@@ -1,0 +1,81 @@
+{
+  "seed_url": "https://www.immigratenwt.ca/immigrate-here",
+  "slug": "nt-immigration",
+  "total_urls": 12,
+  "max_depth": 2,
+  "crawled_at": "2026-06-20T13:16:57.617135",
+  "pages": [
+    {
+      "url": "https://www.immigratenwt.ca/immigrate-here",
+      "title": "Immigrate Here | Northwest Territories Nominee Program",
+      "depth": 0,
+      "status": 200
+    },
+    {
+      "url": "https://www.immigratenwt.ca/employer-driven-stream",
+      "title": "Employer - Driven Stream | Northwest Territories Nominee Program",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.immigratenwt.ca/francophone-stream",
+      "title": "Francophone Stream | Northwest Territories Nominee Program",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.immigratenwt.ca/nominee-support",
+      "title": "Nominee Support | Northwest Territories Nominee Program",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.immigratenwt.ca/business-stream",
+      "title": "Business Stream | Northwest Territories Nominee Program",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.immigratenwt.ca/nominee-applicant-form",
+      "title": "Nominee Applicant Form | Northwest Territories Nominee Program",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.immigratenwt.ca/files/northwest-territories-nominee-program-business-stream-guidelines-september-2023",
+      "title": "Northwest Territories Nominee Program Business Stream Guidelines - September 2023 | Northwest Territories Nominee Program",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.immigratenwt.ca/authorize-or-cancel-representative-nominee-applicant",
+      "title": "Authorize or Cancel a Representative - Nominee Applicant | Northwest Territories Nominee Program",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.immigratenwt.ca/ntnp3-business-stream-nominee-application-checklist",
+      "title": "NTNP3 Business Stream Nominee Application Checklist | Northwest Territories Nominee Program",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.immigratenwt.ca/program-guidelines-francophone-stream",
+      "title": "Program Guidelines - Francophone Stream | Northwest Territories Nominee Program",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.immigratenwt.ca/francophone-stream-application-checklist",
+      "title": "Francophone Stream Application Checklist | Northwest Territories Nominee Program",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.immigratenwt.ca/francophone-stream-employer-information-and-declaration-form",
+      "title": "Francophone Stream Employer Information and Declaration Form | Northwest Territories Nominee Program",
+      "depth": 2,
+      "status": 200
+    }
+  ]
+}

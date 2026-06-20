@@ -1,0 +1,3122 @@
+[
+  {
+    "slug": "2ii-inc",
+    "name": "2ii Inc.",
+    "website": "https://2iiinc.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "3-brothers-shawarma-and-poutine",
+    "name": "3 Brothers Shawarma and Poutine",
+    "website": "https://www.3brothersshawarma.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "6ixty-wings",
+    "name": "6IXTY WINGS",
+    "website": "https://6ixtywings.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "a-w-canada-march-road",
+    "name": "A&W Canada - March Road",
+    "website": "https://web.aw.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "a-architecture-inc",
+    "name": "A+ Architecture Inc.",
+    "website": "https://www.aplus-arch.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "ability-massage-therapy-acupuncture-studio",
+    "name": "Ability Massage Therapy & Acupuncture Studio",
+    "website": "http://www.abilitystudio.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "access-direct-sales",
+    "name": "Access Direct Sales",
+    "website": "https://admcanada.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "access-self-storage",
+    "name": "Access Self Storage",
+    "website": "https://www.accessstorage.ca/en/",
+    "has_careers": false
+  },
+  {
+    "slug": "activecare-medical-centre",
+    "name": "ActiveCARE Medical Centre",
+    "website": "http://www.activecareclinics.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "activecare-physio-clinic",
+    "name": "ActiveCARE Physio Clinic",
+    "website": "http://www.acpottawa.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "adam-miller-kelly-professional-corporation",
+    "name": "Adam Miller Kelly Professional Corporation",
+    "website": "http://amk-law.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "adaptive-marine-solutions-inc",
+    "name": "Adaptive Marine Solutions Inc.",
+    "website": "https://ams-ink.ca/",
+    "has_careers": true
+  },
+  {
+    "slug": "adecco-ottawa",
+    "name": "Adecco Ottawa",
+    "website": "https://www.adecco.ca/",
+    "has_careers": true
+  },
+  {
+    "slug": "adtran-networks-canada-inc",
+    "name": "Adtran Networks Canada Inc.",
+    "website": "https://www.adtran.com/en",
+    "has_careers": true
+  },
+  {
+    "slug": "advanced-office-equipment",
+    "name": "Advanced Office Equipment",
+    "website": "https://topoffice.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "ahearn-and-soper-provision-wms-eastern-ontario",
+    "name": "Ahearn and Soper | proVision WMS Eastern Ontario",
+    "website": "https://www.ahearn.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "ai-talos-inc",
+    "name": "AI Talos Inc.",
+    "website": "https://aitalos.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "ai-spectral-technology-corp",
+    "name": "AI-Spectral Technology Corp.",
+    "website": "https://www.deepmsi.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "allan-mann-insurance-ltd",
+    "name": "Allan Mann Insurance Ltd.",
+    "website": "https://www.manninsurance.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "allmar",
+    "name": "Allmar",
+    "website": "https://www.allmar.com/ottawa/",
+    "has_careers": false
+  },
+  {
+    "slug": "all-mon-coco",
+    "name": "Allô mon Coco",
+    "website": "https://allomoncoco.com/en/",
+    "has_careers": false
+  },
+  {
+    "slug": "alodoc",
+    "name": "Alodoc",
+    "website": "https://alodoc.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "alphawave-semi",
+    "name": "Alphawave Semi",
+    "website": "https://awavesemi.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "ambrotek-printing",
+    "name": "Ambrotek Printing",
+    "website": "https://ambrotekprinting.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "amces",
+    "name": "Amces",
+    "website": "https://amces.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "amdocs",
+    "name": "Amdocs",
+    "website": "https://www.amdocs.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "ams-quantity-surveyors",
+    "name": "AMS Quantity Surveyors",
+    "website": "https://www.amsqs.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "anata-dental-clinic",
+    "name": "Anata Dental Clinic",
+    "website": "https://anatadental.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "aprel",
+    "name": "Aprel",
+    "website": "https://www.aprel.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "arbaum-architects-inc",
+    "name": "Arbaum Architects Inc.",
+    "website": "https://arbaum.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "arcane-four-software",
+    "name": "Arcane Four Software",
+    "website": "https://arcanefour.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "arrowsmith-piano",
+    "name": "Arrowsmith Piano",
+    "website": "https://www.arrowsmithpiano.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "artaflex-inc",
+    "name": "Artaflex Inc.",
+    "website": "https://artaflex.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "asten-johnson-dryer-fabrics",
+    "name": "Asten Johnson Dryer Fabrics",
+    "website": "https://www.astenjohnson.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "astenjohnson-dryer-fabrics",
+    "name": "Astenjohnson Dryer Fabrics",
+    "website": "https://www.astenjohnson.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "attotude-canada",
+    "name": "AttoTude Canada",
+    "website": "https://www.attotude.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "augmentt-technology",
+    "name": "Augmentt Technology",
+    "website": "https://www.augmentt.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "ausculsciences",
+    "name": "AusculSciences",
+    "website": "https://ausculsciences.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "avaya-canada",
+    "name": "Avaya Canada",
+    "website": "https://www.avaya.com/en/",
+    "has_careers": true
+  },
+  {
+    "slug": "aventum-ip-law-llp",
+    "name": "Aventum IP Law LLP",
+    "website": "https://aventum.law/",
+    "has_careers": false
+  },
+  {
+    "slug": "avocet-aerospace-technologies-inc",
+    "name": "Avocet Aerospace Technologies Inc",
+    "website": "https://avocetaerospace.com/about-avocet-aerospace-technologies/",
+    "has_careers": false
+  },
+  {
+    "slug": "b-j-kane-electric-ltd",
+    "name": "B.J. Kane Electric Ltd.",
+    "website": "http://www.bjkaneelectric.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "b4t-solutions-inc",
+    "name": "B4T Solutions Inc.",
+    "website": "https://b4tsolutions.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "barburrito",
+    "name": "barBURRITO",
+    "website": "https://www.barburrito.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "barracuda",
+    "name": "Barracuda",
+    "website": "https://www.barracuda.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "bdc",
+    "name": "BDC",
+    "website": "https://www.bdc.ca/en",
+    "has_careers": false
+  },
+  {
+    "slug": "bellwood-immigration-and-citizenship-services",
+    "name": "Bellwood Immigration and Citizenship Services",
+    "website": "https://bellwoodimmigration.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "benbria-corporation",
+    "name": "Benbria Corporation",
+    "website": "https://benbria.com/contact-us/",
+    "has_careers": true
+  },
+  {
+    "slug": "bench-market",
+    "name": "Bench Market",
+    "website": "https://benchmarket.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "bernier-and-associates",
+    "name": "Bernier and Associates",
+    "website": "https://www.bernierassocies.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "best-life",
+    "name": "Best Life",
+    "website": "https://bestlifeaging.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "best-theratronics-ltd",
+    "name": "Best Theratronics Ltd.",
+    "website": "http://www.theratronics.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "big-rig-brewery",
+    "name": "Big Rig Brewery",
+    "website": "https://www.bigrigdelivery.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "blackberry",
+    "name": "BlackBerry",
+    "website": "https://www.blackberry.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "blackberry-qnx",
+    "name": "Blackberry QNX",
+    "website": "https://www.blackberry.com/us/en",
+    "has_careers": true
+  },
+  {
+    "slug": "blue-door-psychological-services",
+    "name": "Blue Door Psychological Services",
+    "website": "https://www.bluedoorpsychology.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "bluebird-cannabis-co",
+    "name": "Bluebird Cannabis Co.",
+    "website": "https://bluebirdcannabis.store/",
+    "has_careers": false
+  },
+  {
+    "slug": "bluewave-ai",
+    "name": "BlueWave-ai",
+    "website": "https://www.bluwave-ai.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "blushes",
+    "name": "Blushes",
+    "website": "https://blushes.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "bmt",
+    "name": "BMT",
+    "website": "https://www.bmt.org/",
+    "has_careers": false
+  },
+  {
+    "slug": "bmt-consulting",
+    "name": "BMT Consulting",
+    "website": "https://bmtconsultants.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "boston-scientific",
+    "name": "Boston Scientific",
+    "website": "https://www.bostonscientific.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "bourk-s-complete-car-care",
+    "name": "Bourk's Complete Car Care",
+    "website": "https://www.bourks.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "bowie-financial",
+    "name": "Bowie Financial",
+    "website": "https://bowiefinancial.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "braebon-medical-corporation",
+    "name": "Braebon Medical Corporation",
+    "website": "https://www2.braebon.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "brennan-wealth-management",
+    "name": "Brennan Wealth Management",
+    "website": "https://advisor.assante.com/web/brennan-wealth-management/",
+    "has_careers": false
+  },
+  {
+    "slug": "bright-tomorrows-immigration-services",
+    "name": "Bright Tomorrows Immigration Services",
+    "website": "https://btimmigration.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "brookside-dental-centre",
+    "name": "Brookside Dental Centre",
+    "website": "https://brooksidedentistry.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "brookstreet-hotel",
+    "name": "Brookstreet Hotel",
+    "website": "https://www.brookstreethotel.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "brophy-financial-planning-insurance-agency-ltd",
+    "name": "Brophy Financial Planning & Insurance Agency Ltd.",
+    "website": "https://brophyfinancial.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "browns-cleaners-tailoring-alterations",
+    "name": "Browns Cleaners & Tailoring/Alterations",
+    "website": "https://brownscleaners.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "bta-design-services-inc",
+    "name": "BTA Design Services Inc.",
+    "website": "https://www.btadesignservices.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "btai-technology-solutions",
+    "name": "BTAI Technology Solutions",
+    "website": "https://www.btai.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "burger-king",
+    "name": "Burger King",
+    "website": "https://www.burgerking.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "burrito-gringo-kanata",
+    "name": "Burrito Gringo Kanata",
+    "website": "http://burritogringo.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "buttcon-east-limited",
+    "name": "Buttcon East Limited",
+    "website": "https://www.buttcon.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "bwx-isotopes-technolgies-group-inc",
+    "name": "BWX Isotopes Technolgies Group Inc.",
+    "website": "https://www.bwxt.com/bwxt-medical",
+    "has_careers": true
+  },
+  {
+    "slug": "bwxt-medical-ltd",
+    "name": "BWXT Medical Ltd.",
+    "website": "https://www.bwxtmedical.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "c-core",
+    "name": "C-Core",
+    "website": "https://c-core.ca/",
+    "has_careers": true
+  },
+  {
+    "slug": "cae-canada-defence-and-security",
+    "name": "CAE Canada Defence and Security",
+    "website": "https://www.cae.com/defense-security/regional-operations/cae-canada/",
+    "has_careers": true
+  },
+  {
+    "slug": "cake-my-day",
+    "name": "Cake My Day",
+    "website": "https://www.cakemydaygfbakery.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "calabogie-brewing-co",
+    "name": "Calabogie Brewing Co.",
+    "website": "http://www.calabogiebrewing.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "calian",
+    "name": "Calian",
+    "website": "https://www.calian.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "canadian-aeronautics-and-space-institute-casi",
+    "name": "Canadian Aeronautics and Space Institute (CASI)",
+    "website": "https://www.casi.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "canadian-association-of-chiefs-of-police",
+    "name": "Canadian Association of Chiefs of Police",
+    "website": "https://www.cacp.ca/index.html",
+    "has_careers": false
+  },
+  {
+    "slug": "canadian-association-of-home-property-inspectors-cahpi",
+    "name": "Canadian Association of Home & Property Inspectors (CAHPI)",
+    "website": "https://www.cahpi.ca/en/",
+    "has_careers": false
+  },
+  {
+    "slug": "canadian-college-of-physicists-in-medicine-ccpm",
+    "name": "Canadian College of Physicists in Medicine (CCPM)",
+    "website": "https://ccpm.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "canna-cabana",
+    "name": "Canna Cabana",
+    "website": "https://cannacabana.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "capital-aesthetics-clinic-skin-care-and-laser",
+    "name": "Capital Aesthetics Clinic - Skin Care and Laser",
+    "website": "https://www.capitalaesthetics.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "carleton-university-at-kanata-cu-kanata",
+    "name": "Carleton University at Kanata (CU@Kanata)",
+    "website": "https://carleton.ca/kanata/",
+    "has_careers": false
+  },
+  {
+    "slug": "case-iq",
+    "name": "Case IQ",
+    "website": "https://www.caseiq.com",
+    "has_careers": true
+  },
+  {
+    "slug": "casey-s-pet-grooming-and-doggie-daycare",
+    "name": "Casey's Pet Grooming and Doggie Daycare",
+    "website": "https://www.facebook.com/caseyspetgroomingg",
+    "has_careers": false
+  },
+  {
+    "slug": "catalyst-kanata",
+    "name": "Catalyst Kanata",
+    "website": "https://catalystbusinesscenter.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "celestra-health-systems",
+    "name": "Celestra Health Systems",
+    "website": "https://celestrahealth.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "cengn",
+    "name": "CENGN",
+    "website": "https://www.cengn.ca/",
+    "has_careers": true
+  },
+  {
+    "slug": "cerio",
+    "name": "Cerio",
+    "website": "https://www.cerio.io/",
+    "has_careers": true
+  },
+  {
+    "slug": "checkpoint-software-technologies",
+    "name": "Checkpoint Software Technologies",
+    "website": "https://www.checkpoint.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "choices-in-action-counselling-services-monica-forst",
+    "name": "Choices in Action Counselling Services (Monica Forst)",
+    "website": "https://choicesinaction.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "choitechandlaw-professional-corporation",
+    "name": "ChoiTechAndLaw Professional Corporation",
+    "website": "https://choitechandlaw.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "christiane-j-lessard-r-m-f-t",
+    "name": "Christiane J Lessard R M F T",
+    "website": "https://www.yodah.ca/a-propos-de-moi-about-me",
+    "has_careers": false
+  },
+  {
+    "slug": "cibc-wood-gundy-inc",
+    "name": "CIBC Wood Gundy Inc.",
+    "website": "https://www.woodgundy.cibc.com/en/home.html",
+    "has_careers": false
+  },
+  {
+    "slug": "ciena-corporation-canada",
+    "name": "Ciena Corporation Canada",
+    "website": "https://www.ciena.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "circle-k",
+    "name": "Circle K",
+    "website": "https://www.esso.ca/",
+    "has_careers": true
+  },
+  {
+    "slug": "cisco-systems-inc",
+    "name": "Cisco Systems Inc",
+    "website": "https://www.cisco.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "claigan-environmental",
+    "name": "Claigan Environmental",
+    "website": "https://www.claigan.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "cliniconex",
+    "name": "Cliniconex",
+    "website": "https://cliniconex.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "cmc-microsystems",
+    "name": "CMC Microsystems",
+    "website": "https://www.cmc.ca/",
+    "has_careers": true
+  },
+  {
+    "slug": "co-operators",
+    "name": "Co-operators",
+    "website": "https://www.cooperators.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "cody-party-rentals-balloon-design",
+    "name": "Cody Party Rentals & Balloon Design",
+    "website": "https://www.codypartynepean.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "collab-space",
+    "name": "Collab Space",
+    "website": "https://www.collabspace.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "comfort-keepers",
+    "name": "Comfort Keepers",
+    "website": "https://www.comfortkeepers.ca/ottawa/",
+    "has_careers": false
+  },
+  {
+    "slug": "comm2po",
+    "name": "Comm2pO",
+    "website": "https://www.comm2po.ca/en/",
+    "has_careers": false
+  },
+  {
+    "slug": "communications-components-antennas-inc-cci",
+    "name": "Communications Components Antennas Inc. (CCI)",
+    "website": "https://www.cciproducts.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "compugen-inc",
+    "name": "Compugen Inc.",
+    "website": "https://www3.compugen.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "constituency-office-of-jenna-sudds-m-p",
+    "name": "Constituency Office of Jenna Sudds, M.P.",
+    "website": "https://jennasuddsmp.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "constituency-office-of-karen-mccrimmon-m-p-p",
+    "name": "Constituency Office of Karen McCrimmon, M.P.P.",
+    "website": "https://mppkarenmccrimmon.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "cora-s-breakfast-lunch",
+    "name": "Cora's Breakfast & Lunch",
+    "website": "https://www.chezcora.com/en/breakfast-lunch-restaurants/cora-kanata",
+    "has_careers": false
+  },
+  {
+    "slug": "core-migration",
+    "name": "Core Migration",
+    "website": "http://www.coremigration.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "corfix",
+    "name": "Corfix",
+    "website": "https://www.corfix.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "cornerstone-on-demand",
+    "name": "Cornerstone on Demand",
+    "website": "https://www.cornerstoneondemand.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "crank-software-inc",
+    "name": "Crank Software Inc.",
+    "website": "https://www.cranksoftware.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "crossfit-closer",
+    "name": "CrossFit Closer",
+    "website": "http://www.crossfitcloser.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "crowe-bgk",
+    "name": "Crowe BGK",
+    "website": "https://www.crowe.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "cyphercor-inc",
+    "name": "Cyphercor Inc.",
+    "website": "https://www.cyphercor.com",
+    "has_careers": false
+  },
+  {
+    "slug": "cyto-matrix-inc",
+    "name": "Cyto-Matrix Inc.",
+    "website": "https://cytomatrix.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "dafocom-solutions",
+    "name": "Dafocom Solutions",
+    "website": "https://dafocom.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "daltco-electric-and-supply-1979-ltd",
+    "name": "Daltco Electric and Supply (1979) Ltd.",
+    "website": "https://www.daltco.com/locations/ottawa",
+    "has_careers": false
+  },
+  {
+    "slug": "datakinetics-ltd",
+    "name": "DataKinetics Ltd.",
+    "website": "http://www.dkl.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "debar-gold-ltd",
+    "name": "Debar Gold Ltd.",
+    "website": "http://debargold.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "defsec-technologies",
+    "name": "DEFSEC Technologies",
+    "website": "https://defsectec.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "dell-technologies",
+    "name": "Dell Technologies",
+    "website": "https://www.dell.com/en-ca",
+    "has_careers": false
+  },
+  {
+    "slug": "deloitte",
+    "name": "Deloitte",
+    "website": "http://www.deloitte.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "dentistry-kanata",
+    "name": "Dentistry @ Kanata",
+    "website": "http://www.dentistryatkanata.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "dentiza",
+    "name": "Dentiza",
+    "website": "https://dentiza.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "diabai",
+    "name": "DiabAi",
+    "website": "https://diabai.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "differly-inc",
+    "name": "Differly Inc",
+    "website": "https://www.differly.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "dimensions-centre-inc",
+    "name": "Dimensions Centre Inc",
+    "website": "https://centre-dimensions.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "distillersr",
+    "name": "DistillerSR",
+    "website": "https://www.distillersr.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "dollarama",
+    "name": "Dollarama",
+    "website": "https://www.dollarama.com/en-CA/",
+    "has_careers": false
+  },
+  {
+    "slug": "dominion-dynamics",
+    "name": "Dominion Dynamics",
+    "website": "https://www.dominion-dynamics.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "douvris-martial-arts",
+    "name": "Douvris Martial Arts",
+    "website": "https://kanata.douvris.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "dpa-industries-inc-dpa-gold",
+    "name": "DPA Industries Inc. (DPA Gold)",
+    "website": "https://dpagold.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "dr-susan-pella-dentist",
+    "name": "Dr. Susan Pella - Dentist",
+    "website": "",
+    "has_careers": false
+  },
+  {
+    "slug": "drs-technologies-canada-ltd-leonardo-drs",
+    "name": "DRS Technologies Canada Ltd. (Leonardo DRS)",
+    "website": "https://www.leonardodrs.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "dual-code-inc",
+    "name": "Dual Code Inc",
+    "website": "https://www.dualcode.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "dzsi-canada",
+    "name": "DZSi Canada",
+    "website": "https://dzsi.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "edge-gymnastics",
+    "name": "Edge Gymnastics",
+    "website": "https://gymnasticsedge.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "edge-signal",
+    "name": "Edge Signal",
+    "website": "https://www.edgesignal.io/",
+    "has_careers": true
+  },
+  {
+    "slug": "edgewater-computer-systems-inc",
+    "name": "Edgewater Computer Systems Inc.",
+    "website": "https://edgewater.ca/",
+    "has_careers": true
+  },
+  {
+    "slug": "edgewater-wireless-systems",
+    "name": "Edgewater Wireless Systems",
+    "website": "https://edgewaterwireless.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "edward-jones-investments",
+    "name": "Edward Jones Investments",
+    "website": "https://www.edwardjones.ca/ca-en",
+    "has_careers": false
+  },
+  {
+    "slug": "electronic-distributers-international-inc-dba-edi-inc",
+    "name": "Electronic Distributers International inc.  Dba EDI Inc.",
+    "website": "https://ediinc.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "electronic-sales-professionals-esp-inc",
+    "name": "Electronic Sales Professionals (ESP) Inc",
+    "website": "http://www.espsales.com/contact.html",
+    "has_careers": false
+  },
+  {
+    "slug": "electronics-test-care-centre",
+    "name": "Electronics Test Care Centre",
+    "website": "https://electronicstestcentre.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "electronics4all",
+    "name": "Electronics4All",
+    "website": "https://electronics4all.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "elite-dance-studio",
+    "name": "Elite Dance Studio",
+    "website": "https://elitedancestudio.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "enablence-technologies-inc",
+    "name": "Enablence Technologies Inc.",
+    "website": "https://www.enablence.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "endosink-inc",
+    "name": "Endosink Inc.",
+    "website": "https://endosink.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "enercom-canada-inc",
+    "name": "Enercom Canada Inc.",
+    "website": "http://www.enercom.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "enterprise-mobility",
+    "name": "Enterprise Mobility",
+    "website": "https://www.enterprisemobility.com/en/index.html",
+    "has_careers": false
+  },
+  {
+    "slug": "entrust",
+    "name": "Entrust",
+    "website": "https://www.entrust.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "epiphan-systems-inc",
+    "name": "Epiphan Systems Inc.",
+    "website": "http://www.epiphan.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "ericsson-canada-inc",
+    "name": "Ericsson Canada Inc.",
+    "website": "https://www.ericsson.ca/fr",
+    "has_careers": true
+  },
+  {
+    "slug": "esafe",
+    "name": "eSAFE",
+    "website": "https://www.esafe.org/en/field-evaluation/",
+    "has_careers": true
+  },
+  {
+    "slug": "esprit-ai",
+    "name": "Esprit-AI",
+    "website": "https://esprit-ai.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "esso-479-march-road",
+    "name": "Esso 479 March Road",
+    "website": "https://www.esso.ca/en-ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "evik-diagnostics-innovations-inc",
+    "name": "Evik Diagnostics Innovations Inc.",
+    "website": "https://www.evikdiagnostics.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "eyedocs-kanata",
+    "name": "EyeDocs Kanata",
+    "website": "https://eyedocsottawa.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "faces-magazine",
+    "name": "Faces Magazine",
+    "website": "https://facesmag.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "family-therapy-and-counseling-services-ottawa",
+    "name": "Family Therapy and Counseling Services Ottawa",
+    "website": "https://family-therapy.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "farinella-kanata-inc",
+    "name": "Farinella Kanata Inc.",
+    "website": "https://www.farinellaeats.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "farm-credit-canada-fcc-kanata",
+    "name": "Farm Credit Canada (FCC) Kanata",
+    "website": "http://www.fcc-fac.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "festival-promotions-inc",
+    "name": "Festival Promotions Inc.",
+    "website": "https://festival.net/",
+    "has_careers": false
+  },
+  {
+    "slug": "fidus-systems-inc",
+    "name": "Fidus Systems Inc",
+    "website": "https://fidus.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "first-choice-hair-cutters",
+    "name": "First Choice Hair Cutters",
+    "website": "https://www.firstchoice.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "fishburn-sheridan-and-associates-ltd",
+    "name": "Fishburn Sheridan and Associates Ltd",
+    "website": "https://fsaeng.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "flex-fitness-studio-and-spa",
+    "name": "Flex Fitness Studio and Spa",
+    "website": "https://www.brookstreethotel.com/flex-fitness",
+    "has_careers": false
+  },
+  {
+    "slug": "flow-health-and-performance",
+    "name": "Flow Health and Performance",
+    "website": "https://flowhealthandperformance.ca",
+    "has_careers": false
+  },
+  {
+    "slug": "foxwise-technologies-inc",
+    "name": "FoxWise Technologies Inc.",
+    "website": "https://foxwise.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "francolangues-inc",
+    "name": "FrancoLangues Inc.",
+    "website": "https://francolangues.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "free-form-fitness-kanata",
+    "name": "Free Form Fitness Kanata",
+    "website": "https://freeformfitness.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "freshii",
+    "name": "Freshii",
+    "website": "https://www.freshii.com/ca/en-ca/home",
+    "has_careers": false
+  },
+  {
+    "slug": "fullscript",
+    "name": "Fullscript",
+    "website": "https://fullscript.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "fusion-catering-events",
+    "name": "Fusion Catering & Events",
+    "website": "https://fusioncatering613.wixsite.com/fusion-catering",
+    "has_careers": false
+  },
+  {
+    "slug": "g-r-baird-financial-group-inc-bairdbenefitsplus",
+    "name": "G.R. Baird Financial Group Inc. / BairdBenefitsPlus",
+    "website": "https://www.grbairdfinancial.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "gaming-kingdom",
+    "name": "Gaming Kingdom",
+    "website": "https://gaming-kingdom.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "ganex",
+    "name": "Ganex",
+    "website": "https://www.ganex.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "garage-living",
+    "name": "Garage Living",
+    "website": "https://www.garageliving.com/f/ottawa",
+    "has_careers": false
+  },
+  {
+    "slug": "gateway-dentistry",
+    "name": "Gateway Dentistry",
+    "website": "http://www.gatewaydentistry.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "gc-photonics-inc",
+    "name": "GC Photonics Inc",
+    "website": "https://gcphotonics.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "gemtec-consulting-engineers-and-scientists-limited",
+    "name": "GEMTEC Consulting Engineers and Scientists Limited",
+    "website": "https://www.gemtec.ca/",
+    "has_careers": true
+  },
+  {
+    "slug": "genesislink-consulting-services",
+    "name": "Genesislink Consulting Services",
+    "website": "https://genesislink.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "genomadix",
+    "name": "Genomadix",
+    "website": "https://genomadix.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "gilmore-global",
+    "name": "Gilmore Global",
+    "website": "https://www.gilmoreglobal.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "gilmore-printing-services",
+    "name": "Gilmore Printing Services",
+    "website": "https://gilmoreprinting.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "girones-lawyers",
+    "name": "Girones Lawyers",
+    "website": "https://gironeslawyers.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "goodwill-staffing-and-recruitment",
+    "name": "Goodwill Staffing and Recruitment",
+    "website": "https://goodwillstaffing.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "grc-concierge",
+    "name": "GRC Concierge",
+    "website": "https://www.grcconcierge.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "green-leaf-bubble-tea",
+    "name": "Green Leaf Bubble Tea",
+    "website": "https://greenleafkanata.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "grewal-law-firm",
+    "name": "Grewal Law Firm",
+    "website": "https://grewallawfirm.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "harbin-chinese-restaurant",
+    "name": "Harbin Chinese Restaurant",
+    "website": "https://harbinchinesetogo.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "health-canada",
+    "name": "Health Canada",
+    "website": "https://www.canada.ca/en/services/health.html",
+    "has_careers": false
+  },
+  {
+    "slug": "heart-and-soul-kitchen",
+    "name": "Heart and Soul Kitchen",
+    "website": "https://heartsoulkitchen.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "heritage-childcare-center",
+    "name": "Heritage Childcare Center",
+    "website": "https://heritageworld.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "hewitt-young",
+    "name": "Hewitt Young",
+    "website": "",
+    "has_careers": false
+  },
+  {
+    "slug": "hexo-operations-inc",
+    "name": "Hexo Operations Inc.",
+    "website": "https://hexocorp.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "hiboo-networks",
+    "name": "Hiboo Networks",
+    "website": "https://www.hiboonetworks.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "highlands-wellness-sports-injury-clinic",
+    "name": "Highlands Wellness & Sports Injury Clinic",
+    "website": "https://highlandswellness.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "hillview-urgent-diagnostic-imaging-center",
+    "name": "Hillview Urgent Diagnostic Imaging Center",
+    "website": "https://hillviewimaging.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "hockey-sushi",
+    "name": "Hockey Sushi",
+    "website": "https://hockeysushi.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "holmes-brakel-business-interiors",
+    "name": "Holmes & Brakel Business Interiors",
+    "website": "http://www.holmesbrakel.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "honeywell-aerospace-com-dev-int-ltd",
+    "name": "Honeywell Aerospace (COM DEV Int. Ltd.)",
+    "website": "https://www.honeywell.com/us/en",
+    "has_careers": true
+  },
+  {
+    "slug": "hoyes-michalos-and-associates-consumer-proposal-and-licensed",
+    "name": "Hoyes, Michalos and Associates - Consumer Proposal and Licensed Insolvency Trustee",
+    "website": "https://www.hoyes.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "hsbc-bank-canada",
+    "name": "HSBC Bank Canada",
+    "website": "https://www.hsbc.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "huawei-technologies-canada-co-ltd",
+    "name": "Huawei Technologies Canada co. Ltd.",
+    "website": "https://www.huawei.com/ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "hub350",
+    "name": "Hub350",
+    "website": "https://www.hub350.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "i4c-consulting",
+    "name": "I4C Consulting",
+    "website": "https://i4c.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "ig-wealth-management",
+    "name": "IG Wealth Management",
+    "website": "https://www.ig.ca/en",
+    "has_careers": false
+  },
+  {
+    "slug": "immigratic",
+    "name": "Immigratic",
+    "website": "https://immigratic.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "improving",
+    "name": "Improving",
+    "website": "https://www.improving.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "incognito-software-systems",
+    "name": "Incognito Software Systems",
+    "website": "https://www.incognito.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "indian-punjabi-clay-oven",
+    "name": "Indian Punjabi Clay Oven",
+    "website": "http://indianpunjabiclayoven.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "infinera-canada-inc",
+    "name": "Infinera Canada Inc.",
+    "website": "https://www.infinera.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "infrasecure",
+    "name": "Infrasecure",
+    "website": "https://www.infrasecure.group/",
+    "has_careers": false
+  },
+  {
+    "slug": "initlive-inc",
+    "name": "InitLive Inc.",
+    "website": "https://www.initlive.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "innovate-agile-consulting-inc",
+    "name": "Innovate Agile Consulting Inc.",
+    "website": "https://innovateagileconsulting.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "instantel-headquarters",
+    "name": "Instantel Headquarters",
+    "website": "https://www.instantel.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "integral-wealth",
+    "name": "Integral Wealth",
+    "website": "https://integralwealth.com/ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "intengent-inc",
+    "name": "Intengent Inc",
+    "website": "http://www.intengent.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "international-datacasting-corporation-idc",
+    "name": "International Datacasting Corporation (IDC)",
+    "website": "https://www.datacast.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "intouch-insight",
+    "name": "Intouch Insight",
+    "website": "https://www.intouchinsight.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "ipsg-technology",
+    "name": "IPSG Technology",
+    "website": "https://ipsgtechnology.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "iqvia-inc",
+    "name": "Iqvia Inc.",
+    "website": "https://www.iqvia.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "ironstone-grill-at-the-marshes",
+    "name": "Ironstone Grill at The Marshes",
+    "website": "https://www.marshesgolfclub.com/ironstone-grill",
+    "has_careers": false
+  },
+  {
+    "slug": "itex",
+    "name": "Itex",
+    "website": "https://itex.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "j-squared-technologies-inc",
+    "name": "J-Squared Technologies Inc.",
+    "website": "https://jsquared.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "j-d-barnes-limited",
+    "name": "J.D. Barnes Limited",
+    "website": "http://www.jdbarnes.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "jabil-canada-corporation",
+    "name": "Jabil Canada Corporation",
+    "website": "https://www.jabil.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "jcsi-computer-solutions-inc",
+    "name": "JCSI Computer Solutions Inc.",
+    "website": "https://www.jcsi.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "juniper-networks-canada-inc",
+    "name": "Juniper Networks Canada Inc.",
+    "website": "https://www.juniper.net/",
+    "has_careers": true
+  },
+  {
+    "slug": "kanata-chiropractic",
+    "name": "Kanata Chiropractic",
+    "website": "https://kanatachiropractor.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "kanata-electronic-services",
+    "name": "Kanata Electronic Services",
+    "website": "https://www.kesl.com",
+    "has_careers": true
+  },
+  {
+    "slug": "kanata-endodontics-dr-mario-d-adderio-dr-maneesh-sharma",
+    "name": "Kanata Endodontics (Dr Mario D'Adderio & Dr Maneesh Sharma)",
+    "website": "https://www.kanataendodontics.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "kanata-fencing",
+    "name": "Kanata Fencing",
+    "website": "https://kanatafencing.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "kanata-food-cupboard",
+    "name": "Kanata Food Cupboard",
+    "website": "https://www.kanatafoodcupboard.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "kanata-highlands-dental-care",
+    "name": "Kanata Highlands Dental Care",
+    "website": "https://kanatahighlandsdental.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "kanata-learning-center",
+    "name": "Kanata Learning Center",
+    "website": "https://kanatalearningcentre.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "kanata-music-centre",
+    "name": "Kanata Music Centre",
+    "website": "http://kanatamusiccentre.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "kanata-noodle-house",
+    "name": "Kanata Noodle House",
+    "website": "https://carling.kanatanoodlehouse.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "kanata-north-business-association-knba",
+    "name": "Kanata North Business Association (KNBA)",
+    "website": "https://www.kanatanorthba.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "kanata-north-dental-office",
+    "name": "Kanata North Dental Office",
+    "website": "http://kanatadentalcare.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "kanata-north-family-chiropractic-center-knf-chiro",
+    "name": "Kanata North Family Chiropractic Center (KNF Chiro)",
+    "website": "http://www.knfchiro.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "kanata-north-medical-centre",
+    "name": "Kanata North Medical Centre",
+    "website": "",
+    "has_careers": false
+  },
+  {
+    "slug": "kanata-periodontics-dr-sandra-chong",
+    "name": "Kanata Periodontics (Dr Sandra Chong)",
+    "website": "http://kanataperio.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "kanata-plastic-and-cosmetic-surgery",
+    "name": "Kanata Plastic and Cosmetic Surgery",
+    "website": "https://www.kanataplasticsurgery.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "kanata-psychology-and-counselling-centre",
+    "name": "Kanata Psychology and Counselling Centre",
+    "website": "https://www.kanatapsychology.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "kanata-research-park-family-centre",
+    "name": "Kanata Research Park Family Centre",
+    "website": "https://krpfamilycentre.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "kanata-north-early-learning-centre",
+    "name": "Kanata-North Early Learning Centre",
+    "website": "https://www.kanata-northelc.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "kantec",
+    "name": "Kantec",
+    "website": "http://www.kantec.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "kdm-analytics",
+    "name": "KDM Analytics",
+    "website": "http://www.kdmanalytics.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "keysight-technologies-canada-inc",
+    "name": "Keysight Technologies Canada Inc.",
+    "website": "https://www.keysight.com",
+    "has_careers": false
+  },
+  {
+    "slug": "kingsford-consulting-ltd",
+    "name": "Kingsford Consulting Ltd.",
+    "website": "https://www.kingsfordconsulting.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "kinoveo-physiotherapy",
+    "name": "Kinoveo Physiotherapy",
+    "website": "https://www.kinoveophysio.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "kongsberg-geospatial",
+    "name": "Kongsberg Geospatial",
+    "website": "https://www.kongsberggeospatial.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "konnexis-inc",
+    "name": "Konnexis Inc.",
+    "website": "",
+    "has_careers": false
+  },
+  {
+    "slug": "kookijar",
+    "name": "KookiJar",
+    "website": "https://kookijar.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "kratt-brothers-co",
+    "name": "Kratt Brothers Co.",
+    "website": "http://www.krattbrothers.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "krp-properties",
+    "name": "KRP Properties",
+    "website": "https://krpproperties.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "kx-systems",
+    "name": "KX Systems",
+    "website": "https://kx.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "l-spark",
+    "name": "L-SPARK",
+    "website": "https://www.l-spark.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "la-maison-du-kouign-amann",
+    "name": "La Maison du Kouign-Amann",
+    "website": "https://lamaisondukouignamann.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "la-vie-executive-health-center",
+    "name": "La Vie Executive Health Center",
+    "website": "https://www.laviehealth.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "labarge-weinstein-llp",
+    "name": "LaBarge Weinstein LLP",
+    "website": "https://www.lwlaw.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "lalande-insurance",
+    "name": "Lalande Insurance",
+    "website": "https://www.lalandeinsurance.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "law-orders-kanata-north",
+    "name": "Law & Orders Kanata North",
+    "website": "https://lawandorders.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "lcbo",
+    "name": "LCBO",
+    "website": "https://www.lcbo.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "le-groupe-ohmega",
+    "name": "Le Groupe Ohmega",
+    "website": "https://www.groupeohmega.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "legget-drive-dental",
+    "name": "Legget Drive Dental",
+    "website": "http://leggetdental.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "lepine-apartments-groupe-lepine-ottawa",
+    "name": "Lepine Apartments (Groupe Lepine Ottawa)",
+    "website": "https://lepineapartments.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "lesley-bertrand-realtor-royal-lepage-team-realty",
+    "name": "Lesley Bertrand REALTOR® Royal LePage TEAM Realty",
+    "website": "https://www.lesbertrand.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "lester-financial-services-inc",
+    "name": "Lester Financial Services Inc.",
+    "website": "https://www.lesterfinancial.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "liston-animal-hospital",
+    "name": "Liston Animal Hospital",
+    "website": "https://www.listonanimalhospital.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "little-caesars",
+    "name": "Little Caesars",
+    "website": "https://littlecaesars.ca/en-ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "lms-lawyers-llp",
+    "name": "LMS Lawyers LLP",
+    "website": "https://www.lmslawyers.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "loloyan-chiropractor",
+    "name": "Loloyan Chiropractor",
+    "website": "https://www.loloyanchiropractic.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "lone-star-texas-grill",
+    "name": "Lone Star Texas Grill",
+    "website": "http://www.lonestartexasgrill.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "luna-crepes-caf",
+    "name": "LUNA Crepes & Café",
+    "website": "https://lunacafe.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "lytica",
+    "name": "Lytica",
+    "website": "https://lytica.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "mac-fm",
+    "name": "MAC-FM",
+    "website": "https://www.linkedin.com/in/denis-saumure-a979057/?originalSubdomain=ca",
+    "has_careers": false
+  },
+  {
+    "slug": "macleod-company-ltd",
+    "name": "MacLeod Company Ltd.",
+    "website": "https://www.macleod.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "magnet-forensics-inc",
+    "name": "Magnet Forensics Inc.",
+    "website": "https://www.magnetforensics.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "magor-corporation",
+    "name": "Magor Corporation",
+    "website": "http://www.magorcorp.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "march-nails",
+    "name": "March Nails",
+    "website": "https://march-nails.business.site/",
+    "has_careers": false
+  },
+  {
+    "slug": "march-networks",
+    "name": "March Networks",
+    "website": "https://www.marchnetworks.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "march-road-i-d-a-pharmacy",
+    "name": "March Road I.D.A. Pharmacy",
+    "website": "https://march-road-ida-pharmacy.bookrx.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "march-road-veterinary-hospital",
+    "name": "March Road Veterinary Hospital",
+    "website": "https://marchroadvet.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "marchwood-dental",
+    "name": "Marchwood Dental",
+    "website": "https://marchwooddental.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "mark-w-smith-law-office",
+    "name": "Mark W. Smith Law Office",
+    "website": "https://markwsmithlawoffice.wordpress.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "markie-s-montreal-smoked-meat",
+    "name": "Markie's Montreal Smoked Meat",
+    "website": "https://markiessmokedmeats.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "martello-technologies-corporation",
+    "name": "Martello Technologies Corporation",
+    "website": "https://martellotech.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "marvel-snap",
+    "name": "Marvel & Snap",
+    "website": "https://www.marvelandsnap.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "marvell",
+    "name": "Marvell",
+    "website": "https://www.marvell.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "mate-gauge",
+    "name": "Mate Gauge",
+    "website": "https://www.mategauge.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "mattamy-homes-ottawa-office",
+    "name": "Mattamy Homes Ottawa Office",
+    "website": "https://mattamyhomes.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "matthew-house-ottawa-furniture-bank",
+    "name": "Matthew House Ottawa Furniture Bank",
+    "website": "http://matthewhouseottawa.org/",
+    "has_careers": false
+  },
+  {
+    "slug": "mavenir",
+    "name": "Mavenir",
+    "website": "https://www.mavenir.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "mazin-properties-ltd",
+    "name": "Mazin Properties Ltd.",
+    "website": "https://www.mazinproperties.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "mc-countermeasures-inc",
+    "name": "MC Countermeasures Inc.",
+    "website": "https://mc-cm.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "mcauley-financial-services-mfs",
+    "name": "McAuley Financial Services MFS",
+    "website": "https://mcauleyfinancial.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "mcconnell-hr-consulting",
+    "name": "McConnell HR Consulting",
+    "website": "https://mcconnellhrc.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "mcdonald-s",
+    "name": "McDonald's",
+    "website": "https://www.mcdonalds.com/ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "mda-space",
+    "name": "MDA Space",
+    "website": "https://mda.space/en/",
+    "has_careers": false
+  },
+  {
+    "slug": "mead-johnson-nutrition-canada-co",
+    "name": "Mead Johnson Nutrition (Canada) Co.",
+    "website": "https://www.meadjohnson.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "medsport-ottawa",
+    "name": "Medsport Ottawa",
+    "website": "https://medsportottawa.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "metro",
+    "name": "Metro",
+    "website": "https://www.metro.ca/en/",
+    "has_careers": false
+  },
+  {
+    "slug": "microchip-technology-inc",
+    "name": "Microchip Technology Inc.",
+    "website": "https://www.microchip.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "mindspa-mental-health-centre",
+    "name": "MindSpa Mental Health Centre",
+    "website": "https://themindspa.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "mitel",
+    "name": "Mitel",
+    "website": "https://www.mitel.com/en-ca",
+    "has_careers": false
+  },
+  {
+    "slug": "mnp-debt-ltd",
+    "name": "MNP Debt Ltd.",
+    "website": "http://mnpdebt.ca/en/",
+    "has_careers": false
+  },
+  {
+    "slug": "mosaid-technologies",
+    "name": "Mosaid Technologies",
+    "website": "https://mosaid.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "motion-micro-solutions",
+    "name": "Motion Micro Solutions",
+    "website": "https://www.motionmicro.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "music-for-young-children",
+    "name": "Music for Young Children",
+    "website": "https://www.myc.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "mydoma-inc",
+    "name": "Mydoma Inc",
+    "website": "https://www.mydomastudio.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "n-able",
+    "name": "N-able",
+    "website": "https://www.n-able.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "nanometrics-incorporated",
+    "name": "Nanometrics Incorporated",
+    "website": "https://nanometrics.ca/home",
+    "has_careers": true
+  },
+  {
+    "slug": "nature-and-nurture-child-care-services",
+    "name": "Nature and Nurture Child Care Services",
+    "website": "https://nandncc.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "nci-courier-solution",
+    "name": "NCI Courier Solution",
+    "website": "https://ncicouriersolutions.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "net-experience",
+    "name": "Net Experience",
+    "website": "https://netexperience.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "newrocket-iceberg-networks-corporation",
+    "name": "NewRocket (Iceberg Networks Corporation)",
+    "website": "https://www.newrocket.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "ngcoa-canada-national-golf-course-owners-association",
+    "name": "NGCOA Canada (National Golf Course Owners Association)",
+    "website": "https://www.ngcoa.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "nokia",
+    "name": "Nokia",
+    "website": "https://www.nokia.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "nordion",
+    "name": "Nordion",
+    "website": "http://www.nordion.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "nps-labs",
+    "name": "NPS Labs",
+    "website": "https://www.npslabs.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "nrns-incorporated",
+    "name": "NRNS Incorporated",
+    "website": "http://www.nrns.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "numbercrunch",
+    "name": "Numbercrunch",
+    "website": "https://www.numbercrunch.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "nupure-corporation",
+    "name": "NuPure Corporation",
+    "website": "https://www.nupure.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "nuvyyo-inc",
+    "name": "Nuvyyo Inc.",
+    "website": "https://nuvyyo.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "nxp-ottawa-technology-center",
+    "name": "NXP Ottawa Technology Center",
+    "website": "https://www.nxp.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "octagon-systems",
+    "name": "Octagon Systems",
+    "website": "https://octagonsystems.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "omni-conservation-technologies-inc",
+    "name": "Omni Conservation Technologies Inc.",
+    "website": "https://omnict.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "opentext-cybersecurity-cyberres",
+    "name": "OpenText Cybersecurity (Cyberres)",
+    "website": "https://www.microfocus.com/en-us/cyberres",
+    "has_careers": false
+  },
+  {
+    "slug": "ottawa-accident-lawyer",
+    "name": "Ottawa Accident Lawyer",
+    "website": "https://ottawaaccidentlawyer.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "ottawa-driving-school",
+    "name": "Ottawa Driving School",
+    "website": "https://ottawadrivingschool.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "ottawa-golf-superintendents-association-golf-supers",
+    "name": "Ottawa Golf Superintendents Association (Golf Supers)",
+    "website": "https://golfsupers.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "ottawa-hears-audiology-clinic",
+    "name": "Ottawa Hears Audiology Clinic",
+    "website": "https://www.ottawahears.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "ottawa-carleton-lifeskills-inc",
+    "name": "Ottawa-Carleton Lifeskills Inc.",
+    "website": "https://ocl.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "out-of-this-world-plumbing-ottawa",
+    "name": "Out of this World Plumbing Ottawa",
+    "website": "https://www.outofthisworldhomeservices.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "oxford-learning-centres-kanata",
+    "name": "Oxford Learning Centres Kanata",
+    "website": "https://www.oxfordlearning.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "papa-sam-s",
+    "name": "Papa Sam's",
+    "website": "",
+    "has_careers": false
+  },
+  {
+    "slug": "pathminder-inc",
+    "name": "Pathminder Inc.",
+    "website": "http://pathminder.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "patricial-b-simpson-professional-corporation-pbs-law",
+    "name": "Patricial B Simpson Professional Corporation (PBS Law)",
+    "website": "https://www.pbslaw.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "payment-source-inc",
+    "name": "Payment Source Inc.",
+    "website": "https://www.paymentsource.ca/",
+    "has_careers": true
+  },
+  {
+    "slug": "peak-centre-academy",
+    "name": "Peak Centre Academy",
+    "website": "https://www.peakcentre.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "persistant-systems-ltd",
+    "name": "Persistant Systems Ltd.",
+    "website": "https://www.persistent.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "perspectives-restaurant-inside-brookstreet-hotel",
+    "name": "Perspectives Restaurant (inside Brookstreet Hotel)",
+    "website": "https://www.brookstreethotel.com/perspectives-restaurant",
+    "has_careers": false
+  },
+  {
+    "slug": "pet-valu",
+    "name": "Pet Valu",
+    "website": "https://store.petvalu.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "phreesia",
+    "name": "Phreesia",
+    "website": "https://www.phreesia.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "phu-yen-restaurant-inc",
+    "name": "Phu Yen Restaurant Inc.",
+    "website": "https://www.phu-yenrestaurant.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "physiocare-physiotherapy-rehab-centre",
+    "name": "Physiocare Physiotherapy & Rehab Centre",
+    "website": "https://www.physiocarephysiotherapy.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "pinchin-ltd",
+    "name": "Pinchin Ltd.",
+    "website": "https://www.pinchin.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "pivotree",
+    "name": "Pivotree",
+    "website": "https://www.pivotree.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "pizza-hut",
+    "name": "Pizza Hut",
+    "website": "https://www.pizzahut.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "planet-advance-digital-print-and-copy-center",
+    "name": "Planet Advance Digital Print and Copy Center",
+    "website": "",
+    "has_careers": false
+  },
+  {
+    "slug": "pleora-technologies-inc",
+    "name": "Pleora Technologies Inc.",
+    "website": "https://www.pleora.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "plexus-controls-inc",
+    "name": "Plexus Controls Inc.",
+    "website": "http://plexus-controls.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "polyversa",
+    "name": "PolyVersa",
+    "website": "https://polyversa.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "power-integrations-canada",
+    "name": "Power Integrations Canada",
+    "website": "https://www.power.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "power-muscle-fitness",
+    "name": "Power Muscle Fitness",
+    "website": "https://powermusclefitness.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "premier-shockwave-clinic",
+    "name": "Premier Shockwave Clinic",
+    "website": "https://premiershockwaveclinic.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "pro-physio-sport-medicine-centre-march-road",
+    "name": "Pro Physio & Sport Medicine Centre - March Road",
+    "website": "https://prophysiotherapy.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "procom-consultants-group-ltd",
+    "name": "Procom Consultants Group Ltd.",
+    "website": "https://procomservices.com/en-us/",
+    "has_careers": false
+  },
+  {
+    "slug": "project-management-institute-ottawa-valley-outaouais-chapter",
+    "name": "Project Management Institute, Ottawa Valley Outaouais Chapter",
+    "website": "https://www.pmiovoc.org/",
+    "has_careers": false
+  },
+  {
+    "slug": "purecolo-inc",
+    "name": "Purecolo Inc.",
+    "website": "http://purecolo.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "qglex-inc",
+    "name": "QGLex Inc",
+    "website": "http://www.qglexinc.com/index.php",
+    "has_careers": false
+  },
+  {
+    "slug": "qlik",
+    "name": "Qlik",
+    "website": "https://www.qlik.com/us/",
+    "has_careers": true
+  },
+  {
+    "slug": "quarry-consulting",
+    "name": "Quarry Consulting",
+    "website": "https://quarryconsulting.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "quest-software-canada",
+    "name": "Quest Software Canada",
+    "website": "https://www.quest.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "rang-de-indian-cuisine",
+    "name": "Rang De Indian Cuisine",
+    "website": "https://www.rangdeottawa.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "ranovus",
+    "name": "Ranovus",
+    "website": "https://ranovus.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "raymond-james",
+    "name": "Raymond James",
+    "website": "https://www.raymondjames.ca/ottawacorporatebranch",
+    "has_careers": false
+  },
+  {
+    "slug": "raytec-systems-inc",
+    "name": "Raytec Systems Inc.",
+    "website": "https://www.raytecled.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "rb-health-reckitt",
+    "name": "RB Health (Reckitt)",
+    "website": "https://www.reckitt.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "rbc-royal-bank-of-canada",
+    "name": "RBC Royal Bank of Canada",
+    "website": "https://www.rbcroyalbank.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "rbr",
+    "name": "RBR",
+    "website": "https://rbr-global.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "reasonx-labs",
+    "name": "reasonX Labs",
+    "website": "https://www.reasonx.ai/",
+    "has_careers": true
+  },
+  {
+    "slug": "redlore",
+    "name": "RedLore",
+    "website": "https://redlore.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "relationship-counseling-and-therapy-with-anne",
+    "name": "Relationship Counseling and Therapy with Anne",
+    "website": "http://www.counselingandcoachingwithanne.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "relax-massage-group",
+    "name": "Relax Massage Group",
+    "website": "https://relaxmassagegroup.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "relevantz-technology-services",
+    "name": "Relevantz Technology Services",
+    "website": "https://www.relevantz.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "renaissance-network-reinvent",
+    "name": "Renaissance Network Reinvent",
+    "website": "https://renrns.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "renesas-electronics-canada",
+    "name": "Renesas Electronics Canada",
+    "website": "https://www.renesas.com/us/en",
+    "has_careers": true
+  },
+  {
+    "slug": "revelo-consulting",
+    "name": "Revelo Consulting",
+    "website": "http://www.revelo-consulting.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "rexall-pharma-plus",
+    "name": "Rexall Pharma Plus",
+    "website": "https://www.rexall.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "rogers",
+    "name": "Rogers",
+    "website": "https://www.rogers.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "rohde-schwarz-canada-inc",
+    "name": "Rohde & Schwarz Canada Inc.",
+    "website": "https://www.rohde-schwarz.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "ross-video",
+    "name": "Ross Video",
+    "website": "https://www.rossvideo.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "rove-analytics",
+    "name": "Rove Analytics",
+    "website": "https://roveanalytics.ca/",
+    "has_careers": true
+  },
+  {
+    "slug": "royal-canadian-legion-kanata-branch-638",
+    "name": "Royal Canadian Legion, Kanata-Branch #638",
+    "website": "https://kanatalegion.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "royal-lepage-team-reality-brokerage",
+    "name": "Royal LePage Team Reality, Brokerage",
+    "website": "https://www.royallepage.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "royal-oak",
+    "name": "Royal Oak",
+    "website": "http://www.royaloakpubs.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "ryzn-enterprise-systems-inc",
+    "name": "Ryzn Enterprise Systems Inc.",
+    "website": "https://www.ryzn.com/contact",
+    "has_careers": true
+  },
+  {
+    "slug": "sabai-thai-cuisine",
+    "name": "Sabai Thai Cuisine",
+    "website": "http://www.sabaithaicuisine.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "sandstone-psychotherapy-and-counselling",
+    "name": "Sandstone Psychotherapy and Counselling",
+    "website": "https://www.sandstonecounselling.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "sanmina-corporation",
+    "name": "Sanmina Corporation",
+    "website": "https://www.sanmina.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "satcom-direct-avionics",
+    "name": "Satcom Direct Avionics",
+    "website": "https://www.satcomdirect.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "sciemetric-instruments",
+    "name": "Sciemetric Instruments",
+    "website": "https://www.sciemetric.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "scotia-wealth-management",
+    "name": "Scotia Wealth Management",
+    "website": "https://kanata.scotiawealthmanagement.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "scotiabank",
+    "name": "Scotiabank",
+    "website": "https://www.scotiabank.com/ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "scrivens-insurance-and-investment-solutions",
+    "name": "Scrivens Insurance and Investment Solutions",
+    "website": "https://www.scrivens.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "secan-association",
+    "name": "SeCan Association",
+    "website": "https://secan.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "sectigo",
+    "name": "Sectigo",
+    "website": "https://sectigo.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "securitas-technology",
+    "name": "Securitas Technology",
+    "website": "https://www.securitastechnology.com/en-ca/",
+    "has_careers": true
+  },
+  {
+    "slug": "semtech-canada-corporation-ottawa-design-centre",
+    "name": "Semtech Canada Corporation Ottawa Design Centre",
+    "website": "https://www.semtech.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "serenity",
+    "name": "Serenity",
+    "website": "https://serenitykanata.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "sevens-tree-global",
+    "name": "Sevens Tree Global",
+    "website": "https://sevenstreeglobal.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "shawarma-house",
+    "name": "Shawarma House",
+    "website": "https://shawarmahousekanata.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "shell-canada-service-station",
+    "name": "Shell Canada Service Station",
+    "website": "https://www.shell.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "shift4-payments",
+    "name": "Shift4 Payments",
+    "website": "https://www.shift4.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "shirin-market",
+    "name": "Shirin Market",
+    "website": "http://www.shirinmarket.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "shopper-s-drug-mart",
+    "name": "Shopper's Drug Mart",
+    "website": "https://www.shoppersdrugmart.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "siemens-digital",
+    "name": "Siemens Digital",
+    "website": "https://eda.sw.siemens.com/en-US/",
+    "has_careers": true
+  },
+  {
+    "slug": "signiant",
+    "name": "Signiant",
+    "website": "https://www.signiant.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "simfront-simulation-systems-corporation",
+    "name": "SimFront Simulation Systems Corporation",
+    "website": "https://www.simfront.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "simwave-consulting",
+    "name": "SimWave Consulting",
+    "website": "https://www.simwave.ca/",
+    "has_careers": true
+  },
+  {
+    "slug": "siwach-law-professional-corporation",
+    "name": "Siwach Law Professional Corporation",
+    "website": "https://siwachlaw.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "skyworks-solutions-inc",
+    "name": "Skyworks Solutions Inc.",
+    "website": "https://www.skyworksinc.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "smoke-f-x",
+    "name": "Smoke F/X",
+    "website": "https://www.smokefx.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "sobeys",
+    "name": "Sobeys",
+    "website": "https://www.sobeys.com/en/",
+    "has_careers": false
+  },
+  {
+    "slug": "solace-systems",
+    "name": "Solace Systems",
+    "website": "https://solace.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "solink-corporation",
+    "name": "Solink Corporation",
+    "website": "https://solink.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "south-march-medical-centre",
+    "name": "South March Medical Centre",
+    "website": "https://www.southmarchmed.ca/",
+    "has_careers": true
+  },
+  {
+    "slug": "south-march-studio",
+    "name": "South March Studio",
+    "website": "http://southmarchstudio.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "space-credibility-canada-inc",
+    "name": "Space Credibility Canada Inc.",
+    "website": "https://credibility.space/",
+    "has_careers": false
+  },
+  {
+    "slug": "specialized-stainless-solutions",
+    "name": "Specialized Stainless Solutions",
+    "website": "https://3-s.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "spectrum-control-ltd",
+    "name": "Spectrum Control Ltd.",
+    "website": "https://ssia.spectrumcontrol.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "sphyrna-security",
+    "name": "Sphyrna Security",
+    "website": "https://sphyrnasecurity.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "square-peg-communications-inc",
+    "name": "Square Peg Communications Inc.",
+    "website": "https://squarepeg.ca/",
+    "has_careers": true
+  },
+  {
+    "slug": "ssi-micro-ltd",
+    "name": "Ssi Micro Ltd.",
+    "website": "https://www.ssicanada.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "st-louis-bar-and-grill",
+    "name": "St. Louis Bar and Grill",
+    "website": "https://www.stlouiswings.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "starbucks-store",
+    "name": "Starbucks Store",
+    "website": "https://www.starbucks.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "starvoy-technologies-inc",
+    "name": "Starvoy Technologies Inc.",
+    "website": "https://www.starvoy.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "stax-bill",
+    "name": "Stax Bill",
+    "website": "https://staxbill.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "subway",
+    "name": "Subway",
+    "website": "https://www.subway.com/en-ca",
+    "has_careers": false
+  },
+  {
+    "slug": "superna-inc",
+    "name": "Superna Inc.",
+    "website": "https://superna.io/",
+    "has_careers": true
+  },
+  {
+    "slug": "swidget",
+    "name": "Swidget",
+    "website": "https://www.swidget.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "synopsys-canada",
+    "name": "Synopsys Canada",
+    "website": "https://www.synopsys.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "syntax-strategic",
+    "name": "Syntax Strategic",
+    "website": "https://www.syntaxstrategic.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "syntronic-research-and-development-canada",
+    "name": "Syntronic Research and Development Canada",
+    "website": "http://www.syntronic.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "tacit-law",
+    "name": "Tacit Law",
+    "website": "https://tacitlaw.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "talent-lab-inc",
+    "name": "Talent Lab Inc.",
+    "website": "https://talentlab.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "tantalus-systems-corp-acquired-ottawa-based-energate",
+    "name": "Tantalus Systems Corp. (acquired Ottawa based Energate)",
+    "website": "https://www.tantalus.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "tcc-canada-the-corporate-centre",
+    "name": "TCC Canada - The Corporate Centre",
+    "website": "https://tcccanada.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "td-banking-group-td",
+    "name": "TD Banking Group (TD)",
+    "website": "https://www.td.com/ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "technology-integration-group-tig",
+    "name": "Technology Integration Group (TIG)",
+    "website": "https://tig-canada.ca/",
+    "has_careers": true
+  },
+  {
+    "slug": "teldio-corporation",
+    "name": "Teldio Corporation",
+    "website": "https://www.teldio.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "terlin-construction-ltd",
+    "name": "Terlin Construction Ltd",
+    "website": "https://www.terlin.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "terranova-solutions-rewired",
+    "name": "TerraNova Solutions Rewired",
+    "website": "https://terranovasol.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "tessellis",
+    "name": "Tessellis",
+    "website": "https://tessellis.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "texas-instruments-canada-ltd",
+    "name": "Texas Instruments Canada Ltd.",
+    "website": "https://www.ti.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "thai-express",
+    "name": "Thai Express",
+    "website": "https://thaiexpress.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "the-barley-mow",
+    "name": "The Barley Mow",
+    "website": "https://barleymow.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "the-brechin-group-inc",
+    "name": "The Brechin Group Inc.",
+    "website": "https://www.brechingroup.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "the-brookstreet-caf-inside-brookstreet-hotel",
+    "name": "The Brookstreet Café (inside Brookstreet Hotel)",
+    "website": "https://www.brookstreethotel.com/b-café",
+    "has_careers": false
+  },
+  {
+    "slug": "the-children-s-place",
+    "name": "The Children's Place",
+    "website": "https://www.childrensplace.on.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "the-fitness-lab",
+    "name": "The Fitness Lab",
+    "website": "https://thefitnesslabottawa.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "the-great-west-life-assurance-company-sales-and-marketing-ce",
+    "name": "The Great-West Life Assurance Company - Sales and Marketing Centre & Quadrus",
+    "website": "https://www.greatwestlifeco.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "the-hair-bar",
+    "name": "The Hair Bar",
+    "website": "https://www.thehairbar.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "the-marshes-golf-club",
+    "name": "The Marshes Golf Club",
+    "website": "https://www.marshesgolfclub.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "the-mortgage-masters-inc-centum",
+    "name": "The Mortgage Masters Inc. (CENTUM)",
+    "website": "https://www.themortgagemasters.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "the-portia-learning-centre",
+    "name": "The Portia Learning Centre",
+    "website": "https://www.portialearning.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "the-smith-investigation-agency",
+    "name": "The Smith Investigation Agency",
+    "website": "https://smithinvestigationagency.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "the-wine-garden",
+    "name": "The Wine Garden",
+    "website": "https://thewinegarden.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "thera-business",
+    "name": "Thera-Business",
+    "website": "https://www.therabusiness.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "thinkrf-corporation",
+    "name": "ThinkRF Corporation",
+    "website": "https://thinkrf.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "tim-hortons",
+    "name": "Tim Hortons",
+    "website": "https://www.timhortons.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "timesaver-foods",
+    "name": "TimeSaver Foods",
+    "website": "https://timesaverfoods.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "tipot-technologies",
+    "name": "Tipot Technologies",
+    "website": "https://www.tipottechnologies.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "total-outsource-canada-inc",
+    "name": "Total OutSource Canada Inc.",
+    "website": "https://www.toicanada.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "tpc-simutech-multimedia",
+    "name": "TPC Simutech Multimedia",
+    "website": "https://www.tpctraining.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "transcat-canada",
+    "name": "Transcat Canada",
+    "website": "https://www.transcat.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "transit-glass-aluminum-ltd",
+    "name": "Transit Glass & Aluminum Ltd.",
+    "website": "https://transitglass.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "trellis-corporation",
+    "name": "Trellis Corporation",
+    "website": "https://gotrellis.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "trend-micro-canada-technologies-inc",
+    "name": "Trend Micro Canada Technologies Inc.",
+    "website": "https://www.trendmicro.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "tricim-corporation",
+    "name": "Tricim Corporation",
+    "website": "http://www.tricim.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "trillium-dental-corporate",
+    "name": "Trillium Dental Corporate",
+    "website": "https://www.trilliumdental.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "trillium-floral-designs",
+    "name": "Trillium Floral Designs",
+    "website": "https://www.trilliumfloral.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "trio-danceworks",
+    "name": "Trio Danceworks",
+    "website": "https://kanatadance.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "trudel-home-hardware-kanata",
+    "name": "Trudel Home Hardware - Kanata",
+    "website": "https://www.homehardware.ca/store/13613?utm_source=bing&utm_medium=organic_search&utm_campaign=local_seo&utm_content=13613",
+    "has_careers": false
+  },
+  {
+    "slug": "truecontext",
+    "name": "TrueContext",
+    "website": "https://truecontext.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "truvo-cyber",
+    "name": "Truvo Cyber",
+    "website": "https://truvo.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "tsmc-design-technology-canada-inc",
+    "name": "TSMC Design Technology Canada Inc.",
+    "website": "https://www.tsmc.com/english",
+    "has_careers": true
+  },
+  {
+    "slug": "tutorocean",
+    "name": "TutorOcean",
+    "website": "https://www.tutorocean.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "t-v-s-d-canada-inc",
+    "name": "TÜV SÜD Canada Inc.",
+    "website": "https://www.tuvsud.com/en-us",
+    "has_careers": false
+  },
+  {
+    "slug": "ultramar-corner-store",
+    "name": "Ultramar + Corner Store",
+    "website": "https://www.ultramar.ca/en-on/",
+    "has_careers": false
+  },
+  {
+    "slug": "una-derma-clinic",
+    "name": "Una Derma Clinic",
+    "website": "https://unadermaclinic.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "unlocked-adventures-ottawa",
+    "name": "Unlocked Adventures Ottawa",
+    "website": "https://unlockedottawa.com",
+    "has_careers": false
+  },
+  {
+    "slug": "uottawa-kanata-north",
+    "name": "uOttawa - Kanata North",
+    "website": "https://www.uottawa.ca/research-innovation/kanata-north",
+    "has_careers": false
+  },
+  {
+    "slug": "viamarzo-kitchen-and-wine",
+    "name": "ViaMarzo - Kitchen and Wine",
+    "website": "https://www.viamarzo.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "vibrant9",
+    "name": "Vibrant9",
+    "website": "https://vibrant9.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "vivotek-canada",
+    "name": "Vivotek Canada",
+    "website": "https://vivotek.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "vixelstudio",
+    "name": "VixelStudio",
+    "website": "https://vixelstudio.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "voila-gluten-free-bakeree",
+    "name": "Voila Gluten-Free Bakeree",
+    "website": "https://www.voilaglutenfreebakeree.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "voyar-technology",
+    "name": "Voyar Technology",
+    "website": "https://voyar.ca/",
+    "has_careers": true
+  },
+  {
+    "slug": "w3-business-network-inc",
+    "name": "W3 Business Network Inc.",
+    "website": "https://www.businessnetwork.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "waira",
+    "name": "Waira",
+    "website": "https://waira.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "warner-brother-s-discovery",
+    "name": "Warner Brother's Discovery",
+    "website": "https://www.warnermedia.com/ca",
+    "has_careers": false
+  },
+  {
+    "slug": "wesley-clover-international",
+    "name": "Wesley Clover International",
+    "website": "http://www.wesleyclover.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "wesley-clover-services-north-america",
+    "name": "Wesley Clover Services North America",
+    "website": "https://www.wcs-northamerica.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "west-end-unistyle-inc",
+    "name": "West End Unistyle Inc.",
+    "website": "http://www.unistyle.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "weston-instruments",
+    "name": "Weston Instruments",
+    "website": "http://ottawaguitarrepair.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "whole-medicine-naturopathic-clinic",
+    "name": "Whole Medicine Naturopathic Clinic",
+    "website": "https://www.wholemedicine.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "willy-s-pizza",
+    "name": "Willy's Pizza",
+    "website": "https://www.willyspizza.ca",
+    "has_careers": false
+  },
+  {
+    "slug": "winning-circle-martial-arts-and-wellness-center",
+    "name": "Winning Circle Martial Arts and Wellness Center",
+    "website": "https://winningcirclemartialarts.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "workdynamics-technologies",
+    "name": "WorkDynamics Technologies",
+    "website": "https://www.workdynamics.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "wtw-co",
+    "name": "WTW Co",
+    "website": "https://www.wtwco.com/en-ca",
+    "has_careers": true
+  },
+  {
+    "slug": "ww-consulting",
+    "name": "WW Consulting",
+    "website": "https://www.walterwillett.com/about",
+    "has_careers": false
+  },
+  {
+    "slug": "y-managers",
+    "name": "Y Managers",
+    "website": "https://ymanagers.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "yunakson-technologies-inc",
+    "name": "Yunakson Technologies Inc.",
+    "website": "https://yunakson.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "zakuska-market-and-deli",
+    "name": "Zakuska Market and Deli",
+    "website": "https://zakuska.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "zendelity",
+    "name": "Zendelity",
+    "website": "https://www.zendelity.com/",
+    "has_careers": false
+  }
+]

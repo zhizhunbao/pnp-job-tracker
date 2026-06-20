@@ -1,0 +1,23 @@
+---
+source: https://immigratemanitoba.com/life/regulated-occupations/financial-supports
+title: "Financial Supports for Internationally Educated Professionals | Manitoba Immigration"
+fetched: 2026-06-20T12:35:29-04:00
+---
+
+There are various financial support options available to internationally educated/trained professionals and tradespersons residing in Manitoba. Each has its own eligibility criteria.
+
+Some financial supports are available to individuals pursuing any profession or trade. Other financial supports are specific to a profession or trade and are offered only to individual’s pursuing that occupation. For example, any internationally educated/trained individual in any profession or trade can apply for a Recognition Counts loan (details below). Eligibility for a loan is determined on a case-by-case basis. However, the Nurses Recruitment and Retention Fund offers grants only to individuals pursuing their nursing license.
+
+Below is a list of general financial supports.
+
+To learn if there are **other types of financial supports** which are specific to your profession or trade, contact the regulatory body overseeing the profession or trade.
+
+## General Financial Supports
+
+| Who provides the support? | What type of support? | Where to go for more information? |
+| --- | --- | --- |
+| Province of Manitoba, Workforce Training and Employment (WTE) | WTE delivers a full range of employment and training services to residents of Manitoba. Internationally educated/trained individuals requiring financial assistance in order to work in their profession or trade in Manitoba may be eligible for financial supports to help pay costs such as tuition, books and living expenses. This type of assistance does not have to be repaid . | Centres are located throughout the province. To learn more about these supports and the eligibility requirements, visit a Manitoba Jobs and Skills Development Centre . Important information: If you plan on quitting a job to focus your time on returning to your profession or trade, and you need financial support, it is very important to visit a Manitoba Jobs and Skills Development Centre and speak to a Labour Market Services Advisor before quitting your job . If you quit your job before meeting with an advisor, you may not be eligible for funding supports. |
+| Recognition Counts | This program supports skilled immigrants wishing to work in their fields of expertise in Manitoba. It offers career and financial counseling, as well as the opportunity to apply for a repayable loan of up to $15,000 to help cover the costs associated with gaining recognition (licensure or certification) in a regulated profession or trade. | Recognition Counts is delivered by SEED Winnipeg Inc. To learn more, review program information at Recognition Counts . |
+| Manitoba Student Aid | Manitoba Student Aid is a supplemental financial assistance program for Manitobans who do not have sufficient resources to pay for post-secondary education on their own. It provides various types of funding by way of the Manitoba Student Aid Program and the Canada Student Loans and Grants Programs. Funding includes repayable government student loans and non-repayable grants and/or bursaries . All applications are assessed to determine eligibility and financial need. | Learn more about each of these programs at Manitoba Student Aid . |
+| A variety of organizations such as government, industry, secondary and post-secondary institutions, regulatory bodies, professional associations, and charitable organizations | Bursaries , grants , and scholarships are types of financial awards. Many organizations offer a variety of financial awards typically related to the organization’s interests and values. To be considered for an award, applicants must typically meet a specific set of criteria set by the awarding body. Unlike loans, financial awards do not need to be repaid . | It is up to the individual to research the availability of bursaries and/or scholarships. As you interact with different organizations during your research, you can ask if they, or any other organizations they work with, offer any type of bursary or scholarship. Examples of the many organizations offering financial awards include: Manitoba Health – Nurses Recruitment and Retention Fund; Manitoba Hydro awards, bursaries, and scholarships; and University of Manitoba bursaries. |
+| Financial institutions (banks and credit unions) | Financial Institutions typically offer a variety of financial options such as repayable loans and lines of credit for various purposes. | Applicants should consult the individual financial institution to learn more about its financial services. |

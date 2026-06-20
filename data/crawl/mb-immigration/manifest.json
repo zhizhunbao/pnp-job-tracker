@@ -1,0 +1,909 @@
+{
+  "seed_url": "https://immigratemanitoba.com",
+  "slug": "mb-immigration",
+  "total_urls": 150,
+  "max_depth": 2,
+  "crawled_at": "2026-06-20T12:35:20.954583",
+  "pages": [
+    {
+      "url": "https://immigratemanitoba.com",
+      "title": "Manitoba Immigration | Make Manitoba Your New Home",
+      "depth": 0,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/",
+      "title": "Manitoba Immigration | Make Manitoba Your New Home",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp",
+      "title": "Manitoba Provincial Nominee Program | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr",
+      "title": "Accueil | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/ies/cep",
+      "title": "Career Employment Pathway | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/skilled-worker",
+      "title": "Skilled Worker Stream | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/skilled-worker/swm",
+      "title": "Skilled Worker in Manitoba | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/skilled-worker/swo",
+      "title": "Skilled Worker Overseas | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/ies",
+      "title": "International Education Stream | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/streams",
+      "title": "Streams | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/ies/gip",
+      "title": "Graduate Internship Pathway | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/bis",
+      "title": "Business Investor Stream | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/ies/isep",
+      "title": "International Student Entrepreneur Pilot | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/bis/ep",
+      "title": "Entrepreneur Pathway | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/work",
+      "title": "Working in Manitoba | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/policies",
+      "title": "Policies and Guidelines | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/settlement-services",
+      "title": "Settlement Services | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/information-sessions",
+      "title": "Information Sessions | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/bis/fip",
+      "title": "Farm Investor Pathway | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/regional-immigration-initiatives",
+      "title": "Regional Immigration Initiatives | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life",
+      "title": "Life in Manitoba | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/regulated-occupations",
+      "title": "Regulated Occupations | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/resources",
+      "title": "Resources | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/credential-assessment",
+      "title": "Academic Credential Assessment | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/official-languages",
+      "title": "Official Languages | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/resources/data",
+      "title": "Data | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/resources/federal-immigration-programs",
+      "title": "Federal Immigration Programs | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/resources/refugees",
+      "title": "Refugees | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/employer-services",
+      "title": "Employer Services | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/ncis",
+      "title": "Newcomer Community Integration Support Program | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/draws",
+      "title": "Expression of Interest (EOI) Draws Archives | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/news",
+      "title": "News Archives | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/contact",
+      "title": "Contact Us | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/2026/06/notice-to-mpnp-website-users",
+      "title": "NOTICE TO MPNP WEBSITE USERS | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/2026/04/manitoba-government-offers-support-to-rural-employers-by-opting-in-to-the-temporary-foreign-worker-program-temporary-measures",
+      "title": "Manitoba government offers support to rural employers by opting in to the Temporary Foreign Worker Program temporary measures | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/2026/06/expression-of-interest-draw-273",
+      "title": "Expression of Interest Draw #273 | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/2026/03/changes-on-how-to-contact-the-mpnp",
+      "title": "Changes on How to Contact the MPNP | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/2026/06/important-update-for-manitoba-provincial-nominee-program-international-education-stream-ies-career-employment-pathway-cep-candidates",
+      "title": "Important Update for Manitoba Provincial Nominee Program - International Education Stream (IES) – Career Employment Pathway (CEP) Candidates | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/2026/06/expression-of-interest-draw-272",
+      "title": "Expression of Interest Draw #272 | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/2026/05/expression-of-interest-draw-271",
+      "title": "Expression of Interest Draw #271 | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/2026/05/update-2025-temporary-public-policy-to-facilitate-work-permits-for-prospective-provincial-nominee-program-candidates",
+      "title": "Update: 2025 Temporary Public Policy to Facilitate Work Permits for Prospective Provincial Nominee Program Candidates | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/2026/05/expression-of-interest-draw-270",
+      "title": "Expression of Interest Draw #270 | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/2026/04/expression-of-interest-draw-269",
+      "title": "Expression of Interest Draw #269 | Manitoba Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr/pcm",
+      "title": "Programme Candidats du Manitoba | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr/pcm/declaration-interet",
+      "title": "Déclaration d'intérêt | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr/pcm/travailleurs-qualifies",
+      "title": "Volet Travailleurs qualifiés | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr/pcm/initiatives-de-recrutement-strategique",
+      "title": "Initiatives de recrutement régionales | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr/pcm/travailleurs-qualifies/travailleurs-qualifies-etranger",
+      "title": "Travailleurs qualifiés à l'étranger | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr/pcm/visite-exploratoire",
+      "title": "Visite exploratoire: Informations importantes | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr/vivre/exigences-linguistiques",
+      "title": "Exigences linguistiques | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr/pcm/travailleurs-qualifies/travailleurs-qualifies-manitoba",
+      "title": "Travailleurs qualifiés au Manitoba | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr/contactez-nous",
+      "title": "Contactez-nous | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr/vivre/travailler",
+      "title": "Travailler au Manitoba | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr/pcm/lettre-invitation",
+      "title": "Lettre d'invitation à présenter une demande | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr/donnees",
+      "title": "Portail de données sur l'immigration manitobaine | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr/vivre/professions-reglementees",
+      "title": "Professions et métiers réglementés | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr/nouvelles",
+      "title": "Nouvelles Archives | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr/tirages",
+      "title": "Tirages de déclaration d’intérêt Archives | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr/2026/06/avis-aux-utilisateurs-du-site-web-du-pcm",
+      "title": "AVIS AUX UTILISATEURS DU SITE WEB DU PCM | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr/vivre/nouveaux-arrivants",
+      "title": "Nouveaux arrivants | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr/programme-soutien-integration-communautaire-nouveaux-arrivants",
+      "title": "Programme de soutien à l’intégration communautaire des nouveaux arrivants | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr/vivre",
+      "title": "Vivre au Manitoba | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr/2026/06/mise-a-jour-importante-concernant-le-programme-des-candidats-du-manitoba-volet-de-leducation-internationale-vei-candidats-voie-demploi-de-carriere-vec",
+      "title": "Mise à jour importante concernant le Programme des candidats du Manitoba – Volet de l'éducation internationale (VEI) – Candidats Voie d'emploi de carrière (VEC) | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr/2026/05/mise-a-jour-2025-mesure-temporaire-visant-a-faciliter-lobtention-de-permis-de-travail-pour-les-candidats-potentiels-au-programme-des-candidats-des-provinces",
+      "title": "Mise à jour : Mesure temporaire de 2025 visant à faciliter l'obtention de permis de travail pour les candidats potentiels au Programme des candidats des provinces | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr/2026/04/le-gouvernement-du-manitoba-offre-son-soutien-aux-employeurs-ruraux-en-adherant-aux-mesures-temporaires-du-programme-des-travailleurs-etrangers-temporaires",
+      "title": "Le gouvernement du Manitoba offre son soutien aux employeurs ruraux en adhérant aux mesures temporaires du Programme des travailleurs étrangers temporaires | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr/2026/06/tirage-du-systeme-de-declaration-dinteret-n-273",
+      "title": "Tirage du système de déclaration d'intérêt n° 273 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr/2026/03/changements-dans-la-maniere-de-comment-contacter-le-pcm",
+      "title": "Changements dans la manière de comment contacter le PCM | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr/2026/06/tirage-du-systeme-de-declaration-dinteret-n-272",
+      "title": "Tirage du système de déclaration d'intérêt n° 272 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr/2026/03/tirage-du-systeme-de-declaration-dinteret-n-267",
+      "title": "Tirage du système de déclaration d'intérêt n° 267 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/skilled-worker/swm/eligibility",
+      "title": "Eligibility - Skilled Worker in Manitoba | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr/2026/05/tirage-du-systeme-de-declaration-dinteret-n-271",
+      "title": "Tirage du système de déclaration d'intérêt n° 271 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/fr/2026/04/tirage-du-systeme-de-declaration-dinteret-n-268",
+      "title": "Tirage du système de déclaration d'intérêt n° 268 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/apply",
+      "title": "How to Apply | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/ies/cep/eligibility",
+      "title": "Eligibility - Career Employment Pathway | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/skilled-worker/swo/eligibility",
+      "title": "Eligibility - Skilled Worker Overseas | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/ies/gip/eligibility",
+      "title": "Eligibility - Graduate Internship Pathway | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/ies/isep/eligibility",
+      "title": "Eligibility - International Student Entrepreneur Pilot | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/ies/isep/apply",
+      "title": "Apply - International Student Entrepreneur Pilot | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/bis/ep/eligibility",
+      "title": "Eligibility - Entrepreneur Pathway | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/bis/ep/apply",
+      "title": "Apply - Entrepreneur Pathway | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/bis/fip/eligibility",
+      "title": "Eligibility - Farm Investor Pathway | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/policies/commitment-to-settle",
+      "title": "Commitment to Settle in Manitoba | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/policies/contact-information",
+      "title": "Change in Contact Information | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/policies/dependants",
+      "title": "Eligible Dependants | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/policies/glossary",
+      "title": "Glossary | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/policies/information-accuracy",
+      "title": "Information Change Requests and Information Accuracy | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/policies/immigration-representatives",
+      "title": "Immigration Representatives | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/policies/language-proficiency",
+      "title": "Language Proficiency | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/bis/fip/apply",
+      "title": "Apply - Farm Investor Pathway | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/policies/procedural-fairness",
+      "title": "Procedural Fairness | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/policies/truthful-and-correct-information",
+      "title": "Truthful and Correct Information | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/policies/settlement-funds",
+      "title": "Settlement Funds | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/apply/documents",
+      "title": "Supporting Documents | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/apply/eoi",
+      "title": "Expression of Interest (EOI) | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/2025/04/temporary-public-policy-to-facilitate-work-permits-for-prospective-provincial-nominee-program-candidates",
+      "title": "Temporary Public Policy to Facilitate Work Permits for Prospective Provincial Nominee Program Candidates | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/pre-arrival",
+      "title": "Before You Arrive | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/mpnp/policies/wpsl",
+      "title": "Work Permit Support Letters | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/regulated-occupations/financial-supports",
+      "title": "Financial Supports for Internationally Educated Professionals | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/post-arrival",
+      "title": "After You Arrive | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/regulated-occupations/accountant",
+      "title": "Fact Sheet - Accountant | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/regulated-occupations/designated-trades",
+      "title": "Fact Sheet - Designated Trades | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/regulated-occupations/agrologist",
+      "title": "Fact Sheet - Agrologist | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/regulated-occupations/dentist",
+      "title": "Fact Sheet - Dentist | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/regulated-occupations/faq",
+      "title": "Question & Answer Guide - Regulated Occupations | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/regulated-occupations/child-care-worker",
+      "title": "Fact Sheet - Child Care Worker | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/regulated-occupations/eng-tech",
+      "title": "Fact Sheet - Engineering Technician and Engineering Technologist | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/regulated-occupations/geoscientist",
+      "title": "Fact Sheet - Geoscientist | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/regulated-occupations/lpn",
+      "title": "Fact Sheet - Licensed Practical Nurse (LPN) | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/regulated-occupations/lawyer",
+      "title": "Fact Sheet - Lawyer | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/regulated-occupations/architect",
+      "title": "Fact Sheet - Architect | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/regulated-occupations/dietitian",
+      "title": "Fact Sheet - Dietitian | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/regulated-occupations/engineer",
+      "title": "Fact Sheet - Engineer | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/regulated-occupations/physiotherapist",
+      "title": "Fact Sheet - Physiotherapist | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/regulated-occupations/mlt",
+      "title": "Fact Sheet - Medical Laboratory Technologist | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/regulated-occupations/optometrist",
+      "title": "Fact Sheet - Optometrist | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/regulated-occupations/rpn",
+      "title": "Fact Sheet - Registered Psychiatric Nurse (RPN) | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/regulated-occupations/rn",
+      "title": "Fact Sheet - Registered Nurse (RN) | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/regulated-occupations/social-worker",
+      "title": "Fact Sheet - Social Worker | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/regulated-occupations/veterinarian",
+      "title": "Fact Sheet - Veterinarian | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/resources/data/monthly-data-2019",
+      "title": "MPNP Monthly Data 2019 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/life/regulated-occupations/teacher",
+      "title": "Fact Sheet - Teacher | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/resources/data/monthly-data-2020",
+      "title": "MPNP Monthly Data 2020 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/resources/data/monthly-data-2024",
+      "title": "MPNP Monthly Data 2024 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/resources/data/monthly-data-2018",
+      "title": "MPNP Monthly Data 2018 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/resources/data/monthly-data-2022",
+      "title": "MPNP Monthly Data 2022 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/resources/data/monthly-data-2021",
+      "title": "MPNP Monthly Data 2021 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/resources/data/monthly-data-2023",
+      "title": "MPNP Monthly Data 2023 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/resources/data/monthly-data-2026",
+      "title": "MPNP Monthly Data 2026 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/resources/data/annual-report-2019",
+      "title": "MPNP Annual Report 2019 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/resources/data/annual-report-2017",
+      "title": "MPNP Annual Report 2017 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/resources/data/annual-report-2018",
+      "title": "MPNP Annual Report 2018 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/resources/data/annual-report-2021",
+      "title": "MPNP Annual Report 2021 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/resources/data/monthly-data-2025",
+      "title": "MPNP Monthly Data 2025 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/resources/data/annual-report-2023",
+      "title": "MPNP Annual Report 2023 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/resources/data/annual-report-2022",
+      "title": "MPNP Annual Report 2022 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/resources/data/annual-report-2020",
+      "title": "MPNP Annual Report 2020 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/resources/data/facts-report-2016",
+      "title": "Manitoba Immigration Facts Report 2016 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/resources/data/annual-report-2024",
+      "title": "MPNP Annual Report 2024 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/resources/data/facts-report-2018",
+      "title": "Manitoba Immigration Facts Report 2018 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/resources/data/facts-report-2019",
+      "title": "Manitoba Immigration Facts Report 2019 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/resources/data/facts-report-2017",
+      "title": "Manitoba Immigration Facts Report 2017 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/resources/data/facts-report-2020",
+      "title": "Manitoba Immigration Facts Report 2020 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/employer-services/edi",
+      "title": "Employer Direct Initiative | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/employer-services/trrp",
+      "title": "Temporary Resident Retention Pilot | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/ncis/msss",
+      "title": "Manitoba Settlement Support Services (MSSS) | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/employer-services/long-haul-truck-driver-recruitment-guidelines",
+      "title": "Long-Haul Truck Driver Recruitment Guidelines | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/ncis/msss/call-for-applications-2026-27",
+      "title": "Manitoba Settlement Support Services (MSSS) Call for Applications 2026-27 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/employer-services/trrp/faq",
+      "title": "Frequently Asked Questions - TRRP | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/resources/data/facts-report-2022",
+      "title": "Manitoba Immigration Facts Report 2022 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://immigratemanitoba.com/resources/data/facts-report-2021",
+      "title": "Manitoba Immigration Facts Report 2021 | Manitoba Immigration",
+      "depth": 2,
+      "status": 200
+    }
+  ]
+}

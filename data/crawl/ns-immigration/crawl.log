@@ -1,0 +1,78 @@
+[2026-06-20 12:35:47] BFS Discovery starting from: https://liveinnovascotia.com
+[2026-06-20 12:35:47]   Max depth: 2, Max pages: 150, Concurrency: 20
+[2026-06-20 12:35:47]   [LEVEL] Fetching 1 URLs at depth 0...
+[2026-06-20 12:35:47]   [   1] depth=0 https://liveinnovascotia.com
+[2026-06-20 12:35:47]   [LEVEL] Fetching 31 URLs at depth 1...
+[2026-06-20 12:35:47]   [   2] depth=1 https://liveinnovascotia.com/
+[2026-06-20 12:35:47]   [   3] depth=1 https://liveinnovascotia.com/express-entry
+[2026-06-20 12:35:48]   [   4] depth=1 https://liveinnovascotia.com/training-and-certification
+[2026-06-20 12:35:48]   [   5] depth=1 https://liveinnovascotia.com/events
+[2026-06-20 12:35:48]   [   6] depth=1 https://liveinnovascotia.com/about-nova-scotia
+[2026-06-20 12:35:48]   [   7] depth=1 https://liveinnovascotia.com/critical-vacancies
+[2026-06-20 12:35:48]   [   8] depth=1 https://liveinnovascotia.com/eoi-selection
+[2026-06-20 12:35:48]   [   9] depth=1 https://liveinnovascotia.com/nova-scotia-graduate
+[2026-06-20 12:35:48]   [  10] depth=1 https://liveinnovascotia.com/fr
+[2026-06-20 12:35:48]   [  11] depth=1 https://liveinnovascotia.com/finding-job
+[2026-06-20 12:35:48]   [  12] depth=1 https://liveinnovascotia.com/you-arrive-checklist
+[2026-06-20 12:35:48]   [  13] depth=1 https://liveinnovascotia.com/atlantic-immigration-program
+[2026-06-20 12:35:48]   [  14] depth=1 https://liveinnovascotia.com/how-get-settled
+[2026-06-20 12:35:48]   [  15] depth=1 https://liveinnovascotia.com/hiring-immigrant-your-business
+[2026-06-20 12:35:48]   [  16] depth=1 https://liveinnovascotia.com/hire-permanent-resident
+[2026-06-20 12:35:48]   [  17] depth=1 https://liveinnovascotia.com/hire-temporary-foreign-worker
+[2026-06-20 12:35:48]   [  18] depth=1 https://liveinnovascotia.com/hire-international-student
+[2026-06-20 12:35:48]   [  19] depth=1 https://liveinnovascotia.com/resources/expression-interest-eoi-validity-period-and-transition-measur
+[2026-06-20 12:35:48]   [  20] depth=1 https://liveinnovascotia.com/taxonomy/term/3
+[2026-06-20 12:35:48]   [  21] depth=1 https://liveinnovascotia.com/resources/nominee-program-priorities-nova-scotia
+[2026-06-20 12:35:48]   [  22] depth=1 https://liveinnovascotia.com/privacy-notice
+[2026-06-20 12:35:49]   [  23] depth=1 https://liveinnovascotia.com/nova-scotia-nominee-program
+[2026-06-20 12:35:49]   [  24] depth=1 https://liveinnovascotia.com/after-you-graduate
+[2026-06-20 12:35:49]   [  25] depth=1 https://liveinnovascotia.com/study-nova-scotia
+[2026-06-20 12:35:49]   [  26] depth=1 https://liveinnovascotia.com/what-do-nova-scotia
+[2026-06-20 12:35:49]   [  27] depth=1 https://liveinnovascotia.com/entrepreneur
+[2026-06-20 12:35:49]   [  28] depth=1 https://liveinnovascotia.com/contact
+[2026-06-20 12:35:49]   [  29] depth=1 https://liveinnovascotia.com/settlement-services
+[2026-06-20 12:35:49]   [  30] depth=1 https://liveinnovascotia.com/skilled-worker
+[2026-06-20 12:35:49]   [  31] depth=1 https://liveinnovascotia.com/resources
+[2026-06-20 12:35:49]   [  32] depth=1 https://liveinnovascotia.com/explore-nova-scotia
+[2026-06-20 12:35:49]   [LEVEL] Fetching 39 URLs at depth 2...
+[2026-06-20 12:35:49]   [  33] depth=2 https://liveinnovascotia.com/fr/evenements
+[2026-06-20 12:35:49]   [  34] depth=2 https://liveinnovascotia.com/eoi-process
+[2026-06-20 12:35:49]   [  35] depth=2 https://liveinnovascotia.com/fr/ressources
+[2026-06-20 12:35:49]   [  36] depth=2 https://liveinnovascotia.com/fr/contact
+[2026-06-20 12:35:49]   [  37] depth=2 https://liveinnovascotia.com/stream-modern-temp-portal-closure
+[2026-06-20 12:35:49]   [  38] depth=2 https://liveinnovascotia.com/fr/etudier-en-nouvelle-ecosse
+[2026-06-20 12:35:49]   [  39] depth=2 https://liveinnovascotia.com/fr/Programme-des-candidats-Nouvelle-Ecosse
+[2026-06-20 12:35:49]   [  40] depth=2 https://liveinnovascotia.com/fr/setablir
+[2026-06-20 12:35:49]   [  41] depth=2 https://liveinnovascotia.com/fr/diplomes-de-la-nouvelle-ecosse
+[2026-06-20 12:35:49]   [  42] depth=2 https://liveinnovascotia.com/resources/common-terms
+[2026-06-20 12:35:49]   [  43] depth=2 https://liveinnovascotia.com/fr/express-entry
+[2026-06-20 12:35:49]   [  44] depth=2 https://liveinnovascotia.com/fr/embaucher-un-resident-permanent
+[2026-06-20 12:35:50]   [  45] depth=2 https://liveinnovascotia.com/fr/trouver-un-emploi
+[2026-06-20 12:35:50]   [  46] depth=2 https://liveinnovascotia.com/fr/embaucher-un-immigrant
+[2026-06-20 12:35:50]   [  47] depth=2 https://liveinnovascotia.com/fr/entrepreneur
+[2026-06-20 12:35:50]   [  48] depth=2 https://liveinnovascotia.com/fr/node/69
+[2026-06-20 12:35:50]   [  49] depth=2 https://liveinnovascotia.com/fr/services-daide-letablissement
+[2026-06-20 12:35:50]   [  50] depth=2 https://liveinnovascotia.com/fr/formation-et-accreditation
+[2026-06-20 12:35:50]   [  51] depth=2 https://liveinnovascotia.com/fr/liste-de-verification-avant-votre-arrivee
+[2026-06-20 12:35:50]   [  52] depth=2 https://liveinnovascotia.com/fr/decouvrez-la-nouvelle-ecosse
+[2026-06-20 12:35:50]   [  53] depth=2 https://liveinnovascotia.com/fr/skilled-worker
+[2026-06-20 12:35:50]   [  54] depth=2 https://liveinnovascotia.com/fr/choses-faire-en-nouvelle-ecosse
+[2026-06-20 12:35:50]   [  55] depth=2 https://liveinnovascotia.com/fr/une-fois-votre-diplome-en-poche
+[2026-06-20 12:35:50]   [  56] depth=2 https://liveinnovascotia.com/fr/embaucher-un-travailleur-etranger-temporaire
+[2026-06-20 12:35:50]   [  57] depth=2 https://liveinnovascotia.com/fr/embaucher-un-etudiant-etranger
+[2026-06-20 12:35:50]   [  58] depth=2 https://liveinnovascotia.com/fr/resources/mise-jour-du-pcne-regroupement-en-quatre-volets
+[2026-06-20 12:35:50]   [  59] depth=2 https://liveinnovascotia.com/fr/avis-de-confidentialite
+[2026-06-20 12:35:50]   [  60] depth=2 https://liveinnovascotia.com/fr/programme-dimmigration-au-canada-atlantique
+[2026-06-20 12:35:50]   [  61] depth=2 https://liveinnovascotia.com/resources/nsnp-update-four-consolidated-streams
+[2026-06-20 12:35:50]   [  62] depth=2 https://liveinnovascotia.com/fr/stream-modern-temp-portal-closure
+[2026-06-20 12:35:50]   [  63] depth=2 https://liveinnovascotia.com/fr/node/71
+[2026-06-20 12:35:50]   [  64] depth=2 https://liveinnovascotia.com/resources/nova-scotia-nominee-program-update-nsnp-50-nsnp-100-form
+[2026-06-20 12:35:50]   [  65] depth=2 https://liveinnovascotia.com/fr/taxonomy/term/3
+[2026-06-20 12:35:50]   [  66] depth=2 https://liveinnovascotia.com/resources/nova-scotia-immigration-update-2025
+[2026-06-20 12:35:50]   [  67] depth=2 https://liveinnovascotia.com/resources/transition-new-aip-endorsement-application-system
+[2026-06-20 12:35:50]   [  68] depth=2 https://liveinnovascotia.com/fr/propos-de-la-nouvelle-ecosse
+[2026-06-20 12:35:50]   [  69] depth=2 https://liveinnovascotia.com/fr/node/70
+[2026-06-20 12:35:50]   [  70] depth=2 https://liveinnovascotia.com/resources/relaunching-entrepreneur-streams-nova-scotia-nominee-program
+[2026-06-20 12:35:50] 
+[OK] Discovered 70 pages
+[2026-06-20 12:35:50]      Manifest: C:\Users\40270\Desktop\workspace\short-video-studio\docs\ns-immigration\manifest.json

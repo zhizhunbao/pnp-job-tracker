@@ -1,0 +1,28 @@
+---
+source: https://immigratemanitoba.com/life/regulated-occupations/accountant
+title: "Fact Sheet - Accountant | Manitoba Immigration"
+fetched: 2026-06-20T12:35:29-04:00
+---
+
+| Regulated profession (NOC 2021) | There are a wide variety of occupations in the field of accounting. They include regulated and non-regulated occupations. Regulated occupations include professional accountants, public accountants, and auditors. These occupations require individuals to hold a Chartered Professional Accountant (CPA) designation or one of the legacy accounting designations: CGA, CMA, or CA. They include: 10010 – Financial managers 11100 – Financial auditors and accountants 12011 – Supervisors, finance and insurance office workers Non-regulated occupations include accounting clerks, bookkeepers, payroll clerks, income tax experts, etc. To work in a non-regulated occupation, individuals must meet the employer’s hiring criteria which typically requires having related education or training, work experience, and knowledge of industry-specific accounting software. They include: 14200 – Accounting and related clerks 12200 – Accounting technicians and bookkeepers |
+| --- | --- |
+| Regulatory body | Chartered Professional Accountants (CPA) of Manitoba International Credential Recognition Contact information |
+| Regulated titles | Chartered Professional Accountant (CPA) Other variations (e.g., professional accountant, public accountant) |
+| National bodies | Chartered Professional Accountants of Canada (CPA Canada) is the national organization dedicated to the promotion and advancement of the profession. |
+| Regional bodies | The CPA Western School of Business (CPAWSB) delivers CPA education on behalf of provincial and territorial CPA bodies in Western and Northern Canada. |
+| Designation process | See CPA Manitoba – Become a CPA . |
+| Credential assessment | Internationally educated applicants must obtain a credential evaluation from a member of the Alliance of Credential Evaluation Services of Canada (ACESC) . Upon receipt of the credential evaluation, the CPAWSB conducts a transcript assessment. The credential evaluation and transcript assessment are separate processes with separate fees. For details, see CPA Manitoba – Requesting a Transcript Assessment FAQ . |
+| Language proficiency | There are no specific language requirements for designation. However, CPA Manitoba and CPA Canada highly recommend prospective applicants have a minimum level of CLB 8 (or equivalent) before enrolling in a CPA program. |
+| Professional competency profiles | See CPA Manitoba – The CPA Competency Map and CPA practical experience: Competency requirements . |
+| Tools/resources | CPA Manitoba – Become a CPA CPA Manitoba – International Credential Recognition CPA Manitoba – Information Sessions and Events CPA Manitoba – FAQs |
+| Essential skills profile | Go to Job Bank – Explore careers by essential skills , search for the occupation via name or NOC code, and view the essential skills profile. |
+| Employment outlook | Go to Job Bank – Explore job outlooks , search the occupation name or NOC code, and view employment outlook by provinces and regions across Canada. |
+| Job search tools | CPA Manitoba Career Hub is an online portal for connecting CPA Manitoba members and candidates/students with business and accounting employment opportunities in Manitoba. To search job postings in any occupation, visit Job Bank or Work in Manitoba . |
+| Related occupations/alternate careers (NOC 2021) | Below are examples of occupations in the broader field of accounting, data entry, banking, and administration: General accounting and data entry 14200 – Accounting and related clerks 13102 – Payroll administrators 12200 – Accounting technicians and bookkeepers 14202 – Collection clerks 14111 – Data entry clerks 11201 – Professional occupations in business management consulting 14403 – Purchasing and inventory control workers 12102 – Procurement and purchasing agents and officers 65100 – Cashiers 14100 – General office support workers Banking 64400 – Customer services representatives – financial institutions 14201 – Banking, insurance and other financial clerks 63102 – Financial sales representatives Other 14110 – Survey interviewers and statistical clerks 64409 – Other customer and information services representatives While each occupation will have its own set of employment requirements, none are regulated occupations in Manitoba and therefore do not have certification/registration requirements with a professional regulatory body. Employers often, however, require applicants to have job-specific experience, training, and/or certification. Always check the hiring criteria carefully. Hiring criteria is set by the employer and will vary from employer to employer. |
+Last updated December 2022.
+
+### Notes
+
+1. This fact sheet serves as a guide and will be updated periodically. When researching information on professional registration processes, always refer to the regulator to ensure accurate, up-to-date information.
+2. The Government of Canada updates the National Occupational Classification (NOC) every five years. At present, users can access four versions of NOC (2021, 2016, 2011, and 2006) on the [NOC website](https://noc.esdc.gc.ca/). When searching an occupation on the NOC website, always use the most recent version (NOC 2021).
+3. The regulatory body is the only organization that can grant entry into a regulated occupation via registration and the issuing of a licence or certificate. Other organizations (e.g., national bodies, regional bodies, membership associations, etc.) are **not** regulatory bodies.

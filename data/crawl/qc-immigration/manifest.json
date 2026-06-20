@@ -1,0 +1,267 @@
+{
+  "seed_url": "https://www.quebec.ca/en/immigration",
+  "slug": "qc-immigration",
+  "total_urls": 43,
+  "max_depth": 2,
+  "crawled_at": "2026-06-20T12:33:58.657608",
+  "pages": [
+    {
+      "url": "https://www.quebec.ca/en/immigration",
+      "title": "Immigration | Gouvernement du Québec",
+      "depth": 0,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers",
+      "title": "Immigration programs for skilled workers | Gouvernement du Québec",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/online-immigration-services",
+      "title": "Arrima - Online immigration and French learning services | Gouvernement du Québec",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/settle-and-integrate-in-quebec",
+      "title": "Settle and integrate in Québec | Gouvernement du Québec",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/fraud-prevention",
+      "title": "Immigration fraud and the impact on your immigration plans | Gouvernement du Québec",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/work-quebec",
+      "title": "Work in Québec | Gouvernement du Québec",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/integration-service-for-immigrants",
+      "title": "Integration service for immigrants | Gouvernement du Québec",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/french-in-quebec",
+      "title": "Importance of French in Québec | Gouvernement du Québec",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/permanent",
+      "title": "Immigrate permanently to Québec | Gouvernement du Québec",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/permanent/sponsor-family-member",
+      "title": "Sponsor a family member | Gouvernement du Québec",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/refugees-asylum-seekers",
+      "title": "Refugees, asylum seekers, and humanitarian considerations | Gouvernement du Québec",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/online-immigration-services/represent-person-arrima",
+      "title": "Represent a person in Arrima | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program",
+      "title": "Programme de sélection des travailleurs qualifiés – PSTQ (Skilled worker selection program) | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/orderlies",
+      "title": "Permanent immigration pilot program for orderlies | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/permanent/sponsor-family-member/sponsoring-father-mother-great-parent",
+      "title": "Sponsoring your father, mother or great-parent | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/food-processing",
+      "title": "Permanent immigration pilot program for workers in food processing | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/permanent/sponsor-family-member/rules-reception-applications",
+      "title": "Rules governing the reception of applications | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/permanent/immigrate-business",
+      "title": "Immigrate to Québec to do business | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/work-quebec/recognition-skills-acquired-abroad",
+      "title": "Recognition of skills acquired abroad | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/permanent/choose-quebec",
+      "title": "Choosing to immigrate to Québec | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/settle-and-integrate-in-quebec/key-values",
+      "title": "Sharing Québec's key values | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/refugees-asylum-seekers/refugees-recognized-in-canada",
+      "title": "Persons recognized as refugees or in need of protection in Canada | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/permanent/sponsor-family-member/welcoming-integration-person-you-sponsor",
+      "title": "Welcoming and integration of the person you sponsor | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/permanent/sponsor-family-member/sponsoring-spouse-conjugal-partner",
+      "title": "Sponsoring a spouse or conjugal partner | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/permanent/sponsor-family-member/calculating-income",
+      "title": "Demonstrate your financial capacity | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/reconnaissance-etudes-experience/faire-reconnaitre-competences-acquises-etranger/by-regulatory-body",
+      "title": "Having skills acquired abroad recognized if your trade or profession is regulated in Québec | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/settle-and-integrate-in-quebec/objectif-integration",
+      "title": "Objectif Intégration Information Session for Immigrants | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/work-quebec/temporary-workers",
+      "title": "Temporary workers programs | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/permanent/sponsor-family-member/sponsoring-dependent-child",
+      "title": "Sponsoring a dependent child | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/artificial-intelligence",
+      "title": "Permanent immigration pilot program for workers in the artificial intelligence, information technologies and visual effects sectors | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/refugees-asylum-seekers/asylum-seekers",
+      "title": "Asylum seekers | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/regular-skilled-worker-program",
+      "title": "Programme régulier des travailleurs qualifiés – PRTQ (Regular Skilled Worker Program) | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/partners",
+      "title": "Integration support services offered by partner community organizations | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/refugees-asylum-seekers/program-persons-selected-humanitarian-considerations",
+      "title": "Programme des personnes sélectionnées pour considérations humanitaires (Program for persons selected on the basis of humanitarian considerations) | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/get-represented-immigration-procedures",
+      "title": "Get represented in your immigration procedures | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/refugees-asylum-seekers/collective-sponsorship",
+      "title": "Collective sponsorship of a refugee who is abroad | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/refugees-asylum-seekers/refugees-abroad",
+      "title": "Refugees abroad | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/work-quebec/temporary-workers/temporary-foreign-worker-program/obtaining-offer-employment/warning-recruitment-agencies",
+      "title": "Warning if you use the services of a recruitment agency for temporary foreign workers | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/settle-and-integrate-in-quebec/first-steps-settling-in",
+      "title": "Premières démarches d’installation (First steps to settling in) Information Session | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/permanent/sponsor-family-member/sponsoring-sister-brother-nephew-grand-children",
+      "title": "Sponsoring an orphaned minor | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/permanent/sponsor-family-member/sponsoring-child-adoption",
+      "title": "Sponsoring a child for adoption | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/refugees-asylum-seekers/roles-quebec-canada",
+      "title": "The roles of Québec and Canada in humanitarian immigration | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.quebec.ca/en/immigration/permanent/sponsor-family-member/sponsor-other-family-member",
+      "title": "Sponsoring another member of your family | Gouvernement du Québec",
+      "depth": 2,
+      "status": 200
+    }
+  ]
+}

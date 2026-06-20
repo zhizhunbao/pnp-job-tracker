@@ -1,0 +1,147 @@
+{
+  "seed_url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program",
+  "slug": "sk-immigration",
+  "total_urls": 23,
+  "max_depth": 2,
+  "crawled_at": "2026-06-20T12:35:42.779441",
+  "pages": [
+    {
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program",
+      "title": "Saskatchewan Immigrant Nominee Program (SINP) | By Immigrating | Government of Saskatchewan",
+      "depth": 0,
+      "status": 200
+    },
+    {
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs",
+      "title": "Browse SINP Programs | Saskatchewan Immigrant Nominee Program (SINP) | Government of Saskatchewan",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/assess-your-eligibility",
+      "title": "Assess Your Eligibility | Saskatchewan Immigrant Nominee Program (SINP) | Government of Saskatchewan",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/sinp-processing-statistics",
+      "title": "SINP Processing Statistics | Saskatchewan Immigrant Nominee Program (SINP) | Government of Saskatchewan",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/how-to-apply-to-the-sinp",
+      "title": "Saskatchewan Immigrant Nominee Program (SINP) Application  | Saskatchewan Immigrant Nominee Program (SINP) | Government of Saskatchewan",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/language-requirements-for-sinp",
+      "title": "Language Requirements for SINP | Saskatchewan Immigrant Nominee Program (SINP) | Government of Saskatchewan",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/immigration-faqs",
+      "title": "Immigration FAQs | Saskatchewan Immigrant Nominee Program (SINP) | Government of Saskatchewan",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/sinp-important-words-and-definitions",
+      "title": "SINP Important Words and Definitions | Saskatchewan Immigrant Nominee Program (SINP) | Government of Saskatchewan",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers",
+      "title": "International Skilled Worker | Browse SINP Programs | Government of Saskatchewan",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/farm-owner-and-operator",
+      "title": "Farm Owner and Operator | Browse SINP Programs | Government of Saskatchewan",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-with-saskatchewan-experience/students",
+      "title": "Students | Worker with Saskatchewan Work Experience | Government of Saskatchewan",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-with-saskatchewan-experience/procedures-and-guidelines",
+      "title": "Saskatchewan Experience Categories: Procedures and Guidelines | Worker with Saskatchewan Work Experience | Government of Saskatchewan",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/international-skilled-worker-saskatchewan-express-entry",
+      "title": "International Skilled Worker: Saskatchewan Express Entry | International Skilled Worker | Government of Saskatchewan",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-with-saskatchewan-experience",
+      "title": "Worker with Saskatchewan Work Experience | Browse SINP Programs | Government of Saskatchewan",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/procedures-and-guidelines",
+      "title": "International Skilled Worker: Procedures and Guidelines | International Skilled Worker | Government of Saskatchewan",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/sinp-innovation-tech-talent-pathway",
+      "title": "Innovation and Tech Talent Pathway | International Skilled Worker | Government of Saskatchewan",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/international-skilled-worker-occupations-in-demand",
+      "title": "International Skilled Worker: Occupation In-Demand | International Skilled Worker | Government of Saskatchewan",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/agriculture-talent-pathway",
+      "title": "Agriculture Talent Pathway | International Skilled Worker | Government of Saskatchewan",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/occupation-restrictions-and-requirements",
+      "title": "Occupation Restrictions and Requirements | International Skilled Worker | Government of Saskatchewan",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-with-saskatchewan-experience/applicants-with-existing-work-permit",
+      "title": "Skilled Worker With Existing Work Permit | Worker with Saskatchewan Work Experience | Government of Saskatchewan",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/entrepreneur",
+      "title": "Entrepreneur and Farm Categories | Browse SINP Programs | Government of Saskatchewan",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/health-talent-pathway",
+      "title": "Health Talent Pathway | International Skilled Worker | Government of Saskatchewan",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/international-skilled-worker-with-employment-offer",
+      "title": "International Skilled Worker: Employment Offer | International Skilled Worker | Government of Saskatchewan",
+      "depth": 2,
+      "status": 200
+    }
+  ]
+}

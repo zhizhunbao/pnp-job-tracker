@@ -1,0 +1,35 @@
+{
+  "ats": "bamboohr",
+  "token": "caseiq",
+  "count": 4,
+  "jobs": [
+    {
+      "title": "Product Owner",
+      "location": "",
+      "url": "https://caseiq.bamboohr.com/careers/305",
+      "department": "Product",
+      "tech": false
+    },
+    {
+      "title": "Manager, Software Development",
+      "location": "",
+      "url": "https://caseiq.bamboohr.com/careers/327",
+      "department": "Platform",
+      "tech": true
+    },
+    {
+      "title": "Solutions Engineer",
+      "location": "",
+      "url": "https://caseiq.bamboohr.com/careers/328",
+      "department": "Sales",
+      "tech": true
+    },
+    {
+      "title": "RFP Writer",
+      "location": "",
+      "url": "https://caseiq.bamboohr.com/careers/329",
+      "department": "Sales",
+      "tech": false
+    }
+  ]
+}

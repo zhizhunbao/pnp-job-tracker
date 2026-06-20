@@ -1,0 +1,31 @@
+[2026-06-20 12:35:37] BFS Discovery starting from: https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program
+[2026-06-20 12:35:37]   Max depth: 2, Max pages: 150, Concurrency: 20
+[2026-06-20 12:35:37]   [LEVEL] Fetching 1 URLs at depth 0...
+[2026-06-20 12:35:37]   [   1] depth=0 https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/sas
+[2026-06-20 12:35:37]   [LEVEL] Fetching 7 URLs at depth 1...
+[2026-06-20 12:35:37]   [   2] depth=1 https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/sas
+[2026-06-20 12:35:37]   [   3] depth=1 https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/sas
+[2026-06-20 12:35:37]   [   4] depth=1 https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/sas
+[2026-06-20 12:35:38]   [   5] depth=1 https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/sas
+[2026-06-20 12:35:38]   [   6] depth=1 https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/sas
+[2026-06-20 12:35:39]   [   7] depth=1 https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/sas
+[2026-06-20 12:35:39]   [   8] depth=1 https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/sas
+[2026-06-20 12:35:39]   [LEVEL] Fetching 15 URLs at depth 2...
+[2026-06-20 12:35:39]   [   9] depth=2 https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/sas
+[2026-06-20 12:35:39]   [  10] depth=2 https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/sas
+[2026-06-20 12:35:40]   [  11] depth=2 https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/sas
+[2026-06-20 12:35:40]   [  12] depth=2 https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/sas
+[2026-06-20 12:35:40]   [  13] depth=2 https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/sas
+[2026-06-20 12:35:40]   [  14] depth=2 https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/sas
+[2026-06-20 12:35:40]   [  15] depth=2 https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/sas
+[2026-06-20 12:35:40]   [  16] depth=2 https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/sas
+[2026-06-20 12:35:40]   [  17] depth=2 https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/sas
+[2026-06-20 12:35:40]   [  18] depth=2 https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/sas
+[2026-06-20 12:35:41]   [  19] depth=2 https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/sas
+[2026-06-20 12:35:41]   [  20] depth=2 https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/sas
+[2026-06-20 12:35:41]   [  21] depth=2 https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/sas
+[2026-06-20 12:35:42]   [  22] depth=2 https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/sas
+[2026-06-20 12:35:42]   [  23] depth=2 https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/sas
+[2026-06-20 12:35:42] 
+[OK] Discovered 23 pages
+[2026-06-20 12:35:42]      Manifest: C:\Users\40270\Desktop\workspace\short-video-studio\docs\sk-immigration\manifest.json

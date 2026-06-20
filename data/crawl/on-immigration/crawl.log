@@ -1,0 +1,57 @@
+[2026-06-19 18:16:05] BFS Discovery starting from: https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp
+[2026-06-19 18:16:05]   Max depth: 2, Max pages: 150, Concurrency: 20
+[2026-06-19 18:16:05]   [LEVEL] Fetching 1 URLs at depth 0...
+[2026-06-19 18:16:05]   [   1] depth=0 https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp
+[2026-06-19 18:16:05]   [LEVEL] Fetching 8 URLs at depth 1...
+[2026-06-19 18:16:05]   [   2] depth=1 https://www.ontario.ca/page/2026-ontario-immigrant-nominee-program-updates
+[2026-06-19 18:16:05]   [   3] depth=1 https://www.ontario.ca/page/ontario-immigrant-nominee-program-streams
+[2026-06-19 18:16:05]   [   4] depth=1 https://www.ontario.ca/page/oinp-employer-job-offer-streams-employer-guide
+[2026-06-19 18:16:05]   [   5] depth=1 https://www.ontario.ca/document/oinp-document-checklists
+[2026-06-19 18:16:06]   [   6] depth=1 https://www.ontario.ca/page/applying-ontario-immigrant-nominee-program-oinp
+[2026-06-19 18:16:06]   [   7] depth=1 https://www.ontario.ca/page/ontario-immigrant-nominee-program-expression-interest-system-streams
+[2026-06-19 18:16:06]   [   8] depth=1 https://www.ontario.ca/page/how-use-oinp-e-filing-portal
+[2026-06-19 18:16:06]   [   9] depth=1 https://www.ontario.ca/page/using-representative-apply-ontario-immigrant-nominee-program
+[2026-06-19 18:16:06]   [LEVEL] Fetching 40 URLs at depth 2...
+[2026-06-19 18:16:06]   [  10] depth=2 https://www.ontario.ca/page/oinp-employer-job-offer-foreign-worker-stream
+[2026-06-19 18:16:06]   [  11] depth=2 https://www.ontario.ca/page/oinp-employer-job-offer-international-student-stream
+[2026-06-19 18:16:06]   [  12] depth=2 https://www.ontario.ca/page/2025-ontario-immigrant-nominee-program-updates
+[2026-06-19 18:16:06]   [  13] depth=2 https://www.ontario.ca/page/oinp-masters-graduate-stream
+[2026-06-19 18:16:06]   [  14] depth=2 https://www.ontario.ca/page/oinp-phd-graduate-stream
+[2026-06-19 18:16:06]   [  15] depth=2 https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp-invitations-apply
+[2026-06-19 18:16:06]   [  16] depth=2 https://www.ontario.ca/document/oinp-document-checklists/employer-job-offer-foreign-worker-stream-ap
+[2026-06-19 18:16:06]   [  17] depth=2 https://www.ontario.ca/page/2016-ontario-immigrant-nominee-program-updates
+[2026-06-19 18:16:07]   [  18] depth=2 https://www.ontario.ca/document/oinp-document-checklists/oinp-document-translation-and-notarization
+[2026-06-19 18:16:07]   [  19] depth=2 https://www.ontario.ca/page/using-authorized-representative-apply-ontario-immigrant-nominee-program
+[2026-06-19 18:16:07]   [  20] depth=2 https://www.ontario.ca/page/oinp-employer-job-offer-demand-skills-stream
+[2026-06-19 18:16:07]   [  21] depth=2 https://www.ontario.ca/page/oinp-express-entry-notifications-interest
+[2026-06-19 18:16:07]   [  22] depth=2 https://www.ontario.ca/page/2021-ontario-immigrant-nominee-program-updates
+[2026-06-19 18:16:07]   [  23] depth=2 https://www.ontario.ca/page/oinp-tech-draws
+[2026-06-19 18:16:07]   [  24] depth=2 https://www.ontario.ca/page/2019-ontario-immigrant-nominee-program-updates
+[2026-06-19 18:16:07]   [  25] depth=2 https://www.ontario.ca/page/2015-ontario-immigrant-nominee-program-updates
+[2026-06-19 18:16:07]   [  26] depth=2 https://www.ontario.ca/document/oinp-document-checklists/employer-job-offer-demand-skills-stream-app
+[2026-06-19 18:16:07]   [  27] depth=2 https://www.ontario.ca/page/2018-ontario-immigrant-nominee-program-updates
+[2026-06-19 18:16:07]   [  28] depth=2 https://www.ontario.ca/page/how-use-employer-portal-ontario-immigrant-nominee-program
+[2026-06-19 18:16:07]   [  29] depth=2 https://www.ontario.ca/document/oinp-document-checklists/employer-job-offer-international-student-st
+[2026-06-19 18:16:07]   [  30] depth=2 https://www.ontario.ca/page/2017-ontario-immigrant-nominee-program-updates
+[2026-06-19 18:16:07]   [  31] depth=2 https://www.ontario.ca/page/register-expression-interest-ontario-immigrant-nominee-program
+[2026-06-19 18:16:07]   [  32] depth=2 https://www.ontario.ca/document/oinp-document-checklists/masters-graduate-stream-applicant-checklist
+[2026-06-19 18:16:08]   [  33] depth=2 https://www.ontario.ca/document/oinp-document-checklists/ontarios-express-entry-skilled-trades-strea
+[2026-06-19 18:16:08]   [  34] depth=2 https://www.ontario.ca/document/oinp-document-checklists/employer-job-offer-streams-employer-checkli
+[2026-06-19 18:16:08]   [  35] depth=2 https://www.ontario.ca/page/2009-2014-ontario-immigrant-nominee-program-updates
+[2026-06-19 18:16:08]   [  36] depth=2 https://www.ontario.ca/document/oinp-document-checklists/ontarios-express-entry-human-capital-priori
+[2026-06-19 18:16:08]   [  37] depth=2 https://www.ontario.ca/page/2023-ontario-immigrant-nominee-program-updates
+[2026-06-19 18:16:08]   [  38] depth=2 https://www.ontario.ca/page/2020-ontario-immigrant-nominee-program-updates
+[2026-06-19 18:16:08]   [  39] depth=2 https://www.ontario.ca/page/2022-ontario-immigrant-nominee-program-updates
+[2026-06-19 18:16:08]   [  40] depth=2 https://www.ontario.ca/document/oinp-document-checklists/phd-graduate-stream-applicant-checklist
+[2026-06-19 18:16:08]   [  41] depth=2 https://www.ontario.ca/document/oinp-document-checklists/ontarios-express-entry-french-speaking-skil
+[2026-06-19 18:16:08]   [  42] depth=2 https://www.ontario.ca/page/oinp-application-processing-times-and-nominations-issued
+[2026-06-19 18:16:08]   [  43] depth=2 https://www.ontario.ca/document/oinp-document-checklists/ontarios-express-entry-human-capital-priori
+[2026-06-19 18:16:08]   [  44] depth=2 https://www.ontario.ca/document/oinp-document-checklists/entrepreneur-stream-applicant-checklist
+[2026-06-19 18:16:08]   [  45] depth=2 https://www.ontario.ca/page/oinp-representatives
+[2026-06-19 18:16:08]   [  46] depth=2 https://www.ontario.ca/document/oinp-document-checklists/employer-job-offer-international-student-st
+[2026-06-19 18:16:08]   [  47] depth=2 https://www.ontario.ca/document/oinp-document-checklists/ontarios-express-entry-french-speaking-skil
+[2026-06-19 18:16:08]   [  48] depth=2 https://www.ontario.ca/page/2024-ontario-immigrant-nominee-program-updates
+[2026-06-19 18:16:08]   [SKIP] HTTP 404: https://www.ontario.ca/page/document/oinp-document-checklists
+[2026-06-19 18:16:08] 
+[OK] Discovered 48 pages
+[2026-06-19 18:16:08]      Manifest: C:\Users\40270\Desktop\workspace\short-video-studio\docs\on-immigration\manifest.json

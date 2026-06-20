@@ -1,0 +1,54 @@
+[
+  {
+    "posting_id": "49741627",
+    "title": "Web developer",
+    "employer": "Sangoma",
+    "city": "Winnipeg",
+    "province": "MB",
+    "salary": "$90,000.00 to $100,000.00 annually",
+    "date": "May 23, 2026",
+    "source": "Talent.com",
+    "direct": false,
+    "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49741627?source=searchresults",
+    "search_occupation": "web developer (NOC 21234)"
+  },
+  {
+    "posting_id": "49578366",
+    "title": "electronic commerce (e-commerce) Web site developer",
+    "employer": "Drops of Jupiter",
+    "city": "Winnipeg",
+    "province": "MB",
+    "salary": "$33.33 hourly",
+    "date": "May 11, 2026",
+    "source": "Job Bank",
+    "direct": true,
+    "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49578366?source=searchresults",
+    "search_occupation": "web developer (NOC 21234)"
+  },
+  {
+    "posting_id": "49719195",
+    "title": "information technology (IT) analyst",
+    "employer": "Kognitive Sales Solutions",
+    "city": "Winnipeg",
+    "province": "MB",
+    "salary": "$41,000.00 to $50,000.00 annually",
+    "date": "June 12, 2026",
+    "source": "Talent.com",
+    "direct": false,
+    "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49719195?source=searchresults",
+    "search_occupation": "systems analyst (NOC 21222)"
+  },
+  {
+    "posting_id": "49742490",
+    "title": "information technology (IT) analyst",
+    "employer": "Vision Loss Rehabilitation Canada",
+    "city": "Winnipeg",
+    "province": "MB",
+    "salary": "$29.04 hourly",
+    "date": "May 26, 2026",
+    "source": "Talent.com",
+    "direct": false,
+    "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49742490?source=searchresults",
+    "search_occupation": "systems analyst (NOC 21222)"
+  }
+]

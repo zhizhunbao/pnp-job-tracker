@@ -1,0 +1,297 @@
+{
+  "seed_url": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp",
+  "slug": "on-immigration",
+  "total_urls": 48,
+  "max_depth": 2,
+  "crawled_at": "2026-06-19T18:16:08.777317",
+  "pages": [
+    {
+      "url": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp",
+      "title": "Ontario Immigrant Nominee Program (OINP) | ontario.ca",
+      "depth": 0,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/2026-ontario-immigrant-nominee-program-updates",
+      "title": "2026 Ontario Immigrant Nominee Program Updates | ontario.ca",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-streams",
+      "title": "Ontario Immigrant Nominee Program Streams | ontario.ca",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/oinp-employer-job-offer-streams-employer-guide",
+      "title": "Ontario Immigrant Nominee Program employer job offer streams: employer guide | ontario.ca",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/document/oinp-document-checklists",
+      "title": "OINP Document Checklists | ontario.ca",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/applying-ontario-immigrant-nominee-program-oinp",
+      "title": "Applying to the Ontario Immigrant Nominee Program (OINP) | ontario.ca",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-expression-interest-system-streams",
+      "title": "Ontario Immigrant Nominee Program expression of interest system streams | ontario.ca",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/how-use-oinp-e-filing-portal",
+      "title": "How to use the Ontario Immigrant Nominee Program e-Filing Portal | ontario.ca",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/using-representative-apply-ontario-immigrant-nominee-program",
+      "title": "Using an authorized representative to apply to the Ontario Immigrant Nominee Program | ontario.ca",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/oinp-employer-job-offer-foreign-worker-stream",
+      "title": "OINP Employer Job Offer: Foreign Worker stream | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/oinp-employer-job-offer-international-student-stream",
+      "title": "OINP Employer Job Offer: International Student stream | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/2025-ontario-immigrant-nominee-program-updates",
+      "title": "2025 Ontario Immigrant Nominee Program Updates | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/oinp-masters-graduate-stream",
+      "title": "OINP Masters Graduate stream | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/oinp-phd-graduate-stream",
+      "title": "OINP PhD Graduate stream | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp-invitations-apply",
+      "title": "Ontario Immigrant Nominee Program (OINP) invitations to apply | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/document/oinp-document-checklists/employer-job-offer-foreign-worker-stream-applicant-checklist",
+      "title": "Employer Job Offer: Foreign Worker Stream – Applicant Checklist | OINP Document Checklists | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/2016-ontario-immigrant-nominee-program-updates",
+      "title": "2016 Ontario Immigrant Nominee Program Updates | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/document/oinp-document-checklists/oinp-document-translation-and-notarization",
+      "title": "OINP Document Translation and Notarization | OINP Document Checklists | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/using-authorized-representative-apply-ontario-immigrant-nominee-program",
+      "title": "Using an authorized representative to apply to the Ontario Immigrant Nominee Program | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/oinp-employer-job-offer-demand-skills-stream",
+      "title": "OINP Employer Job Offer: In-Demand Skills stream | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/oinp-express-entry-notifications-interest",
+      "title": "OINP Express Entry Notifications of Interest | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/2021-ontario-immigrant-nominee-program-updates",
+      "title": "2021 Ontario Immigrant Nominee Program updates | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/oinp-tech-draws",
+      "title": "OINP tech draws | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/2019-ontario-immigrant-nominee-program-updates",
+      "title": "2019 Ontario Immigrant Nominee Program Updates | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/2015-ontario-immigrant-nominee-program-updates",
+      "title": "2015 Ontario Immigrant Nominee Program Updates | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/document/oinp-document-checklists/employer-job-offer-demand-skills-stream-applicant-checklist",
+      "title": "Employer Job Offer: In-Demand Skills Stream – Applicant Checklist | OINP Document Checklists | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/2018-ontario-immigrant-nominee-program-updates",
+      "title": "2018 Ontario Immigrant Nominee Program Updates | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/how-use-employer-portal-ontario-immigrant-nominee-program",
+      "title": "How to use the Employer Portal: Ontario Immigrant Nominee Program | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/document/oinp-document-checklists/employer-job-offer-international-student-stream-applicant",
+      "title": "Employer Job Offer: International Student Stream – Applicant Checklist | OINP Document Checklists | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/2017-ontario-immigrant-nominee-program-updates",
+      "title": "2017 Ontario Immigrant Nominee Program Updates | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/register-expression-interest-ontario-immigrant-nominee-program",
+      "title": "Ontario Immigrant Nominee Program expression of interest system streams | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/document/oinp-document-checklists/masters-graduate-stream-applicant-checklist",
+      "title": "Masters Graduate Stream – Applicant Checklist | OINP Document Checklists | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/document/oinp-document-checklists/ontarios-express-entry-skilled-trades-stream-applicant-checklist",
+      "title": "Ontario’s Express Entry Skilled Trades Stream – Applicant Checklist | OINP Document Checklists | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/document/oinp-document-checklists/employer-job-offer-streams-employer-checklist",
+      "title": "Employer Job Offer Streams: Employer Checklist | OINP Document Checklists | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/2009-2014-ontario-immigrant-nominee-program-updates",
+      "title": "Radware Captcha Page",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/document/oinp-document-checklists/ontarios-express-entry-human-capital-priorities-stream-applicant",
+      "title": "Ontario’s Express Entry Human Capital Priorities Stream – Applicant Checklist | OINP Document Checklists | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/2023-ontario-immigrant-nominee-program-updates",
+      "title": "Radware Captcha Page",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/2020-ontario-immigrant-nominee-program-updates",
+      "title": "Radware Captcha Page",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/2022-ontario-immigrant-nominee-program-updates",
+      "title": "Radware Captcha Page",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/document/oinp-document-checklists/phd-graduate-stream-applicant-checklist",
+      "title": "PhD Graduate Stream – Applicant Checklist | OINP Document Checklists | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/document/oinp-document-checklists/ontarios-express-entry-french-speaking-skilled-worker-stream",
+      "title": "Ontario’s Express Entry French-Speaking Skilled Worker Stream – Applicant Checklist | OINP Document Checklists | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/oinp-application-processing-times-and-nominations-issued",
+      "title": "Ontario Immigrant Nominee Program (OINP) | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/document/oinp-document-checklists/ontarios-express-entry-human-capital-priorities-stream-applicant-checklist",
+      "title": "Ontario’s Express Entry Human Capital Priorities Stream – Applicant Checklist | OINP Document Checklists | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/document/oinp-document-checklists/entrepreneur-stream-applicant-checklist",
+      "title": "Radware Captcha Page",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/oinp-representatives",
+      "title": "Using an authorized representative to apply to the Ontario Immigrant Nominee Program | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/document/oinp-document-checklists/employer-job-offer-international-student-stream-applicant-checklist",
+      "title": "Employer Job Offer: International Student Stream – Applicant Checklist | OINP Document Checklists | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/document/oinp-document-checklists/ontarios-express-entry-french-speaking-skilled-worker-stream-applicant-checklist",
+      "title": "Ontario’s Express Entry French-Speaking Skilled Worker Stream – Applicant Checklist | OINP Document Checklists | ontario.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.ontario.ca/page/2024-ontario-immigrant-nominee-program-updates",
+      "title": "Radware Captcha Page",
+      "depth": 2,
+      "status": 200
+    }
+  ]
+}

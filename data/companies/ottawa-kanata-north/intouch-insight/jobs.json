@@ -1,0 +1,21 @@
+{
+  "ats": "bamboohr",
+  "token": "intouchinsight",
+  "count": 2,
+  "jobs": [
+    {
+      "title": "Lead IT Systems Engineer (Infrastructure & DevOps)",
+      "location": "Kanata, Ontario",
+      "url": "https://intouchinsight.bamboohr.com/careers/126",
+      "department": "Engineering",
+      "tech": true
+    },
+    {
+      "title": "Data Analyst",
+      "location": "Kanata, Ontario",
+      "url": "https://intouchinsight.bamboohr.com/careers/130",
+      "department": "Data Analytics",
+      "tech": true
+    }
+  ]
+}

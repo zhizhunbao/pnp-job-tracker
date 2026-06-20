@@ -1,0 +1,909 @@
+{
+  "seed_url": "https://www.gov.nl.ca/immigration",
+  "slug": "nl-immigration",
+  "total_urls": 150,
+  "max_depth": 2,
+  "crawled_at": "2026-06-20T13:05:53.158168",
+  "pages": [
+    {
+      "url": "https://www.gov.nl.ca/immigration",
+      "title": "Office of Immigration and Multiculturalism - Government of Newfoundland and Labrador",
+      "depth": 0,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/entrepreneurs",
+      "title": "Entrepreneurs - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/employers/employer-criteria",
+      "title": "Employer Criteria - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/atlantic-immigration-program/using-representatives-and-consultants",
+      "title": "Using Representatives and Consultants - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/expression-of-interest-model-overview",
+      "title": "Expression of Interest Model-Overview - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/expression-of-interest-model-prioritization-criteria",
+      "title": "Expression of Interest Model (EOI) Prioritization Criteria - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador",
+      "title": "Immigrating to Newfoundland and Labrador - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/expression-of-interest-model-faqs",
+      "title": "Expression of Interest Model (EOI) FAQs - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/entrepreneurs/international-entrepreneur/overview",
+      "title": "Overview - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/employers/overview",
+      "title": "Overview - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/international-graduate",
+      "title": "NLPNP International Graduate Category - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/entrepreneurs/international-graduate-entrepreneur/eligibility-criteria",
+      "title": "Eligibility Criteria - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/entrepreneurs/international-graduate-entrepreneur/overview",
+      "title": "Overview - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/using-representatives-and-consultants",
+      "title": "Using Representatives and Consultants - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/entrepreneurs/international-entrepreneur/eligibility-criteria",
+      "title": "Eligibility Criteria - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/express-entry-skilled-worker",
+      "title": "NLPNP Express Entry Skilled Worker Category - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/skilled-worker",
+      "title": "NLPNP Skilled Worker Category - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/overview",
+      "title": "NL Provincial Nominee Program (NLPNP) Overview - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/invitations-to-apply-updates",
+      "title": "Invitations to Apply (ITA) Updates - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/job-vacancy-assessment",
+      "title": "Job Vacancy Assessment - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/atlantic-immigration-program/overview",
+      "title": "Atlantic Immigration Program (AIP) Overview - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/atlantic-immigration-program/workers",
+      "title": "Workers - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/atlantic-immigration-program/employers",
+      "title": "Employers - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/de-designation",
+      "title": "De-designation - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/atlantic-immigration-program/designated-employers",
+      "title": "Designated Employers - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/general-policies-2",
+      "title": "General Policies - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/newfoundland-and-labrador-multiculturalism-grant-program-nlmgp",
+      "title": "Newfoundland and Labrador Multiculturalism Grant Program (NLMGP) - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/excluded-positions",
+      "title": "Positions Exempt from Labour Market Testing - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/skilled-workers-category",
+      "title": "Skilled Worker Category - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/international-graduate-category",
+      "title": "International Graduate Category - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/immigration-agreements-and-reports",
+      "title": "Agreements and Reports - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/immigration-agreements-and-reports/canada-newfoundland-and-labrador-agreement-on-the-atlantic-immigration-pilot",
+      "title": "Canada – Newfoundland and Labrador Agreement on the Atlantic Immigration Program - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/immigration-agreements-and-reports/canada-newfoundland-and-labrador-immigration-agreement",
+      "title": "Canada-Newfoundland and Labrador Immigration Agreement - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/settlement-and-other-resources/overview",
+      "title": "Overview - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/in-canada-refugee-claimants",
+      "title": "In-Canada Refugee Claimants - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/oim-publications-and-reports",
+      "title": "Reports and Publications - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/job-vacancy-assessment-2",
+      "title": "Job Vacancy Assessment - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/program-policies-and-procedures",
+      "title": "Program Policies and Procedures - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/multiculturalism",
+      "title": "Multiculturalism - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/newfoundland-and-labrador-settlement-and-integration-program",
+      "title": "Newfoundland and Labrador Settlement and Integration Program (NLSIP) - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/strengthening-provincial-immigration-programs-and-foreign-worker-protections",
+      "title": "Strengthening Provincial Immigration Programs and Foreign Worker Protections - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/diversitycalendar",
+      "title": "2026 Commemorative Days for Newfoundland and Labrador Communities - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/express-entry-skilled-worker-category",
+      "title": "NLPNP Express Entry – Skilled Worker Category - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/contact-us",
+      "title": "Contact Us - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/myths-facts",
+      "title": "Myths & Facts - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/mandate",
+      "title": "Mandate - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/disclaimer",
+      "title": "Disclaimer - Office of Immigration and Multiculturalism",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/apercu-du-programme-des-candidats-de-la-province-de-terre-neuve-et-labrador-pcptnl",
+      "title": "Aperçu du Programme des candidats de la province de Terre-Neuve-et-Labrador (PCPTNL) - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/1342205-ontario-ltd-a-o-surplus-furniture-and-mattress-warehouse",
+      "title": "1342205 Ontario Ltd. a/o Surplus Furniture and Mattress Warehouse - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/4-skilled-worker-category-eligibility-criteria",
+      "title": "4. Skilled Worker Category Eligibility Criteria - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/10112755-canada-inc-o-a-nomad-stages",
+      "title": "10112755 Canada Inc. o/a Strobel TEK - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/53385-newfoundland-and-labrador-inc-o-a-akita-equipment-and-auto-transport",
+      "title": "53385 Newfoundland and Labrador Inc. o/a Akita Equipment and Auto Transport - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/10113-newfoundland-ltd-o-a-mary-browns",
+      "title": "10113 Newfoundland Ltd. o/a Mary Brown's - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/4-international-graduate-category-eligibility-criteria",
+      "title": "4. International Graduate Category Eligibility Criteria - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/entree-express-criteres-dadmissibilite-de-la-categorie-des-travailleurs-qualifies",
+      "title": "Entrée express – Critères d’admissibilité de la catégorie des travailleurs qualifiés - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/13910-nf-lab-inc-o-a-fewers-ambulance-service",
+      "title": "13910 NF & Lab Inc. o/a Fewers Ambulance Service - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/apercu",
+      "title": "Aperçu du Programme d’immigration au Canada atlantique (PICA) - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/10464-newfoundland-ltd-o-a-jungle-jims-restaurant",
+      "title": "10464 Newfoundland Ltd. o/a Jungle Jim's Restaurant - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/criteres-dadmissibilite-de-la-categorie-des-travailleurs-qualifies",
+      "title": "Critères d’admissibilité de la catégorie des travailleurs qualifiés - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/3ts-limited-o-a-3ts",
+      "title": "3T's Limited o/a 3T's - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/12924692-canada-inc",
+      "title": "12924692 Canada Inc. - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/61065-newfoundland-and-labrador-inc-o-a-the-golden-years-estate",
+      "title": "61065 Newfoundland and Labrador Inc o/a The Golden Years Estate - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/4-express-entry-skilled-worker-category-eligibility-criteria",
+      "title": "4. Express Entry - Skilled Worker Category Eligibility Criteria - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/10565-nfld-inc-o-a-hotel-north",
+      "title": "10565 NFLD Inc. o/a Hotel North - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/1949-barber-shop-ltd-o-a-1949-barber-shop",
+      "title": "1949 Barber Shop Ltd. o/a 1949 Barber Shop - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/8-ineligible-employers",
+      "title": "8. Ineligible Employers - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/13199657-canada-inc-o-a-brophys-ultramar",
+      "title": "13199657 Canada Inc o/a Brophy's Ultramar - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/70535-newfoundland-and-labrador-inc-o-a-aw-restaurant",
+      "title": "70535 Newfoundland and Labrador Inc. o/a A&W Restaurant - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/64354-newfoundland-labrador-ltd-o-a-freedom-foods-mcdonalds",
+      "title": "64354 Newfoundland & Labrador Ltd. o/a Freedom Foods/McDonald's - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/70838-newfoundland-labrador-ltd-o-a-u-designs",
+      "title": "70838 Newfoundland & Labrador Ltd. o/a U-Designs - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/71516-newfoundland-labrador-inc-a-o-yes-wok-restaurant",
+      "title": "71516 NEWFOUNDLAND & LABRADOR INC. a/o Ye's Wok Restaurant - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/72351-nl-lab-inc-o-a-reliable-ambulance-service",
+      "title": "72351 NL & LAB INC o/a Reliable Ambulance Service - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/72452-newfoundland-and-labrador-inc-o-a-jumping-bean",
+      "title": "72452 Newfoundland and Labrador Inc o/a Jumping Bean - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/72764-newfoundland-labrador-o-a-mary-browns",
+      "title": "72764 Newfoundland & Labrador o/a Mary Brown's - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/74547-newfoundland-and-labrador-inc-o-a-milestones-early-learning-centre",
+      "title": "74547 Newfoundland and Labrador Inc. o/a Milestones Early Learning Centre - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/7772-newfoundland-and-labrador-inc-o-a-burritos-mexican-grill",
+      "title": "7772 Newfoundland and Labrador Inc. o/a Burritos Mexican Grill - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/76361-nl-inc-o-a-a-w",
+      "title": "76361 NL Inc. o/a A & W - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/78117-newfoundland-labrador-ltd-o-a-hew-and-draw-hotel",
+      "title": "78117 Newfoundland & Labrador Ltd. o/a Hew and Draw Hotel - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/74501-newfoundland-labrador-inc-o-a-st-johns-fish-exchange",
+      "title": "74501 Newfoundland & Labrador Inc. o/a St. John's Fish Exchange - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/75961-newfoundland-and-labrador-inc-o-a-cyno",
+      "title": "75961 Newfoundland and Labrador Inc. o/a Cyno - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/78426-newfoundland-and-labrador-limited-o-a-volkswagen-st-johns",
+      "title": "78426 Newfoundland and Labrador Limited o/a Volkswagen St. John's - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/76377-newfoundland-and-labrador-corp-o-a-robins-donuts",
+      "title": "76377 Newfoundland and Labrador Corp. o/a Robins Donuts - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/79726-nl-lab-inc-o-a-orams-bethesda-manor",
+      "title": "79726 NL & Lab. Inc. o/a Oram's Bethesda Manor - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/79765-nl-inc-a-o-westbury-estates-seniors-living",
+      "title": "79765 NL Inc. a/o Westbury Estates Seniors Living - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/74167-newfoundland-and-labrador-inc-o-a-pita-pit",
+      "title": "74167 Newfoundland and Labrador Inc. o/a Pita Pit - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/78187-nl-inc-o-a-mucho-burrito",
+      "title": "78187 NL Inc. o/a Mucho Burrito - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/75211-newfoundland-labrador-inc-o-a-holiday-inn-express-suites-st-johns-airport",
+      "title": "75211 Newfoundland & Labrador Inc. o/a Holiday Inn Express & Suites St. John's Airport - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/80383-newfoundland-labrador-inc-o-a-the-spa",
+      "title": "80383 Newfoundland & Labrador Inc. o/a The Spa - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/80488-newfoundland-labrador-ltd-o-a-old-town-pizza",
+      "title": "80488 Newfoundland & Labrador Ltd. o/a Old Town Pizza - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/82117-newfound-and-labrador-inc-o-a-menchies-yogurt",
+      "title": "82117 Newfound and Labrador Inc o/a Menchies Yogurt - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/82360-newfoundland-labrador-inc-a-o-gingergrass-thai-and-vietnamese-restaurant",
+      "title": "82360 NEWFOUNDLAND & LABRADOR INC. a/o Gingergrass Thai and Vietnamese Restaurant - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/81587-newfoundland-labrador-corp-o-a-mary-browns",
+      "title": "81587 Newfoundland & Labrador Corp. o/a Mary Brown's - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/81821-newfoundland-labrador-ltd-o-a-g-salon",
+      "title": "81821 Newfoundland & Labrador Ltd. o/a G Salon - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/5320-2",
+      "title": "84379 Newfoundland & Labrador Corp. o/a NLCC Service Group - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/85429-newfoundland-and-labrador-corp",
+      "title": "85429 Newfoundland and Labrador Corp. - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/85216-newfoundland-and-labrador-ltd-o-a-wok-box",
+      "title": "85216 Newfoundland and Labrador Ltd. o/a Wok Box - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/86280-newfoundland-labrador-corp-a-o-pur-simple-paradise",
+      "title": "86280 NEWFOUNDLAND & LABRADOR CORP. a/o Pur & Simple Paradise - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/85429-newfoundland-and-labrador-corp-o-a-freedom-foods-mcdonalds",
+      "title": "85429 Newfoundland and Labrador Corp. o/a Freedom Foods/McDonald's - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/86790-newfoundland-labrador-limited-a-o-black-rock-paving",
+      "title": "86790 Newfoundland & Labrador Limited a/o Black Rock Paving - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/86754-newfoundland-labrador-inc-o-a-newground-property-management",
+      "title": "86754 NEWFOUNDLAND & LABRADOR INC. o/a NEWGROUND PROPERTY MANAGEMENT - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/86820-newfoundland-labrador-ltd-a-o-liv",
+      "title": "86820 Newfoundland & Labrador LTD. a/o LIV - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/86956-newfoundland-labrador-inc-o-a-winged-eagle-barbershop",
+      "title": "86956 Newfoundland & Labrador Inc. o/a Winged Eagle Barbershop - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/90271-newfoundland-labrador-ltd-o-a-mucho-burrito-avalon-mall",
+      "title": "90271 Newfoundland & Labrador Ltd o/a Mucho Burrito-Avalon Mall - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/92796-newfoundland-labrador-corp-a-o-newfoundland-comfort-food",
+      "title": "92796 Newfoundland & Labrador Corp. a/o Newfoundland Comfort Food - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/aberdeen-pizza-ltd-a-o-pizza-delight",
+      "title": "Aberdeen Pizza Ltd. a/o Pizza Delight - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/89351-newfoundland-labrador-ltd-o-a-jin-dragon-restaurant",
+      "title": "89351 Newfoundland & Labrador Ltd o/a Jin Dragon Restaurant - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/97149-newfoundland-and-labrador-limited-o-a-cambridge-estates",
+      "title": "97149 Newfoundland and Labrador Limited o/a Cambridge Estates - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/ace-wetclean-laundry-ltd-o-a-ace-wetclean",
+      "title": "Ace WetClean & Laundry Ltd. o/a Ace WetClean - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/a-h-pizza-inc-o-a-peters-pizza",
+      "title": "A & H Pizza Inc. o/a Peter's Pizza - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/adelaide-and-george-inc-o-a-kellys-pub",
+      "title": "Adelaide and George Inc. o/a Kelly's Pub - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/abler-hd-canada-inc",
+      "title": "Abler HD Canada Inc - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/admiral-immigration-solutions-inc",
+      "title": "Admiral Immigration Solutions Inc. - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/abm-systems-limited-systemes-abm-limitee-o-a-abm-integrated-solutions",
+      "title": "ABM Systems Limited Systemes ABM Limitee o/a ABM Integrated Solutions - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/action-auto-window-glass-ltd",
+      "title": "Action Auto & Window Glass Ltd. - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/ab-complex-inc",
+      "title": "AB Complex Inc. - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/ag-pikes-holdings-ltd-o-a-pikes-home-hardware-building-centre",
+      "title": "AG Pike's Holdings Ltd. o/a Pike's Home Hardware Building Centre - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/ahf-developments-o-a-coras-breakfast-and-lunch",
+      "title": "AHF Developments o/a Cora's Breakfast and Lunch - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/air-borealis-ltd",
+      "title": "Air Borealis Ltd. - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/amal-youth-and-family-centre-inc-a-o-amal-youth-and-family-centre",
+      "title": "AMAL Youth and Family Centre INC. a/o Amal Youth and Family Centre - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/a-auto-service-center-2017-ltd",
+      "title": "A+ Auto Service Center (2017) Ltd. - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/amity-foods-inc-o-a-tim-hortons",
+      "title": "Amity Foods Inc. o/a Tim Horton's - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/advance-plus-tech-solutions-inc",
+      "title": "Advance Plus Tech Solutions Inc. - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/advanced-woodwork-and-design-limited",
+      "title": "Advanced Woodwork and Design Limited - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/all-care-home-support-ltd",
+      "title": "All Care Home Support Ltd. - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/alexander-bay-automotive-ltd",
+      "title": "Alexander Bay Automotive Ltd. - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/andaluzia-market-inc",
+      "title": "Andaluzia Market Inc. - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/apples-to-zebras-daycare-inc",
+      "title": "Apples to Zebras Daycare Inc. - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/amauligak-services-contracting-ltd-o-a-peps-diner",
+      "title": "Amauligak Services & Contracting Ltd. o/a Pep's Diner - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/aravind-muthusamy-o-a-eat-east-atlantic-tandoor",
+      "title": "Aravind Muthusamy o/a Eat East Atlantic Tandoor - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/arthur-kitchens-inc-o-a-arthur-foods",
+      "title": "Arthur Kitchens Inc. o/a Arthur Foods - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/artistic-hair-designs",
+      "title": "Artistic Hair Designs - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/ash-drywall-limited",
+      "title": "ASH Drywall Limited - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/asian-cafe-holdings-inc-o-a-asian-cafe",
+      "title": "Asian Cafe Holdings Inc. o/a Asian Cafe - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/avalon-laboratories-inc-a-o-avalon-labs",
+      "title": "Avalon Laboratories Inc a/o Avalon Labs - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/atlantican-general-trading-inc",
+      "title": "Atlantican General Trading Inc. - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/avalon-holographics-inc-o-a-avalon-holographics",
+      "title": "Avalon Holographics Inc. o/a Avalon Holographics - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/avalon-tech-and-tailor-inc",
+      "title": "Avalon Tech and Tailor Inc. - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/b-b-nepali-cuisine-ltd-o-a-t-a-peters-pizza",
+      "title": "B & B Nepali Cuisine Ltd. o/a T/A PETER'S PIZZA - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/baccalieu-retirement-living-inc-o-a-baccalieu-retirement-living",
+      "title": "Baccalieu Retirement Living Inc. o/a Baccalieu Retirement Living - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/baie-verte-building-supplies-inc-o-a-home-hardware",
+      "title": "Baie Verte Building Supplies Inc. o/a Home Hardware - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/b-f-enterprises-ltd-mary-browns",
+      "title": "B & F Enterprises Ltd (Mary Browns) - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/balaji-enterprises-limited-o-a-springdale-supermarket",
+      "title": "Balaji Enterprises Limited o/a Springdale Supermarket - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/baie-vista-inn-limited-o-a-baie-vista-inn",
+      "title": "Baie Vista Inn Limited o/a Baie Vista Inn - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/bay-view-holdings-inc-o-a-battens-esso",
+      "title": "Bay View Holdings Inc. o/a Battens Esso - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/bay-roberts-food-services-ltd-o-a-aw-bay-roberts",
+      "title": "Bay Roberts Food Services Ltd. o/a A&W Bay Roberts - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/bartlett-food-services-ltd-o-a-aw-c-b-s",
+      "title": "Bartlett Food Services Ltd. o/a A&W C.B.S - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/bali-nail-salon-ltd",
+      "title": "BaLi Nail Salon Ltd. - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/awesome-enterprises-limited-o-a-acropolis-pizza",
+      "title": "Awesome Enterprises Limited o/a Acropolis Pizza - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/bc-general-partners-inc-o-a-bishops-gardens-seniors-living",
+      "title": "BC General Partners Inc. o/a Bishops Gardens Seniors Living - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.gov.nl.ca/immigration/employer/bay-group-inc-o-a-mary-browns",
+      "title": "Bay Group Inc. o/a Mary Brown's - Office of Immigration and Multiculturalism",
+      "depth": 2,
+      "status": 200
+    }
+  ]
+}

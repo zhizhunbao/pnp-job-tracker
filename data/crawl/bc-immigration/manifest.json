@@ -1,0 +1,129 @@
+{
+  "seed_url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program",
+  "slug": "bc-immigration",
+  "total_urls": 20,
+  "max_depth": 2,
+  "crawled_at": "2026-06-20T12:34:06.169623",
+  "pages": [
+    {
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program",
+      "title": "WelcomeBC - Immigrate to BC - WelcomeBC",
+      "depth": 0,
+      "status": 200
+    },
+    {
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/bc-pnp-online-user-portal",
+      "title": "WelcomeBC - Immigrate to BC - WelcomeBC",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/regional-immigration",
+      "title": "WelcomeBC - Immigrate to BC - WelcomeBC",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/the-bc-provincial-nominee-program",
+      "title": "WelcomeBC - Immigrate to BC - WelcomeBC",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply",
+      "title": "WelcomeBC - Immigrate to BC - WelcomeBC",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/documents",
+      "title": "WelcomeBC - Immigrate to BC - WelcomeBC",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/fraud-awareness",
+      "title": "WelcomeBC - Immigrate to BC - WelcomeBC",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/news",
+      "title": "WelcomeBC - Immigrate to BC - WelcomeBC",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/archives",
+      "title": "WelcomeBC - Immigrate to BC - WelcomeBC",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/regional-communities-in-the-northeast",
+      "title": "WelcomeBC - Immigrate to BC - WelcomeBC",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "http://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/fraud-awareness",
+      "title": "WelcomeBC - Immigrate to BC - WelcomeBC",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program-4374589fc5bd099f34c82a0e2623f93d/bc-pnp-archive",
+      "title": "WelcomeBC - Immigrate to BC - WelcomeBC",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program-4374589fc5bd099f34c82a0e2623f93d/regional-communities-on-vancouver-island-coast",
+      "title": "WelcomeBC - Immigrate to BC - WelcomeBC",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program-4374589fc5bd099f34c82a0e2623f93d/regional-communities-in-nechako",
+      "title": "WelcomeBC - Immigrate to BC - WelcomeBC",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program-4374589fc5bd099f34c82a0e2623f93d/regional-communities-in-the-cariboo",
+      "title": "WelcomeBC - Immigrate to BC - WelcomeBC",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program-4374589fc5bd099f34c82a0e2623f93d/regional-communities-in-the-northeast",
+      "title": "WelcomeBC - Immigrate to BC - WelcomeBC",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program-4374589fc5bd099f34c82a0e2623f93d/regional-communities-in-the-thompson-okanagan",
+      "title": "WelcomeBC - Immigrate to BC - WelcomeBC",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/about-the-bc-provincial-nominee-program",
+      "title": "WelcomeBC - Immigrate to BC - WelcomeBC",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program-4374589fc5bd099f34c82a0e2623f93d/regional-communities-in-the-kootenays",
+      "title": "WelcomeBC - Immigrate to BC - WelcomeBC",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/javascript%3Avoid(0)/*172*",
+      "title": "",
+      "depth": 2,
+      "status": 403
+    }
+  ]
+}

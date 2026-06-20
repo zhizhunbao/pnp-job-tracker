@@ -1,0 +1,135 @@
+{
+  "seed_url": "https://yukon.ca/en/immigration",
+  "slug": "yt-immigration",
+  "total_urls": 21,
+  "max_depth": 2,
+  "crawled_at": "2026-06-20T12:24:49.029763",
+  "pages": [
+    {
+      "url": "https://yukon.ca/en/immigration",
+      "title": "Immigration | Yukon.ca",
+      "depth": 0,
+      "status": 403
+    },
+    {
+      "url": "https://yukon.ca/en/immigration/apply-immigrate-yukon/immigrate-yukon",
+      "title": "Immigrate to the Yukon | Yukon.ca",
+      "depth": 1,
+      "status": 403
+    },
+    {
+      "url": "https://yukon.ca/en/immigration/employers/hire-foreign-worker",
+      "title": "Hire a foreign worker | Yukon.ca",
+      "depth": 1,
+      "status": 403
+    },
+    {
+      "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-skilled-worker-and-critical-impact-worker-streams-hire-foreign-worker",
+      "title": "Apply to the Skilled Worker and Critical Impact Worker streams to hire a foreign worker | Yukon.ca",
+      "depth": 1,
+      "status": 403
+    },
+    {
+      "url": "https://yukon.ca/en/immigration/apply-immigrate-yukon",
+      "title": "Apply to immigrate to the Yukon | Yukon.ca",
+      "depth": 1,
+      "status": 403
+    },
+    {
+      "url": "https://yukon.ca/en/immigration/apply-immigrate-yukon/contact-immigration-humanitarian-support-desk",
+      "title": "Contact the Immigration humanitarian support desk | Yukon.ca",
+      "depth": 1,
+      "status": 403
+    },
+    {
+      "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-express-entry-stream-hire-foreign-worker",
+      "title": "Apply to the Express Entry stream to hire a foreign worker | Yukon.ca",
+      "depth": 1,
+      "status": 403
+    },
+    {
+      "url": "https://yukon.ca/en/immigration/employers",
+      "title": "For employers | Yukon.ca",
+      "depth": 1,
+      "status": 403
+    },
+    {
+      "url": "https://yukon.ca/en/immigration/yukon-nominee-program-foreign-workers",
+      "title": "Yukon Nominee Program (foreign workers) | Yukon.ca",
+      "depth": 1,
+      "status": 403
+    },
+    {
+      "url": "https://yukon.ca/en/immigration/yukon-business-nominee-program/find-eligibility-requirements-apply-run-your-business-yukon-foreign-entrepreneurs",
+      "title": "Find eligibility requirements to apply to run your business in Yukon (foreign entrepreneurs) | Yukon.ca",
+      "depth": 1,
+      "status": 403
+    },
+    {
+      "url": "https://yukon.ca/en/immigration/yukon-business-nominee-program",
+      "title": "Yukon Business Nominee Program | Yukon.ca",
+      "depth": 1,
+      "status": 403
+    },
+    {
+      "url": "https://yukon.ca/en/immigration/yukon-nominee-program/assessing-your-qualifications-if-youre-foreign-worker",
+      "title": "Assessing your qualifications if you're a foreign worker | Yukon.ca",
+      "depth": 1,
+      "status": 403
+    },
+    {
+      "url": "https://yukon.ca/en/immigration/yukon-nominee-program/apply-extend-your-nomination-and-work-permit",
+      "title": "Apply to extend your nomination and work permit | Yukon.ca",
+      "depth": 1,
+      "status": 403
+    },
+    {
+      "url": "https://yukon.ca/en/immigration/yukon-business-nominee-program/apply-run-your-own-business-yukon-foreign-entrepreneurs",
+      "title": "Apply to run your own business in Yukon (foreign entrepreneurs) | Yukon.ca",
+      "depth": 1,
+      "status": 403
+    },
+    {
+      "url": "https://yukon.ca/en/immigration/yukon-nominee-program/learn-about-working-yukon",
+      "title": "Learn about working in the Yukon | Yukon.ca",
+      "depth": 2,
+      "status": 403
+    },
+    {
+      "url": "https://yukon.ca/en/immigration/apply-immigrate-yukon/learn-about-hiring-immigration-representative",
+      "title": "Learn about hiring an immigration representative | Yukon.ca",
+      "depth": 2,
+      "status": 403
+    },
+    {
+      "url": "https://yukon.ca/en/immigration/employers/hire-foreign-worker-employer-eligibility-and-responsibilities",
+      "title": "Hire a foreign worker: employer eligibility and responsibilities | Yukon.ca",
+      "depth": 2,
+      "status": 403
+    },
+    {
+      "url": "https://yukon.ca/en/immigration/yukon-nominee-program/learn-about-yukon-nominee-program-process",
+      "title": "Learn about the Yukon Nominee Program process | Yukon.ca",
+      "depth": 2,
+      "status": 403
+    },
+    {
+      "url": "https://yukon.ca/en/immigration/yukon-nominee-program/find-out-if-you-are-eligible-hire-foreign-worker",
+      "title": "Find out if you are eligible to hire a foreign worker | Yukon.ca",
+      "depth": 2,
+      "status": 403
+    },
+    {
+      "url": "https://yukon.ca/en/immigration/yukon-nominee-program/employers-banned-participating-yukon-nominee-program",
+      "title": "Employers banned from participating in the Yukon Nominee Program | Yukon.ca",
+      "depth": 2,
+      "status": 403
+    },
+    {
+      "url": "https://yukon.ca/en/immigration/yukon-business-nominee-program/find-eligibility-requirements-apply-run-your-business",
+      "title": "Find eligibility requirements to apply to run your business in Yukon (foreign entrepreneurs) | Yukon.ca",
+      "depth": 2,
+      "status": 403
+    }
+  ]
+}

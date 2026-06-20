@@ -1,0 +1,7 @@
+README.md
+pyproject.toml
+pnp_job_tracker.egg-info/PKG-INFO
+pnp_job_tracker.egg-info/SOURCES.txt
+pnp_job_tracker.egg-info/dependency_links.txt
+pnp_job_tracker.egg-info/requires.txt
+pnp_job_tracker.egg-info/top_level.txt

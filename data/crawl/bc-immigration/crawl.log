@@ -1,0 +1,29 @@
+[2026-06-20 12:34:02] BFS Discovery starting from: https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program
+[2026-06-20 12:34:02]   Max depth: 2, Max pages: 150, Concurrency: 20
+[2026-06-20 12:34:02]   [LEVEL] Fetching 1 URLs at depth 0...
+[2026-06-20 12:34:02]   [   1] depth=0 https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program
+[2026-06-20 12:34:02]   [LEVEL] Fetching 7 URLs at depth 1...
+[2026-06-20 12:34:02]   [   2] depth=1 https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/bc-pnp-online-user
+[2026-06-20 12:34:02]   [   3] depth=1 https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/regional-immigrati
+[2026-06-20 12:34:02]   [   4] depth=1 https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/the-bc-provincial-
+[2026-06-20 12:34:03]   [   5] depth=1 https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-app
+[2026-06-20 12:34:03]   [   6] depth=1 https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/documents
+[2026-06-20 12:34:03]   [   7] depth=1 https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/fraud-awareness
+[2026-06-20 12:34:03]   [   8] depth=1 https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/news
+[2026-06-20 12:34:03]   [LEVEL] Fetching 12 URLs at depth 2...
+[2026-06-20 12:34:03]   [   9] depth=2 https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/archives
+[2026-06-20 12:34:03]   [  10] depth=2 https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/regional-communiti
+[2026-06-20 12:34:04]   [  11] depth=2 http://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/fraud-awareness
+[2026-06-20 12:34:04]   [  12] depth=2 https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program-4374589fc5bd099f34
+[2026-06-20 12:34:04]   [  13] depth=2 https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program-4374589fc5bd099f34
+[2026-06-20 12:34:04]   [  14] depth=2 https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program-4374589fc5bd099f34
+[2026-06-20 12:34:04]   [  15] depth=2 https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program-4374589fc5bd099f34
+[2026-06-20 12:34:04]   [  16] depth=2 https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program-4374589fc5bd099f34
+[2026-06-20 12:34:04]   [  17] depth=2 https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program-4374589fc5bd099f34
+[2026-06-20 12:34:04]   [  18] depth=2 https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/about-the-bc-provi
+[2026-06-20 12:34:04]   [  19] depth=2 https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program-4374589fc5bd099f34
+[2026-06-20 12:34:06]   [browser] 403→browser: https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-progra
+[2026-06-20 12:34:06]   [  20] depth=2 https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/javascript%3Avoid(
+[2026-06-20 12:34:06] 
+[OK] Discovered 20 pages
+[2026-06-20 12:34:06]      Manifest: C:\Users\40270\Desktop\workspace\short-video-studio\docs\bc-immigration\manifest.json

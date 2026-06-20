@@ -1,0 +1,31 @@
+[2026-06-20 12:34:11] BFS Discovery starting from: https://www.alberta.ca/immigration
+[2026-06-20 12:34:11]   Max depth: 2, Max pages: 150, Concurrency: 20
+[2026-06-20 12:34:11]   [LEVEL] Fetching 1 URLs at depth 0...
+[2026-06-20 12:34:11]   [   1] depth=0 https://www.alberta.ca/immigration
+[2026-06-20 12:34:11]   [LEVEL] Fetching 7 URLs at depth 1...
+[2026-06-20 12:34:12]   [   2] depth=1 https://www.alberta.ca/alberta-advantage-immigration-program
+[2026-06-20 12:34:12]   [   3] depth=1 https://www.alberta.ca/pa/immigration
+[2026-06-20 12:34:12]   [   4] depth=1 https://www.alberta.ca/ar/immigration
+[2026-06-20 12:34:21]   [   5] depth=1 https://www.alberta.ca/zh-hant/immigration
+[2026-06-20 12:34:33]   [   6] depth=1 https://www.alberta.ca/fr/immigration
+[2026-06-20 12:34:36]   [   7] depth=1 https://www.alberta.ca/zh-hans/immigration
+[2026-06-20 12:34:41]   [   8] depth=1 https://www.alberta.ca/es/immigration
+[2026-06-20 12:34:41]   [LEVEL] Fetching 15 URLs at depth 2...
+[2026-06-20 12:34:41]   [   9] depth=2 https://www.alberta.ca/fr/alberta-advantage-immigration-program
+[2026-06-20 12:34:41]   [  10] depth=2 https://www.alberta.ca/aaip-application-streams
+[2026-06-20 12:34:41]   [  11] depth=2 https://www.alberta.ca/aaip-processing-information
+[2026-06-20 12:34:41]   [  12] depth=2 https://www.alberta.ca/aaip-resources
+[2026-06-20 12:34:41]   [  13] depth=2 https://www.alberta.ca/aaip-answers-for-common-questions
+[2026-06-20 12:34:41]   [  14] depth=2 https://www.alberta.ca/aaip-alberta-opportunity-stream
+[2026-06-20 12:34:41]   [  15] depth=2 https://www.alberta.ca/aaip-expired-streams
+[2026-06-20 12:34:41]   [  16] depth=2 https://www.alberta.ca/aaip-rural-renewal-stream
+[2026-06-20 12:34:41]   [  17] depth=2 https://www.alberta.ca/aaip-foreign-graduate-entrepreneur-stream
+[2026-06-20 12:34:41]   [  18] depth=2 https://www.alberta.ca/aaip-farm-stream
+[2026-06-20 12:34:41]   [  19] depth=2 https://www.alberta.ca/aaip-updates
+[2026-06-20 12:34:41]   [  20] depth=2 https://www.alberta.ca/aaip-alberta-express-entry-stream
+[2026-06-20 12:34:41]   [  21] depth=2 https://www.alberta.ca/aaip-rural-entrepreneur-stream
+[2026-06-20 12:34:41]   [  22] depth=2 https://www.alberta.ca/alberta-advantage-immigration-program-reporting-fraud
+[2026-06-20 12:34:41]   [  23] depth=2 https://www.alberta.ca/aaip-graduate-entrepreneur-stream
+[2026-06-20 12:34:41] 
+[OK] Discovered 23 pages
+[2026-06-20 12:34:41]      Manifest: C:\Users\40270\Desktop\workspace\short-video-studio\docs\ab-immigration\manifest.json

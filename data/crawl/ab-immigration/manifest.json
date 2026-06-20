@@ -1,0 +1,147 @@
+{
+  "seed_url": "https://www.alberta.ca/immigration",
+  "slug": "ab-immigration",
+  "total_urls": 23,
+  "max_depth": 2,
+  "crawled_at": "2026-06-20T12:34:41.915808",
+  "pages": [
+    {
+      "url": "https://www.alberta.ca/immigration",
+      "title": "Immigration | Alberta.ca",
+      "depth": 0,
+      "status": 200
+    },
+    {
+      "url": "https://www.alberta.ca/alberta-advantage-immigration-program",
+      "title": "Alberta Advantage Immigration Program | Alberta.ca",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.alberta.ca/pa/immigration",
+      "title": "Immigration | Alberta.ca",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.alberta.ca/ar/immigration",
+      "title": "Immigration | Alberta.ca",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.alberta.ca/zh-hant/immigration",
+      "title": "Immigration | Alberta.ca",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.alberta.ca/fr/immigration",
+      "title": "Immigration | Alberta.ca",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.alberta.ca/zh-hans/immigration",
+      "title": "Immigration | Alberta.ca",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.alberta.ca/es/immigration",
+      "title": "Immigration | Alberta.ca",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www.alberta.ca/fr/alberta-advantage-immigration-program",
+      "title": "Programme d’immigration Avantage Alberta | Alberta.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.alberta.ca/aaip-application-streams",
+      "title": "Alberta Advantage Immigration Program application streams | Alberta.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.alberta.ca/aaip-processing-information",
+      "title": "Alberta Advantage Immigration Program – Processing information | Alberta.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.alberta.ca/aaip-resources",
+      "title": "Alberta Advantage Immigration Program – Learning resources | Alberta.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.alberta.ca/aaip-answers-for-common-questions",
+      "title": "AAIP answers for common questions | Alberta.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.alberta.ca/aaip-alberta-opportunity-stream",
+      "title": "Alberta Opportunity Stream | Alberta.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.alberta.ca/aaip-expired-streams",
+      "title": "Alberta Advantage Immigration Program – Expired streams | Alberta.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.alberta.ca/aaip-rural-renewal-stream",
+      "title": "Rural Renewal Stream | Alberta.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.alberta.ca/aaip-foreign-graduate-entrepreneur-stream",
+      "title": "Foreign Graduate Entrepreneur Stream | Alberta.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.alberta.ca/aaip-farm-stream",
+      "title": "Farm Stream | Alberta.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.alberta.ca/aaip-updates",
+      "title": "Alberta Advantage Immigration Program – Updates | Alberta.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.alberta.ca/aaip-alberta-express-entry-stream",
+      "title": "Alberta Express Entry Stream | Alberta.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.alberta.ca/aaip-rural-entrepreneur-stream",
+      "title": "Rural Entrepreneur Stream | Alberta.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.alberta.ca/alberta-advantage-immigration-program-reporting-fraud",
+      "title": "Alberta Advantage Immigration Program – Reporting fraud | Alberta.ca",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www.alberta.ca/aaip-graduate-entrepreneur-stream",
+      "title": "Graduate Entrepreneur Stream | Alberta.ca",
+      "depth": 2,
+      "status": 200
+    }
+  ]
+}

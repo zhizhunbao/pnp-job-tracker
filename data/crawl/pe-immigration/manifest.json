@@ -1,0 +1,72 @@
+{
+  "seed_url": "https://www.princeedwardisland.ca/en/information/office-of-immigration",
+  "slug": "pe-immigration",
+  "total_urls": 9,
+  "max_depth": 2,
+  "crawled_at": "2026-06-20T13:28:23.705056",
+  "pages": [
+    {
+      "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration",
+      "title": "Search | Government of Prince Edward Island",
+      "depth": 0,
+      "status": 200,
+      "html": "fbdce73480d45c4690598b96b90791d9.html"
+    },
+    {
+      "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/intermediate-experience-stream",
+      "title": "Intermediate Experience Stream | Government of Prince Edward Island",
+      "depth": 1,
+      "status": 200,
+      "html": "cebbed07851ba7225d0cc214f3a0d98d.html"
+    },
+    {
+      "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/skilled-workers-outside-canada",
+      "title": "Skilled Workers Outside Canada | Government of Prince Edward Island",
+      "depth": 1,
+      "status": 200,
+      "html": "c67550f0bb88331215cf72d6408a651e.html"
+    },
+    {
+      "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/international-recruitment-events",
+      "title": "International Recruitment Events | Government of Prince Edward Island",
+      "depth": 2,
+      "status": 200,
+      "html": "89de6125ff034a9c231a93e13ff9a707.html"
+    },
+    {
+      "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/expression-of-interest-draws",
+      "title": "Expression of Interest Draws | Government of Prince Edward Island",
+      "depth": 2,
+      "status": 200,
+      "html": "a2e5798cefd681b1fe7a3c11d38458d2.html"
+    },
+    {
+      "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/occupations-in-demand",
+      "title": "Occupations in Demand | Government of Prince Edward Island",
+      "depth": 2,
+      "status": 200,
+      "html": "bd5074719792831f010b0f135a528163.html"
+    },
+    {
+      "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/pei-express-entry",
+      "title": "PEI Express Entry | Government of Prince Edward Island",
+      "depth": 2,
+      "status": 200,
+      "html": "f48806cfcb2c23403c08f14edf3e9afb.html"
+    },
+    {
+      "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/skilled-workers-in-pei",
+      "title": "Skilled Workers in PEI | Government of Prince Edward Island",
+      "depth": 2,
+      "status": 200,
+      "html": "30bade86d7d60381c0144e85b8a1edc0.html"
+    },
+    {
+      "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/provincial-nominee-program",
+      "title": "Provincial Nominee Program | Government of Prince Edward Island",
+      "depth": 2,
+      "status": 200,
+      "html": "8d4f5c51928d38787c9fbfebb2d4d279.html"
+    }
+  ]
+}

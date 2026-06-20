@@ -1,0 +1,429 @@
+{
+  "seed_url": "https://liveinnovascotia.com",
+  "slug": "ns-immigration",
+  "total_urls": 70,
+  "max_depth": 2,
+  "crawled_at": "2026-06-20T12:35:50.834275",
+  "pages": [
+    {
+      "url": "https://liveinnovascotia.com",
+      "title": "You Belong in Nova Scotia | Live in NS",
+      "depth": 0,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/",
+      "title": "You Belong in Nova Scotia | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/express-entry",
+      "title": "Nova Scotia: Express Entry | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/training-and-certification",
+      "title": "Training and Certification | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/events",
+      "title": "Events | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/about-nova-scotia",
+      "title": "About Nova Scotia | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/critical-vacancies",
+      "title": "Critical Vacancies | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/eoi-selection",
+      "title": "EOI Selection | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/nova-scotia-graduate",
+      "title": "Nova Scotia Graduate | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr",
+      "title": "LA NOUVELLE-ÉCOSSE VOUS ATTEND | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/finding-job",
+      "title": "Finding a Job | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/you-arrive-checklist",
+      "title": "Before You Arrive Checklist | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/atlantic-immigration-program",
+      "title": "Atlantic Immigration Program | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/how-get-settled",
+      "title": "How to Get Settled | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/hiring-immigrant-your-business",
+      "title": "Hiring an Immigrant for Your Business | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/hire-permanent-resident",
+      "title": "Hire a Permanent Resident | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/hire-temporary-foreign-worker",
+      "title": "Hire a Temporary Foreign Worker | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/hire-international-student",
+      "title": "Hire an International Student | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/resources/expression-interest-eoi-validity-period-and-transition-measures",
+      "title": "Expression of Interest (EOI) Validity Period and Transition Measures | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/taxonomy/term/3",
+      "title": "Program Updates | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/resources/nominee-program-priorities-nova-scotia",
+      "title": "Nominee Program Priorities in Nova Scotia | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/privacy-notice",
+      "title": "Privacy Notice | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/nova-scotia-nominee-program",
+      "title": "Nova Scotia Nominee Program | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/after-you-graduate",
+      "title": "After You Graduate | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/study-nova-scotia",
+      "title": "Study in Nova Scotia | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/what-do-nova-scotia",
+      "title": "What to Do in Nova Scotia | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/entrepreneur",
+      "title": "Entrepreneur | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/contact",
+      "title": "We're Here to Help | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/settlement-services",
+      "title": "Settlement Services | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/skilled-worker",
+      "title": "Skilled Worker | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/resources",
+      "title": "Resources | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/explore-nova-scotia",
+      "title": "Explore Nova Scotia | Live in NS",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/evenements",
+      "title": "Événements | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/eoi-process",
+      "title": "Processing Policy: Expression of Interest | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/ressources",
+      "title": "Ressources | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/contact",
+      "title": "Nous sommes là pour vous aider | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/stream-modern-temp-portal-closure",
+      "title": "NSNP Update: Stream Modernization & Temporary Portal Closure | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/etudier-en-nouvelle-ecosse",
+      "title": "Étudier en Nouvelle-Écosse | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/Programme-des-candidats-Nouvelle-Ecosse",
+      "title": "Programme des candidats de la Nouvelle-Écosse | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/setablir",
+      "title": "S’établir | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/diplomes-de-la-nouvelle-ecosse",
+      "title": "Diplômés de la Nouvelle-Écosse | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/resources/common-terms",
+      "title": "COMMON TERMS | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/express-entry",
+      "title": "Nouvelle-Écosse : Entrée express | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/embaucher-un-resident-permanent",
+      "title": "Embaucher un résident permanent | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/trouver-un-emploi",
+      "title": "Trouver un emploi | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/embaucher-un-immigrant",
+      "title": "Embaucher un immigrant | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/entrepreneur",
+      "title": "Entrepreneur | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/node/69",
+      "title": "Critical Vacancies | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/services-daide-letablissement",
+      "title": "Services d’aide à l’établissement | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/formation-et-accreditation",
+      "title": "Formation et accréditation | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/liste-de-verification-avant-votre-arrivee",
+      "title": "Liste de vérification « Avant votre arrivée » | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/decouvrez-la-nouvelle-ecosse",
+      "title": "Découvrez la Nouvelle-Écosse. | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/skilled-worker",
+      "title": "TRAVAILLEUR QUALIFIÉ | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/choses-faire-en-nouvelle-ecosse",
+      "title": "Choses à faire en Nouvelle-Écosse | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/une-fois-votre-diplome-en-poche",
+      "title": "Une fois votre diplôme en poche | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/embaucher-un-travailleur-etranger-temporaire",
+      "title": "Embaucher un travailleur étranger temporaire | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/embaucher-un-etudiant-etranger",
+      "title": "Embaucher un étudiant étranger | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/resources/mise-jour-du-pcne-regroupement-en-quatre-volets",
+      "title": "Mise à jour du PCNE : regroupement en quatre volets | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/avis-de-confidentialite",
+      "title": "AVIS DE CONFIDENTIALITÉ | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/programme-dimmigration-au-canada-atlantique",
+      "title": "Programme d’immigration au Canada atlantique | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/resources/nsnp-update-four-consolidated-streams",
+      "title": "NSNP Update: Four Consolidated Streams | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/stream-modern-temp-portal-closure",
+      "title": "Mise à jour du PCNE : Modernisation du volet et fermeture temporaire du portail    | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/node/71",
+      "title": "Nominee Program Priorities in Nova Scotia | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/resources/nova-scotia-nominee-program-update-nsnp-50-nsnp-100-form",
+      "title": "Nova Scotia Nominee Program Update: NSNP 50 & NSNP 100 Form | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/taxonomy/term/3",
+      "title": "Program Updates | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/resources/nova-scotia-immigration-update-2025",
+      "title": "Nova Scotia Immigration Update – 2025 | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/resources/transition-new-aip-endorsement-application-system",
+      "title": "Transition to New AIP Endorsement Application System | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/propos-de-la-nouvelle-ecosse",
+      "title": "À propos de la Nouvelle-Écosse | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/fr/node/70",
+      "title": "Expression of Interest (EOI) Validity Period and Transition Measures | Live in NS",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://liveinnovascotia.com/resources/relaunching-entrepreneur-streams-nova-scotia-nominee-program",
+      "title": "Relaunching the Entrepreneur Streams of the Nova Scotia Nominee Program | Live in NS",
+      "depth": 2,
+      "status": 200
+    }
+  ]
+}

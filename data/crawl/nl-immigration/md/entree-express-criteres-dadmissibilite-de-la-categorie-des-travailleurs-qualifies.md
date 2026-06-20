@@ -1,0 +1,38 @@
+---
+source: https://www.gov.nl.ca/immigration/entree-express-criteres-dadmissibilite-de-la-categorie-des-travailleurs-qualifies
+title: "Entrée express – Critères d’admissibilité de la catégorie des travailleurs qualifiés - Office of Immigration and Multiculturalism"
+fetched: 2026-06-20T13:06:00-04:00
+---
+
+[Office of Immigration and Multiculturalism](https://www.gov.nl.ca/immigration)Entrée express – Critères d’admissibilité de la catégorie des travailleurs qualifiés
+
+[English](https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/express-entry-skilled-worker/)
+
+**Les candidats à l’entrée express du PCPTNL – catégorie des travailleurs qualifiés doivent : **
+
+1. Être acceptés dans le bassin des candidats qualifiés pour Entrée express d’IRCC;  Dans une profession de la CNP des catégories FEER 0, 1, 2 ou 3; Qui garantit un minimum de trente (30) heures par semaine au candidat; D’une durée minimale d’un (1) an ou de douze (12) mois, avec une possibilité raisonnable de prolongation au moment où ils font leur demande au PCPTNL, comme le confirme l’employeur; D’un [employeur admissible de Terre-Neuve-et-Labrador](https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/employers/employer-criteria/) (en anglais seulement); Qui verse une rémunération au candidat sous la forme d’un salaire ou d’un traitement horaire (et non d’une commission); Qui est conforme aux [normes du travail](https://www.gov.nl.ca/ecc/division-des-normes-du-travail-employes-et-milieux-de-travail-non-syndiques/) provinciales; Qui est conforme aux [taux de salaire en vigueur](https://www.guichetemplois.gc.ca/analyse-tendances) régionaux ou, si les données régionales ne sont pas disponibles actuellement, aux taux de salaire provinciaux ou nationaux en vigueur, tels qu’ils sont évalués par le Bureau de l’immigration et du multiculturalisme; Auprès d’un employeur qui a une évaluation des postes vacants (EPV) valide ou une EIMT, OU où le candidat détient un permis de travail valide ou une autre autorisation fédérale de travailler à temps plein au moment de la demande pour travailler au poste indiqué. **Remarque **: Les candidats invités à présenter une demande dans la catégorie des travailleurs qualifiés pour Entrée express du PCPTNL à la suite d’une déclaration d’intérêt approuvée peuvent ne pas être tenus d’avoir une offre d’emploi au moment de présenter leur demande au PCPTNL.
+2. Avoir un emploi à temps plein ou une offre d’emploi à temps plein:
+3. Posséder les qualifications, la formation, les compétences et/ou l’accréditation requises pour le poste. Les candidats doivent montrer qu’ils satisfont aux conditions d’emploi du code de la CNP. Les candidats travailleurs qualifiés d’Entrée express du PCPTNL doivent fournir des documents pour attester toute expérience de travail déclarée dans le bassin d’Entrée express d’IRCC;
+4. Montrer qu’ils ont un statut valide, s’ils résident au Canada. Les candidats qui résident au Canada doivent avoir un permis sur lequel il reste au moins quatre (4) mois au moment où ils font leur demande au PCPTNL. Les titulaires d’un permis de travail délivré après l’obtention du diplôme peuvent se qualifier dans cette catégorie;
+5. Avoir l’intention et la capacité de s’établir de façon permanente à Terre-Neuve-et-Labrador, avec les membres de leur famille qui les accompagnent, le cas échéant;
+6. Avoir suffisamment de fonds d’établissement et de ressources financières pour s’établir avec toute personne à charge à Terre-Neuve-et-Labrador :
+
+- Tous les candidats doivent montrer qu’ils seront en mesure de payer les dépenses de la vie quotidienne, les frais de déplacement, les frais de résidence permanente du gouvernement fédéral, l’hébergement et les autres frais accessoires à Terre-Neuve-et-Labrador. Les candidats qui se trouvent déjà dans la province doivent quand même montrer leur capacité à s’établir économiquement à long terme. Un certain nombre de facteurs sont pris en compte par l’agent de développement des programmes d’immigration (ADPI) lorsqu’il détermine si un demandeur principal a montré sa capacité à s’établir économiquement à long terme, notamment : la taille de la famille, les coûts de réinstallation prévus, les économies, les autres actifs, les passifs et le salaire prévu.
+
+1. Si le candidat détient une participation dans l’entreprise dans laquelle il est employé, sa part ne peut pas dépasser dix (10) pour cent. Ceci ne s’applique pas aux entrepreneurs sélectionnés.
+2. Détenir un diplôme d’études postsecondaires canadien ou une Évaluation des diplômes d’études (ÉDÉ) valide;
+3. Avoir subi un test de compétence linguistique en anglais ou en français valide. Les résultats du test doivent être valides pour toute la durée du traitement de la demande faite au PCPTNL et de la soumission de la demande de résidence permanente. Les notes minimales requises au test de compétence linguistique dépendent du volet fédéral d’Entrée express (catégorie de l’expérience canadienne, Programme des travailleurs qualifiés (fédéral) ou Programme des travailleurs de métiers spécialisés (fédéral)) et sont déterminées en fonction des exigences du gouvernement du Canada. Les tests de compétence linguistique acceptés à des fins d’immigration comprennent :
+
+- Anglais : [IELTS General](https://www.ielts.org/) Anglais : [CELPIP- General (CELPIP-G)](https://www.celpip.ca/celpip-general/) Français : [Test d’évaluation de français (TEF Canada)](https://www.lefrancaisdesaffaires.fr/tests-diplomes/test-evaluation-francais-tef/tef-canada/) Français : [Test de connaissance du français (TCF Canada)](https://www.france-education-international.fr/test/tcf-canada)
+
+1. Obtenir un minimum de 67 points dans la [grille d’évaluation du PCPTNL](https://www.gov.nl.ca/immigration/files/AnnexA_PNP.pdf) (en anglais seulement);
+2. S’il utilise les services d’un représentant tiers rémunéré, le candidat doit s’assurer cette personne est enregistrée et autorisée à le représenter. Les candidats doivent consulter le document [Using Representatives and Consultants for additional guidance (faire appel à des représentants et à des experts-conseils pour obtenir d’autres conseils).](https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/using-representatives-and-consultants/) (en anglais seulement)
+
+Les candidats **ne sont pas** admissibles dans la catégorie des travailleurs qualifiés d’Entrée express du PCPTNL dans les cas suivants :
+
+- Ils n’ont pas de profil valide dans le bassin d’Entrée express d’IRCC;
+- Eux-mêmes ou l’un des membres de leur famille à charge âgé de plus de vingt-deux (22) ans ont un casier judiciaire;
+- Ils ont des différends non résolus concernant la garde ou la pension alimentaire pour enfants au Canada ou dans un autre pays;
+- Ils ont fait délibérément des déclarations inexactes à leur sujet dans leur demande;
+- Leur employeur a fait délibérément des déclarations inexactes à son sujet ou au sujet de la personne en ce qui concerne le rôle de l’une ou l’autre des parties dans l’entreprise;
+- Ils sont des demandeurs d’asile qui se trouvent au Canada. Le permis de travail ouvert accordé à la personne pendant qu’elle attend le résultat de sa demande d’asile ne lui confère pas le statut temporaire requis pour présenter une demande au PCPTNL ou au PICA à l’intérieur du Canada. Les demandeurs d’asile dont la demande a été rejetée, abandonnée ou retirée doivent quitter le Canada avant de présenter une demande au PCPTNL, comme l’exige le gouvernement du Canada.

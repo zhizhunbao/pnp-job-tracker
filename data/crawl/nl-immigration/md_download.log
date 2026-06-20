@@ -1,0 +1,35 @@
+[2026-06-20 13:05:53] Downloading 150 pages as Markdown (HTML -> MD)
+[2026-06-20 13:05:53]   Output: C:\Users\40270\Desktop\workspace\short-video-studio\docs\nl-immigration\md
+[2026-06-20 13:05:53]   Concurrency: 10, Delay: 0.2s
+[2026-06-20 13:05:53]   Converter: default
+[2026-06-20 13:05:53]   Profile: www.gov.nl.ca.css
+[2026-06-20 13:05:53]   Content selector: #content
+[2026-06-20 13:05:54]   [   2/150] immigrating-to-newfoundland-and-labrador/provincial-nominee-program/entrepreneurs.md (0.6 KB)
+[2026-06-20 13:05:54]   [   1/150] index.md (1.2 KB)
+[2026-06-20 13:05:54]   [   3/150] immigrating-to-newfoundland-and-labrador/provincial-nominee-program/employers/employer-criteria.md (4.6 KB)
+[2026-06-20 13:05:54]   [   5/150] expression-of-interest-model-overview.md (3.1 KB)
+[2026-06-20 13:05:54]   [   6/150] expression-of-interest-model-prioritization-criteria.md (4.9 KB)
+[2026-06-20 13:05:54]   [   7/150] immigrating-to-newfoundland-and-labrador.md (1.9 KB)
+[2026-06-20 13:05:54]   [   8/150] expression-of-interest-model-faqs.md (6.7 KB)
+[2026-06-20 13:05:54]   [   4/150] immigrating-to-newfoundland-and-labrador/atlantic-immigration-program/using-representatives-and-consultants.md (3.5 KB)
+[2026-06-20 13:05:54]   [  10/150] immigrating-to-newfoundland-and-labrador/provincial-nominee-program/employers/overview.md (1.4 KB)
+[2026-06-20 13:05:54]   [   9/150] immigrating-to-newfoundland-and-labrador/provincial-nominee-program/entrepreneurs/international-entrepreneur/overview.md (5.1 KB)
+[2026-06-20 13:05:55]   [  11/150] immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/international-graduate.md (5.5 KB)
+[2026-06-20 13:05:55]   [  15/150] immigrating-to-newfoundland-and-labrador/provincial-nominee-program/entrepreneurs/international-entrepreneur/eligibility-criteria.md (3.8 KB)
+[2026-06-20 13:05:55]   [  16/150] immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/express-entry-skilled-worker.md (5.8 KB)
+[2026-06-20 13:05:55]   [  12/150] immigrating-to-newfoundland-and-labrador/provincial-nominee-program/entrepreneurs/international-graduate-entrepreneur/eligibility-criteria.md (3.4 KB)
+[2026-06-20 13:05:55]   [  14/150] immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/using-representatives-and-consultants.md (6.1 KB)
+[2026-06-20 13:05:55]   [  17/150] immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/skilled-worker.md (5.4 KB)
+[2026-06-20 13:05:55]   [  18/150] immigrating-to-newfoundland-and-labrador/provincial-nominee-program/overview.md (2.5 KB)
+[2026-06-20 13:05:55]   [  13/150] immigrating-to-newfoundland-and-labrador/provincial-nominee-program/entrepreneurs/international-graduate-entrepreneur/overview.md (4.1 KB)
+[2026-06-20 13:05:55]   [  20/150] job-vacancy-assessment.md (9.0 KB)
+[2026-06-20 13:05:55]   [  19/150] invitations-to-apply-updates.md (2.1 KB)
+[2026-06-20 13:06:06]   [ 100/150] employer/86754-newfoundland-labrador-inc-o-a-newground-property-management.md (0.5 KB)
+[2026-06-20 13:06:11] 
+============================================================
+[2026-06-20 13:06:11] DOWNLOAD COMPLETE
+[2026-06-20 13:06:11]   Saved:   150
+[2026-06-20 13:06:11]   Skipped: 0
+[2026-06-20 13:06:11]   Failed:  0
+[2026-06-20 13:06:11]   Output:  C:\Users\40270\Desktop\workspace\short-video-studio\docs\nl-immigration\md
+[2026-06-20 13:06:11] ============================================================

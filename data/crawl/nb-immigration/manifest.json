@@ -1,0 +1,351 @@
+{
+  "seed_url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/nb-immigration-program-streams.html",
+  "slug": "nb-immigration",
+  "total_urls": 57,
+  "max_depth": 2,
+  "crawled_at": "2026-06-20T13:16:51.210070",
+  "pages": [
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/nb-immigration-program-streams.html",
+      "title": "New Brunswick Provincial Nominee Program",
+      "depth": 0,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/fr/corporate/promo/immigration/immigrer-au-nb/volets-des-programmes-d-immigration-du-nouveau-brunswick.html",
+      "title": "Programme des candidats du Nouveau-Brunswick",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb.html",
+      "title": "Immigrating to New Brunswick",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration.html",
+      "title": "Immigration",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/notice.html",
+      "title": "Important notices",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/nb-immigration-program-streams/nb-express-entry-stream.html",
+      "title": "NB Express Entry Stream",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/nb-immigration-program-streams/nb-strategic-initiative-stream.html",
+      "title": "NB Strategic Initiative",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/nb-immigration-program-streams/nb-critical-workers-pilot.html",
+      "title": "NB Critical Workers Pilot",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/contact.html",
+      "title": "Contact",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/nb-immigration-program-streams/nb-business-immigration-stream.html",
+      "title": "NB Business Immigration Stream",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/nb-immigration-program-streams/private-career-college-graduate-pilot-program.html",
+      "title": "Private Career College Graduate Pilot Program",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/atlantic-immigration-program.html",
+      "title": "Atlantic Immigration Program",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/nb-immigration-program-streams/nb-skilled-worker-stream.html",
+      "title": "NB Skilled Worker Stream",
+      "depth": 1,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/fr/corporate/promo/immigration.html",
+      "title": "Immigration",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/fr/corporate/promo/immigration/immigrer-au-nb.html",
+      "title": "Immigrer au Nouveau-Brunswick",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/fr/corporate/promo/immigration/immigrer-au-nb/volets-des-programmes-d-immigration-du-nouveau-brunswick/volet-entree-express-du-nouveau-brunswick.html.html",
+      "title": "Volet Entrée express du Nouveau-Brunswick",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/fr/corporate/promo/immigration/immigrer-au-nb/volets-des-programmes-d-immigration-du-nouveau-brunswick/volet-des-travailleurs-qualifies-du-nouveau-brunswick.html",
+      "title": "Volet des Travailleurs qualifiés du Nouveau-Brunswick",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/living-in-nb.html",
+      "title": "Living in New Brunswick",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/fr/corporate/promo/immigration/immigrer-au-nb/volets-des-programmes-d-immigration-du-nouveau-brunswick/projet-pilote-sur-les-travailleurs-critiques-du-nouveau-brunswick.html.html",
+      "title": "Projet pilote sur les travailleurs critiques du Nouveau-Brunswick",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/first-steps.html",
+      "title": "First Steps",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/fr/corporate/promo/immigration/immigrer-au-nb/volets-des-programmes-d-immigration-du-nouveau-brunswick/volet-immigration-des-entrepreneurs-du-nouveau-brunswick.html.html",
+      "title": "Volet Immigration des entrepreneurs du Nouveau-Brunswick",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/fr/corporate/promo/immigration/avis.html",
+      "title": "Avis importants",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/fr/corporate/promo/immigration/immigrer-au-nb/programme-d-immigration-au-canada-atlantique.html",
+      "title": "Programme d’immigration au Canada atlantique",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/invitations-to-apply.html",
+      "title": "Invitation and selection rounds",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/maintain-your-status.html",
+      "title": "Maintain your status",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/atlantic-immigration-program/after-endorsement.html",
+      "title": "After endorsement",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/reports-on-immigration-fraud.html",
+      "title": "Reports on Immigration Fraud",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/studying-in-nb.html",
+      "title": "Studying in NB",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/atlantic-immigration-program/designation-application.html",
+      "title": "AIP employer designation",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/fr/corporate/promo/immigration/immigrer-au-nb/volets-des-programmes-d-immigration-du-nouveau-brunswick/projet-pilote-des-diplomes-d-ecoles-privees-de-formation-professionnelle.html.html",
+      "title": "Projet pilote des diplômés d’écoles privées de formation professionnelle",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/after-you-arrive.html",
+      "title": "After You Arrive",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/notice/notice-archive.html",
+      "title": "Important notices 2025 - Archived",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/working-in-nb.html",
+      "title": "Working in NB",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/fr/corporate/promo/immigration/immigrer-au-nb/volets-des-programmes-d-immigration-du-nouveau-brunswick/volet-initiative-strategique-du-nouveau-brunswick.html",
+      "title": "Initiative stratégique du Nouveau-Brunswick",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/atlantic-immigration-program/aip-candidate-pool.html",
+      "title": "AIP candidate pool",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/events-calendar.html",
+      "title": "Events Calendar",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/fr/corporate/promo/immigration/immigrer-au-nb/volets-des-programmes-d-immigration-du-nouveau-brunswick/volet-entree-express-du-nouveau-brunswick.html",
+      "title": "Volet Entrée express du Nouveau-Brunswick",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/contact/candidate.html",
+      "title": "Candidate",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/before-you-arrive.html",
+      "title": "Before You Arrive",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/employer-services.html",
+      "title": "Employer Services",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/contact/business-candidate.html",
+      "title": "Business immigration candidate",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/nb-immigration-program-streams/after-nomination.html",
+      "title": "After nomination",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/fr/corporate/promo/immigration/immigrer-au-nb/volets-des-programmes-d-immigration-du-nouveau-brunswick/volet-initiative-strategique-du-nouveau-brunswick.html.html",
+      "title": "Initiative stratégique du Nouveau-Brunswick",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/nb-immigration-program-streams/nb-business-immigration-stream/entrepreneurial-stream.html",
+      "title": "Entrepreneurial Stream",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/using-a-representative.html",
+      "title": "Using a representative",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/fr/corporate/promo/immigration/immigrer-au-nb/volets-des-programmes-d-immigration-du-nouveau-brunswick/projet-pilote-des-diplomes-d-ecoles-privees-de-formation-professionnelle.html",
+      "title": "Projet pilote des diplômés d’écoles privées de formation professionnelle",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/why-choose-nb.html",
+      "title": "Why Choose New Brunswick?",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/contact/international-student.html",
+      "title": "International student",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/atlantic-immigration-program/designation-application.html.html",
+      "title": "AIP employer designation",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/fr/corporate/promo/immigration/immigrer-au-nb/volets-des-programmes-d-immigration-du-nouveau-brunswick/projet-pilote-sur-les-travailleurs-critiques-du-nouveau-brunswick.html",
+      "title": "Projet pilote sur les travailleurs critiques du Nouveau-Brunswick",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/fr/corporate/promo/immigration/contact.html",
+      "title": "Contact",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/fr/corporate/promo/immigration/immigrer-au-nb/volets-des-programmes-d-immigration-du-nouveau-brunswick/volet-immigration-des-entrepreneurs-du-nouveau-brunswick.html",
+      "title": "Volet Immigration des entrepreneurs du Nouveau-Brunswick",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/contact/employer.html",
+      "title": "Employer",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/nb-immigration-program-streams/candidate-pool.html",
+      "title": "NBPNP candidate pool",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/contact/exploring-programs.html",
+      "title": "Exploring programs",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/contact/representative.html",
+      "title": "Representative",
+      "depth": 2,
+      "status": 200
+    },
+    {
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/contact/other.html",
+      "title": "Other",
+      "depth": 2,
+      "status": 200
+    }
+  ]
+}
