@@ -3,3 +3,9 @@ __pycache__/
 *.pyc
 .ruff_cache/
 .browser-profile/
+
+*.egg-info/
+node_modules/
+.next/
+*.db
+.env

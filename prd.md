@@ -112,17 +112,46 @@ data/companies/<region>/<company-slug>/
 
 ---
 
-## 7. 架构 / 流水线
+## 7. 架构 —— 两段式（公开网站）
+
+整个项目分两部分，通过数据库/API 解耦：
 
 ```
-[F2 公司目录] → [F3 careers定位] → [F1 多源职位采集] → [F4 富化(NOC·指定雇主·通道·政策)]
-                                                        → [F5 评分] → [F6 每日diff+输出]
-                          全部以"公司文件夹"为中心聚合(F7)
+┌─ ② ETL（Python, etl/）──────────────┐         ┌─ ① CMS + 网站（Payload, cms/）────┐
+│ 抓取(F1/F2/F3) → 清洗 → 富化(F4)     │  写入   │ Payload Collections (Postgres)    │
+│ → 评分(F5)                          │ ──REST→ │ + Admin 后台(内容管理)            │
+│ 产物: 归一化+评分的 jobs/companies   │         │ + Next.js 公开前端(人人可查/筛选) │
+└─────────────────────────────────────┘         └───────────────────────────────────┘
+        定时(每日 cron/GitHub Actions)                    部署(Vercel/Railway)
 ```
 
-- 已建脚本（`scripts/jobs/`）：`jobbank_scraper` · `kanata_north_directory` · `company_directory` · `careers_finder` · `ats_jobs` · `aip_designated_employers` · `build_company_folders`
-- 待建：`enrich.py`（NOC分类+指定雇主匹配+通道+政策关联）· `score.py`（评分）· `daily.py`（编排+diff+调度）
-- 数据源总索引：`data/sources/valuable-urls.md`
+- **② ETL（Python）= 数据抓取、清洗、入库**：现有 `etl/jobs/` 脚本（`jobbank_scraper` · `kanata_north_directory` · `company_directory` · `careers_finder` · `ats_jobs` · `aip_designated_employers` · `build_company_folders`）+ 待建 `enrich.py`（NOC/指定雇主/通道/政策）· `score.py`（评分）· `load.py`（写入 Payload REST API）· `daily.py`（编排+增量diff+调度）。
+- **① CMS（Payload）= 内容管理 + 网站**：定义 collections 作为数据模型与 API；Admin 后台供人工管理政策/通道/指定雇主等内容；Next.js 前端渲染可搜索/筛选的公开职位列表。
+- 数据源总索引：`data/sources/valuable-urls.md`。
+
+### Payload Collections（数据模型 = ETL 与网站的契约）
+
+| Collection | 关键字段 | 维护方 |
+|---|---|---|
+| **companies** | name, slug, website, email, phone, region, sectors, address, isDesignatedEmployer, source | ETL 写入 |
+| **jobs** | title, company(rel), noc, province/city/region, applyUrl, salary, datePosted, source, isAgency, pnpStreams(rel), policyRefs(rel), accessibility, **score**, firstSeen, lastSeen, status | ETL 写入 |
+| **pnpStreams** | key, name, province, isExpressEntry, requiresJobOffer, ignoresCRS, officialUrl, notes | 人工(CMS) |
+| **policyDocs** | title, stream(rel), province, sourceUrl, localPath, body | 人工(CMS)/ETL 关联 |
+| **designatedEmployers** | name, province, location, source(AIP) | ETL 写入(NL/NB/NS) |
+
+### ETL → CMS 契约
+- ETL 的最后一步 `load.py` 把归一化+评分后的 records 通过 **Payload REST API**（`POST /api/jobs`、`/api/companies`，API-key 鉴权）upsert 入库（按 slug/posting_id 去重）。
+- `pnpStreams` / `policyDocs` 为参考数据，在 Payload Admin 维护（= 内容管理）；ETL 富化时按 (省+NOC+指定雇主) 关联到对应 stream/policy。
+- `firstSeen/lastSeen/status` 支撑"今日新增"与下架检测。
+
+### 仓库结构
+```
+pnp-job-tracker/
+  etl/        Python 抓取·清洗·评分·入库（②）
+  cms/        Payload CMS + Next.js 公开网站（①）
+  data/       ETL 中间产物 + 政策原文(data/crawl/*-immigration)
+  prd.md
+```
 
 ---
 
@@ -140,9 +169,11 @@ data/companies/<region>/<company-slug>/
 
 ## 9. 技术栈
 
-- Python 3.11；httpx（抓取）、beautifulsoup4（解析）、PyMuPDF（PDF名单）。
-- 输出 JSON + CSV + Markdown；调度复用原项目 tracker 模式。
-- 反爬：JS 目录站逆向其数据接口；登录站用 Playwright 持久 profile。
+- **② ETL**：Python 3.11；httpx（抓取）、beautifulsoup4（解析）、PyMuPDF（PDF名单）；输出 JSON 中间产物 → 经 Payload REST API 入库。调度：cron / GitHub Actions（每日）。
+- **① CMS + 网站**：**Payload CMS**（Node 24 已就绪）+ Next.js 前端；数据库 **Postgres**（关系型,适合 job↔company↔stream 关联）。部署 Vercel/Railway。
+- 反爬：JS 目录站逆向其数据接口；登录站（LinkedIn/Indeed）用 Playwright 持久 profile。
+
+> 公开网站注意：republish 抓取数据涉及来源 ToS / 版权 / 个人信息（已抓的雇主邮箱电话）。公开前需评估：仅展示职位+官方投递链接、不转载受版权内容、对个人联系方式做脱敏或仅 Admin 可见。
 
 ---
 
