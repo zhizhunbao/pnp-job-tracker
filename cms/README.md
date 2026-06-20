@@ -1,28 +1,67 @@
-# ① CMS — Payload（内容管理 + 公开网站前端）
+# Payload Blank Template
 
-## 需要你跑一条命令（这步必须交互式终端，Claude 的非交互 shell 跑不了）
+This template comes configured with the bare minimum to get started on anything you need.
 
-在**你自己的终端**里，于项目根目录执行：
+## Quick start
 
-```bash
-cd C:\Users\40270\Desktop\workspace\pnp-job-tracker
-npx create-payload-app@latest cms -t blank -a claude
-```
+This template can be deployed directly from our Cloud hosting and it will setup MongoDB and cloud S3 object storage for media.
 
-交互提示里选：
-- **Database**：选 **SQLite**（零基础设施、最快；之后可迁 Postgres）
-- 其余默认即可
+## Quick Start - local setup
 
-> `-a claude` 会顺带安装 **Payload 的 Claude 技能**，之后我据此帮你写 collections 会更准。
-> `-t blank` = 空白模板（我们自己定义 collections，不用 demo 内容）。
+To spin up this template locally, follow these steps:
 
-## scaffold 完成后，交给我做：
+### Clone
 
-1. **定义 5 个 collections**（见 ../prd.md §7）：`companies` · `jobs` · `pnpStreams` · `policyDocs` · `designatedEmployers`
-2. **ETL 入库** `etl/jobs/load.py`：把评分后的 jobs/companies 经 Payload REST API（`POST /api/jobs` 等）upsert 入库
-3. **公开前端**：Next.js 页面，按 地域/NOC/通道/评分 搜索筛选
-4. 配 API-key 鉴权（ETL 写库用）
+After you click the `Deploy` button above, you'll want to have standalone copy of this repo on your machine. If you've already cloned this repo, skip to [Development](#development).
 
-## 验证 scaffold 成功的标志
-- `cms/` 下有 `package.json`、`src/payload.config.ts`、`src/app/(payload)/...`
-- `cd cms && npm run dev` 能起到 `http://localhost:3000/admin`
+### Development
+
+1. First [clone the repo](#clone) if you have not done so already
+2. `cd my-project && cp .env.example .env` to copy the example environment variables. You'll need to add the `MONGODB_URL` from your Cloud project to your `.env` if you want to use S3 storage and the MongoDB database that was created for you.
+
+3. `pnpm install && pnpm dev` to install dependencies and start the dev server
+4. open `http://localhost:3000` to open the app in your browser
+
+That's it! Changes made in `./src` will be reflected in your app. Follow the on-screen instructions to login and create your first admin user. Then check out [Production](#production) once you're ready to build and serve your app, and [Deployment](#deployment) when you're ready to go live.
+
+#### Docker (Optional)
+
+If you prefer to use Docker for local development instead of a local MongoDB instance, the provided docker-compose.yml file can be used.
+
+To do so, follow these steps:
+
+- Modify the `MONGODB_URL` in your `.env` file to `mongodb://127.0.0.1/<dbname>`
+- Modify the `docker-compose.yml` file's `MONGODB_URL` to match the above `<dbname>`
+- Run `docker-compose up` to start the database, optionally pass `-d` to run in the background.
+
+## How it works
+
+The Payload config is tailored specifically to the needs of most websites. It is pre-configured in the following ways:
+
+### Collections
+
+See the [Collections](https://payloadcms.com/docs/configuration/collections) docs for details on how to extend this functionality.
+
+- #### Users (Authentication)
+
+  Users are auth-enabled collections that have access to the admin panel.
+
+  For additional help, see the official [Auth Example](https://github.com/payloadcms/payload/tree/3.x/examples/auth) or the [Authentication](https://payloadcms.com/docs/authentication/overview#authentication-overview) docs.
+
+- #### Media
+
+  This is the uploads enabled collection. It features pre-configured sizes, focal point and manual resizing to help you manage your pictures.
+
+### Docker
+
+Alternatively, you can use [Docker](https://www.docker.com) to spin up this template locally. To do so, follow these steps:
+
+1. Follow [steps 1 and 2 from above](#development), the docker-compose file will automatically use the `.env` file in your project root
+1. Next run `docker-compose up`
+1. Follow [steps 4 and 5 from above](#development) to login and create your first admin user
+
+That's it! The Docker instance will help you get up and running quickly while also standardizing the development environment across your teams.
+
+## Questions
+
+If you have any issues or questions, reach out to us on [Discord](https://discord.com/invite/payload) or start a [GitHub discussion](https://github.com/payloadcms/payload/discussions).
