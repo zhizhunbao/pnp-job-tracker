@@ -31,6 +31,7 @@ export default buildConfig({
   },
   db: sqliteAdapter({
     client: { url: process.env.DATABASE_URI || 'file:./payload.db' },
+    push: true, // 自动建表(无需迁移文件),适合本地/dev
   }),
   sharp,
   plugins: [],
