@@ -74,6 +74,16 @@ data/companies/<region>/<company-slug>/
   indeed.json    Indeed 职位(需登录)
 ```
 
+### F8. 榜单 / Rankings（公开内容 + 引流）
+基于评分与抓取数据，定期生成**命名榜单**作为网站的可分享内容（利于 SEO/引流，契合"人人可查"）。现有数据即可出的榜单：
+- 🏆 渥太华最值得投科技岗 TOP N（按移民评分）
+- 🔥 渥太华科技雇主**招聘热度榜**（按在招岗数）
+- 🤝 "最可能担保移民"雇主榜（直接雇主 + 达 OINP 门槛 + 第一方招聘）
+- 🌊 大西洋 AIP 指定雇主中的**科技雇主榜**
+- 🆕 本周新增科技岗榜（增量 diff）· 💰 薪资榜 · 🎓 应届/co-op 友好雇主榜
+
+实现：`08_score.py` 后由 `rankings.py` 派生命名榜单 → Payload `rankings` 内容 → 前端页面（如 `/ottawa/top-tech-jobs`、`/ottawa/most-hiring`），随每日刷新更新；地域可扩展（渥太华/萨省/大西洋…）。
+
 ---
 
 ## 5. 数据模型（每个 job）
