@@ -30,8 +30,9 @@ from pathlib import Path
 import httpx
 from bs4 import BeautifulSoup
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-OUT_DIR = PROJECT_ROOT / "data" / "companies"
+import _paths
+PROJECT_ROOT = _paths.ROOT
+OUT_DIR = _paths.DIRECTORIES
 AJAX = "https://www.kanatanorthba.com/wp-admin/admin-ajax.php"
 REFERER = "https://www.kanatanorthba.com/member-directory/"
 USER_AGENT = (

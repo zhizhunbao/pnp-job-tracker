@@ -40,8 +40,9 @@ from urllib.parse import quote_plus
 import httpx
 from bs4 import BeautifulSoup
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-OUT_DIR = PROJECT_ROOT / "data" / "jobs"
+import _paths
+PROJECT_ROOT = _paths.ROOT
+OUT_DIR = _paths.JOBBANK
 BASE = "https://www.jobbank.gc.ca/jobsearch/jobsearch"
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "

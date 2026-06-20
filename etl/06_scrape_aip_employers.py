@@ -24,9 +24,10 @@ from pathlib import Path
 import fitz  # PyMuPDF
 import httpx
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-OUT_DIR = PROJECT_ROOT / "data" / "companies"
-NL_EMP_DIR = PROJECT_ROOT / "data" / "crawl" / "nl-immigration" / "md" / "employer"
+import _paths
+PROJECT_ROOT = _paths.ROOT
+OUT_DIR = _paths.DESIGNATED
+NL_EMP_DIR = _paths.POLICY / "nl-immigration" / "md" / "employer"
 USER_AGENT = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
               "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
 PDFS = {

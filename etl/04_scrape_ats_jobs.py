@@ -22,8 +22,9 @@ from pathlib import Path
 
 import httpx
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-COMPANIES_DIR = PROJECT_ROOT / "data" / "companies"
+import _paths
+PROJECT_ROOT = _paths.ROOT
+COMPANIES_DIR = _paths.COMPANIES
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
 TECH_JOB = re.compile(
@@ -153,9 +154,9 @@ def main() -> None:
                 L.append(f"| {s['company']} | {j['title']} | {j['location']} | [开](<{j['url']}>) |")
     if skipped:
         L.append(f"\n_未抓(待手动/其他ATS):_ " + "、".join(f"{n}({a})" for n, a in skipped[:50]))
-    (COMPANIES_DIR / f"{args.region}-jobs.md").write_text("\n".join(L), encoding="utf-8")
+    (_paths.OUTPUT / f"{args.region}-jobs.md").write_text("\n".join(L), encoding="utf-8")
     print(f"Stage 3: {len(summary)} companies, {total_tech} tech jobs. Skipped {len(skipped)}.")
-    print(f"  → {COMPANIES_DIR / (args.region + '-jobs.md')}")
+    print(f"  → {_paths.OUTPUT / (args.region + '-jobs.md')}")
 
 
 if __name__ == "__main__":

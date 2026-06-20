@@ -26,8 +26,9 @@ import json
 import re
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-COMPANIES_DIR = PROJECT_ROOT / "data" / "companies"
+import _paths
+PROJECT_ROOT = _paths.ROOT
+COMPANIES_DIR = _paths.COMPANIES
 
 
 def slugify(name: str) -> str:
@@ -38,9 +39,9 @@ def slugify(name: str) -> str:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="Build one-folder-per-company structure.")
-    ap.add_argument("--directory", default=str(COMPANIES_DIR / "kanata-north.json"),
+    ap.add_argument("--directory", default=str(_paths.DIRECTORIES / "kanata-north.json"),
                     help="Flat company directory JSON (profiles).")
-    ap.add_argument("--careers", default=str(COMPANIES_DIR / "kanata-north-careers.json"),
+    ap.add_argument("--careers", default=str(_paths.DIRECTORIES / "kanata-north-careers.json"),
                     help="Careers-finder JSON (optional).")
     ap.add_argument("--region", default="ottawa-kanata-north", help="Region folder name.")
     args = ap.parse_args()
