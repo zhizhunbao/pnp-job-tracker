@@ -10,7 +10,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49747094",
-    "search_occupation": "registered nurse (NOC 31301)"
+    "search_occupation": "registered nurse (NOC 31301)",
+    "address": "Orléans , ON K1C 6G1",
+    "date_detail": "June 18, 2026"
   },
   {
     "posting_id": "49718601",
@@ -23,7 +25,9 @@
     "source": "Talent.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49718601?source=searchresults",
-    "search_occupation": "registered nurse (NOC 31301)"
+    "search_occupation": "registered nurse (NOC 31301)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 07, 2026"
   },
   {
     "posting_id": "49741613",
@@ -36,7 +40,9 @@
     "source": "Talent.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49741613?source=searchresults",
-    "search_occupation": "registered nurse (NOC 31301)"
+    "search_occupation": "registered nurse (NOC 31301)",
+    "address": "Stittsville , ON",
+    "date_detail": "June 03, 2026"
   },
   {
     "posting_id": "49719232",
@@ -49,7 +55,9 @@
     "source": "Talent.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49719232?source=searchresults",
-    "search_occupation": "registered nurse (NOC 31301)"
+    "search_occupation": "registered nurse (NOC 31301)",
+    "address": "Ottawa , ON",
+    "date_detail": "May 23, 2026"
   },
   {
     "posting_id": "49466374",
@@ -62,7 +70,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49466374?source=searchresults",
-    "search_occupation": "registered nurse (NOC 31301)"
+    "search_occupation": "registered nurse (NOC 31301)",
+    "address": "Ottawa , ON K1V 0Y3",
+    "date_detail": "May 06, 2026"
   },
   {
     "posting_id": "49724477",
@@ -75,7 +85,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49724477?source=searchresults",
-    "search_occupation": "personal support worker (NOC 44101)"
+    "search_occupation": "personal support worker (NOC 44101)",
+    "address": "Orléans , ON K4A 0N8",
+    "date_detail": "June 15, 2026"
   },
   {
     "posting_id": "49723250",
@@ -88,7 +100,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49723250?source=searchresults",
-    "search_occupation": "personal support worker (NOC 44101)"
+    "search_occupation": "personal support worker (NOC 44101)",
+    "address": "1900 City Park Drive suite 3rd floor office 322 Gloucester , ON K1J 1A3",
+    "date_detail": "June 15, 2026"
   },
   {
     "posting_id": "49723246",
@@ -101,7 +115,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49723246?source=searchresults",
-    "search_occupation": "personal support worker (NOC 44101)"
+    "search_occupation": "personal support worker (NOC 44101)",
+    "address": "1900 City Park Drive suite 3rd floor office 321 Gloucester , ON K1J 1A3",
+    "date_detail": "June 15, 2026"
   },
   {
     "posting_id": "49685111",
@@ -114,7 +130,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49685111?source=searchresults",
-    "search_occupation": "personal support worker (NOC 44101)"
+    "search_occupation": "personal support worker (NOC 44101)",
+    "address": "Ottawa , ON K1G 1B9",
+    "date_detail": "June 09, 2026"
   },
   {
     "posting_id": "49637880",
@@ -127,7 +145,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49637880?source=searchresults",
-    "search_occupation": "personal support worker (NOC 44101)"
+    "search_occupation": "personal support worker (NOC 44101)",
+    "address": "1345 Ogilvie Rd Gloucester , ON K1J 7P5",
+    "date_detail": "June 02, 2026"
   },
   {
     "posting_id": "49012724",
@@ -140,7 +160,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49012724?source=searchresults",
-    "search_occupation": "personal support worker (NOC 44101)"
+    "search_occupation": "personal support worker (NOC 44101)",
+    "address": "2604 Draper Avenue Ottawa , ON K2H 9B1",
+    "date_detail": "February 26, 2026"
   },
   {
     "posting_id": "49735157",
@@ -153,7 +175,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49735157?source=searchresults",
-    "search_occupation": "pharmacist (NOC 31120)"
+    "search_occupation": "pharmacist (NOC 31120)",
+    "address": "Kanata , ON",
+    "date_detail": "June 17, 2026"
   },
   {
     "posting_id": "49753782",
@@ -166,7 +190,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49753782?source=searchresults",
-    "search_occupation": "physiotherapist (NOC 31202)"
+    "search_occupation": "physiotherapist (NOC 31202)",
+    "address": "Kanata , ON",
+    "date_detail": "June 19, 2026"
   },
   {
     "posting_id": "49690602",
@@ -179,7 +205,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49690602?source=searchresults",
-    "search_occupation": "physiotherapist (NOC 31202)"
+    "search_occupation": "physiotherapist (NOC 31202)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 10, 2026"
   },
   {
     "posting_id": "49690059",
@@ -192,7 +220,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49690059?source=searchresults",
-    "search_occupation": "physiotherapist (NOC 31202)"
+    "search_occupation": "physiotherapist (NOC 31202)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 10, 2026"
   },
   {
     "posting_id": "49667476",
@@ -205,7 +235,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49667476?source=searchresults",
-    "search_occupation": "physiotherapist (NOC 31202)"
+    "search_occupation": "physiotherapist (NOC 31202)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 07, 2026"
   },
   {
     "posting_id": "49664544",
@@ -218,7 +250,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49664544?source=searchresults",
-    "search_occupation": "physiotherapist (NOC 31202)"
+    "search_occupation": "physiotherapist (NOC 31202)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 06, 2026"
   },
   {
     "posting_id": "49573307",
@@ -231,7 +265,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49573307?source=searchresults",
-    "search_occupation": "physiotherapist (NOC 31202)"
+    "search_occupation": "physiotherapist (NOC 31202)",
+    "address": "Kanata , ON",
+    "date_detail": "May 24, 2026"
   },
   {
     "posting_id": "49706596",
@@ -257,7 +293,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49378173?source=searchresults",
-    "search_occupation": "physiotherapist (NOC 31202)"
+    "search_occupation": "physiotherapist (NOC 31202)",
+    "address": "10 Green Street Nepean , ON K2J 3Z6",
+    "date_detail": "April 22, 2026"
   },
   {
     "posting_id": "49643975",
@@ -270,7 +308,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49643975?source=searchresults",
-    "search_occupation": "electrician (NOC 72200)"
+    "search_occupation": "electrician (NOC 72200)",
+    "address": "Manotick , ON",
+    "date_detail": "June 03, 2026"
   },
   {
     "posting_id": "49595295",
@@ -283,7 +323,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49595295?source=searchresults",
-    "search_occupation": "electrician (NOC 72200)"
+    "search_occupation": "electrician (NOC 72200)",
+    "address": "Ottawa , ON K2C 1H3",
+    "date_detail": "May 27, 2026"
   },
   {
     "posting_id": "49738475",
@@ -296,7 +338,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49738475?source=searchresults",
-    "search_occupation": "plumber (NOC 72300)"
+    "search_occupation": "plumber (NOC 72300)",
+    "address": "Ottawa , ON K1N 6N5",
+    "date_detail": "June 17, 2026"
   },
   {
     "posting_id": "49745018",
@@ -309,7 +353,9 @@
     "source": "Talent.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49745018?source=searchresults",
-    "search_occupation": "plumber (NOC 72300)"
+    "search_occupation": "plumber (NOC 72300)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 17, 2026"
   },
   {
     "posting_id": "49679655",
@@ -322,7 +368,9 @@
     "source": "Talent.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49679655?source=searchresults",
-    "search_occupation": "plumber (NOC 72300)"
+    "search_occupation": "plumber (NOC 72300)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 08, 2026"
   },
   {
     "posting_id": "49637613",
@@ -335,7 +383,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49637613?source=searchresults",
-    "search_occupation": "plumber (NOC 72300)"
+    "search_occupation": "plumber (NOC 72300)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 02, 2026"
   },
   {
     "posting_id": "49644229",
@@ -348,7 +398,9 @@
     "source": "Jobillico",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49644229?source=searchresults",
-    "search_occupation": "welder (NOC 72106)"
+    "search_occupation": "welder (NOC 72106)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 03, 2026"
   },
   {
     "posting_id": "49644153",
@@ -361,7 +413,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49644153?source=searchresults",
-    "search_occupation": "welder (NOC 72106)"
+    "search_occupation": "welder (NOC 72106)",
+    "address": "Ottawa , ON K1V 9V9",
+    "date_detail": "June 03, 2026"
   },
   {
     "posting_id": "49642589",
@@ -374,7 +428,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49642589?source=searchresults",
-    "search_occupation": "welder (NOC 72106)"
+    "search_occupation": "welder (NOC 72106)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 03, 2026"
   },
   {
     "posting_id": "49638839",
@@ -387,7 +443,9 @@
     "source": "ZipRecruiter",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49638839?source=searchresults",
-    "search_occupation": "welder (NOC 72106)"
+    "search_occupation": "welder (NOC 72106)",
+    "address": "Ottawa , ON K1A 0A1",
+    "date_detail": "June 02, 2026"
   },
   {
     "posting_id": "49730710",
@@ -400,7 +458,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49730710?source=searchresults",
-    "search_occupation": "carpenter (NOC 72310)"
+    "search_occupation": "carpenter (NOC 72310)",
+    "address": "Nepean , ON",
+    "date_detail": "June 16, 2026"
   },
   {
     "posting_id": "49658487",
@@ -413,7 +473,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49658487?source=searchresults",
-    "search_occupation": "carpenter (NOC 72310)"
+    "search_occupation": "carpenter (NOC 72310)",
+    "address": "Stittsville , ON",
+    "date_detail": "June 05, 2026"
   },
   {
     "posting_id": "49557891",
@@ -439,7 +501,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49462233?source=searchresults",
-    "search_occupation": "carpenter (NOC 72310)"
+    "search_occupation": "carpenter (NOC 72310)",
+    "address": "Gloucester , ON K1G 3N4",
+    "date_detail": "May 05, 2026"
   },
   {
     "posting_id": "49342748",
@@ -452,7 +516,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49342748?source=searchresults",
-    "search_occupation": "carpenter (NOC 72310)"
+    "search_occupation": "carpenter (NOC 72310)",
+    "address": "Gloucester , ON K1B 4V5",
+    "date_detail": "April 15, 2026"
   },
   {
     "posting_id": "49088870",
@@ -465,7 +531,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49088870?source=searchresults",
-    "search_occupation": "carpenter (NOC 72310)"
+    "search_occupation": "carpenter (NOC 72310)",
+    "address": "Stittsville , ON K2S 0L5",
+    "date_detail": "March 11, 2026"
   },
   {
     "posting_id": "49745639",
@@ -478,7 +546,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49745639?source=searchresults",
-    "search_occupation": "automotive technician (NOC 72410)"
+    "search_occupation": "automotive technician (NOC 72410)",
+    "address": "Orléans , ON K1E 1E2",
+    "date_detail": "June 18, 2026"
   },
   {
     "posting_id": "49738582",
@@ -491,7 +561,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49738582?source=searchresults",
-    "search_occupation": "automotive technician (NOC 72410)"
+    "search_occupation": "automotive technician (NOC 72410)",
+    "address": "Orleans South , ON",
+    "date_detail": "June 17, 2026"
   },
   {
     "posting_id": "49737564",
@@ -504,7 +576,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49737564?source=searchresults",
-    "search_occupation": "automotive technician (NOC 72410)"
+    "search_occupation": "automotive technician (NOC 72410)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 17, 2026"
   },
   {
     "posting_id": "49697877",
@@ -517,7 +591,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49697877?source=searchresults",
-    "search_occupation": "automotive technician (NOC 72410)"
+    "search_occupation": "automotive technician (NOC 72410)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 11, 2026"
   },
   {
     "posting_id": "49697812",
@@ -530,7 +606,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49697812?source=searchresults",
-    "search_occupation": "automotive technician (NOC 72410)"
+    "search_occupation": "automotive technician (NOC 72410)",
+    "address": "2655 Bank St Gloucester , ON K1T 1N1",
+    "date_detail": "June 11, 2026"
   },
   {
     "posting_id": "49681765",
@@ -543,7 +621,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49681765?source=searchresults",
-    "search_occupation": "automotive technician (NOC 72410)"
+    "search_occupation": "automotive technician (NOC 72410)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 09, 2026"
   },
   {
     "posting_id": "49598763",
@@ -556,7 +636,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49598763?source=searchresults",
-    "search_occupation": "automotive technician (NOC 72410)"
+    "search_occupation": "automotive technician (NOC 72410)",
+    "address": "Ottawa , ON K1G 3W3",
+    "date_detail": "May 27, 2026"
   },
   {
     "posting_id": "49742130",
@@ -569,7 +651,9 @@
     "source": "Talent.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49742130?source=searchresults",
-    "search_occupation": "automotive technician (NOC 72410)"
+    "search_occupation": "automotive technician (NOC 72410)",
+    "address": "Ottawa , ON",
+    "date_detail": "May 23, 2026"
   },
   {
     "posting_id": "49352833",
@@ -582,7 +666,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49352833?source=searchresults",
-    "search_occupation": "automotive technician (NOC 72410)"
+    "search_occupation": "automotive technician (NOC 72410)",
+    "address": "Ottawa , ON K1Y 3G9",
+    "date_detail": "April 17, 2026"
   },
   {
     "posting_id": "49223263",
@@ -595,7 +681,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49223263?source=searchresults",
-    "search_occupation": "automotive technician (NOC 72410)"
+    "search_occupation": "automotive technician (NOC 72410)",
+    "address": "Ottawa , ON K1B 4X3",
+    "date_detail": "April 05, 2026"
   },
   {
     "posting_id": "49747162",
@@ -608,7 +696,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49747162?source=searchresults",
-    "search_occupation": "truck driver (NOC 73300)"
+    "search_occupation": "truck driver (NOC 73300)",
+    "address": "Ottawa , ON K1G 3N2",
+    "date_detail": "June 18, 2026"
   },
   {
     "posting_id": "49702743",
@@ -621,7 +711,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49702743?source=searchresults",
-    "search_occupation": "truck driver (NOC 73300)"
+    "search_occupation": "truck driver (NOC 73300)",
+    "address": "Gloucester , ON K1T 3V7",
+    "date_detail": "June 12, 2026"
   },
   {
     "posting_id": "49709922",
@@ -634,7 +726,9 @@
     "source": "ZipRecruiter",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49709922?source=searchresults",
-    "search_occupation": "truck driver (NOC 73300)"
+    "search_occupation": "truck driver (NOC 73300)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 12, 2026"
   },
   {
     "posting_id": "49702750",
@@ -647,7 +741,9 @@
     "source": "ZipRecruiter",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49702750?source=searchresults",
-    "search_occupation": "truck driver (NOC 73300)"
+    "search_occupation": "truck driver (NOC 73300)",
+    "address": "Ottawa , ON K1B 5L3",
+    "date_detail": "June 11, 2026"
   },
   {
     "posting_id": "49653737",
@@ -660,7 +756,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49653737?source=searchresults",
-    "search_occupation": "truck driver (NOC 73300)"
+    "search_occupation": "truck driver (NOC 73300)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 04, 2026"
   },
   {
     "posting_id": "49625665",
@@ -673,7 +771,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49625665?source=searchresults",
-    "search_occupation": "truck driver (NOC 73300)"
+    "search_occupation": "truck driver (NOC 73300)",
+    "address": "Kanata , ON",
+    "date_detail": "June 01, 2026"
   },
   {
     "posting_id": "49612904",
@@ -686,7 +786,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49612904?source=searchresults",
-    "search_occupation": "truck driver (NOC 73300)"
+    "search_occupation": "truck driver (NOC 73300)",
+    "address": "Ottawa , ON",
+    "date_detail": "May 29, 2026"
   },
   {
     "posting_id": "49591287",
@@ -699,7 +801,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49591287?source=searchresults",
-    "search_occupation": "truck driver (NOC 73300)"
+    "search_occupation": "truck driver (NOC 73300)",
+    "address": "Ottawa , ON K1K 3X6",
+    "date_detail": "May 26, 2026"
   },
   {
     "posting_id": "49448355",
@@ -712,7 +816,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49448355?source=searchresults",
-    "search_occupation": "truck driver (NOC 73300)"
+    "search_occupation": "truck driver (NOC 73300)",
+    "address": "Nepean , ON K2E 6T9",
+    "date_detail": "May 04, 2026"
   },
   {
     "posting_id": "49730232",
@@ -725,7 +831,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49730232?source=searchresults",
-    "search_occupation": "cook (NOC 63200)"
+    "search_occupation": "cook (NOC 63200)",
+    "address": "Nepean , ON K2H 1A5",
+    "date_detail": "June 16, 2026"
   },
   {
     "posting_id": "49730004",
@@ -738,7 +846,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49730004?source=searchresults",
-    "search_occupation": "cook (NOC 63200)"
+    "search_occupation": "cook (NOC 63200)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 16, 2026"
   },
   {
     "posting_id": "49724986",
@@ -764,7 +874,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49723101?source=searchresults",
-    "search_occupation": "cook (NOC 63200)"
+    "search_occupation": "cook (NOC 63200)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 15, 2026"
   },
   {
     "posting_id": "49721681",
@@ -777,7 +889,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49721681?source=searchresults",
-    "search_occupation": "cook (NOC 63200)"
+    "search_occupation": "cook (NOC 63200)",
+    "address": "Nepean , ON",
+    "date_detail": "June 15, 2026"
   },
   {
     "posting_id": "49717252",
@@ -790,7 +904,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49717252?source=searchresults",
-    "search_occupation": "cook (NOC 63200)"
+    "search_occupation": "cook (NOC 63200)",
+    "address": "Kanata , ON",
+    "date_detail": "June 15, 2026"
   },
   {
     "posting_id": "49715212",
@@ -816,7 +932,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49697103?source=searchresults",
-    "search_occupation": "cook (NOC 63200)"
+    "search_occupation": "cook (NOC 63200)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 11, 2026"
   },
   {
     "posting_id": "49690769",
@@ -829,7 +947,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49690769?source=searchresults",
-    "search_occupation": "cook (NOC 63200)"
+    "search_occupation": "cook (NOC 63200)",
+    "address": "Gloucester , ON K1V 2N8",
+    "date_detail": "June 10, 2026"
   },
   {
     "posting_id": "49688037",
@@ -842,7 +962,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49688037?source=searchresults",
-    "search_occupation": "cook (NOC 63200)"
+    "search_occupation": "cook (NOC 63200)",
+    "address": "Nepean , ON",
+    "date_detail": "June 10, 2026"
   },
   {
     "posting_id": "49684169",
@@ -855,7 +977,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49684169?source=searchresults",
-    "search_occupation": "cook (NOC 63200)"
+    "search_occupation": "cook (NOC 63200)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 09, 2026"
   },
   {
     "posting_id": "49683216",
@@ -868,7 +992,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49683216?source=searchresults",
-    "search_occupation": "cook (NOC 63200)"
+    "search_occupation": "cook (NOC 63200)",
+    "address": "Manotick , ON",
+    "date_detail": "June 09, 2026"
   },
   {
     "posting_id": "49681142",
@@ -881,7 +1007,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49681142?source=searchresults",
-    "search_occupation": "cook (NOC 63200)"
+    "search_occupation": "cook (NOC 63200)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 09, 2026"
   },
   {
     "posting_id": "49677044",
@@ -894,7 +1022,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49677044?source=searchresults",
-    "search_occupation": "cook (NOC 63200)"
+    "search_occupation": "cook (NOC 63200)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 08, 2026"
   },
   {
     "posting_id": "49726858",
@@ -907,7 +1037,9 @@
     "source": "Talent.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49726858?source=searchresults",
-    "search_occupation": "cook (NOC 63200)"
+    "search_occupation": "cook (NOC 63200)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 08, 2026"
   },
   {
     "posting_id": "49668847",
@@ -920,7 +1052,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49668847?source=searchresults",
-    "search_occupation": "cook (NOC 63200)"
+    "search_occupation": "cook (NOC 63200)",
+    "address": "Ottawa , ON K1N 0A6",
+    "date_detail": "June 07, 2026"
   },
   {
     "posting_id": "49653937",
@@ -933,7 +1067,9 @@
     "source": "ZipRecruiter",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49653937?source=searchresults",
-    "search_occupation": "cook (NOC 63200)"
+    "search_occupation": "cook (NOC 63200)",
+    "address": "Gloucester , ON",
+    "date_detail": "June 04, 2026"
   },
   {
     "posting_id": "49650509",
@@ -946,7 +1082,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49650509?source=searchresults",
-    "search_occupation": "cook (NOC 63200)"
+    "search_occupation": "cook (NOC 63200)",
+    "address": "Ottawa , ON K1N 5M4",
+    "date_detail": "June 04, 2026"
   },
   {
     "posting_id": "49636990",
@@ -959,7 +1097,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49636990?source=searchresults",
-    "search_occupation": "cook (NOC 63200)"
+    "search_occupation": "cook (NOC 63200)",
+    "address": "Stittsville , ON K2S 1N9",
+    "date_detail": "June 02, 2026"
   },
   {
     "posting_id": "49635969",
@@ -972,7 +1112,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49635969?source=searchresults",
-    "search_occupation": "cook (NOC 63200)"
+    "search_occupation": "cook (NOC 63200)",
+    "address": "Nepean , ON",
+    "date_detail": "June 02, 2026"
   },
   {
     "posting_id": "49628885",
@@ -985,7 +1127,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49628885?source=searchresults",
-    "search_occupation": "cook (NOC 63200)"
+    "search_occupation": "cook (NOC 63200)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 01, 2026"
   },
   {
     "posting_id": "49628245",
@@ -998,7 +1142,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49628245?source=searchresults",
-    "search_occupation": "cook (NOC 63200)"
+    "search_occupation": "cook (NOC 63200)",
+    "address": "Orléans , ON K1C 1T1",
+    "date_detail": "June 01, 2026"
   },
   {
     "posting_id": "49605727",
@@ -1011,7 +1157,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49605727?source=searchresults",
-    "search_occupation": "cook (NOC 63200)"
+    "search_occupation": "cook (NOC 63200)",
+    "address": "Ottawa , ON",
+    "date_detail": "May 28, 2026"
   },
   {
     "posting_id": "49758660",
@@ -1024,7 +1172,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49758660?source=searchresults",
-    "search_occupation": "chef (NOC 62200)"
+    "search_occupation": "chef (NOC 62200)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 20, 2026"
   },
   {
     "posting_id": "49758662",
@@ -1037,7 +1187,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49758662?source=searchresults",
-    "search_occupation": "chef (NOC 62200)"
+    "search_occupation": "chef (NOC 62200)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 20, 2026"
   },
   {
     "posting_id": "49758093",
@@ -1050,7 +1202,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49758093?source=searchresults",
-    "search_occupation": "chef (NOC 62200)"
+    "search_occupation": "chef (NOC 62200)",
+    "address": "Ottawa , ON K1K 0T6",
+    "date_detail": "June 20, 2026"
   },
   {
     "posting_id": "49751323",
@@ -1063,7 +1217,9 @@
     "source": "86network",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49751323?source=searchresults",
-    "search_occupation": "chef (NOC 62200)"
+    "search_occupation": "chef (NOC 62200)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 19, 2026"
   },
   {
     "posting_id": "49737508",
@@ -1076,7 +1232,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49737508?source=searchresults",
-    "search_occupation": "chef (NOC 62200)"
+    "search_occupation": "chef (NOC 62200)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 17, 2026"
   },
   {
     "posting_id": "49737045",
@@ -1089,7 +1247,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49737045?source=searchresults",
-    "search_occupation": "chef (NOC 62200)"
+    "search_occupation": "chef (NOC 62200)",
+    "address": "Ottawa , ON K1V 7Y8",
+    "date_detail": "June 17, 2026"
   },
   {
     "posting_id": "49731016",
@@ -1102,7 +1262,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49731016?source=searchresults",
-    "search_occupation": "chef (NOC 62200)"
+    "search_occupation": "chef (NOC 62200)",
+    "address": "Ottawa , ON K2P 0C3",
+    "date_detail": "June 16, 2026"
   },
   {
     "posting_id": "49728697",
@@ -1115,7 +1277,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49728697?source=searchresults",
-    "search_occupation": "chef (NOC 62200)"
+    "search_occupation": "chef (NOC 62200)",
+    "address": "Ottawa , ON K1N 9C3",
+    "date_detail": "June 16, 2026"
   },
   {
     "posting_id": "49723613",
@@ -1128,7 +1292,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49723613?source=searchresults",
-    "search_occupation": "chef (NOC 62200)"
+    "search_occupation": "chef (NOC 62200)",
+    "address": "1993 Robertson Road Nepean , ON K2H 5B7",
+    "date_detail": "June 15, 2026"
   },
   {
     "posting_id": "49715445",
@@ -1141,7 +1307,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49715445?source=searchresults",
-    "search_occupation": "chef (NOC 62200)"
+    "search_occupation": "chef (NOC 62200)",
+    "address": "Nepean , ON K2H 5B7",
+    "date_detail": "June 14, 2026"
   },
   {
     "posting_id": "49717401",
@@ -1154,7 +1322,9 @@
     "source": "ZipRecruiter",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49717401?source=searchresults",
-    "search_occupation": "chef (NOC 62200)"
+    "search_occupation": "chef (NOC 62200)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 14, 2026"
   },
   {
     "posting_id": "49706923",
@@ -1167,7 +1337,9 @@
     "source": "ZipRecruiter",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49706923?source=searchresults",
-    "search_occupation": "chef (NOC 62200)"
+    "search_occupation": "chef (NOC 62200)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 12, 2026"
   },
   {
     "posting_id": "49704106",
@@ -1180,7 +1352,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49704106?source=searchresults",
-    "search_occupation": "chef (NOC 62200)"
+    "search_occupation": "chef (NOC 62200)",
+    "address": "Stittsville , ON",
+    "date_detail": "June 12, 2026"
   },
   {
     "posting_id": "49683115",
@@ -1193,7 +1367,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49683115?source=searchresults",
-    "search_occupation": "chef (NOC 62200)"
+    "search_occupation": "chef (NOC 62200)",
+    "address": "Nepean , ON K2J 4B1",
+    "date_detail": "June 09, 2026"
   },
   {
     "posting_id": "49676556",
@@ -1206,7 +1382,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49676556?source=searchresults",
-    "search_occupation": "chef (NOC 62200)"
+    "search_occupation": "chef (NOC 62200)",
+    "address": "Ottawa , ON K1N 5A4",
+    "date_detail": "June 08, 2026"
   },
   {
     "posting_id": "49656894",
@@ -1219,7 +1397,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49656894?source=searchresults",
-    "search_occupation": "chef (NOC 62200)"
+    "search_occupation": "chef (NOC 62200)",
+    "address": "Ottawa , ON K1R 7R1",
+    "date_detail": "June 05, 2026"
   },
   {
     "posting_id": "49647262",
@@ -1232,7 +1412,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49647262?source=searchresults",
-    "search_occupation": "chef (NOC 62200)"
+    "search_occupation": "chef (NOC 62200)",
+    "address": "Nepean , ON",
+    "date_detail": "June 04, 2026"
   },
   {
     "posting_id": "49726763",
@@ -1245,7 +1427,9 @@
     "source": "Talent.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49726763?source=searchresults",
-    "search_occupation": "chef (NOC 62200)"
+    "search_occupation": "chef (NOC 62200)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 03, 2026"
   },
   {
     "posting_id": "49637090",
@@ -1271,7 +1455,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49635143?source=searchresults",
-    "search_occupation": "chef (NOC 62200)"
+    "search_occupation": "chef (NOC 62200)",
+    "address": "1993 Robertson Road Nepean , ON K2H 5B7",
+    "date_detail": "June 02, 2026"
   },
   {
     "posting_id": "49613161",
@@ -1284,7 +1470,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49613161?source=searchresults",
-    "search_occupation": "chef (NOC 62200)"
+    "search_occupation": "chef (NOC 62200)",
+    "address": "Orléans , ON K1C 1G4",
+    "date_detail": "May 29, 2026"
   },
   {
     "posting_id": "49741165",
@@ -1297,7 +1485,9 @@
     "source": "Talent.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49741165?source=searchresults",
-    "search_occupation": "chef (NOC 62200)"
+    "search_occupation": "chef (NOC 62200)",
+    "address": "Ottawa , ON",
+    "date_detail": "May 26, 2026"
   },
   {
     "posting_id": "49581247",
@@ -1310,7 +1500,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49581247?source=searchresults",
-    "search_occupation": "chef (NOC 62200)"
+    "search_occupation": "chef (NOC 62200)",
+    "address": "Ottawa , ON",
+    "date_detail": "May 25, 2026"
   },
   {
     "posting_id": "49669915",
@@ -1323,7 +1515,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49669915?source=searchresults",
-    "search_occupation": "chef (NOC 62200)"
+    "search_occupation": "chef (NOC 62200)",
+    "address": "Ottawa , ON",
+    "date_detail": "May 25, 2026"
   },
   {
     "posting_id": "49574812",
@@ -1336,7 +1530,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49574812?source=searchresults",
-    "search_occupation": "chef (NOC 62200)"
+    "search_occupation": "chef (NOC 62200)",
+    "address": "Kanata , ON",
+    "date_detail": "May 24, 2026"
   },
   {
     "posting_id": "49741534",
@@ -1349,7 +1545,9 @@
     "source": "Talent.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49741534?source=searchresults",
-    "search_occupation": "chef (NOC 62200)"
+    "search_occupation": "chef (NOC 62200)",
+    "address": "Ottawa , ON",
+    "date_detail": "May 23, 2026"
   },
   {
     "posting_id": "49741758",
@@ -1362,7 +1560,9 @@
     "source": "Talent.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49741758?source=searchresults",
-    "search_occupation": "chef (NOC 62200)"
+    "search_occupation": "chef (NOC 62200)",
+    "address": "Ottawa , ON",
+    "date_detail": "May 23, 2026"
   },
   {
     "posting_id": "49562588",
@@ -1375,7 +1575,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49562588?source=searchresults",
-    "search_occupation": "chef (NOC 62200)"
+    "search_occupation": "chef (NOC 62200)",
+    "address": "1696 CARLING AVE. Ottawa , ON K2A 1C6",
+    "date_detail": "May 22, 2026"
   },
   {
     "posting_id": "49737431",
@@ -1388,7 +1590,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49737431?source=searchresults",
-    "search_occupation": "accountant (NOC 11100)"
+    "search_occupation": "accountant (NOC 11100)",
+    "address": "Stittsville , ON",
+    "date_detail": "June 17, 2026"
   },
   {
     "posting_id": "49666989",
@@ -1401,7 +1605,9 @@
     "source": "ZipRecruiter",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49666989?source=searchresults",
-    "search_occupation": "accountant (NOC 11100)"
+    "search_occupation": "accountant (NOC 11100)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 06, 2026"
   },
   {
     "posting_id": "49751010",
@@ -1414,7 +1620,9 @@
     "source": "ZipRecruiter",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49751010?source=searchresults",
-    "search_occupation": "bookkeeper (NOC 12200)"
+    "search_occupation": "bookkeeper (NOC 12200)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 19, 2026"
   },
   {
     "posting_id": "49632001",
@@ -1427,7 +1635,9 @@
     "source": "ZipRecruiter",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49632001?source=searchresults",
-    "search_occupation": "bookkeeper (NOC 12200)"
+    "search_occupation": "bookkeeper (NOC 12200)",
+    "address": "Ottawa , ON",
+    "date_detail": "May 25, 2026"
   },
   {
     "posting_id": "49750738",
@@ -1440,7 +1650,9 @@
     "source": "Jobs.gc.ca",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49750738?source=searchresults",
-    "search_occupation": "administrative assistant (NOC 13110)"
+    "search_occupation": "administrative assistant (NOC 13110)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 19, 2026"
   },
   {
     "posting_id": "49745690",
@@ -1453,7 +1665,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49745690?source=searchresults",
-    "search_occupation": "administrative assistant (NOC 13110)"
+    "search_occupation": "administrative assistant (NOC 13110)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 18, 2026"
   },
   {
     "posting_id": "49745260",
@@ -1466,7 +1680,9 @@
     "source": "Talent.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49745260?source=searchresults",
-    "search_occupation": "administrative assistant (NOC 13110)"
+    "search_occupation": "administrative assistant (NOC 13110)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 18, 2026"
   },
   {
     "posting_id": "49731388",
@@ -1479,7 +1695,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49731388?source=searchresults",
-    "search_occupation": "administrative assistant (NOC 13110)"
+    "search_occupation": "administrative assistant (NOC 13110)",
+    "address": "Nepean , ON K2E 7J5",
+    "date_detail": "June 16, 2026"
   },
   {
     "posting_id": "49728901",
@@ -1492,7 +1710,9 @@
     "source": "CareerBeacon",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49728901?source=searchresults",
-    "search_occupation": "administrative assistant (NOC 13110)"
+    "search_occupation": "administrative assistant (NOC 13110)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 16, 2026"
   },
   {
     "posting_id": "49741732",
@@ -1505,7 +1725,9 @@
     "source": "Talent.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49741732?source=searchresults",
-    "search_occupation": "administrative assistant (NOC 13110)"
+    "search_occupation": "administrative assistant (NOC 13110)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 11, 2026"
   },
   {
     "posting_id": "49459153",
@@ -1518,7 +1740,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49459153?source=searchresults",
-    "search_occupation": "administrative assistant (NOC 13110)"
+    "search_occupation": "administrative assistant (NOC 13110)",
+    "address": "Ottawa , ON K1N 7G1",
+    "date_detail": "May 05, 2026"
   },
   {
     "posting_id": "49730664",
@@ -1531,7 +1755,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49730664?source=searchresults",
-    "search_occupation": "receptionist (NOC 14101)"
+    "search_occupation": "receptionist (NOC 14101)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 16, 2026"
   },
   {
     "posting_id": "49753063",
@@ -1544,7 +1770,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49753063?source=searchresults",
-    "search_occupation": "receptionist (NOC 14101)"
+    "search_occupation": "receptionist (NOC 14101)",
+    "address": "Stittsville , ON",
+    "date_detail": "June 16, 2026"
   },
   {
     "posting_id": "49703616",
@@ -1557,7 +1785,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49703616?source=searchresults",
-    "search_occupation": "receptionist (NOC 14101)"
+    "search_occupation": "receptionist (NOC 14101)",
+    "address": "Kanata , ON",
+    "date_detail": "June 12, 2026"
   },
   {
     "posting_id": "49688033",
@@ -1570,7 +1800,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49688033?source=searchresults",
-    "search_occupation": "receptionist (NOC 14101)"
+    "search_occupation": "receptionist (NOC 14101)",
+    "address": "Stittsville , ON",
+    "date_detail": "June 10, 2026"
   },
   {
     "posting_id": "49686072",
@@ -1583,7 +1815,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49686072?source=searchresults",
-    "search_occupation": "receptionist (NOC 14101)"
+    "search_occupation": "receptionist (NOC 14101)",
+    "address": "Nepean , ON",
+    "date_detail": "June 10, 2026"
   },
   {
     "posting_id": "49684148",
@@ -1596,7 +1830,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49684148?source=searchresults",
-    "search_occupation": "receptionist (NOC 14101)"
+    "search_occupation": "receptionist (NOC 14101)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 09, 2026"
   },
   {
     "posting_id": "49730676",
@@ -1622,7 +1858,9 @@
     "source": "CareerBeacon",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49758151?source=searchresults",
-    "search_occupation": "retail sales (NOC 64100)"
+    "search_occupation": "retail sales (NOC 64100)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 20, 2026"
   },
   {
     "posting_id": "49752906",
@@ -1635,7 +1873,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49752906?source=searchresults",
-    "search_occupation": "retail sales (NOC 64100)"
+    "search_occupation": "retail sales (NOC 64100)",
+    "address": "280 Elgin Street Ottawa , ON K2P 1M2",
+    "date_detail": "June 19, 2026"
   },
   {
     "posting_id": "49736850",
@@ -1648,7 +1888,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49736850?source=searchresults",
-    "search_occupation": "retail sales (NOC 64100)"
+    "search_occupation": "retail sales (NOC 64100)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 17, 2026"
   },
   {
     "posting_id": "49731473",
@@ -1661,7 +1903,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49731473?source=searchresults",
-    "search_occupation": "retail sales (NOC 64100)"
+    "search_occupation": "retail sales (NOC 64100)",
+    "address": "Nepean , ON",
+    "date_detail": "June 16, 2026"
   },
   {
     "posting_id": "49738744",
@@ -1674,7 +1918,9 @@
     "source": "ZipRecruiter",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49738744?source=searchresults",
-    "search_occupation": "retail sales (NOC 64100)"
+    "search_occupation": "retail sales (NOC 64100)",
+    "address": "Nepean , ON",
+    "date_detail": "June 16, 2026"
   },
   {
     "posting_id": "49715924",
@@ -1687,7 +1933,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49715924?source=searchresults",
-    "search_occupation": "retail sales (NOC 64100)"
+    "search_occupation": "retail sales (NOC 64100)",
+    "address": "Orleans South , ON",
+    "date_detail": "June 14, 2026"
   },
   {
     "posting_id": "49725497",
@@ -1700,7 +1948,9 @@
     "source": "ZipRecruiter",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49725497?source=searchresults",
-    "search_occupation": "retail sales (NOC 64100)"
+    "search_occupation": "retail sales (NOC 64100)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 14, 2026"
   },
   {
     "posting_id": "49719142",
@@ -1713,7 +1963,9 @@
     "source": "Talent.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49719142?source=searchresults",
-    "search_occupation": "retail sales (NOC 64100)"
+    "search_occupation": "retail sales (NOC 64100)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 13, 2026"
   },
   {
     "posting_id": "49719317",
@@ -1726,7 +1978,9 @@
     "source": "Talent.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49719317?source=searchresults",
-    "search_occupation": "retail sales (NOC 64100)"
+    "search_occupation": "retail sales (NOC 64100)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 13, 2026"
   },
   {
     "posting_id": "49704082",
@@ -1739,7 +1993,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49704082?source=searchresults",
-    "search_occupation": "retail sales (NOC 64100)"
+    "search_occupation": "retail sales (NOC 64100)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 12, 2026"
   },
   {
     "posting_id": "49703427",
@@ -1752,7 +2008,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49703427?source=searchresults",
-    "search_occupation": "retail sales (NOC 64100)"
+    "search_occupation": "retail sales (NOC 64100)",
+    "address": "Ottawa , ON K1R 6P8",
+    "date_detail": "June 12, 2026"
   },
   {
     "posting_id": "49719295",
@@ -1765,7 +2023,9 @@
     "source": "Talent.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49719295?source=searchresults",
-    "search_occupation": "retail sales (NOC 64100)"
+    "search_occupation": "retail sales (NOC 64100)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 11, 2026"
   },
   {
     "posting_id": "49688553",
@@ -1778,7 +2038,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49688553?source=searchresults",
-    "search_occupation": "retail sales (NOC 64100)"
+    "search_occupation": "retail sales (NOC 64100)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 10, 2026"
   },
   {
     "posting_id": "49741726",
@@ -1791,7 +2053,9 @@
     "source": "Talent.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49741726?source=searchresults",
-    "search_occupation": "retail sales (NOC 64100)"
+    "search_occupation": "retail sales (NOC 64100)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 09, 2026"
   },
   {
     "posting_id": "49651153",
@@ -1804,7 +2068,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49651153?source=searchresults",
-    "search_occupation": "retail sales (NOC 64100)"
+    "search_occupation": "retail sales (NOC 64100)",
+    "address": "Ottawa , ON K1G 1E6",
+    "date_detail": "June 04, 2026"
   },
   {
     "posting_id": "49741771",
@@ -1817,7 +2083,9 @@
     "source": "Talent.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49741771?source=searchresults",
-    "search_occupation": "retail sales (NOC 64100)"
+    "search_occupation": "retail sales (NOC 64100)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 04, 2026"
   },
   {
     "posting_id": "49643235",
@@ -1830,7 +2098,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49643235?source=searchresults",
-    "search_occupation": "retail sales (NOC 64100)"
+    "search_occupation": "retail sales (NOC 64100)",
+    "address": "Orleans South , ON",
+    "date_detail": "June 03, 2026"
   },
   {
     "posting_id": "49643260",
@@ -1843,7 +2113,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49643260?source=searchresults",
-    "search_occupation": "retail sales (NOC 64100)"
+    "search_occupation": "retail sales (NOC 64100)",
+    "address": "Orleans South , ON",
+    "date_detail": "June 03, 2026"
   },
   {
     "posting_id": "49642440",
@@ -1856,7 +2128,9 @@
     "source": "Jobillico",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49642440?source=searchresults",
-    "search_occupation": "retail sales (NOC 64100)"
+    "search_occupation": "retail sales (NOC 64100)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 03, 2026"
   },
   {
     "posting_id": "49649076",
@@ -1869,7 +2143,9 @@
     "source": "ZipRecruiter",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49649076?source=searchresults",
-    "search_occupation": "retail sales (NOC 64100)"
+    "search_occupation": "retail sales (NOC 64100)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 03, 2026"
   },
   {
     "posting_id": "49630667",
@@ -1882,7 +2158,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49630667?source=searchresults",
-    "search_occupation": "retail sales (NOC 64100)"
+    "search_occupation": "retail sales (NOC 64100)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 01, 2026"
   },
   {
     "posting_id": "49628568",
@@ -1895,7 +2173,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49628568?source=searchresults",
-    "search_occupation": "retail sales (NOC 64100)"
+    "search_occupation": "retail sales (NOC 64100)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 01, 2026"
   },
   {
     "posting_id": "49625171",
@@ -1908,7 +2188,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49625171?source=searchresults",
-    "search_occupation": "retail sales (NOC 64100)"
+    "search_occupation": "retail sales (NOC 64100)",
+    "address": "1317 Wellington Street Ottawa , ON K1Y 3B1",
+    "date_detail": "June 01, 2026"
   },
   {
     "posting_id": "49722979",
@@ -1921,7 +2203,9 @@
     "source": "CareerBeacon",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49722979?source=searchresults",
-    "search_occupation": "cashier (NOC 65100)"
+    "search_occupation": "cashier (NOC 65100)",
+    "address": "Manotick , ON",
+    "date_detail": "June 15, 2026"
   },
   {
     "posting_id": "49720111",
@@ -1934,7 +2218,9 @@
     "source": "CareerBeacon",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49720111?source=searchresults",
-    "search_occupation": "cashier (NOC 65100)"
+    "search_occupation": "cashier (NOC 65100)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 05, 2026"
   },
   {
     "posting_id": "49720157",
@@ -1947,7 +2233,9 @@
     "source": "CareerBeacon",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49720157?source=searchresults",
-    "search_occupation": "cashier (NOC 65100)"
+    "search_occupation": "cashier (NOC 65100)",
+    "address": "Manotick , ON",
+    "date_detail": "June 04, 2026"
   },
   {
     "posting_id": "49719942",
@@ -1960,7 +2248,9 @@
     "source": "CareerBeacon",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49719942?source=searchresults",
-    "search_occupation": "cashier (NOC 65100)"
+    "search_occupation": "cashier (NOC 65100)",
+    "address": "Manotick , ON",
+    "date_detail": "May 26, 2026"
   },
   {
     "posting_id": "49755858",
@@ -1973,7 +2263,9 @@
     "source": "CareerBeacon",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49755858?source=searchresults",
-    "search_occupation": "customer service (NOC 64409)"
+    "search_occupation": "customer service (NOC 64409)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 19, 2026"
   },
   {
     "posting_id": "49752911",
@@ -1986,7 +2278,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49752911?source=searchresults",
-    "search_occupation": "customer service (NOC 64409)"
+    "search_occupation": "customer service (NOC 64409)",
+    "address": "Ottawa , ON K2P 1M2",
+    "date_detail": "June 19, 2026"
   },
   {
     "posting_id": "49739007",
@@ -1999,7 +2293,9 @@
     "source": "CareerBeacon",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49739007?source=searchresults",
-    "search_occupation": "customer service (NOC 64409)"
+    "search_occupation": "customer service (NOC 64409)",
+    "address": "Nepean , ON",
+    "date_detail": "June 17, 2026"
   },
   {
     "posting_id": "49735068",
@@ -2012,7 +2308,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49735068?source=searchresults",
-    "search_occupation": "customer service (NOC 64409)"
+    "search_occupation": "customer service (NOC 64409)",
+    "address": "1317 Wellington Street Ottawa , ON K1Y 3B1",
+    "date_detail": "June 17, 2026"
   },
   {
     "posting_id": "49704908",
@@ -2025,7 +2323,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49704908?source=searchresults",
-    "search_occupation": "customer service (NOC 64409)"
+    "search_occupation": "customer service (NOC 64409)",
+    "address": "Kanata , ON K2T 1B8",
+    "date_detail": "June 12, 2026"
   },
   {
     "posting_id": "49703942",
@@ -2038,7 +2338,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49703942?source=searchresults",
-    "search_occupation": "customer service (NOC 64409)"
+    "search_occupation": "customer service (NOC 64409)",
+    "address": "Ottawa , ON T2E 7A4",
+    "date_detail": "June 12, 2026"
   },
   {
     "posting_id": "49703483",
@@ -2051,7 +2353,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49703483?source=searchresults",
-    "search_occupation": "customer service (NOC 64409)"
+    "search_occupation": "customer service (NOC 64409)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 12, 2026"
   },
   {
     "posting_id": "49671658",
@@ -2064,7 +2368,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49671658?source=searchresults",
-    "search_occupation": "customer service (NOC 64409)"
+    "search_occupation": "customer service (NOC 64409)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 08, 2026"
   },
   {
     "posting_id": "49665401",
@@ -2077,7 +2383,9 @@
     "source": "CareerBeacon",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49665401?source=searchresults",
-    "search_occupation": "customer service (NOC 64409)"
+    "search_occupation": "customer service (NOC 64409)",
+    "address": "Gloucester , ON",
+    "date_detail": "June 07, 2026"
   },
   {
     "posting_id": "49673798",
@@ -2090,7 +2398,9 @@
     "source": "ZipRecruiter",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49673798?source=searchresults",
-    "search_occupation": "customer service (NOC 64409)"
+    "search_occupation": "customer service (NOC 64409)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 07, 2026"
   },
   {
     "posting_id": "49653664",
@@ -2103,7 +2413,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49653664?source=searchresults",
-    "search_occupation": "customer service (NOC 64409)"
+    "search_occupation": "customer service (NOC 64409)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 04, 2026"
   },
   {
     "posting_id": "49642966",
@@ -2116,7 +2428,9 @@
     "source": "Jobillico",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49642966?source=searchresults",
-    "search_occupation": "customer service (NOC 64409)"
+    "search_occupation": "customer service (NOC 64409)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 03, 2026"
   },
   {
     "posting_id": "49726848",
@@ -2129,7 +2443,9 @@
     "source": "Talent.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49726848?source=searchresults",
-    "search_occupation": "customer service (NOC 64409)"
+    "search_occupation": "customer service (NOC 64409)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 03, 2026"
   },
   {
     "posting_id": "49619956",
@@ -2142,7 +2458,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49619956?source=searchresults",
-    "search_occupation": "customer service (NOC 64409)"
+    "search_occupation": "customer service (NOC 64409)",
+    "address": "Orleans South , ON",
+    "date_detail": "May 31, 2026"
   },
   {
     "posting_id": "49603983",
@@ -2155,7 +2473,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49603983?source=searchresults",
-    "search_occupation": "customer service (NOC 64409)"
+    "search_occupation": "customer service (NOC 64409)",
+    "address": "Ottawa , ON",
+    "date_detail": "May 28, 2026"
   },
   {
     "posting_id": "49582303",
@@ -2168,7 +2488,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49582303?source=searchresults",
-    "search_occupation": "customer service (NOC 64409)"
+    "search_occupation": "customer service (NOC 64409)",
+    "address": "Ottawa , ON K1N 5Z6",
+    "date_detail": "May 25, 2026"
   },
   {
     "posting_id": "49719208",
@@ -2181,7 +2503,9 @@
     "source": "Talent.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49719208?source=searchresults",
-    "search_occupation": "customer service (NOC 64409)"
+    "search_occupation": "customer service (NOC 64409)",
+    "address": "Ottawa , ON",
+    "date_detail": "May 23, 2026"
   },
   {
     "posting_id": "49494120",
@@ -2194,7 +2518,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49494120?source=searchresults",
-    "search_occupation": "customer service (NOC 64409)"
+    "search_occupation": "customer service (NOC 64409)",
+    "address": "Ottawa , ON K1L 6T5",
+    "date_detail": "May 09, 2026"
   },
   {
     "posting_id": "49295710",
@@ -2207,7 +2533,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49295710?source=searchresults",
-    "search_occupation": "customer service (NOC 64409)"
+    "search_occupation": "customer service (NOC 64409)",
+    "address": "Ottawa , ON K1L 6T5",
+    "date_detail": "April 12, 2026"
   },
   {
     "posting_id": "49226990",
@@ -2220,7 +2548,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49226990?source=searchresults",
-    "search_occupation": "customer service (NOC 64409)"
+    "search_occupation": "customer service (NOC 64409)",
+    "address": "Ottawa , ON K1K 3P9",
+    "date_detail": "April 06, 2026"
   },
   {
     "posting_id": "49145314",
@@ -2233,7 +2563,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49145314?source=searchresults",
-    "search_occupation": "customer service (NOC 64409)"
+    "search_occupation": "customer service (NOC 64409)",
+    "address": "Ottawa , ON K1V 1J5",
+    "date_detail": "March 20, 2026"
   },
   {
     "posting_id": "49755211",
@@ -2246,7 +2578,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49755211?source=searchresults",
-    "search_occupation": "construction labourer (NOC 75110)"
+    "search_occupation": "construction labourer (NOC 75110)",
+    "address": "Nepean , ON",
+    "date_detail": "June 19, 2026"
   },
   {
     "posting_id": "49737064",
@@ -2259,7 +2593,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49737064?source=searchresults",
-    "search_occupation": "construction labourer (NOC 75110)"
+    "search_occupation": "construction labourer (NOC 75110)",
+    "address": "Nepean , ON K2E 6T9",
+    "date_detail": "June 17, 2026"
   },
   {
     "posting_id": "49702742",
@@ -2272,7 +2608,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49702742?source=searchresults",
-    "search_occupation": "construction labourer (NOC 75110)"
+    "search_occupation": "construction labourer (NOC 75110)",
+    "address": "Gloucester , ON K1T 3V7",
+    "date_detail": "June 12, 2026"
   },
   {
     "posting_id": "49702740",
@@ -2285,7 +2623,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49702740?source=searchresults",
-    "search_occupation": "construction labourer (NOC 75110)"
+    "search_occupation": "construction labourer (NOC 75110)",
+    "address": "Gloucester , ON K1T 3V7",
+    "date_detail": "June 12, 2026"
   },
   {
     "posting_id": "49700754",
@@ -2298,7 +2638,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49700754?source=searchresults",
-    "search_occupation": "construction labourer (NOC 75110)"
+    "search_occupation": "construction labourer (NOC 75110)",
+    "address": "Nepean , ON K2G 4N3",
+    "date_detail": "June 12, 2026"
   },
   {
     "posting_id": "49698753",
@@ -2311,7 +2653,9 @@
     "source": "ZipRecruiter",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49698753?source=searchresults",
-    "search_occupation": "construction labourer (NOC 75110)"
+    "search_occupation": "construction labourer (NOC 75110)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 10, 2026"
   },
   {
     "posting_id": "49676550",
@@ -2324,7 +2668,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49676550?source=searchresults",
-    "search_occupation": "construction labourer (NOC 75110)"
+    "search_occupation": "construction labourer (NOC 75110)",
+    "address": "Ottawa , ON K2P 1L4",
+    "date_detail": "June 08, 2026"
   },
   {
     "posting_id": "49674710",
@@ -2337,7 +2683,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49674710?source=searchresults",
-    "search_occupation": "construction labourer (NOC 75110)"
+    "search_occupation": "construction labourer (NOC 75110)",
+    "address": "1701 Woodroffe Ave Nepean , ON K2J 3V8",
+    "date_detail": "June 08, 2026"
   },
   {
     "posting_id": "49658682",
@@ -2350,7 +2698,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49658682?source=searchresults",
-    "search_occupation": "construction labourer (NOC 75110)"
+    "search_occupation": "construction labourer (NOC 75110)",
+    "address": "Nepean , ON K2E 5E8",
+    "date_detail": "June 05, 2026"
   },
   {
     "posting_id": "49632002",
@@ -2363,7 +2713,9 @@
     "source": "ZipRecruiter",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49632002?source=searchresults",
-    "search_occupation": "construction labourer (NOC 75110)"
+    "search_occupation": "construction labourer (NOC 75110)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 01, 2026"
   },
   {
     "posting_id": "49582826",
@@ -2376,7 +2728,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49582826?source=searchresults",
-    "search_occupation": "construction labourer (NOC 75110)"
+    "search_occupation": "construction labourer (NOC 75110)",
+    "address": "Ottawa , ON",
+    "date_detail": "May 25, 2026"
   },
   {
     "posting_id": "49568303",
@@ -2389,7 +2743,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49568303?source=searchresults",
-    "search_occupation": "construction labourer (NOC 75110)"
+    "search_occupation": "construction labourer (NOC 75110)",
+    "address": "Gloucester , ON K1B 4V5",
+    "date_detail": "May 22, 2026"
   },
   {
     "posting_id": "49341918",
@@ -2402,7 +2758,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49341918?source=searchresults",
-    "search_occupation": "construction labourer (NOC 75110)"
+    "search_occupation": "construction labourer (NOC 75110)",
+    "address": "Gloucester , ON K1B 4V5",
+    "date_detail": "April 15, 2026"
   },
   {
     "posting_id": "49757666",
@@ -2415,7 +2773,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49757666?source=searchresults",
-    "search_occupation": "cleaner (NOC 65310)"
+    "search_occupation": "cleaner (NOC 65310)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 20, 2026"
   },
   {
     "posting_id": "49746370",
@@ -2428,7 +2788,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49746370?source=searchresults",
-    "search_occupation": "cleaner (NOC 65310)"
+    "search_occupation": "cleaner (NOC 65310)",
+    "address": "Ottawa , ON K1G 3N2",
+    "date_detail": "June 18, 2026"
   },
   {
     "posting_id": "49731787",
@@ -2441,7 +2803,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49731787?source=searchresults",
-    "search_occupation": "cleaner (NOC 65310)"
+    "search_occupation": "cleaner (NOC 65310)",
+    "address": "Kanata , ON",
+    "date_detail": "June 16, 2026"
   },
   {
     "posting_id": "49728858",
@@ -2454,7 +2818,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49728858?source=searchresults",
-    "search_occupation": "cleaner (NOC 65310)"
+    "search_occupation": "cleaner (NOC 65310)",
+    "address": "Kanata , ON",
+    "date_detail": "June 16, 2026"
   },
   {
     "posting_id": "49727240",
@@ -2467,7 +2833,9 @@
     "source": "CareerBeacon",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49727240?source=searchresults",
-    "search_occupation": "cleaner (NOC 65310)"
+    "search_occupation": "cleaner (NOC 65310)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 16, 2026"
   },
   {
     "posting_id": "49699225",
@@ -2480,7 +2848,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49699225?source=searchresults",
-    "search_occupation": "cleaner (NOC 65310)"
+    "search_occupation": "cleaner (NOC 65310)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 11, 2026"
   },
   {
     "posting_id": "49692073",
@@ -2493,7 +2863,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49692073?source=searchresults",
-    "search_occupation": "cleaner (NOC 65310)"
+    "search_occupation": "cleaner (NOC 65310)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 10, 2026"
   },
   {
     "posting_id": "49683194",
@@ -2506,7 +2878,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49683194?source=searchresults",
-    "search_occupation": "cleaner (NOC 65310)"
+    "search_occupation": "cleaner (NOC 65310)",
+    "address": "Gloucester , ON",
+    "date_detail": "June 09, 2026"
   },
   {
     "posting_id": "49646471",
@@ -2519,7 +2893,9 @@
     "source": "ZipRecruiter",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49646471?source=searchresults",
-    "search_occupation": "cleaner (NOC 65310)"
+    "search_occupation": "cleaner (NOC 65310)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 03, 2026"
   },
   {
     "posting_id": "49641193",
@@ -2532,7 +2908,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49641193?source=searchresults",
-    "search_occupation": "cleaner (NOC 65310)"
+    "search_occupation": "cleaner (NOC 65310)",
+    "address": "Ottawa , ON K1Y 3B1",
+    "date_detail": "June 03, 2026"
   },
   {
     "posting_id": "49619473",
@@ -2545,7 +2923,9 @@
     "source": "CareerBeacon",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49619473?source=searchresults",
-    "search_occupation": "cleaner (NOC 65310)"
+    "search_occupation": "cleaner (NOC 65310)",
+    "address": "Ottawa , ON",
+    "date_detail": "May 29, 2026"
   },
   {
     "posting_id": "49603598",
@@ -2558,7 +2938,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49603598?source=searchresults",
-    "search_occupation": "cleaner (NOC 65310)"
+    "search_occupation": "cleaner (NOC 65310)",
+    "address": "Ottawa , ON",
+    "date_detail": "May 28, 2026"
   },
   {
     "posting_id": "49599266",
@@ -2571,7 +2953,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49599266?source=searchresults",
-    "search_occupation": "cleaner (NOC 65310)"
+    "search_occupation": "cleaner (NOC 65310)",
+    "address": "Ottawa , ON",
+    "date_detail": "May 27, 2026"
   },
   {
     "posting_id": "49580086",
@@ -2584,7 +2968,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49580086?source=searchresults",
-    "search_occupation": "cleaner (NOC 65310)"
+    "search_occupation": "cleaner (NOC 65310)",
+    "address": "Gloucester , ON K1B 4V5",
+    "date_detail": "May 25, 2026"
   },
   {
     "posting_id": "49572308",
@@ -2597,7 +2983,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49572308?source=searchresults",
-    "search_occupation": "cleaner (NOC 65310)"
+    "search_occupation": "cleaner (NOC 65310)",
+    "address": "Ottawa , ON",
+    "date_detail": "May 23, 2026"
   },
   {
     "posting_id": "49618313",
@@ -2623,7 +3011,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49754596?source=searchresults",
-    "search_occupation": "early childhood educator (NOC 42202)"
+    "search_occupation": "early childhood educator (NOC 42202)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 19, 2026"
   },
   {
     "posting_id": "49749376",
@@ -2636,7 +3026,9 @@
     "source": "CareerBeacon",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49749376?source=searchresults",
-    "search_occupation": "early childhood educator (NOC 42202)"
+    "search_occupation": "early childhood educator (NOC 42202)",
+    "address": "Kanata , ON",
+    "date_detail": "June 19, 2026"
   },
   {
     "posting_id": "49744356",
@@ -2649,7 +3041,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49744356?source=searchresults",
-    "search_occupation": "early childhood educator (NOC 42202)"
+    "search_occupation": "early childhood educator (NOC 42202)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 18, 2026"
   },
   {
     "posting_id": "49744433",
@@ -2662,7 +3056,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49744433?source=searchresults",
-    "search_occupation": "early childhood educator (NOC 42202)"
+    "search_occupation": "early childhood educator (NOC 42202)",
+    "address": "Manotick , ON",
+    "date_detail": "June 18, 2026"
   },
   {
     "posting_id": "49744497",
@@ -2675,7 +3071,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49744497?source=searchresults",
-    "search_occupation": "early childhood educator (NOC 42202)"
+    "search_occupation": "early childhood educator (NOC 42202)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 18, 2026"
   },
   {
     "posting_id": "49739332",
@@ -2688,7 +3086,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49739332?source=searchresults",
-    "search_occupation": "early childhood educator (NOC 42202)"
+    "search_occupation": "early childhood educator (NOC 42202)",
+    "address": "Nepean , ON",
+    "date_detail": "June 17, 2026"
   },
   {
     "posting_id": "49739453",
@@ -2701,7 +3101,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49739453?source=searchresults",
-    "search_occupation": "early childhood educator (NOC 42202)"
+    "search_occupation": "early childhood educator (NOC 42202)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 17, 2026"
   },
   {
     "posting_id": "49738537",
@@ -2714,7 +3116,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49738537?source=searchresults",
-    "search_occupation": "early childhood educator (NOC 42202)"
+    "search_occupation": "early childhood educator (NOC 42202)",
+    "address": "Orleans South , ON",
+    "date_detail": "June 17, 2026"
   },
   {
     "posting_id": "49738585",
@@ -2727,7 +3131,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49738585?source=searchresults",
-    "search_occupation": "early childhood educator (NOC 42202)"
+    "search_occupation": "early childhood educator (NOC 42202)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 17, 2026"
   },
   {
     "posting_id": "49738748",
@@ -2740,7 +3146,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49738748?source=searchresults",
-    "search_occupation": "early childhood educator (NOC 42202)"
+    "search_occupation": "early childhood educator (NOC 42202)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 17, 2026"
   },
   {
     "posting_id": "49738779",
@@ -2753,7 +3161,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49738779?source=searchresults",
-    "search_occupation": "early childhood educator (NOC 42202)"
+    "search_occupation": "early childhood educator (NOC 42202)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 17, 2026"
   },
   {
     "posting_id": "49738793",
@@ -2766,7 +3176,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49738793?source=searchresults",
-    "search_occupation": "early childhood educator (NOC 42202)"
+    "search_occupation": "early childhood educator (NOC 42202)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 17, 2026"
   },
   {
     "posting_id": "49738804",
@@ -2779,7 +3191,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49738804?source=searchresults",
-    "search_occupation": "early childhood educator (NOC 42202)"
+    "search_occupation": "early childhood educator (NOC 42202)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 17, 2026"
   },
   {
     "posting_id": "49735129",
@@ -2792,7 +3206,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49735129?source=searchresults",
-    "search_occupation": "early childhood educator (NOC 42202)"
+    "search_occupation": "early childhood educator (NOC 42202)",
+    "address": "Kanata , ON",
+    "date_detail": "June 17, 2026"
   },
   {
     "posting_id": "49731185",
@@ -2805,7 +3221,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49731185?source=searchresults",
-    "search_occupation": "early childhood educator (NOC 42202)"
+    "search_occupation": "early childhood educator (NOC 42202)",
+    "address": "Nepean , ON",
+    "date_detail": "June 16, 2026"
   },
   {
     "posting_id": "49699723",
@@ -2818,7 +3236,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49699723?source=searchresults",
-    "search_occupation": "early childhood educator (NOC 42202)"
+    "search_occupation": "early childhood educator (NOC 42202)",
+    "address": "Ottawa , ON K1V 6P8",
+    "date_detail": "June 11, 2026"
   },
   {
     "posting_id": "49690734",
@@ -2831,7 +3251,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49690734?source=searchresults",
-    "search_occupation": "early childhood educator (NOC 42202)"
+    "search_occupation": "early childhood educator (NOC 42202)",
+    "address": "Ottawa , ON K1Y 2R7",
+    "date_detail": "June 10, 2026"
   },
   {
     "posting_id": "49674746",
@@ -2844,7 +3266,8 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49674746?source=searchresults",
-    "search_occupation": "early childhood educator (NOC 42202)"
+    "search_occupation": "early childhood educator (NOC 42202)",
+    "date_detail": "June 08, 2026"
   },
   {
     "posting_id": "49673714",
@@ -2857,7 +3280,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49673714?source=searchresults",
-    "search_occupation": "early childhood educator (NOC 42202)"
+    "search_occupation": "early childhood educator (NOC 42202)",
+    "address": "Stittsville , ON K2S 1N9",
+    "date_detail": "June 08, 2026"
   },
   {
     "posting_id": "49661384",
@@ -2870,7 +3295,9 @@
     "source": "CareerBeacon",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49661384?source=searchresults",
-    "search_occupation": "early childhood educator (NOC 42202)"
+    "search_occupation": "early childhood educator (NOC 42202)",
+    "address": "Nepean , ON",
+    "date_detail": "June 05, 2026"
   },
   {
     "posting_id": "49654637",
@@ -2883,7 +3310,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49654637?source=searchresults",
-    "search_occupation": "early childhood educator (NOC 42202)"
+    "search_occupation": "early childhood educator (NOC 42202)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 04, 2026"
   },
   {
     "posting_id": "49653954",
@@ -2896,7 +3325,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49653954?source=searchresults",
-    "search_occupation": "early childhood educator (NOC 42202)"
+    "search_occupation": "early childhood educator (NOC 42202)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 04, 2026"
   },
   {
     "posting_id": "49621169",
@@ -2909,7 +3340,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49621169?source=searchresults",
-    "search_occupation": "early childhood educator (NOC 42202)"
+    "search_occupation": "early childhood educator (NOC 42202)",
+    "address": "Ottawa , ON",
+    "date_detail": "May 31, 2026"
   },
   {
     "posting_id": "49609613",
@@ -2922,7 +3355,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49609613?source=searchresults",
-    "search_occupation": "early childhood educator (NOC 42202)"
+    "search_occupation": "early childhood educator (NOC 42202)",
+    "address": "Ottawa , ON",
+    "date_detail": "May 29, 2026"
   },
   {
     "posting_id": "49598285",
@@ -2935,7 +3370,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49598285?source=searchresults",
-    "search_occupation": "early childhood educator (NOC 42202)"
+    "search_occupation": "early childhood educator (NOC 42202)",
+    "address": "Stittsville , ON K2S 1N9",
+    "date_detail": "May 27, 2026"
   },
   {
     "posting_id": "49598277",
@@ -2948,7 +3385,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49598277?source=searchresults",
-    "search_occupation": "early childhood educator (NOC 42202)"
+    "search_occupation": "early childhood educator (NOC 42202)",
+    "address": "Stittsville , ON K2S 1N9",
+    "date_detail": "May 27, 2026"
   },
   {
     "posting_id": "49758113",
@@ -2961,7 +3400,9 @@
     "source": "ZipRecruiter",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49758113?source=searchresults",
-    "search_occupation": "social worker (NOC 41300)"
+    "search_occupation": "social worker (NOC 41300)",
+    "address": "Orleans South , ON",
+    "date_detail": "June 20, 2026"
   },
   {
     "posting_id": "49748228",
@@ -2974,7 +3415,9 @@
     "source": "Jobillico",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49748228?source=searchresults",
-    "search_occupation": "social worker (NOC 41300)"
+    "search_occupation": "social worker (NOC 41300)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 18, 2026"
   },
   {
     "posting_id": "49730440",
@@ -2987,7 +3430,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49730440?source=searchresults",
-    "search_occupation": "social worker (NOC 41300)"
+    "search_occupation": "social worker (NOC 41300)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 16, 2026"
   },
   {
     "posting_id": "49751038",
@@ -3000,7 +3445,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49751038?source=searchresults",
-    "search_occupation": "social worker (NOC 41300)"
+    "search_occupation": "social worker (NOC 41300)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 16, 2026"
   },
   {
     "posting_id": "49680342",
@@ -3013,7 +3460,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49680342?source=searchresults",
-    "search_occupation": "social worker (NOC 41300)"
+    "search_occupation": "social worker (NOC 41300)",
+    "address": "Ottawa , ON K1V 6V8",
+    "date_detail": "June 09, 2026"
   },
   {
     "posting_id": "49660880",
@@ -3026,7 +3475,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49660880?source=searchresults",
-    "search_occupation": "social worker (NOC 41300)"
+    "search_occupation": "social worker (NOC 41300)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 05, 2026"
   },
   {
     "posting_id": "49654694",
@@ -3039,7 +3490,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49654694?source=searchresults",
-    "search_occupation": "social worker (NOC 41300)"
+    "search_occupation": "social worker (NOC 41300)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 04, 2026"
   },
   {
     "posting_id": "49751729",
@@ -3052,7 +3505,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49751729?source=searchresults",
-    "search_occupation": "teacher (NOC 41220)"
+    "search_occupation": "teacher (NOC 41220)",
+    "address": "Orleans South , ON",
+    "date_detail": "June 19, 2026"
   },
   {
     "posting_id": "49751767",
@@ -3065,7 +3520,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49751767?source=searchresults",
-    "search_occupation": "teacher (NOC 41220)"
+    "search_occupation": "teacher (NOC 41220)",
+    "address": "Orleans South , ON",
+    "date_detail": "June 19, 2026"
   },
   {
     "posting_id": "49751694",
@@ -3078,7 +3535,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49751694?source=searchresults",
-    "search_occupation": "teacher (NOC 41220)"
+    "search_occupation": "teacher (NOC 41220)",
+    "address": "Gloucester , ON",
+    "date_detail": "June 19, 2026"
   },
   {
     "posting_id": "49751698",
@@ -3091,7 +3550,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49751698?source=searchresults",
-    "search_occupation": "teacher (NOC 41220)"
+    "search_occupation": "teacher (NOC 41220)",
+    "address": "Orleans South , ON",
+    "date_detail": "June 19, 2026"
   },
   {
     "posting_id": "49751702",
@@ -3104,7 +3565,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49751702?source=searchresults",
-    "search_occupation": "teacher (NOC 41220)"
+    "search_occupation": "teacher (NOC 41220)",
+    "address": "Stittsville , ON",
+    "date_detail": "June 19, 2026"
   },
   {
     "posting_id": "49751711",
@@ -3117,7 +3580,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49751711?source=searchresults",
-    "search_occupation": "teacher (NOC 41220)"
+    "search_occupation": "teacher (NOC 41220)",
+    "address": "Orleans South , ON",
+    "date_detail": "June 19, 2026"
   },
   {
     "posting_id": "49751751",
@@ -3130,7 +3595,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49751751?source=searchresults",
-    "search_occupation": "teacher (NOC 41220)"
+    "search_occupation": "teacher (NOC 41220)",
+    "address": "Orleans South , ON",
+    "date_detail": "June 19, 2026"
   },
   {
     "posting_id": "49751756",
@@ -3143,7 +3610,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49751756?source=searchresults",
-    "search_occupation": "teacher (NOC 41220)"
+    "search_occupation": "teacher (NOC 41220)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 19, 2026"
   },
   {
     "posting_id": "49751762",
@@ -3156,7 +3625,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49751762?source=searchresults",
-    "search_occupation": "teacher (NOC 41220)"
+    "search_occupation": "teacher (NOC 41220)",
+    "address": "Orleans South , ON",
+    "date_detail": "June 19, 2026"
   },
   {
     "posting_id": "49751786",
@@ -3169,7 +3640,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49751786?source=searchresults",
-    "search_occupation": "teacher (NOC 41220)"
+    "search_occupation": "teacher (NOC 41220)",
+    "address": "Orleans South , ON",
+    "date_detail": "June 19, 2026"
   },
   {
     "posting_id": "49747899",
@@ -3182,7 +3655,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49747899?source=searchresults",
-    "search_occupation": "teacher (NOC 41220)"
+    "search_occupation": "teacher (NOC 41220)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 18, 2026"
   },
   {
     "posting_id": "49744363",
@@ -3195,7 +3670,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49744363?source=searchresults",
-    "search_occupation": "teacher (NOC 41220)"
+    "search_occupation": "teacher (NOC 41220)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 18, 2026"
   },
   {
     "posting_id": "49744483",
@@ -3208,7 +3685,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49744483?source=searchresults",
-    "search_occupation": "teacher (NOC 41220)"
+    "search_occupation": "teacher (NOC 41220)",
+    "address": "Gloucester , ON",
+    "date_detail": "June 18, 2026"
   },
   {
     "posting_id": "49744390",
@@ -3221,7 +3700,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49744390?source=searchresults",
-    "search_occupation": "teacher (NOC 41220)"
+    "search_occupation": "teacher (NOC 41220)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 18, 2026"
   },
   {
     "posting_id": "49744500",
@@ -3234,7 +3715,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49744500?source=searchresults",
-    "search_occupation": "teacher (NOC 41220)"
+    "search_occupation": "teacher (NOC 41220)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 18, 2026"
   },
   {
     "posting_id": "49744535",
@@ -3247,7 +3730,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49744535?source=searchresults",
-    "search_occupation": "teacher (NOC 41220)"
+    "search_occupation": "teacher (NOC 41220)",
+    "address": "Stittsville , ON",
+    "date_detail": "June 18, 2026"
   },
   {
     "posting_id": "49744540",
@@ -3260,7 +3745,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49744540?source=searchresults",
-    "search_occupation": "teacher (NOC 41220)"
+    "search_occupation": "teacher (NOC 41220)",
+    "address": "Gloucester , ON",
+    "date_detail": "June 18, 2026"
   },
   {
     "posting_id": "49738763",
@@ -3273,7 +3760,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49738763?source=searchresults",
-    "search_occupation": "teacher (NOC 41220)"
+    "search_occupation": "teacher (NOC 41220)",
+    "address": "Nepean , ON",
+    "date_detail": "June 17, 2026"
   },
   {
     "posting_id": "49738817",
@@ -3286,7 +3775,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49738817?source=searchresults",
-    "search_occupation": "teacher (NOC 41220)"
+    "search_occupation": "teacher (NOC 41220)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 17, 2026"
   },
   {
     "posting_id": "49735925",
@@ -3299,7 +3790,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49735925?source=searchresults",
-    "search_occupation": "teacher (NOC 41220)"
+    "search_occupation": "teacher (NOC 41220)",
+    "address": "Nepean , ON",
+    "date_detail": "June 17, 2026"
   },
   {
     "posting_id": "49731141",
@@ -3312,7 +3805,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49731141?source=searchresults",
-    "search_occupation": "teacher (NOC 41220)"
+    "search_occupation": "teacher (NOC 41220)",
+    "address": "Kanata , ON",
+    "date_detail": "June 16, 2026"
   },
   {
     "posting_id": "49731195",
@@ -3325,7 +3820,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49731195?source=searchresults",
-    "search_occupation": "teacher (NOC 41220)"
+    "search_occupation": "teacher (NOC 41220)",
+    "address": "Nepean , ON",
+    "date_detail": "June 16, 2026"
   },
   {
     "posting_id": "49729366",
@@ -3338,7 +3835,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49729366?source=searchresults",
-    "search_occupation": "teacher (NOC 41220)"
+    "search_occupation": "teacher (NOC 41220)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 16, 2026"
   },
   {
     "posting_id": "49724982",
@@ -3351,7 +3850,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49724982?source=searchresults",
-    "search_occupation": "teacher (NOC 41220)"
+    "search_occupation": "teacher (NOC 41220)",
+    "address": "Nepean , ON",
+    "date_detail": "June 15, 2026"
   },
   {
     "posting_id": "49724991",
@@ -3364,7 +3865,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49724991?source=searchresults",
-    "search_occupation": "teacher (NOC 41220)"
+    "search_occupation": "teacher (NOC 41220)",
+    "address": "Nepean , ON",
+    "date_detail": "June 15, 2026"
   },
   {
     "posting_id": "49716107",
@@ -3377,7 +3880,9 @@
     "source": "ApplyToEducation",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49716107?source=searchresults",
-    "search_occupation": "teacher (NOC 41220)"
+    "search_occupation": "teacher (NOC 41220)",
+    "address": "Gloucester , ON",
+    "date_detail": "June 14, 2026"
   },
   {
     "posting_id": "49698724",
@@ -3390,7 +3895,9 @@
     "source": "Job Bank",
     "direct": true,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49698724?source=searchresults",
-    "search_occupation": "teacher (NOC 41220)"
+    "search_occupation": "teacher (NOC 41220)",
+    "address": "Ottawa , ON K1V 9V9",
+    "date_detail": "June 11, 2026"
   },
   {
     "posting_id": "49760149",
@@ -3403,7 +3910,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49760149?source=searchresults",
-    "search_occupation": "warehouse (NOC 75101)"
+    "search_occupation": "warehouse (NOC 75101)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 20, 2026"
   },
   {
     "posting_id": "49738628",
@@ -3416,7 +3925,9 @@
     "source": "ZipRecruiter",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49738628?source=searchresults",
-    "search_occupation": "warehouse (NOC 75101)"
+    "search_occupation": "warehouse (NOC 75101)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 16, 2026"
   },
   {
     "posting_id": "49684005",
@@ -3429,7 +3940,9 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49684005?source=searchresults",
-    "search_occupation": "warehouse (NOC 75101)"
+    "search_occupation": "warehouse (NOC 75101)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 09, 2026"
   },
   {
     "posting_id": "49626164",
@@ -3442,6 +3955,8 @@
     "source": "indeed.com",
     "direct": false,
     "url": "https://www.jobbank.gc.ca/jobsearch/jobposting/49626164?source=searchresults",
-    "search_occupation": "warehouse (NOC 75101)"
+    "search_occupation": "warehouse (NOC 75101)",
+    "address": "Ottawa , ON",
+    "date_detail": "June 01, 2026"
   }
 ]

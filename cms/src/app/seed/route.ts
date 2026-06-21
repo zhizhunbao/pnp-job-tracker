@@ -111,7 +111,7 @@ export async function GET(req: Request) {
       const key = `${cslug}|${norm(j.title || '')}`
       if (seen.has(key)) { skipped++; continue }
       seen.add(key)
-      const cid = await ensureCompany(j.employer || '—', cslug, { region: 'Ottawa', source: 'jobbank' })
+      const cid = await ensureCompany(j.employer || '—', cslug, { region: 'Ottawa', source: 'jobbank', address: j.address || undefined })
       await addJob({
         title: j.title, company: cid, source: j.source || 'Job Bank',
         city: j.city || '', province: j.province || guessProv(j.city || ''), region: REGION,
