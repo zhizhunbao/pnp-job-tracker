@@ -1,0 +1,4524 @@
+[
+  {
+    "externalId": "https://caseiq.bamboohr.com/careers/305",
+    "noc": "20012",
+    "category": "TEER 0",
+    "accessibility": "unknown",
+    "score": 63
+  },
+  {
+    "externalId": "https://caseiq.bamboohr.com/careers/327",
+    "noc": "21232",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 74
+  },
+  {
+    "externalId": "https://caseiq.bamboohr.com/careers/328",
+    "noc": "21222",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 75
+  },
+  {
+    "externalId": "https://caseiq.bamboohr.com/careers/329",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://rockportnetworks.bamboohr.com/careers/152",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/intern-researcher-robotics-system-and-interaction",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 36
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/intern-researcher-multimodal-voice-interaction-hci",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 36
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/intern-researcher-aiml-technology-insight-and-planning",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 30
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/co-op-researcher-computer-network-for-ai-infrastructure",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 36
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/co-op-engineer-ai-software-engineering",
+    "noc": "21231",
+    "category": "TEER 1",
+    "accessibility": "co-op",
+    "score": 84
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/engineer-optical-communication-systems-test-modeling-sensing",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/intern-engineer-game-engine-system",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 30
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/intern-engineer-rl-post-training-for-llms",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 30
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/researcher-agentic-interaction-engineering",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/technology-ecosystem-academic-relations-lead",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/academic-development-and-cooperation-expert",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 36
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/intern-engineer-crust",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 36
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/project-specialist-3",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/computer-network-for-ai-infrastructure-researcher-distributed-computing",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/research-engineer-agentic-software-systems-engineering",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/intern-researcher-llms-agentic-ai-and-rl",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 36
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/co-op-engineer-compiler-7",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 36
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/intern-researcher-physical-ai",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 36
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/co-op-engineer-ai-tooling-agent-3",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 36
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/engineer-6g",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/co-op-researcher-web-ai-1",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 36
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/machine-learning-researcher-llm-agents-efficient-deep-learning",
+    "noc": "21211",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 75
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/hr-specialist-visa-administration",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/co-op-engineer-wireless-sensing",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 36
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-research-engineer-ai-agentsagentops-1",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/ai-software-developer-smart-grid",
+    "noc": "21232",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 75
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/co-op-researcher-embodied-ai-robot-interaction",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 36
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/co-op-researcher-agentic-interaction-engineering",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 36
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/co-op-researcher-multimodal-voice-interaction-hci",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 36
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/chief-scientist-physical-ai-1",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "unknown",
+    "score": 69
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/researcher-ai-computing-system-4",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-engineer-cloud-ai-infrastructure",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/chief-scientist-physical-ai",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "unknown",
+    "score": 63
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-researcher-ai-agent",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-researcher-physical-ai",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-principal-researcher-ai-algorithm",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/engineer-ml-rl",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-principal-researcher-ai-agent-multimodal-interaction-system",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/co-op-researcher-ai-computing-system-1",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 30
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-researcher-3d-computer-vision-and-generative-modeling",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/researcher-ai-for-scientific-algorithm-discovery",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-principal-compiler-engineer-3",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/intern-engineer-digital-ic-design-ai-assisted-design-focus",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 36
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/intern-researcher-ai-foundation-model-training",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 36
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/intern-researcher-ai-agent-evaluation",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 36
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/intern-researcher-ai-agent",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 36
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-ai-technology-strategy-expert",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/agentic-rl-researcher-distributed-computing",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/system-security-research-engineer-os-and-device-protection-3",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/human-resources-business-partner-hrbp-4",
+    "noc": "11200",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/researcher-reinforcement-learning-llm",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/machine-learning-engineer-3",
+    "noc": "21211",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 81
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/engineer-advanced-network",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-researcher-hollow-core-fiber-hcf-communications",
+    "noc": "11202",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 70
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/researcher-ai-security",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/microgrid-system-developer-protection-and-control",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-researcher-computer-vision-and-image-processing",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/researcher-parallel-computing-1",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/chief-scientist-foundation-models",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "unknown",
+    "score": 63
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/researcher-llms-2",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/intern-researcher-efficient-architecture-for-llms",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 30
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-real-time-solver-development-expert-power-systems-power-electronics",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/legal-counsel-3",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/co-op-researcher-robotics-system-and-interaction",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 36
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/co-op-researcher-computer-vision-and-machine-learning-2",
+    "noc": "21211",
+    "category": "TEER 1",
+    "accessibility": "co-op",
+    "score": 84
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/embedded-engineer-ai-system-architecture",
+    "noc": "21311",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 75
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/power-communication-protocol-developer",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-researcher-diffusion-based-large-language-models",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/researcher-aiml-3",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/researcher-reinforcement-learning-3",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-principal-researcher-ai-for-science",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/ai-systems-engineer-serverless-distributed-computing",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-researcher-voice-ai",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/intern-researcher-ai-computing-system",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 30
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/co-op-researcher-ai-for-autonomous-driving-multimodal-learning",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 36
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/microgrid-system-developer-energy-management-control",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-principal-software-engineer-ai-multi-agents",
+    "noc": "21231",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 80
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/assets-manager",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 68
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-developer-gpu-driver",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-researcher-hardware-efficient-ai-foundation-model-training",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/principal-architect-hardware-efficient-ai-foundation-model-training",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-research-engineer-data-foundation-security",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/co-op-engineer-real-time-operating-system-12-16-months",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 36
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/co-op-researcher-computer-vision-and-machine-learning",
+    "noc": "21211",
+    "category": "TEER 1",
+    "accessibility": "co-op",
+    "score": 84
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/co-op-researcher-computer-vision-and-machine-learning-1",
+    "noc": "21211",
+    "category": "TEER 1",
+    "accessibility": "co-op",
+    "score": 84
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/co-op-researcher-machine-learning-and-computer-vision",
+    "noc": "21211",
+    "category": "TEER 1",
+    "accessibility": "co-op",
+    "score": 84
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/co-op-engineer-mobile-ai",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 36
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/researcher-efficient-architecture-for-llms",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/database-research-expert",
+    "noc": "21223",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 81
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-strategic-researcher-computing-hardware",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/researcher-ai-computing-system-3",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-principal-researcher-technical-leader-agentic-rl-for-distributed-computing",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/distinguished-researcher-computer-network-and-protocol-2",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/technical-vp-ai-data-storage",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "unknown",
+    "score": 69
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/researcher-real-time-embedded-os-2",
+    "noc": "21311",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 81
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/intern-researcher-graphic-rendering-2-3",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/researcher-computer-vision-and-multimodal-foundation-models",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/tech-vp-gpu-architecture",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "unknown",
+    "score": 69
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/co-op-researcher",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 30
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-compiler-engineer-2-7",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/compiler-engineer-2-16",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/intern-researcher-multimodal-learning",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 30
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/procurement-manager",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 68
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/co-opsoftware-engineer-ai-system-infrastructure-2-3",
+    "noc": "21231",
+    "category": "TEER 1",
+    "accessibility": "co-op",
+    "score": 78
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/co-op-researcher-embodied-ai-agent-robotic-2-3",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 36
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/co-op-researcher-llms-reasoning-2",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 30
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/intern-technology-researcher-2-4",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/principal-software-engineer-cloud-ai-infrastructure",
+    "noc": "21231",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 80
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-researcher-embodied-ai-2",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/researcher-3d-vision-and-autonomous-driving-2-3",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-human-resources-business-partner-hrbp",
+    "noc": "11200",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 70
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/hr-specialist-4",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-researcher-real-time-rendering-2-6",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/ai-computing-system-engineer-leading-expert",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-engineer-2-5",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-engineer-5",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/phd-intern-ai-efficiency-researcher",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 36
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-technical-vp-ai-efficient-deep-learning-2-3",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "unknown",
+    "score": 69
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/strategic-research-engineer-future-computing-2",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/recruiter-2-10",
+    "noc": "11200",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/graphics-engineer-3d",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/researcher-3d-vision-and-autonomous-driving-1",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/academic-conference-coordinator-assistant",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/co-op-researcher-ai-storage",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 36
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/intern-researcher-embodied-ai",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 36
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/ai-researcher-1",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/intern-researcher-continual-learning",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 30
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/technical-recruiter-2-8",
+    "noc": "11200",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-ai-research-engineer",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/it-manager-2-3",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-software-engineer-web-engine-2",
+    "noc": "21231",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 80
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-technical-recruiter-3-4",
+    "noc": "11200",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 70
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/department-assistant-2-7",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/researcher-ai-data-storage",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/principal-scientist-of-software-hardware-codesign",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/research-engineer-llm-training-alignment-systems",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/intellectual-property-counsel",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/technical-vp-big-data-platform",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "unknown",
+    "score": 69
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/recruiter-ottawa",
+    "noc": "11200",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/security-researcher-authentication-and-authorization",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/researcher-ai-erc",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/intern-hr-assistant-2",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/principal-engineer-vector-database",
+    "noc": "21223",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 80
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-researcher-ai-powered-big-data-platform",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/technical-planning-manager",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 68
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/procurement-assistant-ottawa",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/technical-director-of-engineering-window-system",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/technology-cooperation-officer-3",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 30
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-software-engineer-os-windowing",
+    "noc": "21231",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 80
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/chief-researcher-network-protocol",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/technical-recruiter-3",
+    "noc": "11200",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/administrative-assistant-ottawa",
+    "noc": "13110",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-software-developer-big-data-crust",
+    "noc": "21232",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 80
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-researcher-gpu-applications-architecture",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/technical-vp-ai-efficient-deep-learning",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 68
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/ide-expert",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/researcher-realtime-embedded-os",
+    "noc": "21311",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 81
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/junior-software-developer-realtime-operating-system",
+    "noc": "21232",
+    "category": "TEER 1",
+    "accessibility": "junior",
+    "score": 84
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/software-developer-realtime-operating-system",
+    "noc": "21232",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 81
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-kernel-developer-rtos-markham",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/senior-kernel-developer-rtos",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/technical-project-assistant",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/engineering-director-web-engine",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://huaweicanada.recruitee.com/o/principal-compiler-engineer",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://jobs.lever.co/fullscript/47f27287-e1fe-49b0-b3fd-d5ae14a46bf1",
+    "noc": "21220",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 81
+  },
+  {
+    "externalId": "https://jobs.lever.co/fullscript/314f182c-6fe9-4cfc-b7cb-bc8c2eaf2bcc",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.lever.co/fullscript/87a6de4c-5cb7-4344-8058-253a72116aa3",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 68
+  },
+  {
+    "externalId": "https://jobs.lever.co/fullscript/64af0a74-6c79-4e91-83c6-cd5bd4e6f03a",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://jobs.lever.co/fullscript/5ec81b29-153d-4483-a7ba-b4f1d8397512",
+    "noc": "21211",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 80
+  },
+  {
+    "externalId": "https://jobs.lever.co/fullscript/30aeab92-7a92-49cb-bd19-b634e0f9e9d3",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://jobs.lever.co/fullscript/5bb48021-f4a4-4069-9185-79205a83f52c",
+    "noc": "21211",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 80
+  },
+  {
+    "externalId": "https://jobs.lever.co/fullscript/bb12012d-5db4-4fd4-b868-0f87413defac",
+    "noc": "21232",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 80
+  },
+  {
+    "externalId": "https://jobs.lever.co/fullscript/0ccdd1bb-7bcd-49d6-9204-f3197f7643fe",
+    "noc": "21232",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 80
+  },
+  {
+    "externalId": "https://jobs.lever.co/fullscript/257f110e-85e8-400f-969e-d307fce76a20",
+    "noc": "21232",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 80
+  },
+  {
+    "externalId": "https://jobs.lever.co/fullscript/eeeafc22-9f23-463e-a0a2-06aa2fc8f847",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 62
+  },
+  {
+    "externalId": "https://jobs.lever.co/fullscript/0bc489f5-de05-4797-b1f8-8cb05c082670",
+    "noc": "21211",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 80
+  },
+  {
+    "externalId": "https://jobs.lever.co/fullscript/fea251e7-fd41-4f63-bd56-4b74983ff8e5",
+    "noc": "52120",
+    "category": "TEER 2",
+    "accessibility": "senior",
+    "score": 66
+  },
+  {
+    "externalId": "https://jobs.lever.co/fullscript/fb857e3a-c40d-44bf-9165-4452c8a9c53c",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://jobs.lever.co/fullscript/21ff4b32-a9c6-4e29-a3a2-1c9d2d65bba4",
+    "noc": "21211",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 80
+  },
+  {
+    "externalId": "https://jobs.lever.co/fullscript/b4474afd-c31d-499a-b959-dae8082b732d",
+    "noc": "21220",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 80
+  },
+  {
+    "externalId": "https://jobs.lever.co/fullscript/575330e5-ac4f-4614-97ed-7555f98929c9",
+    "noc": "11100",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 70
+  },
+  {
+    "externalId": "https://jobs.lever.co/fullscript/35ab3918-9406-4eca-9aad-5c7bb507f0bc",
+    "noc": "75101",
+    "category": "TEER 5",
+    "accessibility": "junior",
+    "score": 32
+  },
+  {
+    "externalId": "https://jobs.lever.co/fullscript/3db0bd0f-6e7f-4788-b25e-e550896eff24",
+    "noc": "75101",
+    "category": "TEER 5",
+    "accessibility": "junior",
+    "score": 32
+  },
+  {
+    "externalId": "https://jobs.lever.co/fullscript/0cb64c16-d053-4df8-99d5-c79225375cbd",
+    "noc": "75101",
+    "category": "TEER 5",
+    "accessibility": "junior",
+    "score": 32
+  },
+  {
+    "externalId": "https://jobs.lever.co/fullscript/f586c129-0d72-4962-838e-895667594848",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 68
+  },
+  {
+    "externalId": "https://intouchinsight.bamboohr.com/careers/126",
+    "noc": "21232",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 80
+  },
+  {
+    "externalId": "https://intouchinsight.bamboohr.com/careers/130",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/5c65b7ba-c46b-455b-82e5-56542b3075f0",
+    "noc": "60010",
+    "category": "TEER 0",
+    "accessibility": "unknown",
+    "score": 63
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/424ccc15-4b3b-4ba3-9ca2-a7cfa6e870a6",
+    "noc": "22221",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/ef65e553-24eb-43c6-9e3c-9e26e2d3c744",
+    "noc": "22221",
+    "category": "TEER 2",
+    "accessibility": "co-op",
+    "score": 80
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/1afc0241-97d4-4473-9fb8-f1dc8c776d91",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 68
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/da08e6d4-0e68-41c1-a771-aec02ff35ad9",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 62
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/691275fe-fee7-47f5-a864-661487a6af2e",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 62
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/f8675bbe-033a-42d6-b303-f16c1b639ca5",
+    "noc": "21311",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 74
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/d65821b9-3c66-4c57-b98c-8f7412b92c18",
+    "noc": "21211",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 74
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/ff7957b7-de85-4b8f-9a50-4cea8a93dbd9",
+    "noc": "21211",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 74
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/f24708c7-18b0-4838-b2d4-8f4598b96f73",
+    "noc": "60010",
+    "category": "TEER 0",
+    "accessibility": "unknown",
+    "score": 63
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/17c5d189-389c-42bc-8a13-357dfcfda07b",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 36
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/2b96fb28-049c-40fb-9917-b407dab7fb56",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/e0aafcd1-580f-43bf-9f2b-aa23a0a677eb",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/994b2b68-b8e4-40c2-ac0e-4c8485d4acd8",
+    "noc": "52120",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/a95575f6-6325-4a4d-b322-3f706ebfe3e3",
+    "noc": "52120",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/1c4a6264-1904-4191-a0a2-96c5dc5c07e8",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/18f6d866-36cb-43d2-8312-9bc28454db96",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/942a1244-184a-4fa5-9691-b7152a508c62",
+    "noc": "11202",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 70
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/7c827d8f-9276-42db-9526-322e10bcf3ab",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/171b017c-054c-44f9-a2fe-e7fbf59947c7",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/49f8894c-93e0-46d6-8f0e-7a6bd63b16e3",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/f3a954ae-62b8-4aac-b23a-1b43a4475950",
+    "noc": "21222",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 81
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/77b3dd39-5858-4877-a7ca-d0aa6dd385e2",
+    "noc": "21211",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 74
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/66f99f0f-ae62-43f5-9bd3-9e164ac4b529",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/cbe695bc-24bd-4b57-a765-4a0ae6fb0867",
+    "noc": "21232",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 74
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/d8a7f42b-9ba4-4f4b-be14-5cc84818dce7",
+    "noc": "60010",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 62
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/bbcb0429-991f-4b2e-9b99-24fcbdc0e346",
+    "noc": "21231",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 74
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/ecafb45d-3636-47f7-bdad-a0f16749e499",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/a072c259-001a-4353-90f1-d8725d505318",
+    "noc": "20012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 68
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/fcafd555-8c23-4104-a310-42ece3f7707d",
+    "noc": "21232",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 74
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/03abb42a-063d-4ddd-92d4-17856346e099",
+    "noc": "21232",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 74
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/0c9b468c-c9cc-4960-8d0d-958c02b9c515",
+    "noc": "21232",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 74
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/c2f1de9f-ce67-4b63-b1ff-adcad491b3a1",
+    "noc": "21231",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 74
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/31932d04-2c5a-424b-8768-a79caa7016f1",
+    "noc": "21231",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 74
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/96925a79-a926-4fe7-989f-afbb590ca0c3",
+    "noc": "20012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 62
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/81d1d631-772f-4098-9d00-b5e6c36c6cbd",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/b9fdce72-4c58-46bb-b7e2-b4bdc90390e5",
+    "noc": "21232",
+    "category": "TEER 1",
+    "accessibility": "co-op",
+    "score": 84
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/d393ab82-448a-4dc2-87d0-a00981a55785",
+    "noc": "21232",
+    "category": "TEER 1",
+    "accessibility": "co-op",
+    "score": 78
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/f125c8e7-052d-430d-b857-ceba1037f809",
+    "noc": "21232",
+    "category": "TEER 1",
+    "accessibility": "co-op",
+    "score": 78
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/bca282a5-0179-4229-b4a5-bcddc027232a",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/42b5bd76-cf92-4289-b4a7-0e6aec5c84d4",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/c0df8fcb-5467-412f-b867-e7878fe4b429",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/0c7c5eb2-f0fc-4327-a038-f56de3fcc218",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.lever.co/magnetforensics/88365952-25db-48a5-95c0-cdb9e3efe55e",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://apply.workable.com/j/8F4258588A",
+    "noc": "21232",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 75
+  },
+  {
+    "externalId": "https://apply.workable.com/j/1002DD6497",
+    "noc": "60010",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 62
+  },
+  {
+    "externalId": "https://apply.workable.com/j/AA2D25B12E",
+    "noc": "21222",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 75
+  },
+  {
+    "externalId": "https://apply.workable.com/j/BC036228F9",
+    "noc": "21232",
+    "category": "TEER 1",
+    "accessibility": "intermediate",
+    "score": 76
+  },
+  {
+    "externalId": "https://apply.workable.com/j/FE967BEAB0",
+    "noc": "22221",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://apply.workable.com/j/B1213D61EA",
+    "noc": "22221",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://apply.workable.com/j/E57C4972C7",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://apply.workable.com/j/736C9DF0A5",
+    "noc": "60010",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 62
+  },
+  {
+    "externalId": "https://apply.workable.com/j/ABE627B780",
+    "noc": "21222",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 75
+  },
+  {
+    "externalId": "https://apply.workable.com/j/266CD7A656",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://apply.workable.com/j/266CD7A656",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://pleora.bamboohr.com/careers/108",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://pleora.bamboohr.com/careers/111",
+    "noc": "21232",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 81
+  },
+  {
+    "externalId": "https://ranovus.bamboohr.com/careers/45",
+    "noc": "52120",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://ranovus.bamboohr.com/careers/47",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 68
+  },
+  {
+    "externalId": "https://ranovus.bamboohr.com/careers/48",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://ranovus.bamboohr.com/careers/55",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 30
+  },
+  {
+    "externalId": "https://ranovus.bamboohr.com/careers/56",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://ranovus.bamboohr.com/careers/59",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://ranovus.bamboohr.com/careers/61",
+    "noc": "52120",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://ranovus.bamboohr.com/careers/62",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://ranovus.bamboohr.com/careers/66",
+    "noc": "21231",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 80
+  },
+  {
+    "externalId": "https://ranovus.bamboohr.com/careers/69",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 32
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000133185589",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000133085524",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000133082796",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000133035385",
+    "noc": "11202",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 64
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000133034489",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000133017545",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000133010569",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000133005735",
+    "noc": "20012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 62
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132992945",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 30
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132993029",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 30
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132989969",
+    "noc": "11100",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 64
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132986359",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132938823",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132936479",
+    "noc": "52120",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132934411",
+    "noc": "22222",
+    "category": "TEER 2",
+    "accessibility": "senior",
+    "score": 70
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132934399",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132933984",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132922129",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132917709",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132915440",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132879354",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132877799",
+    "noc": "60010",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 62
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132874194",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132869701",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 62
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132864946",
+    "noc": "11202",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 64
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132867667",
+    "noc": "11202",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 64
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132856239",
+    "noc": "11202",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 64
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132846395",
+    "noc": "21231",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 74
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132847024",
+    "noc": "21231",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 74
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132847439",
+    "noc": "21231",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 74
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132847399",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132846390",
+    "noc": "21231",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 74
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132846674",
+    "noc": "21231",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 74
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132846529",
+    "noc": "60010",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 62
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132845530",
+    "noc": "60010",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 62
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132840969",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132830637",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132830146",
+    "noc": "21211",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 74
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132829950",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132827885",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132829470",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132829479",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132826442",
+    "noc": "22221",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132825370",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132779379",
+    "noc": "64409",
+    "category": "TEER 4",
+    "accessibility": "unknown",
+    "score": 37
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132775439",
+    "noc": "21222",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 74
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132772669",
+    "noc": "21232",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 74
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132765209",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132740728",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132711574",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132707449",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132704169",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132676207",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132677909",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132674929",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132665734",
+    "noc": "21311",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 75
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132653599",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132653169",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132629683",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132598812",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132571974",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132562049",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132556265",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132549769",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132547799",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132518119",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 62
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132495877",
+    "noc": "22222",
+    "category": "TEER 2",
+    "accessibility": "senior",
+    "score": 70
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132492969",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132487359",
+    "noc": "22222",
+    "category": "TEER 2",
+    "accessibility": "senior",
+    "score": 70
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132484889",
+    "noc": "22222",
+    "category": "TEER 2",
+    "accessibility": "senior",
+    "score": 70
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132482541",
+    "noc": "21311",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 75
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132443006",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "co-op",
+    "score": 30
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132442681",
+    "noc": "22222",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132435369",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132434919",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132408249",
+    "noc": "22222",
+    "category": "TEER 2",
+    "accessibility": "senior",
+    "score": 70
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132405949",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132386899",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132386500",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132385295",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132386274",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132386319",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132386119",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132385719",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132367189",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132362249",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132349209",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132341630",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132343329",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132342335",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132340604",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132338975",
+    "noc": "21311",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 74
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132339829",
+    "noc": "21311",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 74
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132335089",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 27
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132330051",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132328919",
+    "noc": "21311",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 74
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132323159",
+    "noc": "21211",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 75
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132300979",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "senior",
+    "score": 26
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132294339",
+    "noc": "60010",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 62
+  },
+  {
+    "externalId": "https://jobs.smartrecruiters.com/RenesasElectronics/744000132294229",
+    "noc": "60010",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 62
+  },
+  {
+    "externalId": "https://solace.bamboohr.com/careers/729",
+    "noc": "21232",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 80
+  },
+  {
+    "externalId": "https://solace.bamboohr.com/careers/731",
+    "noc": "21232",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 80
+  },
+  {
+    "externalId": "https://solace.bamboohr.com/careers/732",
+    "noc": "21232",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 81
+  },
+  {
+    "externalId": "https://solace.bamboohr.com/careers/736",
+    "noc": "21232",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 80
+  },
+  {
+    "externalId": "https://solace.bamboohr.com/careers/741",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 62
+  },
+  {
+    "externalId": "https://solace.bamboohr.com/careers/745",
+    "noc": "21222",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 75
+  },
+  {
+    "externalId": "https://solace.bamboohr.com/careers/746",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 62
+  },
+  {
+    "externalId": "https://solace.bamboohr.com/careers/747",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 62
+  },
+  {
+    "externalId": "https://solace.bamboohr.com/careers/749",
+    "noc": "21232",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 74
+  },
+  {
+    "externalId": "https://solace.bamboohr.com/careers/751",
+    "noc": "12200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://solace.bamboohr.com/careers/752",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 62
+  },
+  {
+    "externalId": "https://solace.bamboohr.com/careers/753",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 68
+  },
+  {
+    "externalId": "https://solace.bamboohr.com/careers/754",
+    "noc": "21232",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 81
+  },
+  {
+    "externalId": "https://solace.bamboohr.com/careers/755",
+    "noc": "11202",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 64
+  },
+  {
+    "externalId": "https://solace.bamboohr.com/careers/756",
+    "noc": "21232",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 81
+  },
+  {
+    "externalId": "https://solace.bamboohr.com/careers/757",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://solace.bamboohr.com/careers/758",
+    "noc": "11100",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://solace.bamboohr.com/careers/759",
+    "noc": "",
+    "category": "未分类",
+    "accessibility": "unknown",
+    "score": 33
+  },
+  {
+    "externalId": "https://solace.bamboohr.com/careers/760",
+    "noc": "21222",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 75
+  },
+  {
+    "externalId": "https://solace.bamboohr.com/careers/761",
+    "noc": "21232",
+    "category": "TEER 1",
+    "accessibility": "senior",
+    "score": 80
+  },
+  {
+    "externalId": "https://teldio.bamboohr.com/careers/54",
+    "noc": "22221",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://truecontext.bamboohr.com/careers/44",
+    "noc": "21222",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 75
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49747094",
+    "noc": "31301",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 81
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49718601?source=searchresults",
+    "noc": "31301",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 81
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49741613?source=searchresults",
+    "noc": "31301",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 81
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49719232?source=searchresults",
+    "noc": "31301",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 81
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49466374?source=searchresults",
+    "noc": "31301",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 81
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49724477?source=searchresults",
+    "noc": "44101",
+    "category": "TEER 4",
+    "accessibility": "unknown",
+    "score": 55
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49723250?source=searchresults",
+    "noc": "44101",
+    "category": "TEER 4",
+    "accessibility": "unknown",
+    "score": 55
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49723246?source=searchresults",
+    "noc": "44101",
+    "category": "TEER 4",
+    "accessibility": "unknown",
+    "score": 55
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49685111?source=searchresults",
+    "noc": "44101",
+    "category": "TEER 4",
+    "accessibility": "unknown",
+    "score": 55
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49637880?source=searchresults",
+    "noc": "44101",
+    "category": "TEER 4",
+    "accessibility": "unknown",
+    "score": 55
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49012724?source=searchresults",
+    "noc": "44101",
+    "category": "TEER 4",
+    "accessibility": "unknown",
+    "score": 55
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49735157?source=searchresults",
+    "noc": "31120",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 81
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49753782?source=searchresults",
+    "noc": "31202",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 81
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49690602?source=searchresults",
+    "noc": "31202",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 81
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49690059?source=searchresults",
+    "noc": "31202",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 81
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49667476?source=searchresults",
+    "noc": "31202",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 81
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49664544?source=searchresults",
+    "noc": "31202",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 81
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49573307?source=searchresults",
+    "noc": "31202",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 81
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49706596?source=searchresults",
+    "noc": "31202",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 81
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49378173?source=searchresults",
+    "noc": "31202",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 81
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49643975?source=searchresults",
+    "noc": "72200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49595295?source=searchresults",
+    "noc": "72200",
+    "category": "TEER 2",
+    "accessibility": "senior",
+    "score": 76
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49738475?source=searchresults",
+    "noc": "72300",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49745018?source=searchresults",
+    "noc": "72300",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49679655?source=searchresults",
+    "noc": "72300",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49637613?source=searchresults",
+    "noc": "72300",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49644229?source=searchresults",
+    "noc": "72106",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49644153?source=searchresults",
+    "noc": "72106",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49642589?source=searchresults",
+    "noc": "72106",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49638839?source=searchresults",
+    "noc": "72106",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49730710?source=searchresults",
+    "noc": "72310",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49658487?source=searchresults",
+    "noc": "72310",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49557891?source=searchresults",
+    "noc": "72310",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49462233?source=searchresults",
+    "noc": "72310",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49342748?source=searchresults",
+    "noc": "72310",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49088870?source=searchresults",
+    "noc": "72310",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49745639?source=searchresults",
+    "noc": "72410",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49738582?source=searchresults",
+    "noc": "72410",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49737564?source=searchresults",
+    "noc": "72410",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49697877?source=searchresults",
+    "noc": "72410",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49697812?source=searchresults",
+    "noc": "72410",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49681765?source=searchresults",
+    "noc": "72410",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49598763?source=searchresults",
+    "noc": "72410",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49742130?source=searchresults",
+    "noc": "72410",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49352833?source=searchresults",
+    "noc": "72410",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49223263?source=searchresults",
+    "noc": "72410",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49747162?source=searchresults",
+    "noc": "73300",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49702743?source=searchresults",
+    "noc": "73300",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49709922?source=searchresults",
+    "noc": "73300",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49702750?source=searchresults",
+    "noc": "73300",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49653737?source=searchresults",
+    "noc": "73300",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49625665?source=searchresults",
+    "noc": "73300",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49612904?source=searchresults",
+    "noc": "73300",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49591287?source=searchresults",
+    "noc": "73300",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49448355?source=searchresults",
+    "noc": "73300",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49730232?source=searchresults",
+    "noc": "63200",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49730004?source=searchresults",
+    "noc": "63200",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49724986?source=searchresults",
+    "noc": "63200",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49723101?source=searchresults",
+    "noc": "63200",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49721681?source=searchresults",
+    "noc": "63200",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49717252?source=searchresults",
+    "noc": "63200",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49715212?source=searchresults",
+    "noc": "63200",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49697103?source=searchresults",
+    "noc": "63200",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49690769?source=searchresults",
+    "noc": "63200",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49688037?source=searchresults",
+    "noc": "63200",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49684169?source=searchresults",
+    "noc": "63200",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49683216?source=searchresults",
+    "noc": "63200",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49681142?source=searchresults",
+    "noc": "63200",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49677044?source=searchresults",
+    "noc": "63200",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49726858?source=searchresults",
+    "noc": "63200",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49668847?source=searchresults",
+    "noc": "63200",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49653937?source=searchresults",
+    "noc": "63200",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49650509?source=searchresults",
+    "noc": "63200",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49636990?source=searchresults",
+    "noc": "63200",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49635969?source=searchresults",
+    "noc": "63200",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49628885?source=searchresults",
+    "noc": "63200",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49628245?source=searchresults",
+    "noc": "63200",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49605727?source=searchresults",
+    "noc": "63200",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49758660?source=searchresults",
+    "noc": "62200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49758662?source=searchresults",
+    "noc": "62200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49758093?source=searchresults",
+    "noc": "62200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49751323?source=searchresults",
+    "noc": "62200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49737508?source=searchresults",
+    "noc": "62200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49737045?source=searchresults",
+    "noc": "62200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49731016?source=searchresults",
+    "noc": "62200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49728697?source=searchresults",
+    "noc": "62200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49723613?source=searchresults",
+    "noc": "62200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49715445?source=searchresults",
+    "noc": "65200",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 35
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49717401?source=searchresults",
+    "noc": "62200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49706923?source=searchresults",
+    "noc": "62200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49704106?source=searchresults",
+    "noc": "62200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49683115?source=searchresults",
+    "noc": "62200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49676556?source=searchresults",
+    "noc": "62200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49656894?source=searchresults",
+    "noc": "62200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49647262?source=searchresults",
+    "noc": "62200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49726763?source=searchresults",
+    "noc": "62200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49637090?source=searchresults",
+    "noc": "62200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49635143?source=searchresults",
+    "noc": "62200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49613161?source=searchresults",
+    "noc": "62200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49741165?source=searchresults",
+    "noc": "62200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49581247?source=searchresults",
+    "noc": "62200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49669915?source=searchresults",
+    "noc": "62200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49574812?source=searchresults",
+    "noc": "65200",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 35
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49741534?source=searchresults",
+    "noc": "62200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49741758?source=searchresults",
+    "noc": "62200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49562588?source=searchresults",
+    "noc": "62200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49737431?source=searchresults",
+    "noc": "11100",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49666989?source=searchresults",
+    "noc": "11100",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49751010?source=searchresults",
+    "noc": "12200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49632001?source=searchresults",
+    "noc": "12200",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 67
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49750738?source=searchresults",
+    "noc": "13110",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49745690?source=searchresults",
+    "noc": "13110",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49745260?source=searchresults",
+    "noc": "13110",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49731388?source=searchresults",
+    "noc": "13110",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49728901?source=searchresults",
+    "noc": "13110",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49741732?source=searchresults",
+    "noc": "13110",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49459153?source=searchresults",
+    "noc": "13110",
+    "category": "TEER 3",
+    "accessibility": "unknown",
+    "score": 61
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49730664?source=searchresults",
+    "noc": "14101",
+    "category": "TEER 4",
+    "accessibility": "unknown",
+    "score": 43
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49753063?source=searchresults",
+    "noc": "14101",
+    "category": "TEER 4",
+    "accessibility": "unknown",
+    "score": 43
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49703616?source=searchresults",
+    "noc": "14101",
+    "category": "TEER 4",
+    "accessibility": "unknown",
+    "score": 43
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49688033?source=searchresults",
+    "noc": "14101",
+    "category": "TEER 4",
+    "accessibility": "unknown",
+    "score": 43
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49686072?source=searchresults",
+    "noc": "14101",
+    "category": "TEER 4",
+    "accessibility": "unknown",
+    "score": 43
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49684148?source=searchresults",
+    "noc": "14101",
+    "category": "TEER 4",
+    "accessibility": "unknown",
+    "score": 43
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49730676?source=searchresults",
+    "noc": "14101",
+    "category": "TEER 4",
+    "accessibility": "unknown",
+    "score": 43
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49758151?source=searchresults",
+    "noc": "64100",
+    "category": "TEER 4",
+    "accessibility": "junior",
+    "score": 46
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49752906?source=searchresults",
+    "noc": "64100",
+    "category": "TEER 4",
+    "accessibility": "senior",
+    "score": 42
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49736850?source=searchresults",
+    "noc": "60010",
+    "category": "TEER 0",
+    "accessibility": "unknown",
+    "score": 69
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49731473?source=searchresults",
+    "noc": "60010",
+    "category": "TEER 0",
+    "accessibility": "unknown",
+    "score": 69
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49738744?source=searchresults",
+    "noc": "64100",
+    "category": "TEER 4",
+    "accessibility": "unknown",
+    "score": 43
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49715924?source=searchresults",
+    "noc": "64100",
+    "category": "TEER 4",
+    "accessibility": "unknown",
+    "score": 43
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49725497?source=searchresults",
+    "noc": "64100",
+    "category": "TEER 4",
+    "accessibility": "unknown",
+    "score": 43
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49719142?source=searchresults",
+    "noc": "64100",
+    "category": "TEER 4",
+    "accessibility": "senior",
+    "score": 42
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49719317?source=searchresults",
+    "noc": "64100",
+    "category": "TEER 4",
+    "accessibility": "senior",
+    "score": 42
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49704082?source=searchresults",
+    "noc": "64100",
+    "category": "TEER 4",
+    "accessibility": "junior",
+    "score": 46
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49703427?source=searchresults",
+    "noc": "64100",
+    "category": "TEER 4",
+    "accessibility": "senior",
+    "score": 42
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49719295?source=searchresults",
+    "noc": "64100",
+    "category": "TEER 4",
+    "accessibility": "senior",
+    "score": 42
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49688553?source=searchresults",
+    "noc": "60010",
+    "category": "TEER 0",
+    "accessibility": "unknown",
+    "score": 69
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49741726?source=searchresults",
+    "noc": "64100",
+    "category": "TEER 4",
+    "accessibility": "junior",
+    "score": 46
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49651153?source=searchresults",
+    "noc": "60010",
+    "category": "TEER 0",
+    "accessibility": "unknown",
+    "score": 69
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49741771?source=searchresults",
+    "noc": "64100",
+    "category": "TEER 4",
+    "accessibility": "senior",
+    "score": 42
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49643235?source=searchresults",
+    "noc": "64100",
+    "category": "TEER 4",
+    "accessibility": "junior",
+    "score": 46
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49643260?source=searchresults",
+    "noc": "64100",
+    "category": "TEER 4",
+    "accessibility": "senior",
+    "score": 42
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49642440?source=searchresults",
+    "noc": "64100",
+    "category": "TEER 4",
+    "accessibility": "unknown",
+    "score": 43
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49649076?source=searchresults",
+    "noc": "64100",
+    "category": "TEER 4",
+    "accessibility": "unknown",
+    "score": 43
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49630667?source=searchresults",
+    "noc": "64100",
+    "category": "TEER 4",
+    "accessibility": "senior",
+    "score": 42
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49628568?source=searchresults",
+    "noc": "64100",
+    "category": "TEER 4",
+    "accessibility": "junior",
+    "score": 46
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49625171?source=searchresults",
+    "noc": "64100",
+    "category": "TEER 4",
+    "accessibility": "junior",
+    "score": 46
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49722979?source=searchresults",
+    "noc": "64100",
+    "category": "TEER 4",
+    "accessibility": "unknown",
+    "score": 43
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49720111?source=searchresults",
+    "noc": "64100",
+    "category": "TEER 4",
+    "accessibility": "unknown",
+    "score": 43
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49720157?source=searchresults",
+    "noc": "64100",
+    "category": "TEER 4",
+    "accessibility": "unknown",
+    "score": 43
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49719942?source=searchresults",
+    "noc": "64100",
+    "category": "TEER 4",
+    "accessibility": "unknown",
+    "score": 43
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49755858?source=searchresults",
+    "noc": "64409",
+    "category": "TEER 4",
+    "accessibility": "unknown",
+    "score": 43
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49752911?source=searchresults",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 68
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49739007?source=searchresults",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 68
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49735068?source=searchresults",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 68
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49704908?source=searchresults",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 68
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49703942?source=searchresults",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 68
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49703483?source=searchresults",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 68
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49671658?source=searchresults",
+    "noc": "64409",
+    "category": "TEER 4",
+    "accessibility": "unknown",
+    "score": 43
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49665401?source=searchresults",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 68
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49673798?source=searchresults",
+    "noc": "64409",
+    "category": "TEER 4",
+    "accessibility": "unknown",
+    "score": 43
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49653664?source=searchresults",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 68
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49642966?source=searchresults",
+    "noc": "64409",
+    "category": "TEER 4",
+    "accessibility": "senior",
+    "score": 42
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49726848?source=searchresults",
+    "noc": "11202",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49619956?source=searchresults",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 68
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49603983?source=searchresults",
+    "noc": "64409",
+    "category": "TEER 4",
+    "accessibility": "senior",
+    "score": 42
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49582303?source=searchresults",
+    "noc": "64100",
+    "category": "TEER 4",
+    "accessibility": "senior",
+    "score": 42
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49719208?source=searchresults",
+    "noc": "11202",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49494120?source=searchresults",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 68
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49295710?source=searchresults",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 68
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49226990?source=searchresults",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 68
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49145314?source=searchresults",
+    "noc": "00012",
+    "category": "TEER 0",
+    "accessibility": "senior",
+    "score": 68
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49755211?source=searchresults",
+    "noc": "75110",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 47
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49737064?source=searchresults",
+    "noc": "75110",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 47
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49702742?source=searchresults",
+    "noc": "75110",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 47
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49702740?source=searchresults",
+    "noc": "75110",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 47
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49700754?source=searchresults",
+    "noc": "75110",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 47
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49698753?source=searchresults",
+    "noc": "75110",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 47
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49676550?source=searchresults",
+    "noc": "75110",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 47
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49674710?source=searchresults",
+    "noc": "75110",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 47
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49658682?source=searchresults",
+    "noc": "75110",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 47
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49632002?source=searchresults",
+    "noc": "75110",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 47
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49582826?source=searchresults",
+    "noc": "75110",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 47
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49568303?source=searchresults",
+    "noc": "75110",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 47
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49341918?source=searchresults",
+    "noc": "75110",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 47
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49757666?source=searchresults",
+    "noc": "65310",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 35
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49746370?source=searchresults",
+    "noc": "65310",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 35
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49731787?source=searchresults",
+    "noc": "65310",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 35
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49728858?source=searchresults",
+    "noc": "65310",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 35
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49727240?source=searchresults",
+    "noc": "75110",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 47
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49699225?source=searchresults",
+    "noc": "65310",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 35
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49692073?source=searchresults",
+    "noc": "65310",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 35
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49683194?source=searchresults",
+    "noc": "65310",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 35
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49646471?source=searchresults",
+    "noc": "65310",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 35
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49641193?source=searchresults",
+    "noc": "65310",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 35
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49619473?source=searchresults",
+    "noc": "65310",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 35
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49603598?source=searchresults",
+    "noc": "65310",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 35
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49599266?source=searchresults",
+    "noc": "65310",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 35
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49580086?source=searchresults",
+    "noc": "65310",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 35
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49572308?source=searchresults",
+    "noc": "65310",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 35
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49618313?source=searchresults",
+    "noc": "64410",
+    "category": "TEER 4",
+    "accessibility": "unknown",
+    "score": 43
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49754596?source=searchresults",
+    "noc": "42202",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49749376?source=searchresults",
+    "noc": "42202",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49744356?source=searchresults",
+    "noc": "42202",
+    "category": "TEER 2",
+    "accessibility": "senior",
+    "score": 76
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49744433?source=searchresults",
+    "noc": "42202",
+    "category": "TEER 2",
+    "accessibility": "senior",
+    "score": 76
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49744497?source=searchresults",
+    "noc": "42202",
+    "category": "TEER 2",
+    "accessibility": "senior",
+    "score": 76
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49739332?source=searchresults",
+    "noc": "42202",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49739453?source=searchresults",
+    "noc": "42202",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49738537?source=searchresults",
+    "noc": "42202",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49738585?source=searchresults",
+    "noc": "42202",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49738748?source=searchresults",
+    "noc": "42202",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49738779?source=searchresults",
+    "noc": "42202",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49738793?source=searchresults",
+    "noc": "42202",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49738804?source=searchresults",
+    "noc": "42202",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49735129?source=searchresults",
+    "noc": "42202",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49731185?source=searchresults",
+    "noc": "42202",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49699723?source=searchresults",
+    "noc": "42202",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49690734?source=searchresults",
+    "noc": "42202",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49674746?source=searchresults",
+    "noc": "42202",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49673714?source=searchresults",
+    "noc": "42202",
+    "category": "TEER 2",
+    "accessibility": "senior",
+    "score": 76
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49661384?source=searchresults",
+    "noc": "42202",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49654637?source=searchresults",
+    "noc": "42202",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49653954?source=searchresults",
+    "noc": "42202",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49621169?source=searchresults",
+    "noc": "42202",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49609613?source=searchresults",
+    "noc": "42202",
+    "category": "TEER 2",
+    "accessibility": "senior",
+    "score": 76
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49598285?source=searchresults",
+    "noc": "42202",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49598277?source=searchresults",
+    "noc": "42202",
+    "category": "TEER 2",
+    "accessibility": "unknown",
+    "score": 77
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49758113?source=searchresults",
+    "noc": "41300",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49748228?source=searchresults",
+    "noc": "41300",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49730440?source=searchresults",
+    "noc": "41300",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49751038?source=searchresults",
+    "noc": "41300",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49680342?source=searchresults",
+    "noc": "41300",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49660880?source=searchresults",
+    "noc": "41300",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49654694?source=searchresults",
+    "noc": "41300",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49751729?source=searchresults",
+    "noc": "41220",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49751767?source=searchresults",
+    "noc": "41220",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49751694?source=searchresults",
+    "noc": "41220",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49751698?source=searchresults",
+    "noc": "41220",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49751702?source=searchresults",
+    "noc": "41220",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49751711?source=searchresults",
+    "noc": "41220",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49751751?source=searchresults",
+    "noc": "41220",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49751756?source=searchresults",
+    "noc": "41220",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49751762?source=searchresults",
+    "noc": "41220",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49751786?source=searchresults",
+    "noc": "41220",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49747899?source=searchresults",
+    "noc": "41220",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49744363?source=searchresults",
+    "noc": "41220",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49744483?source=searchresults",
+    "noc": "41220",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49744390?source=searchresults",
+    "noc": "41220",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49744500?source=searchresults",
+    "noc": "41220",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49744535?source=searchresults",
+    "noc": "41220",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49744540?source=searchresults",
+    "noc": "41220",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49738763?source=searchresults",
+    "noc": "41220",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49738817?source=searchresults",
+    "noc": "41220",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49735925?source=searchresults",
+    "noc": "41220",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49731141?source=searchresults",
+    "noc": "41220",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49731195?source=searchresults",
+    "noc": "41220",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49729366?source=searchresults",
+    "noc": "41220",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49724982?source=searchresults",
+    "noc": "41220",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49724991?source=searchresults",
+    "noc": "41220",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49716107?source=searchresults",
+    "noc": "41220",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49698724?source=searchresults",
+    "noc": "41220",
+    "category": "TEER 1",
+    "accessibility": "unknown",
+    "score": 71
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49760149?source=searchresults",
+    "noc": "75101",
+    "category": "TEER 5",
+    "accessibility": "junior",
+    "score": 38
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49738628?source=searchresults",
+    "noc": "75101",
+    "category": "TEER 5",
+    "accessibility": "unknown",
+    "score": 35
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49684005?source=searchresults",
+    "noc": "75101",
+    "category": "TEER 5",
+    "accessibility": "junior",
+    "score": 38
+  },
+  {
+    "externalId": "https://www.jobbank.gc.ca/jobsearch/jobposting/49626164?source=searchresults",
+    "noc": "75101",
+    "category": "TEER 5",
+    "accessibility": "junior",
+    "score": 38
+  }
+]

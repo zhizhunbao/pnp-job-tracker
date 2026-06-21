@@ -207,6 +207,10 @@ export interface Job {
    * NOC 2021 5位码
    */
   noc?: string | null;
+  /**
+   * 职业大类(科技/医疗/技工…)
+   */
+  category?: string | null;
   province?: string | null;
   city?: string | null;
   region?: string | null;
@@ -465,6 +469,7 @@ export interface JobsSelect<T extends boolean = true> {
   title?: T;
   company?: T;
   noc?: T;
+  category?: T;
   province?: T;
   city?: T;
   region?: T;

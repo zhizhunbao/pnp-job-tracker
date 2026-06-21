@@ -12,6 +12,7 @@ export const Jobs: CollectionConfig = {
     { name: 'title', type: 'text', required: true },
     { name: 'company', type: 'relationship', relationTo: 'companies' },
     { name: 'noc', type: 'text', index: true, admin: { description: 'NOC 2021 5位码' } },
+    { name: 'category', type: 'text', index: true, admin: { description: '职业大类(科技/医疗/技工…)' } },
     { name: 'province', type: 'text', index: true },
     { name: 'city', type: 'text' },
     { name: 'region', type: 'text', index: true },

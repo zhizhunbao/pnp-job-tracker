@@ -1,8 +1,8 @@
 /**
- * One-time seed/refresh: GET /seed   (add ?reset=1 to wipe & rebuild)
- * Runs inside the dev server (getPayload works here), reads scraped Ottawa ATS jobs
- * from ../data, applies scores (08_score.py output), de-dups, stamps lastSeen.
- * Temporary — superseded later by the ETL REST loader (etl/09_load.py).
+ * Seed/refresh: GET /seed   (add ?reset=1 to wipe & rebuild)
+ * Loads ATS company-folder jobs + Job Bank (all-occupation) jobs into Payload,
+ * applying per-category scores (08_score.py → all-scored.json). Skips agencies,
+ * de-dups, stamps lastSeen. Temporary — to be replaced by etl/09_load.py.
  */
 import fs from 'fs'
 import path from 'path'
@@ -14,89 +14,111 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 const REGION = 'ottawa-kanata-north'
-const SKIP_SLUGS = new Set(['cmc-microsystems']) // token 抓错(huaweicanada/Markham),整源跳过
+const SKIP_SLUGS = new Set(['cmc-microsystems'])
+const AGENCY = /recruit|staffing|talent|personnel|placement|outsourc|mercor|adecco|randstad|source code/i
 const guessProv = (loc: string) => (/\b(on|ontario)\b/i.test(loc) ? 'ON' : '')
-const normTitle = (t: string) => t.toLowerCase().replace(/[^a-z0-9]/g, '')
+const norm = (t: string) => t.toLowerCase().replace(/[^a-z0-9]/g, '')
+const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'company'
+const isoDate = (s?: string) => {
+  if (!s) return undefined
+  const d = new Date(s)
+  return isNaN(d.getTime()) ? undefined : d.toISOString()
+}
 
 export async function GET(req: Request) {
   const payload = await getPayload({ config: await config })
-  const reset = new URL(req.url).searchParams.get('reset')
-  if (reset) {
+  if (new URL(req.url).searchParams.get('reset')) {
     await payload.delete({ collection: 'jobs', where: { externalId: { exists: true } } })
     await payload.delete({ collection: 'companies', where: { slug: { exists: true } } })
   }
 
-  const REGION_DIR = path.resolve(process.cwd(), '..', 'data', 'companies', REGION)
-  if (!fs.existsSync(REGION_DIR)) {
-    return Response.json({ error: 'no data dir', REGION_DIR }, { status: 500 })
-  }
-
-  const scoredPath = path.resolve(process.cwd(), '..', 'data', 'output', `${REGION}-scored.json`)
-  const scored: Record<string, { noc?: string; score?: number; accessibility?: string }> = {}
-  if (fs.existsSync(scoredPath)) {
-    for (const s of JSON.parse(fs.readFileSync(scoredPath, 'utf8'))) scored[s.externalId] = s
-  }
+  const dataRoot = path.resolve(process.cwd(), '..', 'data')
+  const scored: Record<string, any> = {}
+  const sp = path.join(dataRoot, 'output', 'all-scored.json')
+  if (fs.existsSync(sp)) for (const s of JSON.parse(fs.readFileSync(sp, 'utf8'))) scored[s.externalId] = s
 
   const now = new Date().toISOString()
-  const seenTitles = new Set<string>() // company-slug|normTitle → 近似去重
+  const seen = new Set<string>()
+  const companyCache: Record<string, string | number> = {}
   let companies = 0
   let jobs = 0
-  let updated = 0
   let skipped = 0
 
-  for (const slug of fs.readdirSync(REGION_DIR).filter((f) => fs.statSync(path.join(REGION_DIR, f)).isDirectory())) {
-    if (SKIP_SLUGS.has(slug)) continue
-    const dir = path.join(REGION_DIR, slug)
-    const jobsPath = path.join(dir, 'jobs.json')
-    const profilePath = path.join(dir, 'profile.json')
-    if (!fs.existsSync(jobsPath) || !fs.existsSync(profilePath)) continue
-
-    const profile = JSON.parse(fs.readFileSync(profilePath, 'utf8'))
-    const jobsData = JSON.parse(fs.readFileSync(jobsPath, 'utf8'))
-    if (!jobsData.jobs?.length) continue
-
-    const existing = await payload.find({ collection: 'companies', where: { slug: { equals: slug } }, limit: 1 })
-    let companyId = existing.docs[0]?.id
-    if (!companyId) {
-      const c = await payload.create({
-        collection: 'companies',
-        data: {
-          name: profile.name, slug,
-          website: profile.website || undefined,
-          email: profile.email || undefined,
-          region: profile.region || REGION,
-          sectors: profile.sectors || undefined,
-        },
-      })
-      companyId = c.id
+  const ensureCompany = async (name: string, slug: string, extra: Record<string, unknown> = {}) => {
+    if (companyCache[slug]) return companyCache[slug]
+    const ex = await payload.find({ collection: 'companies', where: { slug: { equals: slug } }, limit: 1 })
+    let id = ex.docs[0]?.id
+    if (!id) {
+      const c = await payload.create({ collection: 'companies', data: { name, slug, ...extra } })
+      id = c.id
       companies++
     }
+    companyCache[slug] = id
+    return id
+  }
 
-    const source = jobsData.ats || 'ats'
-    for (const j of jobsData.jobs) {
-      const dupKey = `${slug}|${normTitle(j.title || '')}`
-      if (seenTitles.has(dupKey)) { skipped++; continue }
-      seenTitles.add(dupKey)
+  const addJob = async (data: Record<string, unknown> & { externalId: string }) => {
+    const sc = scored[data.externalId] || {}
+    const full = {
+      ...data, lastSeen: now, status: 'open',
+      noc: sc.noc || undefined, category: sc.category || undefined,
+      score: sc.score, accessibility: sc.accessibility || undefined,
+    }
+    const dup = await payload.find({ collection: 'jobs', where: { externalId: { equals: data.externalId } }, limit: 1 })
+    if (dup.docs.length) {
+      await payload.update({ collection: 'jobs', id: dup.docs[0].id, data: full })
+    } else {
+      await payload.create({ collection: 'jobs', data: { ...full, firstSeen: now } })
+      jobs++
+    }
+  }
 
-      const externalId = j.url || dupKey
-      const sc = scored[externalId] || {}
-      const data: any = {
-        title: j.title, company: companyId, source,
-        city: j.location || '', province: guessProv(j.location || ''),
-        region: REGION, applyUrl: j.url || '', officialUrl: profile.website || '',
-        externalId, status: 'open', lastSeen: now,
-        noc: sc.noc || undefined, score: sc.score, accessibility: (sc.accessibility as any) || undefined,
-      }
-      const dup = await payload.find({ collection: 'jobs', where: { externalId: { equals: externalId } }, limit: 1 })
-      if (dup.docs.length) {
-        await payload.update({ collection: 'jobs', id: dup.docs[0].id, data })
-        updated++
-      } else {
-        data.firstSeen = now
-        await payload.create({ collection: 'jobs', data })
-        jobs++
+  // 1) ATS 公司目录(科技,第一方)
+  const regionDir = path.join(dataRoot, 'companies', REGION)
+  if (fs.existsSync(regionDir)) {
+    for (const slug of fs.readdirSync(regionDir).filter((f) => fs.statSync(path.join(regionDir, f)).isDirectory())) {
+      if (SKIP_SLUGS.has(slug)) continue
+      const dir = path.join(regionDir, slug)
+      if (!fs.existsSync(path.join(dir, 'jobs.json')) || !fs.existsSync(path.join(dir, 'profile.json'))) continue
+      const prof = JSON.parse(fs.readFileSync(path.join(dir, 'profile.json'), 'utf8'))
+      const jd = JSON.parse(fs.readFileSync(path.join(dir, 'jobs.json'), 'utf8'))
+      if (!jd.jobs?.length) continue
+      const cid = await ensureCompany(prof.name, slug, {
+        website: prof.website || undefined, email: prof.email || undefined,
+        region: prof.region || REGION, sectors: prof.sectors || undefined,
+        address: prof.address || undefined, // 公司精确地址(目录已抓)
+      })
+      for (const j of jd.jobs) {
+        const key = `${slug}|${norm(j.title || '')}`
+        if (seen.has(key)) { skipped++; continue }
+        seen.add(key)
+        await addJob({
+          title: j.title, company: cid, source: jd.ats || 'ats',
+          city: j.location || '', province: guessProv(j.location || ''), region: REGION,
+          applyUrl: j.url || '', officialUrl: prof.website || '', externalId: j.url || key,
+        })
       }
     }
   }
-  return Response.json({ ok: true, reset: !!reset, companies, created: jobs, updated, deduped: skipped, updatedAt: now })
+
+  // 2) Job Bank(全职业,含非IT)
+  const jbPath = path.join(dataRoot, 'raw', 'jobbank', 'jobbank-on.json')
+  if (fs.existsSync(jbPath)) {
+    for (const j of JSON.parse(fs.readFileSync(jbPath, 'utf8'))) {
+      if (AGENCY.test(j.employer || '')) { skipped++; continue } // 跳过中介/派遣
+      const cslug = slugify(j.employer || 'unknown')
+      const key = `${cslug}|${norm(j.title || '')}`
+      if (seen.has(key)) { skipped++; continue }
+      seen.add(key)
+      const cid = await ensureCompany(j.employer || '—', cslug, { region: 'Ottawa', source: 'jobbank' })
+      await addJob({
+        title: j.title, company: cid, source: j.source || 'Job Bank',
+        city: j.city || '', province: j.province || guessProv(j.city || ''), region: REGION,
+        applyUrl: j.url || '', externalId: j.url || key,
+        salary: j.salary || undefined, datePosted: isoDate(j.date),
+      })
+    }
+  }
+
+  return Response.json({ ok: true, companies, created: jobs, deduped: skipped, updatedAt: now })
 }
