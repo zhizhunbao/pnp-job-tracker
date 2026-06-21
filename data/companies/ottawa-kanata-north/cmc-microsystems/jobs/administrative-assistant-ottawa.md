@@ -1,0 +1,10 @@
+---
+title: Administrative Assistant
+company: cmc-microsystems
+location: Ottawa, Ontario, Canada
+posted: 2026-04-22
+ats: recruitee
+url: https://huaweicanada.recruitee.com/o/administrative-assistant-ottawa
+---
+
+Huawei Canada has an immediate 12-month contract&nbsp;opening for an Administrative Assistant.          About the Team:      From Procurement to Finance to IT services and much more, the Quality &amp; Operation Department provides critical support for all of Huawei Canada. This department prides itself on its ability to solve complex problems, often under tight deadlines, while provided world class service. The department’s name reflects its commitment to quality and operational excellence.        About the Job:    &nbsp;      Assist with facilities management; office space planning, manage seating maps, coordinate with landlord - booking loading dock/garbage recycle/air conditioning/leaking/kitchen sink clog/water filter replacement/light changing etc.      Coordinate during relocation projects, staff moves, meeting room management; coordinate office leasing, renovation, construction project with operation team in Canada      Handle all incoming shipping for the office and coordinate with other offices as required      Provide mailing service, including receiving and sending both domestic and international mail and shipment      Work with Business Units and the Asset Manager for distribution and return of IT assets (PC, monitors, etc.), including assets disposal and assets inventory checking and documentation      Maintain office operational services and handle general office supplies order and distribution      Manage internal and external visitor access control and registration      New hire set up, including ID card preparation and data entry to security system, parking passes, computer distribution, etc.        The    total target annual compensation    (based on 2,080 hours per year) ranges from $48,000 to $94,000 depending depending on education, experience, and demonstrated expertise.

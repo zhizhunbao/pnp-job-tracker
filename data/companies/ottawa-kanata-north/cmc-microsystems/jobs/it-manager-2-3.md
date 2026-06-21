@@ -1,0 +1,10 @@
+---
+title: IT Engineer
+company: cmc-microsystems
+location: Vancouver, British Columbia, Canada
+posted: 2026-06-03
+ats: recruitee
+url: https://huaweicanada.recruitee.com/o/it-manager-2-3
+---
+
+Huawei Canada has an immediate 12-month contract opening for an IT Engineer.          About the team:      From Procurement to Finance to IT services and much more, the Quality &amp; Operation Department provides critical support for all of Huawei Canada. This department prides itself on its ability to solve complex problems, often under tight deadlines, while provided world class service. The department’s name reflects its commitment to quality and operational excellence.        About the job:        Responsible for regional/office network implementation and maintenance, including WAN/LAN/Voice solution design, network equipment configurations and deployment, network system troubleshooting and health checking      Responsible for system implementation and maintenance, including windows server system, web application system, database and storage system      Responsible for IT infrastructure construction and maintenance, including IT server room, structure cabling system, video conference system, UPS etc.      Responsible for service provider quotation, biding, negotiation and supervising the engineering work provided by service provider      Network, server system and IT infrastructure&nbsp;maintenance and troubleshooting      Implement IT standard/policy in responsible offices. Analyze business requirement and initial the IT project to satisfy the requirement      Build IT infrastructure, including networks, servers, server room, cabling, door access control/CCTV etc. As well as, IT service incident management, availability management, capacity management, continuity management, data backup and recovery etc.      Help desk support for users, including desktop support, printer machine support, user training on IT platforms/OA/Application/Services, etc.        The    total target annual compensation    for this position ranges from $48,000 - $94,000 depending on education, experience, and demonstrated expertise.

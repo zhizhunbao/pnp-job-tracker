@@ -1,0 +1,10 @@
+---
+title: Principal Scientist - Software/Hardware Co-design
+company: cmc-microsystems
+location: Markham, Ontario, Canada
+posted: 2024-05-17
+ats: recruitee
+url: https://huaweicanada.recruitee.com/o/principal-scientist-of-software-hardware-codesign
+---
+
+Huawei Canada has an immediate permanent opening for a Principal Scientist.         About the team:    The Computing Data Application Acceleration Lab aims to create a leading global data analytics platform organized into three specialized teams using innovative programming technologies. This team focuses on full-stack innovations, including software-hardware co-design and optimizing data efficiency at both the storage and runtime layers. This team also develops next-generation GPU architecture for gaming, cloud rendering, VR/AR, and Metaverse applications.  One of the goals of this lab are to enhance algorithm performance and training efficiency across industries, fostering long-term competitiveness.           About the job:       Build an accurate and universal AI performance model based on mainstream AI acceleration technologies to support theoretical analysis.      Track the emerging hardware designs in the industry, conduct in-depth insight and survey analysis, and identify the direction of key cutting-edge technologies.      Cooperate with our AI research team to identify key performance bottlenecks in future AI workloads, and define key algo-hw codesign features of our next-generation chips, for the objectives of low cost, high throughput, great scalability, and stability.      Performance modelling of representative AI workloads with state of the art training &amp; inference algorithms on different hardware specs for quantitative analysis of compute, memory, IO and interconnect.      Lead our team for acceleration algorithm breakthrough in best tradeoff between model quality and compute efficiency.      Track the emerging algorithm-hardware codesign technologies in the industry, conduct in-depth insight and survey analysis, and deeply understand main directions and trends of cutting-edge algorithm-hardware codesign technologies.

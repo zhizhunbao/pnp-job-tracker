@@ -59,6 +59,16 @@ def to_iso(v) -> str:
     return str(v)[:10]
 
 
+def clean_text(html: str) -> str:
+    return re.sub(r"\n{3,}", "\n\n", re.sub(r"<[^>]+>", " ", html or "")).strip()
+
+
+def job_id(j: dict) -> str:
+    m = re.search(r"/([A-Za-z0-9_\-]{4,})/?(?:[?#]|$)", j.get("url", ""))
+    base = m.group(1) if m else re.sub(r"[^a-z0-9]+", "-", j.get("title", "job").lower())
+    return (base or "job")[:60].strip("-")
+
+
 def _token(client, careers_url, ats):
     html = ""
     try:
@@ -84,13 +94,15 @@ def fetch_jobs(client, ats, token):
             j = client.get(f"https://boards-api.greenhouse.io/v1/boards/{token}/jobs?content=true").json()
             return [{"title": x["title"], "location": (x.get("location") or {}).get("name", ""),
                      "url": x.get("absolute_url", ""), "department": "",
-                     "posted": to_iso(x.get("updated_at", "")), "address": extract_address(x.get("content", ""))}
+                     "posted": to_iso(x.get("updated_at", "")), "address": extract_address(x.get("content", "")),
+                     "description": x.get("content", "")}
                     for x in j.get("jobs", [])]
         if ats == "lever":
             j = client.get(f"https://api.lever.co/v0/postings/{token}?mode=json").json()
             return [{"title": x.get("text", ""), "location": (x.get("categories") or {}).get("location", ""),
                      "url": x.get("hostedUrl", ""), "department": (x.get("categories") or {}).get("team", ""),
-                     "posted": to_iso(x.get("createdAt")), "address": extract_address(x.get("descriptionPlain", ""))} for x in j]
+                     "posted": to_iso(x.get("createdAt")), "address": extract_address(x.get("descriptionPlain", "")),
+                     "description": x.get("descriptionPlain", "")} for x in j]
         if ats == "bamboohr":
             j = client.get(f"https://{token}.bamboohr.com/careers/list").json()
             out = []
@@ -106,7 +118,8 @@ def fetch_jobs(client, ats, token):
             j = client.get(f"https://{token}.recruitee.com/api/offers/").json()
             return [{"title": x.get("title", ""), "location": x.get("location", "") or x.get("city", ""),
                      "url": x.get("careers_url") or x.get("url", ""), "department": x.get("department", ""),
-                     "posted": to_iso(x.get("published_at") or x.get("created_at")), "address": extract_address(x.get("description", ""))}
+                     "posted": to_iso(x.get("published_at") or x.get("created_at")), "address": extract_address(x.get("description", "")),
+                     "description": x.get("description", "")}
                     for x in j.get("offers", [])]
         if ats == "smartrecruiters":
             j = client.get(f"https://api.smartrecruiters.com/v1/companies/{token}/postings?limit=100").json()
@@ -126,7 +139,8 @@ def fetch_jobs(client, ats, token):
             return [{"title": x.get("title", ""), "location": x.get("location", {}).get("location_str", "")
                      if isinstance(x.get("location"), dict) else x.get("location", ""),
                      "url": x.get("url") or x.get("application_url", ""), "department": x.get("department", ""),
-                     "posted": to_iso(x.get("published_on", "")), "address": extract_address(x.get("description", ""))}
+                     "posted": to_iso(x.get("published_on", "")), "address": extract_address(x.get("description", "")),
+                     "description": x.get("description", "")}
                     for x in j.get("jobs", [])]
     except Exception as e:  # noqa: BLE001
         return {"error": f"{type(e).__name__}: {e}"}
@@ -161,6 +175,15 @@ def main() -> None:
                 continue
             for jb in jobs:
                 jb["tech"] = bool(TECH_JOB.search(jb.get("title", "")))
+            # 每个职位写一份详情 .md(frontmatter + 完整描述);并把 description 移出 jobs.json 保持精简
+            md_dir = folder / "jobs"
+            md_dir.mkdir(exist_ok=True)
+            for jb in jobs:
+                desc = clean_text(jb.pop("description", ""))
+                body = (f"---\ntitle: {jb.get('title', '')}\ncompany: {folder.name}\n"
+                        f"location: {jb.get('location', '')}\nposted: {jb.get('posted', '')}\n"
+                        f"ats: {ats}\nurl: {jb.get('url', '')}\n---\n\n{desc}\n")
+                (md_dir / f"{job_id(jb)}.md").write_text(body, encoding="utf-8")
             (folder / "jobs.json").write_text(json.dumps(
                 {"ats": ats, "token": token, "count": len(jobs), "jobs": jobs},
                 ensure_ascii=False, indent=2), encoding="utf-8")

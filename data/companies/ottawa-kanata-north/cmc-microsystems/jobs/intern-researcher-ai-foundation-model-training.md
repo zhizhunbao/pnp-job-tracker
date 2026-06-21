@@ -1,0 +1,10 @@
+---
+title: Intern Researcher – AI Foundation Model Training
+company: cmc-microsystems
+location: Markham, Ontario, Canada
+posted: 2026-04-28
+ats: recruitee
+url: https://huaweicanada.recruitee.com/o/intern-researcher-ai-foundation-model-training
+---
+
+Huawei Canada has an immediate 6-12 months internship opening for an Intern Researcher.         About the team:&nbsp;     The Computing Data Application Acceleration Lab aims to create a leading global data analytics platform organized into three specialized teams using innovative programming technologies. This team focuses on full-stack innovations, including software-hardware co-design and optimizing data efficiency at both the storage and runtime layers. This team also develops next-generation GPU architecture for gaming, cloud rendering, VR/AR, and Metaverse applications.    One of the goals of this lab are to enhance algorithm performance and training efficiency across industries, fostering long-term competitiveness.       About the job:       Support the development and optimization of foundation models (LLM / Code / Multimodal) by: assisting with model architecture improvements and experimentation, contributing to post-training optimization techniques, supporting research on continual learning approaches, exploring hardware-aware methods to improve model efficiency.        Assist in building and optimizing distributed training and inference systems: learn and apply parallelization strategies (model / tensor / data parallelism), support operator-level and computational graph optimizations, contribute to performance benchmarking and analysis.        Collaborate with cross-functional teams: work closely with hardware architects and algorithm engineers on research and development tasks and support experiments and prototyping to improve system and model performance.        The    total target annual compensation    (based on 2,080 hours per year) ranges from $58,000 to $104,000 depending on education, experience, and demonstrated expertise.

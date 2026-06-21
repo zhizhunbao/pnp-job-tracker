@@ -1,0 +1,10 @@
+---
+title: Research Engineer - Agentic Software Systems Engineering
+company: cmc-microsystems
+location: Markham, Ontario, Canada
+posted: 2026-06-03
+ats: recruitee
+url: https://huaweicanada.recruitee.com/o/research-engineer-agentic-software-systems-engineering
+---
+
+Huawei Canada has an immediate permanent opening for a Research Engineer.          About the team:      The Intelligent Complex Systems Team, currently a part of the Waterloo Research Centre, examines recent advancements in artificial intelligence (AI) and robotics to determine its potential for broader applications. This innovative team researches AI challenges such as matching human capabilities and ensuring the safety of collaborative AI systems.        About the job:        Research, prototype, and build a complete agentic software system engineering framework spanning the foundation model layer, the code agent tooling layer, and the upper-layer system engineering framework, enabling AI agents to evolve from consumer assistants into full-fledged software engineering collaborators.      Investigate how the rise of code agents is reshaping software engineering paradigms, and design new paradigms for human–Code Agent collaborative development, including the engineering decomposition of complex software development tasks and effective role allocation between humans and agents.      Research multi-agent collaboration patterns for software engineering, developing systematic techniques for coordination, decision-making, and execution across specialized agents (planning, coding, reviewing, testing, debugging) on repository-scale and product-scale tasks.      Build and optimize full-stack engineering capabilities and reusable assets for code agents—including sub-agents, skills, tool libraries, prompt/context engineering modules, and workflow templates—and contribute to the incubation of end-to-end code agent products powered by multi-agent systems.        The    total target annual compensation    for this position ranges from $127,000 to $225,000 depending on education, experience, and demonstrated expertise.

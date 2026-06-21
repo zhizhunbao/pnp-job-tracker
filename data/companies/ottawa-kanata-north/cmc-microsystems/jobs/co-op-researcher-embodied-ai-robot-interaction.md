@@ -1,0 +1,10 @@
+---
+title: Co-op Researcher – Embodied AI & Robot Interaction
+company: cmc-microsystems
+location: Markham, Ontario, Canada
+posted: 2026-05-01
+ats: recruitee
+url: https://huaweicanada.recruitee.com/o/co-op-researcher-embodied-ai-robot-interaction
+---
+
+Huawei Canada has an immediate co-op opening for a Researcher.          About the team:       The Huawei Human-Machine Interaction Lab unites global researchers, engineers, and designers to redefine human technology relationships through user centered, hands on research. We focus on agentic AI and multimodal interaction (voice, touch, vision, gesture) across smartphones, wearables, and emerging devices—advancing agentic workflows, multi-agent orchestration, and intuitive human-AI interfaces. By tightly integrating sensing, algorithms, and systems, our prototype driven work ships directly to products, enabling seamless task delegation and human AI collaboration at scale.         About the job:        Assist in designing and prototyping robotic systems that integrate embodied AI capabilities – enabling robots to perceive, act, learn, and interact with humans and environments in real time.      Design and implement the basic perception pipelines (e.g., object detection, gesture recognition, voice commands) and link them to robot actions using sensors (e.g., cameras, microphones, tactile sensors) and actuators.      Develop simple interaction loops where robots respond to user input and adapt their behavior based on context – exploring ideas like proactive assistance, shared control, or learning from demonstration.      Work with robot middleware (e.g., ROS/ROS2), simulation tools (e.g., Gazebo, Isaac Sim), and embedded systems to create cohesive embodied AI prototypes.      Stay current with introductory embodied AI concepts (e.g., sensorimotor learning, reinforcement learning, multimodal interaction) and document findings, code, and design decisions.        The    total target annual compensation    for this position ranges from $58,000 to $104,000 depending on education, experience, and demonstrated expertise.

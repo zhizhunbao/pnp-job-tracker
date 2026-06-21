@@ -1,0 +1,10 @@
+---
+title: Intern Researcher - AI Agent
+company: cmc-microsystems
+location: Markham, Ontario, Canada
+posted: 2026-03-13
+ats: recruitee
+url: https://huaweicanada.recruitee.com/o/intern-researcher-ai-agent
+---
+
+Huawei Canada&nbsp;has an immediate 12-month internship opening for an AI Agent Intern Researcher.         About the Team     The Technology Planning and Cooperation Department promotes strategic innovation across all of Huawei Canada. Working with fellow experts, the focus is researching new and upcoming areas of technology as well as strategic planning to help achieve long term vision of Huawei. This department offers a unique opportunity to leverage both technical and business skills.        About the job:      The internship focuses on AI agents, foundation models, and intelligent systems, combining technology insight, research exploration, and system prototyping.    Interns will have the opportunity to work on cutting-edge topics such as AI agents, autonomous developer systems, and next-generation AI platforms, while building experimental prototypes that may influence future products and research directions.        Track frontier developments in AI agents, and AI systems to identify emerging technology opportunities.      Analyze research papers and industry trends to generate technical insights and potential research directions.      Contribute to internal research reports and briefings on emerging AI technologies and innovations.      Design and develop experimental prototypes exploring new AI architectures and system concepts.      Build early-stage systems related to AI agents, multi-agent systems, developer agents, and AI-native software platforms.      Experiment with emerging frameworks, agent platforms, and LLM-based tool ecosystems.      Develop and test LLM-powered applications, including agent workflows, tool-use, memory systems, and autonomous task planning.        The target annual compensation (based on 2080 hours per year) ranges from $93,000 to $104,000 depending on education, experience and demonstrated expertise.
