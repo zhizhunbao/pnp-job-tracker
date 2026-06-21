@@ -107,12 +107,20 @@ def fetch_jobs(client, ats, token):
             j = client.get(f"https://{token}.bamboohr.com/careers/list").json()
             out = []
             for x in j.get("result", []):
+                jid = x.get("id", "")
                 loc = x.get("location") or {}
                 loc = ", ".join(v for v in [loc.get("city"), loc.get("state")] if v) if isinstance(loc, dict) else str(loc)
+                desc = ""
+                try:  # 详情页含完整描述
+                    jo = (client.get(f"https://{token}.bamboohr.com/careers/{jid}/detail").json().get("result") or {}).get("jobOpening") or {}
+                    desc = jo.get("description", "")
+                except Exception:  # noqa: BLE001
+                    pass
                 out.append({"title": x.get("jobOpeningName", ""), "location": loc,
-                            "url": f"https://{token}.bamboohr.com/careers/{x.get('id','')}",
+                            "url": f"https://{token}.bamboohr.com/careers/{jid}",
                             "department": x.get("departmentLabel", ""),
-                            "posted": to_iso(x.get("datePosted", "")), "address": ""})
+                            "posted": to_iso(x.get("datePosted", "")),
+                            "address": extract_address(desc), "description": desc})
             return out
         if ats == "recruitee":
             j = client.get(f"https://{token}.recruitee.com/api/offers/").json()
@@ -125,13 +133,22 @@ def fetch_jobs(client, ats, token):
             j = client.get(f"https://api.smartrecruiters.com/v1/companies/{token}/postings?limit=100").json()
             out = []
             for x in j.get("content", []):
+                pid = x.get("id", "")
                 loc = x.get("location") or {}
+                desc = ""
+                try:  # 详情含 jobAd 各段
+                    det = client.get(f"https://api.smartrecruiters.com/v1/companies/{token}/postings/{pid}").json()
+                    secs = ((det.get("jobAd") or det.get("defaultJobAd") or {}).get("sections") or {})
+                    desc = " ".join((secs.get(k) or {}).get("text", "") for k in ("companyDescription", "jobDescription", "qualifications", "additionalInformation"))
+                except Exception:  # noqa: BLE001
+                    pass
                 out.append({"title": x.get("name", ""),
                             "location": ", ".join(v for v in [loc.get("city"), loc.get("region")] if v),
-                            "url": f"https://jobs.smartrecruiters.com/{token}/{x.get('id','')}",
+                            "url": f"https://jobs.smartrecruiters.com/{token}/{pid}",
                             "department": (x.get("department") or {}).get("label", ""),
                             "posted": to_iso(x.get("releasedDate", "")),
-                            "address": ", ".join(v for v in [loc.get("address"), loc.get("city")] if v)})
+                            "address": extract_address(desc) or ", ".join(v for v in [loc.get("address"), loc.get("city")] if v),
+                            "description": desc})
             return out
         if ats == "workable":
             r = client.get(f"https://www.workable.com/api/accounts/{token}?details=true")
