@@ -83,7 +83,7 @@ export default function JobsTable({ jobs, updatedAt }: { jobs: JobRow[]; updated
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13.5, whiteSpace: 'nowrap' }}>
             <thead>
               <tr style={{ textAlign: 'left', background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
-                {['评分', '分类', '职位', '公司', 'NOC', '应届', '地点', '来源', '发布时间', '更新时间'].map((h) => (
+                {['评分', '分类', '职位', '公司', 'NOC', '经验级别', '地点', '来源', '发布时间', '更新时间'].map((h) => (
                   <th key={h} style={{ padding: '8px 12px', color: '#374151', fontWeight: 600 }}>{h}</th>
                 ))}
               </tr>
