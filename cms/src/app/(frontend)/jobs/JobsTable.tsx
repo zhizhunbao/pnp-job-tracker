@@ -22,6 +22,7 @@ const uniq = (xs: string[]) => Array.from(new Set(xs.filter(Boolean))).sort()
 const accLabel: Record<string, string> = {
   'co-op': 'co-op', junior: '初级', intermediate: '中级', senior: '高级', unknown: '—',
 }
+const mapsUrl = (q: string) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`
 
 export default function JobsTable({ jobs, updatedAt }: { jobs: JobRow[]; updatedAt?: string }) {
   const [q, setQ] = useState('')
@@ -43,10 +44,13 @@ export default function JobsTable({ jobs, updatedAt }: { jobs: JobRow[]; updated
 
   return (
     <div style={{ background: '#fff', color: '#1f2937', minHeight: '100vh', fontFamily: 'system-ui, sans-serif' }}>
-      <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1.5rem 1.25rem' }}>
+      <div style={{ maxWidth: 1240, margin: '0 auto', padding: '1.5rem 1.25rem' }}>
         <h1 style={{ margin: '0 0 2px', color: '#111827' }}>Jobs</h1>
         <p style={{ color: '#6b7280', marginTop: 0, fontSize: 14 }}>
           {rows.length} / {jobs.length} 个职位 · 按移民评分排序{updatedAt ? ` · 数据更新于 ${updatedAt.slice(0, 16).replace('T', ' ')}` : ''} · 第一方来源(公司 ATS)
+        </p>
+        <p style={{ color: '#9ca3af', marginTop: -6, fontSize: 12 }}>
+          点职位名 → 投递页 · 点公司名 → 官网 · 点地点 → 地图
         </p>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '1rem 0' }}>
@@ -68,27 +72,34 @@ export default function JobsTable({ jobs, updatedAt }: { jobs: JobRow[]; updated
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13.5, whiteSpace: 'nowrap' }}>
             <thead>
               <tr style={{ textAlign: 'left', background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
-                {['评分', '职位', '公司', 'NOC', '应届', '地点', '来源', '官网', '投递'].map((h) => (
+                {['评分', '职位', '公司', 'NOC', '应届', '地点', '来源'].map((h) => (
                   <th key={h} style={{ padding: '8px 12px', color: '#374151', fontWeight: 600 }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {rows.map((j, i) => (
-                <tr key={j.id} style={{ borderBottom: '1px solid #f3f4f6', background: i % 2 ? '#fcfcfd' : '#fff' }}>
-                  <td style={{ ...td, fontWeight: 600, color: scoreColor(j.score) }}>{j.score ?? '—'}</td>
-                  <td style={{ ...td, ...cap(380) }} title={j.title}>{j.title}</td>
-                  <td style={{ ...td, ...cap(190) }} title={j.company}>{j.company}</td>
-                  <td style={td}>{j.noc || '—'}</td>
-                  <td style={td}>{accLabel[j.accessibility] ?? '—'}</td>
-                  <td style={{ ...td, ...cap(210) }} title={[j.city, j.province].filter(Boolean).join(', ')}>{[j.city, j.province].filter(Boolean).join(', ') || '—'}</td>
-                  <td style={td}><span style={tag}>{j.source}</span></td>
-                  <td style={td}>{j.officialUrl ? <a href={j.officialUrl} target="_blank" rel="noreferrer" style={link}>官网 ↗</a> : '—'}</td>
-                  <td style={td}>{j.applyUrl ? <a href={j.applyUrl} target="_blank" rel="noreferrer" style={link}>投递 ↗</a> : '—'}</td>
-                </tr>
-              ))}
+              {rows.map((j, i) => {
+                const locStr = [j.city, j.province].filter(Boolean).join(', ')
+                return (
+                  <tr key={j.id} style={{ borderBottom: '1px solid #f3f4f6', background: i % 2 ? '#fcfcfd' : '#fff' }}>
+                    <td style={{ ...td, fontWeight: 600, color: scoreColor(j.score) }}>{j.score ?? '—'}</td>
+                    <td style={{ ...td, ...cap(420) }} title={j.title}>
+                      {j.applyUrl ? <a href={j.applyUrl} target="_blank" rel="noreferrer" style={link}>{j.title}</a> : j.title}
+                    </td>
+                    <td style={{ ...td, ...cap(200) }} title={j.company}>
+                      {j.officialUrl ? <a href={j.officialUrl} target="_blank" rel="noreferrer" style={link}>{j.company}</a> : j.company}
+                    </td>
+                    <td style={td}>{j.noc || '—'}</td>
+                    <td style={td}>{accLabel[j.accessibility] ?? '—'}</td>
+                    <td style={{ ...td, ...cap(220) }} title={locStr}>
+                      {locStr ? <a href={mapsUrl(locStr)} target="_blank" rel="noreferrer" style={link}>{locStr}</a> : '—'}
+                    </td>
+                    <td style={td}><span style={tag}>{j.source}</span></td>
+                  </tr>
+                )
+              })}
               {rows.length === 0 && (
-                <tr><td colSpan={9} style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>无匹配职位</td></tr>
+                <tr><td colSpan={7} style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>无匹配职位</td></tr>
               )}
             </tbody>
           </table>
