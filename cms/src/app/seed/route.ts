@@ -23,12 +23,20 @@ export async function GET() {
     return Response.json({ error: 'no data dir', REGION_DIR }, { status: 500 })
   }
 
+  // 评分(08_score.py 产出),按 externalId 关联
+  const scoredPath = path.resolve(process.cwd(), '..', 'data', 'output', `${REGION}-scored.json`)
+  const scored: Record<string, { noc?: string; score?: number; accessibility?: string }> = {}
+  if (fs.existsSync(scoredPath)) {
+    for (const s of JSON.parse(fs.readFileSync(scoredPath, 'utf8'))) scored[s.externalId] = s
+  }
+
   const folders = fs
     .readdirSync(REGION_DIR)
     .filter((f) => fs.statSync(path.join(REGION_DIR, f)).isDirectory())
 
   let companies = 0
   let jobs = 0
+  let updated = 0
   for (const slug of folders) {
     const dir = path.join(REGION_DIR, slug)
     const jobsPath = path.join(dir, 'jobs.json')
@@ -64,12 +72,21 @@ export async function GET() {
     const source = jobsData.ats || 'ats'
     for (const j of jobsData.jobs) {
       const externalId = j.url || `${slug}:${j.title}`
+      const sc = scored[externalId] || {}
       const dup = await payload.find({
         collection: 'jobs',
         where: { externalId: { equals: externalId } },
         limit: 1,
       })
-      if (dup.docs.length) continue
+      if (dup.docs.length) {
+        await payload.update({
+          collection: 'jobs',
+          id: dup.docs[0].id,
+          data: { noc: sc.noc || undefined, score: sc.score, accessibility: (sc.accessibility as any) || undefined },
+        })
+        updated++
+        continue
+      }
       await payload.create({
         collection: 'jobs',
         data: {
@@ -83,10 +100,13 @@ export async function GET() {
           officialUrl: profile.website || '',
           externalId,
           status: 'open',
+          noc: sc.noc || undefined,
+          score: sc.score,
+          accessibility: (sc.accessibility as any) || undefined,
         },
       })
       jobs++
     }
   }
-  return Response.json({ ok: true, companies, jobs })
+  return Response.json({ ok: true, companies, jobs, updated })
 }
