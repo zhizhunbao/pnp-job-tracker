@@ -23,7 +23,7 @@ const accLabel: Record<string, string> = {
   'co-op': 'co-op', junior: '初级', intermediate: '中级', senior: '高级', unknown: '—',
 }
 
-export default function JobsTable({ jobs }: { jobs: JobRow[] }) {
+export default function JobsTable({ jobs, updatedAt }: { jobs: JobRow[]; updatedAt?: string }) {
   const [q, setQ] = useState('')
   const [source, setSource] = useState('')
   const [province, setProvince] = useState('')
@@ -46,7 +46,7 @@ export default function JobsTable({ jobs }: { jobs: JobRow[] }) {
       <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1.5rem 1.25rem' }}>
         <h1 style={{ margin: '0 0 2px', color: '#111827' }}>Jobs</h1>
         <p style={{ color: '#6b7280', marginTop: 0, fontSize: 14 }}>
-          {rows.length} / {jobs.length} 个职位 · 按移民评分排序 · 第一方来源(公司 ATS)
+          {rows.length} / {jobs.length} 个职位 · 按移民评分排序{updatedAt ? ` · 数据更新于 ${updatedAt.slice(0, 16).replace('T', ' ')}` : ''} · 第一方来源(公司 ATS)
         </p>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '1rem 0' }}>

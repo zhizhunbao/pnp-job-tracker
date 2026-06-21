@@ -29,5 +29,7 @@ export default async function JobsPage() {
     datePosted: j.datePosted ?? '',
   }))
 
-  return <JobsTable jobs={jobs} />
+  const updatedAt = docs.reduce((m: string, j: any) => (j.lastSeen && j.lastSeen > m ? j.lastSeen : m), '')
+
+  return <JobsTable jobs={jobs} updatedAt={updatedAt} />
 }
