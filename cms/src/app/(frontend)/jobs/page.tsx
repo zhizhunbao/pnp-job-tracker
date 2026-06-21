@@ -29,6 +29,7 @@ export default async function JobsPage() {
     officialUrl: j.officialUrl ?? '',
     applyUrl: j.applyUrl ?? '',
     datePosted: j.datePosted ?? '',
+    lastSeen: j.lastSeen ?? '',
   }))
 
   const updatedAt = docs.reduce((m: string, j: any) => (j.lastSeen && j.lastSeen > m ? j.lastSeen : m), '')

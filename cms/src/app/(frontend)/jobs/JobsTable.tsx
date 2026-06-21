@@ -17,6 +17,7 @@ export type JobRow = {
   officialUrl: string
   applyUrl: string
   datePosted: string
+  lastSeen: string
 }
 
 const uniq = (xs: string[]) => Array.from(new Set(xs.filter(Boolean))).sort()
@@ -82,7 +83,7 @@ export default function JobsTable({ jobs, updatedAt }: { jobs: JobRow[]; updated
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13.5, whiteSpace: 'nowrap' }}>
             <thead>
               <tr style={{ textAlign: 'left', background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
-                {['评分', '分类', '职位', '公司', 'NOC', '应届', '地点', '来源'].map((h) => (
+                {['评分', '分类', '职位', '公司', 'NOC', '应届', '地点', '来源', '更新时间'].map((h) => (
                   <th key={h} style={{ padding: '8px 12px', color: '#374151', fontWeight: 600 }}>{h}</th>
                 ))}
               </tr>
@@ -107,11 +108,12 @@ export default function JobsTable({ jobs, updatedAt }: { jobs: JobRow[]; updated
                       {locStr ? <a href={mapsUrl(locStr)} target="_blank" rel="noreferrer" style={link}>{locStr}</a> : '—'}
                     </td>
                     <td style={td}><span style={tag}>{j.source}</span></td>
+                    <td style={{ ...td, color: '#9ca3af', fontSize: 12.5 }}>{j.lastSeen ? j.lastSeen.slice(0, 10) : '—'}</td>
                   </tr>
                 )
               })}
               {rows.length === 0 && (
-                <tr><td colSpan={8} style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>无匹配职位</td></tr>
+                <tr><td colSpan={9} style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>无匹配职位</td></tr>
               )}
             </tbody>
           </table>
