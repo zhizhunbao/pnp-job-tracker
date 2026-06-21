@@ -33,6 +33,31 @@ TECH_JOB = re.compile(
     r"\bweb\b|security|cyber|\bsystems?\b|\bit\b|network|database|analyst|firmware|embedded", re.I)
 SUPPORTED = {"greenhouse", "lever", "bamboohr", "recruitee", "smartrecruiters", "workable"}
 
+from datetime import datetime, timezone  # noqa: E402
+
+ADDR_RE = re.compile(
+    r"\d{1,5}\s+[A-Za-z0-9.\-' ]{2,40}?\b(?:Street|St|Road|Rd|Avenue|Ave|Boulevard|Blvd|Drive|Dr|Way|"
+    r"Crescent|Cres|Court|Ct|Lane|Place|Pl|Parkway|Pkwy|Terrace|Trail)\b[^.\n;]{0,50}", re.I)
+
+
+def extract_address(text: str) -> str:
+    if not text:
+        return ""
+    t = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", text))
+    m = ADDR_RE.search(t)
+    return m.group(0).strip(" ,;") if m else ""
+
+
+def to_iso(v) -> str:
+    if not v:
+        return ""
+    if isinstance(v, (int, float)):  # ms epoch (lever)
+        try:
+            return datetime.fromtimestamp(v / 1000, tz=timezone.utc).date().isoformat()
+        except Exception:  # noqa: BLE001
+            return ""
+    return str(v)[:10]
+
 
 def _token(client, careers_url, ats):
     html = ""
@@ -56,13 +81,16 @@ def fetch_jobs(client, ats, token):
     """Return list of normalized {title, location, url, department}."""
     try:
         if ats == "greenhouse":
-            j = client.get(f"https://boards-api.greenhouse.io/v1/boards/{token}/jobs").json()
+            j = client.get(f"https://boards-api.greenhouse.io/v1/boards/{token}/jobs?content=true").json()
             return [{"title": x["title"], "location": (x.get("location") or {}).get("name", ""),
-                     "url": x.get("absolute_url", ""), "department": ""} for x in j.get("jobs", [])]
+                     "url": x.get("absolute_url", ""), "department": "",
+                     "posted": to_iso(x.get("updated_at", "")), "address": extract_address(x.get("content", ""))}
+                    for x in j.get("jobs", [])]
         if ats == "lever":
             j = client.get(f"https://api.lever.co/v0/postings/{token}?mode=json").json()
             return [{"title": x.get("text", ""), "location": (x.get("categories") or {}).get("location", ""),
-                     "url": x.get("hostedUrl", ""), "department": (x.get("categories") or {}).get("team", "")} for x in j]
+                     "url": x.get("hostedUrl", ""), "department": (x.get("categories") or {}).get("team", ""),
+                     "posted": to_iso(x.get("createdAt")), "address": extract_address(x.get("descriptionPlain", ""))} for x in j]
         if ats == "bamboohr":
             j = client.get(f"https://{token}.bamboohr.com/careers/list").json()
             out = []
@@ -71,12 +99,14 @@ def fetch_jobs(client, ats, token):
                 loc = ", ".join(v for v in [loc.get("city"), loc.get("state")] if v) if isinstance(loc, dict) else str(loc)
                 out.append({"title": x.get("jobOpeningName", ""), "location": loc,
                             "url": f"https://{token}.bamboohr.com/careers/{x.get('id','')}",
-                            "department": x.get("departmentLabel", "")})
+                            "department": x.get("departmentLabel", ""),
+                            "posted": to_iso(x.get("datePosted", "")), "address": ""})
             return out
         if ats == "recruitee":
             j = client.get(f"https://{token}.recruitee.com/api/offers/").json()
             return [{"title": x.get("title", ""), "location": x.get("location", "") or x.get("city", ""),
-                     "url": x.get("careers_url") or x.get("url", ""), "department": x.get("department", "")}
+                     "url": x.get("careers_url") or x.get("url", ""), "department": x.get("department", ""),
+                     "posted": to_iso(x.get("published_at") or x.get("created_at")), "address": extract_address(x.get("description", ""))}
                     for x in j.get("offers", [])]
         if ats == "smartrecruiters":
             j = client.get(f"https://api.smartrecruiters.com/v1/companies/{token}/postings?limit=100").json()
@@ -86,14 +116,17 @@ def fetch_jobs(client, ats, token):
                 out.append({"title": x.get("name", ""),
                             "location": ", ".join(v for v in [loc.get("city"), loc.get("region")] if v),
                             "url": f"https://jobs.smartrecruiters.com/{token}/{x.get('id','')}",
-                            "department": (x.get("department") or {}).get("label", "")})
+                            "department": (x.get("department") or {}).get("label", ""),
+                            "posted": to_iso(x.get("releasedDate", "")),
+                            "address": ", ".join(v for v in [loc.get("address"), loc.get("city")] if v)})
             return out
         if ats == "workable":
             r = client.get(f"https://www.workable.com/api/accounts/{token}?details=true")
             j = r.json()
             return [{"title": x.get("title", ""), "location": x.get("location", {}).get("location_str", "")
                      if isinstance(x.get("location"), dict) else x.get("location", ""),
-                     "url": x.get("url") or x.get("application_url", ""), "department": x.get("department", "")}
+                     "url": x.get("url") or x.get("application_url", ""), "department": x.get("department", ""),
+                     "posted": to_iso(x.get("published_on", "")), "address": extract_address(x.get("description", ""))}
                     for x in j.get("jobs", [])]
     except Exception as e:  # noqa: BLE001
         return {"error": f"{type(e).__name__}: {e}"}

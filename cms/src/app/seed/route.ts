@@ -96,6 +96,7 @@ export async function GET(req: Request) {
           title: j.title, company: cid, source: jd.ats || 'ats',
           city: j.location || '', province: guessProv(j.location || ''), region: REGION,
           applyUrl: j.url || '', officialUrl: prof.website || '', externalId: j.url || key,
+          datePosted: isoDate(j.posted),
         })
       }
     }

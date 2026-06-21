@@ -8,6 +8,8 @@
       "location": "Ottawa, Ontario",
       "url": "https://ranovus.bamboohr.com/careers/45",
       "department": "Optical Design",
+      "posted": "",
+      "address": "",
       "tech": true
     },
     {
@@ -15,6 +17,8 @@
       "location": "Ottawa, Ontario",
       "url": "https://ranovus.bamboohr.com/careers/47",
       "department": "Product Management",
+      "posted": "",
+      "address": "",
       "tech": false
     },
     {
@@ -22,6 +26,8 @@
       "location": "Ottawa, Ontario",
       "url": "https://ranovus.bamboohr.com/careers/48",
       "department": "Packaging Design",
+      "posted": "",
+      "address": "",
       "tech": true
     },
     {
@@ -29,6 +35,8 @@
       "location": "Nürnberg",
       "url": "https://ranovus.bamboohr.com/careers/55",
       "department": "Mixed Signal IC & ASIC Integration",
+      "posted": "",
+      "address": "",
       "tech": false
     },
     {
@@ -36,6 +44,8 @@
       "location": "Nürnberg",
       "url": "https://ranovus.bamboohr.com/careers/56",
       "department": "Mixed Signal IC & ASIC Integration",
+      "posted": "",
+      "address": "",
       "tech": true
     },
     {
@@ -43,6 +53,8 @@
       "location": "Nürnberg",
       "url": "https://ranovus.bamboohr.com/careers/59",
       "department": "Mixed Signal IC & ASIC Integration",
+      "posted": "",
+      "address": "",
       "tech": true
     },
     {
@@ -50,6 +62,8 @@
       "location": "Ottawa, Ontario",
       "url": "https://ranovus.bamboohr.com/careers/61",
       "department": "R&D",
+      "posted": "",
+      "address": "",
       "tech": false
     },
     {
@@ -57,6 +71,8 @@
       "location": "Ottawa, Ontario",
       "url": "https://ranovus.bamboohr.com/careers/62",
       "department": "Packaging Design",
+      "posted": "",
+      "address": "",
       "tech": false
     },
     {
@@ -64,6 +80,8 @@
       "location": "Ottawa, Ontario",
       "url": "https://ranovus.bamboohr.com/careers/66",
       "department": "FW/SW Design",
+      "posted": "",
+      "address": "",
       "tech": true
     },
     {
@@ -71,6 +89,8 @@
       "location": "Ottawa, Ontario",
       "url": "https://ranovus.bamboohr.com/careers/69",
       "department": "Product Management",
+      "posted": "",
+      "address": "",
       "tech": true
     }
   ]
