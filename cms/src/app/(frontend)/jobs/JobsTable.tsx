@@ -77,11 +77,11 @@ export default function JobsTable({ jobs }: { jobs: JobRow[] }) {
               {rows.map((j, i) => (
                 <tr key={j.id} style={{ borderBottom: '1px solid #f3f4f6', background: i % 2 ? '#fcfcfd' : '#fff' }}>
                   <td style={{ ...td, fontWeight: 600, color: scoreColor(j.score) }}>{j.score ?? '—'}</td>
-                  <td style={td}>{j.title}</td>
-                  <td style={td}>{j.company}</td>
+                  <td style={{ ...td, ...cap(380) }} title={j.title}>{j.title}</td>
+                  <td style={{ ...td, ...cap(190) }} title={j.company}>{j.company}</td>
                   <td style={td}>{j.noc || '—'}</td>
                   <td style={td}>{accLabel[j.accessibility] ?? '—'}</td>
-                  <td style={td}>{[j.city, j.province].filter(Boolean).join(', ') || '—'}</td>
+                  <td style={{ ...td, ...cap(210) }} title={[j.city, j.province].filter(Boolean).join(', ')}>{[j.city, j.province].filter(Boolean).join(', ') || '—'}</td>
                   <td style={td}><span style={tag}>{j.source}</span></td>
                   <td style={td}>{j.officialUrl ? <a href={j.officialUrl} target="_blank" rel="noreferrer" style={link}>官网 ↗</a> : '—'}</td>
                   <td style={td}>{j.applyUrl ? <a href={j.applyUrl} target="_blank" rel="noreferrer" style={link}>投递 ↗</a> : '—'}</td>
@@ -101,5 +101,6 @@ export default function JobsTable({ jobs }: { jobs: JobRow[] }) {
 const scoreColor = (s: number | null) => (s == null ? '#9ca3af' : s >= 85 ? '#15803d' : s >= 60 ? '#b45309' : '#6b7280')
 const ctrl: React.CSSProperties = { padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 14, color: '#1f2937', background: '#fff' }
 const td: React.CSSProperties = { padding: '7px 12px', whiteSpace: 'nowrap', verticalAlign: 'middle' }
+const cap = (w: number): React.CSSProperties => ({ maxWidth: w, overflow: 'hidden', textOverflow: 'ellipsis' })
 const tag: React.CSSProperties = { background: '#eef2ff', color: '#3730a3', padding: '2px 8px', borderRadius: 10, fontSize: 12 }
 const link: React.CSSProperties = { color: '#2563eb', textDecoration: 'none' }
