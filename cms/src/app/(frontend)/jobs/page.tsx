@@ -22,7 +22,9 @@ export default async function JobsPage() {
     province: j.province ?? '',
     city: j.city ?? '',
     noc: j.noc ?? '',
+    accessibility: j.accessibility ?? '',
     score: typeof j.score === 'number' ? j.score : null,
+    officialUrl: j.officialUrl ?? '',
     applyUrl: j.applyUrl ?? '',
     datePosted: j.datePosted ?? '',
   }))
