@@ -32,7 +32,7 @@ from bs4 import BeautifulSoup
 
 import _paths
 PROJECT_ROOT = _paths.ROOT
-OUT_DIR = _paths.DIRECTORIES
+OUT_DIR = _paths.RAW_COMPANIES
 AJAX = "https://www.kanatanorthba.com/wp-admin/admin-ajax.php"
 REFERER = "https://www.kanatanorthba.com/member-directory/"
 USER_AGENT = (

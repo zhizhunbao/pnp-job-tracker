@@ -132,7 +132,7 @@ def guess_prov(loc: str) -> str:
 
 def collect():
     """Yield (externalId, title, agency, province, hint_noc)."""
-    region_dir = _paths.COMPANIES / REGION
+    region_dir = _paths.COMPANIES  # 已含地域(processed/<region>/companies)
     if region_dir.exists():
         for folder in region_dir.iterdir():
             if not folder.is_dir() or not (folder / "jobs.json").exists():
@@ -141,7 +141,7 @@ def collect():
             ag = bool(AGENCY_RE.search(prof.get("sectors", "") + " " + prof.get("name", "")))
             for j in json.loads((folder / "jobs.json").read_text(encoding="utf-8")).get("jobs", []):
                 yield (j.get("url") or f"{folder.name}:{j.get('title','')}", j.get("title", ""), ag, guess_prov(j.get("location", "")), "")
-    jb = _paths.JOBBANK / "jobbank-on.json"
+    jb = _paths.JOBBANK / "postings.json"
     if jb.exists():
         for j in json.loads(jb.read_text(encoding="utf-8")):
             m = re.search(r"NOC\s*(\d{5})", j.get("search_occupation", ""))  # 搜索时用的 NOC,较准

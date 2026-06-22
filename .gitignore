@@ -12,3 +12,19 @@ node_modules/
 cms/seed.log
 cms/*.db
 cms/dev.log
+
+# ── data/ 衍生文件(可由 ETL 重新生成,不入 git;源 JSON 仍跟踪)──
+# load 阶段计算产出(all-scored.json 等,08_score 可重算)
+/data/output/
+# 人读导出视图(csv)
+/data/**/*.csv
+# 公司名录导出视图(保留 .json)
+/data/raw/**/companies/*.md
+# Job Bank 导出视图(postings.md)+ 帖子详情 .md(scraped,可重抓;postings.json 仍跟踪)
+/data/raw/**/jobbank/*.md
+/data/raw/**/jobbank/details/
+# 公司 ATS 岗位详情 .md(scraped,可重抓)
+/data/processed/**/companies/**/jobs/*.md
+# 抓取日志与原始 html 缓存(policy 正文 .md 仍跟踪)
+/data/**/*.log
+/data/raw/reference/policy/**/html_cache/

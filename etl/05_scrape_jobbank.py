@@ -145,7 +145,8 @@ def scrape(occupations: dict, prov: str, max_pages: int, delay: float) -> list[d
 
 def write_outputs(rows: list[dict], prov: str, scope: str) -> dict:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    stem = OUT_DIR / f"jobbank-{prov.lower()}"
+    # OUT_DIR 已是地域专属(raw/<region>/jobbank),文件名不再带省码 → postings.json
+    stem = OUT_DIR / "postings"
     (stem.with_suffix(".json")).write_text(json.dumps(rows, ensure_ascii=False, indent=2), encoding="utf-8")
 
     fields = ["employer", "title", "city", "province", "salary", "date", "source", "direct",

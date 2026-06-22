@@ -1,0 +1,21 @@
+{
+  "ats": "bamboohr",
+  "token": "teldio",
+  "count": 1,
+  "jobs": [
+    {
+      "title": "Technical Support Specialist",
+      "location": "Ottawa, Ontario",
+      "url": "https://teldio.bamboohr.com/careers/54",
+      "department": "Operations",
+      "posted": "",
+      "address": "",
+      "salary": "",
+      "tech": false,
+      "city": "Ottawa",
+      "province": "ON",
+      "country": "Canada",
+      "district": ""
+    }
+  ]
+}

@@ -39,9 +39,9 @@ def slugify(name: str) -> str:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="Build one-folder-per-company structure.")
-    ap.add_argument("--directory", default=str(_paths.DIRECTORIES / "kanata-north.json"),
+    ap.add_argument("--directory", default=str(_paths.RAW_COMPANIES / "kanata-north.json"),
                     help="Flat company directory JSON (profiles).")
-    ap.add_argument("--careers", default=str(_paths.DIRECTORIES / "kanata-north-careers.json"),
+    ap.add_argument("--careers", default=str(_paths.RAW_COMPANIES / "kanata-north-careers.json"),
                     help="Careers-finder JSON (optional).")
     ap.add_argument("--region", default="ottawa-kanata-north", help="Region folder name.")
     args = ap.parse_args()
@@ -52,7 +52,7 @@ def main() -> None:
         for c in json.load(open(args.careers, encoding="utf-8")):
             careers_by_name[c["name"].lower()] = c
 
-    region_dir = COMPANIES_DIR / args.region
+    region_dir = COMPANIES_DIR  # _paths.COMPANIES 已含地域(processed/<region>/companies)
     region_dir.mkdir(parents=True, exist_ok=True)
 
     seen: dict[str, int] = {}

@@ -1,20 +1,25 @@
 # ottawa-kanata-north · Stage 3 真实在招岗(公司ATS第一方)
 
-> 18 家ATS公司成功抓取,共 **250** 个科技岗。数据来自各公司自己的招聘后台,非聚合站。
-> 跳过 26 家(不支持的ATS/无token)。每家明细见其文件夹 jobs.json。
+> 24 家ATS公司成功抓取,共 **268** 个科技岗。数据来自各公司自己的招聘后台,非聚合站。
+> 跳过 20 家(不支持的ATS/无token)。每家明细见其文件夹 jobs.json。
 
 | 公司 | ATS | 总岗 | 科技岗 | 渥太华/远程科技岗 |
 |---|---|---:|---:|---:|
-| cmc-microsystems | recruitee | 164 | 117 | 117 |
+| cmc-microsystems | recruitee | 168 | 119 | 119 |
 | renesas-electronics-canada | smartrecruiters | 100 | 70 | 1 |
 | magnet-forensics-inc | lever | 44 | 24 | 11 |
 | fullscript | lever | 21 | 12 | 12 |
 | solace-systems | bamboohr | 20 | 11 | 8 |
+| blackberry | myworkdayjobs | 20 | 6 | 6 |
+| blackberry-qnx | myworkdayjobs | 20 | 6 | 6 |
 | ranovus | bamboohr | 10 | 6 | 4 |
 | march-networks | workable | 11 | 4 | 0 |
-| case-iq | bamboohr | 4 | 2 | 0 |
+| case-iq | bamboohr | 5 | 3 | 0 |
 | intouch-insight | bamboohr | 2 | 2 | 2 |
+| adtran-networks-canada-inc | myworkdayjobs | 2 | 1 | 1 |
 | pleora-technologies-inc | bamboohr | 2 | 1 | 1 |
+| semtech-canada-corporation-ottawa-design-centre | myworkdayjobs | 1 | 1 | 1 |
+| trend-micro-canada-technologies-inc | myworkdayjobs | 1 | 1 | 1 |
 | truecontext | bamboohr | 1 | 1 | 0 |
 | attotude-canada | greenhouse | 0 | 0 | 0 |
 | cerio | bamboohr | 1 | 0 | 0 |
@@ -22,16 +27,19 @@
 | evik-diagnostics-innovations-inc | bamboohr | 0 | 0 | 0 |
 | initlive-inc | greenhouse | 0 | 0 | 0 |
 | martello-technologies-corporation | bamboohr | 0 | 0 | 0 |
+| spectrum-control-ltd | myworkdayjobs | 1 | 0 | 0 |
 | teldio-corporation | bamboohr | 1 | 0 | 0 |
 
 ## 渥太华/远程 科技岗(可直接投递)
 
 | 公司 | 职位 | 地点 | 投递 |
 |---|---|---|---|
+| cmc-microsystems | Senior Designer - AI Product Experience | Markham, Ontario, Canada | [开](<https://huaweicanada.recruitee.com/o/senior-designer-ai-product-experience>) |
+| cmc-microsystems | Researcher – AI/ML Engineering | Markham, Ontario, Canada | [开](<https://huaweicanada.recruitee.com/o/researcher-aiml-engineering>) |
 | cmc-microsystems | Intern Researcher – Robotics System and Interaction | Markham, Ontario, Canada | [开](<https://huaweicanada.recruitee.com/o/intern-researcher-robotics-system-and-interaction>) |
 | cmc-microsystems | Intern Researcher - AI/ML Technology Insight and Planning | Vancouver, British Columbia, Canada | [开](<https://huaweicanada.recruitee.com/o/intern-researcher-aiml-technology-insight-and-planning>) |
-| cmc-microsystems | Co-op Researcher - Computer Network for AI Infrastructure | Markham, Ontario, Canada | [开](<https://huaweicanada.recruitee.com/o/co-op-researcher-computer-network-for-ai-infrastructure>) |
 | cmc-microsystems | Co-op Engineer - AI Software Engineering | Markham, Ontario, Canada | [开](<https://huaweicanada.recruitee.com/o/co-op-engineer-ai-software-engineering>) |
+| cmc-microsystems | Co-op Researcher - Computer Network for AI Infrastructure | Markham, Ontario, Canada | [开](<https://huaweicanada.recruitee.com/o/co-op-researcher-computer-network-for-ai-infrastructure>) |
 | cmc-microsystems | Engineer - Optical Communication Systems (Test, Modeling & Sensing) | Ottawa, Ontario, Canada | [开](<https://huaweicanada.recruitee.com/o/engineer-optical-communication-systems-test-modeling-sensing>) |
 | cmc-microsystems | Intern Engineer - Game Engine System | Edmonton, Alberta, Canada | [开](<https://huaweicanada.recruitee.com/o/intern-engineer-game-engine-system>) |
 | cmc-microsystems | Intern Engineer – RL Post-Training for LLMs | Vancouver, British Columbia, Canada | [开](<https://huaweicanada.recruitee.com/o/intern-engineer-rl-post-training-for-llms>) |
@@ -101,8 +109,8 @@
 | cmc-microsystems | Database Research Expert - Big Data Platform | Markham, Ontario, Canada | [开](<https://huaweicanada.recruitee.com/o/database-research-expert>) |
 | cmc-microsystems | Researcher - AI Computing System | Vancouver, British Columbia, Canada | [开](<https://huaweicanada.recruitee.com/o/researcher-ai-computing-system-3>) |
 | cmc-microsystems | Senior Principal Engineer - AI Framework Programming Expression Technology | Markham, Ontario, Canada | [开](<https://huaweicanada.recruitee.com/o/distinguished-researcher-computer-network-and-protocol-2>) |
-| cmc-microsystems | Technical VP - AI & Data Storage | Markham, Ontario, Canada | [开](<https://huaweicanada.recruitee.com/o/technical-vp-ai-data-storage>) |
 | cmc-microsystems | Researcher – AI/ML Real-Time Embedded OS | Ottawa, Ontario, Canada | [开](<https://huaweicanada.recruitee.com/o/researcher-real-time-embedded-os-2>) |
+| cmc-microsystems | Technical VP - AI & Data Storage | Markham, Ontario, Canada | [开](<https://huaweicanada.recruitee.com/o/technical-vp-ai-data-storage>) |
 | cmc-microsystems | Technical VP – GPU Applications Architecture | Markham, Ontario, Canada | [开](<https://huaweicanada.recruitee.com/o/tech-vp-gpu-architecture>) |
 | cmc-microsystems | Senior Compiler Engineer | Markham, Ontario, Canada | [开](<https://huaweicanada.recruitee.com/o/senior-compiler-engineer-2-7>) |
 | cmc-microsystems | Compiler Engineer | Markham, Ontario, Canada | [开](<https://huaweicanada.recruitee.com/o/compiler-engineer-2-16>) |
@@ -177,12 +185,27 @@
 | solace-systems | Software Developer - Full Stack  | Ottawa, Ontario | [开](<https://solace.bamboohr.com/careers/756>) |
 | solace-systems | Chaos Engineer | Ottawa, Ontario | [开](<https://solace.bamboohr.com/careers/759>) |
 | solace-systems | Senior DevOps Engineer | Ottawa, Ontario | [开](<https://solace.bamboohr.com/careers/761>) |
+| blackberry | QNX Principal Technical/Software Project Manager | Ottawa, Ontario | [开](<https://bb.wd3.myworkdayjobs.com/BlackBerry/job/Ottawa-Ontario/QNX-Principal-Technical-Software-Project-Manager_20260145-1>) |
+| blackberry | QNX Systems Software Developer II (Graphics) | Ottawa, Ontario | [开](<https://bb.wd3.myworkdayjobs.com/BlackBerry/job/Ottawa-Ontario/QNX-Systems-Software-Developer-II_20260180-1>) |
+| blackberry | QNX Senior Cybersecurity Manager | Ottawa, Ontario | [开](<https://bb.wd3.myworkdayjobs.com/BlackBerry/job/Ottawa-Ontario/QNX-Senior-Cybersecurity-Manager_20260011-1>) |
+| blackberry | QNX Principal Technical/Software Project Manager | Ottawa, Ontario | [开](<https://bb.wd3.myworkdayjobs.com/QNX/job/Ottawa-Ontario/QNX-Principal-Technical-Software-Project-Manager_20260145>) |
+| blackberry | QNX Systems Software Developer II (Graphics) | Ottawa, Ontario | [开](<https://bb.wd3.myworkdayjobs.com/QNX/job/Ottawa-Ontario/QNX-Systems-Software-Developer-II_20260180>) |
+| blackberry | QNX Senior Cybersecurity Manager | Ottawa, Ontario | [开](<https://bb.wd3.myworkdayjobs.com/QNX/job/Ottawa-Ontario/QNX-Senior-Cybersecurity-Manager_20260011>) |
+| blackberry-qnx | QNX Principal Technical/Software Project Manager | Ottawa, Ontario | [开](<https://bb.wd3.myworkdayjobs.com/BlackBerry/job/Ottawa-Ontario/QNX-Principal-Technical-Software-Project-Manager_20260145-1>) |
+| blackberry-qnx | QNX Systems Software Developer II (Graphics) | Ottawa, Ontario | [开](<https://bb.wd3.myworkdayjobs.com/BlackBerry/job/Ottawa-Ontario/QNX-Systems-Software-Developer-II_20260180-1>) |
+| blackberry-qnx | QNX Senior Cybersecurity Manager | Ottawa, Ontario | [开](<https://bb.wd3.myworkdayjobs.com/BlackBerry/job/Ottawa-Ontario/QNX-Senior-Cybersecurity-Manager_20260011-1>) |
+| blackberry-qnx | QNX Principal Technical/Software Project Manager | Ottawa, Ontario | [开](<https://bb.wd3.myworkdayjobs.com/QNX/job/Ottawa-Ontario/QNX-Principal-Technical-Software-Project-Manager_20260145>) |
+| blackberry-qnx | QNX Systems Software Developer II (Graphics) | Ottawa, Ontario | [开](<https://bb.wd3.myworkdayjobs.com/QNX/job/Ottawa-Ontario/QNX-Systems-Software-Developer-II_20260180>) |
+| blackberry-qnx | QNX Senior Cybersecurity Manager | Ottawa, Ontario | [开](<https://bb.wd3.myworkdayjobs.com/QNX/job/Ottawa-Ontario/QNX-Senior-Cybersecurity-Manager_20260011>) |
 | ranovus | Silicon Photonics Designer and Tester Engineer | Ottawa, Ontario | [开](<https://ranovus.bamboohr.com/careers/45>) |
 | ranovus | Software Automation Engineer | Ottawa, Ontario | [开](<https://ranovus.bamboohr.com/careers/48>) |
 | ranovus | Senior Embedded Software Engineer | Ottawa, Ontario | [开](<https://ranovus.bamboohr.com/careers/66>) |
 | ranovus | Senior Application Engineer / Senior Field Application Engineer | Ottawa, Ontario | [开](<https://ranovus.bamboohr.com/careers/69>) |
 | intouch-insight | Lead IT Systems Engineer (Infrastructure & DevOps) | Kanata, Ontario | [开](<https://intouchinsight.bamboohr.com/careers/126>) |
 | intouch-insight | Data Analyst | Kanata, Ontario | [开](<https://intouchinsight.bamboohr.com/careers/130>) |
+| adtran-networks-canada-inc | Senior Hardware Engineer | Ottawa, ON | [开](<https://adtran.wd3.myworkdayjobs.com/ADTRAN/job/Ottawa-ON/Senior-Hardware-Engineer_R005503>) |
 | pleora-technologies-inc | DevOps Engineer | Kanata, Ontario | [开](<https://pleora.bamboohr.com/careers/111>) |
+| semtech-canada-corporation-ottawa-design-centre | Senior Staff Engineer, IC Systems Architect | CAN - Ottawa, ON | [开](<https://semtech.wd1.myworkdayjobs.com/SemtechCareers/job/CAN---Ottawa-ON/Senior-Staff-Engineer--IC-Systems-Architect_REQ3378>) |
+| trend-micro-canada-technologies-inc | Applied AI Backend Software Developer - Ottawa, ON | Ottawa | [开](<https://trendmicro.wd3.myworkdayjobs.com/External/job/Ottawa/Applied-AI-Backend-Sr-Software-Developer---Ottawa--ON_R0009722>) |
 
-_未抓(待手动/其他ATS):_ adtran-networks-canada-inc(myworkdayjobs)、blackberry(myworkdayjobs)、blackberry-qnx(myworkdayjobs)、bluewave-ai(applytojob)、cisco-systems-inc(workday)、edgewater-computer-systems-inc(workday)、fidus-systems-inc(workable(JSONDecodeError: Exp))、incognito-software-systems(myworkdayjobs)、iqvia-inc(myworkdayjobs)、jabil-canada-corporation(myworkdayjobs)、juniper-networks-canada-inc(myworkdayjobs)、mavenir(myworkdayjobs)、n-able(icims)、newrocket-iceberg-networks-corporation(greenhouse(no token))、phreesia(myworkdayjobs)、pivotree(dayforcehcm)、quest-software-canada(icims)、rbr(recruitee(no token))、semtech-canada-corporation-ottawa-design-centre(myworkdayjobs)、solink-corporation(bamboohr(no token))、spectrum-control-ltd(myworkdayjobs)、superna-inc(teamtailor)、syntronic-research-and-development-canada(teamtailor)、trellis-corporation(bullhorn)、trend-micro-canada-technologies-inc(myworkdayjobs)、w3-business-network-inc(workday)
+_未抓(待手动/其他ATS):_ bluewave-ai(applytojob)、cisco-systems-inc(workday(0 ottawa / 无站点))、edgewater-computer-systems-inc(workday(0 ottawa / 无站点))、fidus-systems-inc(workable(JSONDecodeError: Exp))、incognito-software-systems(myworkdayjobs(0 ottawa / 无站点))、iqvia-inc(myworkdayjobs(0 ottawa / 无站点))、jabil-canada-corporation(myworkdayjobs(0 ottawa / 无站点))、juniper-networks-canada-inc(myworkdayjobs(0 ottawa / 无站点))、mavenir(myworkdayjobs(0 ottawa / 无站点))、n-able(icims)、newrocket-iceberg-networks-corporation(greenhouse(no token))、phreesia(myworkdayjobs(0 ottawa / 无站点))、pivotree(dayforcehcm)、quest-software-canada(icims)、rbr(recruitee(no token))、solink-corporation(bamboohr(no token))、superna-inc(teamtailor)、syntronic-research-and-development-canada(teamtailor)、trellis-corporation(bullhorn)、w3-business-network-inc(workday(0 ottawa / 无站点))

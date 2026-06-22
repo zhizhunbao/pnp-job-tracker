@@ -32,6 +32,11 @@ TECH_JOB = re.compile(
     r"architect|machine learning|\bai\b|full[-\s]?stack|back[-\s]?end|front[-\s]?end|"
     r"\bweb\b|security|cyber|\bsystems?\b|\bit\b|network|database|analyst|firmware|embedded", re.I)
 SUPPORTED = {"greenhouse", "lever", "bamboohr", "recruitee", "smartrecruiters", "workable"}
+WORKDAY = {"workday", "myworkdayjobs"}  # 企业级 ATS:cxs JSON 端点,需单独发现 host/site
+# careers 页里发现 Workday 站点:<tenant>.wdN.myworkdayjobs.com/<lang?>/<site>
+WD_HOST_RE = re.compile(r"([a-z0-9-]+\.wd\d+\.myworkdayjobs\.com)/(?:[a-z]{2}-[A-Z]{2}/)?([A-Za-z0-9_-]+)")
+# Workday 公司多为全球招聘,客户端按地点过滤到 Ottawa 都会区
+OTTAWA_LOC = re.compile(r"ottawa|kanata|nepean|gloucester|orl[eé]ans|stittsville|manotick|barrhaven", re.I)
 
 from datetime import datetime, timezone  # noqa: E402
 
@@ -61,6 +66,29 @@ def to_iso(v) -> str:
 
 def clean_text(html: str) -> str:
     return re.sub(r"\n{3,}", "\n\n", re.sub(r"<[^>]+>", " ", html or "")).strip()
+
+
+def _money(n) -> str:
+    if not n:
+        return ""
+    return f"${n:,.0f}" if float(n) == int(n) else f"${n:,.2f}"
+
+
+def fmt_lever_salary(sr: dict) -> str:
+    """Lever salaryRange {min,max,currency,interval} -> '$125,000 - $175,000 USD annually'."""
+    if not sr:
+        return ""
+    lo, hi = sr.get("min"), sr.get("max")
+    cur = (sr.get("currency") or "").strip()
+    unit = {"per-hour-wage": "per hour", "per-day-wage": "per day", "per-week-salary": "per week",
+            "per-month-salary": "per month", "per-year-salary": "annually"}.get(sr.get("interval", ""), "")
+    if lo and hi and lo != hi:
+        amt = f"{_money(lo)} - {_money(hi)}"
+    elif lo or hi:
+        amt = _money(lo or hi)
+    else:
+        return ""
+    return " ".join(p for p in [amt, cur, unit] if p)
 
 
 def job_id(j: dict) -> str:
@@ -99,10 +127,17 @@ def fetch_jobs(client, ats, token):
                     for x in j.get("jobs", [])]
         if ats == "lever":
             j = client.get(f"https://api.lever.co/v0/postings/{token}?mode=json").json()
-            return [{"title": x.get("text", ""), "location": (x.get("categories") or {}).get("location", ""),
-                     "url": x.get("hostedUrl", ""), "department": (x.get("categories") or {}).get("team", ""),
-                     "posted": to_iso(x.get("createdAt")), "address": extract_address(x.get("descriptionPlain", "")),
-                     "description": x.get("descriptionPlain", "")} for x in j]
+            out = []
+            for x in j:
+                dp = x.get("descriptionPlain", "") or ""
+                add = x.get("additionalPlain", "") or ""  # 结尾段(含 Compensation & Benefits)之前漏抓
+                full = dp + ("\n\n" + add if add else "")
+                out.append({"title": x.get("text", ""), "location": (x.get("categories") or {}).get("location", ""),
+                            "url": x.get("hostedUrl", ""), "department": (x.get("categories") or {}).get("team", ""),
+                            "posted": to_iso(x.get("createdAt")), "address": extract_address(dp),
+                            "salary": fmt_lever_salary(x.get("salaryRange")),  # ATS 结构化薪资优先
+                            "description": full})
+            return out
         if ats == "bamboohr":
             j = client.get(f"https://{token}.bamboohr.com/careers/list").json()
             out = []
@@ -110,17 +145,18 @@ def fetch_jobs(client, ats, token):
                 jid = x.get("id", "")
                 loc = x.get("location") or {}
                 loc = ", ".join(v for v in [loc.get("city"), loc.get("state")] if v) if isinstance(loc, dict) else str(loc)
-                desc = ""
-                try:  # 详情页含完整描述
+                desc, comp = "", ""
+                try:  # 详情页含完整描述 + 结构化薪资 compensation
                     jo = (client.get(f"https://{token}.bamboohr.com/careers/{jid}/detail").json().get("result") or {}).get("jobOpening") or {}
                     desc = jo.get("description", "")
+                    comp = (jo.get("compensation") or "").strip()
                 except Exception:  # noqa: BLE001
                     pass
                 out.append({"title": x.get("jobOpeningName", ""), "location": loc,
                             "url": f"https://{token}.bamboohr.com/careers/{jid}",
                             "department": x.get("departmentLabel", ""),
                             "posted": to_iso(x.get("datePosted", "")),
-                            "address": extract_address(desc), "description": desc})
+                            "address": extract_address(desc), "salary": comp, "description": desc})
             return out
         if ats == "recruitee":
             j = client.get(f"https://{token}.recruitee.com/api/offers/").json()
@@ -164,11 +200,65 @@ def fetch_jobs(client, ats, token):
     return []
 
 
+def workday_targets(client, careers_url: str) -> list[tuple[str, str, str]]:
+    """从 careers 页 HTML 发现 Workday 站点 → [(host, tenant, site)]。"""
+    try:
+        html = client.get(careers_url).text
+    except Exception:  # noqa: BLE001
+        return []
+    seen, out = set(), []
+    for host, site in WD_HOST_RE.findall(html):
+        if site.lower() in {"jobs", ""} or (host, site) in seen:
+            continue
+        seen.add((host, site))
+        out.append((host, host.split(".")[0], site))  # tenant = 子域第一段
+    return out[:4]  # 同公司最多取 4 个站点(主站 + 学生站等)
+
+
+def fetch_workday(client, targets: list[tuple[str, str, str]]) -> list[dict]:
+    """翻页 cxs/jobs,过滤 Ottawa,逐岗取详情。返回与 fetch_jobs 同构的标准化职位。"""
+    out, seen = [], set()
+    hdr = {"Accept": "application/json"}
+    for host, tenant, site in targets:
+        base = f"https://{host}/wday/cxs/{tenant}/{site}"
+        off = 0
+        try:
+            while True:
+                d = client.post(f"{base}/jobs", headers=hdr,
+                                json={"appliedFacets": {}, "limit": 20, "offset": off, "searchText": ""}).json()
+                posts = d.get("jobPostings", [])
+                if not posts:
+                    break
+                for p in posts:
+                    ep = p.get("externalPath", "")
+                    if ep in seen or not OTTAWA_LOC.search(p.get("locationsText", "")):
+                        continue
+                    seen.add(ep)
+                    try:
+                        jpi = client.get(f"{base}{ep}", headers=hdr).json().get("jobPostingInfo", {})
+                    except Exception:  # noqa: BLE001
+                        jpi = {}
+                    desc = jpi.get("jobDescription", "") or ""
+                    out.append({
+                        "title": jpi.get("title") or p.get("title", ""),
+                        "location": jpi.get("location") or p.get("locationsText", ""),
+                        "url": jpi.get("externalUrl", ""), "department": "",
+                        "posted": to_iso(jpi.get("startDate", "")),
+                        "address": extract_address(desc), "salary": "", "description": desc,
+                    })
+                off += 20
+                if off >= d.get("total", 0):
+                    break
+        except Exception:  # noqa: BLE001
+            continue
+    return out
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="Stage 3: pull jobs from company ATS feeds.")
     ap.add_argument("--region", default="ottawa-kanata-north")
     args = ap.parse_args()
-    region_dir = COMPANIES_DIR / args.region
+    region_dir = COMPANIES_DIR  # _paths.COMPANIES 已含地域(processed/<region>/companies)
 
     summary, skipped = [], []
     with httpx.Client(headers={"User-Agent": UA}, follow_redirects=True, timeout=20) as client:
@@ -178,18 +268,25 @@ def main() -> None:
                 continue
             car = json.loads(cj.read_text(encoding="utf-8"))
             ats = car.get("ats", "")
-            if ats not in SUPPORTED:
+            token = ""
+            if ats in WORKDAY:  # Workday:发现 host/site → cxs 翻页 + Ottawa 过滤
+                jobs = fetch_workday(client, workday_targets(client, car.get("careers_url", "")))
+                if not jobs:
+                    skipped.append((folder.name, f"{ats}(0 ottawa / 无站点)"))
+                    continue
+            elif ats not in SUPPORTED:
                 if ats:
                     skipped.append((folder.name, ats))
                 continue
-            token = _token(client, car.get("careers_url", ""), ats)
-            if not token:
-                skipped.append((folder.name, f"{ats}(no token)"))
-                continue
-            jobs = fetch_jobs(client, ats, token)
-            if isinstance(jobs, dict):  # error
-                skipped.append((folder.name, f"{ats}({jobs['error'][:20]})"))
-                continue
+            else:
+                token = _token(client, car.get("careers_url", ""), ats)
+                if not token:
+                    skipped.append((folder.name, f"{ats}(no token)"))
+                    continue
+                jobs = fetch_jobs(client, ats, token)
+                if isinstance(jobs, dict):  # error
+                    skipped.append((folder.name, f"{ats}({jobs['error'][:20]})"))
+                    continue
             for jb in jobs:
                 jb["tech"] = bool(TECH_JOB.search(jb.get("title", "")))
             # 每个职位写一份详情 .md(frontmatter + 完整描述);并把 description 移出 jobs.json 保持精简
