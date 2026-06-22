@@ -211,8 +211,17 @@ export interface Job {
    * 职业大类(科技/医疗/技工…)
    */
   category?: string | null;
+  country?: string | null;
   province?: string | null;
   city?: string | null;
+  /**
+   * 社区/区(Kanata/Nepean/Orléans…)
+   */
+  district?: string | null;
+  /**
+   * 精确地址(街号+邮编)
+   */
+  address?: string | null;
   region?: string | null;
   /**
    * 第一方投递链接
@@ -222,9 +231,13 @@ export interface Job {
   salary?: string | null;
   datePosted?: string | null;
   /**
-   * ATS名/JobBank/...
+   * 原始来源:indeed.com/Talent.com/lever/bamboohr…
    */
   source?: string | null;
+  /**
+   * 数据渠道:raw 下哪个来源
+   */
+  origin?: ('jobbank' | 'ats' | 'directory') | null;
   isAgency?: boolean | null;
   pnpStreams?: (number | PnpStream)[] | null;
   policyRefs?: (number | PolicyDoc)[] | null;
@@ -236,6 +249,10 @@ export interface Job {
   firstSeen?: string | null;
   lastSeen?: string | null;
   status?: ('open' | 'closed') | null;
+  /**
+   * 下架时间(某次抓取不再出现)
+   */
+  closedAt?: string | null;
   /**
    * posting_id,用于增量去重
    */
@@ -470,14 +487,18 @@ export interface JobsSelect<T extends boolean = true> {
   company?: T;
   noc?: T;
   category?: T;
+  country?: T;
   province?: T;
   city?: T;
+  district?: T;
+  address?: T;
   region?: T;
   applyUrl?: T;
   officialUrl?: T;
   salary?: T;
   datePosted?: T;
   source?: T;
+  origin?: T;
   isAgency?: T;
   pnpStreams?: T;
   policyRefs?: T;
@@ -486,6 +507,7 @@ export interface JobsSelect<T extends boolean = true> {
   firstSeen?: T;
   lastSeen?: T;
   status?: T;
+  closedAt?: T;
   externalId?: T;
   updatedAt?: T;
   createdAt?: T;

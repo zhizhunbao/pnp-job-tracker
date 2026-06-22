@@ -1,132 +1,851 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 export type JobRow = {
   id: string | number
   title: string
   company: string
   source: string
+  origin: string
+  country: string
   province: string
   city: string
+  district: string
   address: string
   noc: string
   category: string
   accessibility: string
   score: number | null
+  salary: string
   officialUrl: string
   applyUrl: string
   datePosted: string
   lastSeen: string
+  status: string
+  closedAt: string
 }
 
 const uniq = (xs: string[]) => Array.from(new Set(xs.filter(Boolean))).sort()
 const accLabel: Record<string, string> = {
   'co-op': 'co-op', junior: '初级', intermediate: '中级', senior: '高级', unknown: '—',
 }
-const catColor: Record<string, string> = {
-  'TEER 0': '#dbeafe;#1e40af', 'TEER 1': '#dbeafe;#1e40af', 'TEER 2': '#dcfce7;#166534',
-  'TEER 3': '#fef9c3;#854d0e', 'TEER 4': '#ffedd5;#9a3412', 'TEER 5': '#f3f4f6;#6b7280', 未分类: '#fafafa;#9ca3af',
+// 官方 NOC 层级:TEER(第2位) · 大分类(第1位,10 大类) · 中分类 · 小分类
+type Cat = { name: string; bg: string; fg: string }
+const NA: Cat = { name: '未分类', bg: '#fafafa', fg: '#9ca3af' }
+// 大分类 = NOC 第 1 位
+const BROAD: Record<string, Cat> = {
+  '0': { name: '管理', bg: '#dbeafe', fg: '#1e40af' },
+  '1': { name: '商务', bg: '#e0e7ff', fg: '#3730a3' },
+  '2': { name: '科技', bg: '#cffafe', fg: '#155e75' },
+  '3': { name: '医疗', bg: '#dcfce7', fg: '#166534' },
+  '4': { name: '教育', bg: '#fae8ff', fg: '#86198f' },
+  '5': { name: '文体', bg: '#fce7f3', fg: '#9d174d' },
+  '6': { name: '服务', bg: '#fef9c3', fg: '#854d0e' },
+  '7': { name: '技工', bg: '#ffedd5', fg: '#9a3412' },
+  '8': { name: '资源', bg: '#ecfccb', fg: '#3f6212' },
+  '9': { name: '制造', bg: '#f3f4f6', fg: '#374151' },
 }
+// 中/小分类:数据集出现的 NOC 单元组(五位码)→ 中分类 / 小分类中文名
+const NOC_INFO: Record<string, { mid: string; fine: string }> = {
+  '00012': { mid: '高级管理', fine: '高层管理' },
+  '20012': { mid: 'IT', fine: 'IT/信息系统管理' },
+  '11100': { mid: '金融', fine: '会计/财务分析' },
+  '11200': { mid: '人力资源', fine: '人力资源' },
+  '11202': { mid: '市场营销', fine: '市场/品牌/传播' },
+  '12013': { mid: '客户成功', fine: '客户成功/实施' },
+  '12200': { mid: '财务支持', fine: '记账/薪酬' },
+  '13110': { mid: '行政', fine: '行政助理' },
+  '14101': { mid: '办公支持', fine: '文员/数据录入' },
+  '21211': { mid: 'IT', fine: '数据科学/机器学习' },
+  '21220': { mid: 'IT', fine: '网络安全' },
+  '21222': { mid: 'IT', fine: '系统/业务分析' },
+  '21223': { mid: 'IT', fine: '数据库' },
+  '21231': { mid: 'IT', fine: '软件工程' },
+  '21232': { mid: 'IT', fine: '软件开发' },
+  '21234': { mid: 'IT', fine: 'Web 开发' },
+  '21311': { mid: '工程', fine: '计算机/硬件工程' },
+  '22221': { mid: 'IT', fine: 'IT 支持/网络' },
+  '22222': { mid: 'IT', fine: '测试/QA' },
+  '31102': { mid: '医疗专业', fine: '医生/全科' },
+  '31110': { mid: '医疗专业', fine: '牙科' },
+  '31120': { mid: '医疗专业', fine: '药剂师' },
+  '31202': { mid: '医疗专业', fine: '理疗/康复' },
+  '31301': { mid: '护理', fine: '注册护士' },
+  '32101': { mid: '护理', fine: '实用护士' },
+  '32120': { mid: '医疗技术', fine: '医学影像/化验' },
+  '41220': { mid: '教育', fine: '教师/讲师' },
+  '41300': { mid: '社会服务', fine: '社工/社区' },
+  '42202': { mid: '教育辅助', fine: '幼教/托育' },
+  '44101': { mid: '照护', fine: '护理员/PSW' },
+  '52120': { mid: '设计', fine: 'UI/UX/平面设计' },
+  '60010': { mid: '销售管理', fine: '销售/业务管理' },
+  '62200': { mid: '餐饮', fine: '厨师/主厨' },
+  '63200': { mid: '餐饮', fine: '厨工' },
+  '64100': { mid: '零售', fine: '零售销售' },
+  '64409': { mid: '客服', fine: '客服/安保' },
+  '64410': { mid: '客服', fine: '客服' },
+  '65200': { mid: '餐饮', fine: '餐饮服务' },
+  '65310': { mid: '清洁', fine: '清洁/保洁' },
+  '72100': { mid: '技工', fine: '机械师/CNC' },
+  '72106': { mid: '技工', fine: '焊工' },
+  '72200': { mid: '技工', fine: '电工' },
+  '72300': { mid: '技工', fine: '管道工' },
+  '72310': { mid: '技工', fine: '木工' },
+  '72402': { mid: '技工', fine: '暖通/制冷' },
+  '72410': { mid: '技工', fine: '汽修/钳工' },
+  '73300': { mid: '运输', fine: '货车司机' },
+  '75101': { mid: '物流', fine: '物料搬运/仓储' },
+  '75110': { mid: '建筑', fine: '建筑劳工' },
+}
+// NOC 不在表里时的中分类兜底(按前缀)
+const MID_PREFIX: [RegExp, string][] = [
+  [/^0/, '管理'], [/^11/, '金融商务'], [/^1[234]/, '行政支持'],
+  [/^21[345]/, '工程'], [/^2/, 'IT'],
+  [/^31|^32/, '医疗专业'], [/^33|^44/, '照护'],
+  [/^41/, '教育/社会'], [/^42/, '教育辅助'], [/^5/, '文化艺术'],
+  [/^60/, '销售管理'], [/^62|^63|^65[02]/, '餐饮'], [/^64/, '销售/客服'], [/^65/, '服务支持'],
+  [/^73/, '运输'], [/^75/, '劳工/物流'], [/^7/, '技工'],
+  [/^8/, '资源'], [/^9/, '制造'],
+]
+const catOf = (noc: string): Cat => (noc && /^\d/.test(noc) && BROAD[noc[0]]) || NA
+const midOf = (noc: string): string => {
+  if (!noc || !/^\d/.test(noc)) return '未分类'
+  if (NOC_INFO[noc]) return NOC_INFO[noc].mid
+  for (const [re, name] of MID_PREFIX) if (re.test(noc)) return name
+  return catOf(noc).name
+}
+const fineOf = (noc: string): string => {
+  if (!noc || !/^\d/.test(noc)) return '未分类'
+  return NOC_INFO[noc]?.fine || midOf(noc)
+}
+
+// 统一清洗薪资:任意格式("$22.01 - $33.81 CAD per hour"、"$46.70 hourly"、
+// "$56,821 to $122,631 annually"…)→ 规范显示 + 年薪数值(排序用,时薪×2080、范围取中点)。
+const parseSalary = (raw: string): { annual: number | null; text: string } => {
+  if (!raw) return { annual: null, text: '—' }
+  const all = (raw.match(/\d[\d,]*(?:\.\d+)?/g) || []).map((n) => parseFloat(n.replace(/,/g, ''))).filter((n) => !isNaN(n) && n > 0)
+  const nums = all.filter((n) => n < 1_000_000) // 过滤离谱金额(源 typo/抓串,如 "$145,0000"→145万)
+  const use = nums.length ? nums : all
+  if (!use.length) return { annual: null, text: raw }
+  const low = raw.toLowerCase()
+  const min = Math.min(...use), max = Math.max(...use)
+  // 单位判断 + 常识纠错:① <2000 无单位 → 时薪;② 时薪值≥$1000 → 实为年薪(源把年薪误标成 hourly)
+  let unit: 'hr' | 'wk' | 'mo' | 'yr' = /month/.test(low) ? 'mo' : /week/.test(low) ? 'wk'
+    : /hour|\/\s?hr|hourly/.test(low) ? 'hr'
+    : max < 2000 ? 'hr' : 'yr'
+  if (unit === 'hr' && min >= 1000) unit = 'yr'
+  const mult = unit === 'hr' ? 2080 : unit === 'wk' ? 52 : unit === 'mo' ? 12 : 1
+  const annual = Math.round(((min + max) / 2) * mult)
+  const sub = unit === 'hr' ? '/hr' : unit === 'wk' ? '/wk' : unit === 'mo' ? '/mo' : '/yr'
+  const money = (n: number) => unit === 'yr' ? `$${Math.round(n / 1000)}K` : `$${Math.round(n)}`
+  const text = min === max ? `${money(min)}${sub}` : `${money(min)}–${money(max)}${sub}`
+  return { annual, text }
+}
+// 各列排序取值:数值列返回 number,文本列返回 string,缺值返回 null(排末尾)
+const sortVal = (j: JobRow, key: ColKey): number | string | null => {
+  switch (key) {
+    case 'score': return j.score
+    case 'salary': case 'salaryYr': return parseSalary(j.salary).annual
+    case 'direct': return isDirect(j) ? 1 : 0
+    case 'address': return j.address || null
+    case 'teer': return teerOf(j.noc)
+    case 'datePosted': return j.datePosted || null
+    case 'lastSeen': return j.lastSeen || null
+    case 'broad': { const n = catOf(j.noc).name; return n === '未分类' ? null : n }
+    case 'mid': { const n = midOf(j.noc); return n === '未分类' ? null : n }
+    case 'fine': { const n = fineOf(j.noc); return n === '未分类' ? null : n }
+    case 'noc': return j.noc || null
+    case 'accessibility': return j.accessibility && j.accessibility !== 'unknown' ? j.accessibility : null
+    case 'company': return j.company || null
+    case 'title': return j.title || null
+    case 'source': return sourceLabel(j)
+    case 'origin': return ORIGIN_LABEL[j.origin] || j.origin || null
+    case 'status': return j.status === 'closed' ? 1 : 0
+    case 'closedAt': return j.closedAt || null
+    case 'country': return parseLoc(j).country || null
+    case 'province': return parseLoc(j).prov || null
+    case 'city': return parseLoc(j).city || null
+    case 'district': return parseLoc(j).district || null
+    default: return null
+  }
+}
+const teerOf = (noc: string): number | null => (noc && noc.length === 5 && /\d/.test(noc[1]) ? Number(noc[1]) : null)
 const mapsUrl = (q: string) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`
+// 大渥太华市 2001 年合并的社区(Job Bank 仍用老社区名标注)→ 显示为「社区, Ottawa」
+const OTTAWA_COMMUNITIES = new Set([
+  'nepean', 'gloucester', 'kanata', 'kanata north', 'orleans', 'orléans', 'orleans south',
+  'stittsville', 'manotick', 'vanier', 'cumberland', 'greely', 'carp', 'dunrobin',
+  'metcalfe', 'osgoode', 'richmond', 'barrhaven', 'rockcliffe',
+])
+// 社区别名归一(同一区域不同写法 → 规范名)
+const DISTRICT_ALIAS: Record<string, string> = {
+  'orleans': 'Orléans', 'orléans': 'Orléans', 'orleans south': 'Orléans',
+  'kanata north': 'Kanata',
+}
+const canonDistrict = (low: string, core: string): string => DISTRICT_ALIAS[low] || core
+// 地点显示名:渥太华社区统一带上「, Ottawa」,其它城市原样
+const locDisplay = (j: JobRow): string => {
+  let city = (j.city || '').trim()
+  if (!city && j.address) city = j.address.split(',')[0].trim()
+  if (!city) return ''
+  const core = city.replace(/[,\s]+(on|ontario|canada)\b/gi, '').replace(/,\s*$/, '').trim()
+  const low = core.toLowerCase()
+  if (low.includes('ottawa')) return 'Ottawa'
+  if (OTTAWA_COMMUNITIES.has(low)) return `${canonDistrict(low, core)}, Ottawa`
+  return core || city
+}
+// ── 来源:Job Bank 渠道(含它聚合的 indeed/talent 等)统一显示「Job Bank」;ATS 平台名美化 ──
+const SOURCE_PRETTY: Record<string, string> = {
+  lever: 'Lever', bamboohr: 'BambooHR', greenhouse: 'Greenhouse', smartrecruiters: 'SmartRecruiters',
+  workable: 'Workable', recruitee: 'Recruitee', myworkdayjobs: 'Workday', workday: 'Workday',
+}
+const fromJobBank = (j: JobRow) => /jobbank\.gc\.ca/i.test(j.applyUrl)
+const sourceLabel = (j: JobRow): string =>
+  fromJobBank(j) ? 'Job Bank' : (SOURCE_PRETTY[(j.source || '').toLowerCase()] || j.source || '—')
+// 直接雇主:ATS 第一方=直接;Job Bank 渠道仅 source=='Job Bank'(雇主直发)算直接,其余是聚合转贴
+const isDirect = (j: JobRow): boolean => (fromJobBank(j) ? j.source === 'Job Bank' : true)
+
+// ── 地点拆 省/市/区 ──
+const PROV_NAMES: Record<string, string> = {
+  ON: 'Ontario', BC: 'British Columbia', AB: 'Alberta', QC: 'Quebec', MB: 'Manitoba', SK: 'Saskatchewan',
+  NS: 'Nova Scotia', NB: 'New Brunswick', NL: 'Newfoundland and Labrador', PE: 'Prince Edward Island',
+  NT: 'Northwest Territories', YT: 'Yukon', NU: 'Nunavut',
+}
+// 地点已由清洗脚本(04c)规范化进库,这里直接读结构化字段(省码→全称仅用于显示)
+const parseLoc = (j: JobRow): { country: string; prov: string; city: string; district: string } => ({
+  country: j.country || (j.province ? 'Canada' : ''),
+  prov: PROV_NAMES[(j.province || '').toUpperCase()] || j.province || '',
+  city: j.city || '',
+  district: j.district || '',
+})
+
+// 综合检索串:搜索框对所有列字段生效(职位/公司/省市区/NOC/分类/薪资/来源/经验/评分/TEER)
+const searchHay = (j: JobRow): string => {
+  const t = teerOf(j.noc)
+  const L = parseLoc(j)
+  return [
+    j.title, j.company, sourceLabel(j), j.source, j.noc, j.salary,
+    catOf(j.noc).name, midOf(j.noc), fineOf(j.noc),
+    L.prov, L.city, L.district, j.address,
+    accLabel[j.accessibility], j.accessibility,
+    j.score != null ? String(j.score) : '', t != null ? `TEER ${t}` : '',
+  ].filter(Boolean).join(' ').toLowerCase()
+}
+// 来源链接 = 该来源的板块根(区别于职位指向的具体帖子)。
+// 例:lever 的公司板块、bamboohr 的 /careers、Job Bank 的 /jobsearch
+const sourceUrl = (applyUrl: string): string => {
+  if (!applyUrl) return ''
+  try {
+    const u = new URL(applyUrl)
+    const seg = u.pathname.split('/').filter(Boolean)[0]
+    return seg ? `${u.origin}/${seg}` : u.origin
+  } catch { return '' }
+}
+
+// ── 列配置(可勾选;职位列始终显示) ──────────────────────────────
+type ColKey = 'score' | 'broad' | 'mid' | 'fine' | 'teer' | 'title' | 'company' | 'noc' | 'accessibility' | 'salary' | 'salaryYr' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'lastSeen' | 'closedAt'
+const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean }[] = [
+  { key: 'score', label: '评分', default: true },
+  { key: 'broad', label: '大分类', default: true },
+  { key: 'mid', label: '中分类', default: false },
+  { key: 'fine', label: '小分类', default: false },
+  { key: 'teer', label: 'TEER', default: false },
+  { key: 'company', label: '公司', default: true },
+  { key: 'title', label: '职位', default: true, always: true },
+  { key: 'noc', label: 'NOC', default: false },
+  { key: 'accessibility', label: '经验级别', default: false },
+  { key: 'country', label: '国家', default: false },
+  { key: 'province', label: '省', default: false },
+  { key: 'city', label: '市', default: false },
+  { key: 'district', label: '区', default: true },
+  { key: 'address', label: '地址', default: false },
+  { key: 'salary', label: '薪资', default: true },
+  { key: 'salaryYr', label: '年薪(折算)', default: true },
+  { key: 'source', label: '来源', default: true },
+  { key: 'origin', label: '渠道', default: false },
+  { key: 'direct', label: '发布', default: true },
+  { key: 'status', label: '状态', default: true },
+  { key: 'datePosted', label: '发布时间', default: true },
+  { key: 'lastSeen', label: '更新时间', default: false },
+  { key: 'closedAt', label: '下架时间', default: false },
+]
+const DEFAULT_COLS = COLUMNS.filter((c) => c.default).map((c) => c.key)
+const PREF_KEY = 'jobs.visibleCols.v6'
+const ORIGIN_LABEL: Record<string, string> = { jobbank: 'Job Bank', ats: 'ATS', directory: '社区名单' }
 
 export default function JobsTable({ jobs, updatedAt }: { jobs: JobRow[]; updatedAt?: string }) {
   const [q, setQ] = useState('')
-  const [source, setSource] = useState('')
-  const [province, setProvince] = useState('')
-  const [category, setCategory] = useState('')
+  const [directOnly, setDirectOnly] = useState(false)
+  const [fCountry, setFCountry] = useState(''); const [fProv, setFProv] = useState(''); const [fCity, setFCity] = useState(''); const [fDistrict, setFDistrict] = useState('')
+  const [fBroad, setFBroad] = useState(''); const [fMid, setFMid] = useState(''); const [fFine, setFFine] = useState('')
+  const [fTeer, setFTeer] = useState(''); const [fSource, setFSource] = useState(''); const [fAcc, setFAcc] = useState('')
+  const [visible, setVisible] = useState<ColKey[]>(DEFAULT_COLS)
+  const [popup, setPopup] = useState<{ field: ColKey; job: JobRow } | null>(null)
+  const [sort, setSort] = useState<{ key: ColKey; dir: 'asc' | 'desc' }>({ key: 'score', dir: 'desc' })
+  const [colOpen, setColOpen] = useState(false)
+  const colRef = useRef<HTMLDivElement>(null)
+  const [limit, setLimit] = useState(60)          // 滚动分页:当前渲染行数
+  const sentinelRef = useRef<HTMLDivElement>(null)
+  const toggleSort = (key: ColKey) =>
+    setSort((s) => {
+      if (s.key !== key) return { key, dir: 'desc' }       // 新列:降序
+      if (s.dir === 'desc') return { key, dir: 'asc' }      // 第二下:升序
+      return { key: 'score', dir: 'desc' }                  // 第三下:取消 → 回默认(评分降序)
+    })
 
-  const sources = useMemo(() => uniq(jobs.map((j) => j.source)), [jobs])
-  const provinces = useMemo(() => uniq(jobs.map((j) => j.province)), [jobs])
-  const categories = useMemo(() => uniq(jobs.map((j) => j.category)), [jobs])
+  // 读/存列偏好(挂载后再读,避免 SSR 水合不一致)
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(PREF_KEY)
+      if (saved) {
+        const keys = (JSON.parse(saved) as ColKey[]).filter((k) => COLUMNS.some((c) => c.key === k))
+        if (keys.length) setVisible(keys)
+      }
+    } catch { /* ignore */ }
+  }, [])
+  const saveCols = (next: ColKey[]) => {
+    try { localStorage.setItem(PREF_KEY, JSON.stringify(next)) } catch { /* ignore */ }
+    setVisible(next)
+  }
+  const toggleCol = (key: ColKey) => saveCols(visible.includes(key) ? visible.filter((k) => k !== key) : [...visible, key])
+  const TOGGLABLE = COLUMNS.filter((c) => !c.always).map((c) => c.key)
+  const selectAllCols = () => saveCols(TOGGLABLE)
+  const invertCols = () => saveCols(TOGGLABLE.filter((k) => !visible.includes(k)))
+  const shown = COLUMNS.filter((c) => c.always || visible.includes(c.key))
+
+  // Esc 关弹框
+  useEffect(() => {
+    if (!popup) return
+    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') setPopup(null) }
+    window.addEventListener('keydown', h)
+    return () => window.removeEventListener('keydown', h)
+  }, [popup])
+
+  // 点击其他区域关闭「字段」下拉
+  useEffect(() => {
+    if (!colOpen) return
+    const h = (e: MouseEvent) => { if (colRef.current && !colRef.current.contains(e.target as Node)) setColOpen(false) }
+    document.addEventListener('mousedown', h)
+    return () => document.removeEventListener('mousedown', h)
+  }, [colOpen])
+
+  // 滚动分页:筛选/排序变化重置;接近底部自动加载更多
+  useEffect(() => { setLimit(60) }, [q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, sort])
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const io = new IntersectionObserver((es) => { if (es[0].isIntersecting) setLimit((l) => l + 60) }, { rootMargin: '400px' })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+
+  // 联动选项:下级只列上级选中后仍存在的值(国家→省→市→区)
+  const countryOpts = useMemo(() => uniq(jobs.map((j) => parseLoc(j).country)), [jobs])
+  const provOpts = useMemo(() => uniq(jobs.filter((j) => !fCountry || parseLoc(j).country === fCountry).map((j) => parseLoc(j).prov)), [jobs, fCountry])
+  const cityOpts = useMemo(() => uniq(jobs.filter((j) => { const L = parseLoc(j); return (!fCountry || L.country === fCountry) && (!fProv || L.prov === fProv) }).map((j) => parseLoc(j).city)), [jobs, fCountry, fProv])
+  const distOpts = useMemo(() => uniq(jobs.filter((j) => { const L = parseLoc(j); return (!fCountry || L.country === fCountry) && (!fProv || L.prov === fProv) && (!fCity || L.city === fCity) }).map((j) => parseLoc(j).district)), [jobs, fCountry, fProv, fCity])
+  const broadOpts = useMemo(() => uniq(jobs.map((j) => catOf(j.noc).name)), [jobs])
+  const midOpts = useMemo(() => uniq(jobs.filter((j) => !fBroad || catOf(j.noc).name === fBroad).map((j) => midOf(j.noc))), [jobs, fBroad])
+  const fineOpts = useMemo(() => uniq(jobs.filter((j) => (!fBroad || catOf(j.noc).name === fBroad) && (!fMid || midOf(j.noc) === fMid)).map((j) => fineOf(j.noc))), [jobs, fBroad, fMid])
+  const teerOpts = useMemo(() => uniq(jobs.map((j) => { const t = teerOf(j.noc); return t == null ? '未分类' : `TEER ${t}` })), [jobs])
+  const sourceOpts = useMemo(() => uniq(jobs.map((j) => sourceLabel(j))), [jobs])
+  const accOpts = useMemo(() => uniq(jobs.map((j) => accLabel[j.accessibility] ?? '—')), [jobs])
+  const anyFilter = q || directOnly || fCountry || fProv || fCity || fDistrict || fBroad || fMid || fFine || fTeer || fSource || fAcc
+  const clearAll = () => { setQ(''); setDirectOnly(false); setFCountry(''); setFProv(''); setFCity(''); setFDistrict(''); setFBroad(''); setFMid(''); setFFine(''); setFTeer(''); setFSource(''); setFAcc('') }
 
   const rows = useMemo(() => {
     const term = q.trim().toLowerCase()
-    return jobs.filter(
-      (j) =>
-        (!source || j.source === source) &&
-        (!province || j.province === province) &&
-        (!category || j.category === category) &&
-        (!term || `${j.title} ${j.company}`.toLowerCase().includes(term)),
-    )
-  }, [jobs, q, source, province, category])
+    const filtered = jobs.filter((j) => {
+      const L = parseLoc(j); const t = teerOf(j.noc)
+      return (!directOnly || isDirect(j)) &&
+        (!fCountry || L.country === fCountry) && (!fProv || L.prov === fProv) && (!fCity || L.city === fCity) && (!fDistrict || L.district === fDistrict) &&
+        (!fBroad || catOf(j.noc).name === fBroad) && (!fMid || midOf(j.noc) === fMid) && (!fFine || fineOf(j.noc) === fFine) &&
+        (!fTeer || (t == null ? '未分类' : `TEER ${t}`) === fTeer) &&
+        (!fSource || sourceLabel(j) === fSource) && (!fAcc || (accLabel[j.accessibility] ?? '—') === fAcc) &&
+        (!term || searchHay(j).includes(term))
+    })
+    const dir = sort.dir === 'asc' ? 1 : -1
+    return filtered.slice().sort((a, b) => {
+      const va = sortVal(a, sort.key)
+      const vb = sortVal(b, sort.key)
+      // 缺值始终排到最后(不受升降序影响)
+      if (va == null && vb == null) return 0
+      if (va == null) return 1
+      if (vb == null) return -1
+      if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * dir
+      return String(va).localeCompare(String(vb), 'zh') * dir
+    })
+  }, [jobs, q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, sort])
 
   return (
     <div style={{ background: '#fff', color: '#1f2937', minHeight: '100vh', fontFamily: 'system-ui, sans-serif' }}>
+      <style>{`.jcell:hover{background:#eff6ff !important}`}</style>
       <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1.5rem 1.25rem' }}>
-        <h1 style={{ margin: '0 0 2px', color: '#111827' }}>Jobs</h1>
-        <p style={{ color: '#6b7280', marginTop: 0, fontSize: 14 }}>
-          {rows.length} / {jobs.length} 个职位 · 按移民评分排序{updatedAt ? ` · 数据更新于 ${updatedAt.slice(0, 16).replace('T', ' ')}` : ''}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap' }}>
+          <h1 style={{ margin: '0 0 2px', color: '#111827' }}>Jobs</h1>
+          {updatedAt && <span style={{ color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }}>更新 {updatedAt.slice(0, 16).replace('T', ' ')}</span>}
+        </div>
+        <p style={{ color: '#6b7280', marginTop: 0, fontSize: 13 }}>
+          {rows.length === jobs.length ? `${jobs.length} 个职位` : `${rows.length} / ${jobs.length}`} · 评分排序
         </p>
-        <p style={{ color: '#9ca3af', marginTop: -6, fontSize: 12 }}>评分按职业分类各自标准 · 点职位名→投递 · 点公司名→官网 · 点地点→地图</p>
 
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '1rem 0' }}>
-          <input placeholder="搜索职位 / 公司…" value={q} onChange={(e) => setQ(e.target.value)} style={{ ...ctrl, flex: '1 1 220px' }} />
-          <select value={category} onChange={(e) => setCategory(e.target.value)} style={ctrl}>
-            <option value="">全部分类</option>
-            {categories.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
-          <select value={source} onChange={(e) => setSource(e.target.value)} style={ctrl}>
-            <option value="">全部来源</option>
-            {sources.map((s) => <option key={s} value={s}>{s}</option>)}
-          </select>
-          <select value={province} onChange={(e) => setProvince(e.target.value)} style={ctrl}>
-            <option value="">全部省份</option>
-            {provinces.map((p) => <option key={p} value={p}>{p}</option>)}
-          </select>
-          {(q || source || province || category) && (
-            <button onClick={() => { setQ(''); setSource(''); setProvince(''); setCategory('') }} style={{ ...ctrl, cursor: 'pointer', background: '#f3f4f6' }}>清除</button>
-          )}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '1rem 0' }}>
+          {/* 行1:地理(国家→省→市→区 联动) */}
+          <div style={filtRow}>
+            <span style={filtLabel}>地理</span>
+            <Sel value={fCountry} onChange={(v) => { setFCountry(v); setFProv(''); setFCity(''); setFDistrict('') }} opts={countryOpts} all="全部国家" />
+            <Sel value={fProv} onChange={(v) => { setFProv(v); setFCity(''); setFDistrict('') }} opts={provOpts} all="全部省" />
+            <Sel value={fCity} onChange={(v) => { setFCity(v); setFDistrict('') }} opts={cityOpts} all="全部市" />
+            <Sel value={fDistrict} onChange={setFDistrict} opts={distOpts} all="全部区" />
+          </div>
+          {/* 行2:分类(TEER + 大→中→小 联动) */}
+          <div style={filtRow}>
+            <span style={filtLabel}>分类</span>
+            <Sel value={fTeer} onChange={setFTeer} opts={teerOpts} all="全部 TEER" />
+            <Sel value={fBroad} onChange={(v) => { setFBroad(v); setFMid(''); setFFine('') }} opts={broadOpts} all="全部大类" />
+            <Sel value={fMid} onChange={(v) => { setFMid(v); setFFine('') }} opts={midOpts} all="全部中类" />
+            <Sel value={fFine} onChange={setFFine} opts={fineOpts} all="全部小类" />
+          </div>
+          {/* 行3:属性 */}
+          <div style={filtRow}>
+            <span style={filtLabel}>属性</span>
+            <Sel value={fSource} onChange={setFSource} opts={sourceOpts} all="全部来源" />
+            <Sel value={fAcc} onChange={setFAcc} opts={accOpts} all="全部经验" />
+          </div>
+          {/* 行4:搜索 + 仅第一方 + 清除 */}
+          <div style={filtRow}>
+            <input placeholder="搜索 职位/公司/地点/NOC…" value={q} onChange={(e) => setQ(e.target.value)} style={{ ...ctrl, flex: '0 1 320px', minWidth: 180 }} />
+            <label style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', background: directOnly ? '#eef2ff' : '#fff', whiteSpace: 'nowrap' }} title="只看雇主第一方发布的(公司 ATS / Job Bank 直发),隐藏聚合转贴">
+              <input type="checkbox" checked={directOnly} onChange={(e) => setDirectOnly(e.target.checked)} />仅第一方
+            </label>
+            {anyFilter && <button onClick={clearAll} style={{ ...ctrl, cursor: 'pointer', background: '#f3f4f6', color: '#b91c1c' }}>清除筛选</button>}
+            {/* 字段选择:右对齐,与搜索同一行 */}
+            <div ref={colRef} style={{ position: 'relative', marginLeft: 'auto' }}>
+              <button onClick={() => setColOpen((o) => !o)} style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', background: '#f3f4f6', whiteSpace: 'nowrap' }}>⚙ 字段 ({shown.length})</button>
+              {colOpen && (
+                <div style={colPanel}>
+                  <div style={{ display: 'flex', gap: 6, padding: '2px 4px 6px', borderBottom: '1px solid #f3f4f6', marginBottom: 4 }}>
+                    <button onClick={selectAllCols} style={colBtn}>全选</button>
+                    <button onClick={invertCols} style={colBtn}>反选</button>
+                  </div>
+                  {COLUMNS.map((c) => (
+                    <label key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 6px', fontSize: 13, color: c.always ? '#9ca3af' : '#1f2937', cursor: c.always ? 'default' : 'pointer' }}>
+                      <input type="checkbox" checked={c.always || visible.includes(c.key)} disabled={c.always} onChange={() => toggleCol(c.key)} />
+                      {c.label}{c.always ? ' (固定)' : ''}
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        <div style={{ overflowX: 'auto', border: '1px solid #e5e7eb', borderRadius: 8 }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13.5, whiteSpace: 'nowrap' }}>
+        <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflowX: 'auto' }}>
+          <table style={{ width: 'auto', minWidth: '100%', borderCollapse: 'collapse', fontSize: 13.5, tableLayout: 'auto' }}>
             <thead>
               <tr style={{ textAlign: 'left', background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
-                {['评分', '分类', '职位', '公司', 'NOC', '经验级别', '地点', '来源', '发布时间', '更新时间'].map((h) => (
-                  <th key={h} style={{ padding: '8px 12px', color: '#374151', fontWeight: 600 }}>{h}</th>
-                ))}
+                {shown.map((c) => {
+                  const active = sort.key === c.key
+                  return (
+                    <th key={c.key} onClick={() => toggleSort(c.key)} title="点击表头排序"
+                      style={{ padding: '8px 12px', color: active ? '#2563eb' : '#374151', fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none' }}>
+                      {c.label}<span style={{ color: active ? '#2563eb' : '#d1d5db', fontSize: 11 }}>{active ? (sort.dir === 'desc' ? ' ▼' : ' ▲') : ' ↕'}</span>
+                    </th>
+                  )
+                })}
               </tr>
             </thead>
             <tbody>
-              {rows.map((j, i) => {
-                const locStr = j.address || [j.city, j.province].filter(Boolean).join(', ')
-                const [bg, fg] = (catColor[j.category] || '#f3f4f6;#374151').split(';')
+              {rows.slice(0, limit).map((j, i) => {
+                const mapQ = j.address || [j.city, j.province].filter(Boolean).join(', ') // 地图链接用精确地址
+                const L = parseLoc(j)                                                       // 省/市/区
+                const cat = catOf(j.noc)
+                const open = (field: ColKey) => setPopup({ field, job: j })
                 return (
-                  <tr key={j.id} style={{ borderBottom: '1px solid #f3f4f6', background: i % 2 ? '#fcfcfd' : '#fff' }}>
-                    <td style={{ ...td, fontWeight: 600, color: scoreColor(j.score) }}>{j.score ?? '—'}</td>
-                    <td style={td}>{j.category ? <span style={{ ...tag, background: bg, color: fg }}>{j.category}</span> : '—'}</td>
-                    <td style={{ ...td, ...cap(380) }} title={j.title}>
-                      {j.applyUrl ? <a href={j.applyUrl} target="_blank" rel="noreferrer" style={link}>{j.title}</a> : j.title}
-                    </td>
-                    <td style={{ ...td, ...cap(190) }} title={j.company}>
-                      {j.officialUrl ? <a href={j.officialUrl} target="_blank" rel="noreferrer" style={link}>{j.company}</a> : j.company}
-                    </td>
-                    <td style={td}>{j.noc || '—'}</td>
-                    <td style={td}>{accLabel[j.accessibility] ?? '—'}</td>
-                    <td style={{ ...td, ...cap(210) }} title={locStr}>
-                      {locStr ? <a href={mapsUrl(locStr)} target="_blank" rel="noreferrer" style={link}>{locStr}</a> : '—'}
-                    </td>
-                    <td style={td}><span style={tag}>{j.source}</span></td>
-                    <td style={{ ...td, color: '#6b7280', fontSize: 12.5 }}>{j.datePosted ? j.datePosted.slice(0, 10) : '—'}</td>
-                    <td style={{ ...td, color: '#9ca3af', fontSize: 12.5 }}>{j.lastSeen ? j.lastSeen.slice(0, 10) : '—'}</td>
+                  <tr key={j.id} className="jrow" style={{ borderBottom: '1px solid #f3f4f6', background: i % 2 ? '#fcfcfd' : '#fff' }}>
+                    {shown.map((c) => {
+                      const k = c.key
+                      let href: string | null = null
+                      let node: React.ReactNode
+                      const extra: React.CSSProperties = {}
+                      if (k === 'score') { node = j.score ?? '—'; Object.assign(extra, { fontWeight: 600, color: scoreColor(j.score) }) }
+                      else if (k === 'broad') { node = cat.name; Object.assign(extra, { whiteSpace: 'nowrap', color: cat.fg, fontWeight: 500 }) }
+                      else if (k === 'mid') { node = midOf(j.noc); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+                      else if (k === 'fine') { node = midOf(j.noc) === '未分类' ? '—' : fineOf(j.noc); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+                      else if (k === 'teer') { const t = teerOf(j.noc); node = t == null ? '—' : `TEER ${t}`; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+                      else if (k === 'title') { href = j.applyUrl || null; node = j.title; Object.assign(extra, wrapCell(360)) }
+                      else if (k === 'company') { href = j.officialUrl || null; node = j.company; Object.assign(extra, wrapCell(190)) }
+                      else if (k === 'noc') node = j.noc || '—'
+                      else if (k === 'accessibility') node = accLabel[j.accessibility] ?? '—'
+                      else if (k === 'salary') { node = <span title={j.salary || ''}>{parseSalary(j.salary).text}</span>; Object.assign(extra, { whiteSpace: 'nowrap', color: j.salary ? '#15803d' : '#9ca3af' }) }
+                      else if (k === 'salaryYr') { const a = parseSalary(j.salary).annual; node = a != null ? `$${Math.round(a / 1000)}K/yr` : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: a != null ? '#15803d' : '#9ca3af' }) }
+                      else if (k === 'address') { href = j.address ? mapsUrl(j.address) : null; node = j.address || '—'; Object.assign(extra, wrapCell(220)) }
+                      else if (k === 'direct') { const dr = isDirect(j); node = dr ? '第一方' : '转贴'; Object.assign(extra, { whiteSpace: 'nowrap', color: dr ? '#15803d' : '#9ca3af', fontSize: 12.5 }) }
+                      else if (k === 'country') { node = L.country || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+                      else if (k === 'province') { node = L.prov || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+                      else if (k === 'city') { node = L.city || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+                      else if (k === 'district') { href = mapQ ? mapsUrl(mapQ) : null; node = L.district || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#1f2937' }) }
+                      else if (k === 'source') { href = sourceUrl(j.applyUrl) || null; node = sourceLabel(j); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+                      else if (k === 'origin') { node = ORIGIN_LABEL[j.origin] || j.origin || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+                      else if (k === 'status') { const cl = j.status === 'closed'; node = cl ? '已下架' : '在招'; Object.assign(extra, { whiteSpace: 'nowrap', color: cl ? '#9ca3af' : '#15803d', fontSize: 12.5 }) }
+                      else if (k === 'closedAt') { node = j.closedAt ? j.closedAt.slice(0, 10) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
+                      else if (k === 'datePosted') { node = j.datePosted ? j.datePosted.slice(0, 10) : '—'; Object.assign(extra, { color: '#6b7280', fontSize: 12.5, whiteSpace: 'nowrap' }) }
+                      else { node = j.lastSeen ? j.lastSeen.slice(0, 10) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
+                      return (
+                        <td key={k} className="jcell" style={{ ...td, ...extra, cursor: 'pointer' }} title={typeof node === 'string' ? node : undefined} onClick={() => open(k)}>
+                          {href
+                            ? <a href={href} target="_blank" rel="noreferrer" style={link} onClick={(e) => e.stopPropagation()}>{node}</a>
+                            : node}
+                        </td>
+                      )
+                    })}
                   </tr>
                 )
               })}
               {rows.length === 0 && (
-                <tr><td colSpan={10} style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>无匹配职位</td></tr>
+                <tr><td colSpan={shown.length} style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>无匹配职位</td></tr>
               )}
             </tbody>
           </table>
+        </div>
+        {/* 滚动到此自动加载更多 */}
+        <div ref={sentinelRef} style={{ textAlign: 'center', padding: '12px', fontSize: 12.5, color: '#9ca3af' }}>
+          {rows.length === 0 ? '' : limit < rows.length ? `下滑加载更多 · 已显示 ${Math.min(limit, rows.length)} / ${rows.length}` : `已全部显示 ${rows.length} 个`}
+        </div>
+      </div>
+
+      {popup && <AdvisorModal field={popup.field} job={popup.job} onClose={() => setPopup(null)} />}
+    </div>
+  )
+}
+
+// ── AI 顾问弹框 ────────────────────────────────────────────────
+// 职位/公司 → 调本地大模型流式生成;其余字段 → 模板即时解读
+const AI_FIELDS = new Set<ColKey>(['title', 'company'])
+
+function AdvisorModal({ field, job, onClose }: { field: ColKey; job: JobRow; onClose: () => void }) {
+  const a = advise(field, job)
+  const useAI = AI_FIELDS.has(field)
+  const [text, setText] = useState('')
+  const [status, setStatus] = useState<'loading' | 'streaming' | 'done' | 'error'>('loading')
+
+  useEffect(() => {
+    if (!useAI) return
+    const ctrl = new AbortController()
+    setText(''); setStatus('loading')
+    ;(async () => {
+      try {
+        const res = await fetch('/api/advisor', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal,
+          body: JSON.stringify({ field, id: String(job.id), job }),
+        })
+        if (!res.ok || !res.body) { setStatus('error'); setText(`生成失败(${res.status})`); return }
+        const reader = res.body.getReader(); const dec = new TextDecoder()
+        setStatus('streaming')
+        for (;;) {
+          const { done, value } = await reader.read()
+          if (done) break
+          setText((t) => t + dec.decode(value, { stream: true }))
+        }
+        setStatus('done')
+      } catch {
+        if (!ctrl.signal.aborted) { setStatus('error'); setText('无法连接本地大模型(Ollama),请确认服务在线。') }
+      }
+    })()
+    return () => ctrl.abort()
+  }, [field, job, useAI])
+
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(17,24,39,.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, zIndex: 50 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 12, maxWidth: 520, width: '100%', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,.25)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, padding: '16px 20px 8px' }}>
+          <div>
+            <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, letterSpacing: .3 }}>🧭 AI 顾问 · {a.tag}{useAI && status === 'streaming' ? ' · 生成中…' : ''}</div>
+            <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827' }}>{a.title}</h3>
+          </div>
+          <button onClick={onClose} style={{ border: 'none', background: '#f3f4f6', borderRadius: 8, width: 30, height: 30, cursor: 'pointer', fontSize: 16, color: '#6b7280', flexShrink: 0 }}>×</button>
+        </div>
+        <div style={{ padding: '4px 20px 20px' }}>
+          {useAI ? (
+            status === 'loading' ? (
+              <p style={{ margin: '10px 0', fontSize: 14, color: '#9ca3af' }}>⏳ 本地大模型生成中,请稍候…</p>
+            ) : (
+              <div style={{ fontSize: 14, lineHeight: 1.7, color: '#374151' }}>{renderAI(text)}{status === 'streaming' && <span style={{ color: '#9ca3af' }}>▋</span>}</div>
+            )
+          ) : (
+            a.body.map((p, i) => (
+              <p key={i} style={{ margin: '10px 0', fontSize: 14, lineHeight: 1.6, color: '#374151' }}>{p}</p>
+            ))
+          )}
+          {a.links.length > 0 && (
+            <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid #f3f4f6', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {a.links.map((l) => (
+                <a key={l.href} href={l.href} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 13, background: '#eef2ff', padding: '6px 12px', borderRadius: 8 }}>{l.label} ↗</a>
+              ))}
+            </div>
+          )}
+          <p style={{ marginTop: 14, fontSize: 11.5, color: '#9ca3af' }}>{useAI ? '由本地大模型生成 · 可能有误,仅供参考' : '说明由榜单数据自动生成 · 仅供参考,不构成移民/法律建议'}</p>
         </div>
       </div>
     </div>
   )
 }
 
+// 把 AI 文本里的【小标题】加粗,保留换行
+function renderAI(text: string): React.ReactNode {
+  return text.split(/(【[^】]+】)/g).map((seg, i) =>
+    /^【[^】]+】$/.test(seg)
+      ? <strong key={i} style={{ display: 'block', marginTop: i ? 12 : 0, color: '#111827' }}>{seg}</strong>
+      : <span key={i} style={{ whiteSpace: 'pre-wrap' }}>{seg}</span>,
+  )
+}
+
+// ── 按字段类型生成顾问解读(基于该行数据;无需 API) ─────────────
+type Advice = { tag: string; title: string; body: string[]; links: { label: string; href: string }[] }
+
+const TEER_DESC: Record<number, string> = {
+  0: 'TEER 0(管理岗):属技能类职业,是雇主 offer 省提名(如 OINP 雇主类)的核心目标。',
+  1: 'TEER 1:通常需大学学历的专业岗(工程、IT、医生等)。高技能,省提名/EE 通道首选。',
+  2: 'TEER 2:需 college 文凭或 2 年以上培训/学徒。技能岗,多数省提名雇主通道可走。',
+  3: 'TEER 3:需高中学历加几周在职培训,或相关经验。部分省雇主/紧缺通道可走。',
+  4: 'TEER 4:需高中或短期在岗培训。低技能,通道有限;部分紧缺职业(医护辅助、服务)有专门通道。',
+  5: 'TEER 5:无正式教育要求的短期示范类岗位。技能门槛最低,移民通道最少。',
+}
+const teerLine = (noc: string): string => {
+  const t = teerOf(noc)
+  return t == null ? '此岗标题未匹配 NOC 规则,暂未分类。' : TEER_DESC[t]
+}
+
+// 评分公式常量(与 etl/08_score.py 保持一致)——用于在弹框里还原每一分怎么来的
+const TEER_BASE: Record<number, number> = { 0: 54, 1: 56, 2: 52, 3: 46, 4: 28, 5: 20 }
+const INDEMAND2 = new Set(['21', '22', '31', '32', '72', '73', '42']) // 紧缺大类:科技/医疗/技工运输/教育社区
+const INDEMAND_LOW = new Set(['44101', '75110', '85100', '85101', '84120', '65202']) // TEER4-5 专项紧缺通道
+const ACC_PTS: Record<string, number> = { 'co-op': 6, junior: 6, intermediate: 4, senior: 2, unknown: 3 }
+const AGENCY_RE = /recruit|staffing|talent|personnel|placement|outsourc|mercor|adecco|randstad/i
+
+type ScoreBd = { teer: number | null; base: number; indemand: number; indemandLow: number; direct: number; acc: number; prov: number; total: number }
+function scoreBreakdown(j: JobRow): ScoreBd {
+  const noc = j.noc || ''
+  const teer = teerOf(noc)
+  const base = teer == null ? 18 : (TEER_BASE[teer] ?? 18)
+  const indemand = noc && INDEMAND2.has(noc.slice(0, 2)) ? 10 : 0
+  const indemandLow = noc && INDEMAND_LOW.has(noc) ? 12 : 0
+  const direct = AGENCY_RE.test(j.company || '') ? 0 : 12
+  const acc = ACC_PTS[j.accessibility] ?? 3
+  const prov = j.province && j.province !== 'ON' ? -6 : 0
+  const total = Math.max(0, Math.min(100, base + indemand + indemandLow + direct + acc + prov))
+  return { teer, base, indemand, indemandLow, direct, acc, prov, total }
+}
+
+function advise(field: ColKey, j: JobRow): Advice {
+  const links: { label: string; href: string }[] = []
+  if (j.applyUrl) links.push({ label: '投递页', href: j.applyUrl })
+  if (j.officialUrl) links.push({ label: '公司官网', href: j.officialUrl })
+  const locStr = j.address || [j.city, j.province].filter(Boolean).join(', ')
+  const prov = j.province || '—'
+  const cat = catOf(j.noc).name
+  const provPnp: Record<string, string> = { ON: 'OINP(安省省提名)', BC: 'BC PNP', AB: 'AAIP(阿省)', MB: 'MPNP(曼省)', SK: 'SINP(萨省)', NS: 'NSNP(新斯科舍)', NB: 'NBPNP(新省)' }
+
+  switch (field) {
+    case 'score': {
+      const s = j.score
+      const level = s == null ? '暂未评分' : s >= 75 ? '移民价值高' : s >= 50 ? '中等' : '偏低'
+      const b = scoreBreakdown(j)
+      const sign = (n: number) => (n > 0 ? `+${n}` : `${n}`)
+      const body = [
+        '评分 = 该职位 TEER 的基线 + 多项加减分(各 TEER 独立基线,不跨级直接比较)。本岗构成:',
+        `① 基线(${b.teer == null ? '未分类' : 'TEER ' + b.teer}):${b.base}`,
+        `② 紧缺大类(NOC 前2位 21/22/31/32/72/73/42):${sign(b.indemand)}`,
+        `③ TEER4–5 专项紧缺通道:${sign(b.indemandLow)}`,
+        `④ 直接雇主(非中介):${sign(b.direct)}`,
+        `⑤ 经验级别(${accLabel[j.accessibility] ?? '—'}):${sign(b.acc)}`,
+        `⑥ 省份(${j.province || '—'}${b.prov < 0 ? ',非安省扣分' : ',安省'}):${sign(b.prov)}`,
+        `= 合计:${b.total}(封顶 0–100)${s != null && s !== b.total ? ` · 入库分 ${s}` : ''}`,
+      ]
+      if (s == null) return { tag: '移民价值评分', title: '暂未评分', body: ['此岗标题未匹配 NOC 规则,无法分类,因此未评分。可补更明确的职位名以匹配 NOC。'], links }
+      return { tag: `移民价值评分 · ${level}`, title: `评分 ${s} / 100`, body, links }
+    }
+    case 'broad': {
+      return {
+        tag: '大分类', title: cat,
+        body: [
+          `职业层级:${cat}(大类) › ${midOf(j.noc)}(中类) › ${fineOf(j.noc)}(小类),取自官方 NOC ${j.noc || '—'}。`,
+          '大分类 = NOC 第 1 位的 10 大职业类(管理 / 科技 / 医疗 / 技工 / 服务 等);勾选「中/小分类」列可看更细方向。',
+          `移民技能等级看 NOC 第 2 位的 TEER:${teerLine(j.noc)}`,
+        ],
+        links,
+      }
+    }
+    case 'mid':
+    case 'fine': {
+      return {
+        tag: field === 'mid' ? '中分类' : '小分类', title: (field === 'mid' ? midOf(j.noc) : fineOf(j.noc)),
+        body: [
+          `职业层级:${cat}(大类) › ${midOf(j.noc)}(中类) › ${fineOf(j.noc)}(小类),取自官方 NOC ${j.noc || '—'}。`,
+          '中分类把大类细分(如「科技」分 IT / 工程,「技工」分 技工 / 运输 / 物流);小分类是具体职业方向,便于按方向投递与筛选。',
+          teerLine(j.noc),
+        ],
+        links,
+      }
+    }
+    case 'teer': {
+      const t = teerOf(j.noc)
+      return {
+        tag: '技能等级 (TEER)', title: t == null ? '未分类' : `TEER ${t}`,
+        body: [
+          'TEER = Training, Education, Experience and Responsibilities,取自 NOC 五位码第 2 位,是加拿大移民判断「技能岗」的核心依据。',
+          teerLine(j.noc),
+          'TEER 0–3 属技能岗,雇主 offer 省提名(OINP 等)的主路线;TEER 4–5 偏低技能,仅特定紧缺职业有专门通道。',
+        ],
+        links,
+      }
+    }
+    case 'title':
+      return {
+        tag: '职位', title: j.title,
+        body: [
+          `这是 ${j.company || '该公司'} 发布的岗位${j.noc ? `,对应 NOC ${j.noc}` : ''}${j.accessibility && accLabel[j.accessibility] && j.accessibility !== 'unknown' ? `,经验级别约为${accLabel[j.accessibility]}` : ''}。`,
+          j.applyUrl ? '右键「投递页」可在新标签打开原始招聘链接,查看完整职责与要求。' : '该来源未提供直接投递链接。',
+          `职业大类:${cat}。${teerLine(j.noc)}`,
+        ],
+        links,
+      }
+    case 'company':
+      return {
+        tag: '公司', title: j.company || '—',
+        body: [
+          j.officialUrl ? `官网:${j.officialUrl}(右键公司名可在新标签打开)。` : '榜单暂未抓到该公司官网。',
+          j.source === 'Job Bank' || j.officialUrl ? '来源为政府 Job Bank / 第一方页面,通常是直接雇主——雇主 offer 省提名要求 offer 来自真实雇主而非中介,直接雇主更有价值。' : `来源为 ${j.source},可能是聚合平台,需核实是否直接雇主。`,
+          locStr ? `公司地点:${locStr}。雇主 offer 省提名按公司所在省走对应通道(${provPnp[prov] || `${prov} 省提名`})。` : '',
+        ].filter(Boolean),
+        links,
+      }
+    case 'noc':
+      return {
+        tag: 'NOC 职业代码', title: j.noc ? `NOC ${j.noc}` : '未识别 NOC',
+        body: [
+          j.noc ? `NOC(National Occupational Classification)是加拿大国家职业分类,五位码。第 2 位 = TEER 等级(本岗为 ${j.category || '—'})。` : '此岗标题未匹配到 NOC 代码,因此未评分。',
+          '省提名与快速通道(EE)都按 NOC 判断职业是否符合通道、是否在紧缺/优先清单上。',
+          j.noc ? '可在官方 NOC 网站用此代码查职责、薪资与对应移民通道。' : '可补充更明确的职位名以帮助匹配 NOC 规则。',
+        ],
+        links: j.noc ? [...links, { label: `NOC ${j.noc} 官方页`, href: `https://noc.esdc.gc.ca/Structure/NocSearch?objectid=&val65=${encodeURIComponent(j.noc)}` }] : links,
+      }
+    case 'accessibility': {
+      const lvl = accLabel[j.accessibility] ?? '—'
+      return {
+        tag: '经验级别', title: j.accessibility === 'unknown' || !j.accessibility ? '未标注' : lvl,
+        body: [
+          `经验级别由职位标题/描述推断:co-op(实习)、初级(junior)、中级(intermediate)、高级(senior)。本岗为${lvl}。`,
+          '对走 PGWP→雇主 offer 省提名的应届/早期求职者,初级与中级岗位往往更现实;高级岗要求更高但加分也更多。',
+        ],
+        links,
+      }
+    }
+    case 'salary':
+    case 'salaryYr': {
+      const a = parseSalary(j.salary).annual
+      return {
+        tag: field === 'salaryYr' ? '年薪(折算)' : '薪资', title: j.salary || '未标注',
+        body: [
+          j.salary ? `原始薪资:${j.salary}。` : '该岗未公开薪资(很多公司招聘页不标)。',
+          a != null ? `统一折算成年薪 ≈ $${Math.round(a / 1000)}K/yr(时薪×2080、范围取中点),用于跨「时薪/年薪」对比和排序。` : '无法折算(未取到金额)。',
+          '薪资仅供参考:省提名/EE 不直接按工资打分,但「是否达到该 NOC 当地中位工资」会影响部分雇主类通道与 LMIA。',
+        ],
+        links,
+      }
+    }
+    case 'country':
+    case 'province':
+    case 'city':
+    case 'district':
+    case 'address': {
+      const L = parseLoc(j)
+      const ttl = field === 'country' ? L.country : field === 'province' ? L.prov : field === 'city' ? L.city : field === 'address' ? (j.address || L.district) : L.district
+      return {
+        tag: field === 'country' ? '国家' : field === 'province' ? '省' : field === 'city' ? '市' : field === 'address' ? '地址' : '区', title: ttl || '—',
+        body: [
+          `该岗地点:${[L.district, L.city, L.prov].filter(Boolean).join(' · ') || '—'}(省 › 市 › 区)。右键「区」列可开 Google 地图。`,
+          `所在省:${prov}。雇主 offer 省提名按公司所在省走对应通道——${provPnp[prov] || `${prov} 省提名`}。`,
+          '渥太华的 Kanata / Nepean / Orléans 等都是「大渥太华市」的社区(区),同属安省 OINP。',
+        ],
+        links,
+      }
+    }
+    case 'origin':
+      return {
+        tag: '数据渠道', title: ORIGIN_LABEL[j.origin] || j.origin || '—',
+        body: [
+          '渠道 = 这条岗经 raw 下哪个来源进来的:jobbank(政府职位板)/ ats(公司第一方招聘系统)/ directory(社区/园区名单)。',
+          j.origin === 'ats' ? '本岗来自公司自己的 ATS(由 Kanata North 社区名单发现的公司)→ 直接雇主。' : j.origin === 'jobbank' ? `本岗来自 Job Bank;原始板:${j.source}。` : '本岗来自社区/园区名单。',
+        ],
+        links,
+      }
+    case 'source':
+    case 'direct': {
+      const label = sourceLabel(j)
+      const first = isDirect(j)
+      return {
+        tag: field === 'direct' ? '发布渠道' : '数据来源', title: `${first ? '第一方发布' : '聚合转贴'} · ${label}`,
+        body: [
+          '「第一方 / 转贴」说的是发布渠道,不是雇主真假:第一方=雇主在公司 ATS 或 Job Bank 直接发;转贴=Job Bank 收录了 indeed / Talent.com 等平台上的帖子。',
+          '转贴里大多仍是真实雇主——公司 HR 在 indeed 发的也算直接雇主,对省提名一样有效;只是可能和别处重复,投递前点进去核实雇主即可。',
+          '真正要避开的是「中介 / 派遣」(offer 不来自实际雇主),这类已在入库时按公司名过滤掉,所以列表里基本都是真实雇主。',
+          first ? `本岗:${label} 第一方发布。` : `本岗经 Job Bank 收录,原始出处「${j.source}」。`,
+        ],
+        links,
+      }
+    }
+    case 'datePosted':
+      return {
+        tag: '发布时间', title: j.datePosted ? j.datePosted.slice(0, 10) : '—',
+        body: [
+          j.datePosted ? `该岗发布于 ${j.datePosted.slice(0, 10)}。` : '未取得发布时间。',
+          '发布越新越可能仍在招;Job Bank 等渠道的岗位有时效,建议尽快投递。',
+        ],
+        links,
+      }
+    case 'lastSeen':
+      return {
+        tag: '更新时间', title: j.lastSeen ? j.lastSeen.slice(0, 10) : '—',
+        body: [
+          j.lastSeen ? `本榜单最近一次在 ${j.lastSeen.slice(0, 10)} 仍抓到该岗(说明当时还挂着)。` : '未记录最近抓取时间。',
+          '更新时间反映岗位是否仍在线;长时间未更新的岗位可能已关闭。',
+        ],
+        links,
+      }
+    case 'status':
+    case 'closedAt': {
+      const cl = j.status === 'closed'
+      return {
+        tag: '岗位状态', title: cl ? '已下架' : '在招',
+        body: [
+          cl ? `该岗已下架${j.closedAt ? `(${j.closedAt.slice(0, 10)} 起最近一次抓取不再出现)` : ''}。` : '该岗仍在招(最近一次抓取还在线)。',
+          '判定方式:每次抓取若某岗不再出现,就标记为已下架并记录下架时间。',
+        ],
+        links,
+      }
+    }
+  }
+}
+
 const scoreColor = (s: number | null) => (s == null ? '#9ca3af' : s >= 75 ? '#15803d' : s >= 50 ? '#b45309' : '#6b7280')
-const ctrl: React.CSSProperties = { padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 14, color: '#1f2937', background: '#fff' }
-const td: React.CSSProperties = { padding: '7px 12px', whiteSpace: 'nowrap', verticalAlign: 'middle' }
-const cap = (w: number): React.CSSProperties => ({ maxWidth: w, overflow: 'hidden', textOverflow: 'ellipsis' })
-const tag: React.CSSProperties = { background: '#eef2ff', color: '#3730a3', padding: '2px 8px', borderRadius: 10, fontSize: 12 }
+const ctrl: React.CSSProperties = { height: 38, boxSizing: 'border-box', padding: '0 10px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 14, color: '#1f2937', background: '#fff' }
+const filtRow: React.CSSProperties = { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }
+const filtLabel: React.CSSProperties = { fontSize: 12, color: '#9ca3af', minWidth: 28, whiteSpace: 'nowrap' }
+// 联动下拉:上级选了,下级选项随之收窄;当前值不在选项里也保留显示
+function Sel({ value, onChange, opts, all }: { value: string; onChange: (v: string) => void; opts: string[]; all: string }) {
+  const list = value && !opts.includes(value) ? [value, ...opts] : opts
+  return (
+    <select value={value} onChange={(e) => onChange(e.target.value)} style={{ ...ctrl, maxWidth: 180 }}>
+      <option value="">{all}</option>
+      {list.map((o) => <option key={o} value={o}>{o}</option>)}
+    </select>
+  )
+}
+const td: React.CSSProperties = { padding: '7px 12px', verticalAlign: 'top' }
+// 按词换行(不逐字断词);不设 wordBreak 以免列被挤成 1 字符宽
+const wrapCell = (w: number): React.CSSProperties => ({ maxWidth: w, whiteSpace: 'normal', overflowWrap: 'break-word', wordBreak: 'normal' })
 const link: React.CSSProperties = { color: '#2563eb', textDecoration: 'none' }
+const colPanel: React.CSSProperties = { position: 'absolute', top: '110%', right: 0, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, boxShadow: '0 10px 30px rgba(0,0,0,.12)', padding: 8, zIndex: 20, minWidth: 160 }
+const colBtn: React.CSSProperties = { flex: 1, padding: '4px 6px', fontSize: 12.5, border: '1px solid #d1d5db', borderRadius: 5, background: '#f9fafb', color: '#374151', cursor: 'pointer' }
