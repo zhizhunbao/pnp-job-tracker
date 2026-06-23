@@ -44,8 +44,10 @@ FSA_DISTRICT = {
     "K2K": "Kanata", "K2L": "Kanata", "K2M": "Kanata", "K2T": "Kanata", "K2V": "Kanata", "K2W": "Kanata",
     "K2S": "Stittsville",
     "K2J": "Barrhaven",
-    "K2H": "Nepean", "K2E": "Nepean", "K2G": "Nepean",
-    "K1C": "Orléans", "K1E": "Orléans",
+    "K2H": "Nepean", "K2E": "Nepean", "K2G": "Nepean", "K2C": "Nepean",
+    "K1C": "Orléans", "K1E": "Orléans", "K4A": "Orléans",
+    "K1B": "Gloucester", "K1J": "Gloucester", "K1T": "Gloucester",
+    "K1K": "Vanier", "K1L": "Vanier",
     "K4M": "Manotick", "K4P": "Greely",
 }
 _POSTAL = re.compile(r"\b([A-Za-z]\d[A-Za-z])\s*\d[A-Za-z]\d\b")  # 加拿大邮编 A1A 1A1 → 取 FSA

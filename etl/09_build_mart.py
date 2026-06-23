@@ -29,10 +29,6 @@ PROV_FULL = {
     "SK": "Saskatchewan", "MB": "Manitoba", "NB": "New Brunswick", "NS": "Nova Scotia",
     "NL": "Newfoundland and Labrador", "PE": "Prince Edward Island",
 }
-# 大渥太华社区(区维度的规范来源,与 04c 一致)
-OTTAWA_DISTRICTS = ["Kanata", "Nepean", "Gloucester", "Orléans", "Stittsville", "Manotick",
-                    "Barrhaven", "Vanier", "Cumberland", "Greely", "Carp", "Dunrobin",
-                    "Metcalfe", "Osgoode", "Richmond", "Rockcliffe"]
 AGENCY = re.compile(r"recruit|staffing|talent|personnel|placement|outsourc|mercor|adecco|randstad|source code", re.I)
 SKIP_SLUGS = {"cmc-microsystems"}
 # 来源显示标签清洗:JB 聚合的各原始板统一显示「Job Bank」;ATS 板美化。原始 source 仍保留。
@@ -142,7 +138,9 @@ def build():
     provinces = [{"code": c, "name": n} for c, n in PROV_FULL.items()]
     city_keys = sorted({(j.get("city"), j.get("province")) for j in jobs if j.get("city")})
     cities = [{"name": c, "province": p or ""} for c, p in city_keys]
-    districts = [{"name": d, "city": "Ottawa", "province": "ON"} for d in OTTAWA_DISTRICTS]
+    # 区维度也从 job 数据洗(district 由 04c 从地址/邮编归一);只列实际有岗的区
+    dist_keys = sorted({(j.get("district"), j.get("city"), j.get("province")) for j in jobs if j.get("district")})
+    districts = [{"name": d, "city": c or "", "province": p or ""} for d, c, p in dist_keys]
     designated = []
     if IN_AIP.exists():
         for e in json.loads(IN_AIP.read_text(encoding="utf-8")):
