@@ -398,7 +398,8 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
             </thead>
             <tbody>
               {rows.slice(0, limit).map((j, i) => {
-                const mapQ = j.address || [j.city, j.province].filter(Boolean).join(', ') // 地图链接用精确地址
+                // 各地点列点击 → Google 地图按**自己那一级**查询(省→省/市→市/区→区/地址→地址)
+                const mapsFor = (...parts: (string | undefined)[]) => { const q = parts.filter(Boolean).join(', '); return q ? mapsUrl(q) : null }
                 const L = parseLoc(j)                                                       // 省/市/区
                 const cat = colorOf(j.broad)
                 const open = (field: ColKey) => setPopup({ field, job: j })
@@ -423,9 +424,9 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
                       else if (k === 'address') { href = j.address ? mapsUrl(j.address) : null; node = j.address || '—'; Object.assign(extra, wrapCell(220)) }
                       else if (k === 'direct') { const dr = isDirect(j); node = dr ? '第一方' : '转贴'; Object.assign(extra, { whiteSpace: 'nowrap', color: dr ? '#15803d' : '#9ca3af', fontSize: 12.5 }) }
                       else if (k === 'country') { node = L.country || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
-                      else if (k === 'province') { node = L.prov || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
-                      else if (k === 'city') { href = mapQ ? mapsUrl(mapQ) : null; node = L.city || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
-                      else if (k === 'district') { href = mapQ ? mapsUrl(mapQ) : null; node = L.district || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#1f2937' }) }
+                      else if (k === 'province') { href = mapsFor(L.prov, 'Canada'); node = L.prov || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+                      else if (k === 'city') { href = mapsFor(L.city, L.prov); node = L.city || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+                      else if (k === 'district') { href = mapsFor(L.district, L.city, L.prov); node = L.district || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#1f2937' }) }
                       else if (k === 'source') { href = sourceUrl(j.applyUrl) || null; node = sourceLabel(j); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'origin') { node = ORIGIN_LABEL[j.origin] || j.origin || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'pnp') { node = j.pnpEligible ? '✅ 可省提名' : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.pnpEligible ? '#15803d' : '#d1d5db', fontSize: 12.5 }) }
