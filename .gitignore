@@ -33,3 +33,5 @@ cms/dev.log
 /data/raw/**/jobbank/postings.json
 # Job Bank 物化的公司目录(从 postings.json 衍生,可重建)
 /data/raw/jobbank/**/companies/
+# mart 集市层(由 09_build_mart.py 从 raw+clean 衍生,可重建)
+/data/mart/

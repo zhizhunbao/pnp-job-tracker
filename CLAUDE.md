@@ -26,7 +26,9 @@
 etl/ (Python: 抓取 → 清洗 → 评分, 写 data/) ──> cms/ (Payload + Next.js + Postgres) ──> /jobs 公开页
 ```
 - `etl/` 编号顺序执行,`etl/_paths.py` 是**唯一的路径真相来源**(任何脚本不写死路径)。
-- `cms/src/app/seed/route.ts` 只做**加载**:读 data/ → 入库。不带 `?reset=1` = 增量对账(本次没抓到的岗 → status=closed)。
+- **分层(数据仓库式)**:raw(抽取) → clean/(清洗,按字段) → **mart(集市层,`09_build_mart.py` 产出 data/mart/ 最终表,列对齐 DB)** → load(seed)。
+- `cms/src/app/seed/route.ts` 是**纯加载器**:只读 `data/mart/*.json`(每文件=一张表)→ 灌库,不做拼装/清洗。不带 `?reset=1` = 增量对账(本次没出现的岗 → status=closed)。
+- **DB 表**:事实表 jobs/companies;维度表 provinces/cities/districts/designated_employers(AIP 名单)。Payload 仍管 schema/admin。
 
 ## 核心理念:清洗下沉到数据层(最重要的一条)
 **"脏活在脚本里干完,seed 只入库,前端只显示。"**

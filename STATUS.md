@@ -48,6 +48,7 @@ data/
 | 05 scrape_jobbank | Job Bank 抓取。**新增 `--all-occupations` 全职业·按省·sort=D·增量**(最新 N 天,合并到全国 postings.json);旧的科技关键词+Ottawa 模式仍在 |
 | 05b scrape_jobbank_details | 帖子详情:精确地址 + 描述 + **雇主官网(链接 or 邮箱域名)** |
 | 08 score | NOC→TEER 分类 + 每 TEER 评分 → all-scored.json |
+| 09 build_mart | **集市层**:拼装各源 → data/mart/ 最终表(列对齐 DB):companies/jobs(事实) + provinces/cities/districts/designated_employers(维度)。中介过滤/去重/评分关联都下沉到这 |
 
 ## 清洗约定(按「类」一个脚本,不是每字段一个;脚本都在 `etl/clean/`)
 每个清洗步:**读原始抓取字段 → 写回干净结构化字段**;脚本顶部先声明显式 `IN_*/OUT_*` 全路径;seed 只入库不清洗;前端只显示不清洗。
