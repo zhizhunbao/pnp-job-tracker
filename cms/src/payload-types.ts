@@ -74,6 +74,9 @@ export interface Config {
     'pnp-streams': PnpStream;
     'policy-docs': PolicyDoc;
     'designated-employers': DesignatedEmployer;
+    provinces: Province;
+    cities: City;
+    districts: District;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -88,6 +91,9 @@ export interface Config {
     'pnp-streams': PnpStreamsSelect<false> | PnpStreamsSelect<true>;
     'policy-docs': PolicyDocsSelect<false> | PolicyDocsSelect<true>;
     'designated-employers': DesignatedEmployersSelect<false> | DesignatedEmployersSelect<true>;
+    provinces: ProvincesSelect<false> | ProvincesSelect<true>;
+    cities: CitiesSelect<false> | CitiesSelect<true>;
+    districts: DistrictsSelect<false> | DistrictsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -345,6 +351,52 @@ export interface DesignatedEmployer {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "provinces".
+ */
+export interface Province {
+  id: number;
+  /**
+   * 2位省码,如 ON
+   */
+  code: string;
+  /**
+   * 全称,如 Ontario
+   */
+  name: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cities".
+ */
+export interface City {
+  id: number;
+  name: string;
+  /**
+   * 2位省码
+   */
+  province?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "districts".
+ */
+export interface District {
+  id: number;
+  name: string;
+  city?: string | null;
+  /**
+   * 2位省码
+   */
+  province?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -394,6 +446,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'designated-employers';
         value: number | DesignatedEmployer;
+      } | null)
+    | ({
+        relationTo: 'provinces';
+        value: number | Province;
+      } | null)
+    | ({
+        relationTo: 'cities';
+        value: number | City;
+      } | null)
+    | ({
+        relationTo: 'districts';
+        value: number | District;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -575,6 +639,37 @@ export interface DesignatedEmployersSelect<T extends boolean = true> {
   location?: T;
   isTech?: T;
   source?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "provinces_select".
+ */
+export interface ProvincesSelect<T extends boolean = true> {
+  code?: T;
+  name?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cities_select".
+ */
+export interface CitiesSelect<T extends boolean = true> {
+  name?: T;
+  province?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "districts_select".
+ */
+export interface DistrictsSelect<T extends boolean = true> {
+  name?: T;
+  city?: T;
+  province?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -1,8 +1,8 @@
 /**
- * Seed/refresh: GET /seed   (add ?reset=1 to wipe & rebuild)
- * Loads ATS company-folder jobs + Job Bank (all-occupation) jobs into Payload,
- * applying per-category scores (08_score.py → all-scored.json). Skips agencies,
- * de-dups, stamps lastSeen. Temporary — to be replaced by etl/09_load.py.
+ * Seed/load: GET /seed   (add ?reset=1 to wipe & rebuild)
+ * 纯加载器 — 只读 data/mart/(由 etl/09_build_mart.py 产出的最终表)直接灌库。
+ * 拼装/清洗/评分关联/中介过滤/去重 全在 ETL 完成,这里不做。
+ * mart 每个文件 = 一张表:companies/jobs(事实) + provinces/cities/districts/designated_employers(维度)。
  */
 import fs from 'fs'
 import path from 'path'
@@ -13,12 +13,6 @@ import config from '@/payload.config'
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-const REGION = 'ottawa-kanata-north'
-const SKIP_SLUGS = new Set(['cmc-microsystems'])
-const AGENCY = /recruit|staffing|talent|personnel|placement|outsourc|mercor|adecco|randstad|source code/i
-const guessProv = (loc: string) => (/\b(on|ontario)\b/i.test(loc) ? 'ON' : '')
-const norm = (t: string) => t.toLowerCase().replace(/[^a-z0-9]/g, '')
-const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'company'
 const isoDate = (s?: string) => {
   if (!s) return undefined
   const d = new Date(s)
@@ -27,119 +21,82 @@ const isoDate = (s?: string) => {
 
 export async function GET(req: Request) {
   const payload = await getPayload({ config: await config })
-  if (new URL(req.url).searchParams.get('reset')) {
+  const reset = !!new URL(req.url).searchParams.get('reset')
+  const martDir = path.resolve(process.cwd(), '..', 'data', 'mart')
+  const mart = (name: string): any[] => {
+    const p = path.join(martDir, `${name}.json`)
+    return fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, 'utf8')) : []
+  }
+
+  const now = new Date().toISOString()
+  const counts: Record<string, number> = {}
+
+  // ── 维度表:每次全量重建(参考数据,小) ──
+  const dims: [string, string, (r: any) => Record<string, unknown>][] = [
+    ['provinces', 'provinces', (r) => ({ code: r.code, name: r.name })],
+    ['cities', 'cities', (r) => ({ name: r.name, province: r.province })],
+    ['districts', 'districts', (r) => ({ name: r.name, city: r.city, province: r.province })],
+    ['designated_employers', 'designated-employers',
+      (r) => ({ name: r.name, province: r.province, location: r.location, isTech: r.isTech, source: r.source })],
+  ]
+  for (const [file, slug, map] of dims) {
+    await payload.delete({ collection: slug as any, where: { id: { exists: true } } })
+    let k = 0
+    for (const r of mart(file)) {
+      if (!r.name && !r.code) continue
+      await payload.create({ collection: slug as any, data: map(r) as any })
+      k++
+    }
+    counts[slug] = k
+  }
+
+  // ── 事实表:companies(按 slug upsert) ──
+  if (reset) {
     await payload.delete({ collection: 'jobs', where: { externalId: { exists: true } } })
     await payload.delete({ collection: 'companies', where: { slug: { exists: true } } })
   }
-
-  const dataRoot = path.resolve(process.cwd(), '..', 'data')
-  const scored: Record<string, any> = {}
-  const sp = path.join(dataRoot, 'output', 'all-scored.json')
-  if (fs.existsSync(sp)) for (const s of JSON.parse(fs.readFileSync(sp, 'utf8'))) scored[s.externalId] = s
-
-  const now = new Date().toISOString()
-  const seen = new Set<string>()
-  const seenIds = new Set<string>() // 本次抓到的 externalId(用于下架对账)
-  const companyCache: Record<string, string | number> = {}
-  let companies = 0
-  let jobs = 0
-  let skipped = 0
-
-  const ensureCompany = async (name: string, slug: string, extra: Record<string, unknown> = {}) => {
-    if (companyCache[slug]) return companyCache[slug]
-    const ex = await payload.find({ collection: 'companies', where: { slug: { equals: slug } }, limit: 1 })
-    let id = ex.docs[0]?.id
-    if (!id) {
-      const c = await payload.create({ collection: 'companies', data: { name, slug, ...extra } })
-      id = c.id
-      companies++
-    }
-    companyCache[slug] = id
-    return id
-  }
-
-  const addJob = async (data: Record<string, unknown> & { externalId: string }) => {
-    seenIds.add(data.externalId)
-    const sc = scored[data.externalId] || {}
-    const full = {
-      ...data, lastSeen: now, status: 'open', closedAt: null, // 重新抓到 → 复活
-      noc: sc.noc || undefined, category: sc.category || undefined,
-      score: sc.score, accessibility: sc.accessibility || undefined,
-      pnpEligible: sc.pnpEligible ?? false,
-    }
-    const dup = await payload.find({ collection: 'jobs', where: { externalId: { equals: data.externalId } }, limit: 1 })
-    if (dup.docs.length) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await payload.update({ collection: 'jobs', id: dup.docs[0].id, data: full as any })
+  const companyId: Record<string, string | number> = {}
+  for (const c of mart('companies')) {
+    const ex = await payload.find({ collection: 'companies', where: { slug: { equals: c.slug } }, limit: 1, depth: 0 })
+    if (ex.docs[0]) {
+      companyId[c.slug] = ex.docs[0].id
+      await payload.update({ collection: 'companies', id: ex.docs[0].id, data: c as any })
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await payload.create({ collection: 'jobs', data: { ...full, firstSeen: now } as any })
-      jobs++
+      const doc = await payload.create({ collection: 'companies', data: c as any })
+      companyId[c.slug] = doc.id
+      counts.companies = (counts.companies || 0) + 1
     }
   }
 
-  // 1) ATS 公司目录(科技,第一方)
-  const regionDir = path.join(dataRoot, 'processed', 'ats', 'ontario', 'ottawa', 'kanata-north', 'companies')
-  if (fs.existsSync(regionDir)) {
-    for (const slug of fs.readdirSync(regionDir).filter((f) => fs.statSync(path.join(regionDir, f)).isDirectory())) {
-      if (SKIP_SLUGS.has(slug)) continue
-      const dir = path.join(regionDir, slug)
-      if (!fs.existsSync(path.join(dir, 'jobs.json')) || !fs.existsSync(path.join(dir, 'profile.json'))) continue
-      const prof = JSON.parse(fs.readFileSync(path.join(dir, 'profile.json'), 'utf8'))
-      const jd = JSON.parse(fs.readFileSync(path.join(dir, 'jobs.json'), 'utf8'))
-      if (!jd.jobs?.length) continue
-      const cid = await ensureCompany(prof.name, slug, {
-        website: prof.website || undefined, email: prof.email || undefined,
-        region: prof.region || REGION, sectors: prof.sectors || undefined,
-        address: prof.address || undefined, // 公司精确地址(目录已抓)
-      })
-      for (const j of jd.jobs) {
-        const key = `${slug}|${norm(j.title || '')}`
-        if (seen.has(key)) { skipped++; continue }
-        seen.add(key)
-        await addJob({
-          title: j.title, company: cid, source: jd.ats || 'ats', origin: 'ats',
-          country: j.country || undefined, province: j.province || guessProv(j.location || ''),
-          city: j.city || '', district: j.district || undefined, address: j.address || undefined, region: REGION,
-          applyUrl: j.url || '', officialUrl: prof.website || '', externalId: j.url || key,
-          salary: j.salary || undefined, salaryAnnual: j.salaryAnnual ?? undefined, salaryText: j.salaryText || undefined,
-          aip: j.aip ?? false, datePosted: isoDate(j.posted),
-        })
+  // ── 事实表:jobs(按 externalId upsert,company 按 companySlug 关联) ──
+  const seenIds = new Set<string>()
+  for (const j of mart('jobs')) {
+    seenIds.add(j.externalId)
+    const { companySlug, datePosted, ...rest } = j
+    const data: Record<string, unknown> = {
+      ...rest, company: companyId[companySlug], datePosted: isoDate(datePosted),
+      lastSeen: now, status: 'open', closedAt: null,
+    }
+    const ex = await payload.find({ collection: 'jobs', where: { externalId: { equals: j.externalId } }, limit: 1, depth: 0 })
+    if (ex.docs[0]) {
+      await payload.update({ collection: 'jobs', id: ex.docs[0].id, data: data as any })
+    } else {
+      await payload.create({ collection: 'jobs', data: { ...data, firstSeen: now } as any })
+      counts.jobs = (counts.jobs || 0) + 1
+    }
+  }
+
+  // ── 下架对账(非 reset):本次没出现的 open 岗 → closed ──
+  let closed = 0
+  if (!reset) {
+    const open = await payload.find({ collection: 'jobs', where: { status: { equals: 'open' } }, limit: 100000, depth: 0 })
+    for (const d of open.docs) {
+      if (!seenIds.has(d.externalId as string)) {
+        await payload.update({ collection: 'jobs', id: d.id, data: { status: 'closed', closedAt: now } })
+        closed++
       }
     }
   }
 
-  // 2) Job Bank(全职业 · 全省,含非IT)
-  const jbPath = path.join(dataRoot, 'raw', 'jobbank', 'postings.json')
-  if (fs.existsSync(jbPath)) {
-    for (const j of JSON.parse(fs.readFileSync(jbPath, 'utf8'))) {
-      if (AGENCY.test(j.employer || '')) { skipped++; continue } // 跳过中介/派遣
-      const cslug = slugify(j.employer || 'unknown')
-      const key = `${cslug}|${norm(j.title || '')}`
-      if (seen.has(key)) { skipped++; continue }
-      seen.add(key)
-      const jbRegion = j.province || guessProv(j.city || '') || 'CA'  // 多省:region 用帖子省份
-      const cid = await ensureCompany(j.employer || '—', cslug, { region: j.city || jbRegion, source: 'jobbank', address: j.address || undefined, website: j.website || undefined })
-      await addJob({
-        title: j.title, company: cid, source: j.source || 'Job Bank', origin: 'jobbank',
-        country: j.country || undefined, province: j.province || guessProv(j.city || ''),
-        city: j.city || '', district: j.district || undefined, address: j.address || undefined, region: jbRegion,
-        applyUrl: j.url || '', officialUrl: j.website || '', externalId: j.url || key,
-        salary: j.salary || undefined, salaryAnnual: j.salaryAnnual ?? undefined, salaryText: j.salaryText || undefined,
-        aip: j.aip ?? false, datePosted: isoDate(j.date),
-      })
-    }
-  }
-
-  // 下架对账:库里 open 但本次抓取没再出现的 → 标记已下架(reset 模式下库已清空,无下架)
-  let closed = 0
-  const openDocs = await payload.find({ collection: 'jobs', where: { status: { equals: 'open' } }, limit: 100000, depth: 0 })
-  for (const d of openDocs.docs) {
-    if (!seenIds.has(d.externalId as string)) {
-      await payload.update({ collection: 'jobs', id: d.id, data: { status: 'closed', closedAt: now } })
-      closed++
-    }
-  }
-
-  return Response.json({ ok: true, companies, created: jobs, deduped: skipped, closed, updatedAt: now })
+  return Response.json({ ok: true, reset, counts, closed, updatedAt: now })
 }

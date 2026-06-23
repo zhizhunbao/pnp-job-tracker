@@ -12,6 +12,9 @@ import { Jobs } from './collections/Jobs'
 import { PnpStreams } from './collections/PnpStreams'
 import { PolicyDocs } from './collections/PolicyDocs'
 import { DesignatedEmployers } from './collections/DesignatedEmployers'
+import { Provinces } from './collections/Provinces'
+import { Cities } from './collections/Cities'
+import { Districts } from './collections/Districts'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -23,7 +26,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Companies, Jobs, PnpStreams, PolicyDocs, DesignatedEmployers],
+  collections: [Users, Media, Companies, Jobs, PnpStreams, PolicyDocs, DesignatedEmployers, Provinces, Cities, Districts],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
