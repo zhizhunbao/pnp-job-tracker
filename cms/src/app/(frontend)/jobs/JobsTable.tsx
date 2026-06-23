@@ -234,6 +234,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
   const TOGGLABLE = COLUMNS.filter((c) => !c.always).map((c) => c.key)
   const selectAllCols = () => saveCols(TOGGLABLE)
   const invertCols = () => saveCols(TOGGLABLE.filter((k) => !visible.includes(k)))
+  const mainCols = () => saveCols(DEFAULT_COLS) // 一键只显示默认的核心列
   const shown = COLUMNS.filter((c) => c.always || visible.includes(c.key))
 
   // Esc 关弹框
@@ -364,6 +365,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
               {colOpen && (
                 <div style={colPanel}>
                   <div style={{ display: 'flex', gap: 6, padding: '2px 4px 6px', borderBottom: '1px solid #f3f4f6', marginBottom: 4 }}>
+                    <button onClick={mainCols} style={{ ...colBtn, fontWeight: 600, color: '#2563eb', borderColor: '#bfdbfe' }}>主要</button>
                     <button onClick={selectAllCols} style={colBtn}>全选</button>
                     <button onClick={invertCols} style={colBtn}>反选</button>
                   </div>
