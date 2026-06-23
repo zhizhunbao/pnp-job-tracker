@@ -475,7 +475,7 @@ export default function JobsTable({ jobs, updatedAt }: { jobs: JobRow[]; updated
                       else if (k === 'direct') { const dr = isDirect(j); node = dr ? '第一方' : '转贴'; Object.assign(extra, { whiteSpace: 'nowrap', color: dr ? '#15803d' : '#9ca3af', fontSize: 12.5 }) }
                       else if (k === 'country') { node = L.country || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'province') { node = L.prov || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
-                      else if (k === 'city') { node = L.city || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+                      else if (k === 'city') { href = mapQ ? mapsUrl(mapQ) : null; node = L.city || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'district') { href = mapQ ? mapsUrl(mapQ) : null; node = L.district || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#1f2937' }) }
                       else if (k === 'source') { href = sourceUrl(j.applyUrl) || null; node = sourceLabel(j); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'origin') { node = ORIGIN_LABEL[j.origin] || j.origin || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
