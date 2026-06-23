@@ -185,6 +185,9 @@ const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean 
 ]
 const DEFAULT_COLS = COLUMNS.filter((c) => c.default).map((c) => c.key)
 const PREF_KEY = 'jobs.visibleCols.v6'
+const COLW_KEY = 'jobs.colWidths.v1'   // 列宽偏好(拖表头分隔条设置)
+const MIN_COLW = 56                     // 列最小宽
+const DEFAULT_COLW = 130                // 新列/未测量列的默认宽
 const ORIGIN_LABEL: Record<string, string> = { jobbank: 'Job Bank', ats: 'ATS', directory: '社区名单' }
 
 type Dims = {
@@ -209,6 +212,8 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
   const [sort, setSort] = useState<{ key: ColKey; dir: 'asc' | 'desc' }>({ key: 'datePosted', dir: 'desc' })
   const [colOpen, setColOpen] = useState(false)
   const colRef = useRef<HTMLDivElement>(null)
+  const [widths, setWidths] = useState<Partial<Record<ColKey, number>>>({})  // 列宽(空=自动布局;拖动后转固定布局)
+  const headRowRef = useRef<HTMLTableRowElement>(null)
   const [limit, setLimit] = useState(60)          // 滚动分页:当前渲染行数
   const sentinelRef = useRef<HTMLDivElement>(null)
   const toggleSort = (key: ColKey) =>
@@ -238,6 +243,42 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
   const invertCols = () => saveCols(TOGGLABLE.filter((k) => !visible.includes(k)))
   const mainCols = () => saveCols(DEFAULT_COLS) // 一键只显示默认的核心列
   const shown = COLUMNS.filter((c) => c.always || visible.includes(c.key))
+
+  // ── 列宽:拖表头右缘分隔条调整;空={}时走自动布局,首次拖动测量当前各列宽→转固定布局 ──
+  useEffect(() => {
+    try { const s = localStorage.getItem(COLW_KEY); if (s) { const w = JSON.parse(s); if (w && typeof w === 'object') setWidths(w) } } catch { /* ignore */ }
+  }, [])
+  const hasWidths = Object.keys(widths).length > 0
+  const colW = (k: ColKey) => widths[k] ?? DEFAULT_COLW
+  const totalW = shown.reduce((s, c) => s + colW(c.key), 0)
+  const resetWidths = () => { try { localStorage.removeItem(COLW_KEY) } catch { /* ignore */ } ; setWidths({}) }
+  const startResize = (e: React.MouseEvent, key: ColKey) => {
+    e.preventDefault(); e.stopPropagation()
+    const base: Partial<Record<ColKey, number>> = { ...widths }
+    const ths = headRowRef.current?.children
+    if (ths) shown.forEach((c, i) => { if (base[c.key] == null) base[c.key] = Math.round((ths[i] as HTMLElement).getBoundingClientRect().width) })
+    setWidths(base)
+    const startX = e.clientX
+    const startW = base[key] ?? DEFAULT_COLW
+    const onMove = (ev: MouseEvent) => setWidths((p) => ({ ...p, [key]: Math.max(MIN_COLW, startW + (ev.clientX - startX)) }))
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); document.body.style.cursor = ''
+      setWidths((p) => { try { localStorage.setItem(COLW_KEY, JSON.stringify(p)) } catch { /* ignore */ } ; return p })
+    }
+    document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp); document.body.style.cursor = 'col-resize'
+  }
+  // 双击竖线:所有列平均分配(总宽不变,均分给每一列)
+  const equalizeWidths = () => {
+    const ths = headRowRef.current?.children
+    if (!ths) return
+    let total = 0
+    shown.forEach((_, i) => { total += (ths[i] as HTMLElement).getBoundingClientRect().width })
+    const avg = Math.max(MIN_COLW, Math.round(total / shown.length))
+    const next: Partial<Record<ColKey, number>> = {}
+    shown.forEach((c) => { next[c.key] = avg })
+    setWidths(next)
+    try { localStorage.setItem(COLW_KEY, JSON.stringify(next)) } catch { /* ignore */ }
+  }
 
   // Esc 关弹框
   useEffect(() => {
@@ -370,6 +411,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
                     <button onClick={mainCols} style={{ ...colBtn, fontWeight: 600, color: '#2563eb', borderColor: '#bfdbfe' }}>主要</button>
                     <button onClick={selectAllCols} style={colBtn}>全选</button>
                     <button onClick={invertCols} style={colBtn}>反选</button>
+                    {hasWidths && <button onClick={resetWidths} style={colBtn} title="恢复自动列宽">列宽复位</button>}
                   </div>
                   {COLUMNS.map((c) => (
                     <label key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 6px', fontSize: 13, color: c.always ? '#9ca3af' : '#1f2937', cursor: c.always ? 'default' : 'pointer' }}>
@@ -384,15 +426,21 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
         </div>
 
         <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflowX: 'auto' }}>
-          <table style={{ width: 'auto', minWidth: '100%', borderCollapse: 'collapse', fontSize: 13.5, tableLayout: 'auto' }}>
+          <table style={{ width: hasWidths ? totalW : 'auto', minWidth: '100%', borderCollapse: 'collapse', fontSize: 13.5, tableLayout: hasWidths ? 'fixed' : 'auto' }}>
+            <colgroup>
+              {shown.map((c) => <col key={c.key} style={hasWidths ? { width: colW(c.key) } : undefined} />)}
+            </colgroup>
             <thead>
-              <tr style={{ textAlign: 'left', background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
-                {shown.map((c) => {
+              <tr ref={headRowRef} style={{ textAlign: 'left', background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
+                {shown.map((c, idx) => {
                   const active = sort.key === c.key
+                  const isLast = idx === shown.length - 1
                   return (
                     <th key={c.key} onClick={() => toggleSort(c.key)} title="点击表头排序"
-                      style={{ padding: '8px 12px', color: active ? '#2563eb' : '#374151', fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none' }}>
+                      style={{ padding: '8px 12px', color: active ? '#2563eb' : '#374151', fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none', position: 'relative', borderRight: isLast ? undefined : '1px solid #e5e7eb' }}>
                       {c.label}<span style={{ color: active ? '#2563eb' : '#d1d5db', fontSize: 11 }}>{active ? (sort.dir === 'desc' ? ' ▼' : ' ▲') : ' ↕'}</span>
+                      {!isLast && <span onMouseDown={(e) => startResize(e, shown[idx + 1].key)} onClick={(e) => e.stopPropagation()} onDoubleClick={(e) => { e.stopPropagation(); equalizeWidths() }} title="拖动改右列宽 · 双击平均分配各列"
+                        style={{ position: 'absolute', top: 0, right: 0, width: 9, height: '100%', cursor: 'col-resize', zIndex: 1 }} />}
                     </th>
                   )
                 })}
@@ -407,7 +455,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
                 const open = (field: ColKey) => setPopup({ field, job: j })
                 return (
                   <tr key={j.id} className="jrow" style={{ borderBottom: '1px solid #f3f4f6', background: i % 2 ? '#fcfcfd' : '#fff' }}>
-                    {shown.map((c) => {
+                    {shown.map((c, idx) => {
                       const k = c.key
                       let href: string | null = null
                       let node: React.ReactNode
@@ -438,7 +486,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
                       else if (k === 'datePosted') { node = j.datePosted ? j.datePosted.slice(0, 10) : '—'; Object.assign(extra, { color: '#6b7280', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       else { node = j.lastSeen ? j.lastSeen.slice(0, 10) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       return (
-                        <td key={k} className="jcell" style={{ ...td, ...extra, cursor: 'pointer' }} title={typeof node === 'string' ? node : undefined} onClick={() => open(k)}>
+                        <td key={k} className="jcell" style={{ ...td, ...extra, cursor: 'pointer', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', ...(hasWidths ? { overflow: 'hidden', textOverflow: 'ellipsis' } : null) }} title={typeof node === 'string' ? node : undefined} onClick={() => open(k)}>
                           {href
                             ? <a href={href} target="_blank" rel="noreferrer" style={link} onClick={(e) => e.stopPropagation()}>{node}</a>
                             : node}
