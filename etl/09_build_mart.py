@@ -15,6 +15,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _paths  # noqa: E402
+import noc as NOC  # noqa: E402  NOC 分类法(单一来源)
 
 # ── 输入/输出全路径 ──────────────────────────────────────────────
 IN_JOBBANK = _paths.JOBBANK / "postings.json"
@@ -34,6 +35,16 @@ OTTAWA_DISTRICTS = ["Kanata", "Nepean", "Gloucester", "Orléans", "Stittsville",
                     "Metcalfe", "Osgoode", "Richmond", "Rockcliffe"]
 AGENCY = re.compile(r"recruit|staffing|talent|personnel|placement|outsourc|mercor|adecco|randstad|source code", re.I)
 SKIP_SLUGS = {"cmc-microsystems"}
+# 来源显示标签清洗:JB 聚合的各原始板统一显示「Job Bank」;ATS 板美化。原始 source 仍保留。
+SOURCE_PRETTY = {"lever": "Lever", "bamboohr": "BambooHR", "greenhouse": "Greenhouse",
+                 "smartrecruiters": "SmartRecruiters", "workable": "Workable", "recruitee": "Recruitee",
+                 "myworkdayjobs": "Workday", "workday": "Workday"}
+
+
+def source_label(apply_url: str, source: str) -> str:
+    if apply_url and "jobbank.gc.ca" in apply_url.lower():
+        return "Job Bank"
+    return SOURCE_PRETTY.get((source or "").lower(), source or "—")
 
 
 def slugify(s: str) -> str:
@@ -67,10 +78,13 @@ def build():
             return
         seen_ext.add(external_id)
         sc = scored.get(external_id, {})
+        cls = NOC.classify(sc.get("noc"))  # noc → teer/broad/mid/fine(分类法在 etl/noc.py)
         jobs.append({
             "externalId": external_id, "companySlug": company_slug,
             **{k: v for k, v in fields.items() if v not in (None, "")},
-            "noc": sc.get("noc") or None, "category": sc.get("category") or None,
+            "sourceLabel": source_label(fields.get("applyUrl", ""), fields.get("source", "")),
+            "noc": sc.get("noc") or None, "category": cls["teerLabel"],
+            "teer": cls["teer"], "broad": cls["broad"], "mid": cls["mid"], "fine": cls["fine"],
             "accessibility": sc.get("accessibility") or None, "score": sc.get("score"),
             "pnpEligible": bool(sc.get("pnpEligible")), "status": "open",
         })
@@ -135,10 +149,17 @@ def build():
             designated.append({"name": e.get("employer"), "province": e.get("province"),
                                "location": e.get("location"), "isTech": bool(e.get("tech")), "source": "AIP"})
 
+    # NOC 分类维度(大/中/小 + TEER,数据集出现的层级组合)
+    cat_keys = sorted({(j["broad"], j["mid"], j["fine"], j["teer"] if j["teer"] is not None else -1) for j in jobs})
+    noc_categories = [{"broad": b, "mid": m, "fine": f, "teer": (t if t >= 0 else None)} for b, m, f, t in cat_keys]
+    sources = [{"name": s} for s in sorted({j.get("sourceLabel") for j in jobs if j.get("sourceLabel")})]
+    experience_levels = [{"name": e} for e in sorted({j.get("accessibility") for j in jobs if j.get("accessibility")})]
+
     return {
         "companies": list(companies.values()), "jobs": jobs,
         "provinces": provinces, "cities": cities, "districts": districts,
         "designated_employers": designated,
+        "noc_categories": noc_categories, "sources": sources, "experience_levels": experience_levels,
     }
 
 
