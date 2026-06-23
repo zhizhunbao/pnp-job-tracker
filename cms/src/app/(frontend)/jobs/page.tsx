@@ -7,14 +7,19 @@ export const dynamic = 'force-dynamic'
 
 export default async function JobsPage() {
   const payload = await getPayload({ config: await config })
-  const { docs } = await payload.find({
-    collection: 'jobs',
-    depth: 1,
-    limit: 2000,
-    sort: '-datePosted',
-  })
+  // 列表读取走原始 SQL:payload.find 会把每个 doc 过一遍读取管线(access/hooks),2000+ 行要十几秒。
+  // 公开只读列表直接 select + join 公司名,<0.5s。(列名是 Payload 的 snake_case;schema 改了要同步)
+  const pool = (payload.db as any).pool
+  const { rows } = await pool.query(`
+    SELECT j.id, j.title, c.name AS company_name, c.address AS company_address,
+      j.noc, j.category, j.teer, j.broad, j.mid, j.fine, j.accessibility, j.score, j.pnp_eligible, j.aip,
+      j.country, j.province, j.city, j.district, j.address, j.region,
+      j.apply_url, j.official_url, j.salary, j.salary_annual, j.salary_text,
+      j.source, j.source_label, j.origin, j.date_posted, j.last_seen, j.status, j.closed_at
+    FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
+    ORDER BY j.date_posted DESC NULLS LAST LIMIT 2000`)
 
-  // 联动筛选的选项来源:维度表(provinces/cities/districts),不再从 job 行现推
+  // 维度表小,继续走 payload.find
   const [provDocs, cityDocs, distDocs, nocDocs, srcDocs, expDocs] = await Promise.all([
     payload.find({ collection: 'provinces', limit: 100, depth: 0, sort: 'name' }),
     payload.find({ collection: 'cities', limit: 5000, depth: 0, sort: 'name' }),
@@ -32,13 +37,15 @@ export default async function JobsPage() {
     experienceLevels: expDocs.docs.map((e: any) => ({ name: e.name })),
   }
 
-  const jobs: JobRow[] = docs.map((j: any) => ({
+  const iso = (v: any) => (v instanceof Date ? v.toISOString() : (v ?? ''))
+  const num = (v: any) => (v == null ? null : Number(v)) // pg numeric 返回字符串,转回数字
+  const jobs: JobRow[] = rows.map((j: any) => ({
     id: j.id,
     title: j.title ?? '',
-    company: j.company && typeof j.company === 'object' ? j.company.name : (j.company ?? ''),
-    address: j.address ?? (j.company && typeof j.company === 'object' ? (j.company.address ?? '') : ''),
+    company: j.company_name ?? '',
+    address: j.address ?? j.company_address ?? '',
     source: j.source ?? '',
-    sourceLabel: j.sourceLabel ?? '',
+    sourceLabel: j.source_label ?? '',
     origin: j.origin ?? '',
     country: j.country ?? '',
     province: j.province ?? '',
@@ -46,26 +53,26 @@ export default async function JobsPage() {
     district: j.district ?? '',
     noc: j.noc ?? '',
     category: j.category ?? '',
-    teer: typeof j.teer === 'number' ? j.teer : null,
+    teer: num(j.teer),
     broad: j.broad ?? '未分类',
     mid: j.mid ?? '未分类',
     fine: j.fine ?? '未分类',
     accessibility: j.accessibility ?? '',
-    score: typeof j.score === 'number' ? j.score : null,
-    pnpEligible: !!j.pnpEligible,
+    score: num(j.score),
+    pnpEligible: !!j.pnp_eligible,
     aip: !!j.aip,
     salary: j.salary ?? '',
-    salaryAnnual: typeof j.salaryAnnual === 'number' ? j.salaryAnnual : null,
-    salaryText: j.salaryText ?? '',
-    officialUrl: j.officialUrl ?? '',
-    applyUrl: j.applyUrl ?? '',
-    datePosted: j.datePosted ?? '',
-    lastSeen: j.lastSeen ?? '',
+    salaryAnnual: num(j.salary_annual),
+    salaryText: j.salary_text ?? '',
+    officialUrl: j.official_url ?? '',
+    applyUrl: j.apply_url ?? '',
+    datePosted: iso(j.date_posted),
+    lastSeen: iso(j.last_seen),
     status: j.status ?? 'open',
-    closedAt: j.closedAt ?? '',
+    closedAt: iso(j.closed_at),
   }))
 
-  const updatedAt = docs.reduce((m: string, j: any) => (j.lastSeen && j.lastSeen > m ? j.lastSeen : m), '')
+  const updatedAt = rows.reduce((m: string, j: any) => { const ls = iso(j.last_seen); return ls > m ? ls : m }, '')
 
   return <JobsTable jobs={jobs} updatedAt={updatedAt} dims={dims} />
 }
