@@ -22,6 +22,7 @@ IN_JOBBANK = _paths.JOBBANK / "postings.json"
 IN_ATS_COMPANIES = _paths.COMPANIES                       # processed/ats/.../companies/<slug>/
 IN_SCORED = _paths.OUTPUT / "all-scored.json"
 IN_AIP = _paths.DESIGNATED / "aip-designated-employers.json"
+IN_WAGES = _paths.REFERENCE / "wages.json"   # NOC×省 中位工资(build_wages.py 从 ESDC 开放数据建)
 OUT_MART = _paths.DATA / "mart"
 
 PROV_FULL = {
@@ -59,6 +60,7 @@ def build():
     scored = {}
     if IN_SCORED.exists():
         scored = {s["externalId"]: s for s in json.loads(IN_SCORED.read_text(encoding="utf-8"))}
+    wages = json.loads(IN_WAGES.read_text(encoding="utf-8")) if IN_WAGES.exists() else {}
 
     companies: dict[str, dict] = {}   # slug -> company row
     jobs: list[dict] = []
@@ -75,10 +77,14 @@ def build():
         seen_ext.add(external_id)
         sc = scored.get(external_id, {})
         cls = NOC.classify(sc.get("noc"))  # noc → teer/broad/mid/fine(分类法在 etl/noc.py)
+        # 该 NOC 当地中位工资:优先省级,无则国家级(ESDC 开放数据)
+        wnoc = wages.get(sc.get("noc") or "", {})
+        w = wnoc.get(fields.get("province", "")) or wnoc.get("NAT") or {}
         jobs.append({
             "externalId": external_id, "companySlug": company_slug,
             **{k: v for k, v in fields.items() if v not in (None, "")},
             "sourceLabel": source_label(fields.get("applyUrl", ""), fields.get("source", "")),
+            "wageMedHourly": w.get("hourly"), "wageMedAnnual": w.get("annual"),
             "noc": sc.get("noc") or None, "category": cls["teerLabel"],
             "teer": cls["teer"], "broad": cls["broad"], "mid": cls["mid"], "fine": cls["fine"],
             "accessibility": sc.get("accessibility") or None, "score": sc.get("score"),

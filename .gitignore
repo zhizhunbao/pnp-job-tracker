@@ -37,3 +37,5 @@ cms/dev.log
 /data/mart/
 # GeoNames 源(可从 download.geonames.org/export/zip/CA.zip 重下;衍生表 fsa-districts.json 跟踪)
 /data/raw/reference/geonames/
+# ESDC 工资源 CSV(可从 open.canada.ca 重下;衍生表 wages.json 跟踪)
+/data/raw/reference/wages/*.csv
