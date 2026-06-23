@@ -77,6 +77,9 @@ export interface Config {
     provinces: Province;
     cities: City;
     districts: District;
+    'noc-categories': NocCategory;
+    sources: Source;
+    'experience-levels': ExperienceLevel;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -94,6 +97,9 @@ export interface Config {
     provinces: ProvincesSelect<false> | ProvincesSelect<true>;
     cities: CitiesSelect<false> | CitiesSelect<true>;
     districts: DistrictsSelect<false> | DistrictsSelect<true>;
+    'noc-categories': NocCategoriesSelect<false> | NocCategoriesSelect<true>;
+    sources: SourcesSelect<false> | SourcesSelect<true>;
+    'experience-levels': ExperienceLevelsSelect<false> | ExperienceLevelsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -214,9 +220,25 @@ export interface Job {
    */
   noc?: string | null;
   /**
-   * 职业大类(科技/医疗/技工…)
+   * TEER 标签(=TEER X / 未分类)
    */
   category?: string | null;
+  /**
+   * NOC 第2位 0-5
+   */
+  teer?: number | null;
+  /**
+   * 大分类(NOC 第1位)
+   */
+  broad?: string | null;
+  /**
+   * 中分类
+   */
+  mid?: string | null;
+  /**
+   * 小分类
+   */
+  fine?: string | null;
   country?: string | null;
   province?: string | null;
   city?: string | null;
@@ -248,9 +270,13 @@ export interface Job {
   salaryText?: string | null;
   datePosted?: string | null;
   /**
-   * 原始来源:indeed.com/Talent.com/lever/bamboohr…
+   * 原始来源板:indeed.com/Talent.com/lever/bamboohr…
    */
   source?: string | null;
+  /**
+   * 显示来源标签(mart 洗:JB→Job Bank、ATS板美化)
+   */
+  sourceLabel?: string | null;
   /**
    * 数据渠道:raw 下哪个来源
    */
@@ -397,6 +423,48 @@ export interface District {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "noc-categories".
+ */
+export interface NocCategory {
+  id: number;
+  /**
+   * 大分类
+   */
+  broad?: string | null;
+  /**
+   * 中分类
+   */
+  mid?: string | null;
+  /**
+   * 小分类
+   */
+  fine?: string | null;
+  teer?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sources".
+ */
+export interface Source {
+  id: number;
+  name: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "experience-levels".
+ */
+export interface ExperienceLevel {
+  id: number;
+  name: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -458,6 +526,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'districts';
         value: number | District;
+      } | null)
+    | ({
+        relationTo: 'noc-categories';
+        value: number | NocCategory;
+      } | null)
+    | ({
+        relationTo: 'sources';
+        value: number | Source;
+      } | null)
+    | ({
+        relationTo: 'experience-levels';
+        value: number | ExperienceLevel;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -570,6 +650,10 @@ export interface JobsSelect<T extends boolean = true> {
   company?: T;
   noc?: T;
   category?: T;
+  teer?: T;
+  broad?: T;
+  mid?: T;
+  fine?: T;
   country?: T;
   province?: T;
   city?: T;
@@ -583,6 +667,7 @@ export interface JobsSelect<T extends boolean = true> {
   salaryText?: T;
   datePosted?: T;
   source?: T;
+  sourceLabel?: T;
   origin?: T;
   isAgency?: T;
   pnpStreams?: T;
@@ -670,6 +755,36 @@ export interface DistrictsSelect<T extends boolean = true> {
   name?: T;
   city?: T;
   province?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "noc-categories_select".
+ */
+export interface NocCategoriesSelect<T extends boolean = true> {
+  broad?: T;
+  mid?: T;
+  fine?: T;
+  teer?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sources_select".
+ */
+export interface SourcesSelect<T extends boolean = true> {
+  name?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "experience-levels_select".
+ */
+export interface ExperienceLevelsSelect<T extends boolean = true> {
+  name?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -38,13 +38,17 @@ export async function GET(req: Request) {
     ['districts', 'districts', (r) => ({ name: r.name, city: r.city, province: r.province })],
     ['designated_employers', 'designated-employers',
       (r) => ({ name: r.name, province: r.province, location: r.location, isTech: r.isTech, source: r.source })],
+    ['noc_categories', 'noc-categories', (r) => ({ broad: r.broad, mid: r.mid, fine: r.fine, teer: r.teer })],
+    ['sources', 'sources', (r) => ({ name: r.name })],
+    ['experience_levels', 'experience-levels', (r) => ({ name: r.name })],
   ]
   for (const [file, slug, map] of dims) {
     await payload.delete({ collection: slug as any, where: { id: { exists: true } } })
     let k = 0
     for (const r of mart(file)) {
-      if (!r.name && !r.code) continue
-      await payload.create({ collection: slug as any, data: map(r) as any })
+      const data = map(r)
+      if (Object.values(data).every((v) => v === undefined || v === null || v === '')) continue
+      await payload.create({ collection: slug as any, data: data as any })
       k++
     }
     counts[slug] = k

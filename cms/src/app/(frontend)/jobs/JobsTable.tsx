@@ -7,6 +7,7 @@ export type JobRow = {
   title: string
   company: string
   source: string
+  sourceLabel: string
   origin: string
   country: string
   province: string
@@ -15,6 +16,10 @@ export type JobRow = {
   address: string
   noc: string
   category: string
+  teer: number | null
+  broad: string
+  mid: string
+  fine: string
   accessibility: string
   score: number | null
   pnpEligible: boolean
@@ -34,95 +39,18 @@ const uniq = (xs: string[]) => Array.from(new Set(xs.filter(Boolean))).sort()
 const accLabel: Record<string, string> = {
   'co-op': 'co-op', junior: '初级', intermediate: '中级', senior: '高级', unknown: '—',
 }
-// 官方 NOC 层级:TEER(第2位) · 大分类(第1位,10 大类) · 中分类 · 小分类
-type Cat = { name: string; bg: string; fg: string }
-const NA: Cat = { name: '未分类', bg: '#fafafa', fg: '#9ca3af' }
-// 大分类 = NOC 第 1 位
-const BROAD: Record<string, Cat> = {
-  '0': { name: '管理', bg: '#dbeafe', fg: '#1e40af' },
-  '1': { name: '商务', bg: '#e0e7ff', fg: '#3730a3' },
-  '2': { name: '科技', bg: '#cffafe', fg: '#155e75' },
-  '3': { name: '医疗', bg: '#dcfce7', fg: '#166534' },
-  '4': { name: '教育', bg: '#fae8ff', fg: '#86198f' },
-  '5': { name: '文体', bg: '#fce7f3', fg: '#9d174d' },
-  '6': { name: '服务', bg: '#fef9c3', fg: '#854d0e' },
-  '7': { name: '技工', bg: '#ffedd5', fg: '#9a3412' },
-  '8': { name: '资源', bg: '#ecfccb', fg: '#3f6212' },
-  '9': { name: '制造', bg: '#f3f4f6', fg: '#374151' },
+// 大分类颜色(仅显示)。分类名/层级(broad/mid/fine/teer)由 ETL(etl/noc.py→mart)算好
+// 存在 job 字段上,前端不再用 NOC 现算 —— 单一来源在数据层。
+type Cat = { bg: string; fg: string }
+const NA: Cat = { bg: '#fafafa', fg: '#9ca3af' }
+const BROAD_COLOR: Record<string, Cat> = {
+  管理: { bg: '#dbeafe', fg: '#1e40af' }, 商务: { bg: '#e0e7ff', fg: '#3730a3' },
+  科技: { bg: '#cffafe', fg: '#155e75' }, 医疗: { bg: '#dcfce7', fg: '#166534' },
+  教育: { bg: '#fae8ff', fg: '#86198f' }, 文体: { bg: '#fce7f3', fg: '#9d174d' },
+  服务: { bg: '#fef9c3', fg: '#854d0e' }, 技工: { bg: '#ffedd5', fg: '#9a3412' },
+  资源: { bg: '#ecfccb', fg: '#3f6212' }, 制造: { bg: '#f3f4f6', fg: '#374151' },
 }
-// 中/小分类:数据集出现的 NOC 单元组(五位码)→ 中分类 / 小分类中文名
-const NOC_INFO: Record<string, { mid: string; fine: string }> = {
-  '00012': { mid: '高级管理', fine: '高层管理' },
-  '20012': { mid: 'IT', fine: 'IT/信息系统管理' },
-  '11100': { mid: '金融', fine: '会计/财务分析' },
-  '11200': { mid: '人力资源', fine: '人力资源' },
-  '11202': { mid: '市场营销', fine: '市场/品牌/传播' },
-  '12013': { mid: '客户成功', fine: '客户成功/实施' },
-  '12200': { mid: '财务支持', fine: '记账/薪酬' },
-  '13110': { mid: '行政', fine: '行政助理' },
-  '14101': { mid: '办公支持', fine: '文员/数据录入' },
-  '21211': { mid: 'IT', fine: '数据科学/机器学习' },
-  '21220': { mid: 'IT', fine: '网络安全' },
-  '21222': { mid: 'IT', fine: '系统/业务分析' },
-  '21223': { mid: 'IT', fine: '数据库' },
-  '21231': { mid: 'IT', fine: '软件工程' },
-  '21232': { mid: 'IT', fine: '软件开发' },
-  '21234': { mid: 'IT', fine: 'Web 开发' },
-  '21311': { mid: '工程', fine: '计算机/硬件工程' },
-  '22221': { mid: 'IT', fine: 'IT 支持/网络' },
-  '22222': { mid: 'IT', fine: '测试/QA' },
-  '31102': { mid: '医疗专业', fine: '医生/全科' },
-  '31110': { mid: '医疗专业', fine: '牙科' },
-  '31120': { mid: '医疗专业', fine: '药剂师' },
-  '31202': { mid: '医疗专业', fine: '理疗/康复' },
-  '31301': { mid: '护理', fine: '注册护士' },
-  '32101': { mid: '护理', fine: '实用护士' },
-  '32120': { mid: '医疗技术', fine: '医学影像/化验' },
-  '41220': { mid: '教育', fine: '教师/讲师' },
-  '41300': { mid: '社会服务', fine: '社工/社区' },
-  '42202': { mid: '教育辅助', fine: '幼教/托育' },
-  '44101': { mid: '照护', fine: '护理员/PSW' },
-  '52120': { mid: '设计', fine: 'UI/UX/平面设计' },
-  '60010': { mid: '销售管理', fine: '销售/业务管理' },
-  '62200': { mid: '餐饮', fine: '厨师/主厨' },
-  '63200': { mid: '餐饮', fine: '厨工' },
-  '64100': { mid: '零售', fine: '零售销售' },
-  '64409': { mid: '客服', fine: '客服/安保' },
-  '64410': { mid: '客服', fine: '客服' },
-  '65200': { mid: '餐饮', fine: '餐饮服务' },
-  '65310': { mid: '清洁', fine: '清洁/保洁' },
-  '72100': { mid: '技工', fine: '机械师/CNC' },
-  '72106': { mid: '技工', fine: '焊工' },
-  '72200': { mid: '技工', fine: '电工' },
-  '72300': { mid: '技工', fine: '管道工' },
-  '72310': { mid: '技工', fine: '木工' },
-  '72402': { mid: '技工', fine: '暖通/制冷' },
-  '72410': { mid: '技工', fine: '汽修/钳工' },
-  '73300': { mid: '运输', fine: '货车司机' },
-  '75101': { mid: '物流', fine: '物料搬运/仓储' },
-  '75110': { mid: '建筑', fine: '建筑劳工' },
-}
-// NOC 不在表里时的中分类兜底(按前缀)
-const MID_PREFIX: [RegExp, string][] = [
-  [/^0/, '管理'], [/^11/, '金融商务'], [/^1[234]/, '行政支持'],
-  [/^21[345]/, '工程'], [/^2/, 'IT'],
-  [/^31|^32/, '医疗专业'], [/^33|^44/, '照护'],
-  [/^41/, '教育/社会'], [/^42/, '教育辅助'], [/^5/, '文化艺术'],
-  [/^60/, '销售管理'], [/^62|^63|^65[02]/, '餐饮'], [/^64/, '销售/客服'], [/^65/, '服务支持'],
-  [/^73/, '运输'], [/^75/, '劳工/物流'], [/^7/, '技工'],
-  [/^8/, '资源'], [/^9/, '制造'],
-]
-const catOf = (noc: string): Cat => (noc && /^\d/.test(noc) && BROAD[noc[0]]) || NA
-const midOf = (noc: string): string => {
-  if (!noc || !/^\d/.test(noc)) return '未分类'
-  if (NOC_INFO[noc]) return NOC_INFO[noc].mid
-  for (const [re, name] of MID_PREFIX) if (re.test(noc)) return name
-  return catOf(noc).name
-}
-const fineOf = (noc: string): string => {
-  if (!noc || !/^\d/.test(noc)) return '未分类'
-  return NOC_INFO[noc]?.fine || midOf(noc)
-}
+const colorOf = (broad?: string): Cat => (broad && BROAD_COLOR[broad]) || NA
 
 // 薪资归一已下沉到数据层(etl/04d_clean_salary.py → salaryAnnual/salaryText);前端只读不算。
 // 各列排序取值:数值列返回 number,文本列返回 string,缺值返回 null(排末尾)
@@ -134,12 +62,12 @@ const sortVal = (j: JobRow, key: ColKey): number | string | null => {
     case 'pnp': return j.pnpEligible ? 1 : 0
     case 'aip': return j.aip ? 1 : 0
     case 'address': return j.address || null
-    case 'teer': return teerOf(j.noc)
+    case 'teer': return j.teer
     case 'datePosted': return j.datePosted || null
     case 'lastSeen': return j.lastSeen || null
-    case 'broad': { const n = catOf(j.noc).name; return n === '未分类' ? null : n }
-    case 'mid': { const n = midOf(j.noc); return n === '未分类' ? null : n }
-    case 'fine': { const n = fineOf(j.noc); return n === '未分类' ? null : n }
+    case 'broad': return j.broad && j.broad !== '未分类' ? j.broad : null
+    case 'mid': return j.mid && j.mid !== '未分类' ? j.mid : null
+    case 'fine': return j.fine && j.fine !== '未分类' ? j.fine : null
     case 'noc': return j.noc || null
     case 'accessibility': return j.accessibility && j.accessibility !== 'unknown' ? j.accessibility : null
     case 'company': return j.company || null
@@ -181,13 +109,9 @@ const locDisplay = (j: JobRow): string => {
   return core || city
 }
 // ── 来源:Job Bank 渠道(含它聚合的 indeed/talent 等)统一显示「Job Bank」;ATS 平台名美化 ──
-const SOURCE_PRETTY: Record<string, string> = {
-  lever: 'Lever', bamboohr: 'BambooHR', greenhouse: 'Greenhouse', smartrecruiters: 'SmartRecruiters',
-  workable: 'Workable', recruitee: 'Recruitee', myworkdayjobs: 'Workday', workday: 'Workday',
-}
 const fromJobBank = (j: JobRow) => /jobbank\.gc\.ca/i.test(j.applyUrl)
-const sourceLabel = (j: JobRow): string =>
-  fromJobBank(j) ? 'Job Bank' : (SOURCE_PRETTY[(j.source || '').toLowerCase()] || j.source || '—')
+// 来源显示标签已在数据层(etl/09_build_mart.py)洗好存 job.sourceLabel,前端只读
+const sourceLabel = (j: JobRow): string => j.sourceLabel || '—'
 // 直接雇主:ATS 第一方=直接;Job Bank 渠道仅 source=='Job Bank'(雇主直发)算直接,其余是聚合转贴
 const isDirect = (j: JobRow): boolean => (fromJobBank(j) ? j.source === 'Job Bank' : true)
 
@@ -211,7 +135,7 @@ const searchHay = (j: JobRow): string => {
   const L = parseLoc(j)
   return [
     j.title, j.company, sourceLabel(j), j.source, j.noc, j.salary,
-    catOf(j.noc).name, midOf(j.noc), fineOf(j.noc),
+    j.broad, j.mid, j.fine,
     L.prov, L.city, L.district, j.address,
     accLabel[j.accessibility], j.accessibility,
     j.score != null ? String(j.score) : '', t != null ? `TEER ${t}` : '',
@@ -265,8 +189,11 @@ type Dims = {
   provinces: { code: string; name: string }[]
   cities: { name: string; province: string }[]
   districts: { name: string; city: string; province: string }[]
+  nocCategories: { broad: string; mid: string; fine: string; teer: number | null }[]
+  sources: { name: string }[]
+  experienceLevels: { name: string }[]
 }
-const EMPTY_DIMS: Dims = { provinces: [], cities: [], districts: [] }
+const EMPTY_DIMS: Dims = { provinces: [], cities: [], districts: [], nocCategories: [], sources: [], experienceLevels: [] }
 const PROV_CODE: Record<string, string> = Object.fromEntries(Object.entries(PROV_NAMES).map(([c, n]) => [n, c]))
 
 export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims }) {
@@ -347,23 +274,28 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
     if (dims.districts.length) { const code = fProv ? PROV_CODE[fProv] : ''; return uniq(dims.districts.filter((d) => (!code || d.province === code) && (!fCity || d.city === fCity)).map((d) => d.name)) }
     return uniq(jobs.filter((j) => { const L = parseLoc(j); return (!fCountry || L.country === fCountry) && (!fProv || L.prov === fProv) && (!fCity || L.city === fCity) }).map((j) => parseLoc(j).district))
   }, [dims, jobs, fCountry, fProv, fCity])
-  const broadOpts = useMemo(() => uniq(jobs.map((j) => catOf(j.noc).name)), [jobs])
-  const midOpts = useMemo(() => uniq(jobs.filter((j) => !fBroad || catOf(j.noc).name === fBroad).map((j) => midOf(j.noc))), [jobs, fBroad])
-  const fineOpts = useMemo(() => uniq(jobs.filter((j) => (!fBroad || catOf(j.noc).name === fBroad) && (!fMid || midOf(j.noc) === fMid)).map((j) => fineOf(j.noc))), [jobs, fBroad, fMid])
-  const teerOpts = useMemo(() => uniq(jobs.map((j) => { const t = teerOf(j.noc); return t == null ? '未分类' : `TEER ${t}` })), [jobs])
-  const sourceOpts = useMemo(() => uniq(jobs.map((j) => sourceLabel(j))), [jobs])
-  const accOpts = useMemo(() => uniq(jobs.map((j) => accLabel[j.accessibility] ?? '—')), [jobs])
+  // 分类/来源/经验筛选项来自维度表(noc_categories/sources/experience_levels),回退到 job 行
+  const nc = dims.nocCategories
+  const broadOpts = useMemo(() => (nc.length ? uniq(nc.map((c) => c.broad)) : uniq(jobs.map((j) => j.broad))), [nc, jobs])
+  const midOpts = useMemo(() => (nc.length ? uniq(nc.filter((c) => !fBroad || c.broad === fBroad).map((c) => c.mid))
+    : uniq(jobs.filter((j) => !fBroad || j.broad === fBroad).map((j) => j.mid))), [nc, jobs, fBroad])
+  const fineOpts = useMemo(() => (nc.length ? uniq(nc.filter((c) => (!fBroad || c.broad === fBroad) && (!fMid || c.mid === fMid)).map((c) => c.fine))
+    : uniq(jobs.filter((j) => (!fBroad || j.broad === fBroad) && (!fMid || j.mid === fMid)).map((j) => j.fine))), [nc, jobs, fBroad, fMid])
+  const teerOpts = useMemo(() => (nc.length ? uniq(nc.map((c) => (c.teer == null ? '未分类' : `TEER ${c.teer}`)))
+    : uniq(jobs.map((j) => (j.teer == null ? '未分类' : `TEER ${j.teer}`)))), [nc, jobs])
+  const sourceOpts = useMemo(() => (dims.sources.length ? dims.sources.map((s) => s.name) : uniq(jobs.map((j) => sourceLabel(j)))), [dims, jobs])
+  const accOpts = useMemo(() => (dims.experienceLevels.length ? uniq(dims.experienceLevels.map((e) => accLabel[e.name] ?? '—')) : uniq(jobs.map((j) => accLabel[j.accessibility] ?? '—'))), [dims, jobs])
   const anyFilter = q || directOnly || fCountry || fProv || fCity || fDistrict || fBroad || fMid || fFine || fTeer || fSource || fAcc
   const clearAll = () => { setQ(''); setDirectOnly(false); setFCountry(''); setFProv(''); setFCity(''); setFDistrict(''); setFBroad(''); setFMid(''); setFFine(''); setFTeer(''); setFSource(''); setFAcc('') }
 
   const rows = useMemo(() => {
     const term = q.trim().toLowerCase()
     const filtered = jobs.filter((j) => {
-      const L = parseLoc(j); const t = teerOf(j.noc)
+      const L = parseLoc(j)
       return (!directOnly || isDirect(j)) &&
         (!fCountry || L.country === fCountry) && (!fProv || L.prov === fProv) && (!fCity || L.city === fCity) && (!fDistrict || L.district === fDistrict) &&
-        (!fBroad || catOf(j.noc).name === fBroad) && (!fMid || midOf(j.noc) === fMid) && (!fFine || fineOf(j.noc) === fFine) &&
-        (!fTeer || (t == null ? '未分类' : `TEER ${t}`) === fTeer) &&
+        (!fBroad || j.broad === fBroad) && (!fMid || j.mid === fMid) && (!fFine || j.fine === fFine) &&
+        (!fTeer || (j.teer == null ? '未分类' : `TEER ${j.teer}`) === fTeer) &&
         (!fSource || sourceLabel(j) === fSource) && (!fAcc || (accLabel[j.accessibility] ?? '—') === fAcc) &&
         (!term || searchHay(j).includes(term))
     })
@@ -466,7 +398,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
               {rows.slice(0, limit).map((j, i) => {
                 const mapQ = j.address || [j.city, j.province].filter(Boolean).join(', ') // 地图链接用精确地址
                 const L = parseLoc(j)                                                       // 省/市/区
-                const cat = catOf(j.noc)
+                const cat = colorOf(j.broad)
                 const open = (field: ColKey) => setPopup({ field, job: j })
                 return (
                   <tr key={j.id} className="jrow" style={{ borderBottom: '1px solid #f3f4f6', background: i % 2 ? '#fcfcfd' : '#fff' }}>
@@ -476,10 +408,10 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
                       let node: React.ReactNode
                       const extra: React.CSSProperties = {}
                       if (k === 'score') { node = j.score ?? '—'; Object.assign(extra, { fontWeight: 600, color: scoreColor(j.score) }) }
-                      else if (k === 'broad') { node = cat.name; Object.assign(extra, { whiteSpace: 'nowrap', color: cat.fg, fontWeight: 500 }) }
-                      else if (k === 'mid') { node = midOf(j.noc); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
-                      else if (k === 'fine') { node = midOf(j.noc) === '未分类' ? '—' : fineOf(j.noc); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
-                      else if (k === 'teer') { const t = teerOf(j.noc); node = t == null ? '—' : `TEER ${t}`; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+                      else if (k === 'broad') { node = j.broad || '未分类'; Object.assign(extra, { whiteSpace: 'nowrap', color: cat.fg, fontWeight: 500 }) }
+                      else if (k === 'mid') { node = j.mid || '未分类'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+                      else if (k === 'fine') { node = (j.mid === '未分类' || !j.mid) ? '—' : j.fine; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+                      else if (k === 'teer') { node = j.teer == null ? '—' : `TEER ${j.teer}`; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'title') { href = j.applyUrl || null; node = j.title; Object.assign(extra, wrapCell(360)) }
                       else if (k === 'company') { href = j.officialUrl || null; node = j.company; Object.assign(extra, wrapCell(190)) }
                       else if (k === 'noc') node = j.noc || '—'
@@ -652,7 +584,7 @@ function advise(field: ColKey, j: JobRow): Advice {
   if (j.officialUrl) links.push({ label: '公司官网', href: j.officialUrl })
   const locStr = j.address || [j.city, j.province].filter(Boolean).join(', ')
   const prov = j.province || '—'
-  const cat = catOf(j.noc).name
+  const cat = j.broad || '未分类'
   const provPnp: Record<string, string> = { ON: 'OINP(安省省提名)', BC: 'BC PNP', AB: 'AAIP(阿省)', MB: 'MPNP(曼省)', SK: 'SINP(萨省)', NS: 'NSNP(新斯科舍)', NB: 'NBPNP(新省)' }
 
   switch (field) {
@@ -678,7 +610,7 @@ function advise(field: ColKey, j: JobRow): Advice {
       return {
         tag: '大分类', title: cat,
         body: [
-          `职业层级:${cat}(大类) › ${midOf(j.noc)}(中类) › ${fineOf(j.noc)}(小类),取自官方 NOC ${j.noc || '—'}。`,
+          `职业层级:${cat}(大类) › ${j.mid || '—'}(中类) › ${j.fine || '—'}(小类),取自官方 NOC ${j.noc || '—'}。`,
           '大分类 = NOC 第 1 位的 10 大职业类(管理 / 科技 / 医疗 / 技工 / 服务 等);勾选「中/小分类」列可看更细方向。',
           `移民技能等级看 NOC 第 2 位的 TEER:${teerLine(j.noc)}`,
         ],
@@ -688,9 +620,9 @@ function advise(field: ColKey, j: JobRow): Advice {
     case 'mid':
     case 'fine': {
       return {
-        tag: field === 'mid' ? '中分类' : '小分类', title: (field === 'mid' ? midOf(j.noc) : fineOf(j.noc)),
+        tag: field === 'mid' ? '中分类' : '小分类', title: (field === 'mid' ? j.mid : j.fine) || '未分类',
         body: [
-          `职业层级:${cat}(大类) › ${midOf(j.noc)}(中类) › ${fineOf(j.noc)}(小类),取自官方 NOC ${j.noc || '—'}。`,
+          `职业层级:${cat}(大类) › ${j.mid || '—'}(中类) › ${j.fine || '—'}(小类),取自官方 NOC ${j.noc || '—'}。`,
           '中分类把大类细分(如「科技」分 IT / 工程,「技工」分 技工 / 运输 / 物流);小分类是具体职业方向,便于按方向投递与筛选。',
           teerLine(j.noc),
         ],

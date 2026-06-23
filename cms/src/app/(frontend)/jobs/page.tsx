@@ -15,15 +15,21 @@ export default async function JobsPage() {
   })
 
   // 联动筛选的选项来源:维度表(provinces/cities/districts),不再从 job 行现推
-  const [provDocs, cityDocs, distDocs] = await Promise.all([
+  const [provDocs, cityDocs, distDocs, nocDocs, srcDocs, expDocs] = await Promise.all([
     payload.find({ collection: 'provinces', limit: 100, depth: 0, sort: 'name' }),
     payload.find({ collection: 'cities', limit: 5000, depth: 0, sort: 'name' }),
     payload.find({ collection: 'districts', limit: 1000, depth: 0, sort: 'name' }),
+    payload.find({ collection: 'noc-categories', limit: 1000, depth: 0 }),
+    payload.find({ collection: 'sources', limit: 200, depth: 0, sort: 'name' }),
+    payload.find({ collection: 'experience-levels', limit: 50, depth: 0 }),
   ])
   const dims = {
     provinces: provDocs.docs.map((p: any) => ({ code: p.code, name: p.name })),
     cities: cityDocs.docs.map((c: any) => ({ name: c.name, province: c.province })),
     districts: distDocs.docs.map((d: any) => ({ name: d.name, city: d.city, province: d.province })),
+    nocCategories: nocDocs.docs.map((c: any) => ({ broad: c.broad, mid: c.mid, fine: c.fine, teer: typeof c.teer === 'number' ? c.teer : null })),
+    sources: srcDocs.docs.map((s: any) => ({ name: s.name })),
+    experienceLevels: expDocs.docs.map((e: any) => ({ name: e.name })),
   }
 
   const jobs: JobRow[] = docs.map((j: any) => ({
@@ -32,6 +38,7 @@ export default async function JobsPage() {
     company: j.company && typeof j.company === 'object' ? j.company.name : (j.company ?? ''),
     address: j.address ?? (j.company && typeof j.company === 'object' ? (j.company.address ?? '') : ''),
     source: j.source ?? '',
+    sourceLabel: j.sourceLabel ?? '',
     origin: j.origin ?? '',
     country: j.country ?? '',
     province: j.province ?? '',
@@ -39,6 +46,10 @@ export default async function JobsPage() {
     district: j.district ?? '',
     noc: j.noc ?? '',
     category: j.category ?? '',
+    teer: typeof j.teer === 'number' ? j.teer : null,
+    broad: j.broad ?? '未分类',
+    mid: j.mid ?? '未分类',
+    fine: j.fine ?? '未分类',
     accessibility: j.accessibility ?? '',
     score: typeof j.score === 'number' ? j.score : null,
     pnpEligible: !!j.pnpEligible,
