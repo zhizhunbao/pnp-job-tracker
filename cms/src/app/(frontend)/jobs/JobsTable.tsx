@@ -261,7 +261,15 @@ const DEFAULT_COLS = COLUMNS.filter((c) => c.default).map((c) => c.key)
 const PREF_KEY = 'jobs.visibleCols.v6'
 const ORIGIN_LABEL: Record<string, string> = { jobbank: 'Job Bank', ats: 'ATS', directory: '社区名单' }
 
-export default function JobsTable({ jobs, updatedAt }: { jobs: JobRow[]; updatedAt?: string }) {
+type Dims = {
+  provinces: { code: string; name: string }[]
+  cities: { name: string; province: string }[]
+  districts: { name: string; city: string; province: string }[]
+}
+const EMPTY_DIMS: Dims = { provinces: [], cities: [], districts: [] }
+const PROV_CODE: Record<string, string> = Object.fromEntries(Object.entries(PROV_NAMES).map(([c, n]) => [n, c]))
+
+export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims }) {
   const [q, setQ] = useState('')
   const [directOnly, setDirectOnly] = useState(false)
   const [fCountry, setFCountry] = useState(''); const [fProv, setFProv] = useState(''); const [fCity, setFCity] = useState(''); const [fDistrict, setFDistrict] = useState('')
@@ -327,11 +335,18 @@ export default function JobsTable({ jobs, updatedAt }: { jobs: JobRow[]; updated
     return () => io.disconnect()
   }, [])
 
-  // 联动选项:下级只列上级选中后仍存在的值(国家→省→市→区)
-  const countryOpts = useMemo(() => uniq(jobs.map((j) => parseLoc(j).country)), [jobs])
-  const provOpts = useMemo(() => uniq(jobs.filter((j) => !fCountry || parseLoc(j).country === fCountry).map((j) => parseLoc(j).prov)), [jobs, fCountry])
-  const cityOpts = useMemo(() => uniq(jobs.filter((j) => { const L = parseLoc(j); return (!fCountry || L.country === fCountry) && (!fProv || L.prov === fProv) }).map((j) => parseLoc(j).city)), [jobs, fCountry, fProv])
-  const distOpts = useMemo(() => uniq(jobs.filter((j) => { const L = parseLoc(j); return (!fCountry || L.country === fCountry) && (!fProv || L.prov === fProv) && (!fCity || L.city === fCity) }).map((j) => parseLoc(j).district)), [jobs, fCountry, fProv, fCity])
+  // 联动选项来自维度表(provinces/cities/districts);维度表为空时回退到从 job 行现推。
+  const countryOpts = useMemo(() => (dims.provinces.length ? ['Canada'] : uniq(jobs.map((j) => parseLoc(j).country))), [dims, jobs])
+  const provOpts = useMemo(() => (dims.provinces.length ? dims.provinces.map((p) => p.name)
+    : uniq(jobs.filter((j) => !fCountry || parseLoc(j).country === fCountry).map((j) => parseLoc(j).prov))), [dims, jobs, fCountry])
+  const cityOpts = useMemo(() => {
+    if (dims.cities.length) { const code = fProv ? PROV_CODE[fProv] : ''; return uniq(dims.cities.filter((c) => !code || c.province === code).map((c) => c.name)) }
+    return uniq(jobs.filter((j) => { const L = parseLoc(j); return (!fCountry || L.country === fCountry) && (!fProv || L.prov === fProv) }).map((j) => parseLoc(j).city))
+  }, [dims, jobs, fCountry, fProv])
+  const distOpts = useMemo(() => {
+    if (dims.districts.length) { const code = fProv ? PROV_CODE[fProv] : ''; return uniq(dims.districts.filter((d) => (!code || d.province === code) && (!fCity || d.city === fCity)).map((d) => d.name)) }
+    return uniq(jobs.filter((j) => { const L = parseLoc(j); return (!fCountry || L.country === fCountry) && (!fProv || L.prov === fProv) && (!fCity || L.city === fCity) }).map((j) => parseLoc(j).district))
+  }, [dims, jobs, fCountry, fProv, fCity])
   const broadOpts = useMemo(() => uniq(jobs.map((j) => catOf(j.noc).name)), [jobs])
   const midOpts = useMemo(() => uniq(jobs.filter((j) => !fBroad || catOf(j.noc).name === fBroad).map((j) => midOf(j.noc))), [jobs, fBroad])
   const fineOpts = useMemo(() => uniq(jobs.filter((j) => (!fBroad || catOf(j.noc).name === fBroad) && (!fMid || midOf(j.noc) === fMid)).map((j) => fineOf(j.noc))), [jobs, fBroad, fMid])

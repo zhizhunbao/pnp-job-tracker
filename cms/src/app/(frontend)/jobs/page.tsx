@@ -14,6 +14,18 @@ export default async function JobsPage() {
     sort: '-datePosted',
   })
 
+  // 联动筛选的选项来源:维度表(provinces/cities/districts),不再从 job 行现推
+  const [provDocs, cityDocs, distDocs] = await Promise.all([
+    payload.find({ collection: 'provinces', limit: 100, depth: 0, sort: 'name' }),
+    payload.find({ collection: 'cities', limit: 5000, depth: 0, sort: 'name' }),
+    payload.find({ collection: 'districts', limit: 1000, depth: 0, sort: 'name' }),
+  ])
+  const dims = {
+    provinces: provDocs.docs.map((p: any) => ({ code: p.code, name: p.name })),
+    cities: cityDocs.docs.map((c: any) => ({ name: c.name, province: c.province })),
+    districts: distDocs.docs.map((d: any) => ({ name: d.name, city: d.city, province: d.province })),
+  }
+
   const jobs: JobRow[] = docs.map((j: any) => ({
     id: j.id,
     title: j.title ?? '',
@@ -44,5 +56,5 @@ export default async function JobsPage() {
 
   const updatedAt = docs.reduce((m: string, j: any) => (j.lastSeen && j.lastSeen > m ? j.lastSeen : m), '')
 
-  return <JobsTable jobs={jobs} updatedAt={updatedAt} />
+  return <JobsTable jobs={jobs} updatedAt={updatedAt} dims={dims} />
 }
