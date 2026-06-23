@@ -1,86 +1,81 @@
-# STATUS / 交接文档（2026-06-22）
+# STATUS / 交接文档（2026-06-23）
 
-> 新 session 接手先读这份 + `prd.md`。仓库:github.com/zhizhunbao/pnp-job-tracker
-> ⚠️ **有大量未提交改动**(本 session 做了很多)。接手第一件事建议:`git status` 看一眼 → 整理提交。
+> 新 session 接手先读这份 + `CLAUDE.md`(设计宪法)+ `prd.md`(需求)。仓库:github.com/zhizhunbao/pnp-job-tracker
+> ✅ **本 session 工作全部已提交,工作区干净**(`git log` 看本次 ~25 个 commit)。
 
 ## 这是什么
-**PNP Job Tracker** —— 每日更新、按移民价值评分的加拿大职位站点,面向「雇主 offer → 省提名」路线。当前聚焦 **Ottawa**,设计上可扩到其它城市/省。
+**PNP Job Tracker** —— 每日更新的**全加拿大全职业职位板**,带移民价值视角。能走「雇主 offer → 省提名(PNP)」的岗打 `pnpEligible` 标记(粗筛信号,非资格认定)。
+Job Bank 覆盖全 10 省全职业(含 QC);ATS(Kanata 科技公司)仍 Ottawa。
 
-## 架构(两段式)
+## 架构:数据仓库式分层
 ```
-etl/ (Python 抓取→清洗→评分) ──写 data/──> cms/ (Payload + Next.js, Postgres) ──> /jobs 公开页
+etl/ raw(抓取) → clean/(清洗,按字段) → mart(集市层,列对齐DB) → cms/ seed(纯加载器) → Postgres → /jobs
 ```
+- `etl/_paths.py` 是**唯一路径真相来源**。按来源分顶层:`raw/ats/` · `raw/jobbank/`;processed 同理 `processed/ats/`。
+- **mart(`09_build_mart.py`)**:把各源拼成 `data/mart/*.json`,每文件=一张DB表。中介过滤/去重/评分关联/分类/来源标签 全在这层或更上游。
+- **seed(`cms/src/app/seed/route.ts`)= 纯加载器**:只读 mart → 灌库(并发分批)。`?reset=1` 全清重建;不带 reset = 增量对账(没出现的岗→closed)。
 
-## 现状:全国多省 · 每日增量,端到端跑通
-- **Job Bank 已扩到全 10 省全职业**(ON/QC/SK/AB/BC/MB/NB/NS/NL/PE)。抓「最新几天」增量:一天的增量就 +1200 岗左右。当前库 **~1370 岗**(全国 Job Bank 1513 帖 + 107 Ottawa ATS)。
-- 定位放宽:**全加拿大全职业职位板**;能走省提名的岗打 `pnpEligible` 状态(TEER0-3 或紧缺低TEER),前端有「PNP」列 + 顾问解读。粗筛信号,非资格认定。
-- 抓取模式:`05 --all-occupations --prov ALL --since-days N`,无关键词、按省 sort=D、按 posting_id 增量合并到**全国单文件** `raw/jobbank/postings.json`。
-- ATS(Kanata 科技公司)仍只 Ottawa;Job Bank 各省 city 保留,只有大渥太华才折叠成 city=Ottawa+district=社区。
-- ⚠️ 05b 帖子详情(精确地址/描述)目前还是 Ottawa 时代逻辑,**全国量太大没对每帖抓详情**;后续只对 direct 帖或按需抓。
-- 功能:四级联动筛选(国家→省→市→区 / TEER→大→中→小分类 / 来源·经验)、全字段搜索、表头三态排序(降→升→取消)、滚动分页(首屏 60 下滑加载)、字段自选(全选/反选)、**AI 顾问弹框**(点单元格空白→解读;点链接→跳转)。
-- AI 顾问:职位/公司用**本地 Ollama**(`OLLAMA_URL=http://192.168.1.150:11434`,qwen3.6)流式生成,职位基于抓取的真实 JD;其余字段模板即时解读。**⚠️ 线上访问不到家里 Ollama,部署前要决定:关掉/换云端/暴露。**
+## 现状:全国多省,端到端跑通,库里 ~2084 岗 / 1578 公司
+- **DB 8 张数据表**:事实 `jobs`(2084) `companies`(1578);维度 `provinces`(10) `cities`(541) `districts`(398) `noc_categories`(57) `sources`(5) `experience_levels`(5) `designated_employers`(2917, AIP名单)。
+- **分类全在数据层**:NOC 大/中/小分类+TEER 在 `etl/noc.py`(单一来源)→ 存 job 字段;来源显示标签(JB→Job Bank)在 mart 洗 → `sourceLabel`。前端**只读字段、不再算 NOC**。
+- **区(district)= 自维护 FSA→区表**:`reference/fsa-districts.json`(从 GeoNames 加拿大邮编开放数据建,1651个FSA,零API)。04c 按邮编查表洗区,全国可用(Ottawa社区折叠成 city=Ottawa)。769/2084 岗有区。
+- **中位工资**:`reference/wages.json`(`build_wages.py` 从 ESDC 开放数据建,NOC×省 中位)。mart 按 NOC+省 join → job 带 `wageMedHourly/wageMedAnnual`(1473 岗匹配)。薪资顾问直接显示「中位 + 本岗 vs 中位 %」。
+- **筛选全读维度表**:国→省→市→区(provinces/cities/districts)、大/中/小分类+TEER(noc_categories)、来源(sources)、经验(experience_levels);全字段搜索、表头三态排序、字段自选(含「主要」一键核心列)、**AI 顾问弹框**。
+- 列顺序:发布时间第一、评分最后。默认排序发布时间降序(同值评分兜底)。地点列点击跳 Google 地图(各列用自己那一级)。
+- **AI 顾问**:职位/公司用本地 Ollama(`OLLAMA_URL=http://192.168.1.150:11434`)流式;其余字段模板。**⚠️ 线上访问不到家里 Ollama,部署前要决定去向。**
 
-## data/ 结构(省/市/区分层,`etl/_paths.py` 是唯一路径来源)
+## ⚠️ 性能 / 已踩坑
+- **`/jobs` 列表走原始 SQL**(`page.tsx` 用 pg pool `SELECT+join`),绕开 Payload 的 per-doc 读取管线(2000+行要16s→0.9s)。**代价:耦合 Payload 的 snake_case 列名,改 Jobs schema 要同步那段 SQL。**
+- **衍生抓取数据必须 gitignore**:`postings.json`/`mart/`/`all-scored.json`/`geonames|wages 源`/jobbank公司目录 全已忽略。**教训:之前 postings.json 被 git 跟踪,反复被 restore 回旧版丢数据。** 维护的表(fsa-districts.json/wages.json/AIP)才跟踪。
+- 改 Jobs collection 字段 → **必须重启 dev server**(Payload 同步 schema)再重灌。
+
+## data/ 结构
 ```
 data/
-  raw/                       # extract 抓取
-    jobbank/  postings.json(全国单文件,province 作字段)+ details/<雇主_职位>.md
-    ontario/ottawa/
-      kanata-north/companies/  kanata-north.json(会员名录,520家)+ careers
-    reference/  policy/<省>-immigration/ · designated-employers/   # 跨省参考
-  processed/ontario/ottawa/kanata-north/companies/<slug>/   # 每公司 profile/careers/jobs + 详情.md
-  output/  all-scored.json(评分)             # gitignore
-  registry/  valuable-urls.md
+  raw/
+    ats/ontario/ottawa/kanata-north/companies/  # ATS 源(会员名录,跟踪)
+    jobbank/  postings.json(全国,gitignore) + details/ + <省>/<市>/companies/(物化,gitignore)
+    reference/  fsa-districts.json · wages.json · designated-employers/aip-*.json  # 维护的表(跟踪)
+                geonames/ · wages/*.csv · policy/<省>-immigration/                  # 源(gitignore 或正文跟踪)
+  processed/ats/ontario/ottawa/kanata-north/companies/<slug>/   # ATS 物化(跟踪)
+  mart/   companies/jobs/provinces/cities/districts/noc_categories/sources/experience_levels/designated_employers .json (gitignore)
+  output/ all-scored.json(gitignore)
 ```
-> gitignore 了衍生文件(output/、csv/md 视图、详情.md、log、html_cache);只跟踪源 JSON + policy 正文。
 
-## ETL 流水线(`etl/`,编号顺序)
+## ETL 流水线(`etl/`)
 | 脚本 | 作用 |
 |---|---|
-| 01 scrape_directory | Kanata North 会员名录(逆向 admin-ajax)|
-| 02 build_company_folders | 一公司一文件夹 |
-| 03 find_careers | 找 careers 页 + 识别 ATS |
-| 04 scrape_ats_jobs | ATS 第一方岗(greenhouse/lever/bamboohr/smartrecruiters/workable/recruitee + **Workday cxs 适配器**)+ 每岗 .md + 结构化薪资 |
-| **clean/**04b extract_ats_salary | 从 .md 描述补薪资(ATS 没给结构化时;锚定关键词后 80 字符内取金额,含 "ranges from" 长前缀)|
-| **clean/**04c clean_ats_locations | **地点清洗**:归一化 country/province/city/district/address,ATS 严格只留 Ottawa,Job Bank 也结构化;文本无社区名时用邮编 FSA 兜底 |
-| **clean/**04d clean_salary | **薪资清洗**:原始 salary 串 → salaryAnnual(年薪折算)+ salaryText(规范文本),两源都跑(原前端 parseSalary 下沉至此)|
-| **clean/**05c flag_aip | **单字段脚本**:雇主名匹配官方 AIP 指定雇主名单 → `aip`(bool);只限大西洋四省(NL/NB/NS/PE)|
-| 05 scrape_jobbank | Job Bank 抓取。**新增 `--all-occupations` 全职业·按省·sort=D·增量**(最新 N 天,合并到全国 postings.json);旧的科技关键词+Ottawa 模式仍在 |
-| 05b scrape_jobbank_details | 帖子详情:精确地址 + 描述 + **雇主官网(链接 or 邮箱域名)** |
-| 08 score | NOC→TEER 分类 + 每 TEER 评分 → all-scored.json |
-| 09 build_mart | **集市层**:拼装各源 → data/mart/ 最终表(列对齐 DB):companies/jobs(事实) + provinces/cities/districts/designated_employers(维度)。中介过滤/去重/评分关联都下沉到这 |
-
-## 清洗约定(按「类」一个脚本,不是每字段一个;脚本都在 `etl/clean/`)
-每个清洗步:**读原始抓取字段 → 写回干净结构化字段**;脚本顶部先声明显式 `IN_*/OUT_*` 全路径;seed 只入库不清洗;前端只显示不清洗。
-- 地点 → 04c、薪资 → 04d(均已下沉到数据层)。前端只显示 salaryText/salaryAnnual,不再现算。
-
-## CMS / 数据库(`cms/`,Payload + Postgres@Docker)
-- `cms/src/app/seed/route.ts` = 加载器:读 data/ → 入库。`?reset=1` 全清重建;**不带 reset = 增量对账**(本次抓取没出现的岗 → status=closed + closedAt)。
-- Jobs 字段(近期加):`country/province/city/district/address`(结构化地点)、`origin`(jobbank/ats/directory 渠道)、`source`(原始板 indeed/lever…)、`status/closedAt`(在招/已下架)、`score/noc/category/accessibility/salary`。
-- 改了 Jobs collection 字段后**要重启 dev server**(Payload 同步 schema)再重灌。
+| 01-03 | ATS:Kanata 名录 → 公司文件夹 → 找 careers |
+| 04 scrape_ats_jobs | ATS 第一方岗(greenhouse/lever/workday…)|
+| 05 scrape_jobbank | Job Bank。`--all-occupations --prov ALL --since-days N`:无关键词·按省·sort=D·增量合并到全国 postings.json |
+| 05b scrape_jobbank_details | 帖子详情:地址/邮编/描述/雇主官网(增量,detail_fetched 标记;已全国跑过,~1465 地址)|
+| **clean/**04b/04c/04d/05c | 抽薪资 / 地点(FSA查表洗区) / 薪资归一 / AIP标记。脚本顶部声明 `IN_*/OUT_*` 全路径 |
+| 06 build_jobbank_companies | 把 postings 物化成 `raw/jobbank/<省>/<市>/companies/<slug>/`(分地域分公司,和ATS对齐)|
+| 08 score | NOC→TEER+评分+pnpEligible → all-scored.json |
+| build_fsa_districts | GeoNames → reference/fsa-districts.json(偶尔重建)|
+| build_wages | ESDC开放数据 → reference/wages.json(年度更新)|
+| 09 build_mart | 拼装 → data/mart/*.json(8张表 + 分类/来源/工资 join)|
+| crawl/ | 网站→Markdown 的 BFS 爬虫(带 Playwright 过 Cloudflare),给以后抓政府站/政策页用 |
 
 ## 怎么跑(新机/新 session)
 ```bash
-cd pnp-job-tracker/cms
-docker compose up -d        # Postgres
-npm run dev                 # localhost:3000
-# /admin 建管理员;/jobs 看表;重灌: curl "localhost:3000/seed?reset=1"
-# 重抓后增量检测下架: curl "localhost:3000/seed"  (不带 reset)
-# 完整重跑 ETL: 04 → clean/04b → clean/04c → clean/04d → 05 → clean/05c → 08(清洗脚本在 etl/clean/,走 _paths)
-# 注:05c(AIP)要在 05/04c 之后跑(依赖 province);05b 帖子详情仅 Ottawa,全国未跑
+cd pnp-job-tracker/cms && docker compose up -d && npm run dev   # Postgres + :3000
+# 完整重跑 ETL(走 _paths):
+#   05 --all-occupations --prov ALL --since-days 3  → 05b → clean/04c → clean/04d → clean/05c → 08 → 09_build_mart
+#   (ATS 链 01-04+04b 另跑;build_fsa_districts/build_wages 偶尔重建)
+# 重灌: curl "localhost:3000/seed?reset=1"   |  增量: curl "localhost:3000/seed"
 ```
 
-## 部署上线就差「运维三件」(功能已 MVP)
-1. **托管**:Railway/Render/Fly 或 Vercel + 托管 Postgres(Neon/Supabase)。
-2. **每日 cron**:GitHub Actions 跑 ETL + seed(数据命门)。
-3. ⚠️ **AI 顾问线上去向**:家里 Ollama 访问不到 → 关掉 / 换云端 / 暴露,三选一。
-4. 部署前:提交代码 + `.env.example` + 一个「关于/数据来源/免责声明」页。
-
 ## 待做(优先级)
-- **median wage**:下载 ESDC/Job Bank 工资开放数据(NOC×经济区中位)→ 加「vs 中位」列(对 LMIA/省提名有意义)。已确认走开放数据下载,不爬 JS 页。
-- 扩城市/源(其它园区/商会名录;Toronto/Vancouver;Indeed/LinkedIn 放最后,有 ToS 风险)。
-- 未分类岗(标题没匹配 NOC)可继续加规则或上 AI 兜底。
+- **Phase 3 — Docker 开机自抓服务**:compose 加 etl 容器,登录自启跑「抓最新一天→clean→mart→seed」。⚠️ **增量后不能用不带 reset 的 seed 下架对账**(增量只含最新一天,会误标所有旧岗 closed)→ 下架改按发布日期过期(JB帖约30天)。
+- 薪资加「vs 中位」可视化列(数据已有 wageMedAnnual)。
+- 未分类岗(~26%,标题没匹配 NOC)继续加 noc 规则或 AI 兜底。
+- 扩源:其它商会名录、Indeed/LinkedIn(放最后,ToS 风险)。用 etl/crawl/ 抓政策页填 policy_docs/pnp_streams 空表。
+- 部署运维:托管(Vercel+Neon/Railway)、每日 cron、AI 顾问线上去向、`.env.example`、关于/免责声明页。
 
 ## 关键决策记录
-- 来源真相:Job Bank 自己聚合 indeed/Talent 等,统一显示「Job Bank」;`source` 留原始板。「第一方/转贴」是**发布渠道**不是雇主真假;中介已按公司名过滤。
-- 地点:Ottawa 各社区(Kanata/Nepean/Orléans…)是大渥太华市的「区」,统一 市=Ottawa;Orléans 合并(含 Orleans South)。
+- **数据仓库分层**:raw→clean→mart→load;mart 是「列对齐DB的最终表」,seed 只灌不拼。维度表(省市区/NOC/来源/经验/AIP)各自维护。
+- **区从 GeoNames 自维护表**洗,不用限速的 OSM 地理编码 API。中小城市 FSA=城市本身、无子区时留空(数据天花板)。
+- **列表读用原始 SQL** 而非 payload.find(性能);Payload 仍管 schema/admin/写入。
+- 来源真相:JB 聚合 indeed/Talent → 统一显示「Job Bank」,`source` 留原始板。中介已按公司名过滤。
+- 地点:Ottawa 各社区是「区」,统一 市=Ottawa;Richmond Hill 等靠**邮编 FSA**判定(不子串撞社区名)。
