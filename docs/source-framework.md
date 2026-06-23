@@ -62,10 +62,16 @@ SOURCES = [
 ## 5. 反爬(D3)
 crawl 方式:httpx 优先,命中 403/挑战 → headless 浏览器兜底。**过不了的验证码 → 记日志、跳过该页**,后期再人工处理(现 `browser_fetch` 的有头+人工那套留作手动重抓,不进容器)。
 
-## 6. docker 映射
-- 镜像按**方式**分:`docker/httpx/`(轻)、`docker/crawl/`(headless 浏览器,重)、dataset 复用 httpx 镜像。
-- compose:**一个源一个 service**,`env=SOURCE`,`interval` 按真实频率。
-- `build` service(清洗+评分+mart+seed)单例,**已实现**。
+## 6. docker 映射(镜像按方式分,目录名一眼看清)
+```
+docker/etl/
+  httpx/Dockerfile      # httpx 抓结构化页(Job Bank/ATS)+ build/clean 复用
+  crawl/Dockerfile      # headless 浏览器爬自由文本/政府页(PNP 省级/政策)
+  dataset/Dockerfile    # 下载开放数据文件(工资/邮编/AIP)
+```
+- 目录名 = `method` 值,和 `etl/scrape/<method>/`、`sources.py` 的 `method=` 三处同一套词,连得起来。
+- compose:**一个源一个 service**,`env=SOURCE`,`interval` 按真实频率;service 名表明「哪个源/哪部分数据」。
+- `build` service(清洗+评分+mart+seed)单例,**已实现**,复用 httpx 镜像。
 - dataset/PNP 省级源:**低频**(月级/周级),别套 2h。
 
 ## 7. 初始源清单(进 sources.py)

@@ -8,10 +8,12 @@
 #         docker compose down                             # 停
 # 加新源: 在 etl/auto_update.py 的 SOURCES 登记步骤 → 这里复制一个 service 改 SOURCE。
 
-x-etl: &etl                        # 所有源容器共用的构建/挂载配置(YAML 锚点)
+# jobbank(httpx 抓取)与 build(清洗/评分/mart/seed)都用 httpx 镜像(都只需 python+解析库)。
+# 以后 crawl 源用 docker/etl/crawl/、dataset 源用 docker/etl/dataset/ 镜像,各自一个 service。
+x-etl: &etl                        # httpx 类源 + build 共用的构建/挂载配置(YAML 锚点)
   build:
     context: ..                    # 仓库根(docker/ 的上一级)
-    dockerfile: docker/etl/Dockerfile
+    dockerfile: docker/etl/httpx/Dockerfile
   restart: unless-stopped          # Docker Desktop 设为登录自启 → 开机即跑
   working_dir: /repo               # etl/_paths.py 以此为根解析 data/
   volumes:
