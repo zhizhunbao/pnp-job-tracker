@@ -11,8 +11,12 @@
 etl/ (Python 抓取→清洗→评分) ──写 data/──> cms/ (Payload + Next.js, Postgres) ──> /jobs 公开页
 ```
 
-## 现状:278 个 Ottawa 岗,端到端跑通
-- `/jobs` 页:**278 岗**(265 Job Bank + ~107 ATS,清洗到只剩 Ottawa)。
+## 现状:全国多省 · 每日增量,端到端跑通
+- **Job Bank 已扩到全 10 省全职业**(ON/QC/SK/AB/BC/MB/NB/NS/NL/PE)。抓「最新几天」增量:一天的增量就 +1200 岗左右。当前库 **~1370 岗**(全国 Job Bank 1513 帖 + 107 Ottawa ATS)。
+- 定位放宽:**全加拿大全职业职位板**;能走省提名的岗打 `pnpEligible` 状态(TEER0-3 或紧缺低TEER),前端有「PNP」列 + 顾问解读。粗筛信号,非资格认定。
+- 抓取模式:`05 --all-occupations --prov ALL --since-days N`,无关键词、按省 sort=D、按 posting_id 增量合并到**全国单文件** `raw/jobbank/postings.json`。
+- ATS(Kanata 科技公司)仍只 Ottawa;Job Bank 各省 city 保留,只有大渥太华才折叠成 city=Ottawa+district=社区。
+- ⚠️ 05b 帖子详情(精确地址/描述)目前还是 Ottawa 时代逻辑,**全国量太大没对每帖抓详情**;后续只对 direct 帖或按需抓。
 - 功能:四级联动筛选(国家→省→市→区 / TEER→大→中→小分类 / 来源·经验)、全字段搜索、表头三态排序(降→升→取消)、滚动分页(首屏 60 下滑加载)、字段自选(全选/反选)、**AI 顾问弹框**(点单元格空白→解读;点链接→跳转)。
 - AI 顾问:职位/公司用**本地 Ollama**(`OLLAMA_URL=http://192.168.1.150:11434`,qwen3.6)流式生成,职位基于抓取的真实 JD;其余字段模板即时解读。**⚠️ 线上访问不到家里 Ollama,部署前要决定:关掉/换云端/暴露。**
 
@@ -20,8 +24,8 @@ etl/ (Python 抓取→清洗→评分) ──写 data/──> cms/ (Payload + Ne
 ```
 data/
   raw/                       # extract 抓取
+    jobbank/  postings.json(全国单文件,province 作字段)+ details/<雇主_职位>.md
     ontario/ottawa/
-      jobbank/  postings.json + details/<雇主_职位>.md
       kanata-north/companies/  kanata-north.json(会员名录,520家)+ careers
     reference/  policy/<省>-immigration/ · designated-employers/   # 跨省参考
   processed/ontario/ottawa/kanata-north/companies/<slug>/   # 每公司 profile/careers/jobs + 详情.md
@@ -37,15 +41,17 @@ data/
 | 02 build_company_folders | 一公司一文件夹 |
 | 03 find_careers | 找 careers 页 + 识别 ATS |
 | 04 scrape_ats_jobs | ATS 第一方岗(greenhouse/lever/bamboohr/smartrecruiters/workable/recruitee + **Workday cxs 适配器**)+ 每岗 .md + 结构化薪资 |
-| 04b extract_ats_salary | 从 .md 描述补薪资(ATS 没给结构化时)|
-| 04c clean_ats_locations | **地点清洗**:归一化 country/province/city/district/address,ATS 严格只留 Ottawa,Job Bank 也结构化 |
-| 05 scrape_jobbank | Job Bank 全职业岗(Ottawa 都会区过滤)|
+| **clean/**04b extract_ats_salary | 从 .md 描述补薪资(ATS 没给结构化时;锚定关键词后 80 字符内取金额,含 "ranges from" 长前缀)|
+| **clean/**04c clean_ats_locations | **地点清洗**:归一化 country/province/city/district/address,ATS 严格只留 Ottawa,Job Bank 也结构化;文本无社区名时用邮编 FSA 兜底 |
+| **clean/**04d clean_salary | **薪资清洗**:原始 salary 串 → salaryAnnual(年薪折算)+ salaryText(规范文本),两源都跑(原前端 parseSalary 下沉至此)|
+| **clean/**05c flag_aip | **单字段脚本**:雇主名匹配官方 AIP 指定雇主名单 → `aip`(bool);只限大西洋四省(NL/NB/NS/PE)|
+| 05 scrape_jobbank | Job Bank 抓取。**新增 `--all-occupations` 全职业·按省·sort=D·增量**(最新 N 天,合并到全国 postings.json);旧的科技关键词+Ottawa 模式仍在 |
 | 05b scrape_jobbank_details | 帖子详情:精确地址 + 描述 + **雇主官网(链接 or 邮箱域名)** |
 | 08 score | NOC→TEER 分类 + 每 TEER 评分 → all-scored.json |
 
-## 清洗约定(按「类」一个脚本,不是每字段一个)
-每个清洗步:**读原始抓取字段 → 写回干净结构化字段**;seed 只入库不清洗;前端只显示不清洗。
-- 地点 → 04c(已下沉到数据层)。薪资归一(parseSalary 的年薪折算)**目前还在前端**,下一步应下沉到脚本/seed。
+## 清洗约定(按「类」一个脚本,不是每字段一个;脚本都在 `etl/clean/`)
+每个清洗步:**读原始抓取字段 → 写回干净结构化字段**;脚本顶部先声明显式 `IN_*/OUT_*` 全路径;seed 只入库不清洗;前端只显示不清洗。
+- 地点 → 04c、薪资 → 04d(均已下沉到数据层)。前端只显示 salaryText/salaryAnnual,不再现算。
 
 ## CMS / 数据库(`cms/`,Payload + Postgres@Docker)
 - `cms/src/app/seed/route.ts` = 加载器:读 data/ → 入库。`?reset=1` 全清重建;**不带 reset = 增量对账**(本次抓取没出现的岗 → status=closed + closedAt)。
@@ -59,7 +65,8 @@ docker compose up -d        # Postgres
 npm run dev                 # localhost:3000
 # /admin 建管理员;/jobs 看表;重灌: curl "localhost:3000/seed?reset=1"
 # 重抓后增量检测下架: curl "localhost:3000/seed"  (不带 reset)
-# 完整重跑 ETL: 04 → 04b → 04c → 05 → 05b → 08(走 _paths,顺序见上)
+# 完整重跑 ETL: 04 → clean/04b → clean/04c → clean/04d → 05 → clean/05c → 08(清洗脚本在 etl/clean/,走 _paths)
+# 注:05c(AIP)要在 05/04c 之后跑(依赖 province);05b 帖子详情仅 Ottawa,全国未跑
 ```
 
 ## 部署上线就差「运维三件」(功能已 MVP)
@@ -70,7 +77,6 @@ npm run dev                 # localhost:3000
 
 ## 待做(优先级)
 - **median wage**:下载 ESDC/Job Bank 工资开放数据(NOC×经济区中位)→ 加「vs 中位」列(对 LMIA/省提名有意义)。已确认走开放数据下载,不爬 JS 页。
-- 薪资归一下沉到清洗脚本(现在前端 parseSalary)。
 - 扩城市/源(其它园区/商会名录;Toronto/Vancouver;Indeed/LinkedIn 放最后,有 ToS 风险)。
 - 未分类岗(标题没匹配 NOC)可继续加规则或上 AI 兜底。
 

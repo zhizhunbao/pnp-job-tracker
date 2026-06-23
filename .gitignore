@@ -20,7 +20,7 @@ cms/dev.log
 /data/**/*.csv
 # 公司名录导出视图(保留 .json)
 /data/raw/**/companies/*.md
-# Job Bank 导出视图(postings.md)+ 帖子详情 .md(scraped,可重抓;postings.json 仍跟踪)
+# Job Bank 导出视图(postings.md)+ 帖子详情 .md(scraped,可重抓;postings.json 见文件末尾,不跟踪)
 /data/raw/**/jobbank/*.md
 /data/raw/**/jobbank/details/
 # 公司 ATS 岗位详情 .md(scraped,可重抓)
@@ -28,3 +28,8 @@ cms/dev.log
 # 抓取日志与原始 html 缓存(policy 正文 .md 仍跟踪)
 /data/**/*.log
 /data/raw/reference/policy/**/html_cache/
+
+# Job Bank 全国抓取数据(每日刷新,可重抓 → 不跟踪,避免反复 restore)
+/data/raw/**/jobbank/postings.json
+# Job Bank 物化的公司目录(从 postings.json 衍生,可重建)
+/data/raw/jobbank/**/companies/
