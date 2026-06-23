@@ -28,6 +28,8 @@ export const Jobs: CollectionConfig = {
     { name: 'salary', type: 'text', admin: { description: '原始薪资文本(悬停展示/搜索)' } },
     { name: 'salaryAnnual', type: 'number', index: true, admin: { description: '年薪折算(04d 清洗;排序/vs中位用)' } },
     { name: 'salaryText', type: 'text', admin: { description: '规范薪资文本(04d 清洗,如 $96K–$135K/yr)' } },
+    { name: 'wageMedHourly', type: 'number', admin: { description: '该 NOC 当地中位时薪(ESDC 开放数据,省级)' } },
+    { name: 'wageMedAnnual', type: 'number', admin: { description: '该 NOC 当地中位年薪(=中位时薪×2080)' } },
     { name: 'datePosted', type: 'date' },
     { name: 'source', type: 'text', admin: { description: '原始来源板:indeed.com/Talent.com/lever/bamboohr…' } },
     { name: 'sourceLabel', type: 'text', index: true, admin: { description: '显示来源标签(mart 洗:JB→Job Bank、ATS板美化)' } },

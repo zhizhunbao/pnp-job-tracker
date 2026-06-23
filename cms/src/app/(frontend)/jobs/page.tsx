@@ -15,6 +15,7 @@ export default async function JobsPage() {
       j.noc, j.category, j.teer, j.broad, j.mid, j.fine, j.accessibility, j.score, j.pnp_eligible, j.aip,
       j.country, j.province, j.city, j.district, j.address, j.region,
       j.apply_url, j.official_url, j.salary, j.salary_annual, j.salary_text,
+      j.wage_med_hourly, j.wage_med_annual,
       j.source, j.source_label, j.origin, j.date_posted, j.last_seen, j.status, j.closed_at
     FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
     ORDER BY j.date_posted DESC NULLS LAST LIMIT 2000`)
@@ -64,6 +65,8 @@ export default async function JobsPage() {
     salary: j.salary ?? '',
     salaryAnnual: num(j.salary_annual),
     salaryText: j.salary_text ?? '',
+    wageMedHourly: num(j.wage_med_hourly),
+    wageMedAnnual: num(j.wage_med_annual),
     officialUrl: j.official_url ?? '',
     applyUrl: j.apply_url ?? '',
     datePosted: iso(j.date_posted),

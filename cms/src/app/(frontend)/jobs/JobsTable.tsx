@@ -27,6 +27,8 @@ export type JobRow = {
   salary: string
   salaryAnnual: number | null
   salaryText: string
+  wageMedHourly: number | null
+  wageMedAnnual: number | null
   officialUrl: string
   applyUrl: string
   datePosted: string
@@ -689,12 +691,15 @@ function advise(field: ColKey, j: JobRow): Advice {
     case 'salaryYr': {
       const a = j.salaryAnnual
       const yr = a != null ? `$${Math.round(a / 1000)}K/yr` : '—'
+      const med = j.wageMedAnnual
+      const vs = a != null && med ? `,本岗${a >= med ? '高于' : '低于'}中位 ${Math.abs(Math.round((a / med - 1) * 100))}%` : ''
       return {
         tag: field === 'salaryYr' ? '年薪(折算)' : '薪资',
         title: field === 'salaryYr' ? yr : (j.salary || '未标注'),
         body: [
           j.salary ? `原始:${j.salary}` : '未公开薪资',
           a != null ? `折算年薪 ≈ ${yr}` : '',
+          med ? `该 NOC 当地中位:$${j.wageMedHourly}/hr(≈$${Math.round(med / 1000)}K/yr)${vs}` : '该 NOC 暂无中位工资数据',
         ].filter(Boolean),
         links,
       }

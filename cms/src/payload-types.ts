@@ -268,6 +268,14 @@ export interface Job {
    * 规范薪资文本(04d 清洗,如 $96K–$135K/yr)
    */
   salaryText?: string | null;
+  /**
+   * 该 NOC 当地中位时薪(ESDC 开放数据,省级)
+   */
+  wageMedHourly?: number | null;
+  /**
+   * 该 NOC 当地中位年薪(=中位时薪×2080)
+   */
+  wageMedAnnual?: number | null;
   datePosted?: string | null;
   /**
    * 原始来源板:indeed.com/Talent.com/lever/bamboohr…
@@ -665,6 +673,8 @@ export interface JobsSelect<T extends boolean = true> {
   salary?: T;
   salaryAnnual?: T;
   salaryText?: T;
+  wageMedHourly?: T;
+  wageMedAnnual?: T;
   datePosted?: T;
   source?: T;
   sourceLabel?: T;
