@@ -74,6 +74,23 @@ NOC_RULES: list[tuple[str, str]] = [
     (r"business analyst|operations (analyst|manager|coordinator|specialist)", "21222"),
     (r"finance (manager|analyst)|controller|treasur", "11100"),
     (r"customer success|client (success|services)|implementation (specialist|manager)|onboarding|technical writer", "12013"),
+    # —— 全职业职位板:常见非科技岗扩充(降低未分类;首位=大分类、次位=TEER 已核对)——
+    (r"food (counter|service) (attendant|worker)|kitchen helper|food (prep|preparer)|fast food", "65201"),     # 服务 T5
+    (r"production (labourer|labour|worker|associate)|food processing|process(ing)? (worker|labourer)|\bassembler\b|packaging", "95106"),  # 制造 T5
+    (r"farm (machinery|equipment) operator|general farm worker|farm hand|nursery worker|greenhouse worker", "84120"),  # 资源 T4
+    (r"harvest|fruit picker|livestock (labour|worker)|agricultur(e|al) (worker|labour)", "85100"),             # 资源 T5
+    (r"automotive (service )?(technician|tech)|auto (body|service) (technician|tech)", "72410"),               # 技工 T2
+    (r"landscap|groundskeep|lawn (care|maintenance)|grounds maintenance", "85121"),                            # 资源 T5
+    (r"(transport |long[-\s]?haul )?truck driver|tractor[-\s]?trailer|class (a|1) driver", "73300"),           # 技工 T3
+    (r"(delivery|courier|transport) driver|driver[-\s]?helper|\bchauffeur\b", "75101"),                        # 技工 T5
+    (r"home support|personal care|care (aide|attendant|worker)|caregiver|continuing care", "44101"),           # 教育/社区 T4
+    (r"general office|office (clerk|support)|administrative clerk|filing clerk|\bclerk\b", "14100"),           # 商务 T4
+    (r"shipper|receiver|material handler|warehouse (worker|associate)|order (picker|fulfilment)|forklift", "75101"),  # 技工 T5
+    (r"food service supervisor|retail (supervisor|team lead)|shift supervisor|\bsupervisor\b", "62020"),       # 服务 T2
+    (r"service station attendant|gas (bar |station )?attendant|parking attendant|\battendant\b", "65100"),     # 服务 T5
+    (r"painter|drywall|roofer|flooring|insulation|glazier", "73100"),                                          # 技工 T3
+    (r"\binstaller\b|installation tech", "72404"),                                                             # 技工 T2
+    (r"general (labour|labourer|help|helper)|\blabourer\b|manual labour", "75110"),                            # 技工 T5
     (r"\b(senior |sr )?(manager|director|\bvp\b|head of|chief|president)\b", "00012"),  # 兜底:管理岗→TEER0
 ]
 
@@ -97,6 +114,11 @@ def classify(title: str) -> str:
 
 def teer_of(noc: str) -> int | None:
     return int(noc[1]) if noc and len(noc) == 5 and noc[1].isdigit() else None
+
+
+def pnp_eligible(noc: str, teer: int | None) -> bool:
+    """能否走雇主 offer 省提名:TEER 0-3 技能岗,或 TEER4-5 但在专门紧缺通道清单。"""
+    return teer in (0, 1, 2, 3) or noc in INDEMAND_LOW
 
 
 def accessibility(title: str) -> str:
@@ -157,7 +179,8 @@ def main() -> None:
         acc = accessibility(title)
         out.append({"externalId": ext_id, "noc": noc,
                     "category": f"TEER {teer}" if teer is not None else "未分类",
-                    "accessibility": acc, "score": score(noc, teer, prov, acc, agency)})
+                    "accessibility": acc, "score": score(noc, teer, prov, acc, agency),
+                    "pnpEligible": pnp_eligible(noc, teer)})
     _paths.OUTPUT.mkdir(parents=True, exist_ok=True)
     (_paths.OUTPUT / "all-scored.json").write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Scored {len(out)} jobs → all-scored.json")

@@ -1,0 +1,73 @@
+{
+  "ats": "lever",
+  "token": "magnetforensics",
+  "count": 4,
+  "jobs": [
+    {
+      "title": "Desktop Support Analyst - Ottawa",
+      "location": "Ottawa, Ontario",
+      "url": "https://jobs.lever.co/magnetforensics/424ccc15-4b3b-4ba3-9ca2-a7cfa6e870a6",
+      "department": "Information Technology",
+      "posted": "2026-06-15",
+      "address": "",
+      "salary": "$60,000 - $75,000",
+      "tech": true,
+      "city": "Ottawa",
+      "province": "ON",
+      "country": "Canada",
+      "district": "",
+      "salaryAnnual": 67500,
+      "salaryText": "$60K–$75K/yr",
+      "aip": false
+    },
+    {
+      "title": "Finance Co-op (Fall 2026)",
+      "location": "Waterloo / Ottawa / Ontario",
+      "url": "https://jobs.lever.co/magnetforensics/17c5d189-389c-42bc-8a13-357dfcfda07b",
+      "department": "Finance",
+      "posted": "2026-04-16",
+      "address": "",
+      "salary": "",
+      "tech": false,
+      "city": "Ottawa",
+      "province": "ON",
+      "country": "Canada",
+      "district": "",
+      "aip": false
+    },
+    {
+      "title": "Senior Product Manager, Graykey",
+      "location": "Waterloo / Ottawa / Toronto/ Ontario",
+      "url": "https://jobs.lever.co/magnetforensics/a072c259-001a-4353-90f1-d8725d505318",
+      "department": "Product Management",
+      "posted": "2026-05-27",
+      "address": "",
+      "salary": "$145,0000 - $195,000",
+      "tech": false,
+      "city": "Ottawa",
+      "province": "ON",
+      "country": "Canada",
+      "district": "",
+      "salaryAnnual": 195000,
+      "salaryText": "$195K/yr",
+      "aip": false
+    },
+    {
+      "title": "Software Developer Co-op (Fall 2026)",
+      "location": "Waterloo / Ottawa / Ontario",
+      "url": "https://jobs.lever.co/magnetforensics/b9fdce72-4c58-46bb-b7e2-b4bdc90390e5",
+      "department": "Engineering",
+      "posted": "2026-04-16",
+      "address": "",
+      "salary": "$22.01 - $33.81 CAD per hour",
+      "tech": true,
+      "city": "Ottawa",
+      "province": "ON",
+      "country": "Canada",
+      "district": "",
+      "salaryAnnual": 58053,
+      "salaryText": "$22–$34/hr",
+      "aip": false
+    }
+  ]
+}

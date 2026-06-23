@@ -34,6 +34,7 @@ import csv
 import json
 import re
 import time
+from datetime import datetime, timedelta
 from pathlib import Path
 from urllib.parse import quote_plus
 
@@ -64,8 +65,8 @@ DEFAULT_OCCUPATIONS = {
     "cybersecurity": "21220", "computer engineer": "21311",
 }
 
-# All realistic destination provinces for the employer-offer PNP route (territories skipped).
-ALL_PROVINCES = ["ON", "SK", "AB", "BC", "MB", "NB", "NS", "NL", "PE"]
+# 全加拿大省份(领地暂跳过)。QC 也抓——站点是全职业职位板,PNP 只是其中一种状态标记。
+ALL_PROVINCES = ["ON", "QC", "SK", "AB", "BC", "MB", "NB", "NS", "NL", "PE"]
 
 # Ottawa census-area municipalities (all Ontario side; Gatineau is QC, excluded).
 OTTAWA_CITIES = ["ottawa", "kanata", "nepean", "gloucester", "orléans", "orleans",
@@ -143,6 +144,90 @@ def scrape(occupations: dict, prov: str, max_pages: int, delay: float) -> list[d
     return results
 
 
+# ── 全职业 · 按省 · sort=D · 增量(最新几天)──────────────────────────
+# 抓取脚本只产出「原始抓取字段」;干净结构化字段(country/district/salaryAnnual…)
+# 由后续 clean/04c、clean/04d 在全量 postings.json 上重算 → 这里只增量合并原始字段。
+SCRAPED_KEYS = ("title", "employer", "city", "province", "salary", "date", "source", "direct", "url", "search_occupation")
+NATIONAL_FILE = _paths.JOBBANK / "postings.json"  # 全国单文件(province 作字段)
+
+
+def parse_date(s: str):
+    """'June 22, 2026' → date;解析不了返回 None(当作新帖,保留)。"""
+    s = (s or "").strip()
+    for fmt in ("%B %d, %Y", "%b %d, %Y"):
+        try:
+            return datetime.strptime(s, fmt).date()
+        except ValueError:
+            continue
+    return None
+
+
+def fetch_page_all(client: httpx.Client, prov: str, page: int) -> list[dict]:
+    """无关键词:某省全职业、按日期降序的一页。"""
+    url = f"{BASE}?fprov={prov}&sort=D&page={page}"
+    r = client.get(url, timeout=30)
+    r.raise_for_status()
+    soup = BeautifulSoup(r.text, "html.parser")
+    rows = [parse_article(a) for a in soup.select("article")]
+    return [x for x in rows if x and x["posting_id"]]
+
+
+def scrape_all_occupations(provinces: list[str], since_days: int, max_pages: int, delay: float,
+                           existing: dict[str, dict]) -> dict[str, dict]:
+    """各省按日期降序翻页,合并 [今天-since_days, 今天] 的帖到 existing(按 posting_id)。"""
+    cutoff = datetime.now().date() - timedelta(days=since_days)
+    added = updated = 0
+    with httpx.Client(headers={"User-Agent": USER_AGENT}, follow_redirects=True) as client:
+        for prov in provinces:
+            prov_new = 0
+            for page in range(1, max_pages + 1):
+                try:
+                    rows = fetch_page_all(client, prov, page)
+                except Exception as e:  # noqa: BLE001
+                    print(f"  ! {prov} p{page}: {type(e).__name__} {e}")
+                    break
+                if not rows:
+                    break
+                page_all_old = True
+                for row in rows:
+                    d = parse_date(row["date"])
+                    if d is not None and d < cutoff:
+                        continue  # 早于截止日期 → 跳过(降序,本页其余多半也旧)
+                    page_all_old = False
+                    pid = row["posting_id"]
+                    scraped = {k: row.get(k, "") for k in SCRAPED_KEYS}
+                    if pid in existing:
+                        existing[pid].update(scraped)  # 只覆盖原始字段,保留 04c/04d/05b 衍生字段
+                        updated += 1
+                    else:
+                        existing[pid] = scraped
+                        prov_new += 1
+                if page_all_old:  # 整页都比截止日期旧 → 该省到头
+                    break
+                time.sleep(delay)
+            print(f"  · {prov}: +{prov_new} new (since {cutoff})")
+            added += prov_new
+    print(f"\nIncremental sweep: +{added} new · {updated} updated (existing in place).")
+    return existing
+
+
+def load_national() -> dict[str, dict]:
+    """读全国 postings.json → {posting_id: row}(增量合并基底)。"""
+    if NATIONAL_FILE.exists():
+        rows = json.loads(NATIONAL_FILE.read_text(encoding="utf-8"))
+        return {r["posting_id"]: r for r in rows if r.get("posting_id")}
+    return {}
+
+
+def write_national(by_id: dict[str, dict]) -> None:
+    """写回全国 postings.json(按日期降序,新帖在前)。"""
+    NATIONAL_FILE.parent.mkdir(parents=True, exist_ok=True)
+    rows = list(by_id.values())
+    rows.sort(key=lambda r: (parse_date(r.get("date", "")) or datetime.min.date()), reverse=True)
+    NATIONAL_FILE.write_text(json.dumps(rows, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"Wrote {len(rows)} postings → {NATIONAL_FILE}")
+
+
 def write_outputs(rows: list[dict], prov: str, scope: str) -> dict:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     # OUT_DIR 已是地域专属(raw/<region>/jobbank),文件名不再带省码 → postings.json
@@ -186,7 +271,7 @@ def write_outputs(rows: list[dict], prov: str, scope: str) -> dict:
 
 
 PROV_NAME = {
-    "ON": "安大略（ON）", "SK": "萨斯喀彻温（SK）", "AB": "阿尔伯塔（AB）",
+    "ON": "安大略（ON）", "QC": "魁北克（QC）", "SK": "萨斯喀彻温（SK）", "AB": "阿尔伯塔（AB）",
     "BC": "不列颠哥伦比亚（BC）", "MB": "曼尼托巴（MB）", "NB": "新不伦瑞克（NB）",
     "NS": "新斯科舍（NS）", "NL": "纽芬兰与拉布拉多（NL）", "PE": "爱德华王子岛（PE）",
 }
@@ -237,7 +322,20 @@ def main() -> None:
     ap.add_argument("--max-pages", type=int, default=15, help="Max result pages per occupation (25 jobs/page).")
     ap.add_argument("--delay", type=float, default=0.4, help="Delay between page requests (seconds).")
     ap.add_argument("--occupations", nargs="*", help="Override: 'keyword=NOC' pairs, e.g. 'web developer=21234'.")
+    ap.add_argument("--all-occupations", action="store_true",
+                    help="全职业·按省·sort=D·增量:无关键词,抓最新 N 天的新帖合并进全国 postings.json。")
+    ap.add_argument("--since-days", type=int, default=3, help="--all-occupations 模式:只抓最近 N 天的帖(默认 3)。")
     args = ap.parse_args()
+
+    # 全职业增量模式(新):各省最新几天 → 合并进全国单文件,按 posting_id 去重。
+    if args.all_occupations:
+        provinces = ALL_PROVINCES if args.prov.upper() == "ALL" else [p.strip().upper() for p in args.prov.split(",")]
+        print(f"All-occupations incremental sweep: provinces={provinces}, since_days={args.since_days}")
+        by_id = load_national()
+        print(f"  base: {len(by_id)} existing postings")
+        by_id = scrape_all_occupations(provinces, args.since_days, args.max_pages, args.delay, by_id)
+        write_national(by_id)
+        return
 
     occupations = DEFAULT_OCCUPATIONS
     if args.occupations:

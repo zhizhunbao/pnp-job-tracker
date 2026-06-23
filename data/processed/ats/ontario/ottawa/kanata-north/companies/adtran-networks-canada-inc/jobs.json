@@ -1,0 +1,37 @@
+{
+  "ats": "myworkdayjobs",
+  "token": "",
+  "count": 2,
+  "jobs": [
+    {
+      "title": "Senior Hardware Engineer",
+      "location": "Ottawa, ON",
+      "url": "https://adtran.wd3.myworkdayjobs.com/ADTRAN/job/Ottawa-ON/Senior-Hardware-Engineer_R005503",
+      "department": "",
+      "posted": "2026-05-04",
+      "address": "",
+      "salary": "",
+      "tech": true,
+      "city": "Ottawa",
+      "province": "ON",
+      "country": "Canada",
+      "district": "",
+      "aip": false
+    },
+    {
+      "title": "Director Product Line Management Optical Engines",
+      "location": "Ottawa",
+      "url": "https://adtran.wd3.myworkdayjobs.com/ADTRAN/job/Ottawa/Director-Product-Line-Management-Optical-Engines_R005357",
+      "department": "",
+      "posted": "2026-04-24",
+      "address": "",
+      "salary": "",
+      "tech": false,
+      "city": "Ottawa",
+      "province": "ON",
+      "country": "Canada",
+      "district": "",
+      "aip": false
+    }
+  ]
+}

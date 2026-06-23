@@ -73,8 +73,12 @@ def main() -> None:
     det_dir.mkdir(parents=True, exist_ok=True)
     done = 0
     seen: set[str] = set()  # 文件名去重(雇主+职位偶尔重复时加帖子号)
+    skipped = 0
     with httpx.Client(headers={"User-Agent": UA}, follow_redirects=True, timeout=20) as c:
         for j in jobs:
+            if j.get("detail_fetched") or not j.get("url"):  # 增量:已抓过的跳过(全国 ~1500 帖,每日只抓新帖)
+                skipped += 1
+                continue
             try:
                 raw_html = c.get(j["url"]).text
                 s = BeautifulSoup(raw_html, "html.parser")
@@ -90,6 +94,7 @@ def main() -> None:
                 j["date_detail"] = dp
             if web:
                 j["website"] = web
+            j["detail_fetched"] = True  # 增量标记:下次跳过
             pid = j.get("posting_id") or re.sub(r"\W+", "", j.get("url", ""))[-12:]
             md = (f"---\ntitle: {j.get('title', '')}\nemployer: {j.get('employer', '')}\n"
                   f"address: {addr}\nwebsite: {web}\nposted: {dp}\nsalary: {j.get('salary', '')}\n"
@@ -102,7 +107,8 @@ def main() -> None:
             time.sleep(0.25)
     jb.write_text(json.dumps(jobs, ensure_ascii=False, indent=2), encoding="utf-8")
     webs = sum(1 for j in jobs if j.get("website"))
-    print(f"Fetched details for {done}/{len(jobs)} Job Bank jobs ({webs} with employer website) -> {det_dir}")
+    addrs = sum(1 for j in jobs if j.get("address"))
+    print(f"Fetched {done} details (skipped {skipped} already-done) · {addrs} with address · {webs} with website -> {det_dir}")
 
 
 if __name__ == "__main__":

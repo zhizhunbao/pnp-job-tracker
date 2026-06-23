@@ -30,16 +30,19 @@ CITY = "ottawa"                                         # 城市
 DISTRICT = "kanata-north"                               # 园区/地区
 
 RAW = DATA / "raw"                                      # extract
-RAW_CITY = RAW / PROVINCE / CITY                        # raw/ontario/ottawa
-JOBBANK = RAW_CITY / "jobbank"                          # 城市级(覆盖全 Ottawa)
-RAW_DISTRICT = RAW_CITY / DISTRICT                      # raw/ontario/ottawa/kanata-north
+# 按来源分顶层:raw/ats/(ATS 公司目录) · raw/jobbank/(Job Bank 全国)
+RAW_ATS = RAW / "ats"                                   # ATS 来源根
+RAW_CITY = RAW_ATS / PROVINCE / CITY                    # raw/ats/ontario/ottawa
+JOBBANK = RAW / "jobbank"                               # 全国(各省分目录 + 扁平 postings.json 工作文件)
+RAW_DISTRICT = RAW_CITY / DISTRICT                      # raw/ats/ontario/ottawa/kanata-north
 RAW_COMPANIES = RAW_DISTRICT / "companies"              # 公司名录原始(与 processed 的 companies 对应)
 REFERENCE = RAW / "reference"                           # 跨省共享(非某地专属)
 POLICY = REFERENCE / "policy"
 DESIGNATED = REFERENCE / "designated-employers"
 
 PROCESSED = DATA / "processed"                          # transform
-COMPANIES = PROCESSED / PROVINCE / CITY / DISTRICT / "companies"  # processed/ontario/ottawa/kanata-north/companies
+PROCESSED_ATS = PROCESSED / "ats"                       # ATS 来源根(与 raw/ats 对称)
+COMPANIES = PROCESSED_ATS / PROVINCE / CITY / DISTRICT / "companies"  # processed/ats/ontario/ottawa/kanata-north/companies
 
 OUTPUT = DATA / "output"                                # load
 REGISTRY = DATA / "registry"                            # meta

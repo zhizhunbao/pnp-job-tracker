@@ -1,0 +1,24 @@
+{
+  "ats": "myworkdayjobs",
+  "token": "",
+  "count": 1,
+  "jobs": [
+    {
+      "title": "Applied AI Backend Software Developer - Ottawa, ON",
+      "location": "Ottawa",
+      "url": "https://trendmicro.wd3.myworkdayjobs.com/External/job/Ottawa/Applied-AI-Backend-Sr-Software-Developer---Ottawa--ON_R0009722",
+      "department": "",
+      "posted": "2026-06-16",
+      "address": "40 Hines Rd, Ottawa, ON K2K2M5",
+      "salary": "$105000 to $130000 CAD annually",
+      "tech": true,
+      "city": "Ottawa",
+      "province": "ON",
+      "country": "Canada",
+      "district": "Kanata",
+      "salaryAnnual": 117500,
+      "salaryText": "$105K–$130K/yr",
+      "aip": false
+    }
+  ]
+}

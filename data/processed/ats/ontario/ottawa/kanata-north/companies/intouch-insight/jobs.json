@@ -1,0 +1,41 @@
+{
+  "ats": "bamboohr",
+  "token": "intouchinsight",
+  "count": 2,
+  "jobs": [
+    {
+      "title": "Lead IT Systems Engineer (Infrastructure & DevOps)",
+      "location": "Kanata, Ontario",
+      "url": "https://intouchinsight.bamboohr.com/careers/126",
+      "department": "Engineering",
+      "posted": "",
+      "address": "",
+      "salary": "$110,000-$140,000",
+      "tech": true,
+      "city": "Ottawa",
+      "province": "ON",
+      "country": "Canada",
+      "district": "Kanata",
+      "salaryAnnual": 125000,
+      "salaryText": "$110K–$140K/yr",
+      "aip": false
+    },
+    {
+      "title": "Data Analyst",
+      "location": "Kanata, Ontario",
+      "url": "https://intouchinsight.bamboohr.com/careers/130",
+      "department": "Data Analytics",
+      "posted": "",
+      "address": "",
+      "salary": "$60,000 - $70,000",
+      "tech": true,
+      "city": "Ottawa",
+      "province": "ON",
+      "country": "Canada",
+      "district": "Kanata",
+      "salaryAnnual": 65000,
+      "salaryText": "$60K–$70K/yr",
+      "aip": false
+    }
+  ]
+}
