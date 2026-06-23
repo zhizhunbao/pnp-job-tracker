@@ -64,10 +64,19 @@ cd pnp-job-tracker/cms && docker compose up -d && npm run dev   # Postgres + :30
 #   05 --all-occupations --prov ALL --since-days 3  → 05b → clean/04c → clean/04d → clean/05c → 08 → 09_build_mart
 #   (ATS 链 01-04+04b 另跑;build_fsa_districts/build_wages 偶尔重建)
 # 重灌: curl "localhost:3000/seed?reset=1"   |  增量: curl "localhost:3000/seed"
+#
+# 自动日更(后台,每2h跑全链):cd docker && docker compose up -d --build  |  日志: docker compose logs -f etl
 ```
 
 ## 待做(优先级)
-- **Phase 3 — Docker 开机自抓服务**:compose 加 etl 容器,登录自启跑「抓最新一天→clean→mart→seed」。⚠️ **增量后不能用不带 reset 的 seed 下架对账**(增量只含最新一天,会误标所有旧岗 closed)→ 下架改按发布日期过期(JB帖约30天)。
+- **Phase 3 — Docker 开机自抓服务 ✅ 已建(多源)**:`docker/`(按组件分子目录:`etl/Dockerfile` 等 + 根 `docker-compose.yml`)+ `etl/auto_update.py`。子目录=一个镜像,多源共用 etl 镜像靠 env 区分。`restart: unless-stopped` + Docker Desktop 登录自启 = 开机自跑。`cd docker && docker compose up -d --build`。
+  - **角色拆分**(关键):抓取按源拆,但清洗/评分/mart/seed 是全局的、只一份。`SOURCE=jobbank` 只抓(05/05b 刷 raw);`SOURCE=build` 跨源清洗(04c/04d/05c)→评分(08)→mart(09)→`GET /seed`,是**灌库唯一角色**。多源不抢 mart/seed。加源 = SOURCES 登记 + compose 复制 service 改 SOURCE。
+  - 抓法统一 **httpx**(JB 服务端渲染,已证明稳);`crawl/` Playwright 是有头+人工验证,**不进容器**,只给手动抓 Cloudflare 政府站用。
+  - 编排器在 `etl/`(业务),容器配置在 `docker/`(运维)。代码/data 靠 bind-mount,改脚本不用重建镜像。
+  - ⚠️ **增量 seed 安全,不会误关旧岗**:postings.json 只增不删(`load_national` 读全量当基底),mart 全量累积,`seenIds` 含全部岗 → `stale` 为空。(旧 STATUS 说「增量只含最新一天会误标旧岗 closed」是**错的**,已更正。)
+  - 真正待办:① JB 过期岗(postings.json 不删)会一直挂 open → 以后按发布日期过期(JB帖约30天);② build 读 postings.json 与 jobbank 写它有微小竞态(读到半写→该轮 build 失败重试,文件不损),需要再说可给 05 加 temp+rename 原子写。
+  - ⚠️ build 靠 `host.docker.internal:3000/seed` 灌库,所以 **cms 必须在跑**(host `npm run dev`);cms 没起时 seed 跳过、mart 已落盘,下轮补。要完全无人值守,得把 cms 也容器化(Dockerfile 已有)。
+- **统一源框架(目标架构已定:[docs/source-framework.md](docs/source-framework.md) v2,D1-D5 全部拍板)**:三种抓法分三目录(httpx/crawl/dataset),**铁律=抓取只存原始 raw、清洗在 processed**,raw 按 `方式/源/日期` 快照不可变,源注册表独立 `etl/sources.py`,`auto_update` 只是调度器。OINP/SINP/AAIP 各省 PNP 单独成源(crawl,周/月)。**按文档第 8 节分步实施,JB 最后拆**(fetch 留 httpx、解析下沉 clean;回归基线=2084 岗 mart 一致)。尚未动手。
 - 薪资加「vs 中位」可视化列(数据已有 wageMedAnnual)。
 - 未分类岗(~26%,标题没匹配 NOC)继续加 noc 规则或 AI 兜底。
 - 扩源:其它商会名录、Indeed/LinkedIn(放最后,ToS 风险)。用 etl/crawl/ 抓政策页填 policy_docs/pnp_streams 空表。
