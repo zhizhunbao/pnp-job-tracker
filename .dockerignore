@@ -1,0 +1,8 @@
+# 仅影响以仓库根为 build context 的镜像(docker/Dockerfile.etl)。
+# 该镜像不 COPY 源码(全靠 bind-mount),故把重目录排除掉,构建上下文几乎为空、秒构建。
+.git
+.venv
+**/node_modules
+cms/.next
+data
+*.egg-info
