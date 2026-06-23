@@ -685,13 +685,14 @@ function advise(field: ColKey, j: JobRow): Advice {
     case 'salary':
     case 'salaryYr': {
       const a = j.salaryAnnual
+      const yr = a != null ? `$${Math.round(a / 1000)}K/yr` : '—'
       return {
-        tag: field === 'salaryYr' ? '年薪(折算)' : '薪资', title: j.salary || '未标注',
+        tag: field === 'salaryYr' ? '年薪(折算)' : '薪资',
+        title: field === 'salaryYr' ? yr : (j.salary || '未标注'),
         body: [
-          j.salary ? `原始薪资:${j.salary}。` : '该岗未公开薪资(很多公司招聘页不标)。',
-          a != null ? `统一折算成年薪 ≈ $${Math.round(a / 1000)}K/yr(时薪×2080、范围取中点),用于跨「时薪/年薪」对比和排序。` : '无法折算(未取到金额)。',
-          '薪资仅供参考:省提名/EE 不直接按工资打分,但「是否达到该 NOC 当地中位工资」会影响部分雇主类通道与 LMIA。',
-        ],
+          j.salary ? `原始:${j.salary}` : '未公开薪资',
+          a != null ? `折算年薪 ≈ ${yr}` : '',
+        ].filter(Boolean),
         links,
       }
     }
