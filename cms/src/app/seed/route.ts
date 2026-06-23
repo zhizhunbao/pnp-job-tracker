@@ -65,6 +65,7 @@ export async function GET(req: Request) {
       ...data, lastSeen: now, status: 'open', closedAt: null, // 重新抓到 → 复活
       noc: sc.noc || undefined, category: sc.category || undefined,
       score: sc.score, accessibility: sc.accessibility || undefined,
+      pnpEligible: sc.pnpEligible ?? false,
     }
     const dup = await payload.find({ collection: 'jobs', where: { externalId: { equals: data.externalId } }, limit: 1 })
     if (dup.docs.length) {
@@ -78,7 +79,7 @@ export async function GET(req: Request) {
   }
 
   // 1) ATS 公司目录(科技,第一方)
-  const regionDir = path.join(dataRoot, 'processed', 'ontario', 'ottawa', 'kanata-north', 'companies')
+  const regionDir = path.join(dataRoot, 'processed', 'ats', 'ontario', 'ottawa', 'kanata-north', 'companies')
   if (fs.existsSync(regionDir)) {
     for (const slug of fs.readdirSync(regionDir).filter((f) => fs.statSync(path.join(regionDir, f)).isDirectory())) {
       if (SKIP_SLUGS.has(slug)) continue
@@ -101,14 +102,15 @@ export async function GET(req: Request) {
           country: j.country || undefined, province: j.province || guessProv(j.location || ''),
           city: j.city || '', district: j.district || undefined, address: j.address || undefined, region: REGION,
           applyUrl: j.url || '', officialUrl: prof.website || '', externalId: j.url || key,
-          salary: j.salary || undefined, datePosted: isoDate(j.posted),
+          salary: j.salary || undefined, salaryAnnual: j.salaryAnnual ?? undefined, salaryText: j.salaryText || undefined,
+          aip: j.aip ?? false, datePosted: isoDate(j.posted),
         })
       }
     }
   }
 
-  // 2) Job Bank(全职业,含非IT)
-  const jbPath = path.join(dataRoot, 'raw', 'ontario', 'ottawa', 'jobbank', 'postings.json')
+  // 2) Job Bank(全职业 · 全省,含非IT)
+  const jbPath = path.join(dataRoot, 'raw', 'jobbank', 'postings.json')
   if (fs.existsSync(jbPath)) {
     for (const j of JSON.parse(fs.readFileSync(jbPath, 'utf8'))) {
       if (AGENCY.test(j.employer || '')) { skipped++; continue } // 跳过中介/派遣
@@ -116,13 +118,15 @@ export async function GET(req: Request) {
       const key = `${cslug}|${norm(j.title || '')}`
       if (seen.has(key)) { skipped++; continue }
       seen.add(key)
-      const cid = await ensureCompany(j.employer || '—', cslug, { region: 'Ottawa', source: 'jobbank', address: j.address || undefined, website: j.website || undefined })
+      const jbRegion = j.province || guessProv(j.city || '') || 'CA'  // 多省:region 用帖子省份
+      const cid = await ensureCompany(j.employer || '—', cslug, { region: j.city || jbRegion, source: 'jobbank', address: j.address || undefined, website: j.website || undefined })
       await addJob({
         title: j.title, company: cid, source: j.source || 'Job Bank', origin: 'jobbank',
         country: j.country || undefined, province: j.province || guessProv(j.city || ''),
-        city: j.city || '', district: j.district || undefined, address: j.address || undefined, region: REGION,
+        city: j.city || '', district: j.district || undefined, address: j.address || undefined, region: jbRegion,
         applyUrl: j.url || '', officialUrl: j.website || '', externalId: j.url || key,
-        salary: j.salary || undefined, datePosted: isoDate(j.date),
+        salary: j.salary || undefined, salaryAnnual: j.salaryAnnual ?? undefined, salaryText: j.salaryText || undefined,
+        aip: j.aip ?? false, datePosted: isoDate(j.date),
       })
     }
   }

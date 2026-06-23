@@ -11,7 +11,7 @@ export default async function JobsPage() {
     collection: 'jobs',
     depth: 1,
     limit: 2000,
-    sort: '-score',
+    sort: '-datePosted',
   })
 
   const jobs: JobRow[] = docs.map((j: any) => ({
@@ -29,7 +29,11 @@ export default async function JobsPage() {
     category: j.category ?? '',
     accessibility: j.accessibility ?? '',
     score: typeof j.score === 'number' ? j.score : null,
+    pnpEligible: !!j.pnpEligible,
+    aip: !!j.aip,
     salary: j.salary ?? '',
+    salaryAnnual: typeof j.salaryAnnual === 'number' ? j.salaryAnnual : null,
+    salaryText: j.salaryText ?? '',
     officialUrl: j.officialUrl ?? '',
     applyUrl: j.applyUrl ?? '',
     datePosted: j.datePosted ?? '',

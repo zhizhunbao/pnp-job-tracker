@@ -29,8 +29,8 @@ function buildJdIndex(): Map<string, string> {
       else if (e.name.endsWith('.md')) registerMd(idx, p)
     }
   }
-  walk(path.join(DATA_ROOT, 'raw', 'ontario', 'ottawa', 'jobbank', 'details'))
-  walk(path.join(DATA_ROOT, 'processed', 'ontario', 'ottawa', 'kanata-north', 'companies'))
+  walk(path.join(DATA_ROOT, 'raw', 'jobbank', 'details'))
+  walk(path.join(DATA_ROOT, 'processed', 'ats', 'ontario', 'ottawa', 'kanata-north', 'companies'))
   return idx
 }
 function registerMd(idx: Map<string, string>, file: string) {

@@ -228,7 +228,18 @@ export interface Job {
    */
   applyUrl?: string | null;
   officialUrl?: string | null;
+  /**
+   * 原始薪资文本(悬停展示/搜索)
+   */
   salary?: string | null;
+  /**
+   * 年薪折算(04d 清洗;排序/vs中位用)
+   */
+  salaryAnnual?: number | null;
+  /**
+   * 规范薪资文本(04d 清洗,如 $96K–$135K/yr)
+   */
+  salaryText?: string | null;
   datePosted?: string | null;
   /**
    * 原始来源:indeed.com/Talent.com/lever/bamboohr…
@@ -246,6 +257,14 @@ export interface Job {
    * 移民价值评分 0-100
    */
   score?: number | null;
+  /**
+   * 可走雇主offer省提名(TEER0-3 或紧缺低TEER通道)
+   */
+  pnpEligible?: boolean | null;
+  /**
+   * 雇主在官方 AIP 指定雇主名单(大西洋四省 NL/NB/NS/PE)
+   */
+  aip?: boolean | null;
   firstSeen?: string | null;
   lastSeen?: string | null;
   status?: ('open' | 'closed') | null;
@@ -496,6 +515,8 @@ export interface JobsSelect<T extends boolean = true> {
   applyUrl?: T;
   officialUrl?: T;
   salary?: T;
+  salaryAnnual?: T;
+  salaryText?: T;
   datePosted?: T;
   source?: T;
   origin?: T;
@@ -504,6 +525,8 @@ export interface JobsSelect<T extends boolean = true> {
   policyRefs?: T;
   accessibility?: T;
   score?: T;
+  pnpEligible?: T;
+  aip?: T;
   firstSeen?: T;
   lastSeen?: T;
   status?: T;

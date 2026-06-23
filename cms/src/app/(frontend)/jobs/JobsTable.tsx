@@ -17,7 +17,11 @@ export type JobRow = {
   category: string
   accessibility: string
   score: number | null
+  pnpEligible: boolean
+  aip: boolean
   salary: string
+  salaryAnnual: number | null
+  salaryText: string
   officialUrl: string
   applyUrl: string
   datePosted: string
@@ -120,34 +124,15 @@ const fineOf = (noc: string): string => {
   return NOC_INFO[noc]?.fine || midOf(noc)
 }
 
-// 统一清洗薪资:任意格式("$22.01 - $33.81 CAD per hour"、"$46.70 hourly"、
-// "$56,821 to $122,631 annually"…)→ 规范显示 + 年薪数值(排序用,时薪×2080、范围取中点)。
-const parseSalary = (raw: string): { annual: number | null; text: string } => {
-  if (!raw) return { annual: null, text: '—' }
-  const all = (raw.match(/\d[\d,]*(?:\.\d+)?/g) || []).map((n) => parseFloat(n.replace(/,/g, ''))).filter((n) => !isNaN(n) && n > 0)
-  const nums = all.filter((n) => n < 1_000_000) // 过滤离谱金额(源 typo/抓串,如 "$145,0000"→145万)
-  const use = nums.length ? nums : all
-  if (!use.length) return { annual: null, text: raw }
-  const low = raw.toLowerCase()
-  const min = Math.min(...use), max = Math.max(...use)
-  // 单位判断 + 常识纠错:① <2000 无单位 → 时薪;② 时薪值≥$1000 → 实为年薪(源把年薪误标成 hourly)
-  let unit: 'hr' | 'wk' | 'mo' | 'yr' = /month/.test(low) ? 'mo' : /week/.test(low) ? 'wk'
-    : /hour|\/\s?hr|hourly/.test(low) ? 'hr'
-    : max < 2000 ? 'hr' : 'yr'
-  if (unit === 'hr' && min >= 1000) unit = 'yr'
-  const mult = unit === 'hr' ? 2080 : unit === 'wk' ? 52 : unit === 'mo' ? 12 : 1
-  const annual = Math.round(((min + max) / 2) * mult)
-  const sub = unit === 'hr' ? '/hr' : unit === 'wk' ? '/wk' : unit === 'mo' ? '/mo' : '/yr'
-  const money = (n: number) => unit === 'yr' ? `$${Math.round(n / 1000)}K` : `$${Math.round(n)}`
-  const text = min === max ? `${money(min)}${sub}` : `${money(min)}–${money(max)}${sub}`
-  return { annual, text }
-}
+// 薪资归一已下沉到数据层(etl/04d_clean_salary.py → salaryAnnual/salaryText);前端只读不算。
 // 各列排序取值:数值列返回 number,文本列返回 string,缺值返回 null(排末尾)
 const sortVal = (j: JobRow, key: ColKey): number | string | null => {
   switch (key) {
     case 'score': return j.score
-    case 'salary': case 'salaryYr': return parseSalary(j.salary).annual
+    case 'salary': case 'salaryYr': return j.salaryAnnual
     case 'direct': return isDirect(j) ? 1 : 0
+    case 'pnp': return j.pnpEligible ? 1 : 0
+    case 'aip': return j.aip ? 1 : 0
     case 'address': return j.address || null
     case 'teer': return teerOf(j.noc)
     case 'datePosted': return j.datePosted || null
@@ -244,9 +229,9 @@ const sourceUrl = (applyUrl: string): string => {
 }
 
 // ── 列配置(可勾选;职位列始终显示) ──────────────────────────────
-type ColKey = 'score' | 'broad' | 'mid' | 'fine' | 'teer' | 'title' | 'company' | 'noc' | 'accessibility' | 'salary' | 'salaryYr' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'lastSeen' | 'closedAt'
+type ColKey = 'score' | 'pnp' | 'aip' | 'broad' | 'mid' | 'fine' | 'teer' | 'title' | 'company' | 'noc' | 'accessibility' | 'salary' | 'salaryYr' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'lastSeen' | 'closedAt'
 const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean }[] = [
-  { key: 'score', label: '评分', default: true },
+  { key: 'datePosted', label: '发布时间', default: true },
   { key: 'broad', label: '大分类', default: true },
   { key: 'mid', label: '中分类', default: false },
   { key: 'fine', label: '小分类', default: false },
@@ -265,10 +250,12 @@ const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean 
   { key: 'source', label: '来源', default: true },
   { key: 'origin', label: '渠道', default: false },
   { key: 'direct', label: '发布', default: true },
+  { key: 'pnp', label: 'PNP', default: true },
+  { key: 'aip', label: 'AIP', default: true },
   { key: 'status', label: '状态', default: true },
-  { key: 'datePosted', label: '发布时间', default: true },
   { key: 'lastSeen', label: '更新时间', default: false },
   { key: 'closedAt', label: '下架时间', default: false },
+  { key: 'score', label: '评分', default: true },
 ]
 const DEFAULT_COLS = COLUMNS.filter((c) => c.default).map((c) => c.key)
 const PREF_KEY = 'jobs.visibleCols.v6'
@@ -282,7 +269,7 @@ export default function JobsTable({ jobs, updatedAt }: { jobs: JobRow[]; updated
   const [fTeer, setFTeer] = useState(''); const [fSource, setFSource] = useState(''); const [fAcc, setFAcc] = useState('')
   const [visible, setVisible] = useState<ColKey[]>(DEFAULT_COLS)
   const [popup, setPopup] = useState<{ field: ColKey; job: JobRow } | null>(null)
-  const [sort, setSort] = useState<{ key: ColKey; dir: 'asc' | 'desc' }>({ key: 'score', dir: 'desc' })
+  const [sort, setSort] = useState<{ key: ColKey; dir: 'asc' | 'desc' }>({ key: 'datePosted', dir: 'desc' })
   const [colOpen, setColOpen] = useState(false)
   const colRef = useRef<HTMLDivElement>(null)
   const [limit, setLimit] = useState(60)          // 滚动分页:当前渲染行数
@@ -370,11 +357,15 @@ export default function JobsTable({ jobs, updatedAt }: { jobs: JobRow[]; updated
       const va = sortVal(a, sort.key)
       const vb = sortVal(b, sort.key)
       // 缺值始终排到最后(不受升降序影响)
-      if (va == null && vb == null) return 0
-      if (va == null) return 1
-      if (vb == null) return -1
-      if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * dir
-      return String(va).localeCompare(String(vb), 'zh') * dir
+      let cmp = 0
+      if (va == null && vb == null) cmp = 0
+      else if (va == null) return 1
+      else if (vb == null) return -1
+      else if (typeof va === 'number' && typeof vb === 'number') cmp = (va - vb) * dir
+      else cmp = String(va).localeCompare(String(vb), 'zh') * dir
+      // 主键相等时按评分降序兜底(同一天发布的高价值岗优先)
+      if (cmp === 0 && sort.key !== 'score') cmp = (b.score ?? -Infinity) - (a.score ?? -Infinity)
+      return cmp
     })
   }, [jobs, q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, sort])
 
@@ -478,8 +469,8 @@ export default function JobsTable({ jobs, updatedAt }: { jobs: JobRow[]; updated
                       else if (k === 'company') { href = j.officialUrl || null; node = j.company; Object.assign(extra, wrapCell(190)) }
                       else if (k === 'noc') node = j.noc || '—'
                       else if (k === 'accessibility') node = accLabel[j.accessibility] ?? '—'
-                      else if (k === 'salary') { node = <span title={j.salary || ''}>{parseSalary(j.salary).text}</span>; Object.assign(extra, { whiteSpace: 'nowrap', color: j.salary ? '#15803d' : '#9ca3af' }) }
-                      else if (k === 'salaryYr') { const a = parseSalary(j.salary).annual; node = a != null ? `$${Math.round(a / 1000)}K/yr` : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: a != null ? '#15803d' : '#9ca3af' }) }
+                      else if (k === 'salary') { node = <span title={j.salary || ''}>{j.salaryText || '—'}</span>; Object.assign(extra, { whiteSpace: 'nowrap', color: j.salary ? '#15803d' : '#9ca3af' }) }
+                      else if (k === 'salaryYr') { const a = j.salaryAnnual; node = a != null ? `$${Math.round(a / 1000)}K/yr` : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: a != null ? '#15803d' : '#9ca3af' }) }
                       else if (k === 'address') { href = j.address ? mapsUrl(j.address) : null; node = j.address || '—'; Object.assign(extra, wrapCell(220)) }
                       else if (k === 'direct') { const dr = isDirect(j); node = dr ? '第一方' : '转贴'; Object.assign(extra, { whiteSpace: 'nowrap', color: dr ? '#15803d' : '#9ca3af', fontSize: 12.5 }) }
                       else if (k === 'country') { node = L.country || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
@@ -488,6 +479,8 @@ export default function JobsTable({ jobs, updatedAt }: { jobs: JobRow[]; updated
                       else if (k === 'district') { href = mapQ ? mapsUrl(mapQ) : null; node = L.district || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#1f2937' }) }
                       else if (k === 'source') { href = sourceUrl(j.applyUrl) || null; node = sourceLabel(j); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'origin') { node = ORIGIN_LABEL[j.origin] || j.origin || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+                      else if (k === 'pnp') { node = j.pnpEligible ? '✅ 可省提名' : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.pnpEligible ? '#15803d' : '#d1d5db', fontSize: 12.5 }) }
+                      else if (k === 'aip') { node = j.aip ? '🏅 指定雇主' : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.aip ? '#b45309' : '#d1d5db', fontSize: 12.5 }) }
                       else if (k === 'status') { const cl = j.status === 'closed'; node = cl ? '已下架' : '在招'; Object.assign(extra, { whiteSpace: 'nowrap', color: cl ? '#9ca3af' : '#15803d', fontSize: 12.5 }) }
                       else if (k === 'closedAt') { node = j.closedAt ? j.closedAt.slice(0, 10) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       else if (k === 'datePosted') { node = j.datePosted ? j.datePosted.slice(0, 10) : '—'; Object.assign(extra, { color: '#6b7280', fontSize: 12.5, whiteSpace: 'nowrap' }) }
@@ -744,7 +737,7 @@ function advise(field: ColKey, j: JobRow): Advice {
     }
     case 'salary':
     case 'salaryYr': {
-      const a = parseSalary(j.salary).annual
+      const a = j.salaryAnnual
       return {
         tag: field === 'salaryYr' ? '年薪(折算)' : '薪资', title: j.salary || '未标注',
         body: [
@@ -796,6 +789,29 @@ function advise(field: ColKey, j: JobRow): Advice {
         links,
       }
     }
+    case 'pnp':
+      return {
+        tag: 'PNP 资格', title: j.pnpEligible ? '✅ 可走雇主 offer 省提名' : '一般不符合(技能门槛)',
+        body: [
+          j.pnpEligible
+            ? '该岗的 NOC 属 TEER 0-3(技能岗),或在 TEER4-5 的专门紧缺通道清单——是各省「雇主 offer→省提名」通道通常要求的技能门槛。'
+            : '该岗 NOC 属 TEER 4-5(高中/无正式教育要求)且不在紧缺低 TEER 通道,大多数省提名雇主类通道不收。',
+          '⚠️ 这只是按 NOC/TEER 的**粗筛信号**,不是资格认定:各省(OINP/SINP/AAIP…)有自己的职业清单、语言/工资/居住要求,QC 更是走自己的体系(不属 PNP)。以官方通道要求为准。',
+          '本站是全职业职位板,PNP 只是其中一个状态标记,不代表其他岗没价值。',
+        ],
+        links,
+      }
+    case 'aip':
+      return {
+        tag: 'AIP 指定雇主', title: j.aip ? '🏅 在官方 AIP 指定雇主名单' : '不在名单(或非大西洋四省)',
+        body: [
+          j.aip
+            ? '该雇主出现在**大西洋移民项目(AIP)**官方「指定雇主」名单上。AIP 是唯一公布指定雇主名单的移民通道——这类雇主已获批可担保移民,是大西洋四省(NL/NB/NS/PE)最实在的 sponsor 线索。'
+            : 'AIP 只限大西洋四省(NL/NB/NS/PE),且雇主需在官方指定名单上。本岗不满足(别省或雇主未上名单)。',
+          '⚠️ 按雇主名匹配官方名单的**粗筛**:同名 franchise 可能是不同加盟商;投递前以官方名单为准。',
+        ],
+        links,
+      }
     case 'datePosted':
       return {
         tag: '发布时间', title: j.datePosted ? j.datePosted.slice(0, 10) : '—',
