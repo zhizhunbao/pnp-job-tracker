@@ -41,23 +41,26 @@ data/raw/
 - **日期目录**:每次抓取一份**快照**,raw 不可变、可回溯;**累积/去重/合并放 processed**(不再像现在往单个 postings.json 原地覆盖)。
 - 所以你说的「raw 下没看到新数据」——现在 `05` 是原地覆盖 `raw/jobbank/postings.json`(没新文件、且里面是清洗过的)。新结构下每轮会落 `raw/httpx/jobbank/<日期>/` 一份原始快照。
 
-## 3. 源注册表 `etl/sources.py`(D4:「独立 sources」是什么)
-**就是一个单独的清单文件**,把「有哪些源、各自怎么配」集中声明,和「跑循环的 auto_update」分开。形如:
-```python
-SOURCES = [
-  Source(name="jobbank", method="httpx",   clean="clean/jobbank.py", interval="2h"),
-  Source(name="oinp",    method="crawl",    seeds=[...], clean="clean/pnp.py", interval="weekly"),
-  Source(name="wages",   method="dataset",  url="...", build="build_wages.py", interval="monthly"),
-  ...
-]
+## 3. 源注册表 = `etl/sources/<源>/` 包(D4 + 「按内容分目录」,✅ 已实现)
+**每个抓取内容/角色一个目录**,目录里声明「跑哪些步 + method + 频率 + 是否灌库」;
+`etl/sources/__init__.py` 自动发现所有子目录。`auto_update.py` 已拆成**纯调度器**,零源特定逻辑。
 ```
-**为什么独立成文件**(而不是塞进 `auto_update.SOURCES`):
-- 一处看全所有源 + 频率 + 清洗器,加源只改这一处;
-- `auto_update.py`(调度)、docker compose(生成 service)、清洗/build 都**读同一份**,不重复定义;
-- 「源有哪些」和「怎么调度跑」解耦 —— 改调度不动源清单,反之亦然。
+etl/sources/
+  __init__.py        # 自动发现:NAMES = 所有子目录
+  jobbank/__init__.py  # META = {method:'httpx', interval:7200, seed:False, steps:[05, 05b]}
+  ats/__init__.py      # META = {... steps:[04, 04b]}
+  build/__init__.py    # META = {seed:True, steps:[04c,04d,05c,08,09]}  ← 灌库唯一角色
+  # 后续逐源迁移时,目录里再加 scrape.py / clean.py(把 05 等的逻辑搬进来),engines/ 放可复用引擎
+```
+**为什么这样**(而不是塞进 `auto_update`):加源只改 `sources/` 下新目录;`auto_update`(调度)、
+docker(按 method 选镜像)、清洗都读同一份;「源有哪些」与「怎么调度」解耦。
+> 现状:`jobbank/ats/build` 三个 META 已落地(steps 引用现有 05/04c 等脚本,**未动它们**);
+> `scrape.py/clean.py/engines/` 等逐源迁移时再填(JB 最后,见第 8 节)。
 
-## 4. `auto_update.py` = 调度器,不是抓取器(你的疑问)
-它**不自己抓数据**,是个循环:读 `sources.py` → 按每个源的 `method` 调对应抓取器(`scrape/httpx|crawl|dataset` 里的脚本)→ 按 `interval` 定时 → 再触发清洗/build/seed。真正抓数据的逻辑在 `scrape/<method>/` 下的脚本里。可理解为「编排/定时层」。
+## 4. `auto_update.py` = 调度器,不是抓取器(✅ 已拆薄)
+它**不自己抓数据**,是个循环:读 `SOURCE` → 加载 `etl/sources/<SOURCE>/META` → 跑它的 `steps` → 按
+`interval`(SCRAPE_INTERVAL 可覆盖)定时 → `META["seed"]` 为真才灌库。**不含任何源特定逻辑**。
+真正抓数据的步骤/脚本在各源目录里声明。可理解为「编排/定时层」。
 
 ## 5. 反爬(D3)
 crawl 方式:httpx 优先,命中 403/挑战 → headless 浏览器兜底。**过不了的验证码 → 记日志、跳过该页**,后期再人工处理(现 `browser_fetch` 的有头+人工那套留作手动重抓,不进容器)。
@@ -85,7 +88,7 @@ docker/etl/
 | aip | dataset | 偶尔 | AIP 指定雇主 |
 
 ## 8. 待实施(分步,JB 最后,每步可回滚)
-1. 建 `etl/sources.py` 契约 + `raw/<method>/<source>/<date>/` 约定(不改现有抓取)。
+1. ✅ 建 `etl/sources/<源>/` 注册表 + 拆薄 `auto_update`(已完成,现有抓取未动)。待补:`raw/<method>/<source>/<date>/` 约定。
 2. `etl/scrape/{httpx,crawl,dataset}/` 三目录;crawl 输出迁 `raw/crawl/`,出 `.html`+`.md`;建 `docker/crawl/Dockerfile`(headless)。
 3. **新源验证**:拿一个省 PNP 页(如 oinp)走全框架跑通 → 证明契约。不碰 JB。
 4. dataset 源(wages/fsa/aip)做成低频 service。
