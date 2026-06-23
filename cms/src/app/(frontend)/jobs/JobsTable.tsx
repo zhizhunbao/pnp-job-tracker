@@ -260,6 +260,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
     setWidths(base)
     const startX = e.clientX
     const startW = base[key] ?? DEFAULT_COLW
+    // 拖这条线 = 改它左侧「当前列」的宽:左边列不动,右边列宽不变、整体平移(表总宽随之变化)
     const onMove = (ev: MouseEvent) => setWidths((p) => ({ ...p, [key]: Math.max(MIN_COLW, startW + (ev.clientX - startX)) }))
     const onUp = () => {
       document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); document.body.style.cursor = ''
@@ -439,7 +440,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
                     <th key={c.key} onClick={() => toggleSort(c.key)} title="点击表头排序"
                       style={{ padding: '8px 12px', color: active ? '#2563eb' : '#374151', fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none', position: 'relative', borderRight: isLast ? undefined : '1px solid #e5e7eb' }}>
                       {c.label}<span style={{ color: active ? '#2563eb' : '#d1d5db', fontSize: 11 }}>{active ? (sort.dir === 'desc' ? ' ▼' : ' ▲') : ' ↕'}</span>
-                      {!isLast && <span onMouseDown={(e) => startResize(e, shown[idx + 1].key)} onClick={(e) => e.stopPropagation()} onDoubleClick={(e) => { e.stopPropagation(); equalizeWidths() }} title="拖动改右列宽 · 双击平均分配各列"
+                      {!isLast && <span onMouseDown={(e) => startResize(e, c.key)} onClick={(e) => e.stopPropagation()} onDoubleClick={(e) => { e.stopPropagation(); equalizeWidths() }} title="拖动改本列宽(左列不动,右列平移) · 双击平均分配各列"
                         style={{ position: 'absolute', top: 0, right: 0, width: 9, height: '100%', cursor: 'col-resize', zIndex: 1 }} />}
                     </th>
                   )
