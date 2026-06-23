@@ -25,34 +25,54 @@ OUT_COMPANIES_DIR = IN_COMPANIES_DIR                  # 各 <slug>/jobs.json 原
 OUT_JOBBANK_FILE = IN_JOBBANK_FILE                    # 原地写回
 
 _NUM = re.compile(r"\d[\d,]*(?:\.\d+)?")
+# 只取「$ 锚定」的金额(含范围):$24.74-31.37 / $700,000 to $775,000。
+# 避开杂数:工会号(CUPE 1975)、Phase 4、邮编等没有 $ 前缀的数字。
+_MONEY = re.compile(r"\$\s?(\d[\d,]*(?:\.\d+)?)(?:\s*(?:-|–|—|to)\s*\$?\s?(\d[\d,]*(?:\.\d+)?))?")
+# 年化倍数:时薪×2080、日薪×260(工作日)、周×52、双周×26、月×12
+MULT = {"hr": 2080, "day": 260, "wk": 52, "biwk": 26, "mo": 12, "yr": 1}
+SUB = {"hr": "/hr", "day": "/day", "wk": "/wk", "biwk": "/2wk", "mo": "/mo", "yr": "/yr"}
+
+
+def _amounts(raw: str) -> list[float]:
+    """优先取 $ 锚定金额;没有 $ 时退回全部数字(老行为,兜底无 $ 的薪资)。"""
+    vals: list[float] = []
+    for a, b in _MONEY.findall(raw):
+        for x in (a, b):
+            if x:
+                vals.append(float(x.replace(",", "")))
+    if vals:
+        return vals
+    return [float(m.replace(",", "")) for m in _NUM.findall(raw)]
 
 
 def parse_salary(raw: str) -> tuple[int | None, str]:
-    """原样移植前端 parseSalary:任意格式 → (年薪数值, 规范文本)。"""
+    """任意格式 → (年薪数值, 规范文本)。只用 $ 锚定金额,支持 daily/biweekly。"""
     if not raw:
         return None, "—"
-    allnums = [float(m.replace(",", "")) for m in _NUM.findall(raw)]
-    allnums = [n for n in allnums if n > 0]
-    nums = [n for n in allnums if n < 1_000_000]  # 过滤离谱金额(源 typo/抓串)
+    allnums = [n for n in _amounts(raw) if n > 0]
+    nums = [n for n in allnums if n < 1_000_000]  # 过滤离谱金额(源 typo)
     use = nums or allnums
     if not use:
         return None, raw
     low = raw.lower()
     lo, hi = min(use), max(use)
-    # 单位判断 + 常识纠错:① <2000 无单位 → 时薪;② 时薪值≥$1000 → 实为年薪(源误标)
-    if "month" in low:
+    # 单位判断(biweekly 必须在 week 之前;daily 单列)+ 常识纠错
+    if re.search(r"bi[-\s]?week|every\s+two\s+weeks|fortnight", low):
+        unit = "biwk"
+    elif "month" in low:
         unit = "mo"
     elif "week" in low:
         unit = "wk"
+    elif re.search(r"\bdaily\b|per\s+day|/\s?day", low):
+        unit = "day"
     elif re.search(r"hour|/\s?hr|hourly", low):
         unit = "hr"
     else:
         unit = "hr" if hi < 2000 else "yr"
-    if unit == "hr" and lo >= 1000:
+    if unit == "hr" and lo >= 1000:  # 时薪值≥$1000 → 实为年薪(源误标)
         unit = "yr"
-    mult = {"hr": 2080, "wk": 52, "mo": 12, "yr": 1}[unit]
-    annual = round(((lo + hi) / 2) * mult)
-    sub = {"hr": "/hr", "wk": "/wk", "mo": "/mo", "yr": "/yr"}[unit]
+    annual = round(((lo + hi) / 2) * MULT[unit])
+    sub = SUB[unit]
     money = (lambda n: f"${round(n / 1000)}K") if unit == "yr" else (lambda n: f"${round(n)}")
     text = f"{money(lo)}{sub}" if lo == hi else f"{money(lo)}–{money(hi)}{sub}"
     return annual, text
