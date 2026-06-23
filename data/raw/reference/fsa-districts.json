@@ -1,0 +1,8257 @@
+{
+ "A0A": {
+  "hood": "Ferryland",
+  "main": "Southeastern Avalon Peninsula",
+  "prov": "NL"
+ },
+ "A0B": {
+  "hood": "Argentia",
+  "main": "Western Avalon Peninsula",
+  "prov": "NL"
+ },
+ "A0C": {
+  "hood": "Bonavista",
+  "main": "Bonavista Peninsula",
+  "prov": "NL"
+ },
+ "A0E": {
+  "hood": "Marystown",
+  "main": "Burin Peninsula",
+  "prov": "NL"
+ },
+ "A0G": {
+  "hood": "Lewisporte",
+  "main": "Northeast Newfoundland",
+  "prov": "NL"
+ },
+ "A0H": {
+  "hood": "Bishops Falls",
+  "main": "Central Newfoundland",
+  "prov": "NL"
+ },
+ "A0J": {
+  "hood": "Springdale",
+  "main": "Northern Newfoundland",
+  "prov": "NL"
+ },
+ "A0K": {
+  "hood": "Mary's Harbour",
+  "main": "Northwest Newfoundland/Eastern Labrador",
+  "prov": "NL"
+ },
+ "A0L": {
+  "hood": "Lark Harbour",
+  "main": "Western Newfoundland",
+  "prov": "NL"
+ },
+ "A0M": {
+  "hood": "Channel-Port aux Basques",
+  "main": "Southwestern Newfoundland",
+  "prov": "NL"
+ },
+ "A0N": {
+  "hood": "St. George's",
+  "main": "Port au Port Peninsula region",
+  "prov": "NL"
+ },
+ "A0P": {
+  "hood": "Happy Valley-Goose Bay",
+  "main": "Central Labrador",
+  "prov": "NL"
+ },
+ "A0R": {
+  "hood": "Churchill Falls",
+  "main": "North/Western Labrador",
+  "prov": "NL"
+ },
+ "A1A": {
+  "hood": "",
+  "main": "St. John's North",
+  "prov": "NL"
+ },
+ "A1B": {
+  "hood": "",
+  "main": "St. John's Northwest Newfoundland & Labrador Provincial Government",
+  "prov": "NL"
+ },
+ "A1C": {
+  "hood": "",
+  "main": "St. John's North Central",
+  "prov": "NL"
+ },
+ "A1E": {
+  "hood": "",
+  "main": "St. John's Central",
+  "prov": "NL"
+ },
+ "A1G": {
+  "hood": "",
+  "main": "St. John's South",
+  "prov": "NL"
+ },
+ "A1H": {
+  "hood": "",
+  "main": "St. John's Southwest",
+  "prov": "NL"
+ },
+ "A1K": {
+  "hood": "",
+  "main": "Torbay",
+  "prov": "NL"
+ },
+ "A1L": {
+  "hood": "",
+  "main": "Paradise",
+  "prov": "NL"
+ },
+ "A1M": {
+  "hood": "",
+  "main": "Portugal Cove-St. Philips",
+  "prov": "NL"
+ },
+ "A1N": {
+  "hood": "",
+  "main": "Mount Pearl",
+  "prov": "NL"
+ },
+ "A1S": {
+  "hood": "",
+  "main": "Goulds",
+  "prov": "NL"
+ },
+ "A1V": {
+  "hood": "",
+  "main": "Gander",
+  "prov": "NL"
+ },
+ "A1W": {
+  "hood": "",
+  "main": "Manuels",
+  "prov": "NL"
+ },
+ "A1X": {
+  "hood": "",
+  "main": "Conception Bay",
+  "prov": "NL"
+ },
+ "A1Y": {
+  "hood": "",
+  "main": "Carbonear",
+  "prov": "NL"
+ },
+ "A2A": {
+  "hood": "",
+  "main": "Grand Falls",
+  "prov": "NL"
+ },
+ "A2B": {
+  "hood": "",
+  "main": "Windsor",
+  "prov": "NL"
+ },
+ "A2H": {
+  "hood": "",
+  "main": "Corner Brook",
+  "prov": "NL"
+ },
+ "A2N": {
+  "hood": "",
+  "main": "Stephenville",
+  "prov": "NL"
+ },
+ "A2V": {
+  "hood": "",
+  "main": "Labrador City",
+  "prov": "NL"
+ },
+ "A5A": {
+  "hood": "",
+  "main": "Clarenville",
+  "prov": "NL"
+ },
+ "A8A": {
+  "hood": "",
+  "main": "Deer Lake",
+  "prov": "NL"
+ },
+ "B0C": {
+  "hood": "Dingwall",
+  "main": "North Victoria County",
+  "prov": "NS"
+ },
+ "B0E": {
+  "hood": "Baddeck",
+  "main": "West Cape Breton Island",
+  "prov": "NS"
+ },
+ "B0H": {
+  "hood": "Havre Boucher",
+  "main": "Canso region",
+  "prov": "NS"
+ },
+ "B0J": {
+  "hood": "Lunenburg",
+  "main": "Mainland east shore",
+  "prov": "NS"
+ },
+ "B0K": {
+  "hood": "Pictou",
+  "main": "Southern Northumberland Strait",
+  "prov": "NS"
+ },
+ "B0L": {
+  "hood": "River Hébert",
+  "main": "Isthmus of Chignecto",
+  "prov": "NS"
+ },
+ "B0M": {
+  "hood": "Springhill",
+  "main": "Cobequid Bay north shore",
+  "prov": "NS"
+ },
+ "B0N": {
+  "hood": "Shubenacadie",
+  "main": "Hants County",
+  "prov": "NS"
+ },
+ "B0P": {
+  "hood": "Kingston",
+  "main": "Kings County",
+  "prov": "NS"
+ },
+ "B0R": {
+  "hood": "New Germany",
+  "main": "West Lunenburg County",
+  "prov": "NS"
+ },
+ "B0S": {
+  "hood": "Middleton",
+  "main": "West Annapolis County",
+  "prov": "NS"
+ },
+ "B0T": {
+  "hood": "Shelburne",
+  "main": "Queens County",
+  "prov": "NS"
+ },
+ "B0V": {
+  "hood": "Digby",
+  "main": "Digby Neck",
+  "prov": "NS"
+ },
+ "B0W": {
+  "hood": "Weymouth",
+  "main": "Southwest Mainland",
+  "prov": "NS"
+ },
+ "B1A": {
+  "hood": "",
+  "main": "Glace Bay",
+  "prov": "NS"
+ },
+ "B1B": {
+  "hood": "",
+  "main": "Port Morien",
+  "prov": "NS"
+ },
+ "B1C": {
+  "hood": "",
+  "main": "Louisbourg",
+  "prov": "NS"
+ },
+ "B1E": {
+  "hood": "",
+  "main": "Reserve Mines",
+  "prov": "NS"
+ },
+ "B1G": {
+  "hood": "",
+  "main": "Dominion",
+  "prov": "NS"
+ },
+ "B1H": {
+  "hood": "",
+  "main": "New Waterford",
+  "prov": "NS"
+ },
+ "B1J": {
+  "hood": "",
+  "main": "East Bay",
+  "prov": "NS"
+ },
+ "B1K": {
+  "hood": "",
+  "main": "Marion Bridge",
+  "prov": "NS"
+ },
+ "B1L": {
+  "hood": "",
+  "main": "Sydney Southwest",
+  "prov": "NS"
+ },
+ "B1M": {
+  "hood": "",
+  "main": "Sydney East",
+  "prov": "NS"
+ },
+ "B1N": {
+  "hood": "",
+  "main": "Sydney North",
+  "prov": "NS"
+ },
+ "B1P": {
+  "hood": "",
+  "main": "Sydney North Central",
+  "prov": "NS"
+ },
+ "B1R": {
+  "hood": "",
+  "main": "Sydney West",
+  "prov": "NS"
+ },
+ "B1S": {
+  "hood": "",
+  "main": "Sydney Central",
+  "prov": "NS"
+ },
+ "B1T": {
+  "hood": "",
+  "main": "Christmas Island",
+  "prov": "NS"
+ },
+ "B1V": {
+  "hood": "",
+  "main": "North Sydney North",
+  "prov": "NS"
+ },
+ "B1W": {
+  "hood": "",
+  "main": "Eskasoni",
+  "prov": "NS"
+ },
+ "B1X": {
+  "hood": "",
+  "main": "Big Bras d'Or",
+  "prov": "NS"
+ },
+ "B1Y": {
+  "hood": "",
+  "main": "Alder Point",
+  "prov": "NS"
+ },
+ "B2A": {
+  "hood": "",
+  "main": "North Sydney South Central",
+  "prov": "NS"
+ },
+ "B2C": {
+  "hood": "",
+  "main": "Iona",
+  "prov": "NS"
+ },
+ "B2E": {
+  "hood": "",
+  "main": "Loch Lomond",
+  "prov": "NS"
+ },
+ "B2G": {
+  "hood": "",
+  "main": "Antigonish",
+  "prov": "NS"
+ },
+ "B2H": {
+  "hood": "",
+  "main": "New Glasgow",
+  "prov": "NS"
+ },
+ "B2J": {
+  "hood": "",
+  "main": "Fourchu",
+  "prov": "NS"
+ },
+ "B2N": {
+  "hood": "",
+  "main": "Truro",
+  "prov": "NS"
+ },
+ "B2R": {
+  "hood": "",
+  "main": "Waverley",
+  "prov": "NS"
+ },
+ "B2S": {
+  "hood": "",
+  "main": "Lantz",
+  "prov": "NS"
+ },
+ "B2T": {
+  "hood": "",
+  "main": "Enfield",
+  "prov": "NS"
+ },
+ "B2V": {
+  "hood": "",
+  "main": "Dartmouth Morris Lake",
+  "prov": "NS"
+ },
+ "B2W": {
+  "hood": "",
+  "main": "Dartmouth East Central",
+  "prov": "NS"
+ },
+ "B2X": {
+  "hood": "",
+  "main": "Dartmouth North Central",
+  "prov": "NS"
+ },
+ "B2Y": {
+  "hood": "",
+  "main": "Dartmouth South Central",
+  "prov": "NS"
+ },
+ "B2Z": {
+  "hood": "",
+  "main": "Dartmouth East",
+  "prov": "NS"
+ },
+ "B3A": {
+  "hood": "",
+  "main": "Dartmouth Southwest",
+  "prov": "NS"
+ },
+ "B3B": {
+  "hood": "",
+  "main": "Dartmouth Northwest",
+  "prov": "NS"
+ },
+ "B3E": {
+  "hood": "",
+  "main": "Porters Lake",
+  "prov": "NS"
+ },
+ "B3G": {
+  "hood": "",
+  "main": "Eastern Passage",
+  "prov": "NS"
+ },
+ "B3H": {
+  "hood": "",
+  "main": "Halifax Lower Harbour",
+  "prov": "NS"
+ },
+ "B3J": {
+  "hood": "",
+  "main": "Halifax Mid-Harbour Nova Scotia Provincial Government",
+  "prov": "NS"
+ },
+ "B3K": {
+  "hood": "",
+  "main": "Halifax Upper Harbour",
+  "prov": "NS"
+ },
+ "B3L": {
+  "hood": "",
+  "main": "Halifax Central",
+  "prov": "NS"
+ },
+ "B3M": {
+  "hood": "",
+  "main": "Halifax Bedford Basin",
+  "prov": "NS"
+ },
+ "B3N": {
+  "hood": "",
+  "main": "Halifax South Central",
+  "prov": "NS"
+ },
+ "B3P": {
+  "hood": "",
+  "main": "Halifax North West Arm",
+  "prov": "NS"
+ },
+ "B3R": {
+  "hood": "",
+  "main": "Halifax South",
+  "prov": "NS"
+ },
+ "B3S": {
+  "hood": "",
+  "main": "Halifax West",
+  "prov": "NS"
+ },
+ "B3T": {
+  "hood": "",
+  "main": "Lakeside",
+  "prov": "NS"
+ },
+ "B3V": {
+  "hood": "",
+  "main": "Harrietsfield",
+  "prov": "NS"
+ },
+ "B3Z": {
+  "hood": "",
+  "main": "Tantallon",
+  "prov": "NS"
+ },
+ "B4A": {
+  "hood": "",
+  "main": "Bedford Southeast",
+  "prov": "NS"
+ },
+ "B4B": {
+  "hood": "",
+  "main": "Bedford Northwest",
+  "prov": "NS"
+ },
+ "B4C": {
+  "hood": "",
+  "main": "Lower Sackville South",
+  "prov": "NS"
+ },
+ "B4E": {
+  "hood": "",
+  "main": "Lower Sackville West",
+  "prov": "NS"
+ },
+ "B4G": {
+  "hood": "",
+  "main": "Lower Sackville North",
+  "prov": "NS"
+ },
+ "B4H": {
+  "hood": "",
+  "main": "Amherst",
+  "prov": "NS"
+ },
+ "B4N": {
+  "hood": "",
+  "main": "Kentville",
+  "prov": "NS"
+ },
+ "B4P": {
+  "hood": "",
+  "main": "Wolfville",
+  "prov": "NS"
+ },
+ "B4R": {
+  "hood": "",
+  "main": "Coldbrook",
+  "prov": "NS"
+ },
+ "B4V": {
+  "hood": "",
+  "main": "Bridgewater",
+  "prov": "NS"
+ },
+ "B5A": {
+  "hood": "",
+  "main": "Yarmouth",
+  "prov": "NS"
+ },
+ "B6L": {
+  "hood": "",
+  "main": "Truro",
+  "prov": "NS"
+ },
+ "B9A": {
+  "hood": "",
+  "main": "Port Hawkesbury",
+  "prov": "NS"
+ },
+ "C0A": {
+  "hood": "",
+  "main": "Montague",
+  "prov": "PE"
+ },
+ "C0B": {
+  "hood": "Portage",
+  "main": "Prince County",
+  "prov": "PE"
+ },
+ "C1A": {
+  "hood": "",
+  "main": "Charlottetown Southeast Prince Edward Island Provincial Government",
+  "prov": "PE"
+ },
+ "C1B": {
+  "hood": "",
+  "main": "Stratford",
+  "prov": "PE"
+ },
+ "C1C": {
+  "hood": "",
+  "main": "Charlottetown North",
+  "prov": "PE"
+ },
+ "C1E": {
+  "hood": "",
+  "main": "Charlottetown West",
+  "prov": "PE"
+ },
+ "C1N": {
+  "hood": "",
+  "main": "Summerside",
+  "prov": "PE"
+ },
+ "E1A": {
+  "hood": "",
+  "main": "Dieppe Moncton East",
+  "prov": "NB"
+ },
+ "E1B": {
+  "hood": "",
+  "main": "Riverview",
+  "prov": "NB"
+ },
+ "E1C": {
+  "hood": "",
+  "main": "Moncton Central",
+  "prov": "NB"
+ },
+ "E1E": {
+  "hood": "",
+  "main": "Moncton West",
+  "prov": "NB"
+ },
+ "E1G": {
+  "hood": "",
+  "main": "Moncton Northwest",
+  "prov": "NB"
+ },
+ "E1H": {
+  "hood": "",
+  "main": "Lakeville, Shediac Bridge",
+  "prov": "NB"
+ },
+ "E1J": {
+  "hood": "",
+  "main": "Coverdale",
+  "prov": "NB"
+ },
+ "E1N": {
+  "hood": "",
+  "main": "Miramichi South",
+  "prov": "NB"
+ },
+ "E1V": {
+  "hood": "",
+  "main": "Miramichi North",
+  "prov": "NB"
+ },
+ "E1W": {
+  "hood": "",
+  "main": "Caraquet",
+  "prov": "NB"
+ },
+ "E1X": {
+  "hood": "",
+  "main": "Tracadie-Sheila",
+  "prov": "NB"
+ },
+ "E2A": {
+  "hood": "",
+  "main": "Bathurst",
+  "prov": "NB"
+ },
+ "E2E": {
+  "hood": "",
+  "main": "Rothesay, Quispamsis",
+  "prov": "NB"
+ },
+ "E2G": {
+  "hood": "",
+  "main": "Quispamsis",
+  "prov": "NB"
+ },
+ "E2H": {
+  "hood": "",
+  "main": "Saint John Northeast, Renforth",
+  "prov": "NB"
+ },
+ "E2J": {
+  "hood": "",
+  "main": "Saint John East",
+  "prov": "NB"
+ },
+ "E2K": {
+  "hood": "",
+  "main": "Saint John North",
+  "prov": "NB"
+ },
+ "E2L": {
+  "hood": "",
+  "main": "Saint John Central",
+  "prov": "NB"
+ },
+ "E2M": {
+  "hood": "",
+  "main": "Saint John West",
+  "prov": "NB"
+ },
+ "E2N": {
+  "hood": "",
+  "main": "Saint John Lakewood",
+  "prov": "NB"
+ },
+ "E2P": {
+  "hood": "",
+  "main": "Saint John Red Head",
+  "prov": "NB"
+ },
+ "E2R": {
+  "hood": "",
+  "main": "Saint John Grandview",
+  "prov": "NB"
+ },
+ "E2S": {
+  "hood": "",
+  "main": "Saint John Loch Lomond",
+  "prov": "NB"
+ },
+ "E2V": {
+  "hood": "",
+  "main": "Oromocto",
+  "prov": "NB"
+ },
+ "E3A": {
+  "hood": "",
+  "main": "Fredericton North",
+  "prov": "NB"
+ },
+ "E3B": {
+  "hood": "",
+  "main": "Fredericton South New Brunswick Provincial Government",
+  "prov": "NB"
+ },
+ "E3C": {
+  "hood": "",
+  "main": "Fredericton Southwest, New Maryland",
+  "prov": "NB"
+ },
+ "E3E": {
+  "hood": "",
+  "main": "Kingsclear",
+  "prov": "NB"
+ },
+ "E3G": {
+  "hood": "",
+  "main": "Fredericton",
+  "prov": "NB"
+ },
+ "E3L": {
+  "hood": "",
+  "main": "St. Stephen",
+  "prov": "NB"
+ },
+ "E3N": {
+  "hood": "",
+  "main": "Campbellton",
+  "prov": "NB"
+ },
+ "E3V": {
+  "hood": "",
+  "main": "Edmundston",
+  "prov": "NB"
+ },
+ "E3Y": {
+  "hood": "",
+  "main": "Grand Falls Northeast",
+  "prov": "NB"
+ },
+ "E3Z": {
+  "hood": "",
+  "main": "Grand Falls Central",
+  "prov": "NB"
+ },
+ "E4A": {
+  "hood": "",
+  "main": "Bathurst",
+  "prov": "NB"
+ },
+ "E4B": {
+  "hood": "",
+  "main": "Minto",
+  "prov": "NB"
+ },
+ "E4C": {
+  "hood": "",
+  "main": "Youngs Cove",
+  "prov": "NB"
+ },
+ "E4E": {
+  "hood": "",
+  "main": "Sussex",
+  "prov": "NB"
+ },
+ "E4G": {
+  "hood": "",
+  "main": "Smiths Creek",
+  "prov": "NB"
+ },
+ "E4H": {
+  "hood": "",
+  "main": "Hillsborough",
+  "prov": "NB"
+ },
+ "E4J": {
+  "hood": "",
+  "main": "Salisbury",
+  "prov": "NB"
+ },
+ "E4K": {
+  "hood": "",
+  "main": "Dorchester",
+  "prov": "NB"
+ },
+ "E4L": {
+  "hood": "",
+  "main": "Sackville",
+  "prov": "NB"
+ },
+ "E4M": {
+  "hood": "",
+  "main": "Bayfield",
+  "prov": "NB"
+ },
+ "E4N": {
+  "hood": "",
+  "main": "Cap-Pelé",
+  "prov": "NB"
+ },
+ "E4P": {
+  "hood": "",
+  "main": "Shediac",
+  "prov": "NB"
+ },
+ "E4R": {
+  "hood": "",
+  "main": "Cocagne",
+  "prov": "NB"
+ },
+ "E4S": {
+  "hood": "",
+  "main": "Bouctouche",
+  "prov": "NB"
+ },
+ "E4T": {
+  "hood": "",
+  "main": "Bass River",
+  "prov": "NB"
+ },
+ "E4V": {
+  "hood": "",
+  "main": "Saint-Antoine",
+  "prov": "NB"
+ },
+ "E4W": {
+  "hood": "",
+  "main": "Richibucto",
+  "prov": "NB"
+ },
+ "E4X": {
+  "hood": "",
+  "main": "St-Louis-de-Kent",
+  "prov": "NB"
+ },
+ "E4Y": {
+  "hood": "",
+  "main": "Rogersville",
+  "prov": "NB"
+ },
+ "E4Z": {
+  "hood": "",
+  "main": "Petitcodiac",
+  "prov": "NB"
+ },
+ "E5A": {
+  "hood": "",
+  "main": "Moores Mills",
+  "prov": "NB"
+ },
+ "E5B": {
+  "hood": "",
+  "main": "St. Andrews",
+  "prov": "NB"
+ },
+ "E5C": {
+  "hood": "",
+  "main": "St. George",
+  "prov": "NB"
+ },
+ "E5E": {
+  "hood": "",
+  "main": "Campobello Island",
+  "prov": "NB"
+ },
+ "E5G": {
+  "hood": "",
+  "main": "Grand Manan Island",
+  "prov": "NB"
+ },
+ "E5H": {
+  "hood": "",
+  "main": "Pennfield",
+  "prov": "NB"
+ },
+ "E5J": {
+  "hood": "",
+  "main": "Lepreau",
+  "prov": "NB"
+ },
+ "E5K": {
+  "hood": "",
+  "main": "Grand Bay-Westfield",
+  "prov": "NB"
+ },
+ "E5L": {
+  "hood": "",
+  "main": "Fredericton Junction",
+  "prov": "NB"
+ },
+ "E5M": {
+  "hood": "",
+  "main": "Gagetown",
+  "prov": "NB"
+ },
+ "E5N": {
+  "hood": "",
+  "main": "Hampton",
+  "prov": "NB"
+ },
+ "E5P": {
+  "hood": "",
+  "main": "Apohaqui",
+  "prov": "NB"
+ },
+ "E5R": {
+  "hood": "",
+  "main": "St. Martins",
+  "prov": "NB"
+ },
+ "E5S": {
+  "hood": "",
+  "main": "Kingston",
+  "prov": "NB"
+ },
+ "E5T": {
+  "hood": "",
+  "main": "Norton",
+  "prov": "NB"
+ },
+ "E5V": {
+  "hood": "",
+  "main": "Deer Island",
+  "prov": "NB"
+ },
+ "E6A": {
+  "hood": "",
+  "main": "Boiestown",
+  "prov": "NB"
+ },
+ "E6B": {
+  "hood": "",
+  "main": "Stanley",
+  "prov": "NB"
+ },
+ "E6C": {
+  "hood": "",
+  "main": "Durham Bridge",
+  "prov": "NB"
+ },
+ "E6E": {
+  "hood": "",
+  "main": "Millville",
+  "prov": "NB"
+ },
+ "E6G": {
+  "hood": "",
+  "main": "Nackawic",
+  "prov": "NB"
+ },
+ "E6H": {
+  "hood": "",
+  "main": "Canterbury",
+  "prov": "NB"
+ },
+ "E6J": {
+  "hood": "",
+  "main": "McAdam",
+  "prov": "NB"
+ },
+ "E6K": {
+  "hood": "",
+  "main": "Harvey",
+  "prov": "NB"
+ },
+ "E6L": {
+  "hood": "",
+  "main": "Burtts Corner",
+  "prov": "NB"
+ },
+ "E7A": {
+  "hood": "",
+  "main": "Baker Brook",
+  "prov": "NB"
+ },
+ "E7B": {
+  "hood": "",
+  "main": "Saint-Jacques",
+  "prov": "NB"
+ },
+ "E7C": {
+  "hood": "",
+  "main": "Saint-Basile",
+  "prov": "NB"
+ },
+ "E7E": {
+  "hood": "",
+  "main": "Saint-Leonard",
+  "prov": "NB"
+ },
+ "E7G": {
+  "hood": "",
+  "main": "Plaster Rock",
+  "prov": "NB"
+ },
+ "E7H": {
+  "hood": "",
+  "main": "Perth-Andover",
+  "prov": "NB"
+ },
+ "E7J": {
+  "hood": "",
+  "main": "Bath",
+  "prov": "NB"
+ },
+ "E7K": {
+  "hood": "",
+  "main": "Centreville",
+  "prov": "NB"
+ },
+ "E7L": {
+  "hood": "",
+  "main": "Florenceville",
+  "prov": "NB"
+ },
+ "E7M": {
+  "hood": "",
+  "main": "Woodstock",
+  "prov": "NB"
+ },
+ "E7N": {
+  "hood": "",
+  "main": "Debec",
+  "prov": "NB"
+ },
+ "E7P": {
+  "hood": "",
+  "main": "Hartland",
+  "prov": "NB"
+ },
+ "E8A": {
+  "hood": "",
+  "main": "Saint-Quentin",
+  "prov": "NB"
+ },
+ "E8B": {
+  "hood": "",
+  "main": "Kedgwick",
+  "prov": "NB"
+ },
+ "E8C": {
+  "hood": "",
+  "main": "Dalhousie",
+  "prov": "NB"
+ },
+ "E8E": {
+  "hood": "",
+  "main": "Balmoral",
+  "prov": "NB"
+ },
+ "E8G": {
+  "hood": "",
+  "main": "Belledune",
+  "prov": "NB"
+ },
+ "E8J": {
+  "hood": "",
+  "main": "Petit-Rocher",
+  "prov": "NB"
+ },
+ "E8K": {
+  "hood": "",
+  "main": "Beresford",
+  "prov": "NB"
+ },
+ "E8L": {
+  "hood": "",
+  "main": "Allardville",
+  "prov": "NB"
+ },
+ "E8M": {
+  "hood": "",
+  "main": "Saint-Isidore",
+  "prov": "NB"
+ },
+ "E8N": {
+  "hood": "",
+  "main": "Grande-Anse",
+  "prov": "NB"
+ },
+ "E8P": {
+  "hood": "",
+  "main": "Inkerman",
+  "prov": "NB"
+ },
+ "E8R": {
+  "hood": "",
+  "main": "Paquetville",
+  "prov": "NB"
+ },
+ "E8S": {
+  "hood": "",
+  "main": "Shippagan",
+  "prov": "NB"
+ },
+ "E8T": {
+  "hood": "",
+  "main": "Lamèque",
+  "prov": "NB"
+ },
+ "E9A": {
+  "hood": "",
+  "main": "Baie-Sainte-Anne",
+  "prov": "NB"
+ },
+ "E9B": {
+  "hood": "",
+  "main": "Blackville",
+  "prov": "NB"
+ },
+ "E9C": {
+  "hood": "",
+  "main": "Doaktown",
+  "prov": "NB"
+ },
+ "E9E": {
+  "hood": "",
+  "main": "Red Bank",
+  "prov": "NB"
+ },
+ "E9G": {
+  "hood": "",
+  "main": "Neguac",
+  "prov": "NB"
+ },
+ "E9H": {
+  "hood": "",
+  "main": "Brantville",
+  "prov": "NB"
+ },
+ "G0A": {
+  "hood": "Stoneham",
+  "main": "Capitale-Nationale",
+  "prov": "QC"
+ },
+ "G0B": {
+  "hood": "",
+  "main": "Cap-aux-Meules",
+  "prov": "QC"
+ },
+ "G0C": {
+  "hood": "New Richmond",
+  "main": "Gaspésie-Sud",
+  "prov": "QC"
+ },
+ "G0E": {
+  "hood": "Grande-Vallée",
+  "main": "Gaspésie-Nord",
+  "prov": "QC"
+ },
+ "G0G": {
+  "hood": "Schefferville",
+  "main": "Côte-Nord/Anticosti",
+  "prov": "QC"
+ },
+ "G0H": {
+  "hood": "Baie-Trinité",
+  "main": "Manicouagan",
+  "prov": "QC"
+ },
+ "G0J": {
+  "hood": "Causapscal",
+  "main": "Gaspésie-Ouest",
+  "prov": "QC"
+ },
+ "G0K": {
+  "hood": "Sainte-Luce",
+  "main": "Bas-St-Laurent-Est",
+  "prov": "QC"
+ },
+ "G0L": {
+  "hood": "Trois-Pistoles",
+  "main": "Bas-St-Laurent-Ouest",
+  "prov": "QC"
+ },
+ "G0M": {
+  "hood": "Saint-Prosper-De-Dorchester",
+  "main": "Région de Beauce",
+  "prov": "QC"
+ },
+ "G0N": {
+  "hood": "Disraeli",
+  "main": "Chaudière-Sud",
+  "prov": "QC"
+ },
+ "G0P": {
+  "hood": "Saint-Valère",
+  "main": "Centre-du-Québec-Est",
+  "prov": "QC"
+ },
+ "G0R": {
+  "hood": "La Pocatière",
+  "main": "Appalaches",
+  "prov": "QC"
+ },
+ "G0S": {
+  "hood": "Saint-Joseph-De-Beauce",
+  "main": "Chaudière-Nord",
+  "prov": "QC"
+ },
+ "G0T": {
+  "hood": "Forestville",
+  "main": "Le Fjord",
+  "prov": "QC"
+ },
+ "G0V": {
+  "hood": "Alouette",
+  "main": "Saguenay-Lac-St-Jean",
+  "prov": "QC"
+ },
+ "G0W": {
+  "hood": "Chambord",
+  "main": "Région de Mistassini",
+  "prov": "QC"
+ },
+ "G0X": {
+  "hood": "Parent",
+  "main": "Mauricie",
+  "prov": "QC"
+ },
+ "G0Y": {
+  "hood": "Nantes",
+  "main": "L'Erable",
+  "prov": "QC"
+ },
+ "G0Z": {
+  "hood": "Daveluyville",
+  "main": "Centre-du-Québec-Nord",
+  "prov": "QC"
+ },
+ "G1A": {
+  "hood": "",
+  "main": "Quebec Provincial Government",
+  "prov": "QC"
+ },
+ "G1B": {
+  "hood": "",
+  "main": "Beauport North",
+  "prov": "QC"
+ },
+ "G1C": {
+  "hood": "",
+  "main": "Beauport Central",
+  "prov": "QC"
+ },
+ "G1E": {
+  "hood": "",
+  "main": "Beauport South",
+  "prov": "QC"
+ },
+ "G1G": {
+  "hood": "",
+  "main": "Jean-Talon Southeast",
+  "prov": "QC"
+ },
+ "G1H": {
+  "hood": "",
+  "main": "Charlesbourg South",
+  "prov": "QC"
+ },
+ "G1J": {
+  "hood": "",
+  "main": "Quebec City Lower Riverbank",
+  "prov": "QC"
+ },
+ "G1K": {
+  "hood": "",
+  "main": "Quebec City Mid-Riverbank",
+  "prov": "QC"
+ },
+ "G1L": {
+  "hood": "",
+  "main": "Quebec City Northeast",
+  "prov": "QC"
+ },
+ "G1M": {
+  "hood": "",
+  "main": "Quebec City North Central",
+  "prov": "QC"
+ },
+ "G1N": {
+  "hood": "",
+  "main": "Quebec City South Central",
+  "prov": "QC"
+ },
+ "G1P": {
+  "hood": "",
+  "main": "Quebec City West",
+  "prov": "QC"
+ },
+ "G1R": {
+  "hood": "",
+  "main": "Quebec City East",
+  "prov": "QC"
+ },
+ "G1S": {
+  "hood": "",
+  "main": "Quebec City South",
+  "prov": "QC"
+ },
+ "G1T": {
+  "hood": "",
+  "main": "Quebec City Upper Riverbank",
+  "prov": "QC"
+ },
+ "G1V": {
+  "hood": "",
+  "main": "Sainte-Foy Northeast",
+  "prov": "QC"
+ },
+ "G1W": {
+  "hood": "",
+  "main": "Sainte-Foy Southeast",
+  "prov": "QC"
+ },
+ "G1X": {
+  "hood": "",
+  "main": "Sainte-Foy West",
+  "prov": "QC"
+ },
+ "G1Y": {
+  "hood": "",
+  "main": "Cap-Rouge",
+  "prov": "QC"
+ },
+ "G2A": {
+  "hood": "",
+  "main": "Loretteville North",
+  "prov": "QC"
+ },
+ "G2B": {
+  "hood": "",
+  "main": "Loretteville South",
+  "prov": "QC"
+ },
+ "G2C": {
+  "hood": "",
+  "main": "Quebec City Northwest",
+  "prov": "QC"
+ },
+ "G2E": {
+  "hood": "",
+  "main": "L'Ancienne-Lorette Northeast",
+  "prov": "QC"
+ },
+ "G2G": {
+  "hood": "",
+  "main": "L'Ancienne-Lorette Southwest",
+  "prov": "QC"
+ },
+ "G2J": {
+  "hood": "",
+  "main": "Quebec City Inner North",
+  "prov": "QC"
+ },
+ "G2K": {
+  "hood": "",
+  "main": "Quebec City Outer North",
+  "prov": "QC"
+ },
+ "G2L": {
+  "hood": "",
+  "main": "Charlesbourg North",
+  "prov": "QC"
+ },
+ "G2M": {
+  "hood": "",
+  "main": "Jean-Talon Northeast",
+  "prov": "QC"
+ },
+ "G2N": {
+  "hood": "",
+  "main": "Jean-Talon West",
+  "prov": "QC"
+ },
+ "G3A": {
+  "hood": "",
+  "main": "St-Augustin-De-Desmaures",
+  "prov": "QC"
+ },
+ "G3B": {
+  "hood": "",
+  "main": "Lac-Beauport",
+  "prov": "QC"
+ },
+ "G3C": {
+  "hood": "",
+  "main": "Stoneham-et-Tewkesbury",
+  "prov": "QC"
+ },
+ "G3E": {
+  "hood": "",
+  "main": "Saint-Émile",
+  "prov": "QC"
+ },
+ "G3G": {
+  "hood": "",
+  "main": "Lac-Saint-Charles",
+  "prov": "QC"
+ },
+ "G3H": {
+  "hood": "",
+  "main": "Pont-Rouge",
+  "prov": "QC"
+ },
+ "G3J": {
+  "hood": "",
+  "main": "Val-Bélair North",
+  "prov": "QC"
+ },
+ "G3K": {
+  "hood": "",
+  "main": "Val-Bélair South",
+  "prov": "QC"
+ },
+ "G3L": {
+  "hood": "",
+  "main": "Saint-Raymond",
+  "prov": "QC"
+ },
+ "G3M": {
+  "hood": "",
+  "main": "Donnacona",
+  "prov": "QC"
+ },
+ "G3N": {
+  "hood": "",
+  "main": "Sainte-Catherine-de-la-Jacques-Cartier",
+  "prov": "QC"
+ },
+ "G3S": {
+  "hood": "",
+  "main": "Shannon",
+  "prov": "QC"
+ },
+ "G3Z": {
+  "hood": "",
+  "main": "Baie-Saint-Paul",
+  "prov": "QC"
+ },
+ "G4A": {
+  "hood": "",
+  "main": "Clermont",
+  "prov": "QC"
+ },
+ "G4R": {
+  "hood": "",
+  "main": "Sept-Îles Southeast",
+  "prov": "QC"
+ },
+ "G4S": {
+  "hood": "",
+  "main": "Sept-Îles Northwest",
+  "prov": "QC"
+ },
+ "G4T": {
+  "hood": "",
+  "main": "Les Îles-De-La-Madeleine",
+  "prov": "QC"
+ },
+ "G4V": {
+  "hood": "",
+  "main": "Sainte-Anne-Des-Monts",
+  "prov": "QC"
+ },
+ "G4W": {
+  "hood": "",
+  "main": "Matane",
+  "prov": "QC"
+ },
+ "G4X": {
+  "hood": "",
+  "main": "Gaspé",
+  "prov": "QC"
+ },
+ "G4Z": {
+  "hood": "",
+  "main": "Baie-Comeau Northeast",
+  "prov": "QC"
+ },
+ "G5A": {
+  "hood": "",
+  "main": "La Malbaie",
+  "prov": "QC"
+ },
+ "G5B": {
+  "hood": "",
+  "main": "Port-Cartier",
+  "prov": "QC"
+ },
+ "G5C": {
+  "hood": "",
+  "main": "Baie-Comeau Southwest",
+  "prov": "QC"
+ },
+ "G5H": {
+  "hood": "",
+  "main": "Mont-Joli",
+  "prov": "QC"
+ },
+ "G5J": {
+  "hood": "",
+  "main": "Amqui",
+  "prov": "QC"
+ },
+ "G5L": {
+  "hood": "",
+  "main": "Rimouski Central",
+  "prov": "QC"
+ },
+ "G5M": {
+  "hood": "",
+  "main": "Rimouski Northeast",
+  "prov": "QC"
+ },
+ "G5N": {
+  "hood": "",
+  "main": "Rimouski Southwest",
+  "prov": "QC"
+ },
+ "G5R": {
+  "hood": "",
+  "main": "Rivière-du-Loup",
+  "prov": "QC"
+ },
+ "G5T": {
+  "hood": "",
+  "main": "Degelis",
+  "prov": "QC"
+ },
+ "G5V": {
+  "hood": "",
+  "main": "Montmagny",
+  "prov": "QC"
+ },
+ "G5X": {
+  "hood": "",
+  "main": "Beauceville",
+  "prov": "QC"
+ },
+ "G5Y": {
+  "hood": "",
+  "main": "Saint-Georges Central",
+  "prov": "QC"
+ },
+ "G5Z": {
+  "hood": "",
+  "main": "Saint-Georges Southeast",
+  "prov": "QC"
+ },
+ "G6A": {
+  "hood": "",
+  "main": "Saint-Georges Northwest",
+  "prov": "QC"
+ },
+ "G6B": {
+  "hood": "",
+  "main": "Lac-Megantic",
+  "prov": "QC"
+ },
+ "G6C": {
+  "hood": "",
+  "main": "Pintendre",
+  "prov": "QC"
+ },
+ "G6E": {
+  "hood": "",
+  "main": "Sainte-Marie",
+  "prov": "QC"
+ },
+ "G6G": {
+  "hood": "",
+  "main": "Thetford Mines",
+  "prov": "QC"
+ },
+ "G6H": {
+  "hood": "",
+  "main": "Black Lake",
+  "prov": "QC"
+ },
+ "G6J": {
+  "hood": "",
+  "main": "Saint-Etienne-De-Lauzon",
+  "prov": "QC"
+ },
+ "G6K": {
+  "hood": "",
+  "main": "Saint-Redempteur",
+  "prov": "QC"
+ },
+ "G6L": {
+  "hood": "",
+  "main": "Plessisville",
+  "prov": "QC"
+ },
+ "G6P": {
+  "hood": "",
+  "main": "Victoriaville Central",
+  "prov": "QC"
+ },
+ "G6R": {
+  "hood": "",
+  "main": "Victoriaville South",
+  "prov": "QC"
+ },
+ "G6S": {
+  "hood": "",
+  "main": "Victoriaville East",
+  "prov": "QC"
+ },
+ "G6T": {
+  "hood": "",
+  "main": "Victoriaville Northwest",
+  "prov": "QC"
+ },
+ "G6V": {
+  "hood": "",
+  "main": "Lévis North",
+  "prov": "QC"
+ },
+ "G6W": {
+  "hood": "",
+  "main": "Lévis South",
+  "prov": "QC"
+ },
+ "G6X": {
+  "hood": "",
+  "main": "Charny",
+  "prov": "QC"
+ },
+ "G6Y": {
+  "hood": "",
+  "main": "Lévis",
+  "prov": "QC"
+ },
+ "G6Z": {
+  "hood": "",
+  "main": "Saint-Jean-Chrysostome",
+  "prov": "QC"
+ },
+ "G7A": {
+  "hood": "",
+  "main": "Saint-Nicolas",
+  "prov": "QC"
+ },
+ "G7B": {
+  "hood": "",
+  "main": "La Baie",
+  "prov": "QC"
+ },
+ "G7G": {
+  "hood": "",
+  "main": "Chicoutimi North",
+  "prov": "QC"
+ },
+ "G7H": {
+  "hood": "",
+  "main": "Chicoutimi East",
+  "prov": "QC"
+ },
+ "G7J": {
+  "hood": "",
+  "main": "Chicoutimi West",
+  "prov": "QC"
+ },
+ "G7K": {
+  "hood": "",
+  "main": "Chicoutimi Southwest",
+  "prov": "QC"
+ },
+ "G7N": {
+  "hood": "",
+  "main": "Laterrière",
+  "prov": "QC"
+ },
+ "G7P": {
+  "hood": "",
+  "main": "Saint-Ambroise",
+  "prov": "QC"
+ },
+ "G7S": {
+  "hood": "",
+  "main": "Jonquière Northeast",
+  "prov": "QC"
+ },
+ "G7T": {
+  "hood": "",
+  "main": "Jonquière Southeast",
+  "prov": "QC"
+ },
+ "G7X": {
+  "hood": "",
+  "main": "Jonquière Central",
+  "prov": "QC"
+ },
+ "G7Y": {
+  "hood": "",
+  "main": "Jonquière Southwest",
+  "prov": "QC"
+ },
+ "G7Z": {
+  "hood": "",
+  "main": "Jonquière Northwest",
+  "prov": "QC"
+ },
+ "G8A": {
+  "hood": "",
+  "main": "Jonquière West",
+  "prov": "QC"
+ },
+ "G8B": {
+  "hood": "",
+  "main": "Alma Southeast",
+  "prov": "QC"
+ },
+ "G8C": {
+  "hood": "",
+  "main": "Alma Southwest",
+  "prov": "QC"
+ },
+ "G8E": {
+  "hood": "",
+  "main": "Alma North",
+  "prov": "QC"
+ },
+ "G8G": {
+  "hood": "",
+  "main": "Métabetchouan-Lac-a-la-Croix",
+  "prov": "QC"
+ },
+ "G8H": {
+  "hood": "",
+  "main": "Roberval",
+  "prov": "QC"
+ },
+ "G8J": {
+  "hood": "",
+  "main": "Saint-Prime",
+  "prov": "QC"
+ },
+ "G8K": {
+  "hood": "",
+  "main": "Saint-Félicien",
+  "prov": "QC"
+ },
+ "G8L": {
+  "hood": "",
+  "main": "Dolbeau-Mistassini",
+  "prov": "QC"
+ },
+ "G8M": {
+  "hood": "",
+  "main": "Albanel",
+  "prov": "QC"
+ },
+ "G8N": {
+  "hood": "",
+  "main": "Hébertville",
+  "prov": "QC"
+ },
+ "G8P": {
+  "hood": "",
+  "main": "Chibougamau",
+  "prov": "QC"
+ },
+ "G8T": {
+  "hood": "",
+  "main": "Cap-de-la-Madeleine Central and southeast",
+  "prov": "QC"
+ },
+ "G8V": {
+  "hood": "",
+  "main": "Cap-de-la-Madeleine Northeast",
+  "prov": "QC"
+ },
+ "G8W": {
+  "hood": "",
+  "main": "Cap-de-la-Madeleine West",
+  "prov": "QC"
+ },
+ "G8Y": {
+  "hood": "",
+  "main": "Trois-Rivières Central",
+  "prov": "QC"
+ },
+ "G8Z": {
+  "hood": "",
+  "main": "Trois-Rivières Northeast",
+  "prov": "QC"
+ },
+ "G9A": {
+  "hood": "",
+  "main": "Trois-Rivières East",
+  "prov": "QC"
+ },
+ "G9B": {
+  "hood": "",
+  "main": "Trois-Rivières South",
+  "prov": "QC"
+ },
+ "G9C": {
+  "hood": "",
+  "main": "Trois-Rivières West",
+  "prov": "QC"
+ },
+ "G9H": {
+  "hood": "",
+  "main": "Becancour",
+  "prov": "QC"
+ },
+ "G9N": {
+  "hood": "",
+  "main": "Shawinigan Central",
+  "prov": "QC"
+ },
+ "G9P": {
+  "hood": "",
+  "main": "Shawinigan Southeast",
+  "prov": "QC"
+ },
+ "G9R": {
+  "hood": "",
+  "main": "Shawinigan Northwest",
+  "prov": "QC"
+ },
+ "G9T": {
+  "hood": "",
+  "main": "Grand-Mère",
+  "prov": "QC"
+ },
+ "G9X": {
+  "hood": "",
+  "main": "La Tuque",
+  "prov": "QC"
+ },
+ "H0H": {
+  "hood": "Santa Claus",
+  "main": "Reserved",
+  "prov": "QC"
+ },
+ "H0M": {
+  "hood": "Akwesasne",
+  "main": "Akwesasne Region",
+  "prov": "QC"
+ },
+ "H1A": {
+  "hood": "",
+  "main": "Pointe-Aux-Trembles",
+  "prov": "QC"
+ },
+ "H1B": {
+  "hood": "",
+  "main": "Montreal East",
+  "prov": "QC"
+ },
+ "H1C": {
+  "hood": "",
+  "main": "Rivière-des-Prairies Northeast",
+  "prov": "QC"
+ },
+ "H1E": {
+  "hood": "",
+  "main": "Rivière-Des-Prairies Southwest",
+  "prov": "QC"
+ },
+ "H1G": {
+  "hood": "",
+  "main": "Montreal North North",
+  "prov": "QC"
+ },
+ "H1H": {
+  "hood": "",
+  "main": "Montreal North South",
+  "prov": "QC"
+ },
+ "H1J": {
+  "hood": "",
+  "main": "Anjou West",
+  "prov": "QC"
+ },
+ "H1K": {
+  "hood": "",
+  "main": "Anjou East",
+  "prov": "QC"
+ },
+ "H1L": {
+  "hood": "",
+  "main": "Mercier North",
+  "prov": "QC"
+ },
+ "H1M": {
+  "hood": "",
+  "main": "Mercier West",
+  "prov": "QC"
+ },
+ "H1N": {
+  "hood": "",
+  "main": "Mercier Southeast",
+  "prov": "QC"
+ },
+ "H1P": {
+  "hood": "",
+  "main": "Saint-Léonard North",
+  "prov": "QC"
+ },
+ "H1R": {
+  "hood": "",
+  "main": "Saint-Léonard West",
+  "prov": "QC"
+ },
+ "H1S": {
+  "hood": "",
+  "main": "Saint-Léonard Southeast",
+  "prov": "QC"
+ },
+ "H1T": {
+  "hood": "",
+  "main": "Rosemont North",
+  "prov": "QC"
+ },
+ "H1V": {
+  "hood": "",
+  "main": "Maisonneuve",
+  "prov": "QC"
+ },
+ "H1W": {
+  "hood": "",
+  "main": "Hochelaga",
+  "prov": "QC"
+ },
+ "H1X": {
+  "hood": "",
+  "main": "Rosemont Central",
+  "prov": "QC"
+ },
+ "H1Y": {
+  "hood": "",
+  "main": "Rosemont South",
+  "prov": "QC"
+ },
+ "H1Z": {
+  "hood": "",
+  "main": "Saint-Michel West",
+  "prov": "QC"
+ },
+ "H2A": {
+  "hood": "",
+  "main": "Saint-Michel East",
+  "prov": "QC"
+ },
+ "H2B": {
+  "hood": "",
+  "main": "Ahuntsic North",
+  "prov": "QC"
+ },
+ "H2C": {
+  "hood": "",
+  "main": "Ahuntsic Central",
+  "prov": "QC"
+ },
+ "H2E": {
+  "hood": "",
+  "main": "Villeray Northeast",
+  "prov": "QC"
+ },
+ "H2G": {
+  "hood": "",
+  "main": "Petite-Patrie Northeast",
+  "prov": "QC"
+ },
+ "H2H": {
+  "hood": "",
+  "main": "Plateau Mont-Royal North",
+  "prov": "QC"
+ },
+ "H2J": {
+  "hood": "",
+  "main": "Plateau Mont-Royal North Central",
+  "prov": "QC"
+ },
+ "H2K": {
+  "hood": "",
+  "main": "Centre-Sud North",
+  "prov": "QC"
+ },
+ "H2L": {
+  "hood": "",
+  "main": "Centre-Sud South",
+  "prov": "QC"
+ },
+ "H2M": {
+  "hood": "",
+  "main": "Ahuntsic East",
+  "prov": "QC"
+ },
+ "H2N": {
+  "hood": "",
+  "main": "Ahuntsic Southeast",
+  "prov": "QC"
+ },
+ "H2P": {
+  "hood": "",
+  "main": "Villeray West",
+  "prov": "QC"
+ },
+ "H2R": {
+  "hood": "",
+  "main": "Villeray Southeast",
+  "prov": "QC"
+ },
+ "H2S": {
+  "hood": "",
+  "main": "Petite-Patrie Southwest",
+  "prov": "QC"
+ },
+ "H2T": {
+  "hood": "",
+  "main": "Plateau Mont-Royal West",
+  "prov": "QC"
+ },
+ "H2V": {
+  "hood": "",
+  "main": "Outremont",
+  "prov": "QC"
+ },
+ "H2W": {
+  "hood": "",
+  "main": "Plateau Mont-Royal South Central",
+  "prov": "QC"
+ },
+ "H2X": {
+  "hood": "",
+  "main": "Plateau Mont-Royal Southeast",
+  "prov": "QC"
+ },
+ "H2Y": {
+  "hood": "",
+  "main": "Old Montreal",
+  "prov": "QC"
+ },
+ "H2Z": {
+  "hood": "",
+  "main": "Downtown Montreal Northeast",
+  "prov": "QC"
+ },
+ "H3A": {
+  "hood": "",
+  "main": "Downtown Montreal North",
+  "prov": "QC"
+ },
+ "H3B": {
+  "hood": "",
+  "main": "Downtown Montreal East",
+  "prov": "QC"
+ },
+ "H3C": {
+  "hood": "Includes Île Notre-Dame & Île Sainte-Hélène",
+  "main": "Griffintown",
+  "prov": "QC"
+ },
+ "H3E": {
+  "hood": "",
+  "main": "L'Île-Des-Soeurs",
+  "prov": "QC"
+ },
+ "H3G": {
+  "hood": "",
+  "main": "Downtown Montreal Southeast",
+  "prov": "QC"
+ },
+ "H3H": {
+  "hood": "",
+  "main": "Downtown Montreal South & West",
+  "prov": "QC"
+ },
+ "H3J": {
+  "hood": "",
+  "main": "Petite-Bourgogne",
+  "prov": "QC"
+ },
+ "H3K": {
+  "hood": "",
+  "main": "Pointe-Saint-Charles",
+  "prov": "QC"
+ },
+ "H3L": {
+  "hood": "",
+  "main": "Ahuntsic Southwest",
+  "prov": "QC"
+ },
+ "H3M": {
+  "hood": "",
+  "main": "Cartierville Northeast",
+  "prov": "QC"
+ },
+ "H3N": {
+  "hood": "",
+  "main": "Parc-Extension",
+  "prov": "QC"
+ },
+ "H3P": {
+  "hood": "",
+  "main": "Mount Royal North",
+  "prov": "QC"
+ },
+ "H3R": {
+  "hood": "",
+  "main": "Mount Royal Central",
+  "prov": "QC"
+ },
+ "H3S": {
+  "hood": "",
+  "main": "Côte-des-Neiges North",
+  "prov": "QC"
+ },
+ "H3T": {
+  "hood": "",
+  "main": "Côte-des-Neiges Northeast",
+  "prov": "QC"
+ },
+ "H3V": {
+  "hood": "",
+  "main": "Côte-des-Neiges East",
+  "prov": "QC"
+ },
+ "H3W": {
+  "hood": "",
+  "main": "Côte-des-Neiges Southwest",
+  "prov": "QC"
+ },
+ "H3X": {
+  "hood": "",
+  "main": "Hampstead",
+  "prov": "QC"
+ },
+ "H3Y": {
+  "hood": "",
+  "main": "Westmount West",
+  "prov": "QC"
+ },
+ "H3Z": {
+  "hood": "",
+  "main": "Westmount East",
+  "prov": "QC"
+ },
+ "H4A": {
+  "hood": "",
+  "main": "Notre-Dame-de-Grâce Northeast",
+  "prov": "QC"
+ },
+ "H4B": {
+  "hood": "",
+  "main": "Notre-Dame-de-Grâce Southwest",
+  "prov": "QC"
+ },
+ "H4C": {
+  "hood": "",
+  "main": "Saint-Henri",
+  "prov": "QC"
+ },
+ "H4E": {
+  "hood": "",
+  "main": "Ville Émard",
+  "prov": "QC"
+ },
+ "H4G": {
+  "hood": "",
+  "main": "Verdun North",
+  "prov": "QC"
+ },
+ "H4H": {
+  "hood": "",
+  "main": "Verdun South",
+  "prov": "QC"
+ },
+ "H4J": {
+  "hood": "",
+  "main": "Cartierville Central",
+  "prov": "QC"
+ },
+ "H4K": {
+  "hood": "",
+  "main": "Cartierville Southwest",
+  "prov": "QC"
+ },
+ "H4L": {
+  "hood": "",
+  "main": "Saint-Laurent Inner Northeast",
+  "prov": "QC"
+ },
+ "H4M": {
+  "hood": "",
+  "main": "Saint-Laurent East",
+  "prov": "QC"
+ },
+ "H4N": {
+  "hood": "",
+  "main": "Saint-Laurent Outer Northeast",
+  "prov": "QC"
+ },
+ "H4P": {
+  "hood": "",
+  "main": "Mount Royal South",
+  "prov": "QC"
+ },
+ "H4R": {
+  "hood": "",
+  "main": "Saint-Laurent Central",
+  "prov": "QC"
+ },
+ "H4S": {
+  "hood": "",
+  "main": "Saint-Laurent Southwest",
+  "prov": "QC"
+ },
+ "H4T": {
+  "hood": "",
+  "main": "Saint-Laurent Southeast",
+  "prov": "QC"
+ },
+ "H4V": {
+  "hood": "",
+  "main": "Côte-Saint-Luc East",
+  "prov": "QC"
+ },
+ "H4W": {
+  "hood": "",
+  "main": "Côte-Saint-Luc West",
+  "prov": "QC"
+ },
+ "H4X": {
+  "hood": "",
+  "main": "Montreal West",
+  "prov": "QC"
+ },
+ "H4Y": {
+  "hood": "",
+  "main": "Dorval Central",
+  "prov": "QC"
+ },
+ "H4Z": {
+  "hood": "",
+  "main": "Tour de la Bourse",
+  "prov": "QC"
+ },
+ "H5A": {
+  "hood": "",
+  "main": "Place Bonaventure",
+  "prov": "QC"
+ },
+ "H5B": {
+  "hood": "",
+  "main": "Place Desjardins",
+  "prov": "QC"
+ },
+ "H7A": {
+  "hood": "",
+  "main": "Duvernay-Est",
+  "prov": "QC"
+ },
+ "H7B": {
+  "hood": "",
+  "main": "Saint-Franþois",
+  "prov": "QC"
+ },
+ "H7C": {
+  "hood": "",
+  "main": "Saint-Vincent-de-Paul",
+  "prov": "QC"
+ },
+ "H7E": {
+  "hood": "",
+  "main": "Duvernay",
+  "prov": "QC"
+ },
+ "H7G": {
+  "hood": "",
+  "main": "Pont-Viau",
+  "prov": "QC"
+ },
+ "H7H": {
+  "hood": "",
+  "main": "Auteuil West",
+  "prov": "QC"
+ },
+ "H7J": {
+  "hood": "",
+  "main": "Auteuil Northeast",
+  "prov": "QC"
+ },
+ "H7K": {
+  "hood": "",
+  "main": "Auteuil South",
+  "prov": "QC"
+ },
+ "H7L": {
+  "hood": "",
+  "main": "Sainte-Rose",
+  "prov": "QC"
+ },
+ "H7M": {
+  "hood": "",
+  "main": "Vimont",
+  "prov": "QC"
+ },
+ "H7N": {
+  "hood": "",
+  "main": "Laval-des-Rapides",
+  "prov": "QC"
+ },
+ "H7P": {
+  "hood": "",
+  "main": "Fabreville",
+  "prov": "QC"
+ },
+ "H7R": {
+  "hood": "",
+  "main": "Laval-sur-le-Lac",
+  "prov": "QC"
+ },
+ "H7S": {
+  "hood": "",
+  "main": "Chomedey Northeast",
+  "prov": "QC"
+ },
+ "H7T": {
+  "hood": "",
+  "main": "Chomedey Northwest",
+  "prov": "QC"
+ },
+ "H7V": {
+  "hood": "",
+  "main": "Chomedey East",
+  "prov": "QC"
+ },
+ "H7W": {
+  "hood": "",
+  "main": "Chomedey South",
+  "prov": "QC"
+ },
+ "H7X": {
+  "hood": "",
+  "main": "Sainte-Dorothée",
+  "prov": "QC"
+ },
+ "H7Y": {
+  "hood": "",
+  "main": "Îles-Laval",
+  "prov": "QC"
+ },
+ "H8N": {
+  "hood": "",
+  "main": "LaSalle Northwest",
+  "prov": "QC"
+ },
+ "H8P": {
+  "hood": "",
+  "main": "LaSalle Southeast",
+  "prov": "QC"
+ },
+ "H8R": {
+  "hood": "",
+  "main": "Saint-Pierre",
+  "prov": "QC"
+ },
+ "H8S": {
+  "hood": "",
+  "main": "Lachine East",
+  "prov": "QC"
+ },
+ "H8T": {
+  "hood": "",
+  "main": "Lachine West",
+  "prov": "QC"
+ },
+ "H8Y": {
+  "hood": "",
+  "main": "Roxboro",
+  "prov": "QC"
+ },
+ "H8Z": {
+  "hood": "",
+  "main": "Pierrefonds",
+  "prov": "QC"
+ },
+ "H9A": {
+  "hood": "",
+  "main": "Dollard-Des-Ormeaux Northwest",
+  "prov": "QC"
+ },
+ "H9B": {
+  "hood": "",
+  "main": "Dollard-Des-Ormeaux East",
+  "prov": "QC"
+ },
+ "H9C": {
+  "hood": "",
+  "main": "L'Île Bizard Northeast",
+  "prov": "QC"
+ },
+ "H9E": {
+  "hood": "",
+  "main": "L'Île-Bizard Southwest",
+  "prov": "QC"
+ },
+ "H9G": {
+  "hood": "",
+  "main": "Dollard-Des-Ormeaux Southwest",
+  "prov": "QC"
+ },
+ "H9H": {
+  "hood": "",
+  "main": "Sainte-Geneviève",
+  "prov": "QC"
+ },
+ "H9J": {
+  "hood": "",
+  "main": "Kirkland",
+  "prov": "QC"
+ },
+ "H9K": {
+  "hood": "",
+  "main": "Senneville",
+  "prov": "QC"
+ },
+ "H9P": {
+  "hood": "",
+  "main": "Dorval Outskirts",
+  "prov": "QC"
+ },
+ "H9R": {
+  "hood": "",
+  "main": "Pointe-Claire",
+  "prov": "QC"
+ },
+ "H9S": {
+  "hood": "",
+  "main": "L'Île-Dorval",
+  "prov": "QC"
+ },
+ "H9W": {
+  "hood": "",
+  "main": "Beaconsfield",
+  "prov": "QC"
+ },
+ "H9X": {
+  "hood": "",
+  "main": "Sainte-Anne-De-Bellevue",
+  "prov": "QC"
+ },
+ "J0A": {
+  "hood": "Warwick",
+  "main": "Centre-du-Québec-Sud",
+  "prov": "QC"
+ },
+ "J0B": {
+  "hood": "Stanstead",
+  "main": "Estrie-Est",
+  "prov": "QC"
+ },
+ "J0C": {
+  "hood": "Saint-Bonaventure",
+  "main": "Centre-du-Québec-Ouest",
+  "prov": "QC"
+ },
+ "J0E": {
+  "hood": "Fulford",
+  "main": "Estrie-Ouest",
+  "prov": "QC"
+ },
+ "J0G": {
+  "hood": "Odanak",
+  "main": "Bois-Francs-Nord",
+  "prov": "QC"
+ },
+ "J0H": {
+  "hood": "Saint-Nazaire-D'Acton",
+  "main": "Bois-Francs-Sud",
+  "prov": "QC"
+ },
+ "J0J": {
+  "hood": "Bedford",
+  "main": "Montérégie-Est",
+  "prov": "QC"
+ },
+ "J0K": {
+  "hood": "Saint-Esprit",
+  "main": "Lanaudière-Nord",
+  "prov": "QC"
+ },
+ "J0L": {
+  "hood": "Saint-Antoine-Sur-Richelieu",
+  "main": "Montérégie-Nord",
+  "prov": "QC"
+ },
+ "J0M": {
+  "hood": "Kuujjuaq",
+  "main": "Nunavik",
+  "prov": "QC"
+ },
+ "J0N": {
+  "hood": "Oka",
+  "main": "Région d'Oka",
+  "prov": "QC"
+ },
+ "J0P": {
+  "hood": "Coteau-du-Lac",
+  "main": "Vaudreuil-Soulanges",
+  "prov": "QC"
+ },
+ "J0R": {
+  "hood": "Prévost",
+  "main": "Lanaudière-Sud",
+  "prov": "QC"
+ },
+ "J0S": {
+  "hood": "Saint-Anicet",
+  "main": "Montérégie-Ouest",
+  "prov": "QC"
+ },
+ "J0T": {
+  "hood": "Montcalm",
+  "main": "Laurentides-Nord",
+  "prov": "QC"
+ },
+ "J0V": {
+  "hood": "Chénéville",
+  "main": "Laurentides-Sud",
+  "prov": "QC"
+ },
+ "J0W": {
+  "hood": "Ferme-Neuve",
+  "main": "Outaouais-Nord",
+  "prov": "QC"
+ },
+ "J0X": {
+  "hood": "Thurso",
+  "main": "Outaouais-Sud",
+  "prov": "QC"
+ },
+ "J0Y": {
+  "hood": "Radisson",
+  "main": "Abitibi-Témiscamingue-Est",
+  "prov": "QC"
+ },
+ "J0Z": {
+  "hood": "Guigues",
+  "main": "Abitibi-Témiscamingue-Ouest",
+  "prov": "QC"
+ },
+ "J1A": {
+  "hood": "",
+  "main": "Coaticook",
+  "prov": "QC"
+ },
+ "J1C": {
+  "hood": "",
+  "main": "Bromptonville",
+  "prov": "QC"
+ },
+ "J1E": {
+  "hood": "",
+  "main": "Sherbrooke Northeast",
+  "prov": "QC"
+ },
+ "J1G": {
+  "hood": "",
+  "main": "Sherbrooke East",
+  "prov": "QC"
+ },
+ "J1H": {
+  "hood": "",
+  "main": "Sherbrooke Central",
+  "prov": "QC"
+ },
+ "J1J": {
+  "hood": "",
+  "main": "Sherbrooke North",
+  "prov": "QC"
+ },
+ "J1K": {
+  "hood": "",
+  "main": "Sherbrooke West",
+  "prov": "QC"
+ },
+ "J1L": {
+  "hood": "",
+  "main": "Sherbrooke Northwest",
+  "prov": "QC"
+ },
+ "J1M": {
+  "hood": "",
+  "main": "Sherbrooke Southeast",
+  "prov": "QC"
+ },
+ "J1N": {
+  "hood": "",
+  "main": "Rock Forest",
+  "prov": "QC"
+ },
+ "J1R": {
+  "hood": "",
+  "main": "Saint-Élie-d'Orford",
+  "prov": "QC"
+ },
+ "J1S": {
+  "hood": "",
+  "main": "Windsor",
+  "prov": "QC"
+ },
+ "J1T": {
+  "hood": "",
+  "main": "Asbestos",
+  "prov": "QC"
+ },
+ "J1X": {
+  "hood": "",
+  "main": "Magog",
+  "prov": "QC"
+ },
+ "J1Z": {
+  "hood": "",
+  "main": "Saint-Cyrille-De-Wendover",
+  "prov": "QC"
+ },
+ "J2A": {
+  "hood": "",
+  "main": "Drummondville Southeast",
+  "prov": "QC"
+ },
+ "J2B": {
+  "hood": "",
+  "main": "Drummondville South",
+  "prov": "QC"
+ },
+ "J2C": {
+  "hood": "",
+  "main": "Drummondville Central",
+  "prov": "QC"
+ },
+ "J2E": {
+  "hood": "",
+  "main": "Drummondville Northwest",
+  "prov": "QC"
+ },
+ "J2G": {
+  "hood": "",
+  "main": "Granby Central",
+  "prov": "QC"
+ },
+ "J2H": {
+  "hood": "",
+  "main": "Granby East",
+  "prov": "QC"
+ },
+ "J2J": {
+  "hood": "",
+  "main": "Granby West",
+  "prov": "QC"
+ },
+ "J2K": {
+  "hood": "",
+  "main": "Cowansville",
+  "prov": "QC"
+ },
+ "J2L": {
+  "hood": "",
+  "main": "Bromont",
+  "prov": "QC"
+ },
+ "J2M": {
+  "hood": "",
+  "main": "Shefford",
+  "prov": "QC"
+ },
+ "J2N": {
+  "hood": "",
+  "main": "Farnham",
+  "prov": "QC"
+ },
+ "J2R": {
+  "hood": "",
+  "main": "Saint-Hyacinthe Northwest",
+  "prov": "QC"
+ },
+ "J2S": {
+  "hood": "",
+  "main": "Saint-Hyacinthe Southwest",
+  "prov": "QC"
+ },
+ "J2T": {
+  "hood": "",
+  "main": "Saint-Hyacinthe East",
+  "prov": "QC"
+ },
+ "J2W": {
+  "hood": "",
+  "main": "Saint-Luc",
+  "prov": "QC"
+ },
+ "J2X": {
+  "hood": "",
+  "main": "Saint-Jean-sur-Richelieu East",
+  "prov": "QC"
+ },
+ "J2Y": {
+  "hood": "",
+  "main": "Saint-Jean-sur-Richelieu West",
+  "prov": "QC"
+ },
+ "J3A": {
+  "hood": "",
+  "main": "Saint-Jean-sur-Richelieu North",
+  "prov": "QC"
+ },
+ "J3B": {
+  "hood": "",
+  "main": "Saint-Jean-sur-Richelieu Central",
+  "prov": "QC"
+ },
+ "J3E": {
+  "hood": "",
+  "main": "Sainte-Julie",
+  "prov": "QC"
+ },
+ "J3G": {
+  "hood": "",
+  "main": "Beloeil West",
+  "prov": "QC"
+ },
+ "J3H": {
+  "hood": "",
+  "main": "Beloeil East",
+  "prov": "QC"
+ },
+ "J3L": {
+  "hood": "",
+  "main": "Chambly",
+  "prov": "QC"
+ },
+ "J3M": {
+  "hood": "",
+  "main": "Marieville",
+  "prov": "QC"
+ },
+ "J3N": {
+  "hood": "",
+  "main": "Saint-Basile-Le-Grand",
+  "prov": "QC"
+ },
+ "J3P": {
+  "hood": "",
+  "main": "Sorel Central",
+  "prov": "QC"
+ },
+ "J3R": {
+  "hood": "",
+  "main": "Sorel Southwest",
+  "prov": "QC"
+ },
+ "J3T": {
+  "hood": "",
+  "main": "Nicolet",
+  "prov": "QC"
+ },
+ "J3V": {
+  "hood": "",
+  "main": "Saint-Bruno",
+  "prov": "QC"
+ },
+ "J3X": {
+  "hood": "",
+  "main": "Varennes",
+  "prov": "QC"
+ },
+ "J3Y": {
+  "hood": "",
+  "main": "Saint-Hubert Central",
+  "prov": "QC"
+ },
+ "J3Z": {
+  "hood": "",
+  "main": "Saint-Hubert East",
+  "prov": "QC"
+ },
+ "J4B": {
+  "hood": "",
+  "main": "Boucherville",
+  "prov": "QC"
+ },
+ "J4G": {
+  "hood": "",
+  "main": "Longueuil North",
+  "prov": "QC"
+ },
+ "J4H": {
+  "hood": "",
+  "main": "Longueuil West",
+  "prov": "QC"
+ },
+ "J4J": {
+  "hood": "",
+  "main": "Longueuil Central",
+  "prov": "QC"
+ },
+ "J4K": {
+  "hood": "",
+  "main": "Longueuil Southwest",
+  "prov": "QC"
+ },
+ "J4L": {
+  "hood": "",
+  "main": "Longueuil Southeast",
+  "prov": "QC"
+ },
+ "J4M": {
+  "hood": "",
+  "main": "Longueuil East",
+  "prov": "QC"
+ },
+ "J4N": {
+  "hood": "",
+  "main": "Longueuil Northeast",
+  "prov": "QC"
+ },
+ "J4P": {
+  "hood": "",
+  "main": "Saint-Lambert North",
+  "prov": "QC"
+ },
+ "J4R": {
+  "hood": "",
+  "main": "Saint-Lambert Central",
+  "prov": "QC"
+ },
+ "J4S": {
+  "hood": "",
+  "main": "Saint-Lambert South",
+  "prov": "QC"
+ },
+ "J4T": {
+  "hood": "",
+  "main": "Saint-Hubert West",
+  "prov": "QC"
+ },
+ "J4V": {
+  "hood": "",
+  "main": "Greenfield Park",
+  "prov": "QC"
+ },
+ "J4W": {
+  "hood": "",
+  "main": "Brossard Northwest",
+  "prov": "QC"
+ },
+ "J4X": {
+  "hood": "",
+  "main": "Brossard Southwest",
+  "prov": "QC"
+ },
+ "J4Y": {
+  "hood": "",
+  "main": "Brossard South",
+  "prov": "QC"
+ },
+ "J4Z": {
+  "hood": "",
+  "main": "Brossard Northeast",
+  "prov": "QC"
+ },
+ "J5A": {
+  "hood": "",
+  "main": "Saint-Constant",
+  "prov": "QC"
+ },
+ "J5B": {
+  "hood": "",
+  "main": "Delson",
+  "prov": "QC"
+ },
+ "J5C": {
+  "hood": "",
+  "main": "Sainte-Catherine",
+  "prov": "QC"
+ },
+ "J5J": {
+  "hood": "",
+  "main": "Saint-Sophie",
+  "prov": "QC"
+ },
+ "J5K": {
+  "hood": "",
+  "main": "Saint-Colomban",
+  "prov": "QC"
+ },
+ "J5L": {
+  "hood": "",
+  "main": "Saint-Jérôme West",
+  "prov": "QC"
+ },
+ "J5M": {
+  "hood": "",
+  "main": "Saint-Lin-Laurentides",
+  "prov": "QC"
+ },
+ "J5R": {
+  "hood": "",
+  "main": "La Prairie",
+  "prov": "QC"
+ },
+ "J5T": {
+  "hood": "",
+  "main": "Lavaltrie",
+  "prov": "QC"
+ },
+ "J5V": {
+  "hood": "",
+  "main": "Louiseville",
+  "prov": "QC"
+ },
+ "J5W": {
+  "hood": "",
+  "main": "L'Assomption",
+  "prov": "QC"
+ },
+ "J5X": {
+  "hood": "",
+  "main": "L'Épiphanie",
+  "prov": "QC"
+ },
+ "J5Y": {
+  "hood": "",
+  "main": "Repentigny Northeast",
+  "prov": "QC"
+ },
+ "J5Z": {
+  "hood": "",
+  "main": "Repentigny West",
+  "prov": "QC"
+ },
+ "J6A": {
+  "hood": "",
+  "main": "Repentigny South",
+  "prov": "QC"
+ },
+ "J6E": {
+  "hood": "",
+  "main": "Joliette",
+  "prov": "QC"
+ },
+ "J6J": {
+  "hood": "",
+  "main": "Châteauguay North",
+  "prov": "QC"
+ },
+ "J6K": {
+  "hood": "",
+  "main": "Châteauguay South",
+  "prov": "QC"
+ },
+ "J6N": {
+  "hood": "",
+  "main": "Beauharnois",
+  "prov": "QC"
+ },
+ "J6R": {
+  "hood": "",
+  "main": "Mercier",
+  "prov": "QC"
+ },
+ "J6S": {
+  "hood": "",
+  "main": "Salaberry-de-Valleyfield North",
+  "prov": "QC"
+ },
+ "J6T": {
+  "hood": "",
+  "main": "Salaberry-de-Valleyfield South",
+  "prov": "QC"
+ },
+ "J6V": {
+  "hood": "",
+  "main": "Terrebonne East",
+  "prov": "QC"
+ },
+ "J6W": {
+  "hood": "",
+  "main": "Terrebonne Central",
+  "prov": "QC"
+ },
+ "J6X": {
+  "hood": "",
+  "main": "Terrebonne Northwest",
+  "prov": "QC"
+ },
+ "J6Y": {
+  "hood": "",
+  "main": "Terrebonne Southwest",
+  "prov": "QC"
+ },
+ "J6Z": {
+  "hood": "",
+  "main": "Sainte-Thérèse-de-Blainville Northeast",
+  "prov": "QC"
+ },
+ "J7A": {
+  "hood": "",
+  "main": "Sainte-Thérèse-de-Blainville East",
+  "prov": "QC"
+ },
+ "J7B": {
+  "hood": "",
+  "main": "Sainte-Thérèse-de-Blainville North",
+  "prov": "QC"
+ },
+ "J7C": {
+  "hood": "",
+  "main": "Sainte-Thérèse-de-Blainville Northwest",
+  "prov": "QC"
+ },
+ "J7E": {
+  "hood": "",
+  "main": "Sainte-Thérèse-de-Blainville Central",
+  "prov": "QC"
+ },
+ "J7G": {
+  "hood": "",
+  "main": "Sainte-Thérèse-de-Blainville South",
+  "prov": "QC"
+ },
+ "J7H": {
+  "hood": "",
+  "main": "Sainte-Thérèse-de-Blainville Southwest",
+  "prov": "QC"
+ },
+ "J7J": {
+  "hood": "",
+  "main": "Mirabel Northeast",
+  "prov": "QC"
+ },
+ "J7K": {
+  "hood": "",
+  "main": "Mascouche Extremities",
+  "prov": "QC"
+ },
+ "J7L": {
+  "hood": "",
+  "main": "Mascouche Central",
+  "prov": "QC"
+ },
+ "J7M": {
+  "hood": "",
+  "main": "La Plaine",
+  "prov": "QC"
+ },
+ "J7N": {
+  "hood": "",
+  "main": "Mirabel Southwest",
+  "prov": "QC"
+ },
+ "J7P": {
+  "hood": "",
+  "main": "Saint-Eustache Northeast",
+  "prov": "QC"
+ },
+ "J7R": {
+  "hood": "",
+  "main": "Saint-Eustache Southwest",
+  "prov": "QC"
+ },
+ "J7T": {
+  "hood": "",
+  "main": "Vaudreuil-Dorion RCM",
+  "prov": "QC"
+ },
+ "J7V": {
+  "hood": "",
+  "main": "Vaudreuil-Dorion",
+  "prov": "QC"
+ },
+ "J7W": {
+  "hood": "",
+  "main": "Pincourt",
+  "prov": "QC"
+ },
+ "J7X": {
+  "hood": "",
+  "main": "Valleyfield",
+  "prov": "QC"
+ },
+ "J7Y": {
+  "hood": "",
+  "main": "Saint-Jérôme North",
+  "prov": "QC"
+ },
+ "J7Z": {
+  "hood": "",
+  "main": "Saint-Jérôme Southeast",
+  "prov": "QC"
+ },
+ "J8A": {
+  "hood": "",
+  "main": "Saint-Hippolyte",
+  "prov": "QC"
+ },
+ "J8B": {
+  "hood": "",
+  "main": "Sainte-Adèle",
+  "prov": "QC"
+ },
+ "J8C": {
+  "hood": "",
+  "main": "Sainte-Agathe-Des-Monts",
+  "prov": "QC"
+ },
+ "J8E": {
+  "hood": "",
+  "main": "Mont-Tremblant",
+  "prov": "QC"
+ },
+ "J8G": {
+  "hood": "",
+  "main": "Chatham",
+  "prov": "QC"
+ },
+ "J8H": {
+  "hood": "",
+  "main": "Lachute",
+  "prov": "QC"
+ },
+ "J8L": {
+  "hood": "",
+  "main": "Buckingham",
+  "prov": "QC"
+ },
+ "J8M": {
+  "hood": "",
+  "main": "Masson-Angers",
+  "prov": "QC"
+ },
+ "J8N": {
+  "hood": "",
+  "main": "Val-des-Monts",
+  "prov": "QC"
+ },
+ "J8P": {
+  "hood": "",
+  "main": "Gatineau Southeast",
+  "prov": "QC"
+ },
+ "J8R": {
+  "hood": "",
+  "main": "Gatineau Northeast",
+  "prov": "QC"
+ },
+ "J8T": {
+  "hood": "",
+  "main": "Gatineau Southwest",
+  "prov": "QC"
+ },
+ "J8V": {
+  "hood": "",
+  "main": "Gatineau Northwest",
+  "prov": "QC"
+ },
+ "J8X": {
+  "hood": "",
+  "main": "Hull Southeast",
+  "prov": "QC"
+ },
+ "J8Y": {
+  "hood": "",
+  "main": "Hull Central",
+  "prov": "QC"
+ },
+ "J8Z": {
+  "hood": "",
+  "main": "Hull North",
+  "prov": "QC"
+ },
+ "J9A": {
+  "hood": "",
+  "main": "Hull Southwest",
+  "prov": "QC"
+ },
+ "J9B": {
+  "hood": "",
+  "main": "Chelsea",
+  "prov": "QC"
+ },
+ "J9E": {
+  "hood": "",
+  "main": "Maniwaki",
+  "prov": "QC"
+ },
+ "J9H": {
+  "hood": "",
+  "main": "Aylmer South",
+  "prov": "QC"
+ },
+ "J9J": {
+  "hood": "",
+  "main": "Aylmer North",
+  "prov": "QC"
+ },
+ "J9L": {
+  "hood": "",
+  "main": "Mont-Laurier",
+  "prov": "QC"
+ },
+ "J9P": {
+  "hood": "",
+  "main": "Val-d'Or",
+  "prov": "QC"
+ },
+ "J9T": {
+  "hood": "",
+  "main": "Amos",
+  "prov": "QC"
+ },
+ "J9V": {
+  "hood": "",
+  "main": "Ville-Marie",
+  "prov": "QC"
+ },
+ "J9X": {
+  "hood": "",
+  "main": "Rouyn-Noranda South",
+  "prov": "QC"
+ },
+ "J9Y": {
+  "hood": "",
+  "main": "Rouyn-Noranda North",
+  "prov": "QC"
+ },
+ "J9Z": {
+  "hood": "",
+  "main": "La Sarre",
+  "prov": "QC"
+ },
+ "K0A": {
+  "hood": "Almonte",
+  "main": "National Capital Region",
+  "prov": "ON"
+ },
+ "K0B": {
+  "hood": "Alfred",
+  "main": "Prescott and Russell United Counties",
+  "prov": "ON"
+ },
+ "K0C": {
+  "hood": "Alexandria",
+  "main": "Stormont, Dundas and Glengarry United Counties",
+  "prov": "ON"
+ },
+ "K0E": {
+  "hood": "Prescott",
+  "main": "South Leeds and Grenville United Counties",
+  "prov": "ON"
+ },
+ "K0G": {
+  "hood": "Kemptville",
+  "main": "Rideau Lakes area",
+  "prov": "ON"
+ },
+ "K0H": {
+  "hood": "Inverary",
+  "main": "Frontenac County, Addington County, Loyalist Shores and Southwest Leeds",
+  "prov": "ON"
+ },
+ "K0J": {
+  "hood": "Deep River",
+  "main": "Renfrew County and Lanark Highlands Township",
+  "prov": "ON"
+ },
+ "K0K": {
+  "hood": "Picton",
+  "main": "Quinte Shores, East Northumberland County & Prince Edward County",
+  "prov": "ON"
+ },
+ "K0L": {
+  "hood": "Lakefield",
+  "main": "Peterborough County and North Hastings County",
+  "prov": "ON"
+ },
+ "K0M": {
+  "hood": "Bobcaygeon",
+  "main": "Kawartha lakes and Haliburton County",
+  "prov": "ON"
+ },
+ "K1A": {
+  "hood": "",
+  "main": "Government of Canada Ottawa and Gatineau offices",
+  "prov": "ON"
+ },
+ "K1B": {
+  "hood": "Blackburn Hamlet",
+  "main": "Gloucester",
+  "prov": "ON"
+ },
+ "K1C": {
+  "hood": "West Orleans",
+  "main": "Gloucester",
+  "prov": "ON"
+ },
+ "K1E": {
+  "hood": "Queenswood",
+  "main": "Orleans",
+  "prov": "ON"
+ },
+ "K1G": {
+  "hood": "Riverview",
+  "main": "Ottawa",
+  "prov": "ON"
+ },
+ "K1H": {
+  "hood": "Alta Vista",
+  "main": "Ottawa",
+  "prov": "ON"
+ },
+ "K1J": {
+  "hood": "Beacon Hill",
+  "main": "Gloucester",
+  "prov": "ON"
+ },
+ "K1K": {
+  "hood": "Overbrook",
+  "main": "Ottawa",
+  "prov": "ON"
+ },
+ "K1L": {
+  "hood": "Vanier",
+  "main": "Ottawa",
+  "prov": "ON"
+ },
+ "K1M": {
+  "hood": "Rockcliffe Park",
+  "main": "Ottawa",
+  "prov": "ON"
+ },
+ "K1N": {
+  "hood": "Lower Town",
+  "main": "Ottawa",
+  "prov": "ON"
+ },
+ "K1P": {
+  "hood": "Parliament Hill",
+  "main": "Ottawa",
+  "prov": "ON"
+ },
+ "K1R": {
+  "hood": "West Downtown area",
+  "main": "Ottawa",
+  "prov": "ON"
+ },
+ "K1S": {
+  "hood": "The Glebe",
+  "main": "Ottawa",
+  "prov": "ON"
+ },
+ "K1T": {
+  "hood": "Blossom Park",
+  "main": "Gloucester",
+  "prov": "ON"
+ },
+ "K1V": {
+  "hood": "Riverside Park",
+  "main": "Ottawa",
+  "prov": "ON"
+ },
+ "K1W": {
+  "hood": "South Orleans",
+  "main": "Gloucester",
+  "prov": "ON"
+ },
+ "K1X": {
+  "hood": "",
+  "main": "Gloucester South",
+  "prov": "ON"
+ },
+ "K1Y": {
+  "hood": "",
+  "main": "Ottawa West",
+  "prov": "ON"
+ },
+ "K1Z": {
+  "hood": "Westboro",
+  "main": "Ottawa",
+  "prov": "ON"
+ },
+ "K2A": {
+  "hood": "Highland Park",
+  "main": "Ottawa",
+  "prov": "ON"
+ },
+ "K2B": {
+  "hood": "Britannia",
+  "main": "Ottawa",
+  "prov": "ON"
+ },
+ "K2C": {
+  "hood": "Queensway",
+  "main": "Ottawa",
+  "prov": "ON"
+ },
+ "K2E": {
+  "hood": "",
+  "main": "Nepean East",
+  "prov": "ON"
+ },
+ "K2G": {
+  "hood": "Davidson Heights",
+  "main": "Nepean",
+  "prov": "ON"
+ },
+ "K2H": {
+  "hood": "Bells Corners",
+  "main": "Nepean",
+  "prov": "ON"
+ },
+ "K2J": {
+  "hood": "Barrhaven",
+  "main": "Nepean",
+  "prov": "ON"
+ },
+ "K2K": {
+  "hood": "Beaverbrook",
+  "main": "Kanata",
+  "prov": "ON"
+ },
+ "K2L": {
+  "hood": "Katimavik-Hazeldean",
+  "main": "Kanata",
+  "prov": "ON"
+ },
+ "K2M": {
+  "hood": "Bridlewood",
+  "main": "Kanata",
+  "prov": "ON"
+ },
+ "K2P": {
+  "hood": "Centre Town",
+  "main": "Ottawa",
+  "prov": "ON"
+ },
+ "K2R": {
+  "hood": "Fallowfield Village",
+  "main": "Nepean",
+  "prov": "ON"
+ },
+ "K2S": {
+  "hood": "",
+  "main": "Stittsville",
+  "prov": "ON"
+ },
+ "K2T": {
+  "hood": "Marchwood",
+  "main": "Kanata",
+  "prov": "ON"
+ },
+ "K2V": {
+  "hood": "Terry Fox",
+  "main": "Kanata",
+  "prov": "ON"
+ },
+ "K2W": {
+  "hood": "North March",
+  "main": "Kanata",
+  "prov": "ON"
+ },
+ "K4A": {
+  "hood": "Fallingbrook",
+  "main": "Orleans",
+  "prov": "ON"
+ },
+ "K4B": {
+  "hood": "",
+  "main": "Cumberland Township",
+  "prov": "ON"
+ },
+ "K4C": {
+  "hood": "",
+  "main": "Cumberland",
+  "prov": "ON"
+ },
+ "K4K": {
+  "hood": "",
+  "main": "Rockland",
+  "prov": "ON"
+ },
+ "K4M": {
+  "hood": "",
+  "main": "Manotick",
+  "prov": "ON"
+ },
+ "K4P": {
+  "hood": "",
+  "main": "Greely",
+  "prov": "ON"
+ },
+ "K4R": {
+  "hood": "",
+  "main": "Russell",
+  "prov": "ON"
+ },
+ "K6A": {
+  "hood": "",
+  "main": "Hawkesbury",
+  "prov": "ON"
+ },
+ "K6H": {
+  "hood": "",
+  "main": "Cornwall East",
+  "prov": "ON"
+ },
+ "K6J": {
+  "hood": "",
+  "main": "Cornwall West",
+  "prov": "ON"
+ },
+ "K6K": {
+  "hood": "",
+  "main": "Cornwall North",
+  "prov": "ON"
+ },
+ "K6T": {
+  "hood": "",
+  "main": "Elizabethtown",
+  "prov": "ON"
+ },
+ "K6V": {
+  "hood": "",
+  "main": "Brockville",
+  "prov": "ON"
+ },
+ "K7A": {
+  "hood": "",
+  "main": "Smiths Falls",
+  "prov": "ON"
+ },
+ "K7C": {
+  "hood": "",
+  "main": "Carleton Place",
+  "prov": "ON"
+ },
+ "K7G": {
+  "hood": "",
+  "main": "Gananoque",
+  "prov": "ON"
+ },
+ "K7H": {
+  "hood": "",
+  "main": "Perth",
+  "prov": "ON"
+ },
+ "K7K": {
+  "hood": "SW Pittsburgh Township",
+  "main": "Kingston",
+  "prov": "ON"
+ },
+ "K7L": {
+  "hood": "Downtown",
+  "main": "Kingston",
+  "prov": "ON"
+ },
+ "K7M": {
+  "hood": "Reddendale",
+  "main": "Kingston",
+  "prov": "ON"
+ },
+ "K7N": {
+  "hood": "",
+  "main": "Amherstview",
+  "prov": "ON"
+ },
+ "K7P": {
+  "hood": "Westbrook",
+  "main": "Kingston",
+  "prov": "ON"
+ },
+ "K7R": {
+  "hood": "",
+  "main": "Napanee",
+  "prov": "ON"
+ },
+ "K7S": {
+  "hood": "",
+  "main": "Arnprior",
+  "prov": "ON"
+ },
+ "K7V": {
+  "hood": "",
+  "main": "Renfrew",
+  "prov": "ON"
+ },
+ "K8A": {
+  "hood": "",
+  "main": "Pembroke Central and northern subdivisions",
+  "prov": "ON"
+ },
+ "K8B": {
+  "hood": "Pleasant View",
+  "main": "Pembroke",
+  "prov": "ON"
+ },
+ "K8H": {
+  "hood": "",
+  "main": "Petawawa",
+  "prov": "ON"
+ },
+ "K8N": {
+  "hood": "",
+  "main": "Belleville East",
+  "prov": "ON"
+ },
+ "K8P": {
+  "hood": "",
+  "main": "Belleville West",
+  "prov": "ON"
+ },
+ "K8R": {
+  "hood": "SE Sidney Township",
+  "main": "Belleville",
+  "prov": "ON"
+ },
+ "K8V": {
+  "hood": "",
+  "main": "Trenton",
+  "prov": "ON"
+ },
+ "K9A": {
+  "hood": "",
+  "main": "Cobourg",
+  "prov": "ON"
+ },
+ "K9H": {
+  "hood": "",
+  "main": "Peterborough North",
+  "prov": "ON"
+ },
+ "K9J": {
+  "hood": "",
+  "main": "Peterborough South",
+  "prov": "ON"
+ },
+ "K9K": {
+  "hood": "Fairbairn Meadows",
+  "main": "Peterborough",
+  "prov": "ON"
+ },
+ "K9L": {
+  "hood": "Terra View Heights",
+  "main": "Peterborough",
+  "prov": "ON"
+ },
+ "K9V": {
+  "hood": "",
+  "main": "Lindsay",
+  "prov": "ON"
+ },
+ "L0A": {
+  "hood": "Millbrook",
+  "main": "West Northumberland County",
+  "prov": "ON"
+ },
+ "L0B": {
+  "hood": "Orono",
+  "main": "East Durham Regional Municipality",
+  "prov": "ON"
+ },
+ "L0C": {
+  "hood": "Sunderland",
+  "main": "West Durham Regional Municipality",
+  "prov": "ON"
+ },
+ "L0E": {
+  "hood": "Sutton West",
+  "main": "Lake Simcoe Southeast Shore",
+  "prov": "ON"
+ },
+ "L0G": {
+  "hood": "Queensville",
+  "main": "Ontario Centre",
+  "prov": "ON"
+ },
+ "L0H": {
+  "hood": "Gormley",
+  "main": "Whitby Region",
+  "prov": "ON"
+ },
+ "L0J": {
+  "hood": "Kleinburg",
+  "main": "North Peel Regional Municipality",
+  "prov": "ON"
+ },
+ "L0K": {
+  "hood": "Coldwater",
+  "main": "Lake Simcoe North Shore",
+  "prov": "ON"
+ },
+ "L0L": {
+  "hood": "Oro",
+  "main": "Lake Simcoe West Shore",
+  "prov": "ON"
+ },
+ "L0M": {
+  "hood": "Angus",
+  "main": "Georgian Bay South Shore",
+  "prov": "ON"
+ },
+ "L0N": {
+  "hood": "Shelburne",
+  "main": "Dufferin County",
+  "prov": "ON"
+ },
+ "L0P": {
+  "hood": "Campbellville",
+  "main": "Halton Regional Municipality",
+  "prov": "ON"
+ },
+ "L0R": {
+  "hood": "Waterdown",
+  "main": "East Haldimand County",
+  "prov": "ON"
+ },
+ "L0S": {
+  "hood": "Fonthill",
+  "main": "Niagara Regional Municipality",
+  "prov": "ON"
+ },
+ "L1A": {
+  "hood": "",
+  "main": "Port Hope",
+  "prov": "ON"
+ },
+ "L1B": {
+  "hood": "",
+  "main": "Bowmanville East",
+  "prov": "ON"
+ },
+ "L1C": {
+  "hood": "",
+  "main": "Bowmanville West",
+  "prov": "ON"
+ },
+ "L1E": {
+  "hood": "",
+  "main": "Courtice",
+  "prov": "ON"
+ },
+ "L1G": {
+  "hood": "",
+  "main": "Oshawa Central",
+  "prov": "ON"
+ },
+ "L1H": {
+  "hood": "",
+  "main": "Oshawa Southeast",
+  "prov": "ON"
+ },
+ "L1J": {
+  "hood": "",
+  "main": "Oshawa Southwest",
+  "prov": "ON"
+ },
+ "L1K": {
+  "hood": "",
+  "main": "Oshawa East",
+  "prov": "ON"
+ },
+ "L1L": {
+  "hood": "",
+  "main": "Oshawa North",
+  "prov": "ON"
+ },
+ "L1M": {
+  "hood": "",
+  "main": "Whitby North",
+  "prov": "ON"
+ },
+ "L1N": {
+  "hood": "",
+  "main": "Whitby Southeast",
+  "prov": "ON"
+ },
+ "L1P": {
+  "hood": "",
+  "main": "Whitby Southwest",
+  "prov": "ON"
+ },
+ "L1R": {
+  "hood": "",
+  "main": "Whitby Central",
+  "prov": "ON"
+ },
+ "L1S": {
+  "hood": "",
+  "main": "Ajax Southwest",
+  "prov": "ON"
+ },
+ "L1T": {
+  "hood": "",
+  "main": "Ajax Northwest",
+  "prov": "ON"
+ },
+ "L1V": {
+  "hood": "",
+  "main": "Pickering Southwest",
+  "prov": "ON"
+ },
+ "L1W": {
+  "hood": "",
+  "main": "Pickering South",
+  "prov": "ON"
+ },
+ "L1X": {
+  "hood": "",
+  "main": "Pickering Central",
+  "prov": "ON"
+ },
+ "L1Y": {
+  "hood": "",
+  "main": "Pickering North",
+  "prov": "ON"
+ },
+ "L1Z": {
+  "hood": "",
+  "main": "Ajax East",
+  "prov": "ON"
+ },
+ "L2A": {
+  "hood": "",
+  "main": "Fort Erie",
+  "prov": "ON"
+ },
+ "L2E": {
+  "hood": "",
+  "main": "Niagara Falls Central",
+  "prov": "ON"
+ },
+ "L2G": {
+  "hood": "",
+  "main": "Niagara Falls Southeast",
+  "prov": "ON"
+ },
+ "L2H": {
+  "hood": "",
+  "main": "Niagara Falls West",
+  "prov": "ON"
+ },
+ "L2J": {
+  "hood": "",
+  "main": "Niagara Falls North",
+  "prov": "ON"
+ },
+ "L2M": {
+  "hood": "",
+  "main": "St. Catharines Northeast",
+  "prov": "ON"
+ },
+ "L2N": {
+  "hood": "",
+  "main": "St. Catharines Northwest",
+  "prov": "ON"
+ },
+ "L2P": {
+  "hood": "",
+  "main": "St. Catharines East",
+  "prov": "ON"
+ },
+ "L2R": {
+  "hood": "",
+  "main": "St. Catharines Central",
+  "prov": "ON"
+ },
+ "L2S": {
+  "hood": "",
+  "main": "St. Catharines Southwest",
+  "prov": "ON"
+ },
+ "L2T": {
+  "hood": "",
+  "main": "St. Catharines South",
+  "prov": "ON"
+ },
+ "L2V": {
+  "hood": "",
+  "main": "St. Catharines Southeast",
+  "prov": "ON"
+ },
+ "L2W": {
+  "hood": "",
+  "main": "St. Catharines West",
+  "prov": "ON"
+ },
+ "L3B": {
+  "hood": "",
+  "main": "Welland East",
+  "prov": "ON"
+ },
+ "L3C": {
+  "hood": "",
+  "main": "Welland West",
+  "prov": "ON"
+ },
+ "L3K": {
+  "hood": "",
+  "main": "Port Colborne",
+  "prov": "ON"
+ },
+ "L3M": {
+  "hood": "",
+  "main": "Grimsby",
+  "prov": "ON"
+ },
+ "L3P": {
+  "hood": "",
+  "main": "Markham Central",
+  "prov": "ON"
+ },
+ "L3R": {
+  "hood": "",
+  "main": "Markham Outer Southwest",
+  "prov": "ON"
+ },
+ "L3S": {
+  "hood": "",
+  "main": "Markham Southeast",
+  "prov": "ON"
+ },
+ "L3T": {
+  "hood": "",
+  "main": "Thornhill East",
+  "prov": "ON"
+ },
+ "L3V": {
+  "hood": "",
+  "main": "Orillia",
+  "prov": "ON"
+ },
+ "L3X": {
+  "hood": "",
+  "main": "Newmarket Southwest",
+  "prov": "ON"
+ },
+ "L3Y": {
+  "hood": "",
+  "main": "Newmarket Northeast",
+  "prov": "ON"
+ },
+ "L3Z": {
+  "hood": "",
+  "main": "Bradford",
+  "prov": "ON"
+ },
+ "L4A": {
+  "hood": "",
+  "main": "Stouffville",
+  "prov": "ON"
+ },
+ "L4B": {
+  "hood": "",
+  "main": "Richmond Hill Southeast",
+  "prov": "ON"
+ },
+ "L4C": {
+  "hood": "",
+  "main": "Richmond Hill Southwest",
+  "prov": "ON"
+ },
+ "L4E": {
+  "hood": "",
+  "main": "Richmond Hill North",
+  "prov": "ON"
+ },
+ "L4G": {
+  "hood": "",
+  "main": "Aurora",
+  "prov": "ON"
+ },
+ "L4H": {
+  "hood": "",
+  "main": "Woodbridge North",
+  "prov": "ON"
+ },
+ "L4J": {
+  "hood": "",
+  "main": "Thornhill West",
+  "prov": "ON"
+ },
+ "L4K": {
+  "hood": "",
+  "main": "Concord",
+  "prov": "ON"
+ },
+ "L4L": {
+  "hood": "",
+  "main": "Woodbridge South",
+  "prov": "ON"
+ },
+ "L4M": {
+  "hood": "",
+  "main": "Barrie North",
+  "prov": "ON"
+ },
+ "L4N": {
+  "hood": "",
+  "main": "Barrie South",
+  "prov": "ON"
+ },
+ "L4P": {
+  "hood": "",
+  "main": "Keswick",
+  "prov": "ON"
+ },
+ "L4R": {
+  "hood": "",
+  "main": "Midland",
+  "prov": "ON"
+ },
+ "L4S": {
+  "hood": "",
+  "main": "Richmond Hill Central",
+  "prov": "ON"
+ },
+ "L4T": {
+  "hood": "Malton",
+  "main": "Mississauga",
+  "prov": "ON"
+ },
+ "L4V": {
+  "hood": "Wildwood",
+  "main": "Mississauga",
+  "prov": "ON"
+ },
+ "L4W": {
+  "hood": "Matheson",
+  "main": "Mississauga",
+  "prov": "ON"
+ },
+ "L4X": {
+  "hood": "East Applewood",
+  "main": "Mississauga",
+  "prov": "ON"
+ },
+ "L4Y": {
+  "hood": "West Applewood",
+  "main": "Mississauga",
+  "prov": "ON"
+ },
+ "L4Z": {
+  "hood": "West Rathwood",
+  "main": "Mississauga",
+  "prov": "ON"
+ },
+ "L5A": {
+  "hood": "Mississauga Valleys",
+  "main": "Mississauga",
+  "prov": "ON"
+ },
+ "L5B": {
+  "hood": "West Cooksville",
+  "main": "Mississauga",
+  "prov": "ON"
+ },
+ "L5C": {
+  "hood": "West Creditview",
+  "main": "Mississauga",
+  "prov": "ON"
+ },
+ "L5E": {
+  "hood": "Central Lakeview",
+  "main": "Mississauga",
+  "prov": "ON"
+ },
+ "L5G": {
+  "hood": "SW Lakeview",
+  "main": "Mississauga",
+  "prov": "ON"
+ },
+ "L5H": {
+  "hood": "West Port Credit",
+  "main": "Mississauga",
+  "prov": "ON"
+ },
+ "L5J": {
+  "hood": "Clarkson",
+  "main": "Mississauga",
+  "prov": "ON"
+ },
+ "L5K": {
+  "hood": "West Sheridan",
+  "main": "Mississauga",
+  "prov": "ON"
+ },
+ "L5L": {
+  "hood": "Erin Mills",
+  "main": "Mississauga",
+  "prov": "ON"
+ },
+ "L5M": {
+  "hood": "Churchill Meadows",
+  "main": "Mississauga",
+  "prov": "ON"
+ },
+ "L5N": {
+  "hood": "Lisgar",
+  "main": "Mississauga",
+  "prov": "ON"
+ },
+ "L5P": {
+  "hood": "YYZ",
+  "main": "Mississauga",
+  "prov": "ON"
+ },
+ "L5R": {
+  "hood": "West Hurontario",
+  "main": "Mississauga",
+  "prov": "ON"
+ },
+ "L5S": {
+  "hood": "Cardiff",
+  "main": "Mississauga",
+  "prov": "ON"
+ },
+ "L5T": {
+  "hood": "Courtney Park",
+  "main": "Mississauga",
+  "prov": "ON"
+ },
+ "L5V": {
+  "hood": "East Credit",
+  "main": "Mississauga",
+  "prov": "ON"
+ },
+ "L5W": {
+  "hood": "Meadowvale Village",
+  "main": "Mississauga",
+  "prov": "ON"
+ },
+ "L6A": {
+  "hood": "",
+  "main": "Maple",
+  "prov": "ON"
+ },
+ "L6B": {
+  "hood": "",
+  "main": "Markham East",
+  "prov": "ON"
+ },
+ "L6C": {
+  "hood": "",
+  "main": "Markham Northwest",
+  "prov": "ON"
+ },
+ "L6E": {
+  "hood": "",
+  "main": "Markham Northeast",
+  "prov": "ON"
+ },
+ "L6G": {
+  "hood": "",
+  "main": "Markham Inner Southwest",
+  "prov": "ON"
+ },
+ "L6H": {
+  "hood": "",
+  "main": "Oakville North",
+  "prov": "ON"
+ },
+ "L6J": {
+  "hood": "",
+  "main": "Oakville Northeast",
+  "prov": "ON"
+ },
+ "L6K": {
+  "hood": "",
+  "main": "Oakville East",
+  "prov": "ON"
+ },
+ "L6L": {
+  "hood": "",
+  "main": "Oakville South",
+  "prov": "ON"
+ },
+ "L6M": {
+  "hood": "",
+  "main": "Oakville West",
+  "prov": "ON"
+ },
+ "L6P": {
+  "hood": "",
+  "main": "Brampton North",
+  "prov": "ON"
+ },
+ "L6R": {
+  "hood": "",
+  "main": "Brampton Northwest",
+  "prov": "ON"
+ },
+ "L6S": {
+  "hood": "",
+  "main": "Brampton North Central",
+  "prov": "ON"
+ },
+ "L6T": {
+  "hood": "",
+  "main": "Brampton East",
+  "prov": "ON"
+ },
+ "L6V": {
+  "hood": "",
+  "main": "Brampton Central",
+  "prov": "ON"
+ },
+ "L6W": {
+  "hood": "",
+  "main": "Brampton Southeast",
+  "prov": "ON"
+ },
+ "L6X": {
+  "hood": "",
+  "main": "Brampton Southwest",
+  "prov": "ON"
+ },
+ "L6Y": {
+  "hood": "",
+  "main": "Brampton South",
+  "prov": "ON"
+ },
+ "L6Z": {
+  "hood": "",
+  "main": "Brampton West Central",
+  "prov": "ON"
+ },
+ "L7A": {
+  "hood": "",
+  "main": "Brampton West",
+  "prov": "ON"
+ },
+ "L7B": {
+  "hood": "",
+  "main": "King City",
+  "prov": "ON"
+ },
+ "L7C": {
+  "hood": "",
+  "main": "Caledon",
+  "prov": "ON"
+ },
+ "L7E": {
+  "hood": "",
+  "main": "Bolton",
+  "prov": "ON"
+ },
+ "L7G": {
+  "hood": "",
+  "main": "Georgetown",
+  "prov": "ON"
+ },
+ "L7J": {
+  "hood": "",
+  "main": "Acton",
+  "prov": "ON"
+ },
+ "L7K": {
+  "hood": "",
+  "main": "Caledon Village",
+  "prov": "ON"
+ },
+ "L7L": {
+  "hood": "",
+  "main": "Burlington Northeast",
+  "prov": "ON"
+ },
+ "L7M": {
+  "hood": "",
+  "main": "Burlington North",
+  "prov": "ON"
+ },
+ "L7N": {
+  "hood": "",
+  "main": "Burlington East",
+  "prov": "ON"
+ },
+ "L7P": {
+  "hood": "",
+  "main": "Burlington West",
+  "prov": "ON"
+ },
+ "L7R": {
+  "hood": "",
+  "main": "Burlington Southeast",
+  "prov": "ON"
+ },
+ "L7S": {
+  "hood": "",
+  "main": "Burlington South",
+  "prov": "ON"
+ },
+ "L7T": {
+  "hood": "",
+  "main": "Burlington Southwest",
+  "prov": "ON"
+ },
+ "L8B": {
+  "hood": "",
+  "main": "Waterdown",
+  "prov": "ON"
+ },
+ "L8E": {
+  "hood": "Confederation Park",
+  "main": "Hamilton",
+  "prov": "ON"
+ },
+ "L8G": {
+  "hood": "Greenford",
+  "main": "Hamilton",
+  "prov": "ON"
+ },
+ "L8H": {
+  "hood": "West Kentley",
+  "main": "Hamilton",
+  "prov": "ON"
+ },
+ "L8J": {
+  "hood": "East Albion Falls",
+  "main": "Hamilton",
+  "prov": "ON"
+ },
+ "L8K": {
+  "hood": "East Delta",
+  "main": "Hamilton",
+  "prov": "ON"
+ },
+ "L8L": {
+  "hood": "West Industrial Sector",
+  "main": "Hamilton",
+  "prov": "ON"
+ },
+ "L8M": {
+  "hood": "West Delta",
+  "main": "Hamilton",
+  "prov": "ON"
+ },
+ "L8N": {
+  "hood": "Stinson",
+  "main": "Hamilton",
+  "prov": "ON"
+ },
+ "L8P": {
+  "hood": "Durand",
+  "main": "Hamilton",
+  "prov": "ON"
+ },
+ "L8R": {
+  "hood": "Central",
+  "main": "Hamilton",
+  "prov": "ON"
+ },
+ "L8S": {
+  "hood": "Westdale",
+  "main": "Hamilton",
+  "prov": "ON"
+ },
+ "L8T": {
+  "hood": "Sherwood",
+  "main": "Hamilton",
+  "prov": "ON"
+ },
+ "L8V": {
+  "hood": "Raleigh",
+  "main": "Hamilton",
+  "prov": "ON"
+ },
+ "L8W": {
+  "hood": "West Albion Falls",
+  "main": "Hamilton",
+  "prov": "ON"
+ },
+ "L9A": {
+  "hood": "Crerar",
+  "main": "Hamilton",
+  "prov": "ON"
+ },
+ "L9B": {
+  "hood": "Barnstown",
+  "main": "Hamilton",
+  "prov": "ON"
+ },
+ "L9C": {
+  "hood": "Southam",
+  "main": "Hamilton",
+  "prov": "ON"
+ },
+ "L9E": {
+  "hood": "",
+  "main": "Milton",
+  "prov": "ON"
+ },
+ "L9G": {
+  "hood": "",
+  "main": "Ancaster West",
+  "prov": "ON"
+ },
+ "L9H": {
+  "hood": "",
+  "main": "Dundas",
+  "prov": "ON"
+ },
+ "L9J": {
+  "hood": "",
+  "main": "Barrie",
+  "prov": "ON"
+ },
+ "L9K": {
+  "hood": "",
+  "main": "Ancaster East",
+  "prov": "ON"
+ },
+ "L9L": {
+  "hood": "",
+  "main": "Port Perry",
+  "prov": "ON"
+ },
+ "L9M": {
+  "hood": "",
+  "main": "Penetanguishene",
+  "prov": "ON"
+ },
+ "L9N": {
+  "hood": "",
+  "main": "Holland Landing",
+  "prov": "ON"
+ },
+ "L9P": {
+  "hood": "",
+  "main": "Uxbridge",
+  "prov": "ON"
+ },
+ "L9R": {
+  "hood": "",
+  "main": "Alliston",
+  "prov": "ON"
+ },
+ "L9S": {
+  "hood": "",
+  "main": "Innisfil",
+  "prov": "ON"
+ },
+ "L9T": {
+  "hood": "",
+  "main": "Milton",
+  "prov": "ON"
+ },
+ "L9V": {
+  "hood": "",
+  "main": "Orangeville North",
+  "prov": "ON"
+ },
+ "L9W": {
+  "hood": "",
+  "main": "Orangeville South",
+  "prov": "ON"
+ },
+ "L9X": {
+  "hood": "",
+  "main": "Minesing",
+  "prov": "ON"
+ },
+ "L9Y": {
+  "hood": "",
+  "main": "Collingwood",
+  "prov": "ON"
+ },
+ "L9Z": {
+  "hood": "",
+  "main": "Wasaga Beach",
+  "prov": "ON"
+ },
+ "M1B": {
+  "hood": "Malvern",
+  "main": "Scarborough",
+  "prov": "ON"
+ },
+ "M1C": {
+  "hood": "Rouge Hill",
+  "main": "Scarborough",
+  "prov": "ON"
+ },
+ "M1E": {
+  "hood": "Guildwood",
+  "main": "Scarborough",
+  "prov": "ON"
+ },
+ "M1G": {
+  "hood": "Woburn",
+  "main": "Scarborough",
+  "prov": "ON"
+ },
+ "M1H": {
+  "hood": "Cedarbrae",
+  "main": "Scarborough",
+  "prov": "ON"
+ },
+ "M1J": {
+  "hood": "Eglinton",
+  "main": "Scarborough",
+  "prov": "ON"
+ },
+ "M1K": {
+  "hood": "Kennedy Park",
+  "main": "Scarborough",
+  "prov": "ON"
+ },
+ "M1L": {
+  "hood": "The Golden Mile",
+  "main": "Scarborough",
+  "prov": "ON"
+ },
+ "M1M": {
+  "hood": "Cliffside",
+  "main": "Scarborough",
+  "prov": "ON"
+ },
+ "M1N": {
+  "hood": "Birch Cliff",
+  "main": "Scarborough",
+  "prov": "ON"
+ },
+ "M1P": {
+  "hood": "Dorset Park",
+  "main": "Scarborough",
+  "prov": "ON"
+ },
+ "M1R": {
+  "hood": "Wexford",
+  "main": "Scarborough",
+  "prov": "ON"
+ },
+ "M1S": {
+  "hood": "Agincourt",
+  "main": "Scarborough",
+  "prov": "ON"
+ },
+ "M1T": {
+  "hood": "Clarks Corners",
+  "main": "Scarborough",
+  "prov": "ON"
+ },
+ "M1V": {
+  "hood": "Milliken",
+  "main": "Scarborough",
+  "prov": "ON"
+ },
+ "M1W": {
+  "hood": "Steeles West",
+  "main": "Scarborough",
+  "prov": "ON"
+ },
+ "M1X": {
+  "hood": "Upper Rouge",
+  "main": "Scarborough",
+  "prov": "ON"
+ },
+ "M2H": {
+  "hood": "Hillcrest Village",
+  "main": "North York",
+  "prov": "ON"
+ },
+ "M2J": {
+  "hood": "Fairview",
+  "main": "North York",
+  "prov": "ON"
+ },
+ "M2K": {
+  "hood": "Bayview Village",
+  "main": "North York",
+  "prov": "ON"
+ },
+ "M2L": {
+  "hood": "York Mills",
+  "main": "North York",
+  "prov": "ON"
+ },
+ "M2M": {
+  "hood": "Newtonbrook",
+  "main": "Willowdale East",
+  "prov": "ON"
+ },
+ "M2N": {
+  "hood": "",
+  "main": "Willowdale South",
+  "prov": "ON"
+ },
+ "M2P": {
+  "hood": "York Mills West",
+  "main": "North York",
+  "prov": "ON"
+ },
+ "M2R": {
+  "hood": "",
+  "main": "Willowdale West",
+  "prov": "ON"
+ },
+ "M3A": {
+  "hood": "York Heights",
+  "main": "North York",
+  "prov": "ON"
+ },
+ "M3B": {
+  "hood": "",
+  "main": "Don Mills North",
+  "prov": "ON"
+ },
+ "M3C": {
+  "hood": "Flemingdon Park",
+  "main": "Don Mills South",
+  "prov": "ON"
+ },
+ "M3H": {
+  "hood": "Armour Heights",
+  "main": "North York",
+  "prov": "ON"
+ },
+ "M3J": {
+  "hood": "Northwood Park",
+  "main": "North York",
+  "prov": "ON"
+ },
+ "M3K": {
+  "hood": "CFB Toronto",
+  "main": "Downsview East",
+  "prov": "ON"
+ },
+ "M3L": {
+  "hood": "",
+  "main": "Downsview West",
+  "prov": "ON"
+ },
+ "M3M": {
+  "hood": "",
+  "main": "Downsview Central",
+  "prov": "ON"
+ },
+ "M3N": {
+  "hood": "Jane and Finch",
+  "main": "North York",
+  "prov": "ON"
+ },
+ "M4A": {
+  "hood": "Sweeney Park",
+  "main": "North York",
+  "prov": "ON"
+ },
+ "M4B": {
+  "hood": "Parkview Hill",
+  "main": "East York",
+  "prov": "ON"
+ },
+ "M4C": {
+  "hood": "Woodbine Heights",
+  "main": "East York",
+  "prov": "ON"
+ },
+ "M4E": {
+  "hood": "The Beaches",
+  "main": "East Toronto",
+  "prov": "ON"
+ },
+ "M4G": {
+  "hood": "Leaside",
+  "main": "East York",
+  "prov": "ON"
+ },
+ "M4H": {
+  "hood": "Thorncliffe Park",
+  "main": "East York",
+  "prov": "ON"
+ },
+ "M4J": {
+  "hood": "The Danforth East",
+  "main": "East Toronto",
+  "prov": "ON"
+ },
+ "M4K": {
+  "hood": "The Danforth West",
+  "main": "East Toronto",
+  "prov": "ON"
+ },
+ "M4L": {
+  "hood": "India Bazaar",
+  "main": "East Toronto",
+  "prov": "ON"
+ },
+ "M4M": {
+  "hood": "Studio District",
+  "main": "East Toronto",
+  "prov": "ON"
+ },
+ "M4N": {
+  "hood": "Lawrence Park East",
+  "main": "Central Toronto",
+  "prov": "ON"
+ },
+ "M4P": {
+  "hood": "Davisville North",
+  "main": "Central Toronto",
+  "prov": "ON"
+ },
+ "M4R": {
+  "hood": "North Toronto West",
+  "main": "Central Toronto",
+  "prov": "ON"
+ },
+ "M4S": {
+  "hood": "Davisville",
+  "main": "Central Toronto",
+  "prov": "ON"
+ },
+ "M4T": {
+  "hood": "Moore Park",
+  "main": "Central Toronto",
+  "prov": "ON"
+ },
+ "M4V": {
+  "hood": "Summerhill West",
+  "main": "Central Toronto",
+  "prov": "ON"
+ },
+ "M4W": {
+  "hood": "Rosedale",
+  "main": "Downtown Toronto",
+  "prov": "ON"
+ },
+ "M4X": {
+  "hood": "St. James Town",
+  "main": "Downtown Toronto",
+  "prov": "ON"
+ },
+ "M4Y": {
+  "hood": "Church and Wellesley",
+  "main": "Downtown Toronto",
+  "prov": "ON"
+ },
+ "M5A": {
+  "hood": "",
+  "main": "Toronto",
+  "prov": "ON"
+ },
+ "M5B": {
+  "hood": "Ryerson",
+  "main": "Downtown Toronto",
+  "prov": "ON"
+ },
+ "M5C": {
+  "hood": "St. James Park",
+  "main": "Downtown Toronto",
+  "prov": "ON"
+ },
+ "M5E": {
+  "hood": "Berczy Park",
+  "main": "Downtown Toronto",
+  "prov": "ON"
+ },
+ "M5G": {
+  "hood": "Central Bay Street",
+  "main": "Downtown Toronto",
+  "prov": "ON"
+ },
+ "M5H": {
+  "hood": "Richmond",
+  "main": "Downtown Toronto",
+  "prov": "ON"
+ },
+ "M5J": {
+  "hood": "Harbourfront East",
+  "main": "Downtown Toronto",
+  "prov": "ON"
+ },
+ "M5K": {
+  "hood": "Toronto Dominion Centre",
+  "main": "Downtown Toronto",
+  "prov": "ON"
+ },
+ "M5L": {
+  "hood": "Commerce Court",
+  "main": "Downtown Toronto",
+  "prov": "ON"
+ },
+ "M5M": {
+  "hood": "Bedford Park",
+  "main": "North York",
+  "prov": "ON"
+ },
+ "M5N": {
+  "hood": "Roselawn",
+  "main": "Central Toronto",
+  "prov": "ON"
+ },
+ "M5P": {
+  "hood": "Forest Hill North & West",
+  "main": "Central Toronto",
+  "prov": "ON"
+ },
+ "M5R": {
+  "hood": "The Annex",
+  "main": "Central Toronto",
+  "prov": "ON"
+ },
+ "M5S": {
+  "hood": "University of Toronto",
+  "main": "Downtown Toronto",
+  "prov": "ON"
+ },
+ "M5T": {
+  "hood": "Kensington Market",
+  "main": "Downtown Toronto",
+  "prov": "ON"
+ },
+ "M5V": {
+  "hood": "CN Tower",
+  "main": "Downtown Toronto",
+  "prov": "ON"
+ },
+ "M5W": {
+  "hood": "Enclave of M5E",
+  "main": "Downtown Toronto Stn A PO Boxes 25 The Esplanade",
+  "prov": "ON"
+ },
+ "M5X": {
+  "hood": "Underground city",
+  "main": "Downtown Toronto",
+  "prov": "ON"
+ },
+ "M6A": {
+  "hood": "Lawrence Manor",
+  "main": "North York",
+  "prov": "ON"
+ },
+ "M6B": {
+  "hood": "Glencairn",
+  "main": "North York",
+  "prov": "ON"
+ },
+ "M6C": {
+  "hood": "Cedarvale",
+  "main": "York",
+  "prov": "ON"
+ },
+ "M6E": {
+  "hood": "Fairbank",
+  "main": "York",
+  "prov": "ON"
+ },
+ "M6G": {
+  "hood": "Christie",
+  "main": "Downtown Toronto",
+  "prov": "ON"
+ },
+ "M6H": {
+  "hood": "Dufferin",
+  "main": "West Toronto",
+  "prov": "ON"
+ },
+ "M6J": {
+  "hood": "Rua Aþores",
+  "main": "West Toronto",
+  "prov": "ON"
+ },
+ "M6K": {
+  "hood": "Brockton",
+  "main": "West Toronto",
+  "prov": "ON"
+ },
+ "M6L": {
+  "hood": "North Park",
+  "main": "North York",
+  "prov": "ON"
+ },
+ "M6M": {
+  "hood": "Del Ray",
+  "main": "York",
+  "prov": "ON"
+ },
+ "M6N": {
+  "hood": "Runnymede",
+  "main": "York",
+  "prov": "ON"
+ },
+ "M6P": {
+  "hood": "High Park",
+  "main": "West Toronto",
+  "prov": "ON"
+ },
+ "M6R": {
+  "hood": "Parkdale",
+  "main": "West Toronto",
+  "prov": "ON"
+ },
+ "M6S": {
+  "hood": "Bloor West Village",
+  "main": "West Toronto",
+  "prov": "ON"
+ },
+ "M7A": {
+  "hood": "",
+  "main": "Queen's Park Ontario Provincial Government",
+  "prov": "ON"
+ },
+ "M7Y": {
+  "hood": "Enclave of M4L",
+  "main": "East Toronto Business Reply Mail Processing Centre 969 Eastern",
+  "prov": "ON"
+ },
+ "M8V": {
+  "hood": "New Toronto",
+  "main": "Etobicoke",
+  "prov": "ON"
+ },
+ "M8W": {
+  "hood": "Alderwood",
+  "main": "Etobicoke",
+  "prov": "ON"
+ },
+ "M8X": {
+  "hood": "The Kingsway",
+  "main": "Etobicoke",
+  "prov": "ON"
+ },
+ "M8Y": {
+  "hood": "Old Mill South",
+  "main": "Etobicoke",
+  "prov": "ON"
+ },
+ "M8Z": {
+  "hood": "Mimico NW",
+  "main": "Etobicoke",
+  "prov": "ON"
+ },
+ "M9A": {
+  "hood": "Islington Avenue",
+  "main": "Etobicoke",
+  "prov": "ON"
+ },
+ "M9B": {
+  "hood": "West Deane Park",
+  "main": "Etobicoke",
+  "prov": "ON"
+ },
+ "M9C": {
+  "hood": "Eringate",
+  "main": "Etobicoke",
+  "prov": "ON"
+ },
+ "M9L": {
+  "hood": "Humber Summit",
+  "main": "North York",
+  "prov": "ON"
+ },
+ "M9M": {
+  "hood": "Humberlea",
+  "main": "North York",
+  "prov": "ON"
+ },
+ "M9N": {
+  "hood": "",
+  "main": "Weston",
+  "prov": "ON"
+ },
+ "M9P": {
+  "hood": "Westmount",
+  "main": "Etobicoke",
+  "prov": "ON"
+ },
+ "M9R": {
+  "hood": "Kingsview Village",
+  "main": "Etobicoke",
+  "prov": "ON"
+ },
+ "M9V": {
+  "hood": "South Steeles",
+  "main": "Etobicoke",
+  "prov": "ON"
+ },
+ "M9W": {
+  "hood": "Clairville",
+  "main": "Etobicoke Northwest",
+  "prov": "ON"
+ },
+ "N0A": {
+  "hood": "Port Dover",
+  "main": "West Haldimand",
+  "prov": "ON"
+ },
+ "N0B": {
+  "hood": "Elora",
+  "main": "Wellington",
+  "prov": "ON"
+ },
+ "N0C": {
+  "hood": "Dundalk",
+  "main": "Georgian Bay Southwest Shore",
+  "prov": "ON"
+ },
+ "N0E": {
+  "hood": "Waterford",
+  "main": "Brant and Norfolk",
+  "prov": "ON"
+ },
+ "N0G": {
+  "hood": "Wingham",
+  "main": "Huron",
+  "prov": "ON"
+ },
+ "N0H": {
+  "hood": "Wiarton",
+  "main": "Bruce Peninsula",
+  "prov": "ON"
+ },
+ "N0J": {
+  "hood": "Norwich",
+  "main": "Oxford",
+  "prov": "ON"
+ },
+ "N0K": {
+  "hood": "Mitchell",
+  "main": "Perth",
+  "prov": "ON"
+ },
+ "N0L": {
+  "hood": "Dorchester",
+  "main": "Elgin",
+  "prov": "ON"
+ },
+ "N0M": {
+  "hood": "Clinton",
+  "main": "Middlesex",
+  "prov": "ON"
+ },
+ "N0N": {
+  "hood": "Forest",
+  "main": "Lambton",
+  "prov": "ON"
+ },
+ "N0P": {
+  "hood": "Blenheim",
+  "main": "Kent",
+  "prov": "ON"
+ },
+ "N0R": {
+  "hood": "Belle River",
+  "main": "Essex",
+  "prov": "ON"
+ },
+ "N1A": {
+  "hood": "",
+  "main": "Dunnville",
+  "prov": "ON"
+ },
+ "N1C": {
+  "hood": "",
+  "main": "Guelph South",
+  "prov": "ON"
+ },
+ "N1E": {
+  "hood": "",
+  "main": "Guelph North",
+  "prov": "ON"
+ },
+ "N1G": {
+  "hood": "",
+  "main": "Guelph Central",
+  "prov": "ON"
+ },
+ "N1H": {
+  "hood": "",
+  "main": "Guelph Northwest",
+  "prov": "ON"
+ },
+ "N1K": {
+  "hood": "",
+  "main": "Guelph West",
+  "prov": "ON"
+ },
+ "N1L": {
+  "hood": "",
+  "main": "Guelph East",
+  "prov": "ON"
+ },
+ "N1M": {
+  "hood": "",
+  "main": "Fergus",
+  "prov": "ON"
+ },
+ "N1P": {
+  "hood": "",
+  "main": "Cambridge South",
+  "prov": "ON"
+ },
+ "N1R": {
+  "hood": "",
+  "main": "Cambridge Central",
+  "prov": "ON"
+ },
+ "N1S": {
+  "hood": "",
+  "main": "Cambridge Southwest",
+  "prov": "ON"
+ },
+ "N1T": {
+  "hood": "",
+  "main": "Cambridge East",
+  "prov": "ON"
+ },
+ "N2A": {
+  "hood": "",
+  "main": "Kitchener East",
+  "prov": "ON"
+ },
+ "N2B": {
+  "hood": "",
+  "main": "Kitchener Northeast",
+  "prov": "ON"
+ },
+ "N2C": {
+  "hood": "",
+  "main": "Kitchener South Central",
+  "prov": "ON"
+ },
+ "N2E": {
+  "hood": "",
+  "main": "Kitchener Southwest",
+  "prov": "ON"
+ },
+ "N2G": {
+  "hood": "",
+  "main": "Kitchener Central",
+  "prov": "ON"
+ },
+ "N2H": {
+  "hood": "",
+  "main": "Kitchener North Central",
+  "prov": "ON"
+ },
+ "N2J": {
+  "hood": "",
+  "main": "Waterloo Southeast",
+  "prov": "ON"
+ },
+ "N2K": {
+  "hood": "",
+  "main": "Kitchener North",
+  "prov": "ON"
+ },
+ "N2L": {
+  "hood": "",
+  "main": "Waterloo South",
+  "prov": "ON"
+ },
+ "N2M": {
+  "hood": "",
+  "main": "Kitchener Northwest",
+  "prov": "ON"
+ },
+ "N2N": {
+  "hood": "",
+  "main": "Kitchener West",
+  "prov": "ON"
+ },
+ "N2P": {
+  "hood": "",
+  "main": "Kitchener Southeast",
+  "prov": "ON"
+ },
+ "N2R": {
+  "hood": "",
+  "main": "Kitchener South",
+  "prov": "ON"
+ },
+ "N2T": {
+  "hood": "",
+  "main": "Waterloo Southwest",
+  "prov": "ON"
+ },
+ "N2V": {
+  "hood": "",
+  "main": "Waterloo Northwest",
+  "prov": "ON"
+ },
+ "N2Z": {
+  "hood": "",
+  "main": "Kincardine",
+  "prov": "ON"
+ },
+ "N3A": {
+  "hood": "",
+  "main": "Baden",
+  "prov": "ON"
+ },
+ "N3B": {
+  "hood": "",
+  "main": "Elmira",
+  "prov": "ON"
+ },
+ "N3C": {
+  "hood": "",
+  "main": "Cambridge Northeast",
+  "prov": "ON"
+ },
+ "N3E": {
+  "hood": "",
+  "main": "Cambridge Northwest",
+  "prov": "ON"
+ },
+ "N3H": {
+  "hood": "",
+  "main": "Cambridge West",
+  "prov": "ON"
+ },
+ "N3L": {
+  "hood": "",
+  "main": "Paris",
+  "prov": "ON"
+ },
+ "N3P": {
+  "hood": "",
+  "main": "Brantford Northeast",
+  "prov": "ON"
+ },
+ "N3R": {
+  "hood": "",
+  "main": "Brantford Central",
+  "prov": "ON"
+ },
+ "N3S": {
+  "hood": "",
+  "main": "Brantford Southeast",
+  "prov": "ON"
+ },
+ "N3T": {
+  "hood": "",
+  "main": "Brantford Southwest",
+  "prov": "ON"
+ },
+ "N3V": {
+  "hood": "",
+  "main": "Brantford Northwest",
+  "prov": "ON"
+ },
+ "N3W": {
+  "hood": "",
+  "main": "Caledonia",
+  "prov": "ON"
+ },
+ "N3Y": {
+  "hood": "",
+  "main": "Simcoe",
+  "prov": "ON"
+ },
+ "N4B": {
+  "hood": "",
+  "main": "Delhi",
+  "prov": "ON"
+ },
+ "N4G": {
+  "hood": "",
+  "main": "Tillsonburg",
+  "prov": "ON"
+ },
+ "N4K": {
+  "hood": "",
+  "main": "Owen Sound",
+  "prov": "ON"
+ },
+ "N4L": {
+  "hood": "",
+  "main": "Meaford",
+  "prov": "ON"
+ },
+ "N4N": {
+  "hood": "",
+  "main": "Hanover",
+  "prov": "ON"
+ },
+ "N4S": {
+  "hood": "",
+  "main": "Woodstock Central",
+  "prov": "ON"
+ },
+ "N4T": {
+  "hood": "",
+  "main": "Woodstock North",
+  "prov": "ON"
+ },
+ "N4V": {
+  "hood": "",
+  "main": "Woodstock South",
+  "prov": "ON"
+ },
+ "N4W": {
+  "hood": "",
+  "main": "Listowel",
+  "prov": "ON"
+ },
+ "N4X": {
+  "hood": "",
+  "main": "St. Mary's",
+  "prov": "ON"
+ },
+ "N4Z": {
+  "hood": "",
+  "main": "Stratford South",
+  "prov": "ON"
+ },
+ "N5A": {
+  "hood": "",
+  "main": "Stratford North",
+  "prov": "ON"
+ },
+ "N5C": {
+  "hood": "",
+  "main": "Ingersoll",
+  "prov": "ON"
+ },
+ "N5H": {
+  "hood": "",
+  "main": "Aylmer",
+  "prov": "ON"
+ },
+ "N5L": {
+  "hood": "",
+  "main": "Port Stanley",
+  "prov": "ON"
+ },
+ "N5P": {
+  "hood": "",
+  "main": "St. Thomas North",
+  "prov": "ON"
+ },
+ "N5R": {
+  "hood": "",
+  "main": "St. Thomas South",
+  "prov": "ON"
+ },
+ "N5V": {
+  "hood": "YXU",
+  "main": "London",
+  "prov": "ON"
+ },
+ "N5W": {
+  "hood": "SW Argyle",
+  "main": "London East",
+  "prov": "ON"
+ },
+ "N5X": {
+  "hood": "Fanshawe",
+  "main": "London",
+  "prov": "ON"
+ },
+ "N5Y": {
+  "hood": "West Huron Heights",
+  "main": "London",
+  "prov": "ON"
+ },
+ "N5Z": {
+  "hood": "Glen Cairn",
+  "main": "London",
+  "prov": "ON"
+ },
+ "N6A": {
+  "hood": "UWO",
+  "main": "London North",
+  "prov": "ON"
+ },
+ "N6B": {
+  "hood": "",
+  "main": "London Central",
+  "prov": "ON"
+ },
+ "N6C": {
+  "hood": "East Highland",
+  "main": "London South",
+  "prov": "ON"
+ },
+ "N6E": {
+  "hood": "South White Oaks",
+  "main": "London",
+  "prov": "ON"
+ },
+ "N6G": {
+  "hood": "Sunningdale",
+  "main": "London",
+  "prov": "ON"
+ },
+ "N6H": {
+  "hood": "Central Hyde Park",
+  "main": "London West",
+  "prov": "ON"
+ },
+ "N6J": {
+  "hood": "Southcrest",
+  "main": "London",
+  "prov": "ON"
+ },
+ "N6K": {
+  "hood": "Riverbend",
+  "main": "London",
+  "prov": "ON"
+ },
+ "N6L": {
+  "hood": "East Tempo",
+  "main": "London",
+  "prov": "ON"
+ },
+ "N6M": {
+  "hood": "Jackson",
+  "main": "London",
+  "prov": "ON"
+ },
+ "N6N": {
+  "hood": "South Highbury",
+  "main": "London",
+  "prov": "ON"
+ },
+ "N6P": {
+  "hood": "Talbot",
+  "main": "London",
+  "prov": "ON"
+ },
+ "N7A": {
+  "hood": "",
+  "main": "Goderich",
+  "prov": "ON"
+ },
+ "N7G": {
+  "hood": "",
+  "main": "Strathroy",
+  "prov": "ON"
+ },
+ "N7L": {
+  "hood": "",
+  "main": "Chatham Northwest",
+  "prov": "ON"
+ },
+ "N7M": {
+  "hood": "",
+  "main": "Chatham Southeast",
+  "prov": "ON"
+ },
+ "N7S": {
+  "hood": "",
+  "main": "Sarnia Central",
+  "prov": "ON"
+ },
+ "N7T": {
+  "hood": "",
+  "main": "Sarnia Southwest",
+  "prov": "ON"
+ },
+ "N7V": {
+  "hood": "",
+  "main": "Sarnia Northwest",
+  "prov": "ON"
+ },
+ "N7W": {
+  "hood": "",
+  "main": "Sarnia Southeast",
+  "prov": "ON"
+ },
+ "N7X": {
+  "hood": "",
+  "main": "Sarnia Northeast",
+  "prov": "ON"
+ },
+ "N8A": {
+  "hood": "",
+  "main": "Wallaceburg",
+  "prov": "ON"
+ },
+ "N8H": {
+  "hood": "",
+  "main": "Leamington",
+  "prov": "ON"
+ },
+ "N8M": {
+  "hood": "",
+  "main": "Essex",
+  "prov": "ON"
+ },
+ "N8N": {
+  "hood": "",
+  "main": "Tecumseh Outskirts",
+  "prov": "ON"
+ },
+ "N8P": {
+  "hood": "East Riverside",
+  "main": "Windsor",
+  "prov": "ON"
+ },
+ "N8R": {
+  "hood": "East Forest Glade",
+  "main": "Windsor",
+  "prov": "ON"
+ },
+ "N8S": {
+  "hood": "Riverside",
+  "main": "Windsor",
+  "prov": "ON"
+ },
+ "N8T": {
+  "hood": "West Forest Glade",
+  "main": "Windsor",
+  "prov": "ON"
+ },
+ "N8V": {
+  "hood": "YQG",
+  "main": "Tecumseh",
+  "prov": "ON"
+ },
+ "N8W": {
+  "hood": "South Walkerville",
+  "main": "Windsor",
+  "prov": "ON"
+ },
+ "N8X": {
+  "hood": "West Walkerville",
+  "main": "Windsor South Central",
+  "prov": "ON"
+ },
+ "N8Y": {
+  "hood": "East Walkerville",
+  "main": "Windsor East",
+  "prov": "ON"
+ },
+ "N9A": {
+  "hood": "City Centre",
+  "main": "Windsor",
+  "prov": "ON"
+ },
+ "N9B": {
+  "hood": "University",
+  "main": "Windsor",
+  "prov": "ON"
+ },
+ "N9C": {
+  "hood": "Sandwich",
+  "main": "Windsor",
+  "prov": "ON"
+ },
+ "N9E": {
+  "hood": "East Malden",
+  "main": "Windsor South",
+  "prov": "ON"
+ },
+ "N9G": {
+  "hood": "Roseland",
+  "main": "Windsor",
+  "prov": "ON"
+ },
+ "N9H": {
+  "hood": "",
+  "main": "La Salle East",
+  "prov": "ON"
+ },
+ "N9J": {
+  "hood": "",
+  "main": "La Salle West",
+  "prov": "ON"
+ },
+ "N9K": {
+  "hood": "",
+  "main": "Tecumseh Central",
+  "prov": "ON"
+ },
+ "N9V": {
+  "hood": "",
+  "main": "Amherstburg",
+  "prov": "ON"
+ },
+ "N9Y": {
+  "hood": "",
+  "main": "Kingsville",
+  "prov": "ON"
+ },
+ "P0A": {
+  "hood": "Burk's Falls",
+  "main": "Nipissing Central",
+  "prov": "ON"
+ },
+ "P0B": {
+  "hood": "Utterson",
+  "main": "Nipissing South",
+  "prov": "ON"
+ },
+ "P0C": {
+  "hood": "Bala",
+  "main": "Parry Sound Mid-Shore",
+  "prov": "ON"
+ },
+ "P0E": {
+  "hood": "Kilworthy",
+  "main": "Parry Sound South Shore",
+  "prov": "ON"
+ },
+ "P0G": {
+  "hood": "Nobel",
+  "main": "Parry Sound North Shore",
+  "prov": "ON"
+ },
+ "P0H": {
+  "hood": "Callander",
+  "main": "Nipissing North",
+  "prov": "ON"
+ },
+ "P0J": {
+  "hood": "Temiskaming Shores",
+  "main": "Timiskaming South",
+  "prov": "ON"
+ },
+ "P0K": {
+  "hood": "Iroquois Falls A",
+  "main": "Timiskaming North",
+  "prov": "ON"
+ },
+ "P0L": {
+  "hood": "Hearst",
+  "main": "Cochrane Region",
+  "prov": "ON"
+ },
+ "P0M": {
+  "hood": "Chelmsford",
+  "main": "Algoma, Sudbury District and Greater Sudbury",
+  "prov": "ON"
+ },
+ "P0N": {
+  "hood": "South Porcupine",
+  "main": "Timmins Region",
+  "prov": "ON"
+ },
+ "P0P": {
+  "hood": "Little Current",
+  "main": "Manitoulin",
+  "prov": "ON"
+ },
+ "P0R": {
+  "hood": "Blind River",
+  "main": "Algoma Southwest",
+  "prov": "ON"
+ },
+ "P0S": {
+  "hood": "Wawa",
+  "main": "Lake Superior East Shore",
+  "prov": "ON"
+ },
+ "P0T": {
+  "hood": "Marathon",
+  "main": "Lake Superior North Shore",
+  "prov": "ON"
+ },
+ "P0V": {
+  "hood": "Red Lake",
+  "main": "Northwestern Ontario",
+  "prov": "ON"
+ },
+ "P0W": {
+  "hood": "Emo",
+  "main": "Rainy River Region",
+  "prov": "ON"
+ },
+ "P0X": {
+  "hood": "Keewatin",
+  "main": "Kenora Region",
+  "prov": "ON"
+ },
+ "P0Y": {
+  "hood": "Ingolf",
+  "main": "Lake of the Woods East Shore",
+  "prov": "ON"
+ },
+ "P1A": {
+  "hood": "",
+  "main": "North Bay South",
+  "prov": "ON"
+ },
+ "P1B": {
+  "hood": "",
+  "main": "North Bay Central",
+  "prov": "ON"
+ },
+ "P1C": {
+  "hood": "",
+  "main": "North Bay North",
+  "prov": "ON"
+ },
+ "P1H": {
+  "hood": "",
+  "main": "Huntsville",
+  "prov": "ON"
+ },
+ "P1L": {
+  "hood": "",
+  "main": "Bracebridge",
+  "prov": "ON"
+ },
+ "P1P": {
+  "hood": "",
+  "main": "Gravenhurst",
+  "prov": "ON"
+ },
+ "P2A": {
+  "hood": "",
+  "main": "Parry Sound",
+  "prov": "ON"
+ },
+ "P2B": {
+  "hood": "",
+  "main": "Sturgeon Falls",
+  "prov": "ON"
+ },
+ "P2N": {
+  "hood": "",
+  "main": "Kirkland Lake",
+  "prov": "ON"
+ },
+ "P3A": {
+  "hood": "New Sudbury",
+  "main": "Greater Sudbury",
+  "prov": "ON"
+ },
+ "P3B": {
+  "hood": "Downtown",
+  "main": "Greater Sudbury",
+  "prov": "ON"
+ },
+ "P3C": {
+  "hood": "Gatchell",
+  "main": "Greater Sudbury",
+  "prov": "ON"
+ },
+ "P3E": {
+  "hood": "Robinson",
+  "main": "Greater Sudbury",
+  "prov": "ON"
+ },
+ "P3G": {
+  "hood": "Lo-Ellen",
+  "main": "Greater Sudbury",
+  "prov": "ON"
+ },
+ "P3L": {
+  "hood": "Garson",
+  "main": "Greater Sudbury",
+  "prov": "ON"
+ },
+ "P3N": {
+  "hood": "Val Caron",
+  "main": "Greater Sudbury",
+  "prov": "ON"
+ },
+ "P3P": {
+  "hood": "Hanmer",
+  "main": "Greater Sudbury",
+  "prov": "ON"
+ },
+ "P3Y": {
+  "hood": "Lively",
+  "main": "Greater Sudbury",
+  "prov": "ON"
+ },
+ "P4N": {
+  "hood": "",
+  "main": "Timmins Southeast",
+  "prov": "ON"
+ },
+ "P4P": {
+  "hood": "",
+  "main": "Timmins North",
+  "prov": "ON"
+ },
+ "P4R": {
+  "hood": "",
+  "main": "Timmins West",
+  "prov": "ON"
+ },
+ "P5A": {
+  "hood": "",
+  "main": "Elliot Lake",
+  "prov": "ON"
+ },
+ "P5E": {
+  "hood": "",
+  "main": "Espanola",
+  "prov": "ON"
+ },
+ "P5N": {
+  "hood": "",
+  "main": "Kapuskasing",
+  "prov": "ON"
+ },
+ "P6A": {
+  "hood": "",
+  "main": "Sault Ste. Marie East",
+  "prov": "ON"
+ },
+ "P6B": {
+  "hood": "",
+  "main": "Sault Ste. Marie Central",
+  "prov": "ON"
+ },
+ "P6C": {
+  "hood": "",
+  "main": "Sault Ste. Marie North",
+  "prov": "ON"
+ },
+ "P7A": {
+  "hood": "",
+  "main": "Thunder Bay Northeast",
+  "prov": "ON"
+ },
+ "P7B": {
+  "hood": "",
+  "main": "Thunder Bay North Central",
+  "prov": "ON"
+ },
+ "P7C": {
+  "hood": "",
+  "main": "Thunder Bay Central",
+  "prov": "ON"
+ },
+ "P7E": {
+  "hood": "",
+  "main": "Thunder Bay South Central",
+  "prov": "ON"
+ },
+ "P7G": {
+  "hood": "",
+  "main": "Thunder Bay North",
+  "prov": "ON"
+ },
+ "P7J": {
+  "hood": "",
+  "main": "Thunder Bay South",
+  "prov": "ON"
+ },
+ "P7K": {
+  "hood": "",
+  "main": "Thunder Bay West",
+  "prov": "ON"
+ },
+ "P7L": {
+  "hood": "",
+  "main": "Neebing",
+  "prov": "ON"
+ },
+ "P8N": {
+  "hood": "",
+  "main": "Dryden",
+  "prov": "ON"
+ },
+ "P8T": {
+  "hood": "",
+  "main": "Sioux Lookout",
+  "prov": "ON"
+ },
+ "P9A": {
+  "hood": "",
+  "main": "Fort Frances",
+  "prov": "ON"
+ },
+ "P9N": {
+  "hood": "",
+  "main": "Kenora",
+  "prov": "ON"
+ },
+ "R0A": {
+  "hood": "Lorette",
+  "main": "Southeastern Manitoba",
+  "prov": "MB"
+ },
+ "R0B": {
+  "hood": "Norway House",
+  "main": "Northern Manitoba",
+  "prov": "MB"
+ },
+ "R0C": {
+  "hood": "Stonewall",
+  "main": "North Interlake",
+  "prov": "MB"
+ },
+ "R0E": {
+  "hood": "Beausejour",
+  "main": "Eastern Manitoba",
+  "prov": "MB"
+ },
+ "R0G": {
+  "hood": "Altona",
+  "main": "South Central Manitoba",
+  "prov": "MB"
+ },
+ "R0H": {
+  "hood": "MacGregor",
+  "main": "South Interlake",
+  "prov": "MB"
+ },
+ "R0J": {
+  "hood": "Neepawa",
+  "main": "Riding Mountain",
+  "prov": "MB"
+ },
+ "R0K": {
+  "hood": "Killarney",
+  "main": "Brandon Region",
+  "prov": "MB"
+ },
+ "R0L": {
+  "hood": "Swan River",
+  "main": "Western Manitoba",
+  "prov": "MB"
+ },
+ "R0M": {
+  "hood": "Virden",
+  "main": "Southwestern Manitoba",
+  "prov": "MB"
+ },
+ "R1A": {
+  "hood": "",
+  "main": "Selkirk",
+  "prov": "MB"
+ },
+ "R1B": {
+  "hood": "",
+  "main": "Lockport",
+  "prov": "MB"
+ },
+ "R1C": {
+  "hood": "",
+  "main": "Narol",
+  "prov": "MB"
+ },
+ "R1N": {
+  "hood": "",
+  "main": "Portage la Prairie",
+  "prov": "MB"
+ },
+ "R2C": {
+  "hood": "Transcona",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R2E": {
+  "hood": "",
+  "main": "East St. Paul",
+  "prov": "MB"
+ },
+ "R2G": {
+  "hood": "River East North",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R2H": {
+  "hood": "St. Boniface NW",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R2J": {
+  "hood": "St. Boniface NE",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R2K": {
+  "hood": "River East Central",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R2L": {
+  "hood": "River East South",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R2M": {
+  "hood": "St. Vital North",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R2N": {
+  "hood": "St. Vital SW",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R2P": {
+  "hood": "Seven Oaks West",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R2R": {
+  "hood": "Inkster West",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R2V": {
+  "hood": "Seven Oaks East",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R2W": {
+  "hood": "Point Douglas East",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R2X": {
+  "hood": "Point Douglas West",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R2Y": {
+  "hood": "St. James-Assiniboia NW",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R3A": {
+  "hood": "Centennial",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R3B": {
+  "hood": "Chinatown",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R3C": {
+  "hood": "",
+  "main": "Winnipeg (Broadway / The Forks / Portage and Main) Manitoba Provincial Government",
+  "prov": "MB"
+ },
+ "R3E": {
+  "hood": "Sargent Park",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R3G": {
+  "hood": "Minto",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R3H": {
+  "hood": "St. James-Assiniboia NE",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R3J": {
+  "hood": "St. James-Assiniboia SE",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R3K": {
+  "hood": "St. James-Assiniboia SW",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R3L": {
+  "hood": "River Heights East",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R3M": {
+  "hood": "River Heights Central",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R3N": {
+  "hood": "River Heights West",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R3P": {
+  "hood": "Fort Garry NW",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R3R": {
+  "hood": "Assiniboine South",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R3S": {
+  "hood": "Wilkes South",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R3T": {
+  "hood": "Fort Garry NE",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R3V": {
+  "hood": "Fort Garry South",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R3W": {
+  "hood": "Grassie",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R3X": {
+  "hood": "St. Boniface South",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R3Y": {
+  "hood": "Fort Garry West",
+  "main": "Winnipeg",
+  "prov": "MB"
+ },
+ "R4A": {
+  "hood": "",
+  "main": "West St. Paul",
+  "prov": "MB"
+ },
+ "R4G": {
+  "hood": "",
+  "main": "Oak Bluff",
+  "prov": "MB"
+ },
+ "R4H": {
+  "hood": "",
+  "main": "Headingley East",
+  "prov": "MB"
+ },
+ "R4J": {
+  "hood": "",
+  "main": "Headingley West",
+  "prov": "MB"
+ },
+ "R4K": {
+  "hood": "",
+  "main": "Cartier",
+  "prov": "MB"
+ },
+ "R4L": {
+  "hood": "",
+  "main": "St. Francois Xavier",
+  "prov": "MB"
+ },
+ "R5A": {
+  "hood": "",
+  "main": "St. Adolphe",
+  "prov": "MB"
+ },
+ "R5G": {
+  "hood": "",
+  "main": "Steinbach",
+  "prov": "MB"
+ },
+ "R5H": {
+  "hood": "",
+  "main": "Ste. Anne",
+  "prov": "MB"
+ },
+ "R5K": {
+  "hood": "",
+  "main": "Lorette",
+  "prov": "MB"
+ },
+ "R6M": {
+  "hood": "",
+  "main": "Morden",
+  "prov": "MB"
+ },
+ "R6W": {
+  "hood": "",
+  "main": "Winkler",
+  "prov": "MB"
+ },
+ "R7A": {
+  "hood": "",
+  "main": "Brandon Southeast",
+  "prov": "MB"
+ },
+ "R7B": {
+  "hood": "",
+  "main": "Brandon Southwest",
+  "prov": "MB"
+ },
+ "R7C": {
+  "hood": "",
+  "main": "Brandon North",
+  "prov": "MB"
+ },
+ "R7N": {
+  "hood": "",
+  "main": "Dauphin",
+  "prov": "MB"
+ },
+ "R8A": {
+  "hood": "",
+  "main": "Flin Flon",
+  "prov": "MB"
+ },
+ "R8N": {
+  "hood": "",
+  "main": "Thompson",
+  "prov": "MB"
+ },
+ "R9A": {
+  "hood": "",
+  "main": "The Pas",
+  "prov": "MB"
+ },
+ "S0A": {
+  "hood": "Melville",
+  "main": "Yorkton Region",
+  "prov": "SK"
+ },
+ "S0C": {
+  "hood": "Carlyle",
+  "main": "Southeastern Saskatchewan",
+  "prov": "SK"
+ },
+ "S0E": {
+  "hood": "Melfort",
+  "main": "Eastern Saskatchewan",
+  "prov": "SK"
+ },
+ "S0G": {
+  "hood": "Fort Qu'Appelle",
+  "main": "South Central Saskatchewan",
+  "prov": "SK"
+ },
+ "S0H": {
+  "hood": "Assiniboia",
+  "main": "Southern Saskatchewan",
+  "prov": "SK"
+ },
+ "S0J": {
+  "hood": "La Ronge",
+  "main": "Northern Saskatchewan",
+  "prov": "SK"
+ },
+ "S0K": {
+  "hood": "Humboldt",
+  "main": "Central Saskatchewan",
+  "prov": "SK"
+ },
+ "S0L": {
+  "hood": "Kindersley",
+  "main": "Western Saskatchewan",
+  "prov": "SK"
+ },
+ "S0M": {
+  "hood": "Battleford",
+  "main": "Northwestern Saskatchewan",
+  "prov": "SK"
+ },
+ "S0N": {
+  "hood": "Maple Creek",
+  "main": "Southwestern Saskatchewan",
+  "prov": "SK"
+ },
+ "S0P": {
+  "hood": "Creighton",
+  "main": "Northeastern Saskatchewan",
+  "prov": "SK"
+ },
+ "S2V": {
+  "hood": "",
+  "main": "Buena Vista",
+  "prov": "SK"
+ },
+ "S3N": {
+  "hood": "",
+  "main": "Yorkton",
+  "prov": "SK"
+ },
+ "S4A": {
+  "hood": "",
+  "main": "Estevan",
+  "prov": "SK"
+ },
+ "S4H": {
+  "hood": "",
+  "main": "Weyburn",
+  "prov": "SK"
+ },
+ "S4K": {
+  "hood": "",
+  "main": "Rm Of Sherwood",
+  "prov": "SK"
+ },
+ "S4L": {
+  "hood": "",
+  "main": "Regina East",
+  "prov": "SK"
+ },
+ "S4M": {
+  "hood": "",
+  "main": "Regina",
+  "prov": "SK"
+ },
+ "S4N": {
+  "hood": "",
+  "main": "Regina Northeast and East Central",
+  "prov": "SK"
+ },
+ "S4P": {
+  "hood": "",
+  "main": "Regina Central",
+  "prov": "SK"
+ },
+ "S4R": {
+  "hood": "",
+  "main": "Regina North Central",
+  "prov": "SK"
+ },
+ "S4S": {
+  "hood": "",
+  "main": "Regina South Saskatchewan Provincial Government",
+  "prov": "SK"
+ },
+ "S4T": {
+  "hood": "",
+  "main": "Regina West",
+  "prov": "SK"
+ },
+ "S4V": {
+  "hood": "",
+  "main": "Regina Southeast",
+  "prov": "SK"
+ },
+ "S4W": {
+  "hood": "",
+  "main": "Regina Southwest",
+  "prov": "SK"
+ },
+ "S4X": {
+  "hood": "",
+  "main": "Regina Northwest",
+  "prov": "SK"
+ },
+ "S4Y": {
+  "hood": "",
+  "main": "Regina Outer Northwest",
+  "prov": "SK"
+ },
+ "S4Z": {
+  "hood": "",
+  "main": "Regina Northeast",
+  "prov": "SK"
+ },
+ "S6H": {
+  "hood": "",
+  "main": "Moose Jaw Southeast",
+  "prov": "SK"
+ },
+ "S6J": {
+  "hood": "",
+  "main": "Moose Jaw Northeast",
+  "prov": "SK"
+ },
+ "S6K": {
+  "hood": "",
+  "main": "Moose Jaw West",
+  "prov": "SK"
+ },
+ "S6V": {
+  "hood": "",
+  "main": "Prince Albert Central",
+  "prov": "SK"
+ },
+ "S6W": {
+  "hood": "",
+  "main": "Prince Albert Southwest",
+  "prov": "SK"
+ },
+ "S6X": {
+  "hood": "",
+  "main": "Prince Albert East",
+  "prov": "SK"
+ },
+ "S7H": {
+  "hood": "",
+  "main": "Saskatoon East Central",
+  "prov": "SK"
+ },
+ "S7J": {
+  "hood": "",
+  "main": "Saskatoon South Central",
+  "prov": "SK"
+ },
+ "S7K": {
+  "hood": "",
+  "main": "Saskatoon North Central",
+  "prov": "SK"
+ },
+ "S7L": {
+  "hood": "",
+  "main": "Saskatoon West",
+  "prov": "SK"
+ },
+ "S7M": {
+  "hood": "",
+  "main": "Saskatoon Southwest",
+  "prov": "SK"
+ },
+ "S7N": {
+  "hood": "",
+  "main": "Saskatoon Northeast Central",
+  "prov": "SK"
+ },
+ "S7P": {
+  "hood": "",
+  "main": "Saskatoon North",
+  "prov": "SK"
+ },
+ "S7R": {
+  "hood": "",
+  "main": "Saskatoon Northwest",
+  "prov": "SK"
+ },
+ "S7S": {
+  "hood": "",
+  "main": "Saskatoon Northeast",
+  "prov": "SK"
+ },
+ "S7T": {
+  "hood": "",
+  "main": "Saskatoon South",
+  "prov": "SK"
+ },
+ "S7V": {
+  "hood": "",
+  "main": "Saskatoon Southeast",
+  "prov": "SK"
+ },
+ "S7W": {
+  "hood": "",
+  "main": "Saskatoon",
+  "prov": "SK"
+ },
+ "S9A": {
+  "hood": "",
+  "main": "North Battleford",
+  "prov": "SK"
+ },
+ "S9H": {
+  "hood": "",
+  "main": "Swift Current",
+  "prov": "SK"
+ },
+ "S9V": {
+  "hood": "",
+  "main": "Lloydminster",
+  "prov": "SK"
+ },
+ "S9X": {
+  "hood": "",
+  "main": "Meadow Lake",
+  "prov": "SK"
+ },
+ "T0A": {
+  "hood": "St. Paul",
+  "main": "Eastern Alberta",
+  "prov": "AB"
+ },
+ "T0B": {
+  "hood": "Tofield",
+  "main": "Wainwright Region",
+  "prov": "AB"
+ },
+ "T0C": {
+  "hood": "Stettler",
+  "main": "Central Alberta",
+  "prov": "AB"
+ },
+ "T0E": {
+  "hood": "Jasper",
+  "main": "Western Alberta",
+  "prov": "AB"
+ },
+ "T0G": {
+  "hood": "Slave Lake",
+  "main": "North Central Alberta",
+  "prov": "AB"
+ },
+ "T0H": {
+  "hood": "High Level",
+  "main": "Northwestern Alberta",
+  "prov": "AB"
+ },
+ "T0J": {
+  "hood": "Drumheller",
+  "main": "Southeastern Alberta",
+  "prov": "AB"
+ },
+ "T0K": {
+  "hood": "Cardston",
+  "main": "International Border Region",
+  "prov": "AB"
+ },
+ "T0L": {
+  "hood": "Claresholm",
+  "main": "Kananaskis Country",
+  "prov": "AB"
+ },
+ "T0M": {
+  "hood": "Sundre",
+  "main": "Central Foothills",
+  "prov": "AB"
+ },
+ "T0P": {
+  "hood": "Fort Chipewyan",
+  "main": "Northeastern Alberta",
+  "prov": "AB"
+ },
+ "T0V": {
+  "hood": "Fitzgerald",
+  "main": "Remote Northeast",
+  "prov": "AB"
+ },
+ "T1A": {
+  "hood": "",
+  "main": "Medicine Hat Central",
+  "prov": "AB"
+ },
+ "T1B": {
+  "hood": "",
+  "main": "Medicine Hat South",
+  "prov": "AB"
+ },
+ "T1C": {
+  "hood": "",
+  "main": "Medicine Hat North",
+  "prov": "AB"
+ },
+ "T1G": {
+  "hood": "",
+  "main": "Taber",
+  "prov": "AB"
+ },
+ "T1H": {
+  "hood": "",
+  "main": "Lethbridge North",
+  "prov": "AB"
+ },
+ "T1J": {
+  "hood": "",
+  "main": "Lethbridge West and Central",
+  "prov": "AB"
+ },
+ "T1K": {
+  "hood": "",
+  "main": "Lethbridge Southeast",
+  "prov": "AB"
+ },
+ "T1L": {
+  "hood": "",
+  "main": "Banff",
+  "prov": "AB"
+ },
+ "T1M": {
+  "hood": "",
+  "main": "Coaldale",
+  "prov": "AB"
+ },
+ "T1P": {
+  "hood": "",
+  "main": "Strathmore",
+  "prov": "AB"
+ },
+ "T1R": {
+  "hood": "",
+  "main": "Brooks",
+  "prov": "AB"
+ },
+ "T1S": {
+  "hood": "",
+  "main": "Okotoks",
+  "prov": "AB"
+ },
+ "T1V": {
+  "hood": "",
+  "main": "High River",
+  "prov": "AB"
+ },
+ "T1W": {
+  "hood": "",
+  "main": "Canmore",
+  "prov": "AB"
+ },
+ "T1X": {
+  "hood": "",
+  "main": "Chestermere",
+  "prov": "AB"
+ },
+ "T1Y": {
+  "hood": "Rundle",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T1Z": {
+  "hood": "",
+  "main": "Rocky View",
+  "prov": "AB"
+ },
+ "T2A": {
+  "hood": "Penbrooke Meadows",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T2B": {
+  "hood": "Forest Lawn",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T2C": {
+  "hood": "Lynnwood Ridge",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T2E": {
+  "hood": "Bridgeland",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T2G": {
+  "hood": "Inglewood",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T2H": {
+  "hood": "Highfield",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T2J": {
+  "hood": "Queensland Downs",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T2K": {
+  "hood": "Thornecliffe",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T2L": {
+  "hood": "Brentwood",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T2M": {
+  "hood": "Mount Pleasant",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T2N": {
+  "hood": "Kensington",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T2P": {
+  "hood": "City Centre",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T2R": {
+  "hood": "Connaught",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T2S": {
+  "hood": "Elbow Park",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T2T": {
+  "hood": "Altadore",
+  "main": "Calgary South",
+  "prov": "AB"
+ },
+ "T2V": {
+  "hood": "Oak Ridge",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T2W": {
+  "hood": "Braeside",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T2X": {
+  "hood": "Midnapore",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T2Y": {
+  "hood": "Millrise",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T2Z": {
+  "hood": "Douglas Glen",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T3A": {
+  "hood": "Dalhousie",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T3B": {
+  "hood": "Montgomery",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T3C": {
+  "hood": "Rosscarrock",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T3E": {
+  "hood": "Lakeview",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T3G": {
+  "hood": "Hawkwood",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T3H": {
+  "hood": "Discovery Ridge",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T3J": {
+  "hood": "Martindale",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T3K": {
+  "hood": "Sandstone",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T3L": {
+  "hood": "Tuscany",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T3M": {
+  "hood": "Cranston",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T3N": {
+  "hood": "",
+  "main": "Calgary Northeast",
+  "prov": "AB"
+ },
+ "T3P": {
+  "hood": "Symons Valley",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T3R": {
+  "hood": "",
+  "main": "Calgary Northwest",
+  "prov": "AB"
+ },
+ "T3S": {
+  "hood": "",
+  "main": "Calgary",
+  "prov": "AB"
+ },
+ "T3Z": {
+  "hood": "",
+  "main": "Redwood Meadows",
+  "prov": "AB"
+ },
+ "T4A": {
+  "hood": "",
+  "main": "Airdrie East",
+  "prov": "AB"
+ },
+ "T4B": {
+  "hood": "",
+  "main": "Airdrie West",
+  "prov": "AB"
+ },
+ "T4C": {
+  "hood": "",
+  "main": "Cochrane",
+  "prov": "AB"
+ },
+ "T4E": {
+  "hood": "",
+  "main": "Red Deer County",
+  "prov": "AB"
+ },
+ "T4G": {
+  "hood": "",
+  "main": "Innisfail",
+  "prov": "AB"
+ },
+ "T4H": {
+  "hood": "",
+  "main": "Olds",
+  "prov": "AB"
+ },
+ "T4J": {
+  "hood": "",
+  "main": "Ponoka",
+  "prov": "AB"
+ },
+ "T4L": {
+  "hood": "",
+  "main": "Lacombe",
+  "prov": "AB"
+ },
+ "T4M": {
+  "hood": "",
+  "main": "Blackfalds",
+  "prov": "AB"
+ },
+ "T4N": {
+  "hood": "",
+  "main": "Red Deer Central",
+  "prov": "AB"
+ },
+ "T4P": {
+  "hood": "",
+  "main": "Red Deer North",
+  "prov": "AB"
+ },
+ "T4R": {
+  "hood": "",
+  "main": "Red Deer South",
+  "prov": "AB"
+ },
+ "T4S": {
+  "hood": "",
+  "main": "Sylvan Lake",
+  "prov": "AB"
+ },
+ "T4T": {
+  "hood": "",
+  "main": "Rocky Mountain House",
+  "prov": "AB"
+ },
+ "T4V": {
+  "hood": "",
+  "main": "Camrose",
+  "prov": "AB"
+ },
+ "T4X": {
+  "hood": "",
+  "main": "Beaumont",
+  "prov": "AB"
+ },
+ "T5A": {
+  "hood": "West Clareview",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T5B": {
+  "hood": "East North Central",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T5C": {
+  "hood": "Central Londonderry",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T5E": {
+  "hood": "West Londonderry",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T5G": {
+  "hood": "North Central",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T5H": {
+  "hood": "North and East Downtown Fringe",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T5J": {
+  "hood": "North Downtown",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T5K": {
+  "hood": "South Downtown",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T5L": {
+  "hood": "North Westmount",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T5M": {
+  "hood": "South Westmount",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T5N": {
+  "hood": "Glenora",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T5P": {
+  "hood": "North Jasper Place",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T5R": {
+  "hood": "Central Jasper Place",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T5S": {
+  "hood": "West Northwest Industrial",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T5T": {
+  "hood": "West Jasper Place",
+  "main": "Edmonton West",
+  "prov": "AB"
+ },
+ "T5V": {
+  "hood": "Central Mistatim",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T5W": {
+  "hood": "Central Beverly",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T5X": {
+  "hood": "East Castledowns",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T5Y": {
+  "hood": "Landbank",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T5Z": {
+  "hood": "West Lake District",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T6A": {
+  "hood": "North Capilano",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T6B": {
+  "hood": "SE Capilano",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T6C": {
+  "hood": "Central Bonnie Doon",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T6E": {
+  "hood": "South Bonnie Doon",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T6G": {
+  "hood": "West University",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T6H": {
+  "hood": "Southgate",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T6J": {
+  "hood": "Kaskitayo",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T6K": {
+  "hood": "West Mill Woods",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T6L": {
+  "hood": "East Mill Woods",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T6M": {
+  "hood": "",
+  "main": "Edmonton Southwest",
+  "prov": "AB"
+ },
+ "T6N": {
+  "hood": "South Industrial",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T6P": {
+  "hood": "East Southeast Industrial",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T6R": {
+  "hood": "Riverbend",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T6S": {
+  "hood": "North Clover Bar",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T6T": {
+  "hood": "Meadows",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T6V": {
+  "hood": "West Castledowns",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T6W": {
+  "hood": "Heritage Valley",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T6X": {
+  "hood": "Ellerslie",
+  "main": "Edmonton",
+  "prov": "AB"
+ },
+ "T7A": {
+  "hood": "",
+  "main": "Drayton Valley",
+  "prov": "AB"
+ },
+ "T7E": {
+  "hood": "",
+  "main": "Edson",
+  "prov": "AB"
+ },
+ "T7N": {
+  "hood": "",
+  "main": "Barrhead",
+  "prov": "AB"
+ },
+ "T7P": {
+  "hood": "",
+  "main": "Westlock",
+  "prov": "AB"
+ },
+ "T7S": {
+  "hood": "",
+  "main": "Whitecourt",
+  "prov": "AB"
+ },
+ "T7V": {
+  "hood": "",
+  "main": "Hinton",
+  "prov": "AB"
+ },
+ "T7X": {
+  "hood": "",
+  "main": "Spruce Grove North",
+  "prov": "AB"
+ },
+ "T7Y": {
+  "hood": "",
+  "main": "Spruce Grove South",
+  "prov": "AB"
+ },
+ "T7Z": {
+  "hood": "",
+  "main": "Stony Plain",
+  "prov": "AB"
+ },
+ "T8A": {
+  "hood": "",
+  "main": "Sherwood Park West",
+  "prov": "AB"
+ },
+ "T8B": {
+  "hood": "",
+  "main": "Sherwood Park Outer Southwest",
+  "prov": "AB"
+ },
+ "T8C": {
+  "hood": "",
+  "main": "Sherwood Park Inner Southwest",
+  "prov": "AB"
+ },
+ "T8E": {
+  "hood": "",
+  "main": "Sherwood Park Central",
+  "prov": "AB"
+ },
+ "T8G": {
+  "hood": "",
+  "main": "Sherwood Park East",
+  "prov": "AB"
+ },
+ "T8H": {
+  "hood": "",
+  "main": "Sherwood Park Northwest",
+  "prov": "AB"
+ },
+ "T8L": {
+  "hood": "",
+  "main": "Fort Saskatchewan",
+  "prov": "AB"
+ },
+ "T8N": {
+  "hood": "",
+  "main": "St. Albert",
+  "prov": "AB"
+ },
+ "T8R": {
+  "hood": "",
+  "main": "Morinville",
+  "prov": "AB"
+ },
+ "T8S": {
+  "hood": "",
+  "main": "Peace River",
+  "prov": "AB"
+ },
+ "T8T": {
+  "hood": "",
+  "main": "St. Albert",
+  "prov": "AB"
+ },
+ "T8V": {
+  "hood": "",
+  "main": "Grande Prairie Central",
+  "prov": "AB"
+ },
+ "T8W": {
+  "hood": "",
+  "main": "Grande Prairie South",
+  "prov": "AB"
+ },
+ "T8X": {
+  "hood": "",
+  "main": "Grande Prairie East",
+  "prov": "AB"
+ },
+ "T9A": {
+  "hood": "",
+  "main": "Wetaskiwin",
+  "prov": "AB"
+ },
+ "T9C": {
+  "hood": "",
+  "main": "Vegreville",
+  "prov": "AB"
+ },
+ "T9E": {
+  "hood": "",
+  "main": "Leduc",
+  "prov": "AB"
+ },
+ "T9G": {
+  "hood": "",
+  "main": "Devon",
+  "prov": "AB"
+ },
+ "T9H": {
+  "hood": "",
+  "main": "Fort McMurray Outer Central",
+  "prov": "AB"
+ },
+ "T9J": {
+  "hood": "",
+  "main": "Fort McMurray Inner Central",
+  "prov": "AB"
+ },
+ "T9K": {
+  "hood": "",
+  "main": "Fort McMurray Northwest",
+  "prov": "AB"
+ },
+ "T9M": {
+  "hood": "",
+  "main": "Cold Lake",
+  "prov": "AB"
+ },
+ "T9N": {
+  "hood": "",
+  "main": "Bonnyville",
+  "prov": "AB"
+ },
+ "T9S": {
+  "hood": "",
+  "main": "Athabasca",
+  "prov": "AB"
+ },
+ "T9V": {
+  "hood": "",
+  "main": "Lloydminster",
+  "prov": "AB"
+ },
+ "T9W": {
+  "hood": "",
+  "main": "Wainwright",
+  "prov": "AB"
+ },
+ "T9X": {
+  "hood": "",
+  "main": "Vermilion",
+  "prov": "AB"
+ },
+ "V0A": {
+  "hood": "Golden",
+  "main": "Upper Columbia Region",
+  "prov": "BC"
+ },
+ "V0B": {
+  "hood": "Fernie",
+  "main": "East Kootenays",
+  "prov": "BC"
+ },
+ "V0C": {
+  "hood": "Fort Nelson",
+  "main": "Northern British Columbia",
+  "prov": "BC"
+ },
+ "V0E": {
+  "hood": "Revelstoke",
+  "main": "Central Okanagan and High Country",
+  "prov": "BC"
+ },
+ "V0G": {
+  "hood": "Rossland",
+  "main": "West Kootenays",
+  "prov": "BC"
+ },
+ "V0H": {
+  "hood": "Summerland",
+  "main": "South Okanagan",
+  "prov": "BC"
+ },
+ "V0J": {
+  "hood": "Smithers",
+  "main": "Omineca and Yellowhead",
+  "prov": "BC"
+ },
+ "V0K": {
+  "hood": "100 Mile House",
+  "main": "Cariboo and West Okanagan",
+  "prov": "BC"
+ },
+ "V0L": {
+  "hood": "Alexis Creek",
+  "main": "Chilcotin",
+  "prov": "BC"
+ },
+ "V0M": {
+  "hood": "Agassiz",
+  "main": "Harrison Lake Region",
+  "prov": "BC"
+ },
+ "V0N": {
+  "hood": "Whistler",
+  "main": "North Island, Sunshine Coast, and Southern Gulf Islands",
+  "prov": "BC"
+ },
+ "V0P": {
+  "hood": "Gold River",
+  "main": "North Central Island and Bute Inlet Region",
+  "prov": "BC"
+ },
+ "V0R": {
+  "hood": "Chemainus",
+  "main": "Central Island",
+  "prov": "BC"
+ },
+ "V0S": {
+  "hood": "Sooke",
+  "main": "Juan de Fuca Shore",
+  "prov": "BC"
+ },
+ "V0T": {
+  "hood": "Queen Charlotte City",
+  "main": "Inside Passage and the Queen Charlottes",
+  "prov": "BC"
+ },
+ "V0V": {
+  "hood": "Port Edward",
+  "main": "Lower Skeena",
+  "prov": "BC"
+ },
+ "V0W": {
+  "hood": "Atlin",
+  "main": "Atlin Region",
+  "prov": "BC"
+ },
+ "V0X": {
+  "hood": "Hope",
+  "main": "Similkameen",
+  "prov": "BC"
+ },
+ "V1A": {
+  "hood": "",
+  "main": "Kimberley",
+  "prov": "BC"
+ },
+ "V1B": {
+  "hood": "",
+  "main": "Vernon East",
+  "prov": "BC"
+ },
+ "V1C": {
+  "hood": "",
+  "main": "Cranbrook",
+  "prov": "BC"
+ },
+ "V1E": {
+  "hood": "",
+  "main": "Salmon Arm",
+  "prov": "BC"
+ },
+ "V1G": {
+  "hood": "",
+  "main": "Dawson Creek",
+  "prov": "BC"
+ },
+ "V1H": {
+  "hood": "",
+  "main": "Vernon West",
+  "prov": "BC"
+ },
+ "V1J": {
+  "hood": "",
+  "main": "Fort St. John",
+  "prov": "BC"
+ },
+ "V1K": {
+  "hood": "",
+  "main": "Merritt",
+  "prov": "BC"
+ },
+ "V1L": {
+  "hood": "",
+  "main": "Nelson",
+  "prov": "BC"
+ },
+ "V1M": {
+  "hood": "",
+  "main": "Langley Township North",
+  "prov": "BC"
+ },
+ "V1N": {
+  "hood": "",
+  "main": "Castlegar",
+  "prov": "BC"
+ },
+ "V1P": {
+  "hood": "",
+  "main": "Kelowna East",
+  "prov": "BC"
+ },
+ "V1R": {
+  "hood": "",
+  "main": "Trail",
+  "prov": "BC"
+ },
+ "V1S": {
+  "hood": "",
+  "main": "Kamloops Southwest",
+  "prov": "BC"
+ },
+ "V1T": {
+  "hood": "",
+  "main": "Vernon Central",
+  "prov": "BC"
+ },
+ "V1V": {
+  "hood": "",
+  "main": "Kelowna North",
+  "prov": "BC"
+ },
+ "V1W": {
+  "hood": "",
+  "main": "Kelowna Southwest",
+  "prov": "BC"
+ },
+ "V1X": {
+  "hood": "",
+  "main": "Kelowna East Central",
+  "prov": "BC"
+ },
+ "V1Y": {
+  "hood": "",
+  "main": "Kelowna Central",
+  "prov": "BC"
+ },
+ "V1Z": {
+  "hood": "",
+  "main": "Kelowna West",
+  "prov": "BC"
+ },
+ "V2A": {
+  "hood": "",
+  "main": "Penticton",
+  "prov": "BC"
+ },
+ "V2B": {
+  "hood": "",
+  "main": "Kamloops Northwest",
+  "prov": "BC"
+ },
+ "V2C": {
+  "hood": "",
+  "main": "Kamloops Central and Southeast",
+  "prov": "BC"
+ },
+ "V2E": {
+  "hood": "",
+  "main": "Kamloops South and West",
+  "prov": "BC"
+ },
+ "V2G": {
+  "hood": "",
+  "main": "Williams Lake",
+  "prov": "BC"
+ },
+ "V2H": {
+  "hood": "",
+  "main": "Kamloops North",
+  "prov": "BC"
+ },
+ "V2J": {
+  "hood": "",
+  "main": "Quesnel",
+  "prov": "BC"
+ },
+ "V2K": {
+  "hood": "",
+  "main": "Prince George North",
+  "prov": "BC"
+ },
+ "V2L": {
+  "hood": "",
+  "main": "Prince George East Central",
+  "prov": "BC"
+ },
+ "V2M": {
+  "hood": "",
+  "main": "Prince George West Central",
+  "prov": "BC"
+ },
+ "V2N": {
+  "hood": "",
+  "main": "Prince George South",
+  "prov": "BC"
+ },
+ "V2P": {
+  "hood": "",
+  "main": "Chilliwack Central",
+  "prov": "BC"
+ },
+ "V2R": {
+  "hood": "",
+  "main": "Chilliwack West",
+  "prov": "BC"
+ },
+ "V2S": {
+  "hood": "",
+  "main": "Abbotsford Southeast",
+  "prov": "BC"
+ },
+ "V2T": {
+  "hood": "",
+  "main": "Abbotsford Southwest",
+  "prov": "BC"
+ },
+ "V2V": {
+  "hood": "",
+  "main": "Mission East",
+  "prov": "BC"
+ },
+ "V2W": {
+  "hood": "",
+  "main": "Maple Ridge East",
+  "prov": "BC"
+ },
+ "V2X": {
+  "hood": "",
+  "main": "Maple Ridge West",
+  "prov": "BC"
+ },
+ "V2Y": {
+  "hood": "",
+  "main": "Langley Township Northwest",
+  "prov": "BC"
+ },
+ "V2Z": {
+  "hood": "",
+  "main": "Langley Township Southwest",
+  "prov": "BC"
+ },
+ "V3A": {
+  "hood": "",
+  "main": "Langley City",
+  "prov": "BC"
+ },
+ "V3B": {
+  "hood": "",
+  "main": "Port Coquitlam Central",
+  "prov": "BC"
+ },
+ "V3C": {
+  "hood": "",
+  "main": "Port Coquitlam South",
+  "prov": "BC"
+ },
+ "V3E": {
+  "hood": "",
+  "main": "Port Coquitlam North",
+  "prov": "BC"
+ },
+ "V3G": {
+  "hood": "",
+  "main": "Abbotsford East",
+  "prov": "BC"
+ },
+ "V3H": {
+  "hood": "",
+  "main": "Port Moody",
+  "prov": "BC"
+ },
+ "V3J": {
+  "hood": "",
+  "main": "Coquitlam North",
+  "prov": "BC"
+ },
+ "V3K": {
+  "hood": "",
+  "main": "Coquitlam South",
+  "prov": "BC"
+ },
+ "V3L": {
+  "hood": "",
+  "main": "New Westminster Northeast",
+  "prov": "BC"
+ },
+ "V3M": {
+  "hood": "Includes Annacis Island",
+  "main": "New Westminster Southwest",
+  "prov": "BC"
+ },
+ "V3N": {
+  "hood": "East Big Bend",
+  "main": "Burnaby",
+  "prov": "BC"
+ },
+ "V3R": {
+  "hood": "",
+  "main": "Surrey North",
+  "prov": "BC"
+ },
+ "V3S": {
+  "hood": "",
+  "main": "Surrey East",
+  "prov": "BC"
+ },
+ "V3T": {
+  "hood": "",
+  "main": "Surrey Inner Northwest",
+  "prov": "BC"
+ },
+ "V3V": {
+  "hood": "",
+  "main": "Surrey Outer Northwest",
+  "prov": "BC"
+ },
+ "V3W": {
+  "hood": "",
+  "main": "Surrey Upper West",
+  "prov": "BC"
+ },
+ "V3X": {
+  "hood": "",
+  "main": "Surrey Lower West",
+  "prov": "BC"
+ },
+ "V3Y": {
+  "hood": "",
+  "main": "Pitt Meadows",
+  "prov": "BC"
+ },
+ "V3Z": {
+  "hood": "",
+  "main": "Surrey",
+  "prov": "BC"
+ },
+ "V4A": {
+  "hood": "",
+  "main": "Surrey Southwest",
+  "prov": "BC"
+ },
+ "V4B": {
+  "hood": "",
+  "main": "White Rock",
+  "prov": "BC"
+ },
+ "V4C": {
+  "hood": "",
+  "main": "Delta Northeast",
+  "prov": "BC"
+ },
+ "V4E": {
+  "hood": "",
+  "main": "Delta East",
+  "prov": "BC"
+ },
+ "V4G": {
+  "hood": "",
+  "main": "Delta East Central",
+  "prov": "BC"
+ },
+ "V4K": {
+  "hood": "",
+  "main": "Delta Central",
+  "prov": "BC"
+ },
+ "V4L": {
+  "hood": "",
+  "main": "Delta Southeast",
+  "prov": "BC"
+ },
+ "V4M": {
+  "hood": "",
+  "main": "Delta Southwest",
+  "prov": "BC"
+ },
+ "V4N": {
+  "hood": "",
+  "main": "Surrey Northeast",
+  "prov": "BC"
+ },
+ "V4P": {
+  "hood": "",
+  "main": "Surrey South",
+  "prov": "BC"
+ },
+ "V4R": {
+  "hood": "",
+  "main": "Maple Ridge Northwest",
+  "prov": "BC"
+ },
+ "V4S": {
+  "hood": "",
+  "main": "Mission West",
+  "prov": "BC"
+ },
+ "V4T": {
+  "hood": "",
+  "main": "Westbank",
+  "prov": "BC"
+ },
+ "V4V": {
+  "hood": "",
+  "main": "Winfield",
+  "prov": "BC"
+ },
+ "V4W": {
+  "hood": "",
+  "main": "Langley Township East",
+  "prov": "BC"
+ },
+ "V4X": {
+  "hood": "",
+  "main": "Abbotsford West",
+  "prov": "BC"
+ },
+ "V4Z": {
+  "hood": "",
+  "main": "Chilliwack East",
+  "prov": "BC"
+ },
+ "V5A": {
+  "hood": "Government Road",
+  "main": "Burnaby",
+  "prov": "BC"
+ },
+ "V5B": {
+  "hood": "Parkcrest-Aubrey",
+  "main": "Burnaby",
+  "prov": "BC"
+ },
+ "V5C": {
+  "hood": "Burnaby Heights",
+  "main": "Burnaby",
+  "prov": "BC"
+ },
+ "V5E": {
+  "hood": "Lakeview-Mayfield",
+  "main": "Burnaby",
+  "prov": "BC"
+ },
+ "V5G": {
+  "hood": "Cascade-Schou",
+  "main": "Burnaby",
+  "prov": "BC"
+ },
+ "V5H": {
+  "hood": "Maywood",
+  "main": "Burnaby",
+  "prov": "BC"
+ },
+ "V5J": {
+  "hood": "Suncrest",
+  "main": "Burnaby",
+  "prov": "BC"
+ },
+ "V5K": {
+  "hood": "North Hastings-Sunrise",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V5L": {
+  "hood": "North Grandview-Woodlands",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V5M": {
+  "hood": "South Hastings-Sunrise",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V5N": {
+  "hood": "South Grandview-Woodlands",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V5P": {
+  "hood": "SE Kensington",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V5R": {
+  "hood": "South Renfrew-Collingwood",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V5S": {
+  "hood": "Killarney",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V5T": {
+  "hood": "East Mount Pleasant",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V5V": {
+  "hood": "West Kensington",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V5W": {
+  "hood": "SE Riley Park-Little Mountain",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V5X": {
+  "hood": "SE Oakridge",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V5Y": {
+  "hood": "West Mount Pleasant",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V5Z": {
+  "hood": "East Fairview",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V6A": {
+  "hood": "Strathcona",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V6B": {
+  "hood": "NE Downtown",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V6C": {
+  "hood": "Waterfront",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V6E": {
+  "hood": "South West End",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V6G": {
+  "hood": "North West End",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V6H": {
+  "hood": "West Fairview",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V6J": {
+  "hood": "NW Shaughnessy",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V6K": {
+  "hood": "Central Kitsilano",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V6L": {
+  "hood": "NW Arbutus Ridge",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V6M": {
+  "hood": "South Shaughnessy",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V6N": {
+  "hood": "Dunbar-Southlands",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V6P": {
+  "hood": "SE Kerrisdale",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V6R": {
+  "hood": "West Kitsilano",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V6S": {
+  "hood": "Chaldecutt",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V6T": {
+  "hood": "UBC",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V6V": {
+  "hood": "",
+  "main": "Richmond Northeast",
+  "prov": "BC"
+ },
+ "V6W": {
+  "hood": "",
+  "main": "Richmond Southeast",
+  "prov": "BC"
+ },
+ "V6X": {
+  "hood": "",
+  "main": "Richmond North",
+  "prov": "BC"
+ },
+ "V6Y": {
+  "hood": "",
+  "main": "Richmond Central",
+  "prov": "BC"
+ },
+ "V6Z": {
+  "hood": "SW Downtown",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V7A": {
+  "hood": "",
+  "main": "Richmond South",
+  "prov": "BC"
+ },
+ "V7B": {
+  "hood": "Sea Island",
+  "main": "Richmond",
+  "prov": "BC"
+ },
+ "V7C": {
+  "hood": "",
+  "main": "Richmond West",
+  "prov": "BC"
+ },
+ "V7E": {
+  "hood": "",
+  "main": "Richmond Southwest",
+  "prov": "BC"
+ },
+ "V7G": {
+  "hood": "",
+  "main": "North Vancouver Outer East",
+  "prov": "BC"
+ },
+ "V7H": {
+  "hood": "",
+  "main": "North Vancouver Inner East",
+  "prov": "BC"
+ },
+ "V7J": {
+  "hood": "",
+  "main": "North Vancouver East Central",
+  "prov": "BC"
+ },
+ "V7K": {
+  "hood": "",
+  "main": "North Vancouver North Central",
+  "prov": "BC"
+ },
+ "V7L": {
+  "hood": "",
+  "main": "North Vancouver South Central",
+  "prov": "BC"
+ },
+ "V7M": {
+  "hood": "",
+  "main": "North Vancouver Southwest Central",
+  "prov": "BC"
+ },
+ "V7N": {
+  "hood": "",
+  "main": "North Vancouver Northwest Central",
+  "prov": "BC"
+ },
+ "V7P": {
+  "hood": "",
+  "main": "North Vancouver Southwest",
+  "prov": "BC"
+ },
+ "V7R": {
+  "hood": "",
+  "main": "North Vancouver Northwest",
+  "prov": "BC"
+ },
+ "V7S": {
+  "hood": "",
+  "main": "West Vancouver North",
+  "prov": "BC"
+ },
+ "V7T": {
+  "hood": "",
+  "main": "West Vancouver Southeast",
+  "prov": "BC"
+ },
+ "V7V": {
+  "hood": "",
+  "main": "West Vancouver South",
+  "prov": "BC"
+ },
+ "V7W": {
+  "hood": "",
+  "main": "West Vancouver West",
+  "prov": "BC"
+ },
+ "V7X": {
+  "hood": "Bentall Centre",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V7Y": {
+  "hood": "Pacific Centre",
+  "main": "Vancouver",
+  "prov": "BC"
+ },
+ "V8A": {
+  "hood": "",
+  "main": "Powell River",
+  "prov": "BC"
+ },
+ "V8B": {
+  "hood": "",
+  "main": "Squamish",
+  "prov": "BC"
+ },
+ "V8C": {
+  "hood": "",
+  "main": "Kitimat",
+  "prov": "BC"
+ },
+ "V8E": {
+  "hood": "",
+  "main": "Whistler",
+  "prov": "BC"
+ },
+ "V8G": {
+  "hood": "",
+  "main": "Terrace",
+  "prov": "BC"
+ },
+ "V8J": {
+  "hood": "",
+  "main": "Prince Rupert",
+  "prov": "BC"
+ },
+ "V8K": {
+  "hood": "",
+  "main": "Saltspring Island",
+  "prov": "BC"
+ },
+ "V8L": {
+  "hood": "",
+  "main": "Sidney",
+  "prov": "BC"
+ },
+ "V8M": {
+  "hood": "",
+  "main": "Central Saanich",
+  "prov": "BC"
+ },
+ "V8N": {
+  "hood": "",
+  "main": "Saanich East",
+  "prov": "BC"
+ },
+ "V8P": {
+  "hood": "",
+  "main": "Saanich Southeast",
+  "prov": "BC"
+ },
+ "V8R": {
+  "hood": "",
+  "main": "Oak Bay North",
+  "prov": "BC"
+ },
+ "V8S": {
+  "hood": "",
+  "main": "Oak Bay South",
+  "prov": "BC"
+ },
+ "V8T": {
+  "hood": "",
+  "main": "Victoria North",
+  "prov": "BC"
+ },
+ "V8V": {
+  "hood": "",
+  "main": "Victoria South",
+  "prov": "BC"
+ },
+ "V8W": {
+  "hood": "",
+  "main": "Victoria Central British Columbia Provincial Government",
+  "prov": "BC"
+ },
+ "V8X": {
+  "hood": "",
+  "main": "Saanich South",
+  "prov": "BC"
+ },
+ "V8Y": {
+  "hood": "",
+  "main": "Saanich North",
+  "prov": "BC"
+ },
+ "V8Z": {
+  "hood": "",
+  "main": "Saanich Central",
+  "prov": "BC"
+ },
+ "V9A": {
+  "hood": "",
+  "main": "Esquimalt",
+  "prov": "BC"
+ },
+ "V9B": {
+  "hood": "",
+  "main": "Highlands",
+  "prov": "BC"
+ },
+ "V9C": {
+  "hood": "",
+  "main": "Metchosin",
+  "prov": "BC"
+ },
+ "V9E": {
+  "hood": "",
+  "main": "Saanich West",
+  "prov": "BC"
+ },
+ "V9G": {
+  "hood": "",
+  "main": "Ladysmith",
+  "prov": "BC"
+ },
+ "V9H": {
+  "hood": "",
+  "main": "Campbell River Outskirts",
+  "prov": "BC"
+ },
+ "V9J": {
+  "hood": "",
+  "main": "Courtenay Northern Outskirts",
+  "prov": "BC"
+ },
+ "V9K": {
+  "hood": "",
+  "main": "Qualicum Beach",
+  "prov": "BC"
+ },
+ "V9L": {
+  "hood": "",
+  "main": "Duncan",
+  "prov": "BC"
+ },
+ "V9M": {
+  "hood": "",
+  "main": "Comox",
+  "prov": "BC"
+ },
+ "V9N": {
+  "hood": "",
+  "main": "Courtenay Central",
+  "prov": "BC"
+ },
+ "V9P": {
+  "hood": "",
+  "main": "Parksville",
+  "prov": "BC"
+ },
+ "V9R": {
+  "hood": "",
+  "main": "Nanaimo South",
+  "prov": "BC"
+ },
+ "V9S": {
+  "hood": "",
+  "main": "Nanaimo Central",
+  "prov": "BC"
+ },
+ "V9T": {
+  "hood": "",
+  "main": "Nanaimo North",
+  "prov": "BC"
+ },
+ "V9V": {
+  "hood": "",
+  "main": "Nanaimo Northwest",
+  "prov": "BC"
+ },
+ "V9W": {
+  "hood": "",
+  "main": "Campbell River Central",
+  "prov": "BC"
+ },
+ "V9X": {
+  "hood": "",
+  "main": "Cedar",
+  "prov": "BC"
+ },
+ "V9Y": {
+  "hood": "",
+  "main": "Port Alberni",
+  "prov": "BC"
+ },
+ "V9Z": {
+  "hood": "",
+  "main": "Sooke",
+  "prov": "BC"
+ },
+ "X0A": {
+  "hood": "Iqaluit",
+  "main": "Outer Nunavut",
+  "prov": "NU"
+ },
+ "X0B": {
+  "hood": "Cambridge Bay",
+  "main": "Central Nunavut",
+  "prov": "NU"
+ },
+ "X0C": {
+  "hood": "Rankin Inlet",
+  "main": "Inner Nunavut",
+  "prov": "NU"
+ },
+ "X0E": {
+  "hood": "Inuvik",
+  "main": "Central Northwest Territories",
+  "prov": "NT"
+ },
+ "X0G": {
+  "hood": "Fort Liard",
+  "main": "Southwestern Northwest Territories",
+  "prov": "NT"
+ },
+ "X1A": {
+  "hood": "",
+  "main": "Yellowknife",
+  "prov": "NT"
+ },
+ "Y0A": {
+  "hood": "Watson Lake",
+  "main": "Southeastern Yukon",
+  "prov": "YT"
+ },
+ "Y0B": {
+  "hood": "Dawson City",
+  "main": "Central Yukon",
+  "prov": "YT"
+ },
+ "Y1A": {
+  "hood": "",
+  "main": "Whitehorse",
+  "prov": "YT"
+ }
+}

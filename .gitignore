@@ -35,3 +35,5 @@ cms/dev.log
 /data/raw/jobbank/**/companies/
 # mart 集市层(由 09_build_mart.py 从 raw+clean 衍生,可重建)
 /data/mart/
+# GeoNames 源(可从 download.geonames.org/export/zip/CA.zip 重下;衍生表 fsa-districts.json 跟踪)
+/data/raw/reference/geonames/

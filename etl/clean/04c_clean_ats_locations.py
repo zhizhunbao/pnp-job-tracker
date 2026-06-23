@@ -53,6 +53,11 @@ FSA_DISTRICT = {
 _POSTAL = re.compile(r"\b([A-Za-z]\d[A-Za-z])\s*\d[A-Za-z]\d\b")  # 加拿大邮编 A1A 1A1 → 取 FSA
 OTTAWA_FSA_PREFIX = ("K1", "K2")  # 邮编 K1*/K2* 几乎全是渥太华市(用邮编判定,避免 "Richmond Hill" 撞 Ottawa 社区名)
 OTTAWA_CITY_NAMES = {k for k in OTTAWA_DISTRICTS} | {"ottawa"}  # 无邮编时:按 city 精确名判定(不子串匹配地址)
+OTTAWA_COMMUNITIES = set(OTTAWA_DISTRICTS.values())  # 大渥太华社区名(用于把 Kanata/Gloucester… 折叠回 city=Ottawa)
+
+# 全国 FSA→区 维度表(GeoNames 衍生,我们自己维护,无外部 API)。FSA → {main, hood, prov}
+_FSA_TABLE_PATH = _paths.REFERENCE / "fsa-districts.json"
+FSA_TABLE: dict[str, dict] = json.loads(_FSA_TABLE_PATH.read_text(encoding="utf-8")) if _FSA_TABLE_PATH.exists() else {}
 
 
 def fsa_of(s: str) -> str:
@@ -87,22 +92,26 @@ def normalize(raw_city: str, raw_addr: str):
 
 
 def normalize_jobbank(prov: str, city: str, addr: str) -> dict:
-    """Job Bank 多省:保留帖子自带省/市;区只在大渥太华内判定。
-    Ottawa 判定以**邮编 FSA 为准**(K1*/K2*),避免 "Richmond Hill" 等撞 Ottawa 社区名;
-    无邮编时才退回 city 精确名(不子串匹配地址)。"""
+    """Job Bank 多省:保留帖子省/市;区由**邮编 FSA 查全国维度表**(GeoNames)得到。
+    - 大渥太华社区(Kanata/Gloucester…,K1*/K2*/K4*)→ 折叠成 city=Ottawa + district=社区;
+    - 其余城市:表里 main≠城市 → district=main(如 Richmond Hill Southwest);main=城市 → 用更细的 hood。"""
     prov = (prov or "").strip().upper()
     city_c = re.sub(r"\s+", " ", (city or "").strip())
     fsa = fsa_of(f"{city or ''} {addr or ''}")
     district = ""
-    in_ottawa = False
-    if prov == "ON":
-        if fsa:
-            in_ottawa = fsa[:2] in OTTAWA_FSA_PREFIX or fsa in FSA_DISTRICT
-        else:  # 无邮编 → 按 city 精确名(整城名匹配,不子串)
-            in_ottawa = city_c.lower() in OTTAWA_CITY_NAMES
-    if in_ottawa:
-        district = FSA_DISTRICT.get(fsa, "") or OTTAWA_DISTRICTS.get(city_c.lower(), "")
-        city_c = "Ottawa"  # 大渥太华:各社区统一为 city=Ottawa + district=社区
+    e = FSA_TABLE.get(fsa)
+    if e:
+        main, hood = e.get("main", ""), e.get("hood", "")
+        if prov == "ON" and fsa[:2] in ("K1", "K2", "K4") and main in OTTAWA_COMMUNITIES:
+            city_c, district = "Ottawa", main          # 大渥太华:折叠
+        elif main and main.lower() != city_c.lower():
+            district = main                             # 如 "Richmond Hill Southwest"
+        else:
+            district = hood                             # main=城市 → 用括号里更细的社区
+    elif fsa and prov == "ON" and city_c.lower() in OTTAWA_CITY_NAMES:
+        district = OTTAWA_DISTRICTS.get(city_c.lower(), "")  # 表里没有时的 Ottawa 兜底
+        if district:
+            city_c = "Ottawa"
     return {"country": "Canada", "province": prov, "city": city_c,
             "district": district, "address": clean_address(addr)}
 
