@@ -4,6 +4,14 @@
 > **铁律:抓取只存原始(raw),清洗在 processed,两步绝不混。** 按「先文档后动手」推进,落地见第 9 节。
 > 关联:[CLAUDE.md](../CLAUDE.md) · [STATUS.md](../STATUS.md)。
 
+## ⚠️ 已诊断:增量 seed 误下架 + 不稳定 ID(2026-06-23 实测)
+一次增量后 826 个旧岗被标 closed,量化成因:
+- **~805/826(97%)**:旧岗不在当前 postings.json,被「本次没出现→closed」对账误杀。**对账模型本身脆**(原以为 postings.json 累积就安全,实测基底不全时即误杀)。
+  → 修:**不要用 seenIds 对账**;改**按发布日期过期**(datePosted 早于 ~30 天且本次未见才下架),或仅在**全量抓取**后对账。
+- **~21/826(3%)**:同 posting 换了 URL —— externalId=完整 URL,2707/2733 条带 `?source=searchresults` 查询串,带不带就成两个 ID。
+  → 修:externalId 改用 **`jb:<posting_id>`**(JB 稳定数字 ID,数据已有);换 ID 需一次性 reset 重灌。
+> 两条都属 seed/identity 层,和下面的源框架并行;实施前先确认(见末尾)。
+
 ## 0. 铁律:抓取 ≠ 清洗(最重要)
 - **raw/** = 原样存下抓到的东西(HTML / Markdown / CSV 原文件),**不解析、不清洗、不去重**,按**日期快照不可变**。
 - **processed/** = 清洗后的结构化数据(解析成字段、合并、去重、累积)。
