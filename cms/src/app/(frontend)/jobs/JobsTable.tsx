@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { makeT, LANGS, LANG_KEY, type Lang } from './i18n'
+import { makeT, LANGS, LANG_KEY, type Lang, type TFn } from './i18n'
 
 export type JobRow = {
   id: string | number
@@ -529,7 +529,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
         </div>
       </div>
 
-      {popup && <AdvisorModal field={popup.field} job={popup.job} onClose={() => setPopup(null)} />}
+      {popup && <AdvisorModal field={popup.field} job={popup.job} lang={lang} onClose={() => setPopup(null)} />}
     </div>
   )
 }
@@ -538,8 +538,9 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
 // 职位/公司 → 调本地大模型流式生成;其余字段 → 模板即时解读
 const AI_FIELDS = new Set<ColKey>(['title', 'company'])
 
-function AdvisorModal({ field, job, onClose }: { field: ColKey; job: JobRow; onClose: () => void }) {
-  const a = advise(field, job)
+function AdvisorModal({ field, job, lang, onClose }: { field: ColKey; job: JobRow; lang: Lang; onClose: () => void }) {
+  const t = makeT(lang)
+  const a = advise(field, job, t)
   const useAI = AI_FIELDS.has(field)
   const [text, setText] = useState('')
   const [status, setStatus] = useState<'loading' | 'streaming' | 'done' | 'error'>('loading')
@@ -552,9 +553,9 @@ function AdvisorModal({ field, job, onClose }: { field: ColKey; job: JobRow; onC
       try {
         const res = await fetch('/api/advisor', {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal,
-          body: JSON.stringify({ field, id: String(job.id), job }),
+          body: JSON.stringify({ field, id: String(job.id), job, lang }),
         })
-        if (!res.ok || !res.body) { setStatus('error'); setText(`生成失败(${res.status})`); return }
+        if (!res.ok || !res.body) { setStatus('error'); setText(t('advisor.failed', { code: res.status })); return }
         const reader = res.body.getReader(); const dec = new TextDecoder()
         setStatus('streaming')
         for (;;) {
@@ -564,18 +565,18 @@ function AdvisorModal({ field, job, onClose }: { field: ColKey; job: JobRow; onC
         }
         setStatus('done')
       } catch {
-        if (!ctrl.signal.aborted) { setStatus('error'); setText('无法连接本地大模型(Ollama),请确认服务在线。') }
+        if (!ctrl.signal.aborted) { setStatus('error'); setText(t('advisor.offline')) }
       }
     })()
     return () => ctrl.abort()
-  }, [field, job, useAI])
+  }, [field, job, useAI, lang])
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(17,24,39,.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, zIndex: 50 }}>
       <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 12, maxWidth: 520, width: '100%', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,.25)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, padding: '16px 20px 8px' }}>
           <div>
-            <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, letterSpacing: .3 }}>🧭 AI 顾问 · {a.tag}{useAI && status === 'streaming' ? ' · 生成中…' : ''}</div>
+            <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, letterSpacing: .3 }}>{t('advisor.tag')} · {a.tag}{useAI && status === 'streaming' ? t('advisor.generating') : ''}</div>
             <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827' }}>{a.title}</h3>
           </div>
           <button onClick={onClose} style={{ border: 'none', background: '#f3f4f6', borderRadius: 8, width: 30, height: 30, cursor: 'pointer', fontSize: 16, color: '#6b7280', flexShrink: 0 }}>×</button>
@@ -583,7 +584,7 @@ function AdvisorModal({ field, job, onClose }: { field: ColKey; job: JobRow; onC
         <div style={{ padding: '4px 20px 20px' }}>
           {useAI ? (
             status === 'loading' ? (
-              <p style={{ margin: '10px 0', fontSize: 14, color: '#9ca3af' }}>⏳ 本地大模型生成中,请稍候…</p>
+              <p style={{ margin: '10px 0', fontSize: 14, color: '#9ca3af' }}>{t('advisor.loading')}</p>
             ) : (
               <div style={{ fontSize: 14, lineHeight: 1.7, color: '#374151' }}>{renderAI(text)}{status === 'streaming' && <span style={{ color: '#9ca3af' }}>▋</span>}</div>
             )
@@ -599,7 +600,7 @@ function AdvisorModal({ field, job, onClose }: { field: ColKey; job: JobRow; onC
               ))}
             </div>
           )}
-          <p style={{ marginTop: 14, fontSize: 11.5, color: '#9ca3af' }}>{useAI ? '由本地大模型生成 · 可能有误,仅供参考' : '说明由榜单数据自动生成 · 仅供参考,不构成移民/法律建议'}</p>
+          <p style={{ marginTop: 14, fontSize: 11.5, color: '#9ca3af' }}>{useAI ? t('advisor.footAI') : t('advisor.footTpl')}</p>
         </div>
       </div>
     </div>
@@ -652,10 +653,10 @@ function scoreBreakdown(j: JobRow): ScoreBd {
   return { teer, base, indemand, indemandLow, direct, acc, prov, total }
 }
 
-function advise(field: ColKey, j: JobRow): Advice {
+function advise(field: ColKey, j: JobRow, t: TFn): Advice {
   const links: { label: string; href: string }[] = []
-  if (j.applyUrl) links.push({ label: '投递页', href: j.applyUrl })
-  if (j.officialUrl) links.push({ label: '公司官网', href: j.officialUrl })
+  if (j.applyUrl) links.push({ label: t('advisor.applyLink'), href: j.applyUrl })
+  if (j.officialUrl) links.push({ label: t('advisor.siteLink'), href: j.officialUrl })
   const locStr = j.address || [j.city, j.province].filter(Boolean).join(', ')
   const prov = j.province || '—'
   const cat = j.broad || '未分类'

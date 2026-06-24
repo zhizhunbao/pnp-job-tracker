@@ -61,10 +61,12 @@ function loadJD(url?: string): string {
   return body ?? ''
 }
 
-const SYSTEM =
-  '你是加拿大移民求职顾问,服务对象是想走「雇主 offer → 省提名(PNP)」路线的留学生 / PGWP 求职者。' +
-  '用简体中文,客观专业、信息密度高,不要客套话、不要免责声明、不要 markdown 代码块。' +
-  '每个小标题用「【标题】」格式,标题下 2–3 句话。不确定的内容明确标注是推测。'
+type Lang = 'zh' | 'en' | 'ko'
+const LANG_NAME: Record<Lang, string> = { zh: '简体中文', en: 'English', ko: '한국어' }
+const SYSTEM = (lang: Lang) =>
+  'You are an immigration-focused job advisor for international students / PGWP holders in Canada aiming for the employer-offer → PNP route. ' +
+  `Reply in ${LANG_NAME[lang]}, objective and information-dense; no pleasantries, no disclaimers, no markdown code blocks. ` +
+  'Use 【Heading】 brackets for each section with 2–3 sentences under each. Clearly mark uncertain content as speculation.'
 
 type Job = {
   title?: string; company?: string; noc?: string; province?: string
@@ -83,36 +85,48 @@ const catOf = (noc?: string) => {
   return BROAD[noc[0]] || '未分类'
 }
 
-function buildPrompt(field: string, j: Job, jd: string): string {
+const HEADINGS: Record<Lang, { company: string; title: string }> = {
+  zh: {
+    company: '【公司是做什么的】【主要产品 / 项目】【主要竞品公司】【发展前景与对求职者的意义】',
+    title: '【这个职位做什么】【需要哪些技能 / 背景】【怎么准备(简历 / 作品 / 面试)】',
+  },
+  en: {
+    company: '【What the company does】【Main products / projects】【Main competitors】【Outlook & what it means for job-seekers】',
+    title: '【What this role does】【Skills / background needed】【How to prepare (resume / portfolio / interview)】',
+  },
+  ko: {
+    company: '【회사가 하는 일】【주요 제품 / 프로젝트】【주요 경쟁사】【전망과 구직자에게의 의미】',
+    title: '【이 직무가 하는 일】【필요한 기술 / 배경】【준비 방법 (이력서 / 포트폴리오 / 면접)】',
+  },
+}
+
+function buildPrompt(field: string, j: Job, jd: string, lang: Lang): string {
   const loc = j.address || [j.city, j.province].filter(Boolean).join(', ') || '—'
   const t = teerOf(j.noc)
-  const nocLine = j.noc ? `NOC ${j.noc}(TEER ${t ?? '—'},${catOf(j.noc)})` : '未识别 NOC'
+  const nocLine = j.noc ? `NOC ${j.noc} (TEER ${t ?? '—'}, ${catOf(j.noc)})` : 'NOC not identified'
+  const H = HEADINGS[lang]
+  const inLang = `keep the 【】 brackets, write the content in ${LANG_NAME[lang]}`
   if (field === 'company') {
-    return (
-      `公司:${j.company || '—'}\n所在地:${loc}\n官网:${j.officialUrl || '未知'}\n\n` +
-      '请基于你对该公司的了解,按以下四个小标题说明:\n' +
-      '【公司是做什么的】【主要产品 / 项目】【主要竞品公司】【发展前景与对求职者的意义】'
-    )
+    return `Company: ${j.company || '—'}\nLocation: ${loc}\nWebsite: ${j.officialUrl || 'unknown'}\n\n` +
+      `Based on what you know about this company, explain under these headings (${inLang}):\n${H.company}`
   }
-  // 职位:有抓到的真实 JD 就基于它总结,没有才靠 NOC/标题泛化
-  const base = `职位:${j.title || '—'}\n公司:${j.company || '—'}\n${nocLine}\n地点:${loc}\n`
-  const headings = '请按以下三个小标题说明:\n【这个职位做什么】【需要哪些技能 / 背景】【怎么准备(简历 / 作品 / 面试)】'
+  const base = `Role: ${j.title || '—'}\nCompany: ${j.company || '—'}\n${nocLine}\nLocation: ${loc}\n`
+  const instr = `Explain under these headings (${inLang}):\n${H.title}`
   if (jd) {
-    return (
-      base + `\n以下是该岗位的真实招聘描述(请严格基于它总结,不要编造描述里没有的内容;描述若是英文也用中文回答):\n"""\n${jd}\n"""\n\n` +
-      headings + '\n「怎么准备」一项可结合该 NOC 的通用建议。'
-    )
+    return base + `\nHere is the real job posting (summarize strictly from it, do not invent anything not in it; it may be in English but answer in ${LANG_NAME[lang]}):\n"""\n${jd}\n"""\n\n` +
+      instr + `\nFor "how to prepare" you may add general advice for this NOC.`
   }
-  return base + '\n(未抓到该岗详细描述,请基于职位名与 NOC 合理推断)\n\n' + headings
+  return base + `\n(No detailed posting was scraped; infer reasonably from the title and NOC.)\n\n` + instr
 }
 
 export async function POST(req: NextRequest) {
-  let body: { field?: string; id?: string; job?: Job }
+  let body: { field?: string; id?: string; job?: Job; lang?: string }
   try { body = await req.json() } catch { return new Response('bad json', { status: 400 }) }
   const field = body.field === 'company' ? 'company' : 'title'
+  const lang: Lang = body.lang === 'en' ? 'en' : body.lang === 'ko' ? 'ko' : 'zh'
   const job = body.job || {}
-  // 公司描述按公司名缓存(同公司多个岗位共用);职位按 id 缓存
-  const key = field === 'company' ? `company:${(job.company || '').toLowerCase()}` : `title:${body.id || job.title}`
+  // 公司描述按公司名缓存(同公司多个岗位共用);职位按 id 缓存。语言不同分开缓存
+  const key = (field === 'company' ? `company:${(job.company || '').toLowerCase()}` : `title:${body.id || job.title}`) + `:${lang}`
 
   const cached = cache.get(key)
   if (cached) return new Response(cached, { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'X-Cache': 'hit' } })
@@ -130,8 +144,8 @@ export async function POST(req: NextRequest) {
         think: false,
         stream: true,
         messages: [
-          { role: 'system', content: SYSTEM },
-          { role: 'user', content: buildPrompt(field, job, jd) },
+          { role: 'system', content: SYSTEM(lang) },
+          { role: 'user', content: buildPrompt(field, job, jd, lang) },
         ],
         options: { temperature: 0.4, num_predict: field === 'company' ? 480 : 420 },
       }),
