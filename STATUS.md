@@ -62,7 +62,8 @@ data/
 
 ## 怎么跑(新机/新 session)
 ```bash
-cd pnp-job-tracker/cms && docker compose up -d && npm run dev   # Postgres + :3000
+cd pnp-job-tracker/docker && docker compose up -d postgres   # 起库(全栈 compose,项目名 pnp,容器 pnp-*)
+cd ../cms && npm run dev                                      # 开发 :3000(库走宿主 5432)
 # 完整重跑 ETL(走 _paths):
 #   05 --all-occupations --prov ALL --since-days 3  → 05b → clean/04c → clean/04d → clean/05c → 08 → 09_build_mart
 #   (ATS 链 01-04+04b 另跑;build_fsa_districts/build_wages 偶尔重建)

@@ -1,33 +1,51 @@
-# 多源日更自动机。每个 service = 一个源容器,循环跑该源步骤(见 etl/auto_update.py 的 SOURCES)。
-# 抓取源(jobbank/ats…)只刷各自 raw;build 容器做跨源清洗+评分+mart+seed —— 灌库的唯一角色,
-# 避免多源抢 mart/seed。postgres 仍在 cms/docker-compose.yml(发布在宿主 5432)。
+# pnp-job-tracker 运行时全栈(单一 compose,项目名 pnp → 容器统一 pnp-* 前缀)。
+#   postgres  数据库(发布 :5432 给 host npm run dev;容器内用服务名 postgres 连)
+#   cms       Next/Payload 应用(仅 unattended profile 起;开发时用 host npm run dev)
+#   jobbank   抓 Job Bank → raw            (etl httpx 镜像)
+#   build     清洗→评分→mart→seed(灌库唯一角色,curl host.docker.internal:3000/seed)
 #
-# 两种用法:
-#   开发(cms 用 host npm run dev):  cd docker && docker compose up -d            # 只起 etl 自动机
-#   无人值守开机自更新(cms 也容器化):cd docker && docker compose --profile unattended up -d --build
-#   看日志 docker compose logs -f   |  停 docker compose down
+# 用法:
+#   开发:        cd docker && docker compose up -d postgres        # 只起库,cms 用 host npm run dev
+#   跑自动机:    cd docker && docker compose up -d                 # postgres+jobbank+build(cms 仍 host)
+#   无人值守全栈:cd docker && docker compose --profile unattended up -d --build   # 再加容器化 cms
+#   日志 docker compose logs -f  |  停 docker compose --profile unattended down
 # 开机自启:Docker Desktop 勾「登录时启动」+ 各容器 restart:unless-stopped。
-# 加新源: 在 etl/auto_update.py 的 SOURCES 登记步骤 → 这里复制一个 service 改 SOURCE。
+name: pnp
 
-# jobbank(httpx 抓取)与 build(清洗/评分/mart/seed)都用 httpx 镜像(都只需 python+解析库)。
-# 以后 crawl 源用 docker/etl/crawl/、dataset 源用 docker/etl/dataset/ 镜像,各自一个 service。
-x-etl: &etl                        # httpx 类源 + build 共用的构建/挂载配置(YAML 锚点)
+x-etl: &etl                        # httpx 类源 + build 共用(YAML 锚点)
   build:
-    context: ..                    # 仓库根(docker/ 的上一级)
+    context: ..                    # 仓库根(docker/ 上一级)
     dockerfile: docker/etl/httpx/Dockerfile
-  restart: unless-stopped          # Docker Desktop 设为登录自启 → 开机即跑
+  restart: unless-stopped
   working_dir: /repo               # etl/_paths.py 以此为根解析 data/
   volumes:
-    - ..:/repo                     # 源码 + data/ 落盘到宿主,host 上的 cms 直接读到新 mart
+    - ..:/repo                     # 源码 + data/ 落盘到宿主
   extra_hosts:
     - 'host.docker.internal:host-gateway'
 
 services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: pnp
+      POSTGRES_PASSWORD: pnp
+      POSTGRES_DB: pnp
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U pnp']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   jobbank:                         # 抓 Job Bank(只刷 raw/jobbank/)
     <<: *etl
     environment:
       SOURCE: jobbank
-      SCRAPE_INTERVAL: '7200'      # 2h(Job Bank 本就日更,够用)
+      SCRAPE_INTERVAL: '7200'      # 2h
       SINCE_DAYS: '3'
 
   build:                           # 跨源清洗→评分→mart→seed(灌库唯一角色)
@@ -35,25 +53,23 @@ services:
     environment:
       SOURCE: build
       SCRAPE_INTERVAL: '7200'
-      SEED_URL: http://host.docker.internal:3000/seed
+      SEED_URL: http://host.docker.internal:3000/seed  # host npm 或容器 cms 都通(cms 发布 :3000)
 
-  # cms 生产容器:仅无人值守模式起(--profile unattended)。开机自起、把 :3000 发布到宿主,
-  # 所以 build 的 SEED_URL=host.docker.internal:3000 在「容器 cms」和「host npm run dev」两种情况都通。
-  # 平时开发不带 profile → 不起此容器,你仍用 host npm run dev,零影响。
-  cms:
+  cms:                             # 生产容器:仅 --profile unattended 起;开发用 host npm run dev
     profiles: ['unattended']
     build:
       context: ../cms
-      dockerfile: Dockerfile       # cms/Dockerfile(需 next.config output:'standalone',已加)
+      dockerfile: Dockerfile       # 需 next.config output:'standalone'(已加)
     restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
     ports:
       - '3000:3000'
     env_file:
       - ../cms/.env                # PAYLOAD_SECRET / OLLAMA_* 等
     environment:
-      DATABASE_URI: postgresql://pnp:pnp@host.docker.internal:5432/pnp  # 覆盖 .env 的 localhost(连宿主上的 postgres)
-    extra_hosts:
-      - 'host.docker.internal:host-gateway'
+      DATABASE_URI: postgresql://pnp:pnp@postgres:5432/pnp  # 同网络用服务名连库(覆盖 .env 的 localhost)
     volumes:
       - ../data:/data              # seed 读 /data/mart(standalone server cwd=/app,../data=/data)
 
@@ -62,4 +78,8 @@ services:
   #   <<: *etl
   #   environment:
   #     SOURCE: ats
-  #     SCRAPE_INTERVAL: '86400'   # 每天一次
+  #     SCRAPE_INTERVAL: '86400'
+
+volumes:
+  pgdata:
+    name: cms_pgdata               # pin 现有卷,合并项目后不丢已灌的库

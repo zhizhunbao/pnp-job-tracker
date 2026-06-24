@@ -55,7 +55,9 @@ etl/ (Python: 抓取 → 清洗 → 评分, 写 data/) ──> cms/ (Payload + N
 
 ## 跑起来
 ```bash
-cd cms && docker compose up -d && npm run dev   # Postgres + localhost:3000
+cd docker && docker compose up -d postgres      # 起库(全栈 compose 在 docker/,项目名 pnp)
+cd cms && npm run dev                            # 开发:localhost:3000(库走宿主 5432)
+# 无人值守全栈(含容器化 cms,开机自更新):cd docker && docker compose --profile unattended up -d --build
 # 重灌: curl "localhost:3000/seed?reset=1"  |  增量检测下架: curl "localhost:3000/seed"
 # 改了 Jobs collection 字段 → 必须重启 dev server(Payload 同步 schema)再重灌
 # 完整重跑 ETL: 04 → clean/04b → clean/04c → clean/04d → 05 → 05b → 08 (走 _paths,顺序见 STATUS.md)
