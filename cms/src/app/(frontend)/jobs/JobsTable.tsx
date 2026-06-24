@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 
+import { makeT, LANGS, LANG_KEY, type Lang } from './i18n'
+
 export type JobRow = {
   id: string | number
   title: string
@@ -222,6 +224,10 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
   const headRowRef = useRef<HTMLTableRowElement>(null)
   const [limit, setLimit] = useState(60)          // 滚动分页:当前渲染行数
   const sentinelRef = useRef<HTMLDivElement>(null)
+  const [lang, setLang] = useState<Lang>('zh')    // 语言(localStorage 持久化)
+  useEffect(() => { try { const l = localStorage.getItem(LANG_KEY) as Lang | null; if (l === 'zh' || l === 'en' || l === 'ko') setLang(l) } catch { /* ignore */ } }, [])
+  const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
+  const t = makeT(lang)
   const toggleSort = (key: ColKey) =>
     setSort((s) => {
       if (s.key !== key) return { key, dir: 'desc' }       // 新列:降序
@@ -335,7 +341,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
   const teerOpts = useMemo(() => (nc.length ? uniq(nc.map((c) => (c.teer == null ? '未分类' : `TEER ${c.teer}`)))
     : uniq(jobs.map((j) => (j.teer == null ? '未分类' : `TEER ${j.teer}`)))), [nc, jobs])
   const sourceOpts = useMemo(() => (dims.sources.length ? dims.sources.map((s) => s.name) : uniq(jobs.map((j) => sourceLabel(j)))), [dims, jobs])
-  const accOpts = useMemo(() => (dims.experienceLevels.length ? uniq(dims.experienceLevels.map((e) => accLabel[e.name] ?? '—')) : uniq(jobs.map((j) => accLabel[j.accessibility] ?? '—'))), [dims, jobs])
+  const accOpts = useMemo(() => (dims.experienceLevels.length ? uniq(dims.experienceLevels.map((e) => e.name)) : uniq(jobs.map((j) => j.accessibility))), [dims, jobs])
   const anyFilter = q || directOnly || fCountry || fProv || fCity || fDistrict || fBroad || fMid || fFine || fTeer || fSource || fAcc
   const clearAll = () => { setQ(''); setDirectOnly(false); setFCountry(''); setFProv(''); setFCity(''); setFDistrict(''); setFBroad(''); setFMid(''); setFFine(''); setFTeer(''); setFSource(''); setFAcc('') }
 
@@ -347,7 +353,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
         (!fCountry || L.country === fCountry) && (!fProv || L.prov === fProv) && (!fCity || L.city === fCity) && (!fDistrict || L.district === fDistrict) &&
         (!fBroad || j.broad === fBroad) && (!fMid || j.mid === fMid) && (!fFine || j.fine === fFine) &&
         (!fTeer || (j.teer == null ? '未分类' : `TEER ${j.teer}`) === fTeer) &&
-        (!fSource || sourceLabel(j) === fSource) && (!fAcc || (accLabel[j.accessibility] ?? '—') === fAcc) &&
+        (!fSource || sourceLabel(j) === fSource) && (!fAcc || j.accessibility === fAcc) &&
         (!term || searchHay(j).includes(term))
     })
     const dir = sort.dir === 'asc' ? 1 : -1
@@ -373,57 +379,65 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
       <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1.5rem 1.25rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap' }}>
           <h1 style={{ margin: '0 0 2px', color: '#111827' }}>Jobs</h1>
-          {updatedAt && <span style={{ color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }}>更新 {fmtLocal(updatedAt)}</span>}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ display: 'inline-flex', border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
+              {LANGS.map((l) => (
+                <button key={l.code} onClick={() => setLangSaved(l.code)}
+                  style={{ border: 'none', padding: '3px 9px', fontSize: 12.5, cursor: 'pointer', background: lang === l.code ? '#2563eb' : '#fff', color: lang === l.code ? '#fff' : '#6b7280' }}>{l.label}</button>
+              ))}
+            </div>
+            {updatedAt && <span style={{ color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }}>{t('updated', { t: fmtLocal(updatedAt) })}</span>}
+          </div>
         </div>
         <p style={{ color: '#6b7280', marginTop: 0, fontSize: 13 }}>
-          {rows.length === jobs.length ? `${jobs.length} 个职位` : `${rows.length} / ${jobs.length}`}
+          {rows.length === jobs.length ? t('subtitle.count', { n: jobs.length }) : `${rows.length} / ${jobs.length}`}
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '1rem 0' }}>
           {/* 行1:地理(国家→省→市→区 联动) */}
           <div style={filtRow}>
-            <span style={filtLabel}>地理</span>
-            <Sel value={fCountry} onChange={(v) => { setFCountry(v); setFProv(''); setFCity(''); setFDistrict('') }} opts={countryOpts} all="全部国家" />
-            <Sel value={fProv} onChange={(v) => { setFProv(v); setFCity(''); setFDistrict('') }} opts={provOpts} all="全部省" />
-            <Sel value={fCity} onChange={(v) => { setFCity(v); setFDistrict('') }} opts={cityOpts} all="全部市" />
-            <Sel value={fDistrict} onChange={setFDistrict} opts={distOpts} all="全部区" />
+            <span style={filtLabel}>{t('filter.geo')}</span>
+            <Sel value={fCountry} onChange={(v) => { setFCountry(v); setFProv(''); setFCity(''); setFDistrict('') }} opts={countryOpts} all={t('all.country')} />
+            <Sel value={fProv} onChange={(v) => { setFProv(v); setFCity(''); setFDistrict('') }} opts={provOpts} all={t('all.prov')} />
+            <Sel value={fCity} onChange={(v) => { setFCity(v); setFDistrict('') }} opts={cityOpts} all={t('all.city')} />
+            <Sel value={fDistrict} onChange={setFDistrict} opts={distOpts} all={t('all.district')} />
           </div>
           {/* 行2:分类(TEER + 大→中→小 联动) */}
           <div style={filtRow}>
-            <span style={filtLabel}>分类</span>
-            <Sel value={fTeer} onChange={setFTeer} opts={teerOpts} all="全部 TEER" />
-            <Sel value={fBroad} onChange={(v) => { setFBroad(v); setFMid(''); setFFine('') }} opts={broadOpts} all="全部大类" />
-            <Sel value={fMid} onChange={(v) => { setFMid(v); setFFine('') }} opts={midOpts} all="全部中类" />
-            <Sel value={fFine} onChange={setFFine} opts={fineOpts} all="全部小类" />
+            <span style={filtLabel}>{t('filter.cat')}</span>
+            <Sel value={fTeer} onChange={setFTeer} opts={teerOpts} all={t('all.teer')} />
+            <Sel value={fBroad} onChange={(v) => { setFBroad(v); setFMid(''); setFFine('') }} opts={broadOpts} all={t('all.broad')} labelOf={(v) => t('broad.' + v)} />
+            <Sel value={fMid} onChange={(v) => { setFMid(v); setFFine('') }} opts={midOpts} all={t('all.mid')} />
+            <Sel value={fFine} onChange={setFFine} opts={fineOpts} all={t('all.fine')} />
           </div>
           {/* 行3:属性 */}
           <div style={filtRow}>
-            <span style={filtLabel}>属性</span>
-            <Sel value={fSource} onChange={setFSource} opts={sourceOpts} all="全部来源" />
-            <Sel value={fAcc} onChange={setFAcc} opts={accOpts} all="全部经验" />
+            <span style={filtLabel}>{t('filter.attr')}</span>
+            <Sel value={fSource} onChange={setFSource} opts={sourceOpts} all={t('all.source')} />
+            <Sel value={fAcc} onChange={setFAcc} opts={accOpts} all={t('all.exp')} labelOf={(v) => t('acc.' + v)} />
           </div>
           {/* 行4:搜索 + 仅第一方 + 清除 */}
           <div style={filtRow}>
-            <input placeholder="搜索 职位/公司/地点/NOC…" value={q} onChange={(e) => setQ(e.target.value)} style={{ ...ctrl, flex: '0 1 320px', minWidth: 180 }} />
-            <label style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', background: directOnly ? '#eef2ff' : '#fff', whiteSpace: 'nowrap' }} title="只看雇主第一方发布的(公司 ATS / Job Bank 直发),隐藏聚合转贴">
-              <input type="checkbox" checked={directOnly} onChange={(e) => setDirectOnly(e.target.checked)} />仅第一方
+            <input placeholder={t('search.placeholder')} value={q} onChange={(e) => setQ(e.target.value)} style={{ ...ctrl, flex: '0 1 320px', minWidth: 180 }} />
+            <label style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', background: directOnly ? '#eef2ff' : '#fff', whiteSpace: 'nowrap' }} title={t('directOnly.tip')}>
+              <input type="checkbox" checked={directOnly} onChange={(e) => setDirectOnly(e.target.checked)} />{t('directOnly')}
             </label>
-            {anyFilter && <button onClick={clearAll} style={{ ...ctrl, cursor: 'pointer', background: '#f3f4f6', color: '#b91c1c' }}>清除筛选</button>}
+            {anyFilter && <button onClick={clearAll} style={{ ...ctrl, cursor: 'pointer', background: '#f3f4f6', color: '#b91c1c' }}>{t('clear')}</button>}
             {/* 字段选择:右对齐,与搜索同一行 */}
             <div ref={colRef} style={{ position: 'relative', marginLeft: 'auto' }}>
-              <button onClick={() => setColOpen((o) => !o)} style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', background: '#f3f4f6', whiteSpace: 'nowrap' }}>⚙ 字段 ({shown.length})</button>
+              <button onClick={() => setColOpen((o) => !o)} style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', background: '#f3f4f6', whiteSpace: 'nowrap' }}>{t('fields', { n: shown.length })}</button>
               {colOpen && (
                 <div style={colPanel}>
                   <div style={{ display: 'flex', gap: 6, padding: '2px 4px 6px', borderBottom: '1px solid #f3f4f6', marginBottom: 4 }}>
-                    <button onClick={mainCols} style={{ ...colBtn, fontWeight: 600, color: '#2563eb', borderColor: '#bfdbfe' }}>主要</button>
-                    <button onClick={selectAllCols} style={colBtn}>全选</button>
-                    <button onClick={invertCols} style={colBtn}>反选</button>
-                    {hasWidths && <button onClick={resetWidths} style={colBtn} title="恢复自动列宽">列宽复位</button>}
+                    <button onClick={mainCols} style={{ ...colBtn, fontWeight: 600, color: '#2563eb', borderColor: '#bfdbfe' }}>{t('fields.main')}</button>
+                    <button onClick={selectAllCols} style={colBtn}>{t('fields.all')}</button>
+                    <button onClick={invertCols} style={colBtn}>{t('fields.invert')}</button>
+                    {hasWidths && <button onClick={resetWidths} style={colBtn}>{t('fields.resetW')}</button>}
                   </div>
                   {COLUMNS.map((c) => (
                     <label key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 6px', fontSize: 13, color: c.always ? '#9ca3af' : '#1f2937', cursor: c.always ? 'default' : 'pointer' }}>
                       <input type="checkbox" checked={c.always || visible.includes(c.key)} disabled={c.always} onChange={() => toggleCol(c.key)} />
-                      {c.label}{c.always ? ' (固定)' : ''}
+                      {t('col.' + c.key)}{c.always ? t('fields.fixed') : ''}
                     </label>
                   ))}
                 </div>
@@ -443,10 +457,10 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
                   const active = sort.key === c.key
                   const isLast = idx === shown.length - 1
                   return (
-                    <th key={c.key} onClick={() => toggleSort(c.key)} title="点击表头排序"
+                    <th key={c.key} onClick={() => toggleSort(c.key)} title={t('th.tip')}
                       style={{ padding: '8px 12px', color: active ? '#2563eb' : '#374151', fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none', position: 'relative', borderRight: isLast ? undefined : '1px solid #e5e7eb' }}>
-                      {c.label}<span style={{ color: active ? '#2563eb' : '#d1d5db', fontSize: 11 }}>{active ? (sort.dir === 'desc' ? ' ▼' : ' ▲') : ' ↕'}</span>
-                      {!isLast && <span onMouseDown={(e) => startResize(e, c.key)} onClick={(e) => e.stopPropagation()} onDoubleClick={(e) => { e.stopPropagation(); equalizeWidths() }} title="拖动改本列宽(左列不动,右列平移) · 双击平均分配各列"
+                      {t('col.' + c.key)}<span style={{ color: active ? '#2563eb' : '#d1d5db', fontSize: 11 }}>{active ? (sort.dir === 'desc' ? ' ▼' : ' ▲') : ' ↕'}</span>
+                      {!isLast && <span onMouseDown={(e) => startResize(e, c.key)} onClick={(e) => e.stopPropagation()} onDoubleClick={(e) => { e.stopPropagation(); equalizeWidths() }} title={t('resize.tip')}
                         style={{ position: 'absolute', top: 0, right: 0, width: 9, height: '100%', cursor: 'col-resize', zIndex: 1 }} />}
                     </th>
                   )
@@ -468,27 +482,27 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
                       let node: React.ReactNode
                       const extra: React.CSSProperties = {}
                       if (k === 'score') { node = j.score ?? '—'; Object.assign(extra, { fontWeight: 600, color: scoreColor(j.score) }) }
-                      else if (k === 'broad') { node = j.broad || '未分类'; Object.assign(extra, { whiteSpace: 'nowrap', color: cat.fg, fontWeight: 500 }) }
-                      else if (k === 'mid') { node = j.mid || '未分类'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+                      else if (k === 'broad') { node = j.broad ? t('broad.' + j.broad) : t('cell.uncat'); Object.assign(extra, { whiteSpace: 'nowrap', color: cat.fg, fontWeight: 500 }) }
+                      else if (k === 'mid') { node = (!j.mid || j.mid === '未分类') ? t('cell.uncat') : j.mid; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'fine') { node = (j.mid === '未分类' || !j.mid) ? '—' : j.fine; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'teer') { node = j.teer == null ? '—' : `TEER ${j.teer}`; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'title') { href = j.applyUrl || null; node = j.title; Object.assign(extra, wrapCell(360)) }
                       else if (k === 'company') { href = j.officialUrl || null; node = j.company; Object.assign(extra, wrapCell(190)) }
                       else if (k === 'noc') node = j.noc || '—'
-                      else if (k === 'accessibility') node = accLabel[j.accessibility] ?? '—'
+                      else if (k === 'accessibility') node = t('acc.' + (j.accessibility || 'unknown'))
                       else if (k === 'salary') { node = <span title={j.salary || ''}>{j.salaryText || '—'}</span>; Object.assign(extra, { whiteSpace: 'nowrap', color: j.salary ? '#15803d' : '#9ca3af' }) }
                       else if (k === 'salaryYr') { const a = j.salaryAnnual; node = a != null ? `$${Math.round(a / 1000)}K/yr` : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: a != null ? '#15803d' : '#9ca3af' }) }
                       else if (k === 'address') { href = j.address ? mapsUrl(j.address) : null; node = j.address || '—'; Object.assign(extra, wrapCell(220)) }
-                      else if (k === 'direct') { const dr = isDirect(j); node = dr ? '第一方' : '转贴'; Object.assign(extra, { whiteSpace: 'nowrap', color: dr ? '#15803d' : '#9ca3af', fontSize: 12.5 }) }
+                      else if (k === 'direct') { const dr = isDirect(j); node = dr ? t('cell.first') : t('cell.repost'); Object.assign(extra, { whiteSpace: 'nowrap', color: dr ? '#15803d' : '#9ca3af', fontSize: 12.5 }) }
                       else if (k === 'country') { node = L.country || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'province') { href = mapsFor(L.prov); node = L.prov || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'city') { href = mapsFor(L.city); node = L.city || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'district') { href = mapsFor(L.district); node = L.district || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#1f2937' }) }
                       else if (k === 'source') { href = sourceUrl(j.applyUrl) || null; node = sourceLabel(j); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
-                      else if (k === 'origin') { node = ORIGIN_LABEL[j.origin] || j.origin || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
-                      else if (k === 'pnp') { node = j.pnpEligible ? '✅ 可省提名' : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.pnpEligible ? '#15803d' : '#d1d5db', fontSize: 12.5 }) }
-                      else if (k === 'aip') { node = j.aip ? '🏅 指定雇主' : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.aip ? '#b45309' : '#d1d5db', fontSize: 12.5 }) }
-                      else if (k === 'status') { const cl = j.status === 'closed'; node = cl ? '已下架' : '在招'; Object.assign(extra, { whiteSpace: 'nowrap', color: cl ? '#9ca3af' : '#15803d', fontSize: 12.5 }) }
+                      else if (k === 'origin') { node = j.origin ? t('origin.' + j.origin) : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+                      else if (k === 'pnp') { node = j.pnpEligible ? t('cell.pnpYes') : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.pnpEligible ? '#15803d' : '#d1d5db', fontSize: 12.5 }) }
+                      else if (k === 'aip') { node = j.aip ? t('cell.aipYes') : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.aip ? '#b45309' : '#d1d5db', fontSize: 12.5 }) }
+                      else if (k === 'status') { const cl = j.status === 'closed'; node = cl ? t('cell.closed') : t('cell.open'); Object.assign(extra, { whiteSpace: 'nowrap', color: cl ? '#9ca3af' : '#15803d', fontSize: 12.5 }) }
                       else if (k === 'closedAt') { node = j.closedAt ? j.closedAt.slice(0, 10) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       else if (k === 'datePosted') { node = j.datePosted ? j.datePosted.slice(0, 10) : '—'; Object.assign(extra, { color: '#6b7280', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       else { node = j.lastSeen ? j.lastSeen.slice(0, 10) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
@@ -504,14 +518,14 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
                 )
               })}
               {rows.length === 0 && (
-                <tr><td colSpan={shown.length} style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>无匹配职位</td></tr>
+                <tr><td colSpan={shown.length} style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>{t('empty')}</td></tr>
               )}
             </tbody>
           </table>
         </div>
         {/* 滚动到此自动加载更多 */}
         <div ref={sentinelRef} style={{ textAlign: 'center', padding: '12px', fontSize: 12.5, color: '#9ca3af' }}>
-          {rows.length === 0 ? '' : limit < rows.length ? `下滑加载更多 · 已显示 ${Math.min(limit, rows.length)} / ${rows.length}` : `已全部显示 ${rows.length} 个`}
+          {rows.length === 0 ? '' : limit < rows.length ? t('more', { x: Math.min(limit, rows.length), total: rows.length }) : t('allShown', { total: rows.length })}
         </div>
       </div>
 
@@ -861,12 +875,12 @@ const ctrl: React.CSSProperties = { height: 38, boxSizing: 'border-box', padding
 const filtRow: React.CSSProperties = { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }
 const filtLabel: React.CSSProperties = { fontSize: 12, color: '#9ca3af', minWidth: 28, whiteSpace: 'nowrap' }
 // 联动下拉:上级选了,下级选项随之收窄;当前值不在选项里也保留显示
-function Sel({ value, onChange, opts, all }: { value: string; onChange: (v: string) => void; opts: string[]; all: string }) {
+function Sel({ value, onChange, opts, all, labelOf }: { value: string; onChange: (v: string) => void; opts: string[]; all: string; labelOf?: (v: string) => string }) {
   const list = value && !opts.includes(value) ? [value, ...opts] : opts
   return (
     <select value={value} onChange={(e) => onChange(e.target.value)} style={{ ...ctrl, maxWidth: 180 }}>
       <option value="">{all}</option>
-      {list.map((o) => <option key={o} value={o}>{o}</option>)}
+      {list.map((o) => <option key={o} value={o}>{labelOf ? labelOf(o) : o}</option>)}
     </select>
   )
 }
