@@ -70,7 +70,12 @@ const SYSTEM = (lang: Lang) =>
 
 type Job = {
   title?: string; company?: string; noc?: string; province?: string
-  city?: string; address?: string; officialUrl?: string; applyUrl?: string
+  city?: string; district?: string; address?: string; officialUrl?: string; applyUrl?: string
+  score?: number | null; category?: string; accessibility?: string
+  pnpEligible?: boolean; aip?: boolean; salary?: string; salaryAnnual?: number | null
+  wageMedHourly?: number | null; wageMedAnnual?: number | null
+  source?: string; sourceLabel?: string; origin?: string
+  datePosted?: string; lastSeen?: string; status?: string
 }
 
 const BROAD: Record<string, string> = {
@@ -83,6 +88,59 @@ const catOf = (noc?: string) => {
   if (noc[0] === '2' && /^21[345]/.test(noc)) return '工程'
   if (noc[0] === '7' && noc[1] === '3') return '运输'
   return BROAD[noc[0]] || '未分类'
+}
+
+// 评分明细(与 etl/08_score.py 一致)——喂进 prompt 让模型用准确数字解释
+const TEER_BASE: Record<number, number> = { 0: 54, 1: 56, 2: 52, 3: 46, 4: 28, 5: 20 }
+const INDEMAND2 = new Set(['21', '22', '31', '32', '72', '73', '42'])
+const INDEMAND_LOW = new Set(['44101', '75110', '85100', '85101', '84120', '65202'])
+const ACC_PTS: Record<string, number> = { 'co-op': 6, junior: 6, intermediate: 4, senior: 2, unknown: 3 }
+const AGENCY_RE = /recruit|staffing|talent|personnel|placement|outsourc|mercor|adecco|randstad/i
+function scoreFacts(j: Job): string {
+  const noc = j.noc || ''
+  const teer = teerOf(noc)
+  const base = teer == null ? 18 : (TEER_BASE[teer] ?? 18)
+  const indemand = noc && INDEMAND2.has(noc.slice(0, 2)) ? 10 : 0
+  const low = noc && INDEMAND_LOW.has(noc) ? 12 : 0
+  const direct = AGENCY_RE.test(j.company || '') ? 0 : 12
+  const acc = ACC_PTS[j.accessibility || 'unknown'] ?? 3
+  const prov = j.province && j.province !== 'ON' ? -6 : 0
+  const total = Math.max(0, Math.min(100, base + indemand + low + direct + acc + prov))
+  return `Score breakdown — baseline(${teer == null ? 'unclassified' : 'TEER ' + teer}): ${base}; in-demand group: ${indemand}; TEER4-5 special stream: ${low}; direct employer: ${direct}; experience(${j.accessibility || 'unknown'}): ${acc}; province(${j.province || '—'}): ${prov}; total: ${total}${j.score != null && j.score !== total ? ` (stored ${j.score})` : ''}`
+}
+function jobFacts(j: Job): string {
+  const t = teerOf(j.noc)
+  return [
+    `Title: ${j.title || '—'}`, `Company: ${j.company || '—'}`,
+    `NOC: ${j.noc || '—'} (TEER ${t ?? '—'}, ${catOf(j.noc)})`,
+    `Location: ${[j.district, j.city, j.province].filter(Boolean).join(', ') || '—'}`,
+    `Score: ${j.score ?? '—'}/100; PNP-eligible: ${j.pnpEligible ? 'yes' : 'no'}; AIP designated: ${j.aip ? 'yes' : 'no'}; experience: ${j.accessibility || '—'}`,
+    `Salary: ${j.salary || '—'}${j.salaryAnnual != null ? ` (~$${Math.round(j.salaryAnnual / 1000)}K/yr)` : ''}`,
+    j.wageMedAnnual != null ? `NOC local median: $${j.wageMedHourly}/hr (~$${Math.round(j.wageMedAnnual / 1000)}K/yr)` : '',
+    `Source: ${j.sourceLabel || j.source || '—'} (origin ${j.origin || '—'}); posted ${(j.datePosted || '').slice(0, 10) || '—'}; last seen ${(j.lastSeen || '').slice(0, 10) || '—'}; status ${j.status || 'open'}`,
+  ].filter(Boolean).join('\n')
+}
+// 各字段的解释要点(英文指令,输出按所选语言)
+const ASK: Record<string, string> = {
+  score: "Explain this job's immigration-value score: what it means and what drives it, using the exact numbers in the score breakdown.",
+  pnp: 'Explain whether and why this job fits the employer-offer → PNP route, plus caveats (each province has its own occupation lists / language / wage rules; this is a rough signal, not a ruling; QC is separate).',
+  aip: 'Explain the AIP (Atlantic Immigration Program) designated-employer status and what it means; note it only applies to the four Atlantic provinces and is a rough name match.',
+  noc: 'Explain the NOC code and its TEER level, and how NOC is used by PNP / Express Entry.',
+  teer: 'Explain the TEER level and what it means for skilled-worker immigration.',
+  broad: 'Explain this occupation major group and its immigration relevance.',
+  mid: 'Explain this occupation sub-group.', fine: 'Explain this specific occupation (unit group).',
+  salary: 'Explain the salary versus the local NOC median and what it means.',
+  salaryYr: 'Explain the annualized salary versus the local NOC median.',
+  accessibility: 'Explain the experience level and what it means for new grads / PGWP applicants.',
+  country: 'Explain the location and the relevant provincial nominee pathway.',
+  province: 'Explain the province and its PNP pathway.', city: 'Explain the city/location.',
+  district: 'Explain the district/area (note Ottawa communities are part of the amalgamated city).', address: 'Explain the location.',
+  source: 'Explain the data source and posting channel (first-party vs aggregated repost) and why it matters.',
+  direct: 'Explain first-party vs aggregated repost and why it matters for PNP (avoid agencies).',
+  origin: 'Explain the data channel (jobbank / ats / directory).',
+  datePosted: 'Explain the posting date and its relevance (freshness, expiry).',
+  lastSeen: 'Explain the last-seen time and what it indicates.',
+  status: 'Explain the job status (open/closed) and how it is determined.',
 }
 
 const HEADINGS: Record<Lang, { company: string; title: string }> = {
@@ -110,6 +168,12 @@ function buildPrompt(field: string, j: Job, jd: string, lang: Lang): string {
     return `Company: ${j.company || '—'}\nLocation: ${loc}\nWebsite: ${j.officialUrl || 'unknown'}\n\n` +
       `Based on what you know about this company, explain under these headings (${inLang}):\n${H.company}`
   }
+  if (field !== 'title') {
+    // 其它字段:把该岗事实(评分字段附明细)喂进去,模型只负责按所选语言解释,数字用我们给的
+    const ask = ASK[field] || `Explain the "${field}" field for this job.`
+    const facts = jobFacts(j) + (field === 'score' ? '\n' + scoreFacts(j) : '')
+    return `${ask}\nThe reader is an international student / PGWP holder aiming for employer-offer → PNP in Canada.\n\nJob facts:\n${facts}\n\nWrite 2–3 short sections, each starting with a 【heading】, content in ${LANG_NAME[lang]}. Use the exact numbers above; do not invent data.`
+  }
   const base = `Role: ${j.title || '—'}\nCompany: ${j.company || '—'}\n${nocLine}\nLocation: ${loc}\n`
   const instr = `Explain under these headings (${inLang}):\n${H.title}`
   if (jd) {
@@ -122,11 +186,12 @@ function buildPrompt(field: string, j: Job, jd: string, lang: Lang): string {
 export async function POST(req: NextRequest) {
   let body: { field?: string; id?: string; job?: Job; lang?: string }
   try { body = await req.json() } catch { return new Response('bad json', { status: 400 }) }
-  const field = body.field === 'company' ? 'company' : 'title'
+  const field = body.field || 'title'
   const lang: Lang = body.lang === 'en' ? 'en' : body.lang === 'ko' ? 'ko' : 'zh'
   const job = body.job || {}
-  // 公司描述按公司名缓存(同公司多个岗位共用);职位按 id 缓存。语言不同分开缓存
-  const key = (field === 'company' ? `company:${(job.company || '').toLowerCase()}` : `title:${body.id || job.title}`) + `:${lang}`
+  // 缓存键含 字段+标识+语言(公司按公司名,其余按 id;不同字段/语言分开缓存)
+  const keyId = field === 'company' ? (job.company || '').toLowerCase() : (body.id || job.title || '')
+  const key = `${field}:${keyId}:${lang}`
 
   const cached = cache.get(key)
   if (cached) return new Response(cached, { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'X-Cache': 'hit' } })

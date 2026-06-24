@@ -386,7 +386,6 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
                   style={{ border: 'none', padding: '3px 9px', fontSize: 12.5, cursor: 'pointer', background: lang === l.code ? '#2563eb' : '#fff', color: lang === l.code ? '#fff' : '#6b7280' }}>{l.label}</button>
               ))}
             </div>
-            {updatedAt && <span style={{ color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }}>{t('updated', { t: fmtLocal(updatedAt) })}</span>}
           </div>
         </div>
         <p style={{ color: '#6b7280', marginTop: 0, fontSize: 13 }}>
@@ -424,7 +423,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
             </label>
             {anyFilter && <button onClick={clearAll} style={{ ...ctrl, cursor: 'pointer', background: '#f3f4f6', color: '#b91c1c' }}>{t('clear')}</button>}
             {/* 字段选择:右对齐,与搜索同一行 */}
-            <div ref={colRef} style={{ position: 'relative', marginLeft: 'auto' }}>
+            <div ref={colRef} style={{ position: 'relative', marginLeft: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
               <button onClick={() => setColOpen((o) => !o)} style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', background: '#f3f4f6', whiteSpace: 'nowrap' }}>{t('fields', { n: shown.length })}</button>
               {colOpen && (
                 <div style={colPanel}>
@@ -442,6 +441,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
                   ))}
                 </div>
               )}
+              {updatedAt && <span style={{ color: '#9ca3af', fontSize: 12, whiteSpace: 'nowrap' }}>{t('updated', { t: fmtLocal(updatedAt) })}</span>}
             </div>
           </div>
         </div>
@@ -535,18 +535,14 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
 }
 
 // ── AI 顾问弹框 ────────────────────────────────────────────────
-// 职位/公司 → 调本地大模型流式生成;其余字段 → 模板即时解读
-const AI_FIELDS = new Set<ColKey>(['title', 'company'])
-
+// 所有字段都走本地大模型流式生成(按所选语言);前端只给极简头部 + 链接,正文由模型生成。
 function AdvisorModal({ field, job, lang, onClose }: { field: ColKey; job: JobRow; lang: Lang; onClose: () => void }) {
   const t = makeT(lang)
-  const a = advise(field, job, t)
-  const useAI = AI_FIELDS.has(field)
+  const a = advHeader(field, job, t)
   const [text, setText] = useState('')
   const [status, setStatus] = useState<'loading' | 'streaming' | 'done' | 'error'>('loading')
 
   useEffect(() => {
-    if (!useAI) return
     const ctrl = new AbortController()
     setText(''); setStatus('loading')
     ;(async () => {
@@ -569,29 +565,23 @@ function AdvisorModal({ field, job, lang, onClose }: { field: ColKey; job: JobRo
       }
     })()
     return () => ctrl.abort()
-  }, [field, job, useAI, lang])
+  }, [field, job, lang])
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(17,24,39,.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, zIndex: 50 }}>
       <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 12, maxWidth: 520, width: '100%', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,.25)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, padding: '16px 20px 8px' }}>
           <div>
-            <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, letterSpacing: .3 }}>{t('advisor.tag')} · {a.tag}{useAI && status === 'streaming' ? t('advisor.generating') : ''}</div>
+            <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, letterSpacing: .3 }}>{t('advisor.tag')} · {a.tag}{status === 'streaming' ? t('advisor.generating') : ''}</div>
             <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827' }}>{a.title}</h3>
           </div>
           <button onClick={onClose} style={{ border: 'none', background: '#f3f4f6', borderRadius: 8, width: 30, height: 30, cursor: 'pointer', fontSize: 16, color: '#6b7280', flexShrink: 0 }}>×</button>
         </div>
         <div style={{ padding: '4px 20px 20px' }}>
-          {useAI ? (
-            status === 'loading' ? (
-              <p style={{ margin: '10px 0', fontSize: 14, color: '#9ca3af' }}>{t('advisor.loading')}</p>
-            ) : (
-              <div style={{ fontSize: 14, lineHeight: 1.7, color: '#374151' }}>{renderAI(text)}{status === 'streaming' && <span style={{ color: '#9ca3af' }}>▋</span>}</div>
-            )
+          {status === 'loading' ? (
+            <p style={{ margin: '10px 0', fontSize: 14, color: '#9ca3af' }}>{t('advisor.loading')}</p>
           ) : (
-            a.body.map((p, i) => (
-              <p key={i} style={{ margin: '10px 0', fontSize: 14, lineHeight: 1.6, color: '#374151' }}>{p}</p>
-            ))
+            <div style={{ fontSize: 14, lineHeight: 1.7, color: '#374151' }}>{renderAI(text)}{status === 'streaming' && <span style={{ color: '#9ca3af' }}>▋</span>}</div>
           )}
           {a.links.length > 0 && (
             <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid #f3f4f6', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -600,7 +590,7 @@ function AdvisorModal({ field, job, lang, onClose }: { field: ColKey; job: JobRo
               ))}
             </div>
           )}
-          <p style={{ marginTop: 14, fontSize: 11.5, color: '#9ca3af' }}>{useAI ? t('advisor.footAI') : t('advisor.footTpl')}</p>
+          <p style={{ marginTop: 14, fontSize: 11.5, color: '#9ca3af' }}>{t('advisor.footAI')}</p>
         </div>
       </div>
     </div>
@@ -617,258 +607,12 @@ function renderAI(text: string): React.ReactNode {
 }
 
 // ── 按字段类型生成顾问解读(基于该行数据;无需 API) ─────────────
-type Advice = { tag: string; title: string; body: string[]; links: { label: string; href: string }[] }
-
-const TEER_DESC: Record<number, string> = {
-  0: 'TEER 0(管理岗):属技能类职业,是雇主 offer 省提名(如 OINP 雇主类)的核心目标。',
-  1: 'TEER 1:通常需大学学历的专业岗(工程、IT、医生等)。高技能,省提名/EE 通道首选。',
-  2: 'TEER 2:需 college 文凭或 2 年以上培训/学徒。技能岗,多数省提名雇主通道可走。',
-  3: 'TEER 3:需高中学历加几周在职培训,或相关经验。部分省雇主/紧缺通道可走。',
-  4: 'TEER 4:需高中或短期在岗培训。低技能,通道有限;部分紧缺职业(医护辅助、服务)有专门通道。',
-  5: 'TEER 5:无正式教育要求的短期示范类岗位。技能门槛最低,移民通道最少。',
-}
-const teerLine = (noc: string): string => {
-  const t = teerOf(noc)
-  return t == null ? '此岗标题未匹配 NOC 规则,暂未分类。' : TEER_DESC[t]
-}
-
-// 评分公式常量(与 etl/08_score.py 保持一致)——用于在弹框里还原每一分怎么来的
-const TEER_BASE: Record<number, number> = { 0: 54, 1: 56, 2: 52, 3: 46, 4: 28, 5: 20 }
-const INDEMAND2 = new Set(['21', '22', '31', '32', '72', '73', '42']) // 紧缺大类:科技/医疗/技工运输/教育社区
-const INDEMAND_LOW = new Set(['44101', '75110', '85100', '85101', '84120', '65202']) // TEER4-5 专项紧缺通道
-const ACC_PTS: Record<string, number> = { 'co-op': 6, junior: 6, intermediate: 4, senior: 2, unknown: 3 }
-const AGENCY_RE = /recruit|staffing|talent|personnel|placement|outsourc|mercor|adecco|randstad/i
-
-type ScoreBd = { teer: number | null; base: number; indemand: number; indemandLow: number; direct: number; acc: number; prov: number; total: number }
-function scoreBreakdown(j: JobRow): ScoreBd {
-  const noc = j.noc || ''
-  const teer = teerOf(noc)
-  const base = teer == null ? 18 : (TEER_BASE[teer] ?? 18)
-  const indemand = noc && INDEMAND2.has(noc.slice(0, 2)) ? 10 : 0
-  const indemandLow = noc && INDEMAND_LOW.has(noc) ? 12 : 0
-  const direct = AGENCY_RE.test(j.company || '') ? 0 : 12
-  const acc = ACC_PTS[j.accessibility] ?? 3
-  const prov = j.province && j.province !== 'ON' ? -6 : 0
-  const total = Math.max(0, Math.min(100, base + indemand + indemandLow + direct + acc + prov))
-  return { teer, base, indemand, indemandLow, direct, acc, prov, total }
-}
-
-function advise(field: ColKey, j: JobRow, t: TFn): Advice {
+// AI 顾问头部:标签(三语,复用列名)+ 上下文标题 + 链接;正文全部由 /api/advisor 大模型按所选语言生成。
+function advHeader(field: ColKey, j: JobRow, t: TFn): { tag: string; title: string; links: { label: string; href: string }[] } {
   const links: { label: string; href: string }[] = []
   if (j.applyUrl) links.push({ label: t('advisor.applyLink'), href: j.applyUrl })
   if (j.officialUrl) links.push({ label: t('advisor.siteLink'), href: j.officialUrl })
-  const locStr = j.address || [j.city, j.province].filter(Boolean).join(', ')
-  const prov = j.province || '—'
-  const cat = j.broad || '未分类'
-  const provPnp: Record<string, string> = { ON: 'OINP(安省省提名)', BC: 'BC PNP', AB: 'AAIP(阿省)', MB: 'MPNP(曼省)', SK: 'SINP(萨省)', NS: 'NSNP(新斯科舍)', NB: 'NBPNP(新省)' }
-
-  switch (field) {
-    case 'score': {
-      const s = j.score
-      const level = s == null ? '暂未评分' : s >= 75 ? '移民价值高' : s >= 50 ? '中等' : '偏低'
-      const b = scoreBreakdown(j)
-      const sign = (n: number) => (n > 0 ? `+${n}` : `${n}`)
-      const body = [
-        '评分 = 该职位 TEER 的基线 + 多项加减分(各 TEER 独立基线,不跨级直接比较)。本岗构成:',
-        `① 基线(${b.teer == null ? '未分类' : 'TEER ' + b.teer}):${b.base}`,
-        `② 紧缺大类(NOC 前2位 21/22/31/32/72/73/42):${sign(b.indemand)}`,
-        `③ TEER4–5 专项紧缺通道:${sign(b.indemandLow)}`,
-        `④ 直接雇主(非中介):${sign(b.direct)}`,
-        `⑤ 经验级别(${accLabel[j.accessibility] ?? '—'}):${sign(b.acc)}`,
-        `⑥ 省份(${j.province || '—'}${b.prov < 0 ? ',非安省扣分' : ',安省'}):${sign(b.prov)}`,
-        `= 合计:${b.total}(封顶 0–100)${s != null && s !== b.total ? ` · 入库分 ${s}` : ''}`,
-      ]
-      if (s == null) return { tag: '移民价值评分', title: '暂未评分', body: ['此岗标题未匹配 NOC 规则,无法分类,因此未评分。可补更明确的职位名以匹配 NOC。'], links }
-      return { tag: `移民价值评分 · ${level}`, title: `评分 ${s} / 100`, body, links }
-    }
-    case 'broad': {
-      return {
-        tag: '大分类', title: cat,
-        body: [
-          `职业层级:${cat}(大类) › ${j.mid || '—'}(中类) › ${j.fine || '—'}(小类),取自官方 NOC ${j.noc || '—'}。`,
-          '大分类 = NOC 第 1 位的 10 大职业类(管理 / 科技 / 医疗 / 技工 / 服务 等);勾选「中/小分类」列可看更细方向。',
-          `移民技能等级看 NOC 第 2 位的 TEER:${teerLine(j.noc)}`,
-        ],
-        links,
-      }
-    }
-    case 'mid':
-    case 'fine': {
-      return {
-        tag: field === 'mid' ? '中分类' : '小分类', title: (field === 'mid' ? j.mid : j.fine) || '未分类',
-        body: [
-          `职业层级:${cat}(大类) › ${j.mid || '—'}(中类) › ${j.fine || '—'}(小类),取自官方 NOC ${j.noc || '—'}。`,
-          '中分类把大类细分(如「科技」分 IT / 工程,「技工」分 技工 / 运输 / 物流);小分类是具体职业方向,便于按方向投递与筛选。',
-          teerLine(j.noc),
-        ],
-        links,
-      }
-    }
-    case 'teer': {
-      const t = teerOf(j.noc)
-      return {
-        tag: '技能等级 (TEER)', title: t == null ? '未分类' : `TEER ${t}`,
-        body: [
-          'TEER = Training, Education, Experience and Responsibilities,取自 NOC 五位码第 2 位,是加拿大移民判断「技能岗」的核心依据。',
-          teerLine(j.noc),
-          'TEER 0–3 属技能岗,雇主 offer 省提名(OINP 等)的主路线;TEER 4–5 偏低技能,仅特定紧缺职业有专门通道。',
-        ],
-        links,
-      }
-    }
-    case 'title':
-      return {
-        tag: '职位', title: j.title,
-        body: [
-          `这是 ${j.company || '该公司'} 发布的岗位${j.noc ? `,对应 NOC ${j.noc}` : ''}${j.accessibility && accLabel[j.accessibility] && j.accessibility !== 'unknown' ? `,经验级别约为${accLabel[j.accessibility]}` : ''}。`,
-          j.applyUrl ? '右键「投递页」可在新标签打开原始招聘链接,查看完整职责与要求。' : '该来源未提供直接投递链接。',
-          `职业大类:${cat}。${teerLine(j.noc)}`,
-        ],
-        links,
-      }
-    case 'company':
-      return {
-        tag: '公司', title: j.company || '—',
-        body: [
-          j.officialUrl ? `官网:${j.officialUrl}(右键公司名可在新标签打开)。` : '榜单暂未抓到该公司官网。',
-          j.source === 'Job Bank' || j.officialUrl ? '来源为政府 Job Bank / 第一方页面,通常是直接雇主——雇主 offer 省提名要求 offer 来自真实雇主而非中介,直接雇主更有价值。' : `来源为 ${j.source},可能是聚合平台,需核实是否直接雇主。`,
-          locStr ? `公司地点:${locStr}。雇主 offer 省提名按公司所在省走对应通道(${provPnp[prov] || `${prov} 省提名`})。` : '',
-        ].filter(Boolean),
-        links,
-      }
-    case 'noc':
-      return {
-        tag: 'NOC 职业代码', title: j.noc ? `NOC ${j.noc}` : '未识别 NOC',
-        body: [
-          j.noc ? `NOC(National Occupational Classification)是加拿大国家职业分类,五位码。第 2 位 = TEER 等级(本岗为 ${j.category || '—'})。` : '此岗标题未匹配到 NOC 代码,因此未评分。',
-          '省提名与快速通道(EE)都按 NOC 判断职业是否符合通道、是否在紧缺/优先清单上。',
-          j.noc ? '可在官方 NOC 网站用此代码查职责、薪资与对应移民通道。' : '可补充更明确的职位名以帮助匹配 NOC 规则。',
-        ],
-        links: j.noc ? [...links, { label: `NOC ${j.noc} 官方页`, href: `https://noc.esdc.gc.ca/Structure/NocSearch?objectid=&val65=${encodeURIComponent(j.noc)}` }] : links,
-      }
-    case 'accessibility': {
-      const lvl = accLabel[j.accessibility] ?? '—'
-      return {
-        tag: '经验级别', title: j.accessibility === 'unknown' || !j.accessibility ? '未标注' : lvl,
-        body: [
-          `经验级别由职位标题/描述推断:co-op(实习)、初级(junior)、中级(intermediate)、高级(senior)。本岗为${lvl}。`,
-          '对走 PGWP→雇主 offer 省提名的应届/早期求职者,初级与中级岗位往往更现实;高级岗要求更高但加分也更多。',
-        ],
-        links,
-      }
-    }
-    case 'salary':
-    case 'salaryYr': {
-      const a = j.salaryAnnual
-      const yr = a != null ? `$${Math.round(a / 1000)}K/yr` : '—'
-      const med = j.wageMedAnnual
-      const vs = a != null && med ? `,本岗${a >= med ? '高于' : '低于'}中位 ${Math.abs(Math.round((a / med - 1) * 100))}%` : ''
-      return {
-        tag: field === 'salaryYr' ? '年薪(折算)' : '薪资',
-        title: field === 'salaryYr' ? yr : (j.salary || '未标注'),
-        body: [
-          j.salary ? `原始:${j.salary}` : '未公开薪资',
-          a != null ? `折算年薪 ≈ ${yr}` : '',
-          med ? `该 NOC 当地中位:$${j.wageMedHourly}/hr(≈$${Math.round(med / 1000)}K/yr)${vs}` : '该 NOC 暂无中位工资数据',
-        ].filter(Boolean),
-        links,
-      }
-    }
-    case 'country':
-    case 'province':
-    case 'city':
-    case 'district':
-    case 'address': {
-      const L = parseLoc(j)
-      const ttl = field === 'country' ? L.country : field === 'province' ? L.prov : field === 'city' ? L.city : field === 'address' ? (j.address || L.district) : L.district
-      return {
-        tag: field === 'country' ? '国家' : field === 'province' ? '省' : field === 'city' ? '市' : field === 'address' ? '地址' : '区', title: ttl || '—',
-        body: [
-          `该岗地点:${[L.district, L.city, L.prov].filter(Boolean).join(' · ') || '—'}(省 › 市 › 区)。右键「区」列可开 Google 地图。`,
-          `所在省:${prov}。雇主 offer 省提名按公司所在省走对应通道——${provPnp[prov] || `${prov} 省提名`}。`,
-          '渥太华的 Kanata / Nepean / Orléans 等都是「大渥太华市」的社区(区),同属安省 OINP。',
-        ],
-        links,
-      }
-    }
-    case 'origin':
-      return {
-        tag: '数据渠道', title: ORIGIN_LABEL[j.origin] || j.origin || '—',
-        body: [
-          '渠道 = 这条岗经 raw 下哪个来源进来的:jobbank(政府职位板)/ ats(公司第一方招聘系统)/ directory(社区/园区名单)。',
-          j.origin === 'ats' ? '本岗来自公司自己的 ATS(由 Kanata North 社区名单发现的公司)→ 直接雇主。' : j.origin === 'jobbank' ? `本岗来自 Job Bank;原始板:${j.source}。` : '本岗来自社区/园区名单。',
-        ],
-        links,
-      }
-    case 'source':
-    case 'direct': {
-      const label = sourceLabel(j)
-      const first = isDirect(j)
-      return {
-        tag: field === 'direct' ? '发布渠道' : '数据来源', title: `${first ? '第一方发布' : '聚合转贴'} · ${label}`,
-        body: [
-          '「第一方 / 转贴」说的是发布渠道,不是雇主真假:第一方=雇主在公司 ATS 或 Job Bank 直接发;转贴=Job Bank 收录了 indeed / Talent.com 等平台上的帖子。',
-          '转贴里大多仍是真实雇主——公司 HR 在 indeed 发的也算直接雇主,对省提名一样有效;只是可能和别处重复,投递前点进去核实雇主即可。',
-          '真正要避开的是「中介 / 派遣」(offer 不来自实际雇主),这类已在入库时按公司名过滤掉,所以列表里基本都是真实雇主。',
-          first ? `本岗:${label} 第一方发布。` : `本岗经 Job Bank 收录,原始出处「${j.source}」。`,
-        ],
-        links,
-      }
-    }
-    case 'pnp':
-      return {
-        tag: 'PNP 资格', title: j.pnpEligible ? '✅ 可走雇主 offer 省提名' : '一般不符合(技能门槛)',
-        body: [
-          j.pnpEligible
-            ? '该岗的 NOC 属 TEER 0-3(技能岗),或在 TEER4-5 的专门紧缺通道清单——是各省「雇主 offer→省提名」通道通常要求的技能门槛。'
-            : '该岗 NOC 属 TEER 4-5(高中/无正式教育要求)且不在紧缺低 TEER 通道,大多数省提名雇主类通道不收。',
-          '⚠️ 这只是按 NOC/TEER 的**粗筛信号**,不是资格认定:各省(OINP/SINP/AAIP…)有自己的职业清单、语言/工资/居住要求,QC 更是走自己的体系(不属 PNP)。以官方通道要求为准。',
-          '本站是全职业职位板,PNP 只是其中一个状态标记,不代表其他岗没价值。',
-        ],
-        links,
-      }
-    case 'aip':
-      return {
-        tag: 'AIP 指定雇主', title: j.aip ? '🏅 在官方 AIP 指定雇主名单' : '不在名单(或非大西洋四省)',
-        body: [
-          j.aip
-            ? '该雇主出现在**大西洋移民项目(AIP)**官方「指定雇主」名单上。AIP 是唯一公布指定雇主名单的移民通道——这类雇主已获批可担保移民,是大西洋四省(NL/NB/NS/PE)最实在的 sponsor 线索。'
-            : 'AIP 只限大西洋四省(NL/NB/NS/PE),且雇主需在官方指定名单上。本岗不满足(别省或雇主未上名单)。',
-          '⚠️ 按雇主名匹配官方名单的**粗筛**:同名 franchise 可能是不同加盟商;投递前以官方名单为准。',
-        ],
-        links,
-      }
-    case 'datePosted':
-      return {
-        tag: '发布时间', title: j.datePosted ? j.datePosted.slice(0, 10) : '—',
-        body: [
-          j.datePosted ? `该岗发布于 ${j.datePosted.slice(0, 10)}。` : '未取得发布时间。',
-          '发布越新越可能仍在招;Job Bank 等渠道的岗位有时效,建议尽快投递。',
-        ],
-        links,
-      }
-    case 'lastSeen':
-      return {
-        tag: '更新时间', title: j.lastSeen ? j.lastSeen.slice(0, 10) : '—',
-        body: [
-          j.lastSeen ? `本榜单最近一次在 ${j.lastSeen.slice(0, 10)} 仍抓到该岗(说明当时还挂着)。` : '未记录最近抓取时间。',
-          '更新时间反映岗位是否仍在线;长时间未更新的岗位可能已关闭。',
-        ],
-        links,
-      }
-    case 'status':
-    case 'closedAt': {
-      const cl = j.status === 'closed'
-      return {
-        tag: '岗位状态', title: cl ? '已下架' : '在招',
-        body: [
-          cl ? `该岗已下架${j.closedAt ? `(${j.closedAt.slice(0, 10)} 起最近一次抓取不再出现)` : ''}。` : '该岗仍在招(最近一次抓取还在线)。',
-          '判定方式:每次抓取若某岗不再出现,就标记为已下架并记录下架时间。',
-        ],
-        links,
-      }
-    }
-  }
+  return { tag: t('col.' + field), title: j.title || j.company || '—', links }
 }
 
 const scoreColor = (s: number | null) => (s == null ? '#9ca3af' : s >= 75 ? '#15803d' : s >= 50 ? '#b45309' : '#6b7280')

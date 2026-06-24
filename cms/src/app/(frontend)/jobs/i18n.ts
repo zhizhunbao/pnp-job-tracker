@@ -1,6 +1,7 @@
 // 轻量 i18n:中/英/韩。无第三方库 —— 一份按 key 的字典 + 带 {var} 插值的 t()。
-// 作用域:/jobs 页 UI 外壳(列名/筛选/按钮/状态/大分类/经验等固定文案)。
-// AI 顾问的三语在 advisor-i18n(第二步);NOC 中/小分类名(数据派生、海量)暂保持原值。
+// 作用域:/jobs 页 UI 外壳(列名/筛选/按钮/状态/大分类/经验)+ AI 顾问的 UI 壳(advisor.*)。
+// AI 顾问正文不在这里:所有字段都由 /api/advisor 大模型按所选语言生成(无三语长文要维护)。
+// NOC 中/小分类名(数据派生、海量)暂保持原值。
 export type Lang = 'zh' | 'en' | 'ko'
 export const LANGS: { code: Lang; label: string }[] = [
   { code: 'zh', label: '中' },
