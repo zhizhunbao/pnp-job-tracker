@@ -93,11 +93,17 @@ export async function GET(req: Request) {
   })
   counts.jobs = jobRows.length
 
-  // ── 下架对账(非 reset):本次没出现的 open 岗 → closed ──
+  // ── 下架(非 reset):只下架「本次未见 且 发布已超 EXPIRE_DAYS 天」的岗 ──
+  // 不再用「本次没出现就 closed」对账:增量抓取只含最近几天,会误杀大量仍在招的旧岗
+  // (实测一次误杀 805 个,见 docs/source-framework.md)。改按发布日期过期(JB 帖约 30 天):
+  // 近期未见的岗先留着,等真正过龄才下架。
+  const EXPIRE_DAYS = 30
   let closed = 0
   if (!reset) {
+    const cutoff = new Date(Date.now() - EXPIRE_DAYS * 86400000).toISOString()
     const open = await payload.find({ collection: 'jobs', where: { status: { equals: 'open' } }, limit: 100000, depth: 0 })
-    const stale = open.docs.filter((d) => !seenIds.has(d.externalId as string))
+    const stale = open.docs.filter((d) => !seenIds.has(d.externalId as string)
+      && typeof d.datePosted === 'string' && (d.datePosted as string) < cutoff)
     await pool(stale, (d) => payload.update({ collection: 'jobs', id: d.id, data: { status: 'closed', closedAt: now } }).then(() => {}))
     closed = stale.length
   }

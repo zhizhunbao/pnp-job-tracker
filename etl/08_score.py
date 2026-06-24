@@ -167,7 +167,10 @@ def collect():
     if jb.exists():
         for j in json.loads(jb.read_text(encoding="utf-8")):
             m = re.search(r"NOC\s*(\d{5})", j.get("search_occupation", ""))  # 搜索时用的 NOC,较准
-            yield (j.get("url") or f"jb:{j.get('posting_id','')}", j.get("title", ""),
+            mid = re.search(r"/jobposting/(\d+)", j.get("url", ""))          # 稳定 ID:与 09_build_mart 一致(join 键)
+            pid = str(j.get("posting_id") or (mid.group(1) if mid else ""))
+            ext = f"jb:{pid}" if pid else (j.get("url") or f"jb:{j.get('posting_id','')}")
+            yield (ext, j.get("title", ""),
                    bool(AGENCY_RE.search(j.get("employer", ""))), j.get("province", ""), m.group(1) if m else "")
 
 

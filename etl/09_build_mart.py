@@ -132,7 +132,11 @@ def build():
             seen.add(key)
             add_company(j.get("employer") or "—", cslug, website=j.get("website"),
                         address=j.get("address"), region=j.get("province"), source="jobbank")
-            ext = j.get("url") or key
+            # 稳定 ID:Job Bank 帖子 ID(posting_id 字段优先,否则从 URL 的 /jobposting/<id> 取),
+            # 不用含 ?source= 查询串的完整 URL(见 docs/source-framework.md)
+            m = re.search(r"/jobposting/(\d+)", j.get("url", ""))
+            pid = str(j.get("posting_id") or (m.group(1) if m else ""))
+            ext = f"jb:{pid}" if pid else (j.get("url") or key)
             add_job(ext, cslug, title=j.get("title"), source=j.get("source") or "Job Bank", origin="jobbank",
                     country=j.get("country"), province=j.get("province") or guess_prov(j.get("city", "")),
                     city=j.get("city"), district=j.get("district"), address=j.get("address"),
