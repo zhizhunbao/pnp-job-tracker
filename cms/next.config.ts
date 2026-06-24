@@ -7,6 +7,7 @@ const __filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(__filename)
 
 const nextConfig: NextConfig = {
+  output: 'standalone', // 容器化 cms:next build 产出自包含 server.js(见 docker/docker-compose unattended profile)
   images: {
     localPatterns: [
       {

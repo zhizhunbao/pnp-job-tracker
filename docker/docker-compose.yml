@@ -1,11 +1,12 @@
 # 多源日更自动机。每个 service = 一个源容器,循环跑该源步骤(见 etl/auto_update.py 的 SOURCES)。
 # 抓取源(jobbank/ats…)只刷各自 raw;build 容器做跨源清洗+评分+mart+seed —— 灌库的唯一角色,
-# 避免多源抢 mart/seed。与 postgres / cms 解耦:postgres 仍在 cms/docker-compose.yml,cms 仍 `npm run dev`;
-# build 只通过 host.docker.internal:3000/seed 调 cms 的纯加载器灌库。
+# 避免多源抢 mart/seed。postgres 仍在 cms/docker-compose.yml(发布在宿主 5432)。
 #
-# 用法:  cd docker && docker compose up -d --build      # 启动(随 Docker 开机自起)
-#         docker compose logs -f                          # 看所有源日志
-#         docker compose down                             # 停
+# 两种用法:
+#   开发(cms 用 host npm run dev):  cd docker && docker compose up -d            # 只起 etl 自动机
+#   无人值守开机自更新(cms 也容器化):cd docker && docker compose --profile unattended up -d --build
+#   看日志 docker compose logs -f   |  停 docker compose down
+# 开机自启:Docker Desktop 勾「登录时启动」+ 各容器 restart:unless-stopped。
 # 加新源: 在 etl/auto_update.py 的 SOURCES 登记步骤 → 这里复制一个 service 改 SOURCE。
 
 # jobbank(httpx 抓取)与 build(清洗/评分/mart/seed)都用 httpx 镜像(都只需 python+解析库)。
@@ -35,6 +36,26 @@ services:
       SOURCE: build
       SCRAPE_INTERVAL: '7200'
       SEED_URL: http://host.docker.internal:3000/seed
+
+  # cms 生产容器:仅无人值守模式起(--profile unattended)。开机自起、把 :3000 发布到宿主,
+  # 所以 build 的 SEED_URL=host.docker.internal:3000 在「容器 cms」和「host npm run dev」两种情况都通。
+  # 平时开发不带 profile → 不起此容器,你仍用 host npm run dev,零影响。
+  cms:
+    profiles: ['unattended']
+    build:
+      context: ../cms
+      dockerfile: Dockerfile       # cms/Dockerfile(需 next.config output:'standalone',已加)
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    env_file:
+      - ../cms/.env                # PAYLOAD_SECRET / OLLAMA_* 等
+    environment:
+      DATABASE_URI: postgresql://pnp:pnp@host.docker.internal:5432/pnp  # 覆盖 .env 的 localhost(连宿主上的 postgres)
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    volumes:
+      - ../data:/data              # seed 读 /data/mart(standalone server cwd=/app,../data=/data)
 
   # 加 ATS 第一方源时取消注释(Kanata 名录变动少,频率可低):
   # ats:
