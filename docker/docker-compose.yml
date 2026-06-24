@@ -47,6 +47,7 @@ services:
       SOURCE: jobbank
       SCRAPE_INTERVAL: '7200'      # 2h
       SINCE_DAYS: '3'
+      TZ: EST5EDT                  # 日志用东部时区(glibc 原生,无需 tzdata);postgres 保持 UTC
 
   build:                           # 跨源清洗→评分→mart→seed(灌库唯一角色)
     <<: *etl
@@ -54,6 +55,7 @@ services:
       SOURCE: build
       SCRAPE_INTERVAL: '7200'
       SEED_URL: http://host.docker.internal:3000/seed  # host npm 或容器 cms 都通(cms 发布 :3000)
+      TZ: EST5EDT                  # 日志东部时区
 
   cms:                             # 生产容器:仅 --profile unattended 起;开发用 host npm run dev
     profiles: ['unattended']
