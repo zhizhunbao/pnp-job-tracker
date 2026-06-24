@@ -87,6 +87,12 @@ const sortVal = (j: JobRow, key: ColKey): number | string | null => {
 }
 const teerOf = (noc: string): number | null => (noc && noc.length === 5 && /\d/.test(noc[1]) ? Number(noc[1]) : null)
 const mapsUrl = (q: string) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`
+// 「更新」时间显示为东部时区(显式 timeZone,避免 dev=host / 容器=UTC 不一致 + SSR 水合差异)
+const fmtLocal = (iso: string): string => {
+  try {
+    return new Date(iso).toLocaleString('sv-SE', { timeZone: 'America/Toronto', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+  } catch { return (iso || '').slice(0, 16).replace('T', ' ') }
+}
 // 大渥太华市 2001 年合并的社区(Job Bank 仍用老社区名标注)→ 显示为「社区, Ottawa」
 const OTTAWA_COMMUNITIES = new Set([
   'nepean', 'gloucester', 'kanata', 'kanata north', 'orleans', 'orléans', 'orleans south',
@@ -367,7 +373,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
       <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1.5rem 1.25rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap' }}>
           <h1 style={{ margin: '0 0 2px', color: '#111827' }}>Jobs</h1>
-          {updatedAt && <span style={{ color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }}>更新 {updatedAt.slice(0, 16).replace('T', ' ')}</span>}
+          {updatedAt && <span style={{ color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }}>更新 {fmtLocal(updatedAt)}</span>}
         </div>
         <p style={{ color: '#6b7280', marginTop: 0, fontSize: 13 }}>
           {rows.length === jobs.length ? `${jobs.length} 个职位` : `${rows.length} / ${jobs.length}`}
