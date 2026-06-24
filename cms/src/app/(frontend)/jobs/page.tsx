@@ -18,7 +18,7 @@ export default async function JobsPage() {
       j.wage_med_hourly, j.wage_med_annual,
       j.source, j.source_label, j.origin, j.date_posted, j.last_seen, j.status, j.closed_at
     FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
-    ORDER BY j.date_posted DESC NULLS LAST LIMIT 2000`)
+    ORDER BY j.date_posted DESC NULLS LAST LIMIT 20000`)
 
   // 维度表小,继续走 payload.find
   const [provDocs, cityDocs, distDocs, nocDocs, srcDocs, expDocs] = await Promise.all([

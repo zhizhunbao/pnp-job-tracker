@@ -370,7 +370,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
           {updatedAt && <span style={{ color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }}>更新 {updatedAt.slice(0, 16).replace('T', ' ')}</span>}
         </div>
         <p style={{ color: '#6b7280', marginTop: 0, fontSize: 13 }}>
-          {rows.length === jobs.length ? `${jobs.length} 个职位` : `${rows.length} / ${jobs.length}`} · 评分排序
+          {rows.length === jobs.length ? `${jobs.length} 个职位` : `${rows.length} / ${jobs.length}`}
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '1rem 0' }}>
