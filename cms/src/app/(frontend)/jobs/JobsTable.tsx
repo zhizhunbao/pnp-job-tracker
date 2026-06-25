@@ -196,6 +196,7 @@ const PREF_KEY = 'jobs.visibleCols.v6'
 const COLW_KEY = 'jobs.colWidths.v1'   // 列宽偏好(拖表头分隔条设置)
 const MIN_COLW = 56                     // 列最小宽
 const DEFAULT_COLW = 130                // 新列/未测量列的默认宽
+const AUTO_MAX = 180                    // 自动滚动加载上限;超过改「显示更多」按钮,让 footer 可达
 const ORIGIN_LABEL: Record<string, string> = { jobbank: 'Job Bank', ats: 'ATS', directory: '社区名单' }
 
 type Dims = {
@@ -314,7 +315,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
   useEffect(() => {
     const el = sentinelRef.current
     if (!el) return
-    const io = new IntersectionObserver((es) => { if (es[0].isIntersecting) setLimit((l) => l + 60) }, { rootMargin: '400px' })
+    const io = new IntersectionObserver((es) => { if (es[0].isIntersecting) setLimit((l) => (l < AUTO_MAX ? l + 60 : l)) }, { rootMargin: '400px' })
     io.observe(el)
     return () => io.disconnect()
   }, [])
@@ -530,7 +531,10 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
         </div>
         {/* 滚动到此自动加载更多 */}
         <div ref={sentinelRef} style={{ textAlign: 'center', padding: '12px', fontSize: 12.5, color: '#9ca3af' }}>
-          {rows.length === 0 ? '' : limit < rows.length ? t('more', { x: Math.min(limit, rows.length), total: rows.length }) : t('allShown', { total: rows.length })}
+          {rows.length === 0 ? ''
+            : limit >= rows.length ? t('allShown', { total: rows.length })
+            : limit < AUTO_MAX ? t('more', { x: Math.min(limit, rows.length), total: rows.length })
+            : <button onClick={() => setLimit((l) => l + 300)} style={{ ...ctrl, cursor: 'pointer', background: '#f3f4f6', color: '#374151' }}>{t('loadMore', { x: Math.min(limit, rows.length), total: rows.length })}</button>}
         </div>
       </div>
       {/* footer:免责 + 版权,窄屏自动换行 */}
