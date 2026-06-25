@@ -374,20 +374,25 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
   }, [jobs, q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, sort])
 
   return (
-    <div style={{ background: '#fff', color: '#1f2937', minHeight: '100vh', fontFamily: 'system-ui, sans-serif' }}>
+    <div style={{ background: '#fff', color: '#1f2937', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column' }}>
       <style>{`.jcell:hover{background:#eff6ff !important}`}</style>
-      <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1.5rem 1.25rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap' }}>
-          <h1 style={{ margin: '0 0 2px', color: '#111827' }}>Jobs</h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ display: 'inline-flex', border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
-              {LANGS.map((l) => (
-                <button key={l.code} onClick={() => setLangSaved(l.code)}
-                  style={{ border: 'none', padding: '3px 9px', fontSize: 12.5, cursor: 'pointer', background: lang === l.code ? '#2563eb' : '#fff', color: lang === l.code ? '#fff' : '#6b7280' }}>{l.label}</button>
-              ))}
-            </div>
+      {/* sticky 顶栏:品牌 + 语言切换(手机/电脑都贴顶) */}
+      <header style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', borderBottom: '1px solid #e5e7eb' }}>
+        <div style={{ maxWidth: 1320, margin: '0 auto', padding: '10px 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, minWidth: 0 }}>
+            <span style={{ fontSize: 17, fontWeight: 700, color: '#111827', whiteSpace: 'nowrap' }}>🍁 PNP Job Tracker</span>
+            <span style={{ fontSize: 12, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('tagline')}</span>
+          </div>
+          <div style={{ display: 'inline-flex', border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden', flexShrink: 0 }}>
+            {LANGS.map((l) => (
+              <button key={l.code} onClick={() => setLangSaved(l.code)}
+                style={{ border: 'none', padding: '3px 9px', fontSize: 12.5, cursor: 'pointer', background: lang === l.code ? '#2563eb' : '#fff', color: lang === l.code ? '#fff' : '#6b7280' }}>{l.label}</button>
+            ))}
           </div>
         </div>
+      </header>
+      <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1.5rem 1.25rem', width: '100%', boxSizing: 'border-box', flex: '1 0 auto' }}>
+        <h1 style={{ margin: '0 0 2px', color: '#111827' }}>Jobs</h1>
         <p style={{ color: '#6b7280', marginTop: 0, fontSize: 13 }}>
           {rows.length === jobs.length ? t('subtitle.count', { n: jobs.length }) : `${rows.length} / ${jobs.length}`}
         </p>
@@ -528,6 +533,13 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
           {rows.length === 0 ? '' : limit < rows.length ? t('more', { x: Math.min(limit, rows.length), total: rows.length }) : t('allShown', { total: rows.length })}
         </div>
       </div>
+      {/* footer:免责 + 版权,窄屏自动换行 */}
+      <footer style={{ borderTop: '1px solid #e5e7eb', background: '#fafafa', flexShrink: 0 }}>
+        <div style={{ maxWidth: 1320, margin: '0 auto', padding: '16px 1.25rem', display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'space-between', alignItems: 'center', color: '#9ca3af', fontSize: 12.5 }}>
+          <span>{t('foot.disclaimer')}</span>
+          <span style={{ whiteSpace: 'nowrap' }}>© 2026 PNP Job Tracker</span>
+        </div>
+      </footer>
 
       {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} onClose={() => setPopup(null)} />}
     </div>

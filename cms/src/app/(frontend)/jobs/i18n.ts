@@ -15,6 +15,8 @@ type Dict = Record<string, string>
 const zh: Dict = {
   'subtitle.count': '{n} 个职位',
   'updated': '更新 {t}',
+  'tagline': '每日更新 · 全加拿大全职业 · 移民价值视角',
+  'foot.disclaimer': '数据自动抓取与评分,仅供参考,不构成移民 / 法律建议。',
   'search.placeholder': '搜索 职位/公司/地点/NOC…',
   'filter.geo': '地理', 'filter.cat': '分类', 'filter.attr': '属性',
   'all.country': '全部国家', 'all.prov': '全部省', 'all.city': '全部市', 'all.district': '全部区',
@@ -53,6 +55,8 @@ const zh: Dict = {
 const en: Dict = {
   'subtitle.count': '{n} jobs',
   'updated': 'Updated {t}',
+  'tagline': 'Daily updates · all of Canada · immigration-value lens',
+  'foot.disclaimer': 'Auto-scraped and scored; for reference only, not immigration / legal advice.',
   'search.placeholder': 'Search title / company / location / NOC…',
   'filter.geo': 'Location', 'filter.cat': 'Category', 'filter.attr': 'Attributes',
   'all.country': 'All countries', 'all.prov': 'All provinces', 'all.city': 'All cities', 'all.district': 'All districts',
@@ -87,6 +91,8 @@ const en: Dict = {
 const ko: Dict = {
   'subtitle.count': '{n}개 공고',
   'updated': '업데이트 {t}',
+  'tagline': '매일 갱신 · 캐나다 전역 · 이민 가치 관점',
+  'foot.disclaimer': '자동 수집·평가, 참고용이며 이민 / 법률 자문이 아닙니다.',
   'search.placeholder': '직무 / 회사 / 지역 / NOC 검색…',
   'filter.geo': '지역', 'filter.cat': '분류', 'filter.attr': '속성',
   'all.country': '전체 국가', 'all.prov': '전체 주', 'all.city': '전체 도시', 'all.district': '전체 지역',
