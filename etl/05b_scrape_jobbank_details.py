@@ -11,6 +11,7 @@ import json
 import re
 import sys
 import time
+from collections import Counter
 from pathlib import Path
 
 import httpx
@@ -74,6 +75,11 @@ def main() -> None:
     done = 0
     seen: set[str] = set()  # 文件名去重(雇主+职位偶尔重复时加帖子号)
     skipped = 0
+    todo = sum(1 for j in jobs if not j.get("detail_fetched") and j.get("url"))  # 本轮真正要抓的
+    prov_done: Counter[str] = Counter()  # 各省已抓计数(实时进度)
+    t0 = time.monotonic()
+    TICK = 50  # 每抓这么多打一行心跳(否则几十分钟零输出像死机)
+    print(f"05b 抓详情:本轮待抓 {todo} 个(共 {len(jobs)} 帖,其余已抓过跳过)", flush=True)
     with httpx.Client(headers={"User-Agent": UA}, follow_redirects=True, timeout=20) as c:
         for j in jobs:
             if j.get("detail_fetched") or not j.get("url"):  # 增量:已抓过的跳过(全国 ~1500 帖,每日只抓新帖)
@@ -104,11 +110,19 @@ def main() -> None:
             seen.add(stem)
             (det_dir / fn).write_text(md, encoding="utf-8")
             done += 1
+            prov_done[j.get("province") or "?"] += 1
+            if done % TICK == 0 or done == todo:  # 心跳:进度 + 当前省/市/雇主 + 各省累计
+                loc = addr or j.get("province", "")
+                rate = done / max(time.monotonic() - t0, 1e-6)
+                print(f"  …{done}/{todo} ({done * 100 // max(todo, 1)}%) · 刚抓 {j.get('province') or '?'} · "
+                      f"{loc[:42]} · {(j.get('employer') or '')[:28]} · {rate:.1f}/s · 累计 {dict(prov_done)}",
+                      flush=True)
             time.sleep(0.25)
     jb.write_text(json.dumps(jobs, ensure_ascii=False, indent=2), encoding="utf-8")
     webs = sum(1 for j in jobs if j.get("website"))
     addrs = sum(1 for j in jobs if j.get("address"))
-    print(f"Fetched {done} details (skipped {skipped} already-done) · {addrs} with address · {webs} with website -> {det_dir}")
+    print(f"Fetched {done} details (skipped {skipped} already-done) · 省分布 {dict(prov_done)} · "
+          f"{addrs} with address · {webs} with website -> {det_dir}", flush=True)
 
 
 if __name__ == "__main__":
