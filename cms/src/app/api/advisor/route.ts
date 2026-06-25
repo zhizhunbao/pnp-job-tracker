@@ -145,6 +145,8 @@ const ASK: Record<string, string> = {
   lastSeen: 'Explain the last-seen time and what it indicates.',
   status: 'Explain the job status (open/closed) and how it is determined.',
 }
+// 简单字段:一句话即可,不要过度解读;其余(移民价值相关)走多段分析
+const SIMPLE = new Set(['datePosted', 'lastSeen', 'closedAt', 'status', 'country', 'city', 'district', 'address', 'source', 'origin', 'direct', 'wageMedHr', 'wageMedYr'])
 
 const HEADINGS: Record<Lang, { company: string; title: string }> = {
   zh: {
@@ -175,7 +177,12 @@ function buildPrompt(field: string, j: Job, jd: string, lang: Lang): string {
     // 其它字段:把该岗事实(评分字段附明细)喂进去,模型只负责按所选语言解释,数字用我们给的
     const ask = ASK[field] || `Explain the "${field}" field for this job.`
     const facts = jobFacts(j) + (field === 'score' ? '\n' + scoreFacts(j) : '')
-    return `${ask}\nThe reader is an international student / PGWP holder aiming for employer-offer → PNP in Canada.\n\nJob facts:\n${facts}\n\nWrite 2–3 short sections, each starting with a 【heading】, content in ${LANG_NAME[lang]}. Use the exact numbers above; do not invent data.`
+    const reader = 'The reader is an international student / PGWP holder aiming for employer-offer → PNP in Canada.'
+    if (SIMPLE.has(field)) {
+      // 简单字段:一句话,不分段、不过度解读
+      return `${ask}\n${reader}\n\nJob facts:\n${facts}\n\nAnswer in ONE concise sentence in ${LANG_NAME[lang]}. No headings, no preamble, no disclaimer. Use the exact numbers above.`
+    }
+    return `${ask}\n${reader}\n\nJob facts:\n${facts}\n\nWrite 2–3 short sections, each starting with a 【heading】, content in ${LANG_NAME[lang]}. Use the exact numbers above; do not invent data.`
   }
   const base = `Role: ${j.title || '—'}\nCompany: ${j.company || '—'}\n${nocLine}\nLocation: ${loc}\n`
   const instr = `Explain under these headings (${inLang}):\n${H.title}`
@@ -215,7 +222,7 @@ export async function POST(req: NextRequest) {
           { role: 'system', content: SYSTEM(lang) },
           { role: 'user', content: buildPrompt(field, job, jd, lang) },
         ],
-        options: { temperature: 0.4, num_predict: field === 'company' ? 480 : 420 },
+        options: { temperature: 0.4, num_predict: SIMPLE.has(field) ? 120 : (field === 'company' ? 480 : 420) },
       }),
     })
   } catch {
