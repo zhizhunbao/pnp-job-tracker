@@ -433,15 +433,23 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
             <Sel value={fMid} onChange={(v) => { setFMid(v); setFFine('') }} opts={midOpts} all={t('all.mid')} />
             <Sel value={fFine} onChange={setFFine} opts={fineOpts} all={t('all.fine')} />
           </div>
-          {/* 行3:属性 */}
+          {/* 行3:来源 */}
           <div style={filtRow}>
-            <span style={filtLabel}>{t('filter.attr')}</span>
+            <span style={filtLabel}>{t('filter.src')}</span>
             <Sel value={fSource} onChange={setFSource} opts={sourceOpts} all={t('all.source')} />
-            <Sel value={fAcc} onChange={setFAcc} opts={accOpts} all={t('all.exp')} labelOf={(v) => t('acc.' + v)} />
+            <Sel value={fOrigin} onChange={setFOrigin} opts={originOpts} all={t('all.origin')} labelOf={(v) => t('origin.' + v)} />
+          </div>
+          {/* 行4:移民资格 */}
+          <div style={filtRow}>
+            <span style={filtLabel}>{t('filter.elig')}</span>
             <Sel value={fPnp} onChange={setFPnp} opts={['yes', 'no']} all={t('all.pnp')} labelOf={(v) => t('opt.' + v)} />
             <Sel value={fAip} onChange={setFAip} opts={['yes', 'no']} all={t('all.aip')} labelOf={(v) => t('opt.' + v)} />
+          </div>
+          {/* 行5:状态/经验 */}
+          <div style={filtRow}>
+            <span style={filtLabel}>{t('filter.statusexp')}</span>
             <Sel value={fStatus} onChange={setFStatus} opts={['open', 'closed']} all={t('all.status')} labelOf={(v) => (v === 'open' ? t('cell.open') : t('cell.closed'))} />
-            <Sel value={fOrigin} onChange={setFOrigin} opts={originOpts} all={t('all.origin')} labelOf={(v) => t('origin.' + v)} />
+            <Sel value={fAcc} onChange={setFAcc} opts={accOpts} all={t('all.exp')} labelOf={(v) => t('acc.' + v)} />
           </div>
           {/* 行3.5:薪资/评分(预设下拉,不手填) */}
           <div style={filtRow}>
