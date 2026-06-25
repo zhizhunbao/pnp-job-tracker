@@ -1,6 +1,7 @@
 {
   "stream": "OINP Employer Job Offer: In-Demand Skills",
   "province": "ON",
+  "type": "indemand",
   "url": "https://www.ontario.ca/page/oinp-employer-job-offer-demand-skills-stream",
   "fetched": "2026-06-24",
   "teer": [

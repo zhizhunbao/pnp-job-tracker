@@ -74,6 +74,7 @@ def main() -> None:
     table = {
         "stream": "OINP Employer Job Offer: In-Demand Skills",
         "province": "ON",
+        "type": "indemand",  # 包含型:TEER4-5 只有清单内才符合(与 AAIP exclusion 相反)
         "url": URL,
         "fetched": date.today().isoformat(),
         "teer": [4, 5],

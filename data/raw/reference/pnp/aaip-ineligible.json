@@ -1,0 +1,180 @@
+{
+  "stream": "AAIP Alberta Opportunity Stream",
+  "province": "AB",
+  "type": "ineligible",
+  "url": "https://www.alberta.ca/aaip-alberta-opportunity-stream-eligibility",
+  "fetched": "2026-06-25",
+  "note": "AOS 接受 TEER0-5(4/5 需 CLB4),本表是不符合资格的职业;原带 * 为条件性不符合,粗筛下按不符合处理。",
+  "occupations": [
+    {
+      "noc": "00010",
+      "teer": 0,
+      "name": "Legislators"
+    },
+    {
+      "noc": "33100",
+      "teer": 3,
+      "name": "Dental laboratory assistants/bench workers"
+    },
+    {
+      "noc": "40021",
+      "teer": 0,
+      "name": "School principals and administrators of elementary and secondary education"
+    },
+    {
+      "noc": "40030",
+      "teer": 0,
+      "name": "Managers in social, community and correctional services"
+    },
+    {
+      "noc": "40041",
+      "teer": 0,
+      "name": "Fire chiefs and senior firefighting officers"
+    },
+    {
+      "noc": "41100",
+      "teer": 1,
+      "name": "Judges"
+    },
+    {
+      "noc": "41220",
+      "teer": 1,
+      "name": "Secondary school teachers"
+    },
+    {
+      "noc": "41221",
+      "teer": 1,
+      "name": "Elementary school and kindergarten teachers"
+    },
+    {
+      "noc": "42200",
+      "teer": 2,
+      "name": "Justices of the peace"
+    },
+    {
+      "noc": "42202",
+      "teer": 2,
+      "name": "Early childhood educators who do not have certification through Alberta Children's Services – Child Care Staff Certification Office or who have been certified as Level 1 Early Childhood Educator (formerly Child Development Assistant)"
+    },
+    {
+      "noc": "43100",
+      "teer": 3,
+      "name": "Elementary and secondary school teacher assistants"
+    },
+    {
+      "noc": "43109",
+      "teer": 3,
+      "name": "Other instructors"
+    },
+    {
+      "noc": "44100",
+      "teer": 4,
+      "name": "Home child care providers"
+    },
+    {
+      "noc": "44101",
+      "teer": 4,
+      "name": "Home support workers, caregivers and related occupations"
+    },
+    {
+      "noc": "51111",
+      "teer": 1,
+      "name": "Authors and writers (except technical)"
+    },
+    {
+      "noc": "51122",
+      "teer": 1,
+      "name": "Musicians and singers"
+    },
+    {
+      "noc": "53121",
+      "teer": 3,
+      "name": "Actors, comedians and circus performers"
+    },
+    {
+      "noc": "53122",
+      "teer": 3,
+      "name": "Painters, sculptors and other visual artists"
+    },
+    {
+      "noc": "53124",
+      "teer": 3,
+      "name": "Artisans and craftspersons"
+    },
+    {
+      "noc": "53200",
+      "teer": 3,
+      "name": "Athletes"
+    },
+    {
+      "noc": "55109",
+      "teer": 5,
+      "name": "Other performers"
+    },
+    {
+      "noc": "60040",
+      "teer": 0,
+      "name": "Escort agency managers, massage parlour managers"
+    },
+    {
+      "noc": "63101",
+      "teer": 3,
+      "name": "Real estate agents and salespersons"
+    },
+    {
+      "noc": "64321",
+      "teer": 4,
+      "name": "Casino occupations"
+    },
+    {
+      "noc": "65109",
+      "teer": 5,
+      "name": "Other sales related occupations"
+    },
+    {
+      "noc": "65211",
+      "teer": 5,
+      "name": "Operators and attendants in amusement, recreation and sport"
+    },
+    {
+      "noc": "65229",
+      "teer": 5,
+      "name": "Other support occupations in personal services"
+    },
+    {
+      "noc": "65329",
+      "teer": 5,
+      "name": "Other service support occupations"
+    },
+    {
+      "noc": "75200",
+      "teer": 5,
+      "name": "Taxi and limousine drivers and chauffeurs"
+    },
+    {
+      "noc": "85101",
+      "teer": 5,
+      "name": "Harvesting labourers"
+    },
+    {
+      "noc": "85102",
+      "teer": 5,
+      "name": "Aquaculture and marine harvest labourers"
+    },
+    {
+      "noc": "85104",
+      "teer": 5,
+      "name": "Trappers and hunters"
+    },
+    {
+      "noc": "85110",
+      "teer": 5,
+      "name": "Mine labourers"
+    },
+    {
+      "noc": "85121",
+      "teer": 5,
+      "name": "Landscaping and grounds maintenance labourers"
+    }
+  ]
+}

@@ -98,11 +98,14 @@ NOC_RULES: list[tuple[str, str]] = [
 TEER_BASE = {0: 54, 1: 56, 2: 52, 3: 46, 4: 28, 5: 20}
 # PNP 优先紧缺职业(前2位): 21/22 科技, 31/32 医疗, 72/73 技工运输, 42 教育社区
 INDEMAND2 = {"21", "22", "31", "32", "72", "73", "42"}
-# 各省 PNP TEER4-5 专门紧缺通道清单:province → {NOC}。目录驱动——扫 reference/pnp/*.json
-# (每文件一省,build_<prov>.py 产出,如 oinp-in-demand.json),按文件里的 province 字段归省。
-# 加新省 = 丢一个 json,本脚本不用改。某省没文件 = 该省无低TEER通道(留空不猜,符合「宁可留空」)。
-def _load_pnp_indemand() -> dict[str, set[str]]:
-    out: dict[str, set[str]] = {}
+# 各省 PNP 维护表:province → {"type", "nocs"}。目录驱动——扫 reference/pnp/*.json
+# (每文件一省,build_<prov>.py 产出),按文件 province 字段归省。加新省=丢一个 json,本脚本不改。
+# 两种语义(由文件 type 区分,默认 indemand):
+#   · indemand(如 OINP):TEER4-5 默认不符合,只有清单内 NOC 才符合(inclusion)。
+#   · ineligible(如 AAIP):TEER0-5 默认都符合,清单内 NOC 不符合(exclusion/permissive)。
+# 某省没文件 = 无 TEER4-5 专门通道,只吃 TEER0-3 粗筛(留空不猜,符合「宁可留空」)。
+def _load_pnp_tables() -> dict[str, dict]:
+    out: dict[str, dict] = {}
     pnp_dir = _paths.REFERENCE / "pnp"
     if pnp_dir.exists():
         for f in pnp_dir.glob("*.json"):
@@ -112,10 +115,15 @@ def _load_pnp_indemand() -> dict[str, set[str]]:
                 continue
             prov = data.get("province")
             nocs = {o["noc"] for o in data.get("occupations", []) if o.get("noc")}
-            if prov and nocs:
-                out.setdefault(prov, set()).update(nocs)
+            if not (prov and nocs):
+                continue
+            t = out.setdefault(prov, {"type": data.get("type", "indemand"), "nocs": set()})
+            t["nocs"].update(nocs)
     return out
-INDEMAND_LOW_BY_PROV = _load_pnp_indemand()
+PNP_BY_PROV = _load_pnp_tables()
+# score() 的 +12「TEER4-5 专门紧缺通道」只对 inclusion 型有意义
+# (exclusion 表里的 NOC 是「不符合」,绝不能加分)。
+INDEMAND_LOW_BY_PROV = {p: t["nocs"] for p, t in PNP_BY_PROV.items() if t["type"] == "indemand"}
 AGENCY_RE = re.compile(r"recruit|staffing|talent|personnel|placement|outsourc|mercor|adecco|randstad", re.I)
 ACC = {"co-op": 6, "junior": 6, "intermediate": 4, "senior": 2, "unknown": 3}
 
@@ -137,12 +145,17 @@ NON_PNP_PROV = {"QC"}
 
 
 def pnp_eligible(noc: str, teer: int | None, prov: str) -> bool:
-    """能否走雇主 offer 省提名:TEER 0-3 技能岗(各省都有技能通道,粗筛),
-    或 TEER4-5 但在**该岗所在省**的专门紧缺通道清单(按省精准,不跨省套用)。
-    魁省不属 PNP 体系,直接排除。"""
+    """能否走雇主 offer 省提名,按省精准(不跨省套用)。魁省不属 PNP,直接排除。
+    · 有 exclusion 表的省(如 AB/AAIP):TEER0-5 默认都可走,清单内 NOC 不可。
+    · 其余(有 inclusion 表如 ON/OINP,或无表):TEER0-3 粗筛通用,
+      TEER4-5 仅当 NOC 在该省 inclusion 清单内才可。"""
     if prov in NON_PNP_PROV:
         return False
-    return teer in (0, 1, 2, 3) or noc in INDEMAND_LOW_BY_PROV.get(prov, set())
+    tbl = PNP_BY_PROV.get(prov)
+    if tbl and tbl["type"] == "ineligible":
+        return teer is not None and noc not in tbl["nocs"]
+    nocs = tbl["nocs"] if tbl else set()
+    return teer in (0, 1, 2, 3) or noc in nocs
 
 
 def accessibility(title: str) -> str:
