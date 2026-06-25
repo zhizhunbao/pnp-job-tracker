@@ -92,6 +92,8 @@ const sortVal = (j: JobRow, key: ColKey): number | string | null => {
 }
 const teerOf = (noc: string): number | null => (noc && noc.length === 5 && /\d/.test(noc[1]) ? Number(noc[1]) : null)
 const mapsUrl = (q: string) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`
+// 本岗年薪 vs NOC 中位年薪(%);缺值返回 null
+const vsPct = (j: JobRow): number | null => (j.salaryAnnual != null && j.wageMedAnnual ? (j.salaryAnnual / j.wageMedAnnual - 1) * 100 : null)
 // 「更新」时间显示为东部时区(显式 timeZone,避免 dev=host / 容器=UTC 不一致 + SSR 水合差异)
 const fmtLocal = (iso: string): string => {
   try {
@@ -223,6 +225,9 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
   const [fBroad, setFBroad] = useState(''); const [fMid, setFMid] = useState(''); const [fFine, setFFine] = useState('')
   const [fTeer, setFTeer] = useState(''); const [fSource, setFSource] = useState(''); const [fAcc, setFAcc] = useState('')
   const [fPnp, setFPnp] = useState(''); const [fAip, setFAip] = useState(''); const [fStatus, setFStatus] = useState(''); const [fOrigin, setFOrigin] = useState('')
+  const [scoreMin, setScoreMin] = useState(''); const [scoreMax, setScoreMax] = useState('')   // 数值区间
+  const [salMin, setSalMin] = useState(''); const [salMax, setSalMax] = useState('')           // 年薪(单位 K)
+  const [vsMin, setVsMin] = useState(''); const [vsMax, setVsMax] = useState('')               // vs 中位(%)
   const [visible, setVisible] = useState<ColKey[]>(DEFAULT_COLS)
   const [popup, setPopup] = useState<{ field: ColKey; job: JobRow; title: string } | null>(null)
   const [sort, setSort] = useState<{ key: ColKey; dir: 'asc' | 'desc' }>({ key: 'datePosted', dir: 'desc' })
@@ -318,7 +323,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
   }, [colOpen])
 
   // 滚动分页:筛选/排序变化重置;接近底部自动加载更多
-  useEffect(() => { setLimit(60) }, [q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, sort])
+  useEffect(() => { setLimit(60) }, [q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, scoreMin, scoreMax, salMin, salMax, vsMin, vsMax, sort])
   useEffect(() => {
     const el = sentinelRef.current
     if (!el) return
@@ -351,8 +356,8 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
   const sourceOpts = useMemo(() => (dims.sources.length ? dims.sources.map((s) => s.name) : uniq(jobs.map((j) => sourceLabel(j)))), [dims, jobs])
   const accOpts = useMemo(() => (dims.experienceLevels.length ? uniq(dims.experienceLevels.map((e) => e.name)) : uniq(jobs.map((j) => j.accessibility))), [dims, jobs])
   const originOpts = useMemo(() => uniq(jobs.map((j) => j.origin)), [jobs])
-  const anyFilter = q || directOnly || fCountry || fProv || fCity || fDistrict || fBroad || fMid || fFine || fTeer || fSource || fAcc || fPnp || fAip || fStatus || fOrigin
-  const clearAll = () => { setQ(''); setDirectOnly(false); setFCountry(''); setFProv(''); setFCity(''); setFDistrict(''); setFBroad(''); setFMid(''); setFFine(''); setFTeer(''); setFSource(''); setFAcc(''); setFPnp(''); setFAip(''); setFStatus(''); setFOrigin('') }
+  const anyFilter = q || directOnly || fCountry || fProv || fCity || fDistrict || fBroad || fMid || fFine || fTeer || fSource || fAcc || fPnp || fAip || fStatus || fOrigin || scoreMin || scoreMax || salMin || salMax || vsMin || vsMax
+  const clearAll = () => { setQ(''); setDirectOnly(false); setFCountry(''); setFProv(''); setFCity(''); setFDistrict(''); setFBroad(''); setFMid(''); setFFine(''); setFTeer(''); setFSource(''); setFAcc(''); setFPnp(''); setFAip(''); setFStatus(''); setFOrigin(''); setScoreMin(''); setScoreMax(''); setSalMin(''); setSalMax(''); setVsMin(''); setVsMax('') }
 
   const rows = useMemo(() => {
     const term = q.trim().toLowerCase()
@@ -365,6 +370,9 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
         (!fSource || sourceLabel(j) === fSource) && (!fAcc || j.accessibility === fAcc) &&
         (!fPnp || (fPnp === 'yes') === j.pnpEligible) && (!fAip || (fAip === 'yes') === j.aip) &&
         (!fStatus || (j.status || 'open') === fStatus) && (!fOrigin || j.origin === fOrigin) &&
+        (!scoreMin || (j.score != null && j.score >= +scoreMin)) && (!scoreMax || (j.score != null && j.score <= +scoreMax)) &&
+        (!salMin || (j.salaryAnnual != null && j.salaryAnnual >= +salMin * 1000)) && (!salMax || (j.salaryAnnual != null && j.salaryAnnual <= +salMax * 1000)) &&
+        (!vsMin || (vsPct(j) != null && (vsPct(j) as number) >= +vsMin)) && (!vsMax || (vsPct(j) != null && (vsPct(j) as number) <= +vsMax)) &&
         (!term || searchHay(j).includes(term))
     })
     const dir = sort.dir === 'asc' ? 1 : -1
@@ -382,7 +390,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
       if (cmp === 0 && sort.key !== 'score') cmp = (b.score ?? -Infinity) - (a.score ?? -Infinity)
       return cmp
     })
-  }, [jobs, q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, sort])
+  }, [jobs, q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, scoreMin, scoreMax, salMin, salMax, vsMin, vsMax, sort])
 
   return (
     <div style={{ background: '#fff', color: '#1f2937', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column' }}>
@@ -434,6 +442,13 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
             <Sel value={fAip} onChange={setFAip} opts={['yes', 'no']} all={t('all.aip')} labelOf={(v) => t('opt.' + v)} />
             <Sel value={fStatus} onChange={setFStatus} opts={['open', 'closed']} all={t('all.status')} labelOf={(v) => (v === 'open' ? t('cell.open') : t('cell.closed'))} />
             <Sel value={fOrigin} onChange={setFOrigin} opts={originOpts} all={t('all.origin')} labelOf={(v) => t('origin.' + v)} />
+          </div>
+          {/* 行3.5:数值区间(评分 / 年薪K / vs中位%)min–max */}
+          <div style={filtRow}>
+            <span style={filtLabel}>{t('filter.num')}</span>
+            <NumRange label={t('col.score')} min={scoreMin} max={scoreMax} onMin={setScoreMin} onMax={setScoreMax} phMin={t('min')} phMax={t('max')} />
+            <NumRange label={`${t('col.salaryYr')} (K)`} min={salMin} max={salMax} onMin={setSalMin} onMax={setSalMax} phMin={t('min')} phMax={t('max')} />
+            <NumRange label={`${t('col.vsMedian')} (%)`} min={vsMin} max={vsMax} onMin={setVsMin} onMax={setVsMax} phMin={t('min')} phMax={t('max')} />
           </div>
           {/* 行4:搜索 + 仅第一方 + 清除 */}
           <div style={filtRow}>
@@ -660,6 +675,18 @@ function Sel({ value, onChange, opts, all, labelOf }: { value: string; onChange:
       <option value="">{all}</option>
       {list.map((o) => <option key={o} value={o}>{labelOf ? labelOf(o) : o}</option>)}
     </select>
+  )
+}
+// 数值区间筛选:标签 + min – max 两个数字框
+function NumRange({ label, min, max, onMin, onMax, phMin, phMax }: { label: string; min: string; max: string; onMin: (v: string) => void; onMax: (v: string) => void; phMin: string; phMax: string }) {
+  const inp: React.CSSProperties = { ...ctrl, width: 64, padding: '0 6px' }
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+      <span style={{ fontSize: 12, color: '#6b7280', whiteSpace: 'nowrap' }}>{label}</span>
+      <input type="number" value={min} onChange={(e) => onMin(e.target.value)} placeholder={phMin} style={inp} />
+      <span style={{ color: '#9ca3af' }}>–</span>
+      <input type="number" value={max} onChange={(e) => onMax(e.target.value)} placeholder={phMax} style={inp} />
+    </span>
   )
 }
 const td: React.CSSProperties = { padding: '7px 12px', verticalAlign: 'top' }
