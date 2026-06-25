@@ -80,6 +80,7 @@ cd ../cms && npm run dev                                      # 开发 :3000(库
 - **Phase 3 — Docker 开机自抓服务 ✅ 已建并跑通验证(2026-06-24)**:单一 `docker/docker-compose.yml`(项目名 `pnp`,容器 `pnp-postgres/cms/jobbank/build`)+ `etl/auto_update.py`。`restart: unless-stopped` + Docker Desktop 登录自启 = 开机自更新。用法见上「怎么跑」(开发=`up -d postgres`+host npm;无人值守=`--profile unattended up -d`)。
   - **实测一轮端到端通**:jobbank 抓(05/05b,东部时间日志)→ build 清洗/评分/mart → curl cms → seed 200;今天(6-24)数据入库、全部有评分、区/官网富集、稳定 `jb:<id>`。
   - ⚠️ **运维注意①(富集时序)**:build 按自己的 2h 计时,首轮常在 jobbank 的 05b(详情/地址)跑完前就 seed → 该轮 districts/官网偏少。**下一轮(build 用上一轮已富集数据)自动恢复**;想立刻富集可 `docker compose restart build`。
+  - ⚠️ **运维注意③(笔记本睡眠会暂停)**:`time.sleep` 走单调时钟,合盖/睡眠时 VM 暂停、计时冻结 → 整夜不出新周期(不是 bug,容器只有 1 个 python 在 sleep)。醒后需累计够「清醒时长」才触发。想立刻更新:`docker compose -f docker/docker-compose.yml restart build jobbank`(build 立即灌、jobbank 重抓)。要真·7×24 自动 → 部署到常开主机(Render,见框架文档)。
   - ⚠️ **运维注意②(过期累积)**:下架按「发布超 30 天」而非对账,所以近期但本轮没出现的岗会暂留 → DB open 数会比当前实际在挂的多(JB 重发换 posting_id 会放大此现象,30 天内自然清)。彻底干净基线可 `curl "localhost:3000/seed?reset=1"`。真要去重得按内容(公司+标题)而非 posting_id —— 记入 [docs/source-framework.md](docs/source-framework.md)。
   - 旧 `docker compose up -d --build` 命令已随合并失效,改见「怎么跑」。
   - **角色拆分**(关键):抓取按源拆,但清洗/评分/mart/seed 是全局的、只一份。`SOURCE=jobbank` 只抓(05/05b 刷 raw);`SOURCE=build` 跨源清洗(04c/04d/05c)→评分(08)→mart(09)→`GET /seed`,是**灌库唯一角色**。多源不抢 mart/seed。加源 = SOURCES 登记 + compose 复制 service 改 SOURCE。
