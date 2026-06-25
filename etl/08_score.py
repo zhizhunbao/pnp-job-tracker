@@ -98,8 +98,16 @@ NOC_RULES: list[tuple[str, str]] = [
 TEER_BASE = {0: 54, 1: 56, 2: 52, 3: 46, 4: 28, 5: 20}
 # PNP 优先紧缺职业(前2位): 21/22 科技, 31/32 医疗, 72/73 技工运输, 42 教育社区
 INDEMAND2 = {"21", "22", "31", "32", "72", "73", "42"}
-# OINP 紧缺技能(TEER4-5 专门通道)
-INDEMAND_LOW = {"44101", "75110", "85100", "85101", "84120", "65202"}
+# OINP 紧缺技能(TEER4-5 专门通道):从维护表读(etl/build_oinp.py 抓 OINP 官网建,56 个),
+# 文件缺则用兜底 6 个。注:OINP 是安省专属,当前 pnpEligible 不按省过滤——多省清单接入后再细化。
+def _load_oinp_indemand() -> set[str]:
+    base = {"44101", "75110", "85100", "85101", "84120", "65202"}
+    try:
+        data = json.loads((_paths.REFERENCE / "pnp" / "oinp-in-demand.json").read_text(encoding="utf-8"))
+        return {o["noc"] for o in data.get("occupations", []) if o.get("noc")} or base
+    except Exception:  # noqa: BLE001
+        return base
+INDEMAND_LOW = _load_oinp_indemand()
 AGENCY_RE = re.compile(r"recruit|staffing|talent|personnel|placement|outsourc|mercor|adecco|randstad", re.I)
 ACC = {"co-op": 6, "junior": 6, "intermediate": 4, "senior": 2, "unknown": 3}
 
