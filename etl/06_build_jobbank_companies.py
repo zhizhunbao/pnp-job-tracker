@@ -22,8 +22,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _paths  # noqa: E402
 
 # ── 输入/输出全路径 ──────────────────────────────────────────────
-IN_POSTINGS = _paths.JOBBANK / "postings.json"   # 扁平工作文件(scrape+clean)
-IN_DETAILS = _paths.JOBBANK / "details"          # 05b 抓的帖子详情 .md(描述来源)
+IN_POSTINGS = _paths.PROCESSED_JOBBANK / "postings.json"   # 累积/清洗后的 store
+IN_DETAILS = _paths.PROCESSED_JOBBANK / "details"          # 解析后的帖子详情 .md(描述来源)
 OUT_ROOT = _paths.JOBBANK                         # raw/jobbank/<province>/<city>/companies/<slug>/
 
 # 省码 → 目录名(全称,对齐 ATS 的 ontario/ottawa 风格)

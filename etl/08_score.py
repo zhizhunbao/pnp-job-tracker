@@ -200,7 +200,7 @@ def collect():
             ag = bool(AGENCY_RE.search(prof.get("sectors", "") + " " + prof.get("name", "")))
             for j in json.loads((folder / "jobs.json").read_text(encoding="utf-8")).get("jobs", []):
                 yield (j.get("url") or f"{folder.name}:{j.get('title','')}", j.get("title", ""), ag, guess_prov(j.get("location", "")), "")
-    jb = _paths.JOBBANK / "postings.json"
+    jb = _paths.PROCESSED_JOBBANK / "postings.json"
     if jb.exists():
         for j in json.loads(jb.read_text(encoding="utf-8")):
             m = re.search(r"NOC\s*(\d{5})", j.get("search_occupation", ""))  # 搜索时用的 NOC,较准

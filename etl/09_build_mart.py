@@ -18,7 +18,7 @@ import _paths  # noqa: E402
 import noc as NOC  # noqa: E402  NOC 分类法(单一来源)
 
 # ── 输入/输出全路径 ──────────────────────────────────────────────
-IN_JOBBANK = _paths.JOBBANK / "postings.json"
+IN_JOBBANK = _paths.PROCESSED_JOBBANK / "postings.json"
 IN_ATS_COMPANIES = _paths.COMPANIES                       # processed/ats/.../companies/<slug>/
 IN_SCORED = _paths.OUTPUT / "all-scored.json"
 IN_AIP = _paths.DESIGNATED / "aip-designated-employers.json"

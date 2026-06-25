@@ -68,9 +68,9 @@ def email_website(html: str) -> str:
 
 
 def main() -> None:
-    jb = _paths.JOBBANK / "postings.json"
+    jb = _paths.PROCESSED_JOBBANK / "postings.json"
     jobs = json.loads(jb.read_text(encoding="utf-8"))
-    det_dir = _paths.JOBBANK / "details"
+    det_dir = _paths.PROCESSED_JOBBANK / "details"
     det_dir.mkdir(parents=True, exist_ok=True)
     done = 0
     seen: set[str] = set()  # 文件名去重(雇主+职位偶尔重复时加帖子号)

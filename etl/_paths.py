@@ -33,7 +33,10 @@ RAW = DATA / "raw"                                      # extract
 # 按来源分顶层:raw/ats/(ATS 公司目录) · raw/jobbank/(Job Bank 全国)
 RAW_ATS = RAW / "ats"                                   # ATS 来源根
 RAW_CITY = RAW_ATS / PROVINCE / CITY                    # raw/ats/ontario/ottawa
-JOBBANK = RAW / "jobbank"                               # 全国(各省分目录 + 扁平 postings.json 工作文件)
+JOBBANK = RAW / "jobbank"                               # 旧址(过渡:06 物化公司目录仍用;postings/details 已迁 processed)
+# 源框架 v2:抓取只存原始 HTML,按 方式/源/日期 不可变快照(raw/httpx/jobbank/)。解析在 clean/ → processed。
+RAW_HTTPX = RAW / "httpx"                               # httpx 方式的原始页快照根
+RAW_HTTPX_JOBBANK = RAW_HTTPX / "jobbank"               # listing/<日期>/<省>-pNN.html · details/<posting_id>.html
 RAW_DISTRICT = RAW_CITY / DISTRICT                      # raw/ats/ontario/ottawa/kanata-north
 RAW_COMPANIES = RAW_DISTRICT / "companies"              # 公司名录原始(与 processed 的 companies 对应)
 REFERENCE = RAW / "reference"                           # 跨省共享(非某地专属)
@@ -43,6 +46,7 @@ DESIGNATED = REFERENCE / "designated-employers"
 PROCESSED = DATA / "processed"                          # transform
 PROCESSED_ATS = PROCESSED / "ats"                       # ATS 来源根(与 raw/ats 对称)
 COMPANIES = PROCESSED_ATS / PROVINCE / CITY / DISTRICT / "companies"  # processed/ats/ontario/ottawa/kanata-north/companies
+PROCESSED_JOBBANK = PROCESSED / "jobbank"               # Job Bank 累积/去重/清洗后的 store(postings.json + details/*.md)
 
 OUTPUT = DATA / "output"                                # load
 REGISTRY = DATA / "registry"                            # meta

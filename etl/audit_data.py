@@ -22,7 +22,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _paths  # noqa: E402
 
-IN_POSTINGS = _paths.JOBBANK / "postings.json"
+IN_POSTINGS = _paths.PROCESSED_JOBBANK / "postings.json"
 IN_SCORED = _paths.OUTPUT / "all-scored.json"
 OUT_FLAGS = _paths.OUTPUT / "audit-flags.json"
 

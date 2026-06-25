@@ -12,7 +12,9 @@ META = {
     "interval": 7200,        # 2h 默认(SCRAPE_INTERVAL 可覆盖)
     "seed": False,           # 抓取源只刷 raw,不灌库
     "steps": [
+        # 抓取只存原始 HTML 快照;解析下沉 clean → processed(源框架 v2)
         ["python", "etl/05_scrape_jobbank.py", "--all-occupations", "--prov", "ALL", "--since-days", SINCE_DAYS],
+        ["python", "etl/clean/05_parse_jobbank.py", "--since-days", SINCE_DAYS],
         ["python", "etl/05b_scrape_jobbank_details.py"],
     ],
 }

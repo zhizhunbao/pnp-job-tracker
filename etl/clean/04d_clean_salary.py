@@ -20,7 +20,7 @@ import _paths  # noqa: E402
 
 # ── 输入/输出全路径(先声明再用;原地清洗 → IN 与 OUT 同址)──────────────
 IN_COMPANIES_DIR = _paths.COMPANIES                  # processed/ontario/ottawa/kanata-north/companies/
-IN_JOBBANK_FILE = _paths.JOBBANK / "postings.json"   # raw/ontario/ottawa/jobbank/postings.json
+IN_JOBBANK_FILE = _paths.PROCESSED_JOBBANK / "postings.json"   # processed/jobbank/postings.json(原地清洗)
 OUT_COMPANIES_DIR = IN_COMPANIES_DIR                  # 各 <slug>/jobs.json 原地写回
 OUT_JOBBANK_FILE = IN_JOBBANK_FILE                    # 原地写回
 

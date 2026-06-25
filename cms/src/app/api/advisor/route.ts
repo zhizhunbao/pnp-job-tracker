@@ -29,7 +29,7 @@ function buildJdIndex(): Map<string, string> {
       else if (e.name.endsWith('.md')) registerMd(idx, p)
     }
   }
-  walk(path.join(DATA_ROOT, 'raw', 'jobbank', 'details'))
+  walk(path.join(DATA_ROOT, 'processed', 'jobbank', 'details'))
   walk(path.join(DATA_ROOT, 'processed', 'ats', 'ontario', 'ottawa', 'kanata-north', 'companies'))
   return idx
 }

@@ -37,6 +37,9 @@ cms/dev.log
 /data/mart/
 # crawl 原始页快照(政府站等,可重抓;衍生维护表 reference/pnp/*.json 跟踪)
 /data/raw/crawl/
+# 源框架 v2:httpx 原始 HTML 快照(listing/details,可重抓)+ processed 累积 store(从快照重建)
+/data/raw/httpx/
+/data/processed/jobbank/
 # GeoNames 源(可从 download.geonames.org/export/zip/CA.zip 重下;衍生表 fsa-districts.json 跟踪)
 /data/raw/reference/geonames/
 # ESDC 工资源 CSV(可从 open.canada.ca 重下;衍生表 wages.json 跟踪)
