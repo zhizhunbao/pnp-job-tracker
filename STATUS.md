@@ -85,12 +85,13 @@ cd ../cms && npm run dev                                      # 开发 :3000(库
   - **角色拆分**(关键):抓取按源拆,但清洗/评分/mart/seed 是全局的、只一份。`SOURCE=jobbank` 只抓(05/05b 刷 raw);`SOURCE=build` 跨源清洗(04c/04d/05c)→评分(08)→mart(09)→`GET /seed`,是**灌库唯一角色**。多源不抢 mart/seed。加源 = SOURCES 登记 + compose 复制 service 改 SOURCE。
   - 抓法统一 **httpx**(JB 服务端渲染,已证明稳);`crawl/` Playwright 是有头+人工验证,**不进容器**,只给手动抓 Cloudflare 政府站用。
   - 编排器在 `etl/`(业务),容器配置在 `docker/`(运维)。代码/data 靠 bind-mount,改脚本不用重建镜像。
-  - **cms 已容器化 ✅(`unattended` profile)**:整套(postgres + cms + jobbank + build)开机自起、每 2h 自更新。cms 容器连宿主 postgres(`host.docker.internal:5432`)、挂 `../data:/data` 供 seed 读 mart、发布 :3000;build 经 `host.docker.internal:3000` 灌库(host npm 或容器 cms 都通)。改动:next.config `output:'standalone'`、Dockerfile node24+`npm install`+空 `public/`。
+  - **cms 已容器化 ✅(`unattended` profile)+ 单一 compose(项目 pnp,容器 pnp-*)**:整套(postgres + cms + jobbank + build)开机自起、每 2h 自更新。cms 用服务名 `postgres:5432` 连库、挂 `../data:/data` 供 seed 读 mart、发布 :3000;build 经 `host.docker.internal:3000` 灌库(host npm dev 或容器 cms 都通)。pgdata 卷 pin `cms_pgdata` 不丢库。改动:next.config `output:'standalone'`、Dockerfile node24+`npm install`+空 `public/`。
   - **下架已改按发布日期过期 ✅**:不再用 seenIds 对账(实测会误杀 805 仍在招的旧岗)。seed 改「本次未见 **且** datePosted 超 30 天」才 closed。**(旧 STATUS 说「增量 seed 安全」是错的——postings.json 基底不全时会误杀。)**
   - **职位 ID 已改稳定 `jb:<posting_id>` ✅**:见「已踩坑」段(它是 08↔09 join 键,两处一致)。
   - 剩余小坑:build 读 postings.json 与 jobbank 写它有微小竞态(读到半写→该轮失败重试,文件不损);需要可给 05 加 temp+rename 原子写。
 - **统一源框架(目标架构已定:[docs/source-framework.md](docs/source-framework.md) v2,D1-D5 全部拍板)**:三种抓法分三目录(httpx/crawl/dataset),**铁律=抓取只存原始 raw、清洗在 processed**,raw 按 `方式/源/日期` 快照不可变,源注册表独立 `etl/sources.py`,`auto_update` 只是调度器。OINP/SINP/AAIP 各省 PNP 单独成源(crawl,周/月)。**按文档第 8 节分步实施,JB 最后拆**(fetch 留 httpx、解析下沉 clean;回归基线=2084 岗 mart 一致)。尚未动手。
-- 薪资加「vs 中位」可视化列(数据已有 wageMedAnnual)。
+- ✅ **/jobs 前端这轮已上线(容器,2026-06-24)**:中英韩 i18n([i18n.ts](cms/src/app/(frontend)/jobs/i18n.ts):字典+makeT,语言切换 localStorage);**AI 顾问全字段走 Ollama**(按所选语言生成、facts/评分明细喂 prompt 保数值准、简单字段一句话——见 [route.ts](cms/src/app/api/advisor/route.ts) 的 SIMPLE 集;前端 advHeader 只出标签+链接,无三语长文);sticky 顶栏 + 响应式 footer;滚动自动加载封顶 180 + 「显示更多」按钮;新增 中位时薪/中位年薪/**vs中位** 列;**全字段筛选**(分类下拉 PNP/AIP/状态/渠道 + 数值区间 评分/年薪K/vs中位%)。维度表(NOC 中/小分类名等)三语待数据层做(name_zh/en/ko)。
+- **下一步:各省 PNP 职业清单(crawl 源)**:OINP/SINP/AAIP/BCPNP… 各省单独抓职业清单/通道 → 填 `pnp_streams`/`policy_docs`,把 `pnpEligible` 从粗筛升级成**按省精准**。难点:① 政府站常有 Cloudflare → 现有 `crawl/browser_fetch` 有头+人工、容器跑不了(D3:记日志/人工重抓);② 一省一解析。建议先 **OINP 试点**跑通再推其余。
 - 未分类岗(~26%,标题没匹配 NOC)继续加 noc 规则或 AI 兜底。
 - 扩源:其它商会名录、Indeed/LinkedIn(放最后,ToS 风险)。用 etl/crawl/ 抓政策页填 policy_docs/pnp_streams 空表。
 - 部署运维:托管(Vercel+Neon/Railway)、每日 cron、AI 顾问线上去向、`.env.example`、关于/免责声明页。
