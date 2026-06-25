@@ -216,7 +216,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
   const [fBroad, setFBroad] = useState(''); const [fMid, setFMid] = useState(''); const [fFine, setFFine] = useState('')
   const [fTeer, setFTeer] = useState(''); const [fSource, setFSource] = useState(''); const [fAcc, setFAcc] = useState('')
   const [visible, setVisible] = useState<ColKey[]>(DEFAULT_COLS)
-  const [popup, setPopup] = useState<{ field: ColKey; job: JobRow } | null>(null)
+  const [popup, setPopup] = useState<{ field: ColKey; job: JobRow; title: string } | null>(null)
   const [sort, setSort] = useState<{ key: ColKey; dir: 'asc' | 'desc' }>({ key: 'datePosted', dir: 'desc' })
   const [colOpen, setColOpen] = useState(false)
   const colRef = useRef<HTMLDivElement>(null)
@@ -473,7 +473,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
                 const mapsFor = (...parts: (string | undefined)[]) => { const q = parts.filter(Boolean).join(', '); return q ? mapsUrl(q) : null }
                 const L = parseLoc(j)                                                       // 省/市/区
                 const cat = colorOf(j.broad)
-                const open = (field: ColKey) => setPopup({ field, job: j })
+                const open = (field: ColKey, title: string) => setPopup({ field, job: j, title })
                 return (
                   <tr key={j.id} className="jrow" style={{ borderBottom: '1px solid #f3f4f6', background: i % 2 ? '#fcfcfd' : '#fff' }}>
                     {shown.map((c, idx) => {
@@ -507,7 +507,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
                       else if (k === 'datePosted') { node = j.datePosted ? j.datePosted.slice(0, 10) : '—'; Object.assign(extra, { color: '#6b7280', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       else { node = j.lastSeen ? j.lastSeen.slice(0, 10) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       return (
-                        <td key={k} className="jcell" style={{ ...td, ...extra, cursor: 'pointer', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', ...(hasWidths ? { overflow: 'hidden', textOverflow: 'ellipsis' } : null) }} title={typeof node === 'string' ? node : undefined} onClick={() => open(k)}>
+                        <td key={k} className="jcell" style={{ ...td, ...extra, cursor: 'pointer', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', ...(hasWidths ? { overflow: 'hidden', textOverflow: 'ellipsis' } : null) }} title={typeof node === 'string' ? node : undefined} onClick={() => open(k, typeof node === 'string' ? node : (j.salaryText || j.salary || ''))}>
                           {href
                             ? <a href={href} target="_blank" rel="noreferrer" style={link} onClick={(e) => e.stopPropagation()}>{node}</a>
                             : node}
@@ -529,14 +529,14 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
         </div>
       </div>
 
-      {popup && <AdvisorModal field={popup.field} job={popup.job} lang={lang} onClose={() => setPopup(null)} />}
+      {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} onClose={() => setPopup(null)} />}
     </div>
   )
 }
 
 // ── AI 顾问弹框 ────────────────────────────────────────────────
 // 所有字段都走本地大模型流式生成(按所选语言);前端只给极简头部 + 链接,正文由模型生成。
-function AdvisorModal({ field, job, lang, onClose }: { field: ColKey; job: JobRow; lang: Lang; onClose: () => void }) {
+function AdvisorModal({ field, job, title, lang, onClose }: { field: ColKey; job: JobRow; title?: string; lang: Lang; onClose: () => void }) {
   const t = makeT(lang)
   const a = advHeader(field, job, t)
   const [text, setText] = useState('')
@@ -573,7 +573,7 @@ function AdvisorModal({ field, job, lang, onClose }: { field: ColKey; job: JobRo
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, padding: '16px 20px 8px' }}>
           <div>
             <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, letterSpacing: .3 }}>{t('advisor.tag')} · {a.tag}{status === 'streaming' ? t('advisor.generating') : ''}</div>
-            <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827' }}>{a.title}</h3>
+            <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827' }}>{title || a.title}</h3>
           </div>
           <button onClick={onClose} style={{ border: 'none', background: '#f3f4f6', borderRadius: 8, width: 30, height: 30, cursor: 'pointer', fontSize: 16, color: '#6b7280', flexShrink: 0 }}>×</button>
         </div>
