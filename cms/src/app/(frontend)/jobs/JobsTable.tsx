@@ -243,6 +243,8 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
   useEffect(() => { try { const l = localStorage.getItem(LANG_KEY) as Lang | null; if (l === 'zh' || l === 'en' || l === 'ko') setLang(l) } catch { /* ignore */ } }, [])
   const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
   const t = makeT(lang)
+  // 大分类标签:'未分类' 复用规范 key cell.uncat(字典无 broad.未分类,否则会回退成原样输出 "broad.未分类")
+  const broadLabel = (v?: string) => (v && v !== '未分类' ? t('broad.' + v) : t('cell.uncat'))
   const toggleSort = (key: ColKey) =>
     setSort((s) => {
       if (s.key !== key) return { key, dir: 'desc' }       // 新列:降序
@@ -429,7 +431,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
           <div style={filtRow}>
             <span style={filtLabel}>{t('filter.cat')}</span>
             <Sel value={fTeer} onChange={setFTeer} opts={teerOpts} all={t('all.teer')} />
-            <Sel value={fBroad} onChange={(v) => { setFBroad(v); setFMid(''); setFFine('') }} opts={broadOpts} all={t('all.broad')} labelOf={(v) => t('broad.' + v)} />
+            <Sel value={fBroad} onChange={(v) => { setFBroad(v); setFMid(''); setFFine('') }} opts={broadOpts} all={t('all.broad')} labelOf={broadLabel} />
             <Sel value={fMid} onChange={(v) => { setFMid(v); setFFine('') }} opts={midOpts} all={t('all.mid')} />
             <Sel value={fFine} onChange={setFFine} opts={fineOpts} all={t('all.fine')} />
           </div>
@@ -525,7 +527,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
                       let node: React.ReactNode
                       const extra: React.CSSProperties = {}
                       if (k === 'score') { node = j.score ?? '—'; Object.assign(extra, { fontWeight: 600, color: scoreColor(j.score) }) }
-                      else if (k === 'broad') { node = j.broad ? t('broad.' + j.broad) : t('cell.uncat'); Object.assign(extra, { whiteSpace: 'nowrap', color: cat.fg, fontWeight: 500 }) }
+                      else if (k === 'broad') { node = broadLabel(j.broad); Object.assign(extra, { whiteSpace: 'nowrap', color: cat.fg, fontWeight: 500 }) }
                       else if (k === 'mid') { node = (!j.mid || j.mid === '未分类') ? t('cell.uncat') : j.mid; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'fine') { node = (j.mid === '未分类' || !j.mid) ? '—' : j.fine; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'teer') { node = j.teer == null ? '—' : `TEER ${j.teer}`; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
