@@ -62,6 +62,9 @@ const sortVal = (j: JobRow, key: ColKey): number | string | null => {
   switch (key) {
     case 'score': return j.score
     case 'salary': case 'salaryYr': return j.salaryAnnual
+    case 'wageMedHr': return j.wageMedHourly
+    case 'wageMedYr': return j.wageMedAnnual
+    case 'vsMedian': return (j.salaryAnnual != null && j.wageMedAnnual) ? j.salaryAnnual / j.wageMedAnnual : null
     case 'direct': return isDirect(j) ? 1 : 0
     case 'pnp': return j.pnpEligible ? 1 : 0
     case 'aip': return j.aip ? 1 : 0
@@ -163,7 +166,7 @@ const sourceUrl = (applyUrl: string): string => {
 }
 
 // ── 列配置(可勾选;职位列始终显示) ──────────────────────────────
-type ColKey = 'score' | 'pnp' | 'aip' | 'broad' | 'mid' | 'fine' | 'teer' | 'title' | 'company' | 'noc' | 'accessibility' | 'salary' | 'salaryYr' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'lastSeen' | 'closedAt'
+type ColKey = 'score' | 'pnp' | 'aip' | 'broad' | 'mid' | 'fine' | 'teer' | 'title' | 'company' | 'noc' | 'accessibility' | 'salary' | 'salaryYr' | 'wageMedHr' | 'wageMedYr' | 'vsMedian' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'lastSeen' | 'closedAt'
 const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean }[] = [
   { key: 'datePosted', label: '发布时间', default: true },
   { key: 'broad', label: '大分类', default: true },
@@ -181,6 +184,9 @@ const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean 
   { key: 'address', label: '地址', default: false },
   { key: 'salary', label: '薪资', default: true },
   { key: 'salaryYr', label: '年薪(折算)', default: true },
+  { key: 'wageMedHr', label: '中位时薪', default: false },
+  { key: 'wageMedYr', label: '中位年薪', default: false },
+  { key: 'vsMedian', label: 'vs 中位', default: true },
   { key: 'source', label: '来源', default: true },
   { key: 'origin', label: '渠道', default: false },
   { key: 'direct', label: '发布', default: true },
@@ -192,7 +198,7 @@ const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean 
   { key: 'score', label: '评分', default: true },
 ]
 const DEFAULT_COLS = COLUMNS.filter((c) => c.default).map((c) => c.key)
-const PREF_KEY = 'jobs.visibleCols.v6'
+const PREF_KEY = 'jobs.visibleCols.v7'  // v7:新增中位工资/vs中位列,bump 版本让新默认生效
 const COLW_KEY = 'jobs.colWidths.v1'   // 列宽偏好(拖表头分隔条设置)
 const MIN_COLW = 56                     // 列最小宽
 const DEFAULT_COLW = 130                // 新列/未测量列的默认宽
@@ -498,6 +504,9 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
                       else if (k === 'accessibility') node = t('acc.' + (j.accessibility || 'unknown'))
                       else if (k === 'salary') { node = <span title={j.salary || ''}>{j.salaryText || '—'}</span>; Object.assign(extra, { whiteSpace: 'nowrap', color: j.salary ? '#15803d' : '#9ca3af' }) }
                       else if (k === 'salaryYr') { const a = j.salaryAnnual; node = a != null ? `$${Math.round(a / 1000)}K/yr` : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: a != null ? '#15803d' : '#9ca3af' }) }
+                      else if (k === 'wageMedHr') { node = j.wageMedHourly != null ? `$${j.wageMedHourly}/hr` : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.wageMedHourly != null ? '#4b5563' : '#9ca3af' }) }
+                      else if (k === 'wageMedYr') { const m = j.wageMedAnnual; node = m != null ? `$${Math.round(m / 1000)}K/yr` : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: m != null ? '#4b5563' : '#9ca3af' }) }
+                      else if (k === 'vsMedian') { const a = j.salaryAnnual, m = j.wageMedAnnual; if (a != null && m) { const p = Math.round((a / m - 1) * 100); node = `${p >= 0 ? '+' : ''}${p}%`; Object.assign(extra, { whiteSpace: 'nowrap', fontWeight: 600, color: p >= 0 ? '#15803d' : '#b45309' }) } else { node = '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#9ca3af' }) } }
                       else if (k === 'address') { href = j.address ? mapsUrl(j.address) : null; node = j.address || '—'; Object.assign(extra, wrapCell(220)) }
                       else if (k === 'direct') { const dr = isDirect(j); node = dr ? t('cell.first') : t('cell.repost'); Object.assign(extra, { whiteSpace: 'nowrap', color: dr ? '#15803d' : '#9ca3af', fontSize: 12.5 }) }
                       else if (k === 'country') { node = L.country || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
