@@ -91,7 +91,9 @@ cd ../cms && npm run dev                                      # 开发 :3000(库
   - 剩余小坑:build 读 postings.json 与 jobbank 写它有微小竞态(读到半写→该轮失败重试,文件不损);需要可给 05 加 temp+rename 原子写。
 - **统一源框架(目标架构已定:[docs/source-framework.md](docs/source-framework.md) v2,D1-D5 全部拍板)**:三种抓法分三目录(httpx/crawl/dataset),**铁律=抓取只存原始 raw、清洗在 processed**,raw 按 `方式/源/日期` 快照不可变,源注册表独立 `etl/sources.py`,`auto_update` 只是调度器。OINP/SINP/AAIP 各省 PNP 单独成源(crawl,周/月)。**按文档第 8 节分步实施,JB 最后拆**(fetch 留 httpx、解析下沉 clean;回归基线=2084 岗 mart 一致)。尚未动手。
 - ✅ **/jobs 前端这轮已上线(容器,2026-06-24)**:中英韩 i18n([i18n.ts](cms/src/app/(frontend)/jobs/i18n.ts):字典+makeT,语言切换 localStorage);**AI 顾问全字段走 Ollama**(按所选语言生成、facts/评分明细喂 prompt 保数值准、简单字段一句话——见 [route.ts](cms/src/app/api/advisor/route.ts) 的 SIMPLE 集;前端 advHeader 只出标签+链接,无三语长文);sticky 顶栏 + 响应式 footer;滚动自动加载封顶 180 + 「显示更多」按钮;新增 中位时薪/中位年薪/**vs中位** 列;**全字段筛选**(分类下拉 PNP/AIP/状态/渠道 + 数值区间 评分/年薪K/vs中位%)。维度表(NOC 中/小分类名等)三语待数据层做(name_zh/en/ko)。
-- **下一步:各省 PNP 职业清单(crawl 源)**:OINP/SINP/AAIP/BCPNP… 各省单独抓职业清单/通道 → 填 `pnp_streams`/`policy_docs`,把 `pnpEligible` 从粗筛升级成**按省精准**。难点:① 政府站常有 Cloudflare → 现有 `crawl/browser_fetch` 有头+人工、容器跑不了(D3:记日志/人工重抓);② 一省一解析。建议先 **OINP 试点**跑通再推其余。
+- **各省 PNP 职业清单(crawl 源)**:把 `pnpEligible` 从粗筛升级成**按省精准**。
+  - ✅ **OINP 试点已跑通**:`etl/build_oinp.py`(httpx 抓 ontario.ca OINP In-Demand Skills 页,无 Cloudflare)→ bs4 解析 56 个 NOC(任意 9 / 限 GTA 外 47)→ 维护表 `reference/pnp/oinp-in-demand.json`(跟踪;原始 HTML 存 raw/crawl/,gitignore)。`08_score` 读该表当 TEER4-5 紧缺通道(原写死 6 → 真实 56)。**模式 = build_<prov>.py → reference/pnp/<prov>.json → 08 消费**。
+  - 待办:① 其余省照此加(SINP/AAIP/BCPNP… 各自 build 脚本 + 解析);② `pnpEligible` **按省过滤**(现 OINP 清单不分省地用,多省接入后要 per-province);③ OINP 其它 stream(Foreign Worker/International Student 是 TEER0-3 广覆盖,已被现逻辑包住);④ build_oinp 接入低频定时(像 build_wages,偶尔重抓);⑤ 真有 Cloudflare 的省 → 需 headless crawl 镜像(D3)。
 - 未分类岗(~26%,标题没匹配 NOC)继续加 noc 规则或 AI 兜底。
 - 扩源:其它商会名录、Indeed/LinkedIn(放最后,ToS 风险)。用 etl/crawl/ 抓政策页填 policy_docs/pnp_streams 空表。
 - 部署运维:托管(Vercel+Neon/Railway)、每日 cron、AI 顾问线上去向、`.env.example`、关于/免责声明页。
