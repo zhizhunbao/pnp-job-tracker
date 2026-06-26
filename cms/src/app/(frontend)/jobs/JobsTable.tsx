@@ -205,7 +205,7 @@ const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean 
 ]
 const DEFAULT_COLS = COLUMNS.filter((c) => c.default).map((c) => c.key)
 const PREF_KEY = 'jobs.visibleCols.v7'  // v7:新增中位工资/vs中位列,bump 版本让新默认生效
-const COLW_KEY = 'jobs.colWidths.v1'   // 列宽偏好(拖表头分隔条设置)
+const COLW_KEY = 'jobs.colWidths.v2'   // 列宽偏好(拖表头分隔条设置;v2:丢弃 v1 旧坏宽度,回到自动布局)
 const MIN_COLW = 56                     // 列最小宽
 const DEFAULT_COLW = 130                // 新列/未测量列的默认宽
 const AUTO_MAX = 180                    // 自动滚动加载上限;超过改「显示更多」按钮,让 footer 可达
