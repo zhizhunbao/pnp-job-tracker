@@ -203,18 +203,19 @@ def collect():
     jb = _paths.PROCESSED_JOBBANK / "postings.json"
     if jb.exists():
         for j in json.loads(jb.read_text(encoding="utf-8")):
-            m = re.search(r"NOC\s*(\d{5})", j.get("search_occupation", ""))  # 搜索时用的 NOC,较准
+            m = re.search(r"NOC\s*(\d{5})", j.get("search_occupation", ""))  # 搜索时用的 NOC(旧关键词模式)
+            hint = j.get("noc") or (m.group(1) if m else "")                  # 优先官方 NOC(05b 从详情页抽,权威)
             mid = re.search(r"/jobposting/(\d+)", j.get("url", ""))          # 稳定 ID:与 09_build_mart 一致(join 键)
             pid = str(j.get("posting_id") or (mid.group(1) if mid else ""))
             ext = f"jb:{pid}" if pid else (j.get("url") or f"jb:{j.get('posting_id','')}")
             yield (ext, j.get("title", ""),
-                   bool(AGENCY_RE.search(j.get("employer", ""))), j.get("province", ""), m.group(1) if m else "")
+                   bool(AGENCY_RE.search(j.get("employer", ""))), j.get("province", ""), hint)
 
 
 def main() -> None:
     out = []
     for ext_id, title, agency, prov, hint in collect():
-        noc = classify(title) or hint
+        noc = hint or classify(title)   # 源 NOC(JB 官方)优先,无则用标题关键词猜
         teer = teer_of(noc)
         acc = accessibility(title)
         out.append({"externalId": ext_id, "noc": noc,

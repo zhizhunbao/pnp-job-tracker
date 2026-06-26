@@ -54,9 +54,10 @@ def main() -> None:
     raw_dir.mkdir(parents=True, exist_ok=True)
     have = detail_html_index()  # 已抓过的(任意日期)→ 不重抓
 
-    def need(j: dict) -> bool:  # 要抓 = 有 url/id、未富集、且原始 HTML 还没抓过
-        pid = pid_of(j)
-        return bool(pid and j.get("url") and not j.get("detail_fetched") and pid not in have)
+    def need(j: dict) -> bool:  # 要抓 = 有 url/id、HTML 没抓过、且(未富集 或 还缺官方 noc)
+        pid = pid_of(j)                                  # 后者让存量帖一次性重抓拿 NOC(覆盖历史)
+        return bool(pid and j.get("url") and pid not in have
+                    and (not j.get("detail_fetched") or not j.get("noc")))
 
     todo = sum(1 for j in jobs if need(j))
     done = skipped = 0

@@ -62,6 +62,16 @@ def stem_of(employer: str, title: str) -> str:
     return f"{slug(employer)}_{slug(title)}".strip("_") or "job"
 
 
+def extract_noc(s) -> str:
+    """Job Bank 详情页每帖都标了官方 NOC(<span class="noc-no">NOC 72310</span>)→ 取 5 位码。"""
+    el = s.select_one("span.noc-no") or s.select_one(".noc-no")
+    if el:
+        m = re.search(r"(\d{5})", el.get_text())
+        if m:
+            return m.group(1)
+    return ""
+
+
 def employer_website(s) -> str:
     """帖子把雇主名链到其官网:<span property="hiringOrganization">…<a class="external" href>。"""
     org = s.select_one('[property="hiringOrganization"]')
@@ -99,7 +109,8 @@ def main() -> None:
     for j in jobs:
         pid = pid_of(j)
         raw_f = have.get(pid)
-        if j.get("detail_fetched") or not pid or raw_f is None:  # 已解析 / 无原始 HTML → 跳过
+        # 有原始 HTML、且(没解析过 或 还缺官方 noc)→ 解析。后者让存量帖回填 noc(无需重抓)
+        if not pid or raw_f is None or (j.get("detail_fetched") and j.get("noc")):
             continue
         raw_html = raw_f.read_text(encoding="utf-8")
         s = BeautifulSoup(raw_html, "html.parser")
@@ -107,12 +118,15 @@ def main() -> None:
         desc = text(s.select_one('[property="description"]'))
         dp = text(s.select_one('[property="datePosted"]')).replace("Posted on", "").strip()
         web = employer_website(s) or email_website(raw_html)
+        noc = extract_noc(s)  # Job Bank 官方 NOC(权威,胜过标题猜)
         if addr:
             j["address"] = addr
         if dp:
             j["date_detail"] = dp
         if web:
             j["website"] = web
+        if noc:
+            j["noc"] = noc
         j["detail_fetched"] = True
         md = (f"---\ntitle: {j.get('title', '')}\nemployer: {j.get('employer', '')}\n"
               f"address: {addr}\nwebsite: {web}\nposted: {dp}\nsalary: {j.get('salary', '')}\n"
