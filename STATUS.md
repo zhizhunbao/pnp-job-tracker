@@ -109,7 +109,7 @@ cd ../cms && npm run dev                                      # 开发 :3000(库
   - ✅ **AB(AAIP)已接入(2026-06-25)= 第二个省 + 两型框架**:`etl/build_aaip.py`(httpx 抓 alberta.ca AOS 资格页,虽 Cloudflare 但 httpx 直抓 200)→ 解析「不符合资格职业」表(34 个 NOC)→ `reference/pnp/aaip-ineligible.json`。**关键:AAIP 与 OINP 语义相反** —— AOS 是 **exclusion/permissive**(TEER0-5 默认都可走,清单内不可),OINP 是 **inclusion**(TEER4-5 默认不可,清单内才可)。08_score 给省表加 `type`(indemand/ineligible)字段据此反向判定;`score` 的 +12 只对 inclusion 型加。实测 AB 新增 76 个 TEER4-5 岗正确标可走、修正掉 1 个(排除表里的 TEER0-3),pnpEligible 1461→1536。
   - **调研结论(各省 PNP 结构异构,OINP inclusion 非通用)**:**BC** 低 TEER 的 ELSS 流 2024-12-10 永久关闭(无表=逻辑已天然正确);**SK(SINP)** 用排除清单+行业配额模型(另一种形状);**MB(MPNP)** 有 in-demand 清单但 TablePress JS 动态加载(静态 HTML 只 2 行,需 AJAX 端点或 headless),未做;**AB(AAIP)** 是干净 httpx 静态表→已做。
   - 待办:① 其余省继续(SINP 排除+配额 / MB 需破 TablePress 端点 / 其余 inclusion 省)——加 inclusion/exclusion 表丢 json 即生效;③ OINP 其它 stream(Foreign Worker/International Student 是 TEER0-3 广覆盖,已被现逻辑包住);④ build_oinp 接入低频定时(像 build_wages,偶尔重抓);⑤ 真有 Cloudflare 的省 → 需 headless crawl 镜像(D3);⑥ OINP 的 `gtaRestricted`(限大多伦多区外)暂未按岗所在区过滤——08 只有省粒度,接入区粒度后再细化。
-- 未分类岗(~26%,标题没匹配 NOC)继续加 noc 规则或 AI 兜底。
+- ✅ **未分类大幅降(2026-06-26)**:改从 **Job Bank 详情页抽官方 NOC**(`<span class="noc-no">NOC <码></span>`,05b/parse_details 抽 → posting.noc),08 分类优先级 **源NOC > 标题猜**。未分类 31%→预计 ~5%(只剩 JB 自己没标的)。存量帖一次性重抓回填(05b 对缺 noc 的也重抓,自愈)。剩余少量可继续加 noc 规则或 AI 兜底。
 - 扩源:其它商会名录、Indeed/LinkedIn(放最后,ToS 风险)。用 etl/crawl/ 抓政策页填 policy_docs/pnp_streams 空表。
 - 部署运维:托管(Vercel+Neon/Railway)、每日 cron、AI 顾问线上去向、`.env.example`、关于/免责声明页。
 
