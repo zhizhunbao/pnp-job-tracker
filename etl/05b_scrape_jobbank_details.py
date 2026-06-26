@@ -79,10 +79,10 @@ def main() -> None:
             os.replace(tmp, raw_dir / f"{pid}.html")
             done += 1
             prov_done[j.get("province") or "?"] += 1
-            if done % TICK == 0 or done == todo:           # 心跳:进度 + 当前省/雇主 + 各省累计
+            if done % TICK == 0 or done == todo:           # 心跳:一行清爽,对齐(省份累计只在收尾打一次)
                 rate = done / max(time.monotonic() - t0, 1e-6)
-                print(f"  …{done}/{todo} ({done * 100 // max(todo, 1)}%) · 刚抓 {j.get('province') or '?'} · "
-                      f"{(j.get('employer') or '')[:28]} · {rate:.1f}/s · 累计 {dict(prov_done)}", flush=True)
+                print(f"  {done:>5}/{todo} {done * 100 // max(todo, 1):>3}% · {j.get('province') or '?':<3} · "
+                      f"{(j.get('employer') or '')[:30]:<30} · {rate:>4.1f}/s", flush=True)
             time.sleep(0.25)
     print(f"Fetched {done} detail HTML (skipped {skipped}) · 省分布 {dict(prov_done)} -> {raw_dir}", flush=True)
 
