@@ -1,7 +1,8 @@
+import { cookies } from 'next/headers'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import JobsTable, { type JobRow } from './JobsTable'
+import JobsTable, { COLS_COOKIE, type JobRow } from './JobsTable'
 
 export const dynamic = 'force-dynamic'
 
@@ -77,5 +78,12 @@ export default async function JobsPage() {
 
   const updatedAt = rows.reduce((m: string, j: any) => { const ls = iso(j.last_seen); return ls > m ? ls : m }, '')
 
-  return <JobsTable jobs={jobs} updatedAt={updatedAt} dims={dims} />
+  // 列偏好从 cookie 读(浏览器/服务器都能读)→ SSR 直接渲对的列,零闪烁。客户端选列时写这个 cookie。
+  let initialCols: string[] | undefined
+  try {
+    const raw = (await cookies()).get(COLS_COOKIE)?.value
+    if (raw) { const arr = JSON.parse(raw); if (Array.isArray(arr)) initialCols = arr.filter((x) => typeof x === 'string') }
+  } catch { /* 无 cookie/解析失败 → 用默认列 */ }
+
+  return <JobsTable jobs={jobs} updatedAt={updatedAt} dims={dims} initialCols={initialCols} />
 }

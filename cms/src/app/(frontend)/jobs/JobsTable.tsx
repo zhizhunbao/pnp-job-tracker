@@ -209,6 +209,10 @@ const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean 
 ]
 const DEFAULT_COLS = COLUMNS.filter((c) => c.default).map((c) => c.key)
 const PREF_KEY = 'jobs.visibleCols.v7'  // v7:新增中位工资/vs中位列,bump 版本让新默认生效
+export const COLS_COOKIE = 'jobsCols'   // 列偏好 cookie:服务端 SSR 读它直接渲对的列(零闪);客户端选列时写它
+const writeColsCookie = (keys: string[]) => {
+  try { document.cookie = `${COLS_COOKIE}=${encodeURIComponent(JSON.stringify(keys))}; path=/; max-age=31536000; SameSite=Lax` } catch { /* ignore */ }
+}
 const AUTO_MAX = 180                    // 自动滚动加载上限;超过改「显示更多」按钮,让 footer 可达
 const ORIGIN_LABEL: Record<string, string> = { jobbank: 'Job Bank', ats: 'ATS', directory: '社区名单' }
 
@@ -223,7 +227,7 @@ type Dims = {
 const EMPTY_DIMS: Dims = { provinces: [], cities: [], districts: [], nocCategories: [], sources: [], experienceLevels: [] }
 const PROV_CODE: Record<string, string> = Object.fromEntries(Object.entries(PROV_NAMES).map(([c, n]) => [n, c]))
 
-export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims }) {
+export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialCols }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims; initialCols?: string[] }) {
   const [q, setQ] = useState('')
   const [directOnly, setDirectOnly] = useState(false)
   const [fCountry, setFCountry] = useState(''); const [fProv, setFProv] = useState(''); const [fCity, setFCity] = useState(''); const [fDistrict, setFDistrict] = useState('')
@@ -231,8 +235,11 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
   const [fTeer, setFTeer] = useState(''); const [fSource, setFSource] = useState(''); const [fAcc, setFAcc] = useState('')
   const [fPnp, setFPnp] = useState(''); const [fAip, setFAip] = useState(''); const [fStatus, setFStatus] = useState(''); const [fOrigin, setFOrigin] = useState('')
   const [fScore, setFScore] = useState(''); const [fSal, setFSal] = useState(''); const [fVs, setFVs] = useState('')  // 数值预设(下拉,不手填)
-  const [visible, setVisible] = useState<ColKey[]>(DEFAULT_COLS)
-  const [mounted, setMounted] = useState(false)   // 读完 localStorage 列偏好才渲染表格 → 不闪默认列
+  // 初始列:服务端从 cookie 解析后由 initialCols 传入 → SSR 与客户端首帧一致(零闪);无则用默认
+  const [visible, setVisible] = useState<ColKey[]>(() => {
+    const v = (initialCols ?? []).filter((k): k is ColKey => COLUMNS.some((c) => c.key === k))
+    return v.length ? v : DEFAULT_COLS
+  })
   const [popup, setPopup] = useState<{ field: ColKey; job: JobRow; title: string } | null>(null)
   const [sort, setSort] = useState<{ key: ColKey; dir: 'asc' | 'desc' }>({ key: 'datePosted', dir: 'desc' })
   const [colOpen, setColOpen] = useState(false)
@@ -252,19 +259,21 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
       return { key: 'score', dir: 'desc' }                  // 第三下:取消 → 回默认(评分降序)
     })
 
-  // 读列偏好:用 useLayoutEffect 在绘制前切到保存的列;读完才 mounted=true → 表格只渲染一次(所选列),不闪默认
+  // 迁移:老用户有 localStorage 列偏好但还没 cookie(本次改动前设的)→ 应用 + 补写 cookie(一次性)。
+  // 有 cookie 时服务端已渲对的列、initialCols 已传入 → 直接 return,不进迁移。
   useIsoLayoutEffect(() => {
+    if (initialCols && initialCols.length) return
     try {
       const saved = localStorage.getItem(PREF_KEY)
       if (saved) {
         const keys = (JSON.parse(saved) as ColKey[]).filter((k) => COLUMNS.some((c) => c.key === k))
-        if (keys.length) setVisible(keys)
+        if (keys.length) { setVisible(keys); writeColsCookie(keys) }
       }
     } catch { /* ignore */ }
-    setMounted(true)
-  }, [])
+  }, [])  // eslint-disable-line react-hooks/exhaustive-deps
   const saveCols = (next: ColKey[]) => {
-    try { localStorage.setItem(PREF_KEY, JSON.stringify(next)) } catch { /* ignore */ }
+    writeColsCookie(next)                                      // 写 cookie:下次刷新服务端直接渲对
+    try { localStorage.setItem(PREF_KEY, JSON.stringify(next)) } catch { /* ignore */ }  // 留一份兜底
     setVisible(next)
   }
   const toggleCol = (key: ColKey) => saveCols(visible.includes(key) ? visible.filter((k) => k !== key) : [...visible, key])
@@ -457,8 +466,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
           </div>
         </div>
 
-        <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflowX: 'auto', minHeight: 400 }}>
-          {!mounted ? null : (
+        <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflowX: 'auto' }}>
           <table style={{ width: 'auto', minWidth: '100%', borderCollapse: 'collapse', fontSize: 13.5, tableLayout: 'auto' }}>
             <thead>
               <tr style={{ textAlign: 'left', background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
@@ -536,7 +544,6 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
               )}
             </tbody>
           </table>
-          )}
         </div>
         {/* 滚动到此自动加载更多 */}
         <div ref={sentinelRef} style={{ textAlign: 'center', padding: '12px', fontSize: 12.5, color: '#9ca3af' }}>
