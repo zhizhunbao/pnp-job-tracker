@@ -28,27 +28,21 @@
 
 > 三种方式天生不同(抓页面 vs 下文件),不强行统一成一种;统一的是**契约 + 目录 + raw/processed 分层**。
 
-## 2. raw/ 目录约定:`方式 / 源 / 日期`
+## 2. raw/ 目录约定:`raw/<源>/[<日期>/]`(✅ 已实施,2026-06-25)
+> **实施时修订**:原设计是 `方式/源/日期`,但「方式」(httpx/crawl/dataset)已记在 `sources.py` 的 `method=`,
+> 进路径属重复 → **去掉方式层**。无日期维度的源(ats/维护表)不深嵌套。统一成 **`raw/<源>/[<日期>/]内容`**。
 ```
 data/raw/
-  httpx/
-    jobbank/<YYYY-MM-DD>/listing-*.html      # 当天抓的原始列表/详情页
-    ats/<YYYY-MM-DD>/...
-  crawl/                                       # D2:crawl 输出迁到 raw 下
-    oinp/<YYYY-MM-DD>/
-      manifest.json                            #   发现的 URL 清单
-      pages/<slug>.html                        #   D1:原始 HTML
-      pages/<slug>.md                          #   D1:转出的 Markdown(都存)
-    sinp/<YYYY-MM-DD>/ ...
-  dataset/
-    wages/<YYYY-MM-DD>/wage2025.csv
-    fsa/<YYYY-MM-DD>/CA.txt
-    aip/<YYYY-MM-DD>/aip-*.json
-  reference/                                    # 「我们维护的表」仍跟踪(build 产出)
-    wages.json · fsa-districts.json · designated-employers/
+  jobbank/<YYYY-MM-DD>/<省全称>-pNN.html    # 列表快照(每日) + manifest.json
+                       details/<id>.html    #   详情快照(抓取那天的日期目录下)
+  oinp/<YYYY-MM-DD>/ · aaip/<YYYY-MM-DD>/    # 各省 PNP 政策页原始 HTML
+  ats/<slug>/                               # ATS 公司名录(无日期,扁平;roster json 跟踪)
+  pnp/  oinp-in-demand.json · aaip-ineligible.json   # 维护表(跟踪,build_oinp/aaip 产出,08 读)
+  aip/  aip-designated-employers.json       # 维护表(跟踪)
+  wages/ wages.json + wage*.csv源    fsa/ fsa-districts.json + CA.txt源    policy/<省>-immigration/
 ```
-- **日期目录**:每次抓取一份**快照**,raw 不可变、可回溯;**累积/去重/合并放 processed**(不再像现在往单个 postings.json 原地覆盖)。
-- 所以你说的「raw 下没看到新数据」——现在 `05` 是原地覆盖 `raw/jobbank/postings.json`(没新文件、且里面是清洗过的)。新结构下每轮会落 `raw/httpx/jobbank/<日期>/` 一份原始快照。
+- **日期目录**:抓取源每轮一份**快照**,raw 不可变可回溯;**累积/去重/合并放 processed**(processed/jobbank/postings.json)。
+- **维护表(pnp/aip/wages/fsa)**:跟踪的「真相表」,和它的源文件同处一个源目录;**不删 reference 桶之外另设**——reference/ 这层已删,各表直接成顶层源。
 
 ## 3. 源注册表 = `etl/sources/<源>/` 包(D4 + 「按内容分目录」,✅ 已实现)
 **每个抓取内容/角色一个目录**,目录里声明「跑哪些步 + method + 频率 + 是否灌库」;
@@ -101,7 +95,8 @@ docker/etl/
 2. `etl/scrape/{httpx,crawl,dataset}/` 三目录;crawl 输出迁 `raw/crawl/`,出 `.html`+`.md`;建 `docker/crawl/Dockerfile`(headless)。
 3. **新源验证**:拿一个省 PNP 页(如 oinp)走全框架跑通 → 证明契约。不碰 JB。
 4. dataset 源(wages/fsa/aip)做成低频 service。
-5. **最后拆 JB**:`05` 拆成「抓→raw/httpx/jobbank/<date>/*.html」+「clean/jobbank.py 解析→processed」。fetch 仍用 httpx(D5),但解析下沉、raw 只存原始。回归基线:拆前后 mart `jobs.json`(2084 岗)diff 一致。
+5. ✅ **拆 JB 已完成(2026-06-25)**:`05` 拆成「抓→`raw/jobbank/<date>/*.html` + manifest」+「`clean/05_parse_jobbank.py` 解析→`processed/jobbank/postings.json`」;`05b` 同样拆成抓详情 HTML(`<date>/details/<id>.html`)+ `clean/05b_parse_details.py` 解析富集。fetch 仍 httpx(D5),解析下沉、raw 只存原始。回归基线逐字段一致(mart jobs.json 0 差异)。顺带修了潜伏丢数据 bug(去重键改用 url 派生 posting_id)。
+   - 同期还做了 raw 全面扁平化(去方式层 + 删 reference 桶 + ats 地理压平 + all-scored 移 processed + 删 output)、列表文件名用省全称、auto_update 改 loguru 统一日志(逐行截获子进程)。
 
 ## 9. 已定决策
 - **D1** page 源 raw 同时存 `.html` 和 `.md`。
