@@ -275,8 +275,19 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
 
   // ── 列宽:拖表头右缘分隔条调整;空={}时走自动布局,首次拖动测量当前各列宽→转固定布局 ──
   useEffect(() => {
-    try { const s = localStorage.getItem(COLW_KEY); if (s) { const w = JSON.parse(s); if (w && typeof w === 'object') setWidths(w) } } catch { /* ignore */ }
-  }, [])
+    try {
+      const s = localStorage.getItem(COLW_KEY)
+      if (!s) return
+      const saved = JSON.parse(s)
+      if (!saved || typeof saved !== 'object') return
+      // 此刻表仍是自动布局:量出各列自然宽,给「保存里没有的列」兜底(否则它们拿 DEFAULT_COLW 会截断,
+      // 尤其旧版没手柄的最后一列从没存过宽)。保存的宽覆盖量到的宽。
+      const head = headRowRef.current
+      const measured: Partial<Record<ColKey, number>> = {}
+      if (head) shown.forEach((c, i) => { const el = head.children[i] as HTMLElement | undefined; if (el) measured[c.key] = Math.round(el.getBoundingClientRect().width) })
+      setWidths({ ...measured, ...saved })
+    } catch { /* ignore */ }
+  }, [])  // eslint-disable-line react-hooks/exhaustive-deps
   const hasWidths = Object.keys(widths).length > 0
   const colW = (k: ColKey) => widths[k] ?? DEFAULT_COLW
   const totalW = shown.reduce((s, c) => s + colW(c.key), 0)
