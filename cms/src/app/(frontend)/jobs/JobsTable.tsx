@@ -232,6 +232,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
   const [fPnp, setFPnp] = useState(''); const [fAip, setFAip] = useState(''); const [fStatus, setFStatus] = useState(''); const [fOrigin, setFOrigin] = useState('')
   const [fScore, setFScore] = useState(''); const [fSal, setFSal] = useState(''); const [fVs, setFVs] = useState('')  // 数值预设(下拉,不手填)
   const [visible, setVisible] = useState<ColKey[]>(DEFAULT_COLS)
+  const [mounted, setMounted] = useState(false)   // 读完 localStorage 列偏好才渲染表格 → 不闪默认列
   const [popup, setPopup] = useState<{ field: ColKey; job: JobRow; title: string } | null>(null)
   const [sort, setSort] = useState<{ key: ColKey; dir: 'asc' | 'desc' }>({ key: 'datePosted', dir: 'desc' })
   const [colOpen, setColOpen] = useState(false)
@@ -251,7 +252,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
       return { key: 'score', dir: 'desc' }                  // 第三下:取消 → 回默认(评分降序)
     })
 
-  // 读列偏好:用 useLayoutEffect 在绘制前切到保存的列,避免「默认列闪一下再切」
+  // 读列偏好:用 useLayoutEffect 在绘制前切到保存的列;读完才 mounted=true → 表格只渲染一次(所选列),不闪默认
   useIsoLayoutEffect(() => {
     try {
       const saved = localStorage.getItem(PREF_KEY)
@@ -260,6 +261,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
         if (keys.length) setVisible(keys)
       }
     } catch { /* ignore */ }
+    setMounted(true)
   }, [])
   const saveCols = (next: ColKey[]) => {
     try { localStorage.setItem(PREF_KEY, JSON.stringify(next)) } catch { /* ignore */ }
@@ -455,7 +457,8 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
           </div>
         </div>
 
-        <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflowX: 'auto' }}>
+        <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflowX: 'auto', minHeight: 400 }}>
+          {!mounted ? null : (
           <table style={{ width: 'auto', minWidth: '100%', borderCollapse: 'collapse', fontSize: 13.5, tableLayout: 'auto' }}>
             <thead>
               <tr style={{ textAlign: 'left', background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
@@ -533,6 +536,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
               )}
             </tbody>
           </table>
+          )}
         </div>
         {/* 滚动到此自动加载更多 */}
         <div ref={sentinelRef} style={{ textAlign: 'center', padding: '12px', fontSize: 12.5, color: '#9ca3af' }}>
