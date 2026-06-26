@@ -24,7 +24,7 @@ import _paths  # noqa: E402
 # ── 输入/输出全路径 ──────────────────────────────────────────────
 IN_POSTINGS = _paths.PROCESSED_JOBBANK / "postings.json"   # 累积/清洗后的 store
 IN_DETAILS = _paths.PROCESSED_JOBBANK / "details"          # 解析后的帖子详情 .md(描述来源)
-OUT_ROOT = _paths.JOBBANK                         # raw/jobbank/<province>/<city>/companies/<slug>/
+OUT_ROOT = _paths.RAW_JOBBANK                         # raw/jobbank/<province>/<city>/companies/<slug>/
 
 # 省码 → 目录名(全称,对齐 ATS 的 ontario/ottawa 风格)
 PROV_FULL = {

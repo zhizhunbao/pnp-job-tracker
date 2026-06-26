@@ -8,7 +8,7 @@ build_oinp — 抓 OINP「Employer Job Offer: In-Demand Skills」流的符合资
   ① 任意地区(any location in Ontario)  ② 仅大多伦多区域外(outside the Greater Toronto Area)
 
 产出:
-  raw/crawl/oinp/<date>/in-demand-skills.html   # 原始页(raw 只存原始)
+  raw/oinp/<date>/in-demand-skills.html   # 原始页(raw 只存原始)
   reference/pnp/oinp-in-demand.json             # 维护表(跟踪):{occupations:[{noc,name,gtaRestricted}], ...}
 08_score 读 reference 表 → ON 的 TEER4-5 紧缺通道(精化 pnpEligible)。
 
@@ -27,7 +27,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _paths  # noqa: E402
 
 URL = "https://www.ontario.ca/page/oinp-employer-job-offer-demand-skills-stream"
-OUT_RAW_DIR = _paths.RAW / "crawl" / "oinp"                  # 原始页快照(按日期)
+OUT_RAW_DIR = _paths.RAW / "oinp"                  # 原始页快照(按日期)
 OUT_TABLE = _paths.REFERENCE / "pnp" / "oinp-in-demand.json"  # 维护表(跟踪)
 UA = "Mozilla/5.0 (compatible; pnp-job-tracker/1.0)"
 

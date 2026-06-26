@@ -14,7 +14,7 @@ build_aaip — 抓 AAIP(阿尔伯塔)「Alberta Opportunity Stream」的**不符
 NOC 带 `*` = 条件性不符合(如未认证 ECE);粗筛信号下保守按不符合处理(去掉星号)。
 
 产出:
-  raw/crawl/aaip/<date>/opportunity-stream-eligibility.html  # 原始页(raw 只存原始)
+  raw/aaip/<date>/opportunity-stream-eligibility.html  # 原始页(raw 只存原始)
   reference/pnp/aaip-ineligible.json                          # 维护表(跟踪)
 
 Usage:  uv run python etl/build_aaip.py   (或 .venv 的 python)
@@ -32,7 +32,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _paths  # noqa: E402
 
 URL = "https://www.alberta.ca/aaip-alberta-opportunity-stream-eligibility"
-OUT_RAW_DIR = _paths.RAW / "crawl" / "aaip"                     # 原始页快照(按日期)
+OUT_RAW_DIR = _paths.RAW / "aaip"                     # 原始页快照(按日期)
 OUT_TABLE = _paths.REFERENCE / "pnp" / "aaip-ineligible.json"   # 维护表(跟踪)
 UA = "Mozilla/5.0 (compatible; pnp-job-tracker/1.0)"
 

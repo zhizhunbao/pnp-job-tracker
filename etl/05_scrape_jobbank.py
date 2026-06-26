@@ -43,7 +43,7 @@ from bs4 import BeautifulSoup
 
 import _paths
 PROJECT_ROOT = _paths.ROOT
-OUT_DIR = _paths.JOBBANK
+OUT_DIR = _paths.RAW_JOBBANK
 BASE = "https://www.jobbank.gc.ca/jobsearch/jobsearch"
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -145,7 +145,7 @@ def scrape(occupations: dict, prov: str, max_pages: int, delay: float) -> list[d
 
 
 # ── 全职业 · 按省 · sort=D · 增量(最新几天)──────────────────────────
-# 源框架 v2:抓取只存**原始 HTML 快照**(raw/httpx/jobbank/<日期>/<省>-pNN.html),
+# 源框架 v2:抓取只存**原始 HTML 快照**(raw/jobbank/<日期>/<省>-pNN.html),
 # 不解析、不合并。解析→去重合并到 processed/jobbank/postings.json 在 clean/05_parse_jobbank.py。
 # 这里只用页内日期决定翻几页(纯翻页控制,不产出数据)。parse_article 供 parse 脚本 import。
 def parse_date(s: str):
@@ -163,7 +163,7 @@ def fetch_all_occupations_snapshots(provinces: list[str], since_days: int, max_p
     """各省全职业、按日期降序翻页:每页**原始 HTML** 整存进当天 listing 快照目录 + manifest。
     用页内日期判断翻到何处停(page_all_old,纯翻页控制);不解析合并(那在 clean/05_parse_jobbank.py)。"""
     cutoff = datetime.now().date() - timedelta(days=since_days)
-    snap_dir = _paths.RAW_HTTPX_JOBBANK / datetime.now().date().isoformat()  # 日期直接挂源下,与 details/ 平级
+    snap_dir = _paths.RAW_JOBBANK / datetime.now().date().isoformat()  # 日期直接挂源下,与 details/ 平级
     snap_dir.mkdir(parents=True, exist_ok=True)
     manifest = {"fetched_at": datetime.now().isoformat(timespec="seconds"),
                 "since_days": since_days, "cutoff": cutoff.isoformat(), "pages": []}

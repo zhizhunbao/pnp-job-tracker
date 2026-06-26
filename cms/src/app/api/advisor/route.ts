@@ -30,7 +30,7 @@ function buildJdIndex(): Map<string, string> {
     }
   }
   walk(path.join(DATA_ROOT, 'processed', 'jobbank', 'details'))
-  walk(path.join(DATA_ROOT, 'processed', 'ats', 'ontario', 'ottawa', 'kanata-north', 'companies'))
+  walk(path.join(DATA_ROOT, 'processed', 'ats'))
   return idx
 }
 function registerMd(idx: Map<string, string>, file: string) {

@@ -1,13 +1,13 @@
 """
 05b — fetch each Job Bank posting's **detail page raw HTML**, save one snapshot per
-posting at raw/httpx/jobbank/<抓取日期>/details/<posting_id>.html. 源框架 v2:抓取只存
+posting at raw/jobbank/<抓取日期>/details/<posting_id>.html. 源框架 v2:抓取只存
 原始 HTML,解析(地址/官网/描述 → processed postings + .md)下沉到 clean/05b_parse_details.py。
 
 增量:跳过①已富集(detail_fetched)②原始 HTML 已抓过(跨日期目录查)的帖 —— 只抓真正新的。
 每帖抓一次,落在抓取那天的日期目录下。temp+rename 落盘,避免半截 HTML 占位致永不重抓。
 
 Usage:  uv run python etl/05b_scrape_jobbank_details.py
-Output: data/raw/httpx/jobbank/<date>/details/<posting_id>.html
+Output: data/raw/jobbank/<date>/details/<posting_id>.html
 """
 import json
 import os
@@ -38,9 +38,9 @@ def pid_of(j: dict) -> str:
 
 def detail_html_index() -> dict:
     """所有日期目录下已抓的详情 HTML:posting_id → path。详情每帖抓一次,但落在「抓取那天」的
-    raw/httpx/jobbank/<日期>/details/ 下,故要跨日期目录查「是否已抓过」(日期升序,最新覆盖)。"""
+    raw/jobbank/<日期>/details/ 下,故要跨日期目录查「是否已抓过」(日期升序,最新覆盖)。"""
     idx: dict[str, Path] = {}
-    root = _paths.RAW_HTTPX_JOBBANK
+    root = _paths.RAW_JOBBANK
     if root.exists():
         for date_dir in sorted(p for p in root.iterdir() if p.is_dir()):
             for f in (date_dir / "details").glob("*.html"):
@@ -50,7 +50,7 @@ def detail_html_index() -> dict:
 
 def main() -> None:
     jobs = json.loads((_paths.PROCESSED_JOBBANK / "postings.json").read_text(encoding="utf-8"))
-    raw_dir = _paths.RAW_HTTPX_JOBBANK / datetime.now().date().isoformat() / "details"  # 当天日期目录下
+    raw_dir = _paths.RAW_JOBBANK / datetime.now().date().isoformat() / "details"  # 当天日期目录下
     raw_dir.mkdir(parents=True, exist_ok=True)
     have = detail_html_index()  # 已抓过的(任意日期)→ 不重抓
 

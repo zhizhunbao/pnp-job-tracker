@@ -19,27 +19,21 @@ cms/dev.log
 # 人读导出视图(csv)
 /data/**/*.csv
 # 公司名录导出视图(保留 .json)
-/data/raw/**/companies/*.md
-# Job Bank 导出视图(postings.md)+ 帖子详情 .md(scraped,可重抓;postings.json 见文件末尾,不跟踪)
-/data/raw/**/jobbank/*.md
-/data/raw/**/jobbank/details/
-# 公司 ATS 岗位详情 .md(scraped,可重抓)
-/data/processed/**/companies/**/jobs/*.md
+# ATS 名录导出视图 .md(.json 名录跟踪)
+/data/raw/ats/*.md
+# ATS 公司岗位详情 .md(scraped,可重抓;profile/jobs.json 跟踪)
+/data/processed/ats/**/jobs/*.md
 # 抓取日志与原始 html 缓存(policy 正文 .md 仍跟踪)
 /data/**/*.log
 /data/raw/reference/policy/**/html_cache/
 
-# Job Bank 全国抓取数据(每日刷新,可重抓 → 不跟踪,避免反复 restore)
-/data/raw/**/jobbank/postings.json
-# Job Bank 物化的公司目录(从 postings.json 衍生,可重建)
-/data/raw/jobbank/**/companies/
-# mart 集市层(由 09_build_mart.py 从 raw+clean 衍生,可重建)
-/data/mart/
-# crawl 原始页快照(政府站等,可重抓;衍生维护表 reference/pnp/*.json 跟踪)
-/data/raw/crawl/
-# 源框架 v2:httpx 原始 HTML 快照(listing/details,可重抓)+ processed 累积 store(从快照重建)
-/data/raw/httpx/
+# raw/<源>/ 原始 HTML 快照及衍生(每日可重抓;维护表在 reference/ 跟踪)
+/data/raw/jobbank/
+/data/raw/oinp/
+/data/raw/aaip/
+# processed 累积 store(从快照重建)+ mart 集市层(09 衍生)
 /data/processed/jobbank/
+/data/mart/
 # GeoNames 源(可从 download.geonames.org/export/zip/CA.zip 重下;衍生表 fsa-districts.json 跟踪)
 /data/raw/reference/geonames/
 # ESDC 工资源 CSV(可从 open.canada.ca 重下;衍生表 wages.json 跟踪)
