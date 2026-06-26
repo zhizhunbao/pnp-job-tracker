@@ -26,6 +26,24 @@ import sources  # noqa: E402
 
 SOURCE = os.environ.get("SOURCE", "jobbank")
 SEED_URL = os.environ.get("SEED_URL", "http://host.docker.internal:3000/seed")
+ROUNDS = Path(__file__).resolve().parent.parent / "data" / ".rounds"  # 各源「本轮完成」标记(mtime)
+POLL = 30  # 消费者(如 build)轮询上游标记的间隔(秒)
+
+
+def mark_done() -> None:
+    """本源跑完一轮 → 更新自己的标记(下游靠它的 mtime 判断「有新轮次」)。"""
+    ROUNDS.mkdir(parents=True, exist_ok=True)
+    (ROUNDS / f"{SOURCE}.done").write_text(f"{time.time():.0f}")
+
+
+def newest_upstream(after: list[str]) -> float:
+    """上游各源标记里最新的 mtime(都没有则 0)。"""
+    t = 0.0
+    for up in after:
+        f = ROUNDS / f"{up}.done"
+        if f.exists():
+            t = max(t, f.stat().st_mtime)
+    return t
 
 # 统一格式:时间 | 级别 | 源 | 消息(容器日志无 TTY,不上色)
 logger.remove()
@@ -68,12 +86,26 @@ def main() -> None:
         raise SystemExit(1)
     meta = importlib.import_module(f"sources.{SOURCE}").META
     interval = int(os.environ.get("SCRAPE_INTERVAL", meta.get("interval", 7200)))
-    log.info(f"启动:每 {interval}s 一轮" + (f",seed → {SEED_URL}" if meta.get("seed") else ""))
+    after = meta.get("after")  # 有 → 消费者模式:等这些上游源跑完才触发(而非独立计时)
+    if after:
+        log.info(f"消费者模式:上游 {after} 每轮完成后触发(兜底每 {interval}s 至少一次)"
+                 + (f",seed → {SEED_URL}" if meta.get("seed") else ""))
+    else:
+        log.info(f"生产者模式:每 {interval}s 一轮" + (f",seed → {SEED_URL}" if meta.get("seed") else ""))
     while True:
         log.info("===== 开始一轮 =====")
         ok = run_once(meta)
-        log.info(f"===== {'完成' if ok else '未完整完成'},{interval}s 后再来 =====")
-        time.sleep(interval)
+        mark_done()
+        log.info(f"===== {'完成' if ok else '未完整完成'} =====")
+        if after:  # 等上游出现「比刚消费的更新」的轮次,或兜底 interval 到
+            consumed = newest_upstream(after)
+            waited = 0
+            while newest_upstream(after) <= consumed and waited < interval:
+                time.sleep(POLL)
+                waited += POLL
+            log.info("检测到上游新轮次 → 触发" if waited < interval else f"兜底 {interval}s 到 → 触发")
+        else:
+            time.sleep(interval)
 
 
 if __name__ == "__main__":
