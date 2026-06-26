@@ -16,5 +16,6 @@ META = {
         ["python", "etl/05_scrape_jobbank.py", "--all-occupations", "--prov", "ALL", "--since-days", SINCE_DAYS],
         ["python", "etl/clean/05_parse_jobbank.py", "--since-days", SINCE_DAYS],
         ["python", "etl/05b_scrape_jobbank_details.py"],
+        ["python", "etl/clean/05b_parse_details.py"],
     ],
 }
