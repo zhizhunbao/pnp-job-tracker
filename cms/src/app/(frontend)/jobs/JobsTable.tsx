@@ -555,7 +555,11 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
                       else if (k === 'district') { href = mapsFor(L.district); node = L.district || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#1f2937' }) }
                       else if (k === 'source') { href = sourceUrl(j.applyUrl) || null; node = sourceLabel(j); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'origin') { node = j.origin ? t('origin.' + j.origin) : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
-                      else if (k === 'pnp') { node = j.pnpEligible ? t('cell.pnpYes') : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.pnpEligible ? '#15803d' : '#d1d5db', fontSize: 12.5 }) }
+                      else if (k === 'pnp') {  // 显示「依据」:技能岗(TEER0-3 广覆盖,绿) / 紧缺(TEER4-5 在省清单,琥珀) / —
+                        const skilled = j.pnpEligible && j.teer != null && j.teer <= 3
+                        node = !j.pnpEligible ? '—' : (skilled ? t('cell.pnpSkilled') : t('cell.pnpIndemand'))
+                        Object.assign(extra, { whiteSpace: 'nowrap', color: !j.pnpEligible ? '#d1d5db' : (skilled ? '#15803d' : '#b45309'), fontSize: 12.5 })
+                      }
                       else if (k === 'aip') { node = j.aip ? t('cell.aipYes') : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.aip ? '#b45309' : '#d1d5db', fontSize: 12.5 }) }
                       else if (k === 'status') { const cl = j.status === 'closed'; node = cl ? t('cell.closed') : t('cell.open'); Object.assign(extra, { whiteSpace: 'nowrap', color: cl ? '#9ca3af' : '#15803d', fontSize: 12.5 }) }
                       else if (k === 'closedAt') { node = j.closedAt ? j.closedAt.slice(0, 10) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
