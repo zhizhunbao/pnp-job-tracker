@@ -2,7 +2,8 @@ import { cookies } from 'next/headers'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import JobsTable, { COLS_COOKIE, type JobRow } from './JobsTable'
+import JobsTable, { type JobRow } from './JobsTable'
+import { COLS_COOKIE } from './i18n'
 
 export const dynamic = 'force-dynamic'
 
