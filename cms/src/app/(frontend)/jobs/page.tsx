@@ -82,7 +82,7 @@ export default async function JobsPage() {
   let initialCols: string[] | undefined
   try {
     const raw = (await cookies()).get(COLS_COOKIE)?.value
-    if (raw) { const arr = JSON.parse(raw); if (Array.isArray(arr)) initialCols = arr.filter((x) => typeof x === 'string') }
+    if (raw) { const arr = JSON.parse(decodeURIComponent(raw)); if (Array.isArray(arr)) initialCols = arr.filter((x) => typeof x === 'string') }
   } catch { /* 无 cookie/解析失败 → 用默认列 */ }
 
   return <JobsTable jobs={jobs} updatedAt={updatedAt} dims={dims} initialCols={initialCols} />
