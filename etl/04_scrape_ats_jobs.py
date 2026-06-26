@@ -308,25 +308,7 @@ def main() -> None:
 
     summary.sort(key=lambda s: s["tech"], reverse=True)
     total_tech = sum(s["tech"] for s in summary)
-    L = [f"# {args.region} · Stage 3 真实在招岗(公司ATS第一方)\n",
-         f"> {len(summary)} 家ATS公司成功抓取,共 **{total_tech}** 个科技岗。数据来自各公司自己的招聘后台,非聚合站。",
-         f"> 跳过 {len(skipped)} 家(不支持的ATS/无token)。每家明细见其文件夹 jobs.json。\n",
-         "| 公司 | ATS | 总岗 | 科技岗 | 渥太华/远程科技岗 |", "|---|---|---:|---:|---:|"]
-    for s in summary:
-        L.append(f"| {s['company']} | {s['ats']} | {s['total']} | {s['tech']} | {s['ottawa_or_remote_tech']} |")
-    # flatten tech jobs located in Ottawa/remote
-    L.append("\n## 渥太华/远程 科技岗(可直接投递)\n")
-    L.append("| 公司 | 职位 | 地点 | 投递 |")
-    L.append("|---|---|---|---|")
-    for s in summary:
-        for j in s["tech_jobs"]:
-            if re.search(r"ottawa|kanata|nepean|remote|canada", j.get("location", ""), re.I):
-                L.append(f"| {s['company']} | {j['title']} | {j['location']} | [开](<{j['url']}>) |")
-    if skipped:
-        L.append(f"\n_未抓(待手动/其他ATS):_ " + "、".join(f"{n}({a})" for n, a in skipped[:50]))
-    (_paths.OUTPUT / f"{args.region}-jobs.md").write_text("\n".join(L), encoding="utf-8")
     print(f"Stage 3: {len(summary)} companies, {total_tech} tech jobs. Skipped {len(skipped)}.")
-    print(f"  → {_paths.OUTPUT / (args.region + '-jobs.md')}")
 
 
 if __name__ == "__main__":

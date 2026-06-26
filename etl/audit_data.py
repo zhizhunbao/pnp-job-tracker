@@ -23,8 +23,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _paths  # noqa: E402
 
 IN_POSTINGS = _paths.PROCESSED_JOBBANK / "postings.json"
-IN_SCORED = _paths.OUTPUT / "all-scored.json"
-OUT_FLAGS = _paths.OUTPUT / "audit-flags.json"
+IN_SCORED = _paths.PROCESSED / "all-scored.json"
+OUT_FLAGS = _paths.PROCESSED / "audit-flags.json"
 
 # 加拿大邮编首字母 → 省(粗校验地理一致性)
 POSTAL_PROV = {
@@ -115,7 +115,7 @@ def main() -> None:
         print(f"  {cat:14} {len(rows):4} 行   e.g. {rows[0]['why']} — {rows[0]['employer']}")
     print(f"\n  合计可疑 {total} 行 / {n}({total * 100 // n}%) → 只需复查这些")
 
-    _paths.OUTPUT.mkdir(parents=True, exist_ok=True)
+    _paths.PROCESSED.mkdir(parents=True, exist_ok=True)
     OUT_FLAGS.write_text(json.dumps(flags, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"  详情: {OUT_FLAGS}")
 

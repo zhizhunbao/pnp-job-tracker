@@ -14,8 +14,9 @@ cms/*.db
 cms/dev.log
 
 # ── data/ 衍生文件(可由 ETL 重新生成,不入 git;源 JSON 仍跟踪)──
-# load 阶段计算产出(all-scored.json 等,08_score 可重算)
-/data/output/
+# 08→09 评分中间产物 + audit 产出(processed 下,可重算)
+/data/processed/all-scored.json
+/data/processed/audit-flags.json
 # 人读导出视图(csv)
 /data/**/*.csv
 # 公司名录导出视图(保留 .json)

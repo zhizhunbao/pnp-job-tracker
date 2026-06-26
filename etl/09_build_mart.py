@@ -20,7 +20,7 @@ import noc as NOC  # noqa: E402  NOC 分类法(单一来源)
 # ── 输入/输出全路径 ──────────────────────────────────────────────
 IN_JOBBANK = _paths.PROCESSED_JOBBANK / "postings.json"
 IN_ATS_COMPANIES = _paths.COMPANIES                       # processed/ats/.../companies/<slug>/
-IN_SCORED = _paths.OUTPUT / "all-scored.json"
+IN_SCORED = _paths.PROCESSED / "all-scored.json"
 IN_AIP = _paths.AIP / "aip-designated-employers.json"
 IN_WAGES = _paths.WAGES / "wages.json"   # NOC×省 中位工资(build_wages.py 从 ESDC 开放数据建)
 OUT_MART = _paths.DATA / "mart"

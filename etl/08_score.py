@@ -221,8 +221,8 @@ def main() -> None:
                     "category": f"TEER {teer}" if teer is not None else "未分类",
                     "accessibility": acc, "score": score(noc, teer, prov, acc, agency),
                     "pnpEligible": pnp_eligible(noc, teer, prov)})
-    _paths.OUTPUT.mkdir(parents=True, exist_ok=True)
-    (_paths.OUTPUT / "all-scored.json").write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    _paths.PROCESSED.mkdir(parents=True, exist_ok=True)
+    (_paths.PROCESSED / "all-scored.json").write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Scored {len(out)} jobs → all-scored.json")
     print("TEER 分布:", dict(sorted(Counter(o["category"] for o in out).items())))
 
