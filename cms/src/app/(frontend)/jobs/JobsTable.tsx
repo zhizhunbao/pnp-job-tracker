@@ -234,6 +234,8 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
   const [fTeer, setFTeer] = useState(''); const [fSource, setFSource] = useState(''); const [fAcc, setFAcc] = useState('')
   const [fPnp, setFPnp] = useState(''); const [fAip, setFAip] = useState(''); const [fStatus, setFStatus] = useState(''); const [fOrigin, setFOrigin] = useState('')
   const [fScore, setFScore] = useState(''); const [fSal, setFSal] = useState(''); const [fVs, setFVs] = useState('')  // 数值预设(下拉,不手填)
+  const [showMore, setShowMore] = useState(false)  // 「更多筛选」折叠区(来源/状态/经验/评分/薪资)默认收起
+  const moreActive = [fSource, fOrigin, fStatus, fAcc, fScore, fSal, fVs].filter(Boolean).length  // 折叠区里已激活的筛选数
   // 初始列:服务端从 cookie 解析后由 initialCols 传入 → SSR 与客户端首帧一致(零闪);无则用默认
   const [visible, setVisible] = useState<ColKey[]>(() => {
     const v = (initialCols ?? []).filter((k): k is ColKey => COLUMNS.some((c) => c.key === k))
@@ -394,32 +396,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '1rem 0' }}>
-          {/* 行1:地理(国家→省→市→区 联动) */}
-          <div style={filtRow}>
-            <span style={filtLabel}>{t('filter.geo')}</span>
-            <Sel value={fCountry} onChange={(v) => { setFCountry(v); setFProv(''); setFCity(''); setFDistrict('') }} opts={countryOpts} all={t('all.country')} />
-            <Sel value={fProv} onChange={(v) => { setFProv(v); setFCity(''); setFDistrict('') }} opts={provOpts} all={t('all.prov')} />
-            <Sel value={fCity} onChange={(v) => { setFCity(v); setFDistrict('') }} opts={cityOpts} all={t('all.city')} />
-            <Sel value={fDistrict} onChange={setFDistrict} opts={distOpts} all={t('all.district')} />
-          </div>
-          {/* —— 2 字标签组:对齐 —— */}
-          {/* 来源 */}
-          <div style={filtRow}>
-            <span style={filtLabel}>{t('filter.src')}</span>
-            <Sel value={fSource} onChange={setFSource} opts={sourceOpts} all={t('all.source')} />
-            <Sel value={fOrigin} onChange={setFOrigin} opts={originOpts} all={t('all.origin')} labelOf={(v) => t('origin.' + v)} />
-          </div>
-          {/* 状态 */}
-          <div style={filtRow}>
-            <span style={filtLabel}>{t('filter.status')}</span>
-            <Sel value={fStatus} onChange={setFStatus} opts={['open', 'closed']} all={t('all.status')} labelOf={(v) => (v === 'open' ? t('cell.open') : t('cell.closed'))} />
-          </div>
-          {/* 经验 */}
-          <div style={filtRow}>
-            <span style={filtLabel}>{t('filter.exp')}</span>
-            <Sel value={fAcc} onChange={setFAcc} opts={accOpts} all={t('all.exp')} labelOf={(v) => t('acc.' + v)} />
-          </div>
-          {/* —— 4 字标签组:对齐 —— */}
+          {/* ═══ 常用筛选(始终显示):4 字标签在上(职业分类/移民资格),地理在下 ═══ */}
           {/* 职业分类(TEER + 大→中→小 联动) */}
           <div style={filtRow}>
             <span style={filtLabel}>{t('filter.cat')}</span>
@@ -434,13 +411,50 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
             <Sel value={fPnp} onChange={setFPnp} opts={['yes', 'no']} all={t('all.pnp')} labelOf={(v) => t('opt.' + v)} />
             <Sel value={fAip} onChange={setFAip} opts={['yes', 'no']} all={t('all.aip')} labelOf={(v) => t('opt.' + v)} />
           </div>
-          {/* 薪资/评分(预设下拉,不手填) */}
+          {/* 地理(国家→省→市→区 联动) */}
           <div style={filtRow}>
-            <span style={filtLabel}>{t('filter.num')}</span>
-            <Sel value={fScore} onChange={setFScore} opts={['high', 'mid', 'low']} all={t('all.score')} labelOf={(v) => t('sc.' + v)} />
-            <Sel value={fSal} onChange={setFSal} opts={['ge100', '80', '60', 'u60']} all={t('all.sal')} labelOf={(v) => t('sal.' + v)} />
-            <Sel value={fVs} onChange={setFVs} opts={['above', 'above20', 'below']} all={t('all.vs')} labelOf={(v) => t('vs.' + v)} />
+            <span style={filtLabel}>{t('filter.geo')}</span>
+            <Sel value={fCountry} onChange={(v) => { setFCountry(v); setFProv(''); setFCity(''); setFDistrict('') }} opts={countryOpts} all={t('all.country')} />
+            <Sel value={fProv} onChange={(v) => { setFProv(v); setFCity(''); setFDistrict('') }} opts={provOpts} all={t('all.prov')} />
+            <Sel value={fCity} onChange={(v) => { setFCity(v); setFDistrict('') }} opts={cityOpts} all={t('all.city')} />
+            <Sel value={fDistrict} onChange={setFDistrict} opts={distOpts} all={t('all.district')} />
           </div>
+          {/* ═══ 更多筛选(默认收起):来源/状态/经验/评分/薪资 ═══ */}
+          <div style={filtRow}>
+            <span style={filtLabel} />
+            <button onClick={() => setShowMore((o) => !o)} style={{ ...ctrl, cursor: 'pointer', background: '#f3f4f6', display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
+              {t('filter.more')}{moreActive ? ` · ${moreActive}` : ''} <span style={{ fontSize: 11, color: '#9ca3af' }}>{showMore ? '▲' : '▼'}</span>
+            </button>
+          </div>
+          {showMore && (<>
+            {/* 来源 */}
+            <div style={filtRow}>
+              <span style={filtLabel}>{t('filter.src')}</span>
+              <Sel value={fSource} onChange={setFSource} opts={sourceOpts} all={t('all.source')} />
+              <Sel value={fOrigin} onChange={setFOrigin} opts={originOpts} all={t('all.origin')} labelOf={(v) => t('origin.' + v)} />
+            </div>
+            {/* 状态 */}
+            <div style={filtRow}>
+              <span style={filtLabel}>{t('filter.status')}</span>
+              <Sel value={fStatus} onChange={setFStatus} opts={['open', 'closed']} all={t('all.status')} labelOf={(v) => (v === 'open' ? t('cell.open') : t('cell.closed'))} />
+            </div>
+            {/* 经验 */}
+            <div style={filtRow}>
+              <span style={filtLabel}>{t('filter.exp')}</span>
+              <Sel value={fAcc} onChange={setFAcc} opts={accOpts} all={t('all.exp')} labelOf={(v) => t('acc.' + v)} />
+            </div>
+            {/* 评分 */}
+            <div style={filtRow}>
+              <span style={filtLabel}>{t('filter.score')}</span>
+              <Sel value={fScore} onChange={setFScore} opts={['high', 'mid', 'low']} all={t('all.score')} labelOf={(v) => t('sc.' + v)} />
+            </div>
+            {/* 薪资(年薪 + vs中位) */}
+            <div style={filtRow}>
+              <span style={filtLabel}>{t('filter.salary')}</span>
+              <Sel value={fSal} onChange={setFSal} opts={['ge100', '80', '60', 'u60']} all={t('all.sal')} labelOf={(v) => t('sal.' + v)} />
+              <Sel value={fVs} onChange={setFVs} opts={['above', 'above20', 'below']} all={t('all.vs')} labelOf={(v) => t('vs.' + v)} />
+            </div>
+          </>)}
           {/* 行4:搜索 + 仅第一方 + 清除 */}
           <div style={filtRow}>
             <input placeholder={t('search.placeholder')} value={q} onChange={(e) => setQ(e.target.value)} style={{ ...ctrl, flex: '0 1 320px', minWidth: 180 }} />
