@@ -1,11 +1,24 @@
-# STATUS / 交接文档（2026-06-25）
+# STATUS / 交接文档（2026-06-26）
 
 > 新 session 接手先读这份 + `CLAUDE.md`(设计宪法)+ `prd.md`(需求)。仓库:github.com/zhizhunbao/pnp-job-tracker
-> ✅ **本 session 工作全部已提交**(`git log` 看本次 commit)。
-> **本轮重点(2026-06-25)**:① PNP 按省精准(08 读 raw/pnp 两型表 inclusion/exclusion,接入 AB,排除 QC);
-> ② **raw 重构落地**:抓取/解析分离(raw 只存原始 HTML 按日期快照,解析下沉 clean→processed)、全面扁平化
-> (`raw/<源>/[<日期>/]`,删 reference/output 桶 + 方式层 + ats 地理深嵌套,all-scored 移 processed);
-> ③ auto_update 改 **loguru** 统一日志(逐行截获子进程);④ 05b 加进度心跳。回归基线始终逐字段一致。
+> ✅ **本 session 工作全部已提交,工作区干净**;4 容器(postgres/cms/jobbank/build)健康运行,DB ~3900 当前岗。
+>
+> **本轮重点(2026-06-25 数据层 + 2026-06-26 前端,~35 commit)**:
+> **数据层**:① PNP 按省精准(08 读 raw/pnp 两型表 inclusion/exclusion,接入 AB,排除 QC);② **raw 重构**:
+> 抓取/解析分离(raw 只存原始 HTML 按日期快照,解析下沉 clean→processed)+ 全面扁平化(`raw/<源>/[<日期>/]`,
+> 删 reference/output/registry 桶 + 方式层 + ats 地理深嵌套,all-scored 移 processed,顶层只剩 raw/processed/mart);
+> ③ auto_update 改 **loguru** 统一日志(逐行截获子进程)+ 05b 进度心跳;④ **build 反应式触发**(after=[jobbank],
+> jobbank 抓完才灌库,先抓后灌);⑤ **JB 详情页抽官方 NOC**(05b/parse_details `noc-no` span→posting.noc,
+> 08 分类优先源 NOC>标题猜,未分类 31%→缓降;受详情覆盖+旧岗累积稀释,渐进生效)。
+> **前端(/jobs)**:① **列宽机制整个砍掉** → 纯自动布局(table-layout:auto,永不截断,横向滚动);列偏好/语言改
+> useLayoutEffect;② **列偏好用 cookie**(服务端 SSR 直接渲对的列,零闪零空位,不用登录;COLS_COOKIE 放共享非-client
+> 模块 i18n.ts 否则服务端拿不到);③ PNP 列显示「依据」(技能岗/紧缺/魁省/—),QC 单列「魁省」且不归入 PNP=否;
+> ④ 筛选区分两部分(常用:职业分类/移民资格/地理 始终显示;更多筛选 来源/状态/经验/评分/薪资 可折叠,开关带活跃数);
+> ⑤ **新增固定「操作」列**(sticky 右侧):公司信息(前端组装) + 职位描述(/api/jobtext 读真实抓取 .md 正文)。
+> 回归基线始终逐字段一致;每个前端改动 tsc 通过 + 重建 cms 容器上线。
+>
+> **AI 顾问真实性**:职位描述/评分/各数据字段——有真实抓取数据+精确算出的数字作依据(prompt 强制不许编);
+> **唯独公司分析靠模型自身知识**(没抓公司正文,冷门公司可能不准)——待办见下「前端/AI」段。
 
 ## 这是什么
 **PNP Job Tracker** —— 每日更新的**全加拿大全职业职位板**,带移民价值视角。能走「雇主 offer → 省提名(PNP)」的岗打 `pnpEligible` 标记(粗筛信号,非资格认定)。
@@ -112,6 +125,8 @@ cd ../cms && npm run dev                                      # 开发 :3000(库
 - ✅ **未分类大幅降(2026-06-26)**:改从 **Job Bank 详情页抽官方 NOC**(`<span class="noc-no">NOC <码></span>`,05b/parse_details 抽 → posting.noc),08 分类优先级 **源NOC > 标题猜**。未分类 31%→预计 ~5%(只剩 JB 自己没标的)。存量帖一次性重抓回填(05b 对缺 noc 的也重抓,自愈)。剩余少量可继续加 noc 规则或 AI 兜底。
 - 扩源:其它商会名录、Indeed/LinkedIn(放最后,ToS 风险)。用 etl/crawl/ 抓政策页填 policy_docs/pnp_streams 空表。
 - 部署运维:托管(Vercel+Neon/Railway)、每日 cron、AI 顾问线上去向、`.env.example`、关于/免责声明页。
+- **前端/AI**:① AI 顾问**公司分析接真实数据**(现靠模型知识,冷门公司可能编)——轻量=把 JD+官网喂进 company prompt+强化「不确定就说」;重=06b 抓公司官网首页文本进管线。② NOC 中/小分类名三语(name_zh/en/ko,数据层做)。③ 统计模块(用户提过:任意维度×指标,单页还是分模块,jobs 模块命名)——未设计。④ 累积稀释:DB 旧岗保留旧 pnp/NOC/QC 标记,靠 30 天老化或 reset 收敛(用户不愿删岗,选自然收敛)。
+- **本轮踩坑记**:① 服务端组件从 `'use client'` 模块导入普通常量会拿到 undefined(COLS_COOKIE 必须放共享非-client 模块)。② cookie 值 encodeURIComponent 编码,服务端读出要 decodeURIComponent 再 parse。③ SSR+localStorage 偏好天生闪烁(默认→切换),要么 cookie 让服务端直接渲对、要么 useLayoutEffect 绘制前切。④ cms 容器 data 挂在 `/data`(standalone cwd=/app,`../data`=/data);改 cms 源码要重建镜像(`up -d --build cms`),非 bind-mount。
 
 ## 关键决策记录
 - **数据仓库分层**:raw→clean→mart→load;mart 是「列对齐DB的最终表」,seed 只灌不拼。维度表(省市区/NOC/来源/经验/AIP)各自维护。
