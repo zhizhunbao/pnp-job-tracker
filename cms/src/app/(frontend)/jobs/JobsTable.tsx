@@ -1,6 +1,10 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+
+// 读 localStorage 偏好(列/语言)用「绘制前」生效,避免 SSR 默认值闪一下再切到保存值。
+// SSR 端 useLayoutEffect 无效且会告警 → 服务端退化成 useEffect。
+const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
 import { makeT, LANGS, LANG_KEY, type Lang, type TFn } from './i18n'
 
@@ -235,7 +239,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
   const [limit, setLimit] = useState(60)          // 滚动分页:当前渲染行数
   const sentinelRef = useRef<HTMLDivElement>(null)
   const [lang, setLang] = useState<Lang>('zh')    // 语言(localStorage 持久化)
-  useEffect(() => { try { const l = localStorage.getItem(LANG_KEY) as Lang | null; if (l === 'zh' || l === 'en' || l === 'ko') setLang(l) } catch { /* ignore */ } }, [])
+  useIsoLayoutEffect(() => { try { const l = localStorage.getItem(LANG_KEY) as Lang | null; if (l === 'zh' || l === 'en' || l === 'ko') setLang(l) } catch { /* ignore */ } }, [])
   const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
   const t = makeT(lang)
   // 大分类标签:'未分类' 复用规范 key cell.uncat(字典无 broad.未分类,否则会回退成原样输出 "broad.未分类")
@@ -247,8 +251,8 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
       return { key: 'score', dir: 'desc' }                  // 第三下:取消 → 回默认(评分降序)
     })
 
-  // 读/存列偏好(挂载后再读,避免 SSR 水合不一致)
-  useEffect(() => {
+  // 读列偏好:用 useLayoutEffect 在绘制前切到保存的列,避免「默认列闪一下再切」
+  useIsoLayoutEffect(() => {
     try {
       const saved = localStorage.getItem(PREF_KEY)
       if (saved) {
