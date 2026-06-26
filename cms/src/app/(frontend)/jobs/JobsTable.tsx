@@ -349,7 +349,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
         (!fBroad || j.broad === fBroad) && (!fMid || j.mid === fMid) && (!fFine || j.fine === fFine) &&
         (!fTeer || (j.teer == null ? '未分类' : `TEER ${j.teer}`) === fTeer) &&
         (!fSource || sourceLabel(j) === fSource) && (!fAcc || j.accessibility === fAcc) &&
-        (!fPnp || (fPnp === 'yes') === j.pnpEligible) && (!fAip || (fAip === 'yes') === j.aip) &&
+        (!fPnp || (fPnp === 'yes' ? j.pnpEligible : (!j.pnpEligible && j.province !== 'QC'))) && (!fAip || (fAip === 'yes') === j.aip) &&
         (!fStatus || (j.status || 'open') === fStatus) && (!fOrigin || j.origin === fOrigin) &&
         okScore(j.score, fScore) && okSal(j.salaryAnnual, fSal) && okVs(vsPct(j), fVs) &&
         (!term || searchHay(j).includes(term))
@@ -419,13 +419,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
             <Sel value={fCity} onChange={(v) => { setFCity(v); setFDistrict('') }} opts={cityOpts} all={t('all.city')} />
             <Sel value={fDistrict} onChange={setFDistrict} opts={distOpts} all={t('all.district')} />
           </div>
-          {/* ═══ 更多筛选(默认收起):来源/状态/经验/评分/薪资 ═══ */}
-          <div style={filtRow}>
-            <span style={filtLabel} />
-            <button onClick={() => setShowMore((o) => !o)} style={{ ...ctrl, cursor: 'pointer', background: '#f3f4f6', display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
-              {t('filter.more')}{moreActive ? ` · ${moreActive}` : ''} <span style={{ fontSize: 11, color: '#9ca3af' }}>{showMore ? '▲' : '▼'}</span>
-            </button>
-          </div>
+          {/* ═══ 更多筛选(默认收起):来源/状态/经验/评分/薪资 —— 开关在下方搜索行 ═══ */}
           {showMore && (<>
             {/* 来源 */}
             <div style={filtRow}>
@@ -461,6 +455,9 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
             <label style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', background: directOnly ? '#eef2ff' : '#fff', whiteSpace: 'nowrap' }} title={t('directOnly.tip')}>
               <input type="checkbox" checked={directOnly} onChange={(e) => setDirectOnly(e.target.checked)} />{t('directOnly')}
             </label>
+            <button onClick={() => setShowMore((o) => !o)} style={{ ...ctrl, cursor: 'pointer', background: showMore || moreActive ? '#eef2ff' : '#f3f4f6', display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
+              {t('filter.more')}{moreActive ? ` · ${moreActive}` : ''} <span style={{ fontSize: 11, color: '#9ca3af' }}>{showMore ? '▲' : '▼'}</span>
+            </button>
             {anyFilter && <button onClick={clearAll} style={{ ...ctrl, cursor: 'pointer', background: '#f3f4f6', color: '#b91c1c' }}>{t('clear')}</button>}
             {/* 字段选择:右对齐,与搜索同一行 */}
             <div ref={colRef} style={{ position: 'relative', marginLeft: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
@@ -537,10 +534,11 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                       else if (k === 'district') { href = mapsFor(L.district); node = L.district || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#1f2937' }) }
                       else if (k === 'source') { href = sourceUrl(j.applyUrl) || null; node = sourceLabel(j); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'origin') { node = j.origin ? t('origin.' + j.origin) : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
-                      else if (k === 'pnp') {  // 显示「依据」:技能岗(TEER0-3 广覆盖,绿) / 紧缺(TEER4-5 在省清单,琥珀) / —
+                      else if (k === 'pnp') {  // 依据:技能岗(TEER0-3,绿)/紧缺(TEER4-5在省清单,琥珀)/魁省(走自己体系,不属PNP)/—
+                        const qc = j.province === 'QC'
                         const skilled = j.pnpEligible && j.teer != null && j.teer <= 3
-                        node = !j.pnpEligible ? '—' : (skilled ? t('cell.pnpSkilled') : t('cell.pnpIndemand'))
-                        Object.assign(extra, { whiteSpace: 'nowrap', color: !j.pnpEligible ? '#d1d5db' : (skilled ? '#15803d' : '#b45309'), fontSize: 12.5 })
+                        node = qc ? t('cell.pnpQc') : (!j.pnpEligible ? '—' : (skilled ? t('cell.pnpSkilled') : t('cell.pnpIndemand')))
+                        Object.assign(extra, { whiteSpace: 'nowrap', color: qc ? '#7c3aed' : (!j.pnpEligible ? '#d1d5db' : (skilled ? '#15803d' : '#b45309')), fontSize: 12.5 })
                       }
                       else if (k === 'aip') { node = j.aip ? t('cell.aipYes') : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.aip ? '#b45309' : '#d1d5db', fontSize: 12.5 }) }
                       else if (k === 'status') { const cl = j.status === 'closed'; node = cl ? t('cell.closed') : t('cell.open'); Object.assign(extra, { whiteSpace: 'nowrap', color: cl ? '#9ca3af' : '#15803d', fontSize: 12.5 }) }
