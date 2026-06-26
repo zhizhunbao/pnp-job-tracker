@@ -176,7 +176,7 @@ const sourceUrl = (applyUrl: string): string => {
 }
 
 // ── 列配置(可勾选;职位列始终显示) ──────────────────────────────
-type ColKey = 'score' | 'pnp' | 'aip' | 'broad' | 'mid' | 'fine' | 'teer' | 'title' | 'company' | 'noc' | 'accessibility' | 'salary' | 'salaryYr' | 'wageMedHr' | 'wageMedYr' | 'vsMedian' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'lastSeen' | 'closedAt'
+type ColKey = 'score' | 'pnp' | 'aip' | 'broad' | 'mid' | 'fine' | 'teer' | 'title' | 'company' | 'noc' | 'accessibility' | 'salary' | 'salaryYr' | 'wageMedHr' | 'wageMedYr' | 'vsMedian' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'lastSeen' | 'closedAt' | 'actions'
 const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean }[] = [
   { key: 'datePosted', label: '发布时间', default: true },
   { key: 'broad', label: '大分类', default: true },
@@ -206,6 +206,7 @@ const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean 
   { key: 'lastSeen', label: '更新时间', default: false },
   { key: 'closedAt', label: '下架时间', default: false },
   { key: 'score', label: '评分', default: true },
+  { key: 'actions', label: '操作', default: true, always: true },  // 固定最后一列:公司信息 / 职位描述 按钮
 ]
 const DEFAULT_COLS = COLUMNS.filter((c) => c.default).map((c) => c.key)
 const PREF_KEY = 'jobs.visibleCols.v7'  // v7:新增中位工资/vs中位列,bump 版本让新默认生效
@@ -242,6 +243,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
     return v.length ? v : DEFAULT_COLS
   })
   const [popup, setPopup] = useState<{ field: ColKey; job: JobRow; title: string } | null>(null)
+  const [actModal, setActModal] = useState<{ kind: 'company' | 'desc'; job: JobRow } | null>(null)
   const [sort, setSort] = useState<{ key: ColKey; dir: 'asc' | 'desc' }>({ key: 'datePosted', dir: 'desc' })
   const [colOpen, setColOpen] = useState(false)
   const colRef = useRef<HTMLDivElement>(null)
@@ -289,11 +291,11 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
 
   // Esc 关弹框
   useEffect(() => {
-    if (!popup) return
-    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') setPopup(null) }
+    if (!popup && !actModal) return
+    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') { setPopup(null); setActModal(null) } }
     window.addEventListener('keydown', h)
     return () => window.removeEventListener('keydown', h)
-  }, [popup])
+  }, [popup, actModal])
 
   // 点击其他区域关闭「字段」下拉
   useEffect(() => {
@@ -489,6 +491,11 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                 {shown.map((c, idx) => {
                   const active = sort.key === c.key
                   const isLast = idx === shown.length - 1
+                  if (c.key === 'actions') return (  // 操作列:不排序,固定吸附右侧
+                    <th key={c.key} style={{ padding: '8px 12px', color: '#374151', fontWeight: 600, whiteSpace: 'nowrap', userSelect: 'none', position: 'sticky', right: 0, background: '#f9fafb', boxShadow: '-6px 0 8px -6px rgba(0,0,0,.12)', zIndex: 1 }}>
+                      {t('col.actions')}
+                    </th>
+                  )
                   return (
                     <th key={c.key} onClick={() => toggleSort(c.key)} title={t('th.tip')}
                       style={{ padding: '8px 12px', color: active ? '#2563eb' : '#374151', fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none', borderRight: isLast ? undefined : '1px solid #e5e7eb' }}>
@@ -509,6 +516,12 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                   <tr key={j.id} className="jrow" style={{ borderBottom: '1px solid #f3f4f6', background: i % 2 ? '#fcfcfd' : '#fff' }}>
                     {shown.map((c, idx) => {
                       const k = c.key
+                      if (k === 'actions') return (  // 操作列:两按钮(公司信息/职位描述),固定吸附右侧
+                        <td key={k} style={{ ...td, position: 'sticky', right: 0, background: i % 2 ? '#fcfcfd' : '#fff', boxShadow: '-6px 0 8px -6px rgba(0,0,0,.12)', whiteSpace: 'nowrap' }}>
+                          <button onClick={(e) => { e.stopPropagation(); setActModal({ kind: 'company', job: j }) }} style={actBtn}>{t('act.company')}</button>
+                          <button onClick={(e) => { e.stopPropagation(); setActModal({ kind: 'desc', job: j }) }} style={{ ...actBtn, marginLeft: 6 }}>{t('act.desc')}</button>
+                        </td>
+                      )
                       let href: string | null = null
                       let node: React.ReactNode
                       const extra: React.CSSProperties = {}
@@ -579,6 +592,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
       </footer>
 
       {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} onClose={() => setPopup(null)} />}
+      {actModal && <ActModal kind={actModal.kind} job={actModal.job} jobs={jobs} lang={lang} onClose={() => setActModal(null)} />}
     </div>
   )
 }
@@ -646,6 +660,63 @@ function AdvisorModal({ field, job, title, lang, onClose }: { field: ColKey; job
   )
 }
 
+// ── 操作列弹框:公司基本信息(前端组装) / 职位描述(读真实抓取的 .md 正文)────
+function ActRow({ label, value }: { label: string; value: React.ReactNode }) {
+  return <div style={{ display: 'flex', gap: 10, padding: '3px 0' }}><span style={{ minWidth: 48, color: '#9ca3af', flexShrink: 0 }}>{label}</span><span style={{ flex: 1, color: '#374151', wordBreak: 'break-word' }}>{value}</span></div>
+}
+function ActModal({ kind, job, jobs, lang, onClose }: { kind: 'company' | 'desc'; job: JobRow; jobs: JobRow[]; lang: Lang; onClose: () => void }) {
+  const t = makeT(lang)
+  const [text, setText] = useState('')
+  const [status, setStatus] = useState<'loading' | 'done' | 'empty'>(kind === 'desc' ? 'loading' : 'done')
+  useEffect(() => {
+    if (kind !== 'desc') return
+    const ctrl = new AbortController()
+    setStatus('loading'); setText('')
+    ;(async () => {
+      try {
+        const res = await fetch('/api/jobtext?url=' + encodeURIComponent(job.applyUrl || ''), { signal: ctrl.signal })
+        const txt = (await res.text()).trim()
+        setText(txt); setStatus(txt ? 'done' : 'empty')
+      } catch { if (!ctrl.signal.aborted) setStatus('empty') }
+    })()
+    return () => ctrl.abort()
+  }, [kind, job])
+  const sameCo = kind === 'company' ? jobs.filter((x) => x.company && x.company === job.company) : []
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(17,24,39,.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, zIndex: 50 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 12, maxWidth: 560, width: '100%', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,.25)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, padding: '16px 20px 8px' }}>
+          <div>
+            <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600 }}>{kind === 'company' ? t('act.companyTitle') : t('act.descTitle')}</div>
+            <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827' }}>{(kind === 'company' ? job.company : job.title) || job.title || '—'}</h3>
+          </div>
+          <button onClick={onClose} style={{ border: 'none', background: '#f3f4f6', borderRadius: 8, width: 30, height: 30, cursor: 'pointer', fontSize: 16, color: '#6b7280', flexShrink: 0 }}>×</button>
+        </div>
+        <div style={{ padding: '4px 20px 20px', fontSize: 14, lineHeight: 1.7, color: '#374151' }}>
+          {kind === 'company' ? (
+            <div>
+              <ActRow label={t('col.company')} value={job.company || '—'} />
+              {job.officialUrl && <ActRow label={t('act.site')} value={<a href={job.officialUrl} target="_blank" rel="noreferrer" style={link}>{job.officialUrl}</a>} />}
+              <ActRow label={t('act.addr')} value={job.address || [job.city, job.province].filter(Boolean).join(', ') || '—'} />
+              <ActRow label={t('act.src')} value={job.sourceLabel || job.source || '—'} />
+              <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #f3f4f6' }}>
+                <div style={{ fontWeight: 600, color: '#111827', marginBottom: 6 }}>{t('act.jobsHere')} ({sameCo.length})</div>
+                {sameCo.slice(0, 40).map((x) => (
+                  <div key={x.id} style={{ padding: '2px 0', color: x.id === job.id ? '#2563eb' : '#4b5563' }}>· {x.title}{x.city ? ` — ${x.city}` : ''}</div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            status === 'loading' ? <p style={{ color: '#9ca3af' }}>{t('act.loadingText')}</p>
+              : status === 'empty' ? <p style={{ color: '#9ca3af' }}>{t('act.noText')}</p>
+                : <div style={{ whiteSpace: 'pre-wrap' }}>{text}</div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // 把 AI 文本里的【小标题】加粗,保留换行
 function renderAI(text: string): React.ReactNode {
   return text.split(/(【[^】]+】)/g).map((seg, i) => {
@@ -684,3 +755,4 @@ const wrapCell = (w: number): React.CSSProperties => ({ maxWidth: w, whiteSpace:
 const link: React.CSSProperties = { color: '#2563eb', textDecoration: 'none' }
 const colPanel: React.CSSProperties = { position: 'absolute', top: '110%', right: 0, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, boxShadow: '0 10px 30px rgba(0,0,0,.12)', padding: 8, zIndex: 20, minWidth: 210 }
 const colBtn: React.CSSProperties = { flex: 1, whiteSpace: 'nowrap', padding: '4px 8px', fontSize: 12.5, border: '1px solid #d1d5db', borderRadius: 5, background: '#f9fafb', color: '#374151', cursor: 'pointer' }
+const actBtn: React.CSSProperties = { whiteSpace: 'nowrap', padding: '3px 8px', fontSize: 12, border: '1px solid #d1d5db', borderRadius: 5, background: '#fff', color: '#374151', cursor: 'pointer' }

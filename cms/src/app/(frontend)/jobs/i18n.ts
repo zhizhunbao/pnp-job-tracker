@@ -42,6 +42,7 @@ const zh: Dict = {
   'col.country': '国家', 'col.province': '省', 'col.city': '市', 'col.district': '区', 'col.address': '地址',
   'col.salary': '薪资', 'col.salaryYr': '年薪(折算)', 'col.wageMedHr': '中位时薪', 'col.wageMedYr': '中位年薪', 'col.vsMedian': 'vs 中位', 'col.source': '来源', 'col.origin': '渠道', 'col.direct': '发布',
   'col.pnp': 'PNP', 'col.aip': 'AIP', 'col.status': '状态', 'col.lastSeen': '更新时间', 'col.closedAt': '下架时间', 'col.score': '评分',
+  'col.actions': '操作', 'act.company': '公司信息', 'act.desc': '职位描述', 'act.companyTitle': '公司基本信息', 'act.descTitle': '职位描述', 'act.site': '官网', 'act.addr': '地址', 'act.src': '来源', 'act.jobsHere': '该公司在榜职位', 'act.noText': '未抓到该职位的描述文本', 'act.loadingText': '加载中…',
   // 大分类(数据值→显示)
   'broad.管理': '管理', 'broad.商务': '商务', 'broad.科技': '科技', 'broad.医疗': '医疗', 'broad.教育': '教育',
   'broad.文体': '文体', 'broad.服务': '服务', 'broad.技工': '技工', 'broad.资源': '资源', 'broad.制造': '制造',
@@ -86,6 +87,7 @@ const en: Dict = {
   'col.country': 'Country', 'col.province': 'Province', 'col.city': 'City', 'col.district': 'District', 'col.address': 'Address',
   'col.salary': 'Salary', 'col.salaryYr': 'Annual (est.)', 'col.wageMedHr': 'Median $/hr', 'col.wageMedYr': 'Median $/yr', 'col.vsMedian': 'vs median', 'col.source': 'Source', 'col.origin': 'Channel', 'col.direct': 'Posting',
   'col.pnp': 'PNP', 'col.aip': 'AIP', 'col.status': 'Status', 'col.lastSeen': 'Updated', 'col.closedAt': 'Closed', 'col.score': 'Score',
+  'col.actions': 'Actions', 'act.company': 'Company', 'act.desc': 'Description', 'act.companyTitle': 'Company info', 'act.descTitle': 'Job description', 'act.site': 'Website', 'act.addr': 'Address', 'act.src': 'Source', 'act.jobsHere': 'Listings by this company', 'act.noText': 'No scraped description for this job', 'act.loadingText': 'Loading…',
   'broad.管理': 'Management', 'broad.商务': 'Business', 'broad.科技': 'Tech', 'broad.医疗': 'Health', 'broad.教育': 'Education',
   'broad.文体': 'Arts & Sport', 'broad.服务': 'Services', 'broad.技工': 'Trades', 'broad.资源': 'Resources', 'broad.制造': 'Manufacturing',
   'acc.co-op': 'Co-op', 'acc.junior': 'Junior', 'acc.intermediate': 'Intermediate', 'acc.senior': 'Senior', 'acc.unknown': '—',
@@ -127,6 +129,7 @@ const ko: Dict = {
   'col.country': '국가', 'col.province': '주', 'col.city': '도시', 'col.district': '지역', 'col.address': '주소',
   'col.salary': '급여', 'col.salaryYr': '연봉(환산)', 'col.wageMedHr': '중위 시급', 'col.wageMedYr': '중위 연봉', 'col.vsMedian': '중위 대비', 'col.source': '출처', 'col.origin': '채널', 'col.direct': '게시',
   'col.pnp': 'PNP', 'col.aip': 'AIP', 'col.status': '상태', 'col.lastSeen': '갱신일', 'col.closedAt': '마감일', 'col.score': '점수',
+  'col.actions': '작업', 'act.company': '회사 정보', 'act.desc': '직무 설명', 'act.companyTitle': '회사 기본 정보', 'act.descTitle': '직무 설명', 'act.site': '웹사이트', 'act.addr': '주소', 'act.src': '출처', 'act.jobsHere': '이 회사의 공고', 'act.noText': '수집된 직무 설명이 없습니다', 'act.loadingText': '로딩 중…',
   'broad.管理': '관리', 'broad.商务': '비즈니스', 'broad.科技': '기술', 'broad.医疗': '의료', 'broad.教育': '교육',
   'broad.文体': '문화·체육', 'broad.服务': '서비스', 'broad.技工': '기능직', 'broad.资源': '자원', 'broad.制造': '제조',
   'acc.co-op': '인턴십', 'acc.junior': '주니어', 'acc.intermediate': '중급', 'acc.senior': '시니어', 'acc.unknown': '—',
