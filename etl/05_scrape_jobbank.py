@@ -68,6 +68,12 @@ DEFAULT_OCCUPATIONS = {
 # 全加拿大省份(领地暂跳过)。QC 也抓——站点是全职业职位板,PNP 只是其中一种状态标记。
 ALL_PROVINCES = ["ON", "QC", "SK", "AB", "BC", "MB", "NB", "NS", "NL", "PE"]
 
+PROV_FULL = {
+    "ON": "ontario", "QC": "quebec", "BC": "british-columbia", "AB": "alberta",
+    "SK": "saskatchewan", "MB": "manitoba", "NB": "new-brunswick", "NS": "nova-scotia",
+    "NL": "newfoundland-and-labrador", "PE": "prince-edward-island",
+}
+
 # Ottawa census-area municipalities (all Ontario side; Gatineau is QC, excluded).
 OTTAWA_CITIES = ["ottawa", "kanata", "nepean", "gloucester", "orléans", "orleans",
                  "stittsville", "barrhaven", "manotick"]
@@ -182,8 +188,8 @@ def fetch_all_occupations_snapshots(provinces: list[str], since_days: int, max_p
                 rows = [x for x in (parse_article(a) for a in soup.select("article")) if x and x["posting_id"]]
                 if not rows:  # 空页 → 该省到头
                     break
-                (snap_dir / f"{prov}-p{page:02d}.html").write_text(r.text, encoding="utf-8")  # 整页原始 HTML
-                manifest["pages"].append({"prov": prov, "page": page, "file": f"{prov}-p{page:02d}.html", "rows": len(rows)})
+                (snap_dir / f"{PROV_FULL.get(prov, prov.lower())}-p{page:02d}.html").write_text(r.text, encoding="utf-8")  # 整页原始 HTML
+                manifest["pages"].append({"prov": prov, "page": page, "file": f"{PROV_FULL.get(prov, prov.lower())}-p{page:02d}.html", "rows": len(rows)})
                 saved += 1
                 # 整页都早于截止 → 该省到头(降序);date 解析不了当作新,保留继续翻
                 if all(parse_date(x["date"]) is not None and parse_date(x["date"]) < cutoff for x in rows):

@@ -25,7 +25,7 @@ cms/dev.log
 /data/processed/ats/**/jobs/*.md
 # 抓取日志与原始 html 缓存(policy 正文 .md 仍跟踪)
 /data/**/*.log
-/data/raw/reference/policy/**/html_cache/
+/data/raw/policy/**/html_cache/
 
 # raw/<源>/ 原始 HTML 快照及衍生(每日可重抓;维护表在 reference/ 跟踪)
 /data/raw/jobbank/
@@ -34,7 +34,7 @@ cms/dev.log
 # processed 累积 store(从快照重建)+ mart 集市层(09 衍生)
 /data/processed/jobbank/
 /data/mart/
-# GeoNames 源(可从 download.geonames.org/export/zip/CA.zip 重下;衍生表 fsa-districts.json 跟踪)
-/data/raw/reference/geonames/
-# ESDC 工资源 CSV(可从 open.canada.ca 重下;衍生表 wages.json 跟踪)
-/data/raw/reference/wages/*.csv
+# GeoNames 源(可从 download.geonames.org/export/zip/CA.zip 重下;衍生表 fsa/fsa-districts.json 跟踪)
+/data/raw/fsa/CA.txt
+# ESDC 工资源 CSV(可从 open.canada.ca 重下;衍生表 wages/wages.json 跟踪)
+/data/raw/wages/*.csv

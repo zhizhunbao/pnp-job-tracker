@@ -98,7 +98,7 @@ NOC_RULES: list[tuple[str, str]] = [
 TEER_BASE = {0: 54, 1: 56, 2: 52, 3: 46, 4: 28, 5: 20}
 # PNP 优先紧缺职业(前2位): 21/22 科技, 31/32 医疗, 72/73 技工运输, 42 教育社区
 INDEMAND2 = {"21", "22", "31", "32", "72", "73", "42"}
-# 各省 PNP 维护表:province → {"type", "nocs"}。目录驱动——扫 reference/pnp/*.json
+# 各省 PNP 维护表:province → {"type", "nocs"}。目录驱动——扫 pnp/*.json
 # (每文件一省,build_<prov>.py 产出),按文件 province 字段归省。加新省=丢一个 json,本脚本不改。
 # 两种语义(由文件 type 区分,默认 indemand):
 #   · indemand(如 OINP):TEER4-5 默认不符合,只有清单内 NOC 才符合(inclusion)。
@@ -106,7 +106,7 @@ INDEMAND2 = {"21", "22", "31", "32", "72", "73", "42"}
 # 某省没文件 = 无 TEER4-5 专门通道,只吃 TEER0-3 粗筛(留空不猜,符合「宁可留空」)。
 def _load_pnp_tables() -> dict[str, dict]:
     out: dict[str, dict] = {}
-    pnp_dir = _paths.REFERENCE / "pnp"
+    pnp_dir = _paths.PNP
     if pnp_dir.exists():
         for f in pnp_dir.glob("*.json"):
             try:

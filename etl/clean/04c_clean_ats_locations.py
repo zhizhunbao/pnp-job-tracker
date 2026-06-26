@@ -56,7 +56,7 @@ OTTAWA_CITY_NAMES = {k for k in OTTAWA_DISTRICTS} | {"ottawa"}  # 无邮编时:�
 OTTAWA_COMMUNITIES = set(OTTAWA_DISTRICTS.values())  # 大渥太华社区名(用于把 Kanata/Gloucester… 折叠回 city=Ottawa)
 
 # 全国 FSA→区 维度表(GeoNames 衍生,我们自己维护,无外部 API)。FSA → {main, hood, prov}
-_FSA_TABLE_PATH = _paths.REFERENCE / "fsa-districts.json"
+_FSA_TABLE_PATH = _paths.FSA / "fsa-districts.json"
 FSA_TABLE: dict[str, dict] = json.loads(_FSA_TABLE_PATH.read_text(encoding="utf-8")) if _FSA_TABLE_PATH.exists() else {}
 
 

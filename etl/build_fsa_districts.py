@@ -18,8 +18,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _paths  # noqa: E402
 
-IN_GEONAMES = _paths.REFERENCE / "geonames" / "CA.txt"   # GeoNames 源(下载来的)
-OUT_TABLE = _paths.REFERENCE / "fsa-districts.json"      # 我们维护的维度表
+IN_GEONAMES = _paths.FSA / "CA.txt"   # GeoNames 源(下载来的)
+OUT_TABLE = _paths.FSA / "fsa-districts.json"      # 我们维护的维度表
 
 
 def main() -> None:
@@ -41,7 +41,7 @@ def main() -> None:
             main, hood = place, ""
         table[fsa] = {"main": main, "hood": hood, "prov": prov}
     OUT_TABLE.write_text(json.dumps(table, ensure_ascii=False, indent=1, sort_keys=True), encoding="utf-8")
-    print(f"建表完成:{len(table)} 个 FSA → reference/fsa-districts.json")
+    print(f"建表完成:{len(table)} 个 FSA → fsa/fsa-districts.json")
 
 
 if __name__ == "__main__":

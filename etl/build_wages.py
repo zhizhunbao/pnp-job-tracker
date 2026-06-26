@@ -21,8 +21,8 @@ import _paths  # noqa: E402
 WAGE_URL = ("https://open.canada.ca/data/dataset/adad580f-76b0-4502-bd05-20c125de9116/"
             "resource/9da94d63-b178-4a64-aeb3-b6a3bd721ad2/download/"
             "2a71-das-wage2025opendata-esdc-all-19nov2025-vf.csv")
-IN_CSV = _paths.REFERENCE / "wages" / "wage2025.csv"   # 下载缓存(可重下)
-OUT_TABLE = _paths.REFERENCE / "wages.json"            # 我们维护的维度表
+IN_CSV = _paths.WAGES / "wage2025.csv"   # 下载缓存(可重下)
+OUT_TABLE = _paths.WAGES / "wages.json"            # 我们维护的维度表
 
 
 def download() -> str:
@@ -67,7 +67,7 @@ def main() -> None:
         kept += 1
 
     OUT_TABLE.write_text(json.dumps(table, ensure_ascii=False, indent=1, sort_keys=True), encoding="utf-8")
-    print(f"建表完成:{len(table)} 个 NOC(省级+国家级 {kept} 条)→ reference/wages.json")
+    print(f"建表完成:{len(table)} 个 NOC(省级+国家级 {kept} 条)→ wages/wages.json")
     for noc in ("21311", "31301", "63200", "73300"):
         print(f"  NOC {noc}: NAT={table.get(noc, {}).get('NAT')} ON={table.get(noc, {}).get('ON')}")
 

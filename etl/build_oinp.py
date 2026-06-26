@@ -9,7 +9,7 @@ build_oinp — 抓 OINP「Employer Job Offer: In-Demand Skills」流的符合资
 
 产出:
   raw/oinp/<date>/in-demand-skills.html   # 原始页(raw 只存原始)
-  reference/pnp/oinp-in-demand.json             # 维护表(跟踪):{occupations:[{noc,name,gtaRestricted}], ...}
+  pnp/oinp-in-demand.json             # 维护表(跟踪):{occupations:[{noc,name,gtaRestricted}], ...}
 08_score 读 reference 表 → ON 的 TEER4-5 紧缺通道(精化 pnpEligible)。
 
 Usage:  uv run python etl/build_oinp.py   (或 .venv 的 python)
@@ -28,7 +28,7 @@ import _paths  # noqa: E402
 
 URL = "https://www.ontario.ca/page/oinp-employer-job-offer-demand-skills-stream"
 OUT_RAW_DIR = _paths.RAW / "oinp"                  # 原始页快照(按日期)
-OUT_TABLE = _paths.REFERENCE / "pnp" / "oinp-in-demand.json"  # 维护表(跟踪)
+OUT_TABLE = _paths.PNP / "oinp-in-demand.json"  # 维护表(跟踪)
 UA = "Mozilla/5.0 (compatible; pnp-job-tracker/1.0)"
 
 LI_NOC = re.compile(r"(\d{5})\s*[-–]\s*(.+)")  # "NOC 44101 - Home support…"(NOC 字样在 <abbr> 里,已被 get_text 去掉)
