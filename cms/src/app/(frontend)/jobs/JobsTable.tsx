@@ -630,11 +630,11 @@ function AdvisorModal({ field, job, title, lang, onClose }: { field: ColKey; job
 
 // 把 AI 文本里的【小标题】加粗,保留换行
 function renderAI(text: string): React.ReactNode {
-  return text.split(/(【[^】]+】)/g).map((seg, i) =>
-    /^【[^】]+】$/.test(seg)
-      ? <strong key={i} style={{ display: 'block', marginTop: i ? 12 : 0, color: '#111827' }}>{seg}</strong>
-      : <span key={i} style={{ whiteSpace: 'pre-wrap' }}>{seg}</span>,
-  )
+  return text.split(/(【[^】]+】)/g).map((seg, i) => {
+    if (/^【[^】]+】$/.test(seg)) return <strong key={i} style={{ display: 'block', marginTop: i ? 10 : 0, marginBottom: 2, color: '#111827' }}>{seg}</strong>
+    const body = seg.replace(/^\n+/, '').replace(/\n+$/, '').replace(/\n{3,}/g, '\n\n')  // 去段首尾空行+压多余空行,免大空隙
+    return body ? <span key={i} style={{ whiteSpace: 'pre-wrap' }}>{body}</span> : null
+  })
 }
 
 // ── 按字段类型生成顾问解读(基于该行数据;无需 API) ─────────────
