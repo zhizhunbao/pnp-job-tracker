@@ -297,17 +297,22 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
     }
     document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp); document.body.style.cursor = 'col-resize'
   }
-  // 双击竖线:所有列平均分配(总宽不变,均分给每一列)
-  const equalizeWidths = () => {
-    const ths = headRowRef.current?.children
-    if (!ths) return
-    let total = 0
-    shown.forEach((_, i) => { total += (ths[i] as HTMLElement).getBoundingClientRect().width })
-    const avg = Math.max(MIN_COLW, Math.round(total / shown.length))
-    const next: Partial<Record<ColKey, number>> = {}
-    shown.forEach((c) => { next[c.key] = avg })
-    setWidths(next)
-    try { localStorage.setItem(COLW_KEY, JSON.stringify(next)) } catch { /* ignore */ }
+  // 双击竖线:按内容自适应该列宽(Excel 式)。量表头+各行该列内容的自然宽
+  // (scrollWidth 即使内容被裁剪也返回完整宽),设成 max+小余量 → 不再截断。
+  const autoFitColumn = (idx: number, key: ColKey) => {
+    const head = headRowRef.current
+    const table = head?.closest('table') as HTMLTableElement | null
+    if (!head || !table) return
+    const base: Partial<Record<ColKey, number>> = { ...widths }  // 先锁住其余列当前测量宽
+    shown.forEach((c, i) => { if (base[c.key] == null) base[c.key] = Math.round((head.children[i] as HTMLElement).getBoundingClientRect().width) })
+    let max = (head.children[idx] as HTMLElement).scrollWidth
+    table.querySelectorAll('tbody tr').forEach((tr) => {
+      const cell = (tr as HTMLElement).children[idx] as HTMLElement | undefined
+      if (cell) max = Math.max(max, cell.scrollWidth)
+    })
+    base[key] = Math.max(MIN_COLW, max + 6)
+    setWidths(base)
+    try { localStorage.setItem(COLW_KEY, JSON.stringify(base)) } catch { /* ignore */ }
   }
 
   // Esc 关弹框
@@ -396,7 +401,9 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
 
   return (
     <div style={{ background: '#fff', color: '#1f2937', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column' }}>
-      <style>{`.jcell:hover{background:#eff6ff !important}`}</style>
+      <style>{`.jcell:hover{background:#eff6ff !important}
+        .colResize:hover{background:#93c5fd}
+        .colResize:active{background:#3b82f6}`}</style>
       {/* sticky 顶栏:品牌 + 语言切换(手机/电脑都贴顶) */}
       <header style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', borderBottom: '1px solid #e5e7eb' }}>
         <div style={{ maxWidth: 1320, margin: '0 auto', padding: '10px 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
@@ -505,8 +512,8 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS }: { jobs
                     <th key={c.key} onClick={() => toggleSort(c.key)} title={t('th.tip')}
                       style={{ padding: '8px 12px', color: active ? '#2563eb' : '#374151', fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none', position: 'relative', borderRight: isLast ? undefined : '1px solid #e5e7eb' }}>
                       {t('col.' + c.key)}<span style={{ color: active ? '#2563eb' : '#d1d5db', fontSize: 11 }}>{active ? (sort.dir === 'desc' ? ' ▼' : ' ▲') : ' ↕'}</span>
-                      {!isLast && <span onMouseDown={(e) => startResize(e, c.key)} onClick={(e) => e.stopPropagation()} onDoubleClick={(e) => { e.stopPropagation(); equalizeWidths() }} title={t('resize.tip')}
-                        style={{ position: 'absolute', top: 0, right: 0, width: 9, height: '100%', cursor: 'col-resize', zIndex: 1 }} />}
+                      <span className="colResize" onMouseDown={(e) => startResize(e, c.key)} onClick={(e) => e.stopPropagation()} onDoubleClick={(e) => { e.stopPropagation(); autoFitColumn(idx, c.key) }} title={t('resize.tip')}
+                        style={{ position: 'absolute', top: 0, right: 0, width: 13, height: '100%', cursor: 'col-resize', zIndex: 2 }} />
                     </th>
                   )
                 })}
