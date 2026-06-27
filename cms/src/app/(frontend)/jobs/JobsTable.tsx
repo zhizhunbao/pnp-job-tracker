@@ -499,8 +499,8 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                 {shown.map((c, idx) => {
                   const active = sort.key === c.key
                   const isLast = idx === shown.length - 1
-                  if (c.key === 'actions') return (  // 操作列:不排序,固定吸附右侧
-                    <th key={c.key} style={{ padding: '8px 12px', color: '#374151', fontWeight: 600, whiteSpace: 'nowrap', userSelect: 'none', position: 'sticky', right: 0, background: '#f9fafb', boxShadow: '-6px 0 8px -6px rgba(0,0,0,.12)', zIndex: 1 }}>
+                  if (c.key === 'actions') return (  // 操作列:普通末列,不排序(取消 sticky —— 冻结会盖住左侧数据列)
+                    <th key={c.key} style={{ padding: '8px 12px', color: '#374151', fontWeight: 600, whiteSpace: 'nowrap', userSelect: 'none' }}>
                       {t('col.actions')}
                     </th>
                   )
@@ -524,8 +524,8 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                   <tr key={j.id} className="jrow" style={{ borderBottom: '1px solid #f3f4f6', background: i % 2 ? '#fcfcfd' : '#fff' }}>
                     {shown.map((c, idx) => {
                       const k = c.key
-                      if (k === 'actions') return (  // 操作列:两按钮(公司信息/职位描述),固定吸附右侧
-                        <td key={k} style={{ ...td, position: 'sticky', right: 0, background: i % 2 ? '#fcfcfd' : '#fff', boxShadow: '-6px 0 8px -6px rgba(0,0,0,.12)', whiteSpace: 'nowrap' }}>
+                      if (k === 'actions') return (  // 操作列:普通末列,两按钮(公司信息/职位描述)
+                        <td key={k} style={{ ...td, whiteSpace: 'nowrap' }}>
                           <button onClick={(e) => { e.stopPropagation(); setActModal({ kind: 'company', job: j }) }} style={actBtn}>{t('act.company')}</button>
                           <button onClick={(e) => { e.stopPropagation(); setActModal({ kind: 'desc', job: j }) }} style={{ ...actBtn, marginLeft: 6 }}>{t('act.desc')}</button>
                         </td>
