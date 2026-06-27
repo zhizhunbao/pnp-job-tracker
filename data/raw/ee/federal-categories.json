@@ -1,0 +1,531 @@
+{
+  "source": "Express Entry category-based selection",
+  "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/rounds-invitations/category-based-selection.html",
+  "fetched": "2026-06-26",
+  "categories": [
+    {
+      "key": "healthcare",
+      "label": "医疗社服",
+      "occupations": [
+        {
+          "noc": "31100",
+          "teer": 1,
+          "title": "Specialists in clinical and laboratory medicine"
+        },
+        {
+          "noc": "31101",
+          "teer": 1,
+          "title": "Specialists in surgery"
+        },
+        {
+          "noc": "31102",
+          "teer": 1,
+          "title": "General practitioners and family physicians"
+        },
+        {
+          "noc": "31103",
+          "teer": 1,
+          "title": "Veterinarians"
+        },
+        {
+          "noc": "31110",
+          "teer": 1,
+          "title": "Dentists"
+        },
+        {
+          "noc": "31111",
+          "teer": 1,
+          "title": "Optometrists"
+        },
+        {
+          "noc": "31112",
+          "teer": 1,
+          "title": "Audiologists and speech-language pathologists"
+        },
+        {
+          "noc": "31120",
+          "teer": 1,
+          "title": "Pharmacists"
+        },
+        {
+          "noc": "31121",
+          "teer": 1,
+          "title": "Dietitians and nutritionists"
+        },
+        {
+          "noc": "31200",
+          "teer": 1,
+          "title": "Psychologists"
+        },
+        {
+          "noc": "31201",
+          "teer": 1,
+          "title": "Chiropractors"
+        },
+        {
+          "noc": "31202",
+          "teer": 1,
+          "title": "Physiotherapists"
+        },
+        {
+          "noc": "31203",
+          "teer": 1,
+          "title": "Occupational therapists"
+        },
+        {
+          "noc": "31209",
+          "teer": 1,
+          "title": "Other professional occupations in health diagnosing and treating"
+        },
+        {
+          "noc": "31300",
+          "teer": 1,
+          "title": "Nursing coordinators and supervisors"
+        },
+        {
+          "noc": "31301",
+          "teer": 1,
+          "title": "Registered nurses and registered psychiatric nurses"
+        },
+        {
+          "noc": "31302",
+          "teer": 1,
+          "title": "Nurse practitioners"
+        },
+        {
+          "noc": "31303",
+          "teer": 1,
+          "title": "Physician assistants, midwives and allied health professionals"
+        },
+        {
+          "noc": "32101",
+          "teer": 2,
+          "title": "Licensed practical nurses"
+        },
+        {
+          "noc": "32102",
+          "teer": 2,
+          "title": "Paramedical occupations"
+        },
+        {
+          "noc": "32103",
+          "teer": 2,
+          "title": "Respiratory therapists, clinical perfusionists and cardiopulmonary technologists"
+        },
+        {
+          "noc": "32104",
+          "teer": 2,
+          "title": "Animal health technologists and veterinary technicians"
+        },
+        {
+          "noc": "32109",
+          "teer": 2,
+          "title": "Other technical occupations in therapy and assessment"
+        },
+        {
+          "noc": "32111",
+          "teer": 2,
+          "title": "Dental hygienists and dental therapists"
+        },
+        {
+          "noc": "32120",
+          "teer": 2,
+          "title": "Medical laboratory technologists"
+        },
+        {
+          "noc": "32121",
+          "teer": 2,
+          "title": "Medical radiation technologists"
+        },
+        {
+          "noc": "32122",
+          "teer": 2,
+          "title": "Medical sonographers"
+        },
+        {
+          "noc": "32123",
+          "teer": 2,
+          "title": "Cardiology technologists and electrophysiological diagnostic technologists"
+        },
+        {
+          "noc": "32124",
+          "teer": 2,
+          "title": "Pharmacy technicians"
+        },
+        {
+          "noc": "32129",
+          "teer": 2,
+          "title": "Other medical technologists and technicians"
+        },
+        {
+          "noc": "32201",
+          "teer": 2,
+          "title": "Massage therapists"
+        },
+        {
+          "noc": "33101",
+          "teer": 3,
+          "title": "Medical laboratory assistants and related technical occupations"
+        },
+        {
+          "noc": "33102",
+          "teer": 3,
+          "title": "Nurse aides, orderlies and patient service associates"
+        },
+        {
+          "noc": "33103",
+          "teer": 3,
+          "title": "Pharmacy technical assistants and pharmacy assistants"
+        },
+        {
+          "noc": "41300",
+          "teer": 1,
+          "title": "Social workers"
+        },
+        {
+          "noc": "41301",
+          "teer": 1,
+          "title": "Therapists in counselling and related specialized therapies"
+        },
+        {
+          "noc": "42201",
+          "teer": 2,
+          "title": "Social and community service workers"
+        }
+      ]
+    },
+    {
+      "key": "stem",
+      "label": "STEM",
+      "occupations": [
+        {
+          "noc": "20011",
+          "teer": 0,
+          "title": "Architecture and science managers"
+        },
+        {
+          "noc": "21220",
+          "teer": 1,
+          "title": "Cybersecurity specialists"
+        },
+        {
+          "noc": "21300",
+          "teer": 1,
+          "title": "Civil Engineers"
+        },
+        {
+          "noc": "21301",
+          "teer": 1,
+          "title": "Mechanical Engineers"
+        },
+        {
+          "noc": "21310",
+          "teer": 1,
+          "title": "Electrical and electronics engineers"
+        },
+        {
+          "noc": "21321",
+          "teer": 1,
+          "title": "Industrial and manufacturing engineers"
+        },
+        {
+          "noc": "21331",
+          "teer": 1,
+          "title": "Geological Engineers"
+        },
+        {
+          "noc": "22300",
+          "teer": 2,
+          "title": "Civil engineering technologists and technicians"
+        },
+        {
+          "noc": "22301",
+          "teer": 2,
+          "title": "Mechanical Engineering Technologists and Technicians"
+        },
+        {
+          "noc": "22310",
+          "teer": 2,
+          "title": "Electrical and electronics engineering technologists and technicians"
+        },
+        {
+          "noc": "63100",
+          "teer": 3,
+          "title": "Insurance agents and brokers"
+        }
+      ]
+    },
+    {
+      "key": "trade",
+      "label": "技工",
+      "occupations": [
+        {
+          "noc": "22303",
+          "teer": 2,
+          "title": "Construction estimators"
+        },
+        {
+          "noc": "63201",
+          "teer": 3,
+          "title": "Butchers - retail and wholesale"
+        },
+        {
+          "noc": "70010",
+          "teer": 0,
+          "title": "Construction managers"
+        },
+        {
+          "noc": "70011",
+          "teer": 0,
+          "title": "Home building and renovation managers"
+        },
+        {
+          "noc": "72100",
+          "teer": 2,
+          "title": "Machinists and machining and tooling inspectors"
+        },
+        {
+          "noc": "72102",
+          "teer": 2,
+          "title": "Sheet metal workers"
+        },
+        {
+          "noc": "72106",
+          "teer": 2,
+          "title": "Welders and related machine operators"
+        },
+        {
+          "noc": "72200",
+          "teer": 2,
+          "title": "Electricians (except industrial and power system)"
+        },
+        {
+          "noc": "72201",
+          "teer": 2,
+          "title": "Industrial electricians"
+        },
+        {
+          "noc": "72300",
+          "teer": 2,
+          "title": "Plumbers"
+        },
+        {
+          "noc": "72302",
+          "teer": 2,
+          "title": "Gas fitters"
+        },
+        {
+          "noc": "72310",
+          "teer": 2,
+          "title": "Carpenters"
+        },
+        {
+          "noc": "72311",
+          "teer": 2,
+          "title": "Cabinetmakers"
+        },
+        {
+          "noc": "72320",
+          "teer": 2,
+          "title": "Bricklayers"
+        },
+        {
+          "noc": "72400",
+          "teer": 2,
+          "title": "Construction millwrights and industrial mechanics"
+        },
+        {
+          "noc": "72401",
+          "teer": 2,
+          "title": "Heavy-duty equipment mechanics"
+        },
+        {
+          "noc": "72402",
+          "teer": 2,
+          "title": "Heating, refrigeration and air conditioning mechanics"
+        },
+        {
+          "noc": "72422",
+          "teer": 2,
+          "title": "Electrical mechanics"
+        },
+        {
+          "noc": "72501",
+          "teer": 2,
+          "title": "Water well drillers"
+        },
+        {
+          "noc": "72999",
+          "teer": 2,
+          "title": "Other technical trades and related occupations"
+        },
+        {
+          "noc": "73100",
+          "teer": 3,
+          "title": "Concrete finishers"
+        },
+        {
+          "noc": "73110",
+          "teer": 3,
+          "title": "Roofers and shinglers"
+        },
+        {
+          "noc": "73112",
+          "teer": 3,
+          "title": "Painters and decorators (except interior decorators)"
+        },
+        {
+          "noc": "73113",
+          "teer": 3,
+          "title": "Floor covering installers"
+        },
+        {
+          "noc": "82021",
+          "teer": 2,
+          "title": "Contractors and supervisors, oil and gas drilling and services"
+        }
+      ]
+    },
+    {
+      "key": "education",
+      "label": "教育",
+      "occupations": [
+        {
+          "noc": "41220",
+          "teer": 1,
+          "title": "Secondary school teachers"
+        },
+        {
+          "noc": "41221",
+          "teer": 1,
+          "title": "Elementary school and kindergarten teachers"
+        },
+        {
+          "noc": "42202",
+          "teer": 2,
+          "title": "Early childhood educators and assistants"
+        },
+        {
+          "noc": "42203",
+          "teer": 2,
+          "title": "Instructors of persons with disabilities"
+        },
+        {
+          "noc": "43100",
+          "teer": 3,
+          "title": "Elementary and secondary school teacher assistants"
+        }
+      ]
+    },
+    {
+      "key": "transport",
+      "label": "运输",
+      "occupations": [
+        {
+          "noc": "22313",
+          "teer": 2,
+          "title": "Aircraft instrument, electrical and avionics mechanics, technicians and inspectors"
+        },
+        {
+          "noc": "72404",
+          "teer": 2,
+          "title": "Aircraft mechanics and aircraft inspectors"
+        },
+        {
+          "noc": "72410",
+          "teer": 2,
+          "title": "Automotive service technicians, truck and bus mechanics, and mechanical repairers"
+        },
+        {
+          "noc": "72600",
+          "teer": 2,
+          "title": "Air pilots, flight engineers and flying instructors"
+        }
+      ]
+    },
+    {
+      "key": "physicians",
+      "label": "医生",
+      "occupations": [
+        {
+          "noc": "31100",
+          "teer": 1,
+          "title": "Specialists in clinical and laboratory medicine"
+        },
+        {
+          "noc": "31101",
+          "teer": 1,
+          "title": "Specialists in surgery"
+        },
+        {
+          "noc": "31102",
+          "teer": 1,
+          "title": "General practitioners and family physicians"
+        }
+      ]
+    },
+    {
+      "key": "senior-managers",
+      "label": "高管",
+      "occupations": [
+        {
+          "noc": "00012",
+          "teer": 0,
+          "title": "Senior managers - financial, communications and other business services"
+        },
+        {
+          "noc": "00013",
+          "teer": 0,
+          "title": "Senior managers - health, education, social and community services and membership organizations"
+        },
+        {
+          "noc": "00014",
+          "teer": 0,
+          "title": "Senior managers - trade, broadcasting and other services"
+        },
+        {
+          "noc": "00015",
+          "teer": 0,
+          "title": "Senior managers - construction, transportation, production and utilities"
+        }
+      ]
+    },
+    {
+      "key": "researchers",
+      "label": "研究",
+      "occupations": [
+        {
+          "noc": "41200",
+          "teer": 1,
+          "title": "University professors and lecturers"
+        },
+        {
+          "noc": "41201",
+          "teer": 1,
+          "title": "Post-secondary teaching and research assistants"
+        }
+      ]
+    },
+    {
+      "key": "military",
+      "label": "军职",
+      "occupations": [
+        {
+          "noc": "40042",
+          "teer": 0,
+          "title": "Commissioned officers of the Canadian Armed Forces"
+        },
+        {
+          "noc": "42102",
+          "teer": 2,
+          "title": "Specialized members of the Canadian Armed Forces"
+        },
+        {
+          "noc": "43204",
+          "teer": 3,
+          "title": "Operations Members of the Canadian Armed Forces"
+        }
+      ]
+    }
+  ]
+}

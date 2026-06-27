@@ -14,7 +14,7 @@ export default async function JobsPage() {
   const pool = (payload.db as any).pool
   const { rows } = await pool.query(`
     SELECT j.id, j.title, c.name AS company_name, c.address AS company_address,
-      j.noc, j.category, j.teer, j.broad, j.mid, j.fine, j.accessibility, j.score, j.pnp_eligible, j.aip,
+      j.noc, j.category, j.teer, j.broad, j.mid, j.fine, j.accessibility, j.score, j.pnp_eligible, j.pnp_stream, j.ee_category, j.aip,
       j.country, j.province, j.city, j.district, j.address, j.region,
       j.apply_url, j.official_url, j.salary, j.salary_annual, j.salary_text,
       j.wage_med_hourly, j.wage_med_annual,
@@ -23,13 +23,15 @@ export default async function JobsPage() {
     ORDER BY j.date_posted DESC NULLS LAST LIMIT 20000`)
 
   // 维度表小,继续走 payload.find
-  const [provDocs, cityDocs, distDocs, nocDocs, srcDocs, expDocs] = await Promise.all([
+  const [provDocs, cityDocs, distDocs, nocDocs, srcDocs, expDocs, pnpDocs, eeDocs] = await Promise.all([
     payload.find({ collection: 'provinces', limit: 100, depth: 0, sort: 'name' }),
     payload.find({ collection: 'cities', limit: 5000, depth: 0, sort: 'name' }),
     payload.find({ collection: 'districts', limit: 1000, depth: 0, sort: 'name' }),
     payload.find({ collection: 'noc-categories', limit: 1000, depth: 0 }),
     payload.find({ collection: 'sources', limit: 200, depth: 0, sort: 'name' }),
     payload.find({ collection: 'experience-levels', limit: 50, depth: 0 }),
+    payload.find({ collection: 'pnp-occupations', limit: 5000, depth: 0 }),
+    payload.find({ collection: 'ee-categories', limit: 2000, depth: 0 }),
   ])
   const dims = {
     provinces: provDocs.docs.map((p: any) => ({ code: p.code, name: p.name })),
@@ -38,6 +40,8 @@ export default async function JobsPage() {
     nocCategories: nocDocs.docs.map((c: any) => ({ broad: c.broad, mid: c.mid, fine: c.fine, teer: typeof c.teer === 'number' ? c.teer : null })),
     sources: srcDocs.docs.map((s: any) => ({ name: s.name })),
     experienceLevels: expDocs.docs.map((e: any) => ({ name: e.name })),
+    pnpOccupations: pnpDocs.docs.map((r: any) => ({ province: r.province, stream: r.stream, label: r.label, type: r.type, noc: r.noc, name: r.name, gtaRestricted: !!r.gtaRestricted, url: r.url, fetched: r.fetched })),
+    eeCategories: eeDocs.docs.map((r: any) => ({ category: r.category, label: r.label, noc: r.noc, teer: typeof r.teer === 'number' ? r.teer : null, title: r.title, url: r.url, fetched: r.fetched })),
   }
 
   const iso = (v: any) => (v instanceof Date ? v.toISOString() : (v ?? ''))
@@ -63,6 +67,8 @@ export default async function JobsPage() {
     accessibility: j.accessibility ?? '',
     score: num(j.score),
     pnpEligible: !!j.pnp_eligible,
+    pnpStream: j.pnp_stream ?? '',
+    eeCategory: j.ee_category ?? '',
     aip: !!j.aip,
     salary: j.salary ?? '',
     salaryAnnual: num(j.salary_annual),

@@ -50,6 +50,8 @@ export async function GET(req: Request) {
     ['noc_categories', 'noc-categories', (r) => ({ broad: r.broad, mid: r.mid, fine: r.fine, teer: r.teer })],
     ['sources', 'sources', (r) => ({ name: r.name })],
     ['experience_levels', 'experience-levels', (r) => ({ name: r.name })],
+    ['pnp_occupations', 'pnp-occupations', (r) => ({ province: r.province, stream: r.stream, label: r.label, type: r.type, noc: r.noc, name: r.name, gtaRestricted: r.gtaRestricted, url: r.url, fetched: r.fetched })],
+    ['ee_categories', 'ee-categories', (r) => ({ category: r.category, label: r.label, noc: r.noc, teer: r.teer, title: r.title, url: r.url, fetched: r.fetched })],
   ]
   for (const [file, slug, map] of dims) {
     await payload.delete({ collection: slug as any, where: { id: { exists: true } } })

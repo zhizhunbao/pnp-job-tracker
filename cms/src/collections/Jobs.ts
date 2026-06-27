@@ -35,7 +35,6 @@ export const Jobs: CollectionConfig = {
     { name: 'sourceLabel', type: 'text', index: true, admin: { description: '显示来源标签(mart 洗:JB→Job Bank、ATS板美化)' } },
     { name: 'origin', type: 'select', index: true, options: ['jobbank', 'ats', 'directory'], admin: { description: '数据渠道:raw 下哪个来源' } },
     { name: 'isAgency', type: 'checkbox', defaultValue: false },
-    { name: 'pnpStreams', type: 'relationship', relationTo: 'pnp-streams', hasMany: true },
     { name: 'policyRefs', type: 'relationship', relationTo: 'policy-docs', hasMany: true },
     {
       name: 'accessibility',
@@ -45,6 +44,8 @@ export const Jobs: CollectionConfig = {
     },
     { name: 'score', type: 'number', index: true, admin: { description: '移民价值评分 0-100' } },
     { name: 'pnpEligible', type: 'checkbox', index: true, defaultValue: false, admin: { description: '可走雇主offer省提名(TEER0-3 或紧缺低TEER通道)' } },
+    { name: 'pnpStream', type: 'text', admin: { description: '命中省提名具名通道的短标签(如「OINP 紧缺技能」),数据层 08_score 算;泛技能岗为空' } },
+    { name: 'eeCategory', type: 'text', index: true, admin: { description: '联邦 Express Entry 类别抽选所属类别(医疗社服/STEM/技工…),数据层 08_score 算;与 PNP 是两条路,独立信号' } },
     { name: 'aip', type: 'checkbox', index: true, defaultValue: false, admin: { description: '雇主在官方 AIP 指定雇主名单(大西洋四省 NL/NB/NS/PE)' } },
     { name: 'firstSeen', type: 'date' },
     { name: 'lastSeen', type: 'date' },

@@ -29,6 +29,8 @@ export type JobRow = {
   accessibility: string
   score: number | null
   pnpEligible: boolean
+  pnpStream: string
+  eeCategory: string
   aip: boolean
   salary: string
   salaryAnnual: number | null
@@ -71,6 +73,7 @@ const sortVal = (j: JobRow, key: ColKey): number | string | null => {
     case 'vsMedian': return (j.salaryAnnual != null && j.wageMedAnnual) ? j.salaryAnnual / j.wageMedAnnual : null
     case 'direct': return isDirect(j) ? 1 : 0
     case 'pnp': return j.pnpEligible ? 1 : 0
+    case 'ee': return j.eeCategory || null
     case 'aip': return j.aip ? 1 : 0
     case 'address': return j.address || null
     case 'teer': return j.teer
@@ -176,7 +179,7 @@ const sourceUrl = (applyUrl: string): string => {
 }
 
 // ── 列配置(可勾选;职位列始终显示) ──────────────────────────────
-type ColKey = 'score' | 'pnp' | 'aip' | 'broad' | 'mid' | 'fine' | 'teer' | 'title' | 'company' | 'noc' | 'accessibility' | 'salary' | 'salaryYr' | 'wageMedHr' | 'wageMedYr' | 'vsMedian' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'lastSeen' | 'closedAt' | 'actions'
+type ColKey = 'score' | 'pnp' | 'ee' | 'aip' | 'broad' | 'mid' | 'fine' | 'teer' | 'title' | 'company' | 'noc' | 'accessibility' | 'salary' | 'salaryYr' | 'wageMedHr' | 'wageMedYr' | 'vsMedian' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'lastSeen' | 'closedAt' | 'actions'
 const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean }[] = [
   { key: 'datePosted', label: '发布时间', default: true },
   { key: 'broad', label: '大分类', default: true },
@@ -201,6 +204,7 @@ const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean 
   { key: 'origin', label: '渠道', default: false },
   { key: 'direct', label: '发布', default: true },
   { key: 'pnp', label: 'PNP', default: true },
+  { key: 'ee', label: 'EE 类别', default: true },
   { key: 'aip', label: 'AIP', default: true },
   { key: 'status', label: '状态', default: true },
   { key: 'lastSeen', label: '更新时间', default: false },
@@ -216,6 +220,8 @@ const writeColsCookie = (keys: string[]) => {
 const AUTO_MAX = 180                    // 自动滚动加载上限;超过改「显示更多」按钮,让 footer 可达
 const ORIGIN_LABEL: Record<string, string> = { jobbank: 'Job Bank', ats: 'ATS', directory: '社区名单' }
 
+type PnpOcc = { province: string; stream: string; label: string; type: string; noc: string; name: string; gtaRestricted: boolean; url: string; fetched: string }
+type EeOcc = { category: string; label: string; noc: string; teer: number | null; title: string; url: string; fetched: string }
 type Dims = {
   provinces: { code: string; name: string }[]
   cities: { name: string; province: string }[]
@@ -223,8 +229,10 @@ type Dims = {
   nocCategories: { broad: string; mid: string; fine: string; teer: number | null }[]
   sources: { name: string }[]
   experienceLevels: { name: string }[]
+  pnpOccupations: PnpOcc[]
+  eeCategories: EeOcc[]
 }
-const EMPTY_DIMS: Dims = { provinces: [], cities: [], districts: [], nocCategories: [], sources: [], experienceLevels: [] }
+const EMPTY_DIMS: Dims = { provinces: [], cities: [], districts: [], nocCategories: [], sources: [], experienceLevels: [], pnpOccupations: [], eeCategories: [] }
 const PROV_CODE: Record<string, string> = Object.fromEntries(Object.entries(PROV_NAMES).map(([c, n]) => [n, c]))
 
 export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialCols }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims; initialCols?: string[] }) {
@@ -547,11 +555,15 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                       else if (k === 'district') { href = mapsFor(L.district); node = L.district || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#1f2937' }) }
                       else if (k === 'source') { href = sourceUrl(j.applyUrl) || null; node = sourceLabel(j); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'origin') { node = j.origin ? t('origin.' + j.origin) : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
-                      else if (k === 'pnp') {  // 依据:技能岗(TEER0-3,绿)/紧缺(TEER4-5在省清单,琥珀)/魁省(走自己体系,不属PNP)/—
+                      else if (k === 'pnp') {  // 具名通道(命中省清单,如「OINP 紧缺技能」,琥珀,数据层算)优先;否则泛技能岗(TEER0-3,绿)/魁省/—
                         const qc = j.province === 'QC'
+                        const stream = j.pnpStream  // 命中省 inclusion 清单才有,别处看不到的真信号
                         const skilled = j.pnpEligible && j.teer != null && j.teer <= 3
-                        node = qc ? t('cell.pnpQc') : (!j.pnpEligible ? '—' : (skilled ? t('cell.pnpSkilled') : t('cell.pnpIndemand')))
-                        Object.assign(extra, { whiteSpace: 'nowrap', color: qc ? '#7c3aed' : (!j.pnpEligible ? '#d1d5db' : (skilled ? '#15803d' : '#b45309')), fontSize: 12.5 })
+                        node = qc ? t('cell.pnpQc') : stream ? stream : (!j.pnpEligible ? '—' : (skilled ? t('cell.pnpSkilled') : t('cell.pnpIndemand')))
+                        Object.assign(extra, { whiteSpace: 'nowrap', color: qc ? '#7c3aed' : stream ? '#b45309' : (!j.pnpEligible ? '#d1d5db' : (skilled ? '#15803d' : '#b45309')), fontSize: 12.5 })
+                      }
+                      else if (k === 'ee') {  // 联邦 EE 类别抽选(全国单一源,数据层算);命中→蓝,未列入→—
+                        node = j.eeCategory || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.eeCategory ? '#2563eb' : '#d1d5db', fontSize: 12.5 })
                       }
                       else if (k === 'aip') { node = j.aip ? t('cell.aipYes') : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.aip ? '#b45309' : '#d1d5db', fontSize: 12.5 }) }
                       else if (k === 'status') { const cl = j.status === 'closed'; node = cl ? t('cell.closed') : t('cell.open'); Object.assign(extra, { whiteSpace: 'nowrap', color: cl ? '#9ca3af' : '#15803d', fontSize: 12.5 }) }
@@ -591,19 +603,183 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
         </div>
       </footer>
 
-      {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} onClose={() => setPopup(null)} />}
+      {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} pnpOcc={dims.pnpOccupations} eeOcc={dims.eeCategories} onClose={() => setPopup(null)} />}
       {actModal && <ActModal kind={actModal.kind} job={actModal.job} jobs={jobs} lang={lang} onClose={() => setActModal(null)} />}
+    </div>
+  )
+}
+
+// ── 省提名清单区(点 PNP 字段时显示)────────────────────────────
+// 清单是权威「事实」,来自 DB 维度表(pnp-occupations,经 props 传入),绝不让 LLM 编。
+// 判定只用本岗既有字段(province/noc/teer)+ 清单比对,不在前端重算资格逻辑。
+type PnpStream = { stream: string; label: string; type: string; url: string; fetched: string; occupations: { noc: string; name: string; gtaRestricted: boolean }[] }
+function PnpListSection({ job, lang, occ }: { job: JobRow; lang: Lang; occ: PnpOcc[] }) {
+  const t = makeT(lang)
+  const matchRef = useRef<HTMLDivElement | null>(null)
+  const isQc = job.province === 'QC'
+  // 从扁平维度表取本省各通道(按 label 分组)
+  const streams = useMemo<PnpStream[]>(() => {
+    if (isQc || !job.province) return []
+    const byLabel = new Map<string, PnpStream>()
+    for (const r of occ) {
+      if (r.province !== job.province) continue
+      let s = byLabel.get(r.label)
+      if (!s) { s = { stream: r.stream, label: r.label, type: r.type, url: r.url, fetched: r.fetched, occupations: [] }; byLabel.set(r.label, s) }
+      s.occupations.push({ noc: r.noc, name: r.name, gtaRestricted: r.gtaRestricted })
+    }
+    return [...byLabel.values()]
+  }, [occ, job.province, isQc])
+  // 高亮行滚进视野(就近滚,尽量不动整个弹框)
+  useEffect(() => { matchRef.current?.scrollIntoView({ block: 'nearest' }) }, [streams])
+
+  const noc = job.noc, teer = job.teer, skilled = teer != null && teer <= 3
+  let matched: PnpStream | null = null, excluded = false, hasInclusion = false
+  for (const s of streams) {
+    if (s.type === 'ineligible') { if (s.occupations.some((o) => o.noc === noc)) excluded = true }
+    else { hasInclusion = true; if (s.occupations.some((o) => o.noc === noc)) matched = s }
+  }
+  let verdict = '', tone = '#6b7280'
+  if (isQc) { verdict = t('pnplist.qc'); tone = '#7c3aed' }
+  else if (streams.length === 0) { verdict = skilled ? t('pnplist.noList') : t('pnplist.notEligible'); tone = skilled ? '#15803d' : '#9ca3af' }
+  else if (excluded) { verdict = t('pnplist.excludedHit', { noc }); tone = '#b91c1c' }
+  else if (matched) { verdict = t('pnplist.onList', { noc, label: matched.label }); tone = '#b45309' }
+  else if (hasInclusion) { verdict = skilled ? t('pnplist.generic', { teer }) : t('pnplist.notEligible'); tone = skilled ? '#15803d' : '#9ca3af' }
+  else { verdict = skilled ? t('pnplist.excludedMiss', { teer }) : t('pnplist.notEligible'); tone = skilled ? '#15803d' : '#9ca3af' }
+
+  return (
+    <div style={{ marginBottom: 14, paddingBottom: 12, borderBottom: '1px solid #f3f4f6' }}>
+      <div style={{ fontSize: 13.5, fontWeight: 600, color: tone, marginBottom: 8 }}>{verdict}</div>
+      {streams.filter((s) => s.occupations.length).map((s) => (
+        <div key={s.label + s.stream} style={{ marginBottom: 10 }}>
+          <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>
+            {s.label}{s.url ? <> · <a href={s.url} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12 }}>{t('pnplist.source')}{s.fetched ? ` (${s.fetched})` : ''} ↗</a></> : null}
+          </div>
+          <div style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid #f3f4f6', borderRadius: 8 }}>
+            {s.occupations.map((o) => {
+              const hit = o.noc === noc
+              return (
+                <div key={o.noc + o.name} ref={hit ? matchRef : undefined}
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 10px', fontSize: 12.5,
+                    background: hit ? '#fef3c7' : undefined, fontWeight: hit ? 600 : 400, color: hit ? '#92400e' : '#374151' }}>
+                  <span style={{ fontVariantNumeric: 'tabular-nums', color: hit ? '#92400e' : '#9ca3af' }}>{o.noc}</span>
+                  <span style={{ flex: 1 }}>{o.name}</span>
+                  {hit && <span style={{ fontSize: 11, whiteSpace: 'nowrap' }}>← {t('pnplist.your')}</span>}
+                  {o.gtaRestricted && <span style={{ fontSize: 11, color: '#9ca3af', whiteSpace: 'nowrap' }}>{t('pnplist.gta')}</span>}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ── 联邦 EE 类别抽选区(点 EE 字段时显示)──────────────────────
+// 与 PnpListSection 同理:清单来自 DB 维度表(ee-categories,经 props 传入),全国单一源。
+// 命中→只展开该类别清单 + 高亮本岗;未命中→只列出各类别名+数量概览。EE ≠ PNP,独立信号。
+type EeCat = { key: string; label: string; occupations: { noc: string; teer: number | null; title: string }[] }
+function EeCategorySection({ job, lang, cats }: { job: JobRow; lang: Lang; cats: EeOcc[] }) {
+  const t = makeT(lang)
+  const matchRef = useRef<HTMLDivElement | null>(null)
+  // 扁平维度表按 label 分组
+  const grouped = useMemo<EeCat[]>(() => {
+    const byLabel = new Map<string, EeCat>()
+    for (const r of cats) {
+      let c = byLabel.get(r.label)
+      if (!c) { c = { key: r.category, label: r.label, occupations: [] }; byLabel.set(r.label, c) }
+      c.occupations.push({ noc: r.noc, teer: r.teer, title: r.title })
+    }
+    return [...byLabel.values()]
+  }, [cats])
+  useEffect(() => { matchRef.current?.scrollIntoView({ block: 'nearest' }) }, [grouped])
+
+  const noc = job.noc
+  const url = cats[0]?.url || '', fetched = cats[0]?.fetched || ''
+  const hit = grouped.filter((c) => c.occupations.some((o) => o.noc === noc))
+  const shown = hit.length ? hit : grouped  // 命中→只看命中类别清单;未命中→列各类别概览
+  return (
+    <div style={{ marginBottom: 14, paddingBottom: 12, borderBottom: '1px solid #f3f4f6' }}>
+      <div style={{ fontSize: 13.5, fontWeight: 600, color: hit.length ? '#2563eb' : '#9ca3af', marginBottom: 6 }}>
+        {hit.length ? t('eelist.in', { noc, cats: hit.map((c) => c.label).join('/') }) : t('eelist.out')}
+      </div>
+      {url ? <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 8 }}><a href={url} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12 }}>{t('eelist.source')}{fetched ? ` (${fetched})` : ''} ↗</a></div> : null}
+      {shown.map((c) => (
+        <div key={c.key} style={{ marginBottom: 10 }}>
+          <div style={{ fontSize: 12.5, fontWeight: 600, color: '#374151', marginBottom: 4 }}>{c.label} <span style={{ color: '#9ca3af', fontWeight: 400 }}>· {c.occupations.length}</span></div>
+          {hit.length ? (
+            <div style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid #f3f4f6', borderRadius: 8 }}>
+              {c.occupations.map((o) => {
+                const isHit = o.noc === noc
+                return (
+                  <div key={o.noc} ref={isHit ? matchRef : undefined}
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 10px', fontSize: 12.5,
+                      background: isHit ? '#dbeafe' : undefined, fontWeight: isHit ? 600 : 400, color: isHit ? '#1e40af' : '#374151' }}>
+                    <span style={{ fontVariantNumeric: 'tabular-nums', color: isHit ? '#1e40af' : '#9ca3af' }}>{o.noc}</span>
+                    <span style={{ flex: 1 }}>{o.title}</span>
+                    {o.teer != null && <span style={{ fontSize: 11, color: '#9ca3af' }}>T{o.teer}</span>}
+                    {isHit && <span style={{ fontSize: 11, whiteSpace: 'nowrap' }}>← {t('eelist.your')}</span>}
+                  </div>
+                )
+              })}
+            </div>
+          ) : null}
+        </div>
+      ))}
     </div>
   )
 }
 
 // ── AI 顾问弹框 ────────────────────────────────────────────────
 // 所有字段都走本地大模型流式生成(按所选语言);前端只给极简头部 + 链接,正文由模型生成。
-function AdvisorModal({ field, job, title, lang, onClose }: { field: ColKey; job: JobRow; title?: string; lang: Lang; onClose: () => void }) {
+const ADV_PREF = 'adv_modal_pref'  // 记忆 {full, w, h}(位置每次打开居中,避免窗口缩小后跑出屏外)
+function AdvisorModal({ field, job, title, lang, pnpOcc, eeOcc, onClose }: { field: ColKey; job: JobRow; title?: string; lang: Lang; pnpOcc: PnpOcc[]; eeOcc: EeOcc[]; onClose: () => void }) {
   const t = makeT(lang)
   const a = advHeader(field, job, t)
   const [text, setText] = useState('')
   const [status, setStatus] = useState<'loading' | 'streaming' | 'done' | 'error'>('loading')
+
+  // 弹框尺寸/全屏/位置 —— 默认更大(720×620),可全屏、标题栏拖动、右下角拉伸;尺寸+全屏记忆
+  const [full, setFull] = useState(false)
+  const [size, setSize] = useState({ w: 720, h: 620 })
+  const [pos, setPos] = useState(() => {
+    if (typeof window === 'undefined') return { x: 80, y: 60 }
+    const w = Math.min(720, window.innerWidth - 24), h = Math.min(620, window.innerHeight - 24)
+    return { x: Math.max(12, (window.innerWidth - w) / 2), y: Math.max(12, (window.innerHeight - h) / 2) }
+  })
+  const sizeRef = useRef(size); sizeRef.current = size
+  useEffect(() => {  // 载入记忆的尺寸/全屏,并按记忆尺寸重新居中
+    try {
+      const p = JSON.parse(localStorage.getItem(ADV_PREF) || '{}')
+      if (p.full) setFull(true)
+      if (p.w && p.h) {
+        const w = Math.min(p.w, window.innerWidth - 24), h = Math.min(p.h, window.innerHeight - 24)
+        setSize({ w: p.w, h: p.h })
+        setPos({ x: Math.max(12, (window.innerWidth - w) / 2), y: Math.max(12, (window.innerHeight - h) / 2) })
+      }
+    } catch { /* ignore */ }
+  }, [])
+  const savePref = (next: Record<string, unknown>) => {
+    try { localStorage.setItem(ADV_PREF, JSON.stringify({ ...JSON.parse(localStorage.getItem(ADV_PREF) || '{}'), ...next })) } catch { /* ignore */ }
+  }
+
+  // 拖动(标题栏)/ 拉伸(右下角)—— 原生 pointer 事件,无依赖
+  const startDrag = (e: React.PointerEvent) => {
+    if (full) return
+    e.preventDefault()
+    const ox = e.clientX - pos.x, oy = e.clientY - pos.y
+    const move = (ev: PointerEvent) => setPos({ x: ev.clientX - ox, y: ev.clientY - oy })
+    const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up) }
+    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up)
+  }
+  const startResize = (e: React.PointerEvent) => {
+    if (full) return
+    e.preventDefault(); e.stopPropagation()
+    const sx = e.clientX, sy = e.clientY, sw = size.w, sh = size.h
+    const move = (ev: PointerEvent) => setSize({ w: Math.max(360, sw + ev.clientX - sx), h: Math.max(280, sh + ev.clientY - sy) })
+    const up = () => { savePref({ w: sizeRef.current.w, h: sizeRef.current.h }); window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up) }
+    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up)
+  }
 
   useEffect(() => {
     const ctrl = new AbortController()
@@ -630,17 +806,29 @@ function AdvisorModal({ field, job, title, lang, onClose }: { field: ColKey; job
     return () => ctrl.abort()
   }, [field, job, lang])
 
+  const panel: React.CSSProperties = full
+    ? { position: 'fixed', inset: 0, borderRadius: 0 }
+    : { position: 'fixed', left: pos.x, top: pos.y, width: size.w, height: size.h, borderRadius: 12 }
+  const iconBtn: React.CSSProperties = { border: 'none', background: '#f3f4f6', borderRadius: 8, width: 30, height: 30, cursor: 'pointer', fontSize: 15, color: '#6b7280', flexShrink: 0, lineHeight: 1 }
+
   return (
-    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(17,24,39,.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, zIndex: 50 }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 12, maxWidth: 520, width: '100%', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,.25)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, padding: '16px 20px 8px' }}>
-          <div>
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(17,24,39,.45)', zIndex: 50 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ ...panel, background: '#fff', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 50px rgba(0,0,0,.25)', overflow: 'hidden' }}>
+        {/* 标题栏 = 拖动手柄 */}
+        <div onPointerDown={startDrag} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, padding: '14px 18px 10px', cursor: full ? 'default' : 'move', userSelect: 'none', flexShrink: 0 }}>
+          <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, letterSpacing: .3 }}>{t('advisor.tag')} · {a.tag}{status === 'streaming' ? t('advisor.generating') : ''}</div>
-            <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827' }}>{title || a.title}</h3>
+            <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title || a.title}</h3>
           </div>
-          <button onClick={onClose} style={{ border: 'none', background: '#f3f4f6', borderRadius: 8, width: 30, height: 30, cursor: 'pointer', fontSize: 16, color: '#6b7280', flexShrink: 0 }}>×</button>
+          <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+            <button onClick={() => setFull((f) => { savePref({ full: !f }); return !f })} title={t(full ? 'advisor.exitFull' : 'advisor.full')} style={iconBtn}>{full ? '🗗' : '⛶'}</button>
+            <button onClick={onClose} style={{ ...iconBtn, fontSize: 16 }}>×</button>
+          </div>
         </div>
-        <div style={{ padding: '4px 20px 20px' }}>
+        {/* 正文(可滚动):上半真实清单 + 下半 AI 建议 */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '4px 18px 18px' }}>
+          {field === 'pnp' && <PnpListSection job={job} lang={lang} occ={pnpOcc} />}
+          {field === 'ee' && <EeCategorySection job={job} lang={lang} cats={eeOcc} />}
           {status === 'loading' ? (
             <p style={{ margin: '10px 0', fontSize: 14, color: '#9ca3af' }}>{t('advisor.loading')}</p>
           ) : (
@@ -655,6 +843,8 @@ function AdvisorModal({ field, job, title, lang, onClose }: { field: ColKey; job
           )}
           <p style={{ marginTop: 14, fontSize: 11.5, color: '#9ca3af' }}>{t('advisor.footAI')}</p>
         </div>
+        {/* 右下角拉伸手柄 */}
+        {!full && <div onPointerDown={startResize} style={{ position: 'absolute', right: 0, bottom: 0, width: 18, height: 18, cursor: 'nwse-resize', background: 'linear-gradient(135deg, transparent 50%, #cbd5e1 50%)' }} />}
       </div>
     </div>
   )

@@ -117,13 +117,33 @@ def _load_pnp_tables() -> dict[str, dict]:
             nocs = {o["noc"] for o in data.get("occupations", []) if o.get("noc")}
             if not (prov and nocs):
                 continue
-            t = out.setdefault(prov, {"type": data.get("type", "indemand"), "nocs": set()})
+            t = out.setdefault(prov, {"type": data.get("type", "indemand"), "nocs": set(), "streams": []})
             t["nocs"].update(nocs)
+            # 具名通道:短标签(label,数据层备好;无则退回英文 stream 名)→ 前端原样显示
+            t["streams"].append({"label": data.get("label") or data.get("stream") or "", "nocs": nocs})
     return out
 PNP_BY_PROV = _load_pnp_tables()
 # score() 的 +12「TEER4-5 专门紧缺通道」只对 inclusion 型有意义
 # (exclusion 表里的 NOC 是「不符合」,绝不能加分)。
 INDEMAND_LOW_BY_PROV = {p: t["nocs"] for p, t in PNP_BY_PROV.items() if t["type"] == "indemand"}
+# 联邦 Express Entry「类别抽选」清单(全国单一源,与 PNP 是两条不同路 → 独立信号,不混 pnpEligible)。
+# NOC → 类别中文标签;多类别罕见,出现则 / 连接。文件无 = 不标。
+def _load_ee() -> dict[str, str]:
+    acc: dict[str, list[str]] = {}
+    f = _paths.EE / "federal-categories.json"
+    if f.exists():
+        try:
+            data = json.loads(f.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001
+            data = {}
+        for c in data.get("categories", []):
+            lab = c.get("label") or c.get("key")
+            for o in c.get("occupations", []):
+                noc = o.get("noc")
+                if noc and lab and lab not in acc.setdefault(noc, []):
+                    acc[noc].append(lab)
+    return {noc: "/".join(labs) for noc, labs in acc.items()}
+EE_BY_NOC = _load_ee()
 AGENCY_RE = re.compile(r"recruit|staffing|talent|personnel|placement|outsourc|mercor|adecco|randstad", re.I)
 ACC = {"co-op": 6, "junior": 6, "intermediate": 4, "senior": 2, "unknown": 3}
 
@@ -156,6 +176,19 @@ def pnp_eligible(noc: str, teer: int | None, prov: str) -> bool:
         return teer is not None and noc not in tbl["nocs"]
     nocs = tbl["nocs"] if tbl else set()
     return teer in (0, 1, 2, 3) or noc in nocs
+
+
+def pnp_stream(noc: str, prov: str) -> str | None:
+    """命中某省 inclusion 清单时,返回该具名通道的短标签(如「OINP 紧缺技能」)。
+    泛 TEER0-3 技能岗、exclusion 型省(无具名 in-demand 通道)、未命中 → None,
+    前端对 None 退回泛标签/留空(宁可不具名,也不瞎贴通道名)。"""
+    tbl = PNP_BY_PROV.get(prov)
+    if not tbl or tbl["type"] != "indemand":
+        return None
+    for s in tbl["streams"]:
+        if noc in s["nocs"] and s["label"]:
+            return s["label"]
+    return None
 
 
 def accessibility(title: str) -> str:
@@ -221,7 +254,9 @@ def main() -> None:
         out.append({"externalId": ext_id, "noc": noc,
                     "category": f"TEER {teer}" if teer is not None else "未分类",
                     "accessibility": acc, "score": score(noc, teer, prov, acc, agency),
-                    "pnpEligible": pnp_eligible(noc, teer, prov)})
+                    "pnpEligible": pnp_eligible(noc, teer, prov),
+                    "pnpStream": pnp_stream(noc, prov),
+                    "eeCategory": EE_BY_NOC.get(noc) or None})
     _paths.PROCESSED.mkdir(parents=True, exist_ok=True)
     (_paths.PROCESSED / "all-scored.json").write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Scored {len(out)} jobs → all-scored.json")

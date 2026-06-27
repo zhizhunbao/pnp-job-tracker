@@ -5,12 +5,11 @@ export const PolicyDocs: CollectionConfig = {
   slug: 'policy-docs',
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'province', 'stream'],
+    defaultColumns: ['title', 'province'],
     group: 'Reference (CMS)',
   },
   fields: [
     { name: 'title', type: 'text', required: true },
-    { name: 'stream', type: 'relationship', relationTo: 'pnp-streams' },
     { name: 'province', type: 'text', index: true },
     { name: 'sourceUrl', type: 'text', admin: { description: '官方政策URL' } },
     { name: 'localPath', type: 'text', admin: { description: 'data/policy/ 下的本地原文路径' } },

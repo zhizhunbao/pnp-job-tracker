@@ -1,0 +1,202 @@
+{
+  "stream": "SINP Health Talent Pathway",
+  "label": "SK 医疗",
+  "province": "SK",
+  "type": "indemand",
+  "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/health-talent-pathway",
+  "fetched": "2026-06-20",
+  "occupations": [
+    {
+      "noc": "21100",
+      "name": "Physicists and astronomers (in a medical setting)"
+    },
+    {
+      "noc": "30010",
+      "name": "Managers in health care"
+    },
+    {
+      "noc": "31100",
+      "name": "Specialists in clinical and laboratory medicine"
+    },
+    {
+      "noc": "31101",
+      "name": "Specialists in surgery"
+    },
+    {
+      "noc": "31102",
+      "name": "General practitioners and family physicians"
+    },
+    {
+      "noc": "31103",
+      "name": "Veterinarians"
+    },
+    {
+      "noc": "31110",
+      "name": "Dentists"
+    },
+    {
+      "noc": "31111",
+      "name": "Optometrists"
+    },
+    {
+      "noc": "31112",
+      "name": "Audiologists and speech-language pathologists"
+    },
+    {
+      "noc": "31120",
+      "name": "Pharmacists"
+    },
+    {
+      "noc": "31121",
+      "name": "Dietitians and nutritionists"
+    },
+    {
+      "noc": "31200",
+      "name": "Psychologists"
+    },
+    {
+      "noc": "31201",
+      "name": "Chiropractors"
+    },
+    {
+      "noc": "31202",
+      "name": "Physiotherapists"
+    },
+    {
+      "noc": "31203",
+      "name": "Occupational therapists"
+    },
+    {
+      "noc": "31204",
+      "name": "Kinesiologists and other professional occupations in therapy and assessment"
+    },
+    {
+      "noc": "31209",
+      "name": "Other professional occupations in health diagnosing and treating"
+    },
+    {
+      "noc": "31300",
+      "name": "Nursing coordinators and supervisors"
+    },
+    {
+      "noc": "31301",
+      "name": "Registered nurses and registered psychiatric nurses"
+    },
+    {
+      "noc": "31302",
+      "name": "Nurse practitioners"
+    },
+    {
+      "noc": "31303",
+      "name": "Physician assistants, midwives and allied health professionals"
+    },
+    {
+      "noc": "32100",
+      "name": "Opticians"
+    },
+    {
+      "noc": "32101",
+      "name": "Licensed practical nurses"
+    },
+    {
+      "noc": "32102",
+      "name": "Paramedical occupations"
+    },
+    {
+      "noc": "32103",
+      "name": "Respiratory therapists, clinical perfusionists and cardiopulmonary technologists"
+    },
+    {
+      "noc": "32104",
+      "name": "Animal health technologists and veterinary technicians"
+    },
+    {
+      "noc": "32109",
+      "name": "Other technical occupations in therapy and assessment"
+    },
+    {
+      "noc": "32110",
+      "name": "Denturists"
+    },
+    {
+      "noc": "32111",
+      "name": "Dental hygienists and dental therapists"
+    },
+    {
+      "noc": "32112",
+      "name": "Dental technologists and technicians"
+    },
+    {
+      "noc": "32120",
+      "name": "Medical laboratory technologists"
+    },
+    {
+      "noc": "32121",
+      "name": "Medical radiation technologists"
+    },
+    {
+      "noc": "32122",
+      "name": "Medical sonographers"
+    },
+    {
+      "noc": "32123",
+      "name": "Cardiology technologists and electrophysiological diagnostic technologists n.e.c"
+    },
+    {
+      "noc": "32124",
+      "name": "Pharmacy technicians"
+    },
+    {
+      "noc": "32129",
+      "name": "Other medical technologists and technicians"
+    },
+    {
+      "noc": "32200",
+      "name": "Traditional Chinese medicine practitioners and acupuncturists"
+    },
+    {
+      "noc": "32201",
+      "name": "Massage therapists"
+    },
+    {
+      "noc": "32209",
+      "name": "Other practitioners of natural healing"
+    },
+    {
+      "noc": "33100",
+      "name": "Dental assistants and dental laboratory assistants"
+    },
+    {
+      "noc": "33101",
+      "name": "Medical laboratory assistants and related technical occupations"
+    },
+    {
+      "noc": "33102",
+      "name": "Nurse aides, orderlies and patient service associates"
+    },
+    {
+      "noc": "33103",
+      "name": "Pharmacy technical assistants and pharmacy assistants"
+    },
+    {
+      "noc": "33109",
+      "name": "Other assisting occupations in support of health services"
+    },
+    {
+      "noc": "41300",
+      "name": "Social workers"
+    },
+    {
+      "noc": "41301",
+      "name": "Therapists in counselling and related specialized therapies"
+    },
+    {
+      "noc": "42201",
+      "name": "Social and community service workers"
+    },
+    {
+      "noc": "44101",
+      "name": "Home support workers, caregivers and related occupations"
+    }
+  ]
+}

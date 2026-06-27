@@ -1,0 +1,138 @@
+{
+  "stream": "SINP Innovation & Tech Talent Pathway",
+  "label": "SK 科技",
+  "province": "SK",
+  "type": "indemand",
+  "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/sinp-innovation-tech-talent-pathway",
+  "fetched": "2026-06-20",
+  "occupations": [
+    {
+      "noc": "20012",
+      "name": "Computer and information systems managers"
+    },
+    {
+      "noc": "21100",
+      "name": "Physicists and astronomers"
+    },
+    {
+      "noc": "21101",
+      "name": "Chemists"
+    },
+    {
+      "noc": "21102",
+      "name": "Geoscientists and oceanographers"
+    },
+    {
+      "noc": "21109",
+      "name": "Other professional occupations in physical sciences"
+    },
+    {
+      "noc": "21110",
+      "name": "Biologists and related scientists"
+    },
+    {
+      "noc": "21112",
+      "name": "Agricultural representatives, consultants and specialists"
+    },
+    {
+      "noc": "21211",
+      "name": "Data scientists"
+    },
+    {
+      "noc": "21220",
+      "name": "Cybersecurity specialists"
+    },
+    {
+      "noc": "21221",
+      "name": "Business system specialists"
+    },
+    {
+      "noc": "21222",
+      "name": "Information System specialists"
+    },
+    {
+      "noc": "21223",
+      "name": "Database analysts and data administrators"
+    },
+    {
+      "noc": "21230",
+      "name": "Computer systems developers and programmers"
+    },
+    {
+      "noc": "21231",
+      "name": "Software engineers and designers"
+    },
+    {
+      "noc": "21232",
+      "name": "Software developers and programmers"
+    },
+    {
+      "noc": "21233",
+      "name": "Web designers"
+    },
+    {
+      "noc": "21234",
+      "name": "Web developers and programmers"
+    },
+    {
+      "noc": "21310",
+      "name": "Electrical and Electronics engineers"
+    },
+    {
+      "noc": "21311",
+      "name": "Computer engineers (except software engineers and designers)"
+    },
+    {
+      "noc": "21320",
+      "name": "Chemical engineers"
+    },
+    {
+      "noc": "21322",
+      "name": "Metallurgical and materials engineers"
+    },
+    {
+      "noc": "21330",
+      "name": "Mining engineers"
+    },
+    {
+      "noc": "21331",
+      "name": "Geological engineers"
+    },
+    {
+      "noc": "21332",
+      "name": "Petroleum engineers"
+    },
+    {
+      "noc": "22100",
+      "name": "Chemical technologists and technicians"
+    },
+    {
+      "noc": "22101",
+      "name": "Geological and mineral technologists and technicians"
+    },
+    {
+      "noc": "22110",
+      "name": "Biological technologists and technicians"
+    },
+    {
+      "noc": "22214",
+      "name": "Technological occupations in geomatics and meteorology"
+    },
+    {
+      "noc": "22220",
+      "name": "Computer network and web technicians"
+    },
+    {
+      "noc": "22221",
+      "name": "User support technicians"
+    },
+    {
+      "noc": "22222",
+      "name": "Information systems testing technicians"
+    },
+    {
+      "noc": "22301",
+      "name": "Mechanical engineering technologists and technicians"
+    }
+  ]
+}

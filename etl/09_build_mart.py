@@ -23,6 +23,8 @@ IN_ATS_COMPANIES = _paths.COMPANIES                       # processed/ats/.../co
 IN_SCORED = _paths.PROCESSED / "all-scored.json"
 IN_AIP = _paths.AIP / "aip-designated-employers.json"
 IN_WAGES = _paths.WAGES / "wages.json"   # NOC×省 中位工资(build_wages.py 从 ESDC 开放数据建)
+IN_PNP = _paths.PNP                      # raw/pnp/*.json(各省具名通道:每文件一条通道)
+IN_EE = _paths.EE / "federal-categories.json"  # 联邦 Express Entry 类别抽选(全国单一源)
 OUT_MART = _paths.DATA / "mart"
 
 PROV_FULL = {
@@ -88,7 +90,8 @@ def build():
             "noc": sc.get("noc") or None, "category": cls["teerLabel"],
             "teer": cls["teer"], "broad": cls["broad"], "mid": cls["mid"], "fine": cls["fine"],
             "accessibility": sc.get("accessibility") or None, "score": sc.get("score"),
-            "pnpEligible": bool(sc.get("pnpEligible")), "status": "open",
+            "pnpEligible": bool(sc.get("pnpEligible")), "pnpStream": sc.get("pnpStream") or None,
+            "eeCategory": sc.get("eeCategory") or None, "status": "open",
         })
 
     # 1) ATS 公司岗(processed/ats/.../companies/<slug>/)
@@ -163,11 +166,45 @@ def build():
     sources = [{"name": s} for s in sorted({j.get("sourceLabel") for j in jobs if j.get("sourceLabel")})]
     experience_levels = [{"name": e} for e in sorted({j.get("accessibility") for j in jobs if j.get("accessibility")})]
 
+    # 省提名通道维度(每行=某通道内一个职业;前端按 province+label 分组渲染清单/高亮)
+    pnp_occupations = []
+    if IN_PNP.exists():
+        for f in sorted(IN_PNP.glob("*.json")):
+            try:
+                d = json.loads(f.read_text(encoding="utf-8"))
+            except Exception:  # noqa: BLE001
+                continue
+            prov, label = d.get("province"), d.get("label") or d.get("stream")
+            if not (prov and label):
+                continue
+            for o in d.get("occupations", []):
+                if o.get("noc"):
+                    pnp_occupations.append({
+                        "province": prov, "stream": d.get("stream", ""), "label": label,
+                        "type": d.get("type", "indemand"), "url": d.get("url", ""), "fetched": d.get("fetched", ""),
+                        "noc": o["noc"], "name": o.get("name", ""), "gtaRestricted": bool(o.get("gtaRestricted"))})
+
+    # 联邦 EE 类别维度(每行=某类别内一个职业)
+    ee_categories = []
+    if IN_EE.exists():
+        try:
+            d = json.loads(IN_EE.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001
+            d = {}
+        for c in d.get("categories", []):
+            for o in c.get("occupations", []):
+                if o.get("noc"):
+                    ee_categories.append({
+                        "category": c.get("key", ""), "label": c.get("label", ""),
+                        "url": d.get("url", ""), "fetched": d.get("fetched", ""),
+                        "noc": o["noc"], "teer": o.get("teer"), "title": o.get("title", "")})
+
     return {
         "companies": list(companies.values()), "jobs": jobs,
         "provinces": provinces, "cities": cities, "districts": districts,
         "designated_employers": designated,
         "noc_categories": noc_categories, "sources": sources, "experience_levels": experience_levels,
+        "pnp_occupations": pnp_occupations, "ee_categories": ee_categories,
     }
 
 

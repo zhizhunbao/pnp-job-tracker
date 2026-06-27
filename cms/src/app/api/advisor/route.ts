@@ -72,7 +72,7 @@ type Job = {
   title?: string; company?: string; noc?: string; province?: string
   city?: string; district?: string; address?: string; officialUrl?: string; applyUrl?: string
   score?: number | null; category?: string; accessibility?: string
-  pnpEligible?: boolean; aip?: boolean; salary?: string; salaryAnnual?: number | null
+  pnpEligible?: boolean; eeCategory?: string; aip?: boolean; salary?: string; salaryAnnual?: number | null
   wageMedHourly?: number | null; wageMedAnnual?: number | null
   source?: string; sourceLabel?: string; origin?: string
   datePosted?: string; lastSeen?: string; status?: string
@@ -114,7 +114,7 @@ function jobFacts(j: Job): string {
     `Title: ${j.title || '—'}`, `Company: ${j.company || '—'}`,
     `NOC: ${j.noc || '—'} (TEER ${t ?? '—'}, ${catOf(j.noc)})`,
     `Location: ${[j.district, j.city, j.province].filter(Boolean).join(', ') || '—'}`,
-    `Score: ${j.score ?? '—'}/100; PNP-eligible: ${j.pnpEligible ? 'yes' : 'no'}; AIP designated: ${j.aip ? 'yes' : 'no'}; experience: ${j.accessibility || '—'}`,
+    `Score: ${j.score ?? '—'}/100; PNP-eligible: ${j.pnpEligible ? 'yes' : 'no'}; Federal EE category: ${j.eeCategory || 'none'}; AIP designated: ${j.aip ? 'yes' : 'no'}; experience: ${j.accessibility || '—'}`,
     `Salary: ${j.salary || '—'}${j.salaryAnnual != null ? ` (~$${Math.round(j.salaryAnnual / 1000)}K/yr)` : ''}`,
     j.wageMedAnnual != null ? `NOC local median: $${j.wageMedHourly}/hr (~$${Math.round(j.wageMedAnnual / 1000)}K/yr)` : '',
     `Source: ${j.sourceLabel || j.source || '—'} (origin ${j.origin || '—'}); posted ${(j.datePosted || '').slice(0, 10) || '—'}; last seen ${(j.lastSeen || '').slice(0, 10) || '—'}; status ${j.status || 'open'}`,
@@ -124,6 +124,7 @@ function jobFacts(j: Job): string {
 const ASK: Record<string, string> = {
   score: "Explain this job's immigration-value score: what it means and what drives it, using the exact numbers in the score breakdown.",
   pnp: 'Explain whether and why this job fits the employer-offer → PNP route, plus caveats (each province has its own occupation lists / language / wage rules; this is a rough signal, not a ruling; QC is separate).',
+  ee: 'Explain Express Entry category-based selection: this is a FEDERAL pathway, SEPARATE from PNP — which category this job\'s NOC falls into and what that means (IRCC holds CRS-based draws prioritizing these categories; often no job offer needed). Make clear it differs from the provincial PNP route.',
   aip: 'Explain the AIP (Atlantic Immigration Program) designated-employer status and what it means; note it only applies to the four Atlantic provinces and is a rough name match.',
   noc: 'Explain the NOC code and its TEER level, and how NOC is used by PNP / Express Entry.',
   teer: 'Explain the TEER level and what it means for skilled-worker immigration.',

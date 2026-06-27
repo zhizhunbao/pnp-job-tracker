@@ -71,7 +71,8 @@ export interface Config {
     media: Media;
     companies: Company;
     jobs: Job;
-    'pnp-streams': PnpStream;
+    'pnp-occupations': PnpOccupation;
+    'ee-categories': EeCategory;
     'policy-docs': PolicyDoc;
     'designated-employers': DesignatedEmployer;
     provinces: Province;
@@ -91,7 +92,8 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     companies: CompaniesSelect<false> | CompaniesSelect<true>;
     jobs: JobsSelect<false> | JobsSelect<true>;
-    'pnp-streams': PnpStreamsSelect<false> | PnpStreamsSelect<true>;
+    'pnp-occupations': PnpOccupationsSelect<false> | PnpOccupationsSelect<true>;
+    'ee-categories': EeCategoriesSelect<false> | EeCategoriesSelect<true>;
     'policy-docs': PolicyDocsSelect<false> | PolicyDocsSelect<true>;
     'designated-employers': DesignatedEmployersSelect<false> | DesignatedEmployersSelect<true>;
     provinces: ProvincesSelect<false> | ProvincesSelect<true>;
@@ -290,7 +292,6 @@ export interface Job {
    */
   origin?: ('jobbank' | 'ats' | 'directory') | null;
   isAgency?: boolean | null;
-  pnpStreams?: (number | PnpStream)[] | null;
   policyRefs?: (number | PolicyDoc)[] | null;
   accessibility?: ('co-op' | 'junior' | 'intermediate' | 'senior' | 'unknown') | null;
   /**
@@ -301,6 +302,14 @@ export interface Job {
    * 可走雇主offer省提名(TEER0-3 或紧缺低TEER通道)
    */
   pnpEligible?: boolean | null;
+  /**
+   * 命中省提名具名通道的短标签(如「OINP 紧缺技能」),数据层 08_score 算;泛技能岗为空
+   */
+  pnpStream?: string | null;
+  /**
+   * 联邦 Express Entry 类别抽选所属类别(医疗社服/STEM/技工…),数据层 08_score 算;与 PNP 是两条路,独立信号
+   */
+  eeCategory?: string | null;
   /**
    * 雇主在官方 AIP 指定雇主名单(大西洋四省 NL/NB/NS/PE)
    */
@@ -321,38 +330,11 @@ export interface Job {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "pnp-streams".
- */
-export interface PnpStream {
-  id: number;
-  /**
-   * 如 OINP-EJO / SINP-TECH
-   */
-  key?: string | null;
-  name: string;
-  province?: string | null;
-  /**
-   * EE对齐(有CRS地板)
-   */
-  isExpressEntry?: boolean | null;
-  requiresJobOffer?: boolean | null;
-  /**
-   * base非EE,不看CRS
-   */
-  ignoresCRS?: boolean | null;
-  officialUrl?: string | null;
-  notes?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "policy-docs".
  */
 export interface PolicyDoc {
   id: number;
   title: string;
-  stream?: (number | null) | PnpStream;
   province?: string | null;
   /**
    * 官方政策URL
@@ -363,6 +345,58 @@ export interface PolicyDoc {
    */
   localPath?: string | null;
   body?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pnp-occupations".
+ */
+export interface PnpOccupation {
+  id: number;
+  province?: string | null;
+  /**
+   * 通道官方名(英文)
+   */
+  stream?: string | null;
+  /**
+   * 通道短标签(前端显示,如「OINP 紧缺技能」)
+   */
+  label?: string | null;
+  /**
+   * indemand(命中=符合) / ineligible(命中=不符合)
+   */
+  type?: string | null;
+  noc?: string | null;
+  name?: string | null;
+  /**
+   * ON 限大多伦多区域外
+   */
+  gtaRestricted?: boolean | null;
+  url?: string | null;
+  fetched?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ee-categories".
+ */
+export interface EeCategory {
+  id: number;
+  /**
+   * 类别 key(healthcare/stem/…)
+   */
+  category?: string | null;
+  /**
+   * 类别中文标签(医疗社服/STEM/…)
+   */
+  label?: string | null;
+  noc?: string | null;
+  teer?: number | null;
+  title?: string | null;
+  url?: string | null;
+  fetched?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -512,8 +546,12 @@ export interface PayloadLockedDocument {
         value: number | Job;
       } | null)
     | ({
-        relationTo: 'pnp-streams';
-        value: number | PnpStream;
+        relationTo: 'pnp-occupations';
+        value: number | PnpOccupation;
+      } | null)
+    | ({
+        relationTo: 'ee-categories';
+        value: number | EeCategory;
       } | null)
     | ({
         relationTo: 'policy-docs';
@@ -680,11 +718,12 @@ export interface JobsSelect<T extends boolean = true> {
   sourceLabel?: T;
   origin?: T;
   isAgency?: T;
-  pnpStreams?: T;
   policyRefs?: T;
   accessibility?: T;
   score?: T;
   pnpEligible?: T;
+  pnpStream?: T;
+  eeCategory?: T;
   aip?: T;
   firstSeen?: T;
   lastSeen?: T;
@@ -696,17 +735,33 @@ export interface JobsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "pnp-streams_select".
+ * via the `definition` "pnp-occupations_select".
  */
-export interface PnpStreamsSelect<T extends boolean = true> {
-  key?: T;
-  name?: T;
+export interface PnpOccupationsSelect<T extends boolean = true> {
   province?: T;
-  isExpressEntry?: T;
-  requiresJobOffer?: T;
-  ignoresCRS?: T;
-  officialUrl?: T;
-  notes?: T;
+  stream?: T;
+  label?: T;
+  type?: T;
+  noc?: T;
+  name?: T;
+  gtaRestricted?: T;
+  url?: T;
+  fetched?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ee-categories_select".
+ */
+export interface EeCategoriesSelect<T extends boolean = true> {
+  category?: T;
+  label?: T;
+  noc?: T;
+  teer?: T;
+  title?: T;
+  url?: T;
+  fetched?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -716,7 +771,6 @@ export interface PnpStreamsSelect<T extends boolean = true> {
  */
 export interface PolicyDocsSelect<T extends boolean = true> {
   title?: T;
-  stream?: T;
   province?: T;
   sourceUrl?: T;
   localPath?: T;

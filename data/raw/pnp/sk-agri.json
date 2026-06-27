@@ -1,0 +1,54 @@
+{
+  "stream": "SINP Agriculture Talent Pathway",
+  "label": "SK 农业",
+  "province": "SK",
+  "type": "indemand",
+  "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/agriculture-talent-pathway",
+  "fetched": "2026-06-20",
+  "occupations": [
+    {
+      "noc": "14401",
+      "name": "Storekeepers and partspersons"
+    },
+    {
+      "noc": "75101",
+      "name": "Material handlers"
+    },
+    {
+      "noc": "84120",
+      "name": "Specialized livestock workers and farm machinery operators"
+    },
+    {
+      "noc": "85100",
+      "name": "Livestock labourers"
+    },
+    {
+      "noc": "85101",
+      "name": "Harvesting labourers"
+    },
+    {
+      "noc": "85103",
+      "name": "Nursery and greenhouse labourers"
+    },
+    {
+      "noc": "94140",
+      "name": "Process control and machine operators, food and beverage processing"
+    },
+    {
+      "noc": "94141",
+      "name": "Industrial butchers and meat cutters, poultry preparers and related workers"
+    },
+    {
+      "noc": "94143",
+      "name": "Testers and graders, food and beverage processing"
+    },
+    {
+      "noc": "94204",
+      "name": "Mechanical assemblers and inspectors"
+    },
+    {
+      "noc": "95106",
+      "name": "Labourers in food and beverage processing"
+    }
+  ]
+}
