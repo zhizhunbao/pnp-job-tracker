@@ -17,6 +17,7 @@ export const Jobs: CollectionConfig = {
     { name: 'broad', type: 'text', index: true, admin: { description: '大分类(NOC 第1位)' } },
     { name: 'mid', type: 'text', index: true, admin: { description: '中分类' } },
     { name: 'fine', type: 'text', admin: { description: '小分类' } },
+    { name: 'description', type: 'textarea', admin: { description: '真实抓取的 JD 正文(mart 按 applyUrl 匹配 .md 写入);列表 SQL 不读,只「职位描述」弹框/顾问按需取' } },
     { name: 'country', type: 'text', index: true },
     { name: 'province', type: 'text', index: true },
     { name: 'city', type: 'text' },

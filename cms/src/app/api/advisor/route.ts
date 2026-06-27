@@ -1,64 +1,21 @@
 // AI 顾问代理:把前端请求转发到本地 Ollama,流式返回中文解读。
 // 密钥/地址只在服务端;同一职位/公司只生成一次(内存缓存)。
 // 职位描述基于抓取的真实 JD(.md)总结,不让模型凭空猜。
-import fs from 'fs'
-import path from 'path'
 import { NextRequest } from 'next/server'
+import { jobDescription } from '@/lib/jobDescription'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434'
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'qwen3:4b'
-const DATA_ROOT = path.resolve(process.cwd(), '..', 'data')
 
 // 进程内缓存(dev 下随热重载清空,够用;以后可换持久化)
 const cache = new Map<string, string>()
 
-// url → .md 路径索引(懒加载一次)。两类详情:Job Bank + 各公司 ATS 岗位
-let jdIndex: Map<string, string> | null = null
-function buildJdIndex(): Map<string, string> {
-  const idx = new Map<string, string>()
-  // 递归收集所有 .md(Job Bank 详情是平铺;公司岗位较深:companies/<region>/<slug>/jobs/*.md)
-  const walk = (dir: string) => {
-    let entries: fs.Dirent[] = []
-    try { entries = fs.readdirSync(dir, { withFileTypes: true }) } catch { return }
-    for (const e of entries) {
-      const p = path.join(dir, e.name)
-      if (e.isDirectory()) walk(p)
-      else if (e.name.endsWith('.md')) registerMd(idx, p)
-    }
-  }
-  walk(path.join(DATA_ROOT, 'processed', 'jobbank', 'details'))
-  walk(path.join(DATA_ROOT, 'processed', 'ats'))
-  return idx
-}
-function registerMd(idx: Map<string, string>, file: string) {
-  try {
-    const head = fs.readFileSync(file, 'utf8').slice(0, 600)
-    const m = head.match(/^url:\s*(.+)$/m)
-    if (m) idx.set(m[1].trim(), file)
-  } catch { /* ignore */ }
-}
-function readJD(file?: string): string | null {
-  if (!file) return null // url 不在索引里
-  try {
-    const raw = fs.readFileSync(file, 'utf8')
-    return raw.replace(/^---[\s\S]*?\n---\s*/m, '').trim().slice(0, 2200) // 去 frontmatter + 截断
-  } catch { return null } // 文件已被改名/移动 → 索引过期
-}
-// 读出某 url 对应 JD 正文。索引未命中或文件已移动时,重建索引重试一次
-// (重抓后 .md 会改名/新增,不必重启服务)。
-function loadJD(url?: string): string {
-  if (!url) return ''
-  const u = url.trim()
-  if (!jdIndex) jdIndex = buildJdIndex()
-  let body = readJD(jdIndex.get(u))
-  if (body === null) {
-    jdIndex = buildJdIndex()
-    body = readJD(jdIndex.get(u))
-  }
-  return body ?? ''
+// JD 正文从 DB jobs.description 取(mart 灌入),不再扫 .md 文件;模型基于真实 JD 总结,不凭空猜。
+async function loadJD(url?: string): Promise<string> {
+  return (await jobDescription((url || '').trim())).slice(0, 2200) // 截断,控制 prompt 长度
 }
 
 type Lang = 'zh' | 'en' | 'ko'
@@ -208,7 +165,7 @@ export async function POST(req: NextRequest) {
   if (cached) return new Response(cached, { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'X-Cache': 'hit' } })
 
   // 职位:读取抓到的真实 JD(基于它总结,缓存未命中才扫);公司:暂无正文,靠模型知识
-  const jd = field === 'title' ? loadJD(job.applyUrl) : ''
+  const jd = field === 'title' ? await loadJD(job.applyUrl) : ''
 
   let upstream: Response
   try {

@@ -241,6 +241,10 @@ export interface Job {
    * 小分类
    */
   fine?: string | null;
+  /**
+   * 真实抓取的 JD 正文(mart 按 applyUrl 匹配 .md 写入);列表 SQL 不读,只「职位描述」弹框/顾问按需取
+   */
+  description?: string | null;
   country?: string | null;
   province?: string | null;
   city?: string | null;
@@ -700,6 +704,7 @@ export interface JobsSelect<T extends boolean = true> {
   broad?: T;
   mid?: T;
   fine?: T;
+  description?: T;
   country?: T;
   province?: T;
   city?: T;

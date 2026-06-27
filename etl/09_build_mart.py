@@ -58,6 +58,33 @@ def guess_prov(loc: str) -> str:
     return "ON" if re.search(r"\b(on|ontario)\b", loc or "", re.I) else ""
 
 
+# ── JD 正文下沉:把已抓的职位描述 .md 灌进 job.description(去掉前端/顾问的运行时文件依赖)──
+def build_jd_index() -> dict:
+    """扫已抓的 JD .md(processed/jobbank/details + processed/ats),按 frontmatter `url` 建 url→路径 索引。"""
+    idx: dict[str, "object"] = {}
+    for root in (_paths.PROCESSED / "jobbank" / "details", _paths.PROCESSED_ATS):
+        if not root.exists():
+            continue
+        for p in root.rglob("*.md"):
+            try:
+                head = p.read_text(encoding="utf-8", errors="replace")[:600]
+            except Exception:  # noqa: BLE001
+                continue
+            m = re.search(r"^url:\s*(.+)$", head, re.M)
+            if m:
+                idx.setdefault(m.group(1).strip(), p)
+    return idx
+
+
+def jd_body(path) -> str | None:
+    """读 .md → 去 frontmatter → 正文(与 jobtext/advisor 同口径)。"""
+    try:
+        raw = path.read_text(encoding="utf-8", errors="replace")
+    except Exception:  # noqa: BLE001
+        return None
+    return re.sub(r"^---.*?\n---\s*", "", raw, count=1, flags=re.S).strip() or None
+
+
 def build():
     scored = {}
     if IN_SCORED.exists():
@@ -147,12 +174,25 @@ def build():
                     salary=j.get("salary"), salaryAnnual=j.get("salaryAnnual"), salaryText=j.get("salaryText"),
                     aip=bool(j.get("aip")), datePosted=j.get("date"))
 
+    # JD 正文下沉到 DB:按 applyUrl 匹配已抓的 .md → job.description(seed 自动透传;列表 SQL 不读它)
+    jd_idx = build_jd_index()
+    matched = 0
+    for j in jobs:
+        p = jd_idx.get(j.get("applyUrl", ""))
+        body = jd_body(p) if p else None
+        if body:
+            j["description"] = body
+            matched += 1
+    print(f"  JD 正文匹配: {matched}/{len(jobs)} 岗写入 description")
+
     # ── 维度表 ──
     provinces = [{"code": c, "name": n} for c, n in PROV_FULL.items()]
-    city_keys = sorted({(j.get("city"), j.get("province")) for j in jobs if j.get("city")})
+    city_keys = sorted({(j.get("city"), j.get("province")) for j in jobs if j.get("city")},
+                       key=lambda t: (t[0] or "", t[1] or ""))
     cities = [{"name": c, "province": p or ""} for c, p in city_keys]
     # 区维度也从 job 数据洗(district 由 04c 从地址/邮编归一);只列实际有岗的区
-    dist_keys = sorted({(j.get("district"), j.get("city"), j.get("province")) for j in jobs if j.get("district")})
+    dist_keys = sorted({(j.get("district"), j.get("city"), j.get("province")) for j in jobs if j.get("district")},
+                       key=lambda t: (t[0] or "", t[1] or "", t[2] or ""))
     districts = [{"name": d, "city": c or "", "province": p or ""} for d, c, p in dist_keys]
     designated = []
     if IN_AIP.exists():
