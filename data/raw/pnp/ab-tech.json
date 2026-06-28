@@ -1,0 +1,186 @@
+{
+  "stream": "AAIP Accelerated Tech Pathway",
+  "label": "AB 科技",
+  "province": "AB",
+  "type": "indemand",
+  "url": "https://www.alberta.ca/system/files/custom_downloaded_images/lbr-aaip-tech-pathway-nocs-codes-list.pdf",
+  "fetched": "2026-06-28",
+  "occupations": [
+    {
+      "noc": "00012",
+      "name": "Senior managers - financial, communications and other business services"
+    },
+    {
+      "noc": "10011",
+      "name": "Human resources managers"
+    },
+    {
+      "noc": "10022",
+      "name": "Advertising, marketing and public relations manager"
+    },
+    {
+      "noc": "10030",
+      "name": "Telecommunication carriers manager"
+    },
+    {
+      "noc": "11200",
+      "name": "Human resources professionals"
+    },
+    {
+      "noc": "11202",
+      "name": "Professional occupations in advertising, marketing and public relations"
+    },
+    {
+      "noc": "12101",
+      "name": "Human resources and recruitment officers"
+    },
+    {
+      "noc": "20010",
+      "name": "Engineering managers"
+    },
+    {
+      "noc": "20011",
+      "name": "Architecture and science managers"
+    },
+    {
+      "noc": "20012",
+      "name": "Computer and information systems managers"
+    },
+    {
+      "noc": "21210",
+      "name": "Mathematicians, statisticians and actuaries"
+    },
+    {
+      "noc": "21211",
+      "name": "Data scientists"
+    },
+    {
+      "noc": "21220",
+      "name": "Cybersecurity specialists"
+    },
+    {
+      "noc": "21221",
+      "name": "Business system specialists"
+    },
+    {
+      "noc": "21222",
+      "name": "Information systems specialists"
+    },
+    {
+      "noc": "21223",
+      "name": "Database analysts and data administrators"
+    },
+    {
+      "noc": "21230",
+      "name": "Computer systems developers and programmers"
+    },
+    {
+      "noc": "21231",
+      "name": "Software engineers and designers"
+    },
+    {
+      "noc": "21232",
+      "name": "Software developers and programmers"
+    },
+    {
+      "noc": "21233",
+      "name": "Web designers"
+    },
+    {
+      "noc": "21234",
+      "name": "Web developers and programmers"
+    },
+    {
+      "noc": "21300",
+      "name": "Civil engineers"
+    },
+    {
+      "noc": "21301",
+      "name": "Mechanical engineers"
+    },
+    {
+      "noc": "21310",
+      "name": "Electrical and electronics engineers"
+    },
+    {
+      "noc": "21311",
+      "name": "Computer engineers (except software engineers and designers)"
+    },
+    {
+      "noc": "22110",
+      "name": "Biological technologists and technicians"
+    },
+    {
+      "noc": "22212",
+      "name": "Drafting technologists and technicians"
+    },
+    {
+      "noc": "22220",
+      "name": "Computer network and web technicians"
+    },
+    {
+      "noc": "22221",
+      "name": "User support technicians"
+    },
+    {
+      "noc": "22222",
+      "name": "Information systems testing technicians"
+    },
+    {
+      "noc": "22301",
+      "name": "Mechanical engineering technologists and technicians"
+    },
+    {
+      "noc": "22302",
+      "name": "Industrial engineering and manufacturing technologists and technicians"
+    },
+    {
+      "noc": "22310",
+      "name": "Electrical and electronics engineering technologists and technicians"
+    },
+    {
+      "noc": "32120",
+      "name": "Medical laboratory technologists"
+    },
+    {
+      "noc": "32129",
+      "name": "Other medical technologists and technicians"
+    },
+    {
+      "noc": "33101",
+      "name": "Medical laboratory assistants and related technical occupations"
+    },
+    {
+      "noc": "41402",
+      "name": "Business development officers and market researchers and analysts"
+    },
+    {
+      "noc": "50011",
+      "name": "Managers – publishing, motion pictures, broadcasting and performing arts"
+    },
+    {
+      "noc": "51120",
+      "name": "Producers, directors, choreographers and related occupations"
+    },
+    {
+      "noc": "52120",
+      "name": "Graphic designers and illustrators"
+    },
+    {
+      "noc": "60010",
+      "name": "Corporate sales managers"
+    },
+    {
+      "noc": "72200",
+      "name": "Electricians (except industrial and power system)"
+    },
+    {
+      "noc": "72201",
+      "name": "Industrial electricians"
+    },
+    {
+      "noc": "72205",
+      "name": "Telecommunications equipment installation and cable television service technicians"
+    }
+  ]
+}

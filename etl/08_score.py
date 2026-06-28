@@ -108,7 +108,7 @@ def _load_pnp_tables() -> dict[str, dict]:
     out: dict[str, dict] = {}
     pnp_dir = _paths.PNP
     if pnp_dir.exists():
-        for f in pnp_dir.glob("*.json"):
+        for f in sorted(pnp_dir.glob("*.json")):
             try:
                 data = json.loads(f.read_text(encoding="utf-8"))
             except Exception:  # noqa: BLE001
@@ -117,15 +117,28 @@ def _load_pnp_tables() -> dict[str, dict]:
             nocs = {o["noc"] for o in data.get("occupations", []) if o.get("noc")}
             if not (prov and nocs):
                 continue
-            t = out.setdefault(prov, {"type": data.get("type", "indemand"), "nocs": set(), "streams": []})
-            t["nocs"].update(nocs)
-            # 具名通道:短标签(label,数据层备好;无则退回英文 stream 名)→ 前端原样显示
-            t["streams"].append({"label": data.get("label") or data.get("stream") or "", "nocs": nocs})
+            typ = data.get("type", "indemand")
+            t = out.setdefault(prov, {"type": "indemand", "nocs": set(), "streams": []})
+            if typ == "ineligible":
+                # exclusion 文件定义该省资格规则(排除集),独占 type 与 nocs —— 不与 inclusion 混
+                # (否则 inclusion 的 NOC 会被并进排除集、被误判不符合)。顺序无关:exclusion 总会重置 nocs。
+                t["type"] = "ineligible"
+                t["nocs"] = set(nocs)
+            else:
+                # inclusion 文件:① 叠加具名通道标签(stream,任何省都生效,与资格 type 解耦)
+                #                 ② 仅当该省非 exclusion 时,才并入资格 nocs(TEER4-5 凭清单可走)
+                t["streams"].append({"label": data.get("label") or data.get("stream") or "", "nocs": nocs})
+                if t["type"] != "ineligible":
+                    t["nocs"].update(nocs)
     return out
 PNP_BY_PROV = _load_pnp_tables()
-# score() 的 +12「TEER4-5 专门紧缺通道」只对 inclusion 型有意义
-# (exclusion 表里的 NOC 是「不符合」,绝不能加分)。
-INDEMAND_LOW_BY_PROV = {p: t["nocs"] for p, t in PNP_BY_PROV.items() if t["type"] == "indemand"}
+# score() 的 +12「省点名招」按**具名通道命中**算,与资格 inclusion/exclusion 解耦。
+# 对 indemand 省,这等于其 inclusion nocs(分数不变);新覆盖的是 exclusion 省(如 AB)的具名通道。
+NAMED_STREAM_NOCS_BY_PROV: dict[str, set] = {}
+for _p, _t in PNP_BY_PROV.items():
+    _s: set = set().union(*[st["nocs"] for st in _t["streams"]]) if _t["streams"] else set()
+    if _s:
+        NAMED_STREAM_NOCS_BY_PROV[_p] = _s
 # 联邦 Express Entry「类别抽选」清单(全国单一源,与 PNP 是两条不同路 → 独立信号,不混 pnpEligible)。
 # NOC → 类别中文标签;多类别罕见,出现则 / 连接。文件无 = 不标。
 def _load_ee() -> dict[str, str]:
@@ -183,9 +196,9 @@ def pnp_stream(noc: str, prov: str) -> str | None:
     泛 TEER0-3 技能岗、exclusion 型省(无具名 in-demand 通道)、未命中 → None,
     前端对 None 退回泛标签/留空(宁可不具名,也不瞎贴通道名)。"""
     tbl = PNP_BY_PROV.get(prov)
-    if not tbl or tbl["type"] != "indemand":
+    if not tbl:
         return None
-    for s in tbl["streams"]:
+    for s in tbl["streams"]:  # 具名通道与资格 type 解耦:exclusion 省(AB)也能挂通道标签
         if noc in s["nocs"] and s["label"]:
             return s["label"]
     return None
@@ -208,8 +221,8 @@ def score(noc: str, teer: int | None, prov: str, acc: str, agency: bool) -> int:
     s = TEER_BASE.get(teer, 18) if teer is not None else 18
     if noc[:2] in INDEMAND2:
         s += 10                       # 紧缺技能职业
-    if noc in INDEMAND_LOW_BY_PROV.get(prov, set()):
-        s += 12                       # TEER4-5 专门紧缺通道(按省)
+    if noc in NAMED_STREAM_NOCS_BY_PROV.get(prov, set()):
+        s += 12                       # 省具名通道(点名招,inclusion/exclusion 省都算)
     if not agency:
         s += 12
     s += ACC.get(acc, 3)

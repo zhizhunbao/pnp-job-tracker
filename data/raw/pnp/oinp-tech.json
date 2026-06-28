@@ -1,0 +1,46 @@
+{
+  "stream": "OINP Human Capital Priorities: Tech Draws",
+  "label": "OINP 科技",
+  "province": "ON",
+  "type": "indemand",
+  "url": "https://www.ontario.ca/page/oinp-tech-draws",
+  "fetched": "2026-06-28",
+  "occupations": [
+    {
+      "noc": "20012",
+      "name": "Computer and information systems managers"
+    },
+    {
+      "noc": "21211",
+      "name": "Data Scientists"
+    },
+    {
+      "noc": "21223",
+      "name": "Database analysts and data administrators"
+    },
+    {
+      "noc": "21230",
+      "name": "Computer systems developers and programmers"
+    },
+    {
+      "noc": "21231",
+      "name": "Software engineers and designers"
+    },
+    {
+      "noc": "21232",
+      "name": "Software developers and programmers"
+    },
+    {
+      "noc": "21233",
+      "name": "Web designers"
+    },
+    {
+      "noc": "21234",
+      "name": "Web developers and programmers"
+    },
+    {
+      "noc": "21311",
+      "name": "Computer engineers (except software engineers and designers"
+    }
+  ]
+}

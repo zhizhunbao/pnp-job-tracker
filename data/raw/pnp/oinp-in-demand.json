@@ -1,15 +1,10 @@
 {
   "stream": "OINP Employer Job Offer: In-Demand Skills",
+  "label": "OINP 紧缺技能",
   "province": "ON",
   "type": "indemand",
   "url": "https://www.ontario.ca/page/oinp-employer-job-offer-demand-skills-stream",
-  "fetched": "2026-06-27",
-  "teer": [
-    4,
-    5
-  ],
-  "wageRule": "Wage must meet or exceed the local median wage for the occupation/region.",
-  "gtaNote": "gtaRestricted=true 的职业只在大多伦多区域(Toronto/Durham/Halton/York/Peel)以外符合。",
+  "fetched": "2026-06-28",
   "occupations": [
     {
       "noc": "14400",
