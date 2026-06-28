@@ -449,7 +449,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
         .colResize:active{background:#3b82f6}`}</style>
       {/* sticky 顶栏:品牌 + 语言切换(手机/电脑都贴顶) */}
       <header style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', borderBottom: '1px solid #e5e7eb' }}>
-        <div style={{ maxWidth: 1320, margin: '0 auto', padding: '10px 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <div style={{ margin: '0 auto',padding: '10px 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, minWidth: 0 }}>
             <span style={{ fontSize: 17, fontWeight: 700, color: '#111827', whiteSpace: 'nowrap' }}>🍁 PNP Job Tracker</span>
             <span style={{ fontSize: 12, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('tagline')}</span>
@@ -462,7 +462,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
           </div>
         </div>
       </header>
-      <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1.5rem 1.25rem', width: '100%', boxSizing: 'border-box', flex: '1 0 auto' }}>
+      <div style={{ margin: '0 auto',padding: '1.5rem 1.25rem', width: '100%', boxSizing: 'border-box', flex: '1 0 auto' }}>
         <h1 style={{ margin: '0 0 2px', color: '#111827' }}>Jobs</h1>
         <p style={{ color: '#6b7280', marginTop: 0, fontSize: 13 }}>
           {rows.length === jobs.length ? t('subtitle.count', { n: jobs.length }) : `${rows.length} / ${jobs.length}`}
@@ -557,7 +557,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
         </div>
 
         <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflowX: 'auto' }}>
-          <table style={{ width: hasWidths ? totalW : 'auto', minWidth: '100%', borderCollapse: 'collapse', fontSize: 13.5, tableLayout: hasWidths ? 'fixed' : 'auto' }}>
+          <table style={{ width: hasWidths ? totalW : '100%', minWidth: '100%', borderCollapse: 'collapse', fontSize: 13.5, tableLayout: hasWidths ? 'fixed' : 'auto' }}>
             {/* 末列宽设 auto:固定布局下吸收剩余空间,右缘始终贴齐容器,无右侧缝隙 */}
             {hasWidths && <colgroup>{shown.map((c, i) => <col key={c.key} style={{ width: i === shown.length - 1 ? 'auto' : widths[c.key] }} />)}</colgroup>}
             <thead>
@@ -608,8 +608,8 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                       else if (k === 'mid') { node = (!j.mid || j.mid === '未分类') ? t('cell.uncat') : j.mid; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'fine') { node = (j.mid === '未分类' || !j.mid) ? '—' : j.fine; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'teer') { node = j.teer == null ? '—' : `TEER ${j.teer}`; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
-                      else if (k === 'title') { href = j.applyUrl || null; node = j.title; Object.assign(extra, hasWidths ? wrapCell(360) : clipCell(360)) }
-                      else if (k === 'company') { href = j.officialUrl || null; node = j.company; Object.assign(extra, hasWidths ? wrapCell(190) : clipCell(190)) }
+                      else if (k === 'title') { href = j.applyUrl || null; node = j.title; Object.assign(extra, wrapCell(360)) }
+                      else if (k === 'company') { href = j.officialUrl || null; node = j.company; Object.assign(extra, wrapCell(190)) }
                       else if (k === 'noc') node = j.noc || '—'
                       else if (k === 'accessibility') node = t('acc.' + (j.accessibility || 'unknown'))
                       else if (k === 'salary') { node = <span title={j.salary || ''}>{j.salaryText || '—'}</span>; Object.assign(extra, { whiteSpace: 'nowrap', color: j.salary ? '#15803d' : '#9ca3af' }) }
@@ -617,7 +617,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                       else if (k === 'wageMedHr') { node = j.wageMedHourly != null ? `$${j.wageMedHourly}/hr` : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.wageMedHourly != null ? '#4b5563' : '#9ca3af' }) }
                       else if (k === 'wageMedYr') { const m = j.wageMedAnnual; node = m != null ? `$${Math.round(m / 1000)}K/yr` : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: m != null ? '#4b5563' : '#9ca3af' }) }
                       else if (k === 'vsMedian') { const a = j.salaryAnnual, m = j.wageMedAnnual; if (a != null && m) { const p = Math.round((a / m - 1) * 100); node = `${p >= 0 ? '+' : ''}${p}%`; Object.assign(extra, { whiteSpace: 'nowrap', fontWeight: 600, color: p >= 0 ? '#15803d' : '#b45309' }) } else { node = '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#9ca3af' }) } }
-                      else if (k === 'address') { href = j.address ? mapsUrl(j.address) : null; node = j.address || '—'; Object.assign(extra, hasWidths ? wrapCell(220) : clipCell(220)) }
+                      else if (k === 'address') { href = j.address ? mapsUrl(j.address) : null; node = j.address || '—'; Object.assign(extra, wrapCell(220)) }
                       else if (k === 'direct') { const dr = isDirect(j); node = dr ? t('cell.first') : t('cell.repost'); Object.assign(extra, { whiteSpace: 'nowrap', color: dr ? '#15803d' : '#9ca3af', fontSize: 12.5 }) }
                       else if (k === 'country') { node = L.country || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'province') { href = mapsFor(L.prov); node = L.prov || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
@@ -670,7 +670,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
       </div>
       {/* footer:免责 + 版权,窄屏自动换行 */}
       <footer style={{ borderTop: '1px solid #e5e7eb', background: '#fafafa', flexShrink: 0 }}>
-        <div style={{ maxWidth: 1320, margin: '0 auto', padding: '16px 1.25rem', display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'space-between', alignItems: 'center', color: '#9ca3af', fontSize: 12.5 }}>
+        <div style={{ margin: '0 auto',padding: '16px 1.25rem', display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'space-between', alignItems: 'center', color: '#9ca3af', fontSize: 12.5 }}>
           <span>{t('foot.disclaimer')}</span>
           <span style={{ whiteSpace: 'nowrap' }}>© 2026 PNP Job Tracker</span>
         </div>
@@ -1287,8 +1287,6 @@ function Sel({ value, onChange, opts, all, labelOf }: { value: string; onChange:
 const td: React.CSSProperties = { padding: '7px 12px', verticalAlign: 'top' }
 // 按词换行(不逐字断词);不设 wordBreak 以免列被挤成 1 字符宽
 const wrapCell = (w: number): React.CSSProperties => ({ maxWidth: w, whiteSpace: 'normal', overflowWrap: 'break-word', wordBreak: 'normal' })
-// 默认(自动布局)长文本列单行截断 + 省略号,保持行紧凑;仅当用户拖窄列(hasWidths)才换行展开
-const clipCell = (w: number): React.CSSProperties => ({ maxWidth: w, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' })
 const link: React.CSSProperties = { color: '#2563eb', textDecoration: 'none' }
 const colPanel: React.CSSProperties = { position: 'absolute', top: '110%', right: 0, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, boxShadow: '0 10px 30px rgba(0,0,0,.12)', padding: 8, zIndex: 20, minWidth: 210 }
 const colBtn: React.CSSProperties = { flex: 1, whiteSpace: 'nowrap', padding: '4px 8px', fontSize: 12.5, border: '1px solid #d1d5db', borderRadius: 5, background: '#f9fafb', color: '#374151', cursor: 'pointer' }
