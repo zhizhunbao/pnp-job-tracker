@@ -1,8 +1,8 @@
 # pnp-job-tracker 运行时全栈(单一 compose,项目名 pnp → 容器统一 pnp-* 前缀)。
 #   postgres  数据库(发布 :5432 给 host npm run dev;容器内用服务名 postgres 连)
-#   cms       Next/Payload 应用(仅 unattended profile 起;开发时用 host npm run dev)
+#   cms       Next/Payload 应用(仅 unattended profile 起,发布 :3001;本地开发用 host npm run dev 占 :3000)
 #   jobbank   抓 Job Bank → raw            (etl httpx 镜像)
-#   build     清洗→评分→mart→seed(灌库唯一角色,curl host.docker.internal:3000/seed)
+#   build     清洗→评分→mart→seed(灌库唯一角色,默认 curl host.docker.internal:3001/seed;本地测试可 export SEED_URL=…:3000)
 #
 # 用法:
 #   开发:        cd docker && docker compose up -d postgres        # 只起库,cms 用 host npm run dev
@@ -78,10 +78,10 @@ services:
     environment:
       SOURCE: build
       SCRAPE_INTERVAL: '7200'
-      SEED_URL: http://host.docker.internal:3000/seed  # host npm 或容器 cms 都通(cms 发布 :3000)
+      SEED_URL: ${SEED_URL:-http://host.docker.internal:3001/seed}  # 默认灌 docker cms(发布 :3001);本地 host npm 在 :3000 测试时 export SEED_URL=http://host.docker.internal:3000/seed
       TZ: EST5EDT                  # 日志东部时区
 
-  cms:                             # 生产容器:仅 --profile unattended 起;开发用 host npm run dev
+  cms:                             # 生产容器:仅 --profile unattended 起;本地开发用 host npm run dev(占 :3000)
     profiles: ['unattended']
     build:
       context: ../cms
@@ -91,7 +91,7 @@ services:
       postgres:
         condition: service_healthy
     ports:
-      - '3000:3000'
+      - '3001:3000'                # 发布 :3001(让出 :3000 给 host npm run dev 本地测试;容器内仍 3000)
     env_file:
       - ../cms/.env                # PAYLOAD_SECRET / OLLAMA_* 等
     environment:
