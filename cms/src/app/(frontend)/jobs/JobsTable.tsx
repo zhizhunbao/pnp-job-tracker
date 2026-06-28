@@ -286,6 +286,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
     writeColsCookie(next)                                      // 写 cookie:下次刷新服务端直接渲对
     try { localStorage.setItem(PREF_KEY, JSON.stringify(next)) } catch { /* ignore */ }  // 留一份兜底
     setVisible(next)
+    setWidths({})                                             // 列集变了 → 回自动布局(否则新列在固定布局里塌陷成 0)
   }
   const toggleCol = (key: ColKey) => saveCols(visible.includes(key) ? visible.filter((k) => k !== key) : [...visible, key])
   const TOGGLABLE = COLUMNS.filter((c) => !c.always).map((c) => c.key)
@@ -294,8 +295,52 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
   const mainCols = () => saveCols(DEFAULT_COLS) // 一键只显示默认的核心列
   const shown = COLUMNS.filter((c) => c.always || visible.includes(c.key))
 
-  // ── 列宽:纯自动布局(table-layout:auto)—— 每列按内容自然宽,放不下横向滚动,永不截断。
-  //    (曾有「拖拽调宽+localStorage 固定布局」,反复导致加载后截断/收缩 → 已整体移除,化繁为简)
+  // ── 列宽:默认纯自动布局(table-layout:auto,永不截断);用户拖表头竖线/双击才切固定布局。
+  //    会话内有效、不落 localStorage —— 刷新即回自动布局。当初 bug 正是「localStorage 固定布局 +
+  //    缺测列兜底 130px」导致加载后截断/收缩;此处切固定前**全量实测**每列自然宽,无任何常量兜底,
+  //    故任何列都不会被压窄。切换可见列时清回自动(防新列塌陷成 0)。
+  const [widths, setWidths] = useState<Record<string, number>>({})
+  const headRowRef = useRef<HTMLTableRowElement>(null)
+  const hasWidths = Object.keys(widths).length > 0
+  const totalW = shown.reduce((s, c) => s + (widths[c.key] ?? 0), 0)
+  const resetWidths = () => setWidths({})
+  // 量当前表头每个可见列的自然渲染宽(auto 布局下为真实内容宽),返回覆盖全可见列的完整 map
+  const measureAll = (): Record<string, number> => {
+    const head = headRowRef.current
+    const m: Record<string, number> = {}
+    if (head) shown.forEach((c, i) => {
+      const el = head.children[i] as HTMLElement | undefined
+      if (el) m[c.key] = Math.round(el.getBoundingClientRect().width)
+    })
+    return m
+  }
+  // 拖某列右缘竖线:先以全量实测作基线(已有手动宽优先),再只改本列宽 —— 左列不动、右列平移
+  const startResize = (e: React.MouseEvent, key: string) => {
+    e.preventDefault(); e.stopPropagation()
+    const base = { ...measureAll(), ...widths }
+    const startX = e.clientX
+    const startW = base[key] ?? 120
+    setWidths(base)
+    const onMove = (ev: MouseEvent) => setWidths((p) => ({ ...p, [key]: Math.max(56, startW + (ev.clientX - startX)) }))
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); document.body.style.cursor = ''
+    }
+    document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp); document.body.style.cursor = 'col-resize'
+  }
+  // 双击竖线:按内容自适应该列(量表头+各行该列 scrollWidth 取 max+余量)——只会变宽,永不截断
+  const autoFitColumn = (idx: number, key: string) => {
+    const head = headRowRef.current
+    const table = head?.closest('table') as HTMLTableElement | null
+    if (!head || !table) return
+    const base = { ...measureAll(), ...widths }
+    let max = (head.children[idx] as HTMLElement).scrollWidth
+    table.querySelectorAll('tbody tr').forEach((tr) => {
+      const cell = (tr as HTMLElement).children[idx] as HTMLElement | undefined
+      if (cell) max = Math.max(max, cell.scrollWidth)
+    })
+    base[key] = Math.max(56, max + 6)
+    setWidths(base)
+  }
 
   // Esc 关弹框
   useEffect(() => {
@@ -383,7 +428,9 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
 
   return (
     <div style={{ background: '#fff', color: '#1f2937', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column' }}>
-      <style>{`.jcell:hover{background:#eff6ff !important}`}</style>
+      <style>{`.jcell:hover{background:#eff6ff !important}
+        .colResize:hover{background:#93c5fd}
+        .colResize:active{background:#3b82f6}`}</style>
       {/* sticky 顶栏:品牌 + 语言切换(手机/电脑都贴顶) */}
       <header style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', borderBottom: '1px solid #e5e7eb' }}>
         <div style={{ maxWidth: 1320, margin: '0 auto', padding: '10px 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
@@ -478,6 +525,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                     <button onClick={mainCols} style={{ ...colBtn, fontWeight: 600, color: '#2563eb', borderColor: '#bfdbfe' }}>{t('fields.main')}</button>
                     <button onClick={selectAllCols} style={colBtn}>{t('fields.all')}</button>
                     <button onClick={invertCols} style={colBtn}>{t('fields.invert')}</button>
+                    {hasWidths && <button onClick={resetWidths} style={colBtn}>{t('fields.resetW')}</button>}
                   </div>
                   {COLUMNS.map((c) => (
                     <label key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 6px', fontSize: 13, color: c.always ? '#9ca3af' : '#1f2937', cursor: c.always ? 'default' : 'pointer' }}>
@@ -493,21 +541,26 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
         </div>
 
         <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflowX: 'auto' }}>
-          <table style={{ width: 'auto', minWidth: '100%', borderCollapse: 'collapse', fontSize: 13.5, tableLayout: 'auto' }}>
+          <table style={{ width: hasWidths ? totalW : 'auto', minWidth: '100%', borderCollapse: 'collapse', fontSize: 13.5, tableLayout: hasWidths ? 'fixed' : 'auto' }}>
+            {hasWidths && <colgroup>{shown.map((c) => <col key={c.key} style={{ width: widths[c.key] }} />)}</colgroup>}
             <thead>
-              <tr style={{ textAlign: 'left', background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
+              <tr ref={headRowRef} style={{ textAlign: 'left', background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
                 {shown.map((c, idx) => {
                   const active = sort.key === c.key
                   const isLast = idx === shown.length - 1
+                  const handle = (  // 列右缘竖线:拖动调本列宽 / 双击按内容自适应
+                    <span className="colResize" onMouseDown={(e) => startResize(e, c.key)} onClick={(e) => e.stopPropagation()} onDoubleClick={(e) => { e.stopPropagation(); autoFitColumn(idx, c.key) }} title={t('resize.tip')}
+                      style={{ position: 'absolute', top: 0, right: 0, width: 13, height: '100%', cursor: 'col-resize', zIndex: 2 }} />
+                  )
                   if (c.key === 'actions') return (  // 操作列:普通末列,不排序(取消 sticky —— 冻结会盖住左侧数据列)
-                    <th key={c.key} style={{ padding: '8px 12px', color: '#374151', fontWeight: 600, whiteSpace: 'nowrap', userSelect: 'none' }}>
-                      {t('col.actions')}
+                    <th key={c.key} style={{ padding: '8px 12px', color: '#374151', fontWeight: 600, whiteSpace: 'nowrap', userSelect: 'none', position: 'relative' }}>
+                      {t('col.actions')}{handle}
                     </th>
                   )
                   return (
                     <th key={c.key} onClick={() => toggleSort(c.key)} title={t('th.tip')}
-                      style={{ padding: '8px 12px', color: active ? '#2563eb' : '#374151', fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none', borderRight: isLast ? undefined : '1px solid #e5e7eb' }}>
-                      {t('col.' + c.key)}<span style={{ color: active ? '#2563eb' : '#d1d5db', fontSize: 11 }}>{active ? (sort.dir === 'desc' ? ' ▼' : ' ▲') : ' ↕'}</span>
+                      style={{ padding: '8px 12px', color: active ? '#2563eb' : '#374151', fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none', position: 'relative', borderRight: isLast ? undefined : '1px solid #e5e7eb' }}>
+                      {t('col.' + c.key)}<span style={{ color: active ? '#2563eb' : '#d1d5db', fontSize: 11 }}>{active ? (sort.dir === 'desc' ? ' ▼' : ' ▲') : ' ↕'}</span>{handle}
                     </th>
                   )
                 })}
@@ -571,7 +624,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                       else if (k === 'datePosted') { node = j.datePosted ? j.datePosted.slice(0, 10) : '—'; Object.assign(extra, { color: '#6b7280', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       else { node = j.lastSeen ? j.lastSeen.slice(0, 10) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       return (
-                        <td key={k} className="jcell" style={{ ...td, ...extra, cursor: 'pointer', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6' }} title={typeof node === 'string' ? node : undefined} onClick={() => open(k, typeof node === 'string' ? node : (j.salaryText || j.salary || ''))}>
+                        <td key={k} className="jcell" style={{ ...td, ...extra, cursor: 'pointer', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', ...(hasWidths ? { whiteSpace: 'normal', overflowWrap: 'break-word', wordBreak: 'break-word' } : null) }} title={typeof node === 'string' ? node : undefined} onClick={() => open(k, typeof node === 'string' ? node : (j.salaryText || j.salary || ''))}>
                           {href
                             ? <a href={href} target="_blank" rel="noreferrer" style={link} onClick={(e) => e.stopPropagation()}>{node}</a>
                             : node}
