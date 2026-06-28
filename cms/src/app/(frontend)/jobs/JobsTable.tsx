@@ -229,6 +229,9 @@ const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean 
   { key: 'actions', label: '操作', default: true, always: true },  // 固定最后一列:公司信息 / 职位描述 按钮
 ]
 const DEFAULT_COLS = COLUMNS.filter((c) => c.default).map((c) => c.key)
+// 原子值列:内容单行不换行(日期/金额/百分比/分级等短值,断行会很丑)。其余文本列(职位/公司/地点等)允许多行,
+// 以便表格压进容器宽度不横向滚动。表头一律不换行(=该列最小宽度)。
+const NOWRAP_COLS = new Set<ColKey>(['datePosted', 'lastSeen', 'closedAt', 'salary', 'salaryYr', 'wageMedHr', 'wageMedYr', 'vsMedian', 'teer', 'score', 'status', 'direct', 'aip'])
 const PREF_KEY = 'jobs.visibleCols.v8'  // v8:默认精简为 10 列 + 满宽自适应布局,bump 版本让新默认生效
 const writeColsCookie = (keys: string[]) => {
   try { document.cookie = `${COLS_COOKIE}=${encodeURIComponent(JSON.stringify(keys))}; path=/; max-age=31536000; SameSite=Lax` } catch { /* ignore */ }
@@ -572,13 +575,13 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                       style={{ position: 'absolute', top: 0, right: 0, width: 13, height: '100%', cursor: 'col-resize', zIndex: 2 }} />
                   )
                   if (c.key === 'actions') return (  // 操作列:普通末列,不排序(取消 sticky —— 冻结会盖住左侧数据列)
-                    <th key={c.key} style={{ padding: '8px 12px', color: '#374151', fontWeight: 600, whiteSpace: 'normal', overflowWrap: 'break-word', userSelect: 'none', position: 'relative' }}>
+                    <th key={c.key} style={{ padding: '8px 12px', color: '#374151', fontWeight: 600, whiteSpace: 'nowrap', userSelect: 'none', position: 'relative' }}>
                       {t('col.actions')}{handle}
                     </th>
                   )
                   return (
                     <th key={c.key} onClick={() => toggleSort(c.key)} title={t('th.tip')}
-                      style={{ padding: '8px 12px', color: active ? '#2563eb' : '#374151', fontWeight: 600, whiteSpace: 'normal', overflowWrap: 'break-word', cursor: 'pointer', userSelect: 'none', position: 'relative', borderRight: isLast ? undefined : '1px solid #e5e7eb' }}>
+                      style={{ padding: '8px 12px', color: active ? '#2563eb' : '#374151', fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none', position: 'relative', borderRight: isLast ? undefined : '1px solid #e5e7eb' }}>
                       {t('col.' + c.key)}<span style={{ color: active ? '#2563eb' : '#d1d5db', fontSize: 11 }}>{active ? (sort.dir === 'desc' ? ' ▼' : ' ▲') : ' ↕'}</span>{handle}
                     </th>
                   )
@@ -646,7 +649,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                       else if (k === 'datePosted') { node = j.datePosted ? j.datePosted.slice(0, 10) : '—'; Object.assign(extra, { color: '#6b7280', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       else { node = j.lastSeen ? fmtLocalSec(j.lastSeen) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       return (
-                        <td key={k} className="jcell" style={{ ...td, ...extra, cursor: 'pointer', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', whiteSpace: 'normal', overflowWrap: 'break-word' }} title={typeof node === 'string' ? node : undefined} onClick={() => open(k, typeof node === 'string' ? node : (j.salaryText || j.salary || ''))}>
+                        <td key={k} className="jcell" style={{ ...td, ...extra, cursor: 'pointer', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', ...(NOWRAP_COLS.has(k) ? { whiteSpace: 'nowrap' } : { whiteSpace: 'normal', overflowWrap: 'break-word' }) }} title={typeof node === 'string' ? node : undefined} onClick={() => open(k, typeof node === 'string' ? node : (j.salaryText || j.salary || ''))}>
                           {href
                             ? <a href={href} target="_blank" rel="noreferrer" style={link} onClick={(e) => e.stopPropagation()}>{node}</a>
                             : node}
