@@ -194,6 +194,8 @@ const sourceUrl = (applyUrl: string): string => {
 
 // ── 列配置(可勾选;职位列始终显示) ──────────────────────────────
 type ColKey = 'score' | 'pnp' | 'ee' | 'aip' | 'broad' | 'mid' | 'fine' | 'teer' | 'title' | 'company' | 'noc' | 'accessibility' | 'salary' | 'salaryYr' | 'wageMedHr' | 'wageMedYr' | 'vsMedian' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'lastSeen' | 'closedAt' | 'actions'
+// 默认显示 10 列(发布时间·大分类·公司·职位·省·市·薪资·年薪·vs中位·操作);其余用户自选。
+// 布局:表格永远满宽不横向滚动,列按内容自适应,内容多行换行(不省略)——见 <table>/<td> 注释。
 const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean }[] = [
   { key: 'datePosted', label: '发布时间', default: true },
   { key: 'broad', label: '大分类', default: true },
@@ -205,29 +207,29 @@ const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean 
   { key: 'noc', label: 'NOC', default: false },
   { key: 'accessibility', label: '经验级别', default: false },
   { key: 'country', label: '国家', default: false },
-  { key: 'province', label: '省', default: false },
-  { key: 'city', label: '市', default: false },
-  { key: 'district', label: '区', default: true },
+  { key: 'province', label: '省', default: true },
+  { key: 'city', label: '市', default: true },
+  { key: 'district', label: '区', default: false },
   { key: 'address', label: '地址', default: false },
   { key: 'salary', label: '薪资', default: true },
   { key: 'salaryYr', label: '年薪(折算)', default: true },
   { key: 'wageMedHr', label: '中位时薪', default: false },
   { key: 'wageMedYr', label: '中位年薪', default: false },
   { key: 'vsMedian', label: 'vs 中位', default: true },
-  { key: 'source', label: '来源', default: true },
+  { key: 'source', label: '来源', default: false },
   { key: 'origin', label: '渠道', default: false },
-  { key: 'direct', label: '发布', default: true },
-  { key: 'pnp', label: 'PNP', default: true },
-  { key: 'ee', label: 'EE 类别', default: true },
-  { key: 'aip', label: 'AIP', default: true },
-  { key: 'status', label: '状态', default: true },
+  { key: 'direct', label: '发布', default: false },
+  { key: 'pnp', label: 'PNP', default: false },
+  { key: 'ee', label: 'EE 类别', default: false },
+  { key: 'aip', label: 'AIP', default: false },
+  { key: 'status', label: '状态', default: false },
   { key: 'lastSeen', label: '更新时间', default: false },
   { key: 'closedAt', label: '下架时间', default: false },
-  { key: 'score', label: '评分', default: true },
+  { key: 'score', label: '评分', default: false },
   { key: 'actions', label: '操作', default: true, always: true },  // 固定最后一列:公司信息 / 职位描述 按钮
 ]
 const DEFAULT_COLS = COLUMNS.filter((c) => c.default).map((c) => c.key)
-const PREF_KEY = 'jobs.visibleCols.v7'  // v7:新增中位工资/vs中位列,bump 版本让新默认生效
+const PREF_KEY = 'jobs.visibleCols.v8'  // v8:默认精简为 10 列 + 满宽自适应布局,bump 版本让新默认生效
 const writeColsCookie = (keys: string[]) => {
   try { document.cookie = `${COLS_COOKIE}=${encodeURIComponent(JSON.stringify(keys))}; path=/; max-age=31536000; SameSite=Lax` } catch { /* ignore */ }
 }
@@ -449,7 +451,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
         .colResize:active{background:#3b82f6}`}</style>
       {/* sticky 顶栏:品牌 + 语言切换(手机/电脑都贴顶) */}
       <header style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', borderBottom: '1px solid #e5e7eb' }}>
-        <div style={{ margin: '0 auto',padding: '10px 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <div style={{ maxWidth: 1320, margin: '0 auto', padding: '10px 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, minWidth: 0 }}>
             <span style={{ fontSize: 17, fontWeight: 700, color: '#111827', whiteSpace: 'nowrap' }}>🍁 PNP Job Tracker</span>
             <span style={{ fontSize: 12, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('tagline')}</span>
@@ -462,7 +464,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
           </div>
         </div>
       </header>
-      <div style={{ margin: '0 auto',padding: '1.5rem 1.25rem', width: '100%', boxSizing: 'border-box', flex: '1 0 auto' }}>
+      <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1.5rem 1.25rem', width: '100%', boxSizing: 'border-box', flex: '1 0 auto' }}>
         <h1 style={{ margin: '0 0 2px', color: '#111827' }}>Jobs</h1>
         <p style={{ color: '#6b7280', marginTop: 0, fontSize: 13 }}>
           {rows.length === jobs.length ? t('subtitle.count', { n: jobs.length }) : `${rows.length} / ${jobs.length}`}
@@ -570,13 +572,13 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                       style={{ position: 'absolute', top: 0, right: 0, width: 13, height: '100%', cursor: 'col-resize', zIndex: 2 }} />
                   )
                   if (c.key === 'actions') return (  // 操作列:普通末列,不排序(取消 sticky —— 冻结会盖住左侧数据列)
-                    <th key={c.key} style={{ padding: '8px 12px', color: '#374151', fontWeight: 600, whiteSpace: 'nowrap', userSelect: 'none', position: 'relative' }}>
+                    <th key={c.key} style={{ padding: '8px 12px', color: '#374151', fontWeight: 600, whiteSpace: 'normal', overflowWrap: 'break-word', userSelect: 'none', position: 'relative' }}>
                       {t('col.actions')}{handle}
                     </th>
                   )
                   return (
                     <th key={c.key} onClick={() => toggleSort(c.key)} title={t('th.tip')}
-                      style={{ padding: '8px 12px', color: active ? '#2563eb' : '#374151', fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none', position: 'relative', borderRight: isLast ? undefined : '1px solid #e5e7eb' }}>
+                      style={{ padding: '8px 12px', color: active ? '#2563eb' : '#374151', fontWeight: 600, whiteSpace: 'normal', overflowWrap: 'break-word', cursor: 'pointer', userSelect: 'none', position: 'relative', borderRight: isLast ? undefined : '1px solid #e5e7eb' }}>
                       {t('col.' + c.key)}<span style={{ color: active ? '#2563eb' : '#d1d5db', fontSize: 11 }}>{active ? (sort.dir === 'desc' ? ' ▼' : ' ▲') : ' ↕'}</span>{handle}
                     </th>
                   )
@@ -644,7 +646,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                       else if (k === 'datePosted') { node = j.datePosted ? j.datePosted.slice(0, 10) : '—'; Object.assign(extra, { color: '#6b7280', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       else { node = j.lastSeen ? fmtLocalSec(j.lastSeen) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       return (
-                        <td key={k} className="jcell" style={{ ...td, ...extra, cursor: 'pointer', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', ...(hasWidths ? { whiteSpace: 'normal', overflowWrap: 'break-word', wordBreak: 'break-word' } : null) }} title={typeof node === 'string' ? node : undefined} onClick={() => open(k, typeof node === 'string' ? node : (j.salaryText || j.salary || ''))}>
+                        <td key={k} className="jcell" style={{ ...td, ...extra, cursor: 'pointer', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', whiteSpace: 'normal', overflowWrap: 'break-word' }} title={typeof node === 'string' ? node : undefined} onClick={() => open(k, typeof node === 'string' ? node : (j.salaryText || j.salary || ''))}>
                           {href
                             ? <a href={href} target="_blank" rel="noreferrer" style={link} onClick={(e) => e.stopPropagation()}>{node}</a>
                             : node}
@@ -670,7 +672,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
       </div>
       {/* footer:免责 + 版权,窄屏自动换行 */}
       <footer style={{ borderTop: '1px solid #e5e7eb', background: '#fafafa', flexShrink: 0 }}>
-        <div style={{ margin: '0 auto',padding: '16px 1.25rem', display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'space-between', alignItems: 'center', color: '#9ca3af', fontSize: 12.5 }}>
+        <div style={{ maxWidth: 1320, margin: '0 auto', padding: '16px 1.25rem', display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'space-between', alignItems: 'center', color: '#9ca3af', fontSize: 12.5 }}>
           <span>{t('foot.disclaimer')}</span>
           <span style={{ whiteSpace: 'nowrap' }}>© 2026 PNP Job Tracker</span>
         </div>

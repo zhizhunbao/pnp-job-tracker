@@ -9,7 +9,7 @@ export const LANGS: { code: Lang; label: string }[] = [
   { code: 'ko', label: '한' },
 ]
 export const LANG_KEY = 'jobs.lang'
-export const COLS_COOKIE = 'jobsCols'   // 列偏好 cookie 名(放共享非 client 模块,服务端 page.tsx 也能读到真实值)
+export const COLS_COOKIE = 'jobsCols2'   // 列偏好 cookie 名(放共享非 client 模块,服务端 page.tsx 也能读到真实值);v2:新默认 10 列,bump 名让旧 cookie 失效
 
 type Dict = Record<string, string>
 
