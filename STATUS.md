@@ -7,8 +7,8 @@
 > ① **PNP 列显示具名通道**:08_score `pnp_stream()` 算命中省清单的短标签(OINP 紧缺技能 / BC PNP 科技 / SK 医疗·科技·农业),
 > 列里不再只是泛「技能岗」。② **联邦 EE 类别——独立一列**:Express Entry 类别抽选 ≠ PNP(看 CRS、多不需 offer),
 > 独立信号;`etl/crawl/_fetch_ee_categories.py` 用 browser_fetch 过 canada.ca 403、展开 DataTables 抓全 9 类 94 职业 → `raw/ee/`。
-> ③ **省清单从已抓 policy md 解析**:`build_pnp_from_policy.py` 读 `raw/policy/<省>/md/*.md`(自动读 frontmatter 的 source/fetched)
-> → `raw/pnp/{bc-tech,sk-health,sk-tech,sk-agri}.json`,无需重抓。④ **清单维度表化**:mart 产 `pnp_occupations`(216)/`ee_categories`(94)
+> ③ **省清单从已抓 policy md 解析,每省一个自包含脚本**(`build_<prov>.py`:`build_bc`/`build_sk`/`build_ns`)读 `raw/policy/<省>/md/*.md`
+> (自动读 frontmatter 的 source/fetched)→ `raw/pnp/{bc-tech,sk-health,sk-tech,sk-agri,ns-critical,ns-grad}.json`,无需重抓。④ **清单维度表化**:mart 产 `pnp_occupations`(229)/`ee_categories`(94)
 > → seed 入库 → 前端**读 DB props**(删 `/api/pnp-list`、`/api/ee-list` 文件读取;删空壳 `PnpStreams` collection,手动 drop 表+残留列)。
 > ⑤ **点 PNP/EE 字段 → AI 顾问弹框**:上半「真实清单」(数据层维度表,**绝不经 LLM**,命中行高亮「← 本岗」),下半 LLM 建议。
 > ⑥ **弹框升级**:默认 720×620、右上角全屏切换、标题栏拖动、右下角 resize(原生 pointer,尺寸记忆 localStorage)。
@@ -82,7 +82,9 @@ data/
 | 08 score | NOC→TEER+评分+pnpEligible(按省:08 读 raw/pnp/*.json,inclusion/exclusion 两型)→ processed/all-scored.json |
 | build_fsa_districts | GeoNames → fsa/fsa-districts.json(偶尔重建)|
 | build_wages | ESDC开放数据 → wages/wages.json(年度更新)|
-| build_oinp / build_aaip | 抓 OINP/AAIP 资格页 → pnp/*.json(手动,很少变,不上定时)|
+| etl/pnp/build_<prov> | 每省一个自包含脚本 → pnp/*.json。**AB/ON/SK/NS 实时抓**(SK/NS 复用 crawl 的 HTML→md 转换器);BC 实时源待定位、暂解析旧 md。**已上 docker `pnp` 源(周更)**|
+| 06_scrape_aip_employers | AIP 指定雇主 NL/NB/NS → aip/(PE 仍 TODO);随 `pnp` 源周更 |
+| _fetch_ee_categories | 联邦 EE 9 类/94职业 → ee/。**已上 docker `ee` 源(月更,crawl 镜像无头 chromium,canada.ca/Akamai 无头直接通,无需 xvfb)**|
 | 09 build_mart | 拼装 → data/mart/*.json(8张表 + 分类/来源/工资 join)|
 | auto_update | 调度器:读 sources/<SOURCE>/META 跑 steps;**loguru 统一日志**,逐行截获子进程输出套「时间\|级别\|源\|消息」|
 
@@ -119,11 +121,11 @@ cd ../cms && npm run dev                                      # 开发 :3000(库
 - **统一源框架(目标架构已定:[docs/source-framework.md](docs/source-framework.md) v2,D1-D5 全部拍板)**:三种抓法分三目录(httpx/crawl/dataset),**铁律=抓取只存原始 raw、清洗在 processed**,raw 按 `方式/源/日期` 快照不可变,源注册表独立 `etl/sources.py`,`auto_update` 只是调度器。OINP/SINP/AAIP 各省 PNP 单独成源(crawl,周/月)。**按文档第 8 节分步实施,JB 最后拆**(fetch 留 httpx、解析下沉 clean;回归基线=2084 岗 mart 一致)。尚未动手。
 - ✅ **/jobs 前端这轮已上线(容器,2026-06-24)**:中英韩 i18n([i18n.ts](cms/src/app/(frontend)/jobs/i18n.ts):字典+makeT,语言切换 localStorage);**AI 顾问全字段走 Ollama**(按所选语言生成、facts/评分明细喂 prompt 保数值准、简单字段一句话——见 [route.ts](cms/src/app/api/advisor/route.ts) 的 SIMPLE 集;前端 advHeader 只出标签+链接,无三语长文);sticky 顶栏 + 响应式 footer;滚动自动加载封顶 180 + 「显示更多」按钮;新增 中位时薪/中位年薪/**vs中位** 列;**全字段筛选**(分类下拉 PNP/AIP/状态/渠道 + 数值区间 评分/年薪K/vs中位%)。维度表(NOC 中/小分类名等)三语待数据层做(name_zh/en/ko)。
 - **各省 PNP 职业清单(crawl 源)**:把 `pnpEligible` 从粗筛升级成**按省精准**。
-  - ✅ **OINP 试点已跑通**:`etl/build_oinp.py`(httpx 抓 ontario.ca OINP In-Demand Skills 页,无 Cloudflare)→ bs4 解析 56 个 NOC(任意 9 / 限 GTA 外 47)→ 维护表 `reference/pnp/oinp-in-demand.json`(跟踪;原始 HTML 存 raw/crawl/,gitignore)。`08_score` 读该表当 TEER4-5 紧缺通道(原写死 6 → 真实 56)。**模式 = build_<prov>.py → reference/pnp/<prov>.json → 08 消费**。
+  - ✅ **OINP 试点已跑通**:`etl/pnp/build_on.py`(httpx 抓 ontario.ca OINP In-Demand Skills 页,无 Cloudflare)→ bs4 解析 56 个 NOC(任意 9 / 限 GTA 外 47)→ 维护表 `reference/pnp/oinp-in-demand.json`(跟踪;原始 HTML 存 raw/crawl/,gitignore)。`08_score` 读该表当 TEER4-5 紧缺通道(原写死 6 → 真实 56)。**模式 = build_<prov>.py → reference/pnp/<prov>.json → 08 消费**。
   - ✅ **② `pnpEligible` 已改按省过滤(2026-06-25)**:`08_score` 现**目录驱动**——扫 `reference/pnp/*.json` 按各文件 `province` 字段建 `省→{NOC}` 表(`INDEMAND_LOW_BY_PROV`)。TEER0-3 全省粗筛通用;TEER4-5 仅当 NOC 在**该岗所在省**清单才 eligible。加新省=丢一个 json,08 不改代码。**魁省(QC)直接排除**(`NON_PNP_PROV`,走自己的甄选不属 PNP)。实测修正 264 个跨省误标(QC 69/SK 51/AB 34…),pnpEligible 1580→1461。去掉了原硬编码 6 个兜底 NOC(那是瞎猜)。
-  - ✅ **AB(AAIP)已接入(2026-06-25)= 第二个省 + 两型框架**:`etl/build_aaip.py`(httpx 抓 alberta.ca AOS 资格页,虽 Cloudflare 但 httpx 直抓 200)→ 解析「不符合资格职业」表(34 个 NOC)→ `reference/pnp/aaip-ineligible.json`。**关键:AAIP 与 OINP 语义相反** —— AOS 是 **exclusion/permissive**(TEER0-5 默认都可走,清单内不可),OINP 是 **inclusion**(TEER4-5 默认不可,清单内才可)。08_score 给省表加 `type`(indemand/ineligible)字段据此反向判定;`score` 的 +12 只对 inclusion 型加。实测 AB 新增 76 个 TEER4-5 岗正确标可走、修正掉 1 个(排除表里的 TEER0-3),pnpEligible 1461→1536。
+  - ✅ **AB(AAIP)已接入(2026-06-25)= 第二个省 + 两型框架**:`etl/pnp/build_ab.py`(httpx 抓 alberta.ca AOS 资格页,虽 Cloudflare 但 httpx 直抓 200)→ 解析「不符合资格职业」表(34 个 NOC)→ `reference/pnp/aaip-ineligible.json`。**关键:AAIP 与 OINP 语义相反** —— AOS 是 **exclusion/permissive**(TEER0-5 默认都可走,清单内不可),OINP 是 **inclusion**(TEER4-5 默认不可,清单内才可)。08_score 给省表加 `type`(indemand/ineligible)字段据此反向判定;`score` 的 +12 只对 inclusion 型加。实测 AB 新增 76 个 TEER4-5 岗正确标可走、修正掉 1 个(排除表里的 TEER0-3),pnpEligible 1461→1536。
   - **调研结论(各省 PNP 结构异构,OINP inclusion 非通用)**:**BC** 低 TEER 的 ELSS 流 2024-12-10 永久关闭(无表=逻辑已天然正确);**SK(SINP)** 用排除清单+行业配额模型(另一种形状);**MB(MPNP)** 有 in-demand 清单但 TablePress JS 动态加载(静态 HTML 只 2 行,需 AJAX 端点或 headless),未做;**AB(AAIP)** 是干净 httpx 静态表→已做。
-  - 待办:① 其余省继续(SINP 排除+配额 / MB 需破 TablePress 端点 / 其余 inclusion 省)——加 inclusion/exclusion 表丢 json 即生效;③ OINP 其它 stream(Foreign Worker/International Student 是 TEER0-3 广覆盖,已被现逻辑包住);④ build_oinp 接入低频定时(像 build_wages,偶尔重抓);⑤ 真有 Cloudflare 的省 → 需 headless crawl 镜像(D3);⑥ OINP 的 `gtaRestricted`(限大多伦多区外)暂未按岗所在区过滤——08 只有省粒度,接入区粒度后再细化。
+  - 待办:① 其余省继续(SINP 排除+配额 / MB 需破 TablePress 端点 / 其余 inclusion 省)——加 inclusion/exclusion 表丢 json 即生效;③ OINP 其它 stream(Foreign Worker/International Student 是 TEER0-3 广覆盖,已被现逻辑包住);④ build_on 接入低频定时(像 build_wages,偶尔重抓);⑤ 真有 Cloudflare 的省 → 需 headless crawl 镜像(D3);⑥ OINP 的 `gtaRestricted`(限大多伦多区外)暂未按岗所在区过滤——08 只有省粒度,接入区粒度后再细化。
 - ✅ **未分类大幅降(2026-06-26)**:改从 **Job Bank 详情页抽官方 NOC**(`<span class="noc-no">NOC <码></span>`,05b/parse_details 抽 → posting.noc),08 分类优先级 **源NOC > 标题猜**。未分类 31%→预计 ~5%(只剩 JB 自己没标的)。存量帖一次性重抓回填(05b 对缺 noc 的也重抓,自愈)。剩余少量可继续加 noc 规则或 AI 兜底。
 - 扩源:其它商会名录、Indeed/LinkedIn(放最后,ToS 风险)。用 etl/crawl/ 抓政策页填 policy_docs/pnp_streams 空表。
 - 部署运维:托管(Vercel+Neon/Railway)、每日 cron、AI 顾问线上去向、`.env.example`、关于/免责声明页。

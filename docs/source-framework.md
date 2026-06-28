@@ -37,7 +37,7 @@ data/raw/
                        details/<id>.html    #   详情快照(抓取那天的日期目录下)
   oinp/<YYYY-MM-DD>/ · aaip/<YYYY-MM-DD>/    # 各省 PNP 政策页原始 HTML
   ats/<slug>/                               # ATS 公司名录(无日期,扁平;roster json 跟踪)
-  pnp/  oinp-in-demand.json · aaip-ineligible.json   # 维护表(跟踪,build_oinp/aaip 产出,08 读)
+  pnp/  oinp-in-demand · aaip-ineligible · bc-tech · sk-{health,tech,agri} · ns-{critical,grad}.json  # 维护表(跟踪,每省 build_<prov>.py 产出,08 读)
   aip/  aip-designated-employers.json       # 维护表(跟踪)
   wages/ wages.json + wage*.csv源    fsa/ fsa-districts.json + CA.txt源    policy/<省>-immigration/
 ```
