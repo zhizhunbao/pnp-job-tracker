@@ -37,6 +37,11 @@ export type JobRow = {
   salaryText: string
   wageMedHourly: number | null
   wageMedAnnual: number | null
+  wageLowHourly: number | null
+  wageLowAnnual: number | null
+  wageHighHourly: number | null
+  wageHighAnnual: number | null
+  wageYear: string
   officialUrl: string
   applyUrl: string
   datePosted: string
@@ -551,7 +556,8 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
 
         <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflowX: 'auto' }}>
           <table style={{ width: hasWidths ? totalW : 'auto', minWidth: '100%', borderCollapse: 'collapse', fontSize: 13.5, tableLayout: hasWidths ? 'fixed' : 'auto' }}>
-            {hasWidths && <colgroup>{shown.map((c) => <col key={c.key} style={{ width: widths[c.key] }} />)}</colgroup>}
+            {/* 末列宽设 auto:固定布局下吸收剩余空间,右缘始终贴齐容器,无右侧缝隙 */}
+            {hasWidths && <colgroup>{shown.map((c, i) => <col key={c.key} style={{ width: i === shown.length - 1 ? 'auto' : widths[c.key] }} />)}</colgroup>}
             <thead>
               <tr ref={headRowRef} style={{ textAlign: 'left', background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
                 {shown.map((c, idx) => {
@@ -923,13 +929,17 @@ function FieldFactsSection({ field, job, lang, pnpOcc, eeOcc, desigEmp }: { fiel
   }
   if (SAL_FIELDS.has(field)) {
     const a = job.salaryAnnual, mHr = job.wageMedHourly, mYr = job.wageMedAnnual
+    const lHr = job.wageLowHourly, hHr = job.wageHighHourly, lYr = job.wageLowAnnual, hYr = job.wageHighAnnual
     const vs = a != null && mYr ? Math.round((a / mYr - 1) * 100) : null
+    const K = (n: number) => `$${Math.round(n / 1000)}K`
+    const bandHr = mHr != null ? `${lHr != null ? `$${lHr} – ` : ''}$${mHr}${hHr != null ? ` – $${hHr}` : ''}/hr` : null
+    const bandYr = mYr != null ? `${lYr != null ? `${K(lYr)} – ` : ''}${K(mYr)}${hYr != null ? ` – ${K(hYr)}` : ''}/yr` : null
     return (
-      <FactsBox note={t('fact.medianSrc') + (vs != null ? ' · ' + t('fact.vsNote') : '')}>
+      <FactsBox note={t('fact.medianSrc') + (job.wageYear ? ` · ${job.wageYear}` : '') + (vs != null ? ' · ' + t('fact.vsNote') : '')}>
         <FactRow k={t('col.salary')}>{job.salaryText || job.salary}</FactRow>
         <FactRow k={t('col.salaryYr')}>{a != null ? `$${Math.round(a / 1000)}K/yr` : null}</FactRow>
-        <FactRow k={t('col.wageMedHr')}>{mHr != null ? `$${mHr}/hr` : null}</FactRow>
-        <FactRow k={t('col.wageMedYr')}>{mYr != null ? `$${Math.round(mYr / 1000)}K/yr` : null}</FactRow>
+        <FactRow k={t('fact.wageBandHr')}>{bandHr}</FactRow>
+        <FactRow k={t('fact.wageBandYr')}>{bandYr}</FactRow>
         <FactRow k={t('col.vsMedian')}>{vs != null ? `${vs >= 0 ? '+' : ''}${vs}%` : null}</FactRow>
       </FactsBox>
     )

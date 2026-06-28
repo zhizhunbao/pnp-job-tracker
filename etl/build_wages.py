@@ -43,27 +43,43 @@ def main() -> None:
     reader = csv.DictReader(io.StringIO(text))
     # 取「省级」中位:prov 是省码 + ER_Code 为 4 位(ERxx=整省);另存「国家级」(prov=NAT)兜底。
     # Annual_Wage_Flag=1 → 数值是年薪率,否则是时薪。统一存 hourly + annual 便于对比/显示。
+    # ESDC 同一份数据本就含 low/median/high → 一并抽出(low/high 可能为空,缺则不写),并带数据年份。
     table: dict[str, dict] = {}
     kept = 0
+
+    def to_hr_yr(raw: str, annual_flag: bool) -> tuple[float, int] | None:
+        raw = (raw or "").strip()
+        if not raw:
+            return None
+        try:
+            v = float(raw)
+        except ValueError:
+            return None
+        return (round(v / 2080, 2), round(v)) if annual_flag else (v, round(v * 2080))
+
     for r in reader:
         noc = (r.get("NOC_CNP") or "").replace("NOC_", "").strip()
         prov = (r.get("prov") or "").strip().upper()
         er = (r.get("ER_Code_Code_RE") or "").strip()
-        med = (r.get("Median_Wage_Salaire_Median") or "").strip()
-        if not (noc and med):
-            continue
         is_province = prov != "NAT" and len(er) == 4   # ERxx=整省(ER00 是 NAT)
-        if not (is_province or prov == "NAT"):
+        if not (noc and (is_province or prov == "NAT")):
             continue                                    # 跳过经济区(6位)粒度,先只要省级+国家级
-        try:
-            v = float(med)
-        except ValueError:
-            continue
         annual_flag = (r.get("Annual_Wage_Flag_Salaire_annuel") or "").strip() == "1"
-        hourly = round(v / 2080, 2) if annual_flag else v
-        annual = round(v) if annual_flag else round(v * 2080)
+        med = to_hr_yr(r.get("Median_Wage_Salaire_Median"), annual_flag)
+        if med is None:
+            continue                                    # 中位是必备(无中位整条跳过)
+        entry: dict = {"hourly": med[0], "annual": med[1]}
+        low = to_hr_yr(r.get("Low_Wage_Salaire_Minium"), annual_flag)
+        high = to_hr_yr(r.get("High_Wage_Salaire_Maximal"), annual_flag)
+        if low:
+            entry["lowHourly"], entry["lowAnnual"] = low
+        if high:
+            entry["highHourly"], entry["highAnnual"] = high
+        year = (r.get("Reference_Period") or "").strip()
+        if year:
+            entry["year"] = year
         key = "NAT" if prov == "NAT" else prov
-        table.setdefault(noc, {})[key] = {"hourly": hourly, "annual": annual}
+        table.setdefault(noc, {})[key] = entry
         kept += 1
 
     OUT_TABLE.write_text(json.dumps(table, ensure_ascii=False, indent=1, sort_keys=True), encoding="utf-8")

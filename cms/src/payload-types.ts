@@ -282,6 +282,26 @@ export interface Job {
    * 该 NOC 当地中位年薪(=中位时薪×2080)
    */
   wageMedAnnual?: number | null;
+  /**
+   * 该 NOC 当地低位时薪(ESDC，可能缺)
+   */
+  wageLowHourly?: number | null;
+  /**
+   * 该 NOC 当地低位年薪
+   */
+  wageLowAnnual?: number | null;
+  /**
+   * 该 NOC 当地高位时薪(ESDC，可能缺)
+   */
+  wageHighHourly?: number | null;
+  /**
+   * 该 NOC 当地高位年薪
+   */
+  wageHighAnnual?: number | null;
+  /**
+   * ESDC 工资数据参考年份(如 2023-2024)
+   */
+  wageYear?: string | null;
   datePosted?: string | null;
   /**
    * 原始来源板:indeed.com/Talent.com/lever/bamboohr…
@@ -718,6 +738,11 @@ export interface JobsSelect<T extends boolean = true> {
   salaryText?: T;
   wageMedHourly?: T;
   wageMedAnnual?: T;
+  wageLowHourly?: T;
+  wageLowAnnual?: T;
+  wageHighHourly?: T;
+  wageHighAnnual?: T;
+  wageYear?: T;
   datePosted?: T;
   source?: T;
   sourceLabel?: T;
