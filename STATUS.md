@@ -1,9 +1,13 @@
 # STATUS / 交接文档（2026-06-26）
 
 > 新 session 接手先读这份 + `CLAUDE.md`(设计宪法)+ `prd.md`(需求)。仓库:github.com/zhizhunbao/pnp-job-tracker
-> ✅ 4 容器(postgres/cms/jobbank/build)健康运行,DB ~4834 当前岗。
+> ✅ 6 容器(postgres/cms/jobbank/build/**pnp/ee**)健康运行,DB ~5322 当前岗。
 >
-> **本轮重点(2026-06-26 移民信号 + 弹框)**:
+> **本轮(2026-06-28,接上轮)**:① **PNP/AIP/EE 三类清单全部 docker 自动更新** —— `pnp` 源(周更 httpx:AB/ON/SK/NS 实时抓 + `06_scrape_aip`)、`ee` 源(月更**无头 chromium**,canada.ca 实测无头+stealth 直接通,无需 xvfb;crawl 镜像保留有头能力给硬墙)。② **每省脚本全实时抓,md 只作参考**(`etl/pnp/build_<prov>.py`)。③ **08_score 把具名通道 stream 与资格 type 解耦** → exclusion 省(AB)也能挂 inclusion 通道;新增 **ON 科技(OINP Tech Draws 9)/ AB 科技(AAIP Accelerated Tech 44)**,全国具名命中 ~247。④ **BC tech 下架**(tech 抽选 2024-12 已关、welcomebc 无清单页;原 bc-tech 是手工从第三方补录的,违反"实时抓")→ BC 岗落绿「可提名」。⑤ **表格显示升级**:PNP 列 3 档强度(具名=琥珀 chip / 可提名 / 不符 + 魁省 N/A)+ 评分列 5 档色阶 + 更新时间时分秒 + 列宽拖拽/缩窄换行。⑥ **修**:09 空省份排序崩溃、04c 非城市占位词清洗。
+> 代码在分支 `feat/lists-autoupdate-and-table-ux`(**10 commits,未合并 main**)。
+> **下一步(已规划未做)**:见 [docs/advisor-fields-plan.md](docs/advisor-fields-plan.md) —— 每字段弹框「上原始数据块 + 下 AI」+ 补 6 个数据缺口(①EE 抽选分数线 ②NOC 职责 ③PNP 门槛 ④工资 low/high ⑤公司信息 ⑥RNIP)。
+>
+> **上轮(2026-06-26 移民信号 + 弹框)**:
 > ① **PNP 列显示具名通道**:08_score `pnp_stream()` 算命中省清单的短标签(OINP 紧缺技能·科技 / AB 科技 / SK 医疗·科技·农业 / NS 紧缺空缺·毕业生;stream 与资格 type 解耦,exclusion 省也能挂),
 > 列里不再只是泛「技能岗」。② **联邦 EE 类别——独立一列**:Express Entry 类别抽选 ≠ PNP(看 CRS、多不需 offer),
 > 独立信号;`etl/crawl/_fetch_ee_categories.py` 用 browser_fetch 过 canada.ca 403、展开 DataTables 抓全 9 类 94 职业 → `raw/ee/`。
