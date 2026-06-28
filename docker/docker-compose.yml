@@ -49,6 +49,30 @@ services:
       SINCE_DAYS: '3'
       TZ: EST5EDT                  # 日志用东部时区(glibc 原生,无需 tzdata);postgres 保持 UTC
 
+  pnp:                             # 省提名/AIP 具名清单实时刷新(低频,只刷 raw;build 角色消费灌库)
+    <<: *etl
+    environment:
+      SOURCE: pnp
+      SCRAPE_INTERVAL: '604800'    # 周更(清单极少变)
+      TZ: EST5EDT
+
+  ee:                              # 联邦 EE 类别(canada.ca/Akamai → 有头 chromium under xvfb,月更,只刷 raw)
+    build:
+      context: ..                  # 仓库根
+      dockerfile: docker/etl/crawl/Dockerfile   # 重镜像:playwright + chromium + xvfb
+    restart: unless-stopped
+    working_dir: /repo
+    volumes:
+      - ..:/repo                   # 含持久 profile etl/crawl/.browser-profile
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    environment:
+      SOURCE: ee
+      SCRAPE_INTERVAL: '2592000'   # 月更
+      BROWSER_HEADLESS: '1'        # 无人值守 → 无头 chromium(canada.ca 实测无头直接通)
+      PYTHONUNBUFFERED: '1'        # 容器内 python 行缓冲,日志实时出
+      TZ: EST5EDT
+
   build:                           # 跨源清洗→评分→mart→seed(灌库唯一角色)
     <<: *etl
     environment:

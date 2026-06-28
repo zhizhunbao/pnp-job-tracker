@@ -17,6 +17,7 @@ If Playwright isn't installed, fetch_html() returns None and the caller skips
 the page — no hard dependency for sites that don't need it.
 """
 import asyncio
+import os
 from pathlib import Path
 
 _USER_AGENT = (
@@ -28,7 +29,9 @@ _NAV_TIMEOUT_MS = 45000
 _NETWORK_IDLE_MS = 8000
 _CHALLENGE_TIMEOUT_MS = 120000  # allow time to click the human-verification checkbox
 _MAX_CONCURRENCY = 1  # one tab at a time — concurrent automated tabs trip bot checks harder
-_HEADLESS = False  # headed browser + manual checkbox passes interactive Cloudflare challenges
+# 默认有头(host 上解 Cloudflare 交互式复选框);BROWSER_HEADLESS=1 → 无头(docker 无人值守用:
+# 实测 canada.ca/Akamai 无头+stealth 直接通,无需显示器/xvfb)。
+_HEADLESS = os.environ.get("BROWSER_HEADLESS", "0") == "1"
 _CHALLENGE_MARKERS = ("just a moment", "请稍候", "checking your browser", "attention required",
                       "安全验证", "请验证")
 _SCROLL_PASSES = 5       # scroll-downs to trigger lazy-loaded listing content
@@ -74,7 +77,8 @@ async def _ensure_page():
             _context = await _pw.chromium.launch_persistent_context(
                 str(_PROFILE_DIR),
                 headless=_HEADLESS,
-                args=["--disable-blink-features=AutomationControlled"],
+                # --no-sandbox:容器内以 root 跑 chromium 必需(host 上无害)
+                args=["--disable-blink-features=AutomationControlled", "--no-sandbox"],
                 user_agent=_USER_AGENT,
                 viewport={"width": 1440, "height": 900},
                 locale="en-CA",
