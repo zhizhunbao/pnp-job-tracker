@@ -1,10 +1,9 @@
 {
   "stream": "AAIP Alberta Opportunity Stream",
-  "label": "AAIP 不符合清单",
   "province": "AB",
   "type": "ineligible",
   "url": "https://www.alberta.ca/aaip-alberta-opportunity-stream-eligibility",
-  "fetched": "2026-06-25",
+  "fetched": "2026-06-27",
   "note": "AOS 接受 TEER0-5(4/5 需 CLB4),本表是不符合资格的职业;原带 * 为条件性不符合,粗筛下按不符合处理。",
   "occupations": [
     {

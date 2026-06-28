@@ -1,5 +1,5 @@
 """
-build_oinp — 抓 OINP「Employer Job Offer: In-Demand Skills」流的符合资格职业清单,
+build_on — 抓 OINP「Employer Job Offer: In-Demand Skills」流的符合资格职业清单,
 建成我们维护的 PNP 维度表(各省 PNP 清单的第一个试点;ontario.ca 用 httpx 即可,无 Cloudflare)。
 
 源(免费,偶尔更新):
@@ -12,7 +12,7 @@ build_oinp — 抓 OINP「Employer Job Offer: In-Demand Skills」流的符合资
   pnp/oinp-in-demand.json             # 维护表(跟踪):{occupations:[{noc,name,gtaRestricted}], ...}
 08_score 读 reference 表 → ON 的 TEER4-5 紧缺通道(精化 pnpEligible)。
 
-Usage:  uv run python etl/build_oinp.py   (或 .venv 的 python)
+Usage:  uv run python etl/pnp/build_on.py   (或 .venv 的 python)
 """
 import json
 import re
@@ -23,7 +23,7 @@ from pathlib import Path
 import httpx
 from bs4 import BeautifulSoup
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/(上一级)有 _paths
 import _paths  # noqa: E402
 
 URL = "https://www.ontario.ca/page/oinp-employer-job-offer-demand-skills-stream"

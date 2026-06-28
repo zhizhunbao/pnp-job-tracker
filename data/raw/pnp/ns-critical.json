@@ -1,0 +1,46 @@
+{
+  "stream": "Nova Scotia Critical Vacancies",
+  "label": "NS 紧缺空缺",
+  "province": "NS",
+  "type": "indemand",
+  "url": "https://liveinnovascotia.com/critical-vacancies",
+  "fetched": "2026-06-27",
+  "occupations": [
+    {
+      "noc": "33102",
+      "name": "Nurse aides, orderlies and patient service associates"
+    },
+    {
+      "noc": "70010",
+      "name": "Construction managers"
+    },
+    {
+      "noc": "72014",
+      "name": "Contractors and supervisors, other construction trades, installers, repairers and servicers"
+    },
+    {
+      "noc": "72020",
+      "name": "Contractors and supervisors, mechanic trades"
+    },
+    {
+      "noc": "72104",
+      "name": "Structural metal and platework fabricators and fitters"
+    },
+    {
+      "noc": "72106",
+      "name": "Welders and related machine operators"
+    },
+    {
+      "noc": "72310",
+      "name": "Carpenters"
+    },
+    {
+      "noc": "73100",
+      "name": "Concrete Finishers"
+    },
+    {
+      "noc": "73102",
+      "name": "Plasterers, drywall installers and finishers and lathers"
+    }
+  ]
+}

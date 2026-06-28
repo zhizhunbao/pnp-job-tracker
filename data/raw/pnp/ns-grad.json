@@ -1,0 +1,26 @@
+{
+  "stream": "Nova Scotia Graduate stream",
+  "label": "NS 毕业生",
+  "province": "NS",
+  "type": "indemand",
+  "url": "https://liveinnovascotia.com/nova-scotia-graduate",
+  "fetched": "2026-06-27",
+  "occupations": [
+    {
+      "noc": "32102",
+      "name": "Paramedical occupations"
+    },
+    {
+      "noc": "32124",
+      "name": "Pharmacy technicians"
+    },
+    {
+      "noc": "33102",
+      "name": "nurse aides, orderlies, and patient service associates"
+    },
+    {
+      "noc": "42202",
+      "name": "early childhood educators and assistants"
+    }
+  ]
+}
