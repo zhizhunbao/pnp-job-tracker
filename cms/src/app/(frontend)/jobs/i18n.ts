@@ -45,7 +45,7 @@ const zh: Dict = {
   'col.company': '公司', 'col.title': '职位', 'col.noc': 'NOC', 'col.accessibility': '经验级别',
   'col.country': '国家', 'col.province': '省', 'col.city': '市', 'col.district': '区', 'col.address': '地址',
   'col.salary': '薪资', 'col.salaryYr': '年薪(折算)', 'col.wageMedHr': '中位时薪', 'col.wageMedYr': '中位年薪', 'col.vsMedian': 'vs 中位', 'col.source': '来源', 'col.origin': '渠道', 'col.direct': '发布',
-  'col.pnp': 'PNP', 'col.ee': 'EE 类别', 'col.aip': 'AIP', 'col.status': '状态', 'col.lastSeen': '更新时间', 'col.closedAt': '下架时间', 'col.score': '评分',
+  'col.pnp': 'PNP', 'col.ee': 'EE 类别', 'col.aip': 'AIP', 'col.status': '状态', 'col.firstSeen': '首次收录', 'col.lastSeen': '更新时间', 'col.closedAt': '下架时间', 'col.score': '评分',
   'eelist.in': '✓ 本岗 NOC {noc} 在联邦 EE「{cats}」类别清单内', 'eelist.out': '未列入任何联邦 EE 类别抽选清单', 'eelist.source': '来源:Express Entry 类别抽选', 'eelist.your': '本岗', 'eelist.loading': '加载 EE 清单…',
   'col.actions': '操作', 'act.company': '公司信息', 'act.desc': '职位描述', 'act.companyTitle': '公司基本信息', 'act.descTitle': '职位描述', 'act.site': '官网', 'act.addr': '地址', 'act.src': '来源', 'act.jobsHere': '该公司在榜职位', 'act.noText': '未抓到该职位的描述文本', 'act.loadingText': '加载中…',
   // 大分类(数据值→显示)
@@ -64,6 +64,7 @@ const zh: Dict = {
   'fact.medianSrc': 'ESDC 开放数据 · 同 NOC × 本省 中位', 'fact.vsNote': 'vs 中位 = 本岗年薪 ÷ 当地中位 − 1',
   'fact.sourceNote': 'Job Bank 聚合 indeed/Talent 等第三方板 → 统一显示为来源;渠道(origin)是发布通道,不代表雇主真假', 'fact.firstParty': '第一方直投', 'fact.repost': '聚合转贴',
   'fact.timeNote': '下架口径:本次抓取未出现 且 发布超 30 天,才标「已下架」',
+  'fact.aipNote': 'AIP 仅限大西洋四省(NL/NB/NS/PE);按公司名归一化匹配官方指定雇主名单,无中介', 'fact.aipTech': '科技类',
   'advisor.footTpl': '说明由榜单数据自动生成 · 仅供参考,不构成移民/法律建议',
   'advisor.applyLink': '投递页', 'advisor.siteLink': '公司官网',
 }
@@ -99,7 +100,7 @@ const en: Dict = {
   'col.company': 'Company', 'col.title': 'Title', 'col.noc': 'NOC', 'col.accessibility': 'Level',
   'col.country': 'Country', 'col.province': 'Province', 'col.city': 'City', 'col.district': 'District', 'col.address': 'Address',
   'col.salary': 'Salary', 'col.salaryYr': 'Annual (est.)', 'col.wageMedHr': 'Median $/hr', 'col.wageMedYr': 'Median $/yr', 'col.vsMedian': 'vs median', 'col.source': 'Source', 'col.origin': 'Channel', 'col.direct': 'Posting',
-  'col.pnp': 'PNP', 'col.ee': 'EE category', 'col.aip': 'AIP', 'col.status': 'Status', 'col.lastSeen': 'Updated', 'col.closedAt': 'Closed', 'col.score': 'Score',
+  'col.pnp': 'PNP', 'col.ee': 'EE category', 'col.aip': 'AIP', 'col.status': 'Status', 'col.firstSeen': 'First seen', 'col.lastSeen': 'Updated', 'col.closedAt': 'Closed', 'col.score': 'Score',
   'eelist.in': '✓ This job (NOC {noc}) is in the federal EE "{cats}" category', 'eelist.out': 'Not in any federal Express Entry category', 'eelist.source': 'Source: Express Entry category-based selection', 'eelist.your': 'This job', 'eelist.loading': 'Loading EE list…',
   'col.actions': 'Actions', 'act.company': 'Company', 'act.desc': 'Description', 'act.companyTitle': 'Company info', 'act.descTitle': 'Job description', 'act.site': 'Website', 'act.addr': 'Address', 'act.src': 'Source', 'act.jobsHere': 'Listings by this company', 'act.noText': 'No scraped description for this job', 'act.loadingText': 'Loading…',
   'broad.管理': 'Management', 'broad.商务': 'Business', 'broad.科技': 'Tech', 'broad.医疗': 'Health', 'broad.教育': 'Education',
@@ -115,6 +116,7 @@ const en: Dict = {
   'fact.medianSrc': 'ESDC open data · same NOC × this province median', 'fact.vsNote': 'vs median = job annual ÷ local median − 1',
   'fact.sourceNote': 'Job Bank aggregates indeed/Talent etc. → shown as one source; channel (origin) is the posting pipe, not employer authenticity', 'fact.firstParty': 'First-party', 'fact.repost': 'Aggregated repost',
   'fact.timeNote': 'Closed only when absent from the latest crawl AND posted >30 days ago',
+  'fact.aipNote': 'AIP covers the four Atlantic provinces only (NL/NB/NS/PE); matched by normalized employer name against the official designated list', 'fact.aipTech': 'Tech',
   'advisor.footTpl': 'Auto-generated from listing data · reference only, not immigration/legal advice',
   'advisor.applyLink': 'Apply', 'advisor.siteLink': 'Website',
 }
@@ -150,7 +152,7 @@ const ko: Dict = {
   'col.company': '회사', 'col.title': '직무', 'col.noc': 'NOC', 'col.accessibility': '경력',
   'col.country': '국가', 'col.province': '주', 'col.city': '도시', 'col.district': '지역', 'col.address': '주소',
   'col.salary': '급여', 'col.salaryYr': '연봉(환산)', 'col.wageMedHr': '중위 시급', 'col.wageMedYr': '중위 연봉', 'col.vsMedian': '중위 대비', 'col.source': '출처', 'col.origin': '채널', 'col.direct': '게시',
-  'col.pnp': 'PNP', 'col.ee': 'EE 카테고리', 'col.aip': 'AIP', 'col.status': '상태', 'col.lastSeen': '갱신일', 'col.closedAt': '마감일', 'col.score': '점수',
+  'col.pnp': 'PNP', 'col.ee': 'EE 카테고리', 'col.aip': 'AIP', 'col.status': '상태', 'col.firstSeen': '최초 수집', 'col.lastSeen': '갱신일', 'col.closedAt': '마감일', 'col.score': '점수',
   'eelist.in': '✓ 이 채용(NOC {noc})이 연방 EE 「{cats}」 카테고리에 있음', 'eelist.out': '연방 Express Entry 카테고리에 없음', 'eelist.source': '출처: Express Entry 카테고리 선발', 'eelist.your': '이 채용', 'eelist.loading': 'EE 목록 불러오는 중…',
   'col.actions': '작업', 'act.company': '회사 정보', 'act.desc': '직무 설명', 'act.companyTitle': '회사 기본 정보', 'act.descTitle': '직무 설명', 'act.site': '웹사이트', 'act.addr': '주소', 'act.src': '출처', 'act.jobsHere': '이 회사의 공고', 'act.noText': '수집된 직무 설명이 없습니다', 'act.loadingText': '로딩 중…',
   'broad.管理': '관리', 'broad.商务': '비즈니스', 'broad.科技': '기술', 'broad.医疗': '의료', 'broad.教育': '교육',
@@ -166,6 +168,7 @@ const ko: Dict = {
   'fact.medianSrc': 'ESDC 공개 데이터 · 동일 NOC × 해당 주 중위', 'fact.vsNote': '중위 대비 = 직무 연봉 ÷ 현지 중위 − 1',
   'fact.sourceNote': 'Job Bank가 indeed/Talent 등 제3자 보드를 집계 → 단일 출처로 표시; 채널(origin)은 게시 경로이며 고용주 진위와 무관', 'fact.firstParty': '직접 게시', 'fact.repost': '집계 재게시',
   'fact.timeNote': '최신 수집에 없고 게시 30일 초과일 때만 「마감」 처리',
+  'fact.aipNote': 'AIP는 대서양 4개 주(NL/NB/NS/PE)만 해당; 정규화된 고용주명으로 공식 지정 명단과 매칭', 'fact.aipTech': '기술',
   'advisor.footTpl': '목록 데이터 기반 자동 생성 · 참고용, 이민/법률 자문 아님',
   'advisor.applyLink': '지원 페이지', 'advisor.siteLink': '회사 웹사이트',
 }

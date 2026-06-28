@@ -40,6 +40,7 @@ export type JobRow = {
   officialUrl: string
   applyUrl: string
   datePosted: string
+  firstSeen: string
   lastSeen: string
   status: string
   closedAt: string
@@ -228,6 +229,7 @@ const ORIGIN_LABEL: Record<string, string> = { jobbank: 'Job Bank', ats: 'ATS', 
 
 type PnpOcc = { province: string; stream: string; label: string; type: string; noc: string; name: string; gtaRestricted: boolean; url: string; fetched: string }
 type EeOcc = { category: string; label: string; noc: string; teer: number | null; title: string; url: string; fetched: string }
+type DesigEmp = { name: string; province: string; location: string; isTech: boolean }
 type Dims = {
   provinces: { code: string; name: string }[]
   cities: { name: string; province: string }[]
@@ -237,8 +239,9 @@ type Dims = {
   experienceLevels: { name: string }[]
   pnpOccupations: PnpOcc[]
   eeCategories: EeOcc[]
+  designatedEmployers: DesigEmp[]
 }
-const EMPTY_DIMS: Dims = { provinces: [], cities: [], districts: [], nocCategories: [], sources: [], experienceLevels: [], pnpOccupations: [], eeCategories: [] }
+const EMPTY_DIMS: Dims = { provinces: [], cities: [], districts: [], nocCategories: [], sources: [], experienceLevels: [], pnpOccupations: [], eeCategories: [], designatedEmployers: [] }
 const PROV_CODE: Record<string, string> = Object.fromEntries(Object.entries(PROV_NAMES).map(([c, n]) => [n, c]))
 
 export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialCols }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims; initialCols?: string[] }) {
@@ -665,7 +668,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
         </div>
       </footer>
 
-      {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} pnpOcc={dims.pnpOccupations} eeOcc={dims.eeCategories} onClose={() => setPopup(null)} />}
+      {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} pnpOcc={dims.pnpOccupations} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} onClose={() => setPopup(null)} />}
       {actModal && <ActModal kind={actModal.kind} job={actModal.job} jobs={jobs} lang={lang} onClose={() => setActModal(null)} />}
     </div>
   )
@@ -812,16 +815,37 @@ function FactsBox({ children, note }: { children: React.ReactNode; note?: React.
     </div>
   )
 }
+// 公司名归一(镜像 etl/clean/05c_flag_aip.py 的 norm_name)—— 用于把岗位公司名匹配回 AIP 指定雇主记录
+const AIP_SUFFIX = /\b(inc|incorporated|ltd|limited|llp|llc|corp|corporation|co|company|enr|ltee|ltée|holdings?|group|services?|enterprises?)\b\.?/gi
+const normName = (name?: string) => (name || '').toLowerCase()
+  .split(/\bo\/a\b|\bdba\b|\bd\/b\/a\b/)[0]
+  .replace(AIP_SUFFIX, ' ').replace(/[^a-z0-9& ]/g, ' ').replace(/\s+/g, ' ').trim()
+const ATLANTIC = new Set(['NL', 'NB', 'NS', 'PE'])
 const LOC_FIELDS = new Set<ColKey>(['country', 'province', 'city', 'district', 'address'])
 const SAL_FIELDS = new Set<ColKey>(['salary', 'salaryYr', 'wageMedHr', 'wageMedYr', 'vsMedian'])
 const CLS_FIELDS = new Set<ColKey>(['noc', 'teer', 'broad', 'mid', 'fine'])
 const SRC_FIELDS = new Set<ColKey>(['source', 'origin', 'direct'])
 const TIME_FIELDS = new Set<ColKey>(['status', 'datePosted', 'lastSeen', 'closedAt'])
-function FieldFactsSection({ field, job, lang, pnpOcc, eeOcc }: { field: ColKey; job: JobRow; lang: Lang; pnpOcc: PnpOcc[]; eeOcc: EeOcc[] }) {
+function FieldFactsSection({ field, job, lang, pnpOcc, eeOcc, desigEmp }: { field: ColKey; job: JobRow; lang: Lang; pnpOcc: PnpOcc[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[] }) {
   const t = makeT(lang)
   if (field === 'pnp') return <PnpListSection job={job} lang={lang} occ={pnpOcc} />
   if (field === 'ee') return <EeCategorySection job={job} lang={lang} cats={eeOcc} />
   const day = (s?: string) => (s || '').slice(0, 10)
+
+  if (field === 'aip') {
+    const cn = normName(job.company)
+    const matches = ATLANTIC.has(job.province) && cn
+      ? desigEmp.filter((e) => e.province === job.province && normName(e.name) === cn)
+      : []
+    return (
+      <FactsBox note={t('fact.aipNote')}>
+        <FactRow k={t('col.aip')}>{job.aip ? t('cell.aipYes') : '—'}</FactRow>
+        {matches.map((e, i) => (
+          <FactRow key={i} k={e.name}>{[e.location, e.province, e.isTech ? t('fact.aipTech') : null].filter(Boolean).join(' · ')}</FactRow>
+        ))}
+      </FactsBox>
+    )
+  }
 
   if (LOC_FIELDS.has(field)) {
     const L = parseLoc(job)
@@ -878,6 +902,7 @@ function FieldFactsSection({ field, job, lang, pnpOcc, eeOcc }: { field: ColKey;
       <FactsBox note={t('fact.timeNote')}>
         <FactRow k={t('col.status')}>{t(job.status === 'closed' ? 'cell.closed' : 'cell.open')}</FactRow>
         <FactRow k={t('col.datePosted')}>{day(job.datePosted)}</FactRow>
+        <FactRow k={t('col.firstSeen')}>{day(job.firstSeen)}</FactRow>
         <FactRow k={t('col.lastSeen')}>{day(job.lastSeen)}</FactRow>
         <FactRow k={t('col.closedAt')}>{job.closedAt ? day(job.closedAt) : null}</FactRow>
       </FactsBox>
@@ -889,7 +914,7 @@ function FieldFactsSection({ field, job, lang, pnpOcc, eeOcc }: { field: ColKey;
 // ── AI 顾问弹框 ────────────────────────────────────────────────
 // 所有字段都走本地大模型流式生成(按所选语言);前端只给极简头部 + 链接,正文由模型生成。
 const ADV_PREF = 'adv_modal_pref'  // 记忆 {full, w, h}(位置每次打开居中,避免窗口缩小后跑出屏外)
-function AdvisorModal({ field, job, title, lang, pnpOcc, eeOcc, onClose }: { field: ColKey; job: JobRow; title?: string; lang: Lang; pnpOcc: PnpOcc[]; eeOcc: EeOcc[]; onClose: () => void }) {
+function AdvisorModal({ field, job, title, lang, pnpOcc, eeOcc, desigEmp, onClose }: { field: ColKey; job: JobRow; title?: string; lang: Lang; pnpOcc: PnpOcc[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; onClose: () => void }) {
   const t = makeT(lang)
   const a = advHeader(field, job, t)
   const [text, setText] = useState('')
@@ -983,7 +1008,7 @@ function AdvisorModal({ field, job, title, lang, pnpOcc, eeOcc, onClose }: { fie
         </div>
         {/* 正文(可滚动):上半真实清单 + 下半 AI 建议 */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '4px 18px 18px' }}>
-          <FieldFactsSection field={field} job={job} lang={lang} pnpOcc={pnpOcc} eeOcc={eeOcc} />
+          <FieldFactsSection field={field} job={job} lang={lang} pnpOcc={pnpOcc} eeOcc={eeOcc} desigEmp={desigEmp} />
           {status === 'loading' ? (
             <p style={{ margin: '10px 0', fontSize: 14, color: '#9ca3af' }}>{t('advisor.loading')}</p>
           ) : (

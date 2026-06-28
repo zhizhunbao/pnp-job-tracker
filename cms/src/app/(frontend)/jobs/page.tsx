@@ -18,12 +18,12 @@ export default async function JobsPage() {
       j.country, j.province, j.city, j.district, j.address, j.region,
       j.apply_url, j.official_url, j.salary, j.salary_annual, j.salary_text,
       j.wage_med_hourly, j.wage_med_annual,
-      j.source, j.source_label, j.origin, j.date_posted, j.last_seen, j.status, j.closed_at
+      j.source, j.source_label, j.origin, j.date_posted, j.first_seen, j.last_seen, j.status, j.closed_at
     FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
     ORDER BY j.date_posted DESC NULLS LAST LIMIT 20000`)
 
   // 维度表小,继续走 payload.find
-  const [provDocs, cityDocs, distDocs, nocDocs, srcDocs, expDocs, pnpDocs, eeDocs] = await Promise.all([
+  const [provDocs, cityDocs, distDocs, nocDocs, srcDocs, expDocs, pnpDocs, eeDocs, aipDocs] = await Promise.all([
     payload.find({ collection: 'provinces', limit: 100, depth: 0, sort: 'name' }),
     payload.find({ collection: 'cities', limit: 5000, depth: 0, sort: 'name' }),
     payload.find({ collection: 'districts', limit: 1000, depth: 0, sort: 'name' }),
@@ -32,6 +32,7 @@ export default async function JobsPage() {
     payload.find({ collection: 'experience-levels', limit: 50, depth: 0 }),
     payload.find({ collection: 'pnp-occupations', limit: 5000, depth: 0 }),
     payload.find({ collection: 'ee-categories', limit: 2000, depth: 0 }),
+    payload.find({ collection: 'designated-employers', limit: 5000, depth: 0 }),
   ])
   const dims = {
     provinces: provDocs.docs.map((p: any) => ({ code: p.code, name: p.name })),
@@ -42,6 +43,7 @@ export default async function JobsPage() {
     experienceLevels: expDocs.docs.map((e: any) => ({ name: e.name })),
     pnpOccupations: pnpDocs.docs.map((r: any) => ({ province: r.province, stream: r.stream, label: r.label, type: r.type, noc: r.noc, name: r.name, gtaRestricted: !!r.gtaRestricted, url: r.url, fetched: r.fetched })),
     eeCategories: eeDocs.docs.map((r: any) => ({ category: r.category, label: r.label, noc: r.noc, teer: typeof r.teer === 'number' ? r.teer : null, title: r.title, url: r.url, fetched: r.fetched })),
+    designatedEmployers: aipDocs.docs.map((r: any) => ({ name: r.name, province: r.province, location: r.location, isTech: !!r.isTech })),
   }
 
   const iso = (v: any) => (v instanceof Date ? v.toISOString() : (v ?? ''))
@@ -78,6 +80,7 @@ export default async function JobsPage() {
     officialUrl: j.official_url ?? '',
     applyUrl: j.apply_url ?? '',
     datePosted: iso(j.date_posted),
+    firstSeen: iso(j.first_seen),
     lastSeen: iso(j.last_seen),
     status: j.status ?? 'open',
     closedAt: iso(j.closed_at),
