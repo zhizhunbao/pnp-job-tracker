@@ -792,6 +792,100 @@ function EeCategorySection({ job, lang, cats }: { job: JobRow; lang: Lang; cats:
   )
 }
 
+// ── 弹框上半:每字段「事实块」(凭证)—— 值 + 口径,绝不经 LLM ──────
+// 框架:按 field 分支。pnp/ee 用既有清单组件;其余「零成本」字段(地点/薪资/分类/来源/经验/时间状态)
+// 直接读 job 已加载的真实字段渲染。依赖 Part B 抓取的字段(职位 JD / 公司简介 / 官方职责 / 门槛 / 抽选线)留待后续填。
+function FactRow({ k, children }: { k: React.ReactNode; children: React.ReactNode }) {
+  if (children == null || children === '' || children === '—') return null
+  return (
+    <div style={{ display: 'flex', gap: 10, padding: '3px 0', fontSize: 13 }}>
+      <span style={{ minWidth: 88, color: '#9ca3af', flexShrink: 0 }}>{k}</span>
+      <span style={{ flex: 1, color: '#374151', wordBreak: 'break-word' }}>{children}</span>
+    </div>
+  )
+}
+function FactsBox({ children, note }: { children: React.ReactNode; note?: React.ReactNode }) {
+  return (
+    <div style={{ marginBottom: 14, paddingBottom: 12, borderBottom: '1px solid #f3f4f6' }}>
+      {children}
+      {note ? <div style={{ marginTop: 7, fontSize: 11.5, color: '#9ca3af', lineHeight: 1.5 }}>{note}</div> : null}
+    </div>
+  )
+}
+const LOC_FIELDS = new Set<ColKey>(['country', 'province', 'city', 'district', 'address'])
+const SAL_FIELDS = new Set<ColKey>(['salary', 'salaryYr', 'wageMedHr', 'wageMedYr', 'vsMedian'])
+const CLS_FIELDS = new Set<ColKey>(['noc', 'teer', 'broad', 'mid', 'fine'])
+const SRC_FIELDS = new Set<ColKey>(['source', 'origin', 'direct'])
+const TIME_FIELDS = new Set<ColKey>(['status', 'datePosted', 'lastSeen', 'closedAt'])
+function FieldFactsSection({ field, job, lang, pnpOcc, eeOcc }: { field: ColKey; job: JobRow; lang: Lang; pnpOcc: PnpOcc[]; eeOcc: EeOcc[] }) {
+  const t = makeT(lang)
+  if (field === 'pnp') return <PnpListSection job={job} lang={lang} occ={pnpOcc} />
+  if (field === 'ee') return <EeCategorySection job={job} lang={lang} cats={eeOcc} />
+  const day = (s?: string) => (s || '').slice(0, 10)
+
+  if (LOC_FIELDS.has(field)) {
+    const L = parseLoc(job)
+    const full = [job.address, L.district, L.city, L.prov].filter(Boolean).join(', ')
+    return (
+      <FactsBox>
+        <FactRow k={t('col.country')}>{L.country || 'Canada'}</FactRow>
+        <FactRow k={t('col.province')}>{L.prov}</FactRow>
+        <FactRow k={t('col.city')}>{L.city}</FactRow>
+        <FactRow k={t('col.district')}>{L.district}</FactRow>
+        <FactRow k={t('col.address')}>{job.address}</FactRow>
+        {full ? <FactRow k="🗺"><a href={mapsUrl(full)} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5 }}>{full} ↗</a></FactRow> : null}
+      </FactsBox>
+    )
+  }
+  if (SAL_FIELDS.has(field)) {
+    const a = job.salaryAnnual, mHr = job.wageMedHourly, mYr = job.wageMedAnnual
+    const vs = a != null && mYr ? Math.round((a / mYr - 1) * 100) : null
+    return (
+      <FactsBox note={t('fact.medianSrc') + (vs != null ? ' · ' + t('fact.vsNote') : '')}>
+        <FactRow k={t('col.salary')}>{job.salaryText || job.salary}</FactRow>
+        <FactRow k={t('col.salaryYr')}>{a != null ? `$${Math.round(a / 1000)}K/yr` : null}</FactRow>
+        <FactRow k={t('col.wageMedHr')}>{mHr != null ? `$${mHr}/hr` : null}</FactRow>
+        <FactRow k={t('col.wageMedYr')}>{mYr != null ? `$${Math.round(mYr / 1000)}K/yr` : null}</FactRow>
+        <FactRow k={t('col.vsMedian')}>{vs != null ? `${vs >= 0 ? '+' : ''}${vs}%` : null}</FactRow>
+      </FactsBox>
+    )
+  }
+  if (CLS_FIELDS.has(field)) {
+    return (
+      <FactsBox>
+        <FactRow k={t('col.noc')}>{job.noc}</FactRow>
+        <FactRow k={t('col.teer')}>{job.teer != null ? `TEER ${job.teer}` : null}</FactRow>
+        <FactRow k={t('col.broad')}>{job.broad && job.broad !== '未分类' ? t('broad.' + job.broad) : null}</FactRow>
+        <FactRow k={t('col.mid')}>{job.mid && job.mid !== '未分类' ? job.mid : null}</FactRow>
+        <FactRow k={t('col.fine')}>{job.fine && job.fine !== '未分类' ? job.fine : null}</FactRow>
+      </FactsBox>
+    )
+  }
+  if (SRC_FIELDS.has(field)) {
+    return (
+      <FactsBox note={t('fact.sourceNote')}>
+        <FactRow k={t('col.source')}>{job.sourceLabel || job.source}</FactRow>
+        <FactRow k={t('col.origin')}>{job.origin}</FactRow>
+        <FactRow k={t('col.direct')}>{isDirect(job) ? t('fact.firstParty') : t('fact.repost')}</FactRow>
+      </FactsBox>
+    )
+  }
+  if (field === 'accessibility') {
+    return <FactsBox><FactRow k={t('col.accessibility')}>{t('acc.' + (job.accessibility || 'unknown'))}</FactRow></FactsBox>
+  }
+  if (TIME_FIELDS.has(field)) {
+    return (
+      <FactsBox note={t('fact.timeNote')}>
+        <FactRow k={t('col.status')}>{t(job.status === 'closed' ? 'cell.closed' : 'cell.open')}</FactRow>
+        <FactRow k={t('col.datePosted')}>{day(job.datePosted)}</FactRow>
+        <FactRow k={t('col.lastSeen')}>{day(job.lastSeen)}</FactRow>
+        <FactRow k={t('col.closedAt')}>{job.closedAt ? day(job.closedAt) : null}</FactRow>
+      </FactsBox>
+    )
+  }
+  return null  // title/company/noc-职责/aip/score 等依赖 Part B 抓取或 wiring,后续填
+}
+
 // ── AI 顾问弹框 ────────────────────────────────────────────────
 // 所有字段都走本地大模型流式生成(按所选语言);前端只给极简头部 + 链接,正文由模型生成。
 const ADV_PREF = 'adv_modal_pref'  // 记忆 {full, w, h}(位置每次打开居中,避免窗口缩小后跑出屏外)
@@ -889,8 +983,7 @@ function AdvisorModal({ field, job, title, lang, pnpOcc, eeOcc, onClose }: { fie
         </div>
         {/* 正文(可滚动):上半真实清单 + 下半 AI 建议 */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '4px 18px 18px' }}>
-          {field === 'pnp' && <PnpListSection job={job} lang={lang} occ={pnpOcc} />}
-          {field === 'ee' && <EeCategorySection job={job} lang={lang} cats={eeOcc} />}
+          <FieldFactsSection field={field} job={job} lang={lang} pnpOcc={pnpOcc} eeOcc={eeOcc} />
           {status === 'loading' ? (
             <p style={{ margin: '10px 0', fontSize: 14, color: '#9ca3af' }}>{t('advisor.loading')}</p>
           ) : (
