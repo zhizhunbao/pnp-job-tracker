@@ -12,6 +12,8 @@ export type JobRow = {
   id: string | number
   title: string
   company: string
+  companyDescription: string
+  companySectors: string
   source: string
   sourceLabel: string
   origin: string
@@ -880,6 +882,21 @@ function FieldFactsSection({ field, job, lang, pnpOcc, eeOcc, desigEmp }: { fiel
   if (field === 'ee') return <EeCategorySection job={job} lang={lang} cats={eeOcc} />
   if (field === 'title') return <TitleFacts job={job} lang={lang} />
   const day = (s?: string) => (s || '').slice(0, 10)
+
+  if (field === 'company') {
+    const desc = job.companyDescription
+    return (
+      <FactsBox note={desc ? undefined : t('fact.coNone')}>
+        <FactRow k={t('col.company')}>{job.company}</FactRow>
+        {job.officialUrl ? <FactRow k={t('act.site')}><a href={job.officialUrl} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5 }}>{job.officialUrl}</a></FactRow> : null}
+        <FactRow k={t('fact.coSectors')}>{job.companySectors}</FactRow>
+        {desc ? <>
+          <div style={{ marginTop: 8, fontSize: 11.5, color: '#9ca3af' }}>{t('fact.coIntro')}</div>
+          <div style={{ marginTop: 4, fontSize: 12.5, color: '#4b5563', whiteSpace: 'pre-wrap', lineHeight: 1.6, maxHeight: 180, overflowY: 'auto', border: '1px solid #f3f4f6', borderRadius: 8, padding: '8px 10px' }}>{desc}</div>
+        </> : null}
+      </FactsBox>
+    )
+  }
   const sg = (n: number) => (n >= 0 ? `+${n}` : `${n}`)
 
   if (field === 'score') {

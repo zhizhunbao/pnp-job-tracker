@@ -139,7 +139,8 @@ def build():
             slug = prof.get("slug") or cdir.name
             add_company(prof.get("name") or slug, slug, website=prof.get("website"),
                         email=prof.get("email"), address=prof.get("address"),
-                        sectors=prof.get("sectors"), region=prof.get("region"), source="ats")
+                        sectors=prof.get("sectors"), description=prof.get("description"),
+                        region=prof.get("region"), source="ats")
             for j in jd["jobs"]:
                 key = f"{slug}|{norm(j.get('title',''))}"
                 if key in seen:

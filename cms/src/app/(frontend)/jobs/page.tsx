@@ -13,7 +13,7 @@ export default async function JobsPage() {
   // 公开只读列表直接 select + join 公司名,<0.5s。(列名是 Payload 的 snake_case;schema 改了要同步)
   const pool = (payload.db as any).pool
   const { rows } = await pool.query(`
-    SELECT j.id, j.title, c.name AS company_name, c.address AS company_address,
+    SELECT j.id, j.title, c.name AS company_name, c.address AS company_address, c.description AS company_description, c.sectors AS company_sectors,
       j.noc, j.category, j.teer, j.broad, j.mid, j.fine, j.accessibility, j.score, j.pnp_eligible, j.pnp_stream, j.ee_category, j.aip,
       j.country, j.province, j.city, j.district, j.address, j.region,
       j.apply_url, j.official_url, j.salary, j.salary_annual, j.salary_text,
@@ -52,6 +52,8 @@ export default async function JobsPage() {
     id: j.id,
     title: j.title ?? '',
     company: j.company_name ?? '',
+    companyDescription: j.company_description ?? '',
+    companySectors: j.company_sectors ?? '',
     address: j.address ?? j.company_address ?? '',
     source: j.source ?? '',
     sourceLabel: j.source_label ?? '',
