@@ -904,10 +904,80 @@ function AdvisorModal({ field, job, title, lang, pnpOcc, eeOcc, onClose }: { fie
             </div>
           )}
           <p style={{ marginTop: 14, fontSize: 11.5, color: '#9ca3af' }}>{t('advisor.footAI')}</p>
+          {/* 下半:对话框 —— 基于上方事实 + 初判,多轮 grounded 追问 */}
+          {status === 'done' && <AdvisorChat field={field} job={job} lang={lang} initialJudgment={text} />}
         </div>
         {/* 右下角拉伸手柄 */}
         {!full && <div onPointerDown={startResize} style={{ position: 'absolute', right: 0, bottom: 0, width: 18, height: 18, cursor: 'nwse-resize', background: 'linear-gradient(135deg, transparent 50%, #cbd5e1 50%)' }} />}
       </div>
+    </div>
+  )
+}
+
+// ── 顾问对话框(弹框下半)──────────────────────────────────────
+// 多轮 grounded chat:把「初判」当首个 assistant 轮喂回去保连续性;后端 system 始终带整条岗位事实 + 铁律。
+type ChatMsg = { role: 'user' | 'assistant'; content: string }
+function AdvisorChat({ field, job, lang, initialJudgment }: { field: ColKey; job: JobRow; lang: Lang; initialJudgment: string }) {
+  const t = makeT(lang)
+  const [msgs, setMsgs] = useState<ChatMsg[]>([])
+  const [input, setInput] = useState('')
+  const [busy, setBusy] = useState(false)
+  const endRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => { endRef.current?.scrollIntoView({ block: 'nearest' }) }, [msgs])
+
+  const send = async () => {
+    const q = input.trim()
+    if (!q || busy) return
+    const convo = [...msgs, { role: 'user' as const, content: q }]
+    setMsgs([...convo, { role: 'assistant', content: '' }])  // 占位,流进去
+    setInput(''); setBusy(true)
+    // 喂回初判作首个 assistant 轮 → 用户可"你刚才说的…";后端 system 另带事实
+    const payload: ChatMsg[] = [{ role: 'assistant', content: initialJudgment }, ...convo]
+    try {
+      const res = await fetch('/api/advisor', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ field, id: String(job.id), job, lang, messages: payload }),
+      })
+      if (!res.ok || !res.body) {
+        setMsgs((m) => { const c = [...m]; c[c.length - 1] = { role: 'assistant', content: t('advisor.failed', { code: res.status }) }; return c })
+      } else {
+        const reader = res.body.getReader(); const dec = new TextDecoder()
+        for (;;) {
+          const { done, value } = await reader.read()
+          if (done) break
+          const d = dec.decode(value, { stream: true })
+          setMsgs((m) => { const c = [...m]; c[c.length - 1] = { role: 'assistant', content: c[c.length - 1].content + d }; return c })
+        }
+      }
+    } catch {
+      setMsgs((m) => { const c = [...m]; c[c.length - 1] = { role: 'assistant', content: t('advisor.offline') }; return c })
+    }
+    setBusy(false)
+  }
+
+  return (
+    <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid #f3f4f6' }}>
+      <div style={{ fontSize: 12, fontWeight: 600, color: '#6366f1', marginBottom: 8 }}>{t('advisor.chatTitle')}</div>
+      {msgs.map((m, i) => (
+        <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start', marginBottom: 6 }}>
+          <div style={{ maxWidth: '85%', padding: '7px 11px', borderRadius: 10, fontSize: 13.5, lineHeight: 1.6, whiteSpace: 'pre-wrap',
+            background: m.role === 'user' ? '#eef2ff' : '#f9fafb', color: '#374151' }}>
+            {m.role === 'assistant' && !m.content ? <span style={{ color: '#9ca3af' }}>▋</span> : m.content}
+          </div>
+        </div>
+      ))}
+      <div ref={endRef} />
+      <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+        <input value={input} onChange={(e) => setInput(e.target.value)} disabled={busy}
+          onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
+          placeholder={t('advisor.chatPlaceholder')}
+          style={{ flex: 1, height: 36, boxSizing: 'border-box', padding: '0 10px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 13.5, color: '#1f2937', background: '#fff' }} />
+        <button onClick={send} disabled={busy || !input.trim()}
+          style={{ border: 'none', background: busy || !input.trim() ? '#c7d2fe' : '#6366f1', color: '#fff', borderRadius: 8, padding: '0 14px', height: 36, cursor: busy || !input.trim() ? 'default' : 'pointer', fontSize: 13.5, flexShrink: 0 }}>
+          {t('advisor.chatSend')}
+        </button>
+      </div>
+      <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 6 }}>{t('advisor.chatHint')}</div>
     </div>
   )
 }

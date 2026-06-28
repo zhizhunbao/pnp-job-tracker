@@ -151,21 +151,41 @@ function buildPrompt(field: string, j: Job, jd: string, lang: Lang): string {
   return base + `\n(No detailed posting was scraped; infer reasonably from the title and NOC.)\n\n` + instr
 }
 
+// 对话(下半):基于上半事实的多轮追问。system 始终带整条岗位事实 + grounding 铁律 —— 防止多轮放开后退回"编"。
+type ChatMsg = { role: 'user' | 'assistant'; content: string }
+function chatSystem(job: Job, jd: string, lang: Lang): string {
+  const facts = jobFacts(job) + '\n' + scoreFacts(job) + (jd ? `\n\nReal job posting excerpt:\n"""\n${jd}\n"""` : '')
+  return SYSTEM(lang) +
+    '\n\nYou are answering follow-up questions about ONE specific job. These verified facts are your ONLY source of truth:\n' + facts +
+    `\n\nGround every answer ONLY in these facts and the conversation so far. If the user asks about something the facts do not cover, say plainly in ${LANG_NAME[lang]} that you do not have that data — do NOT invent, guess, or use outside knowledge. Answer concisely; 【headings】 are optional for chat replies. Always tie the answer back to what it means for the reader's job/immigration decision.`
+}
+
 export async function POST(req: NextRequest) {
-  let body: { field?: string; id?: string; job?: Job; lang?: string }
+  let body: { field?: string; id?: string; job?: Job; lang?: string; messages?: ChatMsg[] }
   try { body = await req.json() } catch { return new Response('bad json', { status: 400 }) }
   const field = body.field || 'title'
   const lang: Lang = body.lang === 'en' ? 'en' : body.lang === 'ko' ? 'ko' : 'zh'
   const job = body.job || {}
-  // 缓存键含 字段+标识+语言(公司按公司名,其余按 id;不同字段/语言分开缓存)
+  // 下半对话:带 messages[](user/assistant 交替)→ 多轮 grounded chat;否则一次性初判
+  const messages = (Array.isArray(body.messages) ? body.messages : [])
+    .filter((m): m is ChatMsg => !!m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
+  const isChat = messages.length > 0
+  // 缓存键含 字段+标识+语言(公司按公司名,其余按 id;不同字段/语言分开缓存);对话不缓存(每轮唯一)
   const keyId = field === 'company' ? (job.company || '').toLowerCase() : (body.id || job.title || '')
   const key = `${field}:${keyId}:${lang}`
 
-  const cached = cache.get(key)
-  if (cached) return new Response(cached, { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'X-Cache': 'hit' } })
+  if (!isChat) {
+    const cached = cache.get(key)
+    if (cached) return new Response(cached, { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'X-Cache': 'hit' } })
+  }
 
-  // 职位:读取抓到的真实 JD(基于它总结,缓存未命中才扫);公司:暂无正文,靠模型知识
-  const jd = field === 'title' ? await loadJD(job.applyUrl) : ''
+  // 职位/对话:读取抓到的真实 JD 作 grounding(基于它总结,不凭空猜);公司初判暂无正文,靠模型知识
+  const jd = (field === 'title' || isChat) ? await loadJD(job.applyUrl) : ''
+
+  const ollamaMessages = isChat
+    ? [{ role: 'system', content: chatSystem(job, jd, lang) }, ...messages]
+    : [{ role: 'system', content: SYSTEM(lang) }, { role: 'user', content: buildPrompt(field, job, jd, lang) }]
+  const numPredict = isChat ? 500 : (SIMPLE.has(field) ? 120 : (field === 'company' ? 480 : 420))
 
   let upstream: Response
   try {
@@ -176,11 +196,8 @@ export async function POST(req: NextRequest) {
         model: OLLAMA_MODEL,
         think: false,
         stream: true,
-        messages: [
-          { role: 'system', content: SYSTEM(lang) },
-          { role: 'user', content: buildPrompt(field, job, jd, lang) },
-        ],
-        options: { temperature: 0.4, num_predict: SIMPLE.has(field) ? 120 : (field === 'company' ? 480 : 420) },
+        messages: ollamaMessages,
+        options: { temperature: 0.4, num_predict: numPredict },
       }),
     })
   } catch {
@@ -201,7 +218,7 @@ export async function POST(req: NextRequest) {
     async pull(controller) {
       const { done, value } = await reader.read()
       if (done) {
-        if (full.trim()) cache.set(key, full)
+        if (!isChat && full.trim()) cache.set(key, full)
         controller.close()
         return
       }
