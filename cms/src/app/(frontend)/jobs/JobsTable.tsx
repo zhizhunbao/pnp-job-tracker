@@ -815,6 +815,31 @@ function FactsBox({ children, note }: { children: React.ReactNode; note?: React.
     </div>
   )
 }
+// 职位事实块:标题 + 匹配 NOC + 抓取的 JD 正文摘录(走 /api/jobtext,同 ActModal desc;列表 SQL 不带 description)
+function TitleFacts({ job, lang }: { job: JobRow; lang: Lang }) {
+  const t = makeT(lang)
+  const [jd, setJd] = useState<string | null>(null)  // null=loading · ''=无正文
+  useEffect(() => {
+    const ctrl = new AbortController()
+    ;(async () => {
+      try {
+        const res = await fetch('/api/jobtext?url=' + encodeURIComponent(job.applyUrl || ''), { signal: ctrl.signal })
+        setJd((await res.text()).trim())
+      } catch { if (!ctrl.signal.aborted) setJd('') }
+    })()
+    return () => ctrl.abort()
+  }, [job])
+  return (
+    <FactsBox>
+      <FactRow k={t('col.title')}>{job.title}</FactRow>
+      <FactRow k={t('col.noc')}>{job.noc ? `${job.noc}${job.teer != null ? ` · TEER ${job.teer}` : ''}` : null}</FactRow>
+      <div style={{ marginTop: 8, fontSize: 11.5, color: '#9ca3af' }}>{t('fact.jdExcerpt')}</div>
+      {jd === null ? <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>{t('act.loadingText')}</div>
+        : jd ? <div style={{ marginTop: 4, fontSize: 12.5, color: '#4b5563', whiteSpace: 'pre-wrap', lineHeight: 1.6, maxHeight: 180, overflowY: 'auto', border: '1px solid #f3f4f6', borderRadius: 8, padding: '8px 10px' }}>{jd.slice(0, 900)}</div>
+        : <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>{t('act.noText')}</div>}
+    </FactsBox>
+  )
+}
 // 公司名归一(镜像 etl/clean/05c_flag_aip.py 的 norm_name)—— 用于把岗位公司名匹配回 AIP 指定雇主记录
 const AIP_SUFFIX = /\b(inc|incorporated|ltd|limited|llp|llc|corp|corporation|co|company|enr|ltee|ltée|holdings?|group|services?|enterprises?)\b\.?/gi
 const normName = (name?: string) => (name || '').toLowerCase()
@@ -830,6 +855,7 @@ function FieldFactsSection({ field, job, lang, pnpOcc, eeOcc, desigEmp }: { fiel
   const t = makeT(lang)
   if (field === 'pnp') return <PnpListSection job={job} lang={lang} occ={pnpOcc} />
   if (field === 'ee') return <EeCategorySection job={job} lang={lang} cats={eeOcc} />
+  if (field === 'title') return <TitleFacts job={job} lang={lang} />
   const day = (s?: string) => (s || '').slice(0, 10)
 
   if (field === 'aip') {

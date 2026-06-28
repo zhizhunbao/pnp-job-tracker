@@ -65,6 +65,7 @@ const zh: Dict = {
   'fact.sourceNote': 'Job Bank 聚合 indeed/Talent 等第三方板 → 统一显示为来源;渠道(origin)是发布通道,不代表雇主真假', 'fact.firstParty': '第一方直投', 'fact.repost': '聚合转贴',
   'fact.timeNote': '下架口径:本次抓取未出现 且 发布超 30 天,才标「已下架」',
   'fact.aipNote': 'AIP 仅限大西洋四省(NL/NB/NS/PE);按公司名归一化匹配官方指定雇主名单,无中介', 'fact.aipTech': '科技类',
+  'fact.jdExcerpt': '职位描述摘录(抓取正文)',
   'advisor.footTpl': '说明由榜单数据自动生成 · 仅供参考,不构成移民/法律建议',
   'advisor.applyLink': '投递页', 'advisor.siteLink': '公司官网',
 }
@@ -117,6 +118,7 @@ const en: Dict = {
   'fact.sourceNote': 'Job Bank aggregates indeed/Talent etc. → shown as one source; channel (origin) is the posting pipe, not employer authenticity', 'fact.firstParty': 'First-party', 'fact.repost': 'Aggregated repost',
   'fact.timeNote': 'Closed only when absent from the latest crawl AND posted >30 days ago',
   'fact.aipNote': 'AIP covers the four Atlantic provinces only (NL/NB/NS/PE); matched by normalized employer name against the official designated list', 'fact.aipTech': 'Tech',
+  'fact.jdExcerpt': 'Posting excerpt (scraped)',
   'advisor.footTpl': 'Auto-generated from listing data · reference only, not immigration/legal advice',
   'advisor.applyLink': 'Apply', 'advisor.siteLink': 'Website',
 }
@@ -169,6 +171,7 @@ const ko: Dict = {
   'fact.sourceNote': 'Job Bank가 indeed/Talent 등 제3자 보드를 집계 → 단일 출처로 표시; 채널(origin)은 게시 경로이며 고용주 진위와 무관', 'fact.firstParty': '직접 게시', 'fact.repost': '집계 재게시',
   'fact.timeNote': '최신 수집에 없고 게시 30일 초과일 때만 「마감」 처리',
   'fact.aipNote': 'AIP는 대서양 4개 주(NL/NB/NS/PE)만 해당; 정규화된 고용주명으로 공식 지정 명단과 매칭', 'fact.aipTech': '기술',
+  'fact.jdExcerpt': '공고 발췌(수집 본문)',
   'advisor.footTpl': '목록 데이터 기반 자동 생성 · 참고용, 이민/법률 자문 아님',
   'advisor.applyLink': '지원 페이지', 'advisor.siteLink': '회사 웹사이트',
 }
