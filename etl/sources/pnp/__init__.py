@@ -12,7 +12,7 @@ META = {
     "steps": [
         ["python", "etl/pnp/build_ab.py"],   # AB AAIP(实时,exclusion 排除式)
         ["python", "etl/pnp/build_on.py"],   # ON OINP(实时,inclusion)
-        ["python", "etl/pnp/build_bc.py"],   # BC(暂解析本地 md;实时源待定位)
+        # BC:tech 定向抽选 2024-12 已关、无具名通道;welcomebc 也无清单页 → 不产出,BC 岗走通用「可提名」。
         ["python", "etl/pnp/build_sk.py"],   # SK SINP 三通道(实时)
         ["python", "etl/pnp/build_ns.py"],   # NS 两通道(实时)
         ["python", "etl/06_scrape_aip_employers.py"],  # AIP 指定雇主(NL/NB/NS;PE 仍 TODO)

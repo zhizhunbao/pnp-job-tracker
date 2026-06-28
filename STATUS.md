@@ -4,7 +4,7 @@
 > ✅ 4 容器(postgres/cms/jobbank/build)健康运行,DB ~4834 当前岗。
 >
 > **本轮重点(2026-06-26 移民信号 + 弹框)**:
-> ① **PNP 列显示具名通道**:08_score `pnp_stream()` 算命中省清单的短标签(OINP 紧缺技能 / BC PNP 科技 / SK 医疗·科技·农业),
+> ① **PNP 列显示具名通道**:08_score `pnp_stream()` 算命中省清单的短标签(OINP 紧缺技能·科技 / AB 科技 / SK 医疗·科技·农业 / NS 紧缺空缺·毕业生;stream 与资格 type 解耦,exclusion 省也能挂),
 > 列里不再只是泛「技能岗」。② **联邦 EE 类别——独立一列**:Express Entry 类别抽选 ≠ PNP(看 CRS、多不需 offer),
 > 独立信号;`etl/crawl/_fetch_ee_categories.py` 用 browser_fetch 过 canada.ca 403、展开 DataTables 抓全 9 类 94 职业 → `raw/ee/`。
 > ③ **省清单从已抓 policy md 解析,每省一个自包含脚本**(`build_<prov>.py`:`build_bc`/`build_sk`/`build_ns`)读 `raw/policy/<省>/md/*.md`
@@ -82,7 +82,7 @@ data/
 | 08 score | NOC→TEER+评分+pnpEligible(按省:08 读 raw/pnp/*.json,inclusion/exclusion 两型)→ processed/all-scored.json |
 | build_fsa_districts | GeoNames → fsa/fsa-districts.json(偶尔重建)|
 | build_wages | ESDC开放数据 → wages/wages.json(年度更新)|
-| etl/pnp/build_<prov> | 每省一个自包含脚本 → pnp/*.json。**AB/ON/SK/NS 实时抓**(SK/NS 复用 crawl 的 HTML→md 转换器);BC 实时源待定位、暂解析旧 md。**已上 docker `pnp` 源(周更)**|
+| etl/pnp/build_<prov> | 每省一个自包含脚本 → pnp/*.json。**AB/ON/SK/NS 全实时抓**(ON 双流含科技,AB 含科技 PDF;SK/NS 复用 HTML→md 转换器)。BC tech 抽选 2024-12 已关→**无具名通道、已下架**。**docker `pnp` 源(周更)**|
 | 06_scrape_aip_employers | AIP 指定雇主 NL/NB/NS → aip/(PE 仍 TODO);随 `pnp` 源周更 |
 | _fetch_ee_categories | 联邦 EE 9 类/94职业 → ee/。**已上 docker `ee` 源(月更,crawl 镜像无头 chromium,canada.ca/Akamai 无头直接通,无需 xvfb)**|
 | 09 build_mart | 拼装 → data/mart/*.json(8张表 + 分类/来源/工资 join)|
