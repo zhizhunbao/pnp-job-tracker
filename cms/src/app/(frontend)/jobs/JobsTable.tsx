@@ -111,6 +111,12 @@ const fmtLocal = (iso: string): string => {
     return new Date(iso).toLocaleString('sv-SE', { timeZone: 'America/Toronto', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
   } catch { return (iso || '').slice(0, 16).replace('T', ' ') }
 }
+// 同上但带秒(更新时间列要看到时分秒)
+const fmtLocalSec = (iso: string): string => {
+  try {
+    return new Date(iso).toLocaleString('sv-SE', { timeZone: 'America/Toronto', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  } catch { return (iso || '').slice(0, 19).replace('T', ' ') }
+}
 // 大渥太华市 2001 年合并的社区(Job Bank 仍用老社区名标注)→ 显示为「社区, Ottawa」
 const OTTAWA_COMMUNITIES = new Set([
   'nepean', 'gloucester', 'kanata', 'kanata north', 'orleans', 'orléans', 'orleans south',
@@ -586,7 +592,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                       let href: string | null = null
                       let node: React.ReactNode
                       const extra: React.CSSProperties = {}
-                      if (k === 'score') { node = j.score ?? '—'; Object.assign(extra, { fontWeight: 600, color: scoreColor(j.score) }) }
+                      if (k === 'score') { node = j.score ?? '—'; Object.assign(extra, { fontWeight: 500, color: scoreColor(j.score) }) }
                       else if (k === 'broad') { node = broadLabel(j.broad); Object.assign(extra, { whiteSpace: 'nowrap', color: cat.fg, fontWeight: 500 }) }
                       else if (k === 'mid') { node = (!j.mid || j.mid === '未分类') ? t('cell.uncat') : j.mid; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'fine') { node = (j.mid === '未分类' || !j.mid) ? '—' : j.fine; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
@@ -608,12 +614,15 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                       else if (k === 'district') { href = mapsFor(L.district); node = L.district || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#1f2937' }) }
                       else if (k === 'source') { href = sourceUrl(j.applyUrl) || null; node = sourceLabel(j); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'origin') { node = j.origin ? t('origin.' + j.origin) : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
-                      else if (k === 'pnp') {  // 具名通道(命中省清单,如「OINP 紧缺技能」,琥珀,数据层算)优先;否则泛技能岗(TEER0-3,绿)/魁省/—
-                        const qc = j.province === 'QC'
+                      else if (k === 'pnp') {  // 三档强度 + 魁省N/A:强=具名紧缺通道(琥珀底色 chip,500)、中=可提名(绿,500)、弱=不符(灰—,400);魁省=紫,400(独立 N/A)
                         const stream = j.pnpStream  // 命中省 inclusion 清单才有,别处看不到的真信号
-                        const skilled = j.pnpEligible && j.teer != null && j.teer <= 3
-                        node = qc ? t('cell.pnpQc') : stream ? stream : (!j.pnpEligible ? '—' : (skilled ? t('cell.pnpSkilled') : t('cell.pnpIndemand')))
-                        Object.assign(extra, { whiteSpace: 'nowrap', color: qc ? '#7c3aed' : stream ? '#b45309' : (!j.pnpEligible ? '#d1d5db' : (skilled ? '#15803d' : '#b45309')), fontSize: 12.5 })
+                        if (j.province === 'QC') { node = t('cell.pnpQc'); Object.assign(extra, { whiteSpace: 'nowrap', color: '#7c3aed', fontSize: 12.5 }) }
+                        else if (stream) {       // 强:省点名招 → 浅琥珀底色徽章(全列唯一加底色的一档)
+                          node = <span style={{ background: '#fef3c7', color: '#b45309', fontWeight: 500, fontSize: 12, padding: '2px 8px', borderRadius: 6, whiteSpace: 'nowrap' }}>{stream}</span>
+                          Object.assign(extra, { whiteSpace: 'nowrap' })
+                        }
+                        else if (j.pnpEligible) { node = t('cell.pnpSkilled'); Object.assign(extra, { whiteSpace: 'nowrap', color: '#15803d', fontWeight: 500, fontSize: 12.5 }) }  // 中:可提名
+                        else { node = '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#9ca3af', fontSize: 12.5 }) }  // 弱:不符
                       }
                       else if (k === 'ee') {  // 联邦 EE 类别抽选(全国单一源,数据层算);命中→蓝,未列入→—
                         node = j.eeCategory || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.eeCategory ? '#2563eb' : '#d1d5db', fontSize: 12.5 })
@@ -622,7 +631,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                       else if (k === 'status') { const cl = j.status === 'closed'; node = cl ? t('cell.closed') : t('cell.open'); Object.assign(extra, { whiteSpace: 'nowrap', color: cl ? '#9ca3af' : '#15803d', fontSize: 12.5 }) }
                       else if (k === 'closedAt') { node = j.closedAt ? j.closedAt.slice(0, 10) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       else if (k === 'datePosted') { node = j.datePosted ? j.datePosted.slice(0, 10) : '—'; Object.assign(extra, { color: '#6b7280', fontSize: 12.5, whiteSpace: 'nowrap' }) }
-                      else { node = j.lastSeen ? j.lastSeen.slice(0, 10) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
+                      else { node = j.lastSeen ? fmtLocalSec(j.lastSeen) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       return (
                         <td key={k} className="jcell" style={{ ...td, ...extra, cursor: 'pointer', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', ...(hasWidths ? { whiteSpace: 'normal', overflowWrap: 'break-word', wordBreak: 'break-word' } : null) }} title={typeof node === 'string' ? node : undefined} onClick={() => open(k, typeof node === 'string' ? node : (j.salaryText || j.salary || ''))}>
                           {href
@@ -978,7 +987,15 @@ function advHeader(field: ColKey, j: JobRow, t: TFn): { tag: string; title: stri
   return { tag: t('col.' + field), title: j.title || j.company || '—', links }
 }
 
-const scoreColor = (s: number | null) => (s == null ? '#9ca3af' : s >= 75 ? '#15803d' : s >= 50 ? '#b45309' : '#6b7280')
+// 5 档综合价值色阶(分位 ~37/55/64/72):灰底 → 4 级绿越高越深(数字本身给精度,颜色作梯度强化)
+const scoreColor = (s: number | null) => (
+  s == null ? '#9ca3af'
+    : s >= 72 ? '#166534'   // 高
+    : s >= 64 ? '#15803d'   // 中高
+    : s >= 55 ? '#16a34a'   // 中
+    : s >= 38 ? '#65a30d'   // 中低
+    : '#9ca3af'             // 低 → 灰
+)
 const ctrl: React.CSSProperties = { height: 38, boxSizing: 'border-box', padding: '0 10px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 14, color: '#1f2937', background: '#fff' }
 const filtRow: React.CSSProperties = { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }
 const filtLabel: React.CSSProperties = { fontSize: 12, color: '#9ca3af', minWidth: 28, whiteSpace: 'nowrap' }
