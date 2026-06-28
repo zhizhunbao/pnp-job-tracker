@@ -846,6 +846,23 @@ const normName = (name?: string) => (name || '').toLowerCase()
   .split(/\bo\/a\b|\bdba\b|\bd\/b\/a\b/)[0]
   .replace(AIP_SUFFIX, ' ').replace(/[^a-z0-9& ]/g, ' ').replace(/\s+/g, ' ').trim()
 const ATLANTIC = new Set(['NL', 'NB', 'NS', 'PE'])
+// 评分明细(镜像 etl/08_score.py 的 score())—— 前端同步重建,供「评分」事实块展示。
+// 关键:+12 是「省具名通道命中」(NAMED_STREAM_NOCS_BY_PROV = 各省 pnp 清单 nocs 并集),
+// 由 pnpOccupations 维度按 (省, noc) 判定 —— 不是写死的低TEER集合(那是旧 route.ts 的错,会对不上库里分数)。
+const SCORE_TEER_BASE: Record<number, number> = { 0: 54, 1: 56, 2: 52, 3: 46, 4: 28, 5: 20 }
+const SCORE_INDEMAND2 = new Set(['21', '22', '31', '32', '72', '73', '42'])
+const SCORE_ACC: Record<string, number> = { 'co-op': 6, junior: 6, intermediate: 4, senior: 2, unknown: 3 }
+const SCORE_AGENCY = /recruit|staffing|talent|personnel|placement|outsourc|mercor|adecco|randstad/i
+function scoreBreakdown(job: JobRow, named: boolean) {
+  const noc = job.noc || '', teer = job.teer
+  const base = teer == null ? 18 : (SCORE_TEER_BASE[teer] ?? 18)
+  const indemand = noc && SCORE_INDEMAND2.has(noc.slice(0, 2)) ? 10 : 0
+  const namedPts = named ? 12 : 0
+  const direct = SCORE_AGENCY.test(job.company || '') ? 0 : 12
+  const acc = SCORE_ACC[job.accessibility || 'unknown'] ?? 3
+  const prov = job.province && job.province !== 'ON' ? -6 : 0
+  return { base, indemand, named: namedPts, direct, acc, prov, teer, total: Math.max(0, Math.min(100, base + indemand + namedPts + direct + acc + prov)) }
+}
 const LOC_FIELDS = new Set<ColKey>(['country', 'province', 'city', 'district', 'address'])
 const SAL_FIELDS = new Set<ColKey>(['salary', 'salaryYr', 'wageMedHr', 'wageMedYr', 'vsMedian'])
 const CLS_FIELDS = new Set<ColKey>(['noc', 'teer', 'broad', 'mid', 'fine'])
@@ -857,6 +874,23 @@ function FieldFactsSection({ field, job, lang, pnpOcc, eeOcc, desigEmp }: { fiel
   if (field === 'ee') return <EeCategorySection job={job} lang={lang} cats={eeOcc} />
   if (field === 'title') return <TitleFacts job={job} lang={lang} />
   const day = (s?: string) => (s || '').slice(0, 10)
+  const sg = (n: number) => (n >= 0 ? `+${n}` : `${n}`)
+
+  if (field === 'score') {
+    const named = !!job.noc && pnpOcc.some((o) => o.province === job.province && o.noc === job.noc)
+    const b = scoreBreakdown(job, named)
+    return (
+      <FactsBox note={t('fact.scoreNote')}>
+        <FactRow k={t('score.base')}>{`${b.base}  (${b.teer == null ? t('cell.uncat') : 'TEER ' + b.teer})`}</FactRow>
+        {b.indemand ? <FactRow k={t('score.indemand')}>{sg(b.indemand)}</FactRow> : null}
+        {b.named ? <FactRow k={t('score.low')}>{sg(b.named)}</FactRow> : null}
+        <FactRow k={t('score.direct')}>{sg(b.direct)}</FactRow>
+        <FactRow k={t('score.exp')}>{sg(b.acc)}</FactRow>
+        {b.prov ? <FactRow k={t('score.prov')}>{sg(b.prov)}</FactRow> : null}
+        <FactRow k={t('score.total')}><strong style={{ color: '#111827' }}>{b.total}{job.score != null && job.score !== b.total ? `  (${t('score.stored')} ${job.score})` : ''}</strong></FactRow>
+      </FactsBox>
+    )
+  }
 
   if (field === 'aip') {
     const cn = normName(job.company)

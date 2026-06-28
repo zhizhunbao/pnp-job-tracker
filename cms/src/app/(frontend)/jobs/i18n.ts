@@ -66,6 +66,7 @@ const zh: Dict = {
   'fact.timeNote': '下架口径:本次抓取未出现 且 发布超 30 天,才标「已下架」',
   'fact.aipNote': 'AIP 仅限大西洋四省(NL/NB/NS/PE);按公司名归一化匹配官方指定雇主名单,无中介', 'fact.aipTech': '科技类',
   'fact.jdExcerpt': '职位描述摘录(抓取正文)',
+  'fact.scoreNote': '评分明细与 08_score 一致(满分 100,移民价值视角)', 'score.base': '基准', 'score.indemand': '紧缺大类', 'score.low': '省具名通道', 'score.direct': '第一方雇主', 'score.exp': '经验', 'score.prov': '省份(非 ON)', 'score.total': '合计', 'score.stored': '入库',
   'advisor.footTpl': '说明由榜单数据自动生成 · 仅供参考,不构成移民/法律建议',
   'advisor.applyLink': '投递页', 'advisor.siteLink': '公司官网',
 }
@@ -119,6 +120,7 @@ const en: Dict = {
   'fact.timeNote': 'Closed only when absent from the latest crawl AND posted >30 days ago',
   'fact.aipNote': 'AIP covers the four Atlantic provinces only (NL/NB/NS/PE); matched by normalized employer name against the official designated list', 'fact.aipTech': 'Tech',
   'fact.jdExcerpt': 'Posting excerpt (scraped)',
+  'fact.scoreNote': 'Breakdown matches 08_score (out of 100, immigration-value lens)', 'score.base': 'Baseline', 'score.indemand': 'In-demand group', 'score.low': 'Named PNP stream', 'score.direct': 'First-party employer', 'score.exp': 'Experience', 'score.prov': 'Province (non-ON)', 'score.total': 'Total', 'score.stored': 'stored',
   'advisor.footTpl': 'Auto-generated from listing data · reference only, not immigration/legal advice',
   'advisor.applyLink': 'Apply', 'advisor.siteLink': 'Website',
 }
@@ -172,6 +174,7 @@ const ko: Dict = {
   'fact.timeNote': '최신 수집에 없고 게시 30일 초과일 때만 「마감」 처리',
   'fact.aipNote': 'AIP는 대서양 4개 주(NL/NB/NS/PE)만 해당; 정규화된 고용주명으로 공식 지정 명단과 매칭', 'fact.aipTech': '기술',
   'fact.jdExcerpt': '공고 발췌(수집 본문)',
+  'fact.scoreNote': '08_score와 동일(100점 만점, 이민 가치 관점)', 'score.base': '기준', 'score.indemand': '부족 대분류', 'score.low': '주 지정 채널', 'score.direct': '직접 고용주', 'score.exp': '경력', 'score.prov': '주(ON 외)', 'score.total': '합계', 'score.stored': '저장값',
   'advisor.footTpl': '목록 데이터 기반 자동 생성 · 참고용, 이민/법률 자문 아님',
   'advisor.applyLink': '지원 페이지', 'advisor.siteLink': '회사 웹사이트',
 }

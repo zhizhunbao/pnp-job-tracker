@@ -29,7 +29,7 @@ type Job = {
   title?: string; company?: string; noc?: string; province?: string
   city?: string; district?: string; address?: string; officialUrl?: string; applyUrl?: string
   score?: number | null; category?: string; accessibility?: string
-  pnpEligible?: boolean; eeCategory?: string; aip?: boolean; salary?: string; salaryAnnual?: number | null
+  pnpEligible?: boolean; pnpStream?: string; eeCategory?: string; aip?: boolean; salary?: string; salaryAnnual?: number | null
   wageMedHourly?: number | null; wageMedAnnual?: number | null
   source?: string; sourceLabel?: string; origin?: string
   datePosted?: string; lastSeen?: string; status?: string
@@ -47,10 +47,11 @@ const catOf = (noc?: string) => {
   return BROAD[noc[0]] || '未分类'
 }
 
-// 评分明细(与 etl/08_score.py 一致)——喂进 prompt 让模型用准确数字解释
+// 评分明细(与 etl/08_score.py 的 score() 一致)——喂进 prompt 让模型用准确数字解释。
+// +12 是「省具名通道命中」(NAMED_STREAM_NOCS_BY_PROV),用 pnpStream(非空=命中具名通道)作信号,
+// 不是写死的低TEER集合(旧版那样会对不上库里分数)。
 const TEER_BASE: Record<number, number> = { 0: 54, 1: 56, 2: 52, 3: 46, 4: 28, 5: 20 }
 const INDEMAND2 = new Set(['21', '22', '31', '32', '72', '73', '42'])
-const INDEMAND_LOW = new Set(['44101', '75110', '85100', '85101', '84120', '65202'])
 const ACC_PTS: Record<string, number> = { 'co-op': 6, junior: 6, intermediate: 4, senior: 2, unknown: 3 }
 const AGENCY_RE = /recruit|staffing|talent|personnel|placement|outsourc|mercor|adecco|randstad/i
 function scoreFacts(j: Job): string {
@@ -58,12 +59,12 @@ function scoreFacts(j: Job): string {
   const teer = teerOf(noc)
   const base = teer == null ? 18 : (TEER_BASE[teer] ?? 18)
   const indemand = noc && INDEMAND2.has(noc.slice(0, 2)) ? 10 : 0
-  const low = noc && INDEMAND_LOW.has(noc) ? 12 : 0
+  const named = j.pnpStream ? 12 : 0
   const direct = AGENCY_RE.test(j.company || '') ? 0 : 12
   const acc = ACC_PTS[j.accessibility || 'unknown'] ?? 3
   const prov = j.province && j.province !== 'ON' ? -6 : 0
-  const total = Math.max(0, Math.min(100, base + indemand + low + direct + acc + prov))
-  return `Score breakdown — baseline(${teer == null ? 'unclassified' : 'TEER ' + teer}): ${base}; in-demand group: ${indemand}; TEER4-5 special stream: ${low}; direct employer: ${direct}; experience(${j.accessibility || 'unknown'}): ${acc}; province(${j.province || '—'}): ${prov}; total: ${total}${j.score != null && j.score !== total ? ` (stored ${j.score})` : ''}`
+  const total = Math.max(0, Math.min(100, base + indemand + named + direct + acc + prov))
+  return `Score breakdown — baseline(${teer == null ? 'unclassified' : 'TEER ' + teer}): ${base}; in-demand group: ${indemand}; named PNP stream: ${named}; direct employer: ${direct}; experience(${j.accessibility || 'unknown'}): ${acc}; province(${j.province || '—'}): ${prov}; total: ${total}${j.score != null && j.score !== total ? ` (stored ${j.score})` : ''}`
 }
 function jobFacts(j: Job): string {
   const t = teerOf(j.noc)
