@@ -165,8 +165,10 @@
   - ✅ **A1 零成本字段事实块**:地点 / 薪资 / 分类 / 来源 / 经验 / 时间状态(读 job 已有字段)。
   - ✅ **小 wiring 4 项**:firstSeen 进 SQL/JobRow(时间块) · designated_employers 维度进前端(AIP 记录块,normName 镜像 05c) · 职位 JD 摘录走 `/api/jobtext` · 评分明细前端重建。
   - ✅ **附带修 bug**:评分明细 +12 应按「省具名通道命中」(pnpOccupations 维度),旧 route.ts 写死低TEER 6码集合会对不上库分;前端 + route.ts 都已修(实测合计=库分)。
-- **下一步全部跨「需重灌/抓取」边界(已按 loop 约定停下等人)**:
-  - #0 ATS 简介进 mart → 改 09 +(可能加 Companies schema)+ **重建 mart + reseed**。
-  - #4 工资 low/high → 改 build_wages + 09 + **Jobs.ts 加字段(必须重启 dev sync)+ reseed**。
+- ✅ **#4 工资 low/high(全链路打通,已实测)**:build_wages 抽 Low/High/年份 → 09 join wageLow/High + wageYear → Jobs.ts +5 字段 → Payload 推列 → host dev 重灌(DB 5499 带 low/5503 带 year)→ 薪资块显示「当地时薪/年薪(低–中–高)+ 年份」。**验证了「改 schema→重启 dev sync→重灌」全链路。**
+- ✅ **#0 ATS 公司简介进 mart(零抓取快赢,已实测)**:09 ATS add_company 补 description → companies.json(14 家)→ page.tsx join c.description/sectors → 公司事实块显示真实简介(无则诚实留空)。Companies 已有字段,无需改 schema。
+- ✅ **附带修表格末列右侧缝隙**(用户反馈):末列 `<col>` 宽设 auto 吸收剩余空间,右缘贴齐容器。
+- **剩余 Part B(全跨「需抓取」边界,等人)**:
   - #1 EE 抽选线 / #2 NOC 职责 → **抓 canada.ca / noc.esdc(政府站,可能反爬)** + 维度 + reseed。
-  - #3 PNP 门槛 → 解析 policy md + 维度 + reseed。 #5 公司官网 / #6 RNIP → 抓取,后置。
+  - #3 PNP 门槛 → 解析 policy md + 维度 + reseed。 #5 公司官网(仅 24% 有网址,脆)/ #6 RNIP → 抓取,后置。
+- ⚠️ **部署注意**:以上前端/schema 改动在 **host dev(npm run dev)** 上验证;**docker pnp-cms-1(production build)仍是旧码**,要让线上(:3000)也生效需 `docker compose up -d --build cms`。DB schema 已加列(host dev 推的),docker cms 读到多余列无害。
