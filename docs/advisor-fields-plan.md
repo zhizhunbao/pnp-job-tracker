@@ -159,5 +159,14 @@
 
 ## 当前代码状态(交接)
 
-- 分支 `feat/lists-autoupdate-and-table-ux`,已 push 远端(`origin/` 同名)。
-- 本计划相关改动**尚未开始**;设计总纲(三层 + 契约)已锁定,数据缺口已核实(CSV low/high 在、公司官网仅 24%、ATS 简介 mart 漏带、firstSeen/designated_employers 未 wire)。
+- 分支 `feat/lists-autoupdate-and-table-ux`,持续 push 远端(`origin/` 同名)。
+- **已完成并实测(纯前端 / 不需重灌的部分全做完了)**:
+  - ✅ **A0 三层骨架**:② route.ts 多轮 `messages[]` grounded chat · ③ `AdvisorChat` 对话框 · ① `FieldFactsSection` 上半框架。
+  - ✅ **A1 零成本字段事实块**:地点 / 薪资 / 分类 / 来源 / 经验 / 时间状态(读 job 已有字段)。
+  - ✅ **小 wiring 4 项**:firstSeen 进 SQL/JobRow(时间块) · designated_employers 维度进前端(AIP 记录块,normName 镜像 05c) · 职位 JD 摘录走 `/api/jobtext` · 评分明细前端重建。
+  - ✅ **附带修 bug**:评分明细 +12 应按「省具名通道命中」(pnpOccupations 维度),旧 route.ts 写死低TEER 6码集合会对不上库分;前端 + route.ts 都已修(实测合计=库分)。
+- **下一步全部跨「需重灌/抓取」边界(已按 loop 约定停下等人)**:
+  - #0 ATS 简介进 mart → 改 09 +(可能加 Companies schema)+ **重建 mart + reseed**。
+  - #4 工资 low/high → 改 build_wages + 09 + **Jobs.ts 加字段(必须重启 dev sync)+ reseed**。
+  - #1 EE 抽选线 / #2 NOC 职责 → **抓 canada.ca / noc.esdc(政府站,可能反爬)** + 维度 + reseed。
+  - #3 PNP 门槛 → 解析 policy md + 维度 + reseed。 #5 公司官网 / #6 RNIP → 抓取,后置。
