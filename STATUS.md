@@ -1,9 +1,18 @@
-# STATUS / 交接文档（2026-06-26）
+# STATUS / 交接文档（2026-06-29）
 
 > 新 session 接手先读这份 + `CLAUDE.md`(设计宪法)+ `prd.md`(需求)。仓库:github.com/zhizhunbao/pnp-job-tracker
-> ✅ 6 容器(postgres/cms/jobbank/build/**pnp/ee**)健康运行,DB ~5322 当前岗。
+> ✅ 容器健康运行;**docker cms 现发布 :3001**(让出 :3000 给本地 host npm dev),本地 dev :3000。
 >
-> **本轮(2026-06-28,接上轮)**:① **PNP/AIP/EE 三类清单全部 docker 自动更新** —— `pnp` 源(周更 httpx:AB/ON/SK/NS 实时抓 + `06_scrape_aip`)、`ee` 源(月更**无头 chromium**,canada.ca 实测无头+stealth 直接通,无需 xvfb;crawl 镜像保留有头能力给硬墙)。② **每省脚本全实时抓,md 只作参考**(`etl/pnp/build_<prov>.py`)。③ **08_score 把具名通道 stream 与资格 type 解耦** → exclusion 省(AB)也能挂 inclusion 通道;新增 **ON 科技(OINP Tech Draws 9)/ AB 科技(AAIP Accelerated Tech 44)**,全国具名命中 ~247。④ **BC tech 下架**(tech 抽选 2024-12 已关、welcomebc 无清单页;原 bc-tech 是手工从第三方补录的,违反"实时抓")→ BC 岗落绿「可提名」。⑤ **表格显示升级**:PNP 列 3 档强度(具名=琥珀 chip / 可提名 / 不符 + 魁省 N/A)+ 评分列 5 档色阶 + 更新时间时分秒 + 列宽拖拽/缩窄换行。⑥ **修**:09 空省份排序崩溃、04c 非城市占位词清洗。
+> **本轮(2026-06-29 顾问弹框三层 + Part B 数据 + 表格固定列 + JD 格式)**:
+> **① 弹框三层(事实/判断/对话)**:上半=可核验事实(绝不经 LLM)/ 中=只基于上半事实的 AI 判断 / 下=多轮 grounded 对话([route.ts](cms/src/app/api/advisor/route.ts) 加 `messages[]`,system 带整条岗位事实+铁律,问到没有的数据直说"未提供"不编)。各字段「事实块」`FieldFactsSection`(地点/薪资/分类/来源/经验/时间状态零成本;wiring:firstSeen 进 SQL、designated_employers 维度进前端=AIP 记录、职位 JD 摘录走 `/api/jobtext`、评分明细前端重建)。
+> **② Part B 数据缺口(全开放数据 httpx,可进 docker 自动更新)**:**#0** ATS 公司简介进 mart;**#4** 工资 low/中/high+年份(`build_wages` 多抽 + `Jobs.ts` +5 字段);**#1** EE 抽选分数线(`build_ee_draws` 抓 IRCC `ee_rounds_123_en.json`,无 Akamai → ee_categories 加 drawCrs/Date/Size);**#2** NOC 官方名+职责(`build_noc_descriptions` 抓 StatCan NOC 2021 Elements CSV → 新 `noc-descriptions` 维度 397 行)。**#3 PNP 门槛 = 评估后决定留空**(门槛散在各省 checklist prose、工资多定性,解析易错;移民门槛宁可留空,弹框已带官方来源链接)。
+> **③ 表格固定左列 + 横滚**:发布时间/大分类/公司/职位 **sticky 固定**(只冻最左连续段,先量列宽算累计 left),其余列给最小宽 → 列多时整表超容器**横向滚动**看隐藏列、列少 `width:100%` 拉满;默认 10 列;**bump 列偏好版本** COLS_COOKIE→`jobsCols2`/PREF_KEY→`v8`。
+> **④ JD 正文保留格式**:[clean/05b_parse_details](etl/clean/05b_parse_details.py) `description()` 改抓**可见结构区** `.job-posting-detail-requirements`(h4+ul/li)做块感知提取(原是读 `[property=description]` 压平一坨);聚合帖 property 里的转义 HTML 再解析一次。`REPARSE=1` 重解析 6808 岗 → mart(4699 有正文)→ reseed。**原生 JB 岗格式漂亮;少数聚合纯文本帖源头无结构,天花板**。
+> **本轮坑/教训**:① **seed 各维度是显式字段白名单**([seed/route.ts](cms/src/app/seed/route.ts) `dims[]`)—— 加维度字段必须同步加进 map,否则重灌不入库(EE drawCrs 踩过)。② 改 `Jobs.ts`/新 collection → **必须重启 host dev**(Payload 推 schema 加列/建表)再 reseed。③ **noc.esdc 证书链坏 + 不透明 objectid** → 弃用,改 StatCan 开放 CSV。④ canada.ca **category-based-selection 页现可 httpx 直取**(无 Akamai),EE 类别抓取可改 httpx 替掉有头浏览器(未做)。⑤ **EE「类别抽选」≠ 普通 EE**:类别列「—」只代表无定向快车道,不挡普通 EE/PNP/AIP(三条独立)。
+> 代码在分支 `feat/lists-autoupdate-and-table-ux`(**未合并 main**,本轮 +20 余 commits)。
+> **下一步(新 session)**:① **重建 docker cms :3001 到最新**(本轮改动后 :3001 又旧了:`cd docker && docker compose --profile unattended up -d --build cms`)② #5 公司官网抓取(仅 ~24% 有网址,脆)/ #6 RNIP ③ EE 类别抓取改 httpx(数据已准,只为进 docker 自更)④ 合并 main。详见 [docs/advisor-fields-plan.md](docs/advisor-fields-plan.md)。
+>
+> **上轮(2026-06-28)**:① **PNP/AIP/EE 三类清单全部 docker 自动更新** —— `pnp` 源(周更 httpx:AB/ON/SK/NS 实时抓 + `06_scrape_aip`)、`ee` 源(月更**无头 chromium**,canada.ca 实测无头+stealth 直接通,无需 xvfb;crawl 镜像保留有头能力给硬墙)。② **每省脚本全实时抓,md 只作参考**(`etl/pnp/build_<prov>.py`)。③ **08_score 把具名通道 stream 与资格 type 解耦** → exclusion 省(AB)也能挂 inclusion 通道;新增 **ON 科技(OINP Tech Draws 9)/ AB 科技(AAIP Accelerated Tech 44)**,全国具名命中 ~247。④ **BC tech 下架**(tech 抽选 2024-12 已关、welcomebc 无清单页;原 bc-tech 是手工从第三方补录的,违反"实时抓")→ BC 岗落绿「可提名」。⑤ **表格显示升级**:PNP 列 3 档强度(具名=琥珀 chip / 可提名 / 不符 + 魁省 N/A)+ 评分列 5 档色阶 + 更新时间时分秒 + 列宽拖拽/缩窄换行。⑥ **修**:09 空省份排序崩溃、04c 非城市占位词清洗。
 > 代码在分支 `feat/lists-autoupdate-and-table-ux`(**10 commits,未合并 main**)。
 > **下一步(已规划未做)**:见 [docs/advisor-fields-plan.md](docs/advisor-fields-plan.md) —— 每字段弹框「上原始数据块 + 下 AI」+ 补 6 个数据缺口(①EE 抽选分数线 ②NOC 职责 ③PNP 门槛 ④工资 low/high ⑤公司信息 ⑥RNIP)。
 >
