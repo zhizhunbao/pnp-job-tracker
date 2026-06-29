@@ -73,6 +73,7 @@ export interface Config {
     jobs: Job;
     'pnp-occupations': PnpOccupation;
     'ee-categories': EeCategory;
+    'noc-descriptions': NocDescription;
     'policy-docs': PolicyDoc;
     'designated-employers': DesignatedEmployer;
     provinces: Province;
@@ -94,6 +95,7 @@ export interface Config {
     jobs: JobsSelect<false> | JobsSelect<true>;
     'pnp-occupations': PnpOccupationsSelect<false> | PnpOccupationsSelect<true>;
     'ee-categories': EeCategoriesSelect<false> | EeCategoriesSelect<true>;
+    'noc-descriptions': NocDescriptionsSelect<false> | NocDescriptionsSelect<true>;
     'policy-docs': PolicyDocsSelect<false> | PolicyDocsSelect<true>;
     'designated-employers': DesignatedEmployersSelect<false> | DesignatedEmployersSelect<true>;
     provinces: ProvincesSelect<false> | ProvincesSelect<true>;
@@ -438,6 +440,32 @@ export interface EeCategory {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "noc-descriptions".
+ */
+export interface NocDescription {
+  id: number;
+  /**
+   * NOC 2021 5 位码
+   */
+  noc?: string | null;
+  /**
+   * 官方职业名(Class title)
+   */
+  title?: string | null;
+  /**
+   * 主要职责(换行分隔)
+   */
+  duties?: string | null;
+  /**
+   * 任职要求(换行分隔)
+   */
+  requirements?: string | null;
+  fetched?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "designated-employers".
  */
 export interface DesignatedEmployer {
@@ -588,6 +616,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'ee-categories';
         value: number | EeCategory;
+      } | null)
+    | ({
+        relationTo: 'noc-descriptions';
+        value: number | NocDescription;
       } | null)
     | ({
         relationTo: 'policy-docs';
@@ -807,6 +839,19 @@ export interface EeCategoriesSelect<T extends boolean = true> {
   drawCrs?: T;
   drawDate?: T;
   drawSize?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "noc-descriptions_select".
+ */
+export interface NocDescriptionsSelect<T extends boolean = true> {
+  noc?: T;
+  title?: T;
+  duties?: T;
+  requirements?: T;
+  fetched?: T;
   updatedAt?: T;
   createdAt?: T;
 }

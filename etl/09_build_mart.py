@@ -26,6 +26,7 @@ IN_WAGES = _paths.WAGES / "wages.json"   # NOC×省 中位工资(build_wages.py 
 IN_PNP = _paths.PNP                      # raw/pnp/*.json(各省具名通道:每文件一条通道)
 IN_EE = _paths.EE / "federal-categories.json"  # 联邦 Express Entry 类别抽选(全国单一源)
 IN_EE_DRAWS = _paths.EE / "draws.json"          # 各类别最近一次抽选(CRS/日期/邀请数,build_ee_draws.py 产)
+IN_NOC_DESC = _paths.NOC / "descriptions.json"  # NOC 官方名+主要职责(build_noc_descriptions.py 产)
 OUT_MART = _paths.DATA / "mart"
 
 PROV_FULL = {
@@ -254,12 +255,30 @@ def build():
                         "noc": o["noc"], "teer": o.get("teer"), "title": o.get("title", ""),
                         "drawCrs": dr.get("crs"), "drawDate": dr.get("date"), "drawSize": dr.get("size")})
 
+    # NOC 官方名+主要职责维度(只收数据集出现过的 NOC,控制前端 payload;duties/requirements 存换行拼接文本)
+    noc_descriptions = []
+    if IN_NOC_DESC.exists():
+        try:
+            nd = json.loads(IN_NOC_DESC.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001
+            nd = {}
+        fetched = nd.get("fetched", "")
+        used_nocs = {j.get("noc") for j in jobs if j.get("noc")}
+        for n, v in nd.get("byNoc", {}).items():
+            if n in used_nocs:
+                noc_descriptions.append({
+                    "noc": n, "title": v.get("title", ""),
+                    "duties": "\n".join(v.get("duties", [])),
+                    "requirements": "\n".join(v.get("requirements", [])),
+                    "fetched": fetched})
+
     return {
         "companies": list(companies.values()), "jobs": jobs,
         "provinces": provinces, "cities": cities, "districts": districts,
         "designated_employers": designated,
         "noc_categories": noc_categories, "sources": sources, "experience_levels": experience_levels,
         "pnp_occupations": pnp_occupations, "ee_categories": ee_categories,
+        "noc_descriptions": noc_descriptions,
     }
 
 

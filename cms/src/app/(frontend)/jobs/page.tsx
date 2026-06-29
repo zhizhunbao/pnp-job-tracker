@@ -23,7 +23,7 @@ export default async function JobsPage() {
     ORDER BY j.date_posted DESC NULLS LAST LIMIT 20000`)
 
   // 维度表小,继续走 payload.find
-  const [provDocs, cityDocs, distDocs, nocDocs, srcDocs, expDocs, pnpDocs, eeDocs, aipDocs] = await Promise.all([
+  const [provDocs, cityDocs, distDocs, nocDocs, srcDocs, expDocs, pnpDocs, eeDocs, aipDocs, nocDescDocs] = await Promise.all([
     payload.find({ collection: 'provinces', limit: 100, depth: 0, sort: 'name' }),
     payload.find({ collection: 'cities', limit: 5000, depth: 0, sort: 'name' }),
     payload.find({ collection: 'districts', limit: 1000, depth: 0, sort: 'name' }),
@@ -33,6 +33,7 @@ export default async function JobsPage() {
     payload.find({ collection: 'pnp-occupations', limit: 5000, depth: 0 }),
     payload.find({ collection: 'ee-categories', limit: 2000, depth: 0 }),
     payload.find({ collection: 'designated-employers', limit: 5000, depth: 0 }),
+    payload.find({ collection: 'noc-descriptions', limit: 2000, depth: 0 }),
   ])
   const dims = {
     provinces: provDocs.docs.map((p: any) => ({ code: p.code, name: p.name })),
@@ -44,6 +45,7 @@ export default async function JobsPage() {
     pnpOccupations: pnpDocs.docs.map((r: any) => ({ province: r.province, stream: r.stream, label: r.label, type: r.type, noc: r.noc, name: r.name, gtaRestricted: !!r.gtaRestricted, url: r.url, fetched: r.fetched })),
     eeCategories: eeDocs.docs.map((r: any) => ({ category: r.category, label: r.label, noc: r.noc, teer: typeof r.teer === 'number' ? r.teer : null, title: r.title, url: r.url, fetched: r.fetched, drawCrs: typeof r.drawCrs === 'number' ? r.drawCrs : null, drawDate: r.drawDate ?? '', drawSize: typeof r.drawSize === 'number' ? r.drawSize : null })),
     designatedEmployers: aipDocs.docs.map((r: any) => ({ name: r.name, province: r.province, location: r.location, isTech: !!r.isTech })),
+    nocDescriptions: nocDescDocs.docs.map((r: any) => ({ noc: r.noc, title: r.title ?? '', duties: r.duties ?? '', requirements: r.requirements ?? '', fetched: r.fetched ?? '' })),
   }
 
   const iso = (v: any) => (v instanceof Date ? v.toISOString() : (v ?? ''))

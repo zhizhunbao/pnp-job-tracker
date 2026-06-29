@@ -242,6 +242,7 @@ const ORIGIN_LABEL: Record<string, string> = { jobbank: 'Job Bank', ats: 'ATS', 
 type PnpOcc = { province: string; stream: string; label: string; type: string; noc: string; name: string; gtaRestricted: boolean; url: string; fetched: string }
 type EeOcc = { category: string; label: string; noc: string; teer: number | null; title: string; url: string; fetched: string; drawCrs: number | null; drawDate: string; drawSize: number | null }
 type DesigEmp = { name: string; province: string; location: string; isTech: boolean }
+type NocDesc = { noc: string; title: string; duties: string; requirements: string; fetched: string }
 type Dims = {
   provinces: { code: string; name: string }[]
   cities: { name: string; province: string }[]
@@ -252,8 +253,9 @@ type Dims = {
   pnpOccupations: PnpOcc[]
   eeCategories: EeOcc[]
   designatedEmployers: DesigEmp[]
+  nocDescriptions: NocDesc[]
 }
-const EMPTY_DIMS: Dims = { provinces: [], cities: [], districts: [], nocCategories: [], sources: [], experienceLevels: [], pnpOccupations: [], eeCategories: [], designatedEmployers: [] }
+const EMPTY_DIMS: Dims = { provinces: [], cities: [], districts: [], nocCategories: [], sources: [], experienceLevels: [], pnpOccupations: [], eeCategories: [], designatedEmployers: [], nocDescriptions: [] }
 const PROV_CODE: Record<string, string> = Object.fromEntries(Object.entries(PROV_NAMES).map(([c, n]) => [n, c]))
 
 export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialCols }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims; initialCols?: string[] }) {
@@ -681,7 +683,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
         </div>
       </footer>
 
-      {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} pnpOcc={dims.pnpOccupations} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} onClose={() => setPopup(null)} />}
+      {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} pnpOcc={dims.pnpOccupations} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} onClose={() => setPopup(null)} />}
       {actModal && <ActModal kind={actModal.kind} job={actModal.job} jobs={jobs} lang={lang} onClose={() => setActModal(null)} />}
     </div>
   )
@@ -830,7 +832,21 @@ function FactsBox({ children, note }: { children: React.ReactNode; note?: React.
   )
 }
 // 职位事实块:标题 + 匹配 NOC + 抓取的 JD 正文摘录(走 /api/jobtext,同 ActModal desc;列表 SQL 不带 description)
-function TitleFacts({ job, lang }: { job: JobRow; lang: Lang }) {
+// NOC 官方主要职责 / 任职要求(StatCan Elements);noc 来自 noc-descriptions 维度,无则不渲染
+function NocDutiesView({ noc, lang }: { noc: NocDesc | null; lang: Lang }) {
+  const t = makeT(lang)
+  if (!noc || (!noc.duties && !noc.requirements)) return null
+  const block = (label: string, text: string) => text ? (
+    <>
+      <div style={{ marginTop: 8, fontSize: 11.5, color: '#9ca3af' }}>{label}{noc.fetched ? ` · ${noc.fetched}` : ''}</div>
+      <ul style={{ margin: '3px 0 0', paddingLeft: 18, fontSize: 12.5, color: '#4b5563', lineHeight: 1.55 }}>
+        {text.split('\n').filter(Boolean).map((d, i) => <li key={i}>{d}</li>)}
+      </ul>
+    </>
+  ) : null
+  return <>{block(t('fact.nocDuties'), noc.duties)}{block(t('fact.nocReqs'), noc.requirements)}</>
+}
+function TitleFacts({ job, lang, noc }: { job: JobRow; lang: Lang; noc: NocDesc | null }) {
   const t = makeT(lang)
   const [jd, setJd] = useState<string | null>(null)  // null=loading · ''=无正文
   useEffect(() => {
@@ -846,7 +862,8 @@ function TitleFacts({ job, lang }: { job: JobRow; lang: Lang }) {
   return (
     <FactsBox>
       <FactRow k={t('col.title')}>{job.title}</FactRow>
-      <FactRow k={t('col.noc')}>{job.noc ? `${job.noc}${job.teer != null ? ` · TEER ${job.teer}` : ''}` : null}</FactRow>
+      <FactRow k={t('col.noc')}>{job.noc ? `${job.noc}${job.teer != null ? ` · TEER ${job.teer}` : ''}${noc?.title ? ` · ${noc.title}` : ''}` : null}</FactRow>
+      <NocDutiesView noc={noc} lang={lang} />
       <div style={{ marginTop: 8, fontSize: 11.5, color: '#9ca3af' }}>{t('fact.jdExcerpt')}</div>
       {jd === null ? <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>{t('act.loadingText')}</div>
         : jd ? <div style={{ marginTop: 4, fontSize: 12.5, color: '#4b5563', whiteSpace: 'pre-wrap', lineHeight: 1.6, maxHeight: 180, overflowY: 'auto', border: '1px solid #f3f4f6', borderRadius: 8, padding: '8px 10px' }}>{jd.slice(0, 900)}</div>
@@ -882,11 +899,12 @@ const SAL_FIELDS = new Set<ColKey>(['salary', 'salaryYr', 'wageMedHr', 'wageMedY
 const CLS_FIELDS = new Set<ColKey>(['noc', 'teer', 'broad', 'mid', 'fine'])
 const SRC_FIELDS = new Set<ColKey>(['source', 'origin', 'direct'])
 const TIME_FIELDS = new Set<ColKey>(['status', 'datePosted', 'lastSeen', 'closedAt'])
-function FieldFactsSection({ field, job, lang, pnpOcc, eeOcc, desigEmp }: { field: ColKey; job: JobRow; lang: Lang; pnpOcc: PnpOcc[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[] }) {
+function FieldFactsSection({ field, job, lang, pnpOcc, eeOcc, desigEmp, nocDesc }: { field: ColKey; job: JobRow; lang: Lang; pnpOcc: PnpOcc[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[] }) {
   const t = makeT(lang)
+  const noc = nocDesc.find((d) => d.noc === job.noc) || null
   if (field === 'pnp') return <PnpListSection job={job} lang={lang} occ={pnpOcc} />
   if (field === 'ee') return <EeCategorySection job={job} lang={lang} cats={eeOcc} />
-  if (field === 'title') return <TitleFacts job={job} lang={lang} />
+  if (field === 'title') return <TitleFacts job={job} lang={lang} noc={noc} />
   const day = (s?: string) => (s || '').slice(0, 10)
 
   if (field === 'company') {
@@ -971,10 +989,12 @@ function FieldFactsSection({ field, job, lang, pnpOcc, eeOcc, desigEmp }: { fiel
     return (
       <FactsBox>
         <FactRow k={t('col.noc')}>{job.noc}</FactRow>
+        {noc?.title ? <FactRow k={t('fact.nocTitle')}>{noc.title}</FactRow> : null}
         <FactRow k={t('col.teer')}>{job.teer != null ? `TEER ${job.teer}` : null}</FactRow>
         <FactRow k={t('col.broad')}>{job.broad && job.broad !== '未分类' ? t('broad.' + job.broad) : null}</FactRow>
         <FactRow k={t('col.mid')}>{job.mid && job.mid !== '未分类' ? job.mid : null}</FactRow>
         <FactRow k={t('col.fine')}>{job.fine && job.fine !== '未分类' ? job.fine : null}</FactRow>
+        <NocDutiesView noc={noc} lang={lang} />
       </FactsBox>
     )
   }
@@ -1007,7 +1027,7 @@ function FieldFactsSection({ field, job, lang, pnpOcc, eeOcc, desigEmp }: { fiel
 // ── AI 顾问弹框 ────────────────────────────────────────────────
 // 所有字段都走本地大模型流式生成(按所选语言);前端只给极简头部 + 链接,正文由模型生成。
 const ADV_PREF = 'adv_modal_pref'  // 记忆 {full, w, h}(位置每次打开居中,避免窗口缩小后跑出屏外)
-function AdvisorModal({ field, job, title, lang, pnpOcc, eeOcc, desigEmp, onClose }: { field: ColKey; job: JobRow; title?: string; lang: Lang; pnpOcc: PnpOcc[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; onClose: () => void }) {
+function AdvisorModal({ field, job, title, lang, pnpOcc, eeOcc, desigEmp, nocDesc, onClose }: { field: ColKey; job: JobRow; title?: string; lang: Lang; pnpOcc: PnpOcc[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; onClose: () => void }) {
   const t = makeT(lang)
   const a = advHeader(field, job, t)
   const [text, setText] = useState('')
@@ -1101,7 +1121,7 @@ function AdvisorModal({ field, job, title, lang, pnpOcc, eeOcc, desigEmp, onClos
         </div>
         {/* 正文(可滚动):上半真实清单 + 下半 AI 建议 */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '4px 18px 18px' }}>
-          <FieldFactsSection field={field} job={job} lang={lang} pnpOcc={pnpOcc} eeOcc={eeOcc} desigEmp={desigEmp} />
+          <FieldFactsSection field={field} job={job} lang={lang} pnpOcc={pnpOcc} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} />
           {status === 'loading' ? (
             <p style={{ margin: '10px 0', fontSize: 14, color: '#9ca3af' }}>{t('advisor.loading')}</p>
           ) : (
