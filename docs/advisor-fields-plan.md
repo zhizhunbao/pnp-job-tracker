@@ -170,8 +170,10 @@
 - ✅ **附带修表格末列右侧缝隙**(用户反馈):末列 `<col>` 宽设 auto 吸收剩余空间,右缘贴齐容器。
 - ✅ **#1 EE 抽选分数线(已实测)**:IRCC 开放 JSON(`ee_rounds_123_en.json`,httpx 直取无 Akamai)→ `build_ee_draws.py` 每类别最近抽选 → 09 join ee_categories(89/94)→ EE 弹框「近期抽选:CRS·日期·邀请数」。**坑:seed 维度是字段白名单,加字段要同步 seed map**。
 - ✅ **#2 NOC 官方名+职责(已实测)**:StatCan NOC 2021 Elements 开放 CSV(httpx,valid cert)→ `build_noc_descriptions.py`(516 NOC 的 title/duties/requirements)→ 09 产 noc_descriptions 维度(397,只收数据集 NOC)→ 新 collection + 职位/NOC 弹框显示官方名 + 职责 bullet。**坑:noc.esdc 证书链坏 + 不透明 objectid → 弃用,改 StatCan 开放数据**。
-- **剩余 Part B**:
-  - #3 PNP 门槛 → 解析已抓 policy md(语言/工资/CRS)+ pnp_occupations 加字段(记得同步 seed 白名单)+ reseed。**脆,宁可留空**。
+- ⏭️ **#3 PNP 门槛(评估后决定不做 = 留空)**:门槛只散落在各省 checklist 长 md(结构各异),且**工资要求多为定性**(「该地区中位工资」非单一数字);把 prose 解析成结构化门槛**易错,而错误的移民门槛比留空更糟**。按 CLAUDE.md「信任边界/数据完整性永不上砧板·宁可留空也不瞎猜」+ 计划「脆,宜留空」→ **不建脆弱解析器**。PNP 弹框每个通道已带官方来源链接,精确门槛点过去看。
+- **剩余 Part B(后置/待定)**:
   - #5 公司官网(仅 24% 有网址,脆)/ #6 RNIP → 抓取,后置。
+  - **JD 正文格式**(用户提)→ 改 05b 解析可见结构区,待用户确认是否插队。
+  - **可选改进**:EE 类别抓取现可 httpx 直取(canada.ca 该页无 Akamai)→ 替掉有头浏览器、可进 docker。
   - **JD 正文格式(用户提)**:Job Bank `property="description"` 是压平字符串;格式在可见区 `.job-posting-details-body`(p/li)。改 05b 解析可见区 + 块感知 + 强制重解析 6800 → 重 mart → reseed。**未做,待用户确认是否插队**。
 - ⚠️ **部署注意**:以上前端/schema 改动在 **host dev(npm run dev)** 上验证;**docker pnp-cms-1(production build)仍是旧码**,要让线上(:3000)也生效需 `docker compose up -d --build cms`。DB schema 已加列(host dev 推的),docker cms 读到多余列无害。
