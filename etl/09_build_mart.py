@@ -25,6 +25,7 @@ IN_AIP = _paths.AIP / "aip-designated-employers.json"
 IN_WAGES = _paths.WAGES / "wages.json"   # NOC×省 中位工资(build_wages.py 从 ESDC 开放数据建)
 IN_PNP = _paths.PNP                      # raw/pnp/*.json(各省具名通道:每文件一条通道)
 IN_EE = _paths.EE / "federal-categories.json"  # 联邦 Express Entry 类别抽选(全国单一源)
+IN_EE_DRAWS = _paths.EE / "draws.json"          # 各类别最近一次抽选(CRS/日期/邀请数,build_ee_draws.py 产)
 OUT_MART = _paths.DATA / "mart"
 
 PROV_FULL = {
@@ -228,6 +229,14 @@ def build():
                         "type": d.get("type", "indemand"), "url": d.get("url", ""), "fetched": d.get("fetched", ""),
                         "noc": o["noc"], "name": o.get("name", ""), "gtaRestricted": bool(o.get("gtaRestricted"))})
 
+    # 各类别最近抽选(CRS/日期/邀请数)—— join 进每行,EE 弹框显示「近期抽选」
+    ee_draws = {}
+    if IN_EE_DRAWS.exists():
+        try:
+            ee_draws = json.loads(IN_EE_DRAWS.read_text(encoding="utf-8")).get("byCategory", {})
+        except Exception:  # noqa: BLE001
+            ee_draws = {}
+
     # 联邦 EE 类别维度(每行=某类别内一个职业)
     ee_categories = []
     if IN_EE.exists():
@@ -236,12 +245,14 @@ def build():
         except Exception:  # noqa: BLE001
             d = {}
         for c in d.get("categories", []):
+            dr = ee_draws.get(c.get("key", ""), {})
             for o in c.get("occupations", []):
                 if o.get("noc"):
                     ee_categories.append({
                         "category": c.get("key", ""), "label": c.get("label", ""),
                         "url": d.get("url", ""), "fetched": d.get("fetched", ""),
-                        "noc": o["noc"], "teer": o.get("teer"), "title": o.get("title", "")})
+                        "noc": o["noc"], "teer": o.get("teer"), "title": o.get("title", ""),
+                        "drawCrs": dr.get("crs"), "drawDate": dr.get("date"), "drawSize": dr.get("size")})
 
     return {
         "companies": list(companies.values()), "jobs": jobs,

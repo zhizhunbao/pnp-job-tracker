@@ -421,6 +421,18 @@ export interface EeCategory {
   title?: string | null;
   url?: string | null;
   fetched?: string | null;
+  /**
+   * 该类别最近一次抽选 CRS 分数线
+   */
+  drawCrs?: number | null;
+  /**
+   * 该类别最近一次抽选日期
+   */
+  drawDate?: string | null;
+  /**
+   * 该类别最近一次抽选发出邀请数
+   */
+  drawSize?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -792,6 +804,9 @@ export interface EeCategoriesSelect<T extends boolean = true> {
   title?: T;
   url?: T;
   fetched?: T;
+  drawCrs?: T;
+  drawDate?: T;
+  drawSize?: T;
   updatedAt?: T;
   createdAt?: T;
 }

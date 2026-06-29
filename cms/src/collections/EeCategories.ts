@@ -13,5 +13,8 @@ export const EeCategories: CollectionConfig = {
     { name: 'title', type: 'text' },
     { name: 'url', type: 'text' },
     { name: 'fetched', type: 'text' },
+    { name: 'drawCrs', type: 'number', admin: { description: '该类别最近一次抽选 CRS 分数线' } },
+    { name: 'drawDate', type: 'text', admin: { description: '该类别最近一次抽选日期' } },
+    { name: 'drawSize', type: 'number', admin: { description: '该类别最近一次抽选发出邀请数' } },
   ],
 }

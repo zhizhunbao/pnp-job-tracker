@@ -240,7 +240,7 @@ const AUTO_MAX = 180                    // 自动滚动加载上限;超过改「
 const ORIGIN_LABEL: Record<string, string> = { jobbank: 'Job Bank', ats: 'ATS', directory: '社区名单' }
 
 type PnpOcc = { province: string; stream: string; label: string; type: string; noc: string; name: string; gtaRestricted: boolean; url: string; fetched: string }
-type EeOcc = { category: string; label: string; noc: string; teer: number | null; title: string; url: string; fetched: string }
+type EeOcc = { category: string; label: string; noc: string; teer: number | null; title: string; url: string; fetched: string; drawCrs: number | null; drawDate: string; drawSize: number | null }
 type DesigEmp = { name: string; province: string; location: string; isTech: boolean }
 type Dims = {
   provinces: { code: string; name: string }[]
@@ -756,7 +756,7 @@ function PnpListSection({ job, lang, occ }: { job: JobRow; lang: Lang; occ: PnpO
 // ── 联邦 EE 类别抽选区(点 EE 字段时显示)──────────────────────
 // 与 PnpListSection 同理:清单来自 DB 维度表(ee-categories,经 props 传入),全国单一源。
 // 命中→只展开该类别清单 + 高亮本岗;未命中→只列出各类别名+数量概览。EE ≠ PNP,独立信号。
-type EeCat = { key: string; label: string; occupations: { noc: string; teer: number | null; title: string }[] }
+type EeCat = { key: string; label: string; drawCrs: number | null; drawDate: string; drawSize: number | null; occupations: { noc: string; teer: number | null; title: string }[] }
 function EeCategorySection({ job, lang, cats }: { job: JobRow; lang: Lang; cats: EeOcc[] }) {
   const t = makeT(lang)
   const matchRef = useRef<HTMLDivElement | null>(null)
@@ -765,7 +765,7 @@ function EeCategorySection({ job, lang, cats }: { job: JobRow; lang: Lang; cats:
     const byLabel = new Map<string, EeCat>()
     for (const r of cats) {
       let c = byLabel.get(r.label)
-      if (!c) { c = { key: r.category, label: r.label, occupations: [] }; byLabel.set(r.label, c) }
+      if (!c) { c = { key: r.category, label: r.label, drawCrs: r.drawCrs, drawDate: r.drawDate, drawSize: r.drawSize, occupations: [] }; byLabel.set(r.label, c) }
       c.occupations.push({ noc: r.noc, teer: r.teer, title: r.title })
     }
     return [...byLabel.values()]
@@ -785,6 +785,7 @@ function EeCategorySection({ job, lang, cats }: { job: JobRow; lang: Lang; cats:
       {shown.map((c) => (
         <div key={c.key} style={{ marginBottom: 10 }}>
           <div style={{ fontSize: 12.5, fontWeight: 600, color: '#374151', marginBottom: 4 }}>{c.label} <span style={{ color: '#9ca3af', fontWeight: 400 }}>· {c.occupations.length}</span></div>
+          {c.drawCrs != null && c.drawDate ? <div style={{ fontSize: 12, color: '#2563eb', marginBottom: 4 }}>{t('eelist.draw', { crs: c.drawCrs, date: c.drawDate, size: c.drawSize ?? '—' })}</div> : null}
           {hit.length ? (
             <div style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid #f3f4f6', borderRadius: 8 }}>
               {c.occupations.map((o) => {
