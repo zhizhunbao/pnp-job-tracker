@@ -168,7 +168,10 @@
 - ✅ **#4 工资 low/high(全链路打通,已实测)**:build_wages 抽 Low/High/年份 → 09 join wageLow/High + wageYear → Jobs.ts +5 字段 → Payload 推列 → host dev 重灌(DB 5499 带 low/5503 带 year)→ 薪资块显示「当地时薪/年薪(低–中–高)+ 年份」。**验证了「改 schema→重启 dev sync→重灌」全链路。**
 - ✅ **#0 ATS 公司简介进 mart(零抓取快赢,已实测)**:09 ATS add_company 补 description → companies.json(14 家)→ page.tsx join c.description/sectors → 公司事实块显示真实简介(无则诚实留空)。Companies 已有字段,无需改 schema。
 - ✅ **附带修表格末列右侧缝隙**(用户反馈):末列 `<col>` 宽设 auto 吸收剩余空间,右缘贴齐容器。
-- **剩余 Part B(全跨「需抓取」边界,等人)**:
-  - #1 EE 抽选线 / #2 NOC 职责 → **抓 canada.ca / noc.esdc(政府站,可能反爬)** + 维度 + reseed。
-  - #3 PNP 门槛 → 解析 policy md + 维度 + reseed。 #5 公司官网(仅 24% 有网址,脆)/ #6 RNIP → 抓取,后置。
+- ✅ **#1 EE 抽选分数线(已实测)**:IRCC 开放 JSON(`ee_rounds_123_en.json`,httpx 直取无 Akamai)→ `build_ee_draws.py` 每类别最近抽选 → 09 join ee_categories(89/94)→ EE 弹框「近期抽选:CRS·日期·邀请数」。**坑:seed 维度是字段白名单,加字段要同步 seed map**。
+- ✅ **#2 NOC 官方名+职责(已实测)**:StatCan NOC 2021 Elements 开放 CSV(httpx,valid cert)→ `build_noc_descriptions.py`(516 NOC 的 title/duties/requirements)→ 09 产 noc_descriptions 维度(397,只收数据集 NOC)→ 新 collection + 职位/NOC 弹框显示官方名 + 职责 bullet。**坑:noc.esdc 证书链坏 + 不透明 objectid → 弃用,改 StatCan 开放数据**。
+- **剩余 Part B**:
+  - #3 PNP 门槛 → 解析已抓 policy md(语言/工资/CRS)+ pnp_occupations 加字段(记得同步 seed 白名单)+ reseed。**脆,宁可留空**。
+  - #5 公司官网(仅 24% 有网址,脆)/ #6 RNIP → 抓取,后置。
+  - **JD 正文格式(用户提)**:Job Bank `property="description"` 是压平字符串;格式在可见区 `.job-posting-details-body`(p/li)。改 05b 解析可见区 + 块感知 + 强制重解析 6800 → 重 mart → reseed。**未做,待用户确认是否插队**。
 - ⚠️ **部署注意**:以上前端/schema 改动在 **host dev(npm run dev)** 上验证;**docker pnp-cms-1(production build)仍是旧码**,要让线上(:3000)也生效需 `docker compose up -d --build cms`。DB schema 已加列(host dev 推的),docker cms 读到多余列无害。
