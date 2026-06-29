@@ -52,6 +52,33 @@ def text(el) -> str:
     return re.sub(r"\s+", " ", el.get_text(" ", strip=True)) if el else ""
 
 
+def rich_text(el) -> str:
+    """块感知提取:按文档顺序遍历 h2-h5 / p / li,各取整洁单行文本 → 标题前空行、li 加「• 」、p 原样。
+    保留分段与列表(Job Bank 详情可见区是 h4 小标题 + ul/li),不像 text() 把整段压成一坨。"""
+    if not el:
+        return ""
+    out: list[str] = []
+    for node in el.find_all(["h2", "h3", "h4", "h5", "p", "li"]):
+        t = re.sub(r"\s+", " ", node.get_text(" ", strip=True)).strip()
+        if not t:
+            continue
+        out.append(("• " + t) if node.name == "li" else (("\n" + t) if node.name[0] == "h" else t))
+    return re.sub(r"\n{3,}", "\n\n", "\n".join(out)).strip()
+
+
+def description(s) -> str:
+    """职位描述:优先抓**可见结构区**(.job-posting-detail-requirements,带 h4/列表)做块感知提取;
+    缺失或过短时退回 [property=description]。后者在聚合帖里常是**被转义的 HTML**(自带 p/ul/li 格式)
+    → 再解析一次恢复分段/列表;否则是压平纯文本,原样返回。"""
+    rich = rich_text(s.select_one(".job-posting-detail-requirements"))
+    if len(rich) >= 40:
+        return rich
+    raw = text(s.select_one('[property="description"]'))
+    if re.search(r"</?(p|ul|ol|li|br|div|strong|h[1-5])\b", raw, re.I):  # 转义 HTML → 重新解析
+        return rich_text(BeautifulSoup(raw, "html.parser"))
+    return raw
+
+
 def slug(s: str) -> str:
     """单段 → 小写连字符,截断 50 字符。"""
     return re.sub(r"[^a-z0-9]+", "-", (s or "").lower()).strip("-")[:50].strip("-")
@@ -105,17 +132,18 @@ def main() -> None:
     OUT_DETAILS.mkdir(parents=True, exist_ok=True)
     have = detail_html_index()  # posting_id → 详情 HTML path(跨日期)
     seen: set[str] = set()  # 本轮文件名去重(雇主+职位偶尔重复时加帖子号)
+    reparse = os.environ.get("REPARSE") == "1"  # 强制重解析全部(如改了描述提取逻辑后回填)
     parsed = 0
     for j in jobs:
         pid = pid_of(j)
         raw_f = have.get(pid)
-        # 有原始 HTML、且(没解析过 或 还缺官方 noc)→ 解析。后者让存量帖回填 noc(无需重抓)
-        if not pid or raw_f is None or (j.get("detail_fetched") and j.get("noc")):
+        # 有原始 HTML、且(没解析过 或 还缺官方 noc)→ 解析。后者让存量帖回填 noc(无需重抓)。REPARSE=1 全部重解析。
+        if not pid or raw_f is None or (not reparse and j.get("detail_fetched") and j.get("noc")):
             continue
         raw_html = raw_f.read_text(encoding="utf-8")
         s = BeautifulSoup(raw_html, "html.parser")
         addr = text(s.select_one('[property="address"]'))
-        desc = text(s.select_one('[property="description"]'))
+        desc = description(s)
         dp = text(s.select_one('[property="datePosted"]')).replace("Posted on", "").strip()
         web = employer_website(s) or email_website(raw_html)
         noc = extract_noc(s)  # Job Bank 官方 NOC(权威,胜过标题猜)
