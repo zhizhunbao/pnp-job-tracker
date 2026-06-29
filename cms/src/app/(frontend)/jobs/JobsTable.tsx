@@ -327,6 +327,25 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
   const hasWidths = Object.keys(widths).length > 0
   const totalW = shown.reduce((s, c) => s + (widths[c.key] ?? 0), 0)
   const resetWidths = () => setWidths({})
+
+  // ── 末列放不下就隐藏:auto 布局下渲染后量容器是否溢出,从右往左砍列到不溢出(无横滚、不截断) ──
+  const shownKey = shown.map((c) => c.key).join(',')
+  const scrollerRef = useRef<HTMLDivElement>(null)
+  const [fitCount, setFitCount] = useState(99)
+  useIsoLayoutEffect(() => { setFitCount(99) }, [shownKey, hasWidths])  // 列集/布局变 → 先全显再重量
+  useEffect(() => {
+    const onResize = () => setFitCount(99)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [shownKey])
+  useIsoLayoutEffect(() => {
+    if (hasWidths) return                                   // 手动拖宽=用户要横滚,不自动隐藏
+    const el = scrollerRef.current
+    const n = Math.min(fitCount, shown.length)
+    if (el && el.scrollWidth > el.clientWidth + 1 && n > 3) setFitCount(n - 1)
+  })
+  const fitShown = hasWidths ? shown : shown.slice(0, Math.max(3, Math.min(fitCount, shown.length)))
+  const hiddenCount = shown.length - fitShown.length
   // 量当前表头每个可见列的自然渲染宽(auto 布局下为真实内容宽),返回覆盖全可见列的完整 map
   const measureAll = (): Record<string, number> => {
     const head = headRowRef.current
@@ -558,20 +577,21 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                   ))}
                 </div>
               )}
+              {hiddenCount > 0 && <span style={{ color: '#b45309', fontSize: 12, whiteSpace: 'nowrap' }}>{t('cols.hidden', { n: hiddenCount })}</span>}
               {updatedAt && <span style={{ color: '#9ca3af', fontSize: 12, whiteSpace: 'nowrap' }}>{t('updated', { t: fmtLocal(updatedAt) })}</span>}
             </div>
           </div>
         </div>
 
-        <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflowX: 'auto' }}>
+        <div ref={scrollerRef} style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflowX: 'auto' }}>
           <table style={{ width: hasWidths ? totalW : '100%', minWidth: '100%', borderCollapse: 'collapse', fontSize: 13.5, tableLayout: hasWidths ? 'fixed' : 'auto' }}>
             {/* 末列宽设 auto:固定布局下吸收剩余空间,右缘始终贴齐容器,无右侧缝隙 */}
             {hasWidths && <colgroup>{shown.map((c, i) => <col key={c.key} style={{ width: i === shown.length - 1 ? 'auto' : widths[c.key] }} />)}</colgroup>}
             <thead>
               <tr ref={headRowRef} style={{ textAlign: 'left', background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
-                {shown.map((c, idx) => {
+                {fitShown.map((c, idx) => {
                   const active = sort.key === c.key
-                  const isLast = idx === shown.length - 1
+                  const isLast = idx === fitShown.length - 1
                   const handle = (  // 列右缘竖线:拖动调本列宽 / 双击按内容自适应
                     <span className="colResize" onMouseDown={(e) => startResize(e, c.key)} onClick={(e) => e.stopPropagation()} onDoubleClick={(e) => { e.stopPropagation(); autoFitColumn(idx, c.key) }} title={t('resize.tip')}
                       style={{ position: 'absolute', top: 0, right: 0, width: 13, height: '100%', cursor: 'col-resize', zIndex: 2 }} />
@@ -599,7 +619,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                 const open = (field: ColKey, title: string) => setPopup({ field, job: j, title })
                 return (
                   <tr key={j.id} className="jrow" style={{ borderBottom: '1px solid #f3f4f6', background: i % 2 ? '#fcfcfd' : '#fff' }}>
-                    {shown.map((c, idx) => {
+                    {fitShown.map((c, idx) => {
                       const k = c.key
                       if (k === 'actions') return (  // 操作列:普通末列,两按钮(公司信息/职位描述)
                         <td key={k} style={{ ...td, whiteSpace: 'nowrap' }}>
@@ -651,7 +671,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                       else if (k === 'datePosted') { node = j.datePosted ? j.datePosted.slice(0, 10) : '—'; Object.assign(extra, { color: '#6b7280', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       else { node = j.lastSeen ? fmtLocalSec(j.lastSeen) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       return (
-                        <td key={k} className="jcell" style={{ ...td, ...extra, cursor: 'pointer', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', ...(NOWRAP_COLS.has(k) ? { whiteSpace: 'nowrap' } : { whiteSpace: 'normal', overflowWrap: 'break-word' }) }} title={typeof node === 'string' ? node : undefined} onClick={() => open(k, typeof node === 'string' ? node : (j.salaryText || j.salary || ''))}>
+                        <td key={k} className="jcell" style={{ ...td, ...extra, cursor: 'pointer', borderRight: idx === fitShown.length - 1 ? undefined : '1px solid #f3f4f6', ...(NOWRAP_COLS.has(k) ? { whiteSpace: 'nowrap' } : { whiteSpace: 'normal', overflowWrap: 'break-word' }) }} title={typeof node === 'string' ? node : undefined} onClick={() => open(k, typeof node === 'string' ? node : (j.salaryText || j.salary || ''))}>
                           {href
                             ? <a href={href} target="_blank" rel="noreferrer" style={link} onClick={(e) => e.stopPropagation()}>{node}</a>
                             : node}
@@ -662,7 +682,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                 )
               })}
               {rows.length === 0 && (
-                <tr><td colSpan={shown.length} style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>{t('empty')}</td></tr>
+                <tr><td colSpan={fitShown.length} style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>{t('empty')}</td></tr>
               )}
             </tbody>
           </table>
