@@ -1,0 +1,5 @@
+# caddy 反代配置(E2-01):域名来自 docker/.env 的 SITE_DOMAIN,证书自动签发/续期。
+{$SITE_DOMAIN} {
+	encode gzip
+	reverse_proxy cms:3000
+}

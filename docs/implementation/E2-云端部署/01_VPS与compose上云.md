@@ -20,10 +20,7 @@
 
 - [ ] **3.1 选型开通**：单台 VPS（2 vCPU / 4GB / 40GB，加东或美东；Hetzner/OVH/DO 择一）+ 域名注册，A 记录指 VPS。**同时去申请 Stripe 账户（B4 卡点，提前办）。**
 - [ ] **3.2** VPS 装 docker + compose plugin；`git clone` 仓库；`cms/.env` 手工放置（不进 git）。
-- [ ] **3.3** 新增 `docker/docker-compose.prod.yml`（override）：
-  - postgres：删 `ports`；密码从 env 读（替掉硬编码 `pnp/pnp`，连带 cms 的 `DATABASE_URI`）。
-  - cms：删 `ports`。
-  - 新增 `caddy`：`caddy:2-alpine`，发布 80/443，挂 `Caddyfile`（`<域名> { reverse_proxy cms:3000 }`）+ `caddy_data` 卷。
+- [x] **3.3** `docker-compose.prod.yml` + `Caddyfile` + `docker/.env.example` 已建（2026-07-03，VPS 到手前先备好）：postgres/cms 端口 `!reset` 清除（需 compose ≥2.24）、密码/SEED_TOKEN 经 `${VAR:?}` 强制、SEED_URL 覆写 `http://cms:3000/seed`、caddy 挂 unattended profile。`compose config` 合并验证通过。
 - [ ] **3.4** 数据冷启动：scp 本地 `data/` 快照（快）或云上全量抓一轮（慢但干净）。
 - [ ] **3.5** `docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile unattended up -d --build`；核对 §2。
 - [ ] **3.6** 资源压测：观察一轮完整 ETL 的内存/磁盘峰值，不够升配。

@@ -18,8 +18,8 @@
 | [E2-04](E2-云端部署/04_云端端到端验证M1.md) | 云端端到端验证（M1 收口） | 2 | 0 | ☐ |
 | [E3-01](E3-账号与订阅/01_Users扩展与鉴权工具.md) | Users collection 扩展 + entitlement 工具 | 2 | 1 | ☐ |
 | [E3-02](E3-账号与订阅/02_注册登录前端.md) | 注册 / 登录前端 | 2 | 1 | ☐ |
-| [E3-03](E3-账号与订阅/03_Stripe_Checkout与Portal.md) | Stripe 订阅 Checkout + Customer Portal | 4 | 1 | ☐ |
-| [E3-04](E3-账号与订阅/04_Stripe_webhook状态同步.md) | Stripe webhook → 订阅状态同步 | 3 | 1 | ☐ |
+| [E3-03](E3-账号与订阅/03_Stripe_Checkout与Portal.md) | Stripe 时长包 Checkout（卡+Alipay+WeChat） | 3 | 1 | ☐ |
+| [E3-04](E3-账号与订阅/04_Stripe_webhook状态同步.md) | Stripe webhook → proUntil 拨动（单事件） | 2 | 1 | ☐ |
 | [E3-05](E3-账号与订阅/05_付费墙分层gate.md) | 付费墙分层 gate | 4 | 1 | ☐ |
 | [E3-06](E3-账号与订阅/06_Stripe切live.md) | Stripe 切 live 真实收款（M3） | 1 | 2 | ☐ |
 | [E4-01](E4-合规与信任/01_免责声明v1.md) | 免责声明 v1（页脚 + 弹框） | 1 | 1 | ☐ |

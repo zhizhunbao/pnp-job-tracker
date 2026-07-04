@@ -1,27 +1,26 @@
-# E3-03 · Stripe 订阅 Checkout + Customer Portal
+# E3-03 · Stripe 时长包 Checkout（卡 + Alipay + WeChat Pay）
 
-> Epic **E3 账号与订阅** · 负责人 Frank · 4 SP · Sprint 1 · 批次 B4
-> 通用约定与索引见 [实现文档 README](../README.md)。决策 D8：全托管页，自己不建账单 UI。
+> Epic **E3 账号与订阅** · 负责人 Frank · 3 SP · Sprint 1 · 批次 B4
+> 通用约定与索引见 [实现文档 README](../README.md)。决策 D8（2026-07-03 修订）：**v1 一次性时长包，不做订阅不做 Portal**——微信/支付宝走 Stripe 只支持一次性付款，且时长包更贴过渡型产品心智。
 
 ---
 
 ## 1. 整体目标
 
-订阅/退订/换卡全走 Stripe 托管页：Checkout 发起订阅，Customer Portal 自助管理。test 模式贯通（live 切换见 E3-06）。
+用户买 30 天 / 90 天 Pro（一次性买断，到期即止无自动续费）：Stripe Checkout（mode=payment），支付方式 卡 + Alipay（+ WeChat Pay 视 Dashboard 能否开通）。test 模式贯通（live 切换见 E3-06）。
 
 ## 2. 验收标准
 
-- [ ] 登录用户点「订阅」→ Stripe Checkout（4242 测试卡）→ 回跳 `/account?ok=1`。
-- [ ] `/account` 的「管理订阅」→ Portal 可退订/换卡。
-- [ ] 未登录调 checkout → 401/跳登录；同一用户复用同一 stripeCustomerId（不重复建客户）。
+- [ ] 登录用户选 30/90 天 → Checkout（4242 测试卡）→ 回跳 `/account?ok=1`，`/account` 显示 Pro 到期日。
+- [ ] Checkout 页出现 Alipay 选项（test 模式可模拟支付）；WeChat Pay 开通情况在 Dashboard 确认并记录 §5。
+- [ ] 未登录调 checkout → 401/跳登录；重复购买 = 到期日顺延（在 E3-04 验证）。
 
 ## 3. 实现步骤
 
-- [ ] **3.1** Stripe Dashboard（test）：建 Product + 月付 Price → `STRIPE_PRICE_ID`；开启 Customer Portal。
-- [ ] **3.2** `npm i stripe`；env：`STRIPE_SECRET_KEY` / `STRIPE_PRICE_ID` / `NEXT_PUBLIC_SITE_URL`。
-- [ ] **3.3** `api/billing/checkout/route.ts`：`getUser` 校验 → 无 customerId 则 `customers.create({email})` 回写 user → `checkout.sessions.create({ mode:'subscription', line_items:[{price, quantity:1}], customer, success_url, cancel_url, client_reference_id: user.id })` → 303 重定向。
-- [ ] **3.4** `api/billing/portal/route.ts`：`billingPortal.sessions.create({ customer, return_url })` → 303。
-- [ ] **3.5** /account 与 /pricing（E5-01）挂按钮。
+- [ ] **3.1** Stripe Dashboard（test）：建 Product「Pro」+ 两个 **one-time Price**（30 天/90 天）→ `STRIPE_PRICE_30D` / `STRIPE_PRICE_90D`；Payment methods 开 card + alipay，申请 wechat_pay 并记录结果。
+- [ ] **3.2** `npm i stripe`；env：`STRIPE_SECRET_KEY` / `STRIPE_PRICE_30D` / `STRIPE_PRICE_90D` / `NEXT_PUBLIC_SITE_URL`。
+- [ ] **3.3** `api/billing/checkout/route.ts`：`getUser` 校验 → `checkout.sessions.create({ mode:'payment', line_items:[{price: 按参数选30/90, quantity:1}], payment_method_types:['card','alipay'(,'wechat_pay')], success_url, cancel_url, client_reference_id: user.id, customer_email: user.email, metadata:{days} })` → 303 重定向。
+- [ ] **3.4** /account 与 /pricing（E5-01）挂两档购买按钮 + 到期日展示。~~Portal~~ 不做（无可退订之物；退款口径写进条款 E4-02）。
 
 ## 4. 涉及目录 / 文件
 

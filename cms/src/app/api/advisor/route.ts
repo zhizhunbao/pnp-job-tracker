@@ -3,6 +3,7 @@
 // 职位描述基于抓取的真实 JD(.md)总结,不让模型凭空猜。
 import { NextRequest } from 'next/server'
 import { jobDescription } from '@/lib/jobDescription'
+import { checkLimit, ipOf } from '@/lib/rateLimit'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -179,6 +180,12 @@ export async function POST(req: NextRequest) {
     const cached = cache.get(key)
     if (cached) return new Response(cached, { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'X-Cache': 'hit' } })
   }
+
+  // 限流(放在缓存之后:命中不计数):按 IP 日限 + 全局日上限,公网防滥用/LLM 成本兜底(E2-02)
+  if (!checkLimit([
+    [`adv:${ipOf(req)}`, Number(process.env.ADVISOR_IP_DAILY || 40)],
+    ['adv:__global__', Number(process.env.ADVISOR_DAILY_CAP || 1000)],
+  ])) return new Response('rate limited', { status: 429 })
 
   // 职位/对话:读取抓到的真实 JD 作 grounding(基于它总结,不凭空猜);公司初判暂无正文,靠模型知识
   const jd = (field === 'title' || isChat) ? await loadJD(job.applyUrl) : ''

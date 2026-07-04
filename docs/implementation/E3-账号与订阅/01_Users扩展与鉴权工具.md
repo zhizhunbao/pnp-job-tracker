@@ -18,14 +18,13 @@
 
 ## 3. 实现步骤
 
-- [ ] **3.1** Users.ts 加字段：
+- [ ] **3.1** Users.ts 加字段（**2026-07-03 时长包修订**：不需要订阅状态机，一个到期日就是全部真相）：
   - `role` select(user/admin) default user，`saveToJWT: true`，update 仅 admin；
-  - `stripeCustomerId` text（admin readOnly 展示）；
-  - `subscriptionStatus` select(none/active/past_due/canceled) default none，update 仅 admin（webhook 走 overrideAccess）；
-  - `subscriptionEndsAt` date。
+  - `proUntil` date（Pro 到期日，update 仅 admin；webhook 走 overrideAccess 往后拨）；
+  - `stripeCustomerId` text（可选留空——mode=payment 不强制建 customer，有邮箱收据即可）。
 - [ ] **3.2** access：`create: () => true`；read/update = 本人或 admin（普通用户 update 白名单限 email/password）；delete 仅 admin；`admin: ({req}) => req.user?.role === 'admin'`。
 - [ ] **3.3** ⚠️ 重启 dev（schema 推送）→ 给现有管理员补 role=admin（admin UI 或 SQL）→ 再验证 3.2。
-- [ ] **3.4** 新建 `cms/src/lib/entitlement.ts`：`getUser(req)`（`payload.auth({ headers })` 解 `payload-token` cookie）；`isPro(user)` = `active` 或（`canceled` 且 `subscriptionEndsAt > now`）。
+- [ ] **3.4** 新建 `cms/src/lib/entitlement.ts`：`getUser(req)`（`payload.auth({ headers })` 解 `payload-token` cookie）；`isPro(user)` = `proUntil > now`（时长包语义，一行）。
 
 ## 4. 涉及目录 / 文件
 

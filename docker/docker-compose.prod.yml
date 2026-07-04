@@ -1,0 +1,44 @@
+# 生产 override(E2-01):与 docker-compose.yml 叠加,VPS 上用。要点:
+#   · postgres/cms 端口不出公网(!reset 需 compose ≥2.24),只有 caddy 发布 80/443
+#   · caddy 反代 cms + 自动 Let's Encrypt(Caddyfile 一行配置)
+#   · 密钥全部来自 docker/.env(cp .env.example .env 填强随机值,不进 git)
+# 用法:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile unattended up -d --build
+name: pnp
+
+services:
+  postgres:
+    ports: !reset []               # 不出公网,容器网内用服务名连
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?docker/.env 缺 POSTGRES_PASSWORD}
+
+  cms:
+    ports: !reset []               # 由 caddy 反代,不直接发布
+    environment:
+      DATABASE_URI: postgresql://pnp:${POSTGRES_PASSWORD}@postgres:5432/pnp
+      SEED_TOKEN: ${SEED_TOKEN:?docker/.env 缺 SEED_TOKEN}
+
+  build:
+    environment:
+      SEED_URL: http://cms:3000/seed   # 同网络直连服务名(生产不走 host.docker.internal)
+      SEED_TOKEN: ${SEED_TOKEN}
+
+  caddy:                           # HTTPS 入口(自动签发/续期证书)
+    image: caddy:2-alpine
+    restart: unless-stopped
+    profiles: ['unattended']
+    depends_on:
+      - cms
+    ports:
+      - '80:80'
+      - '443:443'
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN:?docker/.env 缺 SITE_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data           # 证书持久化(丢了会重签,触发 LE 频率限制)
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

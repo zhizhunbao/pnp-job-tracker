@@ -29,8 +29,14 @@ async function pool<T>(items: T[], fn: (item: T) => Promise<void>): Promise<void
 }
 
 export async function GET(req: Request) {
+  // 鉴权:SEED_TOKEN 已设置则必须匹配(生产必设 —— ?reset=1 可清库,公网裸奔=事故;本地 dev 未设则放行)
+  const url = new URL(req.url)
+  const token = process.env.SEED_TOKEN
+  if (token && req.headers.get('x-seed-token') !== token && url.searchParams.get('token') !== token) {
+    return new Response('unauthorized', { status: 401 })
+  }
   const payload = await getPayload({ config: await config })
-  const reset = !!new URL(req.url).searchParams.get('reset')
+  const reset = !!url.searchParams.get('reset')
   const martDir = path.resolve(process.cwd(), '..', 'data', 'mart')
   const mart = (name: string): any[] => {
     const p = path.join(martDir, `${name}.json`)

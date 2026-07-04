@@ -26,6 +26,7 @@ import sources  # noqa: E402
 
 SOURCE = os.environ.get("SOURCE", "jobbank")
 SEED_URL = os.environ.get("SEED_URL", "http://host.docker.internal:3000/seed")
+SEED_TOKEN = os.environ.get("SEED_TOKEN", "")  # 生产必设(seed 端点鉴权,E2-02);本地 dev 可空
 ROUNDS = Path(__file__).resolve().parent.parent / "data" / ".rounds"  # 各源「本轮完成」标记(mtime)
 POLL = 30  # 消费者(如 build)轮询上游标记的间隔(秒)
 
@@ -72,7 +73,8 @@ def run_once(meta: dict) -> bool:
             return False
     if meta.get("seed"):  # 仅 build 角色:增量 seed(mart 全量累积,不会误关旧岗)
         try:
-            r = httpx.get(SEED_URL, timeout=600)
+            r = httpx.get(SEED_URL, timeout=600,
+                          headers={"x-seed-token": SEED_TOKEN} if SEED_TOKEN else None)
             log.info(f"✓ seed {r.status_code}: {r.text[:200]}")
         except Exception as e:  # noqa: BLE001
             log.error(f"✗ seed 失败({type(e).__name__}: {e})—— mart 已落盘,cms 起来后下轮补")
