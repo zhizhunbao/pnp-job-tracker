@@ -7,18 +7,31 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
 import { makeT, LANGS, LANG_KEY, COLS_COOKIE, type Lang, type TFn } from './i18n'
+import { AuthModal } from './AuthForm'
 
-// 顶栏账户入口(E3-02):未登录=「登录」,已登录=用户名 → /account。客户端探测(httpOnly cookie),仅做展示引导。
+// 顶栏账户入口(E3-02):未登录=「登录」弹框(不跳页,用户要求);已登录=用户名 → /account 状态页。
 function AccountLink({ t }: { t: TFn }) {
   const [email, setEmail] = useState<string | null>(null)
-  useEffect(() => {
+  const [open, setOpen] = useState(false)
+  const refresh = () =>
     fetch('/api/users/me', { credentials: 'include' })
       .then((r) => r.json()).then((d) => setEmail(d?.user?.email ?? null)).catch(() => {})
-  }, [])
+  useEffect(() => { refresh() }, [])
+  if (email) {
+    return (
+      <a href="/account" style={{ fontSize: 12.5, color: '#2563eb', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+        👤 {email.split('@')[0]}
+      </a>
+    )
+  }
   return (
-    <a href="/account" style={{ fontSize: 12.5, color: '#2563eb', textDecoration: 'none', whiteSpace: 'nowrap' }}>
-      {email ? `👤 ${email.split('@')[0]}` : t('nav.login')}
-    </a>
+    <>
+      <button onClick={() => setOpen(true)}
+        style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: '#2563eb', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+        {t('nav.login')}
+      </button>
+      {open && <AuthModal t={t} onClose={() => setOpen(false)} onDone={() => { setOpen(false); refresh() }} />}
+    </>
   )
 }
 
