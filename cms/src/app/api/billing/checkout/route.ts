@@ -29,16 +29,28 @@ export async function POST(req: NextRequest) {
   const pmTypes: Stripe.Checkout.SessionCreateParams.PaymentMethodType[] = ['card', 'alipay']
   if (wechat) pmTypes.push('wechat_pay')
 
-  const session = await stripe.checkout.sessions.create({
-    mode: 'payment',
-    line_items: [{ price, quantity: 1 }],
-    payment_method_types: pmTypes,
-    ...(wechat ? { payment_method_options: { wechat_pay: { client: 'web' } } } : {}),
-    success_url: `${site}/account?ok=1`,
-    cancel_url: `${site}/account`,
-    client_reference_id: String(user.id),
-    customer_email: user.email,
-    metadata: { days: String(plan.days) },   // webhook 按它拨 proUntil,唯一真相
-  })
+  const create = (types: Stripe.Checkout.SessionCreateParams.PaymentMethodType[]) =>
+    stripe.checkout.sessions.create({
+      mode: 'payment',
+      line_items: [{ price, quantity: 1 }],
+      payment_method_types: types,
+      ...(types.includes('wechat_pay') ? { payment_method_options: { wechat_pay: { client: 'web' } } } : {}),
+      success_url: `${site}/account?ok=1`,
+      cancel_url: `${site}/account`,
+      client_reference_id: String(user.id),
+      customer_email: user.email,
+      metadata: { days: String(plan.days) },   // webhook 按它拨 proUntil,唯一真相
+    })
+
+  // 韧性兜底(E3-06):live 模式下 alipay/wechat 若未获批,带上会让整个 Checkout 建不出来 ——
+  // 失败自动退回纯卡(收款可用性 > 支付方式齐全),打日志提醒去 Dashboard 确认开通
+  let session: Stripe.Checkout.Session
+  try {
+    session = await create(pmTypes)
+  } catch (e) {
+    if (pmTypes.length <= 1) throw e
+    console.error('[checkout] non-card methods rejected, falling back to card-only:', e instanceof Error ? e.message : e)
+    session = await create(['card'])
+  }
   return NextResponse.json({ url: session.url })
 }

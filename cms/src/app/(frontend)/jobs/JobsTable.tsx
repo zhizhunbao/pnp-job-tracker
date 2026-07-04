@@ -22,6 +22,29 @@ const FREE_PLAN: Plan = { isPro: false, loggedIn: false, profileOk: false, profi
 // Pro 专属列(与 lib/plan.ts PRO_COLUMNS 一致;免费用户列位显示锁标,数据本就没进浏览器)
 const PRO_COLS = new Set<ColKey>(['match', 'vsMedian', 'wageMedHr', 'wageMedYr'])
 
+// 未登录价值主张横幅(E5-01):注册/定价引导,可关闭(localStorage 记忆,bump key 可重新展示)
+const BANNER_KEY = 'jobs.banner.v1'
+function ValueBanner({ t }: { t: TFn }) {
+  const [show, setShow] = useState(false)
+  const [auth, setAuth] = useState(false)
+  useIsoLayoutEffect(() => { try { if (!localStorage.getItem(BANNER_KEY)) setShow(true) } catch { setShow(true) } }, [])
+  if (!show) return null
+  const dismiss = () => { try { localStorage.setItem(BANNER_KEY, '1') } catch { /* ignore */ } ; setShow(false) }
+  return (
+    <div style={{ background: 'linear-gradient(90deg,#eff6ff,#eef2ff)', borderBottom: '1px solid #e0e7ff' }}>
+      <div style={{ maxWidth: 1320, margin: '0 auto', padding: '8px 1.25rem', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', fontSize: 13 }}>
+        <span style={{ color: '#3730a3', flex: 1, minWidth: 240 }}>🎯 {t('banner.text')}</span>
+        <span style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
+          <button onClick={() => setAuth(true)} style={{ border: 'none', background: '#2563eb', color: '#fff', borderRadius: 6, padding: '5px 12px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>{t('banner.reg')}</button>
+          <a href="/pricing" style={{ color: '#2563eb', textDecoration: 'none', fontSize: 12.5, fontWeight: 600 }}>{t('banner.pricing')}</a>
+          <button onClick={dismiss} aria-label="close" style={{ border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 15, padding: 0 }}>×</button>
+        </span>
+      </div>
+      {auth && <AuthModal t={t} onClose={() => setAuth(false)} onDone={() => window.location.reload()} />}
+    </div>
+  )
+}
+
 // 升级卡片(402 / 锁定块共用)
 function UpgradeCard({ t, reason }: { t: TFn; reason: string }) {
   return (
@@ -562,6 +585,8 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
           </div>
         </div>
       </header>
+      {/* 未登录价值主张横幅(E5-01):可关闭,localStorage 记忆 */}
+      {!plan.loggedIn && <ValueBanner t={t} />}
       <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1.5rem 1.25rem', width: '100%', boxSizing: 'border-box', flex: '1 0 auto' }}>
         <h1 style={{ margin: '0 0 2px', color: '#111827' }}>Jobs</h1>
         <p style={{ color: '#6b7280', marginTop: 0, fontSize: 13 }}>
@@ -790,8 +815,14 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
       {/* footer:免责 + 版权,窄屏自动换行 */}
       <footer style={{ borderTop: '1px solid #e5e7eb', background: '#fafafa', flexShrink: 0 }}>
         <div style={{ maxWidth: 1320, margin: '0 auto', padding: '16px 1.25rem', display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'space-between', alignItems: 'center', color: '#9ca3af', fontSize: 12.5 }}>
-          <span>{t('foot.disclaimer')} <a href="/legal/disclaimer" style={{ color: '#6b7280' }}>{t('foot.disclaimerLink')}</a></span>
-          <span style={{ whiteSpace: 'nowrap' }}>© 2026 PNP Job Tracker</span>
+          <span>{t('foot.disclaimer')}</span>
+          <span style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+            <a href="/legal/disclaimer" style={{ color: '#6b7280' }}>{t('foot.disclaimerLink')}</a>
+            <a href="/legal/privacy" style={{ color: '#6b7280' }}>{t('foot.privacy')}</a>
+            <a href="/legal/terms" style={{ color: '#6b7280' }}>{t('foot.terms')}</a>
+            <a href="/about" style={{ color: '#6b7280' }}>{t('foot.about')}</a>
+            <span style={{ whiteSpace: 'nowrap' }}>© 2026 PNP Job Tracker</span>
+          </span>
         </div>
       </footer>
 
@@ -978,7 +1009,11 @@ function TitleFacts({ job, lang, noc }: { job: JobRow; lang: Lang; noc: NocDesc 
       <FactRow k={t('col.title')}>{job.title}</FactRow>
       <FactRow k={t('col.noc')}>{job.noc ? `${job.noc}${job.teer != null ? ` · TEER ${job.teer}` : ''}${noc?.title ? ` · ${noc.title}` : ''}` : null}</FactRow>
       <NocDutiesView noc={noc} lang={lang} />
-      <div style={{ marginTop: 8, fontSize: 11.5, color: '#9ca3af' }}>{t('fact.jdExcerpt')}</div>
+      {/* republish 自查(E4-03,D6):摘录+显著官方原帖按钮;投递/完整内容引导回官方源 */}
+      <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+        <span style={{ fontSize: 11.5, color: '#9ca3af' }}>{t('fact.jdExcerpt')}</span>
+        {job.applyUrl && <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ fontSize: 12, background: '#eef2ff', color: '#3730a3', padding: '3px 10px', borderRadius: 6, textDecoration: 'none', fontWeight: 600 }}>{t('act.official')}</a>}
+      </div>
       {gated ? <UpgradeCard t={t} reason={t('up.jobtext')} />
         : jd === null ? <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>{t('act.loadingText')}</div>
         : jd ? <div style={{ marginTop: 4, fontSize: 12.5, color: '#4b5563', whiteSpace: 'pre-wrap', lineHeight: 1.6, maxHeight: 180, overflowY: 'auto', border: '1px solid #f3f4f6', borderRadius: 8, padding: '8px 10px' }}>{jd.slice(0, 900)}</div>
@@ -1442,10 +1477,19 @@ function ActModal({ kind, job, jobs, lang, onClose }: { kind: 'company' | 'desc'
               </div>
             </div>
           ) : (
-            status === 'loading' ? <p style={{ color: '#9ca3af' }}>{t('act.loadingText')}</p>
-              : status === 'upgrade' ? <UpgradeCard t={t} reason={t('up.jobtext')} />
-              : status === 'empty' ? <p style={{ color: '#9ca3af' }}>{t('act.noText')}</p>
-                : <div style={{ whiteSpace: 'pre-wrap' }}>{text}</div>
+            <>
+              {/* republish 自查(E4-03,D6):JD 弹框顶部显著官方原帖按钮 + 摘录说明 */}
+              {job.applyUrl && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
+                  <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ fontSize: 13, background: '#4f46e5', color: '#fff', padding: '6px 14px', borderRadius: 8, textDecoration: 'none', fontWeight: 600 }}>{t('act.official')}</a>
+                  <span style={{ fontSize: 11.5, color: '#9ca3af' }}>{t('act.jdNote')}</span>
+                </div>
+              )}
+              {status === 'loading' ? <p style={{ color: '#9ca3af' }}>{t('act.loadingText')}</p>
+                : status === 'upgrade' ? <UpgradeCard t={t} reason={t('up.jobtext')} />
+                : status === 'empty' ? <p style={{ color: '#9ca3af' }}>{t('act.noText')}</p>
+                  : <div style={{ whiteSpace: 'pre-wrap' }}>{text}</div>}
+            </>
           )}
         </div>
       </div>

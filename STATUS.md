@@ -3,6 +3,12 @@
 > 新 session 接手先读这份 + `CLAUDE.md`(设计宪法)+ `prd.md`(v2 定位见头部标注)。仓库:github.com/zhizhunbao/pnp-job-tracker
 > **🚀 站点已公网上线:https://pnp-cms.onrender.com**(Render + Supabase,R3 架构)。上线计划/批次进度=`docs/implementation/_开发批次顺序.md`(B0-B3 ✅,B4 代码侧 ✅ 剩 Stripe 手续)。
 >
+> **本轮(2026-07-04 深夜 B6 合规与收费开闸 —— 代码侧全部就绪,M3 只差 live 手续)**:
+> ① **E4-02 四件套 ✅**:`/legal/{disclaimer,privacy,terms}` + `/about` 三语(共享 `legal/LegalShell.tsx`,法务长文各页自带字典不进 i18n.ts;footer 四链)。**拍板落档**:定价 $19/$39 CAD 转正(D5)/退款=购后 7 天未大量使用可全额退(写进条款 §4)/公开支持邮箱 wangsansi9527@gmail.com(NEXT_PUBLIC_SUPPORT_EMAIL 可换)/适用法 Ontario。下架演练 ✅(applyUrl 删岗前端 1→0;**seed 回灌局限记档**:真实异议需同步清 postings/mart,backlog)。
+> ② **E4-03 republish/PII ✅**:前台 SQL/API 零 email/phone 字段(grep 留档);**JD 出口统一脱敏** `lib/jobDescription.scrubPii()`(email+电话→「[见官方原帖]」,jobtext/advisor 共用,实测 0 泄漏);JD 弹框+事实块两处显著「↗ 查看官方原帖」按钮(D6:摘录+导流官方)。
+> ③ **E5-01 定价页 ✅**:/pricing 服务端读 plan.ts(对照表与分层单一来源)+按钮三态(未登录→注册弹框/已登录→Checkout/Pro→账户);价格走 NEXT_PUBLIC_PRICE_DISPLAY,改价零代码;/jobs 未登录价值主张横幅(可关,localStorage)。埋点留给 B7/E7-02。
+> ④ **E3-06 代码就绪**:checkout 加**live 支付方式兜底**(alipay/wechat 未获批时创建失败自动退纯卡打日志,防一个方式炸全部收款);无 test 假设写死。**M3 清单(用户手动,见 E3-06 §7)**:live 激活确认 → live Product/Price($19/$39)→ live webhook(两事件)→ Render env 换 live 三件+**删 STRIPE_WECHAT_PAY** → 真实付一笔 → Dashboard 退一笔+admin 手动清 proUntil(退款运维口径 v1=人工)→ 品牌/收据设置。
+>
 > **本轮(2026-07-04 晚 B5 档案匹配 + 付费墙 —— 付费头牌就位,M2 完整达成)**:
 > ① **E5-00 档案匹配(付费核)**:Users 加 `profile` group(nocCodes/clb/crs/targetProvinces/pgwpMonthsLeft,json 存数组,本人可改无字段锁);**规则引擎只住 `lib/match.ts`**(纯函数同构:五规则 NOC对口/省通道/EE距离/TEER可达/工资信用 → 加权分 → 高≥60/中≥30/低/不适用,每条 reason=i18n键+参数+sourceRef 指回维度记录);/account 档案表单(NOC 搜索下拉用 **noc-descriptions**——文档写的 noc_categories 没有码,偏离已记);列表「与我的匹配」列(服务端算,Pro 全量/免费前 10 岗激活钩子);弹框「对我意味着什么」(客户端同一 match() 重算依据链,✓⚠✗ 逐条+来源↗+免责短句);advisor 档案感知(Pro 注入自报档案+本岗匹配结论,**个性化初判缓存按人隔离** :p<uid>)。快照测试 10 项含**措辞键白名单**(红线:永不说"你能/不能移民")。
 > ② **E3-05 付费墙**:常量收口 `lib/plan.ts`(试用 8/20 次、Pro 日限 200、免费匹配前 10、PRO_COLUMNS,全可 env 覆盖);**gate 全服务端**——advisor/jobtext 免费登录用户按 userId 计数超 **402**(前端渲升级卡,四处)/Pro 429 日限/未登录 IP 限流不变;Pro 列(match/vs中位三件套)数据在 page.tsx 映射层剥离(算完匹配再剥),改 cookie 绕不过。列偏好 bump:COLS_COOKIE→jobsCols3 / PREF_KEY→v9(新默认含匹配列)。

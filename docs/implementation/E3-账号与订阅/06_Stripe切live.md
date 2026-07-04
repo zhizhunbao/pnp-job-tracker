@@ -33,3 +33,11 @@
 ## 6. 完成定义（DoD）
 
 - [ ] §2 全勾 → 标记 **M3 正式收费开闸**。
+
+---
+
+## 7. 切换准备记录(2026-07-04,代码侧就绪)
+
+- 前置已齐:E4-02 四件套在线、E4-03 自查落档、退款口径(7 天未滥用可退)已进条款;定价 $19/$39 CAD 已定,NEXT_PUBLIC_PRICE_DISPLAY 一致。
+- **代码加韧性兜底**:live 下 alipay/wechat 若未获批,Checkout 创建失败自动退回纯卡并打日志(否则一个未开通的支付方式会炸掉全部收款)。除此无 test 假设写死,切 live = 只换 env。
+- **剩余 = 用户手动**:① Dashboard(live)确认激活通过;② live Product「Pro」+ $19/$39 one-time Price;③ live webhook endpoint(两事件:completed + async_payment_succeeded)拿 whsec;④ Render env 换 STRIPE_SECRET_KEY(live)/STRIPE_PRICE_30D/90D(live)/STRIPE_WEBHOOK_SECRET(live whsec),**STRIPE_WECHAT_PAY 建议先删**(live 可用性未确认,有兜底但别故意触发);⑤ 真实卡付一笔 $19 → Pro 解锁;⑥ Dashboard 真实退款一笔 → **人工在 admin 把该用户 proUntil 清掉**(退款运维口径:无 charge.refunded 自动处理,v1 人工,量大再自动化);⑦ Stripe 品牌/收据设置。完成勾 §2 = M3。

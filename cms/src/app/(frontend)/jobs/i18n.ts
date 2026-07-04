@@ -87,7 +87,7 @@ const zh: Dict = {
   'acct.payOk': '✅ 支付成功!到期日将在数秒内更新,稍后刷新查看',
   'acct.payErr': '发起支付失败,请稍后再试',
   // 免责声明(E4-01)
-  'foot.disclaimerLink': '免责声明',
+  'foot.disclaimerLink': '免责声明', 'foot.privacy': '隐私政策', 'foot.terms': '服务条款', 'foot.about': '关于',
   'advisor.disclaimer': 'AI 生成判断,非移民建议(我们非持牌顾问 RCIC),以官方来源为准',
   'legal.title': '免责声明',
   'legal.body': '本站是职位信息聚合工具:数据来自 Job Bank 等公开来源的自动抓取与评分,可能有误或滞后,仅供参考。本站内容(含 AI 顾问输出)不构成移民建议或法律建议;我们并非加拿大持牌移民顾问(RCIC)或律师。任何移民决定请以 IRCC 与各省政府官方发布为准,必要时咨询持牌专业人士。',
@@ -142,6 +142,18 @@ const zh: Dict = {
   'prof.save': '保存档案',
   'prof.saved': '✓ 已保存',
   'prof.err': '保存失败,请重试',
+  'act.official': '↗ 查看官方原帖', 'act.jdNote': '以下为结构化摘录,完整内容与投递以官方原帖为准',
+  // 定价页 + 横幅(E5-01)
+  'price.title': '定价', 'price.sub': '一次性时长包,无订阅、无自动续费;到期自动回免费版',
+  'price.free': '免费', 'price.pro': 'Pro', 'price.freePrice': 'CA$0',
+  'price.per30': '/ 30 天', 'price.per90': '/ 90 天',
+  'price.f1': '职位列表 · 筛选 · 搜索(每日更新)', 'price.f2': 'PNP / EE 类别 / AIP 标记', 'price.f3': '「与我的匹配」+ 依据链',
+  'price.f4': 'AI 顾问(判断 + 追问)', 'price.f5': 'JD 结构化摘录', 'price.f6': '工资中位对比(vs 中位 / 中位列)', 'price.f7': 'AI 顾问档案感知(带上你的档案分析)',
+  'price.yes': '✓', 'price.no': '—', 'price.unlimited': '不限', 'price.firstN': '每日前 {n} 岗', 'price.dayN': '每日 {n} 次', 'price.fairN': '每日 {n} 次(公平使用)',
+  'price.cta.reg': '注册后购买 →', 'price.cta.buy30': '购买 30 天', 'price.cta.buy90': '购买 90 天', 'price.cta.acct': '⭐ 已是 Pro · 去账户页',
+  'price.note': '支付由 Stripe 处理(卡 / 支付宝);7 天内未大量使用可全额退款,详见服务条款。',
+  'banner.text': '免费建档案,看每份工作对你移民路径的匹配度 —— PNP / EE / 工资信号,每日更新。',
+  'banner.reg': '免费注册', 'banner.pricing': '看看 Pro →',
 }
 
 const en: Dict = {
@@ -213,7 +225,7 @@ const en: Dict = {
   'acct.payOk': '✅ Payment received! Your expiry date updates within seconds — refresh to see it',
   'acct.payErr': 'Could not start checkout, please try again later',
   // 免责声明(E4-01)
-  'foot.disclaimerLink': 'Disclaimer',
+  'foot.disclaimerLink': 'Disclaimer', 'foot.privacy': 'Privacy', 'foot.terms': 'Terms', 'foot.about': 'About',
   'advisor.disclaimer': 'AI-generated assessment, not immigration advice (we are not RCIC); verify with official sources',
   'legal.title': 'Disclaimer',
   'legal.body': 'This site is a job-information aggregator: data is auto-scraped and scored from public sources such as Job Bank, may contain errors or lag, and is provided for reference only. Nothing on this site (including AI advisor output) constitutes immigration or legal advice; we are not licensed Canadian immigration consultants (RCIC) or lawyers. For any immigration decision, rely on official IRCC and provincial government publications, and consult a licensed professional where needed.',
@@ -268,6 +280,18 @@ const en: Dict = {
   'prof.save': 'Save profile',
   'prof.saved': '✓ Saved',
   'prof.err': 'Save failed, please retry',
+  'act.official': '↗ View official posting', 'act.jdNote': 'Structured excerpt below — see the official posting for the full text and to apply',
+  // 定价页 + 横幅(E5-01)
+  'price.title': 'Pricing', 'price.sub': 'One-time passes — no subscription, no auto-renewal; you simply return to Free on expiry',
+  'price.free': 'Free', 'price.pro': 'Pro', 'price.freePrice': 'CA$0',
+  'price.per30': '/ 30 days', 'price.per90': '/ 90 days',
+  'price.f1': 'Job list · filters · search (daily updates)', 'price.f2': 'PNP / EE category / AIP flags', 'price.f3': '"Match for me" + evidence chain',
+  'price.f4': 'AI advisor (assessment + follow-ups)', 'price.f5': 'Structured JD excerpts', 'price.f6': 'Median-wage comparison (vs median / median columns)', 'price.f7': 'Profile-aware AI advisor (analysis with your profile)',
+  'price.yes': '✓', 'price.no': '—', 'price.unlimited': 'Unlimited', 'price.firstN': 'First {n} jobs / day', 'price.dayN': '{n} / day', 'price.fairN': '{n} / day (fair use)',
+  'price.cta.reg': 'Sign up to buy →', 'price.cta.buy30': 'Buy 30 days', 'price.cta.buy90': 'Buy 90 days', 'price.cta.acct': '⭐ Already Pro · account page',
+  'price.note': 'Payments by Stripe (card / Alipay); full refund within 7 days if not heavily used — see Terms.',
+  'banner.text': 'Create a free profile and see how every job matches your immigration path — PNP / EE / wage signals, updated daily.',
+  'banner.reg': 'Sign up free', 'banner.pricing': 'See Pro →',
 }
 
 const ko: Dict = {
@@ -339,7 +363,7 @@ const ko: Dict = {
   'acct.payOk': '✅ 결제 완료! 만료일이 몇 초 내 갱신됩니다. 새로고침하여 확인하세요',
   'acct.payErr': '결제를 시작하지 못했습니다. 잠시 후 다시 시도하세요',
   // 免责声明(E4-01)
-  'foot.disclaimerLink': '면책 조항',
+  'foot.disclaimerLink': '면책 조항', 'foot.privacy': '개인정보', 'foot.terms': '이용약관', 'foot.about': '소개',
   'advisor.disclaimer': 'AI 생성 판단이며 이민 자문이 아닙니다(당사는 RCIC 아님) · 공식 출처 기준으로 확인하세요',
   'legal.title': '면책 조항',
   'legal.body': '본 사이트는 채용 정보 수집 도구입니다. 데이터는 Job Bank 등 공개 출처에서 자동 수집·평가되며 오류나 지연이 있을 수 있고 참고용으로만 제공됩니다. 본 사이트의 콘텐츠(AI 어드바이저 출력 포함)는 이민 또는 법률 자문이 아니며, 당사는 캐나다 공인 이민 컨설턴트(RCIC)나 변호사가 아닙니다. 이민 관련 결정은 IRCC 및 각 주정부의 공식 발표를 기준으로 하고, 필요 시 공인 전문가와 상담하세요.',
@@ -394,6 +418,18 @@ const ko: Dict = {
   'prof.save': '프로필 저장',
   'prof.saved': '✓ 저장됨',
   'prof.err': '저장 실패, 다시 시도하세요',
+  'act.official': '↗ 공식 공고 보기', 'act.jdNote': '아래는 구조화 발췌본입니다. 전문과 지원은 공식 공고 기준',
+  // 定价页 + 횡幅(E5-01)
+  'price.title': '요금', 'price.sub': '일회성 기간권 — 구독·자동 갱신 없음. 만료 시 무료 플랜으로 돌아갑니다',
+  'price.free': '무료', 'price.pro': 'Pro', 'price.freePrice': 'CA$0',
+  'price.per30': '/ 30일', 'price.per90': '/ 90일',
+  'price.f1': '채용 목록 · 필터 · 검색(매일 갱신)', 'price.f2': 'PNP / EE 카테고리 / AIP 표시', 'price.f3': '"나와의 매칭" + 근거 체인',
+  'price.f4': 'AI 어드바이저(판단 + 추가 질문)', 'price.f5': 'JD 구조화 발췌', 'price.f6': '중위 임금 비교(vs 중위 / 중위 열)', 'price.f7': '프로필 인지 AI 어드바이저(내 프로필 기반 분석)',
+  'price.yes': '✓', 'price.no': '—', 'price.unlimited': '무제한', 'price.firstN': '하루 상위 {n}개', 'price.dayN': '하루 {n}회', 'price.fairN': '하루 {n}회(공정 사용)',
+  'price.cta.reg': '가입 후 구매 →', 'price.cta.buy30': '30일 구매', 'price.cta.buy90': '90일 구매', 'price.cta.acct': '⭐ 이미 Pro · 계정 페이지',
+  'price.note': '결제는 Stripe 처리(카드 / Alipay); 7일 이내 과다 사용이 없으면 전액 환불 — 이용약관 참조.',
+  'banner.text': '무료로 프로필을 만들고 모든 공고의 이민 경로 매칭도를 확인하세요 — PNP / EE / 임금 신호, 매일 갱신.',
+  'banner.reg': '무료 가입', 'banner.pricing': 'Pro 보기 →',
 }
 
 const MESSAGES: Record<Lang, Dict> = { zh, en, ko }
