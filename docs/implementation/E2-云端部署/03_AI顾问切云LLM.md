@@ -17,14 +17,11 @@
 
 ## 3. 实现步骤
 
-- [ ] **3.1** `npm i @anthropic-ai/sdk`；新建 `cms/src/lib/llm.ts`：
-  - `streamChat(messages: {role,content}[], opts: {maxTokens}): Promise<ReadableStream<string>>`；
-  - ollama 分支：现 route.ts 的 `/api/chat` fetch + NDJSON 解析搬入；
-  - anthropic 分支：`client.messages.stream({ model: 'claude-haiku-4-5', max_tokens, system, messages })`，system 从 messages[0]（role=system）拆出，`text_stream` 包成 ReadableStream。
-- [ ] **3.2** [advisor/route.ts](../../../cms/src/app/api/advisor/route.ts) 删直连 Ollama 段，改调 `streamChat`（`numPredict` 值映射到 maxTokens）。
-- [ ] **3.3** env：`LLM_PROVIDER` / `ANTHROPIC_API_KEY`；compose cms 服务注入。
-- [ ] **3.4** 双 provider 对照验证（同一岗同字段，核数字引用与「未提供不编」行为）。
-- [ ] **3.5** Console 用量告警 + 成本记录（预估:全局日上限 1000 次 ≈ $4/天封顶）。
+- [x] **3.1** `@anthropic-ai/sdk` 已装；`cms/src/lib/llm.ts`：`streamChat()` 统一输出文本增量字节流；ollama NDJSON 解析搬入；anthropic 走 `messages.stream`（system 从消息里拆到顶层参数，`on('text')` 包 ReadableStream，`LlmError` 传友好错误）。
+- [x] **3.2** route.ts 改调 streamChat；缓存累积改为 `pipeThrough(TransformStream)`（flush 时写缓存）。
+- [x] **3.3** env 键就位（.env.example 已列；**Render 侧待用户加 `LLM_PROVIDER=anthropic` + `ANTHROPIC_API_KEY`**）。
+- [~] **3.4** ollama 分支实测 ✅（200 流式 + 二次请求 X-Cache:hit,证明累积/缓存路径）；anthropic 分支**待 key 后在生产实测**（代码路径 dev 编译通过）。
+- [ ] **3.5** Console 用量告警（用户建 key 时顺手设）；生产实测后记录单次成本。
 
 ## 4. 涉及目录 / 文件
 

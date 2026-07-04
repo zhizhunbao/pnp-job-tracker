@@ -4,12 +4,10 @@
 import { NextRequest } from 'next/server'
 import { jobDescription } from '@/lib/jobDescription'
 import { checkLimit, ipOf } from '@/lib/rateLimit'
+import { streamChat, LlmError, type ChatMessage } from '@/lib/llm'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
-
-const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434'
-const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'qwen3:4b'
 
 // 进程内缓存(dev 下随热重载清空,够用;以后可换持久化)
 const cache = new Map<string, string>()
@@ -195,55 +193,21 @@ export async function POST(req: NextRequest) {
     : [{ role: 'system', content: SYSTEM(lang) }, { role: 'user', content: buildPrompt(field, job, jd, lang) }]
   const numPredict = isChat ? 500 : (SIMPLE.has(field) ? 120 : (field === 'company' ? 480 : 420))
 
-  let upstream: Response
+  // provider 抽象(E2-03):ollama(本地 dev)/anthropic(线上 Haiku),见 lib/llm.ts
+  let upstream: ReadableStream<Uint8Array>
   try {
-    upstream = await fetch(`${OLLAMA_URL}/api/chat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: OLLAMA_MODEL,
-        think: false,
-        stream: true,
-        messages: ollamaMessages,
-        options: { temperature: 0.4, num_predict: numPredict },
-      }),
-    })
-  } catch {
-    return new Response('无法连接本地大模型(Ollama),请确认服务在线。', { status: 502 })
-  }
-  if (!upstream.ok || !upstream.body) {
-    return new Response(`大模型返回错误(${upstream.status})。`, { status: 502 })
+    upstream = await streamChat(ollamaMessages as ChatMessage[], { maxTokens: numPredict })
+  } catch (e) {
+    return new Response(e instanceof LlmError ? e.message : '大模型不可用。', { status: 502 })
   }
 
-  // 把 Ollama 的 NDJSON 流转成纯文本增量流,顺便累积进缓存
-  const reader = upstream.body.getReader()
-  const decoder = new TextDecoder()
-  const encoder = new TextEncoder()
-  let buf = ''
+  // 透传文本增量,顺便累积进缓存(初判才缓存,对话每轮唯一)
+  const dec = new TextDecoder()
   let full = ''
-
-  const stream = new ReadableStream({
-    async pull(controller) {
-      const { done, value } = await reader.read()
-      if (done) {
-        if (!isChat && full.trim()) cache.set(key, full)
-        controller.close()
-        return
-      }
-      buf += decoder.decode(value, { stream: true })
-      const lines = buf.split('\n')
-      buf = lines.pop() || ''
-      for (const line of lines) {
-        if (!line.trim()) continue
-        try {
-          const piece = JSON.parse(line)
-          const delta = piece?.message?.content || ''
-          if (delta) { full += delta; controller.enqueue(encoder.encode(delta)) }
-        } catch { /* 跳过不完整行 */ }
-      }
-    },
-    cancel() { reader.cancel().catch(() => {}) },
-  })
+  const stream = upstream.pipeThrough(new TransformStream<Uint8Array, Uint8Array>({
+    transform(chunk, controller) { full += dec.decode(chunk, { stream: true }); controller.enqueue(chunk) },
+    flush() { if (!isChat && full.trim()) cache.set(key, full) },
+  }))
 
   return new Response(stream, { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'X-Cache': 'miss', 'X-JD': jd ? 'yes' : 'no' } })
 }
