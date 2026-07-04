@@ -21,7 +21,7 @@
 | [E3-03](E3-账号与订阅/03_Stripe_Checkout与Portal.md) | Stripe 时长包 Checkout（卡+Alipay+WeChat） | 3 | 1 | [x] 真实回归通过；生产 Render env 待填 |
 | [E3-04](E3-账号与订阅/04_Stripe_webhook状态同步.md) | Stripe webhook → proUntil 拨动（单事件） | 2 | 1 | [x] 真实事件回归通过；生产 endpoint 已建 |
 | [E3-05](E3-账号与订阅/05_付费墙分层gate.md) | 付费墙分层 gate | 4 | 1 | [x] |
-| [E3-06](E3-账号与订阅/06_Stripe切live.md) | Stripe 切 live 真实收款（M3） | 1 | 2 | [~] 代码就绪+兜底;剩 live Dashboard 手续+真实付款 |
+| [E3-06](E3-账号与订阅/06_Stripe切live.md) | Stripe 切 live 真实收款（M3） | 1 | 2 | [x] 真实付款+退款演练通过=M3(品牌设置追办) |
 | [E4-01](E4-合规与信任/01_免责声明v1.md) | 免责声明 v1（页脚 + 弹框） | 1 | 1 | [x] |
 | [E4-02](E4-合规与信任/02_合规四件套页面.md) | 合规四件套页面（免责/隐私/条款/关于） | 3 | 2 | [x] |
 | [E4-03](E4-合规与信任/03_republish自查与脱敏.md) | republish 自查与 PII 脱敏 | 2 | 2 | [x] |

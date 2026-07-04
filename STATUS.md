@@ -3,6 +3,12 @@
 > 新 session 接手先读这份 + `CLAUDE.md`(设计宪法)+ `prd.md`(v2 定位见头部标注)。仓库:github.com/zhizhunbao/pnp-job-tracker
 > **🚀 站点已公网上线:https://pnp-cms.onrender.com**(Render + Supabase,R3 架构)。上线计划/批次进度=`docs/implementation/_开发批次顺序.md`(B0-B3 ✅,B4 代码侧 ✅ 剩 Stripe 手续)。
 >
+> **本轮(2026-07-04 深夜续 —— M3 正式收费开闸 🎉 + 登录改版)**:
+> ① **E3-06 切 live 完成**:live Product `prod_UpEXEb8j3hFyBG`($19=`price_1Tpa4dGre9TF1l9zHOsx7tR4`/$39=`price_1Tpa5sGre9TF1l9zFjycLhSf`)+ live webhook `we_1TpaA9Gre9TF1l9zVVoSM7Uz`(completed+async 两事件)——助手驱动用户浏览器建的,**sk_live/whsec 全程用户自持不经助手**;Render env 切 live(STRIPE_WECHAT_PAY 已删,checkout 有未获批自动退纯卡兜底)。
+> ② **真实收款验证**:admin 号真卡购 30 天 CA$19 → live webhook 一次投递成功(984ms)→ proUntil=2026-08-03(+30d 精确)→ 账户页 ⭐Pro。**真实退款演练**:Dashboard 全额 Refund → admin 后台清 Pro Until → 免费版 ✅。**运维口径:退款不自动降级,人工两步(Refund+清 proUntil)**。= **M3 正式收费开闸**。
+> ③ **登录改版(用户提出)**:AuthForm 视觉翻新(品牌头/分段切换/聚焦态/渐变按钮);**全站唯一登录入口=首页弹框**——未登录访问 /account → 弹回 /jobs?login=1 自动开框,登录成功整页刷新让 SSR 分层态生效;/account 只留已登录态。
+> **追办**:Stripe 品牌/收据设置(名称/图标/支持邮箱);live 侧 Alipay 可用性待确认(现兜底退纯卡);品牌名/域名决策仍悬。**下批 B7:E4-04 citation + E5-02 榜单 + E5-04 地区统计 + E7-02 analytics**。
+>
 > **本轮(2026-07-04 深夜 B6 合规与收费开闸 —— 代码侧全部就绪,M3 只差 live 手续)**:
 > ① **E4-02 四件套 ✅**:`/legal/{disclaimer,privacy,terms}` + `/about` 三语(共享 `legal/LegalShell.tsx`,法务长文各页自带字典不进 i18n.ts;footer 四链)。**拍板落档**:定价 $19/$39 CAD 转正(D5)/退款=购后 7 天未大量使用可全额退(写进条款 §4)/公开支持邮箱 wangsansi9527@gmail.com(NEXT_PUBLIC_SUPPORT_EMAIL 可换)/适用法 Ontario。下架演练 ✅(applyUrl 删岗前端 1→0;**seed 回灌局限记档**:真实异议需同步清 postings/mart,backlog)。
 > ② **E4-03 republish/PII ✅**:前台 SQL/API 零 email/phone 字段(grep 留档);**JD 出口统一脱敏** `lib/jobDescription.scrubPii()`(email+电话→「[见官方原帖]」,jobtext/advisor 共用,实测 0 泄漏);JD 弹框+事实块两处显著「↗ 查看官方原帖」按钮(D6:摘录+导流官方)。
