@@ -10,6 +10,7 @@ AIP = Atlantic Immigration Program(NL/NB/NS/PE),是唯一公布「指定雇主�
 Usage:  uv run python etl/clean/05c_flag_aip.py
 """
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -68,7 +69,9 @@ def main() -> None:
             total += 1
             j["aip"] = j.get("province") in ATLANTIC and norm_name(j.get("employer", "")) in aip
             flagged += j["aip"]
-        OUT_JOBBANK_FILE.write_text(json.dumps(posts, ensure_ascii=False, indent=2), encoding="utf-8")
+        tmp = OUT_JOBBANK_FILE.with_suffix(".json.tmp")  # 原子写:与 05/05b 一致
+        tmp.write_text(json.dumps(posts, ensure_ascii=False, indent=2), encoding="utf-8")
+        os.replace(tmp, OUT_JOBBANK_FILE)
 
     # ATS 公司岗在 Ottawa(ON),定义上不属 AIP(大西洋四省)→ 一律 False(保持字段一致)
     for jobs_json in IN_COMPANIES_DIR.rglob("jobs.json"):

@@ -11,14 +11,14 @@
 
 ## 2. 验收标准
 
-- [ ] `postings.json` 的**全部写方**均为 temp+replace（clean/05 已是；核查 05b 富集回写等其余路径）。
-- [ ] 人工并发验证：写进行中读方拿到的是完整旧版。
+- [x] `postings.json` 全部 5 个写方均为 temp+`os.replace`：clean/05、clean/05b 原已原子（核校确认）；**04c/04d/05c 三处直写已补**（grep 全仓确认无遗漏）。
+- [x] 验证：py_compile 三文件通过；05c 幂等实跑走新路径成功（15293 帖 / 318 AIP）。os.replace 同卷 rename 原子性由 OS 保证，读方任意时刻拿到完整旧版或完整新版。
 
 ## 3. 实现步骤
 
-- [ ] **3.1** grep `postings.json` 全部写点，逐一核查写法。
-- [ ] **3.2** 非原子写点补 temp+`os.replace`（同目录 temp 文件保证同卷 rename 原子性）。
-- [ ] **3.3** 顺手核查其它跨容器共享产物（all-scored.json、mart/*.json）同样处理。
+- [x] **3.1** grep 定位：05/05b 已原子；04c:175、04d:122、05c:71 直写（STATUS 两处记载的矛盾由此澄清——05 早已原子，坑在三个原地清洗脚本）。
+- [x] **3.2** 三处补 temp+`os.replace`（含补 `import os`）。
+- [x] **3.3** 其它共享产物核查结论：ATS 各公司 jobs.json（04b/04c/04d/05c 写）只在 build 链内顺序读写、无跨容器并发写方 → 不处理；all-scored.json/mart 由 08/09 在同一 build 步内产出后才被 seed 读 → 竞态窗口可忽略，暂不处理（YAGNI）。
 
 ## 4. 涉及目录 / 文件
 

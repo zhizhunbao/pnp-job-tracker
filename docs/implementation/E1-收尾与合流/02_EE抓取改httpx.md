@@ -11,16 +11,16 @@ EE 类别抓取从「有头/无头 chromium crawl 镜像」改为 httpx（STATUS
 
 ## 2. 验收标准
 
-- [ ] httpx 版抓取脚本产出与现 `raw/ee/federal-categories.json` 结构一致（9 类 94 职业量级）。
-- [ ] compose `ee` 服务改用 `<<: *etl` 锚点（不再 build crawl Dockerfile），容器跑通一轮。
-- [ ] 失败时不覆盖旧数据（先写 temp 再 replace）。
+- [x] httpx 版产出与旧浏览器版**完全一致**：9 类 94 职业，逐类数目相同（37/11/25/5/4/3/4/2/3）。
+- [x] compose `ee` 服务已换 `<<: *etl` 锚点；容器实测整轮通过（categories ✓ 9类94职业 + draws ✓ 13类别 423轮）。
+- [x] 失败安全：解析空 → 跳过写盘保留旧表（打 ⚠ 提示人工核查）。
 
 ## 3. 实现步骤
 
-- [ ] **3.1** 新脚本（仿各省 `etl/pnp/build_<prov>.py` 的 httpx+bs4 模式）替代 `_fetch_ee_categories` 的浏览器路径；沿用输出路径与 `_paths`。
-- [ ] **3.2** 本地跑通对比新旧 JSON（类别数/职业数一致）。
-- [ ] **3.3** compose：`ee` 服务换锚点，删 `BROWSER_HEADLESS`/`PYTHONUNBUFFERED` 等 crawl 专属 env；`docker compose up -d ee` 验证日志。
-- [ ] **3.4** `etl/sources.py` 的 ee 源 steps 指向新脚本。
+- [x] **3.1** 新建 `etl/build_ee_categories.py`（httpx+bs4；关键发现:DataTables 只是前端分页,原始 HTML 行全量,无需展开）。
+- [x] **3.2** 对比一致（9 类 94 职业,逐类相同;sample 字段结构同构）。
+- [x] **3.3** compose 换锚点 + 容器重建,首轮日志两步全 ✓。
+- [x] **3.4** `etl/sources/ee/__init__.py`（源注册是包不是单文件）：method crawl→httpx,steps = build_ee_categories + build_ee_draws（draws 原先未进调度,顺带纳入）;回退路径写入 docstring。
 
 ## 4. 涉及目录 / 文件
 

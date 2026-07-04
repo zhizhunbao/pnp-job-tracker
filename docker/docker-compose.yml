@@ -56,22 +56,13 @@ services:
       SCRAPE_INTERVAL: '604800'    # 周更(清单极少变)
       TZ: EST5EDT
 
-  ee:                              # 联邦 EE 类别(canada.ca/Akamai → 有头 chromium under xvfb,月更,只刷 raw)
-    build:
-      context: ..                  # 仓库根
-      dockerfile: docker/etl/crawl/Dockerfile   # 重镜像:playwright + chromium + xvfb
-    restart: unless-stopped
-    working_dir: /repo
-    volumes:
-      - ..:/repo                   # 含持久 profile etl/crawl/.browser-profile
-    extra_hosts:
-      - 'host.docker.internal:host-gateway'
+  ee:                              # 联邦 EE 类别+抽选(2026-07 改 httpx:类别页无 Akamai、行全量;月更,只刷 raw)
+    <<: *etl
     environment:
       SOURCE: ee
       SCRAPE_INTERVAL: '2592000'   # 月更
-      BROWSER_HEADLESS: '1'        # 无人值守 → 无头 chromium(canada.ca 实测无头直接通)
-      PYTHONUNBUFFERED: '1'        # 容器内 python 行缓冲,日志实时出
       TZ: EST5EDT
+    # 回退:源站重新上 Akamai 时恢复 crawl 重镜像(build dockerfile: docker/etl/crawl/Dockerfile + BROWSER_HEADLESS=1)
 
   build:                           # 跨源清洗→评分→mart→seed(灌库唯一角色)
     <<: *etl

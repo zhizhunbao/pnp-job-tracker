@@ -11,6 +11,7 @@ Runs on BOTH sources (same as 04c geography cleaning). 原地清洗:读哪个文
 Usage:  uv run python etl/clean/04d_clean_salary.py
 """
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -119,7 +120,9 @@ def main() -> None:
                 updated += 1
                 changed = True
         if changed:
-            OUT_JOBBANK_FILE.write_text(json.dumps(postings, ensure_ascii=False, indent=2), encoding="utf-8")
+            tmp = OUT_JOBBANK_FILE.with_suffix(".json.tmp")  # 原子写:与 05/05b 一致
+            tmp.write_text(json.dumps(postings, ensure_ascii=False, indent=2), encoding="utf-8")
+            os.replace(tmp, OUT_JOBBANK_FILE)
 
     print(f"Salary cleaned: {updated} jobs updated · {priced}/{total} have a salary")
 

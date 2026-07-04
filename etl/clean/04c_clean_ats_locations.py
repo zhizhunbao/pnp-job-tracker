@@ -15,6 +15,7 @@ Output per kept job:  country=Canada · province=ON · city=Ottawa ·
 Usage:  uv run python etl/clean/04c_clean_ats_locations.py
 """
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -172,7 +173,9 @@ def main() -> None:
                 backfilled += 1
         if backfilled:
             print(f"Job Bank: 省份兜底补全 {backfilled} 帖(同名城市唯一省)。")
-        OUT_JOBBANK_FILE.write_text(json.dumps(posts, ensure_ascii=False, indent=2), encoding="utf-8")
+        tmp = OUT_JOBBANK_FILE.with_suffix(".json.tmp")  # 原子写:与 05/05b 一致,消除跨容器读到半写
+        tmp.write_text(json.dumps(posts, ensure_ascii=False, indent=2), encoding="utf-8")
+        os.replace(tmp, OUT_JOBBANK_FILE)
         from collections import Counter
         dist = Counter(j.get("province", "?") for j in posts)
         print(f"Job Bank: structured {len(posts)} postings across {len(dist)} provinces {dict(dist)}.")
