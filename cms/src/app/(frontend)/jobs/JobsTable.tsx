@@ -745,7 +745,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
       {/* footer:免责 + 版权,窄屏自动换行 */}
       <footer style={{ borderTop: '1px solid #e5e7eb', background: '#fafafa', flexShrink: 0 }}>
         <div style={{ maxWidth: 1320, margin: '0 auto', padding: '16px 1.25rem', display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'space-between', alignItems: 'center', color: '#9ca3af', fontSize: 12.5 }}>
-          <span>{t('foot.disclaimer')} <a href="/legal/disclaimer" style={{ color: '#6b7280' }}>{t('foot.disclaimerLink')}</a></span>
+          <span>{t('foot.disclaimer')}</span>
           <span style={{ whiteSpace: 'nowrap' }}>© 2026 PNP Job Tracker</span>
         </div>
       </footer>
@@ -1189,8 +1189,6 @@ function AdvisorModal({ field, job, title, lang, pnpOcc, eeOcc, desigEmp, nocDes
         {/* 正文(可滚动):上半真实清单 + 下半 AI 建议 */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '4px 18px 18px' }}>
           <FieldFactsSection field={field} job={job} lang={lang} pnpOcc={pnpOcc} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} />
-          {/* 免责声明 v1(E4-01):AI 判断区顶部,UI 层声明与 AI 文风分离(SYSTEM 已禁输出套话) */}
-          <div style={{ fontSize: 11.5, color: '#9ca3af', margin: '6px 0 4px' }}>⚖️ {t('advisor.disclaimer')}</div>
           {status === 'loading' ? (
             <p style={{ margin: '10px 0', fontSize: 14, color: '#9ca3af' }}>{t('advisor.loading')}</p>
           ) : (
