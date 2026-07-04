@@ -28,8 +28,8 @@ def main() -> None:
     files = sorted(_paths.MART.glob("*.json"))
     if not files:
         print("data/mart/ 为空,无可上传"); sys.exit(1)
-    headers = {"Authorization": f"Bearer {SB_KEY}", "x-upsert": "true",
-               "Content-Type": "application/json"}
+    headers = {"Authorization": f"Bearer {SB_KEY}", "apikey": SB_KEY,  # 双头:兼容新版 sb_secret_ 与旧 service_role JWT
+               "x-upsert": "true", "Content-Type": "application/json"}
     with httpx.Client(timeout=120) as client:
         for f in files:
             body = f.read_bytes()

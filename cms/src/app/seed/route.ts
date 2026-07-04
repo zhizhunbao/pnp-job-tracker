@@ -45,7 +45,7 @@ export async function GET(req: Request) {
   const mart = async (name: string): Promise<any[]> => {
     if (sbUrl && sbKey) {
       const r = await fetch(`${sbUrl}/storage/v1/object/mart/${name}.json`, {
-        headers: { Authorization: `Bearer ${sbKey}` }, cache: 'no-store',
+        headers: { Authorization: `Bearer ${sbKey}`, apikey: sbKey }, cache: 'no-store', // 双头兼容 sb_secret_/legacy JWT
       })
       return r.ok ? await r.json() : []
     }
