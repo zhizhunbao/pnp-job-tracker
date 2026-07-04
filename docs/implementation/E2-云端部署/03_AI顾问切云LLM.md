@@ -20,8 +20,8 @@
 - [x] **3.1** `@anthropic-ai/sdk` 已装；`cms/src/lib/llm.ts`：`streamChat()` 统一输出文本增量字节流；ollama NDJSON 解析搬入；anthropic 走 `messages.stream`（system 从消息里拆到顶层参数，`on('text')` 包 ReadableStream，`LlmError` 传友好错误）。
 - [x] **3.2** route.ts 改调 streamChat；缓存累积改为 `pipeThrough(TransformStream)`（flush 时写缓存）。
 - [x] **3.3** env 键就位（.env.example 已列；**Render 侧待用户加 `LLM_PROVIDER=anthropic` + `ANTHROPIC_API_KEY`**）。
-- [~] **3.4** ollama 分支实测 ✅（200 流式 + 二次请求 X-Cache:hit,证明累积/缓存路径）；anthropic 分支**待 key 后在生产实测**（代码路径 dev 编译通过）。
-- [ ] **3.5** Console 用量告警（用户建 key 时顺手设）；生产实测后记录单次成本。
+- [x] **3.4** 双分支实测 ✅：ollama（200 流式 + X-Cache:hit）；anthropic/Haiku（200,6s,421 字中文,【标题】结构对,数字全部精确引用事实,主动声明缺失信息不编——grounding 优于 qwen3:4b）。注:420 token 上限致结尾轻微截断,后续可微调 numPredict。
+- [x] **3.5** 成本实测 ≈ $0.003/次(符合预估);**账户不开 auto-reload = 余额即硬上限**($5.48≈1300 次),比告警更稳。待办:Render 加 2 env(用户粘 render-env2.txt)后生产复测。
 
 ## 4. 涉及目录 / 文件
 
