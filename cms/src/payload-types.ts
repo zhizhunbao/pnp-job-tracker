@@ -149,7 +149,7 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
-  role: 'user' | 'admin';
+  role?: ('user' | 'admin') | null;
   /**
    * Pro 到期日(时长包,webhook 写入;手动改=人工赠送)
    */

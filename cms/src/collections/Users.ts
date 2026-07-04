@@ -1,14 +1,14 @@
 // 用户(E3-01):Payload 自带 auth,公开注册;role/proUntil 由字段级 access 锁死(webhook 走 overrideAccess)。
 // 时长包语义(D8 修订):没有订阅状态机,proUntil 一个到期日就是全部真相(isPro 见 lib/entitlement.ts)。
-import type { Access, CollectionConfig, FieldAccess } from 'payload'
+import type { Access, CollectionConfig, FieldAccess, PayloadRequest } from 'payload'
 
-const isAdminReq = ({ req: { user } }: { req: { user: { role?: string } | null } }) =>
-  user?.role === 'admin'
-const adminOnlyField: FieldAccess = ({ req: { user } }) => (user as { role?: string } | null)?.role === 'admin'
-const selfOrAdmin: Access = ({ req: { user } }) => {
-  if (!user) return false
-  if ((user as { role?: string }).role === 'admin') return true
-  return { id: { equals: user.id } }
+const isAdmin = (req: PayloadRequest) => req.user?.role === 'admin'
+const isAdminReq = ({ req }: { req: PayloadRequest }) => isAdmin(req)
+const adminOnlyField: FieldAccess = ({ req }) => isAdmin(req)
+const selfOrAdmin: Access = ({ req }) => {
+  if (!req.user) return false
+  if (isAdmin(req)) return true
+  return { id: { equals: req.user.id } }
 }
 
 export const Users: CollectionConfig = {
@@ -29,8 +29,7 @@ export const Users: CollectionConfig = {
       name: 'role',
       type: 'select',
       options: ['user', 'admin'],
-      defaultValue: 'user',
-      required: true,
+      defaultValue: 'user',    // 不加 required:生成类型会逼所有 payload.create 显式传 role(tests/seedUser 编译爆过)
       saveToJWT: true,         // 进 token,服务端 gate 不用回表
       access: { create: adminOnlyField, update: adminOnlyField },
     },
