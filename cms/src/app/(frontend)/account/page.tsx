@@ -5,8 +5,9 @@
 import { useEffect, useState } from 'react'
 import { makeT, LANG_KEY, type Lang } from '../jobs/i18n'
 import { AuthForm } from '../jobs/AuthForm'
+import { ProfileForm, type ProfileValue } from './ProfileForm'
 
-type Me = { id: string | number; email: string; role?: string; proUntil?: string | null } | null
+type Me = { id: string | number; email: string; role?: string; proUntil?: string | null; profile?: ProfileValue | null } | null
 
 const card: React.CSSProperties = { maxWidth: 400, margin: '3rem auto', padding: '1.75rem', border: '1px solid #e5e7eb', borderRadius: 10, background: '#fff' }
 const btn: React.CSSProperties = { width: '100%', padding: '9px 0', fontSize: 14, fontWeight: 600, border: 'none', borderRadius: 6, cursor: 'pointer', marginTop: 14 }
@@ -69,6 +70,8 @@ export default function AccountPage() {
               : <span style={{ color: '#6b7280' }}>{t('acct.plan.free')}</span>}
             </div>
           </div>
+          {/* 移民档案(E5-00):匹配层输入;key 按 id 防换号残留 */}
+          <ProfileForm key={String(me.id)} t={t} userId={me.id} initial={me.profile ?? null} />
           {/* 时长包购买(E3-03):Pro 也可续买,到期日顺延 */}
           <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid #f3f4f6' }}>
             <div style={{ fontSize: 13.5, fontWeight: 600, color: '#374151' }}>{t('acct.buyTitle')}</div>

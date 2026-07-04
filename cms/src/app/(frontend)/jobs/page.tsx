@@ -1,16 +1,27 @@
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import JobsTable, { type JobRow } from './JobsTable'
 import { COLS_COOKIE } from './i18n'
+import { getUser, isPro } from '@/lib/entitlement'
+import { FREE_MATCH_JOBS_PER_DAY } from '@/lib/plan'
+import { match, normalizeProfile, hasProfile, type MatchJob } from '@/lib/match'
 
 export const dynamic = 'force-dynamic'
 
 export default async function JobsPage() {
   const payload = await getPayload({ config: await config })
+
+  // 分层(E3-05):Pro 列(工资中位对比三件套 + 匹配)在 SELECT 源头裁掉 —— 免费用户的数据不进浏览器
+  const user = await getUser(await headers())
+  const pro = isPro(user)
+  const profile = normalizeProfile((user as any)?.profile)
+  const profileOk = hasProfile(profile)
+
   // 列表读取走原始 SQL:payload.find 会把每个 doc 过一遍读取管线(access/hooks),2000+ 行要十几秒。
   // 公开只读列表直接 select + join 公司名,<0.5s。(列名是 Payload 的 snake_case;schema 改了要同步)
+  // 工资中位列 SELECT 全量(免费用户的匹配计算也要用),但免费用户在下方映射层剥离 —— 数据不进浏览器。
   const pool = (payload.db as any).pool
   const { rows } = await pool.query(`
     SELECT j.id, j.title, c.name AS company_name, c.address AS company_address, c.description AS company_description, c.sectors AS company_sectors,
@@ -20,7 +31,8 @@ export default async function JobsPage() {
       j.wage_med_hourly, j.wage_med_annual, j.wage_low_hourly, j.wage_low_annual, j.wage_high_hourly, j.wage_high_annual, j.wage_year,
       j.source, j.source_label, j.origin, j.date_posted, j.first_seen, j.last_seen, j.status, j.closed_at
     FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
-    ORDER BY j.date_posted DESC NULLS LAST LIMIT 20000`)
+    ORDER BY j.date_posted DESC NULLS LAST, j.score DESC NULLS LAST LIMIT 20000`)
+  // ↑ 排序与前端默认序一致(发布时间↓,同日评分↓兜底):免费匹配「前 N 岗」(E5-00)才等于用户看到的前 N 行
 
   // 维度表小,继续走 payload.find
   const [provDocs, cityDocs, distDocs, nocDocs, srcDocs, expDocs, pnpDocs, eeDocs, aipDocs, nocDescDocs] = await Promise.all([
@@ -50,7 +62,22 @@ export default async function JobsPage() {
 
   const iso = (v: any) => (v instanceof Date ? v.toISOString() : (v ?? ''))
   const num = (v: any) => (v == null ? null : Number(v)) // pg numeric 返回字符串,转回数字
-  const jobs: JobRow[] = rows.map((j: any) => ({
+
+  // 档案匹配(E5-00):服务端按人逐行 join(规则在 lib/match.ts 一处)。
+  // Pro=全量;免费=默认序前 N 岗(激活钩子,plan.ts);未建档/未登录不算。
+  const matchDims = { pnpOccupations: dims.pnpOccupations, eeCategories: dims.eeCategories }
+  const matchOf = (j: any, idx: number): JobRow['match'] => {
+    if (!profileOk) return null
+    if (!pro && idx >= FREE_MATCH_JOBS_PER_DAY) return null
+    const mj: MatchJob = {
+      noc: j.noc ?? '', teer: num(j.teer), province: j.province ?? '', pnpEligible: !!j.pnp_eligible,
+      pnpStream: j.pnp_stream ?? '', eeCategory: j.ee_category ?? '', salaryAnnual: num(j.salary_annual), wageMedAnnual: num(j.wage_med_annual),
+    }
+    return match(profile, mj, matchDims).level
+  }
+
+  const jobs: JobRow[] = rows.map((j: any, idx: number) => ({
+    match: matchOf(j, idx),
     id: j.id,
     title: j.title ?? '',
     company: j.company_name ?? '',
@@ -79,13 +106,14 @@ export default async function JobsPage() {
     salary: j.salary ?? '',
     salaryAnnual: num(j.salary_annual),
     salaryText: j.salary_text ?? '',
-    wageMedHourly: num(j.wage_med_hourly),
-    wageMedAnnual: num(j.wage_med_annual),
-    wageLowHourly: num(j.wage_low_hourly),
-    wageLowAnnual: num(j.wage_low_annual),
-    wageHighHourly: num(j.wage_high_hourly),
-    wageHighAnnual: num(j.wage_high_annual),
-    wageYear: j.wage_year ?? '',
+    // Pro 列数据(E3-05):免费用户置空 —— 不进浏览器,前端在列位显示锁标(改 cookie/偏好绕不过)
+    wageMedHourly: pro ? num(j.wage_med_hourly) : null,
+    wageMedAnnual: pro ? num(j.wage_med_annual) : null,
+    wageLowHourly: pro ? num(j.wage_low_hourly) : null,
+    wageLowAnnual: pro ? num(j.wage_low_annual) : null,
+    wageHighHourly: pro ? num(j.wage_high_hourly) : null,
+    wageHighAnnual: pro ? num(j.wage_high_annual) : null,
+    wageYear: pro ? (j.wage_year ?? '') : '',
     officialUrl: j.official_url ?? '',
     applyUrl: j.apply_url ?? '',
     datePosted: iso(j.date_posted),
@@ -104,5 +132,13 @@ export default async function JobsPage() {
     if (raw) { const arr = JSON.parse(decodeURIComponent(raw)); if (Array.isArray(arr)) initialCols = arr.filter((x) => typeof x === 'string') }
   } catch { /* 无 cookie/解析失败 → 用默认列 */ }
 
-  return <JobsTable jobs={jobs} updatedAt={updatedAt} dims={dims} initialCols={initialCols} />
+  // plan(E3-05/E5-00):分层态与档案传给前端 —— 展示引导用;gate 本身在服务端(上方 SELECT/匹配范围)已生效
+  const plan = {
+    isPro: pro,
+    loggedIn: !!user,
+    profileOk,
+    profile: profileOk ? profile : null,   // 本人档案(弹框端重算依据链用)
+    freeMatchCap: FREE_MATCH_JOBS_PER_DAY,
+  }
+  return <JobsTable jobs={jobs} updatedAt={updatedAt} dims={dims} initialCols={initialCols} plan={plan} />
 }

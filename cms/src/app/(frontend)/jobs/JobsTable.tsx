@@ -8,6 +8,30 @@ const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : use
 
 import { makeT, LANGS, LANG_KEY, COLS_COOKIE, type Lang, type TFn } from './i18n'
 import { AuthModal } from './AuthForm'
+import { match as matchJob, matchRank, type MatchProfile, type MatchJob, type MatchReason } from '@/lib/match'
+
+// 分层态(E3-05/E5-00,服务端 page.tsx 传入):gate 在服务端已生效,这里只做展示引导
+export type Plan = {
+  isPro: boolean
+  loggedIn: boolean
+  profileOk: boolean
+  profile: MatchProfile | null
+  freeMatchCap: number
+}
+const FREE_PLAN: Plan = { isPro: false, loggedIn: false, profileOk: false, profile: null, freeMatchCap: 0 }
+// Pro 专属列(与 lib/plan.ts PRO_COLUMNS 一致;免费用户列位显示锁标,数据本就没进浏览器)
+const PRO_COLS = new Set<ColKey>(['match', 'vsMedian', 'wageMedHr', 'wageMedYr'])
+
+// 升级卡片(402 / 锁定块共用)
+function UpgradeCard({ t, reason }: { t: TFn; reason: string }) {
+  return (
+    <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '10px 14px', margin: '8px 0', fontSize: 13.5 }}>
+      <span style={{ fontWeight: 600, color: '#92400e' }}>⭐ {t('up.title')}</span>
+      <span style={{ color: '#78716c', marginLeft: 8 }}>{reason}</span>
+      <a href="/account" style={{ marginLeft: 10, color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}>{t('up.cta')}</a>
+    </div>
+  )
+}
 
 // 顶栏账户入口(E3-02):未登录=「登录」弹框(不跳页,用户要求);已登录=用户名 → /account 状态页。
 function AccountLink({ t }: { t: TFn }) {
@@ -37,6 +61,7 @@ function AccountLink({ t }: { t: TFn }) {
 
 export type JobRow = {
   id: string | number
+  match: 'high' | 'mid' | 'low' | 'na' | null   // 与我的匹配(E5-00,服务端算;null=未建档/免费限额外/未登录)
   title: string
   company: string
   companyDescription: string
@@ -102,6 +127,7 @@ const colorOf = (broad?: string): Cat => (broad && BROAD_COLOR[broad]) || NA
 const sortVal = (j: JobRow, key: ColKey): number | string | null => {
   switch (key) {
     case 'score': return j.score
+    case 'match': return matchRank(j.match)
     case 'salary': case 'salaryYr': return j.salaryAnnual
     case 'wageMedHr': return j.wageMedHourly
     case 'wageMedYr': return j.wageMedAnnual
@@ -220,7 +246,7 @@ const sourceUrl = (applyUrl: string): string => {
 }
 
 // ── 列配置(可勾选;职位列始终显示) ──────────────────────────────
-type ColKey = 'score' | 'pnp' | 'ee' | 'aip' | 'broad' | 'mid' | 'fine' | 'teer' | 'title' | 'company' | 'noc' | 'accessibility' | 'salary' | 'salaryYr' | 'wageMedHr' | 'wageMedYr' | 'vsMedian' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'lastSeen' | 'closedAt' | 'actions'
+type ColKey = 'score' | 'match' | 'pnp' | 'ee' | 'aip' | 'broad' | 'mid' | 'fine' | 'teer' | 'title' | 'company' | 'noc' | 'accessibility' | 'salary' | 'salaryYr' | 'wageMedHr' | 'wageMedYr' | 'vsMedian' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'lastSeen' | 'closedAt' | 'actions'
 // 默认显示 10 列(发布时间·大分类·公司·职位·省·市·薪资·年薪·vs中位·操作);其余用户自选。
 // 布局:表格永远满宽不横向滚动,列按内容自适应,内容多行换行(不省略)——见 <table>/<td> 注释。
 const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean }[] = [
@@ -231,6 +257,7 @@ const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean 
   { key: 'teer', label: 'TEER', default: false },
   { key: 'company', label: '公司', default: true },
   { key: 'title', label: '职位', default: true, always: true },
+  { key: 'match', label: '与我的匹配', default: true },   // E5-00 付费头牌列(服务端算;免费=每日前 N 岗)
   { key: 'noc', label: 'NOC', default: false },
   { key: 'accessibility', label: '经验级别', default: false },
   { key: 'country', label: '国家', default: false },
@@ -258,8 +285,8 @@ const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean 
 const DEFAULT_COLS = COLUMNS.filter((c) => c.default).map((c) => c.key)
 // 原子值列:内容单行不换行(日期/金额/百分比/分级等短值,断行会很丑)。其余文本列(职位/公司/地点等)允许多行,
 // 以便表格压进容器宽度不横向滚动。表头一律不换行(=该列最小宽度)。
-const NOWRAP_COLS = new Set<ColKey>(['datePosted', 'lastSeen', 'closedAt', 'salary', 'salaryYr', 'wageMedHr', 'wageMedYr', 'vsMedian', 'teer', 'score', 'status', 'direct', 'aip'])
-const PREF_KEY = 'jobs.visibleCols.v8'  // v8:默认精简为 10 列 + 满宽自适应布局,bump 版本让新默认生效
+const NOWRAP_COLS = new Set<ColKey>(['datePosted', 'lastSeen', 'closedAt', 'salary', 'salaryYr', 'wageMedHr', 'wageMedYr', 'vsMedian', 'teer', 'score', 'status', 'direct', 'aip', 'match'])
+const PREF_KEY = 'jobs.visibleCols.v9'  // v9:新增「与我的匹配」默认列(E5-00),bump 版本让新默认生效
 const writeColsCookie = (keys: string[]) => {
   try { document.cookie = `${COLS_COOKIE}=${encodeURIComponent(JSON.stringify(keys))}; path=/; max-age=31536000; SameSite=Lax` } catch { /* ignore */ }
 }
@@ -285,7 +312,7 @@ type Dims = {
 const EMPTY_DIMS: Dims = { provinces: [], cities: [], districts: [], nocCategories: [], sources: [], experienceLevels: [], pnpOccupations: [], eeCategories: [], designatedEmployers: [], nocDescriptions: [] }
 const PROV_CODE: Record<string, string> = Object.fromEntries(Object.entries(PROV_NAMES).map(([c, n]) => [n, c]))
 
-export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialCols }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims; initialCols?: string[] }) {
+export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialCols, plan = FREE_PLAN }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims; initialCols?: string[]; plan?: Plan }) {
   const [q, setQ] = useState('')
   const [directOnly, setDirectOnly] = useState(false)
   const [fCountry, setFCountry] = useState(''); const [fProv, setFProv] = useState(''); const [fCity, setFCity] = useState(''); const [fDistrict, setFDistrict] = useState('')
@@ -650,7 +677,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                   return (
                     <th key={c.key} onClick={() => toggleSort(c.key)} title={t('th.tip')}
                       style={{ padding: '8px 12px', color: active ? '#2563eb' : '#374151', fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none', position: 'relative', borderRight: isLast ? undefined : '1px solid #e5e7eb', minWidth: colMin(c.key), ...frozenStyle(c.key, '#f9fafb') }}>
-                      {t('col.' + c.key)}<span style={{ color: active ? '#2563eb' : '#d1d5db', fontSize: 11 }}>{active ? (sort.dir === 'desc' ? ' ▼' : ' ▲') : ' ↕'}</span>{handle}
+                      {t('col.' + c.key)}{PRO_COLS.has(c.key) && !plan.isPro ? <span title={t('up.lockTip')} style={{ fontSize: 10 }}> 🔒</span> : null}<span style={{ color: active ? '#2563eb' : '#d1d5db', fontSize: 11 }}>{active ? (sort.dir === 'desc' ? ' ▼' : ' ▲') : ' ↕'}</span>{handle}
                     </th>
                   )
                 })}
@@ -677,7 +704,25 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                       let href: string | null = null
                       let node: React.ReactNode
                       const extra: React.CSSProperties = {}
-                      if (k === 'score') { node = j.score ?? '—'; Object.assign(extra, { fontWeight: 500, color: scoreColor(j.score) }) }
+                      // Pro 专属列(E3-05):免费用户列位显示锁标(数据在服务端已剥离,改偏好/cookie 绕不过)
+                      if (PRO_COLS.has(k) && !plan.isPro && k !== 'match') {
+                        node = <a href="/account" title={t('up.lockTip')} style={{ textDecoration: 'none', color: '#b45309' }} onClick={(e) => e.stopPropagation()}>🔒</a>
+                        Object.assign(extra, { whiteSpace: 'nowrap', textAlign: 'center' as const })
+                      }
+                      else if (k === 'match') {  // 与我的匹配(E5-00):高=绿 chip / 中=蓝 / 低=灰 / 不适用=浅;未建档→引导;免费限额外→锁
+                        if (j.match) {
+                          const M: Record<string, { bg: string; fg: string }> = { high: { bg: '#dcfce7', fg: '#166534' }, mid: { bg: '#dbeafe', fg: '#1e40af' }, low: { bg: '#f3f4f6', fg: '#6b7280' }, na: { bg: '#fafafa', fg: '#c4c4c8' } }
+                          const c2 = M[j.match]
+                          node = <span style={{ background: c2.bg, color: c2.fg, fontWeight: 600, fontSize: 12, padding: '2px 8px', borderRadius: 6, whiteSpace: 'nowrap' }}>{t('match.' + j.match)}</span>
+                          Object.assign(extra, { whiteSpace: 'nowrap' })
+                        } else if (!plan.loggedIn || !plan.profileOk) {
+                          node = <a href="/account" style={{ fontSize: 12, color: '#2563eb', textDecoration: 'none', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>{t('match.needProfile')} →</a>
+                        } else {
+                          node = <a href="/account" title={t('match.overCap', { n: plan.freeMatchCap })} style={{ textDecoration: 'none', color: '#b45309' }} onClick={(e) => e.stopPropagation()}>🔒</a>
+                          Object.assign(extra, { whiteSpace: 'nowrap', textAlign: 'center' as const })
+                        }
+                      }
+                      else if (k === 'score') { node = j.score ?? '—'; Object.assign(extra, { fontWeight: 500, color: scoreColor(j.score) }) }
                       else if (k === 'broad') { node = broadLabel(j.broad); Object.assign(extra, { whiteSpace: 'nowrap', color: cat.fg, fontWeight: 500 }) }
                       else if (k === 'mid') { node = (!j.mid || j.mid === '未分类') ? t('cell.uncat') : j.mid; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'fine') { node = (j.mid === '未分类' || !j.mid) ? '—' : j.fine; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
@@ -750,7 +795,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
         </div>
       </footer>
 
-      {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} pnpOcc={dims.pnpOccupations} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} onClose={() => setPopup(null)} />}
+      {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} onClose={() => setPopup(null)} />}
       {actModal && <ActModal kind={actModal.kind} job={actModal.job} jobs={jobs} lang={lang} onClose={() => setActModal(null)} />}
     </div>
   )
@@ -916,11 +961,13 @@ function NocDutiesView({ noc, lang }: { noc: NocDesc | null; lang: Lang }) {
 function TitleFacts({ job, lang, noc }: { job: JobRow; lang: Lang; noc: NocDesc | null }) {
   const t = makeT(lang)
   const [jd, setJd] = useState<string | null>(null)  // null=loading · ''=无正文
+  const [gated, setGated] = useState(false)          // 402:JD 摘录免费试用用完(E3-05)
   useEffect(() => {
     const ctrl = new AbortController()
     ;(async () => {
       try {
         const res = await fetch('/api/jobtext?url=' + encodeURIComponent(job.applyUrl || ''), { signal: ctrl.signal })
+        if (res.status === 402) { setGated(true); setJd(''); return }
         setJd((await res.text()).trim())
       } catch { if (!ctrl.signal.aborted) setJd('') }
     })()
@@ -932,7 +979,8 @@ function TitleFacts({ job, lang, noc }: { job: JobRow; lang: Lang; noc: NocDesc 
       <FactRow k={t('col.noc')}>{job.noc ? `${job.noc}${job.teer != null ? ` · TEER ${job.teer}` : ''}${noc?.title ? ` · ${noc.title}` : ''}` : null}</FactRow>
       <NocDutiesView noc={noc} lang={lang} />
       <div style={{ marginTop: 8, fontSize: 11.5, color: '#9ca3af' }}>{t('fact.jdExcerpt')}</div>
-      {jd === null ? <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>{t('act.loadingText')}</div>
+      {gated ? <UpgradeCard t={t} reason={t('up.jobtext')} />
+        : jd === null ? <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>{t('act.loadingText')}</div>
         : jd ? <div style={{ marginTop: 4, fontSize: 12.5, color: '#4b5563', whiteSpace: 'pre-wrap', lineHeight: 1.6, maxHeight: 180, overflowY: 'auto', border: '1px solid #f3f4f6', borderRadius: 8, padding: '8px 10px' }}>{jd.slice(0, 900)}</div>
         : <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>{t('act.noText')}</div>}
     </FactsBox>
@@ -1094,11 +1142,68 @@ function FieldFactsSection({ field, job, lang, pnpOcc, eeOcc, desigEmp, nocDesc 
 // ── AI 顾问弹框 ────────────────────────────────────────────────
 // 所有字段都走本地大模型流式生成(按所选语言);前端只给极简头部 + 链接,正文由模型生成。
 const ADV_PREF = 'adv_modal_pref'  // 记忆 {full, w, h}(位置每次打开居中,避免窗口缩小后跑出屏外)
-function AdvisorModal({ field, job, title, lang, pnpOcc, eeOcc, desigEmp, nocDesc, onClose }: { field: ColKey; job: JobRow; title?: string; lang: Lang; pnpOcc: PnpOcc[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; onClose: () => void }) {
+// ── 对我意味着什么(E5-00 §3.5,FieldFactsSection 同级)────────────
+// 依据链在弹框端用同一 match() 重算(lib/match.ts 纯函数,与服务端列一致);每条结论指回维度记录。
+// 措辞红线:只说「符合/不符合公开清单条件」「高于/低于抽选线」,永不说「你能/不能移民」;块底带免责短句。
+const VERDICT_ICON: Record<string, { icon: string; color: string }> = {
+  pass: { icon: '✓', color: '#15803d' }, warn: { icon: '⚠', color: '#b45309' }, fail: { icon: '✗', color: '#dc2626' }, na: { icon: '·', color: '#9ca3af' },
+}
+function MeansForMe({ job, lang, plan, pnpOcc, eeOcc }: { job: JobRow; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; eeOcc: EeOcc[] }) {
+  const t = makeT(lang)
+  const result = useMemo(() => {
+    if (!plan.profileOk || !plan.profile) return null
+    const mj: MatchJob = {
+      noc: job.noc, teer: job.teer, province: job.province, pnpEligible: job.pnpEligible,
+      pnpStream: job.pnpStream, eeCategory: job.eeCategory, salaryAnnual: job.salaryAnnual, wageMedAnnual: job.wageMedAnnual,
+    }
+    return matchJob(plan.profile, mj, {
+      pnpOccupations: pnpOcc.map((r) => ({ province: r.province, label: r.label, type: r.type, noc: r.noc, url: r.url, fetched: r.fetched })),
+      eeCategories: eeOcc.map((r) => ({ category: r.category, label: r.label, noc: r.noc, drawCrs: r.drawCrs, drawDate: r.drawDate, url: r.url, fetched: r.fetched })),
+    })
+  }, [job, plan, pnpOcc, eeOcc])
+
+  if (!plan.loggedIn || !plan.profileOk) {  // 未登录/未建档:一行引导,不占地
+    return (
+      <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 8, padding: '8px 12px', margin: '4px 0 8px', fontSize: 13 }}>
+        🎯 <a href="/account" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}>{t('match.needProfile')} →</a>
+        <span style={{ color: '#6b7280', marginLeft: 8 }}>{t('prof.hint')}</span>
+      </div>
+    )
+  }
+  // 免费限额外(服务端没给这行算 match)→ 升级卡;依据链是 Pro/限额内权益
+  if (!plan.isPro && job.match == null) return <UpgradeCard t={t} reason={t('up.match', { n: plan.freeMatchCap })} />
+  if (!result) return null
+  const lvColor: Record<string, string> = { high: '#166534', mid: '#1e40af', low: '#6b7280', na: '#9ca3af' }
+  return (
+    <div style={{ background: '#fafaf9', border: '1px solid #e7e5e4', borderRadius: 10, padding: '10px 14px', margin: '4px 0 8px' }}>
+      <div style={{ fontSize: 13, fontWeight: 700, color: '#374151' }}>
+        {t('match.title')}
+        <span style={{ marginLeft: 10, fontWeight: 600, color: lvColor[result.level] }}>{t('match.levelLine', { level: t('match.' + result.level) })}</span>
+      </div>
+      <div style={{ marginTop: 6 }}>
+        {result.reasons.map((r: MatchReason, i: number) => {
+          const v = VERDICT_ICON[r.verdict]
+          return (
+            <div key={i} style={{ fontSize: 12.5, lineHeight: 1.7, color: '#4b5563' }}>
+              <span style={{ color: v.color, fontWeight: 700 }}>{v.icon}</span> {t(r.key, r.params as Record<string, string | number>)}
+              {r.source?.url && (
+                <a href={r.source.url} target="_blank" rel="noreferrer" style={{ marginLeft: 6, fontSize: 11.5, color: '#2563eb', textDecoration: 'none' }}
+                  title={r.source.fetched ? t('match.srcFetched', { d: r.source.fetched }) : undefined}>{r.source.label} ↗</a>
+              )}
+            </div>
+          )
+        })}
+      </div>
+      <div style={{ marginTop: 6, fontSize: 11, color: '#9ca3af' }}>⚖️ {t('match.disclaimer')}</div>
+    </div>
+  )
+}
+
+function AdvisorModal({ field, job, title, lang, plan, pnpOcc, eeOcc, desigEmp, nocDesc, onClose }: { field: ColKey; job: JobRow; title?: string; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; onClose: () => void }) {
   const t = makeT(lang)
   const a = advHeader(field, job, t)
   const [text, setText] = useState('')
-  const [status, setStatus] = useState<'loading' | 'streaming' | 'done' | 'error'>('loading')
+  const [status, setStatus] = useState<'loading' | 'streaming' | 'done' | 'error' | 'upgrade'>('loading')
 
   // 弹框尺寸/全屏/位置 —— 默认更大(720×620),可全屏、标题栏拖动、右下角拉伸;尺寸+全屏记忆
   const [full, setFull] = useState(false)
@@ -1151,6 +1256,7 @@ function AdvisorModal({ field, job, title, lang, pnpOcc, eeOcc, desigEmp, nocDes
           method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal,
           body: JSON.stringify({ field, id: String(job.id), job, lang }),
         })
+        if (res.status === 402) { setStatus('upgrade'); return }  // 免费试用用完(E3-05)→ 升级卡
         if (!res.ok || !res.body) { setStatus('error'); setText(t('advisor.failed', { code: res.status })); return }
         const reader = res.body.getReader(); const dec = new TextDecoder()
         setStatus('streaming')
@@ -1188,10 +1294,14 @@ function AdvisorModal({ field, job, title, lang, pnpOcc, eeOcc, desigEmp, nocDes
         </div>
         {/* 正文(可滚动):上半真实清单 + 下半 AI 建议 */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '4px 18px 18px' }}>
+          {/* 对我意味着什么(E5-00):个人相关性放最上;依据链同源 match() */}
+          <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} />
           <FieldFactsSection field={field} job={job} lang={lang} pnpOcc={pnpOcc} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} />
           {/* 免责声明 v1(E4-01):AI 判断区顶部,UI 层声明与 AI 文风分离(SYSTEM 已禁输出套话) */}
           <div style={{ fontSize: 11.5, color: '#9ca3af', margin: '6px 0 4px' }}>⚖️ {t('advisor.disclaimer')}</div>
-          {status === 'loading' ? (
+          {status === 'upgrade' ? (
+            <UpgradeCard t={t} reason={t('up.advisor')} />
+          ) : status === 'loading' ? (
             <p style={{ margin: '10px 0', fontSize: 14, color: '#9ca3af' }}>{t('advisor.loading')}</p>
           ) : (
             <div style={{ fontSize: 14, lineHeight: 1.7, color: '#374151' }}>{renderAI(text)}{status === 'streaming' && <span style={{ color: '#9ca3af' }}>▋</span>}</div>
@@ -1238,7 +1348,9 @@ function AdvisorChat({ field, job, lang, initialJudgment }: { field: ColKey; job
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ field, id: String(job.id), job, lang, messages: payload }),
       })
-      if (!res.ok || !res.body) {
+      if (res.status === 402) {  // 免费试用用完(E3-05):对话里给升级引导
+        setMsgs((m) => { const c = [...m]; c[c.length - 1] = { role: 'assistant', content: `⭐ ${t('up.title')} · ${t('up.advisor')} → /account` }; return c })
+      } else if (!res.ok || !res.body) {
         setMsgs((m) => { const c = [...m]; c[c.length - 1] = { role: 'assistant', content: t('advisor.failed', { code: res.status }) }; return c })
       } else {
         const reader = res.body.getReader(); const dec = new TextDecoder()
@@ -1289,7 +1401,7 @@ function ActRow({ label, value }: { label: string; value: React.ReactNode }) {
 function ActModal({ kind, job, jobs, lang, onClose }: { kind: 'company' | 'desc'; job: JobRow; jobs: JobRow[]; lang: Lang; onClose: () => void }) {
   const t = makeT(lang)
   const [text, setText] = useState('')
-  const [status, setStatus] = useState<'loading' | 'done' | 'empty'>(kind === 'desc' ? 'loading' : 'done')
+  const [status, setStatus] = useState<'loading' | 'done' | 'empty' | 'upgrade'>(kind === 'desc' ? 'loading' : 'done')
   useEffect(() => {
     if (kind !== 'desc') return
     const ctrl = new AbortController()
@@ -1297,6 +1409,7 @@ function ActModal({ kind, job, jobs, lang, onClose }: { kind: 'company' | 'desc'
     ;(async () => {
       try {
         const res = await fetch('/api/jobtext?url=' + encodeURIComponent(job.applyUrl || ''), { signal: ctrl.signal })
+        if (res.status === 402) { setStatus('upgrade'); return }  // 免费试用用完(E3-05)
         const txt = (await res.text()).trim()
         setText(txt); setStatus(txt ? 'done' : 'empty')
       } catch { if (!ctrl.signal.aborted) setStatus('empty') }
@@ -1330,6 +1443,7 @@ function ActModal({ kind, job, jobs, lang, onClose }: { kind: 'company' | 'desc'
             </div>
           ) : (
             status === 'loading' ? <p style={{ color: '#9ca3af' }}>{t('act.loadingText')}</p>
+              : status === 'upgrade' ? <UpgradeCard t={t} reason={t('up.jobtext')} />
               : status === 'empty' ? <p style={{ color: '#9ca3af' }}>{t('act.noText')}</p>
                 : <div style={{ whiteSpace: 'pre-wrap' }}>{text}</div>
           )}

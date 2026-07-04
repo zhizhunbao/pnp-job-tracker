@@ -2,15 +2,55 @@
 // 密钥/地址只在服务端;同一职位/公司只生成一次(内存缓存)。
 // 职位描述基于抓取的真实 JD(.md)总结,不让模型凭空猜。
 import { NextRequest } from 'next/server'
+import { getPayload } from 'payload'
+import config from '@/payload.config'
 import { jobDescription } from '@/lib/jobDescription'
 import { checkLimit, ipOf } from '@/lib/rateLimit'
 import { streamChat, LlmError, type ChatMessage } from '@/lib/llm'
+import { getUser, isPro } from '@/lib/entitlement'
+import { FREE_ADVISOR_TRIES, PRO_ADVISOR_DAILY } from '@/lib/plan'
+import { match, normalizeProfile, hasProfile, reasonEn, type MatchDims, type MatchJob } from '@/lib/match'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 // 进程内缓存(dev 下随热重载清空,够用;以后可换持久化)
 const cache = new Map<string, string>()
+
+// 匹配用维度(pnp/ee 清单)进程内缓存 1h —— 档案事实注入(E5-00)要按岗 join,不能每请求回表
+let dimsCache: { at: number; dims: MatchDims } | null = null
+async function loadMatchDims(): Promise<MatchDims> {
+  if (dimsCache && Date.now() - dimsCache.at < 3600_000) return dimsCache.dims
+  const payload = await getPayload({ config: await config })
+  const [pnp, ee] = await Promise.all([
+    payload.find({ collection: 'pnp-occupations', limit: 5000, depth: 0 }),
+    payload.find({ collection: 'ee-categories', limit: 2000, depth: 0 }),
+  ])
+  const dims: MatchDims = {
+    pnpOccupations: pnp.docs.map((r: any) => ({ province: r.province, label: r.label, type: r.type, noc: r.noc, url: r.url, fetched: r.fetched })),
+    eeCategories: ee.docs.map((r: any) => ({ category: r.category, label: r.label, noc: r.noc, drawCrs: typeof r.drawCrs === 'number' ? r.drawCrs : null, drawDate: r.drawDate ?? '', url: r.url, fetched: r.fetched })),
+  }
+  dimsCache = { at: Date.now(), dims }
+  return dims
+}
+
+// Pro 档案事实(E5-00 §3.5):自报档案 + 本岗匹配结论(与 UI 同一 match() 输出,数字一致)。
+// grounded 契约不变:注进 facts 当事实用,问到档案没有的信息照样直说未提供。
+function profileFacts(profileRaw: any, j: Job, dims: MatchDims): string {
+  const p = normalizeProfile(profileRaw)
+  if (!hasProfile(p)) return ''
+  const mj: MatchJob = {
+    noc: j.noc || '', teer: teerOf(j.noc), province: j.province || '', pnpEligible: !!j.pnpEligible,
+    pnpStream: j.pnpStream || '', eeCategory: j.eeCategory || '', salaryAnnual: j.salaryAnnual ?? null, wageMedAnnual: j.wageMedAnnual ?? null,
+  }
+  const m = match(p, mj, dims)
+  return [
+    `\nUser immigration profile (self-reported): NOC ${p.nocCodes.join('/') || '—'}; CLB ${p.clb ?? '—'}; CRS ${p.crs ?? 'not reported'}; target provinces ${p.targetProvinces.join('/') || '—'}; PGWP months left ${p.pgwpMonthsLeft ?? '—'}.`,
+    `Profile-match for THIS job: ${m.level} (score ${m.score}). Findings:`,
+    ...m.reasons.map((r) => `- ${reasonEn(r)}`),
+    'State list/draw comparisons factually; NEVER tell the user they can or cannot immigrate.',
+  ].join('\n')
+}
 
 // JD 正文从 DB jobs.description 取(mart 灌入),不再扫 .md 文件;模型基于真实 JD 总结,不凭空猜。
 async function loadJD(url?: string): Promise<string> {
@@ -121,7 +161,7 @@ const HEADINGS: Record<Lang, { company: string; title: string }> = {
   },
 }
 
-function buildPrompt(field: string, j: Job, jd: string, lang: Lang): string {
+function buildPrompt(field: string, j: Job, jd: string, lang: Lang, pf = ''): string {
   const loc = j.address || [j.city, j.province].filter(Boolean).join(', ') || '—'
   const t = teerOf(j.noc)
   const nocLine = j.noc ? `NOC ${j.noc} (TEER ${t ?? '—'}, ${catOf(j.noc)})` : 'NOC not identified'
@@ -134,7 +174,7 @@ function buildPrompt(field: string, j: Job, jd: string, lang: Lang): string {
   if (field !== 'title') {
     // 其它字段:把该岗事实(评分字段附明细)喂进去,模型只负责按所选语言解释,数字用我们给的
     const ask = ASK[field] || `Explain the "${field}" field for this job.`
-    const facts = jobFacts(j) + (field === 'score' ? '\n' + scoreFacts(j) : '')
+    const facts = jobFacts(j) + (field === 'score' ? '\n' + scoreFacts(j) : '') + pf
     const reader = 'The reader is an international student / PGWP holder aiming for employer-offer → PNP in Canada.'
     if (SIMPLE.has(field)) {
       // 简单字段:一句话,不分段、不过度解读
@@ -153,8 +193,8 @@ function buildPrompt(field: string, j: Job, jd: string, lang: Lang): string {
 
 // 对话(下半):基于上半事实的多轮追问。system 始终带整条岗位事实 + grounding 铁律 —— 防止多轮放开后退回"编"。
 type ChatMsg = { role: 'user' | 'assistant'; content: string }
-function chatSystem(job: Job, jd: string, lang: Lang): string {
-  const facts = jobFacts(job) + '\n' + scoreFacts(job) + (jd ? `\n\nReal job posting excerpt:\n"""\n${jd}\n"""` : '')
+function chatSystem(job: Job, jd: string, lang: Lang, pf = ''): string {
+  const facts = jobFacts(job) + '\n' + scoreFacts(job) + pf + (jd ? `\n\nReal job posting excerpt:\n"""\n${jd}\n"""` : '')
   return SYSTEM(lang) +
     '\n\nYou are answering follow-up questions about ONE specific job. These verified facts are your ONLY source of truth:\n' + facts +
     `\n\nGround every answer ONLY in these facts and the conversation so far. If the user asks about something the facts do not cover, say plainly in ${LANG_NAME[lang]} that you do not have that data — do NOT invent, guess, or use outside knowledge. Answer concisely; 【headings】 are optional for chat replies. Always tie the answer back to what it means for the reader's job/immigration decision.`
@@ -170,27 +210,39 @@ export async function POST(req: NextRequest) {
   const messages = (Array.isArray(body.messages) ? body.messages : [])
     .filter((m): m is ChatMsg => !!m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
   const isChat = messages.length > 0
-  // 缓存键含 字段+标识+语言(公司按公司名,其余按 id;不同字段/语言分开缓存);对话不缓存(每轮唯一)
+
+  // 分层 gate(E3-05,一律服务端):免费登录用户 = 每日试用次数,超 → 402(前端渲升级卡);
+  // 试用计「功能使用次数」,缓存命中也算 —— 付费卖的是功能不是 token。
+  const user = await getUser(req.headers)
+  const pro = isPro(user)
+  if (user && !pro && !checkLimit([[`adv:u:${user.id}`, FREE_ADVISOR_TRIES]])) {
+    return new Response('upgrade required', { status: 402 })
+  }
+
+  // Pro 档案感知(E5-00):自报档案 + 本岗匹配结论注入 facts;个性化内容缓存按人隔离
+  const pf = pro && user ? profileFacts((user as any).profile, job, await loadMatchDims()) : ''
+
+  // 缓存键含 字段+标识+语言(公司按公司名,其余按 id);带档案的初判按人隔离;对话不缓存(每轮唯一)
   const keyId = field === 'company' ? (job.company || '').toLowerCase() : (body.id || job.title || '')
-  const key = `${field}:${keyId}:${lang}`
+  const key = `${field}:${keyId}:${lang}${pf ? `:p${user!.id}` : ''}`
 
   if (!isChat) {
     const cached = cache.get(key)
     if (cached) return new Response(cached, { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'X-Cache': 'hit' } })
   }
 
-  // 限流(放在缓存之后:命中不计数):按 IP 日限 + 全局日上限,公网防滥用/LLM 成本兜底(E2-02)
-  if (!checkLimit([
-    [`adv:${ipOf(req)}`, Number(process.env.ADVISOR_IP_DAILY || 40)],
-    ['adv:__global__', Number(process.env.ADVISOR_DAILY_CAP || 1000)],
-  ])) return new Response('rate limited', { status: 429 })
+  // 成本限流(真调 LLM 才计,放缓存之后):全局日上限兜底;Pro 个人日限(防滥用);未登录沿用 IP 限(E2-02)
+  const quotas: [string, number][] = [['adv:__global__', Number(process.env.ADVISOR_DAILY_CAP || 1000)]]
+  if (pro && user) quotas.push([`adv:pro:${user.id}`, PRO_ADVISOR_DAILY])
+  if (!user) quotas.push([`adv:${ipOf(req)}`, Number(process.env.ADVISOR_IP_DAILY || 40)])
+  if (!checkLimit(quotas)) return new Response('rate limited', { status: 429 })
 
   // 职位/对话:读取抓到的真实 JD 作 grounding(基于它总结,不凭空猜);公司初判暂无正文,靠模型知识
   const jd = (field === 'title' || isChat) ? await loadJD(job.applyUrl) : ''
 
   const ollamaMessages = isChat
-    ? [{ role: 'system', content: chatSystem(job, jd, lang) }, ...messages]
-    : [{ role: 'system', content: SYSTEM(lang) }, { role: 'user', content: buildPrompt(field, job, jd, lang) }]
+    ? [{ role: 'system', content: chatSystem(job, jd, lang, pf) }, ...messages]
+    : [{ role: 'system', content: SYSTEM(lang) }, { role: 'user', content: buildPrompt(field, job, jd, lang, pf) }]
   const numPredict = isChat ? 500 : (SIMPLE.has(field) ? 120 : (field === 'company' ? 480 : 420))
 
   // provider 抽象(E2-03):ollama(本地 dev)/anthropic(线上 Haiku),见 lib/llm.ts

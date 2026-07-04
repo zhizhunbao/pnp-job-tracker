@@ -50,5 +50,19 @@ export const Users: CollectionConfig = {
       access: { create: adminOnlyField, update: adminOnlyField },
       admin: { hidden: true },
     },
+    {
+      // 移民档案(E5-00):用户自填,匹配层的输入。无字段级锁 —— 本人可改(update 已限 selfOrAdmin)。
+      // nocCodes/targetProvinces 用 json 存 string[](表单自建,不走 admin 数组 UI)。
+      name: 'profile',
+      type: 'group',
+      fields: [
+        { name: 'nocCodes', type: 'json', admin: { description: '经验/学历对应 NOC 码(string[])' } },
+        { name: 'clb', type: 'number', admin: { description: '语言 CLB 等级(自报)' } },
+        { name: 'crs', type: 'number', admin: { description: 'EE CRS 分(自报,可空)' } },
+        { name: 'targetProvinces', type: 'json', admin: { description: '目标省(省码 string[])' } },
+        { name: 'pgwpMonthsLeft', type: 'number', admin: { description: 'PGWP 剩余月数' } },
+        { name: 'profileUpdatedAt', type: 'date' },
+      ],
+    },
   ],
 }

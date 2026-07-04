@@ -3,13 +3,20 @@
 import { NextRequest } from 'next/server'
 import { jobDescription } from '@/lib/jobDescription'
 import { checkLimit, ipOf } from '@/lib/rateLimit'
+import { getUser, isPro } from '@/lib/entitlement'
+import { FREE_JOBTEXT_TRIES } from '@/lib/plan'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
-  // 按 IP 日限(纯 DB 读,配额给宽;E2-02 公网防刷)
-  if (!checkLimit([[`jd:${ipOf(req)}`, Number(process.env.JOBTEXT_IP_DAILY || 200)]])) {
+  // 分层 gate(E3-05):免费登录用户每日试用次数,超 → 402 升级卡;Pro 不限次
+  const user = await getUser(req.headers)
+  if (user && !isPro(user) && !checkLimit([[`jd:u:${user.id}`, FREE_JOBTEXT_TRIES]])) {
+    return new Response('upgrade required', { status: 402 })
+  }
+  // 未登录按 IP 日限(纯 DB 读,配额给宽;E2-02 公网防刷)
+  if (!user && !checkLimit([[`jd:${ipOf(req)}`, Number(process.env.JOBTEXT_IP_DAILY || 200)]])) {
     return new Response('rate limited', { status: 429 })
   }
   const url = req.nextUrl.searchParams.get('url')?.trim()

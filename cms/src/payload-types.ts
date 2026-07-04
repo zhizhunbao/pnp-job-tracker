@@ -164,6 +164,45 @@ export interface User {
     | number
     | boolean
     | null;
+  profile?: {
+    /**
+     * 经验/学历对应 NOC 码(string[])
+     */
+    nocCodes?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+    /**
+     * 语言 CLB 等级(自报)
+     */
+    clb?: number | null;
+    /**
+     * EE CRS 分(自报,可空)
+     */
+    crs?: number | null;
+    /**
+     * 目标省(省码 string[])
+     */
+    targetProvinces?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+    /**
+     * PGWP 剩余月数
+     */
+    pgwpMonthsLeft?: number | null;
+    profileUpdatedAt?: string | null;
+  };
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -719,6 +758,16 @@ export interface UsersSelect<T extends boolean = true> {
   proUntil?: T;
   stripeCustomerId?: T;
   stripeSessions?: T;
+  profile?:
+    | T
+    | {
+        nocCodes?: T;
+        clb?: T;
+        crs?: T;
+        targetProvinces?: T;
+        pgwpMonthsLeft?: T;
+        profileUpdatedAt?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   email?: T;
