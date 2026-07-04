@@ -44,5 +44,11 @@ export const Users: CollectionConfig = {
       type: 'text',
       access: { create: adminOnlyField, update: adminOnlyField },
     },
+    {
+      name: 'stripeSessions',  // 已拨动过 proUntil 的 Checkout session id(webhook 重放幂等去重)
+      type: 'json',
+      access: { create: adminOnlyField, update: adminOnlyField },
+      admin: { hidden: true },
+    },
   ],
 }

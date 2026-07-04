@@ -155,6 +155,15 @@ export interface User {
    */
   proUntil?: string | null;
   stripeCustomerId?: string | null;
+  stripeSessions?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -709,6 +718,7 @@ export interface UsersSelect<T extends boolean = true> {
   role?: T;
   proUntil?: T;
   stripeCustomerId?: T;
+  stripeSessions?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
