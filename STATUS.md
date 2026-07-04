@@ -3,6 +3,13 @@
 > 新 session 接手先读这份 + `CLAUDE.md`(设计宪法)+ `prd.md`(v2 定位见头部标注)。仓库:github.com/zhizhunbao/pnp-job-tracker
 > **🚀 站点已公网上线:https://pnp-cms.onrender.com**(Render + Supabase,R3 架构)。上线计划/批次进度=`docs/implementation/_开发批次顺序.md`(B0-B3 ✅,B4 代码侧 ✅ 剩 Stripe 手续)。
 >
+> **本轮(2026-07-04 晚 B5 档案匹配 + 付费墙 —— 付费头牌就位,M2 完整达成)**:
+> ① **E5-00 档案匹配(付费核)**:Users 加 `profile` group(nocCodes/clb/crs/targetProvinces/pgwpMonthsLeft,json 存数组,本人可改无字段锁);**规则引擎只住 `lib/match.ts`**(纯函数同构:五规则 NOC对口/省通道/EE距离/TEER可达/工资信用 → 加权分 → 高≥60/中≥30/低/不适用,每条 reason=i18n键+参数+sourceRef 指回维度记录);/account 档案表单(NOC 搜索下拉用 **noc-descriptions**——文档写的 noc_categories 没有码,偏离已记);列表「与我的匹配」列(服务端算,Pro 全量/免费前 10 岗激活钩子);弹框「对我意味着什么」(客户端同一 match() 重算依据链,✓⚠✗ 逐条+来源↗+免责短句);advisor 档案感知(Pro 注入自报档案+本岗匹配结论,**个性化初判缓存按人隔离** :p<uid>)。快照测试 10 项含**措辞键白名单**(红线:永不说"你能/不能移民")。
+> ② **E3-05 付费墙**:常量收口 `lib/plan.ts`(试用 8/20 次、Pro 日限 200、免费匹配前 10、PRO_COLUMNS,全可 env 覆盖);**gate 全服务端**——advisor/jobtext 免费登录用户按 userId 计数超 **402**(前端渲升级卡,四处)/Pro 429 日限/未登录 IP 限流不变;Pro 列(match/vs中位三件套)数据在 page.tsx 映射层剥离(算完匹配再剥),改 cookie 绕不过。列偏好 bump:COLS_COOKIE→jobsCols3 / PREF_KEY→v9(新默认含匹配列)。
+> ③ **本地 15 项端到端全过**:档案 CRUD/回读、role/proUntil 字段锁回归、SSR 免费前 10 chips + 11 起🔒、HTML 无中位数据泄漏、curl 直调 402、Pro 全解锁不限次。**踩到一个真 bug**:免费"前 N 岗"最初取 SQL 序,与前端默认序(同日按评分兜底)不一致 → SQL 排序补 `score DESC` 对齐(读 JobsTable:537 的兜底逻辑)。
+> ④ **生产 users 表 6 个 profile 列已先行补齐**(psql,用户授权;render-env.txt 已删,连接串用 cms/.env 里注释的 Supabase 行)——B4 "schema 先行再 push" 教训落实。
+> **下一步:B6 合规与收费开闸**(E4-02 四件套 / E4-03 republish 自查 / E5-01 定价页 / E3-06 切 live = M3)。E5-01 拍正式定价后建新 Stripe price 换 env(现 $19/$39 是占位)。
+>
 > **本轮(2026-07-04 下午 B4 支付贯通 —— 代码侧全部完成,收口只剩 Stripe Dashboard 手续)**:
 > ① **E3-03 时长包 Checkout**:`lib/stripe.ts` 单例(key 未配置返回 null → 无支付配置站点照常跑)+ `api/billing/checkout`(getUser 401 → mode=payment,30/90 天 price,卡+Alipay,返回 {url} 前端跳转;WeChat 待 Dashboard 确认后设 `STRIPE_WECHAT_PAY=1` 即开,client:web 已带)+ `/account` 两档购买按钮 + `?ok=1` 回跳绿条(三语)。
 > ② **E3-04 webhook**:`api/stripe/webhook`(raw body 验签 → completed 且 paid → `proUntil = max(now,现值)+metadata.days`;幂等=Users 新隐藏字段 `stripeSessions` 记已拨 session.id;未知事件 200 ack、异常 500 让 Stripe 重试)。**超文档一处:同时处理 `async_payment_succeeded`**(alipay/wechat 异步到账,completed 时可能 unpaid → 不处理会丢单;⚠️ Dashboard 建 endpoint 两个事件都要勾)。**本地自签 HMAC 伪造事件走真实验签路径 13/13 实测过**(401/400/假签名 400/首购+30d/重放不叠加/续买顺延 +120d/unpaid 不拨 async 补拨/未知事件 ack/幽灵用户 ack)。

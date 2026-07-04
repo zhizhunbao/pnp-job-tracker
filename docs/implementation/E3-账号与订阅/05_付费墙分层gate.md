@@ -12,18 +12,18 @@
 
 ## 2. 验收标准
 
-- [ ] 免费用户：列表+基础筛选+citation 可用；**档案匹配每日限前 N 岗（激活钩子）**；advisor 超试用次数 → 402 + 升级提示（三语）；vs 中位等 Pro 列隐藏并显示升级引导。
-- [ ] Pro 用户：全功能解锁（**匹配列/「对我意味着什么」块无限** + advisor 档案感知 + 事实弹框 + Pro 列 + 跨城市对比 E5-04）；advisor 仍受个人日上限（防滥用）。
-- [ ] **直接调 API 绕过前端同样被拦**（curl 验证 advisor/jobtext）。
-- [ ] 分层参数（试用次数 M、Pro 列清单）全部 env/常量，改分层不改逻辑。
+- [x] 免费用户：列表+基础筛选+citation 可用；**档案匹配每日限前 N 岗（激活钩子）**；advisor 超试用次数 → 402 + 升级提示（三语）；vs 中位等 Pro 列隐藏并显示升级引导。
+- [x] Pro 用户：全功能解锁（**匹配列/「对我意味着什么」块无限** + advisor 档案感知 + 事实弹框 + Pro 列 + 跨城市对比 E5-04）；advisor 仍受个人日上限（防滥用）。
+- [x] **直接调 API 绕过前端同样被拦**（curl 验证 advisor/jobtext）。
+- [x] 分层参数（试用次数 M、Pro 列清单）全部 env/常量，改分层不改逻辑。
 
 ## 3. 实现步骤
 
-- [ ] **3.1** advisor/jobtext route：`getUser` + `isPro`；免费用户走试用计数（内存 Map，键=userId，日 M 次，超 402）；Pro 走个人日上限；未登录沿用 E2-02 的 IP 限流。
-- [ ] **3.2** `/jobs` page.tsx：服务端按 `isPro` 决定 SELECT 列与传给前端的列配置（Pro 列对免费用户不出 SQL，数据不到浏览器）。
-- [ ] **3.3** 前端：Pro 列位置显示锁标+升级链接；弹框内 402 响应渲染成升级卡片（三语）。
-- [ ] **3.4** 分层常量收口 `cms/src/lib/plan.ts`（FREE_ADVISOR_TRIES / FREE_MATCH_JOBS_PER_DAY / PRO_COLUMNS…）。
-- [ ] **3.5** 匹配层 gate：page.tsx 按 isPro 决定 match 计算范围（免费=前 N 岗）；「对我意味着什么」块对免费超额岗渲染升级卡片。
+- [x] **3.1** advisor/jobtext route：`getUser` + `isPro`；免费用户走试用计数（内存 Map，键=userId，日 M 次，超 402）；Pro 走个人日上限；未登录沿用 E2-02 的 IP 限流。
+- [x] **3.2** `/jobs` page.tsx：服务端按 `isPro` 决定 SELECT 列与传给前端的列配置（Pro 列对免费用户不出 SQL，数据不到浏览器）。
+- [x] **3.3** 前端：Pro 列位置显示锁标+升级链接；弹框内 402 响应渲染成升级卡片（三语）。
+- [x] **3.4** 分层常量收口 `cms/src/lib/plan.ts`（FREE_ADVISOR_TRIES / FREE_MATCH_JOBS_PER_DAY / PRO_COLUMNS…）。
+- [x] **3.5** 匹配层 gate：page.tsx 按 isPro 决定 match 计算范围（免费=前 N 岗）；「对我意味着什么」块对免费超额岗渲染升级卡片。
 
 ## 4. 涉及目录 / 文件
 
@@ -41,4 +41,14 @@
 
 ## 6. 完成定义（DoD）
 
-- [ ] §2 全勾（含 curl 绕过测试）+ push。与 E3-03/04 合并验收 = **M2**。
+- [x] §2 全勾（含 curl 绕过测试）+ push。与 E3-03/04 合并验收 = **M2**。
+
+---
+
+## 7. 实施记录(2026-07-04)
+
+- 分层常量全收口 `cms/src/lib/plan.ts`(FREE_ADVISOR_TRIES=8 / FREE_JOBTEXT_TRIES=20 / PRO_ADVISOR_DAILY=200 / FREE_MATCH_JOBS_PER_DAY=10 / PRO_COLUMNS,全部可 env 覆盖,已进 .env.example)。
+- **gate 全在服务端**:advisor/jobtext 免费登录用户按 userId 计数超 402(试用计功能次数,缓存命中也算;Pro 走个人日限 429;未登录沿用 IP 限流语义不变);Pro 列(match/vsMedian/wageMedHr/wageMedYr)数据在 page.tsx 映射层剥离(算完匹配再剥,免费匹配质量与 Pro 一致)——改 cookie/列偏好绕不过,实测 HTML 无中位数据。
+- 前端:Pro 列位=🔒(表头+单元格,链 /account);402 → 升级卡片(AdvisorModal/AdvisorChat/ActModal/TitleFacts 四处,三语)。
+- **curl 绕过验证 ✅**(本地 15 项):免费第 N+1 次 advisor/jobtext 直调 = 402;未登录不走 402;Pro 不受试用限。
+- 与 E3-03/04 合并 = **M2 完整达成**(支付收钱 + 付费墙锁价值)。
