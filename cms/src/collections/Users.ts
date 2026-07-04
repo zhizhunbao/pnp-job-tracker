@@ -1,4 +1,15 @@
-import type { CollectionConfig } from 'payload'
+// 用户(E3-01):Payload 自带 auth,公开注册;role/proUntil 由字段级 access 锁死(webhook 走 overrideAccess)。
+// 时长包语义(D8 修订):没有订阅状态机,proUntil 一个到期日就是全部真相(isPro 见 lib/entitlement.ts)。
+import type { Access, CollectionConfig, FieldAccess } from 'payload'
+
+const isAdminReq = ({ req: { user } }: { req: { user: { role?: string } | null } }) =>
+  user?.role === 'admin'
+const adminOnlyField: FieldAccess = ({ req: { user } }) => (user as { role?: string } | null)?.role === 'admin'
+const selfOrAdmin: Access = ({ req: { user } }) => {
+  if (!user) return false
+  if ((user as { role?: string }).role === 'admin') return true
+  return { id: { equals: user.id } }
+}
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -6,8 +17,33 @@ export const Users: CollectionConfig = {
     useAsTitle: 'email',
   },
   auth: true,
+  access: {
+    create: () => true,        // 公开注册(role/proUntil 有字段级锁,冒填直接被忽略)
+    read: selfOrAdmin,
+    update: selfOrAdmin,       // 普通用户实际只能改 email/password(敏感字段见字段级 access)
+    delete: isAdminReq,
+    admin: isAdminReq,         // Payload 后台仅 role=admin 可进
+  },
   fields: [
-    // Email added by default
-    // Add more fields as needed
+    {
+      name: 'role',
+      type: 'select',
+      options: ['user', 'admin'],
+      defaultValue: 'user',
+      required: true,
+      saveToJWT: true,         // 进 token,服务端 gate 不用回表
+      access: { create: adminOnlyField, update: adminOnlyField },
+    },
+    {
+      name: 'proUntil',        // Pro 到期日:唯一付费真相(Stripe webhook overrideAccess 拨动)
+      type: 'date',
+      access: { create: adminOnlyField, update: adminOnlyField },
+      admin: { description: 'Pro 到期日(时长包,webhook 写入;手动改=人工赠送)' },
+    },
+    {
+      name: 'stripeCustomerId',
+      type: 'text',
+      access: { create: adminOnlyField, update: adminOnlyField },
+    },
   ],
 }

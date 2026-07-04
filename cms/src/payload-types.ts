@@ -149,6 +149,12 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
+  role: 'user' | 'admin';
+  /**
+   * Pro 到期日(时长包,webhook 写入;手动改=人工赠送)
+   */
+  proUntil?: string | null;
+  stripeCustomerId?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -700,6 +706,9 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  role?: T;
+  proUntil?: T;
+  stripeCustomerId?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;

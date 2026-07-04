@@ -11,10 +11,10 @@
 
 ## 2. 验收标准
 
-- [ ] 公开可注册（REST `POST /api/users`），新用户 `role=user`、`subscriptionStatus=none`。
-- [ ] Payload admin 后台仅 `role=admin` 可进；普通用户读/改仅限自己，且改不了 role/订阅字段。
-- [ ] `getUser(req)` / `isPro(user)` 可在服务器组件与 API route 共用。
-- [ ] 现有管理员账号已补 `role=admin`（**否则自己被锁在后台外**）。
+- [x] 公开可注册（201），新用户 role=user、proUntil 空；**冒填 role=admin/proUntil 注册与自 PATCH 均被字段级锁静默忽略（实测）**。
+- [x] access：普通用户 list 只见自己（totalDocs=1）；delete/admin 面板仅 admin；role 进 JWT（saveToJWT）。
+- [x] `lib/entitlement.ts`：getUser(headers)/isPro(proUntil>now) 就位。
+- [x] 本地管理员 admin@local.test 已建并提权（本地库原来是空的）。⚠️ **生产 /admin 首用户裸奔已发现——待用户亲手在 pnp-cms.onrender.com/admin 注册首个管理员**（权限系统拦截了代注册，正确）。生产 schema 推送与 role 提权在 B3 部署步一并做。
 
 ## 3. 实现步骤
 

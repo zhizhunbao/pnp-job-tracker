@@ -71,6 +71,15 @@ const zh: Dict = {
   'fact.scoreNote': '评分明细与 08_score 一致(满分 100,移民价值视角)', 'score.base': '基准', 'score.indemand': '紧缺大类', 'score.low': '省具名通道', 'score.direct': '第一方雇主', 'score.exp': '经验', 'score.prov': '省份(非 ON)', 'score.total': '合计', 'score.stored': '入库',
   'advisor.footTpl': '说明由榜单数据自动生成 · 仅供参考,不构成移民/法律建议',
   'advisor.applyLink': '投递页', 'advisor.siteLink': '公司官网',
+  // 账户(E3-02)
+  'nav.login': '登录', 'acct.title': '账户',
+  'acct.email': '邮箱', 'acct.password': '密码',
+  'acct.login': '登录', 'acct.register': '注册', 'acct.submitReg': '注册并登录',
+  'acct.toReg': '没有账号?注册 →', 'acct.toLogin': '已有账号?登录 →',
+  'acct.err.cred': '邮箱或密码不正确', 'acct.err.exists': '注册失败:邮箱可能已注册或密码过短', 'acct.err.generic': '操作失败,请稍后再试',
+  'acct.plan.free': '免费版', 'acct.plan.pro': 'Pro · 有效期至 {d}',
+  'acct.logout': '退出登录', 'acct.back': '← 返回职位列表',
+  'acct.forgot': '忘记密码?公测期请邮件联系我们重置',
 }
 
 const en: Dict = {
@@ -127,6 +136,14 @@ const en: Dict = {
   'fact.scoreNote': 'Breakdown matches 08_score (out of 100, immigration-value lens)', 'score.base': 'Baseline', 'score.indemand': 'In-demand group', 'score.low': 'Named PNP stream', 'score.direct': 'First-party employer', 'score.exp': 'Experience', 'score.prov': 'Province (non-ON)', 'score.total': 'Total', 'score.stored': 'stored',
   'advisor.footTpl': 'Auto-generated from listing data · reference only, not immigration/legal advice',
   'advisor.applyLink': 'Apply', 'advisor.siteLink': 'Website',
+  'nav.login': 'Sign in', 'acct.title': 'Account',
+  'acct.email': 'Email', 'acct.password': 'Password',
+  'acct.login': 'Sign in', 'acct.register': 'Sign up', 'acct.submitReg': 'Create account & sign in',
+  'acct.toReg': "No account? Sign up →", 'acct.toLogin': 'Have an account? Sign in →',
+  'acct.err.cred': 'Wrong email or password', 'acct.err.exists': 'Sign-up failed: email may be taken or password too short', 'acct.err.generic': 'Something went wrong, try again',
+  'acct.plan.free': 'Free', 'acct.plan.pro': 'Pro · until {d}',
+  'acct.logout': 'Sign out', 'acct.back': '← Back to jobs',
+  'acct.forgot': 'Forgot password? Email us during beta to reset',
 }
 
 const ko: Dict = {
@@ -183,6 +200,14 @@ const ko: Dict = {
   'fact.scoreNote': '08_score와 동일(100점 만점, 이민 가치 관점)', 'score.base': '기준', 'score.indemand': '부족 대분류', 'score.low': '주 지정 채널', 'score.direct': '직접 고용주', 'score.exp': '경력', 'score.prov': '주(ON 외)', 'score.total': '합계', 'score.stored': '저장값',
   'advisor.footTpl': '목록 데이터 기반 자동 생성 · 참고용, 이민/법률 자문 아님',
   'advisor.applyLink': '지원 페이지', 'advisor.siteLink': '회사 웹사이트',
+  'nav.login': '로그인', 'acct.title': '계정',
+  'acct.email': '이메일', 'acct.password': '비밀번호',
+  'acct.login': '로그인', 'acct.register': '회원가입', 'acct.submitReg': '가입 후 로그인',
+  'acct.toReg': '계정이 없나요? 가입 →', 'acct.toLogin': '계정이 있나요? 로그인 →',
+  'acct.err.cred': '이메일 또는 비밀번호가 올바르지 않습니다', 'acct.err.exists': '가입 실패: 이미 등록된 이메일이거나 비밀번호가 짧습니다', 'acct.err.generic': '오류가 발생했습니다. 다시 시도하세요',
+  'acct.plan.free': '무료', 'acct.plan.pro': 'Pro · {d}까지',
+  'acct.logout': '로그아웃', 'acct.back': '← 채용 목록으로',
+  'acct.forgot': '비밀번호를 잊으셨나요? 베타 기간에는 이메일로 문의하세요',
 }
 
 const MESSAGES: Record<Lang, Dict> = { zh, en, ko }

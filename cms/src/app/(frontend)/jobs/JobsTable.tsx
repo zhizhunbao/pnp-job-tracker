@@ -8,6 +8,20 @@ const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : use
 
 import { makeT, LANGS, LANG_KEY, COLS_COOKIE, type Lang, type TFn } from './i18n'
 
+// 顶栏账户入口(E3-02):未登录=「登录」,已登录=用户名 → /account。客户端探测(httpOnly cookie),仅做展示引导。
+function AccountLink({ t }: { t: TFn }) {
+  const [email, setEmail] = useState<string | null>(null)
+  useEffect(() => {
+    fetch('/api/users/me', { credentials: 'include' })
+      .then((r) => r.json()).then((d) => setEmail(d?.user?.email ?? null)).catch(() => {})
+  }, [])
+  return (
+    <a href="/account" style={{ fontSize: 12.5, color: '#2563eb', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+      {email ? `👤 ${email.split('@')[0]}` : t('nav.login')}
+    </a>
+  )
+}
+
 export type JobRow = {
   id: string | number
   title: string
@@ -497,11 +511,14 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
             <span style={{ fontSize: 17, fontWeight: 700, color: '#111827', whiteSpace: 'nowrap' }}>🍁 PNP Job Tracker</span>
             <span style={{ fontSize: 12, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('tagline')}</span>
           </div>
-          <div style={{ display: 'inline-flex', border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden', flexShrink: 0 }}>
-            {LANGS.map((l) => (
-              <button key={l.code} onClick={() => setLangSaved(l.code)}
-                style={{ border: 'none', padding: '3px 9px', fontSize: 12.5, cursor: 'pointer', background: lang === l.code ? '#2563eb' : '#fff', color: lang === l.code ? '#fff' : '#6b7280' }}>{l.label}</button>
-            ))}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+            <AccountLink t={t} />
+            <div style={{ display: 'inline-flex', border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
+              {LANGS.map((l) => (
+                <button key={l.code} onClick={() => setLangSaved(l.code)}
+                  style={{ border: 'none', padding: '3px 9px', fontSize: 12.5, cursor: 'pointer', background: lang === l.code ? '#2563eb' : '#fff', color: lang === l.code ? '#fff' : '#6b7280' }}>{l.label}</button>
+              ))}
+            </div>
           </div>
         </div>
       </header>
