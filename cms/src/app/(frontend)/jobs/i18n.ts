@@ -17,7 +17,7 @@ const zh: Dict = {
   'subtitle.count': '{n} 个职位',
   'updated': '更新 {t}',
   'tagline': '每日更新 · 全加拿大全职业 · 移民价值视角',
-  'foot.disclaimer': '本站为信息聚合工具,数据自动抓取仅供参考,不构成移民 / 法律建议;我们非持牌移民顾问(RCIC),以官方来源为准。',
+  'foot.disclaimer': '数据自动抓取与评分,仅供参考,不构成移民 / 法律建议。',
   'search.placeholder': '搜索 职位/公司/地点/NOC…',
   'filter.geo': '地理', 'filter.cat': '职业分类', 'filter.src': '来源', 'filter.elig': '移民资格', 'filter.statusexp': '状态/经验', 'filter.status': '状态', 'filter.exp': '经验',
   'all.country': '全部国家', 'all.prov': '全部省', 'all.city': '全部市', 'all.district': '全部区',
@@ -80,25 +80,13 @@ const zh: Dict = {
   'acct.plan.free': '免费版', 'acct.plan.pro': 'Pro · 有效期至 {d}',
   'acct.logout': '退出登录', 'acct.back': '← 返回职位列表',
   'acct.forgot': '忘记密码?公测期请邮件联系我们重置',
-  // 时长包购买(E3-03)
-  'acct.buyTitle': '升级 Pro(一次性时长包,无自动续费)',
-  'acct.buy30': '购买 30 天', 'acct.buy90': '购买 90 天',
-  'acct.buyNote': '未到期续买 = 到期日顺延 · 支付由 Stripe 处理(卡 / 支付宝)',
-  'acct.payOk': '✅ 支付成功!到期日将在数秒内更新,稍后刷新查看',
-  'acct.payErr': '发起支付失败,请稍后再试',
-  // 免责声明(E4-01)
-  'foot.disclaimerLink': '免责声明',
-  'advisor.disclaimer': 'AI 生成判断,非移民建议(我们非持牌顾问 RCIC),以官方来源为准',
-  'legal.title': '免责声明',
-  'legal.body': '本站是职位信息聚合工具:数据来自 Job Bank 等公开来源的自动抓取与评分,可能有误或滞后,仅供参考。本站内容(含 AI 顾问输出)不构成移民建议或法律建议;我们并非加拿大持牌移民顾问(RCIC)或律师。任何移民决定请以 IRCC 与各省政府官方发布为准,必要时咨询持牌专业人士。',
-  'legal.wip': '完整版法律页面(隐私政策 / 使用条款 / 关于)将在正式收费前发布。',
 }
 
 const en: Dict = {
   'subtitle.count': '{n} jobs',
   'updated': 'Updated {t}',
   'tagline': 'Daily updates · all of Canada · immigration-value lens',
-  'foot.disclaimer': 'This site is an information aggregator; auto-scraped data is for reference only and is not immigration / legal advice. We are not licensed immigration consultants (RCIC) — always verify with official sources.',
+  'foot.disclaimer': 'Auto-scraped and scored; for reference only, not immigration / legal advice.',
   'search.placeholder': 'Search title / company / location / NOC…',
   'filter.geo': 'Location', 'filter.cat': 'Occupation', 'filter.src': 'Source', 'filter.elig': 'Eligibility', 'filter.statusexp': 'Status / level', 'filter.status': 'Status', 'filter.exp': 'Level',
   'all.country': 'All countries', 'all.prov': 'All provinces', 'all.city': 'All cities', 'all.district': 'All districts',
@@ -156,25 +144,13 @@ const en: Dict = {
   'acct.plan.free': 'Free', 'acct.plan.pro': 'Pro · until {d}',
   'acct.logout': 'Sign out', 'acct.back': '← Back to jobs',
   'acct.forgot': 'Forgot password? Email us during beta to reset',
-  // 时长包购买(E3-03)
-  'acct.buyTitle': 'Upgrade to Pro (one-time pass, no auto-renewal)',
-  'acct.buy30': 'Buy 30 days', 'acct.buy90': 'Buy 90 days',
-  'acct.buyNote': 'Buying again before expiry extends the date · payment handled by Stripe (card / Alipay)',
-  'acct.payOk': '✅ Payment received! Your expiry date updates within seconds — refresh to see it',
-  'acct.payErr': 'Could not start checkout, please try again later',
-  // 免责声明(E4-01)
-  'foot.disclaimerLink': 'Disclaimer',
-  'advisor.disclaimer': 'AI-generated assessment, not immigration advice (we are not RCIC); verify with official sources',
-  'legal.title': 'Disclaimer',
-  'legal.body': 'This site is a job-information aggregator: data is auto-scraped and scored from public sources such as Job Bank, may contain errors or lag, and is provided for reference only. Nothing on this site (including AI advisor output) constitutes immigration or legal advice; we are not licensed Canadian immigration consultants (RCIC) or lawyers. For any immigration decision, rely on official IRCC and provincial government publications, and consult a licensed professional where needed.',
-  'legal.wip': 'Full legal pages (privacy policy / terms of use / about) will be published before paid plans go live.',
 }
 
 const ko: Dict = {
   'subtitle.count': '{n}개 공고',
   'updated': '업데이트 {t}',
   'tagline': '매일 갱신 · 캐나다 전역 · 이민 가치 관점',
-  'foot.disclaimer': '본 사이트는 정보 수집 도구입니다. 자동 수집 데이터는 참고용이며 이민 / 법률 자문이 아닙니다. 당사는 공인 이민 컨설턴트(RCIC)가 아니며, 공식 출처를 기준으로 확인하세요.',
+  'foot.disclaimer': '자동 수집·평가, 참고용이며 이민 / 법률 자문이 아닙니다.',
   'search.placeholder': '직무 / 회사 / 지역 / NOC 검색…',
   'filter.geo': '지역', 'filter.cat': '직업 분류', 'filter.src': '출처', 'filter.elig': '이민 자격', 'filter.statusexp': '상태 / 경력', 'filter.status': '상태', 'filter.exp': '경력',
   'all.country': '전체 국가', 'all.prov': '전체 주', 'all.city': '전체 도시', 'all.district': '전체 지역',
@@ -232,18 +208,6 @@ const ko: Dict = {
   'acct.plan.free': '무료', 'acct.plan.pro': 'Pro · {d}까지',
   'acct.logout': '로그아웃', 'acct.back': '← 채용 목록으로',
   'acct.forgot': '비밀번호를 잊으셨나요? 베타 기간에는 이메일로 문의하세요',
-  // 时长包购买(E3-03)
-  'acct.buyTitle': 'Pro 업그레이드(일회성 기간권, 자동 갱신 없음)',
-  'acct.buy30': '30일 구매', 'acct.buy90': '90일 구매',
-  'acct.buyNote': '만료 전 재구매 = 만료일 연장 · 결제는 Stripe 처리(카드 / Alipay)',
-  'acct.payOk': '✅ 결제 완료! 만료일이 몇 초 내 갱신됩니다. 새로고침하여 확인하세요',
-  'acct.payErr': '결제를 시작하지 못했습니다. 잠시 후 다시 시도하세요',
-  // 免责声明(E4-01)
-  'foot.disclaimerLink': '면책 조항',
-  'advisor.disclaimer': 'AI 생성 판단이며 이민 자문이 아닙니다(당사는 RCIC 아님) · 공식 출처 기준으로 확인하세요',
-  'legal.title': '면책 조항',
-  'legal.body': '본 사이트는 채용 정보 수집 도구입니다. 데이터는 Job Bank 등 공개 출처에서 자동 수집·평가되며 오류나 지연이 있을 수 있고 참고용으로만 제공됩니다. 본 사이트의 콘텐츠(AI 어드바이저 출력 포함)는 이민 또는 법률 자문이 아니며, 당사는 캐나다 공인 이민 컨설턴트(RCIC)나 변호사가 아닙니다. 이민 관련 결정은 IRCC 및 각 주정부의 공식 발표를 기준으로 하고, 필요 시 공인 전문가와 상담하세요.',
-  'legal.wip': '전체 법률 페이지(개인정보 처리방침 / 이용약관 / 소개)는 유료 서비스 시작 전에 게시됩니다.',
 }
 
 const MESSAGES: Record<Lang, Dict> = { zh, en, ko }
