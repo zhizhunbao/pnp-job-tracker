@@ -12,17 +12,17 @@
 | [E1-01](E1-收尾与合流/01_分支合main与容器同步.md) | 分支合 main 与容器同步 | 2 | 0 | [x] |
 | [E1-02](E1-收尾与合流/02_EE抓取改httpx.md) | EE 类别抓取改 httpx | 1 | 0 | [x] |
 | [E1-03](E1-收尾与合流/03_postings原子写.md) | postings 原子写竞态修复 | 1 | 0 | [x] |
-| [E2-01](E2-云端部署/01_VPS与compose上云.md) | VPS 选型与 compose 整体上云（含域名 HTTPS） | 7 | 0 | ☐ |
-| [E2-02](E2-云端部署/02_上线安全加固.md) | 上线安全加固（seed token / 限流 / 密钥） | 2 | 0 | ☐ |
-| [E2-03](E2-云端部署/03_AI顾问切云LLM.md) | AI 顾问切云 LLM（Haiku 4.5） | 3 | 0 | ☐ |
-| [E2-04](E2-云端部署/04_云端端到端验证M1.md) | 云端端到端验证（M1 收口） | 2 | 0 | ☐ |
-| [E3-01](E3-账号与订阅/01_Users扩展与鉴权工具.md) | Users collection 扩展 + entitlement 工具 | 2 | 1 | ☐ |
-| [E3-02](E3-账号与订阅/02_注册登录前端.md) | 注册 / 登录前端 | 2 | 1 | ☐ |
-| [E3-03](E3-账号与订阅/03_Stripe_Checkout与Portal.md) | Stripe 时长包 Checkout（卡+Alipay+WeChat） | 3 | 1 | ☐ |
-| [E3-04](E3-账号与订阅/04_Stripe_webhook状态同步.md) | Stripe webhook → proUntil 拨动（单事件） | 2 | 1 | ☐ |
+| [E2-01](E2-云端部署/01_VPS与compose上云.md) | VPS 选型与 compose 整体上云（含域名 HTTPS） | 7 | 0 | [~] R3 修订=Render+Supabase 已上线；剩 Free→Starter+域名 |
+| [E2-02](E2-云端部署/02_上线安全加固.md) | 上线安全加固（seed token / 限流 / 密钥） | 2 | 0 | [x] |
+| [E2-03](E2-云端部署/03_AI顾问切云LLM.md) | AI 顾问切云 LLM（Haiku 4.5） | 3 | 0 | [x] |
+| [E2-04](E2-云端部署/04_云端端到端验证M1.md) | 云端端到端验证（M1 收口） | 2 | 0 | [~] 三天日更观察中 |
+| [E3-01](E3-账号与订阅/01_Users扩展与鉴权工具.md) | Users collection 扩展 + entitlement 工具 | 2 | 1 | [x] |
+| [E3-02](E3-账号与订阅/02_注册登录前端.md) | 注册 / 登录前端 | 2 | 1 | [x] |
+| [E3-03](E3-账号与订阅/03_Stripe_Checkout与Portal.md) | Stripe 时长包 Checkout（卡+Alipay+WeChat） | 3 | 1 | [~] 代码✅；剩 Dashboard 建价+key 填 env |
+| [E3-04](E3-账号与订阅/04_Stripe_webhook状态同步.md) | Stripe webhook → proUntil 拨动（单事件） | 2 | 1 | [~] 代码✅本地13测过；剩 Stripe CLI 复核+建 endpoint |
 | [E3-05](E3-账号与订阅/05_付费墙分层gate.md) | 付费墙分层 gate | 4 | 1 | ☐ |
 | [E3-06](E3-账号与订阅/06_Stripe切live.md) | Stripe 切 live 真实收款（M3） | 1 | 2 | ☐ |
-| [E4-01](E4-合规与信任/01_免责声明v1.md) | 免责声明 v1（页脚 + 弹框） | 1 | 1 | ☐ |
+| [E4-01](E4-合规与信任/01_免责声明v1.md) | 免责声明 v1（页脚 + 弹框） | 1 | 1 | [x] |
 | [E4-02](E4-合规与信任/02_合规四件套页面.md) | 合规四件套页面（免责/隐私/条款/关于） | 3 | 2 | ☐ |
 | [E4-03](E4-合规与信任/03_republish自查与脱敏.md) | republish 自查与 PII 脱敏 | 2 | 2 | ☐ |
 | [E4-04](E4-合规与信任/04_字段级citation来源维度.md) | 字段级 citation + 来源解释（field_sources） | 3 | 2 | ☐ |

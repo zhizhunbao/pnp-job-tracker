@@ -1,7 +1,14 @@
 # STATUS / 交接文档（2026-07-04）
 
 > 新 session 接手先读这份 + `CLAUDE.md`(设计宪法)+ `prd.md`(v2 定位见头部标注)。仓库:github.com/zhizhunbao/pnp-job-tracker
-> **🚀 站点已公网上线:https://pnp-cms.onrender.com**(Render + Supabase,R3 架构)。上线计划/批次进度=`docs/implementation/_开发批次顺序.md`(B0-B3 ✅,下批 B4 支付)。
+> **🚀 站点已公网上线:https://pnp-cms.onrender.com**(Render + Supabase,R3 架构)。上线计划/批次进度=`docs/implementation/_开发批次顺序.md`(B0-B3 ✅,B4 代码侧 ✅ 剩 Stripe 手续)。
+>
+> **本轮(2026-07-04 下午 B4 支付贯通 —— 代码侧全部完成,收口只剩 Stripe Dashboard 手续)**:
+> ① **E3-03 时长包 Checkout**:`lib/stripe.ts` 单例(key 未配置返回 null → 无支付配置站点照常跑)+ `api/billing/checkout`(getUser 401 → mode=payment,30/90 天 price,卡+Alipay,返回 {url} 前端跳转;WeChat 待 Dashboard 确认后设 `STRIPE_WECHAT_PAY=1` 即开,client:web 已带)+ `/account` 两档购买按钮 + `?ok=1` 回跳绿条(三语)。
+> ② **E3-04 webhook**:`api/stripe/webhook`(raw body 验签 → completed 且 paid → `proUntil = max(now,现值)+metadata.days`;幂等=Users 新隐藏字段 `stripeSessions` 记已拨 session.id;未知事件 200 ack、异常 500 让 Stripe 重试)。**超文档一处:同时处理 `async_payment_succeeded`**(alipay/wechat 异步到账,completed 时可能 unpaid → 不处理会丢单;⚠️ Dashboard 建 endpoint 两个事件都要勾)。**本地自签 HMAC 伪造事件走真实验签路径 13/13 实测过**(401/400/假签名 400/首购+30d/重放不叠加/续买顺延 +120d/unpaid 不拨 async 补拨/未知事件 ack/幽灵用户 ack)。
+> ③ **E4-01 免责声明 v1 收口 ✅**:页脚三语升级(聚合工具/非 RCIC/以官方为准)+ 链 `/legal/disclaimer` 占位页(新,client 读 LANG_KEY 循 /account 约定)+ AdvisorModal AI 判断区顶部小字提示;advisor SYSTEM 本就禁 disclaimers,UI 层与 AI 文风分离核对无需改。
+> ④ `npm run build` 过(改了 Users 字段照老坑先本地 build);payload-types 已重新生成;`.env.example` 补 STRIPE_* 五项注释。
+> **B4 收口待办(全是手动手续,代码零改动)**:Stripe Dashboard(test)建 Product「Pro」+ 30/90 天两个 one-time Price、Payment methods 开 card+alipay、申请 wechat_pay → key/price id 填本地 `cms/.env` 与 Render env → `stripe listen` + 4242/Alipay 模拟支付跑一遍支付回归清单 → 勾 E3-03/04 §2 = **M2**。⚠️ **生产部署前:Supabase 生产库还没有 `users.stripe_sessions` 列**——照既有流程,推代码前临时把本地 DATABASE_URI 切 Supabase 行起 dev 推 schema(推完切回)。
 >
 > **本轮(2026-07-03/04 上线冲刺 —— 计划体系 + B0-B3 一天半打完,站点上线)**:
 > ① **计划体系**:`docs/整体开发计划.md`(4 Sprint→8/28 收费,四里程碑 M1-M4)+ `docs/implementation/`(一工作项一文档,molit 规范)+ **产品重设计 v2 已采纳**(`docs/产品重设计提案.md`:三问定位 去哪/投什么/怎么拿身份;**付费核=档案匹配 E5-00**,AI 顾问降为个人化层;地区统计 E5-04;E6 让位;**付费 v1=30/90 天一次性时长包**,无订阅无 Portal,D5/D8 修订)。

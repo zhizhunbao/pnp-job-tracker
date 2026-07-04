@@ -17,9 +17,9 @@ webhook 是 `proUntil` 的**唯一写入方**（2026-07-03 时长包修订：单
 
 ## 3. 实现步骤
 
-- [ ] **3.1** `api/stripe/webhook/route.ts`：`await req.text()` 拿 **raw body**（不能先 json()）→ `stripe.webhooks.constructEvent(raw, sig, STRIPE_WEBHOOK_SECRET)`。
-- [ ] **3.2** 单事件处理：`client_reference_id` 定位用户 → 幂等检查（processedSessions 记录在 user 或轻量表）→ `payload.update({ overrideAccess: true, data: { proUntil } })`。
-- [ ] **3.3** 未知事件类型 → 200 直接 ack；处理异常 → 500 让 Stripe 重试。
+- [x] **3.1** `api/stripe/webhook/route.ts`：`await req.text()` 拿 **raw body**（不能先 json()）→ `stripe.webhooks.constructEvent(raw, sig, STRIPE_WEBHOOK_SECRET)`。
+- [x] **3.2** 单事件处理：`client_reference_id` 定位用户 → 幂等检查（processedSessions 记录在 user 或轻量表）→ `payload.update({ overrideAccess: true, data: { proUntil } })`。
+- [x] **3.3** 未知事件类型 → 200 直接 ack；处理异常 → 500 让 Stripe 重试。
 - [ ] **3.4** 本地 `stripe listen --forward-to localhost:3000/api/stripe/webhook` 联调；test Dashboard 建正式 endpoint（只订阅 checkout.session.completed）。
 - [ ] **3.5** 跑通 README「支付回归清单」（时长包版：注册→购买→到期日拨动→Pro 解锁→改系统时间/临时改 proUntil 验证到期降级→续买顺延）。
 
@@ -27,7 +27,7 @@ webhook 是 `proUntil` 的**唯一写入方**（2026-07-03 时长包修订：单
 
 | 路径 | 角色 | 状态 |
 |---|---|---|
-| `cms/src/app/api/stripe/webhook/route.ts`（新） | 验签 + 状态同步 | 新建 |
+| `cms/src/app/api/stripe/webhook/route.ts`（新） | 验签 + 状态同步 | ✅ 已建 |
 
 ## 5. 现有代码
 
@@ -36,3 +36,12 @@ webhook 是 `proUntil` 的**唯一写入方**（2026-07-03 时长包修订：单
 ## 6. 完成定义（DoD）
 
 - [ ] §2 全勾 + 支付回归清单留档 + push。完成 = **M2 支付链路贯通**（与 E3-05 同批）。
+
+---
+
+## 7. 实施记录（2026-07-04，代码侧完成 + 本地全路径实测）
+
+- 幂等实现：Users 加隐藏 `stripeSessions`（json，admin 字段锁）记录已拨过的 session.id；webhook 是 proUntil 唯一写入方（overrideAccess）。
+- 超出文档的一处：**同时订阅 `checkout.session.async_payment_succeeded`**（同一处理器）——alipay/wechat 属异步支付方式，completed 时可能还 unpaid；不处理会丢单（付了钱不到账 = 数据完整性，不上砧板）。completed 时 `payment_status!=paid` 只 ack 不拨。⚠️ Dashboard 建 endpoint 时**两个事件都要勾**。
+- 本地实测（自签 HMAC 伪造事件走真实验签路径，13/13 过）：假签名 400 ✅；首购 30 天 proUntil=now+30d ✅;同 session 重放不叠加 ✅;未到期续买 90 天顺延到 +120d ✅;unpaid 不拨、async 到账再拨 ✅;未订阅事件 200 ack ✅;用户不存在 200 ✅。
+- **剩余 = 手动办理**：Stripe test key 填 env 后 `stripe listen --forward-to localhost:3000/api/stripe/webhook` + `stripe trigger checkout.session.completed` 复核（§3.4），test Dashboard 建正式 endpoint（订阅上述两事件），跑一遍 4242 + Alipay 模拟支付勾 §2/§3.5。

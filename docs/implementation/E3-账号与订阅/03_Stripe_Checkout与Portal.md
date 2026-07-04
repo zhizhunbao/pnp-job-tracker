@@ -18,17 +18,17 @@
 ## 3. 实现步骤
 
 - [ ] **3.1** Stripe Dashboard（test）：建 Product「Pro」+ 两个 **one-time Price**（30 天/90 天）→ `STRIPE_PRICE_30D` / `STRIPE_PRICE_90D`；Payment methods 开 card + alipay，申请 wechat_pay 并记录结果。
-- [ ] **3.2** `npm i stripe`；env：`STRIPE_SECRET_KEY` / `STRIPE_PRICE_30D` / `STRIPE_PRICE_90D` / `NEXT_PUBLIC_SITE_URL`。
-- [ ] **3.3** `api/billing/checkout/route.ts`：`getUser` 校验 → `checkout.sessions.create({ mode:'payment', line_items:[{price: 按参数选30/90, quantity:1}], payment_method_types:['card','alipay'(,'wechat_pay')], success_url, cancel_url, client_reference_id: user.id, customer_email: user.email, metadata:{days} })` → 303 重定向。
-- [ ] **3.4** /account 与 /pricing（E5-01）挂两档购买按钮 + 到期日展示。~~Portal~~ 不做（无可退订之物；退款口径写进条款 E4-02）。
+- [x] **3.2** `npm i stripe`；env：`STRIPE_SECRET_KEY` / `STRIPE_PRICE_30D` / `STRIPE_PRICE_90D` / `NEXT_PUBLIC_SITE_URL`。
+- [x] **3.3** `api/billing/checkout/route.ts`：`getUser` 校验 → `checkout.sessions.create({ mode:'payment', line_items:[{price: 按参数选30/90, quantity:1}], payment_method_types:['card','alipay'(,'wechat_pay')], success_url, cancel_url, client_reference_id: user.id, customer_email: user.email, metadata:{days} })` → 303 重定向。
+- [x] **3.4** /account 与 /pricing（E5-01）挂两档购买按钮 + 到期日展示。~~Portal~~ 不做（无可退订之物；退款口径写进条款 E4-02）。
 
 ## 4. 涉及目录 / 文件
 
 | 路径 | 角色 | 状态 |
 |---|---|---|
-| `cms/src/app/api/billing/checkout/route.ts`（新） | 发起订阅 | 新建 |
-| `cms/src/app/api/billing/portal/route.ts`（新） | 自助管理 | 新建 |
-| `cms/src/lib/stripe.ts`（新） | 单例 client | 新建 |
+| `cms/src/app/api/billing/checkout/route.ts`（新） | 发起时长包 Checkout | ✅ 已建 |
+| ~~`cms/src/app/api/billing/portal/route.ts`~~ | ~~自助管理~~ | 不做（D8：无订阅无 Portal） |
+| `cms/src/lib/stripe.ts`（新） | 单例 client | ✅ 已建 |
 
 ## 5. 现有代码
 
@@ -37,3 +37,12 @@
 ## 6. 完成定义（DoD）
 
 - [ ] §2 全勾（订阅状态落库依赖 E3-04，同批验收）+ push。
+
+---
+
+## 7. 实施记录（2026-07-04，代码侧完成）
+
+- 代码全部就位并过 `npm run build`：`lib/stripe.ts`（key 未配置返回 null，站点无支付配置也正常跑）、`api/billing/checkout`（登录校验→mode=payment→返回 {url} 前端跳转）、/account 两档购买按钮 + `?ok=1` 回跳提示（三语）。
+- 本地实测：未登录 401 ✅、未知 plan 400 ✅（真实 Checkout 跳转待 test key）。
+- WeChat Pay 待 Dashboard 确认：确认开通后设 `STRIPE_WECHAT_PAY=1` 即启用（代码已带 client:web 参数）。
+- **剩余 = 手动办理（§3.1）**：Dashboard 建 Product「Pro」+ 30/90 天两个 one-time Price、开 card+alipay、申请 wechat_pay；把 `STRIPE_SECRET_KEY / STRIPE_PRICE_30D / STRIPE_PRICE_90D` 填进 cms/.env（本地）与 Render env(生产)，再跑一次 4242 全流程勾 §2。
