@@ -1,7 +1,18 @@
-# STATUS / 交接文档（2026-06-29）
+# STATUS / 交接文档（2026-07-04）
 
-> 新 session 接手先读这份 + `CLAUDE.md`(设计宪法)+ `prd.md`(需求)。仓库:github.com/zhizhunbao/pnp-job-tracker
-> ✅ 容器健康运行;**docker cms 现发布 :3001**(让出 :3000 给本地 host npm dev),本地 dev :3000。
+> 新 session 接手先读这份 + `CLAUDE.md`(设计宪法)+ `prd.md`(v2 定位见头部标注)。仓库:github.com/zhizhunbao/pnp-job-tracker
+> **🚀 站点已公网上线:https://pnp-cms.onrender.com**(Render + Supabase,R3 架构)。上线计划/批次进度=`docs/implementation/_开发批次顺序.md`(B0-B3 ✅,下批 B4 支付)。
+>
+> **本轮(2026-07-03/04 上线冲刺 —— 计划体系 + B0-B3 一天半打完,站点上线)**:
+> ① **计划体系**:`docs/整体开发计划.md`(4 Sprint→8/28 收费,四里程碑 M1-M4)+ `docs/implementation/`(一工作项一文档,molit 规范)+ **产品重设计 v2 已采纳**(`docs/产品重设计提案.md`:三问定位 去哪/投什么/怎么拿身份;**付费核=档案匹配 E5-00**,AI 顾问降为个人化层;地区统计 E5-04;E6 让位;**付费 v1=30/90 天一次性时长包**,无订阅无 Portal,D5/D8 修订)。
+> ② **B0 收尾**:分支已合 main 并 push;EE 类别抓取改 httpx(`etl/build_ee_categories.py`,产出与浏览器版逐类一致 9类94职业,ee 容器换轻镜像,draws 一并进月更 steps);04c/04d/05c 三处 postings 直写补原子(05/05b 原已原子)。
+> ③ **B1/R3 上线(D2 修订:Render+Supabase,VPS 降备选)**:Render web `pnp-cms`(Docker,rootDir=cms,**Free 档待升 Starter**,Auto-Deploy=On)× Supabase 项目 `jnulqjhtqdwthtyccypj`(us-east-1;库走 **Session pooler :5432**;私有 bucket `mart`,**建项目关掉了 Data API**——Payload 表无 RLS 开着会裸奔)。**mart 交接走 Storage**:build steps 末尾 `upload_mart.py`(SUPABASE_* 未设自动跳过→本地/VPS 模式不变);seed 改双模式(env 设=从 Storage 拉,否则读本地);**家里 build 容器已接云端**(`docker/.env`:SEED_URL=云端/SEED_TOKEN/SUPABASE_*)=**$7 起步档**(ETL 留家,笔记本合盖不更新是已知代价;M4 前可上 Render worker 转全托管,`docker/render/Dockerfile.etl`+supervisor 已备好)。VPS 备选文件(docker-compose.prod.yml/Caddyfile)保留未删。
+> ④ **安全**:seed 加 `x-seed-token` 鉴权(生产 401 实测;本地不设 token 放行);advisor/jobtext 进程内限流(`lib/rateLimit.ts`:IP 日限 40/200+全局 1000,缓存命中不计);**生产 admin 首用户已注册提权(402707192@qq.com=admin)**——曾裸奔一天,教训:上线即抢注。
+> ⑤ **E2-03 云 LLM**:advisor 抽 `cms/src/lib/llm.ts` 双后端(`LLM_PROVIDER`:ollama=本地 dev/anthropic=线上 **claude-haiku-4-5**);生产三项实测过(数字精确引用/缓存 hit/追问无数据明说"我没有这些数据");成本≈$0.003/次,**Anthropic 账户不开 auto-reload=余额即硬上限**。
+> ⑥ **B3 账号**:Users 加 role/proUntil/stripeCustomerId(**字段级 access 锁**,实测冒填注册与自 PATCH 提权均被忽略;role 进 JWT);`lib/entitlement.ts`(getUser/isPro=proUntil>now,时长包语义);`/account` 三合一页 + **顶栏弹框登录**(共享 `jobs/AuthForm.tsx`,弹框循 ActModal 既有约定,不跳页);顶栏顺序=语言切换在前账户最右;根路径 307→/jobs(模板欢迎页已删)。
+> **坑/教训(新)**:① **dev(turbopack)不跑完整类型检查——改 collection 后必须本地 `npm run build` 过了再推**(role 加 required:true 让 tests/seedUser 编译爆,生产构建连挂三次才发现);② Render:免费档 web 会休眠(50s 冷启动杀 SEO),worker/持久盘无免费档;**控制台 SPA 长连接卡浏览器扩展读屏**(自动化走 API 或用户手点);③ PowerShell 5.1 发中文 JSON 必须显式 UTF-8 字节,否则测试假阴性;④ Supabase 新版 `sb_secret_` key:Storage 请求带**双头**(apikey+Authorization);⑤ **`cms/.env` 的 DATABASE_URI 切到 Supabase 行时=本地 dev 直连生产库,`seed?reset=1` 会重灌生产**——日常开发保持本地库行,推 schema 时临时切。
+> **规则更新**:git 提交身份=**Wang Peng**、**不带 Co-Authored-By 尾注**(repo config 已设)。
+> **下一步:B4 支付贯通** —— E3-03 时长包 Checkout(mode=payment,卡+Alipay,WeChat 待 Dashboard 确认;Stripe test key 就绪,激活的 Business website 等 M1 后回填)+ E3-04 webhook 单事件拨 proUntil + E4-01 免责声明 v1。M1 收尾:三天日更观察(**家里 build 自动推云端的首轮还没核过**)+ Free→Starter + 域名(等品牌名决策)。杂务:让用户删桌面 render-env*.txt 密钥文件。
 >
 > **本轮(2026-06-29 顾问弹框三层 + Part B 数据 + 表格固定列 + JD 格式)**:
 > **① 弹框三层(事实/判断/对话)**:上半=可核验事实(绝不经 LLM)/ 中=只基于上半事实的 AI 判断 / 下=多轮 grounded 对话([route.ts](cms/src/app/api/advisor/route.ts) 加 `messages[]`,system 带整条岗位事实+铁律,问到没有的数据直说"未提供"不编)。各字段「事实块」`FieldFactsSection`(地点/薪资/分类/来源/经验/时间状态零成本;wiring:firstSeen 进 SQL、designated_employers 维度进前端=AIP 记录、职位 JD 摘录走 `/api/jobtext`、评分明细前端重建)。
