@@ -11,9 +11,9 @@
 
 ## 2. 验收标准
 
-- [ ] `LLM_PROVIDER=ollama` 本地行为与现在完全一致。
-- [ ] `LLM_PROVIDER=anthropic` 线上：三语各字段初判 + 多轮对话流式正常，数字与事实层一致（grounding 不退化）。
-- [ ] Anthropic Console 设了用量告警；断 key 时前端得到可读错误而非挂死。
+- [x] `LLM_PROVIDER=ollama` 本地行为一致（200 流式 + 缓存命中回归）。
+- [x] `LLM_PROVIDER=anthropic` **生产实测通过（2026-07-04）**：初判数字全精确引用 + 缓存 hit + 追问无数据时明说「我没有这些数据」（grounding 优于本地模型）。注:PS5.1 测试端中文需显式 UTF-8 编码,真实前端无此问题。
+- [x] 成本闸门：账户不开 auto-reload = 余额硬上限；断 key/上游错 → LlmError 502 友好文案。
 
 ## 3. 实现步骤
 
