@@ -39,3 +39,5 @@ PROCESSED_ATS = PROCESSED / "ats"                       # ATS 清洗后根(扁�
 COMPANIES = PROCESSED_ATS                               # 各公司文件夹的根(= processed/ats)
 PROCESSED_JOBBANK = PROCESSED / "jobbank"               # Job Bank 累积/去重/清洗后的 store(当前态,不按日期)
 
+MART = DATA / "mart"                                    # load: 09 产出的最终表(seed 灌库;R3 下 upload_mart 上传)
+

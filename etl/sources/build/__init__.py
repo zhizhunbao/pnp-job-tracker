@@ -15,5 +15,6 @@ META = {
         ["python", "etl/clean/05c_flag_aip.py"],
         ["python", "etl/08_score.py"],
         ["python", "etl/09_build_mart.py"],
+        ["python", "etl/upload_mart.py"],   # R3:mart → Supabase Storage(SUPABASE_* 未设自动跳过)
     ],
 }

@@ -37,8 +37,18 @@ export async function GET(req: Request) {
   }
   const payload = await getPayload({ config: await config })
   const reset = !!url.searchParams.get('reset')
+  // mart 双模式(R3):SUPABASE_* 已设 → 从 Supabase Storage 拉(Render 上 cms 无共享盘);
+  // 否则读本地 data/mart/(本地 dev / VPS compose 不变)。缺表两模式同义:返回 []。
+  const sbUrl = process.env.SUPABASE_URL?.replace(/\/$/, '')
+  const sbKey = process.env.SUPABASE_SERVICE_KEY
   const martDir = path.resolve(process.cwd(), '..', 'data', 'mart')
-  const mart = (name: string): any[] => {
+  const mart = async (name: string): Promise<any[]> => {
+    if (sbUrl && sbKey) {
+      const r = await fetch(`${sbUrl}/storage/v1/object/mart/${name}.json`, {
+        headers: { Authorization: `Bearer ${sbKey}` }, cache: 'no-store',
+      })
+      return r.ok ? await r.json() : []
+    }
     const p = path.join(martDir, `${name}.json`)
     return fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, 'utf8')) : []
   }
@@ -62,7 +72,7 @@ export async function GET(req: Request) {
   ]
   for (const [file, slug, map] of dims) {
     await payload.delete({ collection: slug as any, where: { id: { exists: true } } })
-    const rows = mart(file).map(map).filter((d) => Object.values(d).some((v) => v !== undefined && v !== null && v !== ''))
+    const rows = (await mart(file)).map(map).filter((d) => Object.values(d).some((v) => v !== undefined && v !== null && v !== ''))
     await pool(rows, (data) => payload.create({ collection: slug as any, data: data as any }).then(() => {}))
     counts[slug] = rows.length
   }
@@ -73,7 +83,7 @@ export async function GET(req: Request) {
     await payload.delete({ collection: 'companies', where: { slug: { exists: true } } })
   }
   const companyId: Record<string, string | number> = {}
-  const companyRows = mart('companies')
+  const companyRows = await mart('companies')
   await pool(companyRows, async (c) => {
     if (!reset) {
       const ex = await payload.find({ collection: 'companies', where: { slug: { equals: c.slug } }, limit: 1, depth: 0 })
@@ -86,7 +96,7 @@ export async function GET(req: Request) {
 
   // ── 事实表:jobs(company 按 companySlug 关联) ──
   const seenIds = new Set<string>()
-  const jobRows = mart('jobs')
+  const jobRows = await mart('jobs')
   await pool(jobRows, async (j) => {
     seenIds.add(j.externalId)
     const { companySlug, datePosted, ...rest } = j
