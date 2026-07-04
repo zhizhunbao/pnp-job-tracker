@@ -69,7 +69,10 @@ services:
     environment:
       SOURCE: build
       SCRAPE_INTERVAL: '7200'
-      SEED_URL: ${SEED_URL:-http://host.docker.internal:3001/seed}  # 默认灌 docker cms(发布 :3001);本地 host npm 在 :3000 测试时 export SEED_URL=http://host.docker.internal:3000/seed
+      SEED_URL: ${SEED_URL:-http://host.docker.internal:3001/seed}  # 默认灌 docker cms(:3001);R3 起步档在 docker/.env 覆写为云端 https://pnp-cms.onrender.com/seed
+      SEED_TOKEN: ${SEED_TOKEN:-}  # 云端 seed 鉴权(docker/.env 注入;本地空=不带头)
+      SUPABASE_URL: ${SUPABASE_URL:-}          # upload_mart → Storage(R3;空=跳过上传)
+      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY:-}
       TZ: EST5EDT                  # 日志东部时区
 
   cms:                             # 生产容器:仅 --profile unattended 起;本地开发用 host npm run dev(占 :3000)
