@@ -133,6 +133,46 @@
 
 ---
 
+## Part C — 字段级来源:每个字段带 citation + 来源解释(2026-07-03 用户新要求)
+
+> **用户原话:所有字段都要从网上抓 citation 和来源解释。**
+> 即:每个字段的上半事实块,统一带「这条数据从哪来」——官方来源链接(citation)+ 来源解释(这是什么数据集/什么口径),且来源信息本身也由 ETL 从网上抓取验证,不在前端硬编码。
+
+### 契约延伸(与三层契约一致)
+
+- 来源行属于**上半事实层** → **绝不经 LLM**:来源解释用抓取的页面元信息(`<title>`/meta description)原文展示,不翻译不改写;UI 标签走 i18n 字典,解释正文保持原文。
+- **宁可留空**:来源页抓取失败 → 标记 unverified,只显示链接不显示解释;派生字段(评分/vs中位)没有外部 citation → citation = 底层数据来源链 + 本站口径说明,明说「本站派生」。
+- **单一来源真相**:各维护表**已有**的 `url`/`fetched`(pnp/*.json、build 脚本的 SOURCE_URL 常量)不重复维护——聚合它们,只给没有记录来源的字段补注册项。
+
+### 字段 → 来源映射(citation 分两级:静态数据集级 + 逐条记录级)
+
+| 字段 | 数据集级 citation(field_sources 维度) | 记录级 citation(已有/优先显示) |
+|---|---|---|
+| title / company / salary / datePosted / JD / status | Job Bank 网站(数据集说明) | ✅ `job.applyUrl` 官方原帖(每岗) |
+| noc / teer / 大中小类 / 官方名+职责 | StatCan NOC 2021 Elements(build_noc_descriptions 的源 URL) | — |
+| wageMed / low / high / year | ESDC 工资开放数据(build_wages 的源 URL)+ `Reference_Period` | wageYear 每记录 |
+| pnp(具名通道) | 各省提名官网 | ✅ pnp/*.json 每通道 `url`+`fetched`(已有,**要 surface 到弹框**) |
+| ee(类别/抽选) | IRCC 类别页 + `ee_rounds_123_en.json` | 每类别/每次抽选日期已有 |
+| aip | IRCC AIP + 各省指定雇主名单页 | 按省名单 URL |
+| district(区) | GeoNames 加拿大邮编开放数据 | — |
+| score / vsMedian / salaryAnnual / accessibility / firstSeen·lastSeen / origin | **本站派生** —— citation = 底层来源链(NOC+工资+省清单)+ 口径一句(如「评分 = 08_score 规则,权重见明细」「下架 = 未见且发布超30天」) | 评分明细已前端重建 |
+
+### 实现(照旧四步:数据层 → mart → seed → 前端)
+
+1. **`etl/build_field_sources.py`**(新,挂 `pnp` 源周更):
+   - 注册表 = fieldKey → { publisher, url(来自各 build 脚本常量/维护表聚合), kind: dataset|derived }。
+   - 对每个唯一 URL httpx 抓取 → 验证 200 + 抽 `<title>`/meta description 作「来源解释」原文 + 记 fetchedAt/status → `raw/sources/field-sources.json`(跟踪)。
+   - 派生字段不抓网,写口径说明(静态文案放这里,同样进维度,单一来源)。
+2. **09 mart** 产 `field_sources.json` 维度(每行=字段×来源)→ **seed 新 collection `field-sources`(dims 白名单记得加映射——踩过的坑)**。
+3. **前端 `FieldFactsSection`** 底部统一加 `<SourceLine>` 组件:「来源:{publisher}(链接)· 抓取于 {fetched}」+ 解释摘录;**记录级 URL 优先**(pnp 通道 url / applyUrl / 省 AIP 名单),数据集级兜底;unverified 只出链接。
+4. **advisor prompt**:`jobFacts()` 每行事实追加其来源短标注,让中层判断/对话引用时能指回来源(强化反编机制)。
+
+### 执行位置
+
+排进上线主计划 Sprint 2(合规与信任,配合免责声明/republish 自查)——实现工作项见 [implementation/E4-合规与信任/04_字段级citation来源维度.md](implementation/E4-合规与信任/04_字段级citation来源维度.md);字段弹框侧的显示改动依赖本文件 Part A 已完成的 FieldFactsSection 框架,增量小。
+
+---
+
 ## 执行顺序
 
 1. **A0 三层骨架**:对话框 UI + route.ts 多轮 `messages[]` + 上半 `FieldFactsSection` 框架。
