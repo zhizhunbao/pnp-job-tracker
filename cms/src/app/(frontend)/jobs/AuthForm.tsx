@@ -1,11 +1,19 @@
 'use client'
-// 登录/注册共享表单 + 弹框(E3-02 修订:顶栏登录走弹框不跳页;/account 页复用同一表单)。
+// 登录/注册共享表单 + 弹框(E3-02;B6 视觉翻新:分段切换 + 聚焦态 + 品牌头)。
 // 全走 Payload 自带 REST(httpOnly cookie),特权字段由 Users collection 字段级锁保护。
 import { useState } from 'react'
 import type { TFn } from './i18n'
 
-const inputS: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '8px 10px', fontSize: 14, border: '1px solid #d1d5db', borderRadius: 6, marginTop: 4 }
-const btnS: React.CSSProperties = { width: '100%', padding: '9px 0', fontSize: 14, fontWeight: 600, border: 'none', borderRadius: 6, background: '#2563eb', color: '#fff', cursor: 'pointer', marginTop: 14 }
+const inputS: React.CSSProperties = {
+  width: '100%', boxSizing: 'border-box', padding: '10px 12px', fontSize: 14,
+  border: '1.5px solid #e5e7eb', borderRadius: 9, marginTop: 6, background: '#fafafa',
+  outline: 'none', transition: 'border-color .15s, background .15s, box-shadow .15s',
+}
+const btnS: React.CSSProperties = {
+  width: '100%', padding: '11px 0', fontSize: 14.5, fontWeight: 600, border: 'none', borderRadius: 9,
+  background: 'linear-gradient(180deg,#3b82f6,#2563eb)', color: '#fff', cursor: 'pointer', marginTop: 18,
+  boxShadow: '0 2px 8px rgba(37,99,235,.35)',
+}
 
 export function AuthForm({ t, onDone }: { t: TFn; onDone: () => void }) {
   const [mode, setMode] = useState<'login' | 'register'>('login')
@@ -35,28 +43,46 @@ export function AuthForm({ t, onDone }: { t: TFn; onDone: () => void }) {
     } catch { setErr(t('acct.err.generic')) } finally { setBusy(false) }
   }
 
+  const seg = (m: 'login' | 'register', label: string) => (
+    <button type="button" onClick={() => { setMode(m); setErr('') }}
+      style={{
+        flex: 1, padding: '8px 0', fontSize: 13.5, fontWeight: 600, cursor: 'pointer', border: 'none', borderRadius: 8,
+        background: mode === m ? '#fff' : 'transparent', color: mode === m ? '#1d4ed8' : '#6b7280',
+        boxShadow: mode === m ? '0 1px 4px rgba(0,0,0,.08)' : 'none', transition: 'all .15s',
+      }}>
+      {label}
+    </button>
+  )
+
   return (
     <div>
-      <h2 style={{ fontSize: 17, margin: '0 0 14px', color: '#111827' }}>{mode === 'login' ? t('acct.login') : t('acct.register')}</h2>
+      <style>{`.authIn:focus{border-color:#3b82f6 !important;background:#fff !important;box-shadow:0 0 0 3px rgba(59,130,246,.12)}`}</style>
+      {/* 品牌头 */}
+      <div style={{ textAlign: 'center', marginBottom: 18 }}>
+        <div style={{ fontSize: 30, lineHeight: 1 }}>🍁</div>
+        <div style={{ fontSize: 16.5, fontWeight: 700, color: '#111827', marginTop: 6 }}>PNP Job Tracker</div>
+        <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 3 }}>{t('tagline')}</div>
+      </div>
+      {/* 登录/注册 分段切换 */}
+      <div style={{ display: 'flex', gap: 4, background: '#f3f4f6', borderRadius: 10, padding: 4, marginBottom: 16 }}>
+        {seg('login', t('acct.login'))}
+        {seg('register', t('acct.register'))}
+      </div>
       <form onSubmit={submit}>
-        <label style={{ fontSize: 13, color: '#374151' }}>{t('acct.email')}
-          <input style={inputS} type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
+        <label style={{ fontSize: 13, fontWeight: 500, color: '#374151', display: 'block' }}>{t('acct.email')}
+          <input className="authIn" style={inputS} type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" placeholder="you@example.com" />
         </label>
-        <div style={{ height: 10 }} />
-        <label style={{ fontSize: 13, color: '#374151' }}>{t('acct.password')}
-          <input style={inputS} type="password" required minLength={8} value={pw} onChange={(e) => setPw(e.target.value)}
-            autoComplete={mode === 'login' ? 'current-password' : 'new-password'} />
+        <div style={{ height: 12 }} />
+        <label style={{ fontSize: 13, fontWeight: 500, color: '#374151', display: 'block' }}>{t('acct.password')}
+          <input className="authIn" style={inputS} type="password" required minLength={8} value={pw} onChange={(e) => setPw(e.target.value)}
+            autoComplete={mode === 'login' ? 'current-password' : 'new-password'} placeholder="••••••••" />
         </label>
-        {err && <div style={{ color: '#dc2626', fontSize: 13, marginTop: 10 }}>{err}</div>}
+        {err && <div style={{ color: '#dc2626', fontSize: 13, marginTop: 10, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '7px 10px' }}>{err}</div>}
         <button type="submit" disabled={busy} style={{ ...btnS, opacity: busy ? 0.6 : 1 }}>
           {busy ? '…' : mode === 'login' ? t('acct.login') : t('acct.submitReg')}
         </button>
       </form>
-      <button onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setErr('') }}
-        style={{ border: 'none', background: 'none', color: '#2563eb', fontSize: 13, cursor: 'pointer', marginTop: 12, padding: 0 }}>
-        {mode === 'login' ? t('acct.toReg') : t('acct.toLogin')}
-      </button>
-      <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 10 }}>{t('acct.forgot')}</div>
+      <div style={{ fontSize: 11.5, color: '#c4c4c8', marginTop: 14, textAlign: 'center' }}>{t('acct.forgot')}</div>
     </div>
   )
 }
@@ -64,11 +90,11 @@ export function AuthForm({ t, onDone }: { t: TFn; onDone: () => void }) {
 export function AuthModal({ t, onClose, onDone }: { t: TFn; onClose: () => void; onDone: () => void }) {
   return (
     <div onClick={onClose}
-      style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(17,24,39,.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(17,24,39,.5)', backdropFilter: 'blur(2px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
       <div onClick={(e) => e.stopPropagation()}
-        style={{ position: 'relative', width: 'min(380px, 100%)', background: '#fff', borderRadius: 10, padding: '1.5rem 1.5rem 1.25rem', boxShadow: '0 20px 50px rgba(0,0,0,.25)' }}>
+        style={{ position: 'relative', width: 'min(390px, 100%)', background: '#fff', borderRadius: 16, padding: '1.75rem 1.75rem 1.4rem', boxShadow: '0 24px 60px rgba(0,0,0,.3)' }}>
         <button onClick={onClose} aria-label="close"
-          style={{ position: 'absolute', top: 8, right: 10, border: 'none', background: 'none', fontSize: 20, color: '#9ca3af', cursor: 'pointer', lineHeight: 1 }}>×</button>
+          style={{ position: 'absolute', top: 10, right: 12, border: 'none', background: '#f3f4f6', borderRadius: 8, width: 28, height: 28, fontSize: 15, color: '#6b7280', cursor: 'pointer', lineHeight: 1 }}>×</button>
         <AuthForm t={t} onDone={onDone} />
       </div>
     </div>

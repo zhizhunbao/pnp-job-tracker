@@ -56,7 +56,8 @@ function UpgradeCard({ t, reason }: { t: TFn; reason: string }) {
   )
 }
 
-// 顶栏账户入口(E3-02):未登录=「登录」弹框(不跳页,用户要求);已登录=用户名 → /account 状态页。
+// 顶栏账户入口(E3-02):未登录=「登录」弹框(全站唯一登录入口,不跳页);已登录=用户名 → /account 状态页。
+// ?login=1(未登录访问 /account 被弹回时带上)→ 自动开弹框;登录成功整页刷新让 SSR 分层态(匹配列等)生效。
 function AccountLink({ t }: { t: TFn }) {
   const [email, setEmail] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
@@ -64,6 +65,13 @@ function AccountLink({ t }: { t: TFn }) {
     fetch('/api/users/me', { credentials: 'include' })
       .then((r) => r.json()).then((d) => setEmail(d?.user?.email ?? null)).catch(() => {})
   useEffect(() => { refresh() }, [])
+  useEffect(() => {
+    try { if (new URLSearchParams(window.location.search).get('login') === '1') setOpen(true) } catch { /* ignore */ }
+  }, [])
+  const done = () => {
+    try { window.history.replaceState(null, '', '/jobs') } catch { /* ignore */ }
+    window.location.reload()
+  }
   if (email) {
     return (
       <a href="/account" style={{ fontSize: 12.5, color: '#2563eb', textDecoration: 'none', whiteSpace: 'nowrap' }}>
@@ -77,7 +85,7 @@ function AccountLink({ t }: { t: TFn }) {
         style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: '#2563eb', cursor: 'pointer', whiteSpace: 'nowrap' }}>
         {t('nav.login')}
       </button>
-      {open && <AuthModal t={t} onClose={() => setOpen(false)} onDone={() => { setOpen(false); refresh() }} />}
+      {open && <AuthModal t={t} onClose={() => setOpen(false)} onDone={done} />}
     </>
   )
 }
