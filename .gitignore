@@ -43,3 +43,5 @@ cms/dev.log
 /data/raw/fsa/CA.txt
 # ESDC 工资源 CSV(可从 open.canada.ca 重下;衍生表 wages/wages.json 跟踪)
 /data/raw/wages/*.csv
+# ESDC LMIA 季度源 + 聚合表(16MB+,可重建;E6-02)
+/data/raw/lmia/
