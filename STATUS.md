@@ -8,6 +8,13 @@
 > - **当前状态**:M1/M2/M3 ✅;M4 差「用户办托管账号(Resend/umami/healthchecks/UptimeRobot/GSC)+ BACKUP_DATABASE_URI+compose build + 三演练 + 7 天无人值守观察」——清单见下方 B8 段。
 > - **悬而未决的决策**:品牌名/域名(阻塞:Resend 正式发信、GSC 正式收录、Render 自定义域)、Render Free→Starter(公测宣传前)、Stripe 品牌/收据设置(追办)。
 > - **下一步可选**:① 陪用户办完 M4 手续+演练;② B9/E6-01 数据补强(PE AIP/RNIP/内容去重,原定入学后);③ 公测冷启动(发帖)后按反馈迭代;④ E5-01 正式定价复核($19/$39 现为公测价)。
+> - **seed 已批量化(2026-07-05)**:一轮 <1 分钟、单事务;⚠️ 改 Jobs/维度表字段 → 必须同步 `seed/route.ts` 列白名单(写路径耦合 snake_case,老坑 5 同款)。「抓取时间」= 数据层 last_seen,重灌不动它。
+>
+> **本轮(2026-07-05 白天 —— UI 图标化 + 抓取时间语义 + seed 批量化提速,三件全部署)**:
+> ① **全站 emoji → 内联 SVG ✅**:装 lucide-react(用户拍板,弃手写),新共享出口 `cms/src/app/(frontend)/Icons.tsx`(统一 size=1em 跟字号 / stroke=currentColor / 基线 -0.125em,调用点只 import 这一个文件);/jobs 列表+弹框、账户、定价、统计、榜单、法务、横幅、升级卡全换;i18n 字符串内的 emoji 前缀剥离、图标改渲染点挂(`price.yes` 键删除,定价表勾改 `<IconCheck/>` 节点;alert/prompt 纯文本串只去符号);邮件 📣 改纯文本;品牌 🍁 保留(顶栏/登录框/about/邮件)。验收:grep cms/src 无残留 emoji(🍁 除外)+ build 过 + 本地 DOM 目检 + 生产 SSR 审计五页全过。
+> ② **「更新时间」→「抓取时间」✅(用户提出:重新入库不许推这个时间)**:清洗下沉——`clean/05_parse_jobbank` 合并快照时给帖打 `last_seen` = manifest.fetched_at(抓取机本地时间转 UTC Z;同一快照重复解析幂等)→ 09 透传 `lastSeen`(ATS = jobs.json mtime)→ **seed 不再打钟**(mart 给了才写;缺则更新不碰旧值、新建留空);i18n 三语改名(抓取时间/Scraped/수집,顶部「更新→抓取」)。老口径残值(=历次入库时间)按「宁可留空」一次性置 NULL(12,500 行,用户授权)。**实测连灌两次 last_seen 分布逐字节不变** = 验收过。
+> ③ **seed 改批量 SQL ✅(~40 分钟 → 44-63 秒,提速 ~40 倍)**:查「为什么这么慢」时发现 **近 72h 没有一轮 seed 真成功**——Payload 逐行管线(12k 岗 × find+update ≈ 数万次往返)在 Render Free 0.1 vCPU 上一轮 ~40 分钟,必撞代理 ~100s 超时:客户端记失败、服务端继续跑出半写状态,auto_update 日志还把 502/500 记成「✓ seed 502」。重写 `seed/route.ts`:分批 `INSERT … ON CONFLICT`(300 行/语句;companies upsert RETURNING 建 slug→id 映射)+ **BEGIN/COMMIT 单事务**(任一步失败整体回滚,消灭半写);列白名单按**生产 information_schema 实查**(别猜 camel→snake:stats.new7d 无下划线、rankings.date_posted 是 varchar);维度表删除前先清 locked_documents_rels 关联列(B7 教训照做)。语义不变:token / reset / 增量 / lastSeen 透传 / 30 天过期下架。**代价记档:写路径也耦合 snake_case 列名(老坑 5 同款)——改 collection 字段要同步 seed 列白名单。**
+> **云端复验 ✅**:Render 侧触发 seed **42 秒一把过**(ok:true,12432 岗;远低于 ~100s 代理线,ReadTimeout 根治);页头「抓取 2026-07-04 23:01(ET)」= 数据层抓取时刻,连灌三次不动。**剩**:auto_update 的 seed 成功判定 bug(非 2xx 也记 ✓;E5-03「seed 成功后自动发提醒」依赖它)已开独立任务卡待修。
 >
 > **本轮(2026-07-05 凌晨 B8 提醒与运维收敛 —— 代码侧全部落地,M4 只剩托管账号+观察期)**:
 > ① **E5-03 匹配版邮件提醒 ✅(dry-run E2E 全通)**:`api/alerts/run`(x-seed-token,双通道:A=Pro+建档匹配日报(match high 新岗前10+当日新抽选 vs CRS 段,users.lastAlertAt 游标)/B=saved search(filters json 原样→lib/jobsQuery 解释,lastNotifiedAt 游标);首轮回看 36h 防倒灌;**RESEND_API_KEY 未设=dry-run 不发不回写**);SavedSearches collection(create=Pro,上限 5 钩子)+筛选区「保存此筛选」+/account 管理;auto_update seed 成功后自动触发;lib/matchDims 抽共享。**剩 Resend key(域名前=测试模式只能发账户本人)**。
