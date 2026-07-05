@@ -6,7 +6,7 @@
 | 省 | 指定雇主总数 | 科技相关 | 占比 |
 |---|---:|---:|---:|
 | 纽芬兰与拉布拉多（NL） | 94 | 12 | 13% |
-| 新不伦瑞克（NB） | 1262 | 48 | 4% |
+| 新不伦瑞克（NB） | 1263 | 48 | 4% |
 | 新斯科舍（NS） | 1561 | 63 | 4% |
 | 爱德华王子岛（PE） | （未抓到/无源）| — | — |
 
@@ -31,7 +31,6 @@
 
 | 雇主 | 地点 |
 |---|---|
-| 13476049 Canada Inc OA Fibrenet Canada |  |
 | A-1 Detailing and Engineering Ltd |  |
 | ABM Integrated Solutions (ABM Systems Ltd) |  |
 | Altimate Global Solutions,668054 N.B. LTD |  |
@@ -52,6 +51,7 @@
 | Easy Kleen Pressure Systems Ltd |  |
 | Extreme Window and Entrance Systems |  |
 | Ferro-Chemi-Crete Engineering Limited |  |
+| Fibrenet Canada (13476049 Canada Inc) |  |
 | Fundy Engineering |  |
 | Galco Atlantic (Galco Atlantic Investments Network Ltd) |  |
 | GNB - Horizon Health Network - Fredericton |  |
