@@ -104,10 +104,14 @@ def parse_quarter(path: Path, quarter: str, table: dict) -> int:
             continue
         e = table.setdefault(key, {
             "name": employer, "provinces": set(), "streams": {},
-            "quarters": {}, "lmias": 0, "positions": 0, "nocs": {},
+            "quarters": {}, "lmias": 0, "positions": 0, "positionsSkilled": 0, "nocs": {},
         })
         e["provinces"].add(prov)
         e["streams"][stream] = e["streams"].get(stream, 0) + n_pos
+        # 技能类口径(榜单排序用):只计 High Wage / Global Talent / PR-only 三股 ——
+        # Low Wage(鱼厂/快餐百人计)与农业/SAWP 会淹没技能类担保榜;PR-only 股=为支持 PR 申请办的 LMIA,最强移民信号
+        if re.search(r"high wage|global talent|permanent resident", stream, re.I):
+            e["positionsSkilled"] += n_pos
         q = e["quarters"].setdefault(quarter, [0, 0])
         q[0] += n_lmias
         q[1] += n_pos

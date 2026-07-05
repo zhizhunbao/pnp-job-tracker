@@ -14,5 +14,6 @@ META = {
     "steps": [
         ["python", "etl/build_ee_categories.py"],
         ["python", "etl/build_ee_draws.py"],
+        ["python", "etl/build_lmia.py"],   # E6-02:ESDC LMIA 季度数据(月检查,已缓存季度不重下;需镜像含 openpyxl)
     ],
 }

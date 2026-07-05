@@ -68,6 +68,11 @@ DATASETS = [
         "url": "https://download.geonames.org/export/zip/",
         "fields": ["district"],
     },
+    {   # E6-02:雇主外劳雇佣记录(正面 LMIA 清单;着陆页=开放数据集页)
+        "publisher": "ESDC — TFWP positive LMIA employers list (Open Government)",
+        "url": "https://open.canada.ca/data/en/dataset/90fed587-1364-4f33-a9ee-208181dc0b97",
+        "fields": ["lmia"],
+    },
 ]
 
 # ── 派生字段:本站口径(kind=derived,不抓网;citation=口径一句+底层来源链) ──────

@@ -118,6 +118,10 @@ export type JobRow = {
   pnpStream: string
   eeCategory: string
   aip: boolean
+  // LMIA 外劳雇佣记录(E6-02,公司级,ESDC 近 8 季聚合):历史事实,非「能担保」判定
+  lmiaPositions: number | null
+  lmiaLastQuarter: string
+  lmiaStreams: string
   salary: string
   salaryAnnual: number | null
   salaryText: string
@@ -168,6 +172,7 @@ const sortVal = (j: JobRow, key: ColKey): number | string | null => {
     case 'pnp': return j.pnpEligible ? 1 : 0
     case 'ee': return j.eeCategory || null
     case 'aip': return j.aip ? 1 : 0
+    case 'lmia': return j.lmiaPositions
     case 'address': return j.address || null
     case 'teer': return j.teer
     case 'datePosted': return j.datePosted || null
@@ -278,7 +283,7 @@ const sourceUrl = (applyUrl: string): string => {
 }
 
 // ── 列配置(可勾选;职位列始终显示) ──────────────────────────────
-type ColKey = 'score' | 'match' | 'pnp' | 'ee' | 'aip' | 'broad' | 'mid' | 'fine' | 'teer' | 'title' | 'company' | 'noc' | 'accessibility' | 'salary' | 'salaryYr' | 'wageMedHr' | 'wageMedYr' | 'vsMedian' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'lastSeen' | 'closedAt' | 'actions'
+type ColKey = 'score' | 'match' | 'pnp' | 'ee' | 'aip' | 'lmia' | 'broad' | 'mid' | 'fine' | 'teer' | 'title' | 'company' | 'noc' | 'accessibility' | 'salary' | 'salaryYr' | 'wageMedHr' | 'wageMedYr' | 'vsMedian' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'lastSeen' | 'closedAt' | 'actions'
 // 默认显示 10 列(发布时间·大分类·公司·职位·省·市·薪资·年薪·vs中位·操作);其余用户自选。
 // 布局:表格永远满宽不横向滚动,列按内容自适应,内容多行换行(不省略)——见 <table>/<td> 注释。
 const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean }[] = [
@@ -308,6 +313,7 @@ const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean 
   { key: 'pnp', label: 'PNP', default: false },
   { key: 'ee', label: 'EE 类别', default: false },
   { key: 'aip', label: 'AIP', default: false },
+  { key: 'lmia', label: '外劳记录', default: false },  // E6-02:雇主近两年 LMIA 获批史(公司级信号)
   { key: 'status', label: '状态', default: false },
   { key: 'lastSeen', label: '更新时间', default: false },
   { key: 'closedAt', label: '下架时间', default: false },
@@ -317,7 +323,7 @@ const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean 
 const DEFAULT_COLS = COLUMNS.filter((c) => c.default).map((c) => c.key)
 // 原子值列:内容单行不换行(日期/金额/百分比/分级等短值,断行会很丑)。其余文本列(职位/公司/地点等)允许多行,
 // 以便表格压进容器宽度不横向滚动。表头一律不换行(=该列最小宽度)。
-const NOWRAP_COLS = new Set<ColKey>(['datePosted', 'lastSeen', 'closedAt', 'salary', 'salaryYr', 'wageMedHr', 'wageMedYr', 'vsMedian', 'teer', 'score', 'status', 'direct', 'aip', 'match'])
+const NOWRAP_COLS = new Set<ColKey>(['datePosted', 'lastSeen', 'closedAt', 'salary', 'salaryYr', 'wageMedHr', 'wageMedYr', 'vsMedian', 'teer', 'score', 'status', 'direct', 'aip', 'lmia', 'match'])
 const PREF_KEY = 'jobs.visibleCols.v9'  // v9:新增「与我的匹配」默认列(E5-00),bump 版本让新默认生效
 const writeColsCookie = (keys: string[]) => {
   try { document.cookie = `${COLS_COOKIE}=${encodeURIComponent(JSON.stringify(keys))}; path=/; max-age=31536000; SameSite=Lax` } catch { /* ignore */ }
@@ -824,6 +830,10 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                         node = j.eeCategory || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.eeCategory ? '#2563eb' : '#d1d5db', fontSize: 12.5 })
                       }
                       else if (k === 'aip') { node = j.aip ? t('cell.aipYes') : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.aip ? '#b45309' : '#d1d5db', fontSize: 12.5 }) }
+                      else if (k === 'lmia') {  // E6-02:✓ 职位数 · 最近季度(历史事实;详情看弹框事实块)
+                        node = j.lmiaPositions ? t('cell.lmiaYes', { n: j.lmiaPositions, q: j.lmiaLastQuarter }) : '—'
+                        Object.assign(extra, { whiteSpace: 'nowrap', color: j.lmiaPositions ? '#0f766e' : '#d1d5db', fontSize: 12.5, fontWeight: j.lmiaPositions ? 500 : 400 })
+                      }
                       else if (k === 'status') { const cl = j.status === 'closed'; node = cl ? t('cell.closed') : t('cell.open'); Object.assign(extra, { whiteSpace: 'nowrap', color: cl ? '#9ca3af' : '#15803d', fontSize: 12.5 }) }
                       else if (k === 'closedAt') { node = j.closedAt ? j.closedAt.slice(0, 10) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       else if (k === 'datePosted') { node = j.datePosted ? j.datePosted.slice(0, 10) : '—'; Object.assign(extra, { color: '#6b7280', fontSize: 12.5, whiteSpace: 'nowrap' }) }
@@ -1179,6 +1189,16 @@ function FieldFactsInner({ field, job, lang, pnpOcc, eeOcc, desigEmp, nocDesc }:
         {matches.map((e, i) => (
           <FactRow key={i} k={e.name}>{[e.location, e.province, e.isTech ? t('fact.aipTech') : null].filter(Boolean).join(' · ')}</FactRow>
         ))}
+      </FactsBox>
+    )
+  }
+
+  if (field === 'lmia') {  // E6-02:公司级 LMIA 获批史(ESDC 近 8 季聚合)——纯事实,股别/季度语境必带
+    return (
+      <FactsBox note={t('fact.lmiaNote')}>
+        <FactRow k={t('col.lmia')}>{job.lmiaPositions ? t('cell.lmiaYes', { n: job.lmiaPositions, q: job.lmiaLastQuarter }) : '—'}</FactRow>
+        <FactRow k={t('fact.lmiaStreams')}>{job.lmiaStreams || null}</FactRow>
+        <FactRow k={t('col.company')}>{job.company}</FactRow>
       </FactsBox>
     )
   }

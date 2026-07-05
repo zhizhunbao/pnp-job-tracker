@@ -14,8 +14,8 @@ const META: Record<string, { title: string; desc: string }> = {
     desc: 'Top 50 jobs posted across Canada in the last 7 days, ranked by immigration-value score (PNP streams, EE categories, wages vs median). Updated daily. 本周全加拿大新增职位 TOP 50,按移民价值评分排序,每日更新。',
   },
   'sponsor-likely': {
-    title: 'Employers most likely to support PNP — named-stream hiring | PNP Job Tracker',
-    desc: 'First-party employers hiring in occupations on published provincial nominee lists, ranked by named-stream openings. A rough signal, not a sponsorship promise. 最可能担保雇主榜:省提名公开清单命中的第一方雇主,每日更新。',
+    title: 'Employers most likely to support PNP — LMIA track record | PNP Job Tracker',
+    desc: 'First-party employers ranked by approved LMIA positions in the past two years (ESDC open data, skilled streams) and named provincial-stream hiring. A rough signal, not a sponsorship promise. 最可能担保雇主榜:近两年 LMIA 获批记录 + 省提名清单命中,每日更新。',
   },
 }
 

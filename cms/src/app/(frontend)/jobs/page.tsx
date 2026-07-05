@@ -30,6 +30,7 @@ export default async function JobsPage() {
   const pool = (payload.db as any).pool
   const { rows } = await pool.query(`
     SELECT j.id, j.title, c.name AS company_name, c.address AS company_address, c.description AS company_description, c.sectors AS company_sectors,
+      c.lmia_positions, c.lmia_lmias, c.lmia_last_quarter, c.lmia_streams,
       j.noc, j.category, j.teer, j.broad, j.mid, j.fine, j.accessibility, j.score, j.pnp_eligible, j.pnp_stream, j.ee_category, j.aip,
       j.country, j.province, j.city, j.district, j.address, j.region,
       j.apply_url, j.official_url, j.salary, j.salary_annual, j.salary_text,
@@ -90,6 +91,10 @@ export default async function JobsPage() {
     company: j.company_name ?? '',
     companyDescription: j.company_description ?? '',
     companySectors: j.company_sectors ?? '',
+    // LMIA 外劳雇佣记录(E6-02,免费信号——信任层):历史事实,展示带股别/季度语境
+    lmiaPositions: num(j.lmia_positions),
+    lmiaLastQuarter: j.lmia_last_quarter ?? '',
+    lmiaStreams: j.lmia_streams ?? '',
     address: j.address ?? j.company_address ?? '',
     source: j.source ?? '',
     sourceLabel: j.source_label ?? '',

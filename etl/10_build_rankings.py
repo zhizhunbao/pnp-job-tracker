@@ -4,7 +4,8 @@
   weekly-top      本周新增 TOP 50 —— datePosted 7 天内、在招,按评分降序(同分薪资高优先)。
                   (口径注:mart 无 firstSeen(它是 DB 侧种入时间戳),用 datePosted 表达"本周新增",偏离文档已记档)
   sponsor-likely  最可能担保雇主 TOP 30 —— 公司聚合:第一方直发 + 省具名通道命中岗数,
-                  按 (具名通道岗数, 在招岗数, 平均分) 降序。全部字段来自 mart jobs,纯聚合零新抓取。
+                  按 (LMIA 获批职位数, 具名通道岗数, 在招岗数, 平均分) 降序(E6-02:LMIA 雇佣史=最硬证据,第一排序键)。
+                  入榜门槛:具名通道命中 或 有近两年 LMIA 记录。
 
 行遵守 E4-03 约束:只含事实字段 + 官方链接(applyUrl/officialUrl);展示字段冗余进行,页面零 join 零计算。
 输入:data/mart/jobs.json + companies.json(跑在 09 之后);输出:data/mart/rankings.json(seed 灌 rankings 表)。
@@ -80,7 +81,9 @@ def main() -> None:
             continue
         if not is_direct(j):
             continue
-        a = agg.setdefault(j["companySlug"], {"name": name, "open": 0, "named": 0, "scores": [], "provs": set(), "official": ""})
+        comp = companies.get(j["companySlug"]) or {}
+        a = agg.setdefault(j["companySlug"], {"name": name, "open": 0, "named": 0, "scores": [], "provs": set(), "official": "",
+                                              "lmia": comp.get("lmiaPositionsSkilled") or 0})  # 榜单口径:剔除农业/季节股(温室/渔场百人季节工会淹没技能类榜)
         a["open"] += 1
         if j.get("pnpStream"):
             a["named"] += 1
@@ -89,8 +92,10 @@ def main() -> None:
         if j.get("province"):
             a["provs"].add(j["province"])
         a["official"] = a["official"] or (j.get("officialUrl") or "")
-    ranked = sorted(agg.items(), key=lambda kv: (-kv[1]["named"], -kv[1]["open"], -(sum(kv[1]["scores"]) / len(kv[1]["scores"]) if kv[1]["scores"] else 0)))
-    ranked = [kv for kv in ranked if kv[1]["named"] > 0][:SPONSOR_N]   # 无具名通道命中的不进担保榜(口径:省点名招的职业才算强信号)
+    ranked = sorted(agg.items(), key=lambda kv: (-kv[1]["lmia"], -kv[1]["named"], -kv[1]["open"],
+                                                 -(sum(kv[1]["scores"]) / len(kv[1]["scores"]) if kv[1]["scores"] else 0)))
+    # 入榜口径(E6-02 升级):LMIA 雇佣史(实证)或 具名通道命中(省点名),二者其一
+    ranked = [kv for kv in ranked if kv[1]["lmia"] > 0 or kv[1]["named"] > 0][:SPONSOR_N]
     for i, (slug, a) in enumerate(ranked, 1):
         rows.append({
             "slug": "sponsor-likely", "rank": i, "kind": "company",

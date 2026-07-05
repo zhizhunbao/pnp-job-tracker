@@ -132,11 +132,15 @@ export async function GET(req: Request) {
       companyRows.push({
         slug: c.slug, name: c.name ?? c.slug, website: c.website, email: c.email, region: c.region,
         sectors: c.sectors, address: c.address, description: c.description, source: c.source,
+        lmia_positions: c.lmiaPositions, lmia_lmias: c.lmiaLmias,
+        lmia_last_quarter: c.lmiaLastQuarter, lmia_streams: c.lmiaStreams,
         created_at: now, updated_at: now,
       })
     }
-    const companyCols = ['slug', 'name', 'website', 'email', 'region', 'sectors', 'address', 'description', 'source', 'created_at', 'updated_at']
-    const companyUpdate = ['name', 'website', 'email', 'region', 'sectors', 'address', 'description', 'source', 'updated_at']
+    const companyCols = ['slug', 'name', 'website', 'email', 'region', 'sectors', 'address', 'description', 'source',
+      'lmia_positions', 'lmia_lmias', 'lmia_last_quarter', 'lmia_streams', 'created_at', 'updated_at']
+    const companyUpdate = ['name', 'website', 'email', 'region', 'sectors', 'address', 'description', 'source',
+      'lmia_positions', 'lmia_lmias', 'lmia_last_quarter', 'lmia_streams', 'updated_at']
       .map((c) => `${c}=EXCLUDED.${c}`).join(',')
     const companyId: Record<string, number> = {}
     for (const r of await insertBatch(client, 'companies', companyCols, companyRows,
