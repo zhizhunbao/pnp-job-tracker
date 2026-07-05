@@ -43,4 +43,5 @@
 
 - **选型偏离记档**:文档写 compose 自托管 umami——那是 VPS 方案;R3(Render+Supabase)下自托管=多一个常开服务($7/月起,免费档休眠会丢脚本)。改用 **umami cloud 免费档**(Hobby:10 万事件/月,够公测)——零运维零费用,与"自托管优先省订阅费"的初衷(省钱)一致。
 - 代码侧 ✅:layout 注入 script(NEXT_PUBLIC_UMAMI_SRC/ID 双 env,不设=本地不注入);事件 signup(AuthForm 注册成功)+ checkout{plan}(account+pricing 两处发起);隐私政策三语补 analytics 条目(§3.4);顺手修掉 layout 里 Payload 模板残留 metadata。
-- **剩余=用户手动**:cloud.umami.is 注册(免费)→ Add website(pnp-cms.onrender.com)→ 拿 website id → Render env 加 NEXT_PUBLIC_UMAMI_SRC=https://cloud.umami.is/script.js 和 NEXT_PUBLIC_UMAMI_ID=<id>。填完即生效,报表在 umami cloud 控制台看。
+- ~~**剩余=用户手动**:cloud.umami.is 注册(免费)→ Add website(pnp-cms.onrender.com)→ 拿 website id → Render env 加 NEXT_PUBLIC_UMAMI_SRC=https://cloud.umami.is/script.js 和 NEXT_PUBLIC_UMAMI_ID=<id>。填完即生效,报表在 umami cloud 控制台看。~~
+- **✅ 全部办结(2026-07-05)**:账号 wangsansi9527@gmail.com(数据区 US);website `PNP Job Tracker` / pnp-cms.onrender.com,website id `a648865a-acc2-4f34-822c-a8f98412b58d`;两 env 已进 Render 并重部署;**端到端实测过**——生产 /jobs HTML 带 script 标签,访问一次后 umami 面板即时显示 1 Online + 1 view。

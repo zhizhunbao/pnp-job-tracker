@@ -5,7 +5,8 @@
 >
 > **⚡ 新 session 快速上手(2026-07-05 交接)**:
 > - **架构已切「直连正式库」**:本地 `cd cms && npm run dev` 连的就是 Supabase 生产(护栏:dev 不自动推 schema,改表=显式 `DB_PUSH=1` 单次或手写 SQL;seed 必带 `x-seed-token`;测试号 @test.local)。本地 postgres/cms:3001 已过时。改 collection 的 DDL 清单看 memory `prod-migration-workflow`(⚠️ 别漏 payload_locked_documents_rels 关联列)。
-> - **当前状态**:M1/M2/M3 ✅;M4 差「用户办托管账号(Resend/umami/healthchecks/UptimeRobot/GSC)+ BACKUP_DATABASE_URI+compose build + 三演练 + 7 天无人值守观察」——清单见下方 B8 段。
+> - **当前状态**:M1/M2/M3 ✅;**M4 手续全部办结(2026-07-05 夜)——只剩 7 天无人值守观察期**。五账号全通:healthchecks(5 check 全绿,ping URL 进 docker/.env)/ UptimeRobot(/jobs 5min 监控)/ Resend(key 进 Render,`alerts/run` 实测 dryRun:false;域名前测试模式只能发账户本人)/ umami cloud(两 env 进 Render,面板实测收到 pageview)/ GSC(property 验证过+sitemap Success 119 页)。备份链闭环(backup 容器日更 pg_dump→backups/,首份 6.8MB)。**三演练全过**(断源=缩周期法/宕机=404 法/恢复=临时库行数全等),记档 E7-01 §5。
+> - **M4 记档补充**:GSC 验证走的 **HTML 文件法**(`cms/public/google021724190957bb4b.html`,勿删)——meta 法因根路径 307→/jobs 被验证器拒;layout 的 `metadata.verification` 保留备用。`/backups/` 已补 .gitignore(生产 dump 含用户数据)。Render env 里 **STRIPE_WECHAT_PAY 仍在**(STATUS 曾记「已删」,不一致待用户定夺;checkout 有兜底不挡收款)。umami website id=`a648865a-acc2-4f34-822c-a8f98412b58d`。
 > - **悬而未决的决策**:品牌名/域名(阻塞:Resend 正式发信、GSC 正式收录、Render 自定义域)、Render Free→Starter(公测宣传前)、Stripe 品牌/收据设置(追办)。
 > - **下一步可选**:① 陪用户办完 M4 手续+演练;② B9/E6-01 数据补强(PE AIP/RNIP/内容去重,原定入学后);③ 公测冷启动(发帖)后按反馈迭代;④ E5-01 正式定价复核($19/$39 现为公测价)。
 > - **seed 已批量化(2026-07-05)**:一轮 <1 分钟、单事务;⚠️ 改 Jobs/维度表字段 → 必须同步 `seed/route.ts` 列白名单(写路径耦合 snake_case,老坑 5 同款)。「抓取时间」= 数据层 last_seen,重灌不动它。auto_update 的 seed 判定已修:**2xx 且 ok:true 才记 ✓/才触发 alerts**(以前 502/500 也记 ✓)——看到「✗ seed」才是真失败,E5-03 自动提醒的触发条件自此可靠。

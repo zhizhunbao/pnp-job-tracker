@@ -11,7 +11,7 @@
 
 ## 2. 验收标准
 
-- [ ] `sitemap.xml`（/jobs、/rankings/*、/pricing、legal、about）与 `robots.txt` 可访问；Google Search Console 提交并开始收录。
+- [x] `sitemap.xml`（/jobs、/rankings/*、/pricing、legal、about）与 `robots.txt` 可访问；Google Search Console 提交并开始收录。（2026-07-05 ✅）
 - [ ] 核心页 `generateMetadata` 三语 title/description（榜单页为 SEO 主体，E5-02 已做的核对即可）。
 - [ ] 目标社区各发 1 帖（小红书 / Reddit r/ImmigrationCanada 或 r/PNP / 相关微信群），带 UTM；首批反馈整理成 backlog 条目。
 
@@ -19,7 +19,7 @@
 
 - [x] **3.1** `app/sitemap.ts` + `app/robots.ts`（Next 原生约定，零依赖）。
 - [x] **3.2** 各页 metadata 补齐；OG 标签（分享卡片标题/描述，图先用文字卡或跳过——YAGNI）。
-- [ ] **3.3** Search Console 验证域名 + 提交 sitemap。
+- [x] **3.3** Search Console 验证域名 + 提交 sitemap。（2026-07-05:URL-prefix property `https://pnp-cms.onrender.com/`;**meta 法失败**——根路径 307 → /jobs,GSC 验证器不吃跳转页上的 meta,layout 的 `metadata.verification` 保留备用;**改 HTML 文件法一次过**(`cms/public/google021724190957bb4b.html`,验证长期有效勿删);sitemap.xml 提交 Status=Success,当场 Discovered 119 页。正式域名定了后需重建 property 重提。）
 - [ ] **3.4** 发帖文案三平台各一（价值主张=移民信号+日更+免费可查），UTM 链接，发布后 72h 收集反馈记 §5。
 
 ## 4. 涉及目录 / 文件
