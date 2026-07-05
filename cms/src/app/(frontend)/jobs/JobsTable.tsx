@@ -1289,6 +1289,7 @@ function MeansForMe({ job, lang, plan, pnpOcc, eeOcc }: { job: JobRow; lang: Lan
     const mj: MatchJob = {
       noc: job.noc, teer: job.teer, province: job.province, pnpEligible: job.pnpEligible,
       pnpStream: job.pnpStream, eeCategory: job.eeCategory, salaryAnnual: job.salaryAnnual, wageMedAnnual: job.wageMedAnnual,
+      lmiaPositions: job.lmiaPositions, lmiaLastQuarter: job.lmiaLastQuarter,
     }
     return matchJob(plan.profile, mj, {
       pnpOccupations: pnpOcc.map((r) => ({ province: r.province, label: r.label, type: r.type, noc: r.noc, url: r.url, fetched: r.fetched })),

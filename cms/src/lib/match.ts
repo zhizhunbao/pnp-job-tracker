@@ -22,6 +22,9 @@ export type MatchJob = {
   eeCategory: string
   salaryAnnual: number | null
   wageMedAnnual: number | null
+  // E6-02:雇主近两年 LMIA 获批记录(公司级,ESDC 公开数据;历史事实非能力判定)
+  lmiaPositions?: number | null
+  lmiaLastQuarter?: string
 }
 
 export type PnpOccDim = { province: string; label: string; type: string; noc: string; url: string; fetched: string }
@@ -30,7 +33,7 @@ export type MatchDims = { pnpOccupations: PnpOccDim[]; eeCategories: EeCatDim[] 
 
 export type MatchVerdict = 'pass' | 'warn' | 'fail' | 'na'
 export type MatchReason = {
-  rule: 'noc' | 'prov' | 'ee' | 'teer' | 'wage'
+  rule: 'noc' | 'prov' | 'ee' | 'teer' | 'wage' | 'lmia'
   verdict: MatchVerdict
   key: string                                   // i18n 键(match.r.*,见 i18n.ts)
   params: Record<string, string | number>
@@ -162,6 +165,19 @@ export function match(profile: MatchProfile, job: MatchJob, dims: MatchDims): Ma
     reasons.push({ rule: 'wage', verdict: 'na', key: 'match.r.wage.na', params: {} })
   }
 
+  // ── 规则 6:雇主外劳雇佣记录(E6-02;近两年获批 LMIA=雇主质量轴的历史事实)──
+  // 轻加权:有记录 +5(愿意走担保流程的间接证据);无记录不扣分(多数好雇主从没需要办过 LMIA)。
+  if (job.lmiaPositions && job.lmiaPositions > 0) {
+    score += 5
+    reasons.push({
+      rule: 'lmia', verdict: 'pass', key: 'match.r.lmia.has',
+      params: { n: job.lmiaPositions, q: job.lmiaLastQuarter || '' },
+      source: { label: 'ESDC TFWP positive LMIA employers', url: 'https://open.canada.ca/data/en/dataset/90fed587-1364-4f33-a9ee-208181dc0b97', fetched: '' },
+    })
+  } else {
+    reasons.push({ rule: 'lmia', verdict: 'na', key: 'match.r.lmia.na', params: {} })
+  }
+
   const level: MatchLevel = score >= 60 ? 'high' : score >= 30 ? 'mid' : 'low'
   return { level, score, reasons }
 }
@@ -191,5 +207,7 @@ const EN: Record<string, (p: Record<string, string | number>) => string> = {
   'match.r.wage.near': (p) => `Offered salary is ${p.pct}% below the local NOC median (within 20%).`,
   'match.r.wage.below': (p) => `Offered salary is ${p.pct}% below the local NOC median — verify the offer meets provincial wage requirements.`,
   'match.r.wage.na': () => 'No salary/median data to compare.',
+  'match.r.lmia.has': (p) => `Employer had ${p.n} positions on approved positive LMIAs in the past two years (latest: ${p.q}, ESDC open data) — a historical fact, not an indication they can or will sponsor now.`,
+  'match.r.lmia.na': () => 'No positive-LMIA record for this employer in the past two years (many employers never needed one; not negative evidence).',
 }
 export const reasonEn = (r: MatchReason): string => (EN[r.key] ? EN[r.key](r.params) : r.key)

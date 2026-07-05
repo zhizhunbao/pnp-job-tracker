@@ -124,6 +124,8 @@ const zh: Dict = {
   'match.r.wage.near': '本岗薪资低于当地中位 {pct}%(20% 以内)',
   'match.r.wage.below': '本岗薪资低于当地中位 {pct}%——留意省提名对工资的要求',
   'match.r.wage.na': '无薪资/中位数据可比',
+  'match.r.lmia.has': '雇主近两年有 {n} 个获批 LMIA 职位(最近 {q},ESDC 公开数据)——历史事实,不代表现在能/愿担保',
+  'match.r.lmia.na': '该雇主近两年无获批 LMIA 记录(多数雇主从未办过,非负面信号)',
   // 付费墙(E3-05)
   'up.title': '升级 Pro 解锁',
   'up.advisor': 'AI 顾问免费试用今日已用完',
@@ -267,6 +269,8 @@ const en: Dict = {
   'match.r.wage.near': 'Pay is {pct}% below the local median (within 20%)',
   'match.r.wage.below': 'Pay is {pct}% below the local median — check provincial wage requirements',
   'match.r.wage.na': 'No salary/median data to compare',
+  'match.r.lmia.has': 'Employer had {n} approved LMIA positions in the past two years (latest {q}, ESDC open data) — a historical fact, not a sponsorship promise',
+  'match.r.lmia.na': 'No positive-LMIA record for this employer in the past two years (most employers never needed one; not a negative signal)',
   // 付费墙(E3-05)
   'up.title': 'Upgrade to Pro to unlock',
   'up.advisor': 'Free AI-advisor tries used up for today',
@@ -410,6 +414,8 @@ const ko: Dict = {
   'match.r.wage.near': '급여가 지역 중위값보다 {pct}% 낮음(20% 이내)',
   'match.r.wage.below': '급여가 지역 중위값보다 {pct}% 낮음 — 주정부 임금 요건 확인',
   'match.r.wage.na': '비교할 급여/중위값 데이터 없음',
+  'match.r.lmia.has': '고용주가 최근 2년간 승인된 LMIA 포지션 {n}건 보유(최근 {q}, ESDC 공개 데이터) — 과거 사실이며 스폰서 보장이 아님',
+  'match.r.lmia.na': '이 고용주는 최근 2년간 승인된 LMIA 기록 없음(대부분의 고용주는 필요한 적이 없음; 부정적 신호 아님)',
   // 付费墙(E3-05)
   'up.title': 'Pro 업그레이드로 잠금 해제',
   'up.advisor': '오늘의 AI 어드바이저 무료 사용 소진',

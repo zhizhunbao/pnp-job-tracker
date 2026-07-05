@@ -98,6 +98,7 @@ describe('match rules v1', () => {
       'match.r.ee.none', 'match.r.ee.noDraw', 'match.r.ee.noCrs', 'match.r.ee.above', 'match.r.ee.below',
       'match.r.teer.ok', 'match.r.teer.channel', 'match.r.teer.low',
       'match.r.wage.above', 'match.r.wage.near', 'match.r.wage.below', 'match.r.wage.na',
+      'match.r.lmia.has', 'match.r.lmia.na',  // E6-02:陈述「有/无获批记录」的历史事实,无担保承诺
     ])
     const jobs: MatchJob[] = [
       job({ noc: '21232', teer: 1, province: 'ON', pnpEligible: true, eeCategory: 'STEM', salaryAnnual: 60000, wageMedAnnual: 90000 }),
@@ -108,6 +109,18 @@ describe('match rules v1', () => {
     for (const p of [dev, psw]) for (const j of jobs) for (const r of match(p, j, dims).reasons) {
       expect(allowed.has(r.key), r.key).toBe(true)
     }
+  })
+
+  it('雇主 LMIA 记录(E6-02):有记录 +5 带来源,无记录 na 不扣分', () => {
+    const base = { noc: '21232', teer: 1 as const, province: 'ON', pnpEligible: true, eeCategory: '' }
+    const withRec = match(dev, job({ ...base, lmiaPositions: 44, lmiaLastQuarter: '2025Q4' }), dims)
+    const without = match(dev, job(base), dims)
+    const rec = withRec.reasons.find((x) => x.rule === 'lmia')!
+    expect(rec.key).toBe('match.r.lmia.has')
+    expect(rec.params).toMatchObject({ n: 44, q: '2025Q4' })
+    expect(rec.source?.url).toContain('open.canada.ca')
+    expect(without.reasons.find((x) => x.rule === 'lmia')!.key).toBe('match.r.lmia.na')
+    expect(withRec.score - without.score).toBe(5)
   })
 
   it('matchRank 排序序:high>mid>low>na>null', () => {

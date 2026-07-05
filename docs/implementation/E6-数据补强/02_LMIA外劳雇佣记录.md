@@ -14,20 +14,20 @@
 
 - [x] ① `build_lmia.py` 拉近 8 季度(2024Q1-2025Q4)文件 → 按雇主 normName 聚合(季度分布/股别/获批 LMIA 数/获批职位数/涉及 NOC)→ 衍生表落盘;重跑幂等。(2026-07-05 ✅,见 §7)
 - [x] ② 与 companies 的 normName 匹配率**先出统计报告**(命中数/命中率/抽样人检 20 条无误报)再灌库——法定名 vs 商用名的错配风险要量化后拍板阈值。(2026-07-05 ✅:**精确 normName 即可,不做模糊匹配**,见 §7)
-- [ ] ③ 命中雇主的岗:列表新「外劳记录」列(✓+悬浮摘要)+ 公司弹框事实块(「2024-2025 获批 X 份 LMIA(高薪股为主),Y 个职位」+ 来源行)+ field_sources 新增数据集条目(E4-04 机制)。
-- [ ] ④ sponsor-likely 榜单口径升级:LMIA 记录作为第一排序证据,页面措辞同步改为可辩护表述(盘点 D-c)。
-- [ ] ⑤ `lib/match.ts` 加一条规则:雇主有近两年 LMIA 记录 → 小幅加权 + reason 依据链(措辞:「该雇主 2024-2025 有获批 LMIA 记录(公开清单)」)。
-- [ ] ⑥ 数据回归:重灌前后岗位数不变(本项只加字段不动行);快照测试补措辞键。
+- [x] ③ 命中雇主的岗:列表新「外劳记录」列(`✓ N 职位 · 季度`)+ 弹框 lmia 事实块(记录/股别分布/免责注)+ field_sources 数据集条目(31 行,verified)。(2026-07-05 ✅ 生产)
+- [x] ④ sponsor-likely 榜单口径升级:LMIA **技能股**(High Wage/GTS/PR-only)职位数为第一排序键;三语口径说明+SEO meta 同步;D-c 因实证数据自然解决。(2026-07-05 ✅ 生产,榜首 AHS/庞巴迪/BRP/Sony)
+- [x] ⑤ `lib/match.ts` 规则 6:有近两年记录 +5(带 ESDC 来源链),无记录 na 不扣分;服务端 matchOf + 弹框 MeansForMe 双端接线;advisor EN 事实行同步。(2026-07-05 ✅)
+- [x] ⑥ 数据回归:seed 前后 jobs=12,509 不变 ✅;快照测试 11/11 过,白名单补 `match.r.lmia.has/na`。
 
 ## 3. 实现步骤
 
 - [ ] **3.1 抓取**:`etl/build_lmia.py`(dataset 方式,循 build_wages 模式)——CKAN API 列资源 → 过滤 `_pos_en.xlsx` → 下载缺失季度到 `data/raw/lmia/`(gitignore)→ openpyxl 解析(**镜像需 +openpyxl,compose build 重建**)→ 聚合写 `data/raw/lmia/lmia-employers.json`(跟踪;若 >5MB 改 gitignore+上传 Storage 议)。列实查:Province/Stream/Employer/Address/Occupation/Incorporate Status/Approved LMIAs/Approved Positions(2025Q4 = 9,745 行)。
 - [ ] **3.2 匹配统计**:一次性脚本跑 normName(复用 05c 规范化)× companies 命中率,结果记 §7,拍匹配策略(精确 normName 起步,模糊匹配 YAGNI)。
-- [ ] **3.3 mart**:09 给 companies.json 加 `lmiaApproved/lmiaPositions/lmiaLastQuarter/lmiaStreams`,jobs 透传 `lmiaHistory` 布尔(列表列/筛选用;若列表 SQL 已 join companies 则考虑只动 companies——实施时核 page.tsx)。
-- [ ] **3.4 schema 先行**:Companies/Jobs collection 加字段 → 本地 `npm run build` → **生产 DDL 先补列再推代码**(B4 教训);seed 列白名单同步(老坑 5)。
-- [ ] **3.5 前端**:列(默认关,字段选择器可开)+ 公司弹框事实块 + field_sources 条目;i18n 三语。
-- [ ] **3.6 榜单+匹配**:10_build_rankings 口径升级 + 措辞改;match.ts 规则+快照测试。
-- [ ] **3.7 调度**:挂 `ee` 月更源 steps(季度数据月检查,无新文件跳过)。
+- [x] **3.3 mart** ✅:companies 四字段(lmiaPositions/lmiaLmias/lmiaLastQuarter/lmiaStreams)+ mart-only `lmiaPositionsSkilled`(榜单口径,不进 DB);**jobs 零改动**——列表 SQL 本就 join companies,SELECT 加 c.lmia_* 即可(实施时核实,省一张表的 schema 变更)。
+- [x] **3.4 schema 先行** ✅:DDL(4 列 ADD COLUMN IF NOT EXISTS)在本地 dev/推代码**之前**打进生产(本地 dev 直连生产库,顺序必须如此);seed 白名单同步;本地 build 过后推。
+- [x] **3.5 前端** ✅:列默认关;事实块带股别/季度语境+2026 收紧免责;i18n 三语(cell/col/fact/match 全套)。
+- [x] **3.6 榜单+匹配** ✅:榜单口径中途迭代两轮(剔农业股→只认 High Wage/GTS/PR-only,鱼厂/快餐百人低薪股会淹没技能榜——记档为口径决策);match 规则 6 轻加权。
+- [x] **3.7 调度** ✅:build_lmia 挂 ee 月更源;镜像 +openpyxl(Dockerfile 已改,**下次 compose build 生效**——当前靠本地跑过的缓存文件,风险低)。
 
 ## 4. 涉及目录 / 文件
 
