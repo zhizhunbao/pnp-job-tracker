@@ -1,11 +1,12 @@
 'use client'
 // 隐私政策(E4-02)。文案模板级自拟,不构成法律意见。
 import { LegalShell, type LegalDoc } from '../LegalShell'
+import { IconLock } from '../../Icons'
 import type { Lang } from '../../jobs/i18n'
 
 const docs: Record<Lang, LegalDoc> = {
   zh: {
-    title: '🔒 隐私政策',
+    title: '隐私政策',
     updated: '生效日期:2026-07-04',
     sections: [
       { h: '1. 我们收集什么', body: [
@@ -36,7 +37,7 @@ const docs: Record<Lang, LegalDoc> = {
     ],
   },
   en: {
-    title: '🔒 Privacy Policy',
+    title: 'Privacy Policy',
     updated: 'Effective date: 2026-07-04',
     sections: [
       { h: '1. What we collect', body: [
@@ -67,7 +68,7 @@ const docs: Record<Lang, LegalDoc> = {
     ],
   },
   ko: {
-    title: '🔒 개인정보 처리방침',
+    title: '개인정보 처리방침',
     updated: '시행일: 2026-07-04',
     sections: [
       { h: '1. 수집 항목', body: [
@@ -99,4 +100,4 @@ const docs: Record<Lang, LegalDoc> = {
   },
 }
 
-export default function PrivacyPage() { return <LegalShell docs={docs} /> }
+export default function PrivacyPage() { return <LegalShell docs={docs} icon={<IconLock />} /> }

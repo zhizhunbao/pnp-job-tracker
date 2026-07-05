@@ -9,7 +9,7 @@ export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'wangsansi
 
 export type LegalDoc = { title: string; updated: string; sections: { h: string; body: string[] }[] }
 
-export function LegalShell({ docs }: { docs: Record<Lang, LegalDoc> }) {
+export function LegalShell({ docs, icon }: { docs: Record<Lang, LegalDoc>; icon?: React.ReactNode }) {
   const [lang, setLang] = useState<Lang>('zh')
   useEffect(() => { const s = localStorage.getItem(LANG_KEY) as Lang | null; if (s) setLang(s) }, [])
   const t = makeT(lang)
@@ -35,7 +35,7 @@ export function LegalShell({ docs }: { docs: Record<Lang, LegalDoc> }) {
         </div>
       </header>
       <div style={{ maxWidth: 720, margin: '2.5rem auto', padding: '1.75rem 2rem', border: '1px solid #e5e7eb', borderRadius: 10, background: '#fff' }}>
-        <h1 style={{ fontSize: 21, margin: '0 0 4px' }}>{doc.title}</h1>
+        <h1 style={{ fontSize: 21, margin: '0 0 4px' }}>{icon}{icon ? ' ' : null}{doc.title}</h1>
         <div style={{ fontSize: 12, color: '#9ca3af', marginBottom: 18 }}>{doc.updated}</div>
         {doc.sections.map((s, i) => (
           <section key={i} style={{ marginBottom: 18 }}>

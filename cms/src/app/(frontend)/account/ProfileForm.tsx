@@ -4,6 +4,7 @@
 // 匹配列在 /jobs 服务端算 —— 存好档案后刷新列表页生效。
 import { useEffect, useMemo, useState } from 'react'
 import type { TFn } from '../jobs/i18n'
+import { IconCheck, IconTarget } from '../Icons'
 
 type NocOpt = { noc: string; title: string }
 export type ProfileValue = {
@@ -65,7 +66,7 @@ export function ProfileForm({ t, userId, initial, onSaved }: { t: TFn; userId: s
 
   return (
     <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid #f3f4f6' }}>
-      <div style={{ fontSize: 13.5, fontWeight: 600, color: '#374151' }}>🎯 {t('prof.title')}</div>
+      <div style={{ fontSize: 13.5, fontWeight: 600, color: '#374151' }}><IconTarget /> {t('prof.title')}</div>
       <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>{t('prof.hint')}</div>
 
       <label style={lbl}>{t('prof.noc')}
@@ -123,7 +124,7 @@ export function ProfileForm({ t, userId, initial, onSaved }: { t: TFn; userId: s
         style={{ width: '100%', padding: '9px 0', fontSize: 14, fontWeight: 600, border: 'none', borderRadius: 6, cursor: 'pointer', marginTop: 14, background: '#2563eb', color: '#fff', opacity: busy ? 0.6 : 1 }}>
         {busy ? '…' : t('prof.save')}
       </button>
-      {state === 'saved' && <div style={{ color: '#047857', fontSize: 13, marginTop: 8 }}>{t('prof.saved')}</div>}
+      {state === 'saved' && <div style={{ color: '#047857', fontSize: 13, marginTop: 8 }}><IconCheck /> {t('prof.saved')}</div>}
       {state === 'err' && <div style={{ color: '#dc2626', fontSize: 13, marginTop: 8 }}>{t('prof.err')}</div>}
     </div>
   )

@@ -2,11 +2,12 @@
 // 服务条款(E4-02):含时长包付费与退款口径(D5/用户拍板:7 天内未滥用可退)、数据来源、雇主异议下架机制。
 // 文案模板级自拟,不构成法律意见。
 import { LegalShell, type LegalDoc } from '../LegalShell'
+import { IconClipboard } from '../../Icons'
 import type { Lang } from '../../jobs/i18n'
 
 const docs: Record<Lang, LegalDoc> = {
   zh: {
-    title: '📋 服务条款',
+    title: '服务条款',
     updated: '生效日期:2026-07-04',
     sections: [
       { h: '1. 服务内容', body: [
@@ -39,7 +40,7 @@ const docs: Record<Lang, LegalDoc> = {
     ],
   },
   en: {
-    title: '📋 Terms of Service',
+    title: 'Terms of Service',
     updated: 'Effective date: 2026-07-04',
     sections: [
       { h: '1. The service', body: [
@@ -72,7 +73,7 @@ const docs: Record<Lang, LegalDoc> = {
     ],
   },
   ko: {
-    title: '📋 이용약관',
+    title: '이용약관',
     updated: '시행일: 2026-07-04',
     sections: [
       { h: '1. 서비스', body: [
@@ -106,4 +107,4 @@ const docs: Record<Lang, LegalDoc> = {
   },
 }
 
-export default function TermsPage() { return <LegalShell docs={docs} /> }
+export default function TermsPage() { return <LegalShell docs={docs} icon={<IconClipboard />} /> }

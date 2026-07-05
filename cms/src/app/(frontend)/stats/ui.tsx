@@ -2,6 +2,7 @@
 // 地区统计共享 UI(E5-04):壳(顶栏+语言)+ slug 映射 + 指标卡/口径行。页面零计算,只渲染 stats 行。
 import { useEffect, useState } from 'react'
 import { makeT, LANG_KEY, LANGS, type Lang, type TFn } from '../jobs/i18n'
+import { IconPaperclip } from '../Icons'
 import type { StatRow, SrcRow } from './shared'
 export type { StatRow, SrcRow } from './shared'
 
@@ -62,7 +63,7 @@ export function CaliberLine({ t, srcs, fetched }: { t: TFn; srcs: SrcRow[]; fetc
   return (
     <div style={{ fontSize: 11.5, color: '#9ca3af', margin: '10px 0' }}>
       <button onClick={() => setOpen(!open)} style={{ border: 'none', background: 'none', color: '#6b7280', cursor: 'pointer', padding: 0, fontSize: 11.5 }}>
-        📎 {t('stats.caliber')} {open ? '▴' : '▾'}
+        <IconPaperclip /> {t('stats.caliber')} {open ? '▴' : '▾'}
       </button>
       {open && (
         <div style={{ marginTop: 6, lineHeight: 1.7 }}>

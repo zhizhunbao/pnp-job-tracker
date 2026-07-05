@@ -4,6 +4,7 @@
 // E3-03:时长包购买入口(30/90 天)——前端只拿 Checkout URL 跳转,回跳 ?ok=1 提示(到期日由 webhook 拨)。
 import { useEffect, useState } from 'react'
 import { makeT, LANG_KEY, type Lang } from '../jobs/i18n'
+import { IconCheckCircle, IconStar, IconUser } from '../Icons'
 import { ProfileForm, type ProfileValue } from './ProfileForm'
 import { SavedSearchList } from './SavedSearchList'
 
@@ -68,11 +69,11 @@ export default function AccountPage() {
       {!checked ? null : me ? (
         <div style={card}>
           <h1 style={{ fontSize: 18, margin: '0 0 14px' }}>{t('acct.title')}</h1>
-          {payOk && <div style={{ background: '#ecfdf5', color: '#047857', fontSize: 13, padding: '8px 10px', borderRadius: 6, marginBottom: 12 }}>{t('acct.payOk')}</div>}
+          {payOk && <div style={{ background: '#ecfdf5', color: '#047857', fontSize: 13, padding: '8px 10px', borderRadius: 6, marginBottom: 12 }}><IconCheckCircle /> {t('acct.payOk')}</div>}
           <div style={{ fontSize: 14, lineHeight: 2 }}>
-            <div>👤 {me.email}</div>
+            <div><IconUser /> {me.email}</div>
             <div>{pro
-              ? <span style={{ color: '#b45309', fontWeight: 600 }}>⭐ {t('acct.plan.pro', { d: (me.proUntil || '').slice(0, 10) })}</span>
+              ? <span style={{ color: '#b45309', fontWeight: 600 }}><IconStar /> {t('acct.plan.pro', { d: (me.proUntil || '').slice(0, 10) })}</span>
               : <span style={{ color: '#6b7280' }}>{t('acct.plan.free')}</span>}
             </div>
           </div>

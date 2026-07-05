@@ -7,6 +7,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
 import { makeT, LANGS, LANG_KEY, COLS_COOKIE, type Lang, type TFn } from './i18n'
+import { IconChart, IconCheck, IconCompass, IconLock, IconMap, IconMapPin, IconMaximize, IconMinimize, IconPaperclip, IconSave, IconScale, IconSettings, IconStar, IconTarget, IconUser, IconWarn, IconX } from '../Icons'
 import { AuthModal } from './AuthForm'
 import { match as matchJob, matchRank, type MatchProfile, type MatchJob, type MatchReason } from '@/lib/match'
 
@@ -33,7 +34,7 @@ function ValueBanner({ t }: { t: TFn }) {
   return (
     <div style={{ background: 'linear-gradient(90deg,#eff6ff,#eef2ff)', borderBottom: '1px solid #e0e7ff' }}>
       <div style={{ maxWidth: 1320, margin: '0 auto', padding: '8px 1.25rem', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', fontSize: 13 }}>
-        <span style={{ color: '#3730a3', flex: 1, minWidth: 240 }}>🎯 {t('banner.text')}</span>
+        <span style={{ color: '#3730a3', flex: 1, minWidth: 240 }}><IconTarget /> {t('banner.text')}</span>
         <span style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
           <button onClick={() => setAuth(true)} style={{ border: 'none', background: '#2563eb', color: '#fff', borderRadius: 6, padding: '5px 12px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>{t('banner.reg')}</button>
           <a href="/pricing" style={{ color: '#2563eb', textDecoration: 'none', fontSize: 12.5, fontWeight: 600 }}>{t('banner.pricing')}</a>
@@ -49,7 +50,7 @@ function ValueBanner({ t }: { t: TFn }) {
 function UpgradeCard({ t, reason }: { t: TFn; reason: string }) {
   return (
     <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '10px 14px', margin: '8px 0', fontSize: 13.5 }}>
-      <span style={{ fontWeight: 600, color: '#92400e' }}>⭐ {t('up.title')}</span>
+      <span style={{ fontWeight: 600, color: '#92400e' }}><IconStar /> {t('up.title')}</span>
       <span style={{ color: '#78716c', marginLeft: 8 }}>{reason}</span>
       <a href="/account" style={{ marginLeft: 10, color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}>{t('up.cta')}</a>
     </div>
@@ -75,7 +76,7 @@ function AccountLink({ t }: { t: TFn }) {
   if (email) {
     return (
       <a href="/account" style={{ fontSize: 12.5, color: '#2563eb', textDecoration: 'none', whiteSpace: 'nowrap' }}>
-        👤 {email.split('@')[0]}
+        <IconUser /> {email.split('@')[0]}
       </a>
     )
   }
@@ -595,8 +596,8 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
             <span style={{ fontSize: 12, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('tagline')}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-            <a href="/rankings/weekly-top" style={{ fontSize: 12.5, color: '#6b7280', textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('rank.entry')}</a>
-            <a href="/stats" style={{ fontSize: 12.5, color: '#6b7280', textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('stats.entry')}</a>
+            <a href="/rankings/weekly-top" style={{ fontSize: 12.5, color: '#6b7280', textDecoration: 'none', whiteSpace: 'nowrap' }}><IconChart /> {t('rank.entry')}</a>
+            <a href="/stats" style={{ fontSize: 12.5, color: '#6b7280', textDecoration: 'none', whiteSpace: 'nowrap' }}><IconMapPin /> {t('stats.entry')}</a>
             <div style={{ display: 'inline-flex', border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
               {LANGS.map((l) => (
                 <button key={l.code} onClick={() => setLangSaved(l.code)}
@@ -694,12 +695,12 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                   alert(r?.ok ? t('ss.saved') : t('ss.err'))
                 }}
                 style={{ ...ctrl, cursor: 'pointer', background: '#eef2ff', color: '#3730a3' }}>
-                {t('ss.save')}
+                <IconSave /> {t('ss.save')}
               </button>
             )}
             {/* 字段选择:右对齐,与搜索同一行 */}
             <div ref={colRef} style={{ position: 'relative', marginLeft: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-              <button onClick={() => setColOpen((o) => !o)} style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', background: '#f3f4f6', whiteSpace: 'nowrap' }}>{t('fields', { n: shown.length })}</button>
+              <button onClick={() => setColOpen((o) => !o)} style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', background: '#f3f4f6', whiteSpace: 'nowrap' }}><IconSettings style={{ marginRight: 5 }} />{t('fields', { n: shown.length })}</button>
               {colOpen && (
                 <div style={colPanel}>
                   <div style={{ display: 'flex', gap: 6, padding: '2px 4px 6px', borderBottom: '1px solid #f3f4f6', marginBottom: 4 }}>
@@ -742,7 +743,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                   return (
                     <th key={c.key} onClick={() => toggleSort(c.key)} title={t('th.tip')}
                       style={{ padding: '8px 12px', color: active ? '#2563eb' : '#374151', fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none', position: 'relative', borderRight: isLast ? undefined : '1px solid #e5e7eb', minWidth: colMin(c.key), ...frozenStyle(c.key, '#f9fafb') }}>
-                      {t('col.' + c.key)}{PRO_COLS.has(c.key) && !plan.isPro ? <span title={t('up.lockTip')} style={{ fontSize: 10 }}> 🔒</span> : null}<span style={{ color: active ? '#2563eb' : '#d1d5db', fontSize: 11 }}>{active ? (sort.dir === 'desc' ? ' ▼' : ' ▲') : ' ↕'}</span>{handle}
+                      {t('col.' + c.key)}{PRO_COLS.has(c.key) && !plan.isPro ? <span title={t('up.lockTip')} style={{ fontSize: 10 }}> <IconLock /></span> : null}<span style={{ color: active ? '#2563eb' : '#d1d5db', fontSize: 11 }}>{active ? (sort.dir === 'desc' ? ' ▼' : ' ▲') : ' ↕'}</span>{handle}
                     </th>
                   )
                 })}
@@ -771,7 +772,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                       const extra: React.CSSProperties = {}
                       // Pro 专属列(E3-05):免费用户列位显示锁标(数据在服务端已剥离,改偏好/cookie 绕不过)
                       if (PRO_COLS.has(k) && !plan.isPro && k !== 'match') {
-                        node = <a href="/account" title={t('up.lockTip')} style={{ textDecoration: 'none', color: '#b45309' }} onClick={(e) => e.stopPropagation()}>🔒</a>
+                        node = <a href="/account" title={t('up.lockTip')} style={{ textDecoration: 'none', color: '#b45309' }} onClick={(e) => e.stopPropagation()}><IconLock /></a>
                         Object.assign(extra, { whiteSpace: 'nowrap', textAlign: 'center' as const })
                       }
                       else if (k === 'match') {  // 与我的匹配(E5-00):高=绿 chip / 中=蓝 / 低=灰 / 不适用=浅;未建档→引导;免费限额外→锁
@@ -783,7 +784,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                         } else if (!plan.loggedIn || !plan.profileOk) {
                           node = <a href="/account" style={{ fontSize: 12, color: '#2563eb', textDecoration: 'none', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>{t('match.needProfile')} →</a>
                         } else {
-                          node = <a href="/account" title={t('match.overCap', { n: plan.freeMatchCap })} style={{ textDecoration: 'none', color: '#b45309' }} onClick={(e) => e.stopPropagation()}>🔒</a>
+                          node = <a href="/account" title={t('match.overCap', { n: plan.freeMatchCap })} style={{ textDecoration: 'none', color: '#b45309' }} onClick={(e) => e.stopPropagation()}><IconLock /></a>
                           Object.assign(extra, { whiteSpace: 'nowrap', textAlign: 'center' as const })
                         }
                       }
@@ -901,17 +902,17 @@ function PnpListSection({ job, lang, occ }: { job: JobRow; lang: Lang; occ: PnpO
     if (s.type === 'ineligible') { if (s.occupations.some((o) => o.noc === noc)) excluded = true }
     else { hasInclusion = true; if (s.occupations.some((o) => o.noc === noc)) matched = s }
   }
-  let verdict = '', tone = '#6b7280'
+  let verdict = '', tone = '#6b7280', vIcon: React.ReactNode = null
   if (isQc) { verdict = t('pnplist.qc'); tone = '#7c3aed' }
   else if (streams.length === 0) { verdict = skilled ? t('pnplist.noList') : t('pnplist.notEligible'); tone = skilled ? '#15803d' : '#9ca3af' }
-  else if (excluded) { verdict = t('pnplist.excludedHit', { noc }); tone = '#b91c1c' }
-  else if (matched) { verdict = t('pnplist.onList', { noc, label: matched.label }); tone = '#b45309' }
+  else if (excluded) { verdict = t('pnplist.excludedHit', { noc }); tone = '#b91c1c'; vIcon = <IconX /> }
+  else if (matched) { verdict = t('pnplist.onList', { noc, label: matched.label }); tone = '#b45309'; vIcon = <IconCheck /> }
   else if (hasInclusion) { verdict = skilled ? t('pnplist.generic', { teer }) : t('pnplist.notEligible'); tone = skilled ? '#15803d' : '#9ca3af' }
   else { verdict = skilled ? t('pnplist.excludedMiss', { teer }) : t('pnplist.notEligible'); tone = skilled ? '#15803d' : '#9ca3af' }
 
   return (
     <div style={{ marginBottom: 14, paddingBottom: 12, borderBottom: '1px solid #f3f4f6' }}>
-      <div style={{ fontSize: 13.5, fontWeight: 600, color: tone, marginBottom: 8 }}>{verdict}</div>
+      <div style={{ fontSize: 13.5, fontWeight: 600, color: tone, marginBottom: 8 }}>{vIcon}{vIcon ? ' ' : null}{verdict}</div>
       {streams.filter((s) => s.occupations.length).map((s) => (
         <div key={s.label + s.stream} style={{ marginBottom: 10 }}>
           <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>
@@ -964,7 +965,7 @@ function EeCategorySection({ job, lang, cats }: { job: JobRow; lang: Lang; cats:
   return (
     <div style={{ marginBottom: 14, paddingBottom: 12, borderBottom: '1px solid #f3f4f6' }}>
       <div style={{ fontSize: 13.5, fontWeight: 600, color: hit.length ? '#2563eb' : '#9ca3af', marginBottom: 6 }}>
-        {hit.length ? t('eelist.in', { noc, cats: hit.map((c) => c.label).join('/') }) : t('eelist.out')}
+        {hit.length ? <><IconCheck /> {t('eelist.in', { noc, cats: hit.map((c) => c.label).join('/') })}</> : t('eelist.out')}
       </div>
       {url ? <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 8 }}><a href={url} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12 }}>{t('eelist.source')}{fetched ? ` (${fetched})` : ''} ↗</a></div> : null}
       {shown.map((c) => (
@@ -1103,7 +1104,7 @@ function SourceLine({ field, job, lang, sources }: { field: ColKey; job: JobRow;
   const recordUrl = RECORD_URL_FIELDS.has(field) && job.applyUrl ? job.applyUrl : ''
   return (
     <div style={{ margin: '2px 0 10px', fontSize: 11.5, color: '#9ca3af', lineHeight: 1.6 }}>
-      <span>📎 {t('src.label')}:</span>
+      <span><IconPaperclip /> {t('src.label')}:</span>
       {s.kind === 'derived' ? (
         <span> {t('src.derived')}{s.note ? ` — ${s.note}` : ''}</span>
       ) : (
@@ -1192,7 +1193,7 @@ function FieldFactsInner({ field, job, lang, pnpOcc, eeOcc, desigEmp, nocDesc }:
         <FactRow k={t('col.city')}>{L.city}</FactRow>
         <FactRow k={t('col.district')}>{L.district}</FactRow>
         <FactRow k={t('col.address')}>{job.address}</FactRow>
-        {full ? <FactRow k="🗺"><a href={mapsUrl(full)} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5 }}>{full} ↗</a></FactRow> : null}
+        {full ? <FactRow k={<IconMap />}><a href={mapsUrl(full)} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5 }}>{full} ↗</a></FactRow> : null}
       </FactsBox>
     )
   }
@@ -1258,8 +1259,8 @@ const ADV_PREF = 'adv_modal_pref'  // 记忆 {full, w, h}(位置每次打开居�
 // ── 对我意味着什么(E5-00 §3.5,FieldFactsSection 同级)────────────
 // 依据链在弹框端用同一 match() 重算(lib/match.ts 纯函数,与服务端列一致);每条结论指回维度记录。
 // 措辞红线:只说「符合/不符合公开清单条件」「高于/低于抽选线」,永不说「你能/不能移民」;块底带免责短句。
-const VERDICT_ICON: Record<string, { icon: string; color: string }> = {
-  pass: { icon: '✓', color: '#15803d' }, warn: { icon: '⚠', color: '#b45309' }, fail: { icon: '✗', color: '#dc2626' }, na: { icon: '·', color: '#9ca3af' },
+const VERDICT_ICON: Record<string, { icon: React.ReactNode; color: string }> = {
+  pass: { icon: <IconCheck />, color: '#15803d' }, warn: { icon: <IconWarn />, color: '#b45309' }, fail: { icon: <IconX />, color: '#dc2626' }, na: { icon: '·', color: '#9ca3af' },
 }
 function MeansForMe({ job, lang, plan, pnpOcc, eeOcc }: { job: JobRow; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; eeOcc: EeOcc[] }) {
   const t = makeT(lang)
@@ -1278,7 +1279,7 @@ function MeansForMe({ job, lang, plan, pnpOcc, eeOcc }: { job: JobRow; lang: Lan
   if (!plan.loggedIn || !plan.profileOk) {  // 未登录/未建档:一行引导,不占地
     return (
       <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 8, padding: '8px 12px', margin: '4px 0 8px', fontSize: 13 }}>
-        🎯 <a href="/account" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}>{t('match.needProfile')} →</a>
+        <IconTarget /> <a href="/account" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}>{t('match.needProfile')} →</a>
         <span style={{ color: '#6b7280', marginLeft: 8 }}>{t('prof.hint')}</span>
       </div>
     )
@@ -1290,7 +1291,7 @@ function MeansForMe({ job, lang, plan, pnpOcc, eeOcc }: { job: JobRow; lang: Lan
   return (
     <div style={{ background: '#fafaf9', border: '1px solid #e7e5e4', borderRadius: 10, padding: '10px 14px', margin: '4px 0 8px' }}>
       <div style={{ fontSize: 13, fontWeight: 700, color: '#374151' }}>
-        {t('match.title')}
+        <IconTarget /> {t('match.title')}
         <span style={{ marginLeft: 10, fontWeight: 600, color: lvColor[result.level] }}>{t('match.levelLine', { level: t('match.' + result.level) })}</span>
       </div>
       <div style={{ marginTop: 6 }}>
@@ -1307,7 +1308,7 @@ function MeansForMe({ job, lang, plan, pnpOcc, eeOcc }: { job: JobRow; lang: Lan
           )
         })}
       </div>
-      <div style={{ marginTop: 6, fontSize: 11, color: '#9ca3af' }}>⚖️ {t('match.disclaimer')}</div>
+      <div style={{ marginTop: 6, fontSize: 11, color: '#9ca3af' }}><IconScale /> {t('match.disclaimer')}</div>
     </div>
   )
 }
@@ -1397,11 +1398,11 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, eeOcc, desigEmp, 
         {/* 标题栏 = 拖动手柄 */}
         <div onPointerDown={startDrag} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, padding: '14px 18px 10px', cursor: full ? 'default' : 'move', userSelect: 'none', flexShrink: 0 }}>
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, letterSpacing: .3 }}>{t('advisor.tag')} · {a.tag}{status === 'streaming' ? t('advisor.generating') : ''}</div>
+            <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, letterSpacing: .3 }}><IconCompass /> {t('advisor.tag')} · {a.tag}{status === 'streaming' ? t('advisor.generating') : ''}</div>
             <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title || a.title}</h3>
           </div>
           <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-            <button onClick={() => setFull((f) => { savePref({ full: !f }); return !f })} title={t(full ? 'advisor.exitFull' : 'advisor.full')} style={iconBtn}>{full ? '🗗' : '⛶'}</button>
+            <button onClick={() => setFull((f) => { savePref({ full: !f }); return !f })} title={t(full ? 'advisor.exitFull' : 'advisor.full')} style={iconBtn}>{full ? <IconMinimize /> : <IconMaximize />}</button>
             <button onClick={onClose} style={{ ...iconBtn, fontSize: 16 }}>×</button>
           </div>
         </div>
@@ -1411,7 +1412,7 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, eeOcc, desigEmp, 
           <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} />
           <FieldFactsSection field={field} job={job} lang={lang} pnpOcc={pnpOcc} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} />
           {/* 免责声明 v1(E4-01):AI 判断区顶部,UI 层声明与 AI 文风分离(SYSTEM 已禁输出套话) */}
-          <div style={{ fontSize: 11.5, color: '#9ca3af', margin: '6px 0 4px' }}>⚖️ {t('advisor.disclaimer')}</div>
+          <div style={{ fontSize: 11.5, color: '#9ca3af', margin: '6px 0 4px' }}><IconScale /> {t('advisor.disclaimer')}</div>
           {status === 'upgrade' ? (
             <UpgradeCard t={t} reason={t('up.advisor')} />
           ) : status === 'loading' ? (
@@ -1462,7 +1463,7 @@ function AdvisorChat({ field, job, lang, initialJudgment }: { field: ColKey; job
         body: JSON.stringify({ field, id: String(job.id), job, lang, messages: payload }),
       })
       if (res.status === 402) {  // 免费试用用完(E3-05):对话里给升级引导
-        setMsgs((m) => { const c = [...m]; c[c.length - 1] = { role: 'assistant', content: `⭐ ${t('up.title')} · ${t('up.advisor')} → /account` }; return c })
+        setMsgs((m) => { const c = [...m]; c[c.length - 1] = { role: 'assistant', content: `${t('up.title')} · ${t('up.advisor')} → /account` }; return c })
       } else if (!res.ok || !res.body) {
         setMsgs((m) => { const c = [...m]; c[c.length - 1] = { role: 'assistant', content: t('advisor.failed', { code: res.status }) }; return c })
       } else {

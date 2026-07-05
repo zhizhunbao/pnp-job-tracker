@@ -1,7 +1,7 @@
 // 保存筛选 → SQL where(E5-03):alerts run 用它解释 /jobs 前端筛选 state(json 原样存)。
 // 诚实解释:只翻译能映射到列的键(q/省/市/区/大中小类/TEER/PNP/AIP/渠道/经验/薪资档/评分档),
 // 翻不动的(vs 中位档、directOnly 的中介正则)忽略并在 skipped 里报出 —— 宁可多发不漏发。
-// ⚠️ 列名是 Payload snake_case(老坑 5):改 Jobs schema 记得同步这里。
+// 注意:列名是 Payload snake_case(老坑 5):改 Jobs schema 记得同步这里。
 
 const PROV_CODE: Record<string, string> = {
   'Ontario': 'ON', 'British Columbia': 'BC', 'Alberta': 'AB', 'Quebec': 'QC', 'Manitoba': 'MB',

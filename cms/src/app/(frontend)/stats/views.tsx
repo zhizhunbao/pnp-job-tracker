@@ -2,6 +2,7 @@
 // 地区统计视图集(E5-04):全部零计算,渲染 ETL 预聚合行。
 import { useMemo, useState } from 'react'
 import { StatsShell, MetricCards, CaliberLine, useLang } from './ui'
+import { IconMapPin, IconScale, IconStar, IconTarget } from '../Icons'
 import { BROAD_SLUGS, PROV_NAME, type StatRow, type SrcRow } from './shared'
 
 const money = (v: number | null) => (v != null ? `$${Math.round(v / 1000)}K` : '—')
@@ -22,7 +23,7 @@ export function StatsIndexView({ rows, srcs }: { rows: StatRow[]; srcs: SrcRow[]
   const [lang, setLang, t] = useLang()
   return (
     <StatsShell lang={lang} setLang={setLang} t={t}>
-      <h1 style={{ fontSize: 22, margin: 0 }}>📍 {t('stats.provIndex')}</h1>
+      <h1 style={{ fontSize: 22, margin: 0 }}><IconMapPin /> {t('stats.provIndex')}</h1>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12, margin: '16px 0' }}>
         {rows.map((r) => (
           <a key={r.province} href={`/stats/${r.province.toLowerCase()}`}
@@ -36,7 +37,7 @@ export function StatsIndexView({ rows, srcs }: { rows: StatRow[]; srcs: SrcRow[]
           </a>
         ))}
       </div>
-      <a href="/stats/compare" style={{ fontSize: 13, color: '#2563eb', textDecoration: 'none' }}>⚖️ {t('stats.compare')} →</a>
+      <a href="/stats/compare" style={{ fontSize: 13, color: '#2563eb', textDecoration: 'none' }}><IconScale /> {t('stats.compare')} →</a>
       <CaliberLine t={t} srcs={srcs} fetched={rows[0]?.fetched || ''} />
     </StatsShell>
   )
@@ -113,9 +114,9 @@ export function CompareView({ rows, srcs, isPro, myNocs }: { rows: StatRow[]; sr
   if (!isPro) {
     return (
       <StatsShell lang={lang} setLang={setLang} t={t}>
-        <h1 style={{ fontSize: 22, margin: 0 }}>⚖️ {t('stats.compare')}</h1>
+        <h1 style={{ fontSize: 22, margin: 0 }}><IconScale /> {t('stats.compare')}</h1>
         <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '14px 18px', margin: '16px 0', fontSize: 13.5 }}>
-          <span style={{ fontWeight: 600, color: '#92400e' }}>⭐ {t('up.title')}</span>
+          <span style={{ fontWeight: 600, color: '#92400e' }}><IconStar /> {t('up.title')}</span>
           <a href="/pricing" style={{ marginLeft: 10, color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}>{t('up.cta')}</a>
         </div>
       </StatsShell>
@@ -132,8 +133,8 @@ export function CompareView({ rows, srcs, isPro, myNocs }: { rows: StatRow[]; sr
   ]
   return (
     <StatsShell lang={lang} setLang={setLang} t={t}>
-      <h1 style={{ fontSize: 22, margin: 0 }}>⚖️ {t('stats.compare')}</h1>
-      <div style={{ margin: '12px 0', fontSize: 12.5, color: '#6b7280' }}>{t('stats.pickProv')}{myNocs.length ? <span style={{ marginLeft: 10, color: '#3730a3' }}>🎯 {t('stats.myNoc')}:NOC {myNocs.join('/')} → {broadLabel(myBroad)}</span> : null}</div>
+      <h1 style={{ fontSize: 22, margin: 0 }}><IconScale /> {t('stats.compare')}</h1>
+      <div style={{ margin: '12px 0', fontSize: 12.5, color: '#6b7280' }}>{t('stats.pickProv')}{myNocs.length ? <span style={{ marginLeft: 10, color: '#3730a3' }}><IconTarget /> {t('stats.myNoc')}:NOC {myNocs.join('/')} → {broadLabel(myBroad)}</span> : null}</div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
         {provs.map((p) => (
           <button key={p} onClick={() => toggle(p)}

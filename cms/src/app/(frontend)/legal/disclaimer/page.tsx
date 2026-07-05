@@ -1,11 +1,12 @@
 'use client'
 // 免责声明全文(E4-02,替换 E4-01 占位)。文案模板级自拟,不构成法律意见。
 import { LegalShell, type LegalDoc } from '../LegalShell'
+import { IconScale } from '../../Icons'
 import type { Lang } from '../../jobs/i18n'
 
 const docs: Record<Lang, LegalDoc> = {
   zh: {
-    title: '⚖️ 免责声明',
+    title: '免责声明',
     updated: '生效日期:2026-07-04',
     sections: [
       { h: '1. 本站性质', body: [
@@ -30,7 +31,7 @@ const docs: Record<Lang, LegalDoc> = {
     ],
   },
   en: {
-    title: '⚖️ Disclaimer',
+    title: 'Disclaimer',
     updated: 'Effective date: 2026-07-04',
     sections: [
       { h: '1. What this site is', body: [
@@ -55,7 +56,7 @@ const docs: Record<Lang, LegalDoc> = {
     ],
   },
   ko: {
-    title: '⚖️ 면책 조항',
+    title: '면책 조항',
     updated: '시행일: 2026-07-04',
     sections: [
       { h: '1. 본 사이트의 성격', body: [
@@ -81,4 +82,4 @@ const docs: Record<Lang, LegalDoc> = {
   },
 }
 
-export default function DisclaimerPage() { return <LegalShell docs={docs} /> }
+export default function DisclaimerPage() { return <LegalShell docs={docs} icon={<IconScale />} /> }
