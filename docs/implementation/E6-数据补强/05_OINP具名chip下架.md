@@ -65,7 +65,7 @@
 
 ## 6. 完成定义(DoD)
 
-- [x] 用户拍板方案 A(2026-07-05)→ §2 全勾 + STATUS 记档 + commit/push;E6-04 §0 连带发现与 STATUS 任务卡结案。剩 §7 残值 SQL 待用户授权(3 行,不跑也 30 天内自然消亡)。
+- [x] 用户拍板方案 A(2026-07-05)→ §2 全勾 + STATUS 记档 + commit/push;E6-04 §0 连带发现与 STATUS 任务卡结案。§7 残值 SQL 用户授权「跑」后已执行(3+3 行,残值归零,SSR 复核 0 chip/通告在)——**本项全结**。
 
 ## 7. 实施记录
 
@@ -77,6 +77,8 @@
 UPDATE jobs SET pnp_stream = NULL WHERE pnp_stream LIKE 'OINP%';
 UPDATE jobs SET pnp_eligible = false WHERE province='ON' AND teer IN (4,5) AND pnp_eligible = true;
 ```
+
+  → **已执行**(2026-07-05 用户授权「跑」,单事务):清 stream 3 行 + 翻 eligible 3 行,残值归零;SSR 复核 0 chip、通告行在。
 
 - **跟进钩子**:pnp 源周更里 build_draws 的 ON notice 持续盯 oinp 页;e-Filing 重开(夏末)后复查两件事——① 新流若出职业清单 → 新 json 进 raw/pnp 即恢复具名 chip;② 若确认 TEER4-5 全职业可走(reg 已写 CLB4 分档),评估给 ON 建新 type 语义(如 `all`)让 TEER4-5 回绿——**属新语义扩展,另立项**。
 - **跟进钩子**(拍板后写进 3.1 注释):pnp 源周更里 build_draws 的 ON notice 持续盯 oinp 页;e-Filing 重开(夏末)后复查两件事——① 新流若出职业清单 → 新 json 进 raw/pnp 即恢复具名 chip;② 若确认 TEER4-5 全职业可走(reg 已写 CLB4 分档),评估给 ON 建新 type 语义(如 `all`)让 TEER4-5 回绿——**属新语义扩展,另立项,莫混本项**(本项只做保守回退)。
