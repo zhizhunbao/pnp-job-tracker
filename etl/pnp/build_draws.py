@@ -90,13 +90,18 @@ def parse_bc(html: str) -> list[dict]:
         grid = expand_table(table)
         if not grid or "ita type" not in " ".join(grid[0]).lower():
             continue
-        draws = []
+        draws, seen = [], set()
         for row in grid[1:]:
             if len(row) < 5:
                 continue
             d = _iso(row[0])
             if not d:
                 continue
+            # 官方一次抽选可带多行「选择因素」(rowspan 展开后 日期/流/分/邀请 相同)→ 合并为一条
+            key = (d, row[1], _int(row[3]), _int(row[4]))
+            if key in seen:
+                continue
+            seen.add(key)
             draws.append({"date": d, "stream": row[1], "note": row[2][:160],
                           "score": _int(row[3]), "invitations": _int(row[4])})
         return draws[:MAX_PER_PROV]

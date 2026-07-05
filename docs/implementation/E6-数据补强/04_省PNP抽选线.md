@@ -29,8 +29,8 @@
 - [x] ① `build_draws.py` 三省一通告跑通(2026-07-05 实跑):BC 12 条(rowspan 展开器)、AB 12 条(Table 10)、MB 10 条(prose;多流通用抽选 score 按「宁可留空」置 null)、ON 1 条 notice;**08_score 目录驱动不受影响**(实证:载入省仍 AB/NS/ON/SK,draws.json 无 occupations 键被 08_score.py:118 跳过)
 - [x] ② mart/pnp_draws.json 25 行(BC 8/AB 8/MB 8/ON notice 1),列对齐 DB
 - [x] ③ PnpDraws collection + seed 白名单 + payload-types 重生成 + `npm run build` 过
-- [ ] ④ 弹框:BC/AB/MB 岗顶部见最近抽选(分数带分制短标注);ON 岗见改制通告;SK/QC 岗此块不出现;三语(**代码就绪,验证卡 ⑤ 的 DDL——本地 dev 也直连生产库**)
-- [ ] ⑤ 生产:DDL 先行(含 payload_locked_documents_rels.pnp_draws_id,B7 清单)→ push → seed → 生产弹框终验(**卡用户授权:生产 DDL 被会话权限拦下,SQL 已备好见 §7**)
+- [x] ④ 弹框(2026-07-05 本地 dev=生产库,DOM 实测):BC=「Recent draws · BC PNP Skills Immigration · SIRS — provincial scale, not CRS」+ 各期日期/流/min 分/邀请数;AB=WEOI 标注同构;ON=改制通告行;SK=无此块且清单区照常(「SK 医疗」命中高亮不受影响)
+- [x] ⑤ 生产:DDL 执行过(用户授权,14 列+rels 列/索引/FK 验证)→ push(Render 自动部署)→ 生产 seed `pnp_draws: 25` ok:true → 终验同 ④
 
 ## 3. 实现步骤
 
@@ -38,7 +38,7 @@
 - [x] **3.2** `09_build_mart.py`:读 raw/pnp/draws.json → mart `pnp_draws`(每省最新 ≤8 条)。
 - [x] **3.3** CMS:`collections/PnpDraws.ts`(照 EeCategories 模式)+ payload.config 注册 + seed dims[] 一条 + payload-types 重生成。
 - [x] **3.4** 前端:page.tsx dims 加 pnpDraws → AdvisorModal/FieldFactsSection 链 → PnpListSection 顶部 `PnpDrawsBlock` + i18n 三语键(pnpdraws.title/scale/min/inv/notice)。
-- [ ] **3.5** 本地 build ✅ → 生产 DDL(卡授权)→ push(Render 自动部署)→ 触发生产 seed → 终验。
+- [x] **3.5** 本地 build → 生产 DDL(用户授权)→ push → mart 传 Storage → 生产 seed → 终验。全链走完 2026-07-05。
 
 ## 4. 涉及文件
 
@@ -53,12 +53,15 @@
 
 ## 6. 完成定义(DoD)
 
-- [ ] §2 全勾 + STATUS 记档 + 盘点文档 §4-P1 行结案 + commit/push。
+- [x] §2 全勾 + STATUS 记档 + 盘点文档 §4-P1 行结案 + commit/push。(2026-07-05,立项→生产终验一天)
 
 ## 7. 实施记录
 
 - 2026-07-05 立项。源盘点实测推翻交接的两档假设(§0);落库两方案中选**新维度表**(方案②嵌现有行不成立:BC/MB 在 pnp_occupations 无行可嵌,嵌 provinces json 列偏离既有扁平维度模式)。
-- 2026-07-05 代码侧全落地(3.1-3.4 + build 过)。**生产 DDL 被会话权限拦下(直连正式库的 CREATE/ALTER 需用户授权)→ push/seed/终验连锁挂起**(代码先上而表不存在会让 /jobs 的 payload.find 500,B4 教训:先 DDL 再 push)。待授权后执行的 SQL(形状照生产 ee_categories information_schema 实查,B7 rels 清单齐):
+- 2026-07-05 代码侧全落地(3.1-3.4 + build 过)。生产 DDL 起初被会话权限拦下(直连正式库的 CREATE/ALTER 需用户授权)→ **用户当日授权后全链走完**:DDL → push → mart 传 Storage → 生产 seed(pnp_draws 25,首发即新代码,一把过)→ 弹框四类终验(BC/AB 抽选块、ON 通告、SK 无块)。
+- 收尾修一刀:官方一次抽选带多行「选择因素」时(BC Vet Care)rowspan 展开出重复行 → parse_bc 按 (日期,流,分,邀请) 去重合并,重建+重灌后 0 重复。
+- **插曲记档**:本地 dev 验证时 /jobs 一度 500 = Supabase session pooler 打满(`EMAXCONNSESSION max clients 15`,本地 dev + Render 生产同抢一个池)——「直连正式库」的已知代价,验证完及时关本地 dev;非代码 bug。另:preview 截图在本机超时(SPA+扩展老坑),终验以 DOM 文本提取为准。
+- 当时执行的 DDL(形状照生产 ee_categories information_schema 实查,B7 rels 清单齐):
 
 ```sql
 CREATE TABLE IF NOT EXISTS pnp_draws (
