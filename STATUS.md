@@ -3,6 +3,14 @@
 > 新 session 接手先读这份 + `CLAUDE.md`(设计宪法)+ `prd.md`(v2 定位见头部标注)。仓库:github.com/zhizhunbao/pnp-job-tracker
 > **🚀 站点已公网上线:https://pnp-cms.onrender.com**(Render + Supabase,R3 架构)。上线计划/批次进度=`docs/implementation/_开发批次顺序.md`(B0-B3 ✅,B4 代码侧 ✅ 剩 Stripe 手续)。
 >
+> **本轮(2026-07-04 深夜 B7 信任与引流 + 架构拍板:直连正式库)**:
+> ① **E4-04 字段级 citation ✅**:`etl/build_field_sources.py`(7 数据集着陆页 httpx 验证抽 title/meta 原文+9 派生口径,挂 pnp 源周更;21 verified/0 unverified)→ mart `field_sources`(30 行)→ 弹框统一 `SourceLine`(记录级官方原帖优先/数据集级兜底/unverified 降级/派生显口径)+ advisor jobFacts 行尾 [src:…] 标注。断源演练 ✅。
+> ② **E5-02 榜单 ✅**:`10_build_rankings.py`(weekly-top TOP50 按 datePosted 7 天——mart 无 firstSeen 偏离记档;sponsor-likely TOP30 第一方+具名通道聚合)→ /rankings/[slug] 三语 SEO 页;顶栏入口;/jobs 接 ?q=。
+> ③ **E5-04 地区统计 ✅**:`11_build_stats.py`(省×大类 115 行,双口径中位:ESDC+帖面)→ /stats 省索引+省页+大类页(口径行复用 E4-04 来源;职位板入口 ?prov=&broad=)+ **Pro 跨省对比**(档案 NOC 预选大类);市级后置 topCities 顶上。**又踩老坑 6**:共享常量放 'use client' 模块服务端拿 undefined → 抽 stats/shared.ts。
+> ④ **E7-02 埋点(代码侧 ✅,选型按 R3 修订)**:compose 自托管方案过时 → **umami cloud 免费档**;layout env-gate script + signup/checkout 两事件;隐私政策补 analytics 条目;layout 顺手修掉「Payload Blank Template」残留 metadata。**剩用户手动:cloud.umami.is 开账号 → Render 填 NEXT_PUBLIC_UMAMI_SRC/ID**。
+> ⑤ **架构拍板(用户,2026-07-04):所有数据真相=Supabase(库+Storage),本地库/本地 mart 读路径过时,本地 dev 直连正式库**。护栏已全上:payload `push: DB_PUSH==='1'`(dev 不再自动推 schema!改 collection=显式 DB_PUSH=1 单次推或手写 SQL)/本地 .env 配 SEED_TOKEN(seed 必须带 token,reset=1 会重灌生产)/测试号一律 @test.local/本地 postgres+cms:3001 标过时不删/`data/` 仍是 ETL 构建工作区(mart 上传 Storage 是唯一交接)。**生产 3 新表(field_sources/rankings/stats)DDL 先行**(pg_dump 导本地→psql,方案内授权)。
+> **B7 收尾**:部署后带 token 触发生产 seed 填三新表 → 验证 /stats /rankings;umami 账号(用户)。**下批 B8:E5-03 邮件提醒 + E7-01 监控备份 + E7-03 SEO(sitemap 收录 stats 页)= M4。**
+>
 > **本轮(2026-07-04 深夜续 —— M3 正式收费开闸 🎉 + 登录改版)**:
 > ① **E3-06 切 live 完成**:live Product `prod_UpEXEb8j3hFyBG`($19=`price_1Tpa4dGre9TF1l9zHOsx7tR4`/$39=`price_1Tpa5sGre9TF1l9zFjycLhSf`)+ live webhook `we_1TpaA9Gre9TF1l9zVVoSM7Uz`(completed+async 两事件)——助手驱动用户浏览器建的,**sk_live/whsec 全程用户自持不经助手**;Render env 切 live(STRIPE_WECHAT_PAY 已删,checkout 有未获批自动退纯卡兜底)。
 > ② **真实收款验证**:admin 号真卡购 30 天 CA$19 → live webhook 一次投递成功(984ms)→ proUntil=2026-08-03(+30d 精确)→ 账户页 ⭐Pro。**真实退款演练**:Dashboard 全额 Refund → admin 后台清 Pro Until → 免费版 ✅。**运维口径:退款不自动降级,人工两步(Refund+清 proUntil)**。= **M3 正式收费开闸**。

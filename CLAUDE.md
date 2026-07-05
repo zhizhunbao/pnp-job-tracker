@@ -55,10 +55,11 @@ etl/ (Python: 抓取 → 清洗 → 评分, 写 data/) ──> cms/ (Payload + N
 
 ## 跑起来
 ```bash
-cd docker && docker compose up -d postgres      # 起库(全栈 compose 在 docker/,项目名 pnp)
-cd cms && npm run dev                            # 开发:localhost:3000(库走宿主 5432)
+# ⚠️ 2026-07-04 起:本地 dev **直连 Supabase 正式库**(cms/.env 已配;本地 postgres 已过时,仅紧急回退)
+cd cms && npm run dev                            # 开发:localhost:3000(读写的就是生产!测试号用 @test.local)
+# 改 collection 字段:dev 默认不推 schema(护栏)→ 显式 `DB_PUSH=1 npm run dev` 单次推,删列/改类型手写 SQL
 # 无人值守全栈(含容器化 cms,开机自更新):cd docker && docker compose --profile unattended up -d --build
-# 重灌: curl "localhost:3000/seed?reset=1"  |  增量检测下架: curl "localhost:3000/seed"
+# seed 必须带 token(直连生产!): curl -H "x-seed-token: $SEED_TOKEN" localhost:3000/seed  (reset=1 会清生产,慎)
 # 改了 Jobs collection 字段 → 必须重启 dev server(Payload 同步 schema)再重灌
 # 完整重跑 ETL: 04 → clean/04b → clean/04c → clean/04d → 05 → 05b → 08 (走 _paths,顺序见 STATUS.md)
 ```

@@ -12,20 +12,20 @@
 
 ## 2. 验收标准
 
-- [ ] 每个字段弹框事实块底部有来源行；**记录级 URL 优先**（pnp 通道 url / applyUrl 原帖 / 省 AIP 名单），数据集级兜底。
-- [ ] 来源解释 = 抓取页面 `<title>`/meta description **原文**（不经 LLM 不翻译）；抓取失败 → unverified 只出链接（宁可留空）。
-- [ ] 派生字段（score/vsMedian/状态口径等）明示「本站派生」+ 口径一句 + 底层来源链。
-- [ ] `jobFacts()` 每行事实带来源短标注，AI 判断/对话能指回来源。
-- [ ] 断源演练：故意改坏一个注册 URL → 前端降级为 unverified，不报错。
+- [x] 每个字段弹框事实块底部有来源行；**记录级 URL 优先**（pnp 通道 url / applyUrl 原帖 / 省 AIP 名单），数据集级兜底。
+- [x] 来源解释 = 抓取页面 `<title>`/meta description **原文**（不经 LLM 不翻译）；抓取失败 → unverified 只出链接（宁可留空）。
+- [x] 派生字段（score/vsMedian/状态口径等）明示「本站派生」+ 口径一句 + 底层来源链。
+- [x] `jobFacts()` 每行事实带来源短标注，AI 判断/对话能指回来源。
+- [x] 断源演练：故意改坏一个注册 URL → 前端降级为 unverified，不报错。
 
 ## 3. 实现步骤
 
-- [ ] **3.1** `etl/build_field_sources.py`（新，挂 `pnp` 源周更）：注册表 fieldKey→{publisher, url, kind: dataset|derived}；URL 聚合自各 build 脚本既有常量与维护表 `url`/`fetched`（**不重复维护**）；httpx 逐 URL 验证 200 + 抽 title/meta description → `raw/sources/field-sources.json`（跟踪）。
-- [ ] **3.2** 09 mart 产 `field_sources.json` 维度；派生字段的口径文案也进维度（单一来源）。
-- [ ] **3.3** seed：新 collection `field-sources`（**dims 白名单加字段映射**——坑 2）；重启 dev 推 schema + 重灌。
-- [ ] **3.4** 前端 `FieldFactsSection` 加 `<SourceLine field job dims>`：「来源：{publisher}（链接）· 抓取于 {fetched}」+ 解释摘录；PNP 块 surface 各通道已有的 `url`+`fetched`。
-- [ ] **3.5** advisor route `jobFacts()` 行尾加来源短标注（如 `[src: ESDC wage data 2024]`）。
-- [ ] **3.6** 断源演练 + 全字段弹框过一遍。
+- [x] **3.1** `etl/build_field_sources.py`（新，挂 `pnp` 源周更）：注册表 fieldKey→{publisher, url, kind: dataset|derived}；URL 聚合自各 build 脚本既有常量与维护表 `url`/`fetched`（**不重复维护**）；httpx 逐 URL 验证 200 + 抽 title/meta description → `raw/sources/field-sources.json`（跟踪）。
+- [x] **3.2** 09 mart 产 `field_sources.json` 维度；派生字段的口径文案也进维度（单一来源）。
+- [x] **3.3** seed：新 collection `field-sources`（**dims 白名单加字段映射**——坑 2）；重启 dev 推 schema + 重灌。
+- [x] **3.4** 前端 `FieldFactsSection` 加 `<SourceLine field job dims>`：「来源：{publisher}（链接）· 抓取于 {fetched}」+ 解释摘录；PNP 块 surface 各通道已有的 `url`+`fetched`。
+- [x] **3.5** advisor route `jobFacts()` 行尾加来源短标注（如 `[src: ESDC wage data 2024]`）。
+- [x] **3.6** 断源演练 + 全字段弹框过一遍。
 
 ## 4. 涉及目录 / 文件
 
@@ -42,4 +42,15 @@
 
 ## 6. 完成定义（DoD）
 
-- [ ] §2 全勾（含断源演练）+ 数据回归清单 + push。
+- [x] §2 全勾（含断源演练）+ 数据回归清单 + push。
+
+---
+
+## 7. 实施记录(2026-07-04 深夜,B7)
+
+- `etl/build_field_sources.py`:注册表 7 数据集(URL=着陆页,聚合各 build 脚本常量)× httpx 验证抽 <title>/meta 原文 + 9 派生口径 → raw/sources/field-sources.json(跟踪);挂 pnp 源周更。首跑 21 verified / 0 unverified / 9 derived。
+- 09 直通 mart field_sources(30 行)→ 新 collection `field-sources`(seed 白名单已加)。
+- 前端 `SourceLine`(FieldFactsSection 外层统一挂):记录级 applyUrl「官方原帖」优先 + 数据集级 publisher 链接 + 抓取日期 + title/description 原文摘录;unverified 只出链接;derived 显「本站派生」+口径。实测弹框渲染:「📎 Source: Official posting ↗ Job Bank ↗ · fetched 2026-07-04 “Available jobs - Search - Job Bank”…」。
+- advisor jobFacts 每行加 [src: …] 短标注(§3.5)。
+- **断源演练 ✅**:SQL 把 ee 行置 unverified → 前端出现「未验证(仅链接)」降级,不报错;还原正常。
+- stats 页口径行(CaliberLine)复用本维度(岗量=Job Bank/薪资=ESDC/通道=省清单)。
