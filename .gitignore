@@ -1,5 +1,7 @@
 .venv/
 __pycache__/
+# 生产库每日 pg_dump(E7-01,含用户数据,绝不入 git)
+/backups/
 *.pyc
 .ruff_cache/
 .browser-profile/
