@@ -45,6 +45,7 @@ services:
     <<: *etl
     environment:
       SOURCE: jobbank
+      HEALTHCHECK_PING_JOBBANK: ${HEALTHCHECK_PING_JOBBANK:-}
       SCRAPE_INTERVAL: '7200'      # 2h
       SINCE_DAYS: '3'
       TZ: EST5EDT                  # 日志用东部时区(glibc 原生,无需 tzdata);postgres 保持 UTC
@@ -53,6 +54,7 @@ services:
     <<: *etl
     environment:
       SOURCE: pnp
+      HEALTHCHECK_PING_PNP: ${HEALTHCHECK_PING_PNP:-}
       SCRAPE_INTERVAL: '604800'    # 周更(清单极少变)
       TZ: EST5EDT
 
@@ -60,14 +62,25 @@ services:
     <<: *etl
     environment:
       SOURCE: ee
+      HEALTHCHECK_PING_EE: ${HEALTHCHECK_PING_EE:-}
       SCRAPE_INTERVAL: '2592000'   # 月更
       TZ: EST5EDT
     # 回退:源站重新上 Akamai 时恢复 crawl 重镜像(build dockerfile: docker/etl/crawl/Dockerfile + BROWSER_HEADLESS=1)
+
+  backup:                          # 每日 pg_dump 生产库 → backups/(E7-01;家里机=运维盒)
+    <<: *etl
+    environment:
+      SOURCE: backup
+      SCRAPE_INTERVAL: '86400'     # 日更
+      BACKUP_DATABASE_URI: ${BACKUP_DATABASE_URI:-}   # docker/.env 注入 Supabase 连接串;空=跳过
+      HEALTHCHECK_PING_BACKUP: ${HEALTHCHECK_PING_BACKUP:-}
+      TZ: EST5EDT
 
   build:                           # 跨源清洗→评分→mart→seed(灌库唯一角色)
     <<: *etl
     environment:
       SOURCE: build
+      HEALTHCHECK_PING_BUILD: ${HEALTHCHECK_PING_BUILD:-}
       SCRAPE_INTERVAL: '7200'
       SEED_URL: ${SEED_URL:-http://host.docker.internal:3001/seed}  # 默认灌 docker cms(:3001);R3 起步档在 docker/.env 覆写为云端 https://pnp-cms.onrender.com/seed
       SEED_TOKEN: ${SEED_TOKEN:-}  # 云端 seed 鉴权(docker/.env 注入;本地空=不带头)

@@ -23,6 +23,7 @@ import { ExperienceLevels } from './collections/ExperienceLevels'
 import { FieldSources } from './collections/FieldSources'
 import { Rankings } from './collections/Rankings'
 import { Stats } from './collections/Stats'
+import { SavedSearches } from './collections/SavedSearches'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -34,7 +35,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Companies, Jobs, PnpOccupations, EeCategories, NocDescriptions, PolicyDocs, DesignatedEmployers, Provinces, Cities, Districts, NocCategories, Sources, ExperienceLevels, FieldSources, Rankings, Stats],
+  collections: [Users, Media, Companies, Jobs, PnpOccupations, EeCategories, NocDescriptions, PolicyDocs, DesignatedEmployers, Provinces, Cities, Districts, NocCategories, Sources, ExperienceLevels, FieldSources, Rankings, Stats, SavedSearches],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

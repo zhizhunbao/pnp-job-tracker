@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react'
 import { makeT, LANG_KEY, type Lang } from '../jobs/i18n'
 import { ProfileForm, type ProfileValue } from './ProfileForm'
+import { SavedSearchList } from './SavedSearchList'
 
 type Me = { id: string | number; email: string; role?: string; proUntil?: string | null; profile?: ProfileValue | null } | null
 
@@ -77,6 +78,8 @@ export default function AccountPage() {
           </div>
           {/* 移民档案(E5-00):匹配层输入;key 按 id 防换号残留 */}
           <ProfileForm key={String(me.id)} t={t} userId={me.id} initial={me.profile ?? null} />
+          {/* 已保存筛选(E5-03):邮件提醒管理 */}
+          <SavedSearchList t={t} />
           {/* 时长包购买(E3-03):Pro 也可续买,到期日顺延 */}
           <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid #f3f4f6' }}>
             <div style={{ fontSize: 13.5, fontWeight: 600, color: '#374151' }}>{t('acct.buyTitle')}</div>

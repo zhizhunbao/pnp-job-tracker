@@ -10,6 +10,11 @@ import { match, normalizeProfile, hasProfile, type MatchJob } from '@/lib/match'
 
 export const dynamic = 'force-dynamic'
 
+export const metadata = {
+  title: 'Canadian jobs with immigration signals — PNP · EE · wages | PNP Job Tracker',
+  description: 'Daily-updated job board across all 10 provinces: PNP named streams, EE categories, wages vs ESDC median, profile matching. 全加拿大日更职位板:省提名通道/EE 类别/工资对比/档案匹配。',
+}
+
 export default async function JobsPage() {
   const payload = await getPayload({ config: await config })
 

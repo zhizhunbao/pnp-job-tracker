@@ -15,3 +15,8 @@ export const FREE_MATCH_JOBS_PER_DAY = Number(process.env.FREE_MATCH_JOBS_PER_DA
 export const PRO_COLUMNS = ['match', 'vsMedian', 'wageMedHr', 'wageMedYr'] as const
 export type ProColumn = (typeof PRO_COLUMNS)[number]
 export const isProColumn = (k: string): boolean => (PRO_COLUMNS as readonly string[]).includes(k)
+
+// Pro 保存筛选上限(E5-03)
+export const PRO_SAVED_SEARCHES = Number(process.env.PRO_SAVED_SEARCHES || 5)
+// 匹配版提醒:达到该 level 才进邮件(E5-03;high=规则分≥60,见 lib/match.ts)
+export const ALERT_MATCH_LEVEL = (process.env.ALERT_MATCH_LEVEL || 'high') as 'high' | 'mid'

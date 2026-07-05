@@ -10,29 +10,13 @@ import { streamChat, LlmError, type ChatMessage } from '@/lib/llm'
 import { getUser, isPro } from '@/lib/entitlement'
 import { FREE_ADVISOR_TRIES, PRO_ADVISOR_DAILY } from '@/lib/plan'
 import { match, normalizeProfile, hasProfile, reasonEn, type MatchDims, type MatchJob } from '@/lib/match'
+import { loadMatchDims } from '@/lib/matchDims'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 // 进程内缓存(dev 下随热重载清空,够用;以后可换持久化)
 const cache = new Map<string, string>()
-
-// 匹配用维度(pnp/ee 清单)进程内缓存 1h —— 档案事实注入(E5-00)要按岗 join,不能每请求回表
-let dimsCache: { at: number; dims: MatchDims } | null = null
-async function loadMatchDims(): Promise<MatchDims> {
-  if (dimsCache && Date.now() - dimsCache.at < 3600_000) return dimsCache.dims
-  const payload = await getPayload({ config: await config })
-  const [pnp, ee] = await Promise.all([
-    payload.find({ collection: 'pnp-occupations', limit: 5000, depth: 0 }),
-    payload.find({ collection: 'ee-categories', limit: 2000, depth: 0 }),
-  ])
-  const dims: MatchDims = {
-    pnpOccupations: pnp.docs.map((r: any) => ({ province: r.province, label: r.label, type: r.type, noc: r.noc, url: r.url, fetched: r.fetched })),
-    eeCategories: ee.docs.map((r: any) => ({ category: r.category, label: r.label, noc: r.noc, drawCrs: typeof r.drawCrs === 'number' ? r.drawCrs : null, drawDate: r.drawDate ?? '', url: r.url, fetched: r.fetched })),
-  }
-  dimsCache = { at: Date.now(), dims }
-  return dims
-}
 
 // Pro 档案事实(E5-00 §3.5):自报档案 + 本岗匹配结论(与 UI 同一 match() 输出,数字一致)。
 // grounded 契约不变:注进 facts 当事实用,问到档案没有的信息照样直说未提供。

@@ -85,6 +85,7 @@ export interface Config {
     'field-sources': FieldSource;
     rankings: Ranking;
     stats: Stat;
+    'saved-searches': SavedSearch;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -110,6 +111,7 @@ export interface Config {
     'field-sources': FieldSourcesSelect<false> | FieldSourcesSelect<true>;
     rankings: RankingsSelect<false> | RankingsSelect<true>;
     stats: StatsSelect<false> | StatsSelect<true>;
+    'saved-searches': SavedSearchesSelect<false> | SavedSearchesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -170,6 +172,7 @@ export interface User {
     | number
     | boolean
     | null;
+  lastAlertAt?: string | null;
   profile?: {
     /**
      * 经验/学历对应 NOC 码(string[])
@@ -751,6 +754,37 @@ export interface Stat {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "saved-searches".
+ */
+export interface SavedSearch {
+  id: number;
+  user: number | User;
+  name: string;
+  /**
+   * /jobs 前端筛选 state 原样(jobsQuery 解释)
+   */
+  filters?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * 存时的界面语言(zh/en/ko),发信用
+   */
+  lang?: string | null;
+  /**
+   * 上次发信游标(alerts run 回写,防重复通知)
+   */
+  lastNotifiedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -844,6 +878,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'stats';
         value: number | Stat;
+      } | null)
+    | ({
+        relationTo: 'saved-searches';
+        value: number | SavedSearch;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -896,6 +934,7 @@ export interface UsersSelect<T extends boolean = true> {
   proUntil?: T;
   stripeCustomerId?: T;
   stripeSessions?: T;
+  lastAlertAt?: T;
   profile?:
     | T
     | {
@@ -1211,6 +1250,19 @@ export interface StatsSelect<T extends boolean = true> {
   aipJobs?: T;
   topCities?: T;
   fetched?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "saved-searches_select".
+ */
+export interface SavedSearchesSelect<T extends boolean = true> {
+  user?: T;
+  name?: T;
+  filters?: T;
+  lang?: T;
+  lastNotifiedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

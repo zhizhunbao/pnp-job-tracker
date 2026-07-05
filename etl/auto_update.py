@@ -79,6 +79,22 @@ def run_once(meta: dict) -> bool:
         except Exception as e:  # noqa: BLE001
             log.error(f"✗ seed 失败({type(e).__name__}: {e})—— mart 已落盘,cms 起来后下轮补")
             return False
+        # 邮件提醒(E5-03):seed 成功后触发匹配版 alerts(同一 token 鉴权;失败不影响本轮,下轮补)
+        try:
+            alerts_url = SEED_URL.rsplit("/seed", 1)[0] + "/api/alerts/run"
+            r = httpx.get(alerts_url, timeout=300,
+                          headers={"x-seed-token": SEED_TOKEN} if SEED_TOKEN else None)
+            log.info(f"✓ alerts {r.status_code}: {r.text[:200]}")
+        except Exception as e:  # noqa: BLE001
+            log.error(f"✗ alerts 失败({type(e).__name__}: {e})—— 不影响本轮")
+    # 监控心跳(E7-01):本轮全部成功 → ping healthchecks.io(env 缺省=本地开发不 ping)
+    ping = os.environ.get(f"HEALTHCHECK_PING_{SOURCE.upper()}", "")
+    if ping:
+        try:
+            httpx.get(ping, timeout=10)
+            log.info("✓ healthcheck ping")
+        except Exception as e:  # noqa: BLE001
+            log.error(f"✗ healthcheck ping 失败({type(e).__name__})")
     return True
 
 

@@ -679,6 +679,24 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
               {t('filter.more')}{moreActive ? ` · ${moreActive}` : ''} <span style={{ fontSize: 11, color: '#9ca3af' }}>{showMore ? '▲' : '▼'}</span>
             </button>
             {anyFilter && <button onClick={clearAll} style={{ ...ctrl, cursor: 'pointer', background: '#f3f4f6', color: '#b91c1c' }}>{t('clear')}</button>}
+            {/* 保存此筛选(E5-03):Pro 存为邮件提醒;filters=前端 state 原样(alerts 用 jobsQuery 解释) */}
+            {anyFilter && plan.loggedIn && (
+              <button
+                onClick={async () => {
+                  if (!plan.isPro) { alert(t('ss.pro')); window.location.href = '/pricing'; return }
+                  const name = window.prompt(t('ss.name'))
+                  if (!name) return
+                  const filters = { q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs }
+                  const r = await fetch('/api/saved-searches', {
+                    method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, filters, lang }),
+                  }).catch(() => null)
+                  alert(r?.ok ? t('ss.saved') : t('ss.err'))
+                }}
+                style={{ ...ctrl, cursor: 'pointer', background: '#eef2ff', color: '#3730a3' }}>
+                {t('ss.save')}
+              </button>
+            )}
             {/* 字段选择:右对齐,与搜索同一行 */}
             <div ref={colRef} style={{ position: 'relative', marginLeft: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
               <button onClick={() => setColOpen((o) => !o)} style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', background: '#f3f4f6', whiteSpace: 'nowrap' }}>{t('fields', { n: shown.length })}</button>

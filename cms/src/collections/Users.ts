@@ -51,6 +51,12 @@ export const Users: CollectionConfig = {
       admin: { hidden: true },
     },
     {
+      name: 'lastAlertAt',     // 匹配版提醒游标(E5-03):alerts run 发信后回写,防重复通知
+      type: 'date',
+      access: { create: adminOnlyField, update: adminOnlyField },
+      admin: { hidden: true },
+    },
+    {
       // 移民档案(E5-00):用户自填,匹配层的输入。无字段级锁 —— 本人可改(update 已限 selfOrAdmin)。
       // nocCodes/targetProvinces 用 json 存 string[](表单自建,不走 admin 数组 UI)。
       name: 'profile',
