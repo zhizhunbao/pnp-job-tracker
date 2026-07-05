@@ -18,7 +18,7 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300
 
-const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://pnp-cms.onrender.com').replace(/\/$/, '')
+const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://offer2pr.com').replace(/\/$/, '')
 type Lang = 'zh' | 'en' | 'ko'
 const T: Record<Lang, { subject: (n: number) => string; matchSubject: (n: number) => string; hi: string; drawGapAbove: (cat: string, crs: number, draw: number, d: number) => string; drawGapBelow: (cat: string, crs: number, draw: number, d: number) => string; open: string; unsub: string }> = {
   zh: {

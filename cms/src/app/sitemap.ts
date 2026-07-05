@@ -2,7 +2,8 @@
 import type { MetadataRoute } from 'next'
 import { PROVS, BROAD_SLUGS } from './(frontend)/stats/shared'
 
-const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://pnp-cms.onrender.com').replace(/\/$/, '')
+// ⚠️ 本路由构建期静态烘焙,而 Docker 构建拿不到 Render env(Dockerfile 无 ARG)→ 实际生效的是 fallback,必须=正式域
+const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://offer2pr.com').replace(/\/$/, '')
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date()
