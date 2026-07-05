@@ -33,21 +33,21 @@
 
 ## 2. 验收标准
 
-- [ ] ① `raw/pnp` 无 oinp-*.json;`build_on.py` 及 sources/pnp step 移除;08→09 跑通,载入省无 ON
-- [ ] ② 08 产物:ON 岗 `pnpStream` 全空;in-demand 56 NOC(TEER4-5)的 ON 岗 `pnpEligible=false`;原命中 65 NOC 的 ON 岗分数 -12(前后快照抽查;tech 9 NOC 是 TEER0-1,只失 chip 与 +12,仍绿「可提名」)
-- [ ] ③ mart `pnp_occupations` 无 province=ON 行(-65 行);`pnp_draws` 的 ON 改制通告行**仍在**(由 draws.json 携带,不受影响)
-- [ ] ④ 前端(本地 dev 直连生产库,DOM 实测):/jobs ON 无琥珀 chip(TEER0-3 绿/TEER4-5 灰);弹框 PNP 清单区无 OINP 两清单、顶部通告行照显;match 侧「省点名招 +30」(match.ts:99)与「TEER4-5 具名通道 +10」(match.ts:143)对 ON 不再触发
-- [ ] ⑤ 生产:mart 传 Storage → seed(**无 DDL**)→ 终验同 ④;核对 dims 重灌后 pnp_occupations 的 ON 行真删非残留
-- [ ] ⑥ 连带影响记档并接受:sponsor-likely 榜单 ON 公司 namedJobs 归 0、邮件提醒 match 可能高→中降档——均属**如实反映通道关闭**,非回归
+- [x] ① `raw/pnp` 无 oinp-*.json;`build_on.py` 及 sources/pnp step 移除;08→09 跑通(2026-07-05 实跑 16341 岗)
+- [x] ② 08 产物:pnpStream 全站仅剩 SK/AB/NS 六通道(OINP 0);ON TEER4-5 岗 945 个全部 `pnpEligible=false`;抽查 ON 44101(PSW)= false/None/43 分(改前 55 = 撤 +12 实证)
+- [x] ③ mart `pnp_occupations` 182 行、ON 0 行(只剩 AB/NS/SK);`pnp_draws` 25 行、ON 改制通告行仍在
+- [x] ④ 生产 SSR 实测(offer2pr.com/jobs):开放岗零 OINP chip;pnp_draws ON 通告(note "OINP redesign…")在 props 里照传;match 两规则数据驱动(dims 无 ON 行即不触发,规则代码零改动)
+- [x] ⑤ 生产:mart 传 Storage(16 表,含重跑的 rankings/stats)→ seed ok:true(pnp_occupations 182/jobs 12671)→ 终验同 ④
+- [x] ⑥ 连带影响记档:sponsor-likely 榜单重建后 30 家具名命中(不再含 OINP 聚合);邮件提醒 match 降档属如实。**已知残值(待用户授权 DML)**:3 个「本次 mart 未含、发布<30 天」的 open ON 岗仍带旧 OINP stream——seed 只更新本批岗、下架只杀 30 天+,旧值最多滞留 30 天自然消亡;一次性清理 SQL 见 §7
 
 ## 3. 实现步骤
 
-- [ ] **3.1** 删 `etl/pnp/build_on.py`;`etl/sources/pnp/__init__.py` steps 删该行,原位注释「ON 2026-06-26 改制旧流全删、新 Workforce Priority 流无职业清单 → 不产出(同 BC/SK 先例);清单若重现,按 git 史 build_on 模板重写」
-- [ ] **3.2** `git rm data/raw/pnp/oinp-in-demand.json data/raw/pnp/oinp-tech.json`(历史可考)
-- [ ] **3.3** 重跑 08→09(零代码改动),抽查 ②③(留意 08 打印的载入省清单)
-- [ ] **3.4** 本地 build + DOM 目检 ④(直连生产库,验完关 dev,防 pooler 打满)
-- [ ] **3.5** mart 上传 → 生产 seed(SEED_TOKEN)→ 终验 ⑤
-- [ ] **3.6** STATUS 记档、盘点/E6-04 连带项结案、commit/push
+- [x] **3.1** 删 `etl/pnp/build_on.py`;`etl/sources/pnp/__init__.py` steps 删该行,原位注释记改制事实与恢复路径
+- [x] **3.2** git rm 两份清单(历史可考)
+- [x] **3.3** 重跑 08→09 **+ 10/11**(rankings 的 sponsor-likely 第二排序键聚合具名通道,必须连带重建),抽查 ②③
+- [x] **3.4** 前端零代码改动,本地 DOM 目检以生产 SSR 终验代替(④)
+- [x] **3.5** mart 上传 → 生产 seed(SEED_TOKEN,offer2pr.com/seed)→ 终验 ⑤
+- [x] **3.6** STATUS 记档、commit/push(与同批 UI 三修一起合 main 部署)
 
 ## 4. 涉及文件
 
@@ -65,9 +65,18 @@
 
 ## 6. 完成定义(DoD)
 
-- [ ] 用户拍板方案 → §2 全勾 + STATUS 记档 + commit/push;E6-04 §0 连带发现与 STATUS 任务卡结案。
+- [x] 用户拍板方案 A(2026-07-05)→ §2 全勾 + STATUS 记档 + commit/push;E6-04 §0 连带发现与 STATUS 任务卡结案。剩 §7 残值 SQL 待用户授权(3 行,不跑也 30 天内自然消亡)。
 
 ## 7. 实施记录
 
-- 2026-07-05 立项 + 调研(§0 实测三页:oinp-tech-draws 顶部通告、2026-updates 新流分档条件、streams 页无清单细则)。**待拍板,未动代码。**
+- 2026-07-05 立项 + 调研(§0 实测三页:oinp-tech-draws 顶部通告、2026-updates 新流分档条件、streams 页无清单细则)。
+- 2026-07-05 用户拍板方案 A,当日全链落地:代码删除 → 08/09/10/11 重跑 → mart 上传 → push(Render 部署)→ 生产 seed ok:true → SSR 终验。**教训记档:rankings(10)不重跑会带着旧 mart 的 OINP 聚合上载**——凡动 jobs 信号列,10/11 连带重跑。
+- **残值发现**:seed 增量模型的结构性边角——「本批 mart 未含 + 发布<30 天」的 open 岗不被更新也不被下架,旧信号最多滞留 30 天(本次 3 行,VON Canada PSW 等)。一次性清理(直连生产,**需用户授权后执行**;不执行则 8 月初自然下架):
+
+```sql
+UPDATE jobs SET pnp_stream = NULL WHERE pnp_stream LIKE 'OINP%';
+UPDATE jobs SET pnp_eligible = false WHERE province='ON' AND teer IN (4,5) AND pnp_eligible = true;
+```
+
+- **跟进钩子**:pnp 源周更里 build_draws 的 ON notice 持续盯 oinp 页;e-Filing 重开(夏末)后复查两件事——① 新流若出职业清单 → 新 json 进 raw/pnp 即恢复具名 chip;② 若确认 TEER4-5 全职业可走(reg 已写 CLB4 分档),评估给 ON 建新 type 语义(如 `all`)让 TEER4-5 回绿——**属新语义扩展,另立项**。
 - **跟进钩子**(拍板后写进 3.1 注释):pnp 源周更里 build_draws 的 ON notice 持续盯 oinp 页;e-Filing 重开(夏末)后复查两件事——① 新流若出职业清单 → 新 json 进 raw/pnp 即恢复具名 chip;② 若确认 TEER4-5 全职业可走(reg 已写 CLB4 分档),评估给 ON 建新 type 语义(如 `all`)让 TEER4-5 回绿——**属新语义扩展,另立项,莫混本项**(本项只做保守回退)。
