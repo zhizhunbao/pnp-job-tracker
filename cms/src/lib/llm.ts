@@ -15,8 +15,10 @@ export class LlmError extends Error {
   constructor(msg: string) { super(msg); this.name = 'LlmError' }
 }
 
+// fetchUrl(E6-03):给 anthropic 后端声明服务端 web_fetch 工具,让模型现场抓该 URL(公司官网)做 grounding。
+// 只在 anthropic 生效(ollama 无此能力,忽略);域名白名单锁定到该 URL 自己的 host,输入侧 max_content_tokens 封顶。
 export async function streamChat(
-  messages: ChatMessage[], opts: { maxTokens: number },
+  messages: ChatMessage[], opts: { maxTokens: number; fetchUrl?: string },
 ): Promise<ReadableStream<Uint8Array>> {
   return PROVIDER === 'anthropic' ? anthropicStream(messages, opts) : ollamaStream(messages, opts)
 }
@@ -61,8 +63,19 @@ async function ollamaStream(messages: ChatMessage[], opts: { maxTokens: number }
   })
 }
 
+// 官网 URL → web_fetch 工具声明(冒烟实测 2026-07-05:haiku-4-5 + web_fetch_20250910 无需 beta 头)。
+// 非法 URL/非 http(s) → 不声明工具(行为同无 URL);max_uses=1 防多轮抓取,4K tokens 封住输入侧成本。
+function webFetchTool(fetchUrl?: string): { tools?: any[] } {
+  if (!fetchUrl) return {}
+  try {
+    const u = new URL(fetchUrl)
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') return {}
+    return { tools: [{ type: 'web_fetch_20250910', name: 'web_fetch', max_uses: 1, allowed_domains: [u.hostname], max_content_tokens: 4000 }] }
+  } catch { return {} }
+}
+
 // ── Anthropic:messages.stream → 文本增量(system 从 messages 拆到顶层参数) ──
-async function anthropicStream(messages: ChatMessage[], opts: { maxTokens: number }): Promise<ReadableStream<Uint8Array>> {
+async function anthropicStream(messages: ChatMessage[], opts: { maxTokens: number; fetchUrl?: string }): Promise<ReadableStream<Uint8Array>> {
   const client = new Anthropic() // ANTHROPIC_API_KEY 从 env 解析
   const system = messages.filter((m) => m.role === 'system').map((m) => m.content).join('\n\n')
   const turns = messages.filter((m) => m.role !== 'system') as { role: 'user' | 'assistant'; content: string }[]
@@ -70,6 +83,7 @@ async function anthropicStream(messages: ChatMessage[], opts: { maxTokens: numbe
     model: ANTHROPIC_MODEL,
     max_tokens: opts.maxTokens,
     ...(system ? { system } : {}),
+    ...webFetchTool(opts.fetchUrl),
     messages: turns,
   })
   const encoder = new TextEncoder()
