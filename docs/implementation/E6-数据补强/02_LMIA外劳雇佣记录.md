@@ -46,7 +46,7 @@
 
 ## 6. 完成定义(DoD)
 
-- [ ] §2 全勾 + 生产页面终验(列表列/弹框/榜单三处带来源)+ push;STATUS 记档。
+- [x] §2 全勾 + 生产终验(rankings 页 AHS/庞巴迪/Sony 在榜 ✅;SSR 载荷带 lmia 三字段 ✅;**生产库 1,657/9,126 公司有值**,与本地统计全等 ✅)+ push;STATUS 记档。(2026-07-05,单日立项→生产)
 
 ---
 
@@ -55,4 +55,5 @@
 - 2026-07-05 立项。数据集实查:open.canada.ca `90fed587-1364-4f33-a9ee-208181dc0b97`,76 资源(2015Q3 起,季度×英法),XLSX 单 sheet 表头在第 2 行;2025Q4=9,745 行/584KB。
 - **3.1 抓取 ✅(2026-07-05)**:`build_lmia.py` 一把跑通——8 季度 141,504 行 → **75,426 独立雇主**,`lmia-employers.json` 16.6MB(超 5MB → 整目录 gitignore,可由缓存 xlsx 重建;xlsx 缓存增量不重下)。聚合结构:name/provinces/streams(职位数)/quarters([lmias,positions])/lmias/positions/nocs(职位数)/lastQuarter。**佐证收紧**:季度行数 2024Q1=25,579 → 2025Q4=9,737,一路走低。
 - **3.2 匹配统计 ✅(2026-07-05,拍板:精确 normName,模糊匹配 YAGNI)**:公司命中 **1,657/9,126=18.2%**;岗位命中(companySlug join)**2,477/12,509=19.8%**;抽样 20 条**零误报**(法定名≈帖面名,normName 足够)。命中岗雇主主股别:High Wage 1,125 / Low Wage 1,056 / Agriculture 168 / GTS 93 / PR-only 35;**2025Q3+ 仍有获批的 997 岗**(收紧后仍活跃=最强信号,展示可分级)。
-- 待办移交下步:3.3 mart join → 3.4 schema(生产 DDL 先行!)→ 3.5 前端三处露出 → 3.6 榜单+匹配 → 3.7 调度(镜像 openpyxl 已随本笔加入 Dockerfile,**下次 compose build 生效**)。
+- **3.3-3.7 + 规则 6 全部落地(2026-07-05 同日)**:生产 seed 42 秒过(jobs=12,509 不变);榜单口径两轮迭代记档(全量 LMIA→剔农业→只认 High Wage/GTS/PR-only,低薪股百人级季节工会淹没技能榜);match 规则 6 轻加权 +5(无记录 na 不扣——多数雇主从未需要办 LMIA,缺失非负面证据)。
+- **遗留小尾巴**:① 镜像 openpyxl 需下次 `docker compose build` 生效(当前月更靠已缓存 xlsx,首次全新环境跑 build_lmia 会缺依赖);② rankings 表未加 lmia 展示列(榜单页仍显示 named/open/avg 三列,排序已按 LMIA——展示列等用户反馈再议,YAGNI)。
