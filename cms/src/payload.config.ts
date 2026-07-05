@@ -20,6 +20,9 @@ import { Districts } from './collections/Districts'
 import { NocCategories } from './collections/NocCategories'
 import { Sources } from './collections/Sources'
 import { ExperienceLevels } from './collections/ExperienceLevels'
+import { FieldSources } from './collections/FieldSources'
+import { Rankings } from './collections/Rankings'
+import { Stats } from './collections/Stats'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -31,7 +34,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Companies, Jobs, PnpOccupations, EeCategories, NocDescriptions, PolicyDocs, DesignatedEmployers, Provinces, Cities, Districts, NocCategories, Sources, ExperienceLevels],
+  collections: [Users, Media, Companies, Jobs, PnpOccupations, EeCategories, NocDescriptions, PolicyDocs, DesignatedEmployers, Provinces, Cities, Districts, NocCategories, Sources, ExperienceLevels, FieldSources, Rankings, Stats],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -39,7 +42,10 @@ export default buildConfig({
   },
   db: postgresAdapter({
     pool: { connectionString: process.env.DATABASE_URI || '' },
-    push: true, // 自动建表(无需迁移文件),适合本地/dev
+    // 直连正式库护栏(2026-07-04 拍板):dev 默认**不**自动推 schema —— 本地 dev 连的就是生产,
+    // 热重载推垃圾/删列会直接伤生产。改 collection 的流程:显式 `DB_PUSH=1 npm run dev` 单次推(加列级),
+    // 删列/改类型手写 SQL。生产 next start 本就不推。
+    push: process.env.DB_PUSH === '1',
   }),
   sharp,
   plugins: [],

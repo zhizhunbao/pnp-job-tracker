@@ -69,6 +69,10 @@ export async function GET(req: Request) {
     ['pnp_occupations', 'pnp-occupations', (r) => ({ province: r.province, stream: r.stream, label: r.label, type: r.type, noc: r.noc, name: r.name, gtaRestricted: r.gtaRestricted, url: r.url, fetched: r.fetched })],
     ['ee_categories', 'ee-categories', (r) => ({ category: r.category, label: r.label, noc: r.noc, teer: r.teer, title: r.title, url: r.url, fetched: r.fetched, drawCrs: r.drawCrs, drawDate: r.drawDate, drawSize: r.drawSize })],
     ['noc_descriptions', 'noc-descriptions', (r) => ({ noc: r.noc, title: r.title, duties: r.duties, requirements: r.requirements, fetched: r.fetched })],
+    // E4-04 字段级来源 / E5-02 榜单 / E5-04 地区统计(坑 2:白名单必须显式列全字段)
+    ['field_sources', 'field-sources', (r) => ({ field: r.field, kind: r.kind, publisher: r.publisher, url: r.url, title: r.title, description: r.description, status: r.status, fetched: r.fetched, note: r.note })],
+    ['rankings', 'rankings', (r) => ({ slug: r.slug, rank: r.rank, kind: r.kind, externalId: r.externalId, title: r.title, company: r.company, companySlug: r.companySlug, city: r.city, province: r.province, noc: r.noc, teer: r.teer, score: r.score, salaryText: r.salaryText, salaryAnnual: r.salaryAnnual, pnpStream: r.pnpStream, eeCategory: r.eeCategory, datePosted: r.datePosted, applyUrl: r.applyUrl, officialUrl: r.officialUrl, openJobs: r.openJobs, namedJobs: r.namedJobs, avgScore: r.avgScore })],
+    ['stats', 'stats', (r) => ({ province: r.province, broad: r.broad, openJobs: r.openJobs, new7d: r.new7d, medianWageAnnual: r.medianWageAnnual, medianSalaryAnnual: r.medianSalaryAnnual, namedJobs: r.namedJobs, streamLabels: r.streamLabels, aipJobs: r.aipJobs, topCities: r.topCities, fetched: r.fetched })],
   ]
   for (const [file, slug, map] of dims) {
     await payload.delete({ collection: slug as any, where: { id: { exists: true } } })

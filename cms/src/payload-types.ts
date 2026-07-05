@@ -82,6 +82,9 @@ export interface Config {
     'noc-categories': NocCategory;
     sources: Source;
     'experience-levels': ExperienceLevel;
+    'field-sources': FieldSource;
+    rankings: Ranking;
+    stats: Stat;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -104,6 +107,9 @@ export interface Config {
     'noc-categories': NocCategoriesSelect<false> | NocCategoriesSelect<true>;
     sources: SourcesSelect<false> | SourcesSelect<true>;
     'experience-levels': ExperienceLevelsSelect<false> | ExperienceLevelsSelect<true>;
+    'field-sources': FieldSourcesSelect<false> | FieldSourcesSelect<true>;
+    rankings: RankingsSelect<false> | RankingsSelect<true>;
+    stats: StatsSelect<false> | StatsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -625,6 +631,126 @@ export interface ExperienceLevel {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "field-sources".
+ */
+export interface FieldSource {
+  id: number;
+  /**
+   * 前端字段键(ColKey/弹框字段)
+   */
+  field?: string | null;
+  /**
+   * dataset=外部数据集 | derived=本站派生
+   */
+  kind?: string | null;
+  publisher?: string | null;
+  url?: string | null;
+  /**
+   * 来源页 <title> 原文(不经 LLM 不翻译)
+   */
+  title?: string | null;
+  /**
+   * 来源页 meta description 原文
+   */
+  description?: string | null;
+  /**
+   * verified | unverified | derived
+   */
+  status?: string | null;
+  fetched?: string | null;
+  /**
+   * 派生字段的本站口径说明
+   */
+  note?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rankings".
+ */
+export interface Ranking {
+  id: number;
+  /**
+   * 榜单 slug(weekly-top / sponsor-likely)
+   */
+  slug?: string | null;
+  rank?: number | null;
+  /**
+   * job | company
+   */
+  kind?: string | null;
+  /**
+   * kind=job:回 /jobs 定位用
+   */
+  externalId?: string | null;
+  title?: string | null;
+  company?: string | null;
+  companySlug?: string | null;
+  city?: string | null;
+  province?: string | null;
+  noc?: string | null;
+  teer?: number | null;
+  score?: number | null;
+  salaryText?: string | null;
+  salaryAnnual?: number | null;
+  pnpStream?: string | null;
+  eeCategory?: string | null;
+  datePosted?: string | null;
+  applyUrl?: string | null;
+  officialUrl?: string | null;
+  openJobs?: number | null;
+  namedJobs?: number | null;
+  avgScore?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stats".
+ */
+export interface Stat {
+  id: number;
+  province?: string | null;
+  /**
+   * NOC 大类(数据值)| all=省级汇总
+   */
+  broad?: string | null;
+  /**
+   * 在招岗数(本站抓取口径)
+   */
+  openJobs?: number | null;
+  /**
+   * 7 天新增(datePosted 近 7 天)
+   */
+  new7d?: number | null;
+  /**
+   * 中位年薪(ESDC 口径:桶内各岗 NOC×省中位的中位数)
+   */
+  medianWageAnnual?: number | null;
+  /**
+   * 帖面中位年薪(本站折算口径,对照)
+   */
+  medianSalaryAnnual?: number | null;
+  /**
+   * 省具名通道命中岗数
+   */
+  namedJobs?: number | null;
+  /**
+   * 命中的通道名(、分隔)
+   */
+  streamLabels?: string | null;
+  aipJobs?: number | null;
+  /**
+   * json:[{city,n}] 前 5 城市
+   */
+  topCities?: string | null;
+  fetched?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -706,6 +832,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'experience-levels';
         value: number | ExperienceLevel;
+      } | null)
+    | ({
+        relationTo: 'field-sources';
+        value: number | FieldSource;
+      } | null)
+    | ({
+        relationTo: 'rankings';
+        value: number | Ranking;
+      } | null)
+    | ({
+        relationTo: 'stats';
+        value: number | Stat;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1007,6 +1145,72 @@ export interface SourcesSelect<T extends boolean = true> {
  */
 export interface ExperienceLevelsSelect<T extends boolean = true> {
   name?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "field-sources_select".
+ */
+export interface FieldSourcesSelect<T extends boolean = true> {
+  field?: T;
+  kind?: T;
+  publisher?: T;
+  url?: T;
+  title?: T;
+  description?: T;
+  status?: T;
+  fetched?: T;
+  note?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rankings_select".
+ */
+export interface RankingsSelect<T extends boolean = true> {
+  slug?: T;
+  rank?: T;
+  kind?: T;
+  externalId?: T;
+  title?: T;
+  company?: T;
+  companySlug?: T;
+  city?: T;
+  province?: T;
+  noc?: T;
+  teer?: T;
+  score?: T;
+  salaryText?: T;
+  salaryAnnual?: T;
+  pnpStream?: T;
+  eeCategory?: T;
+  datePosted?: T;
+  applyUrl?: T;
+  officialUrl?: T;
+  openJobs?: T;
+  namedJobs?: T;
+  avgScore?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stats_select".
+ */
+export interface StatsSelect<T extends boolean = true> {
+  province?: T;
+  broad?: T;
+  openJobs?: T;
+  new7d?: T;
+  medianWageAnnual?: T;
+  medianSalaryAnnual?: T;
+  namedJobs?: T;
+  streamLabels?: T;
+  aipJobs?: T;
+  topCities?: T;
+  fetched?: T;
   updatedAt?: T;
   createdAt?: T;
 }

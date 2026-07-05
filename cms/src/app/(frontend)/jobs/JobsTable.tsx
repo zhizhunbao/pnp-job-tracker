@@ -328,6 +328,7 @@ type PnpOcc = { province: string; stream: string; label: string; type: string; n
 type EeOcc = { category: string; label: string; noc: string; teer: number | null; title: string; url: string; fetched: string; drawCrs: number | null; drawDate: string; drawSize: number | null }
 type DesigEmp = { name: string; province: string; location: string; isTech: boolean }
 type NocDesc = { noc: string; title: string; duties: string; requirements: string; fetched: string }
+type FieldSource = { field: string; kind: string; publisher: string; url: string; title: string; description: string; status: string; fetched: string; note: string }
 type Dims = {
   provinces: { code: string; name: string }[]
   cities: { name: string; province: string }[]
@@ -339,8 +340,9 @@ type Dims = {
   eeCategories: EeOcc[]
   designatedEmployers: DesigEmp[]
   nocDescriptions: NocDesc[]
+  fieldSources: FieldSource[]
 }
-const EMPTY_DIMS: Dims = { provinces: [], cities: [], districts: [], nocCategories: [], sources: [], experienceLevels: [], pnpOccupations: [], eeCategories: [], designatedEmployers: [], nocDescriptions: [] }
+const EMPTY_DIMS: Dims = { provinces: [], cities: [], districts: [], nocCategories: [], sources: [], experienceLevels: [], pnpOccupations: [], eeCategories: [], designatedEmployers: [], nocDescriptions: [], fieldSources: [] }
 const PROV_CODE: Record<string, string> = Object.fromEntries(Object.entries(PROV_NAMES).map(([c, n]) => [n, c]))
 
 export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialCols, plan = FREE_PLAN }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims; initialCols?: string[]; plan?: Plan }) {
@@ -358,6 +360,16 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
     const v = (initialCols ?? []).filter((k): k is ColKey => COLUMNS.some((c) => c.key === k))
     return v.length ? v : DEFAULT_COLS
   })
+  // URL 参数 → 初始筛选(stats/rankings 入口回流:?q= ?prov= ?broad=)
+  useIsoLayoutEffect(() => {
+    try {
+      const sp = new URLSearchParams(window.location.search)
+      const q0 = sp.get('q'); const pv = sp.get('prov'); const bd = sp.get('broad')
+      if (q0) setQ(q0)
+      if (pv) setFProv(PROV_NAMES[pv.toUpperCase()] || pv)
+      if (bd) setFBroad(bd)
+    } catch { /* ignore */ }
+  }, [])
   const [popup, setPopup] = useState<{ field: ColKey; job: JobRow; title: string } | null>(null)
   const [actModal, setActModal] = useState<{ kind: 'company' | 'desc'; job: JobRow } | null>(null)
   const [sort, setSort] = useState<{ key: ColKey; dir: 'asc' | 'desc' }>({ key: 'datePosted', dir: 'desc' })
@@ -583,6 +595,8 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
             <span style={{ fontSize: 12, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('tagline')}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+            <a href="/rankings/weekly-top" style={{ fontSize: 12.5, color: '#6b7280', textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('rank.entry')}</a>
+            <a href="/stats" style={{ fontSize: 12.5, color: '#6b7280', textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('stats.entry')}</a>
             <div style={{ display: 'inline-flex', border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
               {LANGS.map((l) => (
                 <button key={l.code} onClick={() => setLangSaved(l.code)}
@@ -834,7 +848,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
         </div>
       </footer>
 
-      {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} onClose={() => setPopup(null)} />}
+      {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} />}
       {actModal && <ActModal kind={actModal.kind} job={actModal.job} jobs={jobs} lang={lang} onClose={() => setActModal(null)} />}
     </div>
   )
@@ -1057,7 +1071,45 @@ const SAL_FIELDS = new Set<ColKey>(['salary', 'salaryYr', 'wageMedHr', 'wageMedY
 const CLS_FIELDS = new Set<ColKey>(['noc', 'teer', 'broad', 'mid', 'fine'])
 const SRC_FIELDS = new Set<ColKey>(['source', 'origin', 'direct'])
 const TIME_FIELDS = new Set<ColKey>(['status', 'datePosted', 'lastSeen', 'closedAt'])
-function FieldFactsSection({ field, job, lang, pnpOcc, eeOcc, desigEmp, nocDesc }: { field: ColKey; job: JobRow; lang: Lang; pnpOcc: PnpOcc[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[] }) {
+
+// ── 字段级 citation(E4-04):统一来源行,来源元数据由 ETL 抓取验证(field-sources 维度) ──
+// 记录级 URL(官方原帖)优先显示;数据集级兜底;unverified 只出链接(宁可留空);derived 明示本站派生+口径。
+const SRC_KEY_ALIAS: Partial<Record<ColKey, string>> = { lastSeen: 'firstSeen', closedAt: 'status', actions: 'title' }
+// applyUrl 就是这些字段的「记录级 citation」(该岗官方原帖)
+const RECORD_URL_FIELDS = new Set<ColKey>(['title', 'company', 'salary', 'salaryYr', 'datePosted', 'status', 'closedAt', 'address', 'city', 'province', 'country', 'district', 'source'])
+function SourceLine({ field, job, lang, sources }: { field: ColKey; job: JobRow; lang: Lang; sources: FieldSource[] }) {
+  const t = makeT(lang)
+  const key = SRC_KEY_ALIAS[field] || field
+  const s = sources.find((x) => x.field === key)
+  if (!s) return null   // 注册表没有该字段 → 宁可留空
+  const recordUrl = RECORD_URL_FIELDS.has(field) && job.applyUrl ? job.applyUrl : ''
+  return (
+    <div style={{ margin: '2px 0 10px', fontSize: 11.5, color: '#9ca3af', lineHeight: 1.6 }}>
+      <span>📎 {t('src.label')}:</span>
+      {s.kind === 'derived' ? (
+        <span> {t('src.derived')}{s.note ? ` — ${s.note}` : ''}</span>
+      ) : (
+        <>
+          {recordUrl && <a href={recordUrl} target="_blank" rel="noreferrer" style={{ color: '#6b7280', marginLeft: 4 }}>{t('src.official')} ↗</a>}
+          <a href={s.url} target="_blank" rel="noreferrer" style={{ color: '#6b7280', marginLeft: 6 }}>{s.publisher} ↗</a>
+          {s.status === 'verified'
+            ? <span> · {t('src.fetched', { d: s.fetched })}{s.title ? <span style={{ display: 'block', color: '#c4c4c8' }}>“{s.title}”{s.description ? ` — ${s.description.slice(0, 160)}` : ''}</span> : null}</span>
+            : <span> · {t('src.unverified')}</span>}
+        </>
+      )}
+    </div>
+  )
+}
+
+function FieldFactsSection({ field, job, lang, pnpOcc, eeOcc, desigEmp, nocDesc, fieldSources }: { field: ColKey; job: JobRow; lang: Lang; pnpOcc: PnpOcc[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[] }) {
+  return (
+    <>
+      <FieldFactsInner field={field} job={job} lang={lang} pnpOcc={pnpOcc} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} />
+      <SourceLine field={field} job={job} lang={lang} sources={fieldSources} />
+    </>
+  )
+}
+function FieldFactsInner({ field, job, lang, pnpOcc, eeOcc, desigEmp, nocDesc }: { field: ColKey; job: JobRow; lang: Lang; pnpOcc: PnpOcc[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[] }) {
   const t = makeT(lang)
   const noc = nocDesc.find((d) => d.noc === job.noc) || null
   if (field === 'pnp') return <PnpListSection job={job} lang={lang} occ={pnpOcc} />
@@ -1242,7 +1294,7 @@ function MeansForMe({ job, lang, plan, pnpOcc, eeOcc }: { job: JobRow; lang: Lan
   )
 }
 
-function AdvisorModal({ field, job, title, lang, plan, pnpOcc, eeOcc, desigEmp, nocDesc, onClose }: { field: ColKey; job: JobRow; title?: string; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; onClose: () => void }) {
+function AdvisorModal({ field, job, title, lang, plan, pnpOcc, eeOcc, desigEmp, nocDesc, fieldSources, onClose }: { field: ColKey; job: JobRow; title?: string; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onClose: () => void }) {
   const t = makeT(lang)
   const a = advHeader(field, job, t)
   const [text, setText] = useState('')
@@ -1339,7 +1391,7 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, eeOcc, desigEmp, 
         <div style={{ flex: 1, overflowY: 'auto', padding: '4px 18px 18px' }}>
           {/* 对我意味着什么(E5-00):个人相关性放最上;依据链同源 match() */}
           <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} />
-          <FieldFactsSection field={field} job={job} lang={lang} pnpOcc={pnpOcc} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} />
+          <FieldFactsSection field={field} job={job} lang={lang} pnpOcc={pnpOcc} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} />
           {/* 免责声明 v1(E4-01):AI 判断区顶部,UI 层声明与 AI 文风分离(SYSTEM 已禁输出套话) */}
           <div style={{ fontSize: 11.5, color: '#9ca3af', margin: '6px 0 4px' }}>⚖️ {t('advisor.disclaimer')}</div>
           {status === 'upgrade' ? (

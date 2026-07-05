@@ -105,16 +105,17 @@ function scoreFacts(j: Job): string {
   const total = Math.max(0, Math.min(100, base + indemand + named + direct + acc + prov))
   return `Score breakdown — baseline(${teer == null ? 'unclassified' : 'TEER ' + teer}): ${base}; in-demand group: ${indemand}; named PNP stream: ${named}; direct employer: ${direct}; experience(${j.accessibility || 'unknown'}): ${acc}; province(${j.province || '—'}): ${prov}; total: ${total}${j.score != null && j.score !== total ? ` (stored ${j.score})` : ''}`
 }
+// 每行事实带来源短标注(E4-04 §3.5):中层判断/对话引用时能指回来源,强化反编机制。
 function jobFacts(j: Job): string {
   const t = teerOf(j.noc)
   return [
-    `Title: ${j.title || '—'}`, `Company: ${j.company || '—'}`,
-    `NOC: ${j.noc || '—'} (TEER ${t ?? '—'}, ${catOf(j.noc)})`,
-    `Location: ${[j.district, j.city, j.province].filter(Boolean).join(', ') || '—'}`,
-    `Score: ${j.score ?? '—'}/100; PNP-eligible: ${j.pnpEligible ? 'yes' : 'no'}; Federal EE category: ${j.eeCategory || 'none'}; AIP designated: ${j.aip ? 'yes' : 'no'}; experience: ${j.accessibility || '—'}`,
-    `Salary: ${j.salary || '—'}${j.salaryAnnual != null ? ` (~$${Math.round(j.salaryAnnual / 1000)}K/yr)` : ''}`,
-    j.wageMedAnnual != null ? `NOC local median: $${j.wageMedHourly}/hr (~$${Math.round(j.wageMedAnnual / 1000)}K/yr)` : '',
-    `Source: ${j.sourceLabel || j.source || '—'} (origin ${j.origin || '—'}); posted ${(j.datePosted || '').slice(0, 10) || '—'}; last seen ${(j.lastSeen || '').slice(0, 10) || '—'}; status ${j.status || 'open'}`,
+    `Title: ${j.title || '—'}`, `Company: ${j.company || '—'} [src: official posting]`,
+    `NOC: ${j.noc || '—'} (TEER ${t ?? '—'}, ${catOf(j.noc)}) [src: StatCan NOC 2021]`,
+    `Location: ${[j.district, j.city, j.province].filter(Boolean).join(', ') || '—'} [src: official posting]`,
+    `Score: ${j.score ?? '—'}/100 [src: site-derived rubric]; PNP-eligible: ${j.pnpEligible ? 'yes' : 'no'} [src: provincial published lists]; Federal EE category: ${j.eeCategory || 'none'} [src: IRCC category-based selection]; AIP designated: ${j.aip ? 'yes' : 'no'} [src: designated-employer lists]; experience: ${j.accessibility || '—'} [src: site-derived]`,
+    `Salary: ${j.salary || '—'}${j.salaryAnnual != null ? ` (~$${Math.round(j.salaryAnnual / 1000)}K/yr)` : ''} [src: official posting]`,
+    j.wageMedAnnual != null ? `NOC local median: $${j.wageMedHourly}/hr (~$${Math.round(j.wageMedAnnual / 1000)}K/yr) [src: ESDC wage data]` : '',
+    `Source: ${j.sourceLabel || j.source || '—'} (origin ${j.origin || '—'}); posted ${(j.datePosted || '').slice(0, 10) || '—'}; last seen ${(j.lastSeen || '').slice(0, 10) || '—'}; status ${j.status || 'open'} [src: site scrape timestamps]`,
   ].filter(Boolean).join('\n')
 }
 // 各字段的解释要点(英文指令,输出按所选语言)

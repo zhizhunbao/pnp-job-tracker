@@ -17,6 +17,7 @@ export function PricingView({ loggedIn, pro, price30, price90, caps }: { loggedI
   const buy = async (plan: '30' | '90') => {
     if (!loggedIn) { setAuth(true); return }
     setBusy(true)
+    try { (window as any).umami?.track('checkout', { plan }) } catch { /* E7-02:Checkout 发起事件 */ }
     try {
       const r = await fetch('/api/billing/checkout', {
         method: 'POST', credentials: 'include',

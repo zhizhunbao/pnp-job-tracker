@@ -15,6 +15,8 @@ META = {
         ["python", "etl/clean/05c_flag_aip.py"],
         ["python", "etl/08_score.py"],
         ["python", "etl/09_build_mart.py"],
+        ["python", "etl/10_build_rankings.py"],   # 榜单(E5-02:读 mart 纯聚合)
+        ["python", "etl/11_build_stats.py"],      # 地区统计(E5-04:读 mart 纯聚合)
         ["python", "etl/upload_mart.py"],   # R3:mart → Supabase Storage(SUPABASE_* 未设自动跳过)
     ],
 }

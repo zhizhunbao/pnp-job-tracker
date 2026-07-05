@@ -154,6 +154,9 @@ const zh: Dict = {
   'price.note': '支付由 Stripe 处理(卡 / 支付宝);7 天内未大量使用可全额退款,详见服务条款。',
   'banner.text': '免费建档案,看每份工作对你移民路径的匹配度 —— PNP / EE / 工资信号,每日更新。',
   'banner.reg': '免费注册', 'banner.pricing': '看看 Pro →',
+  'src.label': '来源', 'src.fetched': '抓取于 {d}', 'src.derived': '本站派生', 'src.official': '官方原帖', 'src.unverified': '未验证(仅链接)',
+  'rank.title.weekly-top': '本周新增 TOP 50', 'rank.title.sponsor-likely': '最可能担保雇主榜', 'rank.updated': '随日更自动刷新 · 更新于 {d}', 'rank.entry': '📊 榜单', 'rank.col.company': '公司', 'rank.col.openJobs': '在招', 'rank.col.namedJobs': '具名通道岗', 'rank.col.avgScore': '平均分', 'rank.viewJobs': '在职位板查看 →', 'rank.note.weekly-top': '口径:近 7 天发布、在招,按移民价值评分排序(同分薪资高优先)。', 'rank.note.sponsor-likely': '口径:第一方直发雇主,按省具名通道命中岗数/在招量/平均分排序;「具名通道」=职业在省提名官网公开清单内,为粗筛信号非担保承诺。',
+  'stats.title': '{prov} 地区职位统计', 'stats.catTitle': '{prov} · {cat} 职位统计', 'stats.openJobs': '在招职位', 'stats.new7d': '7 天新增', 'stats.medWage': '中位年薪(ESDC)', 'stats.medSalary': '帖面中位年薪', 'stats.named': '具名通道岗', 'stats.aip': 'AIP 指定雇主岗', 'stats.topCities': '主要城市', 'stats.streams': '命中通道', 'stats.byCat': '按职业大类', 'stats.entry': '📍 地区统计', 'stats.toJobs': '看这些职位 →', 'stats.caliber': '口径说明', 'stats.caliberText': '在招/新增=本站抓取口径(Job Bank 全国+ATS);中位年薪=ESDC 工资数据(同 NOC×省)的中位;具名通道=省提名官网公开清单命中;非资格认定。', 'stats.provIndex': '选择省份', 'stats.compare': '跨省对比(Pro)', 'stats.pickProv': '选 2-4 个省对比', 'stats.myNoc': '按我的档案高亮',
 }
 
 const en: Dict = {
@@ -292,6 +295,9 @@ const en: Dict = {
   'price.note': 'Payments by Stripe (card / Alipay); full refund within 7 days if not heavily used — see Terms.',
   'banner.text': 'Create a free profile and see how every job matches your immigration path — PNP / EE / wage signals, updated daily.',
   'banner.reg': 'Sign up free', 'banner.pricing': 'See Pro →',
+  'src.label': 'Source', 'src.fetched': 'fetched {d}', 'src.derived': 'Derived by this site', 'src.official': 'Official posting', 'src.unverified': 'unverified (link only)',
+  'rank.title.weekly-top': 'New this week — TOP 50', 'rank.title.sponsor-likely': 'Most likely sponsor employers', 'rank.updated': 'Refreshes with daily updates · updated {d}', 'rank.entry': '📊 Rankings', 'rank.col.company': 'Company', 'rank.col.openJobs': 'Open', 'rank.col.namedJobs': 'Named-stream jobs', 'rank.col.avgScore': 'Avg score', 'rank.viewJobs': 'View on job board →', 'rank.note.weekly-top': 'Method: posted in the last 7 days, still open, ranked by immigration-value score (salary breaks ties).', 'rank.note.sponsor-likely': 'Method: first-party employers ranked by named provincial-stream job count / open jobs / average score; “named stream” = occupation on a published provincial list — a rough signal, not a sponsorship promise.',
+  'stats.title': '{prov} job statistics', 'stats.catTitle': '{prov} · {cat} job statistics', 'stats.openJobs': 'Open jobs', 'stats.new7d': 'New in 7 days', 'stats.medWage': 'Median wage (ESDC)', 'stats.medSalary': 'Median posted salary', 'stats.named': 'Named-stream jobs', 'stats.aip': 'AIP designated-employer jobs', 'stats.topCities': 'Top cities', 'stats.streams': 'Streams hit', 'stats.byCat': 'By occupation group', 'stats.entry': '📍 Region stats', 'stats.toJobs': 'See these jobs →', 'stats.caliber': 'Methodology', 'stats.caliberText': 'Open/new = this site’s scrape (Job Bank Canada-wide + ATS); median wage = ESDC wage data (same NOC × province); named stream = hit on a published provincial list; not an eligibility ruling.', 'stats.provIndex': 'Choose a province', 'stats.compare': 'Compare provinces (Pro)', 'stats.pickProv': 'Pick 2–4 provinces', 'stats.myNoc': 'Highlight by my profile',
 }
 
 const ko: Dict = {
@@ -430,6 +436,9 @@ const ko: Dict = {
   'price.note': '결제는 Stripe 처리(카드 / Alipay); 7일 이내 과다 사용이 없으면 전액 환불 — 이용약관 참조.',
   'banner.text': '무료로 프로필을 만들고 모든 공고의 이민 경로 매칭도를 확인하세요 — PNP / EE / 임금 신호, 매일 갱신.',
   'banner.reg': '무료 가입', 'banner.pricing': 'Pro 보기 →',
+  'src.label': '출처', 'src.fetched': '{d} 수집', 'src.derived': '본 사이트 파생', 'src.official': '공식 공고', 'src.unverified': '미검증(링크만)',
+  'rank.title.weekly-top': '이번 주 신규 TOP 50', 'rank.title.sponsor-likely': '스폰서 가능성 높은 고용주', 'rank.updated': '매일 갱신 · {d} 업데이트', 'rank.entry': '📊 랭킹', 'rank.col.company': '회사', 'rank.col.openJobs': '채용중', 'rank.col.namedJobs': '지정 스트림 공고', 'rank.col.avgScore': '평균 점수', 'rank.viewJobs': '채용 보드에서 보기 →', 'rank.note.weekly-top': '기준: 최근 7일 게시·채용중, 이민 가치 점수순(동점 시 급여순).', 'rank.note.sponsor-likely': '기준: 직접 고용주를 지정 스트림 공고 수/채용중/평균 점수로 정렬. “지정 스트림”=주정부 공개 목록 포함 직업으로, 대략적 신호이며 스폰서 보장이 아님.',
+  'stats.title': '{prov} 채용 통계', 'stats.catTitle': '{prov} · {cat} 채용 통계', 'stats.openJobs': '채용중', 'stats.new7d': '7일 신규', 'stats.medWage': '중위 연봉(ESDC)', 'stats.medSalary': '게시 중위 연봉', 'stats.named': '지정 스트림 공고', 'stats.aip': 'AIP 지정 고용주 공고', 'stats.topCities': '주요 도시', 'stats.streams': '해당 스트림', 'stats.byCat': '직업 대분류별', 'stats.entry': '📍 지역 통계', 'stats.toJobs': '해당 공고 보기 →', 'stats.caliber': '산정 기준', 'stats.caliberText': '채용중/신규=본 사이트 수집 기준(Job Bank 전국+ATS); 중위 연봉=ESDC 임금 데이터(동일 NOC×주)의 중위값; 지정 스트림=주정부 공개 목록 해당; 자격 판정 아님.', 'stats.provIndex': '주 선택', 'stats.compare': '주간 비교(Pro)', 'stats.pickProv': '2–4개 주 선택', 'stats.myNoc': '내 프로필로 강조',
 }
 
 const MESSAGES: Record<Lang, Dict> = { zh, en, ko }

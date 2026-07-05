@@ -32,6 +32,7 @@ export function AuthForm({ t, onDone }: { t: TFn; onDone: () => void }) {
           body: JSON.stringify({ email, password: pw }),
         })
         if (!r.ok) { setErr(t(r.status === 400 ? 'acct.err.exists' : 'acct.err.generic')); return }
+        try { (window as any).umami?.track('signup') } catch { /* E7-02:注册成功事件 */ }
       }
       const r2 = await fetch('/api/users/login', {
         method: 'POST', credentials: 'include',

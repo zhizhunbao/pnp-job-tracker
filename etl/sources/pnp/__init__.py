@@ -16,5 +16,6 @@ META = {
         ["python", "etl/pnp/build_sk.py"],   # SK SINP 三通道(实时)
         ["python", "etl/pnp/build_ns.py"],   # NS 两通道(实时)
         ["python", "etl/06_scrape_aip_employers.py"],  # AIP 指定雇主(NL/NB/NS;PE 仍 TODO)
+        ["python", "etl/build_field_sources.py"],     # 字段级来源注册表(E4-04:验证 URL+抽 title/meta)
     ],
 }

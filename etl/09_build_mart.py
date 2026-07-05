@@ -27,6 +27,7 @@ IN_PNP = _paths.PNP                      # raw/pnp/*.json(各省具名通道:每
 IN_EE = _paths.EE / "federal-categories.json"  # 联邦 Express Entry 类别抽选(全国单一源)
 IN_EE_DRAWS = _paths.EE / "draws.json"          # 各类别最近一次抽选(CRS/日期/邀请数,build_ee_draws.py 产)
 IN_NOC_DESC = _paths.NOC / "descriptions.json"  # NOC 官方名+主要职责(build_noc_descriptions.py 产)
+IN_FIELD_SOURCES = _paths.RAW / "sources" / "field-sources.json"  # 字段级来源注册表(build_field_sources.py 产,E4-04)
 OUT_MART = _paths.DATA / "mart"
 
 PROV_FULL = {
@@ -272,6 +273,14 @@ def build():
                     "requirements": "\n".join(v.get("requirements", [])),
                     "fetched": fetched})
 
+    # 字段级来源维度(E4-04):build_field_sources.py 已抓取验证,这里直通(缺文件→空表,宁可留空)
+    field_sources = []
+    if IN_FIELD_SOURCES.exists():
+        try:
+            field_sources = json.loads(IN_FIELD_SOURCES.read_text(encoding="utf-8")).get("rows", [])
+        except Exception:  # noqa: BLE001
+            field_sources = []
+
     return {
         "companies": list(companies.values()), "jobs": jobs,
         "provinces": provinces, "cities": cities, "districts": districts,
@@ -279,6 +288,7 @@ def build():
         "noc_categories": noc_categories, "sources": sources, "experience_levels": experience_levels,
         "pnp_occupations": pnp_occupations, "ee_categories": ee_categories,
         "noc_descriptions": noc_descriptions,
+        "field_sources": field_sources,
     }
 
 

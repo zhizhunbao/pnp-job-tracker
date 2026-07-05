@@ -40,6 +40,7 @@ export default function AccountPage() {
 
   const buy = async (plan: '30' | '90') => {
     setBuying(true); setBuyErr('')
+    try { (window as any).umami?.track('checkout', { plan }) } catch { /* E7-02:Checkout 发起事件 */ }
     try {
       const r = await fetch('/api/billing/checkout', {
         method: 'POST', credentials: 'include',
