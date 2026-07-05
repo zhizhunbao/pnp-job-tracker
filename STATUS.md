@@ -1,7 +1,13 @@
-# STATUS / 交接文档（2026-07-04）
+# STATUS / 交接文档（2026-07-05）
 
 > 新 session 接手先读这份 + `CLAUDE.md`(设计宪法)+ `prd.md`(v2 定位见头部标注)。仓库:github.com/zhizhunbao/pnp-job-tracker
-> **🚀 站点已公网上线:https://pnp-cms.onrender.com**(Render + Supabase,R3 架构)。上线计划/批次进度=`docs/implementation/_开发批次顺序.md`(B0-B3 ✅,B4 代码侧 ✅ 剩 Stripe 手续)。
+> **🚀 站点已公网上线并真实收款:https://pnp-cms.onrender.com**(Render + Supabase;**live Stripe,M3 已开闸**)。批次进度=`docs/implementation/_开发批次顺序.md`:**B0-B8 全部落地(2026-07-04 一天从 B4 打到 B8),24 工作项代码侧全完**。
+>
+> **⚡ 新 session 快速上手(2026-07-05 交接)**:
+> - **架构已切「直连正式库」**:本地 `cd cms && npm run dev` 连的就是 Supabase 生产(护栏:dev 不自动推 schema,改表=显式 `DB_PUSH=1` 单次或手写 SQL;seed 必带 `x-seed-token`;测试号 @test.local)。本地 postgres/cms:3001 已过时。改 collection 的 DDL 清单看 memory `prod-migration-workflow`(⚠️ 别漏 payload_locked_documents_rels 关联列)。
+> - **当前状态**:M1/M2/M3 ✅;M4 差「用户办托管账号(Resend/umami/healthchecks/UptimeRobot/GSC)+ BACKUP_DATABASE_URI+compose build + 三演练 + 7 天无人值守观察」——清单见下方 B8 段。
+> - **悬而未决的决策**:品牌名/域名(阻塞:Resend 正式发信、GSC 正式收录、Render 自定义域)、Render Free→Starter(公测宣传前)、Stripe 品牌/收据设置(追办)。
+> - **下一步可选**:① 陪用户办完 M4 手续+演练;② B9/E6-01 数据补强(PE AIP/RNIP/内容去重,原定入学后);③ 公测冷启动(发帖)后按反馈迭代;④ E5-01 正式定价复核($19/$39 现为公测价)。
 >
 > **本轮(2026-07-05 凌晨 B8 提醒与运维收敛 —— 代码侧全部落地,M4 只剩托管账号+观察期)**:
 > ① **E5-03 匹配版邮件提醒 ✅(dry-run E2E 全通)**:`api/alerts/run`(x-seed-token,双通道:A=Pro+建档匹配日报(match high 新岗前10+当日新抽选 vs CRS 段,users.lastAlertAt 游标)/B=saved search(filters json 原样→lib/jobsQuery 解释,lastNotifiedAt 游标);首轮回看 36h 防倒灌;**RESEND_API_KEY 未设=dry-run 不发不回写**);SavedSearches collection(create=Pro,上限 5 钩子)+筛选区「保存此筛选」+/account 管理;auto_update seed 成功后自动触发;lib/matchDims 抽共享。**剩 Resend key(域名前=测试模式只能发账户本人)**。
