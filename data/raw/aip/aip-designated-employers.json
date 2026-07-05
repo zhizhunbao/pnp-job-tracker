@@ -577,12 +577,6 @@
   },
   {
     "province": "NB",
-    "employer": "13476049 Canada Inc OA Fibrenet Canada",
-    "location": "",
-    "tech": true
-  },
-  {
-    "province": "NB",
     "employer": "1919599 Ontario Limited O/A Harvey’s 2568",
     "location": "",
     "tech": false
@@ -770,6 +764,12 @@
   {
     "province": "NB",
     "employer": "Admiral Investigations Atlantic Inc",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NB",
+    "employer": "Advantage Physiotherapy",
     "location": "",
     "tech": false
   },
@@ -1651,7 +1651,7 @@
   },
   {
     "province": "NB",
-    "employer": "CBI Health SCS LP 2 - Fredericton (We Care Health Services Limited)",
+    "employer": "CBI Health SCS LP 2",
     "location": "",
     "tech": false
   },
@@ -2090,12 +2090,6 @@
   {
     "province": "NB",
     "employer": "Cyberatics Ventures LTD",
-    "location": "",
-    "tech": false
-  },
-  {
-    "province": "NB",
-    "employer": "CYV Chevrolet Pontiac Buick GMC Ltd",
     "location": "",
     "tech": false
   },
@@ -2737,6 +2731,12 @@
   },
   {
     "province": "NB",
+    "employer": "Fibrenet Canada (13476049 Canada Inc)",
+    "location": "",
+    "tech": true
+  },
+  {
+    "province": "NB",
     "employer": "Fiddlehead Technology Inc",
     "location": "",
     "tech": false
@@ -3271,6 +3271,12 @@
   },
   {
     "province": "NB",
+    "employer": "GMG Fish Services",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NB",
     "employer": "GNB - Agriculture, Aquaculture and Fisheries",
     "location": "",
     "tech": false
@@ -3746,12 +3752,6 @@
   {
     "province": "NB",
     "employer": "Home Alone Pizza Inc./Goya’s Pizza",
-    "location": "",
-    "tech": false
-  },
-  {
-    "province": "NB",
-    "employer": "Home Hardware (Elmwood Group)",
     "location": "",
     "tech": false
   },
@@ -5179,7 +5179,7 @@
   },
   {
     "province": "NB",
-    "employer": "Mr Lube East Saint John (675211 NB Inc.)",
+    "employer": "Mr. Lube (675211 NB Inc.) - East Saint John",
     "location": "",
     "tech": false
   },
@@ -5461,7 +5461,7 @@
   },
   {
     "province": "NB",
-    "employer": "Organigram Holdings Inc",
+    "employer": "Organigram Global Inc (Organigram Holdings Inc)",
     "location": "",
     "tech": false
   },
@@ -6877,7 +6877,7 @@
   },
   {
     "province": "NB",
-    "employer": "Startup Support Plus",
+    "employer": "Startup Support Plus Inc",
     "location": "",
     "tech": false
   },
@@ -7664,6 +7664,12 @@
   {
     "province": "NB",
     "employer": "Totally Kids Early Learning & Child Care",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NB",
+    "employer": "Township Chevrolet Buick GMC Woodstock Ltd",
     "location": "",
     "tech": false
   },
