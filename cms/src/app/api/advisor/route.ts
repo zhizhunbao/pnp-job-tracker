@@ -164,7 +164,11 @@ function buildPrompt(field: string, j: Job, jd: string, lang: Lang, pf = ''): st
   }
   if (field !== 'title') {
     // 其它字段:把该岗事实(评分字段附明细)喂进去,模型只负责按所选语言解释,数字用我们给的
-    const ask = ASK[field] || `Explain the "${field}" field for this job.`
+    let ask = ASK[field] || `Explain the "${field}" field for this job.`
+    // 薪资类字段但中位缺失(NOC×省无 ESDC 数据,或免费层已剥离)→ 明说没有,严禁模型凭记忆报中位数(踩过:编出 $72K-$78K)
+    if (['salary', 'salaryYr', 'wageMedHr', 'wageMedYr', 'vsMedian'].includes(field) && j.wageMedAnnual == null) {
+      ask += ' IMPORTANT: no ESDC median wage figure is available in the facts below — say so plainly, and do NOT quote, estimate, or recall any median/typical wage number from memory.'
+    }
     const facts = jobFacts(j) + (field === 'score' ? '\n' + scoreFacts(j) : '') + pf
     const reader = 'The reader is an international student / PGWP holder aiming for employer-offer → PNP in Canada.'
     if (SIMPLE.has(field)) {

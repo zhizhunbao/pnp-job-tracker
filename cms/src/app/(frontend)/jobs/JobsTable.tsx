@@ -842,7 +842,12 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                       else if (k === 'datePosted') { node = j.datePosted ? j.datePosted.slice(0, 10) : '—'; Object.assign(extra, { color: '#6b7280', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       else { node = j.lastSeen ? fmtLocalSec(j.lastSeen) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       return (
-                        <td key={k} className="jcell" style={{ ...td, ...extra, cursor: 'pointer', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', minWidth: colMin(k), ...(NOWRAP_COLS.has(k) ? { whiteSpace: 'nowrap' } : { whiteSpace: 'normal', overflowWrap: 'break-word' }), ...frozenStyle(k, rowBg) }} title={typeof node === 'string' ? node : undefined} onClick={() => open(k, typeof node === 'string' ? node : (j.salaryText || j.salary || ''))}>
+                        <td key={k} className="jcell" style={{ ...td, ...extra, cursor: 'pointer', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', minWidth: colMin(k), ...(NOWRAP_COLS.has(k) ? { whiteSpace: 'nowrap' } : { whiteSpace: 'normal', overflowWrap: 'break-word' }), ...frozenStyle(k, rowBg) }} title={typeof node === 'string' ? node : undefined} onClick={() => {
+                          // Pro 锁列(免费态数据已在服务端剥离)不开顾问弹框——没数据只会误导;锁形本身已链去 /account。match 免费额度内有值仍可开。
+                          if (PRO_COLS.has(k) && !plan.isPro && !(k === 'match' && j.match)) return
+                          // 大标题=单元格字符串值;元素类 cell 只有薪资列回退薪资文本,其余留空(页眉已有字段名,别拿别列的值凑)
+                          open(k, typeof node === 'string' ? node : (k === 'salary' ? (j.salaryText || j.salary || '') : ''))
+                        }}>
                           {href
                             ? <a href={href} target="_blank" rel="noreferrer" style={link} onClick={(e) => e.stopPropagation()}>{node}</a>
                             : node}
@@ -1167,15 +1172,15 @@ function SourceLine({ field, job, lang, sources }: { field: ColKey; job: JobRow;
   )
 }
 
-function FieldFactsSection({ field, job, lang, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc, fieldSources }: { field: ColKey; job: JobRow; lang: Lang; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[] }) {
+function FieldFactsSection({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc, fieldSources }: { field: ColKey; job: JobRow; lang: Lang; isPro: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[] }) {
   return (
     <>
-      <FieldFactsInner field={field} job={job} lang={lang} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} />
+      <FieldFactsInner field={field} job={job} lang={lang} isPro={isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} />
       <SourceLine field={field} job={job} lang={lang} sources={fieldSources} />
     </>
   )
 }
-function FieldFactsInner({ field, job, lang, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc }: { field: ColKey; job: JobRow; lang: Lang; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[] }) {
+function FieldFactsInner({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc }: { field: ColKey; job: JobRow; lang: Lang; isPro: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[] }) {
   const t = makeT(lang)
   const noc = nocDesc.find((d) => d.noc === job.noc) || null
   if (field === 'pnp') return <PnpListSection job={job} lang={lang} occ={pnpOcc} draws={pnpDraws} />
@@ -1262,7 +1267,10 @@ function FieldFactsInner({ field, job, lang, pnpOcc, pnpDraws, eeOcc, desigEmp, 
     const bandHr = mHr != null ? `${lHr != null ? `$${lHr} – ` : ''}$${mHr}${hHr != null ? ` – $${hHr}` : ''}/hr` : null
     const bandYr = mYr != null ? `${lYr != null ? `${K(lYr)} – ` : ''}${K(mYr)}${hYr != null ? ` – ${K(hYr)}` : ''}/yr` : null
     return (
-      <FactsBox note={t('fact.medianSrc') + (job.wageYear ? ` · ${job.wageYear}` : '') + (vs != null ? ' · ' + t('fact.vsNote') : '')}>
+      <FactsBox note={(mHr != null || mYr != null)
+        ? t('fact.medianSrc') + (job.wageYear ? ` · ${job.wageYear}` : '') + (vs != null ? ' · ' + t('fact.vsNote') : '')
+        // 中位缺失分两种,别混:免费层=数据被付费墙剥离(引导升级);Pro=该 NOC×省真无 ESDC 数据(宁可留空)
+        : (isPro ? t('fact.noMedian') : t('fact.medianPro'))}>
         <FactRow k={t('col.salary')}>{job.salaryText || job.salary}</FactRow>
         <FactRow k={t('col.salaryYr')}>{a != null ? `$${Math.round(a / 1000)}K/yr` : null}</FactRow>
         <FactRow k={t('fact.wageBandHr')}>{bandHr}</FactRow>
@@ -1468,7 +1476,7 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, eeOcc, 
         <div style={{ flex: 1, overflowY: 'auto', padding: '4px 18px 18px' }}>
           {/* 对我意味着什么(E5-00):个人相关性放最上;依据链同源 match() */}
           <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} />
-          <FieldFactsSection field={field} job={job} lang={lang} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} />
+          <FieldFactsSection field={field} job={job} lang={lang} isPro={plan.isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} />
           {/* 免责声明 v1(E4-01):AI 判断区顶部,UI 层声明与 AI 文风分离(SYSTEM 已禁输出套话) */}
           <div style={{ fontSize: 11.5, color: '#9ca3af', margin: '6px 0 4px' }}><IconScale /> {t('advisor.disclaimer')}</div>
           {status === 'upgrade' ? (
