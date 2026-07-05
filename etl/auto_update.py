@@ -73,8 +73,18 @@ def run_once(meta: dict) -> bool:
             return False
     if meta.get("seed"):  # 仅 build 角色:增量 seed(mart 全量累积,不会误关旧岗)
         try:
-            r = httpx.get(SEED_URL, timeout=600,
+            # seed 已批量化(2026-07-05,一轮 <1 分钟),180s 足够;老 600s 是逐行时代的遗产
+            r = httpx.get(SEED_URL, timeout=180,
                           headers={"x-seed-token": SEED_TOKEN} if SEED_TOKEN else None)
+            # 成功 = 2xx 且响应体 ok:true,别的一律算失败 —— 老版把任何响应都记「✓ seed 502」,
+            # 还带着失败状态去触发 alerts/心跳(E5-03 的自动提醒依赖这个判定,必须真实)
+            try:
+                ok = r.is_success and r.json().get("ok") is True
+            except Exception:  # noqa: BLE001  # 502/500 返回的是 HTML,json() 会炸
+                ok = False
+            if not ok:
+                log.error(f"✗ seed {r.status_code}: {r.text[:200]} —— mart 已落盘,下轮补")
+                return False
             log.info(f"✓ seed {r.status_code}: {r.text[:200]}")
         except Exception as e:  # noqa: BLE001
             log.error(f"✗ seed 失败({type(e).__name__}: {e})—— mart 已落盘,cms 起来后下轮补")
@@ -84,7 +94,10 @@ def run_once(meta: dict) -> bool:
             alerts_url = SEED_URL.rsplit("/seed", 1)[0] + "/api/alerts/run"
             r = httpx.get(alerts_url, timeout=300,
                           headers={"x-seed-token": SEED_TOKEN} if SEED_TOKEN else None)
-            log.info(f"✓ alerts {r.status_code}: {r.text[:200]}")
+            if r.is_success:
+                log.info(f"✓ alerts {r.status_code}: {r.text[:200]}")
+            else:
+                log.error(f"✗ alerts {r.status_code}: {r.text[:200]} —— 不影响本轮")
         except Exception as e:  # noqa: BLE001
             log.error(f"✗ alerts 失败({type(e).__name__}: {e})—— 不影响本轮")
     # 监控心跳(E7-01):本轮全部成功 → ping healthchecks.io(env 缺省=本地开发不 ping)
