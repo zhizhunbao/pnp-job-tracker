@@ -3,6 +3,14 @@
 > 新 session 接手先读这份 + `CLAUDE.md`(设计宪法)+ `prd.md`(v2 定位见头部标注)。仓库:github.com/zhizhunbao/pnp-job-tracker
 > **🚀 站点已公网上线:https://pnp-cms.onrender.com**(Render + Supabase,R3 架构)。上线计划/批次进度=`docs/implementation/_开发批次顺序.md`(B0-B3 ✅,B4 代码侧 ✅ 剩 Stripe 手续)。
 >
+> **本轮(2026-07-05 凌晨 B8 提醒与运维收敛 —— 代码侧全部落地,M4 只剩托管账号+观察期)**:
+> ① **E5-03 匹配版邮件提醒 ✅(dry-run E2E 全通)**:`api/alerts/run`(x-seed-token,双通道:A=Pro+建档匹配日报(match high 新岗前10+当日新抽选 vs CRS 段,users.lastAlertAt 游标)/B=saved search(filters json 原样→lib/jobsQuery 解释,lastNotifiedAt 游标);首轮回看 36h 防倒灌;**RESEND_API_KEY 未设=dry-run 不发不回写**);SavedSearches collection(create=Pro,上限 5 钩子)+筛选区「保存此筛选」+/account 管理;auto_update seed 成功后自动触发;lib/matchDims 抽共享。**剩 Resend key(域名前=测试模式只能发账户本人)**。
+> ② **E7-01 监控备份(代码侧 ✅,R3 修订记档)**:无 VPS → 家里构建机=运维盒;auto_update 成功后 ping HEALTHCHECK_PING_<SOURCE>(compose 已透传);新 backup 源(日更 pg_dump Supabase→backups/ 留14天)+compose 服务+httpx 镜像加 postgresql-client(**要 docker compose build 重建**)。剩:healthchecks.io×5/UptimeRobot/Anthropic 告警复核/BACKUP_DATABASE_URI 进 docker/.env/三演练。
+> ③ **E7-03 SEO(代码侧 ✅)**:sitemap 121 URL(含 stats 全矩阵)+robots(挡 admin/api/account)+/jobs 专属 meta。剩:GSC 验证+提交、三平台发帖(72h 反馈记档)。
+> ④ **B8 生产 schema 先行**:saved_searches 全清单(主表+users.last_alert_at+locked_documents_rels.saved_searches_id 列/索引/FK——B7 教训清单照做);DDL 生成用「本地库当生成器」:临时 DATABASE_URI=本地+DB_PUSH=1 起一次 dev(⚠️ 记得 taskkill node 子进程,kill npm 壳杀不掉,撞过双 dev 拒启)。
+> ⑤ **老坑③ 又演**:bash curl 发中文 JSON 变 `??`(saved search 的 fBroad 损坏,误判为 alerts bug 查了一轮)——**中文测试体一律 UTF-8 文件 + --data-binary @file**。
+> **M4 清单(用户手动)**:Resend 注册→RESEND_API_KEY 进 Render;healthchecks.io 5 check→ping URL 进 docker/.env;UptimeRobot;GSC+sitemap;umami 账号(B7 遗留);docker compose build+起 backup;然后三演练+7 天无人值守观察=M4。
+>
 > **本轮(2026-07-04 深夜 B7 信任与引流 + 架构拍板:直连正式库)**:
 > ① **E4-04 字段级 citation ✅**:`etl/build_field_sources.py`(7 数据集着陆页 httpx 验证抽 title/meta 原文+9 派生口径,挂 pnp 源周更;21 verified/0 unverified)→ mart `field_sources`(30 行)→ 弹框统一 `SourceLine`(记录级官方原帖优先/数据集级兜底/unverified 降级/派生显口径)+ advisor jobFacts 行尾 [src:…] 标注。断源演练 ✅。
 > ② **E5-02 榜单 ✅**:`10_build_rankings.py`(weekly-top TOP50 按 datePosted 7 天——mart 无 firstSeen 偏离记档;sponsor-likely TOP30 第一方+具名通道聚合)→ /rankings/[slug] 三语 SEO 页;顶栏入口;/jobs 接 ?q=。
