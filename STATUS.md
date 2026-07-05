@@ -8,7 +8,7 @@
 > - **当前状态**:M1/M2/M3 ✅;M4 差「用户办托管账号(Resend/umami/healthchecks/UptimeRobot/GSC)+ BACKUP_DATABASE_URI+compose build + 三演练 + 7 天无人值守观察」——清单见下方 B8 段。
 > - **悬而未决的决策**:品牌名/域名(阻塞:Resend 正式发信、GSC 正式收录、Render 自定义域)、Render Free→Starter(公测宣传前)、Stripe 品牌/收据设置(追办)。
 > - **下一步可选**:① 陪用户办完 M4 手续+演练;② B9/E6-01 数据补强(PE AIP/RNIP/内容去重,原定入学后);③ 公测冷启动(发帖)后按反馈迭代;④ E5-01 正式定价复核($19/$39 现为公测价)。
-> - **seed 已批量化(2026-07-05)**:一轮 <1 分钟、单事务;⚠️ 改 Jobs/维度表字段 → 必须同步 `seed/route.ts` 列白名单(写路径耦合 snake_case,老坑 5 同款)。「抓取时间」= 数据层 last_seen,重灌不动它。
+> - **seed 已批量化(2026-07-05)**:一轮 <1 分钟、单事务;⚠️ 改 Jobs/维度表字段 → 必须同步 `seed/route.ts` 列白名单(写路径耦合 snake_case,老坑 5 同款)。「抓取时间」= 数据层 last_seen,重灌不动它。auto_update 的 seed 判定已修:**2xx 且 ok:true 才记 ✓/才触发 alerts**(以前 502/500 也记 ✓)——看到「✗ seed」才是真失败,E5-03 自动提醒的触发条件自此可靠。
 >
 > **本轮(2026-07-05 白天 —— UI 图标化 + 抓取时间语义 + seed 批量化提速,三件全部署)**:
 > ① **全站 emoji → 内联 SVG ✅**:装 lucide-react(用户拍板,弃手写),新共享出口 `cms/src/app/(frontend)/Icons.tsx`(统一 size=1em 跟字号 / stroke=currentColor / 基线 -0.125em,调用点只 import 这一个文件);/jobs 列表+弹框、账户、定价、统计、榜单、法务、横幅、升级卡全换;i18n 字符串内的 emoji 前缀剥离、图标改渲染点挂(`price.yes` 键删除,定价表勾改 `<IconCheck/>` 节点;alert/prompt 纯文本串只去符号);邮件 📣 改纯文本;品牌 🍁 保留(顶栏/登录框/about/邮件)。验收:grep cms/src 无残留 emoji(🍁 除外)+ build 过 + 本地 DOM 目检 + 生产 SSR 审计五页全过。
