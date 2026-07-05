@@ -35,6 +35,7 @@
 | [E7-01](E7-运维与增长/01_监控告警与备份.md) | 监控告警 + 库备份 | 4 | 3 | [~] 代码侧✅;剩托管服务账号+演练 |
 | [E7-02](E7-运维与增长/02_Analytics埋点.md) | Analytics 与转化埋点 | 2 | 2 | [x] 代码侧;剩 umami cloud 账号+2 env |
 | [E7-03](E7-运维与增长/03_SEO与冷启动获客.md) | SEO 基建 + 冷启动获客 | 3 | 3 | [~] sitemap/robots/meta✅;剩 GSC+发帖 |
+| [E7-04](E7-运维与增长/04_jobs列表服务端分页.md) | /jobs 列表服务端分页与增量加载 | 3 | 3 | ☐ |
 
 状态标记：`☐ 未开始` · `[~] 进行中/部分` · `[x] 收口`。
 
@@ -54,7 +55,7 @@
 2. **seed 各维度是显式字段白名单**（[seed/route.ts](../../cms/src/app/seed/route.ts) `dims[]`）——加维度字段必须同步加映射，否则重灌不入库。
 3. `externalId`（`jb:<posting_id>`）是 **08_score ↔ 09_mart 的 join 键，两处必须一致**。
 4. **重灌前跑完整链**：05→05b→04c→04d→05c→08→09→seed，别半条链 reset。
-5. `/jobs` 列表走原始 SQL（耦合 snake_case 列名）——改 Jobs schema 要同步 [page.tsx](../../cms/src/app/(frontend)/jobs/page.tsx) 的 SELECT。
+5. `/jobs` 列表走原始 SQL（耦合 snake_case 列名）——改 Jobs schema 要同步 [lib/jobsList.ts](../../cms/src/lib/jobsList.ts) 的 SELECT/排序映射与 [lib/jobsQuery.ts](../../cms/src/lib/jobsQuery.ts) 的筛选翻译（E7-04 起 SELECT 单点从 page.tsx 移到 jobsList.ts）。
 6. 服务端组件不能从 `'use client'` 模块导入常量（拿到 undefined）。
 7. 衍生抓取数据必须 gitignore；只有维护表跟踪。
 

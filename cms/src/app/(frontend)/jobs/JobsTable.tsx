@@ -11,7 +11,7 @@ import { IconChart, IconCheck, IconCompass, IconLock, IconMap, IconMapPin, IconM
 import { AuthModal } from './AuthForm'
 import { UpgradeModal } from './UpgradeModal'
 import { useOverlayClose } from './overlay'
-import { match as matchJob, matchRank, type MatchProfile, type MatchJob, type MatchReason } from '@/lib/match'
+import { match as matchJob, type MatchProfile, type MatchJob, type MatchReason } from '@/lib/match'
 
 // 分层态(E3-05/E5-00,服务端 page.tsx 传入):gate 在服务端已生效,这里只做展示引导
 export type Plan = {
@@ -151,9 +151,6 @@ export type JobRow = {
 }
 
 const uniq = (xs: string[]) => Array.from(new Set(xs.filter(Boolean))).sort()
-const accLabel: Record<string, string> = {
-  'co-op': 'co-op', junior: '初级', intermediate: '中级', senior: '高级', unknown: '—',
-}
 // 大分类颜色(仅显示)。分类名/层级(broad/mid/fine/teer)由 ETL(etl/noc.py→mart)算好
 // 存在 job 字段上,前端不再用 NOC 现算 —— 单一来源在数据层。
 type Cat = { bg: string; fg: string }
@@ -168,50 +165,8 @@ const BROAD_COLOR: Record<string, Cat> = {
 const colorOf = (broad?: string): Cat => (broad && BROAD_COLOR[broad]) || NA
 
 // 薪资归一已下沉到数据层(etl/04d_clean_salary.py → salaryAnnual/salaryText);前端只读不算。
-// 各列排序取值:数值列返回 number,文本列返回 string,缺值返回 null(排末尾)
-const sortVal = (j: JobRow, key: ColKey): number | string | null => {
-  switch (key) {
-    case 'score': return j.score
-    case 'match': return matchRank(j.match)
-    case 'salary': case 'salaryYr': return j.salaryAnnual
-    case 'wageMedHr': return j.wageMedHourly
-    case 'wageMedYr': return j.wageMedAnnual
-    case 'vsMedian': return (j.salaryAnnual != null && j.wageMedAnnual) ? j.salaryAnnual / j.wageMedAnnual : null
-    case 'direct': return isDirect(j) ? 1 : 0
-    case 'pnp': return j.pnpEligible ? 1 : 0
-    case 'ee': return j.eeCategory || null
-    case 'aip': return j.aip ? 1 : 0
-    case 'lmia': return j.lmiaPositions
-    case 'address': return j.address || null
-    case 'teer': return j.teer
-    case 'datePosted': return j.datePosted || null
-    case 'lastSeen': return j.lastSeen || null
-    case 'broad': return j.broad && j.broad !== '未分类' ? j.broad : null
-    case 'mid': return j.mid && j.mid !== '未分类' ? j.mid : null
-    case 'fine': return j.fine && j.fine !== '未分类' ? j.fine : null
-    case 'noc': return j.noc || null
-    case 'accessibility': return j.accessibility && j.accessibility !== 'unknown' ? j.accessibility : null
-    case 'company': return j.company || null
-    case 'title': return j.title || null
-    case 'source': return sourceLabel(j)
-    case 'origin': return ORIGIN_LABEL[j.origin] || j.origin || null
-    case 'status': return j.status === 'closed' ? 1 : 0
-    case 'closedAt': return j.closedAt || null
-    case 'country': return parseLoc(j).country || null
-    case 'province': return parseLoc(j).prov || null
-    case 'city': return parseLoc(j).city || null
-    case 'district': return parseLoc(j).district || null
-    default: return null
-  }
-}
-const teerOf = (noc: string): number | null => (noc && noc.length === 5 && /\d/.test(noc[1]) ? Number(noc[1]) : null)
+// 筛选/搜索/排序全部下沉服务端 SQL(E7-04,语义对照表见实现文档)—— 客户端不再有本地谓词/比较器。
 const mapsUrl = (q: string) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`
-// 本岗年薪 vs NOC 中位年薪(%);缺值返回 null
-const vsPct = (j: JobRow): number | null => (j.salaryAnnual != null && j.wageMedAnnual ? (j.salaryAnnual / j.wageMedAnnual - 1) * 100 : null)
-// 数值预设判定(下拉,不手填):评分高/中/低、年薪档、vs中位
-const okScore = (s: number | null, f: string): boolean => !f || (s != null && (f === 'high' ? s >= 75 : f === 'mid' ? s >= 50 && s < 75 : s < 50))
-const okSal = (a: number | null, f: string): boolean => !f || (a != null && (f === 'ge100' ? a >= 100000 : f === '80' ? a >= 80000 && a < 100000 : f === '60' ? a >= 60000 && a < 80000 : a < 60000))
-const okVs = (v: number | null, f: string): boolean => !f || (v != null && (f === 'above' ? v >= 0 : f === 'above20' ? v >= 20 : v < 0))
 // 「更新」时间显示为东部时区(显式 timeZone,避免 dev=host / 容器=UTC 不一致 + SSR 水合差异)
 const fmtLocal = (iso: string): string => {
   try {
@@ -268,18 +223,6 @@ const parseLoc = (j: JobRow): { country: string; prov: string; city: string; dis
   district: j.district || '',
 })
 
-// 综合检索串:搜索框对所有列字段生效(职位/公司/省市区/NOC/分类/薪资/来源/经验/评分/TEER)
-const searchHay = (j: JobRow): string => {
-  const t = teerOf(j.noc)
-  const L = parseLoc(j)
-  return [
-    j.title, j.company, sourceLabel(j), j.source, j.noc, j.salary,
-    j.broad, j.mid, j.fine,
-    L.prov, L.city, L.district, j.address,
-    accLabel[j.accessibility], j.accessibility,
-    j.score != null ? String(j.score) : '', t != null ? `TEER ${t}` : '',
-  ].filter(Boolean).join(' ').toLowerCase()
-}
 // 来源链接 = 该来源的板块根(区别于职位指向的具体帖子)。
 // 例:lever 的公司板块、bamboohr 的 /careers、Job Bank 的 /jobsearch
 const sourceUrl = (applyUrl: string): string => {
@@ -338,6 +281,7 @@ const writeColsCookie = (keys: string[]) => {
   try { document.cookie = `${COLS_COOKIE}=${encodeURIComponent(JSON.stringify(keys))}; path=/; max-age=31536000; SameSite=Lax` } catch { /* ignore */ }
 }
 const AUTO_MAX = 180                    // 自动滚动加载上限;超过改「显示更多」按钮,让 footer 可达
+const PAGE_FETCH = 200                  // /api/jobs 每页行数(与服务端 JOBS_PAGE_SIZE 一致;服务端 lib 不能进客户端 bundle)
 const ORIGIN_LABEL: Record<string, string> = { jobbank: 'Job Bank', ats: 'ATS', directory: '社区名单' }
 
 type PnpOcc = { province: string; stream: string; label: string; type: string; noc: string; name: string; gtaRestricted: boolean; url: string; fetched: string }
@@ -364,11 +308,14 @@ type Dims = {
 const EMPTY_DIMS: Dims = { provinces: [], cities: [], districts: [], nocCategories: [], sources: [], experienceLevels: [], pnpOccupations: [], pnpDraws: [], eeCategories: [], designatedEmployers: [], nocDescriptions: [], fieldSources: [] }
 const PROV_CODE: Record<string, string> = Object.fromEntries(Object.entries(PROV_NAMES).map(([c, n]) => [n, c]))
 
-export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialCols, plan = FREE_PLAN }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims; initialCols?: string[]; plan?: Plan }) {
-  const [q, setQ] = useState('')
+// E7-04:jobs=服务端首屏页(默认序前 200);筛选/搜索/排序/翻页走 /api/jobs 增量取,交互语义不变
+export default function JobsTable({ jobs, initialTotal = 0, grandTotal = 0, updatedAt, dims = EMPTY_DIMS, initialCols, plan = FREE_PLAN, initialFilters }: { jobs: JobRow[]; initialTotal?: number; grandTotal?: number; updatedAt?: string; dims?: Dims; initialCols?: string[]; plan?: Plan; initialFilters?: Record<string, string> }) {
+  // 初始筛选(?q= ?prov= ?broad= 榜单/统计回流):服务端已应用到首屏查询,这里注入同一份 state,不再读 URL 二次渲染
+  const IF = initialFilters ?? {}
+  const [q, setQ] = useState(IF.q ?? '')
   const [directOnly, setDirectOnly] = useState(false)
-  const [fCountry, setFCountry] = useState(''); const [fProv, setFProv] = useState(''); const [fCity, setFCity] = useState(''); const [fDistrict, setFDistrict] = useState('')
-  const [fBroad, setFBroad] = useState(''); const [fMid, setFMid] = useState(''); const [fFine, setFFine] = useState('')
+  const [fCountry, setFCountry] = useState(''); const [fProv, setFProv] = useState(IF.fProv ?? ''); const [fCity, setFCity] = useState(''); const [fDistrict, setFDistrict] = useState('')
+  const [fBroad, setFBroad] = useState(IF.fBroad ?? ''); const [fMid, setFMid] = useState(''); const [fFine, setFFine] = useState('')
   const [fTeer, setFTeer] = useState(''); const [fSource, setFSource] = useState(''); const [fAcc, setFAcc] = useState('')
   const [fPnp, setFPnp] = useState(''); const [fAip, setFAip] = useState(''); const [fStatus, setFStatus] = useState(''); const [fOrigin, setFOrigin] = useState('')
   const [fScore, setFScore] = useState(''); const [fSal, setFSal] = useState(''); const [fVs, setFVs] = useState('')  // 数值预设(下拉,不手填)
@@ -379,16 +326,6 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
     const v = (initialCols ?? []).filter((k): k is ColKey => COLUMNS.some((c) => c.key === k))
     return v.length ? v : DEFAULT_COLS
   })
-  // URL 参数 → 初始筛选(stats/rankings 入口回流:?q= ?prov= ?broad=)
-  useIsoLayoutEffect(() => {
-    try {
-      const sp = new URLSearchParams(window.location.search)
-      const q0 = sp.get('q'); const pv = sp.get('prov'); const bd = sp.get('broad')
-      if (q0) setQ(q0)
-      if (pv) setFProv(PROV_NAMES[pv.toUpperCase()] || pv)
-      if (bd) setFBroad(bd)
-    } catch { /* ignore */ }
-  }, [])
   const [popup, setPopup] = useState<{ field: ColKey; job: JobRow; title: string } | null>(null)
   const [actModal, setActModal] = useState<{ kind: 'company' | 'desc'; job: JobRow } | null>(null)
   // 升级入口(Pro 锁列/保存筛选 gate)统一开独立升级弹框;未登录先走注册弹框(用户定:注册与购买分离)
@@ -546,6 +483,68 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
     return () => io.disconnect()
   }, [])
 
+  // ── 服务端列表状态(E7-04):rows=已取回行(服务端已筛已排),total=命中总数;筛排变更拉第 0 页,滚动追加 ──
+  const [rows, setRows] = useState<JobRow[]>(jobs)
+  const [total, setTotal] = useState(initialTotal)
+  const [loading, setLoading] = useState(false)
+  const seqRef = useRef(0)                              // 竞态防护:只认最后一次请求
+  const abortRef = useRef<AbortController | null>(null)
+  const listQS = (offset: number) => {
+    const sp = new URLSearchParams()
+    const F: Record<string, string> = { q, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs }
+    Object.entries(F).forEach(([k, v]) => { if (v) sp.set(k, v) })
+    if (directOnly) sp.set('directOnly', '1')
+    sp.set('sort', sort.key); sp.set('dir', sort.dir)
+    sp.set('offset', String(offset)); sp.set('limit', String(PAGE_FETCH))
+    return sp.toString()
+  }
+  const fetchPage = (offset: number, mode: 'replace' | 'append') => {
+    const seq = ++seqRef.current
+    abortRef.current?.abort()
+    const ac = new AbortController(); abortRef.current = ac
+    setLoading(true)
+    fetch(`/api/jobs?${listQS(offset)}`, { signal: ac.signal, credentials: 'include' })
+      .then((r) => r.json())
+      .then((d) => {
+        if (seq !== seqRef.current) return
+        setTotal(typeof d.total === 'number' ? d.total : 0)
+        setRows((prev) => (mode === 'append' ? [...prev, ...(d.rows ?? [])] : (d.rows ?? [])))
+        setLoading(false)
+      })
+      .catch(() => { if (seq === seqRef.current) setLoading(false) })
+  }
+  // 筛选/排序变化 → 防抖 250ms 拉第 0 页替换。fetchedKey 初始=首屏 key(SSR 已带数据不重复拉);
+  // 抖动期内 A→B→A 只清定时器不空拉。
+  const filterKey = JSON.stringify([q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, sort.key, sort.dir])
+  const fetchedKey = useRef(filterKey)
+  useEffect(() => {
+    if (filterKey === fetchedKey.current) return
+    const h = setTimeout(() => { fetchedKey.current = filterKey; fetchPage(0, 'replace') }, 250)
+    return () => clearTimeout(h)
+  }, [filterKey])  // eslint-disable-line react-hooks/exhaustive-deps
+  // 渲染窗口逼近已取行数且服务端还有 → 预取下一页追加(滚动 sentinel 与「显示更多」都只推 limit)
+  useEffect(() => {
+    if (loading || rows.length >= total) return
+    if (limit + 60 > rows.length) fetchPage(rows.length, 'append')
+  }, [limit, rows.length, total, loading])  // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 弹框维度(pnp/ee/aip/noc描述/来源说明,仅 AdvisorModal 用)idle 懒加载 —— 不占首字节(E7-04 D7)。
+  // 维度未到位前弹框渲 loading 蒙层,绝不把「还没加载」显示成「未列入清单」(措辞诚实红线)。
+  const [popupDims, setPopupDims] = useState<Partial<Dims> | null>(null)
+  const dimsLoadRef = useRef(false)
+  const loadPopupDims = () => {
+    if (dimsLoadRef.current) return
+    dimsLoadRef.current = true
+    fetch('/api/jobs/dims').then((r) => r.json()).then((d) => setPopupDims(d)).catch(() => { dimsLoadRef.current = false })  // 失败允许下次重试
+  }
+  useEffect(() => {
+    const w = window as any
+    const idle = typeof w.requestIdleCallback === 'function' ? w.requestIdleCallback(loadPopupDims, { timeout: 3000 }) : setTimeout(loadPopupDims, 1500)
+    return () => { if (typeof w.cancelIdleCallback === 'function') w.cancelIdleCallback(idle); else clearTimeout(idle) }
+  }, [])  // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (popup) loadPopupDims() }, [popup])  // eslint-disable-line react-hooks/exhaustive-deps
+  const dimsFull = useMemo<Dims>(() => ({ ...dims, ...(popupDims ?? {}) }), [dims, popupDims])
+
   // 联动选项来自维度表(provinces/cities/districts);维度表为空时回退到从 job 行现推。
   const countryOpts = useMemo(() => (dims.provinces.length ? ['Canada'] : uniq(jobs.map((j) => parseLoc(j).country))), [dims, jobs])
   const provOpts = useMemo(() => (dims.provinces.length ? dims.provinces.map((p) => p.name)
@@ -569,40 +568,9 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
     : uniq(jobs.map((j) => (j.teer == null ? '未分类' : `TEER ${j.teer}`)))), [nc, jobs])
   const sourceOpts = useMemo(() => (dims.sources.length ? dims.sources.map((s) => s.name) : uniq(jobs.map((j) => sourceLabel(j)))), [dims, jobs])
   const accOpts = useMemo(() => (dims.experienceLevels.length ? uniq(dims.experienceLevels.map((e) => e.name)) : uniq(jobs.map((j) => j.accessibility))), [dims, jobs])
-  const originOpts = useMemo(() => uniq(jobs.map((j) => j.origin)), [jobs])
+  const originOpts = useMemo(() => Object.keys(ORIGIN_LABEL), [])  // ETL 固定枚举(分页后不再从全量行推导)
   const anyFilter = q || directOnly || fCountry || fProv || fCity || fDistrict || fBroad || fMid || fFine || fTeer || fSource || fAcc || fPnp || fAip || fStatus || fOrigin || fScore || fSal || fVs
   const clearAll = () => { setQ(''); setDirectOnly(false); setFCountry(''); setFProv(''); setFCity(''); setFDistrict(''); setFBroad(''); setFMid(''); setFFine(''); setFTeer(''); setFSource(''); setFAcc(''); setFPnp(''); setFAip(''); setFStatus(''); setFOrigin(''); setFScore(''); setFSal(''); setFVs('') }
-
-  const rows = useMemo(() => {
-    const term = q.trim().toLowerCase()
-    const filtered = jobs.filter((j) => {
-      const L = parseLoc(j)
-      return (!directOnly || isDirect(j)) &&
-        (!fCountry || L.country === fCountry) && (!fProv || L.prov === fProv) && (!fCity || L.city === fCity) && (!fDistrict || L.district === fDistrict) &&
-        (!fBroad || j.broad === fBroad) && (!fMid || j.mid === fMid) && (!fFine || j.fine === fFine) &&
-        (!fTeer || (j.teer == null ? '未分类' : `TEER ${j.teer}`) === fTeer) &&
-        (!fSource || sourceLabel(j) === fSource) && (!fAcc || j.accessibility === fAcc) &&
-        (!fPnp || (fPnp === 'yes' ? j.pnpEligible : (!j.pnpEligible && j.province !== 'QC'))) && (!fAip || (fAip === 'yes') === j.aip) &&
-        (!fStatus || (j.status || 'open') === fStatus) && (!fOrigin || j.origin === fOrigin) &&
-        okScore(j.score, fScore) && okSal(j.salaryAnnual, fSal) && okVs(vsPct(j), fVs) &&
-        (!term || searchHay(j).includes(term))
-    })
-    const dir = sort.dir === 'asc' ? 1 : -1
-    return filtered.slice().sort((a, b) => {
-      const va = sortVal(a, sort.key)
-      const vb = sortVal(b, sort.key)
-      // 缺值始终排到最后(不受升降序影响)
-      let cmp = 0
-      if (va == null && vb == null) cmp = 0
-      else if (va == null) return 1
-      else if (vb == null) return -1
-      else if (typeof va === 'number' && typeof vb === 'number') cmp = (va - vb) * dir
-      else cmp = String(va).localeCompare(String(vb), 'zh') * dir
-      // 主键相等时按评分降序兜底(同一天发布的高价值岗优先)
-      if (cmp === 0 && sort.key !== 'score') cmp = (b.score ?? -Infinity) - (a.score ?? -Infinity)
-      return cmp
-    })
-  }, [jobs, q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, sort])
 
   return (
     <div style={{ background: '#fff', color: '#1f2937', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column' }}>
@@ -634,7 +602,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
       <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1.5rem 1.25rem', width: '100%', boxSizing: 'border-box', flex: '1 0 auto' }}>
         <h1 style={{ margin: '0 0 2px', color: '#111827' }}>Jobs</h1>
         <p style={{ color: '#6b7280', marginTop: 0, fontSize: 13 }}>
-          {rows.length === jobs.length ? t('subtitle.count', { n: jobs.length }) : `${rows.length} / ${jobs.length}`}
+          {total === grandTotal ? t('subtitle.count', { n: grandTotal }) : `${total} / ${grandTotal}`}
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '1rem 0' }}>
@@ -870,17 +838,17 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                 )
               })}
               {rows.length === 0 && (
-                <tr><td colSpan={shown.length} style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>{t('empty')}</td></tr>
+                <tr><td colSpan={shown.length} style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>{loading ? t('act.loadingText') : t('empty')}</td></tr>
               )}
             </tbody>
           </table>
         </div>
-        {/* 滚动到此自动加载更多 */}
+        {/* 滚动到此自动加载更多(渲染窗口推进;取数由预取 effect 跟进)。计数一律用服务端命中总数 total */}
         <div ref={sentinelRef} style={{ textAlign: 'center', padding: '12px', fontSize: 12.5, color: '#9ca3af' }}>
-          {rows.length === 0 ? ''
-            : limit >= rows.length ? t('allShown', { total: rows.length })
-            : limit < AUTO_MAX ? t('more', { x: Math.min(limit, rows.length), total: rows.length })
-            : <button onClick={() => setLimit((l) => l + 300)} style={{ ...ctrl, cursor: 'pointer', background: '#f3f4f6', color: '#374151' }}>{t('loadMore', { x: Math.min(limit, rows.length), total: rows.length })}</button>}
+          {rows.length === 0 ? (loading ? t('act.loadingText') : '')
+            : Math.min(limit, rows.length) >= total ? t('allShown', { total })
+            : limit < AUTO_MAX ? t('more', { x: Math.min(limit, rows.length), total })
+            : <button onClick={() => setLimit((l) => l + 300)} style={{ ...ctrl, cursor: 'pointer', background: '#f3f4f6', color: '#374151' }}>{t('loadMore', { x: Math.min(limit, rows.length), total })}</button>}
         </div>
       </div>
       {/* footer:免责 + 版权,窄屏自动换行 */}
@@ -897,8 +865,13 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
         </div>
       </footer>
 
-      {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} />}
-      {actModal && <ActModal kind={actModal.kind} job={actModal.job} jobs={jobs} lang={lang} onClose={() => setActModal(null)} />}
+      {popup && !popupDims && (
+        <div onClick={() => setPopup(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(17,24,39,.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, zIndex: 50 }}>
+          <div style={{ background: '#fff', borderRadius: 12, padding: '28px 40px', color: '#6b7280', fontSize: 14 }}>{t('act.loadingText')}</div>
+        </div>
+      )}
+      {popup && popupDims && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dimsFull.pnpOccupations} pnpDraws={dimsFull.pnpDraws} eeOcc={dimsFull.eeCategories} desigEmp={dimsFull.designatedEmployers} nocDesc={dimsFull.nocDescriptions} fieldSources={dimsFull.fieldSources} onClose={() => setPopup(null)} />}
+      {actModal && <ActModal kind={actModal.kind} job={actModal.job} lang={lang} onClose={() => setActModal(null)} />}
       {upsell && (plan.loggedIn
         ? <UpgradeModal t={t} reason={upsell === 'ss' ? t('ss.pro') : undefined} onClose={() => setUpsell(false)} />
         : <AuthModal t={t} mode="register" onClose={() => setUpsell(false)} onDone={() => window.location.reload()} />)}
@@ -1594,7 +1567,7 @@ function AdvisorChat({ field, job, lang, initialJudgment }: { field: ColKey; job
 function ActRow({ label, value }: { label: string; value: React.ReactNode }) {
   return <div style={{ display: 'flex', gap: 10, padding: '3px 0' }}><span style={{ minWidth: 48, color: '#9ca3af', flexShrink: 0 }}>{label}</span><span style={{ flex: 1, color: '#374151', wordBreak: 'break-word' }}>{value}</span></div>
 }
-function ActModal({ kind, job, jobs, lang, onClose }: { kind: 'company' | 'desc'; job: JobRow; jobs: JobRow[]; lang: Lang; onClose: () => void }) {
+function ActModal({ kind, job, lang, onClose }: { kind: 'company' | 'desc'; job: JobRow; lang: Lang; onClose: () => void }) {
   const t = makeT(lang)
   const overlayClose = useOverlayClose(onClose)
   const [text, setText] = useState('')
@@ -1613,7 +1586,17 @@ function ActModal({ kind, job, jobs, lang, onClose }: { kind: 'company' | 'desc'
     })()
     return () => ctrl.abort()
   }, [kind, job])
-  const sameCo = kind === 'company' ? jobs.filter((x) => x.company && x.company === job.company) : []
+  // 该公司在招:分页后客户端没有全量 → 打开时按需查(精确公司名,内部参数;E7-04 D11)
+  const [sameCo, setSameCo] = useState<{ total: number; rows: JobRow[] } | null>(null)
+  useEffect(() => {
+    if (kind !== 'company' || !job.company) { setSameCo({ total: 0, rows: [] }); return }
+    const ctrl = new AbortController()
+    fetch(`/api/jobs?company=${encodeURIComponent(job.company)}&limit=40`, { signal: ctrl.signal, credentials: 'include' })
+      .then((r) => r.json())
+      .then((d) => setSameCo({ total: d.total ?? 0, rows: d.rows ?? [] }))
+      .catch(() => { if (!ctrl.signal.aborted) setSameCo({ total: 0, rows: [] }) })
+    return () => ctrl.abort()
+  }, [kind, job])
   return (
     <div {...overlayClose} style={{ position: 'fixed', inset: 0, background: 'rgba(17,24,39,.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, zIndex: 50 }}>
       <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 12, maxWidth: 560, width: '100%', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,.25)' }}>
@@ -1632,8 +1615,9 @@ function ActModal({ kind, job, jobs, lang, onClose }: { kind: 'company' | 'desc'
               <ActRow label={t('act.addr')} value={job.address || [job.city, job.province].filter(Boolean).join(', ') || '—'} />
               <ActRow label={t('act.src')} value={job.sourceLabel || job.source || '—'} />
               <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #f3f4f6' }}>
-                <div style={{ fontWeight: 600, color: '#111827', marginBottom: 6 }}>{t('act.jobsHere')} ({sameCo.length})</div>
-                {sameCo.slice(0, 40).map((x) => (
+                <div style={{ fontWeight: 600, color: '#111827', marginBottom: 6 }}>{t('act.jobsHere')} {sameCo ? `(${sameCo.total})` : ''}</div>
+                {!sameCo && <div style={{ color: '#9ca3af' }}>{t('act.loadingText')}</div>}
+                {(sameCo?.rows ?? []).map((x) => (
                   <div key={x.id} style={{ padding: '2px 0', color: x.id === job.id ? '#2563eb' : '#4b5563' }}>· {x.title}{x.city ? ` — ${x.city}` : ''}</div>
                 ))}
               </div>
