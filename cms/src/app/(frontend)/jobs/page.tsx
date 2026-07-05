@@ -41,7 +41,7 @@ export default async function JobsPage() {
   // ↑ 排序与前端默认序一致(发布时间↓,同日评分↓兜底):免费匹配「前 N 岗」(E5-00)才等于用户看到的前 N 行
 
   // 维度表小,继续走 payload.find
-  const [provDocs, cityDocs, distDocs, nocDocs, srcDocs, expDocs, pnpDocs, eeDocs, aipDocs, nocDescDocs, fieldSrcDocs] = await Promise.all([
+  const [provDocs, cityDocs, distDocs, nocDocs, srcDocs, expDocs, pnpDocs, pnpDrawDocs, eeDocs, aipDocs, nocDescDocs, fieldSrcDocs] = await Promise.all([
     payload.find({ collection: 'provinces', limit: 100, depth: 0, sort: 'name' }),
     payload.find({ collection: 'cities', limit: 5000, depth: 0, sort: 'name' }),
     payload.find({ collection: 'districts', limit: 1000, depth: 0, sort: 'name' }),
@@ -49,6 +49,7 @@ export default async function JobsPage() {
     payload.find({ collection: 'sources', limit: 200, depth: 0, sort: 'name' }),
     payload.find({ collection: 'experience-levels', limit: 50, depth: 0 }),
     payload.find({ collection: 'pnp-occupations', limit: 5000, depth: 0 }),
+    payload.find({ collection: 'pnp-draws', limit: 200, depth: 0, sort: '-drawDate' }),
     payload.find({ collection: 'ee-categories', limit: 2000, depth: 0 }),
     payload.find({ collection: 'designated-employers', limit: 5000, depth: 0 }),
     payload.find({ collection: 'noc-descriptions', limit: 2000, depth: 0 }),
@@ -62,6 +63,7 @@ export default async function JobsPage() {
     sources: srcDocs.docs.map((s: any) => ({ name: s.name })),
     experienceLevels: expDocs.docs.map((e: any) => ({ name: e.name })),
     pnpOccupations: pnpDocs.docs.map((r: any) => ({ province: r.province, stream: r.stream, label: r.label, type: r.type, noc: r.noc, name: r.name, gtaRestricted: !!r.gtaRestricted, url: r.url, fetched: r.fetched })),
+    pnpDraws: pnpDrawDocs.docs.map((r: any) => ({ province: r.province, kind: r.kind, drawDate: r.drawDate ?? '', stream: r.stream ?? '', score: typeof r.score === 'number' ? r.score : null, scale: r.scale ?? '', invitations: typeof r.invitations === 'number' ? r.invitations : null, note: r.note ?? '', label: r.label ?? '', url: r.url ?? '', fetched: r.fetched ?? '' })),
     eeCategories: eeDocs.docs.map((r: any) => ({ category: r.category, label: r.label, noc: r.noc, teer: typeof r.teer === 'number' ? r.teer : null, title: r.title, url: r.url, fetched: r.fetched, drawCrs: typeof r.drawCrs === 'number' ? r.drawCrs : null, drawDate: r.drawDate ?? '', drawSize: typeof r.drawSize === 'number' ? r.drawSize : null })),
     designatedEmployers: aipDocs.docs.map((r: any) => ({ name: r.name, province: r.province, location: r.location, isTech: !!r.isTech })),
     nocDescriptions: nocDescDocs.docs.map((r: any) => ({ noc: r.noc, title: r.title ?? '', duties: r.duties ?? '', requirements: r.requirements ?? '', fetched: r.fetched ?? '' })),

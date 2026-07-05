@@ -15,6 +15,7 @@ META = {
         # BC:tech 定向抽选 2024-12 已关、无具名通道;welcomebc 也无清单页 → 不产出,BC 岗走通用「可提名」。
         ["python", "etl/pnp/build_sk.py"],   # SK SINP 三通道(实时)
         ["python", "etl/pnp/build_ns.py"],   # NS 两通道(实时)
+        ["python", "etl/pnp/build_draws.py"],  # E6-04 省抽选事实(BC/AB/MB+ON通告;无 occupations 键,08 扫表跳过)
         ["python", "etl/06_scrape_aip_employers.py"],  # AIP 指定雇主(NL/NB/NS;PE 仍 TODO)
         ["python", "etl/build_field_sources.py"],     # 字段级来源注册表(E4-04:验证 URL+抽 title/meta)
     ],

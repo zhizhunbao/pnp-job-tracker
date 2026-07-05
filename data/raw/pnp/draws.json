@@ -1,0 +1,275 @@
+{
+  "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
+  "fetched": "2026-07-05",
+  "provinces": {
+    "BC": {
+      "label": "BC PNP Skills Immigration",
+      "scale": "SIRS",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply",
+      "draws": [
+        {
+          "date": "2026-06-18",
+          "stream": "Innovate: High Economic Impact",
+          "note": "Minimum wage of $62/hour and $125,000/year, and NOC 0, 1, 2, or 3",
+          "score": null,
+          "invitations": 130
+        },
+        {
+          "date": "2026-06-18",
+          "stream": "Innovate: High Economic Impact",
+          "note": "Points",
+          "score": 136,
+          "invitations": 149
+        },
+        {
+          "date": "2026-06-02",
+          "stream": "Care: Childcare",
+          "note": "Early childhood educators *",
+          "score": 111,
+          "invitations": 91
+        },
+        {
+          "date": "2026-06-02",
+          "stream": "Care: Health",
+          "note": "All priority health care occupations *",
+          "score": 100,
+          "invitations": 117
+        },
+        {
+          "date": "2026-06-02",
+          "stream": "Care: Veterinary Care",
+          "note": "All priority veterinary care occupations",
+          "score": 92,
+          "invitations": 6
+        },
+        {
+          "date": "2026-06-02",
+          "stream": "Care: Veterinary Care",
+          "note": "Animal health technologists and veterinary technicians (NOC 32104) with valid professional designation",
+          "score": 92,
+          "invitations": 6
+        },
+        {
+          "date": "2026-06-02",
+          "stream": "Build: Construction Trades",
+          "note": "All priority construction occupations *",
+          "score": 101,
+          "invitations": 128
+        },
+        {
+          "date": "2026-05-14",
+          "stream": "Innovate: High Economic Impact",
+          "note": "Minimum wage of $59/hour and $120,000/year, and NOC 0, 1, 2, or 3",
+          "score": null,
+          "invitations": 225
+        },
+        {
+          "date": "2026-05-14",
+          "stream": "Innovate: High Economic Impact",
+          "note": "Points",
+          "score": 135,
+          "invitations": 212
+        },
+        {
+          "date": "2026-05-06",
+          "stream": "Care: Childcare",
+          "note": "Early childhood educators only (NOC 42202) *",
+          "score": 115,
+          "invitations": 86
+        },
+        {
+          "date": "2026-05-06",
+          "stream": "Care: Health",
+          "note": "All priority health care occupations *",
+          "score": 108,
+          "invitations": 117
+        },
+        {
+          "date": "2026-05-06",
+          "stream": "Care: Veterinary Care",
+          "note": "All priority veterinary care occupations",
+          "score": 100,
+          "invitations": 9
+        }
+      ]
+    },
+    "AB": {
+      "label": "AAIP",
+      "scale": "WEOI",
+      "url": "https://www.alberta.ca/aaip-processing-information",
+      "draws": [
+        {
+          "date": "2026-06-29",
+          "stream": "Dedicated Health Care Pathway – non-Express Entry",
+          "note": "",
+          "score": 63,
+          "invitations": 75
+        },
+        {
+          "date": "2026-06-24",
+          "stream": "Alberta Express Entry Stream – Priority Sectors (Aviation and skilled trade)",
+          "note": "",
+          "score": 47,
+          "invitations": 35
+        },
+        {
+          "date": "2026-06-22",
+          "stream": "Dedicated Health Care Pathway – Express Entry",
+          "note": "",
+          "score": 64,
+          "invitations": 46
+        },
+        {
+          "date": "2026-06-19",
+          "stream": "Alberta Express Entry Stream – Accelerated Tech Pathway",
+          "note": "",
+          "score": 59,
+          "invitations": 100
+        },
+        {
+          "date": "2026-06-18",
+          "stream": "Tourism and Hospitality Stream",
+          "note": "",
+          "score": 71,
+          "invitations": 61
+        },
+        {
+          "date": "2026-06-17",
+          "stream": "Alberta Opportunity Stream",
+          "note": "",
+          "score": 58,
+          "invitations": 720
+        },
+        {
+          "date": "2026-06-15",
+          "stream": "Alberta Express Entry Stream – Priority Sectors (Manufacturing)",
+          "note": "",
+          "score": 50,
+          "invitations": 56
+        },
+        {
+          "date": "2026-06-12",
+          "stream": "Alberta Express Entry Stream – Priority Sectors (Agriculture)",
+          "note": "",
+          "score": 52,
+          "invitations": 37
+        },
+        {
+          "date": "2026-06-11",
+          "stream": "Alberta Express Entry Stream – Priority Sectors (Health Care)",
+          "note": "",
+          "score": 63,
+          "invitations": 50
+        },
+        {
+          "date": "2026-06-10",
+          "stream": "Rural Renewal Stream",
+          "note": "",
+          "score": 51,
+          "invitations": 54
+        },
+        {
+          "date": "2026-06-09",
+          "stream": "Dedicated Health Care Pathway – non-Express Entry",
+          "note": "",
+          "score": 45,
+          "invitations": 35
+        },
+        {
+          "date": "2026-06-08",
+          "stream": "Dedicated Health Care Pathway – Express Entry",
+          "note": "",
+          "score": 60,
+          "invitations": 49
+        }
+      ]
+    },
+    "MB": {
+      "label": "MPNP Expression of Interest",
+      "scale": "MPNP EOI",
+      "url": "https://immigratemanitoba.com/draws/",
+      "draws": [
+        {
+          "date": "2026-07-02",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #274",
+          "score": null,
+          "invitations": 77
+        },
+        {
+          "date": "2026-06-18",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #273",
+          "score": null,
+          "invitations": 124
+        },
+        {
+          "date": "2026-06-04",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #272",
+          "score": null,
+          "invitations": null
+        },
+        {
+          "date": "2026-05-21",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #271",
+          "score": null,
+          "invitations": 96
+        },
+        {
+          "date": "2026-05-07",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #270",
+          "score": null,
+          "invitations": 431
+        },
+        {
+          "date": "2026-04-23",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #269",
+          "score": null,
+          "invitations": 192
+        },
+        {
+          "date": "2026-04-09",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #268",
+          "score": null,
+          "invitations": 32
+        },
+        {
+          "date": "2026-03-26",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #267",
+          "score": null,
+          "invitations": 14
+        },
+        {
+          "date": "2026-03-12",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #266",
+          "score": null,
+          "invitations": 46
+        },
+        {
+          "date": "2026-02-26",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #265",
+          "score": null,
+          "invitations": 72
+        }
+      ]
+    },
+    "ON": {
+      "label": "OINP",
+      "scale": null,
+      "url": "https://www.ontario.ca/page/2026-ontario-immigrant-nominee-program-updates",
+      "draws": [],
+      "notice": {
+        "date": "2026-06-26",
+        "note": "OINP redesign: former 8 streams removed, EOI closed, no further invitations under former streams; new Ontario Workforce Priority stream pending."
+      }
+    }
+  }
+}

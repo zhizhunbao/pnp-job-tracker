@@ -72,6 +72,7 @@ export interface Config {
     companies: Company;
     jobs: Job;
     'pnp-occupations': PnpOccupation;
+    'pnp-draws': PnpDraw;
     'ee-categories': EeCategory;
     'noc-descriptions': NocDescription;
     'policy-docs': PolicyDoc;
@@ -98,6 +99,7 @@ export interface Config {
     companies: CompaniesSelect<false> | CompaniesSelect<true>;
     jobs: JobsSelect<false> | JobsSelect<true>;
     'pnp-occupations': PnpOccupationsSelect<false> | PnpOccupationsSelect<true>;
+    'pnp-draws': PnpDrawsSelect<false> | PnpDrawsSelect<true>;
     'ee-categories': EeCategoriesSelect<false> | EeCategoriesSelect<true>;
     'noc-descriptions': NocDescriptionsSelect<false> | NocDescriptionsSelect<true>;
     'policy-docs': PolicyDocsSelect<false> | PolicyDocsSelect<true>;
@@ -271,6 +273,22 @@ export interface Company {
    */
   isAgency?: boolean | null;
   source?: string | null;
+  /**
+   * 获批 LMIA 职位数(近两年)
+   */
+  lmiaPositions?: number | null;
+  /**
+   * 获批 LMIA 份数(近两年)
+   */
+  lmiaLmias?: number | null;
+  /**
+   * 最近获批季度,如 2025Q4
+   */
+  lmiaLastQuarter?: string | null;
+  /**
+   * 股别分布(展示串),如 High Wage 44 · Low Wage 12
+   */
+  lmiaStreams?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -462,6 +480,47 @@ export interface PnpOccupation {
    * ON 限大多伦多区域外
    */
   gtaRestricted?: boolean | null;
+  url?: string | null;
+  fetched?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pnp-draws".
+ */
+export interface PnpDraw {
+  id: number;
+  province?: string | null;
+  /**
+   * draw=抽选 / notice=改制通告
+   */
+  kind?: string | null;
+  /**
+   * 抽选日期(ISO)
+   */
+  drawDate?: string | null;
+  /**
+   * 流/通道名(官方原文)
+   */
+  stream?: string | null;
+  /**
+   * 最低邀请分 — 省自评分制,非 CRS!展示必须带 scale
+   */
+  score?: number | null;
+  /**
+   * 分制名(SIRS/WEOI/MPNP EOI)
+   */
+  scale?: string | null;
+  invitations?: number | null;
+  /**
+   * 选择参数/期号/通告原文
+   */
+  note?: string | null;
+  /**
+   * 省项目名(BC PNP Skills Immigration/AAIP/…)
+   */
+  label?: string | null;
   url?: string | null;
   fetched?: string | null;
   updatedAt: string;
@@ -828,6 +887,10 @@ export interface PayloadLockedDocument {
         value: number | PnpOccupation;
       } | null)
     | ({
+        relationTo: 'pnp-draws';
+        value: number | PnpDraw;
+      } | null)
+    | ({
         relationTo: 'ee-categories';
         value: number | EeCategory;
       } | null)
@@ -997,6 +1060,10 @@ export interface CompaniesSelect<T extends boolean = true> {
   isDesignatedEmployer?: T;
   isAgency?: T;
   source?: T;
+  lmiaPositions?: T;
+  lmiaLmias?: T;
+  lmiaLastQuarter?: T;
+  lmiaStreams?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1064,6 +1131,25 @@ export interface PnpOccupationsSelect<T extends boolean = true> {
   noc?: T;
   name?: T;
   gtaRestricted?: T;
+  url?: T;
+  fetched?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pnp-draws_select".
+ */
+export interface PnpDrawsSelect<T extends boolean = true> {
+  province?: T;
+  kind?: T;
+  drawDate?: T;
+  stream?: T;
+  score?: T;
+  scale?: T;
+  invitations?: T;
+  note?: T;
+  label?: T;
   url?: T;
   fetched?: T;
   updatedAt?: T;

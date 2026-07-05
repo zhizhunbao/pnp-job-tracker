@@ -332,6 +332,8 @@ const AUTO_MAX = 180                    // 自动滚动加载上限;超过改「
 const ORIGIN_LABEL: Record<string, string> = { jobbank: 'Job Bank', ats: 'ATS', directory: '社区名单' }
 
 type PnpOcc = { province: string; stream: string; label: string; type: string; noc: string; name: string; gtaRestricted: boolean; url: string; fetched: string }
+// 省抽选事实(E6-04):score 是省自评分制(scale 标注),非 CRS —— 只作事实展示,不做资格/差分判定
+type PnpDraw = { province: string; kind: string; drawDate: string; stream: string; score: number | null; scale: string; invitations: number | null; note: string; label: string; url: string; fetched: string }
 type EeOcc = { category: string; label: string; noc: string; teer: number | null; title: string; url: string; fetched: string; drawCrs: number | null; drawDate: string; drawSize: number | null }
 type DesigEmp = { name: string; province: string; location: string; isTech: boolean }
 type NocDesc = { noc: string; title: string; duties: string; requirements: string; fetched: string }
@@ -344,12 +346,13 @@ type Dims = {
   sources: { name: string }[]
   experienceLevels: { name: string }[]
   pnpOccupations: PnpOcc[]
+  pnpDraws: PnpDraw[]
   eeCategories: EeOcc[]
   designatedEmployers: DesigEmp[]
   nocDescriptions: NocDesc[]
   fieldSources: FieldSource[]
 }
-const EMPTY_DIMS: Dims = { provinces: [], cities: [], districts: [], nocCategories: [], sources: [], experienceLevels: [], pnpOccupations: [], eeCategories: [], designatedEmployers: [], nocDescriptions: [], fieldSources: [] }
+const EMPTY_DIMS: Dims = { provinces: [], cities: [], districts: [], nocCategories: [], sources: [], experienceLevels: [], pnpOccupations: [], pnpDraws: [], eeCategories: [], designatedEmployers: [], nocDescriptions: [], fieldSources: [] }
 const PROV_CODE: Record<string, string> = Object.fromEntries(Object.entries(PROV_NAMES).map(([c, n]) => [n, c]))
 
 export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialCols, plan = FREE_PLAN }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims; initialCols?: string[]; plan?: Plan }) {
@@ -877,7 +880,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
         </div>
       </footer>
 
-      {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} />}
+      {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} />}
       {actModal && <ActModal kind={actModal.kind} job={actModal.job} jobs={jobs} lang={lang} onClose={() => setActModal(null)} />}
     </div>
   )
@@ -887,7 +890,40 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
 // 清单是权威「事实」,来自 DB 维度表(pnp-occupations,经 props 传入),绝不让 LLM 编。
 // 判定只用本岗既有字段(province/noc/teer)+ 清单比对,不在前端重算资格逻辑。
 type PnpStream = { stream: string; label: string; type: string; url: string; fetched: string; occupations: { noc: string; name: string; gtaRestricted: boolean }[] }
-function PnpListSection({ job, lang, occ }: { job: JobRow; lang: Lang; occ: PnpOcc[] }) {
+
+// 本省最近抽选事实块(E6-04)。score 是省自评分制(SIRS/WEOI/MPNP EOI),非 CRS —— 只陈列事实,不判定资格。
+// kind=notice(如 ON 2026-06 改制)渲染通告行;省内无数据(SK/QC 等)整块不出现。
+function PnpDrawsBlock({ province, lang, draws }: { province: string; lang: Lang; draws: PnpDraw[] }) {
+  const t = makeT(lang)
+  const rows = draws.filter((d) => d.province === province)
+  if (!rows.length) return null
+  const src = rows[0]
+  return (
+    <div style={{ marginBottom: 12 }}>
+      <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>
+        {t('pnpdraws.title', { label: src.label })}
+        {src.scale ? <span style={{ color: '#9ca3af' }}> · {t('pnpdraws.scale', { scale: src.scale })}</span> : null}
+        {src.url ? <> · <a href={src.url} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12 }}>{t('pnplist.source')}{src.fetched ? ` (${src.fetched})` : ''} ↗</a></> : null}
+      </div>
+      <div style={{ border: '1px solid #f3f4f6', borderRadius: 8 }}>
+        {rows.map((d, i) => d.kind === 'notice' ? (
+          <div key={i} style={{ padding: '5px 10px', fontSize: 12.5, color: '#b45309', background: '#fffbeb' }}>
+            <IconWarn /> {t('pnpdraws.notice', { date: d.drawDate })}
+          </div>
+        ) : (
+          <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '4px 10px', fontSize: 12.5, color: '#374151' }}>
+            <span style={{ fontVariantNumeric: 'tabular-nums', color: '#9ca3af', whiteSpace: 'nowrap' }}>{d.drawDate}</span>
+            <span style={{ flex: 1, minWidth: 0 }} title={d.note || undefined}>{d.stream}</span>
+            {d.score != null && <span style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('pnpdraws.min', { score: d.score })}</span>}
+            {d.invitations != null && <span style={{ color: '#6b7280', whiteSpace: 'nowrap' }}>{t('pnpdraws.inv', { n: d.invitations })}</span>}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function PnpListSection({ job, lang, occ, draws }: { job: JobRow; lang: Lang; occ: PnpOcc[]; draws: PnpDraw[] }) {
   const t = makeT(lang)
   const matchRef = useRef<HTMLDivElement | null>(null)
   const isQc = job.province === 'QC'
@@ -923,6 +959,7 @@ function PnpListSection({ job, lang, occ }: { job: JobRow; lang: Lang; occ: PnpO
   return (
     <div style={{ marginBottom: 14, paddingBottom: 12, borderBottom: '1px solid #f3f4f6' }}>
       <div style={{ fontSize: 13.5, fontWeight: 600, color: tone, marginBottom: 8 }}>{vIcon}{vIcon ? ' ' : null}{verdict}</div>
+      {!isQc && job.province ? <PnpDrawsBlock province={job.province} lang={lang} draws={draws} /> : null}
       {streams.filter((s) => s.occupations.length).map((s) => (
         <div key={s.label + s.stream} style={{ marginBottom: 10 }}>
           <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>
@@ -1130,18 +1167,18 @@ function SourceLine({ field, job, lang, sources }: { field: ColKey; job: JobRow;
   )
 }
 
-function FieldFactsSection({ field, job, lang, pnpOcc, eeOcc, desigEmp, nocDesc, fieldSources }: { field: ColKey; job: JobRow; lang: Lang; pnpOcc: PnpOcc[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[] }) {
+function FieldFactsSection({ field, job, lang, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc, fieldSources }: { field: ColKey; job: JobRow; lang: Lang; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[] }) {
   return (
     <>
-      <FieldFactsInner field={field} job={job} lang={lang} pnpOcc={pnpOcc} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} />
+      <FieldFactsInner field={field} job={job} lang={lang} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} />
       <SourceLine field={field} job={job} lang={lang} sources={fieldSources} />
     </>
   )
 }
-function FieldFactsInner({ field, job, lang, pnpOcc, eeOcc, desigEmp, nocDesc }: { field: ColKey; job: JobRow; lang: Lang; pnpOcc: PnpOcc[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[] }) {
+function FieldFactsInner({ field, job, lang, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc }: { field: ColKey; job: JobRow; lang: Lang; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[] }) {
   const t = makeT(lang)
   const noc = nocDesc.find((d) => d.noc === job.noc) || null
-  if (field === 'pnp') return <PnpListSection job={job} lang={lang} occ={pnpOcc} />
+  if (field === 'pnp') return <PnpListSection job={job} lang={lang} occ={pnpOcc} draws={pnpDraws} />
   if (field === 'ee') return <EeCategorySection job={job} lang={lang} cats={eeOcc} />
   if (field === 'title') return <TitleFacts job={job} lang={lang} noc={noc} />
   const day = (s?: string) => (s || '').slice(0, 10)
@@ -1334,7 +1371,7 @@ function MeansForMe({ job, lang, plan, pnpOcc, eeOcc }: { job: JobRow; lang: Lan
   )
 }
 
-function AdvisorModal({ field, job, title, lang, plan, pnpOcc, eeOcc, desigEmp, nocDesc, fieldSources, onClose }: { field: ColKey; job: JobRow; title?: string; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onClose: () => void }) {
+function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc, fieldSources, onClose }: { field: ColKey; job: JobRow; title?: string; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onClose: () => void }) {
   const t = makeT(lang)
   const a = advHeader(field, job, t)
   const [text, setText] = useState('')
@@ -1431,7 +1468,7 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, eeOcc, desigEmp, 
         <div style={{ flex: 1, overflowY: 'auto', padding: '4px 18px 18px' }}>
           {/* 对我意味着什么(E5-00):个人相关性放最上;依据链同源 match() */}
           <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} />
-          <FieldFactsSection field={field} job={job} lang={lang} pnpOcc={pnpOcc} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} />
+          <FieldFactsSection field={field} job={job} lang={lang} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} />
           {/* 免责声明 v1(E4-01):AI 判断区顶部,UI 层声明与 AI 文风分离(SYSTEM 已禁输出套话) */}
           <div style={{ fontSize: 11.5, color: '#9ca3af', margin: '6px 0 4px' }}><IconScale /> {t('advisor.disclaimer')}</div>
           {status === 'upgrade' ? (

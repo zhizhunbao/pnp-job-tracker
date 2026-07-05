@@ -86,6 +86,8 @@ export async function GET(req: Request) {
     ['experience_levels', 'experience_levels', ['name'], (r) => ({ name: r.name })],
     ['pnp_occupations', 'pnp_occupations', ['province', 'stream', 'label', 'type', 'noc', 'name', 'gta_restricted', 'url', 'fetched'],
       (r) => ({ province: r.province, stream: r.stream, label: r.label, type: r.type, noc: r.noc, name: r.name, gta_restricted: r.gtaRestricted, url: r.url, fetched: r.fetched })],
+    ['pnp_draws', 'pnp_draws', ['province', 'kind', 'draw_date', 'stream', 'score', 'scale', 'invitations', 'note', 'label', 'url', 'fetched'],
+      (r) => ({ province: r.province, kind: r.kind, draw_date: r.drawDate, stream: r.stream, score: r.score, scale: r.scale, invitations: r.invitations, note: r.note, label: r.label, url: r.url, fetched: r.fetched })],
     ['ee_categories', 'ee_categories', ['category', 'label', 'noc', 'teer', 'title', 'url', 'fetched', 'draw_crs', 'draw_date', 'draw_size'],
       (r) => ({ category: r.category, label: r.label, noc: r.noc, teer: r.teer, title: r.title, url: r.url, fetched: r.fetched, draw_crs: r.drawCrs, draw_date: r.drawDate, draw_size: r.drawSize })],
     ['noc_descriptions', 'noc_descriptions', ['noc', 'title', 'duties', 'requirements', 'fetched'],

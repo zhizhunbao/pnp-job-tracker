@@ -32,6 +32,7 @@ IN_SCORED = _paths.PROCESSED / "all-scored.json"
 IN_AIP = _paths.AIP / "aip-designated-employers.json"
 IN_WAGES = _paths.WAGES / "wages.json"   # NOC×省 中位工资(build_wages.py 从 ESDC 开放数据建)
 IN_PNP = _paths.PNP                      # raw/pnp/*.json(各省具名通道:每文件一条通道)
+IN_PNP_DRAWS = _paths.PNP / "draws.json"  # 省抽选事实(BC/AB/MB+ON通告,build_draws.py 产,E6-04)
 IN_EE = _paths.EE / "federal-categories.json"  # 联邦 Express Entry 类别抽选(全国单一源)
 IN_EE_DRAWS = _paths.EE / "draws.json"          # 各类别最近一次抽选(CRS/日期/邀请数,build_ee_draws.py 产)
 IN_NOC_DESC = _paths.NOC / "descriptions.json"  # NOC 官方名+主要职责(build_noc_descriptions.py 产)
@@ -260,6 +261,26 @@ def build():
                         "type": d.get("type", "indemand"), "url": d.get("url", ""), "fetched": d.get("fetched", ""),
                         "noc": o["noc"], "name": o.get("name", ""), "gtaRestricted": bool(o.get("gtaRestricted"))})
 
+    # 省 PNP 抽选事实维度(E6-04):每行=一省一次抽选(kind=draw)或改制通告(kind=notice)。
+    # 各省分制互不相通且都非 CRS(scale 标注),纯事实展示层,不进评分/匹配。每省 ≤8 条,全量历史在 raw。
+    pnp_draws = []
+    if IN_PNP_DRAWS.exists():
+        try:
+            pd = json.loads(IN_PNP_DRAWS.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001
+            pd = {}
+        for prov, v in pd.get("provinces", {}).items():
+            base = {"province": prov, "label": v.get("label", ""), "scale": v.get("scale"),
+                    "url": v.get("url", ""), "fetched": pd.get("fetched", "")}
+            for dr in v.get("draws", [])[:8]:
+                pnp_draws.append({**base, "kind": "draw", "drawDate": dr.get("date"),
+                                  "stream": dr.get("stream", ""), "score": dr.get("score"),
+                                  "invitations": dr.get("invitations"), "note": dr.get("note", "")})
+            if v.get("notice"):
+                pnp_draws.append({**base, "kind": "notice", "drawDate": v["notice"].get("date"),
+                                  "stream": "", "score": None, "invitations": None,
+                                  "note": v["notice"].get("note", "")})
+
     # 各类别最近抽选(CRS/日期/邀请数)—— join 进每行,EE 弹框显示「近期抽选」
     ee_draws = {}
     if IN_EE_DRAWS.exists():
@@ -315,7 +336,7 @@ def build():
         "provinces": provinces, "cities": cities, "districts": districts,
         "designated_employers": designated,
         "noc_categories": noc_categories, "sources": sources, "experience_levels": experience_levels,
-        "pnp_occupations": pnp_occupations, "ee_categories": ee_categories,
+        "pnp_occupations": pnp_occupations, "pnp_draws": pnp_draws, "ee_categories": ee_categories,
         "noc_descriptions": noc_descriptions,
         "field_sources": field_sources,
     }

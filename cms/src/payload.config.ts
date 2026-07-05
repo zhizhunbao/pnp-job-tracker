@@ -11,6 +11,7 @@ import { Companies } from './collections/Companies'
 import { Jobs } from './collections/Jobs'
 import { PnpOccupations } from './collections/PnpOccupations'
 import { EeCategories } from './collections/EeCategories'
+import { PnpDraws } from './collections/PnpDraws'
 import { NocDescriptions } from './collections/NocDescriptions'
 import { PolicyDocs } from './collections/PolicyDocs'
 import { DesignatedEmployers } from './collections/DesignatedEmployers'
@@ -35,7 +36,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Companies, Jobs, PnpOccupations, EeCategories, NocDescriptions, PolicyDocs, DesignatedEmployers, Provinces, Cities, Districts, NocCategories, Sources, ExperienceLevels, FieldSources, Rankings, Stats, SavedSearches],
+  collections: [Users, Media, Companies, Jobs, PnpOccupations, PnpDraws, EeCategories, NocDescriptions, PolicyDocs, DesignatedEmployers, Provinces, Cities, Districts, NocCategories, Sources, ExperienceLevels, FieldSources, Rankings, Stats, SavedSearches],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
