@@ -9,7 +9,7 @@
 > ③ **E5-04 地区统计 ✅**:`11_build_stats.py`(省×大类 115 行,双口径中位:ESDC+帖面)→ /stats 省索引+省页+大类页(口径行复用 E4-04 来源;职位板入口 ?prov=&broad=)+ **Pro 跨省对比**(档案 NOC 预选大类);市级后置 topCities 顶上。**又踩老坑 6**:共享常量放 'use client' 模块服务端拿 undefined → 抽 stats/shared.ts。
 > ④ **E7-02 埋点(代码侧 ✅,选型按 R3 修订)**:compose 自托管方案过时 → **umami cloud 免费档**;layout env-gate script + signup/checkout 两事件;隐私政策补 analytics 条目;layout 顺手修掉「Payload Blank Template」残留 metadata。**剩用户手动:cloud.umami.is 开账号 → Render 填 NEXT_PUBLIC_UMAMI_SRC/ID**。
 > ⑤ **架构拍板(用户,2026-07-04):所有数据真相=Supabase(库+Storage),本地库/本地 mart 读路径过时,本地 dev 直连正式库**。护栏已全上:payload `push: DB_PUSH==='1'`(dev 不再自动推 schema!改 collection=显式 DB_PUSH=1 单次推或手写 SQL)/本地 .env 配 SEED_TOKEN(seed 必须带 token,reset=1 会重灌生产)/测试号一律 @test.local/本地 postgres+cms:3001 标过时不删/`data/` 仍是 ETL 构建工作区(mart 上传 Storage 是唯一交接)。**生产 3 新表(field_sources/rankings/stats)DDL 先行**(pg_dump 导本地→psql,方案内授权)。
-> **B7 收尾**:部署后带 token 触发生产 seed 填三新表 → 验证 /stats /rankings;umami 账号(用户)。**下批 B8:E5-03 邮件提醒 + E7-01 监控备份 + E7-03 SEO(sitemap 收录 stats 页)= M4。**
+> **B7 收尾 ✅**:生产 seed 灌满三新表(115/80/30)并页面终验通过。**踩坑记档:新增 collection 手写 DDL 时,除主表外还必须给 `payload_locked_documents_rels` 补 `<slug>_id` 列+索引+FK**(Payload 给每个 collection 在该表加关联列;漏了 → seed 的 delete 阶段整事务炸,错误还被 25P02 吞掉难定位)——已补进 prod-migration-workflow 记忆与本段。另:本地→远端库逐行 seed 太慢(跨网延迟),触发生产 seed 让它在 us-east-1 内网跑才是正解。剩 umami 账号(用户,2 env)。**下批 B8:E5-03 邮件提醒 + E7-01 监控备份 + E7-03 SEO(sitemap 收录 stats 页)= M4。**
 >
 > **本轮(2026-07-04 深夜续 —— M3 正式收费开闸 🎉 + 登录改版)**:
 > ① **E3-06 切 live 完成**:live Product `prod_UpEXEb8j3hFyBG`($19=`price_1Tpa4dGre9TF1l9zHOsx7tR4`/$39=`price_1Tpa5sGre9TF1l9zFjycLhSf`)+ live webhook `we_1TpaA9Gre9TF1l9zVVoSM7Uz`(completed+async 两事件)——助手驱动用户浏览器建的,**sk_live/whsec 全程用户自持不经助手**;Render env 切 live(STRIPE_WECHAT_PAY 已删,checkout 有未获批自动退纯卡兜底)。
