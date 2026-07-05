@@ -9,6 +9,8 @@ const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : use
 import { makeT, LANGS, LANG_KEY, COLS_COOKIE, type Lang, type TFn } from './i18n'
 import { IconChart, IconCheck, IconCompass, IconLock, IconMap, IconMapPin, IconMaximize, IconMinimize, IconPaperclip, IconSave, IconScale, IconSettings, IconStar, IconTarget, IconUser, IconWarn, IconX } from '../Icons'
 import { AuthModal } from './AuthForm'
+import { UpgradeModal } from './UpgradeModal'
+import { useOverlayClose } from './overlay'
 import { match as matchJob, matchRank, type MatchProfile, type MatchJob, type MatchReason } from '@/lib/match'
 
 // 分层态(E3-05/E5-00,服务端 page.tsx 传入):gate 在服务端已生效,这里只做展示引导
@@ -20,6 +22,11 @@ export type Plan = {
   freeMatchCap: number
 }
 const FREE_PLAN: Plan = { isPro: false, loggedIn: false, profileOk: false, profile: null, freeMatchCap: 0 }
+// 中/小分类显示翻译(值仍是数据层中文,筛选/查询语义不变):cat.* 缺键退 broad.*(noc.py 兜底会把大类名当中/小类),再退原值
+function catName(t: TFn, v: string): string {
+  for (const k of ['cat.' + v, 'broad.' + v]) { const s = t(k); if (s !== k) return s }
+  return v
+}
 // Pro 专属列(与 lib/plan.ts PRO_COLUMNS 一致;免费用户列位显示锁标,数据本就没进浏览器)
 const PRO_COLS = new Set<ColKey>(['match', 'vsMedian', 'wageMedHr', 'wageMedYr'])
 
@@ -41,18 +48,20 @@ function ValueBanner({ t }: { t: TFn }) {
           <button onClick={dismiss} aria-label="close" style={{ border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 15, padding: 0 }}>×</button>
         </span>
       </div>
-      {auth && <AuthModal t={t} onClose={() => setAuth(false)} onDone={() => window.location.reload()} />}
+      {auth && <AuthModal t={t} mode="register" onClose={() => setAuth(false)} onDone={() => window.location.reload()} />}
     </div>
   )
 }
 
-// 升级卡片(402 / 锁定块共用)
+// 升级卡片(402 / 锁定块共用;都出现在已登录上下文)—— CTA 开独立升级弹框(用户定),不再跳 /account
 function UpgradeCard({ t, reason }: { t: TFn; reason: string }) {
+  const [up, setUp] = useState(false)
   return (
     <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '10px 14px', margin: '8px 0', fontSize: 13.5 }}>
       <span style={{ fontWeight: 600, color: '#92400e' }}><IconStar /> {t('up.title')}</span>
       <span style={{ color: '#78716c', marginLeft: 8 }}>{reason}</span>
-      <a href="/account" style={{ marginLeft: 10, color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}>{t('up.cta')}</a>
+      <button onClick={() => setUp(true)} style={{ marginLeft: 10, border: 'none', background: 'none', padding: 0, color: '#2563eb', fontWeight: 600, fontSize: 13.5, cursor: 'pointer' }}>{t('up.cta')}</button>
+      {up && <UpgradeModal t={t} onClose={() => setUp(false)} />}
     </div>
   )
 }
@@ -382,6 +391,8 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
   }, [])
   const [popup, setPopup] = useState<{ field: ColKey; job: JobRow; title: string } | null>(null)
   const [actModal, setActModal] = useState<{ kind: 'company' | 'desc'; job: JobRow } | null>(null)
+  // 升级入口(Pro 锁列/保存筛选 gate)统一开独立升级弹框;未登录先走注册弹框(用户定:注册与购买分离)
+  const [upsell, setUpsell] = useState<false | 'lock' | 'ss'>(false)
   const [sort, setSort] = useState<{ key: ColKey; dir: 'asc' | 'desc' }>({ key: 'datePosted', dir: 'desc' })
   const [colOpen, setColOpen] = useState(false)
   const colRef = useRef<HTMLDivElement>(null)
@@ -393,6 +404,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
   const t = makeT(lang)
   // 大分类标签:'未分类' 复用规范 key cell.uncat(字典无 broad.未分类,否则会回退成原样输出 "broad.未分类")
   const broadLabel = (v?: string) => (v && v !== '未分类' ? t('broad.' + v) : t('cell.uncat'))
+  const catLabel = (v?: string) => (!v || v === '未分类' ? t('cell.uncat') : catName(t, v))
   const toggleSort = (key: ColKey) =>
     setSort((s) => {
       if (s.key !== key) return { key, dir: 'desc' }       // 新列:降序
@@ -630,10 +642,10 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
           {/* 职业分类(TEER + 大→中→小 联动) */}
           <div style={filtRow}>
             <span style={filtLabel}>{t('filter.cat')}</span>
-            <Sel value={fTeer} onChange={setFTeer} opts={teerOpts} all={t('all.teer')} />
+            <Sel value={fTeer} onChange={setFTeer} opts={teerOpts} all={t('all.teer')} labelOf={catLabel} />
             <Sel value={fBroad} onChange={(v) => { setFBroad(v); setFMid(''); setFFine('') }} opts={broadOpts} all={t('all.broad')} labelOf={broadLabel} />
-            <Sel value={fMid} onChange={(v) => { setFMid(v); setFFine('') }} opts={midOpts} all={t('all.mid')} />
-            <Sel value={fFine} onChange={setFFine} opts={fineOpts} all={t('all.fine')} />
+            <Sel value={fMid} onChange={(v) => { setFMid(v); setFFine('') }} opts={midOpts} all={t('all.mid')} labelOf={catLabel} />
+            <Sel value={fFine} onChange={setFFine} opts={fineOpts} all={t('all.fine')} labelOf={catLabel} />
           </div>
           {/* 移民资格 */}
           <div style={filtRow}>
@@ -693,7 +705,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
             {anyFilter && plan.loggedIn && (
               <button
                 onClick={async () => {
-                  if (!plan.isPro) { alert(t('ss.pro')); window.location.href = '/pricing'; return }
+                  if (!plan.isPro) { setUpsell('ss'); return }  // 升级走独立弹框(用户定),不再 alert+跳定价页
                   const name = window.prompt(t('ss.name'))
                   if (!name) return
                   const filters = { q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs }
@@ -781,7 +793,7 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                       const extra: React.CSSProperties = {}
                       // Pro 专属列(E3-05):免费用户列位显示锁标(数据在服务端已剥离,改偏好/cookie 绕不过)
                       if (PRO_COLS.has(k) && !plan.isPro && k !== 'match') {
-                        node = <a href="/account" title={t('up.lockTip')} style={{ textDecoration: 'none', color: '#b45309' }} onClick={(e) => e.stopPropagation()}><IconLock /></a>
+                        node = <button title={t('up.lockTip')} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', color: '#b45309' }} onClick={(e) => { e.stopPropagation(); setUpsell('lock') }}><IconLock /></button>
                         Object.assign(extra, { whiteSpace: 'nowrap', textAlign: 'center' as const })
                       }
                       else if (k === 'match') {  // 与我的匹配(E5-00):高=绿 chip / 中=蓝 / 低=灰 / 不适用=浅;未建档→引导;免费限额外→锁
@@ -793,14 +805,14 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
                         } else if (!plan.loggedIn || !plan.profileOk) {
                           node = <a href="/account" style={{ fontSize: 12, color: '#2563eb', textDecoration: 'none', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>{t('match.needProfile')} →</a>
                         } else {
-                          node = <a href="/account" title={t('match.overCap', { n: plan.freeMatchCap })} style={{ textDecoration: 'none', color: '#b45309' }} onClick={(e) => e.stopPropagation()}><IconLock /></a>
+                          node = <button title={t('match.overCap', { n: plan.freeMatchCap })} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', color: '#b45309' }} onClick={(e) => { e.stopPropagation(); setUpsell('lock') }}><IconLock /></button>
                           Object.assign(extra, { whiteSpace: 'nowrap', textAlign: 'center' as const })
                         }
                       }
                       else if (k === 'score') { node = j.score ?? '—'; Object.assign(extra, { fontWeight: 500, color: scoreColor(j.score) }) }
                       else if (k === 'broad') { node = broadLabel(j.broad); Object.assign(extra, { whiteSpace: 'nowrap', color: cat.fg, fontWeight: 500 }) }
-                      else if (k === 'mid') { node = (!j.mid || j.mid === '未分类') ? t('cell.uncat') : j.mid; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
-                      else if (k === 'fine') { node = (j.mid === '未分类' || !j.mid) ? '—' : j.fine; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+                      else if (k === 'mid') { node = (!j.mid || j.mid === '未分类') ? t('cell.uncat') : catLabel(j.mid); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+                      else if (k === 'fine') { node = (j.mid === '未分类' || !j.mid) ? '—' : catLabel(j.fine); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'teer') { node = j.teer == null ? '—' : `TEER ${j.teer}`; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'title') { href = j.applyUrl || null; node = j.title; Object.assign(extra, wrapCell(360)) }
                       else if (k === 'company') { href = j.officialUrl || null; node = j.company; Object.assign(extra, wrapCell(190)) }
@@ -887,6 +899,9 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
 
       {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} />}
       {actModal && <ActModal kind={actModal.kind} job={actModal.job} jobs={jobs} lang={lang} onClose={() => setActModal(null)} />}
+      {upsell && (plan.loggedIn
+        ? <UpgradeModal t={t} reason={upsell === 'ss' ? t('ss.pro') : undefined} onClose={() => setUpsell(false)} />
+        : <AuthModal t={t} mode="register" onClose={() => setUpsell(false)} onDone={() => window.location.reload()} />)}
     </div>
   )
 }
@@ -1286,8 +1301,8 @@ function FieldFactsInner({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, des
         {noc?.title ? <FactRow k={t('fact.nocTitle')}>{noc.title}</FactRow> : null}
         <FactRow k={t('col.teer')}>{job.teer != null ? `TEER ${job.teer}` : null}</FactRow>
         <FactRow k={t('col.broad')}>{job.broad && job.broad !== '未分类' ? t('broad.' + job.broad) : null}</FactRow>
-        <FactRow k={t('col.mid')}>{job.mid && job.mid !== '未分类' ? job.mid : null}</FactRow>
-        <FactRow k={t('col.fine')}>{job.fine && job.fine !== '未分类' ? job.fine : null}</FactRow>
+        <FactRow k={t('col.mid')}>{job.mid && job.mid !== '未分类' ? catName(t, job.mid) : null}</FactRow>
+        <FactRow k={t('col.fine')}>{job.fine && job.fine !== '未分类' ? catName(t, job.fine) : null}</FactRow>
         <NocDutiesView noc={noc} lang={lang} />
       </FactsBox>
     )
@@ -1381,6 +1396,7 @@ function MeansForMe({ job, lang, plan, pnpOcc, eeOcc }: { job: JobRow; lang: Lan
 
 function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc, fieldSources, onClose }: { field: ColKey; job: JobRow; title?: string; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onClose: () => void }) {
   const t = makeT(lang)
+  const overlayClose = useOverlayClose(onClose)
   const a = advHeader(field, job, t)
   const [text, setText] = useState('')
   const [status, setStatus] = useState<'loading' | 'streaming' | 'done' | 'error' | 'upgrade'>('loading')
@@ -1459,7 +1475,7 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, eeOcc, 
   const iconBtn: React.CSSProperties = { border: 'none', background: '#f3f4f6', borderRadius: 8, width: 30, height: 30, cursor: 'pointer', fontSize: 15, color: '#6b7280', flexShrink: 0, lineHeight: 1 }
 
   return (
-    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(17,24,39,.45)', zIndex: 50 }}>
+    <div {...overlayClose} style={{ position: 'fixed', inset: 0, background: 'rgba(17,24,39,.45)', zIndex: 50 }}>
       <div onClick={(e) => e.stopPropagation()} style={{ ...panel, background: '#fff', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 50px rgba(0,0,0,.25)', overflow: 'hidden' }}>
         {/* 标题栏 = 拖动手柄 */}
         <div onPointerDown={startDrag} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, padding: '14px 18px 10px', cursor: full ? 'default' : 'move', userSelect: 'none', flexShrink: 0 }}>
@@ -1580,6 +1596,7 @@ function ActRow({ label, value }: { label: string; value: React.ReactNode }) {
 }
 function ActModal({ kind, job, jobs, lang, onClose }: { kind: 'company' | 'desc'; job: JobRow; jobs: JobRow[]; lang: Lang; onClose: () => void }) {
   const t = makeT(lang)
+  const overlayClose = useOverlayClose(onClose)
   const [text, setText] = useState('')
   const [status, setStatus] = useState<'loading' | 'done' | 'empty' | 'upgrade'>(kind === 'desc' ? 'loading' : 'done')
   useEffect(() => {
@@ -1598,7 +1615,7 @@ function ActModal({ kind, job, jobs, lang, onClose }: { kind: 'company' | 'desc'
   }, [kind, job])
   const sameCo = kind === 'company' ? jobs.filter((x) => x.company && x.company === job.company) : []
   return (
-    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(17,24,39,.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, zIndex: 50 }}>
+    <div {...overlayClose} style={{ position: 'fixed', inset: 0, background: 'rgba(17,24,39,.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, zIndex: 50 }}>
       <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 12, maxWidth: 560, width: '100%', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,.25)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, padding: '16px 20px 8px' }}>
           <div>

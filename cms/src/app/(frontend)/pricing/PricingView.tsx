@@ -104,7 +104,7 @@ export function PricingView({ loggedIn, pro, price30, price90, caps }: { loggedI
           </div>
         </div>
       </div>
-      {auth && <AuthModal t={t} onClose={() => setAuth(false)} onDone={() => window.location.reload()} />}
+      {auth && <AuthModal t={t} mode="register" onClose={() => setAuth(false)} onDone={() => window.location.reload()} />}
     </div>
   )
 }

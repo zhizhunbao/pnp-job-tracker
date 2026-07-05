@@ -3,6 +3,7 @@
 // 全走 Payload 自带 REST(httpOnly cookie),特权字段由 Users collection 字段级锁保护。
 import { useState } from 'react'
 import type { TFn } from './i18n'
+import { useOverlayClose } from './overlay'
 
 const inputS: React.CSSProperties = {
   width: '100%', boxSizing: 'border-box', padding: '10px 12px', fontSize: 14,
@@ -15,8 +16,8 @@ const btnS: React.CSSProperties = {
   boxShadow: '0 2px 8px rgba(37,99,235,.35)',
 }
 
-export function AuthForm({ t, onDone }: { t: TFn; onDone: () => void }) {
-  const [mode, setMode] = useState<'login' | 'register'>('login')
+export function AuthForm({ t, onDone, initialMode }: { t: TFn; onDone: () => void; initialMode?: 'login' | 'register' }) {
+  const [mode, setMode] = useState<'login' | 'register'>(initialMode ?? 'login')
   const [email, setEmail] = useState('')
   const [pw, setPw] = useState('')
   const [busy, setBusy] = useState(false)
@@ -88,15 +89,17 @@ export function AuthForm({ t, onDone }: { t: TFn; onDone: () => void }) {
   )
 }
 
-export function AuthModal({ t, onClose, onDone }: { t: TFn; onClose: () => void; onDone: () => void }) {
+// mode:入口决定初始 tab(注册 CTA 直达注册,用户定「注册也要弹框」;默认登录)
+export function AuthModal({ t, onClose, onDone, mode }: { t: TFn; onClose: () => void; onDone: () => void; mode?: 'login' | 'register' }) {
+  const ov = useOverlayClose(onClose)
   return (
-    <div onClick={onClose}
+    <div {...ov}
       style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(17,24,39,.5)', backdropFilter: 'blur(2px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
       <div onClick={(e) => e.stopPropagation()}
         style={{ position: 'relative', width: 'min(390px, 100%)', background: '#fff', borderRadius: 16, padding: '1.75rem 1.75rem 1.4rem', boxShadow: '0 24px 60px rgba(0,0,0,.3)' }}>
         <button onClick={onClose} aria-label="close"
           style={{ position: 'absolute', top: 10, right: 12, border: 'none', background: '#f3f4f6', borderRadius: 8, width: 28, height: 28, fontSize: 15, color: '#6b7280', cursor: 'pointer', lineHeight: 1 }}>×</button>
-        <AuthForm t={t} onDone={onDone} />
+        <AuthForm t={t} onDone={onDone} initialMode={mode} />
       </div>
     </div>
   )
