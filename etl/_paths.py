@@ -26,7 +26,7 @@ RAW_ATS = RAW / "ats"                                   # ATS 公司名录根(�
 RAW_COMPANIES = RAW_ATS                                 # 01/03 写名录 json、公司文件夹的根(= raw/ats)
 RAW_JOBBANK = RAW / "jobbank"                           # Job Bank 原始 HTML 快照:<日期>/ · <日期>/details/
 # 维护表/源各自成顶层源(删掉 reference 桶):pnp/aip/wages/fsa/policy 直接挂 raw 下,各自维护表+源同处
-PNP = RAW / "pnp"                                       # 各省 PNP 维护表(oinp-in-demand/aaip-ineligible.json)
+PNP = RAW / "pnp"                                       # 各省 PNP 维护表(aaip-ineligible/sk-*.json 等)
 EE = RAW / "ee"                                         # 联邦 Express Entry 类别抽选清单(federal-categories.json,全国单一源)
 NOC = RAW / "noc"                                      # NOC 2021 官方职业名+主要职责(StatCan Elements 开放 CSV)
 AIP = RAW / "aip"                                       # AIP 指定雇主名单(aip-designated-employers.json/.md)

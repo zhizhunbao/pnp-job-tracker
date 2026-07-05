@@ -11,7 +11,8 @@ META = {
     "seed": False,             # 只刷 raw 参考表,build 角色统一灌库(避免抢 mart/seed)
     "steps": [
         ["python", "etl/pnp/build_ab.py"],   # AB AAIP(实时,exclusion 排除式)
-        ["python", "etl/pnp/build_on.py"],   # ON OINP(实时,inclusion)
+        # ON:2026-06-26 OINP 改制(O.Reg 422/17)旧 8 流全删、EOI 关;新 Workforce Priority 流按 TEER 分档
+        #     无职业清单 → 不产出(E6-05,同 BC/SK「没数据不猜」);清单若重现,按 git 史 build_on.py 模板重写。
         # BC:tech 定向抽选 2024-12 已关、无具名通道;welcomebc 也无清单页 → 不产出,BC 岗走通用「可提名」。
         ["python", "etl/pnp/build_sk.py"],   # SK SINP 三通道(实时)
         ["python", "etl/pnp/build_ns.py"],   # NS 两通道(实时)
