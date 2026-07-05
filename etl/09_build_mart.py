@@ -11,6 +11,7 @@ Usage:  uv run python etl/09_build_mart.py
 import json
 import re
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -144,6 +145,8 @@ def build():
                         email=prof.get("email"), address=prof.get("address"),
                         sectors=prof.get("sectors"), description=prof.get("description"),
                         region=prof.get("region"), source="ats")
+            # ATS 的抓取时刻 = jobs.json 落盘时间(04 每轮整写);与 JB 的 last_seen 同义
+            ats_seen = datetime.fromtimestamp(jf.stat().st_mtime, tz=timezone.utc).isoformat().replace("+00:00", "Z")
             for j in jd["jobs"]:
                 key = f"{slug}|{norm(j.get('title',''))}"
                 if key in seen:
@@ -155,7 +158,7 @@ def build():
                         city=j.get("city"), district=j.get("district"), address=j.get("address"),
                         applyUrl=j.get("url"), officialUrl=prof.get("website"),
                         salary=j.get("salary"), salaryAnnual=j.get("salaryAnnual"), salaryText=j.get("salaryText"),
-                        aip=bool(j.get("aip")), datePosted=j.get("posted"))
+                        aip=bool(j.get("aip")), datePosted=j.get("posted"), lastSeen=ats_seen)
 
     # 2) Job Bank(全国全职业)
     if IN_JOBBANK.exists():
@@ -179,7 +182,7 @@ def build():
                     city=j.get("city"), district=j.get("district"), address=j.get("address"),
                     applyUrl=j.get("url"), officialUrl=j.get("website"),
                     salary=j.get("salary"), salaryAnnual=j.get("salaryAnnual"), salaryText=j.get("salaryText"),
-                    aip=bool(j.get("aip")), datePosted=j.get("date"))
+                    aip=bool(j.get("aip")), datePosted=j.get("date"), lastSeen=j.get("last_seen"))
 
     # JD 正文下沉到 DB:按 applyUrl 匹配已抓的 .md → job.description(seed 自动透传;列表 SQL 不读它)
     jd_idx = build_jd_index()

@@ -15,7 +15,7 @@ type Dict = Record<string, string>
 
 const zh: Dict = {
   'subtitle.count': '{n} 个职位',
-  'updated': '更新 {t}',
+  'updated': '抓取 {t}',
   'tagline': '每日更新 · 全加拿大全职业 · 移民价值视角',
   'foot.disclaimer': '本站为信息聚合工具,数据自动抓取仅供参考,不构成移民 / 法律建议;我们非持牌移民顾问(RCIC),以官方来源为准。',
   'search.placeholder': '搜索 职位/公司/地点/NOC…',
@@ -45,7 +45,7 @@ const zh: Dict = {
   'col.company': '公司', 'col.title': '职位', 'col.noc': 'NOC', 'col.accessibility': '经验级别',
   'col.country': '国家', 'col.province': '省', 'col.city': '市', 'col.district': '区', 'col.address': '地址',
   'col.salary': '薪资', 'col.salaryYr': '年薪(折算)', 'col.wageMedHr': '中位时薪', 'col.wageMedYr': '中位年薪', 'col.vsMedian': 'vs 中位', 'col.source': '来源', 'col.origin': '渠道', 'col.direct': '发布',
-  'col.pnp': 'PNP', 'col.ee': 'EE 类别', 'col.aip': 'AIP', 'col.status': '状态', 'col.firstSeen': '首次收录', 'col.lastSeen': '更新时间', 'col.closedAt': '下架时间', 'col.score': '评分',
+  'col.pnp': 'PNP', 'col.ee': 'EE 类别', 'col.aip': 'AIP', 'col.status': '状态', 'col.firstSeen': '首次收录', 'col.lastSeen': '抓取时间', 'col.closedAt': '下架时间', 'col.score': '评分',
   'eelist.in': '本岗 NOC {noc} 在联邦 EE「{cats}」类别清单内', 'eelist.out': '未列入任何联邦 EE 类别抽选清单', 'eelist.source': '来源:Express Entry 类别抽选', 'eelist.your': '本岗', 'eelist.loading': '加载 EE 清单…', 'eelist.draw': '近期抽选:CRS {crs} · {date} · 发出 {size} 邀请',
   'col.actions': '操作', 'act.company': '公司信息', 'act.desc': '职位描述', 'act.companyTitle': '公司基本信息', 'act.descTitle': '职位描述', 'act.site': '官网', 'act.addr': '地址', 'act.src': '来源', 'act.jobsHere': '该公司在榜职位', 'act.noText': '未抓到该职位的描述文本', 'act.loadingText': '加载中…',
   // 大分类(数据值→显示)
@@ -162,7 +162,7 @@ const zh: Dict = {
 
 const en: Dict = {
   'subtitle.count': '{n} jobs',
-  'updated': 'Updated {t}',
+  'updated': 'Scraped {t}',
   'tagline': 'Daily updates · all of Canada · immigration-value lens',
   'foot.disclaimer': 'This site is an information aggregator; auto-scraped data is for reference only and is not immigration / legal advice. We are not licensed immigration consultants (RCIC) — always verify with official sources.',
   'search.placeholder': 'Search title / company / location / NOC…',
@@ -191,7 +191,7 @@ const en: Dict = {
   'col.company': 'Company', 'col.title': 'Title', 'col.noc': 'NOC', 'col.accessibility': 'Level',
   'col.country': 'Country', 'col.province': 'Province', 'col.city': 'City', 'col.district': 'District', 'col.address': 'Address',
   'col.salary': 'Salary', 'col.salaryYr': 'Annual (est.)', 'col.wageMedHr': 'Median $/hr', 'col.wageMedYr': 'Median $/yr', 'col.vsMedian': 'vs median', 'col.source': 'Source', 'col.origin': 'Channel', 'col.direct': 'Posting',
-  'col.pnp': 'PNP', 'col.ee': 'EE category', 'col.aip': 'AIP', 'col.status': 'Status', 'col.firstSeen': 'First seen', 'col.lastSeen': 'Updated', 'col.closedAt': 'Closed', 'col.score': 'Score',
+  'col.pnp': 'PNP', 'col.ee': 'EE category', 'col.aip': 'AIP', 'col.status': 'Status', 'col.firstSeen': 'First seen', 'col.lastSeen': 'Scraped', 'col.closedAt': 'Closed', 'col.score': 'Score',
   'eelist.in': 'This job (NOC {noc}) is in the federal EE "{cats}" category', 'eelist.out': 'Not in any federal Express Entry category', 'eelist.source': 'Source: Express Entry category-based selection', 'eelist.your': 'This job', 'eelist.loading': 'Loading EE list…', 'eelist.draw': 'Recent draw: CRS {crs} · {date} · {size} invitations',
   'col.actions': 'Actions', 'act.company': 'Company', 'act.desc': 'Description', 'act.companyTitle': 'Company info', 'act.descTitle': 'Job description', 'act.site': 'Website', 'act.addr': 'Address', 'act.src': 'Source', 'act.jobsHere': 'Listings by this company', 'act.noText': 'No scraped description for this job', 'act.loadingText': 'Loading…',
   'broad.管理': 'Management', 'broad.商务': 'Business', 'broad.科技': 'Tech', 'broad.医疗': 'Health', 'broad.教育': 'Education',
@@ -304,7 +304,7 @@ const en: Dict = {
 
 const ko: Dict = {
   'subtitle.count': '{n}개 공고',
-  'updated': '업데이트 {t}',
+  'updated': '수집 {t}',
   'tagline': '매일 갱신 · 캐나다 전역 · 이민 가치 관점',
   'foot.disclaimer': '본 사이트는 정보 수집 도구입니다. 자동 수집 데이터는 참고용이며 이민 / 법률 자문이 아닙니다. 당사는 공인 이민 컨설턴트(RCIC)가 아니며, 공식 출처를 기준으로 확인하세요.',
   'search.placeholder': '직무 / 회사 / 지역 / NOC 검색…',
@@ -333,7 +333,7 @@ const ko: Dict = {
   'col.company': '회사', 'col.title': '직무', 'col.noc': 'NOC', 'col.accessibility': '경력',
   'col.country': '국가', 'col.province': '주', 'col.city': '도시', 'col.district': '지역', 'col.address': '주소',
   'col.salary': '급여', 'col.salaryYr': '연봉(환산)', 'col.wageMedHr': '중위 시급', 'col.wageMedYr': '중위 연봉', 'col.vsMedian': '중위 대비', 'col.source': '출처', 'col.origin': '채널', 'col.direct': '게시',
-  'col.pnp': 'PNP', 'col.ee': 'EE 카테고리', 'col.aip': 'AIP', 'col.status': '상태', 'col.firstSeen': '최초 수집', 'col.lastSeen': '갱신일', 'col.closedAt': '마감일', 'col.score': '점수',
+  'col.pnp': 'PNP', 'col.ee': 'EE 카테고리', 'col.aip': 'AIP', 'col.status': '상태', 'col.firstSeen': '최초 수집', 'col.lastSeen': '수집 시각', 'col.closedAt': '마감일', 'col.score': '점수',
   'eelist.in': '이 채용(NOC {noc})이 연방 EE 「{cats}」 카테고리에 있음', 'eelist.out': '연방 Express Entry 카테고리에 없음', 'eelist.source': '출처: Express Entry 카테고리 선발', 'eelist.your': '이 채용', 'eelist.loading': 'EE 목록 불러오는 중…', 'eelist.draw': '최근 추첨: CRS {crs} · {date} · {size}건 초대',
   'col.actions': '작업', 'act.company': '회사 정보', 'act.desc': '직무 설명', 'act.companyTitle': '회사 기본 정보', 'act.descTitle': '직무 설명', 'act.site': '웹사이트', 'act.addr': '주소', 'act.src': '출처', 'act.jobsHere': '이 회사의 공고', 'act.noText': '수집된 직무 설명이 없습니다', 'act.loadingText': '로딩 중…',
   'broad.管理': '관리', 'broad.商务': '비즈니스', 'broad.科技': '기술', 'broad.医疗': '의료', 'broad.教育': '교육',

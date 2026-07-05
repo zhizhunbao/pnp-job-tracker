@@ -103,16 +103,18 @@ export async function GET(req: Request) {
   const jobRows = await mart('jobs')
   await pool(jobRows, async (j) => {
     seenIds.add(j.externalId)
-    const { companySlug, datePosted, ...rest } = j
+    const { companySlug, datePosted, lastSeen, ...rest } = j
+    // lastSeen = 数据抓取时刻(ETL 下沉,mart 透传),不再用 seed 时间——重新入库不推动「抓取时间」。
+    // mart 没给(老帖未再被抓到)→ 更新时不带该键,保留库里旧值;仅新建才兜底 now。
     const data: Record<string, unknown> = {
       ...rest, company: companyId[companySlug], datePosted: isoDate(datePosted),
-      lastSeen: now, status: 'open', closedAt: null,
+      status: 'open', closedAt: null, ...(lastSeen ? { lastSeen } : {}),
     }
     if (!reset) {
       const ex = await payload.find({ collection: 'jobs', where: { externalId: { equals: j.externalId } }, limit: 1, depth: 0 })
       if (ex.docs[0]) { await payload.update({ collection: 'jobs', id: ex.docs[0].id, data: data as any }); return }
     }
-    await payload.create({ collection: 'jobs', data: { ...data, firstSeen: now } as any })
+    await payload.create({ collection: 'jobs', data: { ...data, lastSeen: lastSeen || now, firstSeen: now } as any })
   })
   counts.jobs = jobRows.length
 

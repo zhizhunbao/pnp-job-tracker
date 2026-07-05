@@ -19,7 +19,7 @@ import json
 import os
 import re
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from bs4 import BeautifulSoup
@@ -104,6 +104,21 @@ def cutoff_of(snap: Path, since_days: int):
     return datetime.now().date() - timedelta(days=since_days)
 
 
+def fetched_at_of(snap: Path) -> str:
+    """快照的抓取时刻(manifest.fetched_at,抓取机本地裸时间)→ UTC ISO(Z)。
+    这是帖子 last_seen 的唯一来源:同一快照重复解析得到同一时刻(幂等),
+    数据重新入库不会推动「抓取时间」。缺 manifest 时退化用目录日期。"""
+    raw = ""
+    mf = snap / "manifest.json"
+    if mf.exists():
+        raw = json.loads(mf.read_text(encoding="utf-8")).get("fetched_at", "")
+    try:
+        dt = datetime.fromisoformat(raw) if raw else datetime.strptime(snap.name, "%Y-%m-%d")
+    except ValueError:
+        dt = datetime.strptime(snap.name, "%Y-%m-%d")
+    return dt.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="解析 Job Bank 列表 HTML 快照 → processed/jobbank/postings.json")
     ap.add_argument("--since-days", type=int, default=3, help="manifest 缺 cutoff 时的回退窗口")
@@ -116,6 +131,7 @@ def main() -> None:
         print("没有 listing 快照可解析(raw/jobbank/ 为空)——跳过", flush=True)
         return
     cutoff = cutoff_of(snap, args.since_days)
+    fetched = fetched_at_of(snap)
     rows = parse_snapshot(snap)
 
     by_id = load_postings()
@@ -136,6 +152,7 @@ def main() -> None:
         else:
             by_id[pid] = scraped
             added += 1
+        by_id[pid]["last_seen"] = fetched  # 本快照见到的帖 → 抓取时刻(mart 透传 lastSeen)
     write_postings(by_id)
     print(f"解析 {snap.name}: {len(rows)} 行 → +{added} new · {updated} updated · "
           f"{skipped_old} 跳过(早于 {cutoff}) · base {base} → {len(by_id)}", flush=True)
