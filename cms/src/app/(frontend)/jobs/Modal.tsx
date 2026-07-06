@@ -2,9 +2,21 @@
 // 弹框统一壳(2026-07-05 用户拍板:全站弹框格式布局一致,遮罩不带毛玻璃)。
 // 规范:遮罩 rgba(17,24,39,.5) · 圆角 14 · 阴影/关闭钮/内边距统一 · 普通层 z=50、叠加层 z=60。
 // 居中弹框直接用 <Modal>;顾问弹框(拖拽/全屏)自绘面板,但必须复用这里的 token(SCRIM/CARD/iconBtnS/ModalTitle)。
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useOverlayClose } from './overlay'
+
+// 窄屏判定(E8-03,单一来源):≤640px 弹窗一律全屏。弹窗都是水合后才开,惰性初值直接读 matchMedia 无水合差异。
+export function useIsNarrow(bp = 640): boolean {
+  const [narrow, setNarrow] = useState(() => typeof window !== 'undefined' && window.matchMedia(`(max-width: ${bp}px)`).matches)
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${bp}px)`)
+    const on = () => setNarrow(mq.matches)
+    mq.addEventListener('change', on)
+    return () => mq.removeEventListener('change', on)
+  }, [bp])
+  return narrow
+}
 
 export const MODAL_RADIUS = 14
 export const MODAL_SHADOW = '0 24px 60px rgba(0,0,0,.3)'
@@ -37,15 +49,18 @@ export function Modal({ onClose, size = 'md', z = 50, pad = true, children }: {
   onClose: () => void; size?: 'sm' | 'md' | 'lg'; z?: number; pad?: boolean; children: React.ReactNode
 }) {
   const ov = useOverlayClose(onClose)
+  const narrow = useIsNarrow()  // 窄屏(≤640px)→ 全屏卡:占满视口、圆角 0、内边距收窄(E8-03)
   useEffect(() => {  // ESC 关闭(统一壳新增的一致行为;老弹框只支持点外面)
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
   return (
-    <div {...ov} style={{ ...SCRIM, zIndex: z, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+    <div {...ov} style={{ ...SCRIM, zIndex: z, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: narrow ? 0 : 16 }}>
       <div onClick={(e) => e.stopPropagation()}
-        style={{ ...CARD, width: `min(${WIDTH[size]}px, 100%)`, maxHeight: '85vh', overflowY: 'auto', padding: pad ? '24px 24px 20px' : 0 }}>
+        style={narrow
+          ? { ...CARD, borderRadius: 0, width: '100%', height: '100%', maxHeight: '100vh', overflowY: 'auto', padding: pad ? '20px 14px 16px' : 0 }
+          : { ...CARD, width: `min(${WIDTH[size]}px, 100%)`, maxHeight: '85vh', overflowY: 'auto', padding: pad ? '24px 24px 20px' : 0 }}>
         <button onClick={onClose} aria-label="close" style={closeBtnS}>×</button>
         {children}
       </div>

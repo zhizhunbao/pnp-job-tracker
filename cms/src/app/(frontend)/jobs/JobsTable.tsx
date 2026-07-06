@@ -12,7 +12,7 @@ import { AuthModal } from './AuthForm'
 import { UpgradeModal } from './UpgradeModal'
 import { PricingModal } from './PricingModal'
 import { useOverlayClose } from './overlay'
-import { CARD, iconBtnS, Modal, ModalTitle, SCRIM } from './Modal'
+import { CARD, iconBtnS, Modal, ModalTitle, SCRIM, useIsNarrow } from './Modal'
 import { match as matchJob, matchRank, type MatchProfile, type MatchJob, type MatchReason } from '@/lib/match'
 
 // 分层态(E3-05/E5-00,服务端 page.tsx 传入):gate 在服务端已生效,这里只做展示引导
@@ -637,12 +637,13 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         .colResize:active{background:#3b82f6}`}</style>
       {/* sticky 顶栏:品牌 + 语言切换(手机/电脑都贴顶) */}
       <header style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', borderBottom: '1px solid #e5e7eb' }}>
-        <div style={{ maxWidth: 1320, margin: '0 auto', padding: '10px 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        {/* 窄屏(E8-03):两段可换行,右侧账户区折到第二行,不横向溢出 */}
+        <div style={{ maxWidth: 1320, margin: '0 auto', padding: '10px 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, minWidth: 0 }}>
             <span style={{ fontSize: 17, fontWeight: 700, color: '#111827', whiteSpace: 'nowrap' }}>🍁 PNP Job Tracker</span>
             <span style={{ fontSize: 12, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('tagline')}</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, maxWidth: '100%', flexWrap: 'wrap' }}>
             <a href="/rankings/weekly-top" style={{ fontSize: 12.5, color: '#6b7280', textDecoration: 'none', whiteSpace: 'nowrap' }}><IconChart /> {t('rank.entry')}</a>
             <a href="/stats" style={{ fontSize: 12.5, color: '#6b7280', textDecoration: 'none', whiteSpace: 'nowrap' }}><IconMapPin /> {t('stats.entry')}</a>
             <div style={{ display: 'inline-flex', border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
@@ -1418,7 +1419,10 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, eeOcc, 
   }, [])
 
   // 弹框尺寸/全屏/位置 —— 默认更大(720×620),可全屏、标题栏拖动、右下角拉伸;尺寸+全屏记忆
-  const [full, setFull] = useState(false)
+  // 窄屏(E8-03):强制全屏,禁拖拽/八向拉伸/全屏切换钮
+  const narrow = useIsNarrow()
+  const [fullPref, setFull] = useState(false)
+  const full = fullPref || narrow
   const [size, setSize] = useState({ w: 720, h: 620 })
   const [pos, setPos] = useState(() => {
     if (typeof window === 'undefined') return { x: 80, y: 60 }
@@ -1523,7 +1527,7 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, eeOcc, 
             <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title || a.title}</h3>
           </div>
           <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-            <button onClick={() => setFull((f) => { savePref({ full: !f }); return !f })} title={t(full ? 'advisor.exitFull' : 'advisor.full')} style={iconBtn}>{full ? <IconMinimize /> : <IconMaximize />}</button>
+            {!narrow && <button onClick={() => setFull((f) => { savePref({ full: !f }); return !f })} title={t(full ? 'advisor.exitFull' : 'advisor.full')} style={iconBtn}>{full ? <IconMinimize /> : <IconMaximize />}</button>}
             <button onClick={onClose} style={{ ...iconBtn, fontSize: 16 }}>×</button>
           </div>
         </div>
