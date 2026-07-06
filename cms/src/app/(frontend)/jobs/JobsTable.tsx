@@ -921,7 +921,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         </div>
       </footer>
 
-      {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} />}
+      {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} onClose={() => setPopup(null)} />}
       {actModal && <ActModal kind={actModal.kind} job={actModal.job} jobs={jobs} lang={lang} onClose={() => setActModal(null)} />}
       {upsell && (plan.loggedIn
         ? <UpgradeModal t={t} reason={upsell === 'ss' ? t('ss.pro') : undefined} onClose={() => setUpsell(false)} />
@@ -947,7 +947,6 @@ function PnpDrawsBlock({ province, lang, draws }: { province: string; lang: Lang
       <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>
         {t('pnpdraws.title', { label: src.label })}
         {src.scale ? <span style={{ color: '#9ca3af' }}> · {t('pnpdraws.scale', { scale: src.scale })}</span> : null}
-        {src.url ? <> · <a href={src.url} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12 }}>{t('pnplist.source')}{src.fetched ? ` (${src.fetched})` : ''} ↗</a></> : null}
       </div>
       <div style={{ border: '1px solid #f3f4f6', borderRadius: 8 }}>
         {rows.map((d, i) => d.kind === 'notice' ? (
@@ -1007,7 +1006,7 @@ function PnpListSection({ job, lang, occ, draws }: { job: JobRow; lang: Lang; oc
       {streams.filter((s) => s.occupations.length).map((s) => (
         <div key={s.label + s.stream} style={{ marginBottom: 10 }}>
           <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>
-            {s.label}{s.url ? <> · <a href={s.url} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12 }}>{t('pnplist.source')}{s.fetched ? ` (${s.fetched})` : ''} ↗</a></> : null}
+            {s.label}
           </div>
           <div style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid #f3f4f6', borderRadius: 8 }}>
             {s.occupations.map((o) => {
@@ -1050,7 +1049,6 @@ function EeCategorySection({ job, lang, cats }: { job: JobRow; lang: Lang; cats:
   useEffect(() => { matchRef.current?.scrollIntoView({ block: 'nearest' }) }, [grouped])
 
   const noc = job.noc
-  const url = cats[0]?.url || '', fetched = cats[0]?.fetched || ''
   const hit = grouped.filter((c) => c.occupations.some((o) => o.noc === noc))
   const shown = hit.length ? hit : grouped  // 命中→只看命中类别清单;未命中→列各类别概览
   return (
@@ -1058,7 +1056,6 @@ function EeCategorySection({ job, lang, cats }: { job: JobRow; lang: Lang; cats:
       <div style={{ fontSize: 13.5, fontWeight: 600, color: hit.length ? '#2563eb' : '#9ca3af', marginBottom: 6 }}>
         {hit.length ? <><IconCheck /> {t('eelist.in', { noc, cats: hit.map((c) => c.label).join('/') })}</> : t('eelist.out')}
       </div>
-      {url ? <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 8 }}><a href={url} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12 }}>{t('eelist.source')}{fetched ? ` (${fetched})` : ''} ↗</a></div> : null}
       {shown.map((c) => (
         <div key={c.key} style={{ marginBottom: 10 }}>
           <div style={{ fontSize: 12.5, fontWeight: 600, color: '#374151', marginBottom: 4 }}>{c.label} <span style={{ color: '#9ca3af', fontWeight: 400 }}>· {c.occupations.length}</span></div>
@@ -1197,43 +1194,10 @@ const CLS_FIELDS = new Set<ColKey>(['noc', 'teer', 'broad', 'mid', 'fine'])
 const SRC_FIELDS = new Set<ColKey>(['source', 'origin', 'direct'])
 const TIME_FIELDS = new Set<ColKey>(['status', 'datePosted', 'lastSeen', 'closedAt'])
 
-// ── 字段级 citation(E4-04):统一来源行,来源元数据由 ETL 抓取验证(field-sources 维度) ──
-// 记录级 URL(官方原帖)优先显示;数据集级兜底;unverified 只出链接(宁可留空);derived 明示本站派生+口径。
-const SRC_KEY_ALIAS: Partial<Record<ColKey, string>> = { lastSeen: 'firstSeen', closedAt: 'status', actions: 'title' }
-// applyUrl 就是这些字段的「记录级 citation」(该岗官方原帖)
-const RECORD_URL_FIELDS = new Set<ColKey>(['title', 'company', 'salary', 'salaryYr', 'datePosted', 'status', 'closedAt', 'address', 'city', 'province', 'country', 'district', 'source'])
-function SourceLine({ field, job, lang, sources }: { field: ColKey; job: JobRow; lang: Lang; sources: FieldSource[] }) {
-  const t = makeT(lang)
-  const key = SRC_KEY_ALIAS[field] || field
-  const s = sources.find((x) => x.field === key)
-  if (!s) return null   // 注册表没有该字段 → 宁可留空
-  // 压缩版(用户拍板):发布方 + 完整 URL + 抓取时间一行;不再引用来源页 title/description(对岗位无信息量)。
-  // title 字段的事实块自带显著「查看官方原帖」按钮 → 这里不重复
-  const recordUrl = field !== 'title' && RECORD_URL_FIELDS.has(field) && job.applyUrl ? job.applyUrl : ''
-  return (
-    <div style={{ margin: '2px 0 10px', fontSize: 11.5, color: '#9ca3af', lineHeight: 1.6, overflowWrap: 'anywhere' }}>
-      <span><IconPaperclip /> {t('src.label')}:</span>
-      {s.kind === 'derived' ? (
-        <span> {t('src.derived')}{s.note ? ` — ${s.note}` : ''}</span>
-      ) : (
-        <>
-          {recordUrl && <a href={recordUrl} target="_blank" rel="noreferrer" style={{ color: '#6b7280', marginLeft: 4 }}>{t('src.official')} ↗</a>}
-          <span> {s.publisher} — </span>
-          <a href={s.url} target="_blank" rel="noreferrer" style={{ color: '#6b7280' }}>{s.url}</a>
-          {s.status === 'verified' ? <span> · {t('src.fetched', { d: s.fetched })}</span> : <span> · {t('src.unverified')}</span>}
-        </>
-      )}
-    </div>
-  )
-}
-
-function FieldFactsSection({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc, fieldSources }: { field: ColKey; job: JobRow; lang: Lang; isPro: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[] }) {
-  return (
-    <>
-      <FieldFactsInner field={field} job={job} lang={lang} isPro={isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} />
-      <SourceLine field={field} job={job} lang={lang} sources={fieldSources} />
-    </>
-  )
+// 字段级 citation 来源行(E4-04 的 SourceLine)已按用户拍板(2026-07-05)从所有弹框移除;
+// field_sources 维度与 /sources 解释页保留 —— 出处能力还在,只是不再占弹框版面。
+function FieldFactsSection({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc }: { field: ColKey; job: JobRow; lang: Lang; isPro: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[] }) {
+  return <FieldFactsInner field={field} job={job} lang={lang} isPro={isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} />
 }
 function FieldFactsInner({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc }: { field: ColKey; job: JobRow; lang: Lang; isPro: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[] }) {
   const t = makeT(lang)
@@ -1429,7 +1393,7 @@ function MeansForMe({ job, lang, plan, pnpOcc, eeOcc }: { job: JobRow; lang: Lan
   )
 }
 
-function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc, fieldSources, onClose }: { field: ColKey; job: JobRow; title?: string; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onClose: () => void }) {
+function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc, onClose }: { field: ColKey; job: JobRow; title?: string; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; onClose: () => void }) {
   const t = makeT(lang)
   const overlayClose = useOverlayClose(onClose)
   const a = advHeader(field, job, t)
@@ -1570,7 +1534,7 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, eeOcc, 
         <div style={{ flex: 1, overflowY: 'auto', padding: '4px 20px 20px' }}>
           {/* 对我意味着什么(E5-00):个人相关性放最上;依据链同源 match() */}
           <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} />
-          <FieldFactsSection field={field} job={job} lang={lang} isPro={plan.isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} />
+          <FieldFactsSection field={field} job={job} lang={lang} isPro={plan.isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} />
           {/* 免责声明 v1(E4-01):AI 判断区顶部,UI 层声明与 AI 文风分离(SYSTEM 已禁输出套话) */}
           <div style={{ fontSize: 11.5, color: '#9ca3af', margin: '6px 0 4px' }}><IconScale /> {t('advisor.disclaimer')}</div>
           {status === 'upgrade' ? (
