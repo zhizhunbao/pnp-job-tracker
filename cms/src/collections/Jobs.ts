@@ -24,7 +24,7 @@ export const Jobs: CollectionConfig = {
     { name: 'district', type: 'text', index: true, admin: { description: '社区/区(Kanata/Nepean/Orléans…)' } },
     { name: 'address', type: 'text', admin: { description: '精确地址(街号+邮编)' } },
     { name: 'region', type: 'text', index: true },
-    { name: 'applyUrl', type: 'text', admin: { description: '第一方投递链接' } },
+    { name: 'applyUrl', type: 'text', index: true, admin: { description: '第一方投递链接(/api/jobtext 按此等值查询)' } },
     { name: 'officialUrl', type: 'text' },
     { name: 'salary', type: 'text', admin: { description: '原始薪资文本(悬停展示/搜索)' } },
     { name: 'salaryAnnual', type: 'number', index: true, admin: { description: '年薪折算(04d 清洗;排序/vs中位用)' } },
