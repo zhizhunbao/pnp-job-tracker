@@ -950,7 +950,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         </div>
       </footer>
 
-      {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} onClose={() => setPopup(null)} />}
+      {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} />}
       {actModal && <ActModal kind={actModal.kind} job={actModal.job} jobs={jobs} lang={lang} onClose={() => setActModal(null)} />}
       {upsell && (plan.loggedIn
         ? <UpgradeModal t={t} reason={upsell === 'ss' ? t('ss.pro') : undefined} onClose={() => setUpsell(false)} />
@@ -1234,22 +1234,33 @@ const SAL_FIELDS = new Set<ColKey>(['salary', 'salaryYr', 'wageMedHr', 'wageMedY
 const CLS_FIELDS = new Set<ColKey>(['noc', 'teer', 'broad', 'mid', 'fine'])
 const SRC_FIELDS = new Set<ColKey>(['source', 'origin', 'direct'])
 const TIME_FIELDS = new Set<ColKey>(['status', 'datePosted', 'lastSeen', 'closedAt'])
-// 这些字段的内容不来自职位帖(分类=本站衍生、评分=本站算法、中位=ESDC、LMIA/AIP=官方名录、pnp/ee=政策清单自带链接)
-// → 不挂「来源: applyUrl」行(07-06 用户拍板:来源紧跟且仅跟真正出自帖子的内容)
-const NO_SRC_FIELDS = new Set<ColKey>(['pnp', 'ee', 'noc', 'teer', 'broad', 'mid', 'fine', 'score', 'match', 'lmia', 'aip', 'wageMedHr', 'wageMedYr', 'company'])  // company 简介来自官网抓取,官网行即出处
+// 每个字段来源各归其源(07-06 用户拍板:不能都链 jobbank 列表根):
+// 帖内字段 → 记录级 applyUrl(这一岗的原帖,每岗不同);第三方数据字段 → field_sources 注册表里各自的
+// 官方数据集页(分类=StatCan NOC、中位=ESDC 工资、AIP/PNP/EE=IRCC、LMIA=ESDC 名录);
+// 本站派生(评分/匹配)与公司(官网行即出处)不挂。vsMedian=对比字段,帖子+ESDC 两个输入都给。
+const DATASET_SRC_FIELDS = new Set<ColKey>(['noc', 'teer', 'broad', 'mid', 'fine', 'wageMedHr', 'wageMedYr', 'aip', 'lmia', 'pnp', 'ee'])
+const NO_SRC_FIELDS = new Set<ColKey>(['score', 'match', 'company'])
+function fieldSrcUrls(field: ColKey, job: JobRow, sources: FieldSource[]): string[] {
+  const reg = (k: string) => sources.find((s) => s.field === k && s.url)?.url || ''
+  if (NO_SRC_FIELDS.has(field)) return []
+  if (field === 'vsMedian') return [job.applyUrl, reg('wageMedYr')].filter(Boolean)
+  if (DATASET_SRC_FIELDS.has(field)) return [reg(field)].filter(Boolean)
+  return job.applyUrl ? [job.applyUrl] : []
+}
 
 // 来源行极简版(2026-07-06 用户拍板):「来源: 完整 applyUrl」一行可点击,**紧跟事实/JD 内容、在 AI 区之前**
 // (出处跟着对应内容走,不吊在弹窗底部);发布方/抓取时间/标签全不带 —— 合规已在 footer 统一声明。
 // pnp/ee 字段例外:清单内容来自政策页,各通道行已带自己的 ↗ 官方链接,不加岗位帖来源行。
 // field_sources 维度与 /sources 解释页照旧保留(E4-04 出处能力后置到解释页)。
-function FieldFactsSection({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc }: { field: ColKey; job: JobRow; lang: Lang; isPro: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[] }) {
+function FieldFactsSection({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc, fieldSources }: { field: ColKey; job: JobRow; lang: Lang; isPro: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[] }) {
   const t = makeT(lang)
+  const urls = fieldSrcUrls(field, job, fieldSources)
   return (
     <>
       <FieldFactsInner field={field} job={job} lang={lang} isPro={isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} />
-      {NO_SRC_FIELDS.has(field) ? null : job.applyUrl ? (
+      {urls.length ? (
         <div style={{ margin: '2px 0 12px', fontSize: 11.5, color: '#9ca3af', overflowWrap: 'anywhere' }}>
-          {t('src.label')}: <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#6b7280' }}>{job.applyUrl}</a>
+          {t('src.label')}: {urls.map((u, i) => <span key={u}>{i ? ' · ' : ''}<a href={u} target="_blank" rel="noreferrer" style={{ color: '#6b7280' }}>{u}</a></span>)}
         </div>
       ) : null}
     </>
@@ -1463,7 +1474,7 @@ function MeansForMe({ job, lang, plan, pnpOcc, eeOcc }: { job: JobRow; lang: Lan
   )
 }
 
-function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc, onClose }: { field: ColKey; job: JobRow; title?: string; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; onClose: () => void }) {
+function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc, fieldSources, onClose }: { field: ColKey; job: JobRow; title?: string; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onClose: () => void }) {
   const t = makeT(lang)
   const overlayClose = useOverlayClose(onClose)
   const a = advHeader(field, job, t)
@@ -1607,7 +1618,7 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, eeOcc, 
         <div style={{ flex: 1, overflowY: 'auto', padding: '4px 20px 20px' }}>
           {/* 对我意味着什么(E5-00):个人相关性放最上;依据链同源 match() */}
           <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} />
-          <FieldFactsSection field={field} job={job} lang={lang} isPro={plan.isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} />
+          <FieldFactsSection field={field} job={job} lang={lang} isPro={plan.isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} />
           {/* 免责/AI 声明不进弹框(2026-07-06 用户拍板:合规统一在 footer 说明) */}
           {status === 'upgrade' ? (
             <UpgradeCard t={t} reason={t('up.advisor')} />
