@@ -1189,7 +1189,8 @@ function TitleFacts({ job, lang, noc }: { job: JobRow; lang: Lang; noc: NocDesc 
   return (
     <FactsBox>
       <FactRow k={t('col.title')}>{job.title}</FactRow>
-      <FactRow k={t('col.noc')}>{job.noc ? `${job.noc}${job.teer != null ? ` · TEER ${job.teer}` : ''}${noc?.title ? ` · ${noc.title}` : ''}` : null}</FactRow>
+      {/* TEER 带人话括注(用户点名:新手不知道 TEER 2 是什么门槛;NOC 码本身用户认识,不标版本) */}
+      <FactRow k={t('col.noc')}>{job.noc ? `${job.noc}${job.teer != null ? ` · TEER ${job.teer} (${t('teer.' + job.teer)})` : ''}${noc?.title ? ` · ${noc.title}` : ''}` : null}</FactRow>
       <NocDutiesView noc={noc} lang={lang} />
       {/* 官方原帖入口=弹框底部统一「来源: URL」行(2026-07-06 拍板),此处只留摘录标签 */}
       <div style={{ marginTop: 8, fontSize: 11.5, color: '#9ca3af' }}>{t('fact.jdExcerpt')}</div>
@@ -1348,10 +1349,10 @@ function FieldFactsInner({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, des
   }
   if (CLS_FIELDS.has(field)) {
     return (
-      <FactsBox>
+      <FactsBox note={t('fact.nocNote')}>
         <FactRow k={t('col.noc')}>{job.noc}</FactRow>
         {noc?.title ? <FactRow k={t('fact.nocTitle')}>{noc.title}</FactRow> : null}
-        <FactRow k={t('col.teer')}>{job.teer != null ? `TEER ${job.teer}` : null}</FactRow>
+        <FactRow k={t('col.teer')}>{job.teer != null ? `TEER ${job.teer} (${t('teer.' + job.teer)})` : null}</FactRow>
         <FactRow k={t('col.broad')}>{job.broad && job.broad !== '未分类' ? t('broad.' + job.broad) : null}</FactRow>
         <FactRow k={t('col.mid')}>{job.mid && job.mid !== '未分类' ? catName(t, job.mid) : null}</FactRow>
         <FactRow k={t('col.fine')}>{job.fine && job.fine !== '未分类' ? catName(t, job.fine) : null}</FactRow>
