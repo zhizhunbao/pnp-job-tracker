@@ -48,14 +48,15 @@
 
 **线上核查(2026-07-06)**:offer2pr.com/robots.txt 200 · sitemap.xml 200 · 119 URL live。SEO 基建就绪。
 
-### 8.1 账号状态(**五个账号 M4 已全办**,见 [[ops-accounts-workflow]];剩的不是建账号,是**指向新域名 offer2pr.com**)
-| 账号 | 状态 | 剩余(=对齐 offer2pr.com) |
-|---|---|---|
-| healthchecks.io / UptimeRobot / umami | ✅ 跑通,与域名无关 | 无 |
-| **Resend** | ✅ 账号+key(Render);当时测试模式只能发账户本人 | **在 Resend 验证 offer2pr.com 发信域名**(加 SPF/DKIM DNS)→ 才能给真实用户发提醒 |
-| **GSC** | ✅ 验过,但 property=旧域名 pnp-cms.onrender.com | **给 offer2pr.com 建新 property + 重提 sitemap**(DNS TXT 或 HTML 文件法,后者有先例) |
+### 8.1 账号状态(2026-07-06 助手浏览器实地复核:**全部就绪,含 offer2pr.com 域名对齐**)
+| 账号 | 状态(实地核) |
+|---|---|
+| healthchecks.io / UptimeRobot / umami | ✅ 跑通,与域名无关 |
+| **Resend** | ✅ offer2pr.com 发信域名 **Verified**(us-east-1,~1 天前);key 在 Render → 可给真实用户发提醒 |
+| **GSC** | ✅ offer2pr.com property 已建、HTML 文件法 auto-verified;sitemap.xml **Success**、119 页 Discovered(07-05 提交) |
 
-**分工**(见 [[ops-accounts-workflow]]):DNS 记录/密钥你亲手加;仪表盘点选(建 property、提 sitemap、点验证)我经 claude-in-chrome 驱动你的 Chrome。
+**结论:上线基础设施 100% 就绪**,不欠任何账号/DNS/验证。**唯一剩的是「发帖引流」**(§8.2,用户手动)+ 可选一封真实邮件端到端验(域名已验+dry-run 过,大概率通)。
+分工备忘(见 [[ops-accounts-workflow]]):以后办新账号/改控制台——DNS/密钥用户亲手,仪表盘点选助手经 claude-in-chrome 代做。
 
 ### 8.2 冷启动发帖文案(草稿,待你发;**发前查各版块 self-promo 规则**,Reddit 移民版对硬广很敏感,价值优先、明说自制、求反馈)
 
