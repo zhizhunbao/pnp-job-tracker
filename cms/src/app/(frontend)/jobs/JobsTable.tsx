@@ -1035,7 +1035,8 @@ function PnpListSection({ job, lang, occ, draws }: { job: JobRow; lang: Lang; oc
       {streams.filter((s) => s.occupations.length).map((s) => (
         <div key={s.label + s.stream} style={{ marginBottom: 10 }}>
           <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>
-            {s.label}
+            {/* 通道名挂官方政策页(url 维度字段一直有,07-06 质量盘点补渲染)—— 每条清单自带出处 */}
+            {s.url ? <a href={s.url} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'underline', textDecorationColor: '#d1d5db' }}>{s.label} ↗</a> : s.label}
           </div>
           <div style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid #f3f4f6', borderRadius: 8 }}>
             {s.occupations.map((o) => {
@@ -1411,6 +1412,11 @@ function FieldFactsInner({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, des
       <FactsBox note={isStatusish ? t('fact.timeNote') : undefined}>
         {isStatusish && <FactRow k={t('col.status')}>{t(job.status === 'closed' ? 'cell.closed' : 'cell.open')}</FactRow>}
         {field === 'datePosted' && <FactRow k={t('col.datePosted')}>{day(job.datePosted)}</FactRow>}
+        {/* 挂帖时长(痛点盘点 P0 零抓取项):新鲜度信号,弹窗只在客户端开,无水合差异 */}
+        {field === 'datePosted' && job.datePosted && (job.status || 'open') !== 'closed' && (() => {
+          const d = Math.max(0, Math.floor((Date.now() - new Date(job.datePosted).getTime()) / 86400000))
+          return <FactRow k={t('fact.daysUp')}>{t('fact.daysUpVal', { n: d })}</FactRow>
+        })()}
         {field === 'datePosted' && <FactRow k={t('col.firstSeen')}>{day(job.firstSeen)}</FactRow>}
         {field === 'lastSeen' && <FactRow k={t('col.lastSeen')}>{day(job.lastSeen)}</FactRow>}
         {isStatusish && <FactRow k={t('col.closedAt')}>{job.closedAt ? day(job.closedAt) : null}</FactRow>}
