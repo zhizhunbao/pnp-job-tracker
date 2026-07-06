@@ -3,11 +3,10 @@
 import { getPayload } from 'payload'
 import { notFound } from 'next/navigation'
 import config from '@/payload.config'
-import { RankingView, type RankRow } from '../RankingView'
+import { RankingView } from '../RankingView'
+import { fetchRankingRows, RANKING_SLUGS } from '@/lib/rankings'
 
 export const dynamic = 'force-dynamic'
-
-const SLUGS = new Set(['weekly-top', 'sponsor-likely'])
 const META: Record<string, { title: string; desc: string }> = {
   'weekly-top': {
     title: 'New Canadian jobs this week — TOP 50 by immigration value | PNP Job Tracker',
@@ -27,22 +26,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function RankingPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  if (!SLUGS.has(slug)) notFound()
+  if (!RANKING_SLUGS.has(slug)) notFound()
   const payload = await getPayload({ config: await config })
-  const { rows } = await (payload.db as any).pool.query(
-    `SELECT slug, rank, kind, external_id, title, company, company_slug, city, province, noc, teer, score,
-            salary_text, salary_annual, pnp_stream, ee_category, date_posted, apply_url, official_url,
-            open_jobs, named_jobs, avg_score
-     FROM rankings WHERE slug = $1 ORDER BY rank ASC`, [slug])
-  const num = (v: any) => (v == null ? null : Number(v))
-  const items: RankRow[] = rows.map((r: any) => ({
-    rank: Number(r.rank), kind: r.kind ?? 'job', externalId: r.external_id ?? '',
-    title: r.title ?? '', company: r.company ?? '', city: r.city ?? '', province: r.province ?? '',
-    noc: r.noc ?? '', teer: num(r.teer), score: num(r.score),
-    salaryText: r.salary_text ?? '', salaryAnnual: num(r.salary_annual),
-    pnpStream: r.pnp_stream ?? '', eeCategory: r.ee_category ?? '', datePosted: r.date_posted ?? '',
-    applyUrl: r.apply_url ?? '', officialUrl: r.official_url ?? '',
-    openJobs: num(r.open_jobs), namedJobs: num(r.named_jobs), avgScore: num(r.avg_score),
-  }))
+  const items = await fetchRankingRows((payload.db as any).pool, slug)
   return <RankingView slug={slug} items={items} />
 }

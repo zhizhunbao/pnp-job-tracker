@@ -11,6 +11,7 @@ import { IconChart, IconCheck, IconCompass, IconLock, IconMap, IconMapPin, IconM
 import { AuthModal } from './AuthForm'
 import { UpgradeModal } from './UpgradeModal'
 import { PricingModal } from './PricingModal'
+import { RankingModal } from './RankingModal'
 import { useOverlayClose } from './overlay'
 import { CARD, iconBtnS, Modal, ModalTitle, SCRIM, useIsNarrow } from './Modal'
 import { match as matchJob, matchRank, type MatchProfile, type MatchJob, type MatchReason } from '@/lib/match'
@@ -406,6 +407,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const [fScore, setFScore] = useState(''); const [fSal, setFSal] = useState(''); const [fVs, setFVs] = useState('')  // 数值预设(下拉,不手填)
   const [showMore, setShowMore] = useState(false)  // 「更多筛选」折叠区(来源/状态/经验/评分/薪资)默认收起
   const moreActive = [fSource, fOrigin, fStatus, fAcc, fScore, fSal, fVs].filter(Boolean).length  // 折叠区里已激活的筛选数
+  // 窄屏筛选抽屉(E8-03):≤640px 整个筛选区默认收起,一行「筛选」开关展开;CSS 媒体查询控制显隐,零水合差异
+  const [fDrawer, setFDrawer] = useState(false)
+  const drawerActive = [fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs].filter(Boolean).length
   // 初始列:服务端从 cookie 解析后由 initialCols 传入 → SSR 与客户端首帧一致(零闪);无则用默认
   const [visible, setVisible] = useState<ColKey[]>(() => {
     const v = (initialCols ?? []).filter((k): k is ColKey => COLUMNS.some((c) => c.key === k))
@@ -427,6 +431,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const [upsell, setUpsell] = useState<false | 'lock' | 'ss'>(false)
   const [sort, setSort] = useState<{ key: ColKey; dir: 'asc' | 'desc' }>({ key: 'datePosted', dir: 'desc' })
   const [colOpen, setColOpen] = useState(false)
+  const [rankOpen, setRankOpen] = useState(false)  // 榜单弹窗(E8-02:站内不跳页;/rankings 页留给 SEO)
   const colRef = useRef<HTMLDivElement>(null)
   const [limit, setLimit] = useState(PAGE_ROWS)   // 当前渲染行数(点击分页)
   const [lang, setLang] = useState<Lang>('zh')    // 语言(localStorage 持久化)
@@ -634,7 +639,12 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     <div style={{ background: '#fff', color: '#1f2937', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column' }}>
       <style>{`.jcell:hover{background:#eff6ff !important}
         .colResize:hover{background:#93c5fd}
-        .colResize:active{background:#3b82f6}`}</style>
+        .colResize:active{background:#3b82f6}
+        .jtDrawerToggle{display:none}
+        @media (max-width:640px){
+          .jtDrawerToggle{display:inline-flex}
+          .jtHideNarrow{display:none !important}
+        }`}</style>
       {/* sticky 顶栏:品牌 + 语言切换(手机/电脑都贴顶) */}
       <header style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', borderBottom: '1px solid #e5e7eb' }}>
         {/* 窄屏(E8-03):两段可换行,右侧账户区折到第二行,不横向溢出 */}
@@ -644,7 +654,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             <span style={{ fontSize: 12, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('tagline')}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, maxWidth: '100%', flexWrap: 'wrap' }}>
-            <a href="/rankings/weekly-top" style={{ fontSize: 12.5, color: '#6b7280', textDecoration: 'none', whiteSpace: 'nowrap' }}><IconChart /> {t('rank.entry')}</a>
+            <button onClick={() => setRankOpen(true)} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: '#6b7280', cursor: 'pointer', whiteSpace: 'nowrap' }}><IconChart /> {t('rank.entry')}</button>
             <a href="/stats" style={{ fontSize: 12.5, color: '#6b7280', textDecoration: 'none', whiteSpace: 'nowrap' }}><IconMapPin /> {t('stats.entry')}</a>
             <div style={{ display: 'inline-flex', border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
               {LANGS.map((l) => (
@@ -656,6 +666,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           </div>
         </div>
       </header>
+      {rankOpen && <RankingModal t={t} onClose={() => setRankOpen(false)} />}
       {/* 未登录价值主张横幅(E5-01):可关闭,cookie 记忆(SSR 首帧即渲) */}
       {!plan.loggedIn && <ValueBanner t={t} initialShow={initialBanner ?? true} />}
       <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1.5rem 1.25rem', width: '100%', boxSizing: 'border-box', flex: '1 0 auto' }}>
@@ -665,7 +676,13 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '1rem 0' }}>
-          {/* ═══ 常用筛选(始终显示):4 字标签在上(职业分类/移民资格),地理在下 ═══ */}
+          {/* 窄屏抽屉开关(仅 ≤640px 显示,CSS 控制):筛选区整体收起/展开 */}
+          <button className="jtDrawerToggle" onClick={() => setFDrawer((o) => !o)}
+            style={{ ...ctrl, cursor: 'pointer', background: fDrawer || drawerActive ? '#eef2ff' : '#f3f4f6', alignItems: 'center', gap: 6, alignSelf: 'flex-start' }}>
+            {t('filter.drawer')}{drawerActive ? ` · ${drawerActive}` : ''} <span style={{ fontSize: 11, color: '#9ca3af' }}>{fDrawer ? '▲' : '▼'}</span>
+          </button>
+          <div className={fDrawer ? '' : 'jtHideNarrow'} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {/* ═══ 常用筛选(桌面始终显示;窄屏在抽屉里):4 字标签在上(职业分类/移民资格),地理在下 ═══ */}
           {/* 职业分类(TEER + 大→中→小 联动) */}
           <div style={filtRow}>
             <span style={filtLabel}>{t('filter.cat')}</span>
@@ -718,13 +735,15 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               <Sel value={fVs} onChange={setFVs} opts={['above', 'above20', 'below']} all={t('all.vs')} labelOf={(v) => t('vs.' + v)} />
             </div>
           </>)}
+          </div>
           {/* 行4:搜索 + 仅第一方 + 清除 */}
           <div style={filtRow}>
             <input placeholder={t('search.placeholder')} value={q} onChange={(e) => setQ(e.target.value)} style={{ ...ctrl, flex: '0 1 320px', minWidth: 180 }} />
             <label style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', background: directOnly ? '#eef2ff' : '#fff', whiteSpace: 'nowrap' }} title={t('directOnly.tip')}>
               <input type="checkbox" checked={directOnly} onChange={(e) => setDirectOnly(e.target.checked)} />{t('directOnly')}
             </label>
-            <button onClick={() => setShowMore((o) => !o)} style={{ ...ctrl, cursor: 'pointer', background: showMore || moreActive ? '#eef2ff' : '#f3f4f6', display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
+            {/* 窄屏抽屉收起时隐藏(它切换的行都在抽屉里,收起状态点了无感) */}
+            <button className={fDrawer ? '' : 'jtHideNarrow'} onClick={() => setShowMore((o) => !o)} style={{ ...ctrl, cursor: 'pointer', background: showMore || moreActive ? '#eef2ff' : '#f3f4f6', display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
               {t('filter.more')}{moreActive ? ` · ${moreActive}` : ''} <span style={{ fontSize: 11, color: '#9ca3af' }}>{showMore ? '▲' : '▼'}</span>
             </button>
             {anyFilter && <button onClick={clearAll} style={{ ...ctrl, cursor: 'pointer', background: '#f3f4f6', color: '#b91c1c' }}>{t('clear')}</button>}
