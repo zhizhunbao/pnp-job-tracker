@@ -1241,10 +1241,13 @@ const TIME_FIELDS = new Set<ColKey>(['status', 'datePosted', 'lastSeen', 'closed
 // 官方数据集页(分类=StatCan NOC、中位=ESDC 工资、AIP/PNP/EE=IRCC、LMIA=ESDC 名录);
 // 本站派生(评分/匹配)与公司(官网行即出处)不挂。vsMedian=对比字段,帖子+ESDC 两个输入都给。
 const DATASET_SRC_FIELDS = new Set<ColKey>(['noc', 'teer', 'broad', 'mid', 'fine', 'wageMedHr', 'wageMedYr', 'aip', 'lmia', 'pnp', 'ee'])
-const NO_SRC_FIELDS = new Set<ColKey>(['score', 'match', 'company'])
+// 本站派生字段(评分/匹配):无外部 URL,来源行显示算法说明文案(E8-04:所有字段都有来源,派生也诚实标注)
+const DERIVED_SRC_FIELDS = new Set<ColKey>(['score', 'match'])
 function fieldSrcUrls(field: ColKey, job: JobRow, sources: FieldSource[]): string[] {
   const reg = (k: string) => sources.find((s) => s.field === k && s.url)?.url || ''
-  if (NO_SRC_FIELDS.has(field)) return []
+  if (DERIVED_SRC_FIELDS.has(field)) return []
+  // 公司:简介/官网抓取自官网;担保史行来自 ESDC LMIA 名录 / IRCC AIP 名单(只列实际显示了的内容的来源)
+  if (field === 'company') return [job.officialUrl, job.lmiaPositions ? reg('lmia') : '', job.aip ? reg('aip') : ''].filter(Boolean)
   if (field === 'vsMedian') return [job.applyUrl, reg('wageMedYr')].filter(Boolean)
   if (DATASET_SRC_FIELDS.has(field)) return [reg(field)].filter(Boolean)
   return job.applyUrl ? [job.applyUrl] : []
@@ -1260,7 +1263,11 @@ function FieldFactsSection({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, d
   return (
     <>
       <FieldFactsInner field={field} job={job} lang={lang} isPro={isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} />
-      {urls.length ? (
+      {DERIVED_SRC_FIELDS.has(field) ? (
+        <div style={{ margin: '2px 0 12px', fontSize: 11.5, color: '#9ca3af' }}>
+          {t('src.label')}: {t('src.derived')}
+        </div>
+      ) : urls.length ? (
         <div style={{ margin: '2px 0 12px', fontSize: 11.5, color: '#9ca3af', overflowWrap: 'anywhere' }}>
           {t('src.label')}: {urls.map((u, i) => <span key={u}>{i ? ' · ' : ''}<a href={u} target="_blank" rel="noreferrer" style={{ color: '#6b7280' }}>{u}</a></span>)}
         </div>
@@ -1359,7 +1366,9 @@ function FieldFactsInner({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, des
     const provStreams = field === 'province' && job.province && job.province !== 'QC'
       ? new Set(pnpOcc.filter((o) => o.province === job.province && o.type !== 'ineligible').map((o) => o.label)).size : 0
     return (
-      <FactsBox>
+      // 缺地址/区时口径注明说(E8-04 诚实降级):留空=源帖没给,不猜;有值时无注(值即事实)
+      <FactsBox note={field === 'address' && !job.address ? t('fact.noAddrNote')
+        : field === 'district' && !L.district ? t('fact.noDistrictNote') : undefined}>
         <FactRow k={t('col.country')}>{L.country || 'Canada'}</FactRow>
         {depth >= 2 && <FactRow k={t('col.province')}>{L.prov}</FactRow>}
         {depth >= 3 && <FactRow k={t('col.city')}>{L.city}</FactRow>}
@@ -1383,7 +1392,8 @@ function FieldFactsInner({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, des
     const bandYr = mYr != null ? `${lYr != null ? `${K(lYr)} – ` : ''}${K(mYr)}${hYr != null ? ` – ${K(hYr)}` : ''}/yr` : null
     const usesMedian = field === 'wageMedHr' || field === 'wageMedYr' || field === 'vsMedian'
     return (
-      <FactsBox note={!usesMedian ? undefined
+      <FactsBox note={field === 'salaryYr' ? (a != null ? t('fact.salYrNote') : undefined)
+        : !usesMedian ? undefined
         : (mHr != null || mYr != null)
           ? t('fact.medianSrc') + (job.wageYear ? ` · ${job.wageYear}` : '') + (field === 'vsMedian' && vs != null ? ' · ' + t('fact.vsNote') : '')
           // 中位缺失分两种,别混:免费层=数据被付费墙剥离(引导升级);Pro=该 NOC×省真无 ESDC 数据(宁可留空)
@@ -1425,7 +1435,7 @@ function FieldFactsInner({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, des
     )
   }
   if (field === 'accessibility') {
-    return <FactsBox><FactRow k={t('col.accessibility')}>{t('acc.' + (job.accessibility || 'unknown'))}</FactRow></FactsBox>
+    return <FactsBox note={t('fact.accNote')}><FactRow k={t('col.accessibility')}>{t('acc.' + (job.accessibility || 'unknown'))}</FactRow></FactsBox>
   }
   if (TIME_FIELDS.has(field)) {
     // 时间四字段各看各的(07-06 用户拍板):状态/下架互为语境成对出现;发布带首次收录;抓取单独。
