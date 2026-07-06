@@ -48,12 +48,14 @@
 
 **线上核查(2026-07-06)**:offer2pr.com/robots.txt 200 · sitemap.xml 200 · 119 URL live。SEO 基建就绪。
 
-### 8.1 账号清单(你亲手办,我接线)—— 按解锁价值排序
-| 账号 | 解锁 | 你做 | 我接 |
-|---|---|---|---|
-| **Google Search Console(offer2pr.com 新 property)** | Google 收录 119 页(自然流量唯一入口) | DNS TXT 验证域名 / 或放 HTML 文件 + 提交 sitemap | 已有 HTML 验证法先例;域名版给 DNS 记录 |
-| **Resend(+ offer2pr.com 发信域名验证)** | 邮件职位提醒真发(E5-03 代码就绪,dry-run 全过) | 注册 + 加 DNS(SPF/DKIM)+ 拿 API key | 填 RESEND_API_KEY env,真发一封验 |
-| **healthchecks.io** | 断更告警(今天 Docker 关了都没人知道就是缺这个) | 注册 + 建 check 拿 ping URL | 填 HEALTHCHECK_PING_* env |
+### 8.1 账号状态(**五个账号 M4 已全办**,见 [[ops-accounts-workflow]];剩的不是建账号,是**指向新域名 offer2pr.com**)
+| 账号 | 状态 | 剩余(=对齐 offer2pr.com) |
+|---|---|---|
+| healthchecks.io / UptimeRobot / umami | ✅ 跑通,与域名无关 | 无 |
+| **Resend** | ✅ 账号+key(Render);当时测试模式只能发账户本人 | **在 Resend 验证 offer2pr.com 发信域名**(加 SPF/DKIM DNS)→ 才能给真实用户发提醒 |
+| **GSC** | ✅ 验过,但 property=旧域名 pnp-cms.onrender.com | **给 offer2pr.com 建新 property + 重提 sitemap**(DNS TXT 或 HTML 文件法,后者有先例) |
+
+**分工**(见 [[ops-accounts-workflow]]):DNS 记录/密钥你亲手加;仪表盘点选(建 property、提 sitemap、点验证)我经 claude-in-chrome 驱动你的 Chrome。
 
 ### 8.2 冷启动发帖文案(草稿,待你发;**发前查各版块 self-promo 规则**,Reddit 移民版对硬广很敏感,价值优先、明说自制、求反馈)
 
