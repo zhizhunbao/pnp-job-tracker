@@ -12,6 +12,7 @@ import { AuthModal } from './AuthForm'
 import { UpgradeModal } from './UpgradeModal'
 import { PricingModal } from './PricingModal'
 import { RankingModal } from './RankingModal'
+import { StatsModal } from './StatsModal'
 import { useOverlayClose } from './overlay'
 import { CARD, iconBtnS, Modal, ModalTitle, SCRIM, useIsNarrow } from './Modal'
 import { match as matchJob, matchRank, type MatchProfile, type MatchJob, type MatchReason } from '@/lib/match'
@@ -432,6 +433,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const [sort, setSort] = useState<{ key: ColKey; dir: 'asc' | 'desc' }>({ key: 'datePosted', dir: 'desc' })
   const [colOpen, setColOpen] = useState(false)
   const [rankOpen, setRankOpen] = useState(false)  // 榜单弹窗(E8-02:站内不跳页;/rankings 页留给 SEO)
+  const [statsOpen, setStatsOpen] = useState(false)  // 统计弹窗(同上;/stats 页留给 SEO)
   const colRef = useRef<HTMLDivElement>(null)
   const [limit, setLimit] = useState(PAGE_ROWS)   // 当前渲染行数(点击分页)
   const [lang, setLang] = useState<Lang>('zh')    // 语言(localStorage 持久化)
@@ -655,7 +657,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, maxWidth: '100%', flexWrap: 'wrap' }}>
             <button onClick={() => setRankOpen(true)} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: '#6b7280', cursor: 'pointer', whiteSpace: 'nowrap' }}><IconChart /> {t('rank.entry')}</button>
-            <a href="/stats" style={{ fontSize: 12.5, color: '#6b7280', textDecoration: 'none', whiteSpace: 'nowrap' }}><IconMapPin /> {t('stats.entry')}</a>
+            <button onClick={() => setStatsOpen(true)} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: '#6b7280', cursor: 'pointer', whiteSpace: 'nowrap' }}><IconMapPin /> {t('stats.entry')}</button>
             <div style={{ display: 'inline-flex', border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
               {LANGS.map((l) => (
                 <button key={l.code} onClick={() => setLangSaved(l.code)}
@@ -667,6 +669,12 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         </div>
       </header>
       {rankOpen && <RankingModal t={t} onClose={() => setRankOpen(false)} />}
+      {statsOpen && <StatsModal t={t} onClose={() => setStatsOpen(false)}
+        onApplyFilters={(prov, broad) => {  // 统计弹窗「看职位」:关弹窗直接落筛选(与 ?prov=&broad= 回流同语义)
+          setFCountry(''); setFCity(''); setFDistrict(''); setFMid(''); setFFine('')
+          setFProv(prov ? (PROV_NAMES[prov.toUpperCase()] || prov) : '')
+          setFBroad(broad)
+        }} />}
       {/* 未登录价值主张横幅(E5-01):可关闭,cookie 记忆(SSR 首帧即渲) */}
       {!plan.loggedIn && <ValueBanner t={t} initialShow={initialBanner ?? true} />}
       <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1.5rem 1.25rem', width: '100%', boxSizing: 'border-box', flex: '1 0 auto' }}>

@@ -1,16 +1,19 @@
 'use client'
 // 地区统计视图集(E5-04):全部零计算,渲染 ETL 预聚合行。
+// E8-02 弹窗化:每级拆「*Content 内容组件」(页面壳与 /jobs 统计弹窗共用,不许 fork);
+// 内容里的 <a href="/stats/..."> 保持原样 —— 页面自然跳转,弹窗端由 StatsModal 点击拦截转 state 导航。
 import { useMemo, useState } from 'react'
 import { StatsShell, MetricCards, CaliberLine, useLang } from './ui'
 import { IconMapPin, IconScale, IconStar, IconTarget } from '../Icons'
 import { BROAD_SLUGS, PROV_NAME, type StatRow, type SrcRow } from './shared'
 import { PricingModal } from '../jobs/PricingModal'
+import type { TFn } from '../jobs/i18n'
 
 const money = (v: number | null) => (v != null ? `$${Math.round(v / 1000)}K` : '—')
 const th: React.CSSProperties = { textAlign: 'left', padding: '8px 12px', fontSize: 12.5, color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap', borderBottom: '1px solid #e5e7eb' }
 const td: React.CSSProperties = { padding: '8px 12px', fontSize: 13, color: '#374151', borderBottom: '1px solid #f3f4f6' }
 
-function TopCities({ raw, t }: { raw: string; t: (k: string, v?: Record<string, string | number>) => string }) {
+function TopCities({ raw, t }: { raw: string; t: TFn }) {
   const cities = useMemo(() => { try { return JSON.parse(raw) as { city: string; n: number }[] } catch { return [] } }, [raw])
   if (!cities.length) return null
   return (
@@ -20,10 +23,10 @@ function TopCities({ raw, t }: { raw: string; t: (k: string, v?: Record<string, 
   )
 }
 
-export function StatsIndexView({ rows, srcs }: { rows: StatRow[]; srcs: SrcRow[] }) {
-  const [lang, setLang, t] = useLang()
+// ── 省份索引(broad='all' 各省卡)──────────────────────────────
+export function StatsIndexContent({ rows, srcs, t }: { rows: StatRow[]; srcs: SrcRow[]; t: TFn }) {
   return (
-    <StatsShell lang={lang} setLang={setLang} t={t}>
+    <>
       <h1 style={{ fontSize: 22, margin: 0 }}><IconMapPin /> {t('stats.provIndex')}</h1>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12, margin: '16px 0' }}>
         {rows.map((r) => (
@@ -40,17 +43,21 @@ export function StatsIndexView({ rows, srcs }: { rows: StatRow[]; srcs: SrcRow[]
       </div>
       <a href="/stats/compare" style={{ fontSize: 13, color: '#2563eb', textDecoration: 'none' }}><IconScale /> {t('stats.compare')} →</a>
       <CaliberLine t={t} srcs={srcs} fetched={rows[0]?.fetched || ''} />
-    </StatsShell>
+    </>
   )
 }
-
-export function StatsProvView({ prov, rows, srcs }: { prov: string; rows: StatRow[]; srcs: SrcRow[] }) {
+export function StatsIndexView({ rows, srcs }: { rows: StatRow[]; srcs: SrcRow[] }) {
   const [lang, setLang, t] = useLang()
+  return <StatsShell lang={lang} setLang={setLang} t={t}><StatsIndexContent rows={rows} srcs={srcs} t={t} /></StatsShell>
+}
+
+// ── 省级(汇总指标 + 按大类表)────────────────────────────────
+export function StatsProvContent({ prov, rows, srcs, t }: { prov: string; rows: StatRow[]; srcs: SrcRow[]; t: TFn }) {
   const all = rows.find((r) => r.broad === 'all')
   const cats = BROAD_SLUGS.map(([slug, broad]) => ({ slug, broad, row: rows.find((r) => r.broad === broad) })).filter((x) => x.row)
   const broadLabel = (b: string) => (b === '未分类' ? t('cell.uncat') : t('broad.' + b))
   return (
-    <StatsShell lang={lang} setLang={setLang} t={t}>
+    <>
       <div style={{ fontSize: 12.5, marginBottom: 6 }}><a href="/stats" style={{ color: '#2563eb', textDecoration: 'none' }}>← {t('stats.provIndex')}</a></div>
       <h1 style={{ fontSize: 22, margin: 0 }}>{t('stats.title', { prov: PROV_NAME[prov] || prov })}</h1>
       {all && <MetricCards r={all} t={t} />}
@@ -74,15 +81,19 @@ export function StatsProvView({ prov, rows, srcs }: { prov: string; rows: StatRo
         </table>
       </div>
       <CaliberLine t={t} srcs={srcs} fetched={all?.fetched || ''} />
-    </StatsShell>
+    </>
   )
 }
-
-export function StatsCatView({ prov, row, srcs, catSlug }: { prov: string; row: StatRow; srcs: SrcRow[]; catSlug: string }) {
+export function StatsProvView({ prov, rows, srcs }: { prov: string; rows: StatRow[]; srcs: SrcRow[] }) {
   const [lang, setLang, t] = useLang()
+  return <StatsShell lang={lang} setLang={setLang} t={t}><StatsProvContent prov={prov} rows={rows} srcs={srcs} t={t} /></StatsShell>
+}
+
+// ── 省×大类详情 ──────────────────────────────────────────────
+export function StatsCatContent({ prov, row, srcs, t }: { prov: string; row: StatRow; srcs: SrcRow[]; t: TFn }) {
   const broadLabel = row.broad === '未分类' ? t('cell.uncat') : t('broad.' + row.broad)
   return (
-    <StatsShell lang={lang} setLang={setLang} t={t}>
+    <>
       <div style={{ fontSize: 12.5, marginBottom: 6 }}><a href={`/stats/${prov.toLowerCase()}`} style={{ color: '#2563eb', textDecoration: 'none' }}>← {t('stats.title', { prov: PROV_NAME[prov] || prov })}</a></div>
       <h1 style={{ fontSize: 22, margin: 0 }}>{t('stats.catTitle', { prov: PROV_NAME[prov] || prov, cat: broadLabel })}</h1>
       <MetricCards r={row} t={t} />
@@ -97,14 +108,17 @@ export function StatsCatView({ prov, row, srcs, catSlug }: { prov: string; row: 
         {t('stats.toJobs')}
       </a>
       <CaliberLine t={t} srcs={srcs} fetched={row.fetched} />
-    </StatsShell>
+    </>
   )
 }
-
-// Pro 跨省对比(E5-04 §3.4):选 2-4 省并排;已建档用户按「我的 NOC」预选大类并高亮。
-const NOC_FIRST_TO_BROAD: Record<string, string> = { '0': '管理', '1': '商务', '2': '科技', '3': '医疗', '4': '教育', '5': '文体', '6': '服务', '7': '技工', '8': '资源', '9': '制造' }
-export function CompareView({ rows, srcs, isPro, loggedIn, myNocs }: { rows: StatRow[]; srcs: SrcRow[]; isPro: boolean; loggedIn: boolean; myNocs: string[] }) {
+export function StatsCatView({ prov, row, srcs }: { prov: string; row: StatRow; srcs: SrcRow[]; catSlug?: string }) {
   const [lang, setLang, t] = useLang()
+  return <StatsShell lang={lang} setLang={setLang} t={t}><StatsCatContent prov={prov} row={row} srcs={srcs} t={t} /></StatsShell>
+}
+
+// ── Pro 跨省对比(E5-04 §3.4):选 2-4 省并排;已建档用户按「我的 NOC」预选大类并高亮 ──
+const NOC_FIRST_TO_BROAD: Record<string, string> = { '0': '管理', '1': '商务', '2': '科技', '3': '医疗', '4': '教育', '5': '文体', '6': '服务', '7': '技工', '8': '资源', '9': '制造' }
+export function CompareContent({ rows, srcs, isPro, loggedIn, myNocs, t }: { rows: StatRow[]; srcs: SrcRow[]; isPro: boolean; loggedIn: boolean; myNocs: string[]; t: TFn }) {
   const myBroad = myNocs.length ? NOC_FIRST_TO_BROAD[myNocs[0][0]] || 'all' : 'all'
   const [broad, setBroad] = useState<string>(myBroad)
   const [picked, setPicked] = useState<string[]>(['ON', 'BC'])
@@ -115,14 +129,14 @@ export function CompareView({ rows, srcs, isPro, loggedIn, myNocs }: { rows: Sta
 
   if (!isPro) {
     return (
-      <StatsShell lang={lang} setLang={setLang} t={t}>
+      <>
         <h1 style={{ fontSize: 22, margin: 0 }}><IconScale /> {t('stats.compare')}</h1>
         <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '14px 18px', margin: '16px 0', fontSize: 13.5 }}>
           <span style={{ fontWeight: 600, color: '#92400e' }}><IconStar /> {t('up.title')}</span>
           <button onClick={() => setPricing(true)} style={{ marginLeft: 10, color: '#2563eb', border: 'none', background: 'none', padding: 0, cursor: 'pointer', fontWeight: 600, fontSize: 13.5 }}>{t('up.cta')}</button>
         </div>
-        {pricing && <PricingModal t={t} loggedIn={loggedIn} pro={false} onClose={() => setPricing(false)} />}
-      </StatsShell>
+        {pricing && <PricingModal t={t} loggedIn={loggedIn} pro={false} z={60} onClose={() => setPricing(false)} />}
+      </>
     )
   }
   const metrics: [string, (r: StatRow) => React.ReactNode][] = [
@@ -135,7 +149,7 @@ export function CompareView({ rows, srcs, isPro, loggedIn, myNocs }: { rows: Sta
     [t('stats.streams'), (r) => r.streamLabels || '—'],
   ]
   return (
-    <StatsShell lang={lang} setLang={setLang} t={t}>
+    <>
       <h1 style={{ fontSize: 22, margin: 0 }}><IconScale /> {t('stats.compare')}</h1>
       <div style={{ margin: '12px 0', fontSize: 12.5, color: '#6b7280' }}>{t('stats.pickProv')}{myNocs.length ? <span style={{ marginLeft: 10, color: '#3730a3' }}><IconTarget /> {t('stats.myNoc')}:NOC {myNocs.join('/')} → {broadLabel(myBroad)}</span> : null}</div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
@@ -165,6 +179,10 @@ export function CompareView({ rows, srcs, isPro, loggedIn, myNocs }: { rows: Sta
         </table>
       </div>
       <CaliberLine t={t} srcs={srcs} fetched={rows[0]?.fetched || ''} />
-    </StatsShell>
+    </>
   )
+}
+export function CompareView({ rows, srcs, isPro, loggedIn, myNocs }: { rows: StatRow[]; srcs: SrcRow[]; isPro: boolean; loggedIn: boolean; myNocs: string[] }) {
+  const [lang, setLang, t] = useLang()
+  return <StatsShell lang={lang} setLang={setLang} t={t}><CompareContent rows={rows} srcs={srcs} isPro={isPro} loggedIn={loggedIn} myNocs={myNocs} t={t} /></StatsShell>
 }
