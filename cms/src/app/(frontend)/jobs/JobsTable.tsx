@@ -11,6 +11,7 @@ import { IconChart, IconCheck, IconCompass, IconLock, IconMap, IconMapPin, IconM
 import { AuthModal } from './AuthForm'
 import { UpgradeModal } from './UpgradeModal'
 import { useOverlayClose } from './overlay'
+import { CARD, iconBtnS, Modal, ModalTitle, SCRIM } from './Modal'
 import { match as matchJob, matchRank, type MatchProfile, type MatchJob, type MatchReason } from '@/lib/match'
 
 // 分层态(E3-05/E5-00,服务端 page.tsx 传入):gate 在服务端已生效,这里只做展示引导
@@ -1471,14 +1472,14 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, eeOcc, 
 
   const panel: React.CSSProperties = full
     ? { position: 'fixed', inset: 0, borderRadius: 0 }
-    : { position: 'fixed', left: pos.x, top: pos.y, width: size.w, height: size.h, borderRadius: 12 }
-  const iconBtn: React.CSSProperties = { border: 'none', background: '#f3f4f6', borderRadius: 8, width: 30, height: 30, cursor: 'pointer', fontSize: 15, color: '#6b7280', flexShrink: 0, lineHeight: 1 }
+    : { position: 'fixed', left: pos.x, top: pos.y, width: size.w, height: size.h }
+  const iconBtn = iconBtnS
 
   return (
-    <div {...overlayClose} style={{ position: 'fixed', inset: 0, background: 'rgba(17,24,39,.45)', zIndex: 50 }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ ...panel, background: '#fff', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 50px rgba(0,0,0,.25)', overflow: 'hidden' }}>
+    <div {...overlayClose} style={{ ...SCRIM, zIndex: 50 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ ...CARD, ...panel, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {/* 标题栏 = 拖动手柄 */}
-        <div onPointerDown={startDrag} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, padding: '14px 18px 10px', cursor: full ? 'default' : 'move', userSelect: 'none', flexShrink: 0 }}>
+        <div onPointerDown={startDrag} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, padding: '16px 20px 10px', cursor: full ? 'default' : 'move', userSelect: 'none', flexShrink: 0 }}>
           <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, letterSpacing: .3 }}><IconCompass /> {t('advisor.tag')} · {a.tag}{status === 'streaming' ? t('advisor.generating') : ''}</div>
             <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title || a.title}</h3>
@@ -1489,7 +1490,7 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, eeOcc, 
           </div>
         </div>
         {/* 正文(可滚动):上半真实清单 + 下半 AI 建议 */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '4px 18px 18px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '4px 20px 20px' }}>
           {/* 对我意味着什么(E5-00):个人相关性放最上;依据链同源 match() */}
           <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} />
           <FieldFactsSection field={field} job={job} lang={lang} isPro={plan.isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} />
@@ -1596,7 +1597,6 @@ function ActRow({ label, value }: { label: string; value: React.ReactNode }) {
 }
 function ActModal({ kind, job, jobs, lang, onClose }: { kind: 'company' | 'desc'; job: JobRow; jobs: JobRow[]; lang: Lang; onClose: () => void }) {
   const t = makeT(lang)
-  const overlayClose = useOverlayClose(onClose)
   const [text, setText] = useState('')
   const [status, setStatus] = useState<'loading' | 'done' | 'empty' | 'upgrade'>(kind === 'desc' ? 'loading' : 'done')
   useEffect(() => {
@@ -1615,16 +1615,12 @@ function ActModal({ kind, job, jobs, lang, onClose }: { kind: 'company' | 'desc'
   }, [kind, job])
   const sameCo = kind === 'company' ? jobs.filter((x) => x.company && x.company === job.company) : []
   return (
-    <div {...overlayClose} style={{ position: 'fixed', inset: 0, background: 'rgba(17,24,39,.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, zIndex: 50 }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 12, maxWidth: 560, width: '100%', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,.25)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, padding: '16px 20px 8px' }}>
-          <div>
-            <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600 }}>{kind === 'company' ? t('act.companyTitle') : t('act.descTitle')}</div>
-            <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827' }}>{(kind === 'company' ? job.company : job.title) || job.title || '—'}</h3>
-          </div>
-          <button onClick={onClose} style={{ border: 'none', background: '#f3f4f6', borderRadius: 8, width: 30, height: 30, cursor: 'pointer', fontSize: 16, color: '#6b7280', flexShrink: 0 }}>×</button>
-        </div>
-        <div style={{ padding: '4px 20px 20px', fontSize: 14, lineHeight: 1.7, color: '#374151' }}>
+    <Modal onClose={onClose} size="md" pad={false}>
+      <div style={{ padding: '16px 20px 8px' }}>
+        <ModalTitle eyebrow={kind === 'company' ? t('act.companyTitle') : t('act.descTitle')}
+          title={(kind === 'company' ? job.company : job.title) || job.title || '—'} />
+      </div>
+      <div style={{ padding: '4px 20px 20px', fontSize: 14, lineHeight: 1.7, color: '#374151' }}>
           {kind === 'company' ? (
             <div>
               <ActRow label={t('col.company')} value={job.company || '—'} />
@@ -1654,8 +1650,7 @@ function ActModal({ kind, job, jobs, lang, onClose }: { kind: 'company' | 'desc'
             </>
           )}
         </div>
-      </div>
-    </div>
+    </Modal>
   )
 }
 

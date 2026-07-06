@@ -4,7 +4,7 @@
 // 价格展示走 NEXT_PUBLIC_PRICE_DISPLAY(与 /pricing 同源,构建期内联);Checkout 复用 /api/billing/checkout。
 import { useState } from 'react'
 import type { TFn } from './i18n'
-import { useOverlayClose } from './overlay'
+import { Modal } from './Modal'
 import { IconStar } from '../Icons'
 
 const [P30, P90] = (process.env.NEXT_PUBLIC_PRICE_DISPLAY || 'CA$19,CA$39').split(',').map((s) => s.trim())
@@ -12,7 +12,6 @@ const [P30, P90] = (process.env.NEXT_PUBLIC_PRICE_DISPLAY || 'CA$19,CA$39').spli
 export function UpgradeModal({ t, onClose, reason }: { t: TFn; onClose: () => void; reason?: string }) {
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
-  const ov = useOverlayClose(onClose)
   const buy = async (plan: '30' | '90') => {
     setBusy(true); setErr('')
     try { (window as any).umami?.track('checkout', { plan }) } catch { /* E7-02:Checkout 发起事件 */ }
@@ -31,20 +30,16 @@ export function UpgradeModal({ t, onClose, reason }: { t: TFn; onClose: () => vo
     color: '#fff', cursor: 'pointer', opacity: busy ? 0.6 : 1,
   }
   return (
-    <div {...ov} style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(17,24,39,.5)', backdropFilter: 'blur(2px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      <div style={{ position: 'relative', width: 'min(390px, 100%)', background: '#fff', borderRadius: 16, padding: '1.75rem 1.75rem 1.4rem', boxShadow: '0 24px 60px rgba(0,0,0,.3)' }}>
-        <button onClick={onClose} aria-label="close"
-          style={{ position: 'absolute', top: 10, right: 12, border: 'none', background: '#f3f4f6', borderRadius: 8, width: 28, height: 28, fontSize: 15, color: '#6b7280', cursor: 'pointer', lineHeight: 1 }}>×</button>
-        <div style={{ fontSize: 15.5, fontWeight: 700, color: '#92400e' }}><IconStar /> {t('acct.buyTitle')}</div>
-        {reason && <div style={{ fontSize: 13, color: '#78716c', marginTop: 8 }}>{reason}</div>}
-        <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-          <button onClick={() => buy('30')} disabled={busy} style={{ ...btn, background: '#2563eb' }}>{t('acct.buy30')} · {P30}</button>
-          <button onClick={() => buy('90')} disabled={busy} style={{ ...btn, background: '#1d4ed8' }}>{t('acct.buy90')} · {P90}</button>
-        </div>
-        {err && <div style={{ color: '#dc2626', fontSize: 13, marginTop: 10, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '7px 10px' }}>{err}</div>}
-        <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 12 }}>{t('acct.buyNote')}</div>
-        <a href="/pricing" style={{ display: 'block', marginTop: 10, fontSize: 12.5, color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}>{t('up.compare')} →</a>
+    <Modal onClose={onClose} size="sm" z={60}>
+      <div style={{ fontSize: 15.5, fontWeight: 700, color: '#92400e', paddingRight: 36 }}><IconStar /> {t('acct.buyTitle')}</div>
+      {reason && <div style={{ fontSize: 13, color: '#78716c', marginTop: 8 }}>{reason}</div>}
+      <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+        <button onClick={() => buy('30')} disabled={busy} style={{ ...btn, background: '#2563eb' }}>{t('acct.buy30')} · {P30}</button>
+        <button onClick={() => buy('90')} disabled={busy} style={{ ...btn, background: '#1d4ed8' }}>{t('acct.buy90')} · {P90}</button>
       </div>
-    </div>
+      {err && <div style={{ color: '#dc2626', fontSize: 13, marginTop: 10, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '7px 10px' }}>{err}</div>}
+      <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 12 }}>{t('acct.buyNote')}</div>
+      <a href="/pricing" style={{ display: 'block', marginTop: 10, fontSize: 12.5, color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}>{t('up.compare')} →</a>
+    </Modal>
   )
 }
