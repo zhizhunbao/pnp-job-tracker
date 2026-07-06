@@ -1147,19 +1147,28 @@ function NocDutiesView({ noc, lang }: { noc: NocDesc | null; lang: Lang }) {
   ) : null
   return <>{block(t('fact.nocDuties'), noc.duties)}{block(t('fact.nocReqs'), noc.requirements)}</>
 }
-// 抓取的 JD 正文 → 结构化行(用户拍板:与上方 NOC 官方职责同一版式)。
-// 按换行 + 「句号紧跟大写字母」(源头丢失换行的痕迹,如 services.Provide)拆行;「Responsibilities:」类小节头加粗。
-function JdTextView({ text, max = 1600 }: { text: string; max?: number }) {
+// 抓取的 JD 正文 → Job Bank 原版式(2026-07-06 用户拍板「按人家的格式」):
+// 大节头(Overview/Responsibilities…)加粗放大、子节头(Tasks/Languages…)加粗,内容行缩进纯文本;
+// 源头自带的 •/· 圆点剥掉(否则双圆点);全部展开不做内层滚动(弹窗整体滚)。
+// 节头用白名单识别(Job Bank 固定小节),白名单外一律当内容行 —— 「English」这类单词值不会被误判成标题。
+const JD_TOP_HEADS = new Set(['overview', 'responsibilities', 'requirements', 'experience and specialization', 'additional information', 'benefits', 'employment groups', 'who can apply for this job', 'who can apply to this job'])
+const JD_SUB_HEADS = new Set(['languages', 'education', 'experience', 'on site', 'on the road', 'work setting', 'work site environment', 'tasks', 'supervision', 'credentials', 'certificates, licences, memberships, and courses', 'computer and technology knowledge', 'area of specialization', 'area of work experience', 'security and safety', 'transportation/travel information', 'work conditions and physical capabilities', 'weight handling', 'own tools/equipment', 'personal suitability', 'health benefits', 'financial benefits', 'long term benefits', 'other benefits', 'screening questions', 'green job'])
+function JdTextView({ text, max = 4000 }: { text: string; max?: number }) {
   const lines = text.slice(0, max).split('\n')
     .flatMap((l) => l.split(/(?<=\.)(?=[A-Z])/))
-    .map((s) => s.trim()).filter(Boolean)
+    .map((s) => s.trim().replace(/^[•·▪◦‣*-]+\s*/, ''))
+    .filter(Boolean)
   return (
-    <ul style={{ margin: '4px 0 0', paddingLeft: 18, fontSize: 12.5, color: '#4b5563', lineHeight: 1.55, maxHeight: 220, overflowY: 'auto' }}>
+    <div style={{ margin: '4px 0 0', fontSize: 12.5, color: '#4b5563', lineHeight: 1.6 }}>
       {lines.map((l, i) => {
-        const m = l.match(/^([A-Z][A-Za-z /&'-]{1,30}):\s*(.*)$/)
-        return <li key={i}>{m ? <><strong style={{ color: '#374151' }}>{m[1]}:</strong> {m[2]}</> : l}</li>
+        const low = l.toLowerCase()
+        if (JD_TOP_HEADS.has(low)) return <div key={i} style={{ marginTop: i ? 12 : 0, fontSize: 14, fontWeight: 700, color: '#111827' }}>{l}</div>
+        if (JD_SUB_HEADS.has(low)) return <div key={i} style={{ marginTop: i ? 8 : 0, fontWeight: 700, color: '#374151' }}>{l}</div>
+        const m = l.match(/^([A-Z][A-Za-z /&'-]{1,30}):\s*(.+)$/)
+        if (m) return <div key={i} style={{ paddingLeft: 14 }}><strong style={{ color: '#374151' }}>{m[1]}:</strong> {m[2]}</div>
+        return <div key={i} style={{ paddingLeft: 14 }}>{l}</div>
       })}
-    </ul>
+    </div>
   )
 }
 function TitleFacts({ job, lang, noc }: { job: JobRow; lang: Lang; noc: NocDesc | null }) {
@@ -1186,7 +1195,7 @@ function TitleFacts({ job, lang, noc }: { job: JobRow; lang: Lang; noc: NocDesc 
       <div style={{ marginTop: 8, fontSize: 11.5, color: '#9ca3af' }}>{t('fact.jdExcerpt')}</div>
       {gated ? <UpgradeCard t={t} reason={t('up.jobtext')} />
         : jd === null ? <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>{t('act.loadingText')}</div>
-        : jd ? <JdTextView text={jd} max={900} />
+        : jd ? <JdTextView text={jd} />
         : <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>{t('act.noText')}</div>}
     </FactsBox>
   )
@@ -1220,10 +1229,22 @@ const CLS_FIELDS = new Set<ColKey>(['noc', 'teer', 'broad', 'mid', 'fine'])
 const SRC_FIELDS = new Set<ColKey>(['source', 'origin', 'direct'])
 const TIME_FIELDS = new Set<ColKey>(['status', 'datePosted', 'lastSeen', 'closedAt'])
 
-// 字段级 citation 来源行(E4-04 的 SourceLine)已按用户拍板(2026-07-05)从所有弹框移除;
-// field_sources 维度与 /sources 解释页保留 —— 出处能力还在,只是不再占弹框版面。
+// 来源行极简版(2026-07-06 用户拍板):「来源: 完整 applyUrl」一行可点击,**紧跟事实/JD 内容、在 AI 区之前**
+// (出处跟着对应内容走,不吊在弹窗底部);发布方/抓取时间/标签全不带 —— 合规已在 footer 统一声明。
+// pnp/ee 字段例外:清单内容来自政策页,各通道行已带自己的 ↗ 官方链接,不加岗位帖来源行。
+// field_sources 维度与 /sources 解释页照旧保留(E4-04 出处能力后置到解释页)。
 function FieldFactsSection({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc }: { field: ColKey; job: JobRow; lang: Lang; isPro: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[] }) {
-  return <FieldFactsInner field={field} job={job} lang={lang} isPro={isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} />
+  const t = makeT(lang)
+  return (
+    <>
+      <FieldFactsInner field={field} job={job} lang={lang} isPro={isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} />
+      {field !== 'pnp' && field !== 'ee' && job.applyUrl ? (
+        <div style={{ margin: '2px 0 12px', fontSize: 11.5, color: '#9ca3af', overflowWrap: 'anywhere' }}>
+          {t('src.label')}: <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#6b7280' }}>{job.applyUrl}</a>
+        </div>
+      ) : null}
+    </>
+  )
 }
 function FieldFactsInner({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc }: { field: ColKey; job: JobRow; lang: Lang; isPro: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[] }) {
   const t = makeT(lang)
@@ -1571,12 +1592,7 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, eeOcc, 
           ) : (
             <div style={{ fontSize: 14, lineHeight: 1.7, color: '#374151' }}>{renderAI(text)}{status === 'streaming' && <span style={{ color: '#9ca3af' }}>▋</span>}</div>
           )}
-          {/* 来源行极简版(2026-07-06 用户拍板):只「来源: 完整 URL」可点,不带发布方/抓取时间/标签 */}
-          {job.applyUrl && (
-            <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid #f3f4f6', fontSize: 11.5, color: '#9ca3af', overflowWrap: 'anywhere' }}>
-              {t('src.label')}: <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#6b7280' }}>{job.applyUrl}</a>
-            </div>
-          )}
+          {/* 来源行已随事实块走(FieldFactsSection 内,紧跟内容、在 AI 区之前)—— 底部不再重复 */}
           {/* 下半:对话框 —— 基于上方事实 + 初判,多轮 grounded 追问 */}
           {status === 'done' && <AdvisorChat field={field} job={job} lang={lang} initialJudgment={text} />}
         </div>
