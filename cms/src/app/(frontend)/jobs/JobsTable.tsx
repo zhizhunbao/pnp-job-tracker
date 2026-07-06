@@ -1153,8 +1153,15 @@ function NocDutiesView({ noc, lang }: { noc: NocDesc | null; lang: Lang }) {
 // 节头用白名单识别(Job Bank 固定小节),白名单外一律当内容行 —— 「English」这类单词值不会被误判成标题。
 const JD_TOP_HEADS = new Set(['overview', 'responsibilities', 'requirements', 'experience and specialization', 'additional information', 'benefits', 'employment groups', 'who can apply for this job', 'who can apply to this job'])
 const JD_SUB_HEADS = new Set(['languages', 'education', 'experience', 'on site', 'on the road', 'work setting', 'work site environment', 'tasks', 'supervision', 'credentials', 'certificates, licences, memberships, and courses', 'computer and technology knowledge', 'area of specialization', 'area of work experience', 'security and safety', 'transportation/travel information', 'work conditions and physical capabilities', 'weight handling', 'own tools/equipment', 'personal suitability', 'health benefits', 'financial benefits', 'long term benefits', 'other benefits', 'screening questions', 'green job'])
+// Indeed/ATS 尾巴的内联标签(源头丢换行,如 "Job Type: Part-time Pay: $20 Benefits: * A * B"):
+// 白名单标签前补换行 + 「* 」项拆行 —— 只认这些词,不会切碎正文散文段落。
+const JD_INLINE_LABELS = ['Job Types', 'Job Type', 'Pay', 'Salary', 'Benefits', 'Schedule', 'Expected hours', 'Supplemental pay types', 'Flexible language requirement', 'Experience', 'Education', 'Language', 'Work Location', 'Licence/Certification', 'Ability to commute/relocate', 'Application question(s)', 'Application deadline', 'Expected start date', 'Shift availability']
+const JD_INLINE_RE = new RegExp(`\\s+(?=(?:${JD_INLINE_LABELS.map((s) => s.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')).join('|')}):)`, 'g')
 function JdTextView({ text, max = 4000 }: { text: string; max?: number }) {
-  const lines = text.slice(0, max).split('\n')
+  const lines = text.slice(0, max)
+    .replace(JD_INLINE_RE, '\n')      // 已知标签前断行
+    .replace(/\s+\*\s+/g, '\n')       // "* 项" 拆行(星号本身在下方统一剥掉)
+    .split('\n')
     .flatMap((l) => l.split(/(?<=\.)(?=[A-Z])/))
     .map((s) => s.trim().replace(/^[•·▪◦‣*-]+\s*/, ''))
     .filter(Boolean)
@@ -1164,7 +1171,9 @@ function JdTextView({ text, max = 4000 }: { text: string; max?: number }) {
         const low = l.toLowerCase()
         if (JD_TOP_HEADS.has(low)) return <div key={i} style={{ marginTop: i ? 12 : 0, fontSize: 14, fontWeight: 700, color: '#111827' }}>{l}</div>
         if (JD_SUB_HEADS.has(low)) return <div key={i} style={{ marginTop: i ? 8 : 0, fontWeight: 700, color: '#374151' }}>{l}</div>
-        const m = l.match(/^([A-Z][A-Za-z /&'-]{1,30}):\s*(.+)$/)
+        const bare = l.match(/^([A-Z][A-Za-z ()/&'-]{1,40}):$/)  // 裸标签行(如 "Benefits:")→ 小节头
+        if (bare) return <div key={i} style={{ marginTop: i ? 8 : 0, fontWeight: 700, color: '#374151' }}>{bare[1]}</div>
+        const m = l.match(/^([A-Z][A-Za-z ()/&'-]{1,40}):\s*(.+)$/)
         if (m) return <div key={i} style={{ paddingLeft: 14 }}><strong style={{ color: '#374151' }}>{m[1]}:</strong> {m[2]}</div>
         return <div key={i} style={{ paddingLeft: 14 }}>{l}</div>
       })}
