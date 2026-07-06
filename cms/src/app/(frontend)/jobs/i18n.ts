@@ -14,7 +14,7 @@ export const COLS_COOKIE = 'jobsCols3'   // 列偏好 cookie 名(放共享非 cl
 type Dict = Record<string, string>
 
 const zh: Dict = {
-  'subtitle.count': '{n} 个职位',
+  'subtitle.count': '{n} 个职位', 'subtitle.loadingAll': '完整列表加载中…',
   'updated': '抓取 {t}',
   'tagline': '每日更新 · 全加拿大全职业 · 移民价值视角',
   'foot.disclaimer': '本站为信息聚合工具,数据自动抓取仅供参考,不构成移民 / 法律建议;我们非持牌移民顾问(RCIC),以官方来源为准。',
@@ -68,7 +68,7 @@ const zh: Dict = {
   'fact.timeNote': '下架口径:本次抓取未出现 且 发布超 30 天,才标「已下架」',
   'fact.aipNote': 'AIP 仅限大西洋四省(NL/NB/NS/PE);按公司名归一化匹配官方指定雇主名单,无中介', 'fact.aipTech': '科技类',
   'fact.lmiaNote': '雇主近两年有获批的正面 LMIA(ESDC 季度公开数据,按公司名归一匹配)——历史事实,不代表现在能/愿担保;2026 年低薪股在多数大城市已冻结受理', 'fact.lmiaStreams': '股别分布',
-  'fact.jdExcerpt': '职位描述摘录(抓取正文)',
+  'fact.jdExcerpt': '职位描述摘录',
   'fact.coSectors': '行业', 'fact.coIntro': '公司简介(抓取)', 'fact.coNone': '未抓到该公司简介(目前仅 ATS 名录公司有正文;其余公司下方 AI 据公开知识推断,可能有误)',
   'fact.nocTitle': '官方职业名', 'fact.nocDuties': '官方主要职责(NOC 2021)', 'fact.nocReqs': '任职要求(NOC 2021)',
   'fact.scoreNote': '评分明细与 08_score 一致(满分 100,移民价值视角)', 'score.base': '基准', 'score.indemand': '紧缺大类', 'score.low': '省具名通道', 'score.direct': '第一方雇主', 'score.exp': '经验', 'score.prov': '省份(非 ON)', 'score.total': '合计', 'score.stored': '入库',
@@ -168,7 +168,7 @@ const zh: Dict = {
 }
 
 const en: Dict = {
-  'subtitle.count': '{n} jobs',
+  'subtitle.count': '{n} jobs', 'subtitle.loadingAll': 'loading full list…',
   'updated': 'Scraped {t}',
   'tagline': 'Daily updates · all of Canada · immigration-value lens',
   'foot.disclaimer': 'This site is an information aggregator; auto-scraped data is for reference only and is not immigration / legal advice. We are not licensed immigration consultants (RCIC) — always verify with official sources.',
@@ -245,7 +245,7 @@ const en: Dict = {
   'fact.timeNote': 'Closed only when absent from the latest crawl AND posted >30 days ago',
   'fact.aipNote': 'AIP covers the four Atlantic provinces only (NL/NB/NS/PE); matched by normalized employer name against the official designated list', 'fact.aipTech': 'Tech',
   'fact.lmiaNote': 'This employer had positive LMIAs approved in the past two years (ESDC quarterly open data, matched by normalized employer name) — a historical fact, not an indication they can or will sponsor now; the low-wage stream is frozen in most large cities as of 2026', 'fact.lmiaStreams': 'By stream',
-  'fact.jdExcerpt': 'Posting excerpt (scraped)',
+  'fact.jdExcerpt': 'Posting excerpt',
   'fact.coSectors': 'Sector', 'fact.coIntro': 'Company profile (scraped)', 'fact.coNone': 'No scraped company profile (only ATS-directory companies have one so far; for others the AI below infers from public knowledge and may be inaccurate)',
   'fact.nocTitle': 'Official title', 'fact.nocDuties': 'Official main duties (NOC 2021)', 'fact.nocReqs': 'Employment requirements (NOC 2021)',
   'fact.scoreNote': 'Breakdown matches 08_score (out of 100, immigration-value lens)', 'score.base': 'Baseline', 'score.indemand': 'In-demand group', 'score.low': 'Named PNP stream', 'score.direct': 'First-party employer', 'score.exp': 'Experience', 'score.prov': 'Province (non-ON)', 'score.total': 'Total', 'score.stored': 'stored',
@@ -344,7 +344,7 @@ const en: Dict = {
 }
 
 const ko: Dict = {
-  'subtitle.count': '{n}개 공고',
+  'subtitle.count': '{n}개 공고', 'subtitle.loadingAll': '전체 목록 불러오는 중…',
   'updated': '수집 {t}',
   'tagline': '매일 갱신 · 캐나다 전역 · 이민 가치 관점',
   'foot.disclaimer': '본 사이트는 정보 수집 도구입니다. 자동 수집 데이터는 참고용이며 이민 / 법률 자문이 아닙니다. 당사는 공인 이민 컨설턴트(RCIC)가 아니며, 공식 출처를 기준으로 확인하세요.',
@@ -421,7 +421,7 @@ const ko: Dict = {
   'fact.timeNote': '최신 수집에 없고 게시 30일 초과일 때만 「마감」 처리',
   'fact.aipNote': 'AIP는 대서양 4개 주(NL/NB/NS/PE)만 해당; 정규화된 고용주명으로 공식 지정 명단과 매칭', 'fact.aipTech': '기술',
   'fact.lmiaNote': '이 고용주는 최근 2년간 승인된 LMIA 기록이 있습니다(ESDC 분기 공개 데이터, 정규화된 고용주명 매칭) — 과거 사실이며 현재 스폰서 가능/의사를 뜻하지 않음; 2026년 저임금 스트림은 대부분 대도시에서 접수 동결', 'fact.lmiaStreams': '스트림별',
-  'fact.jdExcerpt': '공고 발췌(수집 본문)',
+  'fact.jdExcerpt': '공고 발췌',
   'fact.coSectors': '업종', 'fact.coIntro': '회사 소개(수집)', 'fact.coNone': '수집된 회사 소개 없음(현재 ATS 디렉터리 회사만 본문 있음; 그 외는 아래 AI가 공개 지식으로 추론하며 부정확할 수 있음)',
   'fact.nocTitle': '공식 직업명', 'fact.nocDuties': '공식 주요 업무(NOC 2021)', 'fact.nocReqs': '취업 요건(NOC 2021)',
   'fact.scoreNote': '08_score와 동일(100점 만점, 이민 가치 관점)', 'score.base': '기준', 'score.indemand': '부족 대분류', 'score.low': '주 지정 채널', 'score.direct': '직접 고용주', 'score.exp': '경력', 'score.prov': '주(ON 외)', 'score.total': '합계', 'score.stored': '저장값',

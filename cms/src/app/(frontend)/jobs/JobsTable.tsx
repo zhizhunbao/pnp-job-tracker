@@ -31,14 +31,14 @@ function catName(t: TFn, v: string): string {
 // Pro 专属列(与 lib/plan.ts PRO_COLUMNS 一致;免费用户列位显示锁标,数据本就没进浏览器)
 const PRO_COLS = new Set<ColKey>(['match', 'vsMedian', 'wageMedHr', 'wageMedYr'])
 
-// 未登录价值主张横幅(E5-01):注册/定价引导,可关闭(localStorage 记忆,bump key 可重新展示)
-const BANNER_KEY = 'jobs.banner.v1'
-function ValueBanner({ t }: { t: TFn }) {
-  const [show, setShow] = useState(false)
+// 未登录价值主张横幅(E5-01):注册/定价引导,可关闭。
+// 关闭记忆走 cookie(同 COLS_COOKIE 手法)→ SSR 首帧直接渲对,不再等水合后才弹出来(用户点名);bump cookie 名可重新展示
+export const BANNER_COOKIE = 'jobs_banner_v1'
+function ValueBanner({ t, initialShow }: { t: TFn; initialShow: boolean }) {
+  const [show, setShow] = useState(initialShow)
   const [auth, setAuth] = useState(false)
-  useIsoLayoutEffect(() => { try { if (!localStorage.getItem(BANNER_KEY)) setShow(true) } catch { setShow(true) } }, [])
   if (!show) return null
-  const dismiss = () => { try { localStorage.setItem(BANNER_KEY, '1') } catch { /* ignore */ } ; setShow(false) }
+  const dismiss = () => { try { document.cookie = `${BANNER_COOKIE}=1; max-age=31536000; path=/` } catch { /* ignore */ } ; setShow(false) }
   return (
     <div style={{ background: 'linear-gradient(90deg,#eff6ff,#eef2ff)', borderBottom: '1px solid #e0e7ff' }}>
       <div style={{ maxWidth: 1320, margin: '0 auto', padding: '8px 1.25rem', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', fontSize: 13 }}>
@@ -365,7 +365,29 @@ type Dims = {
 const EMPTY_DIMS: Dims = { provinces: [], cities: [], districts: [], nocCategories: [], sources: [], experienceLevels: [], pnpOccupations: [], pnpDraws: [], eeCategories: [], designatedEmployers: [], nocDescriptions: [], fieldSources: [] }
 const PROV_CODE: Record<string, string> = Object.fromEntries(Object.entries(PROV_NAMES).map(([c, n]) => [n, c]))
 
-export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialCols, plan = FREE_PLAN }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims; initialCols?: string[]; plan?: Plan }) {
+export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdatedAt, dims = EMPTY_DIMS, initialCols, plan = FREE_PLAN, initialBanner, totalCount, deferFull }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims; initialCols?: string[]; plan?: Plan; initialBanner?: boolean; totalCount?: number; deferFull?: boolean }) {
+  // 首屏拆分(2026-07-05):SSR 只带最近 50 行,水合后从 /api/jobs-data 后台换入全量(同序,无跳变);
+  // 失败保底留首屏 50 行可用,loadedAll 复位以显示计数而非假「全量」。
+  const [jobs, setJobs] = useState(initialJobs)
+  const [updatedAt, setUpdatedAt] = useState(initialUpdatedAt)
+  const [loadedAll, setLoadedAll] = useState(!deferFull)
+  useEffect(() => {
+    if (!deferFull) return
+    let dead = false
+    ;(async () => {
+      try {
+        const r = await fetch('/api/jobs-data', { credentials: 'include' })
+        if (!r.ok) return
+        const d = await r.json()
+        if (!dead && Array.isArray(d.jobs) && d.jobs.length) {
+          setJobs(d.jobs)
+          if (d.updatedAt) setUpdatedAt(d.updatedAt)
+          setLoadedAll(true)
+        }
+      } catch { /* 网络失败:留首屏 50 行,刷新可重试 */ }
+    })()
+    return () => { dead = true }
+  }, [deferFull])
   const [q, setQ] = useState('')
   const [directOnly, setDirectOnly] = useState(false)
   const [fCountry, setFCountry] = useState(''); const [fProv, setFProv] = useState(''); const [fCity, setFCity] = useState(''); const [fDistrict, setFDistrict] = useState('')
@@ -630,12 +652,13 @@ export default function JobsTable({ jobs, updatedAt, dims = EMPTY_DIMS, initialC
           </div>
         </div>
       </header>
-      {/* 未登录价值主张横幅(E5-01):可关闭,localStorage 记忆 */}
-      {!plan.loggedIn && <ValueBanner t={t} />}
+      {/* 未登录价值主张横幅(E5-01):可关闭,cookie 记忆(SSR 首帧即渲) */}
+      {!plan.loggedIn && <ValueBanner t={t} initialShow={initialBanner ?? true} />}
       <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1.5rem 1.25rem', width: '100%', boxSizing: 'border-box', flex: '1 0 auto' }}>
         <h1 style={{ margin: '0 0 2px', color: '#111827' }}>Jobs</h1>
         <p style={{ color: '#6b7280', marginTop: 0, fontSize: 13 }}>
-          {rows.length === jobs.length ? t('subtitle.count', { n: jobs.length }) : `${rows.length} / ${jobs.length}`}
+          {rows.length === jobs.length ? t('subtitle.count', { n: !loadedAll && totalCount ? totalCount : jobs.length }) : `${rows.length} / ${jobs.length}`}
+          {!loadedAll && <span style={{ color: '#c4c4c8' }}> · {t('subtitle.loadingAll')}</span>}
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '1rem 0' }}>
@@ -1098,6 +1121,21 @@ function NocDutiesView({ noc, lang }: { noc: NocDesc | null; lang: Lang }) {
   ) : null
   return <>{block(t('fact.nocDuties'), noc.duties)}{block(t('fact.nocReqs'), noc.requirements)}</>
 }
+// 抓取的 JD 正文 → 结构化行(用户拍板:与上方 NOC 官方职责同一版式)。
+// 按换行 + 「句号紧跟大写字母」(源头丢失换行的痕迹,如 services.Provide)拆行;「Responsibilities:」类小节头加粗。
+function JdTextView({ text, max = 1600 }: { text: string; max?: number }) {
+  const lines = text.slice(0, max).split('\n')
+    .flatMap((l) => l.split(/(?<=\.)(?=[A-Z])/))
+    .map((s) => s.trim()).filter(Boolean)
+  return (
+    <ul style={{ margin: '4px 0 0', paddingLeft: 18, fontSize: 12.5, color: '#4b5563', lineHeight: 1.55, maxHeight: 220, overflowY: 'auto' }}>
+      {lines.map((l, i) => {
+        const m = l.match(/^([A-Z][A-Za-z /&'-]{1,30}):\s*(.*)$/)
+        return <li key={i}>{m ? <><strong style={{ color: '#374151' }}>{m[1]}:</strong> {m[2]}</> : l}</li>
+      })}
+    </ul>
+  )
+}
 function TitleFacts({ job, lang, noc }: { job: JobRow; lang: Lang; noc: NocDesc | null }) {
   const t = makeT(lang)
   const [jd, setJd] = useState<string | null>(null)  // null=loading · ''=无正文
@@ -1125,7 +1163,7 @@ function TitleFacts({ job, lang, noc }: { job: JobRow; lang: Lang; noc: NocDesc 
       </div>
       {gated ? <UpgradeCard t={t} reason={t('up.jobtext')} />
         : jd === null ? <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>{t('act.loadingText')}</div>
-        : jd ? <div style={{ marginTop: 4, fontSize: 12.5, color: '#4b5563', whiteSpace: 'pre-wrap', lineHeight: 1.6, maxHeight: 180, overflowY: 'auto', border: '1px solid #f3f4f6', borderRadius: 8, padding: '8px 10px' }}>{jd.slice(0, 900)}</div>
+        : jd ? <JdTextView text={jd} max={900} />
         : <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>{t('act.noText')}</div>}
     </FactsBox>
   )
@@ -1169,19 +1207,20 @@ function SourceLine({ field, job, lang, sources }: { field: ColKey; job: JobRow;
   const key = SRC_KEY_ALIAS[field] || field
   const s = sources.find((x) => x.field === key)
   if (!s) return null   // 注册表没有该字段 → 宁可留空
-  const recordUrl = RECORD_URL_FIELDS.has(field) && job.applyUrl ? job.applyUrl : ''
+  // 压缩版(用户拍板):发布方 + 完整 URL + 抓取时间一行;不再引用来源页 title/description(对岗位无信息量)。
+  // title 字段的事实块自带显著「查看官方原帖」按钮 → 这里不重复
+  const recordUrl = field !== 'title' && RECORD_URL_FIELDS.has(field) && job.applyUrl ? job.applyUrl : ''
   return (
-    <div style={{ margin: '2px 0 10px', fontSize: 11.5, color: '#9ca3af', lineHeight: 1.6 }}>
+    <div style={{ margin: '2px 0 10px', fontSize: 11.5, color: '#9ca3af', lineHeight: 1.6, overflowWrap: 'anywhere' }}>
       <span><IconPaperclip /> {t('src.label')}:</span>
       {s.kind === 'derived' ? (
         <span> {t('src.derived')}{s.note ? ` — ${s.note}` : ''}</span>
       ) : (
         <>
           {recordUrl && <a href={recordUrl} target="_blank" rel="noreferrer" style={{ color: '#6b7280', marginLeft: 4 }}>{t('src.official')} ↗</a>}
-          <a href={s.url} target="_blank" rel="noreferrer" style={{ color: '#6b7280', marginLeft: 6 }}>{s.publisher} ↗</a>
-          {s.status === 'verified'
-            ? <span> · {t('src.fetched', { d: s.fetched })}{s.title ? <span style={{ display: 'block', color: '#c4c4c8' }}>“{s.title}”{s.description ? ` — ${s.description.slice(0, 160)}` : ''}</span> : null}</span>
-            : <span> · {t('src.unverified')}</span>}
+          <span> {s.publisher} — </span>
+          <a href={s.url} target="_blank" rel="noreferrer" style={{ color: '#6b7280' }}>{s.url}</a>
+          {s.status === 'verified' ? <span> · {t('src.fetched', { d: s.fetched })}</span> : <span> · {t('src.unverified')}</span>}
         </>
       )}
     </div>
@@ -1205,10 +1244,11 @@ function FieldFactsInner({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, des
   const day = (s?: string) => (s || '').slice(0, 10)
 
   if (field === 'company') {
+    // 弹框标题已是公司名 → 不再重复公司行;没抓到简介就直接不渲染(长解释文案删了,用户拍板:少而清楚)
     const desc = job.companyDescription
+    if (!desc && !job.officialUrl && !job.companySectors) return null
     return (
-      <FactsBox note={desc ? undefined : t('fact.coNone')}>
-        <FactRow k={t('col.company')}>{job.company}</FactRow>
+      <FactsBox>
         {job.officialUrl ? <FactRow k={t('act.site')}><a href={job.officialUrl} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5 }}>{job.officialUrl}</a></FactRow> : null}
         <FactRow k={t('fact.coSectors')}>{job.companySectors}</FactRow>
         {desc ? <>
@@ -1358,14 +1398,8 @@ function MeansForMe({ job, lang, plan, pnpOcc, eeOcc }: { job: JobRow; lang: Lan
     })
   }, [job, plan, pnpOcc, eeOcc])
 
-  if (!plan.loggedIn || !plan.profileOk) {  // 未登录/未建档:一行引导,不占地
-    return (
-      <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 8, padding: '8px 12px', margin: '4px 0 8px', fontSize: 13 }}>
-        <IconTarget /> <a href="/account" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}>{t('match.needProfile')} →</a>
-        <span style={{ color: '#6b7280', marginLeft: 8 }}>{t('prof.hint')}</span>
-      </div>
-    )
-  }
+  // 未登录/未建档:弹框内不再放建档引导(页头横幅 + 列表「建档案 →」列已覆盖;用户拍板:别到处都是)
+  if (!plan.loggedIn || !plan.profileOk) return null
   // 免费限额外(服务端没给这行算 match)→ 升级卡;依据链是 Pro/限额内权益
   if (!plan.isPro && job.match == null) return <UpgradeCard t={t} reason={t('up.match', { n: plan.freeMatchCap })} />
   if (!result) return null
@@ -1402,6 +1436,26 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, eeOcc, 
   const [text, setText] = useState('')
   const [status, setStatus] = useState<'loading' | 'streaming' | 'done' | 'error' | 'upgrade'>('loading')
 
+  // 打字机(用户拍板:AI 内容必须流式感,不许整段蹦出来):网络块先进 pending,固定节奏吐字。
+  // 覆盖三种「整段到达」场景:公司初判 web_fetch 工具阶段后快速吐完、服务端缓存命中、代理缓冲。
+  // 吐字速率与积压成正比(每帧 1/12),整段大文本几秒内追平,不会无限拖尾。
+  const pendingRef = useRef('')
+  const doneRef = useRef(false)
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (pendingRef.current) {
+        const n = Math.max(2, Math.ceil(pendingRef.current.length / 12))
+        const chunk = pendingRef.current.slice(0, n)
+        pendingRef.current = pendingRef.current.slice(n)
+        setText((prev) => prev + chunk)
+      } else if (doneRef.current) {
+        doneRef.current = false
+        setStatus('done')
+      }
+    }, 33)
+    return () => clearInterval(id)
+  }, [])
+
   // 弹框尺寸/全屏/位置 —— 默认更大(720×620),可全屏、标题栏拖动、右下角拉伸;尺寸+全屏记忆
   const [full, setFull] = useState(false)
   const [size, setSize] = useState({ w: 720, h: 620 })
@@ -1435,18 +1489,41 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, eeOcc, 
     const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up) }
     window.addEventListener('pointermove', move); window.addEventListener('pointerup', up)
   }
-  const startResize = (e: React.PointerEvent) => {
+  // 八方向拉伸(用户点名:上下左右都可放大缩小);西/北向同时移动位置,右/下边固定
+  const MIN_W = 360, MIN_H = 280
+  const startResize = (e: React.PointerEvent, dir: string) => {
     if (full) return
     e.preventDefault(); e.stopPropagation()
-    const sx = e.clientX, sy = e.clientY, sw = size.w, sh = size.h
-    const move = (ev: PointerEvent) => setSize({ w: Math.max(360, sw + ev.clientX - sx), h: Math.max(280, sh + ev.clientY - sy) })
+    const sx = e.clientX, sy = e.clientY, sw = size.w, sh = size.h, spx = pos.x, spy = pos.y
+    const move = (ev: PointerEvent) => {
+      const dx = ev.clientX - sx, dy = ev.clientY - sy
+      let w = sw, h = sh, x = spx, y = spy
+      if (dir.includes('e')) w = sw + dx
+      if (dir.includes('s')) h = sh + dy
+      if (dir.includes('w')) { w = sw - dx; x = spx + dx }
+      if (dir.includes('n')) { h = sh - dy; y = spy + dy }
+      if (w < MIN_W) { if (dir.includes('w')) x = spx + sw - MIN_W; w = MIN_W }
+      if (h < MIN_H) { if (dir.includes('n')) y = spy + sh - MIN_H; h = MIN_H }
+      setSize({ w, h }); setPos({ x, y })
+    }
     const up = () => { savePref({ w: sizeRef.current.w, h: sizeRef.current.h }); window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up) }
     window.addEventListener('pointermove', move); window.addEventListener('pointerup', up)
   }
+  // 边 6px / 角 14px 的透明手柄条(角在后,覆盖边的交叠区)
+  const EDGES: { dir: string; cursor: string; style: React.CSSProperties }[] = [
+    { dir: 'n', cursor: 'ns-resize', style: { top: 0, left: 14, right: 14, height: 6 } },
+    { dir: 's', cursor: 'ns-resize', style: { bottom: 0, left: 14, right: 14, height: 6 } },
+    { dir: 'w', cursor: 'ew-resize', style: { left: 0, top: 14, bottom: 14, width: 6 } },
+    { dir: 'e', cursor: 'ew-resize', style: { right: 0, top: 14, bottom: 14, width: 6 } },
+    { dir: 'nw', cursor: 'nwse-resize', style: { top: 0, left: 0, width: 14, height: 14 } },
+    { dir: 'ne', cursor: 'nesw-resize', style: { top: 0, right: 0, width: 14, height: 14 } },
+    { dir: 'sw', cursor: 'nesw-resize', style: { bottom: 0, left: 0, width: 14, height: 14 } },
+    { dir: 'se', cursor: 'nwse-resize', style: { bottom: 0, right: 0, width: 14, height: 14 } },
+  ]
 
   useEffect(() => {
     const ctrl = new AbortController()
-    setText(''); setStatus('loading')
+    setText(''); setStatus('loading'); pendingRef.current = ''; doneRef.current = false
     ;(async () => {
       try {
         const res = await fetch('/api/advisor', {
@@ -1460,11 +1537,11 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, eeOcc, 
         for (;;) {
           const { done, value } = await reader.read()
           if (done) break
-          setText((t) => t + dec.decode(value, { stream: true }))
+          pendingRef.current += dec.decode(value, { stream: true })  // 进打字机队列,不直接上屏
         }
-        setStatus('done')
+        doneRef.current = true  // 吐完 pending 后打字机自己切 done
       } catch {
-        if (!ctrl.signal.aborted) { setStatus('error'); setText(t('advisor.offline')) }
+        if (!ctrl.signal.aborted) { pendingRef.current = ''; setStatus('error'); setText(t('advisor.offline')) }
       }
     })()
     return () => ctrl.abort()
@@ -1514,8 +1591,12 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, eeOcc, 
           {/* 下半:对话框 —— 基于上方事实 + 初判,多轮 grounded 追问 */}
           {status === 'done' && <AdvisorChat field={field} job={job} lang={lang} initialJudgment={text} />}
         </div>
-        {/* 右下角拉伸手柄 */}
-        {!full && <div onPointerDown={startResize} style={{ position: 'absolute', right: 0, bottom: 0, width: 18, height: 18, cursor: 'nwse-resize', background: 'linear-gradient(135deg, transparent 50%, #cbd5e1 50%)' }} />}
+        {/* 八方向拉伸手柄(透明边条+角块;右下角保留视觉提示三角) */}
+        {!full && <div style={{ position: 'absolute', right: 0, bottom: 0, width: 18, height: 18, pointerEvents: 'none', background: 'linear-gradient(135deg, transparent 50%, #cbd5e1 50%)' }} />}
+        {!full && EDGES.map((h) => (
+          <div key={h.dir} onPointerDown={(e) => startResize(e, h.dir)}
+            style={{ position: 'absolute', cursor: h.cursor, ...h.style }} />
+        ))}
       </div>
     </div>
   )
@@ -1646,7 +1727,7 @@ function ActModal({ kind, job, jobs, lang, onClose }: { kind: 'company' | 'desc'
               {status === 'loading' ? <p style={{ color: '#9ca3af' }}>{t('act.loadingText')}</p>
                 : status === 'upgrade' ? <UpgradeCard t={t} reason={t('up.jobtext')} />
                 : status === 'empty' ? <p style={{ color: '#9ca3af' }}>{t('act.noText')}</p>
-                  : <div style={{ whiteSpace: 'pre-wrap' }}>{text}</div>}
+                  : <JdTextView text={text} max={4000} />}
             </>
           )}
         </div>
