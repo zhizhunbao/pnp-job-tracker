@@ -341,7 +341,7 @@ export interface Job {
   address?: string | null;
   region?: string | null;
   /**
-   * 第一方投递链接
+   * 第一方投递链接(/api/jobtext 按此等值查询)
    */
   applyUrl?: string | null;
   officialUrl?: string | null;
