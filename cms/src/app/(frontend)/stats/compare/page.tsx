@@ -17,5 +17,5 @@ export default async function ComparePage() {
   const profile = normalizeProfile((user as any)?.profile)
   const rows = pro ? await loadStats() : []
   const srcs = pro ? await loadStatSources() : []
-  return <CompareView rows={rows} srcs={srcs} isPro={pro} myNocs={profile.nocCodes} />
+  return <CompareView rows={rows} srcs={srcs} isPro={pro} loggedIn={!!user} myNocs={profile.nocCodes} />
 }

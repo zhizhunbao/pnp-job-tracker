@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import { StatsShell, MetricCards, CaliberLine, useLang } from './ui'
 import { IconMapPin, IconScale, IconStar, IconTarget } from '../Icons'
 import { BROAD_SLUGS, PROV_NAME, type StatRow, type SrcRow } from './shared'
+import { PricingModal } from '../jobs/PricingModal'
 
 const money = (v: number | null) => (v != null ? `$${Math.round(v / 1000)}K` : '—')
 const th: React.CSSProperties = { textAlign: 'left', padding: '8px 12px', fontSize: 12.5, color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap', borderBottom: '1px solid #e5e7eb' }
@@ -102,11 +103,12 @@ export function StatsCatView({ prov, row, srcs, catSlug }: { prov: string; row: 
 
 // Pro 跨省对比(E5-04 §3.4):选 2-4 省并排;已建档用户按「我的 NOC」预选大类并高亮。
 const NOC_FIRST_TO_BROAD: Record<string, string> = { '0': '管理', '1': '商务', '2': '科技', '3': '医疗', '4': '教育', '5': '文体', '6': '服务', '7': '技工', '8': '资源', '9': '制造' }
-export function CompareView({ rows, srcs, isPro, myNocs }: { rows: StatRow[]; srcs: SrcRow[]; isPro: boolean; myNocs: string[] }) {
+export function CompareView({ rows, srcs, isPro, loggedIn, myNocs }: { rows: StatRow[]; srcs: SrcRow[]; isPro: boolean; loggedIn: boolean; myNocs: string[] }) {
   const [lang, setLang, t] = useLang()
   const myBroad = myNocs.length ? NOC_FIRST_TO_BROAD[myNocs[0][0]] || 'all' : 'all'
   const [broad, setBroad] = useState<string>(myBroad)
   const [picked, setPicked] = useState<string[]>(['ON', 'BC'])
+  const [pricing, setPricing] = useState(false)  // 升级 CTA 开定价弹窗(E8-02:站内不跳页)
   const provs = [...new Set(rows.map((r) => r.province))]
   const toggle = (p: string) => setPicked((cur) => cur.includes(p) ? cur.filter((x) => x !== p) : cur.length >= 4 ? cur : [...cur, p])
   const broadLabel = (b: string) => (b === 'all' ? t('fields.all') : b === '未分类' ? t('cell.uncat') : t('broad.' + b))
@@ -117,8 +119,9 @@ export function CompareView({ rows, srcs, isPro, myNocs }: { rows: StatRow[]; sr
         <h1 style={{ fontSize: 22, margin: 0 }}><IconScale /> {t('stats.compare')}</h1>
         <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '14px 18px', margin: '16px 0', fontSize: 13.5 }}>
           <span style={{ fontWeight: 600, color: '#92400e' }}><IconStar /> {t('up.title')}</span>
-          <a href="/pricing" style={{ marginLeft: 10, color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}>{t('up.cta')}</a>
+          <button onClick={() => setPricing(true)} style={{ marginLeft: 10, color: '#2563eb', border: 'none', background: 'none', padding: 0, cursor: 'pointer', fontWeight: 600, fontSize: 13.5 }}>{t('up.cta')}</button>
         </div>
+        {pricing && <PricingModal t={t} loggedIn={loggedIn} pro={false} onClose={() => setPricing(false)} />}
       </StatsShell>
     )
   }

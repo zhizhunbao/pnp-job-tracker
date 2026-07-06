@@ -62,7 +62,6 @@ export default function AccountPage() {
       <header style={{ background: 'rgba(255,255,255,.85)', backdropFilter: 'blur(6px)', borderBottom: '1px solid #e5e7eb' }}>
         <div style={{ maxWidth: 1320, margin: '0 auto', padding: '10px 1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <a href="/jobs" style={{ fontSize: 17, fontWeight: 700, color: '#111827', textDecoration: 'none' }}>🍁 PNP Job Tracker</a>
-          <a href="/jobs" style={{ fontSize: 12.5, color: '#6b7280', textDecoration: 'none' }}>{t('acct.back')}</a>
         </div>
       </header>
 

@@ -30,7 +30,6 @@ export function LegalShell({ docs, icon }: { docs: Record<Lang, LegalDoc>; icon?
                 </button>
               ))}
             </span>
-            <a href="/jobs" style={{ fontSize: 12.5, color: '#6b7280', textDecoration: 'none' }}>{t('acct.back')}</a>
           </div>
         </div>
       </header>

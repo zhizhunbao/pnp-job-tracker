@@ -26,7 +26,6 @@ export function StatsShell({ lang, setLang, t, children }: { lang: Lang; setLang
                   style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 12.5, padding: '0 4px', color: lang === l.code ? '#2563eb' : '#9ca3af', fontWeight: lang === l.code ? 700 : 400 }}>{l.label}</button>
               ))}
             </span>
-            <a href="/jobs" style={{ fontSize: 12.5, color: '#6b7280', textDecoration: 'none' }}>{t('acct.back')}</a>
           </div>
         </div>
       </header>

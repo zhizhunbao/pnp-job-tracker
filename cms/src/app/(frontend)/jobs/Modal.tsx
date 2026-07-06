@@ -17,7 +17,7 @@ export const iconBtnS: React.CSSProperties = {
   fontSize: 16, color: '#6b7280', cursor: 'pointer', lineHeight: 1, flexShrink: 0,
 }
 const closeBtnS: React.CSSProperties = { ...iconBtnS, position: 'absolute', top: 12, right: 12 }
-const WIDTH = { sm: 390, md: 560 } as const
+const WIDTH = { sm: 390, md: 560, lg: 720 } as const
 
 /** eyebrow 小字 + 17px 标题(右侧给关闭钮留位);颜色按场景传(顾问靛蓝/升级琥珀) */
 export function ModalTitle({ eyebrow, color = '#6366f1', title }: { eyebrow: React.ReactNode; color?: string; title: React.ReactNode }) {
@@ -30,11 +30,11 @@ export function ModalTitle({ eyebrow, color = '#6366f1', title }: { eyebrow: Rea
 }
 
 /**
- * 居中弹框壳:sm=390(登录/升级) md=560(公司/JD)。
+ * 居中弹框壳:sm=390(登录/升级) md=560(公司/JD) lg=720(定价对照/榜单类)。
  * pad=true 整卡 24px 内边距(表单类);pad=false 内容区自管(头/体分区类,约定头 '16px 20px 8px' 体 '4px 20px 20px')。
  */
 export function Modal({ onClose, size = 'md', z = 50, pad = true, children }: {
-  onClose: () => void; size?: 'sm' | 'md'; z?: number; pad?: boolean; children: React.ReactNode
+  onClose: () => void; size?: 'sm' | 'md' | 'lg'; z?: number; pad?: boolean; children: React.ReactNode
 }) {
   const ov = useOverlayClose(onClose)
   useEffect(() => {  // ESC 关闭(统一壳新增的一致行为;老弹框只支持点外面)

@@ -132,9 +132,9 @@ export function AuthForm({ t, onDone, initialMode }: { t: TFn; onDone: () => voi
 
 // mode:入口决定初始 tab(注册 CTA 直达注册,用户定「注册也要弹框」;默认登录)
 // 壳统一走 Modal(sm);品牌头保留(用户拍板:登录弹框是品牌触点,仅 chrome 对齐规范)
-export function AuthModal({ t, onClose, onDone, mode }: { t: TFn; onClose: () => void; onDone: () => void; mode?: 'login' | 'register' }) {
+export function AuthModal({ t, onClose, onDone, mode, z }: { t: TFn; onClose: () => void; onDone: () => void; mode?: 'login' | 'register'; z?: number }) {
   return (
-    <Modal onClose={onClose} size="sm">
+    <Modal onClose={onClose} size="sm" z={z}>
       <AuthForm t={t} onDone={onDone} initialMode={mode} />
     </Modal>
   )

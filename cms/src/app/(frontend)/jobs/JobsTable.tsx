@@ -10,6 +10,7 @@ import { makeT, LANGS, LANG_KEY, COLS_COOKIE, type Lang, type TFn } from './i18n
 import { IconChart, IconCheck, IconCompass, IconLock, IconMap, IconMapPin, IconMaximize, IconMinimize, IconSave, IconSettings, IconStar, IconTarget, IconUser, IconWarn, IconX } from '../Icons'
 import { AuthModal } from './AuthForm'
 import { UpgradeModal } from './UpgradeModal'
+import { PricingModal } from './PricingModal'
 import { useOverlayClose } from './overlay'
 import { CARD, iconBtnS, Modal, ModalTitle, SCRIM } from './Modal'
 import { match as matchJob, matchRank, type MatchProfile, type MatchJob, type MatchReason } from '@/lib/match'
@@ -31,25 +32,19 @@ function catName(t: TFn, v: string): string {
 // Pro 专属列(与 lib/plan.ts PRO_COLUMNS 一致;免费用户列位显示锁标,数据本就没进浏览器)
 const PRO_COLS = new Set<ColKey>(['match', 'vsMedian', 'wageMedHr', 'wageMedYr'])
 
-// 未登录价值主张横幅(E5-01):注册/定价引导,可关闭。
+// 未登录价值主张横幅(E5-01):一句话+关闭,可关闭。注册/定价按钮已归组进顶栏账户区(E8-01,2026-07-06 拍板)。
 // 关闭记忆走 cookie(同 COLS_COOKIE 手法)→ SSR 首帧直接渲对,不再等水合后才弹出来(用户点名);bump cookie 名可重新展示
 export const BANNER_COOKIE = 'jobs_banner_v1'
 function ValueBanner({ t, initialShow }: { t: TFn; initialShow: boolean }) {
   const [show, setShow] = useState(initialShow)
-  const [auth, setAuth] = useState(false)
   if (!show) return null
   const dismiss = () => { try { document.cookie = `${BANNER_COOKIE}=1; max-age=31536000; path=/` } catch { /* ignore */ } ; setShow(false) }
   return (
     <div style={{ background: 'linear-gradient(90deg,#eff6ff,#eef2ff)', borderBottom: '1px solid #e0e7ff' }}>
-      <div style={{ maxWidth: 1320, margin: '0 auto', padding: '8px 1.25rem', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', fontSize: 13 }}>
+      <div style={{ maxWidth: 1320, margin: '0 auto', padding: '8px 1.25rem', display: 'flex', alignItems: 'center', gap: 12, fontSize: 13 }}>
         <span style={{ color: '#3730a3', flex: 1, minWidth: 240 }}><IconTarget /> {t('banner.text')}</span>
-        <span style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
-          <button onClick={() => setAuth(true)} style={{ border: 'none', background: '#2563eb', color: '#fff', borderRadius: 6, padding: '5px 12px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>{t('banner.reg')}</button>
-          <a href="/pricing" style={{ color: '#2563eb', textDecoration: 'none', fontSize: 12.5, fontWeight: 600 }}>{t('banner.pricing')}</a>
-          <button onClick={dismiss} aria-label="close" style={{ border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 15, padding: 0 }}>×</button>
-        </span>
+        <button onClick={dismiss} aria-label="close" style={{ border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 15, padding: 0, flexShrink: 0 }}>×</button>
       </div>
-      {auth && <AuthModal t={t} mode="register" onClose={() => setAuth(false)} onDone={() => window.location.reload()} />}
     </div>
   )
 }
@@ -67,37 +62,51 @@ function UpgradeCard({ t, reason }: { t: TFn; reason: string }) {
   )
 }
 
-// 顶栏账户入口(E3-02):未登录=「登录」弹框(全站唯一登录入口,不跳页);已登录=用户名 → /account 状态页。
-// ?login=1(未登录访问 /account 被弹回时带上)→ 自动开弹框;登录成功整页刷新让 SSR 分层态(匹配列等)生效。
-function AccountLink({ t }: { t: TFn }) {
+// 顶栏账户区(E8-01,2026-07-06 归组拍板:登录/注册/Pro 一处):
+// 未登录=[登录][注册][Pro] 一组(登录/注册开 AuthModal 对应 tab,Pro 开定价弹窗);
+// 已登录=用户名 → /account + Pro 徽标(已 Pro)或 Pro 钮(开定价弹窗)。
+// ?login=1(未登录访问 /account 被弹回时带上)→ 自动开登录弹框;登录成功整页刷新让 SSR 分层态(匹配列等)生效。
+function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
   const [email, setEmail] = useState<string | null>(null)
-  const [open, setOpen] = useState(false)
-  const refresh = () =>
+  const [auth, setAuth] = useState<false | 'login' | 'register'>(false)
+  const [pricing, setPricing] = useState(false)
+  useEffect(() => {
+    if (!plan.loggedIn) return
     fetch('/api/users/me', { credentials: 'include' })
       .then((r) => r.json()).then((d) => setEmail(d?.user?.email ?? null)).catch(() => {})
-  useEffect(() => { refresh() }, [])
+  }, [plan.loggedIn])
   useEffect(() => {
-    try { if (new URLSearchParams(window.location.search).get('login') === '1') setOpen(true) } catch { /* ignore */ }
+    try { if (new URLSearchParams(window.location.search).get('login') === '1') setAuth('login') } catch { /* ignore */ }
   }, [])
   const done = () => {
     try { window.history.replaceState(null, '', '/jobs') } catch { /* ignore */ }
     window.location.reload()
   }
-  if (email) {
-    return (
-      <a href="/account" style={{ fontSize: 12.5, color: '#2563eb', textDecoration: 'none', whiteSpace: 'nowrap' }}>
-        <IconUser /> {email.split('@')[0]}
-      </a>
-    )
-  }
+  const proBtn: React.CSSProperties = { border: '1px solid #fde68a', background: '#fffbeb', color: '#92400e', borderRadius: 6, padding: '3px 10px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }
   return (
-    <>
-      <button onClick={() => setOpen(true)}
-        style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: '#2563eb', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-        {t('nav.login')}
-      </button>
-      {open && <AuthModal t={t} onClose={() => setOpen(false)} onDone={done} />}
-    </>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+      {plan.loggedIn ? (
+        <a href="/account" style={{ fontSize: 12.5, color: '#2563eb', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+          <IconUser />{email ? ` ${email.split('@')[0]}` : ''}
+        </a>
+      ) : (
+        <>
+          <button onClick={() => setAuth('login')}
+            style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: '#2563eb', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            {t('nav.login')}
+          </button>
+          <button onClick={() => setAuth('register')}
+            style={{ border: 'none', background: '#2563eb', color: '#fff', borderRadius: 6, padding: '3px 10px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            {t('nav.register')}
+          </button>
+        </>
+      )}
+      {plan.isPro
+        ? <a href="/account" style={{ ...proBtn, textDecoration: 'none' }}><IconStar /> Pro</a>
+        : <button onClick={() => setPricing(true)} style={proBtn}><IconStar /> Pro</button>}
+      {auth && <AuthModal t={t} mode={auth} onClose={() => setAuth(false)} onDone={done} />}
+      {pricing && <PricingModal t={t} loggedIn={plan.loggedIn} pro={plan.isPro} onClose={() => setPricing(false)} />}
+    </span>
   )
 }
 
@@ -642,7 +651,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                   style={{ border: 'none', padding: '3px 9px', fontSize: 12.5, cursor: 'pointer', background: lang === l.code ? '#2563eb' : '#fff', color: lang === l.code ? '#fff' : '#6b7280' }}>{l.label}</button>
               ))}
             </div>
-            <AccountLink t={t} />
+            <AccountArea t={t} plan={plan} />
           </div>
         </div>
       </header>
