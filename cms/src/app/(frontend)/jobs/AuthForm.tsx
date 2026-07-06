@@ -16,6 +16,22 @@ const btnS: React.CSSProperties = {
   boxShadow: '0 2px 8px rgba(37,99,235,.35)',
 }
 
+// 密码强度(注册时实时提示):0=太短(<8,不可提交) 1=弱 2=中 3=强。
+// 服务端只强制长度,强度条是引导不是闸门——只有「太短」拦提交,避免误伤转化。
+function pwStrength(pw: string): 0 | 1 | 2 | 3 {
+  if (pw.length < 8) return 0
+  const classes = [/[a-z]/, /[A-Z]/, /\d/, /[^a-zA-Z0-9]/].filter((re) => re.test(pw)).length
+  if (classes >= 3 || (classes >= 2 && pw.length >= 12)) return 3
+  if (classes >= 2) return 2
+  return 1
+}
+const PW_METER = [
+  { key: 'acct.pw.short', color: '#dc2626', fill: 0 },
+  { key: 'acct.pw.weak', color: '#f59e0b', fill: 1 },
+  { key: 'acct.pw.medium', color: '#eab308', fill: 2 },
+  { key: 'acct.pw.strong', color: '#16a34a', fill: 3 },
+] as const
+
 export function AuthForm({ t, onDone, initialMode }: { t: TFn; onDone: () => void; initialMode?: 'login' | 'register' }) {
   const [mode, setMode] = useState<'login' | 'register'>(initialMode ?? 'login')
   const [email, setEmail] = useState('')
@@ -27,12 +43,21 @@ export function AuthForm({ t, onDone, initialMode }: { t: TFn; onDone: () => voi
     e.preventDefault(); setBusy(true); setErr('')
     try {
       if (mode === 'register') {
+        if (pw.length < 8) { setErr(t('acct.err.weakPw')); return }
         const r = await fetch('/api/users', {
           method: 'POST', credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password: pw }),
         })
-        if (!r.ok) { setErr(t(r.status === 400 ? 'acct.err.exists' : 'acct.err.generic')); return }
+        if (!r.ok) {
+          // 分开报错:Payload 400 响应体带字段级错误——email 相关=已注册,password 相关=密码不合格
+          let body = ''
+          try { body = JSON.stringify(await r.json()) } catch { /* 非 JSON 响应,走 generic */ }
+          if (r.status === 400 && /email|already|registered|exist/i.test(body)) setErr(t('acct.err.exists'))
+          else if (r.status === 400 && /password/i.test(body)) setErr(t('acct.err.weakPw'))
+          else setErr(t('acct.err.generic'))
+          return
+        }
         try { (window as any).umami?.track('signup') } catch { /* E7-02:注册成功事件 */ }
       }
       const r2 = await fetch('/api/users/login', {
@@ -79,6 +104,22 @@ export function AuthForm({ t, onDone, initialMode }: { t: TFn; onDone: () => voi
           <input className="authIn" style={inputS} type="password" required minLength={8} value={pw} onChange={(e) => setPw(e.target.value)}
             autoComplete={mode === 'login' ? 'current-password' : 'new-password'} placeholder="••••••••" />
         </label>
+        {mode === 'register' && pw && (() => {
+          const lv = pwStrength(pw)
+          const m = PW_METER[lv]
+          return (
+            <div style={{ marginTop: 8 }}>
+              <div style={{ display: 'flex', gap: 4 }}>
+                {[1, 2, 3].map((i) => (
+                  <div key={i} style={{ flex: 1, height: 4, borderRadius: 2, background: i <= m.fill ? m.color : '#e5e7eb', transition: 'background .2s' }} />
+                ))}
+              </div>
+              <div style={{ fontSize: 11.5, marginTop: 4, color: m.color }}>
+                {t(m.key)}{lv > 0 && lv < 3 ? <span style={{ color: '#9ca3af' }}> · {t('acct.pw.hint')}</span> : null}
+              </div>
+            </div>
+          )
+        })()}
         {err && <div style={{ color: '#dc2626', fontSize: 13, marginTop: 10, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '7px 10px' }}>{err}</div>}
         <button type="submit" disabled={busy} style={{ ...btnS, opacity: busy ? 0.6 : 1 }}>
           {busy ? '…' : mode === 'login' ? t('acct.login') : t('acct.submitReg')}
