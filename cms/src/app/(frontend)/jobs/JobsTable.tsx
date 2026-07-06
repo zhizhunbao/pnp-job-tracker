@@ -1180,7 +1180,7 @@ function JdTextView({ text, max = 4000 }: { text: string; max?: number }) {
     </div>
   )
 }
-function TitleFacts({ job, lang, noc }: { job: JobRow; lang: Lang; noc: NocDesc | null }) {
+function TitleFacts({ job, lang }: { job: JobRow; lang: Lang }) {
   const t = makeT(lang)
   const [jd, setJd] = useState<string | null>(null)  // null=loading · ''=无正文
   const [gated, setGated] = useState(false)          // 402:JD 摘录免费试用用完(E3-05)
@@ -1197,12 +1197,8 @@ function TitleFacts({ job, lang, noc }: { job: JobRow; lang: Lang; noc: NocDesc 
   }, [job])
   return (
     <FactsBox>
-      <FactRow k={t('col.title')}>{job.title}</FactRow>
-      {/* TEER 带人话括注(用户点名:新手不知道 TEER 2 是什么门槛;NOC 码本身用户认识,不标版本) */}
-      <FactRow k={t('col.noc')}>{job.noc ? `${job.noc}${job.teer != null ? ` · TEER ${job.teer} (${t('teer.' + job.teer)})` : ''}${noc?.title ? ` · ${noc.title}` : ''}` : null}</FactRow>
-      {/* NOC 官方职责/任职要求是职业级信息 → 只在分类弹窗展示(07-06 拍板);这里是具体职位,真实 JD 就在下方 */}
-      {/* 官方原帖入口=弹框底部统一「来源: URL」行(2026-07-06 拍板),此处只留摘录标签 */}
-      <div style={{ marginTop: 8, fontSize: 11.5, color: '#9ca3af' }}>{t('fact.jdExcerpt')}</div>
+      {/* 职位字段只做职位的事(07-06 用户拍板):职位名已在弹窗标题,NOC/TEER 归分类弹窗 —— 这里就是真实 JD */}
+      <div style={{ fontSize: 11.5, color: '#9ca3af' }}>{t('fact.jdExcerpt')}</div>
       {gated ? <UpgradeCard t={t} reason={t('up.jobtext')} />
         : jd === null ? <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>{t('act.loadingText')}</div>
         : jd ? <JdTextView text={jd} />
@@ -1238,6 +1234,9 @@ const SAL_FIELDS = new Set<ColKey>(['salary', 'salaryYr', 'wageMedHr', 'wageMedY
 const CLS_FIELDS = new Set<ColKey>(['noc', 'teer', 'broad', 'mid', 'fine'])
 const SRC_FIELDS = new Set<ColKey>(['source', 'origin', 'direct'])
 const TIME_FIELDS = new Set<ColKey>(['status', 'datePosted', 'lastSeen', 'closedAt'])
+// 这些字段的内容不来自职位帖(分类=本站衍生、评分=本站算法、中位=ESDC、LMIA/AIP=官方名录、pnp/ee=政策清单自带链接)
+// → 不挂「来源: applyUrl」行(07-06 用户拍板:来源紧跟且仅跟真正出自帖子的内容)
+const NO_SRC_FIELDS = new Set<ColKey>(['pnp', 'ee', 'noc', 'teer', 'broad', 'mid', 'fine', 'score', 'match', 'lmia', 'aip', 'wageMedHr', 'wageMedYr', 'company'])  // company 简介来自官网抓取,官网行即出处
 
 // 来源行极简版(2026-07-06 用户拍板):「来源: 完整 applyUrl」一行可点击,**紧跟事实/JD 内容、在 AI 区之前**
 // (出处跟着对应内容走,不吊在弹窗底部);发布方/抓取时间/标签全不带 —— 合规已在 footer 统一声明。
@@ -1248,8 +1247,7 @@ function FieldFactsSection({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, d
   return (
     <>
       <FieldFactsInner field={field} job={job} lang={lang} isPro={isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} />
-      {/* 分类(noc/teer/大中小)是本站衍生口径、pnp/ee 清单自带政策页链接 —— 都不挂职位帖来源行(07-06 用户点名) */}
-      {field !== 'pnp' && field !== 'ee' && !CLS_FIELDS.has(field) && job.applyUrl ? (
+      {NO_SRC_FIELDS.has(field) ? null : job.applyUrl ? (
         <div style={{ margin: '2px 0 12px', fontSize: 11.5, color: '#9ca3af', overflowWrap: 'anywhere' }}>
           {t('src.label')}: <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#6b7280' }}>{job.applyUrl}</a>
         </div>
@@ -1262,7 +1260,7 @@ function FieldFactsInner({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, des
   const noc = nocDesc.find((d) => d.noc === job.noc) || null
   if (field === 'pnp') return <PnpListSection job={job} lang={lang} occ={pnpOcc} draws={pnpDraws} />
   if (field === 'ee') return <EeCategorySection job={job} lang={lang} cats={eeOcc} />
-  if (field === 'title') return <TitleFacts job={job} lang={lang} noc={noc} />
+  if (field === 'title') return <TitleFacts job={job} lang={lang} />
   const day = (s?: string) => (s || '').slice(0, 10)
 
   if (field === 'company') {
@@ -1324,36 +1322,42 @@ function FieldFactsInner({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, des
   }
 
   if (LOC_FIELDS.has(field)) {
+    // 点哪级只看哪级(含上级路径,07-06 用户拍板);地图链接按所看层级拼查询词(点省=省的地图,不带街址)
     const L = parseLoc(job)
-    const full = [job.address, L.district, L.city, L.prov].filter(Boolean).join(', ')
+    const depth = field === 'country' ? 1 : field === 'province' ? 2 : field === 'city' ? 3 : field === 'district' ? 4 : 5
+    const mapQ = [depth >= 5 ? job.address : '', depth >= 4 ? L.district : '', depth >= 3 ? L.city : '', depth >= 2 ? L.prov : ''].filter(Boolean).join(', ')
     return (
       <FactsBox>
         <FactRow k={t('col.country')}>{L.country || 'Canada'}</FactRow>
-        <FactRow k={t('col.province')}>{L.prov}</FactRow>
-        <FactRow k={t('col.city')}>{L.city}</FactRow>
-        <FactRow k={t('col.district')}>{L.district}</FactRow>
-        <FactRow k={t('col.address')}>{job.address}</FactRow>
-        {full ? <FactRow k={<IconMap />}><a href={mapsUrl(full)} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5 }}>{full} ↗</a></FactRow> : null}
+        {depth >= 2 && <FactRow k={t('col.province')}>{L.prov}</FactRow>}
+        {depth >= 3 && <FactRow k={t('col.city')}>{L.city}</FactRow>}
+        {depth >= 4 && <FactRow k={t('col.district')}>{L.district}</FactRow>}
+        {depth >= 5 && <FactRow k={t('col.address')}>{job.address}</FactRow>}
+        {mapQ ? <FactRow k={<IconMap />}><a href={mapsUrl(mapQ)} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5 }}>{mapQ} ↗</a></FactRow> : null}
       </FactsBox>
     )
   }
   if (SAL_FIELDS.has(field)) {
+    // 五个薪资字段各看各的(07-06 用户拍板):薪资=帖面原文;年薪=折算;中位时薪/年薪=ESDC band;
+    // vs 中位=对比,天然要带两个输入(年薪+中位年薪)。中位口径注只跟用到中位的字段。
     const a = job.salaryAnnual, mHr = job.wageMedHourly, mYr = job.wageMedAnnual
     const lHr = job.wageLowHourly, hHr = job.wageHighHourly, lYr = job.wageLowAnnual, hYr = job.wageHighAnnual
     const vs = a != null && mYr ? Math.round((a / mYr - 1) * 100) : null
     const K = (n: number) => `$${Math.round(n / 1000)}K`
     const bandHr = mHr != null ? `${lHr != null ? `$${lHr} – ` : ''}$${mHr}${hHr != null ? ` – $${hHr}` : ''}/hr` : null
     const bandYr = mYr != null ? `${lYr != null ? `${K(lYr)} – ` : ''}${K(mYr)}${hYr != null ? ` – ${K(hYr)}` : ''}/yr` : null
+    const usesMedian = field === 'wageMedHr' || field === 'wageMedYr' || field === 'vsMedian'
     return (
-      <FactsBox note={(mHr != null || mYr != null)
-        ? t('fact.medianSrc') + (job.wageYear ? ` · ${job.wageYear}` : '') + (vs != null ? ' · ' + t('fact.vsNote') : '')
-        // 中位缺失分两种,别混:免费层=数据被付费墙剥离(引导升级);Pro=该 NOC×省真无 ESDC 数据(宁可留空)
-        : (isPro ? t('fact.noMedian') : t('fact.medianPro'))}>
-        <FactRow k={t('col.salary')}>{job.salaryText || job.salary}</FactRow>
-        <FactRow k={t('col.salaryYr')}>{a != null ? `$${Math.round(a / 1000)}K/yr` : null}</FactRow>
-        <FactRow k={t('fact.wageBandHr')}>{bandHr}</FactRow>
-        <FactRow k={t('fact.wageBandYr')}>{bandYr}</FactRow>
-        <FactRow k={t('col.vsMedian')}>{vs != null ? `${vs >= 0 ? '+' : ''}${vs}%` : null}</FactRow>
+      <FactsBox note={!usesMedian ? undefined
+        : (mHr != null || mYr != null)
+          ? t('fact.medianSrc') + (job.wageYear ? ` · ${job.wageYear}` : '') + (field === 'vsMedian' && vs != null ? ' · ' + t('fact.vsNote') : '')
+          // 中位缺失分两种,别混:免费层=数据被付费墙剥离(引导升级);Pro=该 NOC×省真无 ESDC 数据(宁可留空)
+          : (isPro ? t('fact.noMedian') : t('fact.medianPro'))}>
+        {field === 'salary' && <FactRow k={t('col.salary')}>{job.salaryText || job.salary}</FactRow>}
+        {(field === 'salaryYr' || field === 'vsMedian') && <FactRow k={t('col.salaryYr')}>{a != null ? `$${Math.round(a / 1000)}K/yr` : null}</FactRow>}
+        {field === 'wageMedHr' && <FactRow k={t('fact.wageBandHr')}>{bandHr}</FactRow>}
+        {(field === 'wageMedYr' || field === 'vsMedian') && <FactRow k={t('fact.wageBandYr')}>{bandYr}</FactRow>}
+        {field === 'vsMedian' && <FactRow k={t('col.vsMedian')}>{vs != null ? `${vs >= 0 ? '+' : ''}${vs}%` : null}</FactRow>}
       </FactsBox>
     )
   }
@@ -1376,11 +1380,12 @@ function FieldFactsInner({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, des
     )
   }
   if (SRC_FIELDS.has(field)) {
+    // 来源/渠道/发布各看各的一行(07-06 用户拍板);口径注三者共用
     return (
       <FactsBox note={t('fact.sourceNote')}>
-        <FactRow k={t('col.source')}>{job.sourceLabel || job.source}</FactRow>
-        <FactRow k={t('col.origin')}>{job.origin}</FactRow>
-        <FactRow k={t('col.direct')}>{isDirect(job) ? t('fact.firstParty') : t('fact.repost')}</FactRow>
+        {field === 'source' && <FactRow k={t('col.source')}>{job.sourceLabel || job.source}</FactRow>}
+        {field === 'origin' && <FactRow k={t('col.origin')}>{job.origin}</FactRow>}
+        {field === 'direct' && <FactRow k={t('col.direct')}>{isDirect(job) ? t('fact.firstParty') : t('fact.repost')}</FactRow>}
       </FactsBox>
     )
   }
@@ -1388,13 +1393,16 @@ function FieldFactsInner({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, des
     return <FactsBox><FactRow k={t('col.accessibility')}>{t('acc.' + (job.accessibility || 'unknown'))}</FactRow></FactsBox>
   }
   if (TIME_FIELDS.has(field)) {
+    // 时间四字段各看各的(07-06 用户拍板):状态/下架互为语境成对出现;发布带首次收录;抓取单独。
+    // 「下架口径」注只跟状态/下架(发布、抓取时间与下架判定无关)。
+    const isStatusish = field === 'status' || field === 'closedAt'
     return (
-      <FactsBox note={t('fact.timeNote')}>
-        <FactRow k={t('col.status')}>{t(job.status === 'closed' ? 'cell.closed' : 'cell.open')}</FactRow>
-        <FactRow k={t('col.datePosted')}>{day(job.datePosted)}</FactRow>
-        <FactRow k={t('col.firstSeen')}>{day(job.firstSeen)}</FactRow>
-        <FactRow k={t('col.lastSeen')}>{day(job.lastSeen)}</FactRow>
-        <FactRow k={t('col.closedAt')}>{job.closedAt ? day(job.closedAt) : null}</FactRow>
+      <FactsBox note={isStatusish ? t('fact.timeNote') : undefined}>
+        {isStatusish && <FactRow k={t('col.status')}>{t(job.status === 'closed' ? 'cell.closed' : 'cell.open')}</FactRow>}
+        {field === 'datePosted' && <FactRow k={t('col.datePosted')}>{day(job.datePosted)}</FactRow>}
+        {field === 'datePosted' && <FactRow k={t('col.firstSeen')}>{day(job.firstSeen)}</FactRow>}
+        {field === 'lastSeen' && <FactRow k={t('col.lastSeen')}>{day(job.lastSeen)}</FactRow>}
+        {isStatusish && <FactRow k={t('col.closedAt')}>{job.closedAt ? day(job.closedAt) : null}</FactRow>}
       </FactsBox>
     )
   }
