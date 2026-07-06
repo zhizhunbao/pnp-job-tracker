@@ -38,6 +38,7 @@ IN_EE_DRAWS = _paths.EE / "draws.json"          # 各类别最近一次抽选(CR
 IN_NOC_DESC = _paths.NOC / "descriptions.json"  # NOC 官方名+主要职责(build_noc_descriptions.py 产)
 IN_FIELD_SOURCES = _paths.RAW / "sources" / "field-sources.json"  # 字段级来源注册表(build_field_sources.py 产,E4-04)
 IN_LMIA = _paths.LMIA / "lmia-employers.json"   # ESDC 正面 LMIA 雇主聚合(build_lmia.py 产,E6-02)
+IN_ENRICH = _paths.PROCESSED / "company_enrich.json"  # 公司官网富化(简介/行业,enrich_companies.py 产,E8-04)
 OUT_MART = _paths.DATA / "mart"
 
 PROV_FULL = {
@@ -104,6 +105,12 @@ def build():
         scored = {s["externalId"]: s for s in json.loads(IN_SCORED.read_text(encoding="utf-8"))}
     wages = json.loads(IN_WAGES.read_text(encoding="utf-8")) if IN_WAGES.exists() else {}
 
+    # 公司官网富化(E8-04):slug → 简介/行业(enrich_companies.py 逐轮累积;只取成功记录)
+    enrich = {}
+    if IN_ENRICH.exists():
+        enrich = {sl: c for sl, c in json.loads(IN_ENRICH.read_text(encoding="utf-8")).items()
+                  if c.get("status") == "ok"}
+
     companies: dict[str, dict] = {}   # slug -> company row
     jobs: list[dict] = []
     seen: set[str] = set()            # company-slug|title 去重
@@ -111,6 +118,11 @@ def build():
 
     def add_company(name, slug, **extra):
         if slug not in companies:
+            # 富化并入(Job Bank 公司无 profile;ATS 已自带 profile 的 description/sectors 优先,富化只填空)
+            en = enrich.get(slug, {})
+            for k in ("description", "sectors", "website"):
+                if not extra.get(k) and en.get(k):
+                    extra[k] = en[k]
             companies[slug] = {"slug": slug, "name": name, **{k: v for k, v in extra.items() if v}}
 
     def add_job(external_id, company_slug, **fields):

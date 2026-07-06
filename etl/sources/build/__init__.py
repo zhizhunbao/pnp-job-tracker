@@ -13,6 +13,7 @@ META = {
         ["python", "etl/clean/04c_clean_ats_locations.py"],
         ["python", "etl/clean/04d_clean_salary.py"],
         ["python", "etl/clean/05c_flag_aip.py"],
+        ["python", "etl/enrich_companies.py"],    # E8-04:抓公司官网首页(简介/行业),增量每轮 300 家累积
         ["python", "etl/08_score.py"],
         ["python", "etl/09_build_mart.py"],
         ["python", "etl/10_build_rankings.py"],   # 榜单(E5-02:读 mart 纯聚合)
