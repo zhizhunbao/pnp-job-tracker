@@ -149,7 +149,6 @@ const zh: Dict = {
   'prof.save': '保存档案',
   'prof.saved': '已保存',
   'prof.err': '保存失败,请重试',
-  'act.official': '↗ 查看官方原帖', 'act.jdNote': '以下为结构化摘录,完整内容与投递以官方原帖为准',
   // 定价页 + 横幅(E5-01)
   'price.title': '定价', 'price.sub': '一次性时长包,无订阅、无自动续费;到期自动回免费版',
   'price.free': '免费', 'price.pro': 'Pro', 'price.freePrice': 'CA$0',
@@ -325,7 +324,6 @@ const en: Dict = {
   'prof.save': 'Save profile',
   'prof.saved': 'Saved',
   'prof.err': 'Save failed, please retry',
-  'act.official': '↗ View official posting', 'act.jdNote': 'Structured excerpt below — see the official posting for the full text and to apply',
   // 定价页 + 横幅(E5-01)
   'price.title': 'Pricing', 'price.sub': 'One-time passes — no subscription, no auto-renewal; you simply return to Free on expiry',
   'price.free': 'Free', 'price.pro': 'Pro', 'price.freePrice': 'CA$0',
@@ -501,7 +499,6 @@ const ko: Dict = {
   'prof.save': '프로필 저장',
   'prof.saved': '저장됨',
   'prof.err': '저장 실패, 다시 시도하세요',
-  'act.official': '↗ 공식 공고 보기', 'act.jdNote': '아래는 구조화 발췌본입니다. 전문과 지원은 공식 공고 기준',
   // 定价页 + 횡幅(E5-01)
   'price.title': '요금', 'price.sub': '일회성 기간권 — 구독·자동 갱신 없음. 만료 시 무료 플랜으로 돌아갑니다',
   'price.free': '무료', 'price.pro': 'Pro', 'price.freePrice': 'CA$0',

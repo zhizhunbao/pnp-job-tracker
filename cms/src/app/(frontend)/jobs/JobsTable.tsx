@@ -1145,11 +1145,8 @@ function TitleFacts({ job, lang, noc }: { job: JobRow; lang: Lang; noc: NocDesc 
       <FactRow k={t('col.title')}>{job.title}</FactRow>
       <FactRow k={t('col.noc')}>{job.noc ? `${job.noc}${job.teer != null ? ` · TEER ${job.teer}` : ''}${noc?.title ? ` · ${noc.title}` : ''}` : null}</FactRow>
       <NocDutiesView noc={noc} lang={lang} />
-      {/* republish 自查(E4-03,D6):摘录+显著官方原帖按钮;投递/完整内容引导回官方源 */}
-      <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 11.5, color: '#9ca3af' }}>{t('fact.jdExcerpt')}</span>
-        {job.applyUrl && <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ fontSize: 12, background: '#eef2ff', color: '#3730a3', padding: '3px 10px', borderRadius: 6, textDecoration: 'none', fontWeight: 600 }}>{t('act.official')}</a>}
-      </div>
+      {/* 官方原帖入口=弹框底部统一「来源: URL」行(2026-07-06 拍板),此处只留摘录标签 */}
+      <div style={{ marginTop: 8, fontSize: 11.5, color: '#9ca3af' }}>{t('fact.jdExcerpt')}</div>
       {gated ? <UpgradeCard t={t} reason={t('up.jobtext')} />
         : jd === null ? <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>{t('act.loadingText')}</div>
         : jd ? <JdTextView text={jd} max={900} />
@@ -1667,17 +1664,16 @@ function ActModal({ kind, job, jobs, lang, onClose }: { kind: 'company' | 'desc'
             </div>
           ) : (
             <>
-              {/* republish 自查(E4-03,D6):JD 弹框顶部显著官方原帖按钮 + 摘录说明 */}
-              {job.applyUrl && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
-                  <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ fontSize: 13, background: '#4f46e5', color: '#fff', padding: '6px 14px', borderRadius: 8, textDecoration: 'none', fontWeight: 600 }}>{t('act.official')}</a>
-                  <span style={{ fontSize: 11.5, color: '#9ca3af' }}>{t('act.jdNote')}</span>
-                </div>
-              )}
               {status === 'loading' ? <p style={{ color: '#9ca3af' }}>{t('act.loadingText')}</p>
                 : status === 'upgrade' ? <UpgradeCard t={t} reason={t('up.jobtext')} />
                 : status === 'empty' ? <p style={{ color: '#9ca3af' }}>{t('act.noText')}</p>
                   : <JdTextView text={text} max={4000} />}
+              {/* republish 合规的官方入口=底部极简来源行(2026-07-06 拍板,取代顶部按钮+说明) */}
+              {job.applyUrl && (
+                <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #f3f4f6', fontSize: 11.5, color: '#9ca3af', overflowWrap: 'anywhere' }}>
+                  {t('src.label')}: <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#6b7280' }}>{job.applyUrl}</a>
+                </div>
+              )}
             </>
           )}
         </div>
