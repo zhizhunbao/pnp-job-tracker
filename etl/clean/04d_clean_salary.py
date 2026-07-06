@@ -29,34 +29,59 @@ _NUM = re.compile(r"\d[\d,]*(?:\.\d+)?")
 # 只取「$ 锚定」的金额(含范围):$24.74-31.37 / $700,000 to $775,000。
 # 避开杂数:工会号(CUPE 1975)、Phase 4、邮编等没有 $ 前缀的数字。
 _MONEY = re.compile(r"\$\s?(\d[\d,]*(?:\.\d+)?)(?:\s*(?:-|–|—|to)\s*\$?\s?(\d[\d,]*(?:\.\d+)?))?")
+# 佣金/奖金/补贴子句:该词及之后不算底薪("$25 hourly + $400 commission per sale" 只取 $25)
+_EXTRA = re.compile(r"\+|\bplus\b|\bcommission\b|\bbonus(?:es)?\b|\btips?\b|\bgratuit", re.I)
+# 含 $ 的括号=换算注释("$40.39 ($6,552.07/mo)"),剥掉再解析;纯文字括号(to be negotiated)无害不动
+_PAREN_MONEY = re.compile(r"\([^)]*\$[^)]*\)")
+# 无 $ 回退的白名单:纯数字+单位/连接/议薪词才可信("48.85 - 61.21"、"20-35/hr depending on experience"),
+# 其余("35% commission"、"CUPE 777"、"after 90 Days")一律不猜
+_PLAIN_OK = {"per", "hour", "hourly", "hr", "hrs", "h", "year", "yr", "yearly", "annually",
+             "annual", "annum", "month", "monthly", "mo", "week", "weekly", "wk", "weeks",
+             "biweekly", "bi", "day", "daily", "cad", "to", "a", "an", "and", "from",
+             "based", "on", "as", "with", "depending", "depends", "experience", "negotiable",
+             "commensurate", "starting", "wage", "rate", "salary", "pay"}
 # 年化倍数:时薪×2080、日薪×260(工作日)、周×52、双周×26、月×12
 MULT = {"hr": 2080, "day": 260, "wk": 52, "biwk": 26, "mo": 12, "yr": 1}
 SUB = {"hr": "/hr", "day": "/day", "wk": "/wk", "biwk": "/2wk", "mo": "/mo", "yr": "/yr"}
 
+# 护栏(E7-04 回归:榜首出现 49.7 亿年薪 —— 源 typo 漏过旧过滤):
+# 全库合法最高年薪 ~$810K(医生岗),合法区间高/低比 ≤~9;超限=源 typo,置 NULL 不猜
+ANNUAL_MAX = 1_000_000
+RATIO_MAX = 10
+GUARDED = {"absurd": 0, "ratio": 0, "cap": 0}  # 三道护栏各拦了多少条(main 里汇报)
 
-def _amounts(raw: str) -> list[float]:
-    """优先取 $ 锚定金额;没有 $ 时退回全部数字(老行为,兜底无 $ 的薪资)。"""
+
+def _amounts(text: str) -> list[float]:
+    """优先取 $ 锚定金额;没有 $ 时回退全部数字,但仅限「纯薪资表达」(白名单词+无 %)。"""
     vals: list[float] = []
-    for a, b in _MONEY.findall(raw):
+    for a, b in _MONEY.findall(text):
         for x in (a, b):
             if x:
                 vals.append(float(x.replace(",", "")))
     if vals:
         return vals
-    return [float(m.replace(",", "")) for m in _NUM.findall(raw)]
+    if "%" in text or any(w not in _PLAIN_OK for w in re.findall(r"[a-z]+", text.lower())):
+        return []
+    return [float(m.replace(",", "")) for m in _NUM.findall(text)]
 
 
 def parse_salary(raw: str) -> tuple[int | None, str]:
-    """任意格式 → (年薪数值, 规范文本)。只用 $ 锚定金额,支持 daily/biweekly。"""
+    """任意格式 → (年薪数值, 规范文本)。解析不出/护栏拦下 → (None, 原文)。"""
     if not raw:
         return None, "—"
-    allnums = [n for n in _amounts(raw) if n > 0]
-    nums = [n for n in allnums if n < 1_000_000]  # 过滤离谱金额(源 typo)
-    use = nums or allnums
-    if not use:
+    base = _EXTRA.split(raw, maxsplit=1)[0] or raw          # 剪掉佣金/奖金子句
+    stripped = _PAREN_MONEY.sub(" ", base)                   # 剥含 $ 的换算括号
+    text_src = stripped if _MONEY.search(stripped) else base  # 剥完没金额就用剪后原文
+    nums = [n for n in _amounts(text_src) if 0 < n < ANNUAL_MAX]
+    if not nums:
+        if any(n >= ANNUAL_MAX for n in _amounts(text_src)):  # 只有离谱金额(如 -$4,972,171,264)
+            GUARDED["absurd"] += 1
         return None, raw
-    low = raw.lower()
-    lo, hi = min(use), max(use)
+    lo, hi = min(nums), max(nums)
+    if hi / lo > RATIO_MAX:  # 区间上限 typo("$20.00 to $999.00 hourly")→ 整条不可信
+        GUARDED["ratio"] += 1
+        return None, raw
+    low = text_src.lower()
     # 单位判断(biweekly 必须在 week 之前;daily 单列)+ 常识纠错
     if re.search(r"bi[-\s]?week|every\s+two\s+weeks|fortnight", low):
         unit = "biwk"
@@ -72,7 +97,12 @@ def parse_salary(raw: str) -> tuple[int | None, str]:
         unit = "hr" if hi < 2000 else "yr"
     if unit == "hr" and lo >= 1000:  # 时薪值≥$1000 → 实为年薪(源误标)
         unit = "yr"
+    if unit == "mo" and lo >= 20_000:  # 月薪≥$2万 → 实为年薪(源误标,同上)
+        unit = "yr"
     annual = round(((lo + hi) / 2) * MULT[unit])
+    if annual > ANNUAL_MAX:  # 最终护栏:年化后仍离谱("$600.00 hourly")→ NULL
+        GUARDED["cap"] += 1
+        return None, raw
     sub = SUB[unit]
     money = (lambda n: f"${round(n / 1000)}K") if unit == "yr" else (lambda n: f"${round(n)}")
     text = f"{money(lo)}{sub}" if lo == hi else f"{money(lo)}–{money(hi)}{sub}"
@@ -124,7 +154,9 @@ def main() -> None:
             tmp.write_text(json.dumps(postings, ensure_ascii=False, indent=2), encoding="utf-8")
             os.replace(tmp, OUT_JOBBANK_FILE)
 
+    guarded = sum(GUARDED.values())
     print(f"Salary cleaned: {updated} jobs updated · {priced}/{total} have a salary")
+    print(f"  护栏拦截 {guarded} 条置 NULL:离谱金额 {GUARDED['absurd']} · 区间比>{RATIO_MAX} {GUARDED['ratio']} · 年化>{ANNUAL_MAX:,} {GUARDED['cap']}")
 
 
 if __name__ == "__main__":

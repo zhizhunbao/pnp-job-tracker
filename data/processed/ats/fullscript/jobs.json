@@ -163,8 +163,8 @@
       "province": "ON",
       "country": "Canada",
       "district": "",
-      "salaryAnnual": 81500,
-      "salaryText": "$13K–$150K/yr",
+      "salaryAnnual": null,
+      "salaryText": "$130,00 to $150,000 CAD",
       "aip": false
     },
     {
