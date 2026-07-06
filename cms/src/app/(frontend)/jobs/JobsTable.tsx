@@ -1341,6 +1341,9 @@ function FieldFactsInner({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, des
     const L = parseLoc(job)
     const depth = field === 'country' ? 1 : field === 'province' ? 2 : field === 'city' ? 3 : field === 'district' ? 4 : 5
     const mapQ = [depth >= 5 ? job.address : '', depth >= 4 ? L.district : '', depth >= 3 ? L.city : '', depth >= 2 ? L.prov : ''].filter(Boolean).join(', ')
+    // 点「省」= 移民视角高价值内容(用户拍板:每字段要有料):该省具名通道数 + 最近抽选(数据已有,复用)
+    const provStreams = field === 'province' && job.province && job.province !== 'QC'
+      ? new Set(pnpOcc.filter((o) => o.province === job.province && o.type !== 'ineligible').map((o) => o.label)).size : 0
     return (
       <FactsBox>
         <FactRow k={t('col.country')}>{L.country || 'Canada'}</FactRow>
@@ -1349,6 +1352,9 @@ function FieldFactsInner({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, des
         {depth >= 4 && <FactRow k={t('col.district')}>{L.district}</FactRow>}
         {depth >= 5 && <FactRow k={t('col.address')}>{job.address}</FactRow>}
         {mapQ ? <FactRow k={<IconMap />}><a href={mapsUrl(mapQ)} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5 }}>{mapQ} ↗</a></FactRow> : null}
+        {field === 'province' && job.province === 'QC' && <FactRow k={t('col.pnp')}>{t('pnplist.qc')}</FactRow>}
+        {provStreams > 0 && <FactRow k={t('col.pnp')}>{t('fact.provStreams', { n: provStreams })}</FactRow>}
+        {field === 'province' && job.province && <PnpDrawsBlock province={job.province} lang={lang} draws={pnpDraws} />}
       </FactsBox>
     )
   }
