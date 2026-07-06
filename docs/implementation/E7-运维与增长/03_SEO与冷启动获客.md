@@ -43,3 +43,31 @@
 
 - sitemap.ts:核心 9 页 + 榜单 2 + stats 全矩阵(10 省 × 11)= 121 URL;robots.ts 挡 /admin /api /account。/jobs 补专属 metadata(中英混排);layout 默认 metadata B7 已修。OG 图按 YAGNI 跳过(文字卡都没做,分享卡用 title/desc)。
 - **剩余=用户手动**:① Google Search Console 验证站点(pnp-cms.onrender.com;正式域名后重提)+ 提交 sitemap;② 三平台发帖(小红书/Reddit/微信群,带 UTM ?utm_source=xhs 等)——文案素材:三问定位+免费档案匹配+每日更新;72h 反馈记 §5。
+
+## 8. 上线获客 playbook(2026-07-06,方向拍板=推上线/获客)
+
+**线上核查(2026-07-06)**:offer2pr.com/robots.txt 200 · sitemap.xml 200 · 119 URL live。SEO 基建就绪。
+
+### 8.1 账号清单(你亲手办,我接线)—— 按解锁价值排序
+| 账号 | 解锁 | 你做 | 我接 |
+|---|---|---|---|
+| **Google Search Console(offer2pr.com 新 property)** | Google 收录 119 页(自然流量唯一入口) | DNS TXT 验证域名 / 或放 HTML 文件 + 提交 sitemap | 已有 HTML 验证法先例;域名版给 DNS 记录 |
+| **Resend(+ offer2pr.com 发信域名验证)** | 邮件职位提醒真发(E5-03 代码就绪,dry-run 全过) | 注册 + 加 DNS(SPF/DKIM)+ 拿 API key | 填 RESEND_API_KEY env,真发一封验 |
+| **healthchecks.io** | 断更告警(今天 Docker 关了都没人知道就是缺这个) | 注册 + 建 check 拿 ping URL | 填 HEALTHCHECK_PING_* env |
+
+### 8.2 冷启动发帖文案(草稿,待你发;**发前查各版块 self-promo 规则**,Reddit 移民版对硬广很敏感,价值优先、明说自制、求反馈)
+
+**Reddit(r/ImmigrationCanada · r/canadaexpressentry · r/PersonalFinanceCanada 不合适跳过)** — 英文,价值+求反馈体:
+> **标题**:I built a free job board that tags every posting with its PNP stream / EE category / wage-vs-median — looking for accuracy feedback
+> **正文**:Cross-referencing each job's NOC against provincial PNP lists, EE categories and ESDC median wages by hand was driving me nuts, so I built a tool that does it automatically across all 10 provinces, updated daily. It's free to browse. You can also enter your NOC/CRS profile and it flags which jobs match your pathway. Not a consultant, not selling anything for the browse tier — I'd genuinely like feedback on whether the PNP/wage tagging is accurate for your occupation. Link: offer2pr.com/jobs?utm_source=reddit — happy to fix anything that's wrong.
+
+**小红书** — 中文,痛点+个人口吻+截图引导:
+> **标题**:🍁加拿大找工作还要自己查省提名?我做了个免费工具
+> **正文**:润加拿大最烦的一步:看到个 job,还得手动查它属不属于省提名紧缺、EE 哪个类别、工资比当地中位高还是低……我把这些全自动化了,全加拿大日更,每个岗位直接标好 PNP/EE/工资信号,免费看。填一下自己的 NOC 还能看哪些岗匹配你的移民路径。不是中介、不卖课,就想验证下数据准不准,欢迎来挑错👉 offer2pr.com?utm_source=xhs (配图:职位列表 + 某岗弹窗的 PNP/工资/LMIA 信号)
+
+**微信群(加拿大移民/留学群)** — 中文,一句话+链接:
+> 做了个免费的加拿大职位板,每个岗位自动标好属不属于省提名/EE/工资对比,全国日更,还能按自己 NOC 匹配移民路径。不是中介,求反馈找 bug:offer2pr.com?utm_source=wechat
+
+### 8.3 发布后 72h 看什么(记 §5)
+- UTM 分渠道:哪个源来人 / 注册转化 / 建档率(付费漏斗第一环)。
+- 原话反馈尤其「数据不准」的具体岗——直接进 backlog,这就是痛点驱动下一步抓什么数据的真实输入。
