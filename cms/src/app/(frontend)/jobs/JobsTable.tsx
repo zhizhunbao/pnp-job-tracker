@@ -1200,7 +1200,7 @@ function TitleFacts({ job, lang, noc }: { job: JobRow; lang: Lang; noc: NocDesc 
       <FactRow k={t('col.title')}>{job.title}</FactRow>
       {/* TEER 带人话括注(用户点名:新手不知道 TEER 2 是什么门槛;NOC 码本身用户认识,不标版本) */}
       <FactRow k={t('col.noc')}>{job.noc ? `${job.noc}${job.teer != null ? ` · TEER ${job.teer} (${t('teer.' + job.teer)})` : ''}${noc?.title ? ` · ${noc.title}` : ''}` : null}</FactRow>
-      <NocDutiesView noc={noc} lang={lang} />
+      {/* NOC 官方职责/任职要求是职业级信息 → 只在分类弹窗展示(07-06 拍板);这里是具体职位,真实 JD 就在下方 */}
       {/* 官方原帖入口=弹框底部统一「来源: URL」行(2026-07-06 拍板),此处只留摘录标签 */}
       <div style={{ marginTop: 8, fontSize: 11.5, color: '#9ca3af' }}>{t('fact.jdExcerpt')}</div>
       {gated ? <UpgradeCard t={t} reason={t('up.jobtext')} />
