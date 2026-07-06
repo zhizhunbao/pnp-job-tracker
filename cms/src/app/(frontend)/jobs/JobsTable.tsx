@@ -1248,7 +1248,8 @@ function FieldFactsSection({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, d
   return (
     <>
       <FieldFactsInner field={field} job={job} lang={lang} isPro={isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} />
-      {field !== 'pnp' && field !== 'ee' && job.applyUrl ? (
+      {/* 分类(noc/teer/大中小)是本站衍生口径、pnp/ee 清单自带政策页链接 —— 都不挂职位帖来源行(07-06 用户点名) */}
+      {field !== 'pnp' && field !== 'ee' && !CLS_FIELDS.has(field) && job.applyUrl ? (
         <div style={{ margin: '2px 0 12px', fontSize: 11.5, color: '#9ca3af', overflowWrap: 'anywhere' }}>
           {t('src.label')}: <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#6b7280' }}>{job.applyUrl}</a>
         </div>
@@ -1357,15 +1358,20 @@ function FieldFactsInner({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, des
     )
   }
   if (CLS_FIELDS.has(field)) {
+    // 点哪级只看哪级(含上级路径,07-06 用户点名:大分类弹窗不该混进中/小分类):
+    // broad=1 级 · mid=2 级 · fine=3 级;NOC 字段=全链 + 官方职责/任职要求(五位码职业级信息只在这)。
+    const depth = field === 'broad' ? 1 : field === 'mid' ? 2 : field === 'fine' ? 3 : 0
     return (
       <FactsBox note={t('fact.nocNote')}>
-        <FactRow k={t('col.noc')}>{job.noc}</FactRow>
-        {noc?.title ? <FactRow k={t('fact.nocTitle')}>{noc.title}</FactRow> : null}
-        <FactRow k={t('col.teer')}>{job.teer != null ? `TEER ${job.teer} (${t('teer.' + job.teer)})` : null}</FactRow>
-        <FactRow k={t('col.broad')}>{job.broad && job.broad !== '未分类' ? t('broad.' + job.broad) : null}</FactRow>
-        <FactRow k={t('col.mid')}>{job.mid && job.mid !== '未分类' ? catName(t, job.mid) : null}</FactRow>
-        <FactRow k={t('col.fine')}>{job.fine && job.fine !== '未分类' ? catName(t, job.fine) : null}</FactRow>
-        <NocDutiesView noc={noc} lang={lang} />
+        {field === 'noc' ? <>
+          <FactRow k={t('col.noc')}>{job.noc}</FactRow>
+          {noc?.title ? <FactRow k={t('fact.nocTitle')}>{noc.title}</FactRow> : null}
+        </> : null}
+        {(field === 'noc' || field === 'teer') && <FactRow k={t('col.teer')}>{job.teer != null ? `TEER ${job.teer} (${t('teer.' + job.teer)})` : null}</FactRow>}
+        {(field === 'noc' || depth >= 1) && <FactRow k={t('col.broad')}>{job.broad && job.broad !== '未分类' ? t('broad.' + job.broad) : null}</FactRow>}
+        {(field === 'noc' || depth >= 2) && <FactRow k={t('col.mid')}>{job.mid && job.mid !== '未分类' ? catName(t, job.mid) : null}</FactRow>}
+        {(field === 'noc' || depth >= 3) && <FactRow k={t('col.fine')}>{job.fine && job.fine !== '未分类' ? catName(t, job.fine) : null}</FactRow>}
+        {field === 'noc' && <NocDutiesView noc={noc} lang={lang} />}
       </FactsBox>
     )
   }
