@@ -1276,16 +1276,19 @@ function FieldFactsInner({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, des
   const day = (s?: string) => (s || '').slice(0, 10)
 
   if (field === 'company') {
-    // 弹框标题已是公司名 → 不再重复公司行;没抓到简介就直接不渲染(长解释文案删了,用户拍板:少而清楚)
+    // 弹框标题已是公司名 → 不重复公司行。事实段=官网 + 行业 + 担保史信号(LMIA/AIP 接进来,付费相关)+ 简介(抓到才有);
+    // 都空则整块 null(不留孤儿行,07-06 质量打磨);简介去内层滚动全部展开(用户拍板)。AI 段有官网实时 grounding(E6-03)。
     const desc = job.companyDescription
-    if (!desc && !job.officialUrl && !job.companySectors) return null
+    const sponsor = job.lmiaPositions ? t('fact.coLmia', { n: job.lmiaPositions, q: job.lmiaLastQuarter || '—' }) : job.aip ? t('fact.coAip') : ''
+    if (!desc && !job.officialUrl && !job.companySectors && !sponsor) return null
     return (
-      <FactsBox>
+      <FactsBox note={sponsor ? t('fact.lmiaNote') : undefined}>
         {job.officialUrl ? <FactRow k={t('act.site')}><a href={job.officialUrl} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5 }}>{job.officialUrl}</a></FactRow> : null}
         <FactRow k={t('fact.coSectors')}>{job.companySectors}</FactRow>
+        <FactRow k={t('fact.coSponsor')}>{sponsor || null}</FactRow>
         {desc ? <>
           <div style={{ marginTop: 8, fontSize: 11.5, color: '#9ca3af' }}>{t('fact.coIntro')}</div>
-          <div style={{ marginTop: 4, fontSize: 12.5, color: '#4b5563', whiteSpace: 'pre-wrap', lineHeight: 1.6, maxHeight: 180, overflowY: 'auto', border: '1px solid #f3f4f6', borderRadius: 8, padding: '8px 10px' }}>{desc}</div>
+          <div style={{ marginTop: 4, fontSize: 12.5, color: '#4b5563', whiteSpace: 'pre-wrap', lineHeight: 1.6, border: '1px solid #f3f4f6', borderRadius: 8, padding: '8px 10px' }}>{desc}</div>
         </> : null}
       </FactsBox>
     )
