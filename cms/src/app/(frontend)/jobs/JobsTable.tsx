@@ -7,7 +7,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
 import { makeT, LANGS, LANG_KEY, COLS_COOKIE, type Lang, type TFn } from './i18n'
-import { IconChart, IconCheck, IconCompass, IconLock, IconMap, IconMapPin, IconMaximize, IconMinimize, IconPaperclip, IconSave, IconScale, IconSettings, IconStar, IconTarget, IconUser, IconWarn, IconX } from '../Icons'
+import { IconChart, IconCheck, IconCompass, IconLock, IconMap, IconMapPin, IconMaximize, IconMinimize, IconSave, IconSettings, IconStar, IconTarget, IconUser, IconWarn, IconX } from '../Icons'
 import { AuthModal } from './AuthForm'
 import { UpgradeModal } from './UpgradeModal'
 import { useOverlayClose } from './overlay'
@@ -615,6 +615,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       else cmp = String(va).localeCompare(String(vb), 'zh') * dir
       // 主键相等时按评分降序兜底(同一天发布的高价值岗优先)
       if (cmp === 0 && sort.key !== 'score') cmp = (b.score ?? -Infinity) - (a.score ?? -Infinity)
+      // 评分也并列 → id 降序唯一兜底(与 SQL 第三键同一把尺):任意两行先后唯一,首屏 50 与全量换入同序
+      if (cmp === 0) cmp = Number(b.id) - Number(a.id)
       return cmp
     })
   }, [jobs, q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, sort])
@@ -650,7 +652,6 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         <h1 style={{ margin: '0 0 2px', color: '#111827' }}>Jobs</h1>
         <p style={{ color: '#6b7280', marginTop: 0, fontSize: 13 }}>
           {rows.length === jobs.length ? t('subtitle.count', { n: !loadedAll && totalCount ? totalCount : jobs.length }) : `${rows.length} / ${jobs.length}`}
-          {!loadedAll && <span style={{ color: '#c4c4c8' }}> · {t('subtitle.loadingAll')}</span>}
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '1rem 0' }}>
@@ -1379,7 +1380,6 @@ function MeansForMe({ job, lang, plan, pnpOcc, eeOcc }: { job: JobRow; lang: Lan
           )
         })}
       </div>
-      <div style={{ marginTop: 6, fontSize: 11, color: '#9ca3af' }}><IconScale /> {t('match.disclaimer')}</div>
     </div>
   )
 }
@@ -1526,8 +1526,7 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, eeOcc, 
           {/* 对我意味着什么(E5-00):个人相关性放最上;依据链同源 match() */}
           <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} />
           <FieldFactsSection field={field} job={job} lang={lang} isPro={plan.isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} />
-          {/* 免责声明 v1(E4-01):AI 判断区顶部,UI 层声明与 AI 文风分离(SYSTEM 已禁输出套话) */}
-          <div style={{ fontSize: 11.5, color: '#9ca3af', margin: '6px 0 4px' }}><IconScale /> {t('advisor.disclaimer')}</div>
+          {/* 免责/AI 声明不进弹框(2026-07-06 用户拍板:合规统一在 footer 说明) */}
           {status === 'upgrade' ? (
             <UpgradeCard t={t} reason={t('up.advisor')} />
           ) : status === 'loading' ? (
@@ -1535,14 +1534,12 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, eeOcc, 
           ) : (
             <div style={{ fontSize: 14, lineHeight: 1.7, color: '#374151' }}>{renderAI(text)}{status === 'streaming' && <span style={{ color: '#9ca3af' }}>▋</span>}</div>
           )}
-          {a.links.length > 0 && (
-            <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid #f3f4f6', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {a.links.map((l) => (
-                <a key={l.href} href={l.href} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 13, background: '#eef2ff', padding: '6px 12px', borderRadius: 8 }}>{l.label} ↗</a>
-              ))}
+          {/* 来源行极简版(2026-07-06 用户拍板):只「来源: 完整 URL」可点,不带发布方/抓取时间/标签 */}
+          {job.applyUrl && (
+            <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid #f3f4f6', fontSize: 11.5, color: '#9ca3af', overflowWrap: 'anywhere' }}>
+              {t('src.label')}: <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#6b7280' }}>{job.applyUrl}</a>
             </div>
           )}
-          <p style={{ marginTop: 14, fontSize: 11.5, color: '#9ca3af' }}>{t('advisor.footAI')}</p>
           {/* 下半:对话框 —— 基于上方事实 + 初判,多轮 grounded 追问 */}
           {status === 'done' && <AdvisorChat field={field} job={job} lang={lang} initialJudgment={text} />}
         </div>
@@ -1602,7 +1599,6 @@ function AdvisorChat({ field, job, lang, initialJudgment }: { field: ColKey; job
 
   return (
     <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid #f3f4f6' }}>
-      <div style={{ fontSize: 12, fontWeight: 600, color: '#6366f1', marginBottom: 8 }}>{t('advisor.chatTitle')}</div>
       {msgs.map((m, i) => (
         <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start', marginBottom: 6 }}>
           <div style={{ maxWidth: '85%', padding: '7px 11px', borderRadius: 10, fontSize: 13.5, lineHeight: 1.6, whiteSpace: 'pre-wrap',
@@ -1622,7 +1618,6 @@ function AdvisorChat({ field, job, lang, initialJudgment }: { field: ColKey; job
           {t('advisor.chatSend')}
         </button>
       </div>
-      <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 6 }}>{t('advisor.chatHint')}</div>
     </div>
   )
 }
@@ -1701,11 +1696,8 @@ function renderAI(text: string): React.ReactNode {
 
 // ── 按字段类型生成顾问解读(基于该行数据;无需 API) ─────────────
 // AI 顾问头部:标签(三语,复用列名)+ 上下文标题 + 链接;正文全部由 /api/advisor 大模型按所选语言生成。
-function advHeader(field: ColKey, j: JobRow, t: TFn): { tag: string; title: string; links: { label: string; href: string }[] } {
-  const links: { label: string; href: string }[] = []
-  if (j.applyUrl) links.push({ label: t('advisor.applyLink'), href: j.applyUrl })
-  if (j.officialUrl) links.push({ label: t('advisor.siteLink'), href: j.officialUrl })
-  return { tag: t('col.' + field), title: j.title || j.company || '—', links }
+function advHeader(field: ColKey, j: JobRow, t: TFn): { tag: string; title: string } {
+  return { tag: t('col.' + field), title: j.title || j.company || '—' }
 }
 
 // 5 档综合价值色阶(分位 ~37/55/64/72):灰底 → 4 级绿越高越深(数字本身给精度,颜色作梯度强化)

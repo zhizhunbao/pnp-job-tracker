@@ -21,7 +21,8 @@ export type JobsListOpts = {
 
 /**
  * 列表读取走原始 SQL:payload.find 会把每个 doc 过一遍读取管线(access/hooks),2000+ 行要十几秒。
- * 公开只读列表直接 select + join 公司名。排序与前端默认序一致(发布时间↓,同日评分↓兜底):
+ * 公开只读列表直接 select + join 公司名。排序与前端默认序一致(发布时间↓,同日评分↓,id↓ 唯一兜底
+ * —— 并列行顺序定死,LIMIT 50 与全量两次查询严格同序,否则换入时并列组内会换位):
  * 免费匹配「前 N 岗」(E5-00)才等于用户看到的前 N 行;首屏 50 与全量取同一序,后台换入无跳变。
  * Pro 列(工资中位三件套)SELECT 全量(免费用户的匹配计算也要用),免费用户在映射层剥离 —— 数据不进浏览器。
  */
@@ -35,7 +36,7 @@ export async function fetchJobRows(pool: any, { pro, profile, profileOk, matchDi
       j.wage_med_hourly, j.wage_med_annual, j.wage_low_hourly, j.wage_low_annual, j.wage_high_hourly, j.wage_high_annual, j.wage_year,
       j.source, j.source_label, j.origin, j.date_posted, j.first_seen, j.last_seen, j.status, j.closed_at
     FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
-    ORDER BY j.date_posted DESC NULLS LAST, j.score DESC NULLS LAST LIMIT $1`, [limit])
+    ORDER BY j.date_posted DESC NULLS LAST, j.score DESC NULLS LAST, j.id DESC LIMIT $1`, [limit])
 
   // 档案匹配(E5-00):服务端按人逐行 join(规则在 lib/match.ts 一处)。
   // Pro=全量;免费=默认序前 N 岗(激活钩子,plan.ts);未建档/未登录不算。

@@ -14,7 +14,7 @@ export const COLS_COOKIE = 'jobsCols3'   // 列偏好 cookie 名(放共享非 cl
 type Dict = Record<string, string>
 
 const zh: Dict = {
-  'subtitle.count': '{n} 个职位', 'subtitle.loadingAll': '完整列表加载中…',
+  'subtitle.count': '{n} 个职位',
   'updated': '抓取 {t}',
   'tagline': '每日更新 · 全加拿大全职业 · 移民价值视角',
   'foot.disclaimer': '本站为信息聚合工具,数据自动抓取仅供参考,不构成移民 / 法律建议;我们非持牌移民顾问(RCIC),以官方来源为准。',
@@ -168,7 +168,7 @@ const zh: Dict = {
 }
 
 const en: Dict = {
-  'subtitle.count': '{n} jobs', 'subtitle.loadingAll': 'loading full list…',
+  'subtitle.count': '{n} jobs',
   'updated': 'Scraped {t}',
   'tagline': 'Daily updates · all of Canada · immigration-value lens',
   'foot.disclaimer': 'This site is an information aggregator; auto-scraped data is for reference only and is not immigration / legal advice. We are not licensed immigration consultants (RCIC) — always verify with official sources.',
@@ -344,7 +344,7 @@ const en: Dict = {
 }
 
 const ko: Dict = {
-  'subtitle.count': '{n}개 공고', 'subtitle.loadingAll': '전체 목록 불러오는 중…',
+  'subtitle.count': '{n}개 공고',
   'updated': '수집 {t}',
   'tagline': '매일 갱신 · 캐나다 전역 · 이민 가치 관점',
   'foot.disclaimer': '본 사이트는 정보 수집 도구입니다. 자동 수집 데이터는 참고용이며 이민 / 법률 자문이 아닙니다. 당사는 공인 이민 컨설턴트(RCIC)가 아니며, 공식 출처를 기준으로 확인하세요.',
