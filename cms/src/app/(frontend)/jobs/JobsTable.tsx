@@ -16,6 +16,7 @@ import { StatsModal } from './StatsModal'
 import { useOverlayClose } from './overlay'
 import { CARD, iconBtnS, Modal, ModalTitle, SCRIM, useIsNarrow } from './Modal'
 import { match as matchJob, matchRank, type MatchProfile, type MatchJob, type MatchReason } from '@/lib/match'
+import { lmiaWageClass, isExemptSector, LMIA_REFUSAL_SOURCE } from '@/lib/lmiaStatus'
 
 // 分层态(E3-05/E5-00,服务端 page.tsx 传入):gate 在服务端已生效,这里只做展示引导
 export type Plan = {
@@ -1327,11 +1328,24 @@ function FieldFactsInner({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, des
   }
 
   if (field === 'lmia') {  // E6-02:公司级 LMIA 获批史(ESDC 近 8 季聚合)——纯事实,股别/季度语境必带
+    // E8-04:把「历史记录」升级为「今天这条路通不通」——按本岗高/低薪 + 豁免行业判前瞻可行性(数据:lib/lmiaStatus)
+    const wc = lmiaWageClass(job.province, job.salaryAnnual)
+    const exempt = isExemptSector(job.noc)
+    const feasible = wc === 'high' ? { tone: '#15803d', txt: t('lmia.high') }        // 高薪类:不受冻结
+      : wc === 'low' && exempt ? { tone: '#15803d', txt: t('lmia.exempt') }          // 低薪但豁免行业
+      : wc === 'low' ? { tone: '#b45309', txt: t('lmia.lowFrozen') }                  // 低薪非豁免:大城市可能冻结
+      : null                                                                          // 缺工资/门槛:不猜
     return (
       <FactsBox note={t('fact.lmiaNote')}>
         <FactRow k={t('col.lmia')}>{job.lmiaPositions ? t('cell.lmiaYes', { n: job.lmiaPositions, q: job.lmiaLastQuarter }) : '—'}</FactRow>
         <FactRow k={t('fact.lmiaStreams')}>{job.lmiaStreams || null}</FactRow>
         <FactRow k={t('col.company')}>{job.company}</FactRow>
+        {feasible && (
+          <FactRow k={t('lmia.route')}>
+            <span style={{ color: feasible.tone, fontWeight: 500 }}>{feasible.txt}</span>{' '}
+            <a href={LMIA_REFUSAL_SOURCE} target="_blank" rel="noreferrer" style={{ color: '#6b7280', fontSize: 11.5 }}>{t('lmia.official')} ↗</a>
+          </FactRow>
+        )}
       </FactsBox>
     )
   }
