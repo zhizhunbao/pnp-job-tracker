@@ -116,6 +116,19 @@ def clean_jd(text: str) -> str:
     return re.sub(r"\n{3,}", "\n\n", "\n".join(out)).strip()
 
 
+def iso_date(v) -> str | None:
+    """日期串归一 ISO(YYYY-MM-DD)。认:ISO(原样)/「June 26, 2026」(Job Bank 展示格式);认不出=原样保留(宁可不猜)。"""
+    s = (str(v) if v is not None else "").strip()
+    if not s:
+        return None
+    if re.match(r"^\d{4}-\d{2}-\d{2}", s):
+        return s[:10]
+    try:
+        return datetime.strptime(s, "%B %d, %Y").date().isoformat()
+    except ValueError:
+        return s
+
+
 def jd_body(path) -> str | None:
     """读 .md → 去 frontmatter → 清样板噪音 → 正文(与 jobtext/advisor 同口径)。"""
     try:
@@ -159,6 +172,10 @@ def build():
         if external_id in seen_ext:
             return
         seen_ext.add(external_id)
+        # datePosted 归一 ISO(2026-07-07 全站走查):Job Bank 原样是「June 26, 2026」英文串——
+        # DB date 列灌入时被 Postgres 悄悄解析所以列表没炸,但 10/11 拿它和 ISO 做字符串比较永真
+        # (weekly-top 全库入池、stats 7天新增=在招总数),前端 slice(0,10) 还截出「June 26, 2」。单点断根。
+        fields["datePosted"] = iso_date(fields.get("datePosted"))
         sc = scored.get(external_id, {})
         cls = NOC.classify(sc.get("noc"))  # noc → teer/broad/mid/fine(分类法在 etl/noc.py)
         # 该 NOC 当地中位工资:优先省级,无则国家级(ESDC 开放数据)
