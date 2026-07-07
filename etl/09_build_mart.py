@@ -90,13 +90,40 @@ def build_jd_index() -> dict:
     return idx
 
 
+# Job Bank 页面样板噪音(E8-04 文案审计,2026-07-07 用户点名「莫名其妙+重复」):
+# 帮助浮层(「Green job – Help」×3)/通用解释/免责腿被抓进 JD 正文。按行剔除 + 长行全局去重。
+JD_NOISE = [
+    re.compile(r"–\s*Help\b", re.I),   # tooltip 标题行(xxx – Help,JB 用长横线;不匹配连字符,防误杀「- Help customers」类真内容)
+    re.compile(r"^Green jobs contribute to environmental", re.I),          # 通用解释(非本岗内容)
+    re.compile(r"Learn more about green jobs", re.I),
+    re.compile(r"provided by the employer; it was not verified by Job Bank", re.I),
+]
+
+
+def clean_jd(text: str) -> str:
+    """剔样板行 + 去重复长行(同一行在正文出现多次=抓取浮层伪影,首现保留)。"""
+    seen: set[str] = set()
+    out: list[str] = []
+    for line in text.split("\n"):
+        s = line.strip()
+        if s and any(p.search(s) for p in JD_NOISE):
+            continue
+        if len(s) > 40:  # 只对长行去重,短行(Yes/标签)合法重复
+            if s in seen:
+                continue
+            seen.add(s)
+        out.append(line)
+    return re.sub(r"\n{3,}", "\n\n", "\n".join(out)).strip()
+
+
 def jd_body(path) -> str | None:
-    """读 .md → 去 frontmatter → 正文(与 jobtext/advisor 同口径)。"""
+    """读 .md → 去 frontmatter → 清样板噪音 → 正文(与 jobtext/advisor 同口径)。"""
     try:
         raw = path.read_text(encoding="utf-8", errors="replace")
     except Exception:  # noqa: BLE001
         return None
-    return re.sub(r"^---.*?\n---\s*", "", raw, count=1, flags=re.S).strip() or None
+    body = re.sub(r"^---.*?\n---\s*", "", raw, count=1, flags=re.S).strip()
+    return clean_jd(body) or None
 
 
 def build():

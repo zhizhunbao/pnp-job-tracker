@@ -1169,7 +1169,7 @@ function EeCategorySection({ job, lang, cats }: { job: JobRow; lang: Lang; cats:
       </div>
       {shown.map((c) => (
         <div key={c.key} style={{ marginBottom: 10 }}>
-          <div style={{ fontSize: 12.5, fontWeight: 600, color: '#374151', marginBottom: 4 }}>{c.label} <span style={{ color: '#9ca3af', fontWeight: 400 }}>· {c.occupations.length}</span></div>
+          <div style={{ fontSize: 12.5, fontWeight: 600, color: '#374151', marginBottom: 4 }}>{c.label} <span style={{ color: '#9ca3af', fontWeight: 400 }}>· {t('eelist.count', { n: c.occupations.length })}</span></div>
           {c.drawCrs != null && c.drawDate ? <div style={{ fontSize: 12, color: '#2563eb', marginBottom: 4 }}>{t('eelist.draw', { crs: c.drawCrs, date: c.drawDate, size: c.drawSize ?? '—' })}</div> : null}
           {hit.length ? (
             <div style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid #f3f4f6', borderRadius: 8 }}>
@@ -1513,13 +1513,14 @@ function FieldFactsInner({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, des
     return (
       <FactsBox note={t('fact.sourceNote')}>
         {field === 'source' && <FactRow k={t('col.source')}>{job.sourceLabel || job.source}</FactRow>}
-        {field === 'origin' && <FactRow k={t('col.origin')}>{job.origin}</FactRow>}
+        {field === 'origin' && <FactRow k={t('col.origin')}>{(() => { const v = t('origin.' + job.origin); return v.startsWith('origin.') ? job.origin : v })()}</FactRow>}
         {field === 'direct' && <FactRow k={t('col.direct')}>{isDirect(job) ? t('fact.firstParty') : t('fact.repost')}</FactRow>}
       </FactsBox>
     )
   }
   if (field === 'accessibility') {
-    return <FactsBox note={t('fact.accNote')}><FactRow k={t('col.accessibility')}>{t('acc.' + (job.accessibility || 'unknown'))}</FactRow></FactsBox>
+    // 未知时显式写「未知(帖内未写)」——acc.unknown 的列值是「—」会被 FactRow 隐藏,弹窗只剩孤零零一句口径注(文案审计)
+    return <FactsBox note={t('fact.accNote')}><FactRow k={t('col.accessibility')}>{job.accessibility && job.accessibility !== 'unknown' ? t('acc.' + job.accessibility) : t('acc.none')}</FactRow></FactsBox>
   }
   if (TIME_FIELDS.has(field)) {
     // 时间四字段各看各的(07-06 用户拍板):状态/下架互为语境成对出现;发布带首次收录;抓取单独。
