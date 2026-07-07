@@ -802,8 +802,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                 <IconSave /> {t('ss.save')}
               </button>
             )}
-            {/* 字段选择:右对齐,与搜索同一行 */}
-            <div ref={colRef} style={{ position: 'relative', marginLeft: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+            {/* 字段选择:右对齐,与搜索同一行;窄屏藏(卡片模式无列概念,E8-03 §3.6) */}
+            <div ref={colRef} className="jtHideNarrow" style={{ position: 'relative', marginLeft: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
               <button onClick={() => setColOpen((o) => !o)} style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', background: '#f3f4f6', whiteSpace: 'nowrap' }}><IconSettings style={{ marginRight: 5 }} />{t('fields', { n: shown.length })}</button>
               {colOpen && (
                 <div style={colPanel}>
