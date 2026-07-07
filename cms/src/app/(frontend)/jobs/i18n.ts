@@ -109,8 +109,10 @@ const zh: Dict = {
   'legal.title': '免责声明',
   'legal.body': '本站是职位信息聚合工具:数据来自 Job Bank 等公开来源的自动抓取与评分,可能有误或滞后,仅供参考。本站内容(含 AI 顾问输出)不构成移民建议或法律建议;我们并非加拿大持牌移民顾问(RCIC)或律师。任何移民决定请以 IRCC 与各省政府官方发布为准,必要时咨询持牌专业人士。',
   'legal.wip': '完整版法律页面(隐私政策 / 使用条款 / 关于)将在正式收费前发布。',
-  // 档案匹配(E5-00)
+  // 档案匹配(E5-00)+ 我的匹配视图(E5-05)
   'col.match': '与我的匹配',
+  'mv.entry': '我的匹配', 'mv.on': '只显示与你档案匹配的职位(高/中),按匹配度排序', 'mv.exit': '退出',
+  'mv.empty': '暂无命中你档案的在招职位——试试放宽目标省或更新档案。', 'mv.editProfile': '改档案',
   'match.high': '高', 'match.mid': '中', 'match.low': '低', 'match.na': '不适用',
   'match.needProfile': '建档案', 'match.overCap': '免费版每日仅前 {n} 岗可见匹配',
   'match.title': '对我意味着什么',
@@ -298,6 +300,8 @@ const en: Dict = {
   'legal.wip': 'Full legal pages (privacy policy / terms of use / about) will be published before paid plans go live.',
   // 档案匹配(E5-00)
   'col.match': 'Match for me',
+  'mv.entry': 'My matches', 'mv.on': 'Showing only jobs matching your profile (high/mid), sorted by match', 'mv.exit': 'Exit',
+  'mv.empty': 'No open jobs match your profile yet — try widening target provinces or updating your profile.', 'mv.editProfile': 'Edit profile',
   'match.high': 'High', 'match.mid': 'Mid', 'match.low': 'Low', 'match.na': 'N/A',
   'match.needProfile': 'Set up profile', 'match.overCap': 'Free plan shows match for the first {n} jobs per day',
   'match.title': 'What this means for me',
@@ -485,6 +489,8 @@ const ko: Dict = {
   'legal.wip': '전체 법률 페이지(개인정보 처리방침 / 이용약관 / 소개)는 유료 서비스 시작 전에 게시됩니다.',
   // 档案匹配(E5-00)
   'col.match': '나와의 매칭',
+  'mv.entry': '내 매칭', 'mv.on': '내 프로필과 매칭되는 공고만 표시(높음/중간), 매칭도순 정렬', 'mv.exit': '나가기',
+  'mv.empty': '아직 프로필과 매칭되는 공고가 없습니다 — 목표 주를 넓히거나 프로필을 갱신해 보세요.', 'mv.editProfile': '프로필 수정',
   'match.high': '높음', 'match.mid': '중간', 'match.low': '낮음', 'match.na': '해당없음',
   'match.needProfile': '프로필 만들기', 'match.overCap': '무료 플랜은 하루 상위 {n}개 공고만 매칭 표시',
   'match.title': '나에게 의미하는 것',

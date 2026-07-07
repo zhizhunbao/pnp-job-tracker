@@ -317,7 +317,7 @@ const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean 
   { key: 'teer', label: 'TEER', default: false },
   { key: 'company', label: '公司', default: true },
   { key: 'title', label: '职位', default: true, always: true },
-  { key: 'match', label: '与我的匹配', default: true },   // E5-00 付费头牌列(服务端算;免费=每日前 N 岗)
+  { key: 'match', label: '与我的匹配', default: false },  // E5-05:主表不再显示(独立「我的匹配」视图专属列,列选择器也不出)
   { key: 'noc', label: 'NOC', default: false },
   { key: 'accessibility', label: '经验级别', default: false },
   { key: 'country', label: '国家', default: false },
@@ -426,6 +426,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       if (q0) setQ(q0)
       if (pv) setFProv(PROV_NAMES[pv.toUpperCase()] || pv)
       if (bd) setFBroad(bd)
+      if (sp.get('view') === 'match' && plan.loggedIn && plan.profileOk) setMatchView(true)  // E5-05 直链回流
     } catch { /* ignore */ }
   }, [])
   const [popup, setPopup] = useState<{ field: ColKey; job: JobRow; title: string } | null>(null)
@@ -436,6 +437,21 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const [colOpen, setColOpen] = useState(false)
   const [rankOpen, setRankOpen] = useState(false)  // 榜单弹窗(E8-02:站内不跳页;/rankings 页留给 SEO)
   const [statsOpen, setStatsOpen] = useState(false)  // 统计弹窗(同上;/stats 页留给 SEO)
+  // 我的匹配视图(E5-05,D1=B):只看命中我档案的岗,匹配度排最前;免费=每日前 N 岗匹配 + 升级卡。
+  // URL ?view=match 可分享/可回退;入口三态分流(未登录/未建档 → /account 建档)。
+  const [matchView, setMatchView] = useState(false)
+  const syncViewUrl = (on: boolean) => {
+    try {
+      const u = new URL(window.location.href)
+      if (on) u.searchParams.set('view', 'match'); else u.searchParams.delete('view')
+      history.replaceState(null, '', u)
+    } catch { /* ignore */ }
+  }
+  const toggleMatchView = () => {
+    if (!plan.loggedIn || !plan.profileOk) { window.location.href = '/account'; return }  // 先登录/建档
+    setMatchView((v) => { syncViewUrl(!v); return !v })
+    setLimit(PAGE_ROWS)
+  }
   const colRef = useRef<HTMLDivElement>(null)
   const [limit, setLimit] = useState(PAGE_ROWS)   // 当前渲染行数(点击分页)
   const [lang, setLang] = useState<Lang>('zh')    // 语言(localStorage 持久化)
@@ -471,11 +487,14 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     setWidths({})                                             // 列集变了 → 回自动布局(否则新列在固定布局里塌陷成 0)
   }
   const toggleCol = (key: ColKey) => saveCols(visible.includes(key) ? visible.filter((k) => k !== key) : [...visible, key])
-  const TOGGLABLE = COLUMNS.filter((c) => !c.always).map((c) => c.key)
+  // match 列不进列选择器(E5-05:独立视图专属;老 cookie 里的 match 也在 shown 处剔除)
+  const TOGGLABLE = COLUMNS.filter((c) => !c.always && c.key !== 'match').map((c) => c.key)
   const selectAllCols = () => saveCols(TOGGLABLE)
   const invertCols = () => saveCols(TOGGLABLE.filter((k) => !visible.includes(k)))
   const mainCols = () => saveCols(DEFAULT_COLS) // 一键只显示默认的核心列
-  const shown = COLUMNS.filter((c) => c.always || visible.includes(c.key))
+  const shownBase = COLUMNS.filter((c) => c.key !== 'match' && (c.always || visible.includes(c.key)))
+  // 匹配视图:match 固定第一列,其余照用户列偏好
+  const shown = matchView ? [COLUMNS.find((c) => c.key === 'match')!, ...shownBase] : shownBase
 
   // ── 列宽:默认纯自动布局(table-layout:auto,永不截断);用户拖表头竖线/双击才切固定布局。
   //    会话内有效、不落 localStorage —— 刷新即回自动布局。当初 bug 正是「localStorage 固定布局 +
@@ -610,7 +629,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     const term = q.trim().toLowerCase()
     const filtered = jobs.filter((j) => {
       const L = parseLoc(j)
-      return (!directOnly || isDirect(j)) &&
+      return (!matchView || (j.match != null && j.match !== 'na' && j.match !== 'low')) &&  // E5-05:匹配视图只看真命中(高/中)
+        (!directOnly || isDirect(j)) &&
         (!fCountry || L.country === fCountry) && (!fProv || L.prov === fProv) && (!fCity || L.city === fCity) && (!fDistrict || L.district === fDistrict) &&
         (!fBroad || j.broad === fBroad) && (!fMid || j.mid === fMid) && (!fFine || j.fine === fFine) &&
         (!fTeer || (j.teer == null ? '未分类' : `TEER ${j.teer}`) === fTeer) &&
@@ -622,6 +642,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     })
     const dir = sort.dir === 'asc' ? 1 : -1
     return filtered.slice().sort((a, b) => {
+      // 匹配视图:匹配度永远第一排序键(高→中),同级内走用户排序(默认发布时间↓)
+      if (matchView) { const r = matchRank(b.match) - matchRank(a.match); if (r) return r }
       const va = sortVal(a, sort.key)
       const vb = sortVal(b, sort.key)
       // 缺值始终排到最后(不受升降序影响)
@@ -637,7 +659,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       if (cmp === 0) cmp = Number(b.id) - Number(a.id)
       return cmp
     })
-  }, [jobs, q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, sort])
+  }, [jobs, q, directOnly, matchView, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, sort])
 
   return (
     <div style={{ background: '#fff', color: '#1f2937', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column' }}>
@@ -658,6 +680,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             <span style={{ fontSize: 12, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('tagline')}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, maxWidth: '100%', flexWrap: 'wrap' }}>
+            {/* 我的匹配(E5-05 付费核一级入口):三态分流在 toggleMatchView;激活态高亮可再点退出 */}
+            <button onClick={toggleMatchView} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: matchView ? '#2563eb' : '#6b7280', fontWeight: matchView ? 700 : 400, cursor: 'pointer', whiteSpace: 'nowrap' }}><IconTarget /> {t('mv.entry')}</button>
             <button onClick={() => setRankOpen(true)} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: '#6b7280', cursor: 'pointer', whiteSpace: 'nowrap' }}><IconChart /> {t('rank.entry')}</button>
             <button onClick={() => setStatsOpen(true)} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: '#6b7280', cursor: 'pointer', whiteSpace: 'nowrap' }}><IconMapPin /> {t('stats.entry')}</button>
             <div style={{ display: 'inline-flex', border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
@@ -799,6 +823,13 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           </div>
         </div>
 
+        {/* 匹配视图状态条(E5-05):说明口径 + 退出;免费限额提示(D1=B) */}
+        {matchView && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', background: '#eff6ff', border: '1px solid #dbeafe', borderRadius: 8, padding: '7px 12px', marginBottom: 8, fontSize: 12.5 }}>
+            <span style={{ color: '#1e40af', flex: 1, minWidth: 200 }}><IconTarget /> {t('mv.on')}{!plan.isPro ? ` · ${t('match.overCap', { n: plan.freeMatchCap })}` : ''}</span>
+            <button onClick={toggleMatchView} style={{ border: 'none', background: 'none', padding: 0, color: '#6b7280', cursor: 'pointer', fontSize: 12.5 }}>{t('mv.exit')} ×</button>
+          </div>
+        )}
         <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflowX: 'auto' }}>
           <table style={{ width: hasWidths ? totalW : '100%', minWidth: '100%', borderCollapse: 'collapse', fontSize: 13.5, tableLayout: hasWidths ? 'fixed' : 'auto' }}>
             {/* 末列宽设 auto:固定布局下吸收剩余空间,右缘始终贴齐容器,无右侧缝隙 */}
@@ -926,7 +957,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                 )
               })}
               {rows.length === 0 && (
-                <tr><td colSpan={shown.length} style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>{t('empty')}</td></tr>
+                <tr><td colSpan={shown.length} style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>
+                  {matchView ? <>{t('mv.empty')} <a href="/account" style={{ color: '#2563eb', textDecoration: 'none' }}>{t('mv.editProfile')} →</a></> : t('empty')}
+                </td></tr>
               )}
             </tbody>
           </table>
@@ -937,6 +970,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             : limit >= rows.length ? t('allShown', { total: rows.length })
             : <button onClick={() => setLimit((l) => l + PAGE_ROWS)} style={{ ...ctrl, cursor: 'pointer', background: '#f3f4f6', color: '#374151' }}>{t('loadMore', { x: Math.min(limit, rows.length), total: rows.length })}</button>}
         </div>
+        {/* 匹配视图 · 免费限额升级卡(D1=B:尝到甜头 → 升级看全量) */}
+        {matchView && !plan.isPro && <UpgradeCard t={t} reason={t('up.match', { n: plan.freeMatchCap })} />}
       </div>
       {/* footer:免责 + 版权,窄屏自动换行 */}
       <footer style={{ borderTop: '1px solid #e5e7eb', background: '#fafafa', flexShrink: 0 }}>
