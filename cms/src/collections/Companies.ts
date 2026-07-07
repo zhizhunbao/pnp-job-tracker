@@ -12,6 +12,7 @@ export const Companies: CollectionConfig = {
     { name: 'name', type: 'text', required: true },
     { name: 'slug', type: 'text', unique: true, index: true },
     { name: 'website', type: 'text' },
+    { name: 'websiteSource', type: 'text', admin: { description: '官网来路:空=雇主自报/名录;jd=帖内线索;searched=自动检索(前端加小字,E8-04 D2)' } },
     { name: 'email', type: 'email' },
     { name: 'phone', type: 'text' },
     { name: 'region', type: 'text', index: true },

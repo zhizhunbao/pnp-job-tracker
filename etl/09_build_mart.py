@@ -105,11 +105,12 @@ def build():
         scored = {s["externalId"]: s for s in json.loads(IN_SCORED.read_text(encoding="utf-8"))}
     wages = json.loads(IN_WAGES.read_text(encoding="utf-8")) if IN_WAGES.exists() else {}
 
-    # 公司官网富化(E8-04):slug → 简介/行业(enrich_companies.py 逐轮累积;只取成功记录)
+    # 公司官网富化(E8-04):slug → 简介/行业(enrich_companies.py 逐轮累积)。
+    # 取:抓到简介的(ok)+ 找官网阶梯命中但简介待抓/抓失败的(found 带 website——官网本身就有展示价值)
     enrich = {}
     if IN_ENRICH.exists():
         enrich = {sl: c for sl, c in json.loads(IN_ENRICH.read_text(encoding="utf-8")).items()
-                  if c.get("status") == "ok"}
+                  if c.get("status") == "ok" or (c.get("found") and c.get("website"))}
 
     companies: dict[str, dict] = {}   # slug -> company row
     jobs: list[dict] = []
@@ -123,6 +124,8 @@ def build():
             for k in ("description", "sectors", "website"):
                 if not extra.get(k) and en.get(k):
                     extra[k] = en[k]
+                    if k == "website" and en.get("found"):
+                        extra["websiteSource"] = en["found"]  # jd/searched(searched 前端加小字,D2)
             companies[slug] = {"slug": slug, "name": name, **{k: v for k, v in extra.items() if v}}
 
     def add_job(external_id, company_slug, **fields):

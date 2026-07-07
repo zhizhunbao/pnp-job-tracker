@@ -29,6 +29,7 @@ export type JobsListOpts = {
 export async function fetchJobRows(pool: any, { pro, profile, profileOk, matchDims, limit }: JobsListOpts): Promise<{ jobs: JobRow[]; updatedAt: string }> {
   const { rows } = await pool.query(`
     SELECT j.id, j.title, c.name AS company_name, c.address AS company_address, c.description AS company_description, c.sectors AS company_sectors,
+      c.website AS company_website, c.website_source,
       c.lmia_positions, c.lmia_lmias, c.lmia_last_quarter, c.lmia_streams,
       j.noc, j.category, j.teer, j.broad, j.mid, j.fine, j.accessibility, j.score, j.pnp_eligible, j.pnp_stream, j.ee_category, j.aip,
       j.country, j.province, j.city, j.district, j.address, j.region,
@@ -58,6 +59,7 @@ export async function fetchJobRows(pool: any, { pro, profile, profileOk, matchDi
     company: j.company_name ?? '',
     companyDescription: j.company_description ?? '',
     companySectors: j.company_sectors ?? '',
+    companyWebsiteSrc: j.website_source ?? '',
     // LMIA 外劳雇佣记录(E6-02,免费信号——信任层):历史事实,展示带股别/季度语境
     lmiaPositions: num(j.lmia_positions),
     lmiaLastQuarter: j.lmia_last_quarter ?? '',
@@ -93,7 +95,8 @@ export async function fetchJobRows(pool: any, { pro, profile, profileOk, matchDi
     wageHighHourly: pro ? num(j.wage_high_hourly) : null,
     wageHighAnnual: pro ? num(j.wage_high_annual) : null,
     wageYear: pro ? (j.wage_year ?? '') : '',
-    officialUrl: j.official_url ?? '',
+    // 官网:帖级优先(雇主在该帖自报),缺则回退公司级(名录/JD 线索/检索,E8-04 D2)
+    officialUrl: j.official_url ?? j.company_website ?? '',
     applyUrl: j.apply_url ?? '',
     datePosted: iso(j.date_posted),
     firstSeen: iso(j.first_seen),

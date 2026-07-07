@@ -120,6 +120,7 @@ export type JobRow = {
   company: string
   companyDescription: string
   companySectors: string
+  companyWebsiteSrc: string   // 官网来路:''=雇主自报/名录 · jd=帖内线索 · searched=自动检索(加小字,E8-04 D2)
   source: string
   sourceLabel: string
   origin: string
@@ -1289,8 +1290,10 @@ function FieldFactsInner({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, des
     const desc = job.companyDescription
     const sponsor = job.lmiaPositions ? t('fact.coLmia', { n: job.lmiaPositions, q: job.lmiaLastQuarter || '—' }) : job.aip ? t('fact.coAip') : ''
     if (!desc && !job.officialUrl && !job.companySectors && !sponsor) return null
+    // 口径注:担保史语义 + 检索官网标注(D2 拍板:自动检索来的官网诚实标小字)
+    const notes = [sponsor ? t('fact.lmiaNote') : '', job.officialUrl && job.companyWebsiteSrc === 'searched' ? t('fact.siteSearched') : ''].filter(Boolean)
     return (
-      <FactsBox note={sponsor ? t('fact.lmiaNote') : undefined}>
+      <FactsBox note={notes.length ? notes.join('；') : undefined}>
         {job.officialUrl ? <FactRow k={t('act.site')}><a href={job.officialUrl} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5 }}>{job.officialUrl}</a></FactRow> : null}
         <FactRow k={t('fact.coSectors')}>{job.companySectors}</FactRow>
         <FactRow k={t('fact.coSponsor')}>{sponsor || null}</FactRow>
