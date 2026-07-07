@@ -41,8 +41,8 @@ export function MetricCards({ r, t }: { r: StatRow; t: TFn }) {
     [t('stats.new7d'), r.new7d ?? '—'],
     [t('stats.medWage'), money(r.medianWageAnnual)],
     [t('stats.medSalary'), money(r.medianSalaryAnnual)],
-    [t('stats.named'), r.namedJobs ?? '—'],
-    [t('stats.aip'), r.aipJobs ?? '—'],
+    [t('stats.named'), r.namedJobs || '—'],   // 0 → —(C4:0 是政策现实非缺数,口径说明里有脚注)
+    [t('stats.aip'), r.aipJobs || '—'],
   ]
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, margin: '14px 0' }}>

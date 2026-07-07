@@ -49,7 +49,7 @@ const zh: Dict = {
   'col.salary': '薪资', 'col.salaryYr': '年薪(折算)', 'col.wageMedHr': '中位时薪', 'col.wageMedYr': '中位年薪', 'col.vsMedian': 'vs 中位', 'col.source': '来源', 'col.origin': '渠道', 'col.direct': '发布',
   'col.pnp': 'PNP', 'col.ee': 'EE 类别', 'col.aip': 'AIP', 'col.lmia': '外劳记录', 'col.status': '状态', 'col.firstSeen': '首次收录', 'col.lastSeen': '抓取时间', 'col.closedAt': '下架时间', 'col.score': '评分',
   'eelist.in': '本岗 NOC {noc} 在联邦 EE「{cats}」类别清单内', 'eelist.out': '未列入任何联邦 EE 类别抽选清单', 'eelist.source': '来源:Express Entry 类别抽选', 'eelist.your': '本岗', 'eelist.loading': '加载 EE 清单…', 'eelist.draw': '近期抽选:CRS {crs} · {date} · 发出 {size} 邀请', 'eelist.count': '{n} 个职业',
-  'col.actions': '操作', 'act.company': '公司信息', 'act.desc': '职位描述', 'act.companyTitle': '公司基本信息', 'act.descTitle': '职位描述', 'act.site': '官网', 'act.addr': '地址', 'act.src': '来源', 'act.jobsHere': '该公司在榜职位', 'act.noText': '未抓到该职位的描述文本', 'act.loadingText': '加载中…',
+  'col.actions': '操作', 'act.company': '公司信息', 'act.desc': '职位描述', 'act.descTitle': '职位描述', 'act.site': '官网', 'act.addr': '地址', 'act.jobsHere': '该公司在榜职位', 'act.noText': '未抓到该职位的描述文本', 'act.loadingText': '加载中…',
   // 大分类(数据值→显示)
   'broad.管理': '管理', 'broad.商务': '商务', 'broad.科技': '科技', 'broad.医疗': '医疗', 'broad.教育': '教育',
   'broad.文体': '文体', 'broad.服务': '服务', 'broad.技工': '技工', 'broad.资源': '资源', 'broad.制造': '制造',
@@ -81,6 +81,7 @@ const zh: Dict = {
   'fact.coSectors': '行业', 'fact.coIntro': '公司简介(抓取自官网)',
   'fact.siteSearched': '官网为自动检索匹配(已过域名↔公司名校验),如有出入以官方为准',
   'fact.coSponsor': '担保史', 'fact.coLmia': '近两年 {n} 个 LMIA 获批职位 · {q}', 'fact.coAip': '大西洋 AIP 指定雇主',
+  'fact.coLmiaNote': '担保史为 ESDC 历史记录,非担保承诺',
   'fact.nocTitle': '官方职业名', 'fact.nocDuties': '官方主要职责(NOC)', 'fact.nocReqs': '任职要求(NOC)',
   'fact.nocNote': 'NOC = 加拿大官方职业分类(编码第二位即 TEER);TEER = 教育/培训门槛等级,0(管理)→ 5(无学历要求)。',
   'teer.0': '管理岗', 'teer.1': '本科起', 'teer.2': '大专/学徒', 'teer.3': '大专/短训', 'teer.4': '高中/在职培训', 'teer.5': '无学历门槛',
@@ -177,7 +178,7 @@ const zh: Dict = {
   'ss.save': '保存此筛选', 'ss.name': '给这个筛选起个名字:', 'ss.saved': '已保存;日更后有新命中会邮件提醒(账户页可管理)', 'ss.err': '保存失败(可能已达上限或需要 Pro)', 'ss.pro': '保存筛选+邮件提醒是 Pro 功能', 'ss.title': '已保存的筛选(邮件提醒)', 'ss.none': '还没有保存的筛选 —— 在职位板设好筛选后点「保存此筛选」', 'ss.del': '删除', 'ss.note': 'Pro+已建档会自动收「命中我的路径」日报;保存筛选是额外的自定义提醒',
   'src.label': '来源', 'src.fetched': '抓取于 {d}', 'src.derived': '本站算法,由上方事实计算', 'src.official': '官方原帖', 'src.unverified': '未验证(仅链接)',
   'rank.title.weekly-top': '本周新增 TOP 50', 'rank.title.sponsor-likely': '最可能担保雇主榜', 'rank.updated': '随日更自动刷新 · 更新于 {d}', 'rank.entry': '榜单', 'rank.col.company': '公司', 'rank.col.openJobs': '在招', 'rank.col.namedJobs': '具名通道岗', 'rank.col.avgScore': '平均分', 'rank.viewJobs': '在职位板查看 →', 'rank.note.weekly-top': '口径:近 7 天发布、在招,按移民价值评分排序(同分薪资高优先)。', 'rank.note.sponsor-likely': '口径:第一方直发雇主,按「近两年获批 LMIA 职位数(仅高薪/GTS/PR 股,ESDC 公开数据)→ 省具名通道命中 → 在招量 → 平均分」排序;LMIA 记录=雇过外国人的历史事实,为粗筛信号非担保承诺。',
-  'stats.title': '{prov} 地区职位统计', 'stats.catTitle': '{prov} · {cat} 职位统计', 'stats.openJobs': '在招职位', 'stats.new7d': '7 天新增', 'stats.medWage': '中位年薪(ESDC)', 'stats.medSalary': '帖面中位年薪', 'stats.named': '具名通道岗', 'stats.aip': 'AIP 指定雇主岗', 'stats.topCities': '主要城市', 'stats.streams': '命中通道', 'stats.byCat': '按职业大类', 'stats.entry': '地区统计', 'stats.toJobs': '看这些职位 →', 'stats.caliber': '口径说明', 'stats.caliberText': '在招/新增=本站抓取口径(Job Bank 全国+ATS);中位年薪=ESDC 工资数据(同 NOC×省)的中位;具名通道=省提名官网公开清单命中;非资格认定。', 'stats.provIndex': '选择省份', 'stats.compare': '跨省对比(Pro)', 'stats.pickProv': '选 2-4 个省对比', 'stats.myNoc': '按我的档案高亮',
+  'stats.title': '{prov} 地区职位统计', 'stats.catTitle': '{prov} · {cat} 职位统计', 'stats.openJobs': '在招职位', 'stats.new7d': '近 7 天发布', 'stats.medWage': '中位年薪(ESDC)', 'stats.medSalary': '帖面中位年薪', 'stats.named': '具名通道岗', 'stats.aip': 'AIP 指定雇主岗', 'stats.topCities': '主要城市', 'stats.streams': '命中通道', 'stats.byCat': '按职业大类', 'stats.entry': '地区统计', 'stats.toJobs': '看这些职位 →', 'stats.caliber': '口径说明', 'stats.caliberText': '在招/近 7 天发布=本站抓取口径(Job Bank 全国+ATS,按帖面发布日);中位年薪=ESDC 工资数据(同 NOC×省)的中位;具名通道=省提名官网公开清单命中;具名通道岗「—」= 该省当前无公开的具名职业清单(如 OINP 2026-06 改制后),非数据缺失;均非资格认定。', 'stats.provIndex': '选择省份', 'stats.compare': '跨省对比(Pro)', 'stats.pickProv': '选 2-4 个省对比', 'stats.myNoc': '按我的档案高亮',
 }
 
 const en: Dict = {
@@ -215,7 +216,7 @@ const en: Dict = {
   'col.salary': 'Salary', 'col.salaryYr': 'Annual (est.)', 'col.wageMedHr': 'Median $/hr', 'col.wageMedYr': 'Median $/yr', 'col.vsMedian': 'vs median', 'col.source': 'Source', 'col.origin': 'Channel', 'col.direct': 'Posting',
   'col.pnp': 'PNP', 'col.ee': 'EE category', 'col.aip': 'AIP', 'col.lmia': 'LMIA history', 'col.status': 'Status', 'col.firstSeen': 'First seen', 'col.lastSeen': 'Scraped', 'col.closedAt': 'Closed', 'col.score': 'Score',
   'eelist.in': 'This job (NOC {noc}) is in the federal EE "{cats}" category', 'eelist.out': 'Not in any federal Express Entry category', 'eelist.source': 'Source: Express Entry category-based selection', 'eelist.your': 'This job', 'eelist.loading': 'Loading EE list…', 'eelist.draw': 'Recent draw: CRS {crs} · {date} · {size} invitations', 'eelist.count': '{n} occupations',
-  'col.actions': 'Actions', 'act.company': 'Company', 'act.desc': 'Description', 'act.companyTitle': 'Company info', 'act.descTitle': 'Job description', 'act.site': 'Website', 'act.addr': 'Address', 'act.src': 'Source', 'act.jobsHere': 'Listings by this company', 'act.noText': 'No scraped description for this job', 'act.loadingText': 'Loading…',
+  'col.actions': 'Actions', 'act.company': 'Company', 'act.desc': 'Description', 'act.descTitle': 'Job description', 'act.site': 'Website', 'act.addr': 'Address', 'act.jobsHere': 'Listings by this company', 'act.noText': 'No scraped description for this job', 'act.loadingText': 'Loading…',
   'broad.管理': 'Management', 'broad.商务': 'Business', 'broad.科技': 'Tech', 'broad.医疗': 'Health', 'broad.教育': 'Education',
   // NOC 中/小分类(数据值=etl/noc.py 中文;与大类同名的值走 broad.* 回退,不重复)
   'cat.高级管理': 'Senior management', 'cat.IT': 'IT', 'cat.金融': 'Finance', 'cat.人力资源': 'Human resources',
@@ -271,6 +272,7 @@ const en: Dict = {
   'fact.coSectors': 'Sector', 'fact.coIntro': 'Company profile (scraped from official website)',
   'fact.siteSearched': 'Website auto-matched via search (domain↔name check passed); verify with official sources if in doubt',
   'fact.coSponsor': 'Sponsorship history', 'fact.coLmia': '{n} approved LMIA positions in the past 2 years · {q}', 'fact.coAip': 'Atlantic AIP designated employer',
+  'fact.coLmiaNote': 'Sponsorship history is an ESDC record of the past, not a commitment',
   'fact.nocTitle': 'Official title', 'fact.nocDuties': 'Official main duties (NOC)', 'fact.nocReqs': 'Employment requirements (NOC)',
   'fact.nocNote': "NOC = Canada's official occupational classification (2nd digit of the code is the TEER); TEER = education/training tier, 0 (management) → 5 (no formal requirement).",
   'teer.0': 'management', 'teer.1': "bachelor's+", 'teer.2': 'college/apprenticeship', 'teer.3': 'college/short training', 'teer.4': 'high school/on-the-job', 'teer.5': 'no formal education',
@@ -366,7 +368,7 @@ const en: Dict = {
   'ss.save': 'Save this search', 'ss.name': 'Name this search:', 'ss.saved': 'Saved — you will get an email when new jobs match (manage on account page)', 'ss.err': 'Save failed (limit reached or Pro required)', 'ss.pro': 'Saved searches + email alerts are a Pro feature', 'ss.title': 'Saved searches (email alerts)', 'ss.none': 'No saved searches yet — set filters on the job board and hit Save this search', 'ss.del': 'Delete', 'ss.note': 'Pro users with a profile also get a daily matches-my-path email; saved searches add custom alerts',
   'src.label': 'Source', 'src.fetched': 'fetched {d}', 'src.derived': 'Site algorithm, computed from the facts above', 'src.official': 'Official posting', 'src.unverified': 'unverified (link only)',
   'rank.title.weekly-top': 'New this week — TOP 50', 'rank.title.sponsor-likely': 'Most likely sponsor employers', 'rank.updated': 'Refreshes with daily updates · updated {d}', 'rank.entry': 'Rankings', 'rank.col.company': 'Company', 'rank.col.openJobs': 'Open', 'rank.col.namedJobs': 'Named-stream jobs', 'rank.col.avgScore': 'Avg score', 'rank.viewJobs': 'View on job board →', 'rank.note.weekly-top': 'Method: posted in the last 7 days, still open, ranked by immigration-value score (salary breaks ties).', 'rank.note.sponsor-likely': 'Method: first-party employers ranked by positive-LMIA positions approved in the past two years (High Wage/GTS/PR streams only, ESDC open data) → named provincial-stream hits → open jobs → average score. An LMIA record is a historical fact of hiring foreign workers — a rough signal, not a sponsorship promise.',
-  'stats.title': '{prov} job statistics', 'stats.catTitle': '{prov} · {cat} job statistics', 'stats.openJobs': 'Open jobs', 'stats.new7d': 'New in 7 days', 'stats.medWage': 'Median wage (ESDC)', 'stats.medSalary': 'Median posted salary', 'stats.named': 'Named-stream jobs', 'stats.aip': 'AIP designated-employer jobs', 'stats.topCities': 'Top cities', 'stats.streams': 'Streams hit', 'stats.byCat': 'By occupation group', 'stats.entry': 'Region stats', 'stats.toJobs': 'See these jobs →', 'stats.caliber': 'Methodology', 'stats.caliberText': 'Open/new = this site’s scrape (Job Bank Canada-wide + ATS); median wage = ESDC wage data (same NOC × province); named stream = hit on a published provincial list; not an eligibility ruling.', 'stats.provIndex': 'Choose a province', 'stats.compare': 'Compare provinces (Pro)', 'stats.pickProv': 'Pick 2–4 provinces', 'stats.myNoc': 'Highlight by my profile',
+  'stats.title': '{prov} job statistics', 'stats.catTitle': '{prov} · {cat} job statistics', 'stats.openJobs': 'Open jobs', 'stats.new7d': 'Posted in last 7 days', 'stats.medWage': 'Median wage (ESDC)', 'stats.medSalary': 'Median posted salary', 'stats.named': 'Named-stream jobs', 'stats.aip': 'AIP designated-employer jobs', 'stats.topCities': 'Top cities', 'stats.streams': 'Streams hit', 'stats.byCat': 'By occupation group', 'stats.entry': 'Region stats', 'stats.toJobs': 'See these jobs →', 'stats.caliber': 'Methodology', 'stats.caliberText': 'Open / posted-in-7-days = this site’s scrape (Job Bank Canada-wide + ATS, by posting date); median wage = ESDC wage data (same NOC × province); named stream = hit on a published provincial list; “—” under named-stream = that province currently publishes no named occupation list (e.g. OINP after its 2026-06 redesign), not missing data; none of this is an eligibility ruling.', 'stats.provIndex': 'Choose a province', 'stats.compare': 'Compare provinces (Pro)', 'stats.pickProv': 'Pick 2–4 provinces', 'stats.myNoc': 'Highlight by my profile',
 }
 
 const ko: Dict = {
@@ -404,7 +406,7 @@ const ko: Dict = {
   'col.salary': '급여', 'col.salaryYr': '연봉(환산)', 'col.wageMedHr': '중위 시급', 'col.wageMedYr': '중위 연봉', 'col.vsMedian': '중위 대비', 'col.source': '출처', 'col.origin': '채널', 'col.direct': '게시',
   'col.pnp': 'PNP', 'col.ee': 'EE 카테고리', 'col.aip': 'AIP', 'col.lmia': 'LMIA 이력', 'col.status': '상태', 'col.firstSeen': '최초 수집', 'col.lastSeen': '수집 시각', 'col.closedAt': '마감일', 'col.score': '점수',
   'eelist.in': '이 채용(NOC {noc})이 연방 EE 「{cats}」 카테고리에 있음', 'eelist.out': '연방 Express Entry 카테고리에 없음', 'eelist.source': '출처: Express Entry 카테고리 선발', 'eelist.your': '이 채용', 'eelist.loading': 'EE 목록 불러오는 중…', 'eelist.draw': '최근 추첨: CRS {crs} · {date} · {size}건 초대', 'eelist.count': '직업 {n}개',
-  'col.actions': '작업', 'act.company': '회사 정보', 'act.desc': '직무 설명', 'act.companyTitle': '회사 기본 정보', 'act.descTitle': '직무 설명', 'act.site': '웹사이트', 'act.addr': '주소', 'act.src': '출처', 'act.jobsHere': '이 회사의 공고', 'act.noText': '수집된 직무 설명이 없습니다', 'act.loadingText': '로딩 중…',
+  'col.actions': '작업', 'act.company': '회사 정보', 'act.desc': '직무 설명', 'act.descTitle': '직무 설명', 'act.site': '웹사이트', 'act.addr': '주소', 'act.jobsHere': '이 회사의 공고', 'act.noText': '수집된 직무 설명이 없습니다', 'act.loadingText': '로딩 중…',
   'broad.管理': '관리', 'broad.商务': '비즈니스', 'broad.科技': '기술', 'broad.医疗': '의료', 'broad.教育': '교육',
   // NOC 中/小分类(数据值=etl/noc.py 中文;与大类同名的值走 broad.* 回退,不重复)
   'cat.高级管理': '고위 경영', 'cat.IT': 'IT', 'cat.金融': '금융', 'cat.人力资源': '인사(HR)',
@@ -460,6 +462,7 @@ const ko: Dict = {
   'fact.coSectors': '업종', 'fact.coIntro': '회사 소개(공식 웹사이트에서 수집)',
   'fact.siteSearched': '웹사이트는 자동 검색 매칭(도메인↔회사명 검증 통과); 의심스러우면 공식 출처로 확인',
   'fact.coSponsor': '스폰서 이력', 'fact.coLmia': '최근 2년 LMIA 승인 {n}개 포지션 · {q}', 'fact.coAip': '대서양 AIP 지정 고용주',
+  'fact.coLmiaNote': '스폰서 이력은 ESDC 과거 기록이며 보증 약속이 아님',
   'fact.nocTitle': '공식 직업명', 'fact.nocDuties': '공식 주요 업무(NOC)', 'fact.nocReqs': '취업 요건(NOC)',
   'fact.nocNote': 'NOC = 캐나다 공식 직업분류(코드 두 번째 자리가 TEER); TEER = 교육/훈련 요건 등급, 0(관리직) → 5(학력 요건 없음).',
   'teer.0': '관리직', 'teer.1': '학사 이상', 'teer.2': '전문대/견습', 'teer.3': '전문대/단기훈련', 'teer.4': '고졸/현장훈련', 'teer.5': '학력 요건 없음',
@@ -555,7 +558,7 @@ const ko: Dict = {
   'ss.save': '이 필터 저장', 'ss.name': '필터 이름:', 'ss.saved': '저장됨 — 새 공고가 매칭되면 이메일로 알립니다(계정 페이지에서 관리)', 'ss.err': '저장 실패(상한 도달 또는 Pro 필요)', 'ss.pro': '필터 저장+이메일 알림은 Pro 기능', 'ss.title': '저장된 필터(이메일 알림)', 'ss.none': '저장된 필터가 없습니다 — 채용 보드에서 필터 설정 후 「이 필터 저장」', 'ss.del': '삭제', 'ss.note': '프로필이 있는 Pro는 「내 경로 매칭」 일일 메일도 받습니다. 저장 필터는 추가 맞춤 알림',
   'src.label': '출처', 'src.fetched': '{d} 수집', 'src.derived': '본 사이트 알고리즘(위 사실로 계산)', 'src.official': '공식 공고', 'src.unverified': '미검증(링크만)',
   'rank.title.weekly-top': '이번 주 신규 TOP 50', 'rank.title.sponsor-likely': '스폰서 가능성 높은 고용주', 'rank.updated': '매일 갱신 · {d} 업데이트', 'rank.entry': '랭킹', 'rank.col.company': '회사', 'rank.col.openJobs': '채용중', 'rank.col.namedJobs': '지정 스트림 공고', 'rank.col.avgScore': '평균 점수', 'rank.viewJobs': '채용 보드에서 보기 →', 'rank.note.weekly-top': '기준: 최근 7일 게시·채용중, 이민 가치 점수순(동점 시 급여순).', 'rank.note.sponsor-likely': '기준: 최근 2년 승인 LMIA 포지션 수(고임금/GTS/PR 스트림만, ESDC 공개 데이터) → 지정 스트림 공고 → 채용중 → 평균 점수 순 정렬. LMIA 기록=외국인 고용 과거 사실이며, 대략적 신호일 뿐 스폰서 보장이 아님.',
-  'stats.title': '{prov} 채용 통계', 'stats.catTitle': '{prov} · {cat} 채용 통계', 'stats.openJobs': '채용중', 'stats.new7d': '7일 신규', 'stats.medWage': '중위 연봉(ESDC)', 'stats.medSalary': '게시 중위 연봉', 'stats.named': '지정 스트림 공고', 'stats.aip': 'AIP 지정 고용주 공고', 'stats.topCities': '주요 도시', 'stats.streams': '해당 스트림', 'stats.byCat': '직업 대분류별', 'stats.entry': '지역 통계', 'stats.toJobs': '해당 공고 보기 →', 'stats.caliber': '산정 기준', 'stats.caliberText': '채용중/신규=본 사이트 수집 기준(Job Bank 전국+ATS); 중위 연봉=ESDC 임금 데이터(동일 NOC×주)의 중위값; 지정 스트림=주정부 공개 목록 해당; 자격 판정 아님.', 'stats.provIndex': '주 선택', 'stats.compare': '주간 비교(Pro)', 'stats.pickProv': '2–4개 주 선택', 'stats.myNoc': '내 프로필로 강조',
+  'stats.title': '{prov} 채용 통계', 'stats.catTitle': '{prov} · {cat} 채용 통계', 'stats.openJobs': '채용중', 'stats.new7d': '최근 7일 게시', 'stats.medWage': '중위 연봉(ESDC)', 'stats.medSalary': '게시 중위 연봉', 'stats.named': '지정 스트림 공고', 'stats.aip': 'AIP 지정 고용주 공고', 'stats.topCities': '주요 도시', 'stats.streams': '해당 스트림', 'stats.byCat': '직업 대분류별', 'stats.entry': '지역 통계', 'stats.toJobs': '해당 공고 보기 →', 'stats.caliber': '산정 기준', 'stats.caliberText': '채용중/최근 7일 게시=본 사이트 수집 기준(Job Bank 전국+ATS, 게시일 기준); 중위 연봉=ESDC 임금 데이터(동일 NOC×주)의 중위값; 지정 스트림=주정부 공개 목록 해당; 지정 스트림 「—」=해당 주에 현재 공개 지정 직업 목록이 없음(예: OINP 2026-06 개편 후), 데이터 누락 아님; 모두 자격 판정 아님.', 'stats.provIndex': '주 선택', 'stats.compare': '주간 비교(Pro)', 'stats.pickProv': '2–4개 주 선택', 'stats.myNoc': '내 프로필로 강조',
 }
 
 const MESSAGES: Record<Lang, Dict> = { zh, en, ko }

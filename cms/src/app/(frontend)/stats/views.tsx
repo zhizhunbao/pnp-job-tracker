@@ -36,7 +36,7 @@ export function StatsIndexContent({ rows, srcs, t }: { rows: StatRow[]; srcs: Sr
             <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 8, lineHeight: 1.9 }}>
               {t('stats.openJobs')}:<strong style={{ color: '#111827' }}> {r.openJobs}</strong><br />
               {t('stats.medWage')}: {money(r.medianWageAnnual)}<br />
-              {t('stats.named')}: <span style={{ color: '#b45309', fontWeight: 600 }}>{r.namedJobs}</span>
+              {t('stats.named')}: {r.namedJobs ? <span style={{ color: '#b45309', fontWeight: 600 }}>{r.namedJobs}</span> : <span style={{ color: '#9ca3af' }}>—</span>}
             </div>
           </a>
         ))}
@@ -73,7 +73,7 @@ export function StatsProvContent({ prov, rows, srcs, t }: { prov: string; rows: 
                 <td style={td}>{row!.openJobs}</td>
                 <td style={td}>{row!.new7d}</td>
                 <td style={td}>{money(row!.medianWageAnnual)}</td>
-                <td style={{ ...td, color: '#b45309', fontWeight: 600 }}>{row!.namedJobs}</td>
+                <td style={{ ...td, ...(row!.namedJobs ? { color: '#b45309', fontWeight: 600 } : { color: '#9ca3af' }) }}>{row!.namedJobs || '—'}</td>
                 <td style={td}><a href={`/jobs?prov=${prov}&broad=${encodeURIComponent(broad)}`} style={{ color: '#2563eb', textDecoration: 'none', fontSize: 12.5 }}>{t('stats.toJobs')}</a></td>
               </tr>
             ))}
@@ -144,7 +144,7 @@ export function CompareContent({ rows, srcs, isPro, loggedIn, myNocs, t }: { row
     [t('stats.new7d'), (r) => r.new7d],
     [t('stats.medWage'), (r) => money(r.medianWageAnnual)],
     [t('stats.medSalary'), (r) => money(r.medianSalaryAnnual)],
-    [t('stats.named'), (r) => <span style={{ color: '#b45309', fontWeight: 600 }}>{r.namedJobs}</span>],
+    [t('stats.named'), (r) => (r.namedJobs ? <span style={{ color: '#b45309', fontWeight: 600 }}>{r.namedJobs}</span> : <span style={{ color: '#9ca3af' }}>—</span>)],
     [t('stats.aip'), (r) => r.aipJobs],
     [t('stats.streams'), (r) => r.streamLabels || '—'],
   ]

@@ -430,7 +430,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     } catch { /* ignore */ }
   }, [])
   const [popup, setPopup] = useState<{ field: ColKey; job: JobRow; title: string } | null>(null)
-  const [actModal, setActModal] = useState<{ kind: 'company' | 'desc'; job: JobRow } | null>(null)
+  // C1 走查拍板(2026-07-07):删两套公司弹窗——操作列「公司信息」直接开顾问公司弹窗;ActModal 只剩 JD 快看
+  const [actModal, setActModal] = useState<{ kind: 'desc'; job: JobRow } | null>(null)
   // 升级入口(Pro 锁列/保存筛选 gate)统一开独立升级弹框;未登录先走注册弹框(用户定:注册与购买分离)
   const [upsell, setUpsell] = useState<false | 'lock' | 'ss'>(false)
   const [sort, setSort] = useState<{ key: ColKey; dir: 'asc' | 'desc' }>({ key: 'datePosted', dir: 'desc' })
@@ -872,7 +873,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       const rowBg = i % 2 ? '#fcfcfd' : '#fff'
                       if (k === 'actions') return (  // 操作列:普通末列,两按钮(公司信息/职位描述)
                         <td key={k} style={{ ...td, whiteSpace: 'nowrap', minWidth: colMin('actions') }}>
-                          <button onClick={(e) => { e.stopPropagation(); setActModal({ kind: 'company', job: j }) }} style={actBtn}>{t('act.company')}</button>
+                          <button onClick={(e) => { e.stopPropagation(); setPopup({ field: 'company', job: j, title: j.company }) }} style={actBtn}>{t('act.company')}</button>
                           <button onClick={(e) => { e.stopPropagation(); setActModal({ kind: 'desc', job: j }) }} style={{ ...actBtn, marginLeft: 6 }}>{t('act.desc')}</button>
                         </td>
                       )
@@ -1029,8 +1030,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         </div>
       </footer>
 
-      {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} />}
-      {actModal && <ActModal kind={actModal.kind} job={actModal.job} jobs={jobs} lang={lang} onClose={() => setActModal(null)} />}
+      {popup && <AdvisorModal field={popup.field} job={popup.job} jobs={jobs} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} />}
+      {actModal && <ActModal job={actModal.job} lang={lang} onClose={() => setActModal(null)} />}
       {upsell && (plan.loggedIn
         ? <UpgradeModal t={t} reason={upsell === 'ss' ? t('ss.pro') : undefined} onClose={() => setUpsell(false)} />
         : <AuthModal t={t} mode="register" onClose={() => setUpsell(false)} onDone={() => window.location.reload()} />)}
@@ -1045,9 +1046,10 @@ type PnpStream = { stream: string; label: string; type: string; url: string; fet
 
 // 本省最近抽选事实块(E6-04)。score 是省自评分制(SIRS/WEOI/MPNP EOI),非 CRS —— 只陈列事实,不判定资格。
 // kind=notice(如 ON 2026-06 改制)渲染通告行;省内无数据(SK/QC 等)整块不出现。
-function PnpDrawsBlock({ province, lang, draws }: { province: string; lang: Lang; draws: PnpDraw[] }) {
+function PnpDrawsBlock({ province, lang, draws, limit }: { province: string; lang: Lang; draws: PnpDraw[]; limit?: number }) {
+  // limit(C2 走查拍板):省弹窗只留最近 1 条摘要(全量归 PNP 弹窗),消跨弹窗重复
   const t = makeT(lang)
-  const rows = draws.filter((d) => d.province === province)
+  const rows = draws.filter((d) => d.province === province).slice(0, limit || undefined)
   if (!rows.length) return null
   const src = rows[0]
   return (
@@ -1337,12 +1339,12 @@ function fieldSrcUrls(field: ColKey, job: JobRow, sources: FieldSource[]): strin
 // (出处跟着对应内容走,不吊在弹窗底部);发布方/抓取时间/标签全不带 —— 合规已在 footer 统一声明。
 // pnp/ee 字段例外:清单内容来自政策页,各通道行已带自己的 ↗ 官方链接,不加岗位帖来源行。
 // field_sources 维度与 /sources 解释页照旧保留(E4-04 出处能力后置到解释页)。
-function FieldFactsSection({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc, fieldSources }: { field: ColKey; job: JobRow; lang: Lang; isPro: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[] }) {
+function FieldFactsSection({ field, job, jobs, lang, isPro, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc, fieldSources }: { field: ColKey; job: JobRow; jobs: JobRow[]; lang: Lang; isPro: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[] }) {
   const t = makeT(lang)
   const urls = fieldSrcUrls(field, job, fieldSources)
   return (
     <>
-      <FieldFactsInner field={field} job={job} lang={lang} isPro={isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} />
+      <FieldFactsInner field={field} job={job} jobs={jobs} lang={lang} isPro={isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} />
       {DERIVED_SRC_FIELDS.has(field) ? (
         <div style={{ margin: '2px 0 12px', fontSize: 11.5, color: '#9ca3af' }}>
           {t('src.label')}: {t('src.derived')}
@@ -1355,7 +1357,7 @@ function FieldFactsSection({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, d
     </>
   )
 }
-function FieldFactsInner({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc }: { field: ColKey; job: JobRow; lang: Lang; isPro: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[] }) {
+function FieldFactsInner({ field, job, jobs, lang, isPro, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc }: { field: ColKey; job: JobRow; jobs: JobRow[]; lang: Lang; isPro: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[] }) {
   const t = makeT(lang)
   const noc = nocDesc.find((d) => d.noc === job.noc) || null
   if (field === 'pnp') return <PnpListSection job={job} lang={lang} occ={pnpOcc} draws={pnpDraws} />
@@ -1368,17 +1370,27 @@ function FieldFactsInner({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, des
     // 都空则整块 null(不留孤儿行,07-06 质量打磨);简介去内层滚动全部展开(用户拍板)。AI 段有官网实时 grounding(E6-03)。
     const desc = job.companyDescription
     const sponsor = job.lmiaPositions ? t('fact.coLmia', { n: job.lmiaPositions, q: job.lmiaLastQuarter || '—' }) : job.aip ? t('fact.coAip') : ''
-    if (!desc && !job.officialUrl && !job.companySectors && !sponsor) return null
-    // 口径注:担保史语义 + 检索官网标注(D2 拍板:自动检索来的官网诚实标小字)
-    const notes = [sponsor ? t('fact.lmiaNote') : '', job.officialUrl && job.companyWebsiteSrc === 'searched' ? t('fact.siteSearched') : ''].filter(Boolean)
+    // C1(2026-07-07 走查拍板):原操作列「公司信息」ActModal 并入本弹窗 —— 补地址行 + 在榜职位(>1 才显示,只有本岗=零信息)
+    const here = jobs.filter((x) => x.company && x.company === job.company && (x.status || 'open') !== 'closed')
+    if (!desc && !job.officialUrl && !job.companySectors && !sponsor && !job.address) return null
+    // 口径注:担保史语义(C3 短版)+ 检索官网标注(D2 拍板:自动检索来的官网诚实标小字)
+    const notes = [sponsor ? t('fact.coLmiaNote') : '', job.officialUrl && job.companyWebsiteSrc === 'searched' ? t('fact.siteSearched') : ''].filter(Boolean)
     return (
       <FactsBox note={notes.length ? notes.join('；') : undefined}>
         {job.officialUrl ? <FactRow k={t('act.site')}><a href={job.officialUrl} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5 }}>{job.officialUrl}</a></FactRow> : null}
+        <FactRow k={t('act.addr')}>{job.address || [job.city, job.province].filter(Boolean).join(', ') || null}</FactRow>
         <FactRow k={t('fact.coSectors')}>{job.companySectors}</FactRow>
         <FactRow k={t('fact.coSponsor')}>{sponsor || null}</FactRow>
         {desc ? <>
           <div style={{ marginTop: 8, fontSize: 11.5, color: '#9ca3af' }}>{t('fact.coIntro')}</div>
           <div style={{ marginTop: 4, fontSize: 12.5, color: '#4b5563', whiteSpace: 'pre-wrap', lineHeight: 1.6, border: '1px solid #f3f4f6', borderRadius: 8, padding: '8px 10px' }}>{desc}</div>
+        </> : null}
+        {here.length > 1 ? <>
+          <div style={{ marginTop: 8, fontSize: 11.5, color: '#9ca3af' }}>{t('act.jobsHere')} ({here.length})</div>
+          {here.slice(0, 8).map((x) => (
+            <div key={x.id} style={{ fontSize: 12.5, padding: '2px 0', color: x.id === job.id ? '#2563eb' : '#4b5563' }}>· {x.title}{x.city ? ` — ${x.city}` : ''}</div>
+          ))}
+          {here.length > 8 && <div style={{ fontSize: 11.5, color: '#9ca3af' }}>… +{here.length - 8}</div>}
         </> : null}
       </FactsBox>
     )
@@ -1459,7 +1471,7 @@ function FieldFactsInner({ field, job, lang, isPro, pnpOcc, pnpDraws, eeOcc, des
         {mapQ ? <FactRow k={<IconMap />}><a href={mapsUrl(mapQ)} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5 }}>{mapQ} ↗</a></FactRow> : null}
         {field === 'province' && job.province === 'QC' && <FactRow k={t('col.pnp')}>{t('pnplist.qc')}</FactRow>}
         {provStreams > 0 && <FactRow k={t('col.pnp')}>{t('fact.provStreams', { n: provStreams })}</FactRow>}
-        {field === 'province' && job.province && <PnpDrawsBlock province={job.province} lang={lang} draws={pnpDraws} />}
+        {field === 'province' && job.province && <PnpDrawsBlock province={job.province} lang={lang} draws={pnpDraws} limit={1} />}
       </FactsBox>
     )
   }
@@ -1596,7 +1608,7 @@ function MeansForMe({ job, lang, plan, pnpOcc, eeOcc }: { job: JobRow; lang: Lan
   )
 }
 
-function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc, fieldSources, onClose }: { field: ColKey; job: JobRow; title?: string; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onClose: () => void }) {
+function AdvisorModal({ field, job, jobs, title, lang, plan, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc, fieldSources, onClose }: { field: ColKey; job: JobRow; jobs: JobRow[]; title?: string; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onClose: () => void }) {
   const t = makeT(lang)
   const overlayClose = useOverlayClose(onClose)
   const a = advHeader(field, job, t)
@@ -1740,7 +1752,7 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, eeOcc, 
         <div style={{ flex: 1, overflowY: 'auto', padding: '4px 20px 20px' }}>
           {/* 对我意味着什么(E5-00):个人相关性放最上;依据链同源 match() */}
           <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} />
-          <FieldFactsSection field={field} job={job} lang={lang} isPro={plan.isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} />
+          <FieldFactsSection field={field} job={job} jobs={jobs} lang={lang} isPro={plan.isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} />
           {/* 免责/AI 声明不进弹框(2026-07-06 用户拍板:合规统一在 footer 说明) */}
           {status === 'upgrade' ? (
             <UpgradeCard t={t} reason={t('up.advisor')} />
@@ -1832,16 +1844,13 @@ function AdvisorChat({ field, job, lang, initialJudgment }: { field: ColKey; job
   )
 }
 
-// ── 操作列弹框:公司基本信息(前端组装) / 职位描述(读真实抓取的 .md 正文)────
-function ActRow({ label, value }: { label: string; value: React.ReactNode }) {
-  return <div style={{ display: 'flex', gap: 10, padding: '3px 0' }}><span style={{ minWidth: 48, color: '#9ca3af', flexShrink: 0 }}>{label}</span><span style={{ flex: 1, color: '#374151', wordBreak: 'break-word' }}>{value}</span></div>
-}
-function ActModal({ kind, job, jobs, lang, onClose }: { kind: 'company' | 'desc'; job: JobRow; jobs: JobRow[]; lang: Lang; onClose: () => void }) {
+// ── 操作列弹框:职位描述快看(读真实抓取正文;公司信息已并入顾问公司弹窗,C1)────
+function ActModal({ job, lang, onClose }: { job: JobRow; lang: Lang; onClose: () => void }) {
+  // C1 后只剩 JD 快看(公司信息统一走顾问公司弹窗,消两套公司弹窗重复)
   const t = makeT(lang)
   const [text, setText] = useState('')
-  const [status, setStatus] = useState<'loading' | 'done' | 'empty' | 'upgrade'>(kind === 'desc' ? 'loading' : 'done')
+  const [status, setStatus] = useState<'loading' | 'done' | 'empty' | 'upgrade'>('loading')
   useEffect(() => {
-    if (kind !== 'desc') return
     const ctrl = new AbortController()
     setStatus('loading'); setText('')
     ;(async () => {
@@ -1853,41 +1862,22 @@ function ActModal({ kind, job, jobs, lang, onClose }: { kind: 'company' | 'desc'
       } catch { if (!ctrl.signal.aborted) setStatus('empty') }
     })()
     return () => ctrl.abort()
-  }, [kind, job])
-  const sameCo = kind === 'company' ? jobs.filter((x) => x.company && x.company === job.company) : []
+  }, [job])
   return (
     <Modal onClose={onClose} size="md" pad={false}>
       <div style={{ padding: '16px 20px 8px' }}>
-        <ModalTitle eyebrow={kind === 'company' ? t('act.companyTitle') : t('act.descTitle')}
-          title={(kind === 'company' ? job.company : job.title) || job.title || '—'} />
+        <ModalTitle eyebrow={t('act.descTitle')} title={job.title || '—'} />
       </div>
       <div style={{ padding: '4px 20px 20px', fontSize: 14, lineHeight: 1.7, color: '#374151' }}>
-          {kind === 'company' ? (
-            <div>
-              <ActRow label={t('col.company')} value={job.company || '—'} />
-              {job.officialUrl && <ActRow label={t('act.site')} value={<a href={job.officialUrl} target="_blank" rel="noreferrer" style={link}>{job.officialUrl}</a>} />}
-              <ActRow label={t('act.addr')} value={job.address || [job.city, job.province].filter(Boolean).join(', ') || '—'} />
-              <ActRow label={t('act.src')} value={job.sourceLabel || job.source || '—'} />
-              <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #f3f4f6' }}>
-                <div style={{ fontWeight: 600, color: '#111827', marginBottom: 6 }}>{t('act.jobsHere')} ({sameCo.length})</div>
-                {sameCo.slice(0, 40).map((x) => (
-                  <div key={x.id} style={{ padding: '2px 0', color: x.id === job.id ? '#2563eb' : '#4b5563' }}>· {x.title}{x.city ? ` — ${x.city}` : ''}</div>
-                ))}
-              </div>
+          {status === 'loading' ? <p style={{ color: '#9ca3af' }}>{t('act.loadingText')}</p>
+            : status === 'upgrade' ? <UpgradeCard t={t} reason={t('up.jobtext')} />
+            : status === 'empty' ? <p style={{ color: '#9ca3af' }}>{t('act.noText')}</p>
+              : <JdTextView text={text} max={4000} />}
+          {/* republish 合规的官方入口=底部极简来源行(2026-07-06 拍板,取代顶部按钮+说明) */}
+          {job.applyUrl && (
+            <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #f3f4f6', fontSize: 11.5, color: '#9ca3af', overflowWrap: 'anywhere' }}>
+              {t('src.label')}: <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#6b7280' }}>{job.applyUrl}</a>
             </div>
-          ) : (
-            <>
-              {status === 'loading' ? <p style={{ color: '#9ca3af' }}>{t('act.loadingText')}</p>
-                : status === 'upgrade' ? <UpgradeCard t={t} reason={t('up.jobtext')} />
-                : status === 'empty' ? <p style={{ color: '#9ca3af' }}>{t('act.noText')}</p>
-                  : <JdTextView text={text} max={4000} />}
-              {/* republish 合规的官方入口=底部极简来源行(2026-07-06 拍板,取代顶部按钮+说明) */}
-              {job.applyUrl && (
-                <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #f3f4f6', fontSize: 11.5, color: '#9ca3af', overflowWrap: 'anywhere' }}>
-                  {t('src.label')}: <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#6b7280' }}>{job.applyUrl}</a>
-                </div>
-              )}
-            </>
           )}
         </div>
     </Modal>
