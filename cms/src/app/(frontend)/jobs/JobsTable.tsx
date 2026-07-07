@@ -667,9 +667,12 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         .colResize:hover{background:#93c5fd}
         .colResize:active{background:#3b82f6}
         .jtDrawerToggle{display:none}
+        .jtCards{display:none}
         @media (max-width:640px){
           .jtDrawerToggle{display:inline-flex}
           .jtHideNarrow{display:none !important}
+          .jtTableWrap{display:none !important}
+          .jtCards{display:flex}
         }`}</style>
       {/* sticky 顶栏:品牌 + 语言切换(手机/电脑都贴顶) */}
       <header style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', borderBottom: '1px solid #e5e7eb' }}>
@@ -830,7 +833,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             <button onClick={toggleMatchView} style={{ border: 'none', background: 'none', padding: 0, color: '#6b7280', cursor: 'pointer', fontSize: 12.5 }}>{t('mv.exit')} ×</button>
           </div>
         )}
-        <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflowX: 'auto' }}>
+        <div className="jtTableWrap" style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflowX: 'auto' }}>
           <table style={{ width: hasWidths ? totalW : '100%', minWidth: '100%', borderCollapse: 'collapse', fontSize: 13.5, tableLayout: hasWidths ? 'fixed' : 'auto' }}>
             {/* 末列宽设 auto:固定布局下吸收剩余空间,右缘始终贴齐容器,无右侧缝隙 */}
             {hasWidths && <colgroup>{shown.map((c, i) => <col key={c.key} style={{ width: i === shown.length - 1 ? 'auto' : widths[c.key] }} />)}</colgroup>}
@@ -963,6 +966,47 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               )}
             </tbody>
           </table>
+        </div>
+        {/* 窄屏卡片列表(E8-03 续,2026-07-07 用户拍板):≤640px 表格→卡片,CSS 双渲染零水合差异(同 E8-03 抽屉手法)。
+            卡=职位 / 公司·地点 / 薪资·时间 / 信号 chips;每处可点,开对应字段顾问弹窗(与桌面单元格同一 open());
+            拍板:免费限额外的岗不显示匹配位(不放锁标,卡片寸土寸金);中位/渠道/NOC 码等低频字段留给弹窗。 */}
+        <div className="jtCards" style={{ flexDirection: 'column', gap: 8 }}>
+          {rows.slice(0, limit).map((j) => {
+            const open = (field: ColKey, title: string) => setPopup({ field, job: j, title })  // 与表格行同一签名
+            const L = parseLoc(j)
+            const M: Record<string, { bg: string; fg: string }> = { high: { bg: '#dcfce7', fg: '#166534' }, mid: { bg: '#dbeafe', fg: '#1e40af' }, low: { bg: '#f3f4f6', fg: '#6b7280' } }
+            const mc = j.match ? M[j.match] : undefined
+            const chip = (bg: string, fg: string, txt: string, k: ColKey) => (
+              <span key={k} onClick={() => open(k, txt)} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: bg, color: fg, cursor: 'pointer', whiteSpace: 'nowrap' }}>{txt}</span>
+            )
+            const days = j.datePosted && (j.status || 'open') !== 'closed' ? Math.max(0, Math.floor((Date.now() - new Date(j.datePosted).getTime()) / 86400000)) : null
+            return (
+              <div key={j.id} style={{ border: '1px solid #e5e7eb', borderRadius: 12, padding: '10px 12px', background: '#fff' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'baseline' }}>
+                  <span onClick={() => open('title', j.title)} style={{ fontSize: 14.5, fontWeight: 600, color: '#111827', cursor: 'pointer' }}>{j.title}</span>
+                  {mc && <span onClick={() => open('match', t('match.' + j.match))} style={{ fontSize: 11.5, padding: '1px 8px', borderRadius: 6, background: mc.bg, color: mc.fg, fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer' }}>{t('match.' + j.match)}</span>}
+                </div>
+                <div onClick={() => open('company', j.company)} style={{ fontSize: 12.5, color: '#6b7280', marginTop: 2, cursor: 'pointer' }}>{j.company}{L.city ? ` · ${L.city}${L.prov ? ', ' + L.prov : ''}` : ''}</div>
+                <div style={{ fontSize: 12.5, marginTop: 4, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                  {(j.salaryText || j.salary) ? <span onClick={() => open('salary', j.salaryText || j.salary)} style={{ color: '#15803d', cursor: 'pointer' }}>{j.salaryText || j.salary}</span> : null}
+                  <span suppressHydrationWarning onClick={() => open('datePosted', (j.datePosted || '').slice(0, 10))} style={{ color: '#9ca3af', cursor: 'pointer' }}>{(j.datePosted || '').slice(0, 10)}{days != null ? ` · ${t('fact.daysUp')} ${t('fact.daysUpVal', { n: days })}` : ''}</span>
+                </div>
+                <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                  {j.pnpEligible ? chip('#fef3c7', '#92400e', j.pnpStream ? t('cell.pnpYes') : t('cell.pnpSkilled'), 'pnp') : null}
+                  {j.eeCategory ? chip('#dbeafe', '#1e40af', 'EE ' + j.eeCategory, 'ee') : null}
+                  {j.aip ? chip('#ffedd5', '#9a3412', t('cell.aipYes'), 'aip') : null}
+                  {j.lmiaPositions ? chip('#ccfbf1', '#0f766e', 'LMIA ✓' + j.lmiaPositions, 'lmia') : null}
+                  {!j.pnpEligible && !j.eeCategory && !j.aip && j.teer != null ? chip('#f3f4f6', '#6b7280', `TEER ${j.teer}`, 'teer') : null}
+                  {j.score != null ? chip('#f3f4f6', '#6b7280', t('col.score') + ' ' + j.score, 'score') : null}
+                </div>
+              </div>
+            )
+          })}
+          {rows.length === 0 && (
+            <div style={{ padding: 24, textAlign: 'center', color: '#9ca3af', fontSize: 13 }}>
+              {matchView ? <>{t('mv.empty')} <a href="/account" style={{ color: '#2563eb', textDecoration: 'none' }}>{t('mv.editProfile')} →</a></> : t('empty')}
+            </div>
+          )}
         </div>
         {/* 点击分页:不随滚动自动加载(用户拍板) */}
         <div style={{ textAlign: 'center', padding: '12px', fontSize: 12.5, color: '#9ca3af' }}>
