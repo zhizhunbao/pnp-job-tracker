@@ -1165,7 +1165,9 @@ function JdTextView({ text, max = 4000 }: { text: string; max?: number }) {
     .replace(JD_INLINE_RE, '\n')      // 已知标签前断行
     .replace(/\s+\*\s+/g, '\n')       // "* 项" 拆行(星号本身在下方统一剥掉)
     .split('\n')
-    .flatMap((l) => l.split(/(?<=\.)(?=[A-Z])/))
+    // 一句一行(07-06 用户拍板):句末标点(前一字符是小写/数字/右括号,防 $20.00、U.S. 误拆)
+    // + 可选空格 + 大写开头 → 断行;兼容 Job Bank 抓取的无空格粘连("asset.Core")
+    .flatMap((l) => l.split(/(?<=[a-z0-9)][.!?])\s*(?=[A-Z])/))
     .map((s) => s.trim().replace(/^[•·▪◦‣*-]+\s*/, ''))
     .filter(Boolean)
   return (
