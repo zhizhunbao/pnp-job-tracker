@@ -58,18 +58,26 @@
 **结论:上线基础设施 100% 就绪**,不欠任何账号/DNS/验证。**唯一剩的是「发帖引流」**(§8.2,用户手动)+ 可选一封真实邮件端到端验(域名已验+dry-run 过,大概率通)。
 分工备忘(见 [[ops-accounts-workflow]]):以后办新账号/改控制台——DNS/密钥用户亲手,仪表盘点选助手经 claude-in-chrome 代做。
 
-### 8.2 冷启动发帖文案(草稿,待你发;**发前查各版块 self-promo 规则**,Reddit 移民版对硬广很敏感,价值优先、明说自制、求反馈)
+### 8.2 冷启动发帖文案(**2026-07-07 版规实查后改版**;链接一律直链 /jobs?utm=,根跳转丢 query 的 bug 已修)
 
-**Reddit(r/ImmigrationCanada · r/canadaexpressentry · r/PersonalFinanceCanada 不合适跳过)** — 英文,价值+求反馈体:
-> **标题**:I built a free job board that tags every posting with its PNP stream / EE category / wage-vs-median — looking for accuracy feedback
-> **正文**:Cross-referencing each job's NOC against provincial PNP lists, EE categories and ESDC median wages by hand was driving me nuts, so I built a tool that does it automatically across all 10 provinces, updated daily. It's free to browse. You can also enter your NOC/CRS profile and it flags which jobs match your pathway. Not a consultant, not selling anything for the browse tier — I'd genuinely like feedback on whether the PNP/wage tagging is accurate for your occupation. Link: offer2pr.com/jobs?utm_source=reddit — happy to fix anything that's wrong.
+**⚠️ 版规实查结论(2026-07-07,浏览器逐版核对)——Reddit 移民版全部不能发**:
+- r/ImmigrationCanada:「No blogspam/advertisements」+「**No unofficial links**」(非官方链接一律禁)→ 发=送删,有封号先例
+- r/canadaexpressentry:「No spam/advertising/low effort」+「exclusively for discussion on immigration and policy changes」+ 社媒链接禁 → 同上
+- r/InternetIsBeautiful:「No Aggregations — websites that are aggregates for other content are not allowed」→ 职位聚合板正中枪口
+- **渠道优先级改为:小红书/微信主攻(目标人群密度高、无版规障碍)> Reddit builder 社区(合规但受众是开发者)> 移民版评论区参与式(慢,只回答问题攒信誉,别贴链接)**
 
-**小红书** — 中文,痛点+个人口吻+截图引导:
+**小红书(主攻)** — 中文,痛点+个人口吻+截图引导:
 > **标题**:🍁加拿大找工作还要自己查省提名?我做了个免费工具
-> **正文**:润加拿大最烦的一步:看到个 job,还得手动查它属不属于省提名紧缺、EE 哪个类别、工资比当地中位高还是低……我把这些全自动化了,全加拿大日更,每个岗位直接标好 PNP/EE/工资信号,免费看。填一下自己的 NOC 还能看哪些岗匹配你的移民路径。不是中介、不卖课,就想验证下数据准不准,欢迎来挑错👉 offer2pr.com?utm_source=xhs (配图:职位列表 + 某岗弹窗的 PNP/工资/LMIA 信号)
+> **正文**:润加拿大最烦的一步:看到个 job,还得手动查它属不属于省提名紧缺、EE 哪个类别、工资比当地中位高还是低……我把这些全自动化了,全加拿大日更,每个岗位直接标好 PNP/EE/工资信号,免费看。填一下自己的 NOC 还能看哪些岗匹配你的移民路径。不是中介、不卖课,就想验证下数据准不准,欢迎来挑错👉 **offer2pr.com/jobs?utm_source=xhs**
+> (配图:**手机卡片流截图**(2026-07-07 已上线,比表格截图好看)+ 某岗弹窗的 PNP/工资/LMIA 信号)
 
-**微信群(加拿大移民/留学群)** — 中文,一句话+链接:
-> 做了个免费的加拿大职位板,每个岗位自动标好属不属于省提名/EE/工资对比,全国日更,还能按自己 NOC 匹配移民路径。不是中介,求反馈找 bug:offer2pr.com?utm_source=wechat
+**微信群(主攻,加拿大移民/留学群)** — 中文,一句话+链接:
+> 做了个免费的加拿大职位板,每个岗位自动标好属不属于省提名/EE/工资对比,全国日更,还能按自己 NOC 匹配移民路径。不是中介,求反馈找 bug:**offer2pr.com/jobs?utm_source=wechat**
+
+**Reddit(改投 r/SideProject / r/indiehackers 等 builder 版;移民版不发)** — 英文,价值+求反馈体:
+> **标题**:I built a free job board that tags every Canadian posting with its PNP stream / EE category / wage-vs-median — looking for accuracy feedback
+> **正文**:Cross-referencing each job's NOC against provincial PNP lists, EE categories and ESDC median wages by hand was driving me nuts, so I built a tool that does it automatically across all 10 provinces, updated daily. It's free to browse. You can also enter your NOC/CRS profile and it flags which jobs match your pathway. Not a consultant, not selling anything for the browse tier — I'd genuinely like feedback on whether the PNP/wage tagging is accurate. Link: **offer2pr.com/jobs?utm_source=reddit** — happy to fix anything that's wrong.
+> (发前扫一眼该版当日规则;账号不要只有这一帖——「No accounts designed for self-promotion」是通例)
 
 ### 8.3 发布后 72h 看什么(记 §5)
 - UTM 分渠道:哪个源来人 / 注册转化 / 建档率(付费漏斗第一环)。
