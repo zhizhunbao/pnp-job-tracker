@@ -1329,7 +1329,8 @@ function fieldSrcUrls(field: ColKey, job: JobRow, sources: FieldSource[]): strin
   const reg = (k: string) => sources.find((s) => s.field === k && s.url)?.url || ''
   if (DERIVED_SRC_FIELDS.has(field)) return []
   // 公司:官网行本身就是出处(来源行不再重复它,2026-07-07 用户点名手机端重复);担保史行来源=ESDC/IRCC 名录
-  if (field === 'company') return [job.lmiaPositions ? reg('lmia') : '', job.aip ? reg('aip') : ''].filter(Boolean)
+  // 阈值与画像一致(≥2 才显示担保史行 → 才挂名录来源)
+  if (field === 'company') return [(job.lmiaPositions ?? 0) >= 2 ? reg('lmia') : '', job.aip ? reg('aip') : ''].filter(Boolean)
   if (field === 'vsMedian') return [job.applyUrl, reg('wageMedYr')].filter(Boolean)
   if (DATASET_SRC_FIELDS.has(field)) return [reg(field)].filter(Boolean)
   return job.applyUrl ? [job.applyUrl] : []
@@ -1369,7 +1370,9 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, pnpOcc, pnpDraws, eeOc
     // 弹框标题已是公司名 → 不重复公司行。事实段=官网 + 行业 + 担保史信号(LMIA/AIP 接进来,付费相关)+ 简介(抓到才有);
     // 都空则整块 null(不留孤儿行,07-06 质量打磨);简介去内层滚动全部展开(用户拍板)。AI 段有官网实时 grounding(E6-03)。
     const desc = job.companyDescription
-    const sponsor = job.lmiaPositions ? t('fact.coLmia', { n: job.lmiaPositions, q: job.lmiaLastQuarter || '—' }) : job.aip ? t('fact.coAip') : ''
+    // 担保史阈值 ≥2(2026-07-07 用户点名「近两年就 1 个 = 相当于没有」):1 个不构成信号,不在公司画像里展示;
+    // 「外劳记录」列/弹窗仍如实显示 ✓1(那是该字段本身的事实,不是画像信号)
+    const sponsor = (job.lmiaPositions ?? 0) >= 2 ? t('fact.coLmia', { n: job.lmiaPositions!, q: job.lmiaLastQuarter || '—' }) : job.aip ? t('fact.coAip') : ''
     // C1(2026-07-07 走查拍板):原操作列「公司信息」ActModal 并入本弹窗 —— 补地址行 + 在榜职位(>1 才显示,只有本岗=零信息)
     const here = jobs.filter((x) => x.company && x.company === job.company && (x.status || 'open') !== 'closed')
     if (!desc && !job.officialUrl && !job.companySectors && !sponsor && !job.address) return null
@@ -1388,7 +1391,11 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, pnpOcc, pnpDraws, eeOc
         {here.length > 1 ? <>
           <div style={{ marginTop: 8, fontSize: 11.5, color: '#9ca3af' }}>{t('act.jobsHere')} ({here.length})</div>
           {here.slice(0, 8).map((x) => (
-            <div key={x.id} style={{ fontSize: 12.5, padding: '2px 0', color: x.id === job.id ? '#2563eb' : '#4b5563' }}>· {x.title}{x.city ? ` — ${x.city}` : ''}</div>
+            <div key={x.id} style={{ fontSize: 12.5, padding: '2px 0', color: '#4b5563' }}>
+              · {x.applyUrl
+                ? <a href={x.applyUrl} target="_blank" rel="noreferrer" style={{ color: x.id === job.id ? '#2563eb' : '#4b5563', textDecoration: 'none', borderBottom: '1px dashed #d1d5db' }}>{x.title} ↗</a>
+                : x.title}{x.city ? ` — ${x.city}` : ''}
+            </div>
           ))}
           {here.length > 8 && <div style={{ fontSize: 11.5, color: '#9ca3af' }}>… +{here.length - 8}</div>}
         </> : null}
@@ -1914,8 +1921,10 @@ const filtLabel: React.CSSProperties = { fontSize: 12, color: '#9ca3af', minWidt
 // 联动下拉:上级选了,下级选项随之收窄;当前值不在选项里也保留显示
 function Sel({ value, onChange, opts, all, labelOf }: { value: string; onChange: (v: string) => void; opts: string[]; all: string; labelOf?: (v: string) => string }) {
   const list = value && !opts.includes(value) ? [value, ...opts] : opts
+  // 宽度收紧(2026-07-07 用户点名「需要这么宽吗」):原生 select 会按最长选项撑宽(如 Newfoundland and Labrador)
+  // → 统一上限 150,选中的长值收进 150 内,下拉展开仍显示全文
   return (
-    <select value={value} onChange={(e) => onChange(e.target.value)} style={{ ...ctrl, maxWidth: 180 }}>
+    <select value={value} onChange={(e) => onChange(e.target.value)} style={{ ...ctrl, maxWidth: 150 }}>
       <option value="">{all}</option>
       {list.map((o) => <option key={o} value={o}>{labelOf ? labelOf(o) : o}</option>)}
     </select>
