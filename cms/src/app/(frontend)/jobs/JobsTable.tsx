@@ -599,7 +599,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   useEffect(() => { setLimit(PAGE_ROWS) }, [q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, sort])
 
   // 联动选项来自维度表(provinces/cities/districts);维度表为空时回退到从 job 行现推。
-  const countryOpts = useMemo(() => (dims.provinces.length ? ['Canada'] : uniq(jobs.map((j) => parseLoc(j).country))), [dims, jobs])
+  // 国家/TEER 下拉已删(2026-07-07 文案审计:全库=Canada 单选项、TEER 用户拍板去掉);fCountry/fTeer state 保留给已存的 saved-search 兼容
   const provOpts = useMemo(() => (dims.provinces.length ? dims.provinces.map((p) => p.name)
     : uniq(jobs.filter((j) => !fCountry || parseLoc(j).country === fCountry).map((j) => parseLoc(j).prov))), [dims, jobs, fCountry])
   const cityOpts = useMemo(() => {
@@ -617,8 +617,6 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     : uniq(jobs.filter((j) => !fBroad || j.broad === fBroad).map((j) => j.mid))), [nc, jobs, fBroad])
   const fineOpts = useMemo(() => (nc.length ? uniq(nc.filter((c) => (!fBroad || c.broad === fBroad) && (!fMid || c.mid === fMid)).map((c) => c.fine))
     : uniq(jobs.filter((j) => (!fBroad || j.broad === fBroad) && (!fMid || j.mid === fMid)).map((j) => j.fine))), [nc, jobs, fBroad, fMid])
-  const teerOpts = useMemo(() => (nc.length ? uniq(nc.map((c) => (c.teer == null ? '未分类' : `TEER ${c.teer}`)))
-    : uniq(jobs.map((j) => (j.teer == null ? '未分类' : `TEER ${j.teer}`)))), [nc, jobs])
   const sourceOpts = useMemo(() => (dims.sources.length ? dims.sources.map((s) => s.name) : uniq(jobs.map((j) => sourceLabel(j)))), [dims, jobs])
   const accOpts = useMemo(() => (dims.experienceLevels.length ? uniq(dims.experienceLevels.map((e) => e.name)) : uniq(jobs.map((j) => j.accessibility))), [dims, jobs])
   const originOpts = useMemo(() => uniq(jobs.map((j) => j.origin)), [jobs])
@@ -718,12 +716,20 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             style={{ ...ctrl, cursor: 'pointer', background: fDrawer || drawerActive ? '#eef2ff' : '#f3f4f6', alignItems: 'center', gap: 6, alignSelf: 'flex-start' }}>
             {t('filter.drawer')}{drawerActive ? ` · ${drawerActive}` : ''} <span style={{ fontSize: 11, color: '#9ca3af' }}>{fDrawer ? '▲' : '▼'}</span>
           </button>
-          <div className={fDrawer ? '' : 'jtHideNarrow'} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {/* ═══ 常用筛选(桌面始终显示;窄屏在抽屉里):4 字标签在上(职业分类/移民资格),地理在下 ═══ */}
-          {/* 职业分类(TEER + 大→中→小 联动) */}
+          {/* 抽屉 order:1 → 视觉排在搜索行之后(搜索是最高频入口放最上;DOM 不动,零结构风险)。
+              行序按用户心智(2026-07-07 文案审计拍板):地理 → 职业分类 → 移民资格。
+              删「国家」下拉(全库只有 Canada,单选项下拉=噪音)、删 TEER 下拉(用户拍板;大类够用,TEER 归弹窗/列) */}
+          <div className={fDrawer ? '' : 'jtHideNarrow'} style={{ display: 'flex', flexDirection: 'column', gap: 8, order: 1 }}>
+          {/* 地理(省→市→区 联动) */}
+          <div style={filtRow}>
+            <span style={filtLabel}>{t('filter.geo')}</span>
+            <Sel value={fProv} onChange={(v) => { setFProv(v); setFCity(''); setFDistrict('') }} opts={provOpts} all={t('all.prov')} />
+            <Sel value={fCity} onChange={(v) => { setFCity(v); setFDistrict('') }} opts={cityOpts} all={t('all.city')} />
+            <Sel value={fDistrict} onChange={setFDistrict} opts={distOpts} all={t('all.district')} />
+          </div>
+          {/* 职业分类(大→中→小 联动) */}
           <div style={filtRow}>
             <span style={filtLabel}>{t('filter.cat')}</span>
-            <Sel value={fTeer} onChange={setFTeer} opts={teerOpts} all={t('all.teer')} labelOf={catLabel} />
             <Sel value={fBroad} onChange={(v) => { setFBroad(v); setFMid(''); setFFine('') }} opts={broadOpts} all={t('all.broad')} labelOf={broadLabel} />
             <Sel value={fMid} onChange={(v) => { setFMid(v); setFFine('') }} opts={midOpts} all={t('all.mid')} labelOf={catLabel} />
             <Sel value={fFine} onChange={setFFine} opts={fineOpts} all={t('all.fine')} labelOf={catLabel} />
@@ -733,14 +739,6 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             <span style={filtLabel}>{t('filter.elig')}</span>
             <Sel value={fPnp} onChange={setFPnp} opts={['yes', 'no']} all={t('all.pnp')} labelOf={(v) => t('opt.' + v)} />
             <Sel value={fAip} onChange={setFAip} opts={['yes', 'no']} all={t('all.aip')} labelOf={(v) => t('opt.' + v)} />
-          </div>
-          {/* 地理(国家→省→市→区 联动) */}
-          <div style={filtRow}>
-            <span style={filtLabel}>{t('filter.geo')}</span>
-            <Sel value={fCountry} onChange={(v) => { setFCountry(v); setFProv(''); setFCity(''); setFDistrict('') }} opts={countryOpts} all={t('all.country')} />
-            <Sel value={fProv} onChange={(v) => { setFProv(v); setFCity(''); setFDistrict('') }} opts={provOpts} all={t('all.prov')} />
-            <Sel value={fCity} onChange={(v) => { setFCity(v); setFDistrict('') }} opts={cityOpts} all={t('all.city')} />
-            <Sel value={fDistrict} onChange={setFDistrict} opts={distOpts} all={t('all.district')} />
           </div>
           {/* ═══ 更多筛选(默认收起):来源/状态/经验/评分/薪资 —— 开关在下方搜索行 ═══ */}
           {showMore && (<>
@@ -1328,8 +1326,8 @@ const DERIVED_SRC_FIELDS = new Set<ColKey>(['score', 'match'])
 function fieldSrcUrls(field: ColKey, job: JobRow, sources: FieldSource[]): string[] {
   const reg = (k: string) => sources.find((s) => s.field === k && s.url)?.url || ''
   if (DERIVED_SRC_FIELDS.has(field)) return []
-  // 公司:简介/官网抓取自官网;担保史行来自 ESDC LMIA 名录 / IRCC AIP 名单(只列实际显示了的内容的来源)
-  if (field === 'company') return [job.officialUrl, job.lmiaPositions ? reg('lmia') : '', job.aip ? reg('aip') : ''].filter(Boolean)
+  // 公司:官网行本身就是出处(来源行不再重复它,2026-07-07 用户点名手机端重复);担保史行来源=ESDC/IRCC 名录
+  if (field === 'company') return [job.lmiaPositions ? reg('lmia') : '', job.aip ? reg('aip') : ''].filter(Boolean)
   if (field === 'vsMedian') return [job.applyUrl, reg('wageMedYr')].filter(Boolean)
   if (DATASET_SRC_FIELDS.has(field)) return [reg(field)].filter(Boolean)
   return job.applyUrl ? [job.applyUrl] : []
