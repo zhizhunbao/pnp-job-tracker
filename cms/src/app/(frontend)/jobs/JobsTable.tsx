@@ -1238,10 +1238,23 @@ const JD_SUB_HEADS = new Set(['languages', 'education', 'experience', 'on site',
 // Indeed/ATS 尾巴的内联标签(源头丢换行,如 "Job Type: Part-time Pay: $20 Benefits: * A * B"):
 // 白名单标签前补换行 + 「* 」项拆行 —— 只认这些词,不会切碎正文散文段落。
 const JD_INLINE_LABELS = ['Job Types', 'Job Type', 'Pay', 'Salary', 'Benefits', 'Schedule', 'Expected hours', 'Supplemental pay types', 'Flexible language requirement', 'Experience', 'Education', 'Language', 'Work Location', 'Licence/Certification', 'Ability to commute/relocate', 'Application question(s)', 'Application deadline', 'Expected start date', 'Shift availability']
-const JD_INLINE_RE = new RegExp(`\\s+(?=(?:${JD_INLINE_LABELS.map((s) => s.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')).join('|')}):)`, 'g')
+// 第三套版式(2026-07-07 用户第三例):医疗/政府 HR 系统导出(SHA/SAHO 等)——整段「Label: value Label: value」
+// 粘连,且有无空格粘边(「YesEducation- Bachelor」)和「Label- 值」破折号变体。照旧全白名单制,不碰散文。
+const JD_HR_LABELS = ['Position #', 'Expected Start Date', 'Union', 'Facility', 'City/Town', 'Department', 'Type', 'FTE',
+  'Shift Information', 'Number of Hours per Rotation', 'Relief', 'Float', 'Hours of Work', 'Salary or Pay Band',
+  'Travel Required', 'Job Description', 'Human Resources Exemption', 'Multi-Cost', 'Licenses', 'Other Information',
+  'About Us', 'About The Team']
+const jdEsc = (s: string) => s.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')
+const JD_ALL_ALTS = [...JD_INLINE_LABELS, ...JD_HR_LABELS].map(jdEsc).join('|')
+const JD_INLINE_RE = new RegExp(`\\s+(?=(?:${JD_ALL_ALTS}):)`, 'g')
+const JD_HR_DASH_RE = new RegExp(`\\s+(?=(?:${JD_ALL_ALTS})-\\s)`, 'g')                                // 「 Education- Bachelor」
+const JD_GLUE_RE = new RegExp(`(?<=[a-z)])(?=(?:${JD_ALL_ALTS})[:-])`, 'g')                            // 「YesEducation-」无空格粘边
+const JD_HR_LINE_RE = new RegExp(`^(${JD_ALL_ALTS})-\\s*`)                                             // 行首「Label- 」→「Label: 」
 function JdTextView({ text, max = 4000 }: { text: string; max?: number }) {
   const lines = text.slice(0, max)
+    .replace(JD_GLUE_RE, '\n')        // 无空格粘边先断(YesEducation- → Yes\nEducation-)
     .replace(JD_INLINE_RE, '\n')      // 已知标签前断行
+    .replace(JD_HR_DASH_RE, '\n')     // HR「Label- 值」变体前断行
     .replace(/\s+\*\s+/g, '\n')       // "* 项" 拆行(星号本身在下方统一剥掉)
     .split('\n')
     // 一句一行(07-06 用户拍板):句末标点(前一字符是小写/数字/右括号,防 $20.00、U.S. 误拆)
@@ -1252,12 +1265,13 @@ function JdTextView({ text, max = 4000 }: { text: string; max?: number }) {
   return (
     <div style={{ margin: '4px 0 0', fontSize: 12.5, color: '#4b5563', lineHeight: 1.6 }}>
       {lines.map((l, i) => {
+        l = l.replace(JD_HR_LINE_RE, '$1: ')  // HR「Label- 值」归一成「Label: 值」再走键值行渲染
         const low = l.toLowerCase()
         if (JD_TOP_HEADS.has(low)) return <div key={i} style={{ marginTop: i ? 12 : 0, fontSize: 14, fontWeight: 700, color: '#111827' }}>{l}</div>
         if (JD_SUB_HEADS.has(low)) return <div key={i} style={{ marginTop: i ? 8 : 0, fontWeight: 700, color: '#374151' }}>{l}</div>
-        const bare = l.match(/^([A-Z][A-Za-z ()/&'-]{1,40}):$/)  // 裸标签行(如 "Benefits:")→ 小节头
+        const bare = l.match(/^([A-Z][A-Za-z ()/#&'-]{1,40}):$/)  // 裸标签行(如 "Benefits:")→ 小节头
         if (bare) return <div key={i} style={{ marginTop: i ? 8 : 0, fontWeight: 700, color: '#374151' }}>{bare[1]}</div>
-        const m = l.match(/^([A-Z][A-Za-z ()/&'-]{1,40}):\s*(.+)$/)
+        const m = l.match(/^([A-Z][A-Za-z ()/#&'-]{1,40}):\s*(.+)$/)
         if (m) return <div key={i} style={{ paddingLeft: 14 }}><strong style={{ color: '#374151' }}>{m[1]}:</strong> {m[2]}</div>
         return <div key={i} style={{ paddingLeft: 14 }}>{l}</div>
       })}
