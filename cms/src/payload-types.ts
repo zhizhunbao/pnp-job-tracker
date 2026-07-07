@@ -261,6 +261,10 @@ export interface Company {
   name: string;
   slug?: string | null;
   website?: string | null;
+  /**
+   * 官网来路:空=雇主自报/名录;jd=帖内线索;searched=自动检索(前端加小字,E8-04 D2)
+   */
+  websiteSource?: string | null;
   email?: string | null;
   phone?: string | null;
   region?: string | null;
@@ -1051,6 +1055,7 @@ export interface CompaniesSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
   website?: T;
+  websiteSource?: T;
   email?: T;
   phone?: T;
   region?: T;
