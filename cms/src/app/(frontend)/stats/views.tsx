@@ -64,7 +64,8 @@ export function StatsProvContent({ prov, rows, srcs, t }: { prov: string; rows: 
       {all && <TopCities raw={all.topCities} t={t} />}
       <h2 style={{ fontSize: 15.5, margin: '18px 0 8px' }}>{t('stats.byCat')}</h2>
       <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, overflow: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        {/* minWidth:窄屏让表格溢出进容器横滚,而不是把列挤成逐字竖排(第 2 轮 #10) */}
+        <table style={{ width: '100%', minWidth: 560, borderCollapse: 'collapse' }}>
           <thead><tr><th style={th}>{t('filter.cat')}</th><th style={th}>{t('stats.openJobs')}</th><th style={th}>{t('stats.new7d')}</th><th style={th}>{t('stats.medWage')}</th><th style={th}>{t('stats.named')}</th><th style={th}></th></tr></thead>
           <tbody>
             {cats.map(({ slug, broad, row }) => (
@@ -74,7 +75,7 @@ export function StatsProvContent({ prov, rows, srcs, t }: { prov: string; rows: 
                 <td style={td}>{row!.new7d}</td>
                 <td style={td}>{money(row!.medianWageAnnual)}</td>
                 <td style={{ ...td, ...(row!.namedJobs ? { color: '#b45309', fontWeight: 600 } : { color: '#9ca3af' }) }}>{row!.namedJobs || '—'}</td>
-                <td style={td}><a href={`/jobs?prov=${prov}&broad=${encodeURIComponent(broad)}`} style={{ color: '#2563eb', textDecoration: 'none', fontSize: 12.5 }}>{t('stats.toJobs')}</a></td>
+                <td style={{ ...td, whiteSpace: 'nowrap' }}><a href={`/jobs?prov=${prov}&broad=${encodeURIComponent(broad)}`} style={{ color: '#2563eb', textDecoration: 'none', fontSize: 12.5 }}>{t('stats.toJobs')}</a></td>
               </tr>
             ))}
           </tbody>

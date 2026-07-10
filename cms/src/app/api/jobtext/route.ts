@@ -15,8 +15,8 @@ export async function GET(req: NextRequest) {
   if (user && !isPro(user) && !checkLimit([[`jd:u:${user.id}`, FREE_JOBTEXT_TRIES]])) {
     return new Response('upgrade required', { status: 402 })
   }
-  // 未登录按 IP 日限(纯 DB 读,配额给宽;E2-02 公网防刷)
-  if (!user && !checkLimit([[`jd:${ipOf(req)}`, Number(process.env.JOBTEXT_IP_DAILY || 200)]])) {
+  // 未登录按 IP 日限;匿名不得高于免费注册额度(20/日),否则倒挂劝退注册(第 2 轮随 #5)
+  if (!user && !checkLimit([[`jd:${ipOf(req)}`, Number(process.env.JOBTEXT_IP_DAILY || 20)]])) {
     return new Response('rate limited', { status: 429 })
   }
   const url = req.nextUrl.searchParams.get('url')?.trim()

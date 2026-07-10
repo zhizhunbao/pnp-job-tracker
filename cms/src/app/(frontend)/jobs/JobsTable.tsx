@@ -812,7 +812,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                     <button onClick={invertCols} style={colBtn}>{t('fields.invert')}</button>
                     {hasWidths && <button onClick={resetWidths} style={colBtn}>{t('fields.resetW')}</button>}
                   </div>
-                  {COLUMNS.map((c) => (
+                  {/* match 列是「我的匹配」视图专属(E5-05),勾了也不出列——不进选择器(第 2 轮 #11) */}
+                  {COLUMNS.filter((c) => c.key !== 'match').map((c) => (
                     <label key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 6px', fontSize: 13, color: c.always ? '#9ca3af' : '#1f2937', cursor: c.always ? 'default' : 'pointer' }}>
                       <input type="checkbox" checked={c.always || visible.includes(c.key)} disabled={c.always} onChange={() => toggleCol(c.key)} />
                       {t('col.' + c.key)}{c.always ? t('fields.fixed') : ''}

@@ -18,7 +18,7 @@ const docs: Record<Lang, LegalDoc> = {
       ] },
       { h: '3. 付费:一次性时长包', body: [
         'Pro 以一次性时长包出售:30 天 CA$19、90 天 CA$39(价格可能调整,以购买页显示为准)。购买即时生效;未到期续买时长顺延。到期后自动回到免费版——没有订阅,没有自动扣款。',
-        '支付由 Stripe 处理,支持银行卡与支付宝等方式。',
+        '支付由 Stripe 安全处理;具体可用的支付方式以结账页实际显示为准。',
       ] },
       { h: '4. 退款', body: [
         '购买后 7 天内且未大量使用付费功能(以 AI 顾问等用量显著低于日常上限为准),可用注册邮箱发邮件至 {email} 申请全额退款,我们核实后原路退回,Pro 权益同时终止。',
@@ -51,7 +51,7 @@ const docs: Record<Lang, LegalDoc> = {
       ] },
       { h: '3. Payment: one-time passes', body: [
         'Pro is sold as one-time passes: 30 days CA$19, 90 days CA$39 (prices may change; the checkout page governs). Passes take effect immediately; buying again before expiry extends the date. When a pass expires you simply return to the free plan — there is no subscription and no automatic charge.',
-        'Payments are processed by Stripe (cards, Alipay and other methods).',
+        'Payments are processed securely by Stripe; available payment methods are as shown at checkout.',
       ] },
       { h: '4. Refunds', body: [
         'Within 7 days of purchase, if you have not made heavy use of paid features (e.g. AI-advisor usage well below the daily cap), you may request a full refund by emailing {email} from your registered address. After verification we refund to the original method and the Pro entitlement ends.',
@@ -84,7 +84,7 @@ const docs: Record<Lang, LegalDoc> = {
       ] },
       { h: '3. 결제: 일회성 기간권', body: [
         'Pro는 일회성 기간권으로 판매합니다: 30일 CA$19, 90일 CA$39(가격은 변경될 수 있으며 결제 페이지 기준). 구매 즉시 적용되며 만료 전 재구매 시 기간이 연장됩니다. 만료 후에는 무료 플랜으로 돌아갑니다 — 구독도 자동 결제도 없습니다.',
-        '결제는 Stripe가 처리합니다(카드, Alipay 등).',
+        '결제는 Stripe가 안전하게 처리하며, 사용 가능한 결제 수단은 결제 페이지에 표시된 것을 기준으로 합니다.',
       ] },
       { h: '4. 환불', body: [
         '구매 후 7일 이내이고 유료 기능을 과도하게 사용하지 않은 경우(예: AI 어드바이저 사용량이 일일 한도보다 훨씬 낮음), 가입 이메일로 {email}에 전액 환불을 신청할 수 있습니다. 확인 후 원결제 수단으로 환불되며 Pro 권한은 종료됩니다.',

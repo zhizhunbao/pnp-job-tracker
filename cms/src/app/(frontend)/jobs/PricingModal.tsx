@@ -4,7 +4,7 @@
 // caps 用 lib/plan.ts 常量(客户端 bundle 取默认值;若哪天用 env 改分层数字,记得 NEXT_PUBLIC 化或改走 props)。
 import { useState } from 'react'
 import type { TFn } from './i18n'
-import { Modal } from './Modal'
+import { Modal, useIsNarrow } from './Modal'
 import { IconCheck, IconStar } from '../Icons'
 import { AuthModal } from './AuthForm'
 import { FREE_ADVISOR_TRIES, FREE_JOBTEXT_TRIES, FREE_MATCH_JOBS_PER_DAY, PRO_ADVISOR_DAILY } from '@/lib/plan'
@@ -40,16 +40,21 @@ export function PricingCard({ t, loggedIn, pro, caps, onRegister }: { t: TFn; lo
     ['price.f5', t('price.dayN', { n: caps.jobtext }), t('price.unlimited')],
     ['price.f6', no, yes],
     ['price.f7', no, yes],
+    ['price.f8', no, yes],   // 第 2 轮 #4:实物早就有(saved search 5 条+匹配日报),货架上补摆
+    ['price.f9', no, yes],   // 第 2 轮 #4:跨省对比
   ]
+  // 第 2 轮 #3:390px 下免费/Pro 两列共 350px 固定宽把功能名挤成逐字竖排——窄屏收窄值列、缩内边距
+  const narrow = useIsNarrow()
+  const cellPad = narrow ? '10px 8px' : '10px 16px'
   const btn: React.CSSProperties = { width: '100%', padding: '10px 0', fontSize: 14, fontWeight: 600, border: 'none', borderRadius: 8, cursor: 'pointer' }
   return (
     <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, overflow: 'hidden' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13.5 }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: narrow ? 12.5 : 13.5 }}>
         <thead>
           <tr style={{ background: '#f9fafb' }}>
-            <th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}></th>
-            <th style={{ padding: '12px 16px', fontWeight: 700, width: 150 }}>{t('price.free')}<div style={{ fontSize: 16, marginTop: 4 }}>{t('price.freePrice')}</div></th>
-            <th style={{ padding: '12px 16px', fontWeight: 700, width: 200, color: '#b45309' }}><IconStar /> {t('price.pro')}
+            <th style={{ textAlign: 'left', padding: cellPad, fontWeight: 600 }}></th>
+            <th style={{ padding: cellPad, fontWeight: 700, width: narrow ? 84 : 150 }}>{t('price.free')}<div style={{ fontSize: 16, marginTop: 4 }}>{t('price.freePrice')}</div></th>
+            <th style={{ padding: cellPad, fontWeight: 700, width: narrow ? 110 : 200, color: '#b45309' }}><IconStar /> {t('price.pro')}
               <div style={{ fontSize: 16, marginTop: 4, color: '#111827' }}>{P30} <span style={{ fontSize: 11.5, color: '#9ca3af', fontWeight: 400 }}>{t('price.per30')}</span></div>
               <div style={{ fontSize: 16, color: '#111827' }}>{P90} <span style={{ fontSize: 11.5, color: '#9ca3af', fontWeight: 400 }}>{t('price.per90')}</span></div>
             </th>
@@ -58,9 +63,9 @@ export function PricingCard({ t, loggedIn, pro, caps, onRegister }: { t: TFn; lo
         <tbody>
           {rows.map(([k, f, p]) => (
             <tr key={k} style={{ borderTop: '1px solid #f3f4f6' }}>
-              <td style={{ padding: '10px 16px', color: '#374151' }}>{t(k)}</td>
-              <td style={{ padding: '10px 16px', textAlign: 'center', color: f === no ? '#d1d5db' : '#4b5563' }}>{f}</td>
-              <td style={{ padding: '10px 16px', textAlign: 'center', color: '#15803d', fontWeight: 500 }}>{p}</td>
+              <td style={{ padding: cellPad, color: '#374151', wordBreak: 'keep-all', lineHeight: 1.55 }}>{t(k)}</td>
+              <td style={{ padding: cellPad, textAlign: 'center', color: f === no ? '#d1d5db' : '#4b5563' }}>{f}</td>
+              <td style={{ padding: cellPad, textAlign: 'center', color: '#15803d', fontWeight: 500 }}>{p}</td>
             </tr>
           ))}
         </tbody>

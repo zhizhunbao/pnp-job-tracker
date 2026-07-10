@@ -56,10 +56,13 @@ export function Modal({ onClose, size = 'md', z = 50, pad = true, children }: {
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
   return (
-    <div {...ov} style={{ ...SCRIM, zIndex: z, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: narrow ? 0 : 16 }}>
+    <div {...ov} style={{ ...SCRIM, zIndex: z, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: narrow ? (size === 'sm' ? 14 : 0) : 16 }}>
+      {/* E8-03 微调(第 2 轮 #9):sm 档(登录/升级等短内容)窄屏不再撑满全屏——内容只占顶部时下方大片空白;改自适应高度居中卡。md/lg 内容长,维持全屏。 */}
       <div onClick={(e) => e.stopPropagation()}
         style={narrow
-          ? { ...CARD, borderRadius: 0, width: '100%', height: '100%', maxHeight: '100vh', overflowY: 'auto', padding: pad ? '20px 14px 16px' : 0 }
+          ? (size === 'sm'
+            ? { ...CARD, width: '100%', maxHeight: '92vh', overflowY: 'auto', padding: pad ? '20px 16px 16px' : 0 }
+            : { ...CARD, borderRadius: 0, width: '100%', height: '100%', maxHeight: '100vh', overflowY: 'auto', padding: pad ? '20px 14px 16px' : 0 })
           : { ...CARD, width: `min(${WIDTH[size]}px, 100%)`, maxHeight: '85vh', overflowY: 'auto', padding: pad ? '24px 24px 20px' : 0 }}>
         <button onClick={onClose} aria-label="close" style={closeBtnS}>×</button>
         {children}

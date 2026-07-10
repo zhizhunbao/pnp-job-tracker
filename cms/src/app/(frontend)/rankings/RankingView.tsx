@@ -20,6 +20,9 @@ const td: React.CSSProperties = { padding: '9px 12px', fontSize: 13, color: '#37
 /** 更新时间 + 口径说明 + 榜单表(页面/弹窗共用;壳与标题由宿主渲) */
 export function RankingTable({ slug, items, t }: { slug: string; items: RankRow[]; t: TFn }) {
   const isCompany = slug === 'sponsor-likely'
+  // 第 2 轮 #7 核查:LMIA 强雇主与省提名清单命中长期不重叠(全库 436 命中岗,30 强全 0)——
+  // 整列 0 像坏数据,全零时藏列;哪天数据重叠了自动恢复,排序键不受影响(ETL 侧)。
+  const showNamed = isCompany && items.some((i) => (i.namedJobs ?? 0) > 0)
   const updated = items.find((i) => i.datePosted)?.datePosted?.slice(0, 10) || new Date().toISOString().slice(0, 10)
   return (
     <>
@@ -29,7 +32,7 @@ export function RankingTable({ slug, items, t }: { slug: string; items: RankRow[
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             {isCompany ? (
-              <tr><th style={th}>#</th><th style={th}>{t('rank.col.company')}</th><th style={th}>{t('col.province')}</th><th style={th}>{t('rank.col.namedJobs')}</th><th style={th}>{t('rank.col.openJobs')}</th><th style={th}>{t('rank.col.avgScore')}</th><th style={th}></th></tr>
+              <tr><th style={th}>#</th><th style={th}>{t('rank.col.company')}</th><th style={th}>{t('col.province')}</th>{showNamed && <th style={th}>{t('rank.col.namedJobs')}</th>}<th style={th}>{t('rank.col.openJobs')}</th><th style={th}>{t('rank.col.avgScore')}</th><th style={th}></th></tr>
             ) : (
               <tr><th style={th}>#</th><th style={th}>{t('col.title')}</th><th style={th}>{t('col.company')}</th><th style={th}>{t('col.city')}</th><th style={th}>{t('col.salary')}</th><th style={th}>PNP/EE</th><th style={th}>{t('col.score')}</th><th style={th}>{t('col.datePosted')}</th></tr>
             )}
@@ -40,7 +43,7 @@ export function RankingTable({ slug, items, t }: { slug: string; items: RankRow[
                 <td style={{ ...td, color: '#9ca3af' }}>{r.rank}</td>
                 <td style={{ ...td, fontWeight: 600 }}>{r.officialUrl ? <a href={r.officialUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{r.company} ↗</a> : r.company}</td>
                 <td style={td}>{r.province}</td>
-                <td style={{ ...td, fontWeight: 600, color: '#b45309' }}>{r.namedJobs}</td>
+                {showNamed && <td style={{ ...td, fontWeight: 600, color: '#b45309' }}>{r.namedJobs}</td>}
                 <td style={td}>{r.openJobs}</td>
                 <td style={td}>{r.avgScore ?? '—'}</td>
                 <td style={td}><a href={`/jobs?q=${encodeURIComponent(r.company)}`} style={{ color: '#2563eb', textDecoration: 'none', fontSize: 12.5 }}>{t('rank.viewJobs')}</a></td>

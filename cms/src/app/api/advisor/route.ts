@@ -231,7 +231,8 @@ export async function POST(req: NextRequest) {
   // 成本限流(真调 LLM 才计,放缓存之后):全局日上限兜底;Pro 个人日限(防滥用);未登录沿用 IP 限(E2-02)
   const quotas: [string, number][] = [['adv:__global__', Number(process.env.ADVISOR_DAILY_CAP || 1000)]]
   if (pro && user) quotas.push([`adv:pro:${user.id}`, PRO_ADVISOR_DAILY])
-  if (!user) quotas.push([`adv:${ipOf(req)}`, Number(process.env.ADVISOR_IP_DAILY || 40)])
+  // 匿名额度不得高于免费注册额度(8/日),否则倒挂:烧 LLM 钱还削弱注册动机(第 2 轮 #5)
+  if (!user) quotas.push([`adv:${ipOf(req)}`, Number(process.env.ADVISOR_IP_DAILY || 8)])
   if (!checkLimit(quotas)) return new Response('rate limited', { status: 429 })
 
   // 职位/对话:读取抓到的真实 JD 作 grounding(基于它总结,不凭空猜);公司初判暂无正文,靠模型知识
