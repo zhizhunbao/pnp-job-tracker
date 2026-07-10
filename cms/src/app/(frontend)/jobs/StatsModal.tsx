@@ -53,7 +53,7 @@ export function StatsModal({ t, onClose, onApplyFilters }: { t: TFn; onClose: ()
 
   let body: React.ReactNode = <p style={{ margin: '14px 0', fontSize: 13.5, color: '#9ca3af' }}>{t('act.loadingText')}</p>
   if (data) {
-    if (nav.view === 'index') body = <StatsIndexContent rows={data.rows.filter((r) => r.broad === 'all')} srcs={data.srcs} t={t} />
+    if (nav.view === 'index') body = <StatsIndexContent rows={data.rows} srcs={data.srcs} t={t} />  // E8-06:图表要全量行,省卡组件内自 filter
     else if (nav.view === 'prov') body = <StatsProvContent prov={nav.prov} rows={data.rows.filter((r) => r.province === nav.prov)} srcs={data.srcs} t={t} />
     else if (nav.view === 'cat') {
       const row = data.rows.find((r) => r.province === nav.prov && r.broad === nav.broad)

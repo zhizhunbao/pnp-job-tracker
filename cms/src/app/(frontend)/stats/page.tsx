@@ -1,4 +1,4 @@
-// 省份索引页(E5-04):各省汇总卡(broad='all')→ 点进省页。
+// 省份索引页(E5-04;E8-06 图表化后传全量行——图表要大类维度,省卡在组件内自 filter)。
 import { loadStats, loadStatSources } from './lib'
 import { StatsIndexView } from './views'
 
@@ -12,7 +12,7 @@ export async function generateMetadata() {
 }
 
 export default async function StatsIndexPage() {
-  const rows = await loadStats(`WHERE broad = 'all'`)
+  const rows = await loadStats()
   const srcs = await loadStatSources()
   return <StatsIndexView rows={rows} srcs={srcs} />
 }

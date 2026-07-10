@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react'
 import { StatsShell, MetricCards, CaliberLine, useLang } from './ui'
 import { IconMapPin, IconScale, IconStar, IconTarget } from '../Icons'
 import { BROAD_SLUGS, PROV_NAME, type StatRow, type SrcRow } from './shared'
+import { StatsCharts } from './charts'
 import { PricingModal } from '../jobs/PricingModal'
 import { streamDisplay, type TFn } from '../jobs/i18n'
 
@@ -23,13 +24,17 @@ function TopCities({ raw, t }: { raw: string; t: TFn }) {
   )
 }
 
-// ── 省份索引(broad='all' 各省卡)──────────────────────────────
+// ── 省份索引(E8-06 图表化:上常见图/下自定义,省卡导航保留在图表区之下)──
+// rows 语义=stats 全量行(图表要大类维度);省卡自 filter broad='all'。
 export function StatsIndexContent({ rows, srcs, t }: { rows: StatRow[]; srcs: SrcRow[]; t: TFn }) {
+  const provRows = rows.filter((r) => r.broad === 'all')
   return (
     <>
       <h1 style={{ fontSize: 22, margin: 0 }}><IconMapPin /> {t('stats.provIndex')}</h1>
+      <StatsCharts rows={rows} t={t} />
+      <h2 style={{ fontSize: 15.5, margin: '18px 0 8px' }}>{t('stats.provIndex')}</h2>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12, margin: '16px 0' }}>
-        {rows.map((r) => (
+        {provRows.map((r) => (
           <a key={r.province} href={`/stats/${r.province.toLowerCase()}`}
             style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '14px 16px', textDecoration: 'none', color: '#1f2937' }}>
             <div style={{ fontWeight: 700, fontSize: 15 }}>{PROV_NAME[r.province] || r.province} <span style={{ color: '#9ca3af', fontWeight: 400 }}>{r.province}</span></div>
@@ -42,7 +47,7 @@ export function StatsIndexContent({ rows, srcs, t }: { rows: StatRow[]; srcs: Sr
         ))}
       </div>
       <a href="/stats/compare" style={{ fontSize: 13, color: '#2563eb', textDecoration: 'none' }}><IconScale /> {t('stats.compare')} →</a>
-      <CaliberLine t={t} srcs={srcs} fetched={rows[0]?.fetched || ''} />
+      <CaliberLine t={t} srcs={srcs} fetched={provRows[0]?.fetched || ''} />
     </>
   )
 }
