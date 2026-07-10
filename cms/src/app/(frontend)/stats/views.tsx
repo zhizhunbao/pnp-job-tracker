@@ -30,7 +30,7 @@ export function StatsIndexContent({ rows, srcs, t }: { rows: StatRow[]; srcs: Sr
   const provRows = rows.filter((r) => r.broad === 'all')
   return (
     <>
-      <h1 style={{ fontSize: 22, margin: 0 }}><IconMapPin /> {t('stats.provIndex')}</h1>
+      <h1 style={{ fontSize: 22, margin: 0 }}><IconMapPin /> {t('stats.entry')}</h1>
       <StatsCharts rows={rows} t={t} />
       <h2 style={{ fontSize: 15.5, margin: '18px 0 8px' }}>{t('stats.provIndex')}</h2>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12, margin: '16px 0' }}>
