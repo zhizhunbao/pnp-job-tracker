@@ -6,7 +6,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 // SSR 端 useLayoutEffect 无效且会告警 → 服务端退化成 useEffect。
 const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
-import { makeT, streamDisplay, LANGS, LANG_KEY, COLS_COOKIE, type Lang, type TFn } from './i18n'
+import { makeT, streamDisplay, eeDisplay, LANGS, LANG_KEY, COLS_COOKIE, type Lang, type TFn } from './i18n'
 import { IconChart, IconCheck, IconCompass, IconLock, IconMap, IconMapPin, IconMaximize, IconMinimize, IconSave, IconSettings, IconStar, IconTarget, IconUser, IconWarn, IconX } from '../Icons'
 import { AuthModal } from './AuthForm'
 import { UpgradeModal } from './UpgradeModal'
@@ -940,7 +940,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                         else { node = '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#9ca3af', fontSize: 12.5 }) }  // 弱:不符
                       }
                       else if (k === 'ee') {  // 联邦 EE 类别抽选(全国单一源,数据层算);命中→蓝,未列入→—
-                        node = j.eeCategory || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.eeCategory ? '#2563eb' : '#d1d5db', fontSize: 12.5 })
+                        node = j.eeCategory ? eeDisplay(t, j.eeCategory) : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.eeCategory ? '#2563eb' : '#d1d5db', fontSize: 12.5 })
                       }
                       else if (k === 'aip') { node = j.aip ? t('cell.aipYes') : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.aip ? '#b45309' : '#d1d5db', fontSize: 12.5 }) }
                       else if (k === 'lmia') {  // E6-02:✓ 职位数 · 最近季度(历史事实;详情看弹框事实块)
@@ -1001,7 +1001,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                 </div>
                 <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
                   {j.pnpEligible ? chip('#fef3c7', '#92400e', j.pnpStream ? t('cell.pnpYes') : t('cell.pnpSkilled'), 'pnp') : null}
-                  {j.eeCategory ? chip('#dbeafe', '#1e40af', 'EE ' + j.eeCategory, 'ee') : null}
+                  {j.eeCategory ? chip('#dbeafe', '#1e40af', 'EE ' + eeDisplay(t, j.eeCategory), 'ee') : null}
                   {j.aip ? chip('#ffedd5', '#9a3412', t('cell.aipYes'), 'aip') : null}
                   {j.lmiaPositions ? chip('#ccfbf1', '#0f766e', 'LMIA ✓' + j.lmiaPositions, 'lmia') : null}
                   {!j.pnpEligible && !j.eeCategory && !j.aip && j.teer != null ? chip('#f3f4f6', '#6b7280', `TEER ${j.teer}`, 'teer') : null}
@@ -1175,11 +1175,11 @@ function EeCategorySection({ job, lang, cats }: { job: JobRow; lang: Lang; cats:
   return (
     <div style={{ marginBottom: 14, paddingBottom: 12, borderBottom: '1px solid #f3f4f6' }}>
       <div style={{ fontSize: 13.5, fontWeight: 600, color: hit.length ? '#2563eb' : '#9ca3af', marginBottom: 6 }}>
-        {hit.length ? <><IconCheck /> {t('eelist.in', { noc, cats: hit.map((c) => c.label).join('/') })}</> : t('eelist.out')}
+        {hit.length ? <><IconCheck /> {t('eelist.in', { noc, cats: hit.map((c) => eeDisplay(t, c.label)).join('/') })}</> : t('eelist.out')}
       </div>
       {shown.map((c) => (
         <div key={c.key} style={{ marginBottom: 10 }}>
-          <div style={{ fontSize: 12.5, fontWeight: 600, color: '#374151', marginBottom: 4 }}>{c.label} <span style={{ color: '#9ca3af', fontWeight: 400 }}>· {t('eelist.count', { n: c.occupations.length })}</span></div>
+          <div style={{ fontSize: 12.5, fontWeight: 600, color: '#374151', marginBottom: 4 }}>{eeDisplay(t, c.label)} <span style={{ color: '#9ca3af', fontWeight: 400 }}>· {t('eelist.count', { n: c.occupations.length })}</span></div>
           {c.drawCrs != null && c.drawDate ? <div style={{ fontSize: 12, color: '#2563eb', marginBottom: 4 }}>{t('eelist.draw', { crs: c.drawCrs, date: c.drawDate, size: c.drawSize ?? '—' })}</div> : null}
           {hit.length ? (
             <div style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid #f3f4f6', borderRadius: 8 }}>
@@ -1641,7 +1641,7 @@ function MeansForMe({ job, lang, plan, pnpOcc, eeOcc }: { job: JobRow; lang: Lan
           const v = VERDICT_ICON[r.verdict]
           return (
             <div key={i} style={{ fontSize: 12.5, lineHeight: 1.7, color: '#4b5563' }}>
-              <span style={{ color: v.color, fontWeight: 700 }}>{v.icon}</span> {t(r.key, { ...(r.params as Record<string, string | number>), ...((r.params as any)?.label ? { label: streamDisplay(t, String((r.params as any).label)) } : {}) })}
+              <span style={{ color: v.color, fontWeight: 700 }}>{v.icon}</span> {t(r.key, { ...(r.params as Record<string, string | number>), ...((r.params as any)?.label ? { label: streamDisplay(t, String((r.params as any).label)) } : {}), ...((r.params as any)?.cat ? { cat: eeDisplay(t, String((r.params as any).cat)) } : {}) })}
               {r.source?.url && (
                 <a href={r.source.url} target="_blank" rel="noreferrer" style={{ marginLeft: 6, fontSize: 11.5, color: '#2563eb', textDecoration: 'none' }}
                   title={r.source.fetched ? t('match.srcFetched', { d: r.source.fetched }) : undefined}>{r.source.label} ↗</a>

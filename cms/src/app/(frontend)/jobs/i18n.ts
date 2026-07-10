@@ -21,10 +21,11 @@ const zh: Dict = {
   'price.anchor': '参考:持牌顾问咨询通常 CA$150+/小时——先用 CA$19 把公开数据能回答的问题答掉(本站不构成移民建议)。',
   'stats.rank': '在招职位全国第 {a} · 中位年薪全国第 {b}(共 {total} 省)', 'prof.pgwpNote': '暂用于 AI 顾问参考;窗口期匹配规则筹备中',
   'stream.abTech': 'AB 科技', 'stream.skHealth': 'SK 医疗', 'stream.skTech': 'SK 科技', 'stream.skAgri': 'SK 农业', 'stream.nsCritical': 'NS 紧缺空缺', 'stream.nsGrad': 'NS 毕业生', 'stream.aaipExcl': 'AAIP 不符合清单',
+  'ee.healthcare': '医疗社服', 'ee.stem': 'STEM', 'ee.trade': '技工', 'ee.education': '教育', 'ee.transport': '运输', 'ee.physicians': '医生', 'ee.seniorMgr': '高管', 'ee.researchers': '研究', 'ee.military': '军职',
   'advisor.unavail': 'AI 判断暂时不可用,请稍后再试——上方事实与官方链接不受影响。',
   'advisor.limit429': '今日免费次数已用完(每日重置)。注册登录后有独立额度,Pro 每日 200 次。', 'advisor.limitCta': '登录 / 注册 →',
   'act.seeOfficial': '查看官方原帖 ↗',
-  'updated': '抓取 {t}',
+  'updated': '更新 {t}',
   'tagline': '每日更新 · 全加拿大全职业 · 移民价值视角',
   'foot.disclaimer': '本站为信息聚合工具,数据自动抓取仅供参考,不构成移民 / 法律建议;我们非持牌移民顾问(RCIC),以官方来源为准。',
   'search.placeholder': '搜索 职位/公司/地点/NOC…',
@@ -56,7 +57,7 @@ const zh: Dict = {
   'col.company': '公司', 'col.title': '职位', 'col.noc': 'NOC', 'col.accessibility': '经验级别',
   'col.country': '国家', 'col.province': '省', 'col.city': '市', 'col.district': '区', 'col.address': '地址',
   'col.salary': '薪资', 'col.salaryYr': '年薪(折算)', 'col.wageMedHr': '中位时薪', 'col.wageMedYr': '中位年薪', 'col.vsMedian': 'vs 中位', 'col.source': '来源', 'col.origin': '渠道', 'col.direct': '发布',
-  'col.pnp': 'PNP', 'col.ee': 'EE 类别', 'col.aip': 'AIP', 'col.lmia': '外劳记录', 'col.status': '状态', 'col.firstSeen': '首次收录', 'col.lastSeen': '抓取时间', 'col.closedAt': '下架时间', 'col.score': '评分',
+  'col.pnp': 'PNP', 'col.ee': 'EE 类别', 'col.aip': 'AIP', 'col.lmia': '外劳记录', 'col.status': '状态', 'col.firstSeen': '首次收录', 'col.lastSeen': '更新时间', 'col.closedAt': '下架时间', 'col.score': '评分',
   'eelist.in': '本岗 NOC {noc} 在联邦 EE「{cats}」类别清单内', 'eelist.out': '未列入任何联邦 EE 类别抽选清单', 'eelist.source': '来源:Express Entry 类别抽选', 'eelist.your': '本岗', 'eelist.loading': '加载 EE 清单…', 'eelist.draw': '近期抽选:CRS {crs} · {date} · 发出 {size} 邀请', 'eelist.count': '{n} 个职业',
   'col.actions': '操作', 'act.company': '公司信息', 'act.desc': '职位描述', 'act.descTitle': '职位描述', 'act.site': '官网', 'act.addr': '地址', 'act.jobsHere': '该公司在榜职位', 'act.showAll': '展开其余 {n} 个 ▾', 'act.noText': '本站暂未收录这条帖子的正文——新帖正文通常次日到位,部分聚合源不提供。完整内容请看官方原帖:', 'act.loadingText': '加载中…',
   // 大分类(数据值→显示)
@@ -199,10 +200,11 @@ const en: Dict = {
   'price.anchor': 'For reference: licensed-consultant sessions typically run CA$150+/hour — let CA$19 answer what public data can first (this site is not immigration advice).',
   'stats.rank': '#{a} in open jobs · #{b} in median wage (of {total} provinces)', 'prof.pgwpNote': 'Currently informs the AI advisor; time-window match rules in the works',
   'stream.abTech': 'AB Tech', 'stream.skHealth': 'SK Health', 'stream.skTech': 'SK Tech', 'stream.skAgri': 'SK Agriculture', 'stream.nsCritical': 'NS Critical Vacancies', 'stream.nsGrad': 'NS Graduates', 'stream.aaipExcl': 'AAIP ineligible list',
+  'ee.healthcare': 'Healthcare', 'ee.stem': 'STEM', 'ee.trade': 'Trades', 'ee.education': 'Education', 'ee.transport': 'Transport', 'ee.physicians': 'Physicians', 'ee.seniorMgr': 'Senior managers', 'ee.researchers': 'Researchers', 'ee.military': 'Military',
   'advisor.unavail': 'The AI read is temporarily unavailable — the facts and official links above are unaffected. Please try again later.',
   'advisor.limit429': 'Free uses for today are used up (resets daily). Sign in for your own quota; Pro gets 200/day.', 'advisor.limitCta': 'Sign in / Sign up →',
   'act.seeOfficial': 'View official posting ↗',
-  'updated': 'Scraped {t}',
+  'updated': 'Updated {t}',
   'tagline': 'Daily updates · all of Canada · immigration-value lens',
   'foot.disclaimer': 'This site is an information aggregator; auto-scraped data is for reference only and is not immigration / legal advice. We are not licensed immigration consultants (RCIC) — always verify with official sources.',
   'search.placeholder': 'Search title / company / location / NOC…',
@@ -233,7 +235,7 @@ const en: Dict = {
   'col.company': 'Company', 'col.title': 'Title', 'col.noc': 'NOC', 'col.accessibility': 'Level',
   'col.country': 'Country', 'col.province': 'Province', 'col.city': 'City', 'col.district': 'District', 'col.address': 'Address',
   'col.salary': 'Salary', 'col.salaryYr': 'Annual (est.)', 'col.wageMedHr': 'Median $/hr', 'col.wageMedYr': 'Median $/yr', 'col.vsMedian': 'vs median', 'col.source': 'Source', 'col.origin': 'Channel', 'col.direct': 'Posting',
-  'col.pnp': 'PNP', 'col.ee': 'EE category', 'col.aip': 'AIP', 'col.lmia': 'LMIA history', 'col.status': 'Status', 'col.firstSeen': 'First seen', 'col.lastSeen': 'Scraped', 'col.closedAt': 'Closed', 'col.score': 'Score',
+  'col.pnp': 'PNP', 'col.ee': 'EE category', 'col.aip': 'AIP', 'col.lmia': 'LMIA history', 'col.status': 'Status', 'col.firstSeen': 'First seen', 'col.lastSeen': 'Updated', 'col.closedAt': 'Closed', 'col.score': 'Score',
   'eelist.in': 'This job (NOC {noc}) is in the federal EE "{cats}" category', 'eelist.out': 'Not in any federal Express Entry category', 'eelist.source': 'Source: Express Entry category-based selection', 'eelist.your': 'This job', 'eelist.loading': 'Loading EE list…', 'eelist.draw': 'Recent draw: CRS {crs} · {date} · {size} invitations', 'eelist.count': '{n} occupations',
   'col.actions': 'Actions', 'act.company': 'Company', 'act.desc': 'Description', 'act.descTitle': 'Job description', 'act.site': 'Website', 'act.addr': 'Address', 'act.jobsHere': 'Listings by this company', 'act.showAll': 'Show {n} more ▾', 'act.noText': 'No description text on file for this posting yet — new posts usually arrive within a day; some aggregator sources never provide one. Full text on the official posting:', 'act.loadingText': 'Loading…',
   'broad.管理': 'Management', 'broad.商务': 'Business', 'broad.科技': 'Tech', 'broad.医疗': 'Health', 'broad.教育': 'Education',
@@ -399,10 +401,11 @@ const ko: Dict = {
   'price.anchor': '참고: 공인 컨설턴트 상담은 보통 시간당 CA$150+ — 공개 데이터로 답할 수 있는 것은 CA$19로 먼저(본 사이트는 이민 자문이 아님).',
   'stats.rank': '채용중 전국 {a}위 · 중위 연봉 {b}위 (총 {total}개 주)', 'prof.pgwpNote': '현재 AI 어드바이저 참고용; 기간 매칭 규칙 준비 중',
   'stream.abTech': 'AB 테크', 'stream.skHealth': 'SK 보건', 'stream.skTech': 'SK 테크', 'stream.skAgri': 'SK 농업', 'stream.nsCritical': 'NS 필수 인력', 'stream.nsGrad': 'NS 졸업생', 'stream.aaipExcl': 'AAIP 제외 목록',
+  'ee.healthcare': '보건·사회서비스', 'ee.stem': 'STEM', 'ee.trade': '기능직', 'ee.education': '교육', 'ee.transport': '운수', 'ee.physicians': '의사', 'ee.seniorMgr': '고위 관리자', 'ee.researchers': '연구', 'ee.military': '군인',
   'advisor.unavail': 'AI 판단을 일시적으로 사용할 수 없습니다 — 위의 사실과 공식 링크는 영향 없음. 잠시 후 다시 시도하세요.',
   'advisor.limit429': '오늘 무료 횟수를 모두 사용했습니다(매일 초기화). 로그인하면 별도 한도, Pro는 하루 200회.', 'advisor.limitCta': '로그인 / 가입 →',
   'act.seeOfficial': '공식 공고 보기 ↗',
-  'updated': '수집 {t}',
+  'updated': '업데이트 {t}',
   'tagline': '매일 갱신 · 캐나다 전역 · 이민 가치 관점',
   'foot.disclaimer': '본 사이트는 정보 수집 도구입니다. 자동 수집 데이터는 참고용이며 이민 / 법률 자문이 아닙니다. 당사는 공인 이민 컨설턴트(RCIC)가 아니며, 공식 출처를 기준으로 확인하세요.',
   'search.placeholder': '직무 / 회사 / 지역 / NOC 검색…',
@@ -433,7 +436,7 @@ const ko: Dict = {
   'col.company': '회사', 'col.title': '직무', 'col.noc': 'NOC', 'col.accessibility': '경력',
   'col.country': '국가', 'col.province': '주', 'col.city': '도시', 'col.district': '지역', 'col.address': '주소',
   'col.salary': '급여', 'col.salaryYr': '연봉(환산)', 'col.wageMedHr': '중위 시급', 'col.wageMedYr': '중위 연봉', 'col.vsMedian': '중위 대비', 'col.source': '출처', 'col.origin': '채널', 'col.direct': '게시',
-  'col.pnp': 'PNP', 'col.ee': 'EE 카테고리', 'col.aip': 'AIP', 'col.lmia': 'LMIA 이력', 'col.status': '상태', 'col.firstSeen': '최초 수집', 'col.lastSeen': '수집 시각', 'col.closedAt': '마감일', 'col.score': '점수',
+  'col.pnp': 'PNP', 'col.ee': 'EE 카테고리', 'col.aip': 'AIP', 'col.lmia': 'LMIA 이력', 'col.status': '상태', 'col.firstSeen': '최초 수집', 'col.lastSeen': '업데이트 시각', 'col.closedAt': '마감일', 'col.score': '점수',
   'eelist.in': '이 채용(NOC {noc})이 연방 EE 「{cats}」 카테고리에 있음', 'eelist.out': '연방 Express Entry 카테고리에 없음', 'eelist.source': '출처: Express Entry 카테고리 선발', 'eelist.your': '이 채용', 'eelist.loading': 'EE 목록 불러오는 중…', 'eelist.draw': '최근 추첨: CRS {crs} · {date} · {size}건 초대', 'eelist.count': '직업 {n}개',
   'col.actions': '작업', 'act.company': '회사 정보', 'act.desc': '직무 설명', 'act.descTitle': '직무 설명', 'act.site': '웹사이트', 'act.addr': '주소', 'act.jobsHere': '이 회사의 공고', 'act.showAll': '나머지 {n}개 펼치기 ▾', 'act.noText': '이 공고의 본문이 아직 수집되지 않았습니다 — 신규 공고는 보통 다음날 도착하며 일부 소스는 제공하지 않습니다. 전체 내용은 공식 공고에서:', 'act.loadingText': '로딩 중…',
   'broad.管理': '관리', 'broad.商务': '비즈니스', 'broad.科技': '기술', 'broad.医疗': '의료', 'broad.教育': '교육',
@@ -613,3 +616,12 @@ const STREAM_L10N: Record<string, string> = {
   'AAIP 不符合清单': 'stream.aaipExcl',
 }
 export const streamDisplay = (t: TFn, label: string): string => (STREAM_L10N[label] ? t(STREAM_L10N[label]) : label)
+
+// EE 类别 label 三语映射(第 11 轮 #28,同 #24 性质;数据层 label 是有限集,federal-categories.json 9 类)。
+// 职位可命中多类别,数据层用「/」拼接(如「医疗社服/医生」)——逐段映射再拼回。
+const EE_L10N: Record<string, string> = {
+  '医疗社服': 'ee.healthcare', 'STEM': 'ee.stem', '技工': 'ee.trade', '教育': 'ee.education',
+  '运输': 'ee.transport', '医生': 'ee.physicians', '高管': 'ee.seniorMgr', '研究': 'ee.researchers', '军职': 'ee.military',
+}
+export const eeDisplay = (t: TFn, label: string): string =>
+  label.split('/').map((s) => (EE_L10N[s.trim()] ? t(EE_L10N[s.trim()]) : s.trim())).join('/')

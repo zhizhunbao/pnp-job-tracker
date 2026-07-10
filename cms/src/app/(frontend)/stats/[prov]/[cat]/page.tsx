@@ -2,7 +2,7 @@
 import { notFound } from 'next/navigation'
 import { loadStats, loadStatSources } from '../../lib'
 import { StatsCatView } from '../../views'
-import { PROV_NAME, slugToBroad } from '../../shared'
+import { BROAD_EN, PROV_NAME, slugToBroad } from '../../shared'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,9 +11,10 @@ export async function generateMetadata({ params }: { params: Promise<{ prov: str
   const p = prov.toUpperCase()
   const broad = slugToBroad(cat)
   if (!PROV_NAME[p] || !broad) return {}
+  const en = BROAD_EN[broad] || broad
   return {
-    title: `${broad} jobs in ${PROV_NAME[p]} — wages & PNP streams | PNP Job Tracker`,
-    description: `${PROV_NAME[p]} ${broad}: open jobs, 7-day new postings, median wage (ESDC), provincial named streams, AIP. Updated daily. ${PROV_NAME[p]} ${broad}类职位统计,每日更新。`,
+    title: `${en} jobs in ${PROV_NAME[p]} — wages & PNP streams | PNP Job Tracker`,
+    description: `${PROV_NAME[p]} ${en}: open jobs, 7-day new postings, median wage (ESDC), provincial named streams, AIP. Updated daily. ${PROV_NAME[p]} ${broad}类职位统计,每日更新。`,
   }
 }
 

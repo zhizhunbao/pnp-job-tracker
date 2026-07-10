@@ -2,7 +2,7 @@
 // 榜单视图(E5-02):纯渲染(计算在 ETL);三语壳;岗位行链官方原帖,公司行链官网。
 // RankingTable = 内容单一来源(E8-02):页面版与 /jobs 榜单弹窗共用,不许 fork。
 import { useEffect, useState } from 'react'
-import { makeT, LANG_KEY, LANGS, type Lang, type TFn } from '../jobs/i18n'
+import { makeT, streamDisplay, eeDisplay, LANG_KEY, LANGS, type Lang, type TFn } from '../jobs/i18n'
 
 export type RankRow = {
   rank: number; kind: string; externalId: string
@@ -23,7 +23,8 @@ export function RankingTable({ slug, items, t }: { slug: string; items: RankRow[
   // 第 2 轮 #7 核查:LMIA 强雇主与省提名清单命中长期不重叠(全库 436 命中岗,30 强全 0)——
   // 整列 0 像坏数据,全零时藏列;哪天数据重叠了自动恢复,排序键不受影响(ETL 侧)。
   const showNamed = isCompany && items.some((i) => (i.namedJobs ?? 0) > 0)
-  const updated = items.find((i) => i.datePosted)?.datePosted?.slice(0, 10) || new Date().toISOString().slice(0, 10)
+  // 「更新于」= 榜内最新发布日(第 11 轮 #30:原先取第一行的 datePosted,周榜首行是 7 天前的帖就谎报 7 天前)
+  const updated = items.reduce((m, i) => (i.datePosted && i.datePosted > m ? i.datePosted : m), '').slice(0, 10) || new Date().toISOString().slice(0, 10)
   return (
     <>
       <div style={{ fontSize: 12.5, color: '#9ca3af', margin: '6px 0 4px' }}>{t('rank.updated', { d: updated })}</div>
@@ -55,7 +56,7 @@ export function RankingTable({ slug, items, t }: { slug: string; items: RankRow[
                 <td style={td}>{r.company}</td>
                 <td style={{ ...td, whiteSpace: 'nowrap' }}>{[r.city, r.province].filter(Boolean).join(', ')}</td>
                 <td style={{ ...td, whiteSpace: 'nowrap', color: '#15803d' }}>{r.salaryText || '—'}</td>
-                <td style={{ ...td, fontSize: 12 }}>{[r.pnpStream, r.eeCategory].filter(Boolean).join(' · ') || '—'}</td>
+                <td style={{ ...td, fontSize: 12 }}>{[r.pnpStream ? streamDisplay(t, r.pnpStream) : '', r.eeCategory ? eeDisplay(t, r.eeCategory) : ''].filter(Boolean).join(' · ') || '—'}</td>
                 <td style={{ ...td, fontWeight: 600 }}>{r.score ?? '—'}</td>
                 <td style={{ ...td, whiteSpace: 'nowrap', color: '#9ca3af', fontSize: 12.5 }}>{(r.datePosted || '').slice(0, 10)}</td>
               </tr>
