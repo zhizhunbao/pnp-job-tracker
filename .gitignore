@@ -45,3 +45,4 @@ cms/dev.log
 /data/raw/wages/*.csv
 # ESDC LMIA 季度源 + 聚合表(16MB+,可重建;E6-02)
 /data/raw/lmia/
+.claude/skills/iterate-audit/credentials.local.json
