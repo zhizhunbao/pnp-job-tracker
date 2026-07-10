@@ -16,7 +16,7 @@ type Dict = Record<string, string>
 const zh: Dict = {
   'subtitle.count': '{n} 个职位',
   'subtitle.proof': '其中 {named} 岗命中省提名清单 · {lmia} 家雇主有外劳雇佣记录 · 官方公开数据 · 每日抓取',
-  'mv.today': '今日与你匹配:高 {h} · 中 {m}', 'up.matchN': '你今日共 {h} 个高匹配岗,免费版仅显示前 {n} 岗',
+  'mv.today': '今日与你高匹配的岗位:{h} 个', 'up.matchN': '你今日共 {h} 个高匹配岗,免费版仅显示前 {n} 岗',
   'advisor.left': '免费今日剩 {n} 次', 'fact.buildCta': '建档案,看这条线对你意味着什么 →',
   'price.anchor': '参考:持牌顾问咨询通常 CA$150+/小时——先用 CA$19 把公开数据能回答的问题答掉(本站不构成移民建议)。',
   'stats.rank': '在招职位全国第 {a} · 中位年薪全国第 {b}(共 {total} 省)', 'prof.pgwpNote': '暂用于 AI 顾问参考;窗口期匹配规则筹备中',
@@ -190,7 +190,7 @@ const zh: Dict = {
 const en: Dict = {
   'subtitle.count': '{n} jobs',
   'subtitle.proof': 'incl. {named} on provincial PNP lists · {lmia} employers with LMIA records · official open data, scraped daily',
-  'mv.today': 'Matches for you today: {h} high · {m} mid', 'up.matchN': 'You have {h} high-match jobs today — free plan shows only the first {n}',
+  'mv.today': 'High matches for you today: {h}', 'up.matchN': 'You have {h} high-match jobs today — free plan shows only the first {n}',
   'advisor.left': '{n} free uses left today', 'fact.buildCta': 'Create your profile to see what this means for you →',
   'price.anchor': 'For reference: licensed-consultant sessions typically run CA$150+/hour — let CA$19 answer what public data can first (this site is not immigration advice).',
   'stats.rank': '#{a} in open jobs · #{b} in median wage (of {total} provinces)', 'prof.pgwpNote': 'Currently informs the AI advisor; time-window match rules in the works',
@@ -386,7 +386,7 @@ const en: Dict = {
 const ko: Dict = {
   'subtitle.count': '{n}개 공고',
   'subtitle.proof': 'PNP 목록 해당 {named}건 · LMIA 기록 고용주 {lmia}곳 · 공식 공개 데이터 · 매일 수집',
-  'mv.today': '오늘 매칭: 높음 {h} · 중간 {m}', 'up.matchN': '오늘 높은 매칭 {h}건 — 무료는 상위 {n}건만 표시',
+  'mv.today': '오늘 높은 매칭: {h}건', 'up.matchN': '오늘 높은 매칭 {h}건 — 무료는 상위 {n}건만 표시',
   'advisor.left': '오늘 무료 {n}회 남음', 'fact.buildCta': '프로필을 만들면 나에게 어떤 의미인지 확인 →',
   'price.anchor': '참고: 공인 컨설턴트 상담은 보통 시간당 CA$150+ — 공개 데이터로 답할 수 있는 것은 CA$19로 먼저(본 사이트는 이민 자문이 아님).',
   'stats.rank': '채용중 전국 {a}위 · 중위 연봉 {b}위 (총 {total}개 주)', 'prof.pgwpNote': '현재 AI 어드바이저 참고용; 기간 매칭 규칙 준비 중',

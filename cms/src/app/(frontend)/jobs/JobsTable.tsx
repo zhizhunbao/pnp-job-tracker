@@ -836,7 +836,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         {/* 匹配视图状态条(E5-05):说明口径 + 退出;免费限额提示(D1=B) */}
         {matchView && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', background: '#eff6ff', border: '1px solid #dbeafe', borderRadius: 8, padding: '7px 12px', marginBottom: 8, fontSize: 12.5 }}>
-            <span style={{ color: '#1e40af', flex: 1, minWidth: 200 }}><IconTarget /> {t('mv.on')}{!plan.isPro ? ` · ${matchTotals ? t('mv.today', { h: matchTotals.high, m: matchTotals.mid }) + ' · ' : ''}${t('match.overCap', { n: plan.freeMatchCap })}` : ''}</span>
+            {/* 只报「高」(第 6 轮 #23):中匹配门槛宽、数字动辄数千,报出来像灌水,反而稀释高匹配的可信度 */}
+            <span style={{ color: '#1e40af', flex: 1, minWidth: 200 }}><IconTarget /> {t('mv.on')}{!plan.isPro ? ` · ${matchTotals && matchTotals.high > 0 ? t('mv.today', { h: matchTotals.high }) + ' · ' : ''}${t('match.overCap', { n: plan.freeMatchCap })}` : ''}</span>
             <button onClick={toggleMatchView} style={{ border: 'none', background: 'none', padding: 0, color: '#6b7280', cursor: 'pointer', fontSize: 12.5 }}>{t('mv.exit')} ×</button>
           </div>
         )}
