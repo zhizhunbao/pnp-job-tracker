@@ -2,7 +2,7 @@
 // 给前端「职位描述」弹框用。只读、无大模型、不再扫 .md 文件(去掉运行时文件依赖)。
 import { NextRequest } from 'next/server'
 import { jobDescription } from '@/lib/jobDescription'
-import { checkLimit, ipOf } from '@/lib/rateLimit'
+import { checkLimit, ipOf, usedToday } from '@/lib/rateLimit'
 import { getUser, isPro } from '@/lib/entitlement'
 import { FREE_JOBTEXT_TRIES } from '@/lib/plan'
 
@@ -22,5 +22,7 @@ export async function GET(req: NextRequest) {
   const url = req.nextUrl.searchParams.get('url')?.trim()
   if (!url) return new Response('', { status: 400 })
   const body = await jobDescription(url)
-  return new Response(body, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
+  // 试用额度可见化(第 5 轮 #16)
+  const freeLeft = user && !isPro(user) ? String(Math.max(0, FREE_JOBTEXT_TRIES - usedToday(`jd:u:${user.id}`))) : null
+  return new Response(body, { headers: { 'Content-Type': 'text/plain; charset=utf-8', ...(freeLeft != null ? { 'X-Free-Left': freeLeft } : {}) } })
 }

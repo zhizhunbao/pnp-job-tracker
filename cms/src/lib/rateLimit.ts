@@ -7,6 +7,12 @@ export function ipOf(req: Request): string {
   return (fwd ? fwd.split(',')[0].trim() : '') || 'local'
 }
 
+// 今日已用次数(只读):试用额度可见化用(第 5 轮 #16)——用户该知道还剩几次,而不是突然 402
+export function usedToday(key: string): number {
+  const b = buckets.get(key)
+  return b && b.day === new Date().toISOString().slice(0, 10) ? b.n : 0
+}
+
 export function checkLimit(quotas: [string, number][]): boolean {
   const day = new Date().toISOString().slice(0, 10)
   const cur = quotas.map(([key]) => {

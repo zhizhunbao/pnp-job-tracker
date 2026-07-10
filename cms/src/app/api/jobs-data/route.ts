@@ -31,6 +31,7 @@ export async function GET() {
     matchDims = { pnpOccupations: pnp.docs.map(mapPnpOcc), eeCategories: ee.docs.map(mapEeCat) }
   }
 
-  const { jobs, updatedAt } = await fetchJobRows((payload.db as any).pool, { pro, profile, profileOk, matchDims, limit: 20000 })
-  return Response.json({ jobs, updatedAt })
+  const { jobs, updatedAt, matchHigh, matchMid } = await fetchJobRows((payload.db as any).pool, { pro, profile, profileOk, matchDims, limit: 20000 })
+  // matchHigh/matchMid:全量匹配计数(第 5 轮 #15)——免费用户的 FOMO 数字,值本身仍按 cap 剥离
+  return Response.json({ jobs, updatedAt, matchHigh, matchMid })
 }

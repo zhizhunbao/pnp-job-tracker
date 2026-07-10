@@ -5,7 +5,7 @@ import { NextRequest } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { jobDescription } from '@/lib/jobDescription'
-import { checkLimit, ipOf } from '@/lib/rateLimit'
+import { checkLimit, ipOf, usedToday } from '@/lib/rateLimit'
 import { streamChat, LlmError, type ChatMessage } from '@/lib/llm'
 import { getUser, isPro } from '@/lib/entitlement'
 import { FREE_ADVISOR_TRIES, PRO_ADVISOR_DAILY } from '@/lib/plan'
@@ -215,6 +215,8 @@ export async function POST(req: NextRequest) {
   if (user && !pro && !checkLimit([[`adv:u:${user.id}`, FREE_ADVISOR_TRIES]])) {
     return new Response('upgrade required', { status: 402 })
   }
+  // 试用额度可见化(第 5 轮 #16):免费登录用户随响应带今日剩余次数,前端显示,别让 402 当惊吓
+  const freeLeft = user && !pro ? String(Math.max(0, FREE_ADVISOR_TRIES - usedToday(`adv:u:${user.id}`))) : null
 
   // Pro 档案感知(E5-00):自报档案 + 本岗匹配结论注入 facts;个性化内容缓存按人隔离
   const pf = pro && user ? profileFacts((user as any).profile, job, await loadMatchDims()) : ''
@@ -225,7 +227,7 @@ export async function POST(req: NextRequest) {
 
   if (!isChat) {
     const cached = cache.get(key)
-    if (cached) return new Response(cached, { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'X-Cache': 'hit' } })
+    if (cached) return new Response(cached, { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'X-Cache': 'hit', ...(freeLeft != null ? { 'X-Free-Left': freeLeft } : {}) } })
   }
 
   // 成本限流(真调 LLM 才计,放缓存之后):全局日上限兜底;Pro 个人日限(防滥用);未登录沿用 IP 限(E2-02)
@@ -283,5 +285,5 @@ export async function POST(req: NextRequest) {
     },
   }))
 
-  return new Response(stream, { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'X-Cache': 'miss', 'X-JD': jd ? 'yes' : 'no' } })
+  return new Response(stream, { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'X-Cache': 'miss', 'X-JD': jd ? 'yes' : 'no', ...(freeLeft != null ? { 'X-Free-Left': freeLeft } : {}) } })
 }

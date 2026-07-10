@@ -65,9 +65,14 @@ export default async function JobsPage() {
   const matchDims = { pnpOccupations: dims.pnpOccupations, eeCategories: dims.eeCategories }
   const [{ jobs, updatedAt }, cntRes] = await Promise.all([
     fetchJobRows(pool, { pro, profile, profileOk, matchDims, limit: FIRST_SCREEN_ROWS }),
-    pool.query('SELECT count(*)::int AS n FROM jobs'),
+    // 差异化证言数字(第 5 轮 #14):省提名清单命中岗 + 有外劳记录雇主数 —— 首屏 3 秒讲清与聚合站的区别
+    pool.query(`SELECT count(*)::int AS n,
+      count(*) FILTER (WHERE status = 'open' AND pnp_stream IS NOT NULL AND pnp_stream <> '')::int AS named,
+      (SELECT count(*)::int FROM companies WHERE lmia_positions > 0) AS lmia
+      FROM jobs`),
   ])
   const totalCount: number = cntRes.rows[0]?.n ?? jobs.length
+  const proof = { named: cntRes.rows[0]?.named ?? 0, lmia: cntRes.rows[0]?.lmia ?? 0 }
 
   // 列偏好从 cookie 读(浏览器/服务器都能读)→ SSR 直接渲对的列,零闪烁。客户端选列时写这个 cookie。
   let initialCols: string[] | undefined
@@ -88,5 +93,5 @@ export default async function JobsPage() {
     freeMatchCap: FREE_MATCH_JOBS_PER_DAY,
   }
   return <JobsTable jobs={jobs} updatedAt={updatedAt} dims={dims} initialCols={initialCols} plan={plan}
-    initialBanner={initialBanner} totalCount={totalCount} deferFull />
+    initialBanner={initialBanner} totalCount={totalCount} proof={proof} deferFull />
 }

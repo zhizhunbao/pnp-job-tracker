@@ -378,12 +378,14 @@ type Dims = {
 const EMPTY_DIMS: Dims = { provinces: [], cities: [], districts: [], nocCategories: [], sources: [], experienceLevels: [], pnpOccupations: [], pnpDraws: [], eeCategories: [], designatedEmployers: [], nocDescriptions: [], fieldSources: [] }
 const PROV_CODE: Record<string, string> = Object.fromEntries(Object.entries(PROV_NAMES).map(([c, n]) => [n, c]))
 
-export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdatedAt, dims = EMPTY_DIMS, initialCols, plan = FREE_PLAN, initialBanner, totalCount, deferFull }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims; initialCols?: string[]; plan?: Plan; initialBanner?: boolean; totalCount?: number; deferFull?: boolean }) {
+export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdatedAt, dims = EMPTY_DIMS, initialCols, plan = FREE_PLAN, initialBanner, totalCount, proof, deferFull }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims; initialCols?: string[]; plan?: Plan; initialBanner?: boolean; totalCount?: number; proof?: { named: number; lmia: number }; deferFull?: boolean }) {
   // 首屏拆分(2026-07-05):SSR 只带最近 50 行,水合后从 /api/jobs-data 后台换入全量(同序,无跳变);
   // 失败保底留首屏 50 行可用,loadedAll 复位以显示计数而非假「全量」。
   const [jobs, setJobs] = useState(initialJobs)
   const [updatedAt, setUpdatedAt] = useState(initialUpdatedAt)
   const [loadedAll, setLoadedAll] = useState(!deferFull)
+  // 全量匹配计数(第 5 轮 #15):免费用户的「你今日共 X 个高匹配」FOMO 数字,随全量拉取带回
+  const [matchTotals, setMatchTotals] = useState<{ high: number; mid: number } | null>(null)
   useEffect(() => {
     if (!deferFull) return
     let dead = false
@@ -395,6 +397,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         if (!dead && Array.isArray(d.jobs) && d.jobs.length) {
           setJobs(d.jobs)
           if (d.updatedAt) setUpdatedAt(d.updatedAt)
+          if (typeof d.matchHigh === 'number') setMatchTotals({ high: d.matchHigh, mid: d.matchMid || 0 })
           setLoadedAll(true)
         }
       } catch { /* 网络失败:留首屏 50 行,刷新可重试 */ }
@@ -709,6 +712,10 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         <h1 style={{ margin: '0 0 2px', color: '#111827' }}>Jobs</h1>
         <p style={{ color: '#6b7280', marginTop: 0, fontSize: 13 }}>
           {rows.length === jobs.length ? t('subtitle.count', { n: !loadedAll && totalCount ? totalCount : jobs.length }) : `${rows.length} / ${jobs.length}`}
+          {/* 差异化证言(第 5 轮 #14):首屏 3 秒回答「为什么不用 Indeed」——数字都是本站独有信号 */}
+          {proof && (proof.named > 0 || proof.lmia > 0) && (
+            <span style={{ display: 'block', marginTop: 2, fontSize: 12, color: '#9ca3af' }}>{t('subtitle.proof', { named: proof.named, lmia: proof.lmia })}</span>
+          )}
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '1rem 0' }}>
@@ -829,7 +836,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         {/* 匹配视图状态条(E5-05):说明口径 + 退出;免费限额提示(D1=B) */}
         {matchView && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', background: '#eff6ff', border: '1px solid #dbeafe', borderRadius: 8, padding: '7px 12px', marginBottom: 8, fontSize: 12.5 }}>
-            <span style={{ color: '#1e40af', flex: 1, minWidth: 200 }}><IconTarget /> {t('mv.on')}{!plan.isPro ? ` · ${t('match.overCap', { n: plan.freeMatchCap })}` : ''}</span>
+            <span style={{ color: '#1e40af', flex: 1, minWidth: 200 }}><IconTarget /> {t('mv.on')}{!plan.isPro ? ` · ${matchTotals ? t('mv.today', { h: matchTotals.high, m: matchTotals.mid }) + ' · ' : ''}${t('match.overCap', { n: plan.freeMatchCap })}` : ''}</span>
             <button onClick={toggleMatchView} style={{ border: 'none', background: 'none', padding: 0, color: '#6b7280', cursor: 'pointer', fontSize: 12.5 }}>{t('mv.exit')} ×</button>
           </div>
         )}
@@ -1015,7 +1022,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             : <button onClick={() => setLimit((l) => l + PAGE_ROWS)} style={{ ...ctrl, cursor: 'pointer', background: '#f3f4f6', color: '#374151' }}>{t('loadMore', { x: Math.min(limit, rows.length), total: rows.length })}</button>}
         </div>
         {/* 匹配视图 · 免费限额升级卡(D1=B:尝到甜头 → 升级看全量) */}
-        {matchView && !plan.isPro && <UpgradeCard t={t} reason={t('up.match', { n: plan.freeMatchCap })} />}
+        {/* FOMO 数字(第 5 轮 #15):有全量计数时用「你今日共 X 个高匹配」,比抽象限额有说服力 */}
+        {matchView && !plan.isPro && <UpgradeCard t={t} reason={matchTotals && matchTotals.high > plan.freeMatchCap ? t('up.matchN', { h: matchTotals.high, n: plan.freeMatchCap }) : t('up.match', { n: plan.freeMatchCap })} />}
       </div>
       {/* footer:免责 + 版权,窄屏自动换行 */}
       <footer style={{ borderTop: '1px solid #e5e7eb', background: '#fafafa', flexShrink: 0 }}>
@@ -1725,6 +1733,8 @@ function AdvisorModal({ field, job, jobs, title, lang, plan, pnpOcc, pnpDraws, e
     { dir: 'se', cursor: 'nwse-resize', style: { bottom: 0, right: 0, width: 14, height: 14 } },
   ]
 
+  // 试用额度可见化(第 5 轮 #16):服务端 X-Free-Left 头,免费用户看得见剩几次,402 不再是惊吓
+  const [freeLeft, setFreeLeft] = useState<number | null>(null)
   useEffect(() => {
     const ctrl = new AbortController()
     setText(''); setStatus('loading'); pendingRef.current = ''; doneRef.current = false
@@ -1734,6 +1744,8 @@ function AdvisorModal({ field, job, jobs, title, lang, plan, pnpOcc, pnpDraws, e
           method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal,
           body: JSON.stringify({ field, id: String(job.id), job, lang }),
         })
+        const left = res.headers.get('X-Free-Left')
+        if (left != null) setFreeLeft(Number(left))
         if (res.status === 402) { setStatus('upgrade'); return }  // 免费试用用完(E3-05)→ 升级卡
         if (!res.ok || !res.body) { setStatus('error'); setText(t('advisor.failed', { code: res.status })); return }
         const reader = res.body.getReader(); const dec = new TextDecoder()
@@ -1762,7 +1774,7 @@ function AdvisorModal({ field, job, jobs, title, lang, plan, pnpOcc, pnpDraws, e
         {/* 标题栏 = 拖动手柄 */}
         <div onPointerDown={startDrag} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, padding: '16px 20px 10px', cursor: full ? 'default' : 'move', userSelect: 'none', flexShrink: 0 }}>
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, letterSpacing: .3 }}><IconCompass /> {t('advisor.tag')} · {a.tag}{status === 'streaming' ? t('advisor.generating') : ''}</div>
+            <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, letterSpacing: .3 }}><IconCompass /> {t('advisor.tag')} · {a.tag}{status === 'streaming' ? t('advisor.generating') : ''}{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400 }}> · {t('advisor.left', { n: freeLeft })}</span> : null}</div>
             <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title || a.title}</h3>
           </div>
           <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
@@ -1775,6 +1787,12 @@ function AdvisorModal({ field, job, jobs, title, lang, plan, pnpOcc, pnpDraws, e
           {/* 对我意味着什么(E5-00):个人相关性放最上;依据链同源 match() */}
           <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} />
           <FieldFactsSection field={field} job={job} jobs={jobs} lang={lang} isPro={plan.isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} />
+          {/* 建档 CTA(第 5 轮 #17 = 弹框规范 D1):身份信号族对未建档用户铺「事实 → 个人化」的桥 */}
+          {!plan.profileOk && ['pnp', 'ee', 'lmia', 'aip'].includes(field) && (
+            <div style={{ margin: '8px 0 10px' }}>
+              <a href="/account" style={{ fontSize: 13, color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}><IconTarget /> {t('fact.buildCta')}</a>
+            </div>
+          )}
           {/* 免责/AI 声明不进弹框(2026-07-06 用户拍板:合规统一在 footer 说明) */}
           {status === 'upgrade' ? (
             <UpgradeCard t={t} reason={t('up.advisor')} />
@@ -1872,12 +1890,15 @@ function ActModal({ job, lang, onClose }: { job: JobRow; lang: Lang; onClose: ()
   const t = makeT(lang)
   const [text, setText] = useState('')
   const [status, setStatus] = useState<'loading' | 'done' | 'empty' | 'upgrade'>('loading')
+  const [freeLeft, setFreeLeft] = useState<number | null>(null)  // 第 5 轮 #16:试用额度可见化
   useEffect(() => {
     const ctrl = new AbortController()
     setStatus('loading'); setText('')
     ;(async () => {
       try {
         const res = await fetch('/api/jobtext?url=' + encodeURIComponent(job.applyUrl || ''), { signal: ctrl.signal })
+        const left = res.headers.get('X-Free-Left')
+        if (left != null) setFreeLeft(Number(left))
         if (res.status === 402) { setStatus('upgrade'); return }  // 免费试用用完(E3-05)
         const txt = (await res.text()).trim()
         setText(txt); setStatus(txt ? 'done' : 'empty')
@@ -1888,7 +1909,7 @@ function ActModal({ job, lang, onClose }: { job: JobRow; lang: Lang; onClose: ()
   return (
     <Modal onClose={onClose} size="md" pad={false}>
       <div style={{ padding: '16px 20px 8px' }}>
-        <ModalTitle eyebrow={t('act.descTitle')} title={job.title || '—'} />
+        <ModalTitle eyebrow={<>{t('act.descTitle')}{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400 }}> · {t('advisor.left', { n: freeLeft })}</span> : null}</>} title={job.title || '—'} />
       </div>
       <div style={{ padding: '4px 20px 20px', fontSize: 14, lineHeight: 1.7, color: '#374151' }}>
           {status === 'loading' ? <p style={{ color: '#9ca3af' }}>{t('act.loadingText')}</p>

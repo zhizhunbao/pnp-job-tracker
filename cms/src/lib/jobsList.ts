@@ -26,7 +26,7 @@ export type JobsListOpts = {
  * 免费匹配「前 N 岗」(E5-00)才等于用户看到的前 N 行;首屏 50 与全量取同一序,后台换入无跳变。
  * Pro 列(工资中位三件套)SELECT 全量(免费用户的匹配计算也要用),免费用户在映射层剥离 —— 数据不进浏览器。
  */
-export async function fetchJobRows(pool: any, { pro, profile, profileOk, matchDims, limit }: JobsListOpts): Promise<{ jobs: JobRow[]; updatedAt: string }> {
+export async function fetchJobRows(pool: any, { pro, profile, profileOk, matchDims, limit }: JobsListOpts): Promise<{ jobs: JobRow[]; updatedAt: string; matchHigh: number; matchMid: number }> {
   const { rows } = await pool.query(`
     SELECT j.id, j.title, c.name AS company_name, c.address AS company_address, c.description AS company_description, c.sectors AS company_sectors,
       c.website AS company_website, c.website_source,
@@ -41,15 +41,20 @@ export async function fetchJobRows(pool: any, { pro, profile, profileOk, matchDi
 
   // 档案匹配(E5-00):服务端按人逐行 join(规则在 lib/match.ts 一处)。
   // Pro=全量;免费=默认序前 N 岗(激活钩子,plan.ts);未建档/未登录不算。
+  // FOMO 计数(第 5 轮 #15):免费用户也全量算 level 用于「你今日共 X 个高匹配」,值仍按 cap 剥离不进浏览器。
+  let matchHigh = 0, matchMid = 0
   const matchOf = (j: any, idx: number): JobRow['match'] => {
     if (!profileOk) return null
-    if (!pro && idx >= FREE_MATCH_JOBS_PER_DAY) return null
     const mj: MatchJob = {
       noc: j.noc ?? '', teer: num(j.teer), province: j.province ?? '', pnpEligible: !!j.pnp_eligible,
       pnpStream: j.pnp_stream ?? '', eeCategory: j.ee_category ?? '', salaryAnnual: num(j.salary_annual), wageMedAnnual: num(j.wage_med_annual),
       lmiaPositions: num(j.lmia_positions), lmiaLastQuarter: j.lmia_last_quarter ?? '',
     }
-    return match(profile, mj, matchDims).level
+    const level = match(profile, mj, matchDims).level
+    if (level === 'high') matchHigh++
+    else if (level === 'mid') matchMid++
+    if (!pro && idx >= FREE_MATCH_JOBS_PER_DAY) return null
+    return level
   }
 
   const jobs: JobRow[] = rows.map((j: any, idx: number) => ({
@@ -106,5 +111,5 @@ export async function fetchJobRows(pool: any, { pro, profile, profileOk, matchDi
   }))
 
   const updatedAt = rows.reduce((m: string, j: any) => { const ls = iso(j.last_seen); return ls > m ? ls : m }, '')
-  return { jobs, updatedAt }
+  return { jobs, updatedAt, matchHigh, matchMid }
 }

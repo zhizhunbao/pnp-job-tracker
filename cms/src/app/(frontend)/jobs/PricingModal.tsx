@@ -82,7 +82,9 @@ export function PricingCard({ t, loggedIn, pro, caps, onRegister }: { t: TFn; lo
         ) : (
           <button onClick={onRegister} style={{ ...btn, background: '#2563eb', color: '#fff' }}>{t('price.cta.reg')}</button>
         )}
-        <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 10, textAlign: 'center' }}>
+        {/* 价值锚(第 5 轮 #18):v2 定位对标顾问咨询费,货架上要说出来;措辞循红线(不构成建议) */}
+        <div style={{ fontSize: 12, color: '#78716c', marginTop: 12, textAlign: 'center' }}>{t('price.anchor')}</div>
+        <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 8, textAlign: 'center' }}>
           {t('price.note')} <a href="/legal/terms" target="_blank" rel="noreferrer" style={{ color: '#6b7280' }}>{t('foot.terms')}</a>
         </div>
       </div>

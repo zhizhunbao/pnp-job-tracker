@@ -24,5 +24,14 @@ export default async function StatsProvPage({ params }: { params: Promise<{ prov
   const rows = await loadStats(`WHERE province = $1`, [p])
   if (!rows.length) notFound()
   const srcs = await loadStatSources()
-  return <StatsProvView prov={p} rows={rows} srcs={srcs} />
+  // 全国排名(第 5 轮 #19):P3 用户要结论不是数字——「该省在招全国第 X」是免费级答案,也是跨省对比(Pro)的钩子
+  const allProv = await loadStats(`WHERE broad = 'all'`)
+  const cur = rows.find((r) => r.broad === 'all')
+  const rankBy = (get: (r: (typeof allProv)[number]) => number | null) => {
+    const mine = cur ? get(cur) : null
+    if (mine == null) return null
+    return 1 + allProv.filter((r) => (get(r) ?? -Infinity) > mine).length
+  }
+  const ranks = { open: rankBy((r) => r.openJobs), wage: rankBy((r) => r.medianWageAnnual), total: allProv.length }
+  return <StatsProvView prov={p} rows={rows} srcs={srcs} ranks={ranks} />
 }

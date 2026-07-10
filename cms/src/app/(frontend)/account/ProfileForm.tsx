@@ -104,6 +104,8 @@ export function ProfileForm({ t, userId, initial, onSaved }: { t: TFn; userId: s
         </label>
         <label style={{ ...lbl, flex: 1 }}>{t('prof.pgwp')}
           <input style={inputS} type="number" min={0} max={60} value={pgwp} onChange={(e) => setPgwp(e.target.value)} />
+          {/* 诚实注(第 5 轮 #22):match v1 不消费此字段,别让用户以为填了会进匹配 */}
+          <span style={{ display: 'block', fontSize: 11, color: '#9ca3af', fontWeight: 400, marginTop: 2 }}>{t('prof.pgwpNote')}</span>
         </label>
       </div>
 

@@ -15,6 +15,11 @@ type Dict = Record<string, string>
 
 const zh: Dict = {
   'subtitle.count': '{n} 个职位',
+  'subtitle.proof': '其中 {named} 岗命中省提名清单 · {lmia} 家雇主有外劳雇佣记录 · 官方公开数据 · 每日抓取',
+  'mv.today': '今日与你匹配:高 {h} · 中 {m}', 'up.matchN': '你今日共 {h} 个高匹配岗,免费版仅显示前 {n} 岗',
+  'advisor.left': '免费今日剩 {n} 次', 'fact.buildCta': '建档案,看这条线对你意味着什么 →',
+  'price.anchor': '参考:持牌顾问咨询通常 CA$150+/小时——先用 CA$19 把公开数据能回答的问题答掉(本站不构成移民建议)。',
+  'stats.rank': '在招职位全国第 {a} · 中位年薪全国第 {b}(共 {total} 省)', 'prof.pgwpNote': '暂用于 AI 顾问参考;窗口期匹配规则筹备中',
   'updated': '抓取 {t}',
   'tagline': '每日更新 · 全加拿大全职业 · 移民价值视角',
   'foot.disclaimer': '本站为信息聚合工具,数据自动抓取仅供参考,不构成移民 / 法律建议;我们非持牌移民顾问(RCIC),以官方来源为准。',
@@ -85,7 +90,7 @@ const zh: Dict = {
   'fact.nocTitle': '官方职业名', 'fact.nocDuties': '官方主要职责(NOC)', 'fact.nocReqs': '任职要求(NOC)',
   'fact.nocNote': 'NOC = 加拿大官方职业分类(编码第二位即 TEER);TEER = 教育/培训门槛等级,0(管理)→ 5(无学历要求)。',
   'teer.0': '管理岗', 'teer.1': '本科起', 'teer.2': '大专/学徒', 'teer.3': '大专/短训', 'teer.4': '高中/在职培训', 'teer.5': '无学历门槛',
-  'fact.scoreNote': '本站评分(满分 100,移民价值视角),与列表「评分」列同源;粗筛信号,非资格认定', 'score.base': '基准', 'score.indemand': '紧缺大类', 'score.low': '省提名清单命中', 'score.direct': '第一方雇主', 'score.exp': '经验', 'score.prov': '省份(非 ON)', 'score.total': '合计', 'score.stored': '入库',
+  'fact.scoreNote': '本站评分(满分 100,移民价值视角),与列表「评分」列同源;粗筛信号,非资格认定。此分对所有人相同——个人化结论请用「我的匹配」(需建档)', 'score.base': '基准', 'score.indemand': '紧缺大类', 'score.low': '省提名清单命中', 'score.direct': '第一方雇主', 'score.exp': '经验', 'score.prov': '省份(非 ON)', 'score.total': '合计', 'score.stored': '入库',
   'advisor.footTpl': '说明由榜单数据自动生成 · 仅供参考,不构成移民/法律建议',
   'advisor.applyLink': '投递页', 'advisor.siteLink': '公司官网',
   // 账户(E3-02)
@@ -184,6 +189,11 @@ const zh: Dict = {
 
 const en: Dict = {
   'subtitle.count': '{n} jobs',
+  'subtitle.proof': 'incl. {named} on provincial PNP lists · {lmia} employers with LMIA records · official open data, scraped daily',
+  'mv.today': 'Matches for you today: {h} high · {m} mid', 'up.matchN': 'You have {h} high-match jobs today — free plan shows only the first {n}',
+  'advisor.left': '{n} free uses left today', 'fact.buildCta': 'Create your profile to see what this means for you →',
+  'price.anchor': 'For reference: licensed-consultant sessions typically run CA$150+/hour — let CA$19 answer what public data can first (this site is not immigration advice).',
+  'stats.rank': '#{a} in open jobs · #{b} in median wage (of {total} provinces)', 'prof.pgwpNote': 'Currently informs the AI advisor; time-window match rules in the works',
   'updated': 'Scraped {t}',
   'tagline': 'Daily updates · all of Canada · immigration-value lens',
   'foot.disclaimer': 'This site is an information aggregator; auto-scraped data is for reference only and is not immigration / legal advice. We are not licensed immigration consultants (RCIC) — always verify with official sources.',
@@ -277,7 +287,7 @@ const en: Dict = {
   'fact.nocTitle': 'Official title', 'fact.nocDuties': 'Official main duties (NOC)', 'fact.nocReqs': 'Employment requirements (NOC)',
   'fact.nocNote': "NOC = Canada's official occupational classification (2nd digit of the code is the TEER); TEER = education/training tier, 0 (management) → 5 (no formal requirement).",
   'teer.0': 'management', 'teer.1': "bachelor's+", 'teer.2': 'college/apprenticeship', 'teer.3': 'college/short training', 'teer.4': 'high school/on-the-job', 'teer.5': 'no formal education',
-  'fact.scoreNote': 'Site score (out of 100, immigration-value lens), same formula as the Score column; a coarse signal, not an eligibility ruling', 'score.base': 'Baseline', 'score.indemand': 'In-demand group', 'score.low': 'On a PNP occupation list', 'score.direct': 'First-party employer', 'score.exp': 'Experience', 'score.prov': 'Province (non-ON)', 'score.total': 'Total', 'score.stored': 'stored',
+  'fact.scoreNote': 'Site score (out of 100, immigration-value lens), same formula as the Score column; a coarse signal, not an eligibility ruling. The score is the same for everyone — for a personal read use "My matches" (profile required)', 'score.base': 'Baseline', 'score.indemand': 'In-demand group', 'score.low': 'On a PNP occupation list', 'score.direct': 'First-party employer', 'score.exp': 'Experience', 'score.prov': 'Province (non-ON)', 'score.total': 'Total', 'score.stored': 'stored',
   'advisor.footTpl': 'Auto-generated from listing data · reference only, not immigration/legal advice',
   'advisor.applyLink': 'Apply', 'advisor.siteLink': 'Website',
   'nav.login': 'Sign in', 'nav.register': 'Sign up', 'acct.title': 'Account',
@@ -375,6 +385,11 @@ const en: Dict = {
 
 const ko: Dict = {
   'subtitle.count': '{n}개 공고',
+  'subtitle.proof': 'PNP 목록 해당 {named}건 · LMIA 기록 고용주 {lmia}곳 · 공식 공개 데이터 · 매일 수집',
+  'mv.today': '오늘 매칭: 높음 {h} · 중간 {m}', 'up.matchN': '오늘 높은 매칭 {h}건 — 무료는 상위 {n}건만 표시',
+  'advisor.left': '오늘 무료 {n}회 남음', 'fact.buildCta': '프로필을 만들면 나에게 어떤 의미인지 확인 →',
+  'price.anchor': '참고: 공인 컨설턴트 상담은 보통 시간당 CA$150+ — 공개 데이터로 답할 수 있는 것은 CA$19로 먼저(본 사이트는 이민 자문이 아님).',
+  'stats.rank': '채용중 전국 {a}위 · 중위 연봉 {b}위 (총 {total}개 주)', 'prof.pgwpNote': '현재 AI 어드바이저 참고용; 기간 매칭 규칙 준비 중',
   'updated': '수집 {t}',
   'tagline': '매일 갱신 · 캐나다 전역 · 이민 가치 관점',
   'foot.disclaimer': '본 사이트는 정보 수집 도구입니다. 자동 수집 데이터는 참고용이며 이민 / 법률 자문이 아닙니다. 당사는 공인 이민 컨설턴트(RCIC)가 아니며, 공식 출처를 기준으로 확인하세요.',
@@ -468,7 +483,7 @@ const ko: Dict = {
   'fact.nocTitle': '공식 직업명', 'fact.nocDuties': '공식 주요 업무(NOC)', 'fact.nocReqs': '취업 요건(NOC)',
   'fact.nocNote': 'NOC = 캐나다 공식 직업분류(코드 두 번째 자리가 TEER); TEER = 교육/훈련 요건 등급, 0(관리직) → 5(학력 요건 없음).',
   'teer.0': '관리직', 'teer.1': '학사 이상', 'teer.2': '전문대/견습', 'teer.3': '전문대/단기훈련', 'teer.4': '고졸/현장훈련', 'teer.5': '학력 요건 없음',
-  'fact.scoreNote': '본 사이트 점수(100점 만점, 이민 가치 관점), 목록 「점수」 열과 동일 산식; 대략적 신호이며 자격 판정 아님', 'score.base': '기준', 'score.indemand': '부족 대분류', 'score.low': '주 노미니 목록 해당', 'score.direct': '직접 고용주', 'score.exp': '경력', 'score.prov': '주(ON 외)', 'score.total': '합계', 'score.stored': '저장값',
+  'fact.scoreNote': '본 사이트 점수(100점 만점, 이민 가치 관점), 목록 「점수」 열과 동일 산식; 대략적 신호이며 자격 판정 아님. 이 점수는 모두에게 동일 — 개인화 결론은 「나의 매칭」(프로필 필요)', 'score.base': '기준', 'score.indemand': '부족 대분류', 'score.low': '주 노미니 목록 해당', 'score.direct': '직접 고용주', 'score.exp': '경력', 'score.prov': '주(ON 외)', 'score.total': '합계', 'score.stored': '저장값',
   'advisor.footTpl': '목록 데이터 기반 자동 생성 · 참고용, 이민/법률 자문 아님',
   'advisor.applyLink': '지원 페이지', 'advisor.siteLink': '회사 웹사이트',
   'nav.login': '로그인', 'nav.register': '회원가입', 'acct.title': '계정',

@@ -52,7 +52,7 @@ export function StatsIndexView({ rows, srcs }: { rows: StatRow[]; srcs: SrcRow[]
 }
 
 // ── 省级(汇总指标 + 按大类表)────────────────────────────────
-export function StatsProvContent({ prov, rows, srcs, t }: { prov: string; rows: StatRow[]; srcs: SrcRow[]; t: TFn }) {
+export function StatsProvContent({ prov, rows, srcs, t, ranks }: { prov: string; rows: StatRow[]; srcs: SrcRow[]; t: TFn; ranks?: { open: number | null; wage: number | null; total: number } }) {
   const all = rows.find((r) => r.broad === 'all')
   const cats = BROAD_SLUGS.map(([slug, broad]) => ({ slug, broad, row: rows.find((r) => r.broad === broad) })).filter((x) => x.row)
   const broadLabel = (b: string) => (b === '未分类' ? t('cell.uncat') : t('broad.' + b))
@@ -61,6 +61,13 @@ export function StatsProvContent({ prov, rows, srcs, t }: { prov: string; rows: 
       <div style={{ fontSize: 12.5, marginBottom: 6 }}><a href="/stats" style={{ color: '#2563eb', textDecoration: 'none' }}>← {t('stats.provIndex')}</a></div>
       <h1 style={{ fontSize: 22, margin: 0 }}>{t('stats.title', { prov: PROV_NAME[prov] || prov })}</h1>
       {all && <MetricCards r={all} t={t} />}
+      {/* 全国排名一句话结论 + 对比入口(第 5 轮 #19):P3 要的是答案,不是让用户跨页心算 */}
+      {ranks && (ranks.open != null || ranks.wage != null) && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', background: '#eef2ff', border: '1px solid #e0e7ff', borderRadius: 8, padding: '8px 12px', margin: '10px 0 0', fontSize: 13 }}>
+          <span style={{ color: '#3730a3' }}>{t('stats.rank', { a: ranks.open ?? '—', b: ranks.wage ?? '—', total: ranks.total })}</span>
+          <a href="/stats/compare" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 600, whiteSpace: 'nowrap' }}>{t('stats.compare')} →</a>
+        </div>
+      )}
       {all && <TopCities raw={all.topCities} t={t} />}
       <h2 style={{ fontSize: 15.5, margin: '18px 0 8px' }}>{t('stats.byCat')}</h2>
       <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, overflow: 'auto' }}>
@@ -85,9 +92,9 @@ export function StatsProvContent({ prov, rows, srcs, t }: { prov: string; rows: 
     </>
   )
 }
-export function StatsProvView({ prov, rows, srcs }: { prov: string; rows: StatRow[]; srcs: SrcRow[] }) {
+export function StatsProvView({ prov, rows, srcs, ranks }: { prov: string; rows: StatRow[]; srcs: SrcRow[]; ranks?: { open: number | null; wage: number | null; total: number } }) {
   const [lang, setLang, t] = useLang()
-  return <StatsShell lang={lang} setLang={setLang} t={t}><StatsProvContent prov={prov} rows={rows} srcs={srcs} t={t} /></StatsShell>
+  return <StatsShell lang={lang} setLang={setLang} t={t}><StatsProvContent prov={prov} rows={rows} srcs={srcs} t={t} ranks={ranks} /></StatsShell>
 }
 
 // ── 省×大类详情 ──────────────────────────────────────────────
