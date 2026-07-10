@@ -55,8 +55,9 @@ export function PricingCard({ t, loggedIn, pro, caps, onRegister }: { t: TFn; lo
             <th style={{ textAlign: 'left', padding: cellPad, fontWeight: 600 }}></th>
             <th style={{ padding: cellPad, fontWeight: 700, width: narrow ? 84 : 150 }}>{t('price.free')}<div style={{ fontSize: 16, marginTop: 4 }}>{t('price.freePrice')}</div></th>
             <th style={{ padding: cellPad, fontWeight: 700, width: narrow ? 110 : 200, color: '#b45309' }}><IconStar /> {t('price.pro')}
-              <div style={{ fontSize: 16, marginTop: 4, color: '#111827' }}>{P30} <span style={{ fontSize: 11.5, color: '#9ca3af', fontWeight: 400 }}>{t('price.per30')}</span></div>
-              <div style={{ fontSize: 16, color: '#111827' }}>{P90} <span style={{ fontSize: 11.5, color: '#9ca3af', fontWeight: 400 }}>{t('price.per90')}</span></div>
+              {/* nowrap:窄屏下「/ 30 天」曾被拆成两行,「天」字孤行(第 3 轮 #13) */}
+              <div style={{ fontSize: 16, marginTop: 4, color: '#111827', whiteSpace: 'nowrap' }}>{P30} <span style={{ fontSize: 11.5, color: '#9ca3af', fontWeight: 400 }}>{t('price.per30')}</span></div>
+              <div style={{ fontSize: 16, color: '#111827', whiteSpace: 'nowrap' }}>{P90} <span style={{ fontSize: 11.5, color: '#9ca3af', fontWeight: 400 }}>{t('price.per90')}</span></div>
             </th>
           </tr>
         </thead>
