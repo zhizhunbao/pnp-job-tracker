@@ -75,8 +75,12 @@ with sync_playwright() as p:
         close_banner()
         hs = headers()
         idx = next((i for i, h in enumerate(hs) if "vs" in h), -1)
-        page.locator("table tbody tr").first.locator("td").nth(idx).evaluate("el => el.click()")
-        page.wait_for_timeout(2000); shot("register-gate")  # 图2 锁列→注册框
+        # 锁标是 td 里的 <button>,点 td 本身不触发(第 10 轮空拍教训)——必须点按钮
+        cell = page.locator("table tbody tr").first.locator("td").nth(idx)
+        (cell.locator("button").first if cell.locator("button").count() else cell).evaluate("el => el.click()")
+        page.wait_for_timeout(2000)
+        if not page.locator("text=注册并登录").count(): print("WARN register-gate: modal missing")
+        shot("register-gate")  # 图2 锁列→注册框
         page.keyboard.press("Escape"); page.wait_for_timeout(400)
     except Exception: traceback.print_exc()
     try:
