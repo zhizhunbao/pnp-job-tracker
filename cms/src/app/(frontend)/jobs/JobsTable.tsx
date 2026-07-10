@@ -6,7 +6,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 // SSR 端 useLayoutEffect 无效且会告警 → 服务端退化成 useEffect。
 const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
-import { makeT, LANGS, LANG_KEY, COLS_COOKIE, type Lang, type TFn } from './i18n'
+import { makeT, streamDisplay, LANGS, LANG_KEY, COLS_COOKIE, type Lang, type TFn } from './i18n'
 import { IconChart, IconCheck, IconCompass, IconLock, IconMap, IconMapPin, IconMaximize, IconMinimize, IconSave, IconSettings, IconStar, IconTarget, IconUser, IconWarn, IconX } from '../Icons'
 import { AuthModal } from './AuthForm'
 import { UpgradeModal } from './UpgradeModal'
@@ -933,7 +933,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                         const stream = j.pnpStream  // 命中省 inclusion 清单才有,别处看不到的真信号
                         if (j.province === 'QC') { node = t('cell.pnpQc'); Object.assign(extra, { whiteSpace: 'nowrap', color: '#7c3aed', fontSize: 12.5 }) }
                         else if (stream) {       // 强:省点名招 → 浅琥珀底色徽章(全列唯一加底色的一档)
-                          node = <span style={{ background: '#fef3c7', color: '#b45309', fontWeight: 500, fontSize: 12, padding: '2px 8px', borderRadius: 6, whiteSpace: 'nowrap' }}>{stream}</span>
+                          node = <span style={{ background: '#fef3c7', color: '#b45309', fontWeight: 500, fontSize: 12, padding: '2px 8px', borderRadius: 6, whiteSpace: 'nowrap' }}>{streamDisplay(t, stream)}</span>
                           Object.assign(extra, { whiteSpace: 'nowrap' })
                         }
                         else if (j.pnpEligible) { node = t('cell.pnpSkilled'); Object.assign(extra, { whiteSpace: 'nowrap', color: '#15803d', fontWeight: 500, fontSize: 12.5 }) }  // 中:可提名
@@ -1115,7 +1115,7 @@ function PnpListSection({ job, lang, occ, draws }: { job: JobRow; lang: Lang; oc
   if (isQc) { verdict = t('pnplist.qc'); tone = '#7c3aed' }
   else if (streams.length === 0) { verdict = skilled ? t('pnplist.noList') : t('pnplist.notEligible'); tone = skilled ? '#15803d' : '#9ca3af' }
   else if (excluded) { verdict = t('pnplist.excludedHit', { noc }); tone = '#b91c1c'; vIcon = <IconX /> }
-  else if (matched) { verdict = t('pnplist.onList', { noc, label: matched.label }); tone = '#b45309'; vIcon = <IconCheck /> }
+  else if (matched) { verdict = t('pnplist.onList', { noc, label: streamDisplay(t, matched.label) }); tone = '#b45309'; vIcon = <IconCheck /> }
   else if (hasInclusion) { verdict = skilled ? t('pnplist.generic', { teer }) : t('pnplist.notEligible'); tone = skilled ? '#15803d' : '#9ca3af' }
   else { verdict = skilled ? t('pnplist.excludedMiss', { teer }) : t('pnplist.notEligible'); tone = skilled ? '#15803d' : '#9ca3af' }
 
@@ -1127,7 +1127,7 @@ function PnpListSection({ job, lang, occ, draws }: { job: JobRow; lang: Lang; oc
         <div key={s.label + s.stream} style={{ marginBottom: 10 }}>
           <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>
             {/* 通道名挂官方政策页(url 维度字段一直有,07-06 质量盘点补渲染)—— 每条清单自带出处 */}
-            {s.url ? <a href={s.url} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'underline', textDecorationColor: '#d1d5db' }}>{s.label} ↗</a> : s.label}
+            {s.url ? <a href={s.url} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'underline', textDecorationColor: '#d1d5db' }}>{streamDisplay(t, s.label)} ↗</a> : streamDisplay(t, s.label)}
           </div>
           <div style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid #f3f4f6', borderRadius: 8 }}>
             {s.occupations.map((o) => {
@@ -1310,7 +1310,10 @@ function TitleFacts({ job, lang }: { job: JobRow; lang: Lang }) {
       {gated ? <UpgradeCard t={t} reason={t('up.jobtext')} />
         : jd === null ? <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>{t('act.loadingText')}</div>
         : jd ? <JdTextView text={jd} />
-        : <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>{t('act.noText')}</div>}
+        : <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>
+            {/* 空态给出路(第 9 轮 #26):解释为什么没有 + 官方原帖直达,不留死胡同 */}
+            {t('act.noText')}{job.applyUrl ? <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ marginLeft: 6, color: '#2563eb', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('act.seeOfficial')}</a> : null}
+          </div>}
     </FactsBox>
   )
 }
@@ -1626,7 +1629,7 @@ function MeansForMe({ job, lang, plan, pnpOcc, eeOcc }: { job: JobRow; lang: Lan
           const v = VERDICT_ICON[r.verdict]
           return (
             <div key={i} style={{ fontSize: 12.5, lineHeight: 1.7, color: '#4b5563' }}>
-              <span style={{ color: v.color, fontWeight: 700 }}>{v.icon}</span> {t(r.key, r.params as Record<string, string | number>)}
+              <span style={{ color: v.color, fontWeight: 700 }}>{v.icon}</span> {t(r.key, { ...(r.params as Record<string, string | number>), ...((r.params as any)?.label ? { label: streamDisplay(t, String((r.params as any).label)) } : {}) })}
               {r.source?.url && (
                 <a href={r.source.url} target="_blank" rel="noreferrer" style={{ marginLeft: 6, fontSize: 11.5, color: '#2563eb', textDecoration: 'none' }}
                   title={r.source.fetched ? t('match.srcFetched', { d: r.source.fetched }) : undefined}>{r.source.label} ↗</a>
@@ -1644,7 +1647,7 @@ function AdvisorModal({ field, job, jobs, title, lang, plan, pnpOcc, pnpDraws, e
   const overlayClose = useOverlayClose(onClose)
   const a = advHeader(field, job, t)
   const [text, setText] = useState('')
-  const [status, setStatus] = useState<'loading' | 'streaming' | 'done' | 'error' | 'upgrade'>('loading')
+  const [status, setStatus] = useState<'loading' | 'streaming' | 'done' | 'error' | 'upgrade' | 'limited'>('loading')
 
   // 打字机(用户拍板:AI 内容必须流式感,不许整段蹦出来):网络块先进 pending,固定节奏吐字。
   // 覆盖三种「整段到达」场景:公司初判 web_fetch 工具阶段后快速吐完、服务端缓存命中、代理缓冲。
@@ -1748,7 +1751,8 @@ function AdvisorModal({ field, job, jobs, title, lang, plan, pnpOcc, pnpDraws, e
         const left = res.headers.get('X-Free-Left')
         if (left != null) setFreeLeft(Number(left))
         if (res.status === 402) { setStatus('upgrade'); return }  // 免费试用用完(E3-05)→ 升级卡
-        if (!res.ok || !res.body) { setStatus('error'); setText(t('advisor.failed', { code: res.status })); return }
+        if (res.status === 429) { setStatus('limited'); return }  // 匿名 IP 限/日上限:说人话+给出路,不甩状态码(第 9 轮 #25)
+        if (!res.ok || !res.body) { setStatus('error'); setText(t('advisor.unavail')); return }
         const reader = res.body.getReader(); const dec = new TextDecoder()
         setStatus('streaming')
         for (;;) {
@@ -1797,6 +1801,12 @@ function AdvisorModal({ field, job, jobs, title, lang, plan, pnpOcc, pnpDraws, e
           {/* 免责/AI 声明不进弹框(2026-07-06 用户拍板:合规统一在 footer 说明) */}
           {status === 'upgrade' ? (
             <UpgradeCard t={t} reason={t('up.advisor')} />
+          ) : status === 'limited' ? (
+            /* 429 说人话(第 9 轮 #25):额度用完本是注册/升级的转化时机,不是报错时机 */
+            <div style={{ margin: '10px 0', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '10px 14px', fontSize: 13.5, color: '#78350f' }}>
+              {t('advisor.limit429')}
+              {!plan.loggedIn && <a href="/account" style={{ marginLeft: 8, color: '#2563eb', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('advisor.limitCta')}</a>}
+            </div>
           ) : status === 'loading' ? (
             <p style={{ margin: '10px 0', fontSize: 14, color: '#9ca3af' }}>{t('advisor.loading')}</p>
           ) : (
@@ -1844,7 +1854,7 @@ function AdvisorChat({ field, job, lang, initialJudgment }: { field: ColKey; job
       if (res.status === 402) {  // 免费试用用完(E3-05):对话里给升级引导
         setMsgs((m) => { const c = [...m]; c[c.length - 1] = { role: 'assistant', content: `${t('up.title')} · ${t('up.advisor')} → /account` }; return c })
       } else if (!res.ok || !res.body) {
-        setMsgs((m) => { const c = [...m]; c[c.length - 1] = { role: 'assistant', content: t('advisor.failed', { code: res.status }) }; return c })
+        setMsgs((m) => { const c = [...m]; c[c.length - 1] = { role: 'assistant', content: t(res.status === 429 ? 'advisor.limit429' : 'advisor.unavail') }; return c })
       } else {
         const reader = res.body.getReader(); const dec = new TextDecoder()
         for (;;) {
@@ -1915,7 +1925,12 @@ function ActModal({ job, lang, onClose }: { job: JobRow; lang: Lang; onClose: ()
       <div style={{ padding: '4px 20px 20px', fontSize: 14, lineHeight: 1.7, color: '#374151' }}>
           {status === 'loading' ? <p style={{ color: '#9ca3af' }}>{t('act.loadingText')}</p>
             : status === 'upgrade' ? <UpgradeCard t={t} reason={t('up.jobtext')} />
-            : status === 'empty' ? <p style={{ color: '#9ca3af' }}>{t('act.noText')}</p>
+            : status === 'empty' ? (
+              <div>
+                <p style={{ color: '#9ca3af', margin: '4px 0 10px' }}>{t('act.noText')}</p>
+                {job.applyUrl && <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ display: 'inline-block', background: '#2563eb', color: '#fff', borderRadius: 8, padding: '8px 14px', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>{t('act.seeOfficial')}</a>}
+              </div>
+            )
               : <JdTextView text={text} max={4000} />}
           {/* republish 合规的官方入口=底部极简来源行(2026-07-06 拍板,取代顶部按钮+说明) */}
           {job.applyUrl && (

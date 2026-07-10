@@ -7,7 +7,7 @@ import { StatsShell, MetricCards, CaliberLine, useLang } from './ui'
 import { IconMapPin, IconScale, IconStar, IconTarget } from '../Icons'
 import { BROAD_SLUGS, PROV_NAME, type StatRow, type SrcRow } from './shared'
 import { PricingModal } from '../jobs/PricingModal'
-import type { TFn } from '../jobs/i18n'
+import { streamDisplay, type TFn } from '../jobs/i18n'
 
 const money = (v: number | null) => (v != null ? `$${Math.round(v / 1000)}K` : '—')
 const th: React.CSSProperties = { textAlign: 'left', padding: '8px 12px', fontSize: 12.5, color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap', borderBottom: '1px solid #e5e7eb' }
@@ -107,7 +107,7 @@ export function StatsCatContent({ prov, row, srcs, t }: { prov: string; row: Sta
       <MetricCards r={row} t={t} />
       {row.streamLabels && (
         <div style={{ margin: '8px 0', fontSize: 12.5, color: '#6b7280' }}>
-          {t('stats.streams')}:{row.streamLabels.split('、').map((s2) => <span key={s2} style={{ background: '#fef3c7', color: '#b45309', borderRadius: 6, padding: '2px 8px', marginLeft: 6, fontWeight: 500 }}>{s2}</span>)}
+          {t('stats.streams')}:{row.streamLabels.split('、').map((s2) => <span key={s2} style={{ background: '#fef3c7', color: '#b45309', borderRadius: 6, padding: '2px 8px', marginLeft: 6, fontWeight: 500 }}>{streamDisplay(t, s2)}</span>)}
         </div>
       )}
       <TopCities raw={row.topCities} t={t} />
@@ -154,7 +154,7 @@ export function CompareContent({ rows, srcs, isPro, loggedIn, myNocs, t }: { row
     [t('stats.medSalary'), (r) => money(r.medianSalaryAnnual)],
     [t('stats.named'), (r) => (r.namedJobs ? <span style={{ color: '#b45309', fontWeight: 600 }}>{r.namedJobs}</span> : <span style={{ color: '#9ca3af' }}>—</span>)],
     [t('stats.aip'), (r) => r.aipJobs],
-    [t('stats.streams'), (r) => r.streamLabels || '—'],
+    [t('stats.streams'), (r) => (r.streamLabels ? r.streamLabels.split('、').map((s) => streamDisplay(t, s)).join(' · ') : '—')],
   ]
   return (
     <>
