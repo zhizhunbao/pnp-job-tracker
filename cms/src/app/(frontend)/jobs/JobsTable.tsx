@@ -1040,7 +1040,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         </div>
       </footer>
 
-      {popup && <AdvisorModal field={popup.field} job={popup.job} jobs={jobs} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} />}
+      {popup && <AdvisorModal field={popup.field} job={popup.job} jobs={jobs} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} onOpenJob={(x) => setActModal({ kind: 'desc', job: x })} />}
       {actModal && <ActModal job={actModal.job} lang={lang} onClose={() => setActModal(null)} />}
       {upsell && (plan.loggedIn
         ? <UpgradeModal t={t} reason={upsell === 'ss' ? t('ss.pro') : undefined} onClose={() => setUpsell(false)} />
@@ -1367,12 +1367,12 @@ function fieldSrcUrls(field: ColKey, job: JobRow, sources: FieldSource[]): strin
 // (出处跟着对应内容走,不吊在弹窗底部);发布方/抓取时间/标签全不带 —— 合规已在 footer 统一声明。
 // pnp/ee 字段例外:清单内容来自政策页,各通道行已带自己的 ↗ 官方链接,不加岗位帖来源行。
 // field_sources 维度与 /sources 解释页照旧保留(E4-04 出处能力后置到解释页)。
-function FieldFactsSection({ field, job, jobs, lang, isPro, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc, fieldSources }: { field: ColKey; job: JobRow; jobs: JobRow[]; lang: Lang; isPro: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[] }) {
+function FieldFactsSection({ field, job, jobs, lang, isPro, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc, fieldSources, onOpenJob }: { field: ColKey; job: JobRow; jobs: JobRow[]; lang: Lang; isPro: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onOpenJob?: (j: JobRow) => void }) {
   const t = makeT(lang)
   const urls = fieldSrcUrls(field, job, fieldSources)
   return (
     <>
-      <FieldFactsInner field={field} job={job} jobs={jobs} lang={lang} isPro={isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} />
+      <FieldFactsInner field={field} job={job} jobs={jobs} lang={lang} isPro={isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} onOpenJob={onOpenJob} />
       {DERIVED_SRC_FIELDS.has(field) ? (
         <div style={{ margin: '2px 0 12px', fontSize: 11.5, color: '#9ca3af' }}>
           {t('src.label')}: {t('src.derived')}
@@ -1385,7 +1385,29 @@ function FieldFactsSection({ field, job, jobs, lang, isPro, pnpOcc, pnpDraws, ee
     </>
   )
 }
-function FieldFactsInner({ field, job, jobs, lang, isPro, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc }: { field: ColKey; job: JobRow; jobs: JobRow[]; lang: Lang; isPro: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[] }) {
+// 该公司在榜职位(第 10 轮 #27,用户反馈):行点击开本站职位描述弹窗(叠在公司弹窗上,关掉回列表;
+// 不开顾问弹窗——那会每行烧一次 LLM 额度)、去「— 城市」尾缀;「… +N」改可展开全量
+function CompanyJobsList({ here, cur, lang, onOpenJob }: { here: JobRow[]; cur: JobRow['id']; lang: Lang; onOpenJob?: (j: JobRow) => void }) {
+  const t = makeT(lang)
+  const [all, setAll] = useState(false)
+  const shown = all ? here : here.slice(0, 8)
+  return (
+    <>
+      <div style={{ marginTop: 8, fontSize: 11.5, color: '#9ca3af' }}>{t('act.jobsHere')} ({here.length})</div>
+      {shown.map((x) => (
+        <div key={x.id} style={{ fontSize: 12.5, padding: '2px 0', color: '#4b5563' }}>
+          · {onOpenJob
+            ? <button onClick={() => onOpenJob(x)} style={{ border: 'none', background: 'none', padding: 0, font: 'inherit', cursor: 'pointer', textAlign: 'left', color: x.id === cur ? '#2563eb' : '#4b5563', borderBottom: '1px dashed #d1d5db' }}>{x.title}</button>
+            : x.title}
+        </div>
+      ))}
+      {!all && here.length > 8 && (
+        <button onClick={() => setAll(true)} style={{ border: 'none', background: 'none', padding: '2px 0', fontSize: 11.5, color: '#2563eb', cursor: 'pointer' }}>{t('act.showAll', { n: here.length - 8 })}</button>
+      )}
+    </>
+  )
+}
+function FieldFactsInner({ field, job, jobs, lang, isPro, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc, onOpenJob }: { field: ColKey; job: JobRow; jobs: JobRow[]; lang: Lang; isPro: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; onOpenJob?: (j: JobRow) => void }) {
   const t = makeT(lang)
   const noc = nocDesc.find((d) => d.noc === job.noc) || null
   if (field === 'pnp') return <PnpListSection job={job} lang={lang} occ={pnpOcc} draws={pnpDraws} />
@@ -1415,17 +1437,7 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, pnpOcc, pnpDraws, eeOc
           <div style={{ marginTop: 8, fontSize: 11.5, color: '#9ca3af' }}>{t('fact.coIntro')}</div>
           <div style={{ marginTop: 4, fontSize: 12.5, color: '#4b5563', whiteSpace: 'pre-wrap', lineHeight: 1.6, border: '1px solid #f3f4f6', borderRadius: 8, padding: '8px 10px' }}>{desc}</div>
         </> : null}
-        {here.length > 1 ? <>
-          <div style={{ marginTop: 8, fontSize: 11.5, color: '#9ca3af' }}>{t('act.jobsHere')} ({here.length})</div>
-          {here.slice(0, 8).map((x) => (
-            <div key={x.id} style={{ fontSize: 12.5, padding: '2px 0', color: '#4b5563' }}>
-              · {x.applyUrl
-                ? <a href={x.applyUrl} target="_blank" rel="noreferrer" style={{ color: x.id === job.id ? '#2563eb' : '#4b5563', textDecoration: 'none', borderBottom: '1px dashed #d1d5db' }}>{x.title} ↗</a>
-                : x.title}{x.city ? ` — ${x.city}` : ''}
-            </div>
-          ))}
-          {here.length > 8 && <div style={{ fontSize: 11.5, color: '#9ca3af' }}>… +{here.length - 8}</div>}
-        </> : null}
+        {here.length > 1 ? <CompanyJobsList here={here} cur={job.id} lang={lang} onOpenJob={onOpenJob} /> : null}
       </FactsBox>
     )
   }
@@ -1642,7 +1654,7 @@ function MeansForMe({ job, lang, plan, pnpOcc, eeOcc }: { job: JobRow; lang: Lan
   )
 }
 
-function AdvisorModal({ field, job, jobs, title, lang, plan, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc, fieldSources, onClose }: { field: ColKey; job: JobRow; jobs: JobRow[]; title?: string; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onClose: () => void }) {
+function AdvisorModal({ field, job, jobs, title, lang, plan, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc, fieldSources, onClose, onOpenJob }: { field: ColKey; job: JobRow; jobs: JobRow[]; title?: string; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onClose: () => void; onOpenJob?: (j: JobRow) => void }) {
   const t = makeT(lang)
   const overlayClose = useOverlayClose(onClose)
   const a = advHeader(field, job, t)
@@ -1791,7 +1803,7 @@ function AdvisorModal({ field, job, jobs, title, lang, plan, pnpOcc, pnpDraws, e
         <div style={{ flex: 1, overflowY: 'auto', padding: '4px 20px 20px' }}>
           {/* 对我意味着什么(E5-00):个人相关性放最上;依据链同源 match() */}
           <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} />
-          <FieldFactsSection field={field} job={job} jobs={jobs} lang={lang} isPro={plan.isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} />
+          <FieldFactsSection field={field} job={job} jobs={jobs} lang={lang} isPro={plan.isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} onOpenJob={onOpenJob} />
           {/* 建档 CTA(第 5 轮 #17 = 弹框规范 D1):身份信号族对未建档用户铺「事实 → 个人化」的桥 */}
           {!plan.profileOk && ['pnp', 'ee', 'lmia', 'aip'].includes(field) && (
             <div style={{ margin: '8px 0 10px' }}>
