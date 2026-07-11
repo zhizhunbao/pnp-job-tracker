@@ -788,11 +788,32 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               <span style={filtLabel}>{t('filter.score')}</span>
               <Sel value={fScore} onChange={setFScore} opts={['high', 'mid', 'low']} all={t('all.score')} labelOf={(v) => t('sc.' + v)} />
             </div>
-            {/* 薪资(年薪 + vs中位) */}
+            {/* 薪资(年薪 + vs中位)+ 右侧:更新时间/字段(2026-07-11 用户拍板与薪资同行,省一行高度;窄屏照旧藏) */}
             <div style={filtRow}>
               <span style={filtLabel}>{t('filter.salary')}</span>
               <Sel value={fSal} onChange={setFSal} opts={['ge100', '80', '60', 'u60']} all={t('all.sal')} labelOf={(v) => t('sal.' + v)} />
               <Sel value={fVs} onChange={setFVs} opts={['above', 'above20', 'below']} all={t('all.vs')} labelOf={(v) => t('vs.' + v)} />
+              <div ref={colRef} className="jtHideNarrow" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 10, marginLeft: 'auto' }}>
+                {updatedAt && <span style={{ color: '#9ca3af', fontSize: 12, whiteSpace: 'nowrap' }}>{t('updated', { t: fmtLocal(updatedAt) })}</span>}
+                <button onClick={() => setColOpen((o) => !o)} style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', background: '#f3f4f6', whiteSpace: 'nowrap' }}><IconSettings style={{ marginRight: 5 }} />{t('fields', { n: shown.length })}</button>
+                {colOpen && (
+                  <div style={colPanel}>
+                    <div style={{ display: 'flex', gap: 6, padding: '2px 4px 6px', borderBottom: '1px solid #f3f4f6', marginBottom: 4 }}>
+                      <button onClick={mainCols} style={{ ...colBtn, fontWeight: 600, color: '#2563eb', borderColor: '#bfdbfe' }}>{t('fields.main')}</button>
+                      <button onClick={selectAllCols} style={colBtn}>{t('fields.all')}</button>
+                      <button onClick={invertCols} style={colBtn}>{t('fields.invert')}</button>
+                      {hasWidths && <button onClick={resetWidths} style={colBtn}>{t('fields.resetW')}</button>}
+                    </div>
+                    {/* match 列是「我的匹配」视图专属(E5-05),勾了也不出列——不进选择器(第 2 轮 #11) */}
+                    {COLUMNS.filter((c) => c.key !== 'match').map((c) => (
+                      <label key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 6px', fontSize: 13, color: c.always ? '#9ca3af' : '#1f2937', cursor: c.always ? 'default' : 'pointer' }}>
+                        <input type="checkbox" checked={c.always || visible.includes(c.key)} disabled={c.always} onChange={() => toggleCol(c.key)} />
+                        {t('col.' + c.key)}{c.always ? t('fields.fixed') : ''}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </>)}
           </div>
@@ -832,30 +853,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             <button onClick={toggleMatchView} style={{ border: 'none', background: 'none', padding: 0, color: '#6b7280', cursor: 'pointer', fontSize: 12.5 }}>{t('mv.exit')} ×</button>
           </div>
         )}
-        {/* 字段选择 + 更新时间:紧贴表格右上(2026-07-11 用户拍板,从搜索行挪下来);窄屏藏(卡片模式无列概念) */}
-        <div className="jtHideNarrow" style={{ display: 'flex', justifyContent: 'flex-end', margin: '0 0 6px' }}>
-          <div ref={colRef} style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 10 }}>
-            {updatedAt && <span style={{ color: '#9ca3af', fontSize: 12, whiteSpace: 'nowrap' }}>{t('updated', { t: fmtLocal(updatedAt) })}</span>}
-            <button onClick={() => setColOpen((o) => !o)} style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', background: '#f3f4f6', whiteSpace: 'nowrap' }}><IconSettings style={{ marginRight: 5 }} />{t('fields', { n: shown.length })}</button>
-            {colOpen && (
-              <div style={colPanel}>
-                <div style={{ display: 'flex', gap: 6, padding: '2px 4px 6px', borderBottom: '1px solid #f3f4f6', marginBottom: 4 }}>
-                  <button onClick={mainCols} style={{ ...colBtn, fontWeight: 600, color: '#2563eb', borderColor: '#bfdbfe' }}>{t('fields.main')}</button>
-                  <button onClick={selectAllCols} style={colBtn}>{t('fields.all')}</button>
-                  <button onClick={invertCols} style={colBtn}>{t('fields.invert')}</button>
-                  {hasWidths && <button onClick={resetWidths} style={colBtn}>{t('fields.resetW')}</button>}
-                </div>
-                {/* match 列是「我的匹配」视图专属(E5-05),勾了也不出列——不进选择器(第 2 轮 #11) */}
-                {COLUMNS.filter((c) => c.key !== 'match').map((c) => (
-                  <label key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 6px', fontSize: 13, color: c.always ? '#9ca3af' : '#1f2937', cursor: c.always ? 'default' : 'pointer' }}>
-                    <input type="checkbox" checked={c.always || visible.includes(c.key)} disabled={c.always} onChange={() => toggleCol(c.key)} />
-                    {t('col.' + c.key)}{c.always ? t('fields.fixed') : ''}
-                  </label>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+        {/* 字段选择+更新时间已并入薪资筛选行右侧(2026-07-11 用户拍板「这两个放到一行」) */}
         <div className="jtTableWrap" style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflowX: 'auto' }}>
           <table style={{ width: hasWidths ? totalW : '100%', minWidth: '100%', borderCollapse: 'collapse', fontSize: 13.5, tableLayout: hasWidths ? 'fixed' : 'auto' }}>
             {/* 末列宽设 auto:固定布局下吸收剩余空间,右缘始终贴齐容器,无右侧缝隙 */}
