@@ -1651,9 +1651,10 @@ function MeansForMe({ job, lang, plan, pnpOcc, eeOcc }: { job: JobRow; lang: Lan
           return (
             <div key={i} style={{ fontSize: 12.5, lineHeight: 1.7, color: '#4b5563' }}>
               <span style={{ color: v.color, fontWeight: 700 }}>{v.icon}</span> {t(r.key, { ...(r.params as Record<string, string | number>), ...((r.params as any)?.label ? { label: streamDisplay(t, String((r.params as any).label)) } : {}), ...((r.params as any)?.cat ? { cat: eeDisplay(t, String((r.params as any).cat)) } : {}) })}
+              {/* #33:source.label 是数据值(省通道或 EE 类别),两套映射各管各的、未命中原样透传 */}
               {r.source?.url && (
                 <a href={r.source.url} target="_blank" rel="noreferrer" style={{ marginLeft: 6, fontSize: 11.5, color: '#2563eb', textDecoration: 'none' }}
-                  title={r.source.fetched ? t('match.srcFetched', { d: r.source.fetched }) : undefined}>{r.source.label} ↗</a>
+                  title={r.source.fetched ? t('match.srcFetched', { d: r.source.fetched }) : undefined}>{streamDisplay(t, eeDisplay(t, r.source.label))} ↗</a>
               )}
             </div>
           )
