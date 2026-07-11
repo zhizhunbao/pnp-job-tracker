@@ -1266,6 +1266,9 @@ function JdTextView({ text, max = 4000 }: { text: string; max?: number }) {
     .replace(JD_INLINE_RE, '\n')      // 已知标签前断行
     .replace(JD_HR_DASH_RE, '\n')     // HR「Label- 值」变体前断行
     .replace(/\s+\*\s+/g, '\n')       // "* 项" 拆行(星号本身在下方统一剥掉)
+    // 行内圆点 bullet 拆行(2026-07-10 用户第四例,CER 帖:「decision making;• Design」——源头丢换行,
+    // 圆点前可无空格;圆点后必有空格才算列表项,防误伤小数/代码;圆点在下方统一剥掉)
+    .replace(/\s*[•▪◦‣]\s+/g, '\n')
     .split('\n')
     // 一句一行(07-06 用户拍板):句末标点(前一字符是小写/数字/右括号,防 $20.00、U.S. 误拆)
     // + 可选空格 + 大写开头 → 断行;兼容 Job Bank 抓取的无空格粘连("asset.Core")
@@ -1681,15 +1684,15 @@ function AdvisorModal({ field, job, jobs, title, lang, plan, pnpOcc, pnpDraws, e
     return () => clearInterval(id)
   }, [])
 
-  // 弹框尺寸/全屏/位置 —— 默认更大(720×620),可全屏、标题栏拖动、右下角拉伸;尺寸+全屏记忆
-  // 窄屏(E8-03):强制全屏,禁拖拽/八向拉伸/全屏切换钮
+  // 弹框尺寸/全屏/位置 —— 默认更大(900×760,2026-07-10 用户反馈「弹框不够大,内容显示不全」再加档),
+  // 可全屏、标题栏拖动、右下角拉伸;尺寸+全屏记忆。窄屏(E8-03):强制全屏,禁拖拽/八向拉伸/全屏切换钮
   const narrow = useIsNarrow()
   const [fullPref, setFull] = useState(false)
   const full = fullPref || narrow
-  const [size, setSize] = useState({ w: 720, h: 620 })
+  const [size, setSize] = useState({ w: 900, h: 760 })
   const [pos, setPos] = useState(() => {
     if (typeof window === 'undefined') return { x: 80, y: 60 }
-    const w = Math.min(720, window.innerWidth - 24), h = Math.min(620, window.innerHeight - 24)
+    const w = Math.min(900, window.innerWidth - 24), h = Math.min(760, window.innerHeight - 24)
     return { x: Math.max(12, (window.innerWidth - w) / 2), y: Math.max(12, (window.innerHeight - h) / 2) }
   })
   const sizeRef = useRef(size); sizeRef.current = size
@@ -1848,7 +1851,13 @@ function AdvisorChat({ field, job, lang, initialJudgment }: { field: ColKey; job
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const endRef = useRef<HTMLDivElement | null>(null)
+  const inputRef = useRef<HTMLInputElement | null>(null)
   useEffect(() => { endRef.current?.scrollIntoView({ block: 'nearest' }) }, [msgs])
+  // 建议问题(2026-07-10 用户点名「类似 Claude,默认给一个问题,Tab 填入直接回车提问」):
+  // 首轮对话前显示;Tab / 点 chip 填入,再回车发送。按字段族给一条,不臆测多条。
+  const suggestion = t(field === 'title' ? 'advisor.sug.title' : field === 'company' ? 'advisor.sug.company' : 'advisor.sug.generic')
+  const showSug = !msgs.length && !input
+  const fillSug = () => { setInput(suggestion); inputRef.current?.focus() }
 
   const send = async () => {
     const q = input.trim()
@@ -1893,10 +1902,19 @@ function AdvisorChat({ field, job, lang, initialJudgment }: { field: ColKey; job
         </div>
       ))}
       <div ref={endRef} />
+      {showSug && (
+        <button onClick={fillSug}
+          style={{ display: 'block', maxWidth: '100%', textAlign: 'left', margin: '8px 0 0', padding: '6px 11px', border: '1px dashed #c7d2fe', borderRadius: 10, background: '#f5f7ff', color: '#4f46e5', fontSize: 12.5, lineHeight: 1.5, cursor: 'pointer' }}>
+          {suggestion} <span style={{ color: '#a5b4fc', fontSize: 11 }}>⇥ Tab</span>
+        </button>
+      )}
       <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-        <input value={input} onChange={(e) => setInput(e.target.value)} disabled={busy}
-          onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
-          placeholder={t('advisor.chatPlaceholder')}
+        <input ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)} disabled={busy}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
+            else if (e.key === 'Tab' && showSug) { e.preventDefault(); fillSug() }  // Tab 填入建议问题(用户点名)
+          }}
+          placeholder={showSug ? suggestion : t('advisor.chatPlaceholder')}
           style={{ flex: 1, height: 36, boxSizing: 'border-box', padding: '0 10px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 13.5, color: '#1f2937', background: '#fff' }} />
         <button onClick={send} disabled={busy || !input.trim()}
           style={{ border: 'none', background: busy || !input.trim() ? '#c7d2fe' : '#6366f1', color: '#fff', borderRadius: 8, padding: '0 14px', height: 36, cursor: busy || !input.trim() ? 'default' : 'pointer', fontSize: 13.5, flexShrink: 0 }}>
