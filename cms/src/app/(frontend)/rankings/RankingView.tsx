@@ -23,8 +23,11 @@ export function RankingTable({ slug, items, t }: { slug: string; items: RankRow[
   // 第 2 轮 #7 核查:LMIA 强雇主与省提名清单命中长期不重叠(全库 436 命中岗,30 强全 0)——
   // 整列 0 像坏数据,全零时藏列;哪天数据重叠了自动恢复,排序键不受影响(ETL 侧)。
   const showNamed = isCompany && items.some((i) => (i.namedJobs ?? 0) > 0)
-  // 「更新于」= 榜内最新发布日(第 11 轮 #30:原先取第一行的 datePosted,周榜首行是 7 天前的帖就谎报 7 天前)
-  const updated = items.reduce((m, i) => (i.datePosted && i.datePosted > m ? i.datePosted : m), '').slice(0, 10) || new Date().toISOString().slice(0, 10)
+  // 「更新于」= 榜内最新发布日(第 11 轮 #30),但**不超过今天**(第 12 轮 #32:帖面日期是 ET 时区
+  // 可到「明天」,「更新于未来」损口径可信度)——用浏览者本地日期封顶
+  const today = new Date().toLocaleDateString('en-CA')  // en-CA = YYYY-MM-DD
+  const maxPosted = items.reduce((m, i) => (i.datePosted && i.datePosted > m ? i.datePosted : m), '').slice(0, 10)
+  const updated = (maxPosted && maxPosted < today ? maxPosted : today)
   return (
     <>
       <div style={{ fontSize: 12.5, color: '#9ca3af', margin: '6px 0 4px' }}>{t('rank.updated', { d: updated })}</div>

@@ -1269,11 +1269,17 @@ function JdTextView({ text, max = 4000 }: { text: string; max?: number }) {
     // 行内圆点 bullet 拆行(2026-07-10 用户第四例,CER 帖:「decision making;• Design」——源头丢换行,
     // 圆点前可无空格;圆点后必有空格才算列表项,防误伤小数/代码;圆点在下方统一剥掉)
     .replace(/\s*[•▪◦‣]\s+/g, '\n')
+    // markdown 强调残渣(第 12 轮 #31,第 5 套版式:Indeed 富文本转义,如「*Administrator *to」
+    // 「*Key Responsibilities:*」「\**_*…*_」)——先拍掉连堆的 */_/\,再清孤立 */\;
+    // 下划线只在连堆里清(URL/邮箱残件可能带合法下划线);真实 JD 不用星号行文,误伤面≈0。
+    // 注意顺序:必须在上面「 * 项」拆行之后,别抢了列表拆行的星号。
+    .replace(/[*\\_]{2,}/g, ' ')
+    .replace(/[*\\]/g, ' ')
     .split('\n')
     // 一句一行(07-06 用户拍板):句末标点(前一字符是小写/数字/右括号,防 $20.00、U.S. 误拆)
     // + 可选空格 + 大写开头 → 断行;兼容 Job Bank 抓取的无空格粘连("asset.Core")
     .flatMap((l) => l.split(/(?<=[a-z0-9)][.!?])\s*(?=[A-Z])/))
-    .map((s) => s.trim().replace(/^[•·▪◦‣*-]+\s*/, ''))
+    .map((s) => s.trim().replace(/^[•·▪◦‣*-]+\s*/, '').replace(/\s{2,}/g, ' '))
     .filter(Boolean)
   return (
     <div style={{ margin: '4px 0 0', fontSize: 12.5, color: '#4b5563', lineHeight: 1.6 }}>
