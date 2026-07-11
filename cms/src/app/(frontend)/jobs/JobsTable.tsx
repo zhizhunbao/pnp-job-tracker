@@ -1892,7 +1892,7 @@ const SUG_MARK = '❓'
 // 建议问题长度红线(2026-07-11 用户拍板「不要太长」):>60 字裁到首个问号;还收不住 → 弃用退罐头
 const capSug = (q: string): string => {
   if (q.length <= 60) return q
-  const m = q.match(/^[^??]{0,59}[??]/)
+  const m = q.match(/^[^?？]{0,59}[?？]/)
   return m ? m[0] : ''
 }
 const extractSug = (s: string): { body: string; sug: string } => {
@@ -1901,7 +1901,7 @@ const extractSug = (s: string): { body: string; sug: string } => {
   const t = s.replace(/\s+$/, '')
   const nl = t.lastIndexOf('\n')
   const last = t.slice(nl + 1).trim()
-  if (nl > 0 && last.length >= 8 && last.length <= 70 && /[??]$/.test(last) && !last.startsWith('【')) {
+  if (nl > 0 && last.length >= 8 && last.length <= 70 && /[?？]$/.test(last) && !last.startsWith('【')) {
     return { body: t.slice(0, nl).replace(/\s+$/, ''), sug: last }
   }
   return { body: t, sug: '' }
