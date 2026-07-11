@@ -46,7 +46,10 @@ PROV_FULL = {
     "SK": "Saskatchewan", "MB": "Manitoba", "NB": "New Brunswick", "NS": "Nova Scotia",
     "NL": "Newfoundland and Labrador", "PE": "Prince Edward Island",
 }
-AGENCY = re.compile(r"recruit|staffing|talent|personnel|placement|outsourc|mercor|adecco|randstad|source code", re.I)
+AGENCY = re.compile(r"recruit|staffing|talent|personnel|placement|outsourc|mercor|adecco|randstad|source code|manpower", re.I)
+# Job Bank 官方中介标记(第 17 轮 #41 拍板「视同中介整帖过滤」):帖面这句提示会被黏进 title,
+# 出现即中介代发,零误报——比公司名正则可靠(Manpower/Rapihire/The Hiring Partner 等全靠它抓出)
+AGENCY_NOTE = "this job posting is posted by a recruitment agency"
 SKIP_SLUGS = {"cmc-microsystems"}
 # 来源显示标签清洗:JB 聚合的各原始板统一显示「Job Bank」;ATS 板美化。原始 source 仍保留。
 SOURCE_PRETTY = {"lever": "Lever", "bamboohr": "BambooHR", "greenhouse": "Greenhouse",
@@ -232,6 +235,8 @@ def build():
     if IN_JOBBANK.exists():
         for j in json.loads(IN_JOBBANK.read_text(encoding="utf-8")):
             if AGENCY.search(j.get("employer", "")):  # 跳过中介
+                continue
+            if AGENCY_NOTE in (j.get("title") or "").lower():  # 中介代发标记(#41):整帖过滤
                 continue
             cslug = slugify(j.get("employer") or "unknown")
             key = f"{cslug}|{norm(j.get('title',''))}"

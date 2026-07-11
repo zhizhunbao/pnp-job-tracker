@@ -713,10 +713,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1.5rem 1.25rem', width: '100%', boxSizing: 'border-box', flex: '1 0 auto' }}>
         <h1 style={{ margin: '0 0 2px', color: '#111827' }}>Jobs</h1>
         <p style={{ color: '#6b7280', marginTop: 0, fontSize: 13 }}>
-          {/* 标题数字永远 = 库内真实总数(第 15 轮 #34,用户指出:全量拉取有 2 万行护栏,拉完后数字
-              降级成「已载入行数」恰好 20000 像写死还谎报;被截掉的是按发布时间最旧的尾巴)。
-              截断小注用户拍板删除(废话);筛选态分母仍用已载入数(筛选只扫载入行)。 */}
-          {rows.length === jobs.length ? t('subtitle.count', { n: totalCount || jobs.length }) : `${rows.length} / ${jobs.length}`}
+          {/* 标题数字永远 = 库内真实总数(第 15 轮 #34);筛选/匹配态只报命中数不带分母(第 17 轮 #42 拍板:
+              「/20000」分母=载入护栏非真实总数,像写死还两头不准——去掉分母零谎报零歧义)。 */}
+          {rows.length === jobs.length ? t('subtitle.count', { n: totalCount || jobs.length }) : t('subtitle.hits', { n: rows.length })}
           {/* 差异化证言(第 5 轮 #14):首屏 3 秒回答「为什么不用 Indeed」——数字都是本站独有信号 */}
           {proof && (proof.named > 0 || proof.lmia > 0) && (
             <span style={{ display: 'block', marginTop: 2, fontSize: 12, color: '#9ca3af' }}>{t('subtitle.proof', { named: proof.named, lmia: proof.lmia })}</span>
@@ -1978,6 +1977,7 @@ const SUG_MARK = '❓'
 // 问题裸奔在正文结尾 —— 2026-07-11 用户实机撞到)。都没有 → 原文返回,chip 走罐头池。
 // 建议问题长度红线(2026-07-11 用户拍板「不要太长」):>60 字裁到首个问号;还收不住 → 弃用退罐头
 const capSug = (q: string): string => {
+  q = q.replace(/\*{2,}/g, '')  // 建议问题同剥 **(#43;进 placeholder 的是裸字符串,不走 renderAI)
   if (q.length <= 60) return q
   const m = q.match(/^[^?？]{0,59}[?？]/)
   return m ? m[0] : ''
@@ -2089,7 +2089,8 @@ function AdvisorChat({ field, job, lang, initialJudgment, initialSug }: { field:
         <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start', marginBottom: 6 }}>
           <div style={{ maxWidth: '85%', padding: '7px 11px', borderRadius: 10, fontSize: 13.5, lineHeight: 1.6, whiteSpace: 'pre-wrap',
             background: m.role === 'user' ? '#eef2ff' : '#f9fafb', color: '#374151' }}>
-            {m.role === 'assistant' && !m.content ? <span style={{ color: '#9ca3af' }}>▋</span> : m.content}
+            {/* 追问回复同走 renderAI(#43 剥 **;【节头】若出现也一并加粗) */}
+            {m.role === 'assistant' ? (m.content ? renderAI(m.content) : <span style={{ color: '#9ca3af' }}>▋</span>) : m.content}
           </div>
         </div>
       ))}
@@ -2160,9 +2161,10 @@ function ActModal({ job, lang, onClose }: { job: JobRow; lang: Lang; onClose: ()
   )
 }
 
-// 把 AI 文本里的【小标题】加粗,保留换行
+// 把 AI 文本里的【小标题】加粗,保留换行;markdown 强调残渣 ** 先剥(第 16 轮 #43:正文 pre-wrap
+// 纯文本渲染,模型写的 **加粗** 不会变粗只碍眼;流式期间跨帧的孤 * 下一帧凑齐即消,无需处理边界)
 function renderAI(text: string): React.ReactNode {
-  return text.split(/(【[^】]+】)/g).map((seg, i) => {
+  return text.replace(/\*{2,}/g, '').split(/(【[^】]+】)/g).map((seg, i) => {
     if (/^【[^】]+】$/.test(seg)) return <strong key={i} style={{ display: 'block', marginTop: i ? 10 : 0, marginBottom: 2, color: '#111827' }}>{seg}</strong>
     const body = seg.replace(/^\n+/, '').replace(/\n+$/, '').replace(/\n{3,}/g, '\n\n')  // 去段首尾空行+压多余空行,免大空隙
     return body ? <span key={i} style={{ whiteSpace: 'pre-wrap' }}>{body}</span> : null

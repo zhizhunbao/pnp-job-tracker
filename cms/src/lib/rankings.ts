@@ -8,7 +8,7 @@ export async function fetchRankingRows(pool: any, slug: string): Promise<RankRow
   const { rows } = await pool.query(
     `SELECT slug, rank, kind, external_id, title, company, company_slug, city, province, noc, teer, score,
             salary_text, salary_annual, pnp_stream, ee_category, date_posted, apply_url, official_url,
-            open_jobs, named_jobs, avg_score
+            open_jobs, named_jobs, avg_score, lmia_positions, lmia_quarter
      FROM rankings WHERE slug = $1 ORDER BY rank ASC`, [slug])
   const num = (v: any) => (v == null ? null : Number(v))
   return rows.map((r: any) => ({
@@ -19,5 +19,6 @@ export async function fetchRankingRows(pool: any, slug: string): Promise<RankRow
     pnpStream: r.pnp_stream ?? '', eeCategory: r.ee_category ?? '', datePosted: r.date_posted ?? '',
     applyUrl: r.apply_url ?? '', officialUrl: r.official_url ?? '',
     openJobs: num(r.open_jobs), namedJobs: num(r.named_jobs), avgScore: num(r.avg_score),
+    lmiaPositions: num(r.lmia_positions), lmiaQuarter: r.lmia_quarter ?? '',
   }))
 }

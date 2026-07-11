@@ -28,5 +28,8 @@ export const Rankings: CollectionConfig = {
     { name: 'openJobs', type: 'number' },
     { name: 'namedJobs', type: 'number' },
     { name: 'avgScore', type: 'number' },
+    // #21(第 17 轮拍板):sponsor-likely 第一排序键上榜可见——近两年获批 LMIA 技能股职位数 + 最近季度
+    { name: 'lmiaPositions', type: 'number' },
+    { name: 'lmiaQuarter', type: 'text' },
   ],
 }

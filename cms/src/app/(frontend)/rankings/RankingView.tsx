@@ -13,6 +13,7 @@ export type RankRow = {
   pnpStream: string; eeCategory: string; datePosted: string
   applyUrl: string; officialUrl: string
   openJobs: number | null; namedJobs: number | null; avgScore: number | null
+  lmiaPositions: number | null; lmiaQuarter: string  // #21(第 17 轮):第一排序键上榜可见
 }
 
 const th: React.CSSProperties = { textAlign: 'left', padding: '9px 12px', fontSize: 12.5, color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap', borderBottom: '1px solid #e5e7eb' }
@@ -37,7 +38,7 @@ export function RankingTable({ slug, items, t }: { slug: string; items: RankRow[
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             {isCompany ? (
-              <tr><th style={th}>#</th><th style={th}>{t('rank.col.company')}</th><th style={th}>{t('col.province')}</th>{showNamed && <th style={th}>{t('rank.col.namedJobs')}</th>}<th style={th}>{t('rank.col.openJobs')}</th><th style={th}>{t('rank.col.avgScore')}</th><th style={th}></th></tr>
+              <tr><th style={th}>#</th><th style={th}>{t('rank.col.company')}</th><th style={th}>{t('col.province')}</th><th style={th}>{t('rank.col.lmia')}</th>{showNamed && <th style={th}>{t('rank.col.namedJobs')}</th>}<th style={th}>{t('rank.col.openJobs')}</th><th style={th}>{t('rank.col.avgScore')}</th><th style={th}></th></tr>
             ) : (
               <tr><th style={th}>#</th><th style={th}>{t('col.title')}</th><th style={th}>{t('col.company')}</th><th style={th}>{t('col.city')}</th><th style={th}>{t('col.salary')}</th><th style={th}>PNP/EE</th><th style={th}>{t('col.score')}</th><th style={th}>{t('col.datePosted')}</th></tr>
             )}
@@ -48,6 +49,10 @@ export function RankingTable({ slug, items, t }: { slug: string; items: RankRow[
                 <td style={{ ...td, color: '#9ca3af' }}>{r.rank}</td>
                 <td style={{ ...td, fontWeight: 600 }}>{r.officialUrl ? <a href={r.officialUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{r.company} ↗</a> : r.company}</td>
                 <td style={td}>{r.province}</td>
+                {/* #21:第一排序键(近两年 LMIA 技能股获批职位数)上榜可见;灰色尾缀=最近获批季度 */}
+                <td style={{ ...td, whiteSpace: 'nowrap' }}>{r.lmiaPositions
+                  ? <><span style={{ fontWeight: 600, color: '#15803d' }}>{r.lmiaPositions}</span>{r.lmiaQuarter && <span style={{ color: '#9ca3af', fontSize: 11.5 }}> · {r.lmiaQuarter}</span>}</>
+                  : <span style={{ color: '#9ca3af' }}>—</span>}</td>
                 {showNamed && <td style={{ ...td, fontWeight: 600, color: '#b45309' }}>{r.namedJobs}</td>}
                 <td style={td}>{r.openJobs}</td>
                 <td style={td}>{r.avgScore ?? '—'}</td>

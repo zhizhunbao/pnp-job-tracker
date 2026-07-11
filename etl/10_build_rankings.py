@@ -30,7 +30,7 @@ OUT_RANKINGS = _paths.MART / "rankings.json"
 
 WEEKLY_N = 50
 SPONSOR_N = 30
-AGENCY = re.compile(r"recruit|staffing|talent|personnel|placement|outsourc|mercor|adecco|randstad|source code", re.I)
+AGENCY = re.compile(r"recruit|staffing|talent|personnel|placement|outsourc|mercor|adecco|randstad|source code|manpower", re.I)
 
 
 def is_direct(j: dict) -> bool:
@@ -83,7 +83,8 @@ def main() -> None:
             continue
         comp = companies.get(j["companySlug"]) or {}
         a = agg.setdefault(j["companySlug"], {"name": name, "open": 0, "named": 0, "scores": [], "provs": set(), "official": "",
-                                              "lmia": comp.get("lmiaPositionsSkilled") or 0})  # 榜单口径:剔除农业/季节股(温室/渔场百人季节工会淹没技能类榜)
+                                              "lmia": comp.get("lmiaPositionsSkilled") or 0,   # 榜单口径:剔除农业/季节股(温室/渔场百人季节工会淹没技能类榜)
+                                              "lmiaQ": comp.get("lmiaLastQuarter") or ""})     # 第 17 轮 #21:第一排序键上榜可见,带最近季度
         a["open"] += 1
         if j.get("pnpStream"):
             a["named"] += 1
@@ -106,6 +107,7 @@ def main() -> None:
             "openJobs": a["open"], "namedJobs": a["named"],
             "avgScore": round(sum(a["scores"]) / len(a["scores"]), 1) if a["scores"] else None,
             "officialUrl": a["official"], "companySlug": slug,
+            "lmiaPositions": a["lmia"] or None, "lmiaQuarter": a["lmiaQ"] or None,  # #21:榜单显示第一排序键
         })
     print(f"sponsor-likely: 公司 {len(agg)} → 具名命中 {len(ranked)} 家进榜")
 
