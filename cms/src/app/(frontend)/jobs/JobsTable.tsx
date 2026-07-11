@@ -498,7 +498,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const mainCols = () => saveCols(DEFAULT_COLS) // 一键只显示默认的核心列
   const shownBase = COLUMNS.filter((c) => c.key !== 'match' && (c.always || visible.includes(c.key)))
   // 匹配视图:match 固定第一列,其余照用户列偏好
-  const shown = matchView ? [COLUMNS.find((c) => c.key === 'match')!, ...shownBase] : shownBase
+  const shownAll = matchView ? [COLUMNS.find((c) => c.key === 'match')!, ...shownBase] : shownBase
 
   // ── 列宽:默认纯自动布局(table-layout:auto,永不截断);用户拖表头竖线/双击才切固定布局。
   //    会话内有效、不落 localStorage —— 刷新即回自动布局。当初 bug 正是「localStorage 固定布局 +
@@ -507,6 +507,21 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const [widths, setWidths] = useState<Record<string, number>>({})
   const headRowRef = useRef<HTMLTableRowElement>(null)
   const hasWidths = Object.keys(widths).length > 0
+
+  // #35(2026-07-11 用户拍板「末列截断→整列隐藏」):自动布局下容器装不下时,从右往左把
+  // 非固定列整列藏起(操作列 always 保底不藏),配「N 列宽度不够已隐藏」小注;
+  // 用户拖过列宽(固定布局)= 有意横滚,维持原滚动行为不隐藏。
+  const [hideN, setHideN] = useState(0)
+  const tableWrapRef = useRef<HTMLDivElement | null>(null)
+  const shown = (() => {
+    if (!hideN || hasWidths) return shownAll
+    const res = [...shownAll]
+    let n = hideN
+    for (let i = res.length - 1; i >= 0 && n > 0; i--) {
+      if (!res[i].always && res[i].key !== 'match') { res.splice(i, 1); n-- }
+    }
+    return res
+  })()
   const totalW = shown.reduce((s, c) => s + (widths[c.key] ?? 0), 0)
   const resetWidths = () => setWidths({})
 
@@ -537,6 +552,32 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     window.addEventListener('resize', measureSticky)
     return () => window.removeEventListener('resize', measureSticky)
   }, [shownKey])  // eslint-disable-line react-hooks/exhaustive-deps
+
+  // #35 量与藏:hideN=0(全列在渲)且溢出时,量各列实宽、从右往左挑非固定列凑够溢出量 → 一次 setHideN。
+  // hideN>0 后本效应不再动作(稳态零成本);列集/布局切换与窗口变宽 → 先归零全渲再量(短暂闪列可接受)。
+  const shownAllKey = shownAll.map((c) => c.key).join(',')
+  const measureFit = () => {
+    if (hasWidths || hideN > 0) return
+    const wrap = tableWrapRef.current, head = headRowRef.current
+    if (!wrap || !head) return
+    const over = wrap.scrollWidth - wrap.clientWidth
+    if (over <= 1) return
+    const ths = [...head.children] as HTMLElement[]
+    let need = over, n = 0
+    for (let i = shown.length - 1; i >= 0 && need > 0; i--) {
+      if (shown[i].always || shown[i].key === 'match') continue
+      need -= ths[i]?.getBoundingClientRect().width ?? 0
+      n++
+    }
+    if (n) setHideN(n)
+  }
+  useIsoLayoutEffect(() => { setHideN(0) }, [shownAllKey, hasWidths])  // eslint-disable-line react-hooks/exhaustive-deps
+  useIsoLayoutEffect(() => { measureFit() })  // 每渲后守卫式检查(只在 hideN=0 且溢出时动作)
+  useEffect(() => {
+    const onR = () => setHideN(0)  // 归零 → 渲染全列 → measureFit 重新裁
+    window.addEventListener('resize', onR)
+    return () => window.removeEventListener('resize', onR)
+  }, [])
   // 固定列单元格:sticky + 累计 left + 不透明底色(挡住滚动内容);末固定列加右阴影分隔
   const frozenStyle = (key: ColKey, bg: string): React.CSSProperties =>
     !hasWidths && frozenSet.has(key) && stickyLeft[key] != null
@@ -847,7 +888,11 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             <button onClick={toggleMatchView} style={{ border: 'none', background: 'none', padding: 0, color: '#6b7280', cursor: 'pointer', fontSize: 12.5 }}>{t('mv.exit')} ×</button>
           </div>
         )}
-        <div className="jtTableWrap" style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflowX: 'auto' }}>
+        {/* #35 小注:被宽度藏掉的列数(点「字段」或拉宽窗口可恢复) */}
+        {hideN > 0 && !hasWidths && (
+          <div style={{ textAlign: 'right', fontSize: 11.5, color: '#9ca3af', margin: '0 0 4px' }}>{t('cols.hidden', { n: hideN })}</div>
+        )}
+        <div ref={tableWrapRef} className="jtTableWrap" style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflowX: 'auto' }}>
           <table style={{ width: hasWidths ? totalW : '100%', minWidth: '100%', borderCollapse: 'collapse', fontSize: 13.5, tableLayout: hasWidths ? 'fixed' : 'auto' }}>
             {/* 末列宽设 auto:固定布局下吸收剩余空间,右缘始终贴齐容器,无右侧缝隙 */}
             {hasWidths && <colgroup>{shown.map((c, i) => <col key={c.key} style={{ width: i === shown.length - 1 ? 'auto' : widths[c.key] }} />)}</colgroup>}
@@ -1858,6 +1903,13 @@ function AdvisorModal({ field, job, jobs, title, lang, plan, pnpOcc, pnpDraws, e
 // ── 顾问对话框(弹框下半)──────────────────────────────────────
 // 多轮 grounded chat:把「初判」当首个 assistant 轮喂回去保连续性;后端 system 始终带整条岗位事实 + 铁律。
 type ChatMsg = { role: 'user' | 'assistant'; content: string }
+// 建议问题池(2026-07-10 用户点名「类似 Claude,Tab 填入直接提问」;07-11 追加「按轮迭代」):
+// 每字段族 3 条,一轮问答完推进到下一条,用完即止(不循环重复)。
+const SUG_POOL: Record<'title' | 'company' | 'generic', string[]> = {
+  title: ['advisor.sug.title', 'advisor.sug.title2', 'advisor.sug.title3'],
+  company: ['advisor.sug.company', 'advisor.sug.company2', 'advisor.sug.company3'],
+  generic: ['advisor.sug.generic', 'advisor.sug.generic2', 'advisor.sug.generic3'],
+}
 function AdvisorChat({ field, job, lang, initialJudgment }: { field: ColKey; job: JobRow; lang: Lang; initialJudgment: string }) {
   const t = makeT(lang)
   const [msgs, setMsgs] = useState<ChatMsg[]>([])
@@ -1866,10 +1918,31 @@ function AdvisorChat({ field, job, lang, initialJudgment }: { field: ColKey; job
   const endRef = useRef<HTMLDivElement | null>(null)
   const inputRef = useRef<HTMLInputElement | null>(null)
   useEffect(() => { endRef.current?.scrollIntoView({ block: 'nearest' }) }, [msgs])
-  // 建议问题(2026-07-10 用户点名「类似 Claude,默认给一个问题,Tab 填入直接回车提问」):
-  // 首轮对话前显示;Tab / 点 chip 填入,再回车发送。按字段族给一条,不臆测多条。
-  const suggestion = t(field === 'title' ? 'advisor.sug.title' : field === 'company' ? 'advisor.sug.company' : 'advisor.sug.generic')
-  const showSug = !msgs.length && !input
+
+  // 追问回答打字机(07-11 用户点名「要流式,不要一下蹦出来」):与初判同一手法——
+  // 网络块进 pending,固定节奏吐字(速率与积压成正比);吐完才解 busy/推进建议。
+  const pendingRef = useRef('')
+  const netDoneRef = useRef(false)
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (pendingRef.current) {
+        const n = Math.max(2, Math.ceil(pendingRef.current.length / 12))
+        const chunk = pendingRef.current.slice(0, n)
+        pendingRef.current = pendingRef.current.slice(n)
+        setMsgs((m) => { const c = [...m]; c[c.length - 1] = { ...c[c.length - 1], content: c[c.length - 1].content + chunk }; return c })
+      } else if (netDoneRef.current) {
+        netDoneRef.current = false
+        setBusy(false)
+        setSugIdx((i) => i + 1)  // 一轮完成 → 建议问题迭代到下一条
+      }
+    }, 33)
+    return () => clearInterval(id)
+  }, [])
+
+  const fam: 'title' | 'company' | 'generic' = field === 'title' ? 'title' : field === 'company' ? 'company' : 'generic'
+  const [sugIdx, setSugIdx] = useState(0)
+  const suggestion = sugIdx < SUG_POOL[fam].length ? t(SUG_POOL[fam][sugIdx]) : ''
+  const showSug = !!suggestion && !busy && !input
   const fillSug = () => { setInput(suggestion); inputRef.current?.focus() }
 
   const send = async () => {
@@ -1887,21 +1960,25 @@ function AdvisorChat({ field, job, lang, initialJudgment }: { field: ColKey; job
       })
       if (res.status === 402) {  // 免费试用用完(E3-05):对话里给升级引导
         setMsgs((m) => { const c = [...m]; c[c.length - 1] = { role: 'assistant', content: `${t('up.title')} · ${t('up.advisor')} → /account` }; return c })
+        setBusy(false)
       } else if (!res.ok || !res.body) {
         setMsgs((m) => { const c = [...m]; c[c.length - 1] = { role: 'assistant', content: t(res.status === 429 ? 'advisor.limit429' : 'advisor.unavail') }; return c })
+        setBusy(false)
       } else {
+        // 流式回答(07-11 #36):网络块只进 pending,打字机节奏吐字;吐完(interval 里)才解 busy
         const reader = res.body.getReader(); const dec = new TextDecoder()
         for (;;) {
           const { done, value } = await reader.read()
           if (done) break
-          const d = dec.decode(value, { stream: true })
-          setMsgs((m) => { const c = [...m]; c[c.length - 1] = { role: 'assistant', content: c[c.length - 1].content + d }; return c })
+          pendingRef.current += dec.decode(value, { stream: true })
         }
+        netDoneRef.current = true
       }
     } catch {
+      pendingRef.current = ''  // 半途断流:清掉积压,别往错误文案后面继续吐字
       setMsgs((m) => { const c = [...m]; c[c.length - 1] = { role: 'assistant', content: t('advisor.offline') }; return c })
+      setBusy(false)
     }
-    setBusy(false)
   }
 
   return (
@@ -1927,7 +2004,7 @@ function AdvisorChat({ field, job, lang, initialJudgment }: { field: ColKey; job
             if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
             else if (e.key === 'Tab' && showSug) { e.preventDefault(); fillSug() }  // Tab 填入建议问题(用户点名)
           }}
-          placeholder={showSug ? suggestion : t('advisor.chatPlaceholder')}
+          placeholder={t('advisor.chatPlaceholder')}
           style={{ flex: 1, height: 36, boxSizing: 'border-box', padding: '0 10px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 13.5, color: '#1f2937', background: '#fff' }} />
         <button onClick={send} disabled={busy || !input.trim()}
           style={{ border: 'none', background: busy || !input.trim() ? '#c7d2fe' : '#6366f1', color: '#fff', borderRadius: 8, padding: '0 14px', height: 36, cursor: busy || !input.trim() ? 'default' : 'pointer', fontSize: 13.5, flexShrink: 0 }}>
