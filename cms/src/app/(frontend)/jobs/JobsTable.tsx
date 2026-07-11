@@ -1502,8 +1502,9 @@ function CompanyJobsList({ here, cur, lang, onOpenJob }: { here: JobRow[]; cur: 
       <div style={{ marginTop: 8, fontSize: 11.5, color: '#9ca3af' }}>{t('act.jobsHere')} ({here.length})</div>
       {shown.map((x) => (
         <div key={x.id} style={{ fontSize: 12.5, padding: '2px 0', color: '#4b5563' }}>
+          {/* 统一最原始超链接样式(2026-07-11 用户拍板:当前岗标蓝其余灰的差异看着像「有的高亮有的不高亮」)*/}
           · {onOpenJob
-            ? <button onClick={() => onOpenJob(x)} style={{ border: 'none', background: 'none', padding: 0, font: 'inherit', cursor: 'pointer', textAlign: 'left', color: x.id === cur ? '#2563eb' : '#4b5563', borderBottom: '1px dashed #d1d5db' }}>{x.title}</button>
+            ? <button onClick={() => onOpenJob(x)} style={{ border: 'none', background: 'none', padding: 0, font: 'inherit', cursor: 'pointer', textAlign: 'left', color: '#2563eb', textDecoration: 'underline' }}>{x.title}</button>
             : x.title}
           {(titleCount.get(x.title) || 0) > 1 && x.city ? <span style={{ color: '#9ca3af' }}> · {x.city}</span> : null}
         </div>
