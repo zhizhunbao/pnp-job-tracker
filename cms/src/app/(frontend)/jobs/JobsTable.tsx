@@ -1727,15 +1727,24 @@ function AdvisorModal({ field, job, jobs, title, lang, plan, pnpOcc, pnpDraws, e
   // 吐字速率与积压成正比(每帧 1/12),整段大文本几秒内追平,不会无限拖尾。
   const pendingRef = useRef('')
   const doneRef = useRef(false)
+  const [sug, setSug] = useState('')  // #36:初判结尾 ❓ 建议行 → 传给对话框做首个 chip
   useEffect(() => {
     const id = setInterval(() => {
-      if (pendingRef.current) {
-        const n = Math.max(2, Math.ceil(pendingRef.current.length / 12))
-        const chunk = pendingRef.current.slice(0, n)
+      // ❓ 标记后的内容截住不吐(建议行不进正文);完成时整体取出
+      const cut = pendingRef.current.indexOf(SUG_MARK)
+      const avail = cut >= 0 ? pendingRef.current.slice(0, cut) : pendingRef.current
+      if (avail) {
+        const n = Math.max(2, Math.ceil(avail.length / 12))
+        const chunk = avail.slice(0, n)
         pendingRef.current = pendingRef.current.slice(n)
         setText((prev) => prev + chunk)
       } else if (doneRef.current) {
         doneRef.current = false
+        const left = pendingRef.current; pendingRef.current = ''
+        const { body, sug: q } = splitSug(left)
+        if (body) setText((prev) => prev + body)  // 标记不在结尾区的兜底:当正文吐完
+        if (q) setSug(q)
+        setText((prev) => prev.replace(/\s+$/, ''))
         setStatus('done')
       }
     }, 33)
@@ -1887,7 +1896,7 @@ function AdvisorModal({ field, job, jobs, title, lang, plan, pnpOcc, pnpDraws, e
           )}
           {/* 来源行已随事实块走(FieldFactsSection 内,紧跟内容、在 AI 区之前)—— 底部不再重复 */}
           {/* 下半:对话框 —— 基于上方事实 + 初判,多轮 grounded 追问 */}
-          {status === 'done' && <AdvisorChat field={field} job={job} lang={lang} initialJudgment={text} />}
+          {status === 'done' && <AdvisorChat field={field} job={job} lang={lang} initialJudgment={text} initialSug={sug} />}
         </div>
         {/* 八方向拉伸手柄(透明边条+角块;右下角保留视觉提示三角) */}
         {!full && <div style={{ position: 'absolute', right: 0, bottom: 0, width: 18, height: 18, pointerEvents: 'none', background: 'linear-gradient(135deg, transparent 50%, #cbd5e1 50%)' }} />}
@@ -1903,6 +1912,14 @@ function AdvisorModal({ field, job, jobs, title, lang, plan, pnpOcc, pnpDraws, e
 // ── 顾问对话框(弹框下半)──────────────────────────────────────
 // 多轮 grounded chat:把「初判」当首个 assistant 轮喂回去保连续性;后端 system 始终带整条岗位事实 + 铁律。
 type ChatMsg = { role: 'user' | 'assistant'; content: string }
+// ❓ 建议行协议(第 15 轮 #36,用户点名「基于具体内容生成问题」):模型每次回复结尾附一行「❓问题」,
+// 打字机 drain 时截住不显示,完成后取出做建议 chip;旧缓存/模型没给标记 → 退回 SUG_POOL 罐头兜底。
+const SUG_MARK = '❓'
+const splitSug = (s: string): { body: string; sug: string } => {
+  const i = s.lastIndexOf(SUG_MARK)
+  if (i < 0 || s.length - i > 300) return { body: s.replace(/\s+$/, ''), sug: '' }  // 结尾区才认,防误伤正文
+  return { body: s.slice(0, i).replace(/\s+$/, ''), sug: s.slice(i + SUG_MARK.length).trim() }
+}
 // 建议问题池(2026-07-10 用户点名「类似 Claude,Tab 填入直接提问」;07-11 追加「按轮迭代」):
 // 每字段族 3 条,一轮问答完推进到下一条,用完即止(不循环重复)。
 const SUG_POOL: Record<'title' | 'company' | 'generic', string[]> = {
@@ -1910,7 +1927,7 @@ const SUG_POOL: Record<'title' | 'company' | 'generic', string[]> = {
   company: ['advisor.sug.company', 'advisor.sug.company2', 'advisor.sug.company3'],
   generic: ['advisor.sug.generic', 'advisor.sug.generic2', 'advisor.sug.generic3'],
 }
-function AdvisorChat({ field, job, lang, initialJudgment }: { field: ColKey; job: JobRow; lang: Lang; initialJudgment: string }) {
+function AdvisorChat({ field, job, lang, initialJudgment, initialSug }: { field: ColKey; job: JobRow; lang: Lang; initialJudgment: string; initialSug?: string }) {
   const t = makeT(lang)
   const [msgs, setMsgs] = useState<ChatMsg[]>([])
   const [input, setInput] = useState('')
@@ -1919,31 +1936,40 @@ function AdvisorChat({ field, job, lang, initialJudgment }: { field: ColKey; job
   const inputRef = useRef<HTMLInputElement | null>(null)
   useEffect(() => { endRef.current?.scrollIntoView({ block: 'nearest' }) }, [msgs])
 
+  // 建议问题(#36):首选 = 模型每轮结尾 ❓ 行生成的本岗专属问题(初判的经 initialSug 传入);
+  // 旧缓存/模型没给 → 退 SUG_POOL 罐头,一轮推进一条,用完即止。
+  const fam: 'title' | 'company' | 'generic' = field === 'title' ? 'title' : field === 'company' ? 'company' : 'generic'
+  const [genSug, setGenSug] = useState(initialSug || '')
+  const [sugIdx, setSugIdx] = useState(0)
+  const suggestion = genSug || (sugIdx < SUG_POOL[fam].length ? t(SUG_POOL[fam][sugIdx]) : '')
+  const showSug = !!suggestion && !busy && !input
+  const fillSug = () => { setInput(suggestion); inputRef.current?.focus() }
+
   // 追问回答打字机(07-11 用户点名「要流式,不要一下蹦出来」):与初判同一手法——
-  // 网络块进 pending,固定节奏吐字(速率与积压成正比);吐完才解 busy/推进建议。
+  // 网络块进 pending,固定节奏吐字(速率与积压成正比);❓ 尾行截住做下一条建议;吐完才解 busy。
   const pendingRef = useRef('')
   const netDoneRef = useRef(false)
   useEffect(() => {
     const id = setInterval(() => {
-      if (pendingRef.current) {
-        const n = Math.max(2, Math.ceil(pendingRef.current.length / 12))
-        const chunk = pendingRef.current.slice(0, n)
+      const cut = pendingRef.current.indexOf(SUG_MARK)
+      const avail = cut >= 0 ? pendingRef.current.slice(0, cut) : pendingRef.current
+      if (avail) {
+        const n = Math.max(2, Math.ceil(avail.length / 12))
+        const chunk = avail.slice(0, n)
         pendingRef.current = pendingRef.current.slice(n)
         setMsgs((m) => { const c = [...m]; c[c.length - 1] = { ...c[c.length - 1], content: c[c.length - 1].content + chunk }; return c })
       } else if (netDoneRef.current) {
         netDoneRef.current = false
+        const left = pendingRef.current; pendingRef.current = ''
+        const { body, sug: q } = splitSug(left)
+        setMsgs((m) => { const c = [...m]; c[c.length - 1] = { ...c[c.length - 1], content: (c[c.length - 1].content + body).replace(/\s+$/, '') }; return c })
+        if (q) setGenSug(q)
+        else { setGenSug(''); setSugIdx((i) => i + 1) }  // 没给标记 → 罐头池推进一条
         setBusy(false)
-        setSugIdx((i) => i + 1)  // 一轮完成 → 建议问题迭代到下一条
       }
     }, 33)
     return () => clearInterval(id)
   }, [])
-
-  const fam: 'title' | 'company' | 'generic' = field === 'title' ? 'title' : field === 'company' ? 'company' : 'generic'
-  const [sugIdx, setSugIdx] = useState(0)
-  const suggestion = sugIdx < SUG_POOL[fam].length ? t(SUG_POOL[fam][sugIdx]) : ''
-  const showSug = !!suggestion && !busy && !input
-  const fillSug = () => { setInput(suggestion); inputRef.current?.focus() }
 
   const send = async () => {
     const q = input.trim()

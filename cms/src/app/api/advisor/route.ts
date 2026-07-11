@@ -46,7 +46,9 @@ const LANG_NAME: Record<Lang, string> = { zh: '简体中文', en: 'English', ko:
 const SYSTEM = (lang: Lang) =>
   'You are an immigration-focused job advisor for international students / PGWP holders in Canada aiming for the employer-offer → PNP route. ' +
   `Reply in ${LANG_NAME[lang]}, objective and information-dense; no pleasantries, no disclaimers, no markdown code blocks. ` +
-  'Use 【Heading】 brackets for each section with 2–3 sentences under each. Clearly mark uncertain content as speculation.'
+  'Use 【Heading】 brackets for each section with 2–3 sentences under each. Clearly mark uncertain content as speculation. ' +
+  // 建议追问(第 15 轮 #36,用户点名「基于具体内容生成」):结尾一行 ❓ 标记,前端截住做建议 chip 不显示
+  `End with ONE final line starting with "❓": the single most useful next question (in ${LANG_NAME[lang]}) about THIS specific job/company, grounded in the facts above — nothing after that line.`
 
 type Job = {
   title?: string; company?: string; noc?: string; province?: string
@@ -243,7 +245,7 @@ export async function POST(req: NextRequest) {
   const ollamaMessages = isChat
     ? [{ role: 'system', content: chatSystem(job, jd, lang, pf) }, ...messages]
     : [{ role: 'system', content: SYSTEM(lang) }, { role: 'user', content: buildPrompt(field, job, jd, lang, pf) }]
-  const numPredict = isChat ? 500 : (SIMPLE.has(field) ? 120 : (field === 'company' ? 640 : 420))  // company 480→640:web_fetch 后素材变厚,480 会截断第四段(E6-03 实测)
+  const numPredict = isChat ? 540 : (SIMPLE.has(field) ? 160 : (field === 'company' ? 680 : 460))  // company 480→640:web_fetch 后素材变厚,480 会截断第四段(E6-03 实测);第 15 轮 #36 各档 +40 容纳结尾 ❓ 建议行
 
   // provider 抽象(E2-03):ollama(本地 dev)/anthropic(线上 Haiku),见 lib/llm.ts
   let upstream: ReadableStream<Uint8Array>
