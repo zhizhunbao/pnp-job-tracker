@@ -1258,7 +1258,47 @@ const JD_INLINE_RE = new RegExp(`\\s+(?=(?:${JD_ALL_ALTS}):)`, 'g')
 const JD_HR_DASH_RE = new RegExp(`\\s+(?=(?:${JD_ALL_ALTS})-\\s)`, 'g')                                // 「 Education- Bachelor」
 const JD_GLUE_RE = new RegExp(`(?<=[a-z)])(?=(?:${JD_ALL_ALTS})[:-])`, 'g')                            // 「YesEducation-」无空格粘边
 const JD_HR_LINE_RE = new RegExp(`^(${JD_ALL_ALTS})-\\s*`)                                             // 行首「Label- 」→「Label: 」
-function JdTextView({ text, max = 4000 }: { text: string; max?: number }) {
+// 长文标签:值是叙述段落,不进键值表(仍走原散文渲染)
+const JD_NARRATIVE = new Set(['job description', 'other information', 'about us', 'about the team', 'application question(s)'])
+// 规则解读(2026-07-11 用户拍板「表格+解读列」,解读=本地规则口径):只对白名单标签给固定口径提示,
+// 值解析不出就留空——宁缺毋滥,不经 LLM 不编造;涉及换算的口径(37.5h/周)写进文案里
+function jdInsight(label: string, value: string, t: ReturnType<typeof makeT>, medAnnual?: number | null): string {
+  const lb = label.toLowerCase()
+  if (lb === 'fte') {
+    const v = parseFloat(value)
+    if (v > 0 && v < 1) return t('jdi.fte', { v: String(v), h: Math.round(37.5 * v) })
+    if (v === 1) return t('jdi.fteFull')
+    return ''
+  }
+  if (/^(job types?|type)$/.test(lb)) {
+    if (/part[\s-]?time/i.test(value)) return t('jdi.partTime')
+    if (/full[\s-]?time/i.test(value)) return t('jdi.fullTime')
+    return ''
+  }
+  if (lb === 'union') return t('jdi.union')
+  if (lb === 'expected start date' || lb === 'application deadline') {
+    const d = new Date(value)
+    if (!isNaN(+d)) {
+      const w = Math.round((+d - Date.now()) / (7 * 864e5))
+      if (w > 0 && w < 200) return t('jdi.weeksAway', { w })
+    }
+    return ''
+  }
+  if (/^(salary or pay band|pay|salary)$/.test(lb)) {
+    // 只认时薪量级(10-200)的数字;年薪写法(>10000)不硬折,避免口径打架
+    const nums = (value.match(/\d{1,3}(?:,\d{3})*(?:\.\d+)?/g) || []).map((s) => parseFloat(s.replace(/,/g, ''))).filter((n) => n > 10 && n < 200)
+    if (!nums.length) return ''
+    const lo = Math.round((Math.min(...nums) * 37.5 * 52) / 1000), hi = Math.round((Math.max(...nums) * 37.5 * 52) / 1000)
+    let s = t('jdi.payHourly', { lo, hi })
+    if (medAnnual) s += t('jdi.payVsMed', { m: Math.round(medAnnual / 1000) })
+    return s
+  }
+  if (/^(licenses|licence\/certification|credentials)/.test(lb)) return t('jdi.licence')
+  if (lb === 'education') return t('jdi.education')
+  return ''
+}
+function JdTextView({ text, t, medAnnual, max = 4000 }: { text: string; t: ReturnType<typeof makeT>; medAnnual?: number | null; max?: number }) {
+  const narrow = useIsNarrow()
   const lines = text.slice(0, max)
     .replace(JD_GLUE_RE, '\n')        // 无空格粘边先断(YesEducation- → Yes\nEducation-)
     .replace(JD_INLINE_RE, '\n')      // 已知标签前断行
@@ -1279,18 +1319,73 @@ function JdTextView({ text, max = 4000 }: { text: string; max?: number }) {
     .flatMap((l) => l.split(/(?<=[a-z0-9)][.!?])\s*(?=[A-Z])/))
     .map((s) => s.trim().replace(/^[•·▪◦‣*-]+\s*/, '').replace(/\s{2,}/g, ' '))
     .filter(Boolean)
+  // 连续 ≥2 行短键值聚成「字段/值/解读」表(2026-07-11 用户拍板);长文标签与超长值(>120 字符)
+  // 不进表照旧散文渲染——表格只收 HR 头部块/Indeed 尾巴这类真键值段,不动叙述正文
+  type Seg = { kind: 'row'; label: string; value: string } | { kind: 'line'; l: string }
+  const segs: Seg[] = lines.map((raw) => {
+    const l = raw.replace(JD_HR_LINE_RE, '$1: ')  // HR「Label- 值」归一成「Label: 值」
+    const m = l.match(/^([A-Z][A-Za-z ()/#&'-]{1,40}):\s*(.+)$/)
+    if (m && !JD_NARRATIVE.has(m[1].toLowerCase()) && m[2].length <= 120) return { kind: 'row', label: m[1], value: m[2] }
+    return { kind: 'line', l }
+  })
+  const blocks: (Seg & { kind: 'line' } | { kind: 'rows'; rows: { label: string; value: string }[] })[] = []
+  for (const s of segs) {
+    const last = blocks[blocks.length - 1]
+    if (s.kind === 'row') {
+      if (last && last.kind === 'rows') last.rows.push(s)
+      else blocks.push({ kind: 'rows', rows: [s] })
+    } else blocks.push(s)
+  }
+  const td: React.CSSProperties = { padding: '5px 8px 5px 0', verticalAlign: 'top', lineHeight: 1.5 }
+  const renderLine = (l: string, i: number) => {
+    const low = l.toLowerCase()
+    if (JD_TOP_HEADS.has(low)) return <div key={i} style={{ marginTop: i ? 12 : 0, fontSize: 14, fontWeight: 700, color: '#111827' }}>{l}</div>
+    if (JD_SUB_HEADS.has(low)) return <div key={i} style={{ marginTop: i ? 8 : 0, fontWeight: 700, color: '#374151' }}>{l}</div>
+    const bare = l.match(/^([A-Z][A-Za-z ()/#&'-]{1,40}):$/)  // 裸标签行(如 "Benefits:")→ 小节头
+    if (bare) return <div key={i} style={{ marginTop: i ? 8 : 0, fontWeight: 700, color: '#374151' }}>{bare[1]}</div>
+    const m = l.match(/^([A-Z][A-Za-z ()/#&'-]{1,40}):\s*(.+)$/)
+    if (m) return <div key={i} style={{ paddingLeft: 14 }}><strong style={{ color: '#374151' }}>{m[1]}:</strong> {m[2]}</div>
+    return <div key={i} style={{ paddingLeft: 14 }}>{l}</div>
+  }
   return (
     <div style={{ margin: '4px 0 0', fontSize: 12.5, color: '#4b5563', lineHeight: 1.6 }}>
-      {lines.map((l, i) => {
-        l = l.replace(JD_HR_LINE_RE, '$1: ')  // HR「Label- 值」归一成「Label: 值」再走键值行渲染
-        const low = l.toLowerCase()
-        if (JD_TOP_HEADS.has(low)) return <div key={i} style={{ marginTop: i ? 12 : 0, fontSize: 14, fontWeight: 700, color: '#111827' }}>{l}</div>
-        if (JD_SUB_HEADS.has(low)) return <div key={i} style={{ marginTop: i ? 8 : 0, fontWeight: 700, color: '#374151' }}>{l}</div>
-        const bare = l.match(/^([A-Z][A-Za-z ()/#&'-]{1,40}):$/)  // 裸标签行(如 "Benefits:")→ 小节头
-        if (bare) return <div key={i} style={{ marginTop: i ? 8 : 0, fontWeight: 700, color: '#374151' }}>{bare[1]}</div>
-        const m = l.match(/^([A-Z][A-Za-z ()/#&'-]{1,40}):\s*(.+)$/)
-        if (m) return <div key={i} style={{ paddingLeft: 14 }}><strong style={{ color: '#374151' }}>{m[1]}:</strong> {m[2]}</div>
-        return <div key={i} style={{ paddingLeft: 14 }}>{l}</div>
+      {blocks.map((b, i) => {
+        if (b.kind === 'line') return renderLine(b.l, i)
+        if (b.rows.length < 2) {
+          const r = b.rows[0]
+          return <div key={i} style={{ paddingLeft: 14 }}><strong style={{ color: '#374151' }}>{r.label}:</strong> {r.value}</div>
+        }
+        const withIns = b.rows.map((r) => ({ ...r, ins: jdInsight(r.label, r.value, t, medAnnual) }))
+        if (narrow) return (  // 窄屏:两行式(字段+值 / 解读小字),不上三列不横滚
+          <div key={i} style={{ margin: '6px 0' }}>
+            {withIns.map((r, j) => (
+              <div key={j} style={{ padding: '5px 0', borderTop: j ? '1px solid #f3f4f6' : undefined }}>
+                <div><strong style={{ color: '#374151' }}>{r.label}:</strong> {r.value}</div>
+                {r.ins && <div style={{ color: '#9ca3af', fontSize: 12, marginTop: 2 }}>{r.ins}</div>}
+              </div>
+            ))}
+          </div>
+        )
+        return (
+          <table key={i} style={{ width: '100%', borderCollapse: 'collapse', margin: '6px 0', tableLayout: 'fixed' }}>
+            <thead>
+              <tr>
+                <th style={{ ...td, width: 150, textAlign: 'left', color: '#9ca3af', fontWeight: 600, fontSize: 11.5 }}>{t('jdi.field')}</th>
+                <th style={{ ...td, width: '36%', textAlign: 'left', color: '#9ca3af', fontWeight: 600, fontSize: 11.5 }}>{t('jdi.value')}</th>
+                <th style={{ ...td, textAlign: 'left', color: '#9ca3af', fontWeight: 600, fontSize: 11.5 }}>{t('jdi.read')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {withIns.map((r, j) => (
+                <tr key={j} style={{ borderTop: '1px solid #f3f4f6' }}>
+                  <td style={{ ...td, color: '#374151', fontWeight: 600 }}>{r.label}</td>
+                  <td style={td}>{r.value}</td>
+                  <td style={{ ...td, color: r.ins ? '#6b7280' : '#d1d5db' }}>{r.ins || '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )
       })}
     </div>
   )
@@ -1316,7 +1411,7 @@ function TitleFacts({ job, lang }: { job: JobRow; lang: Lang }) {
       <div style={{ fontSize: 11.5, color: '#9ca3af' }}>{t('fact.jdExcerpt')}</div>
       {gated ? <UpgradeCard t={t} reason={t('up.jobtext')} />
         : jd === null ? <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>{t('act.loadingText')}</div>
-        : jd ? <JdTextView text={jd} />
+        : jd ? <JdTextView text={jd} t={t} medAnnual={job.wageMedAnnual} />
         : <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>
             {/* 空态给出路(第 9 轮 #26):解释为什么没有 + 官方原帖直达,不留死胡同 */}
             {t('act.noText')}{job.applyUrl ? <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ marginLeft: 6, color: '#2563eb', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('act.seeOfficial')}</a> : null}
@@ -2044,7 +2139,7 @@ function ActModal({ job, lang, onClose }: { job: JobRow; lang: Lang; onClose: ()
                 {job.applyUrl && <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ display: 'inline-block', background: '#2563eb', color: '#fff', borderRadius: 8, padding: '8px 14px', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>{t('act.seeOfficial')}</a>}
               </div>
             )
-              : <JdTextView text={text} max={4000} />}
+              : <JdTextView text={text} t={t} medAnnual={job.wageMedAnnual} max={4000} />}
           {/* republish 合规的官方入口=底部极简来源行(2026-07-06 拍板,取代顶部按钮+说明) */}
           {job.applyUrl && (
             <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #f3f4f6', fontSize: 11.5, color: '#9ca3af', overflowWrap: 'anywhere' }}>
