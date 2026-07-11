@@ -1646,12 +1646,14 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, pnpOcc, pnpDraws, eeOc
       // 缺地址/区时口径注明说(E8-04 诚实降级):留空=源帖没给,不猜;有值时无注(值即事实)
       <FactsBox note={field === 'address' && !job.address ? t('fact.noAddrNote')
         : field === 'district' && !L.district ? t('fact.noDistrictNote') : undefined}>
-        <FactRow k={t('col.country')}>{L.country || 'Canada'}</FactRow>
+        {/* 省弹窗不再摆「国家 Canada」凑数行(2026-07-12 用户反馈「说明没看懂」——重复行是噪音);
+            地图行给明确标签「地图 · 在 Google 地图查看」,不再用裸图标当行名+重复地名当链接文案 */}
+        {field !== 'province' && <FactRow k={t('col.country')}>{L.country || 'Canada'}</FactRow>}
         {depth >= 2 && <FactRow k={t('col.province')}>{L.prov}</FactRow>}
         {depth >= 3 && <FactRow k={t('col.city')}>{L.city}</FactRow>}
         {depth >= 4 && <FactRow k={t('col.district')}>{L.district}</FactRow>}
         {depth >= 5 && <FactRow k={t('col.address')}>{job.address}</FactRow>}
-        {mapQ ? <FactRow k={<IconMap />}><a href={mapsUrl(mapQ)} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5 }}>{mapQ} ↗</a></FactRow> : null}
+        {mapQ ? <FactRow k={t('fact.map')}><a href={mapsUrl(mapQ)} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5 }}><IconMap /> {t('fact.mapView')}({mapQ})↗</a></FactRow> : null}
         {field === 'province' && job.province === 'QC' && <FactRow k={t('col.pnp')}>{t('pnplist.qc')}</FactRow>}
         {provStreams > 0 && <FactRow k={t('col.pnp')}>{t('fact.provStreams', { n: provStreams })}</FactRow>}
         {field === 'province' && job.province && <PnpDrawsBlock province={job.province} lang={lang} draws={pnpDraws} limit={1} />}
@@ -2111,8 +2113,8 @@ function AdvisorChat({ field, job, lang, initialJudgment, initialSug }: { field:
         <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start', marginBottom: 6 }}>
           <div style={{ maxWidth: '85%', padding: '7px 11px', borderRadius: 10, fontSize: 13.5, lineHeight: 1.6, whiteSpace: 'pre-wrap',
             background: m.role === 'user' ? '#eef2ff' : '#f9fafb', color: '#374151' }}>
-            {/* 追问回复同走 renderAI(#43 剥 **;【节头】若出现也一并加粗) */}
-            {m.role === 'assistant' ? (m.content ? renderAI(m.content) : <span style={{ color: '#9ca3af' }}>▋</span>) : m.content}
+            {/* 追问回复同走 renderAI(#43 剥 **);等待首字时显「努力思考中」而非光秃 ▋(2026-07-12 用户:太生硬) */}
+            {m.role === 'assistant' ? (m.content ? renderAI(m.content) : <span style={{ color: '#9ca3af' }}>{t('advisor.loading')}</span>) : m.content}
           </div>
         </div>
       ))}
