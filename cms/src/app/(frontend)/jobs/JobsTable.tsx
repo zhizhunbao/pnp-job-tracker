@@ -517,20 +517,12 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const headRowRef = useRef<HTMLTableRowElement>(null)
   const hasWidths = Object.keys(widths).length > 0
 
-  // #35(2026-07-11 用户拍板「末列截断→整列隐藏」):自动布局下容器装不下时,从右往左把
-  // 非固定列整列藏起(操作列 always 保底不藏),配「N 列宽度不够已隐藏」小注;
-  // 用户拖过列宽(固定布局)= 有意横滚,维持原滚动行为不隐藏。
-  const [hideN, setHideN] = useState(0)
+  // #35 v2(2026-07-11 用户两轮拍板):末列不许半截,但「隐藏」=向右滑动可见的藏法——
+  // 自动布局溢出时,把滚动容器宽度收口到「完整装得下的整列」边界,其余列横滑可达;
+  // 列不出 DOM、不加小注文字。用户拖过列宽(固定布局)不干预。
+  const [wrapW, setWrapW] = useState<number | null>(null)
   const tableWrapRef = useRef<HTMLDivElement | null>(null)
-  const shown = (() => {
-    if (!hideN || hasWidths) return shownAll
-    const res = [...shownAll]
-    let n = hideN
-    for (let i = res.length - 1; i >= 0 && n > 0; i--) {
-      if (!res[i].always && res[i].key !== 'match') { res.splice(i, 1); n-- }
-    }
-    return res
-  })()
+  const shown = shownAll
   const totalW = shown.reduce((s, c) => s + (widths[c.key] ?? 0), 0)
   const resetWidths = () => setWidths({})
 
@@ -562,28 +554,27 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     return () => window.removeEventListener('resize', measureSticky)
   }, [shownKey])  // eslint-disable-line react-hooks/exhaustive-deps
 
-  // #35 量与藏:hideN=0(全列在渲)且溢出时,量各列实宽、从右往左挑非固定列凑够溢出量 → 一次 setHideN。
-  // hideN>0 后本效应不再动作(稳态零成本);列集/布局切换与窗口变宽 → 先归零全渲再量(短暂闪列可接受)。
-  const shownAllKey = shownAll.map((c) => c.key).join(',')
+  // #35 v2 量与收口:容器自由宽下溢出时,量各列实宽、取「完整装得下的最大列前缀」累计宽 → 设为容器宽,
+  // 右缘恰在整列边界,其余列横滑可见。wrapW 已设后本效应不动作;列集/布局/窗口变化 → 先复位再量。
   const measureFit = () => {
-    if (hasWidths || hideN > 0) return
+    if (hasWidths) { if (wrapW != null) setWrapW(null); return }
     const wrap = tableWrapRef.current, head = headRowRef.current
-    if (!wrap || !head) return
-    const over = wrap.scrollWidth - wrap.clientWidth
-    if (over <= 1) return
+    if (!wrap || !head || wrapW != null) return
+    if (wrap.scrollWidth - wrap.clientWidth <= 1) return
+    const avail = wrap.clientWidth
     const ths = [...head.children] as HTMLElement[]
-    let need = over, n = 0
-    for (let i = shown.length - 1; i >= 0 && need > 0; i--) {
-      if (shown[i].always || shown[i].key === 'match') continue
-      need -= ths[i]?.getBoundingClientRect().width ?? 0
-      n++
+    let cum = 0, fit = 0
+    for (const el of ths) {
+      const w = el.getBoundingClientRect().width
+      if (cum + w > avail) break
+      cum += w; fit++
     }
-    if (n) setHideN(n)
+    if (fit >= 1 && fit < ths.length) setWrapW(Math.round(cum))
   }
-  useIsoLayoutEffect(() => { setHideN(0) }, [shownAllKey, hasWidths])  // eslint-disable-line react-hooks/exhaustive-deps
-  useIsoLayoutEffect(() => { measureFit() })  // 每渲后守卫式检查(只在 hideN=0 且溢出时动作)
+  useIsoLayoutEffect(() => { setWrapW(null) }, [shownKey, hasWidths])  // eslint-disable-line react-hooks/exhaustive-deps
+  useIsoLayoutEffect(() => { measureFit() })  // 每渲后守卫式检查(只在未收口且溢出时动作)
   useEffect(() => {
-    const onR = () => setHideN(0)  // 归零 → 渲染全列 → measureFit 重新裁
+    const onR = () => setWrapW(null)  // 复位 → 自由宽重量 → 重新收口
     window.addEventListener('resize', onR)
     return () => window.removeEventListener('resize', onR)
   }, [])
@@ -894,11 +885,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             <button onClick={toggleMatchView} style={{ border: 'none', background: 'none', padding: 0, color: '#6b7280', cursor: 'pointer', fontSize: 12.5 }}>{t('mv.exit')} ×</button>
           </div>
         )}
-        {/* #35 小注:被宽度藏掉的列数(点「字段」或拉宽窗口可恢复) */}
-        {hideN > 0 && !hasWidths && (
-          <div style={{ textAlign: 'right', fontSize: 11.5, color: '#9ca3af', margin: '0 0 4px' }}>{t('cols.hidden', { n: hideN })}</div>
-        )}
-        <div ref={tableWrapRef} className="jtTableWrap" style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflowX: 'auto' }}>
+        <div ref={tableWrapRef} className="jtTableWrap" style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflowX: 'auto', ...(wrapW != null && !hasWidths ? { width: wrapW, boxSizing: 'content-box' } : {}) }}>
           <table style={{ width: hasWidths ? totalW : '100%', minWidth: '100%', borderCollapse: 'collapse', fontSize: 13.5, tableLayout: hasWidths ? 'fixed' : 'auto' }}>
             {/* 末列宽设 auto:固定布局下吸收剩余空间,右缘始终贴齐容器,无右侧缝隙 */}
             {hasWidths && <colgroup>{shown.map((c, i) => <col key={c.key} style={{ width: i === shown.length - 1 ? 'auto' : widths[c.key] }} />)}</colgroup>}
