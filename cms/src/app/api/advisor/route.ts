@@ -48,7 +48,7 @@ const SYSTEM = (lang: Lang) =>
   `Reply in ${LANG_NAME[lang]}, objective and information-dense; no pleasantries, no disclaimers, no markdown code blocks. ` +
   'Use 【Heading】 brackets for each section with 2–3 sentences under each. Clearly mark uncertain content as speculation. ' +
   // 建议追问(第 15 轮 #36,用户点名「基于具体内容生成」):结尾一行 ❓ 标记,前端截住做建议 chip 不显示
-  `End with ONE final line starting with "❓": the single most useful next question (in ${LANG_NAME[lang]}) about THIS specific job/company, grounded in the facts above — nothing after that line.`
+  `End with ONE final line starting with "❓": the single most useful next question (in ${LANG_NAME[lang]}) about THIS specific job/company, grounded in the facts above. Keep it SHORT — under 12 words (CJK: under 20 characters), one question mark, no compound questions. Nothing after that line.`
 
 type Job = {
   title?: string; company?: string; noc?: string; province?: string

@@ -1889,9 +1889,15 @@ type ChatMsg = { role: 'user' | 'assistant'; content: string }
 const SUG_MARK = '❓'
 // 从完整回复里摘建议问题:① ❓ 标记行(协议);② 兜底=末行是独立短问句(模型偶发漏打标记,
 // 问题裸奔在正文结尾 —— 2026-07-11 用户实机撞到)。都没有 → 原文返回,chip 走罐头池。
+// 建议问题长度红线(2026-07-11 用户拍板「不要太长」):>60 字裁到首个问号;还收不住 → 弃用退罐头
+const capSug = (q: string): string => {
+  if (q.length <= 60) return q
+  const m = q.match(/^[^??]{0,59}[??]/)
+  return m ? m[0] : ''
+}
 const extractSug = (s: string): { body: string; sug: string } => {
   const i = s.lastIndexOf(SUG_MARK)
-  if (i >= 0 && s.length - i <= 300) return { body: s.slice(0, i).replace(/\s+$/, ''), sug: s.slice(i + SUG_MARK.length).trim() }
+  if (i >= 0 && s.length - i <= 300) return { body: s.slice(0, i).replace(/\s+$/, ''), sug: capSug(s.slice(i + SUG_MARK.length).trim()) }
   const t = s.replace(/\s+$/, '')
   const nl = t.lastIndexOf('\n')
   const last = t.slice(nl + 1).trim()
