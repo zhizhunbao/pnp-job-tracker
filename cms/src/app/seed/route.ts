@@ -65,7 +65,12 @@ export async function GET(req: Request) {
       const r = await fetch(`${sbUrl}/storage/v1/object/mart/${name}.json`, {
         headers: { Authorization: `Bearer ${sbKey}`, apikey: sbKey }, cache: 'no-store', // 双头兼容 sb_secret_/legacy JWT
       })
-      return r.ok ? await r.json() : []
+      // 2026-07-11 事故防线:Storage 拉取失败(402 egress 配额/5xx)绝不能当空表——维度表是
+      // DELETE+重灌,空表照灌 = 生产维度全清(当天真发生过,靠本地 mart 回灌恢复)。
+      // 只有 404(表确实不存在)才与本地缺文件同义返回 [];其余非 2xx 一律抛错整事务回滚。
+      if (r.ok) return await r.json()
+      if (r.status === 404) return []
+      throw new Error(`mart/${name}.json fetch ${r.status}: ${(await r.text()).slice(0, 160)}`)
     }
     const p = path.join(martDir, `${name}.json`)
     return fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, 'utf8')) : []
