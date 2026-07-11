@@ -1326,15 +1326,37 @@ function JdTextView({ text, t, medAnnual, max = 4000 }: { text: string; t: Retur
     .flatMap((l) => l.split(/(?<=[a-z0-9)][.!?])\s*(?=[A-Z])/))
     .map((s) => s.trim().replace(/^[•·▪◦‣*-]+\s*/, '').replace(/\s{2,}/g, ' '))
     .filter(Boolean)
-  // 连续 ≥2 行短键值聚成「字段/值/解读」表(2026-07-11 用户拍板);长文标签与超长值(>120 字符)
-  // 不进表照旧散文渲染——表格只收 HR 头部块/Indeed 尾巴这类真键值段,不动叙述正文
+  // 一张大表(2026-07-12 用户拍板「整成一张大表」,表头改人话「项目/内容/解读」):
+  // ① 短键值行照旧成行;② 「节头/裸标签 + 短条目列表」(Benefits/Schedule/Education…)折成一行多值
+  // ——两类连续出现就合进同一张表,不再被列表段切成多张小表;长散文照旧表外渲染不硬塞。
+  const KV_RE = /^([A-Z][A-Za-z ()/#&'-]{1,40}):\s*(.+)$/
+  const BARE_RE = /^([A-Z][A-Za-z ()/#&'-]{1,40}):$/
+  const isHeadLn = (l: string) => JD_TOP_HEADS.has(l.toLowerCase()) || JD_SUB_HEADS.has(l.toLowerCase()) || BARE_RE.test(l)
   type Seg = { kind: 'row'; label: string; value: string } | { kind: 'line'; l: string }
-  const segs: Seg[] = lines.map((raw) => {
-    const l = raw.replace(JD_HR_LINE_RE, '$1: ')  // HR「Label- 值」归一成「Label: 值」
-    const m = l.match(/^([A-Z][A-Za-z ()/#&'-]{1,40}):\s*(.+)$/)
-    if (m && !JD_NARRATIVE.has(m[1].toLowerCase()) && m[2].length <= 120) return { kind: 'row', label: m[1], value: m[2] }
-    return { kind: 'line', l }
-  })
+  const segs: Seg[] = []
+  for (let i = 0; i < lines.length; ) {
+    const l = lines[i].replace(JD_HR_LINE_RE, '$1: ')  // HR「Label- 值」归一成「Label: 值」
+    const m = l.match(KV_RE)
+    if (m && !JD_NARRATIVE.has(m[1].toLowerCase()) && m[2].length <= 120) {
+      segs.push({ kind: 'row', label: m[1], value: m[2] }); i++; continue
+    }
+    if (isHeadLn(l)) {
+      // 标签组:收集后续短条目(≤90 字、非头/非键值,至多 12 条);组以头/键值/文尾收口才折
+      // ——被长散文截断说明这是叙述节(如 Job Bank 的 Overview),维持原节头+散文渲染
+      const items: string[] = []
+      let j = i + 1
+      while (j < lines.length && items.length < 12) {
+        const n = lines[j].replace(JD_HR_LINE_RE, '$1: ')
+        if (isHeadLn(n) || KV_RE.test(n) || n.length > 90) break
+        items.push(n); j++
+      }
+      const nxt = j < lines.length ? lines[j].replace(JD_HR_LINE_RE, '$1: ') : ''
+      if (items.length && (!nxt || isHeadLn(nxt) || KV_RE.test(nxt))) {
+        segs.push({ kind: 'row', label: l.replace(/:$/, ''), value: items.join('\n') }); i = j; continue
+      }
+    }
+    segs.push({ kind: 'line', l }); i++
+  }
   const blocks: (Seg & { kind: 'line' } | { kind: 'rows'; rows: { label: string; value: string }[] })[] = []
   for (const s of segs) {
     const last = blocks[blocks.length - 1]
@@ -1360,14 +1382,14 @@ function JdTextView({ text, t, medAnnual, max = 4000 }: { text: string; t: Retur
         if (b.kind === 'line') return renderLine(b.l, i)
         if (b.rows.length < 2) {
           const r = b.rows[0]
-          return <div key={i} style={{ paddingLeft: 14 }}><strong style={{ color: '#374151' }}>{r.label}:</strong> {r.value}</div>
+          return <div key={i} style={{ paddingLeft: 14, whiteSpace: 'pre-wrap' }}><strong style={{ color: '#374151' }}>{r.label}:</strong> {r.value}</div>
         }
         const withIns = b.rows.map((r) => ({ ...r, ins: jdInsight(r.label, r.value, t, medAnnual) }))
         if (narrow) return (  // 窄屏:两行式(字段+值 / 解读小字),不上三列不横滚
           <div key={i} style={{ margin: '6px 0' }}>
             {withIns.map((r, j) => (
               <div key={j} style={{ padding: '5px 0', borderTop: j ? '1px solid #f3f4f6' : undefined }}>
-                <div><strong style={{ color: '#374151' }}>{r.label}:</strong> {r.value}</div>
+                <div style={{ whiteSpace: 'pre-wrap' }}><strong style={{ color: '#374151' }}>{r.label}:</strong> {r.value}</div>
                 {r.ins && <div style={{ color: '#9ca3af', fontSize: 12, marginTop: 2 }}>{r.ins}</div>}
               </div>
             ))}
@@ -1386,7 +1408,7 @@ function JdTextView({ text, t, medAnnual, max = 4000 }: { text: string; t: Retur
               {withIns.map((r, j) => (
                 <tr key={j} style={{ borderTop: '1px solid #f3f4f6' }}>
                   <td style={{ ...td, color: '#374151', fontWeight: 600 }}>{r.label}</td>
-                  <td style={td}>{r.value}</td>
+                  <td style={{ ...td, whiteSpace: 'pre-wrap' }}>{r.value}</td>
                   <td style={{ ...td, color: r.ins ? '#6b7280' : '#d1d5db' }}>{r.ins || '—'}</td>
                 </tr>
               ))}
@@ -1509,8 +1531,8 @@ function CompanyJobsList({ here, cur, lang, onOpenJob }: { here: JobRow[]; cur: 
       <div style={{ marginTop: 8, fontSize: 11.5, color: '#9ca3af' }}>{t('act.jobsHere')} ({here.length})</div>
       {shown.map((x) => (
         <div key={x.id} style={{ fontSize: 12.5, padding: '2px 0', color: '#4b5563' }}>
-          {/* 统一最原始超链接样式(2026-07-11 用户拍板:当前岗标蓝其余灰的差异看着像「有的高亮有的不高亮」)*/}
-          · {onOpenJob
+          {/* 统一最原始超链接样式(2026-07-11 用户拍板);行首「·」按用户拍板去掉(链接本身已是行标识) */}
+          {onOpenJob
             ? <button onClick={() => onOpenJob(x)} style={{ border: 'none', background: 'none', padding: 0, font: 'inherit', cursor: 'pointer', textAlign: 'left', color: '#2563eb', textDecoration: 'underline' }}>{x.title}</button>
             : x.title}
           {(titleCount.get(x.title) || 0) > 1 && x.city ? <span style={{ color: '#9ca3af' }}> · {x.city}</span> : null}
