@@ -517,11 +517,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const headRowRef = useRef<HTMLTableRowElement>(null)
   const hasWidths = Object.keys(widths).length > 0
 
-  // #35 v2(2026-07-11 用户两轮拍板):末列不许半截,但「隐藏」=向右滑动可见的藏法——
-  // 自动布局溢出时,把滚动容器宽度收口到「完整装得下的整列」边界,其余列横滑可达;
-  // 列不出 DOM、不加小注文字。用户拖过列宽(固定布局)不干预。
-  const [wrapW, setWrapW] = useState<number | null>(null)
-  const tableWrapRef = useRef<HTMLDivElement | null>(null)
+  // #35 已整轮回滚(2026-07-11 用户三轮拍板互斥后收敛:宽度不变+可滑动+无小注 = 原状):
+  // v1 整列隐藏+小注 → 用户否;v2 容器收口到整列边界 → 用户否(表格变窄)。维持全宽横滚,末列
+  // 在视口边缘被切属滚动常态,不再干预。此教训记档:改表格布局前先给用户看效果图。
   const shown = shownAll
   const totalW = shown.reduce((s, c) => s + (widths[c.key] ?? 0), 0)
   const resetWidths = () => setWidths({})
@@ -554,30 +552,6 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     return () => window.removeEventListener('resize', measureSticky)
   }, [shownKey])  // eslint-disable-line react-hooks/exhaustive-deps
 
-  // #35 v2 量与收口:容器自由宽下溢出时,量各列实宽、取「完整装得下的最大列前缀」累计宽 → 设为容器宽,
-  // 右缘恰在整列边界,其余列横滑可见。wrapW 已设后本效应不动作;列集/布局/窗口变化 → 先复位再量。
-  const measureFit = () => {
-    if (hasWidths) { if (wrapW != null) setWrapW(null); return }
-    const wrap = tableWrapRef.current, head = headRowRef.current
-    if (!wrap || !head || wrapW != null) return
-    if (wrap.scrollWidth - wrap.clientWidth <= 1) return
-    const avail = wrap.clientWidth
-    const ths = [...head.children] as HTMLElement[]
-    let cum = 0, fit = 0
-    for (const el of ths) {
-      const w = el.getBoundingClientRect().width
-      if (cum + w > avail) break
-      cum += w; fit++
-    }
-    if (fit >= 1 && fit < ths.length) setWrapW(Math.round(cum))
-  }
-  useIsoLayoutEffect(() => { setWrapW(null) }, [shownKey, hasWidths])  // eslint-disable-line react-hooks/exhaustive-deps
-  useIsoLayoutEffect(() => { measureFit() })  // 每渲后守卫式检查(只在未收口且溢出时动作)
-  useEffect(() => {
-    const onR = () => setWrapW(null)  // 复位 → 自由宽重量 → 重新收口
-    window.addEventListener('resize', onR)
-    return () => window.removeEventListener('resize', onR)
-  }, [])
   // 固定列单元格:sticky + 累计 left + 不透明底色(挡住滚动内容);末固定列加右阴影分隔
   const frozenStyle = (key: ColKey, bg: string): React.CSSProperties =>
     !hasWidths && frozenSet.has(key) && stickyLeft[key] != null
@@ -885,7 +859,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             <button onClick={toggleMatchView} style={{ border: 'none', background: 'none', padding: 0, color: '#6b7280', cursor: 'pointer', fontSize: 12.5 }}>{t('mv.exit')} ×</button>
           </div>
         )}
-        <div ref={tableWrapRef} className="jtTableWrap" style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflowX: 'auto', ...(wrapW != null && !hasWidths ? { width: wrapW, boxSizing: 'content-box' } : {}) }}>
+        <div className="jtTableWrap" style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflowX: 'auto' }}>
           <table style={{ width: hasWidths ? totalW : '100%', minWidth: '100%', borderCollapse: 'collapse', fontSize: 13.5, tableLayout: hasWidths ? 'fixed' : 'auto' }}>
             {/* 末列宽设 auto:固定布局下吸收剩余空间,右缘始终贴齐容器,无右侧缝隙 */}
             {hasWidths && <colgroup>{shown.map((c, i) => <col key={c.key} style={{ width: i === shown.length - 1 ? 'auto' : widths[c.key] }} />)}</colgroup>}
