@@ -1418,6 +1418,10 @@ function CompanyJobsList({ here, cur, lang, onOpenJob }: { here: JobRow[]; cur: 
   const t = makeT(lang)
   const [all, setAll] = useState(false)
   const shown = all ? here : here.slice(0, 8)
+  // 同名岗才补灰色城市尾缀区分(2026-07-11 用户实机撞到两条同名 gas technician 分不清;
+  // #27 拍板的「去城市尾缀」只对不重名的行生效——重名时城市是唯一区分度,不是废话)
+  const titleCount = new Map<string, number>()
+  for (const x of here) titleCount.set(x.title, (titleCount.get(x.title) || 0) + 1)
   return (
     <>
       <div style={{ marginTop: 8, fontSize: 11.5, color: '#9ca3af' }}>{t('act.jobsHere')} ({here.length})</div>
@@ -1426,6 +1430,7 @@ function CompanyJobsList({ here, cur, lang, onOpenJob }: { here: JobRow[]; cur: 
           · {onOpenJob
             ? <button onClick={() => onOpenJob(x)} style={{ border: 'none', background: 'none', padding: 0, font: 'inherit', cursor: 'pointer', textAlign: 'left', color: x.id === cur ? '#2563eb' : '#4b5563', borderBottom: '1px dashed #d1d5db' }}>{x.title}</button>
             : x.title}
+          {(titleCount.get(x.title) || 0) > 1 && x.city ? <span style={{ color: '#9ca3af' }}> · {x.city}</span> : null}
         </div>
       ))}
       {!all && here.length > 8 && (
@@ -1694,24 +1699,27 @@ function AdvisorModal({ field, job, jobs, title, lang, plan, pnpOcc, pnpDraws, e
   // 吐字速率与积压成正比(每帧 1/12),整段大文本几秒内追平,不会无限拖尾。
   const pendingRef = useRef('')
   const doneRef = useRef(false)
-  const [sug, setSug] = useState('')  // #36:初判结尾 ❓ 建议行 → 传给对话框做首个 chip
+  const textRef = useRef('')          // 已吐正文镜像(完成时和 pending 拼回完整回复摘建议)
+  const [sug, setSug] = useState('')  // #36:初判结尾建议问题 → 传给对话框做首个 chip
   useEffect(() => {
     const id = setInterval(() => {
-      // ❓ 标记后的内容截住不吐(建议行不进正文);完成时整体取出
+      // ❓ 标记后的内容截住不吐(建议行不进正文);完成时对完整回复统一摘取(含无标记兜底)
       const cut = pendingRef.current.indexOf(SUG_MARK)
       const avail = cut >= 0 ? pendingRef.current.slice(0, cut) : pendingRef.current
       if (avail) {
         const n = Math.max(2, Math.ceil(avail.length / 12))
         const chunk = avail.slice(0, n)
         pendingRef.current = pendingRef.current.slice(n)
+        textRef.current += chunk
         setText((prev) => prev + chunk)
       } else if (doneRef.current) {
         doneRef.current = false
-        const left = pendingRef.current; pendingRef.current = ''
-        const { body, sug: q } = splitSug(left)
-        if (body) setText((prev) => prev + body)  // 标记不在结尾区的兜底:当正文吐完
+        const full = textRef.current + pendingRef.current
+        pendingRef.current = ''
+        const { body, sug: q } = extractSug(full)
+        textRef.current = body
+        setText(body)
         if (q) setSug(q)
-        setText((prev) => prev.replace(/\s+$/, ''))
         setStatus('done')
       }
     }, 33)
@@ -1790,7 +1798,7 @@ function AdvisorModal({ field, job, jobs, title, lang, plan, pnpOcc, pnpDraws, e
   const [freeLeft, setFreeLeft] = useState<number | null>(null)
   useEffect(() => {
     const ctrl = new AbortController()
-    setText(''); setStatus('loading'); pendingRef.current = ''; doneRef.current = false
+    setText(''); setStatus('loading'); setSug(''); pendingRef.current = ''; textRef.current = ''; doneRef.current = false
     ;(async () => {
       try {
         const res = await fetch('/api/advisor', {
@@ -1882,10 +1890,18 @@ type ChatMsg = { role: 'user' | 'assistant'; content: string }
 // ❓ 建议行协议(第 15 轮 #36,用户点名「基于具体内容生成问题」):模型每次回复结尾附一行「❓问题」,
 // 打字机 drain 时截住不显示,完成后取出做建议 chip;旧缓存/模型没给标记 → 退回 SUG_POOL 罐头兜底。
 const SUG_MARK = '❓'
-const splitSug = (s: string): { body: string; sug: string } => {
+// 从完整回复里摘建议问题:① ❓ 标记行(协议);② 兜底=末行是独立短问句(模型偶发漏打标记,
+// 问题裸奔在正文结尾 —— 2026-07-11 用户实机撞到)。都没有 → 原文返回,chip 走罐头池。
+const extractSug = (s: string): { body: string; sug: string } => {
   const i = s.lastIndexOf(SUG_MARK)
-  if (i < 0 || s.length - i > 300) return { body: s.replace(/\s+$/, ''), sug: '' }  // 结尾区才认,防误伤正文
-  return { body: s.slice(0, i).replace(/\s+$/, ''), sug: s.slice(i + SUG_MARK.length).trim() }
+  if (i >= 0 && s.length - i <= 300) return { body: s.slice(0, i).replace(/\s+$/, ''), sug: s.slice(i + SUG_MARK.length).trim() }
+  const t = s.replace(/\s+$/, '')
+  const nl = t.lastIndexOf('\n')
+  const last = t.slice(nl + 1).trim()
+  if (nl > 0 && last.length >= 8 && last.length <= 70 && /[??]$/.test(last) && !last.startsWith('【')) {
+    return { body: t.slice(0, nl).replace(/\s+$/, ''), sug: last }
+  }
+  return { body: t, sug: '' }
 }
 // 建议问题池(2026-07-10 用户点名「类似 Claude,Tab 填入直接提问」;07-11 追加「按轮迭代」):
 // 每字段族 3 条,一轮问答完推进到下一条,用完即止(不循环重复)。
@@ -1916,6 +1932,7 @@ function AdvisorChat({ field, job, lang, initialJudgment, initialSug }: { field:
   // 网络块进 pending,固定节奏吐字(速率与积压成正比);❓ 尾行截住做下一条建议;吐完才解 busy。
   const pendingRef = useRef('')
   const netDoneRef = useRef(false)
+  const curRef = useRef('')  // 本轮已吐正文镜像(完成时和 pending 拼回完整回复摘建议)
   useEffect(() => {
     const id = setInterval(() => {
       const cut = pendingRef.current.indexOf(SUG_MARK)
@@ -1924,14 +1941,16 @@ function AdvisorChat({ field, job, lang, initialJudgment, initialSug }: { field:
         const n = Math.max(2, Math.ceil(avail.length / 12))
         const chunk = avail.slice(0, n)
         pendingRef.current = pendingRef.current.slice(n)
+        curRef.current += chunk
         setMsgs((m) => { const c = [...m]; c[c.length - 1] = { ...c[c.length - 1], content: c[c.length - 1].content + chunk }; return c })
       } else if (netDoneRef.current) {
         netDoneRef.current = false
-        const left = pendingRef.current; pendingRef.current = ''
-        const { body, sug: q } = splitSug(left)
-        setMsgs((m) => { const c = [...m]; c[c.length - 1] = { ...c[c.length - 1], content: (c[c.length - 1].content + body).replace(/\s+$/, '') }; return c })
+        const full = curRef.current + pendingRef.current
+        pendingRef.current = ''; curRef.current = ''
+        const { body, sug: q } = extractSug(full)
+        setMsgs((m) => { const c = [...m]; c[c.length - 1] = { ...c[c.length - 1], content: body }; return c })
         if (q) setGenSug(q)
-        else { setGenSug(''); setSugIdx((i) => i + 1) }  // 没给标记 → 罐头池推进一条
+        else { setGenSug(''); setSugIdx((i) => i + 1) }  // 没摘到 → 罐头池推进一条
         setBusy(false)
       }
     }, 33)
@@ -1943,7 +1962,7 @@ function AdvisorChat({ field, job, lang, initialJudgment, initialSug }: { field:
     if (!q || busy) return
     const convo = [...msgs, { role: 'user' as const, content: q }]
     setMsgs([...convo, { role: 'assistant', content: '' }])  // 占位,流进去
-    setInput(''); setBusy(true)
+    setInput(''); setBusy(true); curRef.current = ''
     // 喂回初判作首个 assistant 轮 → 用户可"你刚才说的…";后端 system 另带事实
     const payload: ChatMsg[] = [{ role: 'assistant', content: initialJudgment }, ...convo]
     try {
@@ -1985,19 +2004,14 @@ function AdvisorChat({ field, job, lang, initialJudgment, initialSug }: { field:
         </div>
       ))}
       <div ref={endRef} />
-      {showSug && (
-        <button onClick={fillSug}
-          style={{ display: 'block', maxWidth: '100%', textAlign: 'left', margin: '8px 0 0', padding: '6px 11px', border: '1px dashed #c7d2fe', borderRadius: 10, background: '#f5f7ff', color: '#4f46e5', fontSize: 12.5, lineHeight: 1.5, cursor: 'pointer' }}>
-          {suggestion} <span style={{ color: '#a5b4fc', fontSize: 11 }}>⇥ Tab</span>
-        </button>
-      )}
+      {/* 建议问题=输入框占位(2026-07-11 用户拍板:不要 chip,问题直接放文本框,Tab 自动补全) */}
       <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
         <input ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)} disabled={busy}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
-            else if (e.key === 'Tab' && showSug) { e.preventDefault(); fillSug() }  // Tab 填入建议问题(用户点名)
+            else if (e.key === 'Tab' && showSug) { e.preventDefault(); fillSug() }  // Tab 补全占位里的建议问题
           }}
-          placeholder={t('advisor.chatPlaceholder')}
+          placeholder={showSug ? suggestion : t('advisor.chatPlaceholder')}
           style={{ flex: 1, height: 36, boxSizing: 'border-box', padding: '0 10px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 13.5, color: '#1f2937', background: '#fff' }} />
         <button onClick={send} disabled={busy || !input.trim()}
           style={{ border: 'none', background: busy || !input.trim() ? '#c7d2fe' : '#6366f1', color: '#fff', borderRadius: 8, padding: '0 14px', height: 36, cursor: busy || !input.trim() ? 'default' : 'pointer', fontSize: 13.5, flexShrink: 0 }}>
