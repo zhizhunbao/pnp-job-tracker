@@ -29,8 +29,9 @@ with sync_playwright() as p:
         page.wait_for_timeout(1500)
 
     def close_banner():
+        # 只点「恰好是 ×」的按钮:匹配状态条「退出 ×」也含 ×,第 17 轮起退出=整页跳转,误点毁 context
         try:
-            x = page.locator("button:has-text('×')").first
+            x = page.locator("button").filter(has_text=re.compile(r"^\s*×\s*$")).first
             if x.count(): x.evaluate("el => el.click()"); page.wait_for_timeout(300)
         except Exception: pass
 
