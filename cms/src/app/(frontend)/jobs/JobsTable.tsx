@@ -711,7 +711,13 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1.5rem 1.25rem', width: '100%', boxSizing: 'border-box', flex: '1 0 auto' }}>
         <h1 style={{ margin: '0 0 2px', color: '#111827' }}>Jobs</h1>
         <p style={{ color: '#6b7280', marginTop: 0, fontSize: 13 }}>
-          {rows.length === jobs.length ? t('subtitle.count', { n: !loadedAll && totalCount ? totalCount : jobs.length }) : `${rows.length} / ${jobs.length}`}
+          {/* 标题数字永远 = 库内真实总数(第 15 轮 #34,用户指出:全量拉取有 2 万行护栏,拉完后数字
+              降级成「已载入行数」恰好 20000 像写死还谎报;被截掉的是按发布时间最旧的尾巴)。
+              载入被截断时补小注;筛选态分母仍用已载入数(筛选只扫载入行,分母写总数才是撒谎)。 */}
+          {rows.length === jobs.length ? t('subtitle.count', { n: totalCount || jobs.length }) : `${rows.length} / ${jobs.length}`}
+          {loadedAll && totalCount != null && totalCount > jobs.length && rows.length === jobs.length && (
+            <span style={{ color: '#9ca3af' }}> {t('subtitle.capNote', { n: jobs.length })}</span>
+          )}
           {/* 差异化证言(第 5 轮 #14):首屏 3 秒回答「为什么不用 Indeed」——数字都是本站独有信号 */}
           {proof && (proof.named > 0 || proof.lmia > 0) && (
             <span style={{ display: 'block', marginTop: 2, fontSize: 12, color: '#9ca3af' }}>{t('subtitle.proof', { named: proof.named, lmia: proof.lmia })}</span>

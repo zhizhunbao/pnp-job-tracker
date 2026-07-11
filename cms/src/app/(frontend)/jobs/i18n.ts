@@ -14,7 +14,7 @@ export const COLS_COOKIE = 'jobsCols3'   // 列偏好 cookie 名(放共享非 cl
 type Dict = Record<string, string>
 
 const zh: Dict = {
-  'subtitle.count': '{n} 个职位',
+  'subtitle.count': '{n} 个职位', 'subtitle.capNote': '(已载入最新 {n} 条,筛选/搜索在此范围内)',
   'subtitle.proof': '其中 {named} 岗命中省提名清单 · {lmia} 家雇主有外劳雇佣记录 · 官方公开数据 · 每日抓取',
   'mv.today': '今日与你高匹配的岗位:{h} 个', 'up.matchN': '你今日共 {h} 个高匹配岗,免费版仅显示前 {n} 岗',
   'advisor.left': '免费今日剩 {n} 次', 'fact.buildCta': '建档案,看这条线对你意味着什么 →',
@@ -195,7 +195,7 @@ const zh: Dict = {
 }
 
 const en: Dict = {
-  'subtitle.count': '{n} jobs',
+  'subtitle.count': '{n} jobs', 'subtitle.capNote': '(latest {n} loaded; filters/search apply within them)',
   'subtitle.proof': 'incl. {named} on provincial PNP lists · {lmia} employers with LMIA records · official open data, scraped daily',
   'mv.today': 'High matches for you today: {h}', 'up.matchN': 'You have {h} high-match jobs today — free plan shows only the first {n}',
   'advisor.left': '{n} free uses left today', 'fact.buildCta': 'Create your profile to see what this means for you →',
@@ -398,7 +398,7 @@ const en: Dict = {
 }
 
 const ko: Dict = {
-  'subtitle.count': '{n}개 공고',
+  'subtitle.count': '{n}개 공고', 'subtitle.capNote': '(최신 {n}건 로드, 필터/검색은 이 범위 내)',
   'subtitle.proof': 'PNP 목록 해당 {named}건 · LMIA 기록 고용주 {lmia}곳 · 공식 공개 데이터 · 매일 수집',
   'mv.today': '오늘 높은 매칭: {h}건', 'up.matchN': '오늘 높은 매칭 {h}건 — 무료는 상위 {n}건만 표시',
   'advisor.left': '오늘 무료 {n}회 남음', 'fact.buildCta': '프로필을 만들면 나에게 어떤 의미인지 확인 →',
