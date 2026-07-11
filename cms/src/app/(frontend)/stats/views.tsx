@@ -1,7 +1,6 @@
 'use client'
 // 地区统计视图集(E5-04):全部零计算,渲染 ETL 预聚合行。
-// E8-02 弹窗化:每级拆「*Content 内容组件」(页面壳与 /jobs 统计弹窗共用,不许 fork);
-// 内容里的 <a href="/stats/..."> 保持原样 —— 页面自然跳转,弹窗端由 StatsModal 点击拦截转 state 导航。
+// 每级拆「*Content 内容组件」+页面壳(E8-02 时代曾与 /jobs 统计弹窗共用;弹窗 2026-07-11 已退役,顶栏改跳转页面)。
 import { useMemo, useState } from 'react'
 import { StatsShell, MetricCards, CaliberLine, useLang } from './ui'
 import { IconMapPin, IconScale, IconStar, IconTarget } from '../Icons'

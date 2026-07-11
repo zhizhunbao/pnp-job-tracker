@@ -11,8 +11,6 @@ import { IconChart, IconCheck, IconCompass, IconLock, IconMap, IconMapPin, IconM
 import { AuthModal } from './AuthForm'
 import { UpgradeModal } from './UpgradeModal'
 import { PricingModal } from './PricingModal'
-import { RankingModal } from './RankingModal'
-import { StatsModal } from './StatsModal'
 import { useOverlayClose } from './overlay'
 import { CARD, iconBtnS, Modal, ModalTitle, SCRIM, useIsNarrow } from './Modal'
 import { match as matchJob, matchRank, type MatchProfile, type MatchJob, type MatchReason } from '@/lib/match'
@@ -447,22 +445,14 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const [upsell, setUpsell] = useState<false | 'lock' | 'ss'>(false)
   const [sort, setSort] = useState<{ key: ColKey; dir: 'asc' | 'desc' }>({ key: 'datePosted', dir: 'desc' })
   const [colOpen, setColOpen] = useState(false)
-  const [rankOpen, setRankOpen] = useState(false)  // 榜单弹窗(E8-02:站内不跳页;/rankings 页留给 SEO)
-  const [statsOpen, setStatsOpen] = useState(false)  // 统计弹窗(同上;/stats 页留给 SEO)
   // 我的匹配视图(E5-05,D1=B):只看命中我档案的岗,匹配度排最前;免费=每日前 N 岗匹配 + 升级卡。
   // URL ?view=match 可分享/可回退;入口三态分流(未登录/未建档 → /account 建档)。
   const [matchView, setMatchView] = useState(false)
-  const syncViewUrl = (on: boolean) => {
-    try {
-      const u = new URL(window.location.href)
-      if (on) u.searchParams.set('view', 'match'); else u.searchParams.delete('view')
-      history.replaceState(null, '', u)
-    } catch { /* ignore */ }
-  }
+  // 跳转页面语义(2026-07-11 用户拍板):进出匹配视图=整页跳 /jobs?view=match / /jobs(URL 即状态,可分享可回退);
+  // 未登录/未建档仍先去 /account 建档
   const toggleMatchView = () => {
-    if (!plan.loggedIn || !plan.profileOk) { window.location.href = '/account'; return }  // 先登录/建档
-    setMatchView((v) => { syncViewUrl(!v); return !v })
-    setLimit(PAGE_ROWS)
+    if (!plan.loggedIn || !plan.profileOk) { window.location.href = '/account'; return }
+    window.location.href = matchView ? '/jobs' : '/jobs?view=match'
   }
   const colRef = useRef<HTMLDivElement>(null)
   const [limit, setLimit] = useState(PAGE_ROWS)   // 当前渲染行数(点击分页)
@@ -699,10 +689,11 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             <span style={{ fontSize: 12, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('tagline')}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, maxWidth: '100%', flexWrap: 'wrap' }}>
-            {/* 我的匹配(E5-05 付费核一级入口):三态分流在 toggleMatchView;激活态高亮可再点退出 */}
+            {/* 顶栏三入口改跳转页面(2026-07-11 用户拍板,弹窗版退役):我的匹配=/jobs?view=match(三态分流保留:
+                未登录/未建档先去 /account 建档);榜单/地区统计直链各自页面(原 E8-02「站内不跳页」对这三处不再适用) */}
             <button onClick={toggleMatchView} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: matchView ? '#2563eb' : '#6b7280', fontWeight: matchView ? 700 : 400, cursor: 'pointer', whiteSpace: 'nowrap' }}><IconTarget /> {t('mv.entry')}</button>
-            <button onClick={() => setRankOpen(true)} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: '#6b7280', cursor: 'pointer', whiteSpace: 'nowrap' }}><IconChart /> {t('rank.entry')}</button>
-            <button onClick={() => setStatsOpen(true)} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: '#6b7280', cursor: 'pointer', whiteSpace: 'nowrap' }}><IconMapPin /> {t('stats.entry')}</button>
+            <a href="/rankings/weekly-top" style={{ textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }}><IconChart /> {t('rank.entry')}</a>
+            <a href="/stats" style={{ textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }}><IconMapPin /> {t('stats.entry')}</a>
             <div style={{ display: 'inline-flex', border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
               {LANGS.map((l) => (
                 <button key={l.code} onClick={() => setLangSaved(l.code)}
@@ -713,13 +704,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           </div>
         </div>
       </header>
-      {rankOpen && <RankingModal t={t} onClose={() => setRankOpen(false)} />}
-      {statsOpen && <StatsModal t={t} onClose={() => setStatsOpen(false)}
-        onApplyFilters={(prov, broad) => {  // 统计弹窗「看职位」:关弹窗直接落筛选(与 ?prov=&broad= 回流同语义)
-          setFCountry(''); setFCity(''); setFDistrict(''); setFMid(''); setFFine('')
-          setFProv(prov ? (PROV_NAMES[prov.toUpperCase()] || prov) : '')
-          setFBroad(broad)
-        }} />}
+      {/* 榜单/统计弹窗已退役(2026-07-11 用户拍板顶栏改跳转页面);/stats 页「看职位」?prov=&broad= 回流照旧 */}
       {/* 未登录价值主张横幅(E5-01):可关闭,cookie 记忆(SSR 首帧即渲) */}
       {!plan.loggedIn && <ValueBanner t={t} initialShow={initialBanner ?? true} />}
       <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1.5rem 1.25rem', width: '100%', boxSizing: 'border-box', flex: '1 0 auto' }}>
