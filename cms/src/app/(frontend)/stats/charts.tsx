@@ -6,16 +6,20 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { BROAD_SLUGS, PROVS, PROV_NAME, type StatRow } from './shared'
 import type { TFn } from '../jobs/i18n'
 
-type ChartInst = { setOption: (o: object, notMerge?: boolean) => void; resize: () => void; dispose: () => void }
+type ChartInst = { setOption: (o: object, notMerge?: boolean) => void; resize: () => void; dispose: () => void; on: (ev: string, cb: (e: { dataIndex: number }) => void) => void }
 
-function EChart({ option, height }: { option: object; height: number }) {
+function EChart({ option, height, onBarClick }: { option: object; height: number; onBarClick?: (dataIndex: number) => void }) {
   const ref = useRef<HTMLDivElement | null>(null)
   const inst = useRef<ChartInst | null>(null)
+  const clickRef = useRef(onBarClick); clickRef.current = onBarClick  // ref 转发:init 只绑一次,回调随渲染更新
   useEffect(() => {
     let alive = true
     import('echarts').then((e) => {
       if (!alive || !ref.current) return
-      if (!inst.current) inst.current = e.init(ref.current) as unknown as ChartInst
+      if (!inst.current) {
+        inst.current = e.init(ref.current) as unknown as ChartInst
+        inst.current.on('click', (ev) => clickRef.current?.(ev.dataIndex))
+      }
       inst.current.setOption(option, true)
     })
     const onResize = () => inst.current?.resize()
@@ -23,10 +27,10 @@ function EChart({ option, height }: { option: object; height: number }) {
     return () => { alive = false; window.removeEventListener('resize', onResize) }
   }, [option])
   useEffect(() => () => { inst.current?.dispose(); inst.current = null }, [])
-  return <div ref={ref} style={{ width: '100%', height }} />
+  return <div ref={ref} style={{ width: '100%', height, cursor: onBarClick ? 'pointer' : undefined }} />
 }
 
-type Item = { name: string; full: string; value: number }
+type Item = { name: string; full: string; value: number; key: string }  // key=原始维度值(省码/大类中文),下钻用
 const fmtOf = (money: boolean) => (v: number) => (money ? `$${Math.round(v / 1000)}K` : String(v))
 
 // 横向条形(10 类目手机窄屏也可读;降序=最大在最上)
@@ -65,7 +69,7 @@ const asc = (a: Item, b: Item) => a.value - b.value // 横向条形:数组升序
 // 维度=省:broad=cat('all'=全部职业)的 10 省行
 function byProv(rows: StatRow[], metric: MetricKey, cat: string): Item[] {
   return PROVS
-    .map((p) => ({ name: p, full: PROV_NAME[p] || p, value: rows.find((r) => r.province === p && r.broad === cat)?.[metric] ?? null }))
+    .map((p) => ({ name: p, full: PROV_NAME[p] || p, key: p, value: rows.find((r) => r.province === p && r.broad === cat)?.[metric] ?? null }))
     .filter((i): i is Item => i.value != null)
     .sort(asc)
 }
@@ -77,7 +81,7 @@ function byCat(rows: StatRow[], metric: MetricKey, prov: string, label: (b: stri
       const rs = rows.filter((r) => r.broad === broad && (prov === 'all' || r.province === prov))
       const vals = rs.map((r) => r[metric]).filter((v): v is number => v != null)
       const value = !vals.length ? null : prov === 'all' ? vals.reduce((a, b) => a + b, 0) : vals[0]
-      return { name: label(broad), full: label(broad), value }
+      return { name: label(broad), full: label(broad), key: broad, value }
     })
     .filter((i): i is Item => i.value != null)
     .sort(asc)
@@ -87,16 +91,43 @@ const selS: React.CSSProperties = { padding: '5px 8px', fontSize: 12.5, border: 
 const cardS: React.CSSProperties = { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '12px 14px' }
 const h2S: React.CSSProperties = { fontSize: 15.5, margin: '18px 0 8px' }
 
+const chartH = (n: number) => n * 26 + 40
+
+// 预设图卡:点条形下钻(2026-07-11 用户点名「应支持上卷和下钻」)——省图点某省 → 该省按大类;
+// 大类图点某类 → 该类按省;「← 返回」上卷。中位类下钻=单省按大类,不触碰跨省合并红线。
+function DrillCard({ rows, t, title, kind, metric, money, broadLabel }: {
+  rows: StatRow[]; t: TFn; title: string; kind: 'prov' | 'cat'; metric: MetricKey; money: boolean; broadLabel: (b: string) => string
+}) {
+  const [drill, setDrill] = useState<Item | null>(null)
+  const items = useMemo(() => {
+    if (!drill) return kind === 'prov' ? byProv(rows, metric, 'all') : byCat(rows, metric, 'all', broadLabel)
+    return kind === 'prov' ? byCat(rows, metric, drill.key, broadLabel) : byProv(rows, metric, drill.key)
+  }, [rows, metric, kind, drill]) // eslint-disable-line react-hooks/exhaustive-deps
+  return (
+    <div style={cardS}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>{title}{drill ? ` · ${drill.full}` : ''}</div>
+        {drill
+          ? <button onClick={() => setDrill(null)} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12, color: '#2563eb', cursor: 'pointer', whiteSpace: 'nowrap' }}>{t('chart.back')}</button>
+          : <span style={{ fontSize: 11, color: '#d1d5db', whiteSpace: 'nowrap' }}>{t('chart.drillHint')}</span>}
+      </div>
+      {items.length
+        ? <EChart option={barOption(items, money)} height={chartH(items.length)}
+            onBarClick={drill ? undefined : (i) => items[i] && setDrill(items[i])} />
+        : <p style={{ margin: '10px 0', fontSize: 13, color: '#9ca3af' }}>—</p>}
+    </div>
+  )
+}
+
 export function StatsCharts({ rows, t }: { rows: StatRow[]; t: TFn }) {
   const broadLabel = (b: string) => t('broad.' + b)
-  const chartH = (n: number) => n * 26 + 40
 
   const presets = useMemo(() => [
-    { title: `${t('stats.openJobs')} · ${t('chart.dimProv')}`, items: byProv(rows, 'openJobs', 'all'), money: false },
-    { title: `${t('stats.medWage')} · ${t('chart.dimProv')}`, items: byProv(rows, 'medianWageAnnual', 'all'), money: true },
-    { title: `${t('stats.named')} · ${t('chart.dimProv')}`, items: byProv(rows, 'namedJobs', 'all'), money: false },
-    { title: `${t('stats.openJobs')} · ${t('chart.dimCat')}`, items: byCat(rows, 'openJobs', 'all', broadLabel), money: false },
-  ], [rows, t]) // eslint-disable-line react-hooks/exhaustive-deps
+    { title: `${t('stats.openJobs')} · ${t('chart.dimProv')}`, kind: 'prov' as const, metric: 'openJobs' as const, money: false },
+    { title: `${t('stats.medWage')} · ${t('chart.dimProv')}`, kind: 'prov' as const, metric: 'medianWageAnnual' as const, money: true },
+    { title: `${t('stats.named')} · ${t('chart.dimProv')}`, kind: 'prov' as const, metric: 'namedJobs' as const, money: false },
+    { title: `${t('stats.openJobs')} · ${t('chart.dimCat')}`, kind: 'cat' as const, metric: 'openJobs' as const, money: false },
+  ], [t])
 
   const [dim, setDim] = useState<'prov' | 'cat'>('prov')
   const [metric, setMetric] = useState<MetricKey>('openJobs')
@@ -114,10 +145,7 @@ export function StatsCharts({ rows, t }: { rows: StatRow[]; t: TFn }) {
       <h2 style={h2S}>{t('chart.common')}</h2>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
         {presets.map((p) => (
-          <div key={p.title} style={cardS}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 4 }}>{p.title}</div>
-            <EChart option={barOption(p.items, p.money)} height={chartH(p.items.length)} />
-          </div>
+          <DrillCard key={p.title} rows={rows} t={t} title={p.title} kind={p.kind} metric={p.metric} money={p.money} broadLabel={broadLabel} />
         ))}
       </div>
 
@@ -150,11 +178,17 @@ export function StatsCharts({ rows, t }: { rows: StatRow[]; t: TFn }) {
               </select>
             </label>
           )}
+          <span style={{ fontSize: 11, color: '#d1d5db', whiteSpace: 'nowrap' }}>{t('chart.drillHint')}</span>
         </div>
         {medianBlocked
           ? <p style={{ margin: '10px 0', fontSize: 13, color: '#9ca3af' }}>{t('chart.medianNote')}</p>
           : custom.length
-            ? <EChart option={barOption(custom, m.money)} height={chartH(custom.length)} />
+            ? <EChart option={barOption(custom, m.money)} height={chartH(custom.length)}
+                onBarClick={(i) => {  // 自定义图下钻=切维度联动:点省→该省按大类;点大类→该大类按省(选择器即上卷)
+                  const it = custom[i]; if (!it) return
+                  if (dim === 'prov') { setDim('cat'); setFixProv(it.key) }
+                  else { setDim('prov'); setFixCat(it.key) }
+                }} />
             : <p style={{ margin: '10px 0', fontSize: 13, color: '#9ca3af' }}>—</p>}
       </div>
     </>

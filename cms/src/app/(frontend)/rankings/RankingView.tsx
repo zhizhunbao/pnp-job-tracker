@@ -2,7 +2,8 @@
 // 榜单视图(E5-02):纯渲染(计算在 ETL);三语壳;岗位行链官方原帖,公司行链官网。
 // RankingTable = 内容单一来源(E8-02):页面版与 /jobs 榜单弹窗共用,不许 fork。
 import { useEffect, useState } from 'react'
-import { makeT, streamDisplay, eeDisplay, LANG_KEY, LANGS, type Lang, type TFn } from '../jobs/i18n'
+import { makeT, streamDisplay, eeDisplay, LANG_KEY, type Lang, type TFn } from '../jobs/i18n'
+import { SiteHeader } from '../SiteHeader'
 
 export type RankRow = {
   rank: number; kind: string; externalId: string
@@ -79,19 +80,8 @@ export function RankingView({ slug, items }: { slug: string; items: RankRow[] })
 
   return (
     <div style={{ background: '#f9fafb', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
-      <header style={{ background: '#fff', borderBottom: '1px solid #e5e7eb' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '10px 1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <a href="/jobs" style={{ fontSize: 17, fontWeight: 700, color: '#111827', textDecoration: 'none' }}>🍁 PNP Job Tracker</a>
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-            <span>
-              {LANGS.map((l) => (
-                <button key={l.code} onClick={() => setLangSaved(l.code)}
-                  style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 12.5, padding: '0 4px', color: lang === l.code ? '#2563eb' : '#9ca3af', fontWeight: lang === l.code ? 700 : 400 }}>{l.label}</button>
-              ))}
-            </span>
-          </div>
-        </div>
-      </header>
+      {/* 顶栏换全站共享 SiteHeader(2026-07-11 用户指出子页 header 与 /jobs 样式不一致) */}
+      <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="rank" />
 
       <div style={{ maxWidth: 1100, margin: '2rem auto', padding: '0 1rem' }}>
         <h1 style={{ fontSize: 22, margin: 0 }}>{t('rank.title.' + slug)}</h1>

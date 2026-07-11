@@ -1,8 +1,9 @@
 'use client'
 // 地区统计共享 UI(E5-04):壳(顶栏+语言)+ slug 映射 + 指标卡/口径行。页面零计算,只渲染 stats 行。
 import { useEffect, useState } from 'react'
-import { makeT, LANG_KEY, LANGS, type Lang, type TFn } from '../jobs/i18n'
+import { makeT, LANG_KEY, type Lang, type TFn } from '../jobs/i18n'
 import { IconPaperclip } from '../Icons'
+import { SiteHeader } from '../SiteHeader'
 import type { StatRow, SrcRow } from './shared'
 export type { StatRow, SrcRow } from './shared'
 
@@ -14,21 +15,10 @@ export function useLang(): [Lang, (l: Lang) => void, TFn] {
 }
 
 export function StatsShell({ lang, setLang, t, children }: { lang: Lang; setLang: (l: Lang) => void; t: TFn; children: React.ReactNode }) {
+  // 顶栏换全站共享 SiteHeader(2026-07-11 用户指出子页 header 与 /jobs 样式不一致)
   return (
     <div style={{ background: '#f9fafb', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
-      <header style={{ background: '#fff', borderBottom: '1px solid #e5e7eb' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '10px 1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <a href="/jobs" style={{ fontSize: 17, fontWeight: 700, color: '#111827', textDecoration: 'none' }}>🍁 PNP Job Tracker</a>
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-            <span>
-              {LANGS.map((l) => (
-                <button key={l.code} onClick={() => setLang(l.code)}
-                  style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 12.5, padding: '0 4px', color: lang === l.code ? '#2563eb' : '#9ca3af', fontWeight: lang === l.code ? 700 : 400 }}>{l.label}</button>
-              ))}
-            </span>
-          </div>
-        </div>
-      </header>
+      <SiteHeader lang={lang} setLang={setLang} t={t} active="stats" />
       <div style={{ maxWidth: 1100, margin: '2rem auto', padding: '0 1rem' }}>{children}</div>
     </div>
   )

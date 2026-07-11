@@ -1421,8 +1421,8 @@ function TitleFacts({ job, lang }: { job: JobRow; lang: Lang }) {
         : jd === null ? <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>{t('act.loadingText')}</div>
         : jd ? <JdTextView text={jd} t={t} medAnnual={job.wageMedAnnual} />
         : <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>
-            {/* 空态给出路(第 9 轮 #26):解释为什么没有 + 官方原帖直达,不留死胡同 */}
-            {t('act.noText')}{job.applyUrl ? <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ marginLeft: 6, color: '#2563eb', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('act.seeOfficial')}</a> : null}
+            {/* 空态解释原因(第 9 轮 #26);原帖链接不再内联(2026-07-11 用户指出与下方来源行重复,来源行=同一 applyUrl) */}
+            {t('act.noText')}
           </div>}
     </FactsBox>
   )
