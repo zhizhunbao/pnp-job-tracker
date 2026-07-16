@@ -768,6 +768,8 @@ export interface Ranking {
   openJobs?: number | null;
   namedJobs?: number | null;
   avgScore?: number | null;
+  lmiaPositions?: number | null;
+  lmiaQuarter?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1322,6 +1324,8 @@ export interface RankingsSelect<T extends boolean = true> {
   openJobs?: T;
   namedJobs?: T;
   avgScore?: T;
+  lmiaPositions?: T;
+  lmiaQuarter?: T;
   updatedAt?: T;
   createdAt?: T;
 }
