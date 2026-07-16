@@ -12,6 +12,7 @@
  * 「本次未见且发布超 30 天」才下架。
  */
 import fs from 'fs'
+import os from 'os'
 import path from 'path'
 import { getPayload } from 'payload'
 
@@ -55,25 +56,22 @@ export async function GET(req: Request) {
   }
   const payload = await getPayload({ config: await config })
   const reset = !!url.searchParams.get('reset')
-  // mart 双模式(R3):SUPABASE_* 已设 → 从 Supabase Storage 拉(Render 上 cms 无共享盘);
-  // 否则读本地 data/mart/(本地 dev / VPS compose 不变)。缺表两模式同义:返回 []。
-  const sbUrl = process.env.SUPABASE_URL?.replace(/\/$/, '')
-  const sbKey = process.env.SUPABASE_SERVICE_KEY
-  const martDir = path.resolve(process.cwd(), '..', 'data', 'mart')
+  // mart 读取链(E7-04,Supabase Storage 退役):/api/mart 上传端点落的 <tmpdir>/mart 优先(Render 生产),
+  // 回退本地 ../data/mart(本地 dev / compose)。
+  // 2026-07-11 事故防线(22c8d6a)语义保持:上游读失败绝不能当空表——维度表是 DELETE+重灌,
+  // 空表照灌 = 生产维度全清(真发生过)。两目录都不存在 = 本轮上传丢失(如部署重启清 /tmp)
+  // → 抛错整事务回滚;有目录而单表文件缺 = 表确实不存在(同旧 404)→ 返回 []。
+  const tmpMartDir = path.join(os.tmpdir(), 'mart')
+  const localMartDir = path.resolve(process.cwd(), '..', 'data', 'mart')
   const mart = async (name: string): Promise<any[]> => {
-    if (sbUrl && sbKey) {
-      const r = await fetch(`${sbUrl}/storage/v1/object/mart/${name}.json`, {
-        headers: { Authorization: `Bearer ${sbKey}`, apikey: sbKey }, cache: 'no-store', // 双头兼容 sb_secret_/legacy JWT
-      })
-      // 2026-07-11 事故防线:Storage 拉取失败(402 egress 配额/5xx)绝不能当空表——维度表是
-      // DELETE+重灌,空表照灌 = 生产维度全清(当天真发生过,靠本地 mart 回灌恢复)。
-      // 只有 404(表确实不存在)才与本地缺文件同义返回 [];其余非 2xx 一律抛错整事务回滚。
-      if (r.ok) return await r.json()
-      if (r.status === 404) return []
-      throw new Error(`mart/${name}.json fetch ${r.status}: ${(await r.text()).slice(0, 160)}`)
+    for (const dir of [tmpMartDir, localMartDir]) {
+      const p = path.join(dir, `${name}.json`)
+      if (fs.existsSync(p)) return JSON.parse(fs.readFileSync(p, 'utf8'))
     }
-    const p = path.join(martDir, `${name}.json`)
-    return fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, 'utf8')) : []
+    if (!fs.existsSync(tmpMartDir) && !fs.existsSync(localMartDir)) {
+      throw new Error(`mart no data source: neither ${tmpMartDir} nor ${localMartDir} exists (upload lost? rolling back)`)
+    }
+    return []
   }
 
   const now = new Date().toISOString()

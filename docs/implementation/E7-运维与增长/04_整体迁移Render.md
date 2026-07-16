@@ -28,8 +28,8 @@ Supabase 免费档 egress(5GB/月)被真实流量打爆(2026-07-11,Storage 全 4
 
 - [ ] **3.1(用户)** Render Dashboard → New → Postgres:basic-256mb,区域=Web 服务同区,名 pnp-postgres;外网访问加本机 IP allowlist。
 - [ ] **3.2** 割接窗口:暂停 docker 管线(防半程 seed)→ `pg_dump` Supabase 全量 → 恢复 Render → 逐表行数比对。
-- [ ] **3.3** cms:新 `/api/mart/[name]/route.ts`(POST,x-seed-token,gunzip→JSON.parse 校验→写 /tmp/mart/<name>.json);`seed/route.ts` mart() 读取链改 /tmp/mart → 本地目录(移除 Supabase fetch 分支;404/缺文件语义与 22c8d6a 防线保持:读到空目录=缺表返回 [],**HTTP 上传失败在 ETL 侧就地失败不触发 seed**)。
-- [ ] **3.4** `etl/upload_mart.py`:gzip 压缩逐表 POST 新端点(域名走 SEED_URL 同源;任一失败退出码 1,本轮不 seed——沿用现有语义)。
+- [x] **3.3** cms:新 `/api/mart/[name]/route.ts`(POST,x-seed-token,gunzip→JSON.parse 校验→写 /tmp/mart/<name>.json);`seed/route.ts` mart() 读取链改 /tmp/mart → 本地目录(移除 Supabase fetch 分支;404/缺文件语义与 22c8d6a 防线保持:读到空目录=缺表返回 [],**HTTP 上传失败在 ETL 侧就地失败不触发 seed**)。✅ 2026-07-16(本地 E2E 过,见 §5)
+- [x] **3.4** `etl/upload_mart.py`:gzip 压缩逐表 POST 新端点(域名走 SEED_URL 同源;任一失败退出码 1,本轮不 seed——沿用现有语义)。✅ 2026-07-16(同上)
 - [ ] **3.5** env 三处切换:Render(DATABASE_URI 内网串、删 SUPABASE_*)→ 部署;本地 cms/.env(外网串);docker/.env(BACKUP_DATABASE_URI)→ backup 容器重建。
 - [ ] **3.6** 生产终验 + 三演练(§2)+ 恢复 docker 管线,观察一轮夜更全绿。
 - [ ] **3.7** 记忆/文档收口:prod-migration-workflow 记忆更新(直连正式库=Render 串)、STATUS 头部、功能盈利点检查轮次记录;Supabase 观察期到期后删项目。
@@ -47,6 +47,10 @@ Supabase 免费档 egress(5GB/月)被真实流量打爆(2026-07-11,Storage 全 4
 ## 5. 演练与割接记录
 
 (执行时逐条记:割接时刻、行数比对表、三演练结果、回退口关闭时间)
+
+- **2026-07-16 · 3.3/3.4 代码侧完成 + 本地 E2E**:新端点 `/api/mart/[name]`(gzip 魔数判定不依赖 header;`[a-z0-9_]{1,64}` 名校验防路径穿越;临时名写入再 rename 原子落盘);seed mart() 读取链 = `<tmpdir>/mart` → `../data/mart`,**两目录都不存在 → 抛错整事务回滚**(22c8d6a 防线延续;有目录而单表缺 = 同旧 404 返回 [])。本地 dev 实测:upload_mart.py 推 16 表全 ✓(jobs 64MB→gz 13MB),tmp 落盘与 data/mart 逐字节相等(jobs 27,771 行);无 token=401、`..%2F` 名=400、坏 JSON=400。compose 删 build 容器 SUPABASE_* 两行(SEED_URL/SEED_TOKEN 本就透传,upload_mart 复用)。
+  - ⚠️ 记档:**本地机器 `%TEMP%\mart` 若残留会被 seed 优先读**(优先级高于 data/mart)——本地正常流程不产生它(SEED_URL 未设=upload 跳过),手工测过端点后记得删;本轮测试产物已删。
+  - jobs 表 gz 后 13.7MB(立项估 ~5MB 偏小),本地过网无碍;Render 请求体上限 100MB,富余。
 
 ## 6. 风险与回退
 

@@ -83,9 +83,7 @@ services:
       HEALTHCHECK_PING_BUILD: ${HEALTHCHECK_PING_BUILD:-}
       SCRAPE_INTERVAL: '7200'
       SEED_URL: ${SEED_URL:-http://host.docker.internal:3001/seed}  # 默认灌 docker cms(:3001);R3 起步档在 docker/.env 覆写为云端 https://pnp-cms.onrender.com/seed
-      SEED_TOKEN: ${SEED_TOKEN:-}  # 云端 seed 鉴权(docker/.env 注入;本地空=不带头)
-      SUPABASE_URL: ${SUPABASE_URL:-}          # upload_mart → Storage(R3;空=跳过上传)
-      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY:-}
+      SEED_TOKEN: ${SEED_TOKEN:-}  # 云端 seed 鉴权(docker/.env 注入;本地空=不带头);upload_mart 推 /api/mart 同用这对(E7-04,Supabase Storage 已退役)
       TZ: EST5EDT                  # 日志东部时区
 
   cms:                             # 生产容器:仅 --profile unattended 起;本地开发用 host npm run dev(占 :3000)
