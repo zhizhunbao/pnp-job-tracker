@@ -23,22 +23,28 @@ export async function POST(req: Request, { params }: { params: Promise<{ name: s
     return Response.json({ ok: false, error: 'bad table name' }, { status: 400 })
   }
   const raw = Buffer.from(await req.arrayBuffer())
-  let rows: unknown
+  let body: Buffer
   try {
     // gzip 魔数判定(不依赖 header——中间代理可能改写/吞掉 Content-Encoding)
-    const body = raw.length > 2 && raw[0] === 0x1f && raw[1] === 0x8b ? gunzipSync(raw) : raw
-    rows = JSON.parse(body.toString('utf8'))
+    body = raw.length > 2 && raw[0] === 0x1f && raw[1] === 0x8b ? gunzipSync(raw) : raw
   } catch (e) {
-    return Response.json({ ok: false, error: `bad payload: ${(e as Error).message}` }, { status: 400 })
+    return Response.json({ ok: false, error: `bad gzip: ${(e as Error).message}` }, { status: 400 })
   }
-  if (!Array.isArray(rows)) {
-    return Response.json({ ok: false, error: 'payload is not an array' }, { status: 400 })
+  // 不做全量 JSON.parse:jobs 解压 64MB,parse+重 stringify 在 512MB 实例上内存翻几倍(上线首日 502 实撞)。
+  // 完整性由 gzip CRC 保证(gunzipSync 已校验),ETL 侧上传前已验 JSON;这里只查首尾是数组括号。
+  // 坏 JSON 的最终防线在 seed 读取时的 JSON.parse——失败即整事务回滚,不会半灌。
+  let head = 0
+  let tail = body.length - 1
+  while (head < body.length && body[head]! <= 0x20) head++
+  while (tail > head && body[tail]! <= 0x20) tail--
+  if (body.length === 0 || body[head] !== 0x5b /* [ */ || body[tail] !== 0x5d /* ] */) {
+    return Response.json({ ok: false, error: 'payload is not a JSON array' }, { status: 400 })
   }
   const dir = path.join(os.tmpdir(), 'mart')
   fs.mkdirSync(dir, { recursive: true })
   // 原子写:先临时名再 rename,防并发 seed 读到半写文件
   const tmp = path.join(dir, `.${name}.json.tmp`)
-  fs.writeFileSync(tmp, JSON.stringify(rows))
+  fs.writeFileSync(tmp, body)
   fs.renameSync(tmp, path.join(dir, `${name}.json`))
-  return Response.json({ ok: true, table: name, rows: rows.length })
+  return Response.json({ ok: true, table: name, bytes: body.length })
 }
