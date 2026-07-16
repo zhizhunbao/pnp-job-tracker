@@ -51,6 +51,11 @@ Supabase 免费档 egress(5GB/月)被真实流量打爆(2026-07-11,Storage 全 4
 - **2026-07-16 · 3.3/3.4 代码侧完成 + 本地 E2E**:新端点 `/api/mart/[name]`(gzip 魔数判定不依赖 header;`[a-z0-9_]{1,64}` 名校验防路径穿越;临时名写入再 rename 原子落盘);seed mart() 读取链 = `<tmpdir>/mart` → `../data/mart`,**两目录都不存在 → 抛错整事务回滚**(22c8d6a 防线延续;有目录而单表缺 = 同旧 404 返回 [])。本地 dev 实测:upload_mart.py 推 16 表全 ✓(jobs 64MB→gz 13MB),tmp 落盘与 data/mart 逐字节相等(jobs 27,771 行);无 token=401、`..%2F` 名=400、坏 JSON=400。compose 删 build 容器 SUPABASE_* 两行(SEED_URL/SEED_TOKEN 本就透传,upload_mart 复用)。
   - ⚠️ 记档:**本地机器 `%TEMP%\mart` 若残留会被 seed 优先读**(优先级高于 data/mart)——本地正常流程不产生它(SEED_URL 未设=upload 跳过),手工测过端点后记得删;本轮测试产物已删。
   - jobs 表 gz 后 13.7MB(立项估 ~5MB 偏小),本地过网无碍;Render 请求体上限 100MB,富余。
+- **2026-07-16 · 生产两连 OOM → jobs 分片方案(`d3bbc39` + `87afd61`),日更当天恢复**:
+  - **撞墙①**:端点 v1 生产 502——jobs 解压 64MB 做 `JSON.parse`+重 `stringify`,512MB Starter 撑爆。修:完整性交 gzip CRC+首尾数组括号轻校验,原字节直落盘(坏 JSON 终防线=seed 读取 parse 失败→整事务回滚)。
+  - **撞墙②**:seed 亦 502(5-8s 稳定复现)——jobs mart 自上次成功 seed(07-05,12k 行)已涨到 27,771 行,整文件 parse+映射行数组 ~300MB 峰值,同样 OOM。**这与迁库无关,是数据涨出来的结构性问题**。
+  - **修(87afd61)**:upload_mart 对 >6MB 表按行分片(jobs→11 片 ~5.5MB/片),片序 `name__part0..N-1`,**`name__meta`(声明片数)最后传=提交语义**——半程失败旧 meta 仍指旧完整片集,seed 不读半新半旧;seed `martPaths()` 选路(有 meta 走分片,meta 声明的片缺失=抛错回滚),jobs 逐片 parse→映射→入库→释放,峰值降到单片级;端点写入清对侧旧形态(单文件⇄分片切换不留残);**新防线:jobs mart 空(空 seenIds)时跳过 30 天下架对账**——空清单会把所有 30 天以上旧岗一锅端。
+  - **恢复日更**:本地 dev 直连生产库跑通全链(分片上传 16 表→合并校验逐字节等→seed ok:true 27,771 岗/companies 19,413/closed 18,101s)——**offer2pr.com 职位板 07-11→07-16 当天恢复**,SSR 实证 50 条 07-16 岗。Render 侧 seed 验证挂后台待部署完成复核。
 
 ## 6. 风险与回退
 
