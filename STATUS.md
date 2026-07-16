@@ -3,9 +3,13 @@
 > 新 session 接手先读这份 + `CLAUDE.md`(设计宪法)+ `prd.md`(v2 定位见头部标注)。仓库:github.com/zhizhunbao/pnp-job-tracker
 > **🚀 站点已公网上线并真实收款:https://pnp-cms.onrender.com**(Render + Supabase;**live Stripe,M3 已开闸**)。批次进度=`docs/implementation/_开发批次顺序.md`:**B0-B8 全部落地(2026-07-04 一天从 B4 打到 B8),24 工作项代码侧全完**。
 >
-> **⚡⚡ 最新交接(2026-07-11 深夜)——下个 session 第一件事:执行 E7-04 整体迁移 Render**
-> - **背景**:Supabase 免费档 egress 爆(Storage 全 402 `exceed_egress_quota`),连带旧版 seed 把拉取失败当空表提交、**生产维度表被清过一次**(当天已用本地 mart 回灌恢复;防线 `22c8d6a`:mart() 非 2xx 且非 404 一律炸事务,空灌不可能再发生)。比价拍板:不交 Supabase Pro \$25/月,**整体迁 Render**(库→Render Postgres basic-256mb \$6/月 内网互联;mart→ETL gzip 直推 cms 新上传端点落 /tmp;Supabase 退役、保留 ≥1 周回退口)。
-> - **实现文档:[E7-04](docs/implementation/E7-运维与增长/04_整体迁移Render.md)**;3.1=用户建库(basic-256mb、与 Web 同区、IP allowlist),3.2-3.7=助手全包。**迁移完成前每日 seed 响亮失败、职位板停在 07-11 数据(数据安全,不用慌)**。
+> **⚡⚡ 最新交接(2026-07-16)——E7-04 整体迁移 Render ✅ 当天割接完成,Supabase 已退役(观察期回退口保留到 ~07-23)**
+> - **库=Render Postgres `pnp-postgres`**(basic-256mb+1GB \$6.30/月,Virginia 与 Web 同区内网):dump 16MB → 恢复 → **28 表行数逐表全等**;用户表增量核对零漂移;**/jobs SSR 3.6-6.8s→1.7s、seed→25s**(内网红利)。**mart 中转=ETL gzip 直推 `POST /api/mart/<name>`**(token 门禁,落 /tmp;>6MB 表分片 `__part0..N`+`__meta` 最后传=提交语义)。**日更当天恢复**(07-11 停摆→07-16 数据,Render 侧 seed 无 OOM 实证)。
+> - **途中撞掉两个生产 OOM**(端点全量 parse / seed 整文件解析 27k 行,512MB 实例)→ 分片+逐片入库根治,记档 E7-04 §5;**新防线**:jobs mart 空时跳过 30 天下架(防空清单误杀)+ mart 双目录全无=抛错回滚(演练②实证维度表零损)。
+> - **⚠️ 遗留三件**:① 用户跑 `cd docker && docker compose build && docker compose up -d`——镜像需换 postgresql-client-18(**PG 18 下 pg_dump 17 拒 dump,不重建今晚备份必挂**,Dockerfile 已改好)+ backup 容器吃新 BACKUP_DATABASE_URI;② 观察今晚夜更全绿(演练③,管线全程没停过);③ ~07-23 后删 Supabase 项目(回退口=cms/.env 注释行)。
+> - 实现文档:[E7-04](docs/implementation/E7-运维与增长/04_整体迁移Render.md)(§5 有完整时间线/演练记录)。
+>
+> **上轮交接存档(2026-07-11 深夜,已全部落定)**:Supabase egress 爆 402 → 拍板整体迁 Render(上面已完成);seed 空灌防线 `22c8d6a`。
 > - **迭代整改现状**:第 17 轮收口,**清单 #1-#43 首次全清零**🎉(工作台=docs/功能盈利点检查.md;第 17 轮:#21 LMIA 列全链/#41 中介整帖过滤/#42 只报命中数/#43 剥\*\*,另有当日追加七件 UI 拍板全部生产复验)。清零后正餐=价值账(痛点全量盘点→定价复核)。
 > - **挂起口头确认**:Stripe 品牌图标/支持邮箱、Alipay 审批、站名随 offer2pr。
 >
