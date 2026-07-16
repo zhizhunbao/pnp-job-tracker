@@ -46,5 +46,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ name: s
   const tmp = path.join(dir, `.${name}.json.tmp`)
   fs.writeFileSync(tmp, body)
   fs.renameSync(tmp, path.join(dir, `${name}.json`))
+  // 形态切换清残留:seed 按「有 __meta 走分片,否则走单文件」选路,旧形态文件留着会被误读。
+  // 单文件落地 → 删同表旧 meta;meta 落地(分片集提交)→ 删同表旧单文件。
+  const counterpart = name.endsWith('__meta')
+    ? path.join(dir, `${name.slice(0, -'__meta'.length)}.json`)
+    : name.includes('__') ? null : path.join(dir, `${name}__meta.json`)
+  if (counterpart) fs.rmSync(counterpart, { force: true })
   return Response.json({ ok: true, table: name, bytes: body.length })
 }

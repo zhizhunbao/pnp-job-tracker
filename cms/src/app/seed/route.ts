@@ -63,16 +63,31 @@ export async function GET(req: Request) {
   // → 抛错整事务回滚;有目录而单表文件缺 = 表确实不存在(同旧 404)→ 返回 []。
   const tmpMartDir = path.join(os.tmpdir(), 'mart')
   const localMartDir = path.resolve(process.cwd(), '..', 'data', 'mart')
-  const mart = async (name: string): Promise<any[]> => {
+  // 该表的有序文件清单:大表(>6MB)由 upload_mart 分片上传(name__part0..N-1 + name__meta 声明片数,
+  // meta 最后传=提交语义),小表单文件。分片存在的意义:512MB 实例整文件 parse 27k 行 jobs 会 OOM(实撞),
+  // 逐片 parse→入库→释放才扛得住。meta 声明的片缺失=半程上传 → 抛错整事务回滚。
+  const martPaths = (name: string): string[] => {
     for (const dir of [tmpMartDir, localMartDir]) {
-      const p = path.join(dir, `${name}.json`)
-      if (fs.existsSync(p)) return JSON.parse(fs.readFileSync(p, 'utf8'))
+      if (!fs.existsSync(dir)) continue
+      const metaP = path.join(dir, `${name}__meta.json`)
+      if (fs.existsSync(metaP)) {
+        const parts = JSON.parse(fs.readFileSync(metaP, 'utf8'))[0]?.parts
+        if (!Number.isInteger(parts) || parts < 1) throw new Error(`mart ${name}__meta invalid`)
+        return Array.from({ length: parts }, (_, k) => {
+          const p = path.join(dir, `${name}__part${k}.json`)
+          if (!fs.existsSync(p)) throw new Error(`mart ${name} shard ${k + 1}/${parts} missing (partial upload? rolling back)`)
+          return p
+        })
+      }
+      const single = path.join(dir, `${name}.json`)
+      if (fs.existsSync(single)) return [single]
     }
     if (!fs.existsSync(tmpMartDir) && !fs.existsSync(localMartDir)) {
       throw new Error(`mart no data source: neither ${tmpMartDir} nor ${localMartDir} exists (upload lost? rolling back)`)
     }
     return []
   }
+  const mart = (name: string): any[] => martPaths(name).flatMap((p) => JSON.parse(fs.readFileSync(p, 'utf8')))
 
   const now = new Date().toISOString()
   const counts: Record<string, number> = {}
@@ -157,27 +172,6 @@ export async function GET(req: Request) {
     // 插入分支 last_seen 缺就留空(宁可留空,下轮抓到自然回填)。
     const seenIds: string[] = []
     const seenExt = new Set<string>()
-    const jobRows: Row[] = []
-    for (const j of await mart('jobs')) {
-      if (!j.externalId || seenExt.has(j.externalId)) continue
-      seenExt.add(j.externalId)
-      seenIds.push(j.externalId)
-      jobRows.push({
-        external_id: j.externalId, company_id: companyId[j.companySlug] ?? null, title: j.title ?? '',
-        noc: j.noc, category: j.category, teer: j.teer, broad: j.broad, mid: j.mid, fine: j.fine,
-        description: j.description, country: j.country, province: j.province, city: j.city, district: j.district, address: j.address,
-        apply_url: j.applyUrl, official_url: j.officialUrl,
-        salary: j.salary, salary_annual: j.salaryAnnual, salary_text: j.salaryText,
-        wage_med_hourly: j.wageMedHourly, wage_med_annual: j.wageMedAnnual,
-        wage_low_hourly: j.wageLowHourly, wage_low_annual: j.wageLowAnnual,
-        wage_high_hourly: j.wageHighHourly, wage_high_annual: j.wageHighAnnual, wage_year: j.wageYear,
-        date_posted: isoDate(j.datePosted), source: j.source, source_label: j.sourceLabel,
-        origin: j.origin, accessibility: j.accessibility, score: j.score,
-        pnp_eligible: !!j.pnpEligible, pnp_stream: j.pnpStream, ee_category: j.eeCategory, aip: !!j.aip,
-        status: 'open', closed_at: null, first_seen: now, last_seen: j.lastSeen ?? null,
-        created_at: now, updated_at: now,
-      })
-    }
     const jobCols = ['external_id', 'company_id', 'title', 'noc', 'category', 'teer', 'broad', 'mid', 'fine',
       'description', 'country', 'province', 'city', 'district', 'address', 'apply_url', 'official_url',
       'salary', 'salary_annual', 'salary_text', 'wage_med_hourly', 'wage_med_annual', 'wage_low_hourly',
@@ -187,14 +181,40 @@ export async function GET(req: Request) {
     const jobUpdate = jobCols
       .filter((c) => !['external_id', 'first_seen', 'last_seen', 'created_at'].includes(c))
       .map((c) => `${c}=EXCLUDED.${c}`).join(',')
-    await insertBatch(client, 'jobs', jobCols, jobRows,
-      `ON CONFLICT (external_id) DO UPDATE SET ${jobUpdate}, last_seen=COALESCE(EXCLUDED.last_seen, jobs.last_seen)`)
-    counts.jobs = jobRows.length
+    counts.jobs = 0
+    // 逐片处理:一片 parse→映射→入库→引用释放,内存峰值=单片而非全量(27k 行整解析在 512MB 实例 OOM 实撞)
+    for (const shard of martPaths('jobs')) {
+      const jobRows: Row[] = []
+      for (const j of JSON.parse(fs.readFileSync(shard, 'utf8'))) {
+        if (!j.externalId || seenExt.has(j.externalId)) continue
+        seenExt.add(j.externalId)
+        seenIds.push(j.externalId)
+        jobRows.push({
+          external_id: j.externalId, company_id: companyId[j.companySlug] ?? null, title: j.title ?? '',
+          noc: j.noc, category: j.category, teer: j.teer, broad: j.broad, mid: j.mid, fine: j.fine,
+          description: j.description, country: j.country, province: j.province, city: j.city, district: j.district, address: j.address,
+          apply_url: j.applyUrl, official_url: j.officialUrl,
+          salary: j.salary, salary_annual: j.salaryAnnual, salary_text: j.salaryText,
+          wage_med_hourly: j.wageMedHourly, wage_med_annual: j.wageMedAnnual,
+          wage_low_hourly: j.wageLowHourly, wage_low_annual: j.wageLowAnnual,
+          wage_high_hourly: j.wageHighHourly, wage_high_annual: j.wageHighAnnual, wage_year: j.wageYear,
+          date_posted: isoDate(j.datePosted), source: j.source, source_label: j.sourceLabel,
+          origin: j.origin, accessibility: j.accessibility, score: j.score,
+          pnp_eligible: !!j.pnpEligible, pnp_stream: j.pnpStream, ee_category: j.eeCategory, aip: !!j.aip,
+          status: 'open', closed_at: null, first_seen: now, last_seen: j.lastSeen ?? null,
+          created_at: now, updated_at: now,
+        })
+      }
+      await insertBatch(client, 'jobs', jobCols, jobRows,
+        `ON CONFLICT (external_id) DO UPDATE SET ${jobUpdate}, last_seen=COALESCE(EXCLUDED.last_seen, jobs.last_seen)`)
+      counts.jobs += jobRows.length
+    }
 
     // ── 下架(非 reset):只下架「本次未见 且 发布已超 EXPIRE_DAYS 天」的岗 ──
     // 不用「本次没出现就 closed」对账:增量抓取只含最近几天,会误杀仍在招的旧岗(实测 805,见 docs/source-framework.md)
     const EXPIRE_DAYS = 30
-    if (!reset) {
+    // seenIds 为空(jobs mart 缺/空)时跳过:空清单会把所有 30 天以上的旧岗一锅端下架
+    if (!reset && seenIds.length > 0) {
       const cutoff = new Date(Date.now() - EXPIRE_DAYS * 86400000).toISOString()
       const r = await client.query(
         `UPDATE jobs SET status='closed', closed_at=$1, updated_at=$1

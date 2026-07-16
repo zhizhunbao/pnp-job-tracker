@@ -9,6 +9,7 @@ Usage:  uv run python etl/upload_mart.py
 """
 import gzip
 import json
+import math
 import os
 import sys
 from pathlib import Path
@@ -21,6 +22,10 @@ import _paths  # noqa: E402
 
 SEED_URL = os.environ.get("SEED_URL", "")          # 例 https://offer2pr.com/seed → 端点走同源
 SEED_TOKEN = os.environ.get("SEED_TOKEN", "")
+# 超过就按行数分片:cms 是 512MB 实例,整文件 parse 27k 行 jobs(64MB)会 OOM(2026-07-16 实撞);
+# seed 侧逐片 parse→入库→释放。片序 name__part0..N-1,最后传 name__meta 声明片数(=提交语义,
+# 半程失败旧 meta 仍指旧的完整片集,seed 不会读到半新半旧)。
+SHARD_BYTES = 6 * 1024 * 1024
 
 
 def main() -> None:
@@ -33,19 +38,31 @@ def main() -> None:
     if not files:
         print("data/mart/ 为空,无可上传"); sys.exit(1)
     headers = {"x-seed-token": SEED_TOKEN, "Content-Type": "application/gzip"}
+
     with httpx.Client(timeout=120) as client:
-        for f in files:
-            body = f.read_bytes()
-            json.loads(body)  # 上传前校验合法 JSON(防半写文件污染 /tmp)
+        def post(name: str, body: bytes, label: str) -> None:
             gz = gzip.compress(body)
-            r = client.post(f"{base}/api/mart/{f.stem}", content=gz, headers=headers)
+            r = client.post(f"{base}/api/mart/{name}", content=gz, headers=headers)
             try:
                 ok = r.status_code == 200 and r.json().get("ok") is True  # 502 返回 HTML,json() 炸也归失败
             except Exception:
                 ok = False
             if not ok:
-                print(f"✗ {f.name}: {r.status_code} {r.text[:200]}"); sys.exit(1)
-            print(f"✓ {f.name}  ({len(body) // 1024} KB → gz {len(gz) // 1024} KB)")
+                print(f"✗ {label}: {r.status_code} {r.text[:200]}"); sys.exit(1)
+            print(f"✓ {label}  ({len(body) // 1024} KB → gz {len(gz) // 1024} KB)")
+
+        for f in files:
+            body = f.read_bytes()
+            rows = json.loads(body)  # 上传前校验合法 JSON(防半写文件污染 /tmp)
+            if len(body) <= SHARD_BYTES or not isinstance(rows, list) or len(rows) < 2:
+                post(f.stem, body, f.name)
+                continue
+            nparts = math.ceil(len(body) / SHARD_BYTES)
+            per = math.ceil(len(rows) / nparts)
+            parts = [rows[i:i + per] for i in range(0, len(rows), per)]
+            for k, part in enumerate(parts):
+                post(f"{f.stem}__part{k}", json.dumps(part, ensure_ascii=False).encode(), f"{f.name} [{k + 1}/{len(parts)}]")
+            post(f"{f.stem}__meta", json.dumps([{"parts": len(parts)}]).encode(), f"{f.name} meta(parts={len(parts)})")
     print(f"上传完成:{len(files)} 张表 → {base}/api/mart/")
 
 
