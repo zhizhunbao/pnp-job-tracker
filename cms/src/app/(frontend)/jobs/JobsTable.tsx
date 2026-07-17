@@ -112,14 +112,19 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
       {plan.loggedIn ? (
-        // 用户按钮+下拉(2026-07-16 拍板):Pro 徽标折进菜单,退出登录不再非去 /account 不可
+        // 用户按钮+下拉(2026-07-16 拍板):圆形首字头像 + 邮箱前缀 + ▾;菜单右缘与按钮右缘对齐,
+        // 菜单头=完整邮箱;Pro 徽标折进菜单,退出登录不再非去 /account 不可
         <span ref={menuRef} style={{ position: 'relative', display: 'inline-flex' }}>
           <button onClick={() => setMenu((o) => !o)}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 5, border: '1px solid #e5e7eb', background: menu ? '#eef2ff' : '#fff', borderRadius: 6, padding: '3px 10px', fontSize: 12.5, color: '#2563eb', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-            <IconUser />{email ? ` ${email.split('@')[0]}` : ''}{plan.isPro && <IconStar style={{ color: '#b45309' }} />} <span style={{ fontSize: 10, color: '#9ca3af' }}>▾</span>
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: '1px solid #e5e7eb', background: menu ? '#eef2ff' : '#fff', borderRadius: 999, padding: '2px 10px 2px 3px', fontSize: 12.5, color: '#2563eb', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            <span style={{ width: 22, height: 22, borderRadius: '50%', background: '#2563eb', color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>
+              {(email || 'U').charAt(0).toUpperCase()}
+            </span>
+            {email ? email.split('@')[0] : ''}{plan.isPro && <IconStar style={{ color: '#b45309' }} />}<span style={{ fontSize: 10, color: '#9ca3af' }}>▾</span>
           </button>
           {menu && (
-            <div style={{ position: 'absolute', top: '115%', right: 0, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, boxShadow: '0 10px 30px rgba(0,0,0,.12)', padding: '4px 0', zIndex: 30, minWidth: 170 }}>
+            <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, boxShadow: '0 10px 30px rgba(0,0,0,.12)', padding: '4px 0', zIndex: 30, minWidth: 190 }}>
+              {email && <div style={{ padding: '7px 12px 5px', fontSize: 12, color: '#9ca3af', borderBottom: '1px solid #f3f4f6', marginBottom: 4, whiteSpace: 'nowrap' }}>{email}</div>}
               <a href="/account" style={menuItem}>{t('nav.account')}</a>
               {plan.isPro
                 ? <a href="/account" style={{ ...menuItem, color: '#b45309', fontWeight: 600 }}><IconStar /> {proUntil ? t('acct.plan.pro', { d: proUntil }) : 'Pro'}</a>
