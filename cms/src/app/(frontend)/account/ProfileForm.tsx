@@ -65,7 +65,8 @@ export function ProfileForm({ t, userId, initial, onSaved }: { t: TFn; userId: s
   }
 
   return (
-    <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid #f3f4f6' }}>
+    {/* 2026-07-16 四卡分离后本组件独占一卡:去掉单卡时代的顶部分隔线/上边距 */}
+    <div>
       <div style={{ fontSize: 13.5, fontWeight: 600, color: '#374151' }}><IconTarget /> {t('prof.title')}</div>
       <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>{t('prof.hint')}</div>
 

@@ -1713,7 +1713,7 @@ function AdvisorModal({ field, job, jobs, title, lang, plan, pnpOcc, pnpDraws, e
         doneRef.current = false
         const full = textRef.current + pendingRef.current
         pendingRef.current = ''
-        const { body, sug: q } = extractSug(full)
+        const { body, sug: q } = extractSug(full, job.company, lang)
         textRef.current = body
         setText(body)
         if (q) setSug(q)
@@ -1890,20 +1890,32 @@ const SUG_MARK = '❓'
 // 从完整回复里摘建议问题:① ❓ 标记行(协议);② 兜底=末行是独立短问句(模型偶发漏打标记,
 // 问题裸奔在正文结尾 —— 2026-07-11 用户实机撞到)。都没有 → 原文返回,chip 走罐头池。
 // 建议问题长度红线(2026-07-11 用户拍板「不要太长」):>60 字裁到首个问号;还收不住 → 弃用退罐头
-const capSug = (q: string): string => {
-  q = q.replace(/\*{2,}/g, '')  // 建议问题同剥 **(#43;进 placeholder 的是裸字符串,不走 renderAI)
+// #49(第 19 轮):#44 的 prompt 约束(雇主用「这家公司」指代)模型不稳定遵守,缓存换血即复发
+// (「TABOCHE TECHNOLOGY过去是否…」「ERA是否…」实拍)——前端兜底:占位里把公司名(含去后缀核心名)统一替换成指代词
+const SUG_GENERIC: Record<Lang, string> = { zh: '这家公司', en: 'this company', ko: '이 회사' }
+const scrubCompany = (q: string, company?: string, lang: Lang = 'zh'): string => {
+  if (!company) return q
+  const generic = SUG_GENERIC[lang]
+  const core = company.replace(/\b(incorporated|inc|ltd|limited|llp|llc|corp|corporation|co)\.?\s*$/i, '').trim()
+  for (const n of [...new Set([company.trim(), core])].sort((a, b) => b.length - a.length)) {
+    if (n.length >= 3) q = q.replace(new RegExp(n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), generic)
+  }
+  return q.replace(new RegExp(`(${SUG_GENERIC[lang]})(的?\\s*\\1)+`, 'g'), '$1')  // 相邻重复合一
+}
+const capSug = (q: string, company?: string, lang?: Lang): string => {
+  q = scrubCompany(q.replace(/\*{2,}/g, ''), company, lang)  // 剥 **(#43)+ 公司名指代(#49)
   if (q.length <= 60) return q
   const m = q.match(/^[^?？]{0,59}[?？]/)
   return m ? m[0] : ''
 }
-const extractSug = (s: string): { body: string; sug: string } => {
+const extractSug = (s: string, company?: string, lang?: Lang): { body: string; sug: string } => {
   const i = s.lastIndexOf(SUG_MARK)
-  if (i >= 0 && s.length - i <= 300) return { body: s.slice(0, i).replace(/\s+$/, ''), sug: capSug(s.slice(i + SUG_MARK.length).trim()) }
+  if (i >= 0 && s.length - i <= 300) return { body: s.slice(0, i).replace(/\s+$/, ''), sug: capSug(s.slice(i + SUG_MARK.length).trim(), company, lang) }
   const t = s.replace(/\s+$/, '')
   const nl = t.lastIndexOf('\n')
   const last = t.slice(nl + 1).trim()
   if (nl > 0 && last.length >= 8 && last.length <= 70 && /[?？]$/.test(last) && !last.startsWith('【')) {
-    return { body: t.slice(0, nl).replace(/\s+$/, ''), sug: last }
+    return { body: t.slice(0, nl).replace(/\s+$/, ''), sug: capSug(last, company, lang) }  // 兜底分支同过 capSug(第 16 轮它绕过了)
   }
   return { body: t, sug: '' }
 }
@@ -1951,7 +1963,7 @@ function AdvisorChat({ field, job, lang, initialJudgment, initialSug }: { field:
         netDoneRef.current = false
         const full = curRef.current + pendingRef.current
         pendingRef.current = ''; curRef.current = ''
-        const { body, sug: q } = extractSug(full)
+        const { body, sug: q } = extractSug(full, job.company, lang)
         setMsgs((m) => { const c = [...m]; c[c.length - 1] = { ...c[c.length - 1], content: body }; return c })
         if (q) setGenSug(q)
         else { setGenSug(''); setSugIdx((i) => i + 1) }  // 没摘到 → 罐头池推进一条

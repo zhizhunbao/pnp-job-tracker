@@ -18,7 +18,7 @@ export function SavedSearchList({ t }: { t: TFn }) {
   }
 
   return (
-    <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid #f3f4f6' }}>
+    <div>
       <div style={{ fontSize: 13.5, fontWeight: 600, color: '#374151' }}><IconMail /> {t('ss.title')}</div>
       <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>{t('ss.note')}</div>
       {items === null ? null : items.length === 0 ? (
