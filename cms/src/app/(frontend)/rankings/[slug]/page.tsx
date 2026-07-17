@@ -4,7 +4,7 @@ import { getPayload } from 'payload'
 import { notFound } from 'next/navigation'
 import config from '@/payload.config'
 import { RankingView } from '../RankingView'
-import { fetchRankingRows, RANKING_SLUGS } from '@/lib/rankings'
+import { fetchRankingRows, fetchRankingSlugs, RANKING_SLUGS } from '@/lib/rankings'
 
 export const dynamic = 'force-dynamic'
 const META: Record<string, { title: string; desc: string }> = {
@@ -18,16 +18,29 @@ const META: Record<string, { title: string; desc: string }> = {
   },
 }
 
+// 每日分类榜(E9-02)SEO:slug 段 → 英文大类名
+const DAILY_EN: Record<string, string> = { tech: 'Tech', health: 'Healthcare', trades: 'Trades', service: 'Service', business: 'Business', education: 'Education', manufacturing: 'Manufacturing', resources: 'Resources', arts: 'Arts & sports', management: 'Management' }
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const m = META[slug]
-  return m ? { title: m.title, description: m.desc } : {}
+  if (m) return { title: m.title, description: m.desc }
+  if (slug.startsWith('daily-top')) {
+    const cat = DAILY_EN[slug.replace('daily-top-', '')] || ''
+    const seg = cat ? `${cat} jobs` : 'jobs'
+    return {
+      title: `Daily picks — top ${seg} in Canada by immigration value | PNP Job Tracker`,
+      description: `Top ${seg} posted across Canada in the last 48 hours, ranked by immigration-value score (PNP streams, EE categories, wages). Refreshed hourly. 每日精选:近 48 小时新发布按移民价值评分精选,每小时刷新。`,
+    }
+  }
+  return {}
 }
 
 export default async function RankingPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   if (!RANKING_SLUGS.has(slug)) notFound()
   const payload = await getPayload({ config: await config })
-  const items = await fetchRankingRows((payload.db as any).pool, slug)
-  return <RankingView slug={slug} items={items} />
+  const pool = (payload.db as any).pool
+  const [items, slugs] = await Promise.all([fetchRankingRows(pool, slug), fetchRankingSlugs(pool)])
+  return <RankingView slug={slug} items={items} slugs={slugs} />
 }

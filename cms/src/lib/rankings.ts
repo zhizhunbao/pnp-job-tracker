@@ -2,7 +2,15 @@
 // 零计算 —— 只 SELECT rankings 表(计算在 etl/10_build_rankings.py)。
 import type { RankRow } from '@/app/(frontend)/rankings/RankingView'
 
-export const RANKING_SLUGS = new Set(['weekly-top', 'sponsor-likely'])
+// 每日分类榜(E9-02):大类 slug 段与 etl/10_build_rankings BROAD_SLUG 镜像,勿单改
+export const DAILY_BROADS = ['tech', 'health', 'trades', 'service', 'business', 'education', 'manufacturing', 'resources', 'arts', 'management'] as const
+export const RANKING_SLUGS = new Set(['weekly-top', 'sponsor-likely', 'daily-top', ...DAILY_BROADS.map((b) => `daily-top-${b}`)])
+
+/** 当前实际有数据的榜 slug(大类榜岗不够当天不出榜——导航只显示存在的) */
+export async function fetchRankingSlugs(pool: any): Promise<string[]> {
+  const { rows } = await pool.query(`SELECT DISTINCT slug FROM rankings`)
+  return rows.map((r: any) => r.slug as string)
+}
 
 export async function fetchRankingRows(pool: any, slug: string): Promise<RankRow[]> {
   const { rows } = await pool.query(

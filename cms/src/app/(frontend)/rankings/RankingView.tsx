@@ -34,7 +34,7 @@ export function RankingTable({ slug, items, t }: { slug: string; items: RankRow[
   return (
     <>
       <div style={{ fontSize: 12.5, color: '#9ca3af', margin: '6px 0 4px' }}>{t('rank.updated', { d: updated })}</div>
-      <div style={{ fontSize: 12.5, color: '#6b7280', marginBottom: 16 }}>{t('rank.note.' + slug)}</div>
+      <div style={{ fontSize: 12.5, color: '#6b7280', marginBottom: 16 }}>{t(slug.startsWith('daily-top') ? 'rank.note.daily-top' : 'rank.note.' + slug)}</div>
       <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, overflow: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
@@ -79,7 +79,15 @@ export function RankingTable({ slug, items, t }: { slug: string; items: RankRow[
   )
 }
 
-export function RankingView({ slug, items }: { slug: string; items: RankRow[] }) {
+// 每日分类榜(E9-02):slug 段 → 大类 zh(与 etl/10_build_rankings BROAD_SLUG 镜像,勿单改)
+const BROAD_BY_SLUG: Record<string, string> = { tech: '科技', health: '医疗', trades: '技工', service: '服务', business: '商务', education: '教育', manufacturing: '制造', resources: '资源', arts: '文体', management: '管理' }
+const rankTitle = (t: TFn, slug: string): string => {
+  if (!slug.startsWith('daily-top')) return t('rank.title.' + slug)
+  const zh = BROAD_BY_SLUG[slug.replace('daily-top-', '')]
+  return t('rank.title.daily-top') + (zh ? ' · ' + t('broad.' + zh) : '')
+}
+
+export function RankingView({ slug, items, slugs = [] }: { slug: string; items: RankRow[]; slugs?: string[] }) {
   const [lang, setLang] = useState<Lang>('zh')
   useEffect(() => { const s = localStorage.getItem(LANG_KEY) as Lang | null; if (s) setLang(s) }, [])
   const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
@@ -91,11 +99,17 @@ export function RankingView({ slug, items }: { slug: string; items: RankRow[] })
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="rank" />
 
       <div style={{ maxWidth: 1100, margin: '2rem auto', padding: '0 1rem' }}>
-        <h1 style={{ fontSize: 22, margin: 0 }}>{t('rank.title.' + slug)}</h1>
+        <h1 style={{ fontSize: 22, margin: 0 }}>{rankTitle(t, slug)}</h1>
         <RankingTable slug={slug} items={items} t={t} />
-        <div style={{ marginTop: 14, fontSize: 12.5 }}>
-          <a href="/rankings/weekly-top" style={{ color: slug === 'weekly-top' ? '#111827' : '#2563eb', textDecoration: 'none', marginRight: 14, fontWeight: slug === 'weekly-top' ? 700 : 400 }}>{t('rank.title.weekly-top')}</a>
-          <a href="/rankings/sponsor-likely" style={{ color: slug === 'sponsor-likely' ? '#111827' : '#2563eb', textDecoration: 'none', fontWeight: slug === 'sponsor-likely' ? 700 : 400 }}>{t('rank.title.sponsor-likely')}</a>
+        {/* 榜单导航(E9-02 分类榜矩阵):只列当前有数据的榜;当前榜加粗黑 */}
+        <div style={{ marginTop: 14, fontSize: 12.5, display: 'flex', flexWrap: 'wrap', gap: '6px 14px' }}>
+          {['daily-top', ...Object.keys(BROAD_BY_SLUG).map((k) => `daily-top-${k}`), 'weekly-top', 'sponsor-likely']
+            .filter((x) => x === slug || slugs.includes(x) || x === 'weekly-top' || x === 'sponsor-likely')
+            .map((x) => (
+              <a key={x} href={`/rankings/${x}`} style={{ color: x === slug ? '#111827' : '#2563eb', textDecoration: 'none', fontWeight: x === slug ? 700 : 400, whiteSpace: 'nowrap' }}>
+                {rankTitle(t, x)}
+              </a>
+            ))}
         </div>
       </div>
       <SiteFooter t={t} />

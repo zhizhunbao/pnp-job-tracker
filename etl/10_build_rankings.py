@@ -30,6 +30,12 @@ OUT_RANKINGS = _paths.MART / "rankings.json"
 
 WEEKLY_N = 50
 SPONSOR_N = 30
+DAILY_N = 20            # 每日精选 TOP N(全国与各大类同)
+DAILY_MIN = 5           # 大类榜起榜门槛
+DAILY_SCORE_GATE = 60   # 质量门槛(与 match「高」档同线)
+# 大类 zh → URL slug 段(与前端 RankingView BROAD_BY_SLUG 镜像,勿单改)
+BROAD_SLUG = {"科技": "tech", "医疗": "health", "技工": "trades", "服务": "service", "商务": "business",
+              "教育": "education", "制造": "manufacturing", "资源": "resources", "文体": "arts", "管理": "management"}
 AGENCY = re.compile(r"recruit|staffing|talent|personnel|placement|outsourc|mercor|adecco|randstad|source code|manpower", re.I)
 
 
@@ -70,6 +76,24 @@ def main() -> None:
     for i, j in enumerate(pool[:WEEKLY_N], 1):
         rows.append(job_row("weekly-top", i, j))
     print(f"weekly-top: 池 {len(pool)} → TOP {min(WEEKLY_N, len(pool))}")
+
+    # ── 榜 3:每日精选(全国 + 按职业大类;2026-07-16 用户拍板「榜单可以有不同类别」)──
+    # 口径:近 48h 新发布(帖面日期,给东部时区/晚发帖留余量)× 评分≥60,按评分精选;
+    # 大类榜岗不够(<DAILY_MIN)当天不出榜——宁缺,不凑数。slug ascii 化(URL 段)。
+    dcut = (date.today() - timedelta(days=2)).isoformat()
+    daily = [j for j in jobs if j.get("status") != "closed" and (j.get("datePosted") or "") >= dcut and (j.get("score") or 0) >= DAILY_SCORE_GATE]
+    daily.sort(key=lambda j: (-(j.get("score") or 0), -(j.get("salaryAnnual") or 0)))
+    for i, j in enumerate(daily[:DAILY_N], 1):
+        rows.append(job_row("daily-top", i, j))
+    made = 1
+    for zh, key in BROAD_SLUG.items():
+        sub = [j for j in daily if j.get("broad") == zh]
+        if len(sub) < DAILY_MIN:
+            continue
+        for i, j in enumerate(sub[:DAILY_N], 1):
+            rows.append(job_row(f"daily-top-{key}", i, j))
+        made += 1
+    print(f"daily-top: 池 {len(daily)}(近48h·评分≥{DAILY_SCORE_GATE})→ 出榜 {made} 个(全国+大类)")
 
     # ── 榜 2:最可能担保雇主 TOP N(公司聚合) ──
     agg: dict[str, dict] = {}
