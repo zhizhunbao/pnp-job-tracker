@@ -834,7 +834,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               <span>{t('rec.prefix')}<strong>{chips}</strong></span>
               <button onClick={() => { setFProv(rec.prov); setFCity(''); setFDistrict(''); if (rec.broad) { setFBroad(rec.broad); setFMid(''); setFFine('') } if (rec.sal) setFSal(rec.sal) }}
                 style={{ border: 'none', background: '#4f46e5', color: '#fff', borderRadius: 6, padding: '3px 10px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>
-                {t('rec.cta', { n })}
+                {/* #51:全量换入前 n 按首屏 50 行算(5→604 跳变误导)——loadedAll 才带数字 */}
+                {loadedAll ? t('rec.cta', { n }) : t('rec.cta0')}
               </button>
               <button onClick={() => { if (!plan.loggedIn) setUpsell('lock'); else window.location.href = '/account' }}
                 style={{ border: 'none', background: 'none', color: '#4f46e5', fontSize: 12.5, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
@@ -1098,7 +1099,14 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               <div key={j.id} style={{ border: '1px solid #e5e7eb', borderRadius: 12, padding: '10px 12px', background: '#fff' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'baseline' }}>
                   <span onClick={() => open('title', j.title)} style={{ fontSize: 14.5, fontWeight: 600, color: '#111827', cursor: 'pointer' }}>{j.title}</span>
-                  {mc && <span onClick={() => open('match', t('match.' + j.match))} style={{ fontSize: 11.5, padding: '1px 8px', borderRadius: 6, background: mc.bg, color: mc.fg, fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer' }}>{t('match.' + j.match)}</span>}
+                  <span style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
+                    {mc && <span onClick={() => open('match', t('match.' + j.match))} style={{ fontSize: 11.5, padding: '1px 8px', borderRadius: 6, background: mc.bg, color: mc.fg, fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer' }}>{t('match.' + j.match)}</span>}
+                    {/* #52:收藏入口手机也要有(E9-01 闭环第一环)——卡片寸土寸金只放星标,匿名点=注册框(与桌面 toggleSave 同一逻辑) */}
+                    <button onClick={(e) => { e.stopPropagation(); toggleSave(j) }} aria-label={saved[String(j.id)] ? t('sj.saved') : t('sj.save')}
+                      style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', fontSize: 16, lineHeight: 1, color: saved[String(j.id)] ? '#b45309' : '#c4c9d4' }}>
+                      {saved[String(j.id)] ? '★' : '☆'}
+                    </button>
+                  </span>
                 </div>
                 <div onClick={() => open('company', j.company)} style={{ fontSize: 12.5, color: '#6b7280', marginTop: 2, cursor: 'pointer' }}>{j.company}{L.city ? ` · ${L.city}${L.prov ? ', ' + L.prov : ''}` : ''}</div>
                 <div style={{ fontSize: 12.5, marginTop: 4, display: 'flex', gap: 10, flexWrap: 'wrap' }}>

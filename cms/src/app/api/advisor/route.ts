@@ -48,6 +48,8 @@ const SYSTEM = (lang: Lang) =>
   // #46(第 18 轮):模型偶发输出繁体且被初判缓存固化(NOC 31203 EE 弹窗实例)——zh 明令简体字
   `Reply in ${LANG_NAME[lang]}${lang === 'zh' ? ' (Simplified Chinese characters ONLY — never Traditional: 写「联邦/优势/证」不写「聯邦/優勢/證」)' : ''}, objective and information-dense; no pleasantries, no disclaimers, no markdown code blocks. ` +
   'Use 【Heading】 brackets for each section with 2–3 sentences under each. Clearly mark uncertain content as speculation. ' +
+  // #50(第 20 轮):受众设定被模型当用户事实断言(匿名态「你是PGWP持有人」/「你已有该公司offer」)——身份红线
+  "The reader's own status (visa/PGWP/work permit, experience, whether they hold an offer) is UNKNOWN unless a user profile appears in the facts below. Never assert the reader's identity or status; phrase audience assumptions conditionally (如「若你持 PGWP」/ 'if you hold a PGWP'). Job attributes are facts about the JOB, not the reader — a first-party posting or list hit never means the reader has an offer. " +
   // 建议追问(第 15 轮 #36,用户点名「基于具体内容生成」):结尾一行 ❓ 标记,前端截住做建议 chip 不显示
   `End with ONE final line starting with "❓": the single most useful next question (in ${LANG_NAME[lang]}) about THIS specific job/company, grounded in the facts above. Keep it SHORT — under 12 words (CJK: under 20 characters), one question mark, no compound questions. ` +
   // 建议行语言纯度(2026-07-16 用户指出「不能中文英文混合」):公司名多为英文,嵌进中/韩文问句很别扭 → 一律指代

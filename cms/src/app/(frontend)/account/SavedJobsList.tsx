@@ -43,12 +43,15 @@ export function SavedJobsList({ t }: { t: ReturnType<typeof makeT> }) {
                   {x.title && <>{' · '}<a href={`/jobs?q=${encodeURIComponent(x.title)}`} style={{ color: '#2563eb', textDecoration: 'none' }}>{t('sj.view')}</a></>}
                 </div>
               </div>
-              <select value={x.status || 'wish'} onChange={(e) => setStatus(x.id, e.target.value)}
-                style={{ padding: '4px 8px', fontSize: 12.5, border: '1px solid #d1d5db', borderRadius: 6 }}>
-                {STATUSES.map((st) => <option key={st} value={st}>{t('sj.st.' + st)}</option>)}
-              </select>
-              <button onClick={() => remove(x.id)} title={t('sj.del')}
-                style={{ border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 14, padding: '0 2px' }}>×</button>
+              {/* #53:下拉与 × 包成不换行小组,窄屏换行时一起走(× 单飞到卡片左下角与行脱节) */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                <select value={x.status || 'wish'} onChange={(e) => setStatus(x.id, e.target.value)}
+                  style={{ padding: '4px 8px', fontSize: 12.5, border: '1px solid #d1d5db', borderRadius: 6 }}>
+                  {STATUSES.map((st) => <option key={st} value={st}>{t('sj.st.' + st)}</option>)}
+                </select>
+                <button onClick={() => remove(x.id)} title={t('sj.del')}
+                  style={{ border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 14, padding: '0 2px' }}>×</button>
+              </div>
             </div>
           ))}
         </div>
