@@ -3,6 +3,12 @@
 > 新 session 接手先读这份 + `CLAUDE.md`(设计宪法)+ `prd.md`(v2 定位见头部标注)。仓库:github.com/zhizhunbao/pnp-job-tracker
 > **🚀 站点已公网上线并真实收款:https://pnp-cms.onrender.com**(Render + Supabase;**live Stripe,M3 已开闸**)。批次进度=`docs/implementation/_开发批次顺序.md`:**B0-B8 全部落地(2026-07-04 一天从 B4 打到 B8),24 工作项代码侧全完**。
 >
+> **⚡⚡⚡ 最新交接(2026-07-16→17 通宵 session,「闭环日」)——E9 闭环两件全链上线+生产验收,整改 #1-#49 全闭环,冷启动弹药就绪**
+> - **E9-01 最小求职看板 ✅**(80b5146):SavedJobs collection(免费开放/上限 200/本人 access,SavedSearches 同构)+ 生产 DDL 先行;/jobs 操作列「☆ 收藏」(匿名点→注册框=转化钩子);账户 sidebar「我的求职」=状态流转(想投/已投/面试中/offer)+移除。**生产 Playwright 全链验收过**。实现文档 docs/implementation/E9-闭环/01。
+> - **E9-02 发现层 ✅**:① **每日分类榜矩阵**(6f863c0):`10_build_rankings` 出 daily-top(全国)+daily-top-{10 大类}(近 48h×评分≥60×TOP20,大类<5 岗当日缺席);榜单页导航 chips 只列有数据的;每榜=SEO 落地页;**生产实拍 11 榜全起**。② **推荐横幅 1+3**(1db00d0):本地偏好画像(localStorage 不上传,弹窗+1/收藏+3)→「根据你最近浏览:SK·科技·$80–100K → 看这些岗(N)/建档案精确匹配 →」,当日可关,信号五五开或命中 0 时按宁缺不显;**生产实测渲染+CTA 正常**。
+> - **当天其余全部落定**:第 18/19 轮 dd(整改 #1-#49 全闭环,含 #47 NOC 失配护栏 05d 上线+榜首 intern 生产消失);十三件 UI 拍板(JD 去表格+38k 帖格式保真回填完工/统一 header·footer/用户头像下拉/「我的账户」选项卡/账户 sidebar/筛选只留薪资/loadMore 只报剩余/登录 minLength 修复等);**数据节奏:jobbank 1h + enrich 拆独立角色(6h)+ #47 护栏进 build 轮**,页头每小时整点后 ~15 分钟内推进;文档拆档=一轮一文件(docs/整改轮次/);产品 v3 六环愿景+闭环四素材记档(记忆 product-v3-jobseek-funnel)。
+> - **下一步(用户口头「下个 session 见」)**:① **发帖开闸**(docs/冷启动帖子.md 四渠道成稿,已含收藏/每日榜卖点;发布动作=Frank);② 晨查 healthchecks 隔夜全绿(注意:昨夜容器多次重启,check 周期可能有抖动误报,看当前态即可)+ 07-23 后删 Supabase;③ 流量进来后看 umami,评论痛点喂**价值账**(按六环盘;#45 CLB 数据缺口/简历上传立项/周报邮件/分享卡在矩阵排位);④ 第 20 轮 dd=发版后回归(41 屏含新面:每日榜/收藏钮/推荐横幅/我的求职;新发现从 #50)。
+>
 > **⚡⚡ 最新交接(2026-07-16)——E7-04 整体迁移 Render ✅ 当天割接完成,Supabase 已退役(观察期回退口保留到 ~07-23)**
 > - **库=Render Postgres `pnp-postgres`**(basic-256mb+1GB \$6.30/月,Virginia 与 Web 同区内网):dump 16MB → 恢复 → **28 表行数逐表全等**;用户表增量核对零漂移;**/jobs SSR 3.6-6.8s→1.7s、seed→25s**(内网红利)。**mart 中转=ETL gzip 直推 `POST /api/mart/<name>`**(token 门禁,落 /tmp;>6MB 表分片 `__part0..N`+`__meta` 最后传=提交语义)。**日更当天恢复**(07-11 停摆→07-16 数据,Render 侧 seed 无 OOM 实证)。
 > - **途中撞掉两个生产 OOM**(端点全量 parse / seed 整文件解析 27k 行,512MB 实例)→ 分片+逐片入库根治,记档 E7-04 §5;**新防线**:jobs mart 空时跳过 30 天下架(防空清单误杀)+ mart 双目录全无=抛错回滚(演练②实证维度表零损)。
