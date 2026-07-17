@@ -63,6 +63,10 @@ const zh: Dict = {
   'eelist.in': '本岗 NOC {noc} 在联邦 EE「{cats}」类别清单内', 'eelist.out': '未列入任何联邦 EE 类别抽选清单', 'eelist.source': '来源:Express Entry 类别抽选', 'eelist.your': '本岗', 'eelist.loading': '加载 EE 清单…', 'eelist.draw': '近期抽选:CRS {crs} · {date} · 发出 {size} 邀请', 'eelist.count': '{n} 个职业',
   'col.actions': '操作', 'act.company': '公司信息', 'act.desc': '职位描述', 'act.descTitle': '职位描述', 'act.site': '官网', 'act.addr': '地址', 'act.jobsHere': '该公司在榜职位', 'act.showAll': '展开其余 {n} 个 ▾', 'act.noText': '本站暂未收录这条帖子的正文——新帖正文通常次日到位,部分聚合源不提供。', 'act.loadingText': '加载中…',
   'chart.back': '← 返回', 'chart.drillHint': '点条形可下钻', 'nav.account': '账户', 'nav.acctTab': '我的账户',
+  // 我的求职(E9-01 最小求职看板,免费)
+  'sj.title': '我的求职', 'sj.note': '收藏职位、跟踪投递进度;只存在你的账户里。', 'sj.empty': '还没有收藏的职位——在职位板点「☆ 收藏」。',
+  'sj.st.wish': '想投', 'sj.st.applied': '已投', 'sj.st.interview': '面试中', 'sj.st.offer': '拿到 offer',
+  'sj.save': '☆ 收藏', 'sj.saved': '★ 已收藏', 'sj.view': '在职位板查看 →', 'sj.del': '移除',
   // 大分类(数据值→显示)
   'broad.管理': '管理', 'broad.商务': '商务', 'broad.科技': '科技', 'broad.医疗': '医疗', 'broad.教育': '教育',
   'broad.文体': '文体', 'broad.服务': '服务', 'broad.技工': '技工', 'broad.资源': '资源', 'broad.制造': '制造',
@@ -249,6 +253,9 @@ const en: Dict = {
   'eelist.in': 'This job (NOC {noc}) is in the federal EE "{cats}" category', 'eelist.out': 'Not in any federal Express Entry category', 'eelist.source': 'Source: Express Entry category-based selection', 'eelist.your': 'This job', 'eelist.loading': 'Loading EE list…', 'eelist.draw': 'Recent draw: CRS {crs} · {date} · {size} invitations', 'eelist.count': '{n} occupations',
   'col.actions': 'Actions', 'act.company': 'Company', 'act.desc': 'Description', 'act.descTitle': 'Job description', 'act.site': 'Website', 'act.addr': 'Address', 'act.jobsHere': 'Listings by this company', 'act.showAll': 'Show {n} more ▾', 'act.noText': 'No description text on file for this posting yet — new posts usually arrive within a day; some aggregator sources never provide one.', 'act.loadingText': 'Loading…',
   'chart.back': '← Back', 'chart.drillHint': 'Click a bar to drill down', 'nav.account': 'Account', 'nav.acctTab': 'My account',
+  'sj.title': 'My applications', 'sj.note': 'Save jobs and track your application progress; stored only in your account.', 'sj.empty': 'No saved jobs yet — hit “☆ Save” on the job board.',
+  'sj.st.wish': 'To apply', 'sj.st.applied': 'Applied', 'sj.st.interview': 'Interviewing', 'sj.st.offer': 'Offer',
+  'sj.save': '☆ Save', 'sj.saved': '★ Saved', 'sj.view': 'View on board →', 'sj.del': 'Remove',
   'broad.管理': 'Management', 'broad.商务': 'Business', 'broad.科技': 'Tech', 'broad.医疗': 'Health', 'broad.教育': 'Education',
   // NOC 中/小分类(数据值=etl/noc.py 中文;与大类同名的值走 broad.* 回退,不重复)
   'cat.高级管理': 'Senior management', 'cat.IT': 'IT', 'cat.金融': 'Finance', 'cat.人力资源': 'Human resources',
@@ -458,6 +465,9 @@ const ko: Dict = {
   'eelist.in': '이 채용(NOC {noc})이 연방 EE 「{cats}」 카테고리에 있음', 'eelist.out': '연방 Express Entry 카테고리에 없음', 'eelist.source': '출처: Express Entry 카테고리 선발', 'eelist.your': '이 채용', 'eelist.loading': 'EE 목록 불러오는 중…', 'eelist.draw': '최근 추첨: CRS {crs} · {date} · {size}건 초대', 'eelist.count': '직업 {n}개',
   'col.actions': '작업', 'act.company': '회사 정보', 'act.desc': '직무 설명', 'act.descTitle': '직무 설명', 'act.site': '웹사이트', 'act.addr': '주소', 'act.jobsHere': '이 회사의 공고', 'act.showAll': '나머지 {n}개 펼치기 ▾', 'act.noText': '이 공고의 본문이 아직 수집되지 않았습니다 — 신규 공고는 보통 다음날 도착하며 일부 소스는 제공하지 않습니다.', 'act.loadingText': '로딩 중…',
   'chart.back': '← 뒤로', 'chart.drillHint': '막대를 클릭하면 드릴다운', 'nav.account': '계정', 'nav.acctTab': '내 계정',
+  'sj.title': '내 지원 현황', 'sj.note': '공고를 저장하고 지원 진행 상황을 추적하세요; 계정에만 저장됩니다.', 'sj.empty': '저장한 공고가 없습니다 — 공고 보드에서 「☆ 저장」을 누르세요.',
+  'sj.st.wish': '지원 예정', 'sj.st.applied': '지원함', 'sj.st.interview': '면접 중', 'sj.st.offer': '오퍼 받음',
+  'sj.save': '☆ 저장', 'sj.saved': '★ 저장됨', 'sj.view': '보드에서 보기 →', 'sj.del': '삭제',
   'broad.管理': '관리', 'broad.商务': '비즈니스', 'broad.科技': '기술', 'broad.医疗': '의료', 'broad.教育': '교육',
   // NOC 中/小分类(数据值=etl/noc.py 中文;与大类同名的值走 broad.* 回退,不重复)
   'cat.高级管理': '고위 경영', 'cat.IT': 'IT', 'cat.金融': '금융', 'cat.人力资源': '인사(HR)',

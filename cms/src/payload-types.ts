@@ -87,6 +87,7 @@ export interface Config {
     rankings: Ranking;
     stats: Stat;
     'saved-searches': SavedSearch;
+    'saved-jobs': SavedJob;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -114,6 +115,7 @@ export interface Config {
     rankings: RankingsSelect<false> | RankingsSelect<true>;
     stats: StatsSelect<false> | StatsSelect<true>;
     'saved-searches': SavedSearchesSelect<false> | SavedSearchesSelect<true>;
+    'saved-jobs': SavedJobsSelect<false> | SavedJobsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -850,6 +852,29 @@ export interface SavedSearch {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "saved-jobs".
+ */
+export interface SavedJob {
+  id: number;
+  user: number | User;
+  job?: (number | null) | Job;
+  /**
+   * 岗位标题快照(岗位下架后看板仍可读)
+   */
+  title?: string | null;
+  /**
+   * 公司名快照
+   */
+  company?: string | null;
+  /**
+   * wish | applied | interview | offer(前端下拉限定)
+   */
+  status?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -951,6 +976,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'saved-searches';
         value: number | SavedSearch;
+      } | null)
+    | ({
+        relationTo: 'saved-jobs';
+        value: number | SavedJob;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1358,6 +1387,19 @@ export interface SavedSearchesSelect<T extends boolean = true> {
   filters?: T;
   lang?: T;
   lastNotifiedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "saved-jobs_select".
+ */
+export interface SavedJobsSelect<T extends boolean = true> {
+  user?: T;
+  job?: T;
+  title?: T;
+  company?: T;
+  status?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -18,5 +18,7 @@ export const isProColumn = (k: string): boolean => (PRO_COLUMNS as readonly stri
 
 // Pro 保存筛选上限(E5-03)
 export const PRO_SAVED_SEARCHES = Number(process.env.PRO_SAVED_SEARCHES || 5)
+// 我的求职收藏上限(E9-01;免费开放,防灌爆)
+export const SAVED_JOBS_CAP = Number(process.env.SAVED_JOBS_CAP || 200)
 // 匹配版提醒:达到该 level 才进邮件(E5-03;high=规则分≥60,见 lib/match.ts)
 export const ALERT_MATCH_LEVEL = (process.env.ALERT_MATCH_LEVEL || 'high') as 'high' | 'mid'

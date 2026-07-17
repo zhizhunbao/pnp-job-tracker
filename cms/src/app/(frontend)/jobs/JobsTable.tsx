@@ -477,6 +477,35 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const [actModal, setActModal] = useState<{ kind: 'desc'; job: JobRow } | null>(null)
   // 升级入口(Pro 锁列/保存筛选 gate)统一开独立升级弹框;未登录先走注册弹框(用户定:注册与购买分离)
   const [upsell, setUpsell] = useState<false | 'lock' | 'ss'>(false)
+  // 我的求职(E9-01):已收藏映射 jobId → {saved-jobs 行 id, status};匿名点收藏 → 注册框(转化钩子)
+  const [saved, setSaved] = useState<Record<string, { id: number | string; status: string }>>({})
+  useEffect(() => {
+    if (!plan.loggedIn) return
+    fetch('/api/saved-jobs?limit=200&depth=0', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((d) => {
+        const m: Record<string, { id: number | string; status: string }> = {}
+        for (const doc of d?.docs || []) if (doc.job != null) m[String(doc.job)] = { id: doc.id, status: doc.status || 'wish' }
+        setSaved(m)
+      }).catch(() => {})
+  }, [plan.loggedIn])
+  const toggleSave = async (j: JobRow) => {
+    if (!plan.loggedIn) { setUpsell('lock'); return }
+    const key = String(j.id)
+    const cur = saved[key]
+    if (cur) {
+      setSaved((m) => { const c = { ...m }; delete c[key]; return c })
+      await fetch(`/api/saved-jobs/${cur.id}`, { method: 'DELETE', credentials: 'include' }).catch(() => {})
+    } else {
+      const r = await fetch('/api/saved-jobs', {
+        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ job: j.id, title: j.title, company: j.company, status: 'wish' }),
+      }).catch(() => null)
+      const d = r ? await r.json().catch(() => null) : null
+      const id = d?.doc?.id
+      if (id != null) setSaved((m) => ({ ...m, [key]: { id, status: 'wish' } }))
+    }
+  }
   const [sort, setSort] = useState<{ key: ColKey; dir: 'asc' | 'desc' }>({ key: 'datePosted', dir: 'desc' })
   const [colOpen, setColOpen] = useState(false)
   // 我的匹配视图(E5-05,D1=B):只看命中我档案的岗,匹配度排最前;免费=每日前 N 岗匹配 + 升级卡。
@@ -892,6 +921,10 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       const rowBg = i % 2 ? '#fcfcfd' : '#fff'
                       if (k === 'actions') return (  // 操作列:普通末列,两按钮(公司信息/职位描述)
                         <td key={k} style={{ ...td, whiteSpace: 'nowrap', minWidth: colMin('actions') }}>
+                          <button onClick={(e) => { e.stopPropagation(); toggleSave(j) }}
+                            style={{ ...actBtn, marginRight: 6, ...(saved[String(j.id)] ? { color: '#b45309', borderColor: '#fde68a', background: '#fffbeb' } : {}) }}>
+                            {saved[String(j.id)] ? t('sj.saved') : t('sj.save')}
+                          </button>
                           <button onClick={(e) => { e.stopPropagation(); setPopup({ field: 'company', job: j, title: j.company }) }} style={actBtn}>{t('act.company')}</button>
                           <button onClick={(e) => { e.stopPropagation(); setActModal({ kind: 'desc', job: j }) }} style={{ ...actBtn, marginLeft: 6 }}>{t('act.desc')}</button>
                         </td>
