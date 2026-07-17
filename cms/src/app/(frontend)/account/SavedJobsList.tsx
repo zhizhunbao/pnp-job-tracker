@@ -7,8 +7,9 @@ import type { makeT } from '../jobs/i18n'
 type Row = { id: number | string; title?: string; company?: string; status?: string }
 const STATUSES = ['wish', 'applied', 'interview', 'offer'] as const
 
-export function SavedJobsList({ t }: { t: ReturnType<typeof makeT> }) {
+export function SavedJobsList({ t, userId, weeklyOptOut }: { t: ReturnType<typeof makeT>; userId?: number | string; weeklyOptOut?: boolean }) {
   const [items, setItems] = useState<Row[] | null>(null)
+  const [optOut, setOptOut] = useState(!!weeklyOptOut)   // 周报开关(E9-02b):显示语义取反(勾=订阅)
   useEffect(() => {
     fetch('/api/saved-jobs?limit=200&depth=0&sort=-updatedAt', { credentials: 'include' })
       .then((r) => r.json()).then((d) => setItems(d?.docs || [])).catch(() => setItems([]))
@@ -55,6 +56,19 @@ export function SavedJobsList({ t }: { t: ReturnType<typeof makeT> }) {
             </div>
           ))}
         </div>
+      )}
+      {userId != null && (
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, paddingTop: 10, borderTop: '1px solid #f3f4f6', fontSize: 12.5, color: '#6b7280', cursor: 'pointer' }}>
+          <input type="checkbox" checked={!optOut} onChange={async (e) => {
+            const v = !e.target.checked
+            setOptOut(v)
+            await fetch(`/api/users/${userId}`, {
+              method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ weeklyOptOut: v }),
+            }).catch(() => {})
+          }} />
+          {t('sj.weekly')}
+        </label>
       )}
     </div>
   )

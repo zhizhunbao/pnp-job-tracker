@@ -71,7 +71,8 @@ function UpgradeCard({ t, reason }: { t: TFn; reason: string }) {
 function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
   const [email, setEmail] = useState<string | null>(null)
   const [proUntil, setProUntil] = useState<string>('')
-  const [auth, setAuth] = useState<false | 'login' | 'register'>(false)
+  const [auth, setAuth] = useState<false | 'login' | 'register' | 'reset'>(false)
+  const [resetTok, setResetTok] = useState('')   // E3-07:邮件链接 ?reset=<token> 落地
   const [pricing, setPricing] = useState(false)
   // 用户下拉(2026-07-16 用户拍板「用户这部分改成带下拉的按钮」):账户设置 / Pro 状态 / 退出登录
   const [menu, setMenu] = useState(false)
@@ -88,12 +89,13 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
       .then((r) => r.json()).then((d) => { setEmail(d?.user?.email ?? null); setProUntil((d?.user?.proUntil || '').slice(0, 10)) }).catch(() => {})
   }, [plan.loggedIn])
   useEffect(() => {
-    // 开框后立刻把 ?login=1 从地址栏洗掉(第 15 轮用户反馈:留着参数,刷新就再弹一次)
+    // 开框后立刻把 ?login=1 / ?reset= 从地址栏洗掉(第 15 轮用户反馈:留着参数,刷新就再弹一次)
     try {
       const sp = new URLSearchParams(window.location.search)
-      if (sp.get('login') === '1') {
-        setAuth('login')
-        sp.delete('login')
+      const rst = sp.get('reset')   // E3-07:重置邮件链接落地,token 收进 state 再洗参
+      if (sp.get('login') === '1' || rst) {
+        if (rst) { setResetTok(rst); setAuth('reset') } else setAuth('login')
+        sp.delete('login'); sp.delete('reset')
         const qs = sp.toString()
         window.history.replaceState(null, '', window.location.pathname + (qs ? `?${qs}` : ''))
       }
@@ -147,7 +149,7 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
           <button onClick={() => setPricing(true)} style={proBtn}><IconStar /> Pro</button>
         </>
       )}
-      {auth && <AuthModal t={t} mode={auth} onClose={() => setAuth(false)} onDone={done} />}
+      {auth && <AuthModal t={t} mode={auth} resetToken={resetTok || undefined} onClose={() => setAuth(false)} onDone={done} />}
       {pricing && <PricingModal t={t} loggedIn={plan.loggedIn} pro={plan.isPro} onClose={() => setPricing(false)} />}
     </span>
   )

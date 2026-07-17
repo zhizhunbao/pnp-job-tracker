@@ -177,6 +177,11 @@ export interface User {
     | boolean
     | null;
   lastAlertAt?: string | null;
+  lastWeeklyAt?: string | null;
+  /**
+   * 退订每周收藏摘要邮件
+   */
+  weeklyOptOut?: boolean | null;
   profile?: {
     /**
      * 经验/学历对应 NOC 码(string[])
@@ -1033,6 +1038,8 @@ export interface UsersSelect<T extends boolean = true> {
   stripeCustomerId?: T;
   stripeSessions?: T;
   lastAlertAt?: T;
+  lastWeeklyAt?: T;
+  weeklyOptOut?: T;
   profile?:
     | T
     | {

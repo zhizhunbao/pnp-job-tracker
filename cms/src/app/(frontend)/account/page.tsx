@@ -102,7 +102,7 @@ export default function AccountPage() {
             {/* 移民档案(E5-00):匹配层输入;key 按 id 防换号残留 */}
             {sec === 'profile' && <ProfileForm key={String(me.id)} t={t} userId={me.id} initial={me.profile ?? null} />}
             {/* 已保存筛选(E5-03):邮件提醒管理 */}
-            {sec === 'sjobs' && <SavedJobsList t={t} />}
+            {sec === 'sjobs' && <SavedJobsList t={t} userId={me.id} weeklyOptOut={!!(me as { weeklyOptOut?: boolean }).weeklyOptOut} />}
             {sec === 'saved' && <SavedSearchList t={t} />}
             {/* 时长包购买(E3-03):Pro 也可续买,到期日顺延 */}
             {sec === 'buy' && (<>

@@ -66,7 +66,7 @@ const zh: Dict = {
   // 我的求职(E9-01 最小求职看板,免费)
   'sj.title': '我的求职', 'sj.note': '收藏职位、跟踪投递进度;只存在你的账户里。', 'sj.empty': '还没有收藏的职位——在职位板点「☆ 收藏」。',
   'sj.st.wish': '想投', 'sj.st.applied': '已投', 'sj.st.interview': '面试中', 'sj.st.offer': '拿到 offer',
-  'sj.save': '☆ 收藏', 'sj.saved': '★ 已收藏', 'sj.view': '在职位板查看 →', 'sj.del': '移除',
+  'sj.save': '☆ 收藏', 'sj.saved': '★ 已收藏', 'sj.view': '在职位板查看 →', 'sj.del': '移除', 'sj.weekly': '每周邮件摘要(收藏岗动态,可随时退订)',
   'rec.prefix': '根据你最近浏览:', 'rec.cta': '看这些岗({n})', 'rec.cta0': '看这些岗 →', 'rec.build': '建档案精确匹配 →',
   // 大分类(数据值→显示)
   'broad.管理': '管理', 'broad.商务': '商务', 'broad.科技': '科技', 'broad.医疗': '医疗', 'broad.教育': '教育',
@@ -120,7 +120,8 @@ const zh: Dict = {
   'acct.pw.short': '太短:至少 8 位', 'acct.pw.weak': '弱', 'acct.pw.medium': '中', 'acct.pw.strong': '强', 'acct.pw.hint': '建议混合大小写、数字或符号',
   'acct.plan.free': '免费版', 'acct.plan.pro': 'Pro · 有效期至 {d}',
   'acct.logout': '退出登录',
-  'acct.forgot': '忘记密码?公测期请邮件联系我们重置',
+  'acct.forgot': '忘记密码?', 'acct.forgotSend': '发送重置邮件', 'acct.forgotSent': '如果该邮箱已注册,重置邮件已发出——请查收(链接 1 小时内有效)。',
+  'acct.resetTitle': '设置新密码', 'acct.resetBtn': '设置新密码并登录', 'acct.resetBad': '链接无效或已过期,请返回登录重新发起找回。', 'acct.backLogin': '← 返回登录',
   // 时长包购买(E3-03)
   'acct.buyTitle': '升级 Pro(一次性时长包,无自动续费)',
   'acct.buy30': '购买 30 天', 'acct.buy90': '购买 90 天',
@@ -256,7 +257,7 @@ const en: Dict = {
   'chart.back': '← Back', 'chart.drillHint': 'Click a bar to drill down', 'nav.account': 'Account', 'nav.acctTab': 'My account',
   'sj.title': 'My applications', 'sj.note': 'Save jobs and track your application progress; stored only in your account.', 'sj.empty': 'No saved jobs yet — hit “☆ Save” on the job board.',
   'sj.st.wish': 'To apply', 'sj.st.applied': 'Applied', 'sj.st.interview': 'Interviewing', 'sj.st.offer': 'Offer',
-  'sj.save': '☆ Save', 'sj.saved': '★ Saved', 'sj.view': 'View on board →', 'sj.del': 'Remove',
+  'sj.save': '☆ Save', 'sj.saved': '★ Saved', 'sj.view': 'View on board →', 'sj.del': 'Remove', 'sj.weekly': 'Weekly email digest (saved jobs; unsubscribe anytime)',
   'rec.prefix': 'Based on your recent browsing: ', 'rec.cta': 'See these jobs ({n})', 'rec.cta0': 'See these jobs →', 'rec.build': 'Build a profile for exact matching →',
   'broad.管理': 'Management', 'broad.商务': 'Business', 'broad.科技': 'Tech', 'broad.医疗': 'Health', 'broad.教育': 'Education',
   // NOC 中/小分类(数据值=etl/noc.py 中文;与大类同名的值走 broad.* 回退,不重复)
@@ -333,7 +334,8 @@ const en: Dict = {
   'acct.pw.short': 'Too short: 8+ characters', 'acct.pw.weak': 'Weak', 'acct.pw.medium': 'Fair', 'acct.pw.strong': 'Strong', 'acct.pw.hint': 'Mix upper/lower case, digits or symbols',
   'acct.plan.free': 'Free', 'acct.plan.pro': 'Pro · until {d}',
   'acct.logout': 'Sign out',
-  'acct.forgot': 'Forgot password? Email us during beta to reset',
+  'acct.forgot': 'Forgot password?', 'acct.forgotSend': 'Send reset email', 'acct.forgotSent': 'If that email is registered, a reset link has been sent (valid for 1 hour).',
+  'acct.resetTitle': 'Set a new password', 'acct.resetBtn': 'Set password & sign in', 'acct.resetBad': 'Link invalid or expired — go back and request a new one.', 'acct.backLogin': '← Back to sign in',
   // 时长包购买(E3-03)
   'acct.buyTitle': 'Upgrade to Pro (one-time pass, no auto-renewal)',
   'acct.buy30': 'Buy 30 days', 'acct.buy90': 'Buy 90 days',
@@ -469,7 +471,7 @@ const ko: Dict = {
   'chart.back': '← 뒤로', 'chart.drillHint': '막대를 클릭하면 드릴다운', 'nav.account': '계정', 'nav.acctTab': '내 계정',
   'sj.title': '내 지원 현황', 'sj.note': '공고를 저장하고 지원 진행 상황을 추적하세요; 계정에만 저장됩니다.', 'sj.empty': '저장한 공고가 없습니다 — 공고 보드에서 「☆ 저장」을 누르세요.',
   'sj.st.wish': '지원 예정', 'sj.st.applied': '지원함', 'sj.st.interview': '면접 중', 'sj.st.offer': '오퍼 받음',
-  'sj.save': '☆ 저장', 'sj.saved': '★ 저장됨', 'sj.view': '보드에서 보기 →', 'sj.del': '삭제',
+  'sj.save': '☆ 저장', 'sj.saved': '★ 저장됨', 'sj.view': '보드에서 보기 →', 'sj.del': '삭제', 'sj.weekly': '주간 이메일 요약(저장 공고, 언제든 해지)',
   'rec.prefix': '최근 본 공고 기준: ', 'rec.cta': '이 공고 보기 ({n})', 'rec.cta0': '이 공고 보기 →', 'rec.build': '프로필 만들고 정확 매칭 →',
   'broad.管理': '관리', 'broad.商务': '비즈니스', 'broad.科技': '기술', 'broad.医疗': '의료', 'broad.教育': '교육',
   // NOC 中/小分类(数据值=etl/noc.py 中文;与大类同名的值走 broad.* 回退,不重复)
@@ -546,7 +548,8 @@ const ko: Dict = {
   'acct.pw.short': '너무 짧음: 8자 이상', 'acct.pw.weak': '약함', 'acct.pw.medium': '보통', 'acct.pw.strong': '강함', 'acct.pw.hint': '대소문자·숫자·기호를 섞어 주세요',
   'acct.plan.free': '무료', 'acct.plan.pro': 'Pro · {d}까지',
   'acct.logout': '로그아웃',
-  'acct.forgot': '비밀번호를 잊으셨나요? 베타 기간에는 이메일로 문의하세요',
+  'acct.forgot': '비밀번호를 잊으셨나요?', 'acct.forgotSend': '재설정 메일 보내기', 'acct.forgotSent': '해당 이메일이 등록되어 있다면 재설정 메일을 보냈습니다(1시간 유효).',
+  'acct.resetTitle': '새 비밀번호 설정', 'acct.resetBtn': '설정하고 로그인', 'acct.resetBad': '링크가 유효하지 않거나 만료되었습니다. 다시 요청해 주세요.', 'acct.backLogin': '← 로그인으로',
   // 时长包购买(E3-03)
   'acct.buyTitle': 'Pro 업그레이드(일회성 기간권, 자동 갱신 없음)',
   'acct.buy30': '30일 구매', 'acct.buy90': '90일 구매',

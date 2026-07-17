@@ -5,6 +5,8 @@ import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
+import { sendMail } from './lib/mailer'
+
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Companies } from './collections/Companies'
@@ -39,6 +41,20 @@ export default buildConfig({
   },
   collections: [Users, Media, Companies, Jobs, PnpOccupations, PnpDraws, EeCategories, NocDescriptions, PolicyDocs, DesignatedEmployers, Provinces, Cities, Districts, NocCategories, Sources, ExperienceLevels, FieldSources, Rankings, Stats, SavedSearches, SavedJobs],
   editor: lexicalEditor(),
+  // E3-07:邮件适配器=包一层现成 lib/mailer(Resend HTTP 直调,零新依赖);目前只有 forgot-password 走这里。
+  // RESEND_API_KEY 未设 → sendMail 返回 false 不发信(dry-run 语义,与 alerts 一致)。
+  email: () => ({
+    name: 'resend-mailer',
+    defaultFromAddress: (process.env.RESEND_FROM || 'alerts@offer2pr.com').replace(/^.*<|>.*$/g, ''),
+    defaultFromName: 'PNP Job Tracker',
+    sendEmail: async (message: unknown) => {
+      const m = message as { to?: unknown; subject?: unknown; html?: unknown; text?: unknown }
+      const addr = (v: unknown): string =>
+        typeof v === 'string' ? v : v && typeof v === 'object' && 'address' in (v as Record<string, unknown>) ? String((v as { address?: unknown }).address ?? '') : ''
+      const to = Array.isArray(m.to) ? addr(m.to[0]) : addr(m.to)
+      if (to) await sendMail(to, String(m.subject || ''), String(m.html || m.text || ''))
+    },
+  }),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),

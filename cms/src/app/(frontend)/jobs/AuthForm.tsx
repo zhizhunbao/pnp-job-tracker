@@ -32,16 +32,36 @@ const PW_METER = [
   { key: 'acct.pw.strong', color: '#16a34a', fill: 3 },
 ] as const
 
-export function AuthForm({ t, onDone, initialMode }: { t: TFn; onDone: () => void; initialMode?: 'login' | 'register' }) {
-  const [mode, setMode] = useState<'login' | 'register'>(initialMode ?? 'login')
+// E3-07:新增 forgot(找回密码,输邮箱)/ reset(邮件链接落地,设新密码)两态;
+// forgot 防枚举=无论邮箱存在与否一律同一提示;reset 成功即登录态(Payload set-cookie),onDone 整页刷新。
+export function AuthForm({ t, onDone, initialMode, resetToken }: { t: TFn; onDone: () => void; initialMode?: 'login' | 'register' | 'reset'; resetToken?: string }) {
+  const [mode, setMode] = useState<'login' | 'register' | 'forgot' | 'reset'>(initialMode ?? 'login')
   const [email, setEmail] = useState('')
   const [pw, setPw] = useState('')
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
+  const [sent, setSent] = useState(false)
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault(); setBusy(true); setErr('')
     try {
+      if (mode === 'forgot') {
+        await fetch('/api/users/forgot-password', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }),
+        }).catch(() => {})
+        setSent(true)   // 防枚举:不看响应,一律「若已注册则已发出」
+        return
+      }
+      if (mode === 'reset') {
+        if (pw.length < 8) { setErr(t('acct.err.weakPw')); return }
+        const r = await fetch('/api/users/reset-password', {
+          method: 'POST', credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: resetToken || '', password: pw }),
+        })
+        if (!r.ok) { setErr(t('acct.resetBad')); return }
+        setPw(''); onDone(); return
+      }
       if (mode === 'register') {
         if (pw.length < 8) { setErr(t('acct.err.weakPw')); return }
         const r = await fetch('/api/users', {
@@ -90,22 +110,36 @@ export function AuthForm({ t, onDone, initialMode }: { t: TFn; onDone: () => voi
         <div style={{ fontSize: 16.5, fontWeight: 700, color: '#111827', marginTop: 6 }}>PNP Job Tracker</div>
         <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 3 }}>{t('tagline')}</div>
       </div>
-      {/* 登录/注册 分段切换 */}
-      <div style={{ display: 'flex', gap: 4, background: '#f3f4f6', borderRadius: 10, padding: 4, marginBottom: 16 }}>
-        {seg('login', t('acct.login'))}
-        {seg('register', t('acct.register'))}
-      </div>
+      {/* 登录/注册 分段切换(找回/重置态不显示) */}
+      {(mode === 'login' || mode === 'register') && (
+        <div style={{ display: 'flex', gap: 4, background: '#f3f4f6', borderRadius: 10, padding: 4, marginBottom: 16 }}>
+          {seg('login', t('acct.login'))}
+          {seg('register', t('acct.register'))}
+        </div>
+      )}
+      {mode === 'reset' && <div style={{ fontSize: 14.5, fontWeight: 600, color: '#111827', marginBottom: 14, textAlign: 'center' }}>{t('acct.resetTitle')}</div>}
+      {mode === 'forgot' && sent ? (
+        <div>
+          <div style={{ background: '#ecfdf5', color: '#047857', fontSize: 13, padding: '10px 12px', borderRadius: 8 }}>{t('acct.forgotSent')}</div>
+          <button type="button" onClick={() => { setMode('login'); setSent(false); setErr('') }}
+            style={{ border: 'none', background: 'none', padding: 0, color: '#2563eb', fontSize: 12.5, cursor: 'pointer', marginTop: 12 }}>{t('acct.backLogin')}</button>
+        </div>
+      ) : (
       <form onSubmit={submit}>
-        <label style={{ fontSize: 13, fontWeight: 500, color: '#374151', display: 'block' }}>{t('acct.email')}
-          <input className="authIn" style={inputS} type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" placeholder="you@example.com" />
-        </label>
-        <div style={{ height: 12 }} />
+        {mode !== 'reset' && (
+          <label style={{ fontSize: 13, fontWeight: 500, color: '#374151', display: 'block' }}>{t('acct.email')}
+            <input className="authIn" style={inputS} type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" placeholder="you@example.com" />
+          </label>
+        )}
+        {mode !== 'forgot' && (<>
+        {mode !== 'reset' && <div style={{ height: 12 }} />}
         <label style={{ fontSize: 13, fontWeight: 500, color: '#374151', display: 'block' }}>{t('acct.password')}
-          {/* minLength 只管注册:登录挂长度校验会把老短密码账号(admin 建的 6 位等)整个拦在门外(2026-07-16 用户实测) */}
-          <input className="authIn" style={inputS} type="password" required minLength={mode === 'register' ? 8 : undefined} value={pw} onChange={(e) => setPw(e.target.value)}
+          {/* minLength 管注册与重置(都是设新密码);登录挂长度校验会把老短密码账号整个拦在门外(2026-07-16 用户实测) */}
+          <input className="authIn" style={inputS} type="password" required minLength={mode === 'login' ? undefined : 8} value={pw} onChange={(e) => setPw(e.target.value)}
             autoComplete={mode === 'login' ? 'current-password' : 'new-password'} placeholder="••••••••" />
         </label>
-        {mode === 'register' && pw && (() => {
+        </>)}
+        {(mode === 'register' || mode === 'reset') && pw && (() => {
           const lv = pwStrength(pw)
           const m = PW_METER[lv]
           return (
@@ -123,20 +157,33 @@ export function AuthForm({ t, onDone, initialMode }: { t: TFn; onDone: () => voi
         })()}
         {err && <div style={{ color: '#dc2626', fontSize: 13, marginTop: 10, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '7px 10px' }}>{err}</div>}
         <button type="submit" disabled={busy} style={{ ...btnS, opacity: busy ? 0.6 : 1 }}>
-          {busy ? '…' : mode === 'login' ? t('acct.login') : t('acct.submitReg')}
+          {busy ? '…' : mode === 'login' ? t('acct.login') : mode === 'register' ? t('acct.submitReg') : mode === 'forgot' ? t('acct.forgotSend') : t('acct.resetBtn')}
         </button>
       </form>
-      <div style={{ fontSize: 11.5, color: '#c4c4c8', marginTop: 14, textAlign: 'center' }}>{t('acct.forgot')}</div>
+      )}
+      {/* 页脚:登录态=「忘记密码?」入口;找回/重置态=返回登录 */}
+      {mode === 'login' && (
+        <button type="button" onClick={() => { setMode('forgot'); setErr('') }}
+          style={{ display: 'block', margin: '14px auto 0', border: 'none', background: 'none', padding: 0, fontSize: 11.5, color: '#9ca3af', cursor: 'pointer', textDecoration: 'underline' }}>
+          {t('acct.forgot')}
+        </button>
+      )}
+      {(mode === 'reset' || (mode === 'forgot' && !sent)) && (
+        <button type="button" onClick={() => { setMode('login'); setErr('') }}
+          style={{ display: 'block', margin: '14px auto 0', border: 'none', background: 'none', padding: 0, fontSize: 11.5, color: '#9ca3af', cursor: 'pointer' }}>
+          {t('acct.backLogin')}
+        </button>
+      )}
     </div>
   )
 }
 
-// mode:入口决定初始 tab(注册 CTA 直达注册,用户定「注册也要弹框」;默认登录)
+// mode:入口决定初始 tab(注册 CTA 直达注册,用户定「注册也要弹框」;默认登录;reset=邮件链接落地设新密码)
 // 壳统一走 Modal(sm);品牌头保留(用户拍板:登录弹框是品牌触点,仅 chrome 对齐规范)
-export function AuthModal({ t, onClose, onDone, mode, z }: { t: TFn; onClose: () => void; onDone: () => void; mode?: 'login' | 'register'; z?: number }) {
+export function AuthModal({ t, onClose, onDone, mode, resetToken, z }: { t: TFn; onClose: () => void; onDone: () => void; mode?: 'login' | 'register' | 'reset'; resetToken?: string; z?: number }) {
   return (
     <Modal onClose={onClose} size="sm" z={z}>
-      <AuthForm t={t} onDone={onDone} initialMode={mode} />
+      <AuthForm t={t} onDone={onDone} initialMode={mode} resetToken={resetToken} />
     </Modal>
   )
 }

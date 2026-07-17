@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { buildJobsWhere } from '@/lib/jobsQuery'
-import { sendMail, MAIL_ENABLED } from '@/lib/mailer'
+import { sendMail, MAIL_ENABLED, unsubToken } from '@/lib/mailer'
 import { loadMatchDims } from '@/lib/matchDims'
 import { match, normalizeProfile, hasProfile, type MatchJob } from '@/lib/match'
 import { ALERT_MATCH_LEVEL } from '@/lib/plan'
@@ -67,6 +67,24 @@ function emailHtml(lang: Lang, rows: any[], drawLines: string[]): string {
 }
 const langOf = (v: unknown): Lang => (v === 'en' || v === 'ko' ? v : 'zh')
 
+// ── C 免费周报(E9-02b):zh+en 双语一封(免费用户多无档案语言偏好,不猜) ──
+function weeklyHtml(rows: { title: string; company: string; open: boolean }[], newN: number, dims: string, unsubUrl: string): string {
+  const tr = rows.map((r) => `<tr>
+    <td style="padding:6px 10px;border-bottom:1px solid #eee">${r.title}</td>
+    <td style="padding:6px 10px;border-bottom:1px solid #eee;color:#6b7280">${r.company}</td>
+    <td style="padding:6px 10px;border-bottom:1px solid #eee">${r.open
+      ? '<span style="color:#15803d">在招 open</span>'
+      : '<span style="color:#9ca3af">已下架 closed</span>'}</td>
+  </tr>`).join('')
+  return `<div style="font-family:system-ui,sans-serif;color:#1f2937;font-size:14px">
+    <p>🍁 <strong>PNP Job Tracker</strong> · 每周求职看板摘要 / Weekly saved-jobs digest</p>
+    <table style="border-collapse:collapse;font-size:13px">${tr}</table>
+    ${newN > 0 ? `<p>你的方向(${dims})近 7 天新增 <strong>${newN}</strong> 岗 / ${newN} new jobs this week in your saved directions — <a href="${SITE}/jobs" style="color:#2563eb">看新岗 View →</a></p>` : ''}
+    <p><a href="${SITE}/account" style="color:#2563eb">建档案,看每岗与你的匹配度 / Build a profile for per-job match →</a></p>
+    <p style="color:#9ca3af;font-size:12px">状态以官方原帖为准 · Status per official posting ·
+      <a href="${unsubUrl}" style="color:#9ca3af">退订本摘要 Unsubscribe</a> · <a href="${SITE}/account" style="color:#9ca3af">账户设置 Settings</a></p></div>`
+}
+
 export async function GET(req: NextRequest) {
   if (!process.env.SEED_TOKEN || req.headers.get('x-seed-token') !== process.env.SEED_TOKEN) {
     return new Response('unauthorized', { status: 401 })
@@ -75,7 +93,7 @@ export async function GET(req: NextRequest) {
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
   const now = new Date().toISOString()
-  const out = { dryRun: dry, matchEmails: 0, searchEmails: 0, usersChecked: 0, searchesChecked: 0, skippedFilters: [] as string[] }
+  const out = { dryRun: dry, matchEmails: 0, searchEmails: 0, weeklyEmails: 0, usersChecked: 0, searchesChecked: 0, weeklyChecked: 0, skippedFilters: [] as string[] }
 
   // ── A 档案匹配提醒(Pro + 建档 + 有邮箱) ──
   const dims = await loadMatchDims()
@@ -141,6 +159,54 @@ export async function GET(req: NextRequest) {
         await payload.update({ collection: 'saved-searches', id: sdoc.id, overrideAccess: true, data: { lastNotifiedAt: now } })
       }
     } else out.searchEmails++
+  }
+
+  // ── C 免费周报(E9-02b):免费 × 未退订 × 距上次 ≥7 天 × 有收藏;滚动游标,单轮 ≤200 封防超时 ──
+  const weekAgo = new Date(Date.now() - 7 * 86400_000).toISOString()
+  const cut7 = new Date(Date.now() - 7 * 86400_000).toISOString().slice(0, 10)
+  const freeUsers = await payload.find({
+    collection: 'users', limit: 1000, depth: 0, overrideAccess: true,
+    where: { and: [
+      { or: [{ proUntil: { exists: false } }, { proUntil: { less_than: now } }] },
+      { or: [{ weeklyOptOut: { not_equals: true } }, { weeklyOptOut: { exists: false } }] },
+      { or: [{ lastWeeklyAt: { exists: false } }, { lastWeeklyAt: { less_than: weekAgo } }] },
+    ] },
+  })
+  for (const u of freeUsers.docs as any[]) {
+    if (out.weeklyEmails >= 200) break                    // 防超时上限;游标语义下一轮自动续
+    if (!u.email) continue
+    const sj = await payload.find({ collection: 'saved-jobs', limit: 200, depth: 0, overrideAccess: true, where: { user: { equals: u.id } } })
+    if (!sj.docs.length) continue                          // 无收藏=没内容,不硬发
+    out.weeklyChecked++
+    const ids = sj.docs.map((d: any) => (typeof d.job === 'object' ? d.job?.id : d.job)).filter((x: any) => x != null)
+    const { rows: jrows } = ids.length
+      ? await pool.query(`SELECT id, status, province, broad FROM jobs WHERE id = ANY($1::int[])`, [ids])
+      : { rows: [] as any[] }
+    const st = new Map<string, { status?: string; province?: string; broad?: string }>(jrows.map((r: any) => [String(r.id), r]))
+    const items = sj.docs.slice(0, 20).map((d: any) => {
+      const j = st.get(String(typeof d.job === 'object' ? d.job?.id : d.job))
+      return { title: d.title || '—', company: d.company || '', open: (j?.status || 'closed') === 'open' }
+    })
+    // 收藏画像 = 收藏岗的 (省, 大类) 去重对;近 7 天新增按对精确计数
+    const pairs = [...new Map(jrows.filter((r: any) => r.province && r.broad).map((r: any) => [`${r.province}|${r.broad}`, r])).values()]
+    let newN = 0
+    if (pairs.length) {
+      const conds = pairs.map((_: any, i: number) => `(province = $${i * 2 + 2} AND broad = $${i * 2 + 3})`).join(' OR ')
+      const params = [cut7, ...pairs.flatMap((r: any) => [r.province, r.broad])]
+      const { rows: cr } = await pool.query(`SELECT count(*)::int AS n FROM jobs WHERE status = 'open' AND date_posted >= $1 AND (${conds})`, params)
+      newN = cr[0]?.n || 0
+    }
+    const openN = items.filter((x) => x.open).length
+    const dims = pairs.slice(0, 3).map((r: any) => `${r.province}·${r.broad}`).join(' / ')
+    const subject = `你收藏的 ${sj.docs.length} 个岗:${openN} 在招 · ${items.length - openN} 已下架 — PNP Job Tracker`
+    if (!dry) {
+      const unsubUrl = `${SITE}/api/alerts/unsub?u=${u.id}&t=${unsubToken(u.id)}`
+      const ok = await sendMail(u.email, subject, weeklyHtml(items, newN, dims, unsubUrl))
+      if (ok) {
+        out.weeklyEmails++
+        await payload.update({ collection: 'users', id: u.id, overrideAccess: true, data: { lastWeeklyAt: now } })
+      }
+    } else out.weeklyEmails++
   }
 
   return NextResponse.json(out)
