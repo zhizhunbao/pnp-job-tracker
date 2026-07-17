@@ -52,18 +52,40 @@ def text(el) -> str:
     return re.sub(r"\s+", " ", el.get_text(" ", strip=True)) if el else ""
 
 
+_BLOCK_TAGS = {"p", "div", "section", "article", "ul", "ol", "dl", "dt", "dd", "table", "thead",
+               "tbody", "tr", "blockquote", "figure", "figcaption", "header", "footer", "main", "aside"}
+_HEAD_TAGS = {"h1", "h2", "h3", "h4", "h5", "h6"}
+_SKIP_TAGS = {"script", "style", "noscript", "template"}
+
+
+def _serialize(node) -> str:
+    """递归块级序列化:块边界落换行、<br> 即换行、标题前后空行、li 加「• 」——原帖的分段/列表/
+    标题结构原样落进纯文本(2026-07-16 用户报告:原帖有格式,老提取只认 h2-h5/p/li,
+    Indeed 转义帖的 <br> 换行与 <b>标题行</b> 全被压平成一坨)。"""
+    from bs4 import NavigableString, Tag
+    if isinstance(node, NavigableString):
+        return re.sub(r"\s+", " ", str(node))
+    if not isinstance(node, Tag) or node.name in _SKIP_TAGS:
+        return ""
+    if node.name == "br":
+        return "\n"
+    inner = "".join(_serialize(c) for c in node.children)
+    if node.name == "li":
+        return "\n• " + inner.strip() + "\n"
+    if node.name in _HEAD_TAGS:
+        return "\n\n" + inner.strip() + "\n"
+    if node.name in _BLOCK_TAGS:
+        t = inner.strip()
+        return ("\n" + t + "\n\n") if t else ""  # 段后空行=保留段落感
+    return inner
+
+
 def rich_text(el) -> str:
-    """块感知提取:按文档顺序遍历 h2-h5 / p / li,各取整洁单行文本 → 标题前空行、li 加「• 」、p 原样。
-    保留分段与列表(Job Bank 详情可见区是 h4 小标题 + ul/li),不像 text() 把整段压成一坨。"""
+    """块感知提取:HTML 结构(p/div/br/h*/li…)→ 带换行的纯文本,段落间空行、li 加「• 」。"""
     if not el:
         return ""
-    out: list[str] = []
-    for node in el.find_all(["h2", "h3", "h4", "h5", "p", "li"]):
-        t = re.sub(r"\s+", " ", node.get_text(" ", strip=True)).strip()
-        if not t:
-            continue
-        out.append(("• " + t) if node.name == "li" else (("\n" + t) if node.name[0] == "h" else t))
-    return re.sub(r"\n{3,}", "\n\n", "\n".join(out)).strip()
+    lines = [re.sub(r"\s+", " ", ln).strip() for ln in _serialize(el).split("\n")]
+    return re.sub(r"\n{3,}", "\n\n", "\n".join(lines)).strip()
 
 
 def description(s) -> str:

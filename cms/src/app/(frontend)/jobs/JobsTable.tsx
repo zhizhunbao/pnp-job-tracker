@@ -1266,32 +1266,42 @@ const JD_HR_DASH_RE = new RegExp(`\\s+(?=(?:${JD_ALL_ALTS})-\\s)`, 'g')         
 const JD_GLUE_RE = new RegExp(`(?<=[a-z)])(?=(?:${JD_ALL_ALTS})[:-])`, 'g')                            // 「YesEducation-」无空格粘边
 const JD_HR_LINE_RE = new RegExp(`^(${JD_ALL_ALTS})-\\s*`)                                             // 行首「Label- 」→「Label: 」
 // 2026-07-16 用户拍板:JD 弹窗去表格,原汁原味逐行显示——第 16 轮「键值段表格化+规则解读列」
-// (c4e6f59/369aac0)整体退役(多张表的抽象感 + 解读列大量留空,读起来不如原文);
-// 行级可读性清洗(粘连断行/bullet 拆行/剥 markdown 残渣/一句一行,均历轮用户拍板)保留。
-// 结构化归数据层:「JD 结构化下沉 ETL」仍在 backlog,做了以后再谈展示形态。
+// (c4e6f59/369aac0)整体退役(多张表的抽象感 + 解读列大量留空,读起来不如原文)。
+// 双轨渲染:数据层给了真实换行(05b 块级序列化,原帖分段/列表/标题保真)→ 按原换行渲染,空行=段距;
+// 压平老坨帖(Job Bank 聚合时丢格式,0 换行)→ 才走猜测式断行(粘连断行/bullet 拆行/一句一行,历轮拍板)。
 function JdTextView({ text, max = 4000 }: { text: string; max?: number }) {
-  const lines = text.slice(0, max)
-    .replace(JD_GLUE_RE, '\n')        // 无空格粘边先断(YesEducation- → Yes\nEducation-)
-    .replace(JD_INLINE_RE, '\n')      // 已知标签前断行
-    .replace(JD_HR_DASH_RE, '\n')     // HR「Label- 值」变体前断行
-    .replace(/\s+\*\s+/g, '\n')       // "* 项" 拆行(星号本身在下方统一剥掉)
-    // 行内圆点 bullet 拆行(2026-07-10 用户第四例,CER 帖:「decision making;• Design」——源头丢换行,
-    // 圆点前可无空格;圆点后必有空格才算列表项,防误伤小数/代码;圆点在下方统一剥掉)
-    .replace(/\s*[•▪◦‣]\s+/g, '\n')
-    // markdown 强调残渣(第 12 轮 #31,第 5 套版式:Indeed 富文本转义,如「*Administrator *to」
-    // 「*Key Responsibilities:*」「\**_*…*_」)——先拍掉连堆的 */_/\,再清孤立 */\;
-    // 下划线只在连堆里清(URL/邮箱残件可能带合法下划线);真实 JD 不用星号行文,误伤面≈0。
-    // 注意顺序:必须在上面「 * 项」拆行之后,别抢了列表拆行的星号。
-    .replace(/[*\\_]{2,}/g, ' ')
-    .replace(/[*\\]/g, ' ')
-    .split('\n')
-    // 一句一行(07-06 用户拍板):句末标点(前一字符是小写/数字/右括号,防 $20.00、U.S. 误拆)
-    // + 可选空格 + 大写开头 → 断行;兼容 Job Bank 抓取的无空格粘连("asset.Core")
-    .flatMap((l) => l.split(/(?<=[a-z0-9)][.!?])\s*(?=[A-Z])/))
-    .map((s) => s.trim().replace(/^[•·▪◦‣*-]+\s*/, '').replace(/\s{2,}/g, ' '))
-    .filter(Boolean)
-    .map((l) => l.replace(JD_HR_LINE_RE, '$1: '))  // HR「Label- 值」归一成「Label: 值」
+  const clipped = text.slice(0, max)
+  const hasBreaks = clipped.includes('\n')
+  const lines = (hasBreaks
+    ? clipped
+      .replace(/[*\\_]{2,}/g, ' ')      // markdown 强调残渣照剥(第 12 轮 #31)
+      .split('\n')
+      .map((s) => s.trim().replace(/\s{2,}/g, ' '))
+    : clipped
+      .replace(JD_GLUE_RE, '\n')        // 无空格粘边先断(YesEducation- → Yes\nEducation-)
+      .replace(JD_INLINE_RE, '\n')      // 已知标签前断行
+      .replace(JD_HR_DASH_RE, '\n')     // HR「Label- 值」变体前断行
+      .replace(/\s+\*\s+/g, '\n')       // "* 项" 拆行(星号本身在下方统一剥掉)
+      // 行内圆点 bullet 拆行(2026-07-10 用户第四例,CER 帖:「decision making;• Design」——源头丢换行,
+      // 圆点前可无空格;圆点后必有空格才算列表项,防误伤小数/代码;圆点在下方统一剥掉)
+      .replace(/\s*[•▪◦‣]\s+/g, '\n')
+      // markdown 强调残渣(第 12 轮 #31,第 5 套版式:Indeed 富文本转义,如「*Administrator *to」
+      // 「*Key Responsibilities:*」「\**_*…*_」)——先拍掉连堆的 */_/\,再清孤立 */\;
+      // 下划线只在连堆里清(URL/邮箱残件可能带合法下划线);真实 JD 不用星号行文,误伤面≈0。
+      // 注意顺序:必须在上面「 * 项」拆行之后,别抢了列表拆行的星号。
+      .replace(/[*\\_]{2,}/g, ' ')
+      .replace(/[*\\]/g, ' ')
+      .split('\n')
+      // 一句一行(07-06 用户拍板):句末标点(前一字符是小写/数字/右括号,防 $20.00、U.S. 误拆)
+      // + 可选空格 + 大写开头 → 断行;兼容 Job Bank 抓取的无空格粘连("asset.Core")
+      .flatMap((l) => l.split(/(?<=[a-z0-9)][.!?])\s*(?=[A-Z])/))
+      .map((s) => s.trim().replace(/^[•·▪◦‣*-]+\s*/, '').replace(/\s{2,}/g, ' '))
+      .filter(Boolean)
+  ).map((l) => l.replace(JD_HR_LINE_RE, '$1: '))  // HR「Label- 值」归一成「Label: 值」
+  // 保真轨保留空行作段距;行首「• 」保留(数据层给的列表符),只在猜测轨剥
   const renderLine = (l: string, i: number) => {
+    if (!l) return <div key={i} style={{ height: 6 }} />
+    if (l.startsWith('• ')) return <div key={i} style={{ paddingLeft: 22, textIndent: -8 }}>{l}</div>
     const low = l.toLowerCase()
     if (JD_TOP_HEADS.has(low)) return <div key={i} style={{ marginTop: i ? 12 : 0, fontSize: 14, fontWeight: 700, color: '#111827' }}>{l}</div>
     if (JD_SUB_HEADS.has(low)) return <div key={i} style={{ marginTop: i ? 8 : 0, fontWeight: 700, color: '#374151' }}>{l}</div>
