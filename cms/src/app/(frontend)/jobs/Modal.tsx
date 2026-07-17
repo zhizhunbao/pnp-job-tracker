@@ -45,8 +45,8 @@ export function ModalTitle({ eyebrow, color = '#6366f1', title }: { eyebrow: Rea
  * 居中弹框壳:sm=390(登录/升级) md=560(公司/JD) lg=720(定价对照/榜单类)。
  * pad=true 整卡 24px 内边距(表单类);pad=false 内容区自管(头/体分区类,约定头 '16px 20px 8px' 体 '4px 20px 20px')。
  */
-export function Modal({ onClose, size = 'md', z = 50, pad = true, children }: {
-  onClose: () => void; size?: 'sm' | 'md' | 'lg'; z?: number; pad?: boolean; children: React.ReactNode
+export function Modal({ onClose, size = 'md', z = 50, pad = true, vh = 85, children }: {
+  onClose: () => void; size?: 'sm' | 'md' | 'lg'; z?: number; pad?: boolean; vh?: number; children: React.ReactNode
 }) {
   const ov = useOverlayClose(onClose)
   const narrow = useIsNarrow()  // 窄屏(≤640px)→ 全屏卡:占满视口、圆角 0、内边距收窄(E8-03)
@@ -63,7 +63,7 @@ export function Modal({ onClose, size = 'md', z = 50, pad = true, children }: {
           ? (size === 'sm'
             ? { ...CARD, width: '100%', maxHeight: '92vh', overflowY: 'auto', padding: pad ? '20px 16px 16px' : 0 }
             : { ...CARD, borderRadius: 0, width: '100%', height: '100%', maxHeight: '100vh', overflowY: 'auto', padding: pad ? '20px 14px 16px' : 0 })
-          : { ...CARD, width: `min(${WIDTH[size]}px, 100%)`, maxHeight: '85vh', overflowY: 'auto', padding: pad ? '24px 24px 20px' : 0 }}>
+          : { ...CARD, width: `min(${WIDTH[size]}px, 100%)`, maxHeight: `${vh}vh`, overflowY: 'auto', padding: pad ? '24px 24px 20px' : 0 }}>
         <button onClick={onClose} aria-label="close" style={closeBtnS}>×</button>
         {children}
       </div>
