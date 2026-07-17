@@ -52,6 +52,9 @@ const SYSTEM = (lang: Lang) =>
   "The reader's own status (visa/PGWP/work permit, experience, whether they hold an offer) is UNKNOWN unless a user profile appears in the facts below. Never assert the reader's identity or status; phrase audience assumptions conditionally (如「若你持 PGWP」/ 'if you hold a PGWP'). Job attributes are facts about the JOB, not the reader — a first-party posting or list hit never means the reader has an offer. " +
   // 建议追问(第 15 轮 #36,用户点名「基于具体内容生成」):结尾一行 ❓ 标记,前端截住做建议 chip 不显示
   `End with ONE final line starting with "❓": the single most useful next question (in ${LANG_NAME[lang]}) about THIS specific job/company, grounded in the facts above. Keep it SHORT — under 12 words (CJK: under 20 characters), one question mark, no compound questions. ` +
+  // 可答性红线(2026-07-17 用户截图「AI 生成的问题自己回答不了」:建议了「护士流失率」→ 一点=「无法提供」):
+  // 建议问题必须是模型用在手事实答得好的;答案会以「无法提供」开头的问题禁止建议
+  `CRITICAL: suggest ONLY a question YOU can answer well from the facts you were given (PNP/EE streams and draws, wage vs median, stated requirements, location, score, posting details). NEVER suggest questions needing data you don't have — employee turnover/retention/tenure, internal culture, headcount, financials, interview specifics. Test: if your own answer would begin with "无法提供 / not available", pick a different question. ` +
   // 建议行语言纯度(2026-07-16 用户指出「不能中文英文混合」):公司名多为英文,嵌进中/韩文问句很别扭 → 一律指代
   `That line must be written entirely in ${LANG_NAME[lang]} — never mix languages: refer to the employer generically ("这家公司" / "this company" / "이 회사" per language) instead of its name; only site-wide abbreviations (PNP, EE, AIP, CLB, NOC, TEER) may stay Latin. Nothing after that line.`
 
