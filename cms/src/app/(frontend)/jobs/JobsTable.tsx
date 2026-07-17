@@ -418,6 +418,13 @@ const topOf = (m: Record<string, number>, min: number): string => {
   const e = Object.entries(m).sort((a, b) => b[1] - a[1])[0]
   return e && e[1] >= min ? e[0] : ''
 }
+// E9-03 地区冷启动:首访无画像时用浏览器时区映射省(零依赖零上传,与画像同一隐私口径)。
+// 白名单外(含 NT/YT/NU 与非加时区)不显示;Halifax→NS 为可接受近似(大西洋时区取人口主省,拍板点②)。
+const TZ_PROV: Record<string, string> = {
+  'America/Toronto': 'ON', 'America/Vancouver': 'BC', 'America/Edmonton': 'AB',
+  'America/Regina': 'SK', 'America/Swift_Current': 'SK', 'America/Winnipeg': 'MB',
+  'America/St_Johns': 'NL', 'America/Moncton': 'NB', 'America/Halifax': 'NS',
+}
 
 const PAGE_ROWS = 50                    // 每页行数:首屏 50,点「显示更多」每次 +50(用户拍板:不随滚动自动加载)
 const ORIGIN_LABEL: Record<string, string> = { jobbank: 'Job Bank', ats: 'ATS', directory: '社区名单' }
@@ -519,14 +526,19 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   }, [plan.loggedIn])
   // E9-02 推荐横幅(方案 1+3):本地画像凑够信号(ev≥5 且省或大类有主导项)→ 顶部一行推荐;
   // 当日可关;已有筛选时不打扰。CTA1=套筛选看岗,CTA2=建档反哺(匿名→注册框,登录→/account)
-  const [rec, setRec] = useState<{ prov: string; broad: string; sal: string } | null>(null)
+  const [rec, setRec] = useState<{ prov: string; broad: string; sal: string; src: 'pref' | 'geo' } | null>(null)
   useEffect(() => {
     try {
       if (localStorage.getItem(PREF_HIDE) === new Date().toLocaleDateString('en-CA')) return
       const pf = readPref()
-      if (pf.ev < 5) return
+      if (pf.ev < 5) {
+        // E9-03 冷启动:无画像时时区映射省(推荐非断言,套错一键可改);画像成型(ev≥5)即让位
+        const gp = TZ_PROV[Intl.DateTimeFormat().resolvedOptions().timeZone || '']
+        if (gp) setRec({ prov: gp, broad: '', sal: '', src: 'geo' })
+        return
+      }
       const prov = topOf(pf.prov, 3), broad = topOf(pf.broad, 3), sal = topOf(pf.sal, 3)
-      if (prov || broad) setRec({ prov, broad, sal: sal === 'u60' ? '' : sal })
+      if (prov || broad) setRec({ prov, broad, sal: sal === 'u60' ? '' : sal, src: 'pref' })
     } catch { /* ignore */ }
   }, [])
   // E9-02 信号采集:任一岗位弹窗打开 +1(popup=字段顾问族,actModal=公司/JD)
@@ -833,8 +845,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           if (!n) return null
           return (
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', background: '#eef2ff', border: '1px solid #e0e7ff', borderRadius: 8, padding: '7px 12px', margin: '10px 0 0', fontSize: 12.5, color: '#3730a3' }}>
-              <span>{t('rec.prefix')}<strong>{chips}</strong></span>
-              <button onClick={() => { setFProv(rec.prov); setFCity(''); setFDistrict(''); if (rec.broad) { setFBroad(rec.broad); setFMid(''); setFFine('') } if (rec.sal) setFSal(rec.sal) }}
+              <span>{t(rec.src === 'geo' ? 'rec.geoPrefix' : 'rec.prefix')}<strong>{chips}</strong></span>
+              {/* fProv 值域=省全称(行过滤 L.prov 比较);rec.prov 是省码,直塞会套出空列表——转全称再落 */}
+              <button onClick={() => { setFProv(PROV_NAMES[rec.prov] || rec.prov); setFCity(''); setFDistrict(''); if (rec.broad) { setFBroad(rec.broad); setFMid(''); setFFine('') } if (rec.sal) setFSal(rec.sal) }}
                 style={{ border: 'none', background: '#4f46e5', color: '#fff', borderRadius: 6, padding: '3px 10px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>
                 {/* #51:全量换入前 n 按首屏 50 行算(5→604 跳变误导)——loadedAll 才带数字 */}
                 {loadedAll ? t('rec.cta', { n }) : t('rec.cta0')}
