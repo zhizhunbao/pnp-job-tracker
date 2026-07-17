@@ -95,19 +95,21 @@ export function ProfileForm({ t, userId, initial, onSaved }: { t: TFn; userId: s
         </div>
       )}
 
+      {/* 三列等高:标签区 flex:1 吃掉行数差,输入框恒定底对齐(2026-07-16 用户报排版:中间标签折两行把输入框挤下去) */}
       <div style={{ display: 'flex', gap: 10 }}>
-        <label style={{ ...lbl, flex: 1 }}>{t('prof.clb')}
-          <input style={inputS} type="number" min={1} max={12} value={clb} onChange={(e) => setClb(e.target.value)} />
-        </label>
-        <label style={{ ...lbl, flex: 1 }}>{t('prof.crs')}
-          <input style={inputS} type="number" min={0} max={1200} value={crs} onChange={(e) => setCrs(e.target.value)} />
-        </label>
-        <label style={{ ...lbl, flex: 1 }}>{t('prof.pgwp')}
-          <input style={inputS} type="number" min={0} max={60} value={pgwp} onChange={(e) => setPgwp(e.target.value)} />
-          {/* 诚实注(第 5 轮 #22):match v1 不消费此字段,别让用户以为填了会进匹配 */}
-          <span style={{ display: 'block', fontSize: 11, color: '#9ca3af', fontWeight: 400, marginTop: 2 }}>{t('prof.pgwpNote')}</span>
-        </label>
+        {([
+          [t('prof.clb'), <input key="clb" style={inputS} type="number" min={1} max={12} value={clb} onChange={(e) => setClb(e.target.value)} />],
+          [t('prof.crs'), <input key="crs" style={inputS} type="number" min={0} max={1200} value={crs} onChange={(e) => setCrs(e.target.value)} />],
+          [t('prof.pgwp'), <input key="pgwp" style={inputS} type="number" min={0} max={60} value={pgwp} onChange={(e) => setPgwp(e.target.value)} />],
+        ] as [string, React.ReactNode][]).map(([label, input]) => (
+          <label key={label} style={{ ...lbl, flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <span style={{ flex: 1 }}>{label}</span>
+            {input}
+          </label>
+        ))}
       </div>
+      {/* 诚实注(第 5 轮 #22):match v1 不消费 PGWP,别让用户以为填了会进匹配;整行宽显示,窄列里会挤断词 */}
+      <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>{t('prof.pgwpNote')}</div>
 
       <div style={lbl}>{t('prof.prov')}</div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
