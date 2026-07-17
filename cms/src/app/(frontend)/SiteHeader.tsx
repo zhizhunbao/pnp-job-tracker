@@ -5,7 +5,7 @@
 import { LANGS, type Lang, type TFn } from './jobs/i18n'
 import { IconTarget, IconChart, IconMapPin } from './Icons'
 
-export function SiteHeader({ lang, setLang, t, active }: { lang: Lang; setLang: (l: Lang) => void; t: TFn; active?: 'rank' | 'stats' }) {
+export function SiteHeader({ lang, setLang, t, active }: { lang: Lang; setLang: (l: Lang) => void; t: TFn; active?: 'rank' | 'stats' | 'account' }) {
   const nav: React.CSSProperties = { textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }
   return (
     <header style={{ background: '#fff', borderBottom: '1px solid #e5e7eb' }}>
@@ -24,7 +24,10 @@ export function SiteHeader({ lang, setLang, t, active }: { lang: Lang; setLang: 
                 style={{ border: 'none', padding: '3px 9px', fontSize: 12.5, cursor: 'pointer', background: lang === l.code ? '#2563eb' : '#fff', color: lang === l.code ? '#fff' : '#6b7280' }}>{l.label}</button>
             ))}
           </div>
-          <a href="/account" style={nav}>{t('nav.account')}</a>
+          {/* 当前页=账户时不再链自己,高亮为当前态(2026-07-16 用户指出) */}
+          {active === 'account'
+            ? <span style={{ ...nav, color: '#2563eb', fontWeight: 700 }}>{t('nav.account')}</span>
+            : <a href="/account" style={nav}>{t('nav.account')}</a>}
         </div>
       </div>
     </header>
