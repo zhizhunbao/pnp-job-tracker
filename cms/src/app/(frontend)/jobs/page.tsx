@@ -31,33 +31,30 @@ export default async function JobsPage() {
   // 列表查询在 lib/jobsList.ts(与 /api/jobs-data 共用);首屏只取 FIRST_SCREEN_ROWS 行 + 总数
   const pool = (payload.db as any).pool
 
-  // 维度表小,继续走 payload.find
-  const [provDocs, cityDocs, distDocs, nocDocs, srcDocs, expDocs, pnpDocs, pnpDrawDocs, eeDocs, aipDocs, nocDescDocs, fieldSrcDocs] = await Promise.all([
+  // SSR 首屏只取小维度(2026-07-17 瘦身):cities/districts/designated_employers/noc_descriptions 这 4 张大表
+  // 移到 /api/jobs-data 随全量后台拉(首屏减 ~1.25MB);它们只在筛选下拉/顾问弹窗用,晚到无碍。
+  const [provDocs, nocDocs, srcDocs, expDocs, pnpDocs, pnpDrawDocs, eeDocs, fieldSrcDocs] = await Promise.all([
     payload.find({ collection: 'provinces', limit: 100, depth: 0, sort: 'name' }),
-    payload.find({ collection: 'cities', limit: 5000, depth: 0, sort: 'name' }),
-    payload.find({ collection: 'districts', limit: 1000, depth: 0, sort: 'name' }),
     payload.find({ collection: 'noc-categories', limit: 1000, depth: 0 }),
     payload.find({ collection: 'sources', limit: 200, depth: 0, sort: 'name' }),
     payload.find({ collection: 'experience-levels', limit: 50, depth: 0 }),
     payload.find({ collection: 'pnp-occupations', limit: 5000, depth: 0 }),
     payload.find({ collection: 'pnp-draws', limit: 200, depth: 0, sort: '-drawDate' }),
     payload.find({ collection: 'ee-categories', limit: 2000, depth: 0 }),
-    payload.find({ collection: 'designated-employers', limit: 5000, depth: 0 }),
-    payload.find({ collection: 'noc-descriptions', limit: 2000, depth: 0 }),
     payload.find({ collection: 'field-sources', limit: 200, depth: 0 }),
   ])
   const dims = {
     provinces: provDocs.docs.map((p: any) => ({ code: p.code, name: p.name })),
-    cities: cityDocs.docs.map((c: any) => ({ name: c.name, province: c.province })),
-    districts: distDocs.docs.map((d: any) => ({ name: d.name, city: d.city, province: d.province })),
+    cities: [],          // SSR 瘦身:后台 /api/jobs-data 拉后并入
+    districts: [],       // 同上
     nocCategories: nocDocs.docs.map((c: any) => ({ broad: c.broad, mid: c.mid, fine: c.fine, teer: typeof c.teer === 'number' ? c.teer : null })),
     sources: srcDocs.docs.map((s: any) => ({ name: s.name })),
     experienceLevels: expDocs.docs.map((e: any) => ({ name: e.name })),
     pnpOccupations: pnpDocs.docs.map((r: any) => ({ province: r.province, stream: r.stream, label: r.label, type: r.type, noc: r.noc, name: r.name, gtaRestricted: !!r.gtaRestricted, url: r.url, fetched: r.fetched })),
     pnpDraws: pnpDrawDocs.docs.map((r: any) => ({ province: r.province, kind: r.kind, drawDate: r.drawDate ?? '', stream: r.stream ?? '', score: typeof r.score === 'number' ? r.score : null, scale: r.scale ?? '', invitations: typeof r.invitations === 'number' ? r.invitations : null, note: r.note ?? '', label: r.label ?? '', url: r.url ?? '', fetched: r.fetched ?? '' })),
     eeCategories: eeDocs.docs.map((r: any) => ({ category: r.category, label: r.label, noc: r.noc, teer: typeof r.teer === 'number' ? r.teer : null, title: r.title, url: r.url, fetched: r.fetched, drawCrs: typeof r.drawCrs === 'number' ? r.drawCrs : null, drawDate: r.drawDate ?? '', drawSize: typeof r.drawSize === 'number' ? r.drawSize : null })),
-    designatedEmployers: aipDocs.docs.map((r: any) => ({ name: r.name, province: r.province, location: r.location, isTech: !!r.isTech })),
-    nocDescriptions: nocDescDocs.docs.map((r: any) => ({ noc: r.noc, title: r.title ?? '', duties: r.duties ?? '', requirements: r.requirements ?? '', fetched: r.fetched ?? '' })),
+    designatedEmployers: [],  // SSR 瘦身:后台 /api/jobs-data 拉后并入
+    nocDescriptions: [],      // 同上(788KB 大头)
     fieldSources: fieldSrcDocs.docs.map((r: any) => ({ field: r.field ?? '', kind: r.kind ?? '', publisher: r.publisher ?? '', url: r.url ?? '', title: r.title ?? '', description: r.description ?? '', status: r.status ?? '', fetched: r.fetched ?? '', note: r.note ?? '' })),
   }
 

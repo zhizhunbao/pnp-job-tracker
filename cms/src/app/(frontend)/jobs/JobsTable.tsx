@@ -470,11 +470,13 @@ type Dims = {
 const EMPTY_DIMS: Dims = { provinces: [], cities: [], districts: [], nocCategories: [], sources: [], experienceLevels: [], pnpOccupations: [], pnpDraws: [], eeCategories: [], designatedEmployers: [], nocDescriptions: [], fieldSources: [] }
 const PROV_CODE: Record<string, string> = Object.fromEntries(Object.entries(PROV_NAMES).map(([c, n]) => [n, c]))
 
-export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdatedAt, dims = EMPTY_DIMS, initialCols, plan = FREE_PLAN, initialBanner, totalCount, proof, deferFull }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims; initialCols?: string[]; plan?: Plan; initialBanner?: boolean; totalCount?: number; proof?: { named: number; lmia: number }; deferFull?: boolean }) {
+export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdatedAt, dims: initialDims = EMPTY_DIMS, initialCols, plan = FREE_PLAN, initialBanner, totalCount, proof, deferFull }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims; initialCols?: string[]; plan?: Plan; initialBanner?: boolean; totalCount?: number; proof?: { named: number; lmia: number }; deferFull?: boolean }) {
   // 首屏拆分(2026-07-05):SSR 只带最近 50 行,水合后从 /api/jobs-data 后台换入全量(同序,无跳变);
   // 失败保底留首屏 50 行可用,loadedAll 复位以显示计数而非假「全量」。
   const [jobs, setJobs] = useState(initialJobs)
   const [updatedAt, setUpdatedAt] = useState(initialUpdatedAt)
+  // SSR 瘦身(2026-07-17):首屏只带小维度,cities/districts/designatedEmployers/nocDescriptions 随 /api/jobs-data 后台并入
+  const [dims, setDims] = useState<Dims>(initialDims)
   const [loadedAll, setLoadedAll] = useState(!deferFull)
   // 全量匹配计数(第 5 轮 #15):免费用户的「你今日共 X 个高匹配」FOMO 数字,随全量拉取带回
   const [matchTotals, setMatchTotals] = useState<{ high: number; mid: number } | null>(null)
@@ -486,6 +488,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         const r = await fetch('/api/jobs-data', { credentials: 'include' })
         if (!r.ok) return
         const d = await r.json()
+        if (!dead && d.dims) setDims((prev) => ({ ...prev, ...d.dims }))  // 并入后台拉来的大维度(城市/区/指定雇主/NOC 描述)
         if (!dead && Array.isArray(d.jobs) && d.jobs.length) {
           setJobs(d.jobs)
           if (d.updatedAt) setUpdatedAt(d.updatedAt)
@@ -840,7 +843,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         .jtDrawerToggle{display:none}
         .jtCards{display:none}
         .recSlot{min-height:0}
-        html.recslot .recSlot{min-height:150px}
+        html.recslot .recSlot{min-height:48px}
         @media (max-width:640px){
           .jtDrawerToggle{display:inline-flex}
           .jtHideNarrow{display:none !important}
@@ -1017,13 +1020,16 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               )}
             </div>
           </div>
-          </div>
-          {/* 行4:搜索 + 仅第一方 + 清除 */}
+          {/* 仅雇主直发(2026-07-17 用户「放到最下面」):从顶部搜索行移到筛选区最末,作独立一行 */}
           <div style={filtRow}>
-            <input placeholder={t('search.placeholder')} value={q} onChange={(e) => setQ(e.target.value)} style={{ ...ctrl, flex: '0 1 320px', minWidth: 180 }} />
             <label style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', background: directOnly ? '#eef2ff' : '#fff', whiteSpace: 'nowrap' }} title={t('directOnly.tip')}>
               <input type="checkbox" checked={directOnly} onChange={(e) => setDirectOnly(e.target.checked)} />{t('directOnly')}
             </label>
+          </div>
+          </div>
+          {/* 行4:搜索 + 清除 */}
+          <div style={filtRow}>
+            <input placeholder={t('search.placeholder')} value={q} onChange={(e) => setQ(e.target.value)} style={{ ...ctrl, flex: '0 1 320px', minWidth: 180 }} />
             {anyFilter && <button onClick={clearAll} style={{ ...ctrl, cursor: 'pointer', background: '#f3f4f6', color: '#b91c1c' }}>{t('clear')}</button>}
             {/* 保存此筛选(E5-03):Pro 存为邮件提醒;filters=前端 state 原样(alerts 用 jobsQuery 解释) */}
             {anyFilter && plan.loggedIn && (

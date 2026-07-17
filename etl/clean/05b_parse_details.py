@@ -230,6 +230,7 @@ def main() -> None:
         (OUT_DETAILS / fn).write_text(md, encoding="utf-8")
         parsed += 1
     if parsed:  # 仅有变更才原子写回(temp + os.replace 同目录)
+        IN_POSTINGS.parent.mkdir(parents=True, exist_ok=True)  # 防御:长回填期间目录偶发不可用(bind-mount/并发抖动)→ 写回 FileNotFoundError 崩整轮(2026-07-17 实测)
         tmp = IN_POSTINGS.with_suffix(".json.tmp")
         tmp.write_text(json.dumps(jobs, ensure_ascii=False, indent=2), encoding="utf-8")
         os.replace(tmp, IN_POSTINGS)
