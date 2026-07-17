@@ -726,6 +726,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             <button onClick={toggleMatchView} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: matchView ? '#2563eb' : '#6b7280', fontWeight: matchView ? 700 : 400, cursor: 'pointer', whiteSpace: 'nowrap' }}><IconTarget /> {t('mv.entry')}</button>
             <a href="/rankings/weekly-top" style={{ textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }}><IconChart /> {t('rank.entry')}</a>
             <a href="/stats" style={{ textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }}><IconMapPin /> {t('stats.entry')}</a>
+            {/* 我的账户=独立选项卡(2026-07-16 用户拍板);登录态另有右侧用户下拉 */}
+            <a href="/account" style={{ textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }}><IconUser /> {t('nav.acctTab')}</a>
             <div style={{ display: 'inline-flex', border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
               {LANGS.map((l) => (
                 <button key={l.code} onClick={() => setLangSaved(l.code)}
@@ -1024,11 +1026,11 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             </div>
           )}
         </div>
-        {/* 点击分页:不随滚动自动加载(用户拍板) */}
+        {/* 点击分页:不随滚动自动加载(用户拍板);按钮只报剩余条数——#42 同族,20000 载入护栏当分母像写死(2026-07-16 用户指出) */}
         <div style={{ textAlign: 'center', padding: '12px', fontSize: 12.5, color: '#9ca3af' }}>
           {rows.length === 0 ? ''
             : limit >= rows.length ? t('allShown', { total: rows.length })
-            : <button onClick={() => setLimit((l) => l + PAGE_ROWS)} style={{ ...ctrl, cursor: 'pointer', background: '#f3f4f6', color: '#374151' }}>{t('loadMore', { x: Math.min(limit, rows.length), total: rows.length })}</button>}
+            : <button onClick={() => setLimit((l) => l + PAGE_ROWS)} style={{ ...ctrl, cursor: 'pointer', background: '#f3f4f6', color: '#374151' }}>{t('loadMore', { n: rows.length - limit })}</button>}
         </div>
         {/* 匹配视图 · 免费限额升级卡(D1=B:尝到甜头 → 升级看全量) */}
         {/* FOMO 数字(第 5 轮 #15):有全量计数时用「你今日共 X 个高匹配」,比抽象限额有说服力 */}
