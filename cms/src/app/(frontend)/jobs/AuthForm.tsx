@@ -101,7 +101,8 @@ export function AuthForm({ t, onDone, initialMode }: { t: TFn; onDone: () => voi
         </label>
         <div style={{ height: 12 }} />
         <label style={{ fontSize: 13, fontWeight: 500, color: '#374151', display: 'block' }}>{t('acct.password')}
-          <input className="authIn" style={inputS} type="password" required minLength={8} value={pw} onChange={(e) => setPw(e.target.value)}
+          {/* minLength 只管注册:登录挂长度校验会把老短密码账号(admin 建的 6 位等)整个拦在门外(2026-07-16 用户实测) */}
+          <input className="authIn" style={inputS} type="password" required minLength={mode === 'register' ? 8 : undefined} value={pw} onChange={(e) => setPw(e.target.value)}
             autoComplete={mode === 'login' ? 'current-password' : 'new-password'} placeholder="••••••••" />
         </label>
         {mode === 'register' && pw && (() => {
