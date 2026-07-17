@@ -107,11 +107,25 @@ with sync_playwright() as p:
 
     for url, name in [("/pricing", "pricing"), ("/stats", "stats-index"), ("/stats/ab", "stats-province"),
                       ("/stats/compare", "stats-compare"), ("/rankings/weekly-top", "rank-weekly"),
-                      ("/rankings/sponsor-likely", "rank-sponsor")]:
+                      ("/rankings/sponsor-likely", "rank-sponsor"),
+                      ("/rankings/daily-top", "rank-daily")]:
         try:
             page.goto(BASE + url, wait_until="domcontentloaded"); page.wait_for_timeout(2500)
-            shot(name, full=True)                  # 图4/21/22/11/19/20
+            shot(name, full=True)                  # 图4/21/22/11/19/20/24
         except Exception: traceback.print_exc()
+
+    try:
+        # E9-02 推荐横幅(第 20 轮新增,图 26):先造画像(ev≥5 且省主导≥3 才显示)再重载;
+        # 拍完清画像,别让横幅混进后面镜头(jobs-board/signal-columns 保持历轮样貌)
+        # 画像只压省维度(带薪资档会把 n 压到 0);横幅 n 按已载入行算,全量换入要几秒——等文本出现再拍
+        goto_jobs()
+        page.evaluate("localStorage.setItem('jobsPref1', JSON.stringify({ev: 8, prov: {AB: 6}, broad: {}, sal: {}})); localStorage.removeItem('jobsPrefHide')")
+        goto_jobs()
+        try: page.wait_for_selector("text=根据你最近浏览", timeout=15000)
+        except Exception: print("WARN rec-banner: not shown")
+        shot("rec-banner")
+        page.evaluate("localStorage.removeItem('jobsPref1')")
+    except Exception: traceback.print_exc()
 
     # ===== 登录段(测试号,循 @test.local 惯例)=====
     try:
@@ -128,6 +142,15 @@ with sync_playwright() as p:
     try:
         close_banner(); enable_cols(COLS)
         page.wait_for_timeout(800); shot("signal-columns")   # 图10 登录态信号列+锁列
+    except Exception: traceback.print_exc()
+
+    try:
+        # E9-01 收藏钮(第 20 轮新增,图 25):登录态点「☆ 收藏」变「★ 已收藏」;已收藏则不点(再点=取消)
+        btn = page.locator("table tbody tr").first.locator("button").filter(has_text=re.compile("收藏")).first
+        if "已收藏" not in btn.inner_text():
+            btn.evaluate("el => el.click()"); page.wait_for_timeout(1500)
+        btn.evaluate("el => el.scrollIntoView({block: 'center', inline: 'center'})")
+        page.wait_for_timeout(400); shot("save-job")
     except Exception: traceback.print_exc()
 
     try:
@@ -162,7 +185,16 @@ with sync_playwright() as p:
     except Exception: traceback.print_exc()
 
     try:
+        # E9-01 我的求职(第 20 轮新增,图 27):sidebar 切「我的求职」节(上面 save-job 已保证列表非空)
+        page.locator("button:has-text('我的求职')").first.evaluate("el => el.click()")
+        page.wait_for_timeout(2500); shot("my-jobs")
+    except Exception: traceback.print_exc()
+
+    try:
         # 真实 live Checkout:只截图不支付,session 过期无副作用
+        # 2026-07-16 账户改 sidebar 分节后「购买 30 天」在「升级 Pro」节,先切节再点
+        up = page.locator("aside button").filter(has_text=re.compile("升级"))
+        if up.count(): up.first.evaluate("el => el.click()"); page.wait_for_timeout(800)
         page.locator("button").filter(has_text=re.compile("购买 30 天")).first.evaluate("el => el.click()")
         for _ in range(30):
             page.wait_for_timeout(1000)

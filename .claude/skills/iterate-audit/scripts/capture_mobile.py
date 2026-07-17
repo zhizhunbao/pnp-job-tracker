@@ -104,11 +104,24 @@ with sync_playwright() as p:
 
     for url, name in [("/pricing", "pricing"), ("/stats", "stats-index"), ("/stats/ab", "stats-province"),
                       ("/stats/compare", "stats-compare"), ("/rankings/weekly-top", "rank-weekly"),
-                      ("/rankings/sponsor-likely", "rank-sponsor")]:
+                      ("/rankings/sponsor-likely", "rank-sponsor"),
+                      ("/rankings/daily-top", "rank-daily")]:
         try:
             page.goto(BASE + url, wait_until="domcontentloaded"); page.wait_for_timeout(2500)
-            shot(name, full=True)                              # 图M4/M16/M17/M20/M18/M19
+            shot(name, full=True)                              # 图M4/M16/M17/M20/M18/M19/M21
         except Exception: traceback.print_exc()
+
+    try:
+        # E9-02 推荐横幅(第 20 轮新增,图 M22):造画像→重载→拍→清画像(同桌面手法)
+        # 画像只压省维度(带薪资档会把 n 压到 0);横幅 n 按已载入行算,全量换入要几秒——等文本出现再拍
+        goto_jobs()
+        page.evaluate("localStorage.setItem('jobsPref1', JSON.stringify({ev: 8, prov: {AB: 6}, broad: {}, sal: {}})); localStorage.removeItem('jobsPrefHide')")
+        goto_jobs()
+        try: page.wait_for_selector("text=根据你最近浏览", timeout=15000)
+        except Exception: print("WARN rec-banner: not shown")
+        shot("rec-banner")
+        page.evaluate("localStorage.removeItem('jobsPref1')")
+    except Exception: traceback.print_exc()
 
     # ===== 登录段 =====
     try:
@@ -125,6 +138,13 @@ with sync_playwright() as p:
     try:
         page.goto(BASE + "/account", wait_until="domcontentloaded"); page.wait_for_timeout(2500)
         shot("account-profile", full=True)                     # 图M7
+    except Exception: traceback.print_exc()
+
+    try:
+        # E9-01 我的求职(第 20 轮新增,图 M23):窄屏 sidebar 变顶部横排,同样按钮切节;
+        # 列表数据吃桌面段 save-job 存的同账号收藏(手机卡片流本身无收藏钮——待检查项)
+        page.locator("button:has-text('我的求职')").first.evaluate("el => el.click()")
+        page.wait_for_timeout(2500); shot("my-jobs", full=True)
     except Exception: traceback.print_exc()
 
     try:
@@ -157,6 +177,9 @@ with sync_playwright() as p:
 
     try:
         page.goto(BASE + "/account", wait_until="domcontentloaded"); page.wait_for_timeout(2000)
+        # 2026-07-16 账户改 sidebar 分节后「购买 30 天」在「升级 Pro」节,先切节再点
+        up = page.locator("aside button").filter(has_text=re.compile("升级"))
+        if up.count(): up.first.evaluate("el => el.click()"); page.wait_for_timeout(800)
         page.locator("button").filter(has_text=re.compile("购买 30 天")).first.evaluate("el => el.click()")
         for _ in range(30):
             page.wait_for_timeout(1000)
