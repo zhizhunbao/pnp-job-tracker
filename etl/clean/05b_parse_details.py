@@ -121,6 +121,41 @@ def extract_noc(s) -> str:
     return ""
 
 
+# ── 雇佣形态 + 入职要求(E6-06 / E6-07A,2026-07-17):详情页结构化区规则解析,零 LLM ──
+_TERM_MAP = [("Permanent", "permanent"), ("Term or contract", "term"),
+             ("Casual", "casual"), ("Seasonal", "seasonal")]
+
+
+def employment_of(s) -> tuple[str, str]:
+    """雇佣形态:hours 来自 <span property="employmentType">(Full/Part time);
+    雇佣期在同一 attribute-value 外层(如「Permanent employmentFull time」)按关键词归一。
+    没有标注 = 双空(宁缺不猜;ATS 帖天然走这条)。"""
+    et = s.select_one('[property="employmentType"]')
+    if not et:
+        return "", ""
+    hours_txt = et.get_text(" ", strip=True)
+    hours = "full" if "Full time" in hours_txt else ("part" if "Part time" in hours_txt else "")
+    outer = et.find_parent("span", class_="attribute-value") or et.parent
+    combo = outer.get_text(" ", strip=True) if outer else hours_txt
+    term = next((v for k, v in _TERM_MAP if k in combo), "")
+    return term, hours
+
+
+def req_section(s, heading: str) -> list[str]:
+    """requirements 区按 h4 标题取归属它的 ul(标准化词表,如「Manicurist's provincial licence」)。
+    ul 须紧跟在该 h4 之后(find_previous 校验),防串到下一节。"""
+    root = s.select_one(".job-posting-detail-requirements")
+    if not root:
+        return []
+    for h in root.find_all("h4"):
+        if h.get_text(strip=True).startswith(heading):
+            ul = h.find_next("ul")
+            if ul and ul.find_previous("h4") is h:
+                return [re.sub(r"\s+", " ", li.get_text(" ", strip=True)) for li in ul.find_all("li")]
+            return []
+    return []
+
+
 def employer_website(s) -> str:
     """帖子把雇主名链到其官网:<span property="hiringOrganization">…<a class="external" href>。"""
     org = s.select_one('[property="hiringOrganization"]')
@@ -159,8 +194,10 @@ def main() -> None:
     for j in jobs:
         pid = pid_of(j)
         raw_f = have.get(pid)
-        # 有原始 HTML、且(没解析过 或 还缺官方 noc)→ 解析。后者让存量帖回填 noc(无需重抓)。REPARSE=1 全部重解析。
-        if not pid or raw_f is None or (not reparse and j.get("detail_fetched") and j.get("noc")):
+        # 有原始 HTML、且(没解析过 或 还缺官方 noc 或 还缺雇佣形态键)→ 解析。缺键条件让存量帖
+        # 自动回填新字段(noc 回填同款先例,无需重抓)。REPARSE=1 全部重解析。
+        if not pid or raw_f is None or (not reparse and j.get("detail_fetched") and j.get("noc")
+                                        and "employment_hours" in j):
             continue
         raw_html = raw_f.read_text(encoding="utf-8")
         s = BeautifulSoup(raw_html, "html.parser")
@@ -177,6 +214,12 @@ def main() -> None:
             j["website"] = web
         if noc:
             j["noc"] = noc
+        # 雇佣形态 + 入职要求(E6-06/E6-07A):无标注即空,无条件写(幂等;宁缺不猜)
+        term, hours = employment_of(s)
+        j["employment_term"] = term
+        j["employment_hours"] = hours
+        j["certificates"] = req_section(s, "Certificates, licences")
+        j["education"] = "; ".join(req_section(s, "Education"))
         j["detail_fetched"] = True
         md = (f"---\ntitle: {j.get('title', '')}\nemployer: {j.get('employer', '')}\n"
               f"address: {addr}\nwebsite: {web}\nposted: {dp}\nsalary: {j.get('salary', '')}\n"
@@ -192,8 +235,10 @@ def main() -> None:
         os.replace(tmp, IN_POSTINGS)
     webs = sum(1 for j in jobs if j.get("website"))
     addrs = sum(1 for j in jobs if j.get("address"))
+    emp = sum(1 for j in jobs if j.get("employment_hours"))
+    certs = sum(1 for j in jobs if j.get("certificates"))
     print(f"Parsed {parsed} new details · {addrs} with address · {webs} with website "
-          f"→ postings 富集 + {OUT_DETAILS}", flush=True)
+          f"· {emp} with employment · {certs} with certificates → postings 富集 + {OUT_DETAILS}", flush=True)
 
 
 if __name__ == "__main__":

@@ -255,7 +255,10 @@ def build():
                     city=j.get("city"), district=j.get("district"), address=j.get("address"),
                     applyUrl=j.get("url"), officialUrl=j.get("website"),
                     salary=j.get("salary"), salaryAnnual=j.get("salaryAnnual"), salaryText=j.get("salaryText"),
-                    aip=bool(j.get("aip")), datePosted=j.get("date"), lastSeen=j.get("last_seen"))
+                    aip=bool(j.get("aip")), datePosted=j.get("date"), lastSeen=j.get("last_seen"),
+                    # 雇佣形态 + 入职要求(E6-06/E6-07A,05b 解析):空值靠 add_job 的 (None,"") 过滤/or None 剔除
+                    employmentTerm=j.get("employment_term"), employmentHours=j.get("employment_hours"),
+                    certificates=j.get("certificates") or None, education=j.get("education"))
 
     # LMIA 外劳雇佣记录(E6-02):按 norm_name 精确匹配(3.2 统计:公司命中 18.2%,抽检零误报)。
     # 只挂 companies(列表 SQL 已 join companies,jobs 零改动);语义=历史事实,展示层必须带股别/季度。

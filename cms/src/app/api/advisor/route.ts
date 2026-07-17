@@ -63,6 +63,7 @@ type Job = {
   city?: string; district?: string; address?: string; officialUrl?: string; applyUrl?: string
   score?: number | null; category?: string; accessibility?: string
   pnpEligible?: boolean; pnpStream?: string; eeCategory?: string; aip?: boolean; salary?: string; salaryAnnual?: number | null
+  employmentTerm?: string; employmentHours?: string; certificates?: string[]; education?: string
   wageMedHourly?: number | null; wageMedAnnual?: number | null
   source?: string; sourceLabel?: string; origin?: string
   datePosted?: string; lastSeen?: string; status?: string
@@ -108,6 +109,10 @@ function jobFacts(j: Job): string {
     `Location: ${[j.district, j.city, j.province].filter(Boolean).join(', ') || '—'} [src: official posting]`,
     `Score: ${j.score ?? '—'}/100 [src: site-derived rubric]; PNP-eligible: ${j.pnpEligible ? 'yes' : 'no'} [src: provincial published lists]; Federal EE category: ${j.eeCategory || 'none'} [src: IRCC category-based selection]; AIP designated: ${j.aip ? 'yes' : 'no'} [src: designated-employer lists]; experience: ${j.accessibility || '—'} [src: site-derived]`,
     `Salary: ${j.salary || '—'}${j.salaryAnnual != null ? ` (~$${Math.round(j.salaryAnnual / 1000)}K/yr)` : ''} [src: official posting]`,
+    // 雇佣形态 + 入职要求(E6-06/E6-07A):详情页结构化标注;缺=不给行(红线:没数据别答证书问题)
+    (j.employmentHours || j.employmentTerm) ? `Employment: ${[j.employmentTerm, j.employmentHours].filter(Boolean).join(', ')} [src: official posting]` : '',
+    j.education ? `Education required: ${j.education} [src: official posting]` : '',
+    j.certificates?.length ? `Certificates/licences required: ${j.certificates.join('; ')} [src: official posting]` : '',
     j.wageMedAnnual != null ? `NOC local median: $${j.wageMedHourly}/hr (~$${Math.round(j.wageMedAnnual / 1000)}K/yr) [src: ESDC wage data]` : '',
     `Source: ${j.sourceLabel || j.source || '—'} (origin ${j.origin || '—'}); posted ${(j.datePosted || '').slice(0, 10) || '—'}; last seen ${(j.lastSeen || '').slice(0, 10) || '—'}; status ${j.status || 'open'} [src: site scrape timestamps]`,
   ].filter(Boolean).join('\n')

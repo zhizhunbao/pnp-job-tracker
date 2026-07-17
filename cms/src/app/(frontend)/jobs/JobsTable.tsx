@@ -183,6 +183,11 @@ export type JobRow = {
   pnpStream: string
   eeCategory: string
   aip: boolean
+  // 雇佣形态 + 入职要求(E6-06/E6-07A,详情页结构化标注 05b 解析;空=未标注,ATS 岗天然空)
+  employmentTerm: string      // permanent/term/casual/seasonal/''
+  employmentHours: string     // full/part/''
+  certificates: string[]      // 证书/执照要求原文(标准化词表)
+  education: string           // 学历要求原文
   // LMIA 外劳雇佣记录(E6-02,公司级,ESDC 近 8 季聚合):历史事实,非「能担保」判定
   lmiaPositions: number | null
   lmiaLastQuarter: string
@@ -397,11 +402,15 @@ const writeColsCookie = (keys: string[]) => {
 // **不上传**(隐私政策口径:浏览偏好存于设备)。打开任一岗位弹窗 +1,收藏 +3;维度=省/大类/薪资档。
 const PREF_LS = 'jobsPref1'
 const PREF_HIDE = 'jobsPrefHide'   // 当日关闭横幅
-type Pref = { ev: number; prov: Record<string, number>; broad: Record<string, number>; sal: Record<string, number> }
+// combo(F2,2026-07-17 用户「最近浏览应该可以有多条,也可以删」):按省×大类**组合**记账——
+// 原三维度各自最高票再拼,可能拼出用户从没浏览过的假组合;组合账才是真浏览轨迹。旧画像无 combo 键=兼容,
+// 积累够之前横幅走旧单条逻辑。
+type Combo = { w: number; sal: Record<string, number> }
+type Pref = { ev: number; prov: Record<string, number>; broad: Record<string, number>; sal: Record<string, number>; combo: Record<string, Combo> }
 const salBand = (a: number | null | undefined): string => (a == null ? '' : a >= 100000 ? 'ge100' : a >= 80000 ? '80' : a >= 60000 ? '60' : 'u60')
 const readPref = (): Pref => {
-  try { return { ev: 0, prov: {}, broad: {}, sal: {}, ...JSON.parse(localStorage.getItem(PREF_LS) || '{}') } }
-  catch { return { ev: 0, prov: {}, broad: {}, sal: {} } }
+  try { return { ev: 0, prov: {}, broad: {}, sal: {}, combo: {}, ...JSON.parse(localStorage.getItem(PREF_LS) || '{}') } }
+  catch { return { ev: 0, prov: {}, broad: {}, sal: {}, combo: {} } }
 }
 const recordPref = (j: JobRow, w: number) => {
   try {
@@ -411,6 +420,13 @@ const recordPref = (j: JobRow, w: number) => {
     if (j.broad) p.broad[j.broad] = (p.broad[j.broad] || 0) + w
     const b = salBand(j.salaryAnnual)
     if (b) p.sal[b] = (p.sal[b] || 0) + w
+    if (j.province || j.broad) {
+      const ck = `${j.province || ''}|${j.broad || ''}`
+      const c = p.combo[ck] || { w: 0, sal: {} }
+      c.w += w
+      if (b) c.sal[b] = (c.sal[b] || 0) + w
+      p.combo[ck] = c
+    }
     localStorage.setItem(PREF_LS, JSON.stringify(p))
   } catch { /* 本地存储不可用则放弃(无痕模式等) */ }
 }
@@ -486,11 +502,12 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const [fTeer, setFTeer] = useState(''); const [fSource, setFSource] = useState(''); const [fAcc, setFAcc] = useState('')
   const [fPnp, setFPnp] = useState(''); const [fAip, setFAip] = useState(''); const [fStatus, setFStatus] = useState(''); const [fOrigin, setFOrigin] = useState('')
   const [fScore, setFScore] = useState(''); const [fSal, setFSal] = useState(''); const [fVs, setFVs] = useState('')  // 数值预设(下拉,不手填)
+  const [fEmp, setFEmp] = useState('')  // 职位类型(E6-06):full/part/gig
   // 「更多筛选」折叠恢复(2026-07-11 用户二次拍板:五行常驻太占竖向空间,恢复默认收起);
   // 开关行右侧带更新时间+字段按钮(同日「放到一行」拍板保留,只是宿主行从薪资行换成开关行)
   // 窄屏筛选抽屉(E8-03):≤640px 整个筛选区默认收起,一行「筛选」开关展开;CSS 媒体查询控制显隐,零水合差异
   const [fDrawer, setFDrawer] = useState(false)
-  const drawerActive = [fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs].filter(Boolean).length
+  const drawerActive = [fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, fEmp].filter(Boolean).length
   // 初始列:服务端从 cookie 解析后由 initialCols 传入 → SSR 与客户端首帧一致(零闪);无则用默认
   const [visible, setVisible] = useState<ColKey[]>(() => {
     const v = (initialCols ?? []).filter((k): k is ColKey => COLUMNS.some((c) => c.key === k))
@@ -526,7 +543,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   }, [plan.loggedIn])
   // E9-02 推荐横幅(方案 1+3):本地画像凑够信号(ev≥5 且省或大类有主导项)→ 顶部一行推荐;
   // 当日可关;已有筛选时不打扰。CTA1=套筛选看岗,CTA2=建档反哺(匿名→注册框,登录→/account)
-  const [rec, setRec] = useState<{ prov: string; broad: string; sal: string; src: 'pref' | 'geo' } | null>(null)
+  type Rec = { key?: string; prov: string; broad: string; sal: string; src: 'pref' | 'geo' }
+  const [recs, setRecs] = useState<Rec[]>([])
   useEffect(() => {
     try {
       if (localStorage.getItem(PREF_HIDE) === new Date().toLocaleDateString('en-CA')) return
@@ -534,13 +552,28 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       if (pf.ev < 5) {
         // E9-03 冷启动:无画像时时区映射省(推荐非断言,套错一键可改);画像成型(ev≥5)即让位
         const gp = TZ_PROV[Intl.DateTimeFormat().resolvedOptions().timeZone || '']
-        if (gp) setRec({ prov: gp, broad: '', sal: '', src: 'geo' })
+        if (gp) setRecs([{ prov: gp, broad: '', sal: '', src: 'geo' }])
         return
       }
+      // F2 多组合(2026-07-17 拍板):组合账权重≥3 取前 2 条,各自可删;组合账未成熟 → 旧单条兜底
+      const combos = Object.entries(pf.combo || {})
+        .filter(([, c]) => c.w >= 3)
+        .sort((a, b) => b[1].w - a[1].w).slice(0, 2)
+        .map(([k, c]) => {
+          const [prov, broad] = k.split('|')
+          const sal = topOf(c.sal, 3)
+          return { key: k, prov, broad, sal: sal === 'u60' ? '' : sal, src: 'pref' as const }
+        })
+      if (combos.length) { setRecs(combos); return }
       const prov = topOf(pf.prov, 3), broad = topOf(pf.broad, 3), sal = topOf(pf.sal, 3)
-      if (prov || broad) setRec({ prov, broad, sal: sal === 'u60' ? '' : sal, src: 'pref' })
+      if (prov || broad) setRecs([{ prov, broad, sal: sal === 'u60' ? '' : sal, src: 'pref' }])
     } catch { /* ignore */ }
   }, [])
+  // 单删组合(F2):该组合账清零(可随浏览再积累,不永久拉黑——口味会变且拉黑无解除入口)
+  const delCombo = (key: string) => {
+    try { const p = readPref(); delete p.combo[key]; localStorage.setItem(PREF_LS, JSON.stringify(p)) } catch { /* ignore */ }
+    setRecs((rs) => rs.filter((r) => r.key !== key))
+  }
   // E9-02 信号采集:任一岗位弹窗打开 +1(popup=字段顾问族,actModal=公司/JD)
   useEffect(() => { if (popup?.job) recordPref(popup.job, 1) }, [popup])
   useEffect(() => { if (actModal?.job) recordPref(actModal.job, 1) }, [actModal])
@@ -725,7 +758,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   }, [colOpen])
 
   // 分页(2026-07-05 用户拍板:滚动不自动加载,点「显示更多」才加载):筛选/排序变化重置回 50
-  useEffect(() => { setLimit(PAGE_ROWS) }, [q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, sort])
+  useEffect(() => { setLimit(PAGE_ROWS) }, [q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, fEmp, sort])
 
   // 联动选项来自维度表(provinces/cities/districts);维度表为空时回退到从 job 行现推。
   // 国家/TEER 下拉已删(2026-07-07 文案审计:全库=Canada 单选项、TEER 用户拍板去掉);fCountry/fTeer state 保留给已存的 saved-search 兼容
@@ -747,8 +780,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const fineOpts = useMemo(() => (nc.length ? uniq(nc.filter((c) => (!fBroad || c.broad === fBroad) && (!fMid || c.mid === fMid)).map((c) => c.fine))
     : uniq(jobs.filter((j) => (!fBroad || j.broad === fBroad) && (!fMid || j.mid === fMid)).map((j) => j.fine))), [nc, jobs, fBroad, fMid])
   // 来源/状态/经验/评分下拉已下架(2026-07-16 拍板只留薪资);state 与谓词保留=URL/老保存筛选照常生效
-  const anyFilter = q || directOnly || fCountry || fProv || fCity || fDistrict || fBroad || fMid || fFine || fTeer || fSource || fAcc || fPnp || fAip || fStatus || fOrigin || fScore || fSal || fVs
-  const clearAll = () => { setQ(''); setDirectOnly(false); setFCountry(''); setFProv(''); setFCity(''); setFDistrict(''); setFBroad(''); setFMid(''); setFFine(''); setFTeer(''); setFSource(''); setFAcc(''); setFPnp(''); setFAip(''); setFStatus(''); setFOrigin(''); setFScore(''); setFSal(''); setFVs('') }
+  const anyFilter = q || directOnly || fCountry || fProv || fCity || fDistrict || fBroad || fMid || fFine || fTeer || fSource || fAcc || fPnp || fAip || fStatus || fOrigin || fScore || fSal || fVs || fEmp
+  const clearAll = () => { setQ(''); setDirectOnly(false); setFCountry(''); setFProv(''); setFCity(''); setFDistrict(''); setFBroad(''); setFMid(''); setFFine(''); setFTeer(''); setFSource(''); setFAcc(''); setFPnp(''); setFAip(''); setFStatus(''); setFOrigin(''); setFScore(''); setFSal(''); setFVs(''); setFEmp('') }
 
   // ── 检索性能三件套(2026-07-17 用户「检索速度很慢」——原实现每敲一键 × 30k 行重建检索串 + 全量重排):
   // ① 检索串每行只算一次,随 jobs 缓存;② 先排序后过滤(filter 保序):排序只随 jobs/sort/matchView 重算,
@@ -790,9 +823,12 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         (!fPnp || (fPnp === 'yes' ? j.pnpEligible : (!j.pnpEligible && j.province !== 'QC'))) && (!fAip || (fAip === 'yes') === j.aip) &&
         (!fStatus || (j.status || 'open') === fStatus) && (!fOrigin || j.origin === fOrigin) &&
         okScore(j.score, fScore) && okSal(j.salaryAnnual, fSal) && (!fVs || okVs(vsPct(j), fVs)) &&
+        (!fEmp || (fEmp === 'gig'
+          ? (j.employmentHours === 'part' || j.employmentTerm === 'casual' || j.employmentTerm === 'seasonal')
+          : j.employmentHours === fEmp)) &&
         (!term || (hays.get(j) || searchHay(j)).includes(term))
     })
-  }, [sorted, hays, dq, directOnly, matchView, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs])
+  }, [sorted, hays, dq, directOnly, matchView, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, fEmp])
 
   return (
     <div style={{ background: '#fff', color: '#1f2937', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column' }}>
@@ -858,25 +894,40 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           )}
         </p>
 
-        {/* E9-02 推荐横幅(1+3):基于本地浏览画像;有筛选/匹配视图时不打扰 */}
-        {rec && !anyFilter && !matchView && (() => {
-          const chips = [rec.prov, rec.broad ? broadLabel(rec.broad) : '', rec.sal ? t('sal.' + rec.sal) : ''].filter(Boolean).join(' · ')
-          const n = jobs.filter((j) => (!rec.prov || j.province === rec.prov) && (!rec.broad || j.broad === rec.broad) && okSal(j.salaryAnnual, rec.sal)).length
-          if (!n) return null
+        {/* E9-02 推荐横幅(1+3)+ F2 多组合(2026-07-17 拍板):最多 2 条组合 chip 并排,每条可单删;
+            有筛选/匹配视图时不打扰 */}
+        {recs.length > 0 && !anyFilter && !matchView && (() => {
+          const items = recs.map((r) => ({
+            ...r,
+            chips: [r.prov, r.broad ? broadLabel(r.broad) : '', r.sal ? t('sal.' + r.sal) : ''].filter(Boolean).join(' · '),
+            n: jobs.filter((j) => (!r.prov || j.province === r.prov) && (!r.broad || j.broad === r.broad) && okSal(j.salaryAnnual, r.sal)).length,
+          })).filter((r) => r.n > 0)
+          if (!items.length) return null
+          const chipBox: React.CSSProperties = items.length > 1
+            ? { display: 'inline-flex', alignItems: 'center', gap: 6, background: '#fff', border: '1px solid #c7d2fe', borderRadius: 7, padding: '3px 8px' }
+            : { display: 'inline-flex', alignItems: 'center', gap: 8 }
           return (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', background: '#eef2ff', border: '1px solid #e0e7ff', borderRadius: 8, padding: '7px 12px', margin: '10px 0 0', fontSize: 12.5, color: '#3730a3' }}>
-              <span>{t(rec.src === 'geo' ? 'rec.geoPrefix' : 'rec.prefix')}<strong>{chips}</strong></span>
-              {/* fProv 值域=省全称(行过滤 L.prov 比较);rec.prov 是省码,直塞会套出空列表——转全称再落 */}
-              <button onClick={() => { setFProv(PROV_NAMES[rec.prov] || rec.prov); setFCity(''); setFDistrict(''); if (rec.broad) { setFBroad(rec.broad); setFMid(''); setFFine('') } if (rec.sal) setFSal(rec.sal) }}
-                style={{ border: 'none', background: '#4f46e5', color: '#fff', borderRadius: 6, padding: '3px 10px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>
-                {/* #51:全量换入前 n 按首屏 50 行算(5→604 跳变误导)——loadedAll 才带数字 */}
-                {loadedAll ? t('rec.cta', { n }) : t('rec.cta0')}
-              </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', background: '#eef2ff', border: '1px solid #e0e7ff', borderRadius: 8, padding: '7px 12px', margin: '10px 0 0', fontSize: 12.5, color: '#3730a3' }}>
+              <span>{t(recs[0].src === 'geo' ? 'rec.geoPrefix' : 'rec.prefix')}</span>
+              {items.map((r) => (
+                <span key={r.key || 'single'} style={chipBox}>
+                  <strong>{r.chips}</strong>
+                  {/* fProv 值域=省全称(行过滤 L.prov 比较);r.prov 是省码,直塞会套出空列表——转全称再落 */}
+                  <button onClick={() => { setFProv(r.prov ? (PROV_NAMES[r.prov] || r.prov) : ''); setFCity(''); setFDistrict(''); if (r.broad) { setFBroad(r.broad); setFMid(''); setFFine('') } if (r.sal) setFSal(r.sal) }}
+                    style={{ border: 'none', background: '#4f46e5', color: '#fff', borderRadius: 6, padding: '3px 10px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>
+                    {/* #51:全量换入前 n 按首屏 50 行算(5→604 跳变误导)——loadedAll 才带数字 */}
+                    {loadedAll ? t('rec.cta', { n: r.n }) : t('rec.cta0')}
+                  </button>
+                  {/* 单删=该组合账清零,可随浏览再积累;另一条不受影响 */}
+                  {r.key && <button onClick={() => delCombo(r.key!)} aria-label="remove"
+                    style={{ border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 12, padding: 0 }}>×</button>}
+                </span>
+              ))}
               <button onClick={() => { if (!plan.loggedIn) setUpsell('lock'); else window.location.href = '/account' }}
                 style={{ border: 'none', background: 'none', color: '#4f46e5', fontSize: 12.5, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
                 {t('rec.build')}
               </button>
-              <button onClick={() => { try { localStorage.setItem(PREF_HIDE, new Date().toLocaleDateString('en-CA')) } catch { /* ignore */ } setRec(null) }}
+              <button onClick={() => { try { localStorage.setItem(PREF_HIDE, new Date().toLocaleDateString('en-CA')) } catch { /* ignore */ } setRecs([]) }}
                 style={{ marginLeft: 'auto', border: 'none', background: 'none', color: '#6b7280', cursor: 'pointer', fontSize: 13 }}>×</button>
             </div>
           )
@@ -910,6 +961,12 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             <span style={filtLabel}>{t('filter.elig')}</span>
             <Sel value={fPnp} onChange={setFPnp} opts={['yes', 'no']} all={t('all.pnp')} labelOf={(v) => t('opt.' + v)} />
             <Sel value={fAip} onChange={setFAip} opts={['yes', 'no']} all={t('all.aip')} labelOf={(v) => t('opt.' + v)} />
+          </div>
+          {/* 职位类型(E6-06):全职/兼职/零工·临时(gig=兼职∪casual∪seasonal,面向低门槛先落脚人群);
+              未标注岗(ATS/未抓详情)选中任一类型时自然不命中,与「未分类」同一诚实口径 */}
+          <div style={filtRow}>
+            <span style={filtLabel}>{t('filter.emp')}</span>
+            <Sel value={fEmp} onChange={setFEmp} opts={['full', 'part', 'gig']} all={t('all.emp')} labelOf={(v) => t('emp.' + v)} />
           </div>
           {/* ═══ 薪资行(2026-07-16 用户拍板「更多筛选去掉,只保留薪资」:折叠开关与来源/状态/经验/评分四组全部下架,
               #40/a4ecf5c 的折叠史被本次取代;state 保留=老保存筛选(邮件提醒)继续生效);右侧=更新时间+字段(同行拍板) ═══ */}
@@ -956,7 +1013,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                   if (!plan.isPro) { setUpsell('ss'); return }  // 升级走独立弹框(用户定),不再 alert+跳定价页
                   const name = window.prompt(t('ss.name'))
                   if (!name) return
-                  const filters = { q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs }
+                  const filters = { q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, fEmp }
                   const r = await fetch('/api/saved-searches', {
                     method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, filters, lang }),
@@ -1467,8 +1524,12 @@ function TitleFacts({ job, lang }: { job: JobRow; lang: Lang }) {
   }, [job])
   return (
     <FactsBox>
+      {/* 雇佣形态 + 入职要求(E6-06/E6-07A):详情页结构化标注原文,零 LLM;无标注不显行(宁缺) */}
+      <FactRow k={t('fact.emp')}>{[job.employmentHours ? t('emp.' + job.employmentHours) : '', job.employmentTerm ? t('term.' + job.employmentTerm) : ''].filter(Boolean).join(' · ') || null}</FactRow>
+      <FactRow k={t('fact.edu')}>{job.education || null}</FactRow>
+      <FactRow k={t('fact.cert')}>{job.certificates?.length ? job.certificates.join(' · ') : null}</FactRow>
       {/* 职位字段只做职位的事(07-06 用户拍板):职位名已在弹窗标题,NOC/TEER 归分类弹窗 —— 这里就是真实 JD */}
-      <div style={{ fontSize: 11.5, color: '#9ca3af' }}>{t('fact.jdExcerpt')}</div>
+      <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: (job.employmentHours || job.education || job.certificates?.length) ? 8 : 0 }}>{t('fact.jdExcerpt')}</div>
       {gated ? <UpgradeCard t={t} reason={t('up.jobtext')} />
         : jd === null ? <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>{t('act.loadingText')}</div>
         : jd ? <JdTextView text={jd} />

@@ -432,6 +432,30 @@ export interface Job {
    * 雇主在官方 AIP 指定雇主名单(大西洋四省 NL/NB/NS/PE)
    */
   aip?: boolean | null;
+  /**
+   * 雇佣期 permanent/term/casual/seasonal;空=未标注
+   */
+  employmentTerm?: string | null;
+  /**
+   * 工时 full/part;空=未标注
+   */
+  employmentHours?: string | null;
+  /**
+   * 证书/执照要求 string[](详情页 Certificates 区原文,标准化词表)
+   */
+  certificates?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * 学历要求(详情页 Education 区原文,分号连接)
+   */
+  education?: string | null;
   firstSeen?: string | null;
   lastSeen?: string | null;
   status?: ('open' | 'closed') | null;
@@ -1154,6 +1178,10 @@ export interface JobsSelect<T extends boolean = true> {
   pnpStream?: T;
   eeCategory?: T;
   aip?: T;
+  employmentTerm?: T;
+  employmentHours?: T;
+  certificates?: T;
+  education?: T;
   firstSeen?: T;
   lastSeen?: T;
   status?: T;

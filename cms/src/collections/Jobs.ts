@@ -53,6 +53,11 @@ export const Jobs: CollectionConfig = {
     { name: 'pnpStream', type: 'text', admin: { description: '命中省提名具名通道的短标签(如「OINP 紧缺技能」),数据层 08_score 算;泛技能岗为空' } },
     { name: 'eeCategory', type: 'text', index: true, admin: { description: '联邦 Express Entry 类别抽选所属类别(医疗社服/STEM/技工…),数据层 08_score 算;与 PNP 是两条路,独立信号' } },
     { name: 'aip', type: 'checkbox', index: true, defaultValue: false, admin: { description: '雇主在官方 AIP 指定雇主名单(大西洋四省 NL/NB/NS/PE)' } },
+    // 雇佣形态 + 入职要求(E6-06/E6-07A):Job Bank 详情页结构化标注,05b 规则解析;无标注/ATS=空(宁缺)
+    { name: 'employmentTerm', type: 'text', admin: { description: '雇佣期 permanent/term/casual/seasonal;空=未标注' } },
+    { name: 'employmentHours', type: 'text', admin: { description: '工时 full/part;空=未标注' } },
+    { name: 'certificates', type: 'json', admin: { description: '证书/执照要求 string[](详情页 Certificates 区原文,标准化词表)' } },
+    { name: 'education', type: 'text', admin: { description: '学历要求(详情页 Education 区原文,分号连接)' } },
     { name: 'firstSeen', type: 'date' },
     { name: 'lastSeen', type: 'date' },
     {
