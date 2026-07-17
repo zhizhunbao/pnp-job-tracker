@@ -403,8 +403,8 @@ const writeColsCookie = (keys: string[]) => {
 const PREF_LS = 'jobsPref1'
 const PREF_HIDE = 'jobsPrefHide'   // 当日关闭横幅
 // combo(F2,2026-07-17 用户「最近浏览应该可以有多条,也可以删」):按省×大类**组合**记账——
-// 原三维度各自最高票再拼,可能拼出用户从没浏览过的假组合;组合账才是真浏览轨迹。旧画像无 combo 键=兼容,
-// 积累够之前横幅走旧单条逻辑。
+// 原三维度各自最高票再拼,可能拼出用户从没浏览过的假组合;组合账才是真浏览轨迹。旧画像无 combo 键时,
+// 组合账攒够(权重≥3)之前不出推荐(2026-07-17「去掉任何兜底分支」——不再退回假组合)。
 type Combo = { w: number; sal: Record<string, number> }
 type Pref = { ev: number; prov: Record<string, number>; broad: Record<string, number>; sal: Record<string, number>; combo: Record<string, Combo> }
 const salBand = (a: number | null | undefined): string => (a == null ? '' : a >= 100000 ? 'ge100' : a >= 80000 ? '80' : a >= 60000 ? '60' : 'u60')
@@ -436,7 +436,8 @@ const topOf = (m: Record<string, number>, min: number): string => {
 }
 // E9-03 地区冷启动:首访无画像时用浏览器时区映射省(零依赖零上传,与画像同一隐私口径)。
 // 白名单外(含 NT/YT/NU 与非加时区)不显示;Halifax→NS 为可接受近似(大西洋时区取人口主省,拍板点②)。
-const TZ_PROV: Record<string, string> = {
+// export 给 page.tsx 的占位预判内联脚本(2026-07-17 用户「刷新怎么后弹出来」——横幅槽位首帧预留,反 CLS)
+export const TZ_PROV: Record<string, string> = {
   'America/Toronto': 'ON', 'America/Vancouver': 'BC', 'America/Edmonton': 'AB',
   'America/Regina': 'SK', 'America/Swift_Current': 'SK', 'America/Winnipeg': 'MB',
   'America/St_Johns': 'NL', 'America/Moncton': 'NB', 'America/Halifax': 'NS',
@@ -545,6 +546,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   // 当日可关;已有筛选时不打扰。CTA1=套筛选看岗,CTA2=建档反哺(匿名→注册框,登录→/account)
   type Rec = { key?: string; prov: string; broad: string; sal: string; src: 'pref' | 'geo' }
   const [recs, setRecs] = useState<Rec[]>([])
+  const [dismissedRec, setDismissedRec] = useState<Set<string>>(new Set())  // 推荐卡「不感兴趣」隐藏(会话级)
   useEffect(() => {
     try {
       if (localStorage.getItem(PREF_HIDE) === new Date().toLocaleDateString('en-CA')) return
@@ -555,7 +557,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         if (gp) setRecs([{ prov: gp, broad: '', sal: '', src: 'geo' }])
         return
       }
-      // F2 多组合(2026-07-17 拍板):组合账权重≥3 取前 2 条,各自可删;组合账未成熟 → 旧单条兜底
+      // F2 多组合(2026-07-17 拍板):只按**真实浏览的省×大类组合**(权重≥3)出最多 2 条,各自可删。
+      // 无兜底(2026-07-17 用户「去掉任何兜底分支」):组合账未成熟就不出推荐——绝不用各维度最高票
+      // 硬拼假组合(那正是本功能要消灭的毛病)。全新无画像用户仍由上面 ev<5 的 geo 冷启动覆盖。
       const combos = Object.entries(pf.combo || {})
         .filter(([, c]) => c.w >= 3)
         .sort((a, b) => b[1].w - a[1].w).slice(0, 2)
@@ -564,16 +568,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           const sal = topOf(c.sal, 3)
           return { key: k, prov, broad, sal: sal === 'u60' ? '' : sal, src: 'pref' as const }
         })
-      if (combos.length) { setRecs(combos); return }
-      const prov = topOf(pf.prov, 3), broad = topOf(pf.broad, 3), sal = topOf(pf.sal, 3)
-      if (prov || broad) setRecs([{ prov, broad, sal: sal === 'u60' ? '' : sal, src: 'pref' }])
+      if (combos.length) setRecs(combos)
     } catch { /* ignore */ }
   }, [])
-  // 单删组合(F2):该组合账清零(可随浏览再积累,不永久拉黑——口味会变且拉黑无解除入口)
-  const delCombo = (key: string) => {
-    try { const p = readPref(); delete p.combo[key]; localStorage.setItem(PREF_LS, JSON.stringify(p)) } catch { /* ignore */ }
-    setRecs((rs) => rs.filter((r) => r.key !== key))
-  }
   // E9-02 信号采集:任一岗位弹窗打开 +1(popup=字段顾问族,actModal=公司/JD)
   useEffect(() => { if (popup?.job) recordPref(popup.job, 1) }, [popup])
   useEffect(() => { if (actModal?.job) recordPref(actModal.job, 1) }, [actModal])
@@ -781,6 +778,11 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     : uniq(jobs.filter((j) => (!fBroad || j.broad === fBroad) && (!fMid || j.mid === fMid)).map((j) => j.fine))), [nc, jobs, fBroad, fMid])
   // 来源/状态/经验/评分下拉已下架(2026-07-16 拍板只留薪资);state 与谓词保留=URL/老保存筛选照常生效
   const anyFilter = q || directOnly || fCountry || fProv || fCity || fDistrict || fBroad || fMid || fFine || fTeer || fSource || fAcc || fPnp || fAip || fStatus || fOrigin || fScore || fSal || fVs || fEmp
+  // 横幅槽位联动(反 CLS):水合后按真实显隐纠正 <html> 的 recslot 类——预判错了收回空槽,关横幅/套筛选后也收回。
+  // 必须置于 anyFilter 声明之后:effect 依赖数组在渲染时求值,不能引用声明在后的 anyFilter/matchView(TDZ)。
+  useEffect(() => {
+    try { document.documentElement.classList.toggle('recslot', recs.length > 0 && !anyFilter && !matchView) } catch { /* ignore */ }
+  }, [recs, anyFilter, matchView])
   const clearAll = () => { setQ(''); setDirectOnly(false); setFCountry(''); setFProv(''); setFCity(''); setFDistrict(''); setFBroad(''); setFMid(''); setFFine(''); setFTeer(''); setFSource(''); setFAcc(''); setFPnp(''); setFAip(''); setFStatus(''); setFOrigin(''); setFScore(''); setFSal(''); setFVs(''); setFEmp('') }
 
   // ── 检索性能三件套(2026-07-17 用户「检索速度很慢」——原实现每敲一键 × 30k 行重建检索串 + 全量重排):
@@ -837,6 +839,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         .colResize:active{background:#3b82f6}
         .jtDrawerToggle{display:none}
         .jtCards{display:none}
+        .recSlot{min-height:0}
+        html.recslot .recSlot{min-height:150px}
         @media (max-width:640px){
           .jtDrawerToggle{display:inline-flex}
           .jtHideNarrow{display:none !important}
@@ -894,44 +898,59 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           )}
         </p>
 
-        {/* E9-02 推荐横幅(1+3)+ F2 多组合(2026-07-17 拍板):最多 2 条组合 chip 并排,每条可单删;
-            有筛选/匹配视图时不打扰 */}
+        {/* 推荐板块(2026-07-17「找工作为主」重构):原蓝条降级为职位列表上方的「推荐岗位」内容行——
+            取最强组合出前 3 张匹配岗卡片,每张可「不感兴趣」;有筛选/匹配视图时不打扰。
+            外层 .recSlot=首帧占位槽(page.tsx 内联脚本预判,反「刷新后弹」CLS) */}
+        <div className="recSlot">
         {recs.length > 0 && !anyFilter && !matchView && (() => {
-          const items = recs.map((r) => ({
-            ...r,
-            chips: [r.prov, r.broad ? broadLabel(r.broad) : '', r.sal ? t('sal.' + r.sal) : ''].filter(Boolean).join(' · '),
-            n: jobs.filter((j) => (!r.prov || j.province === r.prov) && (!r.broad || j.broad === r.broad) && okSal(j.salaryAnnual, r.sal)).length,
-          })).filter((r) => r.n > 0)
-          if (!items.length) return null
-          const chipBox: React.CSSProperties = items.length > 1
-            ? { display: 'inline-flex', alignItems: 'center', gap: 6, background: '#fff', border: '1px solid #c7d2fe', borderRadius: 7, padding: '3px 8px' }
-            : { display: 'inline-flex', alignItems: 'center', gap: 8 }
+          const r = recs[0]  // v1 只出最强的那个组合(多组合切换留后续)
+          const matched = jobs
+            .filter((j) => (!r.prov || j.province === r.prov) && (!r.broad || j.broad === r.broad) && okSal(j.salaryAnnual, r.sal))
+            .filter((j) => !dismissedRec.has(String(j.id)))
+          if (!matched.length) return null
+          const chips = [r.prov, r.broad ? broadLabel(r.broad) : '', r.sal ? t('sal.' + r.sal) : ''].filter(Boolean).join(' · ')
+          const cards = [...matched].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 3)
+          // fProv 值域=省全称(行过滤比较);r.prov 是省码,转全称再落,否则套出空列表
+          const applyFilter = () => { setFProv(r.prov ? (PROV_NAMES[r.prov] || r.prov) : ''); setFCity(''); setFDistrict(''); if (r.broad) { setFBroad(r.broad); setFMid(''); setFFine('') } if (r.sal) setFSal(r.sal) }
+          const tag = (bg: string, c: string, s: string) => <span style={{ fontSize: 11, color: c, background: bg, borderRadius: 5, padding: '2px 7px' }}>{s}</span>
           return (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', background: '#eef2ff', border: '1px solid #e0e7ff', borderRadius: 8, padding: '7px 12px', margin: '10px 0 0', fontSize: 12.5, color: '#3730a3' }}>
-              <span>{t(recs[0].src === 'geo' ? 'rec.geoPrefix' : 'rec.prefix')}</span>
-              {items.map((r) => (
-                <span key={r.key || 'single'} style={chipBox}>
-                  <strong>{r.chips}</strong>
-                  {/* fProv 值域=省全称(行过滤 L.prov 比较);r.prov 是省码,直塞会套出空列表——转全称再落 */}
-                  <button onClick={() => { setFProv(r.prov ? (PROV_NAMES[r.prov] || r.prov) : ''); setFCity(''); setFDistrict(''); if (r.broad) { setFBroad(r.broad); setFMid(''); setFFine('') } if (r.sal) setFSal(r.sal) }}
-                    style={{ border: 'none', background: '#4f46e5', color: '#fff', borderRadius: 6, padding: '3px 10px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>
-                    {/* #51:全量换入前 n 按首屏 50 行算(5→604 跳变误导)——loadedAll 才带数字 */}
-                    {loadedAll ? t('rec.cta', { n: r.n }) : t('rec.cta0')}
-                  </button>
-                  {/* 单删=该组合账清零,可随浏览再积累;另一条不受影响 */}
-                  {r.key && <button onClick={() => delCombo(r.key!)} aria-label="remove"
-                    style={{ border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 12, padding: 0 }}>×</button>}
-                </span>
-              ))}
-              <button onClick={() => { if (!plan.loggedIn) setUpsell('lock'); else window.location.href = '/account' }}
-                style={{ border: 'none', background: 'none', color: '#4f46e5', fontSize: 12.5, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
-                {t('rec.build')}
-              </button>
-              <button onClick={() => { try { localStorage.setItem(PREF_HIDE, new Date().toLocaleDateString('en-CA')) } catch { /* ignore */ } setRecs([]) }}
-                style={{ marginLeft: 'auto', border: 'none', background: 'none', color: '#6b7280', cursor: 'pointer', fontSize: 13 }}>×</button>
-            </div>
+            <section style={{ border: '0.5px solid #e5e7eb', borderRadius: 12, padding: '12px 14px', margin: '12px 0 0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+                <span style={{ fontSize: 14, fontWeight: 500, color: '#374151' }}>{t(r.src === 'geo' ? 'rec.geoPrefix' : 'rec.prefix')}</span>
+                <span style={{ fontSize: 12, color: '#4338ca', background: '#eef2ff', borderRadius: 20, padding: '3px 10px' }}>{chips}</span>
+                <button onClick={() => { if (!plan.loggedIn) setUpsell('lock'); else window.location.href = '/account' }}
+                  style={{ marginLeft: 'auto', border: 'none', background: 'none', color: '#4f46e5', fontSize: 12.5, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>{t('rec.build')}</button>
+                <button onClick={() => { try { localStorage.setItem(PREF_HIDE, new Date().toLocaleDateString('en-CA')) } catch { /* ignore */ } setRecs([]) }}
+                  aria-label="close" style={{ border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 15, padding: '0 2px' }}>×</button>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 10 }}>
+                {cards.map((j) => (
+                  <div key={j.id} style={{ position: 'relative', background: '#f9fafb', borderRadius: 8, padding: '10px 12px' }}>
+                    <button onClick={() => setDismissedRec((s) => new Set(s).add(String(j.id)))} title={t('rec.notInterested')} aria-label={t('rec.notInterested')}
+                      style={{ position: 'absolute', top: 6, right: 7, border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 13, padding: 0 }}>×</button>
+                    <button onClick={() => setActModal({ kind: 'desc', job: j })}
+                      style={{ display: 'block', textAlign: 'left', border: 'none', background: 'none', padding: 0, cursor: 'pointer', width: '100%' }}>
+                      <div style={{ fontSize: 13.5, fontWeight: 500, color: '#111827', paddingRight: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{j.title}</div>
+                      <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{[j.company, j.city].filter(Boolean).join(' · ')}</div>
+                      {j.salaryAnnual != null && <div style={{ fontSize: 12.5, color: '#111827', marginTop: 4 }}>${Math.round(j.salaryAnnual / 1000)}K/yr</div>}
+                    </button>
+                    <div style={{ display: 'flex', gap: 5, marginTop: 7, flexWrap: 'wrap' }}>
+                      {j.pnpEligible && tag('#dcfce7', '#15803d', 'PNP')}
+                      {j.lmiaPositions ? tag('#eef2ff', '#4338ca', 'LMIA') : null}
+                      {j.eeCategory && tag('#dbeafe', '#1e40af', 'EE')}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: 10 }}>
+                <button onClick={applyFilter} style={{ border: 'none', background: 'none', color: '#4f46e5', fontSize: 12.5, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
+                  {loadedAll ? t('rec.seeAll', { n: matched.length }) : t('rec.cta0')}
+                </button>
+              </div>
+            </section>
           )
         })()}
+        </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '1rem 0' }}>
           {/* 窄屏抽屉开关(仅 ≤640px 显示,CSS 控制):筛选区整体收起/展开 */}
           <button className="jtDrawerToggle" onClick={() => setFDrawer((o) => !o)}
