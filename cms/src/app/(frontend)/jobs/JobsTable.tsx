@@ -805,21 +805,28 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             <span style={{ fontSize: 17, fontWeight: 700, color: '#111827', whiteSpace: 'nowrap' }}>🍁 PNP Job Tracker</span>
             <span style={{ fontSize: 12, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('tagline')}</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, maxWidth: '100%', flexWrap: 'wrap' }}>
+          {/* 方案 A(2026-07-17 用户拍板「怎么组织排列」):导航/操作两组+竖线分隔——组内紧凑(14/10)、
+              组间拉开;窄屏两组各自整体换行,竖线随之隐藏(jtHideNarrow) */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, maxWidth: '100%', flexWrap: 'wrap' }}>
             {/* 顶栏三入口改跳转页面(2026-07-11 用户拍板,弹窗版退役):我的匹配=/jobs?view=match(三态分流保留:
                 未登录/未建档先去 /account 建档);榜单/地区统计直链各自页面(原 E8-02「站内不跳页」对这三处不再适用) */}
-            <button onClick={toggleMatchView} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: matchView ? '#2563eb' : '#6b7280', fontWeight: matchView ? 700 : 400, cursor: 'pointer', whiteSpace: 'nowrap' }}><IconTarget /> {t('mv.entry')}</button>
-            <a href="/rankings/weekly-top" style={{ textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }}><IconChart /> {t('rank.entry')}</a>
-            <a href="/stats" style={{ textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }}><IconMapPin /> {t('stats.entry')}</a>
-            {/* 我的账户=独立选项卡(2026-07-16 用户拍板);登录态另有右侧用户下拉 */}
-            <a href="/account" style={{ textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }}><IconUser /> {t('nav.acctTab')}</a>
-            <div style={{ display: 'inline-flex', border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
-              {LANGS.map((l) => (
-                <button key={l.code} onClick={() => setLangSaved(l.code)}
-                  style={{ border: 'none', padding: '3px 9px', fontSize: 12.5, cursor: 'pointer', background: lang === l.code ? '#2563eb' : '#fff', color: lang === l.code ? '#fff' : '#6b7280' }}>{l.label}</button>
-              ))}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+              <button onClick={toggleMatchView} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: matchView ? '#2563eb' : '#6b7280', fontWeight: matchView ? 700 : 400, cursor: 'pointer', whiteSpace: 'nowrap' }}><IconTarget /> {t('mv.entry')}</button>
+              <a href="/rankings/weekly-top" style={{ textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }}><IconChart /> {t('rank.entry')}</a>
+              <a href="/stats" style={{ textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }}><IconMapPin /> {t('stats.entry')}</a>
+              {/* 我的账户=独立选项卡(2026-07-16 用户拍板);登录态另有右侧用户下拉 */}
+              <a href="/account" style={{ textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }}><IconUser /> {t('nav.acctTab')}</a>
             </div>
-            <AccountArea t={t} plan={plan} />
+            <span className="jtHideNarrow" style={{ width: 1, height: 16, background: '#e5e7eb' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <div style={{ display: 'inline-flex', border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
+                {LANGS.map((l) => (
+                  <button key={l.code} onClick={() => setLangSaved(l.code)}
+                    style={{ border: 'none', padding: '3px 9px', fontSize: 12.5, cursor: 'pointer', background: lang === l.code ? '#2563eb' : '#fff', color: lang === l.code ? '#fff' : '#6b7280' }}>{l.label}</button>
+                ))}
+              </div>
+              <AccountArea t={t} plan={plan} />
+            </div>
           </div>
         </div>
       </header>
@@ -2237,15 +2244,21 @@ const ctrl: React.CSSProperties = { height: 38, boxSizing: 'border-box', padding
 const filtRow: React.CSSProperties = { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }
 const filtLabel: React.CSSProperties = { fontSize: 12, color: '#9ca3af', minWidth: 28, whiteSpace: 'nowrap' }
 // 联动下拉:上级选了,下级选项随之收窄;当前值不在选项里也保留显示
+// 宽度贴当前选中值(2026-07-17 用户拍板「不要有空白」;沿革:07-07 曾统一封顶 150 治「按最长选项撑宽」,
+// 但短值如「全部省」仍剩大段空白):镜像文本按选中值占位、select 叠满其上——选短值不留空白,
+// 选长值自动变宽仍封顶 150(下拉展开始终显示全文);代价=切换选中值时同行控件轻微挪位(拍板已认)
 function Sel({ value, onChange, opts, all, labelOf }: { value: string; onChange: (v: string) => void; opts: string[]; all: string; labelOf?: (v: string) => string }) {
   const list = value && !opts.includes(value) ? [value, ...opts] : opts
-  // 宽度收紧(2026-07-07 用户点名「需要这么宽吗」):原生 select 会按最长选项撑宽(如 Newfoundland and Labrador)
-  // → 统一上限 150,选中的长值收进 150 内,下拉展开仍显示全文
+  const shown = value ? (labelOf ? labelOf(value) : value) : all
+  // select 的内在宽度=最长选项,放流内怎么都会撑满上限 → 镜像文本在流内定宽,select 绝对铺满不参与布局
   return (
-    <select value={value} onChange={(e) => onChange(e.target.value)} style={{ ...ctrl, maxWidth: 150 }}>
-      <option value="">{all}</option>
-      {list.map((o) => <option key={o} value={o}>{labelOf ? labelOf(o) : o}</option>)}
-    </select>
+    <span style={{ position: 'relative', display: 'inline-block', maxWidth: 150 }}>
+      <span aria-hidden style={{ ...ctrl, display: 'block', visibility: 'hidden', paddingRight: 28, whiteSpace: 'nowrap', overflow: 'hidden', border: '1px solid transparent' }}>{shown}</span>
+      <select value={value} onChange={(e) => onChange(e.target.value)} style={{ ...ctrl, position: 'absolute', inset: 0, width: '100%' }}>
+        <option value="">{all}</option>
+        {list.map((o) => <option key={o} value={o}>{labelOf ? labelOf(o) : o}</option>)}
+      </select>
+    </span>
   )
 }
 const td: React.CSSProperties = { padding: '7px 12px', verticalAlign: 'top' }
