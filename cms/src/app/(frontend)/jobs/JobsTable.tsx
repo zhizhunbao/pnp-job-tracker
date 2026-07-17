@@ -998,6 +998,12 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               <Sel value={fSal} onChange={setFSal} opts={['ge100', '80', '60', 'u60']} all={t('all.sal')} labelOf={(v) => t('sal.' + v)} />
               <Sel value={fVs} onChange={setFVs} opts={['above', 'above20', 'below']} all={t('all.vs')} labelOf={(v) => t('vs.' + v)} />
             </span>
+          </div>
+          {/* 仅雇主直发 + 更新时间/字段(2026-07-17「放到最下面」+「放一起」):同一行,直发靠左、更新+字段 marginLeft:auto 靠右 */}
+          <div style={filtRow}>
+            <label style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', background: directOnly ? '#eef2ff' : '#fff', whiteSpace: 'nowrap' }} title={t('directOnly.tip')}>
+              <input type="checkbox" checked={directOnly} onChange={(e) => setDirectOnly(e.target.checked)} />{t('directOnly')}
+            </label>
             <div ref={colRef} className="jtHideNarrow" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 10, marginLeft: 'auto' }}>
               {updatedAt && <span style={{ color: '#9ca3af', fontSize: 12, whiteSpace: 'nowrap' }}>{t('updated', { t: fmtLocal(updatedAt) })}</span>}
               <button onClick={() => setColOpen((o) => !o)} style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', background: '#f3f4f6', whiteSpace: 'nowrap' }}><IconSettings style={{ marginRight: 5 }} />{t('fields', { n: shown.length })}</button>
@@ -1019,12 +1025,6 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                 </div>
               )}
             </div>
-          </div>
-          {/* 仅雇主直发(2026-07-17 用户「放到最下面」):从顶部搜索行移到筛选区最末,作独立一行 */}
-          <div style={filtRow}>
-            <label style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', background: directOnly ? '#eef2ff' : '#fff', whiteSpace: 'nowrap' }} title={t('directOnly.tip')}>
-              <input type="checkbox" checked={directOnly} onChange={(e) => setDirectOnly(e.target.checked)} />{t('directOnly')}
-            </label>
           </div>
           </div>
           {/* 行4:搜索 + 清除 */}
