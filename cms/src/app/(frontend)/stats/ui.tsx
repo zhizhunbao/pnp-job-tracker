@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { makeT, LANG_KEY, type Lang, type TFn } from '../jobs/i18n'
 import { IconPaperclip } from '../Icons'
 import { SiteHeader } from '../SiteHeader'
+import { SiteFooter } from '../SiteFooter'
 import type { StatRow, SrcRow } from './shared'
 export type { StatRow, SrcRow } from './shared'
 
@@ -17,9 +18,10 @@ export function useLang(): [Lang, (l: Lang) => void, TFn] {
 export function StatsShell({ lang, setLang, t, children }: { lang: Lang; setLang: (l: Lang) => void; t: TFn; children: React.ReactNode }) {
   // 顶栏换全站共享 SiteHeader(2026-07-11 用户指出子页 header 与 /jobs 样式不一致)
   return (
-    <div style={{ background: '#f9fafb', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
+    <div style={{ background: '#f9fafb', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
       <SiteHeader lang={lang} setLang={setLang} t={t} active="stats" />
-      <div style={{ maxWidth: 1100, margin: '2rem auto', padding: '0 1rem' }}>{children}</div>
+      <div style={{ maxWidth: 1100, margin: '2rem auto', padding: '0 1rem', width: '100%', boxSizing: 'border-box' }}>{children}</div>
+      <SiteFooter t={t} />
     </div>
   )
 }

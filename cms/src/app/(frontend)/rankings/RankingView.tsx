@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react'
 import { makeT, streamDisplay, eeDisplay, LANG_KEY, type Lang, type TFn } from '../jobs/i18n'
 import { SiteHeader } from '../SiteHeader'
+import { SiteFooter } from '../SiteFooter'
 
 export type RankRow = {
   rank: number; kind: string; externalId: string
@@ -84,7 +85,7 @@ export function RankingView({ slug, items }: { slug: string; items: RankRow[] })
   const t = makeT(lang)
 
   return (
-    <div style={{ background: '#f9fafb', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
+    <div style={{ background: '#f9fafb', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
       {/* 顶栏换全站共享 SiteHeader(2026-07-11 用户指出子页 header 与 /jobs 样式不一致) */}
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="rank" />
 
@@ -96,6 +97,7 @@ export function RankingView({ slug, items }: { slug: string; items: RankRow[] })
           <a href="/rankings/sponsor-likely" style={{ color: slug === 'sponsor-likely' ? '#111827' : '#2563eb', textDecoration: 'none', fontWeight: slug === 'sponsor-likely' ? 700 : 400 }}>{t('rank.title.sponsor-likely')}</a>
         </div>
       </div>
+      <SiteFooter t={t} />
     </div>
   )
 }

@@ -46,7 +46,7 @@ services:
     environment:
       SOURCE: jobbank
       HEALTHCHECK_PING_JOBBANK: ${HEALTHCHECK_PING_JOBBANK:-}
-      SCRAPE_INTERVAL: '7200'      # 2h
+      SCRAPE_INTERVAL: '3600'      # 1h(2026-07-16 用户要求数据按小时更新;原 2h)
       SINCE_DAYS: '3'
       TZ: EST5EDT                  # 日志用东部时区(glibc 原生,无需 tzdata);postgres 保持 UTC
 

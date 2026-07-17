@@ -8,6 +8,7 @@ const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : use
 
 import { makeT, streamDisplay, eeDisplay, LANGS, LANG_KEY, COLS_COOKIE, type Lang, type TFn } from './i18n'
 import { IconChart, IconCheck, IconCompass, IconLock, IconMap, IconMapPin, IconMaximize, IconMinimize, IconSave, IconSettings, IconStar, IconTarget, IconUser, IconWarn, IconX } from '../Icons'
+import { SiteFooter } from '../SiteFooter'
 import { AuthModal } from './AuthForm'
 import { UpgradeModal } from './UpgradeModal'
 import { PricingModal } from './PricingModal'
@@ -1031,19 +1032,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         {/* FOMO 数字(第 5 轮 #15):有全量计数时用「你今日共 X 个高匹配」,比抽象限额有说服力 */}
         {matchView && !plan.isPro && <UpgradeCard t={t} reason={matchTotals && matchTotals.high > plan.freeMatchCap ? t('up.matchN', { h: matchTotals.high, n: plan.freeMatchCap }) : t('up.match', { n: plan.freeMatchCap })} />}
       </div>
-      {/* footer:免责 + 版权,窄屏自动换行 */}
-      <footer style={{ borderTop: '1px solid #e5e7eb', background: '#fafafa', flexShrink: 0 }}>
-        <div style={{ maxWidth: 1320, margin: '0 auto', padding: '16px 1.25rem', display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'space-between', alignItems: 'center', color: '#9ca3af', fontSize: 12.5 }}>
-          <span>{t('foot.disclaimer')}</span>
-          <span style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-            <a href="/legal/disclaimer" style={{ color: '#6b7280' }}>{t('foot.disclaimerLink')}</a>
-            <a href="/legal/privacy" style={{ color: '#6b7280' }}>{t('foot.privacy')}</a>
-            <a href="/legal/terms" style={{ color: '#6b7280' }}>{t('foot.terms')}</a>
-            <a href="/about" style={{ color: '#6b7280' }}>{t('foot.about')}</a>
-            <span style={{ whiteSpace: 'nowrap' }}>© 2026 PNP Job Tracker</span>
-          </span>
-        </div>
-      </footer>
+      {/* footer:全站共享 SiteFooter(2026-07-16 用户拍板统一 header/footer) */}
+      <SiteFooter t={t} maxWidth={1320} />
 
       {popup && <AdvisorModal field={popup.field} job={popup.job} jobs={jobs} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} onOpenJob={(x) => setActModal({ kind: 'desc', job: x })} />}
       {actModal && <ActModal job={actModal.job} lang={lang} onClose={() => setActModal(null)} />}

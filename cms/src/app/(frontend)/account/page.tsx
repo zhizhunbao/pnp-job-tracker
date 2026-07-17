@@ -5,6 +5,8 @@
 import { useEffect, useState } from 'react'
 import { makeT, LANG_KEY, type Lang } from '../jobs/i18n'
 import { IconCheckCircle, IconStar, IconUser } from '../Icons'
+import { SiteHeader } from '../SiteHeader'
+import { SiteFooter } from '../SiteFooter'
 import { ProfileForm, type ProfileValue } from './ProfileForm'
 import { SavedSearchList } from './SavedSearchList'
 
@@ -21,6 +23,7 @@ const btn: React.CSSProperties = { width: '100%', padding: '10px 0', fontSize: 1
 export default function AccountPage() {
   const [lang, setLang] = useState<Lang>('zh')
   useEffect(() => { const s = localStorage.getItem(LANG_KEY) as Lang | null; if (s) setLang(s) }, [])
+  const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
   const t = makeT(lang)
 
   const [me, setMe] = useState<Me>(null)
@@ -58,12 +61,9 @@ export default function AccountPage() {
   const pro = !!me?.proUntil && new Date(me.proUntil) > new Date()
 
   return (
-    <div style={{ background: 'linear-gradient(160deg,#f8fafc 0%,#eef2ff 55%,#f8fafc 100%)', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
-      <header style={{ background: 'rgba(255,255,255,.85)', backdropFilter: 'blur(6px)', borderBottom: '1px solid #e5e7eb' }}>
-        <div style={{ maxWidth: 1320, margin: '0 auto', padding: '10px 1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <a href="/jobs" style={{ fontSize: 17, fontWeight: 700, color: '#111827', textDecoration: 'none' }}>🍁 PNP Job Tracker</a>
-        </div>
-      </header>
+    <div style={{ background: 'linear-gradient(160deg,#f8fafc 0%,#eef2ff 55%,#f8fafc 100%)', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
+      {/* 全站共享顶栏/页脚(2026-07-16 用户拍板统一 header/footer) */}
+      <SiteHeader lang={lang} setLang={setLangSaved} t={t} />
 
       {!checked ? null : me ? (
         <div style={card}>
@@ -96,6 +96,7 @@ export default function AccountPage() {
         // 未登录:回首页弹登录框(不渲染独立登录页)
         <RedirectToLogin />
       )}
+      <SiteFooter t={t} />
     </div>
   )
 }
