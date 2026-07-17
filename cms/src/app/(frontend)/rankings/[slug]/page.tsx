@@ -9,11 +9,11 @@ import { fetchRankingRows, fetchRankingSlugs, RANKING_SLUGS } from '@/lib/rankin
 export const dynamic = 'force-dynamic'
 const META: Record<string, { title: string; desc: string }> = {
   'weekly-top': {
-    title: 'New Canadian jobs this week — TOP 50 by immigration value | PNP Job Tracker',
+    title: 'New Canadian jobs this week — TOP 50 by immigration value | Offer2PR',
     desc: 'Top 50 jobs posted across Canada in the last 7 days, ranked by immigration-value score (PNP streams, EE categories, wages vs median). Updated daily. 本周全加拿大新增职位 TOP 50,按移民价值评分排序,每日更新。',
   },
   'sponsor-likely': {
-    title: 'Employers most likely to support PNP — LMIA track record | PNP Job Tracker',
+    title: 'Employers most likely to support PNP — LMIA track record | Offer2PR',
     desc: 'First-party employers ranked by approved LMIA positions in the past two years (ESDC open data, skilled streams) and named provincial-stream hiring. A rough signal, not a sponsorship promise. 最可能担保雇主榜:近两年 LMIA 获批记录 + 省提名清单命中,每日更新。',
   },
 }
@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const cat = DAILY_EN[slug.replace('daily-top-', '')] || ''
     const seg = cat ? `${cat} jobs` : 'jobs'
     return {
-      title: `Daily picks — top ${seg} in Canada by immigration value | PNP Job Tracker`,
+      title: `Daily picks — top ${seg} in Canada by immigration value | Offer2PR`,
       description: `Top ${seg} posted across Canada in the last 48 hours, ranked by immigration-value score (PNP streams, EE categories, wages). Refreshed hourly. 每日精选:近 48 小时新发布按移民价值评分精选,每小时刷新。`,
     }
   }

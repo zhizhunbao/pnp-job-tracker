@@ -41,7 +41,7 @@ export function SavedJobsList({ t, userId, weeklyOptOut }: { t: ReturnType<typeo
                 <div style={{ fontSize: 13.5, color: '#1f2937', fontWeight: 600 }}>{x.title || '—'}</div>
                 <div style={{ fontSize: 12, color: '#9ca3af' }}>
                   {x.company || ''}
-                  {x.title && <>{' · '}<a href={`/jobs?q=${encodeURIComponent(x.title)}`} style={{ color: '#2563eb', textDecoration: 'none' }}>{t('sj.view')}</a></>}
+                  {x.title && <>{' · '}<a href={`/?q=${encodeURIComponent(x.title)}`} style={{ color: '#2563eb', textDecoration: 'none' }}>{t('sj.view')}</a></>}
                 </div>
               </div>
               {/* #53:下拉与 × 包成不换行小组,窄屏换行时一起走(× 单飞到卡片左下角与行脱节) */}

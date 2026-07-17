@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: { params: Promise<{ prov: str
   const name = PROV_NAME[p]
   if (!name) return {}
   return {
-    title: `${name} jobs & immigration statistics — open jobs, wages, PNP streams | PNP Job Tracker`,
+    title: `${name} jobs & immigration statistics — open jobs, wages, PNP streams | Offer2PR`,
     description: `${name} (${p}): open jobs by occupation group, median wages (ESDC), provincial named-stream hits, AIP jobs. Updated daily. ${name} 在招职位/中位薪资/省提名通道统计,每日更新。`,
   }
 }

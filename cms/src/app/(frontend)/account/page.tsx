@@ -15,7 +15,7 @@ import { SavedJobsList } from './SavedJobsList'
 type Me = { id: string | number; email: string; role?: string; proUntil?: string | null; profile?: ProfileValue | null } | null
 
 function RedirectToLogin() {
-  useEffect(() => { window.location.replace('/jobs?login=1') }, [])
+  useEffect(() => { window.location.replace('/?login=1') }, [])
   return null
 }
 

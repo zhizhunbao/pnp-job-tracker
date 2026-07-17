@@ -10,7 +10,7 @@ export const MAIL_ENABLED = !!process.env.RESEND_API_KEY
 export function unsubToken(userId: string | number): string {
   return crypto.createHmac('sha256', process.env.PAYLOAD_SECRET || '').update('unsub:' + userId).digest('hex').slice(0, 16)
 }
-const FROM = process.env.RESEND_FROM || 'PNP Job Tracker <onboarding@resend.dev>'
+const FROM = process.env.RESEND_FROM || 'Offer2PR <onboarding@resend.dev>'
 
 export async function sendMail(to: string, subject: string, html: string): Promise<boolean> {
   if (!MAIL_ENABLED) return false

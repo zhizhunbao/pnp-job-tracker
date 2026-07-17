@@ -10,7 +10,7 @@ const docs: Record<Lang, LegalDoc> = {
     updated: '生效日期:2026-07-04',
     sections: [
       { h: '1. 本站性质', body: [
-        'PNP Job Tracker 是一个职位信息聚合工具:数据来自 Job Bank、各省政府官网、IRCC、ESDC、加拿大统计局等公开来源的自动抓取、清洗与评分,每日更新。本站不是招聘中介,不代表任何雇主,也不参与任何招聘或移民申请流程。',
+        'Offer2PR 是一个职位信息聚合工具:数据来自 Job Bank、各省政府官网、IRCC、ESDC、加拿大统计局等公开来源的自动抓取、清洗与评分,每日更新。本站不是招聘中介,不代表任何雇主,也不参与任何招聘或移民申请流程。',
       ] },
       { h: '2. 非移民建议、非法律建议', body: [
         '本站全部内容——包括职位标记(PNP / EE 类别 / AIP)、评分、「与我的匹配」、AI 顾问输出——均不构成移民建议或法律建议。我们不是加拿大持牌移民顾问(RCIC),也不是律师,与 IRCC 及任何政府机构无隶属关系。',
@@ -35,7 +35,7 @@ const docs: Record<Lang, LegalDoc> = {
     updated: 'Effective date: 2026-07-04',
     sections: [
       { h: '1. What this site is', body: [
-        'PNP Job Tracker is a job-information aggregator: data is automatically scraped, cleaned and scored from public sources such as Job Bank, provincial government websites, IRCC, ESDC and Statistics Canada, updated daily. We are not a recruitment agency, do not represent any employer, and are not involved in any hiring or immigration application process.',
+        'Offer2PR is a job-information aggregator: data is automatically scraped, cleaned and scored from public sources such as Job Bank, provincial government websites, IRCC, ESDC and Statistics Canada, updated daily. We are not a recruitment agency, do not represent any employer, and are not involved in any hiring or immigration application process.',
       ] },
       { h: '2. Not immigration or legal advice', body: [
         'Nothing on this site — including job flags (PNP / EE category / AIP), scores, "Match for me", or AI advisor output — constitutes immigration or legal advice. We are not licensed Canadian immigration consultants (RCIC) or lawyers, and are not affiliated with IRCC or any government body.',
@@ -60,7 +60,7 @@ const docs: Record<Lang, LegalDoc> = {
     updated: '시행일: 2026-07-04',
     sections: [
       { h: '1. 본 사이트의 성격', body: [
-        'PNP Job Tracker는 채용 정보 수집 도구입니다. Job Bank, 주정부 웹사이트, IRCC, ESDC, 캐나다 통계청 등 공개 출처에서 자동 수집·정제·평가한 데이터를 매일 갱신합니다. 당사는 채용 중개사가 아니며, 어떤 고용주도 대리하지 않고, 채용·이민 신청 절차에 관여하지 않습니다.',
+        'Offer2PR는 채용 정보 수집 도구입니다. Job Bank, 주정부 웹사이트, IRCC, ESDC, 캐나다 통계청 등 공개 출처에서 자동 수집·정제·평가한 데이터를 매일 갱신합니다. 당사는 채용 중개사가 아니며, 어떤 고용주도 대리하지 않고, 채용·이민 신청 절차에 관여하지 않습니다.',
       ] },
       { h: '2. 이민·법률 자문이 아님', body: [
         '본 사이트의 모든 콘텐츠(PNP / EE 카테고리 / AIP 표시, 점수, "나와의 매칭", AI 어드바이저 출력 포함)는 이민 또는 법률 자문이 아닙니다. 당사는 캐나다 공인 이민 컨설턴트(RCIC)나 변호사가 아니며 IRCC 및 정부 기관과 무관합니다.',

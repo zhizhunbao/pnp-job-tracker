@@ -22,24 +22,24 @@ const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://offer2pr.com').replac
 type Lang = 'zh' | 'en' | 'ko'
 const T: Record<Lang, { subject: (n: number) => string; matchSubject: (n: number) => string; hi: string; drawGapAbove: (cat: string, crs: number, draw: number, d: number) => string; drawGapBelow: (cat: string, crs: number, draw: number, d: number) => string; open: string; unsub: string }> = {
   zh: {
-    subject: (n) => `你保存的筛选有 ${n} 个新职位 — PNP Job Tracker`,
-    matchSubject: (n) => `${n} 个新职位命中你的移民路径 — PNP Job Tracker`,
+    subject: (n) => `你保存的筛选有 ${n} 个新职位 — Offer2PR`,
+    matchSubject: (n) => `${n} 个新职位命中你的移民路径 — Offer2PR`,
     hi: '以下新职位与你相关(点击职位看官方原帖):',
     drawGapAbove: (c, crs, dr, d) => `新抽选:「${c}」抽到 ${dr} 分 —— 你自报 CRS ${crs},高出 ${d} 分`,
     drawGapBelow: (c, crs, dr, d) => `新抽选:「${c}」抽到 ${dr} 分 —— 你自报 CRS ${crs},还差 ${d} 分`,
     open: '打开职位板', unsub: '在账户页可删除保存的筛选以停止提醒',
   },
   en: {
-    subject: (n) => `${n} new jobs match your saved search — PNP Job Tracker`,
-    matchSubject: (n) => `${n} new jobs match your immigration path — PNP Job Tracker`,
+    subject: (n) => `${n} new jobs match your saved search — Offer2PR`,
+    matchSubject: (n) => `${n} new jobs match your immigration path — Offer2PR`,
     hi: 'New jobs relevant to you (click a title for the official posting):',
     drawGapAbove: (c, crs, dr, d) => `New draw: "${c}" cutoff ${dr} — your CRS ${crs} is ${d} above`,
     drawGapBelow: (c, crs, dr, d) => `New draw: "${c}" cutoff ${dr} — your CRS ${crs} is ${d} below`,
     open: 'Open job board', unsub: 'Delete the saved search on your account page to stop alerts',
   },
   ko: {
-    subject: (n) => `저장한 필터에 새 공고 ${n}건 — PNP Job Tracker`,
-    matchSubject: (n) => `이민 경로에 맞는 새 공고 ${n}건 — PNP Job Tracker`,
+    subject: (n) => `저장한 필터에 새 공고 ${n}건 — Offer2PR`,
+    matchSubject: (n) => `이민 경로에 맞는 새 공고 ${n}건 — Offer2PR`,
     hi: '나와 관련된 새 공고(제목 클릭 시 공식 공고):',
     drawGapAbove: (c, crs, dr, d) => `새 추첨: "${c}" 커트라인 ${dr} — 내 CRS ${crs}, ${d}점 높음`,
     drawGapBelow: (c, crs, dr, d) => `새 추첨: "${c}" 커트라인 ${dr} — 내 CRS ${crs}, ${d}점 부족`,
@@ -49,7 +49,7 @@ const T: Record<Lang, { subject: (n: number) => string; matchSubject: (n: number
 
 function jobsTable(rows: any[]): string {
   const tr = rows.map((j) => `<tr>
-    <td style="padding:6px 10px;border-bottom:1px solid #eee"><a href="${j.apply_url || SITE + '/jobs'}" style="color:#2563eb;text-decoration:none">${j.title}</a></td>
+    <td style="padding:6px 10px;border-bottom:1px solid #eee"><a href="${j.apply_url || SITE}" style="color:#2563eb;text-decoration:none">${j.title}</a></td>
     <td style="padding:6px 10px;border-bottom:1px solid #eee">${j.company_name || ''}</td>
     <td style="padding:6px 10px;border-bottom:1px solid #eee">${[j.city, j.province].filter(Boolean).join(', ')}</td>
     <td style="padding:6px 10px;border-bottom:1px solid #eee">${j.salary_text || ''}</td>
@@ -59,10 +59,10 @@ function jobsTable(rows: any[]): string {
 function emailHtml(lang: Lang, rows: any[], drawLines: string[]): string {
   const t = T[lang]
   return `<div style="font-family:system-ui,sans-serif;color:#1f2937;font-size:14px">
-    <p>🍁 <strong>PNP Job Tracker</strong></p>
+    <p>🍁 <strong>Offer2PR</strong></p>
     ${drawLines.map((l) => `<p style="background:#fef3c7;padding:8px 12px;border-radius:8px">${l}</p>`).join('')}
     <p>${t.hi}</p>${jobsTable(rows)}
-    <p style="margin-top:14px"><a href="${SITE}/jobs" style="color:#2563eb">${t.open} →</a></p>
+    <p style="margin-top:14px"><a href="${SITE}" style="color:#2563eb">${t.open} →</a></p>
     <p style="color:#9ca3af;font-size:12px">${t.unsub}</p></div>`
 }
 const langOf = (v: unknown): Lang => (v === 'en' || v === 'ko' ? v : 'zh')
@@ -77,9 +77,9 @@ function weeklyHtml(rows: { title: string; company: string; open: boolean }[], n
       : '<span style="color:#9ca3af">已下架 closed</span>'}</td>
   </tr>`).join('')
   return `<div style="font-family:system-ui,sans-serif;color:#1f2937;font-size:14px">
-    <p>🍁 <strong>PNP Job Tracker</strong> · 每周求职看板摘要 / Weekly saved-jobs digest</p>
+    <p>🍁 <strong>Offer2PR</strong> · 每周求职看板摘要 / Weekly saved-jobs digest</p>
     <table style="border-collapse:collapse;font-size:13px">${tr}</table>
-    ${newN > 0 ? `<p>你的方向(${dims})近 7 天新增 <strong>${newN}</strong> 岗 / ${newN} new jobs this week in your saved directions — <a href="${SITE}/jobs" style="color:#2563eb">看新岗 View →</a></p>` : ''}
+    ${newN > 0 ? `<p>你的方向(${dims})近 7 天新增 <strong>${newN}</strong> 岗 / ${newN} new jobs this week in your saved directions — <a href="${SITE}" style="color:#2563eb">看新岗 View →</a></p>` : ''}
     <p><a href="${SITE}/account" style="color:#2563eb">建档案,看每岗与你的匹配度 / Build a profile for per-job match →</a></p>
     <p style="color:#9ca3af;font-size:12px">状态以官方原帖为准 · Status per official posting ·
       <a href="${unsubUrl}" style="color:#9ca3af">退订本摘要 Unsubscribe</a> · <a href="${SITE}/account" style="color:#9ca3af">账户设置 Settings</a></p></div>`
@@ -198,7 +198,7 @@ export async function GET(req: NextRequest) {
     }
     const openN = items.filter((x) => x.open).length
     const dims = pairs.slice(0, 3).map((r: any) => `${r.province}·${r.broad}`).join(' / ')
-    const subject = `你收藏的 ${sj.docs.length} 个岗:${openN} 在招 · ${items.length - openN} 已下架 — PNP Job Tracker`
+    const subject = `你收藏的 ${sj.docs.length} 个岗:${openN} 在招 · ${items.length - openN} 已下架 — Offer2PR`
     if (!dry) {
       const unsubUrl = `${SITE}/api/alerts/unsub?u=${u.id}&t=${unsubToken(u.id)}`
       const ok = await sendMail(u.email, subject, weeklyHtml(items, newN, dims, unsubUrl))

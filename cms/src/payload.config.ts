@@ -46,7 +46,7 @@ export default buildConfig({
   email: () => ({
     name: 'resend-mailer',
     defaultFromAddress: (process.env.RESEND_FROM || 'alerts@offer2pr.com').replace(/^.*<|>.*$/g, ''),
-    defaultFromName: 'PNP Job Tracker',
+    defaultFromName: 'Offer2PR',
     sendEmail: async (message: unknown) => {
       const m = message as { to?: unknown; subject?: unknown; html?: unknown; text?: unknown }
       const addr = (v: unknown): string =>

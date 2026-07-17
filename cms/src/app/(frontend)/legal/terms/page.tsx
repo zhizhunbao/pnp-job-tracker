@@ -11,7 +11,7 @@ const docs: Record<Lang, LegalDoc> = {
     updated: '生效日期:2026-07-04',
     sections: [
       { h: '1. 服务内容', body: [
-        'PNP Job Tracker 提供加拿大公开职位信息的聚合浏览,以及面向注册用户的增值功能(移民档案匹配、AI 顾问、工资对比等,统称 Pro 功能)。使用本站即表示你接受本条款、隐私政策与免责声明。',
+        'Offer2PR 提供加拿大公开职位信息的聚合浏览,以及面向注册用户的增值功能(移民档案匹配、AI 顾问、工资对比等,统称 Pro 功能)。使用本站即表示你接受本条款、隐私政策与免责声明。',
       ] },
       { h: '2. 账户', body: [
         '注册需提供有效邮箱。你对账户下的活动负责,请妥善保管密码。我们可对滥用行为(如爬取、共享账户、绕过配额)限制或终止服务。',
@@ -44,7 +44,7 @@ const docs: Record<Lang, LegalDoc> = {
     updated: 'Effective date: 2026-07-04',
     sections: [
       { h: '1. The service', body: [
-        'PNP Job Tracker provides aggregated browsing of publicly posted Canadian jobs, plus paid features for registered users (immigration profile matching, AI advisor, wage comparison, etc. — collectively "Pro"). By using the site you accept these terms, the privacy policy and the disclaimer.',
+        'Offer2PR provides aggregated browsing of publicly posted Canadian jobs, plus paid features for registered users (immigration profile matching, AI advisor, wage comparison, etc. — collectively "Pro"). By using the site you accept these terms, the privacy policy and the disclaimer.',
       ] },
       { h: '2. Accounts', body: [
         'Registration requires a valid email. You are responsible for activity under your account; keep your password safe. We may restrict or terminate service for abuse (scraping, account sharing, quota circumvention).',
@@ -77,7 +77,7 @@ const docs: Record<Lang, LegalDoc> = {
     updated: '시행일: 2026-07-04',
     sections: [
       { h: '1. 서비스', body: [
-        'PNP Job Tracker는 캐나다 공개 채용 정보의 통합 열람과 가입자 대상 유료 기능(이민 프로필 매칭, AI 어드바이저, 임금 비교 등, 통칭 "Pro")을 제공합니다. 본 사이트를 이용하면 본 약관, 개인정보 처리방침, 면책 조항에 동의한 것으로 봅니다.',
+        'Offer2PR는 캐나다 공개 채용 정보의 통합 열람과 가입자 대상 유료 기능(이민 프로필 매칭, AI 어드바이저, 임금 비교 등, 통칭 "Pro")을 제공합니다. 본 사이트를 이용하면 본 약관, 개인정보 처리방침, 면책 조항에 동의한 것으로 봅니다.',
       ] },
       { h: '2. 계정', body: [
         '가입에는 유효한 이메일이 필요합니다. 계정 활동에 대한 책임은 본인에게 있으며 비밀번호를 안전하게 관리하세요. 남용(크롤링, 계정 공유, 할당량 우회)에 대해 서비스 제한·종료가 있을 수 있습니다.',

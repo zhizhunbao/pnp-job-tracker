@@ -58,7 +58,7 @@ export function RankingTable({ slug, items, t }: { slug: string; items: RankRow[
                 {showNamed && <td style={{ ...td, fontWeight: 600, color: '#b45309' }}>{r.namedJobs}</td>}
                 <td style={td}>{r.openJobs}</td>
                 <td style={td}>{r.avgScore ?? '—'}</td>
-                <td style={td}><a href={`/jobs?q=${encodeURIComponent(r.company)}`} style={{ color: '#2563eb', textDecoration: 'none', fontSize: 12.5 }}>{t('rank.viewJobs')}</a></td>
+                <td style={td}><a href={`/?q=${encodeURIComponent(r.company)}`} style={{ color: '#2563eb', textDecoration: 'none', fontSize: 12.5 }}>{t('rank.viewJobs')}</a></td>
               </tr>
             ) : (
               <tr key={r.rank}>

@@ -5,7 +5,7 @@ import type { Lang } from '../jobs/i18n'
 
 const docs: Record<Lang, LegalDoc> = {
   zh: {
-    title: '🍁 关于 PNP Job Tracker',
+    title: '🍁 关于 Offer2PR',
     updated: '',
     sections: [
       { h: '这是什么', body: [
@@ -23,7 +23,7 @@ const docs: Record<Lang, LegalDoc> = {
     ],
   },
   en: {
-    title: '🍁 About PNP Job Tracker',
+    title: '🍁 About Offer2PR',
     updated: '',
     sections: [
       { h: 'What this is', body: [
@@ -41,7 +41,7 @@ const docs: Record<Lang, LegalDoc> = {
     ],
   },
   ko: {
-    title: '🍁 PNP Job Tracker 소개',
+    title: '🍁 Offer2PR 소개',
     updated: '',
     sections: [
       { h: '무엇인가', body: [

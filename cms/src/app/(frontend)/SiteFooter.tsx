@@ -13,7 +13,7 @@ export function SiteFooter({ t, maxWidth = 1100 }: { t: TFn; maxWidth?: number }
           <a href="/legal/privacy" style={{ color: '#6b7280' }}>{t('foot.privacy')}</a>
           <a href="/legal/terms" style={{ color: '#6b7280' }}>{t('foot.terms')}</a>
           <a href="/about" style={{ color: '#6b7280' }}>{t('foot.about')}</a>
-          <span style={{ whiteSpace: 'nowrap' }}>© 2026 PNP Job Tracker</span>
+          <span style={{ whiteSpace: 'nowrap' }}>© 2026 Offer2PR</span>
         </span>
       </div>
     </footer>

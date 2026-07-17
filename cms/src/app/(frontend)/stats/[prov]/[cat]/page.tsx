@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: { params: Promise<{ prov: str
   if (!PROV_NAME[p] || !broad) return {}
   const en = BROAD_EN[broad] || broad
   return {
-    title: `${en} jobs in ${PROV_NAME[p]} — wages & PNP streams | PNP Job Tracker`,
+    title: `${en} jobs in ${PROV_NAME[p]} — wages & PNP streams | Offer2PR`,
     description: `${PROV_NAME[p]} ${en}: open jobs, 7-day new postings, median wage (ESDC), provincial named streams, AIP. Updated daily. ${PROV_NAME[p]} ${broad}类职位统计,每日更新。`,
   }
 }

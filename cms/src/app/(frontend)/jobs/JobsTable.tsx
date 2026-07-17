@@ -102,7 +102,7 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
     } catch { /* ignore */ }
   }, [])
   const done = () => {
-    try { window.history.replaceState(null, '', '/jobs') } catch { /* ignore */ }
+    try { window.history.replaceState(null, '', '/') } catch { /* ignore */ }
     window.location.reload()
   }
   const proBtn: React.CSSProperties = { border: '1px solid #fde68a', background: '#fffbeb', color: '#92400e', borderRadius: 6, padding: '3px 10px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }
@@ -511,7 +511,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   // C1 走查拍板(2026-07-07):删两套公司弹窗——操作列「公司信息」直接开顾问公司弹窗;ActModal 只剩 JD 快看
   const [actModal, setActModal] = useState<{ kind: 'desc'; job: JobRow } | null>(null)
   // 升级入口(Pro 锁列/保存筛选 gate)统一开独立升级弹框;未登录先走注册弹框(用户定:注册与购买分离)
-  const [upsell, setUpsell] = useState<false | 'lock' | 'ss'>(false)
+  const [upsell, setUpsell] = useState<false | 'lock' | 'ss' | 'login'>(false)
   // 我的求职(E9-01):已收藏映射 jobId → {saved-jobs 行 id, status};匿名点收藏 → 注册框(转化钩子)
   const [saved, setSaved] = useState<Record<string, { id: number | string; status: string }>>({})
   useEffect(() => {
@@ -567,11 +567,13 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   // 我的匹配视图(E5-05,D1=B):只看命中我档案的岗,匹配度排最前;免费=每日前 N 岗匹配 + 升级卡。
   // URL ?view=match 可分享/可回退;入口三态分流(未登录/未建档 → /account 建档)。
   const [matchView, setMatchView] = useState(false)
-  // 跳转页面语义(2026-07-11 用户拍板):进出匹配视图=整页跳 /jobs?view=match / /jobs(URL 即状态,可分享可回退);
-  // 未登录/未建档仍先去 /account 建档
+  // 跳转页面语义(2026-07-11 用户拍板):进出匹配视图=整页跳 /?view=match / /(URL 即状态,可分享可回退;
+  // 2026-07-17 根域直出后职位板=根路径)。未登录直接弹登录框(同日用户:「不要先跳转页面再弹窗」),
+  // 已登录未建档才去 /account 建档
   const toggleMatchView = () => {
-    if (!plan.loggedIn || !plan.profileOk) { window.location.href = '/account'; return }
-    window.location.href = matchView ? '/jobs' : '/jobs?view=match'
+    if (!plan.loggedIn) { setUpsell('login'); return }
+    if (!plan.profileOk) { window.location.href = '/account'; return }
+    window.location.href = matchView ? '/' : '/?view=match'
   }
   const colRef = useRef<HTMLDivElement>(null)
   const [limit, setLimit] = useState(PAGE_ROWS)   // 当前渲染行数(点击分页)
@@ -802,7 +804,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         {/* 窄屏(E8-03):两段可换行,右侧账户区折到第二行,不横向溢出 */}
         <div style={{ maxWidth: 1320, margin: '0 auto', padding: '10px 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, minWidth: 0 }}>
-            <span style={{ fontSize: 17, fontWeight: 700, color: '#111827', whiteSpace: 'nowrap' }}>🍁 PNP Job Tracker</span>
+            <span style={{ fontSize: 17, fontWeight: 700, color: '#111827', whiteSpace: 'nowrap' }}>🍁 Offer2PR</span>
             <span style={{ fontSize: 12, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('tagline')}</span>
           </div>
           {/* 方案 A(2026-07-17 用户拍板「怎么组织排列」):导航/操作两组+竖线分隔——组内紧凑(14/10)、
@@ -814,8 +816,11 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               <button onClick={toggleMatchView} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: matchView ? '#2563eb' : '#6b7280', fontWeight: matchView ? 700 : 400, cursor: 'pointer', whiteSpace: 'nowrap' }}><IconTarget /> {t('mv.entry')}</button>
               <a href="/rankings/weekly-top" style={{ textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }}><IconChart /> {t('rank.entry')}</a>
               <a href="/stats" style={{ textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }}><IconMapPin /> {t('stats.entry')}</a>
-              {/* 我的账户=独立选项卡(2026-07-16 用户拍板);登录态另有右侧用户下拉 */}
-              <a href="/account" style={{ textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }}><IconUser /> {t('nav.acctTab')}</a>
+              {/* 我的账户=独立选项卡(2026-07-16 用户拍板);登录态另有右侧用户下拉;
+                  未登录点它=当场弹登录框不跳页(2026-07-17 用户拍板) */}
+              {plan.loggedIn
+                ? <a href="/account" style={{ textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }}><IconUser /> {t('nav.acctTab')}</a>
+                : <button onClick={() => setUpsell('login')} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: '#6b7280', cursor: 'pointer', whiteSpace: 'nowrap' }}><IconUser /> {t('nav.acctTab')}</button>}
             </div>
             <span className="jtHideNarrow" style={{ width: 1, height: 16, background: '#e5e7eb' }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
@@ -1169,7 +1174,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       {actModal && <ActModal job={actModal.job} lang={lang} onClose={() => setActModal(null)} />}
       {upsell && (plan.loggedIn
         ? <UpgradeModal t={t} reason={upsell === 'ss' ? t('ss.pro') : undefined} onClose={() => setUpsell(false)} />
-        : <AuthModal t={t} mode="register" onClose={() => setUpsell(false)} onDone={() => window.location.reload()} />)}
+        : <AuthModal t={t} mode={upsell === 'login' ? 'login' : 'register'} onClose={() => setUpsell(false)} onDone={() => window.location.reload()} />)}
     </div>
   )
 }
@@ -2102,7 +2107,8 @@ function AdvisorChat({ field, job, lang, initialJudgment, initialSug }: { field:
   }, [])
 
   const send = async () => {
-    const q = input.trim()
+    // 输入空但占位有建议问题 → 直接发建议问题(2026-07-17 用户:手机没有 Tab 键,点「发送」就该问这个)
+    const q = input.trim() || (showSug ? suggestion : '')
     if (!q || busy) return
     const convo = [...msgs, { role: 'user' as const, content: q }]
     setMsgs([...convo, { role: 'assistant', content: '' }])  // 占位,流进去
@@ -2158,8 +2164,8 @@ function AdvisorChat({ field, job, lang, initialJudgment, initialSug }: { field:
           }}
           placeholder={showSug ? suggestion : t('advisor.chatPlaceholder')}
           style={{ flex: 1, height: 36, boxSizing: 'border-box', padding: '0 10px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 13.5, color: '#1f2937', background: '#fff' }} />
-        <button onClick={send} disabled={busy || !input.trim()}
-          style={{ border: 'none', background: busy || !input.trim() ? '#c7d2fe' : '#6366f1', color: '#fff', borderRadius: 8, padding: '0 14px', height: 36, cursor: busy || !input.trim() ? 'default' : 'pointer', fontSize: 13.5, flexShrink: 0 }}>
+        <button onClick={send} disabled={busy || (!input.trim() && !showSug)}
+          style={{ border: 'none', background: busy || (!input.trim() && !showSug) ? '#c7d2fe' : '#6366f1', color: '#fff', borderRadius: 8, padding: '0 14px', height: 36, cursor: busy || (!input.trim() && !showSug) ? 'default' : 'pointer', fontSize: 13.5, flexShrink: 0 }}>
           {t('advisor.chatSend')}
         </button>
       </div>

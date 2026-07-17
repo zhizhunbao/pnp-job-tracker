@@ -107,7 +107,7 @@ export function AuthForm({ t, onDone, initialMode, resetToken }: { t: TFn; onDon
       {/* 品牌头 */}
       <div style={{ textAlign: 'center', marginBottom: 18 }}>
         <div style={{ fontSize: 30, lineHeight: 1 }}>🍁</div>
-        <div style={{ fontSize: 16.5, fontWeight: 700, color: '#111827', marginTop: 6 }}>PNP Job Tracker</div>
+        <div style={{ fontSize: 16.5, fontWeight: 700, color: '#111827', marginTop: 6 }}>Offer2PR</div>
         <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 3 }}>{t('tagline')}</div>
       </div>
       {/* 登录/注册 分段切换(找回/重置态不显示) */}

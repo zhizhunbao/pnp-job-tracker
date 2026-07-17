@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic'
 
 export async function generateMetadata() {
   return {
-    title: 'Canadian jobs by province — immigration-lens statistics | PNP Job Tracker',
+    title: 'Canadian jobs by province — immigration-lens statistics | Offer2PR',
     description: 'Open jobs, median wages (ESDC), provincial named-stream hits and AIP jobs by province, updated daily. 按省查看在招职位/中位薪资/省提名通道命中,每日更新。',
   }
 }

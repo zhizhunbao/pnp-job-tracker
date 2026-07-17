@@ -86,7 +86,7 @@ export function StatsProvContent({ prov, rows, srcs, t, ranks }: { prov: string;
                 <td style={td}>{row!.new7d}</td>
                 <td style={td}>{money(row!.medianWageAnnual)}</td>
                 <td style={{ ...td, ...(row!.namedJobs ? { color: '#b45309', fontWeight: 600 } : { color: '#9ca3af' }) }}>{row!.namedJobs || '—'}</td>
-                <td style={{ ...td, whiteSpace: 'nowrap' }}><a href={`/jobs?prov=${prov}&broad=${encodeURIComponent(broad)}`} style={{ color: '#2563eb', textDecoration: 'none', fontSize: 12.5 }}>{t('stats.toJobs')}</a></td>
+                <td style={{ ...td, whiteSpace: 'nowrap' }}><a href={`/?prov=${prov}&broad=${encodeURIComponent(broad)}`} style={{ color: '#2563eb', textDecoration: 'none', fontSize: 12.5 }}>{t('stats.toJobs')}</a></td>
               </tr>
             ))}
           </tbody>
@@ -115,7 +115,7 @@ export function StatsCatContent({ prov, row, srcs, t }: { prov: string; row: Sta
         </div>
       )}
       <TopCities raw={row.topCities} t={t} />
-      <a href={`/jobs?prov=${prov}&broad=${encodeURIComponent(row.broad)}`}
+      <a href={`/?prov=${prov}&broad=${encodeURIComponent(row.broad)}`}
         style={{ display: 'inline-block', marginTop: 10, background: '#2563eb', color: '#fff', borderRadius: 8, padding: '8px 16px', fontSize: 13.5, fontWeight: 600, textDecoration: 'none' }}>
         {t('stats.toJobs')}
       </a>

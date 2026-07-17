@@ -22,6 +22,11 @@ export function middleware(req: NextRequest) {
   if (CANONICAL && host.endsWith('.onrender.com')) {
     return NextResponse.redirect(new URL(req.nextUrl.pathname + req.nextUrl.search, CANONICAL), 301)
   }
+  // 根域直出(2026-07-17 用户拍板「不需要 /jobs 后缀」):职位板搬到 /,旧 /jobs 301 回根(查询串保留:
+  // ?view=match、?reset=<token>、榜单/统计回流 ?prov= 等都不能丢);旧域请求上面已 301 到新域,不叠跳
+  if (req.nextUrl.pathname === '/jobs') {
+    return NextResponse.redirect(new URL('/' + req.nextUrl.search, req.nextUrl.origin), 301)
+  }
   return NextResponse.next()
 }
 

@@ -8,7 +8,7 @@ import { CompareView } from '../views'
 export const dynamic = 'force-dynamic'
 
 export async function generateMetadata() {
-  return { title: 'Compare provinces — jobs, wages & PNP streams side by side | PNP Job Tracker', description: 'Pro: compare 2–4 provinces side by side on open jobs, wages and provincial named streams. 跨省并排对比(Pro)。' }
+  return { title: 'Compare provinces — jobs, wages & PNP streams side by side | Offer2PR', description: 'Pro: compare 2–4 provinces side by side on open jobs, wages and provincial named streams. 跨省并排对比(Pro)。' }
 }
 
 export default async function ComparePage() {

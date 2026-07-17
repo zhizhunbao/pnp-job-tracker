@@ -20,12 +20,12 @@ export const Users: CollectionConfig = {
   // token 有效期用默认 1 小时;防枚举由端点语义保证(存在与否都 200),前端文案配合。
   auth: {
     forgotPassword: {
-      generateEmailSubject: () => '重置密码 / Reset password — PNP Job Tracker',
+      generateEmailSubject: () => '重置密码 / Reset password — Offer2PR',
       generateEmailHTML: (args?: { token?: string }) => {
         const site = (process.env.NEXT_PUBLIC_SITE_URL || 'https://offer2pr.com').replace(/\/$/, '')
-        const url = `${site}/jobs?reset=${args?.token || ''}`
+        const url = `${site}/?reset=${args?.token || ''}`
         return `<div style="font-family:system-ui,sans-serif;color:#1f2937;font-size:14px">
-          <p>🍁 <strong>PNP Job Tracker</strong></p>
+          <p>🍁 <strong>Offer2PR</strong></p>
           <p>点击下方链接设置新密码(1 小时内有效):<br/>Click the link below to set a new password (valid for 1 hour):</p>
           <p><a href="${url}" style="color:#2563eb">${url}</a></p>
           <p style="color:#9ca3af;font-size:12px">如果这不是你本人的操作,请忽略本邮件,密码不会被更改。<br/>If you didn't request this, ignore this email — your password will not change.</p></div>`
