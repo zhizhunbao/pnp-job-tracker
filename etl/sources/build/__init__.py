@@ -13,6 +13,7 @@ META = {
         ["python", "etl/clean/04c_clean_ats_locations.py"],
         ["python", "etl/clean/04d_clean_salary.py"],
         ["python", "etl/clean/05c_flag_aip.py"],
+        ["python", "etl/clean/05d_noc_sanity.py"],  # #47:标题↔NOC 失配护栏(泛词标题×TEER0/1×低薪 → NOC 置空转未分类)
         # 官网富化已拆独立 enrich 角色(2026-07-16「分开来跑」拍板):每轮 10-17 分钟拖垮 seed 时效;
         # 本角色只消费它落好的 company_enrich.json(09 合并),不再现抓
         ["python", "etl/08_score.py"],
