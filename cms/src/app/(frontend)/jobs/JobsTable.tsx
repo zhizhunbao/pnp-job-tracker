@@ -70,12 +70,22 @@ function UpgradeCard({ t, reason }: { t: TFn; reason: string }) {
 // ?login=1(未登录访问 /account 被弹回时带上)→ 自动开登录弹框;登录成功整页刷新让 SSR 分层态(匹配列等)生效。
 function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
   const [email, setEmail] = useState<string | null>(null)
+  const [proUntil, setProUntil] = useState<string>('')
   const [auth, setAuth] = useState<false | 'login' | 'register'>(false)
   const [pricing, setPricing] = useState(false)
+  // 用户下拉(2026-07-16 用户拍板「用户这部分改成带下拉的按钮」):账户设置 / Pro 状态 / 退出登录
+  const [menu, setMenu] = useState(false)
+  const menuRef = useRef<HTMLSpanElement>(null)
+  useEffect(() => {
+    if (!menu) return
+    const h = (e: MouseEvent) => { if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenu(false) }
+    document.addEventListener('mousedown', h)
+    return () => document.removeEventListener('mousedown', h)
+  }, [menu])
   useEffect(() => {
     if (!plan.loggedIn) return
     fetch('/api/users/me', { credentials: 'include' })
-      .then((r) => r.json()).then((d) => setEmail(d?.user?.email ?? null)).catch(() => {})
+      .then((r) => r.json()).then((d) => { setEmail(d?.user?.email ?? null); setProUntil((d?.user?.proUntil || '').slice(0, 10)) }).catch(() => {})
   }, [plan.loggedIn])
   useEffect(() => {
     // 开框后立刻把 ?login=1 从地址栏洗掉(第 15 轮用户反馈:留着参数,刷新就再弹一次)
@@ -94,12 +104,31 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
     window.location.reload()
   }
   const proBtn: React.CSSProperties = { border: '1px solid #fde68a', background: '#fffbeb', color: '#92400e', borderRadius: 6, padding: '3px 10px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }
+  const menuItem: React.CSSProperties = { display: 'block', width: '100%', textAlign: 'left', padding: '7px 12px', fontSize: 13, color: '#374151', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap', boxSizing: 'border-box' }
+  const logout = async () => {
+    try { await fetch('/api/users/logout', { method: 'POST', credentials: 'include' }) } catch { /* ignore */ }
+    window.location.reload()
+  }
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
       {plan.loggedIn ? (
-        <a href="/account" style={{ fontSize: 12.5, color: '#2563eb', textDecoration: 'none', whiteSpace: 'nowrap' }}>
-          <IconUser />{email ? ` ${email.split('@')[0]}` : ''}
-        </a>
+        // 用户按钮+下拉(2026-07-16 拍板):Pro 徽标折进菜单,退出登录不再非去 /account 不可
+        <span ref={menuRef} style={{ position: 'relative', display: 'inline-flex' }}>
+          <button onClick={() => setMenu((o) => !o)}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 5, border: '1px solid #e5e7eb', background: menu ? '#eef2ff' : '#fff', borderRadius: 6, padding: '3px 10px', fontSize: 12.5, color: '#2563eb', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            <IconUser />{email ? ` ${email.split('@')[0]}` : ''}{plan.isPro && <IconStar style={{ color: '#b45309' }} />} <span style={{ fontSize: 10, color: '#9ca3af' }}>▾</span>
+          </button>
+          {menu && (
+            <div style={{ position: 'absolute', top: '115%', right: 0, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, boxShadow: '0 10px 30px rgba(0,0,0,.12)', padding: '4px 0', zIndex: 30, minWidth: 170 }}>
+              <a href="/account" style={menuItem}>{t('nav.account')}</a>
+              {plan.isPro
+                ? <a href="/account" style={{ ...menuItem, color: '#b45309', fontWeight: 600 }}><IconStar /> {proUntil ? t('acct.plan.pro', { d: proUntil }) : 'Pro'}</a>
+                : <button onClick={() => { setMenu(false); setPricing(true) }} style={{ ...menuItem, color: '#b45309', fontWeight: 600 }}><IconStar /> {t('up.cta')}</button>}
+              <div style={{ borderTop: '1px solid #f3f4f6', margin: '4px 0' }} />
+              <button onClick={logout} style={menuItem}>{t('acct.logout')}</button>
+            </div>
+          )}
+        </span>
       ) : (
         <>
           <button onClick={() => setAuth('login')}
@@ -110,11 +139,9 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
             style={{ border: 'none', background: '#2563eb', color: '#fff', borderRadius: 6, padding: '3px 10px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
             {t('nav.register')}
           </button>
+          <button onClick={() => setPricing(true)} style={proBtn}><IconStar /> Pro</button>
         </>
       )}
-      {plan.isPro
-        ? <a href="/account" style={{ ...proBtn, textDecoration: 'none' }}><IconStar /> Pro</a>
-        : <button onClick={() => setPricing(true)} style={proBtn}><IconStar /> Pro</button>}
       {auth && <AuthModal t={t} mode={auth} onClose={() => setAuth(false)} onDone={done} />}
       {pricing && <PricingModal t={t} loggedIn={plan.loggedIn} pro={plan.isPro} onClose={() => setPricing(false)} />}
     </span>
@@ -780,35 +807,33 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               )}
             </div>
           </div>
-          {showMore && (<>
-            {/* 来源 */}
-            <div style={filtRow}>
-              <span style={filtLabel}>{t('filter.src')}</span>
-              <Sel value={fSource} onChange={setFSource} opts={sourceOpts} all={t('all.source')} />
-              <Sel value={fOrigin} onChange={setFOrigin} opts={originOpts} all={t('all.origin')} labelOf={(v) => t('origin.' + v)} />
+          {/* 展开=五组流式一行(2026-07-16 用户拍板:五行竖排右侧大片空白难看;组内 gap 8、组间 columnGap 18,窄了自动换行) */}
+          {showMore && (
+            <div style={{ ...filtRow, columnGap: 18 }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                <span style={filtLabel}>{t('filter.src')}</span>
+                <Sel value={fSource} onChange={setFSource} opts={sourceOpts} all={t('all.source')} />
+                <Sel value={fOrigin} onChange={setFOrigin} opts={originOpts} all={t('all.origin')} labelOf={(v) => t('origin.' + v)} />
+              </span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                <span style={filtLabel}>{t('filter.status')}</span>
+                <Sel value={fStatus} onChange={setFStatus} opts={['open', 'closed']} all={t('all.status')} labelOf={(v) => (v === 'open' ? t('cell.open') : t('cell.closed'))} />
+              </span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                <span style={filtLabel}>{t('filter.exp')}</span>
+                <Sel value={fAcc} onChange={setFAcc} opts={accOpts} all={t('all.exp')} labelOf={(v) => t('acc.' + v)} />
+              </span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                <span style={filtLabel}>{t('filter.score')}</span>
+                <Sel value={fScore} onChange={setFScore} opts={['high', 'mid', 'low']} all={t('all.score')} labelOf={(v) => t('sc.' + v)} />
+              </span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                <span style={filtLabel}>{t('filter.salary')}</span>
+                <Sel value={fSal} onChange={setFSal} opts={['ge100', '80', '60', 'u60']} all={t('all.sal')} labelOf={(v) => t('sal.' + v)} />
+                <Sel value={fVs} onChange={setFVs} opts={['above', 'above20', 'below']} all={t('all.vs')} labelOf={(v) => t('vs.' + v)} />
+              </span>
             </div>
-            {/* 状态 */}
-            <div style={filtRow}>
-              <span style={filtLabel}>{t('filter.status')}</span>
-              <Sel value={fStatus} onChange={setFStatus} opts={['open', 'closed']} all={t('all.status')} labelOf={(v) => (v === 'open' ? t('cell.open') : t('cell.closed'))} />
-            </div>
-            {/* 经验 */}
-            <div style={filtRow}>
-              <span style={filtLabel}>{t('filter.exp')}</span>
-              <Sel value={fAcc} onChange={setFAcc} opts={accOpts} all={t('all.exp')} labelOf={(v) => t('acc.' + v)} />
-            </div>
-            {/* 评分 */}
-            <div style={filtRow}>
-              <span style={filtLabel}>{t('filter.score')}</span>
-              <Sel value={fScore} onChange={setFScore} opts={['high', 'mid', 'low']} all={t('all.score')} labelOf={(v) => t('sc.' + v)} />
-            </div>
-            {/* 薪资(年薪 + vs中位) */}
-            <div style={filtRow}>
-              <span style={filtLabel}>{t('filter.salary')}</span>
-              <Sel value={fSal} onChange={setFSal} opts={['ge100', '80', '60', 'u60']} all={t('all.sal')} labelOf={(v) => t('sal.' + v)} />
-              <Sel value={fVs} onChange={setFVs} opts={['above', 'above20', 'below']} all={t('all.vs')} labelOf={(v) => t('vs.' + v)} />
-            </div>
-          </>)}
+          )}
           </div>
           {/* 行4:搜索 + 仅第一方 + 清除 */}
           <div style={filtRow}>
