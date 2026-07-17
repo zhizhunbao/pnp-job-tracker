@@ -67,6 +67,13 @@ services:
       TZ: EST5EDT
     # 回退:源站重新上 Akamai 时恢复 crawl 重镜像(build dockerfile: docker/etl/crawl/Dockerfile + BROWSER_HEADLESS=1)
 
+  enrich:                          # 公司官网富化(E8-04 拆分,2026-07-16「分开来跑」:从 build 轮摘出,6h 独立节奏)
+    <<: *etl
+    environment:
+      SOURCE: enrich
+      SCRAPE_INTERVAL: '21600'     # 6h
+      TZ: EST5EDT
+
   backup:                          # 每日 pg_dump 生产库 → backups/(E7-01;家里机=运维盒)
     <<: *etl
     environment:
