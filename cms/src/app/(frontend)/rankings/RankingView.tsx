@@ -49,7 +49,8 @@ export function RankingTable({ slug, items, t }: { slug: string; items: RankRow[
               <tr key={r.rank}>
                 <td style={{ ...td, color: '#9ca3af' }}>{r.rank}</td>
                 <td style={{ ...td, fontWeight: 600 }}>{r.officialUrl ? <a href={r.officialUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{r.company} ↗</a> : r.company}</td>
-                <td style={td}>{r.province}</td>
+                {/* #48(第 18 轮):跨省雇主(如加拿大军队)province 为空,裸空像渲染缺陷 → 占位「—」 */}
+                <td style={r.province ? td : { ...td, color: '#9ca3af' }}>{r.province || '—'}</td>
                 {/* #21:第一排序键(近两年 LMIA 技能股获批职位数)上榜可见;灰色尾缀=最近获批季度 */}
                 <td style={{ ...td, whiteSpace: 'nowrap' }}>{r.lmiaPositions
                   ? <><span style={{ fontWeight: 600, color: '#15803d' }}>{r.lmiaPositions}</span>{r.lmiaQuarter && <span style={{ color: '#9ca3af', fontSize: 11.5 }}> · {r.lmiaQuarter}</span>}</>

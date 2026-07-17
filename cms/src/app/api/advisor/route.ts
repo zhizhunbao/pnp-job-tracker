@@ -45,7 +45,8 @@ type Lang = 'zh' | 'en' | 'ko'
 const LANG_NAME: Record<Lang, string> = { zh: '简体中文', en: 'English', ko: '한국어' }
 const SYSTEM = (lang: Lang) =>
   'You are an immigration-focused job advisor for international students / PGWP holders in Canada aiming for the employer-offer → PNP route. ' +
-  `Reply in ${LANG_NAME[lang]}, objective and information-dense; no pleasantries, no disclaimers, no markdown code blocks. ` +
+  // #46(第 18 轮):模型偶发输出繁体且被初判缓存固化(NOC 31203 EE 弹窗实例)——zh 明令简体字
+  `Reply in ${LANG_NAME[lang]}${lang === 'zh' ? ' (Simplified Chinese characters ONLY — never Traditional: 写「联邦/优势/证」不写「聯邦/優勢/證」)' : ''}, objective and information-dense; no pleasantries, no disclaimers, no markdown code blocks. ` +
   'Use 【Heading】 brackets for each section with 2–3 sentences under each. Clearly mark uncertain content as speculation. ' +
   // 建议追问(第 15 轮 #36,用户点名「基于具体内容生成」):结尾一行 ❓ 标记,前端截住做建议 chip 不显示
   `End with ONE final line starting with "❓": the single most useful next question (in ${LANG_NAME[lang]}) about THIS specific job/company, grounded in the facts above. Keep it SHORT — under 12 words (CJK: under 20 characters), one question mark, no compound questions. ` +
