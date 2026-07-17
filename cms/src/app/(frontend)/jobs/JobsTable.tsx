@@ -453,8 +453,6 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const [fScore, setFScore] = useState(''); const [fSal, setFSal] = useState(''); const [fVs, setFVs] = useState('')  // 数值预设(下拉,不手填)
   // 「更多筛选」折叠恢复(2026-07-11 用户二次拍板:五行常驻太占竖向空间,恢复默认收起);
   // 开关行右侧带更新时间+字段按钮(同日「放到一行」拍板保留,只是宿主行从薪资行换成开关行)
-  const [showMore, setShowMore] = useState(false)
-  const moreActive = [fSource, fOrigin, fStatus, fAcc, fScore, fSal, fVs].filter(Boolean).length  // 折叠区里已激活的筛选数
   // 窄屏筛选抽屉(E8-03):≤640px 整个筛选区默认收起,一行「筛选」开关展开;CSS 媒体查询控制显隐,零水合差异
   const [fDrawer, setFDrawer] = useState(false)
   const drawerActive = [fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs].filter(Boolean).length
@@ -661,9 +659,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     : uniq(jobs.filter((j) => !fBroad || j.broad === fBroad).map((j) => j.mid))), [nc, jobs, fBroad])
   const fineOpts = useMemo(() => (nc.length ? uniq(nc.filter((c) => (!fBroad || c.broad === fBroad) && (!fMid || c.mid === fMid)).map((c) => c.fine))
     : uniq(jobs.filter((j) => (!fBroad || j.broad === fBroad) && (!fMid || j.mid === fMid)).map((j) => j.fine))), [nc, jobs, fBroad, fMid])
-  const sourceOpts = useMemo(() => (dims.sources.length ? dims.sources.map((s) => s.name) : uniq(jobs.map((j) => sourceLabel(j)))), [dims, jobs])
-  const accOpts = useMemo(() => (dims.experienceLevels.length ? uniq(dims.experienceLevels.map((e) => e.name)) : uniq(jobs.map((j) => j.accessibility))), [dims, jobs])
-  const originOpts = useMemo(() => uniq(jobs.map((j) => j.origin)), [jobs])
+  // 来源/状态/经验/评分下拉已下架(2026-07-16 拍板只留薪资);state 与谓词保留=URL/老保存筛选照常生效
   const anyFilter = q || directOnly || fCountry || fProv || fCity || fDistrict || fBroad || fMid || fFine || fTeer || fSource || fAcc || fPnp || fAip || fStatus || fOrigin || fScore || fSal || fVs
   const clearAll = () => { setQ(''); setDirectOnly(false); setFCountry(''); setFProv(''); setFCity(''); setFDistrict(''); setFBroad(''); setFMid(''); setFFine(''); setFTeer(''); setFSource(''); setFAcc(''); setFPnp(''); setFAip(''); setFStatus(''); setFOrigin(''); setFScore(''); setFSal(''); setFVs('') }
 
@@ -785,11 +781,14 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             <Sel value={fPnp} onChange={setFPnp} opts={['yes', 'no']} all={t('all.pnp')} labelOf={(v) => t('opt.' + v)} />
             <Sel value={fAip} onChange={setFAip} opts={['yes', 'no']} all={t('all.aip')} labelOf={(v) => t('opt.' + v)} />
           </div>
-          {/* ═══ 更多筛选开关行:五行(来源/状态/经验/评分/薪资)默认收起;右侧=更新时间+字段(同行拍板) ═══ */}
+          {/* ═══ 薪资行(2026-07-16 用户拍板「更多筛选去掉,只保留薪资」:折叠开关与来源/状态/经验/评分四组全部下架,
+              #40/a4ecf5c 的折叠史被本次取代;state 保留=老保存筛选(邮件提醒)继续生效);右侧=更新时间+字段(同行拍板) ═══ */}
           <div style={filtRow}>
-            <button onClick={() => setShowMore((o) => !o)} style={{ ...ctrl, cursor: 'pointer', background: showMore || moreActive ? '#eef2ff' : '#f3f4f6', display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
-              {t('filter.more')}{moreActive ? ` · ${moreActive}` : ''} <span style={{ fontSize: 11, color: '#9ca3af' }}>{showMore ? '▲' : '▼'}</span>
-            </button>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              <span style={filtLabel}>{t('filter.salary')}</span>
+              <Sel value={fSal} onChange={setFSal} opts={['ge100', '80', '60', 'u60']} all={t('all.sal')} labelOf={(v) => t('sal.' + v)} />
+              <Sel value={fVs} onChange={setFVs} opts={['above', 'above20', 'below']} all={t('all.vs')} labelOf={(v) => t('vs.' + v)} />
+            </span>
             <div ref={colRef} className="jtHideNarrow" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 10, marginLeft: 'auto' }}>
               {updatedAt && <span style={{ color: '#9ca3af', fontSize: 12, whiteSpace: 'nowrap' }}>{t('updated', { t: fmtLocal(updatedAt) })}</span>}
               <button onClick={() => setColOpen((o) => !o)} style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', background: '#f3f4f6', whiteSpace: 'nowrap' }}><IconSettings style={{ marginRight: 5 }} />{t('fields', { n: shown.length })}</button>
@@ -812,33 +811,6 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               )}
             </div>
           </div>
-          {/* 展开=五组流式一行(2026-07-16 用户拍板:五行竖排右侧大片空白难看;组内 gap 8、组间 columnGap 18,窄了自动换行) */}
-          {showMore && (
-            <div style={{ ...filtRow, columnGap: 18 }}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                <span style={filtLabel}>{t('filter.src')}</span>
-                <Sel value={fSource} onChange={setFSource} opts={sourceOpts} all={t('all.source')} />
-                <Sel value={fOrigin} onChange={setFOrigin} opts={originOpts} all={t('all.origin')} labelOf={(v) => t('origin.' + v)} />
-              </span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                <span style={filtLabel}>{t('filter.status')}</span>
-                <Sel value={fStatus} onChange={setFStatus} opts={['open', 'closed']} all={t('all.status')} labelOf={(v) => (v === 'open' ? t('cell.open') : t('cell.closed'))} />
-              </span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                <span style={filtLabel}>{t('filter.exp')}</span>
-                <Sel value={fAcc} onChange={setFAcc} opts={accOpts} all={t('all.exp')} labelOf={(v) => t('acc.' + v)} />
-              </span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                <span style={filtLabel}>{t('filter.score')}</span>
-                <Sel value={fScore} onChange={setFScore} opts={['high', 'mid', 'low']} all={t('all.score')} labelOf={(v) => t('sc.' + v)} />
-              </span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                <span style={filtLabel}>{t('filter.salary')}</span>
-                <Sel value={fSal} onChange={setFSal} opts={['ge100', '80', '60', 'u60']} all={t('all.sal')} labelOf={(v) => t('sal.' + v)} />
-                <Sel value={fVs} onChange={setFVs} opts={['above', 'above20', 'below']} all={t('all.vs')} labelOf={(v) => t('vs.' + v)} />
-              </span>
-            </div>
-          )}
           </div>
           {/* 行4:搜索 + 仅第一方 + 清除 */}
           <div style={filtRow}>
