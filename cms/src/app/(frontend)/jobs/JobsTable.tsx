@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 // 读 localStorage 偏好(列/语言)用「绘制前」生效,避免 SSR 默认值闪一下再切到保存值。
 // SSR 端 useLayoutEffect 无效且会告警 → 服务端退化成 useEffect。
@@ -750,23 +750,14 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const anyFilter = q || directOnly || fCountry || fProv || fCity || fDistrict || fBroad || fMid || fFine || fTeer || fSource || fAcc || fPnp || fAip || fStatus || fOrigin || fScore || fSal || fVs
   const clearAll = () => { setQ(''); setDirectOnly(false); setFCountry(''); setFProv(''); setFCity(''); setFDistrict(''); setFBroad(''); setFMid(''); setFFine(''); setFTeer(''); setFSource(''); setFAcc(''); setFPnp(''); setFAip(''); setFStatus(''); setFOrigin(''); setFScore(''); setFSal(''); setFVs('') }
 
-  const rows = useMemo(() => {
-    const term = q.trim().toLowerCase()
-    const filtered = jobs.filter((j) => {
-      const L = parseLoc(j)
-      return (!matchView || (j.match != null && j.match !== 'na' && j.match !== 'low')) &&  // E5-05:匹配视图只看真命中(高/中)
-        (!directOnly || isDirect(j)) &&
-        (!fCountry || L.country === fCountry) && (!fProv || L.prov === fProv) && (!fCity || L.city === fCity) && (!fDistrict || L.district === fDistrict) &&
-        (!fBroad || j.broad === fBroad) && (!fMid || j.mid === fMid) && (!fFine || j.fine === fFine) &&
-        (!fTeer || (j.teer == null ? '未分类' : `TEER ${j.teer}`) === fTeer) &&
-        (!fSource || sourceLabel(j) === fSource) && (!fAcc || j.accessibility === fAcc) &&
-        (!fPnp || (fPnp === 'yes' ? j.pnpEligible : (!j.pnpEligible && j.province !== 'QC'))) && (!fAip || (fAip === 'yes') === j.aip) &&
-        (!fStatus || (j.status || 'open') === fStatus) && (!fOrigin || j.origin === fOrigin) &&
-        okScore(j.score, fScore) && okSal(j.salaryAnnual, fSal) && okVs(vsPct(j), fVs) &&
-        (!term || searchHay(j).includes(term))
-    })
+  // ── 检索性能三件套(2026-07-17 用户「检索速度很慢」——原实现每敲一键 × 30k 行重建检索串 + 全量重排):
+  // ① 检索串每行只算一次,随 jobs 缓存;② 先排序后过滤(filter 保序):排序只随 jobs/sort/matchView 重算,
+  // 敲字路径只剩 includes 过滤;③ useDeferredValue:输入框跟手,过滤滞后一帧算,不卡键
+  const dq = useDeferredValue(q)
+  const hays = useMemo(() => { const m = new Map<JobRow, string>(); for (const j of jobs) m.set(j, searchHay(j)); return m }, [jobs])
+  const sorted = useMemo(() => {
     const dir = sort.dir === 'asc' ? 1 : -1
-    return filtered.slice().sort((a, b) => {
+    return jobs.slice().sort((a, b) => {
       // 匹配视图:匹配度永远第一排序键(高→中),同级内走用户排序(默认发布时间↓)
       if (matchView) { const r = matchRank(b.match) - matchRank(a.match); if (r) return r }
       const va = sortVal(a, sort.key)
@@ -784,7 +775,24 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       if (cmp === 0) cmp = Number(b.id) - Number(a.id)
       return cmp
     })
-  }, [jobs, q, directOnly, matchView, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, sort])
+  }, [jobs, matchView, sort])
+  const rows = useMemo(() => {
+    const term = dq.trim().toLowerCase()
+    const needLoc = !!(fCountry || fProv || fCity || fDistrict)   // 地理筛选没开就不逐行拆地点
+    return sorted.filter((j) => {
+      const L = needLoc ? parseLoc(j) : null
+      return (!matchView || (j.match != null && j.match !== 'na' && j.match !== 'low')) &&  // E5-05:匹配视图只看真命中(高/中)
+        (!directOnly || isDirect(j)) &&
+        (!L || ((!fCountry || L.country === fCountry) && (!fProv || L.prov === fProv) && (!fCity || L.city === fCity) && (!fDistrict || L.district === fDistrict))) &&
+        (!fBroad || j.broad === fBroad) && (!fMid || j.mid === fMid) && (!fFine || j.fine === fFine) &&
+        (!fTeer || (j.teer == null ? '未分类' : `TEER ${j.teer}`) === fTeer) &&
+        (!fSource || sourceLabel(j) === fSource) && (!fAcc || j.accessibility === fAcc) &&
+        (!fPnp || (fPnp === 'yes' ? j.pnpEligible : (!j.pnpEligible && j.province !== 'QC'))) && (!fAip || (fAip === 'yes') === j.aip) &&
+        (!fStatus || (j.status || 'open') === fStatus) && (!fOrigin || j.origin === fOrigin) &&
+        okScore(j.score, fScore) && okSal(j.salaryAnnual, fSal) && (!fVs || okVs(vsPct(j), fVs)) &&
+        (!term || (hays.get(j) || searchHay(j)).includes(term))
+    })
+  }, [sorted, hays, dq, directOnly, matchView, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs])
 
   return (
     <div style={{ background: '#fff', color: '#1f2937', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column' }}>
