@@ -275,7 +275,18 @@ def main() -> None:
     ap.add_argument("--limit", type=int, default=300, help="本轮最多抓多少家(逐轮累积)")
     ap.add_argument("--refresh-days", type=int, default=180, help="成功记录多久后刷新")
     ap.add_argument("--find-limit", type=int, default=60, help="本轮 DDG 找官网最多搜多少家(0=关)")
+    ap.add_argument("--min-interval", type=int, default=21600,
+                    help="距上次产出不足 N 秒整轮跳过(2026-07-16:jobbank 改 1h 后本步是 build 轮 17 分钟大头,"
+                         "官网快照不需要小时级新鲜度;0=不限)")
     args = ap.parse_args()
+
+    # 自限流(用 OUT_CACHE mtime 当戳):抓官网每轮 ~10-17 分钟,把 seed 拖到抓取后近半小时——
+    # 更新时间「不稳定」的元凶(用户 2026-07-16 报告)。6h 一跑照样逐轮清 backlog,build 轮回到分钟级。
+    if args.min_interval and OUT_CACHE.exists():
+        age = time.time() - OUT_CACHE.stat().st_mtime
+        if age < args.min_interval:
+            print(f"距上次官网富化 {age/60:.0f} 分钟(< {args.min_interval//60} 分钟),本轮跳过", flush=True)
+            return
 
     cache: dict[str, dict] = {}
     if OUT_CACHE.exists():
