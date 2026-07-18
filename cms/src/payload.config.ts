@@ -29,6 +29,7 @@ import { Rankings } from './collections/Rankings'
 import { Stats } from './collections/Stats'
 import { SavedSearches } from './collections/SavedSearches'
 import { News } from './collections/News'
+import { Comments } from './collections/Comments'
 import { SavedJobs } from './collections/SavedJobs'
 
 const filename = fileURLToPath(import.meta.url)
@@ -41,7 +42,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Companies, Jobs, PnpOccupations, PnpDraws, Dli, EeCategories, NocDescriptions, PolicyDocs, DesignatedEmployers, Provinces, Cities, Districts, NocCategories, Sources, ExperienceLevels, FieldSources, Rankings, Stats, SavedSearches, SavedJobs, News],
+  collections: [Users, Media, Companies, Jobs, PnpOccupations, PnpDraws, Dli, EeCategories, NocDescriptions, PolicyDocs, DesignatedEmployers, Provinces, Cities, Districts, NocCategories, Sources, ExperienceLevels, FieldSources, Rankings, Stats, SavedSearches, SavedJobs, News, Comments],
   editor: lexicalEditor(),
   // E3-07:邮件适配器=包一层现成 lib/mailer(Resend HTTP 直调,零新依赖);目前只有 forgot-password 走这里。
   // RESEND_API_KEY 未设 → sendMail 返回 false 不发信(dry-run 语义,与 alerts 一致)。

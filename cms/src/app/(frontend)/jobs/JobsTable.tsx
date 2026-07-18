@@ -97,9 +97,10 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
     try {
       const sp = new URLSearchParams(window.location.search)
       const rst = sp.get('reset')   // E3-07:重置邮件链接落地,token 收进 state 再洗参
-      if (sp.get('login') === '1' || rst) {
-        if (rst) { setResetTok(rst); setAuth('reset') } else setAuth('login')
-        sp.delete('login'); sp.delete('reset')
+      if (sp.get('login') === '1' || sp.get('signup') === '1' || rst) {
+        if (rst) { setResetTok(rst); setAuth('reset') }
+        else setAuth(sp.get('signup') === '1' ? 'register' : 'login')   // ?signup=1:二级页头「注册」直达(统一 header)
+        sp.delete('login'); sp.delete('signup'); sp.delete('reset')
         const qs = sp.toString()
         window.history.replaceState(null, '', window.location.pathname + (qs ? `?${qs}` : ''))
       }

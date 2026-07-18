@@ -446,6 +446,7 @@ def build():
                 "slug": slug, "url": r["url"], "ogImage": r.get("ogImage") or None,
                 "excerpt": news_excerpt(r["title"], r["bodyEn"]) or None,
                 "bodyEn": r["bodyEn"], "bodyZh": r.get("bodyZh") or None, "summaryZh": r.get("summaryZh") or None,
+                "bodyKo": r.get("bodyKo") or None, "summaryKo": r.get("summaryKo") or None,
                 # P1d:AI 重要度(1-5,对找工/移民读者的实际影响;展示=「重要」徽标,非资格判定)
                 "importance": r.get("importance"), "importanceNote": r.get("importanceNote") or None,
                 "citation": r.get("citation") or "", "fetched": r.get("fetchedAt") or nd.get("fetched", "")})

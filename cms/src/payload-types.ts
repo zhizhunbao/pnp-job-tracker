@@ -90,6 +90,7 @@ export interface Config {
     'saved-searches': SavedSearch;
     'saved-jobs': SavedJob;
     news: News;
+    comments: Comment;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -120,6 +121,7 @@ export interface Config {
     'saved-searches': SavedSearchesSelect<false> | SavedSearchesSelect<true>;
     'saved-jobs': SavedJobsSelect<false> | SavedJobsSelect<true>;
     news: NewsSelect<false> | NewsSelect<true>;
+    comments: CommentsSelect<false> | CommentsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -1012,18 +1014,49 @@ export interface News {
    */
   bodyEn?: string | null;
   /**
-   * AI 段对段中文翻译(预留列,暂不渲)
+   * AI 段对段中文翻译(编号协议对齐,中文界面对照开关)
    */
   bodyZh?: string | null;
   /**
-   * AI 中文速读(预留列,暂不渲)
+   * AI 中文速读(banner 轮播摘要)
    */
   summaryZh?: string | null;
+  /**
+   * AI 段对段韩语翻译(韩语界面对照开关)
+   */
+  bodyKo?: string | null;
+  /**
+   * AI 韩语速读(韩语界面 banner 摘要)
+   */
+  summaryKo?: string | null;
   /**
    * 来源列表页(数据集级出处)
    */
   citation?: string | null;
   fetched?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comments".
+ */
+export interface Comment {
+  id: number;
+  user: number | User;
+  /**
+   * 所评新闻 slug(/news/[slug])
+   */
+  newsSlug?: string | null;
+  /**
+   * 脱敏昵称快照(公开显示用,不回 user 关系)
+   */
+  authorName?: string | null;
+  body: string;
+  /**
+   * pending(默认,不公开)/ approved / rejected —— admin 审核台改
+   */
+  status?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1142,6 +1175,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'news';
         value: number | News;
+      } | null)
+    | ({
+        relationTo: 'comments';
+        value: number | Comment;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1610,8 +1647,23 @@ export interface NewsSelect<T extends boolean = true> {
   bodyEn?: T;
   bodyZh?: T;
   summaryZh?: T;
+  bodyKo?: T;
+  summaryKo?: T;
   citation?: T;
   fetched?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comments_select".
+ */
+export interface CommentsSelect<T extends boolean = true> {
+  user?: T;
+  newsSlug?: T;
+  authorName?: T;
+  body?: T;
+  status?: T;
   updatedAt?: T;
   createdAt?: T;
 }

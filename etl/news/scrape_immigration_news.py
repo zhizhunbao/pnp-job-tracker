@@ -48,23 +48,63 @@ BODY_CAP = 10000                    # 喂给 LLM 的原文上限(新闻稿一般
 # 输出用哨兵行分隔的纯文本(不用 JSON:长译文里的引号/换行会破坏 JSON 转义,实测 4/12 解析失败)
 # P1d(Frank 2026-07-18):同一调用顺带产「重要度 1-5」——对找工/移民读者的实际影响打分,
 # 展示=列表「重要」徽标,非资格判定;只依据原文,禁编。
-PROMPT = """你是移民政策新闻的专业中译者兼编辑。下面是一篇加拿大官方移民新闻的英文原文(标题+正文)。
-只依据原文内容,禁止外推、补充背景或编造;专有名词(项目名/流名/NOC 等)首次出现时保留英文原文并附中文说明。
+# 对齐协议 v2(Frank 实测抓到 MB 长稿全线错位):原文逐段编号 [1..N] 喂入,译文逐段带 [k] 回来,
+# **按编号对位**;缺号/空段=整条判失败留空重试——bodyZh 存在即必与原文段对段对齐(前端按序配对的前提)。
+PROMPT = """你是移民政策新闻的专业中译者兼编辑。下面是一篇加拿大官方移民新闻(标题+逐段编号的正文,共 {n} 段)。
+只依据原文内容,禁止外推、补充背景或编造;专有名词(项目名/流名/NOC 等)首次出现时保留英文原文并附中文说明;
+纯文本输出,禁用 Markdown 记号(不要 **、# 等)。
 
 输出三部分,除此之外不要任何多余说明:
 1. 第一行,固定格式「重要度: N | 一句中文理由」。N 为 1-5 整数,衡量对正在找工作/办移民的读者的实际影响:
    5=直接影响资格或分数的政策变化/抽选结果(改制、新清单、抽选分数线);4=项目动态与重要数据;
    3=一般性项目新闻;2=人事/活动/拨款类;1=礼节性声明(节日致辞等)。
 2. 之后是 2-3 句中文速读,说人话,讲清「发生了什么、对谁有影响」。
-3. 单独一行「<<<BODY>>>」之后:段对段的中文全文翻译。原文用空行分段(以「• 」开头的行是列表项),
-   译文保持完全相同的分段结构,不合并、不遗漏。
+3. 单独一行「<<<BODY>>>」之后:逐段翻译。每段以「[段号] 」开头,段间空行;
+   必须从 [1] 到 [{n}] 每段都有,不合并、不遗漏、不新增段号。
 
 标题:{title}
 
 正文:
 {body}"""
 
+# 韩语翻译层(Frank 2026-07-18:「点了韩语就是翻译成韩语」):同编号协议,独立调用;
+# 重要度只在中文调用里产(单一来源),韩语调用只出 요약+번역。
+PROMPT_KO = """당신은 이민 정책 뉴스 전문 번역가입니다. 아래는 캐나다 공식 이민 뉴스입니다(제목 + 문단 번호가 붙은 본문, 총 {n}개 문단).
+원문 내용에만 근거하고 외삽·배경 보충·창작을 금지합니다; 고유명사(프로그램명/스트림명/NOC 등)는 처음 나올 때 영어 원문을 유지하고 한국어 설명을 덧붙입니다;
+순수 텍스트로 출력하고 Markdown 기호(**, # 등)를 쓰지 마십시오.
+
+두 부분을 출력하고 그 외 어떤 설명도 붙이지 마십시오:
+1. 먼저 2-3문장의 한국어 요약: 무엇이 일어났고 누구에게 영향이 있는지 쉽게 설명.
+2. 단독 한 줄 「<<<BODY>>>」 뒤: 문단별 번역. 각 문단은 「[번호] 」로 시작, 문단 사이 빈 줄;
+   [1]부터 [{n}]까지 모든 문단 필수, 병합·누락·추가 금지.
+
+제목:{title}
+
+본문:
+{body}"""
+
 IMP_RE = re.compile(r"^重要度[::]\s*([1-5])\s*[|丨]\s*(.+)$")
+SEG_RE = re.compile(r"\n?\[(\d+)\]\s*")
+
+
+def _strip_md(s: str) -> str:
+    """剥 LLM 溜出来的 Markdown 记号(**粗体**/行首 #);正文是纯文本渲染,记号=噪音。"""
+    s = re.sub(r"\*\*(.+?)\*\*", r"\1", s)
+    return re.sub(r"^#+\s*", "", s, flags=re.M).replace("**", "")
+
+
+def parse_numbered_body(body_out: str, n: int) -> str:
+    """按编号解析译文 → 与原文同序同段数的 bodyZh;缺号/空段=抛错(整条重试,不出错位页面)。"""
+    parts = SEG_RE.split(body_out)
+    d: dict[int, str] = {}
+    for k, txt in zip(parts[1::2], parts[2::2]):
+        t = _strip_md(txt).strip()
+        if t:
+            d[int(k)] = t
+    missing = [k for k in range(1, n + 1) if k not in d]
+    if missing:
+        raise ValueError(f"paragraph alignment: missing {missing[:5]}{'…' if len(missing) > 5 else ''} of {n}")
+    return "\n\n".join(d[k] for k in range(1, n + 1))
 
 
 def translate_missing(out_file: Path) -> None:
@@ -73,40 +113,57 @@ def translate_missing(out_file: Path) -> None:
         print("translate: ANTHROPIC_API_KEY 未设,跳过(只抓原文;key 进 docker/.env 后下轮自动补翻)")
         return
     data = json.loads(out_file.read_text(encoding="utf-8"))
-    todo = [it for it in data["items"] if it.get("bodyEn") and not it.get("summaryZh")]
+    # 待翻队列=(条目, 目标语) 对:zh 缺 summaryZh / ko 缺 summaryKo(各自独立补,预算按调用数计)
+    todo = [(it, lang) for it in data["items"] if it.get("bodyEn")
+            for lang in ("zh", "ko") if not it.get("summaryZh" if lang == "zh" else "summaryKo")]
     if not todo:
         print("translate: 无待翻条目")
         return
     done = 0
     with httpx.Client(base_url="https://api.anthropic.com", timeout=120,
                       headers={"x-api-key": key, "anthropic-version": "2023-06-01"}) as c:
-        for it in todo[:MAX_TRANSLATE_PER_RUN]:
+        for it, lang in todo[:MAX_TRANSLATE_PER_RUN]:
             try:
+                # 逐段编号喂入(整段计预算,不在段中间截断——截半段编号就废了)
+                paras: list[str] = []
+                used = 0
+                for p in (s.strip() for s in it["bodyEn"].split("\n\n")):
+                    if not p:
+                        continue
+                    if used + len(p) > BODY_CAP and paras:
+                        break  # 超长稿只翻前 N 整段,尾段对照缺=只显英文,不错位
+                    paras.append(p)
+                    used += len(p)
+                numbered = "\n\n".join(f"[{i + 1}] {p}" for i, p in enumerate(paras))
+                tpl = PROMPT if lang == "zh" else PROMPT_KO
                 r = c.post("/v1/messages", json={
                     "model": LLM_MODEL, "max_tokens": 8000,
-                    "messages": [{"role": "user", "content": PROMPT.format(
-                        title=it["title"], body=it["bodyEn"][:BODY_CAP])}],
+                    "messages": [{"role": "user", "content": tpl.format(
+                        title=it["title"], n=len(paras), body=numbered)}],
                 })
                 r.raise_for_status()
                 text = "".join(b.get("text", "") for b in r.json()["content"]).strip()
                 summary, sep, body = text.partition("<<<BODY>>>")
                 if not (sep and summary.strip() and body.strip()):
                     raise ValueError("missing <<<BODY>>> sentinel in LLM output")
-                summary = summary.strip()
-                # 首行=重要度(P1d);解析不出不硬猜,留空只少个徽标
-                first, _, rest = summary.partition("\n")
-                m = IMP_RE.match(first.strip())
-                if m:
-                    it["importance"], it["importanceNote"] = int(m.group(1)), m.group(2).strip()
-                    summary = rest.strip()
-                it["summaryZh"], it["bodyZh"] = summary, body.strip()
+                summary = _strip_md(summary.strip())
+                if lang == "zh":
+                    # 首行=重要度(P1d,只在中文调用产;解析不出不硬猜,留空只少个徽标)
+                    first, _, rest = summary.partition("\n")
+                    m = IMP_RE.match(first.strip())
+                    if m:
+                        it["importance"], it["importanceNote"] = int(m.group(1)), m.group(2).strip()
+                        summary = rest.strip()
+                    it["summaryZh"], it["bodyZh"] = summary, parse_numbered_body(body, len(paras))
+                else:
+                    it["summaryKo"], it["bodyKo"] = summary, parse_numbered_body(body, len(paras))
                 done += 1
             except Exception as e:  # noqa: BLE001  # 单条失败不断轮,留空下轮重试
-                print(f"  ! translate {it['url']}: {type(e).__name__}: {e}")
+                print(f"  ! translate[{lang}] {it['url']}: {type(e).__name__}: {e}")
     if done:
         _scrape_base.atomic_write_json(out_file, data)
-    print(f"translate: {done}/{len(todo)} 条完成" +
-          (f"(剩 {len(todo) - done} 条下轮续)" if len(todo) > done else ""))
+    print(f"translate: {done}/{len(todo)} 调用完成" +
+          (f"(剩 {len(todo) - done} 下轮续)" if len(todo) > done else ""))
 
 
 if __name__ == "__main__":

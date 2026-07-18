@@ -1,9 +1,43 @@
 'use client'
-// 二级页(榜单/统计)共享顶栏(2026-07-11 用户指出子页 header 与 /jobs 样式不一致):
-// 与 /jobs 顶栏同款视觉——品牌+标语 / 三入口导航 / 方框语言切换 / 账户入口。
-// plan 分层态不在二级页拉取,账户入口统一链 /account(该页自会按登录态分流)。
+// 二级页(榜单/统计/动态)共享顶栏——与 /jobs 顶栏统一(Frank 2026-07-18:「所有页面都是同一个 header」):
+// 品牌+标语 / 六入口导航 / 方框语言切换 / 账户区(登录=头像+昵称药丸进 /account;未登录=登录/注册/Pro,
+// 登录注册走 /?login=1 与 /?signup=1 落 /jobs 弹框,Pro 链 /pricing)。登录态客户端拉 /api/users/me。
+import { useEffect, useState } from 'react'
 import { LANGS, type Lang, type TFn } from './jobs/i18n'
-import { IconTarget, IconChart, IconCompass, IconMapPin, IconNews, IconUser } from './Icons'
+import { Avatar } from './Avatar'
+import { IconTarget, IconChart, IconCompass, IconMapPin, IconNews, IconStar, IconUser } from './Icons'
+
+function AccountLite({ t }: { t: TFn }) {
+  const [state, setState] = useState<'loading' | 'out' | 'in'>('loading')
+  const [u, setU] = useState<{ email: string; displayName: string | null; avatar: string | null; pro: boolean }>({ email: '', displayName: null, avatar: null, pro: false })
+  useEffect(() => {
+    fetch('/api/users/me', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.user?.email) {
+          setU({ email: d.user.email, displayName: d.user.displayName ?? null, avatar: d.user.avatar ?? null, pro: !!(d.user.proUntil && new Date(d.user.proUntil) > new Date()) })
+          setState('in')
+        } else setState('out')
+      })
+      .catch(() => setState('out'))
+  }, [])
+  if (state === 'loading') return <span style={{ width: 120 }} />
+  if (state === 'in') {
+    return (
+      <a href="/account" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: '1px solid #e5e7eb', borderRadius: 999, padding: '2px 10px 2px 3px', fontSize: 12.5, color: '#2563eb', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+        <Avatar src={u.avatar} name={u.displayName || u.email} email={u.email} size={22} />
+        {u.displayName?.trim() || u.email.split('@')[0]}{u.pro && <IconStar style={{ color: '#b45309' }} />}
+      </a>
+    )
+  }
+  return (
+    <>
+      <a href="/?login=1" style={{ fontSize: 12.5, color: '#2563eb', textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('nav.login')}</a>
+      <a href="/?signup=1" style={{ background: '#2563eb', color: '#fff', borderRadius: 6, padding: '3px 10px', fontSize: 12.5, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('nav.register')}</a>
+      <a href="/pricing" style={{ border: '1px solid #fde68a', background: '#fffbeb', color: '#92400e', borderRadius: 6, padding: '3px 10px', fontSize: 12.5, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}><IconStar /> Pro</a>
+    </>
+  )
+}
 
 export function SiteHeader({ lang, setLang, t, active }: { lang: Lang; setLang: (l: Lang) => void; t: TFn; active?: 'rank' | 'stats' | 'account' | 'pathways' | 'news' }) {
   const nav: React.CSSProperties = { textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }
@@ -30,11 +64,14 @@ export function SiteHeader({ lang, setLang, t, active }: { lang: Lang; setLang: 
               : <a href="/account" style={nav}><IconUser /> {t('nav.acctTab')}</a>}
           </div>
           <span className="shDivider" style={{ width: 1, height: 16, background: '#e5e7eb' }} />
-          <div style={{ display: 'inline-flex', border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
-            {LANGS.map((l) => (
-              <button key={l.code} onClick={() => setLang(l.code)}
-                style={{ border: 'none', padding: '3px 9px', fontSize: 12.5, cursor: 'pointer', background: lang === l.code ? '#2563eb' : '#fff', color: lang === l.code ? '#fff' : '#6b7280' }}>{l.label}</button>
-            ))}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <div style={{ display: 'inline-flex', border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
+              {LANGS.map((l) => (
+                <button key={l.code} onClick={() => setLang(l.code)}
+                  style={{ border: 'none', padding: '3px 9px', fontSize: 12.5, cursor: 'pointer', background: lang === l.code ? '#2563eb' : '#fff', color: lang === l.code ? '#fff' : '#6b7280' }}>{l.label}</button>
+              ))}
+            </div>
+            <AccountLite t={t} />
           </div>
         </div>
       </div>
