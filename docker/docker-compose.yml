@@ -67,6 +67,15 @@ services:
       TZ: EST5EDT
     # 回退:源站重新上 Akamai 时恢复 crawl 重镜像(build dockerfile: docker/etl/crawl/Dockerfile + BROWSER_HEADLESS=1)
 
+  news:                            # 官方移民新闻聚合(E12-06;只刷 raw/news/,build 角色消费灌库)
+    <<: *etl
+    environment:
+      SOURCE: news
+      HEALTHCHECK_PING_NEWS: ${HEALTHCHECK_PING_NEWS:-}
+      SCRAPE_INTERVAL: '43200'     # 12h(官方公告低频)
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}   # 中文翻译+速读(docker/.env 注入;空=只抓原文,key 到位下轮自动补翻)
+      TZ: EST5EDT
+
   enrich:                          # 公司官网富化(E8-04 拆分,2026-07-16「分开来跑」:从 build 轮摘出,6h 独立节奏)
     <<: *etl
     environment:
