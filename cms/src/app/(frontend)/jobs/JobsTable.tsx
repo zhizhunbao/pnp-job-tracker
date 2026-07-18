@@ -860,14 +860,16 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           .jtHideNarrow{display:none !important}
           .jtTableWrap{display:none !important}
           .jtCards{display:flex}
-        }`}</style>
+        }
+        @media (max-width:1350px){.jtTagline{display:none}}`}</style>
       {/* sticky 顶栏:品牌 + 语言切换(手机/电脑都贴顶) */}
       <header style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', borderBottom: '1px solid #e5e7eb' }}>
         {/* 窄屏(E8-03):两段可换行,右侧账户区折到第二行,不横向溢出 */}
         <div style={{ maxWidth: 1320, margin: '0 auto', padding: '10px 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, minWidth: 0 }}>
             <span style={{ fontSize: 17, fontWeight: 700, color: '#111827', whiteSpace: 'nowrap' }}>🍁 Offer2PR</span>
-            <span style={{ fontSize: 12, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('tagline')}</span>
+            {/* 副标语 <1350px 隐藏(与 SiteHeader 同步,防顶栏自动折行) */}
+            <span className="jtTagline" style={{ fontSize: 12, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('tagline')}</span>
           </div>
           {/* 方案 A(2026-07-17 用户拍板「怎么组织排列」):导航/操作两组+竖线分隔——组内紧凑(14/10)、
               组间拉开;窄屏两组各自整体换行,竖线随之隐藏(jtHideNarrow) */}

@@ -3,6 +3,7 @@
 // 每级拆「*Content 内容组件」+页面壳(E8-02 时代曾与 /jobs 统计弹窗共用;弹窗 2026-07-11 已退役,顶栏改跳转页面)。
 import { useMemo, useState } from 'react'
 import { StatsShell, MetricCards, CaliberLine, useLang } from './ui'
+import { BackLink } from '../BackLink'
 import { IconMapPin, IconScale, IconStar, IconTarget } from '../Icons'
 import { BROAD_SLUGS, PROV_NAME, type StatRow, type SrcRow } from './shared'
 import { StatsCharts } from './charts'
@@ -81,7 +82,7 @@ export function StatsProvContent({ prov, rows, srcs, t, ranks, news = [] }: { pr
   const broadLabel = (b: string) => (b === '未分类' ? t('cell.uncat') : t('broad.' + b))
   return (
     <>
-      <div style={{ fontSize: 12.5, marginBottom: 6 }}><a href="/stats" style={{ color: '#2563eb', textDecoration: 'none' }}>← {t('stats.provIndex')}</a></div>
+      <div style={{ marginBottom: 8 }}><BackLink href="/stats" label={t('stats.provIndex')} /></div>
       <h1 style={{ fontSize: 22, margin: 0 }}>{t('stats.title', { prov: PROV_NAME[prov] || prov })}</h1>
       {all && <MetricCards r={all} t={t} />}
       {/* 全国排名一句话结论 + 对比入口(第 5 轮 #19):P3 要的是答案,不是让用户跨页心算 */}
@@ -126,7 +127,7 @@ export function StatsCatContent({ prov, row, srcs, t }: { prov: string; row: Sta
   const broadLabel = row.broad === '未分类' ? t('cell.uncat') : t('broad.' + row.broad)
   return (
     <>
-      <div style={{ fontSize: 12.5, marginBottom: 6 }}><a href={`/stats/${prov.toLowerCase()}`} style={{ color: '#2563eb', textDecoration: 'none' }}>← {t('stats.title', { prov: PROV_NAME[prov] || prov })}</a></div>
+      <div style={{ marginBottom: 8 }}><BackLink href={`/stats/${prov.toLowerCase()}`} label={t('stats.title', { prov: PROV_NAME[prov] || prov })} /></div>
       <h1 style={{ fontSize: 22, margin: 0 }}>{t('stats.catTitle', { prov: PROV_NAME[prov] || prov, cat: broadLabel })}</h1>
       <MetricCards r={row} t={t} />
       {row.streamLabels && (

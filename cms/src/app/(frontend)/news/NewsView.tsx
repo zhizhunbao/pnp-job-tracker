@@ -6,11 +6,12 @@
 // ④ 详情页评论区:登录可评 → 人工审核(approved)后显示;未登录=引导登录
 // 缩略图 og 图优先,缺图用省色块默认图(程序生成,一省一固定色,联邦=IRCC 红)。
 // 转载姿势四件套(E4-03 框架):© 出处方 · 非官方声明 · 原文链接 ↗ · 官方发布日期。
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { type Lang, type TFn } from '../jobs/i18n'
 import { useLang } from '../stats/ui'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
+import { BackLink } from '../BackLink'
 import { newsPublisher, newsRegionName, NEWS_REGIONS, type NewsCard, type NewsComment, type NewsHero, type NewsRow } from './shared'
 
 function NewsShell({ children }: { children: (t: TFn, lang: Lang) => React.ReactNode }) {
@@ -48,75 +49,76 @@ function ImpBadge({ t, importance, note }: { t: TFn; importance: number | null; 
     style={{ background: top ? '#dc2626' : '#fef3c7', color: top ? '#fff' : '#b45309', borderRadius: 6, padding: '1px 7px', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap' }}>{top ? t('news.imp') : t('news.watch')}</span>
 }
 
-// 缩略图:og 图优先(加载失败退默认图);缺图=省色块默认图(缩写大字+全名,格式统一)
-function NewsThumb({ region, src }: { region: string; src: string | null }) {
-  const [dead, setDead] = useState(false)
-  if (src && !dead) {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img className="nwThumb" src={src} alt="" onError={() => setDead(true)} style={{ objectFit: 'cover', display: 'block', background: '#f3f4f6', flexShrink: 0 }} />
-  }
+// 列表小色块(v4:调小调淡——96×64 淡底深字,原高饱和大块太吵)
+const MUTED: Record<string, [string, string]> = {
+  federal: ['#fef2f2', '#b91c1c'], ON: ['#f0fdfa', '#0f766e'], BC: ['#f5f3ff', '#6d28d9'],
+  AB: ['#fffbeb', '#b45309'], SK: ['#f0fdf4', '#15803d'], MB: ['#fefce8', '#a16207'],
+  QC: ['#eff6ff', '#1d4ed8'], NS: ['#ecfeff', '#0e7490'],
+}
+function ListTile({ region }: { region: string }) {
+  const [bg, fg] = MUTED[region] || ['#f3f4f6', '#374151']
   return (
-    <div className="nwThumb" style={{ background: tileBg(region), display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff', flexShrink: 0 }}>
-      <div style={{ fontSize: region === 'federal' ? 24 : 30, fontWeight: 700, letterSpacing: 1 }}>{region === 'federal' ? 'IRCC' : region}</div>
-      <div style={{ fontSize: 10.5, opacity: 0.85, marginTop: 2 }}>{region === 'federal' ? 'Government of Canada' : newsRegionName(region)}</div>
+    <div style={{ width: 96, minWidth: 96, height: 64, borderRadius: 8, background: bg, color: fg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
+      <div style={{ fontSize: region === 'federal' ? 17 : 20 }}>{region === 'federal' ? 'IRCC' : region}</div>
+      <div style={{ fontSize: 9.5, fontWeight: 500, opacity: 0.75, textAlign: 'center', padding: '0 4px' }}>{region === 'federal' ? 'Government of Canada' : newsRegionName(region)}</div>
     </div>
   )
 }
 
-// ── 主 banner:TOP5 重要新闻轮播(v3 ①)──────────────────────
-function HeroCarousel({ t, lang, slides }: { t: TFn; lang: Lang; slides: NewsHero[] }) {
-  const [i, setI] = useState(0)
-  useEffect(() => {
-    if (slides.length < 2) return
-    const id = setInterval(() => setI((x) => (x + 1) % slides.length), 5000)
-    return () => clearInterval(id)
-  }, [slides.length])
-  if (!slides.length) return null
-  const s = slides[i]
-  // 摘要按界面语言(Frank 拍板):中→中文速读 / 韩→韩语速读 / 英→英文摘要(缺则逐级回退)
-  const aiSum = lang === 'zh' ? s.summaryZh : lang === 'ko' ? s.summaryKo : null
-  const summary = (aiSum || s.excerpt || '') as string
-  const bg = s.ogImage
-    ? `linear-gradient(rgba(17,24,39,.72), rgba(17,24,39,.72)), url(${JSON.stringify(s.ogImage)}) center/cover no-repeat`
-    : tileBg(s.region)
-  const btn: React.CSSProperties = { width: 28, height: 28, borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,.18)', color: '#fff', cursor: 'pointer', fontSize: 14, lineHeight: '28px' }
+// ── 头条区:1 大 + 4 小(v4,BBC/Reuters 式;轮播退役——自动轮播是新闻站反模式,超宽屏还散架)──
+// 高度固定(Frank:「banner 的高度应该是固定的」):图区恒 240px,标题/摘要行数截断,不随内容抖。
+// 头条图**不用抓来的 og 图**(Frank:「很多文字的图片不适合作为 banner」——政府 og 图多为文字模板图,
+// 裁剪救不回):一律省色字标底,视觉恒定;og 图只在详情页/原文里看。
+function HeroImage({ s }: { s: NewsHero }) {
   return (
-    <div style={{ position: 'relative', background: bg, color: '#fff', transition: 'background .4s' }}>
-      <a href={`/news/${s.slug}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
-        <div style={{ maxWidth: 860, margin: '0 auto', padding: '36px 1rem 48px' }}>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: 12, marginBottom: 10, flexWrap: 'wrap' }}>
-            <span style={{ background: '#fff', color: '#b91c1c', fontWeight: 700, borderRadius: 6, padding: '2px 8px' }}>{t('news.impN', { n: s.importance ?? '' })}</span>
-            <span style={{ background: 'rgba(255,255,255,.18)', borderRadius: 6, padding: '2px 8px' }}>{regionLabel(t, s.region)}</span>
-            <span style={{ opacity: 0.85, fontVariantNumeric: 'tabular-nums' }}>{s.date}</span>
+    <div style={{ height: 240, background: tileBg(s.region), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <span style={{ color: 'rgba(255,255,255,.9)', fontWeight: 800, fontSize: 38, letterSpacing: 2, textTransform: 'uppercase' }}>{s.region === 'federal' ? 'IRCC' : newsRegionName(s.region)}</span>
+    </div>
+  )
+}
+
+function FeaturedGrid({ t, lang, slides }: { t: TFn; lang: Lang; slides: NewsHero[] }) {
+  if (!slides.length) return null
+  const [hero, ...side] = slides
+  const aiSum = lang === 'zh' ? hero.summaryZh : lang === 'ko' ? hero.summaryKo : null
+  const summary = (aiSum || hero.excerpt || '') as string
+  return (
+    <div className="nwTop" style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 14, marginBottom: 8 }}>
+      <a href={`/news/${hero.slug}`} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 14, overflow: 'hidden', textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column' }}>
+        <HeroImage s={hero} />
+        <div style={{ padding: '14px 18px 16px' }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', fontSize: 11.5, color: '#9ca3af', marginBottom: 6, flexWrap: 'wrap' }}>
+            <span style={{ background: '#dc2626', color: '#fff', fontWeight: 700, borderRadius: 6, padding: '1px 7px', fontSize: 11 }}>{t('news.impN', { n: hero.importance ?? '' })}</span>
+            <RegionTag t={t} region={hero.region} />
+            <span style={{ fontVariantNumeric: 'tabular-nums' }}>{hero.date}</span>
           </div>
-          <h2 style={{ fontSize: 23, margin: '0 0 10px', lineHeight: 1.35, maxWidth: 680 }}>{s.title}</h2>
+          <div style={{ fontSize: 19, fontWeight: 700, lineHeight: 1.35, marginBottom: 8, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{hero.title}</div>
           {summary && (
-            <p style={{ fontSize: 13.5, lineHeight: 1.7, opacity: 0.92, margin: 0, maxWidth: 680, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-              {!!aiSum && <span style={{ border: '1px solid rgba(255,255,255,.45)', borderRadius: 4, padding: '0 5px', fontSize: 10.5, marginRight: 6, verticalAlign: '1px' }}>{t('news.aiSum')}</span>}
+            <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.7, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+              {!!aiSum && <span style={{ border: '1px solid #d1d5db', borderRadius: 4, padding: '0 5px', fontSize: 10.5, marginRight: 6, color: '#9ca3af' }}>{t('news.aiSum')}</span>}
               {summary}
-            </p>
+            </div>
           )}
         </div>
       </a>
-      {slides.length > 1 && (
-        <>
-          <div style={{ position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 860, padding: '0 1rem', boxSizing: 'border-box', display: 'flex', gap: 6 }}>
-            {slides.map((x, k) => (
-              <button key={x.slug} onClick={() => setI(k)} aria-label={`slide ${k + 1}`}
-                style={{ width: 22, height: 4, borderRadius: 2, border: 'none', cursor: 'pointer', background: k === i ? '#fff' : 'rgba(255,255,255,.35)', padding: 0 }} />
-            ))}
-          </div>
-          <div style={{ position: 'absolute', right: 16, bottom: 10, display: 'flex', gap: 8 }}>
-            <button style={btn} aria-label="prev" onClick={() => setI((i - 1 + slides.length) % slides.length)}>‹</button>
-            <button style={btn} aria-label="next" onClick={() => setI((i + 1) % slides.length)}>›</button>
-          </div>
-        </>
-      )}
+      <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 14, padding: '6px 16px 10px' }}>
+        <h3 style={{ fontSize: 12.5, color: '#9ca3af', fontWeight: 600, margin: '10px 0 4px', letterSpacing: 0.5 }}>{t('news.topTitle')}</h3>
+        {side.map((s, i) => (
+          <a key={s.slug} href={`/news/${s.slug}`} style={{ display: 'block', padding: '10px 0', borderTop: i ? '1px solid #f3f4f6' : 'none', textDecoration: 'none', color: 'inherit' }}>
+            <div style={{ fontSize: 13.5, fontWeight: 600, lineHeight: 1.45, color: '#111827', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{s.title}</div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', fontSize: 11.5, color: '#9ca3af', marginTop: 3 }}>
+              <ImpBadge t={t} importance={s.importance} note={s.importanceNote} />
+              <RegionTag t={t} region={s.region} />
+              <span style={{ fontVariantNumeric: 'tabular-nums' }}>{s.date.slice(5)}</span>
+            </div>
+          </a>
+        ))}
+      </div>
     </div>
   )
 }
 
-// ── 列表 /news:banner 轮播 + 页头(下沉) + 按日分组单列时间线 ──
+// ── 列表 /news(v4 头版式):页头+筛选 → 头条网格(1大+4小) → 按日分组单列时间线,全页 1100 单轨 ──
 export function NewsListView({ items, hero, cmtCounts }: { items: NewsCard[]; hero: NewsHero[]; cmtCounts: Record<string, number> }) {
   const [region, setRegion] = useState('')
   const [impOnly, setImpOnly] = useState(false)
@@ -138,20 +140,21 @@ export function NewsListView({ items, hero, cmtCounts }: { items: NewsCard[]; he
       })
       return (
         <>
-          <style>{`.nwThumb{width:168px;min-width:168px;height:118px}
-            @media (max-width:640px){.nwThumb{width:104px;min-width:104px;height:96px}}`}</style>
-          <HeroCarousel t={t} lang={lang} slides={hero} />
-          <div style={{ maxWidth: 860, margin: '0 auto', padding: '4px 1rem 32px' }}>
-            {/* 二级信息下沉(v3 ②):标题+口径+筛选不占 banner */}
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, margin: '20px 0 4px', flexWrap: 'wrap' }}>
-              <h1 style={{ fontSize: 20, margin: 0 }}>{t('news.title')}</h1>
+          {/* v4:头条网格窄屏折单列 */}
+          <style>{`@media (max-width:760px){.nwTop{grid-template-columns:1fr !important}}`}</style>
+          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '4px 1rem 32px' }}>
+            {/* 页头:标题+口径+筛选(v4:全页统一 1100 单轨,不再有全宽深色 banner) */}
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, margin: '16px 0 4px', flexWrap: 'wrap' }}>
+              <h1 style={{ fontSize: 21, margin: 0 }}>{t('news.title')}</h1>
               <span style={{ fontSize: 12, color: '#9ca3af' }}>{t('news.sub')}</span>
             </div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '10px 0 6px' }}>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '10px 0 14px' }}>
               <button style={chip(!region)} onClick={() => setRegion('')}>{t('chart.all')}</button>
               {present.map((r) => <button key={r} style={chip(region === r)} onClick={() => setRegion(r)}>{regionLabel(t, r)}</button>)}
               {hasImp && <button style={{ ...chip(impOnly), color: impOnly ? '#fff' : '#b91c1c', borderColor: impOnly ? '#2563eb' : '#fecaca' }} title={t('news.aiScore')} onClick={() => setImpOnly(!impOnly)}>{t('news.impOnly')}</button>}
             </div>
+            {/* 头条区(v4):1 大 + 4 小,固定高;筛选态下不显(看筛选结果为主) */}
+            {!region && !impOnly && <FeaturedGrid t={t} lang={lang} slides={hero} />}
             {!shown.length && <div style={{ color: '#9ca3af', fontSize: 13.5, marginTop: 16 }}>{t('news.empty')}</div>}
             {byDay.map(([day, rows]) => (
               <div key={day}>
@@ -160,18 +163,18 @@ export function NewsListView({ items, hero, cmtCounts }: { items: NewsCard[]; he
                 </div>
                 {rows.map((n) => (
                   <a key={n.slug} href={`/news/${n.slug}`}
-                    style={{ display: 'flex', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, overflow: 'hidden', marginBottom: 10, textDecoration: 'none', color: 'inherit' }}>
-                    <NewsThumb region={n.region} src={n.ogImage} />
-                    <div style={{ padding: '11px 16px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 5, flex: 1 }}>
-                      <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', fontSize: 11.5, color: '#9ca3af', flexWrap: 'wrap' }}>
+                    style={{ display: 'flex', gap: 14, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '12px 14px', marginBottom: 10, textDecoration: 'none', color: 'inherit', alignItems: 'flex-start', height: 128, boxSizing: 'border-box', overflow: 'hidden' }}>
+                    {/* 行定高 128(Frank:「卡片的宽度和高度也应该是固定的」);标题 2 行/摘要 1 行截断,脚钉底 */}
+                    <ListTile region={n.region} />
+                    <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: 4, height: '100%' }}>
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', fontSize: 11.5, color: '#9ca3af', flexWrap: 'wrap', whiteSpace: 'nowrap', overflow: 'hidden' }}>
                         <RegionTag t={t} region={n.region} />
                         <ImpBadge t={t} importance={n.importance} note={n.importanceNote} />
                         <span style={{ fontVariantNumeric: 'tabular-nums' }}>{n.date}</span>
                         {n.region === 'QC' && <span style={{ color: '#b45309' }}>{t('news.qcNote')}</span>}
                       </div>
-                      <div style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.4 }}>{n.title}</div>
-                      {n.excerpt && <div style={{ fontSize: 12.5, color: '#6b7280', lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{n.excerpt}</div>}
-                      {/* 条目脚(v3 ③):评论数+阅读全文 */}
+                      <div style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{n.title}</div>
+                      {n.excerpt && <div style={{ fontSize: 12.5, color: '#6b7280', lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{n.excerpt}</div>}
                       <div style={{ display: 'flex', gap: 14, fontSize: 11.5, color: '#9ca3af', marginTop: 'auto' }}>
                         <span>💬 {t('news.cmt.n', { n: cmtCounts[n.slug] || 0 })}</span>
                         <span style={{ color: '#2563eb' }}>{t('news.read')}</span>
@@ -273,7 +276,7 @@ export function NewsDetailView({ row, comments, loggedIn }: { row: NewsRow; comm
       const zhParas = (trans || '').split(/\n{2,}/).map((p) => p.trim()).filter(Boolean)
       return (
       <div style={{ maxWidth: 860, margin: '0 auto', padding: '18px 1rem 32px' }}>
-        <div style={{ fontSize: 12.5, marginBottom: 10 }}><a href="/news" style={{ color: '#2563eb', textDecoration: 'none' }}>{t('news.back')}</a></div>
+        <div style={{ marginBottom: 12 }}><BackLink href="/news" label={t('news.back')} /></div>
         <article style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '22px 26px' }}>
           <div style={{ fontSize: 11.5, color: '#9ca3af', display: 'flex', gap: 8, alignItems: 'baseline', flexWrap: 'wrap' }}>
             <RegionTag t={t} region={row.region} />
