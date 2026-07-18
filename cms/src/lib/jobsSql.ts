@@ -1,7 +1,7 @@
 // 职位数据访问层(DAL)—— 一领域一文件:职位相关的**所有 SQL + 行映射 + match** 都在这里,
 // 路由/页面/提醒只调函数、不写裸 SQL(E10-01 收拢;Frank「所有职位 SQL 拆一个文件」)。
 // 列名是 Payload snake_case(老坑 5):改 Jobs schema 只动这里。
-import { match, type MatchDims, type MatchJob, type MatchProfile } from './match'
+import { match, matchRank, type MatchDims, type MatchJob, type MatchProfile } from './match'
 import { FREE_MATCH_JOBS_PER_DAY } from './plan'
 import type { JobRow } from '@/app/(frontend)/jobs/JobsTable'
 
@@ -35,6 +35,7 @@ export function buildJobsWhere(filters: Record<string, unknown>, startIndex = 1)
 
   if (s('q')) { const ph = param(`%${s('q')}%`); conds.push(`(${SEARCH_COLS.map((c) => `${c} ILIKE ${ph}`).join(' OR ')})`) }
 
+  if (s('company')) conds.push(`c.name = ${param(s('company'))}`)   // 精确公司名(advisor「同公司在榜岗」用)
   if (s('fCountry')) conds.push(`j.country = ${param(s('fCountry'))}`)
   if (s('fProv')) conds.push(`j.province = ${param(PROV_CODE[s('fProv')] || s('fProv'))}`)
   if (s('fCity')) conds.push(`j.city = ${param(s('fCity'))}`)
@@ -233,6 +234,51 @@ export async function fetchJobsPage(
   const base = page * pageSize
   const jobs = listRes.rows.map((j: any, i: number) => mapJobRow(j, pro, m.of(j, base + i)))
   return { jobs, total: cntRes.rows[0]?.n ?? jobs.length, updatedAt: iso(updRes.rows[0]?.upd) }
+}
+
+export type MatchPageOpts = {
+  pro: boolean; profile: MatchProfile; matchDims: MatchDims; page: number; pageSize: number
+}
+
+/**
+ * E10-01 P3:「我的匹配」视图服务端化(替代旧 blob 客户端筛)。
+ * 候选预筛(SQL 把 3 万压到只可能命中 high/mid 的:pnpEligible∪有EE类别∪NOC对口∪同小类)→ TS 跑 match() 留 high/mid
+ * → 免费用户仅前 N 个可见(cap;FOMO 计数仍返全量 high/mid)→ 按 match 等级+日期序分页。
+ * 预筛用并集从宽,宁可多算不漏(named-list 命中的岗基本都 pnpEligible,已被并集覆盖)。候选封顶防失控。
+ */
+export async function fetchMatchPage(
+  pool: any, { pro, profile, matchDims, page, pageSize }: MatchPageOpts,
+): Promise<{ jobs: JobRow[]; total: number; matchHigh: number; matchMid: number; updatedAt: string }> {
+  const nocs = profile.nocCodes || []
+  const noc4 = Array.from(new Set(nocs.filter((c) => c.length === 5).map((c) => c.slice(0, 4))))
+  const CAND_CAP = 12000  // 候选封顶:按新鲜度取最近 N 个候选,防全表 TS 计算失控(足够覆盖真实匹配)
+  const [candRes, updRes] = await Promise.all([
+    pool.query(
+      `SELECT ${JOB_COLUMNS} ${JOB_FROM}
+       WHERE (COALESCE(j.pnp_eligible,false) OR COALESCE(j.ee_category,'') <> '' OR j.noc = ANY($1) OR LEFT(j.noc,4) = ANY($2))
+       ORDER BY j.date_posted DESC NULLS LAST, j.score DESC NULLS LAST, j.id DESC LIMIT $3`,
+      [nocs, noc4, CAND_CAP]),
+    pool.query(`SELECT max(last_seen) AS upd FROM jobs`),
+  ])
+  let matchHigh = 0, matchMid = 0
+  const hits: { j: any; level: 'high' | 'mid' }[] = []
+  for (const j of candRes.rows) {
+    const mj: MatchJob = {
+      noc: j.noc ?? '', teer: num(j.teer), province: j.province ?? '', pnpEligible: !!j.pnp_eligible,
+      pnpStream: j.pnp_stream ?? '', eeCategory: j.ee_category ?? '', salaryAnnual: num(j.salary_annual), wageMedAnnual: num(j.wage_med_annual),
+      lmiaPositions: num(j.lmia_positions), lmiaLastQuarter: j.lmia_last_quarter ?? '',
+    }
+    const level = match(profile, mj, matchDims).level
+    if (level === 'high') { matchHigh++; hits.push({ j, level }) }
+    else if (level === 'mid') { matchMid++; hits.push({ j, level }) }
+  }
+  // 排序:match 等级↓(候选已按日期↓,stable sort 保同级内日期序)
+  hits.sort((a, b) => matchRank(b.level) - matchRank(a.level))
+  // 免费用户:可见匹配封顶前 N(FOMO 计数仍是全量 matchHigh/matchMid)
+  const visible = pro ? hits : hits.slice(0, FREE_MATCH_JOBS_PER_DAY)
+  const pageItems = visible.slice(page * pageSize, page * pageSize + pageSize)
+  const jobs = pageItems.map(({ j, level }) => mapJobRow(j, pro, level))
+  return { jobs, total: visible.length, matchHigh, matchMid, updatedAt: iso(updRes.rows[0]?.upd) }
 }
 
 /** 头条总数 + 差异化证言数字(省提名清单命中岗 named + 有外劳记录雇主数 lmia)。原在 page.tsx 裸 SQL,收编于此。 */

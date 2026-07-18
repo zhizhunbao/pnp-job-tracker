@@ -10,7 +10,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { getUser, isPro } from '@/lib/entitlement'
 import { hasProfile, normalizeProfile, type MatchDims } from '@/lib/match'
-import { fetchJobsPage, mapEeCat, mapPnpOcc } from '@/lib/jobsSql'
+import { fetchJobsPage, fetchMatchPage, mapEeCat, mapPnpOcc } from '@/lib/jobsSql'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -43,7 +43,14 @@ export async function GET(req: Request) {
     matchDims = { pnpOccupations: pnp.docs.map(mapPnpOcc), eeCategories: ee.docs.map(mapEeCat) }
   }
 
-  const { jobs, total, updatedAt } = await fetchJobsPage((payload.db as any).pool, {
+  const pool = (payload.db as any).pool
+  // 「我的匹配」视图(E5-05):候选预筛 + TS match;未建档 → 空(与旧客户端一致)
+  if (sp.get('view') === 'match') {
+    if (!profileOk) return Response.json({ rows: [], total: 0, page, pageSize: PAGE_SIZE, updatedAt: '', matchHigh: 0, matchMid: 0 })
+    const m = await fetchMatchPage(pool, { pro, profile, matchDims, page, pageSize: PAGE_SIZE })
+    return Response.json({ rows: m.jobs, total: m.total, page, pageSize: PAGE_SIZE, updatedAt: m.updatedAt, matchHigh: m.matchHigh, matchMid: m.matchMid })
+  }
+  const { jobs, total, updatedAt } = await fetchJobsPage(pool, {
     pro, profile, profileOk, matchDims, filters, sort, page, pageSize: PAGE_SIZE,
   })
   return Response.json({ rows: jobs, total, page, pageSize: PAGE_SIZE, updatedAt })
