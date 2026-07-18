@@ -471,7 +471,7 @@ const EMPTY_DIMS: Dims = { provinces: [], cities: [], districts: [], nocCategori
 const PROV_CODE: Record<string, string> = Object.fromEntries(Object.entries(PROV_NAMES).map(([c, n]) => [n, c]))
 
 export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdatedAt, dims: initialDims = EMPTY_DIMS, initialCols, plan = FREE_PLAN, initialBanner, totalCount, proof, deferFull }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims; initialCols?: string[]; plan?: Plan; initialBanner?: boolean; totalCount?: number; proof?: { named: number; lmia: number }; deferFull?: boolean }) {
-  // 首屏拆分(2026-07-05):SSR 只带最近 50 行,水合后从 /api/jobs-data 后台换入全量(同序,无跳变);
+  // 首屏拆分:SSR 带最近 50 行秒开;筛选/搜索/翻页由 fetch effect 打 /api/jobs 分页(E10-01 P3,旧 20k blob 已废);
   // 失败保底留首屏 50 行可用,loadedAll 复位以显示计数而非假「全量」。
   // E10-01 P3:服务端分页/筛选取代 20k blob。rows=当前累计页(SSR 首屏 50 起),total=同 WHERE 总数,page=已翻页数。
   const [rows, setRows] = useState<JobRow[]>(initialJobs)

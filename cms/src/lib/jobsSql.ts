@@ -202,7 +202,7 @@ function makeMatcher(profile: MatchProfile, profileOk: boolean, matchDims: Match
 
 export type JobsListOpts = { pro: boolean; profile: MatchProfile; profileOk: boolean; matchDims: MatchDims; limit: number }
 
-/** (旧)一次性取前 limit 行:SSR 首屏 + /api/jobs-data 全量 blob 用。E10-01 P5 由 fetchJobsPage 取代后删。 */
+/** 一次性取前 limit 行:page.tsx SSR 首屏 50 行用(筛选/翻页走 /api/jobs 分页;E10-01 P5 已删旧 /api/jobs-data blob 端点)。 */
 export async function fetchJobRows(pool: any, { pro, profile, profileOk, matchDims, limit }: JobsListOpts): Promise<{ jobs: JobRow[]; updatedAt: string; matchHigh: number; matchMid: number }> {
   const { rows } = await pool.query(
     `SELECT ${JOB_COLUMNS} ${JOB_FROM}
