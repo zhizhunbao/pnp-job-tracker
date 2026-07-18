@@ -73,6 +73,7 @@ export interface Config {
     jobs: Job;
     'pnp-occupations': PnpOccupation;
     'pnp-draws': PnpDraw;
+    dli: Dli;
     'ee-categories': EeCategory;
     'noc-descriptions': NocDescription;
     'policy-docs': PolicyDoc;
@@ -101,6 +102,7 @@ export interface Config {
     jobs: JobsSelect<false> | JobsSelect<true>;
     'pnp-occupations': PnpOccupationsSelect<false> | PnpOccupationsSelect<true>;
     'pnp-draws': PnpDrawsSelect<false> | PnpDrawsSelect<true>;
+    dli: DliSelect<false> | DliSelect<true>;
     'ee-categories': EeCategoriesSelect<false> | EeCategoriesSelect<true>;
     'noc-descriptions': NocDescriptionsSelect<false> | NocDescriptionsSelect<true>;
     'policy-docs': PolicyDocsSelect<false> | PolicyDocsSelect<true>;
@@ -182,7 +184,27 @@ export interface User {
    * 退订每周收藏摘要邮件
    */
   weeklyOptOut?: boolean | null;
+  /**
+   * 昵称(空则前端回退邮箱前缀)
+   */
+  displayName?: string | null;
+  /**
+   * 头像 URL(v1 仅存 OAuth 带回的 URL,不做上传;无则前端画首字母块)
+   */
+  avatar?: string | null;
+  /**
+   * 注册来路:email(默认)/google/wechat
+   */
+  loginProvider?: string | null;
+  /**
+   * 界面/邮件语言 zh/en/ko(现仅 localStorage,落库备邮件用)
+   */
+  locale?: string | null;
   profile?: {
+    /**
+     * 分型 slug:overseas/studying/working/jobhunting/pr(界面大白话,幕后存码)
+     */
+    currentStatus?: string | null;
     /**
      * 经验/学历对应 NOC 码(string[])
      */
@@ -556,6 +578,45 @@ export interface PnpDraw {
    * 省项目名(BC PNP Skills Immigration/AAIP/…)
    */
   label?: string | null;
+  url?: string | null;
+  fetched?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "dli".
+ */
+export interface Dli {
+  id: number;
+  province?: string | null;
+  /**
+   * 院校名(官方原文)
+   */
+  name?: string | null;
+  /**
+   * DLI 编号(O 开头,IRCC 官方)
+   */
+  dliNumber?: string | null;
+  /**
+   * 主校区城市(首行)
+   */
+  city?: string | null;
+  /**
+   * 名单内校区行数
+   */
+  campuses?: number | null;
+  /**
+   * 公立院校
+   */
+  isPublic?: boolean | null;
+  /**
+   * 有免 PAL/TAL 的研究生学位项目(官方列标)
+   */
+  gradProgram?: boolean | null;
+  /**
+   * 出处=IRCC DLI 名单页(着陆页)
+   */
   url?: string | null;
   fetched?: string | null;
   updatedAt: string;
@@ -951,6 +1012,10 @@ export interface PayloadLockedDocument {
         value: number | PnpDraw;
       } | null)
     | ({
+        relationTo: 'dli';
+        value: number | Dli;
+      } | null)
+    | ({
         relationTo: 'ee-categories';
         value: number | EeCategory;
       } | null)
@@ -1064,9 +1129,14 @@ export interface UsersSelect<T extends boolean = true> {
   lastAlertAt?: T;
   lastWeeklyAt?: T;
   weeklyOptOut?: T;
+  displayName?: T;
+  avatar?: T;
+  loginProvider?: T;
+  locale?: T;
   profile?:
     | T
     | {
+        currentStatus?: T;
         nocCodes?: T;
         clb?: T;
         crs?: T;
@@ -1221,6 +1291,23 @@ export interface PnpDrawsSelect<T extends boolean = true> {
   invitations?: T;
   note?: T;
   label?: T;
+  url?: T;
+  fetched?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "dli_select".
+ */
+export interface DliSelect<T extends boolean = true> {
+  province?: T;
+  name?: T;
+  dliNumber?: T;
+  city?: T;
+  campuses?: T;
+  isPublic?: T;
+  gradProgram?: T;
   url?: T;
   fetched?: T;
   updatedAt?: T;

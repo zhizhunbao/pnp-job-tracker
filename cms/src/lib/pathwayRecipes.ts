@@ -7,9 +7,10 @@ import type { CurrentStatus } from './match'
 export type PathwaySource = { label: string; url: string }
 export type PathwayStep = { key: string; sourceIdx?: number }   // key=i18n(pw.<id>.s*);sourceIdx 指向本配方 sources
 export type PathwayRecipe = {
-  id: 'direct' | 'hcw' | 'health' | 'trades'
+  id: 'direct' | 'hcw' | 'health' | 'trades' | 'study' | 'aip-trades'
   audience: CurrentStatus[]        // 分型 §2.5(E 已 PR 纯找工不硬塞移民路径)
   nocPrefixes: string[] | null     // 职业分支限定(前缀);null=不限职业
+  regionProvs?: string[]           // 地区限定配方(如 AIP=大西洋四省):省清单命中信号只看这些省
   steps: PathwayStep[]
   sources: PathwaySource[]         // 官方页,实测可达
   lastReviewed: string             // 人工核对 YYYY-MM-DD
@@ -23,6 +24,12 @@ const SRC = {
   hcwp: { label: 'IRCC — Home Care Worker Immigration pilots', url: 'https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/caregivers/home-care-worker-immigration-pilots.html' },
   nnas: { label: 'NNAS — National Nursing Assessment Service', url: 'https://www.nnas.ca/' },
   trades: { label: 'Canada.ca — Skilled trades and apprenticeship', url: 'https://www.canada.ca/en/services/jobs/training/support-skilled-trades-apprentices.html' },
+  // 旗舰②(E12-03,全部 2026-07-18 实测 200)
+  dli: { label: 'IRCC — Designated learning institutions list', url: 'https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit/prepare/designated-learning-institutions-list.html' },
+  study: { label: 'IRCC — Study permit', url: 'https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit.html' },
+  pgwp: { label: 'IRCC — Post-graduation work permit', url: 'https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/work/after-graduation.html' },
+  cec: { label: 'IRCC — Canadian Experience Class', url: 'https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/eligibility/canadian-experience-class.html' },
+  aip: { label: 'IRCC — Atlantic Immigration Program', url: 'https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration.html' },
 } satisfies Record<string, PathwaySource>
 
 const REVIEWED = '2026-07-18'
@@ -72,5 +79,27 @@ export const PATHWAY_RECIPES: PathwayRecipe[] = [
       { key: 'pw.trades.s3', sourceIdx: 1 },      // offer → 工签 → 省提名 → PR
     ],
     sources: [SRC.trades, SRC.pnp], lastReviewed: REVIEWED,
+  },
+  // ── 旗舰②(E12-03):要读书的路径。audience=A 海外(计划来读)/B 在加留学(正读) ──
+  {
+    // 通用:留学 → PGWP → CEC/省毕业生通道
+    id: 'study', audience: ['overseas', 'studying'], nocPrefixes: null,
+    steps: [
+      { key: 'pw.study.s1', sourceIdx: 0 },       // 选校认准 IRCC 名单的 PGWP 标记(不是所有 DLI 都能申 PGWP)
+      { key: 'pw.study.s2', sourceIdx: 1 },       // 学签入学、完成学业(学签要求见官方页)
+      { key: 'pw.study.s3', sourceIdx: 2 },       // 毕业申 PGWP,用开放工签攒加拿大工作经验
+      { key: 'pw.study.s4', sourceIdx: 3 },       // 走 CEC(联邦)或目标省毕业生通道递身份(各省细则见官方页)
+    ],
+    sources: [SRC.dli, SRC.study, SRC.pgwp, SRC.cec, SRC.pnp], lastReviewed: REVIEWED,
+  },
+  {
+    // AIP 大西洋实例(电焊例):大西洋公立院校文凭 → 指定雇主 offer → AIP 递 PR
+    id: 'aip-trades', audience: ['overseas', 'studying'], nocPrefixes: null, regionProvs: ['NS', 'NB', 'PE', 'NL'],
+    steps: [
+      { key: 'pw.aip.s1', sourceIdx: 1 },         // 在大西洋四省(NS/NB/PE/NL)公立院校读 trades 等文凭(院校见 DLI 名单)
+      { key: 'pw.aip.s2', sourceIdx: 0 },         // 毕业后拿 AIP「指定雇主」全职 offer(本站指定雇主数据可筛)
+      { key: 'pw.aip.s3', sourceIdx: 0 },         // 省背书 + 语言/学历/定居计划要求以官方页为准 → 递 PR
+    ],
+    sources: [SRC.aip, SRC.dli], lastReviewed: REVIEWED,
   },
 ]

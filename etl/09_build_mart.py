@@ -37,6 +37,7 @@ IN_EE = _paths.EE / "federal-categories.json"  # 联邦 Express Entry 类别抽�
 IN_EE_DRAWS = _paths.EE / "draws.json"          # 各类别最近一次抽选(CRS/日期/邀请数,build_ee_draws.py 产)
 IN_NOC_DESC = _paths.NOC / "descriptions.json"  # NOC 官方名+主要职责(build_noc_descriptions.py 产)
 IN_FIELD_SOURCES = _paths.RAW / "sources" / "field-sources.json"  # 字段级来源注册表(build_field_sources.py 产,E4-04)
+IN_DLI = _paths.DLI / "dli.json"                # PGWP 可申 DLI 子集(build_dli.py 产,E12-03)
 IN_LMIA = _paths.LMIA / "lmia-employers.json"   # ESDC 正面 LMIA 雇主聚合(build_lmia.py 产,E6-02)
 IN_ENRICH = _paths.PROCESSED / "company_enrich.json"  # 公司官网富化(简介/行业,enrich_companies.py 产,E8-04)
 OUT_MART = _paths.DATA / "mart"
@@ -398,6 +399,15 @@ def build():
         except Exception:  # noqa: BLE001
             field_sources = []
 
+    # PGWP 可申 DLI 子集(E12-03):build_dli.py 已过滤去重,这里直通并带上着陆页 url+抓取日期(逐行出处)
+    dli = []
+    if IN_DLI.exists():
+        try:
+            dd = json.loads(IN_DLI.read_text(encoding="utf-8"))
+            dli = [{**r, "url": dd.get("url", ""), "fetched": dd.get("fetched", "")} for r in dd.get("rows", [])]
+        except Exception:  # noqa: BLE001
+            dli = []
+
     return {
         "companies": list(companies.values()), "jobs": jobs,
         "provinces": provinces, "cities": cities, "districts": districts,
@@ -406,6 +416,7 @@ def build():
         "pnp_occupations": pnp_occupations, "pnp_draws": pnp_draws, "ee_categories": ee_categories,
         "noc_descriptions": noc_descriptions,
         "field_sources": field_sources,
+        "dli": dli,
     }
 
 

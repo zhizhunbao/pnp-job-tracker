@@ -34,6 +34,7 @@ WAGES = RAW / "wages"                                   # ESDC 工资:wages.json
 LMIA = RAW / "lmia"                                     # ESDC 正面 LMIA 雇主清单:lmia-employers.json(维护表)+ tfwp_*.xlsx(季度源,gitignore)
 FSA = RAW / "fsa"                                       # GeoNames 邮编→区:fsa-districts.json(维护表)+ CA.txt(源)
 POLICY = RAW / "policy"                                 # 各省移民政策原文(.md)
+DLI = RAW / "dli"                                       # PGWP 可申 DLI 子集(dli.json,build_dli.py 产,E12-03)
 
 PROCESSED = DATA / "processed"                          # transform
 PROCESSED_ATS = PROCESSED / "ats"                       # ATS 清洗后根(扁平:<slug>/ 直接挂)
