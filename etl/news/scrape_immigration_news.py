@@ -177,6 +177,56 @@ def translate_missing(out_file: Path) -> None:
           (f"(剩 {len(todo) - done} 下轮续)" if len(todo) > done else ""))
 
 
+# ---- 只打分不翻译(P1e 稳态:翻译走线上实时,重要度必须提前——banner TOP5/徽标/只看重要全靠它)----
+MAX_SCORE_PER_RUN = int(os.environ.get("NEWS_SCORE_BUDGET", "15"))
+PROMPT_SCORE = """下面是一篇加拿大官方移民新闻(标题+正文开头)。只依据内容输出一行,固定格式「重要度: N | 一句中文理由」,
+除此之外不要任何文字。N 为 1-5 整数,衡量对正在找工作/办移民的读者的实际影响:
+5=直接影响资格或分数的政策变化/抽选结果(改制、新清单、抽选分数线);4=项目动态与重要数据;
+3=一般性项目新闻;2=人事/活动/拨款类;1=礼节性声明(节日致辞等)。
+
+标题:{title}
+
+正文:
+{body}"""
+
+
+def score_missing(out_file: Path) -> None:
+    key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+    if not (LLM_BASE or key):
+        return
+    data = json.loads(out_file.read_text(encoding="utf-8"))
+    todo = [it for it in data["items"] if it.get("bodyEn") and not it.get("importance")]
+    if not todo:
+        return
+    done = 0
+    with httpx.Client(base_url=LLM_BASE or "https://api.anthropic.com", timeout=120,
+                      headers={} if LLM_BASE else {"x-api-key": key, "anthropic-version": "2023-06-01"}) as c:
+        for it in todo[:MAX_SCORE_PER_RUN]:
+            try:
+                prompt = PROMPT_SCORE.format(title=it["title"], body=it["bodyEn"][:1500])
+                if LLM_BASE:
+                    r = c.post("/api/generate", json={"model": LLM_LOCAL_MODEL, "prompt": prompt,
+                                                      "stream": False, "think": False,
+                                                      "options": {"num_predict": 200}})
+                    r.raise_for_status()
+                    text = re.sub(r"<think>.*?</think>", "", r.json()["response"], flags=re.S).strip()
+                else:
+                    r = c.post("/v1/messages", json={"model": LLM_MODEL, "max_tokens": 200,
+                                                     "messages": [{"role": "user", "content": prompt}]})
+                    r.raise_for_status()
+                    text = "".join(b.get("text", "") for b in r.json()["content"]).strip()
+                m = IMP_RE.match(text.splitlines()[0].strip()) if text else None
+                if m:
+                    it["importance"], it["importanceNote"] = int(m.group(1)), m.group(2).strip()
+                    done += 1
+            except Exception as e:  # noqa: BLE001
+                print(f"  ! score {it['url']}: {type(e).__name__}: {e}")
+    if done:
+        _scrape_base.atomic_write_json(out_file, data)
+    print(f"score: {done}/{len(todo)} 条打分")
+
+
 if __name__ == "__main__":
     _scrape_base.run(SOURCES, OUT_FILE)
-    translate_missing(OUT_FILE)
+    score_missing(OUT_FILE)      # 重要度:轻量必跑(新条目才有徽标/上 banner)
+    translate_missing(OUT_FILE)  # 全文翻译:预翻已停(budget 0),恢复=调 NEWS_TRANSLATE_BUDGET

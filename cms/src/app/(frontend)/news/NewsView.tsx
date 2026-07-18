@@ -247,11 +247,29 @@ export function NewsDetailView({ row, comments, loggedIn }: { row: NewsRow; comm
   // 段落=\n\n 分隔;段内 \n(联系人块等)渲染为换行(P1c 保真)
   const paras = useMemo(() => row.bodyEn.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean), [row.bodyEn])
   const [zh, setZh] = useState(false)
+  // 懒翻译(P1e,Frank 终版「线上实时」):DB 缓存(SSR 带下)命中秒开;缺则点开关时调 /api/news-translate
+  // (朋友的 qwen 服务,编号协议服务端校验对齐后写回 DB=永久缓存)。per-lang 各自缓存。
+  const [transCache, setTransCache] = useState<{ zh: string | null; ko: string | null }>({ zh: row.bodyZh, ko: row.bodyKo })
+  const [trState, setTrState] = useState<'idle' | 'busy' | 'err'>('idle')
+  const fetchTrans = async (lang: 'zh' | 'ko') => {
+    if (trState === 'busy') return
+    setTrState('busy')
+    try {
+      const r = await fetch('/api/news-translate', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug: row.slug, lang }),
+      })
+      const d = await r.json()
+      if (!r.ok || !d.ok) throw new Error(d.error || String(r.status))
+      setTransCache((c) => ({ ...c, [lang]: d.body }))
+      setTrState('idle'); setZh(true)
+    } catch { setTrState('err') }
+  }
   return (
     <NewsShell>{(t, lang) => {
       // 对照按界面语言(Frank 拍板):中→中文 / 韩→韩语 / 英→无开关(原文即英文)。
-      // 译文由编号协议保证与原文段对段对齐(缺号=整条不入库),按序配对安全;超长稿只翻前段,尾段只显英文。
-      const trans = lang === 'zh' ? row.bodyZh : lang === 'ko' ? row.bodyKo : null
+      // 译文由编号协议保证与原文段对段对齐(缺号=拒收),按序配对安全;超长稿只翻前段,尾段只显英文。
+      const trans = lang === 'zh' ? transCache.zh : lang === 'ko' ? transCache.ko : null
       const zhParas = (trans || '').split(/\n{2,}/).map((p) => p.trim()).filter(Boolean)
       return (
       <div style={{ maxWidth: 860, margin: '0 auto', padding: '18px 1rem 32px' }}>
@@ -269,12 +287,14 @@ export function NewsDetailView({ row, comments, loggedIn }: { row: NewsRow; comm
               {t('news.copy', { who: newsPublisher(row.region) })}
               {' · '}<a href={row.url} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{t('news.official')}</a>
             </span>
-            {zhParas.length > 0 && (
-              <button onClick={() => setZh(!zh)}
-                style={{ border: '1px solid ' + (zh ? '#2563eb' : '#e5e7eb'), background: zh ? '#eef2ff' : '#fff', color: '#2563eb', borderRadius: 999, padding: '2px 10px', fontSize: 11.5, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                {zh ? t('news.trOff') : t('news.trOn')}
+            {lang !== 'en' && (
+              <button disabled={trState === 'busy'}
+                onClick={() => { if (zh) setZh(false); else if (trans) setZh(true); else fetchTrans(lang as 'zh' | 'ko') }}
+                style={{ border: '1px solid ' + (zh ? '#2563eb' : '#e5e7eb'), background: zh ? '#eef2ff' : '#fff', color: '#2563eb', borderRadius: 999, padding: '2px 10px', fontSize: 11.5, cursor: trState === 'busy' ? 'wait' : 'pointer', whiteSpace: 'nowrap' }}>
+                {trState === 'busy' ? t('news.trBusy') : zh ? t('news.trOff') : t('news.trOn')}
               </button>
             )}
+            {trState === 'err' && <span style={{ color: '#b91c1c', fontSize: 11.5 }}>{t('news.trErr')}</span>}
           </div>
           {row.region === 'QC' && <div style={{ fontSize: 12, color: '#b45309', background: '#fffbeb', borderRadius: 8, padding: '6px 10px', marginBottom: 12 }}>{t('news.qcNote')}</div>}
           {zh && <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 10 }}>{t('news.aiNote')}</div>}
