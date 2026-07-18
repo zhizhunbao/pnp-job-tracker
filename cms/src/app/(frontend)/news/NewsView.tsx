@@ -36,11 +36,13 @@ function RegionTag({ t, region }: { t: TFn; region: string }) {
   return <span style={{ background: fed ? '#fee2e2' : '#eef2ff', color: fed ? '#b91c1c' : '#3730a3', borderRadius: 6, padding: '1px 7px', fontSize: 11.5, fontWeight: 600, whiteSpace: 'nowrap' }}>{regionLabel(t, region)}</span>
 }
 
-// AI 重要度徽标(P1d):≥4 显「重要」;hover=一句理由+口径声明(AI 评,非资格判定)
+// AI 重要度徽标(P1d):5=红「重要」/ 4=琥珀「关注」(首批实测 4 分占半,单档红标会狼来了);
+// hover=一句理由+口径声明(AI 评,非资格判定)
 function ImpBadge({ t, importance, note }: { t: TFn; importance: number | null; note: string | null }) {
   if (importance == null || importance < 4) return null
+  const top = importance >= 5
   return <span title={`${note || ''}${note ? ' · ' : ''}${t('news.aiScore')}`}
-    style={{ background: '#dc2626', color: '#fff', borderRadius: 6, padding: '1px 7px', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap' }}>{t('news.imp')}</span>
+    style={{ background: top ? '#dc2626' : '#fef3c7', color: top ? '#fff' : '#b45309', borderRadius: 6, padding: '1px 7px', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap' }}>{top ? t('news.imp') : t('news.watch')}</span>
 }
 
 // 缩略图:og 图优先(加载失败退默认图);缺图=省色块默认图(缩写大字+全名,格式统一)
