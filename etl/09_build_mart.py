@@ -402,6 +402,21 @@ def build():
 
     # 官方移民新闻(E12-06):raw 全量累积,mart 只带近 60 条(老的留 raw 不进站)。
     # slug=date+标题 slug 化(稳定、可读、进 URL);bodyZh/summaryZh 照灌(v3 拍板前端暂不渲,DB 留列开关式恢复)。
+    # P1c:① excerpt 在这清洗(剥「From:/Media advisory/News release/标题复读」样板行,前端只显);
+    #     ② 同稿去重(同 region+标题多 URL 只留最新,federal feed 会同稿两条)。
+    def news_excerpt(title: str, body: str) -> str:
+        noise = {"media advisory", "news release", "statement", "backgrounder", "joint statement", "speech"}
+        tnorm = re.sub(r"\W+", "", title).lower()
+        for para in body.split("\n\n"):
+            p = " ".join(para.split())
+            low = p.lower()
+            if not p or low.startswith("from:") or low.rstrip(":") in noise:
+                continue
+            if re.sub(r"\W+", "", p).lower() == tnorm:   # 标题复读行
+                continue
+            return p[:240]
+        return ""
+
     news = []
     if IN_NEWS.exists():
         try:
@@ -409,10 +424,17 @@ def build():
         except Exception:  # noqa: BLE001
             nd = {}
         seen_slug: set[str] = set()
+        seen_story: set[tuple] = set()
         items = sorted(nd.get("items", []), key=lambda r: (r.get("date") or "", r.get("fetchedAt") or ""), reverse=True)
-        for r in items[:60]:
+        for r in items:
+            if len(news) >= 60:
+                break
             if not (r.get("title") and r.get("url") and r.get("bodyEn")):
                 continue  # 卡片三要素不齐不进站(抓不到正文=不出详情页,不硬造)
+            story = (r.get("region", ""), re.sub(r"\W+", "", r["title"]).lower())
+            if story in seen_story:
+                continue  # 同稿多 URL(date 倒序在前=最新)只留一条
+            seen_story.add(story)
             slug = f"{(r.get('date') or '')[:10]}-{slugify(r['title'])}"
             n = 2
             while slug in seen_slug:
@@ -422,7 +444,10 @@ def build():
             news.append({
                 "region": r.get("region", ""), "title": r["title"], "date": (r.get("date") or "")[:10],
                 "slug": slug, "url": r["url"], "ogImage": r.get("ogImage") or None,
+                "excerpt": news_excerpt(r["title"], r["bodyEn"]) or None,
                 "bodyEn": r["bodyEn"], "bodyZh": r.get("bodyZh") or None, "summaryZh": r.get("summaryZh") or None,
+                # P1d:AI 重要度(1-5,对找工/移民读者的实际影响;展示=「重要」徽标,非资格判定)
+                "importance": r.get("importance"), "importanceNote": r.get("importanceNote") or None,
                 "citation": r.get("citation") or "", "fetched": r.get("fetchedAt") or nd.get("fetched", "")})
 
     # PGWP 可申 DLI 子集(E12-03):build_dli.py 已过滤去重,这里直通并带上着陆页 url+抓取日期(逐行出处)

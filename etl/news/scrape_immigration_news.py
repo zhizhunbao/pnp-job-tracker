@@ -14,6 +14,7 @@ Usage:  uv run python etl/news/scrape_immigration_news.py
 """
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -38,23 +39,32 @@ OUT_FILE = _paths.NEWS / "news.json"
 
 SOURCES = [IRCC, BC, AB, MB, NS, ON, SK, QC]
 
-# ---- AI 翻译(build 轮直调;新增条目才调,公告频率低成本忽略不计)----
+# ---- AI 翻译+重要度(build 轮直调;新增条目才调,公告频率低成本忽略不计)----
 LLM_MODEL = "claude-haiku-4-5"      # 与顾问同模型(cms/src/lib/llm.ts 口径)
-MAX_TRANSLATE_PER_RUN = 12          # 每轮上限(首轮回填分几轮摊平,12h 一轮追平只是时间问题)
+# 每轮上限(首轮回填分几轮摊平,12h 一轮追平只是时间问题);一次性回填时用 env 临时放大
+MAX_TRANSLATE_PER_RUN = int(os.environ.get("NEWS_TRANSLATE_BUDGET", "12"))
 BODY_CAP = 10000                    # 喂给 LLM 的原文上限(新闻稿一般 <8k 字符)
 
 # 输出用哨兵行分隔的纯文本(不用 JSON:长译文里的引号/换行会破坏 JSON 转义,实测 4/12 解析失败)
-PROMPT = """你是移民政策新闻的专业中译者。下面是一篇加拿大官方移民新闻的英文原文(标题+正文)。
+# P1d(Frank 2026-07-18):同一调用顺带产「重要度 1-5」——对找工/移民读者的实际影响打分,
+# 展示=列表「重要」徽标,非资格判定;只依据原文,禁编。
+PROMPT = """你是移民政策新闻的专业中译者兼编辑。下面是一篇加拿大官方移民新闻的英文原文(标题+正文)。
 只依据原文内容,禁止外推、补充背景或编造;专有名词(项目名/流名/NOC 等)首次出现时保留英文原文并附中文说明。
 
-输出两部分,用单独一行「<<<BODY>>>」分隔,除此之外不要任何多余说明:
-1. 分隔行之前:2-3 句中文速读,说人话,讲清「发生了什么、对谁有影响」。
-2. 分隔行之后:段对段的中文全文翻译。原文用空行分段(以「• 」开头的行是列表项),译文保持完全相同的分段结构,不合并、不遗漏。
+输出三部分,除此之外不要任何多余说明:
+1. 第一行,固定格式「重要度: N | 一句中文理由」。N 为 1-5 整数,衡量对正在找工作/办移民的读者的实际影响:
+   5=直接影响资格或分数的政策变化/抽选结果(改制、新清单、抽选分数线);4=项目动态与重要数据;
+   3=一般性项目新闻;2=人事/活动/拨款类;1=礼节性声明(节日致辞等)。
+2. 之后是 2-3 句中文速读,说人话,讲清「发生了什么、对谁有影响」。
+3. 单独一行「<<<BODY>>>」之后:段对段的中文全文翻译。原文用空行分段(以「• 」开头的行是列表项),
+   译文保持完全相同的分段结构,不合并、不遗漏。
 
 标题:{title}
 
 正文:
 {body}"""
+
+IMP_RE = re.compile(r"^重要度[::]\s*([1-5])\s*[|丨]\s*(.+)$")
 
 
 def translate_missing(out_file: Path) -> None:
@@ -82,7 +92,14 @@ def translate_missing(out_file: Path) -> None:
                 summary, sep, body = text.partition("<<<BODY>>>")
                 if not (sep and summary.strip() and body.strip()):
                     raise ValueError("missing <<<BODY>>> sentinel in LLM output")
-                it["summaryZh"], it["bodyZh"] = summary.strip(), body.strip()
+                summary = summary.strip()
+                # 首行=重要度(P1d);解析不出不硬猜,留空只少个徽标
+                first, _, rest = summary.partition("\n")
+                m = IMP_RE.match(first.strip())
+                if m:
+                    it["importance"], it["importanceNote"] = int(m.group(1)), m.group(2).strip()
+                    summary = rest.strip()
+                it["summaryZh"], it["bodyZh"] = summary, body.strip()
                 done += 1
             except Exception as e:  # noqa: BLE001  # 单条失败不断轮,留空下轮重试
                 print(f"  ! translate {it['url']}: {type(e).__name__}: {e}")

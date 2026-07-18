@@ -12,7 +12,8 @@ async function loadRow(slug: string): Promise<NewsRow | null> {
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
   return pool
-    .query(`SELECT region, title, date, slug, url, og_image AS "ogImage", body_en AS "bodyEn", citation, fetched, '' AS excerpt
+    .query(`SELECT region, title, date, slug, url, og_image AS "ogImage", body_en AS "bodyEn", body_zh AS "bodyZh",
+                   importance, importance_note AS "importanceNote", citation, fetched, '' AS excerpt
             FROM news WHERE slug = $1 LIMIT 1`, [slug])
     .then((r: { rows: NewsRow[] }) => r.rows[0] ?? null)
     .catch(() => null)

@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import email.utils
 import json
+import os
 import re
 import time
 from datetime import datetime, timezone
@@ -115,9 +116,30 @@ def parse_feed(xml: str) -> list[dict]:
 
 # ---------- 详情页:og:image + 正文 ----------
 
+# 页尾样板段(canada.ca 等):遇到这些标题就截断,不进正文
+_TAIL_NOISE = {"page details", "report a problem on this page", "share this page",
+               "date modified", "about this site"}
+
+
+def _el_text(el) -> str:
+    """元素 → 文本,块内 <br> 换行保真(联系人块的姓名/头衔/邮箱各占一行,P1c 修:原先压成一坨)。"""
+    for br in el.find_all("br"):
+        br.replace_with("\n")
+    lines = [re.sub(r"\s+", " ", ln).strip() for ln in el.get_text().split("\n")]
+    return "\n".join(ln for ln in lines if ln)
+
+
+def _clip_tail(paras: list[str]) -> list[str]:
+    """剥页尾样板:从第一个噪音标题起全部丢弃(Page details/Date modified/…)。"""
+    for i, p in enumerate(paras):
+        if p.strip().lower().rstrip(":") in _TAIL_NOISE:
+            return paras[:i]
+    return paras
+
+
 def extract_detail(html: str, body_selector: str | None = None) -> tuple[str | None, str]:
     """详情页 → (og:image, 正文纯文本)。正文取 main/article 容器的段落/列表/小标题,
-    保留段落分隔(\\n\\n);抽不到正文返回空串(只卡片不出详情,不硬造)。"""
+    段落间 \\n\\n、段内 <br> 保留为 \\n;抽不到正文返回空串(只卡片不出详情,不硬造)。"""
     soup = BeautifulSoup(html, "html.parser")
     og = soup.find("meta", property="og:image")
     og_image = og.get("content") if og and og.get("content") else None
@@ -132,10 +154,10 @@ def extract_detail(html: str, body_selector: str | None = None) -> tuple[str | N
         li = el.find_parent("li")
         if li is not None and scope in li.parents:   # 嵌套列表只在最外层收一次(scope 外的布局 li 不算)
             continue
-        txt = re.sub(r"\s+", " ", el.get_text(" ", strip=True))
+        txt = _el_text(el)
         if txt:
             paras.append(("• " + txt) if el.name == "li" else txt)
-    return og_image, "\n\n".join(paras)
+    return og_image, "\n\n".join(_clip_tail(paras))
 
 
 def section_body(heading, stop_names: tuple[str, ...]) -> str:
@@ -149,10 +171,10 @@ def section_body(heading, stop_names: tuple[str, ...]) -> str:
             li = el.find_parent("li")
             if li is not None and (li is sib or sib in li.parents):   # 收集范围内的嵌套列表只收最外层
                 continue
-            txt = re.sub(r"\s+", " ", el.get_text(" ", strip=True))
+            txt = _el_text(el)
             if txt:
                 paras.append(("• " + txt) if el.name == "li" else txt)
-    return "\n\n".join(paras)
+    return "\n\n".join(_clip_tail(paras))
 
 
 def page_og_image(html: str) -> str | None:
@@ -228,6 +250,24 @@ def run(sources: list[dict], out_file: Path) -> None:
                     added += 1
                 print(f"✓ {region}: list {len(items)} · new {added}"
                       + (f" (deferred {len(fresh) - added})" if len(fresh) > added else ""))
+                # NEWS_REBODY=1:对本子源存量条目重抓详情正文(一次性回填,抽取器修复后用;
+                # 锚点合成 url(含 #)= 单页式源,正文来自列表页解析,跳过)。失败保留旧正文。
+                if os.environ.get("NEWS_REBODY") == "1":
+                    redone = 0
+                    for it in by_url.values():
+                        if it["region"] != region or "#" in it["url"]:
+                            continue
+                        try:
+                            og, body = extract_detail(fetch(client, it["url"]), src.get("body_selector"))
+                            if body:
+                                it["bodyEn"] = body
+                                it["ogImage"] = og or it.get("ogImage")
+                                redone += 1
+                        except Exception as e:  # noqa: BLE001
+                            print(f"  ! rebody {it['url']}: {type(e).__name__}")
+                        time.sleep(DETAIL_SLEEP)
+                    if redone:
+                        print(f"  ↻ {region}: rebody {redone}")
             except Exception as e:  # noqa: BLE001
                 print(f"✗ {region}: {type(e).__name__}: {e} —— 保留旧数据,下轮重试")
 

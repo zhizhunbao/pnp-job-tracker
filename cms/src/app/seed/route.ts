@@ -114,8 +114,8 @@ export async function GET(req: Request) {
     ['dli', 'dli', ['province', 'name', 'dli_number', 'city', 'campuses', 'is_public', 'grad_program', 'url', 'fetched'],
       (r) => ({ province: r.province, name: r.name, dli_number: r.dliNumber, city: r.city, campuses: r.campuses, is_public: r.isPublic, grad_program: r.gradProgram, url: r.url, fetched: r.fetched })],
     // E12-06 官方移民新闻(近 60 条滚动;body_zh/summary_zh=预留列照灌,前端暂不渲)
-    ['news', 'news', ['region', 'title', 'date', 'slug', 'url', 'og_image', 'body_en', 'body_zh', 'summary_zh', 'citation', 'fetched'],
-      (r) => ({ region: r.region, title: r.title, date: r.date, slug: r.slug, url: r.url, og_image: r.ogImage, body_en: r.bodyEn, body_zh: r.bodyZh, summary_zh: r.summaryZh, citation: r.citation, fetched: r.fetched })],
+    ['news', 'news', ['region', 'title', 'date', 'slug', 'url', 'og_image', 'excerpt', 'importance', 'importance_note', 'body_en', 'body_zh', 'summary_zh', 'citation', 'fetched'],
+      (r) => ({ region: r.region, title: r.title, date: r.date, slug: r.slug, url: r.url, og_image: r.ogImage, excerpt: r.excerpt, importance: r.importance, importance_note: r.importanceNote, body_en: r.bodyEn, body_zh: r.bodyZh, summary_zh: r.summaryZh, citation: r.citation, fetched: r.fetched })],
     // E4-04 字段级来源 / E5-02 榜单 / E5-04 地区统计(坑 2:白名单必须显式列全字段)
     ['field_sources', 'field_sources', ['field', 'kind', 'publisher', 'url', 'title', 'description', 'status', 'fetched', 'note'],
       (r) => ({ field: r.field, kind: r.kind, publisher: r.publisher, url: r.url, title: r.title, description: r.description, status: r.status, fetched: r.fetched, note: r.note })],

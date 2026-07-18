@@ -996,6 +996,18 @@ export interface News {
    */
   ogImage?: string | null;
   /**
+   * 清洗后摘要(mart 剥样板前缀/标题复读,P1c)
+   */
+  excerpt?: string | null;
+  /**
+   * AI 重要度 1-5(P1d,对找工/移民读者的实际影响;徽标用,非资格判定)
+   */
+  importance?: number | null;
+  /**
+   * AI 重要度一句理由(中文)
+   */
+  importanceNote?: string | null;
+  /**
    * 官方英文原文全文(详情页主体,v3)
    */
   bodyEn?: string | null;
@@ -1592,6 +1604,9 @@ export interface NewsSelect<T extends boolean = true> {
   slug?: T;
   url?: T;
   ogImage?: T;
+  excerpt?: T;
+  importance?: T;
+  importanceNote?: T;
   bodyEn?: T;
   bodyZh?: T;
   summaryZh?: T;

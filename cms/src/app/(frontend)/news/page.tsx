@@ -17,10 +17,12 @@ export const metadata = {
 export default async function NewsPage() {
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
+  // excerpt=mart 清洗产物(剥样板前缀/标题复读,P1c);importance=AI 重要度(P1d,徽标+只看重要)
   const items: NewsCard[] = await pool
-    .query(`SELECT region, title, date, slug, og_image AS "ogImage", left(body_en, 300) AS excerpt
+    .query(`SELECT region, title, date, slug, og_image AS "ogImage", excerpt,
+                   importance, importance_note AS "importanceNote"
             FROM news ORDER BY date DESC, id ASC LIMIT 60`)
-    .then((r: { rows: NewsCard[] }) => r.rows.map((n) => ({ ...n, excerpt: (n.excerpt || '').replace(/\s+/g, ' ').trim() })))
+    .then((r: { rows: NewsCard[] }) => r.rows.map((n) => ({ ...n, importance: n.importance == null ? null : Number(n.importance) })))
     .catch(() => [])
   return <NewsListView items={items} />
 }
