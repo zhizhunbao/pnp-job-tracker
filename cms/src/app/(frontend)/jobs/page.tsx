@@ -7,7 +7,7 @@ import { COLS_COOKIE } from './i18n'
 import { getUser, isPro } from '@/lib/entitlement'
 import { FREE_MATCH_JOBS_PER_DAY } from '@/lib/plan'
 import { normalizeProfile, hasProfile } from '@/lib/match'
-import { fetchJobRows } from '@/lib/jobsList'
+import { fetchJobRows, fetchTotalAndProof } from '@/lib/jobsSql'
 
 // 首屏行数(2026-07-05 用户拍板):SSR 只带最近 N 行秒开,全量 /api/jobs-data 后台拉(拉完筛选/搜索照旧)
 const FIRST_SCREEN_ROWS = 50
@@ -28,7 +28,7 @@ export default async function JobsPage() {
   const profile = normalizeProfile((user as any)?.profile)
   const profileOk = hasProfile(profile)
 
-  // 列表查询在 lib/jobsList.ts(与 /api/jobs-data 共用);首屏只取 FIRST_SCREEN_ROWS 行 + 总数
+  // 列表查询在 lib/jobsSql.ts(与 /api/jobs-data 共用);首屏只取 FIRST_SCREEN_ROWS 行 + 总数
   const pool = (payload.db as any).pool
 
   // SSR 首屏只取小维度(2026-07-17 瘦身):cities/districts/designated_employers/noc_descriptions 这 4 张大表
@@ -60,16 +60,13 @@ export default async function JobsPage() {
 
   // 首屏 50 行 + 总数(全量由客户端后台拉 /api/jobs-data,同一查询层同一排序,换入无跳变)
   const matchDims = { pnpOccupations: dims.pnpOccupations, eeCategories: dims.eeCategories }
-  const [{ jobs, updatedAt }, cntRes] = await Promise.all([
+  // 差异化证言数字(第 5 轮 #14):省提名清单命中岗 + 有外劳记录雇主数 —— 首屏 3 秒讲清与聚合站的区别
+  const [{ jobs, updatedAt }, tp] = await Promise.all([
     fetchJobRows(pool, { pro, profile, profileOk, matchDims, limit: FIRST_SCREEN_ROWS }),
-    // 差异化证言数字(第 5 轮 #14):省提名清单命中岗 + 有外劳记录雇主数 —— 首屏 3 秒讲清与聚合站的区别
-    pool.query(`SELECT count(*)::int AS n,
-      count(*) FILTER (WHERE status = 'open' AND pnp_stream IS NOT NULL AND pnp_stream <> '')::int AS named,
-      (SELECT count(*)::int FROM companies WHERE lmia_positions > 0) AS lmia
-      FROM jobs`),
+    fetchTotalAndProof(pool),
   ])
-  const totalCount: number = cntRes.rows[0]?.n ?? jobs.length
-  const proof = { named: cntRes.rows[0]?.named ?? 0, lmia: cntRes.rows[0]?.lmia ?? 0 }
+  const totalCount: number = tp.total || jobs.length
+  const proof = { named: tp.named, lmia: tp.lmia }
 
   // 列偏好从 cookie 读(浏览器/服务器都能读)→ SSR 直接渲对的列,零闪烁。客户端选列时写这个 cookie。
   let initialCols: string[] | undefined

@@ -2,13 +2,13 @@
 // 两类信 + 抽选段:
 //   A 档案匹配 —— Pro 且建档用户:first_seen > lastAlertAt 的新岗跑 match(),level 达标(plan.ALERT_MATCH_LEVEL)
 //     的前 10 条进信;当日有新抽选且用户报了 CRS → 附「上次抽选 vs 你的 CRS 差 X 分」段。发信后回写 lastAlertAt。
-//   B saved search —— 每条保存的筛选:first_seen > lastNotifiedAt 且命中 filters(lib/jobsQuery 解释)→ 发信,
+//   B saved search —— 每条保存的筛选:first_seen > lastNotifiedAt 且命中 filters(lib/jobsSql fetchAlertHits)→ 发信,
 //     回写 lastNotifiedAt。同一岗不重复通知(游标语义)。
 // RESEND_API_KEY 未设 = dry-run:照常计算返回计数,不发信不回写(端到端可演练)。?dry=1 强制 dry-run。
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { buildJobsWhere } from '@/lib/jobsQuery'
+import { fetchAlertHits } from '@/lib/jobsSql'
 import { sendMail, MAIL_ENABLED, unsubToken } from '@/lib/mailer'
 import { loadMatchDims } from '@/lib/matchDims'
 import { match, normalizeProfile, hasProfile, type MatchJob } from '@/lib/match'
@@ -143,13 +143,8 @@ export async function GET(req: NextRequest) {
     const owner = typeof sdoc.user === 'object' ? sdoc.user : null
     if (!owner?.email) continue
     const since = sdoc.lastNotifiedAt || new Date(Date.now() - 36 * 3600_000).toISOString()
-    const w = buildJobsWhere((sdoc.filters as Record<string, unknown>) || {}, 2)
-    out.skippedFilters.push(...w.skipped)
-    const { rows } = await pool.query(
-      `SELECT j.title, j.city, j.province, j.salary_text, j.apply_url, c.name AS company_name
-       FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
-       WHERE j.status = 'open' AND j.first_seen > $1 AND ${w.sql}
-       ORDER BY j.score DESC NULLS LAST LIMIT 20`, [since, ...w.params])
+    const { rows, skipped } = await fetchAlertHits(pool, (sdoc.filters as Record<string, unknown>) || {}, since)
+    out.skippedFilters.push(...skipped)
     if (!rows.length) continue
     if (!dry) {
       const lang = langOf(sdoc.lang)

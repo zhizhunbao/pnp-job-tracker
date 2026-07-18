@@ -1,7 +1,7 @@
 import type { Access, CollectionConfig, PayloadRequest } from 'payload'
 import { PRO_SAVED_SEARCHES } from '../lib/plan'
 
-// 保存的筛选(E5-03):Pro 用户存 /jobs 前端筛选 state 原样(json),alerts run 用共享 jobsQuery 解释。
+// 保存的筛选(E5-03):Pro 用户存 /jobs 前端筛选 state 原样(json),alerts run 用共享 jobsSql 解释。
 // access=本人+admin;创建时 hook 强制 user=req.user(不可代存);上限在 API 层由 plan.ts 常量卡。
 const isAdmin = (req: PayloadRequest) => req.user?.role === 'admin'
 const ownOrAdmin: Access = ({ req }) => {
@@ -33,7 +33,7 @@ export const SavedSearches: CollectionConfig = {
   fields: [
     { name: 'user', type: 'relationship', relationTo: 'users', required: true, index: true },
     { name: 'name', type: 'text', required: true },
-    { name: 'filters', type: 'json', admin: { description: '/jobs 前端筛选 state 原样(jobsQuery 解释)' } },
+    { name: 'filters', type: 'json', admin: { description: '/jobs 前端筛选 state 原样(jobsSql 解释)' } },
     { name: 'lang', type: 'text', admin: { description: '存时的界面语言(zh/en/ko),发信用' } },
     { name: 'lastNotifiedAt', type: 'date', admin: { description: '上次发信游标(alerts run 回写,防重复通知)' } },
   ],

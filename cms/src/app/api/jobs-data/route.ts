@@ -1,6 +1,6 @@
 /**
  * GET /api/jobs-data — 职位全量数据(首屏拆分的后半:page.tsx SSR 只带最近 50 行秒开,
- * 前端水合后从这里后台拉全量再换入;同一查询层 lib/jobsList.ts,同一排序,换入无跳变)。
+ * 前端水合后从这里后台拉全量再换入;同一查询层 lib/jobsSql.ts,同一排序,换入无跳变)。
  * 分层语义与 SSR 完全一致:Pro 列免费用户置空、匹配免费只算前 N 岗 —— 数据不进浏览器。
  */
 import { headers } from 'next/headers'
@@ -9,7 +9,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { getUser, isPro } from '@/lib/entitlement'
 import { hasProfile, normalizeProfile, type MatchDims } from '@/lib/match'
-import { fetchJobRows, mapEeCat, mapPnpOcc } from '@/lib/jobsList'
+import { fetchJobRows, mapEeCat, mapPnpOcc } from '@/lib/jobsSql'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
