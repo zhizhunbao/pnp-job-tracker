@@ -55,8 +55,27 @@ export function StatsIndexView({ rows, srcs }: { rows: StatRow[]; srcs: SrcRow[]
   return <StatsShell lang={lang} setLang={setLang} t={t}><StatsIndexContent rows={rows} srcs={srcs} t={t} /></StatsShell>
 }
 
+// 该省移民动态块(E12-06):近 3 条官方新闻标题链 /news/[slug];无数据整块不出现
+type NewsSlimRow = { title: string; date: string; slug: string }
+function ProvNewsBlock({ news, t }: { news: NewsSlimRow[]; t: TFn }) {
+  if (!news.length) return null
+  return (
+    <div style={{ margin: '14px 0 0' }}>
+      <h2 style={{ fontSize: 15.5, margin: '0 0 8px' }}>{t('news.blockTitle')} <a href="/news" style={{ fontSize: 12.5, color: '#2563eb', textDecoration: 'none', fontWeight: 400, marginLeft: 8 }}>{t('news.more')}</a></h2>
+      <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12 }}>
+        {news.map((n) => (
+          <div key={n.slug} style={{ display: 'flex', alignItems: 'baseline', gap: 10, padding: '8px 14px', fontSize: 13, borderBottom: '1px solid #f3f4f6' }}>
+            <span style={{ fontVariantNumeric: 'tabular-nums', color: '#9ca3af', whiteSpace: 'nowrap', fontSize: 12.5 }}>{n.date}</span>
+            <a href={`/news/${n.slug}`} style={{ color: '#2563eb', textDecoration: 'none', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={n.title}>{n.title}</a>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // ── 省级(汇总指标 + 按大类表)────────────────────────────────
-export function StatsProvContent({ prov, rows, srcs, t, ranks }: { prov: string; rows: StatRow[]; srcs: SrcRow[]; t: TFn; ranks?: { open: number | null; wage: number | null; total: number } }) {
+export function StatsProvContent({ prov, rows, srcs, t, ranks, news = [] }: { prov: string; rows: StatRow[]; srcs: SrcRow[]; t: TFn; ranks?: { open: number | null; wage: number | null; total: number }; news?: NewsSlimRow[] }) {
   const all = rows.find((r) => r.broad === 'all')
   const cats = BROAD_SLUGS.map(([slug, broad]) => ({ slug, broad, row: rows.find((r) => r.broad === broad) })).filter((x) => x.row)
   const broadLabel = (b: string) => (b === '未分类' ? t('cell.uncat') : t('broad.' + b))
@@ -73,6 +92,7 @@ export function StatsProvContent({ prov, rows, srcs, t, ranks }: { prov: string;
         </div>
       )}
       {all && <TopCities raw={all.topCities} t={t} />}
+      <ProvNewsBlock news={news} t={t} />
       <h2 style={{ fontSize: 15.5, margin: '18px 0 8px' }}>{t('stats.byCat')}</h2>
       <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, overflow: 'auto' }}>
         {/* minWidth:窄屏让表格溢出进容器横滚,而不是把列挤成逐字竖排(第 2 轮 #10) */}
@@ -96,9 +116,9 @@ export function StatsProvContent({ prov, rows, srcs, t, ranks }: { prov: string;
     </>
   )
 }
-export function StatsProvView({ prov, rows, srcs, ranks }: { prov: string; rows: StatRow[]; srcs: SrcRow[]; ranks?: { open: number | null; wage: number | null; total: number } }) {
+export function StatsProvView({ prov, rows, srcs, ranks, news }: { prov: string; rows: StatRow[]; srcs: SrcRow[]; ranks?: { open: number | null; wage: number | null; total: number }; news?: NewsSlimRow[] }) {
   const [lang, setLang, t] = useLang()
-  return <StatsShell lang={lang} setLang={setLang} t={t}><StatsProvContent prov={prov} rows={rows} srcs={srcs} t={t} ranks={ranks} /></StatsShell>
+  return <StatsShell lang={lang} setLang={setLang} t={t}><StatsProvContent prov={prov} rows={rows} srcs={srcs} t={t} ranks={ranks} news={news} /></StatsShell>
 }
 
 // ── 省×大类详情 ──────────────────────────────────────────────

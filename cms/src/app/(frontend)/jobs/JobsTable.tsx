@@ -7,7 +7,7 @@ import { useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState
 const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
 import { makeT, streamDisplay, eeDisplay, LANGS, LANG_KEY, COLS_COOKIE, type Lang, type TFn } from './i18n'
-import { IconChart, IconCheck, IconCompass, IconLock, IconMap, IconMapPin, IconMaximize, IconMinimize, IconSave, IconSettings, IconStar, IconTarget, IconUser, IconWarn, IconX } from '../Icons'
+import { IconChart, IconCheck, IconCompass, IconLock, IconMap, IconMapPin, IconMaximize, IconMinimize, IconNews, IconSave, IconSettings, IconStar, IconTarget, IconUser, IconWarn, IconX } from '../Icons'
 import { SiteFooter } from '../SiteFooter'
 import { Avatar } from '../Avatar'
 import { AuthModal } from './AuthForm'
@@ -469,6 +469,8 @@ type EeOcc = { category: string; label: string; noc: string; teer: number | null
 type DesigEmp = { name: string; province: string; location: string; isTech: boolean }
 type NocDesc = { noc: string; title: string; duties: string; requirements: string; fetched: string }
 type FieldSource = { field: string; kind: string; publisher: string; url: string; title: string; description: string; status: string; fetched: string; note: string }
+// 官方移民新闻瘦行(E12-06):弹框「本省最新公告」行用,详情在 /news/[slug]
+type NewsSlim = { region: string; title: string; date: string; slug: string }
 type Dims = {
   provinces: { code: string; name: string }[]
   cities: { name: string; province: string }[]
@@ -482,8 +484,9 @@ type Dims = {
   designatedEmployers: DesigEmp[]
   nocDescriptions: NocDesc[]
   fieldSources: FieldSource[]
+  news: NewsSlim[]
 }
-const EMPTY_DIMS: Dims = { provinces: [], cities: [], districts: [], nocCategories: [], sources: [], experienceLevels: [], pnpOccupations: [], pnpDraws: [], eeCategories: [], designatedEmployers: [], nocDescriptions: [], fieldSources: [] }
+const EMPTY_DIMS: Dims = { provinces: [], cities: [], districts: [], nocCategories: [], sources: [], experienceLevels: [], pnpOccupations: [], pnpDraws: [], eeCategories: [], designatedEmployers: [], nocDescriptions: [], fieldSources: [], news: [] }
 const PROV_CODE: Record<string, string> = Object.fromEntries(Object.entries(PROV_NAMES).map(([c, n]) => [n, c]))
 
 export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdatedAt, dims: initialDims = EMPTY_DIMS, initialCols, plan = FREE_PLAN, initialBanner, totalCount, proof, deferFull }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims; initialCols?: string[]; plan?: Plan; initialBanner?: boolean; totalCount?: number; proof?: { named: number; lmia: number }; deferFull?: boolean }) {
@@ -875,6 +878,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               <a href="/pathways" style={{ textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }}><IconCompass /> {t('pw.entry')}</a>
               <a href="/rankings/weekly-top" style={{ textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }}><IconChart /> {t('rank.entry')}</a>
               <a href="/stats" style={{ textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }}><IconMapPin /> {t('stats.entry')}</a>
+              {/* 移民动态=顶栏第 6 项(E12-06 拍板);窄屏随 flexWrap 自动折行 */}
+              <a href="/news" style={{ textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }}><IconNews /> {t('news.entry')}</a>
               {/* 我的账户=独立选项卡(2026-07-16 用户拍板);登录态另有右侧用户下拉;
                   未登录点它=当场弹登录框不跳页(2026-07-17 用户拍板) */}
               {plan.loggedIn
@@ -1267,7 +1272,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       {/* footer:全站共享 SiteFooter(2026-07-16 用户拍板统一 header/footer) */}
       <SiteFooter t={t} maxWidth={1320} />
 
-      {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} onOpenJob={(x) => setActModal({ kind: 'desc', job: x })} />}
+      {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} news={dims.news} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} onOpenJob={(x) => setActModal({ kind: 'desc', job: x })} />}
       {actModal && <ActModal job={actModal.job} lang={lang} onClose={() => setActModal(null)} />}
       {wizard && <OnboardingWizard t={t} initial={plan.profile} onClose={closeWizard} />}
       {upsell && (plan.loggedIn
@@ -1314,7 +1319,30 @@ function PnpDrawsBlock({ province, lang, draws, limit }: { province: string; lan
   )
 }
 
-function PnpListSection({ job, lang, occ, draws }: { job: JobRow; lang: Lang; occ: PnpOcc[]; draws: PnpDraw[] }) {
+// 本省最新公告行(E12-06):最新 1-2 条官方新闻标题,链 /news/[slug];无数据整块不出现。
+// 只摆标题+日期(事实),不解读——详情页自带 ©四件套与原文链。
+function NewsLatestBlock({ province, lang, news }: { province: string; lang: Lang; news: NewsSlim[] }) {
+  const t = makeT(lang)
+  const rows = news.filter((n) => n.region === province).slice(0, 2)
+  if (!rows.length) return null
+  return (
+    <div style={{ marginBottom: 12 }}>
+      <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>
+        {t('news.latest')}<a href="/news" style={{ color: '#9ca3af', textDecoration: 'none', marginLeft: 8 }}>{t('news.more')}</a>
+      </div>
+      <div style={{ border: '1px solid #f3f4f6', borderRadius: 8 }}>
+        {rows.map((n) => (
+          <div key={n.slug} style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '4px 10px', fontSize: 12.5 }}>
+            <span style={{ fontVariantNumeric: 'tabular-nums', color: '#9ca3af', whiteSpace: 'nowrap' }}>{n.date}</span>
+            <a href={`/news/${n.slug}`} style={{ flex: 1, minWidth: 0, color: '#2563eb', textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={n.title}>{n.title}</a>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function PnpListSection({ job, lang, occ, draws, news }: { job: JobRow; lang: Lang; occ: PnpOcc[]; draws: PnpDraw[]; news: NewsSlim[] }) {
   const t = makeT(lang)
   const matchRef = useRef<HTMLDivElement | null>(null)
   const isQc = job.province === 'QC'
@@ -1351,6 +1379,8 @@ function PnpListSection({ job, lang, occ, draws }: { job: JobRow; lang: Lang; oc
     <div style={{ marginBottom: 14, paddingBottom: 12, borderBottom: '1px solid #f3f4f6' }}>
       <div style={{ fontSize: 13.5, fontWeight: 600, color: tone, marginBottom: 8 }}>{vIcon}{vIcon ? ' ' : null}{verdict}</div>
       {!isQc && job.province ? <PnpDrawsBlock province={job.province} lang={lang} draws={draws} /> : null}
+      {/* 本省最新公告(E12-06,「本省最近抽选」块下);QC 也显——MIFI 部委新闻,资格口径由 /news 声明 */}
+      {job.province ? <NewsLatestBlock province={job.province} lang={lang} news={news} /> : null}
       {streams.filter((s) => s.occupations.length).map((s) => (
         <div key={s.label + s.stream} style={{ marginBottom: 10 }}>
           <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>
@@ -1623,12 +1653,12 @@ function fieldSrcUrls(field: ColKey, job: JobRow, sources: FieldSource[]): strin
 // (出处跟着对应内容走,不吊在弹窗底部);发布方/抓取时间/标签全不带 —— 合规已在 footer 统一声明。
 // pnp/ee 字段例外:清单内容来自政策页,各通道行已带自己的 ↗ 官方链接,不加岗位帖来源行。
 // field_sources 维度与 /sources 解释页照旧保留(E4-04 出处能力后置到解释页)。
-function FieldFactsSection({ field, job, jobs, lang, isPro, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc, fieldSources, onOpenJob }: { field: ColKey; job: JobRow; jobs: JobRow[]; lang: Lang; isPro: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onOpenJob?: (j: JobRow) => void }) {
+function FieldFactsSection({ field, job, jobs, lang, isPro, pnpOcc, pnpDraws, news, eeOcc, desigEmp, nocDesc, fieldSources, onOpenJob }: { field: ColKey; job: JobRow; jobs: JobRow[]; lang: Lang; isPro: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; news: NewsSlim[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onOpenJob?: (j: JobRow) => void }) {
   const t = makeT(lang)
   const urls = fieldSrcUrls(field, job, fieldSources)
   return (
     <>
-      <FieldFactsInner field={field} job={job} jobs={jobs} lang={lang} isPro={isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} onOpenJob={onOpenJob} />
+      <FieldFactsInner field={field} job={job} jobs={jobs} lang={lang} isPro={isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} onOpenJob={onOpenJob} />
       {DERIVED_SRC_FIELDS.has(field) ? (
         <div style={{ margin: '2px 0 12px', fontSize: 11.5, color: '#9ca3af' }}>
           {t('src.label')}: {t('src.derived')}
@@ -1669,10 +1699,10 @@ function CompanyJobsList({ here, cur, lang, onOpenJob }: { here: JobRow[]; cur: 
     </>
   )
 }
-function FieldFactsInner({ field, job, jobs, lang, isPro, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc, onOpenJob }: { field: ColKey; job: JobRow; jobs: JobRow[]; lang: Lang; isPro: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; onOpenJob?: (j: JobRow) => void }) {
+function FieldFactsInner({ field, job, jobs, lang, isPro, pnpOcc, pnpDraws, news, eeOcc, desigEmp, nocDesc, onOpenJob }: { field: ColKey; job: JobRow; jobs: JobRow[]; lang: Lang; isPro: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; news: NewsSlim[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; onOpenJob?: (j: JobRow) => void }) {
   const t = makeT(lang)
   const noc = nocDesc.find((d) => d.noc === job.noc) || null
-  if (field === 'pnp') return <PnpListSection job={job} lang={lang} occ={pnpOcc} draws={pnpDraws} />
+  if (field === 'pnp') return <PnpListSection job={job} lang={lang} occ={pnpOcc} draws={pnpDraws} news={news} />
   if (field === 'ee') return <EeCategorySection job={job} lang={lang} cats={eeOcc} />
   if (field === 'title') return <TitleFacts job={job} lang={lang} />
   const day = (s?: string) => (s || '').slice(0, 10)
@@ -1919,7 +1949,7 @@ function MeansForMe({ job, lang, plan, pnpOcc, eeOcc }: { job: JobRow; lang: Lan
   )
 }
 
-function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, eeOcc, desigEmp, nocDesc, fieldSources, onClose, onOpenJob }: { field: ColKey; job: JobRow; title?: string; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onClose: () => void; onOpenJob?: (j: JobRow) => void }) {
+function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, news, eeOcc, desigEmp, nocDesc, fieldSources, onClose, onOpenJob }: { field: ColKey; job: JobRow; title?: string; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; news: NewsSlim[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onClose: () => void; onOpenJob?: (j: JobRow) => void }) {
   const t = makeT(lang)
   const overlayClose = useOverlayClose(onClose)
   const a = advHeader(field, job, t)
@@ -2089,7 +2119,7 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, eeOcc, 
         <div style={{ flex: 1, overflowY: 'auto', padding: '4px 20px 20px' }}>
           {/* 对我意味着什么(E5-00):个人相关性放最上;依据链同源 match() */}
           <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} />
-          <FieldFactsSection field={field} job={job} jobs={companyJobs} lang={lang} isPro={plan.isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} onOpenJob={onOpenJob} />
+          <FieldFactsSection field={field} job={job} jobs={companyJobs} lang={lang} isPro={plan.isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} onOpenJob={onOpenJob} />
           {/* 建档 CTA(第 5 轮 #17 = 弹框规范 D1):身份信号族对未建档用户铺「事实 → 个人化」的桥 */}
           {!plan.profileOk && ['pnp', 'ee', 'lmia', 'aip'].includes(field) && (
             <div style={{ margin: '8px 0 10px' }}>

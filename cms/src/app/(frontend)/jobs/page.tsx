@@ -33,6 +33,10 @@ export default async function JobsPage() {
 
   // SSR 首屏只取小维度(2026-07-17 瘦身):cities/districts/designated_employers/noc_descriptions 这 4 张大表
   // 移到 /api/jobs-data 随全量后台拉(首屏减 ~1.25MB);它们只在筛选下拉/顾问弹窗用,晚到无碍。
+  // 官方移民新闻瘦行(E12-06,PNP 弹框「本省最新公告」):只取 4 列不带正文;表缺/查询失败 → 空(宁可留空)
+  const newsRowsP = pool.query(`SELECT region, title, date, slug FROM news ORDER BY date DESC, id ASC LIMIT 60`)
+    .then((r: any) => r.rows as { region: string; title: string; date: string; slug: string }[])
+    .catch(() => [])
   const [provDocs, nocDocs, srcDocs, expDocs, pnpDocs, pnpDrawDocs, eeDocs, fieldSrcDocs] = await Promise.all([
     payload.find({ collection: 'provinces', limit: 100, depth: 0, sort: 'name' }),
     payload.find({ collection: 'noc-categories', limit: 1000, depth: 0 }),
@@ -56,6 +60,7 @@ export default async function JobsPage() {
     designatedEmployers: [],  // SSR 瘦身:客户端从 /api/dims 拉后并入
     nocDescriptions: [],      // 同上(788KB 大头)
     fieldSources: fieldSrcDocs.docs.map((r: any) => ({ field: r.field ?? '', kind: r.kind ?? '', publisher: r.publisher ?? '', url: r.url ?? '', title: r.title ?? '', description: r.description ?? '', status: r.status ?? '', fetched: r.fetched ?? '', note: r.note ?? '' })),
+    news: await newsRowsP,
   }
 
   // 首屏 50 行 + 总数(E10-01 P3:筛选/翻页由客户端打 /api/jobs 分页,同一查询层 jobsSql 同序)

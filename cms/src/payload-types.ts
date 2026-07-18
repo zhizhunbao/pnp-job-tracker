@@ -89,6 +89,7 @@ export interface Config {
     stats: Stat;
     'saved-searches': SavedSearch;
     'saved-jobs': SavedJob;
+    news: News;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -118,6 +119,7 @@ export interface Config {
     stats: StatsSelect<false> | StatsSelect<true>;
     'saved-searches': SavedSearchesSelect<false> | SavedSearchesSelect<true>;
     'saved-jobs': SavedJobsSelect<false> | SavedJobsSelect<true>;
+    news: NewsSelect<false> | NewsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -965,6 +967,56 @@ export interface SavedJob {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "news".
+ */
+export interface News {
+  id: number;
+  /**
+   * federal / BC / AB / SK / MB / ON / QC / NS
+   */
+  region?: string | null;
+  /**
+   * 官方原标题
+   */
+  title?: string | null;
+  /**
+   * 官方发布日期(ISO)
+   */
+  date?: string | null;
+  /**
+   * date+标题 slug(/news/[slug])
+   */
+  slug?: string | null;
+  /**
+   * 官方原文链接(详情页导流)
+   */
+  url?: string | null;
+  /**
+   * og:image 直链(hotlink,onerror 隐藏,不落盘)
+   */
+  ogImage?: string | null;
+  /**
+   * 官方英文原文全文(详情页主体,v3)
+   */
+  bodyEn?: string | null;
+  /**
+   * AI 段对段中文翻译(预留列,暂不渲)
+   */
+  bodyZh?: string | null;
+  /**
+   * AI 中文速读(预留列,暂不渲)
+   */
+  summaryZh?: string | null;
+  /**
+   * 来源列表页(数据集级出处)
+   */
+  citation?: string | null;
+  fetched?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -1074,6 +1126,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'saved-jobs';
         value: number | SavedJob;
+      } | null)
+    | ({
+        relationTo: 'news';
+        value: number | News;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1522,6 +1578,25 @@ export interface SavedJobsSelect<T extends boolean = true> {
   title?: T;
   company?: T;
   status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "news_select".
+ */
+export interface NewsSelect<T extends boolean = true> {
+  region?: T;
+  title?: T;
+  date?: T;
+  slug?: T;
+  url?: T;
+  ogImage?: T;
+  bodyEn?: T;
+  bodyZh?: T;
+  summaryZh?: T;
+  citation?: T;
+  fetched?: T;
   updatedAt?: T;
   createdAt?: T;
 }

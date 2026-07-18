@@ -40,6 +40,7 @@ IN_FIELD_SOURCES = _paths.RAW / "sources" / "field-sources.json"  # 字段级来
 IN_DLI = _paths.DLI / "dli.json"                # PGWP 可申 DLI 子集(build_dli.py 产,E12-03)
 IN_LMIA = _paths.LMIA / "lmia-employers.json"   # ESDC 正面 LMIA 雇主聚合(build_lmia.py 产,E6-02)
 IN_ENRICH = _paths.PROCESSED / "company_enrich.json"  # 公司官网富化(简介/行业,enrich_companies.py 产,E8-04)
+IN_NEWS = _paths.NEWS / "news.json"              # 官方移民新闻累积表(etl/news/ 产,E12-06)
 OUT_MART = _paths.DATA / "mart"
 
 PROV_FULL = {
@@ -399,6 +400,31 @@ def build():
         except Exception:  # noqa: BLE001
             field_sources = []
 
+    # 官方移民新闻(E12-06):raw 全量累积,mart 只带近 60 条(老的留 raw 不进站)。
+    # slug=date+标题 slug 化(稳定、可读、进 URL);bodyZh/summaryZh 照灌(v3 拍板前端暂不渲,DB 留列开关式恢复)。
+    news = []
+    if IN_NEWS.exists():
+        try:
+            nd = json.loads(IN_NEWS.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001
+            nd = {}
+        seen_slug: set[str] = set()
+        items = sorted(nd.get("items", []), key=lambda r: (r.get("date") or "", r.get("fetchedAt") or ""), reverse=True)
+        for r in items[:60]:
+            if not (r.get("title") and r.get("url") and r.get("bodyEn")):
+                continue  # 卡片三要素不齐不进站(抓不到正文=不出详情页,不硬造)
+            slug = f"{(r.get('date') or '')[:10]}-{slugify(r['title'])}"
+            n = 2
+            while slug in seen_slug:
+                slug = f"{(r.get('date') or '')[:10]}-{slugify(r['title'])}-{n}"
+                n += 1
+            seen_slug.add(slug)
+            news.append({
+                "region": r.get("region", ""), "title": r["title"], "date": (r.get("date") or "")[:10],
+                "slug": slug, "url": r["url"], "ogImage": r.get("ogImage") or None,
+                "bodyEn": r["bodyEn"], "bodyZh": r.get("bodyZh") or None, "summaryZh": r.get("summaryZh") or None,
+                "citation": r.get("citation") or "", "fetched": r.get("fetchedAt") or nd.get("fetched", "")})
+
     # PGWP 可申 DLI 子集(E12-03):build_dli.py 已过滤去重,这里直通并带上着陆页 url+抓取日期(逐行出处)
     dli = []
     if IN_DLI.exists():
@@ -417,6 +443,7 @@ def build():
         "noc_descriptions": noc_descriptions,
         "field_sources": field_sources,
         "dli": dli,
+        "news": news,
     }
 
 

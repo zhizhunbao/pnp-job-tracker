@@ -18,6 +18,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url('/legal/privacy', 0.3, 'monthly'),
     url('/legal/terms', 0.3, 'monthly'),
     url('/pathways', 0.9, 'weekly'),
+    url('/news', 0.8),
     url('/rankings/weekly-top', 0.9),
     url('/rankings/sponsor-likely', 0.9),
     url('/stats', 0.8),

@@ -1,5 +1,7 @@
 // 省级统计页(E5-04):汇总指标 + 按大类表格(链去 /stats/[prov]/[cat])。
 import { notFound } from 'next/navigation'
+import { getPayload } from 'payload'
+import config from '@/payload.config'
 import { loadStats, loadStatSources } from '../lib'
 import { StatsProvView } from '../views'
 import { PROV_NAME } from '../shared'
@@ -33,5 +35,11 @@ export default async function StatsProvPage({ params }: { params: Promise<{ prov
     return 1 + allProv.filter((r) => (get(r) ?? -Infinity) > mine).length
   }
   const ranks = { open: rankBy((r) => r.openJobs), wage: rankBy((r) => r.medianWageAnnual), total: allProv.length }
-  return <StatsProvView prov={p} rows={rows} srcs={srcs} ranks={ranks} />
+  // 该省移民动态(E12-06):近 3 条官方新闻瘦行;表缺/查询失败 → 不出块(宁可留空,页面不 500)
+  const payload = await getPayload({ config: await config })
+  const news: { title: string; date: string; slug: string }[] = await (payload.db as any).pool
+    .query(`SELECT title, date, slug FROM news WHERE region = $1 ORDER BY date DESC, id ASC LIMIT 3`, [p])
+    .then((r: any) => r.rows)
+    .catch(() => [])
+  return <StatsProvView prov={p} rows={rows} srcs={srcs} ranks={ranks} news={news} />
 }
