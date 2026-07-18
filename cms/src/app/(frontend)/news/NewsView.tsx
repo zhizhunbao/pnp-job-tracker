@@ -12,6 +12,8 @@ import { useLang } from '../stats/ui'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { BackLink } from '../BackLink'
+import { PageBanner } from '../ui/primitives'
+import { IconNews } from '../Icons'
 import { newsPublisher, newsRegionName, NEWS_REGIONS, type NewsCard, type NewsComment, type NewsHero, type NewsRow } from './shared'
 
 function NewsShell({ children }: { children: (t: TFn, lang: Lang) => React.ReactNode }) {
@@ -160,8 +162,8 @@ export function NewsListView({ items, hero, cmtCounts }: { items: NewsCard[]; he
           {/* v4:头条网格窄屏折单列 */}
           <style>{`@media (max-width:760px){.nwTop{grid-template-columns:1fr !important}}`}</style>
           <div style={{ maxWidth: 1100, margin: '0 auto', padding: '4px 1rem 32px' }}>
-            {/* 页头(v4;P1f:口径副标句删——Frank「这一句也没什么用」,口径细节留 SEO description/详情页©行) */}
-            <h1 style={{ fontSize: 21, margin: '16px 0 4px' }}>{t('news.title')}</h1>
+            {/* 页头=PageBanner(#65 五模块统一浅色带,动态=青;口径句已删——P1f Frank「没什么用」) */}
+            <div style={{ marginTop: 16 }}><PageBanner module="news" icon={<IconNews />} title={t('news.title')} /></div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '10px 0 14px' }}>
               <button style={chip(!region)} onClick={() => setRegion('')}>{t('chart.all')}</button>
               {present.map((r) => <button key={r} style={chip(region === r)} onClick={() => setRegion(r)}>{regionLabel(t, r)}</button>)}

@@ -1,7 +1,8 @@
 'use client'
-// 二级页(榜单/统计/动态)共享顶栏——与 /jobs 顶栏统一(Frank 2026-07-18:「所有页面都是同一个 header」):
-// 品牌+标语 / 六入口导航 / 方框语言切换 / 账户区(登录=头像+昵称药丸进 /account;未登录=登录/注册/Pro,
-// 登录注册走 /?login=1 与 /?signup=1 落 /jobs 弹框,Pro 链 /pricing)。登录态客户端拉 /api/users/me。
+// 全站唯一顶栏(#65 header 合一,Frank 2026-07-18 拍板:「header 合一也做」「为什么不一样宽」):
+// /jobs 的内联头已退役,全部页面用本组件,**头轨统一 1320px**(跟最宽的职位板走;各页正文轨可窄但 header 一致)。
+// /jobs 特有件走 props:matchButton(「我的匹配」切换态)/accountArea(带 plan 的完整账户下拉)/sticky。
+// 二级页缺省:matchButton 不传=链接 /?view=match;accountArea 不传=AccountLite(登录=头像药丸,未登录=登录/注册)。
 import { useEffect, useState } from 'react'
 import { LANGS, type Lang, type TFn } from './jobs/i18n'
 import { Avatar } from './Avatar'
@@ -39,11 +40,17 @@ function AccountLite({ t }: { t: TFn }) {
   )
 }
 
-export function SiteHeader({ lang, setLang, t, active }: { lang: Lang; setLang: (l: Lang) => void; t: TFn; active?: 'rank' | 'stats' | 'account' | 'pathways' | 'news' }) {
+export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, accountArea }: {
+  lang: Lang; setLang: (l: Lang) => void; t: TFn
+  active?: 'rank' | 'stats' | 'account' | 'pathways' | 'news'
+  sticky?: boolean
+  matchButton?: { active: boolean; onClick: () => void }
+  accountArea?: React.ReactNode
+}) {
   const nav: React.CSSProperties = { textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }
   return (
-    <header style={{ background: '#fff', borderBottom: '1px solid #e5e7eb' }}>
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '10px 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+    <header style={{ background: '#fff', borderBottom: '1px solid #e5e7eb', ...(sticky && { position: 'sticky', top: 0, zIndex: 30 }) }}>
+      <div style={{ maxWidth: 1320, margin: '0 auto', padding: '10px 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, minWidth: 0 }}>
           <a href="/" style={{ fontSize: 17, fontWeight: 700, color: '#111827', textDecoration: 'none', whiteSpace: 'nowrap' }}>🍁 Offer2PR</a>
           <span className="shTagline" style={{ fontSize: 12, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('tagline')}</span>
@@ -54,7 +61,9 @@ export function SiteHeader({ lang, setLang, t, active }: { lang: Lang; setLang: 
           @media (max-width:1350px){.shTagline{display:none}}`}</style>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, maxWidth: '100%', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-            <a href="/?view=match" style={nav}><IconTarget /> {t('mv.entry')}</a>
+            {matchButton
+              ? <button onClick={matchButton.onClick} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: matchButton.active ? '#2563eb' : '#6b7280', fontWeight: matchButton.active ? 700 : 400, cursor: 'pointer', whiteSpace: 'nowrap' }}><IconTarget /> {t('mv.entry')}</button>
+              : <a href="/?view=match" style={nav}><IconTarget /> {t('mv.entry')}</a>}
             <a href="/pathways" style={{ ...nav, color: active === 'pathways' ? '#2563eb' : '#6b7280', fontWeight: active === 'pathways' ? 700 : 400 }}><IconCompass /> {t('pw.entry')}</a>
             <a href="/rankings/weekly-top" style={{ ...nav, color: active === 'rank' ? '#2563eb' : '#6b7280', fontWeight: active === 'rank' ? 700 : 400 }}><IconChart /> {t('rank.entry')}</a>
             <a href="/stats" style={{ ...nav, color: active === 'stats' ? '#2563eb' : '#6b7280', fontWeight: active === 'stats' ? 700 : 400 }}><IconMapPin /> {t('stats.entry')}</a>
@@ -73,7 +82,7 @@ export function SiteHeader({ lang, setLang, t, active }: { lang: Lang; setLang: 
                   style={{ border: 'none', padding: '3px 9px', fontSize: 12.5, cursor: 'pointer', background: lang === l.code ? '#2563eb' : '#fff', color: lang === l.code ? '#fff' : '#6b7280' }}>{l.label}</button>
               ))}
             </div>
-            <AccountLite t={t} />
+            {accountArea ?? <AccountLite t={t} />}
           </div>
         </div>
       </div>

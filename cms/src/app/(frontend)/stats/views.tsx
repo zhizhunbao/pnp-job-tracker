@@ -4,6 +4,7 @@
 import { useMemo, useState } from 'react'
 import { StatsShell, MetricCards, CaliberLine, useLang } from './ui'
 import { BackLink } from '../BackLink'
+import { PageBanner } from '../ui/primitives'
 import { IconMapPin, IconScale, IconStar, IconTarget } from '../Icons'
 import { BROAD_SLUGS, PROV_NAME, type StatRow, type SrcRow } from './shared'
 import { StatsCharts } from './charts'
@@ -30,7 +31,8 @@ export function StatsIndexContent({ rows, srcs, t }: { rows: StatRow[]; srcs: Sr
   const provRows = rows.filter((r) => r.broad === 'all')
   return (
     <>
-      <h1 style={{ fontSize: 22, margin: 0 }}><IconMapPin /> {t('stats.entry')}</h1>
+      {/* 页头=PageBanner(#65 五模块统一浅色带,统计=绿) */}
+      <PageBanner module="stats" icon={<IconMapPin />} title={t('stats.entry')} />
       <StatsCharts rows={rows} t={t} />
       <h2 style={{ fontSize: 15.5, margin: '18px 0 8px' }}>{t('stats.provIndex')}</h2>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12, margin: '16px 0' }}>

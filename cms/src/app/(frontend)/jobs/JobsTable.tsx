@@ -8,6 +8,8 @@ const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : use
 
 import { makeT, streamDisplay, eeDisplay, LANGS, LANG_KEY, COLS_COOKIE, type Lang, type TFn } from './i18n'
 import { IconChart, IconCheck, IconCompass, IconLock, IconMap, IconMapPin, IconMaximize, IconMinimize, IconNews, IconSave, IconSettings, IconStar, IconTarget, IconUser, IconWarn, IconX } from '../Icons'
+import { SiteHeader } from '../SiteHeader'
+import { PageBanner } from '../ui/primitives'
 import { SiteFooter } from '../SiteFooter'
 import { Avatar } from '../Avatar'
 import { AuthModal } from './AuthForm'
@@ -862,61 +864,23 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           .jtCards{display:flex}
         }
         @media (max-width:1350px){.jtTagline{display:none}}`}</style>
-      {/* sticky 顶栏:品牌 + 语言切换(手机/电脑都贴顶) */}
-      <header style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', borderBottom: '1px solid #e5e7eb' }}>
-        {/* 窄屏(E8-03):两段可换行,右侧账户区折到第二行,不横向溢出 */}
-        <div style={{ maxWidth: 1320, margin: '0 auto', padding: '10px 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, minWidth: 0 }}>
-            <span style={{ fontSize: 17, fontWeight: 700, color: '#111827', whiteSpace: 'nowrap' }}>🍁 Offer2PR</span>
-            {/* 副标语 <1350px 隐藏(与 SiteHeader 同步,防顶栏自动折行) */}
-            <span className="jtTagline" style={{ fontSize: 12, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('tagline')}</span>
-          </div>
-          {/* 方案 A(2026-07-17 用户拍板「怎么组织排列」):导航/操作两组+竖线分隔——组内紧凑(14/10)、
-              组间拉开;窄屏两组各自整体换行,竖线随之隐藏(jtHideNarrow) */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, maxWidth: '100%', flexWrap: 'wrap' }}>
-            {/* 顶栏三入口改跳转页面(2026-07-11 用户拍板,弹窗版退役):我的匹配=/jobs?view=match(三态分流保留:
-                未登录/未建档先去 /account 建档);榜单/地区统计直链各自页面(原 E8-02「站内不跳页」对这三处不再适用) */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-              <button onClick={toggleMatchView} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: matchView ? '#2563eb' : '#6b7280', fontWeight: matchView ? 700 : 400, cursor: 'pointer', whiteSpace: 'nowrap' }}><IconTarget /> {t('mv.entry')}</button>
-              <a href="/pathways" style={{ textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }}><IconCompass /> {t('pw.entry')}</a>
-              <a href="/rankings/weekly-top" style={{ textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }}><IconChart /> {t('rank.entry')}</a>
-              <a href="/stats" style={{ textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }}><IconMapPin /> {t('stats.entry')}</a>
-              {/* 移民动态=顶栏第 6 项(E12-06 拍板);窄屏随 flexWrap 自动折行 */}
-              <a href="/news" style={{ textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }}><IconNews /> {t('news.entry')}</a>
-              {/* 我的账户=独立选项卡(2026-07-16 用户拍板);登录态另有右侧用户下拉;
-                  未登录点它=当场弹登录框不跳页(2026-07-17 用户拍板) */}
-              {plan.loggedIn
-                ? <a href="/account" style={{ textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }}><IconUser /> {t('nav.acctTab')}</a>
-                : <button onClick={() => setUpsell('login')} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: '#6b7280', cursor: 'pointer', whiteSpace: 'nowrap' }}><IconUser /> {t('nav.acctTab')}</button>}
-            </div>
-            <span className="jtHideNarrow" style={{ width: 1, height: 16, background: '#e5e7eb' }} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-              <div style={{ display: 'inline-flex', border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
-                {LANGS.map((l) => (
-                  <button key={l.code} onClick={() => setLangSaved(l.code)}
-                    style={{ border: 'none', padding: '3px 9px', fontSize: 12.5, cursor: 'pointer', background: lang === l.code ? '#2563eb' : '#fff', color: lang === l.code ? '#fff' : '#6b7280' }}>{l.label}</button>
-                ))}
-              </div>
-              <AccountArea t={t} plan={plan} />
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* 顶栏=全站统一 SiteHeader(#65 header 合一,2026-07-18 Frank 拍板;内联头退役,1320 头轨全站一致)。
+          /jobs 特有件走 props:matchButton 切换态 + 完整 AccountArea(plan 下拉/弹框)。
+          差异认账:未登录点「我的账户」由弹框改为 /account 302 回 /?login=1(终点同为登录框)。 */}
+      <SiteHeader lang={lang} setLang={setLangSaved} t={t} sticky
+        matchButton={{ active: matchView, onClick: toggleMatchView }}
+        accountArea={<AccountArea t={t} plan={plan} />} />
       {/* 榜单/统计弹窗已退役(2026-07-11 用户拍板顶栏改跳转页面);/stats 页「看职位」?prov=&broad= 回流照旧 */}
       {/* 未登录价值主张横幅(E5-01):可关闭,cookie 记忆(SSR 首帧即渲) */}
       {!plan.loggedIn && <ValueBanner t={t} initialShow={initialBanner ?? true} />}
       <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1rem 1.25rem 1.5rem', width: '100%', boxSizing: 'border-box', flex: '1 0 auto' }}>
-        {/* B.5:h1 原用浏览器默认 2em(~32px)偏大 + 容器上 padding 1.5rem 偏松,用户报「标题上方空隙太大」→ 字号收一档、上间距收紧 */}
-        <h1 style={{ margin: '0 0 2px', fontSize: 26, color: '#111827' }}>Jobs</h1>
-        <p style={{ color: '#6b7280', marginTop: 0, fontSize: 13 }}>
-          {/* 标题数字永远 = 库内真实总数(第 15 轮 #34);筛选/匹配态只报命中数不带分母(第 17 轮 #42 拍板:
-              「/20000」分母=载入护栏非真实总数,像写死还两头不准——去掉分母零谎报零歧义)。 */}
-          {anyFilter || matchView ? t('subtitle.hits', { n: total }) : t('subtitle.count', { n: total })}
-          {/* 差异化证言(第 5 轮 #14):首屏 3 秒回答「为什么不用 Indeed」——数字都是本站独有信号 */}
-          {proof && (proof.named > 0 || proof.lmia > 0) && (
-            <span style={{ display: 'block', marginTop: 2, fontSize: 12, color: '#9ca3af' }}>{t('subtitle.proof', { named: proof.named, lmia: proof.lmia })}</span>
-          )}
-        </p>
+        {/* 页头=PageBanner(#65/#66 五模块统一浅色带,职位板=蓝)。标题数字口径不变:
+            库内真实总数(第 15 轮 #34)/筛选匹配态只报命中数(第 17 轮 #42);证言行(第 5 轮 #14)作 sub */}
+        <PageBanner module="jobs" title="Jobs"
+          sub={<>
+            {anyFilter || matchView ? t('subtitle.hits', { n: total }) : t('subtitle.count', { n: total })}
+            {proof && (proof.named > 0 || proof.lmia > 0) && <span style={{ marginLeft: 10 }}>{t('subtitle.proof', { named: proof.named, lmia: proof.lmia })}</span>}
+          </>} />
 
         {/* 推荐板块(2026-07-17「找工作为主」重构):原蓝条降级为职位列表上方的「推荐岗位」内容行——
             取最强组合出前 3 张匹配岗卡片,每张可「不感兴趣」;有筛选/匹配视图时不打扰。

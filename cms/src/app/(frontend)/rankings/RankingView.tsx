@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react'
 import { makeT, streamDisplay, eeDisplay, LANG_KEY, type Lang, type TFn } from '../jobs/i18n'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
+import { PageBanner } from '../ui/primitives'
+import { IconChart } from '../Icons'
 
 export type RankRow = {
   rank: number; kind: string; externalId: string
@@ -99,7 +101,8 @@ export function RankingView({ slug, items, slugs = [] }: { slug: string; items: 
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="rank" />
 
       <div style={{ maxWidth: 1100, margin: '2rem auto', padding: '0 1rem' }}>
-        <h1 style={{ fontSize: 22, margin: 0 }}>{rankTitle(t, slug)}</h1>
+        {/* 页头=PageBanner(#65 五模块统一浅色带,榜单=金) */}
+        <PageBanner module="rank" icon={<IconChart />} title={rankTitle(t, slug)} />
         <RankingTable slug={slug} items={items} t={t} />
         {/* 榜单导航(E9-02 分类榜矩阵):只列当前有数据的榜;当前榜加粗黑 */}
         <div style={{ marginTop: 14, fontSize: 12.5, display: 'flex', flexWrap: 'wrap', gap: '6px 14px' }}>
