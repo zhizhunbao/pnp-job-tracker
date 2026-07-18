@@ -40,13 +40,12 @@ function RegionTag({ t, region }: { t: TFn; region: string }) {
   return <span style={{ background: fed ? '#fee2e2' : '#eef2ff', color: fed ? '#b91c1c' : '#3730a3', borderRadius: 6, padding: '1px 7px', fontSize: 11.5, fontWeight: 600, whiteSpace: 'nowrap' }}>{regionLabel(t, region)}</span>
 }
 
-// AI 重要度徽标(P1d):5=红「重要」/ 4=琥珀「关注」(首批实测 4 分占半,单档红标会狼来了);
-// hover=一句理由+口径声明(AI 评,非资格判定)
+// AI 重要度徽标(P1d;P1f 收窄):只给 5 分挂红「重要」——琥珀「关注」档 Frank 拍板删(没用)。
+// hover=一句理由+口径声明(AI 评,非资格判定);「只看重要」筛选仍取 ≥4(重要动态梯队)。
 function ImpBadge({ t, importance, note }: { t: TFn; importance: number | null; note: string | null }) {
-  if (importance == null || importance < 4) return null
-  const top = importance >= 5
+  if (importance == null || importance < 5) return null
   return <span title={`${note || ''}${note ? ' · ' : ''}${t('news.aiScore')}`}
-    style={{ background: top ? '#dc2626' : '#fef3c7', color: top ? '#fff' : '#b45309', borderRadius: 6, padding: '1px 7px', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap' }}>{top ? t('news.imp') : t('news.watch')}</span>
+    style={{ background: '#dc2626', color: '#fff', borderRadius: 6, padding: '1px 7px', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap' }}>{t('news.imp')}</span>
 }
 
 // 列表小色块(v4:调小调淡——96×64 淡底深字,原高饱和大块太吵)
@@ -71,10 +70,26 @@ function ListTile({ region }: { region: string }) {
 // 头条图**不用抓来的 og 图**(Frank:「很多文字的图片不适合作为 banner」——政府 og 图多为文字模板图,
 // 裁剪救不回):一律省色字标底,视觉恒定;og 图只在详情页/原文里看。
 function HeroImage({ s }: { s: NewsHero }) {
-  // flex:1=图区弹性吃掉与右列的高度差(v4.1:头条卡下半截空白),minHeight 保底
+  // P1f(Frank:「最好背景图能用真实的图片」):省份地标实景照(本站静态 /img/regions/,Wikimedia Commons
+  // 来源见 SOURCES.md,不外链不用 og 文字图)+ 底部渐变压字;缺图/加载失败退省色字标。
+  // flex:1=图区弹性吃掉与右列的高度差(v4.1),minHeight 保底。
+  const [dead, setDead] = useState(false)
+  if (dead) {
+    return (
+      <div style={{ flex: 1, minHeight: 240, background: tileBg(s.region), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ color: 'rgba(255,255,255,.9)', fontWeight: 800, fontSize: 38, letterSpacing: 2, textTransform: 'uppercase' }}>{s.region === 'federal' ? 'IRCC' : newsRegionName(s.region)}</span>
+      </div>
+    )
+  }
   return (
-    <div style={{ flex: 1, minHeight: 240, background: tileBg(s.region), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <span style={{ color: 'rgba(255,255,255,.9)', fontWeight: 800, fontSize: 38, letterSpacing: 2, textTransform: 'uppercase' }}>{s.region === 'federal' ? 'IRCC' : newsRegionName(s.region)}</span>
+    <div style={{ flex: 1, minHeight: 240, position: 'relative', overflow: 'hidden' }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={`/img/regions/${s.region === 'federal' ? 'federal' : s.region.toLowerCase()}.jpg`} alt=""
+        onError={() => setDead(true)}
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(17,24,39,0) 45%, rgba(17,24,39,.55))' }} />
+      <span style={{ position: 'absolute', left: 16, bottom: 10, color: '#fff', fontWeight: 700, fontSize: 14, letterSpacing: 1.5, textShadow: '0 1px 4px rgba(0,0,0,.6)', textTransform: 'uppercase' }}>{s.region === 'federal' ? 'Canada' : newsRegionName(s.region)}</span>
+      <span style={{ position: 'absolute', right: 12, bottom: 9, color: 'rgba(255,255,255,.55)', fontSize: 9 }}>Wikimedia Commons</span>
     </div>
   )
 }
@@ -145,11 +160,8 @@ export function NewsListView({ items, hero, cmtCounts }: { items: NewsCard[]; he
           {/* v4:头条网格窄屏折单列 */}
           <style>{`@media (max-width:760px){.nwTop{grid-template-columns:1fr !important}}`}</style>
           <div style={{ maxWidth: 1100, margin: '0 auto', padding: '4px 1rem 32px' }}>
-            {/* 页头:标题+口径+筛选(v4:全页统一 1100 单轨,不再有全宽深色 banner) */}
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, margin: '16px 0 4px', flexWrap: 'wrap' }}>
-              <h1 style={{ fontSize: 21, margin: 0 }}>{t('news.title')}</h1>
-              <span style={{ fontSize: 12, color: '#9ca3af' }}>{t('news.sub')}</span>
-            </div>
+            {/* 页头(v4;P1f:口径副标句删——Frank「这一句也没什么用」,口径细节留 SEO description/详情页©行) */}
+            <h1 style={{ fontSize: 21, margin: '16px 0 4px' }}>{t('news.title')}</h1>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '10px 0 14px' }}>
               <button style={chip(!region)} onClick={() => setRegion('')}>{t('chart.all')}</button>
               {present.map((r) => <button key={r} style={chip(region === r)} onClick={() => setRegion(r)}>{regionLabel(t, r)}</button>)}
@@ -256,6 +268,23 @@ export function NewsDetailView({ row, comments, loggedIn }: { row: NewsRow; comm
   // (朋友的 qwen 服务,编号协议服务端校验对齐后写回 DB=永久缓存)。per-lang 各自缓存。
   const [transCache, setTransCache] = useState<{ zh: string | null; ko: string | null }>({ zh: row.bodyZh, ko: row.bodyKo })
   const [trState, setTrState] = useState<'idle' | 'busy' | 'err'>('idle')
+  // AI 速读按需生成(P1f):per-lang 缓存(SSR 带下命中秒显);点按钮 → /api/news-summarize → 写库
+  const [sumCache, setSumCache] = useState<{ zh: string | null; ko: string | null; en: string | null }>({ zh: row.summaryZh, ko: row.summaryKo, en: row.summaryEn })
+  const [sumState, setSumState] = useState<'idle' | 'busy' | 'err'>('idle')
+  const fetchSum = async (lang: 'zh' | 'ko' | 'en') => {
+    if (sumState === 'busy') return
+    setSumState('busy')
+    try {
+      const r = await fetch('/api/news-summarize', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug: row.slug, lang }),
+      })
+      const d = await r.json()
+      if (!r.ok || !d.ok) throw new Error(d.error || String(r.status))
+      setSumCache((c) => ({ ...c, [lang]: d.summary }))
+      setSumState('idle')
+    } catch { setSumState('err') }
+  }
   const fetchTrans = async (lang: 'zh' | 'ko') => {
     if (trState === 'busy') return
     setTrState('busy')
@@ -276,6 +305,7 @@ export function NewsDetailView({ row, comments, loggedIn }: { row: NewsRow; comm
       // 译文由编号协议保证与原文段对段对齐(缺号=拒收),按序配对安全;超长稿只翻前段,尾段只显英文。
       const trans = lang === 'zh' ? transCache.zh : lang === 'ko' ? transCache.ko : null
       const zhParas = (trans || '').split(/\n{2,}/).map((p) => p.trim()).filter(Boolean)
+      const summary = sumCache[lang]
       return (
       <div style={{ maxWidth: 860, margin: '0 auto', padding: '18px 1rem 32px' }}>
         <div style={{ marginBottom: 12 }}><BackLink href="/news" label={t('news.back')} /></div>
@@ -292,6 +322,14 @@ export function NewsDetailView({ row, comments, loggedIn }: { row: NewsRow; comm
               {t('news.copy', { who: newsPublisher(row.region) })}
               {' · '}<a href={row.url} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{t('news.official')}</a>
             </span>
+            {/* AI 速读钮(P1f):没生成过才显钮;生成后常驻速读框 */}
+            {!summary && (
+              <button disabled={sumState === 'busy'} onClick={() => fetchSum(lang)}
+                style={{ border: '1px solid #e5e7eb', background: '#fff', color: '#2563eb', borderRadius: 999, padding: '2px 10px', fontSize: 11.5, cursor: sumState === 'busy' ? 'wait' : 'pointer', whiteSpace: 'nowrap' }}>
+                {sumState === 'busy' ? t('news.sumBusy') : `⚡ ${t('news.aiSum')}`}
+              </button>
+            )}
+            {sumState === 'err' && <span style={{ color: '#b91c1c', fontSize: 11.5 }}>{t('news.trErr')}</span>}
             {lang !== 'en' && (
               <button disabled={trState === 'busy'}
                 onClick={() => { if (zh) setZh(false); else if (trans) setZh(true); else fetchTrans(lang as 'zh' | 'ko') }}
@@ -302,6 +340,13 @@ export function NewsDetailView({ row, comments, loggedIn }: { row: NewsRow; comm
             {trState === 'err' && <span style={{ color: '#b91c1c', fontSize: 11.5 }}>{t('news.trErr')}</span>}
           </div>
           {row.region === 'QC' && <div style={{ fontSize: 12, color: '#b45309', background: '#fffbeb', borderRadius: 8, padding: '6px 10px', marginBottom: 12 }}>{t('news.qcNote')}</div>}
+          {/* AI 速读框(P1f):生成后常驻正文上方 */}
+          {summary && (
+            <div style={{ background: '#eff6ff', border: '1px solid #dbeafe', borderRadius: 10, padding: '10px 14px', marginBottom: 12 }}>
+              <div style={{ fontSize: 11, color: '#3b82f6', fontWeight: 600, marginBottom: 4 }}>⚡ {t('news.aiSum')} <span style={{ color: '#9ca3af', fontWeight: 400 }}>· {t('news.aiGen')}</span></div>
+              <div style={{ fontSize: 13.5, color: '#1e40af', lineHeight: 1.7 }}>{summary}</div>
+            </div>
+          )}
           {zh && <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 10 }}>{t('news.aiNote')}</div>}
           <div style={{ fontSize: 14, lineHeight: 1.75, color: '#374151', marginTop: 4 }}>
             {paras.map((p, i) => (

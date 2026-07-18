@@ -1030,6 +1030,10 @@ export interface News {
    */
   summaryKo?: string | null;
   /**
+   * AI 英文速读(P1f 懒生成缓存)
+   */
+  summaryEn?: string | null;
+  /**
    * 来源列表页(数据集级出处)
    */
   citation?: string | null;
@@ -1649,6 +1653,7 @@ export interface NewsSelect<T extends boolean = true> {
   summaryZh?: T;
   bodyKo?: T;
   summaryKo?: T;
+  summaryEn?: T;
   citation?: T;
   fetched?: T;
   updatedAt?: T;

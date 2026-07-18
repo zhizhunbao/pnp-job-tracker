@@ -113,9 +113,8 @@ export async function GET(req: Request) {
     // E12-03 PGWP 可申 DLI 子集(院校级,IRCC 官方名单)
     ['dli', 'dli', ['province', 'name', 'dli_number', 'city', 'campuses', 'is_public', 'grad_program', 'url', 'fetched'],
       (r) => ({ province: r.province, name: r.name, dli_number: r.dliNumber, city: r.city, campuses: r.campuses, is_public: r.isPublic, grad_program: r.gradProgram, url: r.url, fetched: r.fetched })],
-    // E12-06 官方移民新闻(近 60 条滚动;body_zh/summary_zh=预留列照灌,前端暂不渲)
-    ['news', 'news', ['region', 'title', 'date', 'slug', 'url', 'og_image', 'excerpt', 'importance', 'importance_note', 'body_en', 'body_zh', 'summary_zh', 'body_ko', 'summary_ko', 'citation', 'fetched'],
-      (r) => ({ region: r.region, title: r.title, date: r.date, slug: r.slug, url: r.url, og_image: r.ogImage, excerpt: r.excerpt, importance: r.importance, importance_note: r.importanceNote, body_en: r.bodyEn, body_zh: r.bodyZh, summary_zh: r.summaryZh, body_ko: r.bodyKo, summary_ko: r.summaryKo, citation: r.citation, fetched: r.fetched })],
+    // E12-06 news 不走 dims 清空重灌 —— 懒翻译/速读缓存(body_zh/ko、summary_*)是线上按需写入的,
+    // DELETE+重灌每小时抹一次缓存(P1f 实撞发现);改专用 upsert 块见下(dims 循环之后)。
     // E4-04 字段级来源 / E5-02 榜单 / E5-04 地区统计(坑 2:白名单必须显式列全字段)
     ['field_sources', 'field_sources', ['field', 'kind', 'publisher', 'url', 'title', 'description', 'status', 'fetched', 'note'],
       (r) => ({ field: r.field, kind: r.kind, publisher: r.publisher, url: r.url, title: r.title, description: r.description, status: r.status, fetched: r.fetched, note: r.note })],
@@ -145,6 +144,27 @@ export async function GET(req: Request) {
         rows.map((r) => ({ ...r, created_at: now, updated_at: now })))
       counts[table] = rows.length
     }
+
+    // ── news:按 slug upsert(E12-06 P1f)──────────────────────────
+    // 懒翻译/速读缓存列(body_zh/body_ko/summary_zh/summary_ko/summary_en)由 /api/news-translate、
+    // /api/news-summarize 线上写入,seed 不许碰——除非该条 body_en 变了(重抽正文)才连带清缓存(防错位陈译)。
+    // 滚出 60 条窗口的行删除;mart 缺文件=跳过(与 dims 同防线)。预翻批若恢复(budget>0)需同步调整此块。
+    if (martPaths('news').length > 0) {
+      const newsRows = (await mart('news')).filter((r: any) => r.slug).map((r: any) => ({
+        region: r.region, title: r.title, date: r.date, slug: r.slug, url: r.url, og_image: r.ogImage,
+        excerpt: r.excerpt, importance: r.importance, importance_note: r.importanceNote,
+        body_en: r.bodyEn, citation: r.citation, fetched: r.fetched, created_at: now, updated_at: now,
+      }))
+      const newsCols = ['region', 'title', 'date', 'slug', 'url', 'og_image', 'excerpt', 'importance', 'importance_note', 'body_en', 'citation', 'fetched', 'created_at', 'updated_at']
+      const newsUpdate = newsCols.filter((c) => !['slug', 'created_at'].includes(c)).map((c) => `${c}=EXCLUDED.${c}`).join(',')
+      const staleClear = ['body_zh', 'body_ko', 'summary_zh', 'summary_ko', 'summary_en']
+        .map((c) => `${c}=CASE WHEN news.body_en IS DISTINCT FROM EXCLUDED.body_en THEN NULL ELSE news.${c} END`).join(',')
+      await client.query(`DELETE FROM payload_locked_documents_rels WHERE news_id IS NOT NULL`)
+      if (newsRows.length) await client.query(`DELETE FROM news WHERE NOT (slug = ANY($1))`, [newsRows.map((r) => r.slug)])
+      await insertBatch(client, 'news', newsCols, newsRows,
+        `ON CONFLICT (slug) DO UPDATE SET ${staleClear}, ${newsUpdate}`)
+      counts.news = newsRows.length
+    } else { counts.news = -1 }
 
     if (reset) {
       await client.query('DELETE FROM payload_locked_documents_rels WHERE jobs_id IS NOT NULL OR companies_id IS NOT NULL')

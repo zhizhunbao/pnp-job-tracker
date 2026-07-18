@@ -7,7 +7,11 @@ export type NewsCard = {
   importance: number | null; importanceNote: string | null
 }
 export type NewsHero = NewsCard & { summaryZh: string | null; summaryKo: string | null }
-export type NewsRow = NewsCard & { url: string; bodyEn: string; bodyZh: string | null; bodyKo: string | null; citation: string; fetched: string }
+export type NewsRow = NewsCard & {
+  url: string; bodyEn: string; bodyZh: string | null; bodyKo: string | null
+  summaryZh: string | null; summaryKo: string | null; summaryEn: string | null
+  citation: string; fetched: string
+}
 export type NewsComment = { authorName: string; body: string; date: string }
 
 // chips/分组展示顺序:联邦在前,省按职位板惯例

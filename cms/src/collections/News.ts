@@ -21,6 +21,7 @@ export const News: CollectionConfig = {
     { name: 'summaryZh', type: 'textarea', admin: { description: 'AI 中文速读(banner 轮播摘要)' } },
     { name: 'bodyKo', type: 'textarea', admin: { description: 'AI 段对段韩语翻译(韩语界面对照开关)' } },
     { name: 'summaryKo', type: 'textarea', admin: { description: 'AI 韩语速读(韩语界面 banner 摘要)' } },
+    { name: 'summaryEn', type: 'textarea', admin: { description: 'AI 英文速读(P1f 懒生成缓存)' } },
     { name: 'citation', type: 'text', admin: { description: '来源列表页(数据集级出处)' } },
     { name: 'fetched', type: 'text' },
   ],
