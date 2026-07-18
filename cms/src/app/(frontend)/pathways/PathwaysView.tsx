@@ -1,0 +1,120 @@
+'use client'
+// 方案卡渲染(E12-01):分组(与你的处境相关/其他路径)+ 每卡步骤/信号/缺口补法/出处。
+// 纯显示——命中/缺口全由 lib/pathways.ts 算好传入;措辞红线在 i18n 键里落实(摆信息不下结论)。
+import { useEffect, useMemo, useState } from 'react'
+import { makeT, LANG_KEY, type Lang } from '../jobs/i18n'
+import { SiteHeader } from '../SiteHeader'
+import { SiteFooter } from '../SiteFooter'
+import { IconCheck, IconCompass, IconWarn } from '../Icons'
+import type { PathwayEval, PathwaySignal } from '@/lib/pathways'
+
+const card: React.CSSProperties = { background: '#fff', border: '0.5px solid #e5e7eb', borderRadius: 12, padding: '16px 18px' }
+const secTitle: React.CSSProperties = { fontSize: 12.5, fontWeight: 600, color: '#6b7280', margin: '14px 0 6px' }
+
+function SignalRow({ s, t }: { s: PathwaySignal; t: (k: string, v?: Record<string, string | number>) => string }) {
+  const icon = s.verdict === 'pass' ? <IconCheck style={{ color: '#047857' }} /> : s.verdict === 'warn' ? <IconWarn style={{ color: '#b45309' }} /> : <span style={{ color: '#9ca3af' }}>–</span>
+  return (
+    <li style={{ fontSize: 13, color: '#374151', lineHeight: 1.6, listStyle: 'none', display: 'flex', gap: 6 }}>
+      <span style={{ flexShrink: 0 }}>{icon}</span>
+      <span>
+        {t(s.key, s.params)}
+        {s.source && (
+          <a href={s.source.url} target="_blank" rel="noreferrer" style={{ color: '#6366f1', textDecoration: 'none', fontSize: 12, marginLeft: 6 }}>
+            ↗{s.source.fetched ? ` ${String(s.source.fetched).slice(0, 10)}` : ''}
+          </a>
+        )}
+      </span>
+    </li>
+  )
+}
+
+export function PathwaysView({ evals, loggedIn, profileOk }: { evals: PathwayEval[]; loggedIn: boolean; profileOk: boolean }) {
+  const [lang, setLang] = useState<Lang>('zh')
+  useEffect(() => { try { const l = localStorage.getItem(LANG_KEY) as Lang | null; if (l === 'zh' || l === 'en' || l === 'ko') setLang(l) } catch { /* ignore */ } }, [])
+  const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
+  const t = useMemo(() => makeT(lang), [lang])
+
+  const grouped = evals.some((e) => e.forYou === true)   // 有分型且至少一条相关 → 分组;否则平铺
+  const forYou = evals.filter((e) => e.forYou === true)
+  const others = evals.filter((e) => e.forYou !== true)
+
+  const Card = ({ ev }: { ev: PathwayEval }) => (
+    <section style={card}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        <h2 style={{ fontSize: 16, margin: 0, color: '#111827' }}>{t(`pw.${ev.recipe.id}.name`)}</h2>
+        {ev.recipe.audience.map((a) => (
+          <span key={a} style={{ fontSize: 11, color: '#4338ca', background: '#eef2ff', borderRadius: 20, padding: '2px 8px' }}>{t(`prof.st.${a}`)}</span>
+        ))}
+      </div>
+
+      <div style={secTitle}>{t('pw.steps')}</div>
+      <ol style={{ margin: 0, paddingLeft: 20 }}>
+        {ev.recipe.steps.map((s) => (
+          <li key={s.key} style={{ fontSize: 13, color: '#374151', lineHeight: 1.7 }}>
+            {t(s.key)}
+            {s.sourceIdx != null && ev.recipe.sources[s.sourceIdx] && (
+              <a href={ev.recipe.sources[s.sourceIdx].url} target="_blank" rel="noreferrer" style={{ color: '#6366f1', textDecoration: 'none', fontSize: 12, marginLeft: 5 }}>↗</a>
+            )}
+          </li>
+        ))}
+      </ol>
+
+      {ev.signals.length > 0 && (<>
+        <div style={secTitle}>{t('pw.signals')}</div>
+        <ul style={{ margin: 0, padding: 0 }}>{ev.signals.map((s, i) => <SignalRow key={i} s={s} t={t} />)}</ul>
+      </>)}
+
+      {ev.gaps.length > 0 && (<>
+        <div style={secTitle}>{t('pw.gaps')}</div>
+        <ul style={{ margin: 0, padding: 0 }}>
+          {ev.gaps.map((g) => (
+            <li key={g.key} style={{ fontSize: 13, color: '#374151', lineHeight: 1.6, listStyle: 'none', display: 'flex', gap: 6 }}>
+              <span style={{ color: '#b45309', flexShrink: 0 }}><IconWarn /></span>
+              <span>
+                {t(g.key)}
+                {g.url && <a href={g.url} {...(g.url.startsWith('http') ? { target: '_blank', rel: 'noreferrer' } : {})} style={{ color: '#6366f1', textDecoration: 'none', fontSize: 12, marginLeft: 6 }}>↗</a>}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </>)}
+
+      <div style={{ borderTop: '1px solid #f3f4f6', marginTop: 14, paddingTop: 8, fontSize: 11.5, color: '#9ca3af', display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+        <span>{t('pw.sources')}:</span>
+        {ev.recipe.sources.map((s) => (
+          <a key={s.url} href={s.url} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{s.label} ↗</a>
+        ))}
+        <span>· {t('pw.reviewed', { d: ev.recipe.lastReviewed })}</span>
+      </div>
+    </section>
+  )
+
+  return (
+    <div style={{ background: 'linear-gradient(160deg,#f8fafc 0%,#eef2ff 55%,#f8fafc 100%)', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
+      <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="pathways" />
+      <main style={{ maxWidth: 860, width: '100%', margin: '2rem auto', padding: '0 1rem', boxSizing: 'border-box', flex: '1 0 auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div>
+          <h1 style={{ fontSize: 24, margin: 0, color: '#111827' }}><IconCompass /> {t('pw.title')}</h1>
+          <p style={{ fontSize: 13.5, color: '#6b7280', margin: '6px 0 0' }}>{t('pw.sub')}</p>
+          <p style={{ fontSize: 12, color: '#9ca3af', margin: '6px 0 0' }}>{t('pw.disc')}</p>
+        </div>
+
+        {/* 建档 CTA:匿名→登录框深链;登录未建档→档案节 */}
+        {!profileOk && (
+          <a href={loggedIn ? '/account?sec=profile' : '/?login=1'}
+            style={{ ...card, display: 'block', textDecoration: 'none', color: '#1d4ed8', background: '#eff6ff', border: '0.5px solid #bfdbfe', fontSize: 13.5, fontWeight: 600 }}>
+            {loggedIn ? t('pw.buildCta') : t('pw.loginCta')}
+          </a>
+        )}
+
+        {grouped ? (<>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#1d4ed8' }}>{t('pw.forYou')}</div>
+          {forYou.map((ev) => <Card key={ev.recipe.id} ev={ev} />)}
+          {others.length > 0 && <div style={{ fontSize: 13, fontWeight: 700, color: '#9ca3af', marginTop: 6 }}>{t('pw.other')}</div>}
+          {others.map((ev) => <Card key={ev.recipe.id} ev={ev} />)}
+        </>) : evals.map((ev) => <Card key={ev.recipe.id} ev={ev} />)}
+      </main>
+      <SiteFooter t={t} />
+    </div>
+  )
+}

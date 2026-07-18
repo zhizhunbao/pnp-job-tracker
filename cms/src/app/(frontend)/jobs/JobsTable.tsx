@@ -142,6 +142,7 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
               </a>
               {/* 求职向条目(深链到账户页各节;去论坛化,不放积分/消息/主页) */}
               <a href="/?view=match" style={menuItem}><IconTarget /> {t('mv.entry')}</a>
+              <a href="/pathways" style={menuItem}><IconCompass /> {t('pw.entry')}</a>
               <a href="/account?sec=sjobs" style={menuItem}>{t('sj.title')}</a>
               <a href="/account?sec=profile" style={menuItem}>{t('prof.title')}</a>
               <a href="/account?sec=saved" style={menuItem}>{t('ss.title')}</a>
@@ -871,6 +872,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                 未登录/未建档先去 /account 建档);榜单/地区统计直链各自页面(原 E8-02「站内不跳页」对这三处不再适用) */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
               <button onClick={toggleMatchView} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: matchView ? '#2563eb' : '#6b7280', fontWeight: matchView ? 700 : 400, cursor: 'pointer', whiteSpace: 'nowrap' }}><IconTarget /> {t('mv.entry')}</button>
+              <a href="/pathways" style={{ textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }}><IconCompass /> {t('pw.entry')}</a>
               <a href="/rankings/weekly-top" style={{ textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }}><IconChart /> {t('rank.entry')}</a>
               <a href="/stats" style={{ textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }}><IconMapPin /> {t('stats.entry')}</a>
               {/* 我的账户=独立选项卡(2026-07-16 用户拍板);登录态另有右侧用户下拉;

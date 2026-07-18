@@ -3,9 +3,9 @@
 // 与 /jobs 顶栏同款视觉——品牌+标语 / 三入口导航 / 方框语言切换 / 账户入口。
 // plan 分层态不在二级页拉取,账户入口统一链 /account(该页自会按登录态分流)。
 import { LANGS, type Lang, type TFn } from './jobs/i18n'
-import { IconTarget, IconChart, IconMapPin, IconUser } from './Icons'
+import { IconTarget, IconChart, IconCompass, IconMapPin, IconUser } from './Icons'
 
-export function SiteHeader({ lang, setLang, t, active }: { lang: Lang; setLang: (l: Lang) => void; t: TFn; active?: 'rank' | 'stats' | 'account' }) {
+export function SiteHeader({ lang, setLang, t, active }: { lang: Lang; setLang: (l: Lang) => void; t: TFn; active?: 'rank' | 'stats' | 'account' | 'pathways' }) {
   const nav: React.CSSProperties = { textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }
   return (
     <header style={{ background: '#fff', borderBottom: '1px solid #e5e7eb' }}>
@@ -19,6 +19,7 @@ export function SiteHeader({ lang, setLang, t, active }: { lang: Lang; setLang: 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, maxWidth: '100%', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
             <a href="/?view=match" style={nav}><IconTarget /> {t('mv.entry')}</a>
+            <a href="/pathways" style={{ ...nav, color: active === 'pathways' ? '#2563eb' : '#6b7280', fontWeight: active === 'pathways' ? 700 : 400 }}><IconCompass /> {t('pw.entry')}</a>
             <a href="/rankings/weekly-top" style={{ ...nav, color: active === 'rank' ? '#2563eb' : '#6b7280', fontWeight: active === 'rank' ? 700 : 400 }}><IconChart /> {t('rank.entry')}</a>
             <a href="/stats" style={{ ...nav, color: active === 'stats' ? '#2563eb' : '#6b7280', fontWeight: active === 'stats' ? 700 : 400 }}><IconMapPin /> {t('stats.entry')}</a>
             {/* 我的账户=独立选项卡(2026-07-16 用户拍板),与三入口同级;当前页高亮不链自己 */}
