@@ -476,7 +476,11 @@ def main() -> None:
     OUT_MART.mkdir(parents=True, exist_ok=True)
     mart = build()
     for table, rows in mart.items():
-        (OUT_MART / f"{table}.json").write_text(json.dumps(rows, ensure_ascii=False, indent=2), encoding="utf-8")
+        # 原子写(tmp+replace,04c 惯例):直写遇并发跑 09(手动 exec × 每小时例行轮)会截断失败留尾部垃圾
+        # ——2026-07-18 news.json 实撞;upload_mart 上传前验 JSON 是下游防线,这里断根
+        tmp = OUT_MART / f".{table}.json.tmp"
+        tmp.write_text(json.dumps(rows, ensure_ascii=False, indent=2), encoding="utf-8")
+        tmp.replace(OUT_MART / f"{table}.json")
     print("MART built →", OUT_MART)
     for table, rows in mart.items():
         print(f"  {table:22} {len(rows):5} 行")
