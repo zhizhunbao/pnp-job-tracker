@@ -889,8 +889,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       {/* 榜单/统计弹窗已退役(2026-07-11 用户拍板顶栏改跳转页面);/stats 页「看职位」?prov=&broad= 回流照旧 */}
       {/* 未登录价值主张横幅(E5-01):可关闭,cookie 记忆(SSR 首帧即渲) */}
       {!plan.loggedIn && <ValueBanner t={t} initialShow={initialBanner ?? true} />}
-      <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1.5rem 1.25rem', width: '100%', boxSizing: 'border-box', flex: '1 0 auto' }}>
-        <h1 style={{ margin: '0 0 2px', color: '#111827' }}>Jobs</h1>
+      <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1rem 1.25rem 1.5rem', width: '100%', boxSizing: 'border-box', flex: '1 0 auto' }}>
+        {/* B.5:h1 原用浏览器默认 2em(~32px)偏大 + 容器上 padding 1.5rem 偏松,用户报「标题上方空隙太大」→ 字号收一档、上间距收紧 */}
+        <h1 style={{ margin: '0 0 2px', fontSize: 26, color: '#111827' }}>Jobs</h1>
         <p style={{ color: '#6b7280', marginTop: 0, fontSize: 13 }}>
           {/* 标题数字永远 = 库内真实总数(第 15 轮 #34);筛选/匹配态只报命中数不带分母(第 17 轮 #42 拍板:
               「/20000」分母=载入护栏非真实总数,像写死还两头不准——去掉分母零谎报零歧义)。 */}
@@ -999,12 +1000,13 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               <Sel value={fVs} onChange={setFVs} opts={['above', 'above20', 'below']} all={t('all.vs')} labelOf={(v) => t('vs.' + v)} />
             </span>
           </div>
-          {/* 仅雇主直发 + 更新时间/字段(2026-07-17「放到最下面」+「放一起」):同一行,直发靠左、更新+字段 marginLeft:auto 靠右 */}
+          {/* 仅雇主直发 + 更新时间/字段(2026-07-17「放到最下面」+「放一起」):三者靠左成一组,读作一条工具带
+              (原 marginLeft:auto 把更新+字段甩到最右→两端分裂、右侧空白孤悬,与「放一起」相反,用户看后拍板改靠左) */}
           <div style={filtRow}>
             <label style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', background: directOnly ? '#eef2ff' : '#fff', whiteSpace: 'nowrap' }} title={t('directOnly.tip')}>
               <input type="checkbox" checked={directOnly} onChange={(e) => setDirectOnly(e.target.checked)} />{t('directOnly')}
             </label>
-            <div ref={colRef} className="jtHideNarrow" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 10, marginLeft: 'auto' }}>
+            <div ref={colRef} className="jtHideNarrow" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 10 }}>
               {updatedAt && <span style={{ color: '#9ca3af', fontSize: 12, whiteSpace: 'nowrap' }}>{t('updated', { t: fmtLocal(updatedAt) })}</span>}
               <button onClick={() => setColOpen((o) => !o)} style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', background: '#f3f4f6', whiteSpace: 'nowrap' }}><IconSettings style={{ marginRight: 5 }} />{t('fields', { n: shown.length })}</button>
               {colOpen && (
