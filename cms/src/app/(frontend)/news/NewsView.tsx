@@ -57,10 +57,11 @@ const MUTED: Record<string, [string, string]> = {
 }
 function ListTile({ region }: { region: string }) {
   const [bg, fg] = MUTED[region] || ['#f3f4f6', '#374151']
+  // v4.1:副行一行内截断(联邦全名 96px 宽折三行撑破定高的教训);overflow hidden 硬保 64px
   return (
-    <div style={{ width: 96, minWidth: 96, height: 64, borderRadius: 8, background: bg, color: fg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
-      <div style={{ fontSize: region === 'federal' ? 17 : 20 }}>{region === 'federal' ? 'IRCC' : region}</div>
-      <div style={{ fontSize: 9.5, fontWeight: 500, opacity: 0.75, textAlign: 'center', padding: '0 4px' }}>{region === 'federal' ? 'Government of Canada' : newsRegionName(region)}</div>
+    <div style={{ width: 96, minWidth: 96, height: 64, borderRadius: 8, background: bg, color: fg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontWeight: 700, overflow: 'hidden' }}>
+      <div style={{ fontSize: region === 'federal' ? 17 : 20, lineHeight: 1.2 }}>{region === 'federal' ? 'IRCC' : region}</div>
+      <div style={{ fontSize: 9.5, fontWeight: 500, opacity: 0.75, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 88 }}>{region === 'federal' ? 'Canada' : newsRegionName(region)}</div>
     </div>
   )
 }
@@ -70,8 +71,9 @@ function ListTile({ region }: { region: string }) {
 // 头条图**不用抓来的 og 图**(Frank:「很多文字的图片不适合作为 banner」——政府 og 图多为文字模板图,
 // 裁剪救不回):一律省色字标底,视觉恒定;og 图只在详情页/原文里看。
 function HeroImage({ s }: { s: NewsHero }) {
+  // flex:1=图区弹性吃掉与右列的高度差(v4.1:头条卡下半截空白),minHeight 保底
   return (
-    <div style={{ height: 240, background: tileBg(s.region), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ flex: 1, minHeight: 240, background: tileBg(s.region), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <span style={{ color: 'rgba(255,255,255,.9)', fontWeight: 800, fontSize: 38, letterSpacing: 2, textTransform: 'uppercase' }}>{s.region === 'federal' ? 'IRCC' : newsRegionName(s.region)}</span>
     </div>
   )
