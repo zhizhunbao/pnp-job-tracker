@@ -43,12 +43,29 @@
 
 ## 6. 验收
 
-- [ ] build_dli 本地实跑:raw/dli/dli.json 295 行上下、法语校名无乱码、省码全映射
-- [ ] 09 出 mart/dli.json;seed 白名单列全;**生产 DDL 先行**(dli 表 + locked_rels.dli_id)
-- [ ] /pathways 六卡:B 分型建档号「与你的处境相关」= study/aip-trades;学校信号带官方名单出处+抓取日期
-- [ ] typecheck;三语;措辞红线(无结论句);本地 dev 匿名态验证(验完关)
-- [ ] **待 Frank**:生产 seed 后 dli 表灌满;B 型建档号实测信号
+- [x] build_dli 本地实跑:295 所(公立 266/大西洋公立 26),法语校名 utf-8 无损(真 è 字符核过),12 省码全映射,<100 所防线
+- [x] 09 出 mart/dli 295 行;seed 白名单列全;**生产 DDL 先行**(dli 12 列照 pnp_draws 形状 + locked_rels.dli_id+索引+FK,事务执行 ✓)
+- [x] /pathways 六卡本地 dev 实测(匿名态):study/aip-trades 卡 audience=海外/在读、五源出处齐;**dli 表缺护栏生效**(不 500 优雅降级);零 console 错;验完关 dev
+- [x] typecheck 绿(payload-types 重生成);三语;措辞无结论句
+- [ ] 生产 seed 后 dli=295;/pathways 学校信号可见(数据链跑完复核)
+- [ ] **待 Frank**:B 型建档号实测「与你的处境相关」分组+学校信号;**ETL 盒 git pull 新代码**(见 §7 节奏坑)
 
-## 7. 落地记录
+## 7. 落地记录(2026-07-18)
 
-（实施后补）
+- commit `f7723a0`(主体)+ `ccd702d`(seed 防线升级)。生产 DDL 已先行执行。
+- **节奏坑与修法(重要)**:compose 把 repo volume 挂载(容器跑宿主机实时代码),但宿主机**不自动 git pull**——
+  ETL 盒拉新代码前,其小时轮上传的 mart **没有 dli.json**;而 seed 维度语义原是「文件缺=当表不存在→清空重灌 0 行」,
+  会把手动灌的 dli 每小时抹掉。**修法(`ccd702d`)**:seed 改「**文件缺失=跳过保留现有行**;文件在但内容 []=显式清空」——
+  正常管线 09 全键输出(空表也给 [])零行为变化,只护分表/手动上传与新表过渡期。
+- 首灌走手动:本地 mart/dli.json gzip POST `/api/mart/dli`(token)→ 触发 seed(增量)。ETL 盒 pull 后,
+  raw/dli/dli.json 已在 repo → 其 09 即产 dli.json 进正常轮;周更 pnp 源里 build_dli 保持新鲜。
+- 设计取舍:统计口径=公立院校(话术围绕公立);dliAtl 点名过滤 /college/i(NSCC/NBCC/Holland/CNA 类);
+  offerFirst 缺口限 OFFER_FIRST 配方集(study 卡第一步是入学);AIP 卡 regionProvs 限大西洋防各卡重复命中;
+  noneNamed 不在地区限定卡上说(措辞会失真)。
+- 留 P3/E12-04:专业/学制/学费(逐校抓,脆)、政策源抓取核验+last_reviewed 过期告警、顾问联动(E12-05)。
+
+### 事故记录(2026-07-18,已当场恢复,窗口 ~10 分钟)
+
+- **经过**:首灌走「传 dli 单表 → 触发 seed」;seed 触发时 Render 只部署到 `f7723a0`(含 dli dims、**不含** `ccd702d` 跳过语义)——部署就绪探针用的标记(旗舰②卡出现)只能证明第一笔上线,区分不了第二笔。旧语义「文件缺=清空重灌 0 行」把 **14 张维度表全清**(jobs/companies 因「jobs mart 空跳过下架」防线无损)。
+- **恢复**:本地 mart(09 刚构建,维度=repo 维护表当前态)全量 15 表 gzip 直推 `/api/mart/*` → 重灌 seed → 计数全对(provinces 10/cities 2197/pnp_occupations 183/ee 94/dli 295/rankings 291/stats 119),DB+四页 200 复核过;rankings/stats 基于本地 jobs 快照略旧,小时轮自动刷新。
+- **教训(记档)**:① 触发生产 seed 前,**部署标记必须能证明「本次依赖的那笔 commit」已上线**(标记要选第二笔特有的产物,或直接查 /api 响应版本);② 更稳的顺序=**永远全量 dims 上传再 seed**(任何语义下都安全),单表上传只在 skip 语义确认上线后用;③ 依赖「防线 commit」的操作,防线自己要先实测(这次防线代码是对的,但没等到它部署)。
