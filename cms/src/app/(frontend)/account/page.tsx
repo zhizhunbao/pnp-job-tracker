@@ -11,8 +11,9 @@ import { SiteFooter } from '../SiteFooter'
 import { ProfileForm, type ProfileValue } from './ProfileForm'
 import { SavedSearchList } from './SavedSearchList'
 import { SavedJobsList } from './SavedJobsList'
+import { Avatar } from '../Avatar'
 
-type Me = { id: string | number; email: string; role?: string; proUntil?: string | null; profile?: ProfileValue | null } | null
+type Me = { id: string | number; email: string; role?: string; proUntil?: string | null; profile?: ProfileValue | null; displayName?: string | null; avatar?: string | null; locale?: string | null } | null
 
 function RedirectToLogin() {
   useEffect(() => { window.location.replace('/?login=1') }, [])
@@ -47,6 +48,21 @@ export default function AccountPage() {
   const logout = async () => {
     await fetch('/api/users/logout', { method: 'POST', credentials: 'include' })
     await refresh()
+  }
+
+  // 昵称就地编辑(E11-01):null=不在编辑;字符串=编辑值。保存走 Payload PATCH /api/users/:id(本人可改)
+  const [nick, setNick] = useState<string | null>(null)
+  const [nickBusy, setNickBusy] = useState(false)
+  const saveNick = async () => {
+    if (nick == null || !me) return
+    setNickBusy(true)
+    try {
+      await fetch(`/api/users/${me.id}`, {
+        method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ displayName: nick.trim() }),
+      })
+      await refresh(); setNick(null)
+    } catch { /* 留在编辑态,可重试 */ } finally { setNickBusy(false) }
   }
 
   const buy = async (plan: '30' | '90') => {
@@ -91,8 +107,27 @@ export default function AccountPage() {
             {sec === 'overview' && (<>
               <h1 style={{ fontSize: 18, margin: '0 0 14px' }}>{t('acct.title')}</h1>
               {payOk && <div style={{ background: '#ecfdf5', color: '#047857', fontSize: 13, padding: '8px 10px', borderRadius: 6, marginBottom: 12 }}><IconCheckCircle /> {t('acct.payOk')}</div>}
+              {/* 身份头(E11-01):头像 + 昵称(可改,空回退邮箱前缀)+ 邮箱 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+                <Avatar src={me.avatar} name={me.displayName || me.email} email={me.email} size={52} />
+                <div style={{ minWidth: 0 }}>
+                  {nick == null ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 16, fontWeight: 600, color: '#111827' }}>{me.displayName?.trim() || me.email.split('@')[0]}</span>
+                      <button onClick={() => setNick(me.displayName || '')} title={t('acct.nick')} aria-label={t('acct.nick')} style={{ border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', padding: 0, fontSize: 13 }}>✎</button>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <input value={nick} onChange={(e) => setNick(e.target.value)} placeholder={t('acct.nickPh')} maxLength={40} autoFocus
+                        onKeyDown={(e) => { if (e.key === 'Enter') saveNick(); if (e.key === 'Escape') setNick(null) }}
+                        style={{ padding: '5px 8px', fontSize: 14, border: '1px solid #d1d5db', borderRadius: 6, width: 160 }} />
+                      <button onClick={saveNick} disabled={nickBusy} style={{ padding: '5px 10px', fontSize: 13, fontWeight: 600, border: 'none', borderRadius: 6, background: '#2563eb', color: '#fff', cursor: 'pointer', opacity: nickBusy ? 0.6 : 1 }}>{nickBusy ? '…' : t('acct.nickSave')}</button>
+                    </div>
+                  )}
+                  <div style={{ fontSize: 13, color: '#6b7280', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis' }}>{me.email}</div>
+                </div>
+              </div>
               <div style={{ fontSize: 14, lineHeight: 2 }}>
-                <div><IconUser /> {me.email}</div>
                 <div>{pro
                   ? <span style={{ color: '#b45309', fontWeight: 600 }}><IconStar /> {t('acct.plan.pro', { d: (me.proUntil || '').slice(0, 10) })}</span>
                   : <span style={{ color: '#6b7280' }}>{t('acct.plan.free')}</span>}

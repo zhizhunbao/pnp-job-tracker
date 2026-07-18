@@ -83,6 +83,11 @@ export const Users: CollectionConfig = {
       defaultValue: false,
       admin: { description: '退订每周收藏摘要邮件' },
     },
+    // 身份最小集(E11-01):均本人可改(无字段级锁),role/proUntil/stripe* 仍锁死。
+    { name: 'displayName', type: 'text', admin: { description: '昵称(空则前端回退邮箱前缀)' } },
+    { name: 'avatar', type: 'text', admin: { description: '头像 URL(v1 仅存 OAuth 带回的 URL,不做上传;无则前端画首字母块)' } },
+    { name: 'loginProvider', type: 'text', defaultValue: 'email', admin: { description: '注册来路:email(默认)/google/wechat' } },
+    { name: 'locale', type: 'text', admin: { description: '界面/邮件语言 zh/en/ko(现仅 localStorage,落库备邮件用)' } },
     {
       // 移民档案(E5-00):用户自填,匹配层的输入。无字段级锁 —— 本人可改(update 已限 selfOrAdmin)。
       // nocCodes/targetProvinces 用 json 存 string[](表单自建,不走 admin 数组 UI)。

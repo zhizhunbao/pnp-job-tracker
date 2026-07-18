@@ -124,6 +124,7 @@ const zh: Dict = {
   'acct.pw.short': '太短:至少 8 位', 'acct.pw.weak': '弱', 'acct.pw.medium': '中', 'acct.pw.strong': '强', 'acct.pw.hint': '建议混合大小写、数字或符号',
   'acct.plan.free': '免费版', 'acct.plan.pro': 'Pro · 有效期至 {d}',
   'acct.logout': '退出登录',
+  'acct.nick': '昵称', 'acct.nickSave': '保存', 'acct.nickPh': '取个昵称',
   'acct.forgot': '忘记密码?', 'acct.forgotSend': '发送重置邮件', 'acct.forgotSent': '如果该邮箱已注册,重置邮件已发出——请查收(链接 1 小时内有效)。',
   'acct.resetTitle': '设置新密码', 'acct.resetBtn': '设置新密码并登录', 'acct.resetBad': '链接无效或已过期,请返回登录重新发起找回。', 'acct.backLogin': '← 返回登录',
   // 时长包购买(E3-03)
@@ -341,6 +342,7 @@ const en: Dict = {
   'acct.pw.short': 'Too short: 8+ characters', 'acct.pw.weak': 'Weak', 'acct.pw.medium': 'Fair', 'acct.pw.strong': 'Strong', 'acct.pw.hint': 'Mix upper/lower case, digits or symbols',
   'acct.plan.free': 'Free', 'acct.plan.pro': 'Pro · until {d}',
   'acct.logout': 'Sign out',
+  'acct.nick': 'Nickname', 'acct.nickSave': 'Save', 'acct.nickPh': 'Choose a nickname',
   'acct.forgot': 'Forgot password?', 'acct.forgotSend': 'Send reset email', 'acct.forgotSent': 'If that email is registered, a reset link has been sent (valid for 1 hour).',
   'acct.resetTitle': 'Set a new password', 'acct.resetBtn': 'Set password & sign in', 'acct.resetBad': 'Link invalid or expired — go back and request a new one.', 'acct.backLogin': '← Back to sign in',
   // 时长包购买(E3-03)
@@ -558,6 +560,7 @@ const ko: Dict = {
   'acct.pw.short': '너무 짧음: 8자 이상', 'acct.pw.weak': '약함', 'acct.pw.medium': '보통', 'acct.pw.strong': '강함', 'acct.pw.hint': '대소문자·숫자·기호를 섞어 주세요',
   'acct.plan.free': '무료', 'acct.plan.pro': 'Pro · {d}까지',
   'acct.logout': '로그아웃',
+  'acct.nick': '닉네임', 'acct.nickSave': '저장', 'acct.nickPh': '닉네임 입력',
   'acct.forgot': '비밀번호를 잊으셨나요?', 'acct.forgotSend': '재설정 메일 보내기', 'acct.forgotSent': '해당 이메일이 등록되어 있다면 재설정 메일을 보냈습니다(1시간 유효).',
   'acct.resetTitle': '새 비밀번호 설정', 'acct.resetBtn': '설정하고 로그인', 'acct.resetBad': '링크가 유효하지 않거나 만료되었습니다. 다시 요청해 주세요.', 'acct.backLogin': '← 로그인으로',
   // 时长包购买(E3-03)
