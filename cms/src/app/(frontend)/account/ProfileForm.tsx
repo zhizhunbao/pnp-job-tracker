@@ -8,6 +8,7 @@ import { IconCheck, IconTarget } from '../Icons'
 
 type NocOpt = { noc: string; title: string }
 export type ProfileValue = {
+  currentStatus?: string | null
   nocCodes?: string[] | null
   clb?: number | null
   crs?: number | null
@@ -16,10 +17,13 @@ export type ProfileValue = {
 }
 
 const PROVS = ['ON', 'BC', 'AB', 'SK', 'MB', 'NS', 'NB', 'NL', 'PE'] // QC 走自己的体系,不进目标省
+// 分型(E11-04):slug 单一来源在 lib/match.ts;这里只列 UI 顺序(§2.5 A–E),标签走 i18n prof.st.*
+const STATUS_SLUGS = ['overseas', 'studying', 'working', 'jobhunting', 'pr'] as const
 const inputS: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '7px 10px', fontSize: 13.5, border: '1px solid #d1d5db', borderRadius: 6, marginTop: 4 }
 const lbl: React.CSSProperties = { fontSize: 13, color: '#374151', display: 'block', marginTop: 12 }
 
 export function ProfileForm({ t, userId, initial, onSaved }: { t: TFn; userId: string | number; initial: ProfileValue | null; onSaved?: () => void }) {
+  const [status, setStatus] = useState<string>(initial?.currentStatus ?? '')
   const [nocs, setNocs] = useState<string[]>(initial?.nocCodes?.filter(Boolean) ?? [])
   const [clb, setClb] = useState(initial?.clb != null ? String(initial.clb) : '')
   const [crs, setCrs] = useState(initial?.crs != null ? String(initial.crs) : '')
@@ -54,6 +58,7 @@ export function ProfileForm({ t, userId, initial, onSaved }: { t: TFn; userId: s
         method: 'PATCH', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ profile: {
+          currentStatus: status || null,
           nocCodes: nocs, clb: numOrNull(clb), crs: numOrNull(crs),
           targetProvinces: provs, pgwpMonthsLeft: numOrNull(pgwp),
           profileUpdatedAt: new Date().toISOString(),
@@ -69,6 +74,20 @@ export function ProfileForm({ t, userId, initial, onSaved }: { t: TFn; userId: s
     <div>
       <div style={{ fontSize: 13.5, fontWeight: 600, color: '#374151' }}><IconTarget /> {t('prof.title')}</div>
       <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>{t('prof.hint')}</div>
+
+      {/* 分型(E11-04):第一问,零打字单选(能选不打字);可不选。点同一项=取消 */}
+      <div style={lbl}>{t('prof.status')}</div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
+        {STATUS_SLUGS.map((s) => {
+          const on = status === s
+          return (
+            <button key={s} type="button" onClick={() => setStatus(on ? '' : s)}
+              style={{ border: on ? '1px solid #2563eb' : '1px solid #d1d5db', background: on ? '#eff6ff' : '#fff', color: on ? '#1d4ed8' : '#6b7280', borderRadius: 6, padding: '4px 10px', fontSize: 12.5, cursor: 'pointer' }}>
+              {t(`prof.st.${s}`)}
+            </button>
+          )
+        })}
+      </div>
 
       <label style={lbl}>{t('prof.noc')}
         <input style={inputS} value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('prof.nocSearch')}

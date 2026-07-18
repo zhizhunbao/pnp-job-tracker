@@ -4,12 +4,17 @@
 // 每条 reason 带 i18n 键+参数(UI 三语渲染)与 sourceRef(依据链:指回具体维度记录)。
 // v1 不用 clb/pgwpMonthsLeft 评分(档案存着,advisor 事实可见);规则升级时先改 fixture 快照测试。
 
+// 用户分型(E11-04,§2.5 A–E):稳定 slug,枚举单一来源。前后端 + advisor + 未来 E11-05/E12 都引这一处。
+export type CurrentStatus = 'overseas' | 'studying' | 'working' | 'jobhunting' | 'pr'
+export const CURRENT_STATUSES: CurrentStatus[] = ['overseas', 'studying', 'working', 'jobhunting', 'pr']
+
 export type MatchProfile = {
   nocCodes: string[]
   clb: number | null
   crs: number | null
   targetProvinces: string[]
   pgwpMonthsLeft: number | null
+  currentStatus: CurrentStatus | null   // v1 不进评分;仅作 advisor grounding 路径语境
 }
 
 // 匹配只读职位的这几个字段(JobRow 超集兼容)
@@ -52,12 +57,16 @@ export function hasProfile(p: Partial<MatchProfile> | null | undefined): boolean
 export function normalizeProfile(raw: any): MatchProfile {
   const strArr = (v: any): string[] => (Array.isArray(v) ? v.filter((x) => typeof x === 'string' && x.trim()).map((x) => x.trim()) : [])
   const numOrNull = (v: any): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null)
+  const status = typeof raw?.currentStatus === 'string' && (CURRENT_STATUSES as string[]).includes(raw.currentStatus)
+    ? (raw.currentStatus as CurrentStatus)
+    : null
   return {
     nocCodes: strArr(raw?.nocCodes),
     clb: numOrNull(raw?.clb),
     crs: numOrNull(raw?.crs),
     targetProvinces: strArr(raw?.targetProvinces).map((s) => s.toUpperCase()),
     pgwpMonthsLeft: numOrNull(raw?.pgwpMonthsLeft),
+    currentStatus: status,
   }
 }
 
@@ -211,3 +220,15 @@ const EN: Record<string, (p: Record<string, string | number>) => string> = {
   'match.r.lmia.na': () => 'No positive-LMIA record for this employer in the past two years (many employers never needed one; not negative evidence).',
 }
 export const reasonEn = (r: MatchReason): string => (EN[r.key] ? EN[r.key](r.params) : r.key)
+
+// 分型 → 英文路径语境(E11-04):喂 advisor grounding,让顾问按读者真实处境措辞移民路径(修身份红线 #50)。
+// 只陈述该分型的主路径事实,不预测成功率、不断言个人资格(与 match reason 的措辞红线一致)。
+const STATUS_EN: Record<CurrentStatus, string> = {
+  overseas: 'still outside Canada, applying from abroad — main path is federal Express Entry / FSW selected by CRS (no Canadian job offer required), plus overseas-friendly PNP streams',
+  studying: 'currently studying in Canada — main path is graduate → PGWP → Canadian work experience → CEC / provincial nominee',
+  working: 'working in Canada on a work permit — main path is accumulate Canadian experience → CEC / provincial nominee',
+  jobhunting: 'in Canada as a graduate / PGWP holder looking for work — main path is landing a PNP-track job → provincial nominee',
+  pr: 'already a permanent resident or does not need immigration — goal is simply finding a good job; de-emphasize immigration angles',
+}
+export const statusEn = (s: string | null | undefined): string | null =>
+  s && STATUS_EN[s as CurrentStatus] ? STATUS_EN[s as CurrentStatus] : null

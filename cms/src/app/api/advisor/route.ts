@@ -9,7 +9,7 @@ import { checkLimit, ipOf, usedToday } from '@/lib/rateLimit'
 import { streamChat, LlmError, type ChatMessage } from '@/lib/llm'
 import { getUser, isPro } from '@/lib/entitlement'
 import { FREE_ADVISOR_TRIES, PRO_ADVISOR_DAILY } from '@/lib/plan'
-import { match, normalizeProfile, hasProfile, reasonEn, type MatchDims, type MatchJob } from '@/lib/match'
+import { match, normalizeProfile, hasProfile, reasonEn, statusEn, type MatchDims, type MatchJob } from '@/lib/match'
 import { loadMatchDims } from '@/lib/matchDims'
 
 export const runtime = 'nodejs'
@@ -254,7 +254,14 @@ export async function POST(req: NextRequest) {
   const freeLeft = user && !pro ? String(Math.max(0, FREE_ADVISOR_TRIES - usedToday(`adv:u:${user.id}`))) : null
 
   // Pro 档案感知(E5-00):自报档案 + 本岗匹配结论注入 facts;个性化内容缓存按人隔离
-  const pf = pro && user ? profileFacts((user as any).profile, job, await loadMatchDims()) : ''
+  const profileRaw = (user as any)?.profile
+  // 分型路径语境(E11-04,修身份红线 #50):对任何登录用户,设了 currentStatus 就注入读者真实处境,
+  // 让顾问按海外直申/在职/PGWP 分别措辞——不是付费数据,免费用户也生效(profileFacts 仍 Pro-only)。
+  const st = user ? statusEn(normalizeProfile(profileRaw).currentStatus) : null
+  const readerCtx = st
+    ? `\nReader's self-reported situation: ${st}. Treat this as the reader's ACTUAL status (it overrides the generic audience assumption above); frame immigration-path comments accordingly. Still never assert facts the profile does not state.`
+    : ''
+  const pf = (pro && user ? profileFacts(profileRaw, job, await loadMatchDims()) : '') + readerCtx
 
   // 缓存键含 字段+标识+语言(公司按公司名,其余按 id);带档案的初判按人隔离;对话不缓存(每轮唯一)
   const keyId = field === 'company' ? (job.company || '').toLowerCase() : (body.id || job.title || '')

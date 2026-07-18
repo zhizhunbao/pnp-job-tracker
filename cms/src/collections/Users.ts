@@ -94,6 +94,9 @@ export const Users: CollectionConfig = {
       name: 'profile',
       type: 'group',
       fields: [
+        // 用户分型(E11-04):§2.5 A–E 的稳定 slug(overseas/studying/working/jobhunting/pr)。
+        // onboarding 分叉锚 + 顾问 grounding 路径语境;界面大白话点选,幕后存 slug。枚举单一来源=lib/match.ts。
+        { name: 'currentStatus', type: 'text', admin: { description: '分型 slug:overseas/studying/working/jobhunting/pr(界面大白话,幕后存码)' } },
         { name: 'nocCodes', type: 'json', admin: { description: '经验/学历对应 NOC 码(string[])' } },
         { name: 'clb', type: 'number', admin: { description: '语言 CLB 等级(自报)' } },
         { name: 'crs', type: 'number', admin: { description: 'EE CRS 分(自报,可空)' } },
