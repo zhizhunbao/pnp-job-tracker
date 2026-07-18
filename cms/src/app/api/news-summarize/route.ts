@@ -33,7 +33,13 @@ export async function POST(req: Request) {
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
   const col = COL[lang]
-  const r = await pool.query(`SELECT title, body_en AS en, ${col} AS cached FROM news WHERE slug = $1 LIMIT 1`, [slug])
+  let r
+  try {
+    r = await pool.query(`SELECT title, body_en AS en, ${col} AS cached FROM news WHERE slug = $1 LIMIT 1`, [slug])
+  } catch {
+    // schema 容错:summary_en 列未建(DDL4 未跑)时英文速读暂不可用,不炸 500
+    return Response.json({ ok: false, error: 'column not ready' }, { status: 503 })
+  }
   const row = r.rows[0]
   if (!row?.en) return Response.json({ ok: false, error: 'not found' }, { status: 404 })
   if (row.cached) return Response.json({ ok: true, summary: row.cached, cached: true })

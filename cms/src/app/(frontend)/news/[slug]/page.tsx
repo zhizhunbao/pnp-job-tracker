@@ -13,13 +13,15 @@ export const dynamic = 'force-dynamic'
 async function loadRow(slug: string): Promise<NewsRow | null> {
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
-  return pool
-    .query(`SELECT region, title, date, slug, url, og_image AS "ogImage", body_en AS "bodyEn", body_zh AS "bodyZh", body_ko AS "bodyKo",
-                   summary_zh AS "summaryZh", summary_ko AS "summaryKo", summary_en AS "summaryEn",
-                   importance, importance_note AS "importanceNote", citation, fetched, '' AS excerpt
-            FROM news WHERE slug = $1 LIMIT 1`, [slug])
+  const q = (withEn: boolean) => pool.query(
+    `SELECT region, title, date, slug, url, og_image AS "ogImage", body_en AS "bodyEn", body_zh AS "bodyZh", body_ko AS "bodyKo",
+            summary_zh AS "summaryZh", summary_ko AS "summaryKo", ${withEn ? 'summary_en' : 'NULL'} AS "summaryEn",
+            importance, importance_note AS "importanceNote", citation, fetched, '' AS excerpt
+     FROM news WHERE slug = $1 LIMIT 1`, [slug])
+  // schema 容错(P1f 事故教训:引用未建列把全部详情页打成 404):summary_en 缺列时退回 NULL 版,DDL 到位自动启用
+  return q(true)
     .then((r: { rows: NewsRow[] }) => r.rows[0] ?? null)
-    .catch(() => null)
+    .catch(() => q(false).then((r: { rows: NewsRow[] }) => r.rows[0] ?? null).catch(() => null))
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
