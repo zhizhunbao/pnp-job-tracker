@@ -209,6 +209,9 @@ const zh: Dict = {
   'prof.save': '保存档案',
   'prof.saved': '已保存',
   'prof.err': '保存失败,请重试',
+  'ob.step': '第 {i} 步 · 共 {n} 步', 'ob.value': '填完立刻看到与每个岗位的匹配度',
+  'ob.skip': '跳过这步', 'ob.back': '上一步', 'ob.next': '下一步 →', 'ob.finish': '看我的匹配 →',
+  'ob.nocHint': '没有?可跳过,稍后在账户里搜索更多职业',
   // 定价页 + 横幅(E5-01)
   'price.title': '定价', 'price.sub': '一次性时长包,无订阅、无自动续费;到期自动回免费版',
   'price.free': '免费', 'price.pro': 'Pro', 'price.freePrice': 'CA$0',
@@ -442,6 +445,9 @@ const en: Dict = {
   'prof.save': 'Save profile',
   'prof.saved': 'Saved',
   'prof.err': 'Save failed, please retry',
+  'ob.step': 'Step {i} of {n}', 'ob.value': 'See your match with every job the moment you finish',
+  'ob.skip': 'Skip', 'ob.back': 'Back', 'ob.next': 'Next →', 'ob.finish': 'See my matches →',
+  'ob.nocHint': 'Not listed? Skip — search more jobs later in your account',
   // 定价页 + 横幅(E5-01)
   'price.title': 'Pricing', 'price.sub': 'One-time passes — no subscription, no auto-renewal; you simply return to Free on expiry',
   'price.free': 'Free', 'price.pro': 'Pro', 'price.freePrice': 'CA$0',
@@ -675,6 +681,9 @@ const ko: Dict = {
   'prof.save': '프로필 저장',
   'prof.saved': '저장됨',
   'prof.err': '저장 실패, 다시 시도하세요',
+  'ob.step': '{n}단계 중 {i}단계', 'ob.value': '완료하면 각 공고와의 매칭이 바로 보여요',
+  'ob.skip': '건너뛰기', 'ob.back': '이전', 'ob.next': '다음 →', 'ob.finish': '내 매칭 보기 →',
+  'ob.nocHint': '없나요? 건너뛰고 계정에서 더 많은 직업을 검색하세요',
   // 定价页 + 횡幅(E5-01)
   'price.title': '요금', 'price.sub': '일회성 기간권 — 구독·자동 갱신 없음. 만료 시 무료 플랜으로 돌아갑니다',
   'price.free': '무료', 'price.pro': 'Pro', 'price.freePrice': 'CA$0',

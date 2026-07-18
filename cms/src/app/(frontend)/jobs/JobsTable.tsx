@@ -13,6 +13,7 @@ import { Avatar } from '../Avatar'
 import { AuthModal } from './AuthForm'
 import { UpgradeModal } from './UpgradeModal'
 import { PricingModal } from './PricingModal'
+import { OnboardingWizard, OB_SEEN_KEY } from './OnboardingWizard'
 import { useOverlayClose } from './overlay'
 import { CARD, iconBtnS, Modal, ModalTitle, SCRIM, useIsNarrow } from './Modal'
 import { match as matchJob, matchRank, type MatchProfile, type MatchJob, type MatchReason } from '@/lib/match'
@@ -537,6 +538,14 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const [actModal, setActModal] = useState<{ kind: 'desc'; job: JobRow } | null>(null)
   // 升级入口(Pro 锁列/保存筛选 gate)统一开独立升级弹框;未登录先走注册弹框(用户定:注册与购买分离)
   const [upsell, setUpsell] = useState<false | 'lock' | 'ss' | 'login'>(false)
+  // E11-05②:分型引导 wizard。首访自动弹(登录且无档案且没弹过);关/完成置 OB_SEEN 不再自动弹;横幅「建档」手动开忽略它
+  const [wizard, setWizard] = useState(false)
+  const closeWizard = () => { try { localStorage.setItem(OB_SEEN_KEY, '1') } catch { /* ignore */ } setWizard(false) }
+  useEffect(() => {
+    if (!plan.loggedIn || plan.profileOk) return
+    try { if (localStorage.getItem(OB_SEEN_KEY)) return } catch { /* ignore */ }
+    setWizard(true)
+  }, [])
   // 我的求职(E9-01):已收藏映射 jobId → {saved-jobs 行 id, status};匿名点收藏 → 注册框(转化钩子)
   const [saved, setSaved] = useState<Record<string, { id: number | string; status: string }>>({})
   useEffect(() => {
@@ -609,7 +618,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   // 已登录未建档才去 /account 建档
   const toggleMatchView = () => {
     if (!plan.loggedIn) { setUpsell('login'); return }
-    if (!plan.profileOk) { window.location.href = '/account'; return }
+    if (!plan.profileOk) { setWizard(true); return }   // E11-05②:未建档 → 开引导 wizard(原直跳 /account)
     window.location.href = matchView ? '/' : '/?view=match'
   }
   const colRef = useRef<HTMLDivElement>(null)
@@ -916,7 +925,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
                 <span style={{ fontSize: 14, fontWeight: 500, color: '#374151' }}>{t(r.src === 'geo' ? 'rec.geoPrefix' : 'rec.prefix')}</span>
                 <span style={{ fontSize: 12, color: '#4338ca', background: '#eef2ff', borderRadius: 20, padding: '3px 10px' }}>{chips}</span>
-                <button onClick={() => { if (!plan.loggedIn) setUpsell('lock'); else window.location.href = '/account' }}
+                <button onClick={() => { if (!plan.loggedIn) setUpsell('lock'); else setWizard(true) }}
                   style={{ marginLeft: 'auto', border: 'none', background: 'none', color: '#4f46e5', fontSize: 12.5, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>{t('rec.build')}</button>
                 <button onClick={() => { try { localStorage.setItem(PREF_HIDE, new Date().toLocaleDateString('en-CA')) } catch { /* ignore */ } setRecs([]) }}
                   aria-label="close" style={{ border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 15, padding: '0 2px' }}>×</button>
@@ -1258,6 +1267,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
 
       {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} onOpenJob={(x) => setActModal({ kind: 'desc', job: x })} />}
       {actModal && <ActModal job={actModal.job} lang={lang} onClose={() => setActModal(null)} />}
+      {wizard && <OnboardingWizard t={t} initial={plan.profile} onClose={closeWizard} />}
       {upsell && (plan.loggedIn
         ? <UpgradeModal t={t} reason={upsell === 'ss' ? t('ss.pro') : undefined} onClose={() => setUpsell(false)} />
         : <AuthModal t={t} mode={upsell === 'login' ? 'login' : 'register'} onClose={() => setUpsell(false)} onDone={() => window.location.reload()} />)}
