@@ -73,8 +73,11 @@ services:
       SOURCE: news
       HEALTHCHECK_PING_NEWS: ${HEALTHCHECK_PING_NEWS:-}
       SCRAPE_INTERVAL: '43200'     # 12h(官方公告低频)
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}   # 翻译兜底(NEWS_LLM_BASE 未设时用;空=只抓原文)
-      NEWS_LLM_BASE: ${NEWS_LLM_BASE:-}           # 局域网 Ollama(如 http://192.168.1.150:11434)——设了翻译走本地零 API 费
+      # 翻译策略(Frank 2026-07-18 终版):ETL 预翻停用(budget 0)——翻译走线上实时(朋友 /api/translate,懒翻+DB缓存);
+      # 恢复批量=把 NEWS_TRANSLATE_BUDGET 调回 >0(本地 NEWS_LLM_BASE / Anthropic 双后端仍在)
+      NEWS_TRANSLATE_BUDGET: ${NEWS_TRANSLATE_BUDGET:-0}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      NEWS_LLM_BASE: ${NEWS_LLM_BASE:-}
       NEWS_LLM_MODEL: ${NEWS_LLM_MODEL:-qwen3.6:latest}
       TZ: EST5EDT
 
