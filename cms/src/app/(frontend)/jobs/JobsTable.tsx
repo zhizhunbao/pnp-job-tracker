@@ -112,7 +112,7 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
     try { window.history.replaceState(null, '', '/') } catch { /* ignore */ }
     window.location.reload()
   }
-  const proBtn: React.CSSProperties = { border: '1px solid #fde68a', background: '#fffbeb', color: '#92400e', borderRadius: 6, padding: '3px 10px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }
+  // Pro 钮不进 header(#65,Frank:「没有意义」)——升级入口=横幅/升级卡/用户菜单/定价页,四处都在
   const menuItem: React.CSSProperties = { display: 'block', width: '100%', textAlign: 'left', padding: '7px 12px', fontSize: 13, color: '#374151', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap', boxSizing: 'border-box' }
   const logout = async () => {
     try { await fetch('/api/users/logout', { method: 'POST', credentials: 'include' }) } catch { /* ignore */ }
@@ -165,7 +165,6 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
             style={{ border: 'none', background: '#2563eb', color: '#fff', borderRadius: 6, padding: '3px 10px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
             {t('nav.register')}
           </button>
-          <button onClick={() => setPricing(true)} style={proBtn}><IconStar /> Pro</button>
         </>
       )}
       {auth && <AuthModal t={t} mode={auth} resetToken={resetTok || undefined} onClose={() => setAuth(false)} onDone={done} />}
