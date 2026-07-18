@@ -9,6 +9,7 @@ const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : use
 import { makeT, streamDisplay, eeDisplay, LANGS, LANG_KEY, COLS_COOKIE, type Lang, type TFn } from './i18n'
 import { IconChart, IconCheck, IconCompass, IconLock, IconMap, IconMapPin, IconMaximize, IconMinimize, IconSave, IconSettings, IconStar, IconTarget, IconUser, IconWarn, IconX } from '../Icons'
 import { SiteFooter } from '../SiteFooter'
+import { Avatar } from '../Avatar'
 import { AuthModal } from './AuthForm'
 import { UpgradeModal } from './UpgradeModal'
 import { PricingModal } from './PricingModal'
@@ -71,6 +72,8 @@ function UpgradeCard({ t, reason }: { t: TFn; reason: string }) {
 function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
   const [email, setEmail] = useState<string | null>(null)
   const [proUntil, setProUntil] = useState<string>('')
+  const [displayName, setDisplayName] = useState<string | null>(null)   // E11-02:下拉头昵称
+  const [avatar, setAvatar] = useState<string | null>(null)             // E11-02:头像 URL(无则首字母块)
   const [auth, setAuth] = useState<false | 'login' | 'register' | 'reset'>(false)
   const [resetTok, setResetTok] = useState('')   // E3-07:邮件链接 ?reset=<token> 落地
   const [pricing, setPricing] = useState(false)
@@ -86,7 +89,7 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
   useEffect(() => {
     if (!plan.loggedIn) return
     fetch('/api/users/me', { credentials: 'include' })
-      .then((r) => r.json()).then((d) => { setEmail(d?.user?.email ?? null); setProUntil((d?.user?.proUntil || '').slice(0, 10)) }).catch(() => {})
+      .then((r) => r.json()).then((d) => { setEmail(d?.user?.email ?? null); setProUntil((d?.user?.proUntil || '').slice(0, 10)); setDisplayName(d?.user?.displayName ?? null); setAvatar(d?.user?.avatar ?? null) }).catch(() => {})
   }, [plan.loggedIn])
   useEffect(() => {
     // 开框后立刻把 ?login=1 / ?reset= 从地址栏洗掉(第 15 轮用户反馈:留着参数,刷新就再弹一次)
@@ -117,20 +120,31 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
         // 用户按钮+下拉(2026-07-16 拍板):圆形首字头像 + 邮箱前缀 + ▾;菜单右缘与按钮右缘对齐,
         // 菜单头=完整邮箱;Pro 徽标折进菜单,退出登录不再非去 /account 不可
         <span ref={menuRef} style={{ position: 'relative', display: 'inline-flex' }}>
+          {/* E11-02 账户下拉改版(§6,去论坛化):按钮=头像+昵称;下拉=身份头 + 求职向条目 */}
           <button onClick={() => setMenu((o) => !o)}
             style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: '1px solid #e5e7eb', background: menu ? '#eef2ff' : '#fff', borderRadius: 999, padding: '2px 10px 2px 3px', fontSize: 12.5, color: '#2563eb', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-            <span style={{ width: 22, height: 22, borderRadius: '50%', background: '#2563eb', color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>
-              {(email || 'U').charAt(0).toUpperCase()}
-            </span>
-            {email ? email.split('@')[0] : ''}{plan.isPro && <IconStar style={{ color: '#b45309' }} />}<span style={{ fontSize: 10, color: '#9ca3af' }}>▾</span>
+            <Avatar src={avatar} name={displayName || email} email={email} size={22} />
+            {displayName?.trim() || (email ? email.split('@')[0] : '')}{plan.isPro && <IconStar style={{ color: '#b45309' }} />}<span style={{ fontSize: 10, color: '#9ca3af' }}>▾</span>
           </button>
           {menu && (
-            <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, boxShadow: '0 10px 30px rgba(0,0,0,.12)', padding: '4px 0', zIndex: 30, minWidth: 190 }}>
-              {email && <div style={{ padding: '7px 12px 5px', fontSize: 12, color: '#9ca3af', borderBottom: '1px solid #f3f4f6', marginBottom: 4, whiteSpace: 'nowrap' }}>{email}</div>}
-              <a href="/account" style={menuItem}>{t('nav.account')}</a>
-              {plan.isPro
-                ? <a href="/account" style={{ ...menuItem, color: '#b45309', fontWeight: 600 }}><IconStar /> {proUntil ? t('acct.plan.pro', { d: proUntil }) : 'Pro'}</a>
-                : <button onClick={() => { setMenu(false); setPricing(true) }} style={{ ...menuItem, color: '#b45309', fontWeight: 600 }}><IconStar /> {t('up.cta')}</button>}
+            <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, boxShadow: '0 10px 30px rgba(0,0,0,.12)', padding: '4px 0', zIndex: 30, minWidth: 210 }}>
+              {/* 身份头:头像+昵称+邮箱+Free/Pro(点头进账户概览) */}
+              <a href="/account" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', textDecoration: 'none', borderBottom: '1px solid #f3f4f6', marginBottom: 4 }}>
+                <Avatar src={avatar} name={displayName || email} email={email} size={40} />
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 13.5, fontWeight: 600, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName?.trim() || (email ? email.split('@')[0] : '—')}</div>
+                  <div style={{ fontSize: 11.5, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{email}</div>
+                  <div style={{ fontSize: 11, marginTop: 1 }}>{plan.isPro
+                    ? <span style={{ color: '#b45309', fontWeight: 600 }}>Pro{proUntil ? ` · ${proUntil}` : ''}</span>
+                    : <span style={{ color: '#6b7280' }}>{t('acct.plan.free')}</span>}</div>
+                </div>
+              </a>
+              {/* 求职向条目(深链到账户页各节;去论坛化,不放积分/消息/主页) */}
+              <a href="/?view=match" style={menuItem}><IconTarget /> {t('mv.entry')}</a>
+              <a href="/account?sec=sjobs" style={menuItem}>{t('sj.title')}</a>
+              <a href="/account?sec=profile" style={menuItem}>{t('prof.title')}</a>
+              <a href="/account?sec=saved" style={menuItem}>{t('ss.title')}</a>
+              {!plan.isPro && <button onClick={() => { setMenu(false); setPricing(true) }} style={{ ...menuItem, color: '#b45309', fontWeight: 600 }}><IconStar /> {t('up.cta')}</button>}
               <div style={{ borderTop: '1px solid #f3f4f6', margin: '4px 0' }} />
               <button onClick={logout} style={menuItem}>{t('acct.logout')}</button>
             </div>

@@ -39,6 +39,11 @@ export default function AccountPage() {
   const [buying, setBuying] = useState(false)
   const [buyErr, setBuyErr] = useState('')
   useEffect(() => { setPayOk(new URLSearchParams(window.location.search).get('ok') === '1') }, [])
+  // E11-02:账户下拉深链 ?sec=(profile/sjobs/saved/buy/overview)→ 初始落到对应节
+  useEffect(() => {
+    const s = new URLSearchParams(window.location.search).get('sec')
+    if (s && ['overview', 'profile', 'sjobs', 'saved', 'buy'].includes(s)) setSec(s as Sec)
+  }, [])
 
   const refresh = () => fetch('/api/users/me', { credentials: 'include' })
     .then((r) => r.json()).then((d) => setMe(d?.user ?? null))
