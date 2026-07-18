@@ -18,15 +18,15 @@ etl/
   _paths.py auto_update.py upload_mart.py backup_db.py audit_data.py   # 基础设施,留根
   01..06 08 09 10 11 *.py                                              # 编号主管线,留根(顺序语义)
   clean/                                                               # 清洗(已有,不动)
-  pnp/      build_ab.py build_sk.py build_ns.py build_draws.py         # 已就位
-  ee/       build_ee_categories.py build_ee_draws.py                   # ← 从根迁入
-  wages/    build_wages.py                                             # ← 迁
-  lmia/     build_lmia.py                                              # ← 迁
-  noc/      build_noc_descriptions.py (noc.py 分类库留根:被 05/08 引用,是库不是抓取)
-  fsa/      build_fsa_districts.py                                     # ← 迁
-  dli/      build_dli.py                                               # ← 迁
-  meta/     build_field_sources.py                                     # ← 迁(字段级来源注册表)
-  company/  enrich_companies.py                                        # ← 迁(官网富化)
+  pnp/      scrape_ab_aaip_lists.py scrape_sk_sinp_lists.py scrape_ns_nsnp_lists.py scrape_prov_pnp_draws.py   # 已就位,迁时改名(原 build_ab/sk/ns/draws)
+  ee/       scrape_ircc_ee_categories.py scrape_ircc_ee_draws.py       # ← 迁+改名(原 build_ee_*)
+  wages/    build_esdc_wage_medians.py                                 # ← 迁+改名(原 build_wages)
+  lmia/     build_esdc_lmia_employers.py                               # ← 迁+改名(原 build_lmia)
+  noc/      build_statcan_noc_descriptions.py (noc.py 分类库留根:被 05/08 引用,是库不是抓取)
+  fsa/      build_geonames_fsa_districts.py                            # ← 迁+改名(原 build_fsa_districts)
+  dli/      scrape_ircc_dli_pgwp_list.py                               # ← 迁+改名(原 build_dli)
+  meta/     verify_field_source_pages.py                               # ← 迁+改名(原 build_field_sources,本质=验证来源着陆页)
+  company/  enrich_company_websites.py                                  # ← 迁+改名(原 enrich_companies)
   sources/  <源>/__init__.py                                           # 调度单元(只改 steps 里的路径)
 ```
 
@@ -42,7 +42,7 @@ etl/
 #   httpx client(UA/timeout/retry/频控)· og:image/feed 解析助手 · 按 URL 累积去重
 #   原子写盘 · 逐子源 try/except 隔离(一子源挂不影响他源)· 最少行数防线 · 汇总打印
 
-# etl/news/src_sk.py(子脚本)——只填这个源特有的字段:
+# etl/news/scrape_sk_sinp_news.py(子脚本)——只填这个源特有的字段:
 SOURCE = {
     "region": "SK",
     "list_url": "https://…/news",         # 列表页(或 feed URL)
@@ -54,6 +54,9 @@ SOURCE = {
 - **母脚本负责**:怎么抓、怎么去重、怎么写盘、怎么隔离故障、怎么报数——改一处全源受益。
 - **子脚本负责**:抓哪、怎么从这个站的 HTML 里挑出行——每站结构不同,parse 无法纯声明,给「选择器优先、函数兜底」两档。
 - **容器对应**:一源一 compose service(SOURCE=<源>)→ 调度单元 META → 入口脚本(母驱动子)——与 §3 一致。
+- **命名规范(2026-07-18 Frank:见名知意)**:`<动词>_<机构/源>_<数据内容>.py`——动词定语义(`scrape_`=抓原始页/feed,`build_`=构建维护表/衍生数据);文件名单独出现(日志/报错栈/编辑器标签)也自述。
+  例:`scrape_ircc_newsroom.py` / `scrape_sk_sinp_news.py` / `build_ircc_dli_pgwp_list.py` / `build_esdc_lmia_employers.py`。
+  存量脚本(`build_dli.py`/`build_lmia.py`…)随 §4 迁移时**一并改名对齐**(git mv 双改:归目录+改名);sources/META 路径同步。
 
 ## 3. 容器:维持角色制,不做每类一容器
 
