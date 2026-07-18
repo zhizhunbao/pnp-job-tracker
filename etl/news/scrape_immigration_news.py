@@ -39,8 +39,13 @@ OUT_FILE = _paths.NEWS / "news.json"
 
 SOURCES = [IRCC, BC, AB, MB, NS, ON, SK, QC]
 
-# ---- AI 翻译+重要度(build 轮直调;新增条目才调,公告频率低成本忽略不计)----
-LLM_MODEL = "claude-haiku-4-5"      # 与顾问同模型(cms/src/lib/llm.ts 口径)
+# ---- AI 翻译+重要度(build 轮直调;新增条目才调)----
+# 双后端(Frank 2026-07-18:「翻译用本地大模型」,API 账单 $3 阈值触发):
+#   NEWS_LLM_BASE 设置(如 http://192.168.1.150:11434)→ 走局域网 Ollama(实测 qwen3.6 中/韩 16s/9s 每条,
+#   编号全守,零 API 费);未设 → Anthropic haiku(与顾问同模型)。局域网盒不在=该轮翻译跳过,下轮重试。
+LLM_BASE = os.environ.get("NEWS_LLM_BASE", "").strip().rstrip("/")
+LLM_LOCAL_MODEL = os.environ.get("NEWS_LLM_MODEL", "qwen3.6:latest")
+LLM_MODEL = "claude-haiku-4-5"      # Anthropic 兜底(cms/src/lib/llm.ts 口径)
 # 每轮上限(首轮回填分几轮摊平,12h 一轮追平只是时间问题);一次性回填时用 env 临时放大
 MAX_TRANSLATE_PER_RUN = int(os.environ.get("NEWS_TRANSLATE_BUDGET", "12"))
 BODY_CAP = 10000                    # 喂给 LLM 的原文上限(新闻稿一般 <8k 字符)
@@ -109,8 +114,8 @@ def parse_numbered_body(body_out: str, n: int) -> str:
 
 def translate_missing(out_file: Path) -> None:
     key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
-    if not key:
-        print("translate: ANTHROPIC_API_KEY 未设,跳过(只抓原文;key 进 docker/.env 后下轮自动补翻)")
+    if not (LLM_BASE or key):
+        print("translate: NEWS_LLM_BASE/ANTHROPIC_API_KEY 均未设,跳过(只抓原文)")
         return
     data = json.loads(out_file.read_text(encoding="utf-8"))
     # 待翻队列=(条目, 目标语) 对:zh 缺 summaryZh / ko 缺 summaryKo(各自独立补,预算按调用数计)
@@ -120,8 +125,20 @@ def translate_missing(out_file: Path) -> None:
         print("translate: 无待翻条目")
         return
     done = 0
-    with httpx.Client(base_url="https://api.anthropic.com", timeout=120,
-                      headers={"x-api-key": key, "anthropic-version": "2023-06-01"}) as c:
+    with httpx.Client(base_url=LLM_BASE or "https://api.anthropic.com", timeout=300,
+                      headers={} if LLM_BASE else {"x-api-key": key, "anthropic-version": "2023-06-01"}) as c:
+        def call_llm(prompt: str) -> str:
+            if LLM_BASE:  # Ollama:/api/generate,think 关(qwen3 系默认思维链输出,剥 <think> 双保险)
+                r = c.post("/api/generate", json={"model": LLM_LOCAL_MODEL, "prompt": prompt,
+                                                  "stream": False, "think": False,
+                                                  "options": {"num_predict": 8000}})
+                r.raise_for_status()
+                return re.sub(r"<think>.*?</think>", "", r.json()["response"], flags=re.S).strip()
+            r = c.post("/v1/messages", json={"model": LLM_MODEL, "max_tokens": 8000,
+                                             "messages": [{"role": "user", "content": prompt}]})
+            r.raise_for_status()
+            return "".join(b.get("text", "") for b in r.json()["content"]).strip()
+
         for it, lang in todo[:MAX_TRANSLATE_PER_RUN]:
             try:
                 # 逐段编号喂入(整段计预算,不在段中间截断——截半段编号就废了)
@@ -136,13 +153,7 @@ def translate_missing(out_file: Path) -> None:
                     used += len(p)
                 numbered = "\n\n".join(f"[{i + 1}] {p}" for i, p in enumerate(paras))
                 tpl = PROMPT if lang == "zh" else PROMPT_KO
-                r = c.post("/v1/messages", json={
-                    "model": LLM_MODEL, "max_tokens": 8000,
-                    "messages": [{"role": "user", "content": tpl.format(
-                        title=it["title"], n=len(paras), body=numbered)}],
-                })
-                r.raise_for_status()
-                text = "".join(b.get("text", "") for b in r.json()["content"]).strip()
+                text = call_llm(tpl.format(title=it["title"], n=len(paras), body=numbered))
                 summary, sep, body = text.partition("<<<BODY>>>")
                 if not (sep and summary.strip() and body.strip()):
                     raise ValueError("missing <<<BODY>>> sentinel in LLM output")
