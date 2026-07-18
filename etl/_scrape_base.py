@@ -18,6 +18,8 @@
                                      #   date=ISO;url 可相对(母 urljoin);带 bodyEn = 单页日期段落式
                                      #   源(BC/ON/AB),母不再抓详情页
       "citation": "https://…",       # 出处着陆页(E4-04 惯例:人能读的页;缺省 = list_url)
+      "post_data": {...},            # 可选:列表页要 POST 表单才出结果时填(SK Sitecore 筛选)
+      "body_selector": "div.x",      # 可选:详情页正文容器选择器(缺省 main/article 通用抽取)
   }
 """
 from __future__ import annotations
@@ -52,11 +54,12 @@ def make_client() -> httpx.Client:
     return httpx.Client(headers={"User-Agent": UA}, follow_redirects=True, timeout=TIMEOUT)
 
 
-def fetch(client: httpx.Client, url: str) -> str:
+def fetch(client: httpx.Client, url: str, post_data: dict | None = None) -> str:
+    """GET;带 post_data 则 POST 表单(SK 新闻 hub 的 Sitecore 部委筛选是 POST-only)。"""
     last: Exception | None = None
     for attempt in range(RETRIES + 1):
         try:
-            r = client.get(url)
+            r = client.post(url, data=post_data) if post_data else client.get(url)
             r.raise_for_status()
             return r.text
         except Exception as e:  # noqa: BLE001
@@ -181,7 +184,7 @@ def run(sources: list[dict], out_file: Path) -> None:
         for src in sources:
             region = src["region"]
             try:
-                raw = fetch(client, src["list_url"])
+                raw = fetch(client, src["list_url"], src.get("post_data"))
                 if src["kind"] in ("atom", "rss"):
                     items = parse_feed(raw)
                 else:

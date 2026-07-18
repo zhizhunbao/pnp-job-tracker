@@ -28,13 +28,14 @@ from scrape_ircc_newsroom import SOURCE as IRCC  # noqa: E402
 from scrape_mb_mpnp_news import SOURCE as MB  # noqa: E402
 from scrape_ns_nsnp_news import SOURCE as NS  # noqa: E402
 from scrape_on_oinp_news import SOURCE as ON  # noqa: E402
+from scrape_sk_immigration_news import SOURCE as SK  # noqa: E402
 
 if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 OUT_FILE = _paths.NEWS / "news.json"
 
-SOURCES = [IRCC, BC, AB, MB, NS, ON]
+SOURCES = [IRCC, BC, AB, MB, NS, ON, SK]
 
 # ---- AI 翻译(build 轮直调;新增条目才调,公告频率低成本忽略不计)----
 LLM_MODEL = "claude-haiku-4-5"      # 与顾问同模型(cms/src/lib/llm.ts 口径)
