@@ -17,7 +17,7 @@ import { UpgradeModal } from './UpgradeModal'
 import { PricingModal } from './PricingModal'
 import { OnboardingWizard, OB_SEEN_KEY } from './OnboardingWizard'
 import { useOverlayClose } from './overlay'
-import { CARD, iconBtnS, Modal, ModalTitle, SCRIM, useIsNarrow } from './Modal'
+import { CARD, iconBtnS, SCRIM, useIsNarrow } from './Modal'
 import { match as matchJob, matchRank, type MatchProfile, type MatchJob, type MatchReason } from '@/lib/match'
 import { lmiaWageClass, isExemptSector, LMIA_REFUSAL_SOURCE } from '@/lib/lmiaStatus'
 
@@ -1182,7 +1182,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       else { node = j.lastSeen ? fmtLocalSec(j.lastSeen) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       return (
                         <td key={k} className="jcell" style={{ ...td, ...extra, cursor: 'pointer', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', minWidth: colMin(k), ...(NOWRAP_COLS.has(k) ? { whiteSpace: 'nowrap' } : { whiteSpace: 'normal', overflowWrap: 'break-word' }), ...(hasWidths && { overflow: 'hidden', textOverflow: 'ellipsis' }), ...frozenStyle(k, rowBg) }} title={typeof node === 'string' ? node : undefined} onClick={() => {
-                          // 职位格=直开职位描述(2026-07-19 Frank:「点职位也能显示职位描述」;title 顾问弹框退役,JD 才是点标题的预期)
+                          // 职位格=直开职位描述(2026-07-19 Frank:「点职位也能显示职位描述」);title 顾问弹框由 JD 框标题栏「AI 顾问」钮承接(同日报障回补)
                           if (k === 'title') { setActModal({ kind: 'desc', job: j }); return }
                           // Pro 锁列(免费态数据已在服务端剥离)不开顾问弹框——没数据只会误导;锁形本身已链去 /account。match 免费额度内有值仍可开。
                           if (PRO_COLS.has(k) && !plan.isPro && !(k === 'match' && j.match)) return
@@ -1270,7 +1270,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       <SiteFooter t={t} maxWidth={1320} />
 
       {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} news={dims.news} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} onOpenJob={(x) => setActModal({ kind: 'desc', job: x })} />}
-      {actModal && <ActModal job={actModal.job} lang={lang} onClose={() => setActModal(null)} />}
+      {actModal && <ActModal job={actModal.job} lang={lang} onClose={() => setActModal(null)} onAdvisor={(x) => { setActModal(null); setPopup({ field: 'title', job: x, title: x.title }) }} />}
       {wizard && <OnboardingWizard t={t} initial={plan.profile} onClose={closeWizard} />}
       {upsell && (plan.loggedIn
         ? <UpgradeModal t={t} reason={upsell === 'ss' ? t('ss.pro') : undefined} onClose={() => setUpsell(false)} />
@@ -1903,6 +1903,81 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, pnpOcc, pnpDraws, news
 // ── AI 顾问弹框 ────────────────────────────────────────────────
 // 所有字段都走本地大模型流式生成(按所选语言);前端只给极简头部 + 链接,正文由模型生成。
 const ADV_PREF = 'adv_modal_pref'  // 记忆 {full, w, h}(位置每次打开居中,避免窗口缩小后跑出屏外)
+const JD_PREF = 'jd_modal_pref'    // 职位描述弹框同款记忆(独立键:两框常用尺寸不同)
+
+// ── 浮动面板机器(标题栏拖动/八向拉伸/全屏/尺寸记忆)——顾问弹框与职位描述弹框共用 ──
+const PANEL_EDGES: { dir: string; cursor: string; style: React.CSSProperties }[] = [
+  { dir: 'n', cursor: 'ns-resize', style: { top: 0, left: 14, right: 14, height: 6 } },
+  { dir: 's', cursor: 'ns-resize', style: { bottom: 0, left: 14, right: 14, height: 6 } },
+  { dir: 'w', cursor: 'ew-resize', style: { left: 0, top: 14, bottom: 14, width: 6 } },
+  { dir: 'e', cursor: 'ew-resize', style: { right: 0, top: 14, bottom: 14, width: 6 } },
+  { dir: 'nw', cursor: 'nwse-resize', style: { top: 0, left: 0, width: 14, height: 14 } },
+  { dir: 'ne', cursor: 'nesw-resize', style: { top: 0, right: 0, width: 14, height: 14 } },
+  { dir: 'sw', cursor: 'nesw-resize', style: { bottom: 0, left: 0, width: 14, height: 14 } },
+  { dir: 'se', cursor: 'nwse-resize', style: { bottom: 0, right: 0, width: 14, height: 14 } },
+]
+// 窄屏(E8-03):强制全屏,禁拖拽/拉伸/全屏切换钮
+function useFloatPanel(prefKey: string, defW: number, defH: number) {
+  const narrow = useIsNarrow()
+  const [fullPref, setFullPref] = useState(false)
+  const full = fullPref || narrow
+  const [size, setSize] = useState({ w: defW, h: defH })
+  const [pos, setPos] = useState(() => {
+    if (typeof window === 'undefined') return { x: 80, y: 60 }
+    const w = Math.min(defW, window.innerWidth - 24), h = Math.min(defH, window.innerHeight - 24)
+    return { x: Math.max(12, (window.innerWidth - w) / 2), y: Math.max(12, (window.innerHeight - h) / 2) }
+  })
+  const sizeRef = useRef(size); sizeRef.current = size
+  useEffect(() => {  // 载入记忆的尺寸/全屏,并按记忆尺寸重新居中
+    try {
+      const p = JSON.parse(localStorage.getItem(prefKey) || '{}')
+      if (p.full) setFullPref(true)
+      if (p.w && p.h) {
+        const w = Math.min(p.w, window.innerWidth - 24), h = Math.min(p.h, window.innerHeight - 24)
+        setSize({ w: p.w, h: p.h })
+        setPos({ x: Math.max(12, (window.innerWidth - w) / 2), y: Math.max(12, (window.innerHeight - h) / 2) })
+      }
+    } catch { /* ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  const savePref = (next: Record<string, unknown>) => {
+    try { localStorage.setItem(prefKey, JSON.stringify({ ...JSON.parse(localStorage.getItem(prefKey) || '{}'), ...next })) } catch { /* ignore */ }
+  }
+  // 拖动(标题栏)—— 原生 pointer 事件,无依赖
+  const startDrag = (e: React.PointerEvent) => {
+    if (full) return
+    e.preventDefault()
+    const ox = e.clientX - pos.x, oy = e.clientY - pos.y
+    const move = (ev: PointerEvent) => setPos({ x: ev.clientX - ox, y: ev.clientY - oy })
+    const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up) }
+    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up)
+  }
+  // 八方向拉伸(用户点名:上下左右都可放大缩小);西/北向同时移动位置,右/下边固定
+  const MIN_W = 360, MIN_H = 280
+  const startResize = (e: React.PointerEvent, dir: string) => {
+    if (full) return
+    e.preventDefault(); e.stopPropagation()
+    const sx = e.clientX, sy = e.clientY, sw = size.w, sh = size.h, spx = pos.x, spy = pos.y
+    const move = (ev: PointerEvent) => {
+      const dx = ev.clientX - sx, dy = ev.clientY - sy
+      let w = sw, h = sh, x = spx, y = spy
+      if (dir.includes('e')) w = sw + dx
+      if (dir.includes('s')) h = sh + dy
+      if (dir.includes('w')) { w = sw - dx; x = spx + dx }
+      if (dir.includes('n')) { h = sh - dy; y = spy + dy }
+      if (w < MIN_W) { if (dir.includes('w')) x = spx + sw - MIN_W; w = MIN_W }
+      if (h < MIN_H) { if (dir.includes('n')) y = spy + sh - MIN_H; h = MIN_H }
+      setSize({ w, h }); setPos({ x, y })
+    }
+    const up = () => { savePref({ w: sizeRef.current.w, h: sizeRef.current.h }); window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up) }
+    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up)
+  }
+  const toggleFull = () => setFullPref((f) => { savePref({ full: !f }); return !f })
+  const panel: React.CSSProperties = full
+    ? { position: 'fixed', inset: 0, borderRadius: 0 }
+    : { position: 'fixed', left: pos.x, top: pos.y, width: size.w, height: size.h }
+  return { narrow, full, toggleFull, panel, startDrag, startResize }
+}
 // ── 对我意味着什么(E5-00 §3.5,FieldFactsSection 同级)────────────
 // 依据链在弹框端用同一 match() 重算(lib/match.ts 纯函数,与服务端列一致);每条结论指回维度记录。
 // 措辞红线:只说「符合/不符合公开清单条件」「高于/低于抽选线」,永不说「你能/不能移民」;块底带免责短句。
@@ -2003,73 +2078,9 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, news, e
     return () => clearInterval(id)
   }, [])
 
-  // 弹框尺寸/全屏/位置 —— 默认更大(900×760,2026-07-10 用户反馈「弹框不够大,内容显示不全」再加档),
-  // 可全屏、标题栏拖动、右下角拉伸;尺寸+全屏记忆。窄屏(E8-03):强制全屏,禁拖拽/八向拉伸/全屏切换钮
-  const narrow = useIsNarrow()
-  const [fullPref, setFull] = useState(false)
-  const full = fullPref || narrow
-  const [size, setSize] = useState({ w: 900, h: 760 })
-  const [pos, setPos] = useState(() => {
-    if (typeof window === 'undefined') return { x: 80, y: 60 }
-    const w = Math.min(900, window.innerWidth - 24), h = Math.min(760, window.innerHeight - 24)
-    return { x: Math.max(12, (window.innerWidth - w) / 2), y: Math.max(12, (window.innerHeight - h) / 2) }
-  })
-  const sizeRef = useRef(size); sizeRef.current = size
-  useEffect(() => {  // 载入记忆的尺寸/全屏,并按记忆尺寸重新居中
-    try {
-      const p = JSON.parse(localStorage.getItem(ADV_PREF) || '{}')
-      if (p.full) setFull(true)
-      if (p.w && p.h) {
-        const w = Math.min(p.w, window.innerWidth - 24), h = Math.min(p.h, window.innerHeight - 24)
-        setSize({ w: p.w, h: p.h })
-        setPos({ x: Math.max(12, (window.innerWidth - w) / 2), y: Math.max(12, (window.innerHeight - h) / 2) })
-      }
-    } catch { /* ignore */ }
-  }, [])
-  const savePref = (next: Record<string, unknown>) => {
-    try { localStorage.setItem(ADV_PREF, JSON.stringify({ ...JSON.parse(localStorage.getItem(ADV_PREF) || '{}'), ...next })) } catch { /* ignore */ }
-  }
-
-  // 拖动(标题栏)/ 拉伸(右下角)—— 原生 pointer 事件,无依赖
-  const startDrag = (e: React.PointerEvent) => {
-    if (full) return
-    e.preventDefault()
-    const ox = e.clientX - pos.x, oy = e.clientY - pos.y
-    const move = (ev: PointerEvent) => setPos({ x: ev.clientX - ox, y: ev.clientY - oy })
-    const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up) }
-    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up)
-  }
-  // 八方向拉伸(用户点名:上下左右都可放大缩小);西/北向同时移动位置,右/下边固定
-  const MIN_W = 360, MIN_H = 280
-  const startResize = (e: React.PointerEvent, dir: string) => {
-    if (full) return
-    e.preventDefault(); e.stopPropagation()
-    const sx = e.clientX, sy = e.clientY, sw = size.w, sh = size.h, spx = pos.x, spy = pos.y
-    const move = (ev: PointerEvent) => {
-      const dx = ev.clientX - sx, dy = ev.clientY - sy
-      let w = sw, h = sh, x = spx, y = spy
-      if (dir.includes('e')) w = sw + dx
-      if (dir.includes('s')) h = sh + dy
-      if (dir.includes('w')) { w = sw - dx; x = spx + dx }
-      if (dir.includes('n')) { h = sh - dy; y = spy + dy }
-      if (w < MIN_W) { if (dir.includes('w')) x = spx + sw - MIN_W; w = MIN_W }
-      if (h < MIN_H) { if (dir.includes('n')) y = spy + sh - MIN_H; h = MIN_H }
-      setSize({ w, h }); setPos({ x, y })
-    }
-    const up = () => { savePref({ w: sizeRef.current.w, h: sizeRef.current.h }); window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up) }
-    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up)
-  }
-  // 边 6px / 角 14px 的透明手柄条(角在后,覆盖边的交叠区)
-  const EDGES: { dir: string; cursor: string; style: React.CSSProperties }[] = [
-    { dir: 'n', cursor: 'ns-resize', style: { top: 0, left: 14, right: 14, height: 6 } },
-    { dir: 's', cursor: 'ns-resize', style: { bottom: 0, left: 14, right: 14, height: 6 } },
-    { dir: 'w', cursor: 'ew-resize', style: { left: 0, top: 14, bottom: 14, width: 6 } },
-    { dir: 'e', cursor: 'ew-resize', style: { right: 0, top: 14, bottom: 14, width: 6 } },
-    { dir: 'nw', cursor: 'nwse-resize', style: { top: 0, left: 0, width: 14, height: 14 } },
-    { dir: 'ne', cursor: 'nesw-resize', style: { top: 0, right: 0, width: 14, height: 14 } },
-    { dir: 'sw', cursor: 'nesw-resize', style: { bottom: 0, left: 0, width: 14, height: 14 } },
-    { dir: 'se', cursor: 'nwse-resize', style: { bottom: 0, right: 0, width: 14, height: 14 } },
-  ]
+  // 弹框尺寸/全屏/位置 —— 默认更大(900×760,2026-07-10 用户反馈「弹框不够大,内容显示不全」再加档);
+  // 拖动/拉伸/全屏/记忆 = 共用浮动面板机器(useFloatPanel,与职位描述弹框同款)
+  const { narrow, full, toggleFull, panel, startDrag, startResize } = useFloatPanel(ADV_PREF, 900, 760)
 
   // 试用额度可见化(第 5 轮 #16):服务端 X-Free-Left 头,免费用户看得见剩几次,402 不再是惊吓
   const [freeLeft, setFreeLeft] = useState<number | null>(null)
@@ -2102,9 +2113,6 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, news, e
     return () => ctrl.abort()
   }, [field, job, lang])
 
-  const panel: React.CSSProperties = full
-    ? { position: 'fixed', inset: 0, borderRadius: 0 }
-    : { position: 'fixed', left: pos.x, top: pos.y, width: size.w, height: size.h }
   const iconBtn = iconBtnS
 
   return (
@@ -2118,7 +2126,7 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, news, e
             <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title || a.title}</h3>
           </div>
           <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-            {!narrow && <button onClick={() => setFull((f) => { savePref({ full: !f }); return !f })} title={t(full ? 'advisor.exitFull' : 'advisor.full')} style={iconBtn}>{full ? <IconMinimize /> : <IconMaximize />}</button>}
+            {!narrow && <button onClick={toggleFull} title={t(full ? 'advisor.exitFull' : 'advisor.full')} style={iconBtn}>{full ? <IconMinimize /> : <IconMaximize />}</button>}
             <button onClick={onClose} style={{ ...iconBtn, fontSize: 16 }}>×</button>
           </div>
         </div>
@@ -2153,7 +2161,7 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, news, e
         </div>
         {/* 八方向拉伸手柄(透明边条+角块;右下角保留视觉提示三角) */}
         {!full && <div style={{ position: 'absolute', right: 0, bottom: 0, width: 18, height: 18, pointerEvents: 'none', background: 'linear-gradient(135deg, transparent 50%, #cbd5e1 50%)' }} />}
-        {!full && EDGES.map((h) => (
+        {!full && PANEL_EDGES.map((h) => (
           <div key={h.dir} onPointerDown={(e) => startResize(e, h.dir)}
             style={{ position: 'absolute', cursor: h.cursor, ...h.style }} />
         ))}
@@ -2322,9 +2330,13 @@ function AdvisorChat({ field, job, lang, initialJudgment, initialSug }: { field:
 }
 
 // ── 操作列弹框:职位描述快看(读真实抓取正文;公司信息已并入顾问公司弹窗,C1)────
-function ActModal({ job, lang, onClose }: { job: JobRow; lang: Lang; onClose: () => void }) {
+function ActModal({ job, lang, onClose, onAdvisor }: { job: JobRow; lang: Lang; onClose: () => void; onAdvisor?: (j: JobRow) => void }) {
   // C1 后只剩 JD 快看(公司信息统一走顾问公司弹窗,消两套公司弹窗重复)
+  // #87 把「点职位」从 title 顾问弹框改成本框后,顾问入口+可拖动一起丢了(Frank 2026-07-19 报障)——
+  // 修=本框升级为浮动面板(共用 useFloatPanel)+ 标题栏「AI 顾问」钮开 title 字段顾问弹框
   const t = makeT(lang)
+  const overlayClose = useOverlayClose(onClose)
+  const { narrow, full, toggleFull, panel, startDrag, startResize } = useFloatPanel(JD_PREF, 760, 640)
   const [text, setText] = useState('')
   const [status, setStatus] = useState<'loading' | 'done' | 'empty' | 'upgrade'>('loading')
   const [freeLeft, setFreeLeft] = useState<number | null>(null)  // 第 5 轮 #16:试用额度可见化
@@ -2344,11 +2356,22 @@ function ActModal({ job, lang, onClose }: { job: JobRow; lang: Lang; onClose: ()
     return () => ctrl.abort()
   }, [job])
   return (
-    <Modal onClose={onClose} size="md" pad={false}>
-      <div style={{ padding: '16px 20px 8px' }}>
-        <ModalTitle eyebrow={<>{t('act.descTitle')}{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400 }}> · {t('advisor.left', { n: freeLeft })}</span> : null}</>} title={job.title || '—'} />
-      </div>
-      <div style={{ padding: '4px 20px 20px', fontSize: 14, lineHeight: 1.7, color: '#374151' }}>
+    <div {...overlayClose} style={{ ...SCRIM, zIndex: 50 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ ...CARD, ...panel, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {/* 标题栏 = 拖动手柄(与顾问弹框同款) */}
+        <div onPointerDown={startDrag} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, padding: '16px 20px 8px', cursor: full ? 'default' : 'move', userSelect: 'none', flexShrink: 0 }}>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, letterSpacing: 0.3 }}>{t('act.descTitle')}{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400 }}> · {t('advisor.left', { n: freeLeft })}</span> : null}</div>
+            <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{job.title || '—'}</h3>
+          </div>
+          <div style={{ display: 'flex', gap: 6, flexShrink: 0 }} onPointerDown={(e) => e.stopPropagation()}>
+            {/* AI 顾问入口(#87 后由本框承接:关本框 → 开 title 字段顾问弹框) */}
+            {onAdvisor && <button onClick={() => onAdvisor(job)} style={{ border: '1px solid #c7d2fe', background: '#eef2ff', color: '#4338ca', borderRadius: 8, height: 30, padding: '0 10px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}><IconCompass /> {t('advisor.tag')}</button>}
+            {!narrow && <button onClick={toggleFull} title={t(full ? 'advisor.exitFull' : 'advisor.full')} style={iconBtnS}>{full ? <IconMinimize /> : <IconMaximize />}</button>}
+            <button onClick={onClose} style={{ ...iconBtnS, fontSize: 16 }}>×</button>
+          </div>
+        </div>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '4px 20px 20px', fontSize: 14, lineHeight: 1.7, color: '#374151' }}>
           {status === 'loading' ? <p style={{ color: '#9ca3af' }}>{t('act.loadingText')}</p>
             : status === 'upgrade' ? <UpgradeCard t={t} reason={t('up.jobtext')} />
             : status === 'empty' ? (
@@ -2365,7 +2388,14 @@ function ActModal({ job, lang, onClose }: { job: JobRow; lang: Lang; onClose: ()
             </div>
           )}
         </div>
-    </Modal>
+        {/* 八方向拉伸手柄(透明边条+角块;右下角保留视觉提示三角) */}
+        {!full && <div style={{ position: 'absolute', right: 0, bottom: 0, width: 18, height: 18, pointerEvents: 'none', background: 'linear-gradient(135deg, transparent 50%, #cbd5e1 50%)' }} />}
+        {!full && PANEL_EDGES.map((h) => (
+          <div key={h.dir} onPointerDown={(e) => startResize(e, h.dir)}
+            style={{ position: 'absolute', cursor: h.cursor, ...h.style }} />
+        ))}
+      </div>
+    </div>
   )
 }
 
