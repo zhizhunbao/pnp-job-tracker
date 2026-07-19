@@ -90,17 +90,18 @@ function ListTile({ region }: { region: string }) {
 function HeroImage({ s }: { s: NewsHero }) {
   // P1f(Frank:「最好背景图能用真实的图片」):省份地标实景照(本站静态 /img/regions/,Wikimedia Commons
   // 来源见 SOURCES.md,不外链不用 og 文字图)+ 底部渐变压字;缺图/加载失败退省色字标。
-  // flex:1=图区弹性吃掉与右列的高度差(v4.1),minHeight 保底。
+  // 图区**定高 300**(2026-07-19 Frank:「图片不一样大小到现在都没解决」):此前 flex:1 弹性吃高度差,
+  // 每张 slide 文字行数不同 → 图片忽大忽小;高度差改由下方文字区(flex:1+minHeight)吸收,图恒定。
   const [dead, setDead] = useState(false)
   if (dead) {
     return (
-      <div style={{ flex: 1, minHeight: 240, background: tileBg(s.region), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ height: 300, background: tileBg(s.region), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <span style={{ color: 'rgba(255,255,255,.9)', fontWeight: 800, fontSize: 38, letterSpacing: 2, textTransform: 'uppercase' }}>{s.region === 'federal' ? 'IRCC' : newsRegionName(s.region)}</span>
       </div>
     )
   }
   return (
-    <div style={{ flex: 1, minHeight: 240, position: 'relative', overflow: 'hidden' }}>
+    <div style={{ height: 300, position: 'relative', overflow: 'hidden' }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={regionImg(s.region)} alt="" title={IMG_CREDIT}
         onError={() => setDead(true)}
@@ -133,8 +134,8 @@ function FeaturedGrid({ t, lang, slides }: { t: TFn; lang: Lang; slides: NewsHer
     <div className="nwTop" style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 14, marginBottom: 8 }}>
       <a href={`/news/${hero.slug}`} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
         style={{ position: 'relative', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 14, overflow: 'hidden', textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column' }}>
-        {/* 图区包一层相对定位:箭头/圆点锚在图内,不随下方文字区高度漂移 */}
-        <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column' }}>
+        {/* 图区包一层相对定位:箭头/圆点锚在图内;图定高,与右列的高度差由下方文字区吸收 */}
+        <div style={{ position: 'relative' }}>
           <HeroImage key={hero.slug} s={hero} />
           {n > 1 && (<>
             <button aria-label="prev" onClick={step(-1)} style={{ ...arrow, left: 10 }}>‹</button>
@@ -148,7 +149,7 @@ function FeaturedGrid({ t, lang, slides }: { t: TFn; lang: Lang; slides: NewsHer
             </span>
           </>)}
         </div>
-        <div style={{ padding: '14px 18px 16px' }}>
+        <div style={{ padding: '14px 18px 16px', flex: 1, minHeight: 176 }}>{/* 176=最长文案实测(徽标行+2行标题+2行摘要+padding)——整卡高度轮播恒定 */}
           <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', fontSize: 11.5, color: '#9ca3af', marginBottom: 6, flexWrap: 'wrap' }}>
             <span style={{ background: '#dc2626', color: '#fff', fontWeight: 700, borderRadius: 6, padding: '1px 7px', fontSize: 11 }}>{t('news.impN', { n: hero.importance ?? '' })}</span>
             <RegionTag t={t} region={hero.region} />
