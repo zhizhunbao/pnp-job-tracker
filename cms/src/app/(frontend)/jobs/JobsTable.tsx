@@ -101,8 +101,9 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
     window.location.reload()
   }
   // Pro 钮不进 header(#65,Frank:「没有意义」)——升级入口=横幅/升级卡/用户菜单/定价页,四处都在
-  const menuItem: React.CSSProperties = { display: 'block', width: '100%', textAlign: 'left', padding: '7px 12px', fontSize: 13, color: '#374151', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap', boxSizing: 'border-box' }
-  const menuSect: React.CSSProperties = { fontSize: 10.5, color: '#9ca3af', letterSpacing: 0.5, padding: '5px 12px 1px' }  // #63 区头小字
+  // #63b(2026-07-19 Frank「太长太大,参考一亩三分地」):行距/字号/头部全面压紧
+  const menuItem: React.CSSProperties = { display: 'block', width: '100%', textAlign: 'left', padding: '4px 12px', fontSize: 12.5, color: '#374151', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap', boxSizing: 'border-box', lineHeight: 1.7 }
+  const menuSect: React.CSSProperties = { fontSize: 10, color: '#9ca3af', letterSpacing: 0.5, padding: '3px 12px 0' }  // #63 区头小字
   const logout = async () => {
     try { await fetch('/api/users/logout', { method: 'POST', credentials: 'include' }) } catch { /* ignore */ }
     window.location.reload()
@@ -113,24 +114,22 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
         // 用户按钮+下拉(2026-07-16 拍板):圆形首字头像 + 邮箱前缀 + ▾;菜单右缘与按钮右缘对齐,
         // 菜单头=完整邮箱;Pro 徽标折进菜单,退出登录不再非去 /account 不可
         <span ref={menuRef} style={{ position: 'relative', display: 'inline-flex' }}>
-          {/* E11-02 账户下拉改版(§6,去论坛化):按钮=头像+昵称;下拉=身份头 + 求职向条目 */}
-          <button onClick={() => setMenu((o) => !o)}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: '1px solid #e5e7eb', background: menu ? '#eef2ff' : '#fff', borderRadius: 999, padding: '2px 10px 2px 3px', fontSize: 12.5, color: '#2563eb', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-            <Avatar src={avatar} name={displayName || email} email={email} size={22} />
-            {displayName?.trim() || (email ? email.split('@')[0] : '')}{plan.isPro && <IconStar style={{ color: '#b45309' }} />}<span style={{ fontSize: 10, color: '#9ca3af' }}>▾</span>
+          {/* E11-02 账户下拉;#63b(Frank「像 Google 那样只显示图标」):按钮=纯头像圆钮,名字挂 title */}
+          <button onClick={() => setMenu((o) => !o)} title={displayName?.trim() || email || undefined}
+            style={{ display: 'inline-flex', border: 'none', background: 'none', padding: 2, cursor: 'pointer', borderRadius: '50%', boxShadow: menu ? '0 0 0 2px #bfdbfe' : 'none' }}>
+            <Avatar src={avatar} name={displayName || email} email={email} size={28} />
           </button>
           {menu && (
-            <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, boxShadow: '0 10px 30px rgba(0,0,0,.12)', padding: '4px 0', zIndex: 30, minWidth: 210 }}>
-              {/* 身份头:头像+昵称+邮箱+Free/Pro(点头进账户概览) */}
-              <a href="/account" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', textDecoration: 'none', borderBottom: '1px solid #f3f4f6', marginBottom: 4 }}>
-                <Avatar src={avatar} name={displayName || email} email={email} size={40} />
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 13.5, fontWeight: 600, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName?.trim() || (email ? email.split('@')[0] : '—')}</div>
-                  <div style={{ fontSize: 11.5, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{email}</div>
-                  <div style={{ fontSize: 11, marginTop: 1 }}>{plan.isPro
+            <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, boxShadow: '0 10px 30px rgba(0,0,0,.12)', padding: '3px 0', zIndex: 30, minWidth: 185 }}>
+              {/* 身份头:昵称+邮箱+Free/Pro 两行紧凑版(#63b 压缩:大头像退役) */}
+              <a href="/account" style={{ display: 'block', padding: '7px 12px', textDecoration: 'none', borderBottom: '1px solid #f3f4f6', marginBottom: 2 }}>
+                <div style={{ fontSize: 12.5, fontWeight: 600, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {displayName?.trim() || (email ? email.split('@')[0] : '—')}
+                  <span style={{ fontWeight: 400, marginLeft: 6, fontSize: 11 }}>{plan.isPro
                     ? <span style={{ color: '#b45309', fontWeight: 600 }}>Pro{proUntil ? ` · ${proUntil}` : ''}</span>
-                    : <span style={{ color: '#6b7280' }}>{t('acct.plan.free')}</span>}</div>
+                    : <span style={{ color: '#9ca3af' }}>{t('acct.plan.free')}</span>}</span>
                 </div>
+                <div style={{ fontSize: 11, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{email}</div>
               </a>
               {/* #63 Supabase 风分区(2026-07-18 效果图 Frank「可以」):求职/管理两区+区头小字,
                   升级 Pro 改通栏实心钮(免费号才显),退出置底灰字;条目图标全 Icons.tsx SVG */}
@@ -146,11 +145,11 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
               <a href="/account" style={menuItem}><IconSettings /> {t('nav.acctTab')}</a>
               {!plan.isPro && (
                 <button onClick={() => { setMenu(false); setPricing(true) }}
-                  style={{ display: 'block', width: 'calc(100% - 20px)', margin: '6px 10px', padding: '8px 0', textAlign: 'center', background: '#b45309', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+                  style={{ display: 'block', width: 'calc(100% - 20px)', margin: '4px 10px', padding: '5px 0', textAlign: 'center', background: '#b45309', color: '#fff', border: 'none', borderRadius: 7, fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>
                   <IconStar /> {t('up.cta')}
                 </button>
               )}
-              <div style={{ borderTop: '1px solid #f3f4f6', margin: '4px 0' }} />
+              <div style={{ borderTop: '1px solid #f3f4f6', margin: '2px 0' }} />
               <button onClick={logout} style={{ ...menuItem, color: '#9ca3af' }}>{t('acct.logout')}</button>
             </div>
           )}

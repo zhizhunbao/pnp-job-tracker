@@ -6,18 +6,19 @@
 import { useEffect, useState } from 'react'
 import { LANGS, type Lang, type TFn } from './jobs/i18n'
 import { Avatar } from './Avatar'
-import { IconTarget, IconChart, IconCompass, IconMapPin, IconNews, IconStar, IconUser } from './Icons'
+import { IconTarget, IconChart, IconCompass, IconMapPin, IconNews, IconUser } from './Icons'
 
 type AcctState = { state: 'loading' | 'out' | 'in'; u: { email: string; displayName: string | null; avatar: string | null; pro: boolean } }
 
 function AccountLite({ t, acct }: { t: TFn; acct: AcctState }) {
   const { state, u } = acct
-  if (state === 'loading') return <span style={{ width: 120 }} />
+  if (state === 'loading') return <span style={{ width: 32 }} />
   if (state === 'in') {
+    // #63b(Frank「像 Google 那样只显示图标」):纯头像圆钮,名字/Pro 态挂 title
     return (
-      <a href="/account" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: '1px solid #e5e7eb', borderRadius: 999, padding: '2px 10px 2px 3px', fontSize: 12.5, color: '#2563eb', textDecoration: 'none', whiteSpace: 'nowrap' }}>
-        <Avatar src={u.avatar} name={u.displayName || u.email} email={u.email} size={22} />
-        {u.displayName?.trim() || u.email.split('@')[0]}{u.pro && <IconStar style={{ color: '#b45309' }} />}
+      <a href="/account" title={(u.displayName?.trim() || u.email.split('@')[0]) + (u.pro ? ' · Pro' : '')}
+        style={{ display: 'inline-flex', padding: 2, borderRadius: '50%', textDecoration: 'none' }}>
+        <Avatar src={u.avatar} name={u.displayName || u.email} email={u.email} size={28} />
       </a>
     )
   }
