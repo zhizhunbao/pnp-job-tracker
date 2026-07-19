@@ -209,10 +209,14 @@ export async function GET(req: Request) {
       'wage_low_annual', 'wage_high_hourly', 'wage_high_annual', 'wage_year', 'date_posted', 'source',
       'source_label', 'origin', 'accessibility', 'score', 'pnp_eligible', 'pnp_stream', 'ee_category', 'aip',
       'employment_term', 'employment_hours', 'certificates', 'education',
+      'eligibility_flag', 'eligibility_quote',
       'status', 'closed_at', 'first_seen', 'last_seen', 'created_at', 'updated_at']
+    // GAP1③:预筛两列缺值(ETL 盒未拉新代码的过渡期)保留旧值不清空——COALESCE 兜底
     const jobUpdate = jobCols
-      .filter((c) => !['external_id', 'first_seen', 'last_seen', 'created_at'].includes(c))
+      .filter((c) => !['external_id', 'first_seen', 'last_seen', 'created_at', 'eligibility_flag', 'eligibility_quote'].includes(c))
       .map((c) => `${c}=EXCLUDED.${c}`).join(',')
+      + ', eligibility_flag=COALESCE(EXCLUDED.eligibility_flag, jobs.eligibility_flag)'
+      + ', eligibility_quote=COALESCE(EXCLUDED.eligibility_quote, jobs.eligibility_quote)'
     counts.jobs = 0
     // 逐片处理:一片 parse→映射→入库→引用释放,内存峰值=单片而非全量(27k 行整解析在 512MB 实例 OOM 实撞)
     for (const shard of martPaths('jobs')) {
@@ -236,6 +240,7 @@ export async function GET(req: Request) {
           // 雇佣形态+入职要求(E6-06/E6-07A);certificates 是 jsonb,pg 参数须传 JSON 字符串
           employment_term: j.employmentTerm, employment_hours: j.employmentHours,
           certificates: j.certificates ? JSON.stringify(j.certificates) : null, education: j.education,
+          eligibility_flag: j.eligibilityFlag ?? null, eligibility_quote: j.eligibilityQuote ?? null,
           status: 'open', closed_at: null, first_seen: now, last_seen: j.lastSeen ?? null,
           created_at: now, updated_at: now,
         })

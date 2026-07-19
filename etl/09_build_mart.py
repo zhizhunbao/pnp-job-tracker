@@ -18,6 +18,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _paths  # noqa: E402
 import noc as NOC  # noqa: E402  NOC 分类法(单一来源)
+from clean import visa_flag  # noqa: E402  GAP1③ 身份预筛(JD 正文 → 红旗+quote)
 
 # 公司名归一(o/a 前缀、公司后缀、标点)单一来源在 clean/05c —— LMIA 匹配与 AIP 用同一把尺子
 _spec = importlib.util.spec_from_file_location("flag_aip", Path(__file__).resolve().parent / "clean" / "05c_flag_aip.py")
@@ -281,15 +282,23 @@ def build():
         print(f"  LMIA 雇佣记录匹配: {lmia_hit}/{len(companies)} 公司")
 
     # JD 正文下沉到 DB:按 applyUrl 匹配已抓的 .md → job.description(seed 自动透传;列表 SQL 不读它)
+    # GAP1③ 身份预筛:同一循环里跑 visa_flag.detect(不另起脚本重扫 43k 文件)——
+    # 「明确不担保/须 PR」红旗 + 命中原句(quote=可核验出处,citation 惯例)
     jd_idx = build_jd_index()
     matched = 0
+    flagged = {"no_sponsorship": 0, "pr_required": 0}
     for j in jobs:
         p = jd_idx.get(j.get("applyUrl", ""))
         body = jd_body(p) if p else None
         if body:
             j["description"] = body
             matched += 1
-    print(f"  JD 正文匹配: {matched}/{len(jobs)} 岗写入 description")
+            flag, quote = visa_flag.detect(body)
+            if flag:
+                j["eligibilityFlag"] = flag
+                j["eligibilityQuote"] = quote
+                flagged[flag] += 1
+    print(f"  JD 正文匹配: {matched}/{len(jobs)} 岗写入 description;身份预筛: {flagged}")
 
     # ── 维度表 ──
     provinces = [{"code": c, "name": n} for c, n in PROV_FULL.items()]

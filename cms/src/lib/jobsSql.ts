@@ -104,6 +104,9 @@ export function buildJobsWhere(filters: Record<string, unknown>, startIndex = 1)
 
   if (isOn('directOnly')) conds.push(`(COALESCE(j.apply_url,'') NOT ILIKE '%jobbank.gc.ca%' OR COALESCE(j.source,'') = 'Job Bank')`)
 
+  // GAP1③:排除 JD 明确不担保/须 PR 的岗(红旗=数据层 visa_flag 检测;未检出=通过,宁可漏不误伤)
+  if (s('fElig') === 'ok') conds.push(`COALESCE(j.eligibility_flag,'') = ''`)
+
   return { sql: conds.length ? conds.join(' AND ') : 'TRUE', params, skipped }
 }
 
@@ -118,6 +121,8 @@ const SORT_COLUMNS: Record<string, string> = {
   source: 'j.source_label', origin: 'j.origin',
   direct: `(COALESCE(j.apply_url,'') NOT ILIKE '%jobbank.gc.ca%' OR COALESCE(j.source,'') = 'Job Bank')`,   // 与 directOnly 筛选同一谓词
   pnp: 'j.pnp_eligible', ee: 'j.ee_category', aip: 'j.aip', lmia: 'c.lmia_positions',
+  eligibility: `COALESCE(j.eligibility_flag,'')`,   // GAP1③:红旗岗聚一起看
+
   status: 'j.status', closedAt: 'j.closed_at',
   wageMedHr: 'j.wage_med_hourly', wageMedYr: 'j.wage_med_annual',
   vsMedian: '(j.salary_annual::float / NULLIF(j.wage_med_annual, 0))',
@@ -144,7 +149,7 @@ const JOB_COLUMNS = `j.id, j.title, c.name AS company_name, c.address AS company
   c.website AS company_website, c.website_source,
   c.lmia_positions, c.lmia_lmias, c.lmia_last_quarter, c.lmia_streams, c.lmia_positions_skilled,
   j.noc, j.category, j.teer, j.broad, j.mid, j.fine, j.accessibility, j.score, j.pnp_eligible, j.pnp_stream, j.ee_category, j.aip,
-  j.employment_term, j.employment_hours, j.certificates, j.education,
+  j.employment_term, j.employment_hours, j.certificates, j.education, j.eligibility_flag, j.eligibility_quote,
   j.country, j.province, j.city, j.district, j.address, j.region,
   j.apply_url, j.official_url, j.salary, j.salary_annual, j.salary_text,
   j.wage_med_hourly, j.wage_med_annual, j.wage_low_hourly, j.wage_low_annual, j.wage_high_hourly, j.wage_high_annual, j.wage_year,
@@ -187,6 +192,8 @@ export function mapJobRow(j: any, pro: boolean, matchLevel: JobRow['match']): Jo
     aip: !!j.aip,
     employmentTerm: j.employment_term ?? '',
     employmentHours: j.employment_hours ?? '',
+    eligibilityFlag: j.eligibility_flag ?? '',
+    eligibilityQuote: j.eligibility_quote ?? '',
     certificates: Array.isArray(j.certificates) ? j.certificates : [],
     education: j.education ?? '',
     salary: j.salary ?? '',

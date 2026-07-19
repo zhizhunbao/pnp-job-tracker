@@ -200,6 +200,8 @@ export type JobRow = {
   pnpStream: string
   eeCategory: string
   aip: boolean
+  eligibilityFlag?: string   // GAP1③:''|'no_sponsorship'|'pr_required'(数据层 visa_flag 检测)
+  eligibilityQuote?: string  // 命中原句(可核验出处)
   // 雇佣形态 + 入职要求(E6-06/E6-07A,详情页结构化标注 05b 解析;空=未标注,ATS 岗天然空)
   employmentTerm: string      // permanent/term/casual/seasonal/''
   employmentHours: string     // full/part/''
@@ -371,7 +373,7 @@ const sourceUrl = (applyUrl: string): string => {
 }
 
 // ── 列配置(可勾选;职位列始终显示) ──────────────────────────────
-type ColKey = 'score' | 'match' | 'pnp' | 'ee' | 'aip' | 'lmia' | 'broad' | 'mid' | 'fine' | 'teer' | 'title' | 'company' | 'noc' | 'accessibility' | 'salary' | 'salaryYr' | 'wageMedHr' | 'wageMedYr' | 'vsMedian' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'lastSeen' | 'closedAt' | 'actions'
+type ColKey = 'score' | 'match' | 'pnp' | 'ee' | 'aip' | 'lmia' | 'eligibility' | 'broad' | 'mid' | 'fine' | 'teer' | 'title' | 'company' | 'noc' | 'accessibility' | 'salary' | 'salaryYr' | 'wageMedHr' | 'wageMedYr' | 'vsMedian' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'lastSeen' | 'closedAt' | 'actions'
 // 默认显示 10 列(发布时间·大分类·公司·职位·省·市·薪资·年薪·vs中位·操作);其余用户自选。
 // 布局:表格永远满宽不横向滚动,列按内容自适应,内容多行换行(不省略)——见 <table>/<td> 注释。
 const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean }[] = [
@@ -402,6 +404,7 @@ const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean 
   { key: 'ee', label: 'EE 类别', default: false },
   { key: 'aip', label: 'AIP', default: false },
   { key: 'lmia', label: '外劳记录', default: false },  // E6-02:雇主近两年 LMIA 获批史(公司级信号)
+  { key: 'eligibility', label: '身份预筛', default: false },  // GAP1③:JD 明确不担保/须 PR 红旗(C14/C15)
   { key: 'status', label: '状态', default: false },
   { key: 'lastSeen', label: '更新时间', default: false },
   { key: 'closedAt', label: '下架时间', default: false },
@@ -411,7 +414,7 @@ const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean 
 const DEFAULT_COLS = COLUMNS.filter((c) => c.default).map((c) => c.key)
 // 原子值列:内容单行不换行(日期/金额/百分比/分级等短值,断行会很丑)。其余文本列(职位/公司/地点等)允许多行,
 // 以便表格压进容器宽度不横向滚动。表头一律不换行(=该列最小宽度)。
-const NOWRAP_COLS = new Set<ColKey>(['datePosted', 'lastSeen', 'closedAt', 'salary', 'salaryYr', 'wageMedHr', 'wageMedYr', 'vsMedian', 'teer', 'score', 'status', 'direct', 'aip', 'lmia', 'match'])
+const NOWRAP_COLS = new Set<ColKey>(['datePosted', 'lastSeen', 'closedAt', 'salary', 'salaryYr', 'wageMedHr', 'wageMedYr', 'vsMedian', 'teer', 'score', 'status', 'direct', 'aip', 'lmia', 'eligibility', 'match'])
 const PREF_KEY = 'jobs.visibleCols.v9'  // v9:新增「与我的匹配」默认列(E5-00),bump 版本让新默认生效
 const writeColsCookie = (keys: string[]) => {
   try { document.cookie = `${COLS_COOKIE}=${encodeURIComponent(JSON.stringify(keys))}; path=/; max-age=31536000; SameSite=Lax` } catch { /* ignore */ }
@@ -512,6 +515,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   }, [])
   const [q, setQ] = useState('')
   const [directOnly, setDirectOnly] = useState(false)
+  const [fElig, setFElig] = useState('')   // GAP1③:'ok'=排除明确不担保/须 PR 岗
   const [fCountry, setFCountry] = useState(''); const [fProv, setFProv] = useState(''); const [fCity, setFCity] = useState(''); const [fDistrict, setFDistrict] = useState('')
   const [fBroad, setFBroad] = useState(''); const [fMid, setFMid] = useState(''); const [fFine, setFFine] = useState('')
   const [fTeer, setFTeer] = useState(''); const [fSource, setFSource] = useState(''); const [fAcc, setFAcc] = useState('')
@@ -522,7 +526,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   // 开关行右侧带更新时间+字段按钮(同日「放到一行」拍板保留,只是宿主行从薪资行换成开关行)
   // 窄屏筛选抽屉(E8-03):≤640px 整个筛选区默认收起,一行「筛选」开关展开;CSS 媒体查询控制显隐,零水合差异
   const [fDrawer, setFDrawer] = useState(false)   // #59:「更多筛选」折叠开关(原窄屏抽屉退役,本 state 复用)
-  const foldActive = [fCity, fDistrict, fMid, fFine, fAip, fEmp, fVs].filter(Boolean).length + (directOnly ? 1 : 0)
+  const foldActive = [fCity, fDistrict, fMid, fFine, fAip, fEmp, fVs, fElig].filter(Boolean).length + (directOnly ? 1 : 0)
   // 初始列:服务端从 cookie 解析后由 initialCols 传入 → SSR 与客户端首帧一致(零闪);无则用默认
   const [visible, setVisible] = useState<ColKey[]>(() => {
     const v = (initialCols ?? []).filter((k): k is ColKey => COLUMNS.some((c) => c.key === k))
@@ -777,7 +781,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   }, [colOpen])
 
   // 分页(E10-01 P3:服务端分页)——筛选/搜索/排序/切匹配视图变化 → 回第 0 页(fetch effect 随之重拉替换)
-  useEffect(() => { setPage(0) }, [q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, fEmp, sort, matchView])
+  useEffect(() => { setPage(0) }, [q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, fEmp, fElig, sort, matchView])
 
   // 联动选项来自维度表(provinces/cities/districts;E10-01 P3:维度独立加载后不再从 job 行现推)。
   // 国家/TEER 下拉已删(2026-07-07 文案审计);fCountry/fTeer state 保留给已存的 saved-search 兼容
@@ -790,8 +794,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const midOpts = useMemo(() => uniq(nc.filter((c) => !fBroad || c.broad === fBroad).map((c) => c.mid)), [nc, fBroad])
   const fineOpts = useMemo(() => uniq(nc.filter((c) => (!fBroad || c.broad === fBroad) && (!fMid || c.mid === fMid)).map((c) => c.fine)), [nc, fBroad, fMid])
   // 来源/状态/经验/评分下拉已下架(2026-07-16 拍板只留薪资);state 与谓词保留=URL/老保存筛选照常生效
-  const anyFilter = q || directOnly || fCountry || fProv || fCity || fDistrict || fBroad || fMid || fFine || fTeer || fSource || fAcc || fPnp || fAip || fStatus || fOrigin || fScore || fSal || fVs || fEmp
-  const clearAll = () => { setQ(''); setDirectOnly(false); setFCountry(''); setFProv(''); setFCity(''); setFDistrict(''); setFBroad(''); setFMid(''); setFFine(''); setFTeer(''); setFSource(''); setFAcc(''); setFPnp(''); setFAip(''); setFStatus(''); setFOrigin(''); setFScore(''); setFSal(''); setFVs(''); setFEmp('') }
+  const anyFilter = q || directOnly || fCountry || fProv || fCity || fDistrict || fBroad || fMid || fFine || fTeer || fSource || fAcc || fPnp || fAip || fStatus || fOrigin || fScore || fSal || fVs || fEmp || fElig
+  const clearAll = () => { setQ(''); setDirectOnly(false); setFCountry(''); setFProv(''); setFCity(''); setFDistrict(''); setFBroad(''); setFMid(''); setFFine(''); setFTeer(''); setFSource(''); setFAcc(''); setFPnp(''); setFAip(''); setFStatus(''); setFOrigin(''); setFScore(''); setFSal(''); setFVs(''); setFEmp(''); setFElig('') }
 
   // ── E10-01 P3:筛选/搜索/排序/翻页全部打 /api/jobs(服务端 WHERE+分页);rows/total 来自服务端。
   //    useDeferredValue 让搜索输入跟手(dq 变化触发重拉,滞后一帧);reqSeq 丢弃晚到的旧响应。
@@ -801,7 +805,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     const sp = new URLSearchParams()
     const term = dq.trim(); if (term) sp.set('q', term)
     if (directOnly) sp.set('directOnly', '1')
-    for (const [k, v] of ([['fProv', fProv], ['fCity', fCity], ['fDistrict', fDistrict], ['fCountry', fCountry], ['fBroad', fBroad], ['fMid', fMid], ['fFine', fFine], ['fTeer', fTeer], ['fSource', fSource], ['fAcc', fAcc], ['fPnp', fPnp], ['fAip', fAip], ['fStatus', fStatus], ['fOrigin', fOrigin], ['fScore', fScore], ['fSal', fSal], ['fVs', fVs], ['fEmp', fEmp]] as [string, string][])) if (v) sp.set(k, v)
+    for (const [k, v] of ([['fProv', fProv], ['fCity', fCity], ['fDistrict', fDistrict], ['fCountry', fCountry], ['fBroad', fBroad], ['fMid', fMid], ['fFine', fFine], ['fTeer', fTeer], ['fSource', fSource], ['fAcc', fAcc], ['fPnp', fPnp], ['fAip', fAip], ['fStatus', fStatus], ['fOrigin', fOrigin], ['fScore', fScore], ['fSal', fSal], ['fVs', fVs], ['fEmp', fEmp], ['fElig', fElig]] as [string, string][])) if (v) sp.set(k, v)
     if (sort.key) { sp.set('sort', sort.key); sp.set('dir', sort.dir) }
     if (matchView) sp.set('view', 'match')
     sp.set('page', String(page))
@@ -821,7 +825,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       .catch(() => { /* 网络失败:留现有行 */ })
       .finally(() => { if (seq === reqSeq.current) setLoading(false) })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dq, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, fEmp, sort, matchView, page])
+  }, [dq, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, fEmp, fElig, sort, matchView, page])
 
   // 推荐板(E10-01 P3:blob 没了 → 用 /api/jobs 按组合拉前 3 + 总数;组合由 recs[0] 给,评分降序)
   const [recData, setRecData] = useState<{ cards: JobRow[]; total: number } | null>(null)
@@ -957,7 +961,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                   if (!plan.isPro) { setUpsell('ss'); return }  // 升级走独立弹框(用户定),不再 alert+跳定价页
                   const name = window.prompt(t('ss.name'))
                   if (!name) return
-                  const filters = { q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, fEmp }
+                  const filters = { q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, fEmp, fElig }
                   const r = await fetch('/api/saved-searches', {
                     method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, filters, lang }),
@@ -1011,6 +1015,10 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                 <Sel value={fVs} onChange={setFVs} opts={['above', 'above20', 'below']} all={t('all.vs')} labelOf={(v) => t('vs.' + v)} />
                 <label style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', background: directOnly ? '#eef2ff' : '#fff', whiteSpace: 'nowrap' }} title={t('directOnly.tip')}>
                   <input type="checkbox" checked={directOnly} onChange={(e) => setDirectOnly(e.target.checked)} />{t('directOnly')}
+                </label>
+                {/* GAP1③:排除 JD 明确不担保/须 PR 的岗(红旗=数据层检测;未检出=通过,非担保保证) */}
+                <label style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', background: fElig ? '#eef2ff' : '#fff', whiteSpace: 'nowrap' }} title={t('eligOnly.tip')}>
+                  <input type="checkbox" checked={fElig === 'ok'} onChange={(e) => setFElig(e.target.checked ? 'ok' : '')} />{t('eligOnly')}
                 </label>
               </div>
             </div>
@@ -1136,6 +1144,10 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                         node = j.lmiaPositions ? t('cell.lmiaYes', { n: j.lmiaPositions, q: j.lmiaLastQuarter }) : '—'
                         Object.assign(extra, { whiteSpace: 'nowrap', color: j.lmiaPositions ? '#0f766e' : '#d1d5db', fontSize: 12.5, fontWeight: j.lmiaPositions ? 500 : 400 })
                       }
+                      else if (k === 'eligibility') {  // GAP1③:红旗=红字;未检出=灰杠(≠保证担保,口径看弹框)
+                        node = j.eligibilityFlag ? t('cell.elig.' + j.eligibilityFlag) : '—'
+                        Object.assign(extra, { whiteSpace: 'nowrap', color: j.eligibilityFlag ? '#b91c1c' : '#d1d5db', fontSize: 12.5, fontWeight: j.eligibilityFlag ? 600 : 400 })
+                      }
                       else if (k === 'status') { const cl = j.status === 'closed'; node = cl ? t('cell.closed') : t('cell.open'); Object.assign(extra, { whiteSpace: 'nowrap', color: cl ? '#9ca3af' : '#15803d', fontSize: 12.5 }) }
                       else if (k === 'closedAt') { node = j.closedAt ? j.closedAt.slice(0, 10) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       else if (k === 'datePosted') { node = j.datePosted ? j.datePosted.slice(0, 10) : '—'; Object.assign(extra, { color: '#6b7280', fontSize: 12.5, whiteSpace: 'nowrap' }) }
@@ -1200,6 +1212,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                   {j.eeCategory ? chip('#dbeafe', '#1e40af', 'EE ' + eeDisplay(t, j.eeCategory), 'ee') : null}
                   {j.aip ? chip('#ffedd5', '#9a3412', t('cell.aipYes'), 'aip') : null}
                   {j.lmiaPositions ? chip('#ccfbf1', '#0f766e', 'LMIA ✓' + j.lmiaPositions, 'lmia') : null}
+                  {/* GAP1③:红旗 chip(手机卡片)——白投预警比正面信号更值得占位 */}
+                  {j.eligibilityFlag ? chip('#fee2e2', '#b91c1c', t('cell.elig.' + j.eligibilityFlag), 'eligibility') : null}
                   {!j.pnpEligible && !j.eeCategory && !j.aip && j.teer != null ? chip('#f3f4f6', '#6b7280', `TEER ${j.teer}`, 'teer') : null}
                   {j.score != null ? chip('#f3f4f6', '#6b7280', t('col.score') + ' ' + j.score, 'score') : null}
                 </div>
@@ -1715,6 +1729,15 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, pnpOcc, pnpDraws, news
         {matches.map((e, i) => (
           <FactRow key={i} k={e.name}>{[e.location, e.province, e.isTech ? t('fact.aipTech') : null].filter(Boolean).join(' · ')}</FactRow>
         ))}
+      </FactsBox>
+    )
+  }
+
+  if (field === 'eligibility') {  // GAP1③:红旗 + JD 命中原句(可核验);「—」口径=未检出≠保证担保
+    return (
+      <FactsBox note={t('fact.eligNote')}>
+        <FactRow k={t('fact.elig')}>{job.eligibilityFlag ? t('cell.elig.' + job.eligibilityFlag) : '—'}</FactRow>
+        {job.eligibilityQuote ? <FactRow k={t('fact.eligQuote')}>“{job.eligibilityQuote}”</FactRow> : null}
       </FactsBox>
     )
   }
