@@ -30,7 +30,11 @@ GCP:项目 offer2pr / OAuth client `offer2pr-web`(Web);redirect URIs=生产+loca
 
 ## 5 · 验证
 - 本地烟测(2026-07-19,dev):①/api/auth/google 302→accounts.google.com,client_id/redirect_uri/scope/state 全对+state cookie 落 ✓;②callback 缺 env/参数 → 302 oauth=fail ✓;③登录框 Google 钮 env 门控点亮 ✓(图 54-验收-登录-google钮.png)。build 过。
-- **生产实弹(Frank,待办)**:Render 加两 env(见 §4)→ 自动重部署 → 点「使用 Google 继续」走完同意屏 → 回站已登录、头像/昵称带回;再点一次=老用户直进。若撞 redirect_uri_mismatch,等 GCP 传播(5 分钟~数小时)重试。
+- **生产实弹 ✅(2026-07-19 晨,Frank 亲测)**:「可以登录了」——同意屏→回站登录态全链通。
+- **途中坑(重要,已修 70f3c97)**:env 填了按钮不亮——**Render 的 Docker 构建只把 env 传给 Dockerfile 里
+  声明了 ARG 的变量**;NEXT_PUBLIC_* 是 next build 编译期烤进 client 组件的,没 ARG=构建期拿不到=静默回退值
+  (服务端路由却通,因为运行时 env 在——极具迷惑性)。修=builder 段登记 ARG+ENV 四件
+  (GOOGLE_CLIENT_ID/PRICE_DISPLAY/SITE_URL/SUPPORT_EMAIL)。**以后新增 client 用的 NEXT_PUBLIC 变量必须同步登记 Dockerfile**。
 
 ## 6 · 遗留
 - **微信登录(E11-06)= 办不了,搁置**(2026-07-19 Frank:「我在加拿大没法办」)——微信开放平台网页登录
