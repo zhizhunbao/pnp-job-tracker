@@ -9,6 +9,9 @@ export function SiteFooter({ t, maxWidth = 1100 }: { t: TFn; maxWidth?: number }
       <div style={{ maxWidth, margin: '0 auto', padding: '16px 1.25rem', display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'space-between', alignItems: 'center', color: '#9ca3af', fontSize: 12.5 }}>
         <span>{t('foot.disclaimer')}</span>
         <span style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+          {/* B4-01 名录入口(顶栏 6 项已满,名录走页脚+SEO 直达;顶栏给位=Frank 拍板项) */}
+          <a href="/employers" style={{ color: '#6b7280' }}>{t('dir.title')}</a>
+          <a href="/occupations" style={{ color: '#6b7280' }}>{t('dir.occ.title')}</a>
           <a href="/legal/disclaimer" style={{ color: '#6b7280' }}>{t('foot.disclaimerLink')}</a>
           <a href="/legal/privacy" style={{ color: '#6b7280' }}>{t('foot.privacy')}</a>
           <a href="/legal/terms" style={{ color: '#6b7280' }}>{t('foot.terms')}</a>

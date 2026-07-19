@@ -3,7 +3,7 @@
 // 加图标 = 从 lucide-react 挑一个再包一行,调用点永远只 import 本文件。
 import {
   Check, ChartColumn, CircleCheck, ClipboardList, Compass, Lock, Mail, Map as LMap, MapPin,
-  Maximize, Medal, Minimize, Newspaper, Paperclip, Save, Scale, Settings, Star, Target, TriangleAlert, User, X,
+  Maximize, Medal, Minimize, Newspaper, Paperclip, Save, Scale, Settings, Star, Target, TriangleAlert, User, Users, X,
   type LucideProps,
 } from 'lucide-react'
 
@@ -33,5 +33,6 @@ export const IconSettings = wrap(Settings)    // 原 settings
 export const IconStar = wrap(Star)            // 原 star
 export const IconTarget = wrap(Target)        // 原 target
 export const IconUser = wrap(User)            // 原 user
+export const IconUsers = wrap(Users)          // 雇主名录(B4-01)
 export const IconWarn = wrap(TriangleAlert)   // 原 warn
 export const IconX = wrap(X)                  // 原 x
