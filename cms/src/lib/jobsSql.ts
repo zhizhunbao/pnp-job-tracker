@@ -20,7 +20,11 @@ const PROV_CODE: Record<string, string> = {
 }
 
 // 搜索覆盖面:核心列(E10-01 拍板)——职位/公司/省市区/NOC 码/来源标签;分类中文标签后续 query→码补。
-const SEARCH_COLS = ['j.title', 'c.name', 'j.city', 'j.province', 'j.district', 'j.noc', 'j.source_label']
+// 2026-07-19 搜索提速(Frank「搜索要 7-8 秒」,API 实测 3-5s):
+// ① c.name 从 OR 里挪出改 company_id IN 子查询——跨表 OR 谓词让 planner 只能全表扫;
+// ② province 存 2 字码,q>2 时 '%q%' 不可能命中,砍掉该分支(不可索引的死分支会毁位图 OR 计划);
+// ③ 剩余分支配 pg_trgm GIN(docs/sql/search-trgm-indexes.sql,生产 DDL)→ 位图 OR 走索引。
+const SEARCH_COLS = ['j.title', 'j.city', 'j.district', 'j.noc', 'j.source_label']
 
 export type JobsWhere = { sql: string; params: unknown[]; skipped: string[] }
 
@@ -33,7 +37,11 @@ export function buildJobsWhere(filters: Record<string, unknown>, startIndex = 1)
   const s = (k: string) => (typeof filters[k] === 'string' ? (filters[k] as string).trim() : '')
   const isOn = (k: string) => filters[k] === true || filters[k] === 'true' || filters[k] === '1'
 
-  if (s('q')) { const ph = param(`%${s('q')}%`); conds.push(`(${SEARCH_COLS.map((c) => `${c} ILIKE ${ph}`).join(' OR ')})`) }
+  if (s('q')) {
+    const ph = param(`%${s('q')}%`)
+    const cols = s('q').length <= 2 ? [...SEARCH_COLS, 'j.province'] : SEARCH_COLS
+    conds.push(`(${cols.map((c) => `${c} ILIKE ${ph}`).join(' OR ')} OR j.company_id IN (SELECT id FROM companies WHERE name ILIKE ${ph}))`)
+  }
 
   if (s('company')) conds.push(`c.name = ${param(s('company'))}`)   // 精确公司名(advisor「同公司在榜岗」用)
   if (s('fCountry')) conds.push(`j.country = ${param(s('fCountry'))}`)
