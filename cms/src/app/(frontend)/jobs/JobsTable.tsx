@@ -544,10 +544,11 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   useIsoLayoutEffect(() => {
     try {
       const sp = new URLSearchParams(window.location.search)
-      const q0 = sp.get('q'); const pv = sp.get('prov'); const bd = sp.get('broad')
+      const q0 = sp.get('q'); const pv = sp.get('prov'); const bd = sp.get('broad'); const md = sp.get('mid')
       if (q0) setQ(q0)
       if (pv) setFProv(PROV_NAMES[pv.toUpperCase()] || pv)
       if (bd) setFBroad(bd)
+      if (md) setFMid(md)  // stats 图表 L2 下钻深链(2026-07-19)
       if (sp.get('view') === 'match' && plan.loggedIn && plan.profileOk) setMatchView(true)  // E5-05 直链回流
     } catch { /* ignore */ }
   }, [])

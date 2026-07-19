@@ -122,8 +122,8 @@ export async function GET(req: Request) {
       ['slug', 'rank', 'kind', 'external_id', 'title', 'company', 'company_slug', 'city', 'province', 'noc', 'teer', 'score', 'salary_text', 'salary_annual', 'pnp_stream', 'ee_category', 'date_posted', 'apply_url', 'official_url', 'open_jobs', 'named_jobs', 'avg_score', 'lmia_positions', 'lmia_quarter'],
       (r) => ({ slug: r.slug, rank: r.rank, kind: r.kind, external_id: r.externalId, title: r.title, company: r.company, company_slug: r.companySlug, city: r.city, province: r.province, noc: r.noc, teer: r.teer, score: r.score, salary_text: r.salaryText, salary_annual: r.salaryAnnual, pnp_stream: r.pnpStream, ee_category: r.eeCategory, date_posted: r.datePosted, apply_url: r.applyUrl, official_url: r.officialUrl, open_jobs: r.openJobs, named_jobs: r.namedJobs, avg_score: r.avgScore, lmia_positions: r.lmiaPositions, lmia_quarter: r.lmiaQuarter })],
     ['stats', 'stats',
-      ['province', 'broad', 'open_jobs', 'new7d', 'median_wage_annual', 'median_salary_annual', 'named_jobs', 'stream_labels', 'aip_jobs', 'top_cities', 'fetched'],
-      (r) => ({ province: r.province, broad: r.broad, open_jobs: r.openJobs, new7d: r.new7d, median_wage_annual: r.medianWageAnnual, median_salary_annual: r.medianSalaryAnnual, named_jobs: r.namedJobs, stream_labels: r.streamLabels, aip_jobs: r.aipJobs, top_cities: r.topCities, fetched: r.fetched })],
+      ['province', 'broad', 'mid', 'open_jobs', 'new7d', 'median_wage_annual', 'median_salary_annual', 'named_jobs', 'stream_labels', 'aip_jobs', 'top_cities', 'fetched'],
+      (r) => ({ province: r.province, broad: r.broad, mid: r.mid ?? 'all', open_jobs: r.openJobs, new7d: r.new7d, median_wage_annual: r.medianWageAnnual, median_salary_annual: r.medianSalaryAnnual, named_jobs: r.namedJobs, stream_labels: r.streamLabels, aip_jobs: r.aipJobs, top_cities: r.topCities, fetched: r.fetched })],
   ]
 
   // 单连接 + 单事务:任一步失败整体回滚,不再有半写状态(老逐行版没有原子性)

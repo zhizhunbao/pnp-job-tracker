@@ -12,7 +12,7 @@ export async function generateMetadata() {
 }
 
 export default async function StatsIndexPage() {
-  const rows = await loadStats()
+  const rows = await loadStats('', [], { withMid: true })  // 图表下钻 L2 要中类行;省卡/表格在组件内自 filter
   const srcs = await loadStatSources()
   return <StatsIndexView rows={rows} srcs={srcs} />
 }

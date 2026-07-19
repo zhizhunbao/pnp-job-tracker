@@ -8,6 +8,7 @@ export const Stats: CollectionConfig = {
   fields: [
     { name: 'province', type: 'text', index: true },
     { name: 'broad', type: 'text', index: true, admin: { description: 'NOC 大类(数据值)| all=省级汇总' } },
+    { name: 'mid', type: 'text', admin: { description: 'NOC 中类(数据值)| all=大类汇总(下钻 L2,2026-07-19)' } },
     { name: 'openJobs', type: 'number', admin: { description: '在招岗数(本站抓取口径)' } },
     { name: 'new7d', type: 'number', admin: { description: '7 天新增(datePosted 近 7 天)' } },
     { name: 'medianWageAnnual', type: 'number', admin: { description: '中位年薪(ESDC 口径:桶内各岗 NOC×省中位的中位数)' } },

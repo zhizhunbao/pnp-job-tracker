@@ -1,6 +1,7 @@
-"""地区统计 v1(E5-04,三问之「去哪」):省 × NOC 大类 预聚合,页面零计算只渲染。
+"""地区统计 v1(E5-04,三问之「去哪」):省 × NOC 大类 × 中类 预聚合,页面零计算只渲染。
 
-行 = 省 × 大类(含 broad='all' 省级汇总):
+行 = 省 × 大类 × 中类(mid='all'=大类汇总;broad='all'=省级汇总;2026-07-19 Frank 拍板加中类层:
+「有了统计信息才会给人提供选哪个行业哪个地区的概率指导」——图表下钻 省→大类→中类→职位板):
   openJobs        在招岗数(本站抓取口径)
   new7d           7 天新增(datePosted 近 7 天)
   medianWageAnnual 中位年薪 —— 口径=ESDC:取该桶内各岗「所在 NOC×省 的 ESDC 中位年薪」的中位数(不是帖面薪资)
@@ -14,6 +15,7 @@ v1 只做省级(市级后置);RNIP 待 E6 有数据再并入。
 from __future__ import annotations
 
 import json
+import os
 import statistics
 import sys
 from collections import Counter, defaultdict
@@ -43,21 +45,27 @@ def main() -> None:
     jobs = [j for j in json.loads(IN_JOBS.read_text(encoding="utf-8")) if j.get("status") != "closed"]
     cut7 = (date.today() - timedelta(days=7)).isoformat()
 
-    buckets: dict[tuple[str, str], list[dict]] = defaultdict(list)
+    buckets: dict[tuple[str, str, str], list[dict]] = defaultdict(list)
     for j in jobs:
         prov = (j.get("province") or "").upper()
         if prov not in PROVS:
             continue
         broad = j.get("broad") or "未分类"
-        buckets[(prov, broad)].append(j)
-        buckets[(prov, "all")].append(j)
+        mid = j.get("mid") or "未分类"
+        # 发射闸(部署时序保护,过渡期后删):中类行要等 ①生产 stats 表加 mid 列(docs/sql/stats-mid.sql)
+        # ②新 seed(带 mid 白名单)上线 后才能灌——旧 seed 会把中类行当大类行插,旧前端全国求和翻倍。
+        # ETL 盒挂载本工作区=改动即时生效,默认先关;链路齐了把默认翻 "1" 再删此闸。
+        if os.environ.get("STATS_MID", "0") == "1":
+            buckets[(prov, broad, mid)].append(j)
+        buckets[(prov, broad, "all")].append(j)
+        buckets[(prov, "all", "all")].append(j)
 
     rows: list[dict] = []
-    for (prov, broad), js in sorted(buckets.items()):
+    for (prov, broad, mid), js in sorted(buckets.items()):
         streams = sorted({j["pnpStream"] for j in js if j.get("pnpStream")})
         cities = Counter(j.get("city") for j in js if j.get("city"))
         rows.append({
-            "province": prov, "broad": broad,
+            "province": prov, "broad": broad, "mid": mid,
             "openJobs": len(js),
             "new7d": sum(1 for j in js if (j.get("datePosted") or "") >= cut7),
             "medianWageAnnual": median_or_none([j.get("wageMedAnnual") for j in js]),
@@ -71,7 +79,8 @@ def main() -> None:
 
     OUT_STATS.write_text(json.dumps(rows, ensure_ascii=False, indent=2), encoding="utf-8")
     provs = len({r["province"] for r in rows})
-    print(f"stats: {len(rows)} 行({provs} 省 × 大类含 all)→ {OUT_STATS}")
+    base = sum(1 for r in rows if r["mid"] == "all")
+    print(f"stats: {len(rows)} 行({provs} 省;大类层 {base} 行 + 中类层 {len(rows) - base} 行)→ {OUT_STATS}")
 
 
 if __name__ == "__main__":

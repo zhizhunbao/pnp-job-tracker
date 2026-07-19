@@ -3,6 +3,7 @@
 
 export type StatRow = {
   province: string; broad: string
+  mid: string   // NOC 中类;'all'=大类汇总行(旧行/列未落地时读取层回退 'all')
   openJobs: number | null; new7d: number | null
   medianWageAnnual: number | null; medianSalaryAnnual: number | null
   namedJobs: number | null; streamLabels: string; aipJobs: number | null

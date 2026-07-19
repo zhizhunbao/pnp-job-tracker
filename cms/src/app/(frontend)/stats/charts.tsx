@@ -66,10 +66,10 @@ type MetricKey = (typeof METRICS)[number]['key']
 
 const asc = (a: Item, b: Item) => a.value - b.value // 横向条形:数组升序 = 最大条在最上
 
-// 维度=省:broad=cat('all'=全部职业)的 10 省行
+// 维度=省:broad=cat('all'=全部职业)的 10 省行(mid='all' 守卫:行集已含中类行,别错配)
 function byProv(rows: StatRow[], metric: MetricKey, cat: string): Item[] {
   return PROVS
-    .map((p) => ({ name: p, full: PROV_NAME[p] || p, key: p, value: rows.find((r) => r.province === p && r.broad === cat)?.[metric] ?? null }))
+    .map((p) => ({ name: p, full: PROV_NAME[p] || p, key: p, value: rows.find((r) => r.province === p && r.broad === cat && r.mid === 'all')?.[metric] ?? null }))
     .filter((i): i is Item => i.value != null)
     .sort(asc)
 }
@@ -78,11 +78,23 @@ function byProv(rows: StatRow[], metric: MetricKey, cat: string): Item[] {
 function byCat(rows: StatRow[], metric: MetricKey, prov: string, label: (b: string) => string): Item[] {
   return BROAD_SLUGS
     .map(([, broad]) => {
-      const rs = rows.filter((r) => r.broad === broad && (prov === 'all' || r.province === prov))
+      const rs = rows.filter((r) => r.broad === broad && r.mid === 'all' && (prov === 'all' || r.province === prov))
       const vals = rs.map((r) => r[metric]).filter((v): v is number => v != null)
       const value = !vals.length ? null : prov === 'all' ? vals.reduce((a, b) => a + b, 0) : vals[0]
       return { name: label(broad), full: label(broad), key: broad, value }
     })
+    .filter((i): i is Item => i.value != null)
+    .sort(asc)
+}
+
+// NOC 中类显示翻译(同 JobsTable catName:cat.* 缺键退 broad.* 再退原值;不从 JobsTable 导入避免拖整模块进 stats 包)
+const midName = (t: TFn, v: string) => { for (const k of ['cat.' + v, 'broad.' + v]) { const s = t(k); if (s !== k) return s } return v }
+
+// 维度=中类:单省×单大类的中类行(L2;单省内不触碰跨省中位合并红线)
+function byMid(rows: StatRow[], metric: MetricKey, prov: string, broad: string, t: TFn): Item[] {
+  return rows
+    .filter((r) => r.province === prov && r.broad === broad && r.mid !== 'all')
+    .map((r) => ({ name: midName(t, r.mid), full: midName(t, r.mid), key: r.mid, value: r[metric] as number | null }))
     .filter((i): i is Item => i.value != null)
     .sort(asc)
 }
@@ -93,40 +105,60 @@ const h2S: React.CSSProperties = { fontSize: 15.5, margin: '18px 0 8px' }
 
 const chartH = (n: number) => n * 26 + 40
 
-// 预设图卡:两级下钻+面包屑(#57,2026-07-18 设计批定稿)——L0 全景;点条形 → L1(省图→该省按大类,
-// 大类图→该类按省),面包屑「全部 › ON」点根段上卷;L1 再点条形=末级,直达职位板深链 ?prov=&broad=
-// (不引图表库,自绘承载)。中位类下钻=单省按大类,不触碰跨省合并红线。
+// 预设图卡:三级下钻+面包屑(#57 两级;2026-07-19 Frank 拍板加中类层 L2「统计=选行业选地区的概率指导」)——
+// L0 全景;L1 省图→该省按大类 / 大类图→该类按省;L2 = 单省×单大类按 NOC 中类;L2 再点条形=末级,
+// 直达职位板深链 ?prov=&broad=&mid=。面包屑「全部 › ON › 服务」任意段上卷。中位类全程单省,不触碰跨省合并红线。
 function DrillCard({ rows, t, title, kind, metric, money, broadLabel }: {
   rows: StatRow[]; t: TFn; title: string; kind: 'prov' | 'cat'; metric: MetricKey; money: boolean; broadLabel: (b: string) => string
 }) {
-  const [drill, setDrill] = useState<Item | null>(null)
+  const [path, setPath] = useState<Item[]>([])  // []=L0;[a]=L1;[a,b]=L2(prov 卡=[省,大类];cat 卡=[大类,省])
+  const provBroad = (): { prov: string; broad: string } => (
+    kind === 'prov' ? { prov: path[0]?.key ?? '', broad: path[1]?.key ?? '' } : { prov: path[1]?.key ?? '', broad: path[0]?.key ?? '' })
   const items = useMemo(() => {
-    if (!drill) return kind === 'prov' ? byProv(rows, metric, 'all') : byCat(rows, metric, 'all', broadLabel)
-    return kind === 'prov' ? byCat(rows, metric, drill.key, broadLabel) : byProv(rows, metric, drill.key)
-  }, [rows, metric, kind, drill]) // eslint-disable-line react-hooks/exhaustive-deps
+    if (!path.length) return kind === 'prov' ? byProv(rows, metric, 'all') : byCat(rows, metric, 'all', broadLabel)
+    if (path.length === 1) return kind === 'prov' ? byCat(rows, metric, path[0].key, broadLabel) : byProv(rows, metric, path[0].key)
+    const { prov, broad } = provBroad()
+    return byMid(rows, metric, prov, broad, t)
+  }, [rows, metric, kind, path]) // eslint-disable-line react-hooks/exhaustive-deps
   const toJobs = (it: Item) => {
-    if (!drill) return
-    const prov = kind === 'prov' ? drill.key : it.key
-    const broad = kind === 'prov' ? it.key : drill.key
-    window.location.href = `/?prov=${prov}&broad=${encodeURIComponent(broad)}`
+    const { prov, broad } = provBroad()
+    window.location.href = `/?prov=${prov}&broad=${encodeURIComponent(broad)}&mid=${encodeURIComponent(it.key)}`
   }
   return (
     <div style={cardS}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
         <div style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>{title}</div>
-        {drill ? (
+        {path.length ? (
           <span style={{ fontSize: 12, color: '#9ca3af', whiteSpace: 'nowrap' }}>
-            <button onClick={() => setDrill(null)} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12, color: '#2563eb', cursor: 'pointer' }}>{t('chart.all')}</button>
-            {' › '}<span style={{ color: '#374151', fontWeight: 600 }}>{drill.full}</span>
+            <button onClick={() => setPath([])} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12, color: '#2563eb', cursor: 'pointer' }}>{t('chart.all')}</button>
+            {path.map((seg, i) => (
+              <span key={seg.key}>
+                {' › '}
+                {i < path.length - 1
+                  ? <button onClick={() => setPath(path.slice(0, i + 1))} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12, color: '#2563eb', cursor: 'pointer' }}>{seg.full}</button>
+                  : <span style={{ color: '#374151', fontWeight: 600 }}>{seg.full}</span>}
+              </span>
+            ))}
           </span>
         ) : (
           <span style={{ fontSize: 11, color: '#d1d5db', whiteSpace: 'nowrap' }}>{t('chart.drillHint')}</span>
         )}
-        {drill && <span style={{ fontSize: 11, color: '#d1d5db', whiteSpace: 'nowrap' }}>{t('chart.jobsHint')}</span>}
+        {path.length === 2 && <span style={{ fontSize: 11, color: '#d1d5db', whiteSpace: 'nowrap' }}>{t('chart.jobsHint')}</span>}
       </div>
       {items.length
         ? <EChart option={barOption(items, money)} height={chartH(items.length)}
-            onBarClick={drill ? (i) => items[i] && toJobs(items[i]) : (i) => items[i] && setDrill(items[i])} />
+            onBarClick={(i) => {
+              const it = items[i]; if (!it) return
+              if (path.length === 2) return toJobs(it)
+              if (path.length === 1) {  // L1→L2 前探一眼:该桶无中类行(列未落地/数据缺)→ 优雅降级直达职位板(老两层行为)
+                const pb = kind === 'prov' ? { prov: path[0].key, broad: it.key } : { prov: it.key, broad: path[0].key }
+                if (!byMid(rows, metric, pb.prov, pb.broad, t).length) {
+                  window.location.href = `/?prov=${pb.prov}&broad=${encodeURIComponent(pb.broad)}`
+                  return
+                }
+              }
+              setPath([...path, it])
+            }} />
         : <p style={{ margin: '10px 0', fontSize: 13, color: '#9ca3af' }}>—</p>}
     </div>
   )
