@@ -85,13 +85,26 @@ export function buildJobsWhere(filters: Record<string, unknown>, startIndex = 1)
   return { sql: conds.length ? conds.join(' AND ') : 'TRUE', params, skipped }
 }
 
-// 排序白名单(列 key → SQL 列):防注入,未知 key 回退发布时间。默认序=发布时间↓,同序评分↓、id↓ 兜底唯一。
+// 排序白名单(列 key → SQL 列/表达式):防注入,未知 key 回退发布时间。默认序=发布时间↓,同序评分↓、id↓ 兜底唯一。
+// 2026-07-18 Frank 报「字段排序不好使」修:E10 服务端化时这里只搬了 9 个 key,前端表头却全列可点,
+// 白名单外的列静默回退发布时间序=看着像坏了——按前端 COLUMNS 补齐;match 列无 SQL 语义不进白名单。
 const SORT_COLUMNS: Record<string, string> = {
   datePosted: 'j.date_posted', score: 'j.score', salary: 'j.salary_annual', salaryYr: 'j.salary_annual',
   lastSeen: 'j.last_seen', title: 'j.title', company: 'c.name', province: 'j.province', city: 'j.city',
+  broad: 'j.broad', mid: 'j.mid', fine: 'j.fine', teer: 'j.teer', noc: 'j.noc',
+  accessibility: 'j.accessibility', country: 'j.country', district: 'j.district', address: 'j.address',
+  source: 'j.source_label', origin: 'j.origin',
+  direct: `(COALESCE(j.apply_url,'') NOT ILIKE '%jobbank.gc.ca%' OR COALESCE(j.source,'') = 'Job Bank')`,   // 与 directOnly 筛选同一谓词
+  pnp: 'j.pnp_eligible', ee: 'j.ee_category', aip: 'j.aip', lmia: 'c.lmia_positions',
+  status: 'j.status', closedAt: 'j.closed_at',
+  wageMedHr: 'j.wage_med_hourly', wageMedYr: 'j.wage_med_annual',
+  vsMedian: '(j.salary_annual::float / NULLIF(j.wage_med_annual, 0))',
 }
-export function orderByClause(sortKey?: string, dir?: string): string {
-  const col = (sortKey && SORT_COLUMNS[sortKey]) || 'j.date_posted'
+// Pro 数据列(中位三件套):免费用户数据已剥离,若仍按它排序=锁列信息从行序泄露 → 非 Pro 回退默认序
+const PRO_SORTS = new Set(['wageMedHr', 'wageMedYr', 'vsMedian'])
+export function orderByClause(sortKey?: string, dir?: string, pro = true): string {
+  const key = sortKey && (pro || !PRO_SORTS.has(sortKey)) ? sortKey : undefined
+  const col = (key && SORT_COLUMNS[key]) || 'j.date_posted'
   const d = dir === 'asc' ? 'ASC' : 'DESC'
   const tail = col === 'j.score' ? 'j.id DESC' : 'j.score DESC NULLS LAST, j.id DESC'
   return `ORDER BY ${col} ${d} NULLS LAST, ${tail}`
@@ -223,7 +236,7 @@ export async function fetchJobsPage(
   pool: any, { pro, profile, profileOk, matchDims, filters, sort, page, pageSize }: JobsPageOpts,
 ): Promise<{ jobs: JobRow[]; total: number; updatedAt: string }> {
   const w = buildJobsWhere(filters, 1)
-  const order = orderByClause(sort?.key, sort?.dir)
+  const order = orderByClause(sort?.key, sort?.dir, pro)
   const limPh = `$${w.params.length + 1}`, offPh = `$${w.params.length + 2}`
   const [listRes, cntRes, updRes] = await Promise.all([
     pool.query(`SELECT ${JOB_COLUMNS} ${JOB_FROM} WHERE ${w.sql} ${order} LIMIT ${limPh} OFFSET ${offPh}`, [...w.params, pageSize, page * pageSize]),
