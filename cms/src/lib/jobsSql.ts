@@ -231,6 +231,12 @@ export type JobsPageOpts = {
   filters: Record<string, unknown>; sort?: { key?: string; dir?: string }; page: number; pageSize: number
 }
 
+// count/updatedAt 微缓存(2026-07-19「排序 3-4 秒」第二刀):换排序/翻页时 WHERE 不变,总数与全局
+// 新鲜度没必要每次全表扫重算——按 WHERE 签名缓存 30s(数据小时级更新,30s 陈旧无感;Render 单实例)。
+const countCache = new Map<string, { n: number; ts: number }>()
+const COUNT_TTL = 30_000
+let updCache: { v: string; ts: number } | null = null
+
 /** E10-01:服务端筛选+排序+分页。返回当前页行 + 同 WHERE 总数(count)+ 全局 updatedAt(max last_seen)。 */
 export async function fetchJobsPage(
   pool: any, { pro, profile, profileOk, matchDims, filters, sort, page, pageSize }: JobsPageOpts,
@@ -238,15 +244,28 @@ export async function fetchJobsPage(
   const w = buildJobsWhere(filters, 1)
   const order = orderByClause(sort?.key, sort?.dir, pro)
   const limPh = `$${w.params.length + 1}`, offPh = `$${w.params.length + 2}`
+  const now = Date.now()
+  const cntKey = w.sql + '|' + JSON.stringify(w.params)
+  const cachedCnt = countCache.get(cntKey)
+  const cachedUpd = updCache && now - updCache.ts < COUNT_TTL ? updCache.v : null
   const [listRes, cntRes, updRes] = await Promise.all([
     pool.query(`SELECT ${JOB_COLUMNS} ${JOB_FROM} WHERE ${w.sql} ${order} LIMIT ${limPh} OFFSET ${offPh}`, [...w.params, pageSize, page * pageSize]),
-    pool.query(`SELECT count(*)::int n ${JOB_FROM} WHERE ${w.sql}`, w.params),
-    pool.query(`SELECT max(last_seen) AS upd FROM jobs`),   // 全局新鲜度(与筛选无关)
+    cachedCnt && now - cachedCnt.ts < COUNT_TTL ? null : pool.query(`SELECT count(*)::int n ${JOB_FROM} WHERE ${w.sql}`, w.params),
+    cachedUpd ? null : pool.query(`SELECT max(last_seen) AS upd FROM jobs`),   // 全局新鲜度(与筛选无关)
   ])
+  let total: number
+  if (cntRes) {
+    total = cntRes.rows[0]?.n ?? 0
+    if (countCache.size > 300) countCache.clear()   // 粗暴防涨,300 组筛选签名足够日常
+    countCache.set(cntKey, { n: total, ts: now })
+  } else total = cachedCnt!.n
+  let updatedAt: string
+  if (updRes) { updatedAt = iso(updRes.rows[0]?.upd); updCache = { v: updatedAt, ts: now } }
+  else updatedAt = cachedUpd!
   const m = makeMatcher(profile, profileOk, matchDims, pro)
   const base = page * pageSize
   const jobs = listRes.rows.map((j: any, i: number) => mapJobRow(j, pro, m.of(j, base + i)))
-  return { jobs, total: cntRes.rows[0]?.n ?? jobs.length, updatedAt: iso(updRes.rows[0]?.upd) }
+  return { jobs, total, updatedAt }
 }
 
 export type MatchPageOpts = {

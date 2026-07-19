@@ -16,6 +16,22 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 const PAGE_SIZE = 50
+
+// 匹配维度进程内缓存(2026-07-19 Frank「排序 3-4 秒」根因之一:建档用户每次点排序都重拉
+// pnp-occupations ≤5000 行 + ee-categories,0.25CPU 小库上 1-2s)。维度表随 seed 小时级更新,
+// TTL 10 分钟的陈旧完全可接受;Render 单实例,进程缓存即全局缓存。
+let dimsCache: { dims: MatchDims; ts: number } | null = null
+const DIMS_TTL = 10 * 60_000
+async function getMatchDimsCached(payload: Awaited<ReturnType<typeof getPayload>>): Promise<MatchDims> {
+  if (dimsCache && Date.now() - dimsCache.ts < DIMS_TTL) return dimsCache.dims
+  const [pnp, ee] = await Promise.all([
+    payload.find({ collection: 'pnp-occupations', limit: 5000, depth: 0 }),
+    payload.find({ collection: 'ee-categories', limit: 2000, depth: 0 }),
+  ])
+  const dims: MatchDims = { pnpOccupations: pnp.docs.map(mapPnpOcc), eeCategories: ee.docs.map(mapEeCat) }
+  dimsCache = { dims, ts: Date.now() }
+  return dims
+}
 const FILTER_KEYS = ['q', 'fProv', 'fCity', 'fDistrict', 'fBroad', 'fMid', 'fFine', 'fTeer',
   'fSource', 'fAcc', 'fPnp', 'fAip', 'fStatus', 'fOrigin', 'fScore', 'fSal', 'fVs', 'fEmp'] as const
 
@@ -35,13 +51,7 @@ export async function GET(req: Request) {
 
   // 匹配维度只在建了档才需要(未登录/未建档 = 全部 match null,省两次查询)
   let matchDims: MatchDims = { pnpOccupations: [], eeCategories: [] }
-  if (profileOk) {
-    const [pnp, ee] = await Promise.all([
-      payload.find({ collection: 'pnp-occupations', limit: 5000, depth: 0 }),
-      payload.find({ collection: 'ee-categories', limit: 2000, depth: 0 }),
-    ])
-    matchDims = { pnpOccupations: pnp.docs.map(mapPnpOcc), eeCategories: ee.docs.map(mapEeCat) }
-  }
+  if (profileOk) matchDims = await getMatchDimsCached(payload)
 
   const pool = (payload.db as any).pool
   // 「我的匹配」视图(E5-05):候选预筛 + TS match;未建档 → 空(与旧客户端一致)
