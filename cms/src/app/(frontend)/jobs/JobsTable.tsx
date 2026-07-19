@@ -41,19 +41,7 @@ const PRO_COLS = new Set<ColKey>(['match', 'vsMedian', 'wageMedHr', 'wageMedYr']
 // 未登录价值主张横幅(E5-01):一句话+关闭,可关闭。注册/定价按钮已归组进顶栏账户区(E8-01,2026-07-06 拍板)。
 // 关闭记忆走 cookie(同 COLS_COOKIE 手法)→ SSR 首帧直接渲对,不再等水合后才弹出来(用户点名);bump cookie 名可重新展示
 export const BANNER_COOKIE = 'jobs_banner_v1'
-function ValueBanner({ t, initialShow }: { t: TFn; initialShow: boolean }) {
-  const [show, setShow] = useState(initialShow)
-  if (!show) return null
-  const dismiss = () => { try { document.cookie = `${BANNER_COOKIE}=1; max-age=31536000; path=/` } catch { /* ignore */ } ; setShow(false) }
-  return (
-    <div style={{ background: 'linear-gradient(90deg,#eff6ff,#eef2ff)', borderBottom: '1px solid #e0e7ff' }}>
-      <div style={{ maxWidth: 1320, margin: '0 auto', padding: '8px 1.25rem', display: 'flex', alignItems: 'center', gap: 12, fontSize: 13 }}>
-        <span style={{ color: '#3730a3', flex: 1, minWidth: 240 }}><IconTarget /> {t('banner.text')}</span>
-        <button onClick={dismiss} aria-label="close" style={{ border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 15, padding: 0, flexShrink: 0 }}>×</button>
-      </div>
-    </div>
-  )
-}
+// ValueBanner 已退役(#65 收尾,Frank:「不需要两个蓝条」)——建档 CTA 并进 Jobs 页头右槽;BANNER_COOKIE 留给 page.tsx 旧 cookie 读取兼容
 
 // 升级卡片(402 / 锁定块共用;都出现在已登录上下文)—— CTA 开独立升级弹框(用户定),不再跳 /account
 function UpgradeCard({ t, reason }: { t: TFn; reason: string }) {
@@ -491,7 +479,7 @@ type Dims = {
 const EMPTY_DIMS: Dims = { provinces: [], cities: [], districts: [], nocCategories: [], sources: [], experienceLevels: [], pnpOccupations: [], pnpDraws: [], eeCategories: [], designatedEmployers: [], nocDescriptions: [], fieldSources: [], news: [] }
 const PROV_CODE: Record<string, string> = Object.fromEntries(Object.entries(PROV_NAMES).map(([c, n]) => [n, c]))
 
-export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdatedAt, dims: initialDims = EMPTY_DIMS, initialCols, plan = FREE_PLAN, initialBanner, totalCount, proof, deferFull }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims; initialCols?: string[]; plan?: Plan; initialBanner?: boolean; totalCount?: number; proof?: { named: number; lmia: number }; deferFull?: boolean }) {
+export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdatedAt, dims: initialDims = EMPTY_DIMS, initialCols, plan = FREE_PLAN, totalCount, proof, deferFull }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims; initialCols?: string[]; plan?: Plan; initialBanner?: boolean; totalCount?: number; proof?: { named: number; lmia: number }; deferFull?: boolean }) {
   // 首屏拆分:SSR 带最近 50 行秒开;筛选/搜索/翻页由 fetch effect 打 /api/jobs 分页(E10-01 P3,旧 20k blob 已废);
   // 失败保底留首屏 50 行可用,loadedAll 复位以显示计数而非假「全量」。
   // E10-01 P3:服务端分页/筛选取代 20k blob。rows=当前累计页(SSR 首屏 50 起),total=同 WHERE 总数,page=已翻页数。
@@ -870,8 +858,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         matchButton={{ active: matchView, onClick: toggleMatchView }}
         accountArea={<AccountArea t={t} plan={plan} />} />
       {/* 榜单/统计弹窗已退役(2026-07-11 用户拍板顶栏改跳转页面);/stats 页「看职位」?prov=&broad= 回流照旧 */}
-      {/* 未登录价值主张横幅(E5-01):可关闭,cookie 记忆(SSR 首帧即渲) */}
-      {!plan.loggedIn && <ValueBanner t={t} initialShow={initialBanner ?? true} />}
+      {/* 价值横幅退役(#65 收尾,Frank:「不需要两个蓝条」)——建档 CTA 并进下方 Jobs 页头右槽 */}
       <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1rem 1.25rem 1.5rem', width: '100%', boxSizing: 'border-box', flex: '1 0 auto' }}>
         {/* 页头=PageBanner(#65/#66 五模块统一浅色带,职位板=蓝)。标题数字口径不变:
             库内真实总数(第 15 轮 #34)/筛选匹配态只报命中数(第 17 轮 #42);证言行(第 5 轮 #14)作 sub */}
@@ -879,7 +866,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           sub={<>
             {anyFilter || matchView ? t('subtitle.hits', { n: total }) : t('subtitle.count', { n: total })}
             {proof && (proof.named > 0 || proof.lmia > 0) && <span style={{ marginLeft: 10 }}>{t('subtitle.proof', { named: proof.named, lmia: proof.lmia })}</span>}
-          </>} />
+          </>}
+          right={!plan.loggedIn && <a href="/?signup=1" style={{ color: '#1e40af', fontWeight: 600, textDecoration: 'none' }}><IconTarget /> {t('banner.text')}</a>} />
 
         {/* 推荐板块(2026-07-17「找工作为主」重构):原蓝条降级为职位列表上方的「推荐岗位」内容行——
             取最强组合出前 3 张匹配岗卡片,每张可「不感兴趣」;有筛选/匹配视图时不打扰。

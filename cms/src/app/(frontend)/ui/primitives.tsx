@@ -70,12 +70,13 @@ const MODULE_STYLE: Record<string, { bg: string; fg: string }> = {
   stats: { bg: 'linear-gradient(100deg,#f0fdf4,#dcfce7)', fg: '#166534' },
   news: { bg: 'linear-gradient(100deg,#f0fdfa,#ccfbf1)', fg: '#0f766e' },
 }
-export function PageBanner({ module, icon, title, sub }: { module: keyof typeof MODULE_STYLE; icon?: React.ReactNode; title: React.ReactNode; sub?: React.ReactNode }) {
+export function PageBanner({ module, icon, title, sub, right }: { module: keyof typeof MODULE_STYLE; icon?: React.ReactNode; title: React.ReactNode; sub?: React.ReactNode; right?: React.ReactNode }) {
   const m = MODULE_STYLE[module]
   return (
     <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap', background: m.bg, color: m.fg, borderRadius: 12, padding: '16px 20px', margin: '0 0 14px' }}>
       <h1 style={{ fontSize: 20, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>{icon}{title}</h1>
       {sub && <span style={{ fontSize: 12, opacity: 0.75 }}>{sub}</span>}
+      {right && <span style={{ marginLeft: 'auto', fontSize: 13 }}>{right}</span>}
     </div>
   )
 }
