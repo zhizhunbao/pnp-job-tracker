@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>二级导航 + banner 文字排列 · 提案(2026-07-19)</title>
+<style>
+  body { font-family: system-ui, sans-serif; background: #f3f4f6; margin: 0; padding: 24px; color: #1f2937; }
+  h2 { margin: 28px 0 6px; font-size: 17px; }
+  .hint { font-size: 12.5px; color: #6b7280; margin: 0 0 10px; }
+  .frame { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; margin-bottom: 14px; max-width: 1200px; }
+  .hd { display: flex; align-items: center; justify-content: space-between; padding: 10px 18px; border-bottom: 1px solid #e5e7eb; font-size: 12.5px; }
+  .brand { font-size: 16px; font-weight: 700; color: #111827; }
+  .nav { display: flex; gap: 14px; color: #6b7280; align-items: center; }
+  .nav b { color: #2563eb; }
+  .dd { position: relative; }
+  .ddbox { position: absolute; top: 22px; left: -10px; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.12); padding: 6px 0; width: 170px; z-index: 5; }
+  .ddbox a { display: block; padding: 6px 14px; color: #374151; text-decoration: none; font-size: 12.5px; }
+  .ddbox a:hover { background: #f3f4f6; }
+  .tag { font-size: 10.5px; background: #eef2ff; color: #4338ca; border-radius: 999px; padding: 1px 8px; margin-left: 6px; }
+  /* 二级 tab 条(统一样式) */
+  .tabs { display: flex; gap: 6px; padding: 10px 18px 0; }
+  .tab { font-size: 12.5px; padding: 5px 14px; border-radius: 999px 999px 0 0; border: 1px solid #e5e7eb; border-bottom: none; background: #f9fafb; color: #6b7280; }
+  .tab.on { background: #fff; color: #0f766e; font-weight: 700; border-color: #99f6e4; }
+  /* banner 新版式 */
+  .bn { position: relative; height: 130px; border-radius: 12px; margin: 14px 18px; color: #fff; overflow: hidden; display: flex; }
+  .bn .veil { position: absolute; inset: 0; }
+  .bn .inner { position: relative; z-index: 2; display: flex; align-items: flex-end; justify-content: space-between; width: 100%; padding: 0 20px 14px; }
+  .bn h1 { font-size: 20px; margin: 0; text-shadow: 0 1px 6px rgba(0,0,0,.5); }
+  .bn .sub { font-size: 12px; opacity: .9; margin-top: 3px; text-shadow: 0 1px 4px rgba(0,0,0,.5); }
+  .pills { display: flex; gap: 8px; }
+  .pill { background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.35); backdrop-filter: blur(2px); border-radius: 999px; padding: 4px 12px; font-size: 12px; white-space: nowrap; }
+  .pill b { font-size: 14px; margin-right: 4px; }
+  .dots { position: absolute; right: 14px; top: 10px; z-index: 2; display: flex; gap: 5px; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.45); }
+  .dot.on { background: #fff; }
+  .old { opacity: .95; }
+  .note { font-size: 12px; color: #9ca3af; padding: 0 18px 12px; }
+</style>
+</head>
+<body>
+  <h1 style="font-size:20px; margin:0 0 4px">二级导航 + banner 文字排列 · 提案</h1>
+  <p class="hint">背景:Frank 2026-07-19——「名录/清单/时间线是不是放 header 改个名或作为二级模块」「二级模块统一样式」「banner 文字组合排列重新设计」。以下三案任选/混选,拍板后实施。</p>
+
+  <h2>提案一 · 方案 A:顶栏收一项「资料库 ▾」下拉(推荐)</h2>
+  <p class="hint">雇主名录从顶栏第 7 项收进下拉;时间线/职业清单/学校名录(后续)同归一处。顶栏恒 7 项不再涨,footer 三链退役。</p>
+  <div class="frame">
+    <div class="hd">
+      <span class="brand">🍁 Offer2PR</span>
+      <span class="nav">
+        <span>◎ 我的匹配</span><span>◈ 移民路径</span><span>Ⅲ 榜单</span>
+        <span class="dd"><b>▤ 资料库 ▾</b>
+          <span class="ddbox">
+            <a>👥 雇主名录</a>
+            <a>📋 紧缺职业清单</a>
+            <a>🕒 抽选与政策时间线</a>
+            <a style="color:#9ca3af">🏫 学校名录(规划中)</a>
+          </span>
+        </span>
+        <span>◉ 地区统计</span><span>▣ 移民动态</span><span style="margin-left:24px">中 EN 한</span>
+      </span>
+    </div>
+    <div style="height:120px"></div>
+  </div>
+
+  <h2>提案一 · 方案 B:按语义归宿挂「模块二级 tab 条」(统一样式)</h2>
+  <p class="hint">时间线归「移民动态」(公告=内容,时间线=视图);名录/清单归「榜单」改名「榜单与名录」。每个模块页 banner 下方=统一二级 tab 条(新 primitives 组件 SectionTabs,当前页高亮),全站一个样式。</p>
+  <div class="frame">
+    <div class="hd"><span class="brand">🍁 Offer2PR</span><span class="nav"><span>◎ 我的匹配</span><span>◈ 移民路径</span><span>Ⅲ 榜单与名录</span><span>◉ 地区统计</span><b>▣ 移民动态</b></span></div>
+    <div class="tabs">
+      <span class="tab on">最新公告</span><span class="tab">抽选与政策时间线</span>
+    </div>
+    <div style="border-top:1px solid #99f6e4; margin:0; height:70px; background:#fff"></div>
+    <div class="note">「榜单与名录」页同款 tab 条:每日榜 · 本周新增 · 担保雇主榜 · 雇主名录 · 职业清单</div>
+  </div>
+
+  <h2>提案二 · banner 文字排列新版式(全模块统一槽位)</h2>
+  <p class="hint">现状问题:标题+数字块挤在左侧垂直中线,数字与标签断裂(「13↵个榜单」)。新版式=左下角【标题+副题】,右下角【数字胶囊组(数字+标签同行)】,轮播圆点挪右上;高度 150→130 顺带压竖向。</p>
+
+  <div class="frame old">
+    <div class="bn" style="background:linear-gradient(90deg,#92400e,#b45309)">
+      <div class="inner" style="align-items:center">
+        <div style="display:flex;gap:20px;align-items:center">
+          <h1>Ⅲ 本周新增 TOP 50</h1>
+          <div style="text-align:center"><div style="font-size:19px;font-weight:700">13</div><div style="font-size:11px;opacity:.85">个榜单</div></div>
+        </div>
+      </div>
+      <div class="dots" style="top:auto;bottom:10px"><span class="dot"></span><span class="dot"></span><span class="dot on"></span></div>
+    </div>
+    <div class="note">▲ 现状(对照):数字块悬在标题旁,断行别扭;右侧大片空图</div>
+  </div>
+
+  <div class="frame">
+    <div class="bn" style="background:linear-gradient(90deg,#92400e,#c2681a)">
+      <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot on"></span></div>
+      <div class="inner">
+        <div>
+          <h1>Ⅲ 本周新增 TOP 50</h1>
+          <div class="sub">按移民价值评分排序 · 随日更自动刷新</div>
+        </div>
+        <div class="pills">
+          <span class="pill"><b>13</b>个榜单</span>
+          <span class="pill"><b>50</b>本榜岗位</span>
+        </div>
+      </div>
+    </div>
+    <div class="note">▲ 新版式:标题+一句口径副题(顺带解决「精选看不出标准」)在左下;数字胶囊(数字+标签同行)在右下;圆点右上</div>
+  </div>
+
+  <div class="frame">
+    <div class="bn" style="background:linear-gradient(90deg,#1e40af,#2563eb)">
+      <div class="dots"><span class="dot on"></span><span class="dot"></span><span class="dot"></span></div>
+      <div class="inner">
+        <div>
+          <h1>Jobs</h1>
+          <div class="sub">32,970 个职位 · 官方公开数据 · 每小时更新</div>
+        </div>
+        <div class="pills">
+          <span class="pill"><b>723</b>命中省提名</span>
+          <span class="pill"><b>3,793</b>雇主有 LMIA 记录</span>
+        </div>
+      </div>
+    </div>
+    <div class="note">▲ Jobs 模块同款槽位:副题=总量+来源+更新节奏;胶囊=两个差异化数字</div>
+  </div>
+
+  <p class="hint" style="margin-top:20px">待拍板:① 提案一选 A / B / A+B(顶栏收资料库 + 模块页 tab 条都做);② 提案二 banner 版式可以/要改;③「榜单」是否改名「榜单与名录」(仅方案 B)。</p>
+</body>
+</html>

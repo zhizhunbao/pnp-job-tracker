@@ -81,7 +81,7 @@ export function EmployersView({ type, q, prov, page, aip, lmia, counts }: {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             {type === 'lmia' ? (
               <>
-                <thead><tr><th style={th}>{t('dir.col.employer')}</th><th style={th}>{t('dir.col.region')}</th><th style={th}>{t('dir.col.skilled')}</th><th style={th}>{t('rank.col.lmia')}</th><th style={th}>{t('dir.col.streams')}</th><th style={th}>{t('dir.col.quarter')}</th><th style={th}></th></tr></thead>
+                <thead><tr><th style={th}>{t('dir.col.employer')}</th><th style={th}>{t('dir.col.region')}</th><th style={{ ...th, cursor: 'help', textDecoration: 'underline dotted #d1d5db' }} title={t('dir.col.skilled.tip')}>{t('dir.col.skilled')}</th><th style={th}>{t('rank.col.lmia')}</th><th style={th}>{t('dir.col.streams')}</th><th style={th}>{t('dir.col.quarter')}</th><th style={th}></th></tr></thead>
                 <tbody>
                   {(lmia || []).map((r) => (
                     <tr key={r.name}>

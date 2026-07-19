@@ -29,7 +29,7 @@ const zh: Dict = {
   'act.seeOfficial': '查看官方原帖 ↗',
   'updated': '更新 {t}',
   'tagline': '每日更新 · 全加拿大全职业 · 移民价值视角',
-  'foot.disclaimer': '本站为信息聚合工具,数据自动抓取仅供参考,不构成移民 / 法律建议;我们非持牌移民顾问(RCIC),以官方来源为准。',
+  'foot.disclaimer': '数据自动聚合仅供参考,不构成移民/法律建议;非持牌顾问(RCIC),以官方来源为准。',
   'search.placeholder': '搜索 职位/公司/地点/NOC…',
   'filter.geo': '地理', 'filter.cat': '职业分类', 'filter.src': '来源', 'filter.elig': '移民资格', 'filter.statusexp': '状态/经验', 'filter.status': '状态', 'filter.exp': '经验', 'filter.drawer': '筛选',
   // 职位类型(E6-06)+ 入职要求(E6-07A)
@@ -222,7 +222,7 @@ const zh: Dict = {
   'dir.search': '搜索雇主名称…', 'dir.searchBtn': '搜索',
   'dir.note.lmia': '口径:近两年 ESDC 获批 LMIA 职位记录,全部股别(行内标注股别与最近季度;农业/低薪股多为季节性用工,技能类担保主要看 High Wage / Global Talent 股别)——这是「雇过外国人」的历史事实,不代表现在能或愿意担保;数据源 open.canada.ca 季度公开表。',
   'dir.note.aip': '口径:大西洋移民计划(AIP)指定雇主官方名单(NS/NB/NL)——「已注册指定」不等于「有名额或会为你背书」;以雇主与省官方确认为准。',
-  'dir.col.employer': '雇主', 'dir.col.region': '地区', 'dir.col.skilled': '技能股职位(近两年)', 'dir.col.streams': '股别', 'dir.col.quarter': '最近季度', 'dir.tech': '科技类',
+  'dir.col.employer': '雇主', 'dir.col.region': '地区', 'dir.col.skilled': '技能类获批(近两年)', 'dir.col.streams': '股别', 'dir.col.quarter': '最近季度', 'dir.tech': '科技类', 'dir.col.skilled.tip': '高薪(High Wage)与全球人才(Global Talent)股别的 LMIA 获批职位数——不含农业/低薪季节工;想找愿意办技能类工作担保的雇主,看这个数',
   'dir.total': '共 {n} 家', 'dir.page': '第 {p} / {m} 页', 'dir.prev': '← 上一页', 'dir.next': '下一页 →', 'dir.empty': '没有匹配的雇主',
   'dir.occ.title': '紧缺职业清单', 'dir.occ.sub': '各省省提名通道的具名职业清单,随官方页面周更',
   'dir.occ.note': '口径:清单命中=粗筛信号,非资格认定——各省另有语言/工资/工作经验/雇主要求;以行内官方链接为准。',
@@ -340,7 +340,7 @@ const zh: Dict = {
   'banner.text': '免费建档案,看每份工作对你的匹配度 →',
   'ss.save': '保存此筛选', 'ss.name': '给这个筛选起个名字:', 'ss.saved': '已保存;日更后有新命中会邮件提醒(账户页可管理)', 'ss.err': '保存失败(可能已达上限或需要 Pro)', 'ss.pro': '保存筛选+邮件提醒是 Pro 功能', 'ss.title': '已保存的筛选(邮件提醒)', 'ss.none': '还没有保存的筛选 —— 在职位板设好筛选后点「保存此筛选」', 'ss.del': '删除', 'ss.note': 'Pro+已建档会自动收「命中我的路径」日报;保存筛选是额外的自定义提醒',
   'src.label': '来源', 'src.fetched': '抓取于 {d}', 'src.derived': '本站算法,由上方事实计算', 'src.official': '官方原帖', 'src.unverified': '未验证(仅链接)',
-  'rank.title.daily-top': '每日精选 TOP 20', 'rank.note.daily-top': '口径:近 48 小时新发布 · 移民价值评分 ≥60 的岗位按评分精选(同分薪资高优先);大类榜岗位不足当日不出榜;随每小时数据更新自动刷新。', 'rank.title.weekly-top': '本周新增 TOP 50', 'rank.title.sponsor-likely': '最可能担保雇主榜', 'rank.updated': '随日更自动刷新 · 更新于 {d}', 'rank.entry': '榜单', 'rank.col.company': '公司', 'rank.col.openJobs': '在招', 'rank.col.namedJobs': '省提名清单岗', 'rank.col.avgScore': '平均分', 'rank.col.lmia': 'LMIA 获批职位(近两年)', 'rank.viewJobs': '在职位板查看 →', 'rank.note.weekly-top': '口径:近 7 天发布、在招,按移民价值评分排序(同分薪资高优先)。', 'rank.note.sponsor-likely': '口径:第一方直发雇主,按「近两年获批 LMIA 职位数(仅高薪/GTS/PR 股,ESDC 公开数据)→ 省提名清单命中 → 在招量 → 平均分」排序;LMIA 记录=雇过外国人的历史事实,为粗筛信号非担保承诺。',
+  'rank.title.daily-top': '每日高分新岗 TOP 20', 'rank.note.daily-top': '口径:近 48 小时新发布 · 移民价值评分 ≥60 的岗位按评分精选(同分薪资高优先);大类榜岗位不足当日不出榜;随每小时数据更新自动刷新。', 'rank.title.weekly-top': '本周新增 TOP 50', 'rank.title.sponsor-likely': '最可能担保雇主榜', 'rank.updated': '随日更自动刷新 · 更新于 {d}', 'rank.entry': '榜单', 'rank.col.company': '公司', 'rank.col.openJobs': '在招', 'rank.col.namedJobs': '省提名清单岗', 'rank.col.avgScore': '平均分', 'rank.col.lmia': 'LMIA 获批职位(近两年)', 'rank.viewJobs': '在职位板查看 →', 'rank.note.weekly-top': '口径:近 7 天发布、在招,按移民价值评分排序(同分薪资高优先)。', 'rank.note.sponsor-likely': '口径:第一方直发雇主,按「近两年获批 LMIA 职位数(仅高薪/GTS/PR 股,ESDC 公开数据)→ 省提名清单命中 → 在招量 → 平均分」排序;LMIA 记录=雇过外国人的历史事实,为粗筛信号非担保承诺。',
   'stats.title': '{prov} 地区职位统计', 'stats.catTitle': '{prov} · {cat} 职位统计', 'stats.openJobs': '在招职位', 'stats.new7d': '近 7 天发布', 'stats.medWage': '中位年薪(ESDC)', 'stats.medSalary': '帖面中位年薪', 'stats.named': '省提名清单岗', 'stats.aip': 'AIP 指定雇主岗', 'stats.topCities': '主要城市', 'stats.streams': '命中通道', 'stats.byCat': '按职业大类', 'stats.entry': '地区统计', 'stats.toJobs': '看这些职位 →', 'stats.caliber': '口径说明', 'stats.caliberText': '在招/近 7 天发布=本站抓取口径(Job Bank 全国+ATS,按帖面发布日);中位年薪=ESDC 工资数据(同 NOC×省)的中位;省提名清单岗=岗位职业在该省省提名官网公开职业清单上;「—」= 该省当前无公开职业清单(如 OINP 2026-06 改制后),非数据缺失;均非资格认定。', 'stats.provIndex': '选择省份', 'stats.compare': '跨省对比(Pro)', 'stats.pickProv': '选 2-4 个省对比', 'stats.myNoc': '按我的档案高亮',
 }
 
@@ -360,7 +360,7 @@ const en: Dict = {
   'act.seeOfficial': 'View official posting ↗',
   'updated': 'Updated {t}',
   'tagline': 'Daily updates · all of Canada · immigration-value lens',
-  'foot.disclaimer': 'This site is an information aggregator; auto-scraped data is for reference only and is not immigration / legal advice. We are not licensed immigration consultants (RCIC) — always verify with official sources.',
+  'foot.disclaimer': 'Auto-aggregated data, for reference only — not immigration/legal advice; not an RCIC. Verify with official sources.',
   'search.placeholder': 'Search title / company / location / NOC…',
   'filter.geo': 'Location', 'filter.cat': 'Occupation', 'filter.src': 'Source', 'filter.elig': 'Eligibility', 'filter.statusexp': 'Status / level', 'filter.status': 'Status', 'filter.exp': 'Level', 'filter.drawer': 'Filters',
   'filter.emp': 'Job type', 'all.emp': 'All types', 'emp.full': 'Full-time', 'emp.part': 'Part-time', 'emp.gig': 'Gig / temp',
@@ -571,7 +571,7 @@ const en: Dict = {
   'dir.search': 'Search employer name…', 'dir.searchBtn': 'Search',
   'dir.note.lmia': 'Scope: approved LMIA positions in the past two years, all streams (stream and latest quarter shown per row; Primary Agriculture / Low Wage are mostly seasonal hiring — for skilled sponsorship look at High Wage / Global Talent streams) — a historical fact of hiring foreign workers, not a promise of current sponsorship; source: open.canada.ca quarterly tables.',
   'dir.note.aip': 'Scope: official Atlantic Immigration Program designated-employer lists (NS/NB/NL) — "designated" does not mean "has endorsement space or will endorse you"; confirm with the employer and the province.',
-  'dir.col.employer': 'Employer', 'dir.col.region': 'Region', 'dir.col.skilled': 'Skilled-stream positions (2y)', 'dir.col.streams': 'Streams', 'dir.col.quarter': 'Latest quarter', 'dir.tech': 'Tech',
+  'dir.col.employer': 'Employer', 'dir.col.region': 'Region', 'dir.col.skilled': 'Skilled approvals (2y)', 'dir.col.streams': 'Streams', 'dir.col.quarter': 'Latest quarter', 'dir.tech': 'Tech', 'dir.col.skilled.tip': 'Approved LMIA positions in High Wage / Global Talent streams — excludes Primary Agriculture / Low Wage seasonal hiring; this is the number that matters for skilled sponsorship',
   'dir.total': '{n} employers', 'dir.page': 'Page {p} / {m}', 'dir.prev': '← Prev', 'dir.next': 'Next →', 'dir.empty': 'No matching employers',
   'dir.occ.title': 'In-demand occupation lists', 'dir.occ.sub': 'Named occupation lists of provincial nominee streams, refreshed weekly from official pages',
   'dir.occ.note': 'Scope: being on a list is a rough signal, not an eligibility decision — provinces also require language, wage, experience and employer conditions; follow the official link in each row.',
@@ -684,7 +684,7 @@ const en: Dict = {
   'banner.text': 'Create a free profile and see how well each job matches you →',
   'ss.save': 'Save this search', 'ss.name': 'Name this search:', 'ss.saved': 'Saved — you will get an email when new jobs match (manage on account page)', 'ss.err': 'Save failed (limit reached or Pro required)', 'ss.pro': 'Saved searches + email alerts are a Pro feature', 'ss.title': 'Saved searches (email alerts)', 'ss.none': 'No saved searches yet — set filters on the job board and hit Save this search', 'ss.del': 'Delete', 'ss.note': 'Pro users with a profile also get a daily matches-my-path email; saved searches add custom alerts',
   'src.label': 'Source', 'src.fetched': 'fetched {d}', 'src.derived': 'Site algorithm, computed from the facts above', 'src.official': 'Official posting', 'src.unverified': 'unverified (link only)',
-  'rank.title.daily-top': 'Daily picks — TOP 20', 'rank.note.daily-top': 'Method: jobs posted in the last 48 hours with an immigration-value score ≥60, ranked by score (higher salary breaks ties); a category list is skipped when too few jobs qualify; refreshed with every hourly data update.', 'rank.title.weekly-top': 'New this week — TOP 50', 'rank.title.sponsor-likely': 'Most likely sponsor employers', 'rank.updated': 'Refreshes with daily updates · updated {d}', 'rank.entry': 'Rankings', 'rank.col.company': 'Company', 'rank.col.openJobs': 'Open', 'rank.col.namedJobs': 'PNP-list jobs', 'rank.col.avgScore': 'Avg score', 'rank.col.lmia': 'LMIA positions (2 yrs)', 'rank.viewJobs': 'View on job board →', 'rank.note.weekly-top': 'Method: posted in the last 7 days, still open, ranked by immigration-value score (salary breaks ties).', 'rank.note.sponsor-likely': 'Method: first-party employers ranked by positive-LMIA positions approved in the past two years (High Wage/GTS/PR streams only, ESDC open data) → PNP-list hits → open jobs → average score. An LMIA record is a historical fact of hiring foreign workers — a rough signal, not a sponsorship promise.',
+  'rank.title.daily-top': 'Daily top-scored new jobs — TOP 20', 'rank.note.daily-top': 'Method: jobs posted in the last 48 hours with an immigration-value score ≥60, ranked by score (higher salary breaks ties); a category list is skipped when too few jobs qualify; refreshed with every hourly data update.', 'rank.title.weekly-top': 'New this week — TOP 50', 'rank.title.sponsor-likely': 'Most likely sponsor employers', 'rank.updated': 'Refreshes with daily updates · updated {d}', 'rank.entry': 'Rankings', 'rank.col.company': 'Company', 'rank.col.openJobs': 'Open', 'rank.col.namedJobs': 'PNP-list jobs', 'rank.col.avgScore': 'Avg score', 'rank.col.lmia': 'LMIA positions (2 yrs)', 'rank.viewJobs': 'View on job board →', 'rank.note.weekly-top': 'Method: posted in the last 7 days, still open, ranked by immigration-value score (salary breaks ties).', 'rank.note.sponsor-likely': 'Method: first-party employers ranked by positive-LMIA positions approved in the past two years (High Wage/GTS/PR streams only, ESDC open data) → PNP-list hits → open jobs → average score. An LMIA record is a historical fact of hiring foreign workers — a rough signal, not a sponsorship promise.',
   'stats.title': '{prov} job statistics', 'stats.catTitle': '{prov} · {cat} job statistics', 'stats.openJobs': 'Open jobs', 'stats.new7d': 'Posted in last 7 days', 'stats.medWage': 'Median wage (ESDC)', 'stats.medSalary': 'Median posted salary', 'stats.named': 'PNP-list jobs', 'stats.aip': 'AIP designated-employer jobs', 'stats.topCities': 'Top cities', 'stats.streams': 'Streams hit', 'stats.byCat': 'By occupation group', 'stats.entry': 'Region stats', 'stats.toJobs': 'See these jobs →', 'stats.caliber': 'Methodology', 'stats.caliberText': 'Open / posted-in-7-days = this site’s scrape (Job Bank Canada-wide + ATS, by posting date); median wage = ESDC wage data (same NOC × province); PNP-list jobs = the job’s occupation appears on that province’s published PNP occupation list; “—” = that province currently publishes no occupation list (e.g. OINP after its 2026-06 redesign), not missing data; none of this is an eligibility ruling.', 'stats.provIndex': 'Choose a province', 'stats.compare': 'Compare provinces (Pro)', 'stats.pickProv': 'Pick 2–4 provinces', 'stats.myNoc': 'Highlight by my profile',
 }
 
@@ -704,7 +704,7 @@ const ko: Dict = {
   'act.seeOfficial': '공식 공고 보기 ↗',
   'updated': '업데이트 {t}',
   'tagline': '매일 갱신 · 캐나다 전역 · 이민 가치 관점',
-  'foot.disclaimer': '본 사이트는 정보 수집 도구입니다. 자동 수집 데이터는 참고용이며 이민 / 법률 자문이 아닙니다. 당사는 공인 이민 컨설턴트(RCIC)가 아니며, 공식 출처를 기준으로 확인하세요.',
+  'foot.disclaimer': '자동 수집 데이터는 참고용이며 이민/법률 자문이 아닙니다. RCIC 아님 · 공식 출처 기준.',
   'search.placeholder': '직무 / 회사 / 지역 / NOC 검색…',
   'filter.geo': '지역', 'filter.cat': '직업 분류', 'filter.src': '출처', 'filter.elig': '이민 자격', 'filter.statusexp': '상태 / 경력', 'filter.status': '상태', 'filter.exp': '경력', 'filter.drawer': '필터',
   'filter.emp': '고용 형태', 'all.emp': '전체 형태', 'emp.full': '풀타임', 'emp.part': '파트타임', 'emp.gig': '단기·임시',
@@ -915,7 +915,7 @@ const ko: Dict = {
   'dir.search': '고용주 이름 검색…', 'dir.searchBtn': '검색',
   'dir.note.lmia': '기준: 최근 2년 ESDC 승인 LMIA 포지션 기록, 전체 스트림(행마다 스트림·최근 분기 표기; 농업/저임금 스트림은 대부분 계절성 고용 — 숙련 스폰서는 High Wage / Global Talent 스트림 참고) — 「외국인을 고용한 이력」이라는 사실이며 현재 스폰서 가능/의사를 뜻하지 않습니다. 출처: open.canada.ca 분기 공개표.',
   'dir.note.aip': '기준: 대서양 이민 프로그램(AIP) 지정 고용주 공식 명단(NS/NB/NL) — 「지정됨」이 「쿼터가 있거나 당신을 보증해 준다」는 뜻은 아닙니다. 고용주·주정부 확인 필요.',
-  'dir.col.employer': '고용주', 'dir.col.region': '지역', 'dir.col.skilled': '숙련 스트림(2년)', 'dir.col.streams': '스트림', 'dir.col.quarter': '최근 분기', 'dir.tech': '테크',
+  'dir.col.employer': '고용주', 'dir.col.region': '지역', 'dir.col.skilled': '숙련 승인(2년)', 'dir.col.streams': '스트림', 'dir.col.quarter': '최근 분기', 'dir.tech': '테크', 'dir.col.skilled.tip': 'High Wage/Global Talent 스트림의 승인 LMIA 포지션 수 — 농업/저임금 계절 고용 제외; 숙련 스폰서를 찾는다면 이 숫자를 보세요',
   'dir.total': '총 {n}곳', 'dir.page': '{p} / {m} 페이지', 'dir.prev': '← 이전', 'dir.next': '다음 →', 'dir.empty': '일치하는 고용주가 없습니다',
   'dir.occ.title': '수요 직업 리스트', 'dir.occ.sub': '각 주 노미니 스트림의 지정 직업 리스트, 공식 페이지 기준 주간 갱신',
   'dir.occ.note': '기준: 리스트 포함=대략적 신호이며 자격 판정이 아닙니다 — 각 주는 언어/임금/경력/고용주 조건을 별도로 요구합니다. 행의 공식 링크를 확인하세요.',
@@ -1028,7 +1028,7 @@ const ko: Dict = {
   'banner.text': '무료로 프로필을 만들고 각 공고와의 매칭도를 확인하세요 →',
   'ss.save': '이 필터 저장', 'ss.name': '필터 이름:', 'ss.saved': '저장됨 — 새 공고가 매칭되면 이메일로 알립니다(계정 페이지에서 관리)', 'ss.err': '저장 실패(상한 도달 또는 Pro 필요)', 'ss.pro': '필터 저장+이메일 알림은 Pro 기능', 'ss.title': '저장된 필터(이메일 알림)', 'ss.none': '저장된 필터가 없습니다 — 채용 보드에서 필터 설정 후 「이 필터 저장」', 'ss.del': '삭제', 'ss.note': '프로필이 있는 Pro는 「내 경로 매칭」 일일 메일도 받습니다. 저장 필터는 추가 맞춤 알림',
   'src.label': '출처', 'src.fetched': '{d} 수집', 'src.derived': '본 사이트 알고리즘(위 사실로 계산)', 'src.official': '공식 공고', 'src.unverified': '미검증(링크만)',
-  'rank.title.daily-top': '오늘의 추천 TOP 20', 'rank.note.daily-top': '기준: 최근 48시간 내 게시 · 이민 가치 점수 60 이상 공고를 점수순으로 선별(동점 시 급여 높은 순); 공고가 부족한 대분류는 당일 미발행; 매시간 데이터 갱신과 함께 자동 새로고침.', 'rank.title.weekly-top': '이번 주 신규 TOP 50', 'rank.title.sponsor-likely': '스폰서 가능성 높은 고용주', 'rank.updated': '매일 갱신 · {d} 업데이트', 'rank.entry': '랭킹', 'rank.col.company': '회사', 'rank.col.openJobs': '채용중', 'rank.col.namedJobs': 'PNP 목록 공고', 'rank.col.avgScore': '평균 점수', 'rank.col.lmia': 'LMIA 승인 포지션(2년)', 'rank.viewJobs': '채용 보드에서 보기 →', 'rank.note.weekly-top': '기준: 최근 7일 게시·채용중, 이민 가치 점수순(동점 시 급여순).', 'rank.note.sponsor-likely': '기준: 최근 2년 승인 LMIA 포지션 수(고임금/GTS/PR 스트림만, ESDC 공개 데이터) → PNP 목록 해당 → 채용중 → 평균 점수 순 정렬. LMIA 기록=외국인 고용 과거 사실이며, 대략적 신호일 뿐 스폰서 보장이 아님.',
+  'rank.title.daily-top': '오늘의 고득점 신규 TOP 20', 'rank.note.daily-top': '기준: 최근 48시간 내 게시 · 이민 가치 점수 60 이상 공고를 점수순으로 선별(동점 시 급여 높은 순); 공고가 부족한 대분류는 당일 미발행; 매시간 데이터 갱신과 함께 자동 새로고침.', 'rank.title.weekly-top': '이번 주 신규 TOP 50', 'rank.title.sponsor-likely': '스폰서 가능성 높은 고용주', 'rank.updated': '매일 갱신 · {d} 업데이트', 'rank.entry': '랭킹', 'rank.col.company': '회사', 'rank.col.openJobs': '채용중', 'rank.col.namedJobs': 'PNP 목록 공고', 'rank.col.avgScore': '평균 점수', 'rank.col.lmia': 'LMIA 승인 포지션(2년)', 'rank.viewJobs': '채용 보드에서 보기 →', 'rank.note.weekly-top': '기준: 최근 7일 게시·채용중, 이민 가치 점수순(동점 시 급여순).', 'rank.note.sponsor-likely': '기준: 최근 2년 승인 LMIA 포지션 수(고임금/GTS/PR 스트림만, ESDC 공개 데이터) → PNP 목록 해당 → 채용중 → 평균 점수 순 정렬. LMIA 기록=외국인 고용 과거 사실이며, 대략적 신호일 뿐 스폰서 보장이 아님.',
   'stats.title': '{prov} 채용 통계', 'stats.catTitle': '{prov} · {cat} 채용 통계', 'stats.openJobs': '채용중', 'stats.new7d': '최근 7일 게시', 'stats.medWage': '중위 연봉(ESDC)', 'stats.medSalary': '게시 중위 연봉', 'stats.named': 'PNP 목록 공고', 'stats.aip': 'AIP 지정 고용주 공고', 'stats.topCities': '주요 도시', 'stats.streams': '해당 스트림', 'stats.byCat': '직업 대분류별', 'stats.entry': '지역 통계', 'stats.toJobs': '해당 공고 보기 →', 'stats.caliber': '산정 기준', 'stats.caliberText': '채용중/최근 7일 게시=본 사이트 수집 기준(Job Bank 전국+ATS, 게시일 기준); 중위 연봉=ESDC 임금 데이터(동일 NOC×주)의 중위값; PNP 목록 공고=직업이 해당 주의 공개 PNP 직업 목록에 있음; 「—」=해당 주에 현재 공개 직업 목록이 없음(예: OINP 2026-06 개편 후), 데이터 누락 아님; 모두 자격 판정 아님.', 'stats.provIndex': '주 선택', 'stats.compare': '주간 비교(Pro)', 'stats.pickProv': '2–4개 주 선택', 'stats.myNoc': '내 프로필로 강조',
 }
 
