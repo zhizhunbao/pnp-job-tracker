@@ -93,8 +93,9 @@ const h2S: React.CSSProperties = { fontSize: 15.5, margin: '18px 0 8px' }
 
 const chartH = (n: number) => n * 26 + 40
 
-// 预设图卡:点条形下钻(2026-07-11 用户点名「应支持上卷和下钻」)——省图点某省 → 该省按大类;
-// 大类图点某类 → 该类按省;「← 返回」上卷。中位类下钻=单省按大类,不触碰跨省合并红线。
+// 预设图卡:两级下钻+面包屑(#57,2026-07-18 设计批定稿)——L0 全景;点条形 → L1(省图→该省按大类,
+// 大类图→该类按省),面包屑「全部 › ON」点根段上卷;L1 再点条形=末级,直达职位板深链 ?prov=&broad=
+// (不引图表库,自绘承载)。中位类下钻=单省按大类,不触碰跨省合并红线。
 function DrillCard({ rows, t, title, kind, metric, money, broadLabel }: {
   rows: StatRow[]; t: TFn; title: string; kind: 'prov' | 'cat'; metric: MetricKey; money: boolean; broadLabel: (b: string) => string
 }) {
@@ -103,17 +104,29 @@ function DrillCard({ rows, t, title, kind, metric, money, broadLabel }: {
     if (!drill) return kind === 'prov' ? byProv(rows, metric, 'all') : byCat(rows, metric, 'all', broadLabel)
     return kind === 'prov' ? byCat(rows, metric, drill.key, broadLabel) : byProv(rows, metric, drill.key)
   }, [rows, metric, kind, drill]) // eslint-disable-line react-hooks/exhaustive-deps
+  const toJobs = (it: Item) => {
+    if (!drill) return
+    const prov = kind === 'prov' ? drill.key : it.key
+    const broad = kind === 'prov' ? it.key : drill.key
+    window.location.href = `/?prov=${prov}&broad=${encodeURIComponent(broad)}`
+  }
   return (
     <div style={cardS}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>{title}{drill ? ` · ${drill.full}` : ''}</div>
-        {drill
-          ? <button onClick={() => setDrill(null)} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12, color: '#2563eb', cursor: 'pointer', whiteSpace: 'nowrap' }}>{t('chart.back')}</button>
-          : <span style={{ fontSize: 11, color: '#d1d5db', whiteSpace: 'nowrap' }}>{t('chart.drillHint')}</span>}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>{title}</div>
+        {drill ? (
+          <span style={{ fontSize: 12, color: '#9ca3af', whiteSpace: 'nowrap' }}>
+            <button onClick={() => setDrill(null)} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12, color: '#2563eb', cursor: 'pointer' }}>{t('chart.all')}</button>
+            {' › '}<span style={{ color: '#374151', fontWeight: 600 }}>{drill.full}</span>
+          </span>
+        ) : (
+          <span style={{ fontSize: 11, color: '#d1d5db', whiteSpace: 'nowrap' }}>{t('chart.drillHint')}</span>
+        )}
+        {drill && <span style={{ fontSize: 11, color: '#d1d5db', whiteSpace: 'nowrap' }}>{t('chart.jobsHint')}</span>}
       </div>
       {items.length
         ? <EChart option={barOption(items, money)} height={chartH(items.length)}
-            onBarClick={drill ? undefined : (i) => items[i] && setDrill(items[i])} />
+            onBarClick={drill ? (i) => items[i] && toJobs(items[i]) : (i) => items[i] && setDrill(items[i])} />
         : <p style={{ margin: '10px 0', fontSize: 13, color: '#9ca3af' }}>—</p>}
     </div>
   )
