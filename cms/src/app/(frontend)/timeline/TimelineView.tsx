@@ -1,7 +1,7 @@
 'use client'
 // 政策时间线视图(C6-01):三路事件混排时间轴 + 抽选节奏块;省筛/类型筛纯客户端(事件 <100)。
 // 诚实红线:省分数带分制标注(≠CRS);节奏=历史统计,不预测下一次(tl.note 写死)。
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type KeyboardEvent } from 'react'
 import { makeT, LANG_KEY, type Lang } from '../jobs/i18n'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
@@ -19,11 +19,24 @@ export function TimelineView({ events, cadence, eeCadence }: {
   const t = makeT(lang)
   const [fProv, setFProv] = useState('')      // ''=全部;'FED'=联邦;两字码=省
   const [fKind, setFKind] = useState('')      // ''=全部;draw;policy(notice 归 draw 组显示)
+  const [fStream, setFStream] = useState('')  // ''=全部;节奏卡点击带入的流名(=事件 title,分组键同源)
 
   const provs = useMemo(() => [...new Set(events.map((e) => e.prov).filter(Boolean))].sort(), [events])
   const shown = useMemo(() => events.filter((e) =>
     (!fProv || (fProv === 'FED' ? e.prov === '' : e.prov === fProv)) &&
-    (!fKind || (fKind === 'draw' ? e.kind !== 'policy' : e.kind === 'policy'))), [events, fProv, fKind])
+    (!fKind || (fKind === 'draw' ? e.kind !== 'policy' : e.kind === 'policy')) &&
+    (!fStream || e.title === fStream)), [events, fProv, fKind, fStream])
+
+  // 节奏卡点击 → 事件流按该流过滤并滚过去(详情=历次抽选,数据已在同页)
+  const drillTo = (prov: string, stream: string) => {
+    setFProv(prov || 'FED'); setFKind('draw'); setFStream(stream)
+    document.getElementById('tl-events')?.scrollIntoView({ behavior: 'smooth' })
+  }
+  const cardClick = (prov: string, stream: string) => ({
+    role: 'button' as const, tabIndex: 0,
+    onClick: () => drillTo(prov, stream),
+    onKeyDown: (ev: KeyboardEvent) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); drillTo(prov, stream) } },
+  })
 
   const provTag = (p: string) => p ? <Tag variant="region">{p}</Tag> : <Tag variant="federal">{t('tl.fed')}</Tag>
   return (
@@ -42,10 +55,11 @@ export function TimelineView({ events, cadence, eeCadence }: {
         <SectionTitle>{t('tl.cadence')}</SectionTitle>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 10, marginBottom: 8 }}>
           {cadence.map((c) => (
-            <div key={c.prov + c.stream} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '10px 12px', fontSize: 12.5 }}>
+            <div key={c.prov + c.stream} {...cardClick(c.prov, c.stream)} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '10px 12px', fontSize: 12.5, cursor: 'pointer' }}>
               <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 3 }}>
                 {provTag(c.prov)}<span style={{ fontWeight: 600, color: '#111827' }}>{c.stream}</span>
                 {c.scale && <span style={{ color: '#9ca3af', fontSize: 11 }}>{c.scale}</span>}
+                <span style={{ marginLeft: 'auto', color: UI.primary, fontSize: 11, whiteSpace: 'nowrap' }}>{t('tl.hist')}</span>
               </div>
               <div style={{ color: '#6b7280' }}>
                 {t('tl.last', { d: c.last })} · <b style={{ color: c.daysSince > (c.avgGapDays ?? 9999) ? UI.warn : '#374151' }}>{t('tl.daysSince', { n: c.daysSince })}</b>
@@ -54,26 +68,28 @@ export function TimelineView({ events, cadence, eeCadence }: {
             </div>
           ))}
           {eeCadence.map((c) => (
-            <div key={c.category} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '10px 12px', fontSize: 12.5 }}>
+            <div key={c.category} {...cardClick('', c.label)} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '10px 12px', fontSize: 12.5, cursor: 'pointer' }}>
               <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 3 }}>
                 <Tag variant="federal">EE</Tag><span style={{ fontWeight: 600, color: '#111827' }}>{c.label}</span>
                 <span style={{ color: '#9ca3af', fontSize: 11 }}>CRS</span>
+                <span style={{ marginLeft: 'auto', color: UI.primary, fontSize: 11, whiteSpace: 'nowrap' }}>{t('tl.hist')}</span>
               </div>
               <div style={{ color: '#6b7280' }}>{t('tl.last', { d: c.last })} · <b style={{ color: '#374151' }}>{t('tl.daysSince', { n: c.daysSince })}</b></div>
             </div>
           ))}
         </div>
 
-        {/* 筛选 chips */}
-        <SectionTitle>{t('tl.events')}</SectionTitle>
+        {/* 筛选 chips(手动切省/类型时清掉节奏卡带入的流过滤,避免空结果) */}
+        <div id="tl-events" style={{ scrollMarginTop: 12 }}><SectionTitle>{t('tl.events')}</SectionTitle></div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '0 0 6px' }}>
-          <button style={chipStyle(!fProv)} onClick={() => setFProv('')}>{t('all.prov')}</button>
-          <button style={chipStyle(fProv === 'FED')} onClick={() => setFProv('FED')}>{t('tl.fed')}</button>
-          {provs.map((p) => <button key={p} style={chipStyle(fProv === p)} onClick={() => setFProv(p)}>{t('pr.' + p)}</button>)}
+          <button style={chipStyle(!fProv)} onClick={() => { setFProv(''); setFStream('') }}>{t('all.prov')}</button>
+          <button style={chipStyle(fProv === 'FED')} onClick={() => { setFProv('FED'); setFStream('') }}>{t('tl.fed')}</button>
+          {provs.map((p) => <button key={p} style={chipStyle(fProv === p)} onClick={() => { setFProv(p); setFStream('') }}>{t('pr.' + p)}</button>)}
           <span style={{ width: 1, background: '#e5e7eb', margin: '0 4px' }} />
-          <button style={chipStyle(!fKind)} onClick={() => setFKind('')}>{t('tl.kindAll')}</button>
+          <button style={chipStyle(!fKind)} onClick={() => { setFKind(''); setFStream('') }}>{t('tl.kindAll')}</button>
           <button style={chipStyle(fKind === 'draw')} onClick={() => setFKind('draw')}>{t('tl.kindDraw')}</button>
-          <button style={chipStyle(fKind === 'policy')} onClick={() => setFKind('policy')}>{t('tl.kindPolicy')}</button>
+          <button style={chipStyle(fKind === 'policy')} onClick={() => { setFKind('policy'); setFStream('') }}>{t('tl.kindPolicy')}</button>
+          {fStream && <button style={chipStyle(true)} onClick={() => setFStream('')}>{fStream} ✕</button>}
         </div>
 
         {/* 时间轴(左缘竖线+圆点) */}
