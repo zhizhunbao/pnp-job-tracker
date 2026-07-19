@@ -733,7 +733,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       : {}
   // 每列最小宽:文本列宽些(列内换行),其余够放原子值即可 → 列多时整表超容器可横滚
   // #85(Frank「最后一列宽度叠一起」):actions 原默认 78px 塞不下三钮 → 给足最小宽,配合 cell 内 flex wrap 兜底
-  const MIN_W: Partial<Record<ColKey, number>> = { title: 170, company: 140, address: 150, datePosted: 92, lastSeen: 96, closedAt: 92, salary: 100, salaryYr: 86, wageMedHr: 88, wageMedYr: 88, actions: 238 }
+  const MIN_W: Partial<Record<ColKey, number>> = { title: 170, company: 140, address: 150, datePosted: 92, lastSeen: 96, closedAt: 92, salary: 100, salaryYr: 86, wageMedHr: 88, wageMedYr: 88, actions: 92 }
   const colMin = (k: ColKey) => (hasWidths ? undefined : (MIN_W[k] ?? 78))
   // 量当前表头每个可见列的自然渲染宽(auto 布局下为真实内容宽),返回覆盖全可见列的完整 map
   const measureAll = (): Record<string, number> => {
@@ -1091,16 +1091,12 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                     {shown.map((c, idx) => {
                       const k = c.key
                       const rowBg = i % 2 ? '#fcfcfd' : '#fff'
-                      if (k === 'actions') return (  // 操作列:三钮(收藏/公司信息/职位描述);#85 flex+wrap=挤压时堆叠不重叠
+                      if (k === 'actions') return (  // 操作列:只留收藏(2026-07-19 Frank:公司信息=公司格同一弹框纯重复删;职位描述并进职位格点击)
                         <td key={k} style={{ ...td, minWidth: colMin('actions') }}>
-                          <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-                            <button onClick={(e) => { e.stopPropagation(); toggleSave(j) }}
-                              style={{ ...actBtn, whiteSpace: 'nowrap', ...(saved[String(j.id)] ? { color: '#b45309', borderColor: '#fde68a', background: '#fffbeb' } : {}) }}>
-                              {saved[String(j.id)] ? t('sj.saved') : t('sj.save')}
-                            </button>
-                            <button onClick={(e) => { e.stopPropagation(); setPopup({ field: 'company', job: j, title: j.company }) }} style={{ ...actBtn, whiteSpace: 'nowrap' }}>{t('act.company')}</button>
-                            <button onClick={(e) => { e.stopPropagation(); setActModal({ kind: 'desc', job: j }) }} style={{ ...actBtn, whiteSpace: 'nowrap' }}>{t('act.desc')}</button>
-                          </span>
+                          <button onClick={(e) => { e.stopPropagation(); toggleSave(j) }}
+                            style={{ ...actBtn, whiteSpace: 'nowrap', ...(saved[String(j.id)] ? { color: '#b45309', borderColor: '#fde68a', background: '#fffbeb' } : {}) }}>
+                            {saved[String(j.id)] ? t('sj.saved') : t('sj.save')}
+                          </button>
                         </td>
                       )
                       let href: string | null = null
@@ -1174,6 +1170,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       else { node = j.lastSeen ? fmtLocalSec(j.lastSeen) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       return (
                         <td key={k} className="jcell" style={{ ...td, ...extra, cursor: 'pointer', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', minWidth: colMin(k), ...(NOWRAP_COLS.has(k) ? { whiteSpace: 'nowrap' } : { whiteSpace: 'normal', overflowWrap: 'break-word' }), ...(hasWidths && { overflow: 'hidden', textOverflow: 'ellipsis' }), ...frozenStyle(k, rowBg) }} title={typeof node === 'string' ? node : undefined} onClick={() => {
+                          // 职位格=直开职位描述(2026-07-19 Frank:「点职位也能显示职位描述」;title 顾问弹框退役,JD 才是点标题的预期)
+                          if (k === 'title') { setActModal({ kind: 'desc', job: j }); return }
                           // Pro 锁列(免费态数据已在服务端剥离)不开顾问弹框——没数据只会误导;锁形本身已链去 /account。match 免费额度内有值仍可开。
                           if (PRO_COLS.has(k) && !plan.isPro && !(k === 'match' && j.match)) return
                           // 大标题=单元格字符串值;元素类 cell 只有薪资列回退薪资文本,其余留空(页眉已有字段名,别拿别列的值凑)
@@ -1212,7 +1210,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             return (
               <div key={j.id} style={{ border: '1px solid #e5e7eb', borderRadius: 12, padding: '10px 12px', background: '#fff' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'baseline' }}>
-                  <span onClick={() => open('title', j.title)} style={{ fontSize: 14.5, fontWeight: 600, color: '#111827', cursor: 'pointer' }}>{j.title}</span>
+                  <span onClick={() => setActModal({ kind: 'desc', job: j })} style={{ fontSize: 14.5, fontWeight: 600, color: '#111827', cursor: 'pointer' }}>{j.title}</span>
                   <span style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
                     {mc && <span onClick={() => open('match', t('match.' + j.match))} style={{ fontSize: 11.5, padding: '1px 8px', borderRadius: 6, background: mc.bg, color: mc.fg, fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer' }}>{t('match.' + j.match)}</span>}
                     {/* #52:收藏入口手机也要有(E9-01 闭环第一环)——卡片寸土寸金只放星标,匿名点=注册框(与桌面 toggleSave 同一逻辑) */}
