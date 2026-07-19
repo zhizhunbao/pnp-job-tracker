@@ -48,7 +48,7 @@ export function EmployersView({ type, q, prov, page, aip, lmia, counts }: {
 
   return (
     <div style={{ background: '#f9fafb', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
-      <SiteHeader lang={lang} setLang={setLangSaved} t={t} />
+      <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="employers" />
       <PageShell pad="2rem 1.25rem 32px">
         {/* 页头浅色带(B 模块蓝,循 #65 收口不发明新色;banner 图版留后续凑手) */}
         <PageBanner module="jobs" icon={<IconUsers />} title={t('dir.title')} sub={t('dir.sub')} />

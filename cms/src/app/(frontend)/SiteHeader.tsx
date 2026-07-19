@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react'
 import { LANGS, type Lang, type TFn } from './jobs/i18n'
 import { Avatar } from './Avatar'
-import { IconTarget, IconChart, IconCompass, IconMapPin, IconNews, IconUser } from './Icons'
+import { IconTarget, IconChart, IconCompass, IconMapPin, IconNews, IconUser, IconUsers } from './Icons'
 
 type AcctState = { state: 'loading' | 'out' | 'in'; u: { email: string; displayName: string | null; avatar: string | null; pro: boolean } }
 
@@ -33,7 +33,7 @@ function AccountLite({ t, acct }: { t: TFn; acct: AcctState }) {
 
 export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, accountArea, loggedIn }: {
   lang: Lang; setLang: (l: Lang) => void; t: TFn
-  active?: 'rank' | 'stats' | 'account' | 'pathways' | 'news'
+  active?: 'rank' | 'stats' | 'account' | 'pathways' | 'news' | 'employers'
   sticky?: boolean
   matchButton?: { active: boolean; onClick: () => void }
   accountArea?: React.ReactNode
@@ -76,6 +76,8 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
               : <a href="/?view=match" style={nav}><IconTarget /> {t('mv.entry')}</a>}
             <a href="/pathways" style={{ ...nav, color: active === 'pathways' ? '#2563eb' : '#6b7280', fontWeight: active === 'pathways' ? 700 : 400 }}><IconCompass /> {t('pw.entry')}</a>
             <a href="/rankings/weekly-top" style={{ ...nav, color: active === 'rank' ? '#2563eb' : '#6b7280', fontWeight: active === 'rank' ? 700 : 400 }}><IconChart /> {t('rank.entry')}</a>
+            {/* 雇主名录=顶栏第 7 项(2026-07-19 Frank「header 没地方点」拍板给位;B4-01) */}
+            <a href="/employers" style={{ ...nav, color: active === 'employers' ? '#2563eb' : '#6b7280', fontWeight: active === 'employers' ? 700 : 400 }}><IconUsers /> {t('dir.title')}</a>
             <a href="/stats" style={{ ...nav, color: active === 'stats' ? '#2563eb' : '#6b7280', fontWeight: active === 'stats' ? 700 : 400 }}><IconMapPin /> {t('stats.entry')}</a>
             {/* 移民动态=顶栏第 6 项(E12-06 拍板);窄屏随 flexWrap 自动折行 */}
             <a href="/news" style={{ ...nav, color: active === 'news' ? '#2563eb' : '#6b7280', fontWeight: active === 'news' ? 700 : 400 }}><IconNews /> {t('news.entry')}</a>
