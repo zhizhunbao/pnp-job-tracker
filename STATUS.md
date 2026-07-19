@@ -3,7 +3,13 @@
 > 新 session 接手先读这份 + `CLAUDE.md`(设计宪法)+ `prd.md`(v2 定位见头部标注)。仓库:github.com/zhizhunbao/pnp-job-tracker
 > **🚀 站点已公网上线并真实收款:https://pnp-cms.onrender.com**(Render + Supabase;**live Stripe,M3 已开闸**)。批次进度=`docs/implementation/_开发批次顺序.md`:**B0-B8 全部落地(2026-07-04 一天从 B4 打到 B8),24 工作项代码侧全完**。
 >
-> **⚡⚡⚡⚡ 最新交接(2026-07-18 通宵 session,「移民动态之夜」)——E12-06 全环闭合 + #65 设计系统第一批,细节见 implementation/E12/06 §10(续①~⑦)与记忆 next-session-status**
+> **⚡⚡⚡⚡⚡ 最新交接(2026-07-18 晚 session,「快刀+news 批之夜」)——第 21 轮快刀四件 + news 晚批六件,当晚全部生产闭环**
+> - **快刀四件 ✅ 生产闭环(e5fdea1)**:#62A 我的收藏独立入口(账户 favs 节+顶栏下拉,SavedJobsList 加 favs 变体)/#58 档案·wizard 省份 chips 三语全名(i18n 新 `pr.*` 键,码存幕后)/#56 字段钮挪薪资行最右(直发独立收尾行)/#60 stats 常见图表恒 2×2 等宽(min420 auto-fit 治 3+1 空白)。生产 playwright 八项断言全绿,验收图 docs/assets/mockups/。
+> - **news 晚批六件 ✅ 生产闭环(0731f6f,#67-#72)**:**PageShell 公共宽度轨上线**(primitives,1320 与头轨同宽——Frank「每个页面宽度应该一样」拍板;/news 列表+详情已套,**存量页迁移归 #65 余批**)/「只看重要」删/列表小色块换省地标真图(96×64 cover,缺图退色块)/头条大卡恢复轮播(5s 自动+圆点+箭头+hover 暂停,推翻 v4 退役)/AI 顾问标题「思考中」后缀删/图片水印删(CC 致谢挪 img title+SOURCES.md)。生产三态实测:点击切换/自动轮播/hover 暂停。**探针教训记档:生产 SSR style 序列化无空格(`font-size:19px`),dev 带空格——playwright style 选择器别带空格,俩假阴性查了三轮。**
+> - **改版批效果图已出待过目**:docs/assets/mockups/改版批-筛选区与账户下拉-效果图.html(#59+#65 筛选区=常用一行+更多筛选折叠;#63 账户下拉 Supabase 风=分区+通栏升级钮+退出置底,免费/Pro 双态)。Frank 回「按这个做」即动手。
+> - **下轮队列(顺延)**:改版批实施(#59/#63 待批 → #64 定价卡效果图已定稿可直做 → #57 图表两级下钻)→ #65 余批(存量页 PageShell 迁移+账户 Sidebar+弹框头)→ B4 实体名录最小版 → C6 政策时间线;#61 二级标题待 Frank 补截图澄清;发帖开闸(Frank)。
+>
+> **⚡⚡⚡⚡ 上轮交接(2026-07-18 通宵 session,「移民动态之夜」)——E12-06 全环闭合 + #65 设计系统第一批,细节见 implementation/E12/06 §10(续①~⑦)与记忆 next-session-status**
 > - **E12-06 移民动态板块 P0→P1f 一夜全清**:/news 头版式布局(1大+4小头条网格,8省+联邦 **Wikimedia 真实地标头图**)+AI 重要度徽标(5分红「重要」)+**三语实时懒翻译/速读**(朋友的 qwen 服务 ngrok+key,编号对位协议保段对段对齐,DB 缓存全站共享,API 费归零)+**评论区**(登录可评→Frank admin 审核 approved 公开)+统一返回钮/评论数脚标。四次 DDL 全 Frank 亲跑(news 表/excerpt+重要度/comments+韩语列/summary_en)。**新防线两道**:seed 对 news 改 slug upsert(懒缓存列不清——每小时抹缓存 bug 实撞断根)/schema 容错查询(缺列自动降级——**10 分钟 404 事故**教训:改列代码 push 前必须实查 information_schema 列已落位)。
 > - **#65 前端 primitives 库第一批**:`(frontend)/ui/primitives.tsx`(tokens+Button/Chip/Tag/PageBanner/SectionTitle,设计总表 docs/assets/mockups/)+**header 全站合一**(/jobs 内联头退役,SiteHeader 唯一,1320 头轨,Pro 钮全删出 header)+五模块浅色页头(jobs蓝/pathways紫/rank金/stats绿/news青)+双蓝条合一(ValueBanner 退役,建档 CTA 进 Jobs 页头右槽)。五页生产实拍验收过(docs/assets/mockups/65-验收-*.png)。**余批**=jobs 筛选区/账户 Sidebar/弹框头(#65 余批任务)。
 > - **运维新惯例**:翻译类走本地模型(局域网 qwen3.6 / 朋友公网 API);ETL 预翻停用(NEWS_TRANSLATE_BUDGET=0),只留新条目重要度打分;**评论审核=Frank 新日常**(admin→Community→comments→approved);效果图/验收图一律存 docs/assets/mockups(Frank 看不到聊天内嵌图);生产 DDL=Frank 终端亲跑;不用 PowerShell。

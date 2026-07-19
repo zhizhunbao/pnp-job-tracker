@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>改版批效果图 · #59 筛选区重设计 + #63 账户下拉 Supabase 风</title>
+<style>
+  body { font-family: system-ui, sans-serif; background: #f3f4f6; color: #1f2937; margin: 0; padding: 28px; }
+  .note { font-size: 12.5px; color: #6b7280; margin: 6px 0 14px; line-height: 1.7; }
+  h1 { font-size: 18px; } h2 { font-size: 15px; margin: 28px 0 6px; }
+  .board { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px 18px; max-width: 1280px; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+  .sel { padding: 5px 9px; font-size: 12.5px; border: 1px solid #d1d5db; border-radius: 6px; background: #fff; color: #374151; }
+  .inp { padding: 6px 10px; font-size: 12.5px; border: 1px solid #d1d5db; border-radius: 6px; width: 240px; color: #9ca3af; }
+  .ctrl { padding: 5px 10px; font-size: 12.5px; border: 1px solid #d1d5db; border-radius: 6px; background: #f3f4f6; white-space: nowrap; }
+  .badge { background: #2563eb; color: #fff; border-radius: 999px; font-size: 10.5px; padding: 0 6px; margin-left: 4px; }
+  .muted { color: #9ca3af; font-size: 12px; white-space: nowrap; }
+  .fold { border: 1px dashed #d1d5db; border-radius: 8px; padding: 10px 12px; background: #fafafa; }
+  .lbl { font-size: 12px; color: #9ca3af; min-width: 56px; }
+  .right { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+  /* dropdown mock */
+  .dd { width: 240px; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.12); padding: 4px 0; }
+  .dd .head { display: flex; gap: 10px; align-items: center; padding: 10px 12px; border-bottom: 1px solid #f3f4f6; }
+  .av { width: 40px; height: 40px; border-radius: 50%; background: #2563eb; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+  .dd .item { padding: 7px 12px; font-size: 13px; color: #374151; }
+  .dd .item:hover { background: #f9fafb; }
+  .dd .sect { font-size: 10.5px; color: #9ca3af; letter-spacing: .5px; padding: 6px 12px 2px; text-transform: uppercase; }
+  .dd hr { border: none; border-top: 1px solid #f3f4f6; margin: 4px 0; }
+  .upgrade { display: block; margin: 6px 10px; padding: 8px 0; text-align: center; background: #b45309; color: #fff; border-radius: 8px; font-size: 13px; font-weight: 700; }
+  .logout { color: #9ca3af !important; }
+  .cols { display: flex; gap: 40px; flex-wrap: wrap; }
+  .anno { font-size: 12px; color: #b45309; }
+</style>
+</head>
+<body>
+<h1>改版批效果图(2026-07-18)—— 过目后回一句「按这个做」/「改 X」即可动手</h1>
+
+<h2>① #59 + #65 余批 · /jobs 筛选区重设计:「常用一行 + 更多筛选折叠」</h2>
+<div class="note">原 5 行 label+下拉(Frank:「检索功能看着这么恶心」)收成 <b>1 常驻行</b>;低频筛选进「更多筛选」折叠(带激活计数徽标);
+更新时间+字段钮保持右端(#56 拍板延续)。市/区、中/小类仍是省/大类的联动下级,只在折叠区出现。</div>
+<div class="board">
+  <div class="row">
+    <span class="inp">搜索 职位/公司/地点/NOC…</span>
+    <span class="sel">全部省 ▾</span>
+    <span class="sel">全部大类 ▾</span>
+    <span class="sel">全部 PNP ▾</span>
+    <span class="sel">全部年薪 ▾</span>
+    <span class="ctrl">更多筛选 ▾<span class="badge">2</span></span>
+    <span class="right"><span class="muted">更新 2026-07-18 22:20</span><span class="ctrl">⚙ 字段 (10)</span></span>
+  </div>
+  <div class="fold">
+    <div class="row" style="margin-bottom:6px"><span class="lbl">地理</span><span class="sel">全部市 ▾</span><span class="sel">全部区 ▾</span></div>
+    <div class="row" style="margin-bottom:6px"><span class="lbl">分类</span><span class="sel">全部中类 ▾</span><span class="sel">全部小类 ▾</span></div>
+    <div class="row" style="margin-bottom:0"><span class="lbl">其他</span><span class="sel">全部 AIP ▾</span><span class="sel">全部类型 ▾</span><span class="sel">全部对比中位 ▾</span><span class="ctrl">☑ 仅雇主直发</span></div>
+  </div>
+  <div class="note" style="margin:8px 0 0">折叠区默认收起;有筛选激活时徽标计数常驻,一眼知道折叠里有条件。清除钮出现在搜索行(现状不变)。</div>
+</div>
+
+<h2>② #63 · 账户下拉 Supabase 风(与 #62A 我的收藏已合)</h2>
+<div class="note">分区分隔(身份 / 求职 / 管理)+ <b>通栏实心「升级 Pro」钮</b>(免费号;Pro 号不显)+ 退出置底灰字。左=免费态,右=Pro 态。</div>
+<div class="cols">
+  <div class="dd">
+    <div class="head"><span class="av">F</span><div><div style="font-size:13.5px;font-weight:600">fable5d</div><div style="font-size:11.5px;color:#9ca3af">fable5d@test.local</div><div style="font-size:11px;color:#6b7280">免费版</div></div></div>
+    <div class="sect">求职</div>
+    <div class="item">◎ 我的匹配</div>
+    <div class="item">🧭 移民路径</div>
+    <div class="item">☆ 我的收藏</div>
+    <div class="item">📋 我的求职</div>
+    <hr>
+    <div class="sect">管理</div>
+    <div class="item">👤 移民档案</div>
+    <div class="item">🔔 已保存的筛选</div>
+    <div class="item">⚙ 我的账户</div>
+    <a class="upgrade">⭐ 升级 Pro →</a>
+    <hr>
+    <div class="item logout">退出登录</div>
+  </div>
+  <div class="dd">
+    <div class="head"><span class="av" style="background:#b45309">F</span><div><div style="font-size:13.5px;font-weight:600">fable5d ⭐</div><div style="font-size:11.5px;color:#9ca3af">fable5d@test.local</div><div style="font-size:11px;color:#b45309;font-weight:600">Pro · 2026-08-17</div></div></div>
+    <div class="sect">求职</div>
+    <div class="item">◎ 我的匹配</div>
+    <div class="item">🧭 移民路径</div>
+    <div class="item">☆ 我的收藏</div>
+    <div class="item">📋 我的求职</div>
+    <hr>
+    <div class="sect">管理</div>
+    <div class="item">👤 移民档案</div>
+    <div class="item">🔔 已保存的筛选</div>
+    <div class="item">⚙ 我的账户</div>
+    <hr>
+    <div class="item logout">退出登录</div>
+  </div>
+</div>
+<div class="note anno">注:示意图里的 emoji 只是占位,实装一律用 Icons.tsx 的 SVG(全站惯例);「升级 Pro」钮点开 = 现有 PricingModal。</div>
+
+</body>
+</html>
