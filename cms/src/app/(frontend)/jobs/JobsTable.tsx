@@ -9,7 +9,7 @@ const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : use
 import { makeT, streamDisplay, eeDisplay, LANGS, LANG_KEY, COLS_COOKIE, type Lang, type TFn } from './i18n'
 import { IconChart, IconCheck, IconClipboard, IconCompass, IconLock, IconMap, IconMapPin, IconMaximize, IconMinimize, IconNews, IconSave, IconSettings, IconStar, IconTarget, IconUser, IconWarn, IconX } from '../Icons'
 import { SiteHeader } from '../SiteHeader'
-import { PageBanner } from '../ui/primitives'
+import { BANNER_IMGS, PageBanner } from '../ui/primitives'
 import { SiteFooter } from '../SiteFooter'
 import { Avatar } from '../Avatar'
 import { AuthModal } from './AuthForm'
@@ -872,7 +872,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1rem 1.25rem 1.5rem', width: '100%', boxSizing: 'border-box', flex: '1 0 auto' }}>
         {/* 页头=PageBanner(#65/#66 五模块统一浅色带,职位板=蓝)。标题数字口径不变:
             库内真实总数(第 15 轮 #34)/筛选匹配态只报命中数(第 17 轮 #42);证言行(第 5 轮 #14)作 sub */}
-        <PageBanner module="jobs" title="Jobs"
+        <PageBanner module="jobs" title="Jobs" images={BANNER_IMGS.jobs}
           sub={<>
             {anyFilter || matchView ? t('subtitle.hits', { n: total }) : t('subtitle.count', { n: total })}
             {proof && (proof.named > 0 || proof.lmia > 0) && <span style={{ marginLeft: 10 }}>{t('subtitle.proof', { named: proof.named, lmia: proof.lmia })}</span>}

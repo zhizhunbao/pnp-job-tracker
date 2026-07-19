@@ -6,7 +6,7 @@ import { makeT, LANG_KEY, type Lang } from '../jobs/i18n'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { IconCheck, IconCompass, IconWarn } from '../Icons'
-import { PageBanner } from '../ui/primitives'
+import { BANNER_IMGS, PageBanner } from '../ui/primitives'
 import type { PathwayEval, PathwaySignal } from '@/lib/pathways'
 
 const card: React.CSSProperties = { background: '#fff', border: '0.5px solid #e5e7eb', borderRadius: 12, padding: '16px 18px' }
@@ -96,7 +96,7 @@ export function PathwaysView({ evals, loggedIn, profileOk }: { evals: PathwayEva
       <main style={{ maxWidth: 860, width: '100%', margin: '2rem auto', padding: '0 1rem', boxSizing: 'border-box', flex: '1 0 auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div>
           {/* 页头=PageBanner(#65 五模块统一浅色带,路径=紫);免责小字留 banner 外 */}
-          <PageBanner module="pathways" icon={<IconCompass />} title={t('pw.title')} sub={t('pw.sub')} />
+          <PageBanner module="pathways" icon={<IconCompass />} title={t('pw.title')} sub={t('pw.sub')} images={BANNER_IMGS.pathways} />
           <p style={{ fontSize: 12, color: '#9ca3af', margin: '6px 0 0' }}>{t('pw.disc')}</p>
         </div>
 
