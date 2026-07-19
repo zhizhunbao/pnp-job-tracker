@@ -805,7 +805,15 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const fineOpts = useMemo(() => uniq(nc.filter((c) => (!fBroad || c.broad === fBroad) && (!fMid || c.mid === fMid)).map((c) => c.fine)), [nc, fBroad, fMid])
   // 来源/状态/经验/评分下拉已下架(2026-07-16 拍板只留薪资);state 与谓词保留=URL/老保存筛选照常生效
   const anyFilter = q || directOnly || fCountry || fProv || fCity || fDistrict || fBroad || fMid || fFine || fTeer || fSource || fAcc || fPnp || fAip || fStatus || fOrigin || fScore || fSal || fVs || fEmp || fElig
-  const clearAll = () => { setQ(''); setDirectOnly(false); setFCountry(''); setFProv(''); setFCity(''); setFDistrict(''); setFBroad(''); setFMid(''); setFFine(''); setFTeer(''); setFSource(''); setFAcc(''); setFPnp(''); setFAip(''); setFStatus(''); setFOrigin(''); setFScore(''); setFSal(''); setFVs(''); setFEmp(''); setFElig('') }
+  const clearAll = () => {
+    setQ(''); setDirectOnly(false); setFCountry(''); setFProv(''); setFCity(''); setFDistrict(''); setFBroad(''); setFMid(''); setFFine(''); setFTeer(''); setFSource(''); setFAcc(''); setFPnp(''); setFAip(''); setFStatus(''); setFOrigin(''); setFScore(''); setFSal(''); setFVs(''); setFEmp(''); setFElig('')
+    // 深链参数一并摘除(2026-07-19 Frank:「点击清除筛选,一刷新又回去了」)——否则刷新时 URL 初始化又读回来
+    try {
+      const u = new URL(window.location.href)
+      for (const k of ['q', 'prov', 'broad', 'mid']) u.searchParams.delete(k)
+      window.history.replaceState(null, '', u.pathname + (u.searchParams.toString() ? '?' + u.searchParams.toString() : '') + u.hash)
+    } catch { /* ignore */ }
+  }
 
   // ── E10-01 P3:筛选/搜索/排序/翻页全部打 /api/jobs(服务端 WHERE+分页);rows/total 来自服务端。
   //    useDeferredValue 让搜索输入跟手(dq 变化触发重拉,滞后一帧);reqSeq 丢弃晚到的旧响应。
