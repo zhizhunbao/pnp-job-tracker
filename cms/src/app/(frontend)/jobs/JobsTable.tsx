@@ -7,7 +7,7 @@ import { useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState
 const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
 import { makeT, streamDisplay, eeDisplay, LANGS, LANG_KEY, COLS_COOKIE, type Lang, type TFn } from './i18n'
-import { IconChart, IconCheck, IconCompass, IconLock, IconMap, IconMapPin, IconMaximize, IconMinimize, IconNews, IconSave, IconSettings, IconStar, IconTarget, IconUser, IconWarn, IconX } from '../Icons'
+import { IconChart, IconCheck, IconClipboard, IconCompass, IconLock, IconMap, IconMapPin, IconMaximize, IconMinimize, IconNews, IconSave, IconSettings, IconStar, IconTarget, IconUser, IconWarn, IconX } from '../Icons'
 import { SiteHeader } from '../SiteHeader'
 import { PageBanner } from '../ui/primitives'
 import { SiteFooter } from '../SiteFooter'
@@ -102,6 +102,7 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
   }
   // Pro 钮不进 header(#65,Frank:「没有意义」)——升级入口=横幅/升级卡/用户菜单/定价页,四处都在
   const menuItem: React.CSSProperties = { display: 'block', width: '100%', textAlign: 'left', padding: '7px 12px', fontSize: 13, color: '#374151', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap', boxSizing: 'border-box' }
+  const menuSect: React.CSSProperties = { fontSize: 10.5, color: '#9ca3af', letterSpacing: 0.5, padding: '5px 12px 1px' }  // #63 区头小字
   const logout = async () => {
     try { await fetch('/api/users/logout', { method: 'POST', credentials: 'include' }) } catch { /* ignore */ }
     window.location.reload()
@@ -131,16 +132,26 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
                     : <span style={{ color: '#6b7280' }}>{t('acct.plan.free')}</span>}</div>
                 </div>
               </a>
-              {/* 求职向条目(深链到账户页各节;去论坛化,不放积分/消息/主页) */}
+              {/* #63 Supabase 风分区(2026-07-18 效果图 Frank「可以」):求职/管理两区+区头小字,
+                  升级 Pro 改通栏实心钮(免费号才显),退出置底灰字;条目图标全 Icons.tsx SVG */}
+              <div style={menuSect}>{t('menu.sect.job')}</div>
               <a href="/?view=match" style={menuItem}><IconTarget /> {t('mv.entry')}</a>
               <a href="/pathways" style={menuItem}><IconCompass /> {t('pw.entry')}</a>
-              <a href="/account?sec=favs" style={menuItem}>{t('fav.title')}</a>
-              <a href="/account?sec=sjobs" style={menuItem}>{t('sj.title')}</a>
-              <a href="/account?sec=profile" style={menuItem}>{t('prof.title')}</a>
-              <a href="/account?sec=saved" style={menuItem}>{t('ss.title')}</a>
-              {!plan.isPro && <button onClick={() => { setMenu(false); setPricing(true) }} style={{ ...menuItem, color: '#b45309', fontWeight: 600 }}><IconStar /> {t('up.cta')}</button>}
+              <a href="/account?sec=favs" style={menuItem}><IconStar /> {t('fav.title')}</a>
+              <a href="/account?sec=sjobs" style={menuItem}><IconClipboard /> {t('sj.title')}</a>
               <div style={{ borderTop: '1px solid #f3f4f6', margin: '4px 0' }} />
-              <button onClick={logout} style={menuItem}>{t('acct.logout')}</button>
+              <div style={menuSect}>{t('menu.sect.manage')}</div>
+              <a href="/account?sec=profile" style={menuItem}><IconUser /> {t('prof.title')}</a>
+              <a href="/account?sec=saved" style={menuItem}><IconSave /> {t('ss.title')}</a>
+              <a href="/account" style={menuItem}><IconSettings /> {t('nav.acctTab')}</a>
+              {!plan.isPro && (
+                <button onClick={() => { setMenu(false); setPricing(true) }}
+                  style={{ display: 'block', width: 'calc(100% - 20px)', margin: '6px 10px', padding: '8px 0', textAlign: 'center', background: '#b45309', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+                  <IconStar /> {t('up.cta')}
+                </button>
+              )}
+              <div style={{ borderTop: '1px solid #f3f4f6', margin: '4px 0' }} />
+              <button onClick={logout} style={{ ...menuItem, color: '#9ca3af' }}>{t('acct.logout')}</button>
             </div>
           )}
         </span>
@@ -510,8 +521,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   // 「更多筛选」折叠恢复(2026-07-11 用户二次拍板:五行常驻太占竖向空间,恢复默认收起);
   // 开关行右侧带更新时间+字段按钮(同日「放到一行」拍板保留,只是宿主行从薪资行换成开关行)
   // 窄屏筛选抽屉(E8-03):≤640px 整个筛选区默认收起,一行「筛选」开关展开;CSS 媒体查询控制显隐,零水合差异
-  const [fDrawer, setFDrawer] = useState(false)
-  const drawerActive = [fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, fEmp].filter(Boolean).length
+  const [fDrawer, setFDrawer] = useState(false)   // #59:「更多筛选」折叠开关(原窄屏抽屉退役,本 state 复用)
+  const foldActive = [fCity, fDistrict, fMid, fFine, fAip, fEmp, fVs].filter(Boolean).length + (directOnly ? 1 : 0)
   // 初始列:服务端从 cookie 解析后由 initialCols 传入 → SSR 与客户端首帧一致(零闪);无则用默认
   const [visible, setVisible] = useState<ColKey[]>(() => {
     const v = (initialCols ?? []).filter((k): k is ColKey => COLUMNS.some((c) => c.key === k))
@@ -841,12 +852,10 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       <style>{`.jcell:hover{background:#eff6ff !important}
         .colResize:hover{background:#93c5fd}
         .colResize:active{background:#3b82f6}
-        .jtDrawerToggle{display:none}
         .jtCards{display:none}
         .recSlot{min-height:0}
         html.recslot .recSlot{min-height:48px}
         @media (max-width:640px){
-          .jtDrawerToggle{display:inline-flex}
           .jtHideNarrow{display:none !important}
           .jtTableWrap{display:none !important}
           .jtCards{display:flex}
@@ -921,51 +930,41 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         })()}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '1rem 0' }}>
-          {/* 窄屏抽屉开关(仅 ≤640px 显示,CSS 控制):筛选区整体收起/展开 */}
-          <button className="jtDrawerToggle" onClick={() => setFDrawer((o) => !o)}
-            style={{ ...ctrl, cursor: 'pointer', background: fDrawer || drawerActive ? '#eef2ff' : '#f3f4f6', alignItems: 'center', gap: 6, alignSelf: 'flex-start' }}>
-            {t('filter.drawer')}{drawerActive ? ` · ${drawerActive}` : ''} <span style={{ fontSize: 11, color: '#9ca3af' }}>{fDrawer ? '▲' : '▼'}</span>
-          </button>
-          {/* 抽屉 order:1 → 视觉排在搜索行之后(搜索是最高频入口放最上;DOM 不动,零结构风险)。
-              行序按用户心智(2026-07-07 文案审计拍板):地理 → 职业分类 → 移民资格。
-              删「国家」下拉(全库只有 Canada,单选项下拉=噪音)、删 TEER 下拉(用户拍板;大类够用,TEER 归弹窗/列) */}
-          <div className={fDrawer ? '' : 'jtHideNarrow'} style={{ display: 'flex', flexDirection: 'column', gap: 8, order: 1 }}>
-          {/* 地理(省→市→区 联动) */}
+          {/* ═══ #59 筛选区重设计(2026-07-18 效果图过目后 Frank「可以」):5 行 label+下拉收成
+              「常用一行(搜索/省/大类/PNP/年薪)+ 更多筛选折叠(激活计数徽标)」;07-07 行序拍板与
+              窄屏抽屉(jtDrawerToggle)一并退役——一行+折叠对窄屏同样成立,靠 flexWrap 自然换行。
+              右端=更新时间+字段钮(#56 拍板延续)。市/区、中/小类仍是省/大类的联动下级,只在折叠区出现。 ═══ */}
           <div style={filtRow}>
-            <span style={filtLabel}>{t('filter.geo')}</span>
+            <input placeholder={t('search.placeholder')} value={q} onChange={(e) => setQ(e.target.value)} style={{ ...ctrl, flex: '0 1 260px', minWidth: 160 }} />
             <Sel value={fProv} onChange={(v) => { setFProv(v); setFCity(''); setFDistrict('') }} opts={provOpts} all={t('all.prov')} />
-            <Sel value={fCity} onChange={(v) => { setFCity(v); setFDistrict('') }} opts={cityOpts} all={t('all.city')} />
-            <Sel value={fDistrict} onChange={setFDistrict} opts={distOpts} all={t('all.district')} />
-          </div>
-          {/* 职业分类(大→中→小 联动) */}
-          <div style={filtRow}>
-            <span style={filtLabel}>{t('filter.cat')}</span>
             <Sel value={fBroad} onChange={(v) => { setFBroad(v); setFMid(''); setFFine('') }} opts={broadOpts} all={t('all.broad')} labelOf={broadLabel} />
-            <Sel value={fMid} onChange={(v) => { setFMid(v); setFFine('') }} opts={midOpts} all={t('all.mid')} labelOf={catLabel} />
-            <Sel value={fFine} onChange={setFFine} opts={fineOpts} all={t('all.fine')} labelOf={catLabel} />
-          </div>
-          {/* 移民资格 */}
-          <div style={filtRow}>
-            <span style={filtLabel}>{t('filter.elig')}</span>
             <Sel value={fPnp} onChange={setFPnp} opts={['yes', 'no']} all={t('all.pnp')} labelOf={(v) => t('opt.' + v)} />
-            <Sel value={fAip} onChange={setFAip} opts={['yes', 'no']} all={t('all.aip')} labelOf={(v) => t('opt.' + v)} />
-          </div>
-          {/* 职位类型(E6-06):全职/兼职/零工·临时(gig=兼职∪casual∪seasonal,面向低门槛先落脚人群);
-              未标注岗(ATS/未抓详情)选中任一类型时自然不命中,与「未分类」同一诚实口径 */}
-          <div style={filtRow}>
-            <span style={filtLabel}>{t('filter.emp')}</span>
-            <Sel value={fEmp} onChange={setFEmp} opts={['full', 'part', 'gig']} all={t('all.emp')} labelOf={(v) => t('emp.' + v)} />
-          </div>
-          {/* ═══ 薪资行(2026-07-16 用户拍板「更多筛选去掉,只保留薪资」:折叠开关与来源/状态/经验/评分四组全部下架,
-              #40/a4ecf5c 的折叠史被本次取代;state 保留=老保存筛选(邮件提醒)继续生效);右侧=更新时间+字段(同行拍板) ═══ */}
-          {/* #56(2026-07-18 用户批「放到最右边和薪资放到一行」,取代 07-17 靠左拍板):
-              更新时间+字段钮挂薪资行最右;仅雇主直发单独收尾行 */}
-          <div style={filtRow}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-              <span style={filtLabel}>{t('filter.salary')}</span>
-              <Sel value={fSal} onChange={setFSal} opts={['ge100', '80', '60', 'u60']} all={t('all.sal')} labelOf={(v) => t('sal.' + v)} />
-              <Sel value={fVs} onChange={setFVs} opts={['above', 'above20', 'below']} all={t('all.vs')} labelOf={(v) => t('vs.' + v)} />
-            </span>
+            <Sel value={fSal} onChange={setFSal} opts={['ge100', '80', '60', 'u60']} all={t('all.sal')} labelOf={(v) => t('sal.' + v)} />
+            <button onClick={() => setFDrawer((o) => !o)}
+              style={{ ...ctrl, cursor: 'pointer', background: fDrawer || foldActive ? '#eef2ff' : '#f3f4f6', display: 'inline-flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}>
+              {t('filter.more')}
+              {foldActive > 0 && <span style={{ background: '#2563eb', color: '#fff', borderRadius: 999, fontSize: 10.5, padding: '0 6px', lineHeight: '15px' }}>{foldActive}</span>}
+              <span style={{ fontSize: 10, color: '#9ca3af' }}>{fDrawer ? '▲' : '▼'}</span>
+            </button>
+            {anyFilter && <button onClick={clearAll} style={{ ...ctrl, cursor: 'pointer', background: '#f3f4f6', color: '#b91c1c' }}>{t('clear')}</button>}
+            {/* 保存此筛选(E5-03):Pro 存为邮件提醒;filters=前端 state 原样(alerts 用 jobsQuery 解释) */}
+            {anyFilter && plan.loggedIn && (
+              <button
+                onClick={async () => {
+                  if (!plan.isPro) { setUpsell('ss'); return }  // 升级走独立弹框(用户定),不再 alert+跳定价页
+                  const name = window.prompt(t('ss.name'))
+                  if (!name) return
+                  const filters = { q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, fEmp }
+                  const r = await fetch('/api/saved-searches', {
+                    method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, filters, lang }),
+                  }).catch(() => null)
+                  alert(r?.ok ? t('ss.saved') : t('ss.err'))
+                }}
+                style={{ ...ctrl, cursor: 'pointer', background: '#eef2ff', color: '#3730a3' }}>
+                <IconSave /> {t('ss.save')}
+              </button>
+            )}
             <div ref={colRef} className="jtHideNarrow" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 10, marginLeft: 'auto' }}>
               {updatedAt && <span style={{ color: '#9ca3af', fontSize: 12, whiteSpace: 'nowrap' }}>{t('updated', { t: fmtLocal(updatedAt) })}</span>}
               <button onClick={() => setColOpen((o) => !o)} style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', background: '#f3f4f6', whiteSpace: 'nowrap' }}><IconSettings style={{ marginRight: 5 }} />{t('fields', { n: shown.length })}</button>
@@ -988,36 +987,31 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               )}
             </div>
           </div>
-          {/* 仅雇主直发:收尾行(#56 后字段钮上移薪资行,本行只剩这一件) */}
-          <div style={filtRow}>
-            <label style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', background: directOnly ? '#eef2ff' : '#fff', whiteSpace: 'nowrap' }} title={t('directOnly.tip')}>
-              <input type="checkbox" checked={directOnly} onChange={(e) => setDirectOnly(e.target.checked)} />{t('directOnly')}
-            </label>
-          </div>
-          </div>
-          {/* 行4:搜索 + 清除 */}
-          <div style={filtRow}>
-            <input placeholder={t('search.placeholder')} value={q} onChange={(e) => setQ(e.target.value)} style={{ ...ctrl, flex: '0 1 320px', minWidth: 180 }} />
-            {anyFilter && <button onClick={clearAll} style={{ ...ctrl, cursor: 'pointer', background: '#f3f4f6', color: '#b91c1c' }}>{t('clear')}</button>}
-            {/* 保存此筛选(E5-03):Pro 存为邮件提醒;filters=前端 state 原样(alerts 用 jobsQuery 解释) */}
-            {anyFilter && plan.loggedIn && (
-              <button
-                onClick={async () => {
-                  if (!plan.isPro) { setUpsell('ss'); return }  // 升级走独立弹框(用户定),不再 alert+跳定价页
-                  const name = window.prompt(t('ss.name'))
-                  if (!name) return
-                  const filters = { q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, fEmp }
-                  const r = await fetch('/api/saved-searches', {
-                    method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, filters, lang }),
-                  }).catch(() => null)
-                  alert(r?.ok ? t('ss.saved') : t('ss.err'))
-                }}
-                style={{ ...ctrl, cursor: 'pointer', background: '#eef2ff', color: '#3730a3' }}>
-                <IconSave /> {t('ss.save')}
-              </button>
-            )}
-          </div>
+          {/* #59 折叠区:低频筛选(市/区、中/小类、AIP/类型/对比中位/直发);state 全保留=老保存筛选照常生效 */}
+          {fDrawer && (
+            <div style={{ border: '1px dashed #d1d5db', borderRadius: 8, padding: '10px 12px', background: '#fafafa', display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={filtRow}>
+                <span style={filtLabel}>{t('filter.geo')}</span>
+                <Sel value={fCity} onChange={(v) => { setFCity(v); setFDistrict('') }} opts={cityOpts} all={t('all.city')} />
+                <Sel value={fDistrict} onChange={setFDistrict} opts={distOpts} all={t('all.district')} />
+              </div>
+              <div style={filtRow}>
+                <span style={filtLabel}>{t('filter.cat')}</span>
+                <Sel value={fMid} onChange={(v) => { setFMid(v); setFFine('') }} opts={midOpts} all={t('all.mid')} labelOf={catLabel} />
+                <Sel value={fFine} onChange={setFFine} opts={fineOpts} all={t('all.fine')} labelOf={catLabel} />
+              </div>
+              {/* gig=兼职∪casual∪seasonal(E6-06);未标注岗选类型自然不命中,与「未分类」同一诚实口径 */}
+              <div style={filtRow}>
+                <span style={filtLabel}>{t('filter.other')}</span>
+                <Sel value={fAip} onChange={setFAip} opts={['yes', 'no']} all={t('all.aip')} labelOf={(v) => t('opt.' + v)} />
+                <Sel value={fEmp} onChange={setFEmp} opts={['full', 'part', 'gig']} all={t('all.emp')} labelOf={(v) => t('emp.' + v)} />
+                <Sel value={fVs} onChange={setFVs} opts={['above', 'above20', 'below']} all={t('all.vs')} labelOf={(v) => t('vs.' + v)} />
+                <label style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', background: directOnly ? '#eef2ff' : '#fff', whiteSpace: 'nowrap' }} title={t('directOnly.tip')}>
+                  <input type="checkbox" checked={directOnly} onChange={(e) => setDirectOnly(e.target.checked)} />{t('directOnly')}
+                </label>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* 匹配视图状态条(E5-05):说明口径 + 退出;免费限额提示(D1=B) */}
