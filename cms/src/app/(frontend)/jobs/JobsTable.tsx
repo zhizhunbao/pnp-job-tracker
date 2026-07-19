@@ -731,7 +731,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       ? { position: 'sticky', left: stickyLeft[key], zIndex: 3, background: bg, ...(key === lastFrozen ? { boxShadow: '3px 0 5px -3px rgba(0,0,0,.18)' } : null) }
       : {}
   // 每列最小宽:文本列宽些(列内换行),其余够放原子值即可 → 列多时整表超容器可横滚
-  const MIN_W: Partial<Record<ColKey, number>> = { title: 170, company: 140, address: 150, datePosted: 92, lastSeen: 96, closedAt: 92, salary: 100, salaryYr: 86, wageMedHr: 88, wageMedYr: 88 }
+  // #85(Frank「最后一列宽度叠一起」):actions 原默认 78px 塞不下三钮 → 给足最小宽,配合 cell 内 flex wrap 兜底
+  const MIN_W: Partial<Record<ColKey, number>> = { title: 170, company: 140, address: 150, datePosted: 92, lastSeen: 96, closedAt: 92, salary: 100, salaryYr: 86, wageMedHr: 88, wageMedYr: 88, actions: 238 }
   const colMin = (k: ColKey) => (hasWidths ? undefined : (MIN_W[k] ?? 78))
   // 量当前表头每个可见列的自然渲染宽(auto 布局下为真实内容宽),返回覆盖全可见列的完整 map
   const measureAll = (): Record<string, number> => {
@@ -1089,14 +1090,16 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                     {shown.map((c, idx) => {
                       const k = c.key
                       const rowBg = i % 2 ? '#fcfcfd' : '#fff'
-                      if (k === 'actions') return (  // 操作列:普通末列,两按钮(公司信息/职位描述)
-                        <td key={k} style={{ ...td, whiteSpace: 'nowrap', minWidth: colMin('actions') }}>
-                          <button onClick={(e) => { e.stopPropagation(); toggleSave(j) }}
-                            style={{ ...actBtn, marginRight: 6, ...(saved[String(j.id)] ? { color: '#b45309', borderColor: '#fde68a', background: '#fffbeb' } : {}) }}>
-                            {saved[String(j.id)] ? t('sj.saved') : t('sj.save')}
-                          </button>
-                          <button onClick={(e) => { e.stopPropagation(); setPopup({ field: 'company', job: j, title: j.company }) }} style={actBtn}>{t('act.company')}</button>
-                          <button onClick={(e) => { e.stopPropagation(); setActModal({ kind: 'desc', job: j }) }} style={{ ...actBtn, marginLeft: 6 }}>{t('act.desc')}</button>
+                      if (k === 'actions') return (  // 操作列:三钮(收藏/公司信息/职位描述);#85 flex+wrap=挤压时堆叠不重叠
+                        <td key={k} style={{ ...td, minWidth: colMin('actions') }}>
+                          <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                            <button onClick={(e) => { e.stopPropagation(); toggleSave(j) }}
+                              style={{ ...actBtn, whiteSpace: 'nowrap', ...(saved[String(j.id)] ? { color: '#b45309', borderColor: '#fde68a', background: '#fffbeb' } : {}) }}>
+                              {saved[String(j.id)] ? t('sj.saved') : t('sj.save')}
+                            </button>
+                            <button onClick={(e) => { e.stopPropagation(); setPopup({ field: 'company', job: j, title: j.company }) }} style={{ ...actBtn, whiteSpace: 'nowrap' }}>{t('act.company')}</button>
+                            <button onClick={(e) => { e.stopPropagation(); setActModal({ kind: 'desc', job: j }) }} style={{ ...actBtn, whiteSpace: 'nowrap' }}>{t('act.desc')}</button>
+                          </span>
                         </td>
                       )
                       let href: string | null = null
