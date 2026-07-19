@@ -30,6 +30,9 @@ export type MatchJob = {
   // E6-02:雇主近两年 LMIA 获批记录(公司级,ESDC 公开数据;历史事实非能力判定)
   lmiaPositions?: number | null
   lmiaLastQuarter?: string
+  // B4-02:技能股(High Wage/GTS/PR-only)获批数——农业/低薪股≠技能类担保信号(Frank「有 LMIA 但没法移民」)
+  // null=列未回填(DDL/seed 未跑),规则 6 回退旧口径;0=确认纯农业/低薪股
+  lmiaPositionsSkilled?: number | null
 }
 
 export type PnpOccDim = { province: string; label: string; type: string; noc: string; url: string; fetched: string }
@@ -175,14 +178,26 @@ export function match(profile: MatchProfile, job: MatchJob, dims: MatchDims): Ma
   }
 
   // ── 规则 6:雇主外劳雇佣记录(E6-02;近两年获批 LMIA=雇主质量轴的历史事实)──
-  // 轻加权:有记录 +5(愿意走担保流程的间接证据);无记录不扣分(多数好雇主从没需要办过 LMIA)。
+  // 轻加权:B4-02 起只认技能股(High Wage/GTS/PR-only)+5——Frank「有 LMIA 但没法移民」:
+  // 农业/低薪股是季节性用工,给果园 +5 绿勾=误导技能类求职者;纯低股给中性提示行不加分。
+  // skilled==null(列未回填)回退旧口径(全股别 +5),seed 回填后自动切新档。
+  const lmiaSrc = { label: 'ESDC TFWP positive LMIA employers', url: 'https://open.canada.ca/data/en/dataset/90fed587-1364-4f33-a9ee-208181dc0b97', fetched: '' }
+  const skilled = job.lmiaPositionsSkilled
   if (job.lmiaPositions && job.lmiaPositions > 0) {
-    score += 5
-    reasons.push({
-      rule: 'lmia', verdict: 'pass', key: 'match.r.lmia.has',
-      params: { n: job.lmiaPositions, q: job.lmiaLastQuarter || '' },
-      source: { label: 'ESDC TFWP positive LMIA employers', url: 'https://open.canada.ca/data/en/dataset/90fed587-1364-4f33-a9ee-208181dc0b97', fetched: '' },
-    })
+    if (skilled == null || skilled > 0) {
+      score += 5
+      reasons.push({
+        rule: 'lmia', verdict: 'pass', key: skilled == null ? 'match.r.lmia.has' : 'match.r.lmia.skilled',
+        params: skilled == null ? { n: job.lmiaPositions, q: job.lmiaLastQuarter || '' } : { n: skilled, total: job.lmiaPositions, q: job.lmiaLastQuarter || '' },
+        source: lmiaSrc,
+      })
+    } else {
+      reasons.push({
+        rule: 'lmia', verdict: 'na', key: 'match.r.lmia.lowOnly',
+        params: { n: job.lmiaPositions, q: job.lmiaLastQuarter || '' },
+        source: lmiaSrc,
+      })
+    }
   } else {
     reasons.push({ rule: 'lmia', verdict: 'na', key: 'match.r.lmia.na', params: {} })
   }
@@ -217,6 +232,8 @@ const EN: Record<string, (p: Record<string, string | number>) => string> = {
   'match.r.wage.below': (p) => `Offered salary is ${p.pct}% below the local NOC median — verify the offer meets provincial wage requirements.`,
   'match.r.wage.na': () => 'No salary/median data to compare.',
   'match.r.lmia.has': (p) => `Employer had ${p.n} positions on approved positive LMIAs in the past two years (latest: ${p.q}, ESDC open data) — a historical fact, not an indication they can or will sponsor now.`,
+  'match.r.lmia.skilled': (p) => `Employer had ${p.n} skilled-stream (High Wage/Global Talent) positions on approved LMIAs in the past two years (${p.total} across all streams, latest ${p.q}, ESDC open data) — a historical fact, not a sponsorship promise.`,
+  'match.r.lmia.lowOnly': (p) => `Employer's ${p.n} approved LMIA positions (latest ${p.q}) are all in Primary Agriculture / Low Wage streams — mostly seasonal hiring, weak evidence for skilled-stream sponsorship; no points added.`,
   'match.r.lmia.na': () => 'No positive-LMIA record for this employer in the past two years (many employers never needed one; not negative evidence).',
 }
 export const reasonEn = (r: MatchReason): string => (EN[r.key] ? EN[r.key](r.params) : r.key)

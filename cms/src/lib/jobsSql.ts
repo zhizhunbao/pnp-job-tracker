@@ -128,7 +128,7 @@ export const mapEeCat = (r: any) => ({ category: r.category, label: r.label, noc
 
 const JOB_COLUMNS = `j.id, j.title, c.name AS company_name, c.address AS company_address, c.description AS company_description, c.sectors AS company_sectors,
   c.website AS company_website, c.website_source,
-  c.lmia_positions, c.lmia_lmias, c.lmia_last_quarter, c.lmia_streams,
+  c.lmia_positions, c.lmia_lmias, c.lmia_last_quarter, c.lmia_streams, c.lmia_positions_skilled,
   j.noc, j.category, j.teer, j.broad, j.mid, j.fine, j.accessibility, j.score, j.pnp_eligible, j.pnp_stream, j.ee_category, j.aip,
   j.employment_term, j.employment_hours, j.certificates, j.education,
   j.country, j.province, j.city, j.district, j.address, j.region,
@@ -148,6 +148,7 @@ export function mapJobRow(j: any, pro: boolean, matchLevel: JobRow['match']): Jo
     companySectors: j.company_sectors ?? '',
     companyWebsiteSrc: j.website_source ?? '',
     lmiaPositions: num(j.lmia_positions),
+    lmiaPositionsSkilled: num(j.lmia_positions_skilled),
     lmiaLastQuarter: j.lmia_last_quarter ?? '',
     lmiaStreams: j.lmia_streams ?? '',
     address: j.address ?? j.company_address ?? '',

@@ -81,13 +81,15 @@ export function EmployersView({ type, q, prov, page, aip, lmia, counts }: {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             {type === 'lmia' ? (
               <>
-                <thead><tr><th style={th}>{t('dir.col.employer')}</th><th style={th}>{t('dir.col.region')}</th><th style={th}>{t('rank.col.lmia')}</th><th style={th}>{t('dir.col.streams')}</th><th style={th}>{t('dir.col.quarter')}</th><th style={th}></th></tr></thead>
+                <thead><tr><th style={th}>{t('dir.col.employer')}</th><th style={th}>{t('dir.col.region')}</th><th style={th}>{t('dir.col.skilled')}</th><th style={th}>{t('rank.col.lmia')}</th><th style={th}>{t('dir.col.streams')}</th><th style={th}>{t('dir.col.quarter')}</th><th style={th}></th></tr></thead>
                 <tbody>
                   {(lmia || []).map((r) => (
                     <tr key={r.name}>
                       <td style={{ ...td, fontWeight: 600 }}>{r.website ? <a href={r.website} target="_blank" rel="noreferrer" style={{ color: UI.primary, textDecoration: 'none' }}>{r.name} ↗</a> : r.name}</td>
                       <td style={r.region ? td : { ...td, color: '#9ca3af' }}>{r.region || '—'}</td>
-                      <td style={{ ...td, fontWeight: 600, color: UI.ok }}>{r.lmiaPositions}</td>
+                      {/* B4-02:技能股列(High Wage/GTS)——「有 LMIA」≠「技能类担保信号」,0 显灰杠 */}
+                      <td style={{ ...td, fontWeight: 600, color: r.lmiaPositionsSkilled ? UI.ok : '#9ca3af' }}>{r.lmiaPositionsSkilled ?? '—'}</td>
+                      <td style={{ ...td, color: '#374151' }}>{r.lmiaPositions}</td>
                       <td style={{ ...td, fontSize: 12, maxWidth: 260 }}>{r.lmiaStreams || '—'}</td>
                       <td style={{ ...td, color: '#9ca3af' }}>{r.lmiaLastQuarter || '—'}</td>
                       <td style={{ ...td, whiteSpace: 'nowrap' }}><a href={`/?q=${encodeURIComponent(r.name)}`} style={{ color: UI.primary, textDecoration: 'none', fontSize: 12.5 }}>{t('rank.viewJobs')}</a></td>

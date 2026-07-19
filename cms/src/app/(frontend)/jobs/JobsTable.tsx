@@ -207,6 +207,7 @@ export type JobRow = {
   education: string           // 学历要求原文
   // LMIA 外劳雇佣记录(E6-02,公司级,ESDC 近 8 季聚合):历史事实,非「能担保」判定
   lmiaPositions: number | null
+  lmiaPositionsSkilled?: number | null   // B4-02:技能股(High Wage/GTS);null=列未回填
   lmiaLastQuarter: string
   lmiaStreams: string
   salary: string

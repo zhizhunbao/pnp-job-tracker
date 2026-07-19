@@ -17,3 +17,8 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_jobs_company_id        ON jobs (comp
 
 -- 验证:EXPLAIN (ANALYZE) 带 q 查询应出现 BitmapOr + Bitmap Index Scan on idx_jobs_*_trgm;
 -- 生产口径:/api/jobs?q=<公司名> 从 3-5s 进 <500ms 档。
+
+-- ── B4-02 技能股下沉(Frank 2026-07-19「有 LMIA 但没法移民」)────────────────────────
+-- mart 早已算好 lmiaPositionsSkilled(High Wage/GTS/PR-only),seed 一直丢弃;加列后下一轮 seed 自动回填。
+-- 用途:match 规则 6 改「技能股才 +5,纯农业/低薪股中性提示」;名录/弹框标注股别口径。
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS lmia_positions_skilled integer;

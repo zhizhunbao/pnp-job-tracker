@@ -183,13 +183,15 @@ export async function GET(req: Request) {
         sectors: c.sectors, address: c.address, description: c.description, source: c.source,
         lmia_positions: c.lmiaPositions, lmia_lmias: c.lmiaLmias,
         lmia_last_quarter: c.lmiaLastQuarter, lmia_streams: c.lmiaStreams,
+        lmia_positions_skilled: c.lmiaPositionsSkilled,   // B4-02:技能股(High Wage/GTS/PR-only),match/名录分档用
+
         created_at: now, updated_at: now,
       })
     }
     const companyCols = ['slug', 'name', 'website', 'website_source', 'email', 'region', 'sectors', 'address', 'description', 'source',
-      'lmia_positions', 'lmia_lmias', 'lmia_last_quarter', 'lmia_streams', 'created_at', 'updated_at']
+      'lmia_positions', 'lmia_lmias', 'lmia_last_quarter', 'lmia_streams', 'lmia_positions_skilled', 'created_at', 'updated_at']
     const companyUpdate = ['name', 'website', 'website_source', 'email', 'region', 'sectors', 'address', 'description', 'source',
-      'lmia_positions', 'lmia_lmias', 'lmia_last_quarter', 'lmia_streams', 'updated_at']
+      'lmia_positions', 'lmia_lmias', 'lmia_last_quarter', 'lmia_streams', 'lmia_positions_skilled', 'updated_at']
       .map((c) => `${c}=EXCLUDED.${c}`).join(',')
     const companyId: Record<string, number> = {}
     for (const r of await insertBatch(client, 'companies', companyCols, companyRows,
