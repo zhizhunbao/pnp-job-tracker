@@ -103,9 +103,9 @@ export function RankingView({ slug, items, slugs = [] }: { slug: string; items: 
       <div style={{ maxWidth: 1100, margin: '2rem auto', padding: '0 1rem' }}>
         {/* 页头=PageBanner(#65 五模块统一浅色带,榜单=金) */}
         <PageBanner module="rank" icon={<IconChart />} title={rankTitle(t, slug)} images={BANNER_IMGS.rank} />
-        <RankingTable slug={slug} items={items} t={t} />
-        {/* 榜单导航(E9-02 分类榜矩阵):只列当前有数据的榜;当前榜加粗黑 */}
-        <div style={{ marginTop: 14, fontSize: 12.5, display: 'flex', flexWrap: 'wrap', gap: '6px 14px' }}>
+        {/* 榜单导航(E9-02 分类榜矩阵):只列当前有数据的榜;当前榜加粗黑。
+            #61(2026-07-19 Frank 拍板「就是那个意思」):从页底挪到页头下方——导航是切换入口不是脚注 */}
+        <div style={{ margin: '0 0 12px', fontSize: 12.5, display: 'flex', flexWrap: 'wrap', gap: '6px 14px' }}>
           {['daily-top', ...Object.keys(BROAD_BY_SLUG).map((k) => `daily-top-${k}`), 'weekly-top', 'sponsor-likely']
             .filter((x) => x === slug || slugs.includes(x) || x === 'weekly-top' || x === 'sponsor-likely')
             .map((x) => (
@@ -114,6 +114,7 @@ export function RankingView({ slug, items, slugs = [] }: { slug: string; items: 
               </a>
             ))}
         </div>
+        <RankingTable slug={slug} items={items} t={t} />
       </div>
       <SiteFooter t={t} />
     </div>
