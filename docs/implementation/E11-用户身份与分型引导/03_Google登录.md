@@ -41,4 +41,4 @@ GCP:项目 offer2pr / OAuth client `offer2pr-web`(Web);redirect URIs=生产+loca
   要中国企业主体(营业执照+¥300/年认证),个人/海外个人无入口;代注册挂靠有封号风险不碰。
   远期口子:若日后注册加拿大公司,可试开放平台**海外企业主体**认证,AppID 到手代码与 Google 同构半天接完。
   现实覆盖:邮箱+Google 已够——付费主力(在加人群)Google 无障碍;国内用户瓶颈在跨境访问站点本身,非登录方式。
-- oauth=fail 目前回登录框无 toast 文案(P3,量起来再加三语提示)。
+- ~~oauth=fail 目前回登录框无 toast 文案~~ ✅ 已闭环(2026-07-19):AuthForm 挂载读 `?oauth=fail` → 现有 err 红框显示三语提示(acct.err.oauth),读完 replaceState 摘参数刷新不复现;本地 playwright 验过(图 e11-验收-oauth失败提示.png)。

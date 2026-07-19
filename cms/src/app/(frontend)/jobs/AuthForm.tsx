@@ -3,7 +3,7 @@
 // 「或用邮箱」分隔+单列表单+底部切换,分段 tab 退役;Google 钮 env 门控(NEXT_PUBLIC_GOOGLE_CLIENT_ID,
 // E11-03 后端凭据到位并实测后才配 env → 钮自动亮,只上 Google 一枚,LinkedIn/FB 不做)。
 // 全走 Payload 自带 REST(httpOnly cookie),特权字段由 Users collection 字段级锁保护。
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { TFn } from './i18n'
 import { Modal } from './Modal'
 
@@ -53,6 +53,19 @@ export function AuthForm({ t, onDone, initialMode, resetToken }: { t: TFn; onDon
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
   const [sent, setSent] = useState(false)
+
+  // E11-03 遗留:Google 回跳失败带 ?oauth=fail 落回登录框——给出可见提示(读完即从 URL 摘除,刷新不复现)
+  useEffect(() => {
+    try {
+      const u = new URL(window.location.href)
+      if (u.searchParams.get('oauth') === 'fail') {
+        setErr(t('acct.err.oauth'))
+        u.searchParams.delete('oauth')
+        window.history.replaceState(null, '', u.pathname + (u.searchParams.toString() ? '?' + u.searchParams.toString() : '') + u.hash)
+      }
+    } catch { /* ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault(); setBusy(true); setErr('')
