@@ -22,6 +22,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // B4-01 名录(SEO 高意图词落地页:AIP designated employers / LMIA records / in-demand occupations)
     url('/employers', 0.9, 'weekly'),
     url('/occupations', 0.8, 'weekly'),
+    url('/timeline', 0.8, 'daily'),   // C6-01 抽选与政策时间线
+
     url('/rankings/weekly-top', 0.9),
     url('/rankings/sponsor-likely', 0.9),
     url('/stats', 0.8),

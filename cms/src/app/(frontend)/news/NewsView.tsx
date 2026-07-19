@@ -206,7 +206,9 @@ export function NewsListView({ items, hero, cmtCounts }: { items: NewsCard[]; he
           {/* 正文轨=PageShell 1320(Frank 2026-07-18 宽度统一拍板),原 1100 单轨退役 */}
           <PageShell>
             {/* 页头=PageBanner(#65 五模块统一浅色带,动态=青;口径句已删——P1f Frank「没什么用」) */}
-            <div style={{ marginTop: 16 }}><PageBanner module="news" icon={<IconNews />} title={t('news.title')} /></div>
+            {/* C6-01:右槽=时间线入口(C5=公告原文,C6=时间轴视图) */}
+            <div style={{ marginTop: 16 }}><PageBanner module="news" icon={<IconNews />} title={t('news.title')}
+              right={<a href="/timeline" style={{ color: '#0f766e', fontWeight: 600, textDecoration: 'none' }}>{t('tl.entry')}</a>} /></div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '10px 0 14px' }}>
               <button style={chip(!region)} onClick={() => setRegion('')}>{t('chart.all')}</button>
               {present.map((r) => <button key={r} style={chip(region === r)} onClick={() => setRegion(r)}>{regionLabel(t, r)}</button>)}
