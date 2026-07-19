@@ -864,7 +864,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       {/* 顶栏=全站统一 SiteHeader(#65 header 合一,2026-07-18 Frank 拍板;内联头退役,1320 头轨全站一致)。
           /jobs 特有件走 props:matchButton 切换态 + 完整 AccountArea(plan 下拉/弹框)。
           差异认账:未登录点「我的账户」由弹框改为 /account 302 回 /?login=1(终点同为登录框)。 */}
-      <SiteHeader lang={lang} setLang={setLangSaved} t={t} sticky
+      <SiteHeader lang={lang} setLang={setLangSaved} t={t} sticky loggedIn={plan.loggedIn}
         matchButton={{ active: matchView, onClick: toggleMatchView }}
         accountArea={<AccountArea t={t} plan={plan} />} />
       {/* 榜单/统计弹窗已退役(2026-07-11 用户拍板顶栏改跳转页面);/stats 页「看职位」?prov=&broad= 回流照旧 */}

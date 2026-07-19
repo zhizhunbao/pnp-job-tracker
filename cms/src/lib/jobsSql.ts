@@ -251,6 +251,21 @@ export async function fetchJobsPage(
 
 export type MatchPageOpts = {
   pro: boolean; profile: MatchProfile; matchDims: MatchDims; page: number; pageSize: number
+  sort?: { key?: string; dir?: string }
+}
+
+// 匹配视图列排序取值器(第 21 轮续,Frank「排序点了 table 没变化」二报:普通视图 #73 已修,
+// 匹配视图 fetchMatchPage 一直无视 sort——命中集在 TS 内存里,这里按列取原始行值排)
+const MATCH_SORT_VAL: Record<string, (j: any) => unknown> = {
+  datePosted: (j) => iso(j.date_posted), score: (j) => num(j.score), salary: (j) => num(j.salary_annual), salaryYr: (j) => num(j.salary_annual),
+  lastSeen: (j) => iso(j.last_seen), title: (j) => j.title ?? '', company: (j) => j.company_name ?? '', province: (j) => j.province ?? '', city: (j) => j.city ?? '',
+  broad: (j) => j.broad ?? '', mid: (j) => j.mid ?? '', fine: (j) => j.fine ?? '', teer: (j) => num(j.teer), noc: (j) => j.noc ?? '',
+  accessibility: (j) => j.accessibility ?? '', country: (j) => j.country ?? '', district: (j) => j.district ?? '', address: (j) => j.address ?? '',
+  source: (j) => j.source_label ?? '', origin: (j) => j.origin ?? '',
+  pnp: (j) => (j.pnp_eligible ? 1 : 0), ee: (j) => j.ee_category ?? '', aip: (j) => (j.aip ? 1 : 0), lmia: (j) => num(j.lmia_positions),
+  status: (j) => j.status ?? '', closedAt: (j) => iso(j.closed_at),
+  wageMedHr: (j) => num(j.wage_med_hourly), wageMedYr: (j) => num(j.wage_med_annual),
+  vsMedian: (j) => { const s = num(j.salary_annual); const m = num(j.wage_med_annual); return s != null && m ? s / m : null },
 }
 
 /**
@@ -260,7 +275,7 @@ export type MatchPageOpts = {
  * 预筛用并集从宽,宁可多算不漏(named-list 命中的岗基本都 pnpEligible,已被并集覆盖)。候选封顶防失控。
  */
 export async function fetchMatchPage(
-  pool: any, { pro, profile, matchDims, page, pageSize }: MatchPageOpts,
+  pool: any, { pro, profile, matchDims, page, pageSize, sort }: MatchPageOpts,
 ): Promise<{ jobs: JobRow[]; total: number; matchHigh: number; matchMid: number; updatedAt: string }> {
   const nocs = profile.nocCodes || []
   const noc4 = Array.from(new Set(nocs.filter((c) => c.length === 5).map((c) => c.slice(0, 4))))
@@ -285,10 +300,24 @@ export async function fetchMatchPage(
     if (level === 'high') { matchHigh++; hits.push({ j, level }) }
     else if (level === 'mid') { matchMid++; hits.push({ j, level }) }
   }
-  // 排序:match 等级↓(候选已按日期↓,stable sort 保同级内日期序)
+  // 默认排序:match 等级↓(候选已按日期↓,stable sort 保同级内日期序)
   hits.sort((a, b) => matchRank(b.level) - matchRank(a.level))
-  // 免费用户:可见匹配封顶前 N(FOMO 计数仍是全量 matchHigh/matchMid)
+  // 免费用户:可见匹配封顶前 N(FOMO 计数仍是全量 matchHigh/matchMid)。
+  // cap 必须在列排序**之前**按默认序圈定——否则免费用户换着列排就能轮换枚举整个匹配集,绕过前 N 付费墙
   const visible = pro ? hits : hits.slice(0, FREE_MATCH_JOBS_PER_DAY)
+  // 列排序(表头点击):在可见集内重排;Pro 数据列非 Pro 不响应;同值按匹配度次序兜底
+  const getter = sort?.key && sort.key !== 'match' && (pro || !PRO_SORTS.has(sort.key)) ? MATCH_SORT_VAL[sort.key] : null
+  if (getter) {
+    const d = sort!.dir === 'asc' ? 1 : -1
+    visible.sort((a, b) => {
+      const va = getter(a.j) as any, vb = getter(b.j) as any
+      const na = va == null || va === '', nb = vb == null || vb === ''
+      if (na || nb) return na && nb ? 0 : na ? 1 : -1     // 空值恒沉底
+      if (va < vb) return -d
+      if (va > vb) return d
+      return matchRank(b.level) - matchRank(a.level)
+    })
+  }
   const pageItems = visible.slice(page * pageSize, page * pageSize + pageSize)
   const jobs = pageItems.map(({ j, level }) => mapJobRow(j, pro, level))
   return { jobs, total: visible.length, matchHigh, matchMid, updatedAt: iso(updRes.rows[0]?.upd) }

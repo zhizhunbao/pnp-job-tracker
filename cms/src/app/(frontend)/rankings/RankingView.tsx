@@ -94,20 +94,24 @@ export function RankingView({ slug, items, slugs = [] }: { slug: string; items: 
   useEffect(() => { const s = localStorage.getItem(LANG_KEY) as Lang | null; if (s) setLang(s) }, [])
   const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
   const t = makeT(lang)
+  // 有数据的榜单清单(导航与 banner 数字块共用)
+  const boards = ['daily-top', ...Object.keys(BROAD_BY_SLUG).map((k) => `daily-top-${k}`), 'weekly-top', 'sponsor-likely']
+    .filter((x) => x === slug || slugs.includes(x) || x === 'weekly-top' || x === 'sponsor-likely')
 
   return (
     <div style={{ background: '#f9fafb', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
       {/* 顶栏换全站共享 SiteHeader(2026-07-11 用户指出子页 header 与 /jobs 样式不一致) */}
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="rank" />
 
-      <div style={{ maxWidth: 1100, margin: '2rem auto', padding: '0 1rem' }}>
+      {/* #67 宽度统一:1100 → 1320 与头轨/职位板同宽 */}
+      <div style={{ maxWidth: 1320, width: '100%', boxSizing: 'border-box', margin: '2rem auto', padding: '0 1.25rem' }}>
         {/* 页头=PageBanner(#65 五模块统一浅色带,榜单=金) */}
-        <PageBanner module="rank" icon={<IconChart />} title={rankTitle(t, slug)} images={BANNER_IMGS.rank} />
+        <PageBanner module="rank" icon={<IconChart />} title={rankTitle(t, slug)} images={BANNER_IMGS.rank}
+          stats={[{ v: boards.length, label: t('rank.bnBoards') }]} />
         {/* 榜单导航(E9-02 分类榜矩阵):只列当前有数据的榜;当前榜加粗黑。
             #61(2026-07-19 Frank 拍板「就是那个意思」):从页底挪到页头下方——导航是切换入口不是脚注 */}
         <div style={{ margin: '0 0 12px', fontSize: 12.5, display: 'flex', flexWrap: 'wrap', gap: '6px 14px' }}>
-          {['daily-top', ...Object.keys(BROAD_BY_SLUG).map((k) => `daily-top-${k}`), 'weekly-top', 'sponsor-likely']
-            .filter((x) => x === slug || slugs.includes(x) || x === 'weekly-top' || x === 'sponsor-likely')
+          {boards
             .map((x) => (
               <a key={x} href={`/rankings/${x}`} style={{ color: x === slug ? '#111827' : '#2563eb', textDecoration: 'none', fontWeight: x === slug ? 700 : 400, whiteSpace: 'nowrap' }}>
                 {rankTitle(t, x)}

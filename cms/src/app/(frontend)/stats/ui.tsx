@@ -20,7 +20,8 @@ export function StatsShell({ lang, setLang, t, children }: { lang: Lang; setLang
   return (
     <div style={{ background: '#f9fafb', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
       <SiteHeader lang={lang} setLang={setLang} t={t} active="stats" />
-      <div style={{ maxWidth: 1100, margin: '2rem auto', padding: '0 1rem', width: '100%', boxSizing: 'border-box' }}>{children}</div>
+      {/* #67 宽度统一(2026-07-19):1100 → 1320 与头轨/职位板同宽 */}
+      <div style={{ maxWidth: 1320, margin: '2rem auto', padding: '0 1.25rem', width: '100%', boxSizing: 'border-box' }}>{children}</div>
       <SiteFooter t={t} />
     </div>
   )

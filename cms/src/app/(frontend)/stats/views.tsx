@@ -6,7 +6,7 @@ import { StatsShell, MetricCards, CaliberLine, useLang } from './ui'
 import { BackLink } from '../BackLink'
 import { BANNER_IMGS, PageBanner } from '../ui/primitives'
 import { IconMapPin, IconScale, IconStar, IconTarget } from '../Icons'
-import { BROAD_SLUGS, PROV_NAME, type StatRow, type SrcRow } from './shared'
+import { BROAD_SLUGS, PROVS, PROV_NAME, type StatRow, type SrcRow } from './shared'
 import { StatsCharts } from './charts'
 import { PricingModal } from '../jobs/PricingModal'
 import { streamDisplay, type TFn } from '../jobs/i18n'
@@ -32,7 +32,8 @@ export function StatsIndexContent({ rows, srcs, t }: { rows: StatRow[]; srcs: Sr
   return (
     <>
       {/* 页头=PageBanner(#65 五模块统一浅色带,统计=绿) */}
-      <PageBanner module="stats" icon={<IconMapPin />} title={t('stats.entry')} images={BANNER_IMGS.stats} />
+      <PageBanner module="stats" icon={<IconMapPin />} title={t('stats.entry')} images={BANNER_IMGS.stats}
+        stats={[{ v: PROVS.length, label: t('stats.bnProvs') }, { v: BROAD_SLUGS.length, label: t('stats.bnBroads') }]} />
       <StatsCharts rows={rows} t={t} />
       <h2 style={{ fontSize: 15.5, margin: '18px 0 8px' }}>{t('stats.provIndex')}</h2>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12, margin: '16px 0' }}>

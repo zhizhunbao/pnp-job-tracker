@@ -75,9 +75,10 @@ const MODULE_STYLE: Record<string, { bg: string; fg: string; deep: string }> = {
   stats: { bg: 'linear-gradient(100deg,#f0fdf4,#dcfce7)', fg: '#166534', deep: '22,101,52' },
   news: { bg: 'linear-gradient(100deg,#f0fdfa,#ccfbf1)', fg: '#0f766e', deep: '15,118,110' },
 }
-export function PageBanner({ module, icon, title, sub, right, images }: {
+export function PageBanner({ module, icon, title, sub, right, images, stats }: {
   module: keyof typeof MODULE_STYLE; icon?: React.ReactNode; title: React.ReactNode
   sub?: React.ReactNode; right?: React.ReactNode; images?: string[]
+  stats?: { v: React.ReactNode; label: React.ReactNode }[]   // 关键数字块(≤3,Frank:「显示关键信息但不能太多」;仅图版渲染,手机藏)
 }) {
   const m = MODULE_STYLE[module]
   const [idx, setIdx] = useState(0)
@@ -102,7 +103,7 @@ export function PageBanner({ module, icon, title, sub, right, images }: {
   return (
     <div className="pbImgBanner" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
       style={{ position: 'relative', height: 150, borderRadius: 12, overflow: 'hidden', margin: '0 0 14px' }}>
-      <style>{`@media (max-width:640px){.pbImgBanner{height:110px !important}}`}</style>
+      <style>{`@media (max-width:640px){.pbImgBanner{height:110px !important}.pbStat{display:none !important}}`}</style>
       {imgs.map((src, i) => (
         // eslint-disable-next-line @next/next/no-img-element
         <img key={src} src={src} alt="" title="Wikimedia Commons" onError={() => setDead(true)}
@@ -115,6 +116,12 @@ export function PageBanner({ module, icon, title, sub, right, images }: {
           <h1 style={{ fontSize: 20, margin: 0, display: 'flex', alignItems: 'center', gap: 8, textShadow: '0 1px 6px rgba(0,0,0,.5)' }}>{icon}{title}</h1>
           {sub && <div style={{ fontSize: 12, opacity: 0.9, marginTop: 3, textShadow: '0 1px 4px rgba(0,0,0,.5)' }}>{sub}</div>}
         </div>
+        {stats?.slice(0, 3).map((s, i) => (
+          <div key={i} className="pbStat" style={{ textAlign: 'center', textShadow: '0 1px 4px rgba(0,0,0,.6)', flexShrink: 0 }}>
+            <div style={{ fontSize: 19, fontWeight: 700, lineHeight: 1.2 }}>{s.v}</div>
+            <div style={{ fontSize: 11, opacity: 0.85 }}>{s.label}</div>
+          </div>
+        ))}
         {right && <span style={{ marginLeft: 'auto', background: 'rgba(255,255,255,.92)', borderRadius: 8, padding: '7px 14px', fontSize: 13, whiteSpace: 'nowrap' }}>{right}</span>}
       </div>
       {imgs.length > 1 && (

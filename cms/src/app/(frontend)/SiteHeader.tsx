@@ -8,20 +8,10 @@ import { LANGS, type Lang, type TFn } from './jobs/i18n'
 import { Avatar } from './Avatar'
 import { IconTarget, IconChart, IconCompass, IconMapPin, IconNews, IconStar, IconUser } from './Icons'
 
-function AccountLite({ t }: { t: TFn }) {
-  const [state, setState] = useState<'loading' | 'out' | 'in'>('loading')
-  const [u, setU] = useState<{ email: string; displayName: string | null; avatar: string | null; pro: boolean }>({ email: '', displayName: null, avatar: null, pro: false })
-  useEffect(() => {
-    fetch('/api/users/me', { credentials: 'include' })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d?.user?.email) {
-          setU({ email: d.user.email, displayName: d.user.displayName ?? null, avatar: d.user.avatar ?? null, pro: !!(d.user.proUntil && new Date(d.user.proUntil) > new Date()) })
-          setState('in')
-        } else setState('out')
-      })
-      .catch(() => setState('out'))
-  }, [])
+type AcctState = { state: 'loading' | 'out' | 'in'; u: { email: string; displayName: string | null; avatar: string | null; pro: boolean } }
+
+function AccountLite({ t, acct }: { t: TFn; acct: AcctState }) {
+  const { state, u } = acct
   if (state === 'loading') return <span style={{ width: 120 }} />
   if (state === 'in') {
     return (
@@ -40,13 +30,32 @@ function AccountLite({ t }: { t: TFn }) {
   )
 }
 
-export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, accountArea }: {
+export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, accountArea, loggedIn }: {
   lang: Lang; setLang: (l: Lang) => void; t: TFn
   active?: 'rank' | 'stats' | 'account' | 'pathways' | 'news'
   sticky?: boolean
   matchButton?: { active: boolean; onClick: () => void }
   accountArea?: React.ReactNode
+  loggedIn?: boolean   // 宿主已知登录态时传入(/jobs 走 plan);不传=本组件自查 /api/users/me
 }) {
+  // 登录态上提(2026-07-19 Frank:「我的账户模块应该是登录之后才显示」)——原 AccountLite 私有 fetch
+  // 提到 header 级,导航「我的账户」与右端账户区共用;loading 期间按未登录处理(不闪入口)
+  const [acct, setAcct] = useState<AcctState>({
+    state: loggedIn === undefined ? 'loading' : loggedIn ? 'in' : 'out',
+    u: { email: '', displayName: null, avatar: null, pro: false },
+  })
+  useEffect(() => {
+    if (loggedIn !== undefined || accountArea) return   // 宿主自带账户区(/jobs)时由 loggedIn prop 定导航显隐
+    fetch('/api/users/me', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.user?.email) {
+          setAcct({ state: 'in', u: { email: d.user.email, displayName: d.user.displayName ?? null, avatar: d.user.avatar ?? null, pro: !!(d.user.proUntil && new Date(d.user.proUntil) > new Date()) } })
+        } else setAcct((a) => ({ ...a, state: 'out' }))
+      })
+      .catch(() => setAcct((a) => ({ ...a, state: 'out' })))
+  }, [loggedIn, accountArea])
+  const showAcctTab = loggedIn !== undefined ? loggedIn : acct.state === 'in'
   const nav: React.CSSProperties = { textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }
   return (
     <header style={{ background: '#fff', borderBottom: '1px solid #e5e7eb', ...(sticky && { position: 'sticky', top: 0, zIndex: 30 }) }}>
@@ -69,10 +78,10 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
             <a href="/stats" style={{ ...nav, color: active === 'stats' ? '#2563eb' : '#6b7280', fontWeight: active === 'stats' ? 700 : 400 }}><IconMapPin /> {t('stats.entry')}</a>
             {/* 移民动态=顶栏第 6 项(E12-06 拍板);窄屏随 flexWrap 自动折行 */}
             <a href="/news" style={{ ...nav, color: active === 'news' ? '#2563eb' : '#6b7280', fontWeight: active === 'news' ? 700 : 400 }}><IconNews /> {t('news.entry')}</a>
-            {/* 我的账户=独立选项卡(2026-07-16 用户拍板),与三入口同级;当前页高亮不链自己 */}
-            {active === 'account'
+            {/* 我的账户=独立选项卡(2026-07-16 拍板);2026-07-19 Frank:未登录不显示(登录入口=右端登录/注册钮) */}
+            {showAcctTab && (active === 'account'
               ? <span style={{ ...nav, color: '#2563eb', fontWeight: 700 }}><IconUser /> {t('nav.acctTab')}</span>
-              : <a href="/account" style={nav}><IconUser /> {t('nav.acctTab')}</a>}
+              : <a href="/account" style={nav}><IconUser /> {t('nav.acctTab')}</a>)}
           </div>
           <span className="shDivider" style={{ width: 1, height: 16, background: '#e5e7eb' }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
@@ -82,7 +91,7 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
                   style={{ border: 'none', padding: '3px 9px', fontSize: 12.5, cursor: 'pointer', background: lang === l.code ? '#2563eb' : '#fff', color: lang === l.code ? '#fff' : '#6b7280' }}>{l.label}</button>
               ))}
             </div>
-            {accountArea ?? <AccountLite t={t} />}
+            {accountArea ?? <AccountLite t={t} acct={acct} />}
           </div>
         </div>
       </div>

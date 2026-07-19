@@ -209,6 +209,8 @@ const zh: Dict = {
   // 省全名(#58 零黑话:chips 显示全名,码存幕后)
   'pr.ON': '安大略', 'pr.BC': '不列颠哥伦比亚', 'pr.AB': '阿尔伯塔', 'pr.SK': '萨斯喀彻温', 'pr.MB': '曼尼托巴',
   'pr.QC': '魁北克', 'pr.NS': '新斯科舍', 'pr.NB': '新不伦瑞克', 'pr.NL': '纽芬兰与拉布拉多', 'pr.PE': '爱德华王子岛',
+  // banner 数字块标签(2026-07-19 Frank「显示关键信息但不能太多」)
+  'pw.bnRoutes': '条路径方案', 'rank.bnBoards': '个榜单', 'stats.bnProvs': '省全覆盖', 'stats.bnBroads': '职业大类',
   'prof.pgwp': '工签还剩多久?',
   'prof.pgwpOpt.lt6': '不到 6 个月', 'prof.pgwpOpt.6to12': '6–12 个月', 'prof.pgwpOpt.1to2': '1–2 年', 'prof.pgwpOpt.unsure': '不清楚',
   'prof.save': '保存档案',
@@ -529,6 +531,7 @@ const en: Dict = {
   'prof.prov': 'Which province(s)?',
   'pr.ON': 'Ontario', 'pr.BC': 'British Columbia', 'pr.AB': 'Alberta', 'pr.SK': 'Saskatchewan', 'pr.MB': 'Manitoba',
   'pr.QC': 'Quebec', 'pr.NS': 'Nova Scotia', 'pr.NB': 'New Brunswick', 'pr.NL': 'Newfoundland and Labrador', 'pr.PE': 'Prince Edward Island',
+  'pw.bnRoutes': 'pathway plans', 'rank.bnBoards': 'boards', 'stats.bnProvs': 'provinces covered', 'stats.bnBroads': 'occupation groups',
   'prof.pgwp': 'How long left on your work permit?',
   'prof.pgwpOpt.lt6': 'Under 6 months', 'prof.pgwpOpt.6to12': '6–12 months', 'prof.pgwpOpt.1to2': '1–2 years', 'prof.pgwpOpt.unsure': 'Not sure',
   'prof.save': 'Save profile',
@@ -845,6 +848,7 @@ const ko: Dict = {
   'prof.prov': '어느 주로 가고 싶으세요?',
   'pr.ON': '온타리오', 'pr.BC': '브리티시컬럼비아', 'pr.AB': '앨버타', 'pr.SK': '서스캐처원', 'pr.MB': '매니토바',
   'pr.QC': '퀘벡', 'pr.NS': '노바스코샤', 'pr.NB': '뉴브런즈윅', 'pr.NL': '뉴펀들랜드 래브라도', 'pr.PE': '프린스에드워드아일랜드',
+  'pw.bnRoutes': '개 경로 플랜', 'rank.bnBoards': '개 랭킹', 'stats.bnProvs': '개 주 커버', 'stats.bnBroads': '개 직업 대분류',
   'prof.pgwp': '워크퍼밋 잔여 기간은?',
   'prof.pgwpOpt.lt6': '6개월 미만', 'prof.pgwpOpt.6to12': '6–12개월', 'prof.pgwpOpt.1to2': '1–2년', 'prof.pgwpOpt.unsure': '모름',
   'prof.save': '프로필 저장',
