@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { makeT, LANG_KEY, type Lang } from '../jobs/i18n'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
-import { PageBanner, PageShell, SectionTitle, Tag, UI, chipStyle } from '../ui/primitives'
+import { PageBanner, PageShell, SectionTabs, SectionTitle, Tag, UI, chipStyle } from '../ui/primitives'
 import { IconNews } from '../Icons'
 import type { TlCadence, TlEvent } from '@/lib/timeline'
 
@@ -31,6 +31,11 @@ export function TimelineView({ events, cadence, eeCadence }: {
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="news" />
       <PageShell pad="2rem 1.25rem 32px">
         <PageBanner module="news" icon={<IconNews />} title={t('tl.title')} sub={t('tl.sub')} />
+        {/* 2026-07-19 Frank 批提案:统一二级 tab 条(与 /news 互为切换) */}
+        <SectionTabs color="#0f766e" tabs={[
+          { href: '/news', label: t('tl.tabNews') },
+          { href: '/timeline', label: t('tl.title'), active: true },
+        ]} />
         <div style={{ fontSize: 12.5, color: '#6b7280', margin: '0 0 12px', lineHeight: 1.6 }}>{t('tl.note')}</div>
 
         {/* 抽选节奏(个人化钩 v1:省×流 距今/平均间隔;EE=距今) */}

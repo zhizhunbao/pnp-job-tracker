@@ -30,7 +30,7 @@ export function OccupationsView({ rows }: { rows: OccRow[] }) {
 
   return (
     <div style={{ background: '#f9fafb', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
-      <SiteHeader lang={lang} setLang={setLangSaved} t={t} />
+      <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="employers" />
       <PageShell pad="2rem 1.25rem 32px">
         <PageBanner module="jobs" icon={<IconClipboard />} title={t('dir.occ.title')} sub={t('dir.occ.sub')} />
         <div style={{ fontSize: 12.5, color: '#6b7280', margin: '0 0 6px', lineHeight: 1.6 }}>{t('dir.occ.note')}</div>

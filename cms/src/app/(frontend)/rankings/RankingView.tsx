@@ -107,7 +107,7 @@ export function RankingView({ slug, items, slugs = [] }: { slug: string; items: 
       <div style={{ maxWidth: 1320, width: '100%', boxSizing: 'border-box', margin: '2rem auto', padding: '0 1.25rem' }}>
         {/* 页头=PageBanner(#65 五模块统一浅色带,榜单=金) */}
         <PageBanner module="rank" icon={<IconChart />} title={rankTitle(t, slug)} images={BANNER_IMGS.rank}
-          stats={[{ v: boards.length, label: t('rank.bnBoards') }]} />
+          sub={t('rank.bnSub')} stats={[{ v: boards.length, label: t('rank.bnBoards') }, { v: items.length, label: t('rank.bnRows') }]} />
         {/* 榜单导航(E9-02 分类榜矩阵):只列当前有数据的榜;当前榜加粗黑。
             #61(2026-07-19 Frank 拍板「就是那个意思」):从页底挪到页头下方——导航是切换入口不是脚注 */}
         <div style={{ margin: '0 0 12px', fontSize: 12.5, display: 'flex', flexWrap: 'wrap', gap: '6px 14px' }}>

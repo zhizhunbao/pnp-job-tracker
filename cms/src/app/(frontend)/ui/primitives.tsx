@@ -100,10 +100,12 @@ export function PageBanner({ module, icon, title, sub, right, images, stats }: {
       </div>
     )
   }
+  // 2026-07-19 Frank 批新槽位(mockups/二级导航与banner-提案):标题+副题左下,数字胶囊(数字+标签同行)
+  // 右下,轮播圆点右上;高度 150→130——治「数字与标签断裂悬在标题旁」
   return (
     <div className="pbImgBanner" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
-      style={{ position: 'relative', height: 150, borderRadius: 12, overflow: 'hidden', margin: '0 0 14px' }}>
-      <style>{`@media (max-width:640px){.pbImgBanner{height:110px !important}.pbStat{display:none !important}}`}</style>
+      style={{ position: 'relative', height: 130, borderRadius: 12, overflow: 'hidden', margin: '0 0 14px' }}>
+      <style>{`@media (max-width:640px){.pbImgBanner{height:104px !important}.pbStat{display:none !important}}`}</style>
       {imgs.map((src, i) => (
         // eslint-disable-next-line @next/next/no-img-element
         <img key={src} src={src} alt="" title="Wikimedia Commons" onError={() => setDead(true)}
@@ -111,27 +113,49 @@ export function PageBanner({ module, icon, title, sub, right, images, stats }: {
       ))}
       {/* 模块色暗化层(左浓右淡)压图保字;对比度红线 ≥4.5:1 */}
       <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(90deg, rgba(${m.deep},.82), rgba(${m.deep},.45) 55%, rgba(17,24,39,.25))` }} />
-      <div style={{ position: 'relative', zIndex: 2, height: '100%', display: 'flex', alignItems: 'center', gap: 20, padding: '0 22px', color: '#fff' }}>
+      <div style={{ position: 'relative', zIndex: 2, height: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, padding: '0 20px 13px', color: '#fff' }}>
         <div style={{ minWidth: 0 }}>
           <h1 style={{ fontSize: 20, margin: 0, display: 'flex', alignItems: 'center', gap: 8, textShadow: '0 1px 6px rgba(0,0,0,.5)' }}>{icon}{title}</h1>
-          {sub && <div style={{ fontSize: 12, opacity: 0.9, marginTop: 3, textShadow: '0 1px 4px rgba(0,0,0,.5)' }}>{sub}</div>}
+          {sub && <div style={{ fontSize: 12, opacity: 0.92, marginTop: 3, textShadow: '0 1px 4px rgba(0,0,0,.5)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub}</div>}
         </div>
-        {stats?.slice(0, 3).map((s, i) => (
-          <div key={i} className="pbStat" style={{ textAlign: 'center', textShadow: '0 1px 4px rgba(0,0,0,.6)', flexShrink: 0 }}>
-            <div style={{ fontSize: 19, fontWeight: 700, lineHeight: 1.2 }}>{s.v}</div>
-            <div style={{ fontSize: 11, opacity: 0.85 }}>{s.label}</div>
-          </div>
-        ))}
-        {right && <span style={{ marginLeft: 'auto', background: 'rgba(255,255,255,.92)', borderRadius: 8, padding: '7px 14px', fontSize: 13, whiteSpace: 'nowrap' }}>{right}</span>}
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
+          {stats?.slice(0, 3).map((s, i) => (
+            <span key={i} className="pbStat" style={{ background: 'rgba(255,255,255,.16)', border: '1px solid rgba(255,255,255,.35)', borderRadius: 999, padding: '4px 12px', fontSize: 12, whiteSpace: 'nowrap' }}>
+              <b style={{ fontSize: 14, marginRight: 4 }}>{s.v}</b>{s.label}
+            </span>
+          ))}
+          {right && <span style={{ background: 'rgba(255,255,255,.92)', borderRadius: 8, padding: '6px 13px', fontSize: 13, whiteSpace: 'nowrap' }}>{right}</span>}
+        </div>
       </div>
       {imgs.length > 1 && (
-        <span style={{ position: 'absolute', right: 14, bottom: 8, display: 'flex', gap: 5, zIndex: 2 }}>
+        <span style={{ position: 'absolute', right: 14, top: 10, display: 'flex', gap: 5, zIndex: 2 }}>
           {imgs.map((s, i) => (
             <button key={s} aria-label={`bg ${i + 1}`} onClick={() => setIdx(i)}
               style={{ width: 6, height: 6, borderRadius: '50%', border: 'none', padding: 0, cursor: 'pointer', background: i === idx % imgs.length ? '#fff' : 'rgba(255,255,255,.45)' }} />
           ))}
         </span>
       )}
+    </div>
+  )
+}
+
+// ── SectionTabs(模块二级 tab 条,2026-07-19 Frank 批「二级模块统一样式」)──
+// 用在模块页 banner 正下方(如 移民动态:最新公告|时间线);圆角上沿,当前页高亮模块色。
+export function SectionTabs({ tabs, color = UI.primary }: {
+  tabs: { href: string; label: React.ReactNode; active?: boolean }[]; color?: string
+}) {
+  return (
+    <div style={{ display: 'flex', gap: 6, margin: '-6px 0 14px', borderBottom: `2px solid ${color}22` }}>
+      {tabs.map((tb) => (
+        <a key={tb.href} href={tb.active ? undefined : tb.href}
+          style={{
+            fontSize: 12.5, padding: '5px 14px', borderRadius: '9px 9px 0 0', textDecoration: 'none',
+            border: '1px solid', borderBottom: 'none',
+            ...(tb.active
+              ? { background: '#fff', color, fontWeight: 700, borderColor: `${color}55` }
+              : { background: UI.bg, color: UI.text2, borderColor: UI.border, cursor: 'pointer' }),
+          }}>{tb.label}</a>
+      ))}
     </div>
   )
 }

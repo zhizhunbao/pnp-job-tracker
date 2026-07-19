@@ -3,7 +3,7 @@
 // /jobs 的内联头已退役,全部页面用本组件,**头轨统一 1320px**(跟最宽的职位板走;各页正文轨可窄但 header 一致)。
 // /jobs 特有件走 props:matchButton(「我的匹配」切换态)/accountArea(带 plan 的完整账户下拉)/sticky。
 // 二级页缺省:matchButton 不传=链接 /?view=match;accountArea 不传=AccountLite(登录=头像药丸,未登录=登录/注册)。
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { LANGS, type Lang, type TFn } from './jobs/i18n'
 import { Avatar } from './Avatar'
 import { IconTarget, IconChart, IconCompass, IconMapPin, IconNews, IconUser, IconUsers } from './Icons'
@@ -57,6 +57,15 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
       .catch(() => setAcct((a) => ({ ...a, state: 'out' })))
   }, [loggedIn, accountArea])
   const showAcctTab = loggedIn !== undefined ? loggedIn : acct.state === 'in'
+  // 资料库下拉(方案 A):点开/点外关
+  const [lib, setLib] = useState(false)
+  const libRef = useRef<HTMLSpanElement>(null)
+  useEffect(() => {
+    if (!lib) return
+    const h = (e: MouseEvent) => { if (libRef.current && !libRef.current.contains(e.target as Node)) setLib(false) }
+    document.addEventListener('mousedown', h)
+    return () => document.removeEventListener('mousedown', h)
+  }, [lib])
   const nav: React.CSSProperties = { textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }
   return (
     <header style={{ background: '#fff', borderBottom: '1px solid #e5e7eb', ...(sticky && { position: 'sticky', top: 0, zIndex: 30 }) }}>
@@ -76,8 +85,20 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
               : <a href="/?view=match" style={nav}><IconTarget /> {t('mv.entry')}</a>}
             <a href="/pathways" style={{ ...nav, color: active === 'pathways' ? '#2563eb' : '#6b7280', fontWeight: active === 'pathways' ? 700 : 400 }}><IconCompass /> {t('pw.entry')}</a>
             <a href="/rankings/weekly-top" style={{ ...nav, color: active === 'rank' ? '#2563eb' : '#6b7280', fontWeight: active === 'rank' ? 700 : 400 }}><IconChart /> {t('rank.entry')}</a>
-            {/* 雇主名录=顶栏第 7 项(2026-07-19 Frank「header 没地方点」拍板给位;B4-01) */}
-            <a href="/employers" style={{ ...nav, color: active === 'employers' ? '#2563eb' : '#6b7280', fontWeight: active === 'employers' ? 700 : 400 }}><IconUsers /> {t('dir.title')}</a>
+            {/* 资料库 ▾(2026-07-19 Frank 批提案方案 A):名录类归一处,顶栏不再涨;时间线归移民动态 tab */}
+            <span ref={libRef} style={{ position: 'relative', display: 'inline-flex' }}>
+              <button onClick={() => setLib((o) => !o)}
+                style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, cursor: 'pointer', whiteSpace: 'nowrap', color: active === 'employers' ? '#2563eb' : '#6b7280', fontWeight: active === 'employers' ? 700 : 400 }}>
+                <IconUsers /> {t('nav.library')} <span style={{ fontSize: 10, color: '#9ca3af' }}>▾</span>
+              </button>
+              {lib && (
+                <span style={{ position: 'absolute', top: 'calc(100% + 6px)', left: -10, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, boxShadow: '0 10px 30px rgba(0,0,0,.12)', padding: '4px 0', zIndex: 40, minWidth: 168, display: 'block' }}>
+                  <a href="/employers" style={{ display: 'block', padding: '6px 14px', fontSize: 12.5, color: '#374151', textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('dir.title')}</a>
+                  <a href="/occupations" style={{ display: 'block', padding: '6px 14px', fontSize: 12.5, color: '#374151', textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('dir.occ.title')}</a>
+                  <span style={{ display: 'block', padding: '6px 14px', fontSize: 12.5, color: '#c4c9d4', whiteSpace: 'nowrap' }}>{t('nav.schoolsSoon')}</span>
+                </span>
+              )}
+            </span>
             <a href="/stats" style={{ ...nav, color: active === 'stats' ? '#2563eb' : '#6b7280', fontWeight: active === 'stats' ? 700 : 400 }}><IconMapPin /> {t('stats.entry')}</a>
             {/* 移民动态=顶栏第 6 项(E12-06 拍板);窄屏随 flexWrap 自动折行 */}
             <a href="/news" style={{ ...nav, color: active === 'news' ? '#2563eb' : '#6b7280', fontWeight: active === 'news' ? 700 : 400 }}><IconNews /> {t('news.entry')}</a>
