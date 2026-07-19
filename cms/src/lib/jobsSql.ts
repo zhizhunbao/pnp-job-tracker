@@ -220,7 +220,7 @@ function makeMatcher(profile: MatchProfile, profileOk: boolean, matchDims: Match
       const mj: MatchJob = {
         noc: j.noc ?? '', teer: num(j.teer), province: j.province ?? '', pnpEligible: !!j.pnp_eligible,
         pnpStream: j.pnp_stream ?? '', eeCategory: j.ee_category ?? '', salaryAnnual: num(j.salary_annual), wageMedAnnual: num(j.wage_med_annual),
-        lmiaPositions: num(j.lmia_positions), lmiaLastQuarter: j.lmia_last_quarter ?? '',
+        lmiaPositions: num(j.lmia_positions), lmiaPositionsSkilled: num(j.lmia_positions_skilled), lmiaLastQuarter: j.lmia_last_quarter ?? '',
       }
       const level = match(profile, mj, matchDims).level
       if (level === 'high') high++
@@ -336,7 +336,7 @@ export async function fetchMatchPage(
     const mj: MatchJob = {
       noc: j.noc ?? '', teer: num(j.teer), province: j.province ?? '', pnpEligible: !!j.pnp_eligible,
       pnpStream: j.pnp_stream ?? '', eeCategory: j.ee_category ?? '', salaryAnnual: num(j.salary_annual), wageMedAnnual: num(j.wage_med_annual),
-      lmiaPositions: num(j.lmia_positions), lmiaLastQuarter: j.lmia_last_quarter ?? '',
+      lmiaPositions: num(j.lmia_positions), lmiaPositionsSkilled: num(j.lmia_positions_skilled), lmiaLastQuarter: j.lmia_last_quarter ?? '',
     }
     const level = match(profile, mj, matchDims).level
     if (level === 'high') { matchHigh++; hits.push({ j, level }) }
