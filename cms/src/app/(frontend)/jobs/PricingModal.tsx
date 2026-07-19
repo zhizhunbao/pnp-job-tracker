@@ -4,7 +4,7 @@
 // caps 用 lib/plan.ts 常量(客户端 bundle 取默认值;若哪天用 env 改分层数字,记得 NEXT_PUBLIC 化或改走 props)。
 import { useState } from 'react'
 import type { TFn } from './i18n'
-import { Modal, useIsNarrow } from './Modal'
+import { Modal } from './Modal'
 import { IconCheck, IconStar } from '../Icons'
 import { AuthModal } from './AuthForm'
 import { FREE_ADVISOR_TRIES, FREE_JOBTEXT_TRIES, FREE_MATCH_JOBS_PER_DAY, PRO_ADVISOR_DAILY } from '@/lib/plan'
@@ -37,7 +37,6 @@ export function PricingCard({ t, loggedIn, pro, caps, onRegister }: { t: TFn; lo
   const cur = P30.replace(/[\d.,]+.*$/, '')                       // "CA$19" → "CA$"
   const perDay = (p: string, d: number) => `${cur}${(num(p) / d).toFixed(2)}`
   const savePct = num(P30) > 0 ? Math.round((1 - num(P90) / 90 / (num(P30) / 30)) * 100) : 0
-  const narrow = useIsNarrow()
   const btn: React.CSSProperties = { width: '100%', padding: '8px 0', fontSize: 13.5, fontWeight: 600, border: 'none', borderRadius: 8, cursor: 'pointer' }
   const Li = ({ dim, children }: { dim?: boolean; children: React.ReactNode }) => (
     <li style={{ display: 'flex', gap: 7, alignItems: 'flex-start', fontSize: 12.8, color: dim ? '#6b7280' : '#374151', lineHeight: 1.55 }}>
@@ -49,15 +48,17 @@ export function PricingCard({ t, loggedIn, pro, caps, onRegister }: { t: TFn; lo
     position: 'relative', background: '#fff', border: hot ? '1.5px solid #f59e0b' : '1px solid #e5e7eb',
     borderRadius: 12, padding: '16px 16px 14px', display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0,
   })
+  // 第 22 轮 dd 抓的当晚回归:nowrap 价格行在 375px 把页面撑出横向溢出、useIsNarrow 时序下三卡挤三窄列
+  // → 价格行允许换行;栅格改纯 CSS auto-fit(≤单卡宽自然堆叠,不依赖 JS 宽度探测)
   const priceLine = (p: string, per: string) => (
-    <div style={{ whiteSpace: 'nowrap' }}>
+    <div>
       <span style={{ fontSize: 22, fontWeight: 700, color: '#111827' }}>{p}</span>
       <span style={{ fontSize: 11.5, color: '#9ca3af' }}> {per}</span>
     </div>
   )
   return (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: narrow ? '1fr' : 'repeat(3, 1fr)', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: 12 }}>
         {/* 免费卡 */}
         <div style={cardS()}>
           <div style={{ fontSize: 14, fontWeight: 700, color: '#374151' }}>{t('price.free')}</div>
