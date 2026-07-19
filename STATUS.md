@@ -3,7 +3,13 @@
 > 新 session 接手先读这份 + `CLAUDE.md`(设计宪法)+ `prd.md`(v2 定位见头部标注)。仓库:github.com/zhizhunbao/pnp-job-tracker
 > **🚀 站点已公网上线并真实收款:https://pnp-cms.onrender.com**(Render + Supabase;**live Stripe,M3 已开闸**)。批次进度=`docs/implementation/_开发批次顺序.md`:**B0-B8 全部落地(2026-07-04 一天从 B4 打到 B8),24 工作项代码侧全完**。
 >
-> **⚡⚡⚡ 最新交接(2026-07-16→17 通宵 session,「闭环日」)——E9 闭环两件全链上线+生产验收,整改 #1-#49 全闭环,冷启动弹药就绪**
+> **⚡⚡⚡⚡ 最新交接(2026-07-18 通宵 session,「移民动态之夜」)——E12-06 全环闭合 + #65 设计系统第一批,细节见 implementation/E12/06 §10(续①~⑦)与记忆 next-session-status**
+> - **E12-06 移民动态板块 P0→P1f 一夜全清**:/news 头版式布局(1大+4小头条网格,8省+联邦 **Wikimedia 真实地标头图**)+AI 重要度徽标(5分红「重要」)+**三语实时懒翻译/速读**(朋友的 qwen 服务 ngrok+key,编号对位协议保段对段对齐,DB 缓存全站共享,API 费归零)+**评论区**(登录可评→Frank admin 审核 approved 公开)+统一返回钮/评论数脚标。四次 DDL 全 Frank 亲跑(news 表/excerpt+重要度/comments+韩语列/summary_en)。**新防线两道**:seed 对 news 改 slug upsert(懒缓存列不清——每小时抹缓存 bug 实撞断根)/schema 容错查询(缺列自动降级——**10 分钟 404 事故**教训:改列代码 push 前必须实查 information_schema 列已落位)。
+> - **#65 前端 primitives 库第一批**:`(frontend)/ui/primitives.tsx`(tokens+Button/Chip/Tag/PageBanner/SectionTitle,设计总表 docs/assets/mockups/)+**header 全站合一**(/jobs 内联头退役,SiteHeader 唯一,1320 头轨,Pro 钮全删出 header)+五模块浅色页头(jobs蓝/pathways紫/rank金/stats绿/news青)+双蓝条合一(ValueBanner 退役,建档 CTA 进 Jobs 页头右槽)。五页生产实拍验收过(docs/assets/mockups/65-验收-*.png)。**余批**=jobs 筛选区/账户 Sidebar/弹框头(#65 余批任务)。
+> - **运维新惯例**:翻译类走本地模型(局域网 qwen3.6 / 朋友公网 API);ETL 预翻停用(NEWS_TRANSLATE_BUDGET=0),只留新条目重要度打分;**评论审核=Frank 新日常**(admin→Community→comments→approved);效果图/验收图一律存 docs/assets/mockups(Frank 看不到聊天内嵌图);生产 DDL=Frank 终端亲跑;不用 PowerShell。
+> - **下轮队列**:#65 余批 → 快刀四件(#56/58/60/62A)→ 改版批(#59/57/63/64)→ B4 实体名录最小版 → C6 政策时间线;发帖开闸(Frank,/news 板块=现成卖点)。
+>
+> **⚡⚡⚡ 上轮交接(2026-07-16→17 通宵 session,「闭环日」)——E9 闭环两件全链上线+生产验收,整改 #1-#49 全闭环,冷启动弹药就绪**
 > - **E9-01 最小求职看板 ✅**(80b5146):SavedJobs collection(免费开放/上限 200/本人 access,SavedSearches 同构)+ 生产 DDL 先行;/jobs 操作列「☆ 收藏」(匿名点→注册框=转化钩子);账户 sidebar「我的求职」=状态流转(想投/已投/面试中/offer)+移除。**生产 Playwright 全链验收过**。实现文档 docs/implementation/E9-闭环/01。
 > - **E9-02 发现层 ✅**:① **每日分类榜矩阵**(6f863c0):`10_build_rankings` 出 daily-top(全国)+daily-top-{10 大类}(近 48h×评分≥60×TOP20,大类<5 岗当日缺席);榜单页导航 chips 只列有数据的;每榜=SEO 落地页;**生产实拍 11 榜全起**。② **推荐横幅 1+3**(1db00d0):本地偏好画像(localStorage 不上传,弹窗+1/收藏+3)→「根据你最近浏览:SK·科技·$80–100K → 看这些岗(N)/建档案精确匹配 →」,当日可关,信号五五开或命中 0 时按宁缺不显;**生产实测渲染+CTA 正常**。
 > - **当天其余全部落定**:第 18/19 轮 dd(整改 #1-#49 全闭环,含 #47 NOC 失配护栏 05d 上线+榜首 intern 生产消失);十三件 UI 拍板(JD 去表格+38k 帖格式保真回填完工/统一 header·footer/用户头像下拉/「我的账户」选项卡/账户 sidebar/筛选只留薪资/loadMore 只报剩余/登录 minLength 修复等);**数据节奏:jobbank 1h + enrich 拆独立角色(6h)+ #47 护栏进 build 轮**,页头每小时整点后 ~15 分钟内推进;文档拆档=一轮一文件(docs/整改轮次/);产品 v3 六环愿景+闭环四素材记档(记忆 product-v3-jobseek-funnel)。
