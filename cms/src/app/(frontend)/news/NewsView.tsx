@@ -6,13 +6,13 @@
 // ④ 详情页评论区:登录可评 → 人工审核(approved)后显示;未登录=引导登录
 // 缩略图 og 图优先,缺图用省色块默认图(程序生成,一省一固定色,联邦=IRCC 红)。
 // 转载姿势四件套(E4-03 框架):© 出处方 · 非官方声明 · 原文链接 ↗ · 官方发布日期。
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { type Lang, type TFn } from '../jobs/i18n'
 import { useLang } from '../stats/ui'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { BackLink } from '../BackLink'
-import { PageBanner } from '../ui/primitives'
+import { PageBanner, PageShell } from '../ui/primitives'
 import { IconNews } from '../Icons'
 import { newsPublisher, newsRegionName, NEWS_REGIONS, type NewsCard, type NewsComment, type NewsHero, type NewsRow } from './shared'
 
@@ -50,24 +50,40 @@ function ImpBadge({ t, importance, note }: { t: TFn; importance: number | null; 
     style={{ background: '#dc2626', color: '#fff', borderRadius: 6, padding: '1px 7px', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap' }}>{t('news.imp')}</span>
 }
 
-// 列表小色块(v4:调小调淡——96×64 淡底深字,原高饱和大块太吵)
+// 省份地标图路径(本站静态,来源见 public/img/regions/SOURCES.md;致谢挂 title——Frank 2026-07-18「水印去掉」,
+// CC BY/BY-SA 致谢不能全删,挪 hover)
+const regionImg = (r: string) => `/img/regions/${r === 'federal' ? 'federal' : r.toLowerCase()}.jpg`
+const IMG_CREDIT = 'Wikimedia Commons'
+
+// 列表小色块(仅作缺图兜底;v5 主视觉换真实地标图——Frank 2026-07-18「整个真实的图片进来,大小裁剪也要包含」)
 const MUTED: Record<string, [string, string]> = {
   federal: ['#fef2f2', '#b91c1c'], ON: ['#f0fdfa', '#0f766e'], BC: ['#f5f3ff', '#6d28d9'],
   AB: ['#fffbeb', '#b45309'], SK: ['#f0fdf4', '#15803d'], MB: ['#fefce8', '#a16207'],
   QC: ['#eff6ff', '#1d4ed8'], NS: ['#ecfeff', '#0e7490'],
 }
 function ListTile({ region }: { region: string }) {
+  const [dead, setDead] = useState(false)
   const [bg, fg] = MUTED[region] || ['#f3f4f6', '#374151']
-  // v4.1:副行一行内截断(联邦全名 96px 宽折三行撑破定高的教训);overflow hidden 硬保 64px
+  if (dead) {
+    // 缺图兜底=v4 淡色字标;副行一行内截断(联邦全名 96px 宽折三行撑破定高的教训)
+    return (
+      <div style={{ width: 96, minWidth: 96, height: 64, borderRadius: 8, background: bg, color: fg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontWeight: 700, overflow: 'hidden' }}>
+        <div style={{ fontSize: region === 'federal' ? 17 : 20, lineHeight: 1.2 }}>{region === 'federal' ? 'IRCC' : region}</div>
+        <div style={{ fontSize: 9.5, fontWeight: 500, opacity: 0.75, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 88 }}>{region === 'federal' ? 'Canada' : newsRegionName(region)}</div>
+      </div>
+    )
+  }
   return (
-    <div style={{ width: 96, minWidth: 96, height: 64, borderRadius: 8, background: bg, color: fg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontWeight: 700, overflow: 'hidden' }}>
-      <div style={{ fontSize: region === 'federal' ? 17 : 20, lineHeight: 1.2 }}>{region === 'federal' ? 'IRCC' : region}</div>
-      <div style={{ fontSize: 9.5, fontWeight: 500, opacity: 0.75, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 88 }}>{region === 'federal' ? 'Canada' : newsRegionName(region)}</div>
+    <div style={{ width: 96, minWidth: 96, height: 64, borderRadius: 8, overflow: 'hidden' }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={regionImg(region)} alt="" title={IMG_CREDIT} onError={() => setDead(true)}
+        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
     </div>
   )
 }
 
-// ── 头条区:1 大 + 4 小(v4,BBC/Reuters 式;轮播退役——自动轮播是新闻站反模式,超宽屏还散架)──
+// ── 头条区:1 大 + 4 小(v4 BBC/Reuters 式布局保留;v5 大卡恢复轮播——Frank 2026-07-18「这部分
+//    应该加个轮播的功能」,推翻 v4「轮播退役」:5s 自动+圆点+箭头,hover 暂停,右列恒显其余 4 条)──
 // 高度固定(Frank:「banner 的高度应该是固定的」):图区恒 240px,标题/摘要行数截断,不随内容抖。
 // 头条图**不用抓来的 og 图**(Frank:「很多文字的图片不适合作为 banner」——政府 og 图多为文字模板图,
 // 裁剪救不回):一律省色字标底,视觉恒定;og 图只在详情页/原文里看。
@@ -86,25 +102,52 @@ function HeroImage({ s }: { s: NewsHero }) {
   return (
     <div style={{ flex: 1, minHeight: 240, position: 'relative', overflow: 'hidden' }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={`/img/regions/${s.region === 'federal' ? 'federal' : s.region.toLowerCase()}.jpg`} alt=""
+      <img src={regionImg(s.region)} alt="" title={IMG_CREDIT}
         onError={() => setDead(true)}
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(17,24,39,0) 45%, rgba(17,24,39,.55))' }} />
+      {/* 角标水印已删(Frank 2026-07-18);Commons 致谢=img title 悬停 + SOURCES.md */}
       <span style={{ position: 'absolute', left: 16, bottom: 10, color: '#fff', fontWeight: 700, fontSize: 14, letterSpacing: 1.5, textShadow: '0 1px 4px rgba(0,0,0,.6)', textTransform: 'uppercase' }}>{s.region === 'federal' ? 'Canada' : newsRegionName(s.region)}</span>
-      <span style={{ position: 'absolute', right: 12, bottom: 9, color: 'rgba(255,255,255,.55)', fontSize: 9 }}>Wikimedia Commons</span>
     </div>
   )
 }
 
 function FeaturedGrid({ t, lang, slides }: { t: TFn; lang: Lang; slides: NewsHero[] }) {
-  if (!slides.length) return null
-  const [hero, ...side] = slides
+  const [idx, setIdx] = useState(0)
+  const [paused, setPaused] = useState(false)
+  const n = slides.length
+  // 5s 自动轮播;hover 暂停;单条不轮
+  useEffect(() => {
+    if (n < 2 || paused) return
+    const id = setInterval(() => setIdx((i) => (i + 1) % n), 5000)
+    return () => clearInterval(id)
+  }, [n, paused])
+  if (!n) return null
+  const hero = slides[idx % n]
+  const side = slides.filter((_, i) => i !== idx % n).slice(0, 4)
   const aiSum = lang === 'zh' ? hero.summaryZh : lang === 'ko' ? hero.summaryKo : null
   const summary = (aiSum || hero.excerpt || '') as string
+  const arrow: React.CSSProperties = { position: 'absolute', top: '50%', transform: 'translateY(-50%)', width: 30, height: 30, borderRadius: '50%', border: 'none', background: 'rgba(17,24,39,.45)', color: '#fff', fontSize: 15, cursor: 'pointer', lineHeight: 1, zIndex: 2 }
+  const step = (d: number) => (e: React.MouseEvent) => { e.preventDefault(); setIdx((i) => (i + d + n) % n) }
   return (
     <div className="nwTop" style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 14, marginBottom: 8 }}>
-      <a href={`/news/${hero.slug}`} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 14, overflow: 'hidden', textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column' }}>
-        <HeroImage s={hero} />
+      <a href={`/news/${hero.slug}`} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
+        style={{ position: 'relative', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 14, overflow: 'hidden', textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column' }}>
+        {/* 图区包一层相对定位:箭头/圆点锚在图内,不随下方文字区高度漂移 */}
+        <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <HeroImage key={hero.slug} s={hero} />
+          {n > 1 && (<>
+            <button aria-label="prev" onClick={step(-1)} style={{ ...arrow, left: 10 }}>‹</button>
+            <button aria-label="next" onClick={step(1)} style={{ ...arrow, right: 10 }}>›</button>
+            <span style={{ position: 'absolute', left: 0, right: 0, bottom: 10, display: 'flex', justifyContent: 'center', gap: 6, zIndex: 2 }}>
+              {slides.map((s, i) => (
+                <button key={s.slug} aria-label={`slide ${i + 1}`}
+                  onClick={(e) => { e.preventDefault(); setIdx(i) }}
+                  style={{ width: 8, height: 8, borderRadius: '50%', border: 'none', padding: 0, cursor: 'pointer', background: i === idx % n ? '#fff' : 'rgba(255,255,255,.45)' }} />
+              ))}
+            </span>
+          </>)}
+        </div>
         <div style={{ padding: '14px 18px 16px' }}>
           <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', fontSize: 11.5, color: '#9ca3af', marginBottom: 6, flexWrap: 'wrap' }}>
             <span style={{ background: '#dc2626', color: '#fff', fontWeight: 700, borderRadius: 6, padding: '1px 7px', fontSize: 11 }}>{t('news.impN', { n: hero.importance ?? '' })}</span>
@@ -140,12 +183,11 @@ function FeaturedGrid({ t, lang, slides }: { t: TFn; lang: Lang; slides: NewsHer
 // ── 列表 /news(v4 头版式):页头+筛选 → 头条网格(1大+4小) → 按日分组单列时间线,全页 1100 单轨 ──
 export function NewsListView({ items, hero, cmtCounts }: { items: NewsCard[]; hero: NewsHero[]; cmtCounts: Record<string, number> }) {
   const [region, setRegion] = useState('')
-  const [impOnly, setImpOnly] = useState(false)
+  // 「只看重要」筛选已删(Frank 2026-07-18「这个去掉」);重要度徽标/头条梯队保留
   return (
     <NewsShell>{(t, lang) => {
       const present = NEWS_REGIONS.filter((r) => items.some((i) => i.region === r))
-      const hasImp = items.some((i) => (i.importance ?? 0) >= 4)
-      const shown = items.filter((i) => (!region || i.region === region) && (!impOnly || (i.importance ?? 0) >= 4))
+      const shown = items.filter((i) => !region || i.region === region)
       const byDay: [string, NewsCard[]][] = []
       for (const n of shown) {
         const last = byDay[byDay.length - 1]
@@ -161,16 +203,16 @@ export function NewsListView({ items, hero, cmtCounts }: { items: NewsCard[]; he
         <>
           {/* v4:头条网格窄屏折单列 */}
           <style>{`@media (max-width:760px){.nwTop{grid-template-columns:1fr !important}}`}</style>
-          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '4px 1rem 32px' }}>
+          {/* 正文轨=PageShell 1320(Frank 2026-07-18 宽度统一拍板),原 1100 单轨退役 */}
+          <PageShell>
             {/* 页头=PageBanner(#65 五模块统一浅色带,动态=青;口径句已删——P1f Frank「没什么用」) */}
             <div style={{ marginTop: 16 }}><PageBanner module="news" icon={<IconNews />} title={t('news.title')} /></div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '10px 0 14px' }}>
               <button style={chip(!region)} onClick={() => setRegion('')}>{t('chart.all')}</button>
               {present.map((r) => <button key={r} style={chip(region === r)} onClick={() => setRegion(r)}>{regionLabel(t, r)}</button>)}
-              {hasImp && <button style={{ ...chip(impOnly), color: impOnly ? '#fff' : '#b91c1c', borderColor: impOnly ? '#2563eb' : '#fecaca' }} title={t('news.aiScore')} onClick={() => setImpOnly(!impOnly)}>{t('news.impOnly')}</button>}
             </div>
-            {/* 头条区(v4):1 大 + 4 小,固定高;筛选态下不显(看筛选结果为主) */}
-            {!region && !impOnly && <FeaturedGrid t={t} lang={lang} slides={hero} />}
+            {/* 头条区:1 大 + 4 小(大卡轮播);筛选态下不显(看筛选结果为主) */}
+            {!region && <FeaturedGrid t={t} lang={lang} slides={hero} />}
             {!shown.length && <div style={{ color: '#9ca3af', fontSize: 13.5, marginTop: 16 }}>{t('news.empty')}</div>}
             {byDay.map(([day, rows]) => (
               <div key={day}>
@@ -200,7 +242,7 @@ export function NewsListView({ items, hero, cmtCounts }: { items: NewsCard[]; he
                 ))}
               </div>
             ))}
-          </div>
+          </PageShell>
         </>
       )
     }}</NewsShell>
@@ -309,7 +351,9 @@ export function NewsDetailView({ row, comments, loggedIn }: { row: NewsRow; comm
       const zhParas = (trans || '').split(/\n{2,}/).map((p) => p.trim()).filter(Boolean)
       const summary = sumCache[lang]
       return (
-      <div style={{ maxWidth: 860, margin: '0 auto', padding: '18px 1rem 32px' }}>
+      // 外轨=PageShell 1320(宽度统一拍板);阅读列 860 居中保行长可读
+      <PageShell pad="18px 1.25rem 32px">
+      <div style={{ maxWidth: 860, margin: '0 auto' }}>
         <div style={{ marginBottom: 12 }}><BackLink href="/news" label={t('news.back')} /></div>
         <article style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '22px 26px' }}>
           <div style={{ fontSize: 11.5, color: '#9ca3af', display: 'flex', gap: 8, alignItems: 'baseline', flexWrap: 'wrap' }}>
@@ -367,6 +411,7 @@ export function NewsDetailView({ row, comments, loggedIn }: { row: NewsRow; comm
         </article>{/* 底部深链钮已删(Frank 2026-07-18:「不需要」);找岗入口=顶栏/省页块 */}
         <CommentsSection t={t} slug={row.slug} comments={comments} loggedIn={loggedIn} />
       </div>
+      </PageShell>
       )
     }}</NewsShell>
   )

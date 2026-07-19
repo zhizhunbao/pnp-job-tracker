@@ -2063,7 +2063,8 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, news, e
         {/* 标题栏 = 拖动手柄 */}
         <div onPointerDown={startDrag} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, padding: '16px 20px 10px', cursor: full ? 'default' : 'move', userSelect: 'none', flexShrink: 0 }}>
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, letterSpacing: .3 }}><IconCompass /> {t('advisor.tag')} · {a.tag}{status === 'streaming' ? t('advisor.generating') : ''}{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400 }}> · {t('advisor.left', { n: freeLeft })}</span> : null}</div>
+            {/* 标题后不挂「思考中」后缀(Frank 2026-07-18);流式等待态由正文区「努力思考中」占位承担 */}
+            <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, letterSpacing: .3 }}><IconCompass /> {t('advisor.tag')} · {a.tag}{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400 }}> · {t('advisor.left', { n: freeLeft })}</span> : null}</div>
             <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title || a.title}</h3>
           </div>
           <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>

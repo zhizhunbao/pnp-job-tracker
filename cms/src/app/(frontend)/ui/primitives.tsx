@@ -81,6 +81,12 @@ export function PageBanner({ module, icon, title, sub, right }: { module: keyof 
   )
 }
 
+// ── PageShell(全站统一正文轨:1320 与 SiteHeader 头轨同宽——Frank 2026-07-18「每个页面的宽度应该
+//    是一样的,新的页面按这个宽度套壳」;新页面一律用它,存量页迁移随 #65 余批)────────────
+export function PageShell({ pad = '4px 1.25rem 32px', children }: { pad?: string; children: React.ReactNode }) {
+  return <div style={{ maxWidth: 1320, margin: '0 auto', padding: pad, width: '100%', boxSizing: 'border-box' }}>{children}</div>
+}
+
 // ── SectionTitle(二级标题:文字+右延细线;右槽可挂「更多 →」)──────
 export function SectionTitle({ right, children }: { right?: React.ReactNode; children: React.ReactNode }) {
   return (
