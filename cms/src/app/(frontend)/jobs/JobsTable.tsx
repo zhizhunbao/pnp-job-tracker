@@ -28,6 +28,12 @@ export type Plan = {
   profileOk: boolean
   profile: MatchProfile | null
   freeMatchCap: number
+  // #84(Frank「刷新头像闪一下?」):身份四件 SSR 直传——原客户端事后拉 /api/users/me,
+  // 拉回前 Avatar 名字为空兜底成紫「?」,每次刷新闪一下;SSR 本就认识用户,直接带下来零闪
+  email?: string | null
+  displayName?: string | null
+  avatar?: string | null
+  proUntil?: string
 }
 const FREE_PLAN: Plan = { isPro: false, loggedIn: false, profileOk: false, profile: null, freeMatchCap: 0 }
 // 中/小分类显示翻译(值仍是数据层中文,筛选/查询语义不变):cat.* 缺键退 broad.*(noc.py 兜底会把大类名当中/小类),再退原值
@@ -61,10 +67,11 @@ function UpgradeCard({ t, reason }: { t: TFn; reason: string }) {
 // 已登录=用户名 → /account + Pro 徽标(已 Pro)或 Pro 钮(开定价弹窗)。
 // ?login=1(未登录访问 /account 被弹回时带上)→ 自动开登录弹框;登录成功整页刷新让 SSR 分层态(匹配列等)生效。
 function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
-  const [email, setEmail] = useState<string | null>(null)
-  const [proUntil, setProUntil] = useState<string>('')
-  const [displayName, setDisplayName] = useState<string | null>(null)   // E11-02:下拉头昵称
-  const [avatar, setAvatar] = useState<string | null>(null)             // E11-02:头像 URL(无则首字母块)
+  // #84:身份四件以 SSR plan 为初值(刷新零闪);fetch 兜底只在 SSR 没给时跑(老调用方兼容)
+  const [email, setEmail] = useState<string | null>(plan.email ?? null)
+  const [proUntil, setProUntil] = useState<string>(plan.proUntil ?? '')
+  const [displayName, setDisplayName] = useState<string | null>(plan.displayName ?? null)   // E11-02:下拉头昵称
+  const [avatar, setAvatar] = useState<string | null>(plan.avatar ?? null)                  // E11-02:头像 URL(无则首字母块)
   const [auth, setAuth] = useState<false | 'login' | 'register' | 'reset'>(false)
   const [resetTok, setResetTok] = useState('')   // E3-07:邮件链接 ?reset=<token> 落地
   const [pricing, setPricing] = useState(false)
@@ -78,10 +85,10 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
     return () => document.removeEventListener('mousedown', h)
   }, [menu])
   useEffect(() => {
-    if (!plan.loggedIn) return
+    if (!plan.loggedIn || plan.email != null) return   // #84:SSR 已给身份则不再拉(拉回前的紫「?」闪烁根因)
     fetch('/api/users/me', { credentials: 'include' })
       .then((r) => r.json()).then((d) => { setEmail(d?.user?.email ?? null); setProUntil((d?.user?.proUntil || '').slice(0, 10)); setDisplayName(d?.user?.displayName ?? null); setAvatar(d?.user?.avatar ?? null) }).catch(() => {})
-  }, [plan.loggedIn])
+  }, [plan.loggedIn, plan.email])
   useEffect(() => {
     // 开框后立刻把 ?login=1 / ?reset= 从地址栏洗掉(第 15 轮用户反馈:留着参数,刷新就再弹一次)
     try {

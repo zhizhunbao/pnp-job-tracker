@@ -90,6 +90,11 @@ export default async function JobsPage() {
     profileOk,
     profile: profileOk ? profile : null,   // 本人档案(弹框端重算依据链用)
     freeMatchCap: FREE_MATCH_JOBS_PER_DAY,
+    // #84:身份四件 SSR 直传(账户钮零闪,不再等客户端 /api/users/me)
+    email: (user as any)?.email ?? null,
+    displayName: (user as any)?.displayName ?? null,
+    avatar: (user as any)?.avatar ?? null,
+    proUntil: String((user as any)?.proUntil || '').slice(0, 10),
   }
   // 推荐横幅槽位预判(2026-07-17 用户「刷新怎么后弹出来」):画像在 localStorage,SSR 画不出横幅,
   // 水合后插入会把内容整体下推(CLS)。内联脚本在首帧前同步预判「会出横幅」→ <html> 挂 recslot 类,
