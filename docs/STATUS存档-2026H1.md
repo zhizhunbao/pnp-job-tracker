@@ -250,3 +250,13 @@ cd ../cms && npm run dev                                      # 开发 :3000(库
 - **列表读用原始 SQL** 而非 payload.find(性能);Payload 仍管 schema/admin/写入。
 - 来源真相:JB 聚合 indeed/Talent → 统一显示「Job Bank」,`source` 留原始板。中介已按公司名过滤。
 - 地点:Ottawa 各社区是「区」,统一 市=Ottawa;Richmond Hill 等靠**邮编 FSA**判定(不子串撞社区名)。
+
+---
+
+## 沉档 2026-07-19:上上轮交接原文(2026-07-18 通宵 session,「移民动态之夜」)
+
+> **⚡⚡⚡⚡ 上轮交接(2026-07-18 通宵 session,「移民动态之夜」)——E12-06 全环闭合 + #65 设计系统第一批,细节见 implementation/E12/06 §10(续①~⑦)与记忆 next-session-status**
+> - **E12-06 移民动态板块 P0→P1f 一夜全清**:/news 头版式布局(1大+4小头条网格,8省+联邦 **Wikimedia 真实地标头图**)+AI 重要度徽标(5分红「重要」)+**三语实时懒翻译/速读**(朋友的 qwen 服务 ngrok+key,编号对位协议保段对段对齐,DB 缓存全站共享,API 费归零)+**评论区**(登录可评→Frank admin 审核 approved 公开)+统一返回钮/评论数脚标。四次 DDL 全 Frank 亲跑(news 表/excerpt+重要度/comments+韩语列/summary_en)。**新防线两道**:seed 对 news 改 slug upsert(懒缓存列不清——每小时抹缓存 bug 实撞断根)/schema 容错查询(缺列自动降级——**10 分钟 404 事故**教训:改列代码 push 前必须实查 information_schema 列已落位)。
+> - **#65 前端 primitives 库第一批**:`(frontend)/ui/primitives.tsx`(tokens+Button/Chip/Tag/PageBanner/SectionTitle,设计总表 docs/assets/mockups/)+**header 全站合一**(/jobs 内联头退役,SiteHeader 唯一,1320 头轨,Pro 钮全删出 header)+五模块浅色页头(jobs蓝/pathways紫/rank金/stats绿/news青)+双蓝条合一(ValueBanner 退役,建档 CTA 进 Jobs 页头右槽)。五页生产实拍验收过(docs/assets/mockups/65-验收-*.png)。**余批**=jobs 筛选区/账户 Sidebar/弹框头(#65 余批任务)。
+> - **运维新惯例**:翻译类走本地模型(局域网 qwen3.6 / 朋友公网 API);ETL 预翻停用(NEWS_TRANSLATE_BUDGET=0),只留新条目重要度打分;**评论审核=Frank 新日常**(admin→Community→comments→approved;2026-07-19 #95 评论区暂藏后此日常暂停);效果图/验收图一律存 docs/assets/mockups(Frank 看不到聊天内嵌图);生产 DDL=Frank 终端亲跑;不用 PowerShell。
+> - **下轮队列(当时)**:#65 余批 → 快刀四件(#56/58/60/62A)→ 改版批(#59/57/63/64)→ B4 实体名录最小版 → C6 政策时间线;发帖开闸(Frank,/news 板块=现成卖点)。

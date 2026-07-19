@@ -3,7 +3,17 @@
 > 新 session 接手先读这份 + `CLAUDE.md`(设计宪法)+ `prd.md`(v2 定位见头部标注)。仓库:github.com/zhizhunbao/pnp-job-tracker
 > **🚀 站点已公网上线并真实收款:https://pnp-cms.onrender.com**(Render + Supabase;**live Stripe,M3 已开闸**)。批次进度=`docs/implementation/_开发批次顺序.md`:**B0-B8 全部落地(2026-07-04 一天从 B4 打到 B8),24 工作项代码侧全完**。
 >
-> **⚡⚡⚡⚡⚡ 最新交接(2026-07-18 晚 session,「快刀+news 批之夜」)——第 21 轮快刀四件 + news 晚批六件,当晚全部生产闭环**
+> **⚡⚡⚡⚡⚡ 最新交接(2026-07-19 日间→晚 session,「收口与漏斗日」)——15+ commit 全部生产闭环**
+> - **反馈快刀四件**:#87 操作列瘦身(公司信息钮=公司格同弹框纯重复删;职位描述并进职位格点击,桌面+手机双端,MIN_W 238→92)/#92 清除筛选同时摘 URL 深链参(?q/prov/broad/mid——否则刷新回潮)/#94 头条轮播图定高 300(根因 flex:1 弹性吃文字行数差;文字区 minHeight:176 吸收,5 张实测图恒 300 卡恒 478)/E11-03 遗留 oauth=fail 三语可见提示(读参→err 红框→replaceState 摘参)。
+> - **#88 统计三级下钻**:省→大类→NOC 中类→职位板(Frank「统计=选行业选地区的概率指导」);stats 表加 mid 列(Frank 授权代跑 DDL)+ETL 119→530 行+loadStats 缺列 42703 容错+L1 无中类优雅降级;**#88b 末级/降级一律新标签页开职位板**(Frank「点击钻取不要跳转」)。**时序教训记档**:ETL 盒挂载工作区=脚本改动即时生效,旧 seed 会把中类行当大类行插(全国求和翻倍)——发射闸默认关、DDL+新 seed 齐了再翻,是必须的部署保护;测试期一版 530 行 stats.json 被盒轮搬进生产短时污染,自愈。
+> - **付费分层立案+D1-D3 当日拍板落地**([免费付费分层设计-20260719](docs/免费付费分层设计-20260719.md):三原则=事实层免费结论层收费/初体验不设闸/广度免费深度收费;现状盘点=大盘已合拍):**D1 保存筛选降免费**(登录即存,免费 2/Pro 5,触上限才弹升级框;**APIError 教训**:collection hook 裸 throw Error 被 Payload 打码成 Something went wrong,前端分支要靠 `throw new APIError(msg,400)` 透传)/D2 排除不担保筛=免费零改动/D3 多雇主对比=Pro 排 E11-07 后。
+> - **E11-07 简历上传解析全环闭合(付费漏斗顶)**:wizard 第 1 步上传块(可跳过/失败回退手填)→ /api/resume(pdf-parse v2/mammoth 内存解析,原件不落盘)→ llm.ts 新增 completeText 双后端(线上 Anthropic Haiku/本地 Ollama)→ NOC 候选=**在库职位 title pg_trgm 匹配**(真实岗位用语贴简历,比官方类名准)+IELTS→CLB 官方对照;免费 5 次/日。本地+生产双终验:合成双职业简历 21232/31301 精准命中+CLB 9;边界(坏 PDF/未登录/短文本)全优雅回退。**真实简历实测待 Frank**。
+> - **#93 关键路径功能走查(Frank 选 A:先走查再转化)**:生产 24 项全过**零缺陷**——主链(注册→建档+简历→匹配→收藏→保存筛选→JD→顾问→升级→Stripe 结账页)+手机三项+EN/한 抽核+9 页冒烟;两处假阴性复核洗清(保存筛选=脚本 dialog 竞态/手机星标=点中已收藏岗的正确取消)。
+> - **#95 不完美功能关闭批(Frank「不完美的也先关闭」,全开关式亮回条件在代码注释)**:①邮件承诺文案三语降级+周报开关暂藏(**Resend 测试模式发不出外部邮箱,承诺兑现不了**;亮回=域名邮箱+首封真发)②「学校名录(规划中)」灰项摘(B4 二期再挂)③news 评论区暂藏(COMMENTS_ON=false,后端原样)④한 钮暂藏(机翻无人校对;词典留,已选 ko 用户可切走)。保留:简历上传/EE 节奏卡。
+> - **冷启动弹药**:小红书封面 4 版出图(docs/assets/xhs/:A 数字海报/B 痛点/C 移民信号/D 引用体故事钩,**推荐 D 当封面 A 当第 2 张**,发布后编辑换图不掉流量);记档 #89 雇主榜已有待互链/#90 媒体新闻源候选(版权红线:只能标题外链)/#91 顾问本地模型(触发条件=月账单>$20,分层路由:匿名走本地/含档案留 Anthropic——隐私红线)。
+> - **下轮队列**:价值时刻显性化(5 点清单已给 Frank 待批:匹配锁 FOMO 数字/薪资弹窗 Pro 提示/lockTip 具体化/顾问 402 文案审/compare 空态)→ D3 多雇主对比文档 → E6-06 职位类型筛选;**07-22 观察窗复盘**(umami 漏斗访客→注册→建档→触闸,数据重排队列);Frank 亲手项见上。零真实注册=现阶段第一瓶颈在流量不在功能(用户表 10 个号全是测试/自有)。
+>
+> **⚡⚡⚡⚡ 上轮交接(2026-07-18 晚 session,「快刀+news 批之夜」)——第 21 轮快刀四件 + news 晚批六件,当晚全部生产闭环**
 > - **快刀四件 ✅ 生产闭环(e5fdea1)**:#62A 我的收藏独立入口(账户 favs 节+顶栏下拉,SavedJobsList 加 favs 变体)/#58 档案·wizard 省份 chips 三语全名(i18n 新 `pr.*` 键,码存幕后)/#56 字段钮挪薪资行最右(直发独立收尾行)/#60 stats 常见图表恒 2×2 等宽(min420 auto-fit 治 3+1 空白)。生产 playwright 八项断言全绿,验收图 docs/assets/mockups/。
 > - **news 晚批六件 ✅ 生产闭环(0731f6f,#67-#72)**:**PageShell 公共宽度轨上线**(primitives,1320 与头轨同宽——Frank「每个页面宽度应该一样」拍板;/news 列表+详情已套,**存量页迁移归 #65 余批**)/「只看重要」删/列表小色块换省地标真图(96×64 cover,缺图退色块)/头条大卡恢复轮播(5s 自动+圆点+箭头+hover 暂停,推翻 v4 退役)/AI 顾问标题「思考中」后缀删/图片水印删(CC 致谢挪 img title+SOURCES.md)。生产三态实测:点击切换/自动轮播/hover 暂停。**探针教训记档:生产 SSR style 序列化无空格(`font-size:19px`),dev 带空格——playwright style 选择器别带空格,俩假阴性查了三轮。**
 > - **改版批四件当晚也全闭环(Frank「可以」批效果图后)**:#59 筛选区=常用一行(搜索/省/大类/PNP/年薪)+更多筛选折叠(计数徽标,窄屏抽屉退役,3f6150c)/#63 账户下拉 Supabase 风(求职/管理分区+通栏实心升级钮+退出置底,3f6150c)/#64 定价三卡 v3(90 天「更划算·省 32%」动态徽标+每天单价+f2 拆三行,PricingCard 弹窗页面同源,d2332d5)/#57 图表两级下钻+面包屑(末级=职位板深链 /?prov=&broad=,eaa01d4)。全部生产复验过,验收图 mockups/。
@@ -26,10 +36,4 @@
 > - **📉 token 节约=常驻惯例(Frank 拍板,记忆 token-economy)**:STATUS 头部 25k→4k(07-16 前沉档 docs/STATUS存档-2026H1.md,以后只留最近两轮);大文件片段读/验证优先文本断言截图按需/命令输出过滤/长任务拆 session/机械批量活可换便宜模型。
 > - **下轮队列(付费透镜序)**:E11-07 简历上传立项(建档转化杠杆)→ C6 二期(EE 抽选历史入库+节奏喂 match/提醒)→ 公共 DataTable 组件(先设计文档:简单表统一 primitives,jobs 主表吃 token 不并组件)→ B4 二期(LMIA 全量 7.5 万名录/学校名录/佣金制标签);多雇主对比=Pro 候选;微信群/朋友圈/Reddit 发布+盯小红书评论区(Frank);**72h 观察窗:umami/注册/评论痛点喂价值账→数据重排队列**。
 >
-> **⚡⚡⚡⚡ 上轮交接(2026-07-18 通宵 session,「移民动态之夜」)——E12-06 全环闭合 + #65 设计系统第一批,细节见 implementation/E12/06 §10(续①~⑦)与记忆 next-session-status**
-> - **E12-06 移民动态板块 P0→P1f 一夜全清**:/news 头版式布局(1大+4小头条网格,8省+联邦 **Wikimedia 真实地标头图**)+AI 重要度徽标(5分红「重要」)+**三语实时懒翻译/速读**(朋友的 qwen 服务 ngrok+key,编号对位协议保段对段对齐,DB 缓存全站共享,API 费归零)+**评论区**(登录可评→Frank admin 审核 approved 公开)+统一返回钮/评论数脚标。四次 DDL 全 Frank 亲跑(news 表/excerpt+重要度/comments+韩语列/summary_en)。**新防线两道**:seed 对 news 改 slug upsert(懒缓存列不清——每小时抹缓存 bug 实撞断根)/schema 容错查询(缺列自动降级——**10 分钟 404 事故**教训:改列代码 push 前必须实查 information_schema 列已落位)。
-> - **#65 前端 primitives 库第一批**:`(frontend)/ui/primitives.tsx`(tokens+Button/Chip/Tag/PageBanner/SectionTitle,设计总表 docs/assets/mockups/)+**header 全站合一**(/jobs 内联头退役,SiteHeader 唯一,1320 头轨,Pro 钮全删出 header)+五模块浅色页头(jobs蓝/pathways紫/rank金/stats绿/news青)+双蓝条合一(ValueBanner 退役,建档 CTA 进 Jobs 页头右槽)。五页生产实拍验收过(docs/assets/mockups/65-验收-*.png)。**余批**=jobs 筛选区/账户 Sidebar/弹框头(#65 余批任务)。
-> - **运维新惯例**:翻译类走本地模型(局域网 qwen3.6 / 朋友公网 API);ETL 预翻停用(NEWS_TRANSLATE_BUDGET=0),只留新条目重要度打分;**评论审核=Frank 新日常**(admin→Community→comments→approved);效果图/验收图一律存 docs/assets/mockups(Frank 看不到聊天内嵌图);生产 DDL=Frank 终端亲跑;不用 PowerShell。
-> - **下轮队列**:#65 余批 → 快刀四件(#56/58/60/62A)→ 改版批(#59/57/63/64)→ B4 实体名录最小版 → C6 政策时间线;发帖开闸(Frank,/news 板块=现成卖点)。
->
-> **📦 更早交接(2026-07-16 及以前)已沉档** → [docs/STATUS存档-2026H1.md](docs/STATUS存档-2026H1.md)(2026-07-19 瘦身:STATUS 头部是每 session 固定 token 大头,只留最近两轮)。
+> **📦 更早交接(2026-07-18 通宵「移民动态之夜」及以前)已沉档** → [docs/STATUS存档-2026H1.md](docs/STATUS存档-2026H1.md)(只留最近两轮惯例)。
