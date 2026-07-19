@@ -1,9 +1,21 @@
 'use client'
-// 登录/注册共享表单 + 弹框(E3-02;B6 视觉翻新:分段切换 + 聚焦态 + 品牌头)。
+// 登录/注册共享表单 + 弹框(E3-02;#54 改版 2026-07-19:careerbeacon 骨架——大标题文案+社交钮在上+
+// 「或用邮箱」分隔+单列表单+底部切换,分段 tab 退役;Google 钮 env 门控(NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+// E11-03 后端凭据到位并实测后才配 env → 钮自动亮,只上 Google 一枚,LinkedIn/FB 不做)。
 // 全走 Payload 自带 REST(httpOnly cookie),特权字段由 Users collection 字段级锁保护。
 import { useState } from 'react'
 import type { TFn } from './i18n'
 import { Modal } from './Modal'
+
+const GOOGLE_ON = !!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
+const GoogleG = () => (
+  <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden style={{ verticalAlign: '-0.155em' }}>
+    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+  </svg>
+)
 
 const inputS: React.CSSProperties = {
   width: '100%', boxSizing: 'border-box', padding: '10px 12px', fontSize: 14,
@@ -90,33 +102,28 @@ export function AuthForm({ t, onDone, initialMode, resetToken }: { t: TFn; onDon
     } catch { setErr(t('acct.err.generic')) } finally { setBusy(false) }
   }
 
-  const seg = (m: 'login' | 'register', label: string) => (
-    <button type="button" onClick={() => { setMode(m); setErr('') }}
-      style={{
-        flex: 1, padding: '8px 0', fontSize: 13.5, fontWeight: 600, cursor: 'pointer', border: 'none', borderRadius: 8,
-        background: mode === m ? '#fff' : 'transparent', color: mode === m ? '#1d4ed8' : '#6b7280',
-        boxShadow: mode === m ? '0 1px 4px rgba(0,0,0,.08)' : 'none', transition: 'all .15s',
-      }}>
-      {label}
-    </button>
-  )
-
   return (
     <div>
       <style>{`.authIn:focus{border-color:#3b82f6 !important;background:#fff !important;box-shadow:0 0 0 3px rgba(59,130,246,.12)}`}</style>
-      {/* 品牌头 */}
-      <div style={{ textAlign: 'center', marginBottom: 18 }}>
-        <div style={{ fontSize: 30, lineHeight: 1 }}>🍁</div>
-        <div style={{ fontSize: 16.5, fontWeight: 700, color: '#111827', marginTop: 6 }}>Offer2PR</div>
-        <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 3 }}>{t('tagline')}</div>
+      {/* 品牌头(拍板保留:登录弹框=品牌触点)+ 大标题文案(#54:careerbeacon 式价值前置) */}
+      <div style={{ textAlign: 'center', marginBottom: 14 }}>
+        <div style={{ fontSize: 26, lineHeight: 1 }}>🍁</div>
+        <div style={{ fontSize: 14, fontWeight: 700, color: '#111827', marginTop: 4 }}>Offer2PR</div>
       </div>
-      {/* 登录/注册 分段切换(找回/重置态不显示) */}
-      {(mode === 'login' || mode === 'register') && (
-        <div style={{ display: 'flex', gap: 4, background: '#f3f4f6', borderRadius: 10, padding: 4, marginBottom: 16 }}>
-          {seg('login', t('acct.login'))}
-          {seg('register', t('acct.register'))}
+      {(mode === 'login' || mode === 'register') && (<>
+        <div style={{ fontSize: 17, fontWeight: 700, color: '#111827', textAlign: 'center', lineHeight: 1.4, marginBottom: 16 }}>
+          {t(mode === 'login' ? 'acct.hero.login' : 'acct.hero.reg')}
         </div>
-      )}
+        {/* 社交在上(#54 骨架):Google 一枚,env 未配(后端未上线)不渲染 */}
+        {GOOGLE_ON && (<>
+          <a href="/api/auth/google" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', boxSizing: 'border-box', padding: '10px 0', fontSize: 14, fontWeight: 600, color: '#374151', background: '#fff', border: '1.5px solid #e5e7eb', borderRadius: 9, textDecoration: 'none' }}>
+            <GoogleG /> {t('acct.google')}
+          </a>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '14px 0', color: '#9ca3af', fontSize: 11.5 }}>
+            <span style={{ flex: 1, height: 1, background: '#e5e7eb' }} />{t('acct.orEmail')}<span style={{ flex: 1, height: 1, background: '#e5e7eb' }} />
+          </div>
+        </>)}
+      </>)}
       {mode === 'reset' && <div style={{ fontSize: 14.5, fontWeight: 600, color: '#111827', marginBottom: 14, textAlign: 'center' }}>{t('acct.resetTitle')}</div>}
       {mode === 'forgot' && sent ? (
         <div>
@@ -161,10 +168,16 @@ export function AuthForm({ t, onDone, initialMode, resetToken }: { t: TFn; onDon
         </button>
       </form>
       )}
-      {/* 页脚:登录态=「忘记密码?」入口;找回/重置态=返回登录 */}
+      {/* 页脚:登录↔注册切换(#54:底部单行取代分段 tab)+ 忘记密码;找回/重置态=返回登录 */}
+      {(mode === 'login' || mode === 'register') && (
+        <button type="button" onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setErr('') }}
+          style={{ display: 'block', margin: '14px auto 0', border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: '#2563eb', fontWeight: 600, cursor: 'pointer' }}>
+          {t(mode === 'login' ? 'acct.toReg' : 'acct.toLogin')}
+        </button>
+      )}
       {mode === 'login' && (
         <button type="button" onClick={() => { setMode('forgot'); setErr('') }}
-          style={{ display: 'block', margin: '14px auto 0', border: 'none', background: 'none', padding: 0, fontSize: 11.5, color: '#9ca3af', cursor: 'pointer', textDecoration: 'underline' }}>
+          style={{ display: 'block', margin: '10px auto 0', border: 'none', background: 'none', padding: 0, fontSize: 11.5, color: '#9ca3af', cursor: 'pointer', textDecoration: 'underline' }}>
           {t('acct.forgot')}
         </button>
       )}
