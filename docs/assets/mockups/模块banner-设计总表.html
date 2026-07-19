@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>模块 Banner 设计总表 · 图片/轮播/信息/尺寸规范</title>
+<style>
+  body { font-family: system-ui, sans-serif; background: #f3f4f6; color: #1f2937; margin: 0; padding: 28px; }
+  h1 { font-size: 18px; } h2 { font-size: 15px; margin: 26px 0 6px; }
+  .note { font-size: 12.5px; color: #6b7280; margin: 4px 0 12px; line-height: 1.7; }
+  .banner { position: relative; max-width: 1280px; height: 150px; border-radius: 12px; overflow: hidden; margin-bottom: 6px; }
+  .banner img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .shade { position: absolute; inset: 0; }
+  .fg { position: relative; z-index: 2; height: 100%; display: flex; align-items: center; gap: 28px; padding: 0 28px; color: #fff; }
+  .fg h3 { font-size: 20px; margin: 0; text-shadow: 0 1px 6px rgba(0,0,0,.5); }
+  .fg .sub { font-size: 12.5px; opacity: .85; text-shadow: 0 1px 4px rgba(0,0,0,.5); margin-top: 3px; }
+  .stat { text-align: center; text-shadow: 0 1px 4px rgba(0,0,0,.6); }
+  .stat b { display: block; font-size: 19px; }
+  .stat span { font-size: 11px; opacity: .8; }
+  .cta { margin-left: auto; background: rgba(255,255,255,.92); color: #1d4ed8; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 700; white-space: nowrap; }
+  .dots { position: absolute; right: 14px; bottom: 8px; z-index: 2; display: flex; gap: 5px; }
+  .dots i { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.45); }
+  .dots i.on { background: #fff; }
+  table { border-collapse: collapse; font-size: 12.5px; background: #fff; }
+  th, td { border: 1px solid #e5e7eb; padding: 7px 10px; text-align: left; vertical-align: top; }
+  th { background: #f9fafb; }
+  code { background: #eef2ff; border-radius: 4px; padding: 0 4px; font-size: 12px; }
+</style>
+</head>
+<body>
+<h1>模块 Banner 设计总表(2026-07-19)—— 图片怎么找 / 怎么轮 / 放什么信息 / 尺寸规范</h1>
+<div class="note">
+核心原则四条:<b>① 宽高全固定</b>(banner 桌面恒 150px 高、1320 轨内全宽;手机 110px;所有图 object-fit:cover 中心裁剪,不随内容抖)——你问的「宽高应该固定吧」:对,全站图片位一律定框裁图,已定框的:news 头条图区 240px、列表缩略 96×64,banner 加入 150px 一档;
+<b>② 两类轮播分清</b>:A类=内容轮播(news 头条那种,图+文一起换,5s+箭头+圆点+hover 暂停,已上线);B类=氛围背景轮播(四模块 banner 用,只有背景图 crossfade 淡换,前景信息恒定不动,8s 慢速、无箭头、右下小圆点,信息永远可读);
+<b>③ 图片来源只用 Wikimedia Commons 实景</b>(续 /news 惯例:Special:FilePath 1200px 缩略下载 → 裁成 1280×300 存 cms/public/img/banners/,SOURCES.md 记出处,致谢挂 img title;不外链、不用抓来的文字图——文字图教训);
+<b>④ 信息=模块名+一句定位+2-3 个实时数字+右槽 CTA</b>(数字全部来自页面现有 SSR 数据,零新查询);缺图/加载失败自动退现浅色渐变带(现 PageBanner 即兜底态,零风险上线。)
+</div>
+
+<h2>① Jobs(蓝)—— 图:加拿大城市天际线组(多伦多/温哥华/卡尔加里轮换)</h2>
+<div class="banner">
+  <img src="https://offer2pr.com/img/regions/on.jpg" alt="">
+  <div class="shade" style="background:linear-gradient(90deg,rgba(30,64,175,.82),rgba(30,64,175,.45) 55%,rgba(17,24,39,.25))"></div>
+  <div class="fg">
+    <div><h3>Jobs</h3><div class="sub">每日更新 · 全加拿大全职业 · 官方公开数据</div></div>
+    <div class="stat"><b>32,934</b><span>在招职位</span></div>
+    <div class="stat"><b>723</b><span>命中省提名清单</span></div>
+    <div class="stat"><b>3,790</b><span>雇主有外劳记录</span></div>
+    <span class="cta">◎ 免费建档案,看匹配度 →</span>
+  </div>
+  <div class="dots"><i class="on"></i><i></i><i></i></div>
+</div>
+
+<h2>② 移民路径(紫)—— 图:旅程意象组(国会山/机场到达/入籍仪式场地)</h2>
+<div class="banner">
+  <img src="https://offer2pr.com/img/regions/federal.jpg" alt="">
+  <div class="shade" style="background:linear-gradient(90deg,rgba(91,33,182,.82),rgba(91,33,182,.45) 55%,rgba(17,24,39,.25))"></div>
+  <div class="fg">
+    <div><h3>移民路径</h3><div class="sub">从工作到 PR 怎么走 · 全部官方出处 · 非移民建议</div></div>
+    <div class="stat"><b>4</b><span>条路径方案</span></div>
+    <div class="stat"><b>295</b><span>PGWP 认可院校</span></div>
+    <span class="cta">建档看哪条适合我 →</span>
+  </div>
+  <div class="dots"><i class="on"></i><i></i><i></i></div>
+</div>
+
+<h2>③ 榜单(金)—— 图:职场/成就意象组(CN塔日景/班夫/工地吊车)</h2>
+<div class="banner">
+  <img src="https://offer2pr.com/img/regions/ab.jpg" alt="">
+  <div class="shade" style="background:linear-gradient(90deg,rgba(146,64,14,.82),rgba(146,64,14,.42) 55%,rgba(17,24,39,.25))"></div>
+  <div class="fg">
+    <div><h3>榜单</h3><div class="sub">每日刷新 · 高分岗与担保倾向雇主</div></div>
+    <div class="stat"><b>11</b><span>个榜单</span></div>
+    <div class="stat"><b>TOP 50</b><span>本周新增高分岗</span></div>
+    <span class="cta" style="color:#92400e">看今日分类榜 →</span>
+  </div>
+  <div class="dots"><i class="on"></i><i></i><i></i></div>
+</div>
+
+<h2>④ 地区统计(绿)—— 图:地貌全景组(梦莲湖/草原麦田/佩姬湾)</h2>
+<div class="banner">
+  <img src="https://offer2pr.com/img/regions/sk.jpg" alt="">
+  <div class="shade" style="background:linear-gradient(90deg,rgba(22,101,52,.82),rgba(22,101,52,.42) 55%,rgba(17,24,39,.25))"></div>
+  <div class="fg">
+    <div><h3>地区统计</h3><div class="sub">省 × 职业大类 · ESDC 官方中位薪资口径</div></div>
+    <div class="stat"><b>10</b><span>省全覆盖</span></div>
+    <div class="stat"><b>6</b><span>项指标</span></div>
+    <span class="cta" style="color:#166534">跨省对比(Pro)→</span>
+  </div>
+  <div class="dots"><i class="on"></i><i></i><i></i></div>
+</div>
+
+<h2>⑤ 移民动态(青)—— banner 不再放图(头条区已是 A类内容轮播,双图打架);对齐同款前景信息</h2>
+<div class="banner" style="height:110px;background:linear-gradient(100deg,#0f766e,#14b8a6)">
+  <div class="fg">
+    <div><h3>移民政策动态</h3><div class="sub">联邦 + 8 省官方发布 · AI 重要度分级 · 三语速读</div></div>
+    <div class="stat"><b>8</b><span>个官方信源</span></div>
+    <div class="stat"><b>12h</b><span>更新节奏</span></div>
+  </div>
+</div>
+
+<h2>规范表(实装口径)</h2>
+<table>
+  <tr><th>项</th><th>规范</th></tr>
+  <tr><td>尺寸</td><td>桌面:1320 轨内全宽 × <b>恒 150px</b>;手机 <b>恒 110px</b>(数字收到 2 个,CTA 换行藏);图源文件统一裁 <b>1280×300</b> 再入库,object-fit:cover 兜底</td></tr>
+  <tr><td>图片来源</td><td>Wikimedia Commons(Special:FilePath 1200px 下载→裁 1280×300→<code>cms/public/img/banners/&lt;module&gt;-1..3.jpg</code>;SOURCES.md 记出处;致谢=img title,画面无水印)。每模块 3 张起步</td></tr>
+  <tr><td>轮播(B类)</td><td>背景 crossfade 淡换,<b>8s</b>;前景文字/数字/CTA 恒定不动;右下小圆点(可点跳),无箭头;hover 暂停;<code>prefers-reduced-motion</code> 时静止首图</td></tr>
+  <tr><td>信息</td><td>模块名 + 一句定位 + 2-3 个实时数字(全取页面现有 SSR 数据,零新查询)+ 右槽 CTA(jobs=建档 / pathways=建档 / rank=今日榜 / stats=跨省对比;news 无)</td></tr>
+  <tr><td>对比度红线</td><td>模块色渐变暗化层压图(左浓右淡),文字带 text-shadow;任何图上白字对比度 ≥ 4.5:1</td></tr>
+  <tr><td>兜底</td><td>图缺/加载失败 → 退现浅色 PageBanner(现状即兜底,发布零风险);PageBanner 组件加 <code>images?</code> 可选参,不传=现状不变</td></tr>
+</table>
+
+<div class="note" style="margin-top:14px">实施顺序建议:先 jobs+news 文案态(零图可上)→ 选图裁图一次备齐 12 张 → 四模块开图。过目后回「按这个做」/「改 X」。</div>
+</body>
+</html>
