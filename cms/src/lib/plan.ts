@@ -16,8 +16,9 @@ export const PRO_COLUMNS = ['match', 'vsMedian', 'wageMedHr', 'wageMedYr'] as co
 export type ProColumn = (typeof PRO_COLUMNS)[number]
 export const isProColumn = (k: string): boolean => (PRO_COLUMNS as readonly string[]).includes(k)
 
-// Pro 保存筛选上限(E5-03)
+// 保存筛选上限(E5-03;D1 2026-07-19 拍板降免费——留存钩不设 Pro 闸,闸改在「更多保存位」:免费 2 / Pro 5)
 export const PRO_SAVED_SEARCHES = Number(process.env.PRO_SAVED_SEARCHES || 5)
+export const FREE_SAVED_SEARCHES = Number(process.env.FREE_SAVED_SEARCHES || 2)
 // 我的求职收藏上限(E9-01;免费开放,防灌爆)
 export const SAVED_JOBS_CAP = Number(process.env.SAVED_JOBS_CAP || 200)
 // 匹配版提醒:达到该 level 才进邮件(E5-03;high=规则分≥60,见 lib/match.ts)

@@ -964,11 +964,10 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               <span style={{ fontSize: 10, color: '#9ca3af' }}>{fDrawer ? '▲' : '▼'}</span>
             </button>
             {anyFilter && <button onClick={clearAll} style={{ ...ctrl, cursor: 'pointer', background: '#f3f4f6', color: '#b91c1c' }}>{t('clear')}</button>}
-            {/* 保存此筛选(E5-03):Pro 存为邮件提醒;filters=前端 state 原样(alerts 用 jobsQuery 解释) */}
+            {/* 保存此筛选(E5-03;D1 2026-07-19 降免费):登录即可存,免费 2/Pro 5——免费触上限才弹升级 */}
             {anyFilter && plan.loggedIn && (
               <button
                 onClick={async () => {
-                  if (!plan.isPro) { setUpsell('ss'); return }  // 升级走独立弹框(用户定),不再 alert+跳定价页
                   const name = window.prompt(t('ss.name'))
                   if (!name) return
                   const filters = { q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, fEmp, fElig }
@@ -976,7 +975,11 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                     method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, filters, lang }),
                   }).catch(() => null)
-                  alert(r?.ok ? t('ss.saved') : t('ss.err'))
+                  if (r?.ok) { alert(t('ss.saved')); return }
+                  let limitHit = false
+                  try { limitHit = /limit/i.test(JSON.stringify(await r?.json())) } catch { /* 非 JSON,走 generic */ }
+                  if (limitHit && !plan.isPro) setUpsell('ss')  // 免费位(2)用满 → 升级框「Pro 可存 5 个」
+                  else alert(t('ss.err'))
                 }}
                 style={{ ...ctrl, cursor: 'pointer', background: '#eef2ff', color: '#3730a3' }}>
                 <IconSave /> {t('ss.save')}
