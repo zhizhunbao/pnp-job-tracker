@@ -1034,7 +1034,16 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           </div>
         )}
         {/* 字段选择+更新时间已并入薪资筛选行右侧(2026-07-11 用户拍板「这两个放到一行」) */}
-        <div className="jtTableWrap" style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflowX: 'auto' }}>
+        {/* #83(Frank「点我的匹配先跳医疗再跳科技」):整表换血(第 0 页在拉)期间旧行原样挂着零提示,
+            视觉像跳两次——换血中表格/卡片半透明+顶部「更新中」条,数据回来再恢复 */}
+        {loading && page === 0 && (
+          <div style={{ fontSize: 12.5, color: '#2563eb', padding: '4px 2px', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ width: 10, height: 10, border: '2px solid #bfdbfe', borderTopColor: '#2563eb', borderRadius: '50%', display: 'inline-block', animation: 'jtspin .7s linear infinite' }} />
+            {t('loading')}
+            <style>{`@keyframes jtspin{to{transform:rotate(360deg)}}`}</style>
+          </div>
+        )}
+        <div className="jtTableWrap" style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflowX: 'auto', ...(loading && page === 0 && { opacity: 0.45, pointerEvents: 'none', transition: 'opacity .2s' }) }}>
           <table style={{ width: hasWidths ? totalW : '100%', minWidth: '100%', borderCollapse: 'collapse', fontSize: 13.5, tableLayout: hasWidths ? 'fixed' : 'auto' }}>
             {/* 末列宽设 auto:固定布局下吸收剩余空间,右缘始终贴齐容器,无右侧缝隙 */}
             {hasWidths && <colgroup>{shown.map((c, i) => <col key={c.key} style={{ width: i === shown.length - 1 ? 'auto' : widths[c.key] }} />)}</colgroup>}
@@ -1179,7 +1188,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         {/* 窄屏卡片列表(E8-03 续,2026-07-07 用户拍板):≤640px 表格→卡片,CSS 双渲染零水合差异(同 E8-03 抽屉手法)。
             卡=职位 / 公司·地点 / 薪资·时间 / 信号 chips;每处可点,开对应字段顾问弹窗(与桌面单元格同一 open());
             拍板:免费限额外的岗不显示匹配位(不放锁标,卡片寸土寸金);中位/渠道/NOC 码等低频字段留给弹窗。 */}
-        <div className="jtCards" style={{ flexDirection: 'column', gap: 8 }}>
+        <div className="jtCards" style={{ flexDirection: 'column', gap: 8, ...(loading && page === 0 && { opacity: 0.45, pointerEvents: 'none' }) }}>
           {rows.map((j) => {
             const open = (field: ColKey, title: string) => setPopup({ field, job: j, title })  // 与表格行同一签名
             const L = parseLoc(j)

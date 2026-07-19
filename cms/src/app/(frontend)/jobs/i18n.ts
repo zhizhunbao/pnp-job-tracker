@@ -236,6 +236,7 @@ const zh: Dict = {
   'tl.kindAll': '全部类型', 'tl.kindDraw': '抽选', 'tl.kindPolicy': '政策公告', 'tl.notice': '通告',
   'tl.min': '最低分 {n}', 'tl.notCrs': ',非 CRS', 'tl.inv': '邀请 {n} 人', 'tl.src': '官方来源 ↗',
   'tl.entry': '抽选与政策时间线 →', 'tl.empty': '没有匹配的事件',
+  'loading': '更新中…',
   // #54 登录改版(careerbeacon 骨架)
   'acct.hero.login': '欢迎回来', 'acct.hero.reg': '免费注册,看每份工作对你的匹配度',
   'acct.google': '使用 Google 继续', 'acct.orEmail': '或用邮箱',
@@ -585,6 +586,7 @@ const en: Dict = {
   'tl.kindAll': 'All types', 'tl.kindDraw': 'Draws', 'tl.kindPolicy': 'Policy', 'tl.notice': 'Notice',
   'tl.min': 'Min {n}', 'tl.notCrs': ', not CRS', 'tl.inv': '{n} invited', 'tl.src': 'Official source ↗',
   'tl.entry': 'Draws & policy timeline →', 'tl.empty': 'No matching events',
+  'loading': 'Updating…',
   'acct.hero.login': 'Welcome back', 'acct.hero.reg': 'Sign up free — see your match for every job',
   'acct.google': 'Continue with Google', 'acct.orEmail': 'or with email',
   'prof.pgwp': 'How long left on your work permit?',
@@ -929,6 +931,7 @@ const ko: Dict = {
   'tl.kindAll': '전체', 'tl.kindDraw': '추첨', 'tl.kindPolicy': '정책 공지', 'tl.notice': '공지',
   'tl.min': '최저 {n}', 'tl.notCrs': ', CRS 아님', 'tl.inv': '{n}명 초청', 'tl.src': '공식 출처 ↗',
   'tl.entry': '추첨·정책 타임라인 →', 'tl.empty': '일치하는 이벤트 없음',
+  'loading': '업데이트 중…',
   'acct.hero.login': '다시 오신 것을 환영합니다', 'acct.hero.reg': '무료 가입 — 모든 공고의 매칭도를 확인하세요',
   'acct.google': 'Google로 계속하기', 'acct.orEmail': '또는 이메일로',
   'prof.pgwp': '워크퍼밋 잔여 기간은?',
