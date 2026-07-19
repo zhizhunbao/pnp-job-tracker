@@ -240,7 +240,7 @@ export function NewsListView({ items, hero, cmtCounts }: { items: NewsCard[]; he
                       <div style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{n.title}</div>
                       {n.excerpt && <div style={{ fontSize: 12.5, color: '#6b7280', lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{n.excerpt}</div>}
                       <div style={{ display: 'flex', gap: 14, fontSize: 11.5, color: '#9ca3af', marginTop: 'auto' }}>
-                        <span>💬 {t('news.cmt.n', { n: cmtCounts[n.slug] || 0 })}</span>
+                        {COMMENTS_ON && <span>💬 {t('news.cmt.n', { n: cmtCounts[n.slug] || 0 })}</span>}
                         <span style={{ color: '#2563eb' }}>{t('news.read')}</span>
                       </div>
                     </div>
@@ -256,6 +256,8 @@ export function NewsListView({ items, hero, cmtCounts }: { items: NewsCard[]; he
 }
 
 // ── 评论区(v3 ④):登录可评 → 人工审核后显示 ─────────────────
+// 2026-07-19 Frank「不完美的功能先关闭」:零用户期空评论区+日审负担 → 整块暂藏;亮回=翻 true(后端 API/表原样保留)
+const COMMENTS_ON = false
 function CommentsSection({ t, slug, comments, loggedIn }: { t: TFn; slug: string; comments: NewsComment[]; loggedIn: boolean }) {
   const [body, setBody] = useState('')
   const [state, setState] = useState<'idle' | 'busy' | 'sent' | 'err'>('idle')
@@ -415,7 +417,7 @@ export function NewsDetailView({ row, comments, loggedIn }: { row: NewsRow; comm
             ))}
           </div>
         </article>{/* 底部深链钮已删(Frank 2026-07-18:「不需要」);找岗入口=顶栏/省页块 */}
-        <CommentsSection t={t} slug={row.slug} comments={comments} loggedIn={loggedIn} />
+        {COMMENTS_ON && <CommentsSection t={t} slug={row.slug} comments={comments} loggedIn={loggedIn} />}
       </div>
       </PageShell>
       )

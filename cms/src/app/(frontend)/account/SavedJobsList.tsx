@@ -59,7 +59,9 @@ export function SavedJobsList({ t, userId, weeklyOptOut, variant }: { t: ReturnT
           ))}
         </div>
       )}
-      {!favs && userId != null && (
+      {/* 周报开关暂藏(2026-07-19 Frank「不完美的先关」):Resend 测试模式发不了外部邮箱,承诺兑现不了;
+          域名邮箱接好+首封真发验证后把 false 删掉亮回(weeklyOptOut 字段/游标逻辑原样保留) */}
+      {false && !favs && userId != null && (
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, paddingTop: 10, borderTop: '1px solid #f3f4f6', fontSize: 12.5, color: '#6b7280', cursor: 'pointer' }}>
           <input type="checkbox" checked={!optOut} onChange={async (e) => {
             const v = !e.target.checked

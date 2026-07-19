@@ -95,7 +95,7 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
                 <span style={{ position: 'absolute', top: 'calc(100% + 6px)', left: -10, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, boxShadow: '0 10px 30px rgba(0,0,0,.12)', padding: '4px 0', zIndex: 40, minWidth: 168, display: 'block' }}>
                   <a href="/employers" style={{ display: 'block', padding: '6px 14px', fontSize: 12.5, color: '#374151', textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('dir.title')}</a>
                   <a href="/occupations" style={{ display: 'block', padding: '6px 14px', fontSize: 12.5, color: '#374151', textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('dir.occ.title')}</a>
-                  <span style={{ display: 'block', padding: '6px 14px', fontSize: 12.5, color: '#c4c9d4', whiteSpace: 'nowrap' }}>{t('nav.schoolsSoon')}</span>
+                  {/* 「学校名录(规划中)」灰项已摘(2026-07-19 Frank「不完美的先关」)——B4 二期做完再挂真链 */}
                 </span>
               )}
             </span>
