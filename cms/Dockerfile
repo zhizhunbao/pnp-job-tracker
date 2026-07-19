@@ -30,6 +30,18 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED 1
 
+# NEXT_PUBLIC_* 是 next build 编译期烤进 client 组件的;Render 对 Docker 构建只把 env 传给**声明了 ARG** 的
+# Dockerfile(2026-07-19 实锤:Google 钮 env 填了、服务端路由通、按钮就是不亮——构建期根本没拿到)。
+# 凡要进 client 组件的 NEXT_PUBLIC 变量都得在这登记 ARG+ENV,否则静默用代码里的回退值。
+ARG NEXT_PUBLIC_GOOGLE_CLIENT_ID
+ARG NEXT_PUBLIC_PRICE_DISPLAY
+ARG NEXT_PUBLIC_SITE_URL
+ARG NEXT_PUBLIC_SUPPORT_EMAIL
+ENV NEXT_PUBLIC_GOOGLE_CLIENT_ID=$NEXT_PUBLIC_GOOGLE_CLIENT_ID \
+    NEXT_PUBLIC_PRICE_DISPLAY=$NEXT_PUBLIC_PRICE_DISPLAY \
+    NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL \
+    NEXT_PUBLIC_SUPPORT_EMAIL=$NEXT_PUBLIC_SUPPORT_EMAIL
+
 RUN \
   if [ -f yarn.lock ]; then yarn run build; \
   elif [ -f package-lock.json ]; then npm run build; \
