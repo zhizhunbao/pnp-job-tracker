@@ -28,6 +28,14 @@ const SEARCH_COLS = ['j.title', 'j.city', 'j.district', 'j.noc', 'j.source_label
 
 export type JobsWhere = { sql: string; params: unknown[]; skipped: string[] }
 
+/** q 搜索公司名分支预解析:不限 LIMIT 保语义等价(全量 2 万公司的极端泛词也就 ~2 万 int,ANY 哈希扛得住) */
+export async function resolveQCompanyIds(pool: any, filters: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const q = typeof filters.q === 'string' ? filters.q.trim() : ''
+  if (!q) return filters
+  const { rows } = await pool.query(`SELECT id FROM companies WHERE name ILIKE $1`, [`%${q}%`])   // 不转义:与 jobs 侧 ILIKE 分支同口径
+  return { ...filters, qCompanyIds: rows.map((r: any) => Number(r.id)) }
+}
+
 // 契约:返回 { sql(条件串,无 WHERE 前缀,空=TRUE), params, skipped };startIndex=占位符起始($N)。
 export function buildJobsWhere(filters: Record<string, unknown>, startIndex = 1): JobsWhere {
   const conds: string[] = []
@@ -40,7 +48,13 @@ export function buildJobsWhere(filters: Record<string, unknown>, startIndex = 1)
   if (s('q')) {
     const ph = param(`%${s('q')}%`)
     const cols = s('q').length <= 2 ? [...SEARCH_COLS, 'j.province'] : SEARCH_COLS
-    conds.push(`(${cols.map((c) => `${c} ILIKE ${ph}`).join(' OR ')} OR j.company_id IN (SELECT id FROM companies WHERE name ILIKE ${ph}))`)
+    const branches = cols.map((c) => `${c} ILIKE ${ph}`)
+    // 公司名分支:qCompanyIds=调用方经 resolveQCompanyIds 预查(companies trgm 索引,ms 级)——
+    // `= ANY(数组)` 才能与 trgm 分支一起进位图 OR;IN(子查询) 计划期不可索引,整个 OR 退化全表扫(EXPLAIN 实锤)。
+    const ids = filters.qCompanyIds
+    if (Array.isArray(ids)) { if (ids.length) branches.push(`j.company_id = ANY(${param(ids)})`) }
+    else branches.push(`j.company_id IN (SELECT id FROM companies WHERE name ILIKE ${ph})`)   // 未预查回退(语义同,慢)
+    conds.push(`(${branches.join(' OR ')})`)
   }
 
   if (s('company')) conds.push(`c.name = ${param(s('company'))}`)   // 精确公司名(advisor「同公司在榜岗」用)
@@ -250,7 +264,7 @@ let updCache: { v: string; ts: number } | null = null
 export async function fetchJobsPage(
   pool: any, { pro, profile, profileOk, matchDims, filters, sort, page, pageSize }: JobsPageOpts,
 ): Promise<{ jobs: JobRow[]; total: number; updatedAt: string }> {
-  const w = buildJobsWhere(filters, 1)
+  const w = buildJobsWhere(await resolveQCompanyIds(pool, filters), 1)
   const order = orderByClause(sort?.key, sort?.dir, pro)
   const limPh = `$${w.params.length + 1}`, offPh = `$${w.params.length + 2}`
   const now = Date.now()
@@ -364,7 +378,7 @@ export type AlertHit = { title: string; city: string; province: string; salary_t
 
 /** 邮件提醒命中查询(E5-03):某条保存筛选自 since 起的新岗(status=open ∩ first_seen>since ∩ filters)。原在 alerts/run 裸 SQL,收编于此。 */
 export async function fetchAlertHits(pool: any, filters: Record<string, unknown>, since: string): Promise<{ rows: AlertHit[]; skipped: string[] }> {
-  const w = buildJobsWhere(filters, 2)   // $1 留给 since
+  const w = buildJobsWhere(await resolveQCompanyIds(pool, filters), 2)   // $1 留给 since
   const { rows } = await pool.query(
     `SELECT j.title, j.city, j.province, j.salary_text, j.apply_url, c.name AS company_name
      ${JOB_FROM}
