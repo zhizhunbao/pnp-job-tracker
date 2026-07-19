@@ -2,7 +2,7 @@
 // 分型分叉 onboarding wizard(E11-05 ②,§2.5 分叉 + §3.4 零打字 + §7 触点)。
 // 弹框·首访自动弹:登录后无档案首次到 /jobs 弹一次(可关/不再弹);横幅「建档案」也手动开。
 // 一步一问、零打字点选(复用 account/profileOptions)、每项可跳过、进度可见、价值前置;末步保存→整页跳 ?view=match 让 SSR 亮匹配。
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { TFn } from './i18n'
 import { Modal } from './Modal'
 import { hasProfile, normalizeProfile, type MatchProfile } from '@/lib/match'
@@ -48,6 +48,26 @@ export function OnboardingWizard({ t, initial, onClose }: { t: TFn; initial: Mat
   const [pgwp, setPgwp] = useState<number | null>(seed.pgwpMonthsLeft)
   const [step, setStep] = useState(0)
   const [saving, setSaving] = useState(false)
+  // E11-07 简历上传:解析结果=预填建议(NOC 候选进 noc 步供挑选,CLB 直接预选),不静默入库
+  const fileRef = useRef<HTMLInputElement | null>(null)
+  const [resumeState, setResumeState] = useState<'' | 'busy' | 'done' | 'fail' | 'scan' | 'limit'>('')
+  const [resumeNocs, setResumeNocs] = useState<{ noc: string; title: string }[]>([])
+
+  const uploadResume = async (f: File) => {
+    setResumeState('busy')
+    try {
+      const fd = new FormData()
+      fd.append('file', f)
+      const r = await fetch('/api/resume', { method: 'POST', credentials: 'include', body: fd })
+      if (!r.ok) { setResumeState(r.status === 429 ? 'limit' : r.status === 422 ? 'scan' : 'fail'); return }
+      const d = await r.json()
+      const cands: { noc: string; title: string }[] = Array.isArray(d?.nocCandidates) ? d.nocCandidates : []
+      setResumeNocs(cands)
+      if (cands.length) setNocs((prev) => [...new Set([...prev, ...cands.slice(0, 2).map((c) => c.noc)])])  // 预选前 2,可随手取消
+      if (typeof d?.clb === 'number') setClb(d.clb)
+      setResumeState('done')
+    } catch { setResumeState('fail') }
+  }
 
   useEffect(() => {
     fetch('/api/users/me', { credentials: 'include' })
@@ -93,12 +113,40 @@ export function OnboardingWizard({ t, initial, onClose }: { t: TFn; initial: Mat
   )
 
   const body = () => {
-    if (cur === 'status') return (
+    if (cur === 'status') return (<>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
         {STATUS_SLUGS.map((s) => <button key={s} type="button" onClick={() => setStatus(status === s ? '' : s)} style={chip(status === s)}>{t(`prof.st.${s}`)}</button>)}
       </div>
-    )
+      {/* E11-07:上传简历自动预填(可跳过;失败回退手填不阻断) */}
+      <div style={{ marginTop: 16, padding: '10px 12px', border: '1.5px dashed #c7d2fe', borderRadius: 9, background: '#f8faff' }}>
+        <input ref={fileRef} type="file" accept=".pdf,.docx" style={{ display: 'none' }}
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadResume(f); e.target.value = '' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <button type="button" disabled={resumeState === 'busy'} onClick={() => fileRef.current?.click()}
+            style={{ border: 'none', background: '#4f46e5', color: '#fff', borderRadius: 7, padding: '7px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: resumeState === 'busy' ? 0.6 : 1 }}>
+            {t('ob.resume.btn')}
+          </button>
+          <span style={{ fontSize: 12, color: '#6b7280' }}>
+            {resumeState === 'busy' ? t('ob.resume.busy')
+              : resumeState === 'done' ? <span style={{ color: '#047857' }}>{t('ob.resume.done', { n: resumeNocs.length })}</span>
+              : resumeState === 'scan' ? <span style={{ color: '#b45309' }}>{t('ob.resume.scan')}</span>
+              : resumeState === 'limit' ? <span style={{ color: '#b45309' }}>{t('ob.resume.limit')}</span>
+              : resumeState === 'fail' ? <span style={{ color: '#b45309' }}>{t('ob.resume.fail')}</span>
+              : t('ob.resume.hint')}
+          </span>
+        </div>
+      </div>
+    </>)
     if (cur === 'noc') return (<>
+      {resumeNocs.length > 0 && (<>
+        <div style={{ fontSize: 12, color: '#4f46e5', marginTop: 8 }}>{t('ob.resume.from')}</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+          {resumeNocs.map((c) => {
+            const on = nocs.includes(c.noc)
+            return <button key={c.noc} type="button" onClick={() => (on ? setNocs(nocs.filter((x) => x !== c.noc)) : setNocs([...nocs, c.noc]))} style={chip(on)}>{c.title || c.noc} <span style={{ color: '#9ca3af' }}>{c.noc}</span></button>
+          })}
+        </div>
+      </>)}
       <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 8 }}>{t('prof.jobPopular')}</div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
         {POPULAR_NOCS.map((p) => {
@@ -145,7 +193,8 @@ export function OnboardingWizard({ t, initial, onClose }: { t: TFn; initial: Mat
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12 }}>
           {nocs.map((c) => {
             const p = POPULAR_NOCS.find((x) => x.noc === c)
-            return <span key={c} style={{ background: '#eef2ff', color: '#3730a3', fontSize: 12.5, padding: '3px 8px', borderRadius: 6 }}>{p ? t(p.key) : c}<button onClick={() => setNocs(nocs.filter((x) => x !== c))} style={{ border: 'none', background: 'none', color: '#6366f1', cursor: 'pointer', marginLeft: 4, padding: 0, fontSize: 12.5 }}>×</button></span>
+            const rc = resumeNocs.find((x) => x.noc === c)  // 简历候选:官方英文类名回显
+            return <span key={c} style={{ background: '#eef2ff', color: '#3730a3', fontSize: 12.5, padding: '3px 8px', borderRadius: 6 }}>{p ? t(p.key) : rc?.title || c}<button onClick={() => setNocs(nocs.filter((x) => x !== c))} style={{ border: 'none', background: 'none', color: '#6366f1', cursor: 'pointer', marginLeft: 4, padding: 0, fontSize: 12.5 }}>×</button></span>
           })}
         </div>
       )}

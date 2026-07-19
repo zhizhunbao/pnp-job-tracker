@@ -23,6 +23,30 @@ export async function streamChat(
   return PROVIDER === 'anthropic' ? anthropicStream(messages, opts) : ollamaStream(messages, opts)
 }
 
+// ── 非流式整段补全(E11-07 简历解析用:一次调用抽结构化 JSON,不需要流)──
+export async function completeText(messages: ChatMessage[], opts: { maxTokens: number }): Promise<string> {
+  if (PROVIDER === 'anthropic') {
+    const client = new Anthropic() // ANTHROPIC_API_KEY 从 env 解析
+    const system = messages.filter((m) => m.role === 'system').map((m) => m.content).join('\n\n')
+    const turns = messages.filter((m) => m.role !== 'system') as { role: 'user' | 'assistant'; content: string }[]
+    const res = await client.messages.create({
+      model: ANTHROPIC_MODEL, max_tokens: opts.maxTokens,
+      ...(system ? { system } : {}), messages: turns,
+    }).catch((e) => { throw new LlmError(`云模型错误:${e instanceof Error ? e.message : e}`) })
+    if (res.stop_reason === 'refusal') throw new LlmError('模型拒绝了本次请求')
+    return res.content.filter((b: any) => b.type === 'text').map((b: any) => b.text).join('')
+  }
+  let r: Response
+  try {
+    r = await fetch(`${OLLAMA_URL}/api/chat`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: OLLAMA_MODEL, think: false, stream: false, messages, options: { temperature: 0.2, num_predict: opts.maxTokens } }),
+    })
+  } catch { throw new LlmError('无法连接本地大模型(Ollama),请确认服务在线。') }
+  if (!r.ok) throw new LlmError(`大模型返回错误(${r.status})。`)
+  return (await r.json())?.message?.content ?? ''
+}
+
 // ── Ollama:NDJSON /api/chat → 文本增量 ──
 async function ollamaStream(messages: ChatMessage[], opts: { maxTokens: number }): Promise<ReadableStream<Uint8Array>> {
   let upstream: Response
