@@ -71,6 +71,7 @@ const zh: Dict = {
   'sj.title': '我的求职', 'sj.note': '收藏职位、跟踪投递进度;只存在你的账户里。', 'sj.empty': '还没有收藏的职位——在职位板点「☆ 收藏」。',
   'sj.st.wish': '想投', 'sj.st.applied': '已投', 'sj.st.interview': '面试中', 'sj.st.offer': '拿到 offer',
   'sj.save': '☆ 收藏', 'sj.saved': '★ 已收藏', 'sj.view': '在职位板查看 →', 'sj.del': '移除', 'sj.weekly': '每周邮件摘要(收藏岗动态,可随时退订)',
+  'fav.title': '我的收藏', 'fav.note': '收藏过的职位都在这里;要跟踪投递进度去「我的求职」。',
   'rec.prefix': '根据你最近浏览:', 'rec.geoPrefix': '你所在的地区:', 'rec.cta': '看这些岗({n})', 'rec.cta0': '看这些岗 →', 'rec.build': '建档案精确匹配 →', 'rec.seeAll': '看全部 {n} 个匹配岗 →', 'rec.notInterested': '不感兴趣',
   // 大分类(数据值→显示)
   'broad.管理': '管理', 'broad.商务': '商务', 'broad.科技': '科技', 'broad.医疗': '医疗', 'broad.教育': '教育',
@@ -204,6 +205,9 @@ const zh: Dict = {
   'prof.crsCalc.no': '还没算过', 'prof.crsCalc.yes': '算过',
   'prof.crsOpt.lt400': '不到 400', 'prof.crsOpt.r400': '400–450', 'prof.crsOpt.r450': '450–500', 'prof.crsOpt.r500': '500 以上',
   'prof.prov': '你想去哪个省?(可多选)',
+  // 省全名(#58 零黑话:chips 显示全名,码存幕后)
+  'pr.ON': '安大略', 'pr.BC': '不列颠哥伦比亚', 'pr.AB': '阿尔伯塔', 'pr.SK': '萨斯喀彻温', 'pr.MB': '曼尼托巴',
+  'pr.QC': '魁北克', 'pr.NS': '新斯科舍', 'pr.NB': '新不伦瑞克', 'pr.NL': '纽芬兰与拉布拉多', 'pr.PE': '爱德华王子岛',
   'prof.pgwp': '工签还剩多久?',
   'prof.pgwpOpt.lt6': '不到 6 个月', 'prof.pgwpOpt.6to12': '6–12 个月', 'prof.pgwpOpt.1to2': '1–2 年', 'prof.pgwpOpt.unsure': '不清楚',
   'prof.save': '保存档案',
@@ -360,6 +364,7 @@ const en: Dict = {
   'sj.title': 'My applications', 'sj.note': 'Save jobs and track your application progress; stored only in your account.', 'sj.empty': 'No saved jobs yet — hit “☆ Save” on the job board.',
   'sj.st.wish': 'To apply', 'sj.st.applied': 'Applied', 'sj.st.interview': 'Interviewing', 'sj.st.offer': 'Offer',
   'sj.save': '☆ Save', 'sj.saved': '★ Saved', 'sj.view': 'View on board →', 'sj.del': 'Remove', 'sj.weekly': 'Weekly email digest (saved jobs; unsubscribe anytime)',
+  'fav.title': 'My saved jobs', 'fav.note': 'Every job you starred lives here; track applications under “My applications”.',
   'rec.prefix': 'Based on your recent browsing: ', 'rec.geoPrefix': 'Jobs near you: ', 'rec.cta': 'See these jobs ({n})', 'rec.cta0': 'See these jobs →', 'rec.build': 'Build a profile for exact matching →', 'rec.seeAll': 'See all {n} matches →', 'rec.notInterested': 'Not interested',
   'broad.管理': 'Management', 'broad.商务': 'Business', 'broad.科技': 'Tech', 'broad.医疗': 'Health', 'broad.教育': 'Education',
   // NOC 中/小分类(数据值=etl/noc.py 中文;与大类同名的值走 broad.* 回退,不重复)
@@ -516,6 +521,8 @@ const en: Dict = {
   'prof.crsCalc.no': 'Not yet', 'prof.crsCalc.yes': 'Yes',
   'prof.crsOpt.lt400': 'Under 400', 'prof.crsOpt.r400': '400–450', 'prof.crsOpt.r450': '450–500', 'prof.crsOpt.r500': '500+',
   'prof.prov': 'Which province(s)?',
+  'pr.ON': 'Ontario', 'pr.BC': 'British Columbia', 'pr.AB': 'Alberta', 'pr.SK': 'Saskatchewan', 'pr.MB': 'Manitoba',
+  'pr.QC': 'Quebec', 'pr.NS': 'Nova Scotia', 'pr.NB': 'New Brunswick', 'pr.NL': 'Newfoundland and Labrador', 'pr.PE': 'Prince Edward Island',
   'prof.pgwp': 'How long left on your work permit?',
   'prof.pgwpOpt.lt6': 'Under 6 months', 'prof.pgwpOpt.6to12': '6–12 months', 'prof.pgwpOpt.1to2': '1–2 years', 'prof.pgwpOpt.unsure': 'Not sure',
   'prof.save': 'Save profile',
@@ -669,6 +676,7 @@ const ko: Dict = {
   'sj.title': '내 지원 현황', 'sj.note': '공고를 저장하고 지원 진행 상황을 추적하세요; 계정에만 저장됩니다.', 'sj.empty': '저장한 공고가 없습니다 — 공고 보드에서 「☆ 저장」을 누르세요.',
   'sj.st.wish': '지원 예정', 'sj.st.applied': '지원함', 'sj.st.interview': '면접 중', 'sj.st.offer': '오퍼 받음',
   'sj.save': '☆ 저장', 'sj.saved': '★ 저장됨', 'sj.view': '보드에서 보기 →', 'sj.del': '삭제', 'sj.weekly': '주간 이메일 요약(저장 공고, 언제든 해지)',
+  'fav.title': '내 저장 공고', 'fav.note': '저장한 공고가 모두 여기에 있습니다; 지원 진행은 「내 지원 현황」에서 추적하세요.',
   'rec.prefix': '최근 본 공고 기준: ', 'rec.geoPrefix': '내 지역: ', 'rec.cta': '이 공고 보기 ({n})', 'rec.cta0': '이 공고 보기 →', 'rec.build': '프로필 만들고 정확 매칭 →', 'rec.seeAll': '전체 {n}개 매칭 보기 →', 'rec.notInterested': '관심 없음',
   'broad.管理': '관리', 'broad.商务': '비즈니스', 'broad.科技': '기술', 'broad.医疗': '의료', 'broad.教育': '교육',
   // NOC 中/小分类(数据值=etl/noc.py 中文;与大类同名的值走 broad.* 回退,不重复)
@@ -825,6 +833,8 @@ const ko: Dict = {
   'prof.crsCalc.no': '아직', 'prof.crsCalc.yes': '계산함',
   'prof.crsOpt.lt400': '400 미만', 'prof.crsOpt.r400': '400–450', 'prof.crsOpt.r450': '450–500', 'prof.crsOpt.r500': '500 이상',
   'prof.prov': '어느 주로 가고 싶으세요?',
+  'pr.ON': '온타리오', 'pr.BC': '브리티시컬럼비아', 'pr.AB': '앨버타', 'pr.SK': '서스캐처원', 'pr.MB': '매니토바',
+  'pr.QC': '퀘벡', 'pr.NS': '노바스코샤', 'pr.NB': '뉴브런즈윅', 'pr.NL': '뉴펀들랜드 래브라도', 'pr.PE': '프린스에드워드아일랜드',
   'prof.pgwp': '워크퍼밋 잔여 기간은?',
   'prof.pgwpOpt.lt6': '6개월 미만', 'prof.pgwpOpt.6to12': '6–12개월', 'prof.pgwpOpt.1to2': '1–2년', 'prof.pgwpOpt.unsure': '모름',
   'prof.save': '프로필 저장',

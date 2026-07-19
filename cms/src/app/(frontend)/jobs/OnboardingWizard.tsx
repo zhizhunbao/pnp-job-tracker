@@ -118,7 +118,8 @@ export function OnboardingWizard({ t, initial, onClose }: { t: TFn; initial: Mat
     </>)
     if (cur === 'prov') return (
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
-        {PROVS.map((p) => { const on = provs.includes(p); return <button key={p} type="button" onClick={() => setProvs(on ? provs.filter((x) => x !== p) : [...provs, p])} style={chip(on)}>{p}</button> })}
+        {/* #58 零黑话:chip 显示省全名(三语),值仍存两字码 */}
+        {PROVS.map((p) => { const on = provs.includes(p); return <button key={p} type="button" onClick={() => setProvs(on ? provs.filter((x) => x !== p) : [...provs, p])} style={chip(on)}>{t('pr.' + p)}</button> })}
       </div>
     )
     // pgwp

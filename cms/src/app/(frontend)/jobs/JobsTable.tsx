@@ -134,6 +134,7 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
               {/* 求职向条目(深链到账户页各节;去论坛化,不放积分/消息/主页) */}
               <a href="/?view=match" style={menuItem}><IconTarget /> {t('mv.entry')}</a>
               <a href="/pathways" style={menuItem}><IconCompass /> {t('pw.entry')}</a>
+              <a href="/account?sec=favs" style={menuItem}>{t('fav.title')}</a>
               <a href="/account?sec=sjobs" style={menuItem}>{t('sj.title')}</a>
               <a href="/account?sec=profile" style={menuItem}>{t('prof.title')}</a>
               <a href="/account?sec=saved" style={menuItem}>{t('ss.title')}</a>
@@ -957,20 +958,15 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           </div>
           {/* ═══ 薪资行(2026-07-16 用户拍板「更多筛选去掉,只保留薪资」:折叠开关与来源/状态/经验/评分四组全部下架,
               #40/a4ecf5c 的折叠史被本次取代;state 保留=老保存筛选(邮件提醒)继续生效);右侧=更新时间+字段(同行拍板) ═══ */}
+          {/* #56(2026-07-18 用户批「放到最右边和薪资放到一行」,取代 07-17 靠左拍板):
+              更新时间+字段钮挂薪资行最右;仅雇主直发单独收尾行 */}
           <div style={filtRow}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
               <span style={filtLabel}>{t('filter.salary')}</span>
               <Sel value={fSal} onChange={setFSal} opts={['ge100', '80', '60', 'u60']} all={t('all.sal')} labelOf={(v) => t('sal.' + v)} />
               <Sel value={fVs} onChange={setFVs} opts={['above', 'above20', 'below']} all={t('all.vs')} labelOf={(v) => t('vs.' + v)} />
             </span>
-          </div>
-          {/* 仅雇主直发 + 更新时间/字段(2026-07-17「放到最下面」+「放一起」):三者靠左成一组,读作一条工具带
-              (原 marginLeft:auto 把更新+字段甩到最右→两端分裂、右侧空白孤悬,与「放一起」相反,用户看后拍板改靠左) */}
-          <div style={filtRow}>
-            <label style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', background: directOnly ? '#eef2ff' : '#fff', whiteSpace: 'nowrap' }} title={t('directOnly.tip')}>
-              <input type="checkbox" checked={directOnly} onChange={(e) => setDirectOnly(e.target.checked)} />{t('directOnly')}
-            </label>
-            <div ref={colRef} className="jtHideNarrow" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div ref={colRef} className="jtHideNarrow" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 10, marginLeft: 'auto' }}>
               {updatedAt && <span style={{ color: '#9ca3af', fontSize: 12, whiteSpace: 'nowrap' }}>{t('updated', { t: fmtLocal(updatedAt) })}</span>}
               <button onClick={() => setColOpen((o) => !o)} style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', background: '#f3f4f6', whiteSpace: 'nowrap' }}><IconSettings style={{ marginRight: 5 }} />{t('fields', { n: shown.length })}</button>
               {colOpen && (
@@ -991,6 +987,12 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                 </div>
               )}
             </div>
+          </div>
+          {/* 仅雇主直发:收尾行(#56 后字段钮上移薪资行,本行只剩这一件) */}
+          <div style={filtRow}>
+            <label style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', background: directOnly ? '#eef2ff' : '#fff', whiteSpace: 'nowrap' }} title={t('directOnly.tip')}>
+              <input type="checkbox" checked={directOnly} onChange={(e) => setDirectOnly(e.target.checked)} />{t('directOnly')}
+            </label>
           </div>
           </div>
           {/* 行4:搜索 + 清除 */}

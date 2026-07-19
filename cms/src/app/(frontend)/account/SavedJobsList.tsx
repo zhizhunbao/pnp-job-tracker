@@ -1,13 +1,15 @@
 'use client'
 // 我的求职(E9-01 最小求职看板):收藏岗位列表 + 状态下拉(想投/已投/面试中/offer)+ 移除。
 // 数据=Payload REST /api/saved-jobs(access 本人);title/company 用快照,岗位下架后仍可读。
+// #62A:variant='favs' = 「我的收藏」独立节——同一份收藏数据的纯列表视图(无状态下拉/周报开关)。
 import { useEffect, useState } from 'react'
 import type { makeT } from '../jobs/i18n'
 
 type Row = { id: number | string; title?: string; company?: string; status?: string }
 const STATUSES = ['wish', 'applied', 'interview', 'offer'] as const
 
-export function SavedJobsList({ t, userId, weeklyOptOut }: { t: ReturnType<typeof makeT>; userId?: number | string; weeklyOptOut?: boolean }) {
+export function SavedJobsList({ t, userId, weeklyOptOut, variant }: { t: ReturnType<typeof makeT>; userId?: number | string; weeklyOptOut?: boolean; variant?: 'favs' }) {
+  const favs = variant === 'favs'
   const [items, setItems] = useState<Row[] | null>(null)
   const [optOut, setOptOut] = useState(!!weeklyOptOut)   // 周报开关(E9-02b):显示语义取反(勾=订阅)
   useEffect(() => {
@@ -29,8 +31,8 @@ export function SavedJobsList({ t, userId, weeklyOptOut }: { t: ReturnType<typeo
 
   return (
     <div>
-      <div style={{ fontSize: 13.5, fontWeight: 600, color: '#374151' }}>{t('sj.title')}</div>
-      <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>{t('sj.note')}</div>
+      <div style={{ fontSize: 13.5, fontWeight: 600, color: '#374151' }}>{t(favs ? 'fav.title' : 'sj.title')}</div>
+      <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>{t(favs ? 'fav.note' : 'sj.note')}</div>
       {items === null ? null : items.length === 0 ? (
         <div style={{ fontSize: 12.5, color: '#9ca3af', marginTop: 12 }}>{t('sj.empty')}</div>
       ) : (
@@ -46,10 +48,10 @@ export function SavedJobsList({ t, userId, weeklyOptOut }: { t: ReturnType<typeo
               </div>
               {/* #53:下拉与 × 包成不换行小组,窄屏换行时一起走(× 单飞到卡片左下角与行脱节) */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                <select value={x.status || 'wish'} onChange={(e) => setStatus(x.id, e.target.value)}
+                {!favs && <select value={x.status || 'wish'} onChange={(e) => setStatus(x.id, e.target.value)}
                   style={{ padding: '4px 8px', fontSize: 12.5, border: '1px solid #d1d5db', borderRadius: 6 }}>
                   {STATUSES.map((st) => <option key={st} value={st}>{t('sj.st.' + st)}</option>)}
-                </select>
+                </select>}
                 <button onClick={() => remove(x.id)} title={t('sj.del')}
                   style={{ border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 14, padding: '0 2px' }}>×</button>
               </div>
@@ -57,7 +59,7 @@ export function SavedJobsList({ t, userId, weeklyOptOut }: { t: ReturnType<typeo
           ))}
         </div>
       )}
-      {userId != null && (
+      {!favs && userId != null && (
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, paddingTop: 10, borderTop: '1px solid #f3f4f6', fontSize: 12.5, color: '#6b7280', cursor: 'pointer' }}>
           <input type="checkbox" checked={!optOut} onChange={async (e) => {
             const v = !e.target.checked

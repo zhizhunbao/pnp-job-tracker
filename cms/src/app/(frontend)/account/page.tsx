@@ -23,7 +23,7 @@ function RedirectToLogin() {
 const card: React.CSSProperties = { padding: '1.6rem 1.9rem', border: '1px solid #eef0f3', borderRadius: 16, background: '#fff', boxShadow: '0 8px 30px rgba(17,24,39,.06)' }
 const btn: React.CSSProperties = { width: '100%', padding: '10px 0', fontSize: 14, fontWeight: 600, border: 'none', borderRadius: 9, cursor: 'pointer', marginTop: 14 }
 
-type Sec = 'overview' | 'profile' | 'sjobs' | 'saved' | 'buy'
+type Sec = 'overview' | 'profile' | 'favs' | 'sjobs' | 'saved' | 'buy'
 
 export default function AccountPage() {
   const [sec, setSec] = useState<Sec>('overview')
@@ -39,10 +39,10 @@ export default function AccountPage() {
   const [buying, setBuying] = useState(false)
   const [buyErr, setBuyErr] = useState('')
   useEffect(() => { setPayOk(new URLSearchParams(window.location.search).get('ok') === '1') }, [])
-  // E11-02:账户下拉深链 ?sec=(profile/sjobs/saved/buy/overview)→ 初始落到对应节
+  // E11-02:账户下拉深链 ?sec=(profile/favs/sjobs/saved/buy/overview)→ 初始落到对应节
   useEffect(() => {
     const s = new URLSearchParams(window.location.search).get('sec')
-    if (s && ['overview', 'profile', 'sjobs', 'saved', 'buy'].includes(s)) setSec(s as Sec)
+    if (s && ['overview', 'profile', 'favs', 'sjobs', 'saved', 'buy'].includes(s)) setSec(s as Sec)
   }, [])
 
   const refresh = () => fetch('/api/users/me', { credentials: 'include' })
@@ -98,7 +98,7 @@ export default function AccountPage() {
         <div style={{ maxWidth: 860, width: '100%', margin: '2.5rem auto', display: 'flex', flexDirection: narrow ? 'column' : 'row', gap: 16, alignItems: 'flex-start', boxSizing: 'border-box', padding: '0 1rem', flex: '1 0 auto' }}>
           <aside style={{ ...card, padding: '0.7rem', width: narrow ? '100%' : 190, flexShrink: 0, display: 'flex', flexDirection: narrow ? 'row' : 'column', gap: 2, flexWrap: 'wrap', boxSizing: 'border-box' }}>
             {/* sidebar 标签复用各节标题键,裁掉括号说明(「升级 Pro(一次性时长包…)」进侧栏太长) */}
-            {([['overview', t('acct.title')], ['profile', t('prof.title')], ['sjobs', t('sj.title')], ['saved', t('ss.title')], ['buy', t('acct.buyTitle')]] as [Sec, string][]).map(([k, label]) => (
+            {([['overview', t('acct.title')], ['profile', t('prof.title')], ['favs', t('fav.title')], ['sjobs', t('sj.title')], ['saved', t('ss.title')], ['buy', t('acct.buyTitle')]] as [Sec, string][]).map(([k, label]) => (
               <button key={k} onClick={() => setSec(k)}
                 style={{ textAlign: 'left', padding: '8px 12px', fontSize: 13.5, border: 'none', borderRadius: 8, cursor: 'pointer', whiteSpace: 'nowrap',
                   background: sec === k ? '#eef2ff' : 'transparent', color: sec === k ? '#1d4ed8' : '#374151', fontWeight: sec === k ? 600 : 400 }}>
@@ -142,6 +142,8 @@ export default function AccountPage() {
             {/* 移民档案(E5-00):匹配层输入;key 按 id 防换号残留 */}
             {sec === 'profile' && <ProfileForm key={String(me.id)} t={t} userId={me.id} initial={me.profile ?? null} />}
             {/* 已保存筛选(E5-03):邮件提醒管理 */}
+            {/* 我的收藏(#62A):同一收藏数据的纯列表视图,独立成节 */}
+            {sec === 'favs' && <SavedJobsList t={t} variant="favs" />}
             {sec === 'sjobs' && <SavedJobsList t={t} userId={me.id} weeklyOptOut={!!(me as { weeklyOptOut?: boolean }).weeklyOptOut} />}
             {sec === 'saved' && <SavedSearchList t={t} />}
             {/* 时长包购买(E3-03):Pro 也可续买,到期日顺延 */}
