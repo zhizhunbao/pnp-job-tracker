@@ -30,63 +30,83 @@ export function PricingCard({ t, loggedIn, pro, caps, onRegister }: { t: TFn; lo
       else setBusy(false)
     } catch { setBusy(false) }
   }
-  const yes = <IconCheck />
-  const no = t('price.no')
-  const rows: [string, React.ReactNode, React.ReactNode][] = [
-    ['price.f1', yes, yes],
-    ['price.f2', yes, yes],
-    ['price.f3', t('price.firstN', { n: caps.match }), t('price.unlimited')],
-    ['price.f4', t('price.dayN', { n: caps.advisor }), t('price.fairN', { n: caps.proAdvisor })],
-    ['price.f5', t('price.dayN', { n: caps.jobtext }), t('price.unlimited')],
-    ['price.f6', no, yes],
-    ['price.f7', no, yes],
-    ['price.f8', no, yes],   // 第 2 轮 #4:实物早就有(saved search 5 条+匹配日报),货架上补摆
-    ['price.f9', no, yes],   // 第 2 轮 #4:跨省对比
-  ]
-  // 第 2 轮 #3:390px 下免费/Pro 两列共 350px 固定宽把功能名挤成逐字竖排——窄屏收窄值列、缩内边距
-  // 2026-07-17 用户「整页显示不要有滚动框」:行距/头部/CTA 区整体压缩,10 行对照表收进 85vh 一屏(768p 笔记本可容)
+  // ═══ #64 定价卡片式 v3(Supabase 参考图,效果图 v3 定稿):免费/Pro30/Pro90 三卡取代 10 行对照表。
+  // 90 天卡=「更划算·省 N%」徽标+每天单价(随 NEXT_PUBLIC_PRICE_DISPLAY 动态算,改价零代码);
+  // 「当前方案」态;清单一行只说一件事(PNP/EE/AIP 拆三行=全站通用原则);图标全 Icons.tsx SVG。
+  const num = (s: string) => parseFloat(s.replace(/[^\d.]/g, '')) || 0
+  const cur = P30.replace(/[\d.,]+.*$/, '')                       // "CA$19" → "CA$"
+  const perDay = (p: string, d: number) => `${cur}${(num(p) / d).toFixed(2)}`
+  const savePct = num(P30) > 0 ? Math.round((1 - num(P90) / 90 / (num(P30) / 30)) * 100) : 0
   const narrow = useIsNarrow()
-  const cellPad = narrow ? '8px 8px' : '5px 16px'
-  const btn: React.CSSProperties = { width: '100%', padding: '8px 0', fontSize: 14, fontWeight: 600, border: 'none', borderRadius: 8, cursor: 'pointer' }
+  const btn: React.CSSProperties = { width: '100%', padding: '8px 0', fontSize: 13.5, fontWeight: 600, border: 'none', borderRadius: 8, cursor: 'pointer' }
+  const Li = ({ dim, children }: { dim?: boolean; children: React.ReactNode }) => (
+    <li style={{ display: 'flex', gap: 7, alignItems: 'flex-start', fontSize: 12.8, color: dim ? '#6b7280' : '#374151', lineHeight: 1.55 }}>
+      <IconCheck style={{ color: '#15803d', marginTop: 4, flexShrink: 0 }} />
+      <span>{children}</span>
+    </li>
+  )
+  const cardS = (hot?: boolean): React.CSSProperties => ({
+    position: 'relative', background: '#fff', border: hot ? '1.5px solid #f59e0b' : '1px solid #e5e7eb',
+    borderRadius: 12, padding: '16px 16px 14px', display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0,
+  })
+  const priceLine = (p: string, per: string) => (
+    <div style={{ whiteSpace: 'nowrap' }}>
+      <span style={{ fontSize: 22, fontWeight: 700, color: '#111827' }}>{p}</span>
+      <span style={{ fontSize: 11.5, color: '#9ca3af' }}> {per}</span>
+    </div>
+  )
   return (
-    <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, overflow: 'hidden' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: narrow ? 12.5 : 13.5 }}>
-        <thead>
-          <tr style={{ background: '#f9fafb' }}>
-            <th style={{ textAlign: 'left', padding: cellPad, fontWeight: 600 }}></th>
-            <th style={{ padding: cellPad, fontWeight: 700, width: narrow ? 84 : 150 }}>{t('price.free')}<div style={{ fontSize: 15, marginTop: 2 }}>{t('price.freePrice')}</div></th>
-            <th style={{ padding: cellPad, fontWeight: 700, width: narrow ? 110 : 200, color: '#b45309' }}><IconStar /> {t('price.pro')}
-              {/* nowrap:窄屏下「/ 30 天」曾被拆成两行,「天」字孤行(第 3 轮 #13) */}
-              <div style={{ fontSize: 15, marginTop: 2, color: '#111827', whiteSpace: 'nowrap' }}>{P30} <span style={{ fontSize: 11.5, color: '#9ca3af', fontWeight: 400 }}>{t('price.per30')}</span> · {P90} <span style={{ fontSize: 11.5, color: '#9ca3af', fontWeight: 400 }}>{t('price.per90')}</span></div>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map(([k, f, p]) => (
-            <tr key={k} style={{ borderTop: '1px solid #f3f4f6' }}>
-              <td style={{ padding: cellPad, color: '#374151', wordBreak: 'keep-all', lineHeight: 1.35 }}>{t(k)}</td>
-              <td style={{ padding: cellPad, textAlign: 'center', color: f === no ? '#d1d5db' : '#4b5563', lineHeight: 1.35 }}>{f}</td>
-              <td style={{ padding: cellPad, textAlign: 'center', color: '#15803d', fontWeight: 500, lineHeight: 1.35 }}>{p}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div style={{ padding: '10px 16px 12px', borderTop: '1px solid #f3f4f6' }}>
-        {pro ? (
-          <a href="/account" style={{ ...btn, display: 'block', textAlign: 'center', background: '#fef3c7', color: '#92400e', textDecoration: 'none' }}><IconStar /> {t('price.cta.acct')}</a>
-        ) : loggedIn ? (
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={() => buy('30')} disabled={busy} style={{ ...btn, background: '#2563eb', color: '#fff', opacity: busy ? 0.6 : 1 }}>{t('price.cta.buy30')} · {P30}</button>
-            <button onClick={() => buy('90')} disabled={busy} style={{ ...btn, background: '#1d4ed8', color: '#fff', opacity: busy ? 0.6 : 1 }}>{t('price.cta.buy90')} · {P90}</button>
-          </div>
-        ) : (
-          <button onClick={onRegister} style={{ ...btn, background: '#2563eb', color: '#fff' }}>{t('price.cta.reg')}</button>
-        )}
-        {/* 价值锚(第 5 轮 #18):v2 定位对标顾问咨询费,货架上要说出来;措辞循红线(不构成建议) */}
-        <div style={{ fontSize: 11.5, color: '#78716c', marginTop: 7, textAlign: 'center', lineHeight: 1.4 }}>{t('price.anchor')}</div>
-        <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4, textAlign: 'center', lineHeight: 1.4 }}>
-          {t('price.note')} <a href="/legal/terms" target="_blank" rel="noreferrer" style={{ color: '#6b7280' }}>{t('foot.terms')}</a>
+    <div>
+      <div style={{ display: 'grid', gridTemplateColumns: narrow ? '1fr' : 'repeat(3, 1fr)', gap: 12 }}>
+        {/* 免费卡 */}
+        <div style={cardS()}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: '#374151' }}>{t('price.free')}</div>
+          {priceLine(t('price.freePrice'), '')}
+          <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
+            <Li>{t('price.f1')}</Li>
+            <Li>{t('price.f2a')}</Li>
+            <Li>{t('price.f2b')}</Li>
+            <Li>{t('price.f2c')}</Li>
+            <Li>{t('price.f3')} · {t('price.firstN', { n: caps.match })}</Li>
+            <Li>{t('price.f4')} · {t('price.dayN', { n: caps.advisor })}</Li>
+            <Li>{t('price.f5')} · {t('price.dayN', { n: caps.jobtext })}</Li>
+          </ul>
+          {pro ? <div style={{ ...btn, textAlign: 'center', background: '#f9fafb', color: '#d1d5db', cursor: 'default' }}>—</div>
+            : loggedIn ? <div style={{ ...btn, textAlign: 'center', background: '#f3f4f6', color: '#6b7280', cursor: 'default' }}><IconCheck /> {t('price.cur')}</div>
+            : <button onClick={onRegister} style={{ ...btn, background: '#fff', color: '#2563eb', border: '1px solid #bfdbfe' }}>{t('price.regFree')}</button>}
         </div>
+        {/* Pro 30 天卡 */}
+        <div style={cardS()}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: '#b45309' }}><IconStar /> {t('price.pro')} · 30</div>
+          {priceLine(P30, `${t('price.per30')} · ${t('price.perDay', { v: perDay(P30, 30) })}`)}
+          <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
+            <Li dim>{t('price.plusFree')}</Li>
+            <Li>{t('price.f3')} · {t('price.unlimited')}</Li>
+            <Li>{t('price.f4')} · {t('price.fairN', { n: caps.proAdvisor })}</Li>
+            <Li>{t('price.f5')} · {t('price.unlimited')}</Li>
+            <Li>{t('price.f6')}</Li>
+            <Li>{t('price.f7')}</Li>
+            <Li>{t('price.f8')}</Li>
+            <Li>{t('price.f9')}</Li>
+          </ul>
+          <button onClick={() => buy('30')} disabled={busy} style={{ ...btn, background: '#2563eb', color: '#fff', opacity: busy ? 0.6 : 1 }}>{t('price.cta.buy30')} · {P30}</button>
+        </div>
+        {/* Pro 90 天卡(更划算) */}
+        <div style={cardS(true)}>
+          <span style={{ position: 'absolute', top: -10, right: 12, background: '#f59e0b', color: '#fff', borderRadius: 999, padding: '2px 10px', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap' }}>{t('price.save', { p: savePct })}</span>
+          <div style={{ fontSize: 14, fontWeight: 700, color: '#b45309' }}><IconStar /> {t('price.pro')} · 90</div>
+          {priceLine(P90, `${t('price.per90')} · ${t('price.perDay', { v: perDay(P90, 90) })}`)}
+          <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
+            <Li dim>{t('price.same90')}</Li>
+          </ul>
+          <button onClick={() => buy('90')} disabled={busy} style={{ ...btn, background: '#b45309', color: '#fff', opacity: busy ? 0.6 : 1 }}>{t('price.cta.buy90')} · {P90}</button>
+        </div>
+      </div>
+      {/* 价值锚(第 5 轮 #18):v2 定位对标顾问咨询费;措辞循红线(不构成建议) */}
+      <div style={{ fontSize: 11.5, color: '#78716c', marginTop: 10, textAlign: 'center', lineHeight: 1.4 }}>{t('price.anchor')}</div>
+      <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4, textAlign: 'center', lineHeight: 1.4 }}>
+        {t('price.note')} <a href="/legal/terms" target="_blank" rel="noreferrer" style={{ color: '#6b7280' }}>{t('foot.terms')}</a>
+        {pro && <>{' · '}<a href="/account" style={{ color: '#92400e' }}>{t('price.cta.acct')}</a></>}
       </div>
     </div>
   )
