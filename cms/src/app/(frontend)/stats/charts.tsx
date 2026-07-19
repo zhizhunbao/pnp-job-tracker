@@ -120,9 +120,9 @@ function DrillCard({ rows, t, title, kind, metric, money, broadLabel }: {
     const { prov, broad } = provBroad()
     return byMid(rows, metric, prov, broad, t)
   }, [rows, metric, kind, path]) // eslint-disable-line react-hooks/exhaustive-deps
-  const toJobs = (it: Item) => {
+  const toJobs = (it: Item) => {  // 新标签页(2026-07-19 Frank:「点击钻取的时候不要跳转到搜索页面」——统计页留在原地)
     const { prov, broad } = provBroad()
-    window.location.href = `/?prov=${prov}&broad=${encodeURIComponent(broad)}&mid=${encodeURIComponent(it.key)}`
+    window.open(`/?prov=${prov}&broad=${encodeURIComponent(broad)}&mid=${encodeURIComponent(it.key)}`, '_blank', 'noopener')
   }
   return (
     <div style={cardS}>
@@ -150,10 +150,10 @@ function DrillCard({ rows, t, title, kind, metric, money, broadLabel }: {
             onBarClick={(i) => {
               const it = items[i]; if (!it) return
               if (path.length === 2) return toJobs(it)
-              if (path.length === 1) {  // L1→L2 前探一眼:该桶无中类行(列未落地/数据缺)→ 优雅降级直达职位板(老两层行为)
+              if (path.length === 1) {  // L1→L2 前探一眼:该桶无中类行(列未落地/数据缺)→ 优雅降级=新标签页开职位板(不离开统计页)
                 const pb = kind === 'prov' ? { prov: path[0].key, broad: it.key } : { prov: it.key, broad: path[0].key }
                 if (!byMid(rows, metric, pb.prov, pb.broad, t).length) {
-                  window.location.href = `/?prov=${pb.prov}&broad=${encodeURIComponent(pb.broad)}`
+                  window.open(`/?prov=${pb.prov}&broad=${encodeURIComponent(pb.broad)}`, '_blank', 'noopener')
                   return
                 }
               }
