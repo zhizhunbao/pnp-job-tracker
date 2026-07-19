@@ -6,9 +6,7 @@ import { useState } from 'react'
 import type { TFn } from './i18n'
 import { Modal } from './Modal'
 import { IconStar } from '../Icons'
-import { PricingModal } from './PricingModal'
-
-const [P30, P90] = (process.env.NEXT_PUBLIC_PRICE_DISPLAY || 'CA$19,CA$39').split(',').map((s) => s.trim())
+import { PricingModal, PRICE } from './PricingModal'
 
 export function UpgradeModal({ t, onClose, reason }: { t: TFn; onClose: () => void; reason?: string }) {
   const [busy, setBusy] = useState(false)
@@ -35,9 +33,17 @@ export function UpgradeModal({ t, onClose, reason }: { t: TFn; onClose: () => vo
     <Modal onClose={onClose} size="sm" z={60}>
       <div style={{ fontSize: 15.5, fontWeight: 700, color: '#92400e', paddingRight: 36 }}><IconStar /> {t('acct.buyTitle')}</div>
       {reason && <div style={{ fontSize: 13, color: '#78716c', marginTop: 8 }}>{reason}</div>}
-      <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-        <button onClick={() => buy('30')} disabled={busy} style={{ ...btn, background: '#2563eb' }}>{t('acct.buy30')} · {P30}</button>
-        <button onClick={() => buy('90')} disabled={busy} style={{ ...btn, background: '#1d4ed8' }}>{t('acct.buy90')} · {P90}</button>
+      {/* #74 随 #64 换装:90 天钮补「省 N%」徽标,两钮补每天单价(数学与 PricingCard 同源 PRICE) */}
+      <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
+        <button onClick={() => buy('30')} disabled={busy} style={{ ...btn, background: '#2563eb' }}>
+          <div>{t('acct.buy30')} · {PRICE.p30}</div>
+          <div style={{ fontSize: 11, fontWeight: 400, opacity: 0.85, marginTop: 2 }}>{t('price.perDay', { v: PRICE.perDay(PRICE.p30, 30) })}</div>
+        </button>
+        <button onClick={() => buy('90')} disabled={busy} style={{ ...btn, background: '#b45309', position: 'relative' }}>
+          <span style={{ position: 'absolute', top: -9, right: 8, background: '#f59e0b', color: '#fff', borderRadius: 999, padding: '1px 8px', fontSize: 10.5, fontWeight: 700, whiteSpace: 'nowrap' }}>{t('price.save', { p: PRICE.savePct })}</span>
+          <div>{t('acct.buy90')} · {PRICE.p90}</div>
+          <div style={{ fontSize: 11, fontWeight: 400, opacity: 0.85, marginTop: 2 }}>{t('price.perDay', { v: PRICE.perDay(PRICE.p90, 90) })}</div>
+        </button>
       </div>
       {err && <div style={{ color: '#dc2626', fontSize: 13, marginTop: 10, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '7px 10px' }}>{err}</div>}
       <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 12 }}>{t('acct.buyNote')}</div>

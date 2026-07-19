@@ -23,6 +23,11 @@ with sync_playwright() as p:
         page.screenshot(path=str(OUT / f"{name}.png"), full_page=full)
         done.append(name); print("shot:", name)
 
+    def eshot(loc, name):
+        # 元素截图(#76 纳编:特写镜头跟元素走,不再手裁坐标)
+        loc.screenshot(path=str(OUT / f"{name}.png"))
+        done.append(name); print("shot:", name)
+
     def goto_jobs():
         page.goto(BASE + "/jobs", wait_until="domcontentloaded", timeout=60000)
         page.wait_for_selector("table tbody tr", timeout=30000)
@@ -91,6 +96,27 @@ with sync_playwright() as p:
         page.keyboard.press("Escape"); page.wait_for_timeout(400)
     except Exception: traceback.print_exc()
 
+    try:
+        # #76 纳编(2026-07-19,原为 7-17 一次性脚本产物,版式/品牌过期成死图):
+        # 头轨分组特写=header 元素截图(/jobs 与二级页各一张,验 #65 全站合一)
+        goto_jobs(); close_banner()
+        eshot(page.locator("header").first, "header-groups")
+        page.goto(BASE + "/pathways", wait_until="domcontentloaded"); page.wait_for_timeout(2000)
+        eshot(page.locator("header").first, "header-groups-sub")
+    except Exception: traceback.print_exc()
+
+    try:
+        # #76 纳编:筛选区特写(#59 常用一行+更多筛选折叠)——收起素态 / 选省+展开两态
+        goto_jobs(); close_banner()
+        block = page.locator("input[placeholder]").first.locator("xpath=ancestor::div[2]")
+        eshot(block, "filters-fit")
+        page.select_option("select >> nth=0", label="Ontario")
+        mf = page.locator("button").filter(has_text=re.compile("更多筛选"))
+        if mf.count(): mf.first.evaluate("el => el.click()")
+        page.wait_for_timeout(1500)
+        eshot(block, "filters-fit-selected")
+    except Exception: traceback.print_exc()
+
     for kw, name, wait, exc in [("PNP", "pnp-modal", 12000, None), ("EE 类别", "ee-modal", 12000, "TEER"),
                                  ("外劳", "lmia-modal", 12000, None), ("评分", "score-modal", 10000, None)]:
         try:
@@ -108,11 +134,21 @@ with sync_playwright() as p:
     for url, name in [("/pricing", "pricing"), ("/stats", "stats-index"), ("/stats/ab", "stats-province"),
                       ("/stats/compare", "stats-compare"), ("/rankings/weekly-top", "rank-weekly"),
                       ("/rankings/sponsor-likely", "rank-sponsor"),
-                      ("/rankings/daily-top", "rank-daily")]:
+                      ("/rankings/daily-top", "rank-daily"),
+                      ("/news", "news")]:            # #76:news 模块镜头补编(E12-06 上线后一直缺)
         try:
             page.goto(BASE + url, wait_until="domcontentloaded"); page.wait_for_timeout(2500)
             shot(name, full=True)                  # 图4/21/22/11/19/20/24
         except Exception: traceback.print_exc()
+
+    try:
+        # #76:news 详情页镜头(三语懒翻译/速读/评论区都在详情;点头版第一条)
+        page.goto(BASE + "/news", wait_until="domcontentloaded"); page.wait_for_timeout(2500)
+        a = page.locator("a[href*='/news/']").first
+        if a.count():
+            a.evaluate("el => el.click()"); page.wait_for_timeout(3000)
+            shot("news-detail", full=True)
+    except Exception: traceback.print_exc()
 
     try:
         # E9-02 推荐横幅(第 20 轮新增,图 26):先造画像(ev≥5 且省主导≥3 才显示)再重载;

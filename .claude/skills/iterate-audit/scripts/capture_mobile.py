@@ -24,6 +24,11 @@ with sync_playwright() as p:
         page.screenshot(path=str(OUT / f"{name}.png"), full_page=full)
         done.append(name); print("shot:", name)
 
+    def eshot(loc, name):
+        # 元素截图(#76 纳编:特写镜头跟元素走)
+        loc.screenshot(path=str(OUT / f"{name}.png"))
+        done.append(name); print("shot:", name)
+
     def goto_jobs():
         page.goto(BASE + "/jobs", wait_until="domcontentloaded", timeout=60000)
         page.wait_for_selector("table tbody tr", state="attached", timeout=30000)
@@ -102,10 +107,17 @@ with sync_playwright() as p:
             page.wait_for_timeout(wait); shot(name)            # 图M14/M15
         except Exception: traceback.print_exc()
 
+    try:
+        # #76 纳编:手机头轨特写(元素截图,验 #65 全站合一)
+        goto_jobs(); close_banner()
+        eshot(page.locator("header").first, "header-groups")
+    except Exception: traceback.print_exc()
+
     for url, name in [("/pricing", "pricing"), ("/stats", "stats-index"), ("/stats/ab", "stats-province"),
                       ("/stats/compare", "stats-compare"), ("/rankings/weekly-top", "rank-weekly"),
                       ("/rankings/sponsor-likely", "rank-sponsor"),
-                      ("/rankings/daily-top", "rank-daily")]:
+                      ("/rankings/daily-top", "rank-daily"),
+                      ("/news", "news")]:            # #76:news 模块镜头补编
         try:
             page.goto(BASE + url, wait_until="domcontentloaded"); page.wait_for_timeout(2500)
             shot(name, full=True)                              # 图M4/M16/M17/M20/M18/M19/M21
@@ -133,6 +145,12 @@ with sync_playwright() as p:
         page.locator("button").filter(has_text=re.compile("^登录$")).last.evaluate("el => el.click()")
         page.wait_for_timeout(6000)
         print("logged in?")
+    except Exception: traceback.print_exc()
+
+    try:
+        # #52/#76 纳编:登录态卡片星标特写(卡片流标题行 ☆/★,元素截图第一张卡)
+        goto_jobs(); close_banner()
+        eshot(page.locator(".jtCards > *").first, "card-star")
     except Exception: traceback.print_exc()
 
     try:

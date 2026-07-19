@@ -790,11 +790,6 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const fineOpts = useMemo(() => uniq(nc.filter((c) => (!fBroad || c.broad === fBroad) && (!fMid || c.mid === fMid)).map((c) => c.fine)), [nc, fBroad, fMid])
   // 来源/状态/经验/评分下拉已下架(2026-07-16 拍板只留薪资);state 与谓词保留=URL/老保存筛选照常生效
   const anyFilter = q || directOnly || fCountry || fProv || fCity || fDistrict || fBroad || fMid || fFine || fTeer || fSource || fAcc || fPnp || fAip || fStatus || fOrigin || fScore || fSal || fVs || fEmp
-  // 横幅槽位联动(反 CLS):水合后按真实显隐纠正 <html> 的 recslot 类——预判错了收回空槽,关横幅/套筛选后也收回。
-  // 必须置于 anyFilter 声明之后:effect 依赖数组在渲染时求值,不能引用声明在后的 anyFilter/matchView(TDZ)。
-  useEffect(() => {
-    try { document.documentElement.classList.toggle('recslot', recs.length > 0 && !anyFilter && !matchView) } catch { /* ignore */ }
-  }, [recs, anyFilter, matchView])
   const clearAll = () => { setQ(''); setDirectOnly(false); setFCountry(''); setFProv(''); setFCity(''); setFDistrict(''); setFBroad(''); setFMid(''); setFFine(''); setFTeer(''); setFSource(''); setFAcc(''); setFPnp(''); setFAip(''); setFStatus(''); setFOrigin(''); setFScore(''); setFSal(''); setFVs(''); setFEmp('') }
 
   // ── E10-01 P3:筛选/搜索/排序/翻页全部打 /api/jobs(服务端 WHERE+分页);rows/total 来自服务端。
@@ -840,11 +835,19 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     let dead = false
     fetch('/api/jobs?' + sp.toString(), { credentials: 'include' })
       .then((x) => (x.ok ? x.json() : null))
-      .then((d) => { if (!dead && d) setRecData({ cards: d.rows || [], total: d.total || 0 }) })
-      .catch(() => {})
+      .then((d) => { if (!dead) setRecData({ cards: d?.rows || [], total: d?.total || 0 }) })
+      .catch(() => { if (!dead) setRecData({ cards: [], total: 0 }) })
     return () => { dead = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recs, anyFilter, matchView])
+  // 横幅槽位联动(反 CLS):水合后按真实显隐纠正 <html> 的 recslot 类——预判错了收回空槽,关横幅/套筛选后也收回。
+  // 必须置于 anyFilter/recData 声明之后:effect 依赖数组在渲染时求值,不能引用声明在后的变量(TDZ)。
+  // #75:纠正必须看「卡片实际可见数」——cards 拉空/全被「不感兴趣」时 section 渲染 null,只看 recs.length
+  // 会把 48px 空带永久留在页头下;recData 未回(null)期间保留占位,维持反 CLS 初衷。
+  useEffect(() => {
+    const visible = recData ? recData.cards.filter((j) => !dismissedRec.has(String(j.id))).length : 1
+    try { document.documentElement.classList.toggle('recslot', recs.length > 0 && !anyFilter && !matchView && visible > 0) } catch { /* ignore */ }
+  }, [recs, anyFilter, matchView, recData, dismissedRec])
 
   return (
     <div style={{ background: '#fff', color: '#1f2937', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column' }}>

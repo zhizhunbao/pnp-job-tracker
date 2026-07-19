@@ -13,6 +13,15 @@ export type PriceCaps = { advisor: number; jobtext: number; match: number; proAd
 export const CLIENT_CAPS: PriceCaps = { advisor: FREE_ADVISOR_TRIES, jobtext: FREE_JOBTEXT_TRIES, match: FREE_MATCH_JOBS_PER_DAY, proAdvisor: PRO_ADVISOR_DAILY }
 const [P30, P90] = (process.env.NEXT_PUBLIC_PRICE_DISPLAY || 'CA$19,CA$39').split(',').map((s) => s.trim())
 
+// #74:价格锚点数学单一来源(PricingCard 与 UpgradeModal 共用,不许 fork)
+const num = (s: string) => parseFloat(s.replace(/[^\d.]/g, '')) || 0
+const cur = P30.replace(/[\d.,]+.*$/, '')                         // "CA$19" → "CA$"
+export const PRICE = {
+  p30: P30, p90: P90,
+  perDay: (p: string, d: number) => `${cur}${(num(p) / d).toFixed(2)}`,
+  savePct: num(P30) > 0 ? Math.round((1 - num(P90) / 90 / (num(P30) / 30)) * 100) : 0,
+}
+
 /** 对照表 + CTA 三态(未登录→注册/已登录→Checkout/已 Pro→账户)。页面版与弹窗版共用。 */
 export function PricingCard({ t, loggedIn, pro, caps, onRegister }: { t: TFn; loggedIn: boolean; pro: boolean; caps: PriceCaps; onRegister: () => void }) {
   const [busy, setBusy] = useState(false)
@@ -33,10 +42,7 @@ export function PricingCard({ t, loggedIn, pro, caps, onRegister }: { t: TFn; lo
   // ═══ #64 定价卡片式 v3(Supabase 参考图,效果图 v3 定稿):免费/Pro30/Pro90 三卡取代 10 行对照表。
   // 90 天卡=「更划算·省 N%」徽标+每天单价(随 NEXT_PUBLIC_PRICE_DISPLAY 动态算,改价零代码);
   // 「当前方案」态;清单一行只说一件事(PNP/EE/AIP 拆三行=全站通用原则);图标全 Icons.tsx SVG。
-  const num = (s: string) => parseFloat(s.replace(/[^\d.]/g, '')) || 0
-  const cur = P30.replace(/[\d.,]+.*$/, '')                       // "CA$19" → "CA$"
-  const perDay = (p: string, d: number) => `${cur}${(num(p) / d).toFixed(2)}`
-  const savePct = num(P30) > 0 ? Math.round((1 - num(P90) / 90 / (num(P30) / 30)) * 100) : 0
+  const { perDay, savePct } = PRICE
   const btn: React.CSSProperties = { width: '100%', padding: '8px 0', fontSize: 13.5, fontWeight: 600, border: 'none', borderRadius: 8, cursor: 'pointer' }
   const Li = ({ dim, children }: { dim?: boolean; children: React.ReactNode }) => (
     <li style={{ display: 'flex', gap: 7, alignItems: 'flex-start', fontSize: 12.8, color: dim ? '#6b7280' : '#374151', lineHeight: 1.55 }}>
