@@ -15,7 +15,6 @@ v1 只做省级(市级后置);RNIP 待 E6 有数据再并入。
 from __future__ import annotations
 
 import json
-import os
 import statistics
 import sys
 from collections import Counter, defaultdict
@@ -52,11 +51,7 @@ def main() -> None:
             continue
         broad = j.get("broad") or "未分类"
         mid = j.get("mid") or "未分类"
-        # 发射闸(部署时序保护,过渡期后删):中类行要等 ①生产 stats 表加 mid 列(docs/sql/stats-mid.sql)
-        # ②新 seed(带 mid 白名单)上线 后才能灌——旧 seed 会把中类行当大类行插,旧前端全国求和翻倍。
-        # ETL 盒挂载本工作区=改动即时生效,默认先关;链路齐了把默认翻 "1" 再删此闸。
-        if os.environ.get("STATS_MID", "0") == "1":
-            buckets[(prov, broad, mid)].append(j)
+        buckets[(prov, broad, mid)].append(j)
         buckets[(prov, broad, "all")].append(j)
         buckets[(prov, "all", "all")].append(j)
 
