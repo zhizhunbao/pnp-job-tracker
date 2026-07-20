@@ -3,7 +3,7 @@
 > 新 session 接手先读这份 + `CLAUDE.md`(设计宪法)+ `prd.md`(v2 定位见头部标注)。仓库:github.com/zhizhunbao/pnp-job-tracker
 > **🚀 站点已公网上线并真实收款:https://pnp-cms.onrender.com**(Render + Supabase;**live Stripe,M3 已开闸**)。批次进度=`docs/implementation/_开发批次顺序.md`:**B0-B8 全部落地(2026-07-04 一天从 B4 打到 B8),24 工作项代码侧全完**。
 >
-> **⚡⚡⚡⚡⚡⚡⚡ 最新交接(2026-07-20 晚 session,「内容站骨架借鉴批」)——E8-07 A-F 六件全落地本地全绿(待部署生产复验)+ E12-08 评分设计出稿**
+> **⚡⚡⚡⚡⚡⚡⚡ 最新交接(2026-07-20 晚→深夜 session,「内容站骨架与评分日」)——#120-#125 八提交全生产:E8-07 六件(详情页/卡片流/搜索/抽屉/下拉/评论区)+#121 表卡双形态+#122 评分 1-5 档全链+#123 JD 懒抓三补+#124 统一免费池+#125 重复内容三修**
 > - **✅ #120 E8-07 内容站骨架批(Frank 看瓜站拍板「排版交互借鉴,配色不用」;七问全按推荐+三次追拍:分元素点击/侧滑抽屉/知名Tag退役)**:
 >   **A `/jobs/[id]` 独立职位详情页**(单栏 860 骨架:面包屑→meta(公司名可点开公司弹框)→chips→事实块→JD五节⇄原文+顾问初判→PNP/EE 通道节→相关职位;closed 岗 Notice+noindex;组件复用=JobsTable **只加 export 不搬代码**零回归)+ **SEO 三件**:JobPosting JSON-LD/sitemap 分片 8×5000 仅 active(**Next16 坑:sitemap id 参数是 Promise<string>,不 await 直接 NaN 打库**)/og 动态分享图(每岗 1200×630 ImageResponse,站级兜底 og 同落=I 批 og 遗留收口);JD 弹框标题栏加「打开完整页 ↗」。
 >   **B 手机卡片**(既有窄屏卡升级:职位名蓝链→详情页、公司名独立行→公司弹框、「·」杂糅清除)/**C 常驻搜索**(SiteHeader searchBar 槽:jobs 传受控输入即时筛选实测,二级页缺省 form 提交 /?q=)/**D 侧滑抽屉**(4/5 宽圆角块+资讯组二级展开)/**E hover 下拉**(NavDrop 统一 150ms 延时关+键盘通路;资料库改 hover+新增「资讯 ▾」=移民新闻+**政策时间线首获顶栏入口**;榜单/统计保持顶级 IA 未大动)。
