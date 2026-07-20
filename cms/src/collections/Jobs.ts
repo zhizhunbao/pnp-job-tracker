@@ -48,7 +48,10 @@ export const Jobs: CollectionConfig = {
       defaultValue: 'unknown',
       options: ['co-op', 'junior', 'intermediate', 'senior', 'unknown'],
     },
-    { name: 'score', type: 'number', index: true, admin: { description: '移民价值评分 0-100' } },
+    { name: 'score', type: 'number', index: true, admin: { description: '移民价值评分 0-100(E12-08 后仅作同档内排序兜底,不再对用户展示)' } },
+    // E12-08 档位(1-5,etl/grades.py 单一来源):通道档=主表「通道」列免费展示;三维明细 jsonb 走 /api/scoredetail 额度端点
+    { name: 'gradeChannel', type: 'number', index: true, admin: { description: '移民通道档 1-5(E12-08;5=省具名清单命中)' } },
+    { name: 'scoreDetail', type: 'json', admin: { description: '职位三维档明细 {channel/salary/emp:{g,v}}(拆解弹框,试用额度制)' } },
     { name: 'pnpEligible', type: 'checkbox', index: true, defaultValue: false, admin: { description: '可走雇主offer省提名(TEER0-3 或紧缺低TEER通道)' } },
     { name: 'pnpStream', type: 'text', admin: { description: '命中省提名具名通道的短标签(如「OINP 紧缺技能」),数据层 08_score 算;泛技能岗为空' } },
     { name: 'eeCategory', type: 'text', index: true, admin: { description: '联邦 Express Entry 类别抽选所属类别(医疗社服/STEM/技工…),数据层 08_score 算;与 PNP 是两条路,独立信号' } },

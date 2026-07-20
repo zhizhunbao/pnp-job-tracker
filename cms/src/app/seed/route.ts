@@ -184,15 +184,19 @@ export async function GET(req: Request) {
         lmia_positions: c.lmiaPositions, lmia_lmias: c.lmiaLmias,
         lmia_last_quarter: c.lmiaLastQuarter, lmia_streams: c.lmiaStreams,
         lmia_positions_skilled: c.lmiaPositionsSkilled,   // B4-02:技能股(High Wage/GTS/PR-only),match/名录分档用
-
+        // E12-08:担保档(药丸)+ 四维档明细(jsonb);盒过渡期缺键 → COALESCE 保旧值(GAP1 惯例)
+        sponsor_grade: c.sponsorGrade ?? null,
+        score_detail: c.scoreDetail ? JSON.stringify(c.scoreDetail) : null,
         created_at: now, updated_at: now,
       })
     }
     const companyCols = ['slug', 'name', 'website', 'website_source', 'email', 'region', 'sectors', 'address', 'description', 'source',
-      'lmia_positions', 'lmia_lmias', 'lmia_last_quarter', 'lmia_streams', 'lmia_positions_skilled', 'created_at', 'updated_at']
+      'lmia_positions', 'lmia_lmias', 'lmia_last_quarter', 'lmia_streams', 'lmia_positions_skilled', 'sponsor_grade', 'score_detail', 'created_at', 'updated_at']
     const companyUpdate = ['name', 'website', 'website_source', 'email', 'region', 'sectors', 'address', 'description', 'source',
       'lmia_positions', 'lmia_lmias', 'lmia_last_quarter', 'lmia_streams', 'lmia_positions_skilled', 'updated_at']
       .map((c) => `${c}=EXCLUDED.${c}`).join(',')
+      + ', sponsor_grade=COALESCE(EXCLUDED.sponsor_grade, companies.sponsor_grade)'
+      + ', score_detail=COALESCE(EXCLUDED.score_detail, companies.score_detail)'
     const companyId: Record<string, number> = {}
     for (const r of await insertBatch(client, 'companies', companyCols, companyRows,
       `ON CONFLICT (slug) DO UPDATE SET ${companyUpdate} RETURNING id, slug`)) companyId[r.slug] = r.id
@@ -207,16 +211,18 @@ export async function GET(req: Request) {
       'description', 'country', 'province', 'city', 'district', 'address', 'apply_url', 'official_url',
       'salary', 'salary_annual', 'salary_text', 'wage_med_hourly', 'wage_med_annual', 'wage_low_hourly',
       'wage_low_annual', 'wage_high_hourly', 'wage_high_annual', 'wage_year', 'date_posted', 'source',
-      'source_label', 'origin', 'accessibility', 'score', 'pnp_eligible', 'pnp_stream', 'ee_category', 'aip',
+      'source_label', 'origin', 'accessibility', 'score', 'grade_channel', 'score_detail', 'pnp_eligible', 'pnp_stream', 'ee_category', 'aip',
       'employment_term', 'employment_hours', 'certificates', 'education',
       'eligibility_flag', 'eligibility_quote',
       'status', 'closed_at', 'first_seen', 'last_seen', 'created_at', 'updated_at']
-    // GAP1③:预筛两列缺值(ETL 盒未拉新代码的过渡期)保留旧值不清空——COALESCE 兜底
+    // GAP1③:预筛两列缺值(ETL 盒未拉新代码的过渡期)保留旧值不清空——COALESCE 兜底;E12-08 两档列同款
     const jobUpdate = jobCols
-      .filter((c) => !['external_id', 'first_seen', 'last_seen', 'created_at', 'eligibility_flag', 'eligibility_quote'].includes(c))
+      .filter((c) => !['external_id', 'first_seen', 'last_seen', 'created_at', 'eligibility_flag', 'eligibility_quote', 'grade_channel', 'score_detail'].includes(c))
       .map((c) => `${c}=EXCLUDED.${c}`).join(',')
       + ', eligibility_flag=COALESCE(EXCLUDED.eligibility_flag, jobs.eligibility_flag)'
       + ', eligibility_quote=COALESCE(EXCLUDED.eligibility_quote, jobs.eligibility_quote)'
+      + ', grade_channel=COALESCE(EXCLUDED.grade_channel, jobs.grade_channel)'
+      + ', score_detail=COALESCE(EXCLUDED.score_detail, jobs.score_detail)'
     counts.jobs = 0
     // 逐片处理:一片 parse→映射→入库→引用释放,内存峰值=单片而非全量(27k 行整解析在 512MB 实例 OOM 实撞)
     for (const shard of martPaths('jobs')) {
@@ -236,6 +242,7 @@ export async function GET(req: Request) {
           wage_high_hourly: j.wageHighHourly, wage_high_annual: j.wageHighAnnual, wage_year: j.wageYear,
           date_posted: isoDate(j.datePosted), source: j.source, source_label: j.sourceLabel,
           origin: j.origin, accessibility: j.accessibility, score: j.score,
+          grade_channel: j.gradeChannel ?? null, score_detail: j.scoreDetail ? JSON.stringify(j.scoreDetail) : null,
           pnp_eligible: !!j.pnpEligible, pnp_stream: j.pnpStream, ee_category: j.eeCategory, aip: !!j.aip,
           // 雇佣形态+入职要求(E6-06/E6-07A);certificates 是 jsonb,pg 参数须传 JSON 字符串
           employment_term: j.employmentTerm, employment_hours: j.employmentHours,

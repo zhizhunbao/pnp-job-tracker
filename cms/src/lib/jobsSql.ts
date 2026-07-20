@@ -114,7 +114,8 @@ export function buildJobsWhere(filters: Record<string, unknown>, startIndex = 1)
 // 2026-07-18 Frank 报「字段排序不好使」修:E10 服务端化时这里只搬了 9 个 key,前端表头却全列可点,
 // 白名单外的列静默回退发布时间序=看着像坏了——按前端 COLUMNS 补齐;match 列无 SQL 语义不进白名单。
 const SORT_COLUMNS: Record<string, string> = {
-  datePosted: 'j.date_posted', score: 'j.score', salary: 'j.salary_annual', salaryYr: 'j.salary_annual',
+  // E12-08:评分列改「通道」——排序主键=通道档,orderBy tail 的 j.score DESC 兜底同档内次序
+  datePosted: 'j.date_posted', score: 'j.grade_channel', salary: 'j.salary_annual', salaryYr: 'j.salary_annual',
   lastSeen: 'j.last_seen', title: 'j.title', company: 'c.name', province: 'j.province', city: 'j.city',
   broad: 'j.broad', mid: 'j.mid', fine: 'j.fine', teer: 'j.teer', noc: 'j.noc',
   accessibility: 'j.accessibility', country: 'j.country', district: 'j.district', address: 'j.address',
@@ -148,8 +149,8 @@ export const mapEeCat = (r: any) => ({ category: r.category, label: r.label, noc
 
 const JOB_COLUMNS = `j.id, j.title, c.name AS company_name, c.address AS company_address, c.description AS company_description, c.sectors AS company_sectors,
   c.website AS company_website, c.website_source,
-  c.lmia_positions, c.lmia_lmias, c.lmia_last_quarter, c.lmia_streams, c.lmia_positions_skilled,
-  j.noc, j.category, j.teer, j.broad, j.mid, j.fine, j.accessibility, j.score, j.pnp_eligible, j.pnp_stream, j.ee_category, j.aip,
+  c.lmia_positions, c.lmia_lmias, c.lmia_last_quarter, c.lmia_streams, c.lmia_positions_skilled, c.sponsor_grade,
+  j.noc, j.category, j.teer, j.broad, j.mid, j.fine, j.accessibility, j.score, j.grade_channel, j.pnp_eligible, j.pnp_stream, j.ee_category, j.aip,
   j.employment_term, j.employment_hours, j.certificates, j.education, j.eligibility_flag, j.eligibility_quote,
   j.country, j.province, j.city, j.district, j.address, j.region,
   j.apply_url, j.official_url, j.salary, j.salary_annual, j.salary_text,
@@ -187,6 +188,9 @@ export function mapJobRow(j: any, pro: boolean, matchLevel: JobRow['match']): Jo
     fine: j.fine ?? '未分类',
     accessibility: j.accessibility ?? '',
     score: num(j.score),
+    // E12-08:通道档(1-5,主表「通道」列免费展示)+ 公司担保档(药丸);三维明细不进列表行(额度 API 专供)
+    gradeChannel: num(j.grade_channel),
+    sponsorGrade: num(j.sponsor_grade),
     pnpEligible: !!j.pnp_eligible,
     pnpStream: j.pnp_stream ?? '',
     eeCategory: j.ee_category ?? '',
@@ -307,7 +311,7 @@ export type MatchPageOpts = {
 // 匹配视图列排序取值器(第 21 轮续,Frank「排序点了 table 没变化」二报:普通视图 #73 已修,
 // 匹配视图 fetchMatchPage 一直无视 sort——命中集在 TS 内存里,这里按列取原始行值排)
 const MATCH_SORT_VAL: Record<string, (j: any) => unknown> = {
-  datePosted: (j) => iso(j.date_posted), score: (j) => num(j.score), salary: (j) => num(j.salary_annual), salaryYr: (j) => num(j.salary_annual),
+  datePosted: (j) => iso(j.date_posted), score: (j) => num(j.grade_channel), salary: (j) => num(j.salary_annual), salaryYr: (j) => num(j.salary_annual),
   lastSeen: (j) => iso(j.last_seen), title: (j) => j.title ?? '', company: (j) => j.company_name ?? '', province: (j) => j.province ?? '', city: (j) => j.city ?? '',
   broad: (j) => j.broad ?? '', mid: (j) => j.mid ?? '', fine: (j) => j.fine ?? '', teer: (j) => num(j.teer), noc: (j) => j.noc ?? '',
   accessibility: (j) => j.accessibility ?? '', country: (j) => j.country ?? '', district: (j) => j.district ?? '', address: (j) => j.address ?? '',

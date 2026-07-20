@@ -171,6 +171,8 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
 export type JobRow = {
   id: string | number
   match: 'high' | 'mid' | 'low' | 'na' | null   // 与我的匹配(E5-00,服务端算;null=未建档/免费限额外/未登录)
+  gradeChannel?: number | null   // E12-08:移民通道档 1-5(主表「通道」列,免费);明细走 /api/scoredetail 额度
+  sponsorGrade?: number | null   // E12-08:公司担保档 1-5(公司名旁药丸;null=无记录不评)
   title: string
   company: string
   companyDescription: string
@@ -248,7 +250,7 @@ const colorOf = (broad?: string): Cat => (broad && BROAD_COLOR[broad]) || NA
 // 各列排序取值:数值列返回 number,文本列返回 string,缺值返回 null(排末尾)
 const sortVal = (j: JobRow, key: ColKey): number | string | null => {
   switch (key) {
-    case 'score': return j.score
+    case 'score': return j.gradeChannel ?? j.score
     case 'match': return matchRank(j.match)
     case 'salary': case 'salaryYr': return j.salaryAnnual
     case 'wageMedHr': return j.wageMedHourly
@@ -408,7 +410,7 @@ const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean 
   { key: 'status', label: '状态', default: false },
   { key: 'lastSeen', label: '更新时间', default: false },
   { key: 'closedAt', label: '下架时间', default: false },
-  { key: 'score', label: '评分', default: false },
+  { key: 'score', label: '通道', default: true },  // E12-08:评分列改「通道」档(1-5)且默认亮——核心差异点(原 0-100 分默认藏)
   { key: 'actions', label: '操作', default: true, always: true },  // 固定最后一列:公司信息 / 职位描述 按钮
 ]
 const DEFAULT_COLS = COLUMNS.filter((c) => c.default).map((c) => c.key)
@@ -416,7 +418,7 @@ const DEFAULT_COLS = COLUMNS.filter((c) => c.default).map((c) => c.key)
 // 以便表格压进容器宽度不横向滚动。表头一律不换行(=该列最小宽度)。
 // salary 不在此列:薪资原文可为长文本(如 "40% commission per sale"),要像文本列一样换行;年薪/中位数等计算列恒短值。
 const NOWRAP_COLS = new Set<ColKey>(['datePosted', 'lastSeen', 'closedAt', 'salaryYr', 'wageMedHr', 'wageMedYr', 'vsMedian', 'teer', 'empHours', 'empTerm', 'score', 'status', 'direct', 'aip', 'lmia', 'eligibility', 'match'])
-const PREF_KEY = 'jobs.visibleCols.v9'  // v9:新增「与我的匹配」默认列(E5-00),bump 版本让新默认生效
+const PREF_KEY = 'jobs.visibleCols.v10'  // v10:「通道」档默认列(E12-08);bump 版本让新默认生效
 const writeColsCookie = (keys: string[]) => {
   try { document.cookie = `${COLS_COOKIE}=${encodeURIComponent(JSON.stringify(keys))}; path=/; max-age=31536000; SameSite=Lax` } catch { /* ignore */ }
 }
@@ -1132,7 +1134,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                           Object.assign(extra, { whiteSpace: 'nowrap', textAlign: 'center' as const })
                         }
                       }
-                      else if (k === 'score') { node = j.score ?? '—'; Object.assign(extra, { fontWeight: 500, color: scoreColor(j.score) }) }
+                      else if (k === 'score') { node = j.gradeChannel != null ? `${j.gradeChannel}/5` : (j.score ?? '—'); Object.assign(extra, { fontWeight: 500, color: gradeColor(j.gradeChannel) }) }  // E12-08:通道档(旧库未回填时退 0-100 旧分)
                       else if (k === 'broad') { node = broadLabel(j.broad); Object.assign(extra, { whiteSpace: 'nowrap', color: cat.fg, fontWeight: 500 }) }
                       else if (k === 'mid') { node = (!j.mid || j.mid === '未分类') ? t('cell.uncat') : catLabel(j.mid); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'fine') { node = (j.mid === '未分类' || !j.mid) ? '—' : catLabel(j.fine); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
@@ -1235,8 +1237,14 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                     </button>
                   </span>
                 </div>
-                {/* 公司独立一行可点(开公司弹框,K 懒探索照旧);地点拆去下一行——去「·」杂糅(W 规矩存量清理) */}
-                {j.company ? <div onClick={() => open('company', j.company)} style={{ fontSize: 12.5, color: '#2563eb', marginTop: 2, cursor: 'pointer' }}>{j.company}</div> : null}
+                {/* 公司独立一行可点(开公司弹框,K 懒探索照旧);地点拆去下一行——去「·」杂糅(W 规矩存量清理)。
+                    E12-08:担保档药丸(公司分承接原「知名」位;无记录不显=宁缺勿滥) */}
+                {j.company ? (
+                  <div style={{ marginTop: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span onClick={() => open('company', j.company)} style={{ fontSize: 12.5, color: '#2563eb', cursor: 'pointer' }}>{j.company}</span>
+                    {j.sponsorGrade != null && <span style={{ fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sponsorPill', { g: j.sponsorGrade })}</span>}
+                  </div>
+                ) : null}
                 <div style={{ fontSize: 12.5, marginTop: 4, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                   {L.city ? <span onClick={() => open('city', L.city)} style={{ color: '#374151', cursor: 'pointer' }}>{L.city}{j.province ? `, ${j.province}` : ''}</span> : null}
                   {(j.salaryText || j.salary) ? <span onClick={() => open('salary', j.salaryText || j.salary)} style={{ color: '#15803d', fontWeight: 600, cursor: 'pointer' }}>{j.salaryText || j.salary}</span> : null}
@@ -1250,7 +1258,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                   {/* GAP1③:红旗 chip(手机卡片)——白投预警比正面信号更值得占位 */}
                   {j.eligibilityFlag ? chip('#fee2e2', '#b91c1c', t('cell.elig.' + j.eligibilityFlag), 'eligibility') : null}
                   {!j.pnpEligible && !j.eeCategory && !j.aip && j.teer != null ? chip('#f3f4f6', '#6b7280', `TEER ${j.teer}`, 'teer') : null}
-                  {j.score != null ? chip('#f3f4f6', '#6b7280', t('col.score') + ' ' + j.score, 'score') : null}
+                  {j.gradeChannel != null ? chip('#f3f4f6', '#6b7280', t('col.score') + ' ' + j.gradeChannel + '/5', 'score') : null}
                 </div>
               </div>
             )
@@ -1739,22 +1747,56 @@ const normName = (name?: string) => (name || '').toLowerCase()
   .split(/\bo\/a\b|\bdba\b|\bd\/b\/a\b/)[0]
   .replace(AIP_SUFFIX, ' ').replace(/[^a-z0-9& ]/g, ' ').replace(/\s+/g, ' ').trim()
 const ATLANTIC = new Set(['NL', 'NB', 'NS', 'PE'])
-// 评分明细(镜像 etl/08_score.py 的 score())—— 前端同步重建,供「评分」事实块展示。
-// 关键:+12 是「省具名通道命中」(NAMED_STREAM_NOCS_BY_PROV = 各省 pnp 清单 nocs 并集),
-// 由 pnpOccupations 维度按 (省, noc) 判定 —— 不是写死的低TEER集合(那是旧 route.ts 的错,会对不上库里分数)。
-const SCORE_TEER_BASE: Record<number, number> = { 0: 54, 1: 56, 2: 52, 3: 46, 4: 28, 5: 20 }
-const SCORE_INDEMAND2 = new Set(['21', '22', '31', '32', '72', '73', '42'])
-const SCORE_ACC: Record<string, number> = { 'co-op': 6, junior: 6, intermediate: 4, senior: 2, unknown: 3 }
-const SCORE_AGENCY = /recruit|staffing|talent|personnel|placement|outsourc|mercor|adecco|randstad/i
-function scoreBreakdown(job: JobRow, named: boolean) {
-  const noc = job.noc || '', teer = job.teer
-  const base = teer == null ? 18 : (SCORE_TEER_BASE[teer] ?? 18)
-  const indemand = noc && SCORE_INDEMAND2.has(noc.slice(0, 2)) ? 10 : 0
-  const namedPts = named ? 12 : 0
-  const direct = SCORE_AGENCY.test(job.company || '') ? 0 : 12
-  const acc = SCORE_ACC[job.accessibility || 'unknown'] ?? 3
-  const prov = job.province && job.province !== 'ON' ? -6 : 0
-  return { base, indemand, named: namedPts, direct, acc, prov, teer, total: Math.max(0, Math.min(100, base + indemand + namedPts + direct + acc + prov)) }
+// E12-08:拆解弹框——三维档(1-5)明细走 /api/scoredetail 额度端点(「先试用再付费」拍板;
+// 明细不随列表行下发=服务端真闸)。旧 0-100 加权分前端镜像 scoreBreakdown 随加权制退役。
+function ScoreGradesSection({ job, lang, loggedIn }: { job: JobRow; lang: Lang; loggedIn: boolean }) {
+  const t = makeT(lang)
+  type Detail = { channel?: { g: number; v: string } | null; salary?: { g: number; v: number } | null; emp?: { g: number; v: string[] } | null }
+  const [d, setD] = useState<undefined | 'upgrade' | 'limited' | 'error' | { detail: Detail | null; sponsorGrade: number | null }>(undefined)
+  const [freeLeft, setFreeLeft] = useState<number | null>(null)
+  useEffect(() => {
+    let dead = false
+    setD(undefined)
+    fetch('/api/scoredetail', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: job.id }) })
+      .then(async (r) => {
+        const left = r.headers.get('X-Free-Left')
+        if (left != null && !dead) setFreeLeft(Number(left))
+        if (r.status === 402) return 'upgrade' as const
+        if (r.status === 429) return 'limited' as const
+        if (!r.ok) return 'error' as const
+        return await r.json()
+      })
+      .then((x) => { if (!dead) setD(x) })
+      .catch(() => { if (!dead) setD('error') })
+    return () => { dead = true }
+  }, [job])
+  const dots = (g: number) => <span style={{ letterSpacing: 2, color: gradeColor(g), whiteSpace: 'nowrap' }}>{'●'.repeat(g)}{'○'.repeat(5 - g)}</span>
+  const row = (label: string, body: React.ReactNode) => (
+    <div style={{ display: 'flex', gap: 10, padding: '5px 0', fontSize: 13, alignItems: 'baseline' }}>
+      <span style={{ minWidth: 88, color: '#9ca3af', flexShrink: 0 }}>{label}</span>
+      <span style={{ flex: 1, color: '#374151' }}>{body}</span>
+    </div>
+  )
+  if (d === 'upgrade') return <UpgradeCard t={t} reason={t('up.advisor')} />
+  if (d === 'limited') return <Notice kind="warn" action={!loggedIn ? <a href="/account" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('advisor.limitCta')}</a> : undefined}>{t('advisor.limit429')}</Notice>
+  if (d === 'error') return <div style={{ fontSize: 13, color: '#9ca3af' }}>{t('advisor.unavail')}</div>
+  if (d === undefined) return <div style={{ fontSize: 13, color: '#9ca3af' }}>{t('act.loadingText')}</div>
+  const det = d.detail || {}
+  const ch = det.channel, sal = det.salary, emp = det.emp
+  return (
+    <FactsBox note={t('fact.scoreNote')}>
+      {freeLeft != null && <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 4 }}>{t('advisor.left', { n: freeLeft })}</div>}
+      {ch ? row(t('gr.dim.channel'), <>{dots(ch.g)} <b style={{ marginLeft: 8 }}>{ch.g}/5</b><div style={{ fontSize: 12.5, color: '#6b7280' }}>{t(`gr.channel.${ch.g}`, { v: ch.v || '' })}</div></>) : null}
+      {sal ? row(t('gr.dim.salary'), <>{dots(sal.g)} <b style={{ marginLeft: 8 }}>{sal.g}/5</b><div style={{ fontSize: 12.5, color: '#6b7280' }}>{t('gr.salary.d', { pct: sal.v >= 0 ? `+${sal.v}` : String(sal.v) })}</div></>)
+        : row(t('gr.dim.salary'), <span style={{ color: '#9ca3af' }}>{t('gr.noData')}</span>)}
+      {emp ? row(t('gr.dim.emp'), <>{dots(emp.g)} <b style={{ marginLeft: 8 }}>{emp.g}/5</b><div style={{ fontSize: 12.5, color: '#6b7280' }}>{emp.v?.length ? emp.v.map((h) => t('gr.emp.' + h)).join('、') : t('gr.emp.none')}</div></>) : null}
+      <div style={{ marginTop: 10, paddingTop: 8, borderTop: '1px solid #f3f4f6' }}>
+        <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 2 }}>{t('gr.ref.title')}</div>
+        {row(t('gr.ref.sponsor'), d.sponsorGrade != null ? <>{dots(d.sponsorGrade)} <b style={{ marginLeft: 8 }}>{d.sponsorGrade}/5</b></> : <span style={{ color: '#9ca3af' }}>{t('gr.ref.noRec')}</span>)}
+        {job.province ? row('', <a href={`/stats/${job.province.toLowerCase()}`} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none', fontSize: 12.5 }}>{t('gr.ref.diff')}</a>) : null}
+      </div>
+    </FactsBox>
+  )
 }
 const LOC_FIELDS = new Set<ColKey>(['country', 'province', 'city', 'district', 'address'])
 const SAL_FIELDS = new Set<ColKey>(['salary', 'salaryYr', 'wageMedHr', 'wageMedYr', 'vsMedian'])
@@ -1867,22 +1909,10 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
       </FactsBox>
     )
   }
-  const sg = (n: number) => (n >= 0 ? `+${n}` : `${n}`)
 
   if (field === 'score') {
-    const named = !!job.noc && pnpOcc.some((o) => o.province === job.province && o.noc === job.noc)
-    const b = scoreBreakdown(job, named)
-    return (
-      <FactsBox note={t('fact.scoreNote')}>
-        <FactRow k={t('score.base')}>{`${b.base}  (${b.teer == null ? t('cell.uncat') : 'TEER ' + b.teer})`}</FactRow>
-        {b.indemand ? <FactRow k={t('score.indemand')}>{sg(b.indemand)}</FactRow> : null}
-        {b.named ? <FactRow k={t('score.low')}>{sg(b.named)}</FactRow> : null}
-        <FactRow k={t('score.direct')}>{sg(b.direct)}</FactRow>
-        <FactRow k={t('score.exp')}>{sg(b.acc)}</FactRow>
-        {b.prov ? <FactRow k={t('score.prov')}>{sg(b.prov)}</FactRow> : null}
-        <FactRow k={t('score.total')}><strong style={{ color: '#111827' }}>{b.total}{job.score != null && job.score !== b.total ? `  (${t('score.stored')} ${job.score})` : ''}</strong></FactRow>
-      </FactsBox>
-    )
+    // E12-08:1-5 档三维拆解(额度 API);旧 0-100 加权分解表退役
+    return <ScoreGradesSection job={job} lang={lang} loggedIn={loggedIn} />
   }
 
   if (field === 'aip') {
@@ -2666,14 +2696,9 @@ function advHeader(field: ColKey, j: JobRow, t: TFn): { tag: string; title: stri
   return { tag: t('col.' + field), title: j.title || j.company || '—' }
 }
 
-// 5 档综合价值色阶(分位 ~37/55/64/72):灰底 → 4 级绿越高越深(数字本身给精度,颜色作梯度强化)
-const scoreColor = (s: number | null) => (
-  s == null ? '#9ca3af'
-    : s >= 72 ? '#166534'   // 高
-    : s >= 64 ? '#15803d'   // 中高
-    : s >= 55 ? '#16a34a'   // 中
-    : s >= 38 ? '#65a30d'   // 中低
-    : '#9ca3af'             // 低 → 灰
+// E12-08 通道档色阶(1-5):5/4 绿深浅、3 默认、2 琥珀、1/缺 灰(scoreColor 0-100 版随加权分退役)
+const gradeColor = (g: number | null | undefined) => (
+  g == null ? '#9ca3af' : g >= 5 ? '#166534' : g >= 4 ? '#15803d' : g >= 3 ? '#374151' : g >= 2 ? '#b45309' : '#9ca3af'
 )
 const ctrl: React.CSSProperties = { height: 38, boxSizing: 'border-box', padding: '0 10px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 14, color: '#1f2937', background: '#fff' }
 const filtRow: React.CSSProperties = { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }

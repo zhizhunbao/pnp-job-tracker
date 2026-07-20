@@ -36,6 +36,9 @@ export const Companies: CollectionConfig = {
     { name: 'industry', type: 'text', admin: { description: '主营行业(NOC 大类多数派,数据层算)' } },
     { name: 'aliasZh', type: 'text', admin: { description: '中文别名(Wikidata zh 标签,查不到留空)' } },
     { name: 'aliasKo', type: 'text', admin: { description: '韩文别名(Wikidata ko 标签)' } },
-    { name: 'wikiUrl', type: 'text', admin: { description: 'Wikipedia 条目(非空=知名徽标)' } },
+    { name: 'wikiUrl', type: 'text', admin: { description: 'Wikipedia 条目(E12-08 后不再单独出「知名」徽标,作公司分知名度维依据)' } },
+    // E12-08 公司档(1-5):担保档=公司名旁药丸;四维明细 jsonb(担保/活跃/薪资/知名)
+    { name: 'sponsorGrade', type: 'number', index: true, admin: { description: '担保记录档 1-5(E12-08;空=无 LMIA 记录不评,≠不担保)' } },
+    { name: 'scoreDetail', type: 'json', admin: { description: '公司四维档明细 {sponsor/active/salary/fame:{g,v}}' } },
   ],
 }

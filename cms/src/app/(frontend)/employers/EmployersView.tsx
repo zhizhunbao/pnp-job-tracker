@@ -41,7 +41,8 @@ function EmployerLmiaCard({ r, lang, t, inCmp, onCmp }: { r: LmiaRow; lang: Lang
       <button onClick={onCmp} style={{ position: 'absolute', right: 10, top: 10, border: '1px solid ' + (inCmp ? UI.primary : UI.border), background: inCmp ? '#eff6ff' : '#fff', color: inCmp ? UI.primary : '#6b7280', borderRadius: 999, padding: '2px 10px', fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}>{inCmp ? t('ce.added') : t('ce.add')}</button>
       <div style={{ fontSize: 14.5, fontWeight: 600, paddingRight: 78 }}>
         {r.website ? <a href={r.website} target="_blank" rel="noreferrer" style={{ color: UI.primary, textDecoration: 'none' }}>{r.name} ↗</a> : r.name}
-        {r.wiki ? <a href={r.wiki} target="_blank" rel="noreferrer" style={{ marginLeft: 6, textDecoration: 'none' }}><Tag variant="pro">{t('dir.known')}</Tag></a> : null}
+        {/* E12-08:裸「知名」Tag 退役(Frank「只显示知名不清楚」)——担保档药丸承接;无记录不显 */}
+        {r.sponsorGrade != null && <span style={{ marginLeft: 6, fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', fontWeight: 600, whiteSpace: 'nowrap' }}>{t('gr.sponsorPill', { g: r.sponsorGrade })}</span>}
       </div>
       {(alias || r.industry) ? (
         <div style={{ fontSize: 12.5, color: '#9ca3af', marginTop: 2 }}>
@@ -132,12 +133,13 @@ export function EmployersView({ type, q, prov, page, aip, lmia, counts }: {
         {type === 'lmia' ? (
           <DataTable<LmiaRow> rows={lmia || []} rowKey={(r) => r.name} empty={t('dir.empty')} cols={[
             { key: 'name', label: t('dir.col.employer'), sort: (r) => r.name.toLowerCase(), render: (r) => {
-              // 雇主 D:别名灰字随界面语言(Wikidata 官方标签不机翻);知名=有 Wikipedia 条目可核验
+              // 雇主 D:别名灰字随界面语言(Wikidata 官方标签不机翻)。
+              // E12-08:裸「知名」Tag 退役——担保档药丸承接(Frank「能给各维度打分就好」);wiki 依据降级进公司分知名度维
               const alias = lang === 'zh' ? r.aliasZh : lang === 'ko' ? r.aliasKo : ''
               return <span style={{ fontWeight: 600 }}>
                 {r.website ? <a href={r.website} target="_blank" rel="noreferrer" style={{ color: UI.primary, textDecoration: 'none' }}>{r.name} ↗</a> : r.name}
                 {alias ? <span style={{ marginLeft: 6, color: '#9ca3af', fontWeight: 400, fontSize: 12 }}>{alias}</span> : null}
-                {r.wiki ? <a href={r.wiki} target="_blank" rel="noreferrer" style={{ marginLeft: 6, textDecoration: 'none' }}><Tag variant="pro">{t('dir.known')}</Tag></a> : null}
+                {r.sponsorGrade != null && <span style={{ marginLeft: 6, fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sponsorPill', { g: r.sponsorGrade })}</span>}
               </span> } },
             { key: 'industry', label: t('fact.coSectors'), sort: (r) => r.industry || null, render: (r) => r.industry ? <Tag variant="region">{t('broad.' + r.industry)}</Tag> : <span style={{ color: '#9ca3af' }}>—</span> },
             { key: 'region', label: t('dir.col.region'), render: (r) => r.region || <span style={{ color: '#9ca3af' }}>—</span> },

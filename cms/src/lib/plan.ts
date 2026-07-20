@@ -18,6 +18,9 @@ export const isProColumn = (k: string): boolean => (PRO_COLUMNS as readonly stri
 
 // 简历解析次数/日(E11-07;解析免费=转化杠杆,限次防滥用——付费仍在匹配列,不在这)
 export const FREE_RESUME_TRIES = Number(process.env.FREE_RESUME_TRIES || 5)
+
+// E12-08 评分拆解弹框次数/日(Frank「都是先试用再付费」:档位数字全免费,拆解明细试用额度制)
+export const FREE_SCOREDETAIL_TRIES = Number(process.env.FREE_SCOREDETAIL_TRIES || 5)
 // 保存筛选上限(E5-03;D1 2026-07-19 拍板降免费——留存钩不设 Pro 闸,闸改在「更多保存位」:免费 2 / Pro 5)
 export const PRO_SAVED_SEARCHES = Number(process.env.PRO_SAVED_SEARCHES || 5)
 export const FREE_SAVED_SEARCHES = Number(process.env.FREE_SAVED_SEARCHES || 2)

@@ -12,12 +12,13 @@ import importlib.util
 import json
 import re
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _paths  # noqa: E402
 import noc as NOC  # noqa: E402  NOC 分类法(单一来源)
+import grades as GR  # noqa: E402  E12-08 档位(1-5,单一来源;职位三维+公司四维)
 from clean import visa_flag  # noqa: E402  GAP1③ 身份预筛(JD 正文 → 红旗+quote)
 
 # 公司名归一(o/a 前缀、公司后缀、标点)单一来源在 clean/05c —— LMIA 匹配与 AIP 用同一把尺子
@@ -190,6 +191,13 @@ def build():
         # 该 NOC 当地中位工资:优先省级,无则国家级(ESDC 开放数据)
         wnoc = wages.get(sc.get("noc") or "", {})
         w = wnoc.get(fields.get("province", "")) or wnoc.get("NAT") or {}
+        # E12-08 职位三维档(1-5,grades.py 单一来源):通道档单列下发主表「通道」列,明细 jsonb 走额度 API
+        apply_url = fields.get("applyUrl", "")
+        direct = ("jobbank.gc.ca" not in apply_url) or (fields.get("source") == "Job Bank")
+        g_channel, g_detail = GR.job_grades(
+            sc.get("noc") or "", cls["teer"], sc.get("pnpStream"), bool(sc.get("pnpEligible")),
+            fields.get("salaryAnnual"), w.get("annual"),
+            fields.get("employmentTerm"), fields.get("employmentHours"), direct)
         jobs.append({
             "externalId": external_id, "companySlug": company_slug,
             **{k: v for k, v in fields.items() if v not in (None, "")},
@@ -201,6 +209,7 @@ def build():
             "noc": sc.get("noc") or None, "category": cls["teerLabel"],
             "teer": cls["teer"], "broad": cls["broad"], "mid": cls["mid"], "fine": cls["fine"],
             "accessibility": sc.get("accessibility") or None, "score": sc.get("score"),
+            "gradeChannel": g_channel, "scoreDetail": g_detail,
             "pnpEligible": bool(sc.get("pnpEligible")), "pnpStream": sc.get("pnpStream") or None,
             "eeCategory": sc.get("eeCategory") or None, "status": "open",
         })
@@ -283,6 +292,38 @@ def build():
             c["lmiaPositionsSkilled"] = e.get("positionsSkilled", 0)  # 非农业/季节股(仅榜单口径用,不进 DB)
             lmia_hit += 1
         print(f"  LMIA 雇佣记录匹配: {lmia_hit}/{len(companies)} 公司")
+
+    # E12-08 公司四维档(1-5,grades.py 单一来源):担保/活跃/薪资/知名——全部从在库聚合+LMIA 列现算,零新抓取。
+    # 知名依据=processed/company_facts.json 的 wiki(D 批产物;K 懒探索回填的 wiki 在 DB 侧,mart 不可见——
+    # 代理可接受:facts 文件覆盖批量查过的存量,懒回填增量待下轮 facts 重导;fame 档差最多 1 档)。
+    facts_wiki: set[str] = set()
+    facts_f = _paths.PROCESSED / "company_facts.json"
+    if facts_f.exists():
+        try:
+            facts_wiki = {sl for sl, c in json.loads(facts_f.read_text(encoding="utf-8")).get("by_slug", {}).items() if c.get("wiki")}
+        except Exception:  # noqa: BLE001
+            pass
+    cutoff30 = (datetime.now(timezone.utc) - timedelta(days=30)).date().isoformat()
+    agg: dict[str, dict] = {}
+    for j in jobs:
+        a = agg.setdefault(j["companySlug"], {"open": 0, "new30": 0, "pcts": [], "provs": set(), "aip": False})
+        a["open"] += 1
+        if (j.get("datePosted") or "") >= cutoff30:
+            a["new30"] += 1
+        if j.get("salaryAnnual") and j.get("wageMedAnnual"):
+            a["pcts"].append((j["salaryAnnual"] / j["wageMedAnnual"] - 1) * 100)
+        if j.get("province"):
+            a["provs"].add(j["province"])
+        if j.get("aip"):
+            a["aip"] = True
+    for slug, c in companies.items():
+        a = agg.get(slug, {"open": 0, "new30": 0, "pcts": [], "provs": set(), "aip": False})
+        sponsor_g, detail = GR.company_grades(
+            c.get("lmiaPositionsSkilled"), c.get("lmiaPositions"), c.get("lmiaLastQuarter"), a["aip"],
+            a["open"], a["new30"], (sum(a["pcts"]) / len(a["pcts"])) if a["pcts"] else None,
+            slug in facts_wiki, len(a["provs"]))
+        c["sponsorGrade"] = sponsor_g
+        c["scoreDetail"] = detail
 
     # JD 正文下沉到 DB:按 applyUrl 匹配已抓的 .md → job.description(seed 自动透传;列表 SQL 不读它)
     # GAP1③ 身份预筛:同一循环里跑 visa_flag.detect(不另起脚本重扫 43k 文件)——

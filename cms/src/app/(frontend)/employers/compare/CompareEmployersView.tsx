@@ -32,7 +32,7 @@ export function CompareEmployersView({ names, rows, pro, loggedIn }: {
   const withMatch = rows.some((r) => r.matchHigh != null)
   const dims: Dim[] = [
     { key: 'industry', label: t('fact.coSectors'), render: (r) => r.industry ? <Tag variant="region">{t('broad.' + r.industry)}</Tag> : dash },
-    { key: 'known', label: t('dir.known'), render: (r) => r.wiki ? <a href={r.wiki} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}><Tag variant="pro">{t('dir.known')} ↗</Tag></a> : dash },
+    // E12-08:裸「知名」维度行退役(wiki 依据降级进公司分知名度维);担保信号由 skilled 明细行承担
     { key: 'skilled', label: t('dir.col.skilled'), tip: t('dir.col.skilled.tip'), render: (r) => r.lmiaPositionsSkilled ? <b style={{ color: UI.ok }}>{r.lmiaPositionsSkilled}</b> : dash },
     { key: 'lmia', label: t('rank.col.lmia'), render: (r) => r.lmiaPositions ?? dash },
     { key: 'quarter', label: t('dir.col.quarter'), render: (r) => r.lmiaLastQuarter || dash },
