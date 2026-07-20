@@ -953,6 +953,18 @@ export interface Stat {
    * json:[{city,n}] 前 5 城市
    */
   topCities?: string | null;
+  /**
+   * E12-07 省难度指数(仅 broad=all 行;{tier,factors[]} 带出处)
+   */
+  difficulty?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   fetched?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -1659,6 +1671,7 @@ export interface StatsSelect<T extends boolean = true> {
   streamLabels?: T;
   aipJobs?: T;
   topCities?: T;
+  difficulty?: T;
   fetched?: T;
   updatedAt?: T;
   createdAt?: T;
