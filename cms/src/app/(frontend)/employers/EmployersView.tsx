@@ -7,11 +7,9 @@ import { makeT, LANG_KEY, type Lang, type TFn } from '../jobs/i18n'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { PageBanner, PageShell, Tag, UI, chipStyle } from '../ui/primitives'
+import { DataTable } from '../ui/DataTable'
 import { IconUsers } from '../Icons'
 import { DIR_PAGE_SIZE, type AipRow, type LmiaRow } from '@/lib/directory'
-
-const th: React.CSSProperties = { textAlign: 'left', padding: '9px 12px', fontSize: 12.5, color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap', borderBottom: '1px solid #e5e7eb' }
-const td: React.CSSProperties = { padding: '9px 12px', fontSize: 13, color: '#374151', borderBottom: '1px solid #f3f4f6' }
 
 function href(type: string, q: string, prov: string, page: number) {
   const sp = new URLSearchParams()
@@ -77,53 +75,34 @@ export function EmployersView({ type, q, prov, page, aip, lmia, counts }: {
         {/* 口径红线行(E6-02 语义:历史事实 ≠ 担保承诺) */}
         <div style={{ fontSize: 12.5, color: '#6b7280', margin: '0 0 12px', lineHeight: 1.6 }}>{t(type === 'lmia' ? 'dir.note.lmia' : 'dir.note.aip')}</div>
 
-        <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, overflow: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            {type === 'lmia' ? (
-              <>
-                <thead><tr><th style={th}>{t('dir.col.employer')}</th><th style={th}>{t('fact.coSectors')}</th><th style={th}>{t('dir.col.region')}</th><th style={{ ...th, cursor: 'help', textDecoration: 'underline dotted #d1d5db' }} title={t('dir.col.skilled.tip')}>{t('dir.col.skilled')}</th><th style={th}>{t('rank.col.lmia')}</th><th style={th}>{t('dir.col.streams')}</th><th style={th}>{t('dir.col.quarter')}</th><th style={th}></th></tr></thead>
-                <tbody>
-                  {(lmia || []).map((r) => {
-                    // 雇主 D(2026-07-19 Frank):中/韩别名灰字随界面语言(Wikidata 官方标签,不机翻,英文名恒为主名);
-                    // 知名徽标=有 Wikipedia 条目(点开可核验);行业=在库岗大类多数派,t('broad.*') 三语
-                    const alias = lang === 'zh' ? r.aliasZh : lang === 'ko' ? r.aliasKo : ''
-                    return (
-                    <tr key={r.name}>
-                      <td style={{ ...td, fontWeight: 600 }}>
-                        {r.website ? <a href={r.website} target="_blank" rel="noreferrer" style={{ color: UI.primary, textDecoration: 'none' }}>{r.name} ↗</a> : r.name}
-                        {alias ? <span style={{ marginLeft: 6, color: '#9ca3af', fontWeight: 400, fontSize: 12 }}>{alias}</span> : null}
-                        {r.wiki ? <a href={r.wiki} target="_blank" rel="noreferrer" style={{ marginLeft: 6, textDecoration: 'none' }}><Tag variant="pro">{t('dir.known')}</Tag></a> : null}
-                      </td>
-                      <td style={r.industry ? td : { ...td, color: '#9ca3af' }}>{r.industry ? <Tag variant="region">{t('broad.' + r.industry)}</Tag> : '—'}</td>
-                      <td style={r.region ? td : { ...td, color: '#9ca3af' }}>{r.region || '—'}</td>
-                      {/* B4-02:技能股列(High Wage/GTS)——「有 LMIA」≠「技能类担保信号」,0 显灰杠 */}
-                      <td style={{ ...td, fontWeight: 600, color: r.lmiaPositionsSkilled ? UI.ok : '#9ca3af' }}>{r.lmiaPositionsSkilled ?? '—'}</td>
-                      <td style={{ ...td, color: '#374151' }}>{r.lmiaPositions}</td>
-                      <td style={{ ...td, fontSize: 12, maxWidth: 260 }}>{r.lmiaStreams || '—'}</td>
-                      <td style={{ ...td, color: '#9ca3af' }}>{r.lmiaLastQuarter || '—'}</td>
-                      <td style={{ ...td, whiteSpace: 'nowrap' }}><a href={`/?q=${encodeURIComponent(r.name)}`} style={{ color: UI.primary, textDecoration: 'none', fontSize: 12.5 }}>{t('rank.viewJobs')}</a></td>
-                    </tr>
-                  )})}
-                </tbody>
-              </>
-            ) : (
-              <>
-                <thead><tr><th style={th}>{t('dir.col.employer')}</th><th style={th}>{t('col.province')}</th><th style={th}>{t('col.city')}</th><th style={th}></th></tr></thead>
-                <tbody>
-                  {(aip || []).map((r, i) => (
-                    <tr key={r.name + i}>
-                      <td style={{ ...td, fontWeight: 600 }}>{r.name}{r.isTech && <> <Tag variant="region">{t('dir.tech')}</Tag></>}</td>
-                      <td style={td}>{t('pr.' + r.province)}</td>
-                      <td style={r.location ? td : { ...td, color: '#9ca3af' }}>{r.location || '—'}</td>
-                      <td style={{ ...td, whiteSpace: 'nowrap' }}><a href={`/?q=${encodeURIComponent(r.name)}`} style={{ color: UI.primary, textDecoration: 'none', fontSize: 12.5 }}>{t('rank.viewJobs')}</a></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </>
-            )}
-          </table>
-          {counts.pageTotal === 0 && <div style={{ padding: '24px 16px', color: '#9ca3af', fontSize: 13, textAlign: 'center' }}>{t('dir.empty')}</div>}
-        </div>
+        {/* 组件统一 P2(2026-07-19 Frank「所有页面用同一个 table」):两张表换装公共 DataTable(排序/拖宽/hover 同 jobs 观感);
+            排序=当前页内客户端排序(全量序仍由 URL 翻页的服务端默认序保证) */}
+        {type === 'lmia' ? (
+          <DataTable<LmiaRow> rows={lmia || []} rowKey={(r) => r.name} empty={t('dir.empty')} cols={[
+            { key: 'name', label: t('dir.col.employer'), sort: (r) => r.name.toLowerCase(), render: (r) => {
+              // 雇主 D:别名灰字随界面语言(Wikidata 官方标签不机翻);知名=有 Wikipedia 条目可核验
+              const alias = lang === 'zh' ? r.aliasZh : lang === 'ko' ? r.aliasKo : ''
+              return <span style={{ fontWeight: 600 }}>
+                {r.website ? <a href={r.website} target="_blank" rel="noreferrer" style={{ color: UI.primary, textDecoration: 'none' }}>{r.name} ↗</a> : r.name}
+                {alias ? <span style={{ marginLeft: 6, color: '#9ca3af', fontWeight: 400, fontSize: 12 }}>{alias}</span> : null}
+                {r.wiki ? <a href={r.wiki} target="_blank" rel="noreferrer" style={{ marginLeft: 6, textDecoration: 'none' }}><Tag variant="pro">{t('dir.known')}</Tag></a> : null}
+              </span> } },
+            { key: 'industry', label: t('fact.coSectors'), sort: (r) => r.industry || null, render: (r) => r.industry ? <Tag variant="region">{t('broad.' + r.industry)}</Tag> : <span style={{ color: '#9ca3af' }}>—</span> },
+            { key: 'region', label: t('dir.col.region'), render: (r) => r.region || <span style={{ color: '#9ca3af' }}>—</span> },
+            { key: 'skilled', label: t('dir.col.skilled'), thTip: t('dir.col.skilled.tip'), nowrap: true, sort: (r) => r.lmiaPositionsSkilled ?? null, render: (r) => <span style={{ fontWeight: 600, color: r.lmiaPositionsSkilled ? UI.ok : '#9ca3af' }}>{r.lmiaPositionsSkilled ?? '—'}</span> },
+            { key: 'lmia', label: t('rank.col.lmia'), nowrap: true, sort: (r) => r.lmiaPositions, render: (r) => <>{r.lmiaPositions}</> },
+            { key: 'streams', label: t('dir.col.streams'), render: (r) => <span style={{ fontSize: 12, display: 'inline-block', maxWidth: 260 }}>{r.lmiaStreams || '—'}</span> },
+            { key: 'quarter', label: t('dir.col.quarter'), nowrap: true, sort: (r) => r.lmiaLastQuarter || null, render: (r) => <span style={{ color: '#9ca3af' }}>{r.lmiaLastQuarter || '—'}</span> },
+            { key: 'go', label: '', nowrap: true, render: (r) => <a href={`/?q=${encodeURIComponent(r.name)}`} style={{ color: UI.primary, textDecoration: 'none', fontSize: 12.5 }}>{t('rank.viewJobs')}</a> },
+          ]} />
+        ) : (
+          <DataTable<AipRow> rows={aip || []} rowKey={(r, i) => r.name + i} empty={t('dir.empty')} cols={[
+            { key: 'name', label: t('dir.col.employer'), sort: (r) => r.name.toLowerCase(), render: (r) => <span style={{ fontWeight: 600 }}>{r.name}{r.isTech && <> <Tag variant="region">{t('dir.tech')}</Tag></>}</span> },
+            { key: 'prov', label: t('col.province'), nowrap: true, sort: (r) => r.province, render: (r) => <>{t('pr.' + r.province)}</> },
+            { key: 'city', label: t('col.city'), sort: (r) => r.location || null, render: (r) => r.location || <span style={{ color: '#9ca3af' }}>—</span> },
+            { key: 'go', label: '', nowrap: true, render: (r) => <a href={`/?q=${encodeURIComponent(r.name)}`} style={{ color: UI.primary, textDecoration: 'none', fontSize: 12.5 }}>{t('rank.viewJobs')}</a> },
+          ]} />
+        )}
         <Pager t={t} total={counts.pageTotal} page={page} mk={mk} />
       </PageShell>
       <SiteFooter t={t} />
