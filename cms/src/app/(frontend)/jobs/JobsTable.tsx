@@ -1271,7 +1271,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       <SiteFooter t={t} maxWidth={1320} />
 
       {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} news={dims.news} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} onOpenJob={(x) => setActModal({ kind: 'desc', job: x })} />}
-      {actModal && <ActModal job={actModal.job} lang={lang} onClose={() => setActModal(null)} onAdvisor={(x) => { setActModal(null); setPopup({ field: 'title', job: x, title: x.title }) }} />}
+      {actModal && <ActModal job={actModal.job} lang={lang} plan={plan} onClose={() => setActModal(null)} onAdvisor={(x) => { setActModal(null); setPopup({ field: 'title', job: x, title: x.title }) }} />}
       {wizard && <OnboardingWizard t={t} initial={plan.profile} onClose={closeWizard} />}
       {upsell && (plan.loggedIn
         ? <UpgradeModal t={t} reason={upsell === 'ss' ? t('ss.pro') : upsell === 'match' ? (matchTotals && matchTotals.high > plan.freeMatchCap ? t('up.matchN', { h: matchTotals.high, n: plan.freeMatchCap }) : t('up.match', { n: plan.freeMatchCap })) : undefined} onClose={() => setUpsell(false)} />
@@ -1594,6 +1594,64 @@ function JdFormattedView({ text, t }: { text: string; t: TFn }) {
           </div>
         )
       })}
+    </div>
+  )
+}
+// JD 框内嵌 AI 顾问初判(2026-07-19 Frank:「像公司顾问一样自动生成,不要再点一下」)——
+// 打开职位描述即自动流式生成,不用再点「AI 顾问」钮;额度闸照走(402 升级卡/429 说人话);
+// 同岗会话内缓存,反复开关不重复烧额度。深挖(对比表+追问对话)仍在「AI 顾问」钮的完整弹框里。
+const jdAdvCache = new Map<string, string>()
+function JdAdvisorSection({ job, lang, plan }: { job: JobRow; lang: Lang; plan: Plan }) {
+  const t = makeT(lang)
+  const [text, setText] = useState(jdAdvCache.get(String(job.id)) || '')
+  const [status, setStatus] = useState<'loading' | 'streaming' | 'done' | 'error' | 'upgrade' | 'limited'>(jdAdvCache.has(String(job.id)) ? 'done' : 'loading')
+  const [freeLeft, setFreeLeft] = useState<number | null>(null)
+  useEffect(() => {
+    if (jdAdvCache.has(String(job.id))) return
+    const ctrl = new AbortController()
+    setText(''); setStatus('loading')
+    ;(async () => {
+      try {
+        const res = await fetch('/api/advisor', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal,
+          body: JSON.stringify({ field: 'title', id: String(job.id), job, lang }),
+        })
+        const left = res.headers.get('X-Free-Left')
+        if (left != null) setFreeLeft(Number(left))
+        if (res.status === 402) { setStatus('upgrade'); return }
+        if (res.status === 429) { setStatus('limited'); return }
+        if (!res.ok || !res.body) { setStatus('error'); return }
+        setStatus('streaming')
+        const reader = res.body.getReader(); const dec = new TextDecoder()
+        let acc = ''
+        for (;;) {
+          const { done, value } = await reader.read()
+          if (done) break
+          acc += dec.decode(value, { stream: true })
+          setText(acc)
+        }
+        const { body } = extractSug(acc, job.company, lang)   // 尾行建议问题不在内嵌区展示(追问在完整弹框)
+        jdAdvCache.set(String(job.id), body)
+        setText(body); setStatus('done')
+      } catch { if (!ctrl.signal.aborted) setStatus('error') }
+    })()
+    return () => ctrl.abort()
+  }, [job, lang])
+  return (
+    <div style={{ marginTop: 14, paddingTop: 10, borderTop: '1px solid #f3f4f6' }}>
+      <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, letterSpacing: 0.3, marginBottom: 6 }}>
+        <IconCompass /> {t('advisor.tag')}{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400 }}> · {t('advisor.left', { n: freeLeft })}</span> : null}
+      </div>
+      {status === 'upgrade' ? <UpgradeCard t={t} reason={t('up.advisor')} />
+        : status === 'limited' ? (
+          <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: '#78350f' }}>
+            {t('advisor.limit429')}
+            {!plan.loggedIn && <a href="/account" style={{ marginLeft: 8, color: '#2563eb', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('advisor.limitCta')}</a>}
+          </div>
+        )
+        : status === 'loading' ? <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>{t('advisor.loading')}</p>
+        : status === 'error' ? <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>{t('advisor.unavail')}</p>
+        : <div style={{ fontSize: 13.5, lineHeight: 1.7, color: '#374151' }}>{renderAI(text)}{status === 'streaming' && <span style={{ color: '#9ca3af' }}>▋</span>}</div>}
     </div>
   )
 }
@@ -2490,7 +2548,7 @@ function AdvisorChat({ field, job, lang, initialJudgment, initialSug }: { field:
 }
 
 // ── 操作列弹框:职位描述快看(读真实抓取正文;公司信息已并入顾问公司弹窗,C1)────
-function ActModal({ job, lang, onClose, onAdvisor }: { job: JobRow; lang: Lang; onClose: () => void; onAdvisor?: (j: JobRow) => void }) {
+function ActModal({ job, lang, plan, onClose, onAdvisor }: { job: JobRow; lang: Lang; plan: Plan; onClose: () => void; onAdvisor?: (j: JobRow) => void }) {
   // C1 后只剩 JD 快看(公司信息统一走顾问公司弹窗,消两套公司弹窗重复)
   // #87 把「点职位」从 title 顾问弹框改成本框后,顾问入口+可拖动一起丢了(Frank 2026-07-19 报障)——
   // 修=本框升级为浮动面板(共用 useFloatPanel)+ 标题栏「AI 顾问」钮开 title 字段顾问弹框
@@ -2573,6 +2631,8 @@ function ActModal({ job, lang, onClose, onAdvisor }: { job: JobRow; lang: Lang; 
               {t('src.label')}: <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#6b7280' }}>{job.applyUrl}</a>
             </div>
           )}
+          {/* AI 顾问初判自动生成(Frank:不要再点一下);深挖入口=标题栏「AI 顾问」钮 */}
+          {status !== 'loading' && <JdAdvisorSection job={job} lang={lang} plan={plan} />}
         </div>
         {/* 八方向拉伸手柄(透明边条+角块;右下角保留视觉提示三角) */}
         {!full && <div style={{ position: 'absolute', right: 0, bottom: 0, width: 18, height: 18, pointerEvents: 'none', background: 'linear-gradient(135deg, transparent 50%, #cbd5e1 50%)' }} />}
