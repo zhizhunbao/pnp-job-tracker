@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>E8-08 表卡双形态 — 设计总表(桌面 table×手机卡片,DataTable 一处实现 8 处生效)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; background: #f3f4f6; padding: 28px; color: #111827; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .sub { font-size: 13px; color: #6b7280; margin-bottom: 24px; }
+  .row { display: flex; gap: 28px; align-items: flex-start; flex-wrap: wrap; }
+  .frame { background: #fff; border: 1px solid #d1d5db; border-radius: 18px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .phone { width: 375px; padding: 12px 14px; }
+  .cap { font-size: 13px; font-weight: 600; color: #374151; margin: 10px 2px 6px; }
+  .cap span { font-weight: 400; color: #6b7280; }
+  /* 卡片规范 */
+  .card { border: 1px solid #e5e7eb; border-radius: 12px; background: #fff; padding: 10px 12px; margin-bottom: 8px; position: relative; }
+  .c1 { font-size: 14.5px; font-weight: 600; }
+  .c1 a { color: #2563eb; text-decoration: none; }
+  .c2 { font-size: 12.5px; color: #6b7280; margin-top: 2px; }
+  .kv { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 14px; margin-top: 6px; }
+  .kv .k { font-size: 11.5px; color: #9ca3af; }
+  .kv .v { font-size: 13px; color: #374151; }
+  .c4 { margin-top: 6px; font-size: 12.5px; }
+  .c4 a { color: #2563eb; text-decoration: none; }
+  .tagk { display: inline-block; font-size: 10.5px; padding: 1px 6px; border-radius: 6px; background: #fffbeb; color: #92400e; border: 1px solid #fde68a; margin-left: 6px; font-weight: 600; }
+  .tagr { display: inline-block; font-size: 10.5px; padding: 1px 6px; border-radius: 6px; background: #eef2ff; color: #3730a3; margin-left: 6px; font-weight: 600; }
+  .cmpbtn { position: absolute; right: 10px; top: 10px; border: 1px solid #e5e7eb; background: #fff; color: #6b7280; border-radius: 999px; padding: 2px 10px; font-size: 12px; }
+  .green { color: #15803d; font-weight: 600; }
+  .amber { color: #b45309; font-weight: 600; }
+  .gray { color: #9ca3af; }
+  .anno { position: absolute; right: -160px; font-size: 11px; color: #dc2626; width: 150px; line-height: 1.5; }
+  .secttl { font-size: 12.5px; font-weight: 700; color: #6b7280; margin: 14px 0 6px; }
+  /* 页面形态总表 */
+  .wide { width: 820px; padding: 16px 20px; }
+  table.spec { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  table.spec th { text-align: left; padding: 7px 10px; background: #fafafa; border-bottom: 1px solid #e5e7eb; color: #6b7280; font-size: 12px; white-space: nowrap; }
+  table.spec td { padding: 7px 10px; border-bottom: 1px solid #f3f4f6; color: #374151; vertical-align: top; }
+  .pill { display: inline-block; font-size: 11px; padding: 2px 9px; border-radius: 999px; }
+  .pT { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+  .pC { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+  .pS { background: #fafafa; color: #6b7280; border: 1px solid #e5e7eb; }
+  /* 例外小表 */
+  .minitable { width: 100%; border-collapse: collapse; font-size: 12.5px; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+  .minitable th { background: #fafafa; text-align: left; padding: 6px 10px; font-size: 11.5px; color: #6b7280; border-bottom: 1px solid #e5e7eb; }
+  .minitable td { padding: 6px 10px; border-bottom: 1px solid #f3f4f6; }
+</style>
+</head>
+<body>
+<h1>E8-08 表卡双形态 — 设计总表</h1>
+<div class="sub">原则:桌面=table,手机=卡片。DataTable 加卡片形态一处实现 8 处生效;jobs 主表已双形态;occupations 2 列窄表=例外保持表格。配色 token 零新增,桌面列色=手机卡色同一语义。</div>
+<div class="row">
+
+  <!-- ① 解剖 + LMIA 名录卡 -->
+  <div>
+    <div class="cap">① 通用卡片解剖 + 雇主名录 LMIA 卡<br><span>①标题行(蓝链+右上操作位)②副行 ③键值区(2列grid)④操作行</span></div>
+    <div class="frame phone">
+      <div class="secttl">雇主 LMIA 名录(手机)</div>
+      <div class="card">
+        <button class="cmpbtn">+ 对比</button>
+        <div class="c1"><a href="#">Extendicare ↗</a><span class="tagk">知名</span></div>
+        <div class="c2">怡康养老 <span class="tagr">医疗</span></div>
+        <div class="kv">
+          <span class="k">技能类获批</span><span class="k">LMIA 总数</span>
+          <span class="v green">18</span><span class="v">42</span>
+          <span class="k">最近季度</span><span class="k"></span>
+          <span class="v gray">2026-Q1</span><span class="v"></span>
+        </div>
+        <div class="c4"><a href="#">看职位 →</a></div>
+      </div>
+      <div class="card">
+        <button class="cmpbtn">✓ 已选</button>
+        <div class="c1"><a href="#">Porcupine Mechanical ↗</a></div>
+        <div class="c2"><span class="tagr">技工</span></div>
+        <div class="kv">
+          <span class="k">技能类获批</span><span class="k">LMIA 总数</span>
+          <span class="v green">5</span><span class="v">9</span>
+          <span class="k">最近季度</span><span class="k"></span>
+          <span class="v gray">2025-Q4</span><span class="v"></span>
+        </div>
+        <div class="c4"><a href="#">看职位 →</a></div>
+      </div>
+      <div class="secttl">AIP 指定雇主卡(同解剖,更薄)</div>
+      <div class="card">
+        <div class="c1">Cooke Aquaculture <span class="tagr">科技类</span></div>
+        <div class="c2">New Brunswick(新不伦瑞克省)</div>
+        <div class="kv"><span class="k">城市</span><span class="k"></span><span class="v">Saint John</span><span class="v"></span></div>
+        <div class="c4"><a href="#">看职位 →</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② 榜单两卡 -->
+  <div>
+    <div class="cap">② 榜单卡(公司榜 / 职位榜)<br><span>#排名进标题行;数字语义色与桌面列一致(绿=LMIA/薪资,棕=具名)</span></div>
+    <div class="frame phone">
+      <div class="secttl">公司榜(手机)</div>
+      <div class="card">
+        <div class="c1"><span class="gray">#1</span> <a href="#">Saskatchewan Health Authority ↗</a></div>
+        <div class="c2">Saskatchewan</div>
+        <div class="kv">
+          <span class="k">技能类获批</span><span class="k">具名通道岗</span>
+          <span class="v green">31(2026-Q1)</span><span class="v amber">12</span>
+          <span class="k">在招岗</span><span class="k">平均分</span>
+          <span class="v">208</span><span class="v">74</span>
+        </div>
+        <div class="c4"><a href="#">看职位 →</a></div>
+      </div>
+      <div class="secttl">职位榜(手机)</div>
+      <div class="card">
+        <div class="c1"><span class="gray">#1</span> <a href="#">registered nurse ↗</a></div>
+        <div class="c2">Extendicare</div>
+        <div class="kv">
+          <span class="k">城市</span><span class="k">薪资</span>
+          <span class="v">Ottawa, ON</span><span class="v green">$39.50/hr</span>
+          <span class="k">评分</span><span class="k">发布</span>
+          <span class="v">82</span><span class="v gray">2026-07-19</span>
+        </div>
+      </div>
+      <div class="secttl">stats 省页大类卡(手机;横滚退役)</div>
+      <div class="card">
+        <div class="c1"><a href="#">医疗</a></div>
+        <div class="kv">
+          <span class="k">在招</span><span class="k">近 7 天新增</span>
+          <span class="v">3,412</span><span class="v">186</span>
+          <span class="k">中位年薪</span><span class="k">具名通道岗</span>
+          <span class="v">$78K</span><span class="v amber">59</span>
+        </div>
+        <div class="c4"><a href="#">看职位 →</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ 转置卡 + 例外 -->
+  <div>
+    <div class="cap">③ 转置表→一实体一卡(cardBy: col)+ occupations 例外<br><span>对比页/省对比:原列头实体=卡标题,原维度行=键值行</span></div>
+    <div class="frame phone">
+      <div class="secttl">多雇主对比(手机:一雇主一卡)</div>
+      <div class="card">
+        <div class="c1"><a href="#">Extendicare ↗</a></div>
+        <div class="c2">怡康养老</div>
+        <div class="kv">
+          <span class="k">LMIA 技能类</span><span class="k">AIP 指定</span>
+          <span class="v green">18</span><span class="v">—</span>
+          <span class="k">在招岗</span><span class="k">帖面中位</span>
+          <span class="v">37</span><span class="v">$72K</span>
+          <span class="k">所在省难度</span><span class="k">高匹配岗</span>
+          <span class="v">竞争激烈</span><span class="v">4</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="c1"><a href="#">Sienna Senior Living ↗</a></div>
+        <div class="kv">
+          <span class="k">LMIA 技能类</span><span class="k">AIP 指定</span>
+          <span class="v green">7</span><span class="v">—</span>
+          <span class="k">在招岗</span><span class="k">帖面中位</span>
+          <span class="v">21</span><span class="v">$69K</span>
+          <span class="k">所在省难度</span><span class="k">高匹配岗</span>
+          <span class="v">竞争激烈</span><span class="v">2</span>
+        </div>
+      </div>
+      <div class="secttl">occupations 通道表(手机:例外保持表格——2 列窄表卡片反而膨胀)</div>
+      <table class="minitable">
+        <tr><th>NOC</th><th>职业名</th><th></th></tr>
+        <tr><td class="gray">31301</td><td>Registered nurses</td><td><a href="#" style="color:#2563eb;text-decoration:none;font-size:12px">看职位 →</a></td></tr>
+        <tr><td class="gray">32101</td><td>Licensed practical nurses</td><td><a href="#" style="color:#2563eb;text-decoration:none;font-size:12px">看职位 →</a></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ④ 页面形态总表 -->
+  <div>
+    <div class="cap">④ 全站页面形态总表(单一来源;新页面照此定形态)<br><span>T=表格 C=卡片 S=单栏内容/自适应</span></div>
+    <div class="frame wide">
+      <table class="spec">
+        <tr><th>页面</th><th>桌面</th><th>手机</th><th>备注</th></tr>
+        <tr><td>/ 职位板</td><td><span class="pill pT">主表(重器)</span></td><td><span class="pill pC">卡片流</span></td><td>已双形态(#120)</td></tr>
+        <tr><td>/jobs/[id] 职位详情</td><td><span class="pill pS">单栏 860</span></td><td><span class="pill pS">同</span></td><td>#120 A 件</td></tr>
+        <tr><td>/employers LMIA/AIP</td><td><span class="pill pT">DataTable</span></td><td><span class="pill pC">卡片 ←本件</span></td><td>①解剖卡</td></tr>
+        <tr><td>/employers/compare</td><td><span class="pill pT">转置表</span></td><td><span class="pill pC">一雇主一卡 ←本件</span></td><td>cardBy: col</td></tr>
+        <tr><td>/occupations</td><td><span class="pill pT">DataTable</span></td><td><span class="pill pT">紧凑表(例外)</span></td><td>≤3 列窄表不卡片化</td></tr>
+        <tr><td>/rankings 两榜</td><td><span class="pill pT">DataTable</span></td><td><span class="pill pC">卡片 ←本件</span></td><td>②榜单卡</td></tr>
+        <tr><td>/stats/[prov] 大类表</td><td><span class="pill pT">DataTable</span></td><td><span class="pill pC">卡片 ←本件</span></td><td>minWidth 横滚退役</td></tr>
+        <tr><td>/stats Pro 省对比</td><td><span class="pill pT">转置表</span></td><td><span class="pill pC">一省一卡 ←本件</span></td><td>cardBy: col</td></tr>
+        <tr><td>/pathways /timeline /news</td><td><span class="pill pC">内容卡/时间轴</span></td><td><span class="pill pC">同</span></td><td>本就卡片族</td></tr>
+        <tr><td>/news/[slug] /account /pricing /about legal</td><td><span class="pill pS">单栏/表单</span></td><td><span class="pill pS">同</span></td><td>不动</td></tr>
+      </table>
+      <div style="font-size:12px;color:#6b7280;margin-top:12px;line-height:1.7">
+        <b>通用卡片规范</b>:白卡描边 r12 · padding 10×12 · 卡间 8;①标题行 14.5/600 蓝链+右上操作位 ②副行 12.5 灰(别名/Tag)③键值区 label 11.5 灰+value 13(两列 grid,长值独占行)④操作行蓝文字链。
+        分元素点击(卡身不整卡响应);数字语义色=桌面列色(绿=薪资/技能股 · 棕=具名 · 灰=次要);禁「·」「/」杂糅。
+        <b>实现</b>:DTCol 加 card 角色(title/sub/kv/action/hide),render() 表卡共用=内容单一来源;CSS 双渲染 ≤640;转置表 cardBy: col。手机卡片流 v1 无排序控件(桌面表头承担)。
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
