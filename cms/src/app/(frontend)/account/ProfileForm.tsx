@@ -5,8 +5,8 @@
 // 数据完整性:返回用户已填精确值(clb/crs/pgwp)未主动改档时原值保留(state 初值=精确值,不点不覆盖)。
 import { useEffect, useMemo, useState } from 'react'
 import type { TFn } from '../jobs/i18n'
-import { IconCheck, IconTarget } from '../Icons'
-import { Button } from '../ui/primitives'
+import { IconTarget } from '../Icons'
+import { Button, Notice, chipStyle } from '../ui/primitives'
 import { POPULAR_NOCS, CLB_OPTS, CRS_OPTS, PGWP_OPTS, clbActive, crsActive, pgwpActive, type Opt } from './profileOptions'
 
 type NocOpt = { noc: string; title: string }
@@ -25,11 +25,8 @@ const STATUS_SLUGS = ['overseas', 'studying', 'working', 'jobhunting', 'pr'] as 
 
 const inputS: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '7px 10px', fontSize: 13.5, border: '1px solid #d1d5db', borderRadius: 6, marginTop: 4 }
 const lbl: React.CSSProperties = { fontSize: 13, color: '#374151', display: 'block', marginTop: 14 }
-// 统一点选 chip 样式(省份/分型/职业/区间共用)
-const chip = (on: boolean): React.CSSProperties => ({
-  border: on ? '1px solid #2563eb' : '1px solid #d1d5db', background: on ? '#eff6ff' : '#fff',
-  color: on ? '#1d4ed8' : '#6b7280', borderRadius: 6, padding: '4px 10px', fontSize: 12.5, cursor: 'pointer',
-})
+// 统一点选 chip 样式(省份/分型/职业/区间共用)——P3 chips 归并(#114):primitives 药丸
+const chip = chipStyle
 
 export function ProfileForm({ t, userId, initial, onSaved }: { t: TFn; userId: string | number; initial: ProfileValue | null; onSaved?: () => void }) {
   const [status, setStatus] = useState<string>(initial?.currentStatus ?? '')
@@ -172,8 +169,8 @@ export function ProfileForm({ t, userId, initial, onSaved }: { t: TFn; userId: s
       <Button lg onClick={save} disabled={busy} style={{ width: '100%', marginTop: 16, textAlign: 'center', padding: '9px 0' }}>
         {busy ? '…' : t('prof.save')}
       </Button>
-      {state === 'saved' && <div style={{ color: '#047857', fontSize: 13, marginTop: 8 }}><IconCheck /> {t('prof.saved')}</div>}
-      {state === 'err' && <div style={{ color: '#dc2626', fontSize: 13, marginTop: 8 }}>{t('prof.err')}</div>}
+      {state === 'saved' && <Notice kind="ok" style={{ marginTop: 8 }}>{t('prof.saved')}</Notice>}
+      {state === 'err' && <Notice kind="err" style={{ marginTop: 8 }}>{t('prof.err')}</Notice>}
     </div>
   )
 }

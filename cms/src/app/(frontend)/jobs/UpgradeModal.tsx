@@ -8,7 +8,7 @@ import { Modal } from './Modal'
 import { IconStar } from '../Icons'
 import { PricingModal, PRICE } from './PricingModal'
 import { AuthModal } from './AuthForm'
-import { Button } from '../ui/primitives'
+import { Button, Notice } from '../ui/primitives'
 
 // 统一升级钮 UpgradeCta(⓪ 2026-07-19 Frank 批「升级 Pro 按钮单独设计」):⭐ 实心棕 pro 型,
 // 全站升级入口从裸文字链换装到这;已登录=开升级弹框,未登录=开注册框(行为与原各处一致)。
@@ -62,7 +62,7 @@ export function UpgradeModal({ t, onClose, reason }: { t: TFn; onClose: () => vo
           <div style={{ fontSize: 11, fontWeight: 400, opacity: 0.85, marginTop: 2 }}>{t('price.perDay', { v: PRICE.perDay(PRICE.p90, 90) })}</div>
         </button>
       </div>
-      {err && <div style={{ color: '#dc2626', fontSize: 13, marginTop: 10, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '7px 10px' }}>{err}</div>}
+      {err && <Notice kind="err" style={{ marginTop: 10 }}>{err}</Notice>}
       <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 12 }}>{t('acct.buyNote')}</div>
       <button onClick={() => setCompare(true)} style={{ display: 'block', marginTop: 10, fontSize: 12.5, color: '#2563eb', border: 'none', background: 'none', padding: 0, cursor: 'pointer', fontWeight: 600 }}>{t('up.compare')} →</button>
       {/* 本弹框只出现在已登录未 Pro 上下文(见文件头注释) */}

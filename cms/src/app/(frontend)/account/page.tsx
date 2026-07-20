@@ -5,14 +5,14 @@
 import { useEffect, useState } from 'react'
 import { makeT, LANG_KEY, type Lang } from '../jobs/i18n'
 import { useIsNarrow } from '../jobs/Modal'
-import { IconCheckCircle, IconStar, IconUser } from '../Icons'
+import { IconStar, IconUser } from '../Icons'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { ProfileForm, type ProfileValue } from './ProfileForm'
 import { SavedSearchList } from './SavedSearchList'
 import { SavedJobsList } from './SavedJobsList'
 import { Avatar } from '../Avatar'
-import { Button } from '../ui/primitives'
+import { Button, Notice } from '../ui/primitives'
 
 type Me = { id: string | number; email: string; role?: string; proUntil?: string | null; profile?: ProfileValue | null; displayName?: string | null; avatar?: string | null; locale?: string | null } | null
 
@@ -21,7 +21,8 @@ function RedirectToLogin() {
   return null
 }
 
-const card: React.CSSProperties = { padding: '1.6rem 1.9rem', border: '1px solid #eef0f3', borderRadius: 16, background: '#fff', boxShadow: '0 8px 30px rgba(17,24,39,.06)' }
+// H 卡片规格(#114 E-I 批):页面内卡片一律平面描边,阴影只给弹框/下拉
+const card: React.CSSProperties = { padding: '1.6rem 1.9rem', border: '1px solid #e5e7eb', borderRadius: 12, background: '#fff' }
 const btn: React.CSSProperties = { width: '100%', padding: '10px 0', fontSize: 14, fontWeight: 600, border: 'none', borderRadius: 9, cursor: 'pointer', marginTop: 14 }
 
 type Sec = 'overview' | 'profile' | 'favs' | 'sjobs' | 'saved' | 'buy'
@@ -113,7 +114,7 @@ export default function AccountPage() {
           <main style={{ ...card, flex: 1, minWidth: 0, width: narrow ? '100%' : undefined, boxSizing: 'border-box' }}>
             {sec === 'overview' && (<>
               <h1 style={{ fontSize: 18, margin: '0 0 14px' }}>{t('acct.title')}</h1>
-              {payOk && <div style={{ background: '#ecfdf5', color: '#047857', fontSize: 13, padding: '8px 10px', borderRadius: 6, marginBottom: 12 }}><IconCheckCircle /> {t('acct.payOk')}</div>}
+              {payOk && <Notice kind="ok" style={{ marginBottom: 12 }}>{t('acct.payOk')}</Notice>}
               {/* 身份头(E11-01):头像 + 昵称(可改,空回退邮箱前缀)+ 邮箱 */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
                 <Avatar src={me.avatar} name={me.displayName || me.email} email={me.email} size={52} />

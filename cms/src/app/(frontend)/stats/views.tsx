@@ -4,7 +4,7 @@
 import { useMemo, useState } from 'react'
 import { StatsShell, MetricCards, CaliberLine, useLang } from './ui'
 import { BackLink } from '../BackLink'
-import { BANNER_IMGS, Button, PageBanner } from '../ui/primitives'
+import { BANNER_IMGS, Button, Chip, PageBanner } from '../ui/primitives'
 import { DataTable } from '../ui/DataTable'
 import { IconMapPin, IconScale, IconStar, IconTarget } from '../Icons'
 import { BROAD_SLUGS, PROVS, PROV_NAME, type StatRow, type SrcRow } from './shared'
@@ -209,8 +209,7 @@ export function CompareContent({ rows, srcs, isPro, loggedIn, myNocs, t }: { row
       <div style={{ margin: '12px 0', fontSize: 12.5, color: '#6b7280' }}>{t('stats.pickProv')}{myNocs.length ? <span style={{ marginLeft: 10, color: '#3730a3' }}><IconTarget /> {t('stats.myNoc')}:NOC {myNocs.join('/')} → {broadLabel(myBroad)}</span> : null}</div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
         {provs.map((p) => (
-          <button key={p} onClick={() => toggle(p)}
-            style={{ border: picked.includes(p) ? '1px solid #2563eb' : '1px solid #d1d5db', background: picked.includes(p) ? '#eff6ff' : '#fff', color: picked.includes(p) ? '#1d4ed8' : '#6b7280', borderRadius: 6, padding: '4px 10px', fontSize: 12.5, cursor: 'pointer' }}>{p}</button>
+          <Chip key={p} active={picked.includes(p)} onClick={() => toggle(p)}>{p}</Chip>
         ))}
         <select value={broad} onChange={(e) => setBroad(e.target.value)} style={{ marginLeft: 10, fontSize: 12.5, border: '1px solid #d1d5db', borderRadius: 6, padding: '4px 8px', color: '#374151' }}>
           <option value="all">{broadLabel('all')}</option>

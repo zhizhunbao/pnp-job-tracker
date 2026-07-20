@@ -9,7 +9,7 @@ const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : use
 import { makeT, streamDisplay, eeDisplay, LANGS, LANG_KEY, COLS_COOKIE, type Lang, type TFn } from './i18n'
 import { IconChart, IconCheck, IconClipboard, IconCompass, IconLock, IconMap, IconMapPin, IconMaximize, IconMinimize, IconNews, IconSave, IconSettings, IconStar, IconTarget, IconUser, IconWarn, IconX } from '../Icons'
 import { SiteHeader } from '../SiteHeader'
-import { BANNER_IMGS, Button, PageBanner } from '../ui/primitives'
+import { BANNER_IMGS, Button, Notice, PageBanner } from '../ui/primitives'
 import { SiteFooter } from '../SiteFooter'
 import { Avatar } from '../Avatar'
 import { AuthModal } from './AuthForm'
@@ -52,11 +52,7 @@ export const BANNER_COOKIE = 'jobs_banner_v1'
 // 升级卡片(402 / 锁定块共用;都出现在已登录上下文)—— P1 换装(⓪ 2026-07-19):CTA=统一实心 UpgradeCta
 function UpgradeCard({ t, reason }: { t: TFn; reason: string }) {
   return (
-    <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '10px 14px', margin: '8px 0', fontSize: 13.5, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-      <span><span style={{ fontWeight: 600, color: '#92400e' }}><IconStar /> {t('up.title')}</span>
-        <span style={{ color: '#78716c', marginLeft: 8 }}>{reason}</span></span>
-      <UpgradeCta t={t} loggedIn />
-    </div>
+    <Notice kind="warn" lead={t('up.title')} action={<UpgradeCta t={t} loggedIn />} style={{ margin: '8px 0', fontSize: 13.5 }}>{reason}</Notice>
   )
 }
 
@@ -1644,10 +1640,9 @@ function JdAdvisorSection({ job, lang, plan }: { job: JobRow; lang: Lang; plan: 
       </div>
       {status === 'upgrade' ? <UpgradeCard t={t} reason={t('up.advisor')} />
         : status === 'limited' ? (
-          <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: '#78350f' }}>
+          <Notice kind="warn" action={!plan.loggedIn ? <a href="/account" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('advisor.limitCta')}</a> : undefined}>
             {t('advisor.limit429')}
-            {!plan.loggedIn && <a href="/account" style={{ marginLeft: 8, color: '#2563eb', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('advisor.limitCta')}</a>}
-          </div>
+          </Notice>
         )
         : status === 'loading' ? <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>{t('advisor.loading')}</p>
         : status === 'error' ? <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>{t('advisor.unavail')}</p>
@@ -1979,10 +1974,7 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
         {field === 'vsMedian' && <FactRow k={t('col.vsMedian')}>{vs != null ? `${vs >= 0 ? '+' : ''}${vs}%` : null}</FactRow>}
         {/* ②(2026-07-19 价值时刻批):免费用户在「刚要判断薪资」的位置点出 Pro 能看什么;不展示具体 %(数据服务端已剥离) */}
         {!isPro && (field === 'salary' || field === 'salaryYr') && (
-          <div style={{ marginTop: 8, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '8px 12px', fontSize: 12.5, color: '#78350f', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-            <span>⭐ {t('up.salHint')}</span>
-            <UpgradeCta t={t} loggedIn={loggedIn} />
-          </div>
+          <Notice kind="warn" action={<UpgradeCta t={t} loggedIn={loggedIn} />} style={{ marginTop: 8, fontSize: 12.5 }}>{t('up.salHint')}</Notice>
         )}
       </FactsBox>
     )
@@ -2365,10 +2357,9 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, news, e
             <UpgradeCard t={t} reason={t('up.advisor')} />
           ) : status === 'limited' ? (
             /* 429 说人话(第 9 轮 #25):额度用完本是注册/升级的转化时机,不是报错时机 */
-            <div style={{ margin: '10px 0', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '10px 14px', fontSize: 13.5, color: '#78350f' }}>
+            <Notice kind="warn" style={{ margin: '10px 0', fontSize: 13.5 }} action={!plan.loggedIn ? <a href="/account" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('advisor.limitCta')}</a> : undefined}>
               {t('advisor.limit429')}
-              {!plan.loggedIn && <a href="/account" style={{ marginLeft: 8, color: '#2563eb', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('advisor.limitCta')}</a>}
-            </div>
+            </Notice>
           ) : status === 'loading' ? (
             <p style={{ margin: '10px 0', fontSize: 14, color: '#9ca3af' }}>{t('advisor.loading')}</p>
           ) : (

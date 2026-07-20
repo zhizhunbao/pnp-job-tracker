@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react'
 import type { TFn } from './i18n'
 import { Modal } from './Modal'
-import { Button } from '../ui/primitives'
+import { Button, Notice } from '../ui/primitives'
 
 const GOOGLE_ON = !!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
 const GoogleG = () => (
@@ -135,7 +135,7 @@ export function AuthForm({ t, onDone, initialMode, resetToken }: { t: TFn; onDon
       {mode === 'reset' && <div style={{ fontSize: 14.5, fontWeight: 600, color: '#111827', marginBottom: 14, textAlign: 'center' }}>{t('acct.resetTitle')}</div>}
       {mode === 'forgot' && sent ? (
         <div>
-          <div style={{ background: '#ecfdf5', color: '#047857', fontSize: 13, padding: '10px 12px', borderRadius: 8 }}>{t('acct.forgotSent')}</div>
+          <Notice kind="ok">{t('acct.forgotSent')}</Notice>
           <button type="button" onClick={() => { setMode('login'); setSent(false); setErr('') }}
             style={{ border: 'none', background: 'none', padding: 0, color: '#2563eb', fontSize: 12.5, cursor: 'pointer', marginTop: 12 }}>{t('acct.backLogin')}</button>
         </div>
@@ -170,7 +170,7 @@ export function AuthForm({ t, onDone, initialMode, resetToken }: { t: TFn; onDon
             </div>
           )
         })()}
-        {err && <div style={{ color: '#dc2626', fontSize: 13, marginTop: 10, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '7px 10px' }}>{err}</div>}
+        {err && <Notice kind="err" style={{ marginTop: 10 }}>{err}</Notice>}
         {/* 组件统一 P2(#113):提交钮换 primitives.Button(primary lg 通栏;form 内默认 type=submit 行为不变;
             禁用态=Button 内置浅蓝,替代原 opacity 手法) */}
         <Button lg disabled={busy} style={{ width: '100%', marginTop: 18, textAlign: 'center' }}>

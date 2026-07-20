@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import { makeT, LANG_KEY, type Lang, type TFn } from '../jobs/i18n'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
-import { PageBanner, PageShell, Tag, UI, chipStyle } from '../ui/primitives'
+import { Button, PageBanner, PageShell, Tag, UI, chipStyle } from '../ui/primitives'
 import { DataTable } from '../ui/DataTable'
 import { IconUsers } from '../Icons'
 import { DIR_PAGE_SIZE, type AipRow, type LmiaRow } from '@/lib/directory'
@@ -60,7 +60,7 @@ export function EmployersView({ type, q, prov, page, aip, lmia, counts }: {
             {prov && <input type="hidden" name="prov" value={prov} />}
             <input name="q" value={qInput} onChange={(e) => setQInput(e.target.value)} placeholder={t('dir.search')}
               style={{ border: `1px solid ${UI.border}`, borderRadius: 8, padding: '5px 10px', fontSize: 13, minWidth: 180 }} />
-            <button type="submit" style={{ border: 'none', background: UI.primary, color: '#fff', borderRadius: 8, padding: '5px 14px', fontSize: 13, cursor: 'pointer' }}>{t('dir.searchBtn')}</button>
+            <Button sm style={{ fontSize: 13, padding: '5px 14px' }}>{t('dir.searchBtn')}</Button>
           </form>
         </div>
         {/* AIP 省筛(名单只覆盖 NS/NB/NL) */}

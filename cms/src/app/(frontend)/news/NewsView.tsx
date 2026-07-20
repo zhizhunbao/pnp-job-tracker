@@ -12,7 +12,7 @@ import { useLang } from '../stats/ui'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { BackLink } from '../BackLink'
-import { PageBanner, PageShell, SectionTabs } from '../ui/primitives'
+import { PageBanner, PageShell, SectionTabs, chipStyle } from '../ui/primitives'
 import { IconNews } from '../Icons'
 import { newsPublisher, newsRegionName, NEWS_REGIONS, type NewsCard, type NewsComment, type NewsHero, type NewsRow } from './shared'
 
@@ -195,11 +195,7 @@ export function NewsListView({ items, hero, cmtCounts }: { items: NewsCard[]; he
         if (last && last[0] === n.date) last[1].push(n)
         else byDay.push([n.date, [n]])
       }
-      const chip = (active: boolean): React.CSSProperties => ({
-        border: '1px solid ' + (active ? '#2563eb' : '#e5e7eb'), background: active ? '#2563eb' : '#fff',
-        color: active ? '#fff' : '#6b7280', fontWeight: active ? 600 : 400,
-        borderRadius: 999, padding: '4px 12px', fontSize: 12.5, cursor: 'pointer', whiteSpace: 'nowrap',
-      })
+      const chip = chipStyle   // P3 chips 归并(#114):与 primitives 同款,本地副本退役
       return (
         <>
           {/* v4:头条网格窄屏折单列 */}

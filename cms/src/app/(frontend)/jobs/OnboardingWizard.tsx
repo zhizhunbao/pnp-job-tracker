@@ -5,7 +5,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { TFn } from './i18n'
 import { Modal } from './Modal'
-import { Button } from '../ui/primitives'
+import { Button, chipStyle } from '../ui/primitives'
 import { hasProfile, normalizeProfile, type MatchProfile } from '@/lib/match'
 import {
   POPULAR_NOCS, CLB_OPTS, CRS_OPTS, PGWP_OPTS, clbActive, crsActive, pgwpActive, type Opt,
@@ -27,10 +27,7 @@ const BRANCH: Record<string, Field[]> = {
   pr: ['noc', 'prov'],                       // E 已 PR/纯找工:移民信号弱化
 }
 
-const chip = (on: boolean): React.CSSProperties => ({
-  border: on ? '1px solid #2563eb' : '1px solid #d1d5db', background: on ? '#eff6ff' : '#fff',
-  color: on ? '#1d4ed8' : '#6b7280', borderRadius: 6, padding: '5px 11px', fontSize: 13, cursor: 'pointer',
-})
+const chip = chipStyle   // P3 chips 归并(#114):选项 chips 统一 primitives 药丸(B映射)
 
 export function OnboardingWizard({ t, initial, onClose }: { t: TFn; initial: MatchProfile | null; onClose: () => void }) {
   const seed = normalizeProfile(initial)
