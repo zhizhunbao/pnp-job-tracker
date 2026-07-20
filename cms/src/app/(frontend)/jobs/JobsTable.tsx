@@ -1391,7 +1391,11 @@ export function PnpListSection({ job, lang, occ, draws, news }: { job: JobRow; l
       {!isQc && job.province ? <PnpDrawsBlock province={job.province} lang={lang} draws={draws} /> : null}
       {/* 本省最新公告(E12-06,「本省最近抽选」块下);QC 也显——MIFI 部委新闻,资格口径由 /news 声明 */}
       {job.province ? <NewsLatestBlock province={job.province} lang={lang} news={news} /> : null}
-      {streams.filter((s) => s.occupations.length).map((s) => (
+      {/* #125(Frank「上面显示符合,下面还显示不符合干什么」):命中具名通道 → 只展示命中的那个清单;
+          被排除 → 只展示排除清单;都没有才全量铺(浏览语境)——与 EE 节「命中只展开命中类」同一先例 */}
+      {streams.filter((s) => s.occupations.length)
+        .filter((s) => (matched ? s === matched : excluded ? s.type === 'ineligible' : true))
+        .map((s) => (
         <div key={s.label + s.stream} style={{ marginBottom: 10 }}>
           <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>
             {/* 通道名挂官方政策页(url 维度字段一直有,07-06 质量盘点补渲染)—— 每条清单自带出处 */}
@@ -1600,17 +1604,19 @@ export function JdFormattedView({ text, t, fallbackPay, applyUrl }: { text: stri
         return (
           <div key={m} style={{ marginBottom: 8 }}>
             <div style={{ fontWeight: 700, color: '#111827' }}>{t(key)}</div>
-            {/* #123c(Frank「每个职位都有薪资吧」):原帖正文没写薪资但帖面字段有 → 兜底显示帖面薪资+来源灰注
-                (仍是搬运原帖信息——JB 列表字段也是雇主自报,非编造) */}
-            {none && m === 'PAY' && fallbackPay ? (
+            {/* #125(Frank「重复」):「怎么投」整节文本直接渲成官方原帖链接——一处内容一处链接,
+                不再额外附按钮行(与底部合规来源行重复);「Click Here」类废句自身变成可点出口 */}
+            {m === 'APPLY' && applyUrl ? (
+              none
+                ? <div style={{ paddingLeft: 14 }}><a href={applyUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}>{t('act.seeOfficial')}</a></div>
+                : lines.map((l, i) => <div key={i} style={{ paddingLeft: 14 }}><a href={applyUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{l.replace(/^-\s*/, '')} ↗</a></div>)
+            ) : /* #123c(Frank「每个职位都有薪资吧」):原帖正文没写薪资但帖面字段有 → 兜底显示帖面薪资+来源灰注
+                (仍是搬运原帖信息——JB 列表字段也是雇主自报,非编造) */
+            none && m === 'PAY' && fallbackPay ? (
               <div style={{ paddingLeft: 14 }}>{fallbackPay} <span style={{ color: '#9ca3af', fontSize: 12 }}>{t('act.f.payFb')}</span></div>
             ) : none ? <div style={{ paddingLeft: 14, color: '#9ca3af' }}>{t('act.f.none')}</div>
               : hasBullets ? <ul style={{ margin: 0, paddingLeft: 30 }}>{lines.map((l, i) => <li key={i}>{l.replace(/^-\s*/, '')}</li>)}</ul>
               : lines.map((l, i) => <div key={i} style={{ paddingLeft: 14 }}>{l}</div>)}
-            {/* #123c(Frank「Click Here 没法点」):懒抓纯文本丢链接,「怎么投」节尾恒附官方原帖真链 */}
-            {m === 'APPLY' && applyUrl ? (
-              <div style={{ paddingLeft: 14 }}><a href={applyUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}>{t('act.seeOfficial')}</a></div>
-            ) : null}
           </div>
         )
       })}

@@ -155,15 +155,17 @@ const SIMPLE = new Set(['datePosted', 'lastSeen', 'closedAt', 'status', 'country
 const HEADINGS: Record<Lang, { company: string; title: string }> = {
   zh: {
     company: '【公司是做什么的】【主要产品 / 项目】【主要竞品公司】【发展前景与对求职者的意义】',
-    title: '【这个职位做什么】【需要哪些技能 / 背景】【怎么准备(简历 / 作品 / 面试)】',
+    // #125(Frank「AI 整理和 AI 顾问重复了」):初判不再复述职位做什么/要什么(整理版 ROLE/REQS 已承担事实层)——
+    // 顾问只做结论层增量:移民视角含金量 + 怎么行动。功能不合并(事实/结论分离红线),内容重叠砍掉。
+    title: '【移民视角怎么看这个岗】【怎么准备(简历 / 作品 / 面试)】',
   },
   en: {
     company: '【What the company does】【Main products / projects】【Main competitors】【Outlook & what it means for job-seekers】',
-    title: '【What this role does】【Skills / background needed】【How to prepare (resume / portfolio / interview)】',
+    title: '【Immigration lens on this role】【How to prepare (resume / portfolio / interview)】',
   },
   ko: {
     company: '【회사가 하는 일】【주요 제품 / 프로젝트】【주요 경쟁사】【전망과 구직자에게의 의미】',
-    title: '【이 직무가 하는 일】【필요한 기술 / 배경】【준비 방법 (이력서 / 포트폴리오 / 면접)】',
+    title: '【이민 관점에서 본 이 직무】【준비 방법 (이력서 / 포트폴리오 / 면접)】',
   },
 }
 
