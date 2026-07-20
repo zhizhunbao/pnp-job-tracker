@@ -81,11 +81,20 @@ export function EmployersView({ type, q, prov, page, aip, lmia, counts }: {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             {type === 'lmia' ? (
               <>
-                <thead><tr><th style={th}>{t('dir.col.employer')}</th><th style={th}>{t('dir.col.region')}</th><th style={{ ...th, cursor: 'help', textDecoration: 'underline dotted #d1d5db' }} title={t('dir.col.skilled.tip')}>{t('dir.col.skilled')}</th><th style={th}>{t('rank.col.lmia')}</th><th style={th}>{t('dir.col.streams')}</th><th style={th}>{t('dir.col.quarter')}</th><th style={th}></th></tr></thead>
+                <thead><tr><th style={th}>{t('dir.col.employer')}</th><th style={th}>{t('fact.coSectors')}</th><th style={th}>{t('dir.col.region')}</th><th style={{ ...th, cursor: 'help', textDecoration: 'underline dotted #d1d5db' }} title={t('dir.col.skilled.tip')}>{t('dir.col.skilled')}</th><th style={th}>{t('rank.col.lmia')}</th><th style={th}>{t('dir.col.streams')}</th><th style={th}>{t('dir.col.quarter')}</th><th style={th}></th></tr></thead>
                 <tbody>
-                  {(lmia || []).map((r) => (
+                  {(lmia || []).map((r) => {
+                    // 雇主 D(2026-07-19 Frank):中/韩别名灰字随界面语言(Wikidata 官方标签,不机翻,英文名恒为主名);
+                    // 知名徽标=有 Wikipedia 条目(点开可核验);行业=在库岗大类多数派,t('broad.*') 三语
+                    const alias = lang === 'zh' ? r.aliasZh : lang === 'ko' ? r.aliasKo : ''
+                    return (
                     <tr key={r.name}>
-                      <td style={{ ...td, fontWeight: 600 }}>{r.website ? <a href={r.website} target="_blank" rel="noreferrer" style={{ color: UI.primary, textDecoration: 'none' }}>{r.name} ↗</a> : r.name}</td>
+                      <td style={{ ...td, fontWeight: 600 }}>
+                        {r.website ? <a href={r.website} target="_blank" rel="noreferrer" style={{ color: UI.primary, textDecoration: 'none' }}>{r.name} ↗</a> : r.name}
+                        {alias ? <span style={{ marginLeft: 6, color: '#9ca3af', fontWeight: 400, fontSize: 12 }}>{alias}</span> : null}
+                        {r.wiki ? <a href={r.wiki} target="_blank" rel="noreferrer" style={{ marginLeft: 6, textDecoration: 'none' }}><Tag variant="pro">{t('dir.known')}</Tag></a> : null}
+                      </td>
+                      <td style={r.industry ? td : { ...td, color: '#9ca3af' }}>{r.industry ? <Tag variant="region">{t('broad.' + r.industry)}</Tag> : '—'}</td>
                       <td style={r.region ? td : { ...td, color: '#9ca3af' }}>{r.region || '—'}</td>
                       {/* B4-02:技能股列(High Wage/GTS)——「有 LMIA」≠「技能类担保信号」,0 显灰杠 */}
                       <td style={{ ...td, fontWeight: 600, color: r.lmiaPositionsSkilled ? UI.ok : '#9ca3af' }}>{r.lmiaPositionsSkilled ?? '—'}</td>
@@ -94,7 +103,7 @@ export function EmployersView({ type, q, prov, page, aip, lmia, counts }: {
                       <td style={{ ...td, color: '#9ca3af' }}>{r.lmiaLastQuarter || '—'}</td>
                       <td style={{ ...td, whiteSpace: 'nowrap' }}><a href={`/?q=${encodeURIComponent(r.name)}`} style={{ color: UI.primary, textDecoration: 'none', fontSize: 12.5 }}>{t('rank.viewJobs')}</a></td>
                     </tr>
-                  ))}
+                  )})}
                 </tbody>
               </>
             ) : (

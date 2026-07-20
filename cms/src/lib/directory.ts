@@ -4,7 +4,7 @@
 export const DIR_PAGE_SIZE = 100
 
 export type AipRow = { name: string; province: string; location: string; isTech: boolean }
-export type LmiaRow = { name: string; region: string; website: string; lmiaPositions: number; lmiaPositionsSkilled: number | null; lmiaStreams: string; lmiaLastQuarter: string }
+export type LmiaRow = { name: string; region: string; website: string; lmiaPositions: number; lmiaPositionsSkilled: number | null; lmiaStreams: string; lmiaLastQuarter: string; industry: string; aliasZh: string; aliasKo: string; wiki: string }
 export type OccRow = { province: string; stream: string; label: string; type: string; noc: string; name: string; url: string; fetched: string }
 
 const like = (q: string) => `%${q.replace(/[%_\\]/g, (c) => '\\' + c)}%`
@@ -31,12 +31,14 @@ export async function fetchLmiaEmployers(pool: any, { q, page }: { q: string; pa
   const { rows: [{ n }] } = await pool.query(`SELECT COUNT(*)::int AS n FROM companies ${where}`, args)
   // B4-02:技能股(High Wage/GTS)优先排序——农业/低薪股大户(果园/农场)沉底,与担保雇主榜口径一致
   const { rows } = await pool.query(
-    `SELECT name, region, website, lmia_positions, lmia_positions_skilled, lmia_streams, lmia_last_quarter FROM companies ${where}
+    `SELECT name, region, website, lmia_positions, lmia_positions_skilled, lmia_streams, lmia_last_quarter, industry, alias_zh, alias_ko, wiki_url FROM companies ${where}
      ORDER BY COALESCE(lmia_positions_skilled, 0) DESC, lmia_positions DESC, name ASC LIMIT ${DIR_PAGE_SIZE} OFFSET ${Math.max(0, page) * DIR_PAGE_SIZE}`, args)
   const items: LmiaRow[] = rows.map((r: any) => ({
     name: r.name ?? '', region: r.region ?? '', website: r.website ?? '',
     lmiaPositions: Number(r.lmia_positions) || 0, lmiaPositionsSkilled: r.lmia_positions_skilled == null ? null : Number(r.lmia_positions_skilled),
     lmiaStreams: r.lmia_streams ?? '', lmiaLastQuarter: r.lmia_last_quarter ?? '',
+    // 雇主 D(2026-07-19):行业=在库岗大类多数派;别名=Wikidata 官方标签;wiki 非空=知名
+    industry: r.industry ?? '', aliasZh: r.alias_zh ?? '', aliasKo: r.alias_ko ?? '', wiki: r.wiki_url ?? '',
   }))
   return { items, total: n as number }
 }

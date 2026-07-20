@@ -32,5 +32,10 @@ export const Companies: CollectionConfig = {
     { name: 'aiWebsite', type: 'text', admin: { description: 'AI 检索到的官网(非库内 directory 原有,前端标注区分)' } },
     { name: 'aiSources', type: 'textarea', admin: { description: '检索出处 URL 列表(JSON 数组串)' } },
     { name: 'aiFetched', type: 'date', admin: { description: 'AI 调查时间' } },
+    // 雇主 D(2026-07-19):行业=在库岗 NOC 大类多数派;别名=Wikidata 官方跨语言标签(不机翻);知名=有 Wikipedia 条目
+    { name: 'industry', type: 'text', admin: { description: '主营行业(NOC 大类多数派,数据层算)' } },
+    { name: 'aliasZh', type: 'text', admin: { description: '中文别名(Wikidata zh 标签,查不到留空)' } },
+    { name: 'aliasKo', type: 'text', admin: { description: '韩文别名(Wikidata ko 标签)' } },
+    { name: 'wikiUrl', type: 'text', admin: { description: 'Wikipedia 条目(非空=知名徽标)' } },
   ],
 }
