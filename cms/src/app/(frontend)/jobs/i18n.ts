@@ -372,6 +372,9 @@ const zh: Dict = {
   'diff.comp': '竞争比 {v}:1', 'diff.compNote': '学签+工签在库 {pool} 人 ÷ 提名配额 {quota}({y} 年配额)',
   'diff.trend': '配额同比 {v}', 'diff.act': '近 180 天抽选 {n} 次(邀请 {m} 人)', 'diff.score': '分数线处自身近两年 {p}% 分位(最新 {s} 分,{sc} 分制)',
   'diff.note': '口径:竞争基数=IRCC 学签+工签年末存量({y} 年),粗口径参考,非申请人数、非资格判定;各省分制不同,分数只与该省自身历史比较。',
+  'ce.title': '多雇主对比', 'ce.aip': 'AIP 指定雇主', 'ce.provDiff': '主要省·移民难度', 'ce.match': '与我的匹配', 'ce.matchHigh': '高匹配 {n} 岗', 'ce.matchMid': '中匹配 {n} 岗', 'ce.brief': 'AI 调查简介',
+  'ce.note': '口径:LMIA=雇过外国人的历史记录,不代表会担保你;AIP 指定≠有配额;数字为本站库内口径,非资格认定。', 'ce.empty': '至少选 2 家雇主才能对比——去名录行点「+ 对比」', 'ce.goDir': '去雇主名录', 'ce.clear': '清空重选',
+  'ce.v1': 'LMIA 担保记录并排看,技能类获批数一眼比高下', 'ce.v2': '在招岗、省提名清单命中、AIP 指定同屏对齐', 'ce.v3': '建档后逐家看「与我的匹配」高/中命中岗数', 'ce.add': '+ 对比', 'ce.added': '已在对比 ✓', 'ce.bar': '已选 {n} 家', 'ce.go': '去对比 →', 'price.f10': '多雇主对比(2-4 家并排)',
   'stats.title': '{prov} 地区职位统计', 'stats.catTitle': '{prov} · {cat} 职位统计', 'stats.openJobs': '在招职位', 'stats.new7d': '近 7 天发布', 'stats.medWage': '中位年薪(ESDC)', 'stats.medSalary': '帖面中位年薪', 'stats.named': '省提名清单岗', 'stats.aip': 'AIP 指定雇主岗', 'stats.topCities': '主要城市', 'stats.streams': '命中通道', 'stats.byCat': '按职业大类', 'stats.entry': '地区统计', 'stats.toJobs': '看这些职位 →', 'stats.caliber': '口径说明', 'stats.caliberText': '在招/近 7 天发布=本站抓取口径(Job Bank 全国+ATS,按帖面发布日);中位年薪=ESDC 工资数据(同 NOC×省)的中位;省提名清单岗=岗位职业在该省省提名官网公开职业清单上;「—」= 该省当前无公开职业清单(如 OINP 2026-06 改制后),非数据缺失;均非资格认定。', 'stats.provIndex': '选择省份', 'stats.compare': '跨省对比(Pro)', 'stats.pickProv': '选 2-4 个省对比', 'stats.myNoc': '按我的档案高亮',
 }
 
@@ -745,6 +748,9 @@ const en: Dict = {
   'diff.comp': 'Competition ratio {v}:1', 'diff.compNote': '{pool} study+work permit holders ÷ {quota} nomination spaces ({y} allocation)',
   'diff.trend': 'Allocation YoY {v}', 'diff.act': '{n} draws in last 180 days ({m} invitations)', 'diff.score': 'Cutoff at the {p}th percentile of this province’s own 2-year history (latest {s}, {sc} scale)',
   'diff.note': 'Method: competition base = IRCC year-end study + work permit holders ({y}), a rough proxy — not applicant counts, not an eligibility ruling; scores are only compared within each province’s own history.',
+  'ce.title': 'Compare employers', 'ce.aip': 'AIP designated', 'ce.provDiff': 'Main province & difficulty', 'ce.match': 'Match with my profile', 'ce.matchHigh': '{n} high-match jobs', 'ce.matchMid': '{n} mid-match jobs', 'ce.brief': 'AI research brief',
+  'ce.note': 'Method: LMIA = past record of hiring foreign workers, not a promise to support you; AIP designation ≠ quota; figures are this site’s data, not an eligibility ruling.', 'ce.empty': 'Pick at least 2 employers to compare — use “+ Compare” in the directory', 'ce.goDir': 'Employer directory', 'ce.clear': 'Clear selection',
+  'ce.v1': 'LMIA track records side by side — skilled-stream approvals at a glance', 'ce.v2': 'Open jobs, PNP-list hits and AIP status aligned on one screen', 'ce.v3': 'With a profile, see high/mid match counts per employer', 'ce.add': '+ Compare', 'ce.added': 'In compare ✓', 'ce.bar': '{n} selected', 'ce.go': 'Compare →', 'price.f10': 'Compare employers (2–4 side by side)',
   'stats.title': '{prov} job statistics', 'stats.catTitle': '{prov} · {cat} job statistics', 'stats.openJobs': 'Open jobs', 'stats.new7d': 'Posted in last 7 days', 'stats.medWage': 'Median wage (ESDC)', 'stats.medSalary': 'Median posted salary', 'stats.named': 'PNP-list jobs', 'stats.aip': 'AIP designated-employer jobs', 'stats.topCities': 'Top cities', 'stats.streams': 'Streams hit', 'stats.byCat': 'By occupation group', 'stats.entry': 'Region stats', 'stats.toJobs': 'See these jobs →', 'stats.caliber': 'Methodology', 'stats.caliberText': 'Open / posted-in-7-days = this site’s scrape (Job Bank Canada-wide + ATS, by posting date); median wage = ESDC wage data (same NOC × province); PNP-list jobs = the job’s occupation appears on that province’s published PNP occupation list; “—” = that province currently publishes no occupation list (e.g. OINP after its 2026-06 redesign), not missing data; none of this is an eligibility ruling.', 'stats.provIndex': 'Choose a province', 'stats.compare': 'Compare provinces (Pro)', 'stats.pickProv': 'Pick 2–4 provinces', 'stats.myNoc': 'Highlight by my profile',
 }
 
@@ -1118,6 +1124,9 @@ const ko: Dict = {
   'diff.comp': '경쟁률 {v}:1', 'diff.compNote': '학업+취업 허가 보유 {pool}명 ÷ 지명 쿼터 {quota}({y}년 쿼터)',
   'diff.trend': '쿼터 전년 대비 {v}', 'diff.act': '최근 180일 추첨 {n}회(초청 {m}명)', 'diff.score': '컷오프가 해당 주 자체 2년 분포의 {p}% 분위(최근 {s}점, {sc})',
   'diff.note': '기준: 경쟁 기반=IRCC 연말 학업+취업 허가 보유자({y}년), 대략적 참고치이며 신청자 수·자격 판정이 아님; 점수는 각 주 자체 이력과만 비교.',
+  'ce.title': '고용주 비교', 'ce.aip': 'AIP 지정', 'ce.provDiff': '주요 주·이민 난이도', 'ce.match': '내 프로필 매칭', 'ce.matchHigh': '고매칭 {n}건', 'ce.matchMid': '중매칭 {n}건', 'ce.brief': 'AI 조사 요약',
+  'ce.note': '기준: LMIA=외국인 고용 이력이며 보증 약속이 아님; AIP 지정≠쿼터; 자격 판정 아님.', 'ce.empty': '비교하려면 최소 2개 선택 — 디렉토리에서 「+ 비교」', 'ce.goDir': '고용주 디렉토리', 'ce.clear': '선택 초기화',
+  'ce.v1': 'LMIA 이력을 나란히 비교', 'ce.v2': '채용 중·PNP 목록·AIP 한 화면 정렬', 'ce.v3': '프로필 있으면 고용주별 매칭 건수', 'ce.add': '+ 비교', 'ce.added': '비교 중 ✓', 'ce.bar': '{n}개 선택', 'ce.go': '비교 →', 'price.f10': '고용주 비교(2–4개)',
   'stats.title': '{prov} 채용 통계', 'stats.catTitle': '{prov} · {cat} 채용 통계', 'stats.openJobs': '채용 중', 'stats.new7d': '최근 7일 게시', 'stats.medWage': '중위 연봉(ESDC)', 'stats.medSalary': '게시된 중위 연봉', 'stats.named': 'PNP 대상 공고', 'stats.aip': 'AIP 지정 고용주 공고', 'stats.topCities': '주요 도시', 'stats.streams': '해당 스트림', 'stats.byCat': '직업 대분류별', 'stats.entry': '지역 통계', 'stats.toJobs': '이 공고 보기 →', 'stats.caliber': '산정 기준', 'stats.caliberText': '채용 중/최근 7일 게시=본 사이트 수집 기준(Job Bank 전국+ATS, 게시일 기준); 중위 연봉=ESDC 임금 데이터(동일 NOC×주)의 중위값; PNP 대상 공고=직업이 해당 주 PNP 공개 직업 목록에 포함됨; 「—」=해당 주가 현재 공개 직업 목록을 제공하지 않음(예: OINP 2026-06 개편 후), 데이터 누락 아님; 이는 자격 판정이 아님.', 'stats.provIndex': '주 선택', 'stats.compare': '주 간 비교 (Pro)', 'stats.pickProv': '2–4개 주 선택', 'stats.myNoc': '내 프로필로 강조',
 }
 

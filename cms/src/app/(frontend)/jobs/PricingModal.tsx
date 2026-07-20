@@ -97,6 +97,7 @@ export function PricingCard({ t, loggedIn, pro, caps, onRegister }: { t: TFn; lo
             <Li>{t('price.f7')}</Li>
             <Li>{t('price.f8')}</Li>
             <Li>{t('price.f9')}</Li>
+            <Li>{t('price.f10')}</Li>
           </ul>
           <button onClick={() => buy('30')} disabled={busy} style={{ ...btn, background: '#2563eb', color: '#fff', opacity: busy ? 0.6 : 1 }}>{t('price.cta.buy30')} · {P30}</button>
         </div>

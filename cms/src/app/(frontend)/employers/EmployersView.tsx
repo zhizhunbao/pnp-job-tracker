@@ -10,6 +10,7 @@ import { Button, PageBanner, PageShell, Tag, UI, chipStyle } from '../ui/primiti
 import { DataTable } from '../ui/DataTable'
 import { IconUsers } from '../Icons'
 import { DIR_PAGE_SIZE, type AipRow, type LmiaRow } from '@/lib/directory'
+import { CMP_KEY, CMP_MAX } from '@/lib/employerCompareShared'
 
 function href(type: string, q: string, prov: string, page: number) {
   const sp = new URLSearchParams()
@@ -42,6 +43,14 @@ export function EmployersView({ type, q, prov, page, aip, lmia, counts }: {
   const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
   const t = makeT(lang)
   const [qInput, setQInput] = useState(q)
+  // D3 对比选择篮(localStorage,与公司弹框共写;LMIA tab 行=companies 行才可比,AIP tab 不挂)
+  const [cmp, setCmp] = useState<string[]>([])
+  useEffect(() => { try { setCmp(JSON.parse(localStorage.getItem(CMP_KEY) || '[]')) } catch { /* ignore */ } }, [])
+  const toggleCmp = (name: string) => setCmp((cur) => {
+    const next = cur.includes(name) ? cur.filter((x) => x !== name) : cur.length >= CMP_MAX ? cur : [...cur, name]
+    try { localStorage.setItem(CMP_KEY, JSON.stringify(next)) } catch { /* ignore */ }
+    return next
+  })
   const mk = (p: number) => href(type, q, prov, p)
 
   return (
@@ -94,6 +103,12 @@ export function EmployersView({ type, q, prov, page, aip, lmia, counts }: {
             { key: 'streams', label: t('dir.col.streams'), render: (r) => <span style={{ fontSize: 12, display: 'inline-block', maxWidth: 260 }}>{r.lmiaStreams || '—'}</span> },
             { key: 'quarter', label: t('dir.col.quarter'), nowrap: true, sort: (r) => r.lmiaLastQuarter || null, render: (r) => <span style={{ color: '#9ca3af' }}>{r.lmiaLastQuarter || '—'}</span> },
             { key: 'go', label: '', nowrap: true, render: (r) => <a href={`/?q=${encodeURIComponent(r.name)}`} style={{ color: UI.primary, textDecoration: 'none', fontSize: 12.5 }}>{t('rank.viewJobs')}</a> },
+            // D3(E5-06):对比选择钮——免费可点(FOMO 引流,Pro 闸在对比页)
+            { key: 'cmp', label: '', nowrap: true, render: (r) => (
+              <button onClick={() => toggleCmp(r.name)} style={{ border: '1px solid ' + (cmp.includes(r.name) ? UI.primary : UI.border), background: cmp.includes(r.name) ? '#eff6ff' : '#fff', color: cmp.includes(r.name) ? UI.primary : '#6b7280', borderRadius: 999, padding: '2px 10px', fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                {cmp.includes(r.name) ? t('ce.added') : t('ce.add')}
+              </button>
+            ) },
           ]} />
         ) : (
           <DataTable<AipRow> rows={aip || []} rowKey={(r, i) => r.name + i} empty={t('dir.empty')} cols={[
@@ -104,6 +119,14 @@ export function EmployersView({ type, q, prov, page, aip, lmia, counts }: {
           ]} />
         )}
         <Pager t={t} total={counts.pageTotal} page={page} mk={mk} />
+        {/* D3 对比浮条:选 ≥1 家出现;≥2 家可去对比 */}
+        {cmp.length > 0 && (
+          <div style={{ position: 'fixed', left: '50%', transform: 'translateX(-50%)', bottom: 18, zIndex: 40, background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 999, boxShadow: '0 10px 30px rgba(0,0,0,.12)', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 12, fontSize: 13 }}>
+            <span style={{ color: '#374151', fontWeight: 600 }}>{t('ce.bar', { n: cmp.length })}</span>
+            {cmp.length >= 2 && <a href={`/employers/compare?names=${encodeURIComponent(cmp.join('|'))}`} style={{ color: UI.primary, fontWeight: 600, textDecoration: 'none' }}>{t('ce.go')}</a>}
+            <button onClick={() => { try { localStorage.removeItem(CMP_KEY) } catch { /* ignore */ } ; setCmp([]) }} style={{ border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', padding: 0, fontSize: 12.5 }}>{t('ce.clear')}</button>
+          </div>
+        )}
       </PageShell>
       <SiteFooter t={t} />
     </div>
