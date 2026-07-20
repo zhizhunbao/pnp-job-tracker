@@ -326,6 +326,38 @@ export interface Company {
    * 股别分布(展示串),如 High Wage 44 · Low Wage 12
    */
   lmiaStreams?: string | null;
+  /**
+   * AI 检索整理的公司简介(懒生成)
+   */
+  aiBrief?: string | null;
+  /**
+   * AI 检索到的官网(非库内 directory 原有,前端标注区分)
+   */
+  aiWebsite?: string | null;
+  /**
+   * 检索出处 URL 列表(JSON 数组串)
+   */
+  aiSources?: string | null;
+  /**
+   * AI 调查时间
+   */
+  aiFetched?: string | null;
+  /**
+   * 主营行业(NOC 大类多数派,数据层算)
+   */
+  industry?: string | null;
+  /**
+   * 中文别名(Wikidata zh 标签,查不到留空)
+   */
+  aliasZh?: string | null;
+  /**
+   * 韩文别名(Wikidata ko 标签)
+   */
+  aliasKo?: string | null;
+  /**
+   * Wikipedia 条目(非空=知名徽标)
+   */
+  wikiUrl?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -466,6 +498,14 @@ export interface Job {
    * 工时 full/part;空=未标注
    */
   employmentHours?: string | null;
+  /**
+   * AI 五节整理版([ROLE]/[REQS]/[PAY]/[HOURS]/[APPLY] 标记文本,懒生成)
+   */
+  jdFormatted?: string | null;
+  /**
+   * 整理时间
+   */
+  jdFormattedAt?: string | null;
   /**
    * 证书/执照要求 string[](详情页 Certificates 区原文,标准化词表)
    */
@@ -880,6 +920,10 @@ export interface Stat {
    * NOC 大类(数据值)| all=省级汇总
    */
   broad?: string | null;
+  /**
+   * NOC 中类(数据值)| all=大类汇总(下钻 L2,2026-07-19)
+   */
+  mid?: string | null;
   /**
    * 在招岗数(本站抓取口径)
    */
@@ -1310,6 +1354,14 @@ export interface CompaniesSelect<T extends boolean = true> {
   lmiaLmias?: T;
   lmiaLastQuarter?: T;
   lmiaStreams?: T;
+  aiBrief?: T;
+  aiWebsite?: T;
+  aiSources?: T;
+  aiFetched?: T;
+  industry?: T;
+  aliasZh?: T;
+  aliasKo?: T;
+  wikiUrl?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1359,6 +1411,8 @@ export interface JobsSelect<T extends boolean = true> {
   aip?: T;
   employmentTerm?: T;
   employmentHours?: T;
+  jdFormatted?: T;
+  jdFormattedAt?: T;
   certificates?: T;
   education?: T;
   firstSeen?: T;
@@ -1596,6 +1650,7 @@ export interface RankingsSelect<T extends boolean = true> {
 export interface StatsSelect<T extends boolean = true> {
   province?: T;
   broad?: T;
+  mid?: T;
   openJobs?: T;
   new7d?: T;
   medianWageAnnual?: T;
