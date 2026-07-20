@@ -4,6 +4,10 @@ import type { MetadataRoute } from 'next'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 
+// 生产坑(2026-07-20 首跑):sitemap 路由默认构建期静态烘焙——Render 构建容器查库失败 → 空片被烘死。
+// force-dynamic=请求时现查(sitemap 访问频次极低,动态查无压力)。
+export const dynamic = 'force-dynamic'
+
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://offer2pr.com').replace(/\/$/, '')
 export const SHARD_SIZE = 5000
 export const SHARDS = 8
