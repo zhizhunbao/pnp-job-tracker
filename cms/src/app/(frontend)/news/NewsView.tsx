@@ -251,29 +251,87 @@ export function NewsListView({ items, hero, cmtCounts }: { items: NewsCard[]; he
   )
 }
 
-// ── 评论区(v3 ④):登录可评 → 人工审核后显示 ─────────────────
-// 2026-07-19 Frank「不完美的功能先关闭」:零用户期空评论区+日审负担 → 整块暂藏;亮回=翻 true(后端 API/表原样保留)
-const COMMENTS_ON = false
+// ── 评论区(v3 ④ → F 件 v2,E8-07 2026-07-20):登录可评 → 人工审核后显示 ─────────────────
+// #95 暂藏后亮回(Frank「新闻资讯板块完全参考」内容站评论形态,拍板=开;日审归 Frank):
+// v2 形态=计数头 + 官方置顶楼(admin 号发+pinned,蓝底卡)+ 楼中楼一层(「展开 N 条回复」折叠,≤3 直接展开)。
+// 不学匿名直发(信任边界):登录+pending 审核制原样;脱敏昵称快照照旧。
+const COMMENTS_ON = true
+function CommentRow({ cm, t, loggedIn, onReply, replying }: { cm: NewsComment; t: TFn; loggedIn: boolean; onReply?: () => void; replying?: boolean }) {
+  const av = (
+    <span style={{ width: 30, height: 30, borderRadius: '50%', background: cm.official ? '#2563eb' : '#6366f1', color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>{(cm.authorName || '?')[0].toUpperCase()}</span>
+  )
+  return (
+    <div style={{ display: 'flex', gap: 10, padding: '10px 0', fontSize: 13 }}>
+      {av}
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 2 }}>
+          <span style={{ color: cm.official ? '#1d4ed8' : '#6b7280', fontWeight: 600 }}>{cm.authorName}</span>
+          {cm.official && <span style={{ marginLeft: 6, fontSize: 10.5, padding: '1px 6px', borderRadius: 6, background: '#eff6ff', color: '#1d4ed8' }}>{t('news.cmt.official')}</span>}
+          {cm.pinned && <span style={{ marginLeft: 4, fontSize: 10.5, padding: '1px 6px', borderRadius: 6, background: '#fffbeb', color: '#92400e' }}>{t('news.cmt.pinnedTag')}</span>}
+          <span style={{ marginLeft: 8 }}>{cm.date}</span>
+        </div>
+        <div style={{ whiteSpace: 'pre-wrap', overflowWrap: 'break-word' }}>{cm.body}</div>
+        {loggedIn && onReply && (
+          <button onClick={onReply} style={{ border: 'none', background: 'none', padding: '2px 0 0', fontSize: 12, color: replying ? '#1d4ed8' : '#2563eb', fontWeight: replying ? 700 : 400, cursor: 'pointer' }}>{t('news.cmt.reply')}</button>
+        )}
+      </div>
+    </div>
+  )
+}
 function CommentsSection({ t, slug, comments, loggedIn }: { t: TFn; slug: string; comments: NewsComment[]; loggedIn: boolean }) {
   const [body, setBody] = useState('')
   const [state, setState] = useState<'idle' | 'busy' | 'sent' | 'err'>('idle')
-  const submit = async () => {
-    const text = body.trim()
-    if (!text || state === 'busy') return
+  const [replyTo, setReplyTo] = useState<number | null>(null)   // 展开中的回复框(顶层楼 id)
+  const [replyBody, setReplyBody] = useState('')
+  const [expanded, setExpanded] = useState<Set<number>>(new Set())   // 折叠展开的楼
+  // 楼序:顶层=置顶先、再时间倒序;楼内回复=时间正序(SSR 给的就是 ASC,分组即得)
+  const tops = comments.filter((c) => !c.parentId).sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || (a.date < b.date ? 1 : a.date > b.date ? -1 : b.id - a.id))
+  const replies = new Map<number, NewsComment[]>()
+  for (const c of comments) if (c.parentId) { const l = replies.get(c.parentId) || []; l.push(c); replies.set(c.parentId, l) }
+  const post = async (text: string, parent: number | null) => {
+    if (!text || state === 'busy') return false
     setState('busy')
     try {
       const r = await fetch('/api/comments', {
         method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ newsSlug: slug, body: text }),
+        body: JSON.stringify({ newsSlug: slug, body: text, ...(parent != null ? { parent } : {}) }),
       })
       if (!r.ok) throw new Error(String(r.status))
-      setBody(''); setState('sent')
-    } catch { setState('err') }
+      setState('sent'); return true
+    } catch { setState('err'); return false }
   }
-  const av = (name: string) => (
-    <span style={{ width: 30, height: 30, borderRadius: '50%', background: '#6366f1', color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>{(name || '?')[0].toUpperCase()}</span>
-  )
+  const submit = async () => { if (await post(body.trim(), null)) setBody('') }
+  const submitReply = async () => { if (await post(replyBody.trim(), replyTo)) { setReplyBody(''); setReplyTo(null) } }
+  const thread = (top: NewsComment) => {
+    const rs = replies.get(top.id) || []
+    const open = rs.length <= 3 || expanded.has(top.id)
+    return (
+      <div key={top.id} style={top.pinned ? { background: '#f8faff', border: '1px solid #e0e7ff', borderRadius: 12, padding: '0 14px', marginBottom: 6 } : { borderTop: '1px solid #f3f4f6' }}>
+        <CommentRow cm={top} t={t} loggedIn={loggedIn} onReply={() => { setReplyTo(replyTo === top.id ? null : top.id); setReplyBody('') }} replying={replyTo === top.id} />
+        {replyTo === top.id && (
+          <div style={{ margin: '0 0 10px 40px' }}>
+            <textarea value={replyBody} onChange={(e) => { setReplyBody(e.target.value); if (state === 'sent' || state === 'err') setState('idle') }}
+              maxLength={1000} rows={2} placeholder={t('news.cmt.replyPh')} autoFocus
+              style={{ width: '100%', boxSizing: 'border-box', border: '1px solid #e5e7eb', borderRadius: 8, padding: '7px 10px', fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }} />
+            <button onClick={submitReply} disabled={!replyBody.trim() || state === 'busy'}
+              style={{ marginTop: 4, background: replyBody.trim() && state !== 'busy' ? '#2563eb' : '#93c5fd', color: '#fff', border: 'none', borderRadius: 8, padding: '4px 14px', fontSize: 12.5, fontWeight: 600, cursor: replyBody.trim() ? 'pointer' : 'default' }}>{t('news.cmt.send')}</button>
+          </div>
+        )}
+        {rs.length > 0 && (
+          <div style={{ margin: '0 0 4px 40px', borderLeft: '2px solid #f3f4f6', paddingLeft: 12 }}>
+            {open && rs.map((r) => <CommentRow key={r.id} cm={r} t={t} loggedIn={false} />)}
+            {rs.length > 3 && (
+              <button onClick={() => setExpanded((s) => { const n = new Set(s); if (n.has(top.id)) n.delete(top.id); else n.add(top.id); return n })}
+                style={{ border: 'none', background: 'none', padding: '2px 0 8px', fontSize: 12.5, color: '#2563eb', cursor: 'pointer' }}>
+                {open ? t('news.cmt.collapse') : t('news.cmt.expand', { n: rs.length })}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    )
+  }
   return (
     <section id="comments" style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '16px 18px', marginTop: 16 }}>
       <h3 style={{ fontSize: 14.5, margin: '0 0 10px' }}>{t('news.cmt.title', { n: comments.length })}</h3>
@@ -292,15 +350,7 @@ function CommentsSection({ t, slug, comments, loggedIn }: { t: TFn; slug: string
       ) : (
         <a href="/?login=1" style={{ display: 'block', border: '1px solid #e5e7eb', borderRadius: 8, padding: '9px 12px', color: '#2563eb', fontSize: 13, textDecoration: 'none', marginBottom: 12 }}>{t('news.cmt.login')}</a>
       )}
-      {comments.map((cm, i) => (
-        <div key={i} style={{ display: 'flex', gap: 10, padding: '10px 0', borderTop: '1px solid #f3f4f6', fontSize: 13 }}>
-          {av(cm.authorName)}
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 2 }}>{cm.authorName} · {cm.date}</div>
-            <div style={{ whiteSpace: 'pre-wrap', overflowWrap: 'break-word' }}>{cm.body}</div>
-          </div>
-        </div>
-      ))}
+      {tops.map(thread)}
     </section>
   )
 }

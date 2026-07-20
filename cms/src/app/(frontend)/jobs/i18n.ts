@@ -28,6 +28,12 @@ const zh: Dict = {
   'advisor.unavail': 'AI 判断暂时不可用,请稍后再试——上方事实与官方链接不受影响。',
   'advisor.limit429': '今日免费次数已用完(每日重置)。注册登录后有独立额度,Pro 每日 200 次。', 'advisor.limitCta': '登录 / 注册 →',
   'act.seeOfficial': '查看官方原帖 ↗',
+  // E8-07 职位详情页
+  'detail.openFull': '打开完整页', 'detail.back': '返回职位板', 'detail.related': '相关职位',
+  'detail.sameCo': '同公司', 'detail.sameOcc': '同省同职业', 'detail.closedNote': '该岗位已下架,信息仅供参考',
+  'detail.pnpSec': '省提名通道', 'detail.pnpSecNote': '粗筛信号,非资格认定', 'detail.eeSec': '联邦 EE 类别', 'detail.crumbHome': '职位板',
+  // E8-07 C/D/E:顶栏资讯聚合 + 手机抽屉
+  'nav.info': '资讯', 'nav.timeline': '政策时间线', 'nav.menu': '菜单', 'nav.sect.data': '数据与结论', 'nav.sect.mine': '我的',
   'updated': '更新 {t}',
   'tagline': '每日更新 · 全加拿大全职业 · 移民价值视角',
   'foot.disclaimer': '数据自动聚合仅供参考,不构成移民/法律建议;非持牌顾问(RCIC),以官方来源为准。',
@@ -292,6 +298,9 @@ const zh: Dict = {
   'news.cmt.title': '评论 ({n})', 'news.cmt.login': '登录后参与讨论 →',
   'news.cmt.ph': '文明发言;评论经人工审核后显示,广告与中介引流将被移除',
   'news.cmt.send': '发表', 'news.cmt.sent': '已提交,审核通过后显示', 'news.cmt.err': '发表失败,请稍后再试',
+  // F 件(E8-07):楼中楼+官方置顶
+  'news.cmt.reply': '回复', 'news.cmt.expand': '展开 {n} 条回复 ▾', 'news.cmt.collapse': '收起回复 ▴',
+  'news.cmt.official': '官方', 'news.cmt.pinnedTag': '置顶', 'news.cmt.replyPh': '回复这条评论…',
   'news.zhOn': '显示中文对照', 'news.zhOff': '收起中文对照', 'news.aiNote': 'AI 翻译 · 以原文为准', 'news.aiScore': '重要度为 AI 按对求职/移民读者的影响评估,仅供排阅',
   'news.trOn': '显示中文对照', 'news.trOff': '收起中文对照', 'news.trBusy': '翻译中…约 15 秒', 'news.sumBusy': '速读生成中…', 'news.aiGen': 'AI 生成 · 以原文为准', 'news.trErr': '翻译暂不可用,请稍后再试',
   // 移民路径(E12-01):措辞红线=摆信息不下结论,永不「你应该/你就能」
@@ -392,6 +401,12 @@ const en: Dict = {
   'advisor.unavail': 'The AI read is temporarily unavailable — the facts and official links above are unaffected. Please try again later.',
   'advisor.limit429': 'Free uses for today are used up (resets daily). Sign in for your own quota; Pro gets 200/day.', 'advisor.limitCta': 'Sign in / Sign up →',
   'act.seeOfficial': 'View official posting ↗',
+  // E8-07 job detail page
+  'detail.openFull': 'Open full page', 'detail.back': 'Back to job board', 'detail.related': 'Related jobs',
+  'detail.sameCo': 'same employer', 'detail.sameOcc': 'same occupation in province', 'detail.closedNote': 'This posting has closed; shown for reference only',
+  'detail.pnpSec': 'PNP streams', 'detail.pnpSecNote': 'rough signal, not an eligibility decision', 'detail.eeSec': 'Federal EE categories', 'detail.crumbHome': 'Job board',
+  // E8-07 C/D/E: header info group + mobile drawer
+  'nav.info': 'Updates', 'nav.timeline': 'Policy timeline', 'nav.menu': 'Menu', 'nav.sect.data': 'DATA & INSIGHTS', 'nav.sect.mine': 'MINE',
   'updated': 'Updated {t}',
   'tagline': 'Daily updates · all of Canada · immigration-value lens',
   'foot.disclaimer': 'Auto-aggregated data, for reference only — not immigration/legal advice; not an RCIC. Verify with official sources.',
@@ -671,6 +686,9 @@ const en: Dict = {
   'news.cmt.title': 'Comments ({n})', 'news.cmt.login': 'Log in to join the discussion →',
   'news.cmt.ph': 'Be civil. Comments appear after human review; ads and agent solicitation are removed.',
   'news.cmt.send': 'Post', 'news.cmt.sent': 'Submitted — visible after review', 'news.cmt.err': 'Failed to post — please try again later',
+  // F (E8-07): threaded replies + official pinned
+  'news.cmt.reply': 'Reply', 'news.cmt.expand': 'Show {n} replies ▾', 'news.cmt.collapse': 'Hide replies ▴',
+  'news.cmt.official': 'Official', 'news.cmt.pinnedTag': 'Pinned', 'news.cmt.replyPh': 'Reply to this comment…',
   'news.zhOn': 'Show Chinese translation', 'news.zhOff': 'Hide Chinese translation', 'news.aiNote': 'AI translation — refer to the original', 'news.aiScore': 'Importance is AI-assessed impact for job seekers / immigration readers, for browsing only',
   'news.trOn': 'Show translation', 'news.trOff': 'Hide translation', 'news.trBusy': 'Translating… ~15s', 'news.sumBusy': 'Summarizing…', 'news.aiGen': 'AI-generated — refer to the original', 'news.trErr': 'Translation unavailable — try again later',
   'pw.entry': 'Pathways',
@@ -768,6 +786,12 @@ const ko: Dict = {
   'advisor.unavail': 'AI 분석이 일시적으로 사용 불가합니다. 위의 사실 및 공식 링크에는 영향이 없습니다. 잠시 후 다시 시도하세요.',
   'advisor.limit429': '오늘의 무료 이용 횟수가 모두 소진되었습니다(매일 초기화). 로그인하면 별도의 할당량이 제공되며, Pro 회원은 하루 200회를 이용할 수 있습니다.', 'advisor.limitCta': '로그인 / 회원가입 →',
   'act.seeOfficial': '공식 공고 보기 ↗',
+  // E8-07 채용 상세 페이지
+  'detail.openFull': '전체 페이지 열기', 'detail.back': '채용 보드로 돌아가기', 'detail.related': '관련 공고',
+  'detail.sameCo': '같은 회사', 'detail.sameOcc': '같은 주 같은 직종', 'detail.closedNote': '마감된 공고입니다. 참고용으로만 확인하세요',
+  'detail.pnpSec': '주정부 지명(PNP) 통로', 'detail.pnpSecNote': '대략적 신호이며 자격 판정이 아닙니다', 'detail.eeSec': '연방 EE 카테고리', 'detail.crumbHome': '채용 보드',
+  // E8-07 C/D/E: 헤더 소식 그룹 + 모바일 드로어
+  'nav.info': '소식', 'nav.timeline': '정책 타임라인', 'nav.menu': '메뉴', 'nav.sect.data': '데이터', 'nav.sect.mine': '내 메뉴',
   'updated': '{t} 업데이트',
   'tagline': '매일 업데이트 · 캐나다 전역 · 이민 가치 관점',
   'foot.disclaimer': '자동 수집 데이터는 참고용이며 이민/법률 자문이 아닙니다. RCIC가 아니므로 공식 출처를 기준으로 하세요.',
@@ -1047,6 +1071,9 @@ const ko: Dict = {
   'news.cmt.title': '댓글 ({n})', 'news.cmt.login': '로그인하고 댓글 달기 →',
   'news.cmt.ph': '예의를 지켜주세요. 댓글은 검토 후 게시되며, 광고 및 중개 유도 내용은 삭제됩니다.',
   'news.cmt.send': '등록', 'news.cmt.sent': '제출됨 · 검토 후 표시됩니다', 'news.cmt.err': '등록 실패 — 잠시 후 다시 시도하세요',
+  // F (E8-07): 대댓글 + 공식 고정
+  'news.cmt.reply': '답글', 'news.cmt.expand': '답글 {n}개 보기 ▾', 'news.cmt.collapse': '답글 접기 ▴',
+  'news.cmt.official': '공식', 'news.cmt.pinnedTag': '고정', 'news.cmt.replyPh': '이 댓글에 답글 달기…',
   'news.zhOn': '중국어 번역 보기', 'news.zhOff': '중국어 번역 숨기기', 'news.aiNote': 'AI 번역 · 원문 기준', 'news.aiScore': '중요도는 구직 및 이민 독자에게 미치는 영향을 AI가 평가한 것으로, 열람 참고용입니다',
   'news.trOn': '번역 보기', 'news.trOff': '번역 숨기기', 'news.trBusy': '번역 중… 약 15초', 'news.sumBusy': '요약 생성 중…', 'news.aiGen': 'AI 생성 · 원문 기준', 'news.trErr': '번역을 사용할 수 없습니다 — 잠시 후 다시 시도하세요',
   'pw.entry': '이민 경로',

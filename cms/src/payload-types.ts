@@ -1117,6 +1117,14 @@ export interface Comment {
    * pending(默认,不公开)/ approved / rejected —— admin 审核台改
    */
   status?: string | null;
+  /**
+   * 楼中楼:指向顶层楼(一层封顶,hook 校验);空=顶层
+   */
+  parent?: (number | null) | Comment;
+  /**
+   * 置顶楼(admin 专属;配合 admin 号发的评论=官方置顶)
+   */
+  pinned?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1737,6 +1745,8 @@ export interface CommentsSelect<T extends boolean = true> {
   authorName?: T;
   body?: T;
   status?: T;
+  parent?: T;
+  pinned?: T;
   updatedAt?: T;
   createdAt?: T;
 }

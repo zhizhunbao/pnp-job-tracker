@@ -32,6 +32,12 @@ export const Comments: CollectionConfig = {
           collection: 'comments', where: { and: [{ user: { equals: req.user.id } }, { status: { equals: 'pending' } }] },
         })
         if (pending.totalDocs >= PENDING_CAP) throw new Error('too many pending comments')
+        // F 件(E8-07)楼中楼:parent 只允许指向本文顶层已过审楼(一层封顶,审核台/排版可控);置顶=admin 专属
+        if (data.parent != null) {
+          const p = await req.payload.findByID({ collection: 'comments', id: data.parent, depth: 0 }).catch(() => null) as any
+          if (!p || p.status !== 'approved' || p.parent != null || p.newsSlug !== data.newsSlug) throw new Error('invalid reply target')
+        }
+        data.pinned = false
         data.body = body
         data.user = req.user.id
         data.authorName = mask(req.user as { displayName?: string; email?: string })
@@ -46,5 +52,9 @@ export const Comments: CollectionConfig = {
     { name: 'authorName', type: 'text', admin: { description: '脱敏昵称快照(公开显示用,不回 user 关系)' } },
     { name: 'body', type: 'textarea', required: true },
     { name: 'status', type: 'text', index: true, admin: { description: 'pending(默认,不公开)/ approved / rejected —— admin 审核台改' } },
+    // F 件(E8-07,2026-07-20):楼中楼一层 + 官方置顶楼。DDL 手写生产先行(docs/sql/comments-thread.sql 同款):
+    // ALTER TABLE comments ADD COLUMN parent_id integer / pinned boolean DEFAULT false
+    { name: 'parent', type: 'relationship', relationTo: 'comments', index: true, admin: { description: '楼中楼:指向顶层楼(一层封顶,hook 校验);空=顶层' } },
+    { name: 'pinned', type: 'checkbox', defaultValue: false, admin: { description: '置顶楼(admin 专属;配合 admin 号发的评论=官方置顶)' } },
   ],
 }

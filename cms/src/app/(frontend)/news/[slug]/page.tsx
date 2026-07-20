@@ -41,11 +41,23 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
   if (!row) notFound()
   // 评论(v3):approved 才公开;comments 表未建/查询失败 → 空列表照常渲。登录态给表单分流(未登录=去登录)。
   const payload = await getPayload({ config: await config })
-  const comments: NewsComment[] = await (payload.db as any).pool
-    .query(`SELECT author_name AS "authorName", body, to_char(created_at, 'YYYY-MM-DD') AS date
-            FROM comments WHERE news_slug = $1 AND status = 'approved' ORDER BY created_at ASC LIMIT 200`, [slug])
+  // F 件(E8-07):带楼中楼/置顶/官方标(official=admin 号发的);统一 created_at ASC,楼序在组件里排
+  // (顶层=置顶先、再时间倒序;楼内回复保持时间正序)。parent_id/pinned 列缺(DDL 未跑)时回退老查询。
+  const pool = (payload.db as any).pool
+  const comments: NewsComment[] = await pool
+    .query(`SELECT c.id, c.parent_id AS "parentId", COALESCE(c.pinned,false) AS pinned,
+                   (u.role = 'admin') AS official, c.author_name AS "authorName", c.body,
+                   to_char(c.created_at, 'YYYY-MM-DD') AS date
+            FROM comments c LEFT JOIN users u ON u.id = c.user_id
+            WHERE c.news_slug = $1 AND c.status = 'approved' ORDER BY c.created_at ASC LIMIT 200`, [slug])
     .then((r: { rows: NewsComment[] }) => r.rows)
-    .catch(() => [])
+    .catch(() => pool
+      .query(`SELECT c.id, NULL AS "parentId", false AS pinned, (u.role = 'admin') AS official,
+                     c.author_name AS "authorName", c.body, to_char(c.created_at, 'YYYY-MM-DD') AS date
+              FROM comments c LEFT JOIN users u ON u.id = c.user_id
+              WHERE c.news_slug = $1 AND c.status = 'approved' ORDER BY c.created_at ASC LIMIT 200`, [slug])
+      .then((r: { rows: NewsComment[] }) => r.rows)
+      .catch(() => []))
   const user = await getUser(await headers())
   return <NewsDetailView row={row} comments={comments} loggedIn={!!user} />
 }

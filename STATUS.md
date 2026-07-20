@@ -3,7 +3,15 @@
 > 新 session 接手先读这份 + `CLAUDE.md`(设计宪法)+ `prd.md`(v2 定位见头部标注)。仓库:github.com/zhizhunbao/pnp-job-tracker
 > **🚀 站点已公网上线并真实收款:https://pnp-cms.onrender.com**(Render + Supabase;**live Stripe,M3 已开闸**)。批次进度=`docs/implementation/_开发批次顺序.md`:**B0-B8 全部落地(2026-07-04 一天从 B4 打到 B8),24 工作项代码侧全完**。
 >
-> **⚡⚡⚡⚡⚡⚡ 最新交接(2026-07-20 全天 session,「组件收官与难度指数日」)——#107-#116 十批+两设计文档当日全生产**
+> **⚡⚡⚡⚡⚡⚡⚡ 最新交接(2026-07-20 晚 session,「内容站骨架借鉴批」)——E8-07 A-F 六件全落地本地全绿(待部署生产复验)+ E12-08 评分设计出稿**
+> - **✅ #120 E8-07 内容站骨架批(Frank 看瓜站拍板「排版交互借鉴,配色不用」;七问全按推荐+三次追拍:分元素点击/侧滑抽屉/知名Tag退役)**:
+>   **A `/jobs/[id]` 独立职位详情页**(单栏 860 骨架:面包屑→meta(公司名可点开公司弹框)→chips→事实块→JD五节⇄原文+顾问初判→PNP/EE 通道节→相关职位;closed 岗 Notice+noindex;组件复用=JobsTable **只加 export 不搬代码**零回归)+ **SEO 三件**:JobPosting JSON-LD/sitemap 分片 8×5000 仅 active(**Next16 坑:sitemap id 参数是 Promise<string>,不 await 直接 NaN 打库**)/og 动态分享图(每岗 1200×630 ImageResponse,站级兜底 og 同落=I 批 og 遗留收口);JD 弹框标题栏加「打开完整页 ↗」。
+>   **B 手机卡片**(既有窄屏卡升级:职位名蓝链→详情页、公司名独立行→公司弹框、「·」杂糅清除)/**C 常驻搜索**(SiteHeader searchBar 槽:jobs 传受控输入即时筛选实测,二级页缺省 form 提交 /?q=)/**D 侧滑抽屉**(4/5 宽圆角块+资讯组二级展开)/**E hover 下拉**(NavDrop 统一 150ms 延时关+键盘通路;资料库改 hover+新增「资讯 ▾」=移民新闻+**政策时间线首获顶栏入口**;榜单/统计保持顶级 IA 未大动)。
+>   **F 评论区亮回 v2**(COMMENTS_ON=true,Frank 拍板开+**日审归 Frank**):官方置顶楼(admin 帖+pinned 蓝底卡)+楼中楼一层封顶(hook 校验 parent=同文已过审顶楼)+「展开 N 条回复」折叠;登录+审核制不动(不学瓜站匿名直发);comments 加 parent_id/pinned 两列 **DDL 生产已代跑**(docs/sql/comments-thread.sql);匿名 POST 403 实测;**置顶楼真数据验证+每文官方解读=Frank 亲手项**。
+> - **📄 E12-08 多维评分设计出稿(implementation/E12-移民路径引擎/08)**:三轨制已拍——职位分(自身三维:通道/薪资/雇佣)/公司分(担保记录/在库活跃/薪资水平/规模知名度)/地区档(=E12-07 复用);**跨层合成总分砍**(Frank「岗位总分没啥意义」)+**裸「知名」Tag 退役**(降级为规模知名度维度依据,公司名旁改公司分药丸);每分项 value/score/source 三元 jsonb 拆解弹框。**首版权重表已拟待 Frank 过目**(拍板③),批了才动 ETL。
+> - 下轮:部署+生产复验 #120 → E12-08 权重获批后开工(08 重构+08b 公司分+DDL+拆解弹框+rankings 列+知名 Tag 全站清理)。
+>
+> **⚡⚡⚡⚡⚡⚡ 上轮交接(2026-07-20 全天 session,「组件收官与难度指数日」)——#107-#116 十批+两设计文档当日全生产**
 > - **✅ #107 顾问公司初判接通 K 联网调查(2026-07-20,Frank 报障截图「资料不足」)**:根因=两条链路各干各的——K(companyinfo)会 web_search 且已有缓存,顾问初判只认 companies 富化列+web_fetch(friend 后端忽略 web_fetch,#105 切换后联网归零)。修=抽 lib/companyResearch 共享层(companyRow+investigateCompany,并发合流),顾问 field=company 先读 ai_brief 缓存、无富化数据才现场调查,注入 prompt 当次级事实(官网抓取仍第一权威);查不到照旧「资料不足」反编兜底。本地实测:L. Okafor 吃到缓存四段落地(Yorkton 诊所),Porcupine Mechanical 现场查 3.3s 落缓存。
 > - **✅ #114 设计总表 E-I 批+组件 P3 闭环(2026-07-20)**:**F 提醒收口**=primitives 新增 Notice(四色四用禁新配色:warn 升级/额度、err 错误、info 口径、ok 成功;圆角10+图标+lead+右钮槽),换装 10 处散装框(UpgradeCard/顾问 429×2/薪资 Pro 提示/AuthForm 错误+找回已发/UpgradeModal 错误/账户支付成功/档案保存成功失败);**H 阴影收口**=账户卡摘 boxShadow 改平面描边 #e5e7eb r12(全站页面内卡片唯一违规处;下拉/冻结列阴影合法保留);**P3 chips 归并**=wizard/ProfileForm/news 本地 chip 定义退役统一 chipStyle 药丸(B映射「wizard 选项归 Chip」)+compare 省选钮换 Chip+employers 搜索钮换 Button;**E 弹框/G 表格已成体系零改动;I 剩 og 分享图 1200×630 待补(素材活,记档)**。本地冒烟:错误 Notice ✕ 红框/保存 ✓ 绿框/chips 药丸双态/账户卡无阴影/搜索提交跳 ?q= 命中,行为零回归。**教训记档:python 批改脚本 print 中文必带 PYTHONIOENCODING=utf-8,否则 cp1252 半途炸断(本轮 ProfileForm 改一半 import 悬空,当场补上)**。
 > - **✅ #113 组件统一 P2 表单/账户批闭环(2026-07-20,按 mockups/按钮统一-设计-C实施 P2 范围)**:AuthForm 提交钮(渐变大钮→Button primary lg 通栏,form 内默认 submit 行为不变,禁用态=内置浅蓝替代 opacity)/wizard 上一步 ghost 灰+下一步 primary/账户昵称保存 Button sm+退出登录 ghost 灰/ProfileForm 保存 primary 通栏/定价免费注册钮 secondary;**购买双钮(30/90)按 A规格拍板保持现状不并入;chips 归并留 P3**。本地冒烟(新注册测试号 p2test-0720@test.local 全链实测):错误凭据→红框/注册即登录/wizard 来回/保存→已保存/退出→登录态清空/免费注册→开注册框,行为零回归。

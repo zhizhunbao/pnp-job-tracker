@@ -12,7 +12,8 @@ export type NewsRow = NewsCard & {
   summaryZh: string | null; summaryKo: string | null; summaryEn: string | null
   citation: string; fetched: string
 }
-export type NewsComment = { authorName: string; body: string; date: string }
+// F 件(E8-07):id/parentId=楼中楼一层;pinned=置顶楼;official=admin 号发的(SQL join users.role 派生)
+export type NewsComment = { id: number; parentId: number | null; pinned: boolean; official: boolean; authorName: string; body: string; date: string }
 
 // chips/分组展示顺序:联邦在前,省按职位板惯例
 export const NEWS_REGIONS = ['federal', 'ON', 'BC', 'AB', 'SK', 'MB', 'QC', 'NS'] as const

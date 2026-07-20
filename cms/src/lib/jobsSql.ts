@@ -373,6 +373,38 @@ export async function fetchMatchPage(
   return { jobs, total: visible.length, matchHigh, matchMid, updatedAt: iso(updRes.rows[0]?.upd) }
 }
 
+/** E8-07 详情页:按 id 取单岗(与列表同一列集/映射/Pro 剥离口径;closed 岗也返回——详情页保留可访问)。 */
+export async function fetchJobById(
+  pool: any, id: number, { pro, profile, profileOk, matchDims }: Omit<JobsListOpts, 'limit'>,
+): Promise<JobRow | null> {
+  if (!Number.isFinite(id)) return null
+  const { rows } = await pool.query(`SELECT ${JOB_COLUMNS} ${JOB_FROM} WHERE j.id = $1 LIMIT 1`, [id])
+  if (!rows.length) return null
+  const m = makeMatcher(profile, profileOk, matchDims, pro)
+  // 详情页单岗:免费 cap 以 0 号位判(建档免费用户在详情页能看本岗匹配级——单岗不构成枚举面)
+  return mapJobRow(rows[0], pro, m.of(rows[0], 0))
+}
+
+export type RelatedJob = { id: number; title: string; company: string; city: string; province: string; salaryText: string }
+const mapRelated = (r: any): RelatedJob => ({ id: Number(r.id), title: r.title ?? '', company: r.company_name ?? '', city: r.city ?? '', province: r.province ?? '', salaryText: r.salary_text ?? r.salary ?? '' })
+
+/** E8-07 详情页「相关职位」:同公司在招 ≤3 + 同省同 NOC 小类在招 ≤3(都排除本岗;瘦行,不过 Pro 剥离——无 Pro 列)。 */
+export async function fetchRelatedJobs(pool: any, job: { id: string | number; company: string; province: string; noc: string }): Promise<{ sameCompany: RelatedJob[]; sameOcc: RelatedJob[] }> {
+  const REL_COLS = `j.id, j.title, c.name AS company_name, j.city, j.province, j.salary, j.salary_text`
+  const [co, occ] = await Promise.all([
+    job.company ? pool.query(
+      `SELECT ${REL_COLS} ${JOB_FROM}
+       WHERE c.name = $1 AND j.id <> $2 AND COALESCE(j.status,'open') <> 'closed'
+       ORDER BY j.date_posted DESC NULLS LAST, j.id DESC LIMIT 3`, [job.company, job.id]) : { rows: [] },
+    job.noc && job.province ? pool.query(
+      `SELECT ${REL_COLS} ${JOB_FROM}
+       WHERE j.province = $1 AND LEFT(j.noc, 4) = LEFT($2, 4) AND j.id <> $3
+         AND COALESCE(c.name,'') <> $4 AND COALESCE(j.status,'open') <> 'closed'
+       ORDER BY j.date_posted DESC NULLS LAST, j.id DESC LIMIT 3`, [job.province, job.noc, job.id, job.company || '']) : { rows: [] },
+  ])
+  return { sameCompany: co.rows.map(mapRelated), sameOcc: occ.rows.map(mapRelated) }
+}
+
 /** 头条总数 + 差异化证言数字(省提名清单命中岗 named + 有外劳记录雇主数 lmia)。原在 page.tsx 裸 SQL,收编于此。 */
 export async function fetchTotalAndProof(pool: any): Promise<{ total: number; named: number; lmia: number }> {
   const { rows } = await pool.query(`SELECT count(*)::int AS n,

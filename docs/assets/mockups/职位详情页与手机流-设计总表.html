@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>E8-07 职位详情页与手机端内容流 — 设计总表(配色=现行浅色 token)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; background: #f3f4f6; padding: 28px; color: #111827; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .sub { font-size: 13px; color: #6b7280; margin-bottom: 24px; }
+  .row { display: flex; gap: 28px; align-items: flex-start; flex-wrap: wrap; }
+  .frame { background: #fff; border: 1px solid #d1d5db; border-radius: 18px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .phone { width: 375px; }
+  .desk { width: 640px; }
+  .cap { font-size: 13px; font-weight: 600; color: #374151; margin: 10px 2px 6px; }
+  .cap span { font-weight: 400; color: #6b7280; }
+  /* ---- 公共:顶栏 ---- */
+  .topbar { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #e5e7eb; background: #fff; }
+  .burger { width: 34px; height: 34px; border: 1px solid #e5e7eb; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #374151; }
+  .logo { font-weight: 800; font-size: 15px; color: #2563eb; flex: 1; }
+  .ava { width: 30px; height: 30px; border-radius: 50%; background: #7c3aed; color: #fff; font-size: 13px; display: flex; align-items: center; justify-content: center; }
+  .searchband { padding: 8px 14px 10px; border-bottom: 1px solid #e5e7eb; background: #fff; }
+  .searchband .inp { display: flex; align-items: center; gap: 8px; border: 1px solid #d1d5db; border-radius: 10px; padding: 8px 12px; font-size: 13.5px; color: #9ca3af; background: #fafafa; }
+  .sticky-note { font-size: 10.5px; color: #9ca3af; text-align: right; padding: 2px 14px 0; }
+  /* ---- chips ---- */
+  .chip { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid #e5e7eb; background: #fafafa; color: #4b5563; margin-right: 6px; }
+  .chip.blue { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+  .chip.green { background: #ecfdf5; border-color: #a7f3d0; color: #047857; }
+  .tag-known { display: inline-block; font-size: 10.5px; padding: 1px 6px; border-radius: 6px; background: #eff6ff; color: #1d4ed8; margin-left: 6px; }
+  /* ---- B 卡片流 ---- */
+  .card { padding: 12px 14px; border-bottom: 1px solid #f3f4f6; position: relative; }
+  .card .t { font-size: 14.5px; font-weight: 600; color: #2563eb; margin-bottom: 3px; padding-right: 26px; }
+  .card .l2 { font-size: 12.5px; color: #374151; margin-bottom: 3px; }
+  .card .l2 .co, .meta .co { color: #2563eb; }
+  .card .l3 { font-size: 12.5px; color: #374151; margin-bottom: 5px; }
+  .card .l3 b { font-weight: 600; }
+  .card .l4 { font-size: 11.5px; color: #9ca3af; display: flex; align-items: center; gap: 2px; flex-wrap: wrap; }
+  .card .star { position: absolute; right: 12px; top: 12px; color: #d1d5db; font-size: 16px; }
+  .card .star.on { color: #f59e0b; }
+  .more { text-align: center; padding: 12px; }
+  .btn2 { display: inline-block; border: 1px solid #d1d5db; border-radius: 8px; padding: 7px 22px; font-size: 13px; color: #374151; background: #fff; }
+  /* ---- D 抽屉 ---- */
+  .drawer { min-height: 700px; background: #fff; }
+  .drawer .hd { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid #e5e7eb; }
+  .drawer .hd .logo { flex: none; }
+  .drawer .x { width: 32px; height: 32px; border: 1px solid #e5e7eb; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #374151; }
+  .drawer a { display: flex; justify-content: space-between; align-items: center; padding: 15px 18px; font-size: 15px; color: #374151; text-decoration: none; border-bottom: 1px solid #f3f4f6; }
+  .drawer a.cur { color: #1d4ed8; background: #eff6ff; font-weight: 600; }
+  .drawer .sect { font-size: 11px; color: #9ca3af; letter-spacing: .5px; padding: 14px 18px 4px; }
+  .drawer .arr { color: #d1d5db; font-size: 13px; }
+  /* ---- A 详情页 ---- */
+  .dp { padding: 0 14px 18px; }
+  .dp .crumb { font-size: 11.5px; color: #6b7280; padding: 10px 0 8px; }
+  .dp .crumb a { color: #2563eb; text-decoration: none; }
+  .dp h2 { font-size: 18px; line-height: 1.35; margin-bottom: 8px; }
+  .meta { font-size: 12.5px; color: #374151; margin-bottom: 4px; }
+  .meta .k { color: #9ca3af; margin-right: 6px; }
+  .chips { margin: 8px 0 12px; }
+  .factbox { border: 1px solid #e5e7eb; border-radius: 12px; background: #fafafa; padding: 12px 14px; margin-bottom: 14px; }
+  .factbox .fr { display: flex; font-size: 12.5px; padding: 3px 0; }
+  .factbox .fk { width: 92px; color: #9ca3af; flex: none; }
+  .factbox .fv { color: #374151; }
+  .factbox .fv small { color: #9ca3af; }
+  .sec { border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; background: #fff; }
+  .sec .sh { font-size: 13.5px; font-weight: 700; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+  .sec .sh .sw { font-size: 11.5px; color: #2563eb; font-weight: 400; }
+  .sec p, .sec li { font-size: 12.5px; color: #374151; line-height: 1.65; }
+  .sec ul { padding-left: 18px; }
+  .sec .h5 { font-size: 12.5px; font-weight: 700; margin: 8px 0 2px; color: #111827; }
+  .ai { border: 1px solid #ddd6fe; background: #f5f3ff; }
+  .ai .sh { color: #6d28d9; }
+  .rel a { display: block; font-size: 12.5px; color: #2563eb; text-decoration: none; padding: 4px 0; }
+  .rel small { color: #9ca3af; }
+  .backbar { text-align: center; padding: 4px 0 0; }
+  .ext { font-size: 12px; color: #2563eb; }
+  .notice-info { border: 1px solid #bfdbfe; background: #eff6ff; color: #1e40af; border-radius: 10px; font-size: 12px; padding: 8px 12px; margin: 10px 0; }
+  /* 桌面详情 */
+  .desk .dp { max-width: 860px; padding: 0 28px 24px; }
+  .desk .cols { display: flex; gap: 24px; }
+  .desk .main { flex: 1; }
+  /* ---- E 顶栏下拉 ---- */
+  .navrow { display: flex; align-items: center; gap: 18px; padding: 12px 18px; font-size: 13px; color: #374151; border-bottom: 1px solid #e5e7eb; position: relative; }
+  .navrow .hoverd { color: #1d4ed8; font-weight: 600; }
+  .dd { position: absolute; top: 42px; left: 300px; width: 180px; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.08); padding: 6px 0; z-index: 2; }
+  .dd .ds { font-size: 10.5px; color: #9ca3af; letter-spacing: .5px; padding: 6px 14px 2px; }
+  .dd a { display: block; padding: 7px 14px; font-size: 13px; color: #374151; text-decoration: none; }
+  .dd a.cur { background: #eff6ff; color: #1d4ed8; font-weight: 600; }
+  .ddnote { padding: 90px 18px 16px; font-size: 11.5px; color: #9ca3af; }
+  /* ---- F 评论区 ---- */
+  .cwrap { padding: 16px 20px 20px; }
+  .cwrap .ch { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+  .cbox { border: 1px solid #d1d5db; border-radius: 10px; padding: 10px 12px; font-size: 13px; color: #9ca3af; background: #fafafa; margin-bottom: 8px; }
+  .csub { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .csub .note { font-size: 11.5px; color: #9ca3af; }
+  .btn-pri { display: inline-block; background: #2563eb; color: #fff; border-radius: 8px; padding: 7px 18px; font-size: 13px; }
+  .cmt { display: flex; gap: 10px; padding: 12px 0; border-top: 1px solid #f3f4f6; }
+  .cmt .cava { width: 32px; height: 32px; border-radius: 50%; background: #e0e7ff; color: #4338ca; font-size: 13px; display: flex; align-items: center; justify-content: center; flex: none; }
+  .cmt .cb { flex: 1; }
+  .cmt .cn { font-size: 12.5px; font-weight: 600; color: #374151; }
+  .cmt .cn .tag-off { font-size: 10.5px; padding: 1px 6px; border-radius: 6px; background: #eff6ff; color: #1d4ed8; margin-left: 6px; font-weight: 400; }
+  .cmt .cn .tag-pin { font-size: 10.5px; padding: 1px 6px; border-radius: 6px; background: #fffbeb; color: #92400e; margin-left: 4px; font-weight: 400; }
+  .cmt .ct { font-size: 11px; color: #9ca3af; margin: 1px 0 4px; }
+  .cmt .cx { font-size: 13px; color: #374151; line-height: 1.65; }
+  .cmt .cr { font-size: 12px; color: #2563eb; margin-top: 4px; }
+  .replies { margin-left: 42px; border-left: 2px solid #f3f4f6; padding-left: 12px; }
+  .replies .cmt { border-top: none; padding: 8px 0; }
+  .expand { margin-left: 42px; font-size: 12.5px; color: #2563eb; padding: 4px 0 8px; }
+  .pinned { background: #f8faff; border: 1px solid #e0e7ff; border-radius: 12px; padding: 4px 14px; margin-bottom: 4px; }
+  .pinned .cmt { border-top: none; }
+</style>
+</head>
+<body>
+<h1>E8-07 职位详情页与手机端内容流 — 设计总表</h1>
+<div class="sub">借鉴=单栏内容详情页骨架+手机三件;配色=现行浅色 token 零新增(白卡、描边 #e5e7eb、蓝 #2563eb、灰注 #6b7280)。数据为示意。</div>
+<div class="row">
+
+  <!-- ① B+C:手机卡片流 + 常驻搜索 -->
+  <div>
+    <div class="cap">① 手机端卡片流(B)+ 常驻搜索(C)<br><span>分元素点击:职位名→详情页、公司名→公司弹框;裸「知名」Tag 退役,公司名旁=公司分(E12-08,点开看四维)</span></div>
+    <div class="frame phone">
+      <div class="topbar"><div class="burger">☰</div><div class="logo">offer2pr</div><div class="ava">F</div></div>
+      <div class="searchband"><div class="inp">🔍 搜职位、公司、城市…</div></div>
+      <div class="sticky-note">▲ 顶栏+搜索 sticky 常驻</div>
+      <div class="card">
+        <div class="star on">★</div>
+        <div class="t">Registered Nurse 注册护士</div>
+        <div class="l2"><span class="co">Extendicare</span> <span class="tag-known">公司分 82</span></div>
+        <div class="l3">Ottawa, ON <b>$39.50/小时</b></div>
+        <div class="l4">今天 <span class="chip blue">可走省提名</span><span class="chip">TEER 1</span></div>
+      </div>
+      <div class="card">
+        <div class="star">☆</div>
+        <div class="t">Software Developer 软件开发</div>
+        <div class="l2"><span class="co">Kinaxis</span> <span class="tag-known">公司分 78</span></div>
+        <div class="l3">Ottawa(Kanata), ON <b>$95,000/年</b></div>
+        <div class="l4">今天 <span class="chip blue">可走省提名</span><span class="chip">TEER 1</span></div>
+      </div>
+      <div class="card">
+        <div class="star">☆</div>
+        <div class="t">Line Cook 厨师</div>
+        <div class="l2"><span class="co">Famous Dave's</span></div>
+        <div class="l3">Winnipeg, MB <b>$17.25/小时</b></div>
+        <div class="l4">昨天 <span class="chip">TEER 3</span><span class="chip green">紧缺通道</span></div>
+      </div>
+      <div class="card">
+        <div class="star">☆</div>
+        <div class="t">Truck Driver 卡车司机</div>
+        <div class="l2"><span class="co">Porcupine Mechanical</span></div>
+        <div class="l3">Yorkton, SK <b>$28.00/小时</b></div>
+        <div class="l4">昨天 <span class="chip">TEER 3</span><span class="chip green">紧缺通道</span></div>
+      </div>
+      <div class="more"><span class="btn2">显示更多(已显示 50 / 21,384)</span></div>
+    </div>
+  </div>
+
+  <!-- ② D:侧滑抽屉导航 -->
+  <div>
+    <div class="cap">② 手机端侧滑抽屉导航(D)<br><span>左侧 4/5 宽;条目圆角块;chevron 抽屉内展开二级;右露页面+遮罩</span></div>
+    <div class="frame phone" style="position:relative;min-height:640px;background:#fff;overflow:hidden">
+      <div style="position:absolute;inset:0;filter:blur(1px);opacity:.45;pointer-events:none">
+        <div class="topbar"><div class="burger">☰</div><div class="logo">offer2pr</div><div class="ava">F</div></div>
+        <div class="card"><div class="t">Registered Nurse 注册护士</div><div class="l2"><span class="co">Extendicare</span></div><div class="l3">Ottawa, ON <b>$39.50/小时</b></div></div>
+        <div class="card"><div class="t">Software Developer 软件开发</div><div class="l2"><span class="co">Kinaxis</span></div><div class="l3">Ottawa(Kanata), ON <b>$95,000/年</b></div></div>
+        <div class="card"><div class="t">Line Cook 厨师</div><div class="l2"><span class="co">Famous Dave's</span></div><div class="l3">Winnipeg, MB <b>$17.25/小时</b></div></div>
+      </div>
+      <div style="position:absolute;inset:0;background:rgba(17,24,39,.28)"></div>
+      <div style="position:absolute;top:0;bottom:0;left:0;width:80%;background:#fff;border-right:1px solid #e5e7eb;padding:0 14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 2px 12px"><div class="logo">offer2pr</div><div class="x" style="width:32px;height:32px;border:1px solid #e5e7eb;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#374151">✕</div></div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:12px 14px;font-size:14.5px;font-weight:600;color:#1d4ed8">职位板</div>
+          <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;font-size:14.5px;color:#374151">雇主名录</div>
+          <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;font-size:14.5px;color:#374151">职业清单</div>
+          <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;font-size:14.5px;color:#374151;display:flex;justify-content:space-between"><span>资讯</span><span style="color:#9ca3af">▾</span></div>
+          <div style="padding:2px 6px 2px 18px;display:flex;flex-direction:column;gap:2px">
+            <div style="font-size:13.5px;color:#1d4ed8;padding:7px 8px;background:#eff6ff;border-radius:8px">移民新闻</div>
+            <div style="font-size:13.5px;color:#4b5563;padding:7px 8px">政策时间线</div>
+            <div style="font-size:13.5px;color:#4b5563;padding:7px 8px">地区统计</div>
+            <div style="font-size:13.5px;color:#4b5563;padding:7px 8px">榜单</div>
+          </div>
+          <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;font-size:14.5px;color:#374151;display:flex;justify-content:space-between"><span>我的</span><span style="color:#9ca3af">▸</span></div>
+          <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;font-size:14.5px;color:#374151">升级 Pro</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ A:详情页 手机 -->
+  <div>
+    <div class="cap">③ 职位详情页 /jobs/&lt;id&gt; 手机(A)<br><span>单栏内容骨架;弹框内容平铺;可分享可收录</span></div>
+    <div class="frame phone">
+      <div class="topbar"><div class="burger">☰</div><div class="logo">offer2pr</div><div class="ava">F</div></div>
+      <div class="dp">
+        <div class="crumb"><a href="#">职位板</a> › <a href="#">安大略省</a> › <a href="#">卫生职业</a> › Registered Nurse</div>
+        <h2>Registered Nurse 注册护士</h2>
+        <div class="meta"><span class="k">公司</span><span class="co">Extendicare</span> <span class="tag-known">公司分 82</span></div>
+        <div class="meta"><span class="k">城市</span>Ottawa, ON(安大略省)</div>
+        <div class="meta"><span class="k">发布</span>2026-07-19 <span class="k" style="margin-left:10px">来源</span>Job Bank</div>
+        <div class="chips">
+          <span class="chip blue">可走省提名</span><span class="chip">NOC 31301 注册护士</span><span class="chip">TEER 1 需大专学历</span>
+        </div>
+        <div class="factbox">
+          <div class="fr"><div class="fk">薪资</div><div class="fv">$39.50/小时 <small>≈ $77,000/年</small></div></div>
+          <div class="fr"><div class="fk">工时</div><div class="fv">37.5 小时/周</div></div>
+          <div class="fr"><div class="fk">雇佣期</div><div class="fv">永久全职</div></div>
+          <div class="fr"><div class="fk">vs 工资中位</div><div class="fv" style="color:#92400e">Pro 显示与官方中位差距</div></div>
+        </div>
+        <div class="sec">
+          <div class="sh">职位描述(整理版)<span class="sw">看原文 ▾</span></div>
+          <div class="h5">岗位概述</div>
+          <p>为长期护理院住户提供日常护理与用药管理…</p>
+          <div class="h5">任职要求</div>
+          <ul><li>安省注册护士执照(CNO)</li><li>2 年长期护理经验优先</li></ul>
+          <div class="h5" style="color:#9ca3af">职责 / 福利 / 如何申请(略)</div>
+        </div>
+        <div class="sec ai">
+          <div class="sh">AI 顾问初判</div>
+          <p>该岗 NOC 31301 属安省紧缺卫生职业,OINP 卫生类定向抽选常年活跃…(自动生成,额度闸照走)</p>
+        </div>
+        <div class="sec">
+          <div class="sh">省提名通道(粗筛信号,非资格认定)</div>
+          <p>OINP 外国工人类 符合职业清单 ↗ 最近抽选 2026-07-02</p>
+        </div>
+        <div class="sec rel">
+          <div class="sh">相关职位</div>
+          <a href="#">Registered Practical Nurse — Extendicare <small>同公司</small></a>
+          <a href="#">Registered Nurse — Sienna Senior Living <small>同省同职业</small></a>
+          <a href="#">Nurse Practitioner — Carefor <small>同省同职业</small></a>
+        </div>
+        <div class="backbar"><span class="btn2">← 返回职位板</span> <span class="ext" style="margin-left:10px">在 Job Bank 打开 ↗</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ④ A:详情页 桌面(单栏 860) -->
+  <div>
+    <div class="cap">④ 详情页 桌面形态(A)<br><span>同一页面单栏 max-width 860;主表弹框照旧,弹框标题栏加「打开完整页 ↗」</span></div>
+    <div class="frame desk">
+      <div class="topbar"><div class="logo">offer2pr</div><div style="font-size:12.5px;color:#374151">职位板 雇主 统计 时间线 新闻</div><div class="ava">F</div></div>
+      <div class="dp">
+        <div class="crumb"><a href="#">职位板</a> › <a href="#">安大略省</a> › <a href="#">卫生职业</a> › Registered Nurse</div>
+        <h2>Registered Nurse 注册护士 <span class="ext" style="font-size:12.5px;font-weight:400">在 Job Bank 打开 ↗</span></h2>
+        <div class="meta"><span class="k">公司</span><span class="co">Extendicare</span> <span class="tag-known">公司分 82</span> <span class="k" style="margin-left:14px">城市</span>Ottawa, ON <span class="k" style="margin-left:14px">发布</span>2026-07-19 <span class="k" style="margin-left:14px">来源</span>Job Bank</div>
+        <div class="chips"><span class="chip blue">可走省提名</span><span class="chip">NOC 31301 注册护士</span><span class="chip">TEER 1 需大专学历</span></div>
+        <div class="cols">
+          <div class="main">
+            <div class="sec">
+              <div class="sh">职位描述(整理版)<span class="sw">看原文 ▾</span></div>
+              <div class="h5">岗位概述</div><p>为长期护理院住户提供日常护理与用药管理…</p>
+              <div class="h5">任职要求</div><ul><li>安省注册护士执照(CNO)</li><li>2 年长期护理经验优先</li></ul>
+            </div>
+            <div class="sec ai"><div class="sh">AI 顾问初判</div><p>该岗 NOC 31301 属安省紧缺卫生职业…</p></div>
+          </div>
+          <div style="width:230px;flex:none">
+            <div class="factbox">
+              <div class="fr"><div class="fk">薪资</div><div class="fv">$39.50/小时</div></div>
+              <div class="fr"><div class="fk">工时</div><div class="fv">37.5 小时/周</div></div>
+              <div class="fr"><div class="fk">雇佣期</div><div class="fv">永久全职</div></div>
+            </div>
+            <div class="sec rel"><div class="sh">相关职位</div>
+              <a href="#">RPN — Extendicare</a><a href="#">RN — Sienna</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑤ E:顶栏 hover 下拉 -->
+  <div>
+    <div class="cap">⑤ 顶栏 hover 下拉子模块(E,桌面)<br><span>hover 即开;单列白卡;分区区头;当前项高亮;键盘可达</span></div>
+    <div class="frame desk" style="min-height:260px;position:relative">
+      <div class="navrow">
+        <span class="logo" style="flex:none">offer2pr</span>
+        <span>职位板</span><span>雇主名录</span><span class="hoverd">资讯 ▾</span><span>资料库 ▾</span><span style="flex:1"></span><span class="ava">F</span>
+      </div>
+      <div class="dd">
+        <div class="ds">动态</div>
+        <a class="cur" href="#">移民新闻</a>
+        <a href="#">政策时间线</a>
+        <div class="ds">数据与结论</div>
+        <a href="#">地区统计</a>
+        <a href="#">榜单</a>
+      </div>
+      <div class="ddnote">hover「资讯」示意:离开 150ms 延时关;当前页「移民新闻」蓝底高亮;「资料库」同款组件。</div>
+    </div>
+  </div>
+
+  <!-- ⑥ F:新闻评论区 -->
+  <div>
+    <div class="cap">⑥ 新闻评论区亮回 v2(F,news 详情尾部)<br><span>登录+审核制不变(不学匿名直发);官方置顶楼;楼中楼一层;折叠回复</span></div>
+    <div class="frame desk">
+      <div class="cwrap">
+        <div class="ch">已有 12 条评论</div>
+        <div class="cbox">聊聊你对这条政策的看法…(登录后可评)</div>
+        <div class="csub"><span class="note">评论经审核后显示,广告与中介信息不予通过</span><span class="btn-pri">提交评论</span></div>
+
+        <div class="pinned">
+          <div class="cmt">
+            <div class="cava">官</div>
+            <div class="cb">
+              <div class="cn">offer2pr 官方 <span class="tag-off">官方</span><span class="tag-pin">置顶</span></div>
+              <div class="ct">2026-07-18</div>
+              <div class="cx">怎么看这次 OINP 卫生类定向抽选:分数线较上轮降 12 分,但邀请数收窄——对已在池内的卫生类申请人是窗口,观望者建议先核对职业清单 ↗。</div>
+              <div class="cr">回复</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cmt">
+          <div class="cava">Li</div>
+          <div class="cb">
+            <div class="cn">Lin***</div>
+            <div class="ct">2026-07-19</div>
+            <div class="cx">降分是不是意味着后面几轮池子会重新卷回去?有没有历史数据参考</div>
+            <div class="cr">回复</div>
+          </div>
+        </div>
+        <div class="replies">
+          <div class="cmt">
+            <div class="cava">官</div>
+            <div class="cb">
+              <div class="cn">offer2pr 官方 <span class="tag-off">官方</span></div>
+              <div class="ct">2026-07-19</div>
+              <div class="cx">@Lin*** 政策时间线里有近 24 个月分数线走势,可以对着看。</div>
+            </div>
+          </div>
+        </div>
+        <div class="expand">展开 4 条回复 ▾</div>
+
+        <div class="cmt">
+          <div class="cava">W</div>
+          <div class="cb">
+            <div class="cn">wan***</div>
+            <div class="ct">2026-07-19</div>
+            <div class="cx">正好在等这个类别,感谢整理</div>
+            <div class="cr">回复</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -50,7 +50,7 @@ export const BANNER_COOKIE = 'jobs_banner_v1'
 // ValueBanner 已退役(#65 收尾,Frank:「不需要两个蓝条」)——建档 CTA 并进 Jobs 页头右槽;BANNER_COOKIE 留给 page.tsx 旧 cookie 读取兼容
 
 // 升级卡片(402 / 锁定块共用;都出现在已登录上下文)—— P1 换装(⓪ 2026-07-19):CTA=统一实心 UpgradeCta
-function UpgradeCard({ t, reason }: { t: TFn; reason: string }) {
+export function UpgradeCard({ t, reason }: { t: TFn; reason: string }) {
   return (
     <Notice kind="warn" lead={t('up.title')} action={<UpgradeCta t={t} loggedIn />} style={{ margin: '8px 0', fontSize: 13.5 }}>{reason}</Notice>
   )
@@ -332,7 +332,8 @@ const sourceLabel = (j: JobRow): string => j.sourceLabel || '—'
 const isDirect = (j: JobRow): boolean => (fromJobBank(j) ? j.source === 'Job Bank' : true)
 
 // ── 地点拆 省/市/区 ──
-const PROV_NAMES: Record<string, string> = {
+// E8-07:export 给 /jobs/[id] 详情页(面包屑省全名)。详情页复用策略=只加 export 不搬代码(零回归;大搬家瘦身另立批)
+export const PROV_NAMES: Record<string, string> = {
   ON: 'Ontario', BC: 'British Columbia', AB: 'Alberta', QC: 'Quebec', MB: 'Manitoba', SK: 'Saskatchewan',
   NS: 'Nova Scotia', NB: 'New Brunswick', NL: 'Newfoundland and Labrador', PE: 'Prince Edward Island',
   NT: 'Northwest Territories', YT: 'Yukon', NU: 'Nunavut',
@@ -467,15 +468,16 @@ export const TZ_PROV: Record<string, string> = {
 const PAGE_ROWS = 50                    // 每页行数:首屏 50,点「显示更多」每次 +50(用户拍板:不随滚动自动加载)
 const ORIGIN_LABEL: Record<string, string> = { jobbank: 'Job Bank', ats: 'ATS', directory: '社区名单' }
 
-type PnpOcc = { province: string; stream: string; label: string; type: string; noc: string; name: string; gtaRestricted: boolean; url: string; fetched: string }
+// E8-07:维度行类型 export 给详情页(SSR 取数按同一形状传入)
+export type PnpOcc = { province: string; stream: string; label: string; type: string; noc: string; name: string; gtaRestricted: boolean; url: string; fetched: string }
 // 省抽选事实(E6-04):score 是省自评分制(scale 标注),非 CRS —— 只作事实展示,不做资格/差分判定
-type PnpDraw = { province: string; kind: string; drawDate: string; stream: string; score: number | null; scale: string; invitations: number | null; note: string; label: string; url: string; fetched: string }
-type EeOcc = { category: string; label: string; noc: string; teer: number | null; title: string; url: string; fetched: string; drawCrs: number | null; drawDate: string; drawSize: number | null }
-type DesigEmp = { name: string; province: string; location: string; isTech: boolean }
-type NocDesc = { noc: string; title: string; duties: string; requirements: string; fetched: string }
-type FieldSource = { field: string; kind: string; publisher: string; url: string; title: string; description: string; status: string; fetched: string; note: string }
+export type PnpDraw = { province: string; kind: string; drawDate: string; stream: string; score: number | null; scale: string; invitations: number | null; note: string; label: string; url: string; fetched: string }
+export type EeOcc = { category: string; label: string; noc: string; teer: number | null; title: string; url: string; fetched: string; drawCrs: number | null; drawDate: string; drawSize: number | null }
+export type DesigEmp = { name: string; province: string; location: string; isTech: boolean }
+export type NocDesc = { noc: string; title: string; duties: string; requirements: string; fetched: string }
+export type FieldSource = { field: string; kind: string; publisher: string; url: string; title: string; description: string; status: string; fetched: string; note: string }
 // 官方移民新闻瘦行(E12-06):弹框「本省最新公告」行用,详情在 /news/[slug]
-type NewsSlim = { region: string; title: string; date: string; slug: string }
+export type NewsSlim = { region: string; title: string; date: string; slug: string }
 type Dims = {
   provinces: { code: string; name: string }[]
   cities: { name: string; province: string }[]
@@ -883,7 +885,10 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           差异认账:未登录点「我的账户」由弹框改为 /account 302 回 /?login=1(终点同为登录框)。 */}
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} sticky loggedIn={plan.loggedIn}
         matchButton={{ active: matchView, onClick: toggleMatchView }}
-        accountArea={<AccountArea t={t} plan={plan} />} />
+        accountArea={<AccountArea t={t} plan={plan} />}
+        searchBar={/* E8-07 C:窄屏常驻搜索=同一 q state(即时筛选不刷页);筛选区原输入窄屏藏(jtHideNarrow) */
+          <input placeholder={t('search.placeholder')} value={q} onChange={(e) => setQ(e.target.value)} enterKeyHint="search"
+            style={{ width: '100%', boxSizing: 'border-box', height: 38, padding: '0 12px', border: '1px solid #d1d5db', borderRadius: 10, fontSize: 14, color: '#1f2937', background: '#fafafa' }} />} />
       {/* 榜单/统计弹窗已退役(2026-07-11 用户拍板顶栏改跳转页面);/stats 页「看职位」?prov=&broad= 回流照旧 */}
       {/* 价值横幅退役(#65 收尾,Frank:「不需要两个蓝条」)——建档 CTA 并进下方 Jobs 页头右槽 */}
       <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1rem 1.25rem 1.5rem', width: '100%', boxSizing: 'border-box', flex: '1 0 auto' }}>
@@ -952,7 +957,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               窄屏抽屉(jtDrawerToggle)一并退役——一行+折叠对窄屏同样成立,靠 flexWrap 自然换行。
               右端=更新时间+字段钮(#56 拍板延续)。市/区、中/小类仍是省/大类的联动下级,只在折叠区出现。 ═══ */}
           <div style={filtRow}>
-            <input placeholder={t('search.placeholder')} value={q} onChange={(e) => setQ(e.target.value)} style={{ ...ctrl, flex: '0 1 260px', minWidth: 160 }} />
+            <input className="jtHideNarrow" placeholder={t('search.placeholder')} value={q} onChange={(e) => setQ(e.target.value)} style={{ ...ctrl, flex: '0 1 260px', minWidth: 160 }} />
             <Sel value={fProv} onChange={(v) => { setFProv(v); setFCity(''); setFDistrict('') }} opts={provOpts} all={t('all.prov')} />
             <Sel value={fBroad} onChange={(v) => { setFBroad(v); setFMid(''); setFFine('') }} opts={broadOpts} all={t('all.broad')} labelOf={broadLabel} />
             <Sel value={fPnp} onChange={setFPnp} opts={['yes', 'no']} all={t('all.pnp')} labelOf={(v) => t('opt.' + v)} />
@@ -1219,7 +1224,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             return (
               <div key={j.id} style={{ border: '1px solid #e5e7eb', borderRadius: 12, padding: '10px 12px', background: '#fff' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'baseline' }}>
-                  <span onClick={() => setActModal({ kind: 'desc', job: j })} style={{ fontSize: 14.5, fontWeight: 600, color: '#111827', cursor: 'pointer' }}>{j.title}</span>
+                  {/* E8-07 B 件(Frank 拍板「公司名、职位名手机都可点」+手机免弹框套弹框):职位名=蓝链进 /jobs/[id] 详情页(原开 JD 弹框) */}
+                  <a href={`/jobs/${j.id}`} style={{ fontSize: 14.5, fontWeight: 600, color: '#2563eb', textDecoration: 'none' }}>{j.title}</a>
                   <span style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
                     {mc && <span onClick={() => open('match', t('match.' + j.match))} style={{ fontSize: 11.5, padding: '1px 8px', borderRadius: 6, background: mc.bg, color: mc.fg, fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer' }}>{t('match.' + j.match)}</span>}
                     {/* #52:收藏入口手机也要有(E9-01 闭环第一环)——卡片寸土寸金只放星标,匿名点=注册框(与桌面 toggleSave 同一逻辑) */}
@@ -1229,10 +1235,12 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                     </button>
                   </span>
                 </div>
-                <div onClick={() => open('company', j.company)} style={{ fontSize: 12.5, color: '#6b7280', marginTop: 2, cursor: 'pointer' }}>{j.company}{L.city ? ` · ${L.city}${L.prov ? ', ' + L.prov : ''}` : ''}</div>
+                {/* 公司独立一行可点(开公司弹框,K 懒探索照旧);地点拆去下一行——去「·」杂糅(W 规矩存量清理) */}
+                {j.company ? <div onClick={() => open('company', j.company)} style={{ fontSize: 12.5, color: '#2563eb', marginTop: 2, cursor: 'pointer' }}>{j.company}</div> : null}
                 <div style={{ fontSize: 12.5, marginTop: 4, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                  {(j.salaryText || j.salary) ? <span onClick={() => open('salary', j.salaryText || j.salary)} style={{ color: '#15803d', cursor: 'pointer' }}>{j.salaryText || j.salary}</span> : null}
-                  <span suppressHydrationWarning onClick={() => open('datePosted', (j.datePosted || '').slice(0, 10))} style={{ color: '#9ca3af', cursor: 'pointer' }}>{(j.datePosted || '').slice(0, 10)}{days != null ? ` · ${t('fact.daysUp')} ${t('fact.daysUpVal', { n: days })}` : ''}</span>
+                  {L.city ? <span onClick={() => open('city', L.city)} style={{ color: '#374151', cursor: 'pointer' }}>{L.city}{j.province ? `, ${j.province}` : ''}</span> : null}
+                  {(j.salaryText || j.salary) ? <span onClick={() => open('salary', j.salaryText || j.salary)} style={{ color: '#15803d', fontWeight: 600, cursor: 'pointer' }}>{j.salaryText || j.salary}</span> : null}
+                  <span suppressHydrationWarning onClick={() => open('datePosted', (j.datePosted || '').slice(0, 10))} style={{ color: '#9ca3af', cursor: 'pointer' }}>{(j.datePosted || '').slice(0, 10)}{days != null ? `(${t('fact.daysUpVal', { n: days })})` : ''}</span>
                 </div>
                 <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
                   {j.pnpEligible ? chip('#fef3c7', '#92400e', j.pnpStream ? t('cell.pnpYes') : t('cell.pnpSkilled'), 'pnp') : null}
@@ -1336,7 +1344,7 @@ function NewsLatestBlock({ province, lang, news }: { province: string; lang: Lan
   )
 }
 
-function PnpListSection({ job, lang, occ, draws, news }: { job: JobRow; lang: Lang; occ: PnpOcc[]; draws: PnpDraw[]; news: NewsSlim[] }) {
+export function PnpListSection({ job, lang, occ, draws, news }: { job: JobRow; lang: Lang; occ: PnpOcc[]; draws: PnpDraw[]; news: NewsSlim[] }) {
   const t = makeT(lang)
   const matchRef = useRef<HTMLDivElement | null>(null)
   const isQc = job.province === 'QC'
@@ -1406,7 +1414,7 @@ function PnpListSection({ job, lang, occ, draws, news }: { job: JobRow; lang: La
 // 与 PnpListSection 同理:清单来自 DB 维度表(ee-categories,经 props 传入),全国单一源。
 // 命中→只展开该类别清单 + 高亮本岗;未命中→只列出各类别名+数量概览。EE ≠ PNP,独立信号。
 type EeCat = { key: string; label: string; drawCrs: number | null; drawDate: string; drawSize: number | null; occupations: { noc: string; teer: number | null; title: string }[] }
-function EeCategorySection({ job, lang, cats }: { job: JobRow; lang: Lang; cats: EeOcc[] }) {
+export function EeCategorySection({ job, lang, cats }: { job: JobRow; lang: Lang; cats: EeOcc[] }) {
   const t = makeT(lang)
   const matchRef = useRef<HTMLDivElement | null>(null)
   // 扁平维度表按 label 分组
@@ -1459,7 +1467,7 @@ function EeCategorySection({ job, lang, cats }: { job: JobRow; lang: Lang; cats:
 // ── 弹框上半:每字段「事实块」(凭证)—— 值 + 口径,绝不经 LLM ──────
 // 框架:按 field 分支。pnp/ee 用既有清单组件;其余「零成本」字段(地点/薪资/分类/来源/经验/时间状态)
 // 直接读 job 已加载的真实字段渲染。依赖 Part B 抓取的字段(职位 JD / 公司简介 / 官方职责 / 门槛 / 抽选线)留待后续填。
-function FactRow({ k, children }: { k: React.ReactNode; children: React.ReactNode }) {
+export function FactRow({ k, children }: { k: React.ReactNode; children: React.ReactNode }) {
   if (children == null || children === '' || children === '—') return null
   return (
     <div style={{ display: 'flex', gap: 10, padding: '3px 0', fontSize: 13 }}>
@@ -1468,7 +1476,7 @@ function FactRow({ k, children }: { k: React.ReactNode; children: React.ReactNod
     </div>
   )
 }
-function FactsBox({ children, note }: { children: React.ReactNode; note?: React.ReactNode }) {
+export function FactsBox({ children, note }: { children: React.ReactNode; note?: React.ReactNode }) {
   return (
     <div style={{ marginBottom: 14, paddingBottom: 12, borderBottom: '1px solid #f3f4f6' }}>
       {children}
@@ -1516,7 +1524,7 @@ const JD_HR_LINE_RE = new RegExp(`^(${JD_ALL_ALTS})-\\s*`)                      
 // (c4e6f59/369aac0)整体退役(多张表的抽象感 + 解读列大量留空,读起来不如原文)。
 // 双轨渲染:数据层给了真实换行(05b 块级序列化,原帖分段/列表/标题保真)→ 按原换行渲染,空行=段距;
 // 压平老坨帖(Job Bank 聚合时丢格式,0 换行)→ 才走猜测式断行(粘连断行/bullet 拆行/一句一行,历轮拍板)。
-function JdTextView({ text, max = 4000 }: { text: string; max?: number }) {
+export function JdTextView({ text, max = 4000 }: { text: string; max?: number }) {
   const clipped = text.slice(0, max)
   const hasBreaks = clipped.includes('\n')
   const lines = (hasBreaks
@@ -1569,7 +1577,7 @@ function JdTextView({ text, max = 4000 }: { text: string; max?: number }) {
 }
 // J3 五节整理版渲染(2026-07-19 Frank 批):[ROLE]/[REQS]/[PAY]/[WORKHOURS]/[APPLY] 标记文本 → 节头加粗独立行,
 // 节内一条一行(W 规范:禁「·」「/」杂糅);(not stated) → 「原帖未提及」灰字,缺节不脑补
-function JdFormattedView({ text, t }: { text: string; t: TFn }) {
+export function JdFormattedView({ text, t }: { text: string; t: TFn }) {
   const SECS: [string, string][] = [['ROLE', 'act.f.role'], ['REQS', 'act.f.reqs'], ['PAY', 'act.f.pay'], ['WORKHOURS', 'act.f.hours'], ['APPLY', 'act.f.apply']]
   const parts = text.split(/\[(ROLE|REQS|PAY|WORKHOURS|APPLY)\]/)
   const secs: Record<string, string> = {}
@@ -1597,7 +1605,7 @@ function JdFormattedView({ text, t }: { text: string; t: TFn }) {
 // 打开职位描述即自动流式生成,不用再点「AI 顾问」钮;额度闸照走(402 升级卡/429 说人话);
 // 同岗会话内缓存,反复开关不重复烧额度。深挖(对比表+追问对话)仍在「AI 顾问」钮的完整弹框里。
 const jdAdvCache = new Map<string, string>()
-function JdAdvisorSection({ job, lang, plan }: { job: JobRow; lang: Lang; plan: Plan }) {
+export function JdAdvisorSection({ job, lang, plan }: { job: JobRow; lang: Lang; plan: Plan }) {
   const t = makeT(lang)
   const [text, setText] = useState(jdAdvCache.get(String(job.id)) || '')
   const [status, setStatus] = useState<'loading' | 'streaming' | 'done' | 'error' | 'upgrade' | 'limited'>(jdAdvCache.has(String(job.id)) ? 'done' : 'loading')
@@ -2118,7 +2126,7 @@ function useFloatPanel(prefKey: string, defW: number, defH: number) {
 const VERDICT_ICON: Record<string, { icon: React.ReactNode; color: string }> = {
   pass: { icon: <IconCheck />, color: '#15803d' }, warn: { icon: <IconWarn />, color: '#b45309' }, fail: { icon: <IconX />, color: '#dc2626' }, na: { icon: '·', color: '#9ca3af' },
 }
-function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: JobRow; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; eeOcc: EeOcc[]; nocDesc: NocDesc[] }) {
+export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: JobRow; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; eeOcc: EeOcc[]; nocDesc: NocDesc[] }) {
   const t = makeT(lang)
   const result = useMemo(() => {
     if (!plan.profileOk || !plan.profile) return null
@@ -2241,7 +2249,7 @@ function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: JobRow; 
   )
 }
 
-function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, news, eeOcc, desigEmp, nocDesc, fieldSources, onClose, onOpenJob }: { field: ColKey; job: JobRow; title?: string; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; news: NewsSlim[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onClose: () => void; onOpenJob?: (j: JobRow) => void }) {
+export function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, news, eeOcc, desigEmp, nocDesc, fieldSources, onClose, onOpenJob }: { field: ColKey; job: JobRow; title?: string; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; news: NewsSlim[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onClose: () => void; onOpenJob?: (j: JobRow) => void }) {
   const t = makeT(lang)
   const overlayClose = useOverlayClose(onClose)
   const a = advHeader(field, job, t)
@@ -2586,7 +2594,12 @@ function ActModal({ job, lang, plan, onClose }: { job: JobRow; lang: Lang; plan:
         {/* 标题栏 = 拖动手柄(与顾问弹框同款) */}
         <div onPointerDown={startDrag} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, padding: '16px 20px 8px', cursor: full ? 'default' : 'move', userSelect: 'none', flexShrink: 0 }}>
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, letterSpacing: 0.3 }}>{t('act.descTitle')}{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400 }}> · {t('advisor.left', { n: freeLeft })}</span> : null}</div>
+            <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, letterSpacing: 0.3 }}>
+              {t('act.descTitle')}{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400 }}> · {t('advisor.left', { n: freeLeft })}</span> : null}
+              {/* E8-07:详情页入口(分享/新标签场景);阻止冒泡免触发标题栏拖动 */}
+              <a href={`/jobs/${job.id}`} target="_blank" rel="noreferrer" onPointerDown={(e) => e.stopPropagation()}
+                style={{ marginLeft: 10, color: '#2563eb', textDecoration: 'none', fontWeight: 400 }}>{t('detail.openFull')} ↗</a>
+            </div>
             <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{job.title || '—'}</h3>
           </div>
           <div style={{ display: 'flex', gap: 6, flexShrink: 0 }} onPointerDown={(e) => e.stopPropagation()}>
