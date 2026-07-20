@@ -82,9 +82,10 @@ export function buildJobsWhere(filters: Record<string, unknown>, startIndex = 1)
   if (s('fStatus')) conds.push(`COALESCE(j.status,'open') = ${param(s('fStatus'))}`)
   if (s('fOrigin')) conds.push(`j.origin = ${param(s('fOrigin'))}`)
 
-  if (s('fScore') === 'high') conds.push(`j.score >= 75`)
-  else if (s('fScore') === 'mid') conds.push(`j.score >= 50 AND j.score < 75`)
-  else if (s('fScore') === 'low') conds.push(`j.score < 50`)
+  // E12-08 尾巴:fScore 谓词随评分制切 1-5 通道档(高=4-5/中=3/低=1-2);下拉已下架,只剩 URL/老保存筛选触发
+  if (s('fScore') === 'high') conds.push(`j.grade_channel >= 4`)
+  else if (s('fScore') === 'mid') conds.push(`j.grade_channel = 3`)
+  else if (s('fScore') === 'low') conds.push(`j.grade_channel <= 2`)
 
   if (s('fSal') === 'ge100') conds.push(`j.salary_annual >= 100000`)
   else if (s('fSal') === '80') conds.push(`j.salary_annual >= 80000 AND j.salary_annual < 100000`)

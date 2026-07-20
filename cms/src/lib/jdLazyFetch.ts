@@ -30,14 +30,35 @@ async function fetchHtml(url: string): Promise<string> {
   } catch { return '' } finally { clearTimeout(timer) }
 }
 
-// 通用正文抽取(readability 极简版,零依赖):剥非内容块 → 块级标签转行 → 剥标签 → 反转义 → 压行
+// 头部残渣裁剪(#126,央行帖实证):不少原站把导航菜单/语言切换/订阅控件渲在 div 里(<nav> 剥不掉),
+// 抽取后正文前顶着几十行 "Careers / English / Apply now »" 残渣——不光难看,还偷吃 advisor 2200 字符
+// grounding 切片和 jdformat 6000 字符预算。只裁「头部区」= 首个 ≥100 字符段落行之前(封顶 40 行):
+// 黑名单行直接丢;<30 字符且无数字的孤行(菜单链接文本)也丢,但紧跟「xxx:」标签行的保留(是字段值)。
+// 正文区一行不动;裁没了一半以上视为误杀,整体回退不裁(宁脏勿缺)。
+const HEAD_JUNK = /^(skip to|careers?$|language$|english$|fran[çc]ais$|my profile$|sign in|log ?in|register$|menu$|search$|home$|apply now|create alert|select how often|cookie|accept|privacy (policy|notice)$|back to)/i
+function trimHeadJunk(lines: string[]): string[] {
+  let bound = lines.findIndex((l) => l.length >= 100)
+  bound = bound < 0 ? Math.min(lines.length, 40) : Math.min(bound, 40)
+  const head: string[] = []
+  for (let i = 0; i < bound; i++) {
+    const l = lines[i]
+    if (HEAD_JUNK.test(l)) continue
+    const prevKept = head[head.length - 1] || ''
+    if (l.length < 30 && !/\d/.test(l) && !/:$/.test(l) && !/:$/.test(prevKept)) continue
+    head.push(l)
+  }
+  const out = [...head, ...lines.slice(bound)]
+  return out.length * 2 < lines.length ? lines : out
+}
+
+// 通用正文抽取(readability 极简版,零依赖):剥非内容块 → 块级标签转行 → 剥标签 → 反转义 → 压行 → 裁头部残渣
 function extractText(html: string): string {
   let t = html.replace(/(?:<(script|style|noscript|nav|header|footer|svg|form)[^>]*>[\s\S]*?<\/\1>)/gi, ' ')
   t = t.replace(/<br\s*\/?>|<\/p>|<\/div>|<\/li>|<\/h[1-6]>|<\/tr>/gi, '\n')
   t = t.replace(/<[^>]+>/g, ' ')
   t = t.replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;|&apos;/g, "'").replace(/&quot;/g, '"')
   const lines = t.split('\n').map((l) => l.replace(/\s+/g, ' ').trim()).filter((l) => l.length > 2)
-  return lines.join('\n').slice(0, MAX_LEN)
+  return trimHeadJunk(lines).join('\n').slice(0, MAX_LEN)
 }
 
 // JB 详情页自有正文(direct 帖):可见结构区起点切片抽取(JD 块主导,尾部 applynow 前截断)

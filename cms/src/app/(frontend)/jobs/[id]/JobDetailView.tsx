@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 
 import { makeT, LANG_KEY, LANGS, type Lang, type TFn } from '../i18n'
 import {
-  AdvisorModal, EeCategorySection, FactRow, FactsBox, JdAdvisorSection, JdFormattedView, JdTextView,
+  AdvisorModal, EeCategorySection, FactRow, FactsBox, fetchJobText, JdAdvisorSection, JdFormattedView, JdTextView,
   MeansForMe, PnpListSection, PROV_NAMES, UpgradeCard,
   type DesigEmp, type EeOcc, type FieldSource, type JobRow, type NewsSlim, type NocDesc, type Plan, type PnpDraw, type PnpOcc,
 } from '../JobsTable'
@@ -36,10 +36,9 @@ function JdSection({ job, lang, plan, t }: { job: JobRow; lang: Lang; plan: Plan
     setStatus('loading'); setText('')
     ;(async () => {
       try {
-        const res = await fetch('/api/jobtext?url=' + encodeURIComponent(job.applyUrl || ''), { signal: ctrl.signal })
-        if (res.status === 402) { setStatus('upgrade'); return }
-        const txt = (await res.text()).trim()
-        setText(txt); setStatus(txt ? 'done' : 'empty')
+        const r = await fetchJobText(job.applyUrl || '', ctrl.signal)   // #126 同岗会话缓存(JobsTable 共用)
+        if (r.status === 'gated') { setStatus('upgrade'); return }
+        setText(r.text); setStatus(r.text ? 'done' : 'empty')
       } catch { if (!ctrl.signal.aborted) setStatus('empty') }
     })()
     return () => ctrl.abort()

@@ -42,6 +42,12 @@ const zh: Dict = {
   'gr.emp.permanent': '永久岗', 'gr.emp.full': '全职', 'gr.emp.direct': '雇主直发', 'gr.emp.none': '永久、全职、直发均未命中',
   'gr.ref.title': '参照(不计入职位档)', 'gr.ref.sponsor': '公司担保记录档', 'gr.ref.noRec': '无记录(不等于不担保)', 'gr.ref.diff': '查看该省移民难度 →',
   'gr.sponsorPill': '担保 {g}/5',
+  // E12-08 尾巴(#126):公司四维行(拆解弹框参照区)
+  'gr.co.active': '公司在库活跃度', 'gr.co.salary': '公司薪资水平', 'gr.co.fame': '公司规模知名度',
+  'gr.co.sponsor.v': 'LMIA 技能类 {skilled} 份、合计 {total} 份、最近 {q}', 'gr.co.sponsor.aipTag': 'AIP 指定雇主', 'gr.co.sponsor.aipOnly': 'AIP 指定雇主(无 LMIA 记录)',
+  'gr.co.active.v': '在库 {open} 岗、近 30 天新增 {n}',
+  'gr.co.salary.v': '该司帖面薪资较同职业官方中位平均 {pct}%',
+  'gr.co.fame.wiki': '有英文维基条目', 'gr.co.fame.provs': '覆盖 {n} 省', 'gr.co.fame.open': '在库 {n} 岗',
   // #123c:整理版 PAY 节帖面薪资兜底注
   'act.f.payFb': '(帖面薪资字段;原帖正文未写)',
   'updated': '更新 {t}',
@@ -425,6 +431,11 @@ const en: Dict = {
   'gr.emp.permanent': 'Permanent', 'gr.emp.full': 'Full-time', 'gr.emp.direct': 'Direct employer posting', 'gr.emp.none': 'None of permanent, full-time or direct',
   'gr.ref.title': 'Reference (not part of job grades)', 'gr.ref.sponsor': 'Employer sponsorship record', 'gr.ref.noRec': 'No record (not the same as won’t sponsor)', 'gr.ref.diff': 'Provincial difficulty →',
   'gr.sponsorPill': 'Sponsor {g}/5',
+  'gr.co.active': 'Company posting activity', 'gr.co.salary': 'Company pay level', 'gr.co.fame': 'Company scale & recognition',
+  'gr.co.sponsor.v': 'Skilled LMIA {skilled}, total {total}, latest {q}', 'gr.co.sponsor.aipTag': 'AIP designated employer', 'gr.co.sponsor.aipOnly': 'AIP designated employer (no LMIA record)',
+  'gr.co.active.v': '{open} open postings, {n} new in the last 30 days',
+  'gr.co.salary.v': 'Company postings vs official medians: average {pct}%',
+  'gr.co.fame.wiki': 'Has an English Wikipedia entry', 'gr.co.fame.provs': 'Active in {n} provinces', 'gr.co.fame.open': '{n} open postings',
   // #123c: formatted-JD PAY fallback note
   'act.f.payFb': '(from the posting’s pay field; not stated in the body)',
   'updated': 'Updated {t}',
@@ -820,6 +831,11 @@ const ko: Dict = {
   'gr.emp.permanent': '정규직', 'gr.emp.full': '풀타임', 'gr.emp.direct': '고용주 직접 게시', 'gr.emp.none': '정규직, 풀타임, 직접 게시 모두 미해당',
   'gr.ref.title': '참고(직무 등급 미포함)', 'gr.ref.sponsor': '회사 스폰서 기록 등급', 'gr.ref.noRec': '기록 없음(스폰서 불가 아님)', 'gr.ref.diff': '주별 난이도 보기 →',
   'gr.sponsorPill': '스폰서 {g}/5',
+  'gr.co.active': '회사 공고 활동', 'gr.co.salary': '회사 급여 수준', 'gr.co.fame': '회사 규모와 인지도',
+  'gr.co.sponsor.v': '기술직 LMIA {skilled}건, 합계 {total}건, 최근 {q}', 'gr.co.sponsor.aipTag': 'AIP 지정 고용주', 'gr.co.sponsor.aipOnly': 'AIP 지정 고용주(LMIA 기록 없음)',
+  'gr.co.active.v': '게시 중 {open}건, 최근 30일 신규 {n}건',
+  'gr.co.salary.v': '회사 공고 급여 vs 공식 중위값 평균 {pct}%',
+  'gr.co.fame.wiki': '영문 위키백과 문서 있음', 'gr.co.fame.provs': '{n}개 주에서 활동', 'gr.co.fame.open': '게시 중 공고 {n}건',
   // #123c: 정리본 PAY 급여 필드 대체 주석
   'act.f.payFb': '(공고 급여 필드 기준; 본문에는 없음)',
   'updated': '{t} 업데이트',

@@ -64,7 +64,7 @@ const SYSTEM = (lang: Lang) =>
 type Job = {
   title?: string; company?: string; companyDescription?: string; companySectors?: string; noc?: string; province?: string
   city?: string; district?: string; address?: string; officialUrl?: string; applyUrl?: string
-  score?: number | null; category?: string; accessibility?: string
+  score?: number | null; gradeChannel?: number | null; category?: string; accessibility?: string
   pnpEligible?: boolean; pnpStream?: string; eeCategory?: string; aip?: boolean; salary?: string; salaryAnnual?: number | null
   employmentTerm?: string; employmentHours?: string; certificates?: string[]; education?: string
   wageMedHourly?: number | null; wageMedAnnual?: number | null
@@ -84,24 +84,21 @@ const catOf = (noc?: string) => {
   return BROAD[noc[0]] || '未分类'
 }
 
-// 评分明细(与 etl/08_score.py 的 score() 一致)——喂进 prompt 让模型用准确数字解释。
-// +12 是「省具名通道命中」(NAMED_STREAM_NOCS_BY_PROV),用 pnpStream(非空=命中具名通道)作信号,
-// 不是写死的低TEER集合(旧版那样会对不上库里分数)。
-const TEER_BASE: Record<number, number> = { 0: 54, 1: 56, 2: 52, 3: 46, 4: 28, 5: 20 }
+// 评分事实(E12-08 档位制,#126 修):旧 0-100 加权镜像退役——弹框 UI 已是 1-5 档,解读再报「总分 80」
+// 就是两套口径打架。喂档位语义(与 etl/grades.py grade_channel 同源信号),并明令禁提 0-100 总分。
 const INDEMAND2 = new Set(['21', '22', '31', '32', '72', '73', '42'])
-const ACC_PTS: Record<string, number> = { 'co-op': 6, junior: 6, intermediate: 4, senior: 2, unknown: 3 }
-const AGENCY_RE = /recruit|staffing|talent|personnel|placement|outsourc|mercor|adecco|randstad/i
 function scoreFacts(j: Job): string {
   const noc = j.noc || ''
   const teer = teerOf(noc)
-  const base = teer == null ? 18 : (TEER_BASE[teer] ?? 18)
-  const indemand = noc && INDEMAND2.has(noc.slice(0, 2)) ? 10 : 0
-  const named = j.pnpStream ? 12 : 0
-  const direct = AGENCY_RE.test(j.company || '') ? 0 : 12
-  const acc = ACC_PTS[j.accessibility || 'unknown'] ?? 3
-  const prov = j.province && j.province !== 'ON' ? -6 : 0
-  const total = Math.max(0, Math.min(100, base + indemand + named + direct + acc + prov))
-  return `Score breakdown — baseline(${teer == null ? 'unclassified' : 'TEER ' + teer}): ${base}; in-demand group: ${indemand}; named PNP stream: ${named}; direct employer: ${direct}; experience(${j.accessibility || 'unknown'}): ${acc}; province(${j.province || '—'}): ${prov}; total: ${total}${j.score != null && j.score !== total ? ` (stored ${j.score})` : ''}`
+  const indemand = !!noc && INDEMAND2.has(noc.slice(0, 2))
+  const drivers = [
+    j.pnpStream ? `named provincial stream hit: ${j.pnpStream}` : 'no named provincial stream hit',
+    teer == null ? 'NOC unclassified' : `TEER ${teer}`,
+    indemand ? 'in-demand occupation group' : 'not in an in-demand occupation group',
+  ].join('; ')
+  return `Grade system: every dimension is an INDEPENDENT 1-5 grade (5 = strongest immigration signal); there is NO weighting and NO composite total — never mention any 0-100 score, that system is retired. ` +
+    `This job's channel grade: ${j.gradeChannel != null ? `${j.gradeChannel}/5` : 'not graded'} (drivers — ${drivers}). ` +
+    `Salary quality (posted pay vs official median) and employment quality (permanent / full-time / direct posting) are graded separately in the breakdown panel the reader is looking at.`
 }
 // 每行事实带来源短标注(E4-04 §3.5):中层判断/对话引用时能指回来源,强化反编机制。
 function jobFacts(j: Job): string {
@@ -125,7 +122,7 @@ function jobFacts(j: Job): string {
 }
 // 各字段的解释要点(英文指令,输出按所选语言)
 const ASK: Record<string, string> = {
-  score: "Explain this job's immigration-value score: what it means and what drives it, using the exact numbers in the score breakdown.",
+  score: "Explain this job's immigration-channel grade (1-5): what the grade means and what drives it, using exactly the grade facts given. Grades are independent 1-5 dimensions — never invent or mention a 0-100 or total score.",
   pnp: 'Explain whether and why this job fits the employer-offer → PNP route, plus caveats (each province has its own occupation lists / language / wage rules; this is a rough signal, not a ruling; QC is separate).',
   ee: 'Explain Express Entry category-based selection: this is a FEDERAL pathway, SEPARATE from PNP — which category this job\'s NOC falls into and what that means (IRCC holds CRS-based draws prioritizing these categories; often no job offer needed). Make clear it differs from the provincial PNP route.',
   aip: 'Explain the AIP (Atlantic Immigration Program) designated-employer status and what it means; note it only applies to the four Atlantic provinces and is a rough name match.',
@@ -272,8 +269,9 @@ export async function POST(req: NextRequest) {
   const pf = (pro && user ? profileFacts(profileRaw, job, await loadMatchDims()) : '') + readerCtx
 
   // 缓存键含 字段+标识+语言(公司按公司名,其余按 id);带档案的初判按人隔离;对话不缓存(每轮唯一)
+  // v2(#126 生产复验教训):#125 换初判模板后线上仍捞到旧模板缓存条目——提示词/模板一改就 bump 版本,陈旧条目永不再服务
   const keyId = field === 'company' ? (job.company || '').toLowerCase() : (body.id || job.title || '')
-  const key = `${field}:${keyId}:${lang}${pf ? `:p${user!.id}` : ''}`
+  const key = `v2:${field}:${keyId}:${lang}${pf ? `:p${user!.id}` : ''}`
 
   if (!isChat) {
     const cached = cache.get(key)

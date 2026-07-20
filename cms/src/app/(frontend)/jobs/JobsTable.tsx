@@ -287,8 +287,7 @@ const teerOf = (noc: string): number | null => (noc && noc.length === 5 && /\d/.
 const mapsUrl = (q: string) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`
 // 本岗年薪 vs NOC 中位年薪(%);缺值返回 null
 const vsPct = (j: JobRow): number | null => (j.salaryAnnual != null && j.wageMedAnnual ? (j.salaryAnnual / j.wageMedAnnual - 1) * 100 : null)
-// 数值预设判定(下拉,不手填):评分高/中/低、年薪档、vs中位
-const okScore = (s: number | null, f: string): boolean => !f || (s != null && (f === 'high' ? s >= 75 : f === 'mid' ? s >= 50 && s < 75 : s < 50))
+// 数值预设判定(下拉,不手填):年薪档、vs中位(评分谓词只在服务端 jobsSql,按 1-5 通道档)
 const okSal = (a: number | null, f: string): boolean => !f || (a != null && (f === 'ge100' ? a >= 100000 : f === '80' ? a >= 80000 && a < 100000 : f === '60' ? a >= 60000 && a < 80000 : a < 60000))
 const okVs = (v: number | null, f: string): boolean => !f || (v != null && (f === 'above' ? v >= 0 : f === 'above20' ? v >= 20 : v < 0))
 // 「更新」时间显示为东部时区(显式 timeZone,避免 dev=host / 容器=UTC 不一致 + SSR 水合差异)
@@ -1720,6 +1719,21 @@ function CompanyAiSection({ company, t }: { company: string; t: TFn }) {
     </div>
   )
 }
+// #126 同岗 jobtext 会话缓存:三处调用点(事实块/JD 弹框/详情页 JD 区)共用,同一岗反复开关不重复
+// 打端点烧额度(统一池 #124 下一次白开=一次额度)。只缓存 200 非空正文;402/空/失败不缓存,
+// 服务端负缓存(10min)照管懒抓重试节奏。命中缓存时 freeLeft=null(没消耗,额度行不刷新)。
+const jobTextCache = new Map<string, string>()
+export async function fetchJobText(applyUrl: string, signal?: AbortSignal): Promise<{ status: 'ok' | 'gated' | 'empty'; text: string; freeLeft: number | null }> {
+  const hit = jobTextCache.get(applyUrl)
+  if (hit != null) return { status: 'ok', text: hit, freeLeft: null }
+  const res = await fetch('/api/jobtext?url=' + encodeURIComponent(applyUrl), { signal })
+  const left = res.headers.get('X-Free-Left')
+  const freeLeft = left != null ? Number(left) : null
+  if (res.status === 402) return { status: 'gated', text: '', freeLeft }
+  const text = res.ok ? (await res.text()).trim() : ''
+  if (text) jobTextCache.set(applyUrl, text)
+  return { status: text ? 'ok' : 'empty', text, freeLeft }
+}
 function TitleFacts({ job, lang }: { job: JobRow; lang: Lang }) {
   const t = makeT(lang)
   const [jd, setJd] = useState<string | null>(null)  // null=loading · ''=无正文
@@ -1728,9 +1742,9 @@ function TitleFacts({ job, lang }: { job: JobRow; lang: Lang }) {
     const ctrl = new AbortController()
     ;(async () => {
       try {
-        const res = await fetch('/api/jobtext?url=' + encodeURIComponent(job.applyUrl || ''), { signal: ctrl.signal })
-        if (res.status === 402) { setGated(true); setJd(''); return }
-        setJd((await res.text()).trim())
+        const r = await fetchJobText(job.applyUrl || '', ctrl.signal)
+        if (r.status === 'gated') { setGated(true); setJd(''); return }
+        setJd(r.text)
       } catch { if (!ctrl.signal.aborted) setJd('') }
     })()
     return () => ctrl.abort()
@@ -1766,7 +1780,14 @@ const ATLANTIC = new Set(['NL', 'NB', 'NS', 'PE'])
 function ScoreGradesSection({ job, lang, loggedIn }: { job: JobRow; lang: Lang; loggedIn: boolean }) {
   const t = makeT(lang)
   type Detail = { channel?: { g: number; v: string } | null; salary?: { g: number; v: number } | null; emp?: { g: number; v: string[] } | null }
-  const [d, setD] = useState<undefined | 'upgrade' | 'limited' | 'error' | { detail: Detail | null; sponsorGrade: number | null }>(undefined)
+  // E12-08 尾巴(#126):公司四维(担保/活跃/薪资/知名)——scoredetail 一直回传,此前 UI 只渲了担保档一行
+  type CoDetail = {
+    sponsor?: { g: number; v: { skilled?: number; total?: number; q?: string; aip?: boolean } } | null
+    active?: { g: number; v: { open?: number; new30?: number } } | null
+    salary?: { g: number; v: number } | null
+    fame?: { g: number; v: { wiki?: boolean; provs?: number; open?: number } } | null
+  }
+  const [d, setD] = useState<undefined | 'upgrade' | 'limited' | 'error' | { detail: Detail | null; sponsorGrade: number | null; companyDetail: CoDetail | null }>(undefined)
   const [freeLeft, setFreeLeft] = useState<number | null>(null)
   useEffect(() => {
     let dead = false
@@ -1806,7 +1827,29 @@ function ScoreGradesSection({ job, lang, loggedIn }: { job: JobRow; lang: Lang; 
       {emp ? row(t('gr.dim.emp'), <>{dots(emp.g)} <b style={{ marginLeft: 8 }}>{emp.g}/5</b><div style={{ fontSize: 12.5, color: '#6b7280' }}>{emp.v?.length ? emp.v.map((h) => t('gr.emp.' + h)).join('、') : t('gr.emp.none')}</div></>) : null}
       <div style={{ marginTop: 10, paddingTop: 8, borderTop: '1px solid #f3f4f6' }}>
         <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 2 }}>{t('gr.ref.title')}</div>
-        {row(t('gr.ref.sponsor'), d.sponsorGrade != null ? <>{dots(d.sponsorGrade)} <b style={{ marginLeft: 8 }}>{d.sponsorGrade}/5</b></> : <span style={{ color: '#9ca3af' }}>{t('gr.ref.noRec')}</span>)}
+        {/* 公司四维行(E12-08 尾巴):companyDetail 一直随响应回传,此前只渲担保一行;依据句前端按维度拼(数据层只存 {g,v}) */}
+        {(() => {
+          const co = d.companyDetail || {}
+          const sp = co.sponsor, ac = co.active, cs = co.salary, fm = co.fame
+          const gRow = (label: string, g: number, note: string) =>
+            row(label, <>{dots(g)} <b style={{ marginLeft: 8 }}>{g}/5</b><div style={{ fontSize: 12.5, color: '#6b7280' }}>{note}</div></>)
+          return (
+            <>
+              {sp ? gRow(t('gr.ref.sponsor'), sp.g, (sp.v?.total
+                  ? t('gr.co.sponsor.v', { skilled: sp.v.skilled ?? 0, total: sp.v.total, q: sp.v.q || '—' }) + (sp.v?.aip ? '、' + t('gr.co.sponsor.aipTag') : '')
+                  : t('gr.co.sponsor.aipOnly')))
+                : row(t('gr.ref.sponsor'), <span style={{ color: '#9ca3af' }}>{t('gr.ref.noRec')}</span>)}
+              {ac ? gRow(t('gr.co.active'), ac.g, t('gr.co.active.v', { open: ac.v?.open ?? 0, n: ac.v?.new30 ?? 0 })) : null}
+              {cs ? gRow(t('gr.co.salary'), cs.g, t('gr.co.salary.v', { pct: cs.v >= 0 ? `+${cs.v}` : String(cs.v) }))
+                : d.companyDetail ? row(t('gr.co.salary'), <span style={{ color: '#9ca3af' }}>{t('gr.noData')}</span>) : null}
+              {fm ? gRow(t('gr.co.fame'), fm.g, [
+                  fm.v?.wiki ? t('gr.co.fame.wiki') : '',
+                  (fm.v?.provs ?? 0) >= 2 ? t('gr.co.fame.provs', { n: fm.v!.provs! }) : '',
+                  t('gr.co.fame.open', { n: fm.v?.open ?? 0 }),
+                ].filter(Boolean).join('、')) : null}
+            </>
+          )
+        })()}
         {job.province ? row('', <a href={`/stats/${job.province.toLowerCase()}`} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none', fontSize: 12.5 }}>{t('gr.ref.diff')}</a>) : null}
       </div>
     </FactsBox>
@@ -2612,12 +2655,10 @@ function ActModal({ job, lang, plan, onClose }: { job: JobRow; lang: Lang; plan:
     setStatus('loading'); setText('')
     ;(async () => {
       try {
-        const res = await fetch('/api/jobtext?url=' + encodeURIComponent(job.applyUrl || ''), { signal: ctrl.signal })
-        const left = res.headers.get('X-Free-Left')
-        if (left != null) setFreeLeft(Number(left))
-        if (res.status === 402) { setStatus('upgrade'); return }  // 免费试用用完(E3-05)
-        const txt = (await res.text()).trim()
-        setText(txt); setStatus(txt ? 'done' : 'empty')
+        const r = await fetchJobText(job.applyUrl || '', ctrl.signal)   // #126 同岗会话缓存
+        if (r.freeLeft != null) setFreeLeft(r.freeLeft)
+        if (r.status === 'gated') { setStatus('upgrade'); return }  // 免费试用用完(E3-05)
+        setText(r.text); setStatus(r.text ? 'done' : 'empty')
       } catch { if (!ctrl.signal.aborted) setStatus('empty') }
     })()
     return () => ctrl.abort()
