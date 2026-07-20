@@ -1,4 +1,8 @@
 """雇主 D 富化(2026-07-19 Frank 批「开工做雇主 D」):行业 + 中韩别名 + 知名。
+
+⛔ Wikidata 段已退役(#109/#111,2026-07-20 Frank「不要提前跑」):别名/知名改 K 懒探索时并行查
+(cms/src/lib/companyResearch.ts,一家一生一次);本脚本别再批量跑 Wikidata(1668 家网络失败近千,跑不完)。
+①行业段(本地 mart 零网络)保留可手动重跑,apply 手法=scratchpad apply_company_facts.mjs(STATUS 有记)。
 ① 行业 = 该雇主在库开放岗的 NOC 大类多数派(mart/jobs.json,零新抓取);
 ② 别名 = Wikidata 跨语言标签(zh/ko 官方条目名,不机翻;严格名称匹配,宁缺勿滥);
 ③ 知名 = 有英文 Wikipedia 条目(sitelink)。
@@ -89,6 +93,12 @@ def main() -> None:
 
     prev = json.loads(OUT.read_text(encoding="utf-8")) if OUT.exists() else {}
     prev_names: dict[str, dict] = prev.get("by_name", prev if isinstance(prev, dict) else {})
+
+    def save(industry: dict, by_name: dict) -> None:
+        # 旧缓存合并写:中途落盘不冲掉本轮还没遍历到的已查条目
+        merged = {**prev_names, **by_name}
+        OUT.write_text(json.dumps({"by_slug": {s: {"industry": v} for s, v in industry.items()}, "by_name": merged}, ensure_ascii=False, indent=1), encoding="utf-8")
+
     by_name: dict[str, dict] = {}
     hit = 0
     n_err = 0
@@ -106,8 +116,9 @@ def main() -> None:
         if r:
             hit += 1
         if (i + 1) % 50 == 0:
-            print(f"  {i + 1}/{len(cands)} · wiki 命中 {hit}", flush=True)
-    OUT.write_text(json.dumps({"by_slug": {s: {"industry": v} for s, v in industry.items()}, "by_name": by_name}, ensure_ascii=False, indent=1), encoding="utf-8")
+            print(f"  {i + 1}/{len(cands)} · wiki 命中 {hit} · 失败 {n_err}", flush=True)
+            save(industry, by_name)   # 增量落盘:长跑中断不丢已查结果(网络抖动是常态,一次全跑完是奢望)
+    save(industry, by_name)
     with_alias = sum(1 for v in by_name.values() if v.get("zh") or v.get("ko"))
     print(f"done → {OUT} · industry {len(industry)} · wiki {hit} · 有中/韩别名 {with_alias}", flush=True)
 

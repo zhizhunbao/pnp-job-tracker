@@ -81,12 +81,15 @@ services:
       NEWS_LLM_MODEL: ${NEWS_LLM_MODEL:-qwen3.6:latest}
       TZ: EST5EDT
 
-  enrich:                          # 公司官网富化(E8-04 拆分,2026-07-16「分开来跑」:从 build 轮摘出,6h 独立节奏)
-    <<: *etl
-    environment:
-      SOURCE: enrich
-      SCRAPE_INTERVAL: '21600'     # 6h
-      TZ: EST5EDT
+  # enrich 批量爬虫退役(#110,2026-07-20 Frank「不要提前跑,公司详情全懒」):
+  # K 懒探索(cms companyResearch:AI 联网调查+Wikidata)全替,谁被点开谁被查;
+  # 已抓的 company_enrich.json 当静态缓存(09 照旧合并)。亮回=取消注释+up -d。
+  # enrich:                        # 公司官网富化(E8-04 拆分,2026-07-16「分开来跑」:从 build 轮摘出,6h 独立节奏)
+  #   <<: *etl
+  #   environment:
+  #     SOURCE: enrich
+  #     SCRAPE_INTERVAL: '21600'   # 6h
+  #     TZ: EST5EDT
 
   backup:                          # 每日 pg_dump 生产库 → backups/(E7-01;家里机=运维盒)
     <<: *etl

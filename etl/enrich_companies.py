@@ -1,6 +1,10 @@
 """
 enrich_companies — 抓公司官网首页,提取「简介 + 行业」落库(E8-04 / D1=B,2026-07-06)。
 
+⛔ 已退役(#111,2026-07-20 Frank「不要提前跑,公司详情全懒」):不再周期跑(docker compose enrich 服务已摘),
+K 懒探索(cms/src/lib/companyResearch.ts:AI 联网调查+Wikidata,弹框首开触发)全替;
+已抓的 processed/company_enrich.json 当静态缓存,09_build_mart 照旧合并。手动重跑仍可用(幂等)。
+
 背景:Job Bank 公司只带官网 URL(~24%),无简介/行业 → 弹窗事实段几乎空(0.1%)。
 本脚本按官网 URL 抓首页,从 og:description / meta description 提简介、meta keywords 提行业,
 落 data/processed/company_enrich.json(slug → {description, sectors, website, fetched, status}),
