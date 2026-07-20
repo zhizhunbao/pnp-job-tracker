@@ -50,6 +50,18 @@ function jbOwnText(html: string): string {
 
 const jbExternalLink = (html: string): string => /id="externalJobLink"[^>]*href="([^"]+)"/.exec(html)?.[1] || ''
 
+// 原站 <title>(截「 - 站名」尾巴):JB 会把聚合帖标题标准化成职业名(实测 McCain「Engineering Manager…」
+// 被 JB 改名「software developer」)——原帖岗名标注在正文首行,标题≠正文的差异自解释(显性化不掩盖)
+const originTitle = (html: string): string => {
+  const t = (/<title>([^<]{3,200})<\/title>/i.exec(html)?.[1] || '').replace(/&amp;/g, '&').replace(/&#39;/g, "'")
+  // 各站 <title> 分段顺序不一(Jobillico 站名前置竖线分段/SuccessFactors 岗名前置连字符分段)——
+  // 取最长的非通用段近似岗名,再剥「Job Details/Careers」类通用尾词;挑错也只是标注行,正文不受影响
+  const segs = t.split(/\s*\|\s*|\s+[-–]\s+/).map((s) => s.trim())
+    .filter((s) => s.length >= 4 && !/^(job postings?|jobs?|careers?|job details?|job opportunities|home)$/i.test(s) && !/\.(com|ca|net|org)$/i.test(s))
+  const best = segs.sort((a, b) => b.length - a.length)[0] || ''
+  return best.replace(/\s*(job details?|job postings?)\s*$/i, '').trim()
+}
+
 async function doFetch(applyUrl: string): Promise<string> {
   const isJb = /jobbank\.gc\.ca/i.test(applyUrl)
   const first = await fetchHtml(applyUrl)
@@ -62,8 +74,11 @@ async function doFetch(applyUrl: string): Promise<string> {
   if (own.length >= MIN_LEN) return own
   const ext = jbExternalLink(first)
   if (!ext) return ''
-  const t = extractText(await fetchHtml(ext))
-  return t.length >= MIN_LEN ? t : ''
+  const originHtml = await fetchHtml(ext)
+  const t = extractText(originHtml)
+  if (t.length < MIN_LEN) return ''
+  const ot = originTitle(originHtml)
+  return ot ? `Original posting title: ${ot}\n\n${t}`.slice(0, MAX_LEN) : t
 }
 
 /** 懒抓入口:抓到即写库(永久缓存);抓不到返 ''(前端空态照旧引导官方原帖)。 */
