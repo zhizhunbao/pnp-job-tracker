@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react'
 import { StatsShell, MetricCards, CaliberLine, useLang } from './ui'
 import { BackLink } from '../BackLink'
 import { BANNER_IMGS, Button, PageBanner } from '../ui/primitives'
+import { DataTable } from '../ui/DataTable'
 import { IconMapPin, IconScale, IconStar, IconTarget } from '../Icons'
 import { BROAD_SLUGS, PROVS, PROV_NAME, type StatRow, type SrcRow } from './shared'
 import { StatsCharts } from './charts'
@@ -98,24 +99,15 @@ export function StatsProvContent({ prov, rows, srcs, t, ranks, news = [] }: { pr
       {all && <TopCities raw={all.topCities} t={t} />}
       <ProvNewsBlock news={news} t={t} />
       <h2 style={{ fontSize: 15.5, margin: '18px 0 8px' }}>{t('stats.byCat')}</h2>
-      <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, overflow: 'auto' }}>
-        {/* minWidth:窄屏让表格溢出进容器横滚,而不是把列挤成逐字竖排(第 2 轮 #10) */}
-        <table style={{ width: '100%', minWidth: 560, borderCollapse: 'collapse' }}>
-          <thead><tr><th style={th}>{t('filter.cat')}</th><th style={th}>{t('stats.openJobs')}</th><th style={th}>{t('stats.new7d')}</th><th style={th}>{t('stats.medWage')}</th><th style={th}>{t('stats.named')}</th><th style={th}></th></tr></thead>
-          <tbody>
-            {cats.map(({ slug, broad, row }) => (
-              <tr key={slug}>
-                <td style={{ ...td, fontWeight: 600 }}><a href={`/stats/${prov.toLowerCase()}/${slug}`} style={{ color: '#2563eb', textDecoration: 'none' }}>{broadLabel(broad)}</a></td>
-                <td style={td}>{row!.openJobs}</td>
-                <td style={td}>{row!.new7d}</td>
-                <td style={td}>{money(row!.medianWageAnnual)}</td>
-                <td style={{ ...td, ...(row!.namedJobs ? { color: '#b45309', fontWeight: 600 } : { color: '#9ca3af' }) }}>{row!.namedJobs || '—'}</td>
-                <td style={{ ...td, whiteSpace: 'nowrap' }}><a href={`/?prov=${prov}&broad=${encodeURIComponent(broad)}`} style={{ color: '#2563eb', textDecoration: 'none', fontSize: 12.5 }}>{t('stats.toJobs')}</a></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {/* 组件统一 P2 余批(#110):换公共 DataTable;minWidth 560=窄屏横滚不挤竖排(第 2 轮 #10) */}
+      <DataTable<typeof cats[number]> rows={cats} rowKey={(x) => x.slug} minWidth={560} cols={[
+        { key: 'cat', label: t('filter.cat'), sort: (x) => broadLabel(x.broad), render: (x) => <a href={`/stats/${prov.toLowerCase()}/${x.slug}`} style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}>{broadLabel(x.broad)}</a> },
+        { key: 'open', label: t('stats.openJobs'), sort: (x) => x.row!.openJobs, render: (x) => <>{x.row!.openJobs}</> },
+        { key: 'new7d', label: t('stats.new7d'), sort: (x) => x.row!.new7d, render: (x) => <>{x.row!.new7d}</> },
+        { key: 'wage', label: t('stats.medWage'), sort: (x) => x.row!.medianWageAnnual ?? null, render: (x) => <>{money(x.row!.medianWageAnnual)}</> },
+        { key: 'named', label: t('stats.named'), sort: (x) => x.row!.namedJobs ?? null, render: (x) => x.row!.namedJobs ? <span style={{ color: '#b45309', fontWeight: 600 }}>{x.row!.namedJobs}</span> : <span style={{ color: '#9ca3af' }}>—</span> },
+        { key: 'go', label: '', nowrap: true, render: (x) => <a href={`/?prov=${prov}&broad=${encodeURIComponent(x.broad)}`} style={{ color: '#2563eb', textDecoration: 'none', fontSize: 12.5 }}>{t('stats.toJobs')}</a> },
+      ]} />
       <CaliberLine t={t} srcs={srcs} fetched={all?.fetched || ''} />
     </>
   )
@@ -208,7 +200,8 @@ export function CompareContent({ rows, srcs, isPro, loggedIn, myNocs, t }: { row
     [t('stats.medSalary'), (r) => money(r.medianSalaryAnnual)],
     [t('stats.named'), (r) => (r.namedJobs ? <span style={{ color: '#b45309', fontWeight: 600 }}>{r.namedJobs}</span> : <span style={{ color: '#9ca3af' }}>—</span>)],
     [t('stats.aip'), (r) => r.aipJobs],
-    [t('stats.streams'), (r) => (r.streamLabels ? r.streamLabels.split('、').map((s) => streamDisplay(t, s)).join(' · ') : '—')],
+    // W 规矩存量清理(#110):通道枚举「· 」杂糅拆一行一条
+    [t('stats.streams'), (r) => (r.streamLabels ? <>{r.streamLabels.split('、').map((s) => <div key={s}>{streamDisplay(t, s)}</div>)}</> : '—')],
   ]
   return (
     <>
@@ -224,22 +217,18 @@ export function CompareContent({ rows, srcs, isPro, loggedIn, myNocs, t }: { row
           {BROAD_SLUGS.map(([, b]) => <option key={b} value={b}>{broadLabel(b)}</option>)}
         </select>
       </div>
-      <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, overflow: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead><tr><th style={th}></th>{picked.map((p) => <th key={p} style={{ ...th, fontSize: 14 }}>{PROV_NAME[p] || p}</th>)}</tr></thead>
-          <tbody>
-            {metrics.map(([label, get]) => (
-              <tr key={label}>
-                <td style={{ ...td, color: '#9ca3af', whiteSpace: 'nowrap' }}>{label}</td>
-                {picked.map((p) => {
-                  const r = rows.find((x) => x.province === p && x.broad === broad)
-                  return <td key={p} style={{ ...td, fontWeight: 500 }}>{r ? get(r) : '—'}</td>
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {/* 组件统一 P2 余批(#110):对比表换公共 DataTable(转置表=指标行×省列,列随选省动态生成,不排序) */}
+      <DataTable<typeof metrics[number]> rows={metrics} rowKey={([label]) => String(label)} cols={[
+        { key: 'metric', label: '', nowrap: true, render: ([label]) => <span style={{ color: '#9ca3af' }}>{label}</span> },
+        ...picked.map((p) => ({
+          key: p,
+          label: <span style={{ fontSize: 14 }}>{PROV_NAME[p] || p}</span>,
+          render: ([, get]: typeof metrics[number]) => {
+            const r = rows.find((x) => x.province === p && x.broad === broad)
+            return <span style={{ fontWeight: 500 }}>{r ? get(r) : '—'}</span>
+          },
+        })),
+      ]} />
       <CaliberLine t={t} srcs={srcs} fetched={rows[0]?.fetched || ''} />
     </>
   )

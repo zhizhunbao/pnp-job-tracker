@@ -6,6 +6,7 @@ import { makeT, streamDisplay, eeDisplay, LANG_KEY, type Lang, type TFn } from '
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { BANNER_IMGS, PageBanner } from '../ui/primitives'
+import { DataTable } from '../ui/DataTable'
 import { IconChart } from '../Icons'
 
 export type RankRow = {
@@ -19,8 +20,6 @@ export type RankRow = {
   lmiaPositions: number | null; lmiaQuarter: string  // #21(第 17 轮):第一排序键上榜可见
 }
 
-const th: React.CSSProperties = { textAlign: 'left', padding: '9px 12px', fontSize: 12.5, color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap', borderBottom: '1px solid #e5e7eb' }
-const td: React.CSSProperties = { padding: '9px 12px', fontSize: 13, color: '#374151', borderBottom: '1px solid #f3f4f6' }
 
 /** 更新时间 + 口径说明 + 榜单表(页面/弹窗共用;壳与标题由宿主渲) */
 export function RankingTable({ slug, items, t }: { slug: string; items: RankRow[]; t: TFn }) {
@@ -37,46 +36,38 @@ export function RankingTable({ slug, items, t }: { slug: string; items: RankRow[
     <>
       <div style={{ fontSize: 12.5, color: '#9ca3af', margin: '6px 0 4px' }}>{t('rank.updated', { d: updated })}</div>
       <div style={{ fontSize: 12.5, color: '#6b7280', marginBottom: 16 }}>{t(slug.startsWith('daily-top') ? 'rank.note.daily-top' : 'rank.note.' + slug)}</div>
-      <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, overflow: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            {isCompany ? (
-              <tr><th style={th}>#</th><th style={th}>{t('rank.col.company')}</th><th style={th}>{t('col.province')}</th><th style={th}>{t('rank.col.lmia')}</th>{showNamed && <th style={th}>{t('rank.col.namedJobs')}</th>}<th style={th}>{t('rank.col.openJobs')}</th><th style={th}>{t('rank.col.avgScore')}</th><th style={th}></th></tr>
-            ) : (
-              <tr><th style={th}>#</th><th style={th}>{t('col.title')}</th><th style={th}>{t('col.company')}</th><th style={th}>{t('col.city')}</th><th style={th}>{t('col.salary')}</th><th style={th}>PNP/EE</th><th style={th}>{t('col.score')}</th><th style={th}>{t('col.datePosted')}</th></tr>
-            )}
-          </thead>
-          <tbody>
-            {items.map((r) => isCompany ? (
-              <tr key={r.rank}>
-                <td style={{ ...td, color: '#9ca3af' }}>{r.rank}</td>
-                <td style={{ ...td, fontWeight: 600 }}>{r.officialUrl ? <a href={r.officialUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{r.company} ↗</a> : r.company}</td>
-                {/* #48(第 18 轮):跨省雇主(如加拿大军队)province 为空,裸空像渲染缺陷 → 占位「—」 */}
-                <td style={r.province ? td : { ...td, color: '#9ca3af' }}>{r.province || '—'}</td>
-                {/* #21:第一排序键(近两年 LMIA 技能股获批职位数)上榜可见;灰色尾缀=最近获批季度 */}
-                <td style={{ ...td, whiteSpace: 'nowrap' }}>{r.lmiaPositions
-                  ? <><span style={{ fontWeight: 600, color: '#15803d' }}>{r.lmiaPositions}</span>{r.lmiaQuarter && <span style={{ color: '#9ca3af', fontSize: 11.5 }}> · {r.lmiaQuarter}</span>}</>
-                  : <span style={{ color: '#9ca3af' }}>—</span>}</td>
-                {showNamed && <td style={{ ...td, fontWeight: 600, color: '#b45309' }}>{r.namedJobs}</td>}
-                <td style={td}>{r.openJobs}</td>
-                <td style={td}>{r.avgScore ?? '—'}</td>
-                <td style={td}><a href={`/?q=${encodeURIComponent(r.company)}`} style={{ color: '#2563eb', textDecoration: 'none', fontSize: 12.5 }}>{t('rank.viewJobs')}</a></td>
-              </tr>
-            ) : (
-              <tr key={r.rank}>
-                <td style={{ ...td, color: '#9ca3af' }}>{r.rank}</td>
-                <td style={{ ...td, fontWeight: 600, maxWidth: 320 }}>{r.applyUrl ? <a href={r.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{r.title} ↗</a> : r.title}</td>
-                <td style={td}>{r.company}</td>
-                <td style={{ ...td, whiteSpace: 'nowrap' }}>{[r.city, r.province].filter(Boolean).join(', ')}</td>
-                <td style={{ ...td, whiteSpace: 'nowrap', color: '#15803d' }}>{r.salaryText || '—'}</td>
-                <td style={{ ...td, fontSize: 12 }}>{[r.pnpStream ? streamDisplay(t, r.pnpStream) : '', r.eeCategory ? eeDisplay(t, r.eeCategory) : ''].filter(Boolean).join(' · ') || '—'}</td>
-                <td style={{ ...td, fontWeight: 600 }}>{r.score ?? '—'}</td>
-                <td style={{ ...td, whiteSpace: 'nowrap', color: '#9ca3af', fontSize: 12.5 }}>{(r.datePosted || '').slice(0, 10)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {/* 组件统一 P2 余批(#110):换公共 DataTable(排序/拖宽/hover 同 jobs 观感);
+          顺手清 W 规矩存量:LMIA「数 · 季度」与「PNP · EE」的 · 杂糅拆成一行一条 */}
+      {isCompany ? (
+        <DataTable<RankRow> rows={items} rowKey={(r) => String(r.rank)} cols={[
+          { key: 'rank', label: '#', nowrap: true, sort: (r) => r.rank, render: (r) => <span style={{ color: '#9ca3af' }}>{r.rank}</span> },
+          { key: 'company', label: t('rank.col.company'), sort: (r) => r.company.toLowerCase(), render: (r) => <span style={{ fontWeight: 600 }}>{r.officialUrl ? <a href={r.officialUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{r.company} ↗</a> : r.company}</span> },
+          // #48(第 18 轮):跨省雇主(如加拿大军队)province 为空,裸空像渲染缺陷 → 占位「—」
+          { key: 'prov', label: t('col.province'), nowrap: true, sort: (r) => r.province || null, render: (r) => r.province || <span style={{ color: '#9ca3af' }}>—</span> },
+          // #21:第一排序键(近两年 LMIA 技能股获批职位数)上榜可见;最近获批季度独立灰行
+          { key: 'lmia', label: t('rank.col.lmia'), nowrap: true, sort: (r) => r.lmiaPositions ?? null, render: (r) => r.lmiaPositions
+            ? <><span style={{ fontWeight: 600, color: '#15803d' }}>{r.lmiaPositions}</span>{r.lmiaQuarter && <div style={{ color: '#9ca3af', fontSize: 11.5 }}>{r.lmiaQuarter}</div>}</>
+            : <span style={{ color: '#9ca3af' }}>—</span> },
+          ...(showNamed ? [{ key: 'named', label: t('rank.col.namedJobs'), sort: (r: RankRow) => r.namedJobs ?? null, render: (r: RankRow) => <span style={{ fontWeight: 600, color: '#b45309' }}>{r.namedJobs}</span> }] : []),
+          { key: 'open', label: t('rank.col.openJobs'), sort: (r) => r.openJobs ?? null, render: (r) => <>{r.openJobs}</> },
+          { key: 'avg', label: t('rank.col.avgScore'), sort: (r) => r.avgScore ?? null, render: (r) => <>{r.avgScore ?? '—'}</> },
+          { key: 'go', label: '', nowrap: true, render: (r) => <a href={`/?q=${encodeURIComponent(r.company)}`} style={{ color: '#2563eb', textDecoration: 'none', fontSize: 12.5 }}>{t('rank.viewJobs')}</a> },
+        ]} />
+      ) : (
+        <DataTable<RankRow> rows={items} rowKey={(r) => String(r.rank)} cols={[
+          { key: 'rank', label: '#', nowrap: true, sort: (r) => r.rank, render: (r) => <span style={{ color: '#9ca3af' }}>{r.rank}</span> },
+          { key: 'title', label: t('col.title'), sort: (r) => r.title.toLowerCase(), render: (r) => <span style={{ fontWeight: 600, display: 'inline-block', maxWidth: 320 }}>{r.applyUrl ? <a href={r.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{r.title} ↗</a> : r.title}</span> },
+          { key: 'company', label: t('col.company'), sort: (r) => r.company.toLowerCase(), render: (r) => <>{r.company}</> },
+          { key: 'city', label: t('col.city'), nowrap: true, sort: (r) => r.city || null, render: (r) => <>{[r.city, r.province].filter(Boolean).join(', ')}</> },
+          { key: 'salary', label: t('col.salary'), nowrap: true, sort: (r) => r.salaryAnnual ?? null, render: (r) => <span style={{ color: '#15803d' }}>{r.salaryText || '—'}</span> },
+          { key: 'pnpee', label: 'PNP/EE', render: (r) => {
+            const parts = [r.pnpStream ? streamDisplay(t, r.pnpStream) : '', r.eeCategory ? eeDisplay(t, r.eeCategory) : ''].filter(Boolean)
+            return parts.length ? <span style={{ fontSize: 12 }}>{parts.map((x) => <div key={x}>{x}</div>)}</span> : <>—</>
+          } },
+          { key: 'score', label: t('col.score'), sort: (r) => r.score ?? null, render: (r) => <span style={{ fontWeight: 600 }}>{r.score ?? '—'}</span> },
+          { key: 'date', label: t('col.datePosted'), nowrap: true, sort: (r) => r.datePosted || null, render: (r) => <span style={{ color: '#9ca3af', fontSize: 12.5 }}>{(r.datePosted || '').slice(0, 10)}</span> },
+        ]} />
+      )}
     </>
   )
 }

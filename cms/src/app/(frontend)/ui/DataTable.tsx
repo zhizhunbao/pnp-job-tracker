@@ -15,8 +15,10 @@ export type DTCol<T> = {
   thTip?: string                            // 表头 hover 提示(如「技能类获批」口径)
 }
 
-export function DataTable<T>({ cols, rows, rowKey, empty }: {
+export function DataTable<T>({ cols, rows, rowKey, empty, header, minWidth }: {
   cols: DTCol<T>[]; rows: T[]; rowKey: (r: T, i: number) => string; empty?: React.ReactNode
+  header?: React.ReactNode                  // 卡内表格上方的头行(如 occupations 的通道标题行)
+  minWidth?: number                         // 窄屏横滚而非挤成竖排(stats 第 2 轮 #10)
 }) {
   const [sort, setSort] = useState<{ key: string; dir: 1 | -1 } | null>(null)
   const [widths, setWidths] = useState<Record<string, number>>({})
@@ -45,7 +47,8 @@ export function DataTable<T>({ cols, rows, rowKey, empty }: {
   const td: React.CSSProperties = { padding: '9px 12px', fontSize: 13, color: '#374151', borderBottom: `1px solid ${UI.hairline}` }
   return (
     <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, overflow: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      {header}
+      <table style={{ width: '100%', minWidth, borderCollapse: 'collapse' }}>
         <thead><tr>
           {cols.map((c) => (
             <th key={c.key} ref={(el) => { thRefs.current[c.key] = el }} title={c.thTip}

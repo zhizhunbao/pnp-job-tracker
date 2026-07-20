@@ -6,11 +6,9 @@ import { makeT, streamDisplay, LANG_KEY, type Lang } from '../jobs/i18n'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { PageBanner, PageShell, SectionTitle, Tag, UI } from '../ui/primitives'
+import { DataTable } from '../ui/DataTable'
 import { IconClipboard } from '../Icons'
 import type { OccRow } from '@/lib/directory'
-
-const th: React.CSSProperties = { textAlign: 'left', padding: '8px 12px', fontSize: 12.5, color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap', borderBottom: '1px solid #e5e7eb' }
-const td: React.CSSProperties = { padding: '8px 12px', fontSize: 13, color: '#374151', borderBottom: '1px solid #f3f4f6' }
 
 export function OccupationsView({ rows }: { rows: OccRow[] }) {
   const [lang, setLang] = useState<Lang>('zh')
@@ -42,25 +40,20 @@ export function OccupationsView({ rows }: { rows: OccRow[] }) {
           <section key={p.prov} id={`prov-${p.prov}`}>
             <SectionTitle>{t('pr.' + p.prov)} <Tag variant="region">{p.prov}</Tag></SectionTitle>
             {p.streams.map((s) => (
-              <div key={s.stream} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, overflow: 'auto', margin: '0 0 14px' }}>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', padding: '10px 12px 6px' }}>
-                  <span style={{ fontSize: 13.5, fontWeight: 700 }}>{streamDisplay(t, s.stream) || s.label || s.stream}</span>
-                  <span style={{ fontSize: 12, color: '#9ca3af' }}>{s.occ.length} NOC</span>
-                  {s.url && <a href={s.url} target="_blank" rel="noreferrer" style={{ marginLeft: 'auto', fontSize: 12, color: UI.primary, textDecoration: 'none' }}>{t('dir.occ.src')}</a>}
-                  {s.fetched && <span style={{ fontSize: 11.5, color: '#9ca3af' }}>{t('dir.occ.fetched', { d: s.fetched })}</span>}
-                </div>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead><tr><th style={th}>{t('dir.occ.colNoc')}</th><th style={th}>{t('dir.occ.colName')}</th><th style={th}></th></tr></thead>
-                  <tbody>
-                    {s.occ.map((r) => (
-                      <tr key={r.noc}>
-                        <td style={{ ...td, color: '#9ca3af', whiteSpace: 'nowrap' }}>{r.noc}</td>
-                        <td style={{ ...td, fontWeight: 600 }}>{r.name || '—'}</td>
-                        <td style={{ ...td, whiteSpace: 'nowrap' }}><a href={`/?q=${encodeURIComponent(r.noc)}`} style={{ color: UI.primary, textDecoration: 'none', fontSize: 12.5 }}>{t('rank.viewJobs')}</a></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              // 组件统一 P2 余批(#110):通道表换公共 DataTable(排序/拖宽/hover 同 jobs 观感),通道标题走 header 槽
+              <div key={s.stream} style={{ margin: '0 0 14px' }}>
+                <DataTable<OccRow> rows={s.occ} rowKey={(r) => r.noc} header={
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', padding: '10px 12px 6px' }}>
+                    <span style={{ fontSize: 13.5, fontWeight: 700 }}>{streamDisplay(t, s.stream) || s.label || s.stream}</span>
+                    <span style={{ fontSize: 12, color: '#9ca3af' }}>{s.occ.length} NOC</span>
+                    {s.url && <a href={s.url} target="_blank" rel="noreferrer" style={{ marginLeft: 'auto', fontSize: 12, color: UI.primary, textDecoration: 'none' }}>{t('dir.occ.src')}</a>}
+                    {s.fetched && <span style={{ fontSize: 11.5, color: '#9ca3af' }}>{t('dir.occ.fetched', { d: s.fetched })}</span>}
+                  </div>
+                } cols={[
+                  { key: 'noc', label: t('dir.occ.colNoc'), nowrap: true, sort: (r) => r.noc, render: (r) => <span style={{ color: '#9ca3af' }}>{r.noc}</span> },
+                  { key: 'name', label: t('dir.occ.colName'), sort: (r) => r.name || null, render: (r) => <span style={{ fontWeight: 600 }}>{r.name || '—'}</span> },
+                  { key: 'go', label: '', nowrap: true, render: (r) => <a href={`/?q=${encodeURIComponent(r.noc)}`} style={{ color: UI.primary, textDecoration: 'none', fontSize: 12.5 }}>{t('rank.viewJobs')}</a> },
+                ]} />
               </div>
             ))}
           </section>
