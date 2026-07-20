@@ -247,42 +247,7 @@ const BROAD_COLOR: Record<string, Cat> = {
 const colorOf = (broad?: string): Cat => (broad && BROAD_COLOR[broad]) || NA
 
 // 薪资归一已下沉到数据层(etl/04d_clean_salary.py → salaryAnnual/salaryText);前端只读不算。
-// 各列排序取值:数值列返回 number,文本列返回 string,缺值返回 null(排末尾)
-const sortVal = (j: JobRow, key: ColKey): number | string | null => {
-  switch (key) {
-    case 'score': return j.gradeChannel ?? j.score
-    case 'match': return matchRank(j.match)
-    case 'salary': case 'salaryYr': return j.salaryAnnual
-    case 'wageMedHr': return j.wageMedHourly
-    case 'wageMedYr': return j.wageMedAnnual
-    case 'vsMedian': return (j.salaryAnnual != null && j.wageMedAnnual) ? j.salaryAnnual / j.wageMedAnnual : null
-    case 'direct': return isDirect(j) ? 1 : 0
-    case 'pnp': return j.pnpEligible ? 1 : 0
-    case 'ee': return j.eeCategory || null
-    case 'aip': return j.aip ? 1 : 0
-    case 'lmia': return j.lmiaPositions
-    case 'address': return j.address || null
-    case 'teer': return j.teer
-    case 'datePosted': return j.datePosted || null
-    case 'lastSeen': return j.lastSeen || null
-    case 'broad': return j.broad && j.broad !== '未分类' ? j.broad : null
-    case 'mid': return j.mid && j.mid !== '未分类' ? j.mid : null
-    case 'fine': return j.fine && j.fine !== '未分类' ? j.fine : null
-    case 'noc': return j.noc || null
-    case 'accessibility': return j.accessibility && j.accessibility !== 'unknown' ? j.accessibility : null
-    case 'company': return j.company || null
-    case 'title': return j.title || null
-    case 'source': return sourceLabel(j)
-    case 'origin': return ORIGIN_LABEL[j.origin] || j.origin || null
-    case 'status': return j.status === 'closed' ? 1 : 0
-    case 'closedAt': return j.closedAt || null
-    case 'country': return parseLoc(j).country || null
-    case 'province': return parseLoc(j).prov || null
-    case 'city': return parseLoc(j).city || null
-    case 'district': return parseLoc(j).district || null
-    default: return null
-  }
-}
+// (sortVal 客户端排序取值已随 E10 服务端化退役——排序全走 /api/jobs 的 orderByClause,#127 清死代码)
 const teerOf = (noc: string): number | null => (noc && noc.length === 5 && /\d/.test(noc[1]) ? Number(noc[1]) : null)
 const mapsUrl = (q: string) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`
 // 本岗年薪 vs NOC 中位年薪(%);缺值返回 null
@@ -648,7 +613,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     setSort((s) => {
       if (s.key !== key) return { key, dir: 'desc' }       // 新列:降序
       if (s.dir === 'desc') return { key, dir: 'asc' }      // 第二下:升序
-      return { key: 'score', dir: 'desc' }                  // 第三下:取消 → 回默认(评分降序)
+      return { key: 'datePosted', dir: 'desc' }             // 第三下:取消 → 回真默认(发布时间;#127 评分默认序退役)
     })
 
   // 迁移:老用户有 localStorage 列偏好但还没 cookie(本次改动前设的)→ 应用 + 补写 cookie(一次性)。
