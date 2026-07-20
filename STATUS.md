@@ -11,7 +11,8 @@
 > - **📄 E12-08 多维评分设计出稿(implementation/E12-移民路径引擎/08)**:三轨制已拍——职位分(自身三维:通道/薪资/雇佣)/公司分(担保记录/在库活跃/薪资水平/规模知名度)/地区档(=E12-07 复用);**跨层合成总分砍**(Frank「岗位总分没啥意义」)+**裸「知名」Tag 退役**(降级为规模知名度维度依据,公司名旁改公司分药丸);每分项 value/score/source 三元 jsonb 拆解弹框。**首版权重表已拟待 Frank 过目**(拍板③),批了才动 ETL。
 > - **✅ #120 生产复验全绿(同晚)**:详情页 200+JSON-LD/robots 8 分片/评论区亮回线上确认;**#120b 补刀:jobs sitemap 分片加 force-dynamic**——构建期静态烘焙把空片烘死(Render 构建容器查库失败),修后线上分片 0 回 5000 URL。
 > - **✅ #121 E8-08 表卡双形态当晚设计+实施双闭环(Frank 三拍:hover 要高亮/按逻辑拆别合并一个组件/三问按推荐)**:设计=全站页面形态总表(每页桌面/手机形态一次定死,新页照表)+通用卡片解剖+hover 规范(**可点必有态不可点必无**:a:hover 全局 brightness 加深 inline 样式压不住、按钮微暗、DataTable 不可点行 hover 摘除);实施=**DataTable 保持纯表格不动**,primitives 三积木(Card/CardKV/CardAction 纯样式零逻辑)+**每域一卡**(EmployerLmia/EmployerAip/RankCompany/RankJob/StatsCat 五卡+对比页/省对比两转置卡=dims/metrics 数组复用零双写),tcCards/tcTableWrap CSS 双渲染 ≤640;occupations 2 列窄表=例外保持表格;手机卡片流 v1 无排序控件。本地双端全绿;**转置卡 Pro 真值态待 Frank Pro 号**。
-> - 下轮:E12-08 权重表获批后开工(08 重构+08b 公司分+DDL+拆解弹框+rankings 列+知名 Tag 全站清理);#121 生产复验顺手。
+> - **📄 E12-08 评分设计终版全拍齐(同晚三连拍)**:①「权重怎么算都不合理」→ **全维度 1-5 档制**(不加权不合成,档位割点表在文档附表已批「按推荐」);②展示位=主表评分列改**「通道」列显 X/5**、公司名旁药丸显**「担保 X/5」**;③「都是先试用再付费」→ 档位全免费,**拆解弹框 5 次/日试用额度**(同 jobtext/顾问额度族)不设硬闸。设计零悬念,**下 session 首件开工**(ETL 档位三维+公司四维 jsonb → DDL/seed → 通道列/拆解弹框/药丸/知名 Tag 全站退役;一批一 session 惯例)。
+> - 下轮:①E12-08 开工;②#121 生产复验顺手(Render 已部署);③07-22 观察窗复盘(后天)。
 >
 > **⚡⚡⚡⚡⚡⚡ 上轮交接(2026-07-20 全天 session,「组件收官与难度指数日」)——#107-#116 十批+两设计文档当日全生产**
 > - **✅ #107 顾问公司初判接通 K 联网调查(2026-07-20,Frank 报障截图「资料不足」)**:根因=两条链路各干各的——K(companyinfo)会 web_search 且已有缓存,顾问初判只认 companies 富化列+web_fetch(friend 后端忽略 web_fetch,#105 切换后联网归零)。修=抽 lib/companyResearch 共享层(companyRow+investigateCompany,并发合流),顾问 field=company 先读 ai_brief 缓存、无富化数据才现场调查,注入 prompt 当次级事实(官网抓取仍第一权威);查不到照旧「资料不足」反编兜底。本地实测:L. Okafor 吃到缓存四段落地(Yorkton 诊所),Porcupine Mechanical 现场查 3.3s 落缓存。
