@@ -2043,6 +2043,7 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
 
 // ── AI 顾问弹框 ────────────────────────────────────────────────
 // 所有字段都走本地大模型流式生成(按所选语言);前端只给极简头部 + 链接,正文由模型生成。
+const CHAT_ON = false  // 顾问追问对话开关(2026-07-19 Frank 暂关:先做熟现有功能;亮回=初判切本地模型后)
 const ADV_PREF = 'adv_modal_pref'  // 记忆 {full, w, h}(位置每次打开居中,避免窗口缩小后跑出屏外)
 const JD_PREF = 'jd_modal_pref'    // 职位描述弹框同款记忆(独立键:两框常用尺寸不同)
 
@@ -2375,7 +2376,9 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, news, e
           )}
           {/* 来源行已随事实块走(FieldFactsSection 内,紧跟内容、在 AI 区之前)—— 底部不再重复 */}
           {/* 下半:对话框 —— 基于上方事实 + 初判,多轮 grounded 追问 */}
-          {status === 'done' && <AdvisorChat field={field} job={job} lang={lang} initialJudgment={text} initialSug={sug} />}
+          {/* 追问对话暂关(2026-07-19 Frank:「先把现有的功能做成熟」;#95 开关式惯例)——
+              亮回条件:顾问初判切本地模型后按需恢复,置 CHAT_ON=true 即亮 */}
+          {CHAT_ON && status === 'done' && <AdvisorChat field={field} job={job} lang={lang} initialJudgment={text} initialSug={sug} />}
         </div>
         {/* 八方向拉伸手柄(透明边条+角块;右下角保留视觉提示三角) */}
         {!full && <div style={{ position: 'absolute', right: 0, bottom: 0, width: 18, height: 18, pointerEvents: 'none', background: 'linear-gradient(135deg, transparent 50%, #cbd5e1 50%)' }} />}
