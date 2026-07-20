@@ -12,23 +12,28 @@ export const UI = {
   border: '#e5e7eb', hairline: '#f3f4f6', bg: '#f9fafb', card: '#fff',
 } as const
 
-// ── Button(主/次/文字/危险 × 常规/小号;a 或 button 由 href 决定)──
+// ── Button(主/付费/次/AI/文字/危险 × 小/常规/大;a 或 button 由 href 决定)──
+// 按钮统一 P1(2026-07-19 Frank「所有能点的按钮都要统一设计」):新增 pro(⭐付费入口)/ai(AI 功能靛蓝)/lg 档/style 透传。
+// 颜色语义:蓝=普通行动 · 棕=付费 · 靛=AI 功能 · 红=危险 · 灰字=弱操作(ghost + color 覆盖)。
 const BTN_KIND: Record<string, React.CSSProperties> = {
   primary: { background: UI.primary, color: '#fff', border: 'none' },
+  pro: { background: UI.warn, color: '#fff', border: 'none', fontWeight: 700 },
   secondary: { background: '#fff', color: UI.primary, border: `1px solid ${UI.border}` },
+  ai: { background: '#eef2ff', color: '#4338ca', border: '1px solid #c7d2fe' },
   ghost: { background: 'none', color: UI.primary, border: 'none', padding: 0 },
   danger: { background: UI.danger, color: '#fff', border: 'none' },
 }
-export function Button({ kind = 'primary', sm, disabled, onClick, href, target, title, children }: {
-  kind?: 'primary' | 'secondary' | 'ghost' | 'danger'; sm?: boolean; disabled?: boolean
-  onClick?: () => void; href?: string; target?: string; title?: string; children: React.ReactNode
+export function Button({ kind = 'primary', sm, lg, disabled, onClick, href, target, title, style: styleOverride, children }: {
+  kind?: 'primary' | 'pro' | 'secondary' | 'ai' | 'ghost' | 'danger'; sm?: boolean; lg?: boolean; disabled?: boolean
+  onClick?: () => void; href?: string; target?: string; title?: string; style?: React.CSSProperties; children: React.ReactNode
 }) {
   const style: React.CSSProperties = {
-    ...BTN_KIND[kind],
-    ...(kind !== 'ghost' && { borderRadius: 8, padding: sm ? '4px 12px' : '7px 16px' }),
-    fontSize: sm ? 12.5 : 13, fontWeight: 600, cursor: disabled ? 'default' : 'pointer',
+    fontSize: sm ? 12.5 : lg ? 14 : 13, fontWeight: 600, cursor: disabled ? 'default' : 'pointer',
     whiteSpace: 'nowrap', textDecoration: 'none', display: 'inline-block',
+    ...(kind !== 'ghost' && { borderRadius: 8, padding: sm ? '4px 12px' : lg ? '11px 20px' : '7px 16px' }),
+    ...BTN_KIND[kind],
     ...(disabled && kind === 'primary' && { background: '#93c5fd' }),
+    ...styleOverride,
   }
   if (href && !disabled) return <a href={href} target={target} rel={target ? 'noreferrer' : undefined} title={title} style={style}>{children}</a>
   return <button disabled={disabled} onClick={onClick} title={title} style={style}>{children}</button>

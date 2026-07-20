@@ -6,6 +6,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { LANGS, type Lang, type TFn } from './jobs/i18n'
 import { Avatar } from './Avatar'
+import { Button } from './ui/primitives'
 import { IconTarget, IconChart, IconCompass, IconMapPin, IconNews, IconUser, IconUsers } from './Icons'
 
 type AcctState = { state: 'loading' | 'out' | 'in'; u: { email: string; displayName: string | null; avatar: string | null; pro: boolean } }
@@ -25,8 +26,9 @@ function AccountLite({ t, acct }: { t: TFn; acct: AcctState }) {
   // Pro 钮不进 header(Frank 2026-07-18:「没有意义」——定价入口=/pricing 与升级卡)
   return (
     <>
-      <a href="/?login=1" style={{ fontSize: 12.5, color: '#2563eb', textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('nav.login')}</a>
-      <a href="/?signup=1" style={{ background: '#2563eb', color: '#fff', borderRadius: 6, padding: '3px 10px', fontSize: 12.5, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('nav.register')}</a>
+      {/* P1 换装(2026-07-19):登录=ghost,注册=primary sm——与 /jobs AccountArea 同规格 */}
+      <Button kind="ghost" sm href="/?login=1">{t('nav.login')}</Button>
+      <Button kind="primary" sm href="/?signup=1">{t('nav.register')}</Button>
     </>
   )
 }

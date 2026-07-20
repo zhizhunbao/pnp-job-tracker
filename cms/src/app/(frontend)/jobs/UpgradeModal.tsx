@@ -7,6 +7,23 @@ import type { TFn } from './i18n'
 import { Modal } from './Modal'
 import { IconStar } from '../Icons'
 import { PricingModal, PRICE } from './PricingModal'
+import { AuthModal } from './AuthForm'
+import { Button } from '../ui/primitives'
+
+// 统一升级钮 UpgradeCta(⓪ 2026-07-19 Frank 批「升级 Pro 按钮单独设计」):⭐ 实心棕 pro 型,
+// 全站升级入口从裸文字链换装到这;已登录=开升级弹框,未登录=开注册框(行为与原各处一致)。
+export function UpgradeCta({ t, loggedIn, sm = true, reason, label, style }: {
+  t: TFn; loggedIn: boolean; sm?: boolean; reason?: string; label?: string; style?: React.CSSProperties
+}) {
+  const [open, setOpen] = useState<false | 'up' | 'auth'>(false)
+  return (
+    <>
+      <Button kind="pro" sm={sm} style={style} onClick={() => setOpen(loggedIn ? 'up' : 'auth')}><IconStar /> {label || t('up.cta2')}</Button>
+      {open === 'up' && <UpgradeModal t={t} reason={reason} onClose={() => setOpen(false)} />}
+      {open === 'auth' && <AuthModal t={t} mode="register" onClose={() => setOpen(false)} onDone={() => window.location.reload()} />}
+    </>
+  )
+}
 
 export function UpgradeModal({ t, onClose, reason }: { t: TFn; onClose: () => void; reason?: string }) {
   const [busy, setBusy] = useState(false)

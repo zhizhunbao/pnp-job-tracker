@@ -4,7 +4,7 @@
 import { useMemo, useState } from 'react'
 import { StatsShell, MetricCards, CaliberLine, useLang } from './ui'
 import { BackLink } from '../BackLink'
-import { BANNER_IMGS, PageBanner } from '../ui/primitives'
+import { BANNER_IMGS, Button, PageBanner } from '../ui/primitives'
 import { IconMapPin, IconScale, IconStar, IconTarget } from '../Icons'
 import { BROAD_SLUGS, PROVS, PROV_NAME, type StatRow, type SrcRow } from './shared'
 import { StatsCharts } from './charts'
@@ -164,12 +164,38 @@ export function CompareContent({ rows, srcs, isPro, loggedIn, myNocs, t }: { row
   const broadLabel = (b: string) => (b === 'all' ? t('fields.all') : b === '未分类' ? t('cell.uncat') : t('broad.' + b))
 
   if (!isPro) {
+    // ⑤ 价值时刻批(2026-07-19 Frank 批):空态从「一条横幅」改「三行价值点+模糊示例表」——
+    // 用户知道对比长什么样、比什么;示例值硬编码不回传真数据(服务端 gate 原样);点钮开定价弹窗
+    const demo: [string, string[]][] = [
+      [t('stats.openJobs'), ['9,842', '6,157', '4,910']],
+      [t('stats.medWage'), ['$62K', '$60K', '$65K']],
+      [t('stats.named'), ['214', '187', '96']],
+    ]
+    const demoProvs = ['ON', 'BC', 'AB']
     return (
       <>
         <h1 style={{ fontSize: 22, margin: 0 }}><IconScale /> {t('stats.compare')}</h1>
-        <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '14px 18px', margin: '16px 0', fontSize: 13.5 }}>
-          <span style={{ fontWeight: 600, color: '#92400e' }}><IconStar /> {t('up.title')}</span>
-          <button onClick={() => setPricing(true)} style={{ marginLeft: 10, color: '#2563eb', border: 'none', background: 'none', padding: 0, cursor: 'pointer', fontWeight: 600, fontSize: 13.5 }}>{t('up.cta')}</button>
+        <ul style={{ margin: '14px 0 12px 20px', fontSize: 13, color: '#374151', lineHeight: 2 }}>
+          <li>{t('cmp.v1')}</li>
+          <li>{t('cmp.v2')}</li>
+          <li>{t('cmp.v3')}</li>
+        </ul>
+        <div style={{ position: 'relative', border: '1px solid #e5e7eb', borderRadius: 12, overflow: 'hidden', maxWidth: 640 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5, background: '#fff' }}>
+            <thead><tr><th style={{ ...th }}></th>{demoProvs.map((p) => <th key={p} style={{ ...th, fontSize: 13 }}>{PROV_NAME[p] || p}</th>)}</tr></thead>
+            <tbody>
+              {demo.map(([label, vals]) => (
+                <tr key={label}>
+                  <td style={{ ...td, color: '#9ca3af', whiteSpace: 'nowrap' }}>{label}</td>
+                  {vals.map((v, i) => <td key={i} style={{ ...td, filter: 'blur(4px)', userSelect: 'none' }}>{v}</td>)}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <span style={{ background: 'rgba(255,255,255,.92)', border: '1px solid #fde68a', color: '#92400e', fontSize: 12.5, fontWeight: 600, borderRadius: 999, padding: '5px 12px' }}>{t('cmp.demo')}</span>
+            <Button kind="pro" sm onClick={() => setPricing(true)}><IconStar /> {t('cmp.demoCta')}</Button>
+          </div>
         </div>
         {pricing && <PricingModal t={t} loggedIn={loggedIn} pro={false} z={60} onClose={() => setPricing(false)} />}
       </>

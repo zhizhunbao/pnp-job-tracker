@@ -9,11 +9,11 @@ const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : use
 import { makeT, streamDisplay, eeDisplay, LANGS, LANG_KEY, COLS_COOKIE, type Lang, type TFn } from './i18n'
 import { IconChart, IconCheck, IconClipboard, IconCompass, IconLock, IconMap, IconMapPin, IconMaximize, IconMinimize, IconNews, IconSave, IconSettings, IconStar, IconTarget, IconUser, IconWarn, IconX } from '../Icons'
 import { SiteHeader } from '../SiteHeader'
-import { BANNER_IMGS, PageBanner } from '../ui/primitives'
+import { BANNER_IMGS, Button, PageBanner } from '../ui/primitives'
 import { SiteFooter } from '../SiteFooter'
 import { Avatar } from '../Avatar'
 import { AuthModal } from './AuthForm'
-import { UpgradeModal } from './UpgradeModal'
+import { UpgradeCta, UpgradeModal } from './UpgradeModal'
 import { PricingModal } from './PricingModal'
 import { OnboardingWizard, OB_SEEN_KEY } from './OnboardingWizard'
 import { useOverlayClose } from './overlay'
@@ -49,15 +49,13 @@ const PRO_COLS = new Set<ColKey>(['match', 'vsMedian', 'wageMedHr', 'wageMedYr']
 export const BANNER_COOKIE = 'jobs_banner_v1'
 // ValueBanner 已退役(#65 收尾,Frank:「不需要两个蓝条」)——建档 CTA 并进 Jobs 页头右槽;BANNER_COOKIE 留给 page.tsx 旧 cookie 读取兼容
 
-// 升级卡片(402 / 锁定块共用;都出现在已登录上下文)—— CTA 开独立升级弹框(用户定),不再跳 /account
+// 升级卡片(402 / 锁定块共用;都出现在已登录上下文)—— P1 换装(⓪ 2026-07-19):CTA=统一实心 UpgradeCta
 function UpgradeCard({ t, reason }: { t: TFn; reason: string }) {
-  const [up, setUp] = useState(false)
   return (
-    <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '10px 14px', margin: '8px 0', fontSize: 13.5 }}>
-      <span style={{ fontWeight: 600, color: '#92400e' }}><IconStar /> {t('up.title')}</span>
-      <span style={{ color: '#78716c', marginLeft: 8 }}>{reason}</span>
-      <button onClick={() => setUp(true)} style={{ marginLeft: 10, border: 'none', background: 'none', padding: 0, color: '#2563eb', fontWeight: 600, fontSize: 13.5, cursor: 'pointer' }}>{t('up.cta')}</button>
-      {up && <UpgradeModal t={t} onClose={() => setUp(false)} />}
+    <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '10px 14px', margin: '8px 0', fontSize: 13.5, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+      <span><span style={{ fontWeight: 600, color: '#92400e' }}><IconStar /> {t('up.title')}</span>
+        <span style={{ color: '#78716c', marginLeft: 8 }}>{reason}</span></span>
+      <UpgradeCta t={t} loggedIn />
     </div>
   )
 }
@@ -151,10 +149,10 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
               <a href="/account?sec=saved" style={menuItem}><IconSave /> {t('ss.title')}</a>
               <a href="/account" style={menuItem}><IconSettings /> {t('nav.acctTab')}</a>
               {!plan.isPro && (
-                <button onClick={() => { setMenu(false); setPricing(true) }}
-                  style={{ display: 'block', width: 'calc(100% - 20px)', margin: '4px 10px', padding: '5px 0', textAlign: 'center', background: '#b45309', color: '#fff', border: 'none', borderRadius: 7, fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>
-                  <IconStar /> {t('up.cta')}
-                </button>
+                <Button kind="pro" sm onClick={() => { setMenu(false); setPricing(true) }}
+                  style={{ display: 'block', width: 'calc(100% - 20px)', margin: '4px 10px', padding: '5px 0', textAlign: 'center' }}>
+                  <IconStar /> {t('up.cta2')}
+                </Button>
               )}
               <div style={{ borderTop: '1px solid #f3f4f6', margin: '2px 0' }} />
               <button onClick={logout} style={{ ...menuItem, color: '#9ca3af' }}>{t('acct.logout')}</button>
@@ -163,14 +161,9 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
         </span>
       ) : (
         <>
-          <button onClick={() => setAuth('login')}
-            style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: '#2563eb', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-            {t('nav.login')}
-          </button>
-          <button onClick={() => setAuth('register')}
-            style={{ border: 'none', background: '#2563eb', color: '#fff', borderRadius: 6, padding: '3px 10px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-            {t('nav.register')}
-          </button>
+          {/* P1 换装:登录=ghost,注册=primary sm(每屏唯一主行动) */}
+          <Button kind="ghost" sm onClick={() => setAuth('login')}>{t('nav.login')}</Button>
+          <Button kind="primary" sm onClick={() => setAuth('register')}>{t('nav.register')}</Button>
         </>
       )}
       {auth && <AuthModal t={t} mode={auth} resetToken={resetTok || undefined} onClose={() => setAuth(false)} onDone={done} />}
@@ -559,7 +552,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   // C1 走查拍板(2026-07-07):删两套公司弹窗——操作列「公司信息」直接开顾问公司弹窗;ActModal 只剩 JD 快看
   const [actModal, setActModal] = useState<{ kind: 'desc'; job: JobRow } | null>(null)
   // 升级入口(Pro 锁列/保存筛选 gate)统一开独立升级弹框;未登录先走注册弹框(用户定:注册与购买分离)
-  const [upsell, setUpsell] = useState<false | 'lock' | 'ss' | 'login'>(false)
+  const [upsell, setUpsell] = useState<false | 'lock' | 'ss' | 'login' | 'match'>(false)   // match=①匹配锁(弹框带 FOMO 数字)
   // E11-05②:分型引导 wizard。首访自动弹(登录且无档案且没弹过);关/完成置 OB_SEEN 不再自动弹;横幅「建档」手动开忽略它
   const [wizard, setWizard] = useState(false)
   const closeWizard = () => { try { localStorage.setItem(OB_SEEN_KEY, '1') } catch { /* ignore */ } setWizard(false) }
@@ -968,13 +961,14 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             <Sel value={fBroad} onChange={(v) => { setFBroad(v); setFMid(''); setFFine('') }} opts={broadOpts} all={t('all.broad')} labelOf={broadLabel} />
             <Sel value={fPnp} onChange={setFPnp} opts={['yes', 'no']} all={t('all.pnp')} labelOf={(v) => t('opt.' + v)} />
             <Sel value={fSal} onChange={setFSal} opts={['ge100', '80', '60', 'u60']} all={t('all.sal')} labelOf={(v) => t('sal.' + v)} />
-            <button onClick={() => setFDrawer((o) => !o)}
-              style={{ ...ctrl, cursor: 'pointer', background: fDrawer || foldActive ? '#eef2ff' : '#f3f4f6', display: 'inline-flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}>
+            {/* P1 换装:secondary 型(激活态浅蓝底描边蓝);高度 38 与同行下拉对齐 */}
+            <Button kind="secondary" onClick={() => setFDrawer((o) => !o)}
+              style={{ height: 38, display: 'inline-flex', alignItems: 'center', gap: 5, color: '#374151', ...(fDrawer || foldActive ? { background: '#eff6ff', borderColor: '#2563eb', color: '#1d4ed8' } : {}) }}>
               {t('filter.more')}
               {foldActive > 0 && <span style={{ background: '#2563eb', color: '#fff', borderRadius: 999, fontSize: 10.5, padding: '0 6px', lineHeight: '15px' }}>{foldActive}</span>}
               <span style={{ fontSize: 10, color: '#9ca3af' }}>{fDrawer ? '▲' : '▼'}</span>
-            </button>
-            {anyFilter && <button onClick={clearAll} style={{ ...ctrl, cursor: 'pointer', background: '#f3f4f6', color: '#b91c1c' }}>{t('clear')}</button>}
+            </Button>
+            {anyFilter && <Button kind="secondary" onClick={clearAll} style={{ height: 38, color: '#b91c1c' }}>{t('clear')}</Button>}
             {/* 保存此筛选(E5-03;D1 2026-07-19 降免费):登录即可存,免费 2/Pro 5——免费触上限才弹升级 */}
             {anyFilter && plan.loggedIn && (
               <button
@@ -998,7 +992,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             )}
             <div ref={colRef} className="jtHideNarrow" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 10, marginLeft: 'auto' }}>
               {updatedAt && <span style={{ color: '#9ca3af', fontSize: 12, whiteSpace: 'nowrap' }}>{t('updated', { t: fmtLocal(updatedAt) })}</span>}
-              <button onClick={() => setColOpen((o) => !o)} style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', background: '#f3f4f6', whiteSpace: 'nowrap' }}><IconSettings style={{ marginRight: 5 }} />{t('fields', { n: shown.length })}</button>
+              <Button kind="secondary" onClick={() => setColOpen((o) => !o)} style={{ height: 38, display: 'inline-flex', alignItems: 'center', color: '#374151' }}><IconSettings style={{ marginRight: 5 }} />{t('fields', { n: shown.length })}</Button>
               {colOpen && (
                 <div style={colPanel}>
                   <div style={{ display: 'flex', gap: 6, padding: '2px 4px 6px', borderBottom: '1px solid #f3f4f6', marginBottom: 4 }}>
@@ -1119,7 +1113,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       const extra: React.CSSProperties = {}
                       // Pro 专属列(E3-05):免费用户列位显示锁标(数据在服务端已剥离,改偏好/cookie 绕不过)
                       if (PRO_COLS.has(k) && !plan.isPro && k !== 'match') {
-                        node = <button title={t('up.lockTip')} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', color: '#b45309' }} onClick={(e) => { e.stopPropagation(); setUpsell('lock') }}><IconLock /></button>
+                        {/* ③(2026-07-19 价值时刻批):lockTip 按列说人话——hover 就知道锁着什么、值不值 */}
+                        node = <button title={t('up.lockTip.' + k)} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', color: '#b45309' }} onClick={(e) => { e.stopPropagation(); setUpsell('lock') }}><IconLock /></button>
                         Object.assign(extra, { whiteSpace: 'nowrap', textAlign: 'center' as const })
                       }
                       else if (k === 'match') {  // 与我的匹配(E5-00):高=绿 chip / 中=蓝 / 低=灰 / 不适用=浅;未建档→引导;免费限额外→锁
@@ -1131,7 +1126,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                         } else if (!plan.loggedIn || !plan.profileOk) {
                           node = <a href="/account" style={{ fontSize: 12, color: '#2563eb', textDecoration: 'none', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>{t('match.needProfile')} →</a>
                         } else {
-                          node = <button title={t('match.overCap', { n: plan.freeMatchCap })} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', color: '#b45309' }} onClick={(e) => { e.stopPropagation(); setUpsell('lock') }}><IconLock /></button>
+                          {/* ①(2026-07-19 价值时刻批):锁 hover/弹框带 FOMO 全量计数(matchTotals 缺失回退限额文案) */}
+                          node = <button title={matchTotals && matchTotals.high > plan.freeMatchCap ? t('up.matchN', { h: matchTotals.high, n: plan.freeMatchCap }) : t('match.overCap', { n: plan.freeMatchCap })} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', color: '#b45309' }} onClick={(e) => { e.stopPropagation(); setUpsell('match') }}><IconLock /></button>
                           Object.assign(extra, { whiteSpace: 'nowrap', textAlign: 'center' as const })
                         }
                       }
@@ -1265,7 +1261,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         <div style={{ textAlign: 'center', padding: '12px', fontSize: 12.5, color: '#9ca3af' }}>
           {rows.length === 0 ? ''
             : rows.length >= total ? t('allShown', { total })
-            : <button onClick={() => setPage((p) => p + 1)} disabled={loading} style={{ ...ctrl, cursor: 'pointer', background: '#f3f4f6', color: '#374151', opacity: loading ? 0.6 : 1 }}>{loading ? '…' : t('loadMore', { n: total - rows.length })}</button>}
+            : <Button kind="secondary" sm disabled={loading} onClick={() => setPage((p) => p + 1)} style={{ opacity: loading ? 0.6 : 1 }}>{loading ? '…' : t('loadMore', { n: total - rows.length })}</Button>}
         </div>
         {/* 匹配视图 · 免费限额升级卡(D1=B:尝到甜头 → 升级看全量) */}
         {/* FOMO 数字(第 5 轮 #15):有全量计数时用「你今日共 X 个高匹配」,比抽象限额有说服力 */}
@@ -1278,7 +1274,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       {actModal && <ActModal job={actModal.job} lang={lang} onClose={() => setActModal(null)} onAdvisor={(x) => { setActModal(null); setPopup({ field: 'title', job: x, title: x.title }) }} />}
       {wizard && <OnboardingWizard t={t} initial={plan.profile} onClose={closeWizard} />}
       {upsell && (plan.loggedIn
-        ? <UpgradeModal t={t} reason={upsell === 'ss' ? t('ss.pro') : undefined} onClose={() => setUpsell(false)} />
+        ? <UpgradeModal t={t} reason={upsell === 'ss' ? t('ss.pro') : upsell === 'match' ? (matchTotals && matchTotals.high > plan.freeMatchCap ? t('up.matchN', { h: matchTotals.high, n: plan.freeMatchCap }) : t('up.match', { n: plan.freeMatchCap })) : undefined} onClose={() => setUpsell(false)} />
         : <AuthModal t={t} mode={upsell === 'login' ? 'login' : 'register'} onClose={() => setUpsell(false)} onDone={() => window.location.reload()} />)}
     </div>
   )
@@ -1726,12 +1722,12 @@ function fieldSrcUrls(field: ColKey, job: JobRow, sources: FieldSource[]): strin
 // (出处跟着对应内容走,不吊在弹窗底部);发布方/抓取时间/标签全不带 —— 合规已在 footer 统一声明。
 // pnp/ee 字段例外:清单内容来自政策页,各通道行已带自己的 ↗ 官方链接,不加岗位帖来源行。
 // field_sources 维度与 /sources 解释页照旧保留(E4-04 出处能力后置到解释页)。
-function FieldFactsSection({ field, job, jobs, lang, isPro, pnpOcc, pnpDraws, news, eeOcc, desigEmp, nocDesc, fieldSources, onOpenJob }: { field: ColKey; job: JobRow; jobs: JobRow[]; lang: Lang; isPro: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; news: NewsSlim[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onOpenJob?: (j: JobRow) => void }) {
+function FieldFactsSection({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpDraws, news, eeOcc, desigEmp, nocDesc, fieldSources, onOpenJob }: { field: ColKey; job: JobRow; jobs: JobRow[]; lang: Lang; isPro: boolean; loggedIn: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; news: NewsSlim[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onOpenJob?: (j: JobRow) => void }) {
   const t = makeT(lang)
   const urls = fieldSrcUrls(field, job, fieldSources)
   return (
     <>
-      <FieldFactsInner field={field} job={job} jobs={jobs} lang={lang} isPro={isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} onOpenJob={onOpenJob} />
+      <FieldFactsInner field={field} job={job} jobs={jobs} lang={lang} isPro={isPro} loggedIn={loggedIn} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} onOpenJob={onOpenJob} />
       {DERIVED_SRC_FIELDS.has(field) ? (
         <div style={{ margin: '2px 0 12px', fontSize: 11.5, color: '#9ca3af' }}>
           {t('src.label')}: {t('src.derived')}
@@ -1772,7 +1768,7 @@ function CompanyJobsList({ here, cur, lang, onOpenJob }: { here: JobRow[]; cur: 
     </>
   )
 }
-function FieldFactsInner({ field, job, jobs, lang, isPro, pnpOcc, pnpDraws, news, eeOcc, desigEmp, nocDesc, onOpenJob }: { field: ColKey; job: JobRow; jobs: JobRow[]; lang: Lang; isPro: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; news: NewsSlim[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; onOpenJob?: (j: JobRow) => void }) {
+function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpDraws, news, eeOcc, desigEmp, nocDesc, onOpenJob }: { field: ColKey; job: JobRow; jobs: JobRow[]; lang: Lang; isPro: boolean; loggedIn: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; news: NewsSlim[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; onOpenJob?: (j: JobRow) => void }) {
   const t = makeT(lang)
   const noc = nocDesc.find((d) => d.noc === job.noc) || null
   if (field === 'pnp') return <PnpListSection job={job} lang={lang} occ={pnpOcc} draws={pnpDraws} news={news} />
@@ -1923,6 +1919,13 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, pnpOcc, pnpDraws, news
         {field === 'wageMedHr' && <FactRow k={t('fact.wageBandHr')}>{bandHr}</FactRow>}
         {(field === 'wageMedYr' || field === 'vsMedian') && <FactRow k={t('fact.wageBandYr')}>{bandYr}</FactRow>}
         {field === 'vsMedian' && <FactRow k={t('col.vsMedian')}>{vs != null ? `${vs >= 0 ? '+' : ''}${vs}%` : null}</FactRow>}
+        {/* ②(2026-07-19 价值时刻批):免费用户在「刚要判断薪资」的位置点出 Pro 能看什么;不展示具体 %(数据服务端已剥离) */}
+        {!isPro && (field === 'salary' || field === 'salaryYr') && (
+          <div style={{ marginTop: 8, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '8px 12px', fontSize: 12.5, color: '#78350f', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+            <span>⭐ {t('up.salHint')}</span>
+            <UpgradeCta t={t} loggedIn={loggedIn} />
+          </div>
+        )}
       </FactsBox>
     )
   }
@@ -2291,7 +2294,7 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, news, e
         <div style={{ flex: 1, overflowY: 'auto', padding: '4px 20px 20px' }}>
           {/* 对我意味着什么(E5-00):个人相关性放最上;依据链同源 match() */}
           <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} nocDesc={nocDesc} />
-          <FieldFactsSection field={field} job={job} jobs={companyJobs} lang={lang} isPro={plan.isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} onOpenJob={onOpenJob} />
+          <FieldFactsSection field={field} job={job} jobs={companyJobs} lang={lang} isPro={plan.isPro} loggedIn={plan.loggedIn} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} onOpenJob={onOpenJob} />
           {/* 建档 CTA(第 5 轮 #17 = 弹框规范 D1):身份信号族对未建档用户铺「事实 → 个人化」的桥 */}
           {!plan.profileOk && ['pnp', 'ee', 'lmia', 'aip'].includes(field) && (
             <div style={{ margin: '8px 0 10px' }}>
@@ -2536,7 +2539,7 @@ function ActModal({ job, lang, onClose, onAdvisor }: { job: JobRow; lang: Lang; 
           </div>
           <div style={{ display: 'flex', gap: 6, flexShrink: 0 }} onPointerDown={(e) => e.stopPropagation()}>
             {/* AI 顾问入口(#87 后由本框承接:关本框 → 开 title 字段顾问弹框) */}
-            {onAdvisor && <button onClick={() => onAdvisor(job)} style={{ border: '1px solid #c7d2fe', background: '#eef2ff', color: '#4338ca', borderRadius: 8, height: 30, padding: '0 10px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}><IconCompass /> {t('advisor.tag')}</button>}
+            {onAdvisor && <Button kind="ai" sm onClick={() => onAdvisor(job)} style={{ height: 30, display: 'inline-flex', alignItems: 'center', gap: 5, flexShrink: 0 }}><IconCompass /> {t('advisor.tag')}</Button>}
             {!narrow && <button onClick={toggleFull} title={t(full ? 'advisor.exitFull' : 'advisor.full')} style={iconBtnS}>{full ? <IconMinimize /> : <IconMaximize />}</button>}
             <button onClick={onClose} style={{ ...iconBtnS, fontSize: 16 }}>×</button>
           </div>
