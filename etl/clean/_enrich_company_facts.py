@@ -35,8 +35,10 @@ def wd_get(params: dict) -> dict:
     with urllib.request.urlopen(req, timeout=20) as r:
         return json.load(r)
 
-def wikidata_lookup(name: str) -> dict | None:
-    """严格匹配:搜索前 3 个条目,en 标签/别名归一后等于公司名才收;返回 {zh, ko, wiki}"""
+ERR = "__err__"   # 网络/限速失败哨兵:不缓存、下轮重试(与「查过确实没有」区分——首跑 23/1666 偏低即失败被记成未命中)
+
+def wikidata_lookup(name: str) -> dict | str | None:
+    """严格匹配:搜索前 3 个条目,en 标签/别名归一后等于公司名才收;返回 {zh, ko, wiki} | None=确实没有 | ERR=请求失败"""
     try:
         hits = wd_get({"action": "wbsearchentities", "search": name, "language": "en", "type": "item", "limit": 3}).get("search", [])
         ids = [h["id"] for h in hits]
@@ -60,7 +62,7 @@ def wikidata_lookup(name: str) -> dict | None:
             }
         return None
     except Exception:
-        return None
+        return ERR
 
 def main() -> None:
     jobs = json.loads(IN_JOBS.read_text(encoding="utf-8"))
@@ -89,13 +91,17 @@ def main() -> None:
     prev_names: dict[str, dict] = prev.get("by_name", prev if isinstance(prev, dict) else {})
     by_name: dict[str, dict] = {}
     hit = 0
+    n_err = 0
     for i, co in enumerate(cands):
         cached = prev_names.get(co, {})
-        if "wiki_checked" in cached:      # 幂等:查过的不重查(重置=删 OUT)
+        if "wiki_checked" in cached:      # 幂等:确实查过的不重查(命中与确认未命中);失败的没进缓存,自然重试
             r = cached if cached.get("wiki") else None
         else:
             r = wikidata_lookup(co)
             time.sleep(0.6)               # 温和限速
+        if r == ERR:
+            n_err += 1
+            continue                       # 失败不写缓存,下轮重试
         by_name[co] = {"wiki_checked": 1, **({"zh": r["zh"], "ko": r["ko"], "wiki": r["wiki"]} if r else {})}
         if r:
             hit += 1
