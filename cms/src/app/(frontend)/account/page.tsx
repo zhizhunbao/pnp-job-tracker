@@ -12,6 +12,7 @@ import { ProfileForm, type ProfileValue } from './ProfileForm'
 import { SavedSearchList } from './SavedSearchList'
 import { SavedJobsList } from './SavedJobsList'
 import { Avatar } from '../Avatar'
+import { Button } from '../ui/primitives'
 
 type Me = { id: string | number; email: string; role?: string; proUntil?: string | null; profile?: ProfileValue | null; displayName?: string | null; avatar?: string | null; locale?: string | null } | null
 
@@ -106,7 +107,8 @@ export default function AccountPage() {
               </button>
             ))}
             {!narrow && <div style={{ borderTop: '1px solid #f3f4f6', margin: '6px 0' }} />}
-            <button onClick={logout} style={{ textAlign: 'left', padding: '8px 12px', fontSize: 13.5, border: 'none', borderRadius: 8, cursor: 'pointer', background: 'transparent', color: '#9ca3af', whiteSpace: 'nowrap' }}>{t('acct.logout')}</button>
+            {/* 组件统一 P2(#113):退出登录=ghost 灰(危险性弱操作,B映射) */}
+            <Button kind="ghost" onClick={logout} style={{ textAlign: 'left', padding: '8px 12px', fontSize: 13.5, fontWeight: 400, color: '#9ca3af', whiteSpace: 'nowrap' }}>{t('acct.logout')}</Button>
           </aside>
           <main style={{ ...card, flex: 1, minWidth: 0, width: narrow ? '100%' : undefined, boxSizing: 'border-box' }}>
             {sec === 'overview' && (<>
@@ -126,7 +128,7 @@ export default function AccountPage() {
                       <input value={nick} onChange={(e) => setNick(e.target.value)} placeholder={t('acct.nickPh')} maxLength={40} autoFocus
                         onKeyDown={(e) => { if (e.key === 'Enter') saveNick(); if (e.key === 'Escape') setNick(null) }}
                         style={{ padding: '5px 8px', fontSize: 14, border: '1px solid #d1d5db', borderRadius: 6, width: 160 }} />
-                      <button onClick={saveNick} disabled={nickBusy} style={{ padding: '5px 10px', fontSize: 13, fontWeight: 600, border: 'none', borderRadius: 6, background: '#2563eb', color: '#fff', cursor: 'pointer', opacity: nickBusy ? 0.6 : 1 }}>{nickBusy ? '…' : t('acct.nickSave')}</button>
+                      <Button sm onClick={saveNick} disabled={nickBusy}>{nickBusy ? '…' : t('acct.nickSave')}</Button>
                     </div>
                   )}
                   <div style={{ fontSize: 13, color: '#6b7280', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis' }}>{me.email}</div>

@@ -6,6 +6,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { TFn } from '../jobs/i18n'
 import { IconCheck, IconTarget } from '../Icons'
+import { Button } from '../ui/primitives'
 import { POPULAR_NOCS, CLB_OPTS, CRS_OPTS, PGWP_OPTS, clbActive, crsActive, pgwpActive, type Opt } from './profileOptions'
 
 type NocOpt = { noc: string; title: string }
@@ -167,10 +168,10 @@ export function ProfileForm({ t, userId, initial, onSaved }: { t: TFn; userId: s
         })}
       </div>
 
-      <button onClick={save} disabled={busy}
-        style={{ width: '100%', padding: '9px 0', fontSize: 14, fontWeight: 600, border: 'none', borderRadius: 6, cursor: 'pointer', marginTop: 16, background: '#2563eb', color: '#fff', opacity: busy ? 0.6 : 1 }}>
+      {/* 组件统一 P2(#113):保存钮换 primitives.Button(primary 通栏;禁用=内置浅蓝) */}
+      <Button lg onClick={save} disabled={busy} style={{ width: '100%', marginTop: 16, textAlign: 'center', padding: '9px 0' }}>
         {busy ? '…' : t('prof.save')}
-      </button>
+      </Button>
       {state === 'saved' && <div style={{ color: '#047857', fontSize: 13, marginTop: 8 }}><IconCheck /> {t('prof.saved')}</div>}
       {state === 'err' && <div style={{ color: '#dc2626', fontSize: 13, marginTop: 8 }}>{t('prof.err')}</div>}
     </div>

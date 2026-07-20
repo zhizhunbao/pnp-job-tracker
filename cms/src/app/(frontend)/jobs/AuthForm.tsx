@@ -6,6 +6,7 @@
 import { useEffect, useState } from 'react'
 import type { TFn } from './i18n'
 import { Modal } from './Modal'
+import { Button } from '../ui/primitives'
 
 const GOOGLE_ON = !!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
 const GoogleG = () => (
@@ -22,12 +23,6 @@ const inputS: React.CSSProperties = {
   border: '1.5px solid #e5e7eb', borderRadius: 9, marginTop: 6, background: '#fafafa',
   outline: 'none', transition: 'border-color .15s, background .15s, box-shadow .15s',
 }
-const btnS: React.CSSProperties = {
-  width: '100%', padding: '11px 0', fontSize: 14.5, fontWeight: 600, border: 'none', borderRadius: 9,
-  background: 'linear-gradient(180deg,#3b82f6,#2563eb)', color: '#fff', cursor: 'pointer', marginTop: 18,
-  boxShadow: '0 2px 8px rgba(37,99,235,.35)',
-}
-
 // 密码强度(注册时实时提示):0=太短(<8,不可提交) 1=弱 2=中 3=强。
 // 服务端只强制长度,强度条是引导不是闸门——只有「太短」拦提交,避免误伤转化。
 function pwStrength(pw: string): 0 | 1 | 2 | 3 {
@@ -176,9 +171,11 @@ export function AuthForm({ t, onDone, initialMode, resetToken }: { t: TFn; onDon
           )
         })()}
         {err && <div style={{ color: '#dc2626', fontSize: 13, marginTop: 10, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '7px 10px' }}>{err}</div>}
-        <button type="submit" disabled={busy} style={{ ...btnS, opacity: busy ? 0.6 : 1 }}>
+        {/* 组件统一 P2(#113):提交钮换 primitives.Button(primary lg 通栏;form 内默认 type=submit 行为不变;
+            禁用态=Button 内置浅蓝,替代原 opacity 手法) */}
+        <Button lg disabled={busy} style={{ width: '100%', marginTop: 18, textAlign: 'center' }}>
           {busy ? '…' : mode === 'login' ? t('acct.login') : mode === 'register' ? t('acct.submitReg') : mode === 'forgot' ? t('acct.forgotSend') : t('acct.resetBtn')}
-        </button>
+        </Button>
       </form>
       )}
       {/* 页脚:登录↔注册切换(#54:底部单行取代分段 tab)+ 忘记密码;找回/重置态=返回登录 */}

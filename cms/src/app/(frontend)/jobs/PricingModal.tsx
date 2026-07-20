@@ -5,6 +5,7 @@
 import { useState } from 'react'
 import type { TFn } from './i18n'
 import { Modal } from './Modal'
+import { Button } from '../ui/primitives'
 import { IconCheck, IconStar } from '../Icons'
 import { AuthModal } from './AuthForm'
 import { FREE_ADVISOR_TRIES, FREE_JOBTEXT_TRIES, FREE_MATCH_JOBS_PER_DAY, PRO_ADVISOR_DAILY } from '@/lib/plan'
@@ -80,7 +81,8 @@ export function PricingCard({ t, loggedIn, pro, caps, onRegister }: { t: TFn; lo
           </ul>
           {pro ? <div style={{ ...btn, textAlign: 'center', background: '#f9fafb', color: '#d1d5db', cursor: 'default' }}>—</div>
             : loggedIn ? <div style={{ ...btn, textAlign: 'center', background: '#f3f4f6', color: '#6b7280', cursor: 'default' }}><IconCheck /> {t('price.cur')}</div>
-            : <button onClick={onRegister} style={{ ...btn, background: '#fff', color: '#2563eb', border: '1px solid #bfdbfe' }}>{t('price.regFree')}</button>}
+            // 组件统一 P2(#113):免费注册钮=secondary(购买双钮按 A规格拍板保持现状不并入)
+            : <Button kind="secondary" onClick={onRegister} style={{ width: '100%', padding: '8px 0', textAlign: 'center', fontSize: 13.5 }}>{t('price.regFree')}</Button>}
         </div>
         {/* Pro 30 天卡 */}
         <div style={cardS()}>

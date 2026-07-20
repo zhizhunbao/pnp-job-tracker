@@ -5,6 +5,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { TFn } from './i18n'
 import { Modal } from './Modal'
+import { Button } from '../ui/primitives'
 import { hasProfile, normalizeProfile, type MatchProfile } from '@/lib/match'
 import {
   POPULAR_NOCS, CLB_OPTS, CRS_OPTS, PGWP_OPTS, clbActive, crsActive, pgwpActive, type Opt,
@@ -29,11 +30,6 @@ const BRANCH: Record<string, Field[]> = {
 const chip = (on: boolean): React.CSSProperties => ({
   border: on ? '1px solid #2563eb' : '1px solid #d1d5db', background: on ? '#eff6ff' : '#fff',
   color: on ? '#1d4ed8' : '#6b7280', borderRadius: 6, padding: '5px 11px', fontSize: 13, cursor: 'pointer',
-})
-const navBtn = (primary: boolean): React.CSSProperties => ({
-  border: primary ? 'none' : '1px solid #d1d5db', background: primary ? '#2563eb' : '#fff',
-  color: primary ? '#fff' : '#6b7280', fontWeight: primary ? 600 : 400,
-  borderRadius: 7, padding: '8px 18px', fontSize: 13.5, cursor: 'pointer',
 })
 
 export function OnboardingWizard({ t, initial, onClose }: { t: TFn; initial: MatchProfile | null; onClose: () => void }) {
@@ -202,8 +198,9 @@ export function OnboardingWizard({ t, initial, onClose }: { t: TFn; initial: Mat
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 22 }}>
         <button type="button" onClick={next} style={{ border: 'none', background: 'none', color: '#9ca3af', fontSize: 13, cursor: 'pointer', padding: 0 }}>{t('ob.skip')}</button>
         <div style={{ display: 'flex', gap: 8 }}>
-          {step > 0 && <button type="button" onClick={back} style={navBtn(false)}>{t('ob.back')}</button>}
-          <button type="button" onClick={next} disabled={saving} style={{ ...navBtn(true), opacity: saving ? 0.6 : 1 }}>{isLast ? t('ob.finish') : t('ob.next')}</button>
+          {/* 组件统一 P2(#113):上一步 ghost 灰字/下一步 primary(B映射);保存中=Button 内置禁用浅蓝 */}
+          {step > 0 && <Button kind="ghost" onClick={back} style={{ color: '#6b7280', fontWeight: 400, fontSize: 13.5 }}>{t('ob.back')}</Button>}
+          <Button onClick={next} disabled={saving} style={{ fontSize: 13.5, padding: '8px 18px' }}>{isLast ? t('ob.finish') : t('ob.next')}</Button>
         </div>
       </div>
     </Modal>
