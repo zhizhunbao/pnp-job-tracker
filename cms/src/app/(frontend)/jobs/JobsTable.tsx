@@ -1193,8 +1193,10 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               <div key={j.id} onClick={() => { window.location.href = `/jobs/${j.id}` }}
                 style={{ border: '1px solid #e5e7eb', borderRadius: 12, padding: '10px 12px', background: '#fff', cursor: 'pointer' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'baseline' }}>
-                  {/* E8-07 B 件(Frank 拍板「公司名、职位名手机都可点」+手机免弹框套弹框):职位名=蓝链进 /jobs/[id] 详情页(原开 JD 弹框) */}
-                  <a href={`/jobs/${j.id}`} onClick={(e) => e.stopPropagation()} style={{ fontSize: 14.5, fontWeight: 600, color: '#2563eb', textDecoration: 'none' }}>{j.title}</a>
+                  {/* #131(Frank 复拍推翻 #120B 蓝链):职位名文字=开 JD 弹框(和桌面职位格一致),整卡点击才进详情页;
+                      <a href> 语义保留给爬虫/长按新开(preventDefault 只拦普通左键) */}
+                  <a href={`/jobs/${j.id}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActModal({ kind: 'desc', job: j }) }}
+                    style={{ fontSize: 14.5, fontWeight: 600, color: '#2563eb', textDecoration: 'none' }}>{j.title}</a>
                   <span style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
                     {mc && <span onClick={stop(() => open('match', t('match.' + j.match)))} style={{ fontSize: 11.5, padding: '1px 8px', borderRadius: 6, background: mc.bg, color: mc.fg, fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer' }}>{t('match.' + j.match)}</span>}
                     {/* #52:收藏入口手机也要有(E9-01 闭环第一环)——卡片寸土寸金只放星标,匿名点=注册框(与桌面 toggleSave 同一逻辑) */}
@@ -1209,7 +1211,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                 {j.company ? (
                   <div style={{ marginTop: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span onClick={stop(() => open('company', j.company))} style={{ fontSize: 12.5, color: '#2563eb', cursor: 'pointer' }}>{j.company}</span>
-                    {j.sponsorGrade != null && <span style={{ fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sponsorPill', { g: j.sponsorGrade })}</span>}
+                    {j.sponsorGrade != null && <span title={t('gr.sponsorTip')} style={{ fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sponsorPill', { g: j.sponsorGrade })}</span>}
                   </div>
                 ) : null}
                 <div style={{ fontSize: 12.5, marginTop: 4, display: 'flex', gap: 10, flexWrap: 'wrap' }}>

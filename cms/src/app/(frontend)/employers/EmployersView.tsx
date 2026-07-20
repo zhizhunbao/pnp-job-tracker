@@ -42,7 +42,7 @@ function EmployerLmiaCard({ r, lang, t, inCmp, onCmp }: { r: LmiaRow; lang: Lang
       <div style={{ fontSize: 14.5, fontWeight: 600, paddingRight: 78 }}>
         {r.website ? <a href={r.website} target="_blank" rel="noreferrer" style={{ color: UI.primary, textDecoration: 'none' }}>{r.name} ↗</a> : r.name}
         {/* E12-08:裸「知名」Tag 退役(Frank「只显示知名不清楚」)——担保档药丸承接;无记录不显 */}
-        {r.sponsorGrade != null && <span style={{ marginLeft: 6, fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', fontWeight: 600, whiteSpace: 'nowrap' }}>{t('gr.sponsorPill', { g: r.sponsorGrade })}</span>}
+        {r.sponsorGrade != null && <span title={t('gr.sponsorTip')} style={{ marginLeft: 6, fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', fontWeight: 600, whiteSpace: 'nowrap' }}>{t('gr.sponsorPill', { g: r.sponsorGrade })}</span>}
       </div>
       {(alias || r.industry) ? (
         <div style={{ fontSize: 12.5, color: '#9ca3af', marginTop: 2 }}>
@@ -139,7 +139,7 @@ export function EmployersView({ type, q, prov, page, aip, lmia, counts }: {
               return <span style={{ fontWeight: 600 }}>
                 {r.website ? <a href={r.website} target="_blank" rel="noreferrer" style={{ color: UI.primary, textDecoration: 'none' }}>{r.name} ↗</a> : r.name}
                 {alias ? <span style={{ marginLeft: 6, color: '#9ca3af', fontWeight: 400, fontSize: 12 }}>{alias}</span> : null}
-                {r.sponsorGrade != null && <span style={{ marginLeft: 6, fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sponsorPill', { g: r.sponsorGrade })}</span>}
+                {r.sponsorGrade != null && <span title={t('gr.sponsorTip')} style={{ marginLeft: 6, fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sponsorPill', { g: r.sponsorGrade })}</span>}
               </span> } },
             { key: 'industry', label: t('fact.coSectors'), sort: (r) => r.industry || null, render: (r) => r.industry ? <Tag variant="region">{t('broad.' + r.industry)}</Tag> : <span style={{ color: '#9ca3af' }}>—</span> },
             { key: 'region', label: t('dir.col.region'), render: (r) => r.region || <span style={{ color: '#9ca3af' }}>—</span> },
