@@ -1098,7 +1098,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                           Object.assign(extra, { whiteSpace: 'nowrap', textAlign: 'center' as const })
                         }
                       }
-                      else if (k === 'score') { node = j.gradeChannel != null ? `${j.gradeChannel}/5` : (j.score ?? '—'); Object.assign(extra, { fontWeight: 500, color: gradeColor(j.gradeChannel) }) }  // E12-08:通道档(旧库未回填时退 0-100 旧分)
+                      else if (k === 'score') { node = j.gradeChannel != null ? t('gr.ch.' + j.gradeChannel) : (j.score ?? '—'); Object.assign(extra, { fontWeight: 500, whiteSpace: 'nowrap', fontSize: 12.5, color: gradeColor(j.gradeChannel) }) }  // #132 档名人话化(Frank「X/5 看不懂」);旧库未回填退 0-100 旧分
                       else if (k === 'broad') { node = broadLabel(j.broad); Object.assign(extra, { whiteSpace: 'nowrap', color: cat.fg, fontWeight: 500 }) }
                       else if (k === 'mid') { node = (!j.mid || j.mid === '未分类') ? t('cell.uncat') : catLabel(j.mid); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'fine') { node = (j.mid === '未分类' || !j.mid) ? '—' : catLabel(j.fine); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
@@ -1211,7 +1211,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                 {j.company ? (
                   <div style={{ marginTop: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span onClick={stop(() => open('company', j.company))} style={{ fontSize: 12.5, color: '#2563eb', cursor: 'pointer' }}>{j.company}</span>
-                    {j.sponsorGrade != null && <span title={t('gr.sponsorTip')} style={{ fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sponsorPill', { g: j.sponsorGrade })}</span>}
+                    {j.sponsorGrade != null && <span title={t('gr.sponsorTip')} style={{ fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sp.' + j.sponsorGrade)}</span>}
                   </div>
                 ) : null}
                 <div style={{ fontSize: 12.5, marginTop: 4, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -1227,7 +1227,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                   {/* GAP1③:红旗 chip(手机卡片)——白投预警比正面信号更值得占位 */}
                   {j.eligibilityFlag ? chip('#fee2e2', '#b91c1c', t('cell.elig.' + j.eligibilityFlag), 'eligibility') : null}
                   {!j.pnpEligible && !j.eeCategory && !j.aip && j.teer != null ? chip('#f3f4f6', '#6b7280', `TEER ${j.teer}`, 'teer') : null}
-                  {j.gradeChannel != null ? chip('#f3f4f6', '#6b7280', t('col.score') + ' ' + j.gradeChannel + '/5', 'score') : null}
+                  {j.gradeChannel != null ? chip('#f3f4f6', '#6b7280', t('gr.ch.' + j.gradeChannel), 'score') : null}
                 </div>
               </div>
             )
@@ -1791,28 +1791,29 @@ function ScoreGradesSection({ job, lang, loggedIn }: { job: JobRow; lang: Lang; 
   return (
     <FactsBox note={t('fact.scoreNote')}>
       {freeLeft != null && <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 4 }}>{t('advisor.left', { n: freeLeft })}</div>}
-      {ch ? row(t('gr.dim.channel'), <>{dots(ch.g)} <b style={{ marginLeft: 8 }}>{ch.g}/5</b><div style={{ fontSize: 12.5, color: '#6b7280' }}>{t(`gr.channel.${ch.g}`, { v: ch.v || '' })}</div></>) : null}
-      {sal ? row(t('gr.dim.salary'), <>{dots(sal.g)} <b style={{ marginLeft: 8 }}>{sal.g}/5</b><div style={{ fontSize: 12.5, color: '#6b7280' }}>{t('gr.salary.d', { pct: sal.v >= 0 ? `+${sal.v}` : String(sal.v) })}</div></>)
+      {/* #132 档名人话化:主显档名,X/5 降级灰小注(Frank「X/5 用户能看懂吗」) */}
+      {ch ? row(t('gr.dim.channel'), <>{dots(ch.g)} <b style={{ marginLeft: 8 }}>{t('gr.ch.' + ch.g)}</b><span style={{ marginLeft: 6, color: '#9ca3af', fontSize: 11.5 }}>{ch.g}/5</span><div style={{ fontSize: 12.5, color: '#6b7280' }}>{t(`gr.channel.${ch.g}`, { v: ch.v || '' })}</div></>) : null}
+      {sal ? row(t('gr.dim.salary'), <>{dots(sal.g)} <b style={{ marginLeft: 8 }}>{t('gr.sal.' + sal.g)}</b><span style={{ marginLeft: 6, color: '#9ca3af', fontSize: 11.5 }}>{sal.g}/5</span><div style={{ fontSize: 12.5, color: '#6b7280' }}>{t('gr.salary.d', { pct: sal.v >= 0 ? `+${sal.v}` : String(sal.v) })}</div></>)
         : row(t('gr.dim.salary'), <span style={{ color: '#9ca3af' }}>{t('gr.noData')}</span>)}
-      {emp ? row(t('gr.dim.emp'), <>{dots(emp.g)} <b style={{ marginLeft: 8 }}>{emp.g}/5</b><div style={{ fontSize: 12.5, color: '#6b7280' }}>{emp.v?.length ? emp.v.map((h) => t('gr.emp.' + h)).join('、') : t('gr.emp.none')}</div></>) : null}
+      {emp ? row(t('gr.dim.emp'), <>{dots(emp.g)} <b style={{ marginLeft: 8 }}>{t('gr.empn.' + emp.g)}</b><span style={{ marginLeft: 6, color: '#9ca3af', fontSize: 11.5 }}>{emp.g}/5</span><div style={{ fontSize: 12.5, color: '#6b7280' }}>{emp.v?.length ? emp.v.map((h) => t('gr.emp.' + h)).join('、') : t('gr.emp.none')}</div></>) : null}
       <div style={{ marginTop: 10, paddingTop: 8, borderTop: '1px solid #f3f4f6' }}>
         <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 2 }}>{t('gr.ref.title')}</div>
         {/* 公司四维行(E12-08 尾巴):companyDetail 一直随响应回传,此前只渲担保一行;依据句前端按维度拼(数据层只存 {g,v}) */}
         {(() => {
           const co = d.companyDetail || {}
           const sp = co.sponsor, ac = co.active, cs = co.salary, fm = co.fame
-          const gRow = (label: string, g: number, note: string) =>
-            row(label, <>{dots(g)} <b style={{ marginLeft: 8 }}>{g}/5</b><div style={{ fontSize: 12.5, color: '#6b7280' }}>{note}</div></>)
+          const gRow = (label: string, g: number, name: string, note: string) =>
+            row(label, <>{dots(g)} <b style={{ marginLeft: 8 }}>{name}</b><span style={{ marginLeft: 6, color: '#9ca3af', fontSize: 11.5 }}>{g}/5</span><div style={{ fontSize: 12.5, color: '#6b7280' }}>{note}</div></>)
           return (
             <>
-              {sp ? gRow(t('gr.ref.sponsor'), sp.g, (sp.v?.total
+              {sp ? gRow(t('gr.ref.sponsor'), sp.g, t('gr.sp.' + sp.g), (sp.v?.total
                   ? t('gr.co.sponsor.v', { skilled: sp.v.skilled ?? 0, total: sp.v.total, q: sp.v.q || '—' }) + (sp.v?.aip ? '、' + t('gr.co.sponsor.aipTag') : '')
                   : t('gr.co.sponsor.aipOnly')))
                 : row(t('gr.ref.sponsor'), <span style={{ color: '#9ca3af' }}>{t('gr.ref.noRec')}</span>)}
-              {ac ? gRow(t('gr.co.active'), ac.g, t('gr.co.active.v', { open: ac.v?.open ?? 0, n: ac.v?.new30 ?? 0 })) : null}
-              {cs ? gRow(t('gr.co.salary'), cs.g, t('gr.co.salary.v', { pct: cs.v >= 0 ? `+${cs.v}` : String(cs.v) }))
+              {ac ? gRow(t('gr.co.active'), ac.g, t('gr.act.' + ac.g), t('gr.co.active.v', { open: ac.v?.open ?? 0, n: ac.v?.new30 ?? 0 })) : null}
+              {cs ? gRow(t('gr.co.salary'), cs.g, t('gr.sal.' + cs.g), t('gr.co.salary.v', { pct: cs.v >= 0 ? `+${cs.v}` : String(cs.v) }))
                 : d.companyDetail ? row(t('gr.co.salary'), <span style={{ color: '#9ca3af' }}>{t('gr.noData')}</span>) : null}
-              {fm ? gRow(t('gr.co.fame'), fm.g, [
+              {fm ? gRow(t('gr.co.fame'), fm.g, t('gr.fm.' + fm.g), [
                   fm.v?.wiki ? t('gr.co.fame.wiki') : '',
                   (fm.v?.provs ?? 0) >= 2 ? t('gr.co.fame.provs', { n: fm.v!.provs! }) : '',
                   t('gr.co.fame.open', { n: fm.v?.open ?? 0 }),

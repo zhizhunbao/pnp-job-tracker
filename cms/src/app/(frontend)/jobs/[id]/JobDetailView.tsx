@@ -122,7 +122,7 @@ export default function JobDetailView({ job, plan, dims, related }: {
               <span><span style={metaK}>{t('col.company')}</span>
                 <button onClick={() => setCompanyOpen(true)} style={{ border: 'none', background: 'none', padding: 0, font: 'inherit', color: '#2563eb', cursor: 'pointer' }}>{job.company}</button>
                 {/* E12-08:担保档药丸(公司分承接);无记录不显 */}
-                {job.sponsorGrade != null && <span title={t('gr.sponsorTip')} style={{ marginLeft: 6, fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sponsorPill', { g: job.sponsorGrade })}</span>}
+                {job.sponsorGrade != null && <span title={t('gr.sponsorTip')} style={{ marginLeft: 6, fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sp.' + job.sponsorGrade)}</span>}
               </span>
             ) : null}
             {(job.city || provFull) ? <span><span style={metaK}>{t('col.city')}</span>{[job.city, provFull].filter(Boolean).join(', ')}</span> : null}
