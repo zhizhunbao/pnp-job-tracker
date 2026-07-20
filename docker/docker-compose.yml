@@ -91,6 +91,13 @@ services:
   #     SCRAPE_INTERVAL: '21600'   # 6h
   #     TZ: EST5EDT
 
+  ircc:                            # IRCC 开放数据月更(E12-07 #116 难度指数:学签/工签存量+PNP 登陆;配额=人工维护表不在此)
+    <<: *etl
+    environment:
+      SOURCE: ircc
+      SCRAPE_INTERVAL: '2592000'   # 月更
+      TZ: EST5EDT
+
   backup:                          # 每日 pg_dump 生产库 → backups/(E7-01;家里机=运维盒)
     <<: *etl
     environment:
