@@ -2,27 +2,19 @@
 // 给前端「职位描述」弹框用。只读、无大模型、不再扫 .md 文件(去掉运行时文件依赖)。
 import { NextRequest } from 'next/server'
 import { jobDescription } from '@/lib/jobDescription'
-import { checkLimit, ipOf, usedToday } from '@/lib/rateLimit'
-import { getUser, isPro } from '@/lib/entitlement'
-import { FREE_JOBTEXT_TRIES } from '@/lib/plan'
+import { getUser } from '@/lib/entitlement'
+import { freeGate } from '@/lib/freeQuota'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
-  // 分层 gate(E3-05):免费登录用户每日试用次数,超 → 402 升级卡;Pro 不限次
+  // #124 统一免费额度池:四端点同一个池同一个数(闸逻辑/额度可见化收敛进 freeGate)
   const user = await getUser(req.headers)
-  if (user && !isPro(user) && !checkLimit([[`jd:u:${user.id}`, FREE_JOBTEXT_TRIES]])) {
-    return new Response('upgrade required', { status: 402 })
-  }
-  // 未登录按 IP 日限;匿名不得高于免费注册额度(20/日),否则倒挂劝退注册(第 2 轮随 #5)
-  if (!user && !checkLimit([[`jd:${ipOf(req)}`, Number(process.env.JOBTEXT_IP_DAILY || 20)]])) {
-    return new Response('rate limited', { status: 429 })
-  }
+  const g = freeGate(user, req)
+  if (g.block) return g.block
   const url = req.nextUrl.searchParams.get('url')?.trim()
   if (!url) return new Response('', { status: 400 })
   const body = await jobDescription(url)
-  // 试用额度可见化(第 5 轮 #16)
-  const freeLeft = user && !isPro(user) ? String(Math.max(0, FREE_JOBTEXT_TRIES - usedToday(`jd:u:${user.id}`))) : null
-  return new Response(body, { headers: { 'Content-Type': 'text/plain; charset=utf-8', ...(freeLeft != null ? { 'X-Free-Left': freeLeft } : {}) } })
+  return new Response(body, { headers: { 'Content-Type': 'text/plain; charset=utf-8', ...g.headers } })
 }

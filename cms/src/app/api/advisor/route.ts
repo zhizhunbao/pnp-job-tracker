@@ -5,12 +5,13 @@ import { NextRequest } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { jobDescription } from '@/lib/jobDescription'
-import { checkLimit, ipOf, usedToday } from '@/lib/rateLimit'
+import { checkLimit } from '@/lib/rateLimit'
+import { freeGate } from '@/lib/freeQuota'
 import { streamChat, LlmError, type ChatMessage } from '@/lib/llm'
 import { friendLlmReady } from '@/lib/friendLlm'
 import { companyRow, investigateCompany, type CompanyResearch } from '@/lib/companyResearch'
 import { getUser, isPro } from '@/lib/entitlement'
-import { FREE_ADVISOR_TRIES, PRO_ADVISOR_DAILY } from '@/lib/plan'
+import { PRO_ADVISOR_DAILY } from '@/lib/plan'
 import { match, normalizeProfile, hasProfile, reasonEn, statusEn, type MatchDims, type MatchJob } from '@/lib/match'
 import { loadMatchDims } from '@/lib/matchDims'
 
@@ -251,15 +252,12 @@ export async function POST(req: NextRequest) {
     .filter((m): m is ChatMsg => !!m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
   const isChat = messages.length > 0
 
-  // 分层 gate(E3-05,一律服务端):免费登录用户 = 每日试用次数,超 → 402(前端渲升级卡);
+  // 分层 gate(E3-05,一律服务端):#124 统一免费额度池——四端点同池同数,闸+额度可见化收敛进 freeGate;
   // 试用计「功能使用次数」,缓存命中也算 —— 付费卖的是功能不是 token。
   const user = await getUser(req.headers)
   const pro = isPro(user)
-  if (user && !pro && !checkLimit([[`adv:u:${user.id}`, FREE_ADVISOR_TRIES]])) {
-    return new Response('upgrade required', { status: 402 })
-  }
-  // 试用额度可见化(第 5 轮 #16):免费登录用户随响应带今日剩余次数,前端显示,别让 402 当惊吓
-  const freeLeft = user && !pro ? String(Math.max(0, FREE_ADVISOR_TRIES - usedToday(`adv:u:${user.id}`))) : null
+  const gate = freeGate(user, req)
+  if (gate.block) return gate.block
 
   // Pro 档案感知(E5-00):自报档案 + 本岗匹配结论注入 facts;个性化内容缓存按人隔离
   const profileRaw = (user as any)?.profile
@@ -277,14 +275,13 @@ export async function POST(req: NextRequest) {
 
   if (!isChat) {
     const cached = cache.get(key)
-    if (cached) return new Response(cached, { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'X-Cache': 'hit', ...(freeLeft != null ? { 'X-Free-Left': freeLeft } : {}) } })
+    if (cached) return new Response(cached, { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'X-Cache': 'hit', ...gate.headers } })
   }
 
-  // 成本限流(真调 LLM 才计,放缓存之后):全局日上限兜底;Pro 个人日限(防滥用);未登录沿用 IP 限(E2-02)
+  // 成本限流(真调 LLM 才计,放缓存之后):全局日上限兜底;Pro 个人日限(防滥用)。
+  // #124:匿名 IP 限已并进 freeGate 统一池,这里不再单设
   const quotas: [string, number][] = [['adv:__global__', Number(process.env.ADVISOR_DAILY_CAP || 1000)]]
   if (pro && user) quotas.push([`adv:pro:${user.id}`, PRO_ADVISOR_DAILY])
-  // 匿名额度不得高于免费注册额度(8/日),否则倒挂:烧 LLM 钱还削弱注册动机(第 2 轮 #5)
-  if (!user) quotas.push([`adv:${ipOf(req)}`, Number(process.env.ADVISOR_IP_DAILY || 8)])
   if (!checkLimit(quotas)) return new Response('rate limited', { status: 429 })
 
   // 职位/对话:读取抓到的真实 JD 作 grounding(基于它总结,不凭空猜)
@@ -352,5 +349,5 @@ export async function POST(req: NextRequest) {
     },
   }))
 
-  return new Response(stream, { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'X-Cache': 'miss', 'X-JD': jd ? 'yes' : 'no', ...(freeLeft != null ? { 'X-Free-Left': freeLeft } : {}) } })
+  return new Response(stream, { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'X-Cache': 'miss', 'X-JD': jd ? 'yes' : 'no', ...gate.headers } })
 }

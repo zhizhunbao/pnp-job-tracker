@@ -2,9 +2,12 @@
 // gate 一律服务端执行(advisor/jobtext 402、page.tsx 列与匹配范围),前端只做展示引导。
 
 // 免费登录用户:advisor 每日试用次数(超 → 402 升级提示;未登录走 IP 限流不进这里)
-export const FREE_ADVISOR_TRIES = Number(process.env.FREE_ADVISOR_TRIES || 8)
+// #124 统一免费额度池(Frank「统一一个不就完事了」):全站一个每日池,下述旧分池常量=同池别名
+// (定价页/弹窗显示处自动一致;端点闸统一走 lib/freeQuota.freeGate)
+export const FREE_DAILY_TRIES = Number(process.env.FREE_DAILY_TRIES || 20)
+export const FREE_ADVISOR_TRIES = FREE_DAILY_TRIES
 // 免费登录用户:jobtext(JD 摘录)每日试用次数
-export const FREE_JOBTEXT_TRIES = Number(process.env.FREE_JOBTEXT_TRIES || 20)
+export const FREE_JOBTEXT_TRIES = FREE_DAILY_TRIES
 // Pro 用户:advisor 个人日上限(防滥用,不是卖点限制)
 export const PRO_ADVISOR_DAILY = Number(process.env.PRO_ADVISOR_DAILY || 200)
 // 免费层档案匹配:每日仅列表前 N 岗出匹配(激活钩子,E5-00)
@@ -17,10 +20,9 @@ export type ProColumn = (typeof PRO_COLUMNS)[number]
 export const isProColumn = (k: string): boolean => (PRO_COLUMNS as readonly string[]).includes(k)
 
 // 简历解析次数/日(E11-07;解析免费=转化杠杆,限次防滥用——付费仍在匹配列,不在这)
-export const FREE_RESUME_TRIES = Number(process.env.FREE_RESUME_TRIES || 5)
+export const FREE_RESUME_TRIES = FREE_DAILY_TRIES
 
-// E12-08 评分拆解弹框次数/日(Frank「都是先试用再付费」:档位数字全免费,拆解明细试用额度制)
-export const FREE_SCOREDETAIL_TRIES = Number(process.env.FREE_SCOREDETAIL_TRIES || 5)
+export const FREE_SCOREDETAIL_TRIES = FREE_DAILY_TRIES
 // 保存筛选上限(E5-03;D1 2026-07-19 拍板降免费——留存钩不设 Pro 闸,闸改在「更多保存位」:免费 2 / Pro 5)
 export const PRO_SAVED_SEARCHES = Number(process.env.PRO_SAVED_SEARCHES || 5)
 export const FREE_SAVED_SEARCHES = Number(process.env.FREE_SAVED_SEARCHES || 2)

@@ -1,12 +1,12 @@
 // 简历上传解析(E11-07):PDF/DOCX → 文本 → LLM 抽取(职名/年限/语言) → NOC 候选(在库职位标题 trgm 匹配)。
 // 隐私红线:原件不落盘不入库(内存 Buffer 解析完即弃),日志不含简历文本;抽取结果=预填建议,入库走用户确认后的 /api/users PATCH。
-// 免费口径(立项拍板):登录可用,FREE_RESUME_TRIES(5)/日;付费仍在匹配列,不在这。
+// 免费口径:登录可用,#124 起走统一免费池(FREE_DAILY_TRIES/日,四端点同池);付费仍在匹配列,不在这。
 import { NextRequest } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { getUser } from '@/lib/entitlement'
-import { checkLimit, usedToday } from '@/lib/rateLimit'
-import { FREE_RESUME_TRIES } from '@/lib/plan'
+import { FREE_DAILY_TRIES } from '@/lib/plan'
+import { freeGate } from '@/lib/freeQuota'
 import { completeText, LlmError } from '@/lib/llm'
 
 export const runtime = 'nodejs'
@@ -67,10 +67,10 @@ const EXTRACT_SYSTEM =
 export async function POST(req: NextRequest) {
   const user = await getUser(req.headers)
   if (!user) return Response.json({ error: 'login' }, { status: 401 })
-  if (!checkLimit([[`resume:u:${user.id}`, FREE_RESUME_TRIES]])) {
-    return Response.json({ error: 'limit' }, { status: 429 })
-  }
-  const freeLeft = Math.max(0, FREE_RESUME_TRIES - usedToday(`resume:u:${user.id}`))
+  // #124 统一免费额度池:与 jobtext/advisor/scoredetail 同池同数;对 wizard 保持旧契约({error:'limit'} 429)
+  const g = freeGate(user, req)
+  if (g.block) return Response.json({ error: 'limit' }, { status: 429 })
+  const freeLeft = g.left ?? FREE_DAILY_TRIES
 
   let file: File | null = null
   try { file = (await req.formData()).get('file') as File | null } catch { /* 非 multipart */ }

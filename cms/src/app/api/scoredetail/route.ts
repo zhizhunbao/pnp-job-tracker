@@ -4,21 +4,17 @@
 import { NextRequest } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { checkLimit, ipOf, usedToday } from '@/lib/rateLimit'
-import { getUser, isPro } from '@/lib/entitlement'
-import { FREE_SCOREDETAIL_TRIES } from '@/lib/plan'
+import { getUser } from '@/lib/entitlement'
+import { freeGate } from '@/lib/freeQuota'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
+  // #124 统一免费额度池:四端点同一个池同一个数
   const user = await getUser(req.headers)
-  if (user && !isPro(user) && !checkLimit([[`sd:u:${user.id}`, FREE_SCOREDETAIL_TRIES]])) {
-    return new Response('upgrade required', { status: 402 })
-  }
-  if (!user && !checkLimit([[`sd:${ipOf(req)}`, Number(process.env.SCOREDETAIL_IP_DAILY || 5)]])) {
-    return new Response('rate limited', { status: 429 })
-  }
+  const g = freeGate(user, req)
+  if (g.block) return g.block
   const { id } = await req.json().catch(() => ({}))
   if (!Number.isFinite(Number(id))) return new Response('', { status: 400 })
   const payload = await getPayload({ config: await config })
@@ -27,8 +23,7 @@ export async function POST(req: NextRequest) {
     `SELECT j.score_detail AS detail, j.grade_channel, c.sponsor_grade, c.score_detail AS company_detail
      FROM jobs j LEFT JOIN companies c ON c.id = j.company_id WHERE j.id = $1 LIMIT 1`, [Number(id)])
   if (!rows.length) return new Response('', { status: 404 })
-  const freeLeft = user && !isPro(user) ? String(Math.max(0, FREE_SCOREDETAIL_TRIES - usedToday(`sd:u:${user.id}`))) : null
   return Response.json(
     { detail: rows[0].detail || null, sponsorGrade: rows[0].sponsor_grade ?? null, companyDetail: rows[0].company_detail || null },
-    { headers: { ...(freeLeft != null ? { 'X-Free-Left': freeLeft } : {}) } })
+    { headers: g.headers })
 }
