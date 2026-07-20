@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>全站按钮统一 · 设计总表</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; background: #f6f7f9; color: #1f2937; padding: 28px 32px 60px; }
+  h1 { font-size: 21px; margin-bottom: 4px; }
+  .sub { font-size: 12.5px; color: #6b7280; margin-bottom: 24px; line-height: 1.7; }
+  .sec { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 18px 22px; margin-bottom: 22px; }
+  .sec h2 { font-size: 15.5px; margin-bottom: 3px; }
+  .sec .where { font-size: 12px; color: #9ca3af; margin-bottom: 14px; }
+  .note { font-size: 12px; color: #b45309; margin-top: 10px; line-height: 1.7; }
+  .note b { color: #92400e; }
+  table.spec { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  table.spec th, table.spec td { border-bottom: 1px solid #f3f4f6; padding: 8px 12px; text-align: left; vertical-align: middle; }
+  table.spec th { color: #6b7280; font-size: 11.5px; font-weight: 600; background: #fafafa; }
+  table.spec td.lbl { color: #6b7280; white-space: nowrap; }
+  /* ── 统一按钮规格 ── */
+  .b { display: inline-flex; align-items: center; gap: 5px; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap; border: none; text-decoration: none; }
+  .md { padding: 7px 16px; font-size: 13px; }
+  .sm { padding: 4px 12px; font-size: 12.5px; }
+  .lg { padding: 11px 20px; font-size: 14px; }
+  .primary { background: #2563eb; color: #fff; }
+  .primary.hv { background: #1e40af; }
+  .primary.dis { background: #93c5fd; cursor: default; }
+  .pro { background: #b45309; color: #fff; font-weight: 700; }
+  .pro.hv { background: #92400e; }
+  .secondary { background: #fff; color: #2563eb; border: 1px solid #e5e7eb; }
+  .secondary.hv { border-color: #2563eb; background: #eff6ff; }
+  .secondary.ai { color: #4338ca; background: #eef2ff; border-color: #c7d2fe; }
+  .ghost { background: none; color: #2563eb; padding: 0; border-radius: 0; }
+  .ghost.gray { color: #9ca3af; }
+  .danger { background: #dc2626; color: #fff; }
+  .iconb { width: 30px; height: 30px; border-radius: 8px; background: #f3f4f6; color: #6b7280; border: none; font-size: 15px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+  .chip { border: 1px solid #e5e7eb; background: #fff; color: #6b7280; border-radius: 999px; padding: 4px 12px; font-size: 12.5px; cursor: pointer; white-space: nowrap; }
+  .chip.on { border-color: #2563eb; background: #2563eb; color: #fff; font-weight: 600; }
+  .row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 6px 0; }
+  .cap { font-size: 12px; color: #9ca3af; }
+  .old { font-size: 12px; color: #9ca3af; }
+  .old code { background: #f3f4f6; border-radius: 4px; padding: 1px 5px; font-size: 11px; }
+  .arr { color: #16a34a; font-weight: 700; padding: 0 6px; }
+</style>
+</head>
+<body>
+<h1>全站按钮统一 · 设计总表</h1>
+<div class="sub">
+  Frank 2026-07-19:「所有能点的按钮,都要统一设计」。现状:primitives 库已有 Button(#65 已批,primary/secondary/ghost/danger),但只管了新页面——存量散装内联按钮 <b>176 处 / 24 文件</b>。<br>
+  本次=①补全规格(新增 pro 型/lg 号/图标钮/AI 色调);②全站存量按钮按映射表换装到 primitives,此后「不许散装内联」硬执行。颜色语义:<b>蓝=普通行动 · 棕=付费 · 靛=AI 功能 · 红=危险 · 灰=弱操作</b>;非按钮的纯导航文字链(表格里的公司/地图链等)不在此列。
+</div>
+
+<!-- A 规格 -->
+<div class="sec">
+  <h2>A · 按钮规格(5 型 × 3 号 × 状态,全部出自 primitives.Button)</h2>
+  <div class="where">扩展现有 UI tokens,不发明新色;圆角统一 8(chip 999);号=sm 26px / md 32px / lg 42px 高</div>
+  <table class="spec">
+    <tr><th style="width:110px;">型</th><th>样例(md)</th><th>hover</th><th>sm / lg</th><th>用途</th></tr>
+    <tr>
+      <td class="lbl">primary 主行动</td>
+      <td><span class="b md primary">注册</span> <span class="b md primary">下一步 →</span></td>
+      <td><span class="b md primary hv">注册</span> <span class="cap">加深 #1e40af;禁用 <span class="b md primary dis">提交中…</span></span></td>
+      <td><span class="b sm primary">建档案</span> <span class="b lg primary">创建账户</span></td>
+      <td>每屏至多一个主行动:注册/表单提交/wizard 下一步/查看官方原帖</td>
+    </tr>
+    <tr>
+      <td class="lbl">pro 付费</td>
+      <td><span class="b md pro">⭐ 升级 Pro</span></td>
+      <td><span class="b md pro hv">⭐ 升级 Pro</span> <span class="cap">加深 #92400e</span></td>
+      <td><span class="b sm pro">⭐ 升级 Pro</span></td>
+      <td>一切升级入口(升级卡/compare 空态/薪资提示行/账户下拉);购买双钮(30/90 天)保持现状不并入</td>
+    </tr>
+    <tr>
+      <td class="lbl">secondary 次级</td>
+      <td><span class="b md secondary">更多筛选 ▾</span> <span class="b md secondary">字段 (10)</span></td>
+      <td><span class="b md secondary hv">更多筛选 ▾</span> <span class="cap">描边转蓝+浅蓝底</span></td>
+      <td><span class="b sm secondary">载入更多</span> <span class="b sm secondary ai">◎ AI 顾问</span></td>
+      <td>并列操作/工具钮;<b>ai 色调</b>=AI 功能专用(顾问钮,靛 #4338ca)</td>
+    </tr>
+    <tr>
+      <td class="lbl">ghost 文字</td>
+      <td><span class="b md ghost">登录</span> <span class="b md ghost">看完整功能对比 →</span></td>
+      <td><span class="cap">下划线出现</span></td>
+      <td><span class="b sm ghost gray">清除筛选</span> <span class="cap">gray=弱操作(清除/收起/退出登录)</span></td>
+      <td>行内轻操作,不抢主行动;危险性弱操作用 gray</td>
+    </tr>
+    <tr>
+      <td class="lbl">danger 危险</td>
+      <td><span class="b md danger">删除档案</span></td>
+      <td><span class="cap">加深 #b91c1c</span></td>
+      <td><span class="b sm danger">移除</span></td>
+      <td>不可逆操作;二次确认弹框里的确认钮</td>
+    </tr>
+    <tr>
+      <td class="lbl">IconBtn 图标钮</td>
+      <td><span class="iconb">×</span> <span class="iconb">⛶</span> <span class="iconb">☆</span></td>
+      <td><span class="cap">底色转 #e5e7eb</span></td>
+      <td><span class="cap">统一 30×30 圆角 8(现 iconBtnS 收编进 primitives)</span></td>
+      <td>关闭/全屏/收藏星/轮播箭头;弹框头部一律用它</td>
+    </tr>
+    <tr>
+      <td class="lbl">Chip 筛选药丸</td>
+      <td><span class="chip">安大略</span> <span class="chip on">BC</span></td>
+      <td><span class="cap">描边转蓝</span></td>
+      <td><span class="cap">已有 primitives.Chip,不变</span></td>
+      <td>筛选/多选(省 chips、wizard 选项、compare 省选)</td>
+    </tr>
+  </table>
+  <div class="note"><b>规则:</b>① 颜色只从 UI tokens 取,同屏主行动唯一;② 新按钮一律 primitives,内联样式按钮=review 打回;③ 纯导航链接(表格内容链/面包屑/footer 链)不算按钮,维持文字链。</div>
+</div>
+
+<!-- B 映射 -->
+<div class="sec">
+  <h2>B · 存量换装映射(高曝光位逐个点名;其余同型归并)</h2>
+  <div class="where">左=现状散装样式 → 右=统一后规格;行为零变化,纯视觉/代码收口</div>
+  <table class="spec">
+    <tr><th>位置</th><th>现状</th><th></th><th>换装后</th></tr>
+    <tr><td class="lbl">顶栏 注册</td><td class="old">内联蓝底 <code>radius 6 · 3px 10px</code></td><td class="arr">→</td><td><span class="b sm primary">注册</span> <span class="cap">(primary sm)</span></td></tr>
+    <tr><td class="lbl">顶栏 登录</td><td class="old">内联蓝字裸链</td><td class="arr">→</td><td><span class="b sm ghost">登录</span> <span class="cap">(ghost sm)</span></td></tr>
+    <tr><td class="lbl">升级 CTA 全部(402 卡/匹配限额卡/compare/账户下拉)</td><td class="old">蓝文字链「升级 Pro →」/下拉内联棕钮 <code>radius 7</code></td><td class="arr">→</td><td><span class="b sm pro">⭐ 升级 Pro</span> <span class="cap">(pro,⓪ 节已批的 UpgradeCta)</span></td></tr>
+    <tr><td class="lbl">筛选行 更多筛选/字段(10)</td><td class="old">内联 <code>ctrl</code> 灰描边 <code>h38 radius 6</code></td><td class="arr">→</td><td><span class="b md secondary">更多筛选 ▾</span> <span class="cap">(secondary md;含开合态描边转蓝)</span></td></tr>
+    <tr><td class="lbl">表底 载入更多</td><td class="old">内联灰底 <code>#f3f4f6</code></td><td class="arr">→</td><td><span class="b sm secondary">载入剩余 N 条</span></td></tr>
+    <tr><td class="lbl">JD 框 AI 顾问钮</td><td class="old">内联靛蓝描边(#96 刚加)</td><td class="arr">→</td><td><span class="b sm secondary ai">◎ AI 顾问</span> <span class="cap">(secondary ai——规格收编,样式即现状)</span></td></tr>
+    <tr><td class="lbl">弹框头 关闭/全屏</td><td class="old">iconBtnS(Modal.tsx)已统一</td><td class="arr">→</td><td><span class="iconb">×</span> <span class="cap">收编进 primitives,调用点零改</span></td></tr>
+    <tr><td class="lbl">登录/注册表单提交</td><td class="old">AuthForm 内联蓝大钮</td><td class="arr">→</td><td><span class="b lg primary">登录</span> <span class="cap">(primary lg 通栏)</span></td></tr>
+    <tr><td class="lbl">wizard 上一步/下一步</td><td class="old">内联蓝钮+灰钮</td><td class="arr">→</td><td><span class="b md ghost gray">上一步</span> <span class="b md primary">下一步 →</span></td></tr>
+    <tr><td class="lbl">账户页 保存/退出/删除</td><td class="old">内联蓝钮/灰字/红字各自为政</td><td class="arr">→</td><td><span class="b md primary">保存</span> <span class="b md ghost gray">退出登录</span> <span class="b sm danger">删除</span></td></tr>
+    <tr><td class="lbl">榜单/统计/资料库页 工具钮</td><td class="old">各 View 内联描边钮/chips</td><td class="arr">→</td><td><span class="b sm secondary">导出</span> <span class="chip on">ON</span> <span class="cap">(secondary/Chip 归并)</span></td></tr>
+    <tr><td class="lbl">建档案 CTA(banner 右槽/匹配列)</td><td class="old">内联蓝钮/蓝链混用</td><td class="arr">→</td><td><span class="b sm primary">◎ 建档案精确匹配</span></td></tr>
+  </table>
+</div>
+
+<!-- C 实施 -->
+<div class="sec">
+  <h2>C · 实施策略(三批,每批生产复验)</h2>
+  <table class="spec">
+    <tr><th style="width:90px;">批</th><th>范围</th><th>说明</th></tr>
+    <tr><td class="lbl">P1 规格+高曝光</td><td>primitives 扩展(pro/lg/IconBtn/ai 色调)+ 顶栏 + jobs 页(筛选行/载入更多/升级 CTA/JD·顾问弹框)</td><td>一次 commit;jobs 页=九成流量,先统一最可见的</td></tr>
+    <tr><td class="lbl">P2 表单+账户</td><td>AuthForm/wizard/账户页/升级·定价弹框</td><td>表单钮涉及提交态(busy/disabled),单独批稳妥</td></tr>
+    <tr><td class="lbl">P3 长尾页</td><td>news/stats/rankings/pathways/employers/timeline 各 View</td><td>同型归并,顺手消掉每页自造的描边钮</td></tr>
+  </table>
+  <div class="note"><b>红线:</b>行为/文案/布局零变化,只换样式来源;每批换完 playwright 生产冒烟(点击行为回归);价值时刻显性化 6 点(已另表)与本表 P1 同 commit 落地,避免同文件两轮改。</div>
+</div>
+
+</body>
+</html>

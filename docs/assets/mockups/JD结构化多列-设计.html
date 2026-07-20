@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>JD 结构化多列 + 本地模型清洗 · 设计</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; background: #f6f7f9; color: #1f2937; padding: 28px 32px 60px; }
+  h1 { font-size: 21px; margin-bottom: 4px; }
+  .sub { font-size: 12.5px; color: #6b7280; margin-bottom: 24px; line-height: 1.7; }
+  .sec { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 18px 22px; margin-bottom: 22px; }
+  .sec h2 { font-size: 15.5px; margin-bottom: 3px; }
+  .sec .where { font-size: 12px; color: #9ca3af; margin-bottom: 14px; }
+  .note { font-size: 12px; color: #b45309; margin-top: 10px; line-height: 1.7; }
+  .note b { color: #92400e; }
+  .cols { display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap; }
+  .col { flex: 1; min-width: 380px; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 2px 10px; margin-bottom: 8px; }
+  .tag.now { background: #f3f4f6; color: #6b7280; }
+  .tag.new { background: #dcfce7; color: #166534; }
+  .frame { border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px 16px; background: #fcfcfd; }
+  .facts { font-size: 13.5px; line-height: 2; }
+  .facts .k { color: #9ca3af; display: inline-block; min-width: 88px; }
+  table.spec { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  table.spec th, table.spec td { border-bottom: 1px solid #f3f4f6; padding: 8px 12px; text-align: left; vertical-align: top; }
+  table.spec th { color: #6b7280; font-size: 11.5px; font-weight: 600; background: #fafafa; }
+  table.spec td.lbl { color: #6b7280; white-space: nowrap; }
+</style>
+</head>
+<body>
+<h1>JD 结构化多列 + 本地模型清洗 · 设计</h1>
+<div class="sub">Frank 2026-07-19:①职位类型有的岗不显示(实测缺 622/30183=2.1%,聚合板详情页无标准区块+ATS);②JD 摘录可发本地大模型重排;③信息拆多列别挤一列。原则:规则解析为主(免费、可核验),<b>本地 qwen3.6 只兜规则的死角</b>;LLM 只抽取/重排,不许增删改事实;置信不足一律留空。</div>
+
+<!-- J1 多列 -->
+<div class="sec">
+  <h2>J1 · 信息拆多列(弹框事实块 + 表格列)</h2>
+  <div class="where">现状「职位类型:全职 · 合同」把工时+雇佣期挤一行;设计=一事一行/一列,零数据新增即可做</div>
+  <div class="cols">
+    <div class="col">
+      <span class="tag now">现状</span>
+      <div class="frame facts">
+        <div><span class="k">职位类型</span> 全职 · 合同</div>
+        <div style="color:#d1d5db; font-size:12px;">(工时和雇佣期两件事挤一行;缺失岗整行消失,用户不知道为什么)</div>
+      </div>
+    </div>
+    <div class="col">
+      <span class="tag new">设计</span>
+      <div class="frame facts">
+        <div><span class="k">工时</span> 全职</div>
+        <div><span class="k">雇佣期</span> 合同(term)</div>
+        <div><span class="k">班次</span> 日班 · 周末需值</div>
+        <div><span class="k">语言要求</span> 英语</div>
+        <div><span class="k">学历要求</span> 高中或同等</div>
+        <div><span class="k">证书/执照</span> Class 1 驾照</div>
+        <div style="color:#9ca3af; font-size:12px;">未标注 → 显示「原帖未标注」灰字(不再整行消失)</div>
+      </div>
+      <div class="note"><b>表格侧:</b>「职位类型」列拆「工时」「雇佣期」两列(默认藏雇佣期,字段面板可开);班次/语言要求为新列(P3 数据到位后挂)。E6-06 职位类型筛选=工时+雇佣期两组 chip。</div>
+    </div>
+  </div>
+</div>
+
+<!-- J2 懒生成 -->
+<div class="sec">
+  <h2>J2 · JD 整理版 · 懒生成(Frank 拍板:不批量预处理,点到哪个处理哪个,存库复用)</h2>
+  <div class="where">模型走朋友公网 API(ngrok /api/chat,X-API-Key)——news 懒翻译同款架构(TRANSLATE_API_* env 复用),生产端实时调,零 API 账单</div>
+  <table class="spec">
+    <tr><th style="width:160px;">环节</th><th>行为</th></tr>
+    <tr><td class="lbl">首次打开某岗 JD</td><td>先立即显示原文 + 顶部细条「AI 整理中…」→ 服务端拿 description 调 /api/chat(五节模板 prompt)→ 校验过 → <b>存 jobs.jd_formatted(+时间戳/模型标)</b> → 前端切整理版</td></tr>
+    <tr><td class="lbl">后续任何人再开</td><td>直接读库,零等待零调用——被看过的岗永久受益,没人看的岗永不浪费算力</td></tr>
+    <tr><td class="lbl">顺手补字段</td><td>同一次调用捎带抽 {工时, 雇佣期},岗位缺这俩字段的就地补上(622 缺失岗的兜底也惰性化,不单跑批)</td></tr>
+    <tr><td class="lbl">降级</td><td>ngrok 掉线/超 10s/校验不过 → 静默保持原文,不报错不重试轰炸;同岗并发去重(in-flight 锁)</td></tr>
+    <tr><td class="lbl">红线</td><td>①prompt=只搬运不发挥,每条能在原文找到出处,缺的节写「原帖未提及」;②轻校验:节头齐全+不得出现原文没有的数字/邮箱/URL;③原文永不覆盖,整理版存新列;④界面挂「AI 整理 · 原文在下」小注</td></tr>
+  </table>
+  <div class="note"><b>批量只剩一个场景:</b>要进「表格列/筛选」的字段(班次/语言)必须全量才有意义——后置,等 07-22 观察窗数据再定。<b>与已有约定合拍:</b>「公网链接到手后线上按需实时,不提前批量」(翻译已这么跑)。</div>
+</div>
+
+<!-- J3 五节整理版 -->
+<div class="sec">
+  <h2>J3 · 整理版展示:统一五节在上,原文折叠在下</h2>
+  <div class="where">回答「有必要原汁原味吗」:不必唯一——整理版管好读,原文管可核验(核验链+republish 合规不丢)</div>
+  <div class="cols">
+    <div class="col">
+      <span class="tag now">现状(原汁原味,千帖千面)</span>
+      <div class="frame" style="font-size:12.5px; color:#4b5563; line-height:1.7;">
+        <div>*Job Overview* We?re hiring an experienced Landscaping Supervisor to lead a 3 or 4-person crew…</div>
+        <div>Assign tasks, coach crew members, and maintain a positive, accountable jobsite culture Run quick daily…</div>
+        <div>Job Type: Seasonal Pay: $25.00-$30.00 per hour Work Location: In person</div>
+        <div style="color:#d1d5db; font-size:12px; margin-top:6px;">(乱帖读着费劲;规整帖节次序也各不同,扫读要重新找位置)</div>
+      </div>
+    </div>
+    <div class="col">
+      <span class="tag new">设计(AI 整理版默认,五节固定)</span>
+      <div class="frame" style="font-size:12.5px; line-height:1.75;">
+        <div style="font-size:11px; color:#9ca3af; margin-bottom:8px;">✨ AI 整理(<a style="color:#2563eb;">看原文 ▾</a>)</div>
+        <div style="font-weight:700; color:#111827;">这活干什么</div>
+        <div style="padding-left:14px; margin-bottom:8px;">带 3-4 人园艺班组现场作业,分派任务、把控质量进度,对客沟通,用 Jobber 记工时</div>
+        <div style="font-weight:700; color:#111827;">硬性要求</div>
+        <ul style="margin:0 0 8px; padding-left:30px;">
+          <li>5 年园艺经验,其中 2 年带班</li>
+          <li>会用割草机/修边机等维护设备</li>
+          <li>有效驾照,驾驶记录良好</li>
+          <li>能举 50 lbs,适应户外作业</li>
+        </ul>
+        <div style="font-weight:700; color:#111827;">薪资福利</div>
+        <ul style="margin:0 0 8px; padding-left:30px;">
+          <li>$25–30/hr,按经验定</li>
+          <li>可成长为大班组长/field management</li>
+        </ul>
+        <div style="font-weight:700; color:#111827;">工时地点</div>
+        <ul style="margin:0 0 8px; padding-left:30px;">
+          <li>季节性(Seasonal)</li>
+          <li>现场工作(In person)</li>
+        </ul>
+        <div style="font-weight:700; color:#111827;">怎么投</div>
+        <div style="padding-left:14px;">简历+经验概要,注明带班年限、Jobber 经验、能否拖挂</div>
+        <div style="border-top:1px dashed #e5e7eb; margin-top:10px; padding-top:6px; color:#9ca3af; font-size:11.5px;">原文(点开) 来源:jobbank.gc.ca/…/49916441</div>
+      </div>
+      <div class="note"><b>版式规矩(Frank:别用「·」堆一行):</b>节头独立一行加粗;节内一条一行(要点用列表圆点,单句用缩进段落),不用「·」串联。<b>缺节不脑补:</b>原帖没提的节显示「原帖未提及」灰字;三语=先只存英文+界面懒翻译复用,避免三倍调用(实施时定)。</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

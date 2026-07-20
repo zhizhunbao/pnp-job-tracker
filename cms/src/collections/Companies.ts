@@ -27,5 +27,10 @@ export const Companies: CollectionConfig = {
     { name: 'lmiaLmias', type: 'number', admin: { description: '获批 LMIA 份数(近两年)' } },
     { name: 'lmiaLastQuarter', type: 'text', admin: { description: '最近获批季度,如 2025Q4' } },
     { name: 'lmiaStreams', type: 'text', admin: { description: '股别分布(展示串),如 High Wage 44 · Low Wage 12' } },
+    // K 公司懒探索(2026-07-19):首开公司弹框时 AI 联网调查一次,存这四列永久复用;与 directory 自带 website/description 分开存
+    { name: 'aiBrief', type: 'textarea', admin: { description: 'AI 检索整理的公司简介(懒生成)' } },
+    { name: 'aiWebsite', type: 'text', admin: { description: 'AI 检索到的官网(非库内 directory 原有,前端标注区分)' } },
+    { name: 'aiSources', type: 'textarea', admin: { description: '检索出处 URL 列表(JSON 数组串)' } },
+    { name: 'aiFetched', type: 'date', admin: { description: 'AI 调查时间' } },
   ],
 }

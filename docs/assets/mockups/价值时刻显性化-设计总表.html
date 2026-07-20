@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>价值时刻显性化 · 设计总表(5 点)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; background: #f6f7f9; color: #1f2937; padding: 28px 32px 60px; }
+  h1 { font-size: 21px; margin-bottom: 4px; }
+  .sub { font-size: 12.5px; color: #6b7280; margin-bottom: 26px; }
+  .sec { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 18px 22px; margin-bottom: 22px; }
+  .sec h2 { font-size: 15.5px; margin-bottom: 2px; }
+  .sec .where { font-size: 12px; color: #9ca3af; margin-bottom: 14px; }
+  .cols { display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap; }
+  .col { flex: 1; min-width: 380px; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 2px 10px; margin-bottom: 8px; }
+  .tag.now { background: #f3f4f6; color: #6b7280; }
+  .tag.new { background: #dcfce7; color: #166534; }
+  .frame { border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px 16px; background: #fcfcfd; }
+  .note { font-size: 12px; color: #b45309; margin-top: 8px; line-height: 1.6; }
+  .note b { color: #92400e; }
+  /* 站内元素仿真 */
+  .upsell { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 10px 14px; font-size: 13.5px; }
+  .upsell .ti { font-weight: 600; color: #92400e; }
+  .upsell .rs { color: #78716c; margin-left: 8px; }
+  .upsell .cta { color: #2563eb; font-weight: 600; margin-left: 10px; cursor: pointer; }
+  /* 统一升级钮(母版=账户下拉实心钮 #63):⭐+实心 #b45309 白字 700 */
+  .btnpro { display: inline-block; background: #b45309; color: #fff; border-radius: 8px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .btnpro.md { padding: 7px 16px; font-size: 13px; }
+  .btnpro.sm { padding: 4px 10px; font-size: 12px; }
+  .btnpro.hover { background: #92400e; }
+  .lock { color: #b45309; font-size: 15px; }
+  .tip { display: inline-block; background: #1f2937; color: #fff; font-size: 12px; border-radius: 6px; padding: 5px 10px; margin-left: 10px; }
+  .modal { border: 1px solid #e5e7eb; border-radius: 14px; box-shadow: 0 8px 30px rgba(0,0,0,.10); padding: 18px 20px; background: #fff; max-width: 400px; }
+  .modal .mt { font-size: 15.5px; font-weight: 700; color: #92400e; }
+  .modal .reason { font-size: 13px; color: #78716c; margin-top: 8px; line-height: 1.6; }
+  .modal .btns { display: flex; gap: 10px; margin-top: 16px; }
+  .modal .btn { flex: 1; text-align: center; padding: 11px 0; font-size: 13.5px; font-weight: 600; border-radius: 9px; color: #fff; }
+  .b30 { background: #2563eb; } .b90 { background: #b45309; position: relative; }
+  .b90 .save { position: absolute; top: -9px; right: 8px; background: #f59e0b; border-radius: 999px; padding: 1px 8px; font-size: 10.5px; }
+  .btn small { display: block; font-size: 10.5px; font-weight: 400; opacity: .85; margin-top: 2px; }
+  .facts { font-size: 13.5px; line-height: 1.8; }
+  .facts .k { color: #9ca3af; }
+  .prohint { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 8px 12px; font-size: 12.5px; color: #78350f; margin-top: 10px; }
+  .prohint a { color: #2563eb; font-weight: 600; text-decoration: none; white-space: nowrap; }
+  table.cmp { width: 100%; border-collapse: collapse; font-size: 12.5px; background: #fff; }
+  table.cmp th, table.cmp td { border-bottom: 1px solid #f3f4f6; padding: 7px 12px; text-align: left; }
+  table.cmp th { color: #374151; }
+  table.cmp td.m { color: #9ca3af; white-space: nowrap; }
+  .blur { filter: blur(4px); user-select: none; }
+  .demo-wrap { position: relative; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; }
+  .demo-badge { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+  .demo-badge span { background: rgba(255,255,255,.92); border: 1px solid #fde68a; color: #92400e; font-size: 13px; font-weight: 600; border-radius: 999px; padding: 8px 18px; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+  ul.val { font-size: 13px; color: #374151; line-height: 2; margin: 10px 0 12px 18px; }
+  .arrow { color: #16a34a; font-weight: 700; }
+  .i18nrow { font-size: 12px; color: #6b7280; line-height: 1.9; }
+  .i18nrow code { background: #f3f4f6; border-radius: 4px; padding: 1px 6px; font-size: 11.5px; }
+</style>
+</head>
+<body>
+<h1>价值时刻显性化 · 设计总表(5 点)</h1>
+<div class="sub">原则(免费付费分层设计 §4.2):不加弹窗轰炸,只在<b>已有</b>弹框/锁位/空态里补一句「这里 Pro 能帮你什么」。数字全部真实(额度:匹配 10 岗/日 · 顾问 8 次/日)。三语同步改。</div>
+
+<!-- ⓪ 升级钮规范 -->
+<div class="sec">
+  <h2>⓪ 「升级 Pro」统一按钮规范(Frank:这个按钮需要单独设计)</h2>
+  <div class="where">母版=账户下拉实心升级钮(#63 已批):⭐ + 实心 #b45309 · 白字 700 · 圆角 8;全站升级 CTA 从裸文字链统一换装</div>
+  <div class="cols">
+    <div class="col">
+      <span class="tag now">现状(各处裸文字链,无按钮感)</span>
+      <div class="frame" style="font-size:13.5px; line-height:2.6;">
+        <div><span style="color:#2563eb; font-weight:600;">升级 Pro →</span> <span style="color:#9ca3af; font-size:12px;">(402 升级卡/匹配限额卡/compare 空态,蓝文字链)</span></div>
+        <div><span style="background:#b45309; color:#fff; border-radius:7px; padding:3px 12px; font-size:12.5px; font-weight:700;">⭐ 升级 Pro →</span> <span style="color:#9ca3af; font-size:12px;">(只有账户下拉是实心钮——体系不统一)</span></div>
+      </div>
+    </div>
+    <div class="col">
+      <span class="tag new">设计(两个规格,一处组件)</span>
+      <div class="frame" style="font-size:13px;">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:10px;">
+          <span class="btnpro md">⭐ 升级 Pro</span><span style="color:#6b7280;">md·卡片/空态用(升级卡、compare、匹配限额卡)</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:10px;">
+          <span class="btnpro sm">⭐ 升级 Pro</span><span style="color:#6b7280;">sm·行内用(薪资提示行等窄位)</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:14px;">
+          <span class="btnpro md hover">⭐ 升级 Pro</span><span style="color:#6b7280;">hover 加深 #92400e;点击=开升级弹框(已登录)/注册框(未登录),行为不变</span>
+        </div>
+      </div>
+      <div class="note"><b>改法:</b>抽一个 <code>UpgradeCta</code> 小组件(size: md/sm),UpgradeCard/compare 空态/薪资提示行全部换装;账户下拉钮改用同组件(样式即现状,零视觉变化)。定价页/升级弹框里的两颗购买大钮(蓝/棕)是「买」不是「升级入口」,不动。</div>
+    </div>
+  </div>
+</div>
+
+<!-- ① 匹配锁 FOMO -->
+<div class="sec">
+  <h2>① 匹配列锁 · 点开升级框带 FOMO 数字</h2>
+  <div class="where">职位板 · 免费用户匹配额度外的锁 → 点击开的 UpgradeModal</div>
+  <div class="cols">
+    <div class="col">
+      <span class="tag now">现状</span>
+      <div class="frame">
+        <div style="font-size:13px; margin-bottom:10px;"><span class="lock">🔒</span><span class="tip">免费版每日仅前 10 岗可见匹配</span></div>
+        <div class="modal">
+          <div class="mt">⭐ 升级 Pro</div>
+          <div class="reason" style="color:#d1d5db;">(无说明行——用户不知道自己错过了多少)</div>
+          <div class="btns"><div class="btn b30">30 天 · $19.9<small>≈ $0.66/天</small></div><div class="btn b90"><span class="save">更划算 · 省 32%</span>90 天 · $39.9<small>≈ $0.44/天</small></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <span class="tag new">设计</span>
+      <div class="frame">
+        <div style="font-size:13px; margin-bottom:10px;"><span class="lock">🔒</span><span class="tip">你今日共 268 个高匹配岗,免费版仅显示前 10 个</span></div>
+        <div class="modal">
+          <div class="mt">⭐ 升级 Pro</div>
+          <div class="reason"><b style="color:#92400e;">你今日共 268 个高匹配岗</b>,免费版仅显示前 10 个——其余 258 个已被锁定。</div>
+          <div class="btns"><div class="btn b30">30 天 · $19.9<small>≈ $0.66/天</small></div><div class="btn b90"><span class="save">更划算 · 省 32%</span>90 天 · $39.9<small>≈ $0.44/天</small></div></div>
+        </div>
+      </div>
+      <div class="note"><b>改法:</b>锁点击 setUpsell('match'),UpgradeModal 传 reason=<code>up.matchN</code>(全量计数 matchTotals 前端已有,复用现有 i18n 键);锁 hover 的 title 同步带数字。计数缺失(普通视图)时回退现文案。</div>
+    </div>
+  </div>
+</div>
+
+<!-- ② 薪资弹窗 Pro 提示 -->
+<div class="sec">
+  <h2>② 薪资弹框 · 补一行「Pro 显示 vs 官方中位」</h2>
+  <div class="where">职位板 · 点薪资字段开的顾问弹框(事实块底部)· 仅免费用户可见</div>
+  <div class="cols">
+    <div class="col">
+      <span class="tag now">现状</span>
+      <div class="frame">
+        <div class="facts">
+          <div><span class="k">薪资</span> $18.00/hr</div>
+          <div><span class="k">折算年薪</span> $37K/yr</div>
+          <div style="color:#9ca3af; font-size:12px;">来源:Job Bank · 帖面原文</div>
+        </div>
+        <div style="font-size:12px; color:#d1d5db; margin-top:10px;">(到此为止——免费用户判断不了这薪资算高算低)</div>
+      </div>
+    </div>
+    <div class="col">
+      <span class="tag new">设计</span>
+      <div class="frame">
+        <div class="facts">
+          <div><span class="k">薪资</span> $18.00/hr</div>
+          <div><span class="k">折算年薪</span> $37K/yr</div>
+          <div style="color:#9ca3af; font-size:12px;">来源:Job Bank · 帖面原文</div>
+        </div>
+        <div class="prohint">⭐ Pro 额外显示:此岗 vs 同职业<b>官方工资中位数</b>(高/低 ±%)——一眼判断 offer 是否偏低。 <span class="btnpro sm">⭐ 升级 Pro</span></div>
+      </div>
+      <div class="note"><b>改法:</b>AdvisorModal 薪资类字段(salary/salaryYr)事实块底部,<code>!plan.isPro</code> 时渲染一行琥珀提示,点击开 UpgradeModal。不展示具体 %(数据服务端已剥离,不泄露),只说清 Pro 能看什么。</div>
+    </div>
+  </div>
+</div>
+
+<!-- ③ lockTip 具体化 -->
+<div class="sec">
+  <h2>③ 锁列 hover 提示 · 从「Pro 专属列」到「说清这列是什么」</h2>
+  <div class="where">职位板 · 时薪中位/中位年薪/vs 中位 三列的锁 hover title</div>
+  <div class="cols">
+    <div class="col">
+      <span class="tag now">现状(三列同一句)</span>
+      <div class="frame" style="font-size:13px; line-height:2.4;">
+        <div><span class="lock">🔒</span> 时薪中位 <span class="tip">Pro 专属列 · 点击了解</span></div>
+        <div><span class="lock">🔒</span> 中位年薪 <span class="tip">Pro 专属列 · 点击了解</span></div>
+        <div><span class="lock">🔒</span> vs 中位 <span class="tip">Pro 专属列 · 点击了解</span></div>
+      </div>
+    </div>
+    <div class="col">
+      <span class="tag new">设计(按列说人话)</span>
+      <div class="frame" style="font-size:13px; line-height:2.4;">
+        <div><span class="lock">🔒</span> 时薪中位 <span class="tip">同职业官方时薪中位数 · Pro 解锁</span></div>
+        <div><span class="lock">🔒</span> 中位年薪 <span class="tip">同职业官方年薪中位数 · Pro 解锁</span></div>
+        <div><span class="lock">🔒</span> vs 中位 <span class="tip">此岗薪资高/低于官方中位多少(±%)· Pro 解锁</span></div>
+      </div>
+      <div class="note"><b>改法:</b><code>up.lockTip</code> 一键拆三键(<code>up.lockTip.wageMedHr/.wageMedYr/.vsMedian</code>),三语各写;锁 onClick 行为不变。用户 hover 就知道锁着的是什么、值不值。</div>
+    </div>
+  </div>
+</div>
+
+<!-- ④ 顾问 402 文案 -->
+<div class="sec">
+  <h2>④ 顾问额度用尽 · 402 升级卡文案审</h2>
+  <div class="where">AI 顾问弹框 · 免费 8 次/日用完时</div>
+  <div class="cols">
+    <div class="col">
+      <span class="tag now">现状</span>
+      <div class="frame">
+        <div class="upsell"><span class="ti">⭐ 升级 Pro 解锁</span><span class="rs">AI 顾问免费试用今日已用完</span><span class="cta">升级 Pro →</span></div>
+        <div style="font-size:12px; color:#d1d5db; margin-top:8px;">(只说「用完了」——没说明天恢复,也没说 Pro 到底多多少)</div>
+      </div>
+    </div>
+    <div class="col">
+      <span class="tag new">设计</span>
+      <div class="frame">
+        <div class="upsell" style="display:flex; align-items:center; flex-wrap:wrap; gap:8px;"><span><span class="ti">⭐ 升级 Pro 解锁</span><span class="rs">今日 8 次免费解读已用完,明天自动恢复。Pro 不限次数——每个岗、每个字段都能随时问。</span></span><span class="btnpro sm">⭐ 升级 Pro</span></div>
+      </div>
+      <div class="note"><b>改法:</b>只改 <code>up.advisor</code> 文案(次数用 plan 常量插值,不写死);诚实红线:免费明天恢复照实说——用户不升也留下「明天再来」的回访钩。<code>up.jobtext</code>(JD 摘录 20 次/日)同式微调。</div>
+    </div>
+  </div>
+</div>
+
+<!-- ⑤ compare 空态 -->
+<div class="sec">
+  <h2>⑤ 跨省对比 · 非 Pro 空态从「一条横幅」到「示例预览」</h2>
+  <div class="where">/stats/compare · 非 Pro 访问(数据服务端不下发,预览用标注「示例」的静态演示值)</div>
+  <div class="cols">
+    <div class="col">
+      <span class="tag now">现状</span>
+      <div class="frame">
+        <div style="font-size:17px; font-weight:700; margin-bottom:10px;">⚖ 跨省对比</div>
+        <div class="upsell"><span class="ti">⭐ 升级 Pro 解锁</span><span class="cta">升级 Pro →</span></div>
+        <div style="font-size:12px; color:#d1d5db; margin-top:8px;">(页面到此为止——用户不知道对比长什么样、能比什么)</div>
+      </div>
+    </div>
+    <div class="col">
+      <span class="tag new">设计</span>
+      <div class="frame">
+        <div style="font-size:17px; font-weight:700; margin-bottom:6px;">⚖ 跨省对比</div>
+        <ul class="val">
+          <li>2–4 省并排:在招岗位 · 近 7 天新增 · <b>官方中位薪资</b></li>
+          <li>各省<b>具名紧缺通道</b>命中岗数(省点名招的信号)</li>
+          <li>已建档自动按<b>你的 NOC</b> 预选行业对比</li>
+        </ul>
+        <div class="demo-wrap">
+          <table class="cmp">
+            <tr><th></th><th>安大略</th><th>BC</th><th>阿尔伯塔</th></tr>
+            <tr><td class="m">在招职位</td><td class="blur">9,842</td><td class="blur">6,157</td><td class="blur">4,910</td></tr>
+            <tr><td class="m">官方中位年薪</td><td class="blur">$62K</td><td class="blur">$60K</td><td class="blur">$65K</td></tr>
+            <tr><td class="m">具名通道岗</td><td class="blur">214</td><td class="blur">187</td><td class="blur">96</td></tr>
+          </table>
+          <div class="demo-badge"><span style="display:flex; align-items:center; gap:10px;">示例数据 <span class="btnpro sm">⭐ 升级 Pro 看真实对比</span></span></div>
+        </div>
+      </div>
+      <div class="note"><b>改法:</b>非 Pro 分支加三行价值点 + 静态示例表(模糊+「示例数据」角标,硬编码演示值<b>不回传真数据</b>,服务端 gate 原样);点击整表/角标开定价弹窗。三语。</div>
+    </div>
+  </div>
+</div>
+
+<div class="sub" style="margin-top:4px;">共同约束:零新弹窗、零新接口、纯前端+i18n 改动;Pro 数据剥离逻辑不动;改完生产 playwright 复验 5 点。</div>
+</body>
+</html>

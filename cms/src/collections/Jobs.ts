@@ -56,6 +56,9 @@ export const Jobs: CollectionConfig = {
     // 雇佣形态 + 入职要求(E6-06/E6-07A):Job Bank 详情页结构化标注,05b 规则解析;无标注/ATS=空(宁缺)
     { name: 'employmentTerm', type: 'text', admin: { description: '雇佣期 permanent/term/casual/seasonal;空=未标注' } },
     { name: 'employmentHours', type: 'text', admin: { description: '工时 full/part;空=未标注' } },
+    // J2 JD 整理版懒生成(2026-07-19):首开时 AI 五节整理一次,存列永久复用;原文 description 永不覆盖
+    { name: 'jdFormatted', type: 'textarea', admin: { description: 'AI 五节整理版([ROLE]/[REQS]/[PAY]/[HOURS]/[APPLY] 标记文本,懒生成)' } },
+    { name: 'jdFormattedAt', type: 'date', admin: { description: '整理时间' } },
     { name: 'certificates', type: 'json', admin: { description: '证书/执照要求 string[](详情页 Certificates 区原文,标准化词表)' } },
     { name: 'education', type: 'text', admin: { description: '学历要求(详情页 Education 区原文,分号连接)' } },
     { name: 'firstSeen', type: 'date' },

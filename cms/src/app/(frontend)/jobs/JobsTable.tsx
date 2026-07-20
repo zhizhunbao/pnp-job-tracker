@@ -380,7 +380,7 @@ const sourceUrl = (applyUrl: string): string => {
 }
 
 // ── 列配置(可勾选;职位列始终显示) ──────────────────────────────
-type ColKey = 'score' | 'match' | 'pnp' | 'ee' | 'aip' | 'lmia' | 'eligibility' | 'broad' | 'mid' | 'fine' | 'teer' | 'title' | 'company' | 'noc' | 'accessibility' | 'salary' | 'salaryYr' | 'wageMedHr' | 'wageMedYr' | 'vsMedian' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'lastSeen' | 'closedAt' | 'actions'
+type ColKey = 'score' | 'match' | 'pnp' | 'ee' | 'aip' | 'lmia' | 'eligibility' | 'broad' | 'mid' | 'fine' | 'teer' | 'empHours' | 'empTerm' | 'title' | 'company' | 'noc' | 'accessibility' | 'salary' | 'salaryYr' | 'wageMedHr' | 'wageMedYr' | 'vsMedian' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'lastSeen' | 'closedAt' | 'actions'
 // 默认显示 10 列(发布时间·大分类·公司·职位·省·市·薪资·年薪·vs中位·操作);其余用户自选。
 // 布局:表格永远满宽不横向滚动,列按内容自适应,内容多行换行(不省略)——见 <table>/<td> 注释。
 const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean }[] = [
@@ -389,6 +389,9 @@ const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean 
   { key: 'mid', label: '中分类', default: false },
   { key: 'fine', label: '小分类', default: false },
   { key: 'teer', label: 'TEER', default: false },
+  // J1(2026-07-19 Frank):职位类型拆「工时」「雇佣期」两列(禁「·」杂糅),默认藏,字段面板可开
+  { key: 'empHours', label: '工时', default: false },
+  { key: 'empTerm', label: '雇佣期', default: false },
   { key: 'company', label: '公司', default: true },
   { key: 'title', label: '职位', default: true, always: true },
   { key: 'match', label: '与我的匹配', default: false },  // E5-05:主表不再显示(独立「我的匹配」视图专属列,列选择器也不出)
@@ -422,7 +425,7 @@ const DEFAULT_COLS = COLUMNS.filter((c) => c.default).map((c) => c.key)
 // 原子值列:内容单行不换行(日期/金额/百分比/分级等短值,断行会很丑)。其余文本列(职位/公司/地点等)允许多行,
 // 以便表格压进容器宽度不横向滚动。表头一律不换行(=该列最小宽度)。
 // salary 不在此列:薪资原文可为长文本(如 "40% commission per sale"),要像文本列一样换行;年薪/中位数等计算列恒短值。
-const NOWRAP_COLS = new Set<ColKey>(['datePosted', 'lastSeen', 'closedAt', 'salaryYr', 'wageMedHr', 'wageMedYr', 'vsMedian', 'teer', 'score', 'status', 'direct', 'aip', 'lmia', 'eligibility', 'match'])
+const NOWRAP_COLS = new Set<ColKey>(['datePosted', 'lastSeen', 'closedAt', 'salaryYr', 'wageMedHr', 'wageMedYr', 'vsMedian', 'teer', 'empHours', 'empTerm', 'score', 'status', 'direct', 'aip', 'lmia', 'eligibility', 'match'])
 const PREF_KEY = 'jobs.visibleCols.v9'  // v9:新增「与我的匹配」默认列(E5-00),bump 版本让新默认生效
 const writeColsCookie = (keys: string[]) => {
   try { document.cookie = `${COLS_COOKIE}=${encodeURIComponent(JSON.stringify(keys))}; path=/; max-age=31536000; SameSite=Lax` } catch { /* ignore */ }
@@ -1137,6 +1140,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       else if (k === 'mid') { node = (!j.mid || j.mid === '未分类') ? t('cell.uncat') : catLabel(j.mid); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'fine') { node = (j.mid === '未分类' || !j.mid) ? '—' : catLabel(j.fine); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'teer') { node = j.teer == null ? '—' : `TEER ${j.teer}`; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+                      else if (k === 'empHours') { node = j.employmentHours ? t('emp.' + j.employmentHours) : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.employmentHours ? '#4b5563' : '#d1d5db', fontSize: 12.5 }) }
+                      else if (k === 'empTerm') { node = j.employmentTerm ? t('term.' + j.employmentTerm) : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.employmentTerm ? '#4b5563' : '#d1d5db', fontSize: 12.5 }) }
                       else if (k === 'title') { href = j.applyUrl || null; node = j.title; Object.assign(extra, wrapCell(360)) }
                       else if (k === 'company') { href = j.officialUrl || null; node = j.company; Object.assign(extra, wrapCell(190)) }
                       else if (k === 'noc') node = j.noc || '—'
@@ -1570,6 +1575,72 @@ function JdTextView({ text, max = 4000 }: { text: string; max?: number }) {
     </div>
   )
 }
+// J3 五节整理版渲染(2026-07-19 Frank 批):[ROLE]/[REQS]/[PAY]/[WORKHOURS]/[APPLY] 标记文本 → 节头加粗独立行,
+// 节内一条一行(W 规范:禁「·」「/」杂糅);(not stated) → 「原帖未提及」灰字,缺节不脑补
+function JdFormattedView({ text, t }: { text: string; t: TFn }) {
+  const SECS: [string, string][] = [['ROLE', 'act.f.role'], ['REQS', 'act.f.reqs'], ['PAY', 'act.f.pay'], ['WORKHOURS', 'act.f.hours'], ['APPLY', 'act.f.apply']]
+  const parts = text.split(/\[(ROLE|REQS|PAY|WORKHOURS|APPLY)\]/)
+  const secs: Record<string, string> = {}
+  for (let i = 1; i + 1 < parts.length + 1; i += 2) secs[parts[i]] = (parts[i + 1] || '').trim()
+  return (
+    <div style={{ fontSize: 13, lineHeight: 1.75, color: '#374151' }}>
+      {SECS.map(([m, key]) => {
+        const body = (secs[m] || '').trim()
+        const none = !body || /^\(not stated\)$/i.test(body)
+        const lines = body.split('\n').map((s) => s.trim()).filter(Boolean)
+        const hasBullets = lines.some((l) => l.startsWith('- '))
+        return (
+          <div key={m} style={{ marginBottom: 8 }}>
+            <div style={{ fontWeight: 700, color: '#111827' }}>{t(key)}</div>
+            {none ? <div style={{ paddingLeft: 14, color: '#9ca3af' }}>{t('act.f.none')}</div>
+              : hasBullets ? <ul style={{ margin: 0, paddingLeft: 30 }}>{lines.map((l, i) => <li key={i}>{l.replace(/^-\s*/, '')}</li>)}</ul>
+              : lines.map((l, i) => <div key={i} style={{ paddingLeft: 14 }}>{l}</div>)}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+// K 公司懒探索(2026-07-19 Frank 批):首开自动调查(命中缓存秒回);查不到/掉线整块消失不留孤儿
+function CompanyAiSection({ company, t }: { company: string; t: TFn }) {
+  const [d, setD] = useState<undefined | null | { brief: string; website: string; sources: string[]; fetched: string }>(undefined)
+  useEffect(() => {
+    let dead = false
+    setD(undefined)
+    fetch('/api/companyinfo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: company }) })
+      .then((r) => (r.ok && r.status === 200 ? r.json() : null))
+      .then((x) => { if (!dead) setD(x && x.brief ? x : null) })
+      .catch(() => { if (!dead) setD(null) })
+    return () => { dead = true }
+  }, [company])
+  if (d === null) return null
+  return (
+    <div style={{ marginTop: 8 }}>
+      <div style={{ fontSize: 11.5, color: '#9ca3af' }}>✨ {t('fact.aiIntro')}{d?.fetched ? ` · ${d.fetched}` : ''}</div>
+      {d === undefined ? (
+        <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>{t('fact.aiWorking')}</div>
+      ) : (
+        <div style={{ marginTop: 4, fontSize: 12.5, color: '#4b5563', lineHeight: 1.7, border: '1px solid #f3f4f6', borderRadius: 8, padding: '8px 10px' }}>
+          <div style={{ whiteSpace: 'pre-wrap' }}>{d.brief}</div>
+          {d.website ? (
+            <div style={{ marginTop: 6 }}>
+              <a href={d.website} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5, overflowWrap: 'anywhere' }}>{d.website}</a>
+              <span style={{ marginLeft: 6, color: '#9ca3af', fontSize: 11 }}>{t('fact.aiSite')}</span>
+            </div>
+          ) : null}
+          {d.sources.length ? (
+            <div style={{ marginTop: 6, fontSize: 11.5, color: '#9ca3af' }}>
+              {t('fact.aiSources')}
+              {d.sources.slice(0, 3).map((s, i) => (
+                <a key={i} href={s} target="_blank" rel="noreferrer" style={{ display: 'block', color: '#6b7280', overflowWrap: 'anywhere', textDecoration: 'none' }}>{s}</a>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      )}
+    </div>
+  )
+}
 function TitleFacts({ job, lang }: { job: JobRow; lang: Lang }) {
   const t = makeT(lang)
   const [jd, setJd] = useState<string | null>(null)  // null=loading · ''=无正文
@@ -1587,10 +1658,12 @@ function TitleFacts({ job, lang }: { job: JobRow; lang: Lang }) {
   }, [job])
   return (
     <FactsBox>
-      {/* 雇佣形态 + 入职要求(E6-06/E6-07A):详情页结构化标注原文,零 LLM;无标注不显行(宁缺) */}
-      <FactRow k={t('fact.emp')}>{[job.employmentHours ? t('emp.' + job.employmentHours) : '', job.employmentTerm ? t('term.' + job.employmentTerm) : ''].filter(Boolean).join(' · ') || null}</FactRow>
+      {/* 雇佣形态 + 入职要求(E6-06/E6-07A):详情页结构化标注原文,零 LLM。
+          J1(2026-07-19 Frank):工时/雇佣期拆两行(禁「·」杂糅);未标注显灰字不再整行消失;证书一行一条 */}
+      <FactRow k={t('col.empHours')}>{job.employmentHours ? t('emp.' + job.employmentHours) : <span style={{ color: '#9ca3af' }}>{t('fact.unstated')}</span>}</FactRow>
+      <FactRow k={t('col.empTerm')}>{job.employmentTerm ? t('term.' + job.employmentTerm) : <span style={{ color: '#9ca3af' }}>{t('fact.unstated')}</span>}</FactRow>
       <FactRow k={t('fact.edu')}>{job.education || null}</FactRow>
-      <FactRow k={t('fact.cert')}>{job.certificates?.length ? job.certificates.join(' · ') : null}</FactRow>
+      <FactRow k={t('fact.cert')}>{job.certificates?.length ? <>{job.certificates.map((c, i) => <div key={i}>{c}</div>)}</> : null}</FactRow>
       {/* 职位字段只做职位的事(07-06 用户拍板):职位名已在弹窗标题,NOC/TEER 归分类弹窗 —— 这里就是真实 JD */}
       <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: (job.employmentHours || job.education || job.certificates?.length) ? 8 : 0 }}>{t('fact.jdExcerpt')}</div>
       {gated ? <UpgradeCard t={t} reason={t('up.jobtext')} />
@@ -1716,7 +1789,10 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, pnpOcc, pnpDraws, news
     const sponsor = (job.lmiaPositions ?? 0) >= 2 ? t('fact.coLmia', { n: job.lmiaPositions!, q: job.lmiaLastQuarter || '—' }) : job.aip ? t('fact.coAip') : ''
     // C1(2026-07-07 走查拍板):原操作列「公司信息」ActModal 并入本弹窗 —— 补地址行 + 在榜职位(>1 才显示,只有本岗=零信息)
     const here = jobs.filter((x) => x.company && x.company === job.company && (x.status || 'open') !== 'closed')
-    if (!desc && !job.officialUrl && !job.companySectors && !sponsor && !job.address) return null
+    // K(2026-07-19 Frank:「点开没链接 AI 现去查」):没简介或简介太薄(官网 meta 一句话)→ AI 联网调查;
+    // 有 AI 段后,全空公司也不再整块 null
+    const needAi = !!job.company && (!desc || desc.length < 200 || !job.officialUrl)
+    if (!desc && !job.officialUrl && !job.companySectors && !sponsor && !job.address && !needAi) return null
     // 口径注:担保史语义(C3 短版)+ 检索官网标注(D2 拍板:自动检索来的官网诚实标小字)
     const notes = [sponsor ? t('fact.coLmiaNote') : '', job.officialUrl && job.companyWebsiteSrc === 'searched' ? t('fact.siteSearched') : ''].filter(Boolean)
     return (
@@ -1729,6 +1805,7 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, pnpOcc, pnpDraws, news
           <div style={{ marginTop: 8, fontSize: 11.5, color: '#9ca3af' }}>{t('fact.coIntro')}</div>
           <div style={{ marginTop: 4, fontSize: 12.5, color: '#4b5563', whiteSpace: 'pre-wrap', lineHeight: 1.6, border: '1px solid #f3f4f6', borderRadius: 8, padding: '8px 10px' }}>{desc}</div>
         </> : null}
+        {needAi ? <CompanyAiSection company={job.company!} t={t} /> : null}
         {here.length > 1 ? <CompanyJobsList here={here} cur={job.id} lang={lang} onOpenJob={onOpenJob} /> : null}
       </FactsBox>
     )
@@ -1987,7 +2064,7 @@ function useFloatPanel(prefKey: string, defW: number, defH: number) {
 const VERDICT_ICON: Record<string, { icon: React.ReactNode; color: string }> = {
   pass: { icon: <IconCheck />, color: '#15803d' }, warn: { icon: <IconWarn />, color: '#b45309' }, fail: { icon: <IconX />, color: '#dc2626' }, na: { icon: '·', color: '#9ca3af' },
 }
-function MeansForMe({ job, lang, plan, pnpOcc, eeOcc }: { job: JobRow; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; eeOcc: EeOcc[] }) {
+function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: JobRow; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; eeOcc: EeOcc[]; nocDesc: NocDesc[] }) {
   const t = makeT(lang)
   const result = useMemo(() => {
     if (!plan.profileOk || !plan.profile) return null
@@ -2006,29 +2083,106 @@ function MeansForMe({ job, lang, plan, pnpOcc, eeOcc }: { job: JobRow; lang: Lan
   if (!plan.loggedIn || !plan.profileOk) return null
   // 免费限额外(服务端没给这行算 match)→ 升级卡;依据链是 Pro/限额内权益
   if (!plan.isPro && job.match == null) return <UpgradeCard t={t} reason={t('up.match', { n: plan.freeMatchCap })} />
+  // M 对比表(2026-07-19 Frank 批「表格左右对比更直观」):维度 × 本岗 × 你的档案 × 判定;
+  // 依据链同源 match() reasons(1:1 映射,不另起炉灶);代码不裸奔(NOC 带职业名/省全名/TEER 带说明);
+  // 一格一事(第二件事独立成行或进 ⓘ);措辞红线照旧(只说符合与否)。
+  const narrow = useIsNarrow()
   if (!result) return null
   const lvColor: Record<string, string> = { high: '#166534', mid: '#1e40af', low: '#6b7280', na: '#9ca3af' }
+  const pf = plan.profile!
+  const provName = (c: string) => PROV_NAMES[c] || c
+  const nocTitle = (c: string) => nocDesc.find((d) => d.noc === c)?.title || ''
+  const nocCell = (c: string) => nocTitle(c)
+    ? <>{nocTitle(c)}<span style={{ display: 'block', color: '#9ca3af', fontSize: 11 }}>NOC {c}</span></>
+    : <>NOC {c}</>
+  const teerCell = job.teer == null ? '—' : <>TEER {job.teer}<span style={{ display: 'block', color: '#9ca3af', fontSize: 11 }}>{t('mm.job.teerNote')}</span></>
+  const salaryCell = job.salaryAnnual != null ? `$${Math.round(job.salaryAnnual / 1000)}K/yr` : t('mm.job.noSalary')
+  type MMRow = { dim: string; jc: React.ReactNode; yc: React.ReactNode; verdict: 'pass' | 'warn' | 'fail' | 'na'; v: React.ReactNode; vTip?: string; src?: { label: string; url: string; fetched?: string } }
+  const rows: MMRow[] = []
+  for (const r of result.reasons as MatchReason[]) {
+    const p: any = r.params || {}
+    if (r.rule === 'noc') {
+      if (r.key === 'match.r.noc.jobUncat') rows.push({ dim: t('mm.dim.noc'), jc: t('cell.uncat'), yc: '—', verdict: 'na', v: t('mm.v.uncat') })
+      else if (r.key === 'match.r.noc.noProfile') rows.push({ dim: t('mm.dim.noc'), jc: nocCell(job.noc!), yc: t('mm.you.noNoc'), verdict: 'na', v: t('mm.v.noProfile') })
+      else if (r.key === 'match.r.noc.exact') rows.push({ dim: t('mm.dim.noc'), jc: nocCell(job.noc!), yc: nocCell(job.noc!), verdict: 'pass', v: t('mm.v.match') })
+      else if (r.key === 'match.r.noc.minor') rows.push({ dim: t('mm.dim.noc'), jc: nocCell(job.noc!), yc: nocCell(String(p.yours)), verdict: 'pass', v: t('mm.v.minor') })
+      else rows.push({ dim: t('mm.dim.noc'), jc: nocCell(job.noc!), yc: <>{pf.nocCodes.map((c: string) => <div key={c}>{nocCell(c)}</div>)}</>, verdict: 'fail', v: t('mm.v.nomatch') })
+    } else if (r.rule === 'prov') {
+      if (r.key === 'match.r.prov.notTarget') rows.push({ dim: t('mm.dim.prov'), jc: provName(String(p.prov)), yc: <>{pf.targetProvinces.map((c: string) => <div key={c}>{provName(c)}</div>)}</>, verdict: 'warn', v: t('mm.v.notTarget') })
+      else if (r.key === 'match.r.prov.qc') rows.push({ dim: t('mm.dim.pnp'), jc: provName('QC'), yc: '—', verdict: 'na', v: t('mm.v.qc') })
+      else if (r.key === 'match.r.prov.named') rows.push({ dim: t('mm.dim.pnp'), jc: streamDisplay(t, String(p.label)), yc: '—', verdict: 'pass', v: t('mm.v.named'), src: r.source })
+      else if (r.key === 'match.r.prov.excluded') rows.push({ dim: t('mm.dim.pnp'), jc: streamDisplay(t, String(p.label)), yc: '—', verdict: 'fail', v: t('mm.v.excluded'), src: r.source })
+      else if (r.key === 'match.r.prov.generic') rows.push({ dim: t('mm.dim.pnpPre'), jc: teerCell, yc: '—', verdict: 'pass', v: t('mm.v.generic', { prov: provName(String(p.prov)) }) })
+      else rows.push({ dim: t('mm.dim.pnpPre'), jc: teerCell, yc: '—', verdict: 'fail', v: t('mm.v.provNone', { prov: provName(String(p.prov)) }) })
+    } else if (r.rule === 'ee') {
+      if (r.key === 'match.r.ee.none') rows.push({ dim: t('mm.dim.ee'), jc: t('mm.job.eeNone'), yc: '—', verdict: 'na', v: '—' })
+      else if (r.key === 'match.r.ee.noDraw') rows.push({ dim: t('mm.dim.ee'), jc: t('mm.job.inCat', { cat: eeDisplay(t, String(p.cat)) }), yc: '—', verdict: 'na', v: t('mm.v.noDraw') })
+      else {
+        const noCrs = r.key === 'match.r.ee.noCrs'
+        rows.push({ dim: t('mm.dim.ee'), jc: t('mm.job.inCat', { cat: eeDisplay(t, String(p.cat)) }), yc: noCrs ? t('mm.you.noCrs') : t('mm.you.crs', { crs: p.crs }), verdict: noCrs ? 'warn' : r.verdict as MMRow['verdict'], v: noCrs ? t('mm.v.fillCrs') : r.key === 'match.r.ee.above' ? t('mm.v.crsAbove', { diff: p.diff }) : t('mm.v.crsBelow', { gap: p.gap }) })
+        rows.push({ dim: t('mm.dim.eeDraw'), jc: t('mm.job.draw', { draw: p.draw, date: p.date }), yc: '—', verdict: 'na', v: noCrs ? t('mm.v.fillCrsThen') : '—', src: r.source })
+      }
+    } else if (r.rule === 'teer') {
+      if (r.key === 'match.r.teer.ok') rows.push({ dim: t('mm.dim.teer'), jc: teerCell, yc: '—', verdict: 'pass', v: t('mm.v.teerOk') })
+      else if (r.key === 'match.r.teer.channel') rows.push({ dim: t('mm.dim.teer'), jc: teerCell, yc: '—', verdict: 'pass', v: t('mm.v.teerChannel', { stream: streamDisplay(t, String(p.stream)) }) })
+      else rows.push({ dim: t('mm.dim.teer'), jc: teerCell, yc: '—', verdict: 'fail', v: t('mm.v.teerLow') })
+    } else if (r.rule === 'wage') {
+      if (r.key === 'match.r.wage.above') rows.push({ dim: t('mm.dim.wage'), jc: salaryCell, yc: '—', verdict: 'pass', v: t('mm.v.wageAbove', { pct: p.pct }) })
+      else if (r.key === 'match.r.wage.near') rows.push({ dim: t('mm.dim.wage'), jc: salaryCell, yc: '—', verdict: 'warn', v: t('mm.v.wageNear', { pct: p.pct }) })
+      else if (r.key === 'match.r.wage.below') rows.push({ dim: t('mm.dim.wage'), jc: salaryCell, yc: '—', verdict: 'warn', v: t('mm.v.wageBelow', { pct: p.pct }) })
+      else rows.push({ dim: t('mm.dim.wage'), jc: salaryCell, yc: '—', verdict: 'na', v: t('mm.v.wageNa') })
+    } else if (r.rule === 'lmia') {
+      if (r.key === 'match.r.lmia.na') rows.push({ dim: t('mm.dim.lmia'), jc: t('mm.job.lmiaNone'), yc: '—', verdict: 'na', v: t('mm.v.lmiaNa'), vTip: t('mm.v.lmiaNaTip') })
+      else if (r.key === 'match.r.lmia.lowOnly') rows.push({ dim: t('mm.dim.lmia'), jc: t('mm.job.lmia', { n: p.n, q: p.q }), yc: '—', verdict: 'na', v: t('mm.v.lmiaLow'), src: r.source })
+      else rows.push({ dim: t('mm.dim.lmia'), jc: t('mm.job.lmia', { n: p.n, q: p.q }), yc: '—', verdict: 'pass', v: t('mm.v.lmiaHas'), src: r.source })
+    }
+  }
+  const vCell = (r: MMRow) => {
+    const v = VERDICT_ICON[r.verdict]
+    return (
+      <span title={r.vTip} style={{ color: v.color, fontWeight: 600, whiteSpace: 'nowrap' }}>
+        {r.v === '—' ? <span style={{ color: '#9ca3af', fontWeight: 400 }}>—</span> : <>{v.icon} {r.v}{r.vTip ? ' ⓘ' : ''}</>}
+        {r.src?.url && (
+          <a href={r.src.url} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} style={{ marginLeft: 5, fontSize: 11.5, color: '#2563eb', textDecoration: 'none', fontWeight: 400 }}
+            title={r.src.fetched ? t('match.srcFetched', { d: r.src.fetched }) : undefined}>↗</a>
+        )}
+      </span>
+    )
+  }
+  const thS: React.CSSProperties = { textAlign: 'left', fontSize: 11, color: '#9ca3af', fontWeight: 600, padding: '4px 8px', borderBottom: '1px solid #e7e5e4', whiteSpace: 'nowrap' }
+  const tdS: React.CSSProperties = { padding: '5px 8px', fontSize: 12.5, color: '#4b5563', borderBottom: '1px solid #f3f4f6', verticalAlign: 'top', lineHeight: 1.6 }
   return (
     <div style={{ background: '#fafaf9', border: '1px solid #e7e5e4', borderRadius: 10, padding: '10px 14px', margin: '4px 0 8px' }}>
       <div style={{ fontSize: 13, fontWeight: 700, color: '#374151' }}>
         <IconTarget /> {t('match.title')}
         <span style={{ marginLeft: 10, fontWeight: 600, color: lvColor[result.level] }}>{t('match.levelLine', { level: t('match.' + result.level) })}</span>
       </div>
-      <div style={{ marginTop: 6 }}>
-        {result.reasons.map((r: MatchReason, i: number) => {
-          const v = VERDICT_ICON[r.verdict]
-          return (
-            <div key={i} style={{ fontSize: 12.5, lineHeight: 1.7, color: '#4b5563' }}>
-              <span style={{ color: v.color, fontWeight: 700 }}>{v.icon}</span> {t(r.key, { ...(r.params as Record<string, string | number>), ...((r.params as any)?.label ? { label: streamDisplay(t, String((r.params as any).label)) } : {}), ...((r.params as any)?.cat ? { cat: eeDisplay(t, String((r.params as any).cat)) } : {}) })}
-              {/* #33:source.label 是数据值(省通道或 EE 类别),两套映射各管各的、未命中原样透传 */}
-              {r.source?.url && (
-                <a href={r.source.url} target="_blank" rel="noreferrer" style={{ marginLeft: 6, fontSize: 11.5, color: '#2563eb', textDecoration: 'none' }}
-                  title={r.source.fetched ? t('match.srcFetched', { d: r.source.fetched }) : undefined}>{streamDisplay(t, eeDisplay(t, r.source.label))} ↗</a>
-              )}
+      {narrow ? (
+        <div style={{ marginTop: 6 }}>
+          {rows.map((r, i) => (
+            <div key={i} style={{ padding: '6px 0', borderBottom: i === rows.length - 1 ? undefined : '1px solid #f3f4f6' }}>
+              <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600 }}>{r.dim}</div>
+              <div style={{ fontSize: 12.5, color: '#4b5563', lineHeight: 1.6 }}><span style={{ color: '#9ca3af', marginRight: 6 }}>{t('mm.col.job')}</span>{r.jc}</div>
+              {r.yc !== '—' && <div style={{ fontSize: 12.5, color: '#4b5563', lineHeight: 1.6 }}><span style={{ color: '#9ca3af', marginRight: 6 }}>{t('mm.col.you')}</span>{r.yc}</div>}
+              <div style={{ fontSize: 12.5, marginTop: 1 }}>{vCell(r)}</div>
             </div>
-          )
-        })}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 6 }}>
+          <thead><tr><th style={thS}>{t('mm.col.dim')}</th><th style={thS}>{t('mm.col.job')}</th><th style={thS}>{t('mm.col.you')}</th><th style={thS}>{t('mm.col.verdict')}</th></tr></thead>
+          <tbody>
+            {rows.map((r, i) => (
+              <tr key={i}>
+                <td style={{ ...tdS, color: '#9ca3af', whiteSpace: 'nowrap' }}>{r.dim}</td>
+                <td style={tdS}>{r.jc}</td>
+                <td style={tdS}>{r.yc}</td>
+                <td style={tdS}>{vCell(r)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   )
 }
@@ -2136,7 +2290,7 @@ function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, news, e
         {/* 正文(可滚动):上半真实清单 + 下半 AI 建议 */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '4px 20px 20px' }}>
           {/* 对我意味着什么(E5-00):个人相关性放最上;依据链同源 match() */}
-          <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} />
+          <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} nocDesc={nocDesc} />
           <FieldFactsSection field={field} job={job} jobs={companyJobs} lang={lang} isPro={plan.isPro} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} onOpenJob={onOpenJob} />
           {/* 建档 CTA(第 5 轮 #17 = 弹框规范 D1):身份信号族对未建档用户铺「事实 → 个人化」的桥 */}
           {!plan.profileOk && ['pnp', 'ee', 'lmia', 'aip'].includes(field) && (
@@ -2343,6 +2497,9 @@ function ActModal({ job, lang, onClose, onAdvisor }: { job: JobRow; lang: Lang; 
   const [text, setText] = useState('')
   const [status, setStatus] = useState<'loading' | 'done' | 'empty' | 'upgrade'>('loading')
   const [freeLeft, setFreeLeft] = useState<number | null>(null)  // 第 5 轮 #16:试用额度可见化
+  // J3(2026-07-19 Frank 批):AI 五节整理版懒生成——undefined=整理中,null=没有(降级原文),string=整理版
+  const [fmt, setFmt] = useState<string | null | undefined>(undefined)
+  const [showOrig, setShowOrig] = useState(false)
   useEffect(() => {
     const ctrl = new AbortController()
     setStatus('loading'); setText('')
@@ -2356,6 +2513,16 @@ function ActModal({ job, lang, onClose, onAdvisor }: { job: JobRow; lang: Lang; 
         setText(txt); setStatus(txt ? 'done' : 'empty')
       } catch { if (!ctrl.signal.aborted) setStatus('empty') }
     })()
+    return () => ctrl.abort()
+  }, [job])
+  useEffect(() => {
+    // 整理版与原文并行拉:命中缓存秒回;首次生成慢(模型现算),期间正文照常显示原文
+    const ctrl = new AbortController()
+    setFmt(undefined); setShowOrig(false)
+    fetch('/api/jdformat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: job.applyUrl || '' }), signal: ctrl.signal })
+      .then((r) => (r.status === 200 ? r.text() : ''))
+      .then((tx) => setFmt(tx.trim() ? tx : null))
+      .catch(() => { if (!ctrl.signal.aborted) setFmt(null) })
     return () => ctrl.abort()
   }, [job])
   return (
@@ -2383,7 +2550,20 @@ function ActModal({ job, lang, onClose, onAdvisor }: { job: JobRow; lang: Lang; 
                 {job.applyUrl && <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ display: 'inline-block', background: '#2563eb', color: '#fff', borderRadius: 8, padding: '8px 14px', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>{t('act.seeOfficial')}</a>}
               </div>
             )
-              : <JdTextView text={text} max={4000} />}
+              : (
+                <>
+                  {/* J3:整理版默认在上,原文一键切换;生成中/没有整理版 → 原文照旧 */}
+                  {fmt ? (
+                    <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 6 }}>
+                      ✨ {t('act.ai')}
+                      <button onClick={() => setShowOrig((o) => !o)} style={{ border: 'none', background: 'none', padding: 0, marginLeft: 8, color: '#2563eb', cursor: 'pointer', fontSize: 11.5, fontWeight: 600 }}>{showOrig ? t('act.seeFmt') : t('act.seeOrig')}</button>
+                    </div>
+                  ) : fmt === undefined ? (
+                    <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 6 }}>✨ {t('act.aiWorking')}</div>
+                  ) : null}
+                  {fmt && !showOrig ? <JdFormattedView text={fmt} t={t} /> : <JdTextView text={text} max={4000} />}
+                </>
+              )}
           {/* republish 合规的官方入口=底部极简来源行(2026-07-06 拍板,取代顶部按钮+说明) */}
           {job.applyUrl && (
             <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #f3f4f6', fontSize: 11.5, color: '#9ca3af', overflowWrap: 'anywhere' }}>

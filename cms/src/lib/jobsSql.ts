@@ -124,6 +124,7 @@ const SORT_COLUMNS: Record<string, string> = {
   eligibility: `COALESCE(j.eligibility_flag,'')`,   // GAP1③:红旗岗聚一起看
 
   status: 'j.status', closedAt: 'j.closed_at',
+  empHours: `COALESCE(j.employment_hours,'')`, empTerm: `COALESCE(j.employment_term,'')`,   // J1 两列(#73 教训:前端可点列必须进白名单)
   wageMedHr: 'j.wage_med_hourly', wageMedYr: 'j.wage_med_annual',
   vsMedian: '(j.salary_annual::float / NULLIF(j.wage_med_annual, 0))',
 }

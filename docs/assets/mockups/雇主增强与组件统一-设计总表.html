@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>雇主信息增强 + 组件统一 · 设计总表</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; background: #f6f7f9; color: #1f2937; padding: 28px 32px 60px; }
+  h1 { font-size: 21px; margin-bottom: 4px; }
+  .sub { font-size: 12.5px; color: #6b7280; margin-bottom: 24px; line-height: 1.7; }
+  .sec { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 18px 22px; margin-bottom: 22px; }
+  .sec h2 { font-size: 15.5px; margin-bottom: 3px; }
+  .sec .where { font-size: 12px; color: #9ca3af; margin-bottom: 14px; }
+  .note { font-size: 12px; color: #b45309; margin-top: 10px; line-height: 1.7; }
+  .note b { color: #92400e; }
+  .cols { display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap; }
+  .col { flex: 1; min-width: 380px; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 2px 10px; margin-bottom: 8px; }
+  .tag.now { background: #f3f4f6; color: #6b7280; }
+  .tag.new { background: #dcfce7; color: #166534; }
+  .frame { border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px 16px; background: #fcfcfd; }
+  table.t { width: 100%; border-collapse: collapse; font-size: 13px; background: #fff; }
+  table.t th, table.t td { border-bottom: 1px solid #f3f4f6; padding: 8px 12px; text-align: left; vertical-align: middle; }
+  table.t th { color: #6b7280; font-size: 11.5px; background: #fafafa; }
+  table.spec { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  table.spec th, table.spec td { border-bottom: 1px solid #f3f4f6; padding: 8px 12px; text-align: left; vertical-align: top; }
+  table.spec th { color: #6b7280; font-size: 11.5px; font-weight: 600; background: #fafafa; }
+  table.spec td.lbl { color: #6b7280; white-space: nowrap; }
+  .lk { color: #2563eb; font-weight: 600; }
+  .alias { color: #6b7280; font-weight: 400; font-size: 12px; }
+  .bchip { display: inline-block; border-radius: 6px; padding: 1px 8px; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+  .med { background: #fee2e2; color: #b91c1c; }
+  .tech { background: #dbeafe; color: #1e40af; }
+  .trade { background: #fef3c7; color: #b45309; }
+  .mfg { background: #e0e7ff; color: #3730a3; }
+  .edu { background: #dcfce7; color: #166534; }
+  .known { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; border-radius: 6px; padding: 1px 7px; font-size: 11px; font-weight: 600; }
+  .notice { border-radius: 10px; padding: 10px 14px; font-size: 13px; margin: 6px 0; }
+  .n-warn { background: #fffbeb; border: 1px solid #fde68a; color: #78350f; }
+  .n-err { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
+  .n-info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+  .n-ok { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+  .mock { border: 1px solid #e5e7eb; border-radius: 14px; background: #fff; box-shadow: 0 8px 30px rgba(0,0,0,.08); padding: 14px 16px; font-size: 12.5px; }
+  .imgbox { background: #e5e7eb; color: #6b7280; display: flex; align-items: center; justify-content: center; font-size: 11.5px; border-radius: 8px; }
+</style>
+</head>
+<body>
+<h1>雇主信息增强 + 组件统一 · 设计总表</h1>
+<div class="sub">Frank 2026-07-19 两点:①雇主要看得出行业、有中/韩文名、看得出有没有名;②全站弹框/提醒/表格/卡片/图片规格统一。红线沿用已有拍板:公司名<b>不机翻</b>(法定英文名=核验链)、清洗下沉数据层、现有色收口不发明新色。</div>
+
+<!-- W 文案分隔符规范 -->
+<div class="sec">
+  <h2>W · 文案分隔符规范(Frank 定为全站硬规矩,2026-07-19)</h2>
+  <div class="where">「禁止使用 · 包含多个信息杂糅在一起;斜线的也禁止」——适用全部 UI 文案,存量清理并入换装批次</div>
+  <table class="spec">
+    <tr><th style="width:130px;">规则</th><th>禁止</th><th>改成</th></tr>
+    <tr><td class="lbl">一行一条信息</td><td style="color:#b91c1c;">全职 · 合同</td><td>工时:全职<br>雇佣期:合同</td></tr>
+    <tr><td class="lbl">禁「·」杂糅</td><td style="color:#b91c1c;">$36/hr · 已挂 7 天 · 评分 60</td><td>各自独立展示位(列、chip、行)</td></tr>
+    <tr><td class="lbl">禁「/」杂糅</td><td style="color:#b91c1c;">升级/额度类;登录/注册一格</td><td>「升级与额度类」;登录、注册各自成钮</td></tr>
+    <tr><td class="lbl">合法例外</td><td colspan="2">单一概念内部符号不算:单位($25/hr)、专名(N/A、TEER 0-3)、URL 路径</td></tr>
+    <tr><td class="lbl">枚举分隔</td><td colspan="2">中文顿号「、」,英文逗号;超过三项改列表,一条一行</td></tr>
+  </table>
+</div>
+
+<!-- D 雇主增强 -->
+<div class="sec">
+  <h2>D · 雇主信息增强(行业 / 中韩别名 / 知名度)</h2>
+  <div class="where">/employers 名录 + 公司弹框 + 榜单;数据全部数据层算好,前端只显示</div>
+  <div class="cols">
+    <div class="col">
+      <span class="tag now">现状</span>
+      <div class="frame">
+        <table class="t">
+          <tr><th>雇主</th></tr>
+          <tr><td><span class="lk">Alberta Health Services ↗</span></td></tr>
+          <tr><td><span class="lk">Bombardier Aviation ↗</span></td></tr>
+          <tr><td>Université de Montréal</td></tr>
+          <tr><td>TRIPLE EIGHT TRANSPORT</td></tr>
+        </table>
+        <div style="font-size:12px; color:#d1d5db; margin-top:8px;">(只有英文名——不知道是干嘛的、有没有名,中韩用户没有抓手)</div>
+      </div>
+    </div>
+    <div class="col">
+      <span class="tag new">设计</span>
+      <div class="frame">
+        <table class="t">
+          <tr><th>雇主</th><th>行业</th></tr>
+          <tr><td><span class="lk">Alberta Health Services ↗</span> <span class="alias">阿尔伯塔省卫生局</span> <span class="known">知名</span></td><td><span class="bchip med">医疗</span></td></tr>
+          <tr><td><span class="lk">Bombardier Aviation ↗</span> <span class="alias">庞巴迪航空</span> <span class="known">知名</span></td><td><span class="bchip mfg">制造</span></td></tr>
+          <tr><td>Université de Montréal <span class="alias">蒙特利尔大学</span> <span class="known">知名</span></td><td><span class="bchip edu">教育</span></td></tr>
+          <tr><td>TRIPLE EIGHT TRANSPORT</td><td><span class="bchip trade">技工/运输</span></td></tr>
+        </table>
+      </div>
+      <div class="note">
+        <b>行业:</b>零新抓取——雇主在库岗位的 NOC 大类多数派(没岗位→LMIA 记录 NOC 兜底);大类三语现成,chip 色=大类既有配色。可筛选。<br>
+        <b>中/韩别名:</b>不机翻——走 <b>Wikidata 跨语言标签</b>(庞巴迪/阿尔斯通这类本就有官方中韩条目名,可核验);查不到=留空,英文名永远是主名、别名只做灰字括注。ko 界面同理取 ko 标签。<br>
+        <b>知名徽标:</b>= 有 Wikipedia 条目(公众知名的客观信号),不自造评级。<br>
+        <b>管线:</b>etl/clean 新增 company_facts(读 postings+lmia+wikidata,产 industry/alias_zh/alias_ko/wiki 四字段)→ mart → companies 表加列(DDL 你跑)→ 名录/公司弹框/榜单显示。批量跑一次+每周随 ETL 增量。
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- K 公司懒探索 -->
+<div class="sec">
+  <h2>K · 公司信息懒探索(Frank:点开没链接,AI 现去查现去抓)</h2>
+  <div class="where">公司弹框 · 与 JD 整理版同一懒生成模式;模型走朋友公网 API /api/chat + web_search:true(服务端实时联网,回答自带 sources 出处,实测 ~11s)</div>
+  <div class="cols">
+    <div class="col">
+      <span class="tag now">现状</span>
+      <div class="frame">
+        <div style="font-size:14px; font-weight:700;">TRIPLE EIGHT TRANSPORT</div>
+        <div style="font-size:12.5px; color:#9ca3af; margin-top:6px;">(无官网链接的公司,弹框里只有 LMIA 记录和在榜职位——这公司是干嘛的、多大规模,一概不知)</div>
+      </div>
+    </div>
+    <div class="col">
+      <span class="tag new">设计(首开自动调查,存库复用)</span>
+      <div class="frame" style="font-size:12.5px; line-height:1.75;">
+        <div style="font-size:14px; font-weight:700;">TRIPLE EIGHT TRANSPORT</div>
+        <div style="font-size:11px; color:#9ca3af; margin:6px 0;">✨ AI 检索整理 · 2026-07-19</div>
+        <div style="font-weight:700; color:#111827;">公司简介</div>
+        <div style="padding-left:14px; margin-bottom:6px;">BC 省 Abbotsford 的货运公司,主营北美跨境干线运输,车队约 80 台</div>
+        <div style="font-weight:700; color:#111827;">官网/主页</div>
+        <div style="padding-left:14px; margin-bottom:6px;"><a style="color:#2563eb;">tripleeighttransport.com ↗</a>(AI 检索到,非库内原有)</div>
+        <div style="font-weight:700; color:#111827;">信息出处</div>
+        <ul style="margin:0; padding-left:30px; color:#6b7280;">
+          <li>tripleeighttransport.com/about</li>
+          <li>ca.linkedin.com/company/…</li>
+        </ul>
+      </div>
+      <div class="note"><b>流程:</b>开公司弹框 → companies 表有 brief → 直接读;没有 → 「AI 调查中…」→ /api/chat(web_search:true,search_query=「英文公司名+company」)→ 校验 → <b>存 companies(brief/website/sources/fetched)</b> → 渲染。<b>红线:</b>①出处列表必显(citation 惯例),挂「AI 检索整理·非官方自述」标注;②查不到就写「未检索到公开信息」,不瞎猜;③检索到的官网先标「AI 检索到」,不与库内 directory 官网混淆;④ngrok 掉线/超时 → 静默保持现状。<b>底料:</b>已有 company_enrich.json(07-06 抓的 5105 家官网+简介)可一次性灌入当初始缓存,命中的公司连首查都省了——灌不灌你定。</div>
+    </div>
+  </div>
+</div>
+
+<!-- M 对我意味着什么对比表 -->
+<div class="sec">
+  <h2>M · 「对我意味着什么」改左右对比表(Frank:弄个表格左右对比更直观)</h2>
+  <div class="where">顾问弹框顶部 MeansForMe 块;依据链同源 match() 不变,只换展示;措辞红线照旧(只说符合与否,不说「你能不能移民」)</div>
+  <div class="cols">
+    <div class="col">
+      <span class="tag now">现状(一句话塞两边信息)</span>
+      <div class="frame" style="font-size:13px; line-height:2;">
+        <div>✕ 本岗 NOC 31301 与你的(21232)不对口</div>
+        <div>⚠ 本岗在 ON,不在你的目标省(NS)</div>
+        <div>⚠ 本岗属 EE「医疗社服」类(上次抽 475 分,2026-06-25);你还没自报 CRS,填了可比差距</div>
+        <div>• 无薪资/中位数据可比</div>
+        <div style="color:#d1d5db; font-size:12px;">(读每行都要自己拆「岗位的」和「我的」;还有斜线杂糅)</div>
+      </div>
+    </div>
+    <div class="col">
+      <span class="tag new">设计(维度 × 本岗 × 你 × 判定)</span>
+      <div class="frame">
+        <table class="t" style="font-size:12.5px;">
+          <tr><th style="width:80px;">维度</th><th>本岗</th><th>你的档案</th><th style="width:90px;">判定</th></tr>
+          <tr><td style="color:#6b7280;">职业方向</td><td>注册护士<br><span style="color:#9ca3af;">NOC 31301</span></td><td>软件开发<br><span style="color:#9ca3af;">NOC 21232</span></td><td style="color:#dc2626;">✕ 不对口</td></tr>
+          <tr><td style="color:#6b7280;">所在省</td><td>安大略</td><td>目标省:新斯科舍</td><td style="color:#b45309;">⚠ 不在目标省</td></tr>
+          <tr><td style="color:#6b7280;">省提名粗筛</td><td>技能层级 TEER 1<br><span style="color:#9ca3af;">0 最高,5 最低</span></td><td>安大略收 TEER 0-3</td><td style="color:#15803d;">✓ 符合粗筛</td></tr>
+          <tr><td style="color:#6b7280;">联邦 EE 定向类别</td><td>属「医疗社服」类</td><td>未自报 CRS 分</td><td style="color:#b45309;">⚠ 填 CRS 可比差距</td></tr>
+          <tr><td style="color:#6b7280;">该类上次抽选线</td><td>475 分(2026-06-25)</td><td>—</td><td style="color:#9ca3af;">填 CRS 后可比</td></tr>
+          <tr><td style="color:#6b7280;">薪资对照</td><td>原帖未标薪资</td><td>—</td><td style="color:#9ca3af;">无法对比</td></tr>
+          <tr><td style="color:#6b7280;">雇主外劳记录</td><td>近两年无 LMIA 获批</td><td>—</td><td style="color:#9ca3af;">中性信号 ⓘ</td></tr>
+        </table>
+      </div>
+      <div class="note"><b>要点:</b>①左右两列把「岗位的」和「你的」拆开,判定列只放结论短语(带 ✓⚠✕ 三色);②<b>代码不裸奔(全站通用规矩)</b>:人话名当主文案,代码退灰字小注——NOC 用维度表职业名(三语现成),省用全名,TEER 附一句「0 最高 5 最低」;③<b>一格一事</b>:灰字小注只许放同一事实的代码或单位说明,第二件事(抽选线、口径解释)要么独立成行(如「该类上次抽选线」),要么进判定的 ⓘ 依据链;抽选事件的「分数(日期)」算一事;④每行判定可点=原依据链弹层(指回维度记录,现有链路复用);⑤未建档用户=「你的档案」列整列显示「建档案后可比 →」;⑥手机窄屏维度作行头、本岗与你上下两行(不横滚);⑦「无薪资/中位数据可比」这类斜线文案顺手按 W 规范改写。</div>
+    </div>
+  </div>
+</div>
+
+<!-- E 弹框 -->
+<div class="sec">
+  <h2>E · 弹框规格(两族四档,已成体系——收口执行)</h2>
+  <div class="where">统一壳 2026-07-05 已拍板:遮罩 rgba(17,24,39,.5) 无毛玻璃 · 圆角 14 · 关闭钮右上 30×30 · 普通 z50/叠加 z60/70;手机 ≤640 全屏(sm 除外)</div>
+  <table class="spec">
+    <tr><th style="width:150px;">档</th><th>规格</th><th>用在</th></tr>
+    <tr><td class="lbl">Modal sm 390</td><td>居中定宽,自适应高</td><td>登录/注册/升级/确认框</td></tr>
+    <tr><td class="lbl">Modal md 560 / lg 720</td><td>居中定宽,maxHeight 85vh 内滚</td><td>定价/建档 wizard/保存筛选</td></tr>
+    <tr><td class="lbl">浮动面板 FloatPanel</td><td>可拖动/八向拉伸/全屏钮/尺寸记忆(#96 已共用 useFloatPanel)</td><td>AI 顾问 900×760 · 职位描述 760×640;后续「重内容」弹框一律这族</td></tr>
+    <tr><td class="lbl">红线</td><td colspan="2">新弹框只准从这两族选,不许自绘遮罩;标题一律 ModalTitle(eyebrow 小字+17px 标题);内边距 24/20(手机 14)</td></tr>
+  </table>
+</div>
+
+<!-- F 提醒 -->
+<div class="sec">
+  <h2>F · 提醒/通知规格(四色 Notice 组件——现状最散,重点收口)</h2>
+  <div class="where">现状:琥珀升级卡/429 卡/红错误框/APIError 提示/oauth=fail 框……每处手拼底色描边;统一为 primitives.Notice</div>
+  <div class="cols">
+    <div class="col" style="min-width:340px;">
+      <div class="notice n-warn">⭐ <b>升级与额度类</b>(琥珀):402 卡、免费位用满、示例数据提示 —— 可挂 pro 钮槽</div>
+      <div class="notice n-err">✕ <b>错误类</b>(红):登录失败、oauth 失败、支付错误 —— 说人话,给出路,不甩状态码</div>
+      <div class="notice n-info">ℹ <b>信息类</b>(蓝):口径说明、「暂用于 AI 顾问参考」类注记</div>
+      <div class="notice n-ok">✓ <b>成功类</b>(绿):保存成功、邮件已发 —— 3s 自动淡出可选</div>
+    </div>
+    <div class="col">
+      <div class="note"><b>规格:</b>圆角 10 · padding 10×14 · 13px · 图标+粗体引导语+正文+右侧钮槽(可选);四色即上面四张,禁止新配色。<b>改法:</b>primitives 加 Notice(kind: warn/err/info/ok, action?),存量升级卡(UpgradeCard)/429 卡/AuthForm 错误框/act 空态等全部换装;与按钮 P1/P2 批次同轮换。</div>
+    </div>
+  </div>
+</div>
+
+<!-- G 表格 -->
+<div class="sec">
+  <h2>G · 表格规格(主表一套,简单表一套)</h2>
+  <div class="where">jobs 主表(28 列/冻结列/拖宽/排序)是独立重器不动;其余简单表统一 DataTable(STATUS 队列里「公共 DataTable 先设计文档」= 本节)</h2></div>
+  <table class="spec">
+    <tr><th style="width:150px;">规格项</th><th>统一值</th></tr>
+    <tr><td class="lbl">容器</td><td>白卡 · 描边 #e5e7eb · 圆角 12 · overflow auto(宽表内滚,页面不横滚)</td></tr>
+    <tr><td class="lbl">表头</td><td>#fafafa 底 · 11.5-12px 灰字 600 · 可排序列带 ↑↓ 态;sticky 顶(长表)</td></tr>
+    <tr><td class="lbl">行</td><td>分隔线 #f3f4f6 · padding 8×12 · hover #f9fafb;行可点=整行 cursor pointer(格内链接 stopPropagation)</td></tr>
+    <tr><td class="lbl">空态/加载态</td><td>空=居中灰字+出路链接;换血加载=保持行高骨架(#83 已拍板的手法推广到所有表)</td></tr>
+    <tr><td class="lbl">适用</td><td>employers/occupations/compare/timeline/账户列表/榜单表 → 全部迁 DataTable;jobs 主表只对齐视觉 token 不并组件</td></tr>
+  </table>
+</div>
+
+<!-- H 卡片 -->
+<div class="sec">
+  <h2>H · 卡片规格(三档)</h2>
+  <table class="spec">
+    <tr><th style="width:150px;">档</th><th>规格</th><th>用在</th></tr>
+    <tr><td class="lbl">Card 基础卡</td><td>白底 · 描边 #e5e7eb · 圆角 12 · padding 16-20 · 无阴影</td><td>统计块/账户分节/名录筛选条/移民路径卡</td></tr>
+    <tr><td class="lbl">Card hover 可点卡</td><td>基础卡 + hover 描边转蓝/浅底 · 整卡可点</td><td>推荐岗卡/榜单卡/news 列表条</td></tr>
+    <tr><td class="lbl">Card hero 头条卡</td><td>图上文下 · 图区定高(见 I)· 圆角 12 内裁</td><td>news 头条轮播/未来专题卡</td></tr>
+    <tr><td class="lbl">红线</td><td colspan="2">阴影只给弹框/下拉(浮层),页面内卡片一律平面描边——现状混用阴影的卡(推荐卡等)收口</td></tr>
+  </table>
+</div>
+
+<!-- I 图片 -->
+<div class="sec">
+  <h2>I · 图片规格(五种定框,全部 cover 裁剪 + 缺图兜底)</h2>
+  <div class="cols">
+    <div class="col" style="min-width:340px;">
+      <div class="row" style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
+        <div><div class="imgbox" style="width:200px; height:20px;">banner 1280×300 → 显示 130/104</div><div style="font-size:11px; color:#9ca3af; margin-top:3px;">模块 banner(已定)</div></div>
+        <div><div class="imgbox" style="width:150px; height:75px;">头条图 定高300</div><div style="font-size:11px; color:#9ca3af; margin-top:3px;">news 轮播(#94 已定)</div></div>
+        <div><div class="imgbox" style="width:96px; height:64px;">96×64</div><div style="font-size:11px; color:#9ca3af; margin-top:3px;">列表缩略</div></div>
+        <div><div class="imgbox" style="width:40px; height:40px; border-radius:50%;">28/40</div><div style="font-size:11px; color:#9ca3af; margin-top:3px;">头像圆</div></div>
+        <div><div class="imgbox" style="width:120px; height:63px;">og 1200×630</div><div style="font-size:11px; color:#9ca3af; margin-top:3px;">分享图(待补)</div></div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="note"><b>规则:</b>①一律容器定框 + objectFit cover,图随框不随图(治忽大忽小的总根);②缺图必须有兜底(色块/字标/浅色带,已有手法推广);③新图先裁到规格再入库(banners 1280×300 / 缩略 3:2),出处进 SOURCES.md、致谢挂 title;④分享 og 图 1200×630 全站补齐(SEO/发帖用,现缺)。</div>
+    </div>
+  </div>
+</div>
+
+<div class="sub" style="margin-top:4px;">与前两表的关系:⓪-⑤ 价值时刻(已出)· A-C 按钮(已出)· D-I 本表。D=数据层活可独立开工;E-I 并入按钮的 P1-P3 分批一起换装,免同文件两轮改。</div>
+</body>
+</html>
