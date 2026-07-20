@@ -1271,7 +1271,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       <SiteFooter t={t} maxWidth={1320} />
 
       {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} news={dims.news} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} onOpenJob={(x) => setActModal({ kind: 'desc', job: x })} />}
-      {actModal && <ActModal job={actModal.job} lang={lang} plan={plan} onClose={() => setActModal(null)} onAdvisor={(x) => { setActModal(null); setPopup({ field: 'title', job: x, title: x.title }) }} />}
+      {actModal && <ActModal job={actModal.job} lang={lang} plan={plan} onClose={() => setActModal(null)} />}
       {wizard && <OnboardingWizard t={t} initial={plan.profile} onClose={closeWizard} />}
       {upsell && (plan.loggedIn
         ? <UpgradeModal t={t} reason={upsell === 'ss' ? t('ss.pro') : upsell === 'match' ? (matchTotals && matchTotals.high > plan.freeMatchCap ? t('up.matchN', { h: matchTotals.high, n: plan.freeMatchCap }) : t('up.match', { n: plan.freeMatchCap })) : undefined} onClose={() => setUpsell(false)} />
@@ -2551,10 +2551,10 @@ function AdvisorChat({ field, job, lang, initialJudgment, initialSug }: { field:
 }
 
 // ── 操作列弹框:职位描述快看(读真实抓取正文;公司信息已并入顾问公司弹窗,C1)────
-function ActModal({ job, lang, plan, onClose, onAdvisor }: { job: JobRow; lang: Lang; plan: Plan; onClose: () => void; onAdvisor?: (j: JobRow) => void }) {
+function ActModal({ job, lang, plan, onClose }: { job: JobRow; lang: Lang; plan: Plan; onClose: () => void }) {
   // C1 后只剩 JD 快看(公司信息统一走顾问公司弹窗,消两套公司弹窗重复)
-  // #87 把「点职位」从 title 顾问弹框改成本框后,顾问入口+可拖动一起丢了(Frank 2026-07-19 报障)——
-  // 修=本框升级为浮动面板(共用 useFloatPanel)+ 标题栏「AI 顾问」钮开 title 字段顾问弹框
+  // #112(2026-07-20 Frank):标题栏「AI 顾问」钮摘除——点钮会关本框跳顾问弹框,描述/整理版一去不回;
+  // 初判本来就内嵌自动生成(#102,像公司顾问),按钮纯多余;深挖(对比表/字段解读)走字段格入口照旧
   const t = makeT(lang)
   const overlayClose = useOverlayClose(onClose)
   const { narrow, full, toggleFull, panel, startDrag, startResize } = useFloatPanel(JD_PREF, 760, 640)
@@ -2599,8 +2599,6 @@ function ActModal({ job, lang, plan, onClose, onAdvisor }: { job: JobRow; lang: 
             <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{job.title || '—'}</h3>
           </div>
           <div style={{ display: 'flex', gap: 6, flexShrink: 0 }} onPointerDown={(e) => e.stopPropagation()}>
-            {/* AI 顾问入口(#87 后由本框承接:关本框 → 开 title 字段顾问弹框) */}
-            {onAdvisor && <Button kind="ai" sm onClick={() => onAdvisor(job)} style={{ height: 30, display: 'inline-flex', alignItems: 'center', gap: 5, flexShrink: 0 }}><IconCompass /> {t('advisor.tag')}</Button>}
             {!narrow && <button onClick={toggleFull} title={t(full ? 'advisor.exitFull' : 'advisor.full')} style={iconBtnS}>{full ? <IconMinimize /> : <IconMaximize />}</button>}
             <button onClick={onClose} style={{ ...iconBtnS, fontSize: 16 }}>×</button>
           </div>
