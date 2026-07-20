@@ -224,6 +224,7 @@ const zh: Dict = {
   'up.advisor': '今日免费解读已用完,明天自动恢复。Pro 不限次数——每个岗、每个字段都能随时问。',
   'up.jobtext': '今日 JD 摘录免费次数已用完,明天自动恢复。Pro 不限次数。',
   'up.cta2': '升级 Pro', 'up.salHint': 'Pro 额外显示:此岗与同职业官方工资中位数的差距(±%)——一眼判断 offer 是否偏低',
+  'up.proShort': 'Pro 解锁',   // #130 锁位短注:打码占位数旁四字,长解释文案退役
   'up.lockTip.wageMedHr': '同职业官方时薪中位数,Pro 解锁', 'up.lockTip.wageMedYr': '同职业官方年薪中位数,Pro 解锁', 'up.lockTip.vsMedian': '此岗薪资与官方中位的差距(±%),Pro 解锁',
   'cmp.v1': '2–4 省并排:在招岗位、近 7 天新增、官方中位薪资', 'cmp.v2': '各省具名紧缺通道命中岗数(省点名招的信号)', 'cmp.v3': '已建档自动按你的 NOC 预选行业对比',
   'cmp.demo': '示例数据', 'cmp.demoCta': '升级 Pro 看真实对比',
@@ -632,6 +633,7 @@ const en: Dict = {
   'up.advisor': "Today's free readings are used up — they reset tomorrow. Pro is unlimited: ask about any job, any field, anytime.",
   'up.jobtext': "Today's free JD excerpts are used up — they reset tomorrow. Pro is unlimited.",
   'up.cta2': 'Upgrade to Pro', 'up.salHint': 'Pro also shows: this job vs the official median wage for the occupation (±%) — spot a low offer at a glance',
+  'up.proShort': 'Pro only',
   'up.lockTip.wageMedHr': 'Official median hourly wage for this occupation — Pro', 'up.lockTip.wageMedYr': 'Official median annual wage for this occupation — Pro', 'up.lockTip.vsMedian': 'How this job pays vs the official median (±%) — Pro',
   'cmp.v1': '2–4 provinces side by side: open jobs, new in 7 days, official median wages', 'cmp.v2': 'Named in-demand stream hits per province (provinces naming your occupation)', 'cmp.v3': 'With a profile, the industry is pre-selected from your NOC',
   'cmp.demo': 'Sample data', 'cmp.demoCta': 'Upgrade to Pro for real comparison',
@@ -1032,6 +1034,7 @@ const ko: Dict = {
   'up.advisor': '오늘 무료 해설 횟수를 모두 사용했습니다. 내일 자동 복구됩니다. Pro는 무제한 — 어떤 공고든, 어떤 항목이든 언제나 질문 가능.',
   'up.jobtext': '오늘 JD 발췌 무료 횟수를 모두 사용했습니다. 내일 자동 복구됩니다. Pro는 무제한.',
   'up.cta2': 'Pro 업그레이드', 'up.salHint': 'Pro 추가 표시: 이 공고와 동일 직업 공식 중위 임금의 격차(±%) — 낮은 오퍼를 한눈에 판단',
+  'up.proShort': 'Pro 전용',
   'up.lockTip.wageMedHr': '동일 직업 공식 시급 중위값, Pro 잠금 해제', 'up.lockTip.wageMedYr': '동일 직업 공식 연봉 중위값, Pro 잠금 해제', 'up.lockTip.vsMedian': '이 공고 급여와 공식 중위값의 격차(±%), Pro 잠금 해제',
   'cmp.v1': '2–4개 주 나란히: 채용 중 공고, 최근 7일 신규, 공식 중위 임금', 'cmp.v2': '주별 지명 수요 채널 해당 공고 수(주정부가 지명하는 신호)', 'cmp.v3': '프로필 등록 시 내 NOC 기준으로 업종 자동 선택',
   'cmp.demo': '예시 데이터', 'cmp.demoCta': 'Pro 업그레이드로 실제 비교 보기',

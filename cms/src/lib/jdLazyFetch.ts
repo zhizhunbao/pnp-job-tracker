@@ -83,12 +83,23 @@ const originTitle = (html: string): string => {
   return best.replace(/\s*(job details?|job postings?)\s*$/i, '').trim()
 }
 
+// #130(Frank 指认):正文首行常是原站 <title> 原文残留(「Senior Cloud Developer Job Details | Bank of Canada」)——
+// 岗名已单独抽进标注行,这行纯重复,与 <title> 全等才剥(宁缺勿滥,不误伤正文)
+function stripTitleLine(text: string, html: string): string {
+  const raw = (/<title>([^<]{3,200})<\/title>/i.exec(html)?.[1] || '')
+    .replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim()
+  if (!raw) return text
+  const nl = text.indexOf('\n')
+  const firstLine = (nl < 0 ? text : text.slice(0, nl)).trim()
+  return firstLine === raw ? text.slice(nl + 1) : text
+}
+
 async function doFetch(applyUrl: string): Promise<string> {
   const isJb = /jobbank\.gc\.ca/i.test(applyUrl)
   const first = await fetchHtml(applyUrl)
   if (!first) return ''
   if (!isJb) {
-    const t = extractText(first)
+    const t = stripTitleLine(extractText(first), first)
     return t.length >= MIN_LEN ? t : ''
   }
   const own = jbOwnText(first)
@@ -96,7 +107,7 @@ async function doFetch(applyUrl: string): Promise<string> {
   const ext = jbExternalLink(first)
   if (!ext) return ''
   const originHtml = await fetchHtml(ext)
-  const t = extractText(originHtml)
+  const t = stripTitleLine(extractText(originHtml), originHtml)
   if (t.length < MIN_LEN) return ''
   const ot = originTitle(originHtml)
   return ot ? `Original posting title: ${ot}\n\n${t}`.slice(0, MAX_LEN) : t

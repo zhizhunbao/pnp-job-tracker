@@ -158,7 +158,14 @@ export default function JobDetailView({ job, plan, dims, related }: {
               <FactRow k={t('col.vsMedian')}>
                 {plan.isPro
                   ? (job.salaryAnnual != null && job.wageMedAnnual ? `${Math.round((job.salaryAnnual / job.wageMedAnnual - 1) * 100) >= 0 ? '+' : ''}${Math.round((job.salaryAnnual / job.wageMedAnnual - 1) * 100)}%` : null)
-                  : <span style={{ color: '#92400e' }}>{t('up.salHint')}</span>}
+                  : (
+                    /* #130(Frank「打上马赛克那种,别写那么长」):锁位=打码占位数+四字短注(⑤ compare 模糊示例同款);
+                       占位是写死的假数(真值免费态本就不出服务端),blur 只传「这里有个数」 */
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                      <span aria-hidden style={{ filter: 'blur(5px)', userSelect: 'none' }}>+15%</span>
+                      <span style={{ color: '#92400e', fontSize: 12 }}>{t('up.proShort')}</span>
+                    </span>
+                  )}
               </FactRow>
             </FactsBox>
             {!plan.isPro && <UpgradeCta t={t} loggedIn={plan.loggedIn} />}
@@ -184,9 +191,9 @@ export default function JobDetailView({ job, plan, dims, related }: {
             </div>
           ) : null}
 
+          {/* #130(Frank「怎么有三个查看原文」):底部官方原帖链接删——出口收敛为「怎么投」节整节链接(#125①)+JD 尾部来源小注,一页一个动作出口 */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, justifyContent: 'center', padding: '6px 0 2px' }}>
             <a href="/" style={{ display: 'inline-block', border: '1px solid #d1d5db', borderRadius: 8, padding: '7px 20px', fontSize: 13, color: '#374151', textDecoration: 'none', background: '#fff' }}>← {t('detail.back')}</a>
-            {job.applyUrl && <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ ...aLink, fontSize: 13 }}>{t('act.seeOfficial')}</a>}
           </div>
         </div>
       </PageShell>
