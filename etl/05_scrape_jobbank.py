@@ -178,11 +178,19 @@ def fetch_all_occupations_snapshots(provinces: list[str], since_days: int, max_p
             saved = 0
             for page in range(1, max_pages + 1):
                 url = f"{BASE}?fprov={prov}&sort=D&page={page}"
-                try:
-                    r = client.get(url, timeout=30)
-                    r.raise_for_status()
-                except Exception as e:  # noqa: BLE001
-                    print(f"  ! {prov} p{page}: {type(e).__name__} {e}", flush=True)
+                # #118b:抓取失败重试 3 次再放弃(静默断页=另一种漏帖);彻底失败大声告警
+                r = None
+                for attempt in range(3):
+                    try:
+                        r = client.get(url, timeout=30)
+                        r.raise_for_status()
+                        break
+                    except Exception as e:  # noqa: BLE001
+                        err = f"{type(e).__name__} {e}"
+                        r = None
+                        time.sleep(2 * (attempt + 1))
+                if r is None:
+                    print(f"  ⚠ {prov} p{page}: 连续 3 次失败({err})——本省本轮提前止,可能缺帖!", flush=True)
                     break
                 soup = BeautifulSoup(r.text, "html.parser")
                 rows = [x for x in (parse_article(a) for a in soup.select("article")) if x and x["posting_id"]]
@@ -195,6 +203,10 @@ def fetch_all_occupations_snapshots(provinces: list[str], since_days: int, max_p
                 if all(parse_date(x["date"]) is not None and parse_date(x["date"]) < cutoff for x in rows):
                     break
                 time.sleep(delay)
+            else:
+                # #118b(Frank:「固定页数不行,万一比这个多还是漏」):翻页由截止日自然停,
+                # max_pages 只是失控保险——真翻满还没跨天=可能截断,必须大声告警而非静默
+                print(f"  ⚠ {prov}: 翻满 {max_pages} 页仍未跨过截止日 {cutoff}——可能截断!上调 --max-pages", flush=True)
             print(f"  · {prov}: 存 {saved} 页快照 (since {cutoff})", flush=True)
     (snap_dir / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"\nListing 快照 → {snap_dir} ({len(manifest['pages'])} 页)", flush=True)

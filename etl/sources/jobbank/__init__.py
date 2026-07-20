@@ -14,8 +14,8 @@ META = {
     "steps": [
         # 抓取只存原始 HTML 快照;解析下沉 clean → processed(源框架 v2)
         # #118:max-pages 默认 15 在周末积压+周一补抓时截断 ON/QC(3 天量>15 页)→ 显式放大;
-        # 翻页由 cutoff 日期自然停,上限只当失控保险(60 页×25≈1500 帖/省 头部空间)
-        ["python", "etl/05_scrape_jobbank.py", "--all-occupations", "--prov", "ALL", "--since-days", SINCE_DAYS, "--max-pages", "60"],
+        # 翻页由 cutoff 日期自然停,上限只当失控保险(400 页=失控保险,触发即 ⚠ 告警(#118b:截止纯靠日期,固定页数会漏))
+        ["python", "etl/05_scrape_jobbank.py", "--all-occupations", "--prov", "ALL", "--since-days", SINCE_DAYS, "--max-pages", "400"],
         ["python", "etl/clean/05_parse_jobbank.py", "--since-days", SINCE_DAYS],
         ["python", "etl/05b_scrape_jobbank_details.py"],
         ["python", "etl/clean/05b_parse_details.py"],
