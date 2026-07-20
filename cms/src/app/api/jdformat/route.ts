@@ -43,9 +43,14 @@ function validate(out: string, src: string): boolean {
 // 同岗并发去重:同一 apply_url 的生成只跑一份,后到者等同一个 Promise
 const inflight = new Map<string, Promise<string | null>>()
 
+// #123d:朋友 API prompt 硬上限 6000 字符(FastAPI 实测回「prompt too long (max 6000 chars)」)——
+// 原截 12000 对长帖必 400(JB 直发帖 2-4k 从没撞过,#123 懒抓原站 11k+ 一来就撞,整理版永远生成不了)。
+// 正文预算=上限-提示头;超长帖截前段,尾部缺节由 (not stated)+前端帖面薪资/官方原帖链兜底(#123c)。
+const PROMPT_BUDGET = 6000 - PROMPT_HEAD.length - 20
+
 async function generate(pool: any, row: { id: number; description: string; employment_term: string | null; employment_hours: string | null }, url: string): Promise<string | null> {
   const src = row.description
-  const r = await friendChat({ prompt: PROMPT_HEAD + src.slice(0, 12000), timeoutMs: 90_000 })
+  const r = await friendChat({ prompt: PROMPT_HEAD + src.slice(0, PROMPT_BUDGET), timeoutMs: 90_000 })
   if (!r) return null
   let out = r.answer
   // 抽尾部字段行再从正文剥掉
