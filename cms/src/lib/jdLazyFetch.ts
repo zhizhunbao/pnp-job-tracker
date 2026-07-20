@@ -1,0 +1,88 @@
+// #123 JD 正文懒抓(2026-07-20 Frank 拍板,lazy-first 铁律):聚合帖(Jobs.gc.ca 等经 Job Bank 转贴)
+// 的 JB 详情页不带正文(description=空 span,05b 抓不到)——用户点开 JD 且库里为空时现场抓:
+//   ① GET applyUrl(JB 页)→ 先试 JB 自有正文(.job-posting-detail-requirements / [property=description],direct 帖有)
+//   ② 空则抽 #externalJobLink 外链(JB 官方页自带,实测央行帖)→ GET 原站 → 通用正文抽取(剥 script/nav/标签)
+//   ③ ≥300 字符才算抓到 → 写回 jobs.description 永久缓存(谁被点开谁被抓,零批量预抓)
+// 失败=负缓存 10 分钟防连点重抓;单飞防并发重复抓。非 JB 的 applyUrl(ATS 帖)直接走 ② 的通用抽取。
+// 下轮 seed 不会冲掉:seed 的 description 已改 COALESCE(mart 为空保留旧值)。
+
+const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
+const MIN_LEN = 300          // 短于此=没抓到(导航残渣不入库,宁缺勿滥)
+const MAX_LEN = 15000        // 正文封顶(前端 JdTextView max=4000,富余给顾问上下文)
+const NEG_TTL = 10 * 60_000  // 失败负缓存
+
+const inflight = new Map<string, Promise<string>>()
+const failed = new Map<string, number>()
+
+const badHost = (u: URL) => !/^https?:$/.test(u.protocol)
+  || /^(localhost|127\.|10\.|192\.168\.|169\.254\.|0\.|\[)/.test(u.hostname)
+  || /^172\.(1[6-9]|2\d|3[01])\./.test(u.hostname)
+
+async function fetchHtml(url: string): Promise<string> {
+  const u = new URL(url)
+  if (badHost(u)) return ''
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), 8000)
+  try {
+    const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'text/html' }, redirect: 'follow', signal: ctrl.signal })
+    if (!res.ok) return ''
+    return (await res.text()).slice(0, 800_000)
+  } catch { return '' } finally { clearTimeout(timer) }
+}
+
+// 通用正文抽取(readability 极简版,零依赖):剥非内容块 → 块级标签转行 → 剥标签 → 反转义 → 压行
+function extractText(html: string): string {
+  let t = html.replace(/(?:<(script|style|noscript|nav|header|footer|svg|form)[^>]*>[\s\S]*?<\/\1>)/gi, ' ')
+  t = t.replace(/<br\s*\/?>|<\/p>|<\/div>|<\/li>|<\/h[1-6]>|<\/tr>/gi, '\n')
+  t = t.replace(/<[^>]+>/g, ' ')
+  t = t.replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;|&apos;/g, "'").replace(/&quot;/g, '"')
+  const lines = t.split('\n').map((l) => l.replace(/\s+/g, ' ').trim()).filter((l) => l.length > 2)
+  return lines.join('\n').slice(0, MAX_LEN)
+}
+
+// JB 详情页自有正文(direct 帖):可见结构区起点切片抽取(JD 块主导,尾部 applynow 前截断)
+function jbOwnText(html: string): string {
+  const i = html.indexOf('job-posting-detail-requirements')
+  if (i < 0) return ''
+  const end = html.indexOf('id="applynow"', i)
+  return extractText(html.slice(i, end > i ? end : i + 60_000))
+}
+
+const jbExternalLink = (html: string): string => /id="externalJobLink"[^>]*href="([^"]+)"/.exec(html)?.[1] || ''
+
+async function doFetch(applyUrl: string): Promise<string> {
+  const isJb = /jobbank\.gc\.ca/i.test(applyUrl)
+  const first = await fetchHtml(applyUrl)
+  if (!first) return ''
+  if (!isJb) {
+    const t = extractText(first)
+    return t.length >= MIN_LEN ? t : ''
+  }
+  const own = jbOwnText(first)
+  if (own.length >= MIN_LEN) return own
+  const ext = jbExternalLink(first)
+  if (!ext) return ''
+  const t = extractText(await fetchHtml(ext))
+  return t.length >= MIN_LEN ? t : ''
+}
+
+/** 懒抓入口:抓到即写库(永久缓存);抓不到返 ''(前端空态照旧引导官方原帖)。 */
+export async function lazyFetchJd(applyUrl: string, pool: any): Promise<string> {
+  const neg = failed.get(applyUrl)
+  if (neg && Date.now() - neg < NEG_TTL) return ''
+  let p = inflight.get(applyUrl)
+  if (!p) {
+    p = (async () => {
+      const text = await doFetch(applyUrl)
+      if (text) {
+        await pool.query('UPDATE jobs SET description = $1 WHERE apply_url = $2 AND description IS NULL', [text, applyUrl]).catch(() => {})
+      } else {
+        failed.set(applyUrl, Date.now())
+        if (failed.size > 500) failed.clear()
+      }
+      return text
+    })().finally(() => inflight.delete(applyUrl))
+    inflight.set(applyUrl, p)
+  }
+  return p
+}

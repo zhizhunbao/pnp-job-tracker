@@ -217,8 +217,10 @@ export async function GET(req: Request) {
       'status', 'closed_at', 'first_seen', 'last_seen', 'created_at', 'updated_at']
     // GAP1③:预筛两列缺值(ETL 盒未拉新代码的过渡期)保留旧值不清空——COALESCE 兜底;E12-08 两档列同款
     const jobUpdate = jobCols
-      .filter((c) => !['external_id', 'first_seen', 'last_seen', 'created_at', 'eligibility_flag', 'eligibility_quote', 'grade_channel', 'score_detail'].includes(c))
+      .filter((c) => !['external_id', 'first_seen', 'last_seen', 'created_at', 'eligibility_flag', 'eligibility_quote', 'grade_channel', 'score_detail', 'description'].includes(c))
       .map((c) => `${c}=EXCLUDED.${c}`).join(',')
+      // #123:description 也 COALESCE——mart 为空(05b 没抓到=聚合帖)时保留懒抓写回的正文,不冲缓存
+      + ', description=COALESCE(EXCLUDED.description, jobs.description)'
       + ', eligibility_flag=COALESCE(EXCLUDED.eligibility_flag, jobs.eligibility_flag)'
       + ', eligibility_quote=COALESCE(EXCLUDED.eligibility_quote, jobs.eligibility_quote)'
       + ', grade_channel=COALESCE(EXCLUDED.grade_channel, jobs.grade_channel)'

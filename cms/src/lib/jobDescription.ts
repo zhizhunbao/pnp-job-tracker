@@ -1,5 +1,6 @@
 import { getPayload } from 'payload'
 import config from '@/payload.config'
+import { lazyFetchJd } from './jdLazyFetch'
 
 // 按 applyUrl 取真实 JD 正文(DB jobs.description,mart 灌入)。jobtext + advisor 共用,
 // 去掉运行时扫 .md 文件 → 上云不再依赖 data/ 文件在场。走 pg pool 轻量查询(绕开 Payload 读管线)。
@@ -15,9 +16,12 @@ export function scrubPii(text: string): string {
 export async function jobDescription(applyUrl: string): Promise<string> {
   if (!applyUrl) return ''
   const payload = await getPayload({ config: await config })
-  const { rows } = await (payload.db as any).pool.query(
+  const pool = (payload.db as any).pool
+  const { rows } = await pool.query(
     'SELECT description FROM jobs WHERE apply_url = $1 AND description IS NOT NULL LIMIT 1',
     [applyUrl],
   )
-  return scrubPii(rows[0]?.description ?? '')
+  if (rows[0]?.description) return scrubPii(rows[0].description)
+  // #123 懒抓(lazy-first):聚合帖 JB 页无正文 → 现场抓原站正文写回缓存;抓不到返 ''(空态照旧)
+  return scrubPii(await lazyFetchJd(applyUrl, pool))
 }
