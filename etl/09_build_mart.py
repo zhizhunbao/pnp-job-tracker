@@ -170,6 +170,9 @@ def build():
             for k in ("description", "sectors", "website"):
                 if not extra.get(k) and en.get(k):
                     extra[k] = en[k]
+                    if k == "description":
+                        # WordPress 摘要尾巴「[…]/[...]」剥掉(源站自动截断标记,66/3492 家;Frank 2026-07-19 报障)
+                        extra[k] = re.sub(r"\s*\[(?:\.\.\.|…)\]\s*$", "", extra[k])
                     if k == "website" and en.get("found"):
                         extra["websiteSource"] = en["found"]  # jd/searched(searched 前端加小字,D2)
             companies[slug] = {"slug": slug, "name": name, **{k: v for k, v in extra.items() if v}}
