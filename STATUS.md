@@ -9,7 +9,9 @@
 >   **B 手机卡片**(既有窄屏卡升级:职位名蓝链→详情页、公司名独立行→公司弹框、「·」杂糅清除)/**C 常驻搜索**(SiteHeader searchBar 槽:jobs 传受控输入即时筛选实测,二级页缺省 form 提交 /?q=)/**D 侧滑抽屉**(4/5 宽圆角块+资讯组二级展开)/**E hover 下拉**(NavDrop 统一 150ms 延时关+键盘通路;资料库改 hover+新增「资讯 ▾」=移民新闻+**政策时间线首获顶栏入口**;榜单/统计保持顶级 IA 未大动)。
 >   **F 评论区亮回 v2**(COMMENTS_ON=true,Frank 拍板开+**日审归 Frank**):官方置顶楼(admin 帖+pinned 蓝底卡)+楼中楼一层封顶(hook 校验 parent=同文已过审顶楼)+「展开 N 条回复」折叠;登录+审核制不动(不学瓜站匿名直发);comments 加 parent_id/pinned 两列 **DDL 生产已代跑**(docs/sql/comments-thread.sql);匿名 POST 403 实测;**置顶楼真数据验证+每文官方解读=Frank 亲手项**。
 > - **📄 E12-08 多维评分设计出稿(implementation/E12-移民路径引擎/08)**:三轨制已拍——职位分(自身三维:通道/薪资/雇佣)/公司分(担保记录/在库活跃/薪资水平/规模知名度)/地区档(=E12-07 复用);**跨层合成总分砍**(Frank「岗位总分没啥意义」)+**裸「知名」Tag 退役**(降级为规模知名度维度依据,公司名旁改公司分药丸);每分项 value/score/source 三元 jsonb 拆解弹框。**首版权重表已拟待 Frank 过目**(拍板③),批了才动 ETL。
-> - 下轮:部署+生产复验 #120 → E12-08 权重获批后开工(08 重构+08b 公司分+DDL+拆解弹框+rankings 列+知名 Tag 全站清理)。
+> - **✅ #120 生产复验全绿(同晚)**:详情页 200+JSON-LD/robots 8 分片/评论区亮回线上确认;**#120b 补刀:jobs sitemap 分片加 force-dynamic**——构建期静态烘焙把空片烘死(Render 构建容器查库失败),修后线上分片 0 回 5000 URL。
+> - **✅ #121 E8-08 表卡双形态当晚设计+实施双闭环(Frank 三拍:hover 要高亮/按逻辑拆别合并一个组件/三问按推荐)**:设计=全站页面形态总表(每页桌面/手机形态一次定死,新页照表)+通用卡片解剖+hover 规范(**可点必有态不可点必无**:a:hover 全局 brightness 加深 inline 样式压不住、按钮微暗、DataTable 不可点行 hover 摘除);实施=**DataTable 保持纯表格不动**,primitives 三积木(Card/CardKV/CardAction 纯样式零逻辑)+**每域一卡**(EmployerLmia/EmployerAip/RankCompany/RankJob/StatsCat 五卡+对比页/省对比两转置卡=dims/metrics 数组复用零双写),tcCards/tcTableWrap CSS 双渲染 ≤640;occupations 2 列窄表=例外保持表格;手机卡片流 v1 无排序控件。本地双端全绿;**转置卡 Pro 真值态待 Frank Pro 号**。
+> - 下轮:E12-08 权重表获批后开工(08 重构+08b 公司分+DDL+拆解弹框+rankings 列+知名 Tag 全站清理);#121 生产复验顺手。
 >
 > **⚡⚡⚡⚡⚡⚡ 上轮交接(2026-07-20 全天 session,「组件收官与难度指数日」)——#107-#116 十批+两设计文档当日全生产**
 > - **✅ #107 顾问公司初判接通 K 联网调查(2026-07-20,Frank 报障截图「资料不足」)**:根因=两条链路各干各的——K(companyinfo)会 web_search 且已有缓存,顾问初判只认 companies 富化列+web_fetch(friend 后端忽略 web_fetch,#105 切换后联网归零)。修=抽 lib/companyResearch 共享层(companyRow+investigateCompany,并发合流),顾问 field=company 先读 ai_brief 缓存、无富化数据才现场调查,注入 prompt 当次级事实(官网抓取仍第一权威);查不到照旧「资料不足」反编兜底。本地实测:L. Okafor 吃到缓存四段落地(Yorkton 诊所),Porcupine Mechanical 现场查 3.3s 落缓存。

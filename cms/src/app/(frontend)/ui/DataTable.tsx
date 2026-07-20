@@ -22,7 +22,6 @@ export function DataTable<T>({ cols, rows, rowKey, empty, header, minWidth }: {
 }) {
   const [sort, setSort] = useState<{ key: string; dir: 1 | -1 } | null>(null)
   const [widths, setWidths] = useState<Record<string, number>>({})
-  const [hover, setHover] = useState('')
   const thRefs = useRef<Record<string, HTMLTableCellElement | null>>({})
   const sorted = (() => {
     if (!sort) return rows
@@ -61,10 +60,12 @@ export function DataTable<T>({ cols, rows, rowKey, empty, header, minWidth }: {
           ))}
         </tr></thead>
         <tbody>
+          {/* E8-08 hover 规范(Frank「可点才有态」):行本身不可点 → 行 hover 摘除(原 #f9fafb 全行态误导);
+              行内链接/钮的 hover 由 styles.css 全局规则(a:hover 加深)接管 */}
           {sorted.map((r, i) => {
             const k = rowKey(r, i)
             return (
-              <tr key={k} onMouseEnter={() => setHover(k)} onMouseLeave={() => setHover('')} style={{ background: hover === k ? '#f9fafb' : undefined }}>
+              <tr key={k}>
                 {cols.map((c) => <td key={c.key} style={{ ...td, ...(c.nowrap ? { whiteSpace: 'nowrap' } : {}) }}>{c.render ? c.render(r) : String((r as any)[c.key] ?? '—')}</td>)}
               </tr>
             )

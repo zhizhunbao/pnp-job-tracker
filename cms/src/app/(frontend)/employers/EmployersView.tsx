@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import { makeT, LANG_KEY, type Lang, type TFn } from '../jobs/i18n'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
-import { Button, PageBanner, PageShell, Tag, UI, chipStyle } from '../ui/primitives'
+import { Button, Card, CardAction, CardKV, PageBanner, PageShell, Tag, UI, chipStyle } from '../ui/primitives'
 import { DataTable } from '../ui/DataTable'
 import { IconUsers } from '../Icons'
 import { DIR_PAGE_SIZE, type AipRow, type LmiaRow } from '@/lib/directory'
@@ -30,6 +30,41 @@ function Pager({ t, total, page, mk }: { t: TFn; total: number; page: number; mk
       {page > 0 && <a href={mk(page - 1)} style={{ color: UI.primary, textDecoration: 'none' }}>{t('dir.prev')}</a>}
       {page + 1 < pages && <a href={mk(page + 1)} style={{ color: UI.primary, textDecoration: 'none' }}>{t('dir.next')}</a>}
     </div>
+  )
+}
+
+// ── E8-08 #121 手机域卡(Frank「按逻辑拆」:每域自己的卡组件,积木拼装;字段与桌面表同源)──
+function EmployerLmiaCard({ r, lang, t, inCmp, onCmp }: { r: LmiaRow; lang: Lang; t: TFn; inCmp: boolean; onCmp: () => void }) {
+  const alias = lang === 'zh' ? r.aliasZh : lang === 'ko' ? r.aliasKo : ''
+  return (
+    <Card>
+      <button onClick={onCmp} style={{ position: 'absolute', right: 10, top: 10, border: '1px solid ' + (inCmp ? UI.primary : UI.border), background: inCmp ? '#eff6ff' : '#fff', color: inCmp ? UI.primary : '#6b7280', borderRadius: 999, padding: '2px 10px', fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}>{inCmp ? t('ce.added') : t('ce.add')}</button>
+      <div style={{ fontSize: 14.5, fontWeight: 600, paddingRight: 78 }}>
+        {r.website ? <a href={r.website} target="_blank" rel="noreferrer" style={{ color: UI.primary, textDecoration: 'none' }}>{r.name} ↗</a> : r.name}
+        {r.wiki ? <a href={r.wiki} target="_blank" rel="noreferrer" style={{ marginLeft: 6, textDecoration: 'none' }}><Tag variant="pro">{t('dir.known')}</Tag></a> : null}
+      </div>
+      {(alias || r.industry) ? (
+        <div style={{ fontSize: 12.5, color: '#9ca3af', marginTop: 2 }}>
+          {alias}{r.industry ? <span style={{ marginLeft: alias ? 6 : 0 }}><Tag variant="region">{t('broad.' + r.industry)}</Tag></span> : null}
+        </div>
+      ) : null}
+      <CardKV items={[
+        { k: t('dir.col.skilled'), v: <span style={{ fontWeight: 600, color: r.lmiaPositionsSkilled ? UI.ok : '#9ca3af' }}>{r.lmiaPositionsSkilled ?? '—'}</span> },
+        { k: t('rank.col.lmia'), v: r.lmiaPositions },
+        { k: t('dir.col.quarter'), v: <span style={{ color: '#9ca3af' }}>{r.lmiaLastQuarter || '—'}</span> },
+      ]} />
+      <CardAction><a href={`/?q=${encodeURIComponent(r.name)}`} style={{ color: UI.primary, textDecoration: 'none' }}>{t('rank.viewJobs')}</a></CardAction>
+    </Card>
+  )
+}
+function EmployerAipCard({ r, t }: { r: AipRow; t: TFn }) {
+  return (
+    <Card>
+      <div style={{ fontSize: 14.5, fontWeight: 600 }}>{r.name}{r.isTech && <> <Tag variant="region">{t('dir.tech')}</Tag></>}</div>
+      <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 2 }}>{t('pr.' + r.province)}</div>
+      {r.location ? <CardKV items={[{ k: t('col.city'), v: r.location }]} /> : null}
+      <CardAction><a href={`/?q=${encodeURIComponent(r.name)}`} style={{ color: UI.primary, textDecoration: 'none' }}>{t('rank.viewJobs')}</a></CardAction>
+    </Card>
   )
 }
 
@@ -84,8 +119,16 @@ export function EmployersView({ type, q, prov, page, aip, lmia, counts }: {
         {/* 口径红线行(E6-02 语义:历史事实 ≠ 担保承诺) */}
         <div style={{ fontSize: 12.5, color: '#6b7280', margin: '0 0 12px', lineHeight: 1.6 }}>{t(type === 'lmia' ? 'dir.note.lmia' : 'dir.note.aip')}</div>
 
-        {/* 组件统一 P2(2026-07-19 Frank「所有页面用同一个 table」):两张表换装公共 DataTable(排序/拖宽/hover 同 jobs 观感);
-            排序=当前页内客户端排序(全量序仍由 URL 翻页的服务端默认序保证) */}
+        {/* 组件统一 P2(2026-07-19 Frank「所有页面用同一个 table」):两张表换装公共 DataTable(排序/拖宽同 jobs 观感);
+            排序=当前页内客户端排序(全量序仍由 URL 翻页的服务端默认序保证)。
+            E8-08 #121:表卡双形态——桌面表(tcTableWrap),≤640 域卡(tcCards,CSS 双渲染) */}
+        <div className="tcCards">
+          {type === 'lmia'
+            ? (lmia || []).map((r) => <EmployerLmiaCard key={r.name} r={r} lang={lang} t={t} inCmp={cmp.includes(r.name)} onCmp={() => toggleCmp(r.name)} />)
+            : (aip || []).map((r, i) => <EmployerAipCard key={r.name + i} r={r} t={t} />)}
+          {((type === 'lmia' ? lmia : aip) || []).length === 0 && <div style={{ padding: 24, textAlign: 'center', color: '#9ca3af', fontSize: 13 }}>{t('dir.empty')}</div>}
+        </div>
+        <div className="tcTableWrap">
         {type === 'lmia' ? (
           <DataTable<LmiaRow> rows={lmia || []} rowKey={(r) => r.name} empty={t('dir.empty')} cols={[
             { key: 'name', label: t('dir.col.employer'), sort: (r) => r.name.toLowerCase(), render: (r) => {
@@ -118,6 +161,7 @@ export function EmployersView({ type, q, prov, page, aip, lmia, counts }: {
             { key: 'go', label: '', nowrap: true, render: (r) => <a href={`/?q=${encodeURIComponent(r.name)}`} style={{ color: UI.primary, textDecoration: 'none', fontSize: 12.5 }}>{t('rank.viewJobs')}</a> },
           ]} />
         )}
+        </div>
         <Pager t={t} total={counts.pageTotal} page={page} mk={mk} />
         {/* D3 对比浮条:选 ≥1 家出现;≥2 家可去对比 */}
         {cmp.length > 0 && (

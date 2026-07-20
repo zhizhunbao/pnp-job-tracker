@@ -89,6 +89,29 @@ svg {
   vertical-align: middle;
 }
 
+/* E8-08 #121 hover 高亮规范(Frank:「hover 要有高亮,用户才知道哪些能点」)——
+   可点必有态:链接 hover 统一加深(filter 不受 inline textDecoration:none 影响,全站零改动生效);
+   按钮 hover 轻微变暗;禁用钮无态。不可点元素(纯文本/灰注)本就无 cursor 无 hover。 */
+a:hover {
+  filter: brightness(0.75);
+}
+button:not(:disabled):hover {
+  filter: brightness(0.94);
+}
+
+/* E8-08 表卡双形态切换:桌面=表格,≤640=卡片(CSS 双渲染零水合差异,jtCards 同手法) */
+.tcCards {
+  display: none;
+}
+@media (max-width: 640px) {
+  .tcTableWrap {
+    display: none;
+  }
+  .tcCards {
+    display: block;
+  }
+}
+
 .home {
   display: flex;
   flex-direction: column;

@@ -4,7 +4,7 @@
 import { useMemo, useState } from 'react'
 import { StatsShell, MetricCards, CaliberLine, useLang } from './ui'
 import { BackLink } from '../BackLink'
-import { BANNER_IMGS, Button, Chip, PageBanner, Tag } from '../ui/primitives'
+import { BANNER_IMGS, Button, Card, CardAction, CardKV, Chip, PageBanner, Tag } from '../ui/primitives'
 import { DataTable } from '../ui/DataTable'
 import { IconMapPin, IconScale, IconStar, IconTarget } from '../Icons'
 import { BROAD_SLUGS, PROVS, PROV_NAME, type StatRow, type SrcRow } from './shared'
@@ -132,6 +132,22 @@ export function StatsProvContent({ prov, rows, srcs, t, ranks, news = [] }: { pr
       {all && <DifficultyCard raw={all.difficulty} t={t} />}
       <ProvNewsBlock news={news} t={t} />
       <h2 style={{ fontSize: 15.5, margin: '18px 0 8px' }}>{t('stats.byCat')}</h2>
+      {/* E8-08 #121:≤640 大类卡(域卡,minWidth 横滚退役);桌面 DataTable 照旧 */}
+      <div className="tcCards">
+        {cats.map((x) => (
+          <Card key={x.slug}>
+            <div style={{ fontSize: 14.5, fontWeight: 600 }}><a href={`/stats/${prov.toLowerCase()}/${x.slug}`} style={{ color: '#2563eb', textDecoration: 'none' }}>{broadLabel(x.broad)}</a></div>
+            <CardKV items={[
+              { k: t('stats.openJobs'), v: x.row!.openJobs },
+              { k: t('stats.new7d'), v: x.row!.new7d },
+              { k: t('stats.medWage'), v: money(x.row!.medianWageAnnual) },
+              { k: t('stats.named'), v: x.row!.namedJobs ? <span style={{ color: '#b45309', fontWeight: 600 }}>{x.row!.namedJobs}</span> : <span style={{ color: '#9ca3af' }}>—</span> },
+            ]} />
+            <CardAction><a href={`/?prov=${prov}&broad=${encodeURIComponent(x.broad)}`} style={{ color: '#2563eb', textDecoration: 'none' }}>{t('stats.toJobs')}</a></CardAction>
+          </Card>
+        ))}
+      </div>
+      <div className="tcTableWrap">
       {/* 组件统一 P2 余批(#110):换公共 DataTable;minWidth 560=窄屏横滚不挤竖排(第 2 轮 #10) */}
       <DataTable<typeof cats[number]> rows={cats} rowKey={(x) => x.slug} minWidth={560} cols={[
         { key: 'cat', label: t('filter.cat'), sort: (x) => broadLabel(x.broad), render: (x) => <a href={`/stats/${prov.toLowerCase()}/${x.slug}`} style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}>{broadLabel(x.broad)}</a> },
@@ -141,6 +157,7 @@ export function StatsProvContent({ prov, rows, srcs, t, ranks, news = [] }: { pr
         { key: 'named', label: t('stats.named'), sort: (x) => x.row!.namedJobs ?? null, render: (x) => x.row!.namedJobs ? <span style={{ color: '#b45309', fontWeight: 600 }}>{x.row!.namedJobs}</span> : <span style={{ color: '#9ca3af' }}>—</span> },
         { key: 'go', label: '', nowrap: true, render: (x) => <a href={`/?prov=${prov}&broad=${encodeURIComponent(x.broad)}`} style={{ color: '#2563eb', textDecoration: 'none', fontSize: 12.5 }}>{t('stats.toJobs')}</a> },
       ]} />
+      </div>
       <CaliberLine t={t} srcs={srcs} fetched={all?.fetched || ''} />
     </>
   )
@@ -249,6 +266,19 @@ export function CompareContent({ rows, srcs, isPro, loggedIn, myNocs, t }: { row
           {BROAD_SLUGS.map(([, b]) => <option key={b} value={b}>{broadLabel(b)}</option>)}
         </select>
       </div>
+      {/* E8-08 #121:≤640 一省一卡(转置卡:原列头省=卡标题,原指标行=键值行;metrics 数组复用零双写) */}
+      <div className="tcCards">
+        {picked.map((p) => {
+          const r = rows.find((x) => x.province === p && x.broad === broad)
+          return (
+            <Card key={p}>
+              <div style={{ fontSize: 14.5, fontWeight: 600 }}>{PROV_NAME[p] || p}</div>
+              <CardKV items={metrics.map(([label, get]) => ({ k: label, v: r ? get(r) : '—' }))} />
+            </Card>
+          )
+        })}
+      </div>
+      <div className="tcTableWrap">
       {/* 组件统一 P2 余批(#110):对比表换公共 DataTable(转置表=指标行×省列,列随选省动态生成,不排序) */}
       <DataTable<typeof metrics[number]> rows={metrics} rowKey={([label]) => String(label)} cols={[
         { key: 'metric', label: '', nowrap: true, render: ([label]) => <span style={{ color: '#9ca3af' }}>{label}</span> },
@@ -261,6 +291,7 @@ export function CompareContent({ rows, srcs, isPro, loggedIn, myNocs, t }: { row
           },
         })),
       ]} />
+      </div>
       <CaliberLine t={t} srcs={srcs} fetched={rows[0]?.fetched || ''} />
     </>
   )

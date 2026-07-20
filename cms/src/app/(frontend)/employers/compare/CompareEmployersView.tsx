@@ -7,7 +7,7 @@ import { makeT, LANG_KEY, type Lang, type TFn } from '../../jobs/i18n'
 import { SiteHeader } from '../../SiteHeader'
 import { SiteFooter } from '../../SiteFooter'
 import { BackLink } from '../../BackLink'
-import { Button, Notice, PageShell, Tag, UI } from '../../ui/primitives'
+import { Button, Card, CardKV, Notice, PageShell, Tag, UI } from '../../ui/primitives'
 import { DataTable } from '../../ui/DataTable'
 import { PricingModal } from '../../jobs/PricingModal'
 import { IconScale, IconStar } from '../../Icons'
@@ -100,6 +100,22 @@ export function CompareEmployersView({ names, rows, pro, loggedIn }: {
           <Notice kind="info" action={<Button kind="secondary" sm href="/employers">{t('ce.goDir')}</Button>}>{t('ce.empty')}</Notice>
         ) : (
           <>
+            {/* E8-08 #121:≤640 一雇主一卡(转置卡:原列头雇主=卡标题,原维度行=键值行;dims 数组复用零双写) */}
+            <div className="tcCards">
+              {rows.map((r, i) => {
+                const alias = lang === 'zh' ? r.aliasZh : lang === 'ko' ? r.aliasKo : ''
+                return (
+                  <Card key={i}>
+                    <div style={{ fontSize: 14.5, fontWeight: 600 }}>
+                      {r.website ? <a href={r.website} target="_blank" rel="noreferrer" style={{ color: UI.primary, textDecoration: 'none' }}>{r.name} ↗</a> : r.name}
+                    </div>
+                    {alias ? <div style={{ fontSize: 12.5, color: '#9ca3af', marginTop: 2 }}>{alias}</div> : null}
+                    <CardKV items={dims.map((d) => ({ k: d.label, v: d.render(r), wide: d.key === 'brief' }))} />
+                  </Card>
+                )
+              })}
+            </div>
+            <div className="tcTableWrap">
             <DataTable<Dim> rows={dims} rowKey={(d) => d.key} minWidth={560} cols={[
               { key: 'dim', label: '', nowrap: true, render: (d) => <span title={d.tip} style={{ color: '#9ca3af', ...(d.tip ? { textDecoration: 'underline dotted #d1d5db' } : {}) }}>{d.label}</span> },
               ...rows.map((r, i) => ({
@@ -110,6 +126,7 @@ export function CompareEmployersView({ names, rows, pro, loggedIn }: {
                 render: (d: Dim) => d.render(r),
               })),
             ]} />
+            </div>
             <div style={{ marginTop: 12, display: 'flex', gap: 12, alignItems: 'center' }}>
               <Button kind="secondary" sm href="/employers">{t('ce.goDir')}</Button>
               <Button kind="ghost" sm onClick={clear} style={{ color: '#9ca3af', fontWeight: 400 }}>{t('ce.clear')}</Button>

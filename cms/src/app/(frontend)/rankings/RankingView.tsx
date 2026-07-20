@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import { makeT, streamDisplay, eeDisplay, LANG_KEY, type Lang, type TFn } from '../jobs/i18n'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
-import { BANNER_IMGS, PageBanner } from '../ui/primitives'
+import { BANNER_IMGS, Card, CardAction, CardKV, PageBanner } from '../ui/primitives'
 import { DataTable } from '../ui/DataTable'
 import { IconChart } from '../Icons'
 
@@ -20,6 +20,44 @@ export type RankRow = {
   lmiaPositions: number | null; lmiaQuarter: string  // #21(第 17 轮):第一排序键上榜可见
 }
 
+
+// ── E8-08 #121 手机域卡(按逻辑拆):公司榜卡 / 职位榜卡——#排名进标题行,数字语义色与桌面列一致 ──
+function RankCompanyCard({ r, t, showNamed }: { r: RankRow; t: TFn; showNamed: boolean }) {
+  return (
+    <Card>
+      <div style={{ fontSize: 14.5, fontWeight: 600 }}>
+        <span style={{ color: '#9ca3af', fontWeight: 400 }}>#{r.rank}</span>{' '}
+        {r.officialUrl ? <a href={r.officialUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{r.company} ↗</a> : r.company}
+      </div>
+      {r.province ? <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 2 }}>{r.province}</div> : null}
+      <CardKV items={[
+        { k: t('rank.col.lmia'), v: r.lmiaPositions ? <span style={{ fontWeight: 600, color: '#15803d' }}>{r.lmiaPositions}</span> : <span style={{ color: '#9ca3af' }}>—</span> },
+        ...(r.lmiaQuarter ? [{ k: t('dir.col.quarter'), v: <span style={{ color: '#9ca3af' }}>{r.lmiaQuarter}</span> }] : []),
+        ...(showNamed ? [{ k: t('rank.col.namedJobs'), v: <span style={{ fontWeight: 600, color: '#b45309' }}>{r.namedJobs}</span> }] : []),
+        { k: t('rank.col.openJobs'), v: r.openJobs ?? '—' },
+        { k: t('rank.col.avgScore'), v: r.avgScore ?? '—' },
+      ]} />
+      <CardAction><a href={`/?q=${encodeURIComponent(r.company)}`} style={{ color: '#2563eb', textDecoration: 'none' }}>{t('rank.viewJobs')}</a></CardAction>
+    </Card>
+  )
+}
+function RankJobCard({ r, t }: { r: RankRow; t: TFn }) {
+  return (
+    <Card>
+      <div style={{ fontSize: 14.5, fontWeight: 600 }}>
+        <span style={{ color: '#9ca3af', fontWeight: 400 }}>#{r.rank}</span>{' '}
+        {r.applyUrl ? <a href={r.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{r.title} ↗</a> : r.title}
+      </div>
+      {r.company ? <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 2 }}>{r.company}</div> : null}
+      <CardKV items={[
+        { k: t('col.city'), v: [r.city, r.province].filter(Boolean).join(', ') || '—' },
+        { k: t('col.salary'), v: r.salaryText ? <span style={{ color: '#15803d', fontWeight: 600 }}>{r.salaryText}</span> : '—' },
+        { k: t('col.score'), v: r.score ?? '—' },
+        { k: t('col.datePosted'), v: <span style={{ color: '#9ca3af' }}>{(r.datePosted || '').slice(0, 10)}</span> },
+      ]} />
+    </Card>
+  )
+}
 
 /** 更新时间 + 口径说明 + 榜单表(页面/弹窗共用;壳与标题由宿主渲) */
 export function RankingTable({ slug, items, t }: { slug: string; items: RankRow[]; t: TFn }) {
@@ -36,8 +74,11 @@ export function RankingTable({ slug, items, t }: { slug: string; items: RankRow[
     <>
       <div style={{ fontSize: 12.5, color: '#9ca3af', margin: '6px 0 4px' }}>{t('rank.updated', { d: updated })}</div>
       <div style={{ fontSize: 12.5, color: '#6b7280', marginBottom: 16 }}>{t(slug.startsWith('daily-top') ? 'rank.note.daily-top' : 'rank.note.' + slug)}</div>
-      {/* 组件统一 P2 余批(#110):换公共 DataTable(排序/拖宽/hover 同 jobs 观感);
-          顺手清 W 规矩存量:LMIA「数 · 季度」与「PNP · EE」的 · 杂糅拆成一行一条 */}
+      {/* 组件统一 P2 余批(#110):换公共 DataTable;E8-08 #121:≤640 换域卡(CSS 双渲染) */}
+      <div className="tcCards">
+        {items.map((r) => isCompany ? <RankCompanyCard key={r.rank} r={r} t={t} showNamed={showNamed} /> : <RankJobCard key={r.rank} r={r} t={t} />)}
+      </div>
+      <div className="tcTableWrap">
       {isCompany ? (
         <DataTable<RankRow> rows={items} rowKey={(r) => String(r.rank)} cols={[
           { key: 'rank', label: '#', nowrap: true, sort: (r) => r.rank, render: (r) => <span style={{ color: '#9ca3af' }}>{r.rank}</span> },
@@ -68,6 +109,7 @@ export function RankingTable({ slug, items, t }: { slug: string; items: RankRow[
           { key: 'date', label: t('col.datePosted'), nowrap: true, sort: (r) => r.datePosted || null, render: (r) => <span style={{ color: '#9ca3af', fontSize: 12.5 }}>{(r.datePosted || '').slice(0, 10)}</span> },
         ]} />
       )}
+      </div>
     </>
   )
 }

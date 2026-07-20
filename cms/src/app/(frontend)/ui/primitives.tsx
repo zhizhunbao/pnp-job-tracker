@@ -94,6 +94,28 @@ export function Notice({ kind = 'info', lead, action, style, children }: {
   )
 }
 
+// ── 卡片积木(E8-08 #121,2026-07-20 Frank「按逻辑拆」拍板):纯样式原子零逻辑——
+// 手机卡片=每域自己的组件用这三块拼(组合复用样式,不合并逻辑);解剖/hover 规范见 implementation/E8-08。
+// ①Card 卡壳(白卡描边 r12,右上操作位走 position:absolute 自摆)②CardKV 键值区(两列 grid,wide 独占行)③CardAction 操作行。
+export function Card({ style, children }: { style?: React.CSSProperties; children: React.ReactNode }) {
+  return <div style={{ border: `1px solid ${UI.border}`, borderRadius: 12, background: UI.card, padding: '10px 12px', marginBottom: 8, position: 'relative', ...style }}>{children}</div>
+}
+export function CardKV({ items }: { items: { k: React.ReactNode; v: React.ReactNode; wide?: boolean }[] }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 14px', marginTop: 6 }}>
+      {items.map((it, i) => (
+        <div key={i} style={it.wide ? { gridColumn: '1 / -1' } : undefined}>
+          <div style={{ fontSize: 11.5, color: UI.text3 }}>{it.k}</div>
+          <div style={{ fontSize: 13, color: '#374151' }}>{it.v}</div>
+        </div>
+      ))}
+    </div>
+  )
+}
+export function CardAction({ children }: { children: React.ReactNode }) {
+  return <div style={{ marginTop: 6, fontSize: 12.5 }}>{children}</div>
+}
+
 // ── PageBanner(#66 模块统一页头 → banner 图版,2026-07-19 Frank「按这个做」批设计总表)──
 // 两形态一组件:images 传了=实景图 banner(恒 150px/手机 110px 定框,cover 裁剪;背景 crossfade 8s
 // B类氛围轮播——前景信息恒定,区别于 news 头条的 A类内容轮播;右下小圆点,hover 暂停,
