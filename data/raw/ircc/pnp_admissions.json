@@ -1,0 +1,17 @@
+{
+ "source": "https://www.ircc.canada.ca/opendata-donneesouvertes/data/EN_ODP-PR-ProvImmCat.xlsx",
+ "year": "2025",
+ "byProv": {
+  "NL": 3020,
+  "PE": 1620,
+  "NS": 4305,
+  "NB": 4910,
+  "QC": 0,
+  "ON": 25390,
+  "MB": 11140,
+  "SK": 9610,
+  "AB": 12145,
+  "BC": 12150
+ },
+ "note": "PNP 类别 PR 登陆数(含随行家属,人头口径)最新完整年"
+}

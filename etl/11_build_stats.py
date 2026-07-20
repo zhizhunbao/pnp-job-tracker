@@ -28,6 +28,7 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 IN_JOBS = _paths.MART / "jobs.json"
+IN_DIFF = _paths.PROCESSED / "difficulty.json"   # E12-07:省难度指数(04e 产出;缺文件=不挂,列留空)
 OUT_STATS = _paths.MART / "stats.json"
 
 PROVS = ["ON", "BC", "AB", "SK", "MB", "QC", "NS", "NB", "NL", "PE"]
@@ -55,6 +56,10 @@ def main() -> None:
         buckets[(prov, broad, "all")].append(j)
         buckets[(prov, "all", "all")].append(j)
 
+    diff: dict[str, str] = {}
+    if IN_DIFF.exists():
+        _d = json.loads(IN_DIFF.read_text(encoding="utf-8"))
+        diff = {r["province"]: json.dumps(r | {"generated": _d.get("generated")}, ensure_ascii=False) for r in _d.get("rows", [])}
     rows: list[dict] = []
     for (prov, broad, mid), js in sorted(buckets.items()):
         streams = sorted({j["pnpStream"] for j in js if j.get("pnpStream")})
@@ -70,6 +75,8 @@ def main() -> None:
             "aipJobs": sum(1 for j in js if j.get("aip")),
             "topCities": json.dumps([{"city": c, "n": n} for c, n in cities.most_common(5)], ensure_ascii=False),
             "fetched": TODAY,
+            # E12-07:省级汇总行挂难度指数(jsonb);非省级行留空
+            "difficulty": (diff.get(prov) if broad == "all" and mid == "all" else None),
         })
 
     OUT_STATS.write_text(json.dumps(rows, ensure_ascii=False, indent=2), encoding="utf-8")

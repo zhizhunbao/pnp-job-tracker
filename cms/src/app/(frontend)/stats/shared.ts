@@ -8,6 +8,7 @@ export type StatRow = {
   medianWageAnnual: number | null; medianSalaryAnnual: number | null
   namedJobs: number | null; streamLabels: string; aipJobs: number | null
   topCities: string; fetched: string
+  difficulty?: string | Record<string, unknown> | null   // E12-07 难度指数(jsonb,仅 broad=all 行)
 }
 export type SrcRow = { field: string; publisher: string; url: string; fetched: string }
 

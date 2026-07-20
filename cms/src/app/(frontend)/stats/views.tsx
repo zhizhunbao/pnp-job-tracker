@@ -4,7 +4,7 @@
 import { useMemo, useState } from 'react'
 import { StatsShell, MetricCards, CaliberLine, useLang } from './ui'
 import { BackLink } from '../BackLink'
-import { BANNER_IMGS, Button, Chip, PageBanner } from '../ui/primitives'
+import { BANNER_IMGS, Button, Chip, PageBanner, Tag } from '../ui/primitives'
 import { DataTable } from '../ui/DataTable'
 import { IconMapPin, IconScale, IconStar, IconTarget } from '../Icons'
 import { BROAD_SLUGS, PROVS, PROV_NAME, type StatRow, type SrcRow } from './shared'
@@ -60,6 +60,38 @@ export function StatsIndexView({ rows, srcs }: { rows: StatRow[]; srcs: SrcRow[]
   return <StatsShell lang={lang} setLang={setLang} t={t}><StatsIndexContent rows={rows} srcs={srcs} t={t} /></StatsShell>
 }
 
+// ── E12-07 省难度卡(2026-07-20 Frank 拍板「stats 卡先行/人话档名」):分档+逐因子出处;
+//    红线:粗口径注(竞争基数≠申请人数)/分数只与自身历史比/禁概率;H 基础卡规格,一行一条(W 规矩)──
+const TIER_TAG: Record<string, 'ok' | 'warn' | 'federal'> = { easy: 'ok', mid: 'warn', tight: 'federal' }
+function DifficultyCard({ raw, t }: { raw: StatRow['difficulty']; t: TFn }) {
+  const d = useMemo(() => { try { return typeof raw === 'string' ? JSON.parse(raw) : raw } catch { return null } }, [raw]) as any
+  if (!d?.tier) return null
+  const f = (k: string) => (d.factors || []).find((x: any) => x.key === k)
+  const comp = f('comp'), trend = f('quotaTrend'), act = f('activity'), score = f('scoreLevel')
+  const row: React.CSSProperties = { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', fontSize: 13, color: '#374151', marginTop: 6 }
+  const src = (x: any) => x?.source ? <a href={x.source} target="_blank" rel="noreferrer" title={String(x.asOf || '')} style={{ color: '#6b7280', textDecoration: 'none', fontSize: 11.5, whiteSpace: 'nowrap' }}>↗</a> : null
+  const pctS = (v: number) => `${v > 0 ? '+' : ''}${Math.round(v * 100)}%`
+  return (
+    <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '14px 16px', margin: '12px 0 0' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+        <span style={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>{t('diff.title')}</span>
+        <Tag variant={TIER_TAG[d.tier]}>{t('diff.' + d.tier)}</Tag>
+      </div>
+      {comp && (
+        <div style={row}>
+          <span style={{ fontWeight: 600 }}>{t('diff.comp', { v: comp.value })}</span>
+          <span style={{ color: '#9ca3af', fontSize: 12 }}>{t('diff.compNote', { pool: Number(comp.pool).toLocaleString(), quota: Number(comp.quota).toLocaleString(), y: comp.quotaYear })}</span>
+          {src(comp)}
+        </div>
+      )}
+      {trend && <div style={row}><span>{t('diff.trend', { v: pctS(trend.value) })}</span>{src(trend)}</div>}
+      {act && <div style={row}><span>{t('diff.act', { n: act.value, m: Number(act.invitations || 0).toLocaleString() })}</span>{src(act)}</div>}
+      {score && <div style={row}><span>{t('diff.score', { p: score.value, s: score.latestScore, sc: score.scale || '—' })}</span>{src(score)}</div>}
+      <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 8, lineHeight: 1.6 }}>{t('diff.note', { y: comp?.asOf || '' })}</div>
+    </div>
+  )
+}
+
 // 该省移民动态块(E12-06):近 3 条官方新闻标题链 /news/[slug];无数据整块不出现
 type NewsSlimRow = { title: string; date: string; slug: string }
 function ProvNewsBlock({ news, t }: { news: NewsSlimRow[]; t: TFn }) {
@@ -97,6 +129,7 @@ export function StatsProvContent({ prov, rows, srcs, t, ranks, news = [] }: { pr
         </div>
       )}
       {all && <TopCities raw={all.topCities} t={t} />}
+      {all && <DifficultyCard raw={all.difficulty} t={t} />}
       <ProvNewsBlock news={news} t={t} />
       <h2 style={{ fontSize: 15.5, margin: '18px 0 8px' }}>{t('stats.byCat')}</h2>
       {/* 组件统一 P2 余批(#110):换公共 DataTable;minWidth 560=窄屏横滚不挤竖排(第 2 轮 #10) */}

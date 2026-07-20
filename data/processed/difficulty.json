@@ -1,0 +1,213 @@
+{
+ "generated": "2026-07-20",
+ "trYear": "2024",
+ "rows": [
+  {
+   "province": "ON",
+   "tier": "tight",
+   "factors": [
+    {
+     "key": "comp",
+     "value": 76.5,
+     "pool": 1080750,
+     "quota": 14119,
+     "quotaYear": 2026,
+     "tier": "tight",
+     "source": "https://www.ircc.canada.ca/opendata-donneesouvertes/data/EN_ODP_annual-TR-Study-IS_PT_study_level_year_end.xlsx",
+     "asOf": "2024"
+    },
+    {
+     "key": "quotaTrend",
+     "value": 0.313,
+     "tier": "easy",
+     "source": "https://moving2canada.com/news/pnp-allocations-2026-by-province/",
+     "asOf": "2026"
+    }
+   ]
+  },
+  {
+   "province": "BC",
+   "tier": "tight",
+   "factors": [
+    {
+     "key": "comp",
+     "value": 84.2,
+     "pool": 442210,
+     "quota": 5254,
+     "quotaYear": 2026,
+     "tier": "tight",
+     "source": "https://www.ircc.canada.ca/opendata-donneesouvertes/data/EN_ODP_annual-TR-Study-IS_PT_study_level_year_end.xlsx",
+     "asOf": "2024"
+    },
+    {
+     "key": "quotaTrend",
+     "value": -0.154,
+     "tier": "mid",
+     "source": "https://moving2canada.com/news/pnp-allocations-2026-by-province/",
+     "asOf": "2026"
+    },
+    {
+     "key": "activity",
+     "value": 12,
+     "invitations": 1533,
+     "tier": "easy",
+     "source": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply",
+     "asOf": "2026-07-20"
+    },
+    {
+     "key": "scoreLevel",
+     "value": 90,
+     "latestScore": 132,
+     "scale": "SIRS",
+     "tier": "tight",
+     "source": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply",
+     "asOf": "2026-07-16"
+    }
+   ]
+  },
+  {
+   "province": "AB",
+   "tier": "mid",
+   "factors": [
+    {
+     "key": "comp",
+     "value": 33.9,
+     "pool": 216935,
+     "quota": 6403,
+     "quotaYear": 2026,
+     "tier": "mid",
+     "source": "https://www.ircc.canada.ca/opendata-donneesouvertes/data/EN_ODP_annual-TR-Study-IS_PT_study_level_year_end.xlsx",
+     "asOf": "2024"
+    },
+    {
+     "key": "quotaTrend",
+     "value": -0.03,
+     "tier": "mid",
+     "source": "https://moving2canada.com/news/pnp-allocations-2026-by-province/",
+     "asOf": "2026"
+    },
+    {
+     "key": "activity",
+     "value": 12,
+     "invitations": 2204,
+     "tier": "easy",
+     "source": "https://www.alberta.ca/aaip-processing-information",
+     "asOf": "2026-07-20"
+    },
+    {
+     "key": "scoreLevel",
+     "value": 33,
+     "latestScore": 53,
+     "scale": "WEOI",
+     "tier": "easy",
+     "source": "https://www.alberta.ca/aaip-processing-information",
+     "asOf": "2026-07-15"
+    }
+   ]
+  },
+  {
+   "province": "SK",
+   "tier": "easy",
+   "factors": [
+    {
+     "key": "comp",
+     "value": 9.0,
+     "pool": 43025,
+     "quota": 4761,
+     "quotaYear": 2026,
+     "tier": "easy",
+     "source": "https://www.ircc.canada.ca/opendata-donneesouvertes/data/EN_ODP_annual-TR-Study-IS_PT_study_level_year_end.xlsx",
+     "asOf": "2024"
+    }
+   ]
+  },
+  {
+   "province": "MB",
+   "tier": "easy",
+   "factors": [
+    {
+     "key": "comp",
+     "value": 11.9,
+     "pool": 74615,
+     "quota": 6250,
+     "quotaYear": 2025,
+     "tier": "easy",
+     "source": "https://www.ircc.canada.ca/opendata-donneesouvertes/data/EN_ODP_annual-TR-Study-IS_PT_study_level_year_end.xlsx",
+     "asOf": "2024"
+    },
+    {
+     "key": "activity",
+     "value": 10,
+     "invitations": 1090,
+     "tier": "easy",
+     "source": "https://immigratemanitoba.com/draws/",
+     "asOf": "2026-07-20"
+    }
+   ]
+  },
+  {
+   "province": "NS",
+   "tier": "mid",
+   "factors": [
+    {
+     "key": "comp",
+     "value": 22.2,
+     "pool": 52100,
+     "quota": 2344,
+     "quotaYear": 2025,
+     "tier": "mid",
+     "source": "https://www.ircc.canada.ca/opendata-donneesouvertes/data/EN_ODP_annual-TR-Study-IS_PT_study_level_year_end.xlsx",
+     "asOf": "2024"
+    }
+   ]
+  },
+  {
+   "province": "NB",
+   "tier": "easy",
+   "factors": [
+    {
+     "key": "comp",
+     "value": 12.7,
+     "pool": 34815,
+     "quota": 2750,
+     "quotaYear": 2025,
+     "tier": "easy",
+     "source": "https://www.ircc.canada.ca/opendata-donneesouvertes/data/EN_ODP_annual-TR-Study-IS_PT_study_level_year_end.xlsx",
+     "asOf": "2024"
+    }
+   ]
+  },
+  {
+   "province": "NL",
+   "tier": "easy",
+   "factors": [
+    {
+     "key": "comp",
+     "value": 10.6,
+     "pool": 16125,
+     "quota": 1525,
+     "quotaYear": 2025,
+     "tier": "easy",
+     "source": "https://www.ircc.canada.ca/opendata-donneesouvertes/data/EN_ODP_annual-TR-Study-IS_PT_study_level_year_end.xlsx",
+     "asOf": "2024"
+    }
+   ]
+  },
+  {
+   "province": "PE",
+   "tier": "easy",
+   "factors": [
+    {
+     "key": "comp",
+     "value": 10.7,
+     "pool": 10975,
+     "quota": 1025,
+     "quotaYear": 2025,
+     "tier": "easy",
+     "source": "https://www.ircc.canada.ca/opendata-donneesouvertes/data/EN_ODP_annual-TR-Study-IS_PT_study_level_year_end.xlsx",
+     "asOf": "2024"
+    }
+   ]
+  }
+ ]
+}

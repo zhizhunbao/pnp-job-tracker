@@ -1,0 +1,15 @@
+{
+  "note": "PNP 年度提名配额(nomination spaces)人工核对维护表(E12-07;2026-07-20 核对,Frank 抽查制)。口径=联邦分配给各省的提名名额,不是登陆数(登陆含随行家属且跨年滞后)。year 空缺省=沿用上一有数年,行内 note 说明;QC 不参与 PNP 不入表。",
+  "checkedAt": "2026-07-20",
+  "rows": [
+    { "prov": "ON", "y2026": 14119, "y2025": 10750, "source": "https://moving2canada.com/news/pnp-allocations-2026-by-province/", "note": "2026 已公布" },
+    { "prov": "BC", "y2026": 5254, "y2025": 6214, "source": "https://moving2canada.com/news/pnp-allocations-2026-by-province/", "note": "2026 已公布(2025-12-18 IRCC 通知);2025 年中从 4,000 追加至 6,214" },
+    { "prov": "AB", "y2026": 6403, "y2025": 6603, "source": "https://moving2canada.com/news/pnp-allocations-2026-by-province/", "note": "2026 已公布" },
+    { "prov": "SK", "y2026": 4761, "y2025": null, "source": "https://moving2canada.com/news/pnp-allocations-2026-by-province/", "note": "2026 已公布;2025 数未核到" },
+    { "prov": "MB", "y2026": null, "y2025": 6250, "source": "https://immigrationnewscanada.ca/canada-boosts-provincial-nominee-program/", "note": "2026 未公布;2025=4,750 基数 + 2025-10 追加 1,500" },
+    { "prov": "NS", "y2026": null, "y2025": 2344, "source": "https://www.ctivci.ca/provincial-nominee-program-pnp-quotas-2025", "note": "2026 未公布;2025=PNP 1,785 + 追加 559(AIP 名额另列不并入);口径混杂待抽查" },
+    { "prov": "NB", "y2026": null, "y2025": 2750, "source": "https://www.mccarthy.ca/en/insights/blogs/spotlight-can-asia/canadas-immigration-policy-in-2025-an-adjustment-to-meet-provincial-labour-needs", "note": "2026 未公布" },
+    { "prov": "NL", "y2026": null, "y2025": 1525, "source": "https://www.mccarthy.ca/en/insights/blogs/spotlight-can-asia/canadas-immigration-policy-in-2025-an-adjustment-to-meet-provincial-labour-needs", "note": "2026 未公布" },
+    { "prov": "PE", "y2026": null, "y2025": 1025, "source": "https://www.mccarthy.ca/en/insights/blogs/spotlight-can-asia/canadas-immigration-policy-in-2025-an-adjustment-to-meet-provincial-labour-needs", "note": "2026 未公布" }
+  ]
+}

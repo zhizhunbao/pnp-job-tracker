@@ -13,7 +13,7 @@ export async function loadStats(where = '', params: any[] = [], opts?: { withMid
   try {
     rows = (await (payload.db as any).pool.query(
       `SELECT province, broad, mid, open_jobs, new7d, median_wage_annual, median_salary_annual,
-              named_jobs, stream_labels, aip_jobs, top_cities, fetched
+              named_jobs, stream_labels, aip_jobs, top_cities, fetched, difficulty
        FROM stats ${opts?.withMid ? where : baseCond} ORDER BY open_jobs DESC NULLS LAST`, params)).rows
   } catch (e: any) {
     if (e?.code !== '42703') throw e  // 42703=列不存在 → 降级;其余照抛
@@ -28,6 +28,7 @@ export async function loadStats(where = '', params: any[] = [], opts?: { withMid
     medianWageAnnual: num(r.median_wage_annual), medianSalaryAnnual: num(r.median_salary_annual),
     namedJobs: num(r.named_jobs), streamLabels: r.stream_labels ?? '', aipJobs: num(r.aip_jobs),
     topCities: r.top_cities ?? '[]', fetched: r.fetched ?? '',
+    difficulty: r.difficulty ?? null,
   }))
 }
 

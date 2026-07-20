@@ -28,6 +28,7 @@ RAW_JOBBANK = RAW / "jobbank"                           # Job Bank 原始 HTML �
 # 维护表/源各自成顶层源(删掉 reference 桶):pnp/aip/wages/fsa/policy 直接挂 raw 下,各自维护表+源同处
 PNP = RAW / "pnp"                                       # 各省 PNP 维护表(aaip-ineligible/sk-*.json 等)
 EE = RAW / "ee"                                         # 联邦 Express Entry 类别抽选清单(federal-categories.json,全国单一源)
+IRCC = RAW / "ircc"                                     # IRCC 开放数据(E12-07:学签/工签存量、PNP 登陆数)+ pnp_allocations.json 配额维护表
 NOC = RAW / "noc"                                      # NOC 2021 官方职业名+主要职责(StatCan Elements 开放 CSV)
 AIP = RAW / "aip"                                       # AIP 指定雇主名单(aip-designated-employers.json/.md)
 WAGES = RAW / "wages"                                   # ESDC 工资:wages.json(维护表)+ wage*.csv(源)

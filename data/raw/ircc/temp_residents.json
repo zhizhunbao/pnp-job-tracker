@@ -1,0 +1,53 @@
+{
+ "source": {
+  "study": "https://www.ircc.canada.ca/opendata-donneesouvertes/data/EN_ODP_annual-TR-Study-IS_PT_study_level_year_end.xlsx",
+  "tfwp": "https://www.ircc.canada.ca/opendata-donneesouvertes/data/EN_ODP_annual-TR-work-TFW_PT_program_year_end.xlsx",
+  "imp": "https://www.ircc.canada.ca/opendata-donneesouvertes/data/EN_ODP_annual-TR-work-IMP_PT_program_year_end.xlsx"
+ },
+ "note": "IRCC 年末存量(Dec 31 holders);数值官方四舍五入到 5,'--' 小值抑制当 0",
+ "study": {
+  "year": "2024",
+  "byProv": {
+   "NL": 6950,
+   "PE": 4945,
+   "NS": 24410,
+   "NB": 15545,
+   "QC": 128010,
+   "ON": 482100,
+   "MB": 27635,
+   "SK": 18520,
+   "AB": 71545,
+   "BC": 203995
+  }
+ },
+ "tfwp": {
+  "year": "2024",
+  "byProv": {
+   "NL": 1230,
+   "PE": 1255,
+   "NS": 3025,
+   "NB": 3850,
+   "QC": 72280,
+   "ON": 56545,
+   "MB": 5875,
+   "SK": 3830,
+   "AB": 36530,
+   "BC": 50905
+  }
+ },
+ "imp": {
+  "year": "2024",
+  "byProv": {
+   "NL": 7945,
+   "PE": 4775,
+   "NS": 24665,
+   "NB": 15420,
+   "QC": 127540,
+   "ON": 542105,
+   "MB": 41105,
+   "SK": 20675,
+   "AB": 108860,
+   "BC": 187310
+  }
+ }
+}

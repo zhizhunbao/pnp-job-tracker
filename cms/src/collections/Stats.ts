@@ -17,6 +17,7 @@ export const Stats: CollectionConfig = {
     { name: 'streamLabels', type: 'text', admin: { description: '命中的通道名(、分隔)' } },
     { name: 'aipJobs', type: 'number' },
     { name: 'topCities', type: 'textarea', admin: { description: 'json:[{city,n}] 前 5 城市' } },
+    { name: 'difficulty', type: 'json', admin: { description: 'E12-07 省难度指数(仅 broad=all 行;{tier,factors[]} 带出处)' } },
     { name: 'fetched', type: 'text' },
   ],
 }
