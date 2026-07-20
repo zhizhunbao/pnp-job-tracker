@@ -1548,6 +1548,9 @@ function JdTextView({ text, max = 4000 }: { text: string; max?: number }) {
       .map((s) => s.trim().replace(/^[•·▪◦‣*-]+\s*/, '').replace(/\s{2,}/g, ' '))
       .filter(Boolean)
   ).map((l) => l.replace(JD_HR_LINE_RE, '$1: '))  // HR「Label- 值」归一成「Label: 值」
+    // 相邻重复行去重(2026-07-19 Frank 报障:ZipRecruiter 帖「Job Description」连出两遍,库内 349 帖同款
+    // 模板节头重复)——跳过空行比较、只收 ≤80 字符短行(节头/标签),正文长句不碰;保留首次出现
+    .filter((function () { let prev = ''; return (l: string) => { if (!l) return true; const dup = l === prev && l.length <= 80; prev = l; return !dup } })())
   // 保真轨保留空行作段距;行首「• 」保留(数据层给的列表符),只在猜测轨剥
   const renderLine = (l: string, i: number) => {
     if (!l) return <div key={i} style={{ height: 6 }} />
