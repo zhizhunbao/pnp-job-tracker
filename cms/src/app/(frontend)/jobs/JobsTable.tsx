@@ -1775,7 +1775,8 @@ function ScoreGradesSection({ job, lang, loggedIn }: { job: JobRow; lang: Lang; 
       .catch(() => { if (!dead) setD('error') })
     return () => { dead = true }
   }, [job])
-  const dots = (g: number) => <span style={{ letterSpacing: 2, color: gradeColor(g), whiteSpace: 'nowrap' }}>{'●'.repeat(g)}{'○'.repeat(5 - g)}</span>
+  // #133(Frank「直接写文字,不要分成五个单位」):点阵刻度与 X/5 数字全部退役,档名彩字+依据句即全部
+  const gname = (g: number, name: string) => <b style={{ color: gradeColor(g) }}>{name}</b>
   const row = (label: string, body: React.ReactNode) => (
     <div style={{ display: 'flex', gap: 10, padding: '5px 0', fontSize: 13, alignItems: 'baseline' }}>
       <span style={{ minWidth: 88, color: '#9ca3af', flexShrink: 0 }}>{label}</span>
@@ -1791,11 +1792,10 @@ function ScoreGradesSection({ job, lang, loggedIn }: { job: JobRow; lang: Lang; 
   return (
     <FactsBox note={t('fact.scoreNote')}>
       {freeLeft != null && <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 4 }}>{t('advisor.left', { n: freeLeft })}</div>}
-      {/* #132 档名人话化:主显档名,X/5 降级灰小注(Frank「X/5 用户能看懂吗」) */}
-      {ch ? row(t('gr.dim.channel'), <>{dots(ch.g)} <b style={{ marginLeft: 8 }}>{t('gr.ch.' + ch.g)}</b><span style={{ marginLeft: 6, color: '#9ca3af', fontSize: 11.5 }}>{ch.g}/5</span><div style={{ fontSize: 12.5, color: '#6b7280' }}>{t(`gr.channel.${ch.g}`, { v: ch.v || '' })}</div></>) : null}
-      {sal ? row(t('gr.dim.salary'), <>{dots(sal.g)} <b style={{ marginLeft: 8 }}>{t('gr.sal.' + sal.g)}</b><span style={{ marginLeft: 6, color: '#9ca3af', fontSize: 11.5 }}>{sal.g}/5</span><div style={{ fontSize: 12.5, color: '#6b7280' }}>{t('gr.salary.d', { pct: sal.v >= 0 ? `+${sal.v}` : String(sal.v) })}</div></>)
+      {ch ? row(t('gr.dim.channel'), <>{gname(ch.g, t('gr.ch.' + ch.g))}<div style={{ fontSize: 12.5, color: '#6b7280' }}>{t(`gr.channel.${ch.g}`, { v: ch.v || '' })}</div></>) : null}
+      {sal ? row(t('gr.dim.salary'), <>{gname(sal.g, t('gr.sal.' + sal.g))}<div style={{ fontSize: 12.5, color: '#6b7280' }}>{t('gr.salary.d', { pct: sal.v >= 0 ? `+${sal.v}` : String(sal.v) })}</div></>)
         : row(t('gr.dim.salary'), <span style={{ color: '#9ca3af' }}>{t('gr.noData')}</span>)}
-      {emp ? row(t('gr.dim.emp'), <>{dots(emp.g)} <b style={{ marginLeft: 8 }}>{t('gr.empn.' + emp.g)}</b><span style={{ marginLeft: 6, color: '#9ca3af', fontSize: 11.5 }}>{emp.g}/5</span><div style={{ fontSize: 12.5, color: '#6b7280' }}>{emp.v?.length ? emp.v.map((h) => t('gr.emp.' + h)).join('、') : t('gr.emp.none')}</div></>) : null}
+      {emp ? row(t('gr.dim.emp'), <>{gname(emp.g, t('gr.empn.' + emp.g))}<div style={{ fontSize: 12.5, color: '#6b7280' }}>{emp.v?.length ? emp.v.map((h) => t('gr.emp.' + h)).join('、') : t('gr.emp.none')}</div></>) : null}
       <div style={{ marginTop: 10, paddingTop: 8, borderTop: '1px solid #f3f4f6' }}>
         <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 2 }}>{t('gr.ref.title')}</div>
         {/* 公司四维行(E12-08 尾巴):companyDetail 一直随响应回传,此前只渲担保一行;依据句前端按维度拼(数据层只存 {g,v}) */}
@@ -1803,7 +1803,7 @@ function ScoreGradesSection({ job, lang, loggedIn }: { job: JobRow; lang: Lang; 
           const co = d.companyDetail || {}
           const sp = co.sponsor, ac = co.active, cs = co.salary, fm = co.fame
           const gRow = (label: string, g: number, name: string, note: string) =>
-            row(label, <>{dots(g)} <b style={{ marginLeft: 8 }}>{name}</b><span style={{ marginLeft: 6, color: '#9ca3af', fontSize: 11.5 }}>{g}/5</span><div style={{ fontSize: 12.5, color: '#6b7280' }}>{note}</div></>)
+            row(label, <>{gname(g, name)}<div style={{ fontSize: 12.5, color: '#6b7280' }}>{note}</div></>)
           return (
             <>
               {sp ? gRow(t('gr.ref.sponsor'), sp.g, t('gr.sp.' + sp.g), (sp.v?.total

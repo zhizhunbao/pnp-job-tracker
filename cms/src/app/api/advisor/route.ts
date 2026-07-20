@@ -87,6 +87,11 @@ const catOf = (noc?: string) => {
 // 评分事实(E12-08 档位制,#126 修):旧 0-100 加权镜像退役——弹框 UI 已是 1-5 档,解读再报「总分 80」
 // 就是两套口径打架。喂档位语义(与 etl/grades.py grade_channel 同源信号),并明令禁提 0-100 总分。
 const INDEMAND2 = new Set(['21', '22', '31', '32', '72', '73', '42'])
+// #133(Frank「直接写文字,不要分成五个单位」):喂档名语义不喂数字,模型解释也不得报 X/5
+const CH_NAME: Record<number, string> = {
+  5: 'named on a provincial stream list', 4: 'in-demand skilled occupation', 3: 'skilled occupation',
+  2: 'lower-skill but on a pathway list', 1: 'weak pathway',
+}
 function scoreFacts(j: Job): string {
   const noc = j.noc || ''
   const teer = teerOf(noc)
@@ -96,9 +101,9 @@ function scoreFacts(j: Job): string {
     teer == null ? 'NOC unclassified' : `TEER ${teer}`,
     indemand ? 'in-demand occupation group' : 'not in an in-demand occupation group',
   ].join('; ')
-  return `Grade system: every dimension is an INDEPENDENT 1-5 grade (5 = strongest immigration signal); there is NO weighting and NO composite total — never mention any 0-100 score, that system is retired. ` +
-    `This job's channel grade: ${j.gradeChannel != null ? `${j.gradeChannel}/5` : 'not graded'} (drivers — ${drivers}). ` +
-    `Salary quality (posted pay vs official median) and employment quality (permanent / full-time / direct posting) are graded separately in the breakdown panel the reader is looking at.`
+  return `Assessment system: every dimension is assessed INDEPENDENTLY with a plain-language tier name; there is NO weighting, NO composite total, and NO numeric scale shown to users — NEVER mention any number like "4/5", "X out of 5" or a 0-100 score; use the tier wording only. ` +
+    `This job's immigration-channel assessment: ${j.gradeChannel != null ? `"${CH_NAME[j.gradeChannel] || 'unknown'}"` : 'not assessed'} (drivers — ${drivers}). ` +
+    `Salary quality (posted pay vs official median) and employment quality (permanent / full-time / direct posting) are assessed separately in the breakdown panel the reader is looking at.`
 }
 // 每行事实带来源短标注(E4-04 §3.5):中层判断/对话引用时能指回来源,强化反编机制。
 function jobFacts(j: Job): string {
@@ -122,7 +127,7 @@ function jobFacts(j: Job): string {
 }
 // 各字段的解释要点(英文指令,输出按所选语言)
 const ASK: Record<string, string> = {
-  score: "Explain this job's immigration-channel grade (1-5): what the grade means and what drives it, using exactly the grade facts given. Grades are independent 1-5 dimensions — never invent or mention a 0-100 or total score.",
+  score: "Explain this job's immigration-channel assessment: what the tier wording means and what drives it, using exactly the assessment facts given. NEVER mention numeric grades (no \"4/5\", no \"X out of 5\") or any 0-100/total score — plain tier wording only.",
   pnp: 'Explain whether and why this job fits the employer-offer → PNP route, plus caveats (each province has its own occupation lists / language / wage rules; this is a rough signal, not a ruling; QC is separate).',
   ee: 'Explain Express Entry category-based selection: this is a FEDERAL pathway, SEPARATE from PNP — which category this job\'s NOC falls into and what that means (IRCC holds CRS-based draws prioritizing these categories; often no job offer needed). Make clear it differs from the provincial PNP route.',
   aip: 'Explain the AIP (Atlantic Immigration Program) designated-employer status and what it means; note it only applies to the four Atlantic provinces and is a rough name match.',
@@ -271,7 +276,7 @@ export async function POST(req: NextRequest) {
   // 缓存键含 字段+标识+语言(公司按公司名,其余按 id);带档案的初判按人隔离;对话不缓存(每轮唯一)
   // v2(#126 生产复验教训):#125 换初判模板后线上仍捞到旧模板缓存条目——提示词/模板一改就 bump 版本,陈旧条目永不再服务
   const keyId = field === 'company' ? (job.company || '').toLowerCase() : (body.id || job.title || '')
-  const key = `v2:${field}:${keyId}:${lang}${pf ? `:p${user!.id}` : ''}`
+  const key = `v3:${field}:${keyId}:${lang}${pf ? `:p${user!.id}` : ''}`   // v3=#133 档名口径(禁数字)
 
   if (!isChat) {
     const cached = cache.get(key)
