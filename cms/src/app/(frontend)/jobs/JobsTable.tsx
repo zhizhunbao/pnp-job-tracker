@@ -1180,20 +1180,23 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         <div className="jtCards" style={{ flexDirection: 'column', gap: 8, ...(loading && page === 0 && { opacity: 0.45, pointerEvents: 'none' }) }}>
           {rows.map((j) => {
             const open = (field: ColKey, title: string) => setPopup({ field, job: j, title })  // 与表格行同一签名
+            // #129(Frank「卡片本身点不进去」):整卡可点=进详情页;卡内既有交互(弹框/收藏/chips)stopPropagation 保持原行为
+            const stop = (fn: () => void) => (e: React.MouseEvent) => { e.stopPropagation(); fn() }
             const L = parseLoc(j)
             const M: Record<string, { bg: string; fg: string }> = { high: { bg: '#dcfce7', fg: '#166534' }, mid: { bg: '#dbeafe', fg: '#1e40af' }, low: { bg: '#f3f4f6', fg: '#6b7280' } }
             const mc = j.match ? M[j.match] : undefined
             const chip = (bg: string, fg: string, txt: string, k: ColKey) => (
-              <span key={k} onClick={() => open(k, txt)} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: bg, color: fg, cursor: 'pointer', whiteSpace: 'nowrap' }}>{txt}</span>
+              <span key={k} onClick={stop(() => open(k, txt))} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: bg, color: fg, cursor: 'pointer', whiteSpace: 'nowrap' }}>{txt}</span>
             )
             const days = j.datePosted && (j.status || 'open') !== 'closed' ? Math.max(0, Math.floor((Date.now() - new Date(j.datePosted).getTime()) / 86400000)) : null
             return (
-              <div key={j.id} style={{ border: '1px solid #e5e7eb', borderRadius: 12, padding: '10px 12px', background: '#fff' }}>
+              <div key={j.id} onClick={() => { window.location.href = `/jobs/${j.id}` }}
+                style={{ border: '1px solid #e5e7eb', borderRadius: 12, padding: '10px 12px', background: '#fff', cursor: 'pointer' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'baseline' }}>
                   {/* E8-07 B 件(Frank 拍板「公司名、职位名手机都可点」+手机免弹框套弹框):职位名=蓝链进 /jobs/[id] 详情页(原开 JD 弹框) */}
-                  <a href={`/jobs/${j.id}`} style={{ fontSize: 14.5, fontWeight: 600, color: '#2563eb', textDecoration: 'none' }}>{j.title}</a>
+                  <a href={`/jobs/${j.id}`} onClick={(e) => e.stopPropagation()} style={{ fontSize: 14.5, fontWeight: 600, color: '#2563eb', textDecoration: 'none' }}>{j.title}</a>
                   <span style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
-                    {mc && <span onClick={() => open('match', t('match.' + j.match))} style={{ fontSize: 11.5, padding: '1px 8px', borderRadius: 6, background: mc.bg, color: mc.fg, fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer' }}>{t('match.' + j.match)}</span>}
+                    {mc && <span onClick={stop(() => open('match', t('match.' + j.match)))} style={{ fontSize: 11.5, padding: '1px 8px', borderRadius: 6, background: mc.bg, color: mc.fg, fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer' }}>{t('match.' + j.match)}</span>}
                     {/* #52:收藏入口手机也要有(E9-01 闭环第一环)——卡片寸土寸金只放星标,匿名点=注册框(与桌面 toggleSave 同一逻辑) */}
                     <button onClick={(e) => { e.stopPropagation(); toggleSave(j) }} aria-label={saved[String(j.id)] ? t('sj.saved') : t('sj.save')}
                       style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', fontSize: 16, lineHeight: 1, color: saved[String(j.id)] ? '#b45309' : '#c4c9d4' }}>
@@ -1205,14 +1208,14 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                     E12-08:担保档药丸(公司分承接原「知名」位;无记录不显=宁缺勿滥) */}
                 {j.company ? (
                   <div style={{ marginTop: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span onClick={() => open('company', j.company)} style={{ fontSize: 12.5, color: '#2563eb', cursor: 'pointer' }}>{j.company}</span>
+                    <span onClick={stop(() => open('company', j.company))} style={{ fontSize: 12.5, color: '#2563eb', cursor: 'pointer' }}>{j.company}</span>
                     {j.sponsorGrade != null && <span style={{ fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sponsorPill', { g: j.sponsorGrade })}</span>}
                   </div>
                 ) : null}
                 <div style={{ fontSize: 12.5, marginTop: 4, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                  {L.city ? <span onClick={() => open('city', L.city)} style={{ color: '#374151', cursor: 'pointer' }}>{L.city}{j.province ? `, ${j.province}` : ''}</span> : null}
-                  {(j.salaryText || j.salary) ? <span onClick={() => open('salary', j.salaryText || j.salary)} style={{ color: '#15803d', fontWeight: 600, cursor: 'pointer' }}>{j.salaryText || j.salary}</span> : null}
-                  <span suppressHydrationWarning onClick={() => open('datePosted', (j.datePosted || '').slice(0, 10))} style={{ color: '#9ca3af', cursor: 'pointer' }}>{(j.datePosted || '').slice(0, 10)}{days != null ? `(${t('fact.daysUpVal', { n: days })})` : ''}</span>
+                  {L.city ? <span onClick={stop(() => open('city', L.city))} style={{ color: '#374151', cursor: 'pointer' }}>{L.city}{j.province ? `, ${j.province}` : ''}</span> : null}
+                  {(j.salaryText || j.salary) ? <span onClick={stop(() => open('salary', j.salaryText || j.salary))} style={{ color: '#15803d', fontWeight: 600, cursor: 'pointer' }}>{j.salaryText || j.salary}</span> : null}
+                  <span suppressHydrationWarning onClick={stop(() => open('datePosted', (j.datePosted || '').slice(0, 10)))} style={{ color: '#9ca3af', cursor: 'pointer' }}>{(j.datePosted || '').slice(0, 10)}{days != null ? `(${t('fact.daysUpVal', { n: days })})` : ''}</span>
                 </div>
                 <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
                   {j.pnpEligible ? chip('#fef3c7', '#92400e', j.pnpStream ? t('cell.pnpYes') : t('cell.pnpSkilled'), 'pnp') : null}
