@@ -42,6 +42,8 @@ const zh: Dict = {
   'gr.emp.permanent': '永久岗', 'gr.emp.full': '全职', 'gr.emp.direct': '雇主直发', 'gr.emp.none': '永久、全职、直发均未命中',
   'gr.ref.title': '参照(不计入职位档)', 'gr.ref.sponsor': '公司担保记录档', 'gr.ref.noRec': '无记录(不等于不担保)', 'gr.ref.diff': '查看该省移民难度 →',
   'gr.sponsorPill': '担保 {g}/5',
+  // #123c:整理版 PAY 节帖面薪资兜底注
+  'act.f.payFb': '(帖面薪资字段;原帖正文未写)',
   'updated': '更新 {t}',
   'tagline': '每日更新 · 全加拿大全职业 · 移民价值视角',
   'foot.disclaimer': '数据自动聚合仅供参考,不构成移民/法律建议;非持牌顾问(RCIC),以官方来源为准。',
@@ -423,6 +425,8 @@ const en: Dict = {
   'gr.emp.permanent': 'Permanent', 'gr.emp.full': 'Full-time', 'gr.emp.direct': 'Direct employer posting', 'gr.emp.none': 'None of permanent, full-time or direct',
   'gr.ref.title': 'Reference (not part of job grades)', 'gr.ref.sponsor': 'Employer sponsorship record', 'gr.ref.noRec': 'No record (not the same as won’t sponsor)', 'gr.ref.diff': 'Provincial difficulty →',
   'gr.sponsorPill': 'Sponsor {g}/5',
+  // #123c: formatted-JD PAY fallback note
+  'act.f.payFb': '(from the posting’s pay field; not stated in the body)',
   'updated': 'Updated {t}',
   'tagline': 'Daily updates · all of Canada · immigration-value lens',
   'foot.disclaimer': 'Auto-aggregated data, for reference only — not immigration/legal advice; not an RCIC. Verify with official sources.',
@@ -816,6 +820,8 @@ const ko: Dict = {
   'gr.emp.permanent': '정규직', 'gr.emp.full': '풀타임', 'gr.emp.direct': '고용주 직접 게시', 'gr.emp.none': '정규직, 풀타임, 직접 게시 모두 미해당',
   'gr.ref.title': '참고(직무 등급 미포함)', 'gr.ref.sponsor': '회사 스폰서 기록 등급', 'gr.ref.noRec': '기록 없음(스폰서 불가 아님)', 'gr.ref.diff': '주별 난이도 보기 →',
   'gr.sponsorPill': '스폰서 {g}/5',
+  // #123c: 정리본 PAY 급여 필드 대체 주석
+  'act.f.payFb': '(공고 급여 필드 기준; 본문에는 없음)',
   'updated': '{t} 업데이트',
   'tagline': '매일 업데이트 · 캐나다 전역 · 이민 가치 관점',
   'foot.disclaimer': '자동 수집 데이터는 참고용이며 이민/법률 자문이 아닙니다. RCIC가 아니므로 공식 출처를 기준으로 하세요.',

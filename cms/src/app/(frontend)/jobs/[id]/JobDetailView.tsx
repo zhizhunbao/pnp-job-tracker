@@ -68,7 +68,7 @@ function JdSection({ job, lang, plan, t }: { job: JobRow; lang: Lang; plan: Plan
             <p style={{ color: '#9ca3af', margin: '0 0 10px', fontSize: 13 }}>{t('act.noText')}</p>
             {job.applyUrl && <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ ...aLink, fontSize: 13, fontWeight: 600 }}>{t('act.seeOfficial')}</a>}
           </div>
-        ) : (fmt && !showOrig ? <JdFormattedView text={fmt} t={t} /> : <JdTextView text={text} max={4000} />)}
+        ) : (fmt && !showOrig ? <JdFormattedView text={fmt} t={t} fallbackPay={job.salaryText || job.salary || undefined} applyUrl={job.applyUrl || undefined} /> : <JdTextView text={text} max={4000} />)}
       {job.applyUrl && (
         <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #f3f4f6', fontSize: 11.5, color: '#9ca3af', overflowWrap: 'anywhere' }}>
           {t('src.label')}: <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{job.applyUrl}</a>

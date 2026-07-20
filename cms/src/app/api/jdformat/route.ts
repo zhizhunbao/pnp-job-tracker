@@ -66,7 +66,7 @@ async function generate(pool: any, row: { id: number; description: string; emplo
 }
 
 export async function POST(req: NextRequest) {
-  if (!friendLlmReady()) return new Response('', { status: 204 })
+  if (!friendLlmReady()) return new Response(null, { status: 204 })
   let url = ''
   try { url = String((await req.json())?.url || '').trim() } catch { /* fallthrough */ }
   if (!url) return new Response('', { status: 400 })
@@ -77,16 +77,16 @@ export async function POST(req: NextRequest) {
     [url],
   )
   const row = rows[0]
-  if (!row) return new Response('', { status: 204 })
+  if (!row) return new Response(null, { status: 204 })
   if (row.jd_formatted) return new Response(row.jd_formatted, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
   // 生成走 IP 日限(缓存命中不计;生成在朋友盒子上跑,别被刷)
-  if (!checkLimit([[`jdf:${ipOf(req)}`, Number(process.env.JDFORMAT_IP_DAILY || 40)]])) return new Response('', { status: 204 })
+  if (!checkLimit([[`jdf:${ipOf(req)}`, Number(process.env.JDFORMAT_IP_DAILY || 40)]])) return new Response(null, { status: 204 })
   let p = inflight.get(url)
   if (!p) {
     p = generate(pool, row, url).finally(() => inflight.delete(url))
     inflight.set(url, p)
   }
   const out = await p
-  if (!out) return new Response('', { status: 204 })
+  if (!out) return new Response(null, { status: 204 })
   return new Response(out, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
 }

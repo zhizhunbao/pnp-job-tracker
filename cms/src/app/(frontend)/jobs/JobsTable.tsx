@@ -1585,7 +1585,7 @@ export function JdTextView({ text, max = 4000 }: { text: string; max?: number })
 }
 // J3 五节整理版渲染(2026-07-19 Frank 批):[ROLE]/[REQS]/[PAY]/[WORKHOURS]/[APPLY] 标记文本 → 节头加粗独立行,
 // 节内一条一行(W 规范:禁「·」「/」杂糅);(not stated) → 「原帖未提及」灰字,缺节不脑补
-export function JdFormattedView({ text, t }: { text: string; t: TFn }) {
+export function JdFormattedView({ text, t, fallbackPay, applyUrl }: { text: string; t: TFn; fallbackPay?: string; applyUrl?: string }) {
   const SECS: [string, string][] = [['ROLE', 'act.f.role'], ['REQS', 'act.f.reqs'], ['PAY', 'act.f.pay'], ['WORKHOURS', 'act.f.hours'], ['APPLY', 'act.f.apply']]
   const parts = text.split(/\[(ROLE|REQS|PAY|WORKHOURS|APPLY)\]/)
   const secs: Record<string, string> = {}
@@ -1600,9 +1600,17 @@ export function JdFormattedView({ text, t }: { text: string; t: TFn }) {
         return (
           <div key={m} style={{ marginBottom: 8 }}>
             <div style={{ fontWeight: 700, color: '#111827' }}>{t(key)}</div>
-            {none ? <div style={{ paddingLeft: 14, color: '#9ca3af' }}>{t('act.f.none')}</div>
+            {/* #123c(Frank「每个职位都有薪资吧」):原帖正文没写薪资但帖面字段有 → 兜底显示帖面薪资+来源灰注
+                (仍是搬运原帖信息——JB 列表字段也是雇主自报,非编造) */}
+            {none && m === 'PAY' && fallbackPay ? (
+              <div style={{ paddingLeft: 14 }}>{fallbackPay} <span style={{ color: '#9ca3af', fontSize: 12 }}>{t('act.f.payFb')}</span></div>
+            ) : none ? <div style={{ paddingLeft: 14, color: '#9ca3af' }}>{t('act.f.none')}</div>
               : hasBullets ? <ul style={{ margin: 0, paddingLeft: 30 }}>{lines.map((l, i) => <li key={i}>{l.replace(/^-\s*/, '')}</li>)}</ul>
               : lines.map((l, i) => <div key={i} style={{ paddingLeft: 14 }}>{l}</div>)}
+            {/* #123c(Frank「Click Here 没法点」):懒抓纯文本丢链接,「怎么投」节尾恒附官方原帖真链 */}
+            {m === 'APPLY' && applyUrl ? (
+              <div style={{ paddingLeft: 14 }}><a href={applyUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}>{t('act.seeOfficial')}</a></div>
+            ) : null}
           </div>
         )
       })}
@@ -2657,7 +2665,7 @@ function ActModal({ job, lang, plan, onClose }: { job: JobRow; lang: Lang; plan:
                   ) : fmt === undefined ? (
                     <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 6 }}>✨ {t('act.aiWorking')}</div>
                   ) : null}
-                  {fmt && !showOrig ? <JdFormattedView text={fmt} t={t} /> : <JdTextView text={text} max={4000} />}
+                  {fmt && !showOrig ? <JdFormattedView text={fmt} t={t} fallbackPay={job.salaryText || job.salary || undefined} applyUrl={job.applyUrl || undefined} /> : <JdTextView text={text} max={4000} />}
                 </>
               )}
           {/* republish 合规的官方入口=底部极简来源行(2026-07-06 拍板,取代顶部按钮+说明) */}
