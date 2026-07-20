@@ -1,8 +1,11 @@
 // LLM provider 抽象(E2-03):advisor 的唯一模型出口,prompt 组装/缓存/限流都留在调用方。
-// 两个后端,统一输出「纯文本增量」的字节流:
+// 三个后端,统一输出「纯文本增量」的字节流:
 //   ollama(默认)  = 本地 dev,家里模型(OLLAMA_URL/OLLAMA_MODEL)
-//   anthropic     = 线上,Claude Haiku 4.5(ANTHROPIC_API_KEY;单次 1-2k in + ≤500 out ≈ $0.004)
+//   anthropic     = Claude Haiku 4.5(ANTHROPIC_API_KEY;单次 1-2k in + ≤500 out ≈ $0.004)
+//   friend        = 朋友公网 API(ngrok→qwen3.6,friendLlm 传输层;2026-07-19 Frank 拍板初判切本地生态,
+//                   #102 自动生成后 Haiku 调用量翻倍→账单归零;Render 置 LLM_PROVIDER=friend 即切,回退=删该 env)
 import Anthropic from '@anthropic-ai/sdk'
+import { friendChat } from './friendLlm'
 
 export type ChatMessage = { role: 'system' | 'user' | 'assistant'; content: string }
 
@@ -20,11 +23,32 @@ export class LlmError extends Error {
 export async function streamChat(
   messages: ChatMessage[], opts: { maxTokens: number; fetchUrl?: string },
 ): Promise<ReadableStream<Uint8Array>> {
+  if (PROVIDER === 'friend') return friendStream(messages)
   return PROVIDER === 'anthropic' ? anthropicStream(messages, opts) : ollamaStream(messages, opts)
+}
+
+// ── friend:非流式后端——整段答案包成单 chunk 流,advisor 路由/前端打字机零改动;fetchUrl grounding 忽略(同 ollama)──
+function friendMsgSplit(messages: ChatMessage[]) {
+  return {
+    system: messages.filter((m) => m.role === 'system').map((m) => m.content).join('\n\n') || undefined,
+    prompt: messages.filter((m) => m.role !== 'system').map((m) => m.content).join('\n\n'),
+  }
+}
+async function friendStream(messages: ChatMessage[]): Promise<ReadableStream<Uint8Array>> {
+  const { system, prompt } = friendMsgSplit(messages)
+  const r = await friendChat({ prompt, system, timeoutMs: 90_000 })
+  if (!r) throw new LlmError('无法连接本地模型服务,请稍后再试。')
+  return new ReadableStream({ start(c) { c.enqueue(new TextEncoder().encode(r.answer)); c.close() } })
 }
 
 // ── 非流式整段补全(E11-07 简历解析用:一次调用抽结构化 JSON,不需要流)──
 export async function completeText(messages: ChatMessage[], opts: { maxTokens: number }): Promise<string> {
+  if (PROVIDER === 'friend') {
+    const { system, prompt } = friendMsgSplit(messages)
+    const r = await friendChat({ prompt, system, timeoutMs: 90_000 })
+    if (!r) throw new LlmError('无法连接本地模型服务,请稍后再试。')
+    return r.answer
+  }
   if (PROVIDER === 'anthropic') {
     const client = new Anthropic() // ANTHROPIC_API_KEY 从 env 解析
     const system = messages.filter((m) => m.role === 'system').map((m) => m.content).join('\n\n')
