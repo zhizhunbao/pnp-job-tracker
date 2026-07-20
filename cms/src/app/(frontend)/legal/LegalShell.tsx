@@ -31,7 +31,7 @@ export function LegalShell({ docs, icon }: { docs: Record<Lang, LegalDoc>; icon?
             {s.body.map((p, j) => (
               <p key={j} style={{ fontSize: 13.5, lineHeight: 1.85, margin: '0 0 6px', color: '#374151' }}>
                 {p.split('{email}').map((seg, k, arr) => k < arr.length - 1
-                  ? <span key={k}>{seg}<a href={`mailto:${SUPPORT_EMAIL}`} style={{ color: '#2563eb' }}>{SUPPORT_EMAIL}</a></span>
+                  ? <span key={k}>{seg}<a href={`mailto:${SUPPORT_EMAIL}`} style={{ color: '#2563eb', textDecoration: 'none' }}>{SUPPORT_EMAIL}</a></span>
                   : <span key={k}>{seg}</span>)}
               </p>
             ))}

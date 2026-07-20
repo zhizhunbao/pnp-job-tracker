@@ -10,10 +10,10 @@ export function SiteFooter({ t, maxWidth = 1100 }: { t: TFn; maxWidth?: number }
       <div style={{ maxWidth, margin: '0 auto', padding: '14px 1.25rem', display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'space-between', alignItems: 'center', color: '#9ca3af', fontSize: 12.5 }}>
         <span>{t('foot.disclaimer')}</span>
         <span style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-          <a href="/legal/disclaimer" style={{ color: '#6b7280' }}>{t('foot.disclaimerLink')}</a>
-          <a href="/legal/privacy" style={{ color: '#6b7280' }}>{t('foot.privacy')}</a>
-          <a href="/legal/terms" style={{ color: '#6b7280' }}>{t('foot.terms')}</a>
-          <a href="/about" style={{ color: '#6b7280' }}>{t('foot.about')}</a>
+          <a href="/legal/disclaimer" style={{ color: '#6b7280', textDecoration: 'none' }}>{t('foot.disclaimerLink')}</a>
+          <a href="/legal/privacy" style={{ color: '#6b7280', textDecoration: 'none' }}>{t('foot.privacy')}</a>
+          <a href="/legal/terms" style={{ color: '#6b7280', textDecoration: 'none' }}>{t('foot.terms')}</a>
+          <a href="/about" style={{ color: '#6b7280', textDecoration: 'none' }}>{t('foot.about')}</a>
           <span style={{ whiteSpace: 'nowrap' }}>© 2026 Offer2PR</span>
         </span>
       </div>

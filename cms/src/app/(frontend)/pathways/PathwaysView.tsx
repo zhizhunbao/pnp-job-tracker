@@ -20,7 +20,7 @@ function SignalRow({ s, t }: { s: PathwaySignal; t: (k: string, v?: Record<strin
       <span>
         {t(s.key, s.params)}
         {s.source && (
-          <a href={s.source.url} target="_blank" rel="noreferrer" style={{ color: '#6366f1', textDecoration: 'none', fontSize: 12, marginLeft: 6 }}>
+          <a href={s.source.url} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none', fontSize: 12, marginLeft: 6 }}>
             ↗{s.source.fetched ? ` ${String(s.source.fetched).slice(0, 10)}` : ''}
           </a>
         )}
@@ -54,7 +54,7 @@ export function PathwaysView({ evals, loggedIn, profileOk }: { evals: PathwayEva
           <li key={s.key} style={{ fontSize: 13, color: '#374151', lineHeight: 1.7 }}>
             {t(s.key)}
             {s.sourceIdx != null && ev.recipe.sources[s.sourceIdx] && (
-              <a href={ev.recipe.sources[s.sourceIdx].url} target="_blank" rel="noreferrer" style={{ color: '#6366f1', textDecoration: 'none', fontSize: 12, marginLeft: 5 }}>↗</a>
+              <a href={ev.recipe.sources[s.sourceIdx].url} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none', fontSize: 12, marginLeft: 5 }}>↗</a>
             )}
           </li>
         ))}
@@ -73,7 +73,7 @@ export function PathwaysView({ evals, loggedIn, profileOk }: { evals: PathwayEva
               <span style={{ color: '#b45309', flexShrink: 0 }}><IconWarn /></span>
               <span>
                 {t(g.key)}
-                {g.url && <a href={g.url} {...(g.url.startsWith('http') ? { target: '_blank', rel: 'noreferrer' } : {})} style={{ color: '#6366f1', textDecoration: 'none', fontSize: 12, marginLeft: 6 }}>↗</a>}
+                {g.url && <a href={g.url} {...(g.url.startsWith('http') ? { target: '_blank', rel: 'noreferrer' } : {})} style={{ color: '#6b7280', textDecoration: 'none', fontSize: 12, marginLeft: 6 }}>↗</a>}
               </span>
             </li>
           ))}

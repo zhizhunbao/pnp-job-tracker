@@ -898,7 +898,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             {anyFilter || matchView ? t('subtitle.hits', { n: total }) : t('subtitle.count', { n: total })}
             {proof && (proof.named > 0 || proof.lmia > 0) && <span style={{ marginLeft: 10 }}>{t('subtitle.proof', { named: proof.named, lmia: proof.lmia })}</span>}
           </>}
-          right={!plan.loggedIn && <a href="/?signup=1" style={{ color: '#1e40af', fontWeight: 600, textDecoration: 'none' }}><IconTarget /> {t('banner.text')}</a>} />
+          right={!plan.loggedIn && <a href="/?signup=1" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'none' }}><IconTarget /> {t('banner.text')}</a>} />
 
         {/* 推荐板块(2026-07-17「找工作为主」重构):原蓝条降级为职位列表上方的「推荐岗位」内容行——
             取最强组合出前 3 张匹配岗卡片,每张可「不感兴趣」;有筛选/匹配视图时不打扰。
@@ -1326,7 +1326,7 @@ function NewsLatestBlock({ province, lang, news }: { province: string; lang: Lan
   return (
     <div style={{ marginBottom: 12 }}>
       <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>
-        {t('news.latest')}<a href="/news" style={{ color: '#9ca3af', textDecoration: 'none', marginLeft: 8 }}>{t('news.more')}</a>
+        {t('news.latest')}<a href="/news" style={{ color: '#2563eb', textDecoration: 'none', marginLeft: 8 }}>{t('news.more')}</a>
       </div>
       <div style={{ border: '1px solid #f3f4f6', borderRadius: 8 }}>
         {rows.map((n) => (
@@ -1383,7 +1383,7 @@ function PnpListSection({ job, lang, occ, draws, news }: { job: JobRow; lang: La
         <div key={s.label + s.stream} style={{ marginBottom: 10 }}>
           <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>
             {/* 通道名挂官方政策页(url 维度字段一直有,07-06 质量盘点补渲染)—— 每条清单自带出处 */}
-            {s.url ? <a href={s.url} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'underline', textDecorationColor: '#d1d5db' }}>{streamDisplay(t, s.label)} ↗</a> : streamDisplay(t, s.label)}
+            {s.url ? <a href={s.url} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{streamDisplay(t, s.label)} ↗</a> : streamDisplay(t, s.label)}
           </div>
           <div style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid #f3f4f6', borderRadius: 8 }}>
             {s.occupations.map((o) => {
@@ -1792,7 +1792,7 @@ function FieldFactsSection({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pn
         </div>
       ) : urls.length ? (
         <div style={{ margin: '2px 0 12px', fontSize: 11.5, color: '#9ca3af', overflowWrap: 'anywhere' }}>
-          {t('src.label')}: {urls.map((u, i) => <span key={u}>{i ? ' · ' : ''}<a href={u} target="_blank" rel="noreferrer" style={{ color: '#6b7280' }}>{u}</a></span>)}
+          {t('src.label')}: {urls.map((u, i) => <span key={u}>{i ? ' · ' : ''}<a href={u} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{u}</a></span>)}
         </div>
       ) : null}
     </>
@@ -1922,7 +1922,7 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
         {feasible && (
           <FactRow k={t('lmia.route')}>
             <span style={{ color: feasible.tone, fontWeight: 500 }}>{feasible.txt}</span>{' '}
-            <a href={LMIA_REFUSAL_SOURCE} target="_blank" rel="noreferrer" style={{ color: '#6b7280', fontSize: 11.5 }}>{t('lmia.official')} ↗</a>
+            <a href={LMIA_REFUSAL_SOURCE} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none', fontSize: 11.5 }}>{t('lmia.official')} ↗</a>
           </FactRow>
         )}
       </FactsBox>
@@ -2631,7 +2631,7 @@ function ActModal({ job, lang, plan, onClose, onAdvisor }: { job: JobRow; lang: 
           {/* republish 合规的官方入口=底部极简来源行(2026-07-06 拍板,取代顶部按钮+说明) */}
           {job.applyUrl && (
             <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #f3f4f6', fontSize: 11.5, color: '#9ca3af', overflowWrap: 'anywhere' }}>
-              {t('src.label')}: <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#6b7280' }}>{job.applyUrl}</a>
+              {t('src.label')}: <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{job.applyUrl}</a>
             </div>
           )}
           {/* AI 顾问初判自动生成(Frank:不要再点一下);深挖入口=标题栏「AI 顾问」钮 */}

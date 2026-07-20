@@ -62,7 +62,7 @@ export function CaliberLine({ t, srcs, fetched }: { t: TFn; srcs: SrcRow[]; fetc
           {t('stats.caliberText')}
           <div>
             {srcs.map((s) => (
-              <a key={s.field} href={s.url} target="_blank" rel="noreferrer" style={{ color: '#6b7280', marginRight: 12 }}>{s.publisher} ↗</a>
+              <a key={s.field} href={s.url} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none', marginRight: 12 }}>{s.publisher} ↗</a>
             ))}
             {fetched ? <span>· {t('src.fetched', { d: fetched })}</span> : null}
           </div>
