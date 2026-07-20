@@ -55,7 +55,7 @@ services:
     environment:
       SOURCE: pnp
       HEALTHCHECK_PING_PNP: ${HEALTHCHECK_PING_PNP:-}
-      SCRAPE_INTERVAL: '604800'    # 周更(清单极少变)
+      SCRAPE_INTERVAL: '3600'      # 1h(#128 Frank「都改成小时更,不知道什么时候有新数据」;原周更——抽选结果最多滞后一周不可接受)
       TZ: EST5EDT
 
   ee:                              # 联邦 EE 类别+抽选(2026-07 改 httpx:类别页无 Akamai、行全量;月更,只刷 raw)
@@ -63,7 +63,7 @@ services:
     environment:
       SOURCE: ee
       HEALTHCHECK_PING_EE: ${HEALTHCHECK_PING_EE:-}
-      SCRAPE_INTERVAL: '2592000'   # 月更
+      SCRAPE_INTERVAL: '3600'      # 1h(#128 同拍;原月更——EE 抽选两周一轮,月更会漏)
       TZ: EST5EDT
     # 回退:源站重新上 Akamai 时恢复 crawl 重镜像(build dockerfile: docker/etl/crawl/Dockerfile + BROWSER_HEADLESS=1)
 
@@ -72,7 +72,7 @@ services:
     environment:
       SOURCE: news
       HEALTHCHECK_PING_NEWS: ${HEALTHCHECK_PING_NEWS:-}
-      SCRAPE_INTERVAL: '43200'     # 12h(官方公告低频)
+      SCRAPE_INTERVAL: '3600'      # 1h(#128 同拍;原 12h——公告发出后 1 小时内上站)
       # 翻译策略(Frank 2026-07-18 终版):ETL 预翻停用(budget 0)——翻译走线上实时(朋友 /api/translate,懒翻+DB缓存);
       # 恢复批量=把 NEWS_TRANSLATE_BUDGET 调回 >0(本地 NEWS_LLM_BASE / Anthropic 双后端仍在)
       NEWS_TRANSLATE_BUDGET: ${NEWS_TRANSLATE_BUDGET:-0}
@@ -95,7 +95,7 @@ services:
     <<: *etl
     environment:
       SOURCE: ircc
-      SCRAPE_INTERVAL: '2592000'   # 月更
+      SCRAPE_INTERVAL: '86400'     # 日更(#128:IRCC 开放数据官方月度发布,小时抓=每小时重下几十 MB XLSX 纯空转;日更当兜底)
       TZ: EST5EDT
 
   backup:                          # 每日 pg_dump 生产库 → backups/(E7-01;家里机=运维盒)
@@ -112,7 +112,7 @@ services:
     environment:
       SOURCE: build
       HEALTHCHECK_PING_BUILD: ${HEALTHCHECK_PING_BUILD:-}
-      SCRAPE_INTERVAL: '7200'
+      SCRAPE_INTERVAL: '3600'      # 1h 兜底(#128;正常由 jobbank 新轮触发,这是上游卡住时的保底灌库节奏)
       SEED_URL: ${SEED_URL:-http://host.docker.internal:3001/seed}  # 默认灌 docker cms(:3001);R3 起步档在 docker/.env 覆写为云端 https://pnp-cms.onrender.com/seed
       SEED_TOKEN: ${SEED_TOKEN:-}  # 云端 seed 鉴权(docker/.env 注入;本地空=不带头);upload_mart 推 /api/mart 同用这对(E7-04,Supabase Storage 已退役)
       TZ: EST5EDT                  # 日志东部时区
