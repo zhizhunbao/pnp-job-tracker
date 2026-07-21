@@ -49,7 +49,10 @@ export function catName(t: TFn, v: string): string {
 // note=悬停小注(零 LLM 零额度),none=什么都不做(值本身自明,一个日期不需要解释)。
 // 设计与逐字段依据见 docs/implementation/E8-UI体验统一/10_弹框三合一收编.md
 export type FieldGroup = 'company' | 'job' | 'immigration'
-type Disposition = FieldGroup | 'map' | 'note' | 'none'
+// 三档:并(→三个弹框之一)、图(直连地图)、无(不可点)。
+// 原设计还有一档「注=悬停小注」,2026-07-21 Frank 拍板不做 —— 它与「无」行为完全一致,
+// 留着只是个没兑现的意图,故合并(YAGNI:不为「可能用得上」保留结构)。
+type Disposition = FieldGroup | 'map' | 'none'
 const FIELD_GROUP: Partial<Record<ColKey, Disposition>> = {
   // ① 移民(付费核心;职业分类五级合成一节 —— #157 已证同名三级是噪音)
   match: 'immigration', score: 'immigration', pnp: 'immigration', ee: 'immigration', aip: 'immigration',
@@ -61,9 +64,10 @@ const FIELD_GROUP: Partial<Record<ColKey, Disposition>> = {
   company: 'company', lmia: 'company',
   // ④ 地图直连(mapsUrl 已存在,address 本就直连;补齐其余四个)
   country: 'map', province: 'map', city: 'map', district: 'map', address: 'map',
-  // ⑤ 悬停小注:有口径要解释,但一句话的事不值一个弹框+一次生成+一次额度
-  source: 'note', origin: 'note', direct: 'note', status: 'note', wageMedHr: 'note', wageMedYr: 'note',
-  // ⑥ 什么都不做:日期就是日期
+  // ⑤ 不可点:一句话的事不值一个弹框 + 一次生成 + 一次额度;日期就是日期,不需要解释。
+  // (中位薪资两列对免费用户仍是打码 + 锁,那个锁自己链去升级弹窗,不走这条路由。)
+  source: 'none', origin: 'none', direct: 'none', status: 'none',
+  wageMedHr: 'none', wageMedYr: 'none',
   datePosted: 'none', lastSeen: 'none', closedAt: 'none',
 }
 
@@ -595,7 +599,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   // 不再各自 setPopup —— 今天的三个 bug 全出在「按字段特判散落各处」。
   const openField = useCallback((field: ColKey, job: JobRow, title: string) => {
     const d = FIELD_GROUP[field]
-    if (!d || d === 'none' || d === 'note') return
+    if (!d || d === 'none') return
     if (d === 'map') {
       const q = [job.address, job.district, job.city, job.province].filter(Boolean).join(', ')
       if (q) window.open(mapsUrl(q), '_blank', 'noopener')
