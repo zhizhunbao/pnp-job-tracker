@@ -37,7 +37,7 @@ export type Plan = {
 }
 const FREE_PLAN: Plan = { isPro: false, loggedIn: false, profileOk: false, profile: null, freeMatchCap: 0 }
 // 中/小分类显示翻译(值仍是数据层中文,筛选/查询语义不变):cat.* 缺键退 broad.*(noc.py 兜底会把大类名当中/小类),再退原值
-function catName(t: TFn, v: string): string {
+export function catName(t: TFn, v: string): string {
   for (const k of ['cat.' + v, 'broad.' + v]) { const s = t(k); if (s !== k) return s }
   return v
 }
@@ -510,11 +510,12 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   useIsoLayoutEffect(() => {
     try {
       const sp = new URLSearchParams(window.location.search)
-      const q0 = sp.get('q'); const pv = sp.get('prov'); const bd = sp.get('broad'); const md = sp.get('mid')
+      const q0 = sp.get('q'); const pv = sp.get('prov'); const bd = sp.get('broad'); const md = sp.get('mid'); const fn = sp.get('fine')
       if (q0) setQ(q0)
       if (pv) setFProv(PROV_NAMES[pv.toUpperCase()] || pv)
       if (bd) setFBroad(bd)
       if (md) setFMid(md)  // stats 图表 L2 下钻深链(2026-07-19)
+      if (fn) setFFine(fn)  // #142:详情页职业分类三级可点,小类深链补齐
       if (sp.get('view') === 'match' && plan.loggedIn && plan.profileOk) setMatchView(true)  // E5-05 直链回流
     } catch { /* ignore */ }
   }, [])

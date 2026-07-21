@@ -32,6 +32,8 @@ const zh: Dict = {
   'detail.openFull': '打开完整页', 'detail.back': '返回职位板', 'detail.related': '相关职位',
   'detail.sameCo': '同公司', 'detail.sameOcc': '同省同职业', 'detail.closedNote': '该岗位已下架,信息仅供参考',
   'detail.pnpSec': '省提名通道', 'detail.pnpSecNote': '粗筛信号,非资格认定', 'detail.eeSec': '联邦 EE 类别', 'detail.crumbHome': '职位板',
+  // #142 职业分类三级(可点即按该级筛职位板)
+  'detail.catSec': '职业分类', 'detail.catNote': '按加拿大国家职业分类(NOC)划分;点任一级可筛出同类职位',
   // E8-07 C/D/E:顶栏资讯聚合 + 手机抽屉
   'nav.info': '资讯', 'nav.timeline': '政策时间线', 'nav.menu': '菜单', 'nav.sect.data': '数据与结论', 'nav.sect.mine': '我的',
   // E12-08 档位(1-5)拆解
@@ -435,6 +437,7 @@ const en: Dict = {
   'detail.openFull': 'Open full page', 'detail.back': 'Back to job board', 'detail.related': 'Related jobs',
   'detail.sameCo': 'same employer', 'detail.sameOcc': 'same occupation in province', 'detail.closedNote': 'This posting has closed; shown for reference only',
   'detail.pnpSec': 'PNP streams', 'detail.pnpSecNote': 'rough signal, not an eligibility decision', 'detail.eeSec': 'Federal EE categories', 'detail.crumbHome': 'Job board',
+  'detail.catSec': 'Occupation category', 'detail.catNote': 'Based on Canada’s National Occupational Classification (NOC); click any level to filter the board',
   // E8-07 C/D/E: header info group + mobile drawer
   'nav.info': 'Updates', 'nav.timeline': 'Policy timeline', 'nav.menu': 'Menu', 'nav.sect.data': 'DATA & INSIGHTS', 'nav.sect.mine': 'MINE',
   // E12-08 grade (1-5) breakdown
@@ -845,6 +848,7 @@ const ko: Dict = {
   'detail.openFull': '전체 페이지 열기', 'detail.back': '채용 보드로 돌아가기', 'detail.related': '관련 공고',
   'detail.sameCo': '같은 회사', 'detail.sameOcc': '같은 주 같은 직종', 'detail.closedNote': '마감된 공고입니다. 참고용으로만 확인하세요',
   'detail.pnpSec': '주정부 지명(PNP) 통로', 'detail.pnpSecNote': '대략적 신호이며 자격 판정이 아닙니다', 'detail.eeSec': '연방 EE 카테고리', 'detail.crumbHome': '채용 보드',
+  'detail.catSec': '직업 분류', 'detail.catNote': '캐나다 국가직업분류(NOC) 기준; 각 단계를 클릭하면 동일 분류 공고를 필터링합니다',
   // E8-07 C/D/E: 헤더 소식 그룹 + 모바일 드로어
   'nav.info': '소식', 'nav.timeline': '정책 타임라인', 'nav.menu': '메뉴', 'nav.sect.data': '데이터', 'nav.sect.mine': '내 메뉴',
   // E12-08 등급(1-5) 상세

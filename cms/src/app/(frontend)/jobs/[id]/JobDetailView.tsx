@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 
 import { makeT, LANG_KEY, LANGS, type Lang, type TFn } from '../i18n'
 import {
-  AdvisorModal, blockedSrc, EeCategorySection, FactRow, FactsBox, fetchJobText, JdAdvisorSection, JdFormattedView, JdTextView,
+  AdvisorModal, blockedSrc, catName, EeCategorySection, FactRow, FactsBox, fetchJobText, JdAdvisorSection, JdFormattedView, JdTextView,
   MeansForMe, PnpListSection, PROV_NAMES, UpgradeCard,
   type DesigEmp, type EeOcc, type FieldSource, type JobRow, type NewsSlim, type NocDesc, type Plan, type PnpDraw, type PnpOcc,
 } from '../JobsTable'
@@ -142,6 +142,28 @@ export default function JobDetailView({ job, plan, dims, related }: {
             {job.noc ? <span style={chip}>NOC {job.noc}{nocTitle ? ` ${nocTitle}` : ''}</span> : null}
             {job.teer != null ? <span style={chip}>TEER {job.teer}({t('teer.' + job.teer)})</span> : null}
           </div>
+
+          {/* #142(Frank「点进去要看到属于哪个大类中类小类」):职业分类三级,每级可点=按该级筛职位板。
+              代码不裸奔=显示人话分类名(NOC 码与 TEER 在上方 chips,各归其位不重复);未分类的级不渲染 */}
+          {(job.broad && job.broad !== '未分类') || (job.mid && job.mid !== '未分类') || (job.fine && job.fine !== '未分类') ? (
+            <div style={sec}>
+              <div style={secHead}>{t('detail.catSec')}</div>
+              <FactsBox note={t('detail.catNote')}>
+                <FactRow k={t('col.broad')}>
+                  {job.broad && job.broad !== '未分类'
+                    ? <a href={`/?broad=${encodeURIComponent(job.broad)}`} style={aLink}>{t('broad.' + job.broad)}</a> : null}
+                </FactRow>
+                <FactRow k={t('col.mid')}>
+                  {job.mid && job.mid !== '未分类'
+                    ? <a href={`/?broad=${encodeURIComponent(job.broad || '')}&mid=${encodeURIComponent(job.mid)}`} style={aLink}>{catName(t, job.mid)}</a> : null}
+                </FactRow>
+                <FactRow k={t('col.fine')}>
+                  {job.fine && job.fine !== '未分类'
+                    ? <a href={`/?fine=${encodeURIComponent(job.fine)}`} style={aLink}>{catName(t, job.fine)}</a> : null}
+                </FactRow>
+              </FactsBox>
+            </div>
+          ) : null}
 
           {job.status === 'closed' && (
             <Notice kind="info" style={{ marginBottom: 12 }}>{t('detail.closedNote')}{job.closedAt ? ` · ${day(job.closedAt)}` : ''}</Notice>
