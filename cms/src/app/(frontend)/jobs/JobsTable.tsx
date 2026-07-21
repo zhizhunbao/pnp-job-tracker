@@ -2103,6 +2103,55 @@ function fieldSrcUrls(field: ColKey, job: JobRow, sources: FieldSource[]): strin
 // (出处跟着对应内容走,不吊在弹窗底部);发布方/抓取时间/标签全不带 —— 合规已在 footer 统一声明。
 // pnp/ee 字段例外:清单内容来自政策页,各通道行已带自己的 ↗ 官方链接,不加岗位帖来源行。
 // field_sources 维度与 /sources 解释页照旧保留(E4-04 出处能力后置到解释页)。
+// ═══ E8-10 S6:事实块按**分组**铺开(2026-07-21)═════════════════════════════════════
+// 收编前:点「通道」列只渲通道一条 —— 弹框标题写着「移民」,里面却只有一个字段,
+// 用户还得退出去再点 PNP、再点 EE、再点 AIP,每点一次烧一次额度。这正是 24 个弹框的病根。
+// 收编后:一个分组一次把该组事实全铺出来。**复用既有 FieldFactsSection 当积木**(它=某字段事实+其来源行),
+// 不重写任何渲染逻辑 —— 顺序即阅读顺序,先结论后依据。
+const GROUP_SECTIONS: Record<FieldGroup, ColKey[]> = {
+  // 先给「能不能走」(通道档/PNP/EE/AIP),再给「凭什么」(职业分类),最后是薪资对照
+  immigration: ['score', 'pnp', 'ee', 'aip', 'noc', 'vsMedian'],
+  // 职位:JD 五节整理版(title)承担主体,薪资与门槛跟在后面
+  job: ['title', 'salary', 'accessibility'],
+  company: ['company'],
+}
+// 有没有这块事实 —— 没有就整块跳过,**绝不留孤儿小标题**(既有规范 §2「空段规则」)
+function hasFacts(k: ColKey, job: JobRow): boolean {
+  switch (k) {
+    case 'score': return job.gradeChannel != null || job.score != null
+    case 'pnp': return true          // 未命中也要说「未命中」,是结论不是空
+    case 'ee': return true           // 同上(#155 已收成一行+折叠)
+    case 'aip': return !!job.aip
+    case 'noc': return !!job.noc
+    case 'vsMedian': return job.salaryAnnual != null || job.wageMedAnnual != null
+    case 'salary': return !!(job.salaryText || job.salary)
+    case 'accessibility': return !!job.accessibility
+    case 'title': return true
+    case 'company': return !!job.company
+    default: return true
+  }
+}
+// 分节标题:走既有 col.* 人话名(通道 / PNP / EE 类别 / AIP / 薪资…),不新造术语。
+// 版式按 E8 调研结论:**标题在卡外、靠留白分隔**,不画描边盒子(Indeed/Moving2Canada 实测 0 描边)。
+function GroupFactsSection(props: Omit<Parameters<typeof FieldFactsSection>[0], 'field'> & { group: FieldGroup }) {
+  const { group, job, lang, ...rest } = props
+  const t = makeT(lang)
+  const keys = GROUP_SECTIONS[group].filter((k) => hasFacts(k, job))
+  return (
+    <>
+      {keys.map((k, i) => (
+        <div key={k} style={{ marginTop: i === 0 ? 0 : 22 }}>
+          {/* 单节分组不出小标题:标题栏已写着字段名,再出一遍就是 #155/#161 那种重复 */}
+          {keys.length > 1 && (
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#111827', marginBottom: 6 }}>{t('col.' + k)}</div>
+          )}
+          <FieldFactsSection field={k} job={job} lang={lang} {...rest} />
+        </div>
+      ))}
+    </>
+  )
+}
+
 function FieldFactsSection({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpDraws, news, eeOcc, desigEmp, nocDesc, fieldSources, onOpenJob }: { field: ColKey; job: JobRow; jobs: JobRow[]; lang: Lang; isPro: boolean; loggedIn: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; news: NewsSlim[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onOpenJob?: (j: JobRow) => void }) {
   const t = makeT(lang)
   const urls = fieldSrcUrls(field, job, fieldSources)
@@ -2684,8 +2733,11 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
         <div onPointerDown={startDrag} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, padding: '16px 20px 10px', cursor: full ? 'default' : 'move', userSelect: 'none', flexShrink: 0 }}>
           <div style={{ minWidth: 0 }}>
             {/* 标题后不挂「思考中」后缀(Frank 2026-07-18);流式等待态由正文区「努力思考中」占位承担 */}
-            <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, letterSpacing: .3 }}><IconCompass /> {t('advisor.tag')} · {a.tag}{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400 }}> · {t('advisor.left', { n: freeLeft })}</span> : null}</div>
-            <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title || a.title}</h3>
+            {/* E8-10 S6:页眉改「分组名」、大标题改**岗位/公司名** —— 收编前取的是被点单元格的值,
+                于是点「通道」列开出来的弹框标题写着「技能岗」:一个胶囊的值当不了一屏内容的标题。
+                现在:公司弹框=公司名、职位与移民弹框=岗位名,与弹框里铺开的整组事实对得上。 */}
+            <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, letterSpacing: .3 }}><IconCompass /> {t('advisor.tag')} · {t('grp.' + group)}{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400 }}> · {t('advisor.left', { n: freeLeft })}</span> : null}</div>
+            <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{group === 'company' ? (job.company || title || a.title) : (job.title || title || a.title)}</h3>
           </div>
           <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
             {!narrow && <button onClick={toggleFull} title={t(full ? 'advisor.exitFull' : 'advisor.full')} style={iconBtn}>{full ? <IconMinimize /> : <IconMaximize />}</button>}
@@ -2699,7 +2751,8 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
               职业方向/所在省/省提名粗筛/EE/技能层级/薪资 全是**岗位级**事实,挂在「Agilent Technologies」
               这个标题下答非所问(用户点公司是想了解公司)。岗位级判定留在岗位面板。 */}
           {group === 'immigration' && <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} nocDesc={nocDesc} />}
-          <FieldFactsSection field={field} job={job} jobs={companyJobs} lang={lang} isPro={plan.isPro} loggedIn={plan.loggedIn} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} onOpenJob={onOpenJob} />
+          {/* E8-10 S6:按分组铺全组事实(原先只渲被点的那一个字段) */}
+          <GroupFactsSection group={group} job={job} jobs={companyJobs} lang={lang} isPro={plan.isPro} loggedIn={plan.loggedIn} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} onOpenJob={onOpenJob} />
           {/* 建档 CTA(第 5 轮 #17 = 弹框规范 D1):身份信号族对未建档用户铺「事实 → 个人化」的桥 */}
           {!plan.profileOk && group === 'immigration' && (
             <div style={{ margin: '8px 0 10px' }}>
