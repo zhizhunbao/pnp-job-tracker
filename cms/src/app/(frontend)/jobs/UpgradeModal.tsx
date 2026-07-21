@@ -12,13 +12,18 @@ import { Button, Notice } from '../ui/primitives'
 
 // 统一升级钮 UpgradeCta(⓪ 2026-07-19 Frank 批「升级 Pro 按钮单独设计」):⭐ 实心棕 pro 型,
 // 全站升级入口从裸文字链换装到这;已登录=开升级弹框,未登录=开注册框(行为与原各处一致)。
-export function UpgradeCta({ t, loggedIn, sm = true, reason, label, style }: {
-  t: TFn; loggedIn: boolean; sm?: boolean; reason?: string; label?: string; style?: React.CSSProperties
+// #160:新增 link 形态——打码占位旁的 CTA 不该再是实心按钮(一屏若干处打码,每处一枚棕钮=又一堵墙);
+// 实心钮留给顶栏与弹窗,稀缺性就是它的说服力。行为两者完全一致。
+export function UpgradeCta({ t, loggedIn, sm = true, reason, label, style, link }: {
+  t: TFn; loggedIn: boolean; sm?: boolean; reason?: string; label?: string; style?: React.CSSProperties; link?: boolean
 }) {
   const [open, setOpen] = useState<false | 'up' | 'auth'>(false)
   return (
     <>
-      <Button kind="pro" sm={sm} style={style} onClick={() => setOpen(loggedIn ? 'up' : 'auth')}><IconStar /> {label || t('up.cta2')}</Button>
+      {link
+        ? <button onClick={() => setOpen(loggedIn ? 'up' : 'auth')}
+            style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', color: '#b45309', font: 'inherit', fontWeight: 500, ...style }}>{label || t('up.cta')}</button>
+        : <Button kind="pro" sm={sm} style={style} onClick={() => setOpen(loggedIn ? 'up' : 'auth')}><IconStar /> {label || t('up.cta2')}</Button>}
       {open === 'up' && <UpgradeModal t={t} reason={reason} onClose={() => setOpen(false)} />}
       {open === 'auth' && <AuthModal t={t} mode="register" onClose={() => setOpen(false)} onDone={() => window.location.reload()} />}
     </>

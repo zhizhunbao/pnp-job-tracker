@@ -159,17 +159,25 @@ const HEADINGS: Record<Lang, { company: string; title: string }> = {
     company: '【公司是做什么的】【主要产品 / 项目】【主要竞品公司】【发展前景与对求职者的意义】',
     // #125(Frank「AI 整理和 AI 顾问重复了」):初判不再复述职位做什么/要什么(整理版 ROLE/REQS 已承担事实层)——
     // 顾问只做结论层增量:移民视角含金量 + 怎么行动。功能不合并(事实/结论分离红线),内容重叠砍掉。
-    title: '【移民视角怎么看这个岗】【怎么准备(简历 / 作品 / 面试)】',
+    // #161(Frank「这个应该直接给方案,一共分几步,每个步骤做什么,时间线是什么」):
+    // 原「移民视角怎么看这个岗」产出的是**分析**(这岗含金量如何),用户要的是**方案**(我该怎么走、先做什么)。
+    // 分析读完还得自己翻译成行动,那一步正是本站要替用户跨的门槛。改成:通道结论 → 分步时间线 → 面试准备。
+    title: '【走哪条通道】【分几步走(含时间线)】【怎么准备(简历 / 作品 / 面试)】',
   },
   en: {
     company: '【What the company does】【Main products / projects】【Main competitors】【Outlook & what it means for job-seekers】',
-    title: '【Immigration lens on this role】【How to prepare (resume / portfolio / interview)】',
+    title: '【Which pathway this opens】【Step-by-step plan with timeline】【How to prepare (resume / portfolio / interview)】',
   },
   ko: {
     company: '【회사가 하는 일】【주요 제품 / 프로젝트】【주요 경쟁사】【전망과 구직자에게의 의미】',
-    title: '【이민 관점에서 본 이 직무】【준비 방법 (이력서 / 포트폴리오 / 면접)】',
+    title: '【어떤 경로인가】【단계별 계획과 타임라인】【준비 방법 (이력서 / 포트폴리오 / 면접)】',
   },
 }
+
+// #161 分步方案的写法约束:要可执行,但**不许编官方数字**——移民处理周期/费用/名额随时变,
+// 编一个具体周数比不给还坏(用户会照着排计划)。故:时间用**相对阶段**(第 1–2 个月、拿到 offer 后、提名后),
+// 语言考试/证书这类**用户可控**的事必须落到具体某一步,官方审批时长一律说「以官方公布为准」不编。
+const PLAN_RULES = `For the step-by-step section: write numbered steps (1. 2. 3. …), one action per line, no more than 6 steps. Each step must state WHAT to do and WHEN, using RELATIVE phases only (e.g. "now – month 1", "after securing the offer", "after nomination") — never invent specific dates, official processing times, fees, or quota numbers; if a duration depends on government processing, say it follows official published timelines instead of guessing a number. Put user-controllable items (language test such as IELTS/CELPIP, credential assessment (ECA), certificates/licences named in the posting) at the step where they are actually needed, and say plainly which ones must be done BEFORE applying. End the plan with the single most useful thing to do this week.`
 
 function buildPrompt(field: string, j: Job, jd: string, lang: Lang, pf = '', web: CompanyResearch | null = null): string {
   const loc = j.address || [j.city, j.province].filter(Boolean).join(', ') || '—'
@@ -227,8 +235,22 @@ function buildPrompt(field: string, j: Job, jd: string, lang: Lang, pf = '', web
     }
     return `${ask}\n${reader}\n\nJob facts:\n${facts}\n\nWrite 2–3 short sections, each starting with a 【heading】, content in ${LANG_NAME[lang]}. Use the exact numbers above; do not invent data.`
   }
-  const base = `Role: ${j.title || '—'}\nCompany: ${j.company || '—'}\n${nocLine}\nLocation: ${loc}\n`
-  const instr = `Explain under these headings (${inLang}):\n${H.title}`
+  // #161(Frank「人家都海洋四省了,还考虑 EE 吗」):这一块原先只喂 Role/Company/NOC/Location 四行——
+  // **本站算好的 PNP / EE / AIP 三个信号一个都没进提示词**,模型写「移民视角」只能凭常识往外编,
+  // 于是拿联邦 EE 当标尺去衡量一个 PEI 的岗。不是它判断失误,是我们没给数据。修=把通道事实喂进去。
+  const atlantic = ['NL', 'PE', 'NS', 'NB'].includes((j.province || '').toUpperCase())
+  const pathFacts = [
+    `PNP-eligible (employer-offer → provincial nomination): ${j.pnpEligible ? 'yes' : 'no'}${j.pnpStream ? ` (stream: ${j.pnpStream})` : ''} [src: provincial published lists]`,
+    `Federal Express Entry category: ${j.eeCategory || 'none'} [src: IRCC category-based selection]`,
+    `AIP (Atlantic Immigration Program) designated employer: ${j.aip ? 'yes' : 'no'} [src: designated-employer lists]`,
+  ].join('\n')
+  // 海洋四省的判定规则:AIP 是**雇主驱动**通道(指定雇主、无需 EE 分数、语言学历门槛低于联邦),
+  // 对一个已拿到当地 offer 的人,拿 EE 竞争力当标尺是答非所问。EE 只在确有类别命中时才提,且不作主线。
+  const atlanticRule = atlantic
+    ? `\nIMPORTANT — this job is in an Atlantic province (${j.province}). The Atlantic Immigration Program (AIP) is the employer-driven route that applies here: it works through designated employers, does NOT require an Express Entry CRS score, and has lower language/education thresholds than federal programs. Lead with AIP and the provincial nomination route. Do NOT frame Express Entry competitiveness (CRS points, TEER-based education scoring) as the main yardstick for this job — mention EE only if a category above actually matches, and clearly as a secondary option. If the employer is not AIP-designated, say so plainly rather than assuming it is.`
+    : ''
+  const base = `Role: ${j.title || '—'}\nCompany: ${j.company || '—'}\n${nocLine}\nLocation: ${loc}\n\nImmigration signals computed by this site (use these — do not contradict or invent others):\n${pathFacts}\n`
+  const instr = `Explain under these headings (${inLang}):\n${H.title}\n${PLAN_RULES}${atlanticRule}`
   if (jd) {
     return base + `\nHere is the real job posting (summarize strictly from it, do not invent anything not in it; it may be in English but answer in ${LANG_NAME[lang]}):\n"""\n${jd}\n"""\n\n` +
       instr + `\nFor "how to prepare" you may add general advice for this NOC.`

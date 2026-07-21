@@ -54,9 +54,29 @@ export const BANNER_COOKIE = 'jobs_banner_v1'
 // ValueBanner 已退役(#65 收尾,Frank:「不需要两个蓝条」)——建档 CTA 并进 Jobs 页头右槽;BANNER_COOKIE 留给 page.tsx 旧 cookie 读取兼容
 
 // 升级卡片(402 / 锁定块共用;都出现在已登录上下文)—— P1 换装(⓪ 2026-07-19):CTA=统一实心 UpgradeCta
+// #160 起只保留给「整块功能不可用」的少数场景;被额度拦下的内容一律改 LockedText 打码(见下)
 export function UpgradeCard({ t, reason }: { t: TFn; reason: string }) {
   return (
     <Notice kind="warn" lead={t('up.title')} action={<UpgradeCta t={t} loggedIn />} style={{ margin: '8px 0', fontSize: 13.5 }}>{reason}</Notice>
+  )
+}
+
+// #160 打码占位(Frank 拍板「打码比直接不显示更能让用户有付费意愿」):
+// 空白=零信息,用户不知道这儿有东西,也就没有失去感;打码=看得见摸不着,缺口才具体。
+// 关键:**打码不需要真跑**——额度判定本就在调用之前,拦下就不生成(不预跑、不占朋友那台 qwen、不排队),
+// 这里糊掉的是**假文本**,零成本。真内容只在放行时才生成,一次都不浪费。
+// 真值同理不下发:blur 是视觉效果不是访问控制,右键就能读,故服务端剥离 + 前端渲假值(与 #130/#152 同一套)。
+const MASK_TEXT = ['████████████████████████████████', '██████████████████████████', '███████████████████████████████████', '████████████████████']
+export function LockedText({ t, loggedIn, lines = 3 }: { t: TFn; loggedIn: boolean; lines?: number }) {
+  return (
+    <div style={{ marginTop: 4 }}>
+      <div aria-hidden style={{ filter: 'blur(4px)', userSelect: 'none', pointerEvents: 'none', fontSize: 12.5, lineHeight: 1.9, color: '#d1d5db', letterSpacing: -1 }}>
+        {MASK_TEXT.slice(0, lines).map((s, i) => <div key={i}>{s}</div>)}
+      </div>
+      <div style={{ marginTop: 6, fontSize: 11.5, color: '#9ca3af', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+        <IconLock />{t('up.quota')}<UpgradeCta t={t} loggedIn={loggedIn} link style={{ fontSize: 11.5 }} />
+      </div>
+    </div>
   )
 }
 
@@ -1123,7 +1143,19 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                           node = <a href="/account" style={{ fontSize: 12, color: '#2563eb', textDecoration: 'none', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>{t('match.needProfile')} →</a>
                         } else {
                           {/* ①(2026-07-19 价值时刻批):锁 hover/弹框带 FOMO 全量计数(matchTotals 缺失回退限额文案) */}
-                          node = <button title={matchTotals && matchTotals.high > plan.freeMatchCap ? t('up.matchN', { h: matchTotals.high, n: plan.freeMatchCap }) : t('match.overCap', { n: plan.freeMatchCap })} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', color: '#b45309' }} onClick={(e) => { e.stopPropagation(); setUpsell('match') }}><IconLock /></button>
+                          {/* #160:原先只有一把光秃秃的锁——全站最值钱的一列反倒什么都不给看,与「打码比空白更能促付费」正相反。
+                              但匹配度不能照搬工资那套假值:糊一个假「高匹配」= 拿假承诺换钱,用户付完发现是「低」就再也不回来了。
+                              故打码用**中性灰 chip**(只传达「这儿有个判定」不指向任何一档),真话留给悬停——
+                              matchTotals 是真实数字,「你今日共 N 个高匹配」本就为真,真数量 + 遮住的明细,不欠债 */}
+                          node = (
+                            <button title={matchTotals && matchTotals.high > plan.freeMatchCap ? t('up.matchN', { h: matchTotals.high, n: plan.freeMatchCap }) : t('match.overCap', { n: plan.freeMatchCap })}
+                              aria-label={t('up.maskMatch')}
+                              style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', color: '#b45309', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                              onClick={(e) => { e.stopPropagation(); setUpsell('match') }}>
+                              <span aria-hidden style={{ filter: 'blur(4px)', userSelect: 'none', background: '#f3f4f6', color: '#9ca3af', fontWeight: 600, fontSize: 12, padding: '2px 8px', borderRadius: 6, whiteSpace: 'nowrap' }}>██</span>
+                              <IconLock />
+                            </button>
+                          )
                           Object.assign(extra, { whiteSpace: 'nowrap', textAlign: 'center' as const })
                         }
                       }
@@ -1647,7 +1679,7 @@ export function JdTextView({ text, max = 4000 }: { text: string; max?: number })
 }
 // J3 五节整理版渲染(2026-07-19 Frank 批):[ROLE]/[REQS]/[PAY]/[WORKHOURS]/[APPLY] 标记文本 → 节头加粗独立行,
 // 节内一条一行(W 规范:禁「·」「/」杂糅);(not stated) → 「原帖未提及」灰字,缺节不脑补
-export function JdFormattedView({ text, t, fallbackPay, applyUrl }: { text: string; t: TFn; fallbackPay?: string; applyUrl?: string }) {
+export function JdFormattedView({ text, t, fallbackPay, applyUrl, underTitle }: { text: string; t: TFn; fallbackPay?: string; applyUrl?: string; underTitle?: boolean }) {
   const SECS: [string, string][] = [['ROLE', 'act.f.role'], ['REQS', 'act.f.reqs'], ['PAY', 'act.f.pay'], ['WORKHOURS', 'act.f.hours'], ['APPLY', 'act.f.apply']]
   const parts = text.split(/\[(ROLE|REQS|PAY|WORKHOURS|APPLY)\]/)
   const secs: Record<string, string> = {}
@@ -1662,8 +1694,11 @@ export function JdFormattedView({ text, t, fallbackPay, applyUrl }: { text: stri
         return (
           <div key={m} style={{ marginBottom: 8 }}>
             {/* #155(Frank「这两个字也是重复的」):首节 ROLE 的小标题「这活干什么」紧贴大标题「职位描述」,
-                两行说同一件事 —— 首节不出小标题,正文直接跟在「职位描述」下面;其余四节照旧有小标题分区 */}
-            {m === 'ROLE' ? null : <div style={{ fontWeight: 700, color: '#111827' }}>{t(key)}</div>}
+                两行说同一件事 —— 首节不出小标题,正文直接跟在「职位描述」下面;其余四节照旧有小标题分区。
+                #161(Frank「这个地方缺 title 吧」):#155 的作用域开大了 —— 该组件另有一个容器(ActModal)
+                上方只有「✨ AI 整理…」一行灰注、**没有大标题**,砍掉首节小标题后正文就裸奔了。
+                改成按容器决定:underTitle=紧跟大标题(详情页)才省略,默认照常出小标题。 */}
+            {m === 'ROLE' && underTitle ? null : <div style={{ fontWeight: 700, color: '#111827' }}>{t(key)}</div>}
             {/* #125(Frank「重复」):「怎么投」整节文本直接渲成官方原帖链接——一处内容一处链接,
                 不再额外附按钮行(与底部合规来源行重复);「Click Here」类废句自身变成可点出口 */}
             {m === 'APPLY' && applyUrl ? (
@@ -1728,7 +1763,7 @@ export function JdAdvisorSection({ job, lang, plan }: { job: JobRow; lang: Lang;
       <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, letterSpacing: 0.3, marginBottom: 6 }}>
         <IconCompass /> {t('advisor.tag')}{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400 }}> · {t('advisor.left', { n: freeLeft })}</span> : null}
       </div>
-      {status === 'upgrade' ? <UpgradeCard t={t} reason={t('up.advisor')} />
+      {status === 'upgrade' ? <LockedText t={t} loggedIn={plan.loggedIn} />
         : status === 'limited' ? (
           <Notice kind="warn" action={!plan.loggedIn ? <a href="/account" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('advisor.limitCta')}</a> : undefined}>
             {t('advisor.limit429')}
@@ -1825,7 +1860,7 @@ export async function fetchJobText(applyUrl: string, signal?: AbortSignal): Prom
   if (text) jobTextCache.set(applyUrl, text)
   return { status: text ? 'ok' : 'empty', text, freeLeft }
 }
-function TitleFacts({ job, lang }: { job: JobRow; lang: Lang }) {
+function TitleFacts({ job, lang, loggedIn }: { job: JobRow; lang: Lang; loggedIn: boolean }) {
   const t = makeT(lang)
   const [jd, setJd] = useState<string | null>(null)  // null=loading · ''=无正文
   const [gated, setGated] = useState(false)          // 402:JD 摘录免费试用用完(E3-05)
@@ -1852,7 +1887,7 @@ function TitleFacts({ job, lang }: { job: JobRow; lang: Lang }) {
       <FactRow k={t('fact.cert')}>{job.certificates?.length ? <>{job.certificates.map((c, i) => <div key={i}>{c}</div>)}</> : null}</FactRow>
       {/* 职位字段只做职位的事(07-06 用户拍板):职位名已在弹窗标题,NOC/TEER 归分类弹窗 —— 这里就是真实 JD */}
       <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: (job.employmentHours || job.education || job.certificates?.length) ? 8 : 0 }}>{t('fact.jdExcerpt')}</div>
-      {gated ? <UpgradeCard t={t} reason={t('up.jobtext')} />
+      {gated ? <LockedText t={t} loggedIn={loggedIn} lines={4} />
         : limited ? <div style={{ marginTop: 4 }}><Notice kind="warn">{t('advisor.limit429')}</Notice></div>
         : jd === null ? <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>{t('act.loadingText')}</div>
         : jd ? <JdTextView text={jd} />
@@ -1907,7 +1942,7 @@ function ScoreGradesSection({ job, lang, loggedIn }: { job: JobRow; lang: Lang; 
       <span style={{ flex: 1, color: '#374151' }}>{body}</span>
     </div>
   )
-  if (d === 'upgrade') return <UpgradeCard t={t} reason={t('up.advisor')} />
+  if (d === 'upgrade') return <LockedText t={t} loggedIn={loggedIn} />
   if (d === 'limited') return <Notice kind="warn" action={!loggedIn ? <a href="/account" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('advisor.limitCta')}</a> : undefined}>{t('advisor.limit429')}</Notice>
   if (d === 'error') return <div style={{ fontSize: 13, color: '#9ca3af' }}>{t('advisor.unavail')}</div>
   if (d === undefined) return <div style={{ fontSize: 13, color: '#9ca3af' }}>{t('act.loadingText')}</div>
@@ -2028,7 +2063,7 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
   const noc = nocDesc.find((d) => d.noc === job.noc) || null
   if (field === 'pnp') return <PnpListSection job={job} lang={lang} occ={pnpOcc} draws={pnpDraws} news={news} />
   if (field === 'ee') return <EeCategorySection job={job} lang={lang} cats={eeOcc} draws={pnpDraws} />
-  if (field === 'title') return <TitleFacts job={job} lang={lang} />
+  if (field === 'title') return <TitleFacts job={job} lang={lang} loggedIn={loggedIn} />
   const day = (s?: string) => (s || '').slice(0, 10)
 
   if (field === 'company') {
@@ -2556,8 +2591,11 @@ export function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, 
         </div>
         {/* 正文(可滚动):上半真实清单 + 下半 AI 建议 */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '4px 20px 20px' }}>
-          {/* 对我意味着什么(E5-00):个人相关性放最上;依据链同源 match() */}
-          <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} nocDesc={nocDesc} />
+          {/* 对我意味着什么(E5-00):个人相关性放最上;依据链同源 match()。
+              #161(Frank「公司显示这些信息也不合适吧」):公司面板不渲 —— 表里七个维度里
+              职业方向/所在省/省提名粗筛/EE/技能层级/薪资 全是**岗位级**事实,挂在「Agilent Technologies」
+              这个标题下答非所问(用户点公司是想了解公司)。岗位级判定留在岗位面板。 */}
+          {field !== 'company' && <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} nocDesc={nocDesc} />}
           <FieldFactsSection field={field} job={job} jobs={companyJobs} lang={lang} isPro={plan.isPro} loggedIn={plan.loggedIn} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} onOpenJob={onOpenJob} />
           {/* 建档 CTA(第 5 轮 #17 = 弹框规范 D1):身份信号族对未建档用户铺「事实 → 个人化」的桥 */}
           {!plan.profileOk && ['pnp', 'ee', 'lmia', 'aip'].includes(field) && (
@@ -2567,7 +2605,7 @@ export function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, 
           )}
           {/* 免责/AI 声明不进弹框(2026-07-06 用户拍板:合规统一在 footer 说明) */}
           {status === 'upgrade' ? (
-            <UpgradeCard t={t} reason={t('up.advisor')} />
+            <LockedText t={t} loggedIn={plan.loggedIn} />
           ) : status === 'limited' ? (
             /* 429 说人话(第 9 轮 #25):额度用完本是注册/升级的转化时机,不是报错时机 */
             <Notice kind="warn" style={{ margin: '10px 0', fontSize: 13.5 }} action={!plan.loggedIn ? <a href="/account" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('advisor.limitCta')}</a> : undefined}>
@@ -2813,7 +2851,7 @@ function ActModal({ job, lang, plan, onClose }: { job: JobRow; lang: Lang; plan:
         </div>
         <div style={{ flex: 1, overflowY: 'auto', padding: '4px 20px 20px', fontSize: 14, lineHeight: 1.7, color: '#374151' }}>
           {status === 'loading' ? <p style={{ color: '#9ca3af' }}>{t('act.loadingText')}</p>
-            : status === 'upgrade' ? <UpgradeCard t={t} reason={t('up.jobtext')} />
+            : status === 'upgrade' ? <LockedText t={t} loggedIn={plan.loggedIn} lines={4} />
             : status === 'limited' ? (   /* #134:限流说人话,不再谎报「暂未收录」 */
               <Notice kind="warn" action={!plan.loggedIn ? <a href="/account" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('advisor.limitCta')}</a> : undefined}>
                 {t('advisor.limit429')}

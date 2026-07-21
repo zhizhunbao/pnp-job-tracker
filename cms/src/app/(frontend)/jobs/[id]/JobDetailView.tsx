@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 import { makeT, LANG_KEY, LANGS, type Lang, type TFn } from '../i18n'
 import {
   AdvisorModal, blockedSrc, catName, EeCategorySection, FactRow, FactsBox, fetchJobText, JdAdvisorSection, JdFormattedView, JdTextView,
-  MeansForMe, nocLocalTitle, PnpListSection, provName, UpgradeCard,
+  LockedText, MeansForMe, nocLocalTitle, PnpListSection, provName, UpgradeCard,
   type DesigEmp, type EeOcc, type FieldSource, type JobRow, type NewsSlim, type NocDesc, type Plan, type PnpDraw, type PnpOcc,
 } from '../JobsTable'
 import type { RelatedJob } from '@/lib/jobsSql'
@@ -62,7 +62,7 @@ function JdSection({ job, lang, plan, t }: { job: JobRow; lang: Lang; plan: Plan
         ) : fmt === undefined ? <span style={{ fontSize: 11.5, color: '#9ca3af', fontWeight: 400 }}>✨ {t('act.aiWorking')}</span> : null}
       </div>
       {status === 'loading' ? <p style={{ margin: 0, color: '#9ca3af', fontSize: 13 }}>{t('act.loadingText')}</p>
-        : status === 'upgrade' ? <UpgradeCard t={t} reason={t('up.jobtext')} />
+        : status === 'upgrade' ? <LockedText t={t} loggedIn={plan.loggedIn} lines={4} />
         : status === 'limited' ? (   /* #134:限流说人话 */
           <Notice kind="warn" action={!plan.loggedIn ? <a href="/account" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('advisor.limitCta')}</a> : undefined}>
             {t('advisor.limit429')}
@@ -73,7 +73,7 @@ function JdSection({ job, lang, plan, t }: { job: JobRow; lang: Lang; plan: Plan
             <p style={{ color: '#9ca3af', margin: '0 0 10px', fontSize: 13 }}>{blockedSrc(job) ? t('act.noTextBlocked', { src: blockedSrc(job) }) : t('act.noText')}</p>
             {job.applyUrl && <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ ...aLink, fontSize: 13, fontWeight: 600 }}>{t('act.seeOfficial')}</a>}
           </div>
-        ) : (fmt && !showOrig ? <JdFormattedView text={fmt} t={t} fallbackPay={job.salaryText || job.salary || undefined} applyUrl={job.applyUrl || undefined} /> : <JdTextView text={text} max={4000} />)}
+        ) : (fmt && !showOrig ? <JdFormattedView text={fmt} t={t} fallbackPay={job.salaryText || job.salary || undefined} applyUrl={job.applyUrl || undefined} underTitle /> : <JdTextView text={text} max={4000} />)}
       {job.applyUrl && (
         <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #f3f4f6', fontSize: 11.5, color: '#9ca3af', overflowWrap: 'anywhere' }}>
           {t('src.label')}: <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{job.applyUrl}</a>

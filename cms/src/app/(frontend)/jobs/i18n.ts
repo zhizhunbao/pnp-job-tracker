@@ -245,6 +245,9 @@ const zh: Dict = {
   'up.title': '升级 Pro 解锁',
   'up.advisor': '今日免费解读已用完,明天自动恢复。Pro 不限次数——每个岗、每个字段都能随时问。',
   'up.jobtext': '今日 JD 摘录免费次数已用完,明天自动恢复。Pro 不限次数。',
+  // #160 打码占位旁的一行短注:一句话说清「为什么看不到、什么时候能看到」,卖点搬进弹窗不在这堆
+  'up.quota': '今日免费额度已用完,明天恢复',
+  'up.maskMatch': '匹配详情已锁',
   'up.cta2': '升级 Pro', 'up.salHint': 'Pro 额外显示:此岗与同职业官方工资中位数的差距(±%)——一眼判断 offer 是否偏低',
   'up.proShort': 'Pro 解锁',   // #130 锁位短注:打码占位数旁四字,长解释文案退役
   'up.lockTip.wageMedHr': '同职业官方时薪中位数,Pro 解锁', 'up.lockTip.wageMedYr': '同职业官方年薪中位数,Pro 解锁', 'up.lockTip.vsMedian': '此岗薪资与官方中位的差距(±%),Pro 解锁',
@@ -671,6 +674,8 @@ const en: Dict = {
   'up.title': 'Upgrade to Pro to unlock',
   'up.advisor': "Today's free readings are used up — they reset tomorrow. Pro is unlimited: ask about any job, any field, anytime.",
   'up.jobtext': "Today's free JD excerpts are used up — they reset tomorrow. Pro is unlimited.",
+  'up.quota': "Today's free quota is used up — resets tomorrow",
+  'up.maskMatch': 'Match details locked',
   'up.cta2': 'Upgrade to Pro', 'up.salHint': 'Pro also shows: this job vs the official median wage for the occupation (±%) — spot a low offer at a glance',
   'up.proShort': 'Pro only',
   'up.lockTip.wageMedHr': 'Official median hourly wage for this occupation — Pro', 'up.lockTip.wageMedYr': 'Official median annual wage for this occupation — Pro', 'up.lockTip.vsMedian': 'How this job pays vs the official median (±%) — Pro',
@@ -1087,6 +1092,8 @@ const ko: Dict = {
   'up.title': 'Pro 업그레이드로 잠금 해제',
   'up.advisor': '오늘 무료 해설 횟수를 모두 사용했습니다. 내일 자동 복구됩니다. Pro는 무제한 — 어떤 공고든, 어떤 항목이든 언제나 질문 가능.',
   'up.jobtext': '오늘 JD 발췌 무료 횟수를 모두 사용했습니다. 내일 자동 복구됩니다. Pro는 무제한.',
+  'up.quota': '오늘 무료 사용량 소진 — 내일 복구',
+  'up.maskMatch': '매칭 상세 잠김',
   'up.cta2': 'Pro 업그레이드', 'up.salHint': 'Pro 추가 표시: 이 공고와 동일 직업 공식 중위 임금의 격차(±%) — 낮은 오퍼를 한눈에 판단',
   'up.proShort': 'Pro 전용',
   'up.lockTip.wageMedHr': '동일 직업 공식 시급 중위값, Pro 잠금 해제', 'up.lockTip.wageMedYr': '동일 직업 공식 연봉 중위값, Pro 잠금 해제', 'up.lockTip.vsMedian': '이 공고 급여와 공식 중위값의 격차(±%), Pro 잠금 해제',
