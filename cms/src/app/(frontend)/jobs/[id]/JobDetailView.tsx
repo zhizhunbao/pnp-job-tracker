@@ -148,7 +148,11 @@ export default function JobDetailView({ job, plan, dims, related }: {
           <h1 style={{ margin: '0 0 8px', fontSize: 22, lineHeight: 1.35, color: '#111827' }}>{job.title}</h1>
 
           {/* meta:一格一事(W 规矩),公司名可点开公司弹框 */}
-          <div style={{ fontSize: 13, color: '#374151', display: 'flex', flexWrap: 'wrap', gap: '2px 18px', marginBottom: 8 }}>
+          {/* #169(Frank 截图:「Hollywood Nails　St. John's　圣约翰斯　2026-07-21」四条连成一串):
+              标签删对了,但删完靠空格并排 = 与用「·」杂糅同一种毛病,而且「St. John's　圣约翰斯」
+              看着像两条其实是一条(城市+它的译名)。改用 Frank 认可的两列语言(#148 左信息右数字):
+              公司自成一行;城市(含译名)在左、发布日期在右 —— 右列右对齐,与手机卡同一套扫视线。 */}
+          <div style={{ fontSize: 13, color: '#374151', display: 'flex', flexDirection: 'column', gap: 3, marginBottom: 8 }}>
             {job.company ? (
               <span>
                 <button onClick={() => setCompanyOpen(true)} style={{ border: 'none', background: 'none', padding: 0, font: 'inherit', color: '#2563eb', cursor: 'pointer' }}>{job.company}</button>
@@ -164,10 +168,12 @@ export default function JobDetailView({ job, plan, dims, related }: {
                 ②**市行不再拼省**。面包屑已有省且**可点跳筛选**,原样重复一遍「Prince Edward Island
                   (爱德华王子岛省)」纯噪音(Frank 早前也点过「所在省与下方省重复」)。
                 ③**来源退役**。页面底部本就有合规来源行「来源: 完整 URL」,头部这枚是第三次说同一件事。 */}
-            {(job.city || cityLoc) ? (
-              <span>{job.city}{cityLoc ? <span style={{ color: '#9ca3af' }}>　{cityLoc}</span> : null}</span>
+            {(job.city || cityLoc || job.datePosted) ? (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
+                <span style={{ minWidth: 0 }}>{job.city}{cityLoc ? <span style={{ color: '#9ca3af' }}>　{cityLoc}</span> : null}</span>
+                {job.datePosted ? <span style={{ color: '#6b7280', whiteSpace: 'nowrap', flexShrink: 0 }}>{day(job.datePosted)}</span> : null}
+              </div>
             ) : null}
-            {job.datePosted ? <span>{day(job.datePosted)}</span> : null}
           </div>
 
           {/* chips:代码不裸奔(NOC 带职业名、TEER 带说明) */}
@@ -180,11 +186,18 @@ export default function JobDetailView({ job, plan, dims, related }: {
                 两类东西长得一模一样就等于没分。中间加一道间距分开,不加边框不加小标题(留白即分组)。 */}
             {job.pnpEligible ? <span style={{ ...chipBlue, marginRight: 18 }}>{t('cell.pnpYes')}</span> : null}
             {job.noc ? <span style={chip}>NOC {job.noc}</span> : null}
-            {nocTitle ? (
-              <span style={chip}>{nocTitle}{nocZh ? <span style={{ color: '#9ca3af' }}>　{nocZh}</span> : null}</span>
-            ) : null}
             {job.teer != null ? <span style={chip}>TEER {job.teer}</span> : null}
             {job.teer != null ? <span style={chip}>{t('teer.' + job.teer)}</span> : null}
+            {/* #169(Frank 截图:该枚被卡片右缘切掉):**职业全名不该是药丸**。药丸是给短标记的
+                (可省提名 / NOC 63211 / TEER 3),而 NOC 职业名动辄六十字符(如
+                「Estheticians, electrologists and related occupations」+ 中文译名),塞进
+                nowrap 的药丸必然撑破容器。改成药丸下面的一行普通文字,可自然换行、不再溢出。
+                译名仍作灰注跟在英文后(#151 口径不变)。 */}
+            {nocTitle ? (
+              <div style={{ marginTop: 6, fontSize: 12.5, color: '#4b5563', lineHeight: 1.6 }}>
+                {nocTitle}{nocZh ? <span style={{ color: '#9ca3af' }}>　{nocZh}</span> : null}
+              </div>
+            ) : null}
           </div>
           </div>{/* /头部卡 */}
 
