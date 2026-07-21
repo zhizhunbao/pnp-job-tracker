@@ -143,27 +143,28 @@ export default function JobDetailView({ job, plan, dims, related }: {
             {job.teer != null ? <span style={chip}>TEER {job.teer}({t('teer.' + job.teer)})</span> : null}
           </div>
 
-          {/* #142(Frank「点进去要看到属于哪个大类中类小类」):职业分类三级,每级可点=按该级筛职位板。
-              代码不裸奔=显示人话分类名(NOC 码与 TEER 在上方 chips,各归其位不重复);未分类的级不渲染 */}
-          {(job.broad && job.broad !== '未分类') || (job.mid && job.mid !== '未分类') || (job.fine && job.fine !== '未分类') ? (
-            <div style={sec}>
-              <div style={secHead}>{t('detail.catSec')}</div>
-              <FactsBox note={t('detail.catNote')}>
-                <FactRow k={t('col.broad')}>
-                  {job.broad && job.broad !== '未分类'
-                    ? <a href={`/?broad=${encodeURIComponent(job.broad)}`} style={aLink}>{t('broad.' + job.broad)}</a> : null}
-                </FactRow>
-                <FactRow k={t('col.mid')}>
-                  {job.mid && job.mid !== '未分类'
-                    ? <a href={`/?broad=${encodeURIComponent(job.broad || '')}&mid=${encodeURIComponent(job.mid)}`} style={aLink}>{catName(t, job.mid)}</a> : null}
-                </FactRow>
-                <FactRow k={t('col.fine')}>
-                  {job.fine && job.fine !== '未分类'
-                    ? <a href={`/?fine=${encodeURIComponent(job.fine)}`} style={aLink}>{catName(t, job.fine)}</a> : null}
-                </FactRow>
-              </FactsBox>
-            </div>
-          ) : null}
+          {/* #142/#143(Frank「点进去要看到大类中类小类」→「这个可以一行」):职业分类走**层级路径**一行。
+              W 禁杂糅针对的是把不同类信息塞一行;这里三段是同一件事(分类)的三个粒度,用 › 串是路径不是杂糅。
+              每段可点=按该级筛职位板;人话分类名(NOC 码与 TEER 在上方 chips,各归其位);未分类的段跳过 */}
+          {(() => {
+            const segs = [
+              job.broad && job.broad !== '未分类' ? { txt: t('broad.' + job.broad), href: `/?broad=${encodeURIComponent(job.broad)}` } : null,
+              job.mid && job.mid !== '未分类' ? { txt: catName(t, job.mid), href: `/?broad=${encodeURIComponent(job.broad || '')}&mid=${encodeURIComponent(job.mid)}` } : null,
+              job.fine && job.fine !== '未分类' ? { txt: catName(t, job.fine), href: `/?fine=${encodeURIComponent(job.fine)}` } : null,
+            ].filter(Boolean) as { txt: string; href: string }[]
+            if (!segs.length) return null
+            return (
+              <div style={{ fontSize: 13, color: '#374151', marginBottom: 12 }} title={t('detail.catNote')}>
+                <span style={metaK}>{t('detail.catSec')}</span>
+                {segs.map((s, i) => (
+                  <span key={s.href}>
+                    {i > 0 ? <span style={{ color: '#9ca3af', margin: '0 6px' }}>›</span> : null}
+                    <a href={s.href} style={aLink}>{s.txt}</a>
+                  </span>
+                ))}
+              </div>
+            )
+          })()}
 
           {job.status === 'closed' && (
             <Notice kind="info" style={{ marginBottom: 12 }}>{t('detail.closedNote')}{job.closedAt ? ` · ${day(job.closedAt)}` : ''}</Notice>
