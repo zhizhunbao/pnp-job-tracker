@@ -8,7 +8,7 @@ import { NextRequest } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { friendChat, friendLlmReady } from '@/lib/friendLlm'
-import { scrubPii } from '@/lib/jobDescription'
+import { jobDescription, scrubPii } from '@/lib/jobDescription'
 import { checkLimit, ipOf } from '@/lib/rateLimit'
 
 export const runtime = 'nodejs'
@@ -77,13 +77,17 @@ export async function POST(req: NextRequest) {
   if (!url) return new Response('', { status: 400 })
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
+  // #139(Frank「有的 job details 太长 AI 整理会失败」根因):原先这里 SQL 硬要 description IS NOT NULL,
+  // 但打开职位时 jobtext(懒抓,几秒)与本端点是**并发**的——懒抓帖第一次打开时这里读到的还是 NULL → 204,
+  // 整理版永远不生成。而懒抓帖正是长帖(原站正文 8-11k,JB 直发帖只有 2-4k),于是表现为「长的会失败」。
+  // 修:改走 jobDescription 同一入口(内含懒抓;lazyFetchJd 有单飞,与并发的 jobtext 共用一次抓取不重复打原站)。
   const { rows } = await pool.query(
-    'SELECT id, description, employment_term, employment_hours, jd_formatted FROM jobs WHERE apply_url = $1 AND description IS NOT NULL LIMIT 1',
-    [url],
-  )
+    'SELECT id, employment_term, employment_hours, jd_formatted FROM jobs WHERE apply_url = $1 LIMIT 1', [url])
   const row = rows[0]
   if (!row) return new Response(null, { status: 204 })
   if (row.jd_formatted) return new Response(row.jd_formatted, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
+  row.description = await jobDescription(url)
+  if (!row.description) return new Response(null, { status: 204 })   // 真没正文(抓不到)→ 静默,前端空态照旧
   // 生成走 IP 日限(缓存命中不计;生成在朋友盒子上跑,别被刷)
   if (!checkLimit([[`jdf:${ipOf(req)}`, Number(process.env.JDFORMAT_IP_DAILY || 40)]])) return new Response(null, { status: 204 })
   let p = inflight.get(url)
