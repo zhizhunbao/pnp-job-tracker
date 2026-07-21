@@ -248,9 +248,10 @@ const colorOf = (broad?: string): Cat => (broad && BROAD_COLOR[broad]) || NA
 
 // 薪资归一已下沉到数据层(etl/04d_clean_salary.py → salaryAnnual/salaryText);前端只读不算。
 // (sortVal 客户端排序取值已随 E10 服务端化退役——排序全走 /api/jobs 的 orderByClause,#127 清死代码)
-// #136(Frank 问「外链是 Indeed 就没办法了吗」):是。这些原站对第三方抓取返回 403(有意拦截,实测连首页都 403)——
-// 不绕过(那是规避访问控制),改为空态说实话+直达原帖。仅列**实测确认拦截**的站;抓不到但没拦截的(如
-// Québec emploi 是前端渲染的政府站)走通用空态,别扣「不允许转载」的帽子。
+// #136/#137(Frank 问「外链是 Indeed 就没办法了吗」「为什么不能转载」):这些原站对我们的请求返回 403
+// (实测连首页都 403 = 有意拦截)。不绕过——那是规避访问控制。文案只陈述实测到的事实「该站拒绝本站自动读取」,
+// 不替对方做版权断言(职位描述文字多为雇主所写,版权通常归雇主而非平台)。仅列**实测确认拦截**的站;
+// 抓不到但没拦截的(如 Québec emploi 是前端渲染的政府站)走通用空态。
 const BLOCKED_SRC: Record<string, string> = { 'indeed.com': 'Indeed', '86network': '86network' }
 export const blockedSrc = (j: JobRow): string => BLOCKED_SRC[(j.source || '').toLowerCase()] || ''
 const teerOf = (noc: string): number | null => (noc && noc.length === 5 && /\d/.test(noc[1]) ? Number(noc[1]) : null)
