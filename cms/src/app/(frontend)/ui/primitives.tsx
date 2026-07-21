@@ -158,7 +158,7 @@ export function PageBanner({ module, icon, title, sub, right, images, stats }: {
   return (
     <div className="pbImgBanner" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
       style={{ position: 'relative', height: 130, borderRadius: 12, overflow: 'hidden', margin: '0 0 14px' }}>
-      <style>{`@media (max-width:640px){.pbImgBanner{height:104px !important}.pbStat{display:none !important}}`}</style>
+      <style>{`@media (max-width:640px){.pbImgBanner{height:104px !important}.pbStat{display:none !important}.pbProof{display:none !important}}`}</style>
       {imgs.map((src, i) => (
         // eslint-disable-next-line @next/next/no-img-element
         <img key={src} src={src} alt="" title="Wikimedia Commons" onError={() => setDead(true)}

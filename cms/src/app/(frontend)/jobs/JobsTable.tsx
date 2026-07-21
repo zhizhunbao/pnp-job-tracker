@@ -964,7 +964,11 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         <PageBanner module="jobs" title="Jobs" images={BANNER_IMGS.jobs}
           sub={<>
             {anyFilter || matchView ? t('subtitle.hits', { n: total }) : t('subtitle.count', { n: total })}
-            {proof && (proof.named > 0 || proof.lmia > 0) && <span style={{ marginLeft: 10 }}>{t('subtitle.proof', { named: proof.named, lmia: proof.lmia })}</span>}
+            {/* #170(Frank 批,实测证据):这行证言在 375px 上是 nowrap+省略号 —— 后半截被直接切掉,
+                也就是说「N 家雇主有外劳雇佣记录」这条**手机用户从来没看见过**,而手机是主要流量。
+                横幅手机高只有 104px,硬塞挤爆 → 窄屏整条隐藏(与数字胶囊 .pbStat 同一条媒体查询),
+                只留「N 个职位」;证言是说服性内容,在首屏抢不过职位数。 */}
+            {proof && (proof.named > 0 || proof.lmia > 0) && <span className="pbProof" style={{ marginLeft: 10 }}>{t('subtitle.proof', { named: proof.named, lmia: proof.lmia })}</span>}
           </>}
           right={!plan.loggedIn && (
             // #165(Frank 报障「这个按钮在手机端会挡住信息」):CTA 在横幅右槽带 nowrap + flexShrink:0,

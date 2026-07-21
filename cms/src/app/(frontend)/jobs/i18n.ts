@@ -17,7 +17,8 @@ type Dict = Record<string, string>
 const zh: Dict = {
   'subtitle.count': '{n} 个职位',
   'subtitle.hits': '{n} 个命中',
-  'subtitle.proof': '其中 {named} 岗命中省提名清单 · {lmia} 家雇主有外劳雇佣记录 · 官方公开数据',
+  // #170:去「·」杂糅(站内硬规矩)——两条事实改全角空格分隔;「官方公开数据」是限定语不是事实,砍掉
+  'subtitle.proof': '其中 {named} 岗命中省提名清单　{lmia} 家雇主有外劳雇佣记录',
   'mv.today': '今日与你高匹配的岗位:{h} 个', 'up.matchN': '你今日共 {h} 个高匹配岗,免费版仅显示前 {n} 岗',
   'advisor.left': '免费今日剩 {n} 次', 'fact.buildCta': '建档案,看这条线对你意味着什么 →',
   'price.anchor': '参考:持牌顾问咨询通常 CA$150+/小时——先用 CA$19 把公开数据能回答的问题答掉(本站不构成移民建议)。',
@@ -434,7 +435,7 @@ const zh: Dict = {
 const en: Dict = {
   'subtitle.count': '{n} jobs',
   'subtitle.hits': '{n} matches',
-  'subtitle.proof': 'incl. {named} on provincial PNP lists · {lmia} employers with LMIA records · official open data',
+  'subtitle.proof': 'incl. {named} on provincial PNP lists {lmia} employers with LMIA records',
   'mv.today': 'High matches for you today: {h}', 'up.matchN': 'You have {h} high-match jobs today — free plan shows only the first {n}',
   'advisor.left': '{n} free uses left today', 'fact.buildCta': 'Create your profile to see what this means for you →',
   'price.anchor': 'For reference: licensed-consultant sessions typically run CA$150+/hour — let CA$19 answer what public data can first (this site is not immigration advice).',
@@ -855,7 +856,7 @@ const en: Dict = {
 const ko: Dict = {
   'subtitle.count': '{n}개 공고',
   'subtitle.hits': '{n}건 일치',
-  'subtitle.proof': 'PNP 목록 {named}건 포함 · LMIA 기록 고용주 {lmia}곳 · 공식 공개 데이터',
+  'subtitle.proof': 'PNP 목록 {named}건 포함 LMIA 기록 고용주 {lmia}곳',
   'mv.today': '오늘 높은 매칭: {h}건', 'up.matchN': '오늘 높은 매칭 {h}건 — 무료 버전은 상위 {n}건만 표시',
   'advisor.left': '오늘 무료 {n}회 남음', 'fact.buildCta': '프로필을 만들어 이 정보가 나에게 어떤 의미인지 확인하기 →',
   'price.anchor': '참고: 공인 컨설턴트 상담료는 보통 시간당 CA$150+ 이상입니다. CA$19로 공개 데이터로 확인할 수 있는 정보를 먼저 확인하세요(본 사이트는 이민 자문을 제공하지 않습니다).',
