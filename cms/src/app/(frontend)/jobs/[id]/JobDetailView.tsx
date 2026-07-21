@@ -120,7 +120,9 @@ export default function JobDetailView({ job, plan, dims, related }: {
   const relRow = (r: RelatedJob, note: string) => (
     <div key={r.id} style={{ fontSize: 13, padding: '3px 0' }}>
       <a href={`/jobs/${r.id}`} style={aLink}>{r.title} — {r.company}</a>
-      <span style={{ color: '#9ca3af', fontSize: 11.5, marginLeft: 8 }}>{note}{r.city ? ` · ${r.city}` : ''}</span>
+      {/* 「·」杂糅退役(W 规矩):两段灰注各自成段,空隙分隔 */}
+      <span style={{ color: '#9ca3af', fontSize: 11.5, marginLeft: 8 }}>{note}</span>
+      {r.city ? <span style={{ color: '#9ca3af', fontSize: 11.5, marginLeft: 8 }}>{r.city}</span> : null}
     </div>
   )
 
@@ -202,7 +204,7 @@ export default function JobDetailView({ job, plan, dims, related }: {
           </div>{/* /头部卡 */}
 
           {job.status === 'closed' && (
-            <Notice kind="info" style={{ marginBottom: 12 }}>{t('detail.closedNote')}{job.closedAt ? ` · ${day(job.closedAt)}` : ''}</Notice>
+            <Notice kind="info" style={{ marginBottom: 12 }}>{t('detail.closedNote')}{job.closedAt ? `(${day(job.closedAt)})` : ''}</Notice>
           )}
 
           {/* 与我的匹配(建档用户;依据链同 match(),弹框同款组件) */}
@@ -212,6 +214,8 @@ export default function JobDetailView({ job, plan, dims, related }: {
 
           {/* 事实块:薪资/工时/雇佣期/学历/证书;vs 中位=Pro 维度(免费=引导,真值不出服务端) */}
           <div style={sec}>
+            {/* Frank 新规矩:每张卡先有 title——本卡原先内容裸铺,是全页唯一没标题的卡 */}
+            <div style={secHead}>{t('detail.factsTitle')}</div>
             {/* #154(Frank「这个文字没必要显示」):换算口径注常驻一整行=每个岗都在重复同一句话。
                 改挂「年薪(折算)」标签的悬停提示——要查得到,不占版面(口径透明不等于必须常驻) */}
             <FactsBox>

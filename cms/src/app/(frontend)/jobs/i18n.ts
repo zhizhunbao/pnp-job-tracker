@@ -30,7 +30,7 @@ const zh: Dict = {
   'advisor.limit429': '今日免费次数已用完(每日重置)。注册登录后有独立额度,Pro 每日 200 次。', 'advisor.limitCta': '登录 / 注册 →',
   'act.seeOfficial': '查看官方原帖 ↗',
   // E8-07 职位详情页
-  'detail.openFull': '打开完整页', 'detail.back': '返回职位板', 'detail.related': '相关职位',
+  'detail.openFull': '打开完整页', 'detail.back': '返回职位板', 'detail.related': '相关职位', 'detail.factsTitle': '薪资与条件',
   'detail.sameCo': '同公司', 'detail.sameOcc': '同省同职业', 'detail.closedNote': '该岗位已下架,信息仅供参考',
   'detail.pnpSec': '省提名通道', 'detail.pnpSecNote': '粗筛信号,非资格认定', 'detail.eeSec': '联邦 EE 类别', 'detail.crumbHome': '职位板',
   // #142 职业分类三级(可点即按该级筛职位板)
@@ -93,7 +93,7 @@ const zh: Dict = {
   'pnplist.title': '省提名职业清单', 'pnplist.source': '来源', 'pnplist.your': '本岗', 'pnplist.gta': '大多区域外', 'pnplist.loading': '加载清单…',
   'pnplist.onList': '本岗 NOC {noc} 在「{label}」清单内', 'pnplist.generic': '不在具名清单,但 TEER{teer} 技能岗通用粗筛可走',
   'pnplist.excludedHit': '本岗 NOC {noc} 在排除清单内,该省不可走', 'pnplist.excludedMiss': '不在排除清单 · TEER{teer} 通用可走',
-  'pnplist.noList': '该省暂无具名清单 · 仅 TEER0-3 通用粗筛', 'pnplist.qc': '魁省走自己的甄选(CSQ/Arrima),不属省提名', 'pnplist.notEligible': '该职业当前不符合省提名粗筛',
+  'pnplist.noList': '该省暂无具名清单(仅 TEER0-3 通用粗筛)', 'pnplist.qc': '魁省走自己的甄选(CSQ/Arrima),不属省提名', 'pnplist.notEligible': '该职业当前不符合省提名粗筛',
   'pnpdraws.title': '本省最近抽选 · {label}', 'pnpdraws.scale': '分数为省自评分制({scale}),不是 CRS', 'pnpdraws.min': '最低 {score} 分', 'pnpdraws.inv': '{n} 份邀请',
   'pnpdraws.notice': 'OINP {date} 改制:旧通道已关停、EOI 停发邀请;新 Ontario Workforce Priority 通道细则待公布',
   // 列名
@@ -449,7 +449,7 @@ const en: Dict = {
   'advisor.limit429': 'Free uses for today are used up (resets daily). Sign in for your own quota; Pro gets 200/day.', 'advisor.limitCta': 'Sign in / Sign up →',
   'act.seeOfficial': 'View official posting ↗',
   // E8-07 job detail page
-  'detail.openFull': 'Open full page', 'detail.back': 'Back to job board', 'detail.related': 'Related jobs',
+  'detail.openFull': 'Open full page', 'detail.back': 'Back to job board', 'detail.related': 'Related jobs', 'detail.factsTitle': 'Pay and conditions',
   'detail.sameCo': 'same employer', 'detail.sameOcc': 'same occupation in province', 'detail.closedNote': 'This posting has closed; shown for reference only',
   'detail.pnpSec': 'PNP streams', 'detail.pnpSecNote': 'rough signal, not an eligibility decision', 'detail.eeSec': 'Federal EE categories', 'detail.crumbHome': 'Job board',
   'detail.catSec': 'Occupation category', 'detail.catNote': 'Based on Canada’s National Occupational Classification (NOC); click any level to filter the board',
@@ -508,7 +508,7 @@ const en: Dict = {
   'pnplist.title': 'PNP occupation list', 'pnplist.source': 'Source', 'pnplist.your': 'This job', 'pnplist.gta': 'Outside GTA', 'pnplist.loading': 'Loading list…',
   'pnplist.onList': 'This job (NOC {noc}) is on the "{label}" list', 'pnplist.generic': 'Not on a named list, but TEER{teer} skilled — eligible via general screen',
   'pnplist.excludedHit': 'This job (NOC {noc}) is on the excluded list — not eligible here', 'pnplist.excludedMiss': 'Not on the excluded list · TEER{teer} eligible',
-  'pnplist.noList': 'No named list for this province · TEER0-3 general screen only', 'pnplist.qc': 'Quebec uses its own selection (CSQ/Arrima), not PNP', 'pnplist.notEligible': 'This occupation does not currently pass the PNP screen',
+  'pnplist.noList': 'No named list for this province (TEER0-3 general screen only)', 'pnplist.qc': 'Quebec uses its own selection (CSQ/Arrima), not PNP', 'pnplist.notEligible': 'This occupation does not currently pass the PNP screen',
   'pnpdraws.title': 'Recent draws · {label}', 'pnpdraws.scale': "scores use the province's own points system ({scale}), not CRS", 'pnpdraws.min': 'min {score}', 'pnpdraws.inv': '{n} invitations',
   'pnpdraws.notice': 'OINP redesign ({date}): former streams closed, EOI invitations stopped; new Ontario Workforce Priority stream criteria pending',
   'col.datePosted': 'Posted', 'col.broad': 'Major group', 'col.mid': 'Sub-group', 'col.fine': 'Occupation', 'col.teer': 'TEER',
@@ -871,7 +871,7 @@ const ko: Dict = {
   'advisor.limit429': '오늘의 무료 이용 횟수가 모두 소진되었습니다(매일 초기화). 로그인하면 별도의 할당량이 제공되며, Pro 회원은 하루 200회를 이용할 수 있습니다.', 'advisor.limitCta': '로그인 / 회원가입 →',
   'act.seeOfficial': '공식 공고 보기 ↗',
   // E8-07 채용 상세 페이지
-  'detail.openFull': '전체 페이지 열기', 'detail.back': '채용 보드로 돌아가기', 'detail.related': '관련 공고',
+  'detail.openFull': '전체 페이지 열기', 'detail.back': '채용 보드로 돌아가기', 'detail.related': '관련 공고', 'detail.factsTitle': '급여와 조건',
   'detail.sameCo': '같은 회사', 'detail.sameOcc': '같은 주 같은 직종', 'detail.closedNote': '마감된 공고입니다. 참고용으로만 확인하세요',
   'detail.pnpSec': '주정부 지명(PNP) 통로', 'detail.pnpSecNote': '대략적 신호이며 자격 판정이 아닙니다', 'detail.eeSec': '연방 EE 카테고리', 'detail.crumbHome': '채용 보드',
   'detail.catSec': '직업 분류', 'detail.catNote': '캐나다 국가직업분류(NOC) 기준; 각 단계를 클릭하면 동일 분류 공고를 필터링합니다',
@@ -928,7 +928,7 @@ const ko: Dict = {
   'pnplist.title': 'PNP 직업 목록', 'pnplist.source': '출처', 'pnplist.your': '이 채용', 'pnplist.gta': 'GTA 외', 'pnplist.loading': '목록 불러오는 중…',
   'pnplist.onList': '이 직무(NOC {noc})는 「{label}」 목록에 포함됨', 'pnplist.generic': '지정 목록에는 없으나 TEER{teer} 기술직으로 일반 심사를 통해 지원 가능',
   'pnplist.excludedHit': '이 직무(NOC {noc})는 제외 목록에 있어 해당 주에서 지원 불가', 'pnplist.excludedMiss': '제외 목록에 없음 · TEER{teer} 지원 가능',
-  'pnplist.noList': '해당 주의 지정 목록 없음 · TEER 0~3직 일반 심사만 가능', 'pnplist.qc': '퀘벡주는 자체 선발(CSQ/Arrima)을 사용하므로 PNP 대상 아님', 'pnplist.notEligible': '현재 이 직종은 PNP 심사를 통과하지 못함',
+  'pnplist.noList': '해당 주의 지정 목록 없음(TEER 0~3직 일반 심사만 가능)', 'pnplist.qc': '퀘벡주는 자체 선발(CSQ/Arrima)을 사용하므로 PNP 대상 아님', 'pnplist.notEligible': '현재 이 직종은 PNP 심사를 통과하지 못함',
   'pnpdraws.title': '최근 추첨 · {label}', 'pnpdraws.scale': '점수는 CRS가 아닌 주 자체 점수제({scale}) 기준임', 'pnpdraws.min': '최저 {score}점', 'pnpdraws.inv': '{n}개 초청',
   'pnpdraws.notice': 'OINP 개편({date}): 기존 스트림 폐지 및 EOI 초청 중단, 신규 Ontario Workforce Priority 스트림 기준 미정',
   'col.datePosted': '게시일', 'col.broad': '대분류', 'col.mid': '중분류', 'col.fine': '직무', 'col.teer': 'TEER',

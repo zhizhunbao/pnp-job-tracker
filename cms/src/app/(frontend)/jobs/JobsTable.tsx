@@ -1856,9 +1856,11 @@ export function JdAdvisorSection({ job, lang, plan }: { job: JobRow; lang: Lang;
     return () => ctrl.abort()
   }, [job, lang])
   return (
-    <div style={{ marginTop: 14, paddingTop: 10, borderTop: '1px solid #f3f4f6' }}>
-      <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, letterSpacing: 0.3, marginBottom: 6 }}>
-        <IconCompass /> {t('advisor.tag')}{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400 }}> · {t('advisor.left', { n: freeLeft })}</span> : null}
+    /* 壳=灰内卡(全页统一卡片语言:白壳卡里的分组一律灰内卡,分隔线壳退役);
+       标题降为内卡标题级,「·」杂糅退役——剩余次数改空格灰注(一行两段,不用点连) */
+    <div style={{ marginTop: 14, background: '#f9fafb', borderRadius: 8, padding: '8px 12px' }}>
+      <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 600, marginBottom: 6 }}>
+        <IconCompass /> {t('advisor.tag')}{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('advisor.left', { n: freeLeft })}</span> : null}
       </div>
       {status === 'upgrade' ? <LockedText t={t} loggedIn={plan.loggedIn} />
         : status === 'limited' ? (
@@ -2523,17 +2525,17 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
   // Frank「升级 Pro 要全栈统一」)。糊的是假值,真值本就没下发(blur 是视觉不是访问控制)。
   if (!plan.isPro && job.match == null) {
     const maskCard = (dim: string, mask: string) => (
-      <div style={{ background: '#fff', border: '1px solid #f3f4f6', borderRadius: 8, padding: '7px 12px' }}>
+      <div style={{ background: '#f9fafb', borderRadius: 8, padding: '7px 12px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 11.5, color: '#6b7280', fontWeight: 600 }}>{dim}</span>
-          <span aria-hidden style={{ filter: 'blur(4px)', userSelect: 'none', background: '#f3f4f6', color: '#9ca3af', fontWeight: 600, fontSize: 11.5, padding: '2px 8px', borderRadius: 999 }}>████</span>
+          <span aria-hidden style={{ filter: 'blur(4px)', userSelect: 'none', background: '#e5e7eb', color: '#9ca3af', fontWeight: 600, fontSize: 11.5, padding: '2px 8px', borderRadius: 999 }}>████</span>
         </div>
         <div aria-hidden style={{ filter: 'blur(4px)', userSelect: 'none', pointerEvents: 'none', fontSize: 12.5, lineHeight: 1.8, color: '#d1d5db', letterSpacing: -1 }}>{mask}</div>
       </div>
     )
     return (
-      <div style={{ background: '#fafaf9', border: '1px solid #e7e5e4', borderRadius: 10, padding: '10px 14px', margin: '4px 0 8px' }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: '#374151' }}>
+      <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '12px 16px', margin: '0 0 14px' }}>
+        <div style={{ fontSize: 13.5, fontWeight: 700, color: '#111827' }}>
           <IconTarget /> {t('match.title')}
           <span aria-hidden style={{ marginLeft: 10, fontWeight: 600, color: '#9ca3af', filter: 'blur(4px)', userSelect: 'none' }}>{t('match.levelLine', { level: t('match.mid') })}</span>
         </div>
@@ -2625,8 +2627,10 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
     )
   }
   return (
-    <div style={{ background: '#fafaf9', border: '1px solid #e7e5e4', borderRadius: 10, padding: '10px 14px', margin: '4px 0 8px' }}>
-      <div style={{ fontSize: 13, fontWeight: 700, color: '#374151' }}>
+    /* 壳=页面统一卡规范(白底 #e5e7eb 描边 r12,详情页 sec 同款;Frank「一个页面统一风格」)——
+       老弹框灰壳退役;卡里分组用灰内卡(白壳配灰内卡,不再白套白) */
+    <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '12px 16px', margin: '0 0 14px' }}>
+      <div style={{ fontSize: 13.5, fontWeight: 700, color: '#111827' }}>
         <IconTarget /> {t('match.title')}
         <span style={{ marginLeft: 10, fontWeight: 600, color: lvColor[result.level] }}>{t('match.levelLine', { level: t('match.' + result.level) })}</span>
       </div>
@@ -2634,7 +2638,7 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
           「本岗 / 我的」标签列 max-content 自适应,值一行放全——长值窄屏悬挂缩进折行,永不截断省略 */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
         {rows.map((r, i) => (
-          <div key={i} style={{ background: '#fff', border: '1px solid #f3f4f6', borderRadius: 8, padding: '7px 12px' }}>
+          <div key={i} style={{ background: '#f9fafb', borderRadius: 8, padding: '7px 12px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               <span style={{ fontSize: 11.5, color: '#6b7280', fontWeight: 600 }}>{r.dim}</span>
               {vCell(r)}
