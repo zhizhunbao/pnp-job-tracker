@@ -1856,11 +1856,12 @@ export function JdAdvisorSection({ job, lang, plan }: { job: JobRow; lang: Lang;
     return () => ctrl.abort()
   }, [job, lang])
   return (
-    /* 壳=灰内卡(全页统一卡片语言:白壳卡里的分组一律灰内卡,分隔线壳退役);
-       标题降为内卡标题级,「·」杂糅退役——剩余次数改空格灰注(一行两段,不用点连) */
-    <div style={{ marginTop: 14, background: '#f9fafb', borderRadius: 8, padding: '8px 12px' }}>
-      <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 600, marginBottom: 6 }}>
-        <IconCompass /> {t('advisor.tag')}{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('advisor.left', { n: freeLeft })}</span> : null}
+    /* 壳=裸段(Frank「AI 顾问和职位描述分成两个卡片」「不要卡片套卡片」):组件自己不带壳,
+       详情页包进独立 sec 卡、JD 弹框包分隔线段——间隔样式归消费方。
+       标题=卡标题级(每卡必有 title);「·」杂糅退役——剩余次数改空格灰注 */
+    <div>
+      <div style={{ fontSize: 13.5, fontWeight: 700, color: '#111827', marginBottom: 6 }}>
+        <IconCompass /> {t('advisor.tag')}{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400, fontSize: 11.5, marginLeft: 8 }}>{t('advisor.left', { n: freeLeft })}</span> : null}
       </div>
       {status === 'upgrade' ? <LockedText t={t} loggedIn={plan.loggedIn} />
         : status === 'limited' ? (
@@ -2524,11 +2525,11 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
   // 免费限额外(服务端没给这行算 match):文字升级卡退役 → 同版式整块打码 + 统一锁行(#160 档1;
   // Frank「升级 Pro 要全栈统一」)。糊的是假值,真值本就没下发(blur 是视觉不是访问控制)。
   if (!plan.isPro && job.match == null) {
-    const maskCard = (dim: string, mask: string) => (
-      <div style={{ background: '#f9fafb', borderRadius: 8, padding: '7px 12px' }}>
+    const maskRow = (dim: string, mask: string, last: boolean) => (
+      <div style={{ padding: '7px 0', borderBottom: last ? undefined : '1px solid #f3f4f6' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 11.5, color: '#6b7280', fontWeight: 600 }}>{dim}</span>
-          <span aria-hidden style={{ filter: 'blur(4px)', userSelect: 'none', background: '#e5e7eb', color: '#9ca3af', fontWeight: 600, fontSize: 11.5, padding: '2px 8px', borderRadius: 999 }}>████</span>
+          <span aria-hidden style={{ filter: 'blur(4px)', userSelect: 'none', background: '#f3f4f6', color: '#9ca3af', fontWeight: 600, fontSize: 11.5, padding: '2px 8px', borderRadius: 999 }}>████</span>
         </div>
         <div aria-hidden style={{ filter: 'blur(4px)', userSelect: 'none', pointerEvents: 'none', fontSize: 12.5, lineHeight: 1.8, color: '#d1d5db', letterSpacing: -1 }}>{mask}</div>
       </div>
@@ -2539,9 +2540,9 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
           <IconTarget /> {t('match.title')}
           <span aria-hidden style={{ marginLeft: 10, fontWeight: 600, color: '#9ca3af', filter: 'blur(4px)', userSelect: 'none' }}>{t('match.levelLine', { level: t('match.mid') })}</span>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
-          {maskCard(t('mm.dim.noc'), MASK_TEXT[0])}
-          {maskCard(t('mm.dim.prov'), MASK_TEXT[3])}
+        <div style={{ marginTop: 4 }}>
+          {maskRow(t('mm.dim.noc'), MASK_TEXT[0], false)}
+          {maskRow(t('mm.dim.prov'), MASK_TEXT[3], true)}
         </div>
         <LockFoot t={t} loggedIn msg={t('up.match', { n: plan.freeMatchCap })} />
       </div>
@@ -2634,11 +2635,12 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
         <IconTarget /> {t('match.title')}
         <span style={{ marginLeft: 10, fontWeight: 600, color: lvColor[result.level] }}>{t('match.levelLine', { level: t('match.' + result.level) })}</span>
       </div>
-      {/* 一维度一卡,单列满宽(#158 卡片语言收编双端,桌面表格退役):维度名左、判定药丸右;
-          「本岗 / 我的」标签列 max-content 自适应,值一行放全——长值窄屏悬挂缩进折行,永不截断省略 */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+      {/* 一维度一段,分隔线分组(Frank「不要卡片套卡片更清晰」——#172 的灰内卡铺平):
+          维度名左、判定药丸右;「本岗 / 我的」标签列 max-content 自适应,
+          值一行放全——长值窄屏悬挂缩进折行,永不截断省略 */}
+      <div style={{ marginTop: 4 }}>
         {rows.map((r, i) => (
-          <div key={i} style={{ background: '#f9fafb', borderRadius: 8, padding: '7px 12px' }}>
+          <div key={i} style={{ padding: '7px 0', borderBottom: i === rows.length - 1 ? undefined : '1px solid #f3f4f6' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               <span style={{ fontSize: 11.5, color: '#6b7280', fontWeight: 600 }}>{r.dim}</span>
               {vCell(r)}
@@ -3061,8 +3063,13 @@ function ActModal({ job, lang, plan, onClose }: { job: JobRow; lang: Lang; plan:
               {t('src.label')}: <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{job.applyUrl}</a>
             </div>
           )}
-          {/* AI 顾问初判自动生成(Frank:不要再点一下);深挖入口=标题栏「AI 顾问」钮 */}
-          {status !== 'loading' && <JdAdvisorSection job={job} lang={lang} plan={plan} />}
+          {/* AI 顾问初判自动生成(Frank:不要再点一下);深挖入口=标题栏「AI 顾问」钮。
+              组件已裸段化(#173),弹框里的分隔线间隔由这层包 */}
+          {status !== 'loading' && (
+            <div style={{ marginTop: 14, paddingTop: 10, borderTop: '1px solid #f3f4f6' }}>
+              <JdAdvisorSection job={job} lang={lang} plan={plan} />
+            </div>
+          )}
         </div>
         {/* 八方向拉伸手柄(透明边条+角块;右下角保留视觉提示三角) */}
         {!full && <div style={{ position: 'absolute', right: 0, bottom: 0, width: 18, height: 18, pointerEvents: 'none', background: 'linear-gradient(135deg, transparent 50%, #cbd5e1 50%)' }} />}

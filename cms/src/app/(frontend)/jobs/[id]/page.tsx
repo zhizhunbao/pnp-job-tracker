@@ -69,7 +69,10 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
   const [drawDocs, fieldSrcDocs, nocDescDocs, desigDocs, newsRows, related, cityRow] = await Promise.all([
     payload.find({ collection: 'pnp-draws', limit: 200, depth: 0, sort: '-drawDate' }),
     payload.find({ collection: 'field-sources', limit: 200, depth: 0 }),
-    job.noc ? payload.find({ collection: 'noc-descriptions', limit: 1, depth: 0, where: { noc: { equals: job.noc } } }) : { docs: [] },
+    // Frank(#173):「我的 NOC」也要显示官方职业名(雇主写的岗位名可能不规范,NOC 名是锚)——
+    // 原先只查本岗一行,档案 NOC 在「对我意味着什么」里裸奔;把档案职业一并查出
+    (() => { const nocs = [...new Set([job.noc, ...(profileOk ? profile.nocCodes : [])].filter(Boolean))] as string[]
+      return nocs.length ? payload.find({ collection: 'noc-descriptions', limit: 20, depth: 0, where: { noc: { in: nocs } } }) : Promise.resolve({ docs: [] as any[] }) })(),
     ATLANTIC.has(job.province) ? payload.find({ collection: 'designated-employers', limit: 5000, depth: 0, where: { province: { equals: job.province } } }) : { docs: [] },
     job.province
       ? pool.query(`SELECT region, title, date, slug FROM news WHERE region = $1 ORDER BY date DESC, id ASC LIMIT 4`, [job.province])

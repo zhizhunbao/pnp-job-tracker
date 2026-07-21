@@ -55,6 +55,7 @@ function JdSection({ job, lang, plan, t }: { job: JobRow; lang: Lang; plan: Plan
     return () => ctrl.abort()
   }, [job])
   return (
+    <>
     <div style={sec}>
       <div style={{ ...secHead, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
         <span>{t('act.descTitle')}</span>
@@ -84,9 +85,15 @@ function JdSection({ job, lang, plan, t }: { job: JobRow; lang: Lang; plan: Plan
           {t('src.label')}: <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{job.applyUrl}</a>
         </div>
       )}
-      {/* AI 顾问初判(#102 同款自动生成,额度闸照走) */}
-      {status !== 'loading' && <JdAdvisorSection job={job} lang={lang} plan={plan} />}
     </div>
+    {/* AI 顾问初判(#102 同款自动生成,额度闸照走)。#173 Frank:「AI 顾问和职位描述分成两个卡片,
+        不要卡片套卡片」——从 JD 卡里拆出独立 sec 卡;仍等 JD 文本先行(#139 竞态序不动) */}
+    {status !== 'loading' && (
+      <div style={sec}>
+        <JdAdvisorSection job={job} lang={lang} plan={plan} />
+      </div>
+    )}
+    </>
   )
 }
 
