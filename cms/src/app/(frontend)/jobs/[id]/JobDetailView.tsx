@@ -28,7 +28,7 @@ const aLink: React.CSSProperties = { color: '#2563eb', textDecoration: 'none' }
 // JD 区(ActModal 正文同款管线:/api/jobtext 原文 + /api/jdformat 五节整理版懒生成,整理版默认可切换)
 function JdSection({ job, lang, plan, t }: { job: JobRow; lang: Lang; plan: Plan; t: TFn }) {
   const [text, setText] = useState('')
-  const [status, setStatus] = useState<'loading' | 'done' | 'empty' | 'upgrade'>('loading')
+  const [status, setStatus] = useState<'loading' | 'done' | 'empty' | 'upgrade' | 'limited'>('loading')   // #134
   const [fmt, setFmt] = useState<string | null | undefined>(undefined)
   const [showOrig, setShowOrig] = useState(false)
   useEffect(() => {
@@ -38,6 +38,7 @@ function JdSection({ job, lang, plan, t }: { job: JobRow; lang: Lang; plan: Plan
       try {
         const r = await fetchJobText(job.applyUrl || '', ctrl.signal)   // #126 同岗会话缓存(JobsTable 共用)
         if (r.status === 'gated') { setStatus('upgrade'); return }
+        if (r.status === 'limited') { setStatus('limited'); return }   // #134:429 ≠ 没数据
         setText(r.text); setStatus(r.text ? 'done' : 'empty')
       } catch { if (!ctrl.signal.aborted) setStatus('empty') }
     })()
@@ -62,6 +63,11 @@ function JdSection({ job, lang, plan, t }: { job: JobRow; lang: Lang; plan: Plan
       </div>
       {status === 'loading' ? <p style={{ margin: 0, color: '#9ca3af', fontSize: 13 }}>{t('act.loadingText')}</p>
         : status === 'upgrade' ? <UpgradeCard t={t} reason={t('up.jobtext')} />
+        : status === 'limited' ? (   /* #134:限流说人话 */
+          <Notice kind="warn" action={!plan.loggedIn ? <a href="/account" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('advisor.limitCta')}</a> : undefined}>
+            {t('advisor.limit429')}
+          </Notice>
+        )
         : status === 'empty' ? (
           <div>
             <p style={{ color: '#9ca3af', margin: '0 0 10px', fontSize: 13 }}>{t('act.noText')}</p>

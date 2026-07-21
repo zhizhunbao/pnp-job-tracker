@@ -1693,14 +1693,19 @@ function CompanyAiSection({ company, t }: { company: string; t: TFn }) {
 // 打端点烧额度(统一池 #124 下一次白开=一次额度)。只缓存 200 非空正文;402/空/失败不缓存,
 // 服务端负缓存(10min)照管懒抓重试节奏。命中缓存时 freeLeft=null(没消耗,额度行不刷新)。
 const jobTextCache = new Map<string, string>()
-export async function fetchJobText(applyUrl: string, signal?: AbortSignal): Promise<{ status: 'ok' | 'gated' | 'empty'; text: string; freeLeft: number | null }> {
+// #134(Frank 报障「点了一些工作发现都是空的」):429 曾掉进「空」分支——额度一用完,之后每个岗都显示
+// 「本站暂未收录正文」,把限流谎报成缺数据(最恶的一种静默失败:用户以为站没数据)。三态分明:
+// 402=免费额度用完(升级卡) · 429=匿名 IP 池用完(说人话+引导注册) · 其它非 2xx=取数失败(不是「没有」)。
+export async function fetchJobText(applyUrl: string, signal?: AbortSignal): Promise<{ status: 'ok' | 'gated' | 'limited' | 'error' | 'empty'; text: string; freeLeft: number | null }> {
   const hit = jobTextCache.get(applyUrl)
   if (hit != null) return { status: 'ok', text: hit, freeLeft: null }
   const res = await fetch('/api/jobtext?url=' + encodeURIComponent(applyUrl), { signal })
   const left = res.headers.get('X-Free-Left')
   const freeLeft = left != null ? Number(left) : null
   if (res.status === 402) return { status: 'gated', text: '', freeLeft }
-  const text = res.ok ? (await res.text()).trim() : ''
+  if (res.status === 429) return { status: 'limited', text: '', freeLeft }
+  if (!res.ok) return { status: 'error', text: '', freeLeft }
+  const text = (await res.text()).trim()
   if (text) jobTextCache.set(applyUrl, text)
   return { status: text ? 'ok' : 'empty', text, freeLeft }
 }
@@ -1708,12 +1713,14 @@ function TitleFacts({ job, lang }: { job: JobRow; lang: Lang }) {
   const t = makeT(lang)
   const [jd, setJd] = useState<string | null>(null)  // null=loading · ''=无正文
   const [gated, setGated] = useState(false)          // 402:JD 摘录免费试用用完(E3-05)
+  const [limited, setLimited] = useState(false)      // #134:429 匿名池用完 ≠ 没数据
   useEffect(() => {
     const ctrl = new AbortController()
     ;(async () => {
       try {
         const r = await fetchJobText(job.applyUrl || '', ctrl.signal)
         if (r.status === 'gated') { setGated(true); setJd(''); return }
+        if (r.status === 'limited') { setLimited(true); setJd(''); return }
         setJd(r.text)
       } catch { if (!ctrl.signal.aborted) setJd('') }
     })()
@@ -1730,6 +1737,7 @@ function TitleFacts({ job, lang }: { job: JobRow; lang: Lang }) {
       {/* 职位字段只做职位的事(07-06 用户拍板):职位名已在弹窗标题,NOC/TEER 归分类弹窗 —— 这里就是真实 JD */}
       <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: (job.employmentHours || job.education || job.certificates?.length) ? 8 : 0 }}>{t('fact.jdExcerpt')}</div>
       {gated ? <UpgradeCard t={t} reason={t('up.jobtext')} />
+        : limited ? <div style={{ marginTop: 4 }}><Notice kind="warn">{t('advisor.limit429')}</Notice></div>
         : jd === null ? <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>{t('act.loadingText')}</div>
         : jd ? <JdTextView text={jd} />
         : <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>
@@ -2616,7 +2624,7 @@ function ActModal({ job, lang, plan, onClose }: { job: JobRow; lang: Lang; plan:
   const overlayClose = useOverlayClose(onClose)
   const { narrow, full, toggleFull, panel, startDrag, startResize } = useFloatPanel(JD_PREF, 760, 640)
   const [text, setText] = useState('')
-  const [status, setStatus] = useState<'loading' | 'done' | 'empty' | 'upgrade'>('loading')
+  const [status, setStatus] = useState<'loading' | 'done' | 'empty' | 'upgrade' | 'limited'>('loading')   // #134:limited=429 不再谎报「空」
   const [freeLeft, setFreeLeft] = useState<number | null>(null)  // 第 5 轮 #16:试用额度可见化
   // J3(2026-07-19 Frank 批):AI 五节整理版懒生成——undefined=整理中,null=没有(降级原文),string=整理版
   const [fmt, setFmt] = useState<string | null | undefined>(undefined)
@@ -2629,6 +2637,7 @@ function ActModal({ job, lang, plan, onClose }: { job: JobRow; lang: Lang; plan:
         const r = await fetchJobText(job.applyUrl || '', ctrl.signal)   // #126 同岗会话缓存
         if (r.freeLeft != null) setFreeLeft(r.freeLeft)
         if (r.status === 'gated') { setStatus('upgrade'); return }  // 免费试用用完(E3-05)
+        if (r.status === 'limited') { setStatus('limited'); return }  // #134:匿名 IP 池用完
         setText(r.text); setStatus(r.text ? 'done' : 'empty')
       } catch { if (!ctrl.signal.aborted) setStatus('empty') }
     })()
@@ -2666,6 +2675,11 @@ function ActModal({ job, lang, plan, onClose }: { job: JobRow; lang: Lang; plan:
         <div style={{ flex: 1, overflowY: 'auto', padding: '4px 20px 20px', fontSize: 14, lineHeight: 1.7, color: '#374151' }}>
           {status === 'loading' ? <p style={{ color: '#9ca3af' }}>{t('act.loadingText')}</p>
             : status === 'upgrade' ? <UpgradeCard t={t} reason={t('up.jobtext')} />
+            : status === 'limited' ? (   /* #134:限流说人话,不再谎报「暂未收录」 */
+              <Notice kind="warn" action={!plan.loggedIn ? <a href="/account" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('advisor.limitCta')}</a> : undefined}>
+                {t('advisor.limit429')}
+              </Notice>
+            )
             : status === 'empty' ? (
               <div>
                 <p style={{ color: '#9ca3af', margin: '4px 0 10px' }}>{t('act.noText')}</p>
