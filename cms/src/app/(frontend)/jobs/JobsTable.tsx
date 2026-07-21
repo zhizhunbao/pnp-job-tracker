@@ -53,19 +53,20 @@ export type FieldGroup = 'company' | 'job' | 'immigration'
 // 原设计还有一档「注=悬停小注」,2026-07-21 Frank 拍板不做 —— 它与「无」行为完全一致,
 // 留着只是个没兑现的意图,故合并(YAGNI:不为「可能用得上」保留结构)。
 type Disposition = FieldGroup | 'map' | 'none'
+// #175(Frank「所有的框都去掉可点吧。hover 高亮也去掉,只有 分类 公司 职位 可以点击弹框,
+// 地址可以点击跳转」):可点集合大收编——满屏蓝绿都能点=没有重点。
 const FIELD_GROUP: Partial<Record<ColKey, Disposition>> = {
-  // ① 移民(付费核心;职业分类五级合成一节 —— #157 已证同名三级是噪音)
-  match: 'immigration', score: 'immigration', pnp: 'immigration', ee: 'immigration', aip: 'immigration',
-  eligibility: 'immigration', vsMedian: 'immigration',
+  // ① 分类族 → 移民弹框(移民弹框铺全组:通道/PNP/EE/AIP/分类/vs 中位,入口一个就够)
   noc: 'immigration', teer: 'immigration', broad: 'immigration', mid: 'immigration', fine: 'immigration',
-  // ② 职位(薪资与年薪折算合成一节 —— 原两个弹框说同一件事 = 重复排版)
-  title: 'job', salary: 'job', salaryYr: 'job', empHours: 'job', empTerm: 'job', accessibility: 'job',
-  // ③ 公司(外劳记录是**公司级**事实,归公司不归职位)
-  company: 'company', lmia: 'company',
-  // ④ 地图直连(mapsUrl 已存在,address 本就直连;补齐其余四个)
-  country: 'map', province: 'map', city: 'map', district: 'map', address: 'map',
-  // ⑤ 不可点:一句话的事不值一个弹框 + 一次生成 + 一次额度;日期就是日期,不需要解释。
-  // (中位薪资两列对免费用户仍是打码 + 锁,那个锁自己链去升级弹窗,不走这条路由。)
+  // ② 职位 → JD 弹框;③ 公司 → 公司弹框
+  title: 'job', company: 'company',
+  // ④ 地址 → 地图直连(仅地址;省/市/区/国家退回纯文本)
+  address: 'map',
+  // ⑤ 其余一律不可点(#175 前的 match/score/pnp/ee/salary/lmia/地点四件等弹框入口全退役;
+  //    Pro 锁位的锁自己链升级弹窗,不走本路由)
+  match: 'none', score: 'none', pnp: 'none', ee: 'none', aip: 'none', eligibility: 'none', vsMedian: 'none',
+  salary: 'none', salaryYr: 'none', empHours: 'none', empTerm: 'none', accessibility: 'none', lmia: 'none',
+  country: 'none', province: 'none', city: 'none', district: 'none',
   source: 'none', origin: 'none', direct: 'none', status: 'none',
   wageMedHr: 'none', wageMedYr: 'none',
   datePosted: 'none', lastSeen: 'none', closedAt: 'none',
@@ -106,21 +107,24 @@ export function UpgradeCard({ t, reason }: { t: TFn; reason: string }) {
 // 这里糊掉的是**假文本**,零成本。真内容只在放行时才生成,一次都不浪费。
 // 真值同理不下发:blur 是视觉效果不是访问控制,右键就能读,故服务端剥离 + 前端渲假值(与 #130/#152 同一套)。
 const MASK_TEXT = ['████████████████████████████████', '██████████████████████████', '███████████████████████████████████', '████████████████████']
-// 锁行(打码块脚注)单独成件:全站所有打码位共用同一形态(锁 + 灰注 + UpgradeCta 文字链),不许各处自造
-export function LockFoot({ t, loggedIn, msg }: { t: TFn; loggedIn: boolean; msg?: string }) {
+// 锁行(打码块脚注)单独成件:全站所有打码位共用同一形态(锁 + 灰注 + UpgradeCta 文字链),不许各处自造。
+// ctaLabel:未登录 429 场景的出路是「登录/注册」不是「升级 Pro」,文案随场景、行为同一个组件。
+export function LockFoot({ t, loggedIn, msg, ctaLabel }: { t: TFn; loggedIn: boolean; msg?: string; ctaLabel?: string }) {
   return (
     <div style={{ marginTop: 6, fontSize: 11.5, color: '#9ca3af', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-      <IconLock />{msg || t('up.quota')}<UpgradeCta t={t} loggedIn={loggedIn} link style={{ fontSize: 11.5 }} />
+      <IconLock />{msg || t('up.quota')}<UpgradeCta t={t} loggedIn={loggedIn} link label={ctaLabel} style={{ fontSize: 11.5 }} />
     </div>
   )
 }
-export function LockedText({ t, loggedIn, lines = 3 }: { t: TFn; loggedIn: boolean; lines?: number }) {
+// #175(Frank「限额了不应该正常显示内容,但是模糊化吗」):429 限流态也走本件——
+// 黄条 Notice 退役,改打码假文本 + 锁行(§3.6 地板规则:付费/限额内容永不留空白,最低打码占位)
+export function LockedText({ t, loggedIn, lines = 3, msg, ctaLabel }: { t: TFn; loggedIn: boolean; lines?: number; msg?: string; ctaLabel?: string }) {
   return (
     <div style={{ marginTop: 4 }}>
       <div aria-hidden style={{ filter: 'blur(4px)', userSelect: 'none', pointerEvents: 'none', fontSize: 12.5, lineHeight: 1.9, color: '#d1d5db', letterSpacing: -1 }}>
         {MASK_TEXT.slice(0, lines).map((s, i) => <div key={i}>{s}</div>)}
       </div>
-      <LockFoot t={t} loggedIn={loggedIn} />
+      <LockFoot t={t} loggedIn={loggedIn} msg={msg} ctaLabel={ctaLabel} />
     </div>
   )
 }
@@ -407,16 +411,7 @@ const searchHay = (j: JobRow): string => {
     j.score != null ? String(j.score) : '', t != null ? `TEER ${t}` : '',
   ].filter(Boolean).join(' ').toLowerCase()
 }
-// 来源链接 = 该来源的板块根(区别于职位指向的具体帖子)。
-// 例:lever 的公司板块、bamboohr 的 /careers、Job Bank 的 /jobsearch
-const sourceUrl = (applyUrl: string): string => {
-  if (!applyUrl) return ''
-  try {
-    const u = new URL(applyUrl)
-    const seg = u.pathname.split('/').filter(Boolean)[0]
-    return seg ? `${u.origin}/${seg}` : u.origin
-  } catch { return '' }
-}
+// sourceUrl(来源板块根链接)已随 #175 来源格退回纯文本一并删除——死代码不留
 
 // ── 列配置(可勾选;职位列始终显示) ──────────────────────────────
 type ColKey = 'score' | 'match' | 'pnp' | 'ee' | 'aip' | 'lmia' | 'eligibility' | 'broad' | 'mid' | 'fine' | 'teer' | 'empHours' | 'empTerm' | 'title' | 'company' | 'noc' | 'accessibility' | 'salary' | 'salaryYr' | 'wageMedHr' | 'wageMedYr' | 'vsMedian' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'lastSeen' | 'closedAt' | 'actions'
@@ -941,7 +936,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
 
   return (
     <div style={{ background: '#fff', color: '#1f2937', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column' }}>
-      <style>{`.jcell:hover{background:#eff6ff !important}
+      <style>{`.jcellAct:hover{background:#eff6ff !important}
         .colResize:hover{background:#93c5fd}
         .colResize:active{background:#3b82f6}
         .jtCards{display:none}
@@ -1178,8 +1173,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             </thead>
             <tbody>
               {rows.map((j, i) => {
-                // 各地点列点击 → Google 地图按**自己那一级**查询(省→省/市→市/区→区/地址→地址)
-                const mapsFor = (...parts: (string | undefined)[]) => { const q = parts.filter(Boolean).join(', '); return q ? mapsUrl(q) : null }
+                // #175:地点列地图直连只留「地址」格,mapsFor 死代码删(省/市/区退回纯文本)
                 const L = parseLoc(j)                                                       // 省/市/区
                 const cat = colorOf(j.broad)
                 const open = (field: ColKey, title: string) => openField(field, j, title)
@@ -1245,8 +1239,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       else if (k === 'teer') { node = j.teer == null ? '—' : `TEER ${j.teer}`; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'empHours') { node = j.employmentHours ? t('emp.' + j.employmentHours) : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.employmentHours ? '#4b5563' : '#d1d5db', fontSize: 12.5 }) }
                       else if (k === 'empTerm') { node = j.employmentTerm ? t('term.' + j.employmentTerm) : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.employmentTerm ? '#4b5563' : '#d1d5db', fontSize: 12.5 }) }
-                      else if (k === 'title') { href = j.applyUrl || null; node = j.title; Object.assign(extra, wrapCell(360)) }
-                      else if (k === 'company') { href = j.officialUrl || null; node = j.company; Object.assign(extra, wrapCell(190)) }
+                      // #175:职位/公司格的外链 href 摘除——点击行为只剩弹框(外链出口在弹框/详情页里,一格一个动作)
+                      else if (k === 'title') { node = j.title; Object.assign(extra, wrapCell(360), { color: '#2563eb' }) }
+                      else if (k === 'company') { node = j.company; Object.assign(extra, wrapCell(190), { color: '#2563eb' }) }
                       else if (k === 'noc') node = j.noc || '—'
                       else if (k === 'accessibility') node = t('acc.' + (j.accessibility || 'unknown'))
                       else if (k === 'salary') { node = <span title={j.salary || ''}>{j.salaryText || '—'}</span>; Object.assign(extra, { color: j.salary ? '#15803d' : '#9ca3af' }) }
@@ -1257,10 +1252,11 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       else if (k === 'address') { href = j.address ? mapsUrl(j.address) : null; node = j.address || '—'; Object.assign(extra, wrapCell(220)) }
                       else if (k === 'direct') { const dr = isDirect(j); node = dr ? t('cell.first') : t('cell.repost'); Object.assign(extra, { whiteSpace: 'nowrap', color: dr ? '#15803d' : '#9ca3af', fontSize: 12.5 }) }
                       else if (k === 'country') { node = L.country || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
-                      else if (k === 'province') { href = mapsFor(L.prov); node = L.prov || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
-                      else if (k === 'city') { href = mapsFor(L.city); node = L.city || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
-                      else if (k === 'district') { href = mapsFor(L.district); node = L.district || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#1f2937' }) }
-                      else if (k === 'source') { href = sourceUrl(j.applyUrl) || null; node = sourceLabel(j); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+                      // #175:省/市/区/来源退回纯文本(地图出口只留「地址」一格)
+                      else if (k === 'province') { node = L.prov || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+                      else if (k === 'city') { node = L.city || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+                      else if (k === 'district') { node = L.district || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#1f2937' }) }
+                      else if (k === 'source') { node = sourceLabel(j); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'origin') { node = j.origin ? t('origin.' + j.origin) : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'pnp') {  // 三档强度 + 魁省N/A:强=具名紧缺通道(琥珀底色 chip,500)、中=可提名(绿,500)、弱=不符(灰—,400);魁省=紫,400(独立 N/A)
                         const stream = j.pnpStream  // 命中省 inclusion 清单才有,别处看不到的真信号
@@ -1288,8 +1284,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       else if (k === 'closedAt') { node = j.closedAt ? j.closedAt.slice(0, 10) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       else if (k === 'datePosted') { node = j.datePosted ? j.datePosted.slice(0, 10) : '—'; Object.assign(extra, { color: '#6b7280', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       else { node = j.lastSeen ? fmtLocalSec(j.lastSeen) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
+                      // #175:hover 高亮只随可点格(可点必有态,不可点必无——E8-08 规范本来就这么写)
                       return (
-                        <td key={k} className="jcell" style={{ ...td, ...extra, cursor: cellActionable(k) ? 'pointer' : 'default', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', minWidth: colMin(k), ...(NOWRAP_COLS.has(k) ? { whiteSpace: 'nowrap' } : { whiteSpace: 'normal', overflowWrap: 'break-word' }), ...(hasWidths && { overflow: 'hidden', textOverflow: 'ellipsis' }), ...frozenStyle(k, rowBg) }} title={typeof node === 'string' ? node : undefined} onClick={() => {
+                        <td key={k} className={cellActionable(k) ? 'jcell jcellAct' : 'jcell'} style={{ ...td, ...extra, cursor: cellActionable(k) ? 'pointer' : 'default', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', minWidth: colMin(k), ...(NOWRAP_COLS.has(k) ? { whiteSpace: 'nowrap' } : { whiteSpace: 'normal', overflowWrap: 'break-word' }), ...(hasWidths && { overflow: 'hidden', textOverflow: 'ellipsis' }), ...frozenStyle(k, rowBg) }} title={typeof node === 'string' ? node : undefined} onClick={() => {
                           // 职位格=直开职位描述(2026-07-19 Frank:「点职位也能显示职位描述」);title 顾问弹框由 JD 框标题栏「AI 顾问」钮承接(同日报障回补)
                           if (k === 'title') { setActModal({ kind: 'desc', job: j }); return }
                           // Pro 锁列(免费态数据已在服务端剥离)不开顾问弹框——没数据只会误导;锁形本身已链去 /account。match 免费额度内有值仍可开。
@@ -1325,8 +1322,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             const L = parseLoc(j)
             const M: Record<string, { bg: string; fg: string }> = { high: { bg: '#dcfce7', fg: '#166534' }, mid: { bg: '#dbeafe', fg: '#1e40af' }, low: { bg: '#f3f4f6', fg: '#6b7280' } }
             const mc = j.match ? M[j.match] : undefined
+            // #175:不可点的 chip 连 onClick 也摘(stopPropagation 会吞整卡点击=点了没反应)
             const chip = (bg: string, fg: string, txt: string, k: ColKey) => (
-              <span key={k} onClick={stop(() => open(k, txt))} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: bg, color: fg, cursor: cellActionable(k) ? 'pointer' : 'default', whiteSpace: 'nowrap' }}>{txt}</span>
+              <span key={k} onClick={cellActionable(k) ? stop(() => open(k, txt)) : undefined} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: bg, color: fg, cursor: cellActionable(k) ? 'pointer' : 'default', whiteSpace: 'nowrap' }}>{txt}</span>
             )
             const days = j.datePosted && (j.status || 'open') !== 'closed' ? Math.max(0, Math.floor((Date.now() - new Date(j.datePosted).getTime()) / 86400000)) : null
             return (
@@ -1357,16 +1355,18 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       {j.company ? <span onClick={stop(() => open('company', j.company))} style={{ fontSize: 12.5, color: '#2563eb', cursor: 'pointer' }}>{j.company}</span> : null}
                       {j.sponsorGrade != null && <span title={t('gr.sponsorTip')} style={{ fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sp.' + j.sponsorGrade)}</span>}
                     </span>
-                    {(j.salaryText || j.salary) ? <span onClick={stop(() => open('salary', j.salaryText || j.salary))} style={{ fontSize: 13, color: '#15803d', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{j.salaryText || j.salary}</span> : null}
+                    {/* #175:薪资退出可点集合——写死的 pointer+onClick 摘除(看着能点点了没反应比不能点更糟) */}
+                    {(j.salaryText || j.salary) ? <span style={{ fontSize: 13, color: '#15803d', fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}>{j.salaryText || j.salary}</span> : null}
                   </div>
                 ) : null}
                 <div style={{ fontSize: 12.5, marginTop: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
-                  {L.city ? <span onClick={stop(() => open('city', L.city))} style={{ color: '#374151', cursor: 'pointer', minWidth: 0 }}>{L.city}{j.province ? `, ${j.province}` : ''}</span> : <span />}
-                  <span suppressHydrationWarning onClick={stop(() => open('datePosted', (j.datePosted || '').slice(0, 10)))} style={{ color: '#9ca3af', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{(j.datePosted || '').slice(0, 10)}{days != null ? `(${t('fact.daysUpVal', { n: days })})` : ''}</span>
+                  {/* #175:地点/日期退出可点集合——onClick 连根摘(整卡点击照常进详情页) */}
+                  {L.city ? <span style={{ color: '#374151', minWidth: 0 }}>{L.city}{j.province ? `, ${j.province}` : ''}</span> : <span />}
+                  <span suppressHydrationWarning style={{ color: '#9ca3af', whiteSpace: 'nowrap', flexShrink: 0 }}>{(j.datePosted || '').slice(0, 10)}{days != null ? `(${t('fact.daysUpVal', { n: days })})` : ''}</span>
                 </div>
                 <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
                   {/* #167⑩:匹配度胶囊从右上角迁到此排首位(胶囊只此一处);它是个人化结论=最值钱,故排第一 */}
-                  {mc && <span onClick={stop(() => open('match', t('match.' + j.match)))} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: mc.bg, color: mc.fg, fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer' }}>{t('match.' + j.match)}</span>}
+                  {mc && <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: mc.bg, color: mc.fg, fontWeight: 600, whiteSpace: 'nowrap' }}>{t('match.' + j.match)}</span>}
                   {j.pnpEligible ? chip('#fef3c7', '#92400e', j.pnpStream ? t('cell.pnpYes') : t('cell.pnpSkilled'), 'pnp') : null}
                   {j.eeCategory ? chip('#dbeafe', '#1e40af', 'EE ' + eeDisplay(t, j.eeCategory), 'ee') : null}
                   {j.aip ? chip('#ffedd5', '#9a3412', t('cell.aipYes'), 'aip') : null}
@@ -1865,9 +1865,8 @@ export function JdAdvisorSection({ job, lang, plan }: { job: JobRow; lang: Lang;
       </div>
       {status === 'upgrade' ? <LockedText t={t} loggedIn={plan.loggedIn} />
         : status === 'limited' ? (
-          <Notice kind="warn" action={!plan.loggedIn ? <a href="/account" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('advisor.limitCta')}</a> : undefined}>
-            {t('advisor.limit429')}
-          </Notice>
+          /* #175:429 黄条退役 → 打码+锁行(限额内容不留空白也不占黄条,失去感靠打码传达) */
+          <LockedText t={t} loggedIn={plan.loggedIn} msg={t('advisor.limit429')} ctaLabel={!plan.loggedIn ? t('advisor.limitCta') : undefined} />
         )
         : status === 'loading' ? <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>{t('advisor.loading')}</p>
         : status === 'error' ? <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>{t('advisor.unavail')}</p>
@@ -2043,7 +2042,8 @@ function ScoreGradesSection({ job, lang, loggedIn }: { job: JobRow; lang: Lang; 
     </div>
   )
   if (d === 'upgrade') return <LockedText t={t} loggedIn={loggedIn} />
-  if (d === 'limited') return <Notice kind="warn" action={!loggedIn ? <a href="/account" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('advisor.limitCta')}</a> : undefined}>{t('advisor.limit429')}</Notice>
+  // #175:429 黄条退役 → 打码+锁行(全站限额态统一形态)
+  if (d === 'limited') return <LockedText t={t} loggedIn={loggedIn} msg={t('advisor.limit429')} ctaLabel={!loggedIn ? t('advisor.limitCta') : undefined} />
   if (d === 'error') return <div style={{ fontSize: 13, color: '#9ca3af' }}>{t('advisor.unavail')}</div>
   if (d === undefined) return <div style={{ fontSize: 13, color: '#9ca3af' }}>{t('act.loadingText')}</div>
   const det = d.detail || {}
@@ -2555,12 +2555,18 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
   if (!result) return null
   const lvColor: Record<string, string> = { high: '#166534', mid: '#1e40af', low: '#6b7280', na: '#9ca3af' }
   const pf = plan.profile!
-  const provLoc = (c: string) => provName(t, c)   // 全站口径(#146):英文在前,中韩界面带「(译名)」注
   const noteS: React.CSSProperties = { color: '#9ca3af', fontSize: 11 }
-  // NOC:英文官方名主文案 + 界面语言译名括号注(#147),NOC 码作同行行尾灰注——不另起行
+  // #175(Frank「这种还是不要用括号了」):译名不再括号包,改灰注跟在英文后(头部卡
+  // 「Esthetician…　美容师…」同款);省名同理,不再走 provName 的「En(译名)」字符串拼法
+  const provCell = (c: string) => {
+    const cc = (c || '').toUpperCase(); const en = PROV_NAMES[cc] || c
+    const loc = t('prov.' + cc); const has = loc && loc !== 'prov.' + cc && loc !== en
+    return <>{en}{has ? <span style={noteS}>　{loc}</span> : null}</>
+  }
+  // NOC:英文官方名主文案 + 界面语言译名灰注(#147),NOC 码作同行行尾灰注——不另起行
   const nocCell = (c: string) => {
     const d = nocDesc.find((x) => x.noc === c); const loc = nocLocalTitle(d, lang)
-    return d?.title ? <>{d.title}{loc ? `(${loc})` : ''} <span style={noteS}>NOC {c}</span></> : <>NOC {c}</>
+    return d?.title ? <>{d.title}{loc ? <span style={noteS}>　{loc}</span> : null} <span style={noteS}>NOC {c}</span></> : <>NOC {c}</>
   }
   // TEER 值同屏可能出现两次(省提名粗筛 / 技能层级),「0 最高,5 最低」灰注只随首次出现(一事只说一遍)
   let teerNoted = false
@@ -2581,8 +2587,8 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
       else if (r.key === 'match.r.noc.minor') rows.push({ dim: t('mm.dim.noc'), jc: nocCell(job.noc!), yc: nocCell(String(p.yours)), verdict: 'pass', v: t('mm.v.minor') })
       else rows.push({ dim: t('mm.dim.noc'), jc: nocCell(job.noc!), yc: <>{pf.nocCodes.map((c: string) => <div key={c}>{nocCell(c)}</div>)}</>, verdict: 'fail', v: t('mm.v.nomatch') })
     } else if (r.rule === 'prov') {
-      if (r.key === 'match.r.prov.notTarget') rows.push({ dim: t('mm.dim.prov'), jc: provLoc(String(p.prov)), yc: <>{pf.targetProvinces.map((c: string) => <div key={c}>{provLoc(c)}</div>)}</>, verdict: 'warn', v: t('mm.v.notTarget') })
-      else if (r.key === 'match.r.prov.qc') rows.push({ dim: t('mm.dim.pnp'), jc: provLoc('QC'), yc: '—', verdict: 'na', v: t('mm.v.qc') })
+      if (r.key === 'match.r.prov.notTarget') rows.push({ dim: t('mm.dim.prov'), jc: provCell(String(p.prov)), yc: <>{pf.targetProvinces.map((c: string) => <div key={c}>{provCell(c)}</div>)}</>, verdict: 'warn', v: t('mm.v.notTarget') })
+      else if (r.key === 'match.r.prov.qc') rows.push({ dim: t('mm.dim.pnp'), jc: provCell('QC'), yc: '—', verdict: 'na', v: t('mm.v.qc') })
       else if (r.key === 'match.r.prov.named') rows.push({ dim: t('mm.dim.pnp'), jc: streamDisplay(t, String(p.label)), yc: '—', verdict: 'pass', v: t('mm.v.named'), src: r.source })
       else if (r.key === 'match.r.prov.excluded') rows.push({ dim: t('mm.dim.pnp'), jc: streamDisplay(t, String(p.label)), yc: '—', verdict: 'fail', v: t('mm.v.excluded'), src: r.source })
       else if (r.key === 'match.r.prov.generic') rows.push({ dim: t('mm.dim.pnpPre'), jc: teerCell(), yc: '—', verdict: 'pass', v: t('mm.v.generic') })
@@ -2796,10 +2802,8 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
               {status === 'upgrade' ? (
                 <LockedText t={t} loggedIn={plan.loggedIn} />
               ) : status === 'limited' ? (
-                /* 429 说人话(第 9 轮 #25):额度用完本是注册/升级的转化时机,不是报错时机 */
-                <Notice kind="warn" style={{ margin: '4px 0 0', fontSize: 13.5 }} action={!plan.loggedIn ? <a href="/account" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('advisor.limitCta')}</a> : undefined}>
-                  {t('advisor.limit429')}
-                </Notice>
+                /* #175:429 黄条退役 → 打码+锁行(转化靠失去感,不靠警示框) */
+                <LockedText t={t} loggedIn={plan.loggedIn} msg={t('advisor.limit429')} ctaLabel={!plan.loggedIn ? t('advisor.limitCta') : undefined} />
               ) : status === 'loading' ? (
                 <p style={{ margin: 0, fontSize: 14, color: '#9ca3af' }}>{t('advisor.loading')}</p>
               ) : (
@@ -3043,10 +3047,8 @@ function ActModal({ job, lang, plan, onClose }: { job: JobRow; lang: Lang; plan:
         <div style={{ flex: 1, overflowY: 'auto', padding: '4px 20px 20px', fontSize: 14, lineHeight: 1.7, color: '#374151' }}>
           {status === 'loading' ? <p style={{ color: '#9ca3af' }}>{t('act.loadingText')}</p>
             : status === 'upgrade' ? <LockedText t={t} loggedIn={plan.loggedIn} lines={4} />
-            : status === 'limited' ? (   /* #134:限流说人话,不再谎报「暂未收录」 */
-              <Notice kind="warn" action={!plan.loggedIn ? <a href="/account" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('advisor.limitCta')}</a> : undefined}>
-                {t('advisor.limit429')}
-              </Notice>
+            : status === 'limited' ? (   /* #134 限流说人话;#175 黄条退役 → 打码+锁行 */
+              <LockedText t={t} loggedIn={plan.loggedIn} lines={4} msg={t('advisor.limit429')} ctaLabel={!plan.loggedIn ? t('advisor.limitCta') : undefined} />
             )
             : status === 'empty' ? (
               <div>

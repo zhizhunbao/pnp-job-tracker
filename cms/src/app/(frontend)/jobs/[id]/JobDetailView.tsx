@@ -65,10 +65,8 @@ function JdSection({ job, lang, plan, t }: { job: JobRow; lang: Lang; plan: Plan
       </div>
       {status === 'loading' ? <p style={{ margin: 0, color: '#9ca3af', fontSize: 13 }}>{t('act.loadingText')}</p>
         : status === 'upgrade' ? <LockedText t={t} loggedIn={plan.loggedIn} lines={4} />
-        : status === 'limited' ? (   /* #134:限流说人话 */
-          <Notice kind="warn" action={!plan.loggedIn ? <a href="/account" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('advisor.limitCta')}</a> : undefined}>
-            {t('advisor.limit429')}
-          </Notice>
+        : status === 'limited' ? (   /* #134 限流说人话;#175 黄条退役 → 打码+锁行 */
+          <LockedText t={t} loggedIn={plan.loggedIn} lines={4} msg={t('advisor.limit429')} ctaLabel={!plan.loggedIn ? t('advisor.limitCta') : undefined} />
         )
         : status === 'empty' ? (
           <div>
