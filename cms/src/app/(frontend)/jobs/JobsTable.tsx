@@ -959,7 +959,17 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             {anyFilter || matchView ? t('subtitle.hits', { n: total }) : t('subtitle.count', { n: total })}
             {proof && (proof.named > 0 || proof.lmia > 0) && <span style={{ marginLeft: 10 }}>{t('subtitle.proof', { named: proof.named, lmia: proof.lmia })}</span>}
           </>}
-          right={!plan.loggedIn && <a href="/?signup=1" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'none' }}><IconTarget /> {t('banner.text')}</a>} />
+          right={!plan.loggedIn && (
+            // #165(Frank 报障「这个按钮在手机端会挡住信息」):CTA 在横幅右槽带 nowrap + flexShrink:0,
+            // **既不换行也不收缩** → 375px 上整条字占掉右半边,左边标题与职位数被压成省略号。
+            // 旁边的数字胶囊(.pbStat)本就做了窄屏隐藏,这个漏了。
+            // 不能直接隐藏它(手机是主要流量,建档是转化入口)→ 窄屏换短标签,长短同一枚不重复排版。
+            // 注:JSX 属性位不能放 {/* */} 注释(TS1005),注释要写在表达式内 —— 与「return( 后不能跟注释」同类。
+            <a href="/?signup=1" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'none' }}>
+              <style>{'@media(max-width:640px){.ctaLong{display:none}.ctaShort{display:inline}}@media(min-width:641px){.ctaShort{display:none}}'}</style>
+              <IconTarget /> <span className="ctaLong">{t('banner.text')}</span><span className="ctaShort">{t('banner.textShort')}</span>
+            </a>
+          )} />
 
         {/* 推荐板块(2026-07-17「找工作为主」重构):原蓝条降级为职位列表上方的「推荐岗位」内容行——
             取最强组合出前 3 张匹配岗卡片,每张可「不感兴趣」;有筛选/匹配视图时不打扰。
