@@ -41,8 +41,12 @@ export function catName(t: TFn, v: string): string {
   for (const k of ['cat.' + v, 'broad.' + v]) { const s = t(k); if (s !== k) return s }
   return v
 }
-// Pro 专属列(与 lib/plan.ts PRO_COLUMNS 一致;免费用户列位显示锁标,数据本就没进浏览器)
+// Pro 专属列(与 lib/plan.ts PRO_COLUMNS 一致;免费用户列位打码,真值本就没进浏览器)
 const PRO_COLS = new Set<ColKey>(['match', 'vsMedian', 'wageMedHr', 'wageMedYr'])
+// #152 锁位统一打码(Frank「应该给他打上马赛克那种」;#130 详情页先例推广到表格):
+// 每列一个**写死的假占位数**,blur 掉——传达「这儿有个数」比一把锁更能说明值多少。
+// 真值免费态压根不出服务端,占位数是假的,扒开也没用。
+const PRO_MASK: Partial<Record<ColKey, string>> = { vsMedian: '+15%', wageMedHr: '$28/hr', wageMedYr: '$58K/yr' }
 
 // 未登录价值主张横幅(E5-01):一句话+关闭,可关闭。注册/定价按钮已归组进顶栏账户区(E8-01,2026-07-06 拍板)。
 // 关闭记忆走 cookie(同 COLS_COOKIE 手法)→ SSR 首帧直接渲对,不再等水合后才弹出来(用户点名);bump cookie 名可重新展示
@@ -1098,8 +1102,15 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       const extra: React.CSSProperties = {}
                       // Pro 专属列(E3-05):免费用户列位显示锁标(数据在服务端已剥离,改偏好/cookie 绕不过)
                       if (PRO_COLS.has(k) && !plan.isPro && k !== 'match') {
-                        {/* ③(2026-07-19 价值时刻批):lockTip 按列说人话——hover 就知道锁着什么、值不值 */}
-                        node = <button title={t('up.lockTip.' + k)} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', color: '#b45309' }} onClick={(e) => { e.stopPropagation(); setUpsell('lock') }}><IconLock /></button>
+                        {/* ③ lockTip 按列说人话(hover 就知道锁着什么);#152:锁标改打码占位数——
+                            「这儿有个数」比一把锁更能让人判断值不值,和详情页 #130 同一套 */}
+                        node = (
+                          <button title={t('up.lockTip.' + k)} onClick={(e) => { e.stopPropagation(); setUpsell('lock') }}
+                            style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', color: '#b45309', font: 'inherit', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                            <span aria-hidden style={{ filter: 'blur(4px)', userSelect: 'none', color: '#4b5563' }}>{PRO_MASK[k] || '—'}</span>
+                            <IconLock />
+                          </button>
+                        )
                         Object.assign(extra, { whiteSpace: 'nowrap', textAlign: 'center' as const })
                       }
                       else if (k === 'match') {  // 与我的匹配(E5-00):高=绿 chip / 中=蓝 / 低=灰 / 不适用=浅;未建档→引导;免费限额外→锁
@@ -2108,9 +2119,18 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
         {field === 'wageMedHr' && <FactRow k={t('fact.wageBandHr')}>{bandHr}</FactRow>}
         {(field === 'wageMedYr' || field === 'vsMedian') && <FactRow k={t('fact.wageBandYr')}>{bandYr}</FactRow>}
         {field === 'vsMedian' && <FactRow k={t('col.vsMedian')}>{vs != null ? `${vs >= 0 ? '+' : ''}${vs}%` : null}</FactRow>}
-        {/* ②(2026-07-19 价值时刻批):免费用户在「刚要判断薪资」的位置点出 Pro 能看什么;不展示具体 %(数据服务端已剥离) */}
+        {/* ② 免费用户在「刚要判断薪资」的位置点出 Pro 能看什么;#152:整段说明文字退役,改打码占位数
+            (Frank「打上马赛克那种,别写那么长」)——与详情页 #130、表格锁列同一套。真值免费态不出服务端 */}
         {!isPro && (field === 'salary' || field === 'salaryYr') && (
-          <Notice kind="warn" action={<UpgradeCta t={t} loggedIn={loggedIn} />} style={{ marginTop: 8, fontSize: 12.5 }}>{t('up.salHint')}</Notice>
+          <>
+            <FactRow k={t('col.vsMedian')}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                <span aria-hidden style={{ filter: 'blur(5px)', userSelect: 'none' }}>+15%</span>
+                <span style={{ color: '#92400e', fontSize: 12 }}>{t('up.proShort')}</span>
+              </span>
+            </FactRow>
+            <div style={{ marginTop: 6 }}><UpgradeCta t={t} loggedIn={loggedIn} /></div>
+          </>
         )}
       </FactsBox>
     )
