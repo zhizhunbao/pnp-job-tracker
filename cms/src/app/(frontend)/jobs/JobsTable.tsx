@@ -248,6 +248,11 @@ const colorOf = (broad?: string): Cat => (broad && BROAD_COLOR[broad]) || NA
 
 // 薪资归一已下沉到数据层(etl/04d_clean_salary.py → salaryAnnual/salaryText);前端只读不算。
 // (sortVal 客户端排序取值已随 E10 服务端化退役——排序全走 /api/jobs 的 orderByClause,#127 清死代码)
+// #136(Frank 问「外链是 Indeed 就没办法了吗」):是。这些原站对第三方抓取返回 403(有意拦截,实测连首页都 403)——
+// 不绕过(那是规避访问控制),改为空态说实话+直达原帖。仅列**实测确认拦截**的站;抓不到但没拦截的(如
+// Québec emploi 是前端渲染的政府站)走通用空态,别扣「不允许转载」的帽子。
+const BLOCKED_SRC: Record<string, string> = { 'indeed.com': 'Indeed', '86network': '86network' }
+export const blockedSrc = (j: JobRow): string => BLOCKED_SRC[(j.source || '').toLowerCase()] || ''
 const teerOf = (noc: string): number | null => (noc && noc.length === 5 && /\d/.test(noc[1]) ? Number(noc[1]) : null)
 const mapsUrl = (q: string) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`
 // 本岗年薪 vs NOC 中位年薪(%);缺值返回 null
@@ -1781,7 +1786,7 @@ function TitleFacts({ job, lang }: { job: JobRow; lang: Lang }) {
         : jd ? <JdTextView text={jd} />
         : <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>
             {/* 空态解释原因(第 9 轮 #26);原帖链接不再内联(2026-07-11 用户指出与下方来源行重复,来源行=同一 applyUrl) */}
-            {t('act.noText')}
+            {blockedSrc(job) ? t('act.noTextBlocked', { src: blockedSrc(job) }) : t('act.noText')}
           </div>}
     </FactsBox>
   )
@@ -2721,7 +2726,7 @@ function ActModal({ job, lang, plan, onClose }: { job: JobRow; lang: Lang; plan:
             )
             : status === 'empty' ? (
               <div>
-                <p style={{ color: '#9ca3af', margin: '4px 0 10px' }}>{t('act.noText')}</p>
+                <p style={{ color: '#9ca3af', margin: '4px 0 10px' }}>{blockedSrc(job) ? t('act.noTextBlocked', { src: blockedSrc(job) }) : t('act.noText')}</p>
                 {job.applyUrl && <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ display: 'inline-block', background: '#2563eb', color: '#fff', borderRadius: 8, padding: '8px 14px', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>{t('act.seeOfficial')}</a>}
               </div>
             )

@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 
 import { makeT, LANG_KEY, LANGS, type Lang, type TFn } from '../i18n'
 import {
-  AdvisorModal, EeCategorySection, FactRow, FactsBox, fetchJobText, JdAdvisorSection, JdFormattedView, JdTextView,
+  AdvisorModal, blockedSrc, EeCategorySection, FactRow, FactsBox, fetchJobText, JdAdvisorSection, JdFormattedView, JdTextView,
   MeansForMe, PnpListSection, PROV_NAMES, UpgradeCard,
   type DesigEmp, type EeOcc, type FieldSource, type JobRow, type NewsSlim, type NocDesc, type Plan, type PnpDraw, type PnpOcc,
 } from '../JobsTable'
@@ -70,7 +70,7 @@ function JdSection({ job, lang, plan, t }: { job: JobRow; lang: Lang; plan: Plan
         )
         : status === 'empty' ? (
           <div>
-            <p style={{ color: '#9ca3af', margin: '0 0 10px', fontSize: 13 }}>{t('act.noText')}</p>
+            <p style={{ color: '#9ca3af', margin: '0 0 10px', fontSize: 13 }}>{blockedSrc(job) ? t('act.noTextBlocked', { src: blockedSrc(job) }) : t('act.noText')}</p>
             {job.applyUrl && <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ ...aLink, fontSize: 13, fontWeight: 600 }}>{t('act.seeOfficial')}</a>}
           </div>
         ) : (fmt && !showOrig ? <JdFormattedView text={fmt} t={t} fallbackPay={job.salaryText || job.salary || undefined} applyUrl={job.applyUrl || undefined} /> : <JdTextView text={text} max={4000} />)}
