@@ -61,12 +61,23 @@ function extractText(html: string): string {
   return trimHeadJunk(lines).join('\n').slice(0, MAX_LEN)
 }
 
-// JB 详情页自有正文(direct 帖):可见结构区起点切片抽取(JD 块主导,尾部 applynow 前截断)
+// JB 详情页自有正文。两处都要看(#141 Frank 指认的 49933160 实证:很多聚合帖没有结构区,
+// 但 property="description" 里有雇主原文 2000+ 字符 —— 原先只看结构区,找不到就直奔外链,
+// 撞上 Indeed 403 就判「没有正文」,其实政府页上一直摆着,ETL 解析器早就在读这个字段了):
+//   ① .job-posting-detail-requirements 可见结构区(direct 帖,带 h4/列表,版式最好)
+//   ② [property="description"] 微数据字段(聚合帖大头;内容可能是转义 HTML,再剥一层标签)
 function jbOwnText(html: string): string {
   const i = html.indexOf('job-posting-detail-requirements')
-  if (i < 0) return ''
-  const end = html.indexOf('id="applynow"', i)
-  return extractText(html.slice(i, end > i ? end : i + 60_000))
+  if (i >= 0) {
+    const end = html.indexOf('id="applynow"', i)
+    const t = extractText(html.slice(i, end > i ? end : i + 60_000))
+    if (t.length >= MIN_LEN) return t
+  }
+  const m = /property="description"[^>]*>([\s\S]{0,80000}?)<\/(?:div|section|span|p)>/i.exec(html)
+  if (!m) return ''
+  // 字段值常是被转义的 HTML(&lt;p&gt;…)→ 反转义后再走一遍抽取,恢复分段
+  const inner = m[1].replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
+  return extractText(inner)
 }
 
 // #140:href 取出来是 HTML 实体编码的(JB 页写作 `?lang=en&amp;ide_poste=540354`)——不解码就等于把
