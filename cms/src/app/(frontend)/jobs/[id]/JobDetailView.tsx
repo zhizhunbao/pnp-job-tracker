@@ -197,9 +197,11 @@ export default function JobDetailView({ job, plan, dims, related }: {
 
           {/* 事实块:薪资/工时/雇佣期/学历/证书;vs 中位=Pro 维度(免费=引导,真值不出服务端) */}
           <div style={sec}>
-            <FactsBox note={job.salaryAnnual != null ? t('fact.salYrNote') : undefined}>
+            {/* #154(Frank「这个文字没必要显示」):换算口径注常驻一整行=每个岗都在重复同一句话。
+                改挂「年薪(折算)」标签的悬停提示——要查得到,不占版面(口径透明不等于必须常驻) */}
+            <FactsBox>
               <FactRow k={t('col.salary')}>{job.salaryText || job.salary || null}</FactRow>
-              <FactRow k={t('col.salaryYr')}>{job.salaryAnnual != null ? `$${Math.round(job.salaryAnnual / 1000)}K/yr` : null}</FactRow>
+              <FactRow k={<span title={t('fact.salYrNote')}>{t('col.salaryYr')}</span>}>{job.salaryAnnual != null ? `$${Math.round(job.salaryAnnual / 1000)}K/yr` : null}</FactRow>
               <FactRow k={t('col.empHours')}>{job.employmentHours ? t('emp.' + job.employmentHours) : null}</FactRow>
               <FactRow k={t('col.empTerm')}>{job.employmentTerm ? t('term.' + job.employmentTerm) : null}</FactRow>
               <FactRow k={t('fact.edu')}>{job.education || null}</FactRow>
