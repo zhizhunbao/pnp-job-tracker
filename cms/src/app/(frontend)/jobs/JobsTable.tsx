@@ -1224,18 +1224,21 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                     </button>
                   </span>
                 </div>
-                {/* 公司独立一行可点(开公司弹框,K 懒探索照旧);地点拆去下一行——去「·」杂糅(W 规矩存量清理)。
-                    E12-08:担保档药丸(公司分承接原「知名」位;无记录不显=宁缺勿滥) */}
-                {j.company ? (
-                  <div style={{ marginTop: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span onClick={stop(() => open('company', j.company))} style={{ fontSize: 12.5, color: '#2563eb', cursor: 'pointer' }}>{j.company}</span>
-                    {j.sponsorGrade != null && <span title={t('gr.sponsorTip')} style={{ fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sp.' + j.sponsorGrade)}</span>}
+                {/* #148 两列布局(Frank「卡片可以搞成左右两列」):**左列=身份**(公司/地点)、**右列=数字**(薪资/时间)。
+                    右列右对齐后,整列在卡片流里连成一条竖线——手指下滑时眼睛只走右边就能比薪资、比新鲜度。
+                    实现用 flex space-between 而非 grid:左列长内容(公司名)自己换行时不会把右列挤歪。 */}
+                {(j.company || j.salaryText || j.salary) ? (
+                  <div style={{ marginTop: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, flexWrap: 'wrap' }}>
+                      {j.company ? <span onClick={stop(() => open('company', j.company))} style={{ fontSize: 12.5, color: '#2563eb', cursor: 'pointer' }}>{j.company}</span> : null}
+                      {j.sponsorGrade != null && <span title={t('gr.sponsorTip')} style={{ fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sp.' + j.sponsorGrade)}</span>}
+                    </span>
+                    {(j.salaryText || j.salary) ? <span onClick={stop(() => open('salary', j.salaryText || j.salary))} style={{ fontSize: 13, color: '#15803d', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{j.salaryText || j.salary}</span> : null}
                   </div>
                 ) : null}
-                <div style={{ fontSize: 12.5, marginTop: 4, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                  {L.city ? <span onClick={stop(() => open('city', L.city))} style={{ color: '#374151', cursor: 'pointer' }}>{L.city}{j.province ? `, ${j.province}` : ''}</span> : null}
-                  {(j.salaryText || j.salary) ? <span onClick={stop(() => open('salary', j.salaryText || j.salary))} style={{ color: '#15803d', fontWeight: 600, cursor: 'pointer' }}>{j.salaryText || j.salary}</span> : null}
-                  <span suppressHydrationWarning onClick={stop(() => open('datePosted', (j.datePosted || '').slice(0, 10)))} style={{ color: '#9ca3af', cursor: 'pointer' }}>{(j.datePosted || '').slice(0, 10)}{days != null ? `(${t('fact.daysUpVal', { n: days })})` : ''}</span>
+                <div style={{ fontSize: 12.5, marginTop: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
+                  {L.city ? <span onClick={stop(() => open('city', L.city))} style={{ color: '#374151', cursor: 'pointer', minWidth: 0 }}>{L.city}{j.province ? `, ${j.province}` : ''}</span> : <span />}
+                  <span suppressHydrationWarning onClick={stop(() => open('datePosted', (j.datePosted || '').slice(0, 10)))} style={{ color: '#9ca3af', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{(j.datePosted || '').slice(0, 10)}{days != null ? `(${t('fact.daysUpVal', { n: days })})` : ''}</span>
                 </div>
                 <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
                   {j.pnpEligible ? chip('#fef3c7', '#92400e', j.pnpStream ? t('cell.pnpYes') : t('cell.pnpSkilled'), 'pnp') : null}
