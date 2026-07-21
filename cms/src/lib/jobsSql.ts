@@ -132,14 +132,17 @@ const SORT_COLUMNS: Record<string, string> = {
 }
 // Pro 数据列(中位三件套):免费用户数据已剥离,若仍按它排序=锁列信息从行序泄露 → 非 Pro 回退默认序
 const PRO_SORTS = new Set(['wageMedHr', 'wageMedYr', 'vsMedian'])
-// #127(Frank「不要用之前的分数排序,和 Job Bank 保持一致」):旧 0-100 分从所有排序兜底退役。
-// 同日岗按 j.id ASC=入库序:增量抓取按 JB 页面顺序落库,同日内就是 JB 自己的展示顺序;
-// 旧分兜底会把「高分岗浮到当天最上面」,正是与 JB 不一致的来源。
+// #127:旧 0-100 分从所有排序兜底退役(不按分数重排,与 JB 一致)。
+// #159(Frank 报障「昨晚榜首和今天 11 点还是同一个岗」):#127 的同日兜底用 j.id ASC 有致命副作用——
+// date_posted 只有日期没时间,于是**当天最早抓到的那批一整天钉在榜首**,晚上新抓的岗反沉到当天最底
+// (实测:榜首是 08:31 那批,19:31 的新岗在后面)。改用 first_seen DESC=最新发现的在前:
+// 仍是纯时间序不掺分数(#127 意图不变),但榜单随每小时抓取真正滚动起来。
 export function orderByClause(sortKey?: string, dir?: string, pro = true): string {
   const key = sortKey && (pro || !PRO_SORTS.has(sortKey)) ? sortKey : undefined
   const col = (key && SORT_COLUMNS[key]) || 'j.date_posted'
   const d = dir === 'asc' ? 'ASC' : 'DESC'
-  const tail = col === 'j.date_posted' ? 'j.id ASC' : 'j.date_posted DESC NULLS LAST, j.id ASC'
+  const fresh = 'j.first_seen DESC NULLS LAST, j.id DESC'
+  const tail = col === 'j.date_posted' ? fresh : `j.date_posted DESC NULLS LAST, ${fresh}`
   return `ORDER BY ${col} ${d} NULLS LAST, ${tail}`
 }
 
@@ -258,7 +261,7 @@ export type JobsListOpts = { pro: boolean; profile: MatchProfile; profileOk: boo
 export async function fetchJobRows(pool: any, { pro, profile, profileOk, matchDims, limit }: JobsListOpts): Promise<{ jobs: JobRow[]; updatedAt: string; matchHigh: number; matchMid: number }> {
   const { rows } = await pool.query(
     `SELECT ${JOB_COLUMNS} ${JOB_FROM}
-     ORDER BY j.date_posted DESC NULLS LAST, j.id ASC LIMIT $1`, [limit])
+     ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT $1`, [limit])
   const m = makeMatcher(profile, profileOk, matchDims, pro)
   const jobs = rows.map((j: any, i: number) => mapJobRow(j, pro, m.of(j, i)))
   const updatedAt = rows.reduce((acc: string, j: any) => { const ls = iso(j.last_seen); return ls > acc ? ls : acc }, '')
@@ -342,7 +345,7 @@ export async function fetchMatchPage(
     pool.query(
       `SELECT ${JOB_COLUMNS} ${JOB_FROM}
        WHERE (COALESCE(j.pnp_eligible,false) OR COALESCE(j.ee_category,'') <> '' OR j.noc = ANY($1) OR LEFT(j.noc,4) = ANY($2))
-       ORDER BY j.date_posted DESC NULLS LAST, j.id ASC LIMIT $3`,
+       ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT $3`,
       [nocs, noc4, CAND_CAP]),
     pool.query(`SELECT max(last_seen) AS upd FROM jobs`),
   ])
@@ -403,12 +406,12 @@ export async function fetchRelatedJobs(pool: any, job: { id: string | number; co
     job.company ? pool.query(
       `SELECT ${REL_COLS} ${JOB_FROM}
        WHERE c.name = $1 AND j.id <> $2 AND COALESCE(j.status,'open') <> 'closed'
-       ORDER BY j.date_posted DESC NULLS LAST, j.id ASC LIMIT 3`, [job.company, job.id]) : { rows: [] },
+       ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT 3`, [job.company, job.id]) : { rows: [] },
     job.noc && job.province ? pool.query(
       `SELECT ${REL_COLS} ${JOB_FROM}
        WHERE j.province = $1 AND LEFT(j.noc, 4) = LEFT($2, 4) AND j.id <> $3
          AND COALESCE(c.name,'') <> $4 AND COALESCE(j.status,'open') <> 'closed'
-       ORDER BY j.date_posted DESC NULLS LAST, j.id ASC LIMIT 3`, [job.province, job.noc, job.id, job.company || '']) : { rows: [] },
+       ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT 3`, [job.province, job.noc, job.id, job.company || '']) : { rows: [] },
   ])
   return { sameCompany: co.rows.map(mapRelated), sameOcc: occ.rows.map(mapRelated) }
 }
