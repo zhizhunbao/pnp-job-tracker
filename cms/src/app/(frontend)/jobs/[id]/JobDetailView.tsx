@@ -116,7 +116,8 @@ export default function JobDetailView({ job, plan, dims, related }: {
           <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 8 }}>
             <a href="/" style={aLink}>{t('detail.crumbHome')}</a>
             {job.province ? <> › <a href={`/?prov=${encodeURIComponent(job.province)}`} style={aLink}>{provFull}</a></> : null}
-            {job.broad && job.broad !== '未分类' ? <> › <a href={`/?prov=${encodeURIComponent(job.province)}&broad=${encodeURIComponent(job.broad)}`} style={aLink}>{t('broad.' + job.broad)}</a></> : null}
+            {/* #144(手机优先自查):大分类段摘除——紧邻的「职业分类」行已给完整三级,面包屑再放一次
+                就是同一条信息两个家(手机上尤其占地)。面包屑只管地理导航路径,分类归分类行。 */}
             {' › '}<span style={{ color: '#374151' }}>{job.title}</span>
           </div>
 
