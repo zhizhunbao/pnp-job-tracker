@@ -69,7 +69,11 @@ function jbOwnText(html: string): string {
   return extractText(html.slice(i, end > i ? end : i + 60_000))
 }
 
-const jbExternalLink = (html: string): string => /id="externalJobLink"[^>]*href="([^"]+)"/.exec(html)?.[1] || ''
+// #140:href 取出来是 HTML 实体编码的(JB 页写作 `?lang=en&amp;ide_poste=540354`)——不解码就等于把
+// 第二个参数起全丢了(实际请求成 `&amp;ide_poste=…`),带 query 的外链一律抓错页。
+const jbExternalLink = (html: string): string =>
+  (/id="externalJobLink"[^>]*href="([^"]+)"/.exec(html)?.[1] || '')
+    .replace(/&amp;/g, '&').replace(/&#38;/g, '&').replace(/&quot;/g, '"')
 
 // 原站 <title>(截「 - 站名」尾巴):JB 会把聚合帖标题标准化成职业名(实测 McCain「Engineering Manager…」
 // 被 JB 改名「software developer」)——原帖岗名标注在正文首行,标题≠正文的差异自解释(显性化不掩盖)
