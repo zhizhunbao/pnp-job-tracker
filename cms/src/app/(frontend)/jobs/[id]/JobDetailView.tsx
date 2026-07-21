@@ -123,6 +123,10 @@ export default function JobDetailView({ job, plan, dims, related }: {
             {' › '}<span style={{ color: '#374151' }}>{job.title}</span>
           </div>
 
+          {/* #150(Frank「这部分也需要设计卡片吧」):头部(标题/meta/chips/职业分类)原先裸浮在灰底上,
+              下面每节都是白卡 → 视觉不成体系。包成同款卡(白底+描边+r12),面包屑留在卡外(导航在卡上方是惯例)。
+              卡内末元素去掉下外距,免得卡底空一截。 */}
+          <div style={{ ...sec, paddingBottom: 12 }}>
           <h1 style={{ margin: '0 0 8px', fontSize: 22, lineHeight: 1.35, color: '#111827' }}>{job.title}</h1>
 
           {/* meta:一格一事(W 规矩),公司名可点开公司弹框 */}
@@ -140,7 +144,7 @@ export default function JobDetailView({ job, plan, dims, related }: {
           </div>
 
           {/* chips:代码不裸奔(NOC 带职业名、TEER 带说明) */}
-          <div style={{ marginBottom: 12 }}>
+          <div style={{ marginBottom: 10 }}>
             {job.pnpEligible ? <span style={chipBlue}>{t('cell.pnpYes')}</span> : null}
             {/* #147(Frank 拍板「英文在前」):官方英文职业名是主文案,中/韩译名跟在后面作灰注;
                 英文界面或无译名时整段不出(宁可留空也不瞎猜) */}
@@ -163,7 +167,7 @@ export default function JobDetailView({ job, plan, dims, related }: {
             ].filter(Boolean) as { txt: string; href: string }[]
             if (!segs.length) return null
             return (
-              <div style={{ fontSize: 13, color: '#374151', marginBottom: 12 }} title={t('detail.catNote')}>
+              <div style={{ fontSize: 13, color: '#374151' }} title={t('detail.catNote')}>
                 <span style={metaK}>{t('detail.catSec')}</span>
                 {segs.map((s, i) => (
                   <span key={s.href}>
@@ -174,6 +178,7 @@ export default function JobDetailView({ job, plan, dims, related }: {
               </div>
             )
           })()}
+          </div>{/* /头部卡 */}
 
           {job.status === 'closed' && (
             <Notice kind="info" style={{ marginBottom: 12 }}>{t('detail.closedNote')}{job.closedAt ? ` · ${day(job.closedAt)}` : ''}</Notice>
