@@ -105,7 +105,7 @@ const zh: Dict = {
   'cell.elig.no_sponsorship': '🚫 明确不担保', 'cell.elig.pr_required': '🚫 须 PR/公民',
   'eligOnly': '排除不担保/须 PR', 'eligOnly.tip': '排除 JD 里明确写了「不提供担保」或「仅限公民/PR」的岗;未检出≠保证担保,只是没写',
   'fact.elig': '身份预筛', 'fact.eligQuote': 'JD 原句', 'fact.eligNote': '数据层按 JD 原文检测(精确优先宁可漏);「—」= 未检出此类表述,不代表雇主提供担保',
-  'eelist.in': '本岗 NOC {noc} 在联邦 EE「{cats}」类别清单内', 'eelist.out': '未列入任何联邦 EE 类别抽选清单', 'eelist.source': '来源:Express Entry 类别抽选', 'eelist.your': '本岗', 'eelist.loading': '加载 EE 清单…', 'eelist.draw': '近期抽选:CRS {crs} · {date} · 发出 {size} 邀请', 'eelist.count': '{n} 个职业',
+  'eelist.in': '本岗 NOC {noc} 在联邦 EE「{cats}」类别清单内', 'eelist.out': '未列入任何联邦 EE 类别抽选清单', 'eelist.source': '来源:Express Entry 类别抽选', 'eelist.your': '本岗', 'eelist.loading': '加载 EE 清单…', 'eelist.draw': '近期抽选 {date}:CRS {crs},发出 {size} 份邀请', 'eelist.count': '{n} 个职业',
   // #135 历次抽选时间线(展开)
   'eelist.hist': '看历次 {n} 轮', 'eelist.crsN': 'CRS {crs}', 'eelist.itaN': '发出 {n} 邀请',
   'eelist.allCats': '看全部 {n} 个类别',   // #155 未命中时全景默认收起
@@ -519,7 +519,7 @@ const en: Dict = {
   'cell.elig.no_sponsorship': '🚫 No sponsorship', 'cell.elig.pr_required': '🚫 PR/citizen only',
   'eligOnly': 'Hide no-sponsor/PR-only', 'eligOnly.tip': 'Hide jobs whose JD explicitly says "no sponsorship" or "citizens/PR only"; no flag ≠ sponsorship guaranteed — it just isn’t stated',
   'fact.elig': 'Visa flag', 'fact.eligQuote': 'JD quote', 'fact.eligNote': 'Detected from the JD text (precision-first); "—" means no such wording was found — not that the employer sponsors',
-  'eelist.in': 'This job (NOC {noc}) is in the federal EE "{cats}" category', 'eelist.out': 'Not in any federal Express Entry category', 'eelist.source': 'Source: Express Entry category-based selection', 'eelist.your': 'This job', 'eelist.loading': 'Loading EE list…', 'eelist.draw': 'Recent draw: CRS {crs} · {date} · {size} invitations', 'eelist.count': '{n} occupations',
+  'eelist.in': 'This job (NOC {noc}) is in the federal EE "{cats}" category', 'eelist.out': 'Not in any federal Express Entry category', 'eelist.source': 'Source: Express Entry category-based selection', 'eelist.your': 'This job', 'eelist.loading': 'Loading EE list…', 'eelist.draw': 'Recent draw {date}: CRS {crs}, {size} invitations', 'eelist.count': '{n} occupations',
   'eelist.hist': 'see all {n} rounds', 'eelist.crsN': 'CRS {crs}', 'eelist.itaN': '{n} invitations',
   'eelist.allCats': 'see all {n} categories',
   'eelist.histNote': 'Rounds for this category over the past two years; a cut-off reflects that round only and does not predict future ones',
@@ -939,7 +939,7 @@ const ko: Dict = {
   'cell.elig.no_sponsorship': '🚫 스폰서 불가 명시', 'cell.elig.pr_required': '🚫 시민권/PR 한정',
   'eligOnly': '스폰서 불가/PR 한정 제외', 'eligOnly.tip': 'JD에 「스폰서 불가」「시민권/PR 한정」이 명시된 공고 제외; 미검출≠스폰서 보장, 명시가 없을 뿐',
   'fact.elig': '비자 플래그', 'fact.eligQuote': 'JD 원문', 'fact.eligNote': 'JD 원문 기반 검출(정밀도 우선); 「—」= 해당 표현 미검출, 스폰서 제공을 의미하지 않음',
-  'eelist.in': '이 직무 NOC {noc}은 연방 EE 「{cats}」 카테고리 목록에 포함됨', 'eelist.out': '어떤 연방 EE 카테고리 목록에도 없음', 'eelist.source': '출처: Express Entry 카테고리 기반 선발', 'eelist.your': '이 직무', 'eelist.loading': 'EE 목록 로딩 중…', 'eelist.draw': '최근 추첨: CRS {crs} · {date} · {size}개 초청장 발송', 'eelist.count': '{n}개 직업',
+  'eelist.in': '이 직무 NOC {noc}은 연방 EE 「{cats}」 카테고리 목록에 포함됨', 'eelist.out': '어떤 연방 EE 카테고리 목록에도 없음', 'eelist.source': '출처: Express Entry 카테고리 기반 선발', 'eelist.your': '이 직무', 'eelist.loading': 'EE 목록 로딩 중…', 'eelist.draw': '최근 추첨 {date}: CRS {crs}, {size}개 초청장 발송', 'eelist.count': '{n}개 직업',
   'eelist.hist': '지난 {n}회 보기', 'eelist.crsN': 'CRS {crs}', 'eelist.itaN': '초청장 {n}개',
   'eelist.allCats': '전체 {n}개 카테고리 보기',
   'eelist.histNote': '최근 2년간 해당 카테고리의 추첨 내역; 커트라인은 해당 회차의 경쟁만 반영하며 미래를 예측하지 않습니다',

@@ -1612,7 +1612,7 @@ export function EeCategorySection({ job, lang, cats, draws = [] }: { job: JobRow
       </div>
       {shown.map((c) => (
         <div key={c.key} style={{ marginBottom: 10 }}>
-          <div style={{ fontSize: 12.5, fontWeight: 600, color: '#374151', marginBottom: 4 }}>{eeDisplay(t, c.label)} <span style={{ color: '#9ca3af', fontWeight: 400 }}>· {t('eelist.count', { n: c.occupations.length })}</span></div>
+          <div style={{ fontSize: 12.5, fontWeight: 600, color: '#374151', marginBottom: 4 }}>{eeDisplay(t, c.label)} <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 4 }}>{t('eelist.count', { n: c.occupations.length })}</span></div>
           {/* #135:近期抽选行=可展开入口(有历史才给箭头),展开=该类别历次抽选时间线 */}
           {c.drawCrs != null && c.drawDate ? (() => {
             const hist = histOf.get(c.key) || []
@@ -1690,7 +1690,7 @@ function NocDutiesView({ noc, lang }: { noc: NocDesc | null; lang: Lang }) {
   if (!noc || (!noc.duties && !noc.requirements)) return null
   const block = (label: string, text: string) => text ? (
     <>
-      <div style={{ marginTop: 8, fontSize: 11.5, color: '#9ca3af' }}>{label}{noc.fetched ? ` · ${noc.fetched}` : ''}</div>
+      <div style={{ marginTop: 8, fontSize: 11.5, color: '#9ca3af' }}>{label}{noc.fetched ? `(${noc.fetched})` : ''}</div>
       <ul style={{ margin: '3px 0 0', paddingLeft: 18, fontSize: 12.5, color: '#4b5563', lineHeight: 1.55 }}>
         {text.split('\n').filter(Boolean).map((d, i) => <li key={i}>{d}</li>)}
       </ul>
@@ -2141,19 +2141,19 @@ function hasFacts(k: ColKey, job: JobRow): boolean {
   }
 }
 // 分节标题:走既有 col.* 人话名(通道 / PNP / EE 类别 / AIP / 薪资…),不新造术语。
-// 版式按 E8 调研结论:**标题在卡外、靠留白分隔**,不画描边盒子(Indeed/Moving2Canada 实测 0 描边)。
+// #174 对齐详情页卡规范(Frank「对齐」):原「标题在卡外、留白分隔」退役 ——
+// 每节一张 sec 同款卡(白/#e5e7eb/r12),**每卡必有 title,单节组也不例外**(#173 铁律)。
+const MODAL_CARD: React.CSSProperties = { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '12px 16px', marginBottom: 14 }
+const MODAL_CARD_HEAD: React.CSSProperties = { fontSize: 13.5, fontWeight: 700, color: '#111827', marginBottom: 6 }
 function GroupFactsSection(props: Omit<Parameters<typeof FieldFactsSection>[0], 'field'> & { group: FieldGroup }) {
   const { group, job, lang, ...rest } = props
   const t = makeT(lang)
   const keys = GROUP_SECTIONS[group].filter((k) => hasFacts(k, job))
   return (
     <>
-      {keys.map((k, i) => (
-        <div key={k} style={{ marginTop: i === 0 ? 0 : 22 }}>
-          {/* 单节分组不出小标题:标题栏已写着字段名,再出一遍就是 #155/#161 那种重复 */}
-          {keys.length > 1 && (
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#111827', marginBottom: 6 }}>{t('col.' + k)}</div>
-          )}
+      {keys.map((k) => (
+        <div key={k} style={MODAL_CARD}>
+          <div style={MODAL_CARD_HEAD}>{t('col.' + k)}</div>
           <FieldFactsSection field={k} job={job} lang={lang} {...rest} />
         </div>
       ))}
@@ -2168,12 +2168,14 @@ function FieldFactsSection({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pn
     <>
       <FieldFactsInner field={field} job={job} jobs={jobs} lang={lang} isPro={isPro} loggedIn={loggedIn} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} onOpenJob={onOpenJob} />
       {DERIVED_SRC_FIELDS.has(field) ? (
-        <div style={{ margin: '2px 0 12px', fontSize: 11.5, color: '#9ca3af' }}>
+        <div style={{ margin: '2px 0 0', fontSize: 11.5, color: '#9ca3af' }}>
           {t('src.label')}: {t('src.derived')}
         </div>
       ) : urls.length ? (
-        <div style={{ margin: '2px 0 12px', fontSize: 11.5, color: '#9ca3af', overflowWrap: 'anywhere' }}>
-          {t('src.label')}: {urls.map((u, i) => <span key={u}>{i ? ' · ' : ''}<a href={u} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{u}</a></span>)}
+        /* #174:多 URL 的「 · 」连缀退役(W 规矩一行一条)——首条跟标签同行,其余各自成行 */
+        <div style={{ margin: '2px 0 0', fontSize: 11.5, color: '#9ca3af', overflowWrap: 'anywhere' }}>
+          {t('src.label')}: <a href={urls[0]} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{urls[0]}</a>
+          {urls.slice(1).map((u) => <div key={u}><a href={u} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{u}</a></div>)}
         </div>
       ) : null}
     </>
@@ -2760,7 +2762,9 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
             {/* E8-10 S6:页眉改「分组名」、大标题改**岗位/公司名** —— 收编前取的是被点单元格的值,
                 于是点「通道」列开出来的弹框标题写着「技能岗」:一个胶囊的值当不了一屏内容的标题。
                 现在:公司弹框=公司名、职位与移民弹框=岗位名,与弹框里铺开的整组事实对得上。 */}
-            <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, letterSpacing: .3 }}><IconCompass /> {t('advisor.tag')} · {t('grp.' + group)}{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400 }}> · {t('advisor.left', { n: freeLeft })}</span> : null}</div>
+            {/* #174:「AI 顾问 · 移民 · 免费今日剩 N 次」两个「·」退役——分组名与次数改空格灰注
+                (#171 详情页同款手法);靛色随 #108 杂色归一改灰 */}
+            <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 600 }}><IconCompass /> {t('advisor.tag')}<span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('grp.' + group)}</span>{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('advisor.left', { n: freeLeft })}</span> : null}</div>
             <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{group === 'company' ? (job.company || title || a.title) : (job.title || title || a.title)}</h3>
           </div>
           <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
@@ -2784,17 +2788,24 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
             </div>
           )}
           {/* 免责/AI 声明不进弹框(2026-07-06 用户拍板:合规统一在 footer 说明) */}
-          {status === 'upgrade' ? (
-            <LockedText t={t} loggedIn={plan.loggedIn} />
-          ) : status === 'limited' ? (
-            /* 429 说人话(第 9 轮 #25):额度用完本是注册/升级的转化时机,不是报错时机 */
-            <Notice kind="warn" style={{ margin: '10px 0', fontSize: 13.5 }} action={!plan.loggedIn ? <a href="/account" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('advisor.limitCta')}</a> : undefined}>
-              {t('advisor.limit429')}
-            </Notice>
-          ) : status === 'loading' ? (
-            <p style={{ margin: '10px 0', fontSize: 14, color: '#9ca3af' }}>{t('advisor.loading')}</p>
-          ) : (
-            <div style={{ fontSize: 14, lineHeight: 1.7, color: '#374151' }}>{renderAI(text)}{status === 'streaming' && <span style={{ color: '#9ca3af' }}>▋</span>}</div>
+          {/* #174:AI 解读收进自己的卡(每卡必有 title)——只有移民组会请求 AI,
+              职位/公司组(status 直置 done、text 空)不渲,免得出一张空卡孤儿标题 */}
+          {group === 'immigration' && (
+            <div style={MODAL_CARD}>
+              <div style={MODAL_CARD_HEAD}><IconCompass /> {t('advisor.tag')}</div>
+              {status === 'upgrade' ? (
+                <LockedText t={t} loggedIn={plan.loggedIn} />
+              ) : status === 'limited' ? (
+                /* 429 说人话(第 9 轮 #25):额度用完本是注册/升级的转化时机,不是报错时机 */
+                <Notice kind="warn" style={{ margin: '4px 0 0', fontSize: 13.5 }} action={!plan.loggedIn ? <a href="/account" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('advisor.limitCta')}</a> : undefined}>
+                  {t('advisor.limit429')}
+                </Notice>
+              ) : status === 'loading' ? (
+                <p style={{ margin: 0, fontSize: 14, color: '#9ca3af' }}>{t('advisor.loading')}</p>
+              ) : (
+                <div style={{ fontSize: 14, lineHeight: 1.7, color: '#374151' }}>{renderAI(text)}{status === 'streaming' && <span style={{ color: '#9ca3af' }}>▋</span>}</div>
+              )}
+            </div>
           )}
           {/* 来源行已随事实块走(FieldFactsSection 内,紧跟内容、在 AI 区之前)—— 底部不再重复 */}
           {/* 下半:对话框 —— 基于上方事实 + 初判,多轮 grounded 追问 */}
