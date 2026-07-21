@@ -37,12 +37,30 @@ PROMPT = """把下面这个加拿大官方职业分类(NOC)的职业名称翻译
 - 用该语言求职者习惯的职业称谓(如 Physiotherapists → 物理治疗师)。
 - 名称含「- 限定语」的保留限定(如 Senior managers - health → 高级经理 - 医疗)。
 - 保持简洁,不加「人员」「工作者」等冗余后缀,除非原文确实如此。
+- 术语注意:职业名里的 trades 指「工种/技工」不是贸易;developer 指「开发人员」不是开发商。
 
 职业名称:{title}"""
 
 LANGS = {"zh": "简体中文", "ko": "한국어"}
 CJK = re.compile(r"[一-鿿]")
 HANGUL = re.compile(r"[가-힯]")
+
+# 多义词纠正(首轮 487 条实测出的错,模型重跑还会错 → 修进脚本而非手改数据):
+#   trades  职业名里是「工种/技工」,不是贸易(Construction trades helpers ≠ 建筑贸易)
+#   developer 是「开发人员」,不是开发商(开发商=厂商/地产商)
+# 只做**确定性替换**,不猜:命中才换,换不了保持原样。
+TERM_FIX = [
+    ("软件开发商", "软件开发员"), ("开发商和程序员", "开发人员和程序员"),
+    ("建筑贸易", "建筑技工"), ("电气贸易", "电气技工"), ("管道贸易", "管道技工"),
+    ("木工贸易", "木工工种"), ("机械贸易", "机械工种"), ("贸易和电信", "技工和电信"),
+    ("建筑 Trades", "建筑技工"), ("Trades", "技工"),
+]
+
+
+def fix_terms(s: str) -> str:
+    for a, b in TERM_FIX:
+        s = s.replace(a, b)
+    return s
 
 
 def ask(title: str, lang: str) -> str:
@@ -81,6 +99,17 @@ def main() -> None:
     rows = json.loads(IN_NOC.read_text(encoding="utf-8"))
     done: dict = json.loads(OUT_I18N.read_text(encoding="utf-8")) if OUT_I18N.exists() else {}
 
+    # 存量也过一遍术语纠正(TERM_FIX 是后加的;已翻的不重跑模型,只做确定性替换)
+    fixed = 0
+    for v in done.values():
+        if v.get("zh"):
+            nz = fix_terms(v["zh"])
+            if nz != v["zh"]:
+                v["zh"], fixed = nz, fixed + 1
+    if fixed:
+        OUT_I18N.write_text(json.dumps(done, ensure_ascii=False, indent=1), encoding="utf-8")
+        print(f"术语纠正:存量改了 {fixed} 条")
+
     todo = [r for r in rows if r.get("title") and not (done.get(r["noc"], {}).get("zh") and done.get(r["noc"], {}).get("ko"))]
     if limit:
         todo = todo[:limit]
@@ -94,6 +123,8 @@ def main() -> None:
             if cur.get(lang):
                 continue
             out = ask(title, lang)
+            if lang == "zh":
+                out = fix_terms(out)
             if ok(out, title, lang):
                 cur[lang] = out
                 n_ok += 1
