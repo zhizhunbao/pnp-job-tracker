@@ -82,7 +82,8 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
     pnpOcc: pnpOccAll.filter((o) => o.province === job.province),
     pnpDraws: drawDocs.docs
       .map((r: any) => ({ province: r.province, kind: r.kind, drawDate: r.drawDate ?? '', stream: r.stream ?? '', score: typeof r.score === 'number' ? r.score : null, scale: r.scale ?? '', invitations: typeof r.invitations === 'number' ? r.invitations : null, note: r.note ?? '', label: r.label ?? '', url: r.url ?? '', fetched: r.fetched ?? '' }))
-      .filter((d: any) => d.province === job.province),
+      // #135:本省抽选 + 联邦 EE 历次(province=FED,EE 节展开时间线用);其余省份的行不带(页面用不上)
+      .filter((d: any) => d.province === job.province || d.province === 'FED'),
     eeOcc,
     desigEmp: desigDocs.docs.map((r: any) => ({ name: r.name, province: r.province, location: r.location ?? '', isTech: !!r.isTech })),
     nocDesc: nocDescDocs.docs.map((r: any) => ({ noc: r.noc, title: r.title ?? '', duties: r.duties ?? '', requirements: r.requirements ?? '', fetched: r.fetched ?? '' })),

@@ -1,7 +1,9 @@
 """build_ee_draws — 联邦 Express Entry「抽选轮次」(IRCC 开放 JSON,httpx 直取,无 Akamai/无需抓页)。
 源:https://www.canada.ca/content/dam/ircc/documents/json/ee_rounds_123_en.json
-每个**类别**取最近一次抽选(日期 / CRS 分数线 / 发出邀请数)→ raw/ee/draws.json,
-供 09_build_mart join 进 ee_categories(EE 弹框显示「近期抽选:CRS XXX · 日期」)。
+产出 raw/ee/draws.json 三块:
+  byCategory  每类别**最近一次**抽选 → 09 join 进 ee_categories(EE 节头「近期抽选」)
+  history     每类别**历次**抽选(#135 Frank「点开按时间线看每一轮」)→ 09 灌进 pnp_draws(province=FED,零新表)
+  recent      全类别混合最近 20 轮(参考)
 
 Usage:  uv run python etl/build_ee_draws.py
 """
@@ -17,6 +19,8 @@ import _paths  # noqa: E402
 
 URL = "https://www.canada.ca/content/dam/ircc/documents/json/ee_rounds_123_en.json"
 OUT = _paths.EE / "draws.json"
+HIST_PER_CAT = 12          # 每类别保留轮次上限(展示够看趋势,不灌爆维度表)
+HIST_MONTHS = 24           # 同时限最近 24 个月(更早的轮次分数线已无参考意义)
 
 # drawName 关键词 → 类别 key。前 9 个与 _fetch_ee_categories 的 CAT_MAP 对齐(能 join 进 ee_categories);
 # 其余(agriculture/french/cec/pnp/general 等)无 NOC 清单不 join,仅留作 recent 参考。
@@ -49,16 +53,23 @@ def main() -> None:
     r.raise_for_status()
     rounds = r.json().get("rounds", [])  # 已按 drawNumber 降序(最新在前)
 
+    cutoff = (datetime.date.today() - datetime.timedelta(days=HIST_MONTHS * 31)).isoformat()
     by_cat: dict[str, dict] = {}
-    for rd in rounds:
+    history: dict[str, list] = {}
+    for rd in rounds:                  # 源已按 drawNumber 降序(最新在前)
         key = cat_key(rd.get("drawName"))
-        if not key or key in by_cat:   # 每类别首次出现 = 最近一次
+        if not key:
             continue
-        by_cat[key] = {
+        row = {
             "date": rd.get("drawDate"), "crs": _int(rd.get("drawCRS")),
             "size": _int(rd.get("drawSize")), "drawName": rd.get("drawName"),
             "drawNumber": _int(rd.get("drawNumber")),
         }
+        if key not in by_cat:          # 每类别首次出现 = 最近一次
+            by_cat[key] = row
+        h = history.setdefault(key, [])
+        if len(h) < HIST_PER_CAT and (row["date"] or "") >= cutoff:
+            h.append(row)
     recent = [{
         "date": rd.get("drawDate"), "crs": _int(rd.get("drawCRS")),
         "size": _int(rd.get("drawSize")), "name": rd.get("drawName"),
@@ -69,11 +80,11 @@ def main() -> None:
     OUT.write_text(json.dumps({
         "source": "Express Entry rounds of invitations", "url": URL,
         "fetched": datetime.date.today().isoformat(),
-        "byCategory": by_cat, "recent": recent,
+        "byCategory": by_cat, "history": history, "recent": recent,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"✓ {OUT}  ({len(by_cat)} 类别有最近抽选 / {len(rounds)} 轮总计)")
+    print(f"✓ {OUT}  ({len(by_cat)} 类别有最近抽选 / {sum(len(v) for v in history.values())} 条历史 / {len(rounds)} 轮总计)")
     for k, v in by_cat.items():
-        print(f"  {k:16} CRS {v['crs']} · {v['date']} · {v['size']} ITAs · {v['drawName']}")
+        print(f"  {k:16} CRS {v['crs']} · {v['date']} · {v['size']} ITAs · 历史 {len(history.get(k, []))} 轮")
 
 
 if __name__ == "__main__":

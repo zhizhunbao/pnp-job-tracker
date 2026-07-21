@@ -40,19 +40,15 @@ export async function fetchTimeline(pool: any): Promise<{ events: TlEvent[]; cad
   const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000)
 
   const events: TlEvent[] = []
+  // #135:联邦 EE 历次抽选已并进 pnp_draws(province=FED)——原先单独查 ee_categories 只有「最近一期」,
+  // 现在这里直接出全历史;那段 push 已删,否则最近一期会重复(一条信息一个家)。
+  // FED 行 label=类别 key(join 用)、stream=官方 drawName(可读)→ 标题取 stream;prov 留空=联邦口径不变。
   for (const r of draws.rows) {
+    const fed = r.province === 'FED'
     events.push({
-      date: day(r.draw_date), prov: r.province ?? '', kind: r.kind === 'notice' ? 'notice' : 'draw',
-      title: r.label || r.stream || '', score: r.score == null ? null : Number(r.score), scale: r.scale ?? '',
+      date: day(r.draw_date), prov: fed ? '' : (r.province ?? ''), kind: r.kind === 'notice' ? 'notice' : 'draw',
+      title: (fed ? r.stream || r.label : r.label || r.stream) || '', score: r.score == null ? null : Number(r.score), scale: r.scale ?? '',
       invitations: r.invitations == null ? null : Number(r.invitations), note: r.note ?? '',
-      importance: null, url: r.url ?? '', slug: '',
-    })
-  }
-  for (const r of ee.rows) {
-    events.push({
-      date: day(r.draw_date), prov: '', kind: 'draw', title: r.label || r.category,
-      score: r.draw_crs == null ? null : Number(r.draw_crs), scale: 'CRS',
-      invitations: r.draw_size == null ? null : Number(r.draw_size), note: '',
       importance: null, url: r.url ?? '', slug: '',
     })
   }
@@ -70,7 +66,7 @@ export async function fetchTimeline(pool: any): Promise<{ events: TlEvent[]; cad
   // 分组键=label||stream(项目级):stream 每期写法不同(BC 各 ITA 因素/AB 各期描述),按它分组会碎成一期一卡。
   const byStream = new Map<string, { prov: string; stream: string; scale: string; dates: string[] }>()
   for (const r of draws.rows) {
-    if (r.kind === 'notice') continue
+    if (r.kind === 'notice' || r.province === 'FED') continue   // #135:联邦另有 eeCadence 表,不混进省节奏
     const d = day(r.draw_date)
     if (!d) continue
     const name = r.label || r.stream || ''

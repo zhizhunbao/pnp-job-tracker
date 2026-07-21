@@ -186,7 +186,7 @@ export default function JobDetailView({ job, plan, dims, related }: {
           </div>
           <div style={sec}>
             <div style={secHead}>{t('detail.eeSec')}</div>
-            <EeCategorySection job={job} lang={lang} cats={dims.eeOcc} />
+            <EeCategorySection job={job} lang={lang} cats={dims.eeOcc} draws={dims.pnpDraws} />
           </div>
 
           {(related.sameCompany.length || related.sameOcc.length) ? (

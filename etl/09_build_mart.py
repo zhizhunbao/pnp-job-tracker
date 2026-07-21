@@ -404,12 +404,26 @@ def build():
                                   "note": v["notice"].get("note", "")})
 
     # 各类别最近抽选(CRS/日期/邀请数)—— join 进每行,EE 弹框显示「近期抽选」
-    ee_draws = {}
+    ee_draws, ee_hist, ee_fetched = {}, {}, ""
     if IN_EE_DRAWS.exists():
         try:
-            ee_draws = json.loads(IN_EE_DRAWS.read_text(encoding="utf-8")).get("byCategory", {})
+            _eed = json.loads(IN_EE_DRAWS.read_text(encoding="utf-8"))
+            ee_draws, ee_hist, ee_fetched = _eed.get("byCategory", {}), _eed.get("history", {}), _eed.get("fetched", "")
         except Exception:  # noqa: BLE001
-            ee_draws = {}
+            ee_draws, ee_hist = {}, {}
+
+    # #135(Frank「点开按时间线看每一轮」):联邦 EE 历次抽选并进 pnp_draws 表(province="FED")——
+    # 该表列型完全够用(scale/score/invitations/stream/drawDate),**零新表零 DDL**;省块按 province 过滤
+    # 天然不串味;时间线页改读这里的 FED 行(原来单独查 ee_categories 只有最近一期,现在有历史且不重复)。
+    for cat_key, rounds_ in (ee_hist or {}).items():
+        for dr in rounds_:
+            pnp_draws.append({
+                "province": "FED", "label": cat_key, "scale": "CRS",
+                "url": "https://www.canada.ca/en/immigration-refugees-citizenship/corporate/mandate/policies-operational-instructions-agreements/ministerial-instructions/express-entry-rounds.html",
+                "fetched": ee_fetched, "kind": "draw", "drawDate": dr.get("date"),
+                "stream": dr.get("drawName", ""), "score": dr.get("crs"),
+                "invitations": dr.get("size"), "note": "",
+            })
 
     # 联邦 EE 类别维度(每行=某类别内一个职业)
     ee_categories = []

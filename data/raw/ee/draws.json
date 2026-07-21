@@ -1,8 +1,36 @@
 {
   "source": "Express Entry rounds of invitations",
   "url": "https://www.canada.ca/content/dam/ircc/documents/json/ee_rounds_123_en.json",
-  "fetched": "2026-07-05",
+  "fetched": "2026-07-20",
   "byCategory": {
+    "pnp": {
+      "date": "2026-07-20",
+      "crs": 744,
+      "size": 511,
+      "drawName": "Provincial Nominee Program",
+      "drawNumber": 427
+    },
+    "senior-managers": {
+      "date": "2026-07-10",
+      "crs": 392,
+      "size": 500,
+      "drawName": "Senior managers with Canadian Work Experience, 2026-Version 1",
+      "drawNumber": 426
+    },
+    "french": {
+      "date": "2026-07-09",
+      "crs": 420,
+      "size": 5000,
+      "drawName": "French-Language proficiency 2026-Version 2",
+      "drawNumber": 425
+    },
+    "cec": {
+      "date": "2026-07-07",
+      "crs": 517,
+      "size": 2000,
+      "drawName": "Canadian Experience Class",
+      "drawNumber": 424
+    },
     "healthcare": {
       "date": "2026-06-25",
       "crs": 475,
@@ -17,40 +45,12 @@
       "drawName": "Physicians with Canadian Work Experience, 2026-Version 1",
       "drawNumber": 421
     },
-    "cec": {
-      "date": "2026-06-23",
-      "crs": 516,
-      "size": 4000,
-      "drawName": "Canadian Experience Class",
-      "drawNumber": 420
-    },
-    "pnp": {
-      "date": "2026-06-22",
-      "crs": 730,
-      "size": 955,
-      "drawName": "Provincial Nominee Program",
-      "drawNumber": 419
-    },
-    "french": {
-      "date": "2026-05-28",
-      "crs": 409,
-      "size": 4500,
-      "drawName": "French-Language proficiency 2026-Version 2",
-      "drawNumber": 418
-    },
     "trade": {
       "date": "2026-04-02",
       "crs": 477,
       "size": 3000,
       "drawName": "Trades Occupations, 2026-Version 3",
       "drawNumber": 408
-    },
-    "senior-managers": {
-      "date": "2026-03-05",
-      "crs": 429,
-      "size": 250,
-      "drawName": "Senior managers with Canadian Work Experience, 2026-Version 1",
-      "drawNumber": 402
     },
     "education": {
       "date": "2025-09-17",
@@ -95,7 +95,450 @@
       "drawNumber": 240
     }
   },
+  "history": {
+    "pnp": [
+      {
+        "date": "2026-07-20",
+        "crs": 744,
+        "size": 511,
+        "drawName": "Provincial Nominee Program",
+        "drawNumber": 427
+      },
+      {
+        "date": "2026-07-06",
+        "crs": 708,
+        "size": 534,
+        "drawName": "Provincial Nominee Program",
+        "drawNumber": 423
+      },
+      {
+        "date": "2026-06-22",
+        "crs": 730,
+        "size": 955,
+        "drawName": "Provincial Nominee Program",
+        "drawNumber": 419
+      },
+      {
+        "date": "2026-05-25",
+        "crs": 805,
+        "size": 334,
+        "drawName": "Provincial Nominee Program",
+        "drawNumber": 416
+      },
+      {
+        "date": "2026-05-11",
+        "crs": 798,
+        "size": 380,
+        "drawName": "Provincial Nominee Program",
+        "drawNumber": 415
+      },
+      {
+        "date": "2026-04-27",
+        "crs": 795,
+        "size": 473,
+        "drawName": "Provincial Nominee Program",
+        "drawNumber": 412
+      },
+      {
+        "date": "2026-04-13",
+        "crs": 786,
+        "size": 324,
+        "drawName": "Provincial Nominee Program",
+        "drawNumber": 409
+      },
+      {
+        "date": "2026-03-30",
+        "crs": 802,
+        "size": 356,
+        "drawName": "Provincial Nominee Program",
+        "drawNumber": 406
+      },
+      {
+        "date": "2026-03-16",
+        "crs": 742,
+        "size": 362,
+        "drawName": "Provincial Nominee Program",
+        "drawNumber": 403
+      },
+      {
+        "date": "2026-03-02",
+        "crs": 710,
+        "size": 264,
+        "drawName": "Provincial Nominee Program",
+        "drawNumber": 399
+      },
+      {
+        "date": "2026-02-16",
+        "crs": 789,
+        "size": 279,
+        "drawName": "Provincial Nominee Program",
+        "drawNumber": 395
+      },
+      {
+        "date": "2026-02-03",
+        "crs": 749,
+        "size": 423,
+        "drawName": "Provincial Nominee Program",
+        "drawNumber": 393
+      }
+    ],
+    "senior-managers": [
+      {
+        "date": "2026-07-10",
+        "crs": 392,
+        "size": 500,
+        "drawName": "Senior managers with Canadian Work Experience, 2026-Version 1",
+        "drawNumber": 426
+      },
+      {
+        "date": "2026-03-05",
+        "crs": 429,
+        "size": 250,
+        "drawName": "Senior managers with Canadian Work Experience, 2026-Version 1",
+        "drawNumber": 402
+      }
+    ],
+    "french": [
+      {
+        "date": "2026-07-09",
+        "crs": 420,
+        "size": 5000,
+        "drawName": "French-Language proficiency 2026-Version 2",
+        "drawNumber": 425
+      },
+      {
+        "date": "2026-05-28",
+        "crs": 409,
+        "size": 4500,
+        "drawName": "French-Language proficiency 2026-Version 2",
+        "drawNumber": 418
+      },
+      {
+        "date": "2026-04-29",
+        "crs": 400,
+        "size": 4000,
+        "drawName": "French-Language proficiency 2026-Version 2",
+        "drawNumber": 414
+      },
+      {
+        "date": "2026-04-15",
+        "crs": 419,
+        "size": 4000,
+        "drawName": "French-Language proficiency 2026-Version 2",
+        "drawNumber": 411
+      },
+      {
+        "date": "2026-03-18",
+        "crs": 393,
+        "size": 4000,
+        "drawName": "French-Language proficiency 2026-Version 2",
+        "drawNumber": 405
+      },
+      {
+        "date": "2026-03-04",
+        "crs": 397,
+        "size": 5500,
+        "drawName": "French-Language proficiency 2026-Version 2",
+        "drawNumber": 401
+      },
+      {
+        "date": "2026-02-06",
+        "crs": 400,
+        "size": 8500,
+        "drawName": "French-Language proficiency 2026-Version 2",
+        "drawNumber": 394
+      },
+      {
+        "date": "2025-12-17",
+        "crs": 399,
+        "size": 6000,
+        "drawName": "French language proficiency (Version 1)",
+        "drawNumber": 388
+      },
+      {
+        "date": "2025-11-28",
+        "crs": 408,
+        "size": 6000,
+        "drawName": "French language proficiency (Version 1)",
+        "drawNumber": 382
+      },
+      {
+        "date": "2025-10-29",
+        "crs": 416,
+        "size": 6000,
+        "drawName": "French language proficiency (Version 1)",
+        "drawNumber": 376
+      },
+      {
+        "date": "2025-10-06",
+        "crs": 432,
+        "size": 4500,
+        "drawName": "French language proficiency (Version 1)",
+        "drawNumber": 371
+      },
+      {
+        "date": "2025-09-04",
+        "crs": 446,
+        "size": 4500,
+        "drawName": "French language proficiency (Version 1)",
+        "drawNumber": 365
+      }
+    ],
+    "cec": [
+      {
+        "date": "2026-07-07",
+        "crs": 517,
+        "size": 2000,
+        "drawName": "Canadian Experience Class",
+        "drawNumber": 424
+      },
+      {
+        "date": "2026-06-23",
+        "crs": 516,
+        "size": 4000,
+        "drawName": "Canadian Experience Class",
+        "drawNumber": 420
+      },
+      {
+        "date": "2026-05-27",
+        "crs": 518,
+        "size": 3000,
+        "drawName": "Canadian Experience Class",
+        "drawNumber": 417
+      },
+      {
+        "date": "2026-04-28",
+        "crs": 514,
+        "size": 2000,
+        "drawName": "Canadian Experience Class",
+        "drawNumber": 413
+      },
+      {
+        "date": "2026-04-14",
+        "crs": 515,
+        "size": 2000,
+        "drawName": "Canadian Experience Class",
+        "drawNumber": 410
+      },
+      {
+        "date": "2026-03-31",
+        "crs": 509,
+        "size": 2250,
+        "drawName": "Canadian Experience Class",
+        "drawNumber": 407
+      },
+      {
+        "date": "2026-03-17",
+        "crs": 507,
+        "size": 4000,
+        "drawName": "Canadian Experience Class",
+        "drawNumber": 404
+      },
+      {
+        "date": "2026-03-03",
+        "crs": 508,
+        "size": 4000,
+        "drawName": "Canadian Experience Class",
+        "drawNumber": 400
+      },
+      {
+        "date": "2026-02-17",
+        "crs": 508,
+        "size": 6000,
+        "drawName": "Canadian Experience Class",
+        "drawNumber": 396
+      },
+      {
+        "date": "2026-01-21",
+        "crs": 509,
+        "size": 6000,
+        "drawName": "Canadian Experience Class",
+        "drawNumber": 392
+      },
+      {
+        "date": "2026-01-07",
+        "crs": 511,
+        "size": 8000,
+        "drawName": "Canadian Experience Class",
+        "drawNumber": 390
+      },
+      {
+        "date": "2025-12-16",
+        "crs": 515,
+        "size": 5000,
+        "drawName": "Canadian Experience Class",
+        "drawNumber": 387
+      }
+    ],
+    "healthcare": [
+      {
+        "date": "2026-06-25",
+        "crs": 475,
+        "size": 4000,
+        "drawName": "Healthcare and Social Services Occupations, 2026-Version 3",
+        "drawNumber": 422
+      },
+      {
+        "date": "2026-02-20",
+        "crs": 467,
+        "size": 4000,
+        "drawName": "Healthcare and Social Services Occupations, 2026-Version 3",
+        "drawNumber": 398
+      },
+      {
+        "date": "2025-12-11",
+        "crs": 476,
+        "size": 1000,
+        "drawName": "Healthcare and social services occupations (Version 2)",
+        "drawNumber": 385
+      },
+      {
+        "date": "2025-11-14",
+        "crs": 462,
+        "size": 3500,
+        "drawName": "Healthcare and social services occupations (Version 2)",
+        "drawNumber": 379
+      },
+      {
+        "date": "2025-10-15",
+        "crs": 472,
+        "size": 2500,
+        "drawName": "Healthcare and social services occupations (Version 2)",
+        "drawNumber": 373
+      },
+      {
+        "date": "2025-08-19",
+        "crs": 470,
+        "size": 2500,
+        "drawName": "Healthcare and social services occupations (Version 2)",
+        "drawNumber": 362
+      },
+      {
+        "date": "2025-07-22",
+        "crs": 475,
+        "size": 4000,
+        "drawName": "Healthcare and social services occupations (Version 2)",
+        "drawNumber": 357
+      },
+      {
+        "date": "2025-06-04",
+        "crs": 504,
+        "size": 500,
+        "drawName": "Healthcare and social services occupations (Version 2)",
+        "drawNumber": 349
+      },
+      {
+        "date": "2025-05-02",
+        "crs": 510,
+        "size": 500,
+        "drawName": "Healthcare and social services occupations (Version 2)",
+        "drawNumber": 345
+      },
+      {
+        "date": "2024-11-20",
+        "crs": 463,
+        "size": 3000,
+        "drawName": "Healthcare occupations (Version 1)",
+        "drawNumber": 327
+      }
+    ],
+    "physicians": [
+      {
+        "date": "2026-06-24",
+        "crs": 223,
+        "size": 271,
+        "drawName": "Physicians with Canadian Work Experience, 2026-Version 1",
+        "drawNumber": 421
+      },
+      {
+        "date": "2026-02-19",
+        "crs": 169,
+        "size": 391,
+        "drawName": "Physicians with Canadian Work Experience, 2026-Version 1",
+        "drawNumber": 397
+      }
+    ],
+    "trade": [
+      {
+        "date": "2026-04-02",
+        "crs": 477,
+        "size": 3000,
+        "drawName": "Trades Occupations, 2026-Version 3",
+        "drawNumber": 408
+      },
+      {
+        "date": "2025-09-18",
+        "crs": 505,
+        "size": 1250,
+        "drawName": "Trade occupations (Version 2)",
+        "drawNumber": 368
+      },
+      {
+        "date": "2024-10-23",
+        "crs": 433,
+        "size": 1800,
+        "drawName": "Trade occupations (Version 1)",
+        "drawNumber": 321
+      }
+    ],
+    "education": [
+      {
+        "date": "2025-09-17",
+        "crs": 462,
+        "size": 2500,
+        "drawName": "Education occupations (Version 1)",
+        "drawNumber": 367
+      },
+      {
+        "date": "2025-05-01",
+        "crs": 479,
+        "size": 1000,
+        "drawName": "Education occupations (Version 1)",
+        "drawNumber": 344
+      }
+    ],
+    "general": [],
+    "stem": [],
+    "transport": [],
+    "agriculture": [],
+    "fsw": []
+  },
   "recent": [
+    {
+      "date": "2026-07-20",
+      "crs": 744,
+      "size": 511,
+      "name": "Provincial Nominee Program",
+      "number": 427
+    },
+    {
+      "date": "2026-07-10",
+      "crs": 392,
+      "size": 500,
+      "name": "Senior managers with Canadian Work Experience, 2026-Version 1",
+      "number": 426
+    },
+    {
+      "date": "2026-07-09",
+      "crs": 420,
+      "size": 5000,
+      "name": "French-Language proficiency 2026-Version 2",
+      "number": 425
+    },
+    {
+      "date": "2026-07-07",
+      "crs": 517,
+      "size": 2000,
+      "name": "Canadian Experience Class",
+      "number": 424
+    },
+    {
+      "date": "2026-07-06",
+      "crs": 708,
+      "size": 534,
+      "name": "Provincial Nominee Program",
+      "number": 423
+    },
     {
       "date": "2026-06-25",
       "crs": 475,
@@ -200,41 +643,6 @@
       "size": 3000,
       "name": "Trades Occupations, 2026-Version 3",
       "number": 408
-    },
-    {
-      "date": "2026-03-31",
-      "crs": 509,
-      "size": 2250,
-      "name": "Canadian Experience Class",
-      "number": 407
-    },
-    {
-      "date": "2026-03-30",
-      "crs": 802,
-      "size": 356,
-      "name": "Provincial Nominee Program",
-      "number": 406
-    },
-    {
-      "date": "2026-03-18",
-      "crs": 393,
-      "size": 4000,
-      "name": "French-Language proficiency 2026-Version 2",
-      "number": 405
-    },
-    {
-      "date": "2026-03-17",
-      "crs": 507,
-      "size": 4000,
-      "name": "Canadian Experience Class",
-      "number": 404
-    },
-    {
-      "date": "2026-03-16",
-      "crs": 742,
-      "size": 362,
-      "name": "Provincial Nominee Program",
-      "number": 403
     }
   ]
 }

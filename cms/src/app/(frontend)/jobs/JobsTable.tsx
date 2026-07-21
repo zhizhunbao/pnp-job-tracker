@@ -1395,9 +1395,22 @@ export function PnpListSection({ job, lang, occ, draws, news }: { job: JobRow; l
 // 与 PnpListSection 同理:清单来自 DB 维度表(ee-categories,经 props 传入),全国单一源。
 // 命中→只展开该类别清单 + 高亮本岗;未命中→只列出各类别名+数量概览。EE ≠ PNP,独立信号。
 type EeCat = { key: string; label: string; drawCrs: number | null; drawDate: string; drawSize: number | null; occupations: { noc: string; teer: number | null; title: string }[] }
-export function EeCategorySection({ job, lang, cats }: { job: JobRow; lang: Lang; cats: EeOcc[] }) {
+export function EeCategorySection({ job, lang, cats, draws = [] }: { job: JobRow; lang: Lang; cats: EeOcc[]; draws?: PnpDraw[] }) {
   const t = makeT(lang)
   const matchRef = useRef<HTMLDivElement | null>(null)
+  // #135(Frank「应该有个下拉箭头,点开按时间线看每一轮」):该类别历次抽选(pnp_draws 的 province=FED 行,
+  // label=类别 key);近 24 月无抽选的类别拿不到行 → 不出箭头(没东西可展开就别给假入口)。
+  const [openCat, setOpenCat] = useState<string | null>(null)
+  const histOf = useMemo(() => {
+    const m = new Map<string, PnpDraw[]>()
+    for (const d of draws) {
+      if (d.province !== 'FED' || !d.drawDate) continue
+      const arr = m.get(d.label) || []
+      arr.push(d); m.set(d.label, arr)
+    }
+    for (const arr of m.values()) arr.sort((a, b) => (a.drawDate < b.drawDate ? 1 : -1))
+    return m
+  }, [draws])
   // 扁平维度表按 label 分组
   const grouped = useMemo<EeCat[]>(() => {
     const byLabel = new Map<string, EeCat>()
@@ -1421,7 +1434,33 @@ export function EeCategorySection({ job, lang, cats }: { job: JobRow; lang: Lang
       {shown.map((c) => (
         <div key={c.key} style={{ marginBottom: 10 }}>
           <div style={{ fontSize: 12.5, fontWeight: 600, color: '#374151', marginBottom: 4 }}>{eeDisplay(t, c.label)} <span style={{ color: '#9ca3af', fontWeight: 400 }}>· {t('eelist.count', { n: c.occupations.length })}</span></div>
-          {c.drawCrs != null && c.drawDate ? <div style={{ fontSize: 12, color: '#2563eb', marginBottom: 4 }}>{t('eelist.draw', { crs: c.drawCrs, date: c.drawDate, size: c.drawSize ?? '—' })}</div> : null}
+          {/* #135:近期抽选行=可展开入口(有历史才给箭头),展开=该类别历次抽选时间线 */}
+          {c.drawCrs != null && c.drawDate ? (() => {
+            const hist = histOf.get(c.key) || []
+            const expandable = hist.length > 1
+            const open = openCat === c.key
+            return (
+              <>
+                <div onClick={expandable ? () => setOpenCat(open ? null : c.key) : undefined}
+                  style={{ fontSize: 12, color: '#2563eb', marginBottom: 4, cursor: expandable ? 'pointer' : undefined, userSelect: 'none' }}>
+                  {t('eelist.draw', { crs: c.drawCrs, date: c.drawDate, size: c.drawSize ?? '—' })}
+                  {expandable ? <span style={{ marginLeft: 6, color: '#6b7280' }}>{open ? '▴' : '▾'} {t('eelist.hist', { n: hist.length })}</span> : null}
+                </div>
+                {expandable && open ? (
+                  <div style={{ marginBottom: 6, border: '1px solid #f3f4f6', borderRadius: 8, overflow: 'hidden' }}>
+                    {hist.map((h, i) => (
+                      <div key={`${h.drawDate}-${i}`} style={{ display: 'flex', alignItems: 'baseline', gap: 10, padding: '4px 10px', fontSize: 12, background: i % 2 ? '#fafafa' : undefined }}>
+                        <span style={{ fontVariantNumeric: 'tabular-nums', color: '#6b7280', whiteSpace: 'nowrap' }}>{(h.drawDate || '').slice(0, 10)}</span>
+                        <span style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 600, color: '#1f2937', whiteSpace: 'nowrap' }}>{t('eelist.crsN', { crs: h.score ?? '—' })}</span>
+                        <span style={{ flex: 1, color: '#6b7280', whiteSpace: 'nowrap' }}>{t('eelist.itaN', { n: h.invitations ?? '—' })}</span>
+                      </div>
+                    ))}
+                    <div style={{ padding: '4px 10px', fontSize: 11, color: '#9ca3af', borderTop: '1px solid #f3f4f6' }}>{t('eelist.histNote')}</div>
+                  </div>
+                ) : null}
+              </>
+            )
+          })() : null}
           {hit.length ? (
             <div style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid #f3f4f6', borderRadius: 8 }}>
               {c.occupations.map((o) => {
@@ -1911,7 +1950,7 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
   const t = makeT(lang)
   const noc = nocDesc.find((d) => d.noc === job.noc) || null
   if (field === 'pnp') return <PnpListSection job={job} lang={lang} occ={pnpOcc} draws={pnpDraws} news={news} />
-  if (field === 'ee') return <EeCategorySection job={job} lang={lang} cats={eeOcc} />
+  if (field === 'ee') return <EeCategorySection job={job} lang={lang} cats={eeOcc} draws={pnpDraws} />
   if (field === 'title') return <TitleFacts job={job} lang={lang} />
   const day = (s?: string) => (s || '').slice(0, 10)
 
