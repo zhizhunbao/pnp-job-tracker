@@ -344,11 +344,27 @@ def build():
                 flagged[flag] += 1
     print(f"  JD 正文匹配: {matched}/{len(jobs)} 岗写入 description;身份预筛: {flagged}")
 
+    # #147/#151:NOC 职业名与城市名的中/韩译名(clean/04f、04g 产;**固定参考集翻一次永久用**)——
+    # 缺文件/缺条目=留空,前端回退只显英文(宁可留空也不瞎猜;小镇本来就没有通行译名,不硬音译)
+    def _load_i18n(fname: str) -> dict:
+        p = _paths.PROCESSED / fname
+        if not p.exists():
+            return {}
+        try:
+            return json.loads(p.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001
+            return {}
+
+    noc_i18n = _load_i18n("noc_titles_i18n.json")
+    city_i18n = _load_i18n("city_names_i18n.json")
+
     # ── 维度表 ──
     provinces = [{"code": c, "name": n} for c, n in PROV_FULL.items()]
     city_keys = sorted({(j.get("city"), j.get("province")) for j in jobs if j.get("city")},
                        key=lambda t: (t[0] or "", t[1] or ""))
-    cities = [{"name": c, "province": p or ""} for c, p in city_keys]
+    cities = [{"name": c, "province": p or "",
+               "nameZh": city_i18n.get(f"{c}|{p or ''}", {}).get("zh", ""),
+               "nameKo": city_i18n.get(f"{c}|{p or ''}", {}).get("ko", "")} for c, p in city_keys]
     # 区维度也从 job 数据洗(district 由 04c 从地址/邮编归一);只列实际有岗的区
     dist_keys = sorted({(j.get("district"), j.get("city"), j.get("province")) for j in jobs if j.get("district")},
                        key=lambda t: (t[0] or "", t[1] or "", t[2] or ""))
@@ -443,16 +459,6 @@ def build():
                         "drawCrs": dr.get("crs"), "drawDate": dr.get("date"), "drawSize": dr.get("size")})
 
     # NOC 官方名+主要职责维度(只收数据集出现过的 NOC,控制前端 payload;duties/requirements 存换行拼接文本)
-    # #147:NOC 官方职业名的中/韩译名(clean/04f 产,固定参考集翻一次永久用)——缺文件/缺条目=留空,
-    # 前端回退只显英文(宁可留空也不瞎猜)
-    noc_i18n = {}
-    _p = _paths.PROCESSED / "noc_titles_i18n.json"
-    if _p.exists():
-        try:
-            noc_i18n = json.loads(_p.read_text(encoding="utf-8"))
-        except Exception:  # noqa: BLE001
-            noc_i18n = {}
-
     noc_descriptions = []
     if IN_NOC_DESC.exists():
         try:

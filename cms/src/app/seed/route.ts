@@ -95,7 +95,7 @@ export async function GET(req: Request) {
   // ── 维度表:每次全量重建。三元组 = [mart 文件, DB 表(=响应计数键), 列白名单(snake_case)+ 映射] ──
   const dims: [string, string, string[], (r: any) => Row][] = [
     ['provinces', 'provinces', ['code', 'name'], (r) => ({ code: r.code, name: r.name })],
-    ['cities', 'cities', ['name', 'province'], (r) => ({ name: r.name, province: r.province })],
+    ['cities', 'cities', ['name', 'province', 'name_zh', 'name_ko'], (r) => ({ name: r.name, province: r.province, name_zh: r.nameZh, name_ko: r.nameKo })],
     ['districts', 'districts', ['name', 'city', 'province'], (r) => ({ name: r.name, city: r.city, province: r.province })],
     ['designated_employers', 'designated_employers', ['name', 'province', 'location', 'is_tech', 'source'],
       (r) => ({ name: r.name, province: r.province, location: r.location, is_tech: r.isTech, source: r.source })],

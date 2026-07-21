@@ -1,0 +1,198 @@
+{
+ "Toronto|ON": {
+  "zh": "多伦多",
+  "ko": "토론토"
+ },
+ "Mississauga|ON": {
+  "zh": "密西沙加",
+  "ko": "미시소가"
+ },
+ "Brampton|ON": {
+  "zh": "布兰普顿",
+  "ko": "브램턴"
+ },
+ "Markham|ON": {
+  "zh": "万锦",
+  "ko": "마컴"
+ },
+ "Richmond Hill|ON": {
+  "zh": "列治文山",
+  "ko": "리치먼드힐"
+ },
+ "Vaughan|ON": {
+  "zh": "旺市",
+  "ko": "본"
+ },
+ "Scarborough|ON": {
+  "zh": "士嘉堡",
+  "ko": "스카버러"
+ },
+ "North York|ON": {
+  "zh": "北约克",
+  "ko": "노스요크"
+ },
+ "Etobicoke|ON": {
+  "zh": "怡陶碧谷",
+  "ko": "이토비코"
+ },
+ "Ottawa|ON": {
+  "zh": "渥太华",
+  "ko": "오타와"
+ },
+ "Hamilton|ON": {
+  "zh": "汉密尔顿",
+  "ko": "해밀턴"
+ },
+ "London|ON": {
+  "zh": "伦敦",
+  "ko": "런던"
+ },
+ "Windsor|ON": {
+  "zh": "温莎",
+  "ko": "윈저"
+ },
+ "Waterloo|ON": {
+  "zh": "滑铁卢",
+  "ko": "워털루"
+ },
+ "Kitchener|ON": {
+  "zh": "基奇纳",
+  "ko": "키치너"
+ },
+ "Oakville|ON": {
+  "zh": "奥克维尔",
+  "ko": "오크빌"
+ },
+ "Burlington|ON": {
+  "zh": "伯灵顿",
+  "ko": "벌링턴"
+ },
+ "Kingston|ON": {
+  "zh": "金斯顿",
+  "ko": "킹스턴"
+ },
+ "Guelph|ON": {
+  "zh": "圭尔夫",
+  "ko": "겔프"
+ },
+ "Oshawa|ON": {
+  "zh": "奥沙瓦",
+  "ko": "오샤와"
+ },
+ "Niagara Falls|ON": {
+  "zh": "尼亚加拉瀑布城",
+  "ko": "나이아가라폴스"
+ },
+ "Vancouver|BC": {
+  "zh": "温哥华",
+  "ko": "밴쿠버"
+ },
+ "Surrey|BC": {
+  "zh": "素里",
+  "ko": "서리"
+ },
+ "Burnaby|BC": {
+  "zh": "本拿比",
+  "ko": "버나비"
+ },
+ "Richmond|BC": {
+  "zh": "列治文",
+  "ko": "리치먼드"
+ },
+ "Coquitlam|BC": {
+  "zh": "高贵林",
+  "ko": "코퀴틀람"
+ },
+ "Port Coquitlam|BC": {
+  "zh": "高贵林港",
+  "ko": "포트코퀴틀람"
+ },
+ "Victoria|BC": {
+  "zh": "维多利亚",
+  "ko": "빅토리아"
+ },
+ "Abbotsford|BC": {
+  "zh": "阿伯茨福德",
+  "ko": "애보츠퍼드"
+ },
+ "Kelowna|BC": {
+  "zh": "基洛纳",
+  "ko": "켈로나"
+ },
+ "Nanaimo|BC": {
+  "zh": "纳奈莫",
+  "ko": "나나이모"
+ },
+ "Calgary|AB": {
+  "zh": "卡尔加里",
+  "ko": "캘거리"
+ },
+ "Edmonton|AB": {
+  "zh": "埃德蒙顿",
+  "ko": "에드먼턴"
+ },
+ "Red Deer|AB": {
+  "zh": "红鹿市",
+  "ko": "레드디어"
+ },
+ "Lethbridge|AB": {
+  "zh": "莱斯布里奇",
+  "ko": "레스브리지"
+ },
+ "Montréal|QC": {
+  "zh": "蒙特利尔",
+  "ko": "몬트리올"
+ },
+ "Montreal|QC": {
+  "zh": "蒙特利尔",
+  "ko": "몬트리올"
+ },
+ "Québec|QC": {
+  "zh": "魁北克市",
+  "ko": "퀘벡시티"
+ },
+ "Laval|QC": {
+  "zh": "拉瓦尔",
+  "ko": "라발"
+ },
+ "Gatineau|QC": {
+  "zh": "加蒂诺",
+  "ko": "가티노"
+ },
+ "Sherbrooke|QC": {
+  "zh": "舍布鲁克",
+  "ko": "셔브룩"
+ },
+ "Winnipeg|MB": {
+  "zh": "温尼伯",
+  "ko": "위니펙"
+ },
+ "Saskatoon|SK": {
+  "zh": "萨斯卡通",
+  "ko": "사스카툰"
+ },
+ "Regina|SK": {
+  "zh": "里贾纳",
+  "ko": "리자이나"
+ },
+ "Halifax|NS": {
+  "zh": "哈利法克斯",
+  "ko": "핼리팩스"
+ },
+ "Moncton|NB": {
+  "zh": "蒙克顿",
+  "ko": "몽턴"
+ },
+ "Fredericton|NB": {
+  "zh": "弗雷德里克顿",
+  "ko": "프레더릭턴"
+ },
+ "Charlottetown|PE": {
+  "zh": "夏洛特敦",
+  "ko": "샬럿타운"
+ },
+ "St. John's|NL": {
+  "zh": "圣约翰斯",
+  "ko": "세인트존스"
+ }
+}

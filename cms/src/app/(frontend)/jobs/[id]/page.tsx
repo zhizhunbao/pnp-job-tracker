@@ -66,7 +66,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
   if (!job) notFound()
 
   // 页面维度:PNP 清单/抽选/新闻按本省收窄;AIP 指定名单只在大西洋四省才拉;NOC 官方职责只取本岗一行
-  const [drawDocs, fieldSrcDocs, nocDescDocs, desigDocs, newsRows, related] = await Promise.all([
+  const [drawDocs, fieldSrcDocs, nocDescDocs, desigDocs, newsRows, related, cityRow] = await Promise.all([
     payload.find({ collection: 'pnp-draws', limit: 200, depth: 0, sort: '-drawDate' }),
     payload.find({ collection: 'field-sources', limit: 200, depth: 0 }),
     job.noc ? payload.find({ collection: 'noc-descriptions', limit: 1, depth: 0, where: { noc: { equals: job.noc } } }) : { docs: [] },
@@ -76,6 +76,11 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
         .then((r: any) => r.rows).catch(() => [])
       : [],
     fetchRelatedJobs(pool, job),
+    // #151:本岗城市的通行译名(只查这一行;无通行译名的小镇=空,前端只显英文)
+    job.city
+      ? pool.query(`SELECT name_zh, name_ko FROM cities WHERE name = $1 AND province = $2 LIMIT 1`, [job.city, job.province || ''])
+        .then((r: any) => r.rows[0] || {}).catch(() => ({}))
+      : {},
   ])
 
   const dims = {
@@ -89,6 +94,8 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
     nocDesc: nocDescDocs.docs.map((r: any) => ({ noc: r.noc, title: r.title ?? '', titleZh: r.titleZh ?? '', titleKo: r.titleKo ?? '', duties: r.duties ?? '', requirements: r.requirements ?? '', fetched: r.fetched ?? '' })),
     fieldSources: fieldSrcDocs.docs.map((r: any) => ({ field: r.field ?? '', kind: r.kind ?? '', publisher: r.publisher ?? '', url: r.url ?? '', title: r.title ?? '', description: r.description ?? '', status: r.status ?? '', fetched: r.fetched ?? '', note: r.note ?? '' })),
     news: newsRows as { region: string; title: string; date: string; slug: string }[],
+    cityZh: (cityRow as any)?.name_zh || '',
+    cityKo: (cityRow as any)?.name_ko || '',
   }
 
   const plan = {

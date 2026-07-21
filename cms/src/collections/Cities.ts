@@ -7,5 +7,8 @@ export const Cities: CollectionConfig = {
   fields: [
     { name: 'name', type: 'text', required: true, index: true },
     { name: 'province', type: 'text', index: true, admin: { description: '2位省码' } },
+    // #151:通行中/韩译名(clean/04g;小镇无通行译名=留空,前端只显英文)
+    { name: 'nameZh', type: 'text', admin: { description: '城市中文通行译名(显示用灰注)' } },
+    { name: 'nameKo', type: 'text', admin: { description: '城市韩文通行译名(显示用灰注)' } },
   ],
 }

@@ -16,7 +16,7 @@ import { SiteFooter } from '../../SiteFooter'
 import { Notice, PageShell } from '../../ui/primitives'
 import { UpgradeCta } from '../UpgradeModal'
 
-type Dims = { pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; news: NewsSlim[] }
+type Dims = { pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; news: NewsSlim[]; cityZh?: string; cityKo?: string }
 
 const chip: React.CSSProperties = { display: 'inline-block', fontSize: 11.5, padding: '2px 9px', borderRadius: 999, border: '1px solid #e5e7eb', background: '#fafafa', color: '#4b5563', marginRight: 6, whiteSpace: 'nowrap' }
 const chipBlue: React.CSSProperties = { ...chip, background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' }
@@ -101,6 +101,7 @@ export default function JobDetailView({ job, plan, dims, related }: {
   const nocRow = dims.nocDesc.find((d) => d.noc === job.noc) || null
   const nocTitle = nocRow?.title || ''
   const nocZh = nocLocalTitle(nocRow, lang)   // #147:界面语言译名(英文界面为空=不渲染)
+  const cityLoc = lang === 'zh' ? (dims.cityZh || '') : lang === 'ko' ? (dims.cityKo || '') : ''   // #151 同款
   const day = (s: string) => (s || '').slice(0, 10)
   const relRow = (r: RelatedJob, note: string) => (
     <div key={r.id} style={{ fontSize: 13, padding: '3px 0' }}>
@@ -138,7 +139,12 @@ export default function JobDetailView({ job, plan, dims, related }: {
                 {job.sponsorGrade != null && <span title={t('gr.sponsorTip')} style={{ marginLeft: 6, fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sp.' + job.sponsorGrade)}</span>}
               </span>
             ) : null}
-            {(job.city || provFull) ? <span><span style={metaK}>{t('col.city')}</span>{[job.city, provFull].filter(Boolean).join(', ')}</span> : null}
+            {/* #151:城市通行译名作灰注(英文在前);无通行译名的小镇=空,只显英文 */}
+            {(job.city || provFull) ? (
+              <span><span style={metaK}>{t('col.city')}</span>{[job.city, provFull].filter(Boolean).join(', ')}
+                {cityLoc ? <span style={{ color: '#9ca3af' }}>　{cityLoc}</span> : null}
+              </span>
+            ) : null}
             {job.datePosted ? <span><span style={metaK}>{t('col.datePosted')}</span>{day(job.datePosted)}</span> : null}
             {job.sourceLabel ? <span><span style={metaK}>{t('col.source')}</span>{job.sourceLabel}</span> : null}
           </div>
