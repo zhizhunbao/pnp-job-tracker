@@ -310,6 +310,14 @@ export const PROV_NAMES: Record<string, string> = {
   NS: 'Nova Scotia', NB: 'New Brunswick', NL: 'Newfoundland and Labrador', PE: 'Prince Edward Island',
   NT: 'Northwest Territories', YT: 'Yukon', NU: 'Nunavut',
 }
+// #146 显示用省名(Frank「中韩用户只看英文难理解」,拍板英文在前):中韩界面出「Ontario(安大略省)」,
+// 英文界面译名==英文名故只出英文。**只用于显示**——筛选值仍是 PROV_NAMES 的英文全名(fProv/深链/保存的筛选都依赖它)
+export const provName = (t: TFn, code: string): string => {
+  const c = (code || '').toUpperCase()
+  const en = PROV_NAMES[c] || code || ''
+  const loc = t('prov.' + c)
+  return loc && loc !== 'prov.' + c && loc !== en ? `${en}(${loc})` : en
+}
 // 地点已由清洗脚本(04c)规范化进库,这里直接读结构化字段(省码→全称仅用于显示)
 const parseLoc = (j: JobRow): { country: string; prov: string; city: string; district: string } => ({
   country: j.country || (j.province ? 'Canada' : ''),

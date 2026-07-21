@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 import { makeT, LANG_KEY, LANGS, type Lang, type TFn } from '../i18n'
 import {
   AdvisorModal, blockedSrc, catName, EeCategorySection, FactRow, FactsBox, fetchJobText, JdAdvisorSection, JdFormattedView, JdTextView,
-  MeansForMe, PnpListSection, PROV_NAMES, UpgradeCard,
+  MeansForMe, PnpListSection, provName, UpgradeCard,
   type DesigEmp, type EeOcc, type FieldSource, type JobRow, type NewsSlim, type NocDesc, type Plan, type PnpDraw, type PnpOcc,
 } from '../JobsTable'
 import type { RelatedJob } from '@/lib/jobsSql'
@@ -97,7 +97,7 @@ export default function JobDetailView({ job, plan, dims, related }: {
   const t = makeT(lang)
   const [companyOpen, setCompanyOpen] = useState(false)
 
-  const provFull = PROV_NAMES[(job.province || '').toUpperCase()] || job.province
+  const provFull = provName(t, job.province || '')   // #146:中韩界面「Ontario(安大略省)」,英文界面只出英文
   const nocTitle = dims.nocDesc.find((d) => d.noc === job.noc)?.title || ''
   const day = (s: string) => (s || '').slice(0, 10)
   const relRow = (r: RelatedJob, note: string) => (

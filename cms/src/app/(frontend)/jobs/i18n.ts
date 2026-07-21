@@ -34,6 +34,11 @@ const zh: Dict = {
   'detail.pnpSec': '省提名通道', 'detail.pnpSecNote': '粗筛信号,非资格认定', 'detail.eeSec': '联邦 EE 类别', 'detail.crumbHome': '职位板',
   // #142 职业分类三级(可点即按该级筛职位板)
   'detail.catSec': '职业分类', 'detail.catNote': '按加拿大国家职业分类(NOC)划分;点任一级可筛出同类职位',
+  // #146 省份中文名(Frank「中韩用户只看英文难理解」;拍板英文在前中文作注)。**只作显示**——
+  // 筛选/排序仍用英文全名(PROV_NAMES 是 fProv 的取值,动它会打断深链与保存的筛选)
+  'prov.ON': '安大略省', 'prov.BC': '不列颠哥伦比亚省', 'prov.AB': '阿尔伯塔省', 'prov.QC': '魁北克省',
+  'prov.MB': '曼尼托巴省', 'prov.SK': '萨斯喀彻温省', 'prov.NS': '新斯科舍省', 'prov.NB': '新不伦瑞克省',
+  'prov.NL': '纽芬兰与拉布拉多省', 'prov.PE': '爱德华王子岛省', 'prov.NT': '西北地区', 'prov.YT': '育空地区', 'prov.NU': '努纳武特地区',
   // E8-07 C/D/E:顶栏资讯聚合 + 手机抽屉
   'nav.info': '资讯', 'nav.timeline': '政策时间线', 'nav.menu': '菜单', 'nav.sect.data': '数据与结论', 'nav.sect.mine': '我的',
   // E12-08 档位(1-5)拆解
@@ -438,6 +443,11 @@ const en: Dict = {
   'detail.sameCo': 'same employer', 'detail.sameOcc': 'same occupation in province', 'detail.closedNote': 'This posting has closed; shown for reference only',
   'detail.pnpSec': 'PNP streams', 'detail.pnpSecNote': 'rough signal, not an eligibility decision', 'detail.eeSec': 'Federal EE categories', 'detail.crumbHome': 'Job board',
   'detail.catSec': 'Occupation category', 'detail.catNote': 'Based on Canada’s National Occupational Classification (NOC); click any level to filter the board',
+  // en 必须显式给(makeT 缺键会回退 zh,否则英文用户会看到「Ontario(安大略省)」);
+  // provName 判断「译名==英文名」时不加括号注,于是英文界面自然只出英文
+  'prov.ON': 'Ontario', 'prov.BC': 'British Columbia', 'prov.AB': 'Alberta', 'prov.QC': 'Quebec',
+  'prov.MB': 'Manitoba', 'prov.SK': 'Saskatchewan', 'prov.NS': 'Nova Scotia', 'prov.NB': 'New Brunswick',
+  'prov.NL': 'Newfoundland and Labrador', 'prov.PE': 'Prince Edward Island', 'prov.NT': 'Northwest Territories', 'prov.YT': 'Yukon', 'prov.NU': 'Nunavut',
   // E8-07 C/D/E: header info group + mobile drawer
   'nav.info': 'Updates', 'nav.timeline': 'Policy timeline', 'nav.menu': 'Menu', 'nav.sect.data': 'DATA & INSIGHTS', 'nav.sect.mine': 'MINE',
   // E12-08 grade (1-5) breakdown
@@ -849,6 +859,9 @@ const ko: Dict = {
   'detail.sameCo': '같은 회사', 'detail.sameOcc': '같은 주 같은 직종', 'detail.closedNote': '마감된 공고입니다. 참고용으로만 확인하세요',
   'detail.pnpSec': '주정부 지명(PNP) 통로', 'detail.pnpSecNote': '대략적 신호이며 자격 판정이 아닙니다', 'detail.eeSec': '연방 EE 카테고리', 'detail.crumbHome': '채용 보드',
   'detail.catSec': '직업 분류', 'detail.catNote': '캐나다 국가직업분류(NOC) 기준; 각 단계를 클릭하면 동일 분류 공고를 필터링합니다',
+  'prov.ON': '온타리오주', 'prov.BC': '브리티시컬럼비아주', 'prov.AB': '앨버타주', 'prov.QC': '퀘벡주',
+  'prov.MB': '매니토바주', 'prov.SK': '서스캐처원주', 'prov.NS': '노바스코샤주', 'prov.NB': '뉴브런즈윅주',
+  'prov.NL': '뉴펀들랜드 래브라도주', 'prov.PE': '프린스에드워드아일랜드주', 'prov.NT': '노스웨스트준주', 'prov.YT': '유콘준주', 'prov.NU': '누나부트준주',
   // E8-07 C/D/E: 헤더 소식 그룹 + 모바일 드로어
   'nav.info': '소식', 'nav.timeline': '정책 타임라인', 'nav.menu': '메뉴', 'nav.sect.data': '데이터', 'nav.sect.mine': '내 메뉴',
   // E12-08 등급(1-5) 상세
