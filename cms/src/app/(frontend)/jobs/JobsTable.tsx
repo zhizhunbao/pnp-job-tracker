@@ -1,6 +1,6 @@
 'use client'
 
-import { useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 // 读 localStorage 偏好(列/语言)用「绘制前」生效,避免 SSR 默认值闪一下再切到保存值。
 // SSR 端 useLayoutEffect 无效且会告警 → 服务端退化成 useEffect。
@@ -41,6 +41,41 @@ export function catName(t: TFn, v: string): string {
   for (const k of ['cat.' + v, 'broad.' + v]) { const s = t(k); if (s !== k) return s }
   return v
 }
+// ═══ E8-10 弹框三合一(2026-07-21 Frank 拍板「统一设计,统一改」)═══════════════════
+// 原先 24 个字段各开一个顾问弹框,一套组件伺候 24 种字段 —— 当天三个 bug(公司面板渲岗位级匹配表 /
+// JD 首节标题作用域开大 / 黄条同屏堆两条)**根子都在这**:任何「按字段特判」都会漏。
+// 收成 3 个,对应用户真正会问的三件事(= 产品三问):这家靠谱吗 / 这活干什么给多少 / 这岗对我有没有用。
+// 另有三种非弹框处置:map=直接开地图(Frank「地图跳转要保留」——删掉的是「解释」不是「点击」),
+// note=悬停小注(零 LLM 零额度),none=什么都不做(值本身自明,一个日期不需要解释)。
+// 设计与逐字段依据见 docs/implementation/E8-UI体验统一/10_弹框三合一收编.md
+export type FieldGroup = 'company' | 'job' | 'immigration'
+type Disposition = FieldGroup | 'map' | 'note' | 'none'
+const FIELD_GROUP: Partial<Record<ColKey, Disposition>> = {
+  // ① 移民(付费核心;职业分类五级合成一节 —— #157 已证同名三级是噪音)
+  match: 'immigration', score: 'immigration', pnp: 'immigration', ee: 'immigration', aip: 'immigration',
+  eligibility: 'immigration', vsMedian: 'immigration',
+  noc: 'immigration', teer: 'immigration', broad: 'immigration', mid: 'immigration', fine: 'immigration',
+  // ② 职位(薪资与年薪折算合成一节 —— 原两个弹框说同一件事 = 重复排版)
+  title: 'job', salary: 'job', salaryYr: 'job', empHours: 'job', empTerm: 'job', accessibility: 'job',
+  // ③ 公司(外劳记录是**公司级**事实,归公司不归职位)
+  company: 'company', lmia: 'company',
+  // ④ 地图直连(mapsUrl 已存在,address 本就直连;补齐其余四个)
+  country: 'map', province: 'map', city: 'map', district: 'map', address: 'map',
+  // ⑤ 悬停小注:有口径要解释,但一句话的事不值一个弹框+一次生成+一次额度
+  source: 'note', origin: 'note', direct: 'note', status: 'note', wageMedHr: 'note', wageMedYr: 'note',
+  // ⑥ 什么都不做:日期就是日期
+  datePosted: 'none', lastSeen: 'none', closedAt: 'none',
+}
+
+// 这个格子点了有没有反应?——收编后 note/none 两档不再开弹框,若仍渲成 cursor:pointer
+// 就成了「看着能点、点了没反应」,比不能点更糟。手型与真实行为绑同一个判据。
+// title 例外:它不走 FIELD_GROUP,直开职位描述弹框(2026-07-19 Frank 拍板)。
+export const cellActionable = (k: ColKey): boolean => {
+  if (k === 'title') return true
+  const d = FIELD_GROUP[k]
+  return d === 'map' || d === 'company' || d === 'job' || d === 'immigration'
+}
+
 // Pro 专属列(与 lib/plan.ts PRO_COLUMNS 一致;免费用户列位打码,真值本就没进浏览器)
 const PRO_COLS = new Set<ColKey>(['match', 'vsMedian', 'wageMedHr', 'wageMedYr'])
 // #152 锁位统一打码(Frank「应该给他打上马赛克那种」;#130 详情页先例推广到表格):
@@ -554,7 +589,20 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       if (sp.get('view') === 'match' && plan.loggedIn && plan.profileOk) setMatchView(true)  // E5-05 直链回流
     } catch { /* ignore */ }
   }, [])
-  const [popup, setPopup] = useState<{ field: ColKey; job: JobRow; title: string } | null>(null)
+  // E8-10:popup 存**分组**不再存字段(24 → 3);srcField 只用于打开时锚到哪一节,不参与内容分支
+  const [popup, setPopup] = useState<{ group: FieldGroup; srcField: ColKey; job: JobRow; title: string } | null>(null)
+  // 单一路由:查 FIELD_GROUP 决定开哪个弹框 / 跳地图 / 什么都不做。两处调用方(表格行、手机卡)共用,
+  // 不再各自 setPopup —— 今天的三个 bug 全出在「按字段特判散落各处」。
+  const openField = useCallback((field: ColKey, job: JobRow, title: string) => {
+    const d = FIELD_GROUP[field]
+    if (!d || d === 'none' || d === 'note') return
+    if (d === 'map') {
+      const q = [job.address, job.district, job.city, job.province].filter(Boolean).join(', ')
+      if (q) window.open(mapsUrl(q), '_blank', 'noopener')
+      return
+    }
+    setPopup({ group: d, srcField: field, job, title })
+  }, [])
   // C1 走查拍板(2026-07-07):删两套公司弹窗——操作列「公司信息」直接开顾问公司弹窗;ActModal 只剩 JD 快看
   const [actModal, setActModal] = useState<{ kind: 'desc'; job: JobRow } | null>(null)
   // 升级入口(Pro 锁列/保存筛选 gate)统一开独立升级弹框;未登录先走注册弹框(用户定:注册与购买分离)
@@ -1103,7 +1151,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                 const mapsFor = (...parts: (string | undefined)[]) => { const q = parts.filter(Boolean).join(', '); return q ? mapsUrl(q) : null }
                 const L = parseLoc(j)                                                       // 省/市/区
                 const cat = colorOf(j.broad)
-                const open = (field: ColKey, title: string) => setPopup({ field, job: j, title })
+                const open = (field: ColKey, title: string) => openField(field, j, title)
                 return (
                   <tr key={j.id} className="jrow" style={{ borderBottom: '1px solid #f3f4f6', background: i % 2 ? '#fcfcfd' : '#fff' }}>
                     {shown.map((c, idx) => {
@@ -1210,7 +1258,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       else if (k === 'datePosted') { node = j.datePosted ? j.datePosted.slice(0, 10) : '—'; Object.assign(extra, { color: '#6b7280', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       else { node = j.lastSeen ? fmtLocalSec(j.lastSeen) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       return (
-                        <td key={k} className="jcell" style={{ ...td, ...extra, cursor: 'pointer', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', minWidth: colMin(k), ...(NOWRAP_COLS.has(k) ? { whiteSpace: 'nowrap' } : { whiteSpace: 'normal', overflowWrap: 'break-word' }), ...(hasWidths && { overflow: 'hidden', textOverflow: 'ellipsis' }), ...frozenStyle(k, rowBg) }} title={typeof node === 'string' ? node : undefined} onClick={() => {
+                        <td key={k} className="jcell" style={{ ...td, ...extra, cursor: cellActionable(k) ? 'pointer' : 'default', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', minWidth: colMin(k), ...(NOWRAP_COLS.has(k) ? { whiteSpace: 'nowrap' } : { whiteSpace: 'normal', overflowWrap: 'break-word' }), ...(hasWidths && { overflow: 'hidden', textOverflow: 'ellipsis' }), ...frozenStyle(k, rowBg) }} title={typeof node === 'string' ? node : undefined} onClick={() => {
                           // 职位格=直开职位描述(2026-07-19 Frank:「点职位也能显示职位描述」);title 顾问弹框由 JD 框标题栏「AI 顾问」钮承接(同日报障回补)
                           if (k === 'title') { setActModal({ kind: 'desc', job: j }); return }
                           // Pro 锁列(免费态数据已在服务端剥离)不开顾问弹框——没数据只会误导;锁形本身已链去 /account。match 免费额度内有值仍可开。
@@ -1240,14 +1288,14 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             拍板:免费限额外的岗不显示匹配位(不放锁标,卡片寸土寸金);中位/渠道/NOC 码等低频字段留给弹窗。 */}
         <div className="jtCards" style={{ flexDirection: 'column', gap: 8, ...(loading && page === 0 && { opacity: 0.45, pointerEvents: 'none' }) }}>
           {rows.map((j) => {
-            const open = (field: ColKey, title: string) => setPopup({ field, job: j, title })  // 与表格行同一签名
+            const open = (field: ColKey, title: string) => openField(field, j, title)  // 与表格行同一签名
             // #129(Frank「卡片本身点不进去」):整卡可点=进详情页;卡内既有交互(弹框/收藏/chips)stopPropagation 保持原行为
             const stop = (fn: () => void) => (e: React.MouseEvent) => { e.stopPropagation(); fn() }
             const L = parseLoc(j)
             const M: Record<string, { bg: string; fg: string }> = { high: { bg: '#dcfce7', fg: '#166534' }, mid: { bg: '#dbeafe', fg: '#1e40af' }, low: { bg: '#f3f4f6', fg: '#6b7280' } }
             const mc = j.match ? M[j.match] : undefined
             const chip = (bg: string, fg: string, txt: string, k: ColKey) => (
-              <span key={k} onClick={stop(() => open(k, txt))} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: bg, color: fg, cursor: 'pointer', whiteSpace: 'nowrap' }}>{txt}</span>
+              <span key={k} onClick={stop(() => open(k, txt))} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: bg, color: fg, cursor: cellActionable(k) ? 'pointer' : 'default', whiteSpace: 'nowrap' }}>{txt}</span>
             )
             const days = j.datePosted && (j.status || 'open') !== 'closed' ? Math.max(0, Math.floor((Date.now() - new Date(j.datePosted).getTime()) / 86400000)) : null
             return (
@@ -1317,7 +1365,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       {/* footer:全站共享 SiteFooter(2026-07-16 用户拍板统一 header/footer) */}
       <SiteFooter t={t} maxWidth={1320} />
 
-      {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} news={dims.news} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} onOpenJob={(x) => setActModal({ kind: 'desc', job: x })} />}
+      {popup && <AdvisorModal group={popup.group} field={popup.srcField} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} news={dims.news} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} onOpenJob={(x) => setActModal({ kind: 'desc', job: x })} />}
       {actModal && <ActModal job={actModal.job} lang={lang} plan={plan} onClose={() => setActModal(null)} />}
       {wizard && <OnboardingWizard t={t} initial={plan.profile} onClose={closeWizard} />}
       {upsell && (plan.loggedIn
@@ -2489,7 +2537,8 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
   )
 }
 
-export function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, news, eeOcc, desigEmp, nocDesc, fieldSources, onClose, onOpenJob }: { field: ColKey; job: JobRow; title?: string; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; news: NewsSlim[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onClose: () => void; onOpenJob?: (j: JobRow) => void }) {
+// E8-10:入参从 24 值的 field 改为 3 值的 group;field 保留仅用于「打开时锚到哪一节」,不再参与内容分支。
+export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnpDraws, news, eeOcc, desigEmp, nocDesc, fieldSources, onClose, onOpenJob }: { group: FieldGroup; field: ColKey; job: JobRow; title?: string; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; news: NewsSlim[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onClose: () => void; onOpenJob?: (j: JobRow) => void }) {
   const t = makeT(lang)
   const overlayClose = useOverlayClose(onClose)
   const a = advHeader(field, job, t)
@@ -2498,12 +2547,12 @@ export function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, 
   // 同公司在榜岗(E10-01 P3:blob 没了 → 打开公司弹窗时按公司名从 /api/jobs 拉,不再靠父级全量列表)
   const [companyJobs, setCompanyJobs] = useState<JobRow[]>([])
   useEffect(() => {
-    if (field !== 'company' || !job.company) { setCompanyJobs([]); return }
+    if (group !== 'company' || !job.company) { setCompanyJobs([]); return }
     let dead = false
     fetch('/api/jobs?company=' + encodeURIComponent(job.company) + '&page=0', { credentials: 'include' })
       .then((r) => (r.ok ? r.json() : null)).then((d) => { if (!dead && d) setCompanyJobs(d.rows || []) }).catch(() => {})
     return () => { dead = true }
-  }, [field, job.company])
+  }, [group, job.company])
 
   // 打字机(用户拍板:AI 内容必须流式感,不许整段蹦出来):网络块先进 pending,固定节奏吐字。
   // 覆盖三种「整段到达」场景:公司初判 web_fetch 工具阶段后快速吐完、服务端缓存命中、代理缓冲。
@@ -2545,12 +2594,15 @@ export function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, 
   const [freeLeft, setFreeLeft] = useState<number | null>(null)
   useEffect(() => {
     const ctrl = new AbortController()
+    // E8-10:职位弹框不设 AI 段 —— JD 五节整理版已经把「这活干什么/要什么」讲完了,
+    // 再生成一段就是 #125 修掉的那种重复。不发请求 = 不烧额度、不占朋友那台 qwen、不让用户干等。
+    if (group === 'job') { setStatus('done'); setText(''); return }
     setText(''); setStatus('loading'); setSug(''); pendingRef.current = ''; textRef.current = ''; doneRef.current = false
     ;(async () => {
       try {
         const res = await fetch('/api/advisor', {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal,
-          body: JSON.stringify({ field, id: String(job.id), job, lang }),
+          body: JSON.stringify({ field: group, id: String(job.id), job, lang }),   // E8-10:后端按分组取提示词
         })
         const left = res.headers.get('X-Free-Left')
         if (left != null) setFreeLeft(Number(left))
@@ -2570,7 +2622,7 @@ export function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, 
       }
     })()
     return () => ctrl.abort()
-  }, [field, job, lang])
+  }, [group, job, lang])
 
   const iconBtn = iconBtnS
 
@@ -2595,10 +2647,10 @@ export function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, 
               #161(Frank「公司显示这些信息也不合适吧」):公司面板不渲 —— 表里七个维度里
               职业方向/所在省/省提名粗筛/EE/技能层级/薪资 全是**岗位级**事实,挂在「Agilent Technologies」
               这个标题下答非所问(用户点公司是想了解公司)。岗位级判定留在岗位面板。 */}
-          {field !== 'company' && <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} nocDesc={nocDesc} />}
+          {group === 'immigration' && <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} nocDesc={nocDesc} />}
           <FieldFactsSection field={field} job={job} jobs={companyJobs} lang={lang} isPro={plan.isPro} loggedIn={plan.loggedIn} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} onOpenJob={onOpenJob} />
           {/* 建档 CTA(第 5 轮 #17 = 弹框规范 D1):身份信号族对未建档用户铺「事实 → 个人化」的桥 */}
-          {!plan.profileOk && ['pnp', 'ee', 'lmia', 'aip'].includes(field) && (
+          {!plan.profileOk && group === 'immigration' && (
             <div style={{ margin: '8px 0 10px' }}>
               <a href="/account" style={{ fontSize: 13, color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}><IconTarget /> {t('fact.buildCta')}</a>
             </div>
@@ -2620,7 +2672,7 @@ export function AdvisorModal({ field, job, title, lang, plan, pnpOcc, pnpDraws, 
           {/* 下半:对话框 —— 基于上方事实 + 初判,多轮 grounded 追问 */}
           {/* 追问对话暂关(2026-07-19 Frank:「先把现有的功能做成熟」;#95 开关式惯例)——
               亮回条件:顾问初判切本地模型后按需恢复,置 CHAT_ON=true 即亮 */}
-          {CHAT_ON && status === 'done' && <AdvisorChat field={field} job={job} lang={lang} initialJudgment={text} initialSug={sug} />}
+          {CHAT_ON && status === 'done' && <AdvisorChat field={group} job={job} lang={lang} initialJudgment={text} initialSug={sug} />}
         </div>
         {/* 八方向拉伸手柄(透明边条+角块;右下角保留视觉提示三角) */}
         {!full && <div style={{ position: 'absolute', right: 0, bottom: 0, width: 18, height: 18, pointerEvents: 'none', background: 'linear-gradient(135deg, transparent 50%, #cbd5e1 50%)' }} />}
@@ -2678,7 +2730,7 @@ const SUG_POOL: Record<'title' | 'company' | 'generic', string[]> = {
   company: ['advisor.sug.company', 'advisor.sug.company2', 'advisor.sug.company3'],
   generic: ['advisor.sug.generic', 'advisor.sug.generic2', 'advisor.sug.generic3'],
 }
-function AdvisorChat({ field, job, lang, initialJudgment, initialSug }: { field: ColKey; job: JobRow; lang: Lang; initialJudgment: string; initialSug?: string }) {
+function AdvisorChat({ field, job, lang, initialJudgment, initialSug }: { field: ColKey | FieldGroup; job: JobRow; lang: Lang; initialJudgment: string; initialSug?: string }) {
   const t = makeT(lang)
   const [msgs, setMsgs] = useState<ChatMsg[]>([])
   const [input, setInput] = useState('')

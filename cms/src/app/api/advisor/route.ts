@@ -237,7 +237,10 @@ function buildPrompt(field: string, j: Job, jd: string, lang: Lang, pf = '', web
       // E8-05 走查:实测模型仍会先吐一句英文过程叙述("I'll fetch the … website")——把禁令放末尾(最近效应)并写死首字符要求
       `Output rules: your reply must start with 【 as the very first character — zero preamble, zero meta-commentary (never "I'll fetch…", "Let me…"), no English filler; every sentence in ${LANG_NAME[lang]}.`
   }
-  if (field !== 'title') {
+  // E8-10:入参收成三组(company / job / immigration)。'immigration' 走原 'title' 那条分步方案路径;
+  // 'job' 不到这儿——职位弹框**不设 AI 段**(JD 五节整理版已承担事实层,再加一段就是 #125 修掉的那种重复),
+  // 前端直接不发请求。'title' 保留兼容旧调用方。
+  if (field !== 'title' && field !== 'immigration') {
     // 其它字段:把该岗事实(评分字段附明细)喂进去,模型只负责按所选语言解释,数字用我们给的
     let ask = ASK[field] || `Explain the "${field}" field for this job.`
     // 薪资类字段但中位缺失(NOC×省无 ESDC 数据,或免费层已剥离)→ 明说没有,严禁模型凭记忆报中位数(踩过:编出 $72K-$78K)
@@ -329,7 +332,7 @@ export async function POST(req: NextRequest) {
   if (!checkLimit(quotas)) return new Response('rate limited', { status: 429 })
 
   // 职位/对话:读取抓到的真实 JD 作 grounding(基于它总结,不凭空猜)
-  const jd = (field === 'title' || isChat) ? await loadJD(job.applyUrl) : ''
+  const jd = (field === 'title' || field === 'immigration' || isChat) ? await loadJD(job.applyUrl) : ''   // E8-10:分步方案要读 JD 提取可控项(证书/学历)
 
   // #107:公司初判接入 K 的联网调查(companies.ai_* 同一缓存,一家公司全站只查一次)。
   // 缓存命中直接用;库里连爬取简介都没有的公司才现场调查(有富化数据的常见路径不加延迟);

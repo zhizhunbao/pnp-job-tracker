@@ -238,7 +238,7 @@ export default function JobDetailView({ job, plan, dims, related }: {
       </PageShell>
       <SiteFooter t={t} />
       {companyOpen && (
-        <AdvisorModal field="company" job={job} title={job.company} lang={lang} plan={plan}
+        <AdvisorModal group="company" field="company" job={job} title={job.company} lang={lang} plan={plan}
           pnpOcc={dims.pnpOcc} pnpDraws={dims.pnpDraws} news={dims.news} eeOcc={dims.eeOcc}
           desigEmp={dims.desigEmp} nocDesc={dims.nocDesc} fieldSources={dims.fieldSources}
           onClose={() => setCompanyOpen(false)} />
