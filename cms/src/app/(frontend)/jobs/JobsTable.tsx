@@ -1230,7 +1230,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                   {j.pnpEligible ? chip('#fef3c7', '#92400e', j.pnpStream ? t('cell.pnpYes') : t('cell.pnpSkilled'), 'pnp') : null}
                   {j.eeCategory ? chip('#dbeafe', '#1e40af', 'EE ' + eeDisplay(t, j.eeCategory), 'ee') : null}
                   {j.aip ? chip('#ffedd5', '#9a3412', t('cell.aipYes'), 'aip') : null}
-                  {j.lmiaPositions ? chip('#ccfbf1', '#0f766e', 'LMIA ✓' + j.lmiaPositions, 'lmia') : null}
+                  {/* #145(Frank「这两个重复不」):是。LMIA 数与公司名旁的担保档同源(档位就是按 LMIA 份数+新近度算的),
+                      手机卡上并排出现=一件事说两遍;有担保档时不再出 LMIA chip,无档(纯 AIP 等)才退回显数 */}
+                  {j.lmiaPositions && j.sponsorGrade == null ? chip('#ccfbf1', '#0f766e', 'LMIA ✓' + j.lmiaPositions, 'lmia') : null}
                   {/* GAP1③:红旗 chip(手机卡片)——白投预警比正面信号更值得占位 */}
                   {j.eligibilityFlag ? chip('#fee2e2', '#b91c1c', t('cell.elig.' + j.eligibilityFlag), 'eligibility') : null}
                   {!j.pnpEligible && !j.eeCategory && !j.aip && j.teer != null ? chip('#f3f4f6', '#6b7280', `TEER ${j.teer}`, 'teer') : null}
