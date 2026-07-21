@@ -105,6 +105,9 @@ const zh: Dict = {
   // #136/#137(Frank 追问「为什么不能转载」):#136 原文案「该站不允许第三方转载」是替对方做法律断言——
   // 我们实测到的只是 403 拒绝访问。只陈述自己观察到的事实:取不到 + 去哪看(职位描述版权多属雇主而非平台,别乱扣)
   'act.noTextBlocked': '这条帖子的正文在原站({src}),该站拒绝本站自动读取。下面的链接直达原帖。',
+  // #138(Frank「连点几个都是空的,用户什么反应」):空正文岗 98% 有官方 NOC 职业说明——用它兜底,
+  // 明确标注是「该职业的官方说明」不是本帖原文(事实/来源分离红线),把空白页变成有参考价值的页
+  'act.nocFallback': '本帖未提供正文。以下是该职业的官方说明(加拿大统计局 NOC),供参考——不是本帖原文:',
   'chart.back': '← 返回', 'chart.drillHint': '点条形可下钻', 'chart.jobsHint': '点条形直达职位板', 'nav.account': '账户', 'nav.acctTab': '我的账户',
   'menu.sect.job': '求职', 'menu.sect.manage': '管理',
   // 我的求职(E9-01 最小求职看板,免费)
@@ -501,6 +504,7 @@ const en: Dict = {
   'eelist.histNote': 'Rounds for this category over the past two years; a cut-off reflects that round only and does not predict future ones',
   'col.actions': 'Actions', 'act.descTitle': 'Job description', 'act.site': 'Website', 'act.addr': 'Address', 'act.jobsHere': 'Listings by this company', 'act.showAll': 'Show {n} more ▾', 'act.noText': 'No description text on file for this posting yet — new posts usually arrive within a day; some aggregator sources never provide one.', 'act.loadingText': 'Loading…',
   'act.noTextBlocked': 'The full text of this posting is on {src}, which blocks automated reading by this site. The link below goes straight to the original.',
+  'act.nocFallback': 'This posting has no description text. Below is the official occupation profile (Statistics Canada NOC) for reference — not the posting’s own text:',
   'chart.back': '← Back', 'chart.drillHint': 'Click a bar to drill down', 'chart.jobsHint': 'Click a bar to open the job board', 'nav.account': 'Account', 'nav.acctTab': 'My account',
   'menu.sect.job': 'Job search', 'menu.sect.manage': 'Manage',
   'sj.title': 'My applications', 'sj.note': 'Save jobs and track your application progress; stored only in your account.', 'sj.empty': 'No saved jobs yet — hit “☆ Save” on the job board.',
@@ -911,6 +915,7 @@ const ko: Dict = {
   'eelist.histNote': '최근 2년간 해당 카테고리의 추첨 내역; 커트라인은 해당 회차의 경쟁만 반영하며 미래를 예측하지 않습니다',
   'col.actions': '작업', 'act.descTitle': '직무 설명', 'act.site': '웹사이트', 'act.addr': '주소', 'act.jobsHere': '이 회사의 공고', 'act.showAll': '나머지 {n}개 펼치기 ▾', 'act.noText': '이 공고의 본문이 아직 없습니다 — 신규 공고는 보통 다음 날 등록되며, 일부 소스는 본문을 제공하지 않습니다.', 'act.loadingText': '로딩 중…',
   'act.noTextBlocked': '이 공고의 본문은 원본 사이트({src})에 있으며, 해당 사이트는 본 사이트의 자동 읽기를 차단합니다. 아래 링크로 원문을 확인하세요.',
+  'act.nocFallback': '이 공고에는 본문이 없습니다. 아래는 참고용 공식 직업 설명(캐나다 통계청 NOC)이며, 공고 자체의 원문이 아닙니다:',
   'chart.back': '← 뒤로', 'chart.drillHint': '막대를 클릭하면 상세 정보 보기', 'chart.jobsHint': '막대를 클릭하면 공고 목록으로 이동', 'nav.account': '계정', 'nav.acctTab': '내 계정',
   'menu.sect.job': '구직', 'menu.sect.manage': '관리',
   'sj.title': '내 지원 현황', 'sj.note': '공고를 저장하고 지원 진행 상황을 추적하세요. 데이터는 계정에만 저장됩니다.', 'sj.empty': '저장한 공고가 없습니다 — 공고 목록에서 「☆ 저장」을 누르세요.',
