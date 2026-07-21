@@ -601,7 +601,14 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     const d = FIELD_GROUP[field]
     if (!d || d === 'none') return
     if (d === 'map') {
-      const q = [job.address, job.district, job.city, job.province].filter(Boolean).join(', ')
+      // 各字段只查自己那一级(与「一格一事」同一原则):点省看省、点市看市、点区/地址才到街号。
+      // 早前把 address+district+city+province 全拼进查询,而 address 本就含市省 →
+      // 「St. John's」出现三次、「NL」两次,且点省与点市跳同一个精确地址,答非所问。
+      // 省码必须带国名消歧:NL 既是纽芬兰也是**荷兰的国家代码**,单查会跳到欧洲(实测发现)。
+      const q = field === 'province' ? [job.province, 'Canada'].filter(Boolean).join(', ')
+        : field === 'city' ? [job.city, job.province, 'Canada'].filter(Boolean).join(', ')
+        : field === 'country' ? (job.country || 'Canada')
+        : [job.address || job.district, job.city, job.province].filter(Boolean).join(', ')
       if (q) window.open(mapsUrl(q), '_blank', 'noopener')
       return
     }

@@ -22,7 +22,8 @@ const chip: React.CSSProperties = { display: 'inline-block', fontSize: 11.5, pad
 const chipBlue: React.CSSProperties = { ...chip, background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' }
 const sec: React.CSSProperties = { border: '1px solid #e5e7eb', borderRadius: 12, background: '#fff', padding: '12px 16px', marginBottom: 14 }
 const secHead: React.CSSProperties = { fontSize: 13.5, fontWeight: 700, color: '#111827', marginBottom: 6 }
-const metaK: React.CSSProperties = { color: '#9ca3af', marginRight: 6 }
+// metaK(meta 行的灰色标签样式)已随 #166 标签全删退役 —— 值自证身份就不需要标签。
+// 死代码不留:要恢复标签请连同「两个同类型值并排才需标签」那条规则一起重新论证。
 const aLink: React.CSSProperties = { color: '#2563eb', textDecoration: 'none' }
 
 // JD 区(ActModal 正文同款管线:/api/jobtext 原文 + /api/jdformat 五节整理版懒生成,整理版默认可切换)
@@ -131,7 +132,9 @@ export default function JobDetailView({ job, plan, dims, related }: {
             <a href="/" style={aLink}>{t('detail.crumbHome')}</a>
             {job.province ? <> › <a href={`/?prov=${encodeURIComponent(job.province)}`} style={aLink}>{provFull}</a></> : null}
             {catSegs.map((s) => <span key={s.href}> › <a href={s.href} style={aLink}>{s.txt}</a></span>)}
-            {' › '}<span style={{ color: '#374151' }}>{job.title}</span>
+            {/* #166(Frank「很多信息都叠到一起了」):末段「本岗」退役 —— 它与紧邻其下几个像素的 h1
+                必然是同一个词,面包屑的作用是给上级路径,当前位置由大标题承担。#157 加它是为路径完整,
+                但完整不等于重复。 */}
           </div>
 
           {/* #150(Frank「这部分也需要设计卡片吧」):头部(标题/meta/chips/职业分类)原先裸浮在灰底上,
@@ -143,20 +146,24 @@ export default function JobDetailView({ job, plan, dims, related }: {
           {/* meta:一格一事(W 规矩),公司名可点开公司弹框 */}
           <div style={{ fontSize: 13, color: '#374151', display: 'flex', flexWrap: 'wrap', gap: '2px 18px', marginBottom: 8 }}>
             {job.company ? (
-              <span><span style={metaK}>{t('col.company')}</span>
+              <span>
                 <button onClick={() => setCompanyOpen(true)} style={{ border: 'none', background: 'none', padding: 0, font: 'inherit', color: '#2563eb', cursor: 'pointer' }}>{job.company}</button>
                 {/* E12-08:担保档药丸(公司分承接);无记录不显 */}
                 {job.sponsorGrade != null && <span title={t('gr.sponsorTip')} style={{ marginLeft: 6, fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sp.' + job.sponsorGrade)}</span>}
               </span>
             ) : null}
-            {/* #151:城市通行译名作灰注(英文在前);无通行译名的小镇=空,只显英文 */}
-            {(job.city || provFull) ? (
-              <span><span style={metaK}>{t('col.city')}</span>{[job.city, provFull].filter(Boolean).join(', ')}
-                {cityLoc ? <span style={{ color: '#9ca3af' }}>　{cityLoc}</span> : null}
-              </span>
+            {/* #166 三修(Frank:「不需要显示 key 只显示 value 用户也能知道吧」——手机卡片就是自证,
+                它一个标签都没有照样看得懂):
+                ①**标签全删**。公司名、城市、日期,值本身就说明了自己是什么,标签纯占地方。
+                  (例外规则:仅当两个**同类型**值并排才需标签区分 —— 发布时间 vs 更新时间、
+                   年薪(折算) vs 中位年薪,那种不标等于没给信息。此处三项各不同类,无需标签。)
+                ②**市行不再拼省**。面包屑已有省且**可点跳筛选**,原样重复一遍「Prince Edward Island
+                  (爱德华王子岛省)」纯噪音(Frank 早前也点过「所在省与下方省重复」)。
+                ③**来源退役**。页面底部本就有合规来源行「来源: 完整 URL」,头部这枚是第三次说同一件事。 */}
+            {(job.city || cityLoc) ? (
+              <span>{job.city}{cityLoc ? <span style={{ color: '#9ca3af' }}>　{cityLoc}</span> : null}</span>
             ) : null}
-            {job.datePosted ? <span><span style={metaK}>{t('col.datePosted')}</span>{day(job.datePosted)}</span> : null}
-            {job.sourceLabel ? <span><span style={metaK}>{t('col.source')}</span>{job.sourceLabel}</span> : null}
+            {job.datePosted ? <span>{day(job.datePosted)}</span> : null}
           </div>
 
           {/* chips:代码不裸奔(NOC 带职业名、TEER 带说明) */}
@@ -164,7 +171,10 @@ export default function JobDetailView({ job, plan, dims, related }: {
             {/* #157(Frank「一个胶囊包含多个信息,需要拆成多个胶囊吧」):一枚药丸只放一条事实 ——
                 原先「NOC 64100 Retail salespersons…」把编号与职业名塞一枚、「TEER 4(高中/在职培训)」
                 把等级与学历门槛塞一枚。现拆:编号 / 职业名(带译名灰注)/ 等级 / 学历门槛 各一枚。 */}
-            {job.pnpEligible ? <span style={chipBlue}>{t('cell.pnpYes')}</span> : null}
+            {/* #166④:移民信号与职业分类**分组** —— 原先五枚平铺、粗细一样,
+                但「可省提名」是本站的判断(移民价值),NOC/职业名/TEER/门槛是官方分类事实,
+                两类东西长得一模一样就等于没分。中间加一道间距分开,不加边框不加小标题(留白即分组)。 */}
+            {job.pnpEligible ? <span style={{ ...chipBlue, marginRight: 18 }}>{t('cell.pnpYes')}</span> : null}
             {job.noc ? <span style={chip}>NOC {job.noc}</span> : null}
             {nocTitle ? (
               <span style={chip}>{nocTitle}{nocZh ? <span style={{ color: '#9ca3af' }}>　{nocZh}</span> : null}</span>
