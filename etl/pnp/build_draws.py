@@ -176,6 +176,62 @@ def build(prov: str, url: str, parse, scale: str | None, label: str, old: dict) 
     return {"label": label, "scale": scale, "url": url, "draws": draws}
 
 
+# ── ON:OINP 更新页(#153,Frank 报障「OINP 新通道出来了但站上没更新」)──────────────
+# 原先 ON 整块是**写死**的:2026-06-26 手写「新通道细则待公布」,再不会自己更新 ——
+# 7-20 官方已公布新 Ontario Workforce Priority Stream 的资格标准,站上还在说「待公布」= 过期误导。
+# 改为实抓该页:①最新一条更新 → notice(有新动静一小时内自动跟上)②带「issued N invitations」
+# 的条目 → draws(官方按轮次公布邀请数,无分数线 → score=None,scale=None 不假装有分制)。
+ON_ENTRY = re.compile(
+    r"^(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},\s+20\d\d$")
+ON_INV = re.compile(r"issued\s+([\d,]+)\s+invitations?", re.I)
+
+
+def parse_on(html: str) -> tuple[list[dict], dict | None]:
+    """返回 (draws, notice)。页面是「日期行 + 标题行 + 正文」的更新流。"""
+    body = re.sub(r"(?:<(script|style|nav|header|footer)[^>]*>[\s\S]*?</\1>)", " ", html)
+    lines = [re.sub(r"\s+", " ", x).strip() for x in re.sub(r"<[^>]+>", "\n", body).split("\n")]
+    lines = [x for x in lines if len(x) > 2]
+
+    entries: list[tuple[str, str, str]] = []   # (iso 日期, 标题, 正文片段)
+    for i, ln in enumerate(lines):
+        if not ON_ENTRY.match(ln):
+            continue
+        iso = _iso(ln)
+        if not iso:
+            continue
+        title = lines[i + 1] if i + 1 < len(lines) else ""
+        blob = " ".join(lines[i + 1:i + 4])
+        entries.append((iso, title[:160], blob))
+
+    if not entries:
+        return [], None
+    entries.sort(key=lambda e: e[0], reverse=True)
+
+    draws = []
+    for iso, title, blob in entries:
+        m = ON_INV.search(blob)
+        if m:
+            draws.append({"date": iso, "stream": title, "score": None,
+                          "invitations": _int(m.group(1)), "note": ""})
+    latest = entries[0]
+    notice = {"date": latest[0], "note": latest[1]}
+    return draws[:MAX_PER_PROV], notice
+
+
+def build_on(old: dict) -> dict:
+    try:
+        draws, notice = parse_on(fetch(ON_URL))
+    except Exception as e:  # noqa: BLE001
+        print(f"  ✗ ON 抓取失败: {type(e).__name__} {e}(保留旧数据)")
+        return old.get("ON") or {}
+    if not notice:
+        print("  ✗ ON 没解析到更新条目(保留旧数据)")
+        return old.get("ON") or {}
+    print(f"  ✓ ON  {len(draws):>2} 条抽选  最新通告 {notice['date']} {notice['note'][:50]}")
+    # scale=None:OINP 按轮次公布邀请数但不公布分数线,不假装有分制(各省分制不可比红线)
+    return {"label": "OINP", "scale": None, "url": ON_URL, "draws": draws, "notice": notice}
+
+
 def main() -> None:
     print(f"OUT: {OUT}")
     old = {}
@@ -189,12 +245,7 @@ def main() -> None:
         "BC": build("BC", BC_URL, parse_bc, "SIRS", "BC PNP Skills Immigration", old),
         "AB": build("AB", AB_URL, parse_ab, "WEOI", "AAIP", old),
         "MB": build("MB", MB_URL, parse_mb, "MPNP EOI", "MPNP Expression of Interest", old),
-        # ON 2026-06-26 改制:旧 8 流全删、EOI 关闭、不再发邀请;新 Workforce Priority 流细则未出 → 通告行
-        "ON": {"label": "OINP", "scale": None, "url": ON_URL, "draws": [], "notice": {
-            "date": "2026-06-26",
-            "note": "OINP redesign: former 8 streams removed, EOI closed, no further invitations "
-                    "under former streams; new Ontario Workforce Priority stream pending.",
-        }},
+        "ON": build_on(old),
     }
     provinces = {k: v for k, v in provinces.items() if v}
 

@@ -1317,7 +1317,10 @@ function PnpDrawsBlock({ province, lang, draws, limit }: { province: string; lan
       <div style={{ border: '1px solid #f3f4f6', borderRadius: 8 }}>
         {rows.map((d, i) => d.kind === 'notice' ? (
           <div key={i} style={{ padding: '5px 10px', fontSize: 12.5, color: '#b45309', background: '#fffbeb' }}>
-            <IconWarn /> {t('pnpdraws.notice', { date: d.drawDate })}
+            {/* #153(Frank 报障「OINP 新通道出来了站上没更新」):原先整句写死在 i18n(只有日期是变量),
+                ETL 抓到新通告也覆盖不掉,7-20 官方已公布资格标准而站上还在说「细则待公布」=过期误导。
+                改为直接渲染抓到的官方通告原文(note),缺 note 才退回旧模板。 */}
+            <IconWarn /> {d.note ? `${d.drawDate} ${d.note}` : t('pnpdraws.notice', { date: d.drawDate })}
           </div>
         ) : (
           <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '4px 10px', fontSize: 12.5, color: '#374151' }}>
