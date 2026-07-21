@@ -1438,6 +1438,7 @@ export function EeCategorySection({ job, lang, cats, draws = [] }: { job: JobRow
   // #135(Frank「应该有个下拉箭头,点开按时间线看每一轮」):该类别历次抽选(pnp_draws 的 province=FED 行,
   // label=类别 key);近 24 月无抽选的类别拿不到行 → 不出箭头(没东西可展开就别给假入口)。
   const [openCat, setOpenCat] = useState<string | null>(null)
+  const [showAllCats, setShowAllCats] = useState(false)   // #155:未命中时全类别默认收起
   const histOf = useMemo(() => {
     const m = new Map<string, PnpDraw[]>()
     for (const d of draws) {
@@ -1462,11 +1463,23 @@ export function EeCategorySection({ job, lang, cats, draws = [] }: { job: JobRow
 
   const noc = job.noc
   const hit = grouped.filter((c) => c.occupations.some((o) => o.noc === noc))
-  const shown = hit.length ? hit : grouped  // 命中→只看命中类别清单;未命中→列各类别概览
+  // #155(Frank「这个没有数据还需要列吗」= E8-09 开放问题①拍板):未命中时不再铺全部类别——
+  // 本岗跟它们没关系,铺出来只是占屏;收成一行「未列入任何 EE 类别」+ 折叠入口,想看全景才展开。
+  const shown = hit.length ? hit : (showAllCats ? grouped : [])
   return (
     <div style={{ marginBottom: 14, paddingBottom: 12, borderBottom: '1px solid #f3f4f6' }}>
       <div style={{ fontSize: 13.5, fontWeight: 600, color: hit.length ? '#2563eb' : '#9ca3af', marginBottom: 6 }}>
-        {hit.length ? <><IconCheck /> {t('eelist.in', { noc, cats: hit.map((c) => eeDisplay(t, c.label)).join('/') })}</> : t('eelist.out')}
+        {hit.length ? <><IconCheck /> {t('eelist.in', { noc, cats: hit.map((c) => eeDisplay(t, c.label)).join('/') })}</> : (
+          <>
+            {t('eelist.out')}
+            {grouped.length ? (
+              <button onClick={() => setShowAllCats((v) => !v)}
+                style={{ marginLeft: 8, border: 'none', background: 'none', padding: 0, color: '#2563eb', cursor: 'pointer', font: 'inherit', fontWeight: 400 }}>
+                {showAllCats ? '▴' : '▾'} {t('eelist.allCats', { n: grouped.length })}
+              </button>
+            ) : null}
+          </>
+        )}
       </div>
       {shown.map((c) => (
         <div key={c.key} style={{ marginBottom: 10 }}>
@@ -1648,7 +1661,9 @@ export function JdFormattedView({ text, t, fallbackPay, applyUrl }: { text: stri
         const hasBullets = lines.some((l) => l.startsWith('- '))
         return (
           <div key={m} style={{ marginBottom: 8 }}>
-            <div style={{ fontWeight: 700, color: '#111827' }}>{t(key)}</div>
+            {/* #155(Frank「这两个字也是重复的」):首节 ROLE 的小标题「这活干什么」紧贴大标题「职位描述」,
+                两行说同一件事 —— 首节不出小标题,正文直接跟在「职位描述」下面;其余四节照旧有小标题分区 */}
+            {m === 'ROLE' ? null : <div style={{ fontWeight: 700, color: '#111827' }}>{t(key)}</div>}
             {/* #125(Frank「重复」):「怎么投」整节文本直接渲成官方原帖链接——一处内容一处链接,
                 不再额外附按钮行(与底部合规来源行重复);「Click Here」类废句自身变成可点出口 */}
             {m === 'APPLY' && applyUrl ? (

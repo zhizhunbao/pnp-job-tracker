@@ -9,8 +9,12 @@ import { lazyFetchJd } from './jdLazyFetch'
 // 投递入口统一走「查看官方原帖」按钮(applyUrl)。出口统一在这里脱敏 = jobtext/advisor 都干净。
 const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g
 const PHONE_RE = /(\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}(\s*(ext|x|poste)\.?\s*\d+)?/gi
+// #155(Frank「这个怎么有中文」):占位符原先写死中文,被插进**雇主自己的英/法文原文**里 ——
+// 「Apply on Indeed, email resume to [见官方原帖]」中英混排,英文界面用户看更是莫名其妙。
+// 这段文字属于原帖(不是我们的界面文案),占位符跟原文语言走:统一用中性英文标记。
+const PII_MASK = '[see original posting]'
 export function scrubPii(text: string): string {
-  return text.replace(EMAIL_RE, '[见官方原帖]').replace(PHONE_RE, '[见官方原帖]')
+  return text.replace(EMAIL_RE, PII_MASK).replace(PHONE_RE, PII_MASK)
 }
 
 export async function jobDescription(applyUrl: string): Promise<string> {
