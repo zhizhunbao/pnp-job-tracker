@@ -7,7 +7,18 @@ import { friendChat } from './friendLlm'
 
 export type CompanyResearch = { brief: string; website: string; sources: string[]; fetched: string }
 
-const SYSTEM = 'You are a factual company researcher. Answer ONLY from the web search results. 2-3 short sentences: what the company does, where it is based, rough size if stated. If results are unclear or about a different company, reply exactly: NOT_FOUND. Finally on its own line output [SITE]=<official website url or NONE>. No other commentary.'
+// #158(Frank「这部分也按 job 的结构来比较好吧,也是属于 AI 整理的范畴吧」):公司简介原先是一段散文,
+// 与 JD 五节整理版(J2)不是一套语言。改成同款**固定标记分节**——搬运不发挥、缺项写 (not stated)、
+// 查不到整条 NOT_FOUND;节数刻意少(三节),多了模型就会开始编。
+const SYSTEM = `You are a factual company researcher. Use ONLY the web search results.
+Output plain text with EXACTLY these section markers, each on its own line: [WHAT] [BASE] [SIZE]
+- [WHAT]: 1-2 sentences on what the company does / what it sells.
+- [BASE]: where it is based (city, province) — one short line.
+- [SIZE]: employee count or scale ONLY if the results state it.
+If a section is not supported by the results, write exactly: (not stated)
+If the results are unclear or about a different company, reply exactly: NOT_FOUND
+Finally on its own line output [SITE]=<official website url or NONE>. No other commentary.`
+export const CO_MARKS = ['WHAT', 'BASE', 'SIZE'] as const
 
 const inflight = new Map<string, Promise<CompanyResearch | null>>()
 
@@ -67,7 +78,8 @@ async function investigate(pool: any, id: number, name: string): Promise<Company
   const brief = r.answer.replace(/\[SITE\]=[^\n]*/g, '').trim()
   const site = r.answer.match(/\[SITE\]=\s*(\S+)/)?.[1] || ''
   const website = /^https?:\/\/\S+$/i.test(site) ? site : ''
-  if (!brief || /NOT_FOUND/.test(brief) || brief.length < 20 || brief.length > 800) return null
+  // 校验同 J2 范式:整条 NOT_FOUND 拒收;分节齐不齐不强求(缺节前端跳过),但至少要有 [WHAT]
+  if (!brief || /NOT_FOUND/.test(brief) || brief.length < 20 || brief.length > 900) return null
   const sources = r.sources
   await pool.query(
     'UPDATE companies SET ai_brief = $1, ai_website = $2, ai_sources = $3, ai_fetched = now() WHERE id = $4',

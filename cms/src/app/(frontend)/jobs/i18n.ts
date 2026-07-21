@@ -162,6 +162,7 @@ const zh: Dict = {
   'col.empHours': '工时', 'col.empTerm': '雇佣期', 'fact.unstated': '原帖未标注',
   'act.ai': 'AI 整理(只搬运原帖信息,未添加)', 'act.seeOrig': '看原文 ▾', 'act.seeFmt': '看整理版 ▴', 'act.aiWorking': 'AI 整理中,先看原文…',
   'act.f.role': '这活干什么', 'act.f.reqs': '硬性要求', 'act.f.pay': '薪资福利', 'act.f.hours': '工时地点', 'act.f.apply': '怎么投', 'act.f.none': '原帖未提及',
+  'co.f.what': '主营业务', 'co.f.base': '所在地', 'co.f.size': '规模',   // #158 公司简介三节(与 JD 整理版同款)
   'fact.aiIntro': 'AI 检索整理(非官方自述)', 'fact.aiWorking': 'AI 调查中…', 'fact.aiSite': 'AI 检索到,非库内原有', 'fact.aiSources': '信息出处',
   'mm.col.dim': '维度', 'mm.col.job': '本岗', 'mm.col.you': '你的档案', 'mm.col.verdict': '判定',
   'mm.dim.noc': '职业方向', 'mm.dim.prov': '所在省', 'mm.dim.pnp': '省提名清单', 'mm.dim.pnpPre': '省提名粗筛', 'mm.dim.teer': '技能层级', 'mm.dim.ee': '联邦 EE 定向类别', 'mm.dim.eeDraw': '该类上次抽选线', 'mm.dim.wage': '薪资对照', 'mm.dim.lmia': '雇主外劳记录',
@@ -588,6 +589,7 @@ const en: Dict = {
   'col.empHours': 'Hours', 'col.empTerm': 'Term', 'fact.unstated': 'Not stated in posting',
   'act.ai': 'AI-organized (rearranged from the posting, nothing added)', 'act.seeOrig': 'View original ▾', 'act.seeFmt': 'View organized ▴', 'act.aiWorking': 'AI organizing, showing original…',
   'act.f.role': 'What the job does', 'act.f.reqs': 'Hard requirements', 'act.f.pay': 'Pay & benefits', 'act.f.hours': 'Schedule & location', 'act.f.apply': 'How to apply', 'act.f.none': 'Not mentioned in posting',
+  'co.f.what': 'What it does', 'co.f.base': 'Based in', 'co.f.size': 'Size',
   'fact.aiIntro': 'AI-researched (not company-authored)', 'fact.aiWorking': 'AI researching…', 'fact.aiSite': 'found by AI search, not from our directory', 'fact.aiSources': 'Sources',
   'mm.col.dim': 'Dimension', 'mm.col.job': 'This job', 'mm.col.you': 'Your profile', 'mm.col.verdict': 'Verdict',
   'mm.dim.noc': 'Occupation', 'mm.dim.prov': 'Province', 'mm.dim.pnp': 'PNP named list', 'mm.dim.pnpPre': 'PNP pre-screen', 'mm.dim.teer': 'Skill tier', 'mm.dim.ee': 'Federal EE category', 'mm.dim.eeDraw': 'Last category draw', 'mm.dim.wage': 'Wage vs median', 'mm.dim.lmia': 'Employer LMIA record',
@@ -1003,6 +1005,7 @@ const ko: Dict = {
   'col.empHours': '근무 형태', 'col.empTerm': '고용 기간', 'fact.unstated': '원문에 명시 없음',
   'act.ai': 'AI 정리(원문 재배열, 추가 없음)', 'act.seeOrig': '원문 보기 ▾', 'act.seeFmt': '정리본 보기 ▴', 'act.aiWorking': 'AI 정리 중, 우선 원문 표시…',
   'act.f.role': '어떤 일인가', 'act.f.reqs': '필수 요건', 'act.f.pay': '급여·복지', 'act.f.hours': '근무 형태·장소', 'act.f.apply': '지원 방법', 'act.f.none': '원문에 언급 없음',
+  'co.f.what': '주요 사업', 'co.f.base': '소재지', 'co.f.size': '규모',
   'fact.aiIntro': 'AI 검색 정리(회사 공식 소개 아님)', 'fact.aiWorking': 'AI 조사 중…', 'fact.aiSite': 'AI 검색 결과, 디렉터리 원본 아님', 'fact.aiSources': '출처',
   'mm.col.dim': '항목', 'mm.col.job': '이 공고', 'mm.col.you': '내 프로필', 'mm.col.verdict': '판정',
   'mm.dim.noc': '직업 방향', 'mm.dim.prov': '소재 주', 'mm.dim.pnp': '주정부 지명 리스트', 'mm.dim.pnpPre': 'PNP 사전 선별', 'mm.dim.teer': '기술 등급', 'mm.dim.ee': '연방 EE 지정 카테고리', 'mm.dim.eeDraw': '해당 카테고리 최근 추첨', 'mm.dim.wage': '급여 대비 중위값', 'mm.dim.lmia': '고용주 외국인 고용 기록',

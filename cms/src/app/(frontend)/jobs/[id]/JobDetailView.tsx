@@ -103,11 +103,14 @@ export default function JobDetailView({ job, plan, dims, related }: {
   const nocZh = nocLocalTitle(nocRow, lang)   // #147:界面语言译名(英文界面为空=不渲染)
   const cityLoc = lang === 'zh' ? (dims.cityZh || '') : lang === 'ko' ? (dims.cityKo || '') : ''   // #151 同款
   // #157:职业分类三级(大/中/小)—— 并进面包屑当路径段,未分类的级跳过;每段链去按该级筛的职位板
-  const catSegs = ([
+  const catSegs = (([
     job.broad && job.broad !== '未分类' ? { txt: t('broad.' + job.broad), href: `/?broad=${encodeURIComponent(job.broad)}` } : null,
     job.mid && job.mid !== '未分类' ? { txt: catName(t, job.mid), href: `/?broad=${encodeURIComponent(job.broad || '')}&mid=${encodeURIComponent(job.mid)}` } : null,
     job.fine && job.fine !== '未分类' ? { txt: catName(t, job.fine), href: `/?fine=${encodeURIComponent(job.fine)}` } : null,
-  ].filter(Boolean)) as { txt: string; href: string }[]
+  ].filter(Boolean)) as { txt: string; href: string }[])
+    // #158(Frank 截图「商务 › 商务 › 商务」):三级同名时(NOC 里不少大类=中类=小类)铺三遍纯噪音 ——
+    // 与上一段同名就跳过,只留最细那一级的链接(路径语义不变,视觉不重复)
+    .filter((s, i, arr) => i === 0 || s.txt !== arr[i - 1].txt)
   const day = (s: string) => (s || '').slice(0, 10)
   const relRow = (r: RelatedJob, note: string) => (
     <div key={r.id} style={{ fontSize: 13, padding: '3px 0' }}>

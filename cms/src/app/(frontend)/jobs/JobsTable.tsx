@@ -1740,6 +1740,29 @@ export function JdAdvisorSection({ job, lang, plan }: { job: JobRow; lang: Lang;
     </div>
   )
 }
+// #158:公司简介三节渲染([WHAT]/[BASE]/[SIZE],与 JD 五节整理版 JdFormattedView 同款版式)。
+// 无标记=存量散文格式,整段原样渲(不返工);(not stated) 节直接跳过不占行。
+const CO_SECS: [string, string][] = [['WHAT', 'co.f.what'], ['BASE', 'co.f.base'], ['SIZE', 'co.f.size']]
+function CompanyBriefView({ text, t }: { text: string; t: TFn }) {
+  if (!/\[(WHAT|BASE|SIZE)\]/.test(text)) return <div style={{ whiteSpace: 'pre-wrap' }}>{text}</div>
+  const parts = text.split(/\[(WHAT|BASE|SIZE)\]/)
+  const secs: Record<string, string> = {}
+  for (let i = 1; i + 1 <= parts.length - 1; i += 2) secs[parts[i]] = (parts[i + 1] || '').trim()
+  return (
+    <>
+      {CO_SECS.map(([m, key]) => {
+        const body = (secs[m] || '').trim()
+        if (!body || /^\(not stated\)$/i.test(body)) return null   // 缺项不占行(宁可留空)
+        return (
+          <div key={m} style={{ marginBottom: 6 }}>
+            <div style={{ fontWeight: 700, color: '#111827' }}>{t(key)}</div>
+            <div style={{ paddingLeft: 14 }}>{body}</div>
+          </div>
+        )
+      })}
+    </>
+  )
+}
 // K 公司懒探索(2026-07-19 Frank 批):首开自动调查(命中缓存秒回);查不到/掉线整块消失不留孤儿
 function CompanyAiSection({ company, t }: { company: string; t: TFn }) {
   const [d, setD] = useState<undefined | null | { brief: string; website: string; sources: string[]; fetched: string }>(undefined)
@@ -1760,7 +1783,9 @@ function CompanyAiSection({ company, t }: { company: string; t: TFn }) {
         <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>{t('fact.aiWorking')}</div>
       ) : (
         <div style={{ marginTop: 4, fontSize: 12.5, color: '#4b5563', lineHeight: 1.7, border: '1px solid #f3f4f6', borderRadius: 8, padding: '8px 10px' }}>
-          <div style={{ whiteSpace: 'pre-wrap' }}>{d.brief}</div>
+          {/* #158(Frank「按 job 的结构来」):公司简介与 JD 整理版同一套排版=固定分节 + 节头加粗。
+              存量是散文格式(无标记)→ 原样按整段渲,不返工重跑模型(下次调查自然升级) */}
+          <CompanyBriefView text={d.brief} t={t} />
           {d.website ? (
             <div style={{ marginTop: 6 }}>
               <a href={d.website} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5, overflowWrap: 'anywhere' }}>{d.website}</a>
@@ -2387,13 +2412,26 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
         <span style={{ marginLeft: 10, fontWeight: 600, color: lvColor[result.level] }}>{t('match.levelLine', { level: t('match.' + result.level) })}</span>
       </div>
       {narrow ? (
+        /* #158(Frank「乱的一笔,重新排版」):手机版原先「维度/本岗…/你的档案…/判定」四行平铺、
+           标签内联,读起来是一堵墙。改用他认可的卡片语言(#148 左信息右数字):
+           **维度名左、判定药丸右**(一眼扫判定),下面「本岗 / 我的」定宽标签对齐成两列。 */
         <div style={{ marginTop: 6 }}>
           {rows.map((r, i) => (
-            <div key={i} style={{ padding: '6px 0', borderBottom: i === rows.length - 1 ? undefined : '1px solid #f3f4f6' }}>
-              <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600 }}>{r.dim}</div>
-              <div style={{ fontSize: 12.5, color: '#4b5563', lineHeight: 1.6 }}><span style={{ color: '#9ca3af', marginRight: 6 }}>{t('mm.col.job')}</span>{r.jc}</div>
-              {r.yc !== '—' && <div style={{ fontSize: 12.5, color: '#4b5563', lineHeight: 1.6 }}><span style={{ color: '#9ca3af', marginRight: 6 }}>{t('mm.col.you')}</span>{r.yc}</div>}
-              <div style={{ fontSize: 12.5, marginTop: 1 }}>{vCell(r)}</div>
+            <div key={i} style={{ padding: '7px 0', borderBottom: i === rows.length - 1 ? undefined : '1px solid #f3f4f6' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
+                <span style={{ fontSize: 11.5, color: '#6b7280', fontWeight: 600 }}>{r.dim}</span>
+                <span style={{ fontSize: 12, flexShrink: 0 }}>{vCell(r)}</span>
+              </div>
+              <div style={{ display: 'flex', gap: 8, fontSize: 12.5, color: '#4b5563', lineHeight: 1.55, marginTop: 2 }}>
+                <span style={{ color: '#9ca3af', width: 34, flexShrink: 0 }}>{t('mm.col.job')}</span>
+                <span style={{ minWidth: 0 }}>{r.jc}</span>
+              </div>
+              {r.yc !== '—' && (
+                <div style={{ display: 'flex', gap: 8, fontSize: 12.5, color: '#4b5563', lineHeight: 1.55 }}>
+                  <span style={{ color: '#9ca3af', width: 34, flexShrink: 0 }}>{t('mm.col.you')}</span>
+                  <span style={{ minWidth: 0 }}>{r.yc}</span>
+                </div>
+              )}
             </div>
           ))}
         </div>
