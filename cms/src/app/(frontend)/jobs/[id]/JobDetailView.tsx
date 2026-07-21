@@ -102,6 +102,12 @@ export default function JobDetailView({ job, plan, dims, related }: {
   const nocTitle = nocRow?.title || ''
   const nocZh = nocLocalTitle(nocRow, lang)   // #147:界面语言译名(英文界面为空=不渲染)
   const cityLoc = lang === 'zh' ? (dims.cityZh || '') : lang === 'ko' ? (dims.cityKo || '') : ''   // #151 同款
+  // #157:职业分类三级(大/中/小)—— 并进面包屑当路径段,未分类的级跳过;每段链去按该级筛的职位板
+  const catSegs = ([
+    job.broad && job.broad !== '未分类' ? { txt: t('broad.' + job.broad), href: `/?broad=${encodeURIComponent(job.broad)}` } : null,
+    job.mid && job.mid !== '未分类' ? { txt: catName(t, job.mid), href: `/?broad=${encodeURIComponent(job.broad || '')}&mid=${encodeURIComponent(job.mid)}` } : null,
+    job.fine && job.fine !== '未分类' ? { txt: catName(t, job.fine), href: `/?fine=${encodeURIComponent(job.fine)}` } : null,
+  ].filter(Boolean)) as { txt: string; href: string }[]
   const day = (s: string) => (s || '').slice(0, 10)
   const relRow = (r: RelatedJob, note: string) => (
     <div key={r.id} style={{ fontSize: 13, padding: '3px 0' }}>
@@ -115,12 +121,13 @@ export default function JobDetailView({ job, plan, dims, related }: {
       <SiteHeader lang={lang} setLang={setLang} t={t} loggedIn={plan.loggedIn} />
       <PageShell pad="14px 1.25rem 32px">
         <div style={{ maxWidth: 860, margin: '0 auto' }}>
-          {/* 面包屑:职位板 › 省 › 大分类 › 本岗(深链参=#92 既有 ?prov/?broad 语义) */}
-          <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 8 }}>
+          {/* #157(Frank「这两个可以合并吧」):面包屑与「职业分类」行本来就都是路径,分两行是重复排版 ——
+              合成一条完整路径:职位板 › 省 › 大类 › 中类 › 小类 › 本岗。每段各链各的筛选(省=?prov、
+              分类三级=?broad/?mid/?fine),未分类的段自动跳过。省一行,手机上尤其值。 */}
+          <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 8, lineHeight: 1.7 }} title={t('detail.catNote')}>
             <a href="/" style={aLink}>{t('detail.crumbHome')}</a>
             {job.province ? <> › <a href={`/?prov=${encodeURIComponent(job.province)}`} style={aLink}>{provFull}</a></> : null}
-            {/* #144(手机优先自查):大分类段摘除——紧邻的「职业分类」行已给完整三级,面包屑再放一次
-                就是同一条信息两个家(手机上尤其占地)。面包屑只管地理导航路径,分类归分类行。 */}
+            {catSegs.map((s) => <span key={s.href}> › <a href={s.href} style={aLink}>{s.txt}</a></span>)}
             {' › '}<span style={{ color: '#374151' }}>{job.title}</span>
           </div>
 
@@ -151,39 +158,17 @@ export default function JobDetailView({ job, plan, dims, related }: {
 
           {/* chips:代码不裸奔(NOC 带职业名、TEER 带说明) */}
           <div style={{ marginBottom: 10 }}>
+            {/* #157(Frank「一个胶囊包含多个信息,需要拆成多个胶囊吧」):一枚药丸只放一条事实 ——
+                原先「NOC 64100 Retail salespersons…」把编号与职业名塞一枚、「TEER 4(高中/在职培训)」
+                把等级与学历门槛塞一枚。现拆:编号 / 职业名(带译名灰注)/ 等级 / 学历门槛 各一枚。 */}
             {job.pnpEligible ? <span style={chipBlue}>{t('cell.pnpYes')}</span> : null}
-            {/* #147(Frank 拍板「英文在前」):官方英文职业名是主文案,中/韩译名跟在后面作灰注;
-                英文界面或无译名时整段不出(宁可留空也不瞎猜) */}
-            {job.noc ? (
-              <span style={chip}>NOC {job.noc}{nocTitle ? ` ${nocTitle}` : ''}
-                {nocZh ? <span style={{ color: '#9ca3af' }}>　{nocZh}</span> : null}
-              </span>
+            {job.noc ? <span style={chip}>NOC {job.noc}</span> : null}
+            {nocTitle ? (
+              <span style={chip}>{nocTitle}{nocZh ? <span style={{ color: '#9ca3af' }}>　{nocZh}</span> : null}</span>
             ) : null}
-            {job.teer != null ? <span style={chip}>TEER {job.teer}({t('teer.' + job.teer)})</span> : null}
+            {job.teer != null ? <span style={chip}>TEER {job.teer}</span> : null}
+            {job.teer != null ? <span style={chip}>{t('teer.' + job.teer)}</span> : null}
           </div>
-
-          {/* #142/#143(Frank「点进去要看到大类中类小类」→「这个可以一行」):职业分类走**层级路径**一行。
-              W 禁杂糅针对的是把不同类信息塞一行;这里三段是同一件事(分类)的三个粒度,用 › 串是路径不是杂糅。
-              每段可点=按该级筛职位板;人话分类名(NOC 码与 TEER 在上方 chips,各归其位);未分类的段跳过 */}
-          {(() => {
-            const segs = [
-              job.broad && job.broad !== '未分类' ? { txt: t('broad.' + job.broad), href: `/?broad=${encodeURIComponent(job.broad)}` } : null,
-              job.mid && job.mid !== '未分类' ? { txt: catName(t, job.mid), href: `/?broad=${encodeURIComponent(job.broad || '')}&mid=${encodeURIComponent(job.mid)}` } : null,
-              job.fine && job.fine !== '未分类' ? { txt: catName(t, job.fine), href: `/?fine=${encodeURIComponent(job.fine)}` } : null,
-            ].filter(Boolean) as { txt: string; href: string }[]
-            if (!segs.length) return null
-            return (
-              <div style={{ fontSize: 13, color: '#374151' }} title={t('detail.catNote')}>
-                <span style={metaK}>{t('detail.catSec')}</span>
-                {segs.map((s, i) => (
-                  <span key={s.href}>
-                    {i > 0 ? <span style={{ color: '#9ca3af', margin: '0 6px' }}>›</span> : null}
-                    <a href={s.href} style={aLink}>{s.txt}</a>
-                  </span>
-                ))}
-              </div>
-            )
-          })()}
           </div>{/* /头部卡 */}
 
           {job.status === 'closed' && (
