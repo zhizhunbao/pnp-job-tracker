@@ -48,7 +48,6 @@ const zh: Dict = {
   'gr.channel.2': '低 TEER,但在紧缺通道清单内', 'gr.channel.1': '未命中技能层级或清单通道',
   'gr.salary.d': '帖面年薪较官方中位 {pct}%', 'gr.noData': '无数据,不评档',
   'gr.emp.permanent': '永久岗', 'gr.emp.full': '全职', 'gr.emp.direct': '雇主直发', 'gr.emp.none': '永久、全职、直发均未命中',
-  'gr.ref.title': '参照(不计入职位档)', 'gr.ref.sponsor': '公司担保记录档', 'gr.ref.noRec': '无记录(不等于不担保)', 'gr.ref.diff': '查看该省移民难度 →',
   // #132/#133 档名人话化(Frank「X/5 用户能看懂吗」「直接写文字,不要分成五个单位」):全站只显档名文字,数字/点阵刻度全退役
   'gr.ch.5': '命中省清单', 'gr.ch.4': '紧缺技能岗', 'gr.ch.3': '技能岗', 'gr.ch.2': '低技能有通道', 'gr.ch.1': '通道弱',
   'gr.sp.5': '常年担保', 'gr.sp.4': '近期有担保', 'gr.sp.3': '有过担保', 'gr.sp.2': '早年担保过',
@@ -58,11 +57,6 @@ const zh: Dict = {
   'gr.fm.5': '知名大雇主', 'gr.fm.4': '有维基条目', 'gr.fm.3': '多省经营', 'gr.fm.2': '常规规模', 'gr.fm.1': '极小规模',
   'gr.sponsorTip': '该雇主的外劳担保记录(依据官方 LMIA 获批历史与新近度);点公司名看明细',
   // E12-08 尾巴(#126):公司四维行(拆解弹框参照区)
-  'gr.co.active': '公司在库活跃度', 'gr.co.salary': '公司薪资水平', 'gr.co.fame': '公司规模知名度',
-  'gr.co.sponsor.v': 'LMIA 技能类 {skilled} 份、合计 {total} 份、最近 {q}', 'gr.co.sponsor.aipTag': 'AIP 指定雇主', 'gr.co.sponsor.aipOnly': 'AIP 指定雇主(无 LMIA 记录)',
-  'gr.co.active.v': '在库 {open} 岗、近 30 天新增 {n}',
-  'gr.co.salary.v': '该司帖面薪资较同职业官方中位平均 {pct}%',
-  'gr.co.fame.wiki': '有英文维基条目', 'gr.co.fame.provs': '覆盖 {n} 省', 'gr.co.fame.open': '在库 {n} 岗',
   // #123c:整理版 PAY 节帖面薪资兜底注
   'act.f.payFb': '(帖面薪资字段;原帖正文未写)',
   'updated': '更新 {t}',
@@ -244,7 +238,7 @@ const zh: Dict = {
   'match.r.lmia.na': '该雇主近两年无获批 LMIA 记录(多数雇主从未办过,非负面信号)',
   // 付费墙(E3-05)
   // E8-10:三个弹框的页眉分组名(收编后标题不再取被点单元格的值)
-  'grp.company': '公司', 'grp.job': '职位', 'grp.immigration': '移民',
+  'grp.company': '公司', 'grp.immigration': '移民', 'grp.category': '职业分类',
   'up.title': '升级 Pro 解锁',
   'up.advisor': '今日免费解读已用完,明天自动恢复。Pro 不限次数——每个岗、每个字段都能随时问。',
   'up.jobtext': '今日 JD 摘录免费次数已用完,明天自动恢复。Pro 不限次数。',
@@ -466,7 +460,6 @@ const en: Dict = {
   'gr.channel.2': 'Lower TEER, but on an in-demand stream list', 'gr.channel.1': 'No skilled tier or list hit',
   'gr.salary.d': 'Posted pay vs official median: {pct}%', 'gr.noData': 'No data — not graded',
   'gr.emp.permanent': 'Permanent', 'gr.emp.full': 'Full-time', 'gr.emp.direct': 'Direct employer posting', 'gr.emp.none': 'None of permanent, full-time or direct',
-  'gr.ref.title': 'Reference (not part of job grades)', 'gr.ref.sponsor': 'Employer sponsorship record', 'gr.ref.noRec': 'No record (not the same as won’t sponsor)', 'gr.ref.diff': 'Provincial difficulty →',
   'gr.ch.5': 'On a provincial list', 'gr.ch.4': 'In-demand skilled', 'gr.ch.3': 'Skilled', 'gr.ch.2': 'Lower-skill pathway', 'gr.ch.1': 'Weak pathway',
   'gr.sp.5': 'Sponsors regularly', 'gr.sp.4': 'Recent sponsor', 'gr.sp.3': 'Has sponsored', 'gr.sp.2': 'Sponsored years ago',
   'gr.sal.5': 'Well above median', 'gr.sal.4': 'Above median', 'gr.sal.3': 'Around median', 'gr.sal.2': 'Below median', 'gr.sal.1': 'Well below median',
@@ -474,11 +467,6 @@ const en: Dict = {
   'gr.act.5': 'Hiring very actively', 'gr.act.4': 'Hiring actively', 'gr.act.3': 'Hiring now', 'gr.act.2': 'Few openings', 'gr.act.1': 'No openings',
   'gr.fm.5': 'Major well-known employer', 'gr.fm.4': 'Has a Wikipedia entry', 'gr.fm.3': 'Multi-province', 'gr.fm.2': 'Typical size', 'gr.fm.1': 'Very small',
   'gr.sponsorTip': 'This employer’s foreign-worker sponsorship record (from official LMIA approvals and recency); click the company name for details',
-  'gr.co.active': 'Company posting activity', 'gr.co.salary': 'Company pay level', 'gr.co.fame': 'Company scale & recognition',
-  'gr.co.sponsor.v': 'Skilled LMIA {skilled}, total {total}, latest {q}', 'gr.co.sponsor.aipTag': 'AIP designated employer', 'gr.co.sponsor.aipOnly': 'AIP designated employer (no LMIA record)',
-  'gr.co.active.v': '{open} open postings, {n} new in the last 30 days',
-  'gr.co.salary.v': 'Company postings vs official medians: average {pct}%',
-  'gr.co.fame.wiki': 'Has an English Wikipedia entry', 'gr.co.fame.provs': 'Active in {n} provinces', 'gr.co.fame.open': '{n} open postings',
   // #123c: formatted-JD PAY fallback note
   'act.f.payFb': '(from the posting’s pay field; not stated in the body)',
   'updated': 'Updated {t}',
@@ -676,7 +664,7 @@ const en: Dict = {
   'match.r.lmia.lowOnly': 'Employer’s {n} approved LMIA positions (latest {q}) are all Primary Agriculture / Low Wage streams — mostly seasonal hiring, weak evidence for skilled sponsorship; no points added',
   'match.r.lmia.na': 'No positive-LMIA record for this employer in the past two years (most employers never needed one; not a negative signal)',
   // 付费墙(E3-05)
-  'grp.company': 'Company', 'grp.job': 'Job', 'grp.immigration': 'Immigration',
+  'grp.company': 'Company', 'grp.immigration': 'Immigration', 'grp.category': 'Occupation',
   'up.title': 'Upgrade to Pro to unlock',
   'up.advisor': "Today's free readings are used up — they reset tomorrow. Pro is unlimited: ask about any job, any field, anytime.",
   'up.jobtext': "Today's free JD excerpts are used up — they reset tomorrow. Pro is unlimited.",
@@ -886,7 +874,6 @@ const ko: Dict = {
   'gr.channel.2': '낮은 TEER이나 부족직종 통로 목록 포함', 'gr.channel.1': '기술 등급/목록 통로 미해당',
   'gr.salary.d': '공고 급여 vs 공식 중위값: {pct}%', 'gr.noData': '데이터 없음 — 미평가',
   'gr.emp.permanent': '정규직', 'gr.emp.full': '풀타임', 'gr.emp.direct': '고용주 직접 게시', 'gr.emp.none': '정규직, 풀타임, 직접 게시 모두 미해당',
-  'gr.ref.title': '참고(직무 등급 미포함)', 'gr.ref.sponsor': '회사 스폰서 기록 등급', 'gr.ref.noRec': '기록 없음(스폰서 불가 아님)', 'gr.ref.diff': '주별 난이도 보기 →',
   'gr.ch.5': '주 목록 포함', 'gr.ch.4': '부족직종 기술직', 'gr.ch.3': '기술직', 'gr.ch.2': '저숙련 통로 있음', 'gr.ch.1': '통로 약함',
   'gr.sp.5': '스폰서 상시', 'gr.sp.4': '최근 스폰서', 'gr.sp.3': '스폰서 이력 있음', 'gr.sp.2': '수년 전 스폰서',
   'gr.sal.5': '중위값 크게 상회', 'gr.sal.4': '중위값 상회', 'gr.sal.3': '중위값 수준', 'gr.sal.2': '중위값 하회', 'gr.sal.1': '중위값 크게 하회',
@@ -894,11 +881,6 @@ const ko: Dict = {
   'gr.act.5': '채용 매우 활발', 'gr.act.4': '채용 활발', 'gr.act.3': '채용 중', 'gr.act.2': '소수 채용', 'gr.act.1': '채용 없음',
   'gr.fm.5': '유명 대형 고용주', 'gr.fm.4': '위키 문서 있음', 'gr.fm.3': '여러 주 운영', 'gr.fm.2': '일반 규모', 'gr.fm.1': '매우 소규모',
   'gr.sponsorTip': '이 고용주의 외국인 근로자 스폰서 기록(공식 LMIA 승인 이력·최신성 기준); 회사명을 클릭하면 상세',
-  'gr.co.active': '회사 공고 활동', 'gr.co.salary': '회사 급여 수준', 'gr.co.fame': '회사 규모와 인지도',
-  'gr.co.sponsor.v': '기술직 LMIA {skilled}건, 합계 {total}건, 최근 {q}', 'gr.co.sponsor.aipTag': 'AIP 지정 고용주', 'gr.co.sponsor.aipOnly': 'AIP 지정 고용주(LMIA 기록 없음)',
-  'gr.co.active.v': '게시 중 {open}건, 최근 30일 신규 {n}건',
-  'gr.co.salary.v': '회사 공고 급여 vs 공식 중위값 평균 {pct}%',
-  'gr.co.fame.wiki': '영문 위키백과 문서 있음', 'gr.co.fame.provs': '{n}개 주에서 활동', 'gr.co.fame.open': '게시 중 공고 {n}건',
   // #123c: 정리본 PAY 급여 필드 대체 주석
   'act.f.payFb': '(공고 급여 필드 기준; 본문에는 없음)',
   'updated': '{t} 업데이트',
@@ -1096,7 +1078,7 @@ const ko: Dict = {
   'match.r.lmia.lowOnly': '고용주 최근 2년 승인 LMIA {n}건(최근 {q})은 전부 농업/저임금 스트림 — 대부분 계절성 고용으로 숙련 스폰서 근거가 약해 가점 없음',
   'match.r.lmia.na': '이 고용주 최근 2년 승인 LMIA 기록 없음(대부분의 고용주는 필요한 적이 없음; 부정적 신호 아님)',
   // 付费墙(E3-05)
-  'grp.company': '회사', 'grp.job': '직무', 'grp.immigration': '이민',
+  'grp.company': '회사', 'grp.immigration': '이민', 'grp.category': '직업 분류',
   'up.title': 'Pro 업그레이드로 잠금 해제',
   'up.advisor': '오늘 무료 해설 횟수를 모두 사용했습니다. 내일 자동 복구됩니다. Pro는 무제한 — 어떤 공고든, 어떤 항목이든 언제나 질문 가능.',
   'up.jobtext': '오늘 JD 발췌 무료 횟수를 모두 사용했습니다. 내일 자동 복구됩니다. Pro는 무제한.',

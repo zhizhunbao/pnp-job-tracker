@@ -48,7 +48,9 @@ export function catName(t: TFn, v: string): string {
 // 另有三种非弹框处置:map=直接开地图(Frank「地图跳转要保留」——删掉的是「解释」不是「点击」),
 // note=悬停小注(零 LLM 零额度),none=什么都不做(值本身自明,一个日期不需要解释)。
 // 设计与逐字段依据见 docs/implementation/E8-UI体验统一/10_弹框三合一收编.md
-export type FieldGroup = 'company' | 'job' | 'immigration'
+// #176(Frank 拍板「简化,精简才能长久」):'job' 组退役(与 JD 弹框二合一,ActModal 即职位弹框);
+// 'category' 新立——点分类看分类,不再开移民全家桶(入口语义=内容)。
+export type FieldGroup = 'company' | 'immigration' | 'category'
 // 三档:并(→三个弹框之一)、图(直连地图)、无(不可点)。
 // 原设计还有一档「注=悬停小注」,2026-07-21 Frank 拍板不做 —— 它与「无」行为完全一致,
 // 留着只是个没兑现的意图,故合并(YAGNI:不为「可能用得上」保留结构)。
@@ -56,15 +58,16 @@ type Disposition = FieldGroup | 'map' | 'none'
 // #175(Frank「所有的框都去掉可点吧。hover 高亮也去掉,只有 分类 公司 职位 可以点击弹框,
 // 地址可以点击跳转」):可点集合大收编——满屏蓝绿都能点=没有重点。
 const FIELD_GROUP: Partial<Record<ColKey, Disposition>> = {
-  // ① 分类族 → 移民弹框(移民弹框铺全组:通道/PNP/EE/AIP/分类/vs 中位,入口一个就够)
-  noc: 'immigration', teer: 'immigration', broad: 'immigration', mid: 'immigration', fine: 'immigration',
-  // ② 职位 → JD 弹框;③ 公司 → 公司弹框
-  title: 'job', company: 'company',
+  // ① 分类族 → 职业分类弹框(#176:点分类看分类——「这职业是干嘛的」,轻、快、零额度)
+  noc: 'category', teer: 'category', broad: 'category', mid: 'category', fine: 'category',
+  // ② 通道 → 移民弹框唯一入口(#176 恢复可点:「能不能帮我移民」归通道列,语义对得上)
+  score: 'immigration',
+  // ③ 公司 → 公司弹框;职位名不走本表(cellActionable 特判,直开 JD 弹框=职位弹框)
+  company: 'company',
   // ④ 地址 → 地图直连(仅地址;省/市/区/国家退回纯文本)
   address: 'map',
-  // ⑤ 其余一律不可点(#175 前的 match/score/pnp/ee/salary/lmia/地点四件等弹框入口全退役;
-  //    Pro 锁位的锁自己链升级弹窗,不走本路由)
-  match: 'none', score: 'none', pnp: 'none', ee: 'none', aip: 'none', eligibility: 'none', vsMedian: 'none',
+  // ⑤ 其余一律不可点(Pro 锁位的锁自己链升级弹窗,不走本路由)
+  match: 'none', pnp: 'none', ee: 'none', aip: 'none', eligibility: 'none', vsMedian: 'none',
   salary: 'none', salaryYr: 'none', empHours: 'none', empTerm: 'none', accessibility: 'none', lmia: 'none',
   country: 'none', province: 'none', city: 'none', district: 'none',
   source: 'none', origin: 'none', direct: 'none', status: 'none',
@@ -78,7 +81,7 @@ const FIELD_GROUP: Partial<Record<ColKey, Disposition>> = {
 export const cellActionable = (k: ColKey): boolean => {
   if (k === 'title') return true
   const d = FIELD_GROUP[k]
-  return d === 'map' || d === 'company' || d === 'job' || d === 'immigration'
+  return d != null && d !== 'none'
 }
 
 // Pro 专属列(与 lib/plan.ts PRO_COLUMNS 一致;免费用户列位打码,真值本就没进浏览器)
@@ -2055,33 +2058,9 @@ function ScoreGradesSection({ job, lang, loggedIn }: { job: JobRow; lang: Lang; 
       {sal ? row(t('gr.dim.salary'), <>{gname(sal.g, t('gr.sal.' + sal.g))}<div style={{ fontSize: 12.5, color: '#6b7280' }}>{t('gr.salary.d', { pct: sal.v >= 0 ? `+${sal.v}` : String(sal.v) })}</div></>)
         : row(t('gr.dim.salary'), <span style={{ color: '#9ca3af' }}>{t('gr.noData')}</span>)}
       {emp ? row(t('gr.dim.emp'), <>{gname(emp.g, t('gr.empn.' + emp.g))}<div style={{ fontSize: 12.5, color: '#6b7280' }}>{emp.v?.length ? emp.v.map((h) => t('gr.emp.' + h)).join('、') : t('gr.emp.none')}</div></>) : null}
-      <div style={{ marginTop: 10, paddingTop: 8, borderTop: '1px solid #f3f4f6' }}>
-        <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 2 }}>{t('gr.ref.title')}</div>
-        {/* 公司四维行(E12-08 尾巴):companyDetail 一直随响应回传,此前只渲担保一行;依据句前端按维度拼(数据层只存 {g,v}) */}
-        {(() => {
-          const co = d.companyDetail || {}
-          const sp = co.sponsor, ac = co.active, cs = co.salary, fm = co.fame
-          const gRow = (label: string, g: number, name: string, note: string) =>
-            row(label, <>{gname(g, name)}<div style={{ fontSize: 12.5, color: '#6b7280' }}>{note}</div></>)
-          return (
-            <>
-              {sp ? gRow(t('gr.ref.sponsor'), sp.g, t('gr.sp.' + sp.g), (sp.v?.total
-                  ? t('gr.co.sponsor.v', { skilled: sp.v.skilled ?? 0, total: sp.v.total, q: sp.v.q || '—' }) + (sp.v?.aip ? '、' + t('gr.co.sponsor.aipTag') : '')
-                  : t('gr.co.sponsor.aipOnly')))
-                : row(t('gr.ref.sponsor'), <span style={{ color: '#9ca3af' }}>{t('gr.ref.noRec')}</span>)}
-              {ac ? gRow(t('gr.co.active'), ac.g, t('gr.act.' + ac.g), t('gr.co.active.v', { open: ac.v?.open ?? 0, n: ac.v?.new30 ?? 0 })) : null}
-              {cs ? gRow(t('gr.co.salary'), cs.g, t('gr.sal.' + cs.g), t('gr.co.salary.v', { pct: cs.v >= 0 ? `+${cs.v}` : String(cs.v) }))
-                : d.companyDetail ? row(t('gr.co.salary'), <span style={{ color: '#9ca3af' }}>{t('gr.noData')}</span>) : null}
-              {fm ? gRow(t('gr.co.fame'), fm.g, t('gr.fm.' + fm.g), [
-                  fm.v?.wiki ? t('gr.co.fame.wiki') : '',
-                  (fm.v?.provs ?? 0) >= 2 ? t('gr.co.fame.provs', { n: fm.v!.provs! }) : '',
-                  t('gr.co.fame.open', { n: fm.v?.open ?? 0 }),
-                ].filter(Boolean).join('、')) : null}
-            </>
-          )
-        })()}
-        {job.province ? row('', <a href={`/stats/${job.province.toLowerCase()}`} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none', fontSize: 12.5 }}>{t('gr.ref.diff')}</a>) : null}
-      </div>
+      {/* #176(Frank「简化,精简才能长久」):参照区(公司四维行+省难度链)整块退役——
+          公司的事在公司弹框(担保/在库/简介),省难度在 /stats,一条信息只在一个家。
+          通道卡从此只回答一件事:这个岗自身的三维档。 */}
     </FactsBox>
   )
 }
@@ -2118,10 +2097,11 @@ function fieldSrcUrls(field: ColKey, job: JobRow, sources: FieldSource[]): strin
 // 收编后:一个分组一次把该组事实全铺出来。**复用既有 FieldFactsSection 当积木**(它=某字段事实+其来源行),
 // 不重写任何渲染逻辑 —— 顺序即阅读顺序,先结论后依据。
 const GROUP_SECTIONS: Record<FieldGroup, ColKey[]> = {
-  // 先给「能不能走」(通道档/PNP/EE/AIP),再给「凭什么」(职业分类),最后是薪资对照
-  immigration: ['score', 'pnp', 'ee', 'aip', 'noc', 'vsMedian'],
-  // 职位:JD 五节整理版(title)承担主体,薪资与门槛跟在后面
-  job: ['title', 'salary', 'accessibility'],
+  // #176 四弹框终表:移民=「能不能走」(通道/PNP/EE/AIP/vs 中位)——职业分类挪去自己的家;
+  // 分类=「这职业是干嘛的」(三级路径+官方职责+任职要求,一张卡);公司=「雇主靠谱吗」;
+  // 职位组退役(ActModal 即职位弹框:JD 整理版自带薪资/怎么投节,不另立组)。
+  immigration: ['score', 'pnp', 'ee', 'aip', 'vsMedian'],
+  category: ['noc'],
   company: ['company'],
 }
 // 有没有这块事实 —— 没有就整块跳过,**绝不留孤儿小标题**(既有规范 §2「空段规则」)
@@ -2153,7 +2133,8 @@ function GroupFactsSection(props: Omit<Parameters<typeof FieldFactsSection>[0], 
     <>
       {keys.map((k) => (
         <div key={k} style={MODAL_CARD}>
-          <div style={MODAL_CARD_HEAD}>{t('col.' + k)}</div>
+          {/* 分类卡标题人话化:col.noc 是列名「NOC」,当卡标题裸奔(#176 实测抓到)*/}
+          <div style={MODAL_CARD_HEAD}>{k === 'noc' ? t('grp.category') : t('col.' + k)}</div>
           <FieldFactsSection field={k} job={job} lang={lang} {...rest} />
         </div>
       ))}
@@ -2262,7 +2243,7 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
       <FactsBox note={t('fact.aipNote')}>
         <FactRow k={t('col.aip')}>{job.aip ? t('cell.aipYes') : '—'}</FactRow>
         {matches.map((e, i) => (
-          <FactRow key={i} k={e.name}>{[e.location, e.province, e.isTech ? t('fact.aipTech') : null].filter(Boolean).join(' · ')}</FactRow>
+          <FactRow key={i} k={e.name}>{[e.location, e.province, e.isTech ? t('fact.aipTech') : null].filter(Boolean).join('、')}</FactRow>
         ))}
       </FactsBox>
     )
@@ -2721,14 +2702,9 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
   const [freeLeft, setFreeLeft] = useState<number | null>(null)
   useEffect(() => {
     const ctrl = new AbortController()
-    // E8-10:职位弹框不设 AI 段 —— JD 五节整理版已经把「这活干什么/要什么」讲完了,
-    // 再生成一段就是 #125 修掉的那种重复。不发请求 = 不烧额度、不占朋友那台 qwen、不让用户干等。
-    // #167⑨(Frank「格式也不统一,ai 是不是检索了两次」——是):公司弹框同样撤掉 AI 段。
-    // 原先一个公司叠着**两份独立生成**:事实块里 CompanyAiSection 的结构化卡(主营业务/所在地/信息出处)
-    // + 这里当场再跑的四节散文,两种排版、互不知情。实测二者还打架 —— 卡里写着
-    // 「a public research university that offers certificate, diploma…」,四节却连说四遍「公开资料不足」。
-    // 留结构化卡作唯一 AI 内容(#158 已定它与 JD 整理版同款版式);删掉的是废话不是信息,还省一次调用。
-    if (group === 'job' || group === 'company') { setStatus('done'); setText(''); return }
+    // AI 段只归移民弹框(分步方案)。公司弹框撤 AI 段=#167⑨(CompanyAiSection 结构化卡是唯一 AI 内容);
+    // 分类弹框纯官方事实,零生成零额度(#176)。不发请求 = 不烧额度、不占朋友那台 qwen、不让用户干等。
+    if (group !== 'immigration') { setStatus('done'); setText(''); return }
     setText(''); setStatus('loading'); setSug(''); pendingRef.current = ''; textRef.current = ''; doneRef.current = false
     ;(async () => {
       try {
@@ -3032,7 +3008,7 @@ function ActModal({ job, lang, plan, onClose }: { job: JobRow; lang: Lang; plan:
         <div onPointerDown={startDrag} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, padding: '16px 20px 8px', cursor: full ? 'default' : 'move', userSelect: 'none', flexShrink: 0 }}>
           <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, letterSpacing: 0.3 }}>
-              {t('act.descTitle')}{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400 }}> · {t('advisor.left', { n: freeLeft })}</span> : null}
+              {t('act.descTitle')}{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('advisor.left', { n: freeLeft })}</span> : null}
               {/* E8-07:详情页入口(分享/新标签场景);阻止冒泡免触发标题栏拖动 */}
               <a href={`/jobs/${job.id}`} target="_blank" rel="noreferrer" onPointerDown={(e) => e.stopPropagation()}
                 style={{ marginLeft: 10, color: '#2563eb', textDecoration: 'none', fontWeight: 400 }}>{t('detail.openFull')} ↗</a>
