@@ -1258,7 +1258,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       <SiteFooter t={t} maxWidth={1320} />
 
       {popup && <AdvisorModal field={popup.field} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} news={dims.news} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} onOpenJob={(x) => setActModal({ kind: 'desc', job: x })} />}
-      {actModal && <ActModal job={actModal.job} lang={lang} plan={plan} nocDesc={dims.nocDescriptions.find((d) => d.noc === actModal.job.noc) || null} onClose={() => setActModal(null)} />}
+      {actModal && <ActModal job={actModal.job} lang={lang} plan={plan} onClose={() => setActModal(null)} />}
       {wizard && <OnboardingWizard t={t} initial={plan.profile} onClose={closeWizard} />}
       {upsell && (plan.loggedIn
         ? <UpgradeModal t={t} reason={upsell === 'ss' ? t('ss.pro') : upsell === 'match' ? (matchTotals && matchTotals.high > plan.freeMatchCap ? t('up.matchN', { h: matchTotals.high, n: plan.freeMatchCap }) : t('up.match', { n: plan.freeMatchCap })) : undefined} onClose={() => setUpsell(false)} />
@@ -1512,7 +1512,7 @@ export function FactsBox({ children, note }: { children: React.ReactNode; note?:
 }
 // 职位事实块:标题 + 匹配 NOC + 抓取的 JD 正文摘录(走 /api/jobtext,同 ActModal desc;列表 SQL 不带 description)
 // NOC 官方主要职责 / 任职要求(StatCan Elements);noc 来自 noc-descriptions 维度,无则不渲染
-export function NocDutiesView({ noc, lang }: { noc: NocDesc | null; lang: Lang }) {
+function NocDutiesView({ noc, lang }: { noc: NocDesc | null; lang: Lang }) {
   const t = makeT(lang)
   if (!noc || (!noc.duties && !noc.requirements)) return null
   const block = (label: string, text: string) => text ? (
@@ -1754,7 +1754,7 @@ export async function fetchJobText(applyUrl: string, signal?: AbortSignal): Prom
   if (text) jobTextCache.set(applyUrl, text)
   return { status: text ? 'ok' : 'empty', text, freeLeft }
 }
-function TitleFacts({ job, lang, nocDesc = null }: { job: JobRow; lang: Lang; nocDesc?: NocDesc | null }) {
+function TitleFacts({ job, lang }: { job: JobRow; lang: Lang }) {
   const t = makeT(lang)
   const [jd, setJd] = useState<string | null>(null)  // null=loading · ''=无正文
   const [gated, setGated] = useState(false)          // 402:JD 摘录免费试用用完(E3-05)
@@ -1788,8 +1788,6 @@ function TitleFacts({ job, lang, nocDesc = null }: { job: JobRow; lang: Lang; no
         : <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>
             {/* 空态解释原因(第 9 轮 #26);原帖链接不再内联(2026-07-11 用户指出与下方来源行重复,来源行=同一 applyUrl) */}
             {blockedSrc(job) ? t('act.noTextBlocked', { src: blockedSrc(job) }) : t('act.noText')}
-            {/* #138:官方 NOC 说明兜底,空白页变有内容(标注非本帖原文) */}
-            {nocDesc ? <NocDutiesView noc={nocDesc} lang={lang} /> : null}
           </div>}
     </FactsBox>
   )
@@ -1959,7 +1957,7 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
   const noc = nocDesc.find((d) => d.noc === job.noc) || null
   if (field === 'pnp') return <PnpListSection job={job} lang={lang} occ={pnpOcc} draws={pnpDraws} news={news} />
   if (field === 'ee') return <EeCategorySection job={job} lang={lang} cats={eeOcc} draws={pnpDraws} />
-  if (field === 'title') return <TitleFacts job={job} lang={lang} nocDesc={noc} />
+  if (field === 'title') return <TitleFacts job={job} lang={lang} />
   const day = (s?: string) => (s || '').slice(0, 10)
 
   if (field === 'company') {
@@ -2663,7 +2661,7 @@ function AdvisorChat({ field, job, lang, initialJudgment, initialSug }: { field:
 }
 
 // ── 操作列弹框:职位描述快看(读真实抓取正文;公司信息已并入顾问公司弹窗,C1)────
-function ActModal({ job, lang, plan, nocDesc = null, onClose }: { job: JobRow; lang: Lang; plan: Plan; nocDesc?: NocDesc | null; onClose: () => void }) {
+function ActModal({ job, lang, plan, onClose }: { job: JobRow; lang: Lang; plan: Plan; onClose: () => void }) {
   // C1 后只剩 JD 快看(公司信息统一走顾问公司弹窗,消两套公司弹窗重复)
   // #112(2026-07-20 Frank):标题栏「AI 顾问」钮摘除——点钮会关本框跳顾问弹框,描述/整理版一去不回;
   // 初判本来就内嵌自动生成(#102,像公司顾问),按钮纯多余;深挖(对比表/字段解读)走字段格入口照旧
@@ -2730,11 +2728,6 @@ function ActModal({ job, lang, plan, nocDesc = null, onClose }: { job: JobRow; l
             : status === 'empty' ? (
               <div>
                 <p style={{ color: '#9ca3af', margin: '4px 0 10px' }}>{blockedSrc(job) ? t('act.noTextBlocked', { src: blockedSrc(job) }) : t('act.noText')}</p>
-                {/* #138:官方 NOC 说明兜底——连点几个都空白的体验是劝退第一名(实测首屏 50 条 30 条空) */}
-                {nocDesc ? <div style={{ marginBottom: 12 }}>
-                  <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.6 }}>{t('act.nocFallback')}</div>
-                  <NocDutiesView noc={nocDesc} lang={lang} />
-                </div> : null}
                 {job.applyUrl && <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ display: 'inline-block', background: '#2563eb', color: '#fff', borderRadius: 8, padding: '8px 14px', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>{t('act.seeOfficial')}</a>}
               </div>
             )

@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 import { makeT, LANG_KEY, LANGS, type Lang, type TFn } from '../i18n'
 import {
   AdvisorModal, blockedSrc, EeCategorySection, FactRow, FactsBox, fetchJobText, JdAdvisorSection, JdFormattedView, JdTextView,
-  MeansForMe, NocDutiesView, PnpListSection, PROV_NAMES, UpgradeCard,
+  MeansForMe, PnpListSection, PROV_NAMES, UpgradeCard,
   type DesigEmp, type EeOcc, type FieldSource, type JobRow, type NewsSlim, type NocDesc, type Plan, type PnpDraw, type PnpOcc,
 } from '../JobsTable'
 import type { RelatedJob } from '@/lib/jobsSql'
@@ -26,7 +26,7 @@ const metaK: React.CSSProperties = { color: '#9ca3af', marginRight: 6 }
 const aLink: React.CSSProperties = { color: '#2563eb', textDecoration: 'none' }
 
 // JD 区(ActModal 正文同款管线:/api/jobtext 原文 + /api/jdformat 五节整理版懒生成,整理版默认可切换)
-function JdSection({ job, lang, plan, t, nocDesc = null }: { job: JobRow; lang: Lang; plan: Plan; t: TFn; nocDesc?: NocDesc | null }) {
+function JdSection({ job, lang, plan, t }: { job: JobRow; lang: Lang; plan: Plan; t: TFn }) {
   const [text, setText] = useState('')
   const [status, setStatus] = useState<'loading' | 'done' | 'empty' | 'upgrade' | 'limited'>('loading')   // #134
   const [fmt, setFmt] = useState<string | null | undefined>(undefined)
@@ -71,11 +71,6 @@ function JdSection({ job, lang, plan, t, nocDesc = null }: { job: JobRow; lang: 
         : status === 'empty' ? (
           <div>
             <p style={{ color: '#9ca3af', margin: '0 0 10px', fontSize: 13 }}>{blockedSrc(job) ? t('act.noTextBlocked', { src: blockedSrc(job) }) : t('act.noText')}</p>
-            {/* #138:官方 NOC 说明兜底(标注非本帖原文) */}
-            {nocDesc ? <div style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.6 }}>{t('act.nocFallback')}</div>
-              <NocDutiesView noc={nocDesc} lang={lang} />
-            </div> : null}
             {job.applyUrl && <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ ...aLink, fontSize: 13, fontWeight: 600 }}>{t('act.seeOfficial')}</a>}
           </div>
         ) : (fmt && !showOrig ? <JdFormattedView text={fmt} t={t} fallbackPay={job.salaryText || job.salary || undefined} applyUrl={job.applyUrl || undefined} /> : <JdTextView text={text} max={4000} />)}
@@ -182,7 +177,7 @@ export default function JobDetailView({ job, plan, dims, related }: {
             {!plan.isPro && <UpgradeCta t={t} loggedIn={plan.loggedIn} />}
           </div>
 
-          <JdSection job={job} lang={lang} plan={plan} t={t} nocDesc={dims.nocDesc.find((d) => d.noc === job.noc) || null} />
+          <JdSection job={job} lang={lang} plan={plan} t={t} />
 
           {/* 省提名通道(粗筛信号,非资格认定)+ 联邦 EE 类别 */}
           <div style={sec}>
