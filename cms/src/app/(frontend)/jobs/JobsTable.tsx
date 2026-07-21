@@ -1328,7 +1328,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                   <a href={`/jobs/${j.id}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActModal({ kind: 'desc', job: j }) }}
                     style={{ fontSize: 14.5, fontWeight: 600, color: '#2563eb', textDecoration: 'none' }}>{j.title}</a>
                   <span style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
-                    {mc && <span onClick={stop(() => open('match', t('match.' + j.match)))} style={{ fontSize: 11.5, padding: '1px 8px', borderRadius: 6, background: mc.bg, color: mc.fg, fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer' }}>{t('match.' + j.match)}</span>}
+                    {/* #167⑩(Frank「卡片胶囊应该统一放到一个位置吧」):匹配度胶囊原先孤零零挂在右上角,
+                        与卡底那排(可提名/技能岗/…)分处两地 —— 同类东西两个位置=没有位置。
+                        已下移到卡底那一排并排**首位**(它最值钱,排第一)。此处只留星标:它是按钮不是胶囊。 */}
                     {/* #52:收藏入口手机也要有(E9-01 闭环第一环)——卡片寸土寸金只放星标,匿名点=注册框(与桌面 toggleSave 同一逻辑) */}
                     <button onClick={(e) => { e.stopPropagation(); toggleSave(j) }} aria-label={saved[String(j.id)] ? t('sj.saved') : t('sj.save')}
                       style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', fontSize: 16, lineHeight: 1, color: saved[String(j.id)] ? '#b45309' : '#c4c9d4' }}>
@@ -1353,6 +1355,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                   <span suppressHydrationWarning onClick={stop(() => open('datePosted', (j.datePosted || '').slice(0, 10)))} style={{ color: '#9ca3af', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{(j.datePosted || '').slice(0, 10)}{days != null ? `(${t('fact.daysUpVal', { n: days })})` : ''}</span>
                 </div>
                 <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                  {/* #167⑩:匹配度胶囊从右上角迁到此排首位(胶囊只此一处);它是个人化结论=最值钱,故排第一 */}
+                  {mc && <span onClick={stop(() => open('match', t('match.' + j.match)))} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: mc.bg, color: mc.fg, fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer' }}>{t('match.' + j.match)}</span>}
                   {j.pnpEligible ? chip('#fef3c7', '#92400e', j.pnpStream ? t('cell.pnpYes') : t('cell.pnpSkilled'), 'pnp') : null}
                   {j.eeCategory ? chip('#dbeafe', '#1e40af', 'EE ' + eeDisplay(t, j.eeCategory), 'ee') : null}
                   {j.aip ? chip('#ffedd5', '#9a3412', t('cell.aipYes'), 'aip') : null}
@@ -1364,6 +1368,15 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                   {!j.pnpEligible && !j.eeCategory && !j.aip && j.teer != null ? chip('#f3f4f6', '#6b7280', `TEER ${j.teer}`, 'teer') : null}
                   {j.gradeChannel != null ? chip('#f3f4f6', '#6b7280', t('gr.ch.' + j.gradeChannel), 'score') : null}
                 </div>
+                {/* #167⑦(Frank「这个卡片最好有个更新时间吧,年月日时分秒」):发布时间只有日期没时刻(Job Bank 原样),
+                    判断不了「刚抓到还是躺了一天」;更新时间是本站每小时抓取的实际时刻,精确到秒。
+                    **此处必须带标签**:一张卡上两个日期并排,值自己说不清谁是谁 ——
+                    正是 #166 定的「值自证就删标签」的那条例外。 */}
+                {j.lastSeen ? (
+                  <div suppressHydrationWarning style={{ marginTop: 6, fontSize: 11, color: '#9ca3af' }}>
+                    {t('col.lastSeen')} {fmtLocalSec(j.lastSeen)}
+                  </div>
+                ) : null}
               </div>
             )
           })}
@@ -1566,7 +1579,12 @@ export function EeCategorySection({ job, lang, cats, draws = [] }: { job: JobRow
   const hit = grouped.filter((c) => c.occupations.some((o) => o.noc === noc))
   // #155(Frank「这个没有数据还需要列吗」= E8-09 开放问题①拍板):未命中时不再铺全部类别——
   // 本岗跟它们没关系,铺出来只是占屏;收成一行「未列入任何 EE 类别」+ 折叠入口,想看全景才展开。
-  const shown = hit.length ? hit : (showAllCats ? grouped : [])
+  // #167⑥(Frank「没有抽签的类别是不是就不要显示了」):展开全景时,把**从未抽过签**的类别滤掉 ——
+  // 一个没有任何抽选记录的类别对求职者没有可操作性(不知道分数线、不知道抽没抽、无从判断),
+  // 列出来只是让人多读几行(如「军职 3 个职业」「研究 2 个职业」这类)。
+  // 本岗**命中**的类别永远显示,哪怕没抽过 —— 那是与本岗直接相关的事实,不能因无抽选就藏。
+  const hasDraw = (c: EeCat) => (histOf.get(c.label)?.length ?? 0) > 0 || c.drawDate != null
+  const shown = hit.length ? hit : (showAllCats ? grouped.filter(hasDraw) : [])
   return (
     <div style={{ marginBottom: 14, paddingBottom: 12, borderBottom: '1px solid #f3f4f6' }}>
       <div style={{ fontSize: 13.5, fontWeight: 600, color: hit.length ? '#2563eb' : '#9ca3af', marginBottom: 6 }}>
@@ -2271,13 +2289,16 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
             (Frank「打上马赛克那种,别写那么长」)——与详情页 #130、表格锁列同一套。真值免费态不出服务端 */}
         {!isPro && (field === 'salary' || field === 'salaryYr') && (
           <>
+            {/* #167①(Frank「这种需要统一成一个按钮即可吧」):原先同一处并排两个升级入口 ——
+                灰字「Pro 解锁」四字 + 下面一枚实心棕钮,两者点了去同一个地方,等于把同一句话说两遍。
+                收成一个:打码占位数旁的「Pro 解锁」**自己就是那个入口**(UpgradeCta link 形态),
+                实心棕钮撤走 —— 按 #160 定的规矩,实心钮只留顶栏与弹窗,稀缺性就是它的说服力。 */}
             <FactRow k={t('col.vsMedian')}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                 <span aria-hidden style={{ filter: 'blur(5px)', userSelect: 'none' }}>+15%</span>
-                <span style={{ color: '#92400e', fontSize: 12 }}>{t('up.proShort')}</span>
+                <UpgradeCta t={t} loggedIn={loggedIn} link label={t('up.proShort')} style={{ fontSize: 12 }} />
               </span>
             </FactRow>
-            <div style={{ marginTop: 6 }}><UpgradeCta t={t} loggedIn={loggedIn} /></div>
           </>
         )}
       </FactsBox>
@@ -2617,7 +2638,12 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
     const ctrl = new AbortController()
     // E8-10:职位弹框不设 AI 段 —— JD 五节整理版已经把「这活干什么/要什么」讲完了,
     // 再生成一段就是 #125 修掉的那种重复。不发请求 = 不烧额度、不占朋友那台 qwen、不让用户干等。
-    if (group === 'job') { setStatus('done'); setText(''); return }
+    // #167⑨(Frank「格式也不统一,ai 是不是检索了两次」——是):公司弹框同样撤掉 AI 段。
+    // 原先一个公司叠着**两份独立生成**:事实块里 CompanyAiSection 的结构化卡(主营业务/所在地/信息出处)
+    // + 这里当场再跑的四节散文,两种排版、互不知情。实测二者还打架 —— 卡里写着
+    // 「a public research university that offers certificate, diploma…」,四节却连说四遍「公开资料不足」。
+    // 留结构化卡作唯一 AI 内容(#158 已定它与 JD 整理版同款版式);删掉的是废话不是信息,还省一次调用。
+    if (group === 'job' || group === 'company') { setStatus('done'); setText(''); return }
     setText(''); setStatus('loading'); setSug(''); pendingRef.current = ''; textRef.current = ''; doneRef.current = false
     ;(async () => {
       try {

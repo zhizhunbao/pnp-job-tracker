@@ -18,6 +18,12 @@ const PROV_CODE: Record<string, string> = {
   'Saskatchewan': 'SK', 'Nova Scotia': 'NS', 'New Brunswick': 'NB', 'Newfoundland and Labrador': 'NL',
   'Prince Edward Island': 'PE',
 }
+// #168:反向表 —— 喂给模型的事实**必须用省全名**。实测 NS(Nova Scotia)的岗被顾问说成
+// 「符合新不伦瑞克省提名」:两字母省码对模型有歧义,它猜错了。同类前科:NL 在地图里被当成荷兰国家码。
+// 规矩:**对外部消费者(模型、地图、搜索引擎)一律给全名,省码只在库内与筛选参数里用。**
+export const PROV_NAME: Record<string, string> = Object.fromEntries(
+  Object.entries(PROV_CODE).map(([name, code]) => [code, name]),
+)
 
 // 搜索覆盖面:核心列(E10-01 拍板)——职位/公司/省市区/NOC 码/来源标签;分类中文标签后续 query→码补。
 // 2026-07-19 搜索提速(Frank「搜索要 7-8 秒」,API 实测 3-5s):

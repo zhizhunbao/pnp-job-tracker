@@ -75,7 +75,11 @@ function JdSection({ job, lang, plan, t }: { job: JobRow; lang: Lang; plan: Plan
             {job.applyUrl && <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ ...aLink, fontSize: 13, fontWeight: 600 }}>{t('act.seeOfficial')}</a>}
           </div>
         ) : (fmt && !showOrig ? <JdFormattedView text={fmt} t={t} fallbackPay={job.salaryText || job.salary || undefined} applyUrl={job.applyUrl || undefined} underTitle /> : <JdTextView text={text} max={4000} />)}
-      {job.applyUrl && (
+      {/* #167③(Frank「这个来源和查看官方原帖是不是重复了」):是 —— 两者指向**同一个 applyUrl**,
+          上下相邻各说一遍。保留的是**动作**(「怎么投 › 查看官方原帖」在正文里、显眼、是用户真要点的那一下),
+          撤掉的是这行小灰字 —— 「查看官方原帖」这个措辞本身已完成出处标注(republish 合规意图不丢)。
+          仅在整理版**没渲出**时(看原文态 / JD 为空)才回退显示本行,保证任何情况下出处都在。 */}
+      {job.applyUrl && !(fmt && !showOrig) && (
         <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #f3f4f6', fontSize: 11.5, color: '#9ca3af', overflowWrap: 'anywhere' }}>
           {t('src.label')}: <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{job.applyUrl}</a>
         </div>
@@ -210,14 +214,16 @@ export default function JobDetailView({ job, plan, dims, related }: {
                   : (
                     /* #130(Frank「打上马赛克那种,别写那么长」):锁位=打码占位数+四字短注(⑤ compare 模糊示例同款);
                        占位是写死的假数(真值免费态本就不出服务端),blur 只传「这里有个数」 */
+                    /* #167①(Frank「这种需要统一成一个按钮即可吧」):原先灰字「Pro 解锁」+ 下方实心棕钮
+                       两个入口并排、点了去同一个地方 = 同一句话说两遍。收成一个:打码数旁的
+                       「Pro 解锁」自己就是入口;实心钮只留顶栏与弹窗(#160 定的稀缺性规矩)。 */
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                       <span aria-hidden style={{ filter: 'blur(5px)', userSelect: 'none' }}>+15%</span>
-                      <span style={{ color: '#92400e', fontSize: 12 }}>{t('up.proShort')}</span>
+                      <UpgradeCta t={t} loggedIn={plan.loggedIn} link label={t('up.proShort')} style={{ fontSize: 12 }} />
                     </span>
                   )}
               </FactRow>
             </FactsBox>
-            {!plan.isPro && <UpgradeCta t={t} loggedIn={plan.loggedIn} />}
           </div>
 
           <JdSection job={job} lang={lang} plan={plan} t={t} />

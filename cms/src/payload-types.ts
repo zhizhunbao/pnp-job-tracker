@@ -355,9 +355,25 @@ export interface Company {
    */
   aliasKo?: string | null;
   /**
-   * Wikipedia 条目(非空=知名徽标)
+   * Wikipedia 条目(E12-08 后不再单独出「知名」徽标,作公司分知名度维依据)
    */
   wikiUrl?: string | null;
+  /**
+   * 担保记录档 1-5(E12-08;空=无 LMIA 记录不评,≠不担保)
+   */
+  sponsorGrade?: number | null;
+  /**
+   * 公司四维档明细 {sponsor/active/salary/fame:{g,v}}
+   */
+  scoreDetail?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -471,9 +487,25 @@ export interface Job {
   policyRefs?: (number | PolicyDoc)[] | null;
   accessibility?: ('co-op' | 'junior' | 'intermediate' | 'senior' | 'unknown') | null;
   /**
-   * 移民价值评分 0-100
+   * 移民价值评分 0-100(E12-08 后仅作同档内排序兜底,不再对用户展示)
    */
   score?: number | null;
+  /**
+   * 移民通道档 1-5(E12-08;5=省具名清单命中)
+   */
+  gradeChannel?: number | null;
+  /**
+   * 职位三维档明细 {channel/salary/emp:{g,v}}(拆解弹框,试用额度制)
+   */
+  scoreDetail?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   /**
    * 可走雇主offer省提名(TEER0-3 或紧缺低TEER通道)
    */
@@ -715,6 +747,14 @@ export interface NocDescription {
    */
   title?: string | null;
   /**
+   * 职业名中文(显示用灰注,非官方)
+   */
+  titleZh?: string | null;
+  /**
+   * 职业名韩文(显示用灰注,非官方)
+   */
+  titleKo?: string | null;
+  /**
    * 主要职责(换行分隔)
    */
   duties?: string | null;
@@ -771,6 +811,14 @@ export interface City {
    * 2位省码
    */
   province?: string | null;
+  /**
+   * 城市中文通行译名(显示用灰注)
+   */
+  nameZh?: string | null;
+  /**
+   * 城市韩文通行译名(显示用灰注)
+   */
+  nameKo?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1382,6 +1430,8 @@ export interface CompaniesSelect<T extends boolean = true> {
   aliasZh?: T;
   aliasKo?: T;
   wikiUrl?: T;
+  sponsorGrade?: T;
+  scoreDetail?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1425,6 +1475,8 @@ export interface JobsSelect<T extends boolean = true> {
   policyRefs?: T;
   accessibility?: T;
   score?: T;
+  gradeChannel?: T;
+  scoreDetail?: T;
   pnpEligible?: T;
   pnpStream?: T;
   eeCategory?: T;
@@ -1521,6 +1573,8 @@ export interface EeCategoriesSelect<T extends boolean = true> {
 export interface NocDescriptionsSelect<T extends boolean = true> {
   noc?: T;
   title?: T;
+  titleZh?: T;
+  titleKo?: T;
   duties?: T;
   requirements?: T;
   fetched?: T;
@@ -1570,6 +1624,8 @@ export interface ProvincesSelect<T extends boolean = true> {
 export interface CitiesSelect<T extends boolean = true> {
   name?: T;
   province?: T;
+  nameZh?: T;
+  nameKo?: T;
   updatedAt?: T;
   createdAt?: T;
 }

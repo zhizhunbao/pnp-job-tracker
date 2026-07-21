@@ -12,6 +12,7 @@ import { friendLlmReady } from '@/lib/friendLlm'
 import { companyRow, investigateCompany, type CompanyResearch } from '@/lib/companyResearch'
 import { getUser, isPro } from '@/lib/entitlement'
 import { PRO_ADVISOR_DAILY } from '@/lib/plan'
+import { PROV_NAME } from '@/lib/jobsSql'
 import { match, normalizeProfile, hasProfile, reasonEn, statusEn, type MatchDims, type MatchJob } from '@/lib/match'
 import { loadMatchDims } from '@/lib/matchDims'
 
@@ -105,6 +106,9 @@ function scoreFacts(j: Job): string {
     `This job's immigration-channel assessment: ${j.gradeChannel != null ? `"${CH_NAME[j.gradeChannel] || 'unknown'}"` : 'not assessed'} (drivers — ${drivers}). ` +
     `Salary quality (posted pay vs official median) and employment quality (permanent / full-time / direct posting) are assessed separately in the breakdown panel the reader is looking at.`
 }
+// #168 省码→省全名(对模型/地图/搜索引擎一律给全名,省码只在库内与筛选参数用);未知码原样回退
+const provFullName = (p?: string) => (p ? (PROV_NAME[p.toUpperCase()] || p) : '')
+
 // 每行事实带来源短标注(E4-04 §3.5):中层判断/对话引用时能指回来源,强化反编机制。
 function jobFacts(j: Job): string {
   const t = teerOf(j.noc)
@@ -114,7 +118,8 @@ function jobFacts(j: Job): string {
     j.companySectors?.trim() ? `Company sector/industry: ${j.companySectors.trim()} [src: company website]` : '',
     j.companyDescription?.trim() ? `Company about: ${j.companyDescription.trim().slice(0, 600)} [src: company website]` : '',
     `NOC: ${j.noc || '—'} (TEER ${t ?? '—'}, ${catOf(j.noc)}) [src: StatCan NOC 2021]`,
-    `Location: ${[j.district, j.city, j.province].filter(Boolean).join(', ') || '—'} [src: official posting]`,
+    // #168:**省全名**喂模型 —— 实测 NS 的岗被顾问说成「符合新不伦瑞克省提名」,两字母码它猜错了
+    `Location: ${[j.district, j.city, provFullName(j.province)].filter(Boolean).join(', ') || '—'} [src: official posting]`,
     `Score: ${j.score ?? '—'}/100 [src: site-derived rubric]; PNP-eligible: ${j.pnpEligible ? 'yes' : 'no'} [src: provincial published lists]; Federal EE category: ${j.eeCategory || 'none'} [src: IRCC category-based selection]; AIP designated: ${j.aip ? 'yes' : 'no'} [src: designated-employer lists]; experience: ${j.accessibility || '—'} [src: site-derived]`,
     `Salary: ${j.salary || '—'}${j.salaryAnnual != null ? ` (~$${Math.round(j.salaryAnnual / 1000)}K/yr)` : ''} [src: official posting]`,
     // 雇佣形态 + 入职要求(E6-06/E6-07A):详情页结构化标注;缺=不给行(红线:没数据别答证书问题)
@@ -197,7 +202,7 @@ LANGUAGE: write those phase labels in the OUTPUT language, never in English (unl
 NEGATIVE SIGNALS: if a supplied signal says this job does NOT match a route (e.g. PNP-eligible: no), do NOT build steps around that route as though it applied. Either omit it, or state once that the site's data shows no match for it and that official rules decide. Never write a step instructing the reader to apply through a route the supplied data does not support.`
 
 function buildPrompt(field: string, j: Job, jd: string, lang: Lang, pf = '', web: CompanyResearch | null = null): string {
-  const loc = j.address || [j.city, j.province].filter(Boolean).join(', ') || '—'
+  const loc = j.address || [j.city, provFullName(j.province)].filter(Boolean).join(', ') || '—'
   const t = teerOf(j.noc)
   const nocLine = j.noc ? `NOC ${j.noc} (TEER ${t ?? '—'}, ${catOf(j.noc)})` : 'NOC not identified'
   const H = HEADINGS[lang]
@@ -267,7 +272,7 @@ function buildPrompt(field: string, j: Job, jd: string, lang: Lang, pf = '', web
   // 海洋四省的判定规则:AIP 是**雇主驱动**通道(指定雇主、无需 EE 分数、语言学历门槛低于联邦),
   // 对一个已拿到当地 offer 的人,拿 EE 竞争力当标尺是答非所问。EE 只在确有类别命中时才提,且不作主线。
   const atlanticRule = atlantic
-    ? `\nIMPORTANT — this job is in an Atlantic province (${j.province}). The Atlantic Immigration Program (AIP) is the employer-driven route that applies here: it works through designated employers, does NOT require an Express Entry CRS score, and has lower language/education thresholds than federal programs. Lead with AIP and the provincial nomination route. Do NOT frame Express Entry competitiveness (CRS points, TEER-based education scoring) as the main yardstick for this job — mention EE only if a category above actually matches, and clearly as a secondary option. If the employer is not AIP-designated, say so plainly rather than assuming it is.`
+    ? `\nIMPORTANT — this job is in an Atlantic province (${provFullName(j.province)}). The Atlantic Immigration Program (AIP) is the employer-driven route that applies here: it works through designated employers, does NOT require an Express Entry CRS score, and has lower language/education thresholds than federal programs. Lead with AIP and the provincial nomination route. Do NOT frame Express Entry competitiveness (CRS points, TEER-based education scoring) as the main yardstick for this job — mention EE only if a category above actually matches, and clearly as a secondary option. If the employer is not AIP-designated, say so plainly rather than assuming it is.`
     : ''
   const base = `Role: ${j.title || '—'}\nCompany: ${j.company || '—'}\n${nocLine}\nLocation: ${loc}\n\nImmigration signals computed by this site (use these — do not contradict or invent others):\n${pathFacts}\n`
   const instr = `Explain under these headings (${inLang}):\n${H.title}\n${PLAN_RULES}\n${GROUNDING_RULES}${atlanticRule}`
