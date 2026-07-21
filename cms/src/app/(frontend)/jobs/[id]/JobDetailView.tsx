@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 import { makeT, LANG_KEY, LANGS, type Lang, type TFn } from '../i18n'
 import {
   AdvisorModal, blockedSrc, catName, EeCategorySection, FactRow, FactsBox, fetchJobText, JdAdvisorSection, JdFormattedView, JdTextView,
-  MeansForMe, PnpListSection, provName, UpgradeCard,
+  MeansForMe, nocLocalTitle, PnpListSection, provName, UpgradeCard,
   type DesigEmp, type EeOcc, type FieldSource, type JobRow, type NewsSlim, type NocDesc, type Plan, type PnpDraw, type PnpOcc,
 } from '../JobsTable'
 import type { RelatedJob } from '@/lib/jobsSql'
@@ -98,7 +98,9 @@ export default function JobDetailView({ job, plan, dims, related }: {
   const [companyOpen, setCompanyOpen] = useState(false)
 
   const provFull = provName(t, job.province || '')   // #146:中韩界面「Ontario(安大略省)」,英文界面只出英文
-  const nocTitle = dims.nocDesc.find((d) => d.noc === job.noc)?.title || ''
+  const nocRow = dims.nocDesc.find((d) => d.noc === job.noc) || null
+  const nocTitle = nocRow?.title || ''
+  const nocZh = nocLocalTitle(nocRow, lang)   // #147:界面语言译名(英文界面为空=不渲染)
   const day = (s: string) => (s || '').slice(0, 10)
   const relRow = (r: RelatedJob, note: string) => (
     <div key={r.id} style={{ fontSize: 13, padding: '3px 0' }}>
@@ -140,7 +142,13 @@ export default function JobDetailView({ job, plan, dims, related }: {
           {/* chips:代码不裸奔(NOC 带职业名、TEER 带说明) */}
           <div style={{ marginBottom: 12 }}>
             {job.pnpEligible ? <span style={chipBlue}>{t('cell.pnpYes')}</span> : null}
-            {job.noc ? <span style={chip}>NOC {job.noc}{nocTitle ? ` ${nocTitle}` : ''}</span> : null}
+            {/* #147(Frank 拍板「英文在前」):官方英文职业名是主文案,中/韩译名跟在后面作灰注;
+                英文界面或无译名时整段不出(宁可留空也不瞎猜) */}
+            {job.noc ? (
+              <span style={chip}>NOC {job.noc}{nocTitle ? ` ${nocTitle}` : ''}
+                {nocZh ? <span style={{ color: '#9ca3af' }}>　{nocZh}</span> : null}
+              </span>
+            ) : null}
             {job.teer != null ? <span style={chip}>TEER {job.teer}({t('teer.' + job.teer)})</span> : null}
           </div>
 

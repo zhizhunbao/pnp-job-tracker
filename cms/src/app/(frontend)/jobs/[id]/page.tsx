@@ -86,7 +86,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
       .filter((d: any) => d.province === job.province || d.province === 'FED'),
     eeOcc,
     desigEmp: desigDocs.docs.map((r: any) => ({ name: r.name, province: r.province, location: r.location ?? '', isTech: !!r.isTech })),
-    nocDesc: nocDescDocs.docs.map((r: any) => ({ noc: r.noc, title: r.title ?? '', duties: r.duties ?? '', requirements: r.requirements ?? '', fetched: r.fetched ?? '' })),
+    nocDesc: nocDescDocs.docs.map((r: any) => ({ noc: r.noc, title: r.title ?? '', titleZh: r.titleZh ?? '', titleKo: r.titleKo ?? '', duties: r.duties ?? '', requirements: r.requirements ?? '', fetched: r.fetched ?? '' })),
     fieldSources: fieldSrcDocs.docs.map((r: any) => ({ field: r.field ?? '', kind: r.kind ?? '', publisher: r.publisher ?? '', url: r.url ?? '', title: r.title ?? '', description: r.description ?? '', status: r.status ?? '', fetched: r.fetched ?? '', note: r.note ?? '' })),
     news: newsRows as { region: string; title: string; date: string; slug: string }[],
   }

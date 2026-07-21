@@ -443,6 +443,16 @@ def build():
                         "drawCrs": dr.get("crs"), "drawDate": dr.get("date"), "drawSize": dr.get("size")})
 
     # NOC 官方名+主要职责维度(只收数据集出现过的 NOC,控制前端 payload;duties/requirements 存换行拼接文本)
+    # #147:NOC 官方职业名的中/韩译名(clean/04f 产,固定参考集翻一次永久用)——缺文件/缺条目=留空,
+    # 前端回退只显英文(宁可留空也不瞎猜)
+    noc_i18n = {}
+    _p = _paths.PROCESSED / "noc_titles_i18n.json"
+    if _p.exists():
+        try:
+            noc_i18n = json.loads(_p.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001
+            noc_i18n = {}
+
     noc_descriptions = []
     if IN_NOC_DESC.exists():
         try:
@@ -453,8 +463,10 @@ def build():
         used_nocs = {j.get("noc") for j in jobs if j.get("noc")}
         for n, v in nd.get("byNoc", {}).items():
             if n in used_nocs:
+                tr = noc_i18n.get(n, {})
                 noc_descriptions.append({
                     "noc": n, "title": v.get("title", ""),
+                    "titleZh": tr.get("zh", ""), "titleKo": tr.get("ko", ""),
                     "duties": "\n".join(v.get("duties", [])),
                     "requirements": "\n".join(v.get("requirements", [])),
                     "fetched": fetched})

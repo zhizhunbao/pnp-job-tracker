@@ -21,7 +21,7 @@ export async function GET() {
     cities: cityDocs.docs.map((c: any) => ({ name: c.name, province: c.province })),
     districts: distDocs.docs.map((d: any) => ({ name: d.name, city: d.city, province: d.province })),
     designatedEmployers: aipDocs.docs.map((r: any) => ({ name: r.name, province: r.province, location: r.location, isTech: !!r.isTech })),
-    nocDescriptions: nocDescDocs.docs.map((r: any) => ({ noc: r.noc, title: r.title ?? '', duties: r.duties ?? '', requirements: r.requirements ?? '', fetched: r.fetched ?? '' })),
+    nocDescriptions: nocDescDocs.docs.map((r: any) => ({ noc: r.noc, title: r.title ?? '', titleZh: r.titleZh ?? '', titleKo: r.titleKo ?? '', duties: r.duties ?? '', requirements: r.requirements ?? '', fetched: r.fetched ?? '' })),
   }
   return Response.json({ dims })
 }

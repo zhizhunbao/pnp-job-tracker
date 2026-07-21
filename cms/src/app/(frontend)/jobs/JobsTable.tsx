@@ -454,7 +454,10 @@ export type PnpOcc = { province: string; stream: string; label: string; type: st
 export type PnpDraw = { province: string; kind: string; drawDate: string; stream: string; score: number | null; scale: string; invitations: number | null; note: string; label: string; url: string; fetched: string }
 export type EeOcc = { category: string; label: string; noc: string; teer: number | null; title: string; url: string; fetched: string; drawCrs: number | null; drawDate: string; drawSize: number | null }
 export type DesigEmp = { name: string; province: string; location: string; isTech: boolean }
-export type NocDesc = { noc: string; title: string; duties: string; requirements: string; fetched: string }
+export type NocDesc = { noc: string; title: string; titleZh?: string; titleKo?: string; duties: string; requirements: string; fetched: string }
+// #147:界面语言下的职业名译名(英文界面/无译名→空,调用方不渲染灰注)。英文名永远是主文案(Frank 拍板「英文在前」)
+export const nocLocalTitle = (n: NocDesc | null | undefined, lang: Lang): string =>
+  (lang === 'zh' ? n?.titleZh : lang === 'ko' ? n?.titleKo : '') || ''
 export type FieldSource = { field: string; kind: string; publisher: string; url: string; title: string; description: string; status: string; fetched: string; note: string }
 // 官方移民新闻瘦行(E12-06):弹框「本省最新公告」行用,详情在 /news/[slug]
 export type NewsSlim = { region: string; title: string; date: string; slug: string }
