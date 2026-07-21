@@ -239,6 +239,9 @@ const zh: Dict = {
   // 付费墙(E3-05)
   // E8-10:三个弹框的页眉分组名(收编后标题不再取被点单元格的值)
   'grp.company': '公司', 'grp.immigration': '移民', 'grp.category': '职业分类',
+  // 分类弹框按钮(职责/要求实时翻 + AI 速读)
+  'cat.showZh': '显示中文对照', 'cat.showEn': '显示英文原文', 'cat.translating': '翻译中…', 'cat.transErr': '翻译暂不可用',
+  'cat.aiRead': 'AI 速读', 'cat.aiLoading': '正在速读…', 'cat.aiErr': 'AI 速读暂不可用',
   'up.title': '升级 Pro 解锁',
   'up.advisor': '今日免费解读已用完,明天自动恢复。Pro 不限次数——每个岗、每个字段都能随时问。',
   'up.jobtext': '今日 JD 摘录免费次数已用完,明天自动恢复。Pro 不限次数。',
@@ -665,6 +668,8 @@ const en: Dict = {
   'match.r.lmia.na': 'No positive-LMIA record for this employer in the past two years (most employers never needed one; not a negative signal)',
   // 付费墙(E3-05)
   'grp.company': 'Company', 'grp.immigration': 'Immigration', 'grp.category': 'Occupation',
+  'cat.showZh': 'Show Chinese', 'cat.showEn': 'Show English', 'cat.translating': 'Translating…', 'cat.transErr': 'Translation unavailable',
+  'cat.aiRead': 'AI quick-read', 'cat.aiLoading': 'Reading…', 'cat.aiErr': 'AI quick-read unavailable',
   'up.title': 'Upgrade to Pro to unlock',
   'up.advisor': "Today's free readings are used up — they reset tomorrow. Pro is unlimited: ask about any job, any field, anytime.",
   'up.jobtext': "Today's free JD excerpts are used up — they reset tomorrow. Pro is unlimited.",
@@ -1079,6 +1084,8 @@ const ko: Dict = {
   'match.r.lmia.na': '이 고용주 최근 2년 승인 LMIA 기록 없음(대부분의 고용주는 필요한 적이 없음; 부정적 신호 아님)',
   // 付费墙(E3-05)
   'grp.company': '회사', 'grp.immigration': '이민', 'grp.category': '직업 분류',
+  'cat.showZh': '한국어 보기', 'cat.showEn': '영어 원문 보기', 'cat.translating': '번역 중…', 'cat.transErr': '번역 사용 불가',
+  'cat.aiRead': 'AI 빠른 읽기', 'cat.aiLoading': '읽는 중…', 'cat.aiErr': 'AI 빠른 읽기 사용 불가',
   'up.title': 'Pro 업그레이드로 잠금 해제',
   'up.advisor': '오늘 무료 해설 횟수를 모두 사용했습니다. 내일 자동 복구됩니다. Pro는 무제한 — 어떤 공고든, 어떤 항목이든 언제나 질문 가능.',
   'up.jobtext': '오늘 JD 발췌 무료 횟수를 모두 사용했습니다. 내일 자동 복구됩니다. Pro는 무제한.',

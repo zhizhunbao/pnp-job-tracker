@@ -75,7 +75,8 @@ export function PricingCard({ t, loggedIn, pro, caps, onRegister }: { t: TFn; lo
             <Li>{t('price.f2a')}</Li>
             <Li>{t('price.f2b')}</Li>
             <Li>{t('price.f2c')}</Li>
-            <Li>{t('price.f3')} · {t('price.firstN', { n: caps.match })}</Li>
+            {/* 匹配全放开(Frank 2026-07-21):免费即全量匹配,不再「每日前 N 岗」——收费差异改由 f6 工资中位列承担 */}
+            <Li>{t('price.f3')}</Li>
             <Li>{t('price.f4')} · {t('price.dayN', { n: caps.advisor })}</Li>
             <Li>{t('price.f5')} · {t('price.dayN', { n: caps.jobtext })}</Li>
           </ul>
@@ -90,7 +91,7 @@ export function PricingCard({ t, loggedIn, pro, caps, onRegister }: { t: TFn; lo
           {priceLine(P30, `${t('price.per30')} · ${t('price.perDay', { v: perDay(P30, 30) })}`)}
           <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
             <Li dim>{t('price.plusFree')}</Li>
-            <Li>{t('price.f3')} · {t('price.unlimited')}</Li>
+            {/* 匹配已免费(含在「免费版全部功能」里)→ Pro 卡不再单列匹配;Pro 差异=f6 工资中位列 + 顾问额度等 */}
             <Li>{t('price.f4')} · {t('price.fairN', { n: caps.proAdvisor })}</Li>
             <Li>{t('price.f5')} · {t('price.unlimited')}</Li>
             <Li>{t('price.f6')}</Li>

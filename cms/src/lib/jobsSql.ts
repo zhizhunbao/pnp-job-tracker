@@ -2,7 +2,6 @@
 // 路由/页面/提醒只调函数、不写裸 SQL(E10-01 收拢;Frank「所有职位 SQL 拆一个文件」)。
 // 列名是 Payload snake_case(老坑 5):改 Jobs schema 只动这里。
 import { match, matchRank, type MatchDims, type MatchJob, type MatchProfile } from './match'
-import { FREE_MATCH_JOBS_PER_DAY } from './plan'
 import type { JobRow } from '@/app/(frontend)/jobs/JobsTable'
 
 const iso = (v: any) => (v instanceof Date ? v.toISOString() : (v ?? ''))
@@ -234,13 +233,14 @@ export function mapJobRow(j: any, pro: boolean, matchLevel: JobRow['match']): Jo
   }
 }
 
-// match 计算器(规则在 lib/match.ts 一处):按人逐行算 level;免费用户仅默认序前 N 岗返回 level(激活钩子),
-// 未建档/未登录返回 null。第二参 globalIdx=该行在结果序中的全局下标(分页时=page*pageSize+i),供免费 cap 判定。
-type Matcher = { of: (j: any, globalIdx: number) => JobRow['match']; high: () => number; mid: () => number }
-function makeMatcher(profile: MatchProfile, profileOk: boolean, matchDims: MatchDims, pro: boolean): Matcher {
+// match 计算器(规则在 lib/match.ts 一处):按人逐行算 level;未建档/未登录返回 null。
+// 匹配全放开(Frank 2026-07-21:匹配=免费获客钩子,收费只留 Pro 数据列打码)——不再按下标截断,
+// 每一行都返回真实档位;付费墙只剩 vs中位/工资中位这些 Pro 数据列(mapJobRow 里按 pro 剥值)。
+type Matcher = { of: (j: any) => JobRow['match']; high: () => number; mid: () => number }
+function makeMatcher(profile: MatchProfile, profileOk: boolean, matchDims: MatchDims): Matcher {
   let high = 0, mid = 0
   return {
-    of: (j, globalIdx) => {
+    of: (j) => {
       if (!profileOk) return null
       const mj: MatchJob = {
         noc: j.noc ?? '', teer: num(j.teer), province: j.province ?? '', pnpEligible: !!j.pnp_eligible,
@@ -250,7 +250,6 @@ function makeMatcher(profile: MatchProfile, profileOk: boolean, matchDims: Match
       const level = match(profile, mj, matchDims).level
       if (level === 'high') high++
       else if (level === 'mid') mid++
-      if (!pro && globalIdx >= FREE_MATCH_JOBS_PER_DAY) return null
       return level
     },
     high: () => high, mid: () => mid,
@@ -268,8 +267,8 @@ export async function fetchJobRows(pool: any, { pro, profile, profileOk, matchDi
   const { rows } = await pool.query(
     `SELECT ${JOB_COLUMNS} ${JOB_FROM}
      ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT $1`, [limit])
-  const m = makeMatcher(profile, profileOk, matchDims, pro)
-  const jobs = rows.map((j: any, i: number) => mapJobRow(j, pro, m.of(j, i)))
+  const m = makeMatcher(profile, profileOk, matchDims)
+  const jobs = rows.map((j: any) => mapJobRow(j, pro, m.of(j)))
   const updatedAt = rows.reduce((acc: string, j: any) => { const ls = iso(j.last_seen); return ls > acc ? ls : acc }, '')
   return { jobs, updatedAt, matchHigh: m.high(), matchMid: m.mid() }
 }
@@ -310,9 +309,8 @@ export async function fetchJobsPage(
   let updatedAt: string
   if (updRes) { updatedAt = iso(updRes.rows[0]?.upd); updCache = { v: updatedAt, ts: now } }
   else updatedAt = cachedUpd!
-  const m = makeMatcher(profile, profileOk, matchDims, pro)
-  const base = page * pageSize
-  const jobs = listRes.rows.map((j: any, i: number) => mapJobRow(j, pro, m.of(j, base + i)))
+  const m = makeMatcher(profile, profileOk, matchDims)
+  const jobs = listRes.rows.map((j: any) => mapJobRow(j, pro, m.of(j)))
   return { jobs, total, updatedAt }
 }
 
@@ -369,10 +367,9 @@ export async function fetchMatchPage(
   }
   // 默认排序:match 等级↓(候选已按日期↓,stable sort 保同级内日期序)
   hits.sort((a, b) => matchRank(b.level) - matchRank(a.level))
-  // 免费用户:可见匹配封顶前 N(FOMO 计数仍是全量 matchHigh/matchMid)。
-  // cap 必须在列排序**之前**按默认序圈定——否则免费用户换着列排就能轮换枚举整个匹配集,绕过前 N 付费墙
-  const visible = pro ? hits : hits.slice(0, FREE_MATCH_JOBS_PER_DAY)
-  // 列排序(表头点击):在可见集内重排;Pro 数据列非 Pro 不响应;同值按匹配度次序兜底
+  // 匹配全放开(Frank 2026-07-21):免费用户也看全部匹配岗,不再截断——收费只剩 Pro 数据列打码。
+  const visible = hits
+  // 列排序(表头点击):在可见集内重排;Pro 数据列(vs中位/工资)非 Pro 仍不响应;同值按匹配度次序兜底
   const getter = sort?.key && sort.key !== 'match' && (pro || !PRO_SORTS.has(sort.key)) ? MATCH_SORT_VAL[sort.key] : null
   if (getter) {
     const d = sort!.dir === 'asc' ? 1 : -1
@@ -397,9 +394,9 @@ export async function fetchJobById(
   if (!Number.isFinite(id)) return null
   const { rows } = await pool.query(`SELECT ${JOB_COLUMNS} ${JOB_FROM} WHERE j.id = $1 LIMIT 1`, [id])
   if (!rows.length) return null
-  const m = makeMatcher(profile, profileOk, matchDims, pro)
+  const m = makeMatcher(profile, profileOk, matchDims)
   // 详情页单岗:免费 cap 以 0 号位判(建档免费用户在详情页能看本岗匹配级——单岗不构成枚举面)
-  return mapJobRow(rows[0], pro, m.of(rows[0], 0))
+  return mapJobRow(rows[0], pro, m.of(rows[0]))
 }
 
 export type RelatedJob = { id: number; title: string; company: string; city: string; province: string; salaryText: string }

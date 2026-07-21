@@ -64,12 +64,12 @@ const FIELD_GROUP: Partial<Record<ColKey, Disposition>> = {
   score: 'immigration',
   // ③ 公司 → 公司弹框;职位名不走本表(cellActionable 特判,直开 JD 弹框=职位弹框)
   company: 'company',
-  // ④ 地址 → 地图直连(仅地址;省/市/区/国家退回纯文本)
-  address: 'map',
+  // ④ 地址/省/市 → 地图直连(各查自己那一级,见 mapQuery;区/国家退回纯文本)
+  address: 'map', province: 'map', city: 'map',
   // ⑤ 其余一律不可点(Pro 锁位的锁自己链升级弹窗,不走本路由)
   match: 'none', pnp: 'none', ee: 'none', aip: 'none', eligibility: 'none', vsMedian: 'none',
   salary: 'none', salaryYr: 'none', empHours: 'none', empTerm: 'none', accessibility: 'none', lmia: 'none',
-  country: 'none', province: 'none', city: 'none', district: 'none',
+  country: 'none', district: 'none',
   source: 'none', origin: 'none', direct: 'none', status: 'none',
   wageMedHr: 'none', wageMedYr: 'none',
   datePosted: 'none', lastSeen: 'none', closedAt: 'none',
@@ -401,6 +401,15 @@ const parseLoc = (j: JobRow): { country: string; prov: string; city: string; dis
   city: j.city || '',
   district: j.district || '',
 })
+// 地点各级的地图查询串(单一来源;表格格与手机卡共用)。各级只查自己那一级(点省看省、点市看市),
+// **省一律用全称**:省码 NL 既是纽芬兰也是荷兰国家码,单查会跳欧洲(#175 实测),全称无歧义。
+const mapQuery = (field: ColKey, j: JobRow): string => {
+  const L = parseLoc(j)
+  return field === 'province' ? [L.prov, 'Canada'].filter(Boolean).join(', ')
+    : field === 'city' ? [L.city, L.prov, 'Canada'].filter(Boolean).join(', ')
+    : field === 'country' ? (L.country || 'Canada')
+    : [j.address || L.district, L.city, L.prov].filter(Boolean).join(', ')
+}
 
 // 综合检索串:搜索框对所有列字段生效(职位/公司/省市区/NOC/分类/薪资/来源/经验/评分/TEER)
 const searchHay = (j: JobRow): string => {
@@ -606,13 +615,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     if (!d || d === 'none') return
     if (d === 'map') {
       // 各字段只查自己那一级(与「一格一事」同一原则):点省看省、点市看市、点区/地址才到街号。
-      // 早前把 address+district+city+province 全拼进查询,而 address 本就含市省 →
-      // 「St. John's」出现三次、「NL」两次,且点省与点市跳同一个精确地址,答非所问。
-      // 省码必须带国名消歧:NL 既是纽芬兰也是**荷兰的国家代码**,单查会跳到欧洲(实测发现)。
-      const q = field === 'province' ? [job.province, 'Canada'].filter(Boolean).join(', ')
-        : field === 'city' ? [job.city, job.province, 'Canada'].filter(Boolean).join(', ')
-        : field === 'country' ? (job.country || 'Canada')
-        : [job.address || job.district, job.city, job.province].filter(Boolean).join(', ')
+      // 查询串统一走 mapQuery(与表格格 href、手机卡同源;省用全称消歧,见其注释)。
+      const q = mapQuery(field, job)
       if (q) window.open(mapsUrl(q), '_blank', 'noopener')
       return
     }
@@ -1133,7 +1137,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         {matchView && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', background: '#eff6ff', border: '1px solid #dbeafe', borderRadius: 8, padding: '7px 12px', marginBottom: 8, fontSize: 12.5 }}>
             {/* 只报「高」(第 6 轮 #23):中匹配门槛宽、数字动辄数千,报出来像灌水,反而稀释高匹配的可信度 */}
-            <span style={{ color: '#1e40af', flex: 1, minWidth: 200 }}><IconTarget /> {t('mv.on')}{!plan.isPro ? ` · ${matchTotals && matchTotals.high > 0 ? t('mv.today', { h: matchTotals.high }) + ' · ' : ''}${t('match.overCap', { n: plan.freeMatchCap })}` : ''}</span>
+            {/* 匹配全放开(Frank 2026-07-21):不再报「免费仅前 N」封顶——只留「今日 N 个高匹配」纯信息 */}
+            <span style={{ color: '#1e40af', flex: 1, minWidth: 200 }}><IconTarget /> {t('mv.on')}{matchTotals && matchTotals.high > 0 ? ` · ${t('mv.today', { h: matchTotals.high })}` : ''}</span>
             <button onClick={toggleMatchView} style={{ border: 'none', background: 'none', padding: 0, color: '#6b7280', cursor: 'pointer', fontSize: 12.5 }}>{t('mv.exit')} ×</button>
           </div>
         )}
@@ -1209,7 +1214,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                         )
                         Object.assign(extra, { whiteSpace: 'nowrap', textAlign: 'center' as const })
                       }
-                      else if (k === 'match') {  // 与我的匹配(E5-00):高=绿 chip / 中=蓝 / 低=灰 / 不适用=浅;未建档→引导;免费限额外→锁
+                      else if (k === 'match') {  // 与我的匹配(E5-00):高=绿 chip / 中=蓝 / 低=灰 / 不适用=浅;未建档→引导。
+                        // 匹配全放开(Frank 2026-07-21):所有岗都出真实档位,不再有「超额打码」档——收费只剩 Pro 数据列
                         if (j.match) {
                           const M: Record<string, { bg: string; fg: string }> = { high: { bg: '#dcfce7', fg: '#166534' }, mid: { bg: '#dbeafe', fg: '#1e40af' }, low: { bg: '#f3f4f6', fg: '#6b7280' }, na: { bg: '#fafafa', fg: '#c4c4c8' } }
                           const c2 = M[j.match]
@@ -1218,21 +1224,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                         } else if (!plan.loggedIn || !plan.profileOk) {
                           node = <a href="/account" style={{ fontSize: 12, color: '#2563eb', textDecoration: 'none', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>{t('match.needProfile')} →</a>
                         } else {
-                          {/* ①(2026-07-19 价值时刻批):锁 hover/弹框带 FOMO 全量计数(matchTotals 缺失回退限额文案) */}
-                          {/* #160:原先只有一把光秃秃的锁——全站最值钱的一列反倒什么都不给看,与「打码比空白更能促付费」正相反。
-                              但匹配度不能照搬工资那套假值:糊一个假「高匹配」= 拿假承诺换钱,用户付完发现是「低」就再也不回来了。
-                              故打码用**中性灰 chip**(只传达「这儿有个判定」不指向任何一档),真话留给悬停——
-                              matchTotals 是真实数字,「你今日共 N 个高匹配」本就为真,真数量 + 遮住的明细,不欠债 */}
-                          node = (
-                            <button title={matchTotals && matchTotals.high > plan.freeMatchCap ? t('up.matchN', { h: matchTotals.high, n: plan.freeMatchCap }) : t('match.overCap', { n: plan.freeMatchCap })}
-                              aria-label={t('up.maskMatch')}
-                              style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', color: '#b45309', display: 'inline-flex', alignItems: 'center', gap: 4 }}
-                              onClick={(e) => { e.stopPropagation(); setUpsell('match') }}>
-                              <span aria-hidden style={{ filter: 'blur(4px)', userSelect: 'none', background: '#f3f4f6', color: '#9ca3af', fontWeight: 600, fontSize: 12, padding: '2px 8px', borderRadius: 6, whiteSpace: 'nowrap' }}>██</span>
-                              <IconLock />
-                            </button>
-                          )
-                          Object.assign(extra, { whiteSpace: 'nowrap', textAlign: 'center' as const })
+                          node = <span style={{ color: '#d1d5db' }}>—</span>; Object.assign(extra, { whiteSpace: 'nowrap', textAlign: 'center' as const })
                         }
                       }
                       else if (k === 'score') { node = j.gradeChannel != null ? t('gr.ch.' + j.gradeChannel) : (j.score ?? '—'); Object.assign(extra, { fontWeight: 500, whiteSpace: 'nowrap', fontSize: 12.5, color: gradeColor(j.gradeChannel) }) }  // #132 档名人话化(Frank「X/5 看不懂」);旧库未回填退 0-100 旧分
@@ -1255,9 +1247,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       else if (k === 'address') { href = j.address ? mapsUrl(j.address) : null; node = j.address || '—'; Object.assign(extra, wrapCell(220)) }
                       else if (k === 'direct') { const dr = isDirect(j); node = dr ? t('cell.first') : t('cell.repost'); Object.assign(extra, { whiteSpace: 'nowrap', color: dr ? '#15803d' : '#9ca3af', fontSize: 12.5 }) }
                       else if (k === 'country') { node = L.country || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
-                      // #175:省/市/区/来源退回纯文本(地图出口只留「地址」一格)
-                      else if (k === 'province') { node = L.prov || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
-                      else if (k === 'city') { node = L.city || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+                      // 省/市 → 地图直连(Frank 2026-07-21:省市文字加跳转);区/来源仍纯文本
+                      else if (k === 'province') { href = L.prov ? mapsUrl(mapQuery('province', j)) : null; node = L.prov || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+                      else if (k === 'city') { href = L.city ? mapsUrl(mapQuery('city', j)) : null; node = L.city || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'district') { node = L.district || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#1f2937' }) }
                       else if (k === 'source') { node = sourceLabel(j); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'origin') { node = j.origin ? t('origin.' + j.origin) : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
@@ -1363,8 +1355,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                   </div>
                 ) : null}
                 <div style={{ fontSize: 12.5, marginTop: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
-                  {/* #175:地点/日期退出可点集合——onClick 连根摘(整卡点击照常进详情页) */}
-                  {L.city ? <span style={{ color: '#374151', minWidth: 0 }}>{L.city}{j.province ? `, ${j.province}` : ''}</span> : <span />}
+                  {/* 地点 → 地图直连(Frank 2026-07-21;与桌面省/市格同源 mapQuery);stopPropagation 保整卡进详情页 */}
+                  {L.city ? <a href={mapsUrl(mapQuery('city', j))} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} style={{ color: '#2563eb', minWidth: 0, textDecoration: 'none' }}>{L.city}{j.province ? `, ${j.province}` : ''}</a> : <span />}
                   <span suppressHydrationWarning style={{ color: '#9ca3af', whiteSpace: 'nowrap', flexShrink: 0 }}>{(j.datePosted || '').slice(0, 10)}{days != null ? `(${t('fact.daysUpVal', { n: days })})` : ''}</span>
                 </div>
                 <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
@@ -1405,9 +1397,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             : rows.length >= total ? t('allShown', { total })
             : <Button kind="secondary" sm disabled={loading} onClick={() => setPage((p) => p + 1)} style={{ opacity: loading ? 0.6 : 1 }}>{loading ? '…' : t('loadMore', { n: total - rows.length })}</Button>}
         </div>
-        {/* 匹配视图 · 免费限额升级卡(D1=B:尝到甜头 → 升级看全量) */}
-        {/* FOMO 数字(第 5 轮 #15):有全量计数时用「你今日共 X 个高匹配」,比抽象限额有说服力 */}
-        {matchView && !plan.isPro && <UpgradeCard t={t} reason={matchTotals && matchTotals.high > plan.freeMatchCap ? t('up.matchN', { h: matchTotals.high, n: plan.freeMatchCap }) : t('up.match', { n: plan.freeMatchCap })} />}
+        {/* 匹配全放开(Frank 2026-07-21):匹配不再限额 → 底部「升级看全量」升级卡退役;
+            升级动力改由表内 Pro 数据列(vs中位/工资中位)打码承担 */}
       </div>
       {/* footer:全站共享 SiteFooter(2026-07-16 用户拍板统一 header/footer) */}
       <SiteFooter t={t} maxWidth={1320} />
@@ -2505,32 +2496,8 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
 
   // 未登录/未建档:弹框内不再放建档引导(页头横幅 + 列表「建档案 →」列已覆盖;用户拍板:别到处都是)
   if (!plan.loggedIn || !plan.profileOk) return null
-  // 免费限额外(服务端没给这行算 match):文字升级卡退役 → 同版式整块打码 + 统一锁行(#160 档1;
-  // Frank「升级 Pro 要全栈统一」)。糊的是假值,真值本就没下发(blur 是视觉不是访问控制)。
-  if (!plan.isPro && job.match == null) {
-    const maskRow = (dim: string, mask: string, last: boolean) => (
-      <div style={{ padding: '7px 0', borderBottom: last ? undefined : '1px solid #f3f4f6' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 11.5, color: '#6b7280', fontWeight: 600 }}>{dim}</span>
-          <span aria-hidden style={{ filter: 'blur(4px)', userSelect: 'none', background: '#f3f4f6', color: '#9ca3af', fontWeight: 600, fontSize: 11.5, padding: '2px 8px', borderRadius: 999 }}>████</span>
-        </div>
-        <div aria-hidden style={{ filter: 'blur(4px)', userSelect: 'none', pointerEvents: 'none', fontSize: 12.5, lineHeight: 1.8, color: '#d1d5db', letterSpacing: -1 }}>{mask}</div>
-      </div>
-    )
-    return (
-      <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '12px 16px', margin: '0 0 14px' }}>
-        <div style={{ fontSize: 13.5, fontWeight: 700, color: '#111827' }}>
-          <IconTarget /> {t('match.title')}
-          <span aria-hidden style={{ marginLeft: 10, fontWeight: 600, color: '#9ca3af', filter: 'blur(4px)', userSelect: 'none' }}>{t('match.levelLine', { level: t('match.mid') })}</span>
-        </div>
-        <div style={{ marginTop: 4 }}>
-          {maskRow(t('mm.dim.noc'), MASK_TEXT[0], false)}
-          {maskRow(t('mm.dim.prov'), MASK_TEXT[3], true)}
-        </div>
-        <LockFoot t={t} loggedIn msg={t('up.match', { n: plan.freeMatchCap })} />
-      </div>
-    )
-  }
+  // 匹配全放开(Frank 2026-07-21):匹配结论对所有已建档用户免费全出(本卡 result 本就前端按 profile 现算)——
+  // 原「免费限额外整块打码」退役;付费墙只剩表内 Pro 数据列(vs中位/工资中位)。
   // 卡片化(E8-10 §3.5「逐条读判定 → 卡片」,双端统一;Frank 三拍:拆卡 / 值不换行不省略 / 英文在前中文灰注):
   // 依据链同源 match() reasons(1:1 映射,不另起炉灶);措辞红线照旧(只说符合与否)。
   if (!result) return null
@@ -2645,6 +2612,122 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
   )
 }
 
+// 分类弹框主体(#176 分类=「这职业是干嘛的」;Frank 2026-07-21 三卡改版):
+// 三张带 title 的卡 —— ① 职业分类(NOC/职业名/TEER/三级;点哪个字段该行高亮=「点哪个字段就显示哪个字段」
+// 在「始终出完整三卡」下的落地)② 官方主要职责 ③ 任职要求。顶部两钮:
+//  · 显示中文对照:职责/要求实时翻(/api/noc-translate 懒调朋友 qwen,进程缓存;数据层只存英文)。英文界面不出。
+//  · AI 速读:点了才生成(复用 /api/advisor 免费额度 field=occRead,按 NOC 缓存)——不点不烧,#176 零成本默认不破。
+function CategoryPanel({ job, lang, plan, nocDesc, srcField }: { job: JobRow; lang: Lang; plan: Plan; nocDesc: NocDesc[]; srcField: ColKey }) {
+  const t = makeT(lang)
+  const noc = nocDesc.find((d) => d.noc === job.noc) || null
+
+  // 中文对照:首次点才调翻译;拿到后前端存一份,切换英/中零延迟
+  const [showTrans, setShowTrans] = useState(false)
+  const [trans, setTrans] = useState<{ duties: string; requirements: string } | null>(null)
+  const [transStatus, setTransStatus] = useState<'idle' | 'loading' | 'error'>('idle')
+  const toggleTrans = async () => {
+    if (trans) { setShowTrans((v) => !v); return }
+    setTransStatus('loading')
+    try {
+      const r = await fetch('/api/noc-translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ noc: job.noc, lang }) })
+      const d = await r.json().catch(() => null)
+      if (d?.ok) { setTrans({ duties: d.duties || '', requirements: d.requirements || '' }); setShowTrans(true); setTransStatus('idle') }
+      else setTransStatus('error')
+    } catch { setTransStatus('error') }
+  }
+
+  // AI 速读:点了才生成,流式(复用顾问额度 = /api/advisor field=occRead,按 NOC 缓存)
+  const [ai, setAi] = useState('')
+  const [aiStatus, setAiStatus] = useState<'idle' | 'loading' | 'streaming' | 'done' | 'error' | 'upgrade' | 'limited'>('idle')
+  const runAi = async () => {
+    setAiStatus('loading'); setAi('')
+    try {
+      const res = await fetch('/api/advisor', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ field: 'occRead', id: job.noc, job: { noc: job.noc, duties: noc?.duties, requirements: noc?.requirements }, lang }),
+      })
+      if (res.status === 402) { setAiStatus('upgrade'); return }
+      if (res.status === 429) { setAiStatus('limited'); return }
+      if (!res.ok || !res.body) { setAiStatus('error'); return }
+      const reader = res.body.getReader(); const dec = new TextDecoder()
+      setAiStatus('streaming')
+      for (;;) { const { done, value } = await reader.read(); if (done) break; setAi((p) => p + dec.decode(value, { stream: true })) }
+      setAiStatus('done')
+    } catch { setAiStatus('error') }
+  }
+
+  // 身份卡各行(点击字段=该行高亮);NOC 与职业名同属 'noc' 字段,点 NOC 两行齐亮
+  const rows: { f: ColKey; k: string; v: React.ReactNode }[] = [
+    { f: 'noc', k: t('col.noc'), v: job.noc || null },
+    { f: 'noc', k: t('fact.nocTitle'), v: noc?.title || null },
+    { f: 'teer', k: t('col.teer'), v: job.teer != null ? `TEER ${job.teer} (${t('teer.' + job.teer)})` : null },
+    { f: 'broad', k: t('col.broad'), v: job.broad && job.broad !== '未分类' ? t('broad.' + job.broad) : null },
+    { f: 'mid', k: t('col.mid'), v: job.mid && job.mid !== '未分类' ? catName(t, job.mid) : null },
+    { f: 'fine', k: t('col.fine'), v: job.fine && job.fine !== '未分类' ? catName(t, job.fine) : null },
+  ]
+
+  const btn: React.CSSProperties = { border: '1px solid #e5e7eb', borderRadius: 999, padding: '5px 13px', fontSize: 12.5, background: '#fff', color: '#374151', cursor: 'pointer', fontWeight: 600 }
+  // 逐行 duties/requirements(中文对照开且已翻到 → 用译文,与英文同口径 split('\n'))
+  const listBlock = (title: string, en?: string, zh?: string) => {
+    const txt = (showTrans && zh) ? zh : (en || '')
+    const items = txt.split('\n').map((s) => s.trim()).filter(Boolean)
+    if (!items.length) return null
+    return (
+      <div style={MODAL_CARD}>
+        <div style={MODAL_CARD_HEAD}>{title}{noc?.fetched ? <span style={{ fontSize: 11.5, fontWeight: 400, color: '#9ca3af' }}>（{noc.fetched}）</span> : null}</div>
+        <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12.5, color: '#4b5563', lineHeight: 1.6 }}>
+          {items.map((d, i) => <li key={i}>{d}</li>)}
+        </ul>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      {/* 两钮:中文对照(英文界面无需=不出)+ AI 速读(点前只是一枚钮,不烧额度) */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+        {lang !== 'en' && (
+          <button onClick={toggleTrans} disabled={transStatus === 'loading'} style={{ ...btn, opacity: transStatus === 'loading' ? 0.6 : 1 }}>
+            {transStatus === 'loading' ? t('cat.translating') : transStatus === 'error' ? t('cat.transErr') : showTrans ? t('cat.showEn') : t('cat.showZh')}
+          </button>
+        )}
+        {aiStatus === 'idle' && <button onClick={runAi} style={btn}><IconCompass /> {t('cat.aiRead')}</button>}
+      </div>
+
+      {/* 卡①:职业分类(点击字段该行高亮) */}
+      <div style={MODAL_CARD}>
+        <div style={MODAL_CARD_HEAD}>{t('grp.category')}</div>
+        {rows.filter((r) => r.v != null).map((r, i) => {
+          const on = r.f === srcField
+          return (
+            <div key={i} style={{ display: 'flex', gap: 10, padding: '3px 6px', margin: '0 -6px', borderRadius: 6, fontSize: 13, background: on ? '#eff6ff' : undefined }}>
+              <span style={{ minWidth: 88, color: on ? '#2563eb' : '#9ca3af', flexShrink: 0, fontWeight: on ? 600 : 400 }}>{r.k}</span>
+              <span style={{ flex: 1, color: '#374151', wordBreak: 'break-word' }}>{r.v}</span>
+            </div>
+          )
+        })}
+        <div style={{ marginTop: 7, fontSize: 11.5, color: '#9ca3af', lineHeight: 1.5 }}>{t('fact.nocNote')}</div>
+      </div>
+
+      {/* 卡②③:官方主要职责 / 任职要求 */}
+      {listBlock(t('fact.nocDuties'), noc?.duties, trans?.duties)}
+      {listBlock(t('fact.nocReqs'), noc?.requirements, trans?.requirements)}
+
+      {/* AI 速读卡(点了才出) */}
+      {aiStatus !== 'idle' && (
+        <div style={MODAL_CARD}>
+          <div style={MODAL_CARD_HEAD}><IconCompass /> {t('cat.aiRead')}</div>
+          {aiStatus === 'upgrade' ? <LockedText t={t} loggedIn={plan.loggedIn} />
+            : aiStatus === 'limited' ? <LockedText t={t} loggedIn={plan.loggedIn} msg={t('advisor.limit429')} ctaLabel={!plan.loggedIn ? t('advisor.limitCta') : undefined} />
+            : aiStatus === 'error' ? <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>{t('cat.aiErr')}</p>
+            : aiStatus === 'loading' ? <p style={{ margin: 0, fontSize: 14, color: '#9ca3af' }}>{t('advisor.loading')}</p>
+            : <div style={{ fontSize: 14, lineHeight: 1.7, color: '#374151' }}>{renderAI(ai.split('❓')[0])}{aiStatus === 'streaming' && <span style={{ color: '#9ca3af' }}>▋</span>}</div>}
+        </div>
+      )}
+    </>
+  )
+}
+
 // E8-10:入参从 24 值的 field 改为 3 值的 group;field 保留仅用于「打开时锚到哪一节」,不再参与内容分支。
 export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnpDraws, news, eeOcc, desigEmp, nocDesc, fieldSources, onClose, onOpenJob }: { group: FieldGroup; field: ColKey; job: JobRow; title?: string; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; news: NewsSlim[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onClose: () => void; onOpenJob?: (j: JobRow) => void }) {
   const t = makeT(lang)
@@ -2746,7 +2829,11 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
                 现在:公司弹框=公司名、职位与移民弹框=岗位名,与弹框里铺开的整组事实对得上。 */}
             {/* #174:「AI 顾问 · 移民 · 免费今日剩 N 次」两个「·」退役——分组名与次数改空格灰注
                 (#171 详情页同款手法);靛色随 #108 杂色归一改灰 */}
-            <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 600 }}><IconCompass /> {t('advisor.tag')}<span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('grp.' + group)}</span>{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('advisor.left', { n: freeLeft })}</span> : null}</div>
+            {/* 分类弹框零 AI(#176 纯官方事实),故不挂「AI 顾问」标——只出「职业分类」,名副其实
+                (Frank 2026-07-21「点大分类就显示大分类」);移民/公司弹框有 AI 内容,照旧带标。 */}
+            <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 600 }}>{group === 'category'
+              ? t('grp.' + group)
+              : <><IconCompass /> {t('advisor.tag')}<span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('grp.' + group)}</span>{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('advisor.left', { n: freeLeft })}</span> : null}</>}</div>
             <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{group === 'company' ? (job.company || title || a.title) : (job.title || title || a.title)}</h3>
           </div>
           <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
@@ -2761,8 +2848,10 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
               职业方向/所在省/省提名粗筛/EE/技能层级/薪资 全是**岗位级**事实,挂在「Agilent Technologies」
               这个标题下答非所问(用户点公司是想了解公司)。岗位级判定留在岗位面板。 */}
           {group === 'immigration' && <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} nocDesc={nocDesc} />}
-          {/* E8-10 S6:按分组铺全组事实(原先只渲被点的那一个字段) */}
-          <GroupFactsSection group={group} job={job} jobs={companyJobs} lang={lang} isPro={plan.isPro} loggedIn={plan.loggedIn} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} onOpenJob={onOpenJob} />
+          {/* 分类组走专用三卡面板(Frank 2026-07-21:三卡 + 中文对照 + AI 速读);其余组照旧铺全组事实 */}
+          {group === 'category'
+            ? <CategoryPanel job={job} lang={lang} plan={plan} nocDesc={nocDesc} srcField={field} />
+            : <GroupFactsSection group={group} job={job} jobs={companyJobs} lang={lang} isPro={plan.isPro} loggedIn={plan.loggedIn} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} onOpenJob={onOpenJob} />}
           {/* 建档 CTA(第 5 轮 #17 = 弹框规范 D1):身份信号族对未建档用户铺「事实 → 个人化」的桥 */}
           {!plan.profileOk && group === 'immigration' && (
             <div style={{ margin: '8px 0 10px' }}>

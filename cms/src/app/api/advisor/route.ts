@@ -64,6 +64,7 @@ const SYSTEM = (lang: Lang) =>
 
 type Job = {
   title?: string; company?: string; companyDescription?: string; companySectors?: string; noc?: string; province?: string
+  duties?: string; requirements?: string  // occRead(分类弹框 AI 速读)用:官方职责/任职要求原文,接地不凭空
   city?: string; district?: string; address?: string; officialUrl?: string; applyUrl?: string
   score?: number | null; gradeChannel?: number | null; category?: string; accessibility?: string
   pnpEligible?: boolean; pnpStream?: string; eeCategory?: string; aip?: boolean; salary?: string; salaryAnnual?: number | null
@@ -137,6 +138,7 @@ const ASK: Record<string, string> = {
   ee: 'Explain Express Entry category-based selection: this is a FEDERAL pathway, SEPARATE from PNP — which category this job\'s NOC falls into and what that means (IRCC holds CRS-based draws prioritizing these categories; often no job offer needed). Make clear it differs from the provincial PNP route.',
   aip: 'Explain the AIP (Atlantic Immigration Program) designated-employer status and what it means; note it only applies to the four Atlantic provinces and is a rough name match.',
   noc: 'Explain the NOC code and its TEER level, and how NOC is used by PNP / Express Entry.',
+  occRead: 'Give a quick, plain-language read of THIS occupation for someone skimming a long official duties/requirements list: (1) what people in this job actually do day-to-day, (2) the key qualifications/education/credentials to get in, (3) any licensing note if the requirements mention one. Base it STRICTLY on the official duties and requirements in the facts below — do not invent specifics, wages, or immigration advice.',
   teer: 'Explain the TEER level and what it means for skilled-worker immigration.',
   broad: 'Explain this occupation major group and its immigration relevance.',
   mid: 'Explain this occupation sub-group.', fine: 'Explain this specific occupation (unit group).',
@@ -241,6 +243,19 @@ function buildPrompt(field: string, j: Job, jd: string, lang: Lang, pf = '', web
       known + `${ground}\n\n${antiFab}\n\nExplain under these headings (${inLang}):\n${H.company}\n\n` +
       // E8-05 走查:实测模型仍会先吐一句英文过程叙述("I'll fetch the … website")——把禁令放末尾(最近效应)并写死首字符要求
       `Output rules: your reply must start with 【 as the very first character — zero preamble, zero meta-commentary (never "I'll fetch…", "Let me…"), no English filler; every sentence in ${LANG_NAME[lang]}.`
+  }
+  // occRead(分类弹框「AI 速读」):**只喂职业级事实**(NOC/TEER/大类 + 官方职责/要求原文),不带本岗
+  // 标题/公司/薪资 —— 这样按 NOC 缓存干净(同 NOC 各岗共用一份速读),且措辞不跑偏到移民建议。
+  if (field === 'occRead') {
+    const t2 = teerOf(j.noc)
+    const dutiesTxt = (j.duties || '').split('\n').map((s) => s.trim()).filter(Boolean).slice(0, 30).join('\n').slice(0, 2000)
+    const reqTxt = (j.requirements || '').split('\n').map((s) => s.trim()).filter(Boolean).slice(0, 20).join('\n').slice(0, 1400)
+    const facts = [
+      `NOC ${j.noc || '—'} (TEER ${t2 ?? '—'}, ${catOf(j.noc)})`,
+      dutiesTxt ? `Official main duties:\n${dutiesTxt}` : '',
+      reqTxt ? `Official employment requirements:\n${reqTxt}` : '',
+    ].filter(Boolean).join('\n\n')
+    return `${ASK.occRead}\n\nOccupation facts (StatCan NOC 2021):\n${facts}\n\nWrite 2–3 short sections, each starting with a 【heading】, content in ${LANG_NAME[lang]}. Base everything strictly on the facts above; do not invent numbers, licensing rules, or immigration advice.`
   }
   // E8-10:入参收成三组(company / job / immigration)。'immigration' 走原 'title' 那条分步方案路径;
   // 'job' 不到这儿——职位弹框**不设 AI 段**(JD 五节整理版已承担事实层,再加一段就是 #125 修掉的那种重复),
