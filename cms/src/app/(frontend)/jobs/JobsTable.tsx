@@ -106,15 +106,21 @@ export function UpgradeCard({ t, reason }: { t: TFn; reason: string }) {
 // 这里糊掉的是**假文本**,零成本。真内容只在放行时才生成,一次都不浪费。
 // 真值同理不下发:blur 是视觉效果不是访问控制,右键就能读,故服务端剥离 + 前端渲假值(与 #130/#152 同一套)。
 const MASK_TEXT = ['████████████████████████████████', '██████████████████████████', '███████████████████████████████████', '████████████████████']
+// 锁行(打码块脚注)单独成件:全站所有打码位共用同一形态(锁 + 灰注 + UpgradeCta 文字链),不许各处自造
+export function LockFoot({ t, loggedIn, msg }: { t: TFn; loggedIn: boolean; msg?: string }) {
+  return (
+    <div style={{ marginTop: 6, fontSize: 11.5, color: '#9ca3af', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+      <IconLock />{msg || t('up.quota')}<UpgradeCta t={t} loggedIn={loggedIn} link style={{ fontSize: 11.5 }} />
+    </div>
+  )
+}
 export function LockedText({ t, loggedIn, lines = 3 }: { t: TFn; loggedIn: boolean; lines?: number }) {
   return (
     <div style={{ marginTop: 4 }}>
       <div aria-hidden style={{ filter: 'blur(4px)', userSelect: 'none', pointerEvents: 'none', fontSize: 12.5, lineHeight: 1.9, color: '#d1d5db', letterSpacing: -1 }}>
         {MASK_TEXT.slice(0, lines).map((s, i) => <div key={i}>{s}</div>)}
       </div>
-      <div style={{ marginTop: 6, fontSize: 11.5, color: '#9ca3af', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-        <IconLock />{t('up.quota')}<UpgradeCta t={t} loggedIn={loggedIn} link style={{ fontSize: 11.5 }} />
-      </div>
+      <LockFoot t={t} loggedIn={loggedIn} />
     </div>
   )
 }
@@ -2513,21 +2519,51 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
 
   // 未登录/未建档:弹框内不再放建档引导(页头横幅 + 列表「建档案 →」列已覆盖;用户拍板:别到处都是)
   if (!plan.loggedIn || !plan.profileOk) return null
-  // 免费限额外(服务端没给这行算 match)→ 升级卡;依据链是 Pro/限额内权益
-  if (!plan.isPro && job.match == null) return <UpgradeCard t={t} reason={t('up.match', { n: plan.freeMatchCap })} />
-  // M 对比表(2026-07-19 Frank 批「表格左右对比更直观」):维度 × 本岗 × 你的档案 × 判定;
-  // 依据链同源 match() reasons(1:1 映射,不另起炉灶);代码不裸奔(NOC 带职业名/省全名/TEER 带说明);
-  // 一格一事(第二件事独立成行或进 ⓘ);措辞红线照旧(只说符合与否)。
-  const narrow = useIsNarrow()
+  // 免费限额外(服务端没给这行算 match):文字升级卡退役 → 同版式整块打码 + 统一锁行(#160 档1;
+  // Frank「升级 Pro 要全栈统一」)。糊的是假值,真值本就没下发(blur 是视觉不是访问控制)。
+  if (!plan.isPro && job.match == null) {
+    const maskCard = (dim: string, mask: string) => (
+      <div style={{ background: '#fff', border: '1px solid #f3f4f6', borderRadius: 8, padding: '7px 12px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 11.5, color: '#6b7280', fontWeight: 600 }}>{dim}</span>
+          <span aria-hidden style={{ filter: 'blur(4px)', userSelect: 'none', background: '#f3f4f6', color: '#9ca3af', fontWeight: 600, fontSize: 11.5, padding: '2px 8px', borderRadius: 999 }}>████</span>
+        </div>
+        <div aria-hidden style={{ filter: 'blur(4px)', userSelect: 'none', pointerEvents: 'none', fontSize: 12.5, lineHeight: 1.8, color: '#d1d5db', letterSpacing: -1 }}>{mask}</div>
+      </div>
+    )
+    return (
+      <div style={{ background: '#fafaf9', border: '1px solid #e7e5e4', borderRadius: 10, padding: '10px 14px', margin: '4px 0 8px' }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: '#374151' }}>
+          <IconTarget /> {t('match.title')}
+          <span aria-hidden style={{ marginLeft: 10, fontWeight: 600, color: '#9ca3af', filter: 'blur(4px)', userSelect: 'none' }}>{t('match.levelLine', { level: t('match.mid') })}</span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+          {maskCard(t('mm.dim.noc'), MASK_TEXT[0])}
+          {maskCard(t('mm.dim.prov'), MASK_TEXT[3])}
+        </div>
+        <LockFoot t={t} loggedIn msg={t('up.match', { n: plan.freeMatchCap })} />
+      </div>
+    )
+  }
+  // 卡片化(E8-10 §3.5「逐条读判定 → 卡片」,双端统一;Frank 三拍:拆卡 / 值不换行不省略 / 英文在前中文灰注):
+  // 依据链同源 match() reasons(1:1 映射,不另起炉灶);措辞红线照旧(只说符合与否)。
   if (!result) return null
   const lvColor: Record<string, string> = { high: '#166534', mid: '#1e40af', low: '#6b7280', na: '#9ca3af' }
   const pf = plan.profile!
-  const provName = (c: string) => PROV_NAMES[c] || c
-  const nocTitle = (c: string) => nocDesc.find((d) => d.noc === c)?.title || ''
-  const nocCell = (c: string) => nocTitle(c)
-    ? <>{nocTitle(c)}<span style={{ display: 'block', color: '#9ca3af', fontSize: 11 }}>NOC {c}</span></>
-    : <>NOC {c}</>
-  const teerCell = job.teer == null ? '—' : <>TEER {job.teer}<span style={{ display: 'block', color: '#9ca3af', fontSize: 11 }}>{t('mm.job.teerNote')}</span></>
+  const provLoc = (c: string) => provName(t, c)   // 全站口径(#146):英文在前,中韩界面带「(译名)」注
+  const noteS: React.CSSProperties = { color: '#9ca3af', fontSize: 11 }
+  // NOC:英文官方名主文案 + 界面语言译名括号注(#147),NOC 码作同行行尾灰注——不另起行
+  const nocCell = (c: string) => {
+    const d = nocDesc.find((x) => x.noc === c); const loc = nocLocalTitle(d, lang)
+    return d?.title ? <>{d.title}{loc ? `(${loc})` : ''} <span style={noteS}>NOC {c}</span></> : <>NOC {c}</>
+  }
+  // TEER 值同屏可能出现两次(省提名粗筛 / 技能层级),「0 最高,5 最低」灰注只随首次出现(一事只说一遍)
+  let teerNoted = false
+  const teerCell = () => {
+    if (job.teer == null) return '—'
+    const withNote = !teerNoted; teerNoted = true
+    return <>TEER {job.teer}{withNote && <> <span style={noteS}>{t('mm.job.teerNote')}</span></>}</>
+  }
   const salaryCell = job.salaryAnnual != null ? `$${Math.round(job.salaryAnnual / 1000)}K/yr` : t('mm.job.noSalary')
   type MMRow = { dim: string; jc: React.ReactNode; yc: React.ReactNode; verdict: 'pass' | 'warn' | 'fail' | 'na'; v: React.ReactNode; vTip?: string; src?: { label: string; url: string; fetched?: string } }
   const rows: MMRow[] = []
@@ -2540,12 +2576,12 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
       else if (r.key === 'match.r.noc.minor') rows.push({ dim: t('mm.dim.noc'), jc: nocCell(job.noc!), yc: nocCell(String(p.yours)), verdict: 'pass', v: t('mm.v.minor') })
       else rows.push({ dim: t('mm.dim.noc'), jc: nocCell(job.noc!), yc: <>{pf.nocCodes.map((c: string) => <div key={c}>{nocCell(c)}</div>)}</>, verdict: 'fail', v: t('mm.v.nomatch') })
     } else if (r.rule === 'prov') {
-      if (r.key === 'match.r.prov.notTarget') rows.push({ dim: t('mm.dim.prov'), jc: provName(String(p.prov)), yc: <>{pf.targetProvinces.map((c: string) => <div key={c}>{provName(c)}</div>)}</>, verdict: 'warn', v: t('mm.v.notTarget') })
-      else if (r.key === 'match.r.prov.qc') rows.push({ dim: t('mm.dim.pnp'), jc: provName('QC'), yc: '—', verdict: 'na', v: t('mm.v.qc') })
+      if (r.key === 'match.r.prov.notTarget') rows.push({ dim: t('mm.dim.prov'), jc: provLoc(String(p.prov)), yc: <>{pf.targetProvinces.map((c: string) => <div key={c}>{provLoc(c)}</div>)}</>, verdict: 'warn', v: t('mm.v.notTarget') })
+      else if (r.key === 'match.r.prov.qc') rows.push({ dim: t('mm.dim.pnp'), jc: provLoc('QC'), yc: '—', verdict: 'na', v: t('mm.v.qc') })
       else if (r.key === 'match.r.prov.named') rows.push({ dim: t('mm.dim.pnp'), jc: streamDisplay(t, String(p.label)), yc: '—', verdict: 'pass', v: t('mm.v.named'), src: r.source })
       else if (r.key === 'match.r.prov.excluded') rows.push({ dim: t('mm.dim.pnp'), jc: streamDisplay(t, String(p.label)), yc: '—', verdict: 'fail', v: t('mm.v.excluded'), src: r.source })
-      else if (r.key === 'match.r.prov.generic') rows.push({ dim: t('mm.dim.pnpPre'), jc: teerCell, yc: '—', verdict: 'pass', v: t('mm.v.generic', { prov: provName(String(p.prov)) }) })
-      else rows.push({ dim: t('mm.dim.pnpPre'), jc: teerCell, yc: '—', verdict: 'fail', v: t('mm.v.provNone', { prov: provName(String(p.prov)) }) })
+      else if (r.key === 'match.r.prov.generic') rows.push({ dim: t('mm.dim.pnpPre'), jc: teerCell(), yc: '—', verdict: 'pass', v: t('mm.v.generic') })
+      else rows.push({ dim: t('mm.dim.pnpPre'), jc: teerCell(), yc: '—', verdict: 'fail', v: t('mm.v.provNone') })
     } else if (r.rule === 'ee') {
       if (r.key === 'match.r.ee.none') rows.push({ dim: t('mm.dim.ee'), jc: t('mm.job.eeNone'), yc: '—', verdict: 'na', v: '—' })
       else if (r.key === 'match.r.ee.noDraw') rows.push({ dim: t('mm.dim.ee'), jc: t('mm.job.inCat', { cat: eeDisplay(t, String(p.cat)) }), yc: '—', verdict: 'na', v: t('mm.v.noDraw') })
@@ -2555,9 +2591,9 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
         rows.push({ dim: t('mm.dim.eeDraw'), jc: t('mm.job.draw', { draw: p.draw, date: p.date }), yc: '—', verdict: 'na', v: noCrs ? t('mm.v.fillCrsThen') : '—', src: r.source })
       }
     } else if (r.rule === 'teer') {
-      if (r.key === 'match.r.teer.ok') rows.push({ dim: t('mm.dim.teer'), jc: teerCell, yc: '—', verdict: 'pass', v: t('mm.v.teerOk') })
-      else if (r.key === 'match.r.teer.channel') rows.push({ dim: t('mm.dim.teer'), jc: teerCell, yc: '—', verdict: 'pass', v: t('mm.v.teerChannel', { stream: streamDisplay(t, String(p.stream)) }) })
-      else rows.push({ dim: t('mm.dim.teer'), jc: teerCell, yc: '—', verdict: 'fail', v: t('mm.v.teerLow') })
+      if (r.key === 'match.r.teer.ok') rows.push({ dim: t('mm.dim.teer'), jc: teerCell(), yc: '—', verdict: 'pass', v: t('mm.v.teerOk') })
+      else if (r.key === 'match.r.teer.channel') rows.push({ dim: t('mm.dim.teer'), jc: teerCell(), yc: '—', verdict: 'pass', v: t('mm.v.teerChannel', { stream: streamDisplay(t, String(p.stream)) }) })
+      else rows.push({ dim: t('mm.dim.teer'), jc: teerCell(), yc: '—', verdict: 'fail', v: t('mm.v.teerLow') })
     } else if (r.rule === 'wage') {
       if (r.key === 'match.r.wage.above') rows.push({ dim: t('mm.dim.wage'), jc: salaryCell, yc: '—', verdict: 'pass', v: t('mm.v.wageAbove', { pct: p.pct }) })
       else if (r.key === 'match.r.wage.near') rows.push({ dim: t('mm.dim.wage'), jc: salaryCell, yc: '—', verdict: 'warn', v: t('mm.v.wageNear', { pct: p.pct }) })
@@ -2569,65 +2605,47 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
       else rows.push({ dim: t('mm.dim.lmia'), jc: t('mm.job.lmia', { n: p.n, q: p.q }), yc: '—', verdict: 'pass', v: t('mm.v.lmiaHas'), src: r.source })
     }
   }
+  // 判定药丸:底色随判定(裸色字浮在白底上没有归属感);来源 ↗ 在药丸外
+  const PILL: Record<MMRow['verdict'], { bg: string; fg: string }> = {
+    pass: { bg: '#dcfce7', fg: '#15803d' }, warn: { bg: '#fef3c7', fg: '#b45309' }, fail: { bg: '#fee2e2', fg: '#dc2626' }, na: { bg: '#f3f4f6', fg: '#6b7280' },
+  }
   const vCell = (r: MMRow) => {
-    const v = VERDICT_ICON[r.verdict]
+    if (r.v === '—') return <span style={{ color: '#9ca3af' }}>—</span>
+    const pill = PILL[r.verdict]; const v = VERDICT_ICON[r.verdict]
     return (
-      <span title={r.vTip} style={{ color: v.color, fontWeight: 600, whiteSpace: 'nowrap' }}>
-        {r.v === '—' ? <span style={{ color: '#9ca3af', fontWeight: 400 }}>—</span> : <>{v.icon} {r.v}{r.vTip ? ' ⓘ' : ''}</>}
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
+        <span title={r.vTip} style={{ background: pill.bg, color: pill.fg, fontWeight: 600, fontSize: 11.5, padding: '2px 8px', borderRadius: 999, whiteSpace: 'nowrap' }}>
+          {v.icon} {r.v}{r.vTip ? ' ⓘ' : ''}
+        </span>
         {r.src?.url && (
-          <a href={r.src.url} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} style={{ marginLeft: 5, fontSize: 11.5, color: '#2563eb', textDecoration: 'none', fontWeight: 400 }}
+          <a href={r.src.url} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} style={{ fontSize: 11.5, color: '#2563eb', textDecoration: 'none' }}
             title={r.src.fetched ? t('match.srcFetched', { d: r.src.fetched }) : undefined}>↗</a>
         )}
       </span>
     )
   }
-  const thS: React.CSSProperties = { textAlign: 'left', fontSize: 11, color: '#9ca3af', fontWeight: 600, padding: '4px 8px', borderBottom: '1px solid #e7e5e4', whiteSpace: 'nowrap' }
-  const tdS: React.CSSProperties = { padding: '5px 8px', fontSize: 12.5, color: '#4b5563', borderBottom: '1px solid #f3f4f6', verticalAlign: 'top', lineHeight: 1.6 }
   return (
     <div style={{ background: '#fafaf9', border: '1px solid #e7e5e4', borderRadius: 10, padding: '10px 14px', margin: '4px 0 8px' }}>
       <div style={{ fontSize: 13, fontWeight: 700, color: '#374151' }}>
         <IconTarget /> {t('match.title')}
         <span style={{ marginLeft: 10, fontWeight: 600, color: lvColor[result.level] }}>{t('match.levelLine', { level: t('match.' + result.level) })}</span>
       </div>
-      {narrow ? (
-        /* #158(Frank「乱的一笔,重新排版」):手机版原先「维度/本岗…/你的档案…/判定」四行平铺、
-           标签内联,读起来是一堵墙。改用他认可的卡片语言(#148 左信息右数字):
-           **维度名左、判定药丸右**(一眼扫判定),下面「本岗 / 我的」定宽标签对齐成两列。 */
-        <div style={{ marginTop: 6 }}>
-          {rows.map((r, i) => (
-            <div key={i} style={{ padding: '7px 0', borderBottom: i === rows.length - 1 ? undefined : '1px solid #f3f4f6' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
-                <span style={{ fontSize: 11.5, color: '#6b7280', fontWeight: 600 }}>{r.dim}</span>
-                <span style={{ fontSize: 12, flexShrink: 0 }}>{vCell(r)}</span>
-              </div>
-              <div style={{ display: 'flex', gap: 8, fontSize: 12.5, color: '#4b5563', lineHeight: 1.55, marginTop: 2 }}>
-                <span style={{ color: '#9ca3af', width: 34, flexShrink: 0 }}>{t('mm.col.job')}</span>
-                <span style={{ minWidth: 0 }}>{r.jc}</span>
-              </div>
-              {r.yc !== '—' && (
-                <div style={{ display: 'flex', gap: 8, fontSize: 12.5, color: '#4b5563', lineHeight: 1.55 }}>
-                  <span style={{ color: '#9ca3af', width: 34, flexShrink: 0 }}>{t('mm.col.you')}</span>
-                  <span style={{ minWidth: 0 }}>{r.yc}</span>
-                </div>
-              )}
+      {/* 一维度一卡,单列满宽(#158 卡片语言收编双端,桌面表格退役):维度名左、判定药丸右;
+          「本岗 / 我的」标签列 max-content 自适应,值一行放全——长值窄屏悬挂缩进折行,永不截断省略 */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+        {rows.map((r, i) => (
+          <div key={i} style={{ background: '#fff', border: '1px solid #f3f4f6', borderRadius: 8, padding: '7px 12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 11.5, color: '#6b7280', fontWeight: 600 }}>{r.dim}</span>
+              {vCell(r)}
             </div>
-          ))}
-        </div>
-      ) : (
-        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 6 }}>
-          <thead><tr><th style={thS}>{t('mm.col.dim')}</th><th style={thS}>{t('mm.col.job')}</th><th style={thS}>{t('mm.col.you')}</th><th style={thS}>{t('mm.col.verdict')}</th></tr></thead>
-          <tbody>
-            {rows.map((r, i) => (
-              <tr key={i}>
-                <td style={{ ...tdS, color: '#9ca3af', whiteSpace: 'nowrap' }}>{r.dim}</td>
-                <td style={tdS}>{r.jc}</td>
-                <td style={tdS}>{r.yc}</td>
-                <td style={tdS}>{vCell(r)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+            <div style={{ display: 'grid', gridTemplateColumns: 'max-content minmax(0,1fr)', columnGap: 8, rowGap: 1, marginTop: 3, fontSize: 12.5, color: '#4b5563', lineHeight: 1.55 }}>
+              <span style={{ color: '#9ca3af' }}>{t('mm.col.job')}</span><span>{r.jc}</span>
+              {r.yc !== '—' && <><span style={{ color: '#9ca3af' }}>{t('mm.col.you')}</span><span>{r.yc}</span></>}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
