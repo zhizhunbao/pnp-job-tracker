@@ -162,17 +162,31 @@ const HEADINGS: Record<Lang, { company: string; title: string }> = {
     // #161(Frank「这个应该直接给方案,一共分几步,每个步骤做什么,时间线是什么」):
     // 原「移民视角怎么看这个岗」产出的是**分析**(这岗含金量如何),用户要的是**方案**(我该怎么走、先做什么)。
     // 分析读完还得自己翻译成行动,那一步正是本站要替用户跨的门槛。改成:通道结论 → 分步时间线 → 面试准备。
-    title: '【走哪条通道】【分几步走(含时间线)】【怎么准备(简历 / 作品 / 面试)】',
+    // #162 回退首节标题(生产实测事故):#161 改「走哪条通道」是个**问句**,逼模型给是非答案 →
+    // 实测产出「此路径在移民法理上属于死胡同,无法作为获取永久居留权的可行通道」,
+    // 直接违反 docs/弹框规范.md 措辞红线「事实+出处,永不说你能/不能移民」。改回描述性标题。
+    title: '【这个岗的移民信号】【分几步走(含时间线)】【怎么准备(简历 / 作品 / 面试)】',
   },
   en: {
     company: '【What the company does】【Main products / projects】【Main competitors】【Outlook & what it means for job-seekers】',
-    title: '【Which pathway this opens】【Step-by-step plan with timeline】【How to prepare (resume / portfolio / interview)】',
+    title: '【Immigration signals for this role】【Step-by-step plan with timeline】【How to prepare (resume / portfolio / interview)】',
   },
   ko: {
     company: '【회사가 하는 일】【주요 제품 / 프로젝트】【주요 경쟁사】【전망과 구직자에게의 의미】',
-    title: '【어떤 경로인가】【단계별 계획과 타임라인】【준비 방법 (이력서 / 포트폴리오 / 면접)】',
+    title: '【이 직무의 이민 신호】【단계별 계획과 타임라인】【준비 방법 (이력서 / 포트폴리오 / 면접)】',
   },
 }
+
+// #162 接地约束(生产实测同一次暴露两个问题,都是「有结论欲、无事实源」):
+// ①红线:说了「无法作为获取永久居留权的可行通道」= 下资格判定,持牌顾问才能做的事,用户照此弃 offer 我们担不起;
+// ②编造:说了「雇主不在魁北克常规PNP雇主担保名单中」——**本站没有这个名单、从未做过雇主比对**,
+//   它拿到的只是 PNP-eligible: no,自己补了个理由(且魁省根本不走 PNP,走 CSQ/Arrima)。
+// 故本约束只写**禁止性指令**,不写任何移民知识——该说什么由喂进去的事实决定。
+const GROUNDING_RULES = `HARD RULES — these override everything else:
+- NEVER state or imply whether the person can or cannot immigrate, whether a route is "impossible", a "dead end", or "not viable", and never use legal-sounding framing. You are not an immigration advisor. State the signals given and the thresholds they refer to; let the reader draw the conclusion.
+- Use ONLY the immigration signals supplied above. If a signal is absent or negative, say the site's data does not show a match and that provincial/federal rules decide — do NOT invent a reason, a list, an eligibility rule, or an employer check that was not given to you.
+- Never claim this site checked something it did not: there is no employer-by-employer eligibility list beyond the AIP designated-employer flag provided.
+- When a route does not apply, say so as a fact about the DATA ("this site's data shows no match for X"), never as a verdict about the PERSON.`
 
 // #161 分步方案的写法约束:要可执行,但**不许编官方数字**——移民处理周期/费用/名额随时变,
 // 编一个具体周数比不给还坏(用户会照着排计划)。故:时间用**相对阶段**(第 1–2 个月、拿到 offer 后、提名后),
@@ -250,7 +264,7 @@ function buildPrompt(field: string, j: Job, jd: string, lang: Lang, pf = '', web
     ? `\nIMPORTANT — this job is in an Atlantic province (${j.province}). The Atlantic Immigration Program (AIP) is the employer-driven route that applies here: it works through designated employers, does NOT require an Express Entry CRS score, and has lower language/education thresholds than federal programs. Lead with AIP and the provincial nomination route. Do NOT frame Express Entry competitiveness (CRS points, TEER-based education scoring) as the main yardstick for this job — mention EE only if a category above actually matches, and clearly as a secondary option. If the employer is not AIP-designated, say so plainly rather than assuming it is.`
     : ''
   const base = `Role: ${j.title || '—'}\nCompany: ${j.company || '—'}\n${nocLine}\nLocation: ${loc}\n\nImmigration signals computed by this site (use these — do not contradict or invent others):\n${pathFacts}\n`
-  const instr = `Explain under these headings (${inLang}):\n${H.title}\n${PLAN_RULES}${atlanticRule}`
+  const instr = `Explain under these headings (${inLang}):\n${H.title}\n${PLAN_RULES}\n${GROUNDING_RULES}${atlanticRule}`
   if (jd) {
     return base + `\nHere is the real job posting (summarize strictly from it, do not invent anything not in it; it may be in English but answer in ${LANG_NAME[lang]}):\n"""\n${jd}\n"""\n\n` +
       instr + `\nFor "how to prepare" you may add general advice for this NOC.`
