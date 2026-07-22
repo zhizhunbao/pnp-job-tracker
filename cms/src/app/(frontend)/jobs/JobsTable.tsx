@@ -1787,7 +1787,8 @@ const jdParseSecs = (s: string): Record<string, string> => {
 // (none stated)/(not specified)/(not mentioned)…,严格只认 (not stated) → 变体被当正文渲成「(none stated) ↗」。
 // 括号可有可无,not/none + stated/specified/mentioned/provided/available/applicable 一律算缺节。
 const JD_NONE_RE = /^\(?\s*(not|none|n\/a)(\s+(stated|specified|mentioned|provided|available|applicable|listed))?\s*\)?$/i
-const isJdNone = (s?: string) => { const b = (s || '').trim(); return !b || JD_NONE_RE.test(b) }
+// 先剥「- 」bullet 前缀再判(#186:变体常以「- (not stated)」bullet 形式混在有内容的节里)
+const isJdNone = (s?: string) => { const b = (s || '').trim().replace(/^-\s*/, ''); return !b || JD_NONE_RE.test(b) }
 const JD_ZH_LINE: React.CSSProperties = { margin: '2px 0 4px', padding: '1px 0 1px 10px', borderLeft: '3px solid #dbeafe', color: '#1e40af', fontWeight: 400 }
 export function JdFormattedView({ text, t, fallbackPay, applyUrl, underTitle, trans }: { text: string; t: TFn; fallbackPay?: string; applyUrl?: string; underTitle?: boolean; trans?: string }) {
   const SECS: [string, string][] = [['ROLE', 'act.f.role'], ['REQS', 'act.f.reqs'], ['PAY', 'act.f.pay'], ['WORKHOURS', 'act.f.hours'], ['APPLY', 'act.f.apply']]
@@ -1797,11 +1798,15 @@ export function JdFormattedView({ text, t, fallbackPay, applyUrl, underTitle, tr
     <div style={{ fontSize: 13, lineHeight: 1.75, color: '#374151' }}>
       {SECS.map(([m, key]) => {
         const body = (secs[m] || '').trim()
-        const none = isJdNone(body)
-        const lines = body.split('\n').map((s) => s.trim()).filter(Boolean)
-        const zhLines = tSecs ? (tSecs[m] || '').split('\n').map((s) => s.trim()).filter(Boolean) : []
-        // 译文行=英文同文/自身也是缺节变体 → 不渲(#181 部分容错保留英文;none 变体不重复渲)
-        const zh = (i: number) => (zhLines[i] && zhLines[i] !== lines[i] && !isJdNone(zhLines[i]) ? <div style={JD_ZH_LINE}>{zhLines[i].replace(/^-\s*/, '')}</div> : null)
+        const rawEn = body.split('\n').map((s) => s.trim()).filter(Boolean)
+        const rawZh = tSecs ? (tSecs[m] || '').split('\n').map((s) => s.trim()).filter(Boolean) : []
+        // #186(Frank「上面已有信息就别再加一个 (not stated)」):节内逐行丢掉 (not stated) 变体行——
+        // 模型偶发在有真内容的节里也补一条 "(not stated)"(如 薪资列了时薪又挂一条),那是噪音。
+        // 丢完为空=整节缺(走 原帖未提及/URL/兜底)。译文按丢完后的行位对齐。
+        const pairs = rawEn.map((en, i) => ({ en, zh: rawZh[i] })).filter((p) => !isJdNone(p.en))
+        const lines = pairs.map((p) => p.en)
+        const none = lines.length === 0
+        const zh = (i: number) => { const z = pairs[i]?.zh; return z && z !== lines[i] && !isJdNone(z) ? <div style={JD_ZH_LINE}>{z.replace(/^-\s*/, '')}</div> : null }
         const hasBullets = lines.some((l) => l.startsWith('- '))
         return (
           <div key={m} style={{ marginBottom: 8 }}>
@@ -1992,10 +1997,11 @@ export type CoGradeDetail = { sponsor?: CoGradeDim; active?: CoGradeDim; salary?
 export function CompanyGradesView({ detail, t, hideSponsor }: { detail: CoGradeDetail; t: TFn; hideSponsor?: boolean }) {
   if (!detail) return null
   const gname = (g: number, name: string) => <b style={{ color: gradeColor(g) }}>{name}</b>
-  const row = (label: string, body: React.ReactNode) => (
-    <div style={{ display: 'flex', gap: 10, padding: '4px 0', fontSize: 13, alignItems: 'baseline' }}>
-      <span style={{ minWidth: 88, color: '#9ca3af', flexShrink: 0 }}>{label}</span>
-      <span style={{ flex: 1, color: '#374151' }}>{body}</span>
+  // #186(Frank「参考 JD 那种风格」):去两栏表格 → 每维一个加粗小标题 + 下面档名/依据平铺(与 JD 五节整理版同款)
+  const row = (label: string, tier: React.ReactNode, evidence?: React.ReactNode) => (
+    <div style={{ marginBottom: 8 }}>
+      <div style={{ fontWeight: 700, color: '#111827', fontSize: 13 }}>{label}</div>
+      <div style={{ fontSize: 12.5, marginTop: 1 }}>{tier}{evidence ? <span style={{ color: '#6b7280', marginLeft: 8 }}>{evidence}</span> : null}</div>
     </div>
   )
   const sp = detail.sponsor, act = detail.active, sal = detail.salary, fm = detail.fame
@@ -2003,12 +2009,12 @@ export function CompanyGradesView({ detail, t, hideSponsor }: { detail: CoGradeD
   return (
     <>
       {/* hideSponsor:公司详情页把担保维让给独立「担保记录」详情卡,速览卡不再列(不重复,#182) */}
-      {hideSponsor ? null : sp ? row(t('gr.dim.coSponsor'), <>{gname(sp.g, t('gr.sp.' + sp.g))}<div style={{ fontSize: 12.5, color: '#6b7280' }}>{sp.v?.total ? t('gr.co.sp.d', { total: sp.v.total, n: sp.v.skilled ?? 0, q: sp.v.q || '—' }) : t('gr.co.sp.aip')}</div></>)
-        : row(t('gr.dim.coSponsor'), <span style={{ color: '#9ca3af', fontSize: 12.5 }}>{t('gr.co.sp.na')}</span>)}
-      {act ? row(t('gr.dim.coActive'), <>{gname(act.g, t('gr.act.' + act.g))}<div style={{ fontSize: 12.5, color: '#6b7280' }}>{t('gr.co.act.d', { open: act.v?.open ?? 0, n: act.v?.new30 ?? 0 })}</div></>) : null}
-      {sal ? row(t('gr.dim.coSalary'), <>{gname(sal.g, t('gr.sal.' + sal.g))}<div style={{ fontSize: 12.5, color: '#6b7280' }}>{t('gr.co.sal.d', { pct: sal.v >= 0 ? `+${sal.v}` : String(sal.v) })}</div></>)
+      {hideSponsor ? null : sp ? row(t('gr.dim.coSponsor'), gname(sp.g, t('gr.sp.' + sp.g)), sp.v?.total ? t('gr.co.sp.d', { total: sp.v.total, n: sp.v.skilled ?? 0, q: sp.v.q || '—' }) : t('gr.co.sp.aip'))
+        : row(t('gr.dim.coSponsor'), <span style={{ color: '#9ca3af' }}>{t('gr.co.sp.na')}</span>)}
+      {act ? row(t('gr.dim.coActive'), gname(act.g, t('gr.act.' + act.g)), t('gr.co.act.d', { open: act.v?.open ?? 0, n: act.v?.new30 ?? 0 })) : null}
+      {sal ? row(t('gr.dim.coSalary'), gname(sal.g, t('gr.sal.' + sal.g)), t('gr.co.sal.d', { pct: sal.v >= 0 ? `+${sal.v}` : String(sal.v) }))
         : row(t('gr.dim.coSalary'), <span style={{ color: '#9ca3af' }}>{t('gr.noData')}</span>)}
-      {fm ? row(t('gr.dim.coFame'), <>{gname(fm.g, t('gr.fm.' + fm.g))}{fameParts.length ? <div style={{ fontSize: 12.5, color: '#6b7280' }}>{fameParts.join('、')}</div> : null}</>) : null}
+      {fm ? row(t('gr.dim.coFame'), gname(fm.g, t('gr.fm.' + fm.g)), fameParts.length ? fameParts.join('、') : undefined) : null}
       <div style={{ marginTop: 6, fontSize: 11.5, color: '#9ca3af', lineHeight: 1.5 }}>{t('fact.scoreNote')}</div>
     </>
   )
