@@ -6,11 +6,13 @@
   box-sizing: border-box;
 }
 
+/* 底座与站点实际一致(白底站,Payload 模板黑底白字默认已废)——
+   裸继承的组件(如 #190 公司评分 li)从这里取色/字号,不再隐形。
+   html font-size 仅作 rem 基准,冻结 18px 避免全站 rem padding 位移。 */
 html {
   font-size: 18px;
-  line-height: 32px;
 
-  background: rgb(0, 0, 0);
+  background: #f9fafb;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -21,17 +23,12 @@ body,
 }
 
 body {
-  font-family: system-ui;
-  font-size: 18px;
-  line-height: 32px;
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
 
   margin: 0;
-  color: rgb(1000, 1000, 1000);
-
-  @media (max-width: 1024px) {
-    font-size: 15px;
-    line-height: 24px;
-  }
+  color: #1f2937;
 }
 
 img {
