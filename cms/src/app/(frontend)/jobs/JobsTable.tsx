@@ -2007,24 +2007,28 @@ export type CoGradeDetail = { sponsor?: CoGradeDim; active?: CoGradeDim; salary?
 export function CompanyGradesView({ detail, t, hideSponsor }: { detail: CoGradeDetail; t: TFn; hideSponsor?: boolean }) {
   if (!detail) return null
   const gname = (g: number, name: string) => <b style={{ color: gradeColor(g) }}>{name}</b>
-  // #186(Frank「参考 JD 那种风格」):去两栏表格 → 每维一个加粗小标题 + 下面档名/依据平铺(与 JD 五节整理版同款)
+  // #190(Frank「很多冗余 titles,改成 bullets」):#186 的「每维一个加粗小标题」退役 →
+  // 一维一行 bullet「维名: 档名 依据」,与 JD 整理版 bullet 同款(竖向密度减半,维名进行内不再抢层级)
   const row = (label: string, tier: React.ReactNode, evidence?: React.ReactNode) => (
-    <div style={{ marginBottom: 8 }}>
-      <div style={{ fontWeight: 700, color: '#111827', fontSize: 13 }}>{label}</div>
-      <div style={{ fontSize: 12.5, marginTop: 1 }}>{tier}{evidence ? <span style={{ color: '#6b7280', marginLeft: 8 }}>{evidence}</span> : null}</div>
-    </div>
+    <li key={label}>
+      {label}: {tier}{evidence ? <span style={{ color: '#6b7280', marginLeft: 8 }}>{evidence}</span> : null}
+    </li>
   )
   const sp = detail.sponsor, act = detail.active, sal = detail.salary, fm = detail.fame
   const fameParts = fm ? [fm.v?.wiki ? t('gr.co.fm.wiki') : '', fm.v?.provs >= 2 ? t('gr.co.fm.provs', { n: fm.v.provs }) : '', fm.v?.open ? t('gr.co.fm.open', { n: fm.v.open }) : ''].filter(Boolean) : []
   return (
     <>
-      {/* hideSponsor:公司详情页把担保维让给独立「担保记录」详情卡,速览卡不再列(不重复,#182) */}
-      {hideSponsor ? null : sp ? row(t('gr.dim.coSponsor'), gname(sp.g, t('gr.sp.' + sp.g)), sp.v?.total ? t('gr.co.sp.d', { total: sp.v.total, n: sp.v.skilled ?? 0, q: sp.v.q || '—' }) : t('gr.co.sp.aip'))
-        : row(t('gr.dim.coSponsor'), <span style={{ color: '#9ca3af' }}>{t('gr.co.sp.na')}</span>)}
-      {act ? row(t('gr.dim.coActive'), gname(act.g, t('gr.act.' + act.g)), t('gr.co.act.d', { open: act.v?.open ?? 0, n: act.v?.new30 ?? 0 })) : null}
-      {sal ? row(t('gr.dim.coSalary'), gname(sal.g, t('gr.sal.' + sal.g)), t('gr.co.sal.d', { pct: sal.v >= 0 ? `+${sal.v}` : String(sal.v) }))
-        : row(t('gr.dim.coSalary'), <span style={{ color: '#9ca3af' }}>{t('gr.noData')}</span>)}
-      {fm ? row(t('gr.dim.coFame'), gname(fm.g, t('gr.fm.' + fm.g)), fameParts.length ? fameParts.join('、') : undefined) : null}
+      {/* 字号/行高/色显式定在 ul(不靠继承):(frontend)/styles.css 的 body 白字 18px 会吃掉裸继承的 li
+          (公司详情页实测中招;弹框有 13px 包裹层侥幸没事)——组件自带底座,两处上下文同渲 */}
+      <ul style={{ margin: 0, paddingLeft: 16, fontSize: 13, lineHeight: 1.75, color: '#374151' }}>
+        {/* hideSponsor:公司详情页把担保维让给独立「担保记录」详情卡,速览卡不再列(不重复,#182) */}
+        {hideSponsor ? null : sp ? row(t('gr.dim.coSponsor'), gname(sp.g, t('gr.sp.' + sp.g)), sp.v?.total ? t('gr.co.sp.d', { total: sp.v.total, n: sp.v.skilled ?? 0, q: sp.v.q || '—' }) : t('gr.co.sp.aip'))
+          : row(t('gr.dim.coSponsor'), <span style={{ color: '#9ca3af' }}>{t('gr.co.sp.na')}</span>)}
+        {act ? row(t('gr.dim.coActive'), gname(act.g, t('gr.act.' + act.g)), t('gr.co.act.d', { open: act.v?.open ?? 0, n: act.v?.new30 ?? 0 })) : null}
+        {sal ? row(t('gr.dim.coSalary'), gname(sal.g, t('gr.sal.' + sal.g)), t('gr.co.sal.d', { pct: sal.v >= 0 ? `+${sal.v}` : String(sal.v) }))
+          : row(t('gr.dim.coSalary'), <span style={{ color: '#9ca3af' }}>{t('gr.noData')}</span>)}
+        {fm ? row(t('gr.dim.coFame'), gname(fm.g, t('gr.fm.' + fm.g)), fameParts.length ? fameParts.join('、') : undefined) : null}
+      </ul>
       <div style={{ marginTop: 6, fontSize: 11.5, color: '#9ca3af', lineHeight: 1.5 }}>{t('fact.scoreNote')}</div>
     </>
   )
