@@ -80,14 +80,6 @@ export default function CompanyDetailView({ company, similar = [], loggedIn }: {
             {(company.address || provFull) ? <div style={{ marginTop: 6, fontSize: 12.5, color: '#6b7280' }}>{company.address || provFull}</div> : null}
           </div>
 
-          {/* ② 公司评分:服务端 score_detail 直读(零额度,公司页全免费);担保维让给下方担保详情卡(hideSponsor,不重复) */}
-          {company.scoreDetail ? (
-            <div style={sec}>
-              <div style={secHead}>{t('co.grades')}</div>
-              <CompanyGradesView detail={company.scoreDetail} t={t} hideSponsor={showSponsorCard} />
-            </div>
-          ) : null}
-
           {/* ③ 担保记录(深化=护城河,参照 job 页 PNP/EE 深块):股别拆解 + 最近获批 + 人话结论 + 来源。
               数据全来自 ESDC/IRCC 现成列(lmia_streams/lmia_positions_skilled),零编造;只在有记录/AIP 时出。 */}
           {showSponsorCard ? (
@@ -165,6 +157,15 @@ export default function CompanyDetailView({ company, similar = [], loggedIn }: {
                   </span>
                 </div>
               ))}
+            </div>
+          ) : null}
+
+          {/* ⑦ 雇主信号(#192 Frank:放到最下+改名):服务端 score_detail 直读(零额度,公司页全免费);
+              担保维让给上方担保详情卡(hideSponsor,不重复);与弹框同序=判断类内容殿后 */}
+          {company.scoreDetail ? (
+            <div style={sec}>
+              <div style={secHead}>{t('co.grades')}</div>
+              <CompanyGradesView detail={company.scoreDetail} t={t} hideSponsor={showSponsorCard} />
             </div>
           ) : null}
 

@@ -2043,7 +2043,7 @@ export function CompanyGradesView({ detail, t, hideSponsor }: { detail: CoGradeD
           : row(t('gr.dim.coSalary'), <span style={{ color: '#9ca3af' }}>{t('gr.noData')}</span>)}
         {fm ? row(t('gr.dim.coFame'), gname(fm.g, t('gr.fm.' + fm.g)), fameParts.length ? fameParts.join('、') : undefined) : null}
       </ul>
-      <div style={{ marginTop: 6, fontSize: 11.5, color: '#9ca3af', lineHeight: 1.5 }}>{t('fact.scoreNote')}</div>
+      {/* #192(Frank):免责灰注(互不加权/非资格认定/我的匹配)从公司块摘除;fact.scoreNote 仍在通道卡用 */}
     </>
   )
 }
@@ -2129,7 +2129,6 @@ function CompanyPanel({ job, jobs, lang, plan, onOpenJob, onFreeLeft }: { job: J
             </div>
           </div>
         )}
-        <CompanyGradesCard job={job} lang={lang} loggedIn={plan.loggedIn} onFreeLeft={onFreeLeft} />
         {desc ? (
           <div style={FLAT_SEC}>
             <div style={FLAT_HEAD}>{t('fact.coIntro')}</div>
@@ -2145,6 +2144,8 @@ function CompanyPanel({ job, jobs, lang, plan, onOpenJob, onFreeLeft }: { job: J
             </div>
           </div>
         ) : null}
+        {/* #192(Frank):雇主信号(原公司评分)挪到最下——先简介后信号,判断类内容殿后 */}
+        <CompanyGradesCard job={job} lang={lang} loggedIn={plan.loggedIn} onFreeLeft={onFreeLeft} />
       </div>
     </>
   )
