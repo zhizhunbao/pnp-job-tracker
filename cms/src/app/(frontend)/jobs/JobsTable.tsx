@@ -1943,20 +1943,75 @@ function CompanyAiSection({ company, t }: { company: string; t: TFn }) {
     </>
   )
 }
+// 公司评分卡(2026-07-22 Frank 拍板「公司评分在哪里」):#176 砍参照区后公司四维(担保/活跃/薪资/知名)
+// 一直白算没家——归位公司弹框。数据=/api/scoredetail companyDetail(早就回传);额度=同通道卡打开即拉,
+// 402/429 打码+锁行;档名彩字+依据灰句(#133 无数字口径);担保 None=无记录≠不担保(语义红线,灰句说明)。
+function CompanyGradesCard({ job, lang, loggedIn }: { job: JobRow; lang: Lang; loggedIn: boolean }) {
+  const t = makeT(lang)
+  type Dim = { g: number; v: any } | null
+  type CoDetail = { sponsor?: Dim; active?: Dim; salary?: Dim; fame?: Dim }
+  const [d, setD] = useState<undefined | 'upgrade' | 'limited' | 'error' | { companyDetail: CoDetail | null }>(undefined)
+  useEffect(() => {
+    let dead = false
+    setD(undefined)
+    fetch('/api/scoredetail', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: job.id }) })
+      .then(async (r) => {
+        if (r.status === 402) return 'upgrade' as const
+        if (r.status === 429) return 'limited' as const
+        if (!r.ok) return 'error' as const
+        return await r.json()
+      })
+      .then((x) => { if (!dead) setD(x) })
+      .catch(() => { if (!dead) setD('error') })
+    return () => { dead = true }
+  }, [job])
+  if (d === 'error') return null   // 取数失败整卡消失,不留孤儿标题
+  const gname = (g: number, name: string) => <b style={{ color: gradeColor(g) }}>{name}</b>
+  const row = (label: string, body: React.ReactNode) => (
+    <div style={{ display: 'flex', gap: 10, padding: '4px 0', fontSize: 13, alignItems: 'baseline' }}>
+      <span style={{ minWidth: 88, color: '#9ca3af', flexShrink: 0 }}>{label}</span>
+      <span style={{ flex: 1, color: '#374151' }}>{body}</span>
+    </div>
+  )
+  let body: React.ReactNode
+  if (d === undefined) body = <div style={{ fontSize: 13, color: '#9ca3af' }}>{t('act.loadingText')}</div>
+  else if (d === 'upgrade') body = <LockedText t={t} loggedIn={loggedIn} />
+  else if (d === 'limited') body = <LockedText t={t} loggedIn={loggedIn} msg={t('advisor.limit429')} ctaLabel={!loggedIn ? t('advisor.limitCta') : undefined} />
+  else {
+    const co = d.companyDetail
+    if (!co) return null
+    const sp = co.sponsor, act = co.active, sal = co.salary, fm = co.fame
+    const fameParts = fm ? [fm.v?.wiki ? t('gr.co.fm.wiki') : '', fm.v?.provs >= 2 ? t('gr.co.fm.provs', { n: fm.v.provs }) : '', fm.v?.open ? t('gr.co.fm.open', { n: fm.v.open }) : ''].filter(Boolean) : []
+    body = (
+      <>
+        {sp ? row(t('gr.dim.coSponsor'), <>{gname(sp.g, t('gr.sp.' + sp.g))}<div style={{ fontSize: 12.5, color: '#6b7280' }}>{sp.v?.total ? t('gr.co.sp.d', { total: sp.v.total, n: sp.v.skilled ?? 0, q: sp.v.q || '—' }) : t('gr.co.sp.aip')}</div></>)
+          : row(t('gr.dim.coSponsor'), <span style={{ color: '#9ca3af', fontSize: 12.5 }}>{t('gr.co.sp.na')}</span>)}
+        {act ? row(t('gr.dim.coActive'), <>{gname(act.g, t('gr.act.' + act.g))}<div style={{ fontSize: 12.5, color: '#6b7280' }}>{t('gr.co.act.d', { open: act.v?.open ?? 0, n: act.v?.new30 ?? 0 })}</div></>) : null}
+        {sal ? row(t('gr.dim.coSalary'), <>{gname(sal.g, t('gr.sal.' + sal.g))}<div style={{ fontSize: 12.5, color: '#6b7280' }}>{t('gr.co.sal.d', { pct: sal.v >= 0 ? `+${sal.v}` : String(sal.v) })}</div></>)
+          : row(t('gr.dim.coSalary'), <span style={{ color: '#9ca3af' }}>{t('gr.noData')}</span>)}
+        {fm ? row(t('gr.dim.coFame'), <>{gname(fm.g, t('gr.fm.' + fm.g))}{fameParts.length ? <div style={{ fontSize: 12.5, color: '#6b7280' }}>{fameParts.join('、')}</div> : null}</>) : null}
+        <div style={{ marginTop: 6, fontSize: 11.5, color: '#9ca3af', lineHeight: 1.5 }}>{t('fact.scoreNote')}</div>
+      </>
+    )
+  }
+  return (
+    <div style={MODAL_CARD}>
+      <div style={MODAL_CARD_HEAD}>{t('co.grades')}</div>
+      {body}
+    </div>
+  )
+}
 // 公司弹框专用面板(2026-07-21 Frank「参考类别重新设计」):与分类弹框同规范——平级卡、每卡带题、不嵌套。
-// 卡① 公司(官网/地址/行业/担保史+口径注)→ AI 检索卡组(K 懒探索,自动)→ 公司简介卡(名录抓取)→ 在榜职位卡。
-function CompanyPanel({ job, jobs, lang, onOpenJob }: { job: JobRow; jobs: JobRow[]; lang: Lang; onOpenJob?: (j: JobRow) => void }) {
+// 卡① 公司(官网/地址/行业)→ 卡② 公司评分(四维,2026-07-22)→ AI 检索卡组(K 懒探索,自动)→
+// 公司简介卡(名录抓取)→ 在榜职位卡。原「担保史」文本行撤=归评分卡担保记录维(一条信息一个家)。
+function CompanyPanel({ job, jobs, lang, plan, onOpenJob }: { job: JobRow; jobs: JobRow[]; lang: Lang; plan: Plan; onOpenJob?: (j: JobRow) => void }) {
   const t = makeT(lang)
   const desc = job.companyDescription
-  // 担保史阈值 ≥2(2026-07-07 用户点名「近两年就 1 个 = 相当于没有」):1 个不构成信号
-  const sponsor = (job.lmiaPositions ?? 0) >= 2 ? t('fact.coLmia', { n: job.lmiaPositions!, q: job.lmiaLastQuarter || '—' }) : job.aip ? t('fact.coAip') : ''
   const here = jobs.filter((x) => x.company && x.company === job.company && (x.status || 'open') !== 'closed')
   // K:没简介或简介太薄(官网 meta 一句话)→ AI 联网调查
   const needAi = !!job.company && (!desc || desc.length < 200 || !job.officialUrl)
-  // 口径注:担保史语义(C3 短版)+ 检索官网标注(D2 拍板:自动检索来的官网诚实标小字)
-  const notes = [sponsor ? t('fact.coLmiaNote') : '', job.officialUrl && job.companyWebsiteSrc === 'searched' ? t('fact.siteSearched') : ''].filter(Boolean)
   const addr = job.address || [job.city, job.province].filter(Boolean).join(', ')
-  const hasIdCard = !!(job.officialUrl || addr || job.companySectors || sponsor)
+  const hasIdCard = !!(job.officialUrl || addr || job.companySectors)
   return (
     <>
       {hasIdCard && (
@@ -1965,10 +2020,10 @@ function CompanyPanel({ job, jobs, lang, onOpenJob }: { job: JobRow; jobs: JobRo
           {job.officialUrl ? <FactRow k={t('act.site')}><a href={job.officialUrl} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5 }}>{job.officialUrl}</a></FactRow> : null}
           <FactRow k={t('act.addr')}>{addr || null}</FactRow>
           <FactRow k={t('fact.coSectors')}>{job.companySectors}</FactRow>
-          <FactRow k={t('fact.coSponsor')}>{sponsor || null}</FactRow>
-          {notes.length ? <div style={{ marginTop: 7, fontSize: 11.5, color: '#9ca3af', lineHeight: 1.5 }}>{notes.join('；')}</div> : null}
+          {job.officialUrl && job.companyWebsiteSrc === 'searched' ? <div style={{ marginTop: 7, fontSize: 11.5, color: '#9ca3af', lineHeight: 1.5 }}>{t('fact.siteSearched')}</div> : null}
         </div>
       )}
+      <CompanyGradesCard job={job} lang={lang} loggedIn={plan.loggedIn} />
       {desc ? (
         <div style={MODAL_CARD}>
           <div style={MODAL_CARD_HEAD}>{t('fact.coIntro')}</div>
@@ -2883,7 +2938,7 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
           {group === 'category'
             ? <CategoryPanel job={job} lang={lang} plan={plan} nocDesc={nocDesc} srcField={field} />
             : group === 'company'
-            ? <CompanyPanel job={job} jobs={companyJobs} lang={lang} onOpenJob={onOpenJob} />
+            ? <CompanyPanel job={job} jobs={companyJobs} lang={lang} plan={plan} onOpenJob={onOpenJob} />
             : <GroupFactsSection group={group} job={job} jobs={companyJobs} lang={lang} isPro={plan.isPro} loggedIn={plan.loggedIn} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} onOpenJob={onOpenJob} />}
           {/* 建档 CTA(第 5 轮 #17 = 弹框规范 D1):身份信号族对未建档用户铺「事实 → 个人化」的桥 */}
           {!plan.profileOk && group === 'immigration' && (
