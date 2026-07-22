@@ -304,7 +304,7 @@ const zh: Dict = {
   'pw.bnRoutes': '条路径方案', 'rank.bnBoards': '个榜单', 'stats.bnProvs': '省全覆盖', 'stats.bnBroads': '职业大类',
   // B4-01 实体名录(雇主名录 + 紧缺职业清单)
   'dir.title': '雇主名录', 'dir.sub': '谁真的雇过外国人——全部来自官方公开数据',
-  'dir.tab.lmia': 'LMIA 记录雇主', 'dir.tab.aip': 'AIP 指定雇主',
+  'dir.tab.lmia': 'ESDC LMIA 记录', 'dir.tab.aip': 'AIP 指定雇主',
   'dir.search': '搜索雇主名称…', 'dir.searchBtn': '搜索',
   'dir.note.lmia': '口径:近两年 ESDC 获批 LMIA 职位记录,全部股别(行内标注股别与最近季度;农业/低薪股多为季节性用工,技能类担保主要看 High Wage / Global Talent 股别)——这是「雇过外国人」的历史事实,不代表现在能或愿意担保;数据源 open.canada.ca 季度公开表。',
   'dir.note.aip': '口径:大西洋移民计划(AIP)指定雇主官方名单(NS/NB/NL)——「已注册指定」不等于「有名额或会为你背书」;以雇主与省官方确认为准。',
@@ -745,7 +745,7 @@ const en: Dict = {
   'pw.bnRoutes': 'pathway plans', 'rank.bnBoards': 'boards', 'stats.bnProvs': 'provinces covered', 'stats.bnBroads': 'occupation groups',
   // B4-01 directory
   'dir.title': 'Employer directory', 'dir.sub': 'Who has actually hired foreign workers — all from official public data',
-  'dir.tab.lmia': 'Employers with LMIA records', 'dir.tab.aip': 'AIP designated employers',
+  'dir.tab.lmia': 'ESDC LMIA records', 'dir.tab.aip': 'AIP designated employers',
   'dir.search': 'Search employer name…', 'dir.searchBtn': 'Search',
   'dir.note.lmia': 'Scope: approved LMIA positions in the past two years, all streams (stream and latest quarter shown per row; Primary Agriculture / Low Wage are mostly seasonal hiring — for skilled sponsorship look at High Wage / Global Talent streams) — a historical fact of hiring foreign workers, not a promise of current sponsorship; source: open.canada.ca quarterly tables.',
   'dir.note.aip': 'Scope: official Atlantic Immigration Program designated-employer lists (NS/NB/NL) — "designated" does not mean "has endorsement space or will endorse you"; confirm with the employer and the province.',
@@ -1177,7 +1177,7 @@ const ko: Dict = {
   'pw.bnRoutes': '개 경로 플랜', 'rank.bnBoards': '개 랭킹', 'stats.bnProvs': '대상 주 수', 'stats.bnBroads': '직업 대분류 수',
   // B4-01 디렉터리
   'dir.title': '고용주 디렉터리', 'dir.sub': '외국인을 실제로 고용한 이력이 있는 고용주 — 모든 데이터는 공식 공개 자료 기반',
-  'dir.tab.lmia': 'LMIA 기록 있음 고용주', 'dir.tab.aip': 'AIP 지정 고용주',
+  'dir.tab.lmia': 'ESDC LMIA 기록', 'dir.tab.aip': 'AIP 지정 고용주',
   'dir.search': '고용주 이름 검색…', 'dir.searchBtn': '검색',
   'dir.note.lmia': '범위: 최근 2년 ESDC 승인 LMIA 포지션 기록, 전체 스트림(행마다 스트림 및 최신 분기 표기; Primary Agriculture / Low Wage는 대부분 계절성 고용 — 숙련 스폰서 대상은 High Wage / Global Talent 스트림 참고) — 「외국인 고용 이력」이라는 사실일 뿐, 현재 스폰서 가능 여부나 의사를 보장하지 않습니다. 출처: open.canada.ca 분기 공개표.',
   'dir.note.aip': '범위: 대서양 이민 프로그램(AIP) 지정 고용주 공식 명단(NS/NB/NL) — 「지정됨」이 「스폰서 가능 인원 있음 또는 귀하를 스폰서할 것」을 의미하지 않습니다. 고용주 및 주정부 확인 필요.',
