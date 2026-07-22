@@ -1913,7 +1913,8 @@ const coParseSecs = (s: string): Record<string, string> => {
   return secs
 }
 // flat=公司弹框扁平(#186 Frank「先别用卡片」,无卡框);默认 false=公司详情页仍用 MODAL_CARD。
-export function CompanyBriefCards({ brief, website, fetched, t, trans, flat, sources }: { brief: string; website: string; fetched: string; t: TFn; trans?: string; flat?: boolean; sources?: string[] }) {
+// bare(#197 Frank「合并」):只出简介内容体(不带自己的标题/AI声明/外壳/官网),供合并进「公司」块;声明由调用方在顶部渲。
+export function CompanyBriefCards({ brief, website, fetched, t, trans, flat, sources, bare }: { brief: string; website: string; fetched: string; t: TFn; trans?: string; flat?: boolean; sources?: string[]; bare?: boolean }) {
   // #191(Frank「懒查的原文我需要保留显示出来吧」):AI 检索简介的「原文」=检索来源网页(ai_sources 一直在存,
   // 7-21 撤的只是裸 URL 平铺)。对齐 JD「看原文」的收纳法:声明行挂「看来源 ▾」折叠钮,点开一行一条,默认不脏版面。
   const [showSrc, setShowSrc] = useState(false)
@@ -1945,31 +1946,21 @@ export function CompanyBriefCards({ brief, website, fetched, t, trans, flat, sou
     const z = tSecs?.[m]?.trim()
     return z && !isJdNone(z) && z !== en ? <div style={{ ...JD_ZH_LINE, marginTop: 3, fontSize: 12.5 }}>{z}</div> : null
   }
-  // 存量散文格式(无标记)→ 单块「公司简介」原样渲(译文整段挂下面)
   // #188:flat=对齐 JD 整理版——节内小标题走 JD 次级头样式(粗体 #374151 不缩进),正文缩进 14
   const secHead: React.CSSProperties = flat ? { fontWeight: 700, color: '#374151' } : { fontWeight: 700, color: '#111827', fontSize: 13 }
   const secBody: React.CSSProperties = flat ? FLAT_BODY : { fontSize: 12.5, color: '#4b5563', lineHeight: 1.7, marginTop: 1 }
-  if (!/\[(WHAT|BASE|SIZE|FOUNDED|NOTE)\]/.test(brief)) {
-    const z = trans?.trim()
-    return (
-      <div style={wrap}>
-        <div style={head}>{t('fact.coIntro')}</div>
-        {attribution}
-        <div style={{ ...secBody, whiteSpace: 'pre-wrap' }}>
-          {brief}
-          {z && z !== brief.trim() ? <div style={{ ...JD_ZH_LINE, marginTop: 3, fontSize: 12.5, whiteSpace: 'pre-wrap' }}>{z}</div> : null}
-        </div>
-        {site}
-      </div>
-    )
-  }
-  // #186(Frank「拆的太碎了」):五节各占一卡退役 → 一块「公司简介」,各节做加粗小标题(与公司评分/JD 同款,不碎)
+  // 内容体(bare 复用):存量散文(无标记)整段;否则五节各带加粗小标题
+  const isProse = !/\[(WHAT|BASE|SIZE|FOUNDED|NOTE)\]/.test(brief)
   const secs = coParseSecs(brief)
   const has = (m: string) => !isJdNone(secs[m])
-  return (
-    <div style={wrap}>
-      <div style={head}>{t('fact.coIntro')}</div>
-      {attribution}
+  const zProse = trans?.trim()
+  const bodyNode = isProse ? (
+    <div style={{ ...secBody, whiteSpace: 'pre-wrap' }}>
+      {brief}
+      {zProse && zProse !== brief.trim() ? <div style={{ ...JD_ZH_LINE, marginTop: 3, fontSize: 12.5, whiteSpace: 'pre-wrap' }}>{zProse}</div> : null}
+    </div>
+  ) : (
+    <>
       {CO_SECS.map(([m, key]) => {
         if (!has(m)) return null   // 缺项不占行(宁可留空)
         return (
@@ -1982,13 +1973,22 @@ export function CompanyBriefCards({ brief, website, fetched, t, trans, flat, sou
           </div>
         )
       })}
+    </>
+  )
+  // bare(#197):只出内容体,合并进「公司」块(标题/AI声明/官网由调用方处理)
+  if (bare) return bodyNode
+  return (
+    <div style={wrap}>
+      <div style={head}>{t('fact.coIntro')}</div>
+      {attribution}
+      {bodyNode}
       {site}
     </div>
   )
 }
 // #158 K 公司懒探索(2026-07-19 Frank 批):弹框侧 fetch 包装——首开自动调查(命中缓存秒回);
 // 查不到/掉线整块消失不留孤儿;渲染委托 CompanyBriefCards(与公司详情页同源)。
-export function CompanyAiSection({ company, t, showTrans, lang, flat }: { company: string; t: TFn; showTrans?: boolean; lang?: Lang; flat?: boolean }) {
+export function CompanyAiSection({ company, t, showTrans, lang, flat, bare }: { company: string; t: TFn; showTrans?: boolean; lang?: Lang; flat?: boolean; bare?: boolean }) {
   const [d, setD] = useState<undefined | null | { brief: string; website: string; sources: string[]; fetched: string }>(undefined)
   const [trans, setTrans] = useState<string | null>(null)
   useEffect(() => {
@@ -2012,6 +2012,13 @@ export function CompanyAiSection({ company, t, showTrans, lang, flat }: { compan
   }, [showTrans, trans, d, lang, company])
   if (d === null) return null
   if (d === undefined) return <div style={{ margin: '2px 0 12px', fontSize: 12.5, color: '#9ca3af' }}>✨ {t('fact.aiWorking')}</div>
+  // bare(#197):懒查命中在合并「公司」块内出——顶部 body 无缓存无法预挂声明,故在此处紧贴内容渲一行 AI 声明(仍守披露红线)
+  if (bare) return (
+    <>
+      <div style={{ margin: '2px 0 6px', fontSize: 11.5, color: '#9ca3af' }}>✨ {t('fact.aiIntro')}{d.fetched ? <span style={{ marginLeft: 8 }}>{d.fetched}</span> : null}</div>
+      <CompanyBriefCards brief={d.brief} website={d.website} fetched={d.fetched} t={t} trans={showTrans && trans ? trans : undefined} flat={flat} sources={d.sources} bare />
+    </>
+  )
   return <CompanyBriefCards brief={d.brief} website={d.website} fetched={d.fetched} t={t} trans={showTrans && trans ? trans : undefined} flat={flat} sources={d.sources} />
 }
 // 公司四维档明细类型(sponsor/active/salary/fame,与 etl/grades.py company_grades 同源)
@@ -2077,6 +2084,7 @@ export function CompanyBody({ company, similar, t, lang, showTrans, onOpenJob, r
 }) {
   // 中文对照:缓存简介(aiBrief 直渲)也可懒翻——与 CompanyAiSection 内的懒翻同款,拿到存一份切换零延迟
   const [trans, setTrans] = useState<string | null>(null)
+  const [showSrc, setShowSrc] = useState(false)   // #197:AI 看来源折叠(声明挪到顶部,折叠钮随之上移)
   const hasDesc = !!company.description && company.description.length >= 120   // 阈值统一 120(原弹框 200 退役)
   useEffect(() => {
     if (!showTrans || trans != null || hasDesc || !company.aiBrief || lang === 'en') return
@@ -2097,22 +2105,48 @@ export function CompanyBody({ company, similar, t, lang, showTrans, onOpenJob, r
     : { key: 'co.spConcAip', bg: '#f0fdf4', fg: '#15803d' }
   const nocLocal = (j: CompanyDetail['jobs'][number]) => ((lang === 'zh' ? j.nocTitleZh : lang === 'ko' ? j.nocTitleKo : '') || j.nocTitle)
   const extTarget = onOpenJob ? '_blank' : undefined   // 弹框内跳页新开(别关掉弹框);页面同标签
+  // #197(Frank「这两部分合并」+「AI 声明放按钮下」):身份(官网/地址/行业)与公司简介合成一块「公司」;
+  // AI 检索声明从简介块内提到 body 顶部(弹框里即按钮行下);缓存 AI 五节路径才有声明,名录厚简介=抓取自官网另注。
+  const briefCached = !hasDesc && !!company.aiBrief   // 缓存 AI 五节(名录厚简介优先,互斥)
+  const briefSecs = briefCached ? coParseSecs(company.aiBrief) : null
+  const hasBase = !!briefSecs && !isJdNone(briefSecs.BASE)   // AI 有「所在地」(市级)→ 省级「地址」不重复
+  const srcList = (company.aiSources || []).filter((u) => /^https?:\/\//i.test(u))
+  const hasId = company.website || addr || company.industry || company.sectors || company.wikiUrl
   return (
     <div style={{ fontSize: 13, lineHeight: 1.75, color: '#374151' }}>
-      {/* ① 身份(官网/地址/行业/知名) */}
-      {(company.website || addr || company.industry || company.sectors || company.wikiUrl) && (
+      {/* AI 检索声明(#197 挪到顶部=按钮行下):缓存 AI 五节路径才出;看来源折叠随之上移 */}
+      {briefCached && (
+        <div style={{ margin: '0 0 10px', fontSize: 11.5, color: '#9ca3af' }}>
+          ✨ {t('fact.aiIntro')}{company.aiFetched ? <span style={{ marginLeft: 8 }}>{company.aiFetched}</span> : null}
+          {srcList.length ? <button onClick={() => setShowSrc((v) => !v)} style={{ border: 'none', background: 'none', padding: 0, marginLeft: 8, color: '#2563eb', cursor: 'pointer', fontSize: 11.5, fontWeight: 600 }}>{showSrc ? t('fact.aiSrcHide') : t('fact.aiSrc')}</button> : null}
+          {showSrc ? srcList.map((u) => <div key={u} style={{ overflowWrap: 'anywhere', marginTop: 2 }}><a href={u} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{u}</a></div>) : null}
+        </div>
+      )}
+      {/* 合并「公司」块:身份(官网/行业/知名)+ 简介内容同块;地址 AI 有所在地则不重复(#197) */}
+      {(hasId || hasDesc || briefCached || company.name) && (
         <div style={FLAT_SEC}>
           <div style={FLAT_HEAD}>{t('col.company')}</div>
           <div style={FLAT_BODY}>
             {company.website ? <FactRow k={t('act.site')}><a href={company.website} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5, overflowWrap: 'anywhere' }}>{company.website}</a></FactRow> : null}
-            <FactRow k={t('act.addr')}>{addr || null}</FactRow>
+            {!hasBase ? <FactRow k={t('act.addr')}>{addr || null}</FactRow> : null}
             <FactRow k={t('fact.coSectors')}>{company.industry || company.sectors}</FactRow>
             {company.wikiUrl ? <FactRow k={t('co.wellKnown')}><a href={company.wikiUrl} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5, overflowWrap: 'anywhere' }}>{company.wikiUrl}</a></FactRow> : null}
             {company.website && company.websiteSource === 'searched' ? <div style={{ marginTop: 4, fontSize: 11.5, color: '#9ca3af', lineHeight: 1.5 }}>{t('fact.siteSearched')}</div> : null}
           </div>
+          {/* 简介内容接在身份下(同块;标题/声明不再另起):名录厚简介>缓存 AI 五节>懒查,三者互斥 */}
+          {hasDesc ? (
+            <div style={{ marginTop: 8 }}>
+              <div style={{ ...FLAT_BODY, whiteSpace: 'pre-wrap' }}>{company.description}</div>
+              <div style={{ ...FLAT_BODY, marginTop: 4, fontSize: 11.5, color: '#9ca3af' }}>{t('fact.coIntroSrc')}</div>
+            </div>
+          ) : briefCached ? (
+            <div style={{ marginTop: 8 }}><CompanyBriefCards brief={company.aiBrief} website={company.aiWebsite} fetched={company.aiFetched} t={t} flat bare sources={company.aiSources} trans={showTrans && trans ? trans : undefined} /></div>
+          ) : company.name ? (
+            <div style={{ marginTop: 8 }}><CompanyAiSection company={company.name} t={t} showTrans={showTrans} lang={lang} flat bare /></div>
+          ) : null}
         </div>
       )}
-      {/* ② 担保记录深块(#184 从页面收编进 Body,弹框白赚;有记录/AIP 才出) */}
+      {/* 担保记录深块(#184 收编;#197 移到合并块之后;有记录/AIP 才出) */}
       {showSponsor && (
         <div style={FLAT_SEC}>
           <div style={FLAT_HEAD}>{t('gr.dim.coSponsor')}<span style={{ fontWeight: 400, color: '#9ca3af', fontSize: 11.5, marginLeft: 8 }}>{t('co.spSub')}</span></div>
@@ -2134,17 +2168,6 @@ export function CompanyBody({ company, similar, t, lang, showTrans, onOpenJob, r
           </div>
         </div>
       )}
-      {/* ③ 公司简介(一条信息一个家,三者互斥:名录简介够厚>缓存 AI 五节>客户端懒查;阈值 120 两边统一) */}
-      {hasDesc ? (
-        <div style={FLAT_SEC}>
-          <div style={FLAT_HEAD}>{t('fact.coIntro')}</div>
-          <div style={{ ...FLAT_BODY, whiteSpace: 'pre-wrap' }}>{company.description}</div>
-        </div>
-      ) : company.aiBrief ? (
-        <CompanyBriefCards brief={company.aiBrief} website={company.aiWebsite} fetched={company.aiFetched} t={t} flat sources={company.aiSources} trans={showTrans && trans ? trans : undefined} />
-      ) : company.name ? (
-        <CompanyAiSection company={company.name} t={t} showTrans={showTrans} lang={lang} flat />
-      ) : null}
       {/* ④ 在招职位(富行=NOC 对照+薪资+通道档,#184 口径;弹框内点职位叠开 JD 弹框) */}
       {company.jobs.length ? (
         <div style={FLAT_SEC}>
