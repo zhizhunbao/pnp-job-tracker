@@ -36,13 +36,14 @@ export default function CompanyDetailView({ company, similar = [], loggedIn }: {
             <> › <span style={{ color: '#374151' }}>{t('co.crumb')}</span></>
           </div>
 
-          {/* 整页一张白卡:H1(SEO 壳)+ CompanyBody(与弹框同源) */}
-          <div style={{ border: '1px solid #e5e7eb', borderRadius: 12, background: '#fff', padding: '14px 16px 8px', marginBottom: 14 }}>
-            <h1 style={{ margin: '0 0 10px', fontSize: 22, lineHeight: 1.35, color: '#111827' }}>
+          {/* #200(Frank「还分卡片,类似类别」):CompanyBody 各段改回卡片 → 详情页不再套外层白卡(禁卡套卡);
+              H1 单独一张头卡,下面 CompanyBody 卡片自铺(与弹框同源) */}
+          <div style={{ border: '1px solid #e5e7eb', borderRadius: 12, background: '#fff', padding: '14px 16px', marginBottom: 14 }}>
+            <h1 style={{ margin: 0, fontSize: 22, lineHeight: 1.35, color: '#111827' }}>
               {company.name}{alias ? <span style={{ color: '#9ca3af', fontSize: 15, fontWeight: 400 }}>　{alias}</span> : null}
             </h1>
-            <CompanyBody company={company} similar={similar} t={t} lang={lang} />
           </div>
+          <CompanyBody company={company} similar={similar} t={t} lang={lang} />
 
           {!company.jobs.length ? <Notice kind="info">{t('co.notFound')}</Notice> : null}
 

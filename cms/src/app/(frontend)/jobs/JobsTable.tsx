@@ -2122,45 +2122,46 @@ export function CompanyBody({ company, similar, t, lang, showTrans, onOpenJob, r
   const skipBase = hasRealAddr   // DB 精确地址在,AI 所在地不再重复
   const srcList = (company.aiSources || []).filter((u) => /^https?:\/\//i.test(u))
   const hasId = company.website || addr || company.industry || company.sectors || company.wikiUrl
+  // #200:AI 检索声明(缓存路径才出)——从卡片上方浮注挪进「公司」卡内、接在简介内容前(卡片化后浮注显孤)
+  const aiNote = briefCached ? (
+    <div style={{ margin: '8px 0 4px', fontSize: 11.5, color: '#9ca3af' }}>
+      ✨ {t('fact.aiIntro')}{company.aiFetched ? <span style={{ marginLeft: 8 }}>{company.aiFetched}</span> : null}
+      {srcList.length ? <button onClick={() => setShowSrc((v) => !v)} style={{ border: 'none', background: 'none', padding: 0, marginLeft: 8, color: '#2563eb', cursor: 'pointer', fontSize: 11.5, fontWeight: 600 }}>{showSrc ? t('fact.aiSrcHide') : t('fact.aiSrc')}</button> : null}
+      {showSrc ? srcList.map((u) => <div key={u} style={{ overflowWrap: 'anywhere', marginTop: 2 }}><a href={u} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{u}</a></div>) : null}
+    </div>
+  ) : null
   return (
     <div style={{ fontSize: 13, lineHeight: 1.75, color: '#374151' }}>
-      {/* AI 检索声明(#197 挪到顶部=按钮行下):缓存 AI 五节路径才出;看来源折叠随之上移 */}
-      {briefCached && (
-        <div style={{ margin: '0 0 10px', fontSize: 11.5, color: '#9ca3af' }}>
-          ✨ {t('fact.aiIntro')}{company.aiFetched ? <span style={{ marginLeft: 8 }}>{company.aiFetched}</span> : null}
-          {srcList.length ? <button onClick={() => setShowSrc((v) => !v)} style={{ border: 'none', background: 'none', padding: 0, marginLeft: 8, color: '#2563eb', cursor: 'pointer', fontSize: 11.5, fontWeight: 600 }}>{showSrc ? t('fact.aiSrcHide') : t('fact.aiSrc')}</button> : null}
-          {showSrc ? srcList.map((u) => <div key={u} style={{ overflowWrap: 'anywhere', marginTop: 2 }}><a href={u} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{u}</a></div>) : null}
-        </div>
-      )}
-      {/* 合并「公司」块:身份(官网/行业/知名)+ 简介内容同块;地址 AI 有所在地则不重复(#197) */}
+      {/* 合并「公司」卡(#197 合并 + #200 卡片化):身份(官网/行业/知名)+ 简介内容同卡;地址 AI 有所在地则不重复 */}
       {(hasId || hasDesc || briefCached || company.name) && (
-        <div style={FLAT_SEC}>
-          <div style={FLAT_HEAD}>{t('col.company')}</div>
-          <div style={FLAT_BODY}>
+        <div style={MODAL_CARD}>
+          <div style={MODAL_CARD_HEAD}>{t('col.company')}</div>
+          <div>
             {company.website ? <FactRow k={t('act.site')}><a href={company.website} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5, overflowWrap: 'anywhere' }}>{company.website}</a></FactRow> : null}
             {showAddrRow && addr ? <FactRow k={t('act.addr')}><a href={mapsUrl(addr)} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5 }}><IconMap /> {addr}</a></FactRow> : null}
             <FactRow k={t('fact.coSectors')}>{company.industry || company.sectors}</FactRow>
             {company.wikiUrl ? <FactRow k={t('co.wellKnown')}><a href={company.wikiUrl} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5, overflowWrap: 'anywhere' }}>{company.wikiUrl}</a></FactRow> : null}
             {company.website && company.websiteSource === 'searched' ? <div style={{ marginTop: 4, fontSize: 11.5, color: '#9ca3af', lineHeight: 1.5 }}>{t('fact.siteSearched')}</div> : null}
           </div>
-          {/* 简介内容接在身份下(同块;标题/声明不再另起):名录厚简介>缓存 AI 五节>懒查,三者互斥 */}
+          {/* 简介内容接在身份下(同卡;标题/声明不再另起):名录厚简介>缓存 AI 五节>懒查,三者互斥 */}
+          {aiNote}
           {hasDesc ? (
             <div style={{ marginTop: 8 }}>
-              <div style={{ ...FLAT_BODY, whiteSpace: 'pre-wrap' }}>{company.description}</div>
-              <div style={{ ...FLAT_BODY, marginTop: 4, fontSize: 11.5, color: '#9ca3af' }}>{t('fact.coIntroSrc')}</div>
+              <div style={{ whiteSpace: 'pre-wrap' }}>{company.description}</div>
+              <div style={{ marginTop: 4, fontSize: 11.5, color: '#9ca3af' }}>{t('fact.coIntroSrc')}</div>
             </div>
           ) : briefCached ? (
-            <div style={{ marginTop: 8 }}><CompanyBriefCards brief={company.aiBrief} website={company.aiWebsite} fetched={company.aiFetched} t={t} flat bare skipBase={skipBase} sources={company.aiSources} trans={showTrans && trans ? trans : undefined} /></div>
+            <div><CompanyBriefCards brief={company.aiBrief} website={company.aiWebsite} fetched={company.aiFetched} t={t} bare skipBase={skipBase} sources={company.aiSources} trans={showTrans && trans ? trans : undefined} /></div>
           ) : company.name ? (
-            <div style={{ marginTop: 8 }}><CompanyAiSection company={company.name} t={t} showTrans={showTrans} lang={lang} flat bare skipBase={skipBase} /></div>
+            <div style={{ marginTop: 8 }}><CompanyAiSection company={company.name} t={t} showTrans={showTrans} lang={lang} bare skipBase={skipBase} /></div>
           ) : null}
         </div>
       )}
       {/* 担保记录深块(#184 收编;#197 移到合并块之后;有记录/AIP 才出) */}
       {showSponsor && (
-        <div style={FLAT_SEC}>
-          <div style={FLAT_HEAD}>{t('gr.dim.coSponsor')}<span style={{ fontWeight: 400, color: '#9ca3af', fontSize: 11.5, marginLeft: 8 }}>{t('co.spSub')}</span></div>
-          <div style={FLAT_BODY}>
+        <div style={MODAL_CARD}>
+          <div style={MODAL_CARD_HEAD}>{t('gr.dim.coSponsor')}<span style={{ fontWeight: 400, color: '#9ca3af', fontSize: 11.5, marginLeft: 8 }}>{t('co.spSub')}</span></div>
+          <div>
             {streams.map((s, i) => (
               <div key={i} style={{ display: 'flex', gap: 10, padding: '2px 0', fontSize: 13, alignItems: 'baseline' }}>
                 <span style={{ minWidth: 96, color: s.skilled ? '#15803d' : '#9ca3af', flexShrink: 0 }}>{s.label}{s.skilled ? <span style={{ fontSize: 10.5, marginLeft: 4 }}>{t('co.spSkilledTag')}</span> : null}</span>
@@ -2180,9 +2181,9 @@ export function CompanyBody({ company, similar, t, lang, showTrans, onOpenJob, r
       )}
       {/* ④ 在招职位(富行=NOC 对照+薪资+通道档,#184 口径;弹框内点职位叠开 JD 弹框) */}
       {company.jobs.length ? (
-        <div style={FLAT_SEC}>
-          <div style={FLAT_HEAD}>{t('co.openJobs')} ({company.openCount})</div>
-          <div style={FLAT_BODY}>
+        <div style={MODAL_CARD}>
+          <div style={MODAL_CARD_HEAD}>{t('co.openJobs')} ({company.openCount})</div>
+          <div>
             {(allJobs ? company.jobs : company.jobs.slice(0, 8)).map((j) => {
               const r = resolveJob?.(j.id)
               const nl = nocLocal(j)
@@ -2218,9 +2219,9 @@ export function CompanyBody({ company, similar, t, lang, showTrans, onOpenJob, r
       ) : null}
       {/* ⑤ 相似雇主(同省同行业按担保档;弹框白赚) */}
       {similar.length ? (
-        <div style={FLAT_SEC}>
-          <div style={FLAT_HEAD}>{t('co.similar')}<span style={{ fontWeight: 400, color: '#9ca3af', fontSize: 11.5, marginLeft: 8 }}>{t('co.similarSub')}</span></div>
-          <div style={FLAT_BODY}>
+        <div style={MODAL_CARD}>
+          <div style={MODAL_CARD_HEAD}>{t('co.similar')}<span style={{ fontWeight: 400, color: '#9ca3af', fontSize: 11.5, marginLeft: 8 }}>{t('co.similarSub')}</span></div>
+          <div>
             {similar.map((e) => (
               <div key={e.slug} style={{ fontSize: 13, padding: '2px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
                 <a href={`/companies/${e.slug}`} target={extTarget} rel="noreferrer" style={{ ...link, minWidth: 0 }}>{e.name}</a>
@@ -2235,9 +2236,9 @@ export function CompanyBody({ company, similar, t, lang, showTrans, onOpenJob, r
       ) : null}
       {/* ⑥ 雇主信号(#192 殿后;担保维让给上方深块 hideSponsor,不重复) */}
       {company.scoreDetail ? (
-        <div style={FLAT_SEC}>
-          <div style={FLAT_HEAD}>{t('co.grades')}</div>
-          <div style={FLAT_BODY}><CompanyGradesView detail={company.scoreDetail} t={t} hideSponsor={showSponsor} /></div>
+        <div style={MODAL_CARD}>
+          <div style={MODAL_CARD_HEAD}>{t('co.grades')}</div>
+          <div><CompanyGradesView detail={company.scoreDetail} t={t} hideSponsor={showSponsor} /></div>
         </div>
       ) : null}
     </div>
@@ -2280,7 +2281,7 @@ function CompanyPanel({ job, jobs, lang, plan, onOpenJob }: { job: JobRow; jobs:
       </div>
       {/* AI 速读(点了才出,置顶;coRead=公司级接地速读,不联网不凭名字编)——弹框壳独有,页面不带 */}
       {aiOn && (
-        <div style={{ ...FLAT_SEC, fontSize: 13, lineHeight: 1.75, color: '#374151' }}>
+        <div style={{ ...MODAL_CARD, fontSize: 13, lineHeight: 1.75, color: '#374151' }}>
           <JdAdvisorSection job={job} lang={lang} plan={plan} title={t('cat.aiRead')} field="coRead" />
         </div>
       )}
