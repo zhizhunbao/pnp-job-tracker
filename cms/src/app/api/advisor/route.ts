@@ -257,6 +257,15 @@ function buildPrompt(field: string, j: Job, jd: string, lang: Lang, pf = '', web
     ].filter(Boolean).join('\n\n')
     return `${ASK.occRead}\n\nOccupation facts (StatCan NOC 2021):\n${facts}\n\nWrite 2–3 short sections, each starting with a 【heading】, content in ${LANG_NAME[lang]}. Base everything strictly on the facts above; do not invent numbers, licensing rules, or immigration advice.`
   }
+  // jdRead(职位弹框「AI 速读」,2026-07-21 Frank「只速读这个 job 的内容即可,不需要过度解读移民信号」):
+  // 只喂 JD 原文 + 帖面基本盘,总结职位本身;移民路径解读归移民弹框(field=immigration)与详情页初判。
+  if (field === 'jdRead') {
+    const facts = `Role: ${j.title || '—'}\nCompany: ${j.company || '—'}\nLocation: ${loc}\nPay (posted): ${j.salary || 'not stated'}`
+    const src = jd
+      ? `Real job posting (it may be in English; answer in ${LANG_NAME[lang]}):\n"""\n${jd}\n"""`
+      : `(No posting text was scraped for this job — say plainly that the posting text is unavailable and keep to the basic facts above; do NOT invent duties or requirements.)`
+    return `Give a quick, plain-language read of THIS job posting for someone deciding whether to apply: (1) what the day-to-day work actually is, (2) the hard requirements that decide whether you qualify, (3) pay / schedule / benefits or other notable points the posting itself mentions.\n\n${facts}\n\n${src}\n\nWrite 2–3 short sections, each starting with a 【heading】, content in ${LANG_NAME[lang]}. Base everything STRICTLY on the posting; do not invent details; NO immigration pathway analysis or advice.`
+  }
   // E8-10:入参收成三组(company / job / immigration)。'immigration' 走原 'title' 那条分步方案路径;
   // 'job' 不到这儿——职位弹框**不设 AI 段**(JD 五节整理版已承担事实层,再加一段就是 #125 修掉的那种重复),
   // 前端直接不发请求。'title' 保留兼容旧调用方。
@@ -352,7 +361,7 @@ export async function POST(req: NextRequest) {
   if (!checkLimit(quotas)) return new Response('rate limited', { status: 429 })
 
   // 职位/对话:读取抓到的真实 JD 作 grounding(基于它总结,不凭空猜)
-  const jd = (field === 'title' || field === 'immigration' || isChat) ? await loadJD(job.applyUrl) : ''   // E8-10:分步方案要读 JD 提取可控项(证书/学历)
+  const jd = (field === 'title' || field === 'immigration' || field === 'jdRead' || isChat) ? await loadJD(job.applyUrl) : ''   // E8-10:分步方案要读 JD 提取可控项(证书/学历);jdRead 只总结 JD 本身
 
   // #107:公司初判接入 K 的联网调查(companies.ai_* 同一缓存,一家公司全站只查一次)。
   // 缓存命中直接用;库里连爬取简介都没有的公司才现场调查(有富化数据的常见路径不加延迟);

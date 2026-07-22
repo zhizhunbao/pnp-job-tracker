@@ -9,16 +9,19 @@ export type CompanyResearch = { brief: string; website: string; sources: string[
 
 // #158(Frank「这部分也按 job 的结构来比较好吧,也是属于 AI 整理的范畴吧」):公司简介原先是一段散文,
 // 与 JD 五节整理版(J2)不是一套语言。改成同款**固定标记分节**——搬运不发挥、缺项写 (not stated)、
-// 查不到整条 NOT_FOUND;节数刻意少(三节),多了模型就会开始编。
+// 查不到整条 NOT_FOUND。2026-07-21 Frank「公司的信息需要增强」:三节 → 五节(+成立时间/要点),
+// 仍全白名单制,每节都可 (not stated),不给模型自由发挥的口子。
 const SYSTEM = `You are a factual company researcher. Use ONLY the web search results.
-Output plain text with EXACTLY these section markers, each on its own line: [WHAT] [BASE] [SIZE]
+Output plain text with EXACTLY these section markers, each on its own line: [WHAT] [BASE] [SIZE] [FOUNDED] [NOTE]
 - [WHAT]: 1-2 sentences on what the company does / what it sells.
 - [BASE]: where it is based (city, province) — one short line.
 - [SIZE]: employee count or scale ONLY if the results state it.
+- [FOUNDED]: founding year ONLY if the results state it — one short line.
+- [NOTE]: ONE fact a job seeker would care about that the results state (parent company, stock listing, major brands/products, main clients) — one short line.
 If a section is not supported by the results, write exactly: (not stated)
 If the results are unclear or about a different company, reply exactly: NOT_FOUND
 Finally on its own line output [SITE]=<official website url or NONE>. No other commentary.`
-export const CO_MARKS = ['WHAT', 'BASE', 'SIZE'] as const
+export const CO_MARKS = ['WHAT', 'BASE', 'SIZE', 'FOUNDED', 'NOTE'] as const
 
 const inflight = new Map<string, Promise<CompanyResearch | null>>()
 
@@ -38,7 +41,9 @@ export async function companyRow(pool: any, name: string): Promise<{ id: number;
     row = { id: ins.rows[0].id, ai_brief: null }
   }
   let cached: CompanyResearch | null = null
-  if (row.ai_brief) {
+  // 旧版缓存懒升级(2026-07-21 五节改版):三节/散文格式的存量 brief 视为过期 → 当没缓存,
+  // 下次打开这家公司自动重查一次(一家一次,lazy-first 不批量重跑)
+  if (row.ai_brief && row.ai_brief.includes('[FOUNDED]')) {
     let sources: string[] = []
     try { sources = JSON.parse(row.ai_sources || '[]') } catch { /* ignore */ }
     cached = { brief: row.ai_brief, website: row.ai_website || '', sources, fetched: String(row.ai_fetched || '').slice(0, 10) }

@@ -603,7 +603,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       if (bd) setFBroad(bd)
       if (md) setFMid(md)  // stats 图表 L2 下钻深链(2026-07-19)
       if (fn) setFFine(fn)  // #142:详情页职业分类三级可点,小类深链补齐
-      if (sp.get('view') === 'match' && plan.loggedIn && plan.profileOk) setMatchView(true)  // E5-05 直链回流
+      // E5-05 直链回流;进匹配视图默认按匹配度排(2026-07-21 Frank:横幅写「按匹配度排序」得名副其实,
+      // 原默认发布时间序把非今日的高匹配全压在今日中匹配下面)
+      if (sp.get('view') === 'match' && plan.loggedIn && plan.profileOk) { setMatchView(true); setSort({ key: 'match', dir: 'desc' }) }
     } catch { /* ignore */ }
   }, [])
   // E8-10:popup 存**分组**不再存字段(24 → 3);srcField 只用于打开时锚到哪一节,不参与内容分支
@@ -722,7 +724,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     setSort((s) => {
       if (s.key !== key) return { key, dir: 'desc' }       // 新列:降序
       if (s.dir === 'desc') return { key, dir: 'asc' }      // 第二下:升序
-      return { key: 'datePosted', dir: 'desc' }             // 第三下:取消 → 回真默认(发布时间;#127 评分默认序退役)
+      // 第三下:取消 → 回本视图默认(匹配视图=匹配度,普通视图=发布时间;#127 评分默认序退役)
+      return matchView ? { key: 'match', dir: 'desc' } : { key: 'datePosted', dir: 'desc' }
     })
 
   // 迁移:老用户有 localStorage 列偏好但还没 cookie(本次改动前设的)→ 应用 + 补写 cookie(一次性)。
@@ -1802,8 +1805,9 @@ export function JdFormattedView({ text, t, fallbackPay, applyUrl, underTitle, tr
             {/* #125(Frank「重复」):「怎么投」整节文本直接渲成官方原帖链接——一处内容一处链接,
                 不再额外附按钮行(与底部合规来源行重复);「Click Here」类废句自身变成可点出口 */}
             {m === 'APPLY' && applyUrl ? (
+              /* 原帖没写投递方式 → 直接完整显示官方原帖 URL(2026-07-21 Frank;原「查看官方原帖」按钮文案) */
               none
-                ? <div style={{ paddingLeft: 14 }}><a href={applyUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}>{t('act.seeOfficial')}</a></div>
+                ? <div style={{ paddingLeft: 14, overflowWrap: 'anywhere' }}><a href={applyUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{applyUrl} ↗</a></div>
                 : lines.map((l, i) => <div key={i} style={{ paddingLeft: 14 }}><a href={applyUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{l.replace(/^-\s*/, '')} ↗</a>{zh(i)}</div>)
             ) : /* #123c(Frank「每个职位都有薪资吧」):原帖正文没写薪资但帖面字段有 → 兜底显示帖面薪资+来源灰注
                 (仍是搬运原帖信息——JB 列表字段也是雇主自报,非编造) */
@@ -1822,20 +1826,23 @@ export function JdFormattedView({ text, t, fallbackPay, applyUrl, underTitle, tr
 // 打开职位描述即自动流式生成,不用再点「AI 顾问」钮;额度闸照走(402 升级卡/429 说人话);
 // 同岗会话内缓存,反复开关不重复烧额度。深挖(对比表+追问对话)仍在「AI 顾问」钮的完整弹框里。
 const jdAdvCache = new Map<string, string>()
-export function JdAdvisorSection({ job, lang, plan, title }: { job: JobRow; lang: Lang; plan: Plan; title?: string }) {
+// field:'title'=顾问初判(详情页,含移民路径);'jdRead'=纯 JD 速读(职位弹框,2026-07-21 Frank
+// 「只速读这个 job 的内容即可,不需要过度解读移民信号」)
+export function JdAdvisorSection({ job, lang, plan, title, field = 'title' }: { job: JobRow; lang: Lang; plan: Plan; title?: string; field?: 'title' | 'jdRead' }) {
   const t = makeT(lang)
-  const [text, setText] = useState(jdAdvCache.get(String(job.id)) || '')
-  const [status, setStatus] = useState<'loading' | 'streaming' | 'done' | 'error' | 'upgrade' | 'limited'>(jdAdvCache.has(String(job.id)) ? 'done' : 'loading')
+  const ck = `${field}:${job.id}`
+  const [text, setText] = useState(jdAdvCache.get(ck) || '')
+  const [status, setStatus] = useState<'loading' | 'streaming' | 'done' | 'error' | 'upgrade' | 'limited'>(jdAdvCache.has(ck) ? 'done' : 'loading')
   const [freeLeft, setFreeLeft] = useState<number | null>(null)
   useEffect(() => {
-    if (jdAdvCache.has(String(job.id))) return
+    if (jdAdvCache.has(ck)) return
     const ctrl = new AbortController()
     setText(''); setStatus('loading')
     ;(async () => {
       try {
         const res = await fetch('/api/advisor', {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal,
-          body: JSON.stringify({ field: 'title', id: String(job.id), job, lang }),
+          body: JSON.stringify({ field, id: String(job.id), job, lang }),
         })
         const left = res.headers.get('X-Free-Left')
         if (left != null) setFreeLeft(Number(left))
@@ -1881,7 +1888,7 @@ export function JdAdvisorSection({ job, lang, plan, title }: { job: JobRow; lang
 // (命中缓存秒回);查不到/掉线整块消失不留孤儿。
 // 2026-07-21 Frank「公司弹框参考类别重新设计」:嵌套小盒退役 → 每节一卡带题(与分类弹框同规范);
 // 信息出处 URL 列表撤(同日「去掉 source 链接」);AI 检索声明=卡组上方一行灰注。
-const CO_SECS: [string, string][] = [['WHAT', 'co.f.what'], ['BASE', 'co.f.base'], ['SIZE', 'co.f.size']]
+const CO_SECS: [string, string][] = [['WHAT', 'co.f.what'], ['BASE', 'co.f.base'], ['SIZE', 'co.f.size'], ['FOUNDED', 'co.f.founded'], ['NOTE', 'co.f.note']]
 function CompanyAiSection({ company, t }: { company: string; t: TFn }) {
   const [d, setD] = useState<undefined | null | { brief: string; website: string; sources: string[]; fetched: string }>(undefined)
   useEffect(() => {
@@ -1903,7 +1910,7 @@ function CompanyAiSection({ company, t }: { company: string; t: TFn }) {
     </div>
   ) : null
   // 存量散文格式(无标记)→ 单卡「公司简介」原样渲,不返工重跑模型(下次调查自然升级)
-  if (!/\[(WHAT|BASE|SIZE)\]/.test(d.brief)) {
+  if (!/\[(WHAT|BASE|SIZE|FOUNDED|NOTE)\]/.test(d.brief)) {
     return (
       <>
         {attribution}
@@ -1915,7 +1922,7 @@ function CompanyAiSection({ company, t }: { company: string; t: TFn }) {
       </>
     )
   }
-  const parts = d.brief.split(/\[(WHAT|BASE|SIZE)\]/)
+  const parts = d.brief.split(/\[(WHAT|BASE|SIZE|FOUNDED|NOTE)\]/)
   const secs: Record<string, string> = {}
   for (let i = 1; i + 1 <= parts.length - 1; i += 2) secs[parts[i]] = (parts[i + 1] || '').trim()
   const has = (m: string) => !!secs[m] && !/^\(not stated\)$/i.test(secs[m].trim())
@@ -3164,10 +3171,10 @@ function ActModal({ job, lang, plan, onClose }: { job: JobRow; lang: Lang; plan:
             {status !== 'loading' && !aiOn && <button onClick={() => setAiOn(true)} style={PILL_BTN}><IconCompass /> {t('cat.aiRead')}</button>}
             <a href={`/jobs/${job.id}`} target="_blank" rel="noreferrer" style={{ ...PILL_BTN, textDecoration: 'none', display: 'inline-block' }}>{t('detail.openFull')} ↗</a>
           </div>
-          {/* AI 速读卡(点了才出;置顶=点完不用往下翻,与分类弹框同规范) */}
+          {/* AI 速读卡(点了才出;置顶=点完不用往下翻,与分类弹框同规范;jdRead=纯 JD 速读不带移民解读) */}
           {aiOn && (
             <div style={MODAL_CARD}>
-              <JdAdvisorSection job={job} lang={lang} plan={plan} title={t('cat.aiRead')} />
+              <JdAdvisorSection job={job} lang={lang} plan={plan} title={t('cat.aiRead')} field="jdRead" />
             </div>
           )}
           {status === 'loading' ? <p style={{ color: '#9ca3af' }}>{t('act.loadingText')}</p>

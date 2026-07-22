@@ -79,6 +79,7 @@ export const matchRank = (l: MatchLevel | null | undefined): number => (l ? LEVE
 export function match(profile: MatchProfile, job: MatchJob, dims: MatchDims): MatchResult {
   const reasons: MatchReason[] = []
   let score = 0
+  let nocMiss = false   // 填了 NOC 但精确/小类/同族全未命中(见规则 1)→ 档位封顶 low
 
   // ── 规则 1:NOC 对口(job 未分类 → 整体不适用,不硬塞) ──
   if (!job.noc) {
@@ -90,11 +91,18 @@ export function match(profile: MatchProfile, job: MatchJob, dims: MatchDims): Ma
     score += 40
     reasons.push({ rule: 'noc', verdict: 'pass', key: 'match.r.noc.exact', params: { noc: job.noc } })
   } else {
+    // 2026-07-21 Frank 拍板「我干 IT 不一定非得软件开发」:同族分三档——精确 40 / 同小类(前4位)30 /
+    // 同族(前3位,如 212x=计算机专业类)20。跨小类的同领域岗(数据科学/安全/DBA…)不再拿 0 分。
     const minor = profile.nocCodes.find((c) => c.length === 5 && c.slice(0, 4) === job.noc.slice(0, 4))
+    const submajor = profile.nocCodes.find((c) => c.length === 5 && c.slice(0, 3) === job.noc.slice(0, 3))
     if (minor) {
-      score += 25
+      score += 30
       reasons.push({ rule: 'noc', verdict: 'pass', key: 'match.r.noc.minor', params: { noc: job.noc, yours: minor } })
+    } else if (submajor) {
+      score += 20
+      reasons.push({ rule: 'noc', verdict: 'pass', key: 'match.r.noc.submajor', params: { noc: job.noc, yours: submajor } })
     } else {
+      nocMiss = true
       reasons.push({ rule: 'noc', verdict: 'fail', key: 'match.r.noc.none', params: { noc: job.noc, yours: profile.nocCodes.join(' / ') } })
     }
   }
@@ -105,7 +113,8 @@ export function match(profile: MatchProfile, job: MatchJob, dims: MatchDims): Ma
     reasons.push({ rule: 'prov', verdict: 'na', key: 'match.r.prov.qc', params: {} })
   } else if (prov) {
     if (profile.targetProvinces.length > 0 && !profile.targetProvinces.includes(prov)) {
-      score -= 10
+      // 2026-07-21 Frank 拍板:目标省不一致只提示不扣分(原 −10)——目标省是偏好不是资格,
+      // 别把外省的对口好岗压到档线下;弹框「对我意味着什么」仍显示这条 warn
       reasons.push({ rule: 'prov', verdict: 'warn', key: 'match.r.prov.notTarget', params: { prov, targets: profile.targetProvinces.join('/') } })
     }
     const rows = dims.pnpOccupations.filter((r) => r.province === prov && r.noc === job.noc)
@@ -202,7 +211,10 @@ export function match(profile: MatchProfile, job: MatchJob, dims: MatchDims): Ma
     reasons.push({ rule: 'lmia', verdict: 'na', key: 'match.r.lmia.na', params: {} })
   }
 
-  const level: MatchLevel = score >= 60 ? 'high' : score >= 30 ? 'mid' : 'low'
+  // 职业不对口封顶(2026-07-21 Frank「医疗/服务怎么也匹配进来了」):填了 NOC 却全不沾边的岗,
+  // 省清单+TEER 撑出的分不算「与我的匹配」——封顶 low(匹配视图只收 high/mid,自然滤掉);
+  // 档案没填 NOC(如只填 CRS)不受此限,照旧按分数分档。
+  const level: MatchLevel = nocMiss ? 'low' : score >= 60 ? 'high' : score >= 30 ? 'mid' : 'low'
   return { level, score, reasons }
 }
 
@@ -212,6 +224,7 @@ const EN: Record<string, (p: Record<string, string | number>) => string> = {
   'match.r.noc.noProfile': () => 'User has not listed their NOC codes.',
   'match.r.noc.exact': (p) => `User's own NOC ${p.noc} matches this job's NOC exactly.`,
   'match.r.noc.minor': (p) => `User's NOC ${p.yours} is in the same minor group as this job's NOC ${p.noc}.`,
+  'match.r.noc.submajor': (p) => `User's NOC ${p.yours} is in the same occupational sub-major group as this job's NOC ${p.noc} (same field, different specialty).`,
   'match.r.noc.none': (p) => `Job NOC ${p.noc} does not match user's NOC (${p.yours}).`,
   'match.r.prov.qc': () => 'Quebec runs its own selection system (not PNP).',
   'match.r.prov.notTarget': (p) => `Job is in ${p.prov}, outside user's target provinces (${p.targets}).`,

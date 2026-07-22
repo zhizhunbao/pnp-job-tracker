@@ -344,13 +344,14 @@ export async function fetchMatchPage(
 ): Promise<{ jobs: JobRow[]; total: number; matchHigh: number; matchMid: number; updatedAt: string }> {
   const nocs = profile.nocCodes || []
   const noc4 = Array.from(new Set(nocs.filter((c) => c.length === 5).map((c) => c.slice(0, 4))))
+  const noc3 = Array.from(new Set(nocs.filter((c) => c.length === 5).map((c) => c.slice(0, 3))))   // 同族档(match.ts 三档制)
   const CAND_CAP = 12000  // 候选封顶:按新鲜度取最近 N 个候选,防全表 TS 计算失控(足够覆盖真实匹配)
   const [candRes, updRes] = await Promise.all([
     pool.query(
       `SELECT ${JOB_COLUMNS} ${JOB_FROM}
-       WHERE (COALESCE(j.pnp_eligible,false) OR COALESCE(j.ee_category,'') <> '' OR j.noc = ANY($1) OR LEFT(j.noc,4) = ANY($2))
-       ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT $3`,
-      [nocs, noc4, CAND_CAP]),
+       WHERE (COALESCE(j.pnp_eligible,false) OR COALESCE(j.ee_category,'') <> '' OR j.noc = ANY($1) OR LEFT(j.noc,4) = ANY($2) OR LEFT(j.noc,3) = ANY($3))
+       ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT $4`,
+      [nocs, noc4, noc3, CAND_CAP]),
     pool.query(`SELECT max(last_seen) AS upd FROM jobs`),
   ])
   let matchHigh = 0, matchMid = 0
