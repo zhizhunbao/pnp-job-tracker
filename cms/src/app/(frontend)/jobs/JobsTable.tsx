@@ -1788,8 +1788,11 @@ const jdParseSecs = (s: string): Record<string, string> => {
 // (none stated)/(not specified)/(not mentioned)…,严格只认 (not stated) → 变体被当正文渲成「(none stated) ↗」。
 // 括号可有可无,not/none + stated/specified/mentioned/provided/available/applicable 一律算缺节。
 const JD_NONE_RE = /^\(?\s*(not|none|n\/a)(\s+(stated|specified|mentioned|provided|available|applicable|listed))?\s*\)?$/i
+// #198(Frank「这句话删掉」指 "Not stated in the results."):模型偶尔写整句而非 (not stated)——
+// 起手是「not/none/no + stated/specified/…/information」且短句(<50)即当缺项(不占行)。
+const JD_NONE_LOOSE = /^\(?\s*(not|none|no)\s+(stated|specified|mentioned|provided|available|applicable|listed|information)\b/i
 // 先剥「- 」bullet 前缀再判(#186:变体常以「- (not stated)」bullet 形式混在有内容的节里)
-const isJdNone = (s?: string) => { const b = (s || '').trim().replace(/^-\s*/, ''); return !b || JD_NONE_RE.test(b) }
+const isJdNone = (s?: string) => { const b = (s || '').trim().replace(/^-\s*/, ''); return !b || JD_NONE_RE.test(b) || (b.length < 50 && JD_NONE_LOOSE.test(b)) }
 const JD_ZH_LINE: React.CSSProperties = { margin: '2px 0 4px', padding: '1px 0 1px 10px', borderLeft: '3px solid #dbeafe', color: '#1e40af', fontWeight: 400 }
 export function JdFormattedView({ text, t, fallbackPay, applyUrl, underTitle, trans }: { text: string; t: TFn; fallbackPay?: string; applyUrl?: string; underTitle?: boolean; trans?: string }) {
   const SECS: [string, string][] = [['ROLE', 'act.f.role'], ['REQS', 'act.f.reqs'], ['PAY', 'act.f.pay'], ['WORKHOURS', 'act.f.hours'], ['APPLY', 'act.f.apply']]
@@ -2085,6 +2088,7 @@ export function CompanyBody({ company, similar, t, lang, showTrans, onOpenJob, r
   // 中文对照:缓存简介(aiBrief 直渲)也可懒翻——与 CompanyAiSection 内的懒翻同款,拿到存一份切换零延迟
   const [trans, setTrans] = useState<string | null>(null)
   const [showSrc, setShowSrc] = useState(false)   // #197:AI 看来源折叠(声明挪到顶部,折叠钮随之上移)
+  const [allJobs, setAllJobs] = useState(false)   // #198:在招职位内联展开(首显 8,展开其余=原地不跳转)
   const hasDesc = !!company.description && company.description.length >= 120   // 阈值统一 120(原弹框 200 退役)
   useEffect(() => {
     if (!showTrans || trans != null || hasDesc || !company.aiBrief || lang === 'en') return
@@ -2173,7 +2177,7 @@ export function CompanyBody({ company, similar, t, lang, showTrans, onOpenJob, r
         <div style={FLAT_SEC}>
           <div style={FLAT_HEAD}>{t('co.openJobs')} ({company.openCount})</div>
           <div style={FLAT_BODY}>
-            {company.jobs.map((j) => {
+            {(allJobs ? company.jobs : company.jobs.slice(0, 8)).map((j) => {
               const r = resolveJob?.(j.id)
               const nl = nocLocal(j)
               return (
@@ -2196,8 +2200,12 @@ export function CompanyBody({ company, similar, t, lang, showTrans, onOpenJob, r
                 </div>
               )
             })}
-            {company.openCount > company.jobs.length ? (
-              <div style={{ marginTop: 4 }}><a href={`/?q=${encodeURIComponent(company.name)}`} target={extTarget} rel="noreferrer" style={{ ...link, fontSize: 12.5 }}>{t('act.showAll', { n: company.openCount - company.jobs.length })}</a></div>
+            {/* #198(Frank「这个展开不要跳转」):原「展开其余 N 个」跳搜索页退役 → 原地展开已载入职位;
+                载入上限 50,超出部分(极少)才回退跳板搜索全部 */}
+            {!allJobs && company.jobs.length > 8 ? (
+              <button onClick={() => setAllJobs(true)} style={{ border: 'none', background: 'none', padding: '2px 0', fontSize: 12.5, color: '#2563eb', cursor: 'pointer' }}>{t('act.showAll', { n: company.jobs.length - 8 })}</button>
+            ) : allJobs && company.openCount > company.jobs.length ? (
+              <div style={{ marginTop: 4 }}><a href={`/?q=${encodeURIComponent(company.name)}`} target={extTarget} rel="noreferrer" style={{ ...link, fontSize: 12.5 }}>{t('act.showAllBoard', { n: company.openCount - company.jobs.length })}</a></div>
             ) : null}
           </div>
         </div>
@@ -2641,7 +2649,7 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
     // broad=1 级 · mid=2 级 · fine=3 级;NOC 字段=全链 + 官方职责/任职要求(五位码职业级信息只在这)。
     const depth = field === 'broad' ? 1 : field === 'mid' ? 2 : field === 'fine' ? 3 : 0
     return (
-      <FactsBox note={t('fact.nocNote')}>
+      <FactsBox>
         {field === 'noc' ? <>
           <FactRow k={t('col.noc')}>{job.noc}</FactRow>
           {noc?.title ? <FactRow k={t('fact.nocTitle')}>{noc.title}</FactRow> : null}
@@ -3021,7 +3029,7 @@ function CategoryPanel({ job, lang, plan, nocDesc, srcField }: { job: JobRow; la
             </div>
           )
         })}
-        <div style={{ marginTop: 7, fontSize: 11.5, color: '#9ca3af', lineHeight: 1.5 }}>{t('fact.nocNote')}</div>
+        {/* #198(Frank「这部分删掉」):NOC/TEER 解释注撤(枚举值已人话化,不必每次复述定义) */}
       </div>
 
       {/* 卡②③:官方主要职责 / 任职要求 */}

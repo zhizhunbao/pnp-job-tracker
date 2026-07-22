@@ -465,7 +465,7 @@ async function fetchCompanyWhere(pool: any, where: string, param: unknown): Prom
             nd.title AS noc_title, nd.title_zh AS noc_title_zh, nd.title_ko AS noc_title_ko
      FROM jobs j LEFT JOIN noc_descriptions nd ON nd.noc = j.noc
      WHERE j.company_id = $1 AND COALESCE(j.status,'open') <> 'closed'
-     ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT 30`, [c.id])
+     ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT 50`, [c.id])   // #198:上限 30→50,让「展开其余」内联展开(不再跳转搜索页)
   const cntRes = await pool.query(
     `SELECT count(*)::int n FROM jobs WHERE company_id = $1 AND COALESCE(status,'open') <> 'closed'`, [c.id])
   let sources: string[] = []

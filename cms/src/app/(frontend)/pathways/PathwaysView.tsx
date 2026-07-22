@@ -17,14 +17,8 @@ function SignalRow({ s, t }: { s: PathwaySignal; t: (k: string, v?: Record<strin
   return (
     <li style={{ fontSize: 13, color: '#374151', lineHeight: 1.6, listStyle: 'none', display: 'flex', gap: 6 }}>
       <span style={{ flexShrink: 0 }}>{icon}</span>
-      <span>
-        {t(s.key, s.params)}
-        {s.source && (
-          <a href={s.source.url} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none', fontSize: 12, marginLeft: 6 }}>
-            ↗{s.source.fetched ? ` ${String(s.source.fetched).slice(0, 10)}` : ''}
-          </a>
-        )}
-      </span>
+      {/* #198(Frank「这个页面的跳转都删掉」):↗ 外链撤,只留信号文字 */}
+      <span>{t(s.key, s.params)}</span>
     </li>
   )
 }
@@ -53,9 +47,6 @@ export function PathwaysView({ evals, loggedIn, profileOk }: { evals: PathwayEva
         {ev.recipe.steps.map((s) => (
           <li key={s.key} style={{ fontSize: 13, color: '#374151', lineHeight: 1.7 }}>
             {t(s.key)}
-            {s.sourceIdx != null && ev.recipe.sources[s.sourceIdx] && (
-              <a href={ev.recipe.sources[s.sourceIdx].url} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none', fontSize: 12, marginLeft: 5 }}>↗</a>
-            )}
           </li>
         ))}
       </ol>
@@ -71,21 +62,19 @@ export function PathwaysView({ evals, loggedIn, profileOk }: { evals: PathwayEva
           {ev.gaps.map((g) => (
             <li key={g.key} style={{ fontSize: 13, color: '#374151', lineHeight: 1.6, listStyle: 'none', display: 'flex', gap: 6 }}>
               <span style={{ color: '#b45309', flexShrink: 0 }}><IconWarn /></span>
-              <span>
-                {t(g.key)}
-                {g.url && <a href={g.url} {...(g.url.startsWith('http') ? { target: '_blank', rel: 'noreferrer' } : {})} style={{ color: '#6b7280', textDecoration: 'none', fontSize: 12, marginLeft: 6 }}>↗</a>}
-              </span>
+              <span>{t(g.key)}</span>
             </li>
           ))}
         </ul>
       </>)}
 
+      {/* #198(Frank「跳转都删掉」):出处 ↗ 外链撤,来源名作纯文字;「·」清理(核对于自成一段空格分隔) */}
       <div style={{ borderTop: '1px solid #f3f4f6', marginTop: 14, paddingTop: 8, fontSize: 11.5, color: '#9ca3af', display: 'flex', flexWrap: 'wrap', gap: 10 }}>
         <span>{t('pw.sources')}:</span>
         {ev.recipe.sources.map((s) => (
-          <a key={s.url} href={s.url} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{s.label} ↗</a>
+          <span key={s.url}>{s.label}</span>
         ))}
-        <span>· {t('pw.reviewed', { d: ev.recipe.lastReviewed })}</span>
+        <span>{t('pw.reviewed', { d: ev.recipe.lastReviewed })}</span>
       </div>
     </section>
   )

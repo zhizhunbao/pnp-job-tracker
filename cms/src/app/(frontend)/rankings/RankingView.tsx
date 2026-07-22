@@ -73,7 +73,8 @@ export function RankingTable({ slug, items, t }: { slug: string; items: RankRow[
   return (
     <>
       <div style={{ fontSize: 12.5, color: '#9ca3af', margin: '6px 0 4px' }}>{t('rank.updated', { d: updated })}</div>
-      <div style={{ fontSize: 12.5, color: '#6b7280', marginBottom: 16 }}>{t(slug.startsWith('daily-top') ? 'rank.note.daily-top' : 'rank.note.' + slug)}</div>
+      {/* #198(Frank「删掉」周榜口径注):note 为空则整行不渲(空键=已删) */}
+      {(() => { const nk = slug.startsWith('daily-top') ? 'rank.note.daily-top' : 'rank.note.' + slug; const nv = t(nk); return nv && nv !== nk ? <div style={{ fontSize: 12.5, color: '#6b7280', marginBottom: 16 }}>{nv}</div> : null })()}
       {/* 组件统一 P2 余批(#110):换公共 DataTable;E8-08 #121:≤640 换域卡(CSS 双渲染) */}
       <div className="tcCards">
         {items.map((r) => isCompany ? <RankCompanyCard key={r.rank} r={r} t={t} showNamed={showNamed} /> : <RankJobCard key={r.rank} r={r} t={t} />)}
