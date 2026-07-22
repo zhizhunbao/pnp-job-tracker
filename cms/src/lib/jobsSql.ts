@@ -431,26 +431,33 @@ export async function fetchTotalAndProof(pool: any): Promise<{ total: number; na
 }
 
 // ── E8-09 B:公司详情页 /companies/[slug] 数据(零新抓取:companies 行 + 该司在招岗聚合) ──
+export type CompanyJobRow = { id: number; title: string; city: string; province: string; gradeChannel: number | null; noc: string; nocTitle: string; nocTitleZh: string; nocTitleKo: string; teer: number | null; salaryText: string; datePosted: string }
 export type CompanyDetail = {
   name: string; slug: string; website: string; websiteSource: string; industry: string; sectors: string
   aliasZh: string; aliasKo: string; wikiUrl: string; sponsorGrade: number | null
   scoreDetail: any | null; aiBrief: string; aiWebsite: string; aiSources: string[]; aiFetched: string
   description: string; address: string; province: string
+  // LMIA 担保明细(E8-09 深化:股别拆解字段);lmiaStreams=展示串「High Wage 58 · Low Wage 1008」
+  lmiaPositions: number | null; lmiaLmias: number | null; lmiaLastQuarter: string; lmiaStreams: string; lmiaSkilled: number | null
   openCount: number
-  jobs: { id: number; title: string; city: string; province: string; gradeChannel: number | null; noc: string; teer: number | null; datePosted: string }[]
+  jobs: CompanyJobRow[]
 }
-/** slug → 公司行 + 在招岗(≤30,按发布时间);查无返回 null(页面走 Notice 不 404)。全事实层免费,scoreDetail 服务端直读不走额度闸。 */
+/** slug → 公司行 + 在招岗(≤30,按发布时间,带 NOC 译名/薪资);查无返回 null(页面走 Notice 不 404)。全事实层免费,不走额度闸。 */
 export async function fetchCompanyBySlug(pool: any, slug: string): Promise<CompanyDetail | null> {
   if (!slug) return null
   const { rows } = await pool.query(
     `SELECT c.id, c.name, c.slug, c.website, c.website_source, c.industry, c.sectors, c.alias_zh, c.alias_ko, c.wiki_url,
-            c.sponsor_grade, c.score_detail, c.ai_brief, c.ai_website, c.ai_sources, c.ai_fetched, c.description, c.address, c.region
+            c.sponsor_grade, c.score_detail, c.ai_brief, c.ai_website, c.ai_sources, c.ai_fetched, c.description, c.address, c.region,
+            c.lmia_positions, c.lmia_lmias, c.lmia_last_quarter, c.lmia_streams, c.lmia_positions_skilled
      FROM companies c WHERE c.slug = $1 LIMIT 1`, [slug])
   const c = rows[0]
   if (!c) return null
+  // NOC 译名 join(#151 口径,前端按界面语言取)——治「工作名不知道啥意思」,用官方职业名作对照
   const jr = await pool.query(
-    `SELECT j.id, j.title, j.city, j.province, j.grade_channel, j.noc, j.teer, j.date_posted
-     FROM jobs j WHERE j.company_id = $1 AND COALESCE(j.status,'open') <> 'closed'
+    `SELECT j.id, j.title, j.city, j.province, j.grade_channel, j.noc, j.teer, j.date_posted, j.salary, j.salary_text,
+            nd.title AS noc_title, nd.title_zh AS noc_title_zh, nd.title_ko AS noc_title_ko
+     FROM jobs j LEFT JOIN noc_descriptions nd ON nd.noc = j.noc
+     WHERE j.company_id = $1 AND COALESCE(j.status,'open') <> 'closed'
      ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT 30`, [c.id])
   const cntRes = await pool.query(
     `SELECT count(*)::int n FROM jobs WHERE company_id = $1 AND COALESCE(status,'open') <> 'closed'`, [c.id])
@@ -463,12 +470,29 @@ export async function fetchCompanyBySlug(pool: any, slug: string): Promise<Compa
     scoreDetail: c.score_detail ?? null, aiBrief: c.ai_brief || '', aiWebsite: c.ai_website || '',
     aiSources: Array.isArray(sources) ? sources : [], aiFetched: iso(c.ai_fetched).slice(0, 10),
     description: c.description || '', address: c.address || '', province: c.region || '',
+    lmiaPositions: num(c.lmia_positions), lmiaLmias: num(c.lmia_lmias), lmiaLastQuarter: c.lmia_last_quarter || '',
+    lmiaStreams: c.lmia_streams || '', lmiaSkilled: num(c.lmia_positions_skilled),
     openCount: cntRes.rows[0]?.n ?? jr.rows.length,
     jobs: jr.rows.map((j: any) => ({
       id: Number(j.id), title: j.title || '', city: j.city || '', province: j.province || '',
-      gradeChannel: num(j.grade_channel), noc: j.noc || '', teer: num(j.teer), datePosted: iso(j.date_posted),
+      gradeChannel: num(j.grade_channel), noc: j.noc || '', nocTitle: j.noc_title || '', nocTitleZh: j.noc_title_zh || '', nocTitleKo: j.noc_title_ko || '',
+      teer: num(j.teer), salaryText: j.salary_text || j.salary || '', datePosted: iso(j.date_posted),
     })),
   }
+}
+
+export type SimilarEmployer = { slug: string; name: string; industry: string; sponsorGrade: number | null; openCount: number }
+/** 相似雇主(E8-09:同省同行业、有在招岗,按担保档降序取 ≤6;排除自身)。SEO 内链 + 横向比较。 */
+export async function fetchSimilarEmployers(pool: any, opts: { province: string; industry: string; excludeSlug: string }): Promise<SimilarEmployer[]> {
+  if (!opts.province || !opts.industry) return []
+  const { rows } = await pool.query(
+    `SELECT c.slug, c.name, c.industry, c.sponsor_grade, count(j.id)::int open_count
+     FROM companies c JOIN jobs j ON j.company_id = c.id AND COALESCE(j.status,'open') <> 'closed'
+     WHERE c.region = $1 AND c.industry = $2 AND c.slug <> $3 AND c.slug IS NOT NULL AND c.slug <> ''
+     GROUP BY c.id, c.slug, c.name, c.industry, c.sponsor_grade
+     ORDER BY c.sponsor_grade DESC NULLS LAST, count(j.id) DESC LIMIT 6`,
+    [opts.province, opts.industry, opts.excludeSlug])
+  return rows.map((r: any) => ({ slug: r.slug, name: r.name || '', industry: r.industry || '', sponsorGrade: num(r.sponsor_grade), openCount: r.open_count ?? 0 }))
 }
 
 export type AlertHit = { title: string; city: string; province: string; salary_text: string; apply_url: string; company_name: string }

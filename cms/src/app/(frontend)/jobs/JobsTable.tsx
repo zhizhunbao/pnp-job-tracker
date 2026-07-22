@@ -1967,7 +1967,7 @@ export type CoGradeDim = { g: number; v: any } | null
 export type CoGradeDetail = { sponsor?: CoGradeDim; active?: CoGradeDim; salary?: CoGradeDim; fame?: CoGradeDim } | null
 // 公司评分四维渲染(纯展示,#181 抽出):弹框(fetch 后)与公司详情页(服务端 score_detail)共用。
 // 档名彩字+依据灰句(#133 无数字口径);担保 None=无记录≠不担保(语义红线,灰句说明);detail 空=null。
-export function CompanyGradesView({ detail, t }: { detail: CoGradeDetail; t: TFn }) {
+export function CompanyGradesView({ detail, t, hideSponsor }: { detail: CoGradeDetail; t: TFn; hideSponsor?: boolean }) {
   if (!detail) return null
   const gname = (g: number, name: string) => <b style={{ color: gradeColor(g) }}>{name}</b>
   const row = (label: string, body: React.ReactNode) => (
@@ -1980,7 +1980,8 @@ export function CompanyGradesView({ detail, t }: { detail: CoGradeDetail; t: TFn
   const fameParts = fm ? [fm.v?.wiki ? t('gr.co.fm.wiki') : '', fm.v?.provs >= 2 ? t('gr.co.fm.provs', { n: fm.v.provs }) : '', fm.v?.open ? t('gr.co.fm.open', { n: fm.v.open }) : ''].filter(Boolean) : []
   return (
     <>
-      {sp ? row(t('gr.dim.coSponsor'), <>{gname(sp.g, t('gr.sp.' + sp.g))}<div style={{ fontSize: 12.5, color: '#6b7280' }}>{sp.v?.total ? t('gr.co.sp.d', { total: sp.v.total, n: sp.v.skilled ?? 0, q: sp.v.q || '—' }) : t('gr.co.sp.aip')}</div></>)
+      {/* hideSponsor:公司详情页把担保维让给独立「担保记录」详情卡,速览卡不再列(不重复,#182) */}
+      {hideSponsor ? null : sp ? row(t('gr.dim.coSponsor'), <>{gname(sp.g, t('gr.sp.' + sp.g))}<div style={{ fontSize: 12.5, color: '#6b7280' }}>{sp.v?.total ? t('gr.co.sp.d', { total: sp.v.total, n: sp.v.skilled ?? 0, q: sp.v.q || '—' }) : t('gr.co.sp.aip')}</div></>)
         : row(t('gr.dim.coSponsor'), <span style={{ color: '#9ca3af', fontSize: 12.5 }}>{t('gr.co.sp.na')}</span>)}
       {act ? row(t('gr.dim.coActive'), <>{gname(act.g, t('gr.act.' + act.g))}<div style={{ fontSize: 12.5, color: '#6b7280' }}>{t('gr.co.act.d', { open: act.v?.open ?? 0, n: act.v?.new30 ?? 0 })}</div></>) : null}
       {sal ? row(t('gr.dim.coSalary'), <>{gname(sal.g, t('gr.sal.' + sal.g))}<div style={{ fontSize: 12.5, color: '#6b7280' }}>{t('gr.co.sal.d', { pct: sal.v >= 0 ? `+${sal.v}` : String(sal.v) })}</div></>)

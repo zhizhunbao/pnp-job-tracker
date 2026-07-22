@@ -5,7 +5,7 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { getUser } from '@/lib/entitlement'
-import { fetchCompanyBySlug } from '@/lib/jobsSql'
+import { fetchCompanyBySlug, fetchSimilarEmployers } from '@/lib/jobsSql'
 import CompanyDetailView from './CompanyDetailView'
 
 export const dynamic = 'force-dynamic'
@@ -42,9 +42,15 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
     return <CompanyDetailView company={{
       name: slug, slug, website: '', websiteSource: '', industry: '', sectors: '', aliasZh: '', aliasKo: '',
       wikiUrl: '', sponsorGrade: null, scoreDetail: null, aiBrief: '', aiWebsite: '', aiSources: [], aiFetched: '',
-      description: '', address: '', province: '', openCount: 0, jobs: [],
+      description: '', address: '', province: '',
+      lmiaPositions: null, lmiaLmias: null, lmiaLastQuarter: '', lmiaStreams: '', lmiaSkilled: null,
+      openCount: 0, jobs: [],
     }} loggedIn={!!user} />
   }
+
+  // 相似雇主(同省同行业;失败不拦页面)
+  const payload = await getPayload({ config: await config })
+  const similar = await fetchSimilarEmployers((payload.db as any).pool, { province: company.province, industry: company.industry, excludeSlug: company.slug }).catch(() => [])
 
   // Organization JSON-LD(公开事实层;缺值不编)
   const jsonLd: Record<string, unknown> = {
@@ -57,6 +63,6 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
 
   return <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-    <CompanyDetailView company={company} loggedIn={!!user} />
+    <CompanyDetailView company={company} similar={similar} loggedIn={!!user} />
   </>
 }
