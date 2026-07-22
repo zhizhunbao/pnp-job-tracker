@@ -9,7 +9,8 @@ import { IconCheck, IconCompass, IconWarn } from '../Icons'
 import { BANNER_IMGS, PageBanner } from '../ui/primitives'
 import type { PathwayEval, PathwaySignal } from '@/lib/pathways'
 
-const card: React.CSSProperties = { background: '#fff', border: '0.5px solid #e5e7eb', borderRadius: 12, padding: '16px 18px' }
+// #198(Frank「所有页面改成一样的风格」):卡片对齐详情页基准(1px #e5e7eb / r12 / 白底)
+const card: React.CSSProperties = { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '14px 16px' }
 const secTitle: React.CSSProperties = { fontSize: 12.5, fontWeight: 600, color: '#6b7280', margin: '14px 0 6px' }
 
 function SignalRow({ s, t }: { s: PathwaySignal; t: (k: string, v?: Record<string, string | number>) => string }) {
@@ -79,8 +80,9 @@ export function PathwaysView({ evals, loggedIn, profileOk }: { evals: PathwayEva
     </section>
   )
 
+  // #198:底色对齐详情页基准(#f9fafb),原紫渐变退役——与榜单/统计/名录同底
   return (
-    <div style={{ background: 'linear-gradient(160deg,#f8fafc 0%,#eef2ff 55%,#f8fafc 100%)', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
+    <div style={{ background: '#f9fafb', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="pathways" />
       {/* #67 宽度统一(2026-07-19 Frank:「移民路径和其他的页面不一样宽」):860 → PageShell 1320 同轨 */}
       <main style={{ maxWidth: 1320, width: '100%', margin: '2rem auto', padding: '0 1.25rem', boxSizing: 'border-box', flex: '1 0 auto', display: 'flex', flexDirection: 'column', gap: 14 }}>

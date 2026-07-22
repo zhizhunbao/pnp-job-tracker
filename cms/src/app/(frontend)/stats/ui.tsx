@@ -40,7 +40,7 @@ export function MetricCards({ r, t }: { r: StatRow; t: TFn }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, margin: '14px 0' }}>
       {cards.map(([k, v]) => (
-        <div key={k} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '12px 14px' }}>
+        <div key={k} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '12px 14px' }}>
           <div style={{ fontSize: 11.5, color: '#9ca3af' }}>{k}</div>
           <div style={{ fontSize: 20, fontWeight: 700, color: '#111827', marginTop: 4 }}>{v}</div>
         </div>
