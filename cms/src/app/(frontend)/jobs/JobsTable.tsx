@@ -2758,7 +2758,8 @@ function CategoryPanel({ job, lang, plan, nocDesc, srcField }: { job: JobRow; la
           {items.map((d, i) => (
             <li key={i}>
               {d}
-              {zhItems[i] ? <div style={{ margin: '2px 0 4px', padding: '1px 0 1px 10px', borderLeft: '3px solid #dbeafe', color: '#1e40af' }}>{zhItems[i]}</div> : null}
+              {/* 同文=该行没翻到(#181 部分容错保留英文)→ 不重复渲 */}
+              {zhItems[i] && zhItems[i] !== d ? <div style={{ margin: '2px 0 4px', padding: '1px 0 1px 10px', borderLeft: '3px solid #dbeafe', color: '#1e40af' }}>{zhItems[i]}</div> : null}
             </li>
           ))}
         </ul>

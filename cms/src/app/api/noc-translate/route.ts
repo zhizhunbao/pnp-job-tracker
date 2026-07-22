@@ -1,56 +1,35 @@
 /**
  * POST /api/noc-translate {noc, lang:'zh'|'ko'} — NOC 官方职责/任职要求懒翻译(分类弹框「显示中文对照」用)。
  * 数据层只存英文(NocDescriptions.duties/requirements 单语),这里按需调朋友的 qwen(TRANSLATE_API_*,
- * 与 news-translate 同服务)按**行编号对位**翻:缺号=整块拒收(宁可回英文,不出错行)。
+ * 与 news-translate 同服务)按**行编号对位**翻(lib/lineTranslate 共享层:分块+重试+部分容错)。
  * 进程内缓存(一个 NOC 全站翻一次;NOC 集小且静态,重启后按需重暖)——刻意不动 DB schema(不碰生产列)。
  * 防线:IP 日限 + 只认库内 NOC + env 未配置 503(前端按钮吞错误态)。
  */
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { checkLimit, ipOf } from '@/lib/rateLimit'
+import { translateLinesAligned, translateReady } from '@/lib/lineTranslate'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-const BASE = (process.env.TRANSLATE_API_BASE || '').replace(/\/$/, '')
-const KEY = process.env.TRANSLATE_API_KEY || ''
 const IP_DAILY = 80
 
 const cache = new Map<string, { duties: string; requirements: string }>()
 
-const stripMd = (s: string) => s.replace(/\*\*(.+?)\*\*/g, '$1').replace(/^#+\s*/gm, '').replace(/\*\*/g, '')
-
-// 按编号对位解析(镜像 news-translate 的 parseNumbered):缺号/空段 → null(整块拒收)
-function parseNumbered(out: string, n: number): string | null {
-  const parts = out.split(/\n?\[(\d+)\]\s*/)
-  const d = new Map<number, string>()
-  for (let i = 1; i + 1 < parts.length + 1; i += 2) {
-    const t = stripMd(parts[i + 1] ?? '').trim()
-    if (t) d.set(Number(parts[i]), t)
-  }
-  for (let k = 1; k <= n; k++) if (!d.get(k)) return null
-  return Array.from({ length: n }, (_, i) => d.get(i + 1)).join('\n')
-}
-
-// duties/requirements 是**逐行**(一行一条,与 NocDutiesView 的 split('\n') 同口径)——按行编号翻,原样回行
-async function translateLines(text: string, lang: string, signal: AbortSignal): Promise<string> {
+// duties/requirements 是**逐行**(一行一条,与 NocDutiesView 的 split('\n') 同口径)。
+// 翻译=lib/lineTranslate 共享层(#181):分块对位+重试+部分容错(没翻到的行保留英文,前端同文不重复渲);
+// 全 null=服务不可用才报错。返回 {text, full}——full 才进缓存,部分翻齐下次点重试补齐。
+async function translateLines(text: string, lang: string, signal: AbortSignal): Promise<{ text: string; full: boolean }> {
   const lines = text.split('\n').map((s) => s.trim()).filter(Boolean)
-  if (!lines.length) return ''
-  const numbered = lines.map((l, i) => `[${i + 1}] ${l}`).join('\n')
-  const resp = await fetch(`${BASE}/api/translate`, {
-    method: 'POST', signal,
-    headers: { 'Content-Type': 'application/json', 'X-API-Key': KEY },
-    body: JSON.stringify({ text: numbered, source_lang: 'en', target_lang: lang }),
-  })
-  if (!resp.ok) throw new Error(`upstream ${resp.status}`)
-  const out = String((await resp.json()).translated_text || '')
-  const body = parseNumbered(out, lines.length)
-  if (!body) throw new Error('alignment failed')
-  return body
+  if (!lines.length) return { text: '', full: true }
+  const translated = await translateLinesAligned(lines, lang, signal)
+  if (translated.every((t) => t == null)) throw new Error('translate unavailable')
+  return { text: lines.map((l, i) => translated[i] || l).join('\n'), full: translated.every((t) => t != null) }
 }
 
 export async function POST(req: Request) {
-  if (!BASE || !KEY) return Response.json({ ok: false, error: 'not configured' }, { status: 503 })
+  if (!translateReady()) return Response.json({ ok: false, error: 'not configured' }, { status: 503 })
   let noc = '', lang = ''
   try { const b = await req.json(); noc = String(b.noc || ''); lang = String(b.lang || '') } catch { /* fallthrough */ }
   if (!noc || (lang !== 'zh' && lang !== 'ko')) return Response.json({ ok: false, error: 'bad request' }, { status: 400 })
@@ -70,10 +49,10 @@ export async function POST(req: Request) {
   const ctl = new AbortController()
   const timer = setTimeout(() => ctl.abort(), 90_000)
   try {
-    const duties = row.duties ? await translateLines(row.duties, lang, ctl.signal) : ''
-    const requirements = row.requirements ? await translateLines(row.requirements, lang, ctl.signal) : ''
-    const val = { duties, requirements }
-    cache.set(ck, val)
+    const duties = row.duties ? await translateLines(row.duties, lang, ctl.signal) : { text: '', full: true }
+    const requirements = row.requirements ? await translateLines(row.requirements, lang, ctl.signal) : { text: '', full: true }
+    const val = { duties: duties.text, requirements: requirements.text }
+    if (duties.full && requirements.full) cache.set(ck, val)
     return Response.json({ ok: true, ...val, cached: false })
   } catch (e) {
     return Response.json({ ok: false, error: (e as Error).message }, { status: 502 })
