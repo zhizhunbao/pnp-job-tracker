@@ -1916,9 +1916,10 @@ export function CompanyBriefCards({ brief, website, fetched, t, trans, flat }: {
   if (!brief) return null
   const wrap: React.CSSProperties = flat ? FLAT_SEC : MODAL_CARD
   const head: React.CSSProperties = flat ? FLAT_HEAD : MODAL_CARD_HEAD
-  const attribution = <div style={{ margin: '2px 0 8px', fontSize: 11.5, color: '#9ca3af' }}>✨ {t('fact.aiIntro')}{fetched ? ` · ${fetched}` : ''}</div>
+  {/* 检索日期=空格灰注(W 规矩禁「·」杂糅,与剩余次数注同款) */}
+  const attribution = <div style={{ margin: '2px 0 8px', fontSize: 11.5, color: '#9ca3af' }}>✨ {t('fact.aiIntro')}{fetched ? <span style={{ marginLeft: 8 }}>{fetched}</span> : null}</div>
   const site = website ? (
-    <div style={{ marginTop: 6 }}>
+    <div style={{ marginTop: 6, ...(flat ? FLAT_BODY : {}) }}>
       <a href={website} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5, overflowWrap: 'anywhere' }}>{website}</a>
       <span style={{ marginLeft: 6, color: '#9ca3af', fontSize: 11 }}>{t('fact.aiSite')}</span>
     </div>
@@ -1930,14 +1931,19 @@ export function CompanyBriefCards({ brief, website, fetched, t, trans, flat }: {
     return z && !isJdNone(z) && z !== en ? <div style={{ ...JD_ZH_LINE, marginTop: 3, fontSize: 12.5 }}>{z}</div> : null
   }
   // 存量散文格式(无标记)→ 单块「公司简介」原样渲(译文整段挂下面)
+  // #188:flat=对齐 JD 整理版——节内小标题走 JD 次级头样式(粗体 #374151 不缩进),正文缩进 14
+  const secHead: React.CSSProperties = flat ? { fontWeight: 700, color: '#374151' } : { fontWeight: 700, color: '#111827', fontSize: 13 }
+  const secBody: React.CSSProperties = flat ? FLAT_BODY : { fontSize: 12.5, color: '#4b5563', lineHeight: 1.7, marginTop: 1 }
   if (!/\[(WHAT|BASE|SIZE|FOUNDED|NOTE)\]/.test(brief)) {
     const z = trans?.trim()
     return (
       <div style={wrap}>
         <div style={head}>{t('fact.coIntro')}</div>
         {attribution}
-        <div style={{ fontSize: 12.5, color: '#4b5563', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{brief}</div>
-        {z && z !== brief.trim() ? <div style={{ ...JD_ZH_LINE, marginTop: 3, fontSize: 12.5, whiteSpace: 'pre-wrap' }}>{z}</div> : null}
+        <div style={{ ...secBody, whiteSpace: 'pre-wrap' }}>
+          {brief}
+          {z && z !== brief.trim() ? <div style={{ ...JD_ZH_LINE, marginTop: 3, fontSize: 12.5, whiteSpace: 'pre-wrap' }}>{z}</div> : null}
+        </div>
         {site}
       </div>
     )
@@ -1952,10 +1958,12 @@ export function CompanyBriefCards({ brief, website, fetched, t, trans, flat }: {
       {CO_SECS.map(([m, key]) => {
         if (!has(m)) return null   // 缺项不占行(宁可留空)
         return (
-          <div key={m} style={{ marginBottom: 8 }}>
-            <div style={{ fontWeight: 700, color: '#111827', fontSize: 13 }}>{t(key)}</div>
-            <div style={{ fontSize: 12.5, color: '#4b5563', lineHeight: 1.7, marginTop: 1 }}>{secs[m].trim()}</div>
-            {zhBlock(m, secs[m].trim())}
+          <div key={m} style={{ marginBottom: flat ? 2 : 8 }}>
+            <div style={secHead}>{t(key)}</div>
+            <div style={secBody}>
+              {secs[m].trim()}
+              {zhBlock(m, secs[m].trim())}
+            </div>
           </div>
         )
       })}
@@ -2049,11 +2057,11 @@ function CompanyGradesCard({ job, lang, loggedIn }: { job: JobRow; lang: Lang; l
     if (!d.companyDetail) return null
     body = <CompanyGradesView detail={d.companyDetail} t={t} />
   }
-  // #186:公司弹框扁平(先别用卡片)——无卡框,加粗小标题+内容
+  // #186:公司弹框扁平(先别用卡片);#188:正文缩进对齐 JD 整理版
   return (
     <div style={FLAT_SEC}>
       <div style={FLAT_HEAD}>{t('co.grades')}</div>
-      {body}
+      <div style={FLAT_BODY}>{body}</div>
     </div>
   )
 }
@@ -2081,36 +2089,42 @@ function CompanyPanel({ job, jobs, lang, plan, onOpenJob }: { job: JobRow; jobs:
         <button onClick={() => setAiOn((v) => !v)} style={{ ...PILL_BTN, ...(aiOn ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}><IconCompass /> {t('cat.aiRead')} {aiOn ? '▾' : '▸'}</button>
         {job.companySlug ? <a href={`/companies/${job.companySlug}`} target="_blank" rel="noreferrer" style={{ ...PILL_BTN, textDecoration: 'none', display: 'inline-block' }}>{t('detail.openFull')} ↗</a> : null}
       </div>
-      {/* #186(Frank「公司弹框先别用卡片」):整屏扁平——加粗小标题+内容平铺,节间细线分隔,与 JD 弹框同款 */}
-      {/* AI 速读(点了才出,置顶;coRead=公司级接地速读,不联网不凭名字编) */}
-      {aiOn && (
-        <div style={FLAT_SEC}>
-          <JdAdvisorSection job={job} lang={lang} plan={plan} title={t('cat.aiRead')} field="coRead" />
-        </div>
-      )}
-      {hasIdCard && (
-        <div style={FLAT_SEC}>
-          <div style={FLAT_HEAD}>{t('col.company')}</div>
-          {job.officialUrl ? <FactRow k={t('act.site')}><a href={job.officialUrl} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5 }}>{job.officialUrl}</a></FactRow> : null}
-          <FactRow k={t('act.addr')}>{addr || null}</FactRow>
-          <FactRow k={t('fact.coSectors')}>{job.companySectors}</FactRow>
-          {job.officialUrl && job.companyWebsiteSrc === 'searched' ? <div style={{ marginTop: 7, fontSize: 11.5, color: '#9ca3af', lineHeight: 1.5 }}>{t('fact.siteSearched')}</div> : null}
-        </div>
-      )}
-      <CompanyGradesCard job={job} lang={lang} loggedIn={plan.loggedIn} />
-      {desc ? (
-        <div style={FLAT_SEC}>
-          <div style={FLAT_HEAD}>{t('fact.coIntro')}</div>
-          <div style={{ fontSize: 12.5, color: '#4b5563', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{desc}</div>
-        </div>
-      ) : null}
-      {needAi ? <CompanyAiSection company={job.company!} t={t} showTrans={showTrans} lang={lang} flat /> : null}
-      {here.length > 1 ? (
-        <div style={{ marginBottom: 4 }}>
-          <div style={FLAT_HEAD}>{t('act.jobsHere')} ({here.length})</div>
-          <CompanyJobsList here={here} cur={job.id} lang={lang} onOpenJob={onOpenJob} />
-        </div>
-      ) : null}
+      {/* #188(Frank 发 JD 弹框截图):整屏对齐 JD 整理版排版——13px/1.75 底座,节头加粗+正文缩进,无分隔线 */}
+      <div style={{ fontSize: 13, lineHeight: 1.75, color: '#374151' }}>
+        {/* AI 速读(点了才出,置顶;coRead=公司级接地速读,不联网不凭名字编) */}
+        {aiOn && (
+          <div style={FLAT_SEC}>
+            <JdAdvisorSection job={job} lang={lang} plan={plan} title={t('cat.aiRead')} field="coRead" />
+          </div>
+        )}
+        {hasIdCard && (
+          <div style={FLAT_SEC}>
+            <div style={FLAT_HEAD}>{t('col.company')}</div>
+            <div style={FLAT_BODY}>
+              {job.officialUrl ? <FactRow k={t('act.site')}><a href={job.officialUrl} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5 }}>{job.officialUrl}</a></FactRow> : null}
+              <FactRow k={t('act.addr')}>{addr || null}</FactRow>
+              <FactRow k={t('fact.coSectors')}>{job.companySectors}</FactRow>
+              {job.officialUrl && job.companyWebsiteSrc === 'searched' ? <div style={{ marginTop: 4, fontSize: 11.5, color: '#9ca3af', lineHeight: 1.5 }}>{t('fact.siteSearched')}</div> : null}
+            </div>
+          </div>
+        )}
+        <CompanyGradesCard job={job} lang={lang} loggedIn={plan.loggedIn} />
+        {desc ? (
+          <div style={FLAT_SEC}>
+            <div style={FLAT_HEAD}>{t('fact.coIntro')}</div>
+            <div style={{ ...FLAT_BODY, whiteSpace: 'pre-wrap' }}>{desc}</div>
+          </div>
+        ) : null}
+        {needAi ? <CompanyAiSection company={job.company!} t={t} showTrans={showTrans} lang={lang} flat /> : null}
+        {here.length > 1 ? (
+          <div style={{ marginBottom: 4 }}>
+            <div style={FLAT_HEAD}>{t('act.jobsHere')} ({here.length})</div>
+            <div style={FLAT_BODY}>
+              <CompanyJobsList here={here} cur={job.id} lang={lang} onOpenJob={onOpenJob} />
+            </div>
+          </div>
+        ) : null}
+      </div>
     </>
   )
 }
@@ -2297,10 +2311,12 @@ function hasFacts(k: ColKey, job: JobRow): boolean {
 // 每节一张 sec 同款卡(白/#e5e7eb/r12),**每卡必有 title,单节组也不例外**(#173 铁律)。
 const MODAL_CARD: React.CSSProperties = { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '12px 16px', marginBottom: 14 }
 const MODAL_CARD_HEAD: React.CSSProperties = { fontSize: 13.5, fontWeight: 700, color: '#111827', marginBottom: 6 }
-// #186(Frank「公司弹框先别用卡片」):扁平节样式——与 JD 弹框同款(加粗小标题+内容平铺,无卡框);
-// 节间细线分隔替代卡片边框。公司弹框(CompanyPanel)用这套,公司详情页仍用 MODAL_CARD。
-const FLAT_SEC: React.CSSProperties = { marginBottom: 14, paddingBottom: 12, borderBottom: '1px solid #f3f4f6' }
-const FLAT_HEAD: React.CSSProperties = { fontSize: 13.5, fontWeight: 700, color: '#111827', marginBottom: 6 }
+// #186(Frank「公司弹框先别用卡片」):扁平节样式,公司弹框(CompanyPanel)用这套,公司详情页仍用 MODAL_CARD。
+// #188(Frank 发 JD 弹框截图「公司的弹框也改成这种风格」):对齐 JdFormattedView 排版——
+// 节间细线退役、节头加粗同字号、正文统一缩进(与 JD 五节整理版逐像素同款)。
+const FLAT_SEC: React.CSSProperties = { marginBottom: 10 }
+const FLAT_HEAD: React.CSSProperties = { fontWeight: 700, color: '#111827' }
+const FLAT_BODY: React.CSSProperties = { paddingLeft: 14 }
 // 弹框顶部胶囊钮(分类/职位弹框共用:显示中文对照 / AI 速读)
 const PILL_BTN: React.CSSProperties = { border: '1px solid #e5e7eb', borderRadius: 999, padding: '5px 13px', fontSize: 12.5, background: '#fff', color: '#374151', cursor: 'pointer', fontWeight: 600 }
 function GroupFactsSection(props: Omit<Parameters<typeof FieldFactsSection>[0], 'field'> & { group: FieldGroup }) {
@@ -2358,7 +2374,8 @@ function CompanyJobsList({ here, cur, lang, onOpenJob }: { here: JobRow[]; cur: 
           {onOpenJob
             ? <button onClick={() => onOpenJob(x)} style={{ border: 'none', background: 'none', padding: 0, font: 'inherit', cursor: 'pointer', textAlign: 'left', color: '#2563eb', textDecoration: 'underline' }}>{x.title}</button>
             : x.title}
-          {(titleCount.get(x.title) || 0) > 1 && x.city ? <span style={{ color: '#9ca3af' }}> · {x.city}</span> : null}
+          {/* 同名岗城市尾缀:灰字空格注(W 规矩禁「·」) */}
+          {(titleCount.get(x.title) || 0) > 1 && x.city ? <span style={{ color: '#9ca3af', marginLeft: 8 }}>{x.city}</span> : null}
         </div>
       ))}
       {!all && here.length > 8 && (
