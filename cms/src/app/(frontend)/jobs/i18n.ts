@@ -176,6 +176,7 @@ const zh: Dict = {
   'act.f.role': '职位描述', 'act.f.reqs': '硬性要求', 'act.f.pay': '薪资福利', 'act.f.hours': '工时地点', 'act.f.apply': '怎么投', 'act.f.none': '原帖未提及',
   'co.f.what': '主营业务', 'co.f.base': '所在地', 'co.f.size': '规模', 'co.f.founded': '成立时间', 'co.f.note': '其他要点',   // #158 公司简介分节(2026-07-21 增至五节)
   'fact.aiIntro': 'AI 检索整理(非官方自述)', 'fact.aiWorking': 'AI 调查中…', 'fact.aiSite': 'AI 检索到,非库内原有',
+  'fact.aiSrc': '看来源 ▾', 'fact.aiSrcHide': '收起来源 ▴',   // #191 懒查来源可验证(对齐 JD「看原文」)
   'mm.col.job': '本岗', 'mm.col.you': '我的',
   'mm.dim.noc': '职业方向', 'mm.dim.prov': '所在省', 'mm.dim.pnp': '省提名清单', 'mm.dim.pnpPre': '省提名粗筛', 'mm.dim.teer': '技能层级', 'mm.dim.ee': '联邦 EE 定向类别', 'mm.dim.eeDraw': '该类上次抽选线', 'mm.dim.wage': '薪资对照', 'mm.dim.lmia': '雇主外劳记录',
   'mm.you.noNoc': '未填职业方向', 'mm.you.noCrs': '未自报 CRS 分', 'mm.you.crs': 'CRS {crs} 分',
@@ -622,6 +623,7 @@ const en: Dict = {
   'act.f.role': 'Job description', 'act.f.reqs': 'Hard requirements', 'act.f.pay': 'Pay & benefits', 'act.f.hours': 'Schedule & location', 'act.f.apply': 'How to apply', 'act.f.none': 'Not mentioned in posting',
   'co.f.what': 'What it does', 'co.f.base': 'Based in', 'co.f.size': 'Size', 'co.f.founded': 'Founded', 'co.f.note': 'Worth knowing',
   'fact.aiIntro': 'AI-researched (not company-authored)', 'fact.aiWorking': 'AI researching…', 'fact.aiSite': 'found by AI search, not from our directory',
+  'fact.aiSrc': 'Sources ▾', 'fact.aiSrcHide': 'Hide sources ▴',
   'mm.col.job': 'This job', 'mm.col.you': 'You',
   'mm.dim.noc': 'Occupation', 'mm.dim.prov': 'Province', 'mm.dim.pnp': 'PNP named list', 'mm.dim.pnpPre': 'PNP pre-screen', 'mm.dim.teer': 'Skill tier', 'mm.dim.ee': 'Federal EE category', 'mm.dim.eeDraw': 'Last category draw', 'mm.dim.wage': 'Wage vs median', 'mm.dim.lmia': 'Employer LMIA record',
   'mm.you.noNoc': 'No occupation set', 'mm.you.noCrs': 'CRS not provided', 'mm.you.crs': 'CRS {crs}',
@@ -1053,6 +1055,7 @@ const ko: Dict = {
   'act.f.role': '직무 설명', 'act.f.reqs': '필수 요건', 'act.f.pay': '급여·복지', 'act.f.hours': '근무 형태·장소', 'act.f.apply': '지원 방법', 'act.f.none': '원문에 언급 없음',
   'co.f.what': '주요 사업', 'co.f.base': '소재지', 'co.f.size': '규모', 'co.f.founded': '설립 연도', 'co.f.note': '참고 사항',
   'fact.aiIntro': 'AI 검색 정리(회사 공식 소개 아님)', 'fact.aiWorking': 'AI 조사 중…', 'fact.aiSite': 'AI 검색 결과, 디렉터리 원본 아님',
+  'fact.aiSrc': '출처 보기 ▾', 'fact.aiSrcHide': '출처 접기 ▴',
   'mm.col.job': '이 공고', 'mm.col.you': '나',
   'mm.dim.noc': '직업 방향', 'mm.dim.prov': '소재 주', 'mm.dim.pnp': '주정부 지명 리스트', 'mm.dim.pnpPre': 'PNP 사전 선별', 'mm.dim.teer': '기술 등급', 'mm.dim.ee': '연방 EE 지정 카테고리', 'mm.dim.eeDraw': '해당 카테고리 최근 추첨', 'mm.dim.wage': '급여 대비 중위값', 'mm.dim.lmia': '고용주 외국인 고용 기록',
   'mm.you.noNoc': '직업 미입력', 'mm.you.noCrs': 'CRS 미입력', 'mm.you.crs': 'CRS {crs}점',

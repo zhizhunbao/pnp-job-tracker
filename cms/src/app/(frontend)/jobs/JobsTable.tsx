@@ -1912,12 +1912,26 @@ const coParseSecs = (s: string): Record<string, string> => {
   return secs
 }
 // flat=公司弹框扁平(#186 Frank「先别用卡片」,无卡框);默认 false=公司详情页仍用 MODAL_CARD。
-export function CompanyBriefCards({ brief, website, fetched, t, trans, flat }: { brief: string; website: string; fetched: string; t: TFn; trans?: string; flat?: boolean }) {
+export function CompanyBriefCards({ brief, website, fetched, t, trans, flat, sources }: { brief: string; website: string; fetched: string; t: TFn; trans?: string; flat?: boolean; sources?: string[] }) {
+  // #191(Frank「懒查的原文我需要保留显示出来吧」):AI 检索简介的「原文」=检索来源网页(ai_sources 一直在存,
+  // 7-21 撤的只是裸 URL 平铺)。对齐 JD「看原文」的收纳法:声明行挂「看来源 ▾」折叠钮,点开一行一条,默认不脏版面。
+  const [showSrc, setShowSrc] = useState(false)
   if (!brief) return null
   const wrap: React.CSSProperties = flat ? FLAT_SEC : MODAL_CARD
   const head: React.CSSProperties = flat ? FLAT_HEAD : MODAL_CARD_HEAD
+  const srcList = (sources || []).filter((u) => /^https?:\/\//i.test(u))
   {/* 检索日期=空格灰注(W 规矩禁「·」杂糅,与剩余次数注同款) */}
-  const attribution = <div style={{ margin: '2px 0 8px', fontSize: 11.5, color: '#9ca3af' }}>✨ {t('fact.aiIntro')}{fetched ? <span style={{ marginLeft: 8 }}>{fetched}</span> : null}</div>
+  const attribution = (
+    <div style={{ margin: '2px 0 8px', fontSize: 11.5, color: '#9ca3af' }}>
+      ✨ {t('fact.aiIntro')}{fetched ? <span style={{ marginLeft: 8 }}>{fetched}</span> : null}
+      {srcList.length ? (
+        <button onClick={() => setShowSrc((v) => !v)} style={{ border: 'none', background: 'none', padding: 0, marginLeft: 8, color: '#2563eb', cursor: 'pointer', fontSize: 11.5, fontWeight: 600 }}>{showSrc ? t('fact.aiSrcHide') : t('fact.aiSrc')}</button>
+      ) : null}
+      {showSrc ? srcList.map((u) => (
+        <div key={u} style={{ overflowWrap: 'anywhere', marginTop: 2 }}><a href={u} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{u}</a></div>
+      )) : null}
+    </div>
+  )
   const site = website ? (
     <div style={{ marginTop: 6, ...(flat ? FLAT_BODY : {}) }}>
       <a href={website} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5, overflowWrap: 'anywhere' }}>{website}</a>
@@ -1997,7 +2011,7 @@ export function CompanyAiSection({ company, t, showTrans, lang, flat }: { compan
   }, [showTrans, trans, d, lang, company])
   if (d === null) return null
   if (d === undefined) return <div style={{ margin: '2px 0 12px', fontSize: 12.5, color: '#9ca3af' }}>✨ {t('fact.aiWorking')}</div>
-  return <CompanyBriefCards brief={d.brief} website={d.website} fetched={d.fetched} t={t} trans={showTrans && trans ? trans : undefined} flat={flat} />
+  return <CompanyBriefCards brief={d.brief} website={d.website} fetched={d.fetched} t={t} trans={showTrans && trans ? trans : undefined} flat={flat} sources={d.sources} />
 }
 // 公司四维档明细类型(sponsor/active/salary/fame,与 etl/grades.py company_grades 同源)
 export type CoGradeDim = { g: number; v: any } | null

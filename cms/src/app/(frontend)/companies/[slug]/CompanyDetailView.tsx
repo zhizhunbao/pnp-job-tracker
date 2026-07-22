@@ -118,7 +118,7 @@ export default function CompanyDetailView({ company, similar = [], loggedIn }: {
               <div style={{ fontSize: 12.5, color: '#4b5563', whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>{company.description}</div>
             </div>
           ) : company.aiBrief
-            ? <CompanyBriefCards brief={company.aiBrief} website={company.aiWebsite} fetched={company.aiFetched} t={t} />
+            ? <CompanyBriefCards brief={company.aiBrief} website={company.aiWebsite} fetched={company.aiFetched} t={t} sources={company.aiSources} />
             : <CompanyAiSection company={company.name} t={t} />}
 
           {/* ⑤ 在招职位:职位名 + NOC 中文对照(治「工作名看不懂」)+ 薪资 + 通道档;>30 只提总数 */}
