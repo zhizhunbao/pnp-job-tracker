@@ -40,7 +40,8 @@ function EmployerLmiaCard({ r, lang, t, inCmp, onCmp }: { r: LmiaRow; lang: Lang
     <Card>
       <button onClick={onCmp} style={{ position: 'absolute', right: 10, top: 10, border: '1px solid ' + (inCmp ? UI.primary : UI.border), background: inCmp ? '#eff6ff' : '#fff', color: inCmp ? UI.primary : '#6b7280', borderRadius: 999, padding: '2px 10px', fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}>{inCmp ? t('ce.added') : t('ce.add')}</button>
       <div style={{ fontSize: 14.5, fontWeight: 600, paddingRight: 78 }}>
-        {r.website ? <a href={r.website} target="_blank" rel="noreferrer" style={{ color: UI.primary, textDecoration: 'none' }}>{r.name} ↗</a> : r.name}
+        {/* #199(Frank「多余的跳转都删掉」):雇主名 ↗ 官网外链撤,纯文字 */}
+        {r.name}
         {/* E12-08:裸「知名」Tag 退役(Frank「只显示知名不清楚」)——担保档药丸承接;无记录不显 */}
         {r.sponsorGrade != null && <span title={t('gr.sponsorTip')} style={{ marginLeft: 6, fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', fontWeight: 600, whiteSpace: 'nowrap' }}>{t('gr.sp.' + r.sponsorGrade)}</span>}
       </div>
@@ -137,7 +138,8 @@ export function EmployersView({ type, q, prov, page, aip, lmia, counts }: {
               // E12-08:裸「知名」Tag 退役——担保档药丸承接(Frank「能给各维度打分就好」);wiki 依据降级进公司分知名度维
               const alias = lang === 'zh' ? r.aliasZh : lang === 'ko' ? r.aliasKo : ''
               return <span style={{ fontWeight: 600 }}>
-                {r.website ? <a href={r.website} target="_blank" rel="noreferrer" style={{ color: UI.primary, textDecoration: 'none' }}>{r.name} ↗</a> : r.name}
+                {/* #199(Frank「多余的跳转都删掉」):雇主名 ↗ 官网外链撤,纯文字 */}
+                {r.name}
                 {alias ? <span style={{ marginLeft: 6, color: '#9ca3af', fontWeight: 400, fontSize: 12 }}>{alias}</span> : null}
                 {r.sponsorGrade != null && <span title={t('gr.sponsorTip')} style={{ marginLeft: 6, fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sp.' + r.sponsorGrade)}</span>}
               </span> } },

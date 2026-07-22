@@ -1411,7 +1411,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       <SiteFooter t={t} maxWidth={1320} />
 
       {popup && <AdvisorModal group={popup.group} field={popup.srcField} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} news={dims.news} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} onOpenJob={(x) => setActModal({ kind: 'desc', job: x })} />}
-      {actModal && <ActModal job={actModal.job} lang={lang} plan={plan} onClose={() => setActModal(null)} />}
+      {actModal && <ActModal job={actModal.job} lang={lang} plan={plan} nocDesc={dims.nocDescriptions} onClose={() => setActModal(null)} />}
       {wizard && <OnboardingWizard t={t} initial={plan.profile} onClose={closeWizard} />}
       {upsell && (plan.loggedIn
         ? <UpgradeModal t={t} reason={upsell === 'ss' ? t('ss.pro') : upsell === 'match' ? (matchTotals && matchTotals.high > plan.freeMatchCap ? t('up.matchN', { h: matchTotals.high, n: plan.freeMatchCap }) : t('up.match', { n: plan.freeMatchCap })) : undefined} onClose={() => setUpsell(false)} />
@@ -1917,7 +1917,7 @@ const coParseSecs = (s: string): Record<string, string> => {
 }
 // flat=公司弹框扁平(#186 Frank「先别用卡片」,无卡框);默认 false=公司详情页仍用 MODAL_CARD。
 // bare(#197 Frank「合并」):只出简介内容体(不带自己的标题/AI声明/外壳/官网),供合并进「公司」块;声明由调用方在顶部渲。
-export function CompanyBriefCards({ brief, website, fetched, t, trans, flat, sources, bare }: { brief: string; website: string; fetched: string; t: TFn; trans?: string; flat?: boolean; sources?: string[]; bare?: boolean }) {
+export function CompanyBriefCards({ brief, website, fetched, t, trans, flat, sources, bare, skipBase }: { brief: string; website: string; fetched: string; t: TFn; trans?: string; flat?: boolean; sources?: string[]; bare?: boolean; skipBase?: boolean }) {
   // #191(Frank「懒查的原文我需要保留显示出来吧」):AI 检索简介的「原文」=检索来源网页(ai_sources 一直在存,
   // 7-21 撤的只是裸 URL 平铺)。对齐 JD「看原文」的收纳法:声明行挂「看来源 ▾」折叠钮,点开一行一条,默认不脏版面。
   const [showSrc, setShowSrc] = useState(false)
@@ -1966,6 +1966,7 @@ export function CompanyBriefCards({ brief, website, fetched, t, trans, flat, sou
     <>
       {CO_SECS.map(([m, key]) => {
         if (!has(m)) return null   // 缺项不占行(宁可留空)
+        if (skipBase && m === 'BASE') return null   // #199:数据库有精确地址时,AI「所在地」让位不重复
         return (
           <div key={m} style={{ marginBottom: flat ? 2 : 8 }}>
             <div style={secHead}>{t(key)}</div>
@@ -1991,7 +1992,7 @@ export function CompanyBriefCards({ brief, website, fetched, t, trans, flat, sou
 }
 // #158 K 公司懒探索(2026-07-19 Frank 批):弹框侧 fetch 包装——首开自动调查(命中缓存秒回);
 // 查不到/掉线整块消失不留孤儿;渲染委托 CompanyBriefCards(与公司详情页同源)。
-export function CompanyAiSection({ company, t, showTrans, lang, flat, bare }: { company: string; t: TFn; showTrans?: boolean; lang?: Lang; flat?: boolean; bare?: boolean }) {
+export function CompanyAiSection({ company, t, showTrans, lang, flat, bare, skipBase }: { company: string; t: TFn; showTrans?: boolean; lang?: Lang; flat?: boolean; bare?: boolean; skipBase?: boolean }) {
   const [d, setD] = useState<undefined | null | { brief: string; website: string; sources: string[]; fetched: string }>(undefined)
   const [trans, setTrans] = useState<string | null>(null)
   useEffect(() => {
@@ -2019,7 +2020,7 @@ export function CompanyAiSection({ company, t, showTrans, lang, flat, bare }: { 
   if (bare) return (
     <>
       <div style={{ margin: '2px 0 6px', fontSize: 11.5, color: '#9ca3af' }}>✨ {t('fact.aiIntro')}{d.fetched ? <span style={{ marginLeft: 8 }}>{d.fetched}</span> : null}</div>
-      <CompanyBriefCards brief={d.brief} website={d.website} fetched={d.fetched} t={t} trans={showTrans && trans ? trans : undefined} flat={flat} sources={d.sources} bare />
+      <CompanyBriefCards brief={d.brief} website={d.website} fetched={d.fetched} t={t} trans={showTrans && trans ? trans : undefined} flat={flat} sources={d.sources} bare skipBase={skipBase} />
     </>
   )
   return <CompanyBriefCards brief={d.brief} website={d.website} fetched={d.fetched} t={t} trans={showTrans && trans ? trans : undefined} flat={flat} sources={d.sources} />
@@ -2113,7 +2114,12 @@ export function CompanyBody({ company, similar, t, lang, showTrans, onOpenJob, r
   // AI 检索声明从简介块内提到 body 顶部(弹框里即按钮行下);缓存 AI 五节路径才有声明,名录厚简介=抓取自官网另注。
   const briefCached = !hasDesc && !!company.aiBrief   // 缓存 AI 五节(名录厚简介优先,互斥)
   const briefSecs = briefCached ? coParseSecs(company.aiBrief) : null
-  const hasBase = !!briefSecs && !isJdNone(briefSecs.BASE)   // AI 有「所在地」(市级)→ 省级「地址」不重复
+  const hasBase = !!briefSecs && !isJdNone(briefSecs.BASE)   // AI 有「所在地」(市级)
+  // #199(Frank「有精确地址就优先显数据库的」):DB 有精确地址(带街号/邮编)→ 显 DB 地址、AI 所在地让位;
+  // DB 只有省级则让位 AI 市级所在地;地址可点跳 Google Map(与主表地点格同源 mapsUrl)。
+  const hasRealAddr = !!company.address
+  const showAddrRow = hasRealAddr || !hasBase
+  const skipBase = hasRealAddr   // DB 精确地址在,AI 所在地不再重复
   const srcList = (company.aiSources || []).filter((u) => /^https?:\/\//i.test(u))
   const hasId = company.website || addr || company.industry || company.sectors || company.wikiUrl
   return (
@@ -2132,7 +2138,7 @@ export function CompanyBody({ company, similar, t, lang, showTrans, onOpenJob, r
           <div style={FLAT_HEAD}>{t('col.company')}</div>
           <div style={FLAT_BODY}>
             {company.website ? <FactRow k={t('act.site')}><a href={company.website} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5, overflowWrap: 'anywhere' }}>{company.website}</a></FactRow> : null}
-            {!hasBase ? <FactRow k={t('act.addr')}>{addr || null}</FactRow> : null}
+            {showAddrRow && addr ? <FactRow k={t('act.addr')}><a href={mapsUrl(addr)} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5 }}><IconMap /> {addr}</a></FactRow> : null}
             <FactRow k={t('fact.coSectors')}>{company.industry || company.sectors}</FactRow>
             {company.wikiUrl ? <FactRow k={t('co.wellKnown')}><a href={company.wikiUrl} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5, overflowWrap: 'anywhere' }}>{company.wikiUrl}</a></FactRow> : null}
             {company.website && company.websiteSource === 'searched' ? <div style={{ marginTop: 4, fontSize: 11.5, color: '#9ca3af', lineHeight: 1.5 }}>{t('fact.siteSearched')}</div> : null}
@@ -2144,9 +2150,9 @@ export function CompanyBody({ company, similar, t, lang, showTrans, onOpenJob, r
               <div style={{ ...FLAT_BODY, marginTop: 4, fontSize: 11.5, color: '#9ca3af' }}>{t('fact.coIntroSrc')}</div>
             </div>
           ) : briefCached ? (
-            <div style={{ marginTop: 8 }}><CompanyBriefCards brief={company.aiBrief} website={company.aiWebsite} fetched={company.aiFetched} t={t} flat bare sources={company.aiSources} trans={showTrans && trans ? trans : undefined} /></div>
+            <div style={{ marginTop: 8 }}><CompanyBriefCards brief={company.aiBrief} website={company.aiWebsite} fetched={company.aiFetched} t={t} flat bare skipBase={skipBase} sources={company.aiSources} trans={showTrans && trans ? trans : undefined} /></div>
           ) : company.name ? (
-            <div style={{ marginTop: 8 }}><CompanyAiSection company={company.name} t={t} showTrans={showTrans} lang={lang} flat bare /></div>
+            <div style={{ marginTop: 8 }}><CompanyAiSection company={company.name} t={t} showTrans={showTrans} lang={lang} flat bare skipBase={skipBase} /></div>
           ) : null}
         </div>
       )}
@@ -3478,10 +3484,12 @@ export function JobBody({ job, lang, plan, inModal, onFreeLeft }: { job: JobRow;
     </>
   )
 }
-function ActModal({ job, lang, plan, onClose }: { job: JobRow; lang: Lang; plan: Plan; onClose: () => void }) {
+function ActModal({ job, lang, plan, nocDesc, onClose }: { job: JobRow; lang: Lang; plan: Plan; nocDesc: NocDesc[]; onClose: () => void }) {
   // C1 后只剩 JD 快看;E8-11 B2:正文抽为 JobBody(与 /jobs/[id] 页面同源),本组件只剩浮层壳。
   // #112(2026-07-20 Frank):标题栏「AI 顾问」钮摘除——点钮会关本框跳顾问弹框,描述/整理版一去不回。
   const t = makeT(lang)
+  // #199(Frank「chiropractor 怎么没有翻译呢」):标题下挂 NOC 官方职业名译名(与详情页 H1 同款,英文界面不出)
+  const nocZh = nocLocalTitle(nocDesc.find((d) => d.noc === job.noc) || null, lang)
   const overlayClose = useOverlayClose(onClose)
   const { narrow, full, toggleFull, panel, startDrag, startResize } = useFloatPanel(JD_PREF, 760, 640)
   const [freeLeft, setFreeLeft] = useState<number | null>(null)  // 第 5 轮 #16:试用额度可见化(JobBody 回传)
@@ -3496,6 +3504,7 @@ function ActModal({ job, lang, plan, onClose }: { job: JobRow; lang: Lang; plan:
               {t('act.descTitle')}{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('advisor.left', { n: freeLeft })}</span> : null}
             </div>
             <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{job.title || '—'}</h3>
+            {nocZh && nocZh.toLowerCase() !== (job.title || '').toLowerCase() ? <div style={{ fontSize: 12.5, color: '#9ca3af', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{nocZh}</div> : null}
           </div>
           <div style={{ display: 'flex', gap: 6, flexShrink: 0 }} onPointerDown={(e) => e.stopPropagation()}>
             {!narrow && <button onClick={toggleFull} title={t(full ? 'advisor.exitFull' : 'advisor.full')} style={iconBtnS}>{full ? <IconMinimize /> : <IconMaximize />}</button>}

@@ -83,7 +83,8 @@ export function RankingTable({ slug, items, t }: { slug: string; items: RankRow[
       {isCompany ? (
         <DataTable<RankRow> rows={items} rowKey={(r) => String(r.rank)} cols={[
           { key: 'rank', label: '#', nowrap: true, sort: (r) => r.rank, render: (r) => <span style={{ color: '#9ca3af' }}>{r.rank}</span> },
-          { key: 'company', label: t('rank.col.company'), sort: (r) => r.company.toLowerCase(), render: (r) => <span style={{ fontWeight: 600 }}>{r.officialUrl ? <a href={r.officialUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{r.company} ↗</a> : r.company}</span> },
+          // #199(Frank「多余的跳转都删掉」):公司名 ↗ 官网外链撤,纯文字
+          { key: 'company', label: t('rank.col.company'), sort: (r) => r.company.toLowerCase(), render: (r) => <span style={{ fontWeight: 600 }}>{r.company}</span> },
           // #48(第 18 轮):跨省雇主(如加拿大军队)province 为空,裸空像渲染缺陷 → 占位「—」
           { key: 'prov', label: t('col.province'), nowrap: true, sort: (r) => r.province || null, render: (r) => r.province || <span style={{ color: '#9ca3af' }}>—</span> },
           // #21:第一排序键(近两年 LMIA 技能股获批职位数)上榜可见;最近获批季度独立灰行
@@ -102,11 +103,11 @@ export function RankingTable({ slug, items, t }: { slug: string; items: RankRow[
           { key: 'company', label: t('col.company'), sort: (r) => r.company.toLowerCase(), render: (r) => <>{r.company}</> },
           { key: 'city', label: t('col.city'), nowrap: true, sort: (r) => r.city || null, render: (r) => <>{[r.city, r.province].filter(Boolean).join(', ')}</> },
           { key: 'salary', label: t('col.salary'), nowrap: true, sort: (r) => r.salaryAnnual ?? null, render: (r) => <span style={{ color: '#15803d' }}>{r.salaryText || '—'}</span> },
-          { key: 'pnpee', label: 'PNP/EE', render: (r) => {
-            const parts = [r.pnpStream ? streamDisplay(t, r.pnpStream) : '', r.eeCategory ? eeDisplay(t, r.eeCategory) : ''].filter(Boolean)
-            return parts.length ? <span style={{ fontSize: 12 }}>{parts.map((x) => <div key={x}>{x}</div>)}</span> : <>—</>
-          } },
-          { key: 'score', label: t('col.score'), sort: (r) => r.score ?? null, render: (r) => <span style={{ fontWeight: 600 }}>{r.score ?? '—'}</span> },
+          // #199(Frank「拆成两列」):PNP/EE 合并列拆为 PNP、EE 两列(与主表列名同源)
+          { key: 'pnp', label: t('col.pnp'), render: (r) => r.pnpStream ? <span style={{ fontSize: 12 }}>{streamDisplay(t, r.pnpStream)}</span> : <span style={{ color: '#9ca3af' }}>—</span> },
+          { key: 'ee', label: t('col.ee'), render: (r) => r.eeCategory ? <span style={{ fontSize: 12 }}>{eeDisplay(t, r.eeCategory)}</span> : <span style={{ color: '#9ca3af' }}>—</span> },
+          // #199(Frank「这个通道没人知道什么意思」):此列实为 0-100 移民价值分(非 1-5 通道档),relabel「移民价值分」
+          { key: 'score', label: t('rank.col.score'), sort: (r) => r.score ?? null, render: (r) => <span style={{ fontWeight: 600 }}>{r.score ?? '—'}</span> },
           { key: 'date', label: t('col.datePosted'), nowrap: true, sort: (r) => r.datePosted || null, render: (r) => <span style={{ color: '#9ca3af', fontSize: 12.5 }}>{(r.datePosted || '').slice(0, 10)}</span> },
         ]} />
       )}

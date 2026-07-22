@@ -449,7 +449,13 @@ export async function fetchCompanyBySlug(pool: any, slug: string): Promise<Compa
 }
 /** E8-11 B1:job id → 同一份 CompanyDetail(公司弹框同源;按 jobs.company_id 解析,同名公司/无 slug 公司也不串)。 */
 export async function fetchCompanyByJobId(pool: any, jobId: number): Promise<CompanyDetail | null> {
-  return fetchCompanyWhere(pool, 'c.id = (SELECT company_id FROM jobs WHERE id = $1 LIMIT 1)', jobId)
+  const detail = await fetchCompanyWhere(pool, 'c.id = (SELECT company_id FROM jobs WHERE id = $1 LIMIT 1)', jobId)
+  // #199(Frank「有精确地址就优先显数据库的」):公司表 address 常空;从点进来的这条职位取精确地址(带街号/邮编)兜底
+  if (detail && !detail.address) {
+    const { rows } = await pool.query('SELECT address FROM jobs WHERE id = $1 LIMIT 1', [jobId]).catch(() => ({ rows: [] }))
+    if (rows[0]?.address) detail.address = String(rows[0].address)
+  }
+  return detail
 }
 async function fetchCompanyWhere(pool: any, where: string, param: unknown): Promise<CompanyDetail | null> {
   const { rows } = await pool.query(
