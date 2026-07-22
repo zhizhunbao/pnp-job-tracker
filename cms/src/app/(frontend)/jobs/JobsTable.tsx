@@ -1785,6 +1785,11 @@ const jdParseSecs = (s: string): Record<string, string> => {
   for (let i = 1; i + 1 < parts.length + 1; i += 2) secs[parts[i]] = (parts[i + 1] || '').trim()
   return secs
 }
+// 「缺节」判定放宽(Frank 2026-07-22「不需要加括号吧」):模型指令要 (not stated),但实测会漂成
+// (none stated)/(not specified)/(not mentioned)…,严格只认 (not stated) → 变体被当正文渲成「(none stated) ↗」。
+// 括号可有可无,not/none + stated/specified/mentioned/provided/available/applicable 一律算缺节。
+const JD_NONE_RE = /^\(?\s*(not|none|n\/a)(\s+(stated|specified|mentioned|provided|available|applicable|listed))?\s*\)?$/i
+const isJdNone = (s?: string) => { const b = (s || '').trim(); return !b || JD_NONE_RE.test(b) }
 const JD_ZH_LINE: React.CSSProperties = { margin: '2px 0 4px', padding: '1px 0 1px 10px', borderLeft: '3px solid #dbeafe', color: '#1e40af', fontWeight: 400 }
 export function JdFormattedView({ text, t, fallbackPay, applyUrl, underTitle, trans }: { text: string; t: TFn; fallbackPay?: string; applyUrl?: string; underTitle?: boolean; trans?: string }) {
   const SECS: [string, string][] = [['ROLE', 'act.f.role'], ['REQS', 'act.f.reqs'], ['PAY', 'act.f.pay'], ['WORKHOURS', 'act.f.hours'], ['APPLY', 'act.f.apply']]
@@ -1794,10 +1799,11 @@ export function JdFormattedView({ text, t, fallbackPay, applyUrl, underTitle, tr
     <div style={{ fontSize: 13, lineHeight: 1.75, color: '#374151' }}>
       {SECS.map(([m, key]) => {
         const body = (secs[m] || '').trim()
-        const none = !body || /^\(not stated\)$/i.test(body)
+        const none = isJdNone(body)
         const lines = body.split('\n').map((s) => s.trim()).filter(Boolean)
         const zhLines = tSecs ? (tSecs[m] || '').split('\n').map((s) => s.trim()).filter(Boolean) : []
-        const zh = (i: number) => (zhLines[i] && zhLines[i] !== lines[i] ? <div style={JD_ZH_LINE}>{zhLines[i].replace(/^-\s*/, '')}</div> : null)
+        // 译文行=英文同文/自身也是缺节变体 → 不渲(#181 部分容错保留英文;none 变体不重复渲)
+        const zh = (i: number) => (zhLines[i] && zhLines[i] !== lines[i] && !isJdNone(zhLines[i]) ? <div style={JD_ZH_LINE}>{zhLines[i].replace(/^-\s*/, '')}</div> : null)
         const hasBullets = lines.some((l) => l.startsWith('- '))
         return (
           <div key={m} style={{ marginBottom: 8 }}>
@@ -1921,7 +1927,7 @@ export function CompanyBriefCards({ brief, website, fetched, t }: { brief: strin
   const parts = brief.split(/\[(WHAT|BASE|SIZE|FOUNDED|NOTE)\]/)
   const secs: Record<string, string> = {}
   for (let i = 1; i + 1 <= parts.length - 1; i += 2) secs[parts[i]] = (parts[i + 1] || '').trim()
-  const has = (m: string) => !!secs[m] && !/^\(not stated\)$/i.test(secs[m].trim())
+  const has = (m: string) => !isJdNone(secs[m])
   return (
     <>
       {attribution}
@@ -3247,7 +3253,9 @@ function ActModal({ job, lang, plan, onClose }: { job: JobRow; lang: Lang; plan:
                 {transStatus === 'loading' ? t('cat.translating') : transStatus === 'error' ? t('cat.transErr') : showTrans ? t('cat.hideZh') : t('cat.showZh')}
               </button>
             ) : null}
-            {status !== 'loading' && !aiOn && <button onClick={() => setAiOn(true)} style={PILL_BTN}><IconCompass /> {t('cat.aiRead')}</button>}
+            {/* AI 速读=常驻折叠开关(Frank 2026-07-22「按钮怎么没了」「可以折叠的」):点开点收都是它,
+                不再点一次就消失;内容 jdAdvCache 缓存,收起再开秒回不重烧额度。▾=展开 ▸=收起 */}
+            {status !== 'loading' && <button onClick={() => setAiOn((v) => !v)} style={{ ...PILL_BTN, ...(aiOn ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}><IconCompass /> {t('cat.aiRead')} {aiOn ? '▾' : '▸'}</button>}
             <a href={`/jobs/${job.id}`} target="_blank" rel="noreferrer" style={{ ...PILL_BTN, textDecoration: 'none', display: 'inline-block' }}>{t('detail.openFull')} ↗</a>
           </div>
           {/* AI 速读卡(点了才出;置顶=点完不用往下翻,与分类弹框同规范;jdRead=纯 JD 速读不带移民解读) */}
