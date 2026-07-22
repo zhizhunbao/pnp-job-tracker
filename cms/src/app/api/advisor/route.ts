@@ -70,6 +70,7 @@ type Job = {
   pnpEligible?: boolean; pnpStream?: string; eeCategory?: string; aip?: boolean; salary?: string; salaryAnnual?: number | null
   employmentTerm?: string; employmentHours?: string; certificates?: string[]; education?: string
   wageMedHourly?: number | null; wageMedAnnual?: number | null
+  lmiaPositions?: number | null; lmiaPositionsSkilled?: number | null; lmiaLastQuarter?: string   // coRead(公司速读)接地:担保股别
   source?: string; sourceLabel?: string; origin?: string
   datePosted?: string; lastSeen?: string; status?: string
 }
@@ -265,6 +266,23 @@ function buildPrompt(field: string, j: Job, jd: string, lang: Lang, pf = '', web
       ? `Real job posting (it may be in English; answer in ${LANG_NAME[lang]}):\n"""\n${jd}\n"""`
       : `(No posting text was scraped for this job — say plainly that the posting text is unavailable and keep to the basic facts above; do NOT invent duties or requirements.)`
     return `Give a quick, plain-language read of THIS job posting for someone deciding whether to apply: (1) what the day-to-day work actually is, (2) the hard requirements that decide whether you qualify, (3) pay / schedule / benefits or other notable points the posting itself mentions.\n\n${facts}\n\n${src}\n\nWrite 2–3 short sections, each starting with a 【heading】, content in ${LANG_NAME[lang]}. Base everything STRICTLY on the posting; do not invent details; NO immigration pathway analysis or advice.`
+  }
+  // coRead(公司弹框「AI 速读」,2026-07-22 Frank「公司弹框这三个功能也加上」):**只喂已抓的公司事实**
+  // (行业/简介/担保股别/在招量),接地总结「这家雇主对求职者意味着什么」;#167⑨ 教训——严禁联网/凭名字编,
+  // 事实没有就说没有(公司简介本身是 AI 检索来的,这里只在其上做人话速读,不再叠一层臆测)。
+  if (field === 'coRead') {
+    const sk = j.lmiaPositionsSkilled, tot = j.lmiaPositions
+    const spLine = tot && tot > 0
+      ? `LMIA sponsorship (past 2 years, ESDC): ${tot} positions${sk != null ? `, ${sk} in skilled streams (High Wage/Global Talent)` : ''}${j.lmiaLastQuarter ? `, latest ${j.lmiaLastQuarter}` : ''}`
+      : j.aip ? 'AIP designated employer (Atlantic employer-driven route)' : 'No positive-LMIA record in the past two years (not negative evidence — many never needed one)'
+    const facts = [
+      `Company: ${j.company || '—'}`,
+      `Location: ${loc}`,
+      j.companySectors?.trim() ? `Industry/sector: ${j.companySectors.trim()}` : '',
+      j.companyDescription?.trim() ? `About (from company website / AI research): ${j.companyDescription.trim().slice(0, 600)}` : '',
+      spLine,
+    ].filter(Boolean).join('\n')
+    return `Give a quick, plain-language read of THIS employer for someone weighing a job here (job-seeking + immigration angle). Cover only what the facts support: (1) what the company does, (2) its foreign-worker sponsorship signal and what it means for an employer-offer→PNP path (a historical fact, never a promise), (3) how actively it hires if shown.\n\nEmployer facts:\n${facts}\n\nWrite 2–3 short sections, each starting with a 【heading】, content in ${LANG_NAME[lang]}. Base everything STRICTLY on the facts above. NEVER invent the industry, products, size, or ethnicity from the name; if a fact is missing say public info is insufficient (公开资料不足). No web guessing.`
   }
   // E8-10:入参收成三组(company / job / immigration)。'immigration' 走原 'title' 那条分步方案路径;
   // 'job' 不到这儿——职位弹框**不设 AI 段**(JD 五节整理版已承担事实层,再加一段就是 #125 修掉的那种重复),

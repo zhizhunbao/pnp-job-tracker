@@ -1351,11 +1351,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                 {(j.company || j.salaryText || j.salary) ? (
                   <div style={{ marginTop: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, flexWrap: 'wrap' }}>
-                      {/* E8-09 C(Frank 拍板「手机点公司名直接进公司页」,免弹框套弹框):有 slug 直链公司详情页;
-                          stopPropagation 保整卡进职位详情不被抢;无 slug 兜底开公司弹框 */}
-                      {j.company ? (j.companySlug
-                        ? <a href={`/companies/${j.companySlug}`} onClick={(e) => e.stopPropagation()} style={{ fontSize: 12.5, color: '#2563eb', textDecoration: 'none' }}>{j.company}</a>
-                        : <span onClick={stop(() => open('company', j.company))} style={{ fontSize: 12.5, color: '#2563eb', cursor: 'pointer' }}>{j.company}</span>) : null}
+                      {/* 点公司名=开公司弹框(2026-07-22 Frank「其他弹框都很清晰」:与职位/分类一致,不特殊化;
+                          #182 手机直跳页退役——弹框里有「打开完整页」进深页,入口统一从弹框进);stop 保整卡进职位详情不被抢 */}
+                      {j.company ? <span onClick={stop(() => open('company', j.company))} style={{ fontSize: 12.5, color: '#2563eb', cursor: 'pointer' }}>{j.company}</span> : null}
                       {j.sponsorGrade != null && <span title={t('gr.sponsorTip')} style={{ fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sp.' + j.sponsorGrade)}</span>}
                     </span>
                     {/* #175:薪资退出可点集合——写死的 pointer+onClick 摘除(看着能点点了没反应比不能点更糟) */}
@@ -1839,7 +1837,7 @@ export function JdFormattedView({ text, t, fallbackPay, applyUrl, underTitle, tr
 const jdAdvCache = new Map<string, string>()
 // field:'title'=顾问初判(详情页,含移民路径);'jdRead'=纯 JD 速读(职位弹框,2026-07-21 Frank
 // 「只速读这个 job 的内容即可,不需要过度解读移民信号」)
-export function JdAdvisorSection({ job, lang, plan, title, field = 'title' }: { job: JobRow; lang: Lang; plan: Plan; title?: string; field?: 'title' | 'jdRead' }) {
+export function JdAdvisorSection({ job, lang, plan, title, field = 'title' }: { job: JobRow; lang: Lang; plan: Plan; title?: string; field?: 'title' | 'jdRead' | 'coRead' }) {
   const t = makeT(lang)
   const ck = `${field}:${job.id}`
   const [text, setText] = useState(jdAdvCache.get(ck) || '')
@@ -1902,7 +1900,13 @@ export function JdAdvisorSection({ job, lang, plan, title, field = 'title' }: { 
 const CO_SECS: [string, string][] = [['WHAT', 'co.f.what'], ['BASE', 'co.f.base'], ['SIZE', 'co.f.size'], ['FOUNDED', 'co.f.founded'], ['NOTE', 'co.f.note']]
 // 公司 AI 检索简介渲染(纯展示,#181 抽出):弹框(fetch 后)与公司详情页(服务端 ai_brief)共用。
 // 五节标记切卡;存量散文(无标记)整段一卡;缺项不占卡;检索声明+官网小注。brief 空=null。
-export function CompanyBriefCards({ brief, website, fetched, t }: { brief: string; website: string; fetched: string; t: TFn }) {
+const coParseSecs = (s: string): Record<string, string> => {
+  const parts = s.split(/\[(WHAT|BASE|SIZE|FOUNDED|NOTE)\]/)
+  const secs: Record<string, string> = {}
+  for (let i = 1; i + 1 <= parts.length - 1; i += 2) secs[parts[i]] = (parts[i + 1] || '').trim()
+  return secs
+}
+export function CompanyBriefCards({ brief, website, fetched, t, trans }: { brief: string; website: string; fetched: string; t: TFn; trans?: string }) {
   if (!brief) return null
   const attribution = <div style={{ margin: '2px 0 8px', fontSize: 11.5, color: '#9ca3af' }}>✨ {t('fact.aiIntro')}{fetched ? ` · ${fetched}` : ''}</div>
   const site = website ? (
@@ -1911,22 +1915,28 @@ export function CompanyBriefCards({ brief, website, fetched, t }: { brief: strin
       <span style={{ marginLeft: 6, color: '#9ca3af', fontSize: 11 }}>{t('fact.aiSite')}</span>
     </div>
   ) : null
-  // 存量散文格式(无标记)→ 单卡「公司简介」原样渲,不返工重跑模型(下次调查自然升级)
+  // 中文对照(#185 Frank「点了才在下面显示中文」):英文段下挂译文段(蓝条,与 JD 逐句对照同规范);同文不渲
+  const tSecs = trans ? coParseSecs(trans) : null
+  const zhBlock = (m: string, en: string) => {
+    const z = tSecs?.[m]?.trim()
+    return z && !isJdNone(z) && z !== en ? <div style={{ ...JD_ZH_LINE, marginTop: 3, fontSize: 12.5 }}>{z}</div> : null
+  }
+  // 存量散文格式(无标记)→ 单卡「公司简介」原样渲(译文整段挂下面)
   if (!/\[(WHAT|BASE|SIZE|FOUNDED|NOTE)\]/.test(brief)) {
+    const z = trans?.trim()
     return (
       <>
         {attribution}
         <div style={MODAL_CARD}>
           <div style={MODAL_CARD_HEAD}>{t('fact.coIntro')}</div>
           <div style={{ fontSize: 12.5, color: '#4b5563', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{brief}</div>
+          {z && z !== brief.trim() ? <div style={{ ...JD_ZH_LINE, marginTop: 3, fontSize: 12.5, whiteSpace: 'pre-wrap' }}>{z}</div> : null}
           {site}
         </div>
       </>
     )
   }
-  const parts = brief.split(/\[(WHAT|BASE|SIZE|FOUNDED|NOTE)\]/)
-  const secs: Record<string, string> = {}
-  for (let i = 1; i + 1 <= parts.length - 1; i += 2) secs[parts[i]] = (parts[i + 1] || '').trim()
+  const secs = coParseSecs(brief)
   const has = (m: string) => !isJdNone(secs[m])
   return (
     <>
@@ -1938,6 +1948,7 @@ export function CompanyBriefCards({ brief, website, fetched, t }: { brief: strin
           <div key={m} style={MODAL_CARD}>
             <div style={MODAL_CARD_HEAD}>{t(key)}</div>
             <div style={{ fontSize: 12.5, color: '#4b5563', lineHeight: 1.7 }}>{secs[m].trim()}</div>
+            {zhBlock(m, secs[m].trim())}
             {m === 'WHAT' ? site : null}
           </div>
         )
@@ -1947,20 +1958,31 @@ export function CompanyBriefCards({ brief, website, fetched, t }: { brief: strin
 }
 // #158 K 公司懒探索(2026-07-19 Frank 批):弹框侧 fetch 包装——首开自动调查(命中缓存秒回);
 // 查不到/掉线整块消失不留孤儿;渲染委托 CompanyBriefCards(与公司详情页同源)。
-export function CompanyAiSection({ company, t }: { company: string; t: TFn }) {
+export function CompanyAiSection({ company, t, showTrans, lang }: { company: string; t: TFn; showTrans?: boolean; lang?: Lang }) {
   const [d, setD] = useState<undefined | null | { brief: string; website: string; sources: string[]; fetched: string }>(undefined)
+  const [trans, setTrans] = useState<string | null>(null)
   useEffect(() => {
     let dead = false
-    setD(undefined)
+    setD(undefined); setTrans(null)
     fetch('/api/companyinfo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: company }) })
       .then((r) => (r.ok && r.status === 200 ? r.json() : null))
       .then((x) => { if (!dead) setD(x && x.brief ? x : null) })
       .catch(() => { if (!dead) setD(null) })
     return () => { dead = true }
   }, [company])
+  // 中文对照(#185):showTrans 打开且未翻过 → 拉 co-translate(懒翻,拿到存一份切换零延迟)
+  useEffect(() => {
+    if (!showTrans || trans != null || !d || lang === 'en' || !lang) return
+    let dead = false
+    fetch('/api/co-translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: company, lang }) })
+      .then((r) => r.json().catch(() => null))
+      .then((x) => { if (!dead && x?.ok && x.text) setTrans(x.text) })
+      .catch(() => {})
+    return () => { dead = true }
+  }, [showTrans, trans, d, lang, company])
   if (d === null) return null
   if (d === undefined) return <div style={{ margin: '2px 0 12px', fontSize: 12.5, color: '#9ca3af' }}>✨ {t('fact.aiWorking')}</div>
-  return <CompanyBriefCards brief={d.brief} website={d.website} fetched={d.fetched} t={t} />
+  return <CompanyBriefCards brief={d.brief} website={d.website} fetched={d.fetched} t={t} trans={showTrans && trans ? trans : undefined} />
 }
 // 公司四维档明细类型(sponsor/active/salary/fame,与 etl/grades.py company_grades 同源)
 export type CoGradeDim = { g: number; v: any } | null
@@ -2037,8 +2059,25 @@ function CompanyPanel({ job, jobs, lang, plan, onOpenJob }: { job: JobRow; jobs:
   const needAi = !!job.company && (!desc || desc.length < 200 || !job.officialUrl)
   const addr = job.address || [job.city, job.province].filter(Boolean).join(', ')
   const hasIdCard = !!(job.officialUrl || addr || job.companySectors)
+  // #185(Frank「公司弹框这三个功能也加上」):顶部钮行与职位弹框同款——中文对照(点了才在英文下显中文)
+  // + AI 速读(公司级 coRead,接地不编,折叠开关)+ 打开完整页。
+  const [showTrans, setShowTrans] = useState(false)
+  const [aiOn, setAiOn] = useState(false)
   return (
     <>
+      <div style={{ display: 'flex', gap: 8, margin: '2px 0 12px', flexWrap: 'wrap' }}>
+        {lang !== 'en' && needAi ? (
+          <button onClick={() => setShowTrans((v) => !v)} style={{ ...PILL_BTN, ...(showTrans ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}>{showTrans ? t('cat.hideZh') : t('cat.showZh')}</button>
+        ) : null}
+        <button onClick={() => setAiOn((v) => !v)} style={{ ...PILL_BTN, ...(aiOn ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}><IconCompass /> {t('cat.aiRead')} {aiOn ? '▾' : '▸'}</button>
+        {job.companySlug ? <a href={`/companies/${job.companySlug}`} target="_blank" rel="noreferrer" style={{ ...PILL_BTN, textDecoration: 'none', display: 'inline-block' }}>{t('detail.openFull')} ↗</a> : null}
+      </div>
+      {/* AI 速读卡(点了才出,置顶;coRead=公司级接地速读,不联网不凭名字编) */}
+      {aiOn && (
+        <div style={MODAL_CARD}>
+          <JdAdvisorSection job={job} lang={lang} plan={plan} title={t('cat.aiRead')} field="coRead" />
+        </div>
+      )}
       {hasIdCard && (
         <div style={MODAL_CARD}>
           <div style={MODAL_CARD_HEAD}>{t('col.company')}</div>
@@ -2055,7 +2094,7 @@ function CompanyPanel({ job, jobs, lang, plan, onOpenJob }: { job: JobRow; jobs:
           <div style={{ fontSize: 12.5, color: '#4b5563', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{desc}</div>
         </div>
       ) : null}
-      {needAi ? <CompanyAiSection company={job.company!} t={t} /> : null}
+      {needAi ? <CompanyAiSection company={job.company!} t={t} showTrans={showTrans} lang={lang} /> : null}
       {here.length > 1 ? (
         <div style={MODAL_CARD}>
           <div style={MODAL_CARD_HEAD}>{t('act.jobsHere')} ({here.length})</div>
@@ -2945,11 +2984,7 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
             <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 600 }}>{group !== 'immigration'
               ? t('grp.' + group)
               : <><IconCompass /> {t('advisor.tag')}<span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('grp.' + group)}</span>{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('advisor.left', { n: freeLeft })}</span> : null}</>}
-              {/* E8-09 C:公司弹框「打开完整页」→ 公司详情页(与 JD 弹框同款出口;阻止冒泡免触发标题栏拖动) */}
-              {group === 'company' && job.companySlug ? (
-                <a href={`/companies/${job.companySlug}`} target="_blank" rel="noreferrer" onPointerDown={(e) => e.stopPropagation()}
-                  style={{ marginLeft: 10, color: '#2563eb', textDecoration: 'none', fontWeight: 400 }}>{t('detail.openFull')} ↗</a>
-              ) : null}</div>
+              {/* #185:公司弹框「打开完整页」移入正文顶部钮行(与职位弹框同款),页眉不再重复 */}</div>
             <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{group === 'company' ? (job.company || title || a.title) : (job.title || title || a.title)}</h3>
           </div>
           <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
