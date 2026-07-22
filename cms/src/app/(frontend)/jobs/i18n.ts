@@ -158,7 +158,7 @@ const zh: Dict = {
   'act.ai': 'AI 整理(只搬运原帖信息,未添加)', 'act.seeOrig': '看原文 ▾', 'act.seeFmt': '看整理版 ▴', 'act.aiWorking': 'AI 整理中,先看原文…',
   'act.f.role': '这活干什么', 'act.f.reqs': '硬性要求', 'act.f.pay': '薪资福利', 'act.f.hours': '工时地点', 'act.f.apply': '怎么投', 'act.f.none': '原帖未提及',
   'co.f.what': '主营业务', 'co.f.base': '所在地', 'co.f.size': '规模',   // #158 公司简介三节(与 JD 整理版同款)
-  'fact.aiIntro': 'AI 检索整理(非官方自述)', 'fact.aiWorking': 'AI 调查中…', 'fact.aiSite': 'AI 检索到,非库内原有', 'fact.aiSources': '信息出处',
+  'fact.aiIntro': 'AI 检索整理(非官方自述)', 'fact.aiWorking': 'AI 调查中…', 'fact.aiSite': 'AI 检索到,非库内原有',
   'mm.col.job': '本岗', 'mm.col.you': '我的',
   'mm.dim.noc': '职业方向', 'mm.dim.prov': '所在省', 'mm.dim.pnp': '省提名清单', 'mm.dim.pnpPre': '省提名粗筛', 'mm.dim.teer': '技能层级', 'mm.dim.ee': '联邦 EE 定向类别', 'mm.dim.eeDraw': '该类上次抽选线', 'mm.dim.wage': '薪资对照', 'mm.dim.lmia': '雇主外劳记录',
   'mm.you.noNoc': '未填职业方向', 'mm.you.noCrs': '未自报 CRS 分', 'mm.you.crs': 'CRS {crs} 分',
@@ -240,7 +240,7 @@ const zh: Dict = {
   // E8-10:三个弹框的页眉分组名(收编后标题不再取被点单元格的值)
   'grp.company': '公司', 'grp.immigration': '移民', 'grp.category': '职业分类',
   // 分类弹框按钮(职责/要求实时翻 + AI 速读)
-  'cat.showZh': '显示中文对照', 'cat.showEn': '显示英文原文', 'cat.translating': '翻译中…', 'cat.transErr': '翻译暂不可用',
+  'cat.showZh': '显示中文对照', 'cat.hideZh': '收起中文对照', 'cat.translating': '翻译中…', 'cat.transErr': '翻译暂不可用',
   'cat.aiRead': 'AI 速读', 'cat.aiLoading': '正在速读…', 'cat.aiErr': 'AI 速读暂不可用',
   'up.title': '升级 Pro 解锁',
   'up.advisor': '今日免费解读已用完,明天自动恢复。Pro 不限次数——每个岗、每个字段都能随时问。',
@@ -589,7 +589,7 @@ const en: Dict = {
   'act.ai': 'AI-organized (rearranged from the posting, nothing added)', 'act.seeOrig': 'View original ▾', 'act.seeFmt': 'View organized ▴', 'act.aiWorking': 'AI organizing, showing original…',
   'act.f.role': 'What the job does', 'act.f.reqs': 'Hard requirements', 'act.f.pay': 'Pay & benefits', 'act.f.hours': 'Schedule & location', 'act.f.apply': 'How to apply', 'act.f.none': 'Not mentioned in posting',
   'co.f.what': 'What it does', 'co.f.base': 'Based in', 'co.f.size': 'Size',
-  'fact.aiIntro': 'AI-researched (not company-authored)', 'fact.aiWorking': 'AI researching…', 'fact.aiSite': 'found by AI search, not from our directory', 'fact.aiSources': 'Sources',
+  'fact.aiIntro': 'AI-researched (not company-authored)', 'fact.aiWorking': 'AI researching…', 'fact.aiSite': 'found by AI search, not from our directory',
   'mm.col.job': 'This job', 'mm.col.you': 'You',
   'mm.dim.noc': 'Occupation', 'mm.dim.prov': 'Province', 'mm.dim.pnp': 'PNP named list', 'mm.dim.pnpPre': 'PNP pre-screen', 'mm.dim.teer': 'Skill tier', 'mm.dim.ee': 'Federal EE category', 'mm.dim.eeDraw': 'Last category draw', 'mm.dim.wage': 'Wage vs median', 'mm.dim.lmia': 'Employer LMIA record',
   'mm.you.noNoc': 'No occupation set', 'mm.you.noCrs': 'CRS not provided', 'mm.you.crs': 'CRS {crs}',
@@ -668,7 +668,7 @@ const en: Dict = {
   'match.r.lmia.na': 'No positive-LMIA record for this employer in the past two years (most employers never needed one; not a negative signal)',
   // 付费墙(E3-05)
   'grp.company': 'Company', 'grp.immigration': 'Immigration', 'grp.category': 'Occupation',
-  'cat.showZh': 'Show Chinese', 'cat.showEn': 'Show English', 'cat.translating': 'Translating…', 'cat.transErr': 'Translation unavailable',
+  'cat.showZh': 'Show translation', 'cat.hideZh': 'Hide translation', 'cat.translating': 'Translating…', 'cat.transErr': 'Translation unavailable',
   'cat.aiRead': 'AI quick-read', 'cat.aiLoading': 'Reading…', 'cat.aiErr': 'AI quick-read unavailable',
   'up.title': 'Upgrade to Pro to unlock',
   'up.advisor': "Today's free readings are used up — they reset tomorrow. Pro is unlimited: ask about any job, any field, anytime.",
@@ -1005,7 +1005,7 @@ const ko: Dict = {
   'act.ai': 'AI 정리(원문 재배열, 추가 없음)', 'act.seeOrig': '원문 보기 ▾', 'act.seeFmt': '정리본 보기 ▴', 'act.aiWorking': 'AI 정리 중, 우선 원문 표시…',
   'act.f.role': '어떤 일인가', 'act.f.reqs': '필수 요건', 'act.f.pay': '급여·복지', 'act.f.hours': '근무 형태·장소', 'act.f.apply': '지원 방법', 'act.f.none': '원문에 언급 없음',
   'co.f.what': '주요 사업', 'co.f.base': '소재지', 'co.f.size': '규모',
-  'fact.aiIntro': 'AI 검색 정리(회사 공식 소개 아님)', 'fact.aiWorking': 'AI 조사 중…', 'fact.aiSite': 'AI 검색 결과, 디렉터리 원본 아님', 'fact.aiSources': '출처',
+  'fact.aiIntro': 'AI 검색 정리(회사 공식 소개 아님)', 'fact.aiWorking': 'AI 조사 중…', 'fact.aiSite': 'AI 검색 결과, 디렉터리 원본 아님',
   'mm.col.job': '이 공고', 'mm.col.you': '나',
   'mm.dim.noc': '직업 방향', 'mm.dim.prov': '소재 주', 'mm.dim.pnp': '주정부 지명 리스트', 'mm.dim.pnpPre': 'PNP 사전 선별', 'mm.dim.teer': '기술 등급', 'mm.dim.ee': '연방 EE 지정 카테고리', 'mm.dim.eeDraw': '해당 카테고리 최근 추첨', 'mm.dim.wage': '급여 대비 중위값', 'mm.dim.lmia': '고용주 외국인 고용 기록',
   'mm.you.noNoc': '직업 미입력', 'mm.you.noCrs': 'CRS 미입력', 'mm.you.crs': 'CRS {crs}점',
@@ -1084,7 +1084,7 @@ const ko: Dict = {
   'match.r.lmia.na': '이 고용주 최근 2년 승인 LMIA 기록 없음(대부분의 고용주는 필요한 적이 없음; 부정적 신호 아님)',
   // 付费墙(E3-05)
   'grp.company': '회사', 'grp.immigration': '이민', 'grp.category': '직업 분류',
-  'cat.showZh': '한국어 보기', 'cat.showEn': '영어 원문 보기', 'cat.translating': '번역 중…', 'cat.transErr': '번역 사용 불가',
+  'cat.showZh': '한국어 대조 보기', 'cat.hideZh': '한국어 대조 접기', 'cat.translating': '번역 중…', 'cat.transErr': '번역 사용 불가',
   'cat.aiRead': 'AI 빠른 읽기', 'cat.aiLoading': '읽는 중…', 'cat.aiErr': 'AI 빠른 읽기 사용 불가',
   'up.title': 'Pro 업그레이드로 잠금 해제',
   'up.advisor': '오늘 무료 해설 횟수를 모두 사용했습니다. 내일 자동 복구됩니다. Pro는 무제한 — 어떤 공고든, 어떤 항목이든 언제나 질문 가능.',

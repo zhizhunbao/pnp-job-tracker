@@ -1769,18 +1769,27 @@ export function JdTextView({ text, max = 4000 }: { text: string; max?: number })
   )
 }
 // J3 五节整理版渲染(2026-07-19 Frank 批):[ROLE]/[REQS]/[PAY]/[WORKHOURS]/[APPLY] 标记文本 → 节头加粗独立行,
-// 节内一条一行(W 规范:禁「·」「/」杂糅);(not stated) → 「原帖未提及」灰字,缺节不脑补
-export function JdFormattedView({ text, t, fallbackPay, applyUrl, underTitle }: { text: string; t: TFn; fallbackPay?: string; applyUrl?: string; underTitle?: boolean }) {
-  const SECS: [string, string][] = [['ROLE', 'act.f.role'], ['REQS', 'act.f.reqs'], ['PAY', 'act.f.pay'], ['WORKHOURS', 'act.f.hours'], ['APPLY', 'act.f.apply']]
-  const parts = text.split(/\[(ROLE|REQS|PAY|WORKHOURS|APPLY)\]/)
+// 节内一条一行(W 规范:禁「·」「/」杂糅);(not stated) → 「原帖未提及」灰字,缺节不脑补。
+// trans=同结构译文(jd-translate 行位保真)→ 节内按行号逐句对照,样式与资讯页对照同规范(蓝条+深蓝字)
+const jdParseSecs = (s: string): Record<string, string> => {
+  const parts = s.split(/\[(ROLE|REQS|PAY|WORKHOURS|APPLY)\]/)
   const secs: Record<string, string> = {}
   for (let i = 1; i + 1 < parts.length + 1; i += 2) secs[parts[i]] = (parts[i + 1] || '').trim()
+  return secs
+}
+const JD_ZH_LINE: React.CSSProperties = { margin: '2px 0 4px', padding: '1px 0 1px 10px', borderLeft: '3px solid #dbeafe', color: '#1e40af', fontWeight: 400 }
+export function JdFormattedView({ text, t, fallbackPay, applyUrl, underTitle, trans }: { text: string; t: TFn; fallbackPay?: string; applyUrl?: string; underTitle?: boolean; trans?: string }) {
+  const SECS: [string, string][] = [['ROLE', 'act.f.role'], ['REQS', 'act.f.reqs'], ['PAY', 'act.f.pay'], ['WORKHOURS', 'act.f.hours'], ['APPLY', 'act.f.apply']]
+  const secs = jdParseSecs(text)
+  const tSecs = trans ? jdParseSecs(trans) : null
   return (
     <div style={{ fontSize: 13, lineHeight: 1.75, color: '#374151' }}>
       {SECS.map(([m, key]) => {
         const body = (secs[m] || '').trim()
         const none = !body || /^\(not stated\)$/i.test(body)
         const lines = body.split('\n').map((s) => s.trim()).filter(Boolean)
+        const zhLines = tSecs ? (tSecs[m] || '').split('\n').map((s) => s.trim()).filter(Boolean) : []
+        const zh = (i: number) => (zhLines[i] && zhLines[i] !== lines[i] ? <div style={JD_ZH_LINE}>{zhLines[i].replace(/^-\s*/, '')}</div> : null)
         const hasBullets = lines.some((l) => l.startsWith('- '))
         return (
           <div key={m} style={{ marginBottom: 8 }}>
@@ -1795,14 +1804,14 @@ export function JdFormattedView({ text, t, fallbackPay, applyUrl, underTitle }: 
             {m === 'APPLY' && applyUrl ? (
               none
                 ? <div style={{ paddingLeft: 14 }}><a href={applyUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}>{t('act.seeOfficial')}</a></div>
-                : lines.map((l, i) => <div key={i} style={{ paddingLeft: 14 }}><a href={applyUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{l.replace(/^-\s*/, '')} ↗</a></div>)
+                : lines.map((l, i) => <div key={i} style={{ paddingLeft: 14 }}><a href={applyUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{l.replace(/^-\s*/, '')} ↗</a>{zh(i)}</div>)
             ) : /* #123c(Frank「每个职位都有薪资吧」):原帖正文没写薪资但帖面字段有 → 兜底显示帖面薪资+来源灰注
                 (仍是搬运原帖信息——JB 列表字段也是雇主自报,非编造) */
             none && m === 'PAY' && fallbackPay ? (
               <div style={{ paddingLeft: 14 }}>{fallbackPay} <span style={{ color: '#9ca3af', fontSize: 12 }}>{t('act.f.payFb')}</span></div>
             ) : none ? <div style={{ paddingLeft: 14, color: '#9ca3af' }}>{t('act.f.none')}</div>
-              : hasBullets ? <ul style={{ margin: 0, paddingLeft: 30 }}>{lines.map((l, i) => <li key={i}>{l.replace(/^-\s*/, '')}</li>)}</ul>
-              : lines.map((l, i) => <div key={i} style={{ paddingLeft: 14 }}>{l}</div>)}
+              : hasBullets ? <ul style={{ margin: 0, paddingLeft: 30 }}>{lines.map((l, i) => <li key={i}>{l.replace(/^-\s*/, '')}{zh(i)}</li>)}</ul>
+              : lines.map((l, i) => <div key={i} style={{ paddingLeft: 14 }}>{l}{zh(i)}</div>)}
           </div>
         )
       })}
@@ -1813,7 +1822,7 @@ export function JdFormattedView({ text, t, fallbackPay, applyUrl, underTitle }: 
 // 打开职位描述即自动流式生成,不用再点「AI 顾问」钮;额度闸照走(402 升级卡/429 说人话);
 // 同岗会话内缓存,反复开关不重复烧额度。深挖(对比表+追问对话)仍在「AI 顾问」钮的完整弹框里。
 const jdAdvCache = new Map<string, string>()
-export function JdAdvisorSection({ job, lang, plan }: { job: JobRow; lang: Lang; plan: Plan }) {
+export function JdAdvisorSection({ job, lang, plan, title }: { job: JobRow; lang: Lang; plan: Plan; title?: string }) {
   const t = makeT(lang)
   const [text, setText] = useState(jdAdvCache.get(String(job.id)) || '')
   const [status, setStatus] = useState<'loading' | 'streaming' | 'done' | 'error' | 'upgrade' | 'limited'>(jdAdvCache.has(String(job.id)) ? 'done' : 'loading')
@@ -1855,7 +1864,7 @@ export function JdAdvisorSection({ job, lang, plan }: { job: JobRow; lang: Lang;
        标题=卡标题级(每卡必有 title);「·」杂糅退役——剩余次数改空格灰注 */
     <div>
       <div style={{ fontSize: 13.5, fontWeight: 700, color: '#111827', marginBottom: 6 }}>
-        <IconCompass /> {t('advisor.tag')}{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400, fontSize: 11.5, marginLeft: 8 }}>{t('advisor.left', { n: freeLeft })}</span> : null}
+        <IconCompass /> {title || t('advisor.tag')}{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400, fontSize: 11.5, marginLeft: 8 }}>{t('advisor.left', { n: freeLeft })}</span> : null}
       </div>
       {status === 'upgrade' ? <LockedText t={t} loggedIn={plan.loggedIn} />
         : status === 'limited' ? (
@@ -1868,30 +1877,11 @@ export function JdAdvisorSection({ job, lang, plan }: { job: JobRow; lang: Lang;
     </div>
   )
 }
-// #158:公司简介三节渲染([WHAT]/[BASE]/[SIZE],与 JD 五节整理版 JdFormattedView 同款版式)。
-// 无标记=存量散文格式,整段原样渲(不返工);(not stated) 节直接跳过不占行。
+// #158:公司简介三节([WHAT]/[BASE]/[SIZE])。K 公司懒探索(2026-07-19 Frank 批):首开自动调查
+// (命中缓存秒回);查不到/掉线整块消失不留孤儿。
+// 2026-07-21 Frank「公司弹框参考类别重新设计」:嵌套小盒退役 → 每节一卡带题(与分类弹框同规范);
+// 信息出处 URL 列表撤(同日「去掉 source 链接」);AI 检索声明=卡组上方一行灰注。
 const CO_SECS: [string, string][] = [['WHAT', 'co.f.what'], ['BASE', 'co.f.base'], ['SIZE', 'co.f.size']]
-function CompanyBriefView({ text, t }: { text: string; t: TFn }) {
-  if (!/\[(WHAT|BASE|SIZE)\]/.test(text)) return <div style={{ whiteSpace: 'pre-wrap' }}>{text}</div>
-  const parts = text.split(/\[(WHAT|BASE|SIZE)\]/)
-  const secs: Record<string, string> = {}
-  for (let i = 1; i + 1 <= parts.length - 1; i += 2) secs[parts[i]] = (parts[i + 1] || '').trim()
-  return (
-    <>
-      {CO_SECS.map(([m, key]) => {
-        const body = (secs[m] || '').trim()
-        if (!body || /^\(not stated\)$/i.test(body)) return null   // 缺项不占行(宁可留空)
-        return (
-          <div key={m} style={{ marginBottom: 6 }}>
-            <div style={{ fontWeight: 700, color: '#111827' }}>{t(key)}</div>
-            <div style={{ paddingLeft: 14 }}>{body}</div>
-          </div>
-        )
-      })}
-    </>
-  )
-}
-// K 公司懒探索(2026-07-19 Frank 批):首开自动调查(命中缓存秒回);查不到/掉线整块消失不留孤儿
 function CompanyAiSection({ company, t }: { company: string; t: TFn }) {
   const [d, setD] = useState<undefined | null | { brief: string; website: string; sources: string[]; fetched: string }>(undefined)
   useEffect(() => {
@@ -1904,33 +1894,88 @@ function CompanyAiSection({ company, t }: { company: string; t: TFn }) {
     return () => { dead = true }
   }, [company])
   if (d === null) return null
+  if (d === undefined) return <div style={{ margin: '2px 0 12px', fontSize: 12.5, color: '#9ca3af' }}>✨ {t('fact.aiWorking')}</div>
+  const attribution = <div style={{ margin: '2px 0 8px', fontSize: 11.5, color: '#9ca3af' }}>✨ {t('fact.aiIntro')}{d.fetched ? ` · ${d.fetched}` : ''}</div>
+  const site = d.website ? (
+    <div style={{ marginTop: 6 }}>
+      <a href={d.website} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5, overflowWrap: 'anywhere' }}>{d.website}</a>
+      <span style={{ marginLeft: 6, color: '#9ca3af', fontSize: 11 }}>{t('fact.aiSite')}</span>
+    </div>
+  ) : null
+  // 存量散文格式(无标记)→ 单卡「公司简介」原样渲,不返工重跑模型(下次调查自然升级)
+  if (!/\[(WHAT|BASE|SIZE)\]/.test(d.brief)) {
+    return (
+      <>
+        {attribution}
+        <div style={MODAL_CARD}>
+          <div style={MODAL_CARD_HEAD}>{t('fact.coIntro')}</div>
+          <div style={{ fontSize: 12.5, color: '#4b5563', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{d.brief}</div>
+          {site}
+        </div>
+      </>
+    )
+  }
+  const parts = d.brief.split(/\[(WHAT|BASE|SIZE)\]/)
+  const secs: Record<string, string> = {}
+  for (let i = 1; i + 1 <= parts.length - 1; i += 2) secs[parts[i]] = (parts[i + 1] || '').trim()
+  const has = (m: string) => !!secs[m] && !/^\(not stated\)$/i.test(secs[m].trim())
   return (
-    <div style={{ marginTop: 8 }}>
-      <div style={{ fontSize: 11.5, color: '#9ca3af' }}>✨ {t('fact.aiIntro')}{d?.fetched ? ` · ${d.fetched}` : ''}</div>
-      {d === undefined ? (
-        <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>{t('fact.aiWorking')}</div>
-      ) : (
-        <div style={{ marginTop: 4, fontSize: 12.5, color: '#4b5563', lineHeight: 1.7, border: '1px solid #f3f4f6', borderRadius: 8, padding: '8px 10px' }}>
-          {/* #158(Frank「按 job 的结构来」):公司简介与 JD 整理版同一套排版=固定分节 + 节头加粗。
-              存量是散文格式(无标记)→ 原样按整段渲,不返工重跑模型(下次调查自然升级) */}
-          <CompanyBriefView text={d.brief} t={t} />
-          {d.website ? (
-            <div style={{ marginTop: 6 }}>
-              <a href={d.website} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5, overflowWrap: 'anywhere' }}>{d.website}</a>
-              <span style={{ marginLeft: 6, color: '#9ca3af', fontSize: 11 }}>{t('fact.aiSite')}</span>
-            </div>
-          ) : null}
-          {d.sources.length ? (
-            <div style={{ marginTop: 6, fontSize: 11.5, color: '#9ca3af' }}>
-              {t('fact.aiSources')}
-              {d.sources.slice(0, 3).map((s, i) => (
-                <a key={i} href={s} target="_blank" rel="noreferrer" style={{ display: 'block', color: '#6b7280', overflowWrap: 'anywhere', textDecoration: 'none' }}>{s}</a>
-              ))}
-            </div>
-          ) : null}
+    <>
+      {attribution}
+      {!has('WHAT') ? site : null}
+      {CO_SECS.map(([m, key]) => {
+        if (!has(m)) return null   // 缺项不占卡(宁可留空)
+        return (
+          <div key={m} style={MODAL_CARD}>
+            <div style={MODAL_CARD_HEAD}>{t(key)}</div>
+            <div style={{ fontSize: 12.5, color: '#4b5563', lineHeight: 1.7 }}>{secs[m].trim()}</div>
+            {m === 'WHAT' ? site : null}
+          </div>
+        )
+      })}
+    </>
+  )
+}
+// 公司弹框专用面板(2026-07-21 Frank「参考类别重新设计」):与分类弹框同规范——平级卡、每卡带题、不嵌套。
+// 卡① 公司(官网/地址/行业/担保史+口径注)→ AI 检索卡组(K 懒探索,自动)→ 公司简介卡(名录抓取)→ 在榜职位卡。
+function CompanyPanel({ job, jobs, lang, onOpenJob }: { job: JobRow; jobs: JobRow[]; lang: Lang; onOpenJob?: (j: JobRow) => void }) {
+  const t = makeT(lang)
+  const desc = job.companyDescription
+  // 担保史阈值 ≥2(2026-07-07 用户点名「近两年就 1 个 = 相当于没有」):1 个不构成信号
+  const sponsor = (job.lmiaPositions ?? 0) >= 2 ? t('fact.coLmia', { n: job.lmiaPositions!, q: job.lmiaLastQuarter || '—' }) : job.aip ? t('fact.coAip') : ''
+  const here = jobs.filter((x) => x.company && x.company === job.company && (x.status || 'open') !== 'closed')
+  // K:没简介或简介太薄(官网 meta 一句话)→ AI 联网调查
+  const needAi = !!job.company && (!desc || desc.length < 200 || !job.officialUrl)
+  // 口径注:担保史语义(C3 短版)+ 检索官网标注(D2 拍板:自动检索来的官网诚实标小字)
+  const notes = [sponsor ? t('fact.coLmiaNote') : '', job.officialUrl && job.companyWebsiteSrc === 'searched' ? t('fact.siteSearched') : ''].filter(Boolean)
+  const addr = job.address || [job.city, job.province].filter(Boolean).join(', ')
+  const hasIdCard = !!(job.officialUrl || addr || job.companySectors || sponsor)
+  return (
+    <>
+      {hasIdCard && (
+        <div style={MODAL_CARD}>
+          <div style={MODAL_CARD_HEAD}>{t('col.company')}</div>
+          {job.officialUrl ? <FactRow k={t('act.site')}><a href={job.officialUrl} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5 }}>{job.officialUrl}</a></FactRow> : null}
+          <FactRow k={t('act.addr')}>{addr || null}</FactRow>
+          <FactRow k={t('fact.coSectors')}>{job.companySectors}</FactRow>
+          <FactRow k={t('fact.coSponsor')}>{sponsor || null}</FactRow>
+          {notes.length ? <div style={{ marginTop: 7, fontSize: 11.5, color: '#9ca3af', lineHeight: 1.5 }}>{notes.join('；')}</div> : null}
         </div>
       )}
-    </div>
+      {desc ? (
+        <div style={MODAL_CARD}>
+          <div style={MODAL_CARD_HEAD}>{t('fact.coIntro')}</div>
+          <div style={{ fontSize: 12.5, color: '#4b5563', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{desc}</div>
+        </div>
+      ) : null}
+      {needAi ? <CompanyAiSection company={job.company!} t={t} /> : null}
+      {here.length > 1 ? (
+        <div style={MODAL_CARD}>
+          <div style={MODAL_CARD_HEAD}>{t('act.jobsHere')} ({here.length})</div>
+          <CompanyJobsList here={here} cur={job.id} lang={lang} onOpenJob={onOpenJob} />
+        </div>
+      ) : null}
+    </>
   )
 }
 // #126 同岗 jobtext 会话缓存:三处调用点(事实块/JD 弹框/详情页 JD 区)共用,同一岗反复开关不重复
@@ -2093,7 +2138,7 @@ const GROUP_SECTIONS: Record<FieldGroup, ColKey[]> = {
   // 职位组退役(ActModal 即职位弹框:JD 整理版自带薪资/怎么投节,不另立组)。
   immigration: ['score', 'pnp', 'ee', 'aip', 'vsMedian'],
   category: ['noc'],
-  company: ['company'],
+  company: [],   // 2026-07-21:公司组走专用 CompanyPanel(平级卡),不经 GroupFactsSection
 }
 // 有没有这块事实 —— 没有就整块跳过,**绝不留孤儿小标题**(既有规范 §2「空段规则」)
 function hasFacts(k: ColKey, job: JobRow): boolean {
@@ -2116,6 +2161,8 @@ function hasFacts(k: ColKey, job: JobRow): boolean {
 // 每节一张 sec 同款卡(白/#e5e7eb/r12),**每卡必有 title,单节组也不例外**(#173 铁律)。
 const MODAL_CARD: React.CSSProperties = { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '12px 16px', marginBottom: 14 }
 const MODAL_CARD_HEAD: React.CSSProperties = { fontSize: 13.5, fontWeight: 700, color: '#111827', marginBottom: 6 }
+// 弹框顶部胶囊钮(分类/职位弹框共用:显示中文对照 / AI 速读)
+const PILL_BTN: React.CSSProperties = { border: '1px solid #e5e7eb', borderRadius: 999, padding: '5px 13px', fontSize: 12.5, background: '#fff', color: '#374151', cursor: 'pointer', fontWeight: 600 }
 function GroupFactsSection(props: Omit<Parameters<typeof FieldFactsSection>[0], 'field'> & { group: FieldGroup }) {
   const { group, job, lang, ...rest } = props
   const t = makeT(lang)
@@ -2165,7 +2212,6 @@ function CompanyJobsList({ here, cur, lang, onOpenJob }: { here: JobRow[]; cur: 
   for (const x of here) titleCount.set(x.title, (titleCount.get(x.title) || 0) + 1)
   return (
     <>
-      <div style={{ marginTop: 8, fontSize: 11.5, color: '#9ca3af' }}>{t('act.jobsHere')} ({here.length})</div>
       {shown.map((x) => (
         <div key={x.id} style={{ fontSize: 12.5, padding: '2px 0', color: '#4b5563' }}>
           {/* 统一最原始超链接样式(2026-07-11 用户拍板);行首「·」按用户拍板去掉(链接本身已是行标识) */}
@@ -2189,36 +2235,7 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
   if (field === 'title') return <TitleFacts job={job} lang={lang} loggedIn={loggedIn} />
   const day = (s?: string) => (s || '').slice(0, 10)
 
-  if (field === 'company') {
-    // 弹框标题已是公司名 → 不重复公司行。事实段=官网 + 行业 + 担保史信号(LMIA/AIP 接进来,付费相关)+ 简介(抓到才有);
-    // 都空则整块 null(不留孤儿行,07-06 质量打磨);简介去内层滚动全部展开(用户拍板)。AI 段有官网实时 grounding(E6-03)。
-    const desc = job.companyDescription
-    // 担保史阈值 ≥2(2026-07-07 用户点名「近两年就 1 个 = 相当于没有」):1 个不构成信号,不在公司画像里展示;
-    // 「外劳记录」列/弹窗仍如实显示 ✓1(那是该字段本身的事实,不是画像信号)
-    const sponsor = (job.lmiaPositions ?? 0) >= 2 ? t('fact.coLmia', { n: job.lmiaPositions!, q: job.lmiaLastQuarter || '—' }) : job.aip ? t('fact.coAip') : ''
-    // C1(2026-07-07 走查拍板):原操作列「公司信息」ActModal 并入本弹窗 —— 补地址行 + 在榜职位(>1 才显示,只有本岗=零信息)
-    const here = jobs.filter((x) => x.company && x.company === job.company && (x.status || 'open') !== 'closed')
-    // K(2026-07-19 Frank:「点开没链接 AI 现去查」):没简介或简介太薄(官网 meta 一句话)→ AI 联网调查;
-    // 有 AI 段后,全空公司也不再整块 null
-    const needAi = !!job.company && (!desc || desc.length < 200 || !job.officialUrl)
-    if (!desc && !job.officialUrl && !job.companySectors && !sponsor && !job.address && !needAi) return null
-    // 口径注:担保史语义(C3 短版)+ 检索官网标注(D2 拍板:自动检索来的官网诚实标小字)
-    const notes = [sponsor ? t('fact.coLmiaNote') : '', job.officialUrl && job.companyWebsiteSrc === 'searched' ? t('fact.siteSearched') : ''].filter(Boolean)
-    return (
-      <FactsBox note={notes.length ? notes.join('；') : undefined}>
-        {job.officialUrl ? <FactRow k={t('act.site')}><a href={job.officialUrl} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5 }}>{job.officialUrl}</a></FactRow> : null}
-        <FactRow k={t('act.addr')}>{job.address || [job.city, job.province].filter(Boolean).join(', ') || null}</FactRow>
-        <FactRow k={t('fact.coSectors')}>{job.companySectors}</FactRow>
-        <FactRow k={t('fact.coSponsor')}>{sponsor || null}</FactRow>
-        {desc ? <>
-          <div style={{ marginTop: 8, fontSize: 11.5, color: '#9ca3af' }}>{t('fact.coIntro')}</div>
-          <div style={{ marginTop: 4, fontSize: 12.5, color: '#4b5563', whiteSpace: 'pre-wrap', lineHeight: 1.6, border: '1px solid #f3f4f6', borderRadius: 8, padding: '8px 10px' }}>{desc}</div>
-        </> : null}
-        {needAi ? <CompanyAiSection company={job.company!} t={t} /> : null}
-        {here.length > 1 ? <CompanyJobsList here={here} cur={job.id} lang={lang} onOpenJob={onOpenJob} /> : null}
-      </FactsBox>
-    )
-  }
+  // field === 'company' 分支退役(2026-07-21):公司弹框走专用 CompanyPanel(平级卡),不再经本表
 
   if (field === 'score') {
     // E12-08:1-5 档三维拆解(额度 API);旧 0-100 加权分解表退役
@@ -2666,17 +2683,22 @@ function CategoryPanel({ job, lang, plan, nocDesc, srcField }: { job: JobRow; la
     { f: 'fine', k: t('col.fine'), v: job.fine && job.fine !== '未分类' ? catName(t, job.fine) : null },
   ]
 
-  const btn: React.CSSProperties = { border: '1px solid #e5e7eb', borderRadius: 999, padding: '5px 13px', fontSize: 12.5, background: '#fff', color: '#374151', cursor: 'pointer', fontWeight: 600 }
-  // 逐行 duties/requirements(中文对照开且已翻到 → 用译文,与英文同口径 split('\n'))
+  const btn = PILL_BTN
+  // 逐行 duties/requirements;中文对照开 → **逐句对照**:英文行下跟译文行(noc-translate 按行编号对位,行数恒等)
   const listBlock = (title: string, en?: string, zh?: string) => {
-    const txt = (showTrans && zh) ? zh : (en || '')
-    const items = txt.split('\n').map((s) => s.trim()).filter(Boolean)
+    const items = (en || '').split('\n').map((s) => s.trim()).filter(Boolean)
     if (!items.length) return null
+    const zhItems = showTrans && zh ? zh.split('\n').map((s) => s.trim()).filter(Boolean) : []
     return (
       <div style={MODAL_CARD}>
         <div style={MODAL_CARD_HEAD}>{title}{noc?.fetched ? <span style={{ fontSize: 11.5, fontWeight: 400, color: '#9ca3af' }}>（{noc.fetched}）</span> : null}</div>
         <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12.5, color: '#4b5563', lineHeight: 1.6 }}>
-          {items.map((d, i) => <li key={i}>{d}</li>)}
+          {items.map((d, i) => (
+            <li key={i}>
+              {d}
+              {zhItems[i] ? <div style={{ margin: '2px 0 4px', padding: '1px 0 1px 10px', borderLeft: '3px solid #dbeafe', color: '#1e40af' }}>{zhItems[i]}</div> : null}
+            </li>
+          ))}
         </ul>
       </div>
     )
@@ -2688,11 +2710,23 @@ function CategoryPanel({ job, lang, plan, nocDesc, srcField }: { job: JobRow; la
       <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
         {lang !== 'en' && (
           <button onClick={toggleTrans} disabled={transStatus === 'loading'} style={{ ...btn, opacity: transStatus === 'loading' ? 0.6 : 1 }}>
-            {transStatus === 'loading' ? t('cat.translating') : transStatus === 'error' ? t('cat.transErr') : showTrans ? t('cat.showEn') : t('cat.showZh')}
+            {transStatus === 'loading' ? t('cat.translating') : transStatus === 'error' ? t('cat.transErr') : showTrans ? t('cat.hideZh') : t('cat.showZh')}
           </button>
         )}
         {aiStatus === 'idle' && <button onClick={runAi} style={btn}><IconCompass /> {t('cat.aiRead')}</button>}
       </div>
+
+      {/* AI 速读卡(点了才出;置顶=点完不用往下翻) */}
+      {aiStatus !== 'idle' && (
+        <div style={MODAL_CARD}>
+          <div style={MODAL_CARD_HEAD}><IconCompass /> {t('cat.aiRead')}</div>
+          {aiStatus === 'upgrade' ? <LockedText t={t} loggedIn={plan.loggedIn} />
+            : aiStatus === 'limited' ? <LockedText t={t} loggedIn={plan.loggedIn} msg={t('advisor.limit429')} ctaLabel={!plan.loggedIn ? t('advisor.limitCta') : undefined} />
+            : aiStatus === 'error' ? <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>{t('cat.aiErr')}</p>
+            : aiStatus === 'loading' ? <p style={{ margin: 0, fontSize: 14, color: '#9ca3af' }}>{t('advisor.loading')}</p>
+            : <div style={{ fontSize: 14, lineHeight: 1.7, color: '#374151' }}>{renderAI(ai.split('❓')[0])}{aiStatus === 'streaming' && <span style={{ color: '#9ca3af' }}>▋</span>}</div>}
+        </div>
+      )}
 
       {/* 卡①:职业分类(点击字段该行高亮) */}
       <div style={MODAL_CARD}>
@@ -2712,18 +2746,6 @@ function CategoryPanel({ job, lang, plan, nocDesc, srcField }: { job: JobRow; la
       {/* 卡②③:官方主要职责 / 任职要求 */}
       {listBlock(t('fact.nocDuties'), noc?.duties, trans?.duties)}
       {listBlock(t('fact.nocReqs'), noc?.requirements, trans?.requirements)}
-
-      {/* AI 速读卡(点了才出) */}
-      {aiStatus !== 'idle' && (
-        <div style={MODAL_CARD}>
-          <div style={MODAL_CARD_HEAD}><IconCompass /> {t('cat.aiRead')}</div>
-          {aiStatus === 'upgrade' ? <LockedText t={t} loggedIn={plan.loggedIn} />
-            : aiStatus === 'limited' ? <LockedText t={t} loggedIn={plan.loggedIn} msg={t('advisor.limit429')} ctaLabel={!plan.loggedIn ? t('advisor.limitCta') : undefined} />
-            : aiStatus === 'error' ? <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>{t('cat.aiErr')}</p>
-            : aiStatus === 'loading' ? <p style={{ margin: 0, fontSize: 14, color: '#9ca3af' }}>{t('advisor.loading')}</p>
-            : <div style={{ fontSize: 14, lineHeight: 1.7, color: '#374151' }}>{renderAI(ai.split('❓')[0])}{aiStatus === 'streaming' && <span style={{ color: '#9ca3af' }}>▋</span>}</div>}
-        </div>
-      )}
     </>
   )
 }
@@ -2829,9 +2851,10 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
                 现在:公司弹框=公司名、职位与移民弹框=岗位名,与弹框里铺开的整组事实对得上。 */}
             {/* #174:「AI 顾问 · 移民 · 免费今日剩 N 次」两个「·」退役——分组名与次数改空格灰注
                 (#171 详情页同款手法);靛色随 #108 杂色归一改灰 */}
-            {/* 分类弹框零 AI(#176 纯官方事实),故不挂「AI 顾问」标——只出「职业分类」,名副其实
-                (Frank 2026-07-21「点大分类就显示大分类」);移民/公司弹框有 AI 内容,照旧带标。 */}
-            <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 600 }}>{group === 'category'
+            {/* 页眉三弹框统一(Frank 2026-07-21「这三个也要保持一致」):灰色小标+纯名称,与职位弹框
+                「职位描述」同款。「AI 顾问」标只留移民弹框(唯一真在流式生成顾问内容的;#176 分类零 AI,
+                公司弹框的 AI 段 #167⑨ 已撤、只剩检索卡,挂「AI 顾问」名不副实)。 */}
+            <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 600 }}>{group !== 'immigration'
               ? t('grp.' + group)
               : <><IconCompass /> {t('advisor.tag')}<span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('grp.' + group)}</span>{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('advisor.left', { n: freeLeft })}</span> : null}</>}</div>
             <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{group === 'company' ? (job.company || title || a.title) : (job.title || title || a.title)}</h3>
@@ -2848,9 +2871,12 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
               职业方向/所在省/省提名粗筛/EE/技能层级/薪资 全是**岗位级**事实,挂在「Agilent Technologies」
               这个标题下答非所问(用户点公司是想了解公司)。岗位级判定留在岗位面板。 */}
           {group === 'immigration' && <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} nocDesc={nocDesc} />}
-          {/* 分类组走专用三卡面板(Frank 2026-07-21:三卡 + 中文对照 + AI 速读);其余组照旧铺全组事实 */}
+          {/* 分类组走专用三卡面板(Frank 2026-07-21:三卡 + 中文对照 + AI 速读);公司组走专用平级卡面板
+              (同日「参考类别重新设计」);其余组照旧铺全组事实 */}
           {group === 'category'
             ? <CategoryPanel job={job} lang={lang} plan={plan} nocDesc={nocDesc} srcField={field} />
+            : group === 'company'
+            ? <CompanyPanel job={job} jobs={companyJobs} lang={lang} onOpenJob={onOpenJob} />
             : <GroupFactsSection group={group} job={job} jobs={companyJobs} lang={lang} isPro={plan.isPro} loggedIn={plan.loggedIn} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} onOpenJob={onOpenJob} />}
           {/* 建档 CTA(第 5 轮 #17 = 弹框规范 D1):身份信号族对未建档用户铺「事实 → 个人化」的桥 */}
           {!plan.profileOk && group === 'immigration' && (
@@ -3066,6 +3092,22 @@ function ActModal({ job, lang, plan, onClose }: { job: JobRow; lang: Lang; plan:
   // J3(2026-07-19 Frank 批):AI 五节整理版懒生成——undefined=整理中,null=没有(降级原文),string=整理版
   const [fmt, setFmt] = useState<string | null | undefined>(undefined)
   const [showOrig, setShowOrig] = useState(false)
+  // 2026-07-21 Frank「参考类别」:AI 速读点了才生成(不点不烧,额度闸在 JdAdvisorSection 内照走)
+  const [aiOn, setAiOn] = useState(false)
+  // 中文对照(参考分类弹框):整理版逐句翻(/api/jd-translate 行位保真);拿到后前端存一份,切换零延迟
+  const [showTrans, setShowTrans] = useState(false)
+  const [trans, setTrans] = useState<string | null>(null)
+  const [transStatus, setTransStatus] = useState<'idle' | 'loading' | 'error'>('idle')
+  const toggleTrans = async () => {
+    if (trans) { setShowTrans((v) => !v); return }
+    setTransStatus('loading')
+    try {
+      const r = await fetch('/api/jd-translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: job.applyUrl || '', lang }) })
+      const d = await r.json().catch(() => null)
+      if (d?.ok && d.text) { setTrans(d.text); setShowTrans(true); setTransStatus('idle') }
+      else setTransStatus('error')
+    } catch { setTransStatus('error') }
+  }
   useEffect(() => {
     const ctrl = new AbortController()
     setStatus('loading'); setText('')
@@ -3084,6 +3126,7 @@ function ActModal({ job, lang, plan, onClose }: { job: JobRow; lang: Lang; plan:
     // 整理版与原文并行拉:命中缓存秒回;首次生成慢(模型现算),期间正文照常显示原文
     const ctrl = new AbortController()
     setFmt(undefined); setShowOrig(false)
+    setAiOn(false); setShowTrans(false); setTrans(null); setTransStatus('idle')
     fetch('/api/jdformat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: job.applyUrl || '' }), signal: ctrl.signal })
       .then((r) => (r.status === 200 ? r.text() : ''))
       .then((tx) => setFmt(tx.trim() ? tx : null))
@@ -3096,11 +3139,10 @@ function ActModal({ job, lang, plan, onClose }: { job: JobRow; lang: Lang; plan:
         {/* 标题栏 = 拖动手柄(与顾问弹框同款) */}
         <div onPointerDown={startDrag} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, padding: '16px 20px 8px', cursor: full ? 'default' : 'move', userSelect: 'none', flexShrink: 0 }}>
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, letterSpacing: 0.3 }}>
+            {/* 页眉与其余弹框统一灰(Frank 2026-07-21;靛色残余随 #108 杂色归一退役);
+                「打开完整页」挪进下方胶囊钮行(同日「和其他两个按钮放一起,统一风格」) */}
+            <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 600 }}>
               {t('act.descTitle')}{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('advisor.left', { n: freeLeft })}</span> : null}
-              {/* E8-07:详情页入口(分享/新标签场景);阻止冒泡免触发标题栏拖动 */}
-              <a href={`/jobs/${job.id}`} target="_blank" rel="noreferrer" onPointerDown={(e) => e.stopPropagation()}
-                style={{ marginLeft: 10, color: '#2563eb', textDecoration: 'none', fontWeight: 400 }}>{t('detail.openFull')} ↗</a>
             </div>
             <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{job.title || '—'}</h3>
           </div>
@@ -3110,6 +3152,24 @@ function ActModal({ job, lang, plan, onClose }: { job: JobRow; lang: Lang; plan:
           </div>
         </div>
         <div style={{ flex: 1, overflowY: 'auto', padding: '4px 20px 20px', fontSize: 14, lineHeight: 1.7, color: '#374151' }}>
+          {/* 顶部钮行(2026-07-21 Frank「参考类别」):中文对照(英文界面不出;整理版在屏才可翻)+
+              AI 速读(点了才生成,不点不烧——原「打开即自动生成初判」退役,额度省给真想看的人)+
+              打开完整页(E8-07 详情页入口,从页眉挪入,同款胶囊;同日「统一风格」) */}
+          <div style={{ display: 'flex', gap: 8, margin: '2px 0 12px', flexWrap: 'wrap' }}>
+            {status !== 'loading' && lang !== 'en' && fmt && !showOrig ? (
+              <button onClick={toggleTrans} disabled={transStatus === 'loading'} style={{ ...PILL_BTN, opacity: transStatus === 'loading' ? 0.6 : 1 }}>
+                {transStatus === 'loading' ? t('cat.translating') : transStatus === 'error' ? t('cat.transErr') : showTrans ? t('cat.hideZh') : t('cat.showZh')}
+              </button>
+            ) : null}
+            {status !== 'loading' && !aiOn && <button onClick={() => setAiOn(true)} style={PILL_BTN}><IconCompass /> {t('cat.aiRead')}</button>}
+            <a href={`/jobs/${job.id}`} target="_blank" rel="noreferrer" style={{ ...PILL_BTN, textDecoration: 'none', display: 'inline-block' }}>{t('detail.openFull')} ↗</a>
+          </div>
+          {/* AI 速读卡(点了才出;置顶=点完不用往下翻,与分类弹框同规范) */}
+          {aiOn && (
+            <div style={MODAL_CARD}>
+              <JdAdvisorSection job={job} lang={lang} plan={plan} title={t('cat.aiRead')} />
+            </div>
+          )}
           {status === 'loading' ? <p style={{ color: '#9ca3af' }}>{t('act.loadingText')}</p>
             : status === 'upgrade' ? <LockedText t={t} loggedIn={plan.loggedIn} lines={4} />
             : status === 'limited' ? (   /* #134 限流说人话;#175 黄条退役 → 打码+锁行 */
@@ -3132,20 +3192,14 @@ function ActModal({ job, lang, plan, onClose }: { job: JobRow; lang: Lang; plan:
                   ) : fmt === undefined ? (
                     <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 6 }}>✨ {t('act.aiWorking')}</div>
                   ) : null}
-                  {fmt && !showOrig ? <JdFormattedView text={fmt} t={t} fallbackPay={job.salaryText || job.salary || undefined} applyUrl={job.applyUrl || undefined} /> : <JdTextView text={text} max={4000} />}
+                  {fmt && !showOrig ? <JdFormattedView text={fmt} t={t} fallbackPay={job.salaryText || job.salary || undefined} applyUrl={job.applyUrl || undefined} trans={showTrans && trans ? trans : undefined} /> : <JdTextView text={text} max={4000} />}
                 </>
               )}
-          {/* republish 合规的官方入口=底部极简来源行(2026-07-06 拍板,取代顶部按钮+说明) */}
-          {job.applyUrl && (
+          {/* 底部来源行(republish 合规)只在整理版**没渲出**时兜底(#167③ 详情页同款;2026-07-21 Frank
+              「去掉 source 链接」)——整理版在屏时「怎么投」整节已链官方原帖,出处不丢 */}
+          {job.applyUrl && !(status === 'done' && fmt && !showOrig) && status !== 'empty' && (
             <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #f3f4f6', fontSize: 11.5, color: '#9ca3af', overflowWrap: 'anywhere' }}>
               {t('src.label')}: <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{job.applyUrl}</a>
-            </div>
-          )}
-          {/* AI 顾问初判自动生成(Frank:不要再点一下);深挖入口=标题栏「AI 顾问」钮。
-              组件已裸段化(#173),弹框里的分隔线间隔由这层包 */}
-          {status !== 'loading' && (
-            <div style={{ marginTop: 14, paddingTop: 10, borderTop: '1px solid #f3f4f6' }}>
-              <JdAdvisorSection job={job} lang={lang} plan={plan} />
             </div>
           )}
         </div>
