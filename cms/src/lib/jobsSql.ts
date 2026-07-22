@@ -445,11 +445,18 @@ export type CompanyDetail = {
 /** slug → 公司行 + 在招岗(≤30,按发布时间,带 NOC 译名/薪资);查无返回 null(页面走 Notice 不 404)。全事实层免费,不走额度闸。 */
 export async function fetchCompanyBySlug(pool: any, slug: string): Promise<CompanyDetail | null> {
   if (!slug) return null
+  return fetchCompanyWhere(pool, 'c.slug = $1', slug)
+}
+/** E8-11 B1:job id → 同一份 CompanyDetail(公司弹框同源;按 jobs.company_id 解析,同名公司/无 slug 公司也不串)。 */
+export async function fetchCompanyByJobId(pool: any, jobId: number): Promise<CompanyDetail | null> {
+  return fetchCompanyWhere(pool, 'c.id = (SELECT company_id FROM jobs WHERE id = $1 LIMIT 1)', jobId)
+}
+async function fetchCompanyWhere(pool: any, where: string, param: unknown): Promise<CompanyDetail | null> {
   const { rows } = await pool.query(
     `SELECT c.id, c.name, c.slug, c.website, c.website_source, c.industry, c.sectors, c.alias_zh, c.alias_ko, c.wiki_url,
             c.sponsor_grade, c.score_detail, c.ai_brief, c.ai_website, c.ai_sources, c.ai_fetched, c.description, c.address, c.region,
             c.lmia_positions, c.lmia_lmias, c.lmia_last_quarter, c.lmia_streams, c.lmia_positions_skilled
-     FROM companies c WHERE c.slug = $1 LIMIT 1`, [slug])
+     FROM companies c WHERE ${where} LIMIT 1`, [param])
   const c = rows[0]
   if (!c) return null
   // NOC 译名 join(#151 口径,前端按界面语言取)——治「工作名不知道啥意思」,用官方职业名作对照
