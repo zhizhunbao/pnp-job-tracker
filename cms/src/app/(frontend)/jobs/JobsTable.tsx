@@ -2939,7 +2939,8 @@ function CategoryPanel({ job, lang, plan, nocDesc, srcField }: { job: JobRow; la
     const zhItems = showTrans && zh ? zh.split('\n').map((s) => s.trim()).filter(Boolean) : []
     return (
       <div style={MODAL_CARD}>
-        <div style={MODAL_CARD_HEAD}>{title}{noc?.fetched ? <span style={{ fontSize: 11.5, fontWeight: 400, color: '#9ca3af' }}>（{noc.fetched}）</span> : null}</div>
+        {/* #191 对齐:抓取日期全角括号退役 → 空格灰注(与公司简介检索日期同款) */}
+        <div style={MODAL_CARD_HEAD}>{title}{noc?.fetched ? <span style={{ fontSize: 11.5, fontWeight: 400, color: '#9ca3af', marginLeft: 8 }}>{noc.fetched}</span> : null}</div>
         <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12.5, color: '#4b5563', lineHeight: 1.6 }}>
           {items.map((d, i) => (
             <li key={i}>
