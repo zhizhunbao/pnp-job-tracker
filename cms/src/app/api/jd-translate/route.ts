@@ -17,8 +17,6 @@ const IP_DAILY = 60
 
 const cache = new Map<string, string>()
 
-const SKIP_RE = /^\[(ROLE|REQS|PAY|WORKHOURS|APPLY)\]$|^\(not stated\)$/i
-
 const stripMd = (s: string) => s.replace(/\*\*(.+?)\*\*/g, '$1').replace(/^#+\s*/gm, '').replace(/\*\*/g, '')
 
 // 按编号对位解析(镜像 noc-translate 的 parseNumbered):缺号/空段 → null(整块拒收)
@@ -33,15 +31,21 @@ function parseNumbered(out: string, n: number): string[] | null {
   return Array.from({ length: n }, (_, i) => d.get(i + 1)!)
 }
 
-// 整理版按行翻:节标记/(not stated)/空行不进翻译,译完按原行位拼回(「- 」bullet 前缀剥了翻、译文补回)
+// 整理版按行翻:节标记/(not stated)/空行不进翻译,译完按原行位拼回。
+// ⚠️ 标记可与正文**同行**(实际数据大量是「[ROLE] Store Supervisor …」),标记/「- 」前缀都要剥下来
+// 保管、只翻正文——首版只认独占行,标记被 qwen 翻成「[职位]」,前端按 [ROLE] 解析归零=「对照不显示」。
 async function translateFormatted(text: string, lang: string, signal: AbortSignal): Promise<string> {
   const lines = text.split('\n')
   const jobs: { idx: number; prefix: string; body: string }[] = []
   lines.forEach((raw, idx) => {
-    const l = raw.trim()
-    if (!l || SKIP_RE.test(l)) return
-    const m = l.match(/^(-\s+)(.*)$/)
-    jobs.push(m ? { idx, prefix: '- ', body: m[2] } : { idx, prefix: '', body: l })
+    let l = raw.trim()
+    let prefix = ''
+    const mk = l.match(/^(\[(?:ROLE|REQS|PAY|WORKHOURS|APPLY)\]\s*)(.*)$/)
+    if (mk) { prefix = mk[1]; l = mk[2].trim() }
+    if (!l || /^\(not stated\)$/i.test(l)) return   // 纯标记行/缺节行原样保留
+    const b = l.match(/^(-\s+)(.*)$/)
+    if (b) { prefix += '- '; l = b[2] }
+    jobs.push({ idx, prefix, body: l })
   })
   if (!jobs.length) return text
   const numbered = jobs.map((j, i) => `[${i + 1}] ${j.body}`).join('\n')
