@@ -2159,7 +2159,9 @@ export function CompanyBody({ company, similar, t, lang, showTrans, onOpenJob, r
                     {r && onOpenJob
                       ? <button onClick={() => onOpenJob(r)} style={{ border: 'none', background: 'none', padding: 0, font: 'inherit', cursor: 'pointer', textAlign: 'left', color: '#2563eb' }}>{j.title}</button>
                       : <a href={`/jobs/${j.id}`} target={extTarget} rel="noreferrer" style={{ ...link, fontSize: 13 }}>{j.title}</a>}
-                    {nl && nl.toLowerCase() !== j.title.toLowerCase() ? <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 1, lineHeight: 1.5 }}>{nl}</div> : null}
+                    {/* #196(Frank「只有点显示中文对照才需要显示中文」):英文界面照显英文官方职业名(非中文);
+                        中/韩界面的译名默认藏,点「显示中文对照」才出——与 简介/JD 对照同口径 */}
+                    {(lang === 'en' || showTrans) && nl && nl.toLowerCase() !== j.title.toLowerCase() ? <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 1, lineHeight: 1.5 }}>{nl}</div> : null}
                   </span>
                   <span style={{ fontSize: 11.5, whiteSpace: 'nowrap', flexShrink: 0, textAlign: 'right' }}>
                     {j.salaryText ? <div style={{ color: '#15803d', fontWeight: 700, fontSize: 12.5 }}>{j.salaryText}</div> : null}
@@ -2221,13 +2223,19 @@ function CompanyPanel({ job, jobs, lang, plan, onOpenJob }: { job: JobRow; jobs:
     return () => { dead = true }
   }, [job])
   const co = d && typeof d === 'object' ? d.company : null
-  // 中文对照钮只在 AI 简介路径亮(名录厚简介无对照翻译;与 Body 的三者互斥同口径)
+  // 中文对照钮出现条件(#196 放宽):AI 简介可翻 或 在招职位有 zh/ko NOC 译名可显——
+  // 原先只认 AI 简介,导致「名录厚简介 + 在招译名」的公司没钮,译名却无条件冒出来。
   const aiPath = !!co && !(co.description && co.description.length >= 120)
+  const hasZhJobs = !!co && lang !== 'en' && co.jobs.some((j) => {
+    const z = lang === 'zh' ? j.nocTitleZh : j.nocTitleKo
+    return !!z && z.toLowerCase() !== j.title.toLowerCase()
+  })
+  const canTrans = lang !== 'en' && (aiPath || hasZhJobs)
   const slug = job.companySlug || co?.slug || ''
   return (
     <>
       <div style={{ display: 'flex', gap: 8, margin: '2px 0 12px', flexWrap: 'wrap' }}>
-        {lang !== 'en' && aiPath ? (
+        {canTrans ? (
           <button onClick={() => setShowTrans((v) => !v)} style={{ ...PILL_BTN, ...(showTrans ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}>{showTrans ? t('cat.hideZh') : t('cat.showZh')}</button>
         ) : null}
         <button onClick={() => setAiOn((v) => !v)} style={{ ...PILL_BTN, ...(aiOn ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}><IconCompass /> {t('cat.aiRead')} {aiOn ? '▾' : '▸'}</button>
