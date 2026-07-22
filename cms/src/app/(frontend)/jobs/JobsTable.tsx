@@ -2031,7 +2031,8 @@ export function CompanyGradesView({ detail, t, hideSponsor }: { detail: CoGradeD
 }
 // 公司评分卡(2026-07-22 Frank「公司评分在哪里」):弹框侧 fetch 包装——/api/scoredetail companyDetail,
 // 额度同通道卡打开即拉,402/429 打码+锁行;渲染委托 CompanyGradesView(与公司详情页同源)。
-function CompanyGradesCard({ job, lang, loggedIn }: { job: JobRow; lang: Lang; loggedIn: boolean }) {
+// #189(Frank「上限」):这里烧的是统一免费池,X-Free-Left 回传给弹框页眉可见化(与职位弹框同款),不再静默扣。
+function CompanyGradesCard({ job, lang, loggedIn, onFreeLeft }: { job: JobRow; lang: Lang; loggedIn: boolean; onFreeLeft?: (n: number) => void }) {
   const t = makeT(lang)
   const [d, setD] = useState<undefined | 'upgrade' | 'limited' | 'error' | { companyDetail: CoGradeDetail }>(undefined)
   useEffect(() => {
@@ -2039,6 +2040,8 @@ function CompanyGradesCard({ job, lang, loggedIn }: { job: JobRow; lang: Lang; l
     setD(undefined)
     fetch('/api/scoredetail', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: job.id }) })
       .then(async (r) => {
+        const left = r.headers.get('X-Free-Left')
+        if (left != null && !dead) onFreeLeft?.(Number(left))
         if (r.status === 402) return 'upgrade' as const
         if (r.status === 429) return 'limited' as const
         if (!r.ok) return 'error' as const
@@ -2068,7 +2071,7 @@ function CompanyGradesCard({ job, lang, loggedIn }: { job: JobRow; lang: Lang; l
 // 公司弹框专用面板(2026-07-21 Frank「参考类别重新设计」):与分类弹框同规范——平级卡、每卡带题、不嵌套。
 // 卡① 公司(官网/地址/行业)→ 卡② 公司评分(四维,2026-07-22)→ AI 检索卡组(K 懒探索,自动)→
 // 公司简介卡(名录抓取)→ 在榜职位卡。原「担保史」文本行撤=归评分卡担保记录维(一条信息一个家)。
-function CompanyPanel({ job, jobs, lang, plan, onOpenJob }: { job: JobRow; jobs: JobRow[]; lang: Lang; plan: Plan; onOpenJob?: (j: JobRow) => void }) {
+function CompanyPanel({ job, jobs, lang, plan, onOpenJob, onFreeLeft }: { job: JobRow; jobs: JobRow[]; lang: Lang; plan: Plan; onOpenJob?: (j: JobRow) => void; onFreeLeft?: (n: number) => void }) {
   const t = makeT(lang)
   const desc = job.companyDescription
   const here = jobs.filter((x) => x.company && x.company === job.company && (x.status || 'open') !== 'closed')
@@ -2108,7 +2111,7 @@ function CompanyPanel({ job, jobs, lang, plan, onOpenJob }: { job: JobRow; jobs:
             </div>
           </div>
         )}
-        <CompanyGradesCard job={job} lang={lang} loggedIn={plan.loggedIn} />
+        <CompanyGradesCard job={job} lang={lang} loggedIn={plan.loggedIn} onFreeLeft={onFreeLeft} />
         {desc ? (
           <div style={FLAT_SEC}>
             <div style={FLAT_HEAD}>{t('fact.coIntro')}</div>
@@ -3012,8 +3015,10 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
             {/* 页眉三弹框统一(Frank 2026-07-21「这三个也要保持一致」):灰色小标+纯名称,与职位弹框
                 「职位描述」同款。「AI 顾问」标只留移民弹框(唯一真在流式生成顾问内容的;#176 分类零 AI,
                 公司弹框的 AI 段 #167⑨ 已撤、只剩检索卡,挂「AI 顾问」名不副实)。 */}
+            {/* #189(Frank「上限」):公司组也可见化剩余额度——CompanyGradesCard 打开即烧统一池,
+                X-Free-Left 回传到此(与职位弹框「职位描述 免费今日剩 N 次」同款空格灰注) */}
             <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 600 }}>{group !== 'immigration'
-              ? t('grp.' + group)
+              ? <>{t('grp.' + group)}{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('advisor.left', { n: freeLeft })}</span> : null}</>
               : <><IconCompass /> {t('advisor.tag')}<span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('grp.' + group)}</span>{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('advisor.left', { n: freeLeft })}</span> : null}</>}
               {/* #185:公司弹框「打开完整页」移入正文顶部钮行(与职位弹框同款),页眉不再重复 */}</div>
             <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{group === 'company' ? (job.company || title || a.title) : (job.title || title || a.title)}</h3>
@@ -3035,7 +3040,7 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
           {group === 'category'
             ? <CategoryPanel job={job} lang={lang} plan={plan} nocDesc={nocDesc} srcField={field} />
             : group === 'company'
-            ? <CompanyPanel job={job} jobs={companyJobs} lang={lang} plan={plan} onOpenJob={onOpenJob} />
+            ? <CompanyPanel job={job} jobs={companyJobs} lang={lang} plan={plan} onOpenJob={onOpenJob} onFreeLeft={setFreeLeft} />
             : <GroupFactsSection group={group} job={job} jobs={companyJobs} lang={lang} isPro={plan.isPro} loggedIn={plan.loggedIn} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} onOpenJob={onOpenJob} />}
           {/* 建档 CTA(第 5 轮 #17 = 弹框规范 D1):身份信号族对未建档用户铺「事实 → 个人化」的桥 */}
           {!plan.profileOk && group === 'immigration' && (
