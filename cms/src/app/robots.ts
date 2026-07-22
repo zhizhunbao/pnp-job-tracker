@@ -1,6 +1,7 @@
 // robots(E7-03):放开公开页,挡 admin/api;指向 sitemap。
 import type { MetadataRoute } from 'next'
 import { SHARDS } from './(frontend)/jobs/sitemap'   // #156:分片数单一来源(原先这里写死 8,与 sitemap.ts 各写一份)
+import { CO_SHARDS } from './(frontend)/companies/sitemap'   // E8-09:公司页分片
 
 // ⚠️ 同 sitemap.ts:构建期烘焙 + Docker 构建无 env → fallback 必须=正式域
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://offer2pr.com').replace(/\/$/, '')
@@ -14,6 +15,7 @@ export default function robots(): MetadataRoute.Robots {
       `${SITE}/sitemap-index.xml`,
       `${SITE}/sitemap.xml`,
       ...Array.from({ length: SHARDS }, (_, i) => `${SITE}/jobs/sitemap/${i}.xml`),
+      ...Array.from({ length: CO_SHARDS }, (_, i) => `${SITE}/companies/sitemap/${i}.xml`),
     ],
   }
 }

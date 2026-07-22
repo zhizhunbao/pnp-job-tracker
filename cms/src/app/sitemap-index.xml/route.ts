@@ -10,6 +10,7 @@
  * 改那边这边自动跟。
  */
 import { SHARDS } from '../(frontend)/jobs/sitemap'
+import { CO_SHARDS } from '../(frontend)/companies/sitemap'   // E8-09:公司页分片并入索引
 
 export const dynamic = 'force-dynamic'
 
@@ -20,6 +21,7 @@ export function GET() {
   const maps = [
     `${SITE}/sitemap.xml`,
     ...Array.from({ length: SHARDS }, (_, i) => `${SITE}/jobs/sitemap/${i}.xml`),
+    ...Array.from({ length: CO_SHARDS }, (_, i) => `${SITE}/companies/sitemap/${i}.xml`),
   ]
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

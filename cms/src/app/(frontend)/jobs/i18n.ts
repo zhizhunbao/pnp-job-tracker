@@ -58,6 +58,8 @@ const zh: Dict = {
   'gr.sponsorTip': '该雇主的外劳担保记录(依据官方 LMIA 获批历史与新近度);点公司名看明细',
   // 公司评分卡(2026-07-22 Frank 拍板:四维归位公司弹框;档名键沿用 gr.sp/act/sal/fm)
   'co.grades': '公司评分',
+  // E8-09 B 公司详情页 /companies/[slug]
+  'co.crumb': '公司', 'co.wellKnown': '知名企业', 'co.notFound': '未找到这家公司,可能已从在招列表移除。', 'co.openJobs': '在招职位',
   'gr.dim.coSponsor': '担保记录', 'gr.dim.coActive': '在库活跃', 'gr.dim.coSalary': '薪资水平', 'gr.dim.coFame': '规模知名',
   'gr.co.sp.d': '近两年获批 {total} 岗(技能股 {n};最近 {q})', 'gr.co.sp.aip': 'AIP 指定雇主(不走 LMIA 也具担保资格)', 'gr.co.sp.na': '近两年无公开获批记录(无记录≠不担保)',
   'gr.co.act.d': '在招 {open} 岗,近 30 天新发 {n}', 'gr.co.sal.d': '在招岗帖面薪资平均较当地中位 {pct}%',
@@ -478,6 +480,7 @@ const en: Dict = {
   'gr.fm.5': 'Major well-known employer', 'gr.fm.4': 'Has a Wikipedia entry', 'gr.fm.3': 'Multi-province', 'gr.fm.2': 'Typical size', 'gr.fm.1': 'Very small',
   'gr.sponsorTip': 'This employer’s foreign-worker sponsorship record (from official LMIA approvals and recency); click the company name for details',
   'co.grades': 'Company assessment',
+  'co.crumb': 'Company', 'co.wellKnown': 'Well-known', 'co.notFound': 'This company was not found — it may have been removed from the active listings.', 'co.openJobs': 'Open positions',
   'gr.dim.coSponsor': 'Sponsorship record', 'gr.dim.coActive': 'Hiring activity', 'gr.dim.coSalary': 'Pay level', 'gr.dim.coFame': 'Scale & profile',
   'gr.co.sp.d': '{total} approved LMIA positions in the past two years (skilled streams {n}; latest {q})', 'gr.co.sp.aip': 'AIP designated employer (can sponsor without LMIA)', 'gr.co.sp.na': 'No public approvals in the past two years (no record ≠ won’t sponsor)',
   'gr.co.act.d': '{open} open jobs, {n} new in the past 30 days', 'gr.co.sal.d': 'posted pay averages {pct}% vs local medians',
@@ -900,6 +903,7 @@ const ko: Dict = {
   'gr.fm.5': '유명 대형 고용주', 'gr.fm.4': '위키 문서 있음', 'gr.fm.3': '여러 주 운영', 'gr.fm.2': '일반 규모', 'gr.fm.1': '매우 소규모',
   'gr.sponsorTip': '이 고용주의 외국인 근로자 스폰서 기록(공식 LMIA 승인 이력·최신성 기준); 회사명을 클릭하면 상세',
   'co.grades': '회사 평가',
+  'co.crumb': '회사', 'co.wellKnown': '유명 기업', 'co.notFound': '이 회사를 찾을 수 없습니다 — 채용 목록에서 제거되었을 수 있습니다.', 'co.openJobs': '채용 중 공고',
   'gr.dim.coSponsor': '스폰서 기록', 'gr.dim.coActive': '채용 활발도', 'gr.dim.coSalary': '급여 수준', 'gr.dim.coFame': '규모·인지도',
   'gr.co.sp.d': '최근 2년 승인 {total}건(기술직 스트림 {n}건; 최근 {q})', 'gr.co.sp.aip': 'AIP 지정 고용주(LMIA 없이도 스폰서 가능)', 'gr.co.sp.na': '최근 2년 공개 승인 기록 없음(기록 없음 ≠ 스폰서 불가)',
   'gr.co.act.d': '채용 중 {open}건, 최근 30일 신규 {n}건', 'gr.co.sal.d': '채용 공고 급여가 지역 중위값 대비 평균 {pct}%',

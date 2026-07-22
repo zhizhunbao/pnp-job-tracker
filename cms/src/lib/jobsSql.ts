@@ -159,7 +159,7 @@ export function orderByClause(sortKey?: string, dir?: string, pro = true): strin
 export const mapPnpOcc = (r: any) => ({ province: r.province, stream: r.stream, label: r.label, type: r.type, noc: r.noc, name: r.name, gtaRestricted: !!r.gtaRestricted, url: r.url, fetched: r.fetched })
 export const mapEeCat = (r: any) => ({ category: r.category, label: r.label, noc: r.noc, teer: typeof r.teer === 'number' ? r.teer : null, title: r.title, url: r.url, fetched: r.fetched, drawCrs: typeof r.drawCrs === 'number' ? r.drawCrs : null, drawDate: r.drawDate ?? '', drawSize: typeof r.drawSize === 'number' ? r.drawSize : null })
 
-const JOB_COLUMNS = `j.id, j.title, c.name AS company_name, c.address AS company_address, c.description AS company_description, c.sectors AS company_sectors,
+const JOB_COLUMNS = `j.id, j.title, c.name AS company_name, c.slug AS company_slug, c.address AS company_address, c.description AS company_description, c.sectors AS company_sectors,
   c.website AS company_website, c.website_source,
   c.lmia_positions, c.lmia_lmias, c.lmia_last_quarter, c.lmia_streams, c.lmia_positions_skilled, c.sponsor_grade,
   j.noc, j.category, j.teer, j.broad, j.mid, j.fine, j.accessibility, j.score, j.grade_channel, j.pnp_eligible, j.pnp_stream, j.ee_category, j.aip,
@@ -177,6 +177,7 @@ export function mapJobRow(j: any, pro: boolean, matchLevel: JobRow['match']): Jo
     id: j.id,
     title: j.title ?? '',
     company: j.company_name ?? '',
+    companySlug: j.company_slug ?? '',
     companyDescription: j.company_description ?? '',
     companySectors: j.company_sectors ?? '',
     companyWebsiteSrc: j.website_source ?? '',
@@ -427,6 +428,47 @@ export async function fetchTotalAndProof(pool: any): Promise<{ total: number; na
     (SELECT count(*)::int FROM companies WHERE lmia_positions > 0) AS lmia
     FROM jobs`)
   return { total: rows[0]?.n ?? 0, named: rows[0]?.named ?? 0, lmia: rows[0]?.lmia ?? 0 }
+}
+
+// ── E8-09 B:公司详情页 /companies/[slug] 数据(零新抓取:companies 行 + 该司在招岗聚合) ──
+export type CompanyDetail = {
+  name: string; slug: string; website: string; websiteSource: string; industry: string; sectors: string
+  aliasZh: string; aliasKo: string; wikiUrl: string; sponsorGrade: number | null
+  scoreDetail: any | null; aiBrief: string; aiWebsite: string; aiSources: string[]; aiFetched: string
+  description: string; address: string; province: string
+  openCount: number
+  jobs: { id: number; title: string; city: string; province: string; gradeChannel: number | null; noc: string; teer: number | null; datePosted: string }[]
+}
+/** slug → 公司行 + 在招岗(≤30,按发布时间);查无返回 null(页面走 Notice 不 404)。全事实层免费,scoreDetail 服务端直读不走额度闸。 */
+export async function fetchCompanyBySlug(pool: any, slug: string): Promise<CompanyDetail | null> {
+  if (!slug) return null
+  const { rows } = await pool.query(
+    `SELECT c.id, c.name, c.slug, c.website, c.website_source, c.industry, c.sectors, c.alias_zh, c.alias_ko, c.wiki_url,
+            c.sponsor_grade, c.score_detail, c.ai_brief, c.ai_website, c.ai_sources, c.ai_fetched, c.description, c.address, c.region
+     FROM companies c WHERE c.slug = $1 LIMIT 1`, [slug])
+  const c = rows[0]
+  if (!c) return null
+  const jr = await pool.query(
+    `SELECT j.id, j.title, j.city, j.province, j.grade_channel, j.noc, j.teer, j.date_posted
+     FROM jobs j WHERE j.company_id = $1 AND COALESCE(j.status,'open') <> 'closed'
+     ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT 30`, [c.id])
+  const cntRes = await pool.query(
+    `SELECT count(*)::int n FROM jobs WHERE company_id = $1 AND COALESCE(status,'open') <> 'closed'`, [c.id])
+  let sources: string[] = []
+  try { sources = JSON.parse(c.ai_sources || '[]') } catch { /* ignore */ }
+  return {
+    name: c.name || '', slug: c.slug || '', website: c.website || '', websiteSource: c.website_source || '',
+    industry: c.industry || '', sectors: c.sectors || '', aliasZh: c.alias_zh || '', aliasKo: c.alias_ko || '',
+    wikiUrl: c.wiki_url || '', sponsorGrade: num(c.sponsor_grade),
+    scoreDetail: c.score_detail ?? null, aiBrief: c.ai_brief || '', aiWebsite: c.ai_website || '',
+    aiSources: Array.isArray(sources) ? sources : [], aiFetched: iso(c.ai_fetched).slice(0, 10),
+    description: c.description || '', address: c.address || '', province: c.region || '',
+    openCount: cntRes.rows[0]?.n ?? jr.rows.length,
+    jobs: jr.rows.map((j: any) => ({
+      id: Number(j.id), title: j.title || '', city: j.city || '', province: j.province || '',
+      gradeChannel: num(j.grade_channel), noc: j.noc || '', teer: num(j.teer), datePosted: iso(j.date_posted),
+    })),
+  }
 }
 
 export type AlertHit = { title: string; city: string; province: string; salary_text: string; apply_url: string; company_name: string }

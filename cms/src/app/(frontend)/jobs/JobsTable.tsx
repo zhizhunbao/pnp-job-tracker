@@ -251,6 +251,7 @@ export type JobRow = {
   sponsorGrade?: number | null   // E12-08:公司担保档 1-5(公司名旁药丸;null=无记录不评)
   title: string
   company: string
+  companySlug: string   // E8-09:公司详情页 /companies/[slug] 直链(桌面弹框「打开完整页」、手机公司名跳页)
   companyDescription: string
   companySectors: string
   companyWebsiteSrc: string   // 官网来路:''=雇主自报/名录 · jd=帖内线索 · searched=自动检索(加小字,E8-04 D2)
@@ -1350,7 +1351,11 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                 {(j.company || j.salaryText || j.salary) ? (
                   <div style={{ marginTop: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, flexWrap: 'wrap' }}>
-                      {j.company ? <span onClick={stop(() => open('company', j.company))} style={{ fontSize: 12.5, color: '#2563eb', cursor: 'pointer' }}>{j.company}</span> : null}
+                      {/* E8-09 C(Frank 拍板「手机点公司名直接进公司页」,免弹框套弹框):有 slug 直链公司详情页;
+                          stopPropagation 保整卡进职位详情不被抢;无 slug 兜底开公司弹框 */}
+                      {j.company ? (j.companySlug
+                        ? <a href={`/companies/${j.companySlug}`} onClick={(e) => e.stopPropagation()} style={{ fontSize: 12.5, color: '#2563eb', textDecoration: 'none' }}>{j.company}</a>
+                        : <span onClick={stop(() => open('company', j.company))} style={{ fontSize: 12.5, color: '#2563eb', cursor: 'pointer' }}>{j.company}</span>) : null}
                       {j.sponsorGrade != null && <span title={t('gr.sponsorTip')} style={{ fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sp.' + j.sponsorGrade)}</span>}
                     </span>
                     {/* #175:薪资退出可点集合——写死的 pointer+onClick 摘除(看着能点点了没反应比不能点更糟) */}
@@ -1889,40 +1894,31 @@ export function JdAdvisorSection({ job, lang, plan, title, field = 'title' }: { 
 // 2026-07-21 Frank「公司弹框参考类别重新设计」:嵌套小盒退役 → 每节一卡带题(与分类弹框同规范);
 // 信息出处 URL 列表撤(同日「去掉 source 链接」);AI 检索声明=卡组上方一行灰注。
 const CO_SECS: [string, string][] = [['WHAT', 'co.f.what'], ['BASE', 'co.f.base'], ['SIZE', 'co.f.size'], ['FOUNDED', 'co.f.founded'], ['NOTE', 'co.f.note']]
-function CompanyAiSection({ company, t }: { company: string; t: TFn }) {
-  const [d, setD] = useState<undefined | null | { brief: string; website: string; sources: string[]; fetched: string }>(undefined)
-  useEffect(() => {
-    let dead = false
-    setD(undefined)
-    fetch('/api/companyinfo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: company }) })
-      .then((r) => (r.ok && r.status === 200 ? r.json() : null))
-      .then((x) => { if (!dead) setD(x && x.brief ? x : null) })
-      .catch(() => { if (!dead) setD(null) })
-    return () => { dead = true }
-  }, [company])
-  if (d === null) return null
-  if (d === undefined) return <div style={{ margin: '2px 0 12px', fontSize: 12.5, color: '#9ca3af' }}>✨ {t('fact.aiWorking')}</div>
-  const attribution = <div style={{ margin: '2px 0 8px', fontSize: 11.5, color: '#9ca3af' }}>✨ {t('fact.aiIntro')}{d.fetched ? ` · ${d.fetched}` : ''}</div>
-  const site = d.website ? (
+// 公司 AI 检索简介渲染(纯展示,#181 抽出):弹框(fetch 后)与公司详情页(服务端 ai_brief)共用。
+// 五节标记切卡;存量散文(无标记)整段一卡;缺项不占卡;检索声明+官网小注。brief 空=null。
+export function CompanyBriefCards({ brief, website, fetched, t }: { brief: string; website: string; fetched: string; t: TFn }) {
+  if (!brief) return null
+  const attribution = <div style={{ margin: '2px 0 8px', fontSize: 11.5, color: '#9ca3af' }}>✨ {t('fact.aiIntro')}{fetched ? ` · ${fetched}` : ''}</div>
+  const site = website ? (
     <div style={{ marginTop: 6 }}>
-      <a href={d.website} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5, overflowWrap: 'anywhere' }}>{d.website}</a>
+      <a href={website} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5, overflowWrap: 'anywhere' }}>{website}</a>
       <span style={{ marginLeft: 6, color: '#9ca3af', fontSize: 11 }}>{t('fact.aiSite')}</span>
     </div>
   ) : null
   // 存量散文格式(无标记)→ 单卡「公司简介」原样渲,不返工重跑模型(下次调查自然升级)
-  if (!/\[(WHAT|BASE|SIZE|FOUNDED|NOTE)\]/.test(d.brief)) {
+  if (!/\[(WHAT|BASE|SIZE|FOUNDED|NOTE)\]/.test(brief)) {
     return (
       <>
         {attribution}
         <div style={MODAL_CARD}>
           <div style={MODAL_CARD_HEAD}>{t('fact.coIntro')}</div>
-          <div style={{ fontSize: 12.5, color: '#4b5563', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{d.brief}</div>
+          <div style={{ fontSize: 12.5, color: '#4b5563', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{brief}</div>
           {site}
         </div>
       </>
     )
   }
-  const parts = d.brief.split(/\[(WHAT|BASE|SIZE|FOUNDED|NOTE)\]/)
+  const parts = brief.split(/\[(WHAT|BASE|SIZE|FOUNDED|NOTE)\]/)
   const secs: Record<string, string> = {}
   for (let i = 1; i + 1 <= parts.length - 1; i += 2) secs[parts[i]] = (parts[i + 1] || '').trim()
   const has = (m: string) => !!secs[m] && !/^\(not stated\)$/i.test(secs[m].trim())
@@ -1943,14 +1939,56 @@ function CompanyAiSection({ company, t }: { company: string; t: TFn }) {
     </>
   )
 }
-// 公司评分卡(2026-07-22 Frank 拍板「公司评分在哪里」):#176 砍参照区后公司四维(担保/活跃/薪资/知名)
-// 一直白算没家——归位公司弹框。数据=/api/scoredetail companyDetail(早就回传);额度=同通道卡打开即拉,
-// 402/429 打码+锁行;档名彩字+依据灰句(#133 无数字口径);担保 None=无记录≠不担保(语义红线,灰句说明)。
+// #158 K 公司懒探索(2026-07-19 Frank 批):弹框侧 fetch 包装——首开自动调查(命中缓存秒回);
+// 查不到/掉线整块消失不留孤儿;渲染委托 CompanyBriefCards(与公司详情页同源)。
+export function CompanyAiSection({ company, t }: { company: string; t: TFn }) {
+  const [d, setD] = useState<undefined | null | { brief: string; website: string; sources: string[]; fetched: string }>(undefined)
+  useEffect(() => {
+    let dead = false
+    setD(undefined)
+    fetch('/api/companyinfo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: company }) })
+      .then((r) => (r.ok && r.status === 200 ? r.json() : null))
+      .then((x) => { if (!dead) setD(x && x.brief ? x : null) })
+      .catch(() => { if (!dead) setD(null) })
+    return () => { dead = true }
+  }, [company])
+  if (d === null) return null
+  if (d === undefined) return <div style={{ margin: '2px 0 12px', fontSize: 12.5, color: '#9ca3af' }}>✨ {t('fact.aiWorking')}</div>
+  return <CompanyBriefCards brief={d.brief} website={d.website} fetched={d.fetched} t={t} />
+}
+// 公司四维档明细类型(sponsor/active/salary/fame,与 etl/grades.py company_grades 同源)
+export type CoGradeDim = { g: number; v: any } | null
+export type CoGradeDetail = { sponsor?: CoGradeDim; active?: CoGradeDim; salary?: CoGradeDim; fame?: CoGradeDim } | null
+// 公司评分四维渲染(纯展示,#181 抽出):弹框(fetch 后)与公司详情页(服务端 score_detail)共用。
+// 档名彩字+依据灰句(#133 无数字口径);担保 None=无记录≠不担保(语义红线,灰句说明);detail 空=null。
+export function CompanyGradesView({ detail, t }: { detail: CoGradeDetail; t: TFn }) {
+  if (!detail) return null
+  const gname = (g: number, name: string) => <b style={{ color: gradeColor(g) }}>{name}</b>
+  const row = (label: string, body: React.ReactNode) => (
+    <div style={{ display: 'flex', gap: 10, padding: '4px 0', fontSize: 13, alignItems: 'baseline' }}>
+      <span style={{ minWidth: 88, color: '#9ca3af', flexShrink: 0 }}>{label}</span>
+      <span style={{ flex: 1, color: '#374151' }}>{body}</span>
+    </div>
+  )
+  const sp = detail.sponsor, act = detail.active, sal = detail.salary, fm = detail.fame
+  const fameParts = fm ? [fm.v?.wiki ? t('gr.co.fm.wiki') : '', fm.v?.provs >= 2 ? t('gr.co.fm.provs', { n: fm.v.provs }) : '', fm.v?.open ? t('gr.co.fm.open', { n: fm.v.open }) : ''].filter(Boolean) : []
+  return (
+    <>
+      {sp ? row(t('gr.dim.coSponsor'), <>{gname(sp.g, t('gr.sp.' + sp.g))}<div style={{ fontSize: 12.5, color: '#6b7280' }}>{sp.v?.total ? t('gr.co.sp.d', { total: sp.v.total, n: sp.v.skilled ?? 0, q: sp.v.q || '—' }) : t('gr.co.sp.aip')}</div></>)
+        : row(t('gr.dim.coSponsor'), <span style={{ color: '#9ca3af', fontSize: 12.5 }}>{t('gr.co.sp.na')}</span>)}
+      {act ? row(t('gr.dim.coActive'), <>{gname(act.g, t('gr.act.' + act.g))}<div style={{ fontSize: 12.5, color: '#6b7280' }}>{t('gr.co.act.d', { open: act.v?.open ?? 0, n: act.v?.new30 ?? 0 })}</div></>) : null}
+      {sal ? row(t('gr.dim.coSalary'), <>{gname(sal.g, t('gr.sal.' + sal.g))}<div style={{ fontSize: 12.5, color: '#6b7280' }}>{t('gr.co.sal.d', { pct: sal.v >= 0 ? `+${sal.v}` : String(sal.v) })}</div></>)
+        : row(t('gr.dim.coSalary'), <span style={{ color: '#9ca3af' }}>{t('gr.noData')}</span>)}
+      {fm ? row(t('gr.dim.coFame'), <>{gname(fm.g, t('gr.fm.' + fm.g))}{fameParts.length ? <div style={{ fontSize: 12.5, color: '#6b7280' }}>{fameParts.join('、')}</div> : null}</>) : null}
+      <div style={{ marginTop: 6, fontSize: 11.5, color: '#9ca3af', lineHeight: 1.5 }}>{t('fact.scoreNote')}</div>
+    </>
+  )
+}
+// 公司评分卡(2026-07-22 Frank「公司评分在哪里」):弹框侧 fetch 包装——/api/scoredetail companyDetail,
+// 额度同通道卡打开即拉,402/429 打码+锁行;渲染委托 CompanyGradesView(与公司详情页同源)。
 function CompanyGradesCard({ job, lang, loggedIn }: { job: JobRow; lang: Lang; loggedIn: boolean }) {
   const t = makeT(lang)
-  type Dim = { g: number; v: any } | null
-  type CoDetail = { sponsor?: Dim; active?: Dim; salary?: Dim; fame?: Dim }
-  const [d, setD] = useState<undefined | 'upgrade' | 'limited' | 'error' | { companyDetail: CoDetail | null }>(undefined)
+  const [d, setD] = useState<undefined | 'upgrade' | 'limited' | 'error' | { companyDetail: CoGradeDetail }>(undefined)
   useEffect(() => {
     let dead = false
     setD(undefined)
@@ -1966,33 +2004,13 @@ function CompanyGradesCard({ job, lang, loggedIn }: { job: JobRow; lang: Lang; l
     return () => { dead = true }
   }, [job])
   if (d === 'error') return null   // 取数失败整卡消失,不留孤儿标题
-  const gname = (g: number, name: string) => <b style={{ color: gradeColor(g) }}>{name}</b>
-  const row = (label: string, body: React.ReactNode) => (
-    <div style={{ display: 'flex', gap: 10, padding: '4px 0', fontSize: 13, alignItems: 'baseline' }}>
-      <span style={{ minWidth: 88, color: '#9ca3af', flexShrink: 0 }}>{label}</span>
-      <span style={{ flex: 1, color: '#374151' }}>{body}</span>
-    </div>
-  )
   let body: React.ReactNode
   if (d === undefined) body = <div style={{ fontSize: 13, color: '#9ca3af' }}>{t('act.loadingText')}</div>
   else if (d === 'upgrade') body = <LockedText t={t} loggedIn={loggedIn} />
   else if (d === 'limited') body = <LockedText t={t} loggedIn={loggedIn} msg={t('advisor.limit429')} ctaLabel={!loggedIn ? t('advisor.limitCta') : undefined} />
   else {
-    const co = d.companyDetail
-    if (!co) return null
-    const sp = co.sponsor, act = co.active, sal = co.salary, fm = co.fame
-    const fameParts = fm ? [fm.v?.wiki ? t('gr.co.fm.wiki') : '', fm.v?.provs >= 2 ? t('gr.co.fm.provs', { n: fm.v.provs }) : '', fm.v?.open ? t('gr.co.fm.open', { n: fm.v.open }) : ''].filter(Boolean) : []
-    body = (
-      <>
-        {sp ? row(t('gr.dim.coSponsor'), <>{gname(sp.g, t('gr.sp.' + sp.g))}<div style={{ fontSize: 12.5, color: '#6b7280' }}>{sp.v?.total ? t('gr.co.sp.d', { total: sp.v.total, n: sp.v.skilled ?? 0, q: sp.v.q || '—' }) : t('gr.co.sp.aip')}</div></>)
-          : row(t('gr.dim.coSponsor'), <span style={{ color: '#9ca3af', fontSize: 12.5 }}>{t('gr.co.sp.na')}</span>)}
-        {act ? row(t('gr.dim.coActive'), <>{gname(act.g, t('gr.act.' + act.g))}<div style={{ fontSize: 12.5, color: '#6b7280' }}>{t('gr.co.act.d', { open: act.v?.open ?? 0, n: act.v?.new30 ?? 0 })}</div></>) : null}
-        {sal ? row(t('gr.dim.coSalary'), <>{gname(sal.g, t('gr.sal.' + sal.g))}<div style={{ fontSize: 12.5, color: '#6b7280' }}>{t('gr.co.sal.d', { pct: sal.v >= 0 ? `+${sal.v}` : String(sal.v) })}</div></>)
-          : row(t('gr.dim.coSalary'), <span style={{ color: '#9ca3af' }}>{t('gr.noData')}</span>)}
-        {fm ? row(t('gr.dim.coFame'), <>{gname(fm.g, t('gr.fm.' + fm.g))}{fameParts.length ? <div style={{ fontSize: 12.5, color: '#6b7280' }}>{fameParts.join('、')}</div> : null}</>) : null}
-        <div style={{ marginTop: 6, fontSize: 11.5, color: '#9ca3af', lineHeight: 1.5 }}>{t('fact.scoreNote')}</div>
-      </>
-    )
+    if (!d.companyDetail) return null
+    body = <CompanyGradesView detail={d.companyDetail} t={t} />
   }
   return (
     <div style={MODAL_CARD}>
@@ -2919,7 +2937,12 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
                 公司弹框的 AI 段 #167⑨ 已撤、只剩检索卡,挂「AI 顾问」名不副实)。 */}
             <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 600 }}>{group !== 'immigration'
               ? t('grp.' + group)
-              : <><IconCompass /> {t('advisor.tag')}<span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('grp.' + group)}</span>{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('advisor.left', { n: freeLeft })}</span> : null}</>}</div>
+              : <><IconCompass /> {t('advisor.tag')}<span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('grp.' + group)}</span>{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('advisor.left', { n: freeLeft })}</span> : null}</>}
+              {/* E8-09 C:公司弹框「打开完整页」→ 公司详情页(与 JD 弹框同款出口;阻止冒泡免触发标题栏拖动) */}
+              {group === 'company' && job.companySlug ? (
+                <a href={`/companies/${job.companySlug}`} target="_blank" rel="noreferrer" onPointerDown={(e) => e.stopPropagation()}
+                  style={{ marginLeft: 10, color: '#2563eb', textDecoration: 'none', fontWeight: 400 }}>{t('detail.openFull')} ↗</a>
+              ) : null}</div>
             <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{group === 'company' ? (job.company || title || a.title) : (job.title || title || a.title)}</h3>
           </div>
           <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
