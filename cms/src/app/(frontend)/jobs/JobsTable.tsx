@@ -3330,16 +3330,13 @@ function AdvisorChat({ field, job, lang, initialJudgment, initialSug }: { field:
 }
 
 // ── 操作列弹框:职位描述快看(读真实抓取正文;公司信息已并入顾问公司弹窗,C1)────
-function ActModal({ job, lang, plan, onClose }: { job: JobRow; lang: Lang; plan: Plan; onClose: () => void }) {
-  // C1 后只剩 JD 快看(公司信息统一走顾问公司弹窗,消两套公司弹窗重复)
-  // #112(2026-07-20 Frank):标题栏「AI 顾问」钮摘除——点钮会关本框跳顾问弹框,描述/整理版一去不回;
-  // 初判本来就内嵌自动生成(#102,像公司顾问),按钮纯多余;深挖(对比表/字段解读)走字段格入口照旧
+// ── E8-11 B2(Frank「以弹框为准,job 只留 job 相关」):职位域唯一骨架 JobBody ──
+// JD 弹框正文原样抽出(行为零变化,红线:弹框内容 Frank 已满意),/jobs/[id] 页面同渲。
+// 内容=三钮行(中文对照/AI 速读/完整页-仅弹框)+ AI 整理五节/看原文 + 兜底来源行。
+export function JobBody({ job, lang, plan, inModal, onFreeLeft }: { job: JobRow; lang: Lang; plan: Plan; inModal?: boolean; onFreeLeft?: (n: number) => void }) {
   const t = makeT(lang)
-  const overlayClose = useOverlayClose(onClose)
-  const { narrow, full, toggleFull, panel, startDrag, startResize } = useFloatPanel(JD_PREF, 760, 640)
   const [text, setText] = useState('')
   const [status, setStatus] = useState<'loading' | 'done' | 'empty' | 'upgrade' | 'limited'>('loading')   // #134:limited=429 不再谎报「空」
-  const [freeLeft, setFreeLeft] = useState<number | null>(null)  // 第 5 轮 #16:试用额度可见化
   // J3(2026-07-19 Frank 批):AI 五节整理版懒生成——undefined=整理中,null=没有(降级原文),string=整理版
   const [fmt, setFmt] = useState<string | null | undefined>(undefined)
   const [showOrig, setShowOrig] = useState(false)
@@ -3365,13 +3362,14 @@ function ActModal({ job, lang, plan, onClose }: { job: JobRow; lang: Lang; plan:
     ;(async () => {
       try {
         const r = await fetchJobText(job.applyUrl || '', ctrl.signal)   // #126 同岗会话缓存
-        if (r.freeLeft != null) setFreeLeft(r.freeLeft)
+        if (r.freeLeft != null) onFreeLeft?.(r.freeLeft)   // 额度可见化回传(弹框页眉;页面不挂)
         if (r.status === 'gated') { setStatus('upgrade'); return }  // 免费试用用完(E3-05)
         if (r.status === 'limited') { setStatus('limited'); return }  // #134:匿名 IP 池用完
         setText(r.text); setStatus(r.text ? 'done' : 'empty')
       } catch { if (!ctrl.signal.aborted) setStatus('empty') }
     })()
     return () => ctrl.abort()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [job])
   useEffect(() => {
     // 整理版与原文并行拉:命中缓存秒回;首次生成慢(模型现算),期间正文照常显示原文
@@ -3385,13 +3383,75 @@ function ActModal({ job, lang, plan, onClose }: { job: JobRow; lang: Lang; plan:
     return () => ctrl.abort()
   }, [job])
   return (
+    <>
+      {/* 顶部钮行(2026-07-21 Frank「参考类别」):中文对照(英文界面不出;整理版在屏才可翻)+
+          AI 速读(点了才生成,不点不烧)+ 打开完整页(仅弹框;页面自己就是完整页) */}
+      <div style={{ display: 'flex', gap: 8, margin: '2px 0 12px', flexWrap: 'wrap' }}>
+        {status !== 'loading' && lang !== 'en' && fmt && !showOrig ? (
+          <button onClick={toggleTrans} disabled={transStatus === 'loading'} style={{ ...PILL_BTN, opacity: transStatus === 'loading' ? 0.6 : 1 }}>
+            {transStatus === 'loading' ? t('cat.translating') : transStatus === 'error' ? t('cat.transErr') : showTrans ? t('cat.hideZh') : t('cat.showZh')}
+          </button>
+        ) : null}
+        {/* AI 速读=常驻折叠开关(Frank 2026-07-22「按钮怎么没了」「可以折叠的」):点开点收都是它,
+            不再点一次就消失;内容 jdAdvCache 缓存,收起再开秒回不重烧额度。▾=展开 ▸=收起 */}
+        {status !== 'loading' && <button onClick={() => setAiOn((v) => !v)} style={{ ...PILL_BTN, ...(aiOn ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}><IconCompass /> {t('cat.aiRead')} {aiOn ? '▾' : '▸'}</button>}
+        {inModal ? <a href={`/jobs/${job.id}`} target="_blank" rel="noreferrer" style={{ ...PILL_BTN, textDecoration: 'none', display: 'inline-block' }}>{t('detail.openFull')} ↗</a> : null}
+      </div>
+      {/* AI 速读卡(点了才出;置顶=点完不用往下翻,与分类弹框同规范;jdRead=纯 JD 速读不带移民解读) */}
+      {aiOn && (
+        <div style={MODAL_CARD}>
+          <JdAdvisorSection job={job} lang={lang} plan={plan} title={t('cat.aiRead')} field="jdRead" />
+        </div>
+      )}
+      {status === 'loading' ? <p style={{ color: '#9ca3af' }}>{t('act.loadingText')}</p>
+        : status === 'upgrade' ? <LockedText t={t} loggedIn={plan.loggedIn} lines={4} />
+        : status === 'limited' ? (   /* #134 限流说人话;#175 黄条退役 → 打码+锁行 */
+          <LockedText t={t} loggedIn={plan.loggedIn} lines={4} msg={t('advisor.limit429')} ctaLabel={!plan.loggedIn ? t('advisor.limitCta') : undefined} />
+        )
+        : status === 'empty' ? (
+          <div>
+            <p style={{ color: '#9ca3af', margin: '4px 0 10px' }}>{blockedSrc(job) ? t('act.noTextBlocked', { src: blockedSrc(job) }) : t('act.noText')}</p>
+            {job.applyUrl && <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ display: 'inline-block', background: '#2563eb', color: '#fff', borderRadius: 8, padding: '8px 14px', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>{t('act.seeOfficial')}</a>}
+          </div>
+        )
+          : (
+            <>
+              {/* J3:整理版默认在上,原文一键切换;生成中/没有整理版 → 原文照旧 */}
+              {fmt ? (
+                <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 6 }}>
+                  ✨ {t('act.ai')}
+                  <button onClick={() => setShowOrig((o) => !o)} style={{ border: 'none', background: 'none', padding: 0, marginLeft: 8, color: '#2563eb', cursor: 'pointer', fontSize: 11.5, fontWeight: 600 }}>{showOrig ? t('act.seeFmt') : t('act.seeOrig')}</button>
+                </div>
+              ) : fmt === undefined ? (
+                <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 6 }}>✨ {t('act.aiWorking')}</div>
+              ) : null}
+              {fmt && !showOrig ? <JdFormattedView text={fmt} t={t} fallbackPay={job.salaryText || job.salary || undefined} applyUrl={job.applyUrl || undefined} trans={showTrans && trans ? trans : undefined} /> : <JdTextView text={text} max={4000} />}
+            </>
+          )}
+      {/* 底部来源行(republish 合规)只在整理版**没渲出**时兜底(#167③;2026-07-21 Frank
+          「去掉 source 链接」)——整理版在屏时「怎么投」整节已链官方原帖,出处不丢 */}
+      {job.applyUrl && !(status === 'done' && fmt && !showOrig) && status !== 'empty' && (
+        <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #f3f4f6', fontSize: 11.5, color: '#9ca3af', overflowWrap: 'anywhere' }}>
+          {t('src.label')}: <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{job.applyUrl}</a>
+        </div>
+      )}
+    </>
+  )
+}
+function ActModal({ job, lang, plan, onClose }: { job: JobRow; lang: Lang; plan: Plan; onClose: () => void }) {
+  // C1 后只剩 JD 快看;E8-11 B2:正文抽为 JobBody(与 /jobs/[id] 页面同源),本组件只剩浮层壳。
+  // #112(2026-07-20 Frank):标题栏「AI 顾问」钮摘除——点钮会关本框跳顾问弹框,描述/整理版一去不回。
+  const t = makeT(lang)
+  const overlayClose = useOverlayClose(onClose)
+  const { narrow, full, toggleFull, panel, startDrag, startResize } = useFloatPanel(JD_PREF, 760, 640)
+  const [freeLeft, setFreeLeft] = useState<number | null>(null)  // 第 5 轮 #16:试用额度可见化(JobBody 回传)
+  return (
     <div {...overlayClose} style={{ ...SCRIM, zIndex: 50 }}>
       <div onClick={(e) => e.stopPropagation()} style={{ ...CARD, ...panel, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {/* 标题栏 = 拖动手柄(与顾问弹框同款) */}
         <div onPointerDown={startDrag} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, padding: '16px 20px 8px', cursor: full ? 'default' : 'move', userSelect: 'none', flexShrink: 0 }}>
           <div style={{ minWidth: 0 }}>
-            {/* 页眉与其余弹框统一灰(Frank 2026-07-21;靛色残余随 #108 杂色归一退役);
-                「打开完整页」挪进下方胶囊钮行(同日「和其他两个按钮放一起,统一风格」) */}
+            {/* 页眉与其余弹框统一灰(Frank 2026-07-21;「打开完整页」在 JobBody 胶囊钮行) */}
             <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 600 }}>
               {t('act.descTitle')}{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('advisor.left', { n: freeLeft })}</span> : null}
             </div>
@@ -3403,58 +3463,7 @@ function ActModal({ job, lang, plan, onClose }: { job: JobRow; lang: Lang; plan:
           </div>
         </div>
         <div style={{ flex: 1, overflowY: 'auto', padding: '4px 20px 20px', fontSize: 14, lineHeight: 1.7, color: '#374151' }}>
-          {/* 顶部钮行(2026-07-21 Frank「参考类别」):中文对照(英文界面不出;整理版在屏才可翻)+
-              AI 速读(点了才生成,不点不烧——原「打开即自动生成初判」退役,额度省给真想看的人)+
-              打开完整页(E8-07 详情页入口,从页眉挪入,同款胶囊;同日「统一风格」) */}
-          <div style={{ display: 'flex', gap: 8, margin: '2px 0 12px', flexWrap: 'wrap' }}>
-            {status !== 'loading' && lang !== 'en' && fmt && !showOrig ? (
-              <button onClick={toggleTrans} disabled={transStatus === 'loading'} style={{ ...PILL_BTN, opacity: transStatus === 'loading' ? 0.6 : 1 }}>
-                {transStatus === 'loading' ? t('cat.translating') : transStatus === 'error' ? t('cat.transErr') : showTrans ? t('cat.hideZh') : t('cat.showZh')}
-              </button>
-            ) : null}
-            {/* AI 速读=常驻折叠开关(Frank 2026-07-22「按钮怎么没了」「可以折叠的」):点开点收都是它,
-                不再点一次就消失;内容 jdAdvCache 缓存,收起再开秒回不重烧额度。▾=展开 ▸=收起 */}
-            {status !== 'loading' && <button onClick={() => setAiOn((v) => !v)} style={{ ...PILL_BTN, ...(aiOn ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}><IconCompass /> {t('cat.aiRead')} {aiOn ? '▾' : '▸'}</button>}
-            <a href={`/jobs/${job.id}`} target="_blank" rel="noreferrer" style={{ ...PILL_BTN, textDecoration: 'none', display: 'inline-block' }}>{t('detail.openFull')} ↗</a>
-          </div>
-          {/* AI 速读卡(点了才出;置顶=点完不用往下翻,与分类弹框同规范;jdRead=纯 JD 速读不带移民解读) */}
-          {aiOn && (
-            <div style={MODAL_CARD}>
-              <JdAdvisorSection job={job} lang={lang} plan={plan} title={t('cat.aiRead')} field="jdRead" />
-            </div>
-          )}
-          {status === 'loading' ? <p style={{ color: '#9ca3af' }}>{t('act.loadingText')}</p>
-            : status === 'upgrade' ? <LockedText t={t} loggedIn={plan.loggedIn} lines={4} />
-            : status === 'limited' ? (   /* #134 限流说人话;#175 黄条退役 → 打码+锁行 */
-              <LockedText t={t} loggedIn={plan.loggedIn} lines={4} msg={t('advisor.limit429')} ctaLabel={!plan.loggedIn ? t('advisor.limitCta') : undefined} />
-            )
-            : status === 'empty' ? (
-              <div>
-                <p style={{ color: '#9ca3af', margin: '4px 0 10px' }}>{blockedSrc(job) ? t('act.noTextBlocked', { src: blockedSrc(job) }) : t('act.noText')}</p>
-                {job.applyUrl && <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ display: 'inline-block', background: '#2563eb', color: '#fff', borderRadius: 8, padding: '8px 14px', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>{t('act.seeOfficial')}</a>}
-              </div>
-            )
-              : (
-                <>
-                  {/* J3:整理版默认在上,原文一键切换;生成中/没有整理版 → 原文照旧 */}
-                  {fmt ? (
-                    <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 6 }}>
-                      ✨ {t('act.ai')}
-                      <button onClick={() => setShowOrig((o) => !o)} style={{ border: 'none', background: 'none', padding: 0, marginLeft: 8, color: '#2563eb', cursor: 'pointer', fontSize: 11.5, fontWeight: 600 }}>{showOrig ? t('act.seeFmt') : t('act.seeOrig')}</button>
-                    </div>
-                  ) : fmt === undefined ? (
-                    <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 6 }}>✨ {t('act.aiWorking')}</div>
-                  ) : null}
-                  {fmt && !showOrig ? <JdFormattedView text={fmt} t={t} fallbackPay={job.salaryText || job.salary || undefined} applyUrl={job.applyUrl || undefined} trans={showTrans && trans ? trans : undefined} /> : <JdTextView text={text} max={4000} />}
-                </>
-              )}
-          {/* 底部来源行(republish 合规)只在整理版**没渲出**时兜底(#167③ 详情页同款;2026-07-21 Frank
-              「去掉 source 链接」)——整理版在屏时「怎么投」整节已链官方原帖,出处不丢 */}
-          {job.applyUrl && !(status === 'done' && fmt && !showOrig) && status !== 'empty' && (
-            <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #f3f4f6', fontSize: 11.5, color: '#9ca3af', overflowWrap: 'anywhere' }}>
-              {t('src.label')}: <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{job.applyUrl}</a>
-            </div>
-          )}
+          <JobBody job={job} lang={lang} plan={plan} inModal onFreeLeft={setFreeLeft} />
         </div>
         {/* 八方向拉伸手柄(透明边条+角块;右下角保留视觉提示三角) */}
         {!full && <div style={{ position: 'absolute', right: 0, bottom: 0, width: 18, height: 18, pointerEvents: 'none', background: 'linear-gradient(135deg, transparent 50%, #cbd5e1 50%)' }} />}
