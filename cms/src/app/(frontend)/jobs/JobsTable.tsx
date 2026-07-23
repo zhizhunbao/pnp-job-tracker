@@ -1003,7 +1003,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           const r = recs[0]  // v1 只出最强的那个组合(多组合切换留后续)
           const cards = (recData?.cards || []).filter((j) => !dismissedRec.has(String(j.id))).slice(0, 3)  // E10-01 P3:组合前 3 从 /api/jobs 拉
           if (!cards.length) return null
-          const chips = [r.prov, r.broad ? broadLabel(r.broad) : '', r.sal ? t('sal.' + r.sal) : ''].filter(Boolean).join(' · ')
+          const chips = [r.prov, r.broad ? broadLabel(r.broad) : '', r.sal ? t('sal.' + r.sal) : ''].filter(Boolean).join('、')
           // fProv 值域=省全称(行过滤比较);r.prov 是省码,转全称再落,否则套出空列表
           const applyFilter = () => { setFProv(r.prov ? (PROV_NAMES[r.prov] || r.prov) : ''); setFCity(''); setFDistrict(''); if (r.broad) { setFBroad(r.broad); setFMid(''); setFFine('') } if (r.sal) setFSal(r.sal) }
           const tag = (bg: string, c: string, s: string) => <span style={{ fontSize: 11, color: c, background: bg, borderRadius: 5, padding: '2px 7px' }}>{s}</span>
@@ -1025,7 +1025,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                     <button onClick={() => setActModal({ kind: 'desc', job: j })}
                       style={{ display: 'block', textAlign: 'left', border: 'none', background: 'none', padding: 0, cursor: 'pointer', width: '100%' }}>
                       <div style={{ fontSize: 13.5, fontWeight: 500, color: '#111827', paddingRight: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{j.title}</div>
-                      <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{[j.company, j.city].filter(Boolean).join(' · ')}</div>
+                      <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{[j.company, j.city].filter(Boolean).join('　')}</div>
                       {j.salaryAnnual != null && <div style={{ fontSize: 12.5, color: '#111827', marginTop: 4 }}>${Math.round(j.salaryAnnual / 1000)}K/yr</div>}
                     </button>
                     <div style={{ display: 'flex', gap: 5, marginTop: 7, flexWrap: 'wrap' }}>
@@ -1185,7 +1185,13 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               </tr>
             </thead>
             <tbody>
-              {rows.map((j, i) => {
+              {/* #99(走查):进「我的匹配」换血期,别把上一屏的默认(全「低」)行透出来压在「只显示高/中」横幅下
+                  ——自相矛盾。换血中改渲骨架行,数据回来再出真行。 */}
+              {matchView && loading && page === 0
+                ? Array.from({ length: 8 }, (_, si) => (
+                    <tr key={'sk' + si}>{shown.map((c) => <td key={c.key} style={{ ...td, borderRight: '1px solid #f3f4f6' }}><span style={{ display: 'block', height: 12, borderRadius: 4, background: '#f1f3f5' }} /></td>)}</tr>
+                  ))
+                : rows.map((j, i) => {
                 // #175:地点列地图直连只留「地址」格,mapsFor 死代码删(省/市/区退回纯文本)
                 const L = parseLoc(j)                                                       // 省/市/区
                 const cat = colorOf(j.broad)

@@ -119,9 +119,24 @@ export function AuthForm({ t, onDone, initialMode, resetToken }: { t: TFn; onDon
         <div style={{ fontSize: 14, fontWeight: 700, color: '#111827', marginTop: 4 }}>Offer2PR</div>
       </div>
       {(mode === 'login' || mode === 'register') && (<>
-        <div style={{ fontSize: 17, fontWeight: 700, color: '#111827', textAlign: 'center', lineHeight: 1.4, marginBottom: 16 }}>
+        <div style={{ fontSize: 17, fontWeight: 700, color: '#111827', textAlign: 'center', lineHeight: 1.4, marginBottom: mode === 'register' ? 12 : 16 }}>
           {t(mode === 'login' ? 'acct.hero.login' : 'acct.hero.reg')}
         </div>
+        {/* #98(走查):注册框只有承诺没证据 → 给一个匹配度预览样张(一条清晰+一条打码),
+            让用户先尝到「注册后每份工作都亮匹配度」的甜头再注册 */}
+        {mode === 'register' && (
+          <div style={{ margin: '0 0 16px', padding: '10px 12px', background: '#f8fafc', border: '1px solid #e5e7eb', borderRadius: 8 }}>
+            <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 6 }}>{t('acct.teaser')}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
+              <span style={{ color: '#374151' }}>software developer</span>
+              <span style={{ marginLeft: 'auto', background: '#dcfce7', color: '#166534', fontWeight: 600, padding: '2px 8px', borderRadius: 6, fontSize: 12 }}>{t('match.high')}</span>
+            </div>
+            <div aria-hidden style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, marginTop: 6, filter: 'blur(2.5px)', userSelect: 'none' }}>
+              <span style={{ color: '#374151' }}>data analyst</span>
+              <span style={{ marginLeft: 'auto', background: '#dbeafe', color: '#1e40af', fontWeight: 600, padding: '2px 8px', borderRadius: 6, fontSize: 12 }}>{t('match.mid')}</span>
+            </div>
+          </div>
+        )}
         {/* 社交在上(#54 骨架):Google 一枚,env 未配(后端未上线)不渲染 */}
         {GOOGLE_ON && (<>
           <a href="/api/auth/google" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', boxSizing: 'border-box', padding: '10px 0', fontSize: 14, fontWeight: 600, color: '#374151', background: '#fff', border: '1.5px solid #e5e7eb', borderRadius: 9, textDecoration: 'none' }}>

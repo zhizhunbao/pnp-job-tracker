@@ -21,7 +21,7 @@ function TopCities({ raw, t }: { raw: string; t: TFn }) {
   if (!cities.length) return null
   return (
     <div style={{ margin: '8px 0', fontSize: 12.5, color: '#6b7280' }}>
-      {t('stats.topCities')}:{cities.map((c) => <span key={c.city} style={{ background: '#eef2ff', color: '#3730a3', borderRadius: 6, padding: '2px 8px', marginLeft: 6 }}>{c.city} · {c.n}</span>)}
+      {t('stats.topCities')}:{cities.map((c) => <span key={c.city} style={{ background: '#eef2ff', color: '#3730a3', borderRadius: 6, padding: '2px 8px', marginLeft: 6 }}>{c.city}　{c.n}</span>)}
     </div>
   )
 }

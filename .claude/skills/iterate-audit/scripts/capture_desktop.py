@@ -117,12 +117,15 @@ with sync_playwright() as p:
         eshot(block, "filters-fit-selected")
     except Exception: traceback.print_exc()
 
-    for kw, name, wait, exc in [("PNP", "pnp-modal", 12000, None), ("EE 类别", "ee-modal", 12000, "TEER"),
-                                 ("外劳", "lmia-modal", 12000, None), ("评分", "score-modal", 10000, None)]:
-        try:
-            goto_jobs(); close_banner(); enable_cols(COLS)
-            modal_shot(kw, name, wait, exc)        # 图13/14/15/17
-        except Exception: traceback.print_exc()
+    # #103/#201:移民价值弹框改由操作列「移民价值」按钮打开(#201 删了「通道」列;PNP/EE/外劳格本就不可点)。
+    # 现为五合一弹框(PNP/EE/AIP/职业分类/vs 中位),一张镜头即可;旧 pnp/ee/lmia/score 四分镜退役。
+    try:
+        goto_jobs(); close_banner()
+        page.locator("button:has-text('移民价值')").first.evaluate("el => el.click()")
+        page.wait_for_timeout(12000)
+        page.evaluate("document.querySelectorAll('div').forEach(d => d.scrollTop = 0)")  # 弹框自动滚到命中行 → 截图前归零
+        shot("immig-modal")
+    except Exception: traceback.print_exc()
 
     for btn, name, wait in [("职位描述", "jd-modal", 8000), ("公司信息", "company-advisor", 16000)]:
         try:
