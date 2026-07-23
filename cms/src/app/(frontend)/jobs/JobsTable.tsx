@@ -51,7 +51,9 @@ export function catName(t: TFn, v: string): string {
 // 设计与逐字段依据见 docs/implementation/E8-UI体验统一/10_弹框三合一收编.md
 // #176(Frank 拍板「简化,精简才能长久」):'job' 组退役(与 JD 弹框二合一,ActModal 即职位弹框);
 // 'category' 新立——点分类看分类,不再开移民全家桶(入口语义=内容)。
-export type FieldGroup = 'company' | 'immigration' | 'category'
+// E8-12(Frank 2026-07-23):'location' 新立——点省看省(IRCC 体量/难度/抽选/公告,真数据非解释);
+// 省/市/区格子开弹框、**文字仍是地图链接**(点文字跳地图,点格子弹框)。
+export type FieldGroup = 'company' | 'immigration' | 'category' | 'location'
 // 三档:并(→三个弹框之一)、图(直连地图)、无(不可点)。
 // 原设计还有一档「注=悬停小注」,2026-07-21 Frank 拍板不做 —— 它与「无」行为完全一致,
 // 留着只是个没兑现的意图,故合并(YAGNI:不为「可能用得上」保留结构)。
@@ -66,12 +68,12 @@ const FIELD_GROUP: Partial<Record<ColKey, Disposition>> = {
   score: 'immigration',
   // ③ 公司 → 公司弹框;职位名不走本表(cellActionable 特判,直开 JD 弹框=职位弹框)
   company: 'company',
-  // ④ 地址/省/市 → 地图直连(各查自己那一级,见 mapQuery;区/国家退回纯文本)
-  address: 'map', province: 'map', city: 'map',
+  // ④ 省/市/区 → 地点弹框(E8-12;格内文字仍是地图链接,两个动作分开);地址保持地图直连
+  address: 'map', province: 'location', city: 'location', district: 'location',
   // ⑤ 其余一律不可点(Pro 锁位的锁自己链升级弹窗,不走本路由)
   match: 'none', pnp: 'none', ee: 'none', aip: 'none', eligibility: 'none', vsMedian: 'none',
   salary: 'none', salaryYr: 'none', empHours: 'none', empTerm: 'none', accessibility: 'none', lmia: 'none',
-  country: 'none', district: 'none',
+  country: 'none',
   source: 'none', origin: 'none', direct: 'none', status: 'none',
   wageMedHr: 'none', wageMedYr: 'none',
   datePosted: 'none', lastSeen: 'none', closedAt: 'none',
@@ -411,6 +413,7 @@ const mapQuery = (field: ColKey, j: JobRow): string => {
   return field === 'province' ? [L.prov, 'Canada'].filter(Boolean).join(', ')
     : field === 'city' ? [L.city, L.prov, 'Canada'].filter(Boolean).join(', ')
     : field === 'country' ? (L.country || 'Canada')
+    : field === 'district' ? [L.district, L.city, L.prov].filter(Boolean).join(', ')
     : [j.address || L.district, L.city, L.prov].filter(Boolean).join(', ')
 }
 
@@ -1264,10 +1267,10 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       else if (k === 'address') { href = j.address ? mapsUrl(j.address) : null; node = j.address || '—'; Object.assign(extra, wrapCell(220)) }
                       else if (k === 'direct') { const dr = isDirect(j); node = dr ? t('cell.first') : t('cell.repost'); Object.assign(extra, { whiteSpace: 'nowrap', color: dr ? '#15803d' : '#9ca3af', fontSize: 12.5 }) }
                       else if (k === 'country') { node = L.country || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
-                      // 省/市 → 地图直连(Frank 2026-07-21:省市文字加跳转);区/来源仍纯文本
+                      // 省/市/区 → 文字=地图链接、格子=地点弹框(E8-12 Frank「点文字跳 map,点框弹框」)
                       else if (k === 'province') { href = L.prov ? mapsUrl(mapQuery('province', j)) : null; node = L.prov || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'city') { href = L.city ? mapsUrl(mapQuery('city', j)) : null; node = L.city || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
-                      else if (k === 'district') { node = L.district || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#1f2937' }) }
+                      else if (k === 'district') { href = L.district ? mapsUrl(mapQuery('district', j)) : null; node = L.district || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#1f2937' }) }
                       else if (k === 'source') { node = sourceLabel(j); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'origin') { node = j.origin ? t('origin.' + j.origin) : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'pnp') {  // 三档强度 + 魁省N/A:强=具名紧缺通道(琥珀底色 chip,500)、中=可提名(绿,500)、弱=不符(灰—,400);魁省=紫,400(独立 N/A)
@@ -2499,6 +2502,7 @@ const GROUP_SECTIONS: Record<FieldGroup, ColKey[]> = {
   immigration: ['score', 'pnp', 'ee', 'aip', 'vsMedian'],
   category: ['noc'],
   company: [],   // 2026-07-21:公司组走专用 CompanyPanel(平级卡),不经 GroupFactsSection
+  location: [],  // E8-12:地点组走专用 LocationPanel(五卡两列),不经 GroupFactsSection
 }
 // 有没有这块事实 —— 没有就整块跳过,**绝不留孤儿小标题**(既有规范 §2「空段规则」)
 function hasFacts(k: ColKey, job: JobRow): boolean {
@@ -3083,6 +3087,118 @@ function CategoryPanel({ job, lang, plan, nocDesc, srcField }: { job: JobRow; la
   )
 }
 
+// ── E8-12 地点弹框(省情报面板,2026-07-23 Frank 拍板)──────────────
+// 五卡:①地点(点进来的行高亮、值文字=地图链接)②移民难度(E12-07 stats 同源)
+// ③该省移民体量(IRCC 官方数,provinces.info)④本省最近抽选 ⑤本省最新公告(④⑤复用既有块)。
+// 桌面两列(Frank「尽量左右两列」),≤640px 退单列。零 AI 零额度;省级数据打开才拉(懒查询)。
+type ProvInfoNum = { n: number; year: string }
+type ProvInfo = { study?: ProvInfoNum; tfwp?: ProvInfoNum; imp?: ProvInfoNum; pnpPr?: ProvInfoNum; alloc?: { y2026?: number | null; y2025?: number | null } }
+const DIFF_TAG: Record<string, { bg: string; fg: string; bd: string }> = {
+  easy: { bg: '#dcfce7', fg: '#166534', bd: '#bbf7d0' }, mid: { bg: '#fef3c7', fg: '#b45309', bd: '#fde68a' }, tight: { bg: '#eef2ff', fg: '#3730a3', bd: '#e0e7ff' },
+}
+function LocationPanel({ job, lang, srcField, pnpDraws, news }: { job: JobRow; lang: Lang; srcField: ColKey; pnpDraws: PnpDraw[]; news: NewsSlim[] }) {
+  const t = makeT(lang)
+  const narrow = useIsNarrow()
+  const L = parseLoc(job)
+  const [prov, setProv] = useState<{ info: ProvInfo | null; difficulty: { tier?: string; factors?: any[] } | null } | null>(null)
+  useEffect(() => {
+    if (!job.province) { setProv(null); return }
+    let dead = false
+    fetch('/api/province?code=' + encodeURIComponent(job.province))
+      .then((r) => (r.ok ? r.json() : null)).then((d) => { if (!dead && d?.ok) setProv({ info: d.info, difficulty: d.difficulty }) }).catch(() => {})
+    return () => { dead = true }
+  }, [job.province])
+
+  const isQc = job.province === 'QC'
+  const num = (n: number) => Number(n).toLocaleString()
+  const gnote: React.CSSProperties = { color: '#9ca3af', fontSize: 12, fontWeight: 400 }
+  const card: React.CSSProperties = { ...MODAL_CARD, breakInside: 'avoid' }
+
+  // 卡① 地点:与分类卡①同款行(点进来的字段行高亮);有值行值文字=地图链接(与表格格同一规则)
+  const locRows: { f: ColKey; k: string; v: string; map: boolean }[] = [
+    { f: 'country', k: t('col.country'), v: L.country, map: false },
+    { f: 'province', k: t('col.province'), v: L.prov, map: true },
+    { f: 'city', k: t('col.city'), v: L.city, map: true },
+    { f: 'district', k: t('col.district'), v: L.district, map: true },
+    { f: 'address', k: t('col.address'), v: job.address || '', map: true },
+  ]
+
+  // 卡② 移民难度(/stats DifficultyCard 同源渲染,复用 diff.* 文案)
+  const d = prov?.difficulty
+  const fac = (k: string) => (d?.factors || []).find((x: any) => x.key === k)
+  const comp = fac('comp'), trend = fac('quotaTrend'), act = fac('activity'), score = fac('scoreLevel')
+  const pctS = (v: number) => `${v > 0 ? '+' : ''}${Math.round(v * 100)}%`
+  const drow: React.CSSProperties = { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', fontSize: 13, color: '#374151', marginTop: 6 }
+
+  // 卡③ 体量行(人话名主文案 + 代码灰注:Frank「TFWP/IMP 用户都不知道是什么」)
+  const info = prov?.info
+  const volRows: { k: React.ReactNode; v: React.ReactNode }[] = []
+  if (info?.study) volRows.push({ k: t('loc.study'), v: <>{num(info.study.n)} <span style={gnote}>{t('loc.asOf', { y: info.study.year })}</span></> })
+  if (info?.tfwp) volRows.push({ k: <>{t('loc.tfwp')} <span style={{ ...gnote, fontSize: 11 }}>TFWP</span></>, v: <>{num(info.tfwp.n)} <span style={gnote}>{t('loc.asOf', { y: info.tfwp.year })}</span></> })
+  if (info?.imp) volRows.push({ k: <>{t('loc.imp')} <span style={{ ...gnote, fontSize: 11 }}>{t('loc.impNote')}</span></>, v: <>{num(info.imp.n)} <span style={gnote}>{t('loc.asOf', { y: info.imp.year })}</span></> })
+  if (!isQc && info?.alloc && (info.alloc.y2026 != null || info.alloc.y2025 != null)) {
+    const a = info.alloc
+    volRows.push({ k: t('loc.alloc'), v: a.y2026 != null
+      ? <>{num(a.y2026)} <span style={gnote}>{a.y2025 != null ? t('loc.allocBoth', { b: num(a.y2025) }) : t('loc.allocY26')}</span></>
+      : <>{num(a.y2025 as number)} <span style={gnote}>{t('loc.allocY25')}</span></> })
+  }
+  if (!isQc && info?.pnpPr) volRows.push({ k: t('loc.pnpPr'), v: <>{num(info.pnpPr.n)} <span style={gnote}>{t('loc.prNote', { y: info.pnpPr.year })}</span></> })
+
+  return (
+    <div style={narrow ? undefined : { columnCount: 2, columnGap: 14 }}>
+      <div style={card}>
+        <div style={MODAL_CARD_HEAD}>{t('grp.location')}</div>
+        {locRows.filter((r) => r.v).map((r, i) => {
+          const on = r.f === srcField
+          return (
+            <div key={i} style={{ display: 'flex', gap: 10, padding: '3px 6px', margin: '0 -6px', borderRadius: 6, fontSize: 13, background: on ? '#eff6ff' : undefined }}>
+              <span style={{ minWidth: 64, color: on ? '#2563eb' : '#9ca3af', flexShrink: 0, fontWeight: on ? 600 : 400 }}>{r.k}</span>
+              <span style={{ flex: 1, color: '#374151', wordBreak: 'break-word' }}>
+                {r.map ? <a href={mapsUrl(mapQuery(r.f, job))} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{r.v}</a> : r.v}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+
+      {d?.tier && (
+        <div style={card}>
+          <div style={{ ...MODAL_CARD_HEAD, display: 'flex', alignItems: 'center', gap: 10 }}>
+            {t('diff.title')}
+            <span style={{ fontSize: 11.5, fontWeight: 600, padding: '1px 8px', borderRadius: 999, background: DIFF_TAG[d.tier]?.bg, color: DIFF_TAG[d.tier]?.fg, border: `1px solid ${DIFF_TAG[d.tier]?.bd}` }}>{t('diff.' + d.tier)}</span>
+          </div>
+          {comp && <div style={drow}><span style={{ fontWeight: 600 }}>{t('diff.comp', { v: comp.value })}</span><span style={gnote}>{t('diff.compNote', { pool: num(comp.pool), quota: num(comp.quota), y: comp.quotaYear })}</span></div>}
+          {trend && <div style={drow}><span>{t('diff.trend', { v: pctS(trend.value) })}</span></div>}
+          {act && <div style={drow}><span>{t('diff.act', { n: act.value, m: num(act.invitations || 0) })}</span></div>}
+          {score && <div style={drow}><span>{t('diff.score', { p: score.value, s: score.latestScore, sc: score.scale || '—' })}</span></div>}
+          <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 8, lineHeight: 1.6 }}>{t('diff.note', { y: comp?.asOf || '' })}</div>
+        </div>
+      )}
+
+      {volRows.length > 0 && (
+        <div style={card}>
+          <div style={MODAL_CARD_HEAD}>{t('loc.vol')} <span style={{ ...gnote, fontSize: 11.5, marginLeft: 8 }}>{t('loc.volTag')}</span></div>
+          {volRows.map((r, i) => (
+            <div key={i} style={{ display: 'flex', gap: 10, padding: '3px 6px', margin: '0 -6px', fontSize: 13 }}>
+              <span style={{ minWidth: 128, color: '#9ca3af', flexShrink: 0 }}>{r.k}</span>
+              <span style={{ flex: 1, color: '#374151' }}>{r.v}</span>
+            </div>
+          ))}
+          <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 8, lineHeight: 1.6 }}>{isQc ? t('loc.qc') : t('loc.src')}</div>
+        </div>
+      )}
+
+      {/* ④⑤ 复用既有块;块自身无数据返回 null → 外层卡也不渲(不出空壳) */}
+      {job.province && !isQc && pnpDraws.some((x) => x.province === job.province) && (
+        <div style={card}><PnpDrawsBlock province={job.province} lang={lang} draws={pnpDraws} limit={3} /></div>
+      )}
+      {job.province && news.some((n) => n.region === job.province) && (
+        <div style={card}><NewsLatestBlock province={job.province} lang={lang} news={news} /></div>
+      )}
+    </div>
+  )
+}
+
 // E8-10:入参从 24 值的 field 改为 3 值的 group;field 保留仅用于「打开时锚到哪一节」,不再参与内容分支。
 export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnpDraws, news, eeOcc, desigEmp, nocDesc, fieldSources, onClose, onOpenJob }: { group: FieldGroup; field: ColKey; job: JobRow; title?: string; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; news: NewsSlim[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onClose: () => void; onOpenJob?: (j: JobRow) => void }) {
   const t = makeT(lang)
@@ -3211,6 +3327,8 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
               (同日「参考类别重新设计」);其余组照旧铺全组事实 */}
           {group === 'category'
             ? <CategoryPanel job={job} lang={lang} plan={plan} nocDesc={nocDesc} srcField={field} />
+            : group === 'location'
+            ? <LocationPanel job={job} lang={lang} srcField={field} pnpDraws={pnpDraws} news={news} />
             : group === 'company'
             ? <CompanyPanel job={job} jobs={companyJobs} lang={lang} plan={plan} onOpenJob={onOpenJob} />
             : <GroupFactsSection group={group} job={job} jobs={companyJobs} lang={lang} isPro={plan.isPro} loggedIn={plan.loggedIn} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} onOpenJob={onOpenJob} />}

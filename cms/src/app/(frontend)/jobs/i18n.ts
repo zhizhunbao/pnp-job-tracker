@@ -260,7 +260,14 @@ const zh: Dict = {
   'match.r.lmia.na': '该雇主近两年无获批 LMIA 记录(多数雇主从未办过,非负面信号)',
   // 付费墙(E3-05)
   // E8-10:三个弹框的页眉分组名(收编后标题不再取被点单元格的值)
-  'grp.company': '公司', 'grp.immigration': '移民', 'grp.category': '职业分类',
+  'grp.company': '公司', 'grp.immigration': '移民', 'grp.category': '职业分类', 'grp.location': '地点',
+  // E8-12 地点弹框:该省移民体量卡(IRCC 官方数;人话名主文案+代码灰注)
+  'loc.vol': '该省移民体量', 'loc.volTag': 'IRCC 官方数',
+  'loc.study': '学签持有人', 'loc.tfwp': '雇主担保类工签', 'loc.imp': '开放及豁免类工签', 'loc.impNote': 'IMP,含毕业工签',
+  'loc.asOf': '({y} 年末在库)', 'loc.alloc': '省提名年度配额', 'loc.allocBoth': '(2026 年;2025 年为 {b})', 'loc.allocY26': '(2026 年)', 'loc.allocY25': '(2025 年)',
+  'loc.pnpPr': 'PR 登陆(省提名类)', 'loc.prNote': '({y} 年,含随行家属)',
+  'loc.src': '来源:IRCC 开放数据(年末存量,官方数四舍五入到 5)。',
+  'loc.qc': '魁省走独立甄选体系(不参与省提名),配额与抽选不适用。',
   // 分类弹框按钮(职责/要求实时翻 + AI 速读)
   'cat.showZh': '显示中文对照', 'cat.hideZh': '收起中文对照', 'cat.translating': '翻译中…', 'cat.transErr': '翻译暂不可用',
   'cat.aiRead': 'AI 速读', 'cat.aiLoading': '正在速读…', 'cat.aiErr': 'AI 速读暂不可用',
@@ -708,7 +715,13 @@ const en: Dict = {
   'match.r.lmia.lowOnly': 'Employer’s {n} approved LMIA positions (latest {q}) are all Primary Agriculture / Low Wage streams — mostly seasonal hiring, weak evidence for skilled sponsorship; no points added',
   'match.r.lmia.na': 'No positive-LMIA record for this employer in the past two years (most employers never needed one; not a negative signal)',
   // 付费墙(E3-05)
-  'grp.company': 'Company', 'grp.immigration': 'Immigration', 'grp.category': 'Occupation',
+  'grp.company': 'Company', 'grp.immigration': 'Immigration', 'grp.category': 'Occupation', 'grp.location': 'Location',
+  'loc.vol': 'Provincial immigration volume', 'loc.volTag': 'IRCC official data',
+  'loc.study': 'Study permit holders', 'loc.tfwp': 'Employer-specific work permits', 'loc.imp': 'Open & exempt work permits', 'loc.impNote': 'IMP, incl. PGWP',
+  'loc.asOf': '({y} year-end stock)', 'loc.alloc': 'PNP annual allocation', 'loc.allocBoth': '(2026; 2025: {b})', 'loc.allocY26': '(2026)', 'loc.allocY25': '(2025)',
+  'loc.pnpPr': 'PR landings (PNP)', 'loc.prNote': '({y}, incl. accompanying family)',
+  'loc.src': 'Source: IRCC open data (year-end stock, rounded to the nearest 5).',
+  'loc.qc': 'Quebec runs its own selection system (not part of PNP) — allocations and draws do not apply.',
   'cat.showZh': 'Show translation', 'cat.hideZh': 'Hide translation', 'cat.translating': 'Translating…', 'cat.transErr': 'Translation unavailable',
   'cat.aiRead': 'AI quick-read', 'cat.aiLoading': 'Reading…', 'cat.aiErr': 'AI quick-read unavailable',
   'up.title': 'Upgrade to Pro to unlock',
@@ -1143,7 +1156,13 @@ const ko: Dict = {
   'match.r.lmia.lowOnly': '고용주 최근 2년 승인 LMIA {n}건(최근 {q})은 전부 농업/저임금 스트림 — 대부분 계절성 고용으로 숙련 스폰서 근거가 약해 가점 없음',
   'match.r.lmia.na': '이 고용주 최근 2년 승인 LMIA 기록 없음(대부분의 고용주는 필요한 적이 없음; 부정적 신호 아님)',
   // 付费墙(E3-05)
-  'grp.company': '회사', 'grp.immigration': '이민', 'grp.category': '직업 분류',
+  'grp.company': '회사', 'grp.immigration': '이민', 'grp.category': '직업 분류', 'grp.location': '위치',
+  'loc.vol': '해당 주 이민 규모', 'loc.volTag': 'IRCC 공식 수치',
+  'loc.study': '학생비자 소지자', 'loc.tfwp': '고용주 지정 취업비자', 'loc.imp': '오픈 및 면제 취업비자', 'loc.impNote': 'IMP, 졸업 후 취업비자 포함',
+  'loc.asOf': '({y}년 말 기준)', 'loc.alloc': '주정부 노미니 연간 쿼터', 'loc.allocBoth': '(2026년; 2025년 {b})', 'loc.allocY26': '(2026년)', 'loc.allocY25': '(2025년)',
+  'loc.pnpPr': '영주권 취득(주정부 노미니)', 'loc.prNote': '({y}년, 동반 가족 포함)',
+  'loc.src': '출처: IRCC 공개 데이터(연말 기준, 5 단위 반올림).',
+  'loc.qc': '퀘벡은 자체 선발 시스템을 운영하며(PNP 미참여) 쿼터·추첨이 적용되지 않습니다.',
   'cat.showZh': '한국어 대조 보기', 'cat.hideZh': '한국어 대조 접기', 'cat.translating': '번역 중…', 'cat.transErr': '번역 사용 불가',
   'cat.aiRead': 'AI 빠른 읽기', 'cat.aiLoading': '읽는 중…', 'cat.aiErr': 'AI 빠른 읽기 사용 불가',
   'up.title': 'Pro 업그레이드로 잠금 해제',

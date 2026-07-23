@@ -797,6 +797,18 @@ export interface Province {
    * 全称,如 Ontario
    */
   name: string;
+  /**
+   * E8-12 省弹框体量卡:IRCC 学签/工签存量、PR 登陆、提名配额({study,tfwp,imp,pnpPr,alloc},各带年份)
+   */
+  info?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1614,6 +1626,7 @@ export interface DesignatedEmployersSelect<T extends boolean = true> {
 export interface ProvincesSelect<T extends boolean = true> {
   code?: T;
   name?: T;
+  info?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -43,6 +43,9 @@ IN_DLI = _paths.DLI / "dli.json"                # PGWP 可申 DLI 子集(build_d
 IN_LMIA = _paths.LMIA / "lmia-employers.json"   # ESDC 正面 LMIA 雇主聚合(build_lmia.py 产,E6-02)
 IN_ENRICH = _paths.PROCESSED / "company_enrich.json"  # 公司官网富化(简介/行业,enrich_companies.py 产,E8-04)
 IN_NEWS = _paths.NEWS / "news.json"              # 官方移民新闻累积表(etl/news/ 产,E12-06)
+IN_IRCC_TR = _paths.IRCC / "temp_residents.json"      # E8-12 省弹框体量卡:学签/工签年末存量
+IN_IRCC_PR = _paths.IRCC / "pnp_admissions.json"      # PNP 类别 PR 登陆数
+IN_IRCC_ALLOC = _paths.IRCC / "pnp_allocations.json"  # PNP 年度提名配额(人工核对维护表)
 OUT_MART = _paths.DATA / "mart"
 
 PROV_FULL = {
@@ -369,7 +372,32 @@ def build():
     city_i18n = _load_i18n("city_names_i18n.json")
 
     # ── 维度表 ──
-    provinces = [{"code": c, "name": n} for c, n in PROV_FULL.items()]
+    # E8-12 省弹框体量卡:每省挂 info(IRCC 学签/工签存量、PR 登陆、提名配额)。
+    # 全读既有 raw(零新抓取);任一文件缺失 → 对应键留空不瞎猜(宁缺毋假)。
+    def _prov_info() -> dict:
+        info: dict[str, dict] = {c: {} for c in PROV_FULL}
+        if IN_IRCC_TR.exists():
+            tr = json.loads(IN_IRCC_TR.read_text(encoding="utf-8"))
+            for key, out in (("study", "study"), ("tfwp", "tfwp"), ("imp", "imp")):
+                blk = tr.get(key) or {}
+                for c, v in (blk.get("byProv") or {}).items():
+                    if c in info:
+                        info[c][out] = {"n": v, "year": blk.get("year", "")}
+        if IN_IRCC_PR.exists():
+            pr = json.loads(IN_IRCC_PR.read_text(encoding="utf-8"))
+            for c, v in (pr.get("byProv") or {}).items():
+                if c in info:
+                    info[c]["pnpPr"] = {"n": v, "year": pr.get("year", "")}
+        if IN_IRCC_ALLOC.exists():
+            alloc = json.loads(IN_IRCC_ALLOC.read_text(encoding="utf-8"))
+            for r in alloc.get("rows", []):
+                c = r.get("prov")
+                if c in info:
+                    info[c]["alloc"] = {"y2026": r.get("y2026"), "y2025": r.get("y2025")}
+        return info
+
+    prov_info = _prov_info()
+    provinces = [{"code": c, "name": n, "info": prov_info.get(c) or None} for c, n in PROV_FULL.items()]
     city_keys = sorted({(j.get("city"), j.get("province")) for j in jobs if j.get("city")},
                        key=lambda t: (t[0] or "", t[1] or ""))
     cities = [{"name": c, "province": p or "",
