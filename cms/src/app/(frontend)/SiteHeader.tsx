@@ -108,6 +108,7 @@ function MobileDrawer({ t, active, showAcctTab, onClose }: { t: TFn; active?: st
           {grp('lib', t('nav.library'), [
             { href: '/employers', label: t('dir.title'), active: active === 'employers' },
             { href: '/occupations', label: t('dir.occ.title') },
+            { href: '/resources', label: t('res.entry') },
           ])}
           <div style={{ fontSize: 10.5, color: '#9ca3af', letterSpacing: .5, padding: '6px 4px 0' }}>{t('nav.sect.data')}</div>
           <a href="/rankings/weekly-top" style={item('/rankings/weekly-top', '', active === 'rank')}>{t('rank.entry')}</a>
@@ -181,6 +182,7 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
             <NavDrop label={t('nav.library')} icon={<IconUsers />} highlight={active === 'employers'} items={[
               { href: '/employers', label: t('dir.title'), active: active === 'employers' },
               { href: '/occupations', label: t('dir.occ.title') },
+              { href: '/resources', label: t('res.entry') },
             ]} />
             <a href="/stats" style={{ ...nav, color: active === 'stats' ? '#2563eb' : '#6b7280', fontWeight: active === 'stats' ? 700 : 400 }}><IconMapPin /> {t('stats.entry')}</a>
             {/* 资讯 ▾(E8-07 E):移民新闻+政策时间线聚合(时间线首次进顶栏);原「移民动态」顶级项并入 */}
