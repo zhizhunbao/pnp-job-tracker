@@ -2016,6 +2016,7 @@ export function CompanyBriefCards({ brief, website, fetched, t, trans, flat, sou
 export function CompanyAiSection({ company, t, showTrans, lang, flat, bare, skipBase }: { company: string; t: TFn; showTrans?: boolean; lang?: Lang; flat?: boolean; bare?: boolean; skipBase?: boolean }) {
   const [d, setD] = useState<undefined | null | { brief: string; website: string; sources: string[]; fetched: string }>(undefined)
   const [trans, setTrans] = useState<string | null>(null)
+  const [showSrc, setShowSrc] = useState(false)   // 看来源折叠(新查/懒查路径也要有,Frank 2026-07-24 报「新的 AI 调查看来源没了」)
   useEffect(() => {
     let dead = false
     setD(undefined); setTrans(null)
@@ -2040,7 +2041,10 @@ export function CompanyAiSection({ company, t, showTrans, lang, flat, bare, skip
   // bare(#197):懒查命中在合并「公司」块内出——顶部 body 无缓存无法预挂声明,故在此处紧贴内容渲一行 AI 声明(仍守披露红线)
   if (bare) return (
     <>
-      <div style={{ margin: '2px 0 6px', fontSize: 11.5, color: '#9ca3af' }}>✨ {t('fact.aiIntro')}{d.fetched ? <span style={{ marginLeft: 8 }}>{d.fetched}</span> : null}</div>
+      <div style={{ margin: '2px 0 6px', fontSize: 11.5, color: '#9ca3af' }}>✨ {t('fact.aiIntro')}{d.fetched ? <span style={{ marginLeft: 8 }}>{d.fetched}</span> : null}
+        {(d.sources || []).filter((u) => /^https?:\/\//i.test(u)).length ? <button onClick={() => setShowSrc((v) => !v)} style={{ border: 'none', background: 'none', padding: 0, marginLeft: 8, color: '#2563eb', cursor: 'pointer', fontSize: 11.5, fontWeight: 600 }}>{showSrc ? t('fact.aiSrcHide') : t('fact.aiSrc')}</button> : null}
+        {showSrc ? (d.sources || []).filter((u) => /^https?:\/\//i.test(u)).map((u) => <div key={u} style={{ overflowWrap: 'anywhere', marginTop: 2 }}><a href={u} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{u}</a></div>) : null}
+      </div>
       <CompanyBriefCards brief={d.brief} website={d.website} fetched={d.fetched} t={t} trans={showTrans && trans ? trans : undefined} flat={flat} sources={d.sources} bare skipBase={skipBase} />
     </>
   )
@@ -2102,13 +2106,18 @@ function parseCoStreams(streams: string, t: TFn): { label: string; count: string
     return { label: rawName, count, skilled: false }
   })
 }
-// §7 了解公司行:中文行业(做什么的)+ 知名章。弹框里挂到按钮上面(CompanyPanel),详情页挂 body 顶(名下)。
+// 政府/公共机构判定(Frank 2026-07-24):强信号名称关键词,宁可漏标不错标(私企含 Commission 等不误伤)。
+const GOV_RE = /\b(government|gouvernement|ministry|minist[eè]re|public service|city of|town of|municipalit|regional municipalit|health authority|crown corporation|department of|conseil scolaire|commission scolaire)\b/i
+export function isGovCompany(name?: string) { return !!name && GOV_RE.test(name) }
+// 了解公司章行:政府机构章 + 知名章(可点跳维基)。弹框挂基本信息题旁,详情页挂 body 顶(名下)。行业中文已删(Frank)。
 export function CompanyTopInfo({ company, t }: { company: CompanyDetail; t: TFn }) {
-  if (!(company.industry || company.sectors || company.wikiUrl)) return null
+  const gov = isGovCompany(company.name)
+  if (!(company.wikiUrl || gov)) return null
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', margin: '0 0 10px' }}>
-      {(company.industry || company.sectors) ? <span style={{ fontSize: 12.5, color: '#6b7280' }}>{company.industry || company.sectors}</span> : null}
-      {company.wikiUrl ? <span style={{ fontSize: 11, color: '#1d4ed8', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 999, padding: '2px 9px', whiteSpace: 'nowrap' }}>{t('co.wellKnown')}</span> : null}
+      {gov ? <span style={{ fontSize: 11, color: '#15803d', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 999, padding: '2px 9px', whiteSpace: 'nowrap' }}>{t('co.gov')}</span> : null}
+      {/* 知名章=可点跳维基(Frank「有 wiki 把 wiki 加进来」;button 样式非裸链,循 #106) */}
+      {company.wikiUrl ? <a href={company.wikiUrl} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: '#1d4ed8', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 999, padding: '2px 9px', whiteSpace: 'nowrap', textDecoration: 'none' }}>{t('co.wellKnown')} ↗</a> : null}
     </div>
   )
 }
@@ -2168,8 +2177,12 @@ export function CompanyBody({ company, similar, t, lang, showTrans, hideTopInfo,
       {/* 基本信息卡(#197 合并):身份(官网/地址)+ 简介同卡;标题「基本信息」与在招/担保卡同款(Frank 2026-07-24) */}
       {(hasId || hasDesc || briefCached || company.name) && (
         <div style={MODAL_CARD}>
-          <div style={MODAL_CARD_HEAD}>{t('co.basic')}{hideTopInfo && company.wikiUrl ? <span style={{ marginLeft: 8, fontWeight: 400, fontSize: 11, color: '#1d4ed8', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 999, padding: '2px 9px', whiteSpace: 'nowrap' }}>{t('co.wellKnown')}</span> : null}</div>
+          <div style={MODAL_CARD_HEAD}>{t('co.basic')}
+            {hideTopInfo && isGovCompany(company.name) ? <span style={{ marginLeft: 8, fontWeight: 400, fontSize: 11, color: '#15803d', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 999, padding: '2px 9px', whiteSpace: 'nowrap' }}>{t('co.gov')}</span> : null}
+            {hideTopInfo && company.wikiUrl ? <a href={company.wikiUrl} target="_blank" rel="noreferrer" style={{ marginLeft: 8, fontWeight: 400, fontSize: 11, color: '#1d4ed8', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 999, padding: '2px 9px', whiteSpace: 'nowrap', textDecoration: 'none' }}>{t('co.wellKnown')} ↗</a> : null}</div>
           <div>
+            {/* 公司名称中文译名(Frank 2026-07-24「用 AI 翻译的可以」;取库内 alias_zh/ko,空则不显——宁可留空) */}
+            {(lang === 'zh' ? company.aliasZh : lang === 'ko' ? company.aliasKo : '') ? <FactRow k={t('co.name')}>{lang === 'zh' ? company.aliasZh : company.aliasKo}</FactRow> : null}
             {company.website ? <FactRow k={t('act.site')}><a href={company.website} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5, overflowWrap: 'anywhere' }}>{company.website}</a></FactRow> : null}
             {showAddrRow && addr ? <FactRow k={t('act.addr')}><a href={mapsUrl(addr)} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5 }}><IconMap /> {addr}</a></FactRow> : null}
             {/* 行业/知名已上提到 §7 了解行(名下),此处不再重复 */}
@@ -3180,8 +3193,7 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
               : <><IconCompass /> {t('advisor.tag')}<span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('grp.' + group)}</span>{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('advisor.left', { n: freeLeft })}</span> : null}</>}
               {/* #185:公司弹框「打开完整页」移入正文顶部钮行(与职位弹框同款),页眉不再重复 */}</div>
             <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{group === 'company' ? (job.company || title || a.title) : (job.title || title || a.title)}</h3>
-            {/* 公司名下挂中文行业行(Frank 2026-07-24「改成职位这种」:与职位弹框 NOC 译名副标同款) */}
-            {group === 'company' && job.broad && job.broad !== '未分类' ? <div style={{ fontSize: 12.5, color: '#9ca3af', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('broad.' + job.broad)}</div> : null}
+            {/* 公司名下的中文行业行删除(Frank 2026-07-24「公司名下面的中文还是删掉」;了解公司改靠知名/政府章) */}
           </div>
           <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
             {!narrow && <button onClick={toggleFull} title={t(full ? 'advisor.exitFull' : 'advisor.full')} style={iconBtn}>{full ? <IconMinimize /> : <IconMaximize />}</button>}
