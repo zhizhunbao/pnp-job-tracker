@@ -198,6 +198,16 @@ def build():
             sc.get("noc") or "", cls["teer"], sc.get("pnpStream"), bool(sc.get("pnpEligible")),
             fields.get("salaryAnnual"), w.get("annual"),
             fields.get("employmentTerm"), fields.get("employmentHours"), direct)
+        # #100(Frank「移民价值分一片 87」):08 基分是 5 项粗加合、**无薪资项** → TEER0/1 首发紧缺岗全落 87。
+        # 此处补一项「薪资相对该 NOC 当地中位的分位」拉开区分度——薪资是连续信号又直接挂钩 PNP 工资门槛/EE 分数。
+        # 高于中位加分(≤+15)、低于中位减分(≥−12);缺薪资或缺中位则不动(宁可留空不瞎猜,与全站口径一致)。
+        base_score = sc.get("score")
+        sal_ann, med_ann = fields.get("salaryAnnual"), w.get("annual")
+        if base_score is not None and sal_ann and med_ann:
+            adj = round(max(-12, min(15, (sal_ann / med_ann - 1.0) * 30)))
+            mv_score = max(0, min(100, base_score + adj))
+        else:
+            mv_score = base_score
         jobs.append({
             "externalId": external_id, "companySlug": company_slug,
             **{k: v for k, v in fields.items() if v not in (None, "")},
@@ -208,7 +218,7 @@ def build():
             "wageYear": w.get("year"),
             "noc": sc.get("noc") or None, "category": cls["teerLabel"],
             "teer": cls["teer"], "broad": cls["broad"], "mid": cls["mid"], "fine": cls["fine"],
-            "accessibility": sc.get("accessibility") or None, "score": sc.get("score"),
+            "accessibility": sc.get("accessibility") or None, "score": mv_score,
             "gradeChannel": g_channel, "scoreDetail": g_detail,
             "pnpEligible": bool(sc.get("pnpEligible")), "pnpStream": sc.get("pnpStream") or None,
             "eeCategory": sc.get("eeCategory") or None, "status": "open",
