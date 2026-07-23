@@ -1850,7 +1850,7 @@ export function JdFormattedView({ text, t, fallbackPay, applyUrl, underTitle, tr
             ) : /* #123c(Frank「每个职位都有薪资吧」):原帖正文没写薪资但帖面字段有 → 兜底显示帖面薪资+来源灰注
                 (仍是搬运原帖信息——JB 列表字段也是雇主自报,非编造) */
             none && m === 'PAY' && fallbackPay ? (
-              <div style={{ paddingLeft: 14 }}>{fallbackPay} <span style={{ color: '#9ca3af', fontSize: 12 }}>{t('act.f.payFb')}</span></div>
+              <div style={{ paddingLeft: 14 }}>{fallbackPay}</div>
             ) : none ? <div style={{ paddingLeft: 14, color: '#9ca3af' }}>{t('act.f.none')}</div>
               : hasBullets ? <ul style={{ margin: 0, paddingLeft: 30 }}>{lines.map((l, i) => <li key={i}>{l.replace(/^-\s*/, '')}{zh(i)}</li>)}</ul>
               : lines.map((l, i) => <div key={i} style={{ paddingLeft: 14 }}>{l}{zh(i)}</div>)}
