@@ -2153,15 +2153,21 @@ export function CompanyBody({ company, similar, t, lang, showTrans, onOpenJob, r
   ) : null
   return (
     <div style={{ fontSize: 13, lineHeight: 1.75, color: '#374151' }}>
-      {/* 合并「公司」卡(#197 合并 + #200 卡片化):身份(官网/行业/知名)+ 简介内容同卡;地址 AI 有所在地则不重复 */}
+      {/* §7 了解公司(Frank 2026-07-23 效果图):公司名下挂中文行业「做什么的」+ 知名章;名本身在弹框/页头 */}
+      {(company.industry || company.sectors || company.wikiUrl) && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', margin: '0 0 10px' }}>
+          {(company.industry || company.sectors) ? <span style={{ fontSize: 12.5, color: '#6b7280' }}>{company.industry || company.sectors}</span> : null}
+          {company.wikiUrl ? <span style={{ fontSize: 11, color: '#1d4ed8', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 999, padding: '2px 9px', whiteSpace: 'nowrap' }}>{t('co.wellKnown')}</span> : null}
+        </div>
+      )}
+      {/* 合并「公司」卡(#197 合并 + #200 卡片化):身份(官网/地址)+ 简介内容同卡;行业/知名已上提到 §7 了解行 */}
       {(hasId || hasDesc || briefCached || company.name) && (
         <div style={MODAL_CARD}>
           {/* col.company「公司」标题 Frank 2026-07-23 去掉;身份行直接起 */}
           <div>
             {company.website ? <FactRow k={t('act.site')}><a href={company.website} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5, overflowWrap: 'anywhere' }}>{company.website}</a></FactRow> : null}
             {showAddrRow && addr ? <FactRow k={t('act.addr')}><a href={mapsUrl(addr)} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5 }}><IconMap /> {addr}</a></FactRow> : null}
-            <FactRow k={t('fact.coSectors')}>{company.industry || company.sectors}</FactRow>
-            {company.wikiUrl ? <FactRow k={t('co.wellKnown')}><a href={company.wikiUrl} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5, overflowWrap: 'anywhere' }}>{company.wikiUrl}</a></FactRow> : null}
+            {/* 行业/知名已上提到 §7 了解行(名下),此处不再重复 */}
             {company.website && company.websiteSource === 'searched' ? <div style={{ marginTop: 4, fontSize: 11.5, color: '#9ca3af', lineHeight: 1.5 }}>{t('fact.siteSearched')}</div> : null}
           </div>
           {/* 身份与简介间分隔线(Frank 2026-07-23 效果图「中间横线可以」) */}
