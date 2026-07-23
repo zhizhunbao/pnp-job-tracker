@@ -61,7 +61,8 @@ type Disposition = FieldGroup | 'map' | 'none'
 const FIELD_GROUP: Partial<Record<ColKey, Disposition>> = {
   // ① 分类族 → 职业分类弹框(#176:点分类看分类——「这职业是干嘛的」,轻、快、零额度)
   noc: 'category', teer: 'category', broad: 'category', mid: 'category', fine: 'category',
-  // ② 通道 → 移民弹框唯一入口(#176 恢复可点:「能不能帮我移民」归通道列,语义对得上)
+  // ② 移民价值 → 移民弹框(#201 Frank「通道弱删了,用户看不懂」:通道列整列删除;
+  //    score 仅留作操作列「移民价值」按钮的 dispatch 键,不再是可点单元格)
   score: 'immigration',
   // ③ 公司 → 公司弹框;职位名不走本表(cellActionable 特判,直开 JD 弹框=职位弹框)
   company: 'company',
@@ -466,15 +467,14 @@ const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean 
   { key: 'status', label: '状态', default: false },
   { key: 'lastSeen', label: '更新时间', default: false },
   { key: 'closedAt', label: '下架时间', default: false },
-  { key: 'score', label: '通道', default: true },  // E12-08:评分列改「通道」档(1-5)且默认亮——核心差异点(原 0-100 分默认藏)
-  { key: 'actions', label: '操作', default: true, always: true },  // 固定最后一列:公司信息 / 职位描述 按钮
+  { key: 'actions', label: '操作', default: true, always: true },  // 固定最后一列:移民价值 + 收藏按钮(#201:「通道」列删除,「通道弱」等档名用户看不懂;移民弹框入口改本列按钮)
 ]
 const DEFAULT_COLS = COLUMNS.filter((c) => c.default).map((c) => c.key)
 // 原子值列:内容单行不换行(日期/金额/百分比/分级等短值,断行会很丑)。其余文本列(职位/公司/地点等)允许多行,
 // 以便表格压进容器宽度不横向滚动。表头一律不换行(=该列最小宽度)。
 // salary 不在此列:薪资原文可为长文本(如 "40% commission per sale"),要像文本列一样换行;年薪/中位数等计算列恒短值。
 const NOWRAP_COLS = new Set<ColKey>(['datePosted', 'lastSeen', 'closedAt', 'salaryYr', 'wageMedHr', 'wageMedYr', 'vsMedian', 'teer', 'empHours', 'empTerm', 'score', 'status', 'direct', 'aip', 'lmia', 'eligibility', 'match'])
-const PREF_KEY = 'jobs.visibleCols.v10'  // v10:「通道」档默认列(E12-08);bump 版本让新默认生效
+const PREF_KEY = 'jobs.visibleCols.v11'  // v11:删「通道」列(#201,移民入口改操作列按钮);bump 版本让新默认生效
 const writeColsCookie = (keys: string[]) => {
   try { document.cookie = `${COLS_COOKIE}=${encodeURIComponent(JSON.stringify(keys))}; path=/; max-age=31536000; SameSite=Lax` } catch { /* ignore */ }
 }
@@ -808,7 +808,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       : {}
   // 每列最小宽:文本列宽些(列内换行),其余够放原子值即可 → 列多时整表超容器可横滚
   // #85(Frank「最后一列宽度叠一起」):actions 原默认 78px 塞不下三钮 → 给足最小宽,配合 cell 内 flex wrap 兜底
-  const MIN_W: Partial<Record<ColKey, number>> = { title: 170, company: 140, address: 150, datePosted: 92, lastSeen: 96, closedAt: 92, salary: 100, salaryYr: 86, wageMedHr: 88, wageMedYr: 88, actions: 92 }
+  const MIN_W: Partial<Record<ColKey, number>> = { title: 170, company: 140, address: 150, datePosted: 92, lastSeen: 96, closedAt: 92, salary: 100, salaryYr: 86, wageMedHr: 88, wageMedYr: 88, actions: 160 }
   const colMin = (k: ColKey) => (hasWidths ? undefined : (MIN_W[k] ?? 78))
   // 量当前表头每个可见列的自然渲染宽(auto 布局下为真实内容宽),返回覆盖全可见列的完整 map
   const measureAll = (): Record<string, number> => {
@@ -1195,12 +1195,18 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                     {shown.map((c, idx) => {
                       const k = c.key
                       const rowBg = i % 2 ? '#fcfcfd' : '#fff'
-                      if (k === 'actions') return (  // 操作列:只留收藏(2026-07-19 Frank:公司信息=公司格同一弹框纯重复删;职位描述并进职位格点击)
+                      if (k === 'actions') return (  // 操作列(#201 Frank「通道弱删了,用户看不懂」):移民价值按钮(移民弹框入口)+ 收藏
                         <td key={k} style={{ ...td, minWidth: colMin('actions') }}>
-                          <button onClick={(e) => { e.stopPropagation(); toggleSave(j) }}
-                            style={{ ...actBtn, whiteSpace: 'nowrap', ...(saved[String(j.id)] ? { color: '#b45309', borderColor: '#fde68a', background: '#fffbeb' } : {}) }}>
-                            {saved[String(j.id)] ? t('sj.saved') : t('sj.save')}
-                          </button>
+                          <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+                            <button onClick={(e) => { e.stopPropagation(); open('score', t('act.immigValue')) }}
+                              style={{ ...actBtn, whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                              <IconCompass /> {t('act.immigValue')}
+                            </button>
+                            <button onClick={(e) => { e.stopPropagation(); toggleSave(j) }}
+                              style={{ ...actBtn, whiteSpace: 'nowrap', ...(saved[String(j.id)] ? { color: '#b45309', borderColor: '#fde68a', background: '#fffbeb' } : {}) }}>
+                              {saved[String(j.id)] ? t('sj.saved') : t('sj.save')}
+                            </button>
+                          </span>
                         </td>
                       )
                       let href: string | null = null
@@ -1382,8 +1388,12 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                   {/* GAP1③:红旗 chip(手机卡片)——白投预警比正面信号更值得占位 */}
                   {j.eligibilityFlag ? chip('#fee2e2', '#b91c1c', t('cell.elig.' + j.eligibilityFlag), 'eligibility') : null}
                   {!j.pnpEligible && !j.eeCategory && !j.aip && j.teer != null ? chip('#f3f4f6', '#6b7280', `TEER ${j.teer}`, 'teer') : null}
-                  {j.gradeChannel != null ? chip('#f3f4f6', '#6b7280', t('gr.ch.' + j.gradeChannel), 'score') : null}
                 </div>
+                {/* #201(Frank「通道弱删了,用户看不懂」):档名 chip 删除,移民弹框入口改成看得懂的整行「移民价值」按钮 */}
+                <button onClick={stop(() => open('score', t('act.immigValue')))}
+                  style={{ width: '100%', marginTop: 8, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '7px', fontSize: 13, border: '1px solid #d1d5db', borderRadius: 6, background: '#fff', color: '#374151', cursor: 'pointer' }}>
+                  <IconCompass /> {t('act.immigValue')}
+                </button>
                 {/* #167⑦(Frank「这个卡片最好有个更新时间吧,年月日时分秒」):发布时间只有日期没时刻(Job Bank 原样),
                     判断不了「刚抓到还是躺了一天」;更新时间是本站每小时抓取的实际时刻,精确到秒。
                     **此处必须带标签**:一张卡上两个日期并排,值自己说不清谁是谁 ——
