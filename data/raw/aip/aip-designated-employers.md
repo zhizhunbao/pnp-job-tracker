@@ -7,7 +7,7 @@
 |---|---:|---:|---:|
 | 纽芬兰与拉布拉多（NL） | 94 | 12 | 13% |
 | 新不伦瑞克（NB） | 1263 | 48 | 4% |
-| 新斯科舍（NS） | 1561 | 63 | 4% |
+| 新斯科舍（NS） | 1574 | 66 | 4% |
 | 爱德华王子岛（PE） | （未抓到/无源）| — | — |
 
 ## 纽芬兰与拉布拉多（NL） — 科技相关指定雇主（12 家）
@@ -80,7 +80,7 @@
 | Veterinary Innovation Solutions |  |
 | Wentech Solutions Inc (dba anessa) |  |
 
-## 新斯科舍（NS） — 科技相关指定雇主（63 家）
+## 新斯科舍（NS） — 科技相关指定雇主（66 家）
 
 | 雇主 | 地点 |
 |---|---|
@@ -92,6 +92,7 @@
 | ADM Systems Engineering Ltd. o/a Actemium |  |
 | Arctic Energy Solutions Inc |  |
 | Atlantic Security Automation Partners Canada Inc. o/a ASAP |  |
+| AVRION BATTERY LABS INC. (previous NOVONIX BATTERY) o/a Avrion Battery Labs |  |
 | Barscope Interactive Data Systems Incorporated o/a resulta |  |
 | BHA Investments Limited o/a Master Tech Auto Trading, Services and detailing |  |
 | BOOKKEEPING, ACCOUNTING, TAXATION, SOLUTIONS o/a B.A.T.S |  |
@@ -107,7 +108,7 @@
 | Dugo Systems Inc |  |
 | Dura-Tech Industrial & Marine Limited o/a Dura-Tech |  |
 | EastPoint Engineering Limited o/a EastPoint |  |
-| ECOSMART BUILDING ENERGY SOLUTIONS LTD. o/a INTEGRAL ENERGY PERFORMANCE |  |
+| ECOSMART BUILDING ENERGY SOLUTIONS LTD. o/a INTEGRAL ENERGY |  |
 | EJS VENTILATION SYSTEMS INC o/a EJS Ventilation Systems Inc |  |
 | ELASSAL TECH INC |  |
 | Endeavour Solutions Inc. o/a Endeavour Solutions |  |
@@ -116,25 +117,25 @@
 | Global Spatial Technology Solutions Inc. o/a GSTS |  |
 | Graphite Innovation and Technologies Inc |  |
 | Greenfoot Energy Solutions, Inc. o/a Greenfoot Energy Consultants |  |
-| Grinners Food Systems Ltd. o/a Frank and Gino's Grill and Pasta House Truro and Amherst, |  |
+| Grinners Food Systems Ltd. o/a Frank and Gino's Grill and Pasta House Truro and |  |
 | HFX Steel Framing Solutions Inc o/a HFX Steel Framing |  |
-| I.M.P. Group Ltd. o/a I.M.P. Aerospace and Defence, I.M.P. Aerostructures, I.M.P. Electronic |  |
+| I.M.P. Group Ltd. o/a I.M.P. Aerospace and Defence, I.M.P. Aerostructures, I.M.P |  |
 | IMP Solutions, a Division of IMP Group Limited o/a IMP Solutions |  |
 | INTERTALK CRITICAL INFORMATION SYSTEMS INC |  |
 | IT INTERNATIONAL TELECOM CANADA INC |  |
 | Jonas Software Solutions |  |
 | Kohltech International Ltd. o/a Kohltech Windows and Entrance Systems |  |
 | Lab 4 Inc |  |
-| Maritime digital art and design Ltd. o/a Maritime digital art and design / MDAD / Archviz.ca |  |
+| Maritime digital art and design Ltd. o/a Maritime digital art and design / MDAD / |  |
 | Miller Waste Systems Inc. o/a Miller Waste Systems |  |
 | Nedtek Computer Solutions Inc |  |
 | Northlake Solutions (Canada) Inc |  |
 | Nova Scotia Independent Energy System Operator o/a NSIESO |  |
-| NOVONIX Battery Technology Solutions Inc. o/a NOVONIX |  |
 | P. F. Collins Customs Broker Ltd. o/a PF Collins International Trade Solutions |  |
 | POLE STAR TRANSPORT INCORPORATED o/a Armour Transportation Systems |  |
 | R. N. Apex Solutions Ltd |  |
 | Rayleigh Solar Tech Inc. o/a Rayleigh Solar Tech |  |
+| RFINE BIOMASS SOLUTIONS INC |  |
 | Rimot.io Inc. o/a Rimot |  |
 | Ropak Canada Inc. o/a Mauser Packaging Solutions |  |
 | Rumcache Forest Solutions Inc o/a Rumcache Forest Solutions Inc |  |
@@ -145,7 +146,9 @@
 | SURRETTE BATTERY COMPANY LIMITED o/a ROLLS BATTERY ENGINEERING |  |
 | The Barrington Edge Consult Inc o/a Barrington Edge |  |
 | THE TRIBE NETWORK |  |
-| Truro/Colchester Regional Enterprise Network o/a Truro & Colchester Partnership for Economic |  |
+| TRINITY MAINTENANCE SOLUTIONS LTD. o/a TRINITY ENERGY GROUP |  |
+| Truro/Colchester Regional Enterprise Network o/a Truro & Colchester Partnership for |  |
+| ULTRA ELECTRONICS MARITIME SYSTEMS INC. o/a Ultra Maritime |  |
 | WOW! Food Systems Incorporated o/a Roadside Willies Smokehouse & Bar |  |
 
 > 注：NB/NS 名单无行业字段，科技判定靠公司名关键词（偏宽，含工程/咨询）；NL 用 NOC（精确）。

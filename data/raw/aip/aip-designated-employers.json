@@ -8383,7 +8383,7 @@
   },
   {
     "province": "NS",
-    "employer": "3103603 NOVA SCOTIA LIMITED o/a 3035315 - STONEHOUSE MOTEL & RESTAURANT (1999)",
+    "employer": "3103603 NOVA SCOTIA LIMITED o/a 3035315 - STONEHOUSE MOTEL & RESTAURANT",
     "location": "",
     "tech": false
   },
@@ -8623,7 +8623,7 @@
   },
   {
     "province": "NS",
-    "employer": "3279889 Nova Scotia Ltd. o/a The Nook and Cranny Pub; Nook and Cranny Pub Tatamagouche;",
+    "employer": "3279889 Nova Scotia Ltd. o/a The Nook and Cranny Pub; Nook and Cranny Pub",
     "location": "",
     "tech": false
   },
@@ -8845,7 +8845,7 @@
   },
   {
     "province": "NS",
-    "employer": "3311051 Nova Scotia Ltd. o/a Homewood Suites by Hilton Halifax Downtown, Hampton Inn By",
+    "employer": "3311051 Nova Scotia Ltd. o/a Homewood Suites by Hilton Halifax Downtown, Hampton",
     "location": "",
     "tech": false
   },
@@ -9050,12 +9050,6 @@
   {
     "province": "NS",
     "employer": "3330862 Nova Scotia Limited o/a Studio East",
-    "location": "",
-    "tech": false
-  },
-  {
-    "province": "NS",
-    "employer": "3331445 NOVA SCOTIA LIMITED o/a ARIRANG RESTAURANT",
     "location": "",
     "tech": false
   },
@@ -9577,7 +9571,7 @@
   },
   {
     "province": "NS",
-    "employer": "A. JREIGE ACCOUNTING SERVICES LIMITED o/a A. JREIGE ACCOUNTING SERVICES LIMITED",
+    "employer": "A. JREIGE ACCOUNTING SERVICES LIMITED o/a A. JREIGE ACCOUNTING SERVICES",
     "location": "",
     "tech": false
   },
@@ -9949,6 +9943,12 @@
   },
   {
     "province": "NS",
+    "employer": "ARTHRITIS AND INJURY CARE CENTRE ATLANTIC INC. o/a ARTHRITIS & INJURY CARE",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NS",
     "employer": "Asante Logistic Group Inc. o/a Asante Logistic Group Inc",
     "location": "",
     "tech": false
@@ -10009,7 +10009,7 @@
   },
   {
     "province": "NS",
-    "employer": "Atlantic Poultry Immigration o/a Atlantic Poultry Immigration",
+    "employer": "Atlantic Poultry Inc",
     "location": "",
     "tech": false
   },
@@ -10057,6 +10057,12 @@
   },
   {
     "province": "NS",
+    "employer": "ATLANTICA MECHANICAL CONTRACTORS INCORPORATED",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NS",
     "employer": "Atlantick Repellent Products Inc",
     "location": "",
     "tech": false
@@ -10069,9 +10075,9 @@
   },
   {
     "province": "NS",
-    "employer": "Avon Medical Clinic Ltd o/a Avon Medical Clinic",
+    "employer": "AVRION BATTERY LABS INC. (previous NOVONIX BATTERY) o/a Avrion Battery Labs",
     "location": "",
-    "tech": false
+    "tech": true
   },
   {
     "province": "NS",
@@ -10105,7 +10111,7 @@
   },
   {
     "province": "NS",
-    "employer": "B. Dawson Enterprises o/a Halifax West Children's Centre and Waverely Road Children's Centre",
+    "employer": "B. Dawson Enterprises o/a Halifax West Children's Centre and Waverely Road Children's",
     "location": "",
     "tech": false
   },
@@ -10231,6 +10237,12 @@
   },
   {
     "province": "NS",
+    "employer": "BEAUMONT ADVISORS LIMITED",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NS",
     "employer": "Beaute Lia HAir",
     "location": "",
     "tech": false
@@ -10244,12 +10256,6 @@
   {
     "province": "NS",
     "employer": "Becky's Daycare Ltd. o/a Friends for Life Childcare Waverley",
-    "location": "",
-    "tech": false
-  },
-  {
-    "province": "NS",
-    "employer": "Bedford Investments Ltd. o/a Require operating name",
     "location": "",
     "tech": false
   },
@@ -10783,6 +10789,12 @@
   },
   {
     "province": "NS",
+    "employer": "CAPE BRETON CHRISTIAN EDUCATION AND SERVICE ASSOCIATION o/a Munro",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NS",
     "employer": "Cape Breton Credit Union Ltd",
     "location": "",
     "tech": false
@@ -10850,6 +10862,12 @@
   {
     "province": "NS",
     "employer": "Carverys Construction Limited",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NS",
+    "employer": "CASEY CONCRETE LIMITED o/a CASEY CONCRETE / CASEY CONCRETE LANDSCAPE",
     "location": "",
     "tech": false
   },
@@ -11179,7 +11197,7 @@
   },
   {
     "province": "NS",
-    "employer": "Cobequid Prefabricated Wall Panels Limited o/a Cobequid Prefabricated Wall Panels Limited",
+    "employer": "Cobequid Prefabricated Wall Panels Limited o/a Cobequid Prefabricated Wall Panels",
     "location": "",
     "tech": false
   },
@@ -11563,7 +11581,7 @@
   },
   {
     "province": "NS",
-    "employer": "DARTMOUTH CROSSING HOTEL II LIMITED PARTNERSHIP o/a Courtyard by Marriott Halifax",
+    "employer": "DARTMOUTH CROSSING HOTEL II LIMITED PARTNERSHIP o/a Courtyard by Marriott",
     "location": "",
     "tech": false
   },
@@ -11629,6 +11647,12 @@
   },
   {
     "province": "NS",
+    "employer": "DELMORE BUDDY DAYE LEARNING INSTITUTE INC. o/a Delmore “Buddy” Daye Learning",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NS",
     "employer": "deluxe French Fries",
     "location": "",
     "tech": false
@@ -11653,7 +11677,7 @@
   },
   {
     "province": "NS",
-    "employer": "Dhaba Express Restaurant & Takeaway Ltd. o/a Dhaba Express Restaurant & Takeaway Ltd.,",
+    "employer": "Dhaba Express Restaurant & Takeaway Ltd. o/a Dhaba Express Restaurant & Takeaway",
     "location": "",
     "tech": false
   },
@@ -11731,7 +11755,7 @@
   },
   {
     "province": "NS",
-    "employer": "DR. IVAN WONG MEDICINE PROFESSIONAL CORPORATION INCORPORATED o/a DR. IVAN",
+    "employer": "DR. IVAN WONG MEDICINE PROFESSIONAL CORPORATION INCORPORATED o/a DR",
     "location": "",
     "tech": false
   },
@@ -11743,7 +11767,7 @@
   },
   {
     "province": "NS",
-    "employer": "DR. KATHY HUBLEY CARRUTHERS COUNSELLING & PSYCHOLOGICAL SERVICES o/a DR",
+    "employer": "DR. KATHY HUBLEY CARRUTHERS COUNSELLING & PSYCHOLOGICAL SERVICES o/a",
     "location": "",
     "tech": false
   },
@@ -11774,6 +11798,12 @@
   {
     "province": "NS",
     "employer": "Driftwood Greenhouse o/a Driftwood Greenhouse",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NS",
+    "employer": "DRYVE BATTERY MATERIALS INC",
     "location": "",
     "tech": false
   },
@@ -11845,7 +11875,7 @@
   },
   {
     "province": "NS",
-    "employer": "EAGLEWOOD CHIROPRACTIC HEALTH CENTRE INC o/a EAGLEWOOD CHIROPRACTIC HEALTH",
+    "employer": "EAGLEWOOD CHIROPRACTIC HEALTH CENTRE INC o/a EAGLEWOOD CHIROPRACTIC",
     "location": "",
     "tech": false
   },
@@ -11935,7 +11965,7 @@
   },
   {
     "province": "NS",
-    "employer": "ECOSMART BUILDING ENERGY SOLUTIONS LTD. o/a INTEGRAL ENERGY PERFORMANCE",
+    "employer": "ECOSMART BUILDING ENERGY SOLUTIONS LTD. o/a INTEGRAL ENERGY",
     "location": "",
     "tech": true
   },
@@ -12571,13 +12601,19 @@
   },
   {
     "province": "NS",
-    "employer": "Grinners Food Systems Ltd. o/a Frank and Gino's Grill and Pasta House Truro and Amherst,",
+    "employer": "Grinners Food Systems Ltd. o/a Frank and Gino's Grill and Pasta House Truro and",
     "location": "",
     "tech": true
   },
   {
     "province": "NS",
     "employer": "Ground Force Property Services Inc. o/a Ground Force",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NS",
+    "employer": "GROWING NETWORKS CONSULTANT INC",
     "location": "",
     "tech": false
   },
@@ -12715,6 +12751,12 @@
   },
   {
     "province": "NS",
+    "employer": "HARDING FINANCIAL INC",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NS",
     "employer": "Harding Medical, a division of IMP Group Ltd o/a Harding Medical",
     "location": "",
     "tech": false
@@ -12745,7 +12787,7 @@
   },
   {
     "province": "NS",
-    "employer": "Hausgaard Bookkeeping and Tax services o/a Hausgaard Bookkeeping and Tax Services Inc",
+    "employer": "Hausgaard Bookkeeping and Tax services o/a Hausgaard Bookkeeping and Tax Services",
     "location": "",
     "tech": false
   },
@@ -12925,7 +12967,7 @@
   },
   {
     "province": "NS",
-    "employer": "I.M.P. Group Ltd. o/a I.M.P. Aerospace and Defence, I.M.P. Aerostructures, I.M.P. Electronic",
+    "employer": "I.M.P. Group Ltd. o/a I.M.P. Aerospace and Defence, I.M.P. Aerostructures, I.M.P",
     "location": "",
     "tech": true
   },
@@ -13015,7 +13057,7 @@
   },
   {
     "province": "NS",
-    "employer": "Ingonish Harbour Resort Inc (Knotty Pine Cottages) o/a Ingonish Harbour Resort Inc (Knotty Pine",
+    "employer": "Ingonish Harbour Resort Inc (Knotty Pine Cottages) o/a Ingonish Harbour Resort Inc",
     "location": "",
     "tech": false
   },
@@ -13165,12 +13207,6 @@
   },
   {
     "province": "NS",
-    "employer": "J.D. Irving, Limited o/a Irving Equipment Limited",
-    "location": "",
-    "tech": false
-  },
-  {
-    "province": "NS",
     "employer": "J.D. Irving, Limited",
     "location": "",
     "tech": false
@@ -13178,6 +13214,12 @@
   {
     "province": "NS",
     "employer": "J.D. Irving, Limited o/a Kent Building Supplies",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NS",
+    "employer": "J.D. Irving, Limited o/a Irving Equipment Limited",
     "location": "",
     "tech": false
   },
@@ -14095,7 +14137,7 @@
   },
   {
     "province": "NS",
-    "employer": "Maritime digital art and design Ltd. o/a Maritime digital art and design / MDAD / Archviz.ca",
+    "employer": "Maritime digital art and design Ltd. o/a Maritime digital art and design / MDAD /",
     "location": "",
     "tech": true
   },
@@ -14113,7 +14155,7 @@
   },
   {
     "province": "NS",
-    "employer": "Maritimes Immigration Consulting Inc. o/a Maritimes Immigration Consulting",
+    "employer": "Maritimes Immigration Consulting Inc",
     "location": "",
     "tech": false
   },
@@ -14527,7 +14569,7 @@
   },
   {
     "province": "NS",
-    "employer": "N & N ELECTRIC MOTOR SPECIALISTS LIMITED o/a NTE ( Nguyen Technologies & Electrical",
+    "employer": "N & N ELECTRIC MOTOR SPECIALISTS LIMITED o/a NTE ( Nguyen Technologies &",
     "location": "",
     "tech": false
   },
@@ -14833,12 +14875,6 @@
   },
   {
     "province": "NS",
-    "employer": "NOVONIX Battery Technology Solutions Inc. o/a NOVONIX",
-    "location": "",
-    "tech": true
-  },
-  {
-    "province": "NS",
     "employer": "NS SAFETY ALLIANCE LIMITED",
     "location": "",
     "tech": false
@@ -14977,7 +15013,7 @@
   },
   {
     "province": "NS",
-    "employer": "O'Regan Motors Ltd o/a O'Regan's Toyota Dartmouth & O'Regan's National Leasing & O'Regan's",
+    "employer": "O'Regan Motors Ltd o/a O'Regan's Toyota Dartmouth & O'Regan's National Leasing &",
     "location": "",
     "tech": false
   },
@@ -15248,6 +15284,12 @@
   {
     "province": "NS",
     "employer": "PJ Atlantic Restaurants (Dartmouth) Ltd. o/a PAPA JOHNS RESTAURANTS",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NS",
+    "employer": "PLANETARY TECHNOLOGIES INC",
     "location": "",
     "tech": false
   },
@@ -15667,6 +15709,12 @@
   },
   {
     "province": "NS",
+    "employer": "RFINE BIOMASS SOLUTIONS INC",
+    "location": "",
+    "tech": true
+  },
+  {
+    "province": "NS",
     "employer": "Rideout Tool and Machine INC",
     "location": "",
     "tech": false
@@ -15769,12 +15817,6 @@
   },
   {
     "province": "NS",
-    "employer": "RSNSFOODS INC o/a PEACOCK MODERN INDIAN CUISINE",
-    "location": "",
-    "tech": false
-  },
-  {
-    "province": "NS",
     "employer": "Rumcache Forest Solutions Inc o/a Rumcache Forest Solutions Inc",
     "location": "",
     "tech": true
@@ -15800,6 +15842,12 @@
   {
     "province": "NS",
     "employer": "Sackville Recycling Ltd",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NS",
+    "employer": "SACRED HEART SCHOOL OF HALIFAX",
     "location": "",
     "tech": false
   },
@@ -16135,7 +16183,7 @@
   },
   {
     "province": "NS",
-    "employer": "Shupe & Company CPA Limited o/a Shupe & Company Chartered Professional Accountants",
+    "employer": "Shupe & Company CPA Limited o/a Shupe & Company Chartered Professional",
     "location": "",
     "tech": false
   },
@@ -16147,7 +16195,7 @@
   },
   {
     "province": "NS",
-    "employer": "Silverbirch Hotels & Resorts o/a Leadon Operations LP dba Hotel Halifax & The Barrington Hotel",
+    "employer": "Silverbirch Hotels & Resorts o/a Leadon Operations LP dba Hotel Halifax & The",
     "location": "",
     "tech": false
   },
@@ -16417,6 +16465,12 @@
   },
   {
     "province": "NS",
+    "employer": "SUPERIOR FOUNDATIONS LIMITED",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NS",
     "employer": "Superior Glazing Ltd",
     "location": "",
     "tech": false
@@ -16453,7 +16507,7 @@
   },
   {
     "province": "NS",
-    "employer": "SW East International Trading and Consulting o/a SW East International Trading and Consulting",
+    "employer": "SW East International Trading and Consulting o/a SW East International Trading and",
     "location": "",
     "tech": false
   },
@@ -16531,7 +16585,7 @@
   },
   {
     "province": "NS",
-    "employer": "TARTAN TAILS VETERINARY HOSPITAL LTD (previous name) SPCA Cape Breton Animal Hospital",
+    "employer": "TARTAN TAILS VETERINARY HOSPITAL LTD (previous name) SPCA Cape Breton Animal",
     "location": "",
     "tech": false
   },
@@ -16603,6 +16657,12 @@
   },
   {
     "province": "NS",
+    "employer": "THE ALLEN PRINT LIMITED o/a Allen Print",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NS",
     "employer": "The Armour Group Limited",
     "location": "",
     "tech": false
@@ -16634,6 +16694,12 @@
   {
     "province": "NS",
     "employer": "The Blomidon Inn Ltd o/a Blomidon Inn",
+    "location": "",
+    "tech": false
+  },
+  {
+    "province": "NS",
+    "employer": "THE BOYD GROUP INC. o/a ASSURED AUTOMOTIVE",
     "location": "",
     "tech": false
   },
@@ -16963,6 +17029,12 @@
   },
   {
     "province": "NS",
+    "employer": "TRINITY MAINTENANCE SOLUTIONS LTD. o/a TRINITY ENERGY GROUP",
+    "location": "",
+    "tech": true
+  },
+  {
+    "province": "NS",
     "employer": "Tripoli Holdings limited (Mezza Lebanese Kitchen) o/a Mezza Lebanese Kitchen",
     "location": "",
     "tech": false
@@ -16993,7 +17065,7 @@
   },
   {
     "province": "NS",
-    "employer": "Truro/Colchester Regional Enterprise Network o/a Truro & Colchester Partnership for Economic",
+    "employer": "Truro/Colchester Regional Enterprise Network o/a Truro & Colchester Partnership for",
     "location": "",
     "tech": true
   },
@@ -17023,7 +17095,7 @@
   },
   {
     "province": "NS",
-    "employer": "Tusket Falls Brewing Company Inc o/a Tusket Falls Brewing Company and \"Tusket Falls Beer",
+    "employer": "Tusket Falls Brewing Company Inc o/a Tusket Falls Brewing Company and \"Tusket Falls",
     "location": "",
     "tech": false
   },
@@ -17068,6 +17140,12 @@
     "employer": "Ulnooweg Education Centre",
     "location": "",
     "tech": false
+  },
+  {
+    "province": "NS",
+    "employer": "ULTRA ELECTRONICS MARITIME SYSTEMS INC. o/a Ultra Maritime",
+    "location": "",
+    "tech": true
   },
   {
     "province": "NS",

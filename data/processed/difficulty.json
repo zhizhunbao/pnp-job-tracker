@@ -1,5 +1,5 @@
 {
- "generated": "2026-07-20",
+ "generated": "2026-07-22",
  "trYear": "2024",
  "rows": [
   {
@@ -22,6 +22,14 @@
      "tier": "easy",
      "source": "https://moving2canada.com/news/pnp-allocations-2026-by-province/",
      "asOf": "2026"
+    },
+    {
+     "key": "activity",
+     "value": 10,
+     "invitations": 6188,
+     "tier": "easy",
+     "source": "https://www.ontario.ca/page/2026-ontario-immigrant-nominee-program-updates",
+     "asOf": "2026-07-22"
     }
    ]
   },
@@ -52,7 +60,7 @@
      "invitations": 1533,
      "tier": "easy",
      "source": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply",
-     "asOf": "2026-07-20"
+     "asOf": "2026-07-22"
     },
     {
      "key": "scoreLevel",
@@ -92,7 +100,7 @@
      "invitations": 2204,
      "tier": "easy",
      "source": "https://www.alberta.ca/aaip-processing-information",
-     "asOf": "2026-07-20"
+     "asOf": "2026-07-22"
     },
     {
      "key": "scoreLevel",
@@ -141,7 +149,7 @@
      "invitations": 1090,
      "tier": "easy",
      "source": "https://immigratemanitoba.com/draws/",
-     "asOf": "2026-07-20"
+     "asOf": "2026-07-22"
     }
    ]
   },

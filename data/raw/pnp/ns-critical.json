@@ -4,7 +4,7 @@
   "province": "NS",
   "type": "indemand",
   "url": "https://liveinnovascotia.com/critical-vacancies",
-  "fetched": "2026-07-05",
+  "fetched": "2026-07-23",
   "occupations": [
     {
       "noc": "33102",
@@ -33,6 +33,10 @@
     {
       "noc": "72310",
       "name": "Carpenters"
+    },
+    {
+      "noc": "72410",
+      "name": "Automotive service technicians, truck and bus mechanics and mechanical repairers"
     },
     {
       "noc": "73100",
