@@ -2102,8 +2102,18 @@ function parseCoStreams(streams: string, t: TFn): { label: string; count: string
     return { label: rawName, count, skilled: false }
   })
 }
-export function CompanyBody({ company, similar, t, lang, showTrans, onOpenJob, resolveJob }: {
-  company: CompanyDetail; similar: SimilarEmployer[]; t: TFn; lang: Lang; showTrans?: boolean
+// §7 了解公司行:中文行业(做什么的)+ 知名章。弹框里挂到按钮上面(CompanyPanel),详情页挂 body 顶(名下)。
+export function CompanyTopInfo({ company, t }: { company: CompanyDetail; t: TFn }) {
+  if (!(company.industry || company.sectors || company.wikiUrl)) return null
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', margin: '0 0 10px' }}>
+      {(company.industry || company.sectors) ? <span style={{ fontSize: 12.5, color: '#6b7280' }}>{company.industry || company.sectors}</span> : null}
+      {company.wikiUrl ? <span style={{ fontSize: 11, color: '#1d4ed8', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 999, padding: '2px 9px', whiteSpace: 'nowrap' }}>{t('co.wellKnown')}</span> : null}
+    </div>
+  )
+}
+export function CompanyBody({ company, similar, t, lang, showTrans, hideTopInfo, onOpenJob, resolveJob }: {
+  company: CompanyDetail; similar: SimilarEmployer[]; t: TFn; lang: Lang; showTrans?: boolean; hideTopInfo?: boolean
   onOpenJob?: (j: JobRow) => void   // 弹框内点职位=叠开 JD 弹框;页面不传=纯链接
   resolveJob?: (id: number) => JobRow | undefined   // 弹框把已载入行喂回来(JD 弹框要整 JobRow)
 }) {
@@ -2153,17 +2163,12 @@ export function CompanyBody({ company, similar, t, lang, showTrans, onOpenJob, r
   ) : null
   return (
     <div style={{ fontSize: 13, lineHeight: 1.75, color: '#374151' }}>
-      {/* §7 了解公司(Frank 2026-07-23 效果图):公司名下挂中文行业「做什么的」+ 知名章;名本身在弹框/页头 */}
-      {(company.industry || company.sectors || company.wikiUrl) && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', margin: '0 0 10px' }}>
-          {(company.industry || company.sectors) ? <span style={{ fontSize: 12.5, color: '#6b7280' }}>{company.industry || company.sectors}</span> : null}
-          {company.wikiUrl ? <span style={{ fontSize: 11, color: '#1d4ed8', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 999, padding: '2px 9px', whiteSpace: 'nowrap' }}>{t('co.wellKnown')}</span> : null}
-        </div>
-      )}
-      {/* 合并「公司」卡(#197 合并 + #200 卡片化):身份(官网/地址)+ 简介内容同卡;行业/知名已上提到 §7 了解行 */}
+      {/* §7 了解公司行(中文行业+知名章):详情页挂 body 顶(名下);弹框由 CompanyPanel 挂到按钮上面 → hideTopInfo */}
+      {!hideTopInfo ? <CompanyTopInfo company={company} t={t} /> : null}
+      {/* 基本信息卡(#197 合并):身份(官网/地址)+ 简介同卡;标题「基本信息」与在招/担保卡同款(Frank 2026-07-24) */}
       {(hasId || hasDesc || briefCached || company.name) && (
         <div style={MODAL_CARD}>
-          {/* col.company「公司」标题 Frank 2026-07-23 去掉;身份行直接起 */}
+          <div style={MODAL_CARD_HEAD}>{t('co.basic')}</div>
           <div>
             {company.website ? <FactRow k={t('act.site')}><a href={company.website} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5, overflowWrap: 'anywhere' }}>{company.website}</a></FactRow> : null}
             {showAddrRow && addr ? <FactRow k={t('act.addr')}><a href={mapsUrl(addr)} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5 }}><IconMap /> {addr}</a></FactRow> : null}
@@ -2302,6 +2307,8 @@ function CompanyPanel({ job, jobs, lang, plan, onOpenJob }: { job: JobRow; jobs:
   const slug = job.companySlug || co?.slug || ''
   return (
     <>
+      {/* §7 了解公司行(中文行业+知名章)挂到按钮上面(Frank 2026-07-24「放到按钮上面」) */}
+      {co ? <CompanyTopInfo company={co} t={t} /> : null}
       <div style={{ display: 'flex', gap: 8, margin: '2px 0 12px', flexWrap: 'wrap' }}>
         {canTrans ? (
           <button onClick={() => setShowTrans((v) => !v)} style={{ ...PILL_BTN, ...(showTrans ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}>{showTrans ? t('cat.hideZh') : t('cat.showZh')}</button>
@@ -2317,7 +2324,7 @@ function CompanyPanel({ job, jobs, lang, plan, onOpenJob }: { job: JobRow; jobs:
       )}
       {d === undefined ? <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>{t('act.loadingText')}</p>
         : d === null ? <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>{t('advisor.unavail')}</p>
-        : <CompanyBody company={d.company} similar={d.similar} t={t} lang={lang} showTrans={showTrans}
+        : <CompanyBody company={d.company} similar={d.similar} t={t} lang={lang} showTrans={showTrans} hideTopInfo
             onOpenJob={onOpenJob} resolveJob={(id) => jobs.find((x) => Number(x.id) === id)} />}
     </>
   )

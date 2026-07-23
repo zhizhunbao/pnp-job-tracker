@@ -59,7 +59,7 @@ const zh: Dict = {
   // 公司评分卡(2026-07-22 Frank 拍板:四维归位公司弹框;档名键沿用 gr.sp/act/sal/fm)
   'co.grades': '雇主信号',   // #192 Frank「改个名更合适」:四维是粗筛信号不是打分,与「移民信号/相似雇主」词汇一致
   // E8-09 B 公司详情页 /companies/[slug]
-  'co.crumb': '公司', 'co.wellKnown': '知名企业', 'co.notFound': '未找到这家公司,可能已从在招列表移除。', 'co.openJobs': '在招职位',
+  'co.crumb': '公司', 'co.basic': '基本信息', 'co.wellKnown': '知名企业', 'co.notFound': '未找到这家公司,可能已从在招列表移除。', 'co.openJobs': '在招职位',
   // 担保记录深化 + 相似雇主(E8-09 加深)
   'co.spSub': '近两年官方 LMIA 获批(历史事实,非能担保判定)',
   'co.spStream.high': '高薪股', 'co.spStream.gts': '全球人才股', 'co.spStream.pr': 'PR 支持股', 'co.spStream.low': '低薪股', 'co.spStream.agri': '农业股',
@@ -493,7 +493,7 @@ const en: Dict = {
   'gr.fm.5': 'Major well-known employer', 'gr.fm.4': 'Has a Wikipedia entry', 'gr.fm.3': 'Multi-province', 'gr.fm.2': 'Typical size', 'gr.fm.1': 'Very small',
   'gr.sponsorTip': 'This employer’s foreign-worker sponsorship record (from official LMIA approvals and recency); click the company name for details',
   'co.grades': 'Employer signals',
-  'co.crumb': 'Company', 'co.wellKnown': 'Well-known', 'co.notFound': 'This company was not found — it may have been removed from the active listings.', 'co.openJobs': 'Open positions',
+  'co.crumb': 'Company', 'co.basic': 'Basic info', 'co.wellKnown': 'Well-known', 'co.notFound': 'This company was not found — it may have been removed from the active listings.', 'co.openJobs': 'Open positions',
   'co.spSub': 'Approved LMIAs in the past two years (a historical fact, not a sponsorship promise)',
   'co.spStream.high': 'High Wage', 'co.spStream.gts': 'Global Talent', 'co.spStream.pr': 'PR-support', 'co.spStream.low': 'Low Wage', 'co.spStream.agri': 'Agriculture',
   'co.spSkilledTag': 'skilled', 'co.spQuarter': 'Latest approval', 'co.spBatch': '{q}　{n} LMIAs',
@@ -928,7 +928,7 @@ const ko: Dict = {
   'gr.fm.5': '유명 대형 고용주', 'gr.fm.4': '위키 문서 있음', 'gr.fm.3': '여러 주 운영', 'gr.fm.2': '일반 규모', 'gr.fm.1': '매우 소규모',
   'gr.sponsorTip': '이 고용주의 외국인 근로자 스폰서 기록(공식 LMIA 승인 이력·최신성 기준); 회사명을 클릭하면 상세',
   'co.grades': '고용주 신호',
-  'co.crumb': '회사', 'co.wellKnown': '유명 기업', 'co.notFound': '이 회사를 찾을 수 없습니다 — 채용 목록에서 제거되었을 수 있습니다.', 'co.openJobs': '채용 중 공고',
+  'co.crumb': '회사', 'co.basic': '기본 정보', 'co.wellKnown': '유명 기업', 'co.notFound': '이 회사를 찾을 수 없습니다 — 채용 목록에서 제거되었을 수 있습니다.', 'co.openJobs': '채용 중 공고',
   'co.spSub': '최근 2년 공식 LMIA 승인(과거 사실이며 스폰서 보장 아님)',
   'co.spStream.high': 'High Wage', 'co.spStream.gts': 'Global Talent', 'co.spStream.pr': 'PR 지원', 'co.spStream.low': 'Low Wage', 'co.spStream.agri': '농업',
   'co.spSkilledTag': '기술직', 'co.spQuarter': '최근 승인', 'co.spBatch': '{q}　{n}건 LMIA',
