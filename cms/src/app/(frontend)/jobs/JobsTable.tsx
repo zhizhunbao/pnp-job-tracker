@@ -1327,6 +1327,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               <span key={k} onClick={cellActionable(k) ? stop(() => open(k, txt)) : undefined} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: bg, color: fg, cursor: cellActionable(k) ? 'pointer' : 'default', whiteSpace: 'nowrap' }}>{txt}</span>
             )
             const days = j.datePosted && (j.status || 'open') !== 'closed' ? Math.max(0, Math.floor((Date.now() - new Date(j.datePosted).getTime()) / 86400000)) : null
+            // #200(Frank「岗位名称中文翻译默认都加上」):手机卡职位名挂 NOC 官方职业名译名(界面语言;与在招职位/弹框标题同款)
+            const nz = nocLocalTitle(dims.nocDescriptions.find((d) => d.noc === j.noc) || null, lang)
             return (
               <div key={j.id} onClick={() => { window.location.href = `/jobs/${j.id}` }}
                 style={{ border: '1px solid #e5e7eb', borderRadius: 12, padding: '10px 12px', background: '#fff', cursor: 'pointer' }}>
@@ -1346,6 +1348,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                     </button>
                   </span>
                 </div>
+                {/* #200:职位名下挂 NOC 官方职业名译名(岗位名看不懂时靠这条;英文界面出英文官方名) */}
+                {nz && nz.toLowerCase() !== (j.title || '').toLowerCase() ? <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 1, lineHeight: 1.4 }}>{nz}</div> : null}
                 {/* #148 两列布局(Frank「卡片可以搞成左右两列」):**左列=身份**(公司/地点)、**右列=数字**(薪资/时间)。
                     右列右对齐后,整列在卡片流里连成一条竖线——手指下滑时眼睛只走右边就能比薪资、比新鲜度。
                     实现用 flex space-between 而非 grid:左列长内容(公司名)自己换行时不会把右列挤歪。 */}
@@ -2194,9 +2198,9 @@ export function CompanyBody({ company, similar, t, lang, showTrans, onOpenJob, r
                     {r && onOpenJob
                       ? <button onClick={() => onOpenJob(r)} style={{ border: 'none', background: 'none', padding: 0, font: 'inherit', cursor: 'pointer', textAlign: 'left', color: '#2563eb' }}>{j.title}</button>
                       : <a href={`/jobs/${j.id}`} target={extTarget} rel="noreferrer" style={{ ...link, fontSize: 13 }}>{j.title}</a>}
-                    {/* #196(Frank「只有点显示中文对照才需要显示中文」):英文界面照显英文官方职业名(非中文);
-                        中/韩界面的译名默认藏,点「显示中文对照」才出——与 简介/JD 对照同口径 */}
-                    {(lang === 'en' || showTrans) && nl && nl.toLowerCase() !== j.title.toLowerCase() ? <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 1, lineHeight: 1.5 }}>{nl}</div> : null}
+                    {/* #200(Frank「岗位名称中文翻译默认都加上」):#196 的藏译名撤——岗位名 NOC 译名默认显示
+                        (短、就是职业名、一直有用;与职位弹框标题/详情页 H1 同款);简介/JD 正文翻译仍留给「显示中文对照」 */}
+                    {nl && nl.toLowerCase() !== j.title.toLowerCase() ? <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 1, lineHeight: 1.5 }}>{nl}</div> : null}
                   </span>
                   <span style={{ fontSize: 11.5, whiteSpace: 'nowrap', flexShrink: 0, textAlign: 'right' }}>
                     {j.salaryText ? <div style={{ color: '#15803d', fontWeight: 700, fontSize: 12.5 }}>{j.salaryText}</div> : null}
