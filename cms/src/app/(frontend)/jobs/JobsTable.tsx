@@ -2181,8 +2181,8 @@ export function CompanyBody({ company, similar, t, lang, showTrans, hideTopInfo,
             {hideTopInfo && isGovCompany(company.name) ? <span style={{ marginLeft: 8, fontWeight: 400, fontSize: 11, color: '#15803d', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 999, padding: '2px 9px', whiteSpace: 'nowrap' }}>{t('co.gov')}</span> : null}
             {hideTopInfo && company.wikiUrl ? <a href={company.wikiUrl} target="_blank" rel="noreferrer" style={{ marginLeft: 8, fontWeight: 400, fontSize: 11, color: '#1d4ed8', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 999, padding: '2px 9px', whiteSpace: 'nowrap', textDecoration: 'none' }}>{t('co.wellKnown')} ↗</a> : null}</div>
           <div>
-            {/* 公司名称中文译名(Frank 2026-07-24「用 AI 翻译的可以」;取库内 alias_zh/ko,空则不显——宁可留空) */}
-            {(lang === 'zh' ? company.aliasZh : lang === 'ko' ? company.aliasKo : '') ? <FactRow k={t('co.name')}>{lang === 'zh' ? company.aliasZh : company.aliasKo}</FactRow> : null}
+            {/* 公司名称(Frank 2026-07-24「一直显示方便用户看」):一律显示——有中文别名显别名,否则显原名(标题会截断长名,这行给全名) */}
+            <FactRow k={t('co.name')}>{(lang === 'zh' ? company.aliasZh : lang === 'ko' ? company.aliasKo : '') || company.name}</FactRow>
             {company.website ? <FactRow k={t('act.site')}><a href={company.website} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5, overflowWrap: 'anywhere' }}>{company.website}</a></FactRow> : null}
             {showAddrRow && addr ? <FactRow k={t('act.addr')}><a href={mapsUrl(addr)} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5 }}><IconMap /> {addr}</a></FactRow> : null}
             {/* 行业/知名已上提到 §7 了解行(名下),此处不再重复 */}
