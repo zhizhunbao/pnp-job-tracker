@@ -121,7 +121,7 @@ const BROAD_BY_SLUG: Record<string, string> = { tech: '科技', health: '医疗'
 const rankTitle = (t: TFn, slug: string): string => {
   if (!slug.startsWith('daily-top')) return t('rank.title.' + slug)
   const zh = BROAD_BY_SLUG[slug.replace('daily-top-', '')]
-  return t('rank.title.daily-top') + (zh ? ' · ' + t('broad.' + zh) : '')
+  return t('rank.title.daily-top') + (zh ? '　' + t('broad.' + zh) : '')
 }
 
 export function RankingView({ slug, items, slugs = [] }: { slug: string; items: RankRow[]; slugs?: string[] }) {

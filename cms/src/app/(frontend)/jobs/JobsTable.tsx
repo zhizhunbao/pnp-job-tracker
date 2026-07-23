@@ -2642,7 +2642,7 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
     return (
       <FactsBox note={!usesMedian ? undefined
         : (mHr != null || mYr != null)
-          ? t('fact.medianSrc') + (job.wageYear ? ` · ${job.wageYear}` : '') + (field === 'vsMedian' && vs != null ? ' · ' + t('fact.vsNote') : '')
+          ? t('fact.medianSrc') + (job.wageYear ? `　${job.wageYear}` : '') + (field === 'vsMedian' && vs != null ? '　' + t('fact.vsNote') : '')
           // 中位缺失分两种,别混:免费层=数据被付费墙剥离(引导升级);Pro=该 NOC×省真无 ESDC 数据(宁可留空)
           : (isPro ? t('fact.noMedian') : t('fact.medianPro'))}>
         {field === 'salary' && <FactRow k={t('col.salary')}>{job.salaryText || job.salary}</FactRow>}
