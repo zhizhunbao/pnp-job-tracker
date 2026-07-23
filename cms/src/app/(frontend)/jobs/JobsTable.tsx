@@ -2168,7 +2168,7 @@ export function CompanyBody({ company, similar, t, lang, showTrans, hideTopInfo,
       {/* 基本信息卡(#197 合并):身份(官网/地址)+ 简介同卡;标题「基本信息」与在招/担保卡同款(Frank 2026-07-24) */}
       {(hasId || hasDesc || briefCached || company.name) && (
         <div style={MODAL_CARD}>
-          <div style={MODAL_CARD_HEAD}>{t('co.basic')}</div>
+          <div style={MODAL_CARD_HEAD}>{t('co.basic')}{hideTopInfo && company.wikiUrl ? <span style={{ marginLeft: 8, fontWeight: 400, fontSize: 11, color: '#1d4ed8', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 999, padding: '2px 9px', whiteSpace: 'nowrap' }}>{t('co.wellKnown')}</span> : null}</div>
           <div>
             {company.website ? <FactRow k={t('act.site')}><a href={company.website} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5, overflowWrap: 'anywhere' }}>{company.website}</a></FactRow> : null}
             {showAddrRow && addr ? <FactRow k={t('act.addr')}><a href={mapsUrl(addr)} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5 }}><IconMap /> {addr}</a></FactRow> : null}
@@ -2307,8 +2307,7 @@ function CompanyPanel({ job, jobs, lang, plan, onOpenJob }: { job: JobRow; jobs:
   const slug = job.companySlug || co?.slug || ''
   return (
     <>
-      {/* §7 了解公司行(中文行业+知名章)挂到按钮上面(Frank 2026-07-24「放到按钮上面」) */}
-      {co ? <CompanyTopInfo company={co} t={t} /> : null}
+      {/* 行业行已挪到弹框页眉(名下副标,Frank「改成职位这种」);知名章在基本信息卡题旁 */}
       <div style={{ display: 'flex', gap: 8, margin: '2px 0 12px', flexWrap: 'wrap' }}>
         {canTrans ? (
           <button onClick={() => setShowTrans((v) => !v)} style={{ ...PILL_BTN, ...(showTrans ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}>{showTrans ? t('cat.hideZh') : t('cat.showZh')}</button>
@@ -3181,6 +3180,8 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
               : <><IconCompass /> {t('advisor.tag')}<span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('grp.' + group)}</span>{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('advisor.left', { n: freeLeft })}</span> : null}</>}
               {/* #185:公司弹框「打开完整页」移入正文顶部钮行(与职位弹框同款),页眉不再重复 */}</div>
             <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{group === 'company' ? (job.company || title || a.title) : (job.title || title || a.title)}</h3>
+            {/* 公司名下挂中文行业行(Frank 2026-07-24「改成职位这种」:与职位弹框 NOC 译名副标同款) */}
+            {group === 'company' && job.broad && job.broad !== '未分类' ? <div style={{ fontSize: 12.5, color: '#9ca3af', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('broad.' + job.broad)}</div> : null}
           </div>
           <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
             {!narrow && <button onClick={toggleFull} title={t(full ? 'advisor.exitFull' : 'advisor.full')} style={iconBtn}>{full ? <IconMinimize /> : <IconMaximize />}</button>}
