@@ -2155,7 +2155,7 @@ export function CompanyBody({ company, similar, t, lang, showTrans, onOpenJob, r
       {/* 合并「公司」卡(#197 合并 + #200 卡片化):身份(官网/行业/知名)+ 简介内容同卡;地址 AI 有所在地则不重复 */}
       {(hasId || hasDesc || briefCached || company.name) && (
         <div style={MODAL_CARD}>
-          <div style={MODAL_CARD_HEAD}>{t('col.company')}</div>
+          {/* col.company「公司」标题 Frank 2026-07-23 去掉;身份行直接起 */}
           <div>
             {company.website ? <FactRow k={t('act.site')}><a href={company.website} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5, overflowWrap: 'anywhere' }}>{company.website}</a></FactRow> : null}
             {showAddrRow && addr ? <FactRow k={t('act.addr')}><a href={mapsUrl(addr)} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5 }}><IconMap /> {addr}</a></FactRow> : null}
@@ -2163,6 +2163,8 @@ export function CompanyBody({ company, similar, t, lang, showTrans, onOpenJob, r
             {company.wikiUrl ? <FactRow k={t('co.wellKnown')}><a href={company.wikiUrl} target="_blank" rel="noreferrer" style={{ ...link, fontSize: 12.5, overflowWrap: 'anywhere' }}>{company.wikiUrl}</a></FactRow> : null}
             {company.website && company.websiteSource === 'searched' ? <div style={{ marginTop: 4, fontSize: 11.5, color: '#9ca3af', lineHeight: 1.5 }}>{t('fact.siteSearched')}</div> : null}
           </div>
+          {/* 身份与简介间分隔线(Frank 2026-07-23 效果图「中间横线可以」) */}
+          {hasId && (hasDesc || briefCached || company.name) ? <div style={{ borderTop: '1px solid #f3f4f6', margin: '10px 0 8px' }} /> : null}
           {/* 简介内容接在身份下(同卡;标题/声明不再另起):名录厚简介>缓存 AI 五节>懒查,三者互斥 */}
           {aiNote}
           {hasDesc ? (
