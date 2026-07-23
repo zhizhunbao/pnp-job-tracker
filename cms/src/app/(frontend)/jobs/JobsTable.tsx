@@ -2160,7 +2160,8 @@ export function CompanyBody({ company, similar, t, lang, showTrans, onOpenJob, r
       {/* 担保记录深块(#184 收编;#197 移到合并块之后;有记录/AIP 才出) */}
       {showSponsor && (
         <div style={MODAL_CARD}>
-          <div style={MODAL_CARD_HEAD}>{t('gr.dim.coSponsor')}<span style={{ fontWeight: 400, color: '#9ca3af', fontSize: 11.5, marginLeft: 8 }}>{t('co.spSub')}</span></div>
+          {/* #200(Frank「这个废话不用加」):担保记录副标题(历史事实,非能担保判定)撤——彩底结论句已含参考限度 */}
+          <div style={MODAL_CARD_HEAD}>{t('gr.dim.coSponsor')}</div>
           <div>
             {streams.map((s, i) => (
               <div key={i} style={{ display: 'flex', gap: 10, padding: '2px 0', fontSize: 13, alignItems: 'baseline' }}>
@@ -2174,8 +2175,8 @@ export function CompanyBody({ company, similar, t, lang, showTrans, onOpenJob, r
                 <span style={{ flex: 1, color: '#374151' }}>{t('co.spBatch', { q: company.lmiaLastQuarter, n: company.lmiaLmias ?? '—' })}</span>
               </div>
             ) : null}
+            {/* #200(Frank「这个废话也是」):来源行(ESDC 名录、IRCC)撤 */}
             <div style={{ fontSize: 12, color: conc.fg, background: conc.bg, borderRadius: 8, padding: '6px 10px', margin: '6px 0 0', lineHeight: 1.55 }}>{t(conc.key)}</div>
-            <div style={{ fontSize: 11, color: '#9ca3af', margin: '4px 0 0' }}>{t('co.spSource')}</div>
           </div>
         </div>
       )}
@@ -2199,9 +2200,9 @@ export function CompanyBody({ company, similar, t, lang, showTrans, onOpenJob, r
                   </span>
                   <span style={{ fontSize: 11.5, whiteSpace: 'nowrap', flexShrink: 0, textAlign: 'right' }}>
                     {j.salaryText ? <div style={{ color: '#15803d', fontWeight: 700, fontSize: 12.5 }}>{j.salaryText}</div> : null}
+                    {/* #200(Frank「技能岗显示有什么意义」):在招职位裸通道档标签撤(无表头没上下文);通道信号在主表「通道」列/职位弹框 */}
                     <div style={{ color: '#9ca3af' }}>
                       {j.city ? <span>{j.city}</span> : null}
-                      {j.gradeChannel != null ? <span style={{ color: chColor(j.gradeChannel), marginLeft: 8 }}>{t('gr.ch.' + j.gradeChannel)}</span> : null}
                     </div>
                   </span>
                 </div>
