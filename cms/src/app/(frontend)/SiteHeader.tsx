@@ -74,12 +74,12 @@ function NavDrop({ label, icon, highlight, items }: {
 function MobileDrawer({ t, active, showAcctTab, onClose }: { t: TFn; active?: string; showAcctTab: boolean; onClose: () => void }) {
   const [openGrp, setOpenGrp] = useState<string>('')   // 展开中的组(单开足够:资讯/资料库)
   const item = (href: string, label: React.ReactNode, cur: boolean): React.CSSProperties => ({
-    display: 'block', padding: '12px 14px', borderRadius: 10, fontSize: 14.5, textDecoration: 'none',
+    display: 'block', padding: '10px 12px', borderRadius: 9, fontSize: 14, textDecoration: 'none',
     background: cur ? '#eff6ff' : '#f9fafb', border: `1px solid ${cur ? '#bfdbfe' : '#e5e7eb'}`,
     color: cur ? '#1d4ed8' : '#374151', fontWeight: cur ? 600 : 400,
   })
-  const sub: React.CSSProperties = { display: 'block', padding: '7px 8px', margin: '0 6px 0 18px', borderRadius: 8, fontSize: 13.5, color: '#4b5563', textDecoration: 'none' }
-  const grpBtn: React.CSSProperties = { width: '100%', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px', borderRadius: 10, fontSize: 14.5, background: '#f9fafb', border: '1px solid #e5e7eb', color: '#374151', cursor: 'pointer' }
+  const sub: React.CSSProperties = { display: 'block', padding: '7px 8px', margin: '0 6px 0 16px', borderRadius: 8, fontSize: 13, color: '#4b5563', textDecoration: 'none' }
+  const grpBtn: React.CSSProperties = { width: '100%', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', borderRadius: 9, fontSize: 14, background: '#f9fafb', border: '1px solid #e5e7eb', color: '#374151', cursor: 'pointer' }
   const grp = (key: string, label: React.ReactNode, children: { href: string; label: React.ReactNode; active?: boolean }[]) => (
     <>
       <button onClick={() => setOpenGrp((g) => (g === key ? '' : key))} style={grpBtn}>
@@ -91,11 +91,14 @@ function MobileDrawer({ t, active, showAcctTab, onClose }: { t: TFn; active?: st
     </>
   )
   return (
-    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(17,24,39,.28)', zIndex: 60 }}>
+    // 平移动画(Frank 2026-07-23「呼出太宽太大,加平移动画+缩小」):遮罩淡入、面板从左 translateX(-100%)→0 滑入;
+    // 挂载即播关键帧(无需 open 态);宽度 80%/340 → 68%/280 收窄,条目内距略缩(仍保 ≥40px 触控高)
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(17,24,39,.28)', zIndex: 60, animation: 'drwFade .18s ease' }}>
+      <style>{'@keyframes drwFade{from{opacity:0}to{opacity:1}}@keyframes drwSlide{from{transform:translateX(-100%)}to{transform:translateX(0)}}'}</style>
       <div onClick={(e) => e.stopPropagation()}
-        style={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: '80%', maxWidth: 340, background: '#fff', borderRight: '1px solid #e5e7eb', padding: '0 14px', overflowY: 'auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 2px 12px' }}>
-          <span style={{ fontSize: 17, fontWeight: 700, color: '#111827' }}>🍁 Offer2PR</span>
+        style={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: '68%', maxWidth: 280, background: '#fff', borderRight: '1px solid #e5e7eb', padding: '0 12px', overflowY: 'auto', animation: 'drwSlide .24s cubic-bezier(.4,0,.2,1)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 2px 10px' }}>
+          <span style={{ fontSize: 16, fontWeight: 700, color: '#111827' }}>🍁 Offer2PR</span>
           <button onClick={onClose} aria-label={t('nav.menu')} style={{ width: 32, height: 32, border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', color: '#374151', cursor: 'pointer', fontSize: 14 }}>✕</button>
         </div>
         <nav style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 20 }}>
