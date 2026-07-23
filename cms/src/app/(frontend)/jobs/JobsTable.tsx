@@ -2523,19 +2523,13 @@ function GroupFactsSection(props: Omit<Parameters<typeof FieldFactsSection>[0], 
 
 function FieldFactsSection({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpDraws, news, eeOcc, desigEmp, nocDesc, fieldSources, onOpenJob }: { field: ColKey; job: JobRow; jobs: JobRow[]; lang: Lang; isPro: boolean; loggedIn: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; news: NewsSlim[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onOpenJob?: (j: JobRow) => void }) {
   const t = makeT(lang)
-  const urls = fieldSrcUrls(field, job, fieldSources)
   return (
     <>
       <FieldFactsInner field={field} job={job} jobs={jobs} lang={lang} isPro={isPro} loggedIn={loggedIn} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} onOpenJob={onOpenJob} />
+      {/* #106:字段级「来源: URL」官方外链撤(归拢到 /resources);「本站算法」派生注(非链接)保留 */}
       {DERIVED_SRC_FIELDS.has(field) ? (
         <div style={{ margin: '2px 0 0', fontSize: 11.5, color: '#9ca3af' }}>
           {t('src.label')}: {t('src.derived')}
-        </div>
-      ) : urls.length ? (
-        /* #174:多 URL 的「 · 」连缀退役(W 规矩一行一条)——首条跟标签同行,其余各自成行 */
-        <div style={{ margin: '2px 0 0', fontSize: 11.5, color: '#9ca3af', overflowWrap: 'anywhere' }}>
-          {t('src.label')}: <a href={urls[0]} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{urls[0]}</a>
-          {urls.slice(1).map((u) => <div key={u}><a href={u} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{u}</a></div>)}
         </div>
       ) : null}
     </>
