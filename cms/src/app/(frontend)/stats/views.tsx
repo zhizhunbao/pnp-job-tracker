@@ -69,7 +69,7 @@ function DifficultyCard({ raw, t }: { raw: StatRow['difficulty']; t: TFn }) {
   const f = (k: string) => (d.factors || []).find((x: any) => x.key === k)
   const comp = f('comp'), trend = f('quotaTrend'), act = f('activity'), score = f('scoreLevel')
   const row: React.CSSProperties = { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', fontSize: 13, color: '#374151', marginTop: 6 }
-  const src = (x: any) => x?.source ? <a href={x.source} target="_blank" rel="noreferrer" title={String(x.asOf || '')} style={{ color: '#6b7280', textDecoration: 'none', fontSize: 11.5, whiteSpace: 'nowrap' }}>↗</a> : null
+  const src = (_x: any) => null   // #106:官方来源 ↗ 外链撤(归拢到 /resources)
   const pctS = (v: number) => `${v > 0 ? '+' : ''}${Math.round(v * 100)}%`
   return (
     <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '14px 16px', margin: '12px 0 0' }}>

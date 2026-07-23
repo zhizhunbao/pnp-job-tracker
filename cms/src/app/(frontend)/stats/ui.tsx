@@ -61,8 +61,9 @@ export function CaliberLine({ t, srcs, fetched }: { t: TFn; srcs: SrcRow[]; fetc
         <div style={{ marginTop: 6, lineHeight: 1.7 }}>
           {t('stats.caliberText')}
           <div>
+            {/* #106:官方来源外链撤(归拢到 /resources);出处名留纯文本 */}
             {srcs.map((s) => (
-              <a key={s.field} href={s.url} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none', marginRight: 12 }}>{s.publisher} ↗</a>
+              <span key={s.field} style={{ color: '#6b7280', marginRight: 12 }}>{s.publisher}</span>
             ))}
             {fetched ? <span>· {t('src.fetched', { d: fetched })}</span> : null}
           </div>

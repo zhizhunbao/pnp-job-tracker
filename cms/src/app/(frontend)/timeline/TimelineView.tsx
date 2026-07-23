@@ -108,7 +108,7 @@ export function TimelineView({ events, cadence, eeCadence }: {
                         <span style={{ fontWeight: 600, color: '#111827' }}>{e.kind === 'notice' ? t('tl.notice') : e.title}</span>
                         {e.score != null && <span style={{ color: UI.ok, fontWeight: 600 }}>{t('tl.min', { n: e.score })}{e.scale && e.scale !== 'CRS' && <span style={{ color: '#9ca3af', fontWeight: 400, fontSize: 11 }}> ({e.scale}{t('tl.notCrs')})</span>}</span>}
                         {e.invitations != null && <span style={{ color: '#6b7280' }}>{t('tl.inv', { n: e.invitations })}</span>}
-                        {e.url && <a href={e.url} target="_blank" rel="noreferrer" style={{ color: UI.primary, textDecoration: 'none', fontSize: 12 }}>{t('tl.src')}</a>}
+                        {/* #106:官方来源外链撤(归拢到 /resources) */}
                       </>}
                 </div>
                 {e.kind === 'notice' && e.note && <div style={{ color: '#6b7280', fontSize: 12.5, marginTop: 4 }}>{e.note}</div>}

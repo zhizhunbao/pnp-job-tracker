@@ -46,8 +46,8 @@ export function OccupationsView({ rows }: { rows: OccRow[] }) {
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', padding: '10px 12px 6px' }}>
                     <span style={{ fontSize: 13.5, fontWeight: 700 }}>{streamDisplay(t, s.stream) || s.label || s.stream}</span>
                     <span style={{ fontSize: 12, color: '#9ca3af' }}>{s.occ.length} NOC</span>
-                    {s.url && <a href={s.url} target="_blank" rel="noreferrer" style={{ marginLeft: 'auto', fontSize: 12, color: UI.primary, textDecoration: 'none' }}>{t('dir.occ.src')}</a>}
-                    {s.fetched && <span style={{ fontSize: 11.5, color: '#9ca3af' }}>{t('dir.occ.fetched', { d: s.fetched })}</span>}
+                    {/* #106:官方来源外链撤(归拢到 /resources) */}
+                    {s.fetched && <span style={{ marginLeft: 'auto', fontSize: 11.5, color: '#9ca3af' }}>{t('dir.occ.fetched', { d: s.fetched })}</span>}
                   </div>
                 } cols={[
                   { key: 'noc', label: t('dir.occ.colNoc'), nowrap: true, sort: (r) => r.noc, render: (r) => <span style={{ color: '#9ca3af' }}>{r.noc}</span> },

@@ -20,7 +20,7 @@ import { useOverlayClose } from './overlay'
 import { CARD, iconBtnS, SCRIM, useIsNarrow } from './Modal'
 import { match as matchJob, matchRank, type MatchProfile, type MatchJob, type MatchReason } from '@/lib/match'
 import type { CompanyDetail, SimilarEmployer } from '@/lib/jobsSql'   // E8-11 B1:公司域同源数据形状(type-only,不拉服务端码)
-import { lmiaWageClass, isExemptSector, LMIA_REFUSAL_SOURCE } from '@/lib/lmiaStatus'
+import { lmiaWageClass, isExemptSector } from '@/lib/lmiaStatus'
 
 // 分层态(E3-05/E5-00,服务端 page.tsx 传入):gate 在服务端已生效,这里只做展示引导
 export type Plan = {
@@ -1550,7 +1550,8 @@ export function PnpListSection({ job, lang, occ, draws, news }: { job: JobRow; l
         <div key={s.label + s.stream} style={{ marginBottom: 10 }}>
           <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>
             {/* 通道名挂官方政策页(url 维度字段一直有,07-06 质量盘点补渲染)—— 每条清单自带出处 */}
-            {s.url ? <a href={s.url} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{streamDisplay(t, s.label)} ↗</a> : streamDisplay(t, s.label)}
+            {/* #106:官方来源外链撤(归拢到 /resources);清单名留纯文本 */}
+            {streamDisplay(t, s.label)}
           </div>
           <div style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid #f3f4f6', borderRadius: 8 }}>
             {s.occupations.map((o) => {
@@ -2595,8 +2596,8 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
         <FactRow k={t('col.company')}>{job.company}</FactRow>
         {feasible && (
           <FactRow k={t('lmia.route')}>
-            <span style={{ color: feasible.tone, fontWeight: 500 }}>{feasible.txt}</span>{' '}
-            <a href={LMIA_REFUSAL_SOURCE} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none', fontSize: 11.5 }}>{t('lmia.official')} ↗</a>
+            {/* #106:LMIA 官方来源外链撤(归拢到 /resources) */}
+            <span style={{ color: feasible.tone, fontWeight: 500 }}>{feasible.txt}</span>
           </FactRow>
         )}
       </FactsBox>
@@ -2907,10 +2908,7 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
         <span title={r.vTip} style={{ background: pill.bg, color: pill.fg, fontWeight: 600, fontSize: 11.5, padding: '2px 8px', borderRadius: 999, whiteSpace: 'nowrap' }}>
           {v.icon} {r.v}{r.vTip ? ' ⓘ' : ''}
         </span>
-        {r.src?.url && (
-          <a href={r.src.url} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} style={{ fontSize: 11.5, color: '#2563eb', textDecoration: 'none' }}
-            title={r.src.fetched ? t('match.srcFetched', { d: r.src.fetched }) : undefined}>↗</a>
-        )}
+        {/* #106:依据链官方来源 ↗ 外链撤(归拢到 /resources) */}
       </span>
     )
   }
