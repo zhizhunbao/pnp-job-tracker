@@ -2330,14 +2330,12 @@ export async function fetchJobText(applyUrl: string, signal?: AbortSignal): Prom
 function TitleFacts({ job, lang, loggedIn }: { job: JobRow; lang: Lang; loggedIn: boolean }) {
   const t = makeT(lang)
   const [jd, setJd] = useState<string | null>(null)  // null=loading · ''=无正文
-  const [gated, setGated] = useState(false)          // 402:JD 摘录免费试用用完(E3-05)
-  const [limited, setLimited] = useState(false)      // #134:429 匿名池用完 ≠ 没数据
+  const [limited, setLimited] = useState(false)      // #201:429=JD 宽松防滥用闸偶发(JD 已免费,非付费墙)
   useEffect(() => {
     const ctrl = new AbortController()
     ;(async () => {
       try {
         const r = await fetchJobText(job.applyUrl || '', ctrl.signal)
-        if (r.status === 'gated') { setGated(true); setJd(''); return }
         if (r.status === 'limited') { setLimited(true); setJd(''); return }
         setJd(r.text)
       } catch { if (!ctrl.signal.aborted) setJd('') }
@@ -2354,8 +2352,7 @@ function TitleFacts({ job, lang, loggedIn }: { job: JobRow; lang: Lang; loggedIn
       <FactRow k={t('fact.cert')}>{job.certificates?.length ? <>{job.certificates.map((c, i) => <div key={i}>{c}</div>)}</> : null}</FactRow>
       {/* 职位字段只做职位的事(07-06 用户拍板):职位名已在弹窗标题,NOC/TEER 归分类弹窗 —— 这里就是真实 JD */}
       <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: (job.employmentHours || job.education || job.certificates?.length) ? 8 : 0 }}>{t('fact.jdExcerpt')}</div>
-      {gated ? <LockedText t={t} loggedIn={loggedIn} lines={4} />
-        : limited ? <div style={{ marginTop: 4 }}><Notice kind="warn">{t('advisor.limit429')}</Notice></div>
+      {limited ? <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>{t('jd.busy')}</div>
         : jd === null ? <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>{t('act.loadingText')}</div>
         : jd ? <JdTextView text={jd} />
         : <div style={{ marginTop: 4, fontSize: 12.5, color: '#9ca3af' }}>
@@ -3398,7 +3395,7 @@ function AdvisorChat({ field, job, lang, initialJudgment, initialSug }: { field:
 export function JobBody({ job, lang, plan, inModal, onFreeLeft }: { job: JobRow; lang: Lang; plan: Plan; inModal?: boolean; onFreeLeft?: (n: number) => void }) {
   const t = makeT(lang)
   const [text, setText] = useState('')
-  const [status, setStatus] = useState<'loading' | 'done' | 'empty' | 'upgrade' | 'limited'>('loading')   // #134:limited=429 不再谎报「空」
+  const [status, setStatus] = useState<'loading' | 'done' | 'empty' | 'limited'>('loading')   // #201:JD 已免费,付费墙态(upgrade)退役;limited=宽松防滥用闸偶发
   // J3(2026-07-19 Frank 批):AI 五节整理版懒生成——undefined=整理中,null=没有(降级原文),string=整理版
   const [fmt, setFmt] = useState<string | null | undefined>(undefined)
   const [showOrig, setShowOrig] = useState(false)
@@ -3425,8 +3422,7 @@ export function JobBody({ job, lang, plan, inModal, onFreeLeft }: { job: JobRow;
       try {
         const r = await fetchJobText(job.applyUrl || '', ctrl.signal)   // #126 同岗会话缓存
         if (r.freeLeft != null) onFreeLeft?.(r.freeLeft)   // 额度可见化回传(弹框页眉;页面不挂)
-        if (r.status === 'gated') { setStatus('upgrade'); return }  // 免费试用用完(E3-05)
-        if (r.status === 'limited') { setStatus('limited'); return }  // #134:匿名 IP 池用完
+        if (r.status === 'limited') { setStatus('limited'); return }  // #201:JD 宽松防滥用闸偶发(非付费墙)
         setText(r.text); setStatus(r.text ? 'done' : 'empty')
       } catch { if (!ctrl.signal.aborted) setStatus('empty') }
     })()
@@ -3466,9 +3462,8 @@ export function JobBody({ job, lang, plan, inModal, onFreeLeft }: { job: JobRow;
         </div>
       )}
       {status === 'loading' ? <p style={{ color: '#9ca3af' }}>{t('act.loadingText')}</p>
-        : status === 'upgrade' ? <LockedText t={t} loggedIn={plan.loggedIn} lines={4} />
-        : status === 'limited' ? (   /* #134 限流说人话;#175 黄条退役 → 打码+锁行 */
-          <LockedText t={t} loggedIn={plan.loggedIn} lines={4} msg={t('advisor.limit429')} ctaLabel={!plan.loggedIn ? t('advisor.limitCta') : undefined} />
+        : status === 'limited' ? (   /* #201:JD 已免费;429=宽松防滥用闸偶发,素文案不引流 Pro */
+          <p style={{ color: '#9ca3af', margin: '4px 0' }}>{t('jd.busy')}</p>
         )
         : status === 'empty' ? (
           <div>
