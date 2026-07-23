@@ -88,8 +88,8 @@ export function PricingCard({ t, loggedIn, pro, caps, onRegister }: { t: TFn; lo
         </div>
         {/* Pro 30 天卡 */}
         <div style={cardS()}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: '#b45309' }}><IconStar /> {t('price.pro')} · 30</div>
-          {priceLine(P30, `${t('price.per30')} · ${t('price.perDay', { v: perDay(P30, 30) })}`)}
+          <div style={{ fontSize: 14, fontWeight: 700, color: '#b45309' }}><IconStar /> {t('price.pro')} 30</div>
+          {priceLine(P30, `${t('price.per30')}　${t('price.perDay', { v: perDay(P30, 30) })}`)}
           <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
             <Li dim>{t('price.plusFree')}</Li>
             {/* 匹配已免费(含在「免费版全部功能」里)→ Pro 卡不再单列匹配;Pro 差异=f6 工资中位列 + 顾问额度等 */}
@@ -100,24 +100,24 @@ export function PricingCard({ t, loggedIn, pro, caps, onRegister }: { t: TFn; lo
             <Li>{t('price.f9')}</Li>
             <Li>{t('price.f10')}</Li>
           </ul>
-          <button onClick={() => buy('30')} disabled={busy} style={{ ...btn, background: '#2563eb', color: '#fff', opacity: busy ? 0.6 : 1 }}>{t('price.cta.buy30')} · {P30}</button>
+          <button onClick={() => buy('30')} disabled={busy} style={{ ...btn, background: '#2563eb', color: '#fff', opacity: busy ? 0.6 : 1 }}>{t('price.cta.buy30')}　{P30}</button>
         </div>
         {/* Pro 90 天卡(更划算) */}
         <div style={cardS(true)}>
           <span style={{ position: 'absolute', top: -10, right: 12, background: '#f59e0b', color: '#fff', borderRadius: 999, padding: '2px 10px', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap' }}>{t('price.save', { p: savePct })}</span>
-          <div style={{ fontSize: 14, fontWeight: 700, color: '#b45309' }}><IconStar /> {t('price.pro')} · 90</div>
-          {priceLine(P90, `${t('price.per90')} · ${t('price.perDay', { v: perDay(P90, 90) })}`)}
+          <div style={{ fontSize: 14, fontWeight: 700, color: '#b45309' }}><IconStar /> {t('price.pro')} 90</div>
+          {priceLine(P90, `${t('price.per90')}　${t('price.perDay', { v: perDay(P90, 90) })}`)}
           <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
             <Li dim>{t('price.same90')}</Li>
           </ul>
-          <button onClick={() => buy('90')} disabled={busy} style={{ ...btn, background: '#b45309', color: '#fff', opacity: busy ? 0.6 : 1 }}>{t('price.cta.buy90')} · {P90}</button>
+          <button onClick={() => buy('90')} disabled={busy} style={{ ...btn, background: '#b45309', color: '#fff', opacity: busy ? 0.6 : 1 }}>{t('price.cta.buy90')}　{P90}</button>
         </div>
       </div>
       {/* 价值锚(第 5 轮 #18):v2 定位对标顾问咨询费;措辞循红线(不构成建议) */}
       <div style={{ fontSize: 11.5, color: '#78716c', marginTop: 10, textAlign: 'center', lineHeight: 1.4 }}>{t('price.anchor')}</div>
       <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4, textAlign: 'center', lineHeight: 1.4 }}>
         {t('price.note')} <a href="/legal/terms" target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{t('foot.terms')}</a>
-        {pro && <>{' · '}<a href="/account" style={{ color: '#2563eb', textDecoration: 'none' }}>{t('price.cta.acct')}</a></>}
+        {pro && <>{'　'}<a href="/account" style={{ color: '#2563eb', textDecoration: 'none' }}>{t('price.cta.acct')}</a></>}
       </div>
     </div>
   )

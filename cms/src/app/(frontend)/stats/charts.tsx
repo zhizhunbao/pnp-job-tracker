@@ -168,10 +168,10 @@ export function StatsCharts({ rows, t }: { rows: StatRow[]; t: TFn }) {
   const broadLabel = (b: string) => t('broad.' + b)
 
   const presets = useMemo(() => [
-    { title: `${t('stats.openJobs')} · ${t('chart.dimProv')}`, kind: 'prov' as const, metric: 'openJobs' as const, money: false },
-    { title: `${t('stats.medWage')} · ${t('chart.dimProv')}`, kind: 'prov' as const, metric: 'medianWageAnnual' as const, money: true },
-    { title: `${t('stats.named')} · ${t('chart.dimProv')}`, kind: 'prov' as const, metric: 'namedJobs' as const, money: false },
-    { title: `${t('stats.openJobs')} · ${t('chart.dimCat')}`, kind: 'cat' as const, metric: 'openJobs' as const, money: false },
+    { title: `${t('stats.openJobs')}(${t('chart.dimProv')})`, kind: 'prov' as const, metric: 'openJobs' as const, money: false },
+    { title: `${t('stats.medWage')}(${t('chart.dimProv')})`, kind: 'prov' as const, metric: 'medianWageAnnual' as const, money: true },
+    { title: `${t('stats.named')}(${t('chart.dimProv')})`, kind: 'prov' as const, metric: 'namedJobs' as const, money: false },
+    { title: `${t('stats.openJobs')}(${t('chart.dimCat')})`, kind: 'cat' as const, metric: 'openJobs' as const, money: false },
   ], [t])
 
   const [dim, setDim] = useState<'prov' | 'cat'>('prov')

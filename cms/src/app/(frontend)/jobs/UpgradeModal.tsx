@@ -58,12 +58,12 @@ export function UpgradeModal({ t, onClose, reason }: { t: TFn; onClose: () => vo
       {/* #74 随 #64 换装:90 天钮补「省 N%」徽标,两钮补每天单价(数学与 PricingCard 同源 PRICE) */}
       <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
         <button onClick={() => buy('30')} disabled={busy} style={{ ...btn, background: '#2563eb' }}>
-          <div>{t('acct.buy30')} · {PRICE.p30}</div>
+          <div>{t('acct.buy30')}　{PRICE.p30}</div>
           <div style={{ fontSize: 11, fontWeight: 400, opacity: 0.85, marginTop: 2 }}>{t('price.perDay', { v: PRICE.perDay(PRICE.p30, 30) })}</div>
         </button>
         <button onClick={() => buy('90')} disabled={busy} style={{ ...btn, background: '#b45309', position: 'relative' }}>
           <span style={{ position: 'absolute', top: -9, right: 8, background: '#f59e0b', color: '#fff', borderRadius: 999, padding: '1px 8px', fontSize: 10.5, fontWeight: 700, whiteSpace: 'nowrap' }}>{t('price.save', { p: PRICE.savePct })}</span>
-          <div>{t('acct.buy90')} · {PRICE.p90}</div>
+          <div>{t('acct.buy90')}　{PRICE.p90}</div>
           <div style={{ fontSize: 11, fontWeight: 400, opacity: 0.85, marginTop: 2 }}>{t('price.perDay', { v: PRICE.perDay(PRICE.p90, 90) })}</div>
         </button>
       </div>
