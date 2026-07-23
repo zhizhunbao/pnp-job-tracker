@@ -21,6 +21,9 @@ cms/dev.log
 # 08→09 评分中间产物 + audit 产出(processed 下,可重算)
 /data/processed/all-scored.json
 /data/processed/audit-flags.json
+# 公司富化/事实缓存(懒查询产出,可重抓)
+/data/processed/company_enrich.json
+/data/processed/company_facts.json
 # 人读导出视图(csv)
 /data/**/*.csv
 # 公司名录导出视图(保留 .json)
