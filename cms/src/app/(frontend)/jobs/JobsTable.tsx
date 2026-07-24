@@ -1208,8 +1208,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                         <td key={k} style={{ ...td, minWidth: colMin('actions') }}>
                           <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
                             <button onClick={(e) => { e.stopPropagation(); open('score', t('act.immigValue')) }}
-                              style={{ ...actBtn, whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                              <IconCompass /> {t('act.immigValue')}
+                              style={{ ...actBtn, whiteSpace: 'nowrap' }}>
+                              {t('act.immigValue')}
                             </button>
                             <button onClick={(e) => { e.stopPropagation(); toggleSave(j) }}
                               style={{ ...actBtn, whiteSpace: 'nowrap', ...(saved[String(j.id)] ? { color: '#b45309', borderColor: '#fde68a', background: '#fffbeb' } : {}) }}>
@@ -3907,4 +3907,5 @@ const wrapCell = (w: number): React.CSSProperties => ({ maxWidth: w, whiteSpace:
 const link: React.CSSProperties = { color: '#2563eb', textDecoration: 'none' }
 const colPanel: React.CSSProperties = { position: 'absolute', top: '110%', right: 0, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, boxShadow: '0 10px 30px rgba(0,0,0,.12)', padding: 8, zIndex: 20, minWidth: 210 }
 const colBtn: React.CSSProperties = { flex: 1, whiteSpace: 'nowrap', padding: '4px 8px', fontSize: 12.5, border: '1px solid #d1d5db', borderRadius: 5, background: '#f9fafb', color: '#374151', cursor: 'pointer' }
-const actBtn: React.CSSProperties = { whiteSpace: 'nowrap', padding: '3px 8px', fontSize: 12, border: '1px solid #d1d5db', borderRadius: 5, background: '#fff', color: '#374151', cursor: 'pointer' }
+// #E8-12 尾巴(Frank「移民价值这个按钮是不是太大了」):3×8/12 → 2×7/11.5,图标撤(每行都有一颗,轻一档)
+const actBtn: React.CSSProperties = { whiteSpace: 'nowrap', padding: '2px 7px', fontSize: 11.5, border: '1px solid #d1d5db', borderRadius: 5, background: '#fff', color: '#374151', cursor: 'pointer' }
