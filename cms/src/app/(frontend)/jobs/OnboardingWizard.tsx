@@ -181,7 +181,8 @@ export function OnboardingWizard({ t, initial, onClose, onFinished, z }: { t: TF
       <div style={{ height: 5, background: '#eef2ff', borderRadius: 99, marginTop: 8, overflow: 'hidden' }}>
         <div style={{ width: `${Math.round(((step + 1) / total) * 100)}%`, height: '100%', background: '#2563eb', transition: 'width .2s' }} />
       </div>
-      <div style={{ fontSize: 12, color: '#2563eb', marginTop: 10 }}>{t('ob.value')}</div>
+      {/* dd24-#109:投递流(onFinished 在)里价值行/终键不许再许诺「看匹配」——实际动作是继续投递 */}
+      <div style={{ fontSize: 12, color: '#2563eb', marginTop: 10 }}>{t(onFinished ? 'ob.valueApply' : 'ob.value')}</div>
 
       <div style={{ fontSize: 16, fontWeight: 600, color: '#111827', marginTop: 14 }}>{t(qKey)}</div>
       {body()}
@@ -201,7 +202,7 @@ export function OnboardingWizard({ t, initial, onClose, onFinished, z }: { t: TF
         <div style={{ display: 'flex', gap: 8 }}>
           {/* 组件统一 P2(#113):上一步 ghost 灰字/下一步 primary(B映射);保存中=Button 内置禁用浅蓝 */}
           {step > 0 && <Button kind="ghost" onClick={back} style={{ color: '#6b7280', fontWeight: 400, fontSize: 13.5 }}>{t('ob.back')}</Button>}
-          <Button onClick={next} disabled={saving} style={{ fontSize: 13.5, padding: '8px 18px' }}>{isLast ? t('ob.finish') : t('ob.next')}</Button>
+          <Button onClick={next} disabled={saving} style={{ fontSize: 13.5, padding: '8px 18px' }}>{isLast ? t(onFinished ? 'ob.finishApply' : 'ob.finish') : t('ob.next')}</Button>
         </div>
       </div>
     </Modal>

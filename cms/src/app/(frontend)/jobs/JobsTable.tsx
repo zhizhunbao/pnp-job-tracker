@@ -1831,7 +1831,7 @@ const JD_NONE_LOOSE = /^\(?\s*(not|none|no)\s+(stated|specified|mentioned|provid
 // 先剥「- 」bullet 前缀再判(#186:变体常以「- (not stated)」bullet 形式混在有内容的节里)
 const isJdNone = (s?: string) => { const b = (s || '').trim().replace(/^-\s*/, ''); return !b || JD_NONE_RE.test(b) || (b.length < 50 && JD_NONE_LOOSE.test(b)) }
 const JD_ZH_LINE: React.CSSProperties = { margin: '2px 0 4px', padding: '1px 0 1px 10px', borderLeft: '3px solid #dbeafe', color: '#1e40af', fontWeight: 400 }
-export function JdFormattedView({ text, t, fallbackPay, applyUrl, underTitle, trans }: { text: string; t: TFn; fallbackPay?: string; applyUrl?: string; underTitle?: boolean; trans?: string }) {
+export function JdFormattedView({ text, t, fallbackPay, applyUrl, applyEmail, underTitle, trans }: { text: string; t: TFn; fallbackPay?: string; applyUrl?: string; applyEmail?: string; underTitle?: boolean; trans?: string }) {
   const SECS: [string, string][] = [['ROLE', 'act.f.role'], ['REQS', 'act.f.reqs'], ['PAY', 'act.f.pay'], ['WORKHOURS', 'act.f.hours'], ['APPLY', 'act.f.apply']]
   const secs = jdParseSecs(text)
   const tSecs = trans ? jdParseSecs(trans) : null
@@ -1860,10 +1860,16 @@ export function JdFormattedView({ text, t, fallbackPay, applyUrl, underTitle, tr
             {/* #125(Frank「重复」):「怎么投」整节文本直接渲成官方原帖链接——一处内容一处链接,
                 不再额外附按钮行(与底部合规来源行重复);「Click Here」类废句自身变成可点出口 */}
             {m === 'APPLY' && applyUrl ? (
-              /* 原帖没写投递方式 → 直接完整显示官方原帖 URL(2026-07-21 Frank;原「查看官方原帖」按钮文案) */
+              /* dd24-#110:抽到投递邮箱(applyhow/正文正则)优先显示邮箱人话行;没邮箱且原帖也没写投递方式
+                 → 原先整条裸 URL 换短链文案(URL 又长又丑还与下方投递栏重复,出处仍是同一官方原帖) */
               none
-                ? <div style={{ paddingLeft: 14, overflowWrap: 'anywhere' }}><a href={applyUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{applyUrl} ↗</a></div>
-                : lines.map((l, i) => <div key={i} style={{ paddingLeft: 14 }}><a href={applyUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{l.replace(/^-\s*/, '')} ↗</a>{zh(i)}</div>)
+                ? (applyEmail
+                  ? <div style={{ paddingLeft: 14, overflowWrap: 'anywhere' }}>{t('apply.email')}: {applyEmail}</div>
+                  : <div style={{ paddingLeft: 14 }}><a href={applyUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{t('act.seeOfficial')}</a></div>)
+                : <>
+                    {applyEmail && <div style={{ paddingLeft: 14, overflowWrap: 'anywhere' }}>{t('apply.email')}: {applyEmail}</div>}
+                    {lines.map((l, i) => <div key={i} style={{ paddingLeft: 14 }}><a href={applyUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{l.replace(/^-\s*/, '')} ↗</a>{zh(i)}</div>)}
+                  </>
             ) : /* #123c(Frank「每个职位都有薪资吧」):原帖正文没写薪资但帖面字段有 → 兜底显示帖面薪资+来源灰注
                 (仍是搬运原帖信息——JB 列表字段也是雇主自报,非编造) */
             none && m === 'PAY' && fallbackPay ? (
@@ -3729,27 +3735,11 @@ const applyEmailOf = (text: string): string => {
   }
   return ''
 }
-function ApplyBar({ job, text, t, plan }: { job: JobRow; text: string; t: TFn; plan: Plan }) {
+function ApplyBar({ job, email, emailDone, t, plan }: { job: JobRow; email: string; emailDone: boolean; t: TFn; plan: Plan }) {
   const [stage, setStage] = useState<'idle' | 'auth' | 'intent'>('idle')
   const [authed, setAuthed] = useState(false)  // 流程内放行(不整页 reload,SSR plan 下次导航自然更新)
   const [freshProfile, setFreshProfile] = useState<MatchProfile | null>(null)  // 流程内登录后拉到的真实档案
   const [copied, setCopied] = useState(false)
-  // JB 岗投递邮箱在「Show how to apply」JSF 提交后面(正文与 description 都没有)→ 懒查 /api/applyhow;
-  // 非 JB 岗(ATS 原站)正文常直接带邮箱 → 前端正则兜底
-  const [jbEmail, setJbEmail] = useState('')
-  const [jbDone, setJbDone] = useState(false)   // applyhow 已出结果(成败都算);OAuth 回跳续投要等它,别把邮箱岗投成外跳
-  useEffect(() => {
-    setJbEmail('')
-    if (!/jobbank\.gc\.ca\/jobsearch\/jobposting\//.test(job.applyUrl || '')) { setJbDone(true); return }
-    setJbDone(false)
-    const ctrl = new AbortController()
-    fetch('/api/applyhow?url=' + encodeURIComponent(job.applyUrl), { signal: ctrl.signal })
-      .then((r) => (r.ok ? r.json() : null)).then((d) => { if (d?.email) setJbEmail(d.email) }).catch(() => {})
-      .finally(() => { if (!ctrl.signal.aborted) setJbDone(true) })
-    return () => ctrl.abort()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [job.applyUrl])
-  const email = jbEmail || applyEmailOf(text || '')
   // 已投递记录:已有收藏行 → 状态改 applied,没有 → 新建;失败不打扰投递
   const record = () =>
     fetch(`/api/saved-jobs?where[job][equals]=${job.id}&limit=1&depth=0`, { credentials: 'include' })
@@ -3790,7 +3780,7 @@ function ApplyBar({ job, text, t, plan }: { job: JobRow; text: string; t: TFn; p
   }
   // OAuth 回跳续投:登录态 + 落地意图是本岗 + 10 分钟内 → 接着走意向表单/直接投,不让用户再点一次
   useEffect(() => {
-    if (!plan.loggedIn || !jbDone) return
+    if (!plan.loggedIn || !emailDone) return
     try {
       const [id, ts] = (localStorage.getItem(APPLY_RESUME_KEY) || '').split('|')
       if (id !== String(job.id) || Date.now() - Number(ts) > 10 * 60_000) return
@@ -3799,7 +3789,7 @@ function ApplyBar({ job, text, t, plan }: { job: JobRow; text: string; t: TFn; p
       launch()
     } catch { /* ignore */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [plan.loggedIn, jbDone])
+  }, [plan.loggedIn, emailDone])
   // 复制要点:岗位信息打包(贴给自己的 AI 改简历也行);一行一条(no-dot 铁律)
   const copyBrief = async () => {
     const lines = [
@@ -3813,14 +3803,15 @@ function ApplyBar({ job, text, t, plan }: { job: JobRow; text: string; t: TFn; p
     <>
       <div style={{ position: 'sticky', bottom: 0, background: '#fff', borderTop: '1px solid #e5e7eb', marginTop: 16, padding: '10px 0 2px', display: 'flex', gap: 8, zIndex: 5 }}>
         <button onClick={onApply} style={{ flex: 1, background: '#2563eb', color: '#fff', border: 'none', borderRadius: 10, padding: '11px 0', fontSize: 14.5, fontWeight: 700, cursor: 'pointer' }}>
-          {email ? t('apply.email') : `${t('apply.web')} ↗`}
+          {/* applyhow 在途时用中性「投递」占位——别先显「前往投递」再闪成「邮件投递」(Frank 问「为什么有的是前往有的是邮箱」,闪变加剧困惑) */}
+          {email ? t('apply.email') : emailDone ? `${t('apply.web')} ↗` : t('apply.plain')}
         </button>
         <button onClick={copyBrief} style={{ flexShrink: 0, background: '#f3f4f6', color: copied ? '#15803d' : '#374151', border: 'none', borderRadius: 10, padding: '11px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
           {copied ? t('apply.copied') : t('apply.copy')}
         </button>
       </div>
       {stage === 'auth' && (
-        <AuthModal t={t} mode="register" z={70} onClose={() => setStage('idle')}
+        <AuthModal t={t} mode="register" z={70} hero={t('apply.authHero')} onClose={() => setStage('idle')}
           onDone={async () => {
             // 注册闸放行前拉一次真实档案:老用户流程内登录时 SSR plan 还是匿名态,
             // 直接弹向导会以空 initial 覆盖已有档案(跳过=存空档) → 有档案直接投,没档案才进向导
@@ -3884,6 +3875,22 @@ export function JobBody({ job, lang, plan, inModal, onFreeLeft }: { job: JobRow;
     return () => ctrl.abort()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [job])
+  // 投递邮箱(E9-04,dd24-#110 从 ApplyBar 上提):JB 岗藏在「Show how to apply」JSF 后 → 懒查 /api/applyhow;
+  // 非 JB 岗正文常直接带邮箱 → 正则兜底。「怎么投」节与投递栏共用同一份结果。
+  const [jbEmail, setJbEmail] = useState('')
+  const [jbDone, setJbDone] = useState(false)   // 出结果(成败都算);OAuth 回跳续投要等它,别把邮箱岗投成外跳
+  useEffect(() => {
+    setJbEmail('')
+    if (!/jobbank\.gc\.ca\/jobsearch\/jobposting\//.test(job.applyUrl || '')) { setJbDone(true); return }
+    setJbDone(false)
+    const ctrl = new AbortController()
+    fetch('/api/applyhow?url=' + encodeURIComponent(job.applyUrl), { signal: ctrl.signal })
+      .then((r) => (r.ok ? r.json() : null)).then((d) => { if (d?.email) setJbEmail(d.email) }).catch(() => {})
+      .finally(() => { if (!ctrl.signal.aborted) setJbDone(true) })
+    return () => ctrl.abort()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [job.applyUrl])
+  const applyEmail = jbEmail || applyEmailOf(text || '')
   useEffect(() => {
     // 整理版与原文并行拉:命中缓存秒回;首次生成慢(模型现算),期间正文照常显示原文
     const ctrl = new AbortController()
@@ -3937,7 +3944,7 @@ export function JobBody({ job, lang, plan, inModal, onFreeLeft }: { job: JobRow;
               ) : fmt === undefined ? (
                 <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 6 }}>✨ {t('act.aiWorking')}</div>
               ) : null}
-              {fmt && !showOrig ? <JdFormattedView text={fmt} t={t} fallbackPay={job.salaryText || job.salary || undefined} applyUrl={job.applyUrl || undefined} trans={showTrans && trans ? trans : undefined} /> : <JdTextView text={text} max={4000} />}
+              {fmt && !showOrig ? <JdFormattedView text={fmt} t={t} fallbackPay={job.salaryText || job.salary || undefined} applyUrl={job.applyUrl || undefined} applyEmail={applyEmail || undefined} trans={showTrans && trans ? trans : undefined} /> : <JdTextView text={text} max={4000} />}
             </>
           )}
       {/* 底部来源行(republish 合规)只在整理版**没渲出**时兜底(#167③;2026-07-21 Frank
@@ -3948,7 +3955,7 @@ export function JobBody({ job, lang, plan, inModal, onFreeLeft }: { job: JobRow;
         </div>
       )}
       {/* E9-04 投递栏:正文之后常驻(弹框与页面同渲;sticky 吸底) */}
-      <ApplyBar job={job} text={text} t={t} plan={plan} />
+      <ApplyBar job={job} email={applyEmail} emailDone={jbDone} t={t} plan={plan} />
     </>
   )
 }

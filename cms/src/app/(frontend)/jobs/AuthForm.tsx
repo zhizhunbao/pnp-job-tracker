@@ -43,7 +43,8 @@ const PW_METER = [
 // forgot 防枚举=无论邮箱存在与否一律同一提示;reset 成功即登录态(Payload set-cookie),onDone 整页刷新。
 // returnTo(E9-04b):Google 是整页 OAuth 跳转,回调原先写死落首页(Frank「之前那个页面没了」)——
 // 调用方可指定回跳站内路径;不传=当前页。邮箱路径本就原地 onDone,不受影响。
-export function AuthForm({ t, onDone, initialMode, resetToken, returnTo }: { t: TFn; onDone: () => void; initialMode?: 'login' | 'register' | 'reset'; resetToken?: string; returnTo?: string }) {
+// hero(dd24-#109):调用方语境标题(投递闸=「注册后帮你预填投递邮件」),只换 register 态大标题,登录态照旧
+export function AuthForm({ t, onDone, initialMode, resetToken, returnTo, hero }: { t: TFn; onDone: () => void; initialMode?: 'login' | 'register' | 'reset'; resetToken?: string; returnTo?: string; hero?: string }) {
   const [mode, setMode] = useState<'login' | 'register' | 'forgot' | 'reset'>(initialMode ?? 'login')
   const [email, setEmail] = useState('')
   const [pw, setPw] = useState('')
@@ -122,7 +123,7 @@ export function AuthForm({ t, onDone, initialMode, resetToken, returnTo }: { t: 
       </div>
       {(mode === 'login' || mode === 'register') && (<>
         <div style={{ fontSize: 17, fontWeight: 700, color: '#111827', textAlign: 'center', lineHeight: 1.4, marginBottom: mode === 'register' ? 12 : 16 }}>
-          {t(mode === 'login' ? 'acct.hero.login' : 'acct.hero.reg')}
+          {mode === 'register' && hero ? hero : t(mode === 'login' ? 'acct.hero.login' : 'acct.hero.reg')}
         </div>
         {/* #98(走查):注册框只有承诺没证据 → 给一个匹配度预览样张(一条清晰+一条打码),
             让用户先尝到「注册后每份工作都亮匹配度」的甜头再注册 */}
@@ -226,10 +227,10 @@ export function AuthForm({ t, onDone, initialMode, resetToken, returnTo }: { t: 
 
 // mode:入口决定初始 tab(注册 CTA 直达注册,用户定「注册也要弹框」;默认登录;reset=邮件链接落地设新密码)
 // 壳统一走 Modal(sm);品牌头保留(用户拍板:登录弹框是品牌触点,仅 chrome 对齐规范)
-export function AuthModal({ t, onClose, onDone, mode, resetToken, z, returnTo }: { t: TFn; onClose: () => void; onDone: () => void; mode?: 'login' | 'register' | 'reset'; resetToken?: string; z?: number; returnTo?: string }) {
+export function AuthModal({ t, onClose, onDone, mode, resetToken, z, returnTo, hero }: { t: TFn; onClose: () => void; onDone: () => void; mode?: 'login' | 'register' | 'reset'; resetToken?: string; z?: number; returnTo?: string; hero?: string }) {
   return (
     <Modal onClose={onClose} size="sm" z={z}>
-      <AuthForm t={t} onDone={onDone} initialMode={mode} resetToken={resetToken} returnTo={returnTo} />
+      <AuthForm t={t} onDone={onDone} initialMode={mode} resetToken={resetToken} returnTo={returnTo} hero={hero} />
     </Modal>
   )
 }
