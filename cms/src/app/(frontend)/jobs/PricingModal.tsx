@@ -2,7 +2,7 @@
 // 定价弹窗(E8-02,2026-07-06 用户拍板「定价也是弹窗」):对照表+按钮三态与 /pricing 页同一份代码
 // (PricingCard,不许 fork)。/pricing 页保留供直链/SEO/Stripe 回跳,站内入口一律开本弹窗。
 // caps 用 lib/plan.ts 常量(客户端 bundle 取默认值;若哪天用 env 改分层数字,记得 NEXT_PUBLIC 化或改走 props)。
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { TFn } from './i18n'
 import { Modal } from './Modal'
 import { Button } from '../ui/primitives'
@@ -124,6 +124,8 @@ export function PricingCard({ t, loggedIn, pro, caps, onRegister }: { t: TFn; lo
 }
 
 export function PricingModal({ t, loggedIn, pro, onClose, z = 50 }: { t: TFn; loggedIn: boolean; pro: boolean; onClose: () => void; z?: number }) {
+  // 漏斗补洞:与 upgrade-open 同理,记「定价被看到」;/pricing 直链页不发(pageview 已覆盖)
+  useEffect(() => { try { (window as any).umami?.track('pricing-open') } catch { /* 同 checkout 事件,静默 */ } }, [])
   const [auth, setAuth] = useState(false)
   return (
     // vh=94:对照表 10 行是站内最长弹框,85vh 在普通笔记本必出滚动条(2026-07-17 用户「不要有滚动框」)

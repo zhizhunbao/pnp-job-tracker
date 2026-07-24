@@ -2,7 +2,7 @@
 // 升级 Pro 专用弹框(用户定:注册弹框与购买弹框分离,升级入口不再跳 /account)。
 // 仅在已登录上下文渲染(未登录的升级入口先走 AuthModal 注册)。
 // 价格展示走 NEXT_PUBLIC_PRICE_DISPLAY(与 /pricing 同源,构建期内联);Checkout 复用 /api/billing/checkout。
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { TFn } from './i18n'
 import { Modal } from './Modal'
 import { IconStar } from '../Icons'
@@ -31,6 +31,8 @@ export function UpgradeCta({ t, loggedIn, sm = true, reason, label, style, link 
 }
 
 export function UpgradeModal({ t, onClose, reason }: { t: TFn; onClose: () => void; reason?: string }) {
+  // 漏斗补洞:访客→(此事件)→checkout→付款之间缺「看到卖点」一环,零付费无从定位断点
+  useEffect(() => { try { (window as any).umami?.track('upgrade-open') } catch { /* 同 checkout 事件,静默 */ } }, [])
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
   const [compare, setCompare] = useState(false)  // 对比表开定价弹窗(E8-02:站内不跳页)

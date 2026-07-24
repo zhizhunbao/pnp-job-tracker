@@ -14,7 +14,7 @@ const docs: Record<Lang, LegalDoc> = {
         '移民档案(可选、全部自报):NOC 码、语言 CLB、CRS 分、目标省、PGWP 剩余月数。仅用于计算「与我的匹配」等个人化功能,只存在你的账户里,可随时修改或清空。',
         'Pro 状态:到期日与 Stripe 客户标识(用于对账)。',
         '技术数据:为防滥用,API 按 IP 与账户做进程内当日计数(不落库、每日清零);浏览器 localStorage/Cookie 存语言、列偏好与登录会话。',
-        '访问统计:使用 umami(无 Cookie 的匿名统计)记录页面浏览与「注册/发起购买」两类转化事件,不含个人身份,不跨站追踪。',
+        '访问统计:使用 umami(无 Cookie 的匿名统计)记录页面浏览与转化漏斗事件(注册、打开升级/定价弹窗、发起购买),不含个人身份,不跨站追踪。',
       ] },
       { h: '2. 支付', body: [
         '支付全程由 Stripe 处理,银行卡号、支付宝/微信账户等支付凭据不经过也不存储在本站服务器。详见 Stripe 的隐私政策(stripe.com/privacy)。',
@@ -45,7 +45,7 @@ const docs: Record<Lang, LegalDoc> = {
         'Immigration profile (optional, entirely self-reported): NOC codes, language CLB, CRS score, target provinces, PGWP months left. Used only for personalised features such as "Match for me"; stored only on your account; editable or clearable anytime.',
         'Pro status: expiry date and Stripe customer identifier (for reconciliation).',
         'Technical data: to prevent abuse, APIs keep in-process daily counters per IP and per account (not persisted, reset daily); browser localStorage/cookies store language, column preferences and the login session.',
-        'Analytics: we use umami (cookie-less, anonymous) to record page views and two conversion events (sign-up, checkout initiation); no personal identity, no cross-site tracking.',
+        'Analytics: we use umami (cookie-less, anonymous) to record page views and conversion-funnel events (sign-up, opening the upgrade/pricing dialogs, checkout initiation); no personal identity, no cross-site tracking.',
       ] },
       { h: '2. Payments', body: [
         'Payments are handled entirely by Stripe. Card numbers and Alipay/WeChat credentials never pass through or get stored on our servers. See Stripe’s privacy policy (stripe.com/privacy).',
@@ -76,7 +76,7 @@ const docs: Record<Lang, LegalDoc> = {
         '이민 프로필(선택, 전부 자가 보고): NOC 코드, 언어 CLB, CRS 점수, 목표 주, PGWP 잔여 개월. "나와의 매칭" 등 개인화 기능에만 사용되며 내 계정에만 저장, 언제든 수정·삭제 가능합니다.',
         'Pro 상태: 만료일과 Stripe 고객 식별자(대사용).',
         '기술 데이터: 남용 방지를 위해 API는 IP·계정별 당일 카운터를 프로세스 내에서만 유지(저장 안 함, 매일 초기화); 브라우저 localStorage/쿠키에 언어·열 설정·로그인 세션을 저장합니다.',
-        '방문 통계: umami(쿠키 없는 익명 통계)로 페이지 조회와 두 가지 전환 이벤트(가입, 결제 시작)를 기록합니다. 개인 식별 정보 없음, 사이트 간 추적 없음.',
+        '방문 통계: umami(쿠키 없는 익명 통계)로 페이지 조회와 전환 퍼널 이벤트(가입, 업그레이드/요금제 창 열기, 결제 시작)를 기록합니다. 개인 식별 정보 없음, 사이트 간 추적 없음.',
       ] },
       { h: '2. 결제', body: [
         '결제는 전적으로 Stripe가 처리합니다. 카드번호, Alipay/WeChat 자격 증명은 당사 서버를 거치거나 저장되지 않습니다. Stripe 개인정보 처리방침(stripe.com/privacy)을 참조하세요.',
