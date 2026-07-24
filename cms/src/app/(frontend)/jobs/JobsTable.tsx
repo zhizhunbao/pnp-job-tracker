@@ -3100,14 +3100,27 @@ const DIFF_TAG: Record<string, { bg: string; fg: string; bd: string }> = {
 function LocationPanel({ job, lang, srcField, pnpDraws, news }: { job: JobRow; lang: Lang; srcField: ColKey; pnpDraws: PnpDraw[]; news: NewsSlim[] }) {
   const t = makeT(lang)
   const L = parseLoc(job)
+  // 入口语义=内容(Frank「点省看省相关的信息,点市看市相关的信息」):省格=省卡组,市/区格=市卡组(区加本区在招行)
+  const level: 'province' | 'city' = srcField === 'province' ? 'province' : 'city'
   const [prov, setProv] = useState<{ info: ProvInfo | null; difficulty: { tier?: string; factors?: any[] } | null } | null>(null)
   useEffect(() => {
-    if (!job.province) { setProv(null); return }
+    if (level !== 'province' || !job.province) { setProv(null); return }
     let dead = false
     fetch('/api/province?code=' + encodeURIComponent(job.province))
       .then((r) => (r.ok ? r.json() : null)).then((d) => { if (!dead && d?.ok) setProv({ info: d.info, difficulty: d.difficulty }) }).catch(() => {})
     return () => { dead = true }
-  }, [job.province])
+  }, [level, job.province])
+  type CityInfo = { openJobs: number; new7d: number; medSalary: number | null; topBroads: { broad: string; n: number }[]; dli: { count: number; top: { name: string; isPublic: boolean }[] }; aipEmployers: number; districtOpen: number | null }
+  const [cityInfo, setCityInfo] = useState<CityInfo | null>(null)
+  useEffect(() => {
+    if (level !== 'city' || !L.city || !job.province) { setCityInfo(null); return }
+    let dead = false
+    const q = new URLSearchParams({ city: L.city, prov: job.province })
+    if (srcField === 'district' && L.district) q.set('district', L.district)
+    fetch('/api/city?' + q.toString())
+      .then((r) => (r.ok ? r.json() : null)).then((d) => { if (!dead && d?.ok) setCityInfo(d) }).catch(() => {})
+    return () => { dead = true }
+  }, [level, srcField, L.city, L.district, job.province])
 
   const isQc = job.province === 'QC'
   const num = (n: number) => Number(n).toLocaleString()
@@ -3169,7 +3182,8 @@ function LocationPanel({ job, lang, srcField, pnpDraws, news }: { job: JobRow; l
         })}
       </div>
 
-      {d?.tier && (
+      {/* ── 省级卡组(仅点省进来;Frank「点省看省,点市看市」)────────── */}
+      {level === 'province' && d?.tier && (
         <div style={card}>
           <div style={{ ...MODAL_CARD_HEAD, display: 'flex', alignItems: 'center', gap: 10 }}>
             {t('diff.title')}
@@ -3183,7 +3197,7 @@ function LocationPanel({ job, lang, srcField, pnpDraws, news }: { job: JobRow; l
         </div>
       )}
 
-      {volRows.length > 0 && (
+      {level === 'province' && volRows.length > 0 && (
         <div style={card}>
           <div style={MODAL_CARD_HEAD}>{t('loc.vol')} <span style={{ ...gnote, fontSize: 11.5, marginLeft: 8 }}>{t('loc.volTag')}</span></div>
           {volRows.map((r, i) => (
@@ -3197,11 +3211,51 @@ function LocationPanel({ job, lang, srcField, pnpDraws, news }: { job: JobRow; l
       )}
 
       {/* ④⑤ 复用既有块;块自身无数据返回 null → 外层卡也不渲(不出空壳) */}
-      {job.province && !isQc && pnpDraws.some((x) => x.province === job.province) && (
+      {level === 'province' && job.province && !isQc && pnpDraws.some((x) => x.province === job.province) && (
         <div style={card}><PnpDrawsBlock province={job.province} lang={lang} draws={pnpDraws} limit={3} /></div>
       )}
-      {job.province && news.some((n) => n.region === job.province) && (
+      {level === 'province' && job.province && news.some((n) => n.region === job.province) && (
         <div style={card}><NewsLatestBlock province={job.province} lang={lang} news={news} /></div>
+      )}
+
+      {/* ── 市级卡组(点市/区进来;/api/city 现算,本站口径)────────── */}
+      {level === 'city' && cityInfo && (
+        <div style={card}>
+          <div style={MODAL_CARD_HEAD}>{t('loc.cityJobs')} <span style={{ ...gnote, fontSize: 11.5, marginLeft: 8 }}>{L.city}</span></div>
+          {([
+            [t('loc.openJobs'), num(cityInfo.openJobs)],
+            [t('loc.new7d'), num(cityInfo.new7d)],
+            ...(cityInfo.medSalary != null ? [[t('loc.medSal'), `$${Math.round(cityInfo.medSalary / 1000)}K/yr`]] : []),
+            ...(cityInfo.topBroads.length ? [[t('loc.topBroads'), cityInfo.topBroads.map((b) => `${t('broad.' + b.broad)} ${num(b.n)}`).join('、')]] : []),
+            ...(srcField === 'district' && cityInfo.districtOpen != null && L.district ? [[t('loc.distOpen', { d: L.district }), num(cityInfo.districtOpen)]] : []),
+          ] as [string, string][]).map(([k, v], i) => (
+            <div key={i} style={{ display: 'flex', gap: 10, padding: '3px 6px', margin: '0 -6px', fontSize: 13 }}>
+              <span style={{ minWidth: 128, color: '#9ca3af', flexShrink: 0 }}>{k}</span>
+              <span style={{ flex: 1, color: '#374151' }}>{v}</span>
+            </div>
+          ))}
+          <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 8, lineHeight: 1.6 }}>{t('loc.calNote')}</div>
+        </div>
+      )}
+      {level === 'city' && cityInfo && cityInfo.dli.count > 0 && (
+        <div style={card}>
+          <div style={MODAL_CARD_HEAD}>{t('loc.dli')} <span style={{ ...gnote, fontSize: 11.5, marginLeft: 8 }}>{t('loc.dliN', { n: cityInfo.dli.count })}</span></div>
+          {cityInfo.dli.top.map((s, i) => (
+            <div key={i} style={{ display: 'flex', gap: 8, padding: '3px 6px', margin: '0 -6px', fontSize: 13, alignItems: 'baseline' }}>
+              <span style={{ flex: 1, color: '#374151', minWidth: 0 }}>{s.name}</span>
+              {s.isPublic && <span style={gnote}>{t('loc.dliPublic')}</span>}
+            </div>
+          ))}
+        </div>
+      )}
+      {level === 'city' && cityInfo && cityInfo.aipEmployers > 0 && (
+        <div style={card}>
+          <div style={MODAL_CARD_HEAD}>{t('loc.aip')}</div>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'baseline', fontSize: 13 }}>
+            <span style={{ color: '#374151' }}>{t('loc.aipN', { n: num(cityInfo.aipEmployers) })}</span>
+            <a href="/employers" style={{ color: '#2563eb', textDecoration: 'none', fontSize: 12.5 }}>{t('loc.dirLink')}</a>
+          </div>
+        </div>
       )}
     </>
   )
