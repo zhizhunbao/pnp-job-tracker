@@ -3,7 +3,7 @@
 // 付费透镜:名录免费=C7 头号痛点(哪个雇主真的担保)的 browse 面;转化钩=每行「查在招 →」深链 /?q=。
 // 语义红线循 E6-02:LMIA=雇过外国人的历史事实 ≠ 能担保;AIP 指定 ≠ 有配额(口径行写死,见 dir.note.*)。
 import { useEffect, useState } from 'react'
-import { makeT, LANG_KEY, type Lang, type TFn } from '../jobs/i18n'
+import { initialLang, makeT, LANG_KEY, type Lang, type TFn } from '../jobs/i18n'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { Button, Card, CardAction, CardKV, PageBanner, PageShell, Tag, UI, chipStyle } from '../ui/primitives'
@@ -76,7 +76,7 @@ export function EmployersView({ type, q, prov, page, aip, lmia, counts }: {
   counts: { aip: number; lmia: number; pageTotal: number }
 }) {
   const [lang, setLang] = useState<Lang>('zh')
-  useEffect(() => { const s = localStorage.getItem(LANG_KEY) as Lang | null; if (s) setLang(s) }, [])
+  useEffect(() => { setLang(initialLang()) }, [])
   const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
   const t = makeT(lang)
   const [qInput, setQInput] = useState(q)

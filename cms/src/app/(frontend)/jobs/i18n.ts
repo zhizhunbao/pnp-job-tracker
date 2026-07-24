@@ -10,6 +10,20 @@ export const LANGS: { code: Lang; label: string }[] = [
   { code: 'ko', label: '한' },
 ]
 export const LANG_KEY = 'jobs.lang'
+// 首访语言跟浏览器走(2026-07-24 Frank「很多外国人访问」+83% 跳出实证;backlog 早有记):
+// 存过偏好=用户显式选过,照旧;没存过=按 navigator.language 判 zh/ko,其余一律 en。
+// 检测结果**不落 localStorage**(显式切换才持久化,浏览器语言变了下次自然跟着变)。
+// 红线:不许按 IP 判(加拿大华人 IP=加拿大会被错切英文,浏览器语言才是本人信号)。
+export const initialLang = (): Lang => {
+  try {
+    const s = localStorage.getItem(LANG_KEY)
+    if (s === 'zh' || s === 'en' || s === 'ko') return s
+    const n = (navigator.language || '').toLowerCase()
+    if (n.startsWith('zh')) return 'zh'
+    if (n.startsWith('ko')) return 'ko'
+    return 'en'
+  } catch { return 'zh' }
+}
 export const COLS_COOKIE = 'jobsCols3'   // 列偏好 cookie 名(放共享非 client 模块,服务端 page.tsx 也能读到真实值);v2:新默认 10 列,bump 名让旧 cookie 失效
 
 type Dict = Record<string, string>

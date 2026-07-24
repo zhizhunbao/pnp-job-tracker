@@ -6,7 +6,7 @@ import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, use
 // SSR 端 useLayoutEffect 无效且会告警 → 服务端退化成 useEffect。
 const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
-import { makeT, streamDisplay, eeDisplay, LANGS, LANG_KEY, COLS_COOKIE, type Lang, type TFn } from './i18n'
+import { makeT, streamDisplay, eeDisplay, initialLang, LANGS, LANG_KEY, COLS_COOKIE, type Lang, type TFn } from './i18n'
 import { IconChart, IconCheck, IconClipboard, IconCompass, IconLock, IconMap, IconMapPin, IconMaximize, IconMinimize, IconNews, IconSave, IconSettings, IconStar, IconTarget, IconUser, IconWarn, IconX } from '../Icons'
 import { SiteHeader } from '../SiteHeader'
 import { BANNER_IMGS, Button, Notice, PageBanner } from '../ui/primitives'
@@ -719,7 +719,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const colRef = useRef<HTMLDivElement>(null)
   // (E10-01 P3:客户端 limit 切片退役 → 服务端 page 分页,见下方 fetch effect)
   const [lang, setLang] = useState<Lang>('zh')    // 语言(localStorage 持久化)
-  useIsoLayoutEffect(() => { try { const l = localStorage.getItem(LANG_KEY) as Lang | null; if (l === 'zh' || l === 'en' || l === 'ko') setLang(l) } catch { /* ignore */ } }, [])
+  useIsoLayoutEffect(() => { setLang(initialLang()) }, [])   // 首访跟浏览器语言(i18n.initialLang 单一来源)
   const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
   const t = makeT(lang)
   // 大分类标签:'未分类' 复用规范 key cell.uncat(字典无 broad.未分类,否则会回退成原样输出 "broad.未分类")

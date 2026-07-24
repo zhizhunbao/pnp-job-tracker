@@ -5,7 +5,7 @@
 //   省提名/EE 卡、相关职位 —— 一条信息一个家,移民信号在移民弹框,公司在公司弹框/页。
 import { useEffect, useState } from 'react'
 
-import { makeT, LANG_KEY, LANGS, type Lang } from '../i18n'
+import { initialLang, makeT, LANG_KEY, LANGS, type Lang } from '../i18n'
 import { catName, JobBody, nocLocalTitle, provName, type JobRow, type NocDesc, type Plan } from '../JobsTable'
 import { SiteHeader } from '../../SiteHeader'
 import { SiteFooter } from '../../SiteFooter'
@@ -21,7 +21,7 @@ export default function JobDetailView({ job, plan, dims }: { job: JobRow; plan: 
   // 语言:与全站同一 localStorage 键;SSR 首帧 zh,水合后纠正(二级页惯例)
   const [lang, setLangState] = useState<Lang>('zh')
   useEffect(() => {
-    try { const s = localStorage.getItem(LANG_KEY); if (s && LANGS.some((l) => l.code === s)) setLangState(s as Lang) } catch { /* ignore */ }
+    setLangState(initialLang())
   }, [])
   const setLang = (l: Lang) => { setLangState(l); try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } }
   const t = makeT(lang)

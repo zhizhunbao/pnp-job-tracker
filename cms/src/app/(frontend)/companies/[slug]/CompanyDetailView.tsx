@@ -5,7 +5,7 @@
 // 三条铁律(E8-09 §1)不变:一页一域、一条信息一个家、公司页全事实层免费。
 import { useEffect, useState } from 'react'
 
-import { makeT, LANG_KEY, LANGS, type Lang } from '../../jobs/i18n'
+import { initialLang, makeT, LANG_KEY, LANGS, type Lang } from '../../jobs/i18n'
 import { CompanyBody, provName } from '../../jobs/JobsTable'
 import type { CompanyDetail, SimilarEmployer } from '@/lib/jobsSql'
 import { SiteHeader } from '../../SiteHeader'
@@ -17,7 +17,7 @@ const aLink: React.CSSProperties = { color: '#2563eb', textDecoration: 'none' }
 export default function CompanyDetailView({ company, similar = [], loggedIn }: { company: CompanyDetail; similar?: SimilarEmployer[]; loggedIn: boolean }) {
   const [lang, setLangState] = useState<Lang>('zh')
   useEffect(() => {
-    try { const s = localStorage.getItem(LANG_KEY); if (s && LANGS.some((l) => l.code === s)) setLangState(s as Lang) } catch { /* ignore */ }
+    setLangState(initialLang())
   }, [])
   const setLang = (l: Lang) => { setLangState(l); try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } }
   const t = makeT(lang)

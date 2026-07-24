@@ -1,7 +1,7 @@
 'use client'
 // 地区统计共享 UI(E5-04):壳(顶栏+语言)+ slug 映射 + 指标卡/口径行。页面零计算,只渲染 stats 行。
 import { useEffect, useState } from 'react'
-import { makeT, LANG_KEY, type Lang, type TFn } from '../jobs/i18n'
+import { initialLang, makeT, LANG_KEY, type Lang, type TFn } from '../jobs/i18n'
 import { IconPaperclip } from '../Icons'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
@@ -10,7 +10,7 @@ export type { StatRow, SrcRow } from './shared'
 
 export function useLang(): [Lang, (l: Lang) => void, TFn] {
   const [lang, setLang] = useState<Lang>('zh')
-  useEffect(() => { const s = localStorage.getItem(LANG_KEY) as Lang | null; if (s) setLang(s) }, [])
+  useEffect(() => { setLang(initialLang()) }, [])
   const set = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
   return [lang, set, makeT(lang)]
 }

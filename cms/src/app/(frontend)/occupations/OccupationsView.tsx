@@ -2,7 +2,7 @@
 // 紧缺职业清单视图(B4-01):183 行按 省→通道 分组一页展示;行级官方来源链+抓取日(既有 url/fetched 列)。
 // 口径红线:清单命中=粗筛信号,非资格认定(dir.occ.note)。
 import { useEffect, useState } from 'react'
-import { makeT, streamDisplay, LANG_KEY, type Lang } from '../jobs/i18n'
+import { initialLang, makeT, streamDisplay, LANG_KEY, type Lang } from '../jobs/i18n'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { PageBanner, PageShell, SectionTitle, Tag, UI } from '../ui/primitives'
@@ -12,7 +12,7 @@ import type { OccRow } from '@/lib/directory'
 
 export function OccupationsView({ rows }: { rows: OccRow[] }) {
   const [lang, setLang] = useState<Lang>('zh')
-  useEffect(() => { const s = localStorage.getItem(LANG_KEY) as Lang | null; if (s) setLang(s) }, [])
+  useEffect(() => { setLang(initialLang()) }, [])
   const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
   const t = makeT(lang)
 

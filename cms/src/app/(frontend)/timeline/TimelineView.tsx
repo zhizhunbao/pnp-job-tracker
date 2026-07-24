@@ -2,7 +2,7 @@
 // 政策时间线视图(C6-01):三路事件混排时间轴 + 抽选节奏块;省筛/类型筛纯客户端(事件 <100)。
 // 诚实红线:省分数带分制标注(≠CRS);节奏=历史统计,不预测下一次(tl.note 写死)。
 import { useEffect, useMemo, useState, type KeyboardEvent } from 'react'
-import { makeT, LANG_KEY, type Lang } from '../jobs/i18n'
+import { initialLang, makeT, LANG_KEY, type Lang } from '../jobs/i18n'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { PageBanner, PageShell, SectionTabs, SectionTitle, Tag, UI, chipStyle } from '../ui/primitives'
@@ -14,7 +14,7 @@ export function TimelineView({ events, cadence, eeCadence }: {
   eeCadence: { category: string; label: string; last: string; daysSince: number }[]
 }) {
   const [lang, setLang] = useState<Lang>('zh')
-  useEffect(() => { const s = localStorage.getItem(LANG_KEY) as Lang | null; if (s) setLang(s) }, [])
+  useEffect(() => { setLang(initialLang()) }, [])
   const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
   const t = makeT(lang)
   const [fProv, setFProv] = useState('')      // ''=全部;'FED'=联邦;两字码=省

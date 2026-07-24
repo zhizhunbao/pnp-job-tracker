@@ -2,7 +2,7 @@
 // 定价页视图(E5-01):对照表与按钮三态在 jobs/PricingModal.tsx 的 PricingCard(单一来源,弹窗/页面共用);
 // 本页只是 SEO/直链/Stripe 回跳用的页面壳(E8-02 拍板:站内入口一律开定价弹窗)。caps 由服务端 plan.ts 传入。
 import { useEffect, useState } from 'react'
-import { makeT, LANG_KEY, type Lang } from '../jobs/i18n'
+import { initialLang, makeT, LANG_KEY, type Lang } from '../jobs/i18n'
 import { AuthModal } from '../jobs/AuthForm'
 import { PricingCard, type PriceCaps } from '../jobs/PricingModal'
 import { SiteHeader } from '../SiteHeader'
@@ -11,7 +11,7 @@ import { PageShell } from '../ui/primitives'
 
 export function PricingView({ loggedIn, pro, caps }: { loggedIn: boolean; pro: boolean; caps: PriceCaps }) {
   const [lang, setLang] = useState<Lang>('zh')
-  useEffect(() => { const s = localStorage.getItem(LANG_KEY) as Lang | null; if (s) setLang(s) }, [])
+  useEffect(() => { setLang(initialLang()) }, [])
   const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
   const t = makeT(lang)
   const [auth, setAuth] = useState(false)

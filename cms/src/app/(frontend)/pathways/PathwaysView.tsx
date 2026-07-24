@@ -2,7 +2,7 @@
 // 方案卡渲染(E12-01):分组(与你的处境相关/其他路径)+ 每卡步骤/信号/缺口补法/出处。
 // 纯显示——命中/缺口全由 lib/pathways.ts 算好传入;措辞红线在 i18n 键里落实(摆信息不下结论)。
 import { useEffect, useMemo, useState } from 'react'
-import { makeT, LANG_KEY, type Lang } from '../jobs/i18n'
+import { initialLang, makeT, LANG_KEY, type Lang } from '../jobs/i18n'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { IconCheck, IconCompass, IconWarn } from '../Icons'
@@ -26,7 +26,7 @@ function SignalRow({ s, t }: { s: PathwaySignal; t: (k: string, v?: Record<strin
 
 export function PathwaysView({ evals, loggedIn, profileOk }: { evals: PathwayEval[]; loggedIn: boolean; profileOk: boolean }) {
   const [lang, setLang] = useState<Lang>('zh')
-  useEffect(() => { try { const l = localStorage.getItem(LANG_KEY) as Lang | null; if (l === 'zh' || l === 'en' || l === 'ko') setLang(l) } catch { /* ignore */ } }, [])
+  useEffect(() => { setLang(initialLang()) }, [])
   const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
   const t = useMemo(() => makeT(lang), [lang])
 
