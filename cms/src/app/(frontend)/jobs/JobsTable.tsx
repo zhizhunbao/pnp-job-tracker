@@ -957,10 +957,12 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         .jtCards{display:none}
         .recSlot{min-height:0}
         html.recslot .recSlot{min-height:48px}
+        .jtOnlyNarrow{display:none}
         @media (max-width:640px){
           .jtHideNarrow{display:none !important}
           .jtTableWrap{display:none !important}
           .jtCards{display:flex}
+          .jtOnlyNarrow{display:flex}
         }
         @media (max-width:1350px){.jtTagline{display:none}}`}</style>
       {/* 顶栏=全站统一 SiteHeader(#65 header 合一,2026-07-18 Frank 拍板;内联头退役,1320 头轨全站一致)。
@@ -1141,6 +1143,15 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           )}
         </div>
 
+        {/* dd24-#111(Frank「手机顶部加个我的匹配入口」):窄屏专属入口条——桌面顶栏本就有 matchButton,
+            手机上它折进侧滑抽屉首屏不可见,注册 teaser 卖匹配入口却要拉抽屉。CSS 断点显隐(SSR 安全零闪),
+            行为=既有 toggleMatchView 三态;匹配视图激活时让位给下方状态条 */}
+        {!matchView && (
+          <button className="jtOnlyNarrow" onClick={toggleMatchView}
+            style={{ width: '100%', alignItems: 'center', justifyContent: 'center', gap: 6, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', borderRadius: 9, padding: '9px 0', fontSize: 13.5, fontWeight: 600, marginBottom: 8, cursor: 'pointer' }}>
+            <IconTarget /> {t('mv.entry')} →
+          </button>
+        )}
         {/* 匹配视图状态条(E5-05):说明口径 + 退出;免费限额提示(D1=B) */}
         {matchView && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', background: '#eff6ff', border: '1px solid #dbeafe', borderRadius: 8, padding: '7px 12px', marginBottom: 8, fontSize: 12.5 }}>
