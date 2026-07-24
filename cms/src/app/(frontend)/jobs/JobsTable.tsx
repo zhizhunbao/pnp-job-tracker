@@ -1381,9 +1381,17 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                   </div>
                 ) : null}
                 <div style={{ fontSize: 12.5, marginTop: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
-                  {/* E8-12(Frank「手机卡片呢?」):地点文字=开地点弹框(卡上没有「格子」,弹框内地点卡文字仍跳地图);
-                      <a href> 语义保留给爬虫/长按新开地图(#131 职位名同款手法);stopPropagation 保整卡进详情页 */}
-                  {L.city ? <a href={mapsUrl(mapQuery('city', j))} target="_blank" rel="noreferrer" onClick={(e) => { e.preventDefault(); e.stopPropagation(); open('city', L.city) }} style={{ color: '#2563eb', minWidth: 0, textDecoration: 'none' }}>{L.city}{j.province ? `, ${j.province}` : ''}</a> : <span />}
+                  {/* E8-12(Frank「手机卡片呢?」+「省和市没法分开点」):市名/省码各自可点,各开各的弹框
+                      (点市看市、点省看省);<a href> 语义保留给爬虫/长按新开对应层级地图(#131 同款);stop 保整卡进详情页 */}
+                  {L.city ? (
+                    <span style={{ minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <a href={mapsUrl(mapQuery('city', j))} target="_blank" rel="noreferrer" onClick={(e) => { e.preventDefault(); e.stopPropagation(); open('city', L.city) }} style={{ color: '#2563eb', textDecoration: 'none' }}>{L.city}</a>
+                      {j.province ? <>
+                        <span style={{ color: '#9ca3af' }}>, </span>
+                        <a href={mapsUrl(mapQuery('province', j))} target="_blank" rel="noreferrer" onClick={(e) => { e.preventDefault(); e.stopPropagation(); open('province', L.prov) }} style={{ color: '#2563eb', textDecoration: 'none' }}>{j.province}</a>
+                      </> : null}
+                    </span>
+                  ) : <span />}
                   <span suppressHydrationWarning style={{ color: '#9ca3af', whiteSpace: 'nowrap', flexShrink: 0 }}>{(j.datePosted || '').slice(0, 10)}{days != null ? `(${t('fact.daysUpVal', { n: days })})` : ''}</span>
                 </div>
                 <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
