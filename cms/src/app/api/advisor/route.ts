@@ -65,6 +65,7 @@ const SYSTEM = (lang: Lang) =>
 type Job = {
   title?: string; company?: string; companyDescription?: string; companySectors?: string; noc?: string; province?: string
   duties?: string; requirements?: string  // occRead(分类弹框 AI 速读)用:官方职责/任职要求原文,接地不凭空
+  locationFacts?: string  // provRead/cityRead(地点弹框 AI 解读)用:面板同源的 IRCC/库内数字块,接地不凭空
   city?: string; district?: string; address?: string; officialUrl?: string; applyUrl?: string
   score?: number | null; gradeChannel?: number | null; category?: string; accessibility?: string
   pnpEligible?: boolean; pnpStream?: string; eeCategory?: string; aip?: boolean; salary?: string; salaryAnnual?: number | null
@@ -257,6 +258,16 @@ function buildPrompt(field: string, j: Job, jd: string, lang: Lang, pf = '', web
       reqTxt ? `Official employment requirements:\n${reqTxt}` : '',
     ].filter(Boolean).join('\n\n')
     return `${ASK.occRead}\n\nOccupation facts (StatCan NOC 2021):\n${facts}\n\nWrite 2–3 short sections, each starting with a 【heading】, content in ${LANG_NAME[lang]}. Base everything strictly on the facts above; do not invent numbers, licensing rules, or immigration advice.`
+  }
+  // provRead/cityRead(地点弹框「AI 解读」,2026-07-23 Frank「AI 解读呢」):只喂面板同源的
+  // IRCC/库内数字块(客户端把已拉到的事实传上来,与 occRead 同手法),按省码/市区缓存;
+  // 红线同 GROUNDING_RULES:数字是粗口径聚合,禁化成概率/资格判定。
+  if (field === 'provRead' || field === 'cityRead') {
+    const facts = (j.locationFacts || '').slice(0, 2400)
+    const ask = field === 'provRead'
+      ? 'Give a quick plain-language read of this PROVINCE for a job-seeker weighing where to work in Canada: (1) how crowded the provincial-nominee route looks (competition ratio, allocation trend, draw activity), (2) what the study/work-permit and PR volumes say about the local newcomer scene, (3) one practical takeaway. The numbers are rough official aggregates — never turn them into odds, timelines, or eligibility.'
+      : 'Give a quick plain-language read of this CITY or DISTRICT job market for a job-seeker: (1) how active hiring looks (open jobs, last-7-days), (2) what the top fields and median posted salary suggest about who is hiring, (3) mention the schools / AIP employers only if the facts list them, (4) one practical takeaway. The data is this site\'s live job index, not official statistics — never present it as odds or eligibility.'
+    return `${ask}\n\nLocation facts:\n${facts}\n\n${GROUNDING_RULES}\n\nWrite 2–3 short sections, each starting with a 【heading】, content in ${LANG_NAME[lang]}. Base everything strictly on the facts above; do not invent numbers, programs, or immigration advice.`
   }
   // jdRead(职位弹框「AI 速读」,2026-07-21 Frank「只速读这个 job 的内容即可,不需要过度解读移民信号」):
   // 只喂 JD 原文 + 帖面基本盘,总结职位本身;移民路径解读归移民弹框(field=immigration)与详情页初判。

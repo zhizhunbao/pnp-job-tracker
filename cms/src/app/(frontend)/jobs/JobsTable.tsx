@@ -3097,7 +3097,7 @@ type ProvInfo = { study?: ProvInfoNum; tfwp?: ProvInfoNum; imp?: ProvInfoNum; pn
 const DIFF_TAG: Record<string, { bg: string; fg: string; bd: string }> = {
   easy: { bg: '#dcfce7', fg: '#166534', bd: '#bbf7d0' }, mid: { bg: '#fef3c7', fg: '#b45309', bd: '#fde68a' }, tight: { bg: '#eef2ff', fg: '#3730a3', bd: '#e0e7ff' },
 }
-function LocationPanel({ job, lang, srcField, pnpDraws, news }: { job: JobRow; lang: Lang; srcField: ColKey; pnpDraws: PnpDraw[]; news: NewsSlim[] }) {
+function LocationPanel({ job, lang, plan, srcField, pnpDraws, news }: { job: JobRow; lang: Lang; plan: Plan; srcField: ColKey; pnpDraws: PnpDraw[]; news: NewsSlim[] }) {
   const t = makeT(lang)
   const L = parseLoc(job)
   // 入口语义=内容(Frank「点省看省,点市看市」+「点区看区」):省格=省卡组,市格=市卡组,区格=区卡组
@@ -3128,6 +3128,67 @@ function LocationPanel({ job, lang, srcField, pnpDraws, news }: { job: JobRow; l
   const num = (n: number) => Number(n).toLocaleString()
   const gnote: React.CSSProperties = { color: '#9ca3af', fontSize: 12, fontWeight: 400 }
   const card: React.CSSProperties = MODAL_CARD
+
+  // AI 解读(Frank 2026-07-23「AI 解读呢?」):分类弹框 AI 速读同款——点了才生成、流式、统一额度池;
+  // 事实块=面板同源数字(provRead 按省缓存 / cityRead 按市|区缓存),模型被禁越出事实(advisor 路由 GROUNDING_RULES)。
+  const [ai, setAi] = useState('')
+  const [aiStatus, setAiStatus] = useState<'idle' | 'loading' | 'streaming' | 'done' | 'error' | 'upgrade' | 'limited'>('idle')
+  const aiFacts = (): string => {
+    if (level === 'province') {
+      const d0 = prov?.difficulty, inf = prov?.info
+      const out = [`Province: ${L.prov} (${job.province})`]
+      if (isQc) out.push('Quebec runs its own selection system (not part of PNP); allocation and draws do not apply.')
+      const c0 = (d0?.factors || []).find((x: any) => x.key === 'comp')
+      const t0 = (d0?.factors || []).find((x: any) => x.key === 'quotaTrend')
+      const a0 = (d0?.factors || []).find((x: any) => x.key === 'activity')
+      if (d0?.tier) out.push(`PNP difficulty tier: ${d0.tier}${c0 ? `; competition ratio ${c0.value}:1 (study+work permit holders ${c0.pool} ÷ nomination allocation ${c0.quota}, ${c0.quotaYear})` : ''}${t0 ? `; allocation YoY ${Math.round(t0.value * 100)}%` : ''}${a0 ? `; ${a0.value} draws in last 180 days (${a0.invitations ?? 0} invitations)` : ''}`)
+      if (inf?.study) out.push(`Study permit holders: ${inf.study.n} (${inf.study.year} year-end)`)
+      if (inf?.tfwp) out.push(`Employer-specific work permits (TFWP): ${inf.tfwp.n} (${inf.tfwp.year} year-end)`)
+      if (inf?.imp) out.push(`Open/exempt work permits (IMP, incl. PGWP): ${inf.imp.n} (${inf.imp.year} year-end)`)
+      if (!isQc && inf?.alloc && inf.alloc.y2026 != null) out.push(`PNP nomination allocation 2026: ${inf.alloc.y2026}${inf.alloc.y2025 != null ? ` (2025: ${inf.alloc.y2025})` : ''}`)
+      if (!isQc && inf?.pnpPr) out.push(`PR landings via PNP: ${inf.pnpPr.n} (${inf.pnpPr.year}, incl. family)`)
+      return out.join('\n')
+    }
+    const ci = cityInfo
+    if (!ci) return ''
+    if (level === 'district' && ci.district) {
+      const dd = ci.district
+      return [
+        `District: ${L.district}, ${L.city}, ${L.prov}`,
+        `Open jobs in district: ${dd.openJobs}; posted in last 7 days: ${dd.new7d}`,
+        dd.medSalary != null ? `Median posted salary: $${dd.medSalary}/yr` : '',
+        dd.topBroads.length ? `Top fields: ${dd.topBroads.map((b) => `${b.broad} ${b.n}`).join(', ')}` : '',
+        dd.topEmployers.length ? `Top employers: ${dd.topEmployers.map((e) => `${e.name} (${e.n} open)`).join(', ')}` : '',
+      ].filter(Boolean).join('\n')
+    }
+    return [
+      `City: ${L.city}, ${L.prov}`,
+      `Open jobs: ${ci.openJobs}; posted in last 7 days: ${ci.new7d}`,
+      ci.medSalary != null ? `Median posted salary: $${ci.medSalary}/yr` : '',
+      ci.topBroads.length ? `Top fields: ${ci.topBroads.map((b) => `${b.broad} ${b.n}`).join(', ')}` : '',
+      ci.dli.count ? `PGWP-eligible schools: ${ci.dli.count} (${ci.dli.top.map((s) => s.name).join(', ')})` : '',
+      ci.aipEmployers ? `AIP designated employers: ${ci.aipEmployers}` : '',
+    ].filter(Boolean).join('\n')
+  }
+  const runAi = async () => {
+    setAiStatus('loading'); setAi('')
+    try {
+      const aiField = level === 'province' ? 'provRead' : 'cityRead'
+      const id = level === 'province' ? (job.province || '') : [L.city, job.province, level === 'district' ? L.district : ''].join('|')
+      const res = await fetch('/api/advisor', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ field: aiField, id, job: { province: job.province, locationFacts: aiFacts() }, lang }),
+      })
+      if (res.status === 402) { setAiStatus('upgrade'); return }
+      if (res.status === 429) { setAiStatus('limited'); return }
+      if (!res.ok || !res.body) { setAiStatus('error'); return }
+      const reader = res.body.getReader(); const dec = new TextDecoder()
+      setAiStatus('streaming')
+      for (;;) { const { done, value } = await reader.read(); if (done) break; setAi((p) => p + dec.decode(value, { stream: true })) }
+      setAiStatus('done')
+    } catch { setAiStatus('error') }
+  }
+  const factsReady = level === 'province' ? !!prov : !!cityInfo
 
   // 卡① 地点:与分类卡①同款行(点进来的字段行高亮);有值行值文字=地图链接(与表格格同一规则)
   const locRows: { f: ColKey; k: string; v: string; map: boolean }[] = [
@@ -3166,7 +3227,20 @@ function LocationPanel({ job, lang, srcField, pnpDraws, news }: { job: JobRow; l
           (内容已随界面语言本地化、零 AI 设计),只出「打开完整页」=该省地区统计页 */}
       {job.province && (
         <div style={{ display: 'flex', gap: 8, margin: '2px 0 12px', flexWrap: 'wrap' }}>
+          {factsReady && aiStatus === 'idle' && <button onClick={runAi} style={PILL_BTN}><IconCompass /> {t('cat.aiRead')}</button>}
           <a href={`/stats/${job.province.toLowerCase()}`} target="_blank" rel="noreferrer" style={{ ...PILL_BTN, textDecoration: 'none', display: 'inline-block' }}>{t('detail.openFull')} ↗</a>
+        </div>
+      )}
+
+      {/* AI 解读卡(点了才出;置顶=点完不用往下翻,与分类弹框同规范) */}
+      {aiStatus !== 'idle' && (
+        <div style={card}>
+          <div style={MODAL_CARD_HEAD}><IconCompass /> {t('cat.aiRead')}</div>
+          {aiStatus === 'upgrade' ? <LockedText t={t} loggedIn={plan.loggedIn} />
+            : aiStatus === 'limited' ? <LockedText t={t} loggedIn={plan.loggedIn} msg={t('advisor.limit429')} ctaLabel={!plan.loggedIn ? t('advisor.limitCta') : undefined} />
+            : aiStatus === 'error' ? <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>{t('cat.aiErr')}</p>
+            : aiStatus === 'loading' ? <p style={{ margin: 0, fontSize: 14, color: '#9ca3af' }}>{t('advisor.loading')}</p>
+            : <div style={{ fontSize: 14, lineHeight: 1.7, color: '#374151' }}>{renderAI(ai.split('❓')[0])}{aiStatus === 'streaming' && <span style={{ color: '#9ca3af' }}>▋</span>}</div>}
         </div>
       )}
       <div style={card}>
@@ -3423,7 +3497,7 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
           {group === 'category'
             ? <CategoryPanel job={job} lang={lang} plan={plan} nocDesc={nocDesc} srcField={field} />
             : group === 'location'
-            ? <LocationPanel job={job} lang={lang} srcField={field} pnpDraws={pnpDraws} news={news} />
+            ? <LocationPanel job={job} lang={lang} plan={plan} srcField={field} pnpDraws={pnpDraws} news={news} />
             : group === 'company'
             ? <CompanyPanel job={job} jobs={companyJobs} lang={lang} plan={plan} onOpenJob={onOpenJob} />
             : <GroupFactsSection group={group} job={job} jobs={companyJobs} lang={lang} isPro={plan.isPro} loggedIn={plan.loggedIn} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} onOpenJob={onOpenJob} />}
