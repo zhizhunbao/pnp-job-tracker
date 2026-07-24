@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  /* 投递流基本信息表单效果图 v3(注册后、邮件弹出前;3 项+可跳过) */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { width: 375px; font-family: "Microsoft YaHei", sans-serif; background: rgba(28,25,23,.45); padding: 24px 12px; }
+  .modal { background: #fff; border-radius: 16px; padding: 20px 18px 16px; }
+  h3 { font-size: 16px; color: #111827; }
+  .sub { font-size: 12.5px; color: #6b7280; margin-top: 4px; }
+  label { display: block; margin-top: 14px; font-size: 13px; font-weight: 600; color: #374151; }
+  .field {
+    margin-top: 6px; width: 100%; border: 1px solid #d1d5db; border-radius: 9px;
+    padding: 10px 12px; font-size: 13.5px; color: #111827; background: #fff;
+  }
+  .hint { color: #9ca3af; }
+  .btn-main {
+    display: block; width: 100%; margin-top: 18px; background: #2563eb; color: #fff;
+    border: none; border-radius: 10px; padding: 12px 0; font-size: 15px; font-weight: 700; text-align: center;
+  }
+  .skip { margin-top: 10px; text-align: center; font-size: 12.5px; color: #9ca3af; }
+</style>
+</head>
+<body>
+  <div class="modal">
+    <h3>填 3 项,以后有相似的岗自动进你邮箱</h3>
+    <div class="sub">30 秒,可随时改</div>
+    <label>意向职业</label>
+    <div class="field hint">如:客服主管、厨师、软件工程师…</div>
+    <label>目标省或城市</label>
+    <div class="field hint">如:安省、多伦多…</div>
+    <label>当前身份</label>
+    <div class="field hint">学签、毕业工签、工签、境外…</div>
+    <button class="btn-main">完成,继续投递</button>
+    <div class="skip">跳过,直接投递</div>
+  </div>
+</body>
+</html>

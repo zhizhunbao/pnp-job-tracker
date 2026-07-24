@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  /* 投递栏效果图 v2(Frank「不要那么多字,详情底部直接能点投递」):
+     上半 = 现有详情页示意(灰块),只看底部投递栏 */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { width: 375px; font-family: "Microsoft YaHei", sans-serif; background: #fff; }
+  .detail { padding: 14px 14px 0; }
+  .t { font-size: 15px; font-weight: 700; color: #111827; }
+  .zh { font-size: 12px; color: #6b7280; margin-top: 2px; }
+  .ph { background: #f3f4f6; border-radius: 6px; height: 13px; margin-top: 10px; }
+  .cap { margin-top: 16px; font-size: 11px; color: #d1d5db; text-align: center; }
+  /* ▼ 新增的就这一条:详情底部常驻投递栏 */
+  .apply-bar {
+    position: sticky; bottom: 0; margin-top: 16px;
+    background: #fff; border-top: 1px solid #e5e7eb;
+    padding: 10px 14px 12px;
+    display: flex; gap: 8px; align-items: center;
+  }
+  .btn-apply {
+    flex: 1; background: #2563eb; color: #fff; border: none; border-radius: 10px;
+    padding: 12px 0; font-size: 15px; font-weight: 700; text-align: center;
+  }
+  .btn-copy {
+    flex-shrink: 0; background: #f3f4f6; color: #374151; border: none; border-radius: 10px;
+    padding: 12px 14px; font-size: 13px; font-weight: 600;
+  }
+</style>
+</head>
+<body>
+  <div class="detail">
+    <div class="t">customer service supervisor - retail</div>
+    <div class="zh">零售客服主管(NOC 62010)</div>
+    <div class="ph" style="width: 62%"></div>
+    <div class="ph" style="width: 84%"></div>
+    <div class="ph" style="width: 74%"></div>
+    <div class="ph" style="width: 88%"></div>
+    <div class="ph" style="width: 40%"></div>
+    <div class="cap">↑ 现有详情内容原样不动(事实区、JD、AI 区……) ↑</div>
+    <div class="ph" style="width: 80%"></div>
+    <div class="ph" style="width: 66%"></div>
+  </div>
+  <div class="apply-bar">
+    <button class="btn-apply">📧 邮件投递</button>
+    <button class="btn-copy">复制要点</button>
+  </div>
+</body>
+</html>
