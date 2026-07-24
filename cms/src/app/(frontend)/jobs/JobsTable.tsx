@@ -3100,8 +3100,9 @@ const DIFF_TAG: Record<string, { bg: string; fg: string; bd: string }> = {
 function LocationPanel({ job, lang, srcField, pnpDraws, news }: { job: JobRow; lang: Lang; srcField: ColKey; pnpDraws: PnpDraw[]; news: NewsSlim[] }) {
   const t = makeT(lang)
   const L = parseLoc(job)
-  // 入口语义=内容(Frank「点省看省相关的信息,点市看市相关的信息」):省格=省卡组,市/区格=市卡组(区加本区在招行)
-  const level: 'province' | 'city' = srcField === 'province' ? 'province' : 'city'
+  // 入口语义=内容(Frank「点省看省,点市看市」+「点区看区」):省格=省卡组,市格=市卡组,区格=区卡组
+  // (区列点开但该岗无区值 → 退回市级,不出空面板)
+  const level: 'province' | 'city' | 'district' = srcField === 'province' ? 'province' : (srcField === 'district' && L.district) ? 'district' : 'city'
   const [prov, setProv] = useState<{ info: ProvInfo | null; difficulty: { tier?: string; factors?: any[] } | null } | null>(null)
   useEffect(() => {
     if (level !== 'province' || !job.province) { setProv(null); return }
@@ -3110,17 +3111,18 @@ function LocationPanel({ job, lang, srcField, pnpDraws, news }: { job: JobRow; l
       .then((r) => (r.ok ? r.json() : null)).then((d) => { if (!dead && d?.ok) setProv({ info: d.info, difficulty: d.difficulty }) }).catch(() => {})
     return () => { dead = true }
   }, [level, job.province])
-  type CityInfo = { openJobs: number; new7d: number; medSalary: number | null; topBroads: { broad: string; n: number }[]; dli: { count: number; top: { name: string; isPublic: boolean }[] }; aipEmployers: number; districtOpen: number | null }
+  type AreaStats = { openJobs: number; new7d: number; medSalary: number | null; topBroads: { broad: string; n: number }[] }
+  type CityInfo = AreaStats & { dli: { count: number; top: { name: string; isPublic: boolean }[] }; aipEmployers: number; district: (AreaStats & { topEmployers: { name: string; slug: string; n: number }[] }) | null }
   const [cityInfo, setCityInfo] = useState<CityInfo | null>(null)
   useEffect(() => {
-    if (level !== 'city' || !L.city || !job.province) { setCityInfo(null); return }
+    if (level === 'province' || !L.city || !job.province) { setCityInfo(null); return }
     let dead = false
     const q = new URLSearchParams({ city: L.city, prov: job.province })
-    if (srcField === 'district' && L.district) q.set('district', L.district)
+    if (level === 'district' && L.district) q.set('district', L.district)
     fetch('/api/city?' + q.toString())
       .then((r) => (r.ok ? r.json() : null)).then((d) => { if (!dead && d?.ok) setCityInfo(d) }).catch(() => {})
     return () => { dead = true }
-  }, [level, srcField, L.city, L.district, job.province])
+  }, [level, L.city, L.district, job.province])
 
   const isQc = job.province === 'QC'
   const num = (n: number) => Number(n).toLocaleString()
@@ -3227,7 +3229,6 @@ function LocationPanel({ job, lang, srcField, pnpDraws, news }: { job: JobRow; l
             [t('loc.new7d'), num(cityInfo.new7d)],
             ...(cityInfo.medSalary != null ? [[t('loc.medSal'), `$${Math.round(cityInfo.medSalary / 1000)}K/yr`]] : []),
             ...(cityInfo.topBroads.length ? [[t('loc.topBroads'), cityInfo.topBroads.map((b) => `${t('broad.' + b.broad)} ${num(b.n)}`).join('、')]] : []),
-            ...(srcField === 'district' && cityInfo.districtOpen != null && L.district ? [[t('loc.distOpen', { d: L.district }), num(cityInfo.districtOpen)]] : []),
           ] as [string, string][]).map(([k, v], i) => (
             <div key={i} style={{ display: 'flex', gap: 10, padding: '3px 6px', margin: '0 -6px', fontSize: 13 }}>
               <span style={{ minWidth: 128, color: '#9ca3af', flexShrink: 0 }}>{k}</span>
@@ -3255,6 +3256,38 @@ function LocationPanel({ job, lang, srcField, pnpDraws, news }: { job: JobRow; l
             <span style={{ color: '#374151' }}>{t('loc.aipN', { n: num(cityInfo.aipEmployers) })}</span>
             <a href="/employers" style={{ color: '#2563eb', textDecoration: 'none', fontSize: 12.5 }}>{t('loc.dirLink')}</a>
           </div>
+        </div>
+      )}
+
+      {/* ── 区级卡组(点区进来;Frank「点区看区的信息」)────────── */}
+      {level === 'district' && cityInfo?.district && (
+        <div style={card}>
+          <div style={MODAL_CARD_HEAD}>{t('loc.distJobs')} <span style={{ ...gnote, fontSize: 11.5, marginLeft: 8 }}>{L.district}</span></div>
+          {([
+            [t('loc.openJobs'), num(cityInfo.district.openJobs)],
+            [t('loc.new7d'), num(cityInfo.district.new7d)],
+            ...(cityInfo.district.medSalary != null ? [[t('loc.medSal'), `$${Math.round(cityInfo.district.medSalary / 1000)}K/yr`]] : []),
+            ...(cityInfo.district.topBroads.length ? [[t('loc.topBroads'), cityInfo.district.topBroads.map((b) => `${t('broad.' + b.broad)} ${num(b.n)}`).join('、')]] : []),
+          ] as [string, string][]).map(([k, v], i) => (
+            <div key={i} style={{ display: 'flex', gap: 10, padding: '3px 6px', margin: '0 -6px', fontSize: 13 }}>
+              <span style={{ minWidth: 128, color: '#9ca3af', flexShrink: 0 }}>{k}</span>
+              <span style={{ flex: 1, color: '#374151' }}>{v}</span>
+            </div>
+          ))}
+          <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 8, lineHeight: 1.6 }}>{t('loc.calNote')}</div>
+        </div>
+      )}
+      {level === 'district' && cityInfo?.district && cityInfo.district.topEmployers.length > 0 && (
+        <div style={card}>
+          <div style={MODAL_CARD_HEAD}>{t('loc.distEmployers')}</div>
+          {cityInfo.district.topEmployers.map((e, i) => (
+            <div key={i} style={{ display: 'flex', gap: 8, padding: '3px 6px', margin: '0 -6px', fontSize: 13, alignItems: 'baseline' }}>
+              {e.slug
+                ? <a href={`/companies/${e.slug}`} style={{ flex: 1, minWidth: 0, color: '#2563eb', textDecoration: 'none' }}>{e.name}</a>
+                : <span style={{ flex: 1, minWidth: 0, color: '#374151' }}>{e.name}</span>}
+              <span style={gnote}>{t('loc.nJobs', { n: num(e.n) })}</span>
+            </div>
+          ))}
         </div>
       )}
     </>
