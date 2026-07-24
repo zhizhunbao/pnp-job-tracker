@@ -3189,6 +3189,9 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news }: { job: Job
     } catch { setAiStatus('error') }
   }
   const factsReady = level === 'province' ? !!prov : !!cityInfo
+  // #183 同款(Frank「点完按钮怎么没了」):AI 速读=常驻折叠开关,点开点收都是它;内容留在 state,收起再开不重烧
+  const [aiOn, setAiOn] = useState(false)
+  const toggleAi = () => { if (aiStatus === 'idle') runAi(); setAiOn((v) => !v) }
 
   // 卡① 地点:与分类卡①同款行(点进来的字段行高亮);有值行值文字=地图链接(与表格格同一规则)
   const locRows: { f: ColKey; k: string; v: string; map: boolean }[] = [
@@ -3227,13 +3230,13 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news }: { job: Job
           (内容已随界面语言本地化、零 AI 设计),只出「打开完整页」=该省地区统计页 */}
       {job.province && (
         <div style={{ display: 'flex', gap: 8, margin: '2px 0 12px', flexWrap: 'wrap' }}>
-          {factsReady && aiStatus === 'idle' && <button onClick={runAi} style={PILL_BTN}><IconCompass /> {t('cat.aiRead')}</button>}
+          {factsReady && <button onClick={toggleAi} style={{ ...PILL_BTN, ...(aiOn ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}><IconCompass /> {t('cat.aiRead')} {aiOn ? '▾' : '▸'}</button>}
           <a href={`/stats/${job.province.toLowerCase()}`} target="_blank" rel="noreferrer" style={{ ...PILL_BTN, textDecoration: 'none', display: 'inline-block' }}>{t('detail.openFull')} ↗</a>
         </div>
       )}
 
-      {/* AI 解读卡(点了才出;置顶=点完不用往下翻,与分类弹框同规范) */}
-      {aiStatus !== 'idle' && (
+      {/* AI 解读卡(点了才出;置顶=点完不用往下翻;开关收起时隐藏不清 state) */}
+      {aiOn && aiStatus !== 'idle' && (
         <div style={card}>
           <div style={MODAL_CARD_HEAD}><IconCompass /> {t('cat.aiRead')}</div>
           {aiStatus === 'upgrade' ? <LockedText t={t} loggedIn={plan.loggedIn} />
