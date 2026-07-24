@@ -267,7 +267,9 @@ function buildPrompt(field: string, j: Job, jd: string, lang: Lang, pf = '', web
     const ask = field === 'provRead'
       ? 'Give a quick plain-language read of this PROVINCE for a job-seeker weighing where to work in Canada: (1) how crowded the provincial-nominee route looks (competition ratio, allocation trend, draw activity), (2) what the study/work-permit and PR volumes say about the local newcomer scene, (3) one practical takeaway. The numbers are rough official aggregates — never turn them into odds, timelines, or eligibility.'
       : 'Give a quick plain-language read of this CITY or DISTRICT job market for a job-seeker: (1) how active hiring looks (open jobs, last-7-days), (2) what the top fields and median posted salary suggest about who is hiring, (3) mention the schools / AIP employers only if the facts list them, (4) one practical takeaway. The data is this site\'s live job index, not official statistics — never present it as odds or eligibility.'
-    return `${ask}\n\nLocation facts:\n${facts}\n\n${GROUNDING_RULES}\n\nWrite 2–3 short sections, each starting with a 【heading】, content in ${LANG_NAME[lang]}. Base everything strictly on the facts above; do not invent numbers, programs, or immigration advice.`
+    // 语言纯度(Frank 2026-07-23 实拍「中位 posted 薪资」中英夹杂):事实块是英文喂的,模型会把
+    // posted/open jobs 这类词原样漏进译文 → 硬性要求整句目标语言,只放行专有名词与站规缩写。
+    return `${ask}\n\nLocation facts:\n${facts}\n\n${GROUNDING_RULES}\n\nWrite 2–3 short sections, each starting with a 【heading】, content in ${LANG_NAME[lang]}. LANGUAGE PURITY: every sentence must be written entirely in ${LANG_NAME[lang]} — the facts above are in English, but never copy English words like "posted", "open jobs" or "year-end" into your text; translate them. Only proper names (schools, employers, places) and site-wide abbreviations (PNP, EE, AIP, NOC, TEER, PGWP, CLB, IRCC, TFWP, IMP) may stay in Latin script. Base everything strictly on the facts above; do not invent numbers, programs, or immigration advice.`
   }
   // jdRead(职位弹框「AI 速读」,2026-07-21 Frank「只速读这个 job 的内容即可,不需要过度解读移民信号」):
   // 只喂 JD 原文 + 帖面基本盘,总结职位本身;移民路径解读归移民弹框(field=immigration)与详情页初判。
