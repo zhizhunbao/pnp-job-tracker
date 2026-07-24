@@ -1381,8 +1381,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                   </div>
                 ) : null}
                 <div style={{ fontSize: 12.5, marginTop: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
-                  {/* 地点 → 地图直连(Frank 2026-07-21;与桌面省/市格同源 mapQuery);stopPropagation 保整卡进详情页 */}
-                  {L.city ? <a href={mapsUrl(mapQuery('city', j))} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} style={{ color: '#2563eb', minWidth: 0, textDecoration: 'none' }}>{L.city}{j.province ? `, ${j.province}` : ''}</a> : <span />}
+                  {/* E8-12(Frank「手机卡片呢?」):地点文字=开地点弹框(卡上没有「格子」,弹框内地点卡文字仍跳地图);
+                      <a href> 语义保留给爬虫/长按新开地图(#131 职位名同款手法);stopPropagation 保整卡进详情页 */}
+                  {L.city ? <a href={mapsUrl(mapQuery('city', j))} target="_blank" rel="noreferrer" onClick={(e) => { e.preventDefault(); e.stopPropagation(); open('city', L.city) }} style={{ color: '#2563eb', minWidth: 0, textDecoration: 'none' }}>{L.city}{j.province ? `, ${j.province}` : ''}</a> : <span />}
                   <span suppressHydrationWarning style={{ color: '#9ca3af', whiteSpace: 'nowrap', flexShrink: 0 }}>{(j.datePosted || '').slice(0, 10)}{days != null ? `(${t('fact.daysUpVal', { n: days })})` : ''}</span>
                 </div>
                 <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
@@ -3098,7 +3099,6 @@ const DIFF_TAG: Record<string, { bg: string; fg: string; bd: string }> = {
 }
 function LocationPanel({ job, lang, srcField, pnpDraws, news }: { job: JobRow; lang: Lang; srcField: ColKey; pnpDraws: PnpDraw[]; news: NewsSlim[] }) {
   const t = makeT(lang)
-  const narrow = useIsNarrow()
   const L = parseLoc(job)
   const [prov, setProv] = useState<{ info: ProvInfo | null; difficulty: { tier?: string; factors?: any[] } | null } | null>(null)
   useEffect(() => {
@@ -3112,7 +3112,7 @@ function LocationPanel({ job, lang, srcField, pnpDraws, news }: { job: JobRow; l
   const isQc = job.province === 'QC'
   const num = (n: number) => Number(n).toLocaleString()
   const gnote: React.CSSProperties = { color: '#9ca3af', fontSize: 12, fontWeight: 400 }
-  const card: React.CSSProperties = { ...MODAL_CARD, breakInside: 'avoid' }
+  const card: React.CSSProperties = MODAL_CARD
 
   // 卡① 地点:与分类卡①同款行(点进来的字段行高亮);有值行值文字=地图链接(与表格格同一规则)
   const locRows: { f: ColKey; k: string; v: string; map: boolean }[] = [
@@ -3144,8 +3144,16 @@ function LocationPanel({ job, lang, srcField, pnpDraws, news }: { job: JobRow; l
   }
   if (!isQc && info?.pnpPr) volRows.push({ k: t('loc.pnpPr'), v: <>{num(info.pnpPr.n)} <span style={gnote}>{t('loc.prNote', { y: info.pnpPr.year })}</span></> })
 
+  // 竖排单列(Frank 2026-07-23「别横着排列,其他的弹框都是竖着排列的」——两列版当天推翻,与全弹框族一致)
   return (
-    <div style={narrow ? undefined : { columnCount: 2, columnGap: 14 }}>
+    <>
+      {/* 顶部钮行(Frank「这三个按钮也没有」):与职位/分类弹框同款位。中文对照/AI 速读不适用
+          (内容已随界面语言本地化、零 AI 设计),只出「打开完整页」=该省地区统计页 */}
+      {job.province && (
+        <div style={{ display: 'flex', gap: 8, margin: '2px 0 12px', flexWrap: 'wrap' }}>
+          <a href={`/stats/${job.province.toLowerCase()}`} target="_blank" rel="noreferrer" style={{ ...PILL_BTN, textDecoration: 'none', display: 'inline-block' }}>{t('detail.openFull')} ↗</a>
+        </div>
+      )}
       <div style={card}>
         <div style={MODAL_CARD_HEAD}>{t('grp.location')}</div>
         {locRows.filter((r) => r.v).map((r, i) => {
@@ -3195,7 +3203,7 @@ function LocationPanel({ job, lang, srcField, pnpDraws, news }: { job: JobRow; l
       {job.province && news.some((n) => n.region === job.province) && (
         <div style={card}><NewsLatestBlock province={job.province} lang={lang} news={news} /></div>
       )}
-    </div>
+    </>
   )
 }
 
