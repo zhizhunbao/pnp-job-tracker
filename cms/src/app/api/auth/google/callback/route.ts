@@ -13,6 +13,7 @@ const CLIENT_ID = process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE
 const SECRET = process.env.GOOGLE_CLIENT_SECRET || ''
 const secure = SITE.startsWith('https') ? '; Secure' : ''
 const CLEAR_STATE = `g_oauth_state=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure}`
+const CLEAR_RETURN = `g_oauth_return=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure}`
 
 const fail = (why: string): Response => {
   console.error('[google-oauth] fail:', why)
@@ -84,12 +85,16 @@ export async function GET(req: Request): Promise<Response> {
   const fieldsToSign = getFieldsToSign({ collectionConfig, email, sid, user: { ...user, collection: 'users' } })
   const { token } = await jwtSign({ fieldsToSign, secret: payload.secret, tokenExpiration })
   const cookiePrefix = (payload.config as { cookiePrefix?: string }).cookiePrefix || 'payload'
+  // E9-04b:回跳原页(g_oauth_return 由第 1 跳按站内路径白名单种下,这里再验一遍双保险)
+  const rtRaw = decodeURIComponent(/(?:^|;\s*)g_oauth_return=([^;]+)/.exec(req.headers.get('cookie') || '')?.[1] || '')
+  const rt = /^\/(?!\/)[\x21-\x7e]{0,200}$/.test(rtRaw) ? rtRaw : '/'
   return new Response(null, {
     status: 302,
     headers: [
-      ['Location', `${SITE}/`],
+      ['Location', `${SITE}${rt}`],
       ['Set-Cookie', `${cookiePrefix}-token=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${tokenExpiration}${secure}`],
       ['Set-Cookie', CLEAR_STATE],
+      ['Set-Cookie', CLEAR_RETURN],
     ],
   })
 }

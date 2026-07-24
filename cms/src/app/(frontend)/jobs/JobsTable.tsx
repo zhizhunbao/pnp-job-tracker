@@ -1447,7 +1447,11 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       {wizard && <OnboardingWizard t={t} initial={plan.profile} onClose={closeWizard} />}
       {upsell && (plan.loggedIn
         ? <UpgradeModal t={t} reason={upsell === 'ss' ? t('ss.pro') : upsell === 'match' ? (matchTotals && matchTotals.high > plan.freeMatchCap ? t('up.matchN', { h: matchTotals.high, n: plan.freeMatchCap }) : t('up.match', { n: plan.freeMatchCap })) : undefined} onClose={() => setUpsell(false)} />
-        : <AuthModal t={t} mode={upsell === 'login' ? 'login' : 'register'} onClose={() => setUpsell(false)} onDone={() => window.location.reload()} />)}
+        : <AuthModal t={t} mode={upsell === 'login' ? 'login' : 'register'} onClose={() => setUpsell(false)}
+            /* E9-04b:'login' 目前只有「我的匹配」入口在用——登录成功直接落匹配视图(邮箱路径 onDone,
+               Google 路径 returnTo),不再回列表让用户再点一次(Frank「点我的匹配也一样」) */
+            onDone={() => { if (upsell === 'login') window.location.href = '/?view=match'; else window.location.reload() }}
+            returnTo={upsell === 'login' ? '/?view=match' : undefined} />)}
     </div>
   )
 }
@@ -3716,6 +3720,7 @@ function AdvisorChat({ field, job, lang, initialJudgment, initialSug }: { field:
 // 邮箱岗(投递邮箱从已拉 jobtext 正则抽,懒查询零预抓)→ mailto 预填;无邮箱 → 外跳原帖。
 // 未登录 → 注册框 → 求职意向(复用 OnboardingWizard,不新造表单;跳过/关闭都继续投递,投递必须丝滑)。
 // 首版=替他备好一切他自己发,不代发(邮箱授权/简历存储/发信信誉全后置)。
+const APPLY_RESUME_KEY = 'apply_resume_v1'   // OAuth 整页跳转后的续投意图:`jobId|时间戳`
 const APPLY_MAIL_RE = /[\w.+-]+@[\w-]+\.[\w.-]+/g
 const applyEmailOf = (text: string): string => {
   for (const m of text.match(APPLY_MAIL_RE) || []) {
@@ -3732,12 +3737,15 @@ function ApplyBar({ job, text, t, plan }: { job: JobRow; text: string; t: TFn; p
   // JB 岗投递邮箱在「Show how to apply」JSF 提交后面(正文与 description 都没有)→ 懒查 /api/applyhow;
   // 非 JB 岗(ATS 原站)正文常直接带邮箱 → 前端正则兜底
   const [jbEmail, setJbEmail] = useState('')
+  const [jbDone, setJbDone] = useState(false)   // applyhow 已出结果(成败都算);OAuth 回跳续投要等它,别把邮箱岗投成外跳
   useEffect(() => {
     setJbEmail('')
-    if (!/jobbank\.gc\.ca\/jobsearch\/jobposting\//.test(job.applyUrl || '')) return
+    if (!/jobbank\.gc\.ca\/jobsearch\/jobposting\//.test(job.applyUrl || '')) { setJbDone(true); return }
+    setJbDone(false)
     const ctrl = new AbortController()
     fetch('/api/applyhow?url=' + encodeURIComponent(job.applyUrl), { signal: ctrl.signal })
       .then((r) => (r.ok ? r.json() : null)).then((d) => { if (d?.email) setJbEmail(d.email) }).catch(() => {})
+      .finally(() => { if (!ctrl.signal.aborted) setJbDone(true) })
     return () => ctrl.abort()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [job.applyUrl])
@@ -3753,6 +3761,7 @@ function ApplyBar({ job, text, t, plan }: { job: JobRow; text: string; t: TFn; p
       }).catch(() => {})
   }
   const launch = () => {
+    try { localStorage.removeItem(APPLY_RESUME_KEY) } catch { /* ignore */ }  // 原地流程走完=意图清账,防下次进页误续投
     try { (window as any).umami?.track('apply', { mode: email ? 'email' : 'web' }) } catch { /* E9-04:投递事件 */ }
     record()
     if (email) {
@@ -3769,12 +3778,28 @@ function ApplyBar({ job, text, t, plan }: { job: JobRow; text: string; t: TFn; p
     } else if (job.applyUrl) window.open(job.applyUrl, '_blank', 'noopener')
   }
   const onApply = () => {
-    if (!plan.loggedIn && !authed) { setStage('auth'); return }
+    if (!plan.loggedIn && !authed) {
+      // Google 登录=整页 OAuth 跳转,组件状态全丢 → 投递意图落地,回跳本页后自动续投(下方 resume effect)
+      try { localStorage.setItem(APPLY_RESUME_KEY, `${job.id}|${Date.now()}`) } catch { /* ignore */ }
+      setStage('auth'); return
+    }
     let intentPending = !plan.profileOk
     try { if (localStorage.getItem(OB_SEEN_KEY)) intentPending = false } catch { /* ignore */ }
     if (intentPending && !authed) { setStage('intent'); return }  // authed=刚注册,onDone 已走过 intent
     launch()
   }
+  // OAuth 回跳续投:登录态 + 落地意图是本岗 + 10 分钟内 → 接着走意向表单/直接投,不让用户再点一次
+  useEffect(() => {
+    if (!plan.loggedIn || !jbDone) return
+    try {
+      const [id, ts] = (localStorage.getItem(APPLY_RESUME_KEY) || '').split('|')
+      if (id !== String(job.id) || Date.now() - Number(ts) > 10 * 60_000) return
+      localStorage.removeItem(APPLY_RESUME_KEY)
+      if (!plan.profileOk && !localStorage.getItem(OB_SEEN_KEY)) { setStage('intent'); return }
+      launch()
+    } catch { /* ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [plan.loggedIn, jbDone])
   // 复制要点:岗位信息打包(贴给自己的 AI 改简历也行);一行一条(no-dot 铁律)
   const copyBrief = async () => {
     const lines = [

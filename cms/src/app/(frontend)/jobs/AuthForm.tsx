@@ -41,7 +41,9 @@ const PW_METER = [
 
 // E3-07:新增 forgot(找回密码,输邮箱)/ reset(邮件链接落地,设新密码)两态;
 // forgot 防枚举=无论邮箱存在与否一律同一提示;reset 成功即登录态(Payload set-cookie),onDone 整页刷新。
-export function AuthForm({ t, onDone, initialMode, resetToken }: { t: TFn; onDone: () => void; initialMode?: 'login' | 'register' | 'reset'; resetToken?: string }) {
+// returnTo(E9-04b):Google 是整页 OAuth 跳转,回调原先写死落首页(Frank「之前那个页面没了」)——
+// 调用方可指定回跳站内路径;不传=当前页。邮箱路径本就原地 onDone,不受影响。
+export function AuthForm({ t, onDone, initialMode, resetToken, returnTo }: { t: TFn; onDone: () => void; initialMode?: 'login' | 'register' | 'reset'; resetToken?: string; returnTo?: string }) {
   const [mode, setMode] = useState<'login' | 'register' | 'forgot' | 'reset'>(initialMode ?? 'login')
   const [email, setEmail] = useState('')
   const [pw, setPw] = useState('')
@@ -139,7 +141,13 @@ export function AuthForm({ t, onDone, initialMode, resetToken }: { t: TFn; onDon
         )}
         {/* 社交在上(#54 骨架):Google 一枚,env 未配(后端未上线)不渲染 */}
         {GOOGLE_ON && (<>
-          <a href="/api/auth/google" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', boxSizing: 'border-box', padding: '10px 0', fontSize: 14, fontWeight: 600, color: '#374151', background: '#fff', border: '1.5px solid #e5e7eb', borderRadius: 9, textDecoration: 'none' }}>
+          <a href="/api/auth/google"
+            onClick={(e) => {
+              e.preventDefault()
+              const rt = returnTo || window.location.pathname + window.location.search
+              window.location.href = '/api/auth/google?returnTo=' + encodeURIComponent(rt)
+            }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', boxSizing: 'border-box', padding: '10px 0', fontSize: 14, fontWeight: 600, color: '#374151', background: '#fff', border: '1.5px solid #e5e7eb', borderRadius: 9, textDecoration: 'none' }}>
             <GoogleG /> {t('acct.google')}
           </a>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '14px 0', color: '#9ca3af', fontSize: 11.5 }}>
@@ -218,10 +226,10 @@ export function AuthForm({ t, onDone, initialMode, resetToken }: { t: TFn; onDon
 
 // mode:入口决定初始 tab(注册 CTA 直达注册,用户定「注册也要弹框」;默认登录;reset=邮件链接落地设新密码)
 // 壳统一走 Modal(sm);品牌头保留(用户拍板:登录弹框是品牌触点,仅 chrome 对齐规范)
-export function AuthModal({ t, onClose, onDone, mode, resetToken, z }: { t: TFn; onClose: () => void; onDone: () => void; mode?: 'login' | 'register' | 'reset'; resetToken?: string; z?: number }) {
+export function AuthModal({ t, onClose, onDone, mode, resetToken, z, returnTo }: { t: TFn; onClose: () => void; onDone: () => void; mode?: 'login' | 'register' | 'reset'; resetToken?: string; z?: number; returnTo?: string }) {
   return (
     <Modal onClose={onClose} size="sm" z={z}>
-      <AuthForm t={t} onDone={onDone} initialMode={mode} resetToken={resetToken} />
+      <AuthForm t={t} onDone={onDone} initialMode={mode} resetToken={resetToken} returnTo={returnTo} />
     </Modal>
   )
 }
