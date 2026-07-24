@@ -8,7 +8,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { getUser, isPro } from '@/lib/entitlement'
 import { FREE_MATCH_JOBS_PER_DAY } from '@/lib/plan'
-import { normalizeProfile } from '@/lib/match'
+import { hasProfile, normalizeProfile } from '@/lib/match'
 import { fetchJobById } from '@/lib/jobsSql'
 import JobDetailView from './JobDetailView'
 
@@ -63,8 +63,11 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
     nocDesc: nocDescDocs.docs.map((r: any) => ({ noc: r.noc, title: r.title ?? '', titleZh: r.titleZh ?? '', titleKo: r.titleKo ?? '', duties: r.duties ?? '', requirements: r.requirements ?? '', fetched: r.fetched ?? '' })),
   }
 
+  // dd24-#107:B2 瘦身时把 profile 硬置 null,投递栏(E9-04)上线后成了坑——详情页直入的已建档用户
+  // 点投递被当无档案弹空白向导(填完还会覆盖真档案)。user 本来就在手上,传真实档案零额外查询。
+  const userProfile = normalizeProfile((user as any)?.profile ?? null)
   const plan = {
-    isPro: pro, loggedIn: !!user, profileOk: false, profile: null,
+    isPro: pro, loggedIn: !!user, profileOk: !!user && hasProfile(userProfile), profile: user ? userProfile : null,
     freeMatchCap: FREE_MATCH_JOBS_PER_DAY,
     email: (user as any)?.email ?? null, displayName: (user as any)?.displayName ?? null,
     avatar: (user as any)?.avatar ?? null, proUntil: String((user as any)?.proUntil || '').slice(0, 10),

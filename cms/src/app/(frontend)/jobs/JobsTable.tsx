@@ -3750,8 +3750,8 @@ function ApplyBar({ job, text, t, plan }: { job: JobRow; text: string; t: TFn; p
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [job.applyUrl])
   const email = jbEmail || applyEmailOf(text || '')
-  // 已投递记录(fire-and-forget):已有收藏行 → 状态改 applied,没有 → 新建;失败不打扰投递
-  const record = () => {
+  // 已投递记录:已有收藏行 → 状态改 applied,没有 → 新建;失败不打扰投递
+  const record = () =>
     fetch(`/api/saved-jobs?where[job][equals]=${job.id}&limit=1&depth=0`, { credentials: 'include' })
       .then((r) => r.json())
       .then((d) => {
@@ -3759,11 +3759,11 @@ function ApplyBar({ job, text, t, plan }: { job: JobRow; text: string; t: TFn; p
         if (cur?.id != null) return fetch(`/api/saved-jobs/${cur.id}`, { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'applied' }) })
         return fetch('/api/saved-jobs', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ job: job.id, title: job.title, company: job.company, status: 'applied' }) })
       }).catch(() => {})
-  }
-  const launch = () => {
+  const launch = async () => {
     try { localStorage.removeItem(APPLY_RESUME_KEY) } catch { /* ignore */ }  // 原地流程走完=意图清账,防下次进页误续投
     try { (window as any).umami?.track('apply', { mode: email ? 'email' : 'web' }) } catch { /* E9-04:投递事件 */ }
-    record()
+    // dd24-#108:先落库再唤邮件——mailto 触发的导航态会掐死在途 fetch,「已投」记录曾竞态丢失
+    await record()
     if (email) {
       const subject = `Application for ${job.title}${job.company ? ` - ${job.company}` : ''}`
       const loc = [job.city, job.province].filter(Boolean).join(', ')

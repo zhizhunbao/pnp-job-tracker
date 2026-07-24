@@ -80,7 +80,9 @@ export function OnboardingWizard({ t, initial, onClose, onFinished, z }: { t: TF
 
   const finish = async () => {
     try { localStorage.setItem(OB_SEEN_KEY, '1') } catch { /* ignore */ }  // 完成即标记已弹,防跳转后重弹(保存失败/空档同理)
-    if (uid != null) {
+    // dd24-#107 保险丝:全空草稿不落库——一路跳过=没东西可存,更不许拿空值覆盖已有档案
+    const dirty = !!status || nocs.length > 0 || clb != null || (crsCalc && crs != null) || provs.length > 0 || pgwp != null
+    if (uid != null && dirty) {
       setSaving(true)
       try {
         await fetch(`/api/users/${uid}`, {
