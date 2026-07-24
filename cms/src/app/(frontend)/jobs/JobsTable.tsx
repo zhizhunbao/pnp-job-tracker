@@ -18,7 +18,7 @@ import { PricingModal } from './PricingModal'
 import { OnboardingWizard, OB_SEEN_KEY } from './OnboardingWizard'
 import { useOverlayClose } from './overlay'
 import { CARD, iconBtnS, SCRIM, useIsNarrow } from './Modal'
-import { match as matchJob, matchRank, type MatchProfile, type MatchJob, type MatchReason } from '@/lib/match'
+import { match as matchJob, matchRank, hasProfile, normalizeProfile, type MatchProfile, type MatchJob, type MatchReason } from '@/lib/match'
 import type { CompanyDetail, SimilarEmployer } from '@/lib/jobsSql'   // E8-11 B1:公司域同源数据形状(type-only,不拉服务端码)
 import { lmiaWageClass, isExemptSector } from '@/lib/lmiaStatus'
 
@@ -3712,6 +3712,112 @@ function AdvisorChat({ field, job, lang, initialJudgment, initialSug }: { field:
   )
 }
 
+// ── E9-04 投递栏(B11,2026-07-24 拍板):详情底部常驻;注册闸设在投递=全站意愿最强瞬间 ──
+// 邮箱岗(投递邮箱从已拉 jobtext 正则抽,懒查询零预抓)→ mailto 预填;无邮箱 → 外跳原帖。
+// 未登录 → 注册框 → 求职意向(复用 OnboardingWizard,不新造表单;跳过/关闭都继续投递,投递必须丝滑)。
+// 首版=替他备好一切他自己发,不代发(邮箱授权/简历存储/发信信誉全后置)。
+const APPLY_MAIL_RE = /[\w.+-]+@[\w-]+\.[\w.-]+/g
+const applyEmailOf = (text: string): string => {
+  for (const m of text.match(APPLY_MAIL_RE) || []) {
+    const d = (m.split('@')[1] || '').toLowerCase()
+    if (d && !d.includes('jobbank') && !d.endsWith('gc.ca') && !d.endsWith('canada.ca')) return m
+  }
+  return ''
+}
+function ApplyBar({ job, text, t, plan }: { job: JobRow; text: string; t: TFn; plan: Plan }) {
+  const [stage, setStage] = useState<'idle' | 'auth' | 'intent'>('idle')
+  const [authed, setAuthed] = useState(false)  // 流程内放行(不整页 reload,SSR plan 下次导航自然更新)
+  const [freshProfile, setFreshProfile] = useState<MatchProfile | null>(null)  // 流程内登录后拉到的真实档案
+  const [copied, setCopied] = useState(false)
+  // JB 岗投递邮箱在「Show how to apply」JSF 提交后面(正文与 description 都没有)→ 懒查 /api/applyhow;
+  // 非 JB 岗(ATS 原站)正文常直接带邮箱 → 前端正则兜底
+  const [jbEmail, setJbEmail] = useState('')
+  useEffect(() => {
+    setJbEmail('')
+    if (!/jobbank\.gc\.ca\/jobsearch\/jobposting\//.test(job.applyUrl || '')) return
+    const ctrl = new AbortController()
+    fetch('/api/applyhow?url=' + encodeURIComponent(job.applyUrl), { signal: ctrl.signal })
+      .then((r) => (r.ok ? r.json() : null)).then((d) => { if (d?.email) setJbEmail(d.email) }).catch(() => {})
+    return () => ctrl.abort()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [job.applyUrl])
+  const email = jbEmail || applyEmailOf(text || '')
+  // 已投递记录(fire-and-forget):已有收藏行 → 状态改 applied,没有 → 新建;失败不打扰投递
+  const record = () => {
+    fetch(`/api/saved-jobs?where[job][equals]=${job.id}&limit=1&depth=0`, { credentials: 'include' })
+      .then((r) => r.json())
+      .then((d) => {
+        const cur = d?.docs?.[0]
+        if (cur?.id != null) return fetch(`/api/saved-jobs/${cur.id}`, { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'applied' }) })
+        return fetch('/api/saved-jobs', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ job: job.id, title: job.title, company: job.company, status: 'applied' }) })
+      }).catch(() => {})
+  }
+  const launch = () => {
+    try { (window as any).umami?.track('apply', { mode: email ? 'email' : 'web' }) } catch { /* E9-04:投递事件 */ }
+    record()
+    if (email) {
+      const subject = `Application for ${job.title}${job.company ? ` - ${job.company}` : ''}`
+      const loc = [job.city, job.province].filter(Boolean).join(', ')
+      const body = [
+        'Hello,', '',
+        `I would like to apply for the position of "${job.title}"${job.company ? ` at ${job.company}` : ''}${loc ? ` in ${loc}` : ''}.`,
+        `Job posting: ${job.applyUrl}`, '',
+        'Please find my resume attached.', '',
+        'Best regards,',
+      ].join('\r\n')
+      window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+    } else if (job.applyUrl) window.open(job.applyUrl, '_blank', 'noopener')
+  }
+  const onApply = () => {
+    if (!plan.loggedIn && !authed) { setStage('auth'); return }
+    let intentPending = !plan.profileOk
+    try { if (localStorage.getItem(OB_SEEN_KEY)) intentPending = false } catch { /* ignore */ }
+    if (intentPending && !authed) { setStage('intent'); return }  // authed=刚注册,onDone 已走过 intent
+    launch()
+  }
+  // 复制要点:岗位信息打包(贴给自己的 AI 改简历也行);一行一条(no-dot 铁律)
+  const copyBrief = async () => {
+    const lines = [
+      job.title, job.company, [job.city, job.province].filter(Boolean).join(' '),
+      job.salaryText || job.salary, job.noc ? `NOC ${job.noc}` : '', email ? `Apply by email: ${email}` : '', job.applyUrl,
+    ].filter(Boolean)
+    try { await navigator.clipboard.writeText(lines.join('\n')); setCopied(true); setTimeout(() => setCopied(false), 1500) } catch { /* ignore */ }
+  }
+  if (!job.applyUrl) return null
+  return (
+    <>
+      <div style={{ position: 'sticky', bottom: 0, background: '#fff', borderTop: '1px solid #e5e7eb', marginTop: 16, padding: '10px 0 2px', display: 'flex', gap: 8, zIndex: 5 }}>
+        <button onClick={onApply} style={{ flex: 1, background: '#2563eb', color: '#fff', border: 'none', borderRadius: 10, padding: '11px 0', fontSize: 14.5, fontWeight: 700, cursor: 'pointer' }}>
+          {email ? t('apply.email') : `${t('apply.web')} ↗`}
+        </button>
+        <button onClick={copyBrief} style={{ flexShrink: 0, background: '#f3f4f6', color: copied ? '#15803d' : '#374151', border: 'none', borderRadius: 10, padding: '11px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+          {copied ? t('apply.copied') : t('apply.copy')}
+        </button>
+      </div>
+      {stage === 'auth' && (
+        <AuthModal t={t} mode="register" z={70} onClose={() => setStage('idle')}
+          onDone={async () => {
+            // 注册闸放行前拉一次真实档案:老用户流程内登录时 SSR plan 还是匿名态,
+            // 直接弹向导会以空 initial 覆盖已有档案(跳过=存空档) → 有档案直接投,没档案才进向导
+            setAuthed(true)
+            try {
+              const d = await fetch('/api/users/me', { credentials: 'include' }).then((r) => r.json())
+              const p = normalizeProfile(d?.user?.profile || null)
+              if (hasProfile(p)) { setStage('idle'); launch(); return }
+              setFreshProfile(p)
+            } catch { /* 拉不到按无档案走向导,不卡投递 */ }
+            setStage('intent')
+          }} />
+      )}
+      {stage === 'intent' && (
+        <OnboardingWizard t={t} initial={freshProfile || plan.profile} z={70}
+          onClose={() => { setStage('idle'); launch() }}
+          onFinished={() => { setStage('idle'); launch() }} />
+      )}
+    </>
+  )
+}
+
 // ── 操作列弹框:职位描述快看(读真实抓取正文;公司信息已并入顾问公司弹窗,C1)────
 // ── E8-11 B2(Frank「以弹框为准,job 只留 job 相关」):职位域唯一骨架 JobBody ──
 // JD 弹框正文原样抽出(行为零变化,红线:弹框内容 Frank 已满意),/jobs/[id] 页面同渲。
@@ -3816,6 +3922,8 @@ export function JobBody({ job, lang, plan, inModal, onFreeLeft }: { job: JobRow;
           {t('src.label')}: <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{job.applyUrl}</a>
         </div>
       )}
+      {/* E9-04 投递栏:正文之后常驻(弹框与页面同渲;sticky 吸底) */}
+      <ApplyBar job={job} text={text} t={t} plan={plan} />
     </>
   )
 }

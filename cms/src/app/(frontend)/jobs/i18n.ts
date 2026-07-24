@@ -29,6 +29,8 @@ const zh: Dict = {
   'advisor.unavail': 'AI 判断暂时不可用,请稍后再试——上方事实与官方链接不受影响。',
   'advisor.limit429': '今日免费次数已用完(每日重置)。注册登录后有独立额度,Pro 每日 200 次。', 'advisor.limitCta': '登录 / 注册 →',
   'act.seeOfficial': '查看官方原帖 ↗',
+  // E9-04 投递栏
+  'apply.email': '邮件投递', 'apply.web': '前往投递', 'apply.copy': '复制要点', 'apply.copied': '已复制',
   // E8-07 职位详情页
   'detail.openFull': '打开完整页', 'detail.back': '返回职位板', 'detail.related': '相关职位', 'detail.factsTitle': '薪资与条件',
   'detail.sameCo': '同公司', 'detail.sameOcc': '同省同职业', 'detail.closedNote': '该岗位已下架,信息仅供参考',
@@ -480,6 +482,7 @@ const en: Dict = {
   'advisor.unavail': 'The AI read is temporarily unavailable — the facts and official links above are unaffected. Please try again later.',
   'advisor.limit429': 'Free uses for today are used up (resets daily). Sign in for your own quota; Pro gets 200/day.', 'advisor.limitCta': 'Sign in / Sign up →',
   'act.seeOfficial': 'View official posting ↗',
+  'apply.email': 'Apply by email', 'apply.web': 'Apply on official site', 'apply.copy': 'Copy summary', 'apply.copied': 'Copied',
   // E8-07 job detail page
   'detail.openFull': 'Open full page', 'detail.back': 'Back to job board', 'detail.related': 'Related jobs', 'detail.factsTitle': 'Pay and conditions',
   'detail.sameCo': 'same employer', 'detail.sameOcc': 'same occupation in province', 'detail.closedNote': 'This posting has closed; shown for reference only',
@@ -928,6 +931,7 @@ const ko: Dict = {
   'advisor.unavail': 'AI 분석이 일시적으로 사용 불가합니다. 위의 사실 및 공식 링크에는 영향이 없습니다. 잠시 후 다시 시도하세요.',
   'advisor.limit429': '오늘의 무료 이용 횟수가 모두 소진되었습니다(매일 초기화). 로그인하면 별도의 할당량이 제공되며, Pro 회원은 하루 200회를 이용할 수 있습니다.', 'advisor.limitCta': '로그인 / 회원가입 →',
   'act.seeOfficial': '공식 공고 보기 ↗',
+  'apply.email': '이메일로 지원', 'apply.web': '공식 사이트에서 지원', 'apply.copy': '요점 복사', 'apply.copied': '복사됨',
   // E8-07 채용 상세 페이지
   'detail.openFull': '전체 페이지 열기', 'detail.back': '채용 보드로 돌아가기', 'detail.related': '관련 공고', 'detail.factsTitle': '급여와 조건',
   'detail.sameCo': '같은 회사', 'detail.sameOcc': '같은 주 같은 직종', 'detail.closedNote': '마감된 공고입니다. 참고용으로만 확인하세요',

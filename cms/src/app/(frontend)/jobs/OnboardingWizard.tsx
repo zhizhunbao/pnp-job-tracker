@@ -29,7 +29,8 @@ const BRANCH: Record<string, Field[]> = {
 
 const chip = chipStyle   // P3 chips 归并(#114):选项 chips 统一 primitives 药丸(B映射)
 
-export function OnboardingWizard({ t, initial, onClose }: { t: TFn; initial: MatchProfile | null; onClose: () => void }) {
+// E9-04:投递流复用本向导当「求职意向表单」——onFinished 存在时保存后交还调用方(继续投递),不再整页跳转
+export function OnboardingWizard({ t, initial, onClose, onFinished, z }: { t: TFn; initial: MatchProfile | null; onClose: () => void; onFinished?: () => void; z?: number }) {
   const seed = normalizeProfile(initial)
   const [uid, setUid] = useState<string | number | null>(null)
   const [status, setStatus] = useState<string>(seed.currentStatus ?? '')
@@ -88,6 +89,7 @@ export function OnboardingWizard({ t, initial, onClose }: { t: TFn; initial: Mat
         })
       } catch { /* 保存失败也放行,不卡住用户 */ }
     }
+    if (onFinished) { onFinished(); return }
     const p = { ...draft(), targetProvinces: provs, nocCodes: nocs } as Partial<MatchProfile>
     // 有档案 → 整页跳匹配视图(SSR 重算 profileOk 亮 match);否则回职位板。根域直出=职位板在根路径(同 toggleMatchView)
     window.location.href = hasProfile(p) ? '/?view=match' : '/'
@@ -170,7 +172,7 @@ export function OnboardingWizard({ t, initial, onClose }: { t: TFn; initial: Mat
   const qKey = cur === 'status' ? 'prof.status' : `prof.${cur}`
 
   return (
-    <Modal onClose={onClose} size="md">
+    <Modal onClose={onClose} size="md" z={z}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12, color: '#6b7280', paddingRight: 40 }}>
         <span>{t('ob.step', { i: step + 1, n: total })}</span>
       </div>
