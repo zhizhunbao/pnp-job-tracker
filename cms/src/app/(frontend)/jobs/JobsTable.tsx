@@ -3822,7 +3822,9 @@ function ApplyBar({ job, email, emailDone, t, plan }: { job: JobRow; email: stri
         </button>
       </div>
       {stage === 'auth' && (
-        <AuthModal t={t} mode="register" z={70} hero={t('apply.authHero')} onClose={() => setStage('idle')}
+        /* returnTo 一律指本岗详情页(Frank「登录没有弹出之前的 job」):列表弹框里发起的 Google 登录,
+           回跳「当前页」=列表,弹框状态不在 URL 里回不来——详情页挂着 ApplyBar,续投机制自动接手 */
+        <AuthModal t={t} mode="register" z={70} hero={t('apply.authHero')} returnTo={`/jobs/${job.id}`} onClose={() => setStage('idle')}
           onDone={async () => {
             // 注册闸放行前拉一次真实档案:老用户流程内登录时 SSR plan 还是匿名态,
             // 直接弹向导会以空 initial 覆盖已有档案(跳过=存空档) → 有档案直接投,没档案才进向导
