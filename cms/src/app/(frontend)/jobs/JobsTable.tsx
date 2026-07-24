@@ -70,8 +70,11 @@ const FIELD_GROUP: Partial<Record<ColKey, Disposition>> = {
   company: 'company',
   // ④ 省/市/区 → 地点弹框(E8-12;格内文字仍是地图链接,两个动作分开);地址保持地图直连
   address: 'map', province: 'location', city: 'location', district: 'location',
-  // ⑤ 其余一律不可点(Pro 锁位的锁自己链升级弹窗,不走本路由)
-  match: 'none', pnp: 'none', ee: 'none', aip: 'none', eligibility: 'none', vsMedian: 'none',
+  // ⑤ PNP/EE/AIP → 移民弹框(2026-07-24 Frank「这三个也需要弹框,类似类别」——#175 收编后的定向放开:
+  //    这三列本就是移民弹框五合一的内容,点列看详情与「点分类看分类」同构)
+  pnp: 'immigration', ee: 'immigration', aip: 'immigration',
+  // ⑥ 其余一律不可点(Pro 锁位的锁自己链升级弹窗,不走本路由)
+  match: 'none', eligibility: 'none', vsMedian: 'none',
   salary: 'none', salaryYr: 'none', empHours: 'none', empTerm: 'none', accessibility: 'none', lmia: 'none',
   country: 'none',
   source: 'none', origin: 'none', direct: 'none', status: 'none',
