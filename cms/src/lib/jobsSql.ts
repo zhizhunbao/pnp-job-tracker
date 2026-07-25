@@ -84,7 +84,9 @@ export function buildJobsWhere(filters: Record<string, unknown>, startIndex = 1)
   if (s('fAip') === 'yes') conds.push(`COALESCE(j.aip,false) = true`)
   else if (s('fAip') === 'no') conds.push(`COALESCE(j.aip,false) = false`)
 
+  // #136(批A):默认排除已下架——status 列默认藏,closed 行混在列表里无标记;显式选「已下架」仍可看
   if (s('fStatus')) conds.push(`COALESCE(j.status,'open') = ${param(s('fStatus'))}`)
+  else conds.push(`COALESCE(j.status,'open') <> 'closed'`)
   if (s('fOrigin')) conds.push(`j.origin = ${param(s('fOrigin'))}`)
 
   // E12-08 尾巴:fScore 谓词随评分制切 1-5 通道档(高=4-5/中=3/低=1-2);下拉已下架,只剩 URL/老保存筛选触发
@@ -438,17 +440,18 @@ export async function fetchRelatedJobs(pool: any, job: { id: string | number; co
 
 /** 头条总数 + 差异化证言数字(省提名清单命中岗 named + 有外劳记录雇主数 lmia)。原在 page.tsx 裸 SQL,收编于此。 */
 export async function fetchTotalAndProof(pool: any): Promise<{ total: number; named: number; lmia: number }> {
-  // 副标题总数与列表同口径(#125 后修):不吃去重条件时同页两个数(43,253 vs 41,193)打架
+  // 副标题总数与列表同口径(#125 后修+#136):去重+排除已下架,与默认列表 WHERE 一致
+  const OPEN_COND = `COALESCE(j.status,'open') <> 'closed'`
   const q = (cond: string) => pool.query(`SELECT count(*) FILTER (WHERE ${cond})::int AS n,
     count(*) FILTER (WHERE status = 'open' AND pnp_stream IS NOT NULL AND pnp_stream <> '')::int AS named,
     (SELECT count(*)::int FROM companies WHERE lmia_positions > 0) AS lmia
     FROM jobs j`)
   let rows
   try {
-    ;({ rows } = await q(DEDUPE_COND))
+    ;({ rows } = await q(`${DEDUPE_COND} AND ${OPEN_COND}`))
   } catch (e: any) {
     if (e?.code !== '42703') throw e   // is_dup 列未落地(部署时序)→ 降级不去重,列到位自动恢复
-    ;({ rows } = await q('TRUE'))
+    ;({ rows } = await q(OPEN_COND))
   }
   return { total: rows[0]?.n ?? 0, named: rows[0]?.named ?? 0, lmia: rows[0]?.lmia ?? 0 }
 }
