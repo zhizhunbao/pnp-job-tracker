@@ -605,6 +605,23 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   useIsoLayoutEffect(() => {
     try {
       const sp = new URLSearchParams(window.location.search)
+      // 返回保筛选(2026-07-25):详情整页右上角 × 带 ?back=1 回流 → 回放快照(快照见下方写入 effect)。
+      // 只在 back=1 时回放——直接访问 / 仍是干净板;回放后立刻洗掉参数,刷新不再重放(同 ?login=1 惯例)
+      if (sp.get('back') === '1') {
+        try {
+          const s = JSON.parse(localStorage.getItem('boardFilters') || 'null')
+          if (s) {
+            if (s.q) setQ(s.q); if (s.directOnly) setDirectOnly(true); if (s.fElig) setFElig(s.fElig)
+            if (s.fCountry) setFCountry(s.fCountry); if (s.fProv) setFProv(s.fProv); if (s.fCity) setFCity(s.fCity); if (s.fDistrict) setFDistrict(s.fDistrict)
+            if (s.fBroad) setFBroad(s.fBroad); if (s.fMid) setFMid(s.fMid); if (s.fFine) setFFine(s.fFine)
+            if (s.fTeer) setFTeer(s.fTeer); if (s.fSource) setFSource(s.fSource); if (s.fAcc) setFAcc(s.fAcc)
+            if (s.fPnp) setFPnp(s.fPnp); if (s.fAip) setFAip(s.fAip); if (s.fStatus) setFStatus(s.fStatus); if (s.fOrigin) setFOrigin(s.fOrigin)
+            if (s.fScore) setFScore(s.fScore); if (s.fSal) setFSal(s.fSal); if (s.fVs) setFVs(s.fVs); if (s.fEmp) setFEmp(s.fEmp)
+          }
+        } catch { /* ignore */ }
+        sp.delete('back')
+        window.history.replaceState(null, '', window.location.pathname + (sp.toString() ? `?${sp.toString()}` : ''))
+      }
       const q0 = sp.get('q'); const pv = sp.get('prov'); const bd = sp.get('broad'); const md = sp.get('mid'); const fn = sp.get('fine')
       if (q0) setQ(q0)
       if (pv) setFProv(PROV_NAMES[pv.toUpperCase()] || pv)
@@ -616,6 +633,21 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       if (sp.get('view') === 'match' && plan.loggedIn && plan.profileOk) { setMatchView(true); setSort({ key: 'match', dir: 'desc' }) }
     } catch { /* ignore */ }
   }, [])
+  // 筛选快照 → localStorage(返回保筛选的数据面):只记非默认值,全默认就清掉,不留陈年空快照。
+  // 与上面 back=1 回放同一键;快照持续写入,回放只在带参回流时发生
+  useEffect(() => {
+    try {
+      const snap: Record<string, string | boolean> = {}
+      const pairs: [string, string | boolean][] = [['q', q], ['directOnly', directOnly], ['fElig', fElig],
+        ['fCountry', fCountry], ['fProv', fProv], ['fCity', fCity], ['fDistrict', fDistrict],
+        ['fBroad', fBroad], ['fMid', fMid], ['fFine', fFine], ['fTeer', fTeer], ['fSource', fSource], ['fAcc', fAcc],
+        ['fPnp', fPnp], ['fAip', fAip], ['fStatus', fStatus], ['fOrigin', fOrigin],
+        ['fScore', fScore], ['fSal', fSal], ['fVs', fVs], ['fEmp', fEmp]]
+      for (const [k, v] of pairs) if (v) snap[k] = v
+      if (Object.keys(snap).length) localStorage.setItem('boardFilters', JSON.stringify(snap))
+      else localStorage.removeItem('boardFilters')
+    } catch { /* ignore */ }
+  }, [q, directOnly, fElig, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, fEmp])
   // E8-10:popup 存**分组**不再存字段(24 → 3);srcField 只用于打开时锚到哪一节,不参与内容分支
   const [popup, setPopup] = useState<{ group: FieldGroup; srcField: ColKey; job: JobRow; title: string } | null>(null)
   // 单一路由:查 FIELD_GROUP 决定开哪个弹框 / 跳地图 / 什么都不做。两处调用方(表格行、手机卡)共用,
@@ -1568,18 +1600,28 @@ export function PnpListSection({ job, lang, occ, draws, news }: { job: JobRow; l
   else { verdict = skilled ? t('pnplist.excludedMiss', { teer }) : t('pnplist.notEligible'); tone = skilled ? '#15803d' : '#9ca3af' }
 
   return (
-    <div style={{ marginBottom: 14, paddingBottom: 12, borderBottom: '1px solid #f3f4f6' }}>
-      <div style={{ fontSize: 13.5, fontWeight: 600, color: tone, marginBottom: 8 }}>{vIcon}{vIcon ? ' ' : null}{verdict}</div>
-      {!isQc && job.province ? <PnpDrawsBlock province={job.province} lang={lang} draws={draws} /> : null}
-      {/* 本省最新公告(E12-06,「本省最近抽选」块下);QC 也显——MIFI 部委新闻,资格口径由 /news 声明 */}
-      {job.province ? <NewsLatestBlock province={job.province} lang={lang} news={news} /> : null}
+    <>
+      {/* 拆多卡(2026-07-25 用户「乱,拆成多个卡片」):原单卡四块堆叠(判定+抽选+公告+清单)挤成一团;
+          改 判定/本省最近抽选/本省最新公告/每条通道清单 各一张 MODAL_CARD——
+          同 E8-12 省弹框「每块一卡」先例;块自身无数据返回 null → 外层卡不渲(不出空壳) */}
+      <div style={MODAL_CARD}>
+        <div style={MODAL_CARD_HEAD}>{t('col.pnp')}</div>
+        <div style={{ fontSize: 13.5, fontWeight: 600, color: tone }}>{vIcon}{vIcon ? ' ' : null}{verdict}</div>
+      </div>
+      {!isQc && job.province && draws.some((d) => d.province === job.province) ? (
+        <div style={MODAL_CARD}><PnpDrawsBlock province={job.province} lang={lang} draws={draws} /></div>
+      ) : null}
+      {/* 本省最新公告(E12-06);QC 也显——MIFI 部委新闻,资格口径由 /news 声明 */}
+      {job.province && news.some((n) => n.region === job.province) ? (
+        <div style={MODAL_CARD}><NewsLatestBlock province={job.province} lang={lang} news={news} /></div>
+      ) : null}
       {/* #125(Frank「上面显示符合,下面还显示不符合干什么」):命中具名通道 → 只展示命中的那个清单;
           被排除 → 只展示排除清单;都没有才全量铺(浏览语境)——与 EE 节「命中只展开命中类」同一先例 */}
       {streams.filter((s) => s.occupations.length)
         .filter((s) => (matched ? s === matched : excluded ? s.type === 'ineligible' : true))
         .map((s) => (
-        <div key={s.label + s.stream} style={{ marginBottom: 10 }}>
-          <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>
+        <div key={s.label + s.stream} style={MODAL_CARD}>
+          <div style={MODAL_CARD_HEAD}>
             {/* 通道名挂官方政策页(url 维度字段一直有,07-06 质量盘点补渲染)—— 每条清单自带出处 */}
             {/* #106:官方来源外链撤(归拢到 /resources);清单名留纯文本 */}
             {streamDisplay(t, s.label)}
@@ -1601,7 +1643,7 @@ export function PnpListSection({ job, lang, occ, draws, news }: { job: JobRow; l
           </div>
         </div>
       ))}
-    </div>
+    </>
   )
 }
 
@@ -2579,7 +2621,11 @@ function GroupFactsSection(props: Omit<Parameters<typeof FieldFactsSection>[0], 
   const keys = GROUP_SECTIONS[group].filter((k) => hasFacts(k, job))
   return (
     <>
-      {keys.map((k) => (
+      {keys.map((k) => k === 'pnp' ? (
+        // PNP 节拆多卡(2026-07-25):PnpListSection 自带判定/抽选/公告/清单各一卡,壳卡退役——
+        // 再包一层就是卡中卡;标题由判定卡自持(仍 t('col.pnp'),#173 每卡必有 title 不破)
+        <FieldFactsSection key={k} field={k} job={job} lang={lang} {...rest} />
+      ) : (
         <div key={k} style={MODAL_CARD}>
           {/* 分类卡标题人话化:col.noc 是列名「NOC」,当卡标题裸奔(#176 实测抓到)*/}
           <div style={MODAL_CARD_HEAD}>{k === 'noc' ? t('grp.category') : t('col.' + k)}</div>
@@ -3767,7 +3813,6 @@ function ApplyBar({ job, email, emailDone, t, plan }: { job: JobRow; email: stri
   const [stage, setStage] = useState<'idle' | 'auth' | 'intent'>('idle')
   const [authed, setAuthed] = useState(false)  // 流程内放行(不整页 reload,SSR plan 下次导航自然更新)
   const [freshProfile, setFreshProfile] = useState<MatchProfile | null>(null)  // 流程内登录后拉到的真实档案
-  const [copied, setCopied] = useState(false)
   // 已投递记录:已有收藏行 → 状态改 applied,没有 → 新建;失败不打扰投递
   const record = () =>
     fetch(`/api/saved-jobs?where[job][equals]=${job.id}&limit=1&depth=0`, { credentials: 'include' })
@@ -3818,25 +3863,15 @@ function ApplyBar({ job, email, emailDone, t, plan }: { job: JobRow; email: stri
     } catch { /* ignore */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [plan.loggedIn, emailDone])
-  // 复制要点:岗位信息打包(贴给自己的 AI 改简历也行);一行一条(no-dot 铁律)
-  const copyBrief = async () => {
-    const lines = [
-      job.title, job.company, [job.city, job.province].filter(Boolean).join(' '),
-      job.salaryText || job.salary, job.noc ? `NOC ${job.noc}` : '', email ? `Apply by email: ${email}` : '', job.applyUrl,
-    ].filter(Boolean)
-    try { await navigator.clipboard.writeText(lines.join('\n')); setCopied(true); setTimeout(() => setCopied(false), 1500) } catch { /* ignore */ }
-  }
   if (!job.applyUrl) return null
   return (
     <>
-      {/* 2026-07-25 用户:全宽大蓝钮「太吓人」→ 右对齐紧凑钮,保持主次(蓝=投递,灰=复制) */}
-      <div style={{ position: 'sticky', bottom: 0, background: '#fff', borderTop: '1px solid #e5e7eb', marginTop: 16, padding: '10px 0 2px', display: 'flex', gap: 8, justifyContent: 'flex-end', zIndex: 5 }}>
+      {/* 2026-07-25 用户:全宽大蓝钮「太吓人」→ 右对齐紧凑钮;同日「复制要点」钮撤除,只留投递单钮;
+          底 padding 14px = 吸底栏自带留白(容器底 padding 已归 0,补「穿墙」) */}
+      <div style={{ position: 'sticky', bottom: 0, background: '#fff', borderTop: '1px solid #e5e7eb', marginTop: 16, padding: '10px 0 14px', display: 'flex', gap: 8, justifyContent: 'flex-end', zIndex: 5 }}>
         <button onClick={onApply} style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}>
           {/* applyhow 在途时用中性「投递」占位——别先显「前往投递」再闪成「邮件投递」(Frank 问「为什么有的是前往有的是邮箱」,闪变加剧困惑) */}
           {email ? t('apply.email') : emailDone ? `${t('apply.web')} ↗` : t('apply.plain')}
-        </button>
-        <button onClick={copyBrief} style={{ flexShrink: 0, background: '#f3f4f6', color: copied ? '#15803d' : '#374151', border: 'none', borderRadius: 8, padding: '9px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-          {copied ? t('apply.copied') : t('apply.copy')}
         </button>
       </div>
       {stage === 'auth' && (
@@ -3997,8 +4032,10 @@ export function JobBody({ job, lang, plan, inModal, onFreeLeft }: { job: JobRow;
           {t('src.label')}: <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{job.applyUrl}</a>
         </div>
       )}
-      {/* E9-04 投递栏:正文之后常驻(弹框与页面同渲;sticky 吸底) */}
-      <ApplyBar job={job} email={applyEmail} emailDone={jbDone} t={t} plan={plan} />
+      {/* E9-04 投递栏:正文之后常驻(弹框与页面同渲;sticky 吸底)。
+          2026-07-25 用户「AI 整理的时候不要显示这个按钮,等整理完了再显示」:整理进行中(fmt===undefined)先藏,
+          有结果(整理版 string / 失败 null / 空态)才出——fmt 各路径都会落定,不会永久不显 */}
+      {fmt !== undefined && <ApplyBar job={job} email={applyEmail} emailDone={jbDone} t={t} plan={plan} />}
     </>
   )
 }
@@ -4029,7 +4066,8 @@ function ActModal({ job, lang, plan, nocDesc, onClose }: { job: JobRow; lang: La
             <button onClick={onClose} style={{ ...iconBtnS, fontSize: 16 }}>×</button>
           </div>
         </div>
-        <div style={{ flex: 1, overflowY: 'auto', padding: '4px 20px 20px', fontSize: 14, lineHeight: 1.7, color: '#374151' }}>
+        {/* 2026-07-25 用户「穿墙」:底部原 20px padding 在 sticky 投递栏下方留缝,滚动到底 JD 从缝里透出卡片圆角外 → 底 padding 归 0,底部留白改由投递栏自带 */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '4px 20px 0', fontSize: 14, lineHeight: 1.7, color: '#374151' }}>
           <JobBody job={job} lang={lang} plan={plan} inModal onFreeLeft={setFreeLeft} />
         </div>
         {/* 八方向拉伸手柄(透明边条+角块;右下角保留视觉提示三角) */}
