@@ -124,8 +124,9 @@ const h2S: React.CSSProperties = { fontSize: 15.5, margin: '18px 0 8px' }
 const chartH = (n: number) => n * 26 + 40
 
 // 预设图卡:三级下钻+面包屑(#57 两级;2026-07-19 Frank 拍板加中类层 L2「统计=选行业选地区的概率指导」)——
-// L0 全景;L1 省图→该省按大类 / 大类图→该类按省;L2 = 单省×单大类按 NOC 中类;L2 再点条形=末级,
-// 直达职位板深链 ?prov=&broad=&mid=。面包屑「全部 › ON › 服务」任意段上卷。中位类全程单省,不触碰跨省合并红线。
+// L0 全景;L1 省图→该省按大类 / 大类图→该类按省;L2 = 单省×单大类按 NOC 中类;L3 = 小类(仅 openJobs)。
+// 2026-07-25 Frank 拍板:点条形一律不跳职位板 —— 末级点条无动作,图表只做统计浏览。
+// 面包屑「全部 › ON › 服务」任意段上卷。中位类全程单省,不触碰跨省合并红线。
 function DrillCard({ rows, t, title, kind, metric, money, broadLabel }: {
   rows: StatRow[]; t: TFn; title: string; kind: 'prov' | 'cat'; metric: MetricKey; money: boolean; broadLabel: (b: string) => string
 }) {
@@ -157,14 +158,8 @@ function DrillCard({ rows, t, title, kind, metric, money, broadLabel }: {
     const { prov, broad } = provBroad()
     return capItems(byMid(rows, metric, prov, broad, t), sum, t)
   }, [rows, metric, kind, path, fineItems]) // eslint-disable-line react-hooks/exhaustive-deps
-  const toJobs = (it: Item) => {  // 新标签页(2026-07-19 Frank:「点击钻取的时候不要跳转到搜索页面」——统计页留在原地)
-    const { prov, broad } = provBroad()
-    if (path.length === 3) {  // L3 点小类条 → ?fine= 深链(#142)
-      window.open(`/?prov=${prov}&broad=${encodeURIComponent(broad)}&mid=${encodeURIComponent(path[2].key)}&fine=${encodeURIComponent(it.key)}`, '_blank', 'noopener')
-      return
-    }
-    window.open(`/?prov=${prov}&broad=${encodeURIComponent(broad)}&mid=${encodeURIComponent(it.key)}`, '_blank', 'noopener')
-  }
+  // 末级=没有更深层可钻:L3;或 L2 非 openJobs(中位类小类级无数据)。末级不挂点击回调(也不给 pointer 光标)
+  const terminal = path.length === 3 || (path.length === 2 && metric !== 'openJobs')
   return (
     <div style={cardS}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
@@ -184,28 +179,18 @@ function DrillCard({ rows, t, title, kind, metric, money, broadLabel }: {
         ) : (
           <span style={{ fontSize: 11, color: '#d1d5db', whiteSpace: 'nowrap' }}>{t('chart.drillHint')}</span>
         )}
-        {((path.length === 2 && metric !== 'openJobs') || path.length === 3) && <span style={{ fontSize: 11, color: '#d1d5db', whiteSpace: 'nowrap' }}>{t('chart.jobsHint')}</span>}
       </div>
       {path.length === 3 && fineItems === null
         ? <p style={{ margin: '10px 0', fontSize: 13, color: '#9ca3af' }}>{t('chart.loading')}</p>
         : items.length
         ? <EChart option={barOption(items, money)} height={chartH(items.length)}
-            onBarClick={(i) => {
+            onBarClick={terminal ? undefined : (i) => {
               const it = items[i]; if (!it || it.key === OTHER_KEY) return   // 「其他」归并条不可下钻
-              track('stats-drill', { depth: path.length + 1 })   // #129
-              if (path.length === 3) return toJobs(it)
-              // #127(批A):L2 点中类——openJobs 继续钻 L3 小类;其余指标(中位类小类级无数据)维持直达职位板
-              if (path.length === 2) {
-                if (metric === 'openJobs') { setPath([...path, it]); return }
-                return toJobs(it)
-              }
-              if (path.length === 1) {  // L1→L2 前探一眼:该桶无中类行(列未落地/数据缺)→ 优雅降级=新标签页开职位板(不离开统计页)
+              if (path.length === 1) {  // L1→L2 前探一眼:该桶无中类行(列未落地/数据缺)→ 到底,点条无动作
                 const pb = kind === 'prov' ? { prov: path[0].key, broad: it.key } : { prov: it.key, broad: path[0].key }
-                if (!byMid(rows, metric, pb.prov, pb.broad, t).length) {
-                  window.open(`/?prov=${pb.prov}&broad=${encodeURIComponent(pb.broad)}`, '_blank', 'noopener')
-                  return
-                }
+                if (!byMid(rows, metric, pb.prov, pb.broad, t).length) return
               }
+              track('stats-drill', { depth: path.length + 1 })   // #129
               setPath([...path, it])
             }} />
         : <p style={{ margin: '10px 0', fontSize: 13, color: '#9ca3af' }}>—</p>}

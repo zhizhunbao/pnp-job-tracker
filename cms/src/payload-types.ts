@@ -523,6 +523,10 @@ export interface Job {
    */
   aip?: boolean | null;
   /**
+   * #125 展示层重复标记:同 公司×岗名×城市 非最新帖(09 算);列表隐藏,行保留统计不动
+   */
+  isDup?: boolean | null;
+  /**
    * 雇佣期 permanent/term/casual/seasonal;空=未标注
    */
   employmentTerm?: string | null;
@@ -1493,6 +1497,7 @@ export interface JobsSelect<T extends boolean = true> {
   pnpStream?: T;
   eeCategory?: T;
   aip?: T;
+  isDup?: T;
   employmentTerm?: T;
   employmentHours?: T;
   jdFormatted?: T;

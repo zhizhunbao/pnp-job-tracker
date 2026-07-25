@@ -36,10 +36,15 @@ const numFmt = (n: number) => n.toLocaleString('en-CA')
 
 // ── 省份索引(批B #133 重做:省卡挪最上;指标换血——中位年薪撤(省级单一中位=无效聚合),
 //    上 IRCC 学签/工签/PNP 登陆 + 移民难度(与 E8-12 省弹框同源同口径))──
+const SHORT_PROV: Record<string, string> = { NL: 'Newfoundland' }  // 卡上用通行短名(全名 218px 任何布局都放不下),悬停仍显全名
 export function StatsIndexContent({ rows, srcs, t, provExtra = {} }: { rows: StatRow[]; srcs: SrcRow[]; t: TFn; provExtra?: Record<string, ProvExtra> }) {
   const provRows = rows.filter((r) => r.broad === 'all')
+  // 2026-07-25 Frank:卡内一律不折行——标签放不下省略号截断,数值不换行
   const kv = (label: React.ReactNode, val: React.ReactNode) => (
-    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}><span>{label}</span><span style={{ color: '#111827' }}>{val}</span></div>
+    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+      <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{label}</span>
+      <span style={{ color: '#111827', whiteSpace: 'nowrap', flexShrink: 0 }}>{val}</span>
+    </div>
   )
   return (
     <>
@@ -47,7 +52,8 @@ export function StatsIndexContent({ rows, srcs, t, provExtra = {} }: { rows: Sta
       <PageBanner module="stats" icon={<IconMapPin />} title={t('stats.entry')} images={BANNER_IMGS.stats}
         stats={[{ v: PROVS.length, label: t('stats.bnProvs') }, { v: BROAD_SLUGS.length, label: t('stats.bnBroads') }]} />
       <h2 style={{ fontSize: 15.5, margin: '14px 0 8px' }}>{t('stats.provIndex')}</h2>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 12, margin: '4px 0 16px' }}>
+      {/* min 270:装得下「Newfoundland and Labrador+NL+徽章」一行(230 时省名被截成 Onta…);超窄屏 min(100%,·) 防溢出 */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 270px), 1fr))', gap: 12, margin: '4px 0 16px' }}>
         {provRows.map((r) => {
           const ex = provExtra[r.province]
           const work = (ex?.info?.tfwp?.n ?? 0) + (ex?.info?.imp?.n ?? 0)
@@ -56,9 +62,9 @@ export function StatsIndexContent({ rows, srcs, t, provExtra = {} }: { rows: Sta
           <a key={r.province} href={`/stats/${r.province.toLowerCase()}`}
             style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '14px 16px', textDecoration: 'none', color: '#1f2937' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-              <span style={{ fontWeight: 700, fontSize: 15 }}>{PROV_NAME[r.province] || r.province}</span>
-              <span style={{ color: '#9ca3af', fontWeight: 400, fontSize: 12.5 }}>{r.province}</span>
-              {tier ? <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 600, padding: '1px 8px', borderRadius: 999, background: DIFF_COLORS[tier].bg, color: DIFF_COLORS[tier].fg, border: `1px solid ${DIFF_COLORS[tier].bd}` }}>{t('diff.' + tier)}</span> : null}
+              <span title={PROV_NAME[r.province] || r.province} style={{ fontWeight: 700, fontSize: 15, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{SHORT_PROV[r.province] || PROV_NAME[r.province] || r.province}</span>
+              <span style={{ color: '#9ca3af', fontWeight: 400, fontSize: 12.5, flexShrink: 0 }}>{r.province}</span>
+              {tier ? <span style={{ marginLeft: 'auto', flexShrink: 0, whiteSpace: 'nowrap', fontSize: 11, fontWeight: 600, padding: '1px 8px', borderRadius: 999, background: DIFF_COLORS[tier].bg, color: DIFF_COLORS[tier].fg, border: `1px solid ${DIFF_COLORS[tier].bd}` }}>{t('diff.' + tier)}</span> : null}
             </div>
             <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 8, lineHeight: 2 }}>
               {kv(t('stats.openJobs'), <strong>{r.openJobs != null ? numFmt(r.openJobs) : '—'}</strong>)}

@@ -148,7 +148,7 @@ const zh: Dict = {
   // #136/#137(Frank 追问「为什么不能转载」):#136 原文案「该站不允许第三方转载」是替对方做法律断言——
   // 我们实测到的只是 403 拒绝访问。只陈述自己观察到的事实:取不到 + 去哪看(职位描述版权多属雇主而非平台,别乱扣)
   'act.noTextBlocked': '这条帖子的正文在原站({src}),该站拒绝本站自动读取。下面的链接直达原帖。',
-  'chart.back': '← 返回', 'chart.drillHint': '点条形可下钻', 'chart.jobsHint': '点条形直达职位板', 'chart.other': '其他', 'chart.loading': '加载中…', 'nav.account': '账户', 'nav.acctTab': '我的账户',
+  'chart.back': '← 返回', 'chart.drillHint': '点条形可下钻', 'chart.other': '其他', 'chart.loading': '加载中…', 'nav.account': '账户', 'nav.acctTab': '我的账户',
   'menu.sect.job': '求职', 'menu.sect.manage': '管理',
   // 我的求职(E9-01 最小求职看板,免费)
   'sj.title': '我的求职', 'sj.note': '收藏职位、跟踪投递进度;只存在你的账户里。', 'sj.empty': '还没有收藏的职位——在职位板点「☆ 收藏」。',
@@ -593,7 +593,7 @@ const en: Dict = {
   'eelist.histNote': 'Rounds for this category over the past two years; a cut-off reflects that round only and does not predict future ones',
   'col.actions': 'Actions', 'act.immigValue': 'Immigration value', 'act.descTitle': 'Job description', 'act.site': 'Website', 'act.addr': 'Address', 'act.jobsHere': 'Listings by this company', 'act.showAll': 'Show {n} more ▾', 'act.showAllBoard': 'See {n} more on the job board →', 'act.noText': 'No description text on file for this posting yet — new posts usually arrive within a day; some aggregator sources never provide one.', 'act.loadingText': 'Loading…', 'jd.busy': 'Loading these quickly — give it a moment and try again.',
   'act.noTextBlocked': 'The full text of this posting is on {src}, which blocks automated reading by this site. The link below goes straight to the original.',
-  'chart.back': '← Back', 'chart.drillHint': 'Click a bar to drill down', 'chart.jobsHint': 'Click a bar to open the job board', 'chart.other': 'Other', 'chart.loading': 'Loading…', 'nav.account': 'Account', 'nav.acctTab': 'My account',
+  'chart.back': '← Back', 'chart.drillHint': 'Click a bar to drill down', 'chart.other': 'Other', 'chart.loading': 'Loading…', 'nav.account': 'Account', 'nav.acctTab': 'My account',
   'menu.sect.job': 'Job search', 'menu.sect.manage': 'Manage',
   'sj.title': 'My applications', 'sj.note': 'Save jobs and track your application progress; stored only in your account.', 'sj.empty': 'No saved jobs yet — hit “☆ Save” on the job board.',
   'sj.st.wish': 'To apply', 'sj.st.applied': 'Applied', 'sj.st.interview': 'Interviewing', 'sj.st.offer': 'Offer',
@@ -929,7 +929,7 @@ const en: Dict = {
   'ss.save': 'Save this search', 'ss.name': 'Name this search:', 'ss.saved': 'Saved — manage on your account page', 'ss.err': 'Save failed (limit may be reached)', 'ss.pro': 'Free saves 2 searches — Pro saves 5', 'ss.title': 'Saved searches', 'ss.none': 'No saved searches yet — set filters on the job board and hit Save this search', 'ss.del': 'Delete', 'ss.note': 'Manage saved searches here anytime; email alerts coming soon',
   'src.label': 'Source', 'src.fetched': 'fetched {d}', 'src.derived': 'Site algorithm, computed from the facts above', 'src.official': 'Official posting', 'src.unverified': 'unverified (link only)',
   'rank.title.daily-top': 'Daily top-scored new jobs — TOP 20', 'rank.note.daily-top': 'Method: jobs posted in the last 48 hours, immigration-value score ≥60, ranked by score (higher salary breaks ties); a category list is skipped when too few jobs qualify; refreshed with every hourly data update.', 'rank.title.weekly-top': 'New this week — TOP 50', 'rank.title.sponsor-likely': 'Most likely sponsor employers', 'rank.updated': 'Refreshes with daily updates, updated {d}', 'rank.entry': 'Rankings', 'rank.col.company': 'Company', 'rank.col.openJobs': 'Open', 'rank.col.namedJobs': 'PNP-list jobs', 'rank.col.avgScore': 'Immigration-value score', 'rank.col.score': 'Immigration-value score', 'rank.col.lmia': 'LMIA positions (2 yrs)', 'rank.viewJobs': 'View on job board →', 'rank.note.weekly-top': '', 'rank.note.sponsor-likely': 'Method: first-party employers ranked by positive-LMIA positions approved in the past two years (High Wage, GTS, PR streams only, ESDC open data) → PNP-list hits → open jobs → immigration-value score. An LMIA record is a historical fact of hiring foreign workers — a rough signal, not a sponsorship promise.',
-  'diff.title': 'Immigration difficulty', 'diff.easy': 'More room', 'diff.mid': 'Moderate', 'diff.tight': 'Highly competitive',
+  'diff.title': 'Immigration difficulty', 'diff.easy': 'More room', 'diff.mid': 'Moderate', 'diff.tight': 'Competitive',
   'diff.comp': 'Competition ratio {v}:1', 'diff.compNote': '{pool} study+work permit holders ÷ {quota} nomination spaces ({y} allocation)',
   'diff.trend': 'Allocation YoY {v}', 'diff.act': '{n} draws in last 180 days ({m} invitations)', 'diff.score': 'Cutoff at the {p}th percentile of this province’s own 2-year history (latest {s}, {sc} scale)',
   'diff.note': 'Method: competition base = IRCC year-end study + work permit holders ({y}), a rough proxy — not applicant counts, not an eligibility ruling; scores are only compared within each province’s own history.',
@@ -1044,7 +1044,7 @@ const ko: Dict = {
   'eelist.histNote': '최근 2년간 해당 카테고리의 추첨 내역; 커트라인은 해당 회차의 경쟁만 반영하며 미래를 예측하지 않습니다',
   'col.actions': '작업', 'act.immigValue': '이민 가치', 'act.descTitle': '직무 설명', 'act.site': '웹사이트', 'act.addr': '주소', 'act.jobsHere': '이 회사의 공고', 'act.showAll': '나머지 {n}개 펼치기 ▾', 'act.showAllBoard': '채용 보드에서 나머지 {n}개 보기 →', 'act.noText': '이 공고의 본문이 아직 없습니다 — 신규 공고는 보통 다음 날 등록되며, 일부 소스는 본문을 제공하지 않습니다.', 'act.loadingText': '로딩 중…', 'jd.busy': '조금 빠르게 보고 있어요. 잠시 후 다시 시도해 주세요.',
   'act.noTextBlocked': '이 공고의 본문은 원본 사이트({src})에 있으며, 해당 사이트는 본 사이트의 자동 읽기를 차단합니다. 아래 링크로 원문을 확인하세요.',
-  'chart.back': '← 뒤로', 'chart.drillHint': '막대를 클릭하면 상세 정보 보기', 'chart.jobsHint': '막대를 클릭하면 공고 목록으로 이동', 'chart.other': '기타', 'chart.loading': '불러오는 중…', 'nav.account': '계정', 'nav.acctTab': '내 계정',
+  'chart.back': '← 뒤로', 'chart.drillHint': '막대를 클릭하면 상세 정보 보기', 'chart.other': '기타', 'chart.loading': '불러오는 중…', 'nav.account': '계정', 'nav.acctTab': '내 계정',
   'menu.sect.job': '구직', 'menu.sect.manage': '관리',
   'sj.title': '내 지원 현황', 'sj.note': '공고를 저장하고 지원 진행 상황을 추적하세요. 데이터는 계정에만 저장됩니다.', 'sj.empty': '저장한 공고가 없습니다 — 공고 목록에서 「☆ 저장」을 누르세요.',
   'sj.st.wish': '지원 예정', 'sj.st.applied': '지원함', 'sj.st.interview': '면접 중', 'sj.st.offer': '오퍼 받음',
