@@ -1616,10 +1616,10 @@ export function PnpListSection({ job, lang, occ, draws, news }: { job: JobRow; l
       {job.province && news.some((n) => n.region === job.province) ? (
         <div style={MODAL_CARD}><NewsLatestBlock province={job.province} lang={lang} news={news} /></div>
       ) : null}
-      {/* #125(Frank「上面显示符合,下面还显示不符合干什么」):命中具名通道 → 只展示命中的那个清单;
-          被排除 → 只展示排除清单;都没有才全量铺(浏览语境)——与 EE 节「命中只展开命中类」同一先例 */}
+      {/* #125 → 2026-07-25 Frank 收紧「不覆盖就不用显示」:命中 → 只展示命中的清单;被排除 → 只展示排除清单;
+          都没有 → 清单整体不渲(原全量铺浏览语境退役)——判定行已说清结论,不相干的清单只是噪音 */}
       {streams.filter((s) => s.occupations.length)
-        .filter((s) => (matched ? s === matched : excluded ? s.type === 'ineligible' : true))
+        .filter((s) => (matched ? s === matched : excluded && s.type === 'ineligible'))
         .map((s) => (
         <div key={s.label + s.stream} style={MODAL_CARD}>
           <div style={MODAL_CARD_HEAD}>
@@ -1644,6 +1644,23 @@ export function PnpListSection({ job, lang, occ, draws, news }: { job: JobRow; l
           </div>
         </div>
       ))}
+      {/* 2026-07-25 Frank「覆盖了就能走这个通道,怎么走也得给用户说明白」:命中时补三步流程 +
+          该通道官方页直链(#106 撤的是清单出处装饰链;这里是行动指引,语义不同)——只陈述流程不判资格 */}
+      {matched ? (
+        <div style={MODAL_CARD}>
+          <div style={MODAL_CARD_HEAD}>{t('pnplist.howTitle')}</div>
+          <div style={{ fontSize: 12.5, color: '#374151', lineHeight: 1.9 }}>
+            <div>{t('pnplist.how1')}</div>
+            <div>{t('pnplist.how2')}</div>
+            <div>{t('pnplist.how3')}</div>
+          </div>
+          {matched.url ? (
+            <a href={matched.url} target="_blank" rel="noreferrer"
+              style={{ display: 'inline-block', marginTop: 8, fontSize: 12.5, color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}>
+              {t('pnplist.howOfficial')} ↗</a>
+          ) : null}
+        </div>
+      ) : null}
     </>
   )
 }
@@ -1694,18 +1711,17 @@ export function EeCategorySection({ job, lang, cats, draws = [] }: { job: JobRow
   return (
     <div style={{ marginBottom: 14, paddingBottom: 12, borderBottom: '1px solid #f3f4f6' }}>
       <div style={{ fontSize: 13.5, fontWeight: 600, color: hit.length ? '#2563eb' : '#9ca3af', marginBottom: 6 }}>
-        {hit.length ? <><IconCheck /> {t('eelist.in', { noc, cats: hit.map((c) => eeDisplay(t, c.label)).join('/') })}</> : (
-          <>
-            {t('eelist.out')}
-            {grouped.length ? (
-              <button onClick={() => setShowAllCats((v) => !v)}
-                style={{ marginLeft: 8, border: 'none', background: 'none', padding: 0, color: '#2563eb', cursor: 'pointer', font: 'inherit', fontWeight: 400 }}>
-                {showAllCats ? '▴' : '▾'} {t('eelist.allCats', { n: grouped.length })}
-              </button>
-            ) : null}
-          </>
-        )}
+        {hit.length ? <><IconCheck /> {t('eelist.in', { noc, cats: hit.map((c) => eeDisplay(t, c.label)).join('/') })}</> : t('eelist.out')}
       </div>
+      {/* 2026-07-25 Frank「这两个应该是两行吧」:展开钮从结论行拆出,独立一行 */}
+      {!hit.length && grouped.length ? (
+        <div style={{ marginBottom: 8 }}>
+          <button onClick={() => setShowAllCats((v) => !v)}
+            style={{ border: 'none', background: 'none', padding: 0, color: '#2563eb', cursor: 'pointer', fontSize: 12.5 }}>
+            {showAllCats ? '▴' : '▾'} {t('eelist.allCats', { n: grouped.length })}
+          </button>
+        </div>
+      ) : null}
       {shown.map((c) => (
         <div key={c.key} style={{ marginBottom: 10 }}>
           <div style={{ fontSize: 12.5, fontWeight: 600, color: '#374151', marginBottom: 4 }}>{eeDisplay(t, c.label)} <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 4 }}>{t('eelist.count', { n: c.occupations.length })}</span></div>
@@ -1736,23 +1752,23 @@ export function EeCategorySection({ job, lang, cats, draws = [] }: { job: JobRow
               </>
             )
           })() : null}
-          {hit.length ? (
-            <div style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid #f3f4f6', borderRadius: 8 }}>
-              {c.occupations.map((o) => {
-                const isHit = o.noc === noc
-                return (
-                  <div key={o.noc} ref={isHit ? matchRef : undefined}
-                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 10px', fontSize: 12.5,
-                      background: isHit ? '#dbeafe' : undefined, fontWeight: isHit ? 600 : 400, color: isHit ? '#1e40af' : '#374151' }}>
-                    <span style={{ fontVariantNumeric: 'tabular-nums', color: isHit ? '#1e40af' : '#9ca3af' }}>{o.noc}</span>
-                    <span style={{ flex: 1 }}>{o.title}</span>
-                    {o.teer != null && <span style={{ fontSize: 11, color: '#9ca3af' }}>T{o.teer}</span>}
-                    {isHit && <span style={{ fontSize: 11, whiteSpace: 'nowrap' }}>← {t('eelist.your')}</span>}
-                  </div>
-                )
-              })}
-            </div>
-          ) : null}
+          {/* 2026-07-25 Frank「展开的时候把包含哪些职业也显示出来」:全景展开态每类别同样列职业清单,
+              不再只有命中类才有(原 hit.length 条件收窄到「什么都不显示」的空壳) */}
+          <div style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid #f3f4f6', borderRadius: 8 }}>
+            {c.occupations.map((o) => {
+              const isHit = o.noc === noc
+              return (
+                <div key={o.noc} ref={isHit ? matchRef : undefined}
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 10px', fontSize: 12.5,
+                    background: isHit ? '#dbeafe' : undefined, fontWeight: isHit ? 600 : 400, color: isHit ? '#1e40af' : '#374151' }}>
+                  <span style={{ fontVariantNumeric: 'tabular-nums', color: isHit ? '#1e40af' : '#9ca3af' }}>{o.noc}</span>
+                  <span style={{ flex: 1 }}>{o.title}</span>
+                  {o.teer != null && <span style={{ fontSize: 11, color: '#9ca3af' }}>T{o.teer}</span>}
+                  {isHit && <span style={{ fontSize: 11, whiteSpace: 'nowrap' }}>← {t('eelist.your')}</span>}
+                </div>
+              )
+            })}
+          </div>
         </div>
       ))}
     </div>
@@ -2533,8 +2549,9 @@ function ScoreGradesSection({ job, lang, loggedIn }: { job: JobRow; lang: Lang; 
   if (d === undefined) return <div style={{ fontSize: 13, color: '#9ca3af' }}>{t('act.loadingText')}</div>
   const det = d.detail || {}
   const ch = det.channel, sal = det.salary, emp = det.emp
+  // 2026-07-25 Frank「这些都是废话」:fact.scoreNote 长免责注 + 来源行(本站算法)双双退役
   return (
-    <FactsBox note={t('fact.scoreNote')}>
+    <FactsBox>
       {freeLeft != null && <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 4 }}>{t('advisor.left', { n: freeLeft })}</div>}
       {ch ? row(t('gr.dim.channel'), <>{gname(ch.g, t('gr.ch.' + ch.g))}<div style={{ fontSize: 12.5, color: '#6b7280' }}>{t(`gr.channel.${ch.g}`, { v: ch.v || '' })}</div></>) : null}
       {sal ? row(t('gr.dim.salary'), <>{gname(sal.g, t('gr.sal.' + sal.g))}<div style={{ fontSize: 12.5, color: '#6b7280' }}>{t('gr.salary.d', { pct: sal.v >= 0 ? `+${sal.v}` : String(sal.v) })}</div></>)
@@ -2642,12 +2659,7 @@ function FieldFactsSection({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pn
   return (
     <>
       <FieldFactsInner field={field} job={job} jobs={jobs} lang={lang} isPro={isPro} loggedIn={loggedIn} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} onOpenJob={onOpenJob} />
-      {/* #106:字段级「来源: URL」官方外链撤(归拢到 /resources);「本站算法」派生注(非链接)保留 */}
-      {DERIVED_SRC_FIELDS.has(field) ? (
-        <div style={{ margin: '2px 0 0', fontSize: 11.5, color: '#9ca3af' }}>
-          {t('src.label')}: {t('src.derived')}
-        </div>
-      ) : null}
+      {/* #106 撤官方外链;2026-07-25 Frank「这些都是废话」:「来源: 本站算法」派生注也退役 */}
     </>
   )
 }

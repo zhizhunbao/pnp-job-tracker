@@ -118,9 +118,8 @@ export function EmployersView({ type, q, prov, page, aip, lmia, counts }: {
           </div>
         )}
 
-        {/* 口径红线行(E6-02 语义:历史事实 ≠ 担保承诺) */}
-        <div style={{ fontSize: 12.5, color: '#6b7280', margin: '0 0 12px', lineHeight: 1.6 }}>{t(type === 'lmia' ? 'dir.note.lmia' : 'dir.note.aip')}</div>
-
+        {/* 口径红线行退役(2026-07-25 Frank「这种废话删掉」):整段解释性长注不再常驻;
+            「历史事实 ≠ 担保承诺」语义由页脚全站免责与弹框口径承担 */}
         {/* 组件统一 P2(2026-07-19 Frank「所有页面用同一个 table」):两张表换装公共 DataTable(排序/拖宽同 jobs 观感);
             排序=当前页内客户端排序(全量序仍由 URL 翻页的服务端默认序保证)。
             E8-08 #121:表卡双形态——桌面表(tcTableWrap),≤640 域卡(tcCards,CSS 双渲染) */}
