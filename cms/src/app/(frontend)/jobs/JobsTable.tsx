@@ -864,6 +864,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     if (fitMode) return k === 'datePosted' ? 92 : k === 'actions' ? 160 : undefined
     return MIN_W[k] ?? 78
   }
+  // fit 模式格距 12→8:13 列默认集在 1280 视口实测超 61px,横距是最后一截肥肉(nowrap 列天然不缩)
+  const cellPad = fitMode ? '8px' : '12px'
   // 量当前表头每个可见列的自然渲染宽(auto 布局下为真实内容宽),返回覆盖全可见列的完整 map
   const measureAll = (): Record<string, number> => {
     const head = headRowRef.current
@@ -1238,13 +1240,13 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       style={{ position: 'absolute', top: 0, right: 0, width: 13, height: '100%', cursor: 'col-resize', zIndex: 2 }} />
                   )
                   if (c.key === 'actions') return (  // 操作列:普通末列,不排序
-                    <th key={c.key} style={{ padding: '8px 12px', color: '#374151', fontWeight: 600, whiteSpace: 'nowrap', userSelect: 'none', position: 'relative', minWidth: colMin('actions') }}>
+                    <th key={c.key} style={{ padding: `8px ${cellPad}`, color: '#374151', fontWeight: 600, whiteSpace: 'nowrap', userSelect: 'none', position: 'relative', minWidth: colMin('actions') }}>
                       {t('col.actions')}{handle}
                     </th>
                   )
                   return (
                     <th key={c.key} onClick={() => toggleSort(c.key)} title={t('th.tip')}
-                      style={{ padding: '8px 12px', color: active ? '#2563eb' : '#374151', fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none', position: 'relative', borderRight: isLast ? undefined : '1px solid #e5e7eb', minWidth: colMin(c.key), ...(hasWidths && { overflow: 'hidden', textOverflow: 'ellipsis' }), ...frozenStyle(c.key, '#f9fafb') }}>
+                      style={{ padding: `8px ${cellPad}`, color: active ? '#2563eb' : '#374151', fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none', position: 'relative', borderRight: isLast ? undefined : '1px solid #e5e7eb', minWidth: colMin(c.key), ...(hasWidths && { overflow: 'hidden', textOverflow: 'ellipsis' }), ...frozenStyle(c.key, '#f9fafb') }}>
                       {t('col.' + c.key)}<span style={{ color: active ? '#2563eb' : '#d1d5db', fontSize: 11 }}>{active ? (sort.dir === 'desc' ? ' ▼' : ' ▲') : ' ↕'}</span>{handle}
                     </th>
                   )
@@ -1269,7 +1271,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       const k = c.key
                       const rowBg = i % 2 ? '#fcfcfd' : '#fff'
                       if (k === 'actions') return (  // 操作列:「通道」(批A 头牌:三行直判「能走哪条通道」,顶原移民价值钮的位)+收藏
-                        <td key={k} style={{ ...td, minWidth: colMin('actions') }}>
+                        <td key={k} style={{ ...td, padding: `7px ${cellPad}`, minWidth: colMin('actions') }}>
                           <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
                             <button onClick={(e) => { e.stopPropagation(); open('score', t('act.channel')) }}
                               style={{ ...actBtn, whiteSpace: 'nowrap' }}>
@@ -1365,7 +1367,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       else { node = j.lastSeen ? fmtLocalSec(j.lastSeen) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       // #175:hover 高亮只随可点格(可点必有态,不可点必无——E8-08 规范本来就这么写)
                       return (
-                        <td key={k} className={cellActionable(k) ? 'jcell jcellAct' : 'jcell'} style={{ ...td, ...extra, cursor: cellActionable(k) ? 'pointer' : 'default', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', minWidth: colMin(k), ...(NOWRAP_COLS.has(k) ? { whiteSpace: 'nowrap' } : { whiteSpace: 'normal', overflowWrap: 'break-word' }), ...(hasWidths && { overflow: 'hidden', textOverflow: 'ellipsis' }), ...frozenStyle(k, rowBg) }} title={typeof node === 'string' ? node : undefined} onClick={() => {
+                        <td key={k} className={cellActionable(k) ? 'jcell jcellAct' : 'jcell'} style={{ ...td, padding: `7px ${cellPad}`, ...extra, cursor: cellActionable(k) ? 'pointer' : 'default', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', minWidth: colMin(k), ...(NOWRAP_COLS.has(k) ? { whiteSpace: 'nowrap' } : { whiteSpace: 'normal', overflowWrap: 'break-word' }), ...(hasWidths && { overflow: 'hidden', textOverflow: 'ellipsis' }), ...frozenStyle(k, rowBg) }} title={typeof node === 'string' ? node : undefined} onClick={() => {
                           // 职位格=直开职位描述(2026-07-19 Frank:「点职位也能显示职位描述」);title 顾问弹框由 JD 框标题栏「AI 顾问」钮承接(同日报障回补)
                           if (k === 'title') { setActModal({ kind: 'desc', job: j }); return }
                           // Pro 锁列(免费态数据已在服务端剥离)不开顾问弹框——没数据只会误导;锁形本身已链去 /account。match 免费额度内有值仍可开。
@@ -1409,12 +1411,12 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             // #200(Frank「岗位名称中文翻译默认都加上」):手机卡职位名挂 NOC 官方职业名译名(界面语言;与在招职位/弹框标题同款)
             const nz = nocLocalTitle(dims.nocDescriptions.find((d) => d.noc === j.noc) || null, lang)
             return (
-              <div key={j.id} onClick={() => { window.location.href = `/jobs/${j.id}` }}
-                style={{ border: '1px solid #e5e7eb', borderRadius: 12, padding: '10px 12px', background: '#fff', cursor: 'pointer' }}>
+              <div key={j.id}
+                style={{ border: '1px solid #e5e7eb', borderRadius: 12, padding: '10px 12px', background: '#fff' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'baseline' }}>
-                  {/* #131(Frank 复拍推翻 #120B 蓝链):职位名文字=开 JD 弹框(和桌面职位格一致),整卡点击才进详情页;
-                      <a href> 语义保留给爬虫/长按新开(preventDefault 只拦普通左键) */}
-                  <a href={`/jobs/${j.id}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActModal({ kind: 'desc', job: j }) }}
+                  {/* 批A 追拍(Frank「点击卡片不要跳了,只有点击文字才跳」):整卡 onClick 摘除(#129 退役),
+                      职位名文字=直接进详情页(#131 的 JD 弹框劫持一并退役,<a> 回归本义) */}
+                  <a href={`/jobs/${j.id}`}
                     style={{ fontSize: 14.5, fontWeight: 600, color: '#2563eb', textDecoration: 'none' }}>{j.title}</a>
                   <span style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
                     {/* #167⑩(Frank「卡片胶囊应该统一放到一个位置吧」):匹配度胶囊原先孤零零挂在右上角,
@@ -1461,15 +1463,26 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                 <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
                   {/* #167⑩:匹配度胶囊从右上角迁到此排首位(胶囊只此一处);它是个人化结论=最值钱,故排第一 */}
                   {mc && <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: mc.bg, color: mc.fg, fontWeight: 600, whiteSpace: 'nowrap' }}>{t('match.' + j.match)}</span>}
-                  {j.pnpEligible ? chip('#fef3c7', '#92400e', j.pnpStream ? t('cell.pnpYes') : t('cell.pnpSkilled'), 'pnp') : null}
-                  {j.eeCategory ? chip('#dbeafe', '#1e40af', 'EE ' + eeDisplay(t, j.eeCategory), 'ee') : null}
-                  {j.aip ? chip('#ffedd5', '#9a3412', t('cell.aipYes'), 'aip') : null}
+                  {/* 批A 追拍(Frank「每个岗位都要列 teer,pnp,ee 胶囊;aip/qc 单独列;什么都走不了就不用列」):
+                      通道族胶囊统一门=任一通道可走(具名信号或 TEER≤3 或 QC);全走不了 → 通道胶囊整排不出。
+                      TEER 从「无信号才兜底」升级为门内恒显(通用通道的依据);LMIA/红旗非通道胶囊,规则照旧 */}
+                  {(() => {
+                    const isQc = j.province === 'QC'
+                    const anyRoute = j.pnpEligible || j.eeCategory || j.aip || isQc || (j.teer != null && j.teer <= 3)
+                    if (!anyRoute) return null
+                    return (<>
+                      {j.teer != null ? chip('#f3f4f6', '#6b7280', `TEER ${j.teer}`, 'teer') : null}
+                      {j.pnpEligible ? chip('#fef3c7', '#92400e', j.pnpStream ? t('cell.pnpYes') : t('cell.pnpSkilled'), 'pnp') : null}
+                      {j.eeCategory ? chip('#dbeafe', '#1e40af', 'EE ' + eeDisplay(t, j.eeCategory), 'ee') : null}
+                      {j.aip ? chip('#ffedd5', '#9a3412', t('cell.aipYes'), 'aip') : null}
+                      {isQc ? chip('#f3e8ff', '#7c3aed', 'QC', 'province') : null}
+                    </>)
+                  })()}
                   {/* #145(Frank「这两个重复不」):是。LMIA 数与公司名旁的担保档同源(档位就是按 LMIA 份数+新近度算的),
                       手机卡上并排出现=一件事说两遍;有担保档时不再出 LMIA chip,无档(纯 AIP 等)才退回显数 */}
                   {j.lmiaPositions && j.sponsorGrade == null ? chip('#ccfbf1', '#0f766e', 'LMIA ✓' + j.lmiaPositions, 'lmia') : null}
                   {/* GAP1③:红旗 chip(手机卡片)——白投预警比正面信号更值得占位 */}
                   {j.eligibilityFlag ? chip('#fee2e2', '#b91c1c', t('cell.elig.' + j.eligibilityFlag), 'eligibility') : null}
-                  {!j.pnpEligible && !j.eeCategory && !j.aip && j.teer != null ? chip('#f3f4f6', '#6b7280', `TEER ${j.teer}`, 'teer') : null}
                 </div>
                 {/* 批A 头牌:「通道」小钮(三行直判「能走哪条通道」;顶 fd2de0b 删掉的移民价值钮的位) */}
                 <button onClick={stop(() => open('score', t('act.channel')))}
