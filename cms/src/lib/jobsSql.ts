@@ -438,10 +438,18 @@ export async function fetchRelatedJobs(pool: any, job: { id: string | number; co
 
 /** 头条总数 + 差异化证言数字(省提名清单命中岗 named + 有外劳记录雇主数 lmia)。原在 page.tsx 裸 SQL,收编于此。 */
 export async function fetchTotalAndProof(pool: any): Promise<{ total: number; named: number; lmia: number }> {
-  const { rows } = await pool.query(`SELECT count(*)::int AS n,
+  // 副标题总数与列表同口径(#125 后修):不吃去重条件时同页两个数(43,253 vs 41,193)打架
+  const q = (cond: string) => pool.query(`SELECT count(*) FILTER (WHERE ${cond})::int AS n,
     count(*) FILTER (WHERE status = 'open' AND pnp_stream IS NOT NULL AND pnp_stream <> '')::int AS named,
     (SELECT count(*)::int FROM companies WHERE lmia_positions > 0) AS lmia
-    FROM jobs`)
+    FROM jobs j`)
+  let rows
+  try {
+    ;({ rows } = await q(DEDUPE_COND))
+  } catch (e: any) {
+    if (e?.code !== '42703') throw e   // is_dup 列未落地(部署时序)→ 降级不去重,列到位自动恢复
+    ;({ rows } = await q('TRUE'))
+  }
   return { total: rows[0]?.n ?? 0, named: rows[0]?.named ?? 0, lmia: rows[0]?.lmia ?? 0 }
 }
 
