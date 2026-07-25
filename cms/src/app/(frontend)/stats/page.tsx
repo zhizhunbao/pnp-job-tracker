@@ -1,5 +1,5 @@
 // 省份索引页(E5-04;E8-06 图表化后传全量行——图表要大类维度,省卡在组件内自 filter)。
-import { loadStats, loadStatSources } from './lib'
+import { loadProvExtra, loadStats, loadStatSources } from './lib'
 import { StatsIndexView } from './views'
 
 export const dynamic = 'force-dynamic'
@@ -14,5 +14,6 @@ export async function generateMetadata() {
 export default async function StatsIndexPage() {
   const rows = await loadStats('', [], { withMid: true })  // 图表下钻 L2 要中类行;省卡/表格在组件内自 filter
   const srcs = await loadStatSources()
-  return <StatsIndexView rows={rows} srcs={srcs} />
+  const provExtra = await loadProvExtra()   // 批B(#133):省卡 IRCC 体量+难度
+  return <StatsIndexView rows={rows} srcs={srcs} provExtra={provExtra} />
 }

@@ -7,7 +7,7 @@ import { BackLink } from '../BackLink'
 import { BANNER_IMGS, Button, Card, CardAction, CardKV, Chip, PageBanner, Tag } from '../ui/primitives'
 import { DataTable } from '../ui/DataTable'
 import { IconMapPin, IconScale, IconStar, IconTarget } from '../Icons'
-import { BROAD_SLUGS, PROVS, PROV_NAME, type StatRow, type SrcRow } from './shared'
+import { BROAD_SLUGS, PROVS, PROV_NAME, type StatRow, type SrcRow, type ProvExtra } from './shared'
 import { StatsCharts } from './charts'
 import { PricingModal } from '../jobs/PricingModal'
 import { streamDisplay, type TFn } from '../jobs/i18n'
@@ -26,38 +26,64 @@ function TopCities({ raw, t }: { raw: string; t: TFn }) {
   )
 }
 
-// ── 省份索引(E8-06 图表化:上常见图/下自定义,省卡导航保留在图表区之下)──
-// rows 语义=stats 全量行(图表要大类维度);省卡自 filter broad='all'。
-export function StatsIndexContent({ rows, srcs, t }: { rows: StatRow[]; srcs: SrcRow[]; t: TFn }) {
+// 难度 tier 药丸配色(与 JobsTable DIFF_TAG 同值;stats 包不从 JobsTable 导入避免拖整模块,老坑 6 同族)
+const DIFF_COLORS: Record<string, { bg: string; fg: string; bd: string }> = {
+  easy: { bg: '#dcfce7', fg: '#166534', bd: '#bbf7d0' },
+  mid: { bg: '#fef9c3', fg: '#854d0e', bd: '#fde68a' },
+  tight: { bg: '#fee2e2', fg: '#b91c1c', bd: '#fecaca' },
+}
+const numFmt = (n: number) => n.toLocaleString('en-CA')
+
+// ── 省份索引(批B #133 重做:省卡挪最上;指标换血——中位年薪撤(省级单一中位=无效聚合),
+//    上 IRCC 学签/工签/PNP 登陆 + 移民难度(与 E8-12 省弹框同源同口径))──
+export function StatsIndexContent({ rows, srcs, t, provExtra = {} }: { rows: StatRow[]; srcs: SrcRow[]; t: TFn; provExtra?: Record<string, ProvExtra> }) {
   const provRows = rows.filter((r) => r.broad === 'all')
+  const kv = (label: React.ReactNode, val: React.ReactNode) => (
+    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}><span>{label}</span><span style={{ color: '#111827' }}>{val}</span></div>
+  )
   return (
     <>
       {/* 页头=PageBanner(#65 五模块统一浅色带,统计=绿) */}
       <PageBanner module="stats" icon={<IconMapPin />} title={t('stats.entry')} images={BANNER_IMGS.stats}
         stats={[{ v: PROVS.length, label: t('stats.bnProvs') }, { v: BROAD_SLUGS.length, label: t('stats.bnBroads') }]} />
-      <StatsCharts rows={rows} t={t} />
-      <h2 style={{ fontSize: 15.5, margin: '18px 0 8px' }}>{t('stats.provIndex')}</h2>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12, margin: '16px 0' }}>
-        {provRows.map((r) => (
+      <h2 style={{ fontSize: 15.5, margin: '14px 0 8px' }}>{t('stats.provIndex')}</h2>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 12, margin: '4px 0 16px' }}>
+        {provRows.map((r) => {
+          const ex = provExtra[r.province]
+          const work = (ex?.info?.tfwp?.n ?? 0) + (ex?.info?.imp?.n ?? 0)
+          const tier = ex?.tier && DIFF_COLORS[ex.tier] ? ex.tier : null
+          return (
           <a key={r.province} href={`/stats/${r.province.toLowerCase()}`}
             style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '14px 16px', textDecoration: 'none', color: '#1f2937' }}>
-            <div style={{ fontWeight: 700, fontSize: 15 }}>{PROV_NAME[r.province] || r.province} <span style={{ color: '#9ca3af', fontWeight: 400 }}>{r.province}</span></div>
-            <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 8, lineHeight: 1.9 }}>
-              {t('stats.openJobs')}:<strong style={{ color: '#111827' }}> {r.openJobs}</strong><br />
-              {t('stats.medWage')}: {money(r.medianWageAnnual)}<br />
-              {t('stats.named')}: {r.namedJobs ? <span style={{ color: '#b45309', fontWeight: 600 }}>{r.namedJobs}</span> : <span style={{ color: '#9ca3af' }}>—</span>}
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+              <span style={{ fontWeight: 700, fontSize: 15 }}>{PROV_NAME[r.province] || r.province}</span>
+              <span style={{ color: '#9ca3af', fontWeight: 400, fontSize: 12.5 }}>{r.province}</span>
+              {tier ? <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 600, padding: '1px 8px', borderRadius: 999, background: DIFF_COLORS[tier].bg, color: DIFF_COLORS[tier].fg, border: `1px solid ${DIFF_COLORS[tier].bd}` }}>{t('diff.' + tier)}</span> : null}
+            </div>
+            <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 8, lineHeight: 2 }}>
+              {kv(t('stats.openJobs'), <strong>{r.openJobs != null ? numFmt(r.openJobs) : '—'}</strong>)}
+              {kv(t('stats.named'), r.namedJobs ? <span style={{ color: '#b45309', fontWeight: 600 }}>{numFmt(r.namedJobs)}</span> : '—')}
+              {kv(t('stats.cardWork'), work ? numFmt(work) : '—')}
+              {kv(t('stats.cardStudy'), ex?.info?.study?.n ? numFmt(ex.info.study.n) : '—')}
+              {kv(t('stats.cardPr'), ex?.info?.pnpPr?.n ? numFmt(ex.info.pnpPr.n) : '—')}
             </div>
           </a>
-        ))}
+          )
+        })}
       </div>
-      <a href="/stats/compare" style={{ fontSize: 13, color: '#2563eb', textDecoration: 'none' }}><IconScale /> {t('stats.compare')} →</a>
+      {/* IRCC 年份口径一行说清,不在每卡重复(第25轮「同句重复=废话」口径) */}
+      <div style={{ fontSize: 11.5, color: '#9ca3af', margin: '-8px 0 14px' }}>{t('stats.cardNote')}</div>
+      <StatsCharts rows={rows} t={t} />
+      <div style={{ marginTop: 14 }}>
+        <a href="/stats/compare" style={{ fontSize: 13, color: '#2563eb', textDecoration: 'none' }}><IconScale /> {t('stats.compare')} →</a>
+      </div>
       <CaliberLine t={t} srcs={srcs} fetched={provRows[0]?.fetched || ''} />
     </>
   )
 }
-export function StatsIndexView({ rows, srcs }: { rows: StatRow[]; srcs: SrcRow[] }) {
+export function StatsIndexView({ rows, srcs, provExtra }: { rows: StatRow[]; srcs: SrcRow[]; provExtra?: Record<string, ProvExtra> }) {
   const [lang, setLang, t] = useLang()
-  return <StatsShell lang={lang} setLang={setLang} t={t}><StatsIndexContent rows={rows} srcs={srcs} t={t} /></StatsShell>
+  return <StatsShell lang={lang} setLang={setLang} t={t}><StatsIndexContent rows={rows} srcs={srcs} t={t} provExtra={provExtra} /></StatsShell>
 }
 
 // ── E12-07 省难度卡(2026-07-20 Frank 拍板「stats 卡先行/人话档名」):分档+逐因子出处;

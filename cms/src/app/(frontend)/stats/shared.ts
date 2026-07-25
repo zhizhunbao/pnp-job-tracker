@@ -11,6 +11,10 @@ export type StatRow = {
   difficulty?: string | Record<string, unknown> | null   // E12-07 难度指数(jsonb,仅 broad=all 行)
 }
 export type SrcRow = { field: string; publisher: string; url: string; fetched: string }
+// 批B(#133):省卡 IRCC 体量(provinces.info jsonb 透传,与 E8-12 省弹框同源同口径)
+export type ProvVolNum = { n: number; year: string }
+export type ProvVol = { study?: ProvVolNum; tfwp?: ProvVolNum; imp?: ProvVolNum; pnpPr?: ProvVolNum }
+export type ProvExtra = { info: ProvVol | null; tier: string | null }
 
 // URL slug ↔ NOC 大类(数据值);顺序即展示顺序
 export const BROAD_SLUGS: [string, string][] = [
