@@ -3746,12 +3746,7 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
             : group === 'company'
             ? <CompanyPanel job={job} jobs={companyJobs} lang={lang} plan={plan} onOpenJob={onOpenJob} />
             : <GroupFactsSection group={group} job={job} jobs={companyJobs} lang={lang} isPro={plan.isPro} loggedIn={plan.loggedIn} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} onOpenJob={onOpenJob} showZh={showZh} />}
-          {/* 建档 CTA(第 5 轮 #17 = 弹框规范 D1):身份信号族对未建档用户铺「事实 → 个人化」的桥 */}
-          {!plan.profileOk && group === 'immigration' && (
-            <div style={{ margin: '8px 0 10px' }}>
-              <a href="/account" style={{ fontSize: 13, color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}><IconTarget /> {t('fact.buildCta')}</a>
-            </div>
-          )}
+          {/* 建档 CTA 删(2026-07-25 Frank「这个去掉没什么意义」;原第 5 轮 #17 弹框规范 D1) */}
           {/* 免责/AI 声明不进弹框(2026-07-06 用户拍板:合规统一在 footer 说明) */}
           {/* #174:AI 解读收进自己的卡(每卡必有 title)——只有移民组会请求 AI,
               职位/公司组(status 直置 done、text 空)不渲,免得出一张空卡孤儿标题 */}
