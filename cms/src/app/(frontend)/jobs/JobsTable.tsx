@@ -1421,9 +1421,10 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                   {j.eligibilityFlag ? chip('#fee2e2', '#b91c1c', t('cell.elig.' + j.eligibilityFlag), 'eligibility') : null}
                   {!j.pnpEligible && !j.eeCategory && !j.aip && j.teer != null ? chip('#f3f4f6', '#6b7280', `TEER ${j.teer}`, 'teer') : null}
                 </div>
-                {/* #201(Frank「通道弱删了,用户看不懂」):档名 chip 删除,移民弹框入口改成看得懂的整行「移民价值」按钮 */}
+                {/* #201(Frank「通道弱删了,用户看不懂」):档名 chip 删除,移民弹框入口改成看得懂的「移民价值」按钮;
+                    2026-07-25 用户:整行太大 → 收成自适应宽度小钮 */}
                 <button onClick={stop(() => open('score', t('act.immigValue')))}
-                  style={{ width: '100%', marginTop: 8, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '7px', fontSize: 13, border: '1px solid #d1d5db', borderRadius: 6, background: '#fff', color: '#374151', cursor: 'pointer' }}>
+                  style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 12px', fontSize: 12.5, border: '1px solid #d1d5db', borderRadius: 6, background: '#fff', color: '#374151', cursor: 'pointer' }}>
                   <IconCompass /> {t('act.immigValue')}
                 </button>
                 {/* #167⑦(Frank「这个卡片最好有个更新时间吧,年月日时分秒」):发布时间只有日期没时刻(Job Bank 原样),
@@ -1909,6 +1910,7 @@ export function JdAdvisorSection({ job, lang, plan, title, field = 'title' }: { 
   const [text, setText] = useState(jdAdvCache.get(ck) || '')
   const [status, setStatus] = useState<'loading' | 'streaming' | 'done' | 'error' | 'upgrade' | 'limited'>(jdAdvCache.has(ck) ? 'done' : 'loading')
   const [freeLeft, setFreeLeft] = useState<number | null>(null)
+  const [tick, setTick] = useState(0)   // 2026-07-25 用户:解析失败要能重试——tick+1 重跑生成
   useEffect(() => {
     if (jdAdvCache.has(ck)) return
     const ctrl = new AbortController()
@@ -1939,7 +1941,7 @@ export function JdAdvisorSection({ job, lang, plan, title, field = 'title' }: { 
       } catch { if (!ctrl.signal.aborted) setStatus('error') }
     })()
     return () => ctrl.abort()
-  }, [job, lang])
+  }, [job, lang, tick])
   return (
     /* 壳=裸段(Frank「AI 顾问和职位描述分成两个卡片」「不要卡片套卡片」):组件自己不带壳,
        详情页包进独立 sec 卡、JD 弹框包分隔线段——间隔样式归消费方。
@@ -1954,7 +1956,12 @@ export function JdAdvisorSection({ job, lang, plan, title, field = 'title' }: { 
           <LockedText t={t} loggedIn={plan.loggedIn} msg={t('advisor.limit429')} ctaLabel={!plan.loggedIn ? t('advisor.limitCta') : undefined} />
         )
         : status === 'loading' ? <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>{t('advisor.loading')}</p>
-        : status === 'error' ? <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>{t('advisor.unavail')}</p>
+        : status === 'error' ? (
+          <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>
+            {t('advisor.unavail')}
+            <button onClick={() => setTick((n) => n + 1)} style={{ border: 'none', background: 'none', padding: 0, marginLeft: 8, color: '#2563eb', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>{t('ai.retry')}</button>
+          </p>
+        )
         : <div style={{ fontSize: 13.5, lineHeight: 1.7, color: '#374151' }}>{renderAI(text)}{status === 'streaming' && <span style={{ color: '#9ca3af' }}>▋</span>}</div>}
     </div>
   )
@@ -3458,6 +3465,7 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
 
   // 试用额度可见化(第 5 轮 #16):服务端 X-Free-Left 头,免费用户看得见剩几次,402 不再是惊吓
   const [freeLeft, setFreeLeft] = useState<number | null>(null)
+  const [tick, setTick] = useState(0)   // 2026-07-25 用户:解析失败要能重试——tick+1 重跑初判
   useEffect(() => {
     const ctrl = new AbortController()
     // AI 段只归移民弹框(分步方案)。公司弹框撤 AI 段=#167⑨(CompanyAiSection 结构化卡是唯一 AI 内容);
@@ -3488,7 +3496,7 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
       }
     })()
     return () => ctrl.abort()
-  }, [group, job, lang])
+  }, [group, job, lang, tick])
 
   const iconBtn = iconBtnS
 
@@ -3555,6 +3563,12 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
                 <LockedText t={t} loggedIn={plan.loggedIn} msg={t('advisor.limit429')} ctaLabel={!plan.loggedIn ? t('advisor.limitCta') : undefined} />
               ) : status === 'loading' ? (
                 <p style={{ margin: 0, fontSize: 14, color: '#9ca3af' }}>{t('advisor.loading')}</p>
+              ) : status === 'error' ? (
+                /* 2026-07-25 用户:解析失败要能重试——error 态文案(unavail/offline 已在 text 里)后挂重试钮 */
+                <p style={{ margin: 0, fontSize: 14, color: '#9ca3af' }}>
+                  {text}
+                  <button onClick={() => setTick((n) => n + 1)} style={{ border: 'none', background: 'none', padding: 0, marginLeft: 8, color: '#2563eb', cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>{t('ai.retry')}</button>
+                </p>
               ) : (
                 <div style={{ fontSize: 14, lineHeight: 1.7, color: '#374151' }}>{renderAI(text)}{status === 'streaming' && <span style={{ color: '#9ca3af' }}>▋</span>}</div>
               )}
@@ -3815,12 +3829,13 @@ function ApplyBar({ job, email, emailDone, t, plan }: { job: JobRow; email: stri
   if (!job.applyUrl) return null
   return (
     <>
-      <div style={{ position: 'sticky', bottom: 0, background: '#fff', borderTop: '1px solid #e5e7eb', marginTop: 16, padding: '10px 0 2px', display: 'flex', gap: 8, zIndex: 5 }}>
-        <button onClick={onApply} style={{ flex: 1, background: '#2563eb', color: '#fff', border: 'none', borderRadius: 10, padding: '11px 0', fontSize: 14.5, fontWeight: 700, cursor: 'pointer' }}>
+      {/* 2026-07-25 用户:全宽大蓝钮「太吓人」→ 右对齐紧凑钮,保持主次(蓝=投递,灰=复制) */}
+      <div style={{ position: 'sticky', bottom: 0, background: '#fff', borderTop: '1px solid #e5e7eb', marginTop: 16, padding: '10px 0 2px', display: 'flex', gap: 8, justifyContent: 'flex-end', zIndex: 5 }}>
+        <button onClick={onApply} style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}>
           {/* applyhow 在途时用中性「投递」占位——别先显「前往投递」再闪成「邮件投递」(Frank 问「为什么有的是前往有的是邮箱」,闪变加剧困惑) */}
           {email ? t('apply.email') : emailDone ? `${t('apply.web')} ↗` : t('apply.plain')}
         </button>
-        <button onClick={copyBrief} style={{ flexShrink: 0, background: '#f3f4f6', color: copied ? '#15803d' : '#374151', border: 'none', borderRadius: 10, padding: '11px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+        <button onClick={copyBrief} style={{ flexShrink: 0, background: '#f3f4f6', color: copied ? '#15803d' : '#374151', border: 'none', borderRadius: 8, padding: '9px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
           {copied ? t('apply.copied') : t('apply.copy')}
         </button>
       </div>
@@ -3907,16 +3922,22 @@ export function JobBody({ job, lang, plan, inModal, onFreeLeft }: { job: JobRow;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [job.applyUrl])
   const applyEmail = jbEmail || applyEmailOf(text || '')
+  // 2026-07-25 用户「有时候 AI 解析会失败,需要有重试按钮」:拉取抽成 loadFmt,失败态(fmt=null)挂重试钮
+  const loadFmt = (signal?: AbortSignal) => {
+    setFmt(undefined)
+    fetch('/api/jdformat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: job.applyUrl || '' }), signal })
+      .then((r) => (r.status === 200 ? r.text() : ''))
+      .then((tx) => setFmt(tx.trim() ? tx : null))
+      .catch(() => { if (!signal?.aborted) setFmt(null) })
+  }
   useEffect(() => {
     // 整理版与原文并行拉:命中缓存秒回;首次生成慢(模型现算),期间正文照常显示原文
     const ctrl = new AbortController()
-    setFmt(undefined); setShowOrig(false)
+    setShowOrig(false)
     setAiOn(false); setShowTrans(false); setTrans(null); setTransStatus('idle')
-    fetch('/api/jdformat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: job.applyUrl || '' }), signal: ctrl.signal })
-      .then((r) => (r.status === 200 ? r.text() : ''))
-      .then((tx) => setFmt(tx.trim() ? tx : null))
-      .catch(() => { if (!ctrl.signal.aborted) setFmt(null) })
+    loadFmt(ctrl.signal)
     return () => ctrl.abort()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [job])
   return (
     <>
@@ -3959,7 +3980,13 @@ export function JobBody({ job, lang, plan, inModal, onFreeLeft }: { job: JobRow;
                 </div>
               ) : fmt === undefined ? (
                 <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 6 }}>✨ {t('act.aiWorking')}</div>
-              ) : null}
+              ) : (
+                /* fmt=null=整理没出来(模型掉线/校验拒收/限流)——原先静默降级原文,用户以为坏了没路走 → 灰注+重试 */
+                <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 6 }}>
+                  ✨ {t('act.aiFail')}
+                  <button onClick={() => loadFmt()} style={{ border: 'none', background: 'none', padding: 0, marginLeft: 8, color: '#2563eb', cursor: 'pointer', fontSize: 11.5, fontWeight: 600 }}>{t('ai.retry')}</button>
+                </div>
+              )}
               {fmt && !showOrig ? <JdFormattedView text={fmt} t={t} fallbackPay={job.salaryText || job.salary || undefined} applyUrl={job.applyUrl || undefined} applyEmail={applyEmail || undefined} trans={showTrans && trans ? trans : undefined} /> : <JdTextView text={text} max={4000} />}
             </>
           )}

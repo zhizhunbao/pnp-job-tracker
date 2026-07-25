@@ -193,7 +193,7 @@ const zh: Dict = {
   'fact.coLmiaNote': '担保史为 ESDC 历史记录,非担保承诺',
   // J·K·M 批(2026-07-19 Frank 批):J1 多列 · J3 五节整理版 · K 公司调查 · M 对比表
   'col.empHours': '工时', 'col.empTerm': '雇佣期', 'fact.unstated': '原帖未标注',
-  'act.ai': 'AI 整理(只搬运原帖信息,未添加)', 'act.seeOrig': '看原文 ▾', 'act.seeFmt': '看整理版 ▴', 'act.aiWorking': 'AI 整理中,先看原文…',
+  'act.ai': 'AI 整理(只搬运原帖信息,未添加)', 'act.seeOrig': '看原文 ▾', 'act.seeFmt': '看整理版 ▴', 'act.aiWorking': 'AI 整理中,先看原文…', 'act.aiFail': 'AI 整理没成功', 'ai.retry': '重试',
   'act.f.role': '职位描述', 'act.f.reqs': '硬性要求', 'act.f.pay': '薪资福利', 'act.f.hours': '工时地点', 'act.f.apply': '怎么投', 'act.f.none': '原帖未提及',
   'co.f.what': '主营业务', 'co.f.base': '所在地', 'co.f.size': '规模', 'co.f.founded': '成立时间', 'co.f.note': '其他要点',   // #158 公司简介分节(2026-07-21 增至五节)
   'fact.aiIntro': 'AI 检索整理(非官方自述)', 'fact.aiWorking': 'AI 调查中…', 'fact.aiSite': 'AI 检索到,非库内原有',
@@ -659,7 +659,7 @@ const en: Dict = {
   'fact.coLmiaNote': 'Sponsorship history is an ESDC record of the past, not a commitment',
   // J·K·M batch (2026-07-19)
   'col.empHours': 'Hours', 'col.empTerm': 'Term', 'fact.unstated': 'Not stated in posting',
-  'act.ai': 'AI-organized (rearranged from the posting, nothing added)', 'act.seeOrig': 'View original ▾', 'act.seeFmt': 'View organized ▴', 'act.aiWorking': 'AI organizing, showing original…',
+  'act.ai': 'AI-organized (rearranged from the posting, nothing added)', 'act.seeOrig': 'View original ▾', 'act.seeFmt': 'View organized ▴', 'act.aiWorking': 'AI organizing, showing original…', 'act.aiFail': 'AI organizing failed', 'ai.retry': 'Retry',
   'act.f.role': 'Job description', 'act.f.reqs': 'Hard requirements', 'act.f.pay': 'Pay & benefits', 'act.f.hours': 'Schedule & location', 'act.f.apply': 'How to apply', 'act.f.none': 'Not mentioned in posting',
   'co.f.what': 'What it does', 'co.f.base': 'Based in', 'co.f.size': 'Size', 'co.f.founded': 'Founded', 'co.f.note': 'Worth knowing',
   'fact.aiIntro': 'AI-researched (not company-authored)', 'fact.aiWorking': 'AI researching…', 'fact.aiSite': 'found by AI search, not from our directory',
@@ -1108,7 +1108,7 @@ const ko: Dict = {
   'fact.coLmiaNote': '스폰서 이력은 ESDC의 과거 기록이며, 스폰서 보장을 의미하지 않음',
   // J·K·M batch (2026-07-19)
   'col.empHours': '근무 형태', 'col.empTerm': '고용 기간', 'fact.unstated': '원문에 명시 없음',
-  'act.ai': 'AI 정리(원문 재배열, 추가 없음)', 'act.seeOrig': '원문 보기 ▾', 'act.seeFmt': '정리본 보기 ▴', 'act.aiWorking': 'AI 정리 중, 우선 원문 표시…',
+  'act.ai': 'AI 정리(원문 재배열, 추가 없음)', 'act.seeOrig': '원문 보기 ▾', 'act.seeFmt': '정리본 보기 ▴', 'act.aiWorking': 'AI 정리 중, 우선 원문 표시…', 'act.aiFail': 'AI 정리 실패', 'ai.retry': '다시 시도',
   'act.f.role': '직무 설명', 'act.f.reqs': '필수 요건', 'act.f.pay': '급여·복지', 'act.f.hours': '근무 형태·장소', 'act.f.apply': '지원 방법', 'act.f.none': '원문에 언급 없음',
   'co.f.what': '주요 사업', 'co.f.base': '소재지', 'co.f.size': '규모', 'co.f.founded': '설립 연도', 'co.f.note': '참고 사항',
   'fact.aiIntro': 'AI 검색 정리(회사 공식 소개 아님)', 'fact.aiWorking': 'AI 조사 중…', 'fact.aiSite': 'AI 검색 결과, 디렉터리 원본 아님',
