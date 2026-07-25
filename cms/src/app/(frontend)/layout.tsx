@@ -8,6 +8,23 @@ export const metadata = {
   verification: { google: 'zm002EQ20ckam-N3hvapv6J3YeF_ebKfv7_UymszCA4' }, // GSC 站点所有权(E7-03;验证后不可删)
 }
 
+// #135 品牌词 SEO:WebSite/Organization JSON-LD 帮 Google 建品牌实体,alternateName 收「offer to pr」分词形态
+const siteJsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Offer2PR',
+    alternateName: ['offer to pr', 'offer 2 pr', 'Offer to PR'],
+    url: 'https://offer2pr.com',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'Offer2PR',
+    url: 'https://offer2pr.com',
+  },
+]
+
 export default async function RootLayout(props: { children: React.ReactNode }) {
   const { children } = props
   const umamiSrc = process.env.NEXT_PUBLIC_UMAMI_SRC
@@ -16,6 +33,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd) }} />
         {umamiSrc && umamiId ? <script defer src={umamiSrc} data-website-id={umamiId} /> : null}
       </head>
       <body>

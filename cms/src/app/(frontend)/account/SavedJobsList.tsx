@@ -59,9 +59,8 @@ export function SavedJobsList({ t, userId, weeklyOptOut, variant }: { t: ReturnT
           ))}
         </div>
       )}
-      {/* 周报开关暂藏(2026-07-19 Frank「不完美的先关」):Resend 测试模式发不了外部邮箱,承诺兑现不了;
-          域名邮箱接好+首封真发验证后把 false 删掉亮回(weeklyOptOut 字段/游标逻辑原样保留) */}
-      {false && !favs && userId != null && (
+      {/* 周报开关(E9-02b;#113 亮回):2026-07-25 实证 域名 Verified+FROM=alerts@offer2pr.com+外部邮箱真实 Delivered */}
+      {!favs && userId != null && (
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, paddingTop: 10, borderTop: '1px solid #f3f4f6', fontSize: 12.5, color: '#6b7280', cursor: 'pointer' }}>
           <input type="checkbox" checked={!optOut} onChange={async (e) => {
             const v = !e.target.checked
