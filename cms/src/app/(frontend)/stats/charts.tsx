@@ -7,7 +7,7 @@ import { BROAD_SLUGS, PROVS, PROV_NAME, type StatRow } from './shared'
 import type { TFn } from '../jobs/i18n'
 import { track } from '@/lib/track'   // #129 功能级 umami 埋点
 
-type ChartInst = { setOption: (o: object, notMerge?: boolean) => void; resize: () => void; dispose: () => void; on: (ev: string, cb: (e: { dataIndex: number }) => void) => void }
+type ChartInst = { setOption: (o: object, notMerge?: boolean) => void; resize: () => void; clear: () => void; dispose: () => void; on: (ev: string, cb: (e: { dataIndex: number }) => void) => void }
 
 function EChart({ option, height, onBarClick }: { option: object; height: number; onBarClick?: (dataIndex: number) => void }) {
   const ref = useRef<HTMLDivElement | null>(null)
@@ -21,14 +21,31 @@ function EChart({ option, height, onBarClick }: { option: object; height: number
         inst.current = e.init(ref.current) as unknown as ChartInst
         inst.current.on('click', (ev) => clickRef.current?.(ev.dataIndex))
       }
+      // #128(批A):下钻条数变化 → 容器高度变,canvas 尺寸不跟 → 残影透叠进相邻卡。
+      // clear 掉旧帧 + notMerge 全量换 option + resize 对齐新高度,三连根治
+      inst.current.clear()
       inst.current.setOption(option, true)
+      inst.current.resize()
     })
     const onResize = () => inst.current?.resize()
     window.addEventListener('resize', onResize)
     return () => { alive = false; window.removeEventListener('resize', onResize) }
-  }, [option])
+  }, [option, height])
   useEffect(() => () => { inst.current?.dispose(); inst.current = null }, [])
-  return <div ref={ref} style={{ width: '100%', height, cursor: onBarClick ? 'pointer' : undefined }} />
+  return <div ref={ref} style={{ width: '100%', height, cursor: onBarClick ? 'pointer' : undefined, overflow: 'hidden' }} />
+}
+
+// #128(批A):类目过多图变长梯——计数类 >20 收 TOP15+「其他」归并条(其他=不可下钻);
+// 中位类不归并(跨类目中位不能求和,红线),原样全列
+const CAP_AT = 20
+const CAP_TOP = 15
+const OTHER_KEY = '__other'
+function capItems(items: Item[], sum: boolean, t: TFn): Item[] {
+  if (!sum || items.length <= CAP_AT) return items
+  const top = items.slice(-CAP_TOP)   // 升序数组,尾部=最大
+  const rest = items.slice(0, items.length - CAP_TOP)
+  const other: Item = { name: t('chart.other'), full: `${t('chart.other')}(${rest.length})`, key: OTHER_KEY, value: rest.reduce((a, b) => a + b.value, 0) }
+  return [other, ...top].sort(asc)
 }
 
 type Item = { name: string; full: string; value: number; key: string }  // key=原始维度值(省码/大类中文),下钻用
@@ -112,17 +129,40 @@ const chartH = (n: number) => n * 26 + 40
 function DrillCard({ rows, t, title, kind, metric, money, broadLabel }: {
   rows: StatRow[]; t: TFn; title: string; kind: 'prov' | 'cat'; metric: MetricKey; money: boolean; broadLabel: (b: string) => string
 }) {
-  const [path, setPath] = useState<Item[]>([])  // []=L0;[a]=L1;[a,b]=L2(prov 卡=[省,大类];cat 卡=[大类,省])
+  const [path, setPath] = useState<Item[]>([])  // []=L0;[a]=L1;[a,b]=L2;[a,b,mid]=L3(批A,#127 小类层,仅 openJobs)
   const provBroad = (): { prov: string; broad: string } => (
     kind === 'prov' ? { prov: path[0]?.key ?? '', broad: path[1]?.key ?? '' } : { prov: path[1]?.key ?? '', broad: path[0]?.key ?? '' })
-  const items = useMemo(() => {
-    if (!path.length) return kind === 'prov' ? byProv(rows, metric, 'all') : byCat(rows, metric, 'all', broadLabel)
-    if (path.length === 1) return kind === 'prov' ? byCat(rows, metric, path[0].key, broadLabel) : byProv(rows, metric, path[0].key)
+  // #127(批A)L3:小类不进 stats 表 —— 单省×大类×中类现查 /api/statsfine(count by fine),null=加载中
+  const [fineItems, setFineItems] = useState<Item[] | null>(null)
+  useEffect(() => {
+    if (path.length !== 3) { setFineItems(null); return }
     const { prov, broad } = provBroad()
-    return byMid(rows, metric, prov, broad, t)
-  }, [rows, metric, kind, path]) // eslint-disable-line react-hooks/exhaustive-deps
+    const ctrl = new AbortController()
+    fetch(`/api/statsfine?prov=${prov}&broad=${encodeURIComponent(broad)}&mid=${encodeURIComponent(path[2].key)}`, { signal: ctrl.signal })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!d) { setFineItems([]); return }
+        setFineItems((d.rows as { fine: string; n: number }[])
+          .map((r) => ({ name: midName(t, r.fine), full: midName(t, r.fine), key: r.fine, value: r.n }))
+          .sort(asc))
+      })
+      .catch(() => { if (!ctrl.signal.aborted) setFineItems([]) })
+    return () => ctrl.abort()
+  }, [path]) // eslint-disable-line react-hooks/exhaustive-deps
+  const items = useMemo(() => {
+    const sum = METRICS.find((x) => x.key === metric)?.sum ?? false
+    if (!path.length) return kind === 'prov' ? byProv(rows, metric, 'all') : byCat(rows, metric, 'all', broadLabel)
+    if (path.length === 1) return capItems(kind === 'prov' ? byCat(rows, metric, path[0].key, broadLabel) : byProv(rows, metric, path[0].key), sum, t)
+    if (path.length === 3) return capItems(fineItems ?? [], true, t)
+    const { prov, broad } = provBroad()
+    return capItems(byMid(rows, metric, prov, broad, t), sum, t)
+  }, [rows, metric, kind, path, fineItems]) // eslint-disable-line react-hooks/exhaustive-deps
   const toJobs = (it: Item) => {  // 新标签页(2026-07-19 Frank:「点击钻取的时候不要跳转到搜索页面」——统计页留在原地)
     const { prov, broad } = provBroad()
+    if (path.length === 3) {  // L3 点小类条 → ?fine= 深链(#142)
+      window.open(`/?prov=${prov}&broad=${encodeURIComponent(broad)}&mid=${encodeURIComponent(path[2].key)}&fine=${encodeURIComponent(it.key)}`, '_blank', 'noopener')
+      return
+    }
     window.open(`/?prov=${prov}&broad=${encodeURIComponent(broad)}&mid=${encodeURIComponent(it.key)}`, '_blank', 'noopener')
   }
   return (
@@ -144,14 +184,21 @@ function DrillCard({ rows, t, title, kind, metric, money, broadLabel }: {
         ) : (
           <span style={{ fontSize: 11, color: '#d1d5db', whiteSpace: 'nowrap' }}>{t('chart.drillHint')}</span>
         )}
-        {path.length === 2 && <span style={{ fontSize: 11, color: '#d1d5db', whiteSpace: 'nowrap' }}>{t('chart.jobsHint')}</span>}
+        {((path.length === 2 && metric !== 'openJobs') || path.length === 3) && <span style={{ fontSize: 11, color: '#d1d5db', whiteSpace: 'nowrap' }}>{t('chart.jobsHint')}</span>}
       </div>
-      {items.length
+      {path.length === 3 && fineItems === null
+        ? <p style={{ margin: '10px 0', fontSize: 13, color: '#9ca3af' }}>{t('chart.loading')}</p>
+        : items.length
         ? <EChart option={barOption(items, money)} height={chartH(items.length)}
             onBarClick={(i) => {
-              const it = items[i]; if (!it) return
+              const it = items[i]; if (!it || it.key === OTHER_KEY) return   // 「其他」归并条不可下钻
               track('stats-drill', { depth: path.length + 1 })   // #129
-              if (path.length === 2) return toJobs(it)
+              if (path.length === 3) return toJobs(it)
+              // #127(批A):L2 点中类——openJobs 继续钻 L3 小类;其余指标(中位类小类级无数据)维持直达职位板
+              if (path.length === 2) {
+                if (metric === 'openJobs') { setPath([...path, it]); return }
+                return toJobs(it)
+              }
               if (path.length === 1) {  // L1→L2 前探一眼:该桶无中类行(列未落地/数据缺)→ 优雅降级=新标签页开职位板(不离开统计页)
                 const pb = kind === 'prov' ? { prov: path[0].key, broad: it.key } : { prov: it.key, broad: path[0].key }
                 if (!byMid(rows, metric, pb.prov, pb.broad, t).length) {
