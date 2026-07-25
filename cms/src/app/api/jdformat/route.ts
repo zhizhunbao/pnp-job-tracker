@@ -7,9 +7,10 @@
 import { NextRequest } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
+import { getUser } from '@/lib/entitlement'
+import { freeGate } from '@/lib/freeQuota'
 import { friendChat, friendLlmReady } from '@/lib/friendLlm'
 import { jobDescription, scrubPii } from '@/lib/jobDescription'
-import { checkLimit, ipOf } from '@/lib/rateLimit'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -88,14 +89,16 @@ export async function POST(req: NextRequest) {
   if (row.jd_formatted) return new Response(row.jd_formatted, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
   row.description = await jobDescription(url)
   if (!row.description) return new Response(null, { status: 204 })   // 真没正文(抓不到)→ 静默,前端空态照旧
-  // 生成走 IP 日限(缓存命中不计;生成在朋友盒子上跑,别被刷)
-  if (!checkLimit([[`jdf:${ipOf(req)}`, Number(process.env.JDFORMAT_IP_DAILY || 40)]])) return new Response(null, { status: 204 })
+  // 第25轮打码批:生成并入统一免费池(缓存命中不计费)——原私设 IP 日限 40 绕过全站额度,匿名裸用
+  // 第25轮 #114:失败态拆三种给前端(402/429=额度、503=生成失败可重试、204=无正文),不再五因一果
+  const g = freeGate(await getUser(req.headers), req)
+  if (g.block) return g.block
   let p = inflight.get(url)
   if (!p) {
     p = generate(pool, row, url).finally(() => inflight.delete(url))
     inflight.set(url, p)
   }
   const out = await p
-  if (!out) return new Response(null, { status: 204 })
-  return new Response(out, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
+  if (!out) return new Response(null, { status: 503 })
+  return new Response(out, { headers: { 'Content-Type': 'text/plain; charset=utf-8', ...g.headers } })
 }

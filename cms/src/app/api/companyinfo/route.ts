@@ -7,9 +7,10 @@
 import { NextRequest } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
+import { getUser } from '@/lib/entitlement'
+import { freeGate } from '@/lib/freeQuota'
 import { friendLlmReady } from '@/lib/friendLlm'
 import { companyRow, investigateCompany } from '@/lib/companyResearch'
-import { checkLimit, ipOf } from '@/lib/rateLimit'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -24,7 +25,9 @@ export async function POST(req: NextRequest) {
   const row = await companyRow(pool, name)
   if (!row) return new Response('', { status: 204 })
   if (row.cached) return Response.json(row.cached)
-  if (!checkLimit([[`coai:${ipOf(req)}`, Number(process.env.COMPANYINFO_IP_DAILY || 30)]])) return new Response('', { status: 204 })
+  // 第25轮打码批:调查并入统一免费池(缓存命中不计费)——原私设 IP 日限绕过全站额度,匿名裸用
+  const g = freeGate(await getUser(req.headers), req)
+  if (g.block) return g.block
   const out = await investigateCompany(pool, row.id, name)
   if (!out) return new Response('', { status: 204 })
   return Response.json(out)
