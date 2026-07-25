@@ -854,7 +854,16 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   // 每列最小宽:文本列宽些(列内换行),其余够放原子值即可 → 列多时整表超容器可横滚
   // #85(Frank「最后一列宽度叠一起」):actions 原默认 78px 塞不下三钮 → 给足最小宽,配合 cell 内 flex wrap 兜底
   const MIN_W: Partial<Record<ColKey, number>> = { title: 170, company: 140, address: 150, datePosted: 92, lastSeen: 96, closedAt: 92, salary: 100, salaryYr: 86, wageMedHr: 88, wageMedYr: 88, actions: 160 }
-  const colMin = (k: ColKey) => (hasWidths ? undefined : (MIN_W[k] ?? 78))
+  // 批A #134-⑧(Frank「保证所有列都能显示出来/哪个最宽优先缩哪个/发布时间不要缩」):
+  // 默认列集去掉最小宽 → auto 布局在视口内分配,最宽列(公司→职位→省)自然先折行,nowrap 短值列天然不缩;
+  // 发布时间/操作两列保底不缩。自选加列(超出默认集)或手动拖宽 → 回原最小宽+横滚(#35 拍板不动)
+  const DEFAULT_SET = new Set<ColKey>(DEFAULT_COLS)
+  const fitMode = !hasWidths && shown.every((c) => DEFAULT_SET.has(c.key))
+  const colMin = (k: ColKey) => {
+    if (hasWidths) return undefined
+    if (fitMode) return k === 'datePosted' ? 92 : k === 'actions' ? 160 : undefined
+    return MIN_W[k] ?? 78
+  }
   // 量当前表头每个可见列的自然渲染宽(auto 布局下为真实内容宽),返回覆盖全可见列的完整 map
   const measureAll = (): Record<string, number> => {
     const head = headRowRef.current
@@ -1575,27 +1584,12 @@ export function PnpListSection({ job, lang, occ, draws, news, nocDesc = [], show
   const nocRowOf = useMemo(() => new Map(nocDesc.map((d) => [d.noc, d])), [nocDesc])
   const [foldOpen, setFoldOpen] = useState<Record<string, boolean>>({})
   const isQc = job.province === 'QC'
-  // 从扁平维度表取本省各通道(按 label 分组)
-  const streams = useMemo<PnpStream[]>(() => {
-    if (isQc || !job.province) return []
-    const byLabel = new Map<string, PnpStream>()
-    for (const r of occ) {
-      if (r.province !== job.province) continue
-      let s = byLabel.get(r.label)
-      if (!s) { s = { stream: r.stream, label: r.label, type: r.type, url: r.url, fetched: r.fetched, occupations: [] }; byLabel.set(r.label, s) }
-      s.occupations.push({ noc: r.noc, name: r.name, gtaRestricted: r.gtaRestricted })
-    }
-    return [...byLabel.values()]
-  }, [occ, job.province, isQc])
+  // 批A:命中计算抽 pnpMatchOf(与通道直判块共用,改一处两边同变)
+  const { streams, matched, excluded, hasInclusion } = useMemo(() => pnpMatchOf(job, occ), [job, occ])
   // 高亮行滚进视野(就近滚,尽量不动整个弹框)
   useEffect(() => { matchRef.current?.scrollIntoView({ block: 'nearest' }) }, [streams])
 
   const noc = job.noc, teer = job.teer, skilled = teer != null && teer <= 3
-  let matched: PnpStream | null = null, excluded = false, hasInclusion = false
-  for (const s of streams) {
-    if (s.type === 'ineligible') { if (s.occupations.some((o) => o.noc === noc)) excluded = true }
-    else { hasInclusion = true; if (s.occupations.some((o) => o.noc === noc)) matched = s }
-  }
   let verdict = '', tone = '#6b7280', vIcon: React.ReactNode = null
   if (isQc) { verdict = t('pnplist.qc'); tone = '#7c3aed' }
   else if (streams.length === 0) { verdict = skilled ? t('pnplist.noList') : t('pnplist.notEligible'); tone = skilled ? '#15803d' : '#9ca3af' }
@@ -2531,6 +2525,104 @@ const normName = (name?: string) => (name || '').toLowerCase()
   .split(/\bo\/a\b|\bdba\b|\bd\/b\/a\b/)[0]
   .replace(AIP_SUFFIX, ' ').replace(/[^a-z0-9& ]/g, ' ').replace(/\s+/g, ' ').trim()
 const ATLANTIC = new Set(['NL', 'NB', 'NS', 'PE'])
+// ── 批A #134 通道直判(Frank「直接判断这个岗能不能走这个通道」)──────────────
+// 三态:on=雇主在指定名单 / miss=大西洋省但雇主不在名单 / na=非大西洋省不适用
+function aipVerdictOf(job: JobRow): 'on' | 'miss' | 'na' {
+  if (job.aip) return 'on'
+  return ATLANTIC.has(job.province) ? 'miss' : 'na'
+}
+// 判定药丸(直判行统一件):ok 绿=能走 / warn 琥珀 / fail 红=排除 / na 灰=走不了
+const VERDICT_PILL: Record<'ok' | 'warn' | 'fail' | 'na', { bg: string; fg: string }> = {
+  ok: { bg: '#dcfce7', fg: '#15803d' }, warn: { bg: '#fef3c7', fg: '#b45309' },
+  fail: { bg: '#fee2e2', fg: '#b91c1c' }, na: { bg: '#f3f4f6', fg: '#6b7280' },
+}
+function VerdictPill({ tone, children }: { tone: 'ok' | 'warn' | 'fail' | 'na'; children: React.ReactNode }) {
+  const c = VERDICT_PILL[tone]
+  return <span style={{ display: 'inline-block', padding: '1px 10px', borderRadius: 999, fontSize: 12.5, fontWeight: 600, background: c.bg, color: c.fg, whiteSpace: 'nowrap' }}>{children}</span>
+}
+// PNP 命中计算(PnpListSection 与通道直判块两处共用;纯函数,改一处两边同变)
+function pnpMatchOf(job: JobRow, occ: PnpOcc[]): { streams: PnpStream[]; matched: PnpStream | null; excluded: boolean; hasInclusion: boolean } {
+  const streams: PnpStream[] = []
+  if (job.province !== 'QC' && job.province) {
+    const byLabel = new Map<string, PnpStream>()
+    for (const r of occ) {
+      if (r.province !== job.province) continue
+      let s = byLabel.get(r.label)
+      if (!s) { s = { stream: r.stream, label: r.label, type: r.type, url: r.url, fetched: r.fetched, occupations: [] }; byLabel.set(r.label, s) }
+      s.occupations.push({ noc: r.noc, name: r.name, gtaRestricted: r.gtaRestricted })
+    }
+    streams.push(...byLabel.values())
+  }
+  let matched: PnpStream | null = null, excluded = false, hasInclusion = false
+  for (const s of streams) {
+    if (s.type === 'ineligible') { if (s.occupations.some((o) => o.noc === job.noc)) excluded = true }
+    else { hasInclusion = true; if (s.occupations.some((o) => o.noc === job.noc)) matched = s }
+  }
+  return { streams, matched, excluded, hasInclusion }
+}
+// 批A #134 头牌(Frank「就直接点,这个岗位是能走 EE 还是 PNP 还是 AIP」):
+// 通道弹框置顶三行直判;判定点名清单,清单挂行下可开可关(命中职业加粗标「← 本岗」)
+function ChannelVerdicts({ job, lang, pnpOcc, eeOcc, nocDesc, showZh }: { job: JobRow; lang: Lang; pnpOcc: PnpOcc[]; eeOcc: EeOcc[]; nocDesc: NocDesc[]; showZh?: boolean }) {
+  const t = makeT(lang)
+  const [openList, setOpenList] = useState<'' | 'pnp' | 'ee'>('')
+  const { matched, excluded } = useMemo(() => pnpMatchOf(job, pnpOcc), [job, pnpOcc])
+  const eeCats = useMemo(() => [...new Set(eeOcc.filter((r) => r.noc === job.noc).map((r) => r.label))], [eeOcc, job.noc])
+  const nocRowOf = useMemo(() => new Map(nocDesc.map((d) => [d.noc, d])), [nocDesc])
+  const skilled = job.teer != null && job.teer <= 3
+  const aip = aipVerdictOf(job)
+  let pnpPill: React.ReactNode
+  if (job.province === 'QC') pnpPill = <VerdictPill tone="na">{t('ch.pnp.qc')}</VerdictPill>
+  else if (matched) pnpPill = <VerdictPill tone="ok">{t('ch.pnp.on', { label: streamDisplay(t, matched.label) })}</VerdictPill>
+  else if (excluded) pnpPill = <VerdictPill tone="fail">{t('ch.pnp.ex')}</VerdictPill>
+  else if (skilled) pnpPill = <VerdictPill tone="ok">{t('ch.pnp.generic')}</VerdictPill>
+  else pnpPill = <VerdictPill tone="na">{t('ch.pnp.no', { teer: job.teer ?? '?' })}</VerdictPill>
+  // EE 类别多命中一行放不下 → 首类 +「等 N 类」(一行铁律)
+  const eeLabel = eeCats.length ? (eeCats.length === 1 ? eeDisplay(t, eeCats[0]) : t('ch.ee.more', { first: eeDisplay(t, eeCats[0]), n: eeCats.length })) : ''
+  const eePill = eeCats.length ? <VerdictPill tone="ok">{t('ch.ee.on', { cats: eeLabel })}</VerdictPill>
+    : skilled ? <VerdictPill tone="ok">{t('ch.ee.gen')}</VerdictPill>
+    : <VerdictPill tone="na">{t('ch.ee.no', { teer: job.teer ?? '?' })}</VerdictPill>
+  const eeList = useMemo(() => {
+    const m = new Map<string, { noc: string; name: string }>()
+    for (const r of eeOcc) if (eeCats.includes(r.label) && !m.has(r.noc)) m.set(r.noc, { noc: r.noc, name: r.title })
+    return [...m.values()]
+  }, [eeOcc, eeCats])
+  const row = (label: React.ReactNode, pill: React.ReactNode, listKey?: 'pnp' | 'ee') => (
+    <div style={{ display: 'flex', gap: 10, padding: '3px 0', fontSize: 13, alignItems: 'baseline' }}>
+      <span style={{ minWidth: 88, color: '#9ca3af', flexShrink: 0 }}>{label}</span>
+      <span style={{ flex: 1, minWidth: 0 }}>{pill}</span>
+      {listKey ? (
+        <span onClick={() => setOpenList(openList === listKey ? '' : listKey)}
+          style={{ color: '#6b7280', cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap', fontSize: 12.5 }}>
+          {t('ch.list')} {openList === listKey ? '▴' : '▾'}</span>
+      ) : null}
+    </div>
+  )
+  const listRows = (rows: { noc: string; name: string }[]) => (
+    <div style={{ margin: '2px 0 6px 20px', borderLeft: '2px solid #f3f4f6', paddingLeft: 10 }}>
+      {rows.map((o) => {
+        const hit = o.noc === job.noc
+        const zh = showZh ? nocLocalTitle(nocRowOf.get(o.noc) || null, lang) : ''
+        return (
+          <div key={o.noc} style={{ padding: '2px 0', fontSize: 12.5, fontWeight: hit ? 600 : 400, color: hit ? '#111827' : '#374151' }}>
+            <span style={{ color: hit ? '#92400e' : '#9ca3af', fontVariantNumeric: 'tabular-nums' }}>{o.noc}</span> {o.name}
+            {zh && zh.toLowerCase() !== o.name.toLowerCase() ? <span style={{ color: '#9ca3af', fontWeight: 400 }}>　{zh}</span> : null}
+            {hit ? <span style={{ fontSize: 11 }}> ← {t('pnplist.your')}</span> : null}
+          </div>
+        )
+      })}
+    </div>
+  )
+  return (
+    <div style={MODAL_CARD}>
+      <div style={MODAL_CARD_HEAD}>{t('ch.title')}</div>
+      {row(t('ch.pnpRow'), pnpPill, matched ? 'pnp' : undefined)}
+      {openList === 'pnp' && matched ? listRows(matched.occupations) : null}
+      {row('EE', eePill, eeCats.length ? 'ee' : undefined)}
+      {openList === 'ee' ? listRows(eeList) : null}
+      {row('AIP', <VerdictPill tone={aip === 'on' ? 'ok' : 'na'}>{t('ch.aip.' + aip)}</VerdictPill>)}
+    </div>
+  )
+}
 // E12-08:拆解弹框——三维档(1-5)明细走 /api/scoredetail 额度端点(「先试用再付费」拍板;
 // 明细不随列表行下发=服务端真闸)。旧 0-100 加权分前端镜像 scoreBreakdown 随加权制退役。
 function ScoreGradesSection({ job, lang, loggedIn }: { job: JobRow; lang: Lang; loggedIn: boolean }) {
@@ -2629,7 +2721,7 @@ const GROUP_SECTIONS: Record<FieldGroup, ColKey[]> = {
   pnp: ['pnp'],
   ee: ['ee'],
   aip: ['aip'],
-  salary: ['salary', 'vsMedian'],   // 帖面原文一卡 + 折算/当地 band/vs% 一卡
+  salary: ['salary', 'vsMedian', 'wageMedHr'],   // 批A 三卡:帖面(原文+折算) + vs中位(ESDC中位+直判) + ESDC表(低中高一行一条)
   category: ['noc'],
   company: [],   // 2026-07-21:公司组走专用 CompanyPanel(平级卡),不经 GroupFactsSection
   location: [],  // E8-12:地点组走专用 LocationPanel(五卡两列),不经 GroupFactsSection
@@ -2640,9 +2732,10 @@ function hasFacts(k: ColKey, job: JobRow): boolean {
     case 'score': return job.gradeChannel != null || job.score != null
     case 'pnp': return true          // 未命中也要说「未命中」,是结论不是空
     case 'ee': return true           // 同上(#155 已收成一行+折叠)
-    case 'aip': return !!job.aip
+    case 'aip': return true          // 批A:同上——原 !!job.aip 让未命中岗点开整框空壳(第25轮 AIP P3)
     case 'noc': return !!job.noc
     case 'vsMedian': return job.salaryAnnual != null || job.wageMedAnnual != null
+    case 'wageMedHr': return job.wageMedHourly != null || job.wageMedAnnual != null   // 批A ESDC 表卡:无中位=整卡不出
     case 'salary': return !!(job.salaryText || job.salary)
     case 'accessibility': return !!job.accessibility
     case 'title': return true
@@ -2669,14 +2762,16 @@ function GroupFactsSection(props: Omit<Parameters<typeof FieldFactsSection>[0], 
   const keys = GROUP_SECTIONS[group].filter((k) => hasFacts(k, job))
   return (
     <>
+      {/* 批A #134 头牌:移民组置顶三通道直判(通道档卡照旧在下) */}
+      {group === 'immigration' ? <ChannelVerdicts job={job} lang={lang} pnpOcc={rest.pnpOcc} eeOcc={rest.eeOcc} nocDesc={rest.nocDesc} showZh={rest.showZh} /> : null}
       {keys.map((k) => k === 'pnp' ? (
         // PNP 节拆多卡(2026-07-25):PnpListSection 自带判定/抽选/公告/清单各一卡,壳卡退役——
         // 再包一层就是卡中卡;标题由判定卡自持(仍 t('col.pnp'),#173 每卡必有 title 不破)
         <FieldFactsSection key={k} field={k} job={job} lang={lang} {...rest} />
       ) : (
         <div key={k} style={MODAL_CARD}>
-          {/* 分类卡标题人话化:col.noc 是列名「NOC」,当卡标题裸奔(#176 实测抓到)*/}
-          <div style={MODAL_CARD_HEAD}>{k === 'noc' ? t('grp.category') : t('col.' + k)}</div>
+          {/* 分类卡标题人话化:col.noc 是列名「NOC」,当卡标题裸奔(#176 实测抓到);批A 薪资两卡同理 */}
+          <div style={MODAL_CARD_HEAD}>{k === 'noc' ? t('grp.category') : k === 'salary' ? t('sal.cardPosted') : k === 'wageMedHr' ? t('sal.cardEsdc') : t('col.' + k)}</div>
           <FieldFactsSection field={k} job={job} lang={lang} {...rest} />
         </div>
       ))}
@@ -2710,13 +2805,14 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
   }
 
   if (field === 'aip') {
+    // 批A #134:三态直判(空壳修)——未命中也要说,是结论不是空;来源注删(Frank「名单来源也不需要」)。
+    // 命中清单放开跨省(原限本省;同雇主在其他大西洋省上榜=更强信号,一并列出)
+    const v = aipVerdictOf(job)
     const cn = normName(job.company)
-    const matches = ATLANTIC.has(job.province) && cn
-      ? desigEmp.filter((e) => e.province === job.province && normName(e.name) === cn)
-      : []
+    const matches = job.aip && cn ? desigEmp.filter((e) => normName(e.name) === cn) : []
     return (
-      <FactsBox note={t('fact.aipNote')}>
-        <FactRow k={t('col.aip')}>{job.aip ? t('cell.aipYes') : '—'}</FactRow>
+      <FactsBox>
+        <FactRow k={t('fact.verdict')}><VerdictPill tone={v === 'on' ? 'ok' : 'na'}>{t('ch.aip.' + v)}</VerdictPill></FactRow>
         {matches.map((e, i) => (
           <FactRow key={i} k={e.name}>{[e.location, e.province, e.isTech ? t('fact.aipTech') : null].filter(Boolean).join('、')}</FactRow>
         ))}
@@ -2783,31 +2879,32 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
     )
   }
   if (SAL_FIELDS.has(field)) {
-    // 五个薪资字段各看各的(07-06 用户拍板):薪资=帖面原文;年薪=折算;中位时薪/年薪=ESDC band;
-    // vs 中位=对比,天然要带两个输入(年薪+中位年薪)。中位口径注只跟用到中位的字段。
+    // 批A #134 薪资整框三卡(Frank「就显示一个中位数,下面把 ESDC 的列表列出来」):
+    // 帖面卡=原文+折算 / vs 中位卡=ESDC 中位一行+直判药丸 / ESDC 表卡=低中高一行一条(横杠串退役)
     const a = job.salaryAnnual, mHr = job.wageMedHourly, mYr = job.wageMedAnnual
     const lHr = job.wageLowHourly, hHr = job.wageHighHourly, lYr = job.wageLowAnnual, hYr = job.wageHighAnnual
     const vs = a != null && mYr ? Math.round((a / mYr - 1) * 100) : null
     const K = (n: number) => `$${Math.round(n / 1000)}K`
-    const bandHr = mHr != null ? `${lHr != null ? `$${lHr} – ` : ''}$${mHr}${hHr != null ? ` – $${hHr}` : ''}/hr` : null
-    const bandYr = mYr != null ? `${lYr != null ? `${K(lYr)} – ` : ''}${K(mYr)}${hYr != null ? ` – ${K(hYr)}` : ''}/yr` : null
-    const usesMedian = field === 'wageMedHr' || field === 'wageMedYr' || field === 'vsMedian'
-    // #154(Frank「这个文字没必要显示」):换算口径注不再常驻——同一句话每个岗重复一遍是噪音;
-    // 改挂「年薪(折算)」标签的悬停提示(下方 FactRow),口径要查得到但不占版面
-    // 2026-07-25 Frank「这废话不要,直接把 ESDC 表列出来」:口径长注退役,ESDC 时薪+年薪两行直接进表;
-    // 注只剩「真无数据」一种情况
+    if (field === 'salary') return (
+      <FactsBox>
+        <FactRow k={t('col.salary')}>{job.salaryText || job.salary}</FactRow>
+        <FactRow k={<span title={t('fact.salYrNote')}>{t('col.salaryYr')}</span>}>{a != null ? `${K(a)}/yr` : null}</FactRow>
+      </FactsBox>
+    )
+    if (field === 'vsMedian') return (
+      <FactsBox note={mHr == null && mYr == null ? t('fact.noMedian') : undefined}>
+        <FactRow k={t('sal.esdcMed')}>{mYr != null ? `${K(mYr)}/yr` : mHr != null ? `$${mHr}/hr` : null}</FactRow>
+        <FactRow k={t('fact.verdict')}>{vs != null ? <VerdictPill tone={vs >= 0 ? 'ok' : 'warn'}>{t(vs >= 0 ? 'sal.above' : 'sal.below', { p: Math.abs(vs) })}</VerdictPill> : null}</FactRow>
+      </FactsBox>
+    )
+    // ESDC 表卡(挂 wageMedHr 键):时薪优先,无时薪回退年薪;低/高缺=行不出(宁缺勿滥)
+    const row = (v: number | null | undefined, hr: boolean) => v == null ? null : hr ? `$${v}/hr` : `${K(v)}/yr`
+    const hr = mHr != null
     return (
-      <FactsBox note={usesMedian && !(mHr != null || mYr != null) ? t('fact.noMedian') : undefined}>
-        {field === 'salary' && <FactRow k={t('col.salary')}>{job.salaryText || job.salary}</FactRow>}
-        {(field === 'salaryYr' || field === 'vsMedian') && <FactRow k={<span title={t('fact.salYrNote')}>{t('col.salaryYr')}</span>}>{a != null ? `$${Math.round(a / 1000)}K/yr` : null}</FactRow>}
-        {(field === 'wageMedHr' || field === 'vsMedian') && <FactRow k={t('fact.wageBandHr')}>{bandHr}</FactRow>}
-        {(field === 'wageMedYr' || field === 'vsMedian') && <FactRow k={t('fact.wageBandYr')}>{bandYr}</FactRow>}
-        {field === 'vsMedian' && <FactRow k={t('col.vsMedian')}>{vs != null ? `${vs >= 0 ? '+' : ''}${vs}%` : null}</FactRow>}
-        {/* #152 打码占位 teaser 退役(2026-07-25「先都显示出来」):中位真值已放开,免费也显真 vs%——
-            打码假数与真值并存会自相矛盾;重新收口时随 #129 埋点结论一并回来 */}
-        {(field === 'salary' || field === 'salaryYr') && vs != null && (
-          <FactRow k={t('col.vsMedian')}>{`${vs >= 0 ? '+' : ''}${vs}%`}</FactRow>
-        )}
+      <FactsBox>
+        <FactRow k={t('sal.low')}>{row(hr ? lHr : lYr, hr)}</FactRow>
+        <FactRow k={t('sal.med')}>{row(hr ? mHr : mYr, hr)}</FactRow>
+        <FactRow k={t('sal.high')}>{row(hr ? hHr : hYr, hr)}</FactRow>
       </FactsBox>
     )
   }
