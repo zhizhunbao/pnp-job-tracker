@@ -1568,9 +1568,12 @@ function NewsLatestBlock({ province, lang, news }: { province: string; lang: Lan
   )
 }
 
-export function PnpListSection({ job, lang, occ, draws, news }: { job: JobRow; lang: Lang; occ: PnpOcc[]; draws: PnpDraw[]; news: NewsSlim[] }) {
+export function PnpListSection({ job, lang, occ, draws, news, nocDesc = [] }: { job: JobRow; lang: Lang; occ: PnpOcc[]; draws: PnpDraw[]; news: NewsSlim[]; nocDesc?: NocDesc[] }) {
   const t = makeT(lang)
   const matchRef = useRef<HTMLDivElement | null>(null)
+  // 2026-07-25 Frank:清单可折叠+职业带界面语言译名+展开不内嵌滚动。译名=NOC 官方职业名(noc_descriptions)
+  const nocRowOf = useMemo(() => new Map(nocDesc.map((d) => [d.noc, d])), [nocDesc])
+  const [foldOpen, setFoldOpen] = useState<Record<string, boolean>>({})
   const isQc = job.province === 'QC'
   // 从扁平维度表取本省各通道(按 label 分组)
   const streams = useMemo<PnpStream[]>(() => {
@@ -1621,30 +1624,38 @@ export function PnpListSection({ job, lang, occ, draws, news }: { job: JobRow; l
           都没有 → 清单整体不渲(原全量铺浏览语境退役)——判定行已说清结论,不相干的清单只是噪音 */}
       {streams.filter((s) => s.occupations.length)
         .filter((s) => (matched ? s === matched : excluded && s.type === 'ineligible'))
-        .map((s) => (
-        <div key={s.label + s.stream} style={MODAL_CARD}>
-          <div style={MODAL_CARD_HEAD}>
-            {/* 通道名挂官方政策页(url 维度字段一直有,07-06 质量盘点补渲染)—— 每条清单自带出处 */}
-            {/* #106:官方来源外链撤(归拢到 /resources);清单名留纯文本 */}
-            {streamDisplay(t, s.label)}
+        .map((s) => {
+        const fk = s.label + s.stream
+        const open = foldOpen[fk] ?? true   // 只渲直接相关清单(命中/排除),默认展开;点头可收
+        return (
+        <div key={fk} style={MODAL_CARD}>
+          {/* 2026-07-25 Frank:清单头=折叠开关;展开不再内嵌滚动条,全量显示 */}
+          <div style={{ ...MODAL_CARD_HEAD, cursor: 'pointer', userSelect: 'none' }}
+            onClick={() => setFoldOpen((m) => ({ ...m, [fk]: !open }))}>
+            {open ? '▴' : '▾'} {streamDisplay(t, s.label)}
+            <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 6, fontSize: 12 }}>{t('eelist.count', { n: s.occupations.length })}</span>
           </div>
-          <div style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid #f3f4f6', borderRadius: 8 }}>
+          {open ? (
+          <div style={{ border: '1px solid #f3f4f6', borderRadius: 8 }}>
             {s.occupations.map((o) => {
               const hit = o.noc === noc
+              const zh = nocLocalTitle(nocRowOf.get(o.noc) || null, lang)
               return (
                 <div key={o.noc + o.name} ref={hit ? matchRef : undefined}
-                  style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 10px', fontSize: 12.5,
+                  style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '4px 10px', fontSize: 12.5,
                     background: hit ? '#fef3c7' : undefined, fontWeight: hit ? 600 : 400, color: hit ? '#92400e' : '#374151' }}>
                   <span style={{ fontVariantNumeric: 'tabular-nums', color: hit ? '#92400e' : '#9ca3af' }}>{o.noc}</span>
-                  <span style={{ flex: 1 }}>{o.name}</span>
+                  <span style={{ flex: 1 }}>{o.name}{zh && zh.toLowerCase() !== o.name.toLowerCase() ? <span style={{ display: 'block', fontSize: 11.5, color: '#9ca3af', fontWeight: 400 }}>{zh}</span> : null}</span>
                   {hit && <span style={{ fontSize: 11, whiteSpace: 'nowrap' }}>← {t('pnplist.your')}</span>}
                   {o.gtaRestricted && <span style={{ fontSize: 11, color: '#9ca3af', whiteSpace: 'nowrap' }}>{t('pnplist.gta')}</span>}
                 </div>
               )
             })}
           </div>
+          ) : null}
         </div>
-      ))}
+        )
+      })}
       {/* 2026-07-25 Frank「覆盖了就能走这个通道,怎么走也得给用户说明白」:命中时补三步流程 +
           该通道官方页直链(#106 撤的是清单出处装饰链;这里是行动指引,语义不同)——只陈述流程不判资格 */}
       {matched ? (
@@ -1670,9 +1681,12 @@ export function PnpListSection({ job, lang, occ, draws, news }: { job: JobRow; l
 // 与 PnpListSection 同理:清单来自 DB 维度表(ee-categories,经 props 传入),全国单一源。
 // 命中→只展开该类别清单 + 高亮本岗;未命中→只列出各类别名+数量概览。EE ≠ PNP,独立信号。
 type EeCat = { key: string; label: string; drawCrs: number | null; drawDate: string; drawSize: number | null; occupations: { noc: string; teer: number | null; title: string }[] }
-export function EeCategorySection({ job, lang, cats, draws = [] }: { job: JobRow; lang: Lang; cats: EeOcc[]; draws?: PnpDraw[] }) {
+export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [] }: { job: JobRow; lang: Lang; cats: EeOcc[]; draws?: PnpDraw[]; nocDesc?: NocDesc[] }) {
   const t = makeT(lang)
   const matchRef = useRef<HTMLDivElement | null>(null)
+  // 2026-07-25 Frank:每类别可折叠+职业带界面语言译名+展开全量不内嵌滚动(与 PNP 清单同规格)
+  const nocRowOf = useMemo(() => new Map(nocDesc.map((d) => [d.noc, d])), [nocDesc])
+  const [foldOpen, setFoldOpen] = useState<Record<string, boolean>>({})
   // #135(Frank「应该有个下拉箭头,点开按时间线看每一轮」):该类别历次抽选(pnp_draws 的 province=FED 行,
   // label=类别 key);近 24 月无抽选的类别拿不到行 → 不出箭头(没东西可展开就别给假入口)。
   const [openCat, setOpenCat] = useState<string | null>(null)
@@ -1723,9 +1737,14 @@ export function EeCategorySection({ job, lang, cats, draws = [] }: { job: JobRow
           </button>
         </div>
       ) : null}
-      {shown.map((c) => (
+      {shown.map((c) => {
+        const isHitCat = c.occupations.some((o) => o.noc === noc)
+        const listOpen = foldOpen[c.key] ?? isHitCat   // 命中类默认展开;全景浏览默认收起,点头展开
+        return (
         <div key={c.key} style={{ marginBottom: 10 }}>
-          <div style={{ fontSize: 12.5, fontWeight: 600, color: '#374151', marginBottom: 4 }}>{eeDisplay(t, c.label)} <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 4 }}>{t('eelist.count', { n: c.occupations.length })}</span></div>
+          <div onClick={() => setFoldOpen((m) => ({ ...m, [c.key]: !listOpen }))}
+            style={{ fontSize: 12.5, fontWeight: 600, color: '#374151', marginBottom: 4, cursor: 'pointer', userSelect: 'none' }}>
+            {listOpen ? '▴' : '▾'} {eeDisplay(t, c.label)} <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 4 }}>{t('eelist.count', { n: c.occupations.length })}</span></div>
           {/* #135:近期抽选行=可展开入口(有历史才给箭头),展开=该类别历次抽选时间线 */}
           {c.drawCrs != null && c.drawDate ? (() => {
             const hist = histOf.get(c.key) || []
@@ -1753,25 +1772,28 @@ export function EeCategorySection({ job, lang, cats, draws = [] }: { job: JobRow
               </>
             )
           })() : null}
-          {/* 2026-07-25 Frank「展开的时候把包含哪些职业也显示出来」:全景展开态每类别同样列职业清单,
-              不再只有命中类才有(原 hit.length 条件收窄到「什么都不显示」的空壳) */}
-          <div style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid #f3f4f6', borderRadius: 8 }}>
+          {/* 2026-07-25 Frank 两拍:①展开时每类别列职业清单;②可折叠+译名+展开全量不内嵌滚动 */}
+          {listOpen ? (
+          <div style={{ border: '1px solid #f3f4f6', borderRadius: 8 }}>
             {c.occupations.map((o) => {
               const isHit = o.noc === noc
+              const zh = nocLocalTitle(nocRowOf.get(o.noc) || null, lang)
               return (
                 <div key={o.noc} ref={isHit ? matchRef : undefined}
-                  style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 10px', fontSize: 12.5,
+                  style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '4px 10px', fontSize: 12.5,
                     background: isHit ? '#dbeafe' : undefined, fontWeight: isHit ? 600 : 400, color: isHit ? '#1e40af' : '#374151' }}>
                   <span style={{ fontVariantNumeric: 'tabular-nums', color: isHit ? '#1e40af' : '#9ca3af' }}>{o.noc}</span>
-                  <span style={{ flex: 1 }}>{o.title}</span>
+                  <span style={{ flex: 1 }}>{o.title}{zh && zh.toLowerCase() !== o.title.toLowerCase() ? <span style={{ display: 'block', fontSize: 11.5, color: '#9ca3af', fontWeight: 400 }}>{zh}</span> : null}</span>
                   {o.teer != null && <span style={{ fontSize: 11, color: '#9ca3af' }}>T{o.teer}</span>}
                   {isHit && <span style={{ fontSize: 11, whiteSpace: 'nowrap' }}>← {t('eelist.your')}</span>}
                 </div>
               )
             })}
           </div>
+          ) : null}
         </div>
-      ))}
+        )
+      })}
     </div>
   )
 }
@@ -2668,8 +2690,8 @@ function FieldFactsSection({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pn
 function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpDraws, news, eeOcc, desigEmp, nocDesc, onOpenJob }: { field: ColKey; job: JobRow; jobs: JobRow[]; lang: Lang; isPro: boolean; loggedIn: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; news: NewsSlim[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; onOpenJob?: (j: JobRow) => void }) {
   const t = makeT(lang)
   const noc = nocDesc.find((d) => d.noc === job.noc) || null
-  if (field === 'pnp') return <PnpListSection job={job} lang={lang} occ={pnpOcc} draws={pnpDraws} news={news} />
-  if (field === 'ee') return <EeCategorySection job={job} lang={lang} cats={eeOcc} draws={pnpDraws} />
+  if (field === 'pnp') return <PnpListSection job={job} lang={lang} occ={pnpOcc} draws={pnpDraws} news={news} nocDesc={nocDesc} />
+  if (field === 'ee') return <EeCategorySection job={job} lang={lang} cats={eeOcc} draws={pnpDraws} nocDesc={nocDesc} />
   if (field === 'title') return <TitleFacts job={job} lang={lang} loggedIn={loggedIn} />
   const day = (s?: string) => (s || '').slice(0, 10)
 
