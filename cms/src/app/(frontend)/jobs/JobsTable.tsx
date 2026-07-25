@@ -2769,28 +2769,17 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
       <FactsBox note={!usesMedian ? undefined
         : (mHr != null || mYr != null)
           ? t('fact.medianSrc') + (job.wageYear ? `　${job.wageYear}` : '') + (field === 'vsMedian' && vs != null ? '　' + t('fact.vsNote') : '')
-          // 中位缺失分两种,别混:免费层=数据被付费墙剥离(引导升级);Pro=该 NOC×省真无 ESDC 数据(宁可留空)
-          : (isPro ? t('fact.noMedian') : t('fact.medianPro'))}>
+          // 「先都显示出来」(2026-07-25):中位随 PRO_COLUMNS 放开,缺失只剩一种=该 NOC×省真无 ESDC 数据
+          : t('fact.noMedian')}>
         {field === 'salary' && <FactRow k={t('col.salary')}>{job.salaryText || job.salary}</FactRow>}
         {(field === 'salaryYr' || field === 'vsMedian') && <FactRow k={<span title={t('fact.salYrNote')}>{t('col.salaryYr')}</span>}>{a != null ? `$${Math.round(a / 1000)}K/yr` : null}</FactRow>}
         {field === 'wageMedHr' && <FactRow k={t('fact.wageBandHr')}>{bandHr}</FactRow>}
         {(field === 'wageMedYr' || field === 'vsMedian') && <FactRow k={t('fact.wageBandYr')}>{bandYr}</FactRow>}
         {field === 'vsMedian' && <FactRow k={t('col.vsMedian')}>{vs != null ? `${vs >= 0 ? '+' : ''}${vs}%` : null}</FactRow>}
-        {/* ② 免费用户在「刚要判断薪资」的位置点出 Pro 能看什么;#152:整段说明文字退役,改打码占位数
-            (Frank「打上马赛克那种,别写那么长」)——与详情页 #130、表格锁列同一套。真值免费态不出服务端 */}
-        {!isPro && (field === 'salary' || field === 'salaryYr') && (
-          <>
-            {/* #167①(Frank「这种需要统一成一个按钮即可吧」):原先同一处并排两个升级入口 ——
-                灰字「Pro 解锁」四字 + 下面一枚实心棕钮,两者点了去同一个地方,等于把同一句话说两遍。
-                收成一个:打码占位数旁的「Pro 解锁」**自己就是那个入口**(UpgradeCta link 形态),
-                实心棕钮撤走 —— 按 #160 定的规矩,实心钮只留顶栏与弹窗,稀缺性就是它的说服力。 */}
-            <FactRow k={t('col.vsMedian')}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                <span aria-hidden style={{ filter: 'blur(5px)', userSelect: 'none' }}>+15%</span>
-                <UpgradeCta t={t} loggedIn={loggedIn} link label={t('up.proShort')} style={{ fontSize: 12 }} />
-              </span>
-            </FactRow>
-          </>
+        {/* #152 打码占位 teaser 退役(2026-07-25「先都显示出来」):中位真值已放开,免费也显真 vs%——
+            打码假数与真值并存会自相矛盾;重新收口时随 #129 埋点结论一并回来 */}
+        {(field === 'salary' || field === 'salaryYr') && vs != null && (
+          <FactRow k={t('col.vsMedian')}>{`${vs >= 0 ? '+' : ''}${vs}%`}</FactRow>
         )}
       </FactsBox>
     )
