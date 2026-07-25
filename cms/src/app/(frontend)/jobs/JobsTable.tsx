@@ -1475,7 +1475,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                     if (!anyRoute) return null
                     return (<>
                       {j.teer != null ? chip('#f3f4f6', '#6b7280', `TEER ${j.teer}`, 'teer') : null}
-                      {j.pnpEligible ? chip('#fef3c7', '#92400e', j.pnpStream ? t('cell.pnpYes') : t('cell.pnpSkilled'), 'pnp') : null}
+                      {/* 批A 追拍(Frank「可提名和可省提名有什么区别」——字面分不出):对齐桌面三档,
+                          命中具名清单显清单名(BC 医疗),通用才显「可提名」;cell.pnpYes 死键退役 */}
+                      {j.pnpEligible ? chip('#fef3c7', '#92400e', j.pnpStream ? streamDisplay(t, j.pnpStream) : t('cell.pnpSkilled'), 'pnp') : null}
                       {j.eeCategory ? chip('#dbeafe', '#1e40af', 'EE ' + eeDisplay(t, j.eeCategory), 'ee') : null}
                       {j.aip ? chip('#ffedd5', '#9a3412', t('cell.aipYes'), 'aip') : null}
                       {isQc ? chip('#f3e8ff', '#7c3aed', 'QC', 'province') : null}

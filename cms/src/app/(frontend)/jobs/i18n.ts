@@ -122,7 +122,7 @@ const zh: Dict = {
   'th.tip': '点击表头排序', 'resize.tip': '拖动改本列宽 · 双击按内容自适应',
   'empty': '无匹配职位', 'allShown': '已全部显示 {total} 个', 'loadMore': '显示更多(还有 {n} 条)',
   'cell.uncat': '未分类', 'cell.first': '第一方', 'cell.repost': '转贴', 'cell.today': '今天',
-  'cell.pnpYes': '可省提名', 'cell.pnpSkilled': '可提名', 'cell.pnpIndemand': '紧缺', 'cell.pnpQc': '魁省', 'cell.aipYes': '指定雇主', 'cell.lmiaYes': '✓ {n} 职位　{q}', 'cell.closed': '已下架', 'cell.open': '在招',
+  'cell.pnpSkilled': '可提名', 'cell.pnpIndemand': '紧缺', 'cell.pnpQc': '魁省', 'cell.aipYes': '指定雇主', 'cell.lmiaYes': '✓ {n} 职位　{q}', 'cell.closed': '已下架', 'cell.open': '在招',
   'pnplist.title': '省提名职业清单', 'pnplist.source': '来源', 'pnplist.your': '本岗', 'pnplist.gta': '大多区域外', 'pnplist.loading': '加载清单…',
  
  
@@ -580,7 +580,7 @@ const en: Dict = {
   'th.tip': 'Click to sort', 'resize.tip': 'Drag to resize · double-click to fit content',
   'empty': 'No matching jobs', 'allShown': 'All {total} shown', 'loadMore': 'Load more ({n} left)',
   'cell.uncat': 'Uncategorized', 'cell.first': 'Direct', 'cell.repost': 'Repost', 'cell.today': 'today',
-  'cell.pnpYes': 'PNP-eligible', 'cell.pnpSkilled': 'Eligible', 'cell.pnpIndemand': 'In-demand', 'cell.pnpQc': 'Quebec', 'cell.aipYes': 'Designated', 'cell.lmiaYes': '✓ {n} positions　{q}', 'cell.closed': 'Closed', 'cell.open': 'Open',
+  'cell.pnpSkilled': 'Eligible', 'cell.pnpIndemand': 'In-demand', 'cell.pnpQc': 'Quebec', 'cell.aipYes': 'Designated', 'cell.lmiaYes': '✓ {n} positions　{q}', 'cell.closed': 'Closed', 'cell.open': 'Open',
   'pnplist.title': 'PNP occupation list', 'pnplist.source': 'Source', 'pnplist.your': 'This job', 'pnplist.gta': 'Outside GTA', 'pnplist.loading': 'Loading list…',
  
  
@@ -1039,7 +1039,7 @@ const ko: Dict = {
   'th.tip': '클릭하여 정렬', 'resize.tip': '드래그로 너비 조정 · 더블클릭 시 내용에 맞춤',
   'empty': '일치하는 공고 없음', 'allShown': '전체 {total}개 표시', 'loadMore': '더 보기 (남은 {n}개)',
   'cell.uncat': '미분류', 'cell.first': '직접', 'cell.repost': '재게시', 'cell.today': '오늘',
-  'cell.pnpYes': 'PNP 가능', 'cell.pnpSkilled': '지명 가능', 'cell.pnpIndemand': '부족직종', 'cell.pnpQc': '퀘벡', 'cell.aipYes': '지정 고용주', 'cell.lmiaYes': '✓ {n} 포지션　{q}', 'cell.closed': '마감', 'cell.open': '채용중',
+  'cell.pnpSkilled': '지명 가능', 'cell.pnpIndemand': '부족직종', 'cell.pnpQc': '퀘벡', 'cell.aipYes': '지정 고용주', 'cell.lmiaYes': '✓ {n} 포지션　{q}', 'cell.closed': '마감', 'cell.open': '채용중',
   'pnplist.title': 'PNP 직업 목록', 'pnplist.source': '출처', 'pnplist.your': '이 채용', 'pnplist.gta': 'GTA 외', 'pnplist.loading': '목록 불러오는 중…',
  
  
