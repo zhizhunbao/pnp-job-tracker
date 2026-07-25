@@ -7,7 +7,6 @@ import { useEffect, useState } from 'react'
 
 import { initialLang, makeT, LANG_KEY, LANGS, type Lang } from '../i18n'
 import { catName, JobBody, nocLocalTitle, provName, type JobRow, type NocDesc, type Plan } from '../JobsTable'
-import { iconBtnS } from '../Modal'
 import { SiteHeader } from '../../SiteHeader'
 import { SiteFooter } from '../../SiteFooter'
 import { PageShell } from '../../ui/primitives'
@@ -54,11 +53,11 @@ export default function JobDetailView({ job, plan, dims }: { job: JobRow; plan: 
 
           {/* 整页一张白卡:H1(职位名 + 译名对照,SEO 壳)+ JobBody(与 JD 弹框同源) */}
           <div style={{ ...sec, position: 'relative' }}>
-            {/* 返回职位板(2026-07-25 用户:「放到右上角,和弹框的 × 保持一致」):样式复用弹框关闭钮,
-                ?back=1 让板回放筛选快照(见 JobsTable back=1 回流),点过的筛选不丢 */}
-            <a href="/?back=1" aria-label={t('detail.back')} title={t('detail.back')}
-              style={{ ...iconBtnS, position: 'absolute', top: 12, right: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>×</a>
-            <h1 style={{ margin: '0 0 2px', fontSize: 22, lineHeight: 1.35, color: '#111827', paddingRight: 44 }}>{job.title}</h1>
+            {/* 返回职位板(2026-07-25 用户两拍:先「放右上角和弹框×一致」,后「叉改成 返回职位板」):
+                右上角文字钮;?back=1 让板回放筛选快照(见 JobsTable back=1 回流),点过的筛选不丢 */}
+            <a href="/?back=1"
+              style={{ position: 'absolute', top: 12, right: 12, border: '1px solid #d1d5db', borderRadius: 8, padding: '6px 14px', fontSize: 12.5, color: '#374151', textDecoration: 'none', background: '#fff', whiteSpace: 'nowrap' }}>← {t('detail.back')}</a>
+            <h1 style={{ margin: '0 0 2px', fontSize: 22, lineHeight: 1.35, color: '#111827', paddingRight: 120 }}>{job.title}</h1>
             {nocZh && nocZh.toLowerCase() !== (job.title || '').toLowerCase() ? (
               <div style={{ fontSize: 13, color: '#9ca3af', marginBottom: 8 }}>{nocZh}</div>
             ) : null}
