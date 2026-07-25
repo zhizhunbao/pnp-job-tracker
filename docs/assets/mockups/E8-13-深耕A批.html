@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>E8-13 字段弹框深耕A批 效果图</title>
+<style>
+  /* 站内真实底座:13px/1.75 #374151,卡=白/#e5e7eb/r12(MODAL_CARD 同款) */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #f9fafb; color: #374151; font: 13px/1.75 -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; padding: 24px; }
+  .panel { width: 430px; margin-bottom: 28px; }
+  .plabel { font-size: 12px; color: #6b7280; margin-bottom: 6px; font-weight: 600; }
+  .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px 16px; }
+  .chead { font-size: 13.5px; font-weight: 700; color: #111827; margin-bottom: 6px; }
+  .frow { display: flex; gap: 10px; padding: 3px 0; font-size: 13px; }
+  .frow .k { min-width: 88px; color: #9ca3af; flex-shrink: 0; }
+  .frow .v { flex: 1; color: #374151; word-break: break-word; }
+  .note { margin-top: 7px; font-size: 11.5px; color: #9ca3af; line-height: 1.5; }
+  .pill { display: inline-block; padding: 1px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 600; }
+  .pill.ok   { background: #dcfce7; color: #15803d; }
+  .pill.warn { background: #fef3c7; color: #b45309; }
+  .pill.na   { background: #f3f4f6; color: #6b7280; }
+  .tech { display: inline-block; padding: 0 7px; border-radius: 999px; font-size: 11.5px; background: #ffedd5; color: #9a3412; margin-left: 6px; }
+  .hr { border-top: 1px solid #f3f4f6; margin: 8px 0; }
+  /* 三点标尺 */
+  .scale { margin: 10px 0 2px; padding: 0 2px; }
+  .track { position: relative; height: 6px; border-radius: 999px; background: linear-gradient(90deg, #fde68a, #e5e7eb 40%, #bbf7d0); }
+  .tick { position: absolute; top: -3px; width: 2px; height: 12px; background: #9ca3af; }
+  .mark { position: absolute; top: -13px; transform: translateX(-50%); font-size: 12px; color: #111827; }
+  .slabels { display: flex; justify-content: space-between; font-size: 11.5px; color: #9ca3af; margin-top: 5px; }
+  .mval { font-size: 11.5px; color: #111827; font-weight: 600; }
+  /* #136 职位板头部示意 */
+  .board { width: 640px; }
+  .sub { font-size: 12.5px; color: #6b7280; margin: 4px 0 8px; }
+  .selrow { display: flex; gap: 8px; align-items: flex-start; }
+  .sel { border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; font-size: 12.5px; color: #374151; padding: 6px 10px; }
+  .dropdown { border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; font-size: 12.5px; width: 110px; box-shadow: 0 4px 10px rgba(0,0,0,.06); }
+  .dropdown div { padding: 6px 10px; }
+  .dropdown .on { background: #eff6ff; color: #1d4ed8; font-weight: 600; }
+  .strike { color: #9ca3af; text-decoration: line-through; }
+  .arrow { color: #15803d; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<!-- ① AIP 命中态 -->
+<div class="panel" id="p-aip-hit">
+  <div class="plabel">① AIP 弹框 · 命中态(NS 岗,雇主上榜,含跨省行)</div>
+  <div class="card">
+    <div class="chead">AIP</div>
+    <div class="frow"><span class="k">判定</span><span class="v"><span class="pill ok">该雇主在官方 AIP 指定雇主名单</span></span></div>
+    <div class="frow"><span class="k">Shannex Inc.</span><span class="v">Halifax、NS</span></div>
+    <div class="frow"><span class="k">Shannex Inc.</span><span class="v">Moncton、NB</span></div>
+    <div class="frow"><span class="k">在招岗位</span><span class="v">该雇主当前在招 12 岗</span></div>
+    <div class="hr"></div>
+    <div class="frow"><span class="k">AIP 是什么</span><span class="v">大西洋移民计划=雇主驱动通道,只有官方名单内「指定雇主」发的 offer 才能走</span></div>
+    <div class="frow"><span class="k">意味着什么</span><span class="v">雇主具备发 AIP offer 的资格;你的语言、学历、工作经验条件仍需另行满足——粗筛信号,非资格认定</span></div>
+    <div class="note">名单来源: IRCC 大西洋移民计划指定雇主名单(官方,月更)</div>
+  </div>
+</div>
+
+<!-- ② AIP 大西洋未命中 -->
+<div class="panel" id="p-aip-miss">
+  <div class="plabel">② AIP 弹框 · 大西洋四省未命中(现状=整框空壳,本批修)</div>
+  <div class="card">
+    <div class="chead">AIP</div>
+    <div class="frow"><span class="k">判定</span><span class="v"><span class="pill na">该雇主不在 AIP 指定雇主名单 —— 本岗走不了 AIP 通道</span></span></div>
+    <div class="hr"></div>
+    <div class="frow"><span class="k">AIP 是什么</span><span class="v">大西洋移民计划=雇主驱动通道,只有官方名单内「指定雇主」发的 offer 才能走</span></div>
+    <div class="frow"><span class="k">意味着什么</span><span class="v">这个岗走不了 AIP,但 PNP/EE 等其他通道不受影响——点 PNP、EE 列查看</span></div>
+    <div class="note">名单来源: IRCC 大西洋移民计划指定雇主名单(官方,月更)</div>
+  </div>
+</div>
+
+<!-- ③ AIP 非大西洋省 -->
+<div class="panel" id="p-aip-na">
+  <div class="plabel">③ AIP 弹框 · 非大西洋省(ON 岗)</div>
+  <div class="card">
+    <div class="chead">AIP</div>
+    <div class="frow"><span class="k">判定</span><span class="v"><span class="pill na">AIP 仅适用大西洋四省(NL/NB/NS/PE),本岗所在省不适用</span></span></div>
+    <div class="hr"></div>
+    <div class="frow"><span class="k">AIP 是什么</span><span class="v">大西洋移民计划=雇主驱动通道,只有官方名单内「指定雇主」发的 offer 才能走</span></div>
+    <div class="note">名单来源: IRCC 大西洋移民计划指定雇主名单(官方,月更)</div>
+  </div>
+</div>
+
+<!-- ④ 薪资 上段(绿) -->
+<div class="panel" id="p-sal-upper">
+  <div class="plabel">④ 薪资对照卡 · 档位结论+三点标尺(区间上段,绿)</div>
+  <div class="card">
+    <div class="chead">vs 工资中位</div>
+    <div class="frow"><span class="k">年薪(折算)</span><span class="v">$79K/yr</span></div>
+    <div class="frow"><span class="k">当地时薪带</span><span class="v">$21.5 – $29.8 – $41.2/hr</span></div>
+    <div class="frow"><span class="k">当地年薪带</span><span class="v">$45K – $62K – $86K/yr</span></div>
+    <div class="frow"><span class="k">vs 中位</span><span class="v" style="color:#15803d;font-weight:600">+27%</span></div>
+    <div class="frow"><span class="k">所在档位</span><span class="v"><span class="pill ok">处于常见区间上段(不低于中位)</span></span></div>
+    <div class="scale">
+      <div class="track" style="margin-top:16px">
+        <div class="tick" style="left:0%"></div>
+        <div class="tick" style="left:41%"></div>
+        <div class="tick" style="left:100%"></div>
+        <div class="mark" style="left:83%"><span class="mval">本岗 $79K ▾</span></div>
+      </div>
+      <div class="slabels"><span>低 $45K</span><span style="margin-left:-6%">中位 $62K</span><span>高 $86K</span></div>
+    </div>
+    <div class="note">带宽来源: ESDC 分省分职业工资表(low / median / high);带宽不全时本行与标尺不显示</div>
+  </div>
+</div>
+
+<!-- ⑤ 薪资 低于区间(琥珀) -->
+<div class="panel" id="p-sal-below">
+  <div class="plabel">⑤ 薪资对照卡 · 低于常见区间(琥珀)</div>
+  <div class="card">
+    <div class="chead">vs 工资中位</div>
+    <div class="frow"><span class="k">年薪(折算)</span><span class="v">$34K/yr</span></div>
+    <div class="frow"><span class="k">当地年薪带</span><span class="v">$38K – $52K – $71K/yr</span></div>
+    <div class="frow"><span class="k">vs 中位</span><span class="v" style="color:#b45309;font-weight:600">-35%</span></div>
+    <div class="frow"><span class="k">所在档位</span><span class="v"><span class="pill warn">低于本职业本省常见区间</span></span></div>
+    <div class="scale">
+      <div class="track" style="margin-top:16px">
+        <div class="tick" style="left:0%"></div>
+        <div class="tick" style="left:42%"></div>
+        <div class="tick" style="left:100%"></div>
+        <div class="mark" style="left:0%"><span class="mval">本岗 $34K ▾(低于左端)</span></div>
+      </div>
+      <div class="slabels"><span>低 $38K</span><span style="margin-left:-8%">中位 $52K</span><span>高 $71K</span></div>
+    </div>
+    <div class="note">带宽来源: ESDC 分省分职业工资表(low / median / high);带宽不全时本行与标尺不显示</div>
+  </div>
+</div>
+
+<!-- ⑥ #136 默认排除已下架 -->
+<div class="panel board" id="p-136">
+  <div class="plabel">⑥ #136 职位板默认排除已下架(前后对比;「已下架」下拉仍可显式选看)</div>
+  <div class="card">
+    <div class="sub">改前: <span class="strike">41,193 个职位</span>(混着 1,182 条已下架,行上无任何标记)</div>
+    <div class="sub">改后: <strong style="color:#111827">40,011 个职位</strong> <span class="arrow">←</span> 默认全部在招;已下架只在下面显式选了才出现</div>
+    <div class="selrow" style="margin-top:8px">
+      <span class="sel">省份 ▾</span><span class="sel">职业分类 ▾</span>
+      <div>
+        <div class="sel" style="border-color:#93c5fd">状态 ▾</div>
+        <div class="dropdown" style="margin-top:4px">
+          <div class="on">全部状态(=在招)</div>
+          <div>在招</div>
+          <div>已下架 ← 仍可看</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
