@@ -289,6 +289,11 @@ const COUNT_TTL = 30_000
 let updCache: { v: string; ts: number } | null = null
 
 /** E10-01:服务端筛选+排序+分页。返回当前页行 + 同 WHERE 总数(count)+ 全局 updatedAt(max last_seen)。 */
+// #125(批C,Frank「不要有重复」):同 公司×岗名×城市 多帖(多源聚合/同岗重发,open 里 ~1900 行)只显最新。
+// 判定在 ETL(09_build_mart 标 isDup,行保留仅展示隐藏,统计/榜单口径不动);此处只剩布尔过滤——
+// 请求路径反连接实测 5.8s(0.1 vCPU)不可用,预计算是唯一出路。列未落地期(部署时序)42703 由调用方降级兜底
+const DEDUPE_COND = `coalesce(j.is_dup, false) = false`
+
 export async function fetchJobsPage(
   pool: any, { pro, profile, profileOk, matchDims, filters, sort, page, pageSize }: JobsPageOpts,
 ): Promise<{ jobs: JobRow[]; total: number; updatedAt: string }> {
@@ -299,11 +304,18 @@ export async function fetchJobsPage(
   const cntKey = w.sql + '|' + JSON.stringify(w.params)
   const cachedCnt = countCache.get(cntKey)
   const cachedUpd = updCache && now - updCache.ts < COUNT_TTL ? updCache.v : null
-  const [listRes, cntRes, updRes] = await Promise.all([
-    pool.query(`SELECT ${JOB_COLUMNS} ${JOB_FROM} WHERE ${w.sql} ${order} LIMIT ${limPh} OFFSET ${offPh}`, [...w.params, pageSize, page * pageSize]),
-    cachedCnt && now - cachedCnt.ts < COUNT_TTL ? null : pool.query(`SELECT count(*)::int n ${JOB_FROM} WHERE ${w.sql}`, w.params),
+  const run = async (cond: string) => Promise.all([
+    pool.query(`SELECT ${JOB_COLUMNS} ${JOB_FROM} WHERE ${w.sql} AND ${cond} ${order} LIMIT ${limPh} OFFSET ${offPh}`, [...w.params, pageSize, page * pageSize]),
+    cachedCnt && now - cachedCnt.ts < COUNT_TTL ? null : pool.query(`SELECT count(*)::int n ${JOB_FROM} WHERE ${w.sql} AND ${cond}`, w.params),
     cachedUpd ? null : pool.query(`SELECT max(last_seen) AS upd FROM jobs`),   // 全局新鲜度(与筛选无关)
   ])
+  let listRes, cntRes, updRes
+  try {
+    ;[listRes, cntRes, updRes] = await run(DEDUPE_COND)
+  } catch (e: any) {
+    if (e?.code !== '42703') throw e   // is_dup 列未落地(部署时序)→ 不去重降级,列到位自动恢复
+    ;[listRes, cntRes, updRes] = await run('TRUE')
+  }
   let total: number
   if (cntRes) {
     total = cntRes.rows[0]?.n ?? 0

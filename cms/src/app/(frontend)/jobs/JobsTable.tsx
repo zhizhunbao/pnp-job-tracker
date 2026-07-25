@@ -2801,15 +2801,13 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
     const usesMedian = field === 'wageMedHr' || field === 'wageMedYr' || field === 'vsMedian'
     // #154(Frank「这个文字没必要显示」):换算口径注不再常驻——同一句话每个岗重复一遍是噪音;
     // 改挂「年薪(折算)」标签的悬停提示(下方 FactRow),口径要查得到但不占版面
+    // 2026-07-25 Frank「这废话不要,直接把 ESDC 表列出来」:口径长注退役,ESDC 时薪+年薪两行直接进表;
+    // 注只剩「真无数据」一种情况
     return (
-      <FactsBox note={!usesMedian ? undefined
-        : (mHr != null || mYr != null)
-          ? t('fact.medianSrc') + (job.wageYear ? `　${job.wageYear}` : '') + (field === 'vsMedian' && vs != null ? '　' + t('fact.vsNote') : '')
-          // 「先都显示出来」(2026-07-25):中位随 PRO_COLUMNS 放开,缺失只剩一种=该 NOC×省真无 ESDC 数据
-          : t('fact.noMedian')}>
+      <FactsBox note={usesMedian && !(mHr != null || mYr != null) ? t('fact.noMedian') : undefined}>
         {field === 'salary' && <FactRow k={t('col.salary')}>{job.salaryText || job.salary}</FactRow>}
         {(field === 'salaryYr' || field === 'vsMedian') && <FactRow k={<span title={t('fact.salYrNote')}>{t('col.salaryYr')}</span>}>{a != null ? `$${Math.round(a / 1000)}K/yr` : null}</FactRow>}
-        {field === 'wageMedHr' && <FactRow k={t('fact.wageBandHr')}>{bandHr}</FactRow>}
+        {(field === 'wageMedHr' || field === 'vsMedian') && <FactRow k={t('fact.wageBandHr')}>{bandHr}</FactRow>}
         {(field === 'wageMedYr' || field === 'vsMedian') && <FactRow k={t('fact.wageBandYr')}>{bandYr}</FactRow>}
         {field === 'vsMedian' && <FactRow k={t('col.vsMedian')}>{vs != null ? `${vs >= 0 ? '+' : ''}${vs}%` : null}</FactRow>}
         {/* #152 打码占位 teaser 退役(2026-07-25「先都显示出来」):中位真值已放开,免费也显真 vs%——

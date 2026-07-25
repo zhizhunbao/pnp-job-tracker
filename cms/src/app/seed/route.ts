@@ -242,7 +242,7 @@ export async function GET(req: Request) {
       'description', 'country', 'province', 'city', 'district', 'address', 'apply_url', 'official_url',
       'salary', 'salary_annual', 'salary_text', 'wage_med_hourly', 'wage_med_annual', 'wage_low_hourly',
       'wage_low_annual', 'wage_high_hourly', 'wage_high_annual', 'wage_year', 'date_posted', 'source',
-      'source_label', 'origin', 'accessibility', 'score', 'grade_channel', 'score_detail', 'pnp_eligible', 'pnp_stream', 'ee_category', 'aip',
+      'source_label', 'origin', 'accessibility', 'score', 'grade_channel', 'score_detail', 'pnp_eligible', 'pnp_stream', 'ee_category', 'aip', 'is_dup',
       'employment_term', 'employment_hours', 'certificates', 'education',
       'eligibility_flag', 'eligibility_quote',
       'status', 'closed_at', 'first_seen', 'last_seen', 'created_at', 'updated_at']
@@ -284,7 +284,7 @@ export async function GET(req: Request) {
           date_posted: isoDate(j.datePosted), source: j.source, source_label: j.sourceLabel,
           origin: j.origin, accessibility: j.accessibility, score: j.score,
           grade_channel: j.gradeChannel ?? null, score_detail: j.scoreDetail ? JSON.stringify(j.scoreDetail) : null,
-          pnp_eligible: !!j.pnpEligible, pnp_stream: j.pnpStream, ee_category: j.eeCategory, aip: !!j.aip,
+          pnp_eligible: !!j.pnpEligible, pnp_stream: j.pnpStream, ee_category: j.eeCategory, aip: !!j.aip, is_dup: !!j.isDup,
           // 雇佣形态+入职要求(E6-06/E6-07A);certificates 是 jsonb,pg 参数须传 JSON 字符串
           employment_term: j.employmentTerm, employment_hours: j.employmentHours,
           certificates: j.certificates ? JSON.stringify(j.certificates) : null, education: j.education,
