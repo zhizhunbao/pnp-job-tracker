@@ -1741,54 +1741,53 @@ export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [], s
           </button>
         </div>
       ) : null}
-      {shown.map((c) => {
-        const listOpen = foldOpen[c.key] ?? true   // 2026-07-25 Frank「每个职位怎么没了」:一律默认展开,想收再点头折
+      {/* 2026-07-25 Frank「排版还是乱,重新设计」:每类别收成三层清晰结构——
+          头行(名称+数量左/折叠角标右,整行可点)· 抽选摘要一行灰字(蓝色链感退役,历次开合角标随行)·
+          职业列表去外框走发丝分隔线;历史脚注从每类挪到区尾只出一次(同句每类重复=废话) */}
+      {shown.map((c, ci) => {
+        const listOpen = foldOpen[c.key] ?? true   // 一律默认展开(「每个职位怎么没了」),想收再点头折
+        const hist = histOf.get(c.key) || []
+        const histExpandable = hist.length > 1
+        const histOpen = openCat === c.key
         return (
-        <div key={c.key} style={{ marginBottom: 10 }}>
+        <div key={c.key} style={{ padding: '10px 0', borderTop: ci === 0 ? undefined : '1px solid #f3f4f6' }}>
           <div onClick={() => setFoldOpen((m) => ({ ...m, [c.key]: !listOpen }))}
-            style={{ fontSize: 12.5, fontWeight: 600, color: '#374151', marginBottom: 4, cursor: 'pointer', userSelect: 'none' }}>
-            {listOpen ? '▴' : '▾'} {eeDisplay(t, c.label)} <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 4 }}>{t('eelist.count', { n: c.occupations.length })}</span></div>
-          {/* #135:近期抽选行=可展开入口(有历史才给箭头),展开=该类别历次抽选时间线 */}
-          {c.drawCrs != null && c.drawDate ? (() => {
-            const hist = histOf.get(c.key) || []
-            const expandable = hist.length > 1
-            const open = openCat === c.key
-            return (
-              <>
-                <div onClick={expandable ? () => setOpenCat(open ? null : c.key) : undefined}
-                  style={{ fontSize: 12, color: '#2563eb', marginBottom: 4, cursor: expandable ? 'pointer' : undefined, userSelect: 'none' }}>
-                  {t('eelist.draw', { crs: c.drawCrs, date: c.drawDate, size: c.drawSize ?? '—' })}
-                  {expandable ? <span style={{ marginLeft: 6, color: '#6b7280' }}>{open ? '▴' : '▾'} {t('eelist.hist', { n: hist.length })}</span> : null}
+            style={{ display: 'flex', alignItems: 'baseline', gap: 6, cursor: 'pointer', userSelect: 'none' }}>
+            <span style={{ fontSize: 13.5, fontWeight: 700, color: '#111827' }}>{eeDisplay(t, c.label)}</span>
+            <span style={{ fontSize: 12, color: '#9ca3af' }}>{t('eelist.count', { n: c.occupations.length })}</span>
+            <span style={{ marginLeft: 'auto', fontSize: 12, color: '#9ca3af' }}>{listOpen ? '▴' : '▾'}</span>
+          </div>
+          {c.drawCrs != null && c.drawDate ? (
+            <>
+              <div onClick={histExpandable ? () => setOpenCat(histOpen ? null : c.key) : undefined}
+                style={{ fontSize: 12, color: '#6b7280', marginTop: 3, cursor: histExpandable ? 'pointer' : undefined, userSelect: 'none' }}>
+                {t('eelist.draw', { crs: c.drawCrs, date: c.drawDate, size: c.drawSize ?? '—' })}
+                {histExpandable ? <span style={{ marginLeft: 6, color: '#2563eb' }}>{histOpen ? '▴' : '▾'} {t('eelist.hist', { n: hist.length })}</span> : null}
+              </div>
+              {histExpandable && histOpen ? (
+                <div style={{ margin: '6px 0', border: '1px solid #f3f4f6', borderRadius: 8, overflow: 'hidden' }}>
+                  {hist.map((h, i) => (
+                    <div key={`${h.drawDate}-${i}`} style={{ display: 'flex', alignItems: 'baseline', gap: 10, padding: '4px 10px', fontSize: 12, background: i % 2 ? '#fafafa' : undefined }}>
+                      <span style={{ fontVariantNumeric: 'tabular-nums', color: '#6b7280', whiteSpace: 'nowrap' }}>{(h.drawDate || '').slice(0, 10)}</span>
+                      <span style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 600, color: '#1f2937', whiteSpace: 'nowrap' }}>{t('eelist.crsN', { crs: h.score ?? '—' })}</span>
+                      <span style={{ flex: 1, color: '#6b7280', whiteSpace: 'nowrap' }}>{t('eelist.itaN', { n: h.invitations ?? '—' })}</span>
+                    </div>
+                  ))}
                 </div>
-                {expandable && open ? (
-                  <div style={{ marginBottom: 6, border: '1px solid #f3f4f6', borderRadius: 8, overflow: 'hidden' }}>
-                    {hist.map((h, i) => (
-                      <div key={`${h.drawDate}-${i}`} style={{ display: 'flex', alignItems: 'baseline', gap: 10, padding: '4px 10px', fontSize: 12, background: i % 2 ? '#fafafa' : undefined }}>
-                        <span style={{ fontVariantNumeric: 'tabular-nums', color: '#6b7280', whiteSpace: 'nowrap' }}>{(h.drawDate || '').slice(0, 10)}</span>
-                        <span style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 600, color: '#1f2937', whiteSpace: 'nowrap' }}>{t('eelist.crsN', { crs: h.score ?? '—' })}</span>
-                        <span style={{ flex: 1, color: '#6b7280', whiteSpace: 'nowrap' }}>{t('eelist.itaN', { n: h.invitations ?? '—' })}</span>
-                      </div>
-                    ))}
-                    <div style={{ padding: '4px 10px', fontSize: 11, color: '#9ca3af', borderTop: '1px solid #f3f4f6' }}>{t('eelist.histNote')}</div>
-                  </div>
-                ) : null}
-              </>
-            )
-          })() : null}
-          {/* 2026-07-25 Frank 三拍:①展开时每类别列职业清单;②可折叠+译名+展开全量不内嵌滚动;
-              ③抽选历史与职业清单「分开显示」——职业清单带自己的灰标题行,不与历史黏成一张表 */}
+              ) : null}
+            </>
+          ) : null}
           {listOpen ? (
-          <>
-          <div style={{ fontSize: 11.5, color: '#9ca3af', margin: '8px 0 4px' }}>{t('eelist.occTitle')}</div>
-          <div style={{ border: '1px solid #f3f4f6', borderRadius: 8 }}>
-            {c.occupations.map((o) => {
+          <div style={{ marginTop: 6 }}>
+            {c.occupations.map((o, oi) => {
               const isHit = o.noc === noc
               const zh = showZh ? nocLocalTitle(nocRowOf.get(o.noc) || null, lang) : ''
               return (
                 <div key={o.noc} ref={isHit ? matchRef : undefined}
-                  style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '4px 10px', fontSize: 12.5,
+                  style={{ display: 'flex', alignItems: 'baseline', gap: 10, padding: '5px 8px', fontSize: 12.5, borderRadius: 6,
+                    borderTop: oi === 0 ? undefined : '1px solid #f9fafb',
                     background: isHit ? '#dbeafe' : undefined, fontWeight: isHit ? 600 : 400, color: isHit ? '#1e40af' : '#374151' }}>
-                  <span style={{ fontVariantNumeric: 'tabular-nums', color: isHit ? '#1e40af' : '#9ca3af' }}>{o.noc}</span>
+                  <span style={{ fontVariantNumeric: 'tabular-nums', color: isHit ? '#1e40af' : '#9ca3af', flexShrink: 0 }}>{o.noc}</span>
                   <span style={{ flex: 1 }}>{o.title}{zh && zh.toLowerCase() !== o.title.toLowerCase() ? <span style={{ display: 'block', fontSize: 11.5, color: '#9ca3af', fontWeight: 400 }}>{zh}</span> : null}</span>
                   {o.teer != null && <span style={{ fontSize: 11, color: '#9ca3af' }}>T{o.teer}</span>}
                   {isHit && <span style={{ fontSize: 11, whiteSpace: 'nowrap' }}>← {t('eelist.your')}</span>}
@@ -1796,11 +1795,13 @@ export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [], s
               )
             })}
           </div>
-          </>
           ) : null}
         </div>
         )
       })}
+      {shown.some((c) => (histOf.get(c.key)?.length ?? 0) > 0) ? (
+        <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>{t('eelist.histNote')}</div>
+      ) : null}
     </div>
   )
 }
