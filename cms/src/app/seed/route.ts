@@ -11,6 +11,7 @@
  * token 鉴权 / ?reset=1 全清重建 / 增量 upsert / lastSeen=抓取时间(mart 透传,缺则不动旧值)/
  * 「本次未见且发布超 30 天」才下架。
  */
+import crypto from 'crypto'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
@@ -88,6 +89,13 @@ export async function GET(req: Request) {
     return []
   }
   const mart = (name: string): any[] => martPaths(name).flatMap((p) => JSON.parse(fs.readFileSync(p, 'utf8')))
+  // 第25轮 #118:表级内容哈希(裸字节,parse 前)——与上轮一致的 dims/news 整表跳过(不 parse 不重灌),
+  // 压 seed 耗时出代理 ~100s 危险区。哈希存 seed_state 表,随本事务提交,回滚不留脏哈希。
+  const martHash = (name: string): string => {
+    const h = crypto.createHash('md5')
+    for (const p of martPaths(name)) h.update(fs.readFileSync(p))
+    return h.digest('hex')
+  }
 
   const now = new Date().toISOString()
   const counts: Record<string, number> = {}
@@ -131,17 +139,26 @@ export async function GET(req: Request) {
   let closed = 0
   try {
     await client.query('BEGIN')
+    // #118 表级哈希态(响应计数:-1=本轮无上传跳过,-2=内容与上轮一致跳过)
+    await client.query('CREATE TABLE IF NOT EXISTS seed_state (name text PRIMARY KEY, hash text NOT NULL)')
+    const prevHash: Record<string, string> = {}
+    for (const r of (await client.query('SELECT name, hash FROM seed_state')).rows) prevHash[r.name] = r.hash
+    const markState = (name: string, hash: string) =>
+      client.query('INSERT INTO seed_state (name, hash) VALUES ($1,$2) ON CONFLICT (name) DO UPDATE SET hash=EXCLUDED.hash', [name, hash])
 
     // ── 维度表:清空 + 批量插入(先清 locked_documents_rels 关联列,B7 教训:漏了会整事务炸) ──
     for (const [file, table, cols, map] of dims) {
       // E12-03 防线升级(22c8d6a 空灌事故防线的延伸):mart **文件缺失** = 该表本轮没上传(新表未产出/分表上传)
       // → 跳过保留现有行,不再「清空+重灌 0 行」。要真清空一张维度表 = 上传内容为 [] 的文件(显式意图)。
       if (martPaths(file).length === 0) { counts[table] = -1; continue }   // -1 = skipped(本轮无该表上传)
+      const hash = martHash(file)
+      if (prevHash[table] === hash) { counts[table] = -2; continue }   // -2 = 内容与上轮一致,整表免重灌
       const rows = (await mart(file)).map(map).filter((d) => Object.values(d).some((v) => v !== undefined && v !== null && v !== ''))
       await client.query(`DELETE FROM payload_locked_documents_rels WHERE ${table}_id IS NOT NULL`)
       await client.query(`DELETE FROM ${table}`)
       await insertBatch(client, table, [...cols, 'created_at', 'updated_at'],
         rows.map((r) => ({ ...r, created_at: now, updated_at: now })))
+      await markState(table, hash)
       counts[table] = rows.length
     }
 
@@ -149,7 +166,8 @@ export async function GET(req: Request) {
     // 懒翻译/速读缓存列(body_zh/body_ko/summary_zh/summary_ko/summary_en)由 /api/news-translate、
     // /api/news-summarize 线上写入,seed 不许碰——除非该条 body_en 变了(重抽正文)才连带清缓存(防错位陈译)。
     // 滚出 60 条窗口的行删除;mart 缺文件=跳过(与 dims 同防线)。预翻批若恢复(budget>0)需同步调整此块。
-    if (martPaths('news').length > 0) {
+    if (martPaths('news').length > 0 && prevHash['news'] === martHash('news')) { counts.news = -2 }
+    else if (martPaths('news').length > 0) {
       const newsRows = (await mart('news')).filter((r: any) => r.slug).map((r: any) => ({
         region: r.region, title: r.title, date: r.date, slug: r.slug, url: r.url, og_image: r.ogImage,
         excerpt: r.excerpt, importance: r.importance, importance_note: r.importanceNote,
@@ -163,6 +181,7 @@ export async function GET(req: Request) {
       if (newsRows.length) await client.query(`DELETE FROM news WHERE NOT (slug = ANY($1))`, [newsRows.map((r) => r.slug)])
       await insertBatch(client, 'news', newsCols, newsRows,
         `ON CONFLICT (slug) DO UPDATE SET ${staleClear}, ${newsUpdate}`)
+      await markState('news', martHash('news'))
       counts.news = newsRows.length
     } else { counts.news = -1 }
 

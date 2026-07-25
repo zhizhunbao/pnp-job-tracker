@@ -93,7 +93,8 @@ export async function GET(req: NextRequest) {
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
   const now = new Date().toISOString()
-  const out = { dryRun: dry, matchEmails: 0, searchEmails: 0, weeklyEmails: 0, usersChecked: 0, searchesChecked: 0, weeklyChecked: 0, skippedFilters: [] as string[] }
+  // 第25轮 #116:sendFails 计数——发送失败原先只落 Render console(看不到的地方),现随响应进 build 日志
+  const out = { dryRun: dry, matchEmails: 0, searchEmails: 0, weeklyEmails: 0, sendFails: 0, usersChecked: 0, searchesChecked: 0, weeklyChecked: 0, skippedFilters: [] as string[] }
 
   // ── A 档案匹配提醒(Pro + 建档 + 有邮箱) ──
   const dims = await loadMatchDims()
@@ -132,7 +133,7 @@ export async function GET(req: NextRequest) {
       if (ok) {
         out.matchEmails++
         await payload.update({ collection: 'users', id: u.id, overrideAccess: true, data: { lastAlertAt: now } })
-      }
+      } else out.sendFails++
     } else if (hits.length) out.matchEmails++
   }
 
@@ -152,7 +153,7 @@ export async function GET(req: NextRequest) {
       if (ok) {
         out.searchEmails++
         await payload.update({ collection: 'saved-searches', id: sdoc.id, overrideAccess: true, data: { lastNotifiedAt: now } })
-      }
+      } else out.sendFails++
     } else out.searchEmails++
   }
 
@@ -200,7 +201,7 @@ export async function GET(req: NextRequest) {
       if (ok) {
         out.weeklyEmails++
         await payload.update({ collection: 'users', id: u.id, overrideAccess: true, data: { lastWeeklyAt: now } })
-      }
+      } else out.sendFails++
     } else out.weeklyEmails++
   }
 

@@ -173,8 +173,12 @@ def translate_missing(out_file: Path) -> None:
                 print(f"  ! translate[{lang}] {it['url']}: {type(e).__name__}: {e}")
     if done:
         _scrape_base.atomic_write_json(out_file, data)
-    print(f"translate: {done}/{len(todo)} 调用完成" +
-          (f"(剩 {len(todo) - done} 下轮续)" if len(todo) > done else ""))
+    # 第25轮 #119:budget=0 是拍板过的停摆,原「剩 N 下轮续」逐轮刷屏像有活没干完 —— 如实说停用
+    if MAX_TRANSLATE_PER_RUN == 0:
+        print(f"translate: 预翻停用(budget=0),{len(todo)} 条走线上懒翻")
+    else:
+        print(f"translate: {done}/{len(todo)} 调用完成" +
+              (f"(剩 {len(todo) - done} 下轮续)" if len(todo) > done else ""))
 
 
 # ---- 只打分不翻译(P1e 稳态:翻译走线上实时,重要度必须提前——banner TOP5/徽标/只看重要全靠它)----
