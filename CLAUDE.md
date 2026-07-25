@@ -47,7 +47,7 @@ etl/ (Python: 抓取 → 清洗 → 评分, 写 data/) ──> cms/ (Payload + N
 - **地点**:大渥太华的各社区(Kanata/Nepean/Orléans…)是「区」,统一 `city=Ottawa`;Orléans 合并(含 Orleans South)。精确地址需含街号,否则 `address` 留空。社区判定:文本社区名优先,文本没写但地址带邮编时用**高置信郊区 FSA 兜底**(central Ottawa 不猜,留空)。
 - **来源真相**:Job Bank 自己聚合 indeed/Talent 等 → 统一显示「Job Bank」;`source` 字段保留原始板。
   `origin`(jobbank/ats/directory)是**发布渠道**,不代表雇主真假;中介已按公司名过滤。
-- **评分 / PNP**:NOC → TEER 分类 → 每 TEER 评分(08_score)。`pnpEligible` = TEER 0-3 或在紧缺低TEER通道清单 —— **粗筛信号,非资格认定**(各省有自己的职业清单/语言/工资要求;QC 走自己的体系不属 PNP)。未匹配 NOC 的岗标「未分类」,不硬塞。
+- **评分 / PNP**:NOC → TEER 分类 → 每 TEER 评分(08_score)。`pnpEligible` = TEER 0-3 或在紧缺低TEER通道清单;**排除式省(AB;ON 2026-06 改制后排除集为空=全职业可)TEER 0-5 默认可、排除清单内不可** —— **粗筛信号,非资格认定**(各省有自己的职业清单/语言/工资要求;QC 走自己的体系不属 PNP)。未匹配 NOC 的岗标「未分类」,不硬塞。
 
 ## 展示约定
 - 站点定位是**日更职位板**:默认排序「发布时间最新在前」;同日岗保持 Job Bank 原序(入库序,#127 拍板)——**旧 0-100 分不再参与任何排序**,通道档(1-5)只在用户点「通道」列时作主键。列顺序**发布时间第一、评分(通道)最后**。

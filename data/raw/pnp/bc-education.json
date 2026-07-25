@@ -1,0 +1,18 @@
+{
+  "stream": "BC PNP Care: education targeted ITA (French-speaking)",
+  "label": "BC 法语教师",
+  "province": "BC",
+  "type": "indemand",
+  "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/about-the-bc-provincial-nominee-program",
+  "fetched": "2026-07-25",
+  "occupations": [
+    {
+      "noc": "41220",
+      "name": "Secondary school teachers (French-speaking only)"
+    },
+    {
+      "noc": "41221",
+      "name": "Elementary/Kindergarten teachers (French-speaking only)"
+    }
+  ]
+}

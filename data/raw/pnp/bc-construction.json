@@ -1,0 +1,46 @@
+{
+  "stream": "BC PNP Build: construction trades targeted ITA",
+  "label": "BC 建筑技工",
+  "province": "BC",
+  "type": "indemand",
+  "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/about-the-bc-provincial-nominee-program",
+  "fetched": "2026-07-25",
+  "occupations": [
+    {
+      "noc": "72106",
+      "name": "Welders and related machine operators"
+    },
+    {
+      "noc": "72200",
+      "name": "Electricians (except industrial and power system)"
+    },
+    {
+      "noc": "72201",
+      "name": "Industrial electricians"
+    },
+    {
+      "noc": "72300",
+      "name": "Plumbers"
+    },
+    {
+      "noc": "72301",
+      "name": "Steamfitters, pipefitters and sprinkler system installers"
+    },
+    {
+      "noc": "72310",
+      "name": "Carpenters"
+    },
+    {
+      "noc": "72400",
+      "name": "Construction millwrights and industrial mechanics"
+    },
+    {
+      "noc": "72401",
+      "name": "Heavy-duty equipment mechanics"
+    },
+    {
+      "noc": "72402",
+      "name": "Heating, refrigeration and air conditioning mechanics"
+    }
+  ]
+}

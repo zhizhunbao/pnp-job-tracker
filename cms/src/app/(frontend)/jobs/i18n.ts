@@ -38,6 +38,7 @@ const zh: Dict = {
   'price.anchor': '参考:持牌顾问咨询通常 CA$150+/小时——先用 CA$19 把公开数据能回答的问题答掉。',
   'stats.rank': '在招职位全国第 {a} · 中位年薪全国第 {b}(共 {total} 省)', 'prof.pgwpNote': '暂用于 AI 顾问参考;窗口期匹配规则筹备中',
   'stream.abTech': 'AB 科技', 'stream.skHealth': 'SK 医疗', 'stream.skTech': 'SK 科技', 'stream.skAgri': 'SK 农业', 'stream.nsCritical': 'NS 紧缺空缺', 'stream.nsGrad': 'NS 毕业生', 'stream.aaipExcl': 'AAIP 不符合清单',
+  'stream.bcHealth': 'BC 医疗', 'stream.bcChildcare': 'BC 幼教', 'stream.bcEdu': 'BC 法语教师', 'stream.bcVet': 'BC 兽医', 'stream.bcConstr': 'BC 建筑技工',
   'ee.healthcare': '医疗社服', 'ee.stem': 'STEM', 'ee.trade': '技工', 'ee.education': '教育', 'ee.transport': '运输', 'ee.physicians': '医生', 'ee.seniorMgr': '高管', 'ee.researchers': '研究', 'ee.military': '军职',
   'chart.common': '常见图表', 'chart.custom': '自定义图表', 'chart.dim': '维度', 'chart.metric': '指标', 'chart.dimProv': '按省', 'chart.dimCat': '按职业大类', 'chart.all': '全部', 'chart.medianNote': '中位数不做跨省合并——请选择一个省查看各大类中位数。',
   'advisor.unavail': 'AI 判断暂时不可用,请稍后再试——上方事实与官方链接不受影响。',
@@ -495,6 +496,7 @@ const en: Dict = {
   'price.anchor': 'For reference: licensed-consultant sessions typically run CA$150+/hour — let CA$19 answer what public data can first.',
   'stats.rank': '#{a} in open jobs · #{b} in median wage (of {total} provinces)', 'prof.pgwpNote': 'Currently informs the AI advisor; time-window match rules in the works',
   'stream.abTech': 'AB Tech', 'stream.skHealth': 'SK Health', 'stream.skTech': 'SK Tech', 'stream.skAgri': 'SK Agriculture', 'stream.nsCritical': 'NS Critical Vacancies', 'stream.nsGrad': 'NS Graduates', 'stream.aaipExcl': 'AAIP ineligible list',
+  'stream.bcHealth': 'BC Health', 'stream.bcChildcare': 'BC Childcare', 'stream.bcEdu': 'BC French teachers', 'stream.bcVet': 'BC Veterinary', 'stream.bcConstr': 'BC Construction trades',
   'ee.healthcare': 'Healthcare', 'ee.stem': 'STEM', 'ee.trade': 'Trades', 'ee.education': 'Education', 'ee.transport': 'Transport', 'ee.physicians': 'Physicians', 'ee.seniorMgr': 'Senior managers', 'ee.researchers': 'Researchers', 'ee.military': 'Military',
   'chart.common': 'Common charts', 'chart.custom': 'Custom chart', 'chart.dim': 'Dimension', 'chart.metric': 'Metric', 'chart.dimProv': 'by province', 'chart.dimCat': 'by occupation group', 'chart.all': 'All', 'chart.medianNote': 'Medians are not merged across provinces — pick a province to see per-group medians.',
   'advisor.unavail': 'The AI read is temporarily unavailable — the facts and official links above are unaffected. Please try again later.',
@@ -948,6 +950,7 @@ const ko: Dict = {
   'price.anchor': '참고: 공인 컨설턴트 상담료는 보통 시간당 CA$150+ 이상입니다. CA$19로 공개 데이터로 확인할 수 있는 정보를 먼저 확인하세요.',
   'stats.rank': '채용 중 전국 {a}위 · 중위 연봉 전국 {b}위 (총 {total}개 주·도)', 'prof.pgwpNote': '현재 AI 어드바이저 참고용으로 사용됨; 기간 기반 매칭 규칙 준비 중',
   'stream.abTech': 'AB 테크', 'stream.skHealth': 'SK 보건', 'stream.skTech': 'SK 테크', 'stream.skAgri': 'SK 농업', 'stream.nsCritical': 'NS 필수 인력', 'stream.nsGrad': 'NS 졸업생', 'stream.aaipExcl': 'AAIP 제외 목록',
+  'stream.bcHealth': 'BC 보건', 'stream.bcChildcare': 'BC 보육', 'stream.bcEdu': 'BC 프랑스어 교사', 'stream.bcVet': 'BC 수의', 'stream.bcConstr': 'BC 건설 기능직',
   'ee.healthcare': '보건·사회서비스', 'ee.stem': 'STEM', 'ee.trade': '기능직', 'ee.education': '교육', 'ee.transport': '운수', 'ee.physicians': '의사', 'ee.seniorMgr': '고위 관리자', 'ee.researchers': '연구', 'ee.military': '군 경력',
   'chart.common': '일반 차트', 'chart.custom': '사용자 지정 차트', 'chart.dim': '차원', 'chart.metric': '지표', 'chart.dimProv': '주별', 'chart.dimCat': '직업 대분류별', 'chart.all': '전체', 'chart.medianNote': '중위값은 주 간 합산되지 않습니다. 주를 선택해 각 그룹별 중위값을 확인하세요.',
   'advisor.unavail': 'AI 분석이 일시적으로 사용 불가합니다. 위의 사실 및 공식 링크에는 영향이 없습니다. 잠시 후 다시 시도하세요.',
@@ -1410,6 +1413,8 @@ const STREAM_L10N: Record<string, string> = {
   'AB 科技': 'stream.abTech', 'SK 医疗': 'stream.skHealth', 'SK 科技': 'stream.skTech',
   'SK 农业': 'stream.skAgri', 'NS 紧缺空缺': 'stream.nsCritical', 'NS 毕业生': 'stream.nsGrad',
   'AAIP 不符合清单': 'stream.aaipExcl',
+  'BC 医疗': 'stream.bcHealth', 'BC 幼教': 'stream.bcChildcare', 'BC 法语教师': 'stream.bcEdu',
+  'BC 兽医': 'stream.bcVet', 'BC 建筑技工': 'stream.bcConstr',
 }
 export const streamDisplay = (t: TFn, label: string): string => (STREAM_L10N[label] ? t(STREAM_L10N[label]) : label)
 

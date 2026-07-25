@@ -3,7 +3,7 @@
 每省一个自包含 build 脚本(`etl/pnp/build_<prov>.py`)实时抓省政府页 → `raw/pnp/*.json`;
 AIP 指定雇主 `06_scrape_aip_employers.py` → `raw/aip/`。
 **只刷 raw 参考表,不灌库** —— build 角色每轮 08→09→seed 会目录驱动消费这些表(最终一致,不抢 mart/seed)。
-复用 httpx 镜像(脚本只需 httpx+bs4,不需浏览器:AB/ON/SK/NS 源站直连 200;BC 暂解析旧 md)。
+复用 httpx 镜像(脚本只需 httpx+bs4,不需浏览器:AB/BC/SK/NS 源站直连 200)。
 """
 META = {
     "method": "httpx",
@@ -11,9 +11,11 @@ META = {
     "seed": False,             # 只刷 raw 参考表,build 角色统一灌库(避免抢 mart/seed)
     "steps": [
         ["python", "etl/pnp/build_ab.py"],   # AB AAIP(实时,exclusion 排除式)
-        # ON:2026-06-26 OINP 改制(O.Reg 422/17)旧 8 流全删、EOI 关;新 Workforce Priority 流按 TEER 分档
-        #     无职业清单 → 不产出(E6-05,同 BC/SK「没数据不猜」);清单若重现,按 git 史 build_on.py 模板重写。
-        # BC:tech 定向抽选 2024-12 已关、无具名通道;welcomebc 也无清单页 → 不产出,BC 岗走通用「可提名」。
+        # ON:2026-06-26 OINP 改制(O.Reg 422/17)旧 8 流全删、EOI 关;新 Workforce Priority 流覆盖
+        #     TEER0-5 全职业、官方**不设职业清单**(2026-07-25 复核)→ 无抓取脚本;
+        #     政策事实由人工维护表 raw/pnp/on-workforce-priority.json(空排除集=全职业可)承载,
+        #     清单若重现(如传闻中的 CLB5 职业表),删该表并按 git 史 build_on.py 模板重写。
+        ["python", "etl/pnp/build_bc.py"],   # BC 2026 新政 Care/Build 清单(实时,2026-07-25 接入;旧 tech 定向 2024-12 关)
         ["python", "etl/pnp/build_sk.py"],   # SK SINP 三通道(实时)
         ["python", "etl/pnp/build_ns.py"],   # NS 两通道(实时)
         ["python", "etl/pnp/build_draws.py"],  # E6-04 省抽选事实(BC/AB/MB+ON通告;无 occupations 键,08 扫表跳过)

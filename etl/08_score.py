@@ -115,7 +115,9 @@ def _load_pnp_tables() -> dict[str, dict]:
                 continue
             prov = data.get("province")
             nocs = {o["noc"] for o in data.get("occupations", []) if o.get("noc")}
-            if not (prov and nocs):
+            # 空表守卫:inclusion 空=坏抓取,跳过;exclusion 空是合法政策事实
+            # (ON 2026-06 改制后无职业清单 → 空排除集 = TEER0-5 全可,on-workforce-priority.json)
+            if not prov or (not nocs and data.get("type") != "ineligible"):
                 continue
             typ = data.get("type", "indemand")
             t = out.setdefault(prov, {"type": "indemand", "nocs": set(), "streams": []})
@@ -179,8 +181,9 @@ NON_PNP_PROV = {"QC"}
 
 def pnp_eligible(noc: str, teer: int | None, prov: str) -> bool:
     """能否走雇主 offer 省提名,按省精准(不跨省套用)。魁省不属 PNP,直接排除。
-    · 有 exclusion 表的省(如 AB/AAIP):TEER0-5 默认都可走,清单内 NOC 不可。
-    · 其余(有 inclusion 表如 ON/OINP,或无表):TEER0-3 粗筛通用,
+    · 有 exclusion 表的省(AB/AAIP;ON 2026-06 改制后为空排除集=全职业可):
+      TEER0-5 默认都可走,清单内 NOC 不可。
+    · 其余(有 inclusion 表如 SK/NS,或无表):TEER0-3 粗筛通用,
       TEER4-5 仅当 NOC 在该省 inclusion 清单内才可。"""
     if prov in NON_PNP_PROV:
         return False

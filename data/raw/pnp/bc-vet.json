@@ -1,0 +1,18 @@
+{
+  "stream": "BC PNP Care: veterinary targeted ITA",
+  "label": "BC 兽医",
+  "province": "BC",
+  "type": "indemand",
+  "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/about-the-bc-provincial-nominee-program",
+  "fetched": "2026-07-25",
+  "occupations": [
+    {
+      "noc": "31103",
+      "name": "Veterinarians"
+    },
+    {
+      "noc": "32104",
+      "name": "Animal health technologists and veterinary technicians"
+    }
+  ]
+}

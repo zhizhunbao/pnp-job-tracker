@@ -1,0 +1,10 @@
+{
+  "stream": "OINP Ontario Workforce Priority stream",
+  "label": "OINP 不符合清单",
+  "province": "ON",
+  "type": "ineligible",
+  "url": "https://www.ontario.ca/page/2026-ontario-immigrant-nominee-program-updates",
+  "fetched": "2026-07-25",
+  "note": "人工维护的政策事实表(非抓取;2026-07-25 Frank 拍板)。OINP 2026-06-26 改制后唯一的 Workforce Priority 流按 TEER 0-3 / TEER 4-5 两路径覆盖全部职业(全职+永久 offer),官方不设职业清单 → 排除集为空 = TEER 0-5 全部可走省提名。官网 7-20 细则页复核。若 ON 重新引入职业清单,删本文件并按 git 史 build_on.py 模板重写抓取。",
+  "occupations": []
+}
