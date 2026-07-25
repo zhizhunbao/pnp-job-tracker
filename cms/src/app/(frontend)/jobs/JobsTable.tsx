@@ -1023,7 +1023,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                 只留「N 个职位」;证言是说服性内容,在首屏抢不过职位数。 */}
             {proof && (proof.named > 0 || proof.lmia > 0) && <span className="pbProof" style={{ marginLeft: 10 }}>{t('subtitle.proof', { named: proof.named, lmia: proof.lmia })}</span>}
           </>}
-          right={!plan.loggedIn && (
+          right={!plan.loggedIn && !(recs.length > 0 && !anyFilter && !matchView) && (
+            // 第25轮:推荐条可见时它自带「建档案精确匹配」钮,横幅再出「免费建档案」=同屏双 CTA 重复,让位
             // #165(Frank 报障「这个按钮在手机端会挡住信息」):CTA 在横幅右槽带 nowrap + flexShrink:0,
             // **既不换行也不收缩** → 375px 上整条字占掉右半边,左边标题与职位数被压成省略号。
             // 旁边的数字胶囊(.pbStat)本就做了窄屏隐藏,这个漏了。
@@ -1438,7 +1439,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       </> : null}
                     </span>
                   ) : <span />}
-                  <span suppressHydrationWarning style={{ color: '#9ca3af', whiteSpace: 'nowrap', flexShrink: 0 }}>{(j.datePosted || '').slice(0, 10)}{days != null ? `(${t('fact.daysUpVal', { n: days })})` : ''}</span>
+                  <span suppressHydrationWarning style={{ color: '#9ca3af', whiteSpace: 'nowrap', flexShrink: 0 }}>{(j.datePosted || '').slice(0, 10)}{days != null ? `(${days === 0 ? t('cell.today') : t('fact.daysUpVal', { n: days })})` : ''}</span>
                 </div>
                 <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
                   {/* #167⑩:匹配度胶囊从右上角迁到此排首位(胶囊只此一处);它是个人化结论=最值钱,故排第一 */}
@@ -1921,10 +1922,10 @@ export function JdFormattedView({ text, t, fallbackPay, applyUrl, applyEmail, un
                  → 原先整条裸 URL 换短链文案(URL 又长又丑还与下方投递栏重复,出处仍是同一官方原帖) */
               none
                 ? (applyEmail
-                  ? <div style={{ paddingLeft: 14, overflowWrap: 'anywhere' }}>{t('apply.email')}: {applyEmail}</div>
+                  ? <div style={{ paddingLeft: 14, overflowWrap: 'anywhere' }}>{applyEmail}</div>
                   : <div style={{ paddingLeft: 14 }}><a href={applyUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{t('act.seeOfficial')}</a></div>)
                 : <>
-                    {applyEmail && <div style={{ paddingLeft: 14, overflowWrap: 'anywhere' }}>{t('apply.email')}: {applyEmail}</div>}
+                    {applyEmail && <div style={{ paddingLeft: 14, overflowWrap: 'anywhere' }}>{applyEmail}</div>}
                     {lines.map((l, i) => <div key={i} style={{ paddingLeft: 14 }}><a href={applyUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{l.replace(/^-\s*/, '')} ↗</a>{zh(i)}</div>)}
                   </>
             ) : /* #123c(Frank「每个职位都有薪资吧」):原帖正文没写薪资但帖面字段有 → 兜底显示帖面薪资+来源灰注
@@ -3910,6 +3911,8 @@ export function JobBody({ job, lang, plan, inModal, onFreeLeft }: { job: JobRow;
   const [status, setStatus] = useState<'loading' | 'done' | 'empty' | 'limited'>('loading')   // #201:JD 已免费,付费墙态(upgrade)退役;limited=宽松防滥用闸偶发
   // J3(2026-07-19 Frank 批):AI 五节整理版懒生成——undefined=整理中,null=没有(降级原文),string=整理版
   const [fmt, setFmt] = useState<string | null | undefined>(undefined)
+  // 第25轮 #114:失败态拆三种——quota=额度用完(重试无用不给钮)/fail=生成失败(可重试)/notext=无正文(不显示失败行)
+  const [fmtWhy, setFmtWhy] = useState<'quota' | 'fail' | 'notext'>('fail')
   const [showOrig, setShowOrig] = useState(false)
   // 2026-07-21 Frank「参考类别」:AI 速读点了才生成(不点不烧,额度闸在 JdAdvisorSection 内照走)
   const [aiOn, setAiOn] = useState(false)
@@ -3961,9 +3964,12 @@ export function JobBody({ job, lang, plan, inModal, onFreeLeft }: { job: JobRow;
   const loadFmt = (signal?: AbortSignal) => {
     setFmt(undefined)
     fetch('/api/jdformat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: job.applyUrl || '' }), signal })
-      .then((r) => (r.status === 200 ? r.text() : ''))
+      .then((r) => {
+        setFmtWhy(r.status === 402 || r.status === 429 ? 'quota' : r.status === 204 ? 'notext' : 'fail')
+        return r.status === 200 ? r.text() : ''
+      })
       .then((tx) => setFmt(tx.trim() ? tx : null))
-      .catch(() => { if (!signal?.aborted) setFmt(null) })
+      .catch(() => { if (!signal?.aborted) { setFmtWhy('fail'); setFmt(null) } })
   }
   useEffect(() => {
     // 整理版与原文并行拉:命中缓存秒回;首次生成慢(模型现算),期间正文照常显示原文
@@ -4009,17 +4015,17 @@ export function JobBody({ job, lang, plan, inModal, onFreeLeft }: { job: JobRow;
             <>
               {/* J3:整理版默认在上,原文一键切换;生成中/没有整理版 → 原文照旧 */}
               {fmt ? (
-                <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 6 }}>
+                <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 6 }} title={t('act.aiNote')}>
                   ✨ {t('act.ai')}
                   <button onClick={() => setShowOrig((o) => !o)} style={{ border: 'none', background: 'none', padding: 0, marginLeft: 8, color: '#2563eb', cursor: 'pointer', fontSize: 11.5, fontWeight: 600 }}>{showOrig ? t('act.seeFmt') : t('act.seeOrig')}</button>
                 </div>
               ) : fmt === undefined ? (
                 <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 6 }}>✨ {t('act.aiWorking')}</div>
-              ) : (
-                /* fmt=null=整理没出来(模型掉线/校验拒收/限流)——原先静默降级原文,用户以为坏了没路走 → 灰注+重试 */
+              ) : fmtWhy === 'notext' ? null : (
+                /* fmt=null:按 fmtWhy 分说——额度用完(重试无用,不给钮)/生成失败(可重试);无正文不出失败行(空态自己解释) */
                 <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 6 }}>
-                  ✨ {t('act.aiFail')}
-                  <button onClick={() => loadFmt()} style={{ border: 'none', background: 'none', padding: 0, marginLeft: 8, color: '#2563eb', cursor: 'pointer', fontSize: 11.5, fontWeight: 600 }}>{t('ai.retry')}</button>
+                  ✨ {fmtWhy === 'quota' ? t('act.aiQuota') : t('act.aiFail')}
+                  {fmtWhy === 'fail' && <button onClick={() => loadFmt()} style={{ border: 'none', background: 'none', padding: 0, marginLeft: 8, color: '#2563eb', cursor: 'pointer', fontSize: 11.5, fontWeight: 600 }}>{t('ai.retry')}</button>}
                 </div>
               )}
               {fmt && !showOrig ? <JdFormattedView text={fmt} t={t} fallbackPay={job.salaryText || job.salary || undefined} applyUrl={job.applyUrl || undefined} applyEmail={applyEmail || undefined} trans={showTrans && trans ? trans : undefined} /> : <JdTextView text={text} max={4000} />}
