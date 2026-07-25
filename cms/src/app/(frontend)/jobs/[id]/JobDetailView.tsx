@@ -20,6 +20,8 @@ const sec: React.CSSProperties = { border: '1px solid #e5e7eb', borderRadius: 12
 export default function JobDetailView({ job, plan, dims }: { job: JobRow; plan: Plan; dims: Dims }) {
   // 语言:与全站同一 localStorage 键;SSR 首帧 zh,水合后纠正(二级页惯例)
   const [lang, setLangState] = useState<Lang>('zh')
+  // 2026-07-25 Frank「点击要有动画,不然不知道点没点,跳页有延迟」:按下即置忙态(变灰+省略号),导航期间可感
+  const [leaving, setLeaving] = useState(false)
   useEffect(() => {
     setLangState(initialLang())
   }, [])
@@ -55,8 +57,10 @@ export default function JobDetailView({ job, plan, dims }: { job: JobRow; plan: 
           <div style={{ ...sec, position: 'relative' }}>
             {/* 返回职位板(2026-07-25 用户两拍:先「放右上角和弹框×一致」,后「叉改成 返回职位板」):
                 右上角文字钮;?back=1 让板回放筛选快照(见 JobsTable back=1 回流),点过的筛选不丢 */}
-            <a href="/?back=1"
-              style={{ position: 'absolute', top: 12, right: 12, border: '1px solid #d1d5db', borderRadius: 8, padding: '6px 14px', fontSize: 12.5, color: '#374151', textDecoration: 'none', background: '#fff', whiteSpace: 'nowrap' }}>← {t('detail.back')}</a>
+            <a href="/?back=1" className="jdBack" onClick={() => setLeaving(true)}
+              style={{ position: 'absolute', top: 12, right: 12, border: '1px solid #d1d5db', borderRadius: 8, padding: '6px 14px', fontSize: 12.5, color: '#374151', textDecoration: 'none', background: leaving ? '#f3f4f6' : '#fff', opacity: leaving ? 0.7 : 1, whiteSpace: 'nowrap', transition: 'transform .06s' }}>
+              <style>{'.jdBack:active{transform:scale(.95)}'}</style>
+              {leaving ? '… ' : '← '}{t('detail.back')}</a>
             <h1 style={{ margin: '0 0 2px', fontSize: 22, lineHeight: 1.35, color: '#111827', paddingRight: 120 }}>{job.title}</h1>
             {nocZh && nocZh.toLowerCase() !== (job.title || '').toLowerCase() ? (
               <div style={{ fontSize: 13, color: '#9ca3af', marginBottom: 8 }}>{nocZh}</div>

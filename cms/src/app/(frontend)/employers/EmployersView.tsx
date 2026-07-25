@@ -4,6 +4,7 @@
 // 语义红线循 E6-02:LMIA=雇过外国人的历史事实 ≠ 能担保;AIP 指定 ≠ 有配额(口径行写死,见 dir.note.*)。
 import { useEffect, useState } from 'react'
 import { initialLang, makeT, LANG_KEY, type Lang, type TFn } from '../jobs/i18n'
+import { provName } from '../jobs/JobsTable'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { Button, Card, CardAction, CardKV, PageBanner, PageShell, Tag, UI, chipStyle } from '../ui/primitives'
@@ -143,8 +144,8 @@ export function EmployersView({ type, q, prov, page, aip, lmia, counts }: {
                 {r.sponsorGrade != null && <span title={t('gr.sponsorTip')} style={{ marginLeft: 6, fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sp.' + r.sponsorGrade)}</span>}
               </span> } },
             { key: 'industry', label: t('fact.coSectors'), sort: (r) => r.industry || null, render: (r) => r.industry ? <Tag variant="region">{t('broad.' + r.industry)}</Tag> : <span style={{ color: '#9ca3af' }}>—</span> },
-            // 2026-07-25 Frank「省显示完整的名字」(#58 零黑话同族):两字码走 pr.* 全名,非码值原样
-            { key: 'region', label: t('dir.col.region'), sort: (r) => r.region || null, render: (r) => r.region ? <>{/^[A-Z]{2}$/.test(r.region) ? t('pr.' + r.region) : r.region}</> : <span style={{ color: '#9ca3af' }}>—</span> },
+            // 2026-07-25 Frank 两拍(全名→完整英文名):两字码走 provName=英文全名(中文注),#146 惯例;非码值原样
+            { key: 'region', label: t('dir.col.region'), sort: (r) => r.region || null, render: (r) => r.region ? <>{/^[A-Z]{2}$/.test(r.region) ? provName(t, r.region) : r.region}</> : <span style={{ color: '#9ca3af' }}>—</span> },
             { key: 'skilled', label: t('dir.col.skilled'), thTip: t('dir.col.skilled.tip'), nowrap: true, sort: (r) => r.lmiaPositionsSkilled ?? null, render: (r) => <span style={{ fontWeight: 600, color: r.lmiaPositionsSkilled ? UI.ok : '#9ca3af' }}>{r.lmiaPositionsSkilled ?? '—'}</span> },
             { key: 'lmia', label: t('rank.col.lmia'), nowrap: true, sort: (r) => r.lmiaPositions, render: (r) => <>{r.lmiaPositions}</> },
             { key: 'streams', label: t('dir.col.streams'), render: (r) => <span style={{ fontSize: 12, display: 'inline-block', maxWidth: 260 }}>{r.lmiaStreams || '—'}</span> },
@@ -160,7 +161,7 @@ export function EmployersView({ type, q, prov, page, aip, lmia, counts }: {
         ) : (
           <DataTable<AipRow> rows={aip || []} rowKey={(r, i) => r.name + i} empty={t('dir.empty')} cols={[
             { key: 'name', label: t('dir.col.employer'), sort: (r) => r.name.toLowerCase(), render: (r) => <span style={{ fontWeight: 600 }}>{r.name}{r.isTech && <> <Tag variant="region">{t('dir.tech')}</Tag></>}</span> },
-            { key: 'prov', label: t('col.province'), nowrap: true, sort: (r) => r.province, render: (r) => <>{t('pr.' + r.province)}</> },
+            { key: 'prov', label: t('col.province'), nowrap: true, sort: (r) => r.province, render: (r) => <>{provName(t, r.province)}</> },
             { key: 'city', label: t('col.city'), sort: (r) => r.location || null, render: (r) => r.location || <span style={{ color: '#9ca3af' }}>—</span> },
             { key: 'go', label: '', nowrap: true, render: (r) => <a href={`/?q=${encodeURIComponent(r.name)}`} style={{ color: UI.primary, textDecoration: 'none', fontSize: 12.5 }}>{t('rank.viewJobs')}</a> },
           ]} />
