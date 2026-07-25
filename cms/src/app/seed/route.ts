@@ -242,7 +242,7 @@ export async function GET(req: Request) {
       'description', 'country', 'province', 'city', 'district', 'address', 'apply_url', 'official_url',
       'salary', 'salary_annual', 'salary_text', 'wage_med_hourly', 'wage_med_annual', 'wage_low_hourly',
       'wage_low_annual', 'wage_high_hourly', 'wage_high_annual', 'wage_year', 'date_posted', 'source',
-      'source_label', 'origin', 'accessibility', 'score', 'grade_channel', 'score_detail', 'pnp_eligible', 'pnp_stream', 'ee_category', 'aip', 'is_dup',
+      'source_label', 'origin', 'accessibility', 'score', 'grade_channel', 'score_detail', 'pnp_eligible', 'pnp_stream', 'ee_category', 'aip',
       'employment_term', 'employment_hours', 'certificates', 'education',
       'eligibility_flag', 'eligibility_quote',
       'status', 'closed_at', 'first_seen', 'last_seen', 'created_at', 'updated_at']
@@ -284,7 +284,7 @@ export async function GET(req: Request) {
           date_posted: isoDate(j.datePosted), source: j.source, source_label: j.sourceLabel,
           origin: j.origin, accessibility: j.accessibility, score: j.score,
           grade_channel: j.gradeChannel ?? null, score_detail: j.scoreDetail ? JSON.stringify(j.scoreDetail) : null,
-          pnp_eligible: !!j.pnpEligible, pnp_stream: j.pnpStream, ee_category: j.eeCategory, aip: !!j.aip, is_dup: !!j.isDup,
+          pnp_eligible: !!j.pnpEligible, pnp_stream: j.pnpStream, ee_category: j.eeCategory, aip: !!j.aip,
           // 雇佣形态+入职要求(E6-06/E6-07A);certificates 是 jsonb,pg 参数须传 JSON 字符串
           employment_term: j.employmentTerm, employment_hours: j.employmentHours,
           certificates: j.certificates ? JSON.stringify(j.certificates) : null, education: j.education,
@@ -318,6 +318,16 @@ export async function GET(req: Request) {
         [now, cutoff])
       closed = r.rowCount ?? 0
     }
+
+    // #125(批C 修正):重复(同 公司×岗名×城市)跨轮累积在 DB——同岗重发 externalId 会换,单轮 mart
+    // 快照内每岗唯一,ETL 侧标记恒 0(首跑实锤)→ 改本事务内窗口全量重算(open ~42k 行实测 ~6s,
+    // 每轮一次服务端,非请求路径;IS DISTINCT FROM 守卫只写真变化的行)。保最新:date_posted 新者,同日 id 大者
+    await client.query(`UPDATE jobs SET is_dup = x.dup FROM (
+      SELECT id, (row_number() OVER (PARTITION BY company_id, lower(title), coalesce(city, '')
+        ORDER BY date_posted DESC NULLS LAST, id DESC) > 1) AS dup
+      FROM jobs WHERE status = 'open') x
+      WHERE jobs.id = x.id AND jobs.is_dup IS DISTINCT FROM x.dup`)
+    await client.query(`UPDATE jobs SET is_dup = false WHERE status <> 'open' AND is_dup`)
 
     await client.query('COMMIT')
   } catch (e) {

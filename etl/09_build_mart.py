@@ -167,10 +167,11 @@ def build():
     jobs: list[dict] = []
     seen: set[str] = set()            # company-slug|title 去重
     seen_ext: set[str] = set()        # externalId 去重
-    # #124 批C:验尸判死帖不进 mart → 退出 seed 的 seen 集 → 既有「不在 seen 且发布>30天」规则自然置 closed
+    # #124 批C:验尸判死帖不进 mart → 退出 seed 的 seen 集 → 既有「不在 seen 且发布>30天」规则自然置 closed。
+    # 首跑教训:mart externalId 是 jb:<posting_id> 前缀形,验尸文件存裸 posting_id——比对必须加前缀(0 剔除实锤)
     expired: set[str] = set()
     if IN_EXPIRED.exists():
-        expired = set(json.loads(IN_EXPIRED.read_text(encoding="utf-8")).get("dead", {}).keys())
+        expired = {f"jb:{pid}" for pid in json.loads(IN_EXPIRED.read_text(encoding="utf-8")).get("dead", {})}
     dropped_expired = [0]
 
     def add_company(name, slug, **extra):
@@ -368,21 +369,8 @@ def build():
     if dropped_expired[0]:
         print(f"  #124 验尸剔除: {dropped_expired[0]} 个已过期帖不进 mart(seed 将按既有规则置 closed)")
 
-    # #125 批C:同 公司×岗名×城市 多帖标记 isDup(最新的一条=winner 不标)——仅展示层隐藏用,
-    # 行保留、统计/榜单口径不动(ETL 级删行有误合风险,拍板走稳路);请求路径反连接 5.8s 实测不可用,预计算落列
-    best: dict[tuple, tuple] = {}
-    for j in jobs:
-        k = (j.get("companySlug") or "", (j.get("title") or "").lower(), j.get("city") or "")
-        v = (j.get("datePosted") or "", str(j.get("externalId") or ""))
-        if k not in best or v > best[k]:
-            best[k] = v
-    dup_n = 0
-    for j in jobs:
-        k = (j.get("companySlug") or "", (j.get("title") or "").lower(), j.get("city") or "")
-        if best[k] != (j.get("datePosted") or "", str(j.get("externalId") or "")):
-            j["isDup"] = True
-            dup_n += 1
-    print(f"  #125 重复标记: {dup_n} 帖 isDup(同公司×岗名×城市保最新;列表隐藏,统计不动)")
+    # #125 批C 首跑教训:重复跨轮累积在 DB(同岗重发 externalId 会换),单轮 mart 快照内每岗唯一 →
+    # 快照内标记恒 0。isDup 改由 seed 事务内窗口 UPDATE 全量重算(见 cms seed route),mart 不再携带该位
 
     # #147/#151:NOC 职业名与城市名的中/韩译名(clean/04f、04g 产;**固定参考集翻一次永久用**)——
     # 缺文件/缺条目=留空,前端回退只显英文(宁可留空也不瞎猜;小镇本来就没有通行译名,不硬音译)
