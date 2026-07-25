@@ -1259,13 +1259,10 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                     {shown.map((c, idx) => {
                       const k = c.key
                       const rowBg = i % 2 ? '#fcfcfd' : '#fff'
-                      if (k === 'actions') return (  // 操作列(#201 Frank「通道弱删了,用户看不懂」):移民价值按钮(移民弹框入口)+ 收藏
+                      if (k === 'actions') return (  // 操作列:只剩收藏——移民价值钮 2026-07-25 Frank 拍板暂删
+                        // (「先深耕字段弹框」:PNP/EE/AIP/薪资各自弹框已拆,依据链/顾问入口随钮暂下,#201 语义待埋点数据再定)
                         <td key={k} style={{ ...td, minWidth: colMin('actions') }}>
                           <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
-                            <button onClick={(e) => { e.stopPropagation(); open('score', t('act.immigValue')) }}
-                              style={{ ...actBtn, whiteSpace: 'nowrap' }}>
-                              {t('act.immigValue')}
-                            </button>
                             <button onClick={(e) => { e.stopPropagation(); toggleSave(j) }}
                               style={{ ...actBtn, whiteSpace: 'nowrap', ...(saved[String(j.id)] ? { color: '#b45309', borderColor: '#fde68a', background: '#fffbeb' } : {}) }}>
                               {saved[String(j.id)] ? t('sj.saved') : t('sj.save')}
@@ -1462,12 +1459,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                   {j.eligibilityFlag ? chip('#fee2e2', '#b91c1c', t('cell.elig.' + j.eligibilityFlag), 'eligibility') : null}
                   {!j.pnpEligible && !j.eeCategory && !j.aip && j.teer != null ? chip('#f3f4f6', '#6b7280', `TEER ${j.teer}`, 'teer') : null}
                 </div>
-                {/* #201(Frank「通道弱删了,用户看不懂」):档名 chip 删除,移民弹框入口改成看得懂的「移民价值」按钮;
-                    2026-07-25 用户:整行太大 → 收成自适应宽度小钮 */}
-                <button onClick={stop(() => open('score', t('act.immigValue')))}
-                  style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 12px', fontSize: 12.5, border: '1px solid #d1d5db', borderRadius: 6, background: '#fff', color: '#374151', cursor: 'pointer' }}>
-                  <IconCompass /> {t('act.immigValue')}
-                </button>
+                {/* 移民价值钮暂删(2026-07-25 Frank「先删了,先深耕字段弹框」):#201 的入口随弹框大拆分下岗,
+                    PNP/EE/AIP/薪资信号 chips 即各自弹框入口;依据链/顾问回归方式待埋点数据再定 */}
                 {/* #167⑦(Frank「这个卡片最好有个更新时间吧,年月日时分秒」):发布时间只有日期没时刻(Job Bank 原样),
                     判断不了「刚抓到还是躺了一天」;更新时间是本站每小时抓取的实际时刻,精确到秒。
                     **此处必须带标签**:一张卡上两个日期并排,值自己说不清谁是谁 ——
