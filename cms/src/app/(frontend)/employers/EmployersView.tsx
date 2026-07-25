@@ -143,7 +143,8 @@ export function EmployersView({ type, q, prov, page, aip, lmia, counts }: {
                 {r.sponsorGrade != null && <span title={t('gr.sponsorTip')} style={{ marginLeft: 6, fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sp.' + r.sponsorGrade)}</span>}
               </span> } },
             { key: 'industry', label: t('fact.coSectors'), sort: (r) => r.industry || null, render: (r) => r.industry ? <Tag variant="region">{t('broad.' + r.industry)}</Tag> : <span style={{ color: '#9ca3af' }}>—</span> },
-            { key: 'region', label: t('dir.col.region'), render: (r) => r.region || <span style={{ color: '#9ca3af' }}>—</span> },
+            // 2026-07-25 Frank「省显示完整的名字」(#58 零黑话同族):两字码走 pr.* 全名,非码值原样
+            { key: 'region', label: t('dir.col.region'), sort: (r) => r.region || null, render: (r) => r.region ? <>{/^[A-Z]{2}$/.test(r.region) ? t('pr.' + r.region) : r.region}</> : <span style={{ color: '#9ca3af' }}>—</span> },
             { key: 'skilled', label: t('dir.col.skilled'), thTip: t('dir.col.skilled.tip'), nowrap: true, sort: (r) => r.lmiaPositionsSkilled ?? null, render: (r) => <span style={{ fontWeight: 600, color: r.lmiaPositionsSkilled ? UI.ok : '#9ca3af' }}>{r.lmiaPositionsSkilled ?? '—'}</span> },
             { key: 'lmia', label: t('rank.col.lmia'), nowrap: true, sort: (r) => r.lmiaPositions, render: (r) => <>{r.lmiaPositions}</> },
             { key: 'streams', label: t('dir.col.streams'), render: (r) => <span style={{ fontSize: 12, display: 'inline-block', maxWidth: 260 }}>{r.lmiaStreams || '—'}</span> },

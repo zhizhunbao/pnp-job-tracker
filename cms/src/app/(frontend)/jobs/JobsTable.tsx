@@ -92,7 +92,8 @@ export const cellActionable = (k: ColKey): boolean => {
 }
 
 // Pro 专属列(与 lib/plan.ts PRO_COLUMNS 一致;免费用户列位打码,真值本就没进浏览器)
-const PRO_COLS = new Set<ColKey>(['match', 'vsMedian', 'wageMedHr', 'wageMedYr'])
+// 2026-07-25 Frank「先都显示出来」:vs 中位三件套随 lib/plan PRO_COLUMNS 放开,锁只剩 match 语义位
+const PRO_COLS = new Set<ColKey>(['match'])
 // #152 锁位统一打码(Frank「应该给他打上马赛克那种」;#130 详情页先例推广到表格):
 // 每列一个**写死的假占位数**,blur 掉——传达「这儿有个数」比一把锁更能说明值多少。
 // 真值免费态压根不出服务端,占位数是假的,扒开也没用。

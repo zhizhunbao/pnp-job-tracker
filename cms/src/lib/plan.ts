@@ -14,8 +14,9 @@ export const PRO_ADVISOR_DAILY = Number(process.env.PRO_ADVISOR_DAILY || 200)
 export const FREE_MATCH_JOBS_PER_DAY = Number(process.env.FREE_MATCH_JOBS_PER_DAY || 10)
 
 // Pro 专属列(服务端 SELECT 源头裁掉,数据不到浏览器;前端在这些列位显示锁标+升级引导)
-// match=与我的匹配(E5-00 头牌);vs 中位三件套=移民价值对比维度
-export const PRO_COLUMNS = ['match', 'vsMedian', 'wageMedHr', 'wageMedYr'] as const
+// 2026-07-25 Frank「先都显示出来,之后 umami 加事件,访问多的功能再加 Pro」:vs 中位三件套放开
+// (量化用量后再定收费面);match 留列表语义不变(免费额度逻辑在 jobsSql/match,另一条线)
+export const PRO_COLUMNS = ['match'] as const
 export type ProColumn = (typeof PRO_COLUMNS)[number]
 export const isProColumn = (k: string): boolean => (PRO_COLUMNS as readonly string[]).includes(k)
 
