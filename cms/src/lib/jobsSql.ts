@@ -135,8 +135,9 @@ const SORT_COLUMNS: Record<string, string> = {
   wageMedHr: 'j.wage_med_hourly', wageMedYr: 'j.wage_med_annual',
   vsMedian: '(j.salary_annual::float / NULLIF(j.wage_med_annual, 0))',
 }
-// Pro 数据列(中位三件套):免费用户数据已剥离,若仍按它排序=锁列信息从行序泄露 → 非 Pro 回退默认序
-const PRO_SORTS = new Set(['wageMedHr', 'wageMedYr', 'vsMedian'])
+// Pro 数据列排序回退(#73 防行序泄露):2026-07-25「先都显示出来」中位三件套数据已放开,
+// 泄露前提不存在 → 回退集清空(集合保留,收费面回收时把列名加回来即可)
+const PRO_SORTS = new Set<string>([])
 // #127:旧 0-100 分从所有排序兜底退役(不按分数重排,与 JB 一致)。
 // #159(Frank 报障「昨晚榜首和今天 11 点还是同一个岗」):#127 的同日兜底用 j.id ASC 有致命副作用——
 // date_posted 只有日期没时间,于是**当天最早抓到的那批一整天钉在榜首**,晚上新抓的岗反沉到当天最底
@@ -217,13 +218,15 @@ export function mapJobRow(j: any, pro: boolean, matchLevel: JobRow['match']): Jo
     salary: j.salary ?? '',
     salaryAnnual: num(j.salary_annual),
     salaryText: j.salary_text ?? '',
-    wageMedHourly: pro ? num(j.wage_med_hourly) : null,
-    wageMedAnnual: pro ? num(j.wage_med_annual) : null,
-    wageLowHourly: pro ? num(j.wage_low_hourly) : null,
-    wageLowAnnual: pro ? num(j.wage_low_annual) : null,
-    wageHighHourly: pro ? num(j.wage_high_hourly) : null,
-    wageHighAnnual: pro ? num(j.wage_high_annual) : null,
-    wageYear: pro ? (j.wage_year ?? '') : '',
+    // 2026-07-25 Frank「先都显示出来」:中位/band 七字段随 PRO_COLUMNS 放开(此处原 pro 裁剪是
+    // 与前端 PRO_COLS 同款的第三处暗雷——改闸必须三处同步的教训,收费面回收时一并改回)
+    wageMedHourly: num(j.wage_med_hourly),
+    wageMedAnnual: num(j.wage_med_annual),
+    wageLowHourly: num(j.wage_low_hourly),
+    wageLowAnnual: num(j.wage_low_annual),
+    wageHighHourly: num(j.wage_high_hourly),
+    wageHighAnnual: num(j.wage_high_annual),
+    wageYear: j.wage_year ?? '',
     officialUrl: j.official_url ?? j.company_website ?? '',
     applyUrl: j.apply_url ?? '',
     datePosted: iso(j.date_posted),

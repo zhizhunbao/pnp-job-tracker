@@ -469,9 +469,10 @@ const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean 
   { key: 'source', label: '来源', default: false },
   { key: 'origin', label: '渠道', default: false },
   { key: 'direct', label: '发布', default: false },
-  { key: 'pnp', label: 'PNP', default: false },
-  { key: 'ee', label: 'EE 类别', default: false },
-  { key: 'aip', label: 'AIP', default: false },
+  // 2026-07-25 Frank「默认显示这些字段如何」:PNP/EE/AIP 三信号列转默认——差异化信号该默认亮,与手机卡 chips 对齐
+  { key: 'pnp', label: 'PNP', default: true },
+  { key: 'ee', label: 'EE 类别', default: true },
+  { key: 'aip', label: 'AIP', default: true },
   { key: 'lmia', label: '外劳记录', default: false },  // E6-02:雇主近两年 LMIA 获批史(公司级信号)
   { key: 'eligibility', label: '身份预筛', default: false },  // GAP1③:JD 明确不担保/须 PR 红旗(C14/C15)
   { key: 'status', label: '状态', default: false },
