@@ -5,6 +5,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { BROAD_SLUGS, PROVS, PROV_NAME, type StatRow } from './shared'
 import type { TFn } from '../jobs/i18n'
+import { track } from '@/lib/track'   // #129 功能级 umami 埋点
 
 type ChartInst = { setOption: (o: object, notMerge?: boolean) => void; resize: () => void; dispose: () => void; on: (ev: string, cb: (e: { dataIndex: number }) => void) => void }
 
@@ -149,6 +150,7 @@ function DrillCard({ rows, t, title, kind, metric, money, broadLabel }: {
         ? <EChart option={barOption(items, money)} height={chartH(items.length)}
             onBarClick={(i) => {
               const it = items[i]; if (!it) return
+              track('stats-drill', { depth: path.length + 1 })   // #129
               if (path.length === 2) return toJobs(it)
               if (path.length === 1) {  // L1→L2 前探一眼:该桶无中类行(列未落地/数据缺)→ 优雅降级=新标签页开职位板(不离开统计页)
                 const pb = kind === 'prov' ? { prov: path[0].key, broad: it.key } : { prov: it.key, broad: path[0].key }

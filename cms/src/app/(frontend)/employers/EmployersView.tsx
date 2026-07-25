@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react'
 import { initialLang, makeT, LANG_KEY, type Lang, type TFn } from '../jobs/i18n'
 import { provName } from '../jobs/JobsTable'
+import { track } from '@/lib/track'   // #129 功能级 umami 埋点
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { Button, Card, CardAction, CardKV, PageBanner, PageShell, Tag, UI, chipStyle } from '../ui/primitives'
@@ -85,6 +86,7 @@ export function EmployersView({ type, q, prov, page, aip, lmia, counts }: {
   const [cmp, setCmp] = useState<string[]>([])
   useEffect(() => { try { setCmp(JSON.parse(localStorage.getItem(CMP_KEY) || '[]')) } catch { /* ignore */ } }, [])
   const toggleCmp = (name: string) => setCmp((cur) => {
+    if (!cur.includes(name)) track('compare-add')   // #129
     const next = cur.includes(name) ? cur.filter((x) => x !== name) : cur.length >= CMP_MAX ? cur : [...cur, name]
     try { localStorage.setItem(CMP_KEY, JSON.stringify(next)) } catch { /* ignore */ }
     return next
@@ -102,7 +104,7 @@ export function EmployersView({ type, q, prov, page, aip, lmia, counts }: {
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', margin: '0 0 12px' }}>
           <a href={href('lmia', '', '', 0)} style={{ ...chipStyle(type === 'lmia'), textDecoration: 'none', display: 'inline-block' }}>{t('dir.tab.lmia')} · {counts.lmia}</a>
           <a href={href('aip', '', '', 0)} style={{ ...chipStyle(type === 'aip'), textDecoration: 'none', display: 'inline-block' }}>{t('dir.tab.aip')} · {counts.aip}</a>
-          <form action="/employers" method="get" style={{ display: 'flex', gap: 6, marginLeft: 'auto' }}>
+          <form action="/employers" method="get" onSubmit={() => track('employers-search')} style={{ display: 'flex', gap: 6, marginLeft: 'auto' }}>
             {type !== 'lmia' && <input type="hidden" name="type" value={type} />}
             {prov && <input type="hidden" name="prov" value={prov} />}
             <input name="q" value={qInput} onChange={(e) => setQInput(e.target.value)} placeholder={t('dir.search')}

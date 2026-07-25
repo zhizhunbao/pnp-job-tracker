@@ -21,6 +21,7 @@ import { CARD, iconBtnS, SCRIM, useIsNarrow } from './Modal'
 import { match as matchJob, matchRank, hasProfile, normalizeProfile, type MatchProfile, type MatchJob, type MatchReason } from '@/lib/match'
 import type { CompanyDetail, SimilarEmployer } from '@/lib/jobsSql'   // E8-11 B1:公司域同源数据形状(type-only,不拉服务端码)
 import { lmiaWageClass, isExemptSector } from '@/lib/lmiaStatus'
+import { track } from '@/lib/track'   // #129 功能级 umami 埋点
 
 // 分层态(E3-05/E5-00,服务端 page.tsx 传入):gate 在服务端已生效,这里只做展示引导
 export type Plan = {
@@ -730,6 +731,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       setSaved((m) => { const c = { ...m }; delete c[key]; return c })
       await fetch(`/api/saved-jobs/${cur.id}`, { method: 'DELETE', credentials: 'include' }).catch(() => {})
     } else {
+      track('save-job')
       const r = await fetch('/api/saved-jobs', {
         method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ job: j.id, title: j.title, company: j.company, status: 'wish' }),
@@ -750,6 +752,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const toggleMatchView = () => {
     if (!plan.loggedIn) { setUpsell('login'); return }
     if (!plan.profileOk) { setWizard(true); return }   // E11-05②:未建档 → 开引导 wizard(原直跳 /account)
+    if (!matchView) track('match-view')
     window.location.href = matchView ? '/' : '/?view=match'
   }
   const colRef = useRef<HTMLDivElement>(null)
@@ -1113,6 +1116,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                   const name = window.prompt(t('ss.name'))
                   if (!name) return
                   const filters = { q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, fEmp, fElig }
+                  track('save-search')
                   const r = await fetch('/api/saved-searches', {
                     method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, filters, lang }),
@@ -2453,7 +2457,7 @@ function CompanyPanel({ job, jobs, lang, plan, onOpenJob }: { job: JobRow; jobs:
         {canTrans ? (
           <button onClick={() => setShowTrans((v) => !v)} style={{ ...PILL_BTN, ...(showTrans ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}>{showTrans ? t('cat.hideZh') : t('cat.showZh')}</button>
         ) : null}
-        <button onClick={() => setAiOn((v) => !v)} style={{ ...PILL_BTN, ...(aiOn ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}><IconCompass /> {t('cat.aiRead')} {aiOn ? '▾' : '▸'}</button>
+        <button onClick={() => { if (!aiOn) track('ai-read-cat'); setAiOn((v) => !v) }} style={{ ...PILL_BTN, ...(aiOn ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}><IconCompass /> {t('cat.aiRead')} {aiOn ? '▾' : '▸'}</button>
         {slug ? <a href={`/companies/${slug}`} target="_blank" rel="noreferrer" style={{ ...PILL_BTN, textDecoration: 'none', display: 'inline-block' }}>{t('detail.openFull')} ↗</a> : null}
       </div>
       {/* AI 速读(点了才出,置顶;coRead=公司级接地速读,不联网不凭名字编)——弹框壳独有,页面不带 */}
@@ -3093,6 +3097,7 @@ function CategoryPanel({ job, lang, plan, nocDesc, srcField }: { job: JobRow; la
   const [transStatus, setTransStatus] = useState<'idle' | 'loading' | 'error'>('idle')
   const toggleTrans = async () => {
     if (trans) { setShowTrans((v) => !v); return }
+    track('cat-translate')   // #129
     setTransStatus('loading')
     try {
       const r = await fetch('/api/noc-translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ noc: job.noc, lang }) })
@@ -3304,7 +3309,7 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news }: { job: Job
   const factsReady = level === 'province' ? !!prov : !!cityInfo
   // #183 同款(Frank「点完按钮怎么没了」):AI 速读=常驻折叠开关,点开点收都是它;内容留在 state,收起再开不重烧
   const [aiOn, setAiOn] = useState(false)
-  const toggleAi = () => { if (aiStatus === 'idle') runAi(); setAiOn((v) => !v) }
+  const toggleAi = () => { if (aiStatus === 'idle') runAi(); if (!aiOn) track('ai-read-co'); setAiOn((v) => !v) }
 
   // 卡① 地点:与分类卡①同款行(点进来的字段行高亮);有值行值文字=地图链接(与表格格同一规则)
   const locRows: { f: ColKey; k: string; v: string; map: boolean }[] = [
@@ -3493,6 +3498,8 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
   const [status, setStatus] = useState<'loading' | 'streaming' | 'done' | 'error' | 'upgrade' | 'limited'>('loading')
   // 2026-07-25 Frank「和上面的中文翻译按钮联动」:移民弹框清单译名开关(zh/ko 默认开,en 不出钮)
   const [showZh, setShowZh] = useState(lang !== 'en')
+  // #129 功能级埋点:四类弹框打开各记一事件(modal-immigration/company/category/location),field=入口格
+  useEffect(() => { track('modal-' + group, { field: String(field) }) }, [])  // eslint-disable-line react-hooks/exhaustive-deps
   // 同公司在榜岗(E10-01 P3:blob 没了 → 打开公司弹窗时按公司名从 /api/jobs 拉,不再靠父级全量列表)
   const [companyJobs, setCompanyJobs] = useState<JobRow[]>([])
   useEffect(() => {
@@ -3612,7 +3619,7 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
               这个标题下答非所问(用户点公司是想了解公司)。岗位级判定留在岗位面板。 */}
           {group === 'immigration' && lang !== 'en' && (
             <div style={{ margin: '2px 0 10px' }}>
-              <button onClick={() => setShowZh((v) => !v)} style={{ ...PILL_BTN, ...(showZh ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}>{showZh ? t('cat.hideZh') : t('cat.showZh')}</button>
+              <button onClick={() => { if (!showZh) track('imm-translate'); setShowZh((v) => !v) }} style={{ ...PILL_BTN, ...(showZh ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}>{showZh ? t('cat.hideZh') : t('cat.showZh')}</button>
             </div>
           )}
           {group === 'immigration' && <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} nocDesc={nocDesc} />}
@@ -3956,6 +3963,7 @@ export function JobBody({ job, lang, plan, inModal, onFreeLeft }: { job: JobRow;
   const [transStatus, setTransStatus] = useState<'idle' | 'loading' | 'error'>('idle')
   const toggleTrans = async () => {
     if (trans) { setShowTrans((v) => !v); return }
+    track('jd-translate')   // #129:首次拉取才计(纯开合不计)
     setTransStatus('loading')
     try {
       const r = await fetch('/api/jd-translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: job.applyUrl || '', lang }) })
@@ -4026,7 +4034,7 @@ export function JobBody({ job, lang, plan, inModal, onFreeLeft }: { job: JobRow;
         ) : null}
         {/* AI 速读=常驻折叠开关(Frank 2026-07-22「按钮怎么没了」「可以折叠的」):点开点收都是它,
             不再点一次就消失;内容 jdAdvCache 缓存,收起再开秒回不重烧额度。▾=展开 ▸=收起 */}
-        {status !== 'loading' && <button onClick={() => setAiOn((v) => !v)} style={{ ...PILL_BTN, ...(aiOn ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}><IconCompass /> {t('cat.aiRead')} {aiOn ? '▾' : '▸'}</button>}
+        {status !== 'loading' && <button onClick={() => { if (!aiOn) track('ai-read-jd'); setAiOn((v) => !v) }} style={{ ...PILL_BTN, ...(aiOn ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}><IconCompass /> {t('cat.aiRead')} {aiOn ? '▾' : '▸'}</button>}
         {inModal ? <a href={`/jobs/${job.id}`} target="_blank" rel="noreferrer" style={{ ...PILL_BTN, textDecoration: 'none', display: 'inline-block' }}>{t('detail.openFull')} ↗</a> : null}
       </div>
       {/* AI 速读卡(点了才出;置顶=点完不用往下翻,与分类弹框同规范;jdRead=纯 JD 速读不带移民解读) */}
@@ -4088,6 +4096,7 @@ function ActModal({ job, lang, plan, nocDesc, onClose }: { job: JobRow; lang: La
   const overlayClose = useOverlayClose(onClose)
   const { narrow, full, toggleFull, panel, startDrag, startResize } = useFloatPanel(JD_PREF, 760, 640)
   const [freeLeft, setFreeLeft] = useState<number | null>(null)  // 第 5 轮 #16:试用额度可见化(JobBody 回传)
+  useEffect(() => { track('modal-jd') }, [])  // #129 功能级埋点:JD 弹框打开
   return (
     <div {...overlayClose} style={{ ...SCRIM, zIndex: 50 }}>
       <div onClick={(e) => e.stopPropagation()} style={{ ...CARD, ...panel, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
