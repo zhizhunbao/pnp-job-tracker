@@ -161,26 +161,28 @@
 </div>
 
 
-<!-- ⑧ 操作列冻结右侧 -->
+<!-- ⑧ 默认列一屏放下 -->
 <div class="panel board" id="p-actions">
-  <div class="plabel">⑧ 操作列冻结右侧常显(现状=横滚时被右边截一半)</div>
+  <div class="plabel">⑧ 默认列一屏放下:表宽=视口,长文本自动换行,操作列常显不被截</div>
   <div class="card" style="padding:0;overflow:hidden">
-    <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+    <table style="width:100%;border-collapse:collapse;font-size:12.5px;table-layout:fixed">
       <tr style="color:#6b7280;border-bottom:1px solid #e5e7eb">
-        <td style="padding:8px 12px">…</td><td style="padding:8px 12px">PNP</td><td style="padding:8px 12px">EE</td><td style="padding:8px 12px">AIP</td>
-        <td style="padding:8px 12px;box-shadow:-3px 0 5px -3px rgba(0,0,0,.18);background:#fff;width:96px">操作</td>
-      </tr>
-      <tr style="border-bottom:1px solid #f3f4f6">
-        <td style="padding:8px 12px">…</td><td style="padding:8px 12px;color:#15803d">可提名</td><td style="padding:8px 12px;color:#2563eb">STEM</td><td style="padding:8px 12px;color:#d1d5db">—</td>
-        <td style="padding:8px 12px;box-shadow:-3px 0 5px -3px rgba(0,0,0,.18);background:#fff">☆ 收藏</td>
+        <td style="padding:8px 10px;width:88px">发布时间</td><td style="padding:8px 10px">公司</td><td style="padding:8px 10px">职位</td><td style="padding:8px 10px">省</td>
+        <td style="padding:8px 10px;width:76px">薪资</td><td style="padding:8px 10px;width:56px">PNP</td><td style="padding:8px 10px;width:44px">EE</td><td style="padding:8px 10px;width:72px">操作</td>
       </tr>
       <tr>
-        <td style="padding:8px 12px">…</td><td style="padding:8px 12px;color:#15803d">可提名</td><td style="padding:8px 12px;color:#d1d5db">—</td><td style="padding:8px 12px;color:#d1d5db">—</td>
-        <td style="padding:8px 12px;box-shadow:-3px 0 5px -3px rgba(0,0,0,.18);background:#fff">☆ 收藏</td>
+        <td style="padding:8px 10px;vertical-align:top;white-space:nowrap">2026-07-25</td>
+        <td style="padding:8px 10px;color:#2563eb;vertical-align:top">GEMTEC Consulting Engineers and Scientists Limited</td>
+        <td style="padding:8px 10px;color:#2563eb;vertical-align:top">bridge engineer</td>
+        <td style="padding:8px 10px;color:#2563eb;vertical-align:top">New Brunswick</td>
+        <td style="padding:8px 10px;color:#15803d;vertical-align:top;white-space:nowrap">$32–72/hr</td>
+        <td style="padding:8px 10px;color:#15803d;vertical-align:top;white-space:nowrap">可提名</td>
+        <td style="padding:8px 10px;color:#2563eb;vertical-align:top">STEM</td>
+        <td style="padding:8px 10px;vertical-align:top;white-space:nowrap">☆ 收藏</td>
       </tr>
     </table>
   </div>
-  <div class="ghost">操作列 sticky 贴右+左阴影,其余列从它底下横滚——镜像既有左冻结列(发布时间/公司/职位)同款</div>
+  <div class="ghost">收窄顺序=当前最宽列先折行(公司→职位→省);日期/薪资/档位/操作列恒一行不折</div>
 </div>
 
 </body>
