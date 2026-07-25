@@ -1568,7 +1568,7 @@ function NewsLatestBlock({ province, lang, news }: { province: string; lang: Lan
   )
 }
 
-export function PnpListSection({ job, lang, occ, draws, news, nocDesc = [] }: { job: JobRow; lang: Lang; occ: PnpOcc[]; draws: PnpDraw[]; news: NewsSlim[]; nocDesc?: NocDesc[] }) {
+export function PnpListSection({ job, lang, occ, draws, news, nocDesc = [], showZh = true }: { job: JobRow; lang: Lang; occ: PnpOcc[]; draws: PnpDraw[]; news: NewsSlim[]; nocDesc?: NocDesc[]; showZh?: boolean }) {
   const t = makeT(lang)
   const matchRef = useRef<HTMLDivElement | null>(null)
   // 2026-07-25 Frank:清单可折叠+职业带界面语言译名+展开不内嵌滚动。译名=NOC 官方职业名(noc_descriptions)
@@ -1639,7 +1639,7 @@ export function PnpListSection({ job, lang, occ, draws, news, nocDesc = [] }: { 
           <div style={{ border: '1px solid #f3f4f6', borderRadius: 8 }}>
             {s.occupations.map((o) => {
               const hit = o.noc === noc
-              const zh = nocLocalTitle(nocRowOf.get(o.noc) || null, lang)
+              const zh = showZh ? nocLocalTitle(nocRowOf.get(o.noc) || null, lang) : ''
               return (
                 <div key={o.noc + o.name} ref={hit ? matchRef : undefined}
                   style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '4px 10px', fontSize: 12.5,
@@ -1681,7 +1681,7 @@ export function PnpListSection({ job, lang, occ, draws, news, nocDesc = [] }: { 
 // 与 PnpListSection 同理:清单来自 DB 维度表(ee-categories,经 props 传入),全国单一源。
 // 命中→只展开该类别清单 + 高亮本岗;未命中→只列出各类别名+数量概览。EE ≠ PNP,独立信号。
 type EeCat = { key: string; label: string; drawCrs: number | null; drawDate: string; drawSize: number | null; occupations: { noc: string; teer: number | null; title: string }[] }
-export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [] }: { job: JobRow; lang: Lang; cats: EeOcc[]; draws?: PnpDraw[]; nocDesc?: NocDesc[] }) {
+export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [], showZh = true }: { job: JobRow; lang: Lang; cats: EeOcc[]; draws?: PnpDraw[]; nocDesc?: NocDesc[]; showZh?: boolean }) {
   const t = makeT(lang)
   const matchRef = useRef<HTMLDivElement | null>(null)
   // 2026-07-25 Frank:每类别可折叠+职业带界面语言译名+展开全量不内嵌滚动(与 PNP 清单同规格)
@@ -1738,8 +1738,7 @@ export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [] }:
         </div>
       ) : null}
       {shown.map((c) => {
-        const isHitCat = c.occupations.some((o) => o.noc === noc)
-        const listOpen = foldOpen[c.key] ?? isHitCat   // 命中类默认展开;全景浏览默认收起,点头展开
+        const listOpen = foldOpen[c.key] ?? true   // 2026-07-25 Frank「每个职位怎么没了」:一律默认展开,想收再点头折
         return (
         <div key={c.key} style={{ marginBottom: 10 }}>
           <div onClick={() => setFoldOpen((m) => ({ ...m, [c.key]: !listOpen }))}
@@ -1772,12 +1771,15 @@ export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [] }:
               </>
             )
           })() : null}
-          {/* 2026-07-25 Frank 两拍:①展开时每类别列职业清单;②可折叠+译名+展开全量不内嵌滚动 */}
+          {/* 2026-07-25 Frank 三拍:①展开时每类别列职业清单;②可折叠+译名+展开全量不内嵌滚动;
+              ③抽选历史与职业清单「分开显示」——职业清单带自己的灰标题行,不与历史黏成一张表 */}
           {listOpen ? (
+          <>
+          <div style={{ fontSize: 11.5, color: '#9ca3af', margin: '8px 0 4px' }}>{t('eelist.occTitle')}</div>
           <div style={{ border: '1px solid #f3f4f6', borderRadius: 8 }}>
             {c.occupations.map((o) => {
               const isHit = o.noc === noc
-              const zh = nocLocalTitle(nocRowOf.get(o.noc) || null, lang)
+              const zh = showZh ? nocLocalTitle(nocRowOf.get(o.noc) || null, lang) : ''
               return (
                 <div key={o.noc} ref={isHit ? matchRef : undefined}
                   style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '4px 10px', fontSize: 12.5,
@@ -1790,6 +1792,7 @@ export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [] }:
               )
             })}
           </div>
+          </>
           ) : null}
         </div>
         )
@@ -2677,21 +2680,21 @@ function GroupFactsSection(props: Omit<Parameters<typeof FieldFactsSection>[0], 
   )
 }
 
-function FieldFactsSection({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpDraws, news, eeOcc, desigEmp, nocDesc, fieldSources, onOpenJob }: { field: ColKey; job: JobRow; jobs: JobRow[]; lang: Lang; isPro: boolean; loggedIn: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; news: NewsSlim[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onOpenJob?: (j: JobRow) => void }) {
+function FieldFactsSection({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpDraws, news, eeOcc, desigEmp, nocDesc, fieldSources, onOpenJob, showZh }: { field: ColKey; job: JobRow; jobs: JobRow[]; lang: Lang; isPro: boolean; loggedIn: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; news: NewsSlim[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onOpenJob?: (j: JobRow) => void; showZh?: boolean }) {
   const t = makeT(lang)
   return (
     <>
-      <FieldFactsInner field={field} job={job} jobs={jobs} lang={lang} isPro={isPro} loggedIn={loggedIn} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} onOpenJob={onOpenJob} />
+      <FieldFactsInner field={field} job={job} jobs={jobs} lang={lang} isPro={isPro} loggedIn={loggedIn} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} onOpenJob={onOpenJob} showZh={showZh} />
       {/* #106 撤官方外链;2026-07-25 Frank「这些都是废话」:「来源: 本站算法」派生注也退役 */}
     </>
   )
 }
 // CompanyJobsList 退役(E8-11 B1):在招职位富行(NOC 对照+薪资+通道档)收编进 CompanyBody,弹框页面同款
-function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpDraws, news, eeOcc, desigEmp, nocDesc, onOpenJob }: { field: ColKey; job: JobRow; jobs: JobRow[]; lang: Lang; isPro: boolean; loggedIn: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; news: NewsSlim[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; onOpenJob?: (j: JobRow) => void }) {
+function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpDraws, news, eeOcc, desigEmp, nocDesc, onOpenJob, showZh }: { field: ColKey; job: JobRow; jobs: JobRow[]; lang: Lang; isPro: boolean; loggedIn: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; news: NewsSlim[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; onOpenJob?: (j: JobRow) => void; showZh?: boolean }) {
   const t = makeT(lang)
   const noc = nocDesc.find((d) => d.noc === job.noc) || null
-  if (field === 'pnp') return <PnpListSection job={job} lang={lang} occ={pnpOcc} draws={pnpDraws} news={news} nocDesc={nocDesc} />
-  if (field === 'ee') return <EeCategorySection job={job} lang={lang} cats={eeOcc} draws={pnpDraws} nocDesc={nocDesc} />
+  if (field === 'pnp') return <PnpListSection job={job} lang={lang} occ={pnpOcc} draws={pnpDraws} news={news} nocDesc={nocDesc} showZh={showZh} />
+  if (field === 'ee') return <EeCategorySection job={job} lang={lang} cats={eeOcc} draws={pnpDraws} nocDesc={nocDesc} showZh={showZh} />
   if (field === 'title') return <TitleFacts job={job} lang={lang} loggedIn={loggedIn} />
   const day = (s?: string) => (s || '').slice(0, 10)
 
@@ -3488,6 +3491,8 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
   const a = advHeader(field, job, t)
   const [text, setText] = useState('')
   const [status, setStatus] = useState<'loading' | 'streaming' | 'done' | 'error' | 'upgrade' | 'limited'>('loading')
+  // 2026-07-25 Frank「和上面的中文翻译按钮联动」:移民弹框清单译名开关(zh/ko 默认开,en 不出钮)
+  const [showZh, setShowZh] = useState(lang !== 'en')
   // 同公司在榜岗(E10-01 P3:blob 没了 → 打开公司弹窗时按公司名从 /api/jobs 拉,不再靠父级全量列表)
   const [companyJobs, setCompanyJobs] = useState<JobRow[]>([])
   useEffect(() => {
@@ -3605,6 +3610,11 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
               #161(Frank「公司显示这些信息也不合适吧」):公司面板不渲 —— 表里七个维度里
               职业方向/所在省/省提名粗筛/EE/技能层级/薪资 全是**岗位级**事实,挂在「Agilent Technologies」
               这个标题下答非所问(用户点公司是想了解公司)。岗位级判定留在岗位面板。 */}
+          {group === 'immigration' && lang !== 'en' && (
+            <div style={{ margin: '2px 0 10px' }}>
+              <button onClick={() => setShowZh((v) => !v)} style={{ ...PILL_BTN, ...(showZh ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}>{showZh ? t('cat.hideZh') : t('cat.showZh')}</button>
+            </div>
+          )}
           {group === 'immigration' && <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} nocDesc={nocDesc} />}
           {/* 分类组走专用三卡面板(Frank 2026-07-21:三卡 + 中文对照 + AI 速读);公司组走专用平级卡面板
               (同日「参考类别重新设计」);其余组照旧铺全组事实 */}
@@ -3614,7 +3624,7 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
             ? <LocationPanel job={job} lang={lang} plan={plan} srcField={field} pnpDraws={pnpDraws} news={news} />
             : group === 'company'
             ? <CompanyPanel job={job} jobs={companyJobs} lang={lang} plan={plan} onOpenJob={onOpenJob} />
-            : <GroupFactsSection group={group} job={job} jobs={companyJobs} lang={lang} isPro={plan.isPro} loggedIn={plan.loggedIn} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} onOpenJob={onOpenJob} />}
+            : <GroupFactsSection group={group} job={job} jobs={companyJobs} lang={lang} isPro={plan.isPro} loggedIn={plan.loggedIn} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} onOpenJob={onOpenJob} showZh={showZh} />}
           {/* 建档 CTA(第 5 轮 #17 = 弹框规范 D1):身份信号族对未建档用户铺「事实 → 个人化」的桥 */}
           {!plan.profileOk && group === 'immigration' && (
             <div style={{ margin: '8px 0 10px' }}>

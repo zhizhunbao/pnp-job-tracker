@@ -142,6 +142,7 @@ const zh: Dict = {
   // #135 历次抽选时间线(展开)
   'eelist.hist': '看历次 {n} 轮', 'eelist.crsN': 'CRS {crs}', 'eelist.itaN': '发出 {n} 邀请',
   'eelist.allCats': '看全部 {n} 个类别',   // #155 未命中时全景默认收起
+  'eelist.occTitle': '包含职业',
   'eelist.histNote': '近两年该类别的历次抽选;分数线只反映当期竞争,不预测未来',
   'col.actions': '操作', 'act.immigValue': '移民价值', 'act.descTitle': '职位描述', 'act.site': '官网', 'act.addr': '地址', 'act.jobsHere': '该公司在榜职位', 'act.showAll': '展开其余 {n} 个 ▾', 'act.showAllBoard': '在职位板查看其余 {n} 个 →', 'act.noText': '本站暂未收录这条帖子的正文——新帖正文通常次日到位,部分聚合源不提供。', 'act.loadingText': '加载中…', 'jd.busy': '这条看得有点快,稍等一下再看。',
   // #136/#137(Frank 追问「为什么不能转载」):#136 原文案「该站不允许第三方转载」是替对方做法律断言——
@@ -588,6 +589,7 @@ const en: Dict = {
   'eelist.in': 'This job (NOC {noc}) is in the federal EE "{cats}" category', 'eelist.out': 'Not in any federal Express Entry category', 'eelist.source': 'Source: Express Entry category-based selection', 'eelist.your': 'This job', 'eelist.loading': 'Loading EE list…', 'eelist.draw': 'Recent draw {date}: CRS {crs}, {size} invitations', 'eelist.count': '{n} occupations',
   'eelist.hist': 'see all {n} rounds', 'eelist.crsN': 'CRS {crs}', 'eelist.itaN': '{n} invitations',
   'eelist.allCats': 'see all {n} categories',
+  'eelist.occTitle': 'Occupations included',
   'eelist.histNote': 'Rounds for this category over the past two years; a cut-off reflects that round only and does not predict future ones',
   'col.actions': 'Actions', 'act.immigValue': 'Immigration value', 'act.descTitle': 'Job description', 'act.site': 'Website', 'act.addr': 'Address', 'act.jobsHere': 'Listings by this company', 'act.showAll': 'Show {n} more ▾', 'act.showAllBoard': 'See {n} more on the job board →', 'act.noText': 'No description text on file for this posting yet — new posts usually arrive within a day; some aggregator sources never provide one.', 'act.loadingText': 'Loading…', 'jd.busy': 'Loading these quickly — give it a moment and try again.',
   'act.noTextBlocked': 'The full text of this posting is on {src}, which blocks automated reading by this site. The link below goes straight to the original.',
@@ -1038,6 +1040,7 @@ const ko: Dict = {
   'eelist.in': '이 직무 NOC {noc}은 연방 EE 「{cats}」 카테고리 목록에 포함됨', 'eelist.out': '어떤 연방 EE 카테고리 목록에도 없음', 'eelist.source': '출처: Express Entry 카테고리 기반 선발', 'eelist.your': '이 직무', 'eelist.loading': 'EE 목록 로딩 중…', 'eelist.draw': '최근 추첨 {date}: CRS {crs}, {size}개 초청장 발송', 'eelist.count': '{n}개 직업',
   'eelist.hist': '지난 {n}회 보기', 'eelist.crsN': 'CRS {crs}', 'eelist.itaN': '초청장 {n}개',
   'eelist.allCats': '전체 {n}개 카테고리 보기',
+  'eelist.occTitle': '포함 직업',
   'eelist.histNote': '최근 2년간 해당 카테고리의 추첨 내역; 커트라인은 해당 회차의 경쟁만 반영하며 미래를 예측하지 않습니다',
   'col.actions': '작업', 'act.immigValue': '이민 가치', 'act.descTitle': '직무 설명', 'act.site': '웹사이트', 'act.addr': '주소', 'act.jobsHere': '이 회사의 공고', 'act.showAll': '나머지 {n}개 펼치기 ▾', 'act.showAllBoard': '채용 보드에서 나머지 {n}개 보기 →', 'act.noText': '이 공고의 본문이 아직 없습니다 — 신규 공고는 보통 다음 날 등록되며, 일부 소스는 본문을 제공하지 않습니다.', 'act.loadingText': '로딩 중…', 'jd.busy': '조금 빠르게 보고 있어요. 잠시 후 다시 시도해 주세요.',
   'act.noTextBlocked': '이 공고의 본문은 원본 사이트({src})에 있으며, 해당 사이트는 본 사이트의 자동 읽기를 차단합니다. 아래 링크로 원문을 확인하세요.',
