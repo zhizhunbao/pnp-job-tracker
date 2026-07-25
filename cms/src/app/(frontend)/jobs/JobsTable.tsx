@@ -54,7 +54,9 @@ export function catName(t: TFn, v: string): string {
 // 'category' 新立——点分类看分类,不再开移民全家桶(入口语义=内容)。
 // E8-12(Frank 2026-07-23):'location' 新立——点省看省(IRCC 体量/难度/抽选/公告,真数据非解释);
 // 省/市/区格子开弹框、**文字仍是地图链接**(点文字跳地图,点格子弹框)。
-export type FieldGroup = 'company' | 'immigration' | 'category' | 'location'
+// 2026-07-25 Frank 五连拍拆弹框:「EE/PNP/AIP/薪资 的内容只放各自的弹框,移民价值做薄」——
+// #176 五合一长弹框按信号拆专属弹框,移民价值只留 依据链+通道卡+AI 顾问(结论层,清单层各回各家)
+export type FieldGroup = 'company' | 'immigration' | 'category' | 'location' | 'pnp' | 'ee' | 'aip' | 'salary'
 // 三档:并(→三个弹框之一)、图(直连地图)、无(不可点)。
 // 原设计还有一档「注=悬停小注」,2026-07-21 Frank 拍板不做 —— 它与「无」行为完全一致,
 // 留着只是个没兑现的意图,故合并(YAGNI:不为「可能用得上」保留结构)。
@@ -71,15 +73,15 @@ const FIELD_GROUP: Partial<Record<ColKey, Disposition>> = {
   company: 'company',
   // ④ 省/市/区 → 地点弹框(E8-12;格内文字仍是地图链接,两个动作分开);地址保持地图直连
   address: 'map', province: 'location', city: 'location', district: 'location',
-  // ⑤ PNP/EE/AIP → 移民弹框(2026-07-24 Frank「这三个也需要弹框,类似类别」——#175 收编后的定向放开:
-  //    这三列本就是移民弹框五合一的内容,点列看详情与「点分类看分类」同构)
-  pnp: 'immigration', ee: 'immigration', aip: 'immigration',
-  // ⑥ 其余一律不可点(Pro 锁位的锁自己链升级弹窗,不走本路由)
-  match: 'none', eligibility: 'none', vsMedian: 'none',
-  salary: 'none', salaryYr: 'none', empHours: 'none', empTerm: 'none', accessibility: 'none', lmia: 'none',
+  // ⑤ PNP/EE/AIP → 各自专属弹框(2026-07-25 Frank 拆弹框:「xx 的内容只放 xx 的弹框」,
+  //    原并入移民弹框的五合一退役——与移民价值的依据链行重复)
+  pnp: 'pnp', ee: 'ee', aip: 'aip',
+  // ⑥ 薪资族 → 薪资弹框(同批拆分:帖面薪资+折算+当地 band+vs 中位一处看全)
+  vsMedian: 'salary', salary: 'salary', salaryYr: 'salary', wageMedHr: 'salary', wageMedYr: 'salary',
+  // ⑦ 其余一律不可点(Pro 锁位的锁自己链升级弹窗,不走本路由)
+  match: 'none', eligibility: 'none', empHours: 'none', empTerm: 'none', accessibility: 'none', lmia: 'none',
   country: 'none',
   source: 'none', origin: 'none', direct: 'none', status: 'none',
-  wageMedHr: 'none', wageMedYr: 'none',
   datePosted: 'none', lastSeen: 'none', closedAt: 'none',
 }
 
@@ -2627,10 +2629,13 @@ function fieldSrcUrls(field: ColKey, job: JobRow, sources: FieldSource[]): strin
 // 收编后:一个分组一次把该组事实全铺出来。**复用既有 FieldFactsSection 当积木**(它=某字段事实+其来源行),
 // 不重写任何渲染逻辑 —— 顺序即阅读顺序,先结论后依据。
 const GROUP_SECTIONS: Record<FieldGroup, ColKey[]> = {
-  // #176 四弹框终表:移民=「能不能走」(通道/PNP/EE/AIP/vs 中位)——职业分类挪去自己的家;
-  // 分类=「这职业是干嘛的」(三级路径+官方职责+任职要求,一张卡);公司=「雇主靠谱吗」;
-  // 职位组退役(ActModal 即职位弹框:JD 整理版自带薪资/怎么投节,不另立组)。
-  immigration: ['score', 'pnp', 'ee', 'aip', 'vsMedian'],
+  // 2026-07-25 Frank 拆弹框(#176 五合一退役):移民价值做薄=通道卡(+依据链/顾问在 AdvisorModal 直渲);
+  // PNP/EE/AIP/薪资 各回各家——「xx 的内容只放 xx 的弹框」,与依据链结论行不再重复
+  immigration: ['score'],
+  pnp: ['pnp'],
+  ee: ['ee'],
+  aip: ['aip'],
+  salary: ['salary', 'vsMedian'],   // 帖面原文一卡 + 折算/当地 band/vs% 一卡
   category: ['noc'],
   company: [],   // 2026-07-21:公司组走专用 CompanyPanel(平级卡),不经 GroupFactsSection
   location: [],  // E8-12:地点组走专用 LocationPanel(五卡两列),不经 GroupFactsSection
@@ -3618,7 +3623,7 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
               #161(Frank「公司显示这些信息也不合适吧」):公司面板不渲 —— 表里七个维度里
               职业方向/所在省/省提名粗筛/EE/技能层级/薪资 全是**岗位级**事实,挂在「Agilent Technologies」
               这个标题下答非所问(用户点公司是想了解公司)。岗位级判定留在岗位面板。 */}
-          {group === 'immigration' && lang !== 'en' && (
+          {(group === 'pnp' || group === 'ee') && lang !== 'en' && (
             <div style={{ margin: '2px 0 10px' }}>
               <button onClick={() => { if (!showZh) track('imm-translate'); setShowZh((v) => !v) }} style={{ ...PILL_BTN, ...(showZh ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}>{showZh ? t('cat.hideZh') : t('cat.showZh')}</button>
             </div>

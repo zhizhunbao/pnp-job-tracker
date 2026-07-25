@@ -280,7 +280,7 @@ const zh: Dict = {
   'match.r.lmia.na': '该雇主近两年无获批 LMIA 记录(多数雇主从未办过,非负面信号)',
   // 付费墙(E3-05)
   // E8-10:三个弹框的页眉分组名(收编后标题不再取被点单元格的值)
-  'grp.company': '公司', 'grp.immigration': '移民', 'grp.category': '职业分类', 'grp.location': '地点',
+  'grp.company': '公司', 'grp.immigration': '移民', 'grp.category': '职业分类', 'grp.location': '地点', 'grp.pnp': '省提名(PNP)', 'grp.ee': '联邦 EE', 'grp.aip': 'AIP 指定雇主', 'grp.salary': '薪资对照',
   // E8-12 地点弹框:该省移民体量卡(IRCC 官方数;人话名主文案+代码灰注)
   'loc.vol': '该省移民体量', 'loc.volTag': 'IRCC 官方数',
   'loc.study': '学签持有人', 'loc.tfwp': '雇主担保类工签', 'loc.imp': '开放及豁免类工签', 'loc.impNote': 'IMP,含毕业工签',
@@ -746,7 +746,7 @@ const en: Dict = {
   'match.r.lmia.lowOnly': 'Employer’s {n} approved LMIA positions (latest {q}) are all Primary Agriculture / Low Wage streams — mostly seasonal hiring, weak evidence for skilled sponsorship; no points added',
   'match.r.lmia.na': 'No positive-LMIA record for this employer in the past two years (most employers never needed one; not a negative signal)',
   // 付费墙(E3-05)
-  'grp.company': 'Company', 'grp.immigration': 'Immigration', 'grp.category': 'Occupation', 'grp.location': 'Location',
+  'grp.company': 'Company', 'grp.immigration': 'Immigration', 'grp.category': 'Occupation', 'grp.location': 'Location', 'grp.pnp': 'PNP', 'grp.ee': 'Express Entry', 'grp.aip': 'AIP employer', 'grp.salary': 'Pay vs median',
   'loc.vol': 'Provincial immigration volume', 'loc.volTag': 'IRCC official data',
   'loc.study': 'Study permit holders', 'loc.tfwp': 'Employer-specific work permits', 'loc.imp': 'Open & exempt work permits', 'loc.impNote': 'IMP, incl. PGWP',
   'loc.asOf': '({y} year-end stock)', 'loc.alloc': 'PNP annual allocation', 'loc.allocBoth': '(2026; 2025: {b})', 'loc.allocY26': '(2026)', 'loc.allocY25': '(2025)',
@@ -1197,7 +1197,7 @@ const ko: Dict = {
   'match.r.lmia.lowOnly': '고용주 최근 2년 승인 LMIA {n}건(최근 {q})은 전부 농업/저임금 스트림 — 대부분 계절성 고용으로 숙련 스폰서 근거가 약해 가점 없음',
   'match.r.lmia.na': '이 고용주 최근 2년 승인 LMIA 기록 없음(대부분의 고용주는 필요한 적이 없음; 부정적 신호 아님)',
   // 付费墙(E3-05)
-  'grp.company': '회사', 'grp.immigration': '이민', 'grp.category': '직업 분류', 'grp.location': '위치',
+  'grp.company': '회사', 'grp.immigration': '이민', 'grp.category': '직업 분류', 'grp.location': '위치', 'grp.pnp': '주정부 지명(PNP)', 'grp.ee': '연방 EE', 'grp.aip': 'AIP 지정 고용주', 'grp.salary': '급여 대조',
   'loc.vol': '해당 주 이민 규모', 'loc.volTag': 'IRCC 공식 수치',
   'loc.study': '학생비자 소지자', 'loc.tfwp': '고용주 지정 취업비자', 'loc.imp': '오픈 및 면제 취업비자', 'loc.impNote': 'IMP, 졸업 후 취업비자 포함',
   'loc.asOf': '({y}년 말 기준)', 'loc.alloc': '주정부 노미니 연간 쿼터', 'loc.allocBoth': '(2026년; 2025년 {b})', 'loc.allocY26': '(2026년)', 'loc.allocY25': '(2025년)',
