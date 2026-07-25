@@ -124,9 +124,9 @@ const zh: Dict = {
   'cell.uncat': '未分类', 'cell.first': '第一方', 'cell.repost': '转贴', 'cell.today': '今天',
   'cell.pnpYes': '可省提名', 'cell.pnpSkilled': '可提名', 'cell.pnpIndemand': '紧缺', 'cell.pnpQc': '魁省', 'cell.aipYes': '指定雇主', 'cell.lmiaYes': '✓ {n} 职位　{q}', 'cell.closed': '已下架', 'cell.open': '在招',
   'pnplist.title': '省提名职业清单', 'pnplist.source': '来源', 'pnplist.your': '本岗', 'pnplist.gta': '大多区域外', 'pnplist.loading': '加载清单…',
-  'pnplist.onList': '本岗 NOC {noc} 在「{label}」清单内', 'pnplist.generic': '这个职业没被本省清单点名,但属于技能岗(TEER {teer}),本省面向所有技能职业的通用提名通道仍可能适用',
-  'pnplist.excludedHit': '本岗 NOC {noc} 在排除清单内,该省不可走', 'pnplist.excludedMiss': '不在本省排除名单里;技能岗(TEER {teer})可看本省通用提名通道',
-  'pnplist.noList': '本省没有点名职业清单;技能岗(TEER 0-3)走通用提名通道', 'pnplist.qc': '魁省走自己的甄选(CSQ/Arrima),不属省提名', 'pnplist.notEligible': '省提名通常要求技能类职业(TEER 0-3),本岗不属于,常规通道走不通',
+ 
+ 
+  'pnplist.qc': '魁省走自己的甄选(CSQ/Arrima),不属省提名',
   'pnplist.howTitle': '怎么走这个通道', 'pnplist.how1': '① 职业命中只是第一关,还要满足该通道对语言、学历、工作经验等的要求(以官方页为准)', 'pnplist.how2': '② 多数省先在线递交意向(EOI),受邀后才正式申请省提名', 'pnplist.how3': '③ 拿到省提名后,再向联邦递交永居申请', 'pnplist.howOfficial': '查看该通道官方页',
   'pnpdraws.title': '本省最近抽选 · {label}', 'pnpdraws.scale': '分数为省自评分制({scale}),不是 CRS', 'pnpdraws.min': '最低 {score} 分', 'pnpdraws.inv': '{n} 份邀请',
   'pnpdraws.notice': 'OINP {date} 改制:旧通道已关停、EOI 停发邀请;新 Ontario Workforce Priority 通道细则待公布',
@@ -582,9 +582,9 @@ const en: Dict = {
   'cell.uncat': 'Uncategorized', 'cell.first': 'Direct', 'cell.repost': 'Repost', 'cell.today': 'today',
   'cell.pnpYes': 'PNP-eligible', 'cell.pnpSkilled': 'Eligible', 'cell.pnpIndemand': 'In-demand', 'cell.pnpQc': 'Quebec', 'cell.aipYes': 'Designated', 'cell.lmiaYes': '✓ {n} positions　{q}', 'cell.closed': 'Closed', 'cell.open': 'Open',
   'pnplist.title': 'PNP occupation list', 'pnplist.source': 'Source', 'pnplist.your': 'This job', 'pnplist.gta': 'Outside GTA', 'pnplist.loading': 'Loading list…',
-  'pnplist.onList': 'This job (NOC {noc}) is on the "{label}" list', 'pnplist.generic': 'Not named on a provincial list, but it is a skilled job (TEER {teer}) — general PNP streams open to all skilled occupations may still apply',
-  'pnplist.excludedHit': 'This job (NOC {noc}) is on the excluded list — not eligible here', 'pnplist.excludedMiss': 'Not on the excluded list; skilled (TEER {teer}) — general streams may apply',
-  'pnplist.noList': 'This province publishes no named occupation list; skilled jobs (TEER 0-3) go through general streams', 'pnplist.qc': 'Quebec uses its own selection (CSQ/Arrima), not PNP', 'pnplist.notEligible': 'PNP streams generally require skilled occupations (TEER 0-3) — this job is not one',
+ 
+ 
+  'pnplist.qc': 'Quebec uses its own selection (CSQ/Arrima), not PNP',
   'pnplist.howTitle': 'How this stream works', 'pnplist.how1': '1. Being on the list is step one — you must also meet the stream’s language, education and experience requirements (see the official page)', 'pnplist.how2': '2. Most provinces take an online Expression of Interest (EOI) first; you apply after being invited', 'pnplist.how3': '3. With a provincial nomination, you then apply federally for permanent residence', 'pnplist.howOfficial': 'Official stream page',
   'pnpdraws.title': 'Recent draws · {label}', 'pnpdraws.scale': "scores use the province's own points system ({scale}), not CRS", 'pnpdraws.min': 'min {score}', 'pnpdraws.inv': '{n} invitations',
   'pnpdraws.notice': 'OINP redesign ({date}): former streams closed, EOI invitations stopped; new Ontario Workforce Priority stream criteria pending',
@@ -1041,9 +1041,9 @@ const ko: Dict = {
   'cell.uncat': '미분류', 'cell.first': '직접', 'cell.repost': '재게시', 'cell.today': '오늘',
   'cell.pnpYes': 'PNP 가능', 'cell.pnpSkilled': '지명 가능', 'cell.pnpIndemand': '부족직종', 'cell.pnpQc': '퀘벡', 'cell.aipYes': '지정 고용주', 'cell.lmiaYes': '✓ {n} 포지션　{q}', 'cell.closed': '마감', 'cell.open': '채용중',
   'pnplist.title': 'PNP 직업 목록', 'pnplist.source': '출처', 'pnplist.your': '이 채용', 'pnplist.gta': 'GTA 외', 'pnplist.loading': '목록 불러오는 중…',
-  'pnplist.onList': '이 직무(NOC {noc})는 「{label}」 목록에 포함됨', 'pnplist.generic': '주 지정 목록에는 없지만 기술직(TEER {teer})이므로, 모든 기술직에 열려 있는 일반 주정부 지명 통로가 적용될 수 있습니다',
-  'pnplist.excludedHit': '이 직무(NOC {noc})는 제외 목록에 있어 해당 주에서 지원 불가', 'pnplist.excludedMiss': '제외 목록에 없음; 기술직(TEER {teer})은 일반 통로 검토 가능',
-  'pnplist.noList': '이 주는 지정 직업 목록을 공개하지 않음; 기술직(TEER 0-3)은 일반 통로로 진행', 'pnplist.qc': '퀘벡주는 자체 선발(CSQ/Arrima)을 사용하므로 PNP 대상 아님', 'pnplist.notEligible': '주정부 지명은 보통 기술직(TEER 0-3)을 요구합니다. 이 직무는 해당하지 않습니다',
+ 
+ 
+  'pnplist.qc': '퀘벡주는 자체 선발(CSQ/Arrima)을 사용하므로 PNP 대상 아님',
   'pnplist.howTitle': '이 통로 진행 방법', 'pnplist.how1': '① 직업 목록 포함은 첫 단계일 뿐, 언어·학력·경력 등 통로별 요건도 충족해야 합니다(공식 페이지 기준)', 'pnplist.how2': '② 대부분의 주는 먼저 온라인 의향서(EOI)를 접수하고, 초청받은 후 정식 신청합니다', 'pnplist.how3': '③ 주정부 지명을 받으면 연방에 영주권을 신청합니다', 'pnplist.howOfficial': '공식 통로 페이지',
   'pnpdraws.title': '최근 추첨 · {label}', 'pnpdraws.scale': '점수는 CRS가 아닌 주 자체 점수제({scale}) 기준임', 'pnpdraws.min': '최저 {score}점', 'pnpdraws.inv': '{n}개 초청',
   'pnpdraws.notice': 'OINP 개편({date}): 기존 스트림 폐지 및 EOI 초청 중단, 신규 Ontario Workforce Priority 스트림 기준 미정',

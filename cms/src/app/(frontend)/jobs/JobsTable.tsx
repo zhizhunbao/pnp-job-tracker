@@ -1366,8 +1366,11 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       else if (k === 'datePosted') { node = j.datePosted ? j.datePosted.slice(0, 10) : '—'; Object.assign(extra, { color: '#6b7280', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       else { node = j.lastSeen ? fmtLocalSec(j.lastSeen) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       // #175:hover 高亮只随可点格(可点必有态,不可点必无——E8-08 规范本来就这么写)
+                      // 批A 追拍(Frank「走不了的就别给点了」):PNP/EE/AIP 的「—」格(无信号)摘可点——点开只会看到「走不了」,没有意义
+                      const act = cellActionable(k) && (k === 'pnp' ? !!j.pnpEligible : k === 'ee' ? !!j.eeCategory : k === 'aip' ? !!j.aip : true)
                       return (
-                        <td key={k} className={cellActionable(k) ? 'jcell jcellAct' : 'jcell'} style={{ ...td, padding: `7px ${cellPad}`, ...extra, cursor: cellActionable(k) ? 'pointer' : 'default', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', minWidth: colMin(k), ...(NOWRAP_COLS.has(k) ? { whiteSpace: 'nowrap' } : { whiteSpace: 'normal', overflowWrap: 'break-word' }), ...(hasWidths && { overflow: 'hidden', textOverflow: 'ellipsis' }), ...frozenStyle(k, rowBg) }} title={typeof node === 'string' ? node : undefined} onClick={() => {
+                        <td key={k} className={act ? 'jcell jcellAct' : 'jcell'} style={{ ...td, padding: `7px ${cellPad}`, ...extra, cursor: act ? 'pointer' : 'default', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', minWidth: colMin(k), ...(NOWRAP_COLS.has(k) ? { whiteSpace: 'nowrap' } : { whiteSpace: 'normal', overflowWrap: 'break-word' }), ...(hasWidths && { overflow: 'hidden', textOverflow: 'ellipsis' }), ...frozenStyle(k, rowBg) }} title={typeof node === 'string' ? node : undefined} onClick={() => {
+                          if (!act) return
                           // 职位格=直开职位描述(2026-07-19 Frank:「点职位也能显示职位描述」);title 顾问弹框由 JD 框标题栏「AI 顾问」钮承接(同日报障回补)
                           if (k === 'title') { setActModal({ kind: 'desc', job: j }); return }
                           // Pro 锁列(免费态数据已在服务端剥离)不开顾问弹框——没数据只会误导;锁形本身已链去 /account。match 免费额度内有值仍可开。
@@ -1609,13 +1612,13 @@ export function PnpListSection({ job, lang, occ, draws, news, nocDesc = [], show
   useEffect(() => { matchRef.current?.scrollIntoView({ block: 'nearest' }) }, [streams])
 
   const noc = job.noc, teer = job.teer, skilled = teer != null && teer <= 3
-  let verdict = '', tone = '#6b7280', vIcon: React.ReactNode = null
-  if (isQc) { verdict = t('pnplist.qc'); tone = '#7c3aed' }
-  else if (streams.length === 0) { verdict = skilled ? t('pnplist.noList') : t('pnplist.notEligible'); tone = skilled ? '#15803d' : '#9ca3af' }
-  else if (excluded) { verdict = t('pnplist.excludedHit', { noc }); tone = '#b91c1c'; vIcon = <IconX /> }
-  else if (matched) { verdict = t('pnplist.onList', { noc, label: streamDisplay(t, matched.label) }); tone = '#b45309'; vIcon = <IconCheck /> }
-  else if (hasInclusion) { verdict = skilled ? t('pnplist.generic', { teer }) : t('pnplist.notEligible'); tone = skilled ? '#15803d' : '#9ca3af' }
-  else { verdict = skilled ? t('pnplist.excludedMiss', { teer }) : t('pnplist.notEligible'); tone = skilled ? '#15803d' : '#9ca3af' }
+  // 批A 追拍(Frank「可提名,但是显示却是这个」):判定行换直判药丸,与通道块/列头同一套语系(ch.* 键)
+  let verdictPill: React.ReactNode
+  if (isQc) verdictPill = <VerdictPill tone="na">{t('ch.pnp.qc')}</VerdictPill>
+  else if (excluded) verdictPill = <VerdictPill tone="fail">{t('ch.pnp.ex')}</VerdictPill>
+  else if (matched) verdictPill = <VerdictPill tone="ok">{t('ch.pnp.on', { label: streamDisplay(t, matched.label) })}</VerdictPill>
+  else if (skilled) verdictPill = <VerdictPill tone="ok">{t('ch.pnp.generic')}</VerdictPill>
+  else verdictPill = <VerdictPill tone="na">{t('ch.pnp.no', { teer: teer ?? '?' })}</VerdictPill>
 
   return (
     <>
@@ -1624,7 +1627,7 @@ export function PnpListSection({ job, lang, occ, draws, news, nocDesc = [], show
           同 E8-12 省弹框「每块一卡」先例;块自身无数据返回 null → 外层卡不渲(不出空壳) */}
       <div style={MODAL_CARD}>
         <div style={MODAL_CARD_HEAD}>{t('col.pnp')}</div>
-        <div style={{ fontSize: 13.5, fontWeight: 600, color: tone }}>{vIcon}{vIcon ? ' ' : null}{verdict}</div>
+        <div>{verdictPill}</div>
       </div>
       {!isQc && job.province && draws.some((d) => d.province === job.province) ? (
         <div style={MODAL_CARD}><PnpDrawsBlock province={job.province} lang={lang} draws={draws} /></div>
@@ -2589,17 +2592,16 @@ function ChannelVerdicts({ job, lang, pnpOcc, eeOcc, nocDesc, showZh }: { job: J
   const nocRowOf = useMemo(() => new Map(nocDesc.map((d) => [d.noc, d])), [nocDesc])
   const skilled = job.teer != null && job.teer <= 3
   const aip = aipVerdictOf(job)
-  let pnpPill: React.ReactNode
-  if (job.province === 'QC') pnpPill = <VerdictPill tone="na">{t('ch.pnp.qc')}</VerdictPill>
-  else if (matched) pnpPill = <VerdictPill tone="ok">{t('ch.pnp.on', { label: streamDisplay(t, matched.label) })}</VerdictPill>
-  else if (excluded) pnpPill = <VerdictPill tone="fail">{t('ch.pnp.ex')}</VerdictPill>
-  else if (skilled) pnpPill = <VerdictPill tone="ok">{t('ch.pnp.generic')}</VerdictPill>
-  else pnpPill = <VerdictPill tone="na">{t('ch.pnp.no', { teer: job.teer ?? '?' })}</VerdictPill>
+  // 2026-07-25 Frank「这种走不了的不用显示」:通道块只列能走的行;走不了(na/fail)整行不出,全走不了=整卡不出
+  let pnpPill: React.ReactNode = null
+  if (job.province !== 'QC') {
+    if (matched) pnpPill = <VerdictPill tone="ok">{t('ch.pnp.on', { label: streamDisplay(t, matched.label) })}</VerdictPill>
+    else if (!excluded && skilled) pnpPill = <VerdictPill tone="ok">{t('ch.pnp.generic')}</VerdictPill>
+  }
   // EE 类别多命中一行放不下 → 首类 +「等 N 类」(一行铁律)
   const eeLabel = eeCats.length ? (eeCats.length === 1 ? eeDisplay(t, eeCats[0]) : t('ch.ee.more', { first: eeDisplay(t, eeCats[0]), n: eeCats.length })) : ''
-  const eePill = eeCats.length ? <VerdictPill tone="ok">{t('ch.ee.on', { cats: eeLabel })}</VerdictPill>
-    : skilled ? <VerdictPill tone="ok">{t('ch.ee.gen')}</VerdictPill>
-    : <VerdictPill tone="na">{t('ch.ee.no', { teer: job.teer ?? '?' })}</VerdictPill>
+  const eePill: React.ReactNode = eeCats.length ? <VerdictPill tone="ok">{t('ch.ee.on', { cats: eeLabel })}</VerdictPill>
+    : skilled ? <VerdictPill tone="ok">{t('ch.ee.gen')}</VerdictPill> : null
   const eeList = useMemo(() => {
     const m = new Map<string, { noc: string; name: string }>()
     for (const r of eeOcc) if (eeCats.includes(r.label) && !m.has(r.noc)) m.set(r.noc, { noc: r.noc, name: r.title })
@@ -2631,14 +2633,15 @@ function ChannelVerdicts({ job, lang, pnpOcc, eeOcc, nocDesc, showZh }: { job: J
       })}
     </div>
   )
+  if (!pnpPill && !eePill && aip !== 'on') return null   // 全走不了=整卡不出(无空壳)
   return (
     <div style={MODAL_CARD}>
       <div style={MODAL_CARD_HEAD}>{t('ch.title')}</div>
-      {row(t('ch.pnpRow'), pnpPill, matched ? 'pnp' : undefined)}
+      {pnpPill ? row(t('ch.pnpRow'), pnpPill, matched ? 'pnp' : undefined) : null}
       {openList === 'pnp' && matched ? listRows(matched.occupations) : null}
-      {row('EE', eePill, eeCats.length ? 'ee' : undefined)}
+      {eePill ? row('EE', eePill, eeCats.length ? 'ee' : undefined) : null}
       {openList === 'ee' ? listRows(eeList) : null}
-      {row('AIP', <VerdictPill tone={aip === 'on' ? 'ok' : 'na'}>{t('ch.aip.' + aip)}</VerdictPill>)}
+      {aip === 'on' ? row('AIP', <VerdictPill tone="ok">{t('ch.aip.on')}</VerdictPill>) : null}
     </div>
   )
 }
