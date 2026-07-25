@@ -192,14 +192,26 @@ export async function GET(req: Request) {
     }
     const companyCols = ['slug', 'name', 'website', 'website_source', 'email', 'region', 'sectors', 'address', 'description', 'source',
       'lmia_positions', 'lmia_lmias', 'lmia_last_quarter', 'lmia_streams', 'lmia_positions_skilled', 'sponsor_grade', 'score_detail', 'created_at', 'updated_at']
-    const companyUpdate = ['name', 'website', 'website_source', 'email', 'region', 'sectors', 'address', 'description', 'source',
-      'lmia_positions', 'lmia_lmias', 'lmia_last_quarter', 'lmia_streams', 'lmia_positions_skilled', 'updated_at']
+    // 跳过未变行(2026-07-25):upsert 原本无条件重写每一行(含没变的),companies 2.6万 + jobs 4.3万
+    // 全量重写把整轮从秒级抬到 100s+,必撞代理 ~100s 上限 —— 客户端每轮记「seed 失败」,alerts 连带停摆。
+    // DO UPDATE 加 WHERE「任一业务列真变了才写」:普通列比 EXCLUDED,COALESCE 列比 COALESCE 后的终值
+    // (与 SET 子句一一对应);updated_at 不参与比较,数据没变就不该跳。语义与原版唯一差异:
+    // 未变行的 updated_at 不再逐轮刷新 —— 全库无按 jobs/companies.updated_at 排序/过滤的查询,已核。
+    const companyPlain = ['name', 'website', 'website_source', 'email', 'region', 'sectors', 'address', 'description', 'source',
+      'lmia_positions', 'lmia_lmias', 'lmia_last_quarter', 'lmia_streams', 'lmia_positions_skilled']
+    const companyUpdate = [...companyPlain, 'updated_at']
       .map((c) => `${c}=EXCLUDED.${c}`).join(',')
       + ', sponsor_grade=COALESCE(EXCLUDED.sponsor_grade, companies.sponsor_grade)'
       + ', score_detail=COALESCE(EXCLUDED.score_detail, companies.score_detail)'
+    const companyChanged = companyPlain.map((c) => `companies.${c} IS DISTINCT FROM EXCLUDED.${c}`)
+      .concat(['sponsor_grade', 'score_detail'].map((c) => `companies.${c} IS DISTINCT FROM COALESCE(EXCLUDED.${c}, companies.${c})`))
+      .join(' OR ')
+    // 被 WHERE 跳过的行不进 RETURNING → slug→id 映射改为 upsert 后单独 SELECT 全量取(一条语句,秒级)
     const companyId: Record<string, number> = {}
-    for (const r of await insertBatch(client, 'companies', companyCols, companyRows,
-      `ON CONFLICT (slug) DO UPDATE SET ${companyUpdate} RETURNING id, slug`)) companyId[r.slug] = r.id
+    await insertBatch(client, 'companies', companyCols, companyRows,
+      `ON CONFLICT (slug) DO UPDATE SET ${companyUpdate} WHERE ${companyChanged}`)
+    for (const r of (await client.query('SELECT id, slug FROM companies WHERE slug = ANY($1)',
+      [companyRows.map((r) => r.slug)])).rows) companyId[r.slug] = r.id
     counts.companies = companyRows.length
 
     // ── 事实表:jobs 批量 upsert(按 external_id) ──
@@ -216,8 +228,9 @@ export async function GET(req: Request) {
       'eligibility_flag', 'eligibility_quote',
       'status', 'closed_at', 'first_seen', 'last_seen', 'created_at', 'updated_at']
     // GAP1③:预筛两列缺值(ETL 盒未拉新代码的过渡期)保留旧值不清空——COALESCE 兜底;E12-08 两档列同款
+    const jobCoalesce = ['description', 'eligibility_flag', 'eligibility_quote', 'grade_channel', 'score_detail']
     const jobUpdate = jobCols
-      .filter((c) => !['external_id', 'first_seen', 'last_seen', 'created_at', 'eligibility_flag', 'eligibility_quote', 'grade_channel', 'score_detail', 'description'].includes(c))
+      .filter((c) => !['external_id', 'first_seen', 'last_seen', 'created_at', ...jobCoalesce].includes(c))
       .map((c) => `${c}=EXCLUDED.${c}`).join(',')
       // #123:description 也 COALESCE——mart 为空(05b 没抓到=聚合帖)时保留懒抓写回的正文,不冲缓存
       + ', description=COALESCE(EXCLUDED.description, jobs.description)'
@@ -225,6 +238,13 @@ export async function GET(req: Request) {
       + ', eligibility_quote=COALESCE(EXCLUDED.eligibility_quote, jobs.eligibility_quote)'
       + ', grade_channel=COALESCE(EXCLUDED.grade_channel, jobs.grade_channel)'
       + ', score_detail=COALESCE(EXCLUDED.score_detail, jobs.score_detail)'
+    // 跳过未变行(同 companies 块注释):last_seen 归 COALESCE 组——增量抓取只重抓最近几天的帖,
+    // 每轮带新 lastSeen 的是少数,老帖 lastSeen 原样透传比不出差异 → 大多数行整行免写
+    const jobChanged = jobCols
+      .filter((c) => !['external_id', 'first_seen', 'last_seen', 'created_at', 'updated_at', ...jobCoalesce].includes(c))
+      .map((c) => `jobs.${c} IS DISTINCT FROM EXCLUDED.${c}`)
+      .concat([...jobCoalesce, 'last_seen'].map((c) => `jobs.${c} IS DISTINCT FROM COALESCE(EXCLUDED.${c}, jobs.${c})`))
+      .join(' OR ')
     counts.jobs = 0
     // 逐片处理:一片 parse→映射→入库→引用释放,内存峰值=单片而非全量(27k 行整解析在 512MB 实例 OOM 实撞)
     for (const shard of martPaths('jobs')) {
@@ -255,7 +275,7 @@ export async function GET(req: Request) {
         })
       }
       await insertBatch(client, 'jobs', jobCols, jobRows,
-        `ON CONFLICT (external_id) DO UPDATE SET ${jobUpdate}, last_seen=COALESCE(EXCLUDED.last_seen, jobs.last_seen)`)
+        `ON CONFLICT (external_id) DO UPDATE SET ${jobUpdate}, last_seen=COALESCE(EXCLUDED.last_seen, jobs.last_seen) WHERE ${jobChanged}`)
       counts.jobs += jobRows.length
     }
 
@@ -265,10 +285,18 @@ export async function GET(req: Request) {
     // seenIds 为空(jobs mart 缺/空)时跳过:空清单会把所有 30 天以上的旧岗一锅端下架
     if (!reset && seenIds.length > 0) {
       const cutoff = new Date(Date.now() - EXPIRE_DAYS * 86400000).toISOString()
+      // 本次见到的 external_id 灌进带主键的临时表,下架走 NOT EXISTS 反连接。
+      // 原 `NOT (external_id = ANY($seenIds))`:5.2 万元素数组对每个候选行线性搜(≈ 待检行 × 5.2万),
+      // 库涨到 5 万岗后超线性变慢 → seed 整轮撞 180s 超时(mart 已传但灌不进库)。
+      // 临时表主键让反连接走索引/哈希探测,下架从超时降到秒级;ON COMMIT DROP 随本事务清理。
+      await client.query('CREATE TEMP TABLE seen_ext (external_id text PRIMARY KEY) ON COMMIT DROP')
+      await insertBatch(client, 'seen_ext', ['external_id'], seenIds.map((id) => ({ external_id: id })))
+      await client.query('ANALYZE seen_ext')  // 临时表无自动统计,喂给规划器选反连接计划
       const r = await client.query(
         `UPDATE jobs SET status='closed', closed_at=$1, updated_at=$1
-         WHERE status='open' AND date_posted < $2 AND NOT (external_id = ANY($3))`,
-        [now, cutoff, seenIds])
+         WHERE status='open' AND date_posted < $2
+           AND NOT EXISTS (SELECT 1 FROM seen_ext s WHERE s.external_id = jobs.external_id)`,
+        [now, cutoff])
       closed = r.rowCount ?? 0
     }
 
