@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  /* 「一类够得着的岗」第 1 期:厨师(NOC 63200)。小红书风=周榜 D 版同族:黑粗框+米色底+黄荧光高亮。
+     3:4(1242×1656);数据 2026-07-24 生产库实查:在招 1945/高出中位20%+ 528/实例 49957500 当日发布 */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1242px; height: 1656px; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    background: #f7f1e3;
+    padding: 46px;
+  }
+  .frame {
+    height: 100%; border: 6px solid #1c1917; border-radius: 26px; background: #faf6ea;
+    padding: 60px 64px 44px; display: flex; flex-direction: column; position: relative;
+  }
+  .brand { font-size: 30px; font-weight: 800; letter-spacing: 2px; color: #1c1917; }
+  .brand .dot { color: #f59e0b; }
+  .kicker { margin-top: 46px; font-size: 34px; font-weight: 600; color: #57534e; }
+  h1 { margin-top: 14px; font-size: 88px; line-height: 1.3; font-weight: 900; color: #1c1917; letter-spacing: 2px; }
+  .hl { background: linear-gradient(transparent 55%, #fde047 55%); padding: 0 6px; }
+  .stats { margin-top: 56px; display: flex; gap: 24px; }
+  .stat {
+    flex: 1; background: #fff; border: 4px solid #1c1917; border-radius: 20px;
+    padding: 34px 30px 30px; text-align: center;
+  }
+  .stat .num { font-size: 88px; font-weight: 900; color: #1c1917; line-height: 1; }
+  .stat .num em { font-style: normal; font-size: 44px; }
+  .stat .cap { margin-top: 14px; font-size: 30px; color: #57534e; font-weight: 600; line-height: 1.4; }
+  .case {
+    margin-top: 44px; background: #fff; color: #1c1917; border: 4px solid #1c1917; border-radius: 20px;
+    padding: 40px 44px;
+  }
+  .case .tag { display: inline-block; background: #fde047; color: #1c1917; font-size: 28px; font-weight: 800; border-radius: 999px; padding: 6px 22px; }
+  .case .line { margin-top: 22px; font-size: 42px; font-weight: 700; line-height: 1.5; }
+  .case .line b { color: #d97706; font-size: 56px; }
+  .case .sub { margin-top: 14px; font-size: 28px; color: #57534e; line-height: 1.5; }
+  .checks { margin-top: 44px; display: flex; flex-direction: column; gap: 18px; }
+  .check { font-size: 38px; font-weight: 700; color: #1c1917; }
+  .check .tick { color: #15803d; margin-right: 12px; }
+  .spacer { flex: 1; }
+  .cta { text-align: center; font-size: 40px; font-weight: 900; color: #1c1917; }
+  .cta .site { background: linear-gradient(transparent 50%, #fde047 50%); padding: 0 10px; }
+  .foot { margin-top: 18px; text-align: center; font-size: 22px; color: #a8a29e; }
+</style>
+</head>
+<body>
+  <div class="frame">
+    <div class="brand"><span class="dot">●</span> OFFER2PR</div>
+    <div class="kicker">加拿大职业行情:厨师篇</div>
+    <h1>在加拿大当厨师,<br>工资<span class="hl">比你想的高</span></h1>
+    <div class="stats">
+      <div class="stat">
+        <div class="num">1,945</div>
+        <div class="cap">全国在招厨师岗<br>(Job Bank 官方数据)</div>
+      </div>
+      <div class="stat">
+        <div class="num">528<em>个</em></div>
+        <div class="cap">工资高出所在省<br>中位 20% 以上</div>
+      </div>
+    </div>
+    <div class="case">
+      <span class="tag">今天刚发布</span>
+      <div class="line">Calgary 中餐厨师,时薪 <b>$38</b></div>
+      <div class="sub">阿省厨师中位 $17.5/时,这岗是中位的 2.2 倍(Job Bank 编号 49957500,可自行核对)</div>
+    </div>
+    <div class="checks">
+      <div class="check"><span class="tick">✓</span>不要学历要手艺,TEER 3</div>
+      <div class="check"><span class="tick">✓</span>多省省提名紧缺清单常客</div>
+    </div>
+    <div class="spacer"></div>
+    <div class="cta">这 528 个岗,站内一键筛 → <span class="site">offer2pr.com</span></div>
+    <div class="foot">数据来源:Job Bank 公开职位与官方工资统计;省提名为粗筛信号,不构成移民建议</div>
+  </div>
+</body>
+</html>
