@@ -3665,7 +3665,8 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
   const [text, setText] = useState('')
   const [status, setStatus] = useState<'loading' | 'streaming' | 'done' | 'error' | 'upgrade' | 'limited'>('loading')
   // 2026-07-25 Frank「和上面的中文翻译按钮联动」:移民弹框清单译名开关(zh/ko 默认开,en 不出钮)
-  const [showZh, setShowZh] = useState(lang !== 'en')
+  // Frank 走查:中文对照默认关,点了才显/才翻(原 lang!=='en' 默认开 → 中文界面一打开就是对照态,推翻)
+  const [showZh, setShowZh] = useState(false)
   // #129 功能级埋点:四类弹框打开各记一事件(modal-immigration/company/category/location),field=入口格
   useEffect(() => { track('modal-' + group, { field: String(field) }) }, [])  // eslint-disable-line react-hooks/exhaustive-deps
   // 同公司在榜岗(E10-01 P3:blob 没了 → 打开公司弹窗时按公司名从 /api/jobs 拉,不再靠父级全量列表)
