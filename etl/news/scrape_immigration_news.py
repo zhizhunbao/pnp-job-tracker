@@ -27,6 +27,7 @@ from scrape_ab_aaip_news import SOURCE as AB  # noqa: E402
 from scrape_bc_pnp_news import SOURCE as BC  # noqa: E402
 from scrape_ircc_newsroom import SOURCE as IRCC  # noqa: E402
 from scrape_mb_mpnp_news import SOURCE as MB  # noqa: E402
+from scrape_nb_nbpnp_news import SOURCE as NB  # noqa: E402
 from scrape_ns_nsnp_news import SOURCE as NS  # noqa: E402
 from scrape_on_oinp_news import SOURCE as ON  # noqa: E402
 from scrape_qc_mifi_news import SOURCE as QC  # noqa: E402
@@ -37,7 +38,7 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
 
 OUT_FILE = _paths.NEWS / "news.json"
 
-SOURCES = [IRCC, BC, AB, MB, NS, ON, SK, QC]
+SOURCES = [IRCC, BC, AB, MB, NB, NS, ON, SK, QC]
 
 # ---- AI 翻译+重要度(build 轮直调;新增条目才调)----
 # 双后端(Frank 2026-07-18:「翻译用本地大模型」,API 账单 $3 阈值触发):
