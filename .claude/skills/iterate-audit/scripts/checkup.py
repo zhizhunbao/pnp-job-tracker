@@ -227,6 +227,9 @@ JS = r"""
     const r = el.getBoundingClientRect();
     if (r.width >= 40 && r.height >= 40) continue;
     if (r.height >= 32 && r.width >= 120) continue;   // 大条钮(如「购买 30 天 CA$19」296×36)点得中,不必凑 40
+    // 视口外的元素 elementFromPoint 必然落空(#217 复验时踩到:40px 高的按钮照样报 FAIL)——
+    // 只测当前在视口内的;视口外的下次滚动到时再测,不硬报。
+    if (r.bottom < 0 || r.top > innerHeight || r.right < 0 || r.left > innerWidth) continue;
     const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
     const hit = (x, y) => { const h = document.elementFromPoint(x, y); return !!h && (h === el || el.contains(h) || h.contains(el)); };
     const ok = hit(cx, Math.max(1, cy - 14)) && hit(cx, Math.min(innerHeight - 1, cy + 14));
