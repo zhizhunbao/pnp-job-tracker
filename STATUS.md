@@ -3,7 +3,15 @@
 > 新 session 接手先读这份 + `CLAUDE.md`(设计宪法)+ `prd.md`(v2 定位见头部标注)。仓库:github.com/zhizhunbao/pnp-job-tracker
 > **🚀 站点已公网上线并真实收款:https://pnp-cms.onrender.com**(Render + Supabase;**live Stripe,M3 已开闸**)。批次进度=`docs/implementation/_开发批次顺序.md`:**B0-B8 全部落地(2026-07-04 一天从 B4 打到 B8),24 工作项代码侧全完**。
 >
-> **⚡⚡⚡⚡⚡⚡⚡⚡ 最新交接(2026-07-25 session,「stats 收口与 BC/ON 清单接入日」)——图卡两件 + BC 五清单 + ON 空排除表,全生产闭环**
+> **⚡⚡⚡⚡⚡⚡⚡⚡⚡ 最新交接(2026-07-26 凌晨,「E6-09 数据层:MB 在需清单 + NB 不受理清单」)——455ea1f 全生产闭环**
+> - **✅ MB 在需清单接入**(旧「MB 无清单」假设已由 E6-09 核查推翻):`build_mb.py` 实抓 MPNP 现行总表 **`/mpnp/idol/`** —— 立项写的 `/work/in-demand-occupations/` 已被站方 301 到 2023 年一篇更新通告(只增补几条),**差点把 2023 年的增量当现行总表**;真页按 NOC 大类分 9 节=在需总表 156 条,另一节 Rural=仅首都区外算在需 2 条(分两桶不合并,否则温尼伯岗误显在需)。页面**没有**逐职业 stream 限定列 → 不造 stream 维度。生产实测:MB 命中清单 624 岗、可提名 +83(TEER5 material handler 凭清单可走)。
+> - **✅ NB 不受理清单实抓 + 方案修正**(立项时只读了一条通告就定方案,实施时把整页读全才发现):**放弃「三行业→broad 大类」逐岗判定** —— 官方只给行业名不给 NOC,映射到本站 broad 必然硬猜(NOC 大类 4「教育」里教师律师警察社工同锅、护理员 44101 落「教育」不落「医疗」、73 含货车司机),且该限制只针对 **NB Experience 一条 pathway**,拿它否掉全省非三行业岗=过度断言。改抓官方**逐条给了 NOC 码**的硬限制:`nb-ineligible`(14 个,不论行业)+ `nb-ineligible-food`(13 个,住宿餐饮 NAICS 72;官方留口子「雇主不属该行业的同款岗仍可提交」→ 本站无雇主行业字段,按多数情形判不符合,条件写进 label/note)。行业限制事实照旧上站,走 NB 新闻卡。**生产实测 NB 可提名 1011→635**,餐馆厨师/零售/食品加工不再一律绿。
+> - **✅ 08_score 新增第三种语义 `overlay`**:`type=ineligible + overlay=true` = **叠加式排除**——不动该省默认 TEER 规则,只是命中即不可。(套 AAIP 那种「本省无 TEER 门槛、除清单外全可」会把 NB 的 TEER4-5 岗全放开,反向错。)
+> - **其余**:SK 三表加 `note`(需雇主 offer+EPA、2026 三行业配额封顶;**`type` 保持 indemand** —— 它是 08 的 inclusion/exclusion 语义开关,不是描述字段);两脚本进 `etl/sources/pnp/`(仓库 bind-mount 进容器,**无需重建镜像**);4 个 label × 三语;**前端修:一省有多张排除表时只铺命中本岗那张**(NB 现有两张,原逻辑会铺一张不相干清单 + 兜底还随便挑一条,同 #125③)。
+> - **生产复验**:哨兵确认线上==455ea1f → upload_mart 18 表 + 增量 seed(pnp_occupations 428 行、closed 仅 6)→ 表格实见 MB HyLife「MB 在需职业」/「MB in-demand」/「MB 수요 직종」三语、NB Boston Pizza 厨师 PNP 列由「可提名」变「—」。
+> - **📋 交接两条**:①**被排除的岗现在看不到「为什么不能提名」** —— 批A 拍板「—」格摘可点(当时语境=点开只见走不了没意义),但现在命中的是**官方具名清单**、有实质理由可说;要不要给「命中排除清单」这一类恢复可点(或在手机卡显灰胶囊),**待 Frank 拍**。②**NB 的 AIP 也有同款不受理清单**(针对 endorsement,10+6 个 NOC),本轮只做了 PNP 侧 —— 现在 NB 餐馆厨师(Boston Pizza 等指定雇主)AIP 列仍显「指定雇主」,同类误导还在,**下轮可补**(需新表 + 08/09/前端 AIP 三态口径,动的是批A A3 拍过的位置)。
+>
+> **⚡⚡⚡⚡⚡⚡⚡⚡ 上轮交接(2026-07-25 session,「stats 收口与 BC/ON 清单接入日」)——图卡两件 + BC 五清单 + ON 空排除表,全生产闭环**
 > - **✅ stats 图卡两件(Frank 两拍;代码由并行 session 以 0df4bcb 先行入账)**:①统计图表点条一律不跳职位板——toJobs 深链与 L1 无中类兜底 window.open 全摘,末级(L3、中位类 L2)不挂回调无手型,chart.jobsHint 三语键退役;②省卡零折行——标题/难度徽章/指标行全 nowrap+省略号,网格 min 230→270,NL 卡用短名 Newfoundland(悬停全名),EN 紧档文案 Highly competitive→Competitive(BC 卡放不下的元凶)。Playwright 三视口×中英 6 组合实测 0 折行 0 截断。
 > - **✅ BC 2026 清单接入(14432a9)**:BC 新政(Care/Build/Innovate)在 WelcomeBC「About the BC PNP」单页恢复职业清单 → 新写 etl/pnp/build_bc.py 按节标题五桶(医疗 46=定向邀请∪卫生局通道、幼教 1、法语教师 2、兽医 2、建筑技工 9),pnp 源登记周更+抓失败保留旧表护栏;前端通道标签补中英韩。灌库后 **BC 省提名清单岗 —→999**(命中医疗/幼教/建筑技工/法语教师;兽医 0 在招属正常)。
 > - **✅ ON 空排除表(同 commit,Frank 拍板「改」)**:OINP 6-26 改制(O.Reg 47/26 废旧 9 流+204/26 立 Workforce Priority 流)后官方**不设职业清单**(7-20 官方细则页复核)——TEER0-3/TEER4-5 两路径覆盖全职业,凭全职永久 offer+工资/雇主条件。落地=人工维护政策事实表 raw/pnp/on-workforce-priority.json(type=ineligible、occupations=[],照 pnp_allocations 人工表先例)+08 加载守卫放行空 exclusion(空 inclusion 仍视坏抓取跳过)。**ON 可提名 6,743→10,039(+3,296 全为 TEER4-5)**;AB 排除/SK 清单回归无副作用;CLAUDE.md 粗筛口径同步(排除式省 AB/ON)。**ON「省提名清单岗」保持 — 是制度性的(无清单可命中),不是缺数**;若 OINP 日后重出清单(传闻 CLB5 职业表),删该表按 git 史 build_on.py 模板重写。
