@@ -16,7 +16,9 @@ OUT.mkdir(parents=True, exist_ok=True)
 
 with sync_playwright() as p:
     b = p.chromium.launch()
-    page = b.new_context(viewport={"width": 1440, "height": 900}, device_scale_factor=1.5).new_page()
+    _ctx = b.new_context(viewport={"width": 1440, "height": 900}, device_scale_factor=1.5)
+    _ctx.add_init_script("try { localStorage.setItem('umami.disabled', '1') } catch (e) {}")   # 截图不进流量统计
+    page = _ctx.new_page()
     done = []
 
     def shot(name, full=False):

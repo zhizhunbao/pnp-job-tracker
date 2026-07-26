@@ -185,6 +185,9 @@ JS = r"""
       return visible(k) && st.position !== 'absolute' && st.position !== 'fixed' && st.float === 'none';
     });
     if (kids.length < 2 || kids.length > 20) continue;
+    // 行内元素折行时 boundingRect 会横跨整块,与同行的兄弟(如「#20」+ 折行的职业名)假相交 ——
+    // 多行盒的行内元素直接跳过(第 26 轮实拍复核:卡片版式其实好好的)
+    if (kids.some(k => !/^(block|flex|grid|list-item|table)/.test(getComputedStyle(k).display) && k.getClientRects().length > 1)) continue;
     const rs = kids.map(k => k.getBoundingClientRect());
     for (let i = 0; i < kids.length; i++) for (let j = i + 1; j < kids.length; j++) {
       const a = rs[i], b = rs[j];
@@ -284,6 +287,7 @@ def sweep(b, viewport, lang, pages, login=False):
     ctxb = b.new_context(**kw)
     ctxb.add_init_script(f"try {{ localStorage.setItem('jobs.lang', '{lang}') }} catch (e) {{}}")
     ctxb.add_init_script(INIT)
+    ctxb.add_init_script("try { localStorage.setItem('umami.disabled', '1') } catch (e) {}")   # 走查不进流量统计(自污染教训 2026-07-26)
     page = ctxb.new_page()
     auth = "anon"
 

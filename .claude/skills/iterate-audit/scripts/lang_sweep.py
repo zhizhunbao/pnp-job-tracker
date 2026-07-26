@@ -43,6 +43,7 @@ with sync_playwright() as p:
     for lang in ["en", "ko"]:
         ctx = b.new_context(viewport={"width": 1440, "height": 900}, device_scale_factor=1.5)
         ctx.add_init_script(f"try {{ localStorage.setItem('jobs.lang', '{lang}') }} catch (e) {{}}")
+        ctx.add_init_script("try { localStorage.setItem('umami.disabled', '1') } catch (e) {}")   # 走查不进流量统计
         page = ctx.new_page()
         LDIR = OUT / lang; LDIR.mkdir(exist_ok=True)
 
