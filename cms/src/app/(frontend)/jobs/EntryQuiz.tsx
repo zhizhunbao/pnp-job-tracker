@@ -33,23 +33,33 @@ export function readQuiz(): (QuizAnswers & { done?: boolean }) | null {
   try { const s = localStorage.getItem(QUIZ_KEY); return s ? JSON.parse(s) : null } catch { return null }
 }
 
-export function EntryQuiz({ t, lang, onClose, onRegister, onApply }: {
+export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, startAt }: {
   t: TFn
   lang: string
   onClose: () => void                      // 关闭/跳过:置位不再弹
   onRegister: (a: QuizAnswers) => void     // 结果页「注册保存」:交给宿主开注册框并落库
   onApply: (a: QuizAnswers) => void        // 结果页「看这些岗」:把答案套进列表筛选
+  initial?: QuizAnswers | null             // 重答:预填上次答案(填错/跳过了都能回来改)
+  startAt?: 0 | 3                          // 3=直接落结果页(「看上次结果」入口)
 }) {
-  const [step, setStep] = useState(0)              // 0/1/2 = 三题;3 = 结果
-  const [status, setStatus] = useState('')
-  const [nocs, setNocs] = useState<string[]>([])
-  const [provs, setProvs] = useState<string[]>([])
+  const [step, setStep] = useState<number>(startAt ?? 0)   // 0/1/2 = 三题;3 = 结果
+  const [status, setStatus] = useState(initial?.status || '')
+  const [nocs, setNocs] = useState<string[]>(initial?.nocs || [])
+  const [provs, setProvs] = useState<string[]>(initial?.provs || [])
   const [q, setQ] = useState('')
   const [cands, setCands] = useState<{ noc: string; title: string; titleZh: string }[]>([])
   const [facts, setFacts] = useState<QuizFacts | null | 'loading'>(null)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  useEffect(() => { track('quiz-open') }, [])
+  useEffect(() => { track('quiz-open', { mode: startAt === 3 ? 'result' : initial ? 'redo' : 'first' }) }, [])   // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (startAt !== 3) return
+    const noc = (initial?.nocs || [])[0]
+    if (!noc) { setFacts(null); return }
+    setFacts('loading')
+    fetch(`/api/quiz?noc=${encodeURIComponent(noc)}`)
+      .then((r) => r.json()).then((d) => setFacts(d?.facts ?? null)).catch(() => setFacts(null))
+  }, [])   // eslint-disable-line react-hooks/exhaustive-deps
 
   // 第 2 题搜索:250ms 防抖,≥2 字才打后端(库内 ILIKE,≤8 条)
   useEffect(() => {
@@ -78,6 +88,12 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply }: {
   }
 
   const skip = () => { save(false); track('quiz-skip', { step: String(step) }); onClose() }
+  // Escape 关框(与站内其他弹框同款;漏了它 → 用户按 Esc 以为关了,其实遮罩还在挡点击)
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') skip() }
+    document.addEventListener('keydown', h)
+    return () => document.removeEventListener('keydown', h)
+  })
   const next = () => {
     track('quiz-step', { step: String(step) })
     if (step >= 2) toResult(); else setStep(step + 1)
@@ -113,6 +129,7 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply }: {
                 {STATUS_SLUGS.map((s) => (
                   <button key={s} onClick={() => { setStatus(s); track('quiz-step', { step: '0' }); setStep(1) }} style={opt(status === s)}>{t('quiz.st.' + s)}</button>
                 ))}
+                {initial && <div onClick={() => setStep(1)} style={{ textAlign: 'center', fontSize: 12.5, color: '#2563eb', marginTop: 6, cursor: 'pointer' }}>{t('quiz.keep')}</div>}
               </>
             )}
             {step === 1 && (

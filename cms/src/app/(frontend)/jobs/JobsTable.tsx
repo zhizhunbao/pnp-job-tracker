@@ -685,11 +685,14 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   }, [])
   // 入口三问(付费漏斗重设计-20260726,Frank「一访问就弹问题」):**匿名首访**才弹,只弹一次;
   // 登录用户走原 OnboardingWizard(已建档的更不弹),两者互斥不叠。
-  const [quiz, setQuiz] = useState(false)
+  const [quiz, setQuiz] = useState<false | { redo?: boolean; result?: boolean }>(false)
+  const [quizSaved, setQuizSaved] = useState<QuizAnswers | null>(null)   // 上次答案(localStorage),细带按它显示
   useEffect(() => {
+    const saved = readQuiz()
+    if (saved) setQuizSaved({ status: saved.status, nocs: saved.nocs, provs: saved.provs })
     if (plan.loggedIn) return
-    try { if (localStorage.getItem(QUIZ_KEY)) return } catch { /* ignore */ }
-    const id = setTimeout(() => setQuiz(true), 1200)   // 让首屏先渲染出来,别一进门就糊脸
+    if (saved) return                                   // 答过/跳过就不再自动弹(入口改由细带常驻)
+    const id = setTimeout(() => setQuiz({}), 1200)      // 让首屏先渲染出来,别一进门就糊脸
     return () => clearTimeout(id)
   }, [])
   // 结果页两个出口:①把答案套进筛选看岗 ②注册保存(注册成功后落库成档案,不让用户填两遍)
@@ -704,9 +707,18 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       const me = await fetch('/api/users/me', { credentials: 'include' }).then((r) => r.json()).catch(() => null)
       const uid = me?.user?.id
       if (!uid) return
+      // #107 同类保险丝(空白覆盖真档案):三问只管三个字段,**先读回既有档案再合并**,
+      // 语言分/CRS/PGWP 这些三问没问的一律原样带回,不能被整组 PATCH 抹掉
+      const old = me?.user?.profile || {}
       await fetch(`/api/users/${uid}`, {
         method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ profile: { currentStatus: a.status || null, nocCodes: a.nocs, targetProvinces: a.provs, profileUpdatedAt: new Date().toISOString() } }),
+        body: JSON.stringify({ profile: {
+          ...old,
+          currentStatus: a.status || old.currentStatus || null,
+          nocCodes: a.nocs.length ? a.nocs : (old.nocCodes || []),
+          targetProvinces: a.provs.length ? a.provs : (old.targetProvinces || []),
+          profileUpdatedAt: new Date().toISOString(),
+        } }),
       })
       try { localStorage.setItem(OB_SEEN_KEY, '1') } catch { /* ignore */ }   // 已经问过三题,别再弹建档向导
     } catch { /* 落库失败不卡用户:答案还在 localStorage */ }
@@ -1150,6 +1162,24 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           )
         })()}
         </div>
+        {/* 三问细带(Frank「要是用户之前没填或者填错了,不能刷新修改吗」):答过=显示上次答案 + 看结果/改;
+            没答过=一句话入口。常驻不打扰,弹窗只弹一次的缺口靠它补上。 */}
+        {!plan.profileOk && (
+          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, background: '#eff6ff', border: '1px solid #dbeafe', borderRadius: 9, padding: '7px 12px', margin: '10px 0 0', fontSize: 12.5 }}>
+            {quizSaved?.nocs?.length ? (
+              <>
+                <span style={{ color: '#1e40af', flex: 1, minWidth: 110, whiteSpace: 'nowrap' }}>{t('quiz.bar.saved')}</span>
+                <button onClick={() => setQuiz({ result: true })} style={{ border: 'none', background: 'none', color: '#2563eb', fontWeight: 600, cursor: 'pointer', fontSize: 12.5, padding: 0 }}>{t('quiz.bar.result')}</button>
+                <button onClick={() => setQuiz({ redo: true })} style={{ border: 'none', background: 'none', color: '#6b7280', cursor: 'pointer', fontSize: 12.5, padding: 0 }}>{t('quiz.bar.redo')}</button>
+              </>
+            ) : (
+              <>
+                <span style={{ color: '#1e40af', flex: 1, minWidth: 110 }}>{t('quiz.bar.new')}</span>
+                <button onClick={() => setQuiz({})} style={{ border: 'none', background: 'none', color: '#2563eb', fontWeight: 600, cursor: 'pointer', fontSize: 12.5, padding: 0 }}>{t('quiz.bar.go')}</button>
+              </>
+            )}
+          </div>
+        )}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '1rem 0' }}>
           {/* ═══ #59 筛选区重设计(2026-07-18 效果图过目后 Frank「可以」):5 行 label+下拉收成
               「常用一行(搜索/省/大类/PNP/年薪)+ 更多筛选折叠(激活计数徽标)」;07-07 行序拍板与
@@ -1588,7 +1618,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       {actModal && <ActModal job={actModal.job} lang={lang} plan={plan} nocDesc={dims.nocDescriptions} onClose={() => setActModal(null)} />}
       {wizard && <OnboardingWizard t={t} initial={plan.profile} onClose={closeWizard} />}
       {quiz && !wizard && (
-        <EntryQuiz t={t} lang={lang} onClose={() => setQuiz(false)} onApply={applyQuiz}
+        <EntryQuiz t={t} lang={lang} initial={quiz.redo || quiz.result ? quizSaved : null} startAt={quiz.result ? 3 : 0}
+          onClose={() => { setQuiz(false); setQuizSaved(readQuiz()) }} onApply={applyQuiz}
           onRegister={(a) => { setQuiz(false); setPendingQuiz(a); setUpsell('quiz') }} />
       )}
       {upsell && (plan.loggedIn
