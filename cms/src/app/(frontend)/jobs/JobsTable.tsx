@@ -1638,7 +1638,9 @@ export function PnpListSection({ job, lang, occ, draws, news, nocDesc = [], show
       {/* #125 → 2026-07-25 Frank 收紧「不覆盖就不用显示」:命中 → 只展示命中的清单;被排除 → 只展示排除清单;
           都没有 → 清单整体不渲(原全量铺浏览语境退役)——判定行已说清结论,不相干的清单只是噪音 */}
       {streams.filter((s) => s.occupations.length)
-        .filter((s) => (matched ? s === matched : excluded && s.type === 'ineligible'))
+        /* 一省可有多张排除表(NB:通用 14 个 NOC + 餐饮住宿 13 个)→ 只展示真正命中本岗的那张,
+           否则会铺一张与本岗无关的清单(兜底行还会随便挑一条),同 #125③ 口径 */
+        .filter((s) => (matched ? s === matched : excluded && s.type === 'ineligible' && s.occupations.some((o) => o.noc === noc)))
         .map((s) => {
         const fk = s.label + s.stream
         // Frank 走查#14:默认只显命中「本岗」项(其余折叠),点末尾「展开其他」才全量

@@ -1,0 +1,68 @@
+{
+  "stream": "NB Skilled Worker stream / NB Express Entry stream — occupations not being considered (EOI/ITA)",
+  "label": "NB 不符合清单",
+  "province": "NB",
+  "type": "ineligible",
+  "overlay": true,
+  "note": "自 2026-02-03 起,NB 不受理这些职业的 EOI/ITA(不论雇主属什么行业)。",
+  "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/notice.html",
+  "fetched": "2026-07-26",
+  "occupations": [
+    {
+      "noc": "14400",
+      "name": "Shippers and receivers"
+    },
+    {
+      "noc": "60020",
+      "name": "Retail and wholesale trade managers"
+    },
+    {
+      "noc": "62010",
+      "name": "Retail sales supervisors"
+    },
+    {
+      "noc": "62101",
+      "name": "Retail and wholesale buyers"
+    },
+    {
+      "noc": "63201",
+      "name": "Butchers - retail and wholesale"
+    },
+    {
+      "noc": "64100",
+      "name": "Retail salespersons and visual merchandisers"
+    },
+    {
+      "noc": "64409",
+      "name": "Other customer and information services representatives"
+    },
+    {
+      "noc": "65100",
+      "name": "Cashiers"
+    },
+    {
+      "noc": "65101",
+      "name": "Service station attendants"
+    },
+    {
+      "noc": "65102",
+      "name": "Store shelf stockers, clerks and order fillers"
+    },
+    {
+      "noc": "65202",
+      "name": "Meat cutters and fishmongers - retail and wholesale"
+    },
+    {
+      "noc": "94142",
+      "name": "Fish and seafood plant workers"
+    },
+    {
+      "noc": "95106",
+      "name": "Labourers in food and beverage processing"
+    },
+    {
+      "noc": "95107",
+      "name": "Labourers in fish and seafood processing"
+    }
+  ]
+}

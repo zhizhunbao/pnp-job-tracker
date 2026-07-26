@@ -100,9 +100,11 @@ TEER_BASE = {0: 54, 1: 56, 2: 52, 3: 46, 4: 28, 5: 20}
 INDEMAND2 = {"21", "22", "31", "32", "72", "73", "42"}
 # 各省 PNP 维护表:province → {"type", "nocs"}。目录驱动——扫 pnp/*.json
 # (每文件一省,build_<prov>.py 产出),按文件 province 字段归省。加新省=丢一个 json,本脚本不改。
-# 两种语义(由文件 type 区分,默认 indemand):
+# 三种语义(由文件 type + overlay 区分,默认 indemand):
 #   · indemand(如 OINP):TEER4-5 默认不符合,只有清单内 NOC 才符合(inclusion)。
 #   · ineligible(如 AAIP):TEER0-5 默认都符合,清单内 NOC 不符合(exclusion/permissive)。
+#   · ineligible + overlay=true(如 NB 不受理清单):**叠加式排除**——不改该省默认规则
+#     (NB Skilled Worker 仍要技能岗 offer,TEER4-5 不因此放开),只是命中清单即不可。
 # 某省没文件 = 无 TEER4-5 专门通道,只吃 TEER0-3 粗筛(留空不猜,符合「宁可留空」)。
 def _load_pnp_tables() -> dict[str, dict]:
     out: dict[str, dict] = {}
@@ -120,8 +122,11 @@ def _load_pnp_tables() -> dict[str, dict]:
             if not prov or (not nocs and data.get("type") != "ineligible"):
                 continue
             typ = data.get("type", "indemand")
-            t = out.setdefault(prov, {"type": "indemand", "nocs": set(), "streams": []})
-            if typ == "ineligible":
+            t = out.setdefault(prov, {"type": "indemand", "nocs": set(), "blocked": set(), "streams": []})
+            if typ == "ineligible" and data.get("overlay"):
+                # 叠加式排除:只记「命中即不可」,不碰 type/nocs(该省默认 TEER 规则原样保留)
+                t["blocked"].update(nocs)
+            elif typ == "ineligible":
                 # exclusion 文件定义该省资格规则(排除集),独占 type 与 nocs —— 不与 inclusion 混
                 # (否则 inclusion 的 NOC 会被并进排除集、被误判不符合)。顺序无关:exclusion 总会重置 nocs。
                 t["type"] = "ineligible"
@@ -181,6 +186,7 @@ NON_PNP_PROV = {"QC"}
 
 def pnp_eligible(noc: str, teer: int | None, prov: str) -> bool:
     """能否走雇主 offer 省提名,按省精准(不跨省套用)。魁省不属 PNP,直接排除。
+    · 命中该省叠加式排除清单(NB 不受理职业)→ 一律不可,先于下面两条判。
     · 有 exclusion 表的省(AB/AAIP;ON 2026-06 改制后为空排除集=全职业可):
       TEER0-5 默认都可走,清单内 NOC 不可。
     · 其余(有 inclusion 表如 SK/NS,或无表):TEER0-3 粗筛通用,
@@ -188,6 +194,8 @@ def pnp_eligible(noc: str, teer: int | None, prov: str) -> bool:
     if prov in NON_PNP_PROV:
         return False
     tbl = PNP_BY_PROV.get(prov)
+    if tbl and noc in tbl["blocked"]:
+        return False
     if tbl and tbl["type"] == "ineligible":
         return teer is not None and noc not in tbl["nocs"]
     nocs = tbl["nocs"] if tbl else set()

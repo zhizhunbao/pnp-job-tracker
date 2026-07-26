@@ -1,89 +1,121 @@
 """
-build_nb — NB 省提名「优先行业」政策表(每省一个 build 脚本,完全自包含)。
+build_nb — NB 省提名(NBPNP)不受理职业清单(每省一个 build 脚本,完全自包含)。
 
-NB 与 BC/SK 不同:官方**不公布 NOC 职业清单**,只公布**行业**。核实(2026-07-25 httpx 直取
-gnb.ca notice 页):NB 省提名**开放**(旧「2026-02 暂停」记忆已作废),但
-**NB Skilled Worker 的 New Brunswick Experience pathway 自 2026-05-04 起 until further notice,
-新 ITA 只限 Healthcare / Education / Construction Trades 三行业**(官方原因:该流剩余配额有限)。
+**实时抓** gnb.ca「Important notices」页(httpx 直连 200)。E6-09 全省核查纠正了两条旧假设:
+① 旧记忆「NB 2026-02 暂停省提名」错误——NB 在办,只是层层收窄;
+② 首版曾想把 2026-05-04「NB Experience pathway 限 Healthcare/Education/Construction Trades」
+   做成「行业→本站 broad 大类」判定 —— **已放弃**:官方只给行业名不给 NOC,broad 映射会硬猜
+  (NOC 大类 4 含教师也含警察律师社工、护理员 44101 落在「教育」大类而非「医疗」),
+   踩「宁可留空也不瞎猜」。该行业限制**只对 NB Experience 一条 pathway**,通过 NB 新闻
+  (scrape_nb_nbpnp_news)在弹框「本省最新公告」如实呈现,不做逐岗判定。
 
-因此走 ON `on-workforce-priority.json` 同款**人工政策表**路子(非 crawl 具名 NOC),
-用「行业 → 本站 broad 大类」映射,08_score 按 job.broad 判定:
-  · 岗在三优先行业(broad ∈ 医疗/教育/技工) → 「NB 优先行业」强信号(能走 NB Experience)
-  · 岗不在 → **不再一律绿「能走通用通道」**,如实显示「NB Experience 当前限医疗/教育/建筑」行业限制态。
-构建/建筑映射到 broad「技工」为近似(技工含非建筑工种);nocMajor 72/73 供 08_score 需要更细时收紧。
+本脚本只落**官方逐条列了 NOC 码的硬限制**(2026-02-03 起,针对 NB Skilled Worker + NB Express
+Entry 两个流的 EOI/ITA):
+  · nb-ineligible.json       「NB 不符合清单」   —— regardless of sectors,14 个 NOC,无条件
+  · nb-ineligible-food.json  「NB 餐饮住宿不符合」—— 住宿餐饮业(NAICS 72),13 个 NOC
+    **条件性**:官方原文「雇主本身不属住宿餐饮业(NAICS 72)的同款岗仍可提交 EOI」。本站没有雇主
+    NAICS 行业字段(不猜),按多数情形(此类岗绝大多数就在餐饮住宿业)判不符合,条件写进 label 与
+    note,由用户对自己雇主行业做最后判断 —— 粗筛信号,非资格认定(同 CLAUDE.md 口径)。
 
-政策表**人工维护**(NB 改政策才改本表,同 ON 惯例);httpx 抓 notice 页仅用于**校验政策是否变**
-(不改表,只 WARN 提示复核),抓不到不影响产表。
+两表都是 `type=ineligible`(命中=不符合)+ **`overlay=true`**:与 AAIP 那种「本省无 TEER 门槛、
+除清单外全可」不同,NB 的排除是**叠加**在默认 TEER 规则上的(NB Skilled Worker 仍要技能岗 offer)
+—— 08_score 见 overlay 只做「命中即不可」,不把该省 TEER4-5 默认放开。
 
-Usage:  python etl/pnp/build_nb.py            (纯 policy 表,系统 python 即可)
-        uv run python etl/pnp/build_nb.py     (含 httpx 政策校验则用 .venv/docker)
+抓不到/解析空 → 跳过、保留旧表(宁可留旧也不留空)。
+
+Usage:  uv run python etl/pnp/build_nb.py   (需 httpx,系统 python 没装 → 用 .venv / docker etl 镜像)
 """
 import json
+import re
 import sys
 from datetime import date
 from pathlib import Path
 
+import httpx
+
 _HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(_HERE.parent))          # etl/ → _paths
+sys.path.insert(0, str(_HERE.parent))            # etl/ → _paths
+sys.path.insert(0, str(_HERE.parent / "crawl"))  # etl/crawl/ → converters(HTML→md)
 import _paths  # noqa: E402
+from converters import get_converter  # noqa: E402
 
 PROVINCE = "NB"
-NOTICE_URL = "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/notice.html"
-AS_OF = "2026-05-04"   # 官方生效日:限三行业 until further notice
-
-# 行业 → 本站 broad 大类(broad 值见 etl/noc.py:管理/商务/科技/医疗/教育/文体/服务/技工/资源/制造)
-SECTORS = [
-    {"name": "Healthcare", "nameZh": "医疗", "broads": ["医疗"]},
-    {"name": "Education", "nameZh": "教育", "broads": ["教育"]},
-    # Construction Trades 近似映射 broad「技工」;nocMajor 供需要更细时按建筑工种收紧
-    {"name": "Construction Trades", "nameZh": "建筑技工", "broads": ["技工"], "nocMajor": ["72", "73"]},
-]
-
-TABLE = {
-    "stream": "NB Skilled Worker – New Brunswick Experience pathway",
-    "label": "NB 优先行业",
-    "province": PROVINCE,
-    "type": "sector-priority",   # 新类型:08_score 按 broad 判优先行业(区别于 indemand/ineligible 的 NOC 清单)
-    "url": NOTICE_URL,
-    "asOf": AS_OF,
-    "note": ("人工维护的政策事实表(非抓取)。NB 省提名开放,但 NB Skilled Worker 的 New Brunswick "
-             "Experience pathway 自 2026-05-04 起 until further notice 新 ITA 只限 Healthcare/Education/"
-             "Construction Trades 三行业(剩余配额有限)。非这三行业的 NB 岗不应显示无条件「能走通用通道」,"
-             "应如实显示行业限制。NB 改政策才改本表(同 ON 惯例);另雇主指定申请暂停受理重评。"),
-    "sectors": SECTORS,
+UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"
+_PROFILE = {"content_selector": None, "remove_selectors": [], "css_file": None, "direct_suffix": None, "converter": None}
+URL = "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/notice.html"
+STREAM = "NB Skilled Worker stream / NB Express Entry stream — occupations not being considered (EOI/ITA)"
+SPLIT = "regardless of sectors"     # 官方原文的分界句:此句之前=NAICS 72 条件性,之后=无条件
+BUCKETS = {
+    "any": {"out": "nb-ineligible.json", "label": "NB 不符合清单",
+            "note": "自 2026-02-03 起,NB 不受理这些职业的 EOI/ITA(不论雇主属什么行业)。"},
+    "food": {"out": "nb-ineligible-food.json", "label": "NB 餐饮住宿不符合",
+             "note": ("自 2026-02-03 起,NB 不受理住宿餐饮业(NAICS 72)这些职业的 EOI/ITA。"
+                      "官方留了口子:雇主本身不属住宿餐饮业的同款岗仍可提交——本站无雇主行业字段,"
+                      "按多数情形判不符合,请按自己雇主的实际行业核对。")}
 }
+# 官方写法:**NOC 63200** – Cooks(粗体记号与破折号形式不稳定,宽松匹配)
+NOC_LINE = re.compile(r"NOC\s*(\d{5})\s*\*{0,2}\s*[–—-]\s*\*{0,2}\s*(.+?)\s*"
+                      r"(?=\*{0,2}\s*NOC\s*\d{5}|$)", re.S)
+# 清单末条会粘上后文正文(官方一段到底,无列表标签)→ 名字在这些词处截断
+TAIL = re.compile(r"\s+(?:However\b|Additionally\b|In addition\b|This restriction\b|>).*$", re.S)
+SECTOR_NOTICE = "2026-05-04 起 NB Experience pathway 新 ITA 只限 Healthcare/Education/Construction Trades"
 
 
-def verify_notice() -> None:
-    """可选:httpx 抓 notice 页,校验「限三行业」政策是否仍在(变了就 WARN 提示复核,不改表)。"""
-    try:
-        import httpx
-    except ImportError:
-        print("  · 跳过政策校验(无 httpx;纯表已产出)")
-        return
-    ua = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-          "(KHTML, like Gecko) Chrome/125.0 Safari/537.36")
-    try:
-        html = httpx.get(NOTICE_URL, headers={"User-Agent": ua}, follow_redirects=True, timeout=30).text
-    except Exception as e:  # noqa: BLE001
-        print(f"  · 政策校验抓取失败({type(e).__name__});表按人工维护版产出,建议手动复核 {NOTICE_URL}")
-        return
-    low = html.lower()
-    keys = ("healthcare", "education", "construction")
-    if all(k in low for k in keys) and "may 4, 2026" in low:
-        print("  ✓ 政策校验:notice 页仍含「限医疗/教育/建筑 · 2026-05-04」,政策表与官方一致")
-    else:
-        print(f"  ⚠ 政策校验:notice 页未命中预期关键词 → NB 政策可能已变,**请人工复核并更新本表**:{NOTICE_URL}")
+def fetch_md() -> str:
+    html = httpx.get(URL, headers={"User-Agent": UA}, follow_redirects=True, timeout=40).text
+    md, _ = get_converter().convert(html, URL, _PROFILE)
+    return md
+
+
+def pnp_notice(md: str) -> str:
+    """取「不受理 EOI/ITA」那条通告(同页另有一条同款 AIP 背书限制,列表略有不同——本脚本只要 PNP 那条)。"""
+    for b in md.split("### Notice"):
+        if "expressions of interest" in b and "Skilled Worker stream" in b:
+            return b
+    return ""
+
+
+def parse_nocs(seg: str) -> list[dict]:
+    out: dict[str, str] = {}
+    for m in NOC_LINE.finditer(seg):
+        name = TAIL.sub("", re.sub(r"\s+", " ", m.group(2))).strip(" *–—-.,")
+        if name:
+            out.setdefault(m.group(1), name[:80])
+    return [{"noc": n, "name": nm} for n, nm in sorted(out.items())]
 
 
 def main() -> None:
     _paths.PNP.mkdir(parents=True, exist_ok=True)
-    TABLE["fetched"] = date.today().isoformat()
-    out = _paths.PNP / "nb-priority.json"
-    out.write_text(json.dumps(TABLE, ensure_ascii=False, indent=2), encoding="utf-8")
-    sect = "、".join(s["nameZh"] for s in SECTORS)
-    print(f"  ✓ NB 优先行业政策表({sect}) → pnp/nb-priority.json  ({TABLE['fetched']})")
-    verify_notice()
+    try:
+        md = fetch_md()
+    except Exception as e:  # noqa: BLE001  抓取失败 → 保留旧表,不留空
+        print(f"  ✗ 抓取失败 {URL}: {type(e).__name__} {e}(保留旧表)")
+        return
+    notice = pnp_notice(md)
+    if not notice:
+        print("  ✗ 没找到「不受理 EOI/ITA」通告 → NB 可能已改政策,请人工复核(保留旧表)")
+        return
+    i = notice.find(SPLIT)
+    segs = {"food": notice[:i], "any": notice[i:]} if i > 0 else {"any": notice}
+    for key, cfg in BUCKETS.items():
+        occs = parse_nocs(segs.get(key, ""))
+        if not occs:
+            print(f"  ✗ 没解析到 NOC: {cfg['out']}(保留旧表)")
+            continue
+        table = {
+            "stream": STREAM, "label": cfg["label"], "province": PROVINCE,
+            "type": "ineligible", "overlay": True, "note": cfg["note"],
+            "url": URL, "fetched": date.today().isoformat(),
+            "occupations": occs,
+        }
+        (_paths.PNP / cfg["out"]).write_text(json.dumps(table, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"  ✓ {cfg['label']:<10} {len(occs):>3} 个职业 → pnp/{cfg['out']}  (实时 {table['fetched']})")
+    # 行业限制不做逐岗判定(见模块注释),但政策还在不在得盯着——变了要人工复核新闻文案
+    low = md.lower()
+    if all(k in low for k in ("healthcare", "construction trades")) and "may 4, 2026" in low:
+        print(f"  · 政策校验:{SECTOR_NOTICE}(仍在;逐岗判定不做,由 NB 新闻呈现)")
+    else:
+        print(f"  ⚠ 政策校验:未命中「限三行业」原文 → NB 行业限制可能已变,请人工复核 {URL}")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,19 @@
+{
+  "stream": "MPNP In-Demand Occupations List – rural (outside the Manitoba Capital Region)",
+  "label": "MB 乡镇在需",
+  "province": "MB",
+  "type": "indemand",
+  "note": "仅当就业地在曼省首都区(温尼伯及周边)**以外**时才算在需;温尼伯岗不适用。",
+  "url": "https://immigratemanitoba.com/mpnp/idol/",
+  "fetched": "2026-07-25",
+  "occupations": [
+    {
+      "noc": "33102",
+      "name": "Nurse aides, orderlies and patient service associates"
+    },
+    {
+      "noc": "94141",
+      "name": "Industrial butchers and meat cutters, poultry preparers and related workers"
+    }
+  ]
+}

@@ -1,0 +1,635 @@
+{
+  "stream": "MPNP In-Demand Occupations List",
+  "label": "MB 在需职业",
+  "province": "MB",
+  "type": "indemand",
+  "note": "MPNP 在需职业:EOI 抽选中获优先,非硬性资格门槛;各 stream 另有自己的条件与语言要求。",
+  "url": "https://immigratemanitoba.com/mpnp/idol/",
+  "fetched": "2026-07-25",
+  "occupations": [
+    {
+      "noc": "10010",
+      "name": "Financial managers"
+    },
+    {
+      "noc": "10011",
+      "name": "Human resources managers"
+    },
+    {
+      "noc": "10019",
+      "name": "Other administrative services managers"
+    },
+    {
+      "noc": "10020",
+      "name": "Insurance, real estate and financial brokerage managers"
+    },
+    {
+      "noc": "10021",
+      "name": "Banking, credit and other investment managers"
+    },
+    {
+      "noc": "10022",
+      "name": "Advertising, marketing and public relations managers"
+    },
+    {
+      "noc": "11100",
+      "name": "Financial auditors and accountants"
+    },
+    {
+      "noc": "11101",
+      "name": "Financial and investment analysts"
+    },
+    {
+      "noc": "11102",
+      "name": "Financial advisors"
+    },
+    {
+      "noc": "11109",
+      "name": "Other financial officers"
+    },
+    {
+      "noc": "11200",
+      "name": "Human resources professionals"
+    },
+    {
+      "noc": "11201",
+      "name": "Professional occupations in business management consulting"
+    },
+    {
+      "noc": "11202",
+      "name": "Professional occupations in advertising, marketing and public relations"
+    },
+    {
+      "noc": "12011",
+      "name": "Supervisors, finance and insurance office workers"
+    },
+    {
+      "noc": "12013",
+      "name": "Supervisors, supply chain, tracking and scheduling coordination occupations"
+    },
+    {
+      "noc": "12101",
+      "name": "Human resources and recruitment officers"
+    },
+    {
+      "noc": "12110",
+      "name": "Court reporters, medical transcriptionists and related occupations"
+    },
+    {
+      "noc": "12200",
+      "name": "Accounting technicians and bookkeepers"
+    },
+    {
+      "noc": "13100",
+      "name": "Administrative officers"
+    },
+    {
+      "noc": "13101",
+      "name": "Property administrators"
+    },
+    {
+      "noc": "13110",
+      "name": "Administrative assistants"
+    },
+    {
+      "noc": "13111",
+      "name": "Legal administrative assistants"
+    },
+    {
+      "noc": "13201",
+      "name": "Production and transportation logistics coordinators"
+    },
+    {
+      "noc": "20010",
+      "name": "Engineering managers"
+    },
+    {
+      "noc": "20011",
+      "name": "Architecture and science managers"
+    },
+    {
+      "noc": "20012",
+      "name": "Computer and information systems managers"
+    },
+    {
+      "noc": "21110",
+      "name": "Biologists and related scientists"
+    },
+    {
+      "noc": "21112",
+      "name": "Agricultural representatives, consultants and specialists"
+    },
+    {
+      "noc": "21200",
+      "name": "Architects"
+    },
+    {
+      "noc": "21203",
+      "name": "Land surveyors"
+    },
+    {
+      "noc": "21210",
+      "name": "Mathematicians, statisticians and actuaries"
+    },
+    {
+      "noc": "21211",
+      "name": "Data scientists"
+    },
+    {
+      "noc": "21220",
+      "name": "Cybersecurity specialists"
+    },
+    {
+      "noc": "21221",
+      "name": "Business systems specialists"
+    },
+    {
+      "noc": "21222",
+      "name": "Information systems specialists"
+    },
+    {
+      "noc": "21223",
+      "name": "Database analysts and data administrators"
+    },
+    {
+      "noc": "21230",
+      "name": "Computer systems developers and programmers"
+    },
+    {
+      "noc": "21231",
+      "name": "Software engineers and designers"
+    },
+    {
+      "noc": "21232",
+      "name": "Software developers and programmers"
+    },
+    {
+      "noc": "21233",
+      "name": "Web designers"
+    },
+    {
+      "noc": "21234",
+      "name": "Web developers and programmers"
+    },
+    {
+      "noc": "21300",
+      "name": "Civil engineers"
+    },
+    {
+      "noc": "21301",
+      "name": "Mechanical engineers"
+    },
+    {
+      "noc": "21310",
+      "name": "Electrical and electronics engineers"
+    },
+    {
+      "noc": "21311",
+      "name": "Computer engineers (except software engineers and designers)"
+    },
+    {
+      "noc": "21321",
+      "name": "Industrial and manufacturing engineers"
+    },
+    {
+      "noc": "22100",
+      "name": "Chemical technologists and technicians"
+    },
+    {
+      "noc": "22101",
+      "name": "Geological and mineral technologists and technicians"
+    },
+    {
+      "noc": "22110",
+      "name": "Biological technologists and technicians"
+    },
+    {
+      "noc": "22111",
+      "name": "Agricultural and fish products inspectors"
+    },
+    {
+      "noc": "22212",
+      "name": "Drafting technologists and technicians"
+    },
+    {
+      "noc": "22220",
+      "name": "Computer network and web technicians"
+    },
+    {
+      "noc": "22221",
+      "name": "User support technicians"
+    },
+    {
+      "noc": "22232",
+      "name": "Occupational health and safety specialists"
+    },
+    {
+      "noc": "22300",
+      "name": "Civil engineering technologists and technicians"
+    },
+    {
+      "noc": "22301",
+      "name": "Mechanical engineering technologists and technicians"
+    },
+    {
+      "noc": "22302",
+      "name": "Industrial engineering and manufacturing technologists and technicians"
+    },
+    {
+      "noc": "22303",
+      "name": "Construction estimators"
+    },
+    {
+      "noc": "22310",
+      "name": "Electrical and electronics engineering technologists and technicians"
+    },
+    {
+      "noc": "22311",
+      "name": "Electronic service technicians (household and business equipment)"
+    },
+    {
+      "noc": "22313",
+      "name": "Aircraft instrument, electrical and avionics mechanics, technicians and inspectors"
+    },
+    {
+      "noc": "30010",
+      "name": "Managers in health care"
+    },
+    {
+      "noc": "31112",
+      "name": "Audiologists and speech-language pathologists"
+    },
+    {
+      "noc": "31120",
+      "name": "Pharmacists"
+    },
+    {
+      "noc": "31121",
+      "name": "Dietitians and nutritionists"
+    },
+    {
+      "noc": "31200",
+      "name": "Psychologists"
+    },
+    {
+      "noc": "31202",
+      "name": "Physiotherapists"
+    },
+    {
+      "noc": "31203",
+      "name": "Occupational therapists"
+    },
+    {
+      "noc": "31301",
+      "name": "Registered nurses and registered psychiatric nurses"
+    },
+    {
+      "noc": "31303",
+      "name": "Physician assistants, midwives and allied health professionals"
+    },
+    {
+      "noc": "32101",
+      "name": "Licensed practical nurses"
+    },
+    {
+      "noc": "32103",
+      "name": "Respiratory therapists, clinical perfusionists and cardiopulmonary technologists"
+    },
+    {
+      "noc": "32104",
+      "name": "Animal health technologists and veterinary technicians"
+    },
+    {
+      "noc": "32109",
+      "name": "Other technical occupations in therapy and assessment"
+    },
+    {
+      "noc": "32111",
+      "name": "Dental hygienists and dental therapists"
+    },
+    {
+      "noc": "32120",
+      "name": "Medical laboratory technologists"
+    },
+    {
+      "noc": "32121",
+      "name": "Medical radiation technologists"
+    },
+    {
+      "noc": "32124",
+      "name": "Pharmacy technicians"
+    },
+    {
+      "noc": "32129",
+      "name": "Other medical technologists and technicians"
+    },
+    {
+      "noc": "32201",
+      "name": "Massage therapists"
+    },
+    {
+      "noc": "33101",
+      "name": "Medical laboratory assistants and related technical occupations"
+    },
+    {
+      "noc": "33103",
+      "name": "Pharmacy technical assistants and pharmacy assistants"
+    },
+    {
+      "noc": "40030",
+      "name": "Managers in social, community and correctional services"
+    },
+    {
+      "noc": "41101",
+      "name": "Lawyers and Quebec notaries"
+    },
+    {
+      "noc": "41300",
+      "name": "Social workers"
+    },
+    {
+      "noc": "41301",
+      "name": "Therapists in counselling and related specialized therapies"
+    },
+    {
+      "noc": "41310",
+      "name": "Police investigators and other investigative occupations"
+    },
+    {
+      "noc": "41321",
+      "name": "Career development practitioners and career counsellors (except education)"
+    },
+    {
+      "noc": "41400",
+      "name": "Natural and applied science policy researchers, consultants and program officers"
+    },
+    {
+      "noc": "41402",
+      "name": "Business development officers and market researchers and analysts"
+    },
+    {
+      "noc": "41403",
+      "name": "Social policy researchers, consultants and program officers"
+    },
+    {
+      "noc": "41404",
+      "name": "Health policy researchers, consultants and program officers"
+    },
+    {
+      "noc": "41405",
+      "name": "Education policy researchers, consultants and program officers"
+    },
+    {
+      "noc": "41406",
+      "name": "Recreation, sports and fitness policy researchers, consultants and program officers"
+    },
+    {
+      "noc": "41407",
+      "name": "Program officers unique to government"
+    },
+    {
+      "noc": "42200",
+      "name": "Paralegal and related occupations"
+    },
+    {
+      "noc": "42201",
+      "name": "Social and community service workers"
+    },
+    {
+      "noc": "42202",
+      "name": "Early childhood educators and assistants"
+    },
+    {
+      "noc": "42203",
+      "name": "Instructors of persons with disabilities"
+    },
+    {
+      "noc": "50012",
+      "name": "Recreation, sports and fitness program and service directors"
+    },
+    {
+      "noc": "51120",
+      "name": "Producers, directors, choreographers and related occupations"
+    },
+    {
+      "noc": "52113",
+      "name": "Audio and video recording technicians"
+    },
+    {
+      "noc": "52120",
+      "name": "Graphic designers and illustrators"
+    },
+    {
+      "noc": "52121",
+      "name": "Interior designers and interior decorators"
+    },
+    {
+      "noc": "53123",
+      "name": "Theatre, fashion, exhibit and other creative designers"
+    },
+    {
+      "noc": "54100",
+      "name": "Program leaders and instructors in recreation, sport and fitness"
+    },
+    {
+      "noc": "60010",
+      "name": "Corporate sales managers"
+    },
+    {
+      "noc": "60020",
+      "name": "Retail and wholesale trade managers"
+    },
+    {
+      "noc": "60040",
+      "name": "Managers in customer and personal services"
+    },
+    {
+      "noc": "62010",
+      "name": "Retail sales supervisors"
+    },
+    {
+      "noc": "62020",
+      "name": "Food service supervisors"
+    },
+    {
+      "noc": "62100",
+      "name": "Technical sales specialists – wholesale trade"
+    },
+    {
+      "noc": "62101",
+      "name": "Retail and wholesale buyers"
+    },
+    {
+      "noc": "63101",
+      "name": "Real estate agents and salespersons"
+    },
+    {
+      "noc": "63102",
+      "name": "Financial sales representatives"
+    },
+    {
+      "noc": "63200",
+      "name": "Cooks"
+    },
+    {
+      "noc": "63202",
+      "name": "Bakers"
+    },
+    {
+      "noc": "64100",
+      "name": "Retail salespersons and visual merchandisers"
+    },
+    {
+      "noc": "64409",
+      "name": "Other customer and information services representatives"
+    },
+    {
+      "noc": "70010",
+      "name": "Construction managers"
+    },
+    {
+      "noc": "70011",
+      "name": "Home building and renovation managers"
+    },
+    {
+      "noc": "70012",
+      "name": "Facility operation and maintenance managers"
+    },
+    {
+      "noc": "70020",
+      "name": "Managers in transportation"
+    },
+    {
+      "noc": "72100",
+      "name": "Machinists and machining and tooling inspectors"
+    },
+    {
+      "noc": "72101",
+      "name": "Tool and die makers"
+    },
+    {
+      "noc": "72102",
+      "name": "Sheet metal workers"
+    },
+    {
+      "noc": "72106",
+      "name": "Welders and related machine operators"
+    },
+    {
+      "noc": "72200",
+      "name": "Electricians (except industrial and power system)"
+    },
+    {
+      "noc": "72201",
+      "name": "Industrial electricians"
+    },
+    {
+      "noc": "72203",
+      "name": "Electrical power line and cable workers"
+    },
+    {
+      "noc": "72204",
+      "name": "Telecommunications line and cable workers"
+    },
+    {
+      "noc": "72205",
+      "name": "Telecommunications equipment installation and cable television service technicians"
+    },
+    {
+      "noc": "72300",
+      "name": "Plumbers"
+    },
+    {
+      "noc": "72310",
+      "name": "Carpenters"
+    },
+    {
+      "noc": "72400",
+      "name": "Construction millwrights and industrial mechanics"
+    },
+    {
+      "noc": "72401",
+      "name": "Heavy-duty equipment mechanics"
+    },
+    {
+      "noc": "72402",
+      "name": "Heating, refrigeration and air conditioning mechanics"
+    },
+    {
+      "noc": "72404",
+      "name": "Aircraft mechanics and aircraft inspectors"
+    },
+    {
+      "noc": "72405",
+      "name": "Machine fitters"
+    },
+    {
+      "noc": "72410",
+      "name": "Automotive service technicians, truck and bus mechanics and mechanical repairers"
+    },
+    {
+      "noc": "72411",
+      "name": "Auto body collision, refinishing and glass technicians and damage repair estimators"
+    },
+    {
+      "noc": "72500",
+      "name": "Crane operators"
+    },
+    {
+      "noc": "72600",
+      "name": "Air pilots, flight engineers and flying instructors"
+    },
+    {
+      "noc": "73100",
+      "name": "Concrete finishers"
+    },
+    {
+      "noc": "73102",
+      "name": "Plasterers, drywall installers and finishers and lathers"
+    },
+    {
+      "noc": "73112",
+      "name": "Painters and decorators (except interior decorators)"
+    },
+    {
+      "noc": "73113",
+      "name": "Floor covering installers"
+    },
+    {
+      "noc": "73310",
+      "name": "Railway and yard locomotive engineers"
+    },
+    {
+      "noc": "73311",
+      "name": "Railway conductors and brakemen/women"
+    },
+    {
+      "noc": "74202",
+      "name": "Air transport ramp attendants"
+    },
+    {
+      "noc": "75101",
+      "name": "Material handlers"
+    },
+    {
+      "noc": "75110",
+      "name": "Construction trades helpers and labourers"
+    },
+    {
+      "noc": "80020",
+      "name": "Managers in agriculture"
+    },
+    {
+      "noc": "90010",
+      "name": "Manufacturing managers"
+    },
+    {
+      "noc": "90011",
+      "name": "Utilities managers"
+    },
+    {
+      "noc": "92100",
+      "name": "Power engineers and power systems operators"
+    }
+  ]
+}

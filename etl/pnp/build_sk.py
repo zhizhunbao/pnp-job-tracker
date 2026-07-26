@@ -28,6 +28,12 @@ _PROFILE = {"content_selector": None, "remove_selectors": [], "css_file": None, 
 _SK = ("https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/"
        "saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/")
 # 每条 = 一个 inclusion 具名通道(实时 URL / 输出文件 / 通道英文名 / 前端短标签)
+# E6-09 全省核查(2026-07-25):三张清单与官方逐条吻合,但语义比「in-demand」窄——这三条都是
+# Talent Pathway,除了 NOC 在清单内,还要**萨省雇主的长期全职 offer + 雇主先拿 EPA**;
+# 2026 起另有行业配额封顶(住宿餐饮 15%、零售 5%、卡车运输 5%)未建模。清单本身仍是 inclusion
+# (type 不改,08_score 语义就是 inclusion/exclusion 二选一),条件写在这里作数据层事实。
+SK_NOTE = ("SINP Talent Pathway:除职业在清单内,还需萨省雇主长期全职 offer 且雇主已获 EPA;"
+           "2026 起住宿餐饮/零售/卡车运输三行业另有配额封顶(15%/5%/5%)。")
 STREAMS = [
     {"url": _SK + "health-talent-pathway", "out": "sk-health.json",
      "stream": "SINP Health Talent Pathway", "label": "SK 医疗"},
@@ -75,7 +81,7 @@ def main() -> None:
             continue
         table = {
             "stream": s["stream"], "label": s["label"], "province": PROVINCE,
-            "type": "indemand",
+            "type": "indemand", "note": SK_NOTE,
             "url": s["url"], "fetched": date.today().isoformat(),
             "occupations": occs,
         }
