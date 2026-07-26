@@ -210,9 +210,10 @@ JS = r"""
     const st = getComputedStyle(el);
     if (el.matches('button,[role=button]') && !el.disabled && st.cursor !== 'pointer' && st.pointerEvents !== 'none')
       add('R9可点无手型', el, norm(el.innerText), { cursor: st.cursor });
-    // 手型指向空态:只认 —(图标钮天然无文字,首轮 111 条假阳性全是轮播点/图标钮)
-    if (st.cursor === 'pointer' && el.children.length === 0 && /^[—-]$/.test(textOf(el)))
-      add('R9手型指向空态', el, textOf(el));
+    // 手型指向空态:只认 —(图标钮天然无文字,首轮 111 条假阳性全是轮播点/图标钮);
+    // 祖先是链接/按钮的不算 —— 手型来自整卡可点(省卡就是这样),第 26 轮把它误判成「假手型」过
+    if (st.cursor === 'pointer' && el.children.length === 0 && /^[—-]$/.test(textOf(el))
+        && !el.closest('a[href],button')) add('R9手型指向空态', el, textOf(el));
   }
   // ---- 10 死链 ----
   for (const el of all) {
