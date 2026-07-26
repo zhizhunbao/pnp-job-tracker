@@ -42,14 +42,14 @@ const zh: Dict = {
   'ee.healthcare': '医疗社服', 'ee.stem': 'STEM', 'ee.trade': '技工', 'ee.education': '教育', 'ee.transport': '运输', 'ee.physicians': '医生', 'ee.seniorMgr': '高管', 'ee.researchers': '研究', 'ee.military': '军职',
   'chart.common': '常见图表', 'chart.custom': '自定义图表', 'chart.dim': '维度', 'chart.metric': '指标', 'chart.dimProv': '按省', 'chart.dimCat': '按职业大类', 'chart.all': '全部', 'chart.medianNote': '中位数不做跨省合并——请选择一个省查看各大类中位数。',
   'advisor.unavail': 'AI 判断暂时不可用,请稍后再试——上方事实与官方链接不受影响。',
-  'advisor.limit429': '今日免费次数已用完', 'advisor.limitCta': '登录 / 注册 →',
+  'advisor.limit429': '今日免费次数已用完', 'advisor.limitCta': '登录',
   'act.seeOfficial': '查看官方原帖 ↗',
   // E9-04 投递栏(+dd24-#109 语境文案)
   'apply.email': '邮件投递', 'apply.web': '前往投递', 'apply.plain': '投递', 'apply.copy': '复制要点', 'apply.copied': '已复制',
   'apply.authHero': '注册后帮你预填投递邮件,记录投递进度',
   'ob.valueApply': '顺手选几下,以后有相似的岗自动进你邮箱', 'ob.finishApply': '保存,继续投递 →',
   // E8-07 职位详情页
-  'detail.openFull': '打开完整页', 'detail.back': '返回职位板', 'detail.related': '相关职位', 'detail.factsTitle': '薪资与条件',
+  'detail.openFull': '打开完整页', 'detail.back': '返回', 'detail.related': '相关职位', 'detail.factsTitle': '薪资与条件',
   'detail.sameCo': '同公司', 'detail.sameOcc': '同省同职业', 'detail.closedNote': '该岗位已下架,信息仅供参考',
   'detail.pnpSec': '省提名通道', 'detail.pnpSecNote': '粗筛信号,非资格认定', 'detail.eeSec': '联邦 EE 类别', 'detail.crumbHome': '职位板',
   // #142 职业分类三级(可点即按该级筛职位板)
@@ -123,7 +123,7 @@ const zh: Dict = {
   'empty': '无匹配职位', 'allShown': '已全部显示 {total} 个', 'loadMore': '显示更多(还有 {n} 条)',
   'cell.uncat': '未分类', 'cell.first': '第一方', 'cell.repost': '转贴', 'cell.today': '今天',
   'cell.pnpSkilled': '可提名', 'cell.pnpIndemand': '紧缺', 'cell.pnpQc': '魁省', 'cell.aipYes': '指定雇主', 'cell.lmiaYes': '✓ {n} 职位　{q}', 'cell.closed': '已下架', 'cell.open': '在招',
-  'pnplist.title': '省提名职业清单', 'pnplist.source': '来源', 'pnplist.your': '本岗', 'pnplist.gta': '大多区域外', 'pnplist.loading': '加载清单…',
+  'pnplist.title': '省提名职业清单', 'pnplist.source': '来源', 'pnplist.your': '本岗', 'pnplist.gta': '大多区域外', 'pnplist.loading': '加载清单…', 'pnplist.showOther': '展开其他 {n} 个 ▾', 'pnplist.foldOther': '收起 ▴',
  
  
   'pnplist.qc': '魁省走自己的甄选(CSQ/Arrima),不属省提名',
@@ -196,7 +196,7 @@ const zh: Dict = {
   'fact.coLmiaNote': '担保史为 ESDC 历史记录,非担保承诺',
   // J·K·M 批(2026-07-19 Frank 批):J1 多列 · J3 五节整理版 · K 公司调查 · M 对比表
   'col.empHours': '工时', 'col.empTerm': '雇佣期', 'fact.unstated': '原帖未标注',
-  'act.ai': 'AI 整理', 'act.aiNote': '只搬运原帖信息,未添加', 'act.aiQuota': '今日 AI 次数已用完,明天重置', 'act.seeOrig': '看原文 ▾', 'act.seeFmt': '看整理版 ▴', 'act.aiWorking': 'AI 整理中,先看原文…', 'act.aiFail': 'AI 整理没成功', 'ai.retry': '重试',
+  'act.ai': 'AI 整理', 'act.aiNote': '只搬运原帖信息,未添加', 'act.aiQuota': '今日 AI 次数已用完,明天重置', 'act.aiQuotaLogin': '登录后每日次数更多', 'act.seeOrig': '看原文 ▾', 'act.seeFmt': '看整理版 ▴', 'act.aiWorking': 'AI 整理中,先看原文…', 'act.aiFail': 'AI 整理没成功', 'ai.retry': '重试',
   'act.f.role': '职位描述', 'act.f.reqs': '硬性要求', 'act.f.pay': '薪资福利', 'act.f.hours': '工时地点', 'act.f.apply': '怎么投', 'act.f.none': '原帖未提及',
   'co.f.what': '主营业务', 'co.f.base': '所在地', 'co.f.size': '规模', 'co.f.founded': '成立时间', 'co.f.note': '其他要点',   // #158 公司简介分节(2026-07-21 增至五节)
   'fact.aiIntro': 'AI 检索整理(非官方自述)', 'fact.aiWorking': 'AI 调查中…', 'fact.aiSite': 'AI 检索到,非库内原有',
@@ -508,13 +508,13 @@ const en: Dict = {
   'ee.healthcare': 'Healthcare', 'ee.stem': 'STEM', 'ee.trade': 'Trades', 'ee.education': 'Education', 'ee.transport': 'Transport', 'ee.physicians': 'Physicians', 'ee.seniorMgr': 'Senior managers', 'ee.researchers': 'Researchers', 'ee.military': 'Military',
   'chart.common': 'Common charts', 'chart.custom': 'Custom chart', 'chart.dim': 'Dimension', 'chart.metric': 'Metric', 'chart.dimProv': 'by province', 'chart.dimCat': 'by occupation group', 'chart.all': 'All', 'chart.medianNote': 'Medians are not merged across provinces — pick a province to see per-group medians.',
   'advisor.unavail': 'The AI read is temporarily unavailable — the facts and official links above are unaffected. Please try again later.',
-  'advisor.limit429': 'Free uses for today are used up', 'advisor.limitCta': 'Sign in / Sign up →',
+  'advisor.limit429': 'Free uses for today are used up', 'advisor.limitCta': 'Sign in',
   'act.seeOfficial': 'View official posting ↗',
   'apply.email': 'Apply by email', 'apply.web': 'Apply on official site', 'apply.plain': 'Apply', 'apply.copy': 'Copy summary', 'apply.copied': 'Copied',
   'apply.authHero': 'Sign up to prefill the application email and track your applications',
   'ob.valueApply': 'A few taps now — similar jobs will land in your inbox', 'ob.finishApply': 'Save and continue applying →',
   // E8-07 job detail page
-  'detail.openFull': 'Open full page', 'detail.back': 'Back to job board', 'detail.related': 'Related jobs', 'detail.factsTitle': 'Pay and conditions',
+  'detail.openFull': 'Open full page', 'detail.back': 'Back', 'detail.related': 'Related jobs', 'detail.factsTitle': 'Pay and conditions',
   'detail.sameCo': 'same employer', 'detail.sameOcc': 'same occupation in province', 'detail.closedNote': 'This posting has closed; shown for reference only',
   'detail.pnpSec': 'PNP streams', 'detail.pnpSecNote': 'rough signal, not an eligibility decision', 'detail.eeSec': 'Federal EE categories', 'detail.crumbHome': 'Job board',
   'detail.catSec': 'Occupation category', 'detail.catNote': 'Based on Canada’s National Occupational Classification (NOC); click any level to filter the board',
@@ -581,7 +581,7 @@ const en: Dict = {
   'empty': 'No matching jobs', 'allShown': 'All {total} shown', 'loadMore': 'Load more ({n} left)',
   'cell.uncat': 'Uncategorized', 'cell.first': 'Direct', 'cell.repost': 'Repost', 'cell.today': 'today',
   'cell.pnpSkilled': 'Eligible', 'cell.pnpIndemand': 'In-demand', 'cell.pnpQc': 'Quebec', 'cell.aipYes': 'Designated', 'cell.lmiaYes': '✓ {n} positions　{q}', 'cell.closed': 'Closed', 'cell.open': 'Open',
-  'pnplist.title': 'PNP occupation list', 'pnplist.source': 'Source', 'pnplist.your': 'This job', 'pnplist.gta': 'Outside GTA', 'pnplist.loading': 'Loading list…',
+  'pnplist.title': 'PNP occupation list', 'pnplist.source': 'Source', 'pnplist.your': 'This job', 'pnplist.gta': 'Outside GTA', 'pnplist.loading': 'Loading list…', 'pnplist.showOther': 'Show other {n} ▾', 'pnplist.foldOther': 'Collapse ▴',
  
  
   'pnplist.qc': 'Quebec uses its own selection (CSQ/Arrima), not PNP',
@@ -673,7 +673,7 @@ const en: Dict = {
   'fact.coLmiaNote': 'Sponsorship history is an ESDC record of the past, not a commitment',
   // J·K·M batch (2026-07-19)
   'col.empHours': 'Hours', 'col.empTerm': 'Term', 'fact.unstated': 'Not stated in posting',
-  'act.ai': 'AI-organized', 'act.aiNote': 'rearranged from the posting, nothing added', 'act.aiQuota': 'Daily AI quota used up — resets tomorrow', 'act.seeOrig': 'View original ▾', 'act.seeFmt': 'View organized ▴', 'act.aiWorking': 'AI organizing, showing original…', 'act.aiFail': 'AI organizing failed', 'ai.retry': 'Retry',
+  'act.ai': 'AI-organized', 'act.aiNote': 'rearranged from the posting, nothing added', 'act.aiQuota': 'Daily AI quota used up — resets tomorrow', 'act.aiQuotaLogin': 'Sign in for more daily uses', 'act.seeOrig': 'View original ▾', 'act.seeFmt': 'View organized ▴', 'act.aiWorking': 'AI organizing, showing original…', 'act.aiFail': 'AI organizing failed', 'ai.retry': 'Retry',
   'act.f.role': 'Job description', 'act.f.reqs': 'Hard requirements', 'act.f.pay': 'Pay & benefits', 'act.f.hours': 'Schedule & location', 'act.f.apply': 'How to apply', 'act.f.none': 'Not mentioned in posting',
   'co.f.what': 'What it does', 'co.f.base': 'Based in', 'co.f.size': 'Size', 'co.f.founded': 'Founded', 'co.f.note': 'Worth knowing',
   'fact.aiIntro': 'AI-researched (not company-authored)', 'fact.aiWorking': 'AI researching…', 'fact.aiSite': 'found by AI search, not from our directory',
@@ -969,13 +969,13 @@ const ko: Dict = {
   'ee.healthcare': '보건·사회서비스', 'ee.stem': 'STEM', 'ee.trade': '기능직', 'ee.education': '교육', 'ee.transport': '운수', 'ee.physicians': '의사', 'ee.seniorMgr': '고위 관리자', 'ee.researchers': '연구', 'ee.military': '군 경력',
   'chart.common': '일반 차트', 'chart.custom': '사용자 지정 차트', 'chart.dim': '차원', 'chart.metric': '지표', 'chart.dimProv': '주별', 'chart.dimCat': '직업 대분류별', 'chart.all': '전체', 'chart.medianNote': '중위값은 주 간 합산되지 않습니다. 주를 선택해 각 그룹별 중위값을 확인하세요.',
   'advisor.unavail': 'AI 분석이 일시적으로 사용 불가합니다. 위의 사실 및 공식 링크에는 영향이 없습니다. 잠시 후 다시 시도하세요.',
-  'advisor.limit429': '오늘의 무료 횟수 소진', 'advisor.limitCta': '로그인 / 회원가입 →',
+  'advisor.limit429': '오늘의 무료 횟수 소진', 'advisor.limitCta': '로그인',
   'act.seeOfficial': '공식 공고 보기 ↗',
   'apply.email': '이메일로 지원', 'apply.web': '공식 사이트에서 지원', 'apply.plain': '지원', 'apply.copy': '요점 복사', 'apply.copied': '복사됨',
   'apply.authHero': '가입하면 지원 이메일을 미리 채우고 지원 현황을 기록합니다',
   'ob.valueApply': '몇 번만 선택하면 비슷한 공고가 이메일로 도착합니다', 'ob.finishApply': '저장하고 지원 계속 →',
   // E8-07 채용 상세 페이지
-  'detail.openFull': '전체 페이지 열기', 'detail.back': '채용 보드로 돌아가기', 'detail.related': '관련 공고', 'detail.factsTitle': '급여와 조건',
+  'detail.openFull': '전체 페이지 열기', 'detail.back': '뒤로', 'detail.related': '관련 공고', 'detail.factsTitle': '급여와 조건',
   'detail.sameCo': '같은 회사', 'detail.sameOcc': '같은 주 같은 직종', 'detail.closedNote': '마감된 공고입니다. 참고용으로만 확인하세요',
   'detail.pnpSec': '주정부 지명(PNP) 통로', 'detail.pnpSecNote': '대략적 신호이며 자격 판정이 아닙니다', 'detail.eeSec': '연방 EE 카테고리', 'detail.crumbHome': '채용 보드',
   'detail.catSec': '직업 분류', 'detail.catNote': '캐나다 국가직업분류(NOC) 기준; 각 단계를 클릭하면 동일 분류 공고를 필터링합니다',
@@ -1040,7 +1040,7 @@ const ko: Dict = {
   'empty': '일치하는 공고 없음', 'allShown': '전체 {total}개 표시', 'loadMore': '더 보기 (남은 {n}개)',
   'cell.uncat': '미분류', 'cell.first': '직접', 'cell.repost': '재게시', 'cell.today': '오늘',
   'cell.pnpSkilled': '지명 가능', 'cell.pnpIndemand': '부족직종', 'cell.pnpQc': '퀘벡', 'cell.aipYes': '지정 고용주', 'cell.lmiaYes': '✓ {n} 포지션　{q}', 'cell.closed': '마감', 'cell.open': '채용중',
-  'pnplist.title': 'PNP 직업 목록', 'pnplist.source': '출처', 'pnplist.your': '이 채용', 'pnplist.gta': 'GTA 외', 'pnplist.loading': '목록 불러오는 중…',
+  'pnplist.title': 'PNP 직업 목록', 'pnplist.source': '출처', 'pnplist.your': '이 채용', 'pnplist.gta': 'GTA 외', 'pnplist.loading': '목록 불러오는 중…', 'pnplist.showOther': '다른 {n}개 보기 ▾', 'pnplist.foldOther': '접기 ▴',
  
  
   'pnplist.qc': '퀘벡주는 자체 선발(CSQ/Arrima)을 사용하므로 PNP 대상 아님',
@@ -1132,7 +1132,7 @@ const ko: Dict = {
   'fact.coLmiaNote': '스폰서 이력은 ESDC의 과거 기록이며, 스폰서 보장을 의미하지 않음',
   // J·K·M batch (2026-07-19)
   'col.empHours': '근무 형태', 'col.empTerm': '고용 기간', 'fact.unstated': '원문에 명시 없음',
-  'act.ai': 'AI 정리', 'act.aiNote': '원문 재배열, 추가 없음', 'act.aiQuota': '오늘 AI 사용량을 모두 사용했습니다. 내일 초기화됩니다', 'act.seeOrig': '원문 보기 ▾', 'act.seeFmt': '정리본 보기 ▴', 'act.aiWorking': 'AI 정리 중, 우선 원문 표시…', 'act.aiFail': 'AI 정리 실패', 'ai.retry': '다시 시도',
+  'act.ai': 'AI 정리', 'act.aiNote': '원문 재배열, 추가 없음', 'act.aiQuota': '오늘 AI 사용량을 모두 사용했습니다. 내일 초기화됩니다', 'act.aiQuotaLogin': '로그인하면 일일 횟수가 늘어납니다', 'act.seeOrig': '원문 보기 ▾', 'act.seeFmt': '정리본 보기 ▴', 'act.aiWorking': 'AI 정리 중, 우선 원문 표시…', 'act.aiFail': 'AI 정리 실패', 'ai.retry': '다시 시도',
   'act.f.role': '직무 설명', 'act.f.reqs': '필수 요건', 'act.f.pay': '급여·복지', 'act.f.hours': '근무 형태·장소', 'act.f.apply': '지원 방법', 'act.f.none': '원문에 언급 없음',
   'co.f.what': '주요 사업', 'co.f.base': '소재지', 'co.f.size': '규모', 'co.f.founded': '설립 연도', 'co.f.note': '참고 사항',
   'fact.aiIntro': 'AI 검색 정리(회사 공식 소개 아님)', 'fact.aiWorking': 'AI 조사 중…', 'fact.aiSite': 'AI 검색 결과, 디렉터리 원본 아님',

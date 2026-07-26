@@ -1246,7 +1246,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                   )
                   return (
                     <th key={c.key} onClick={() => toggleSort(c.key)} title={t('th.tip')}
-                      style={{ padding: `8px ${cellPad}`, color: active ? '#2563eb' : '#374151', fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none', position: 'relative', borderRight: isLast ? undefined : '1px solid #e5e7eb', minWidth: colMin(c.key), ...(hasWidths && { overflow: 'hidden', textOverflow: 'ellipsis' }), ...frozenStyle(c.key, '#f9fafb') }}>
+                      style={{ padding: `8px ${cellPad}`, color: active ? '#2563eb' : '#374151', fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none', position: 'relative', borderRight: isLast ? undefined : '1px solid #e5e7eb', minWidth: colMin(c.key), ...frozenStyle(c.key, '#f9fafb') }}>{/* Frank 走查#23:表头完全显示——去省略截断,保 nowrap 不换行,列宽随表头撑开 */}
                       {t('col.' + c.key)}<span style={{ color: active ? '#2563eb' : '#d1d5db', fontSize: 11 }}>{active ? (sort.dir === 'desc' ? ' ▼' : ' ▲') : ' ↕'}</span>{handle}
                     </th>
                   )
@@ -1369,7 +1369,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       // 批A 追拍(Frank「走不了的就别给点了」):PNP/EE/AIP 的「—」格(无信号)摘可点——点开只会看到「走不了」,没有意义
                       const act = cellActionable(k) && (k === 'pnp' ? !!j.pnpEligible : k === 'ee' ? !!j.eeCategory : k === 'aip' ? !!j.aip : true)
                       return (
-                        <td key={k} className={act ? 'jcell jcellAct' : 'jcell'} style={{ ...td, padding: `7px ${cellPad}`, ...extra, cursor: act ? 'pointer' : 'default', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', minWidth: colMin(k), ...(NOWRAP_COLS.has(k) ? { whiteSpace: 'nowrap' } : { whiteSpace: 'normal', overflowWrap: 'break-word' }), ...(hasWidths && { overflow: 'hidden', textOverflow: 'ellipsis' }), ...frozenStyle(k, rowBg) }} title={typeof node === 'string' ? node : undefined} onClick={() => {
+                        <td key={k} className={act ? 'jcell jcellAct' : 'jcell'} style={{ ...td, padding: `7px ${cellPad}`, ...extra, cursor: act ? 'pointer' : 'default', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', minWidth: colMin(k), ...(NOWRAP_COLS.has(k) ? { whiteSpace: 'nowrap' } : { whiteSpace: 'normal', overflowWrap: 'break-word' }), ...frozenStyle(k, rowBg) }} title={typeof node === 'string' ? node : undefined} onClick={() => {
                           if (!act) return
                           // 职位格=直开职位描述(2026-07-19 Frank:「点职位也能显示职位描述」);title 顾问弹框由 JD 框标题栏「AI 顾问」钮承接(同日报障回补)
                           if (k === 'title') { setActModal({ kind: 'desc', job: j }); return }
@@ -1552,27 +1552,24 @@ function PnpDrawsBlock({ province, lang, draws, limit }: { province: string; lan
   if (!rows.length) return null
   const src = rows[0]
   return (
-    <div style={{ marginBottom: 12 }}>
-      <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>
-        {t('pnpdraws.title', { label: src.label })}
-        {src.scale ? <span style={{ color: '#9ca3af' }}> · {t('pnpdraws.scale', { scale: src.scale })}</span> : null}
-      </div>
-      <div style={{ border: '1px solid #f3f4f6', borderRadius: 8 }}>
-        {rows.map((d, i) => d.kind === 'notice' ? (
-          <div key={i} style={{ padding: '5px 10px', fontSize: 12.5, color: '#b45309', background: '#fffbeb' }}>
-            {/* #153(Frank 报障「OINP 新通道出来了站上没更新」):原先整句写死在 i18n(只有日期是变量),
-                ETL 抓到新通告也覆盖不掉,7-20 官方已公布资格标准而站上还在说「细则待公布」=过期误导。
-                改为直接渲染抓到的官方通告原文(note),缺 note 才退回旧模板。 */}
+    <div>
+      {/* Frank 走查#9:卡要正式 title(原小灰头提为 MODAL_CARD_HEAD);#G 去内层 marginBottom(外层卡已有底距) */}
+      <div style={MODAL_CARD_HEAD}>{t('pnpdraws.title', { label: src.label })}</div>
+      {/* 2026-07-25 Frank 走查#12:抽选列表四列对齐(日期/流名/最低分/份邀请)——整块一个 grid,
+          列宽跨行对齐(非逐行 flex);SIRS 口径脚注删(#11,「分数只与本省历史比」已是常识噪音)。
+          notice 行跨全部列。 */}
+      <div style={{ border: '1px solid #f3f4f6', borderRadius: 8, display: 'grid', gridTemplateColumns: 'max-content 1fr max-content max-content', alignItems: 'baseline', columnGap: 10, rowGap: 2, padding: '4px 0' }}>
+        {rows.flatMap((d, i) => d.kind === 'notice' ? [
+          <div key={i + 'n'} style={{ gridColumn: '1 / -1', padding: '5px 10px', fontSize: 12.5, color: '#b45309', background: '#fffbeb' }}>
+            {/* #153:直接渲染抓到的官方通告原文(note),缺 note 才退回旧模板 */}
             <IconWarn /> {d.note ? `${d.drawDate} ${d.note}` : t('pnpdraws.notice', { date: d.drawDate })}
-          </div>
-        ) : (
-          <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '4px 10px', fontSize: 12.5, color: '#374151' }}>
-            <span style={{ fontVariantNumeric: 'tabular-nums', color: '#9ca3af', whiteSpace: 'nowrap' }}>{d.drawDate}</span>
-            <span style={{ flex: 1, minWidth: 0 }} title={d.note || undefined}>{d.stream}</span>
-            {d.score != null && <span style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{t('pnpdraws.min', { score: d.score })}</span>}
-            {d.invitations != null && <span style={{ color: '#6b7280', whiteSpace: 'nowrap' }}>{t('pnpdraws.inv', { n: d.invitations })}</span>}
-          </div>
-        ))}
+          </div>,
+        ] : [
+          <span key={i + 'd'} style={{ paddingLeft: 10, fontVariantNumeric: 'tabular-nums', color: '#9ca3af', whiteSpace: 'nowrap', fontSize: 12.5 }}>{d.drawDate}</span>,
+          <span key={i + 's'} style={{ minWidth: 0, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12.5 }} title={d.note || d.stream}>{d.stream}</span>,
+          <span key={i + 'm'} style={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'right', color: '#374151', fontSize: 12.5 }}>{d.score != null ? t('pnpdraws.min', { score: d.score }) : ''}</span>,
+          <span key={i + 'i'} style={{ paddingRight: 10, color: '#6b7280', whiteSpace: 'nowrap', textAlign: 'right', fontSize: 12.5 }}>{d.invitations != null ? t('pnpdraws.inv', { n: d.invitations }) : ''}</span>,
+        ])}
       </div>
     </div>
   )
@@ -1585,10 +1582,9 @@ function NewsLatestBlock({ province, lang, news }: { province: string; lang: Lan
   const rows = news.filter((n) => n.region === province).slice(0, 2)
   if (!rows.length) return null
   return (
-    <div style={{ marginBottom: 12 }}>
-      <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>
-        {t('news.latest')}<a href="/news" style={{ color: '#2563eb', textDecoration: 'none', marginLeft: 8 }}>{t('news.more')}</a>
-      </div>
+    <div>
+      {/* Frank 走查#9 卡要 title + #1 删「全部动态 →」跳转链接;#G 去内层 marginBottom */}
+      <div style={MODAL_CARD_HEAD}>{t('news.latest')}</div>
       <div style={{ border: '1px solid #f3f4f6', borderRadius: 8 }}>
         {rows.map((n) => (
           <div key={n.slug} style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '4px 10px', fontSize: 12.5 }}>
@@ -1644,18 +1640,22 @@ export function PnpListSection({ job, lang, occ, draws, news, nocDesc = [], show
         .filter((s) => (matched ? s === matched : excluded && s.type === 'ineligible'))
         .map((s) => {
         const fk = s.label + s.stream
-        const open = foldOpen[fk] ?? true   // 只渲直接相关清单(命中/排除),默认展开;点头可收
+        // Frank 走查#14:默认只显命中「本岗」项(其余折叠),点末尾「展开其他」才全量
+        const open = foldOpen[fk] ?? false
+        // 命中置顶:本岗排最前,其余保持原序
+        const sorted = s.occupations.filter((o) => o.noc === noc).concat(s.occupations.filter((o) => o.noc !== noc))
+        const hidden = sorted.filter((o) => o.noc !== noc)
+        const shown = open ? sorted : sorted.filter((o) => o.noc === noc)
+        const rows = shown.length ? shown : sorted.slice(0, 1)   // 兜底:即便无命中也至少显 1 条
         return (
         <div key={fk} style={MODAL_CARD}>
-          {/* 2026-07-25 Frank:清单头=折叠开关;展开不再内嵌滚动条,全量显示 */}
-          <div style={{ ...MODAL_CARD_HEAD, cursor: 'pointer', userSelect: 'none' }}
-            onClick={() => setFoldOpen((m) => ({ ...m, [fk]: !open }))}>
-            {open ? '▴' : '▾'} {streamDisplay(t, s.label)}
+          {/* Frank 走查#14:清单头改纯 title(不再作折叠开关);开关移到列表末尾 */}
+          <div style={MODAL_CARD_HEAD}>
+            {streamDisplay(t, s.label)}
             <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 6, fontSize: 12 }}>{t('eelist.count', { n: s.occupations.length })}</span>
           </div>
-          {open ? (
           <div style={{ border: '1px solid #f3f4f6', borderRadius: 8 }}>
-            {s.occupations.map((o) => {
+            {rows.map((o) => {
               const hit = o.noc === noc
               const zh = showZh ? nocLocalTitle(nocRowOf.get(o.noc) || null, lang) : ''
               return (
@@ -1670,27 +1670,16 @@ export function PnpListSection({ job, lang, occ, draws, news, nocDesc = [], show
               )
             })}
           </div>
-          ) : null}
+          {hidden.length > 0 && (
+            <div onClick={() => setFoldOpen((m) => ({ ...m, [fk]: !open }))}
+              style={{ cursor: 'pointer', userSelect: 'none', marginTop: 6, fontSize: 12.5, color: '#2563eb' }}>
+              {open ? t('pnplist.foldOther') : t('pnplist.showOther', { n: hidden.length })}
+            </div>
+          )}
         </div>
         )
       })}
-      {/* 2026-07-25 Frank「覆盖了就能走这个通道,怎么走也得给用户说明白」:命中时补三步流程 +
-          该通道官方页直链(#106 撤的是清单出处装饰链;这里是行动指引,语义不同)——只陈述流程不判资格 */}
-      {matched ? (
-        <div style={MODAL_CARD}>
-          <div style={MODAL_CARD_HEAD}>{t('pnplist.howTitle')}</div>
-          <div style={{ fontSize: 12.5, color: '#374151', lineHeight: 1.9 }}>
-            <div>{t('pnplist.how1')}</div>
-            <div>{t('pnplist.how2')}</div>
-            <div>{t('pnplist.how3')}</div>
-          </div>
-          {matched.url ? (
-            <a href={matched.url} target="_blank" rel="noreferrer"
-              style={{ display: 'inline-block', marginTop: 8, fontSize: 12.5, color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}>
-              {t('pnplist.howOfficial')} ↗</a>
-          ) : null}
-        </div>
-      ) : null}
+      {/* 2026-07-25 Frank 走查#13:「怎么走这个通道」整卡删——①②③ 通用步骤+官方页链 = 废话,无实际价值 */}
     </>
   )
 }
@@ -1797,7 +1786,7 @@ export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [], s
       ) : null}
       {shown.length ? (
         <div style={MODAL_CARD}>
-          <div style={MODAL_CARD_HEAD}>{t('eelist.listTitle')}</div>
+          {/* Frank 走查#16:「类别清单」标签删——类别名(如「医疗社服 37 个职业」)本身即 title(下方粗体名行承担) */}
           {shown.map((c, ci) => {
             const listOpen = foldOpen[c.key] ?? true   // 一律默认展开(「每个职位怎么没了」),想收再点头折
             return (
@@ -1849,8 +1838,9 @@ export function FactRow({ k, children }: { k: React.ReactNode; children: React.R
   )
 }
 export function FactsBox({ children, note }: { children: React.ReactNode; note?: React.ReactNode }) {
+  // Frank 走查#8:去掉卡片底部横线(borderBottom+paddingBottom 退役);组间留白靠 marginBottom
   return (
-    <div style={{ marginBottom: 14, paddingBottom: 12, borderBottom: '1px solid #f3f4f6' }}>
+    <div style={{ marginBottom: 14 }}>
       {children}
       {note ? <div style={{ marginTop: 7, fontSize: 11.5, color: '#9ca3af', lineHeight: 1.5 }}>{note}</div> : null}
     </div>
@@ -2653,14 +2643,27 @@ function ChannelVerdicts({ job, lang, pnpOcc, eeOcc, nocDesc, showZh }: { job: J
   )
   if (!pnpPill && !eePill && aip !== 'on') return null   // 全走不了=整卡不出(无空壳)
   return (
-    <div style={MODAL_CARD}>
-      <div style={MODAL_CARD_HEAD}>{t('ch.title')}</div>
-      {pnpPill ? row(t('ch.pnpRow'), pnpPill, matched ? 'pnp' : undefined) : null}
-      {openList === 'pnp' && matched ? listRows(matched.occupations) : null}
-      {eePill ? row('EE', eePill, eeCats.length ? 'ee' : undefined) : null}
-      {openList === 'ee' ? listRows(eeList) : null}
-      {aip === 'on' ? row('AIP', <VerdictPill tone="ok">{t('ch.aip.on')}</VerdictPill>) : null}
-    </div>
+    <>
+      <div style={MODAL_CARD}>
+        <div style={MODAL_CARD_HEAD}>{t('ch.title')}</div>
+        {pnpPill ? row(t('ch.pnpRow'), pnpPill, matched ? 'pnp' : undefined) : null}
+        {eePill ? row('EE', eePill, eeCats.length ? 'ee' : undefined) : null}
+        {aip === 'on' ? row('AIP', <VerdictPill tone="ok">{t('ch.aip.on')}</VerdictPill>) : null}
+      </div>
+      {/* Frank 走查#21:「清单▾」展开的清单拆成独立卡(不在汇总卡内内联),与 PNP/EE 清单卡同规格 */}
+      {openList === 'pnp' && matched ? (
+        <div style={MODAL_CARD}>
+          <div style={MODAL_CARD_HEAD}>{streamDisplay(t, matched.label)}</div>
+          {listRows(matched.occupations)}
+        </div>
+      ) : null}
+      {openList === 'ee' ? (
+        <div style={MODAL_CARD}>
+          <div style={MODAL_CARD_HEAD}>{eeLabel || 'EE'}</div>
+          {listRows(eeList)}
+        </div>
+      ) : null}
+    </>
   )
 }
 // E12-08:拆解弹框——三维档(1-5)明细走 /api/scoredetail 额度端点(「先试用再付费」拍板;
@@ -3005,6 +3008,10 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
 // ── AI 顾问弹框 ────────────────────────────────────────────────
 // 所有字段都走本地大模型流式生成(按所选语言);前端只给极简头部 + 链接,正文由模型生成。
 const CHAT_ON = false  // 顾问追问对话开关(2026-07-19 Frank 暂关:先做熟现有功能;亮回=初判切本地模型后)
+// Frank 走查#15(2026-07-25):AI 顾问(移民弹框【移民信号/分步走/怎么准备】长文)整体可逆下架——
+// 「目前看着是废话,没什么实际价值;以后可能再用,看情况」。置 false=不渲卡+不发请求(省额度/朋友 qwen)+页眉不挂「AI 顾问」名;
+// 翻回 true 即复活(/api/advisor、etl 底子未删)。
+const AI_ADVISOR_ON = false
 const ADV_PREF = 'adv_modal_pref'  // 记忆 {full, w, h}(位置每次打开居中,避免窗口缩小后跑出屏外)
 const JD_PREF = 'jd_modal_pref'    // 职位描述弹框同款记忆(独立键:两框常用尺寸不同)
 
@@ -3191,8 +3198,9 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
   return (
     /* 壳=页面统一卡规范(白底 #e5e7eb 描边 r12,详情页 sec 同款;Frank「一个页面统一风格」)——
        老弹框灰壳退役;卡里分组用灰内卡(白壳配灰内卡,不再白套白) */
-    <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '12px 16px', margin: '0 0 14px' }}>
-      <div style={{ fontSize: 13.5, fontWeight: 700, color: '#111827' }}>
+    <div style={MODAL_CARD}>
+      {/* #C 一致性:换用统一卡常量(值与原手写完全一致) */}
+      <div style={MODAL_CARD_HEAD}>
         <IconTarget /> {t('match.title')}
         <span style={{ marginLeft: 10, fontWeight: 600, color: lvColor[result.level] }}>{t('match.levelLine', { level: t('match.' + result.level) })}</span>
       </div>
@@ -3245,6 +3253,9 @@ function CategoryPanel({ job, lang, plan, nocDesc, srcField }: { job: JobRow; la
   // AI 速读:点了才生成,流式(复用顾问额度 = /api/advisor field=occRead,按 NOC 缓存)
   const [ai, setAi] = useState('')
   const [aiStatus, setAiStatus] = useState<'idle' | 'loading' | 'streaming' | 'done' | 'error' | 'upgrade' | 'limited'>('idle')
+  // Frank 走查一致性#A:AI 速读改常驻折叠开关(与职位/公司/地点弹框一致,▾/▸ 点开点收都是它,内容留 state 不重烧)
+  const [aiOn, setAiOn] = useState(false)
+  const toggleAi = () => { if (aiStatus === 'idle') runAi(); setAiOn((v) => !v) }
   const runAi = async () => {
     setAiStatus('loading'); setAi('')
     try {
@@ -3304,11 +3315,11 @@ function CategoryPanel({ job, lang, plan, nocDesc, srcField }: { job: JobRow; la
             {transStatus === 'loading' ? t('cat.translating') : transStatus === 'error' ? t('cat.transErr') : showTrans ? t('cat.hideZh') : t('cat.showZh')}
           </button>
         )}
-        {aiStatus === 'idle' && <button onClick={runAi} style={btn}><IconCompass /> {t('cat.aiRead')}</button>}
+        <button onClick={toggleAi} style={{ ...btn, ...(aiOn ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}><IconCompass /> {t('cat.aiRead')} {aiOn ? '▾' : '▸'}</button>
       </div>
 
-      {/* AI 速读卡(点了才出;置顶=点完不用往下翻) */}
-      {aiStatus !== 'idle' && (
+      {/* AI 速读卡(点了才出;置顶=点完不用往下翻;#A:常驻开关收起时隐藏不清 state) */}
+      {aiOn && aiStatus !== 'idle' && (
         <div style={MODAL_CARD}>
           <div style={MODAL_CARD_HEAD}><IconCompass /> {t('cat.aiRead')}</div>
           {aiStatus === 'upgrade' ? <LockedText t={t} loggedIn={plan.loggedIn} />
@@ -3445,6 +3456,8 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news }: { job: Job
   // #183 同款(Frank「点完按钮怎么没了」):AI 速读=常驻折叠开关,点开点收都是它;内容留在 state,收起再开不重烧
   const [aiOn, setAiOn] = useState(false)
   const toggleAi = () => { if (aiStatus === 'idle') runAi(); if (!aiOn) track('ai-read-co'); setAiOn((v) => !v) }
+  // Frank 走查#2:中文对照按钮统一上所有弹框(地点内容现已本地化,此为「以后加英文」的前置占位——切换态在,待英文正文接入即生效)
+  const [showZh, setShowZh] = useState(false)
 
   // 卡① 地点:与分类卡①同款行(点进来的字段行高亮);有值行值文字=地图链接(与表格格同一规则)
   const locRows: { f: ColKey; k: string; v: string; map: boolean }[] = [
@@ -3460,29 +3473,32 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news }: { job: Job
   const fac = (k: string) => (d?.factors || []).find((x: any) => x.key === k)
   const comp = fac('comp'), trend = fac('quotaTrend'), act = fac('activity'), score = fac('scoreLevel')
   const pctS = (v: number) => `${v > 0 ? '+' : ''}${Math.round(v * 100)}%`
-  const drow: React.CSSProperties = { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', fontSize: 13, color: '#374151', marginTop: 6 }
+  // Frank 走查#5:竞争比等难度行改两列 grid(值 | 口径),跨行对齐、不再 flex 换行
+  const drow: React.CSSProperties = { display: 'grid', gridTemplateColumns: 'max-content 1fr', alignItems: 'baseline', columnGap: 10, fontSize: 13, color: '#374151', marginTop: 6 }
 
   // 卡③ 体量行(人话名主文案 + 代码灰注:Frank「TFWP/IMP 用户都不知道是什么」)
   const info = prov?.info
-  const volRows: { k: React.ReactNode; v: React.ReactNode }[] = []
-  if (info?.study) volRows.push({ k: t('loc.study'), v: <>{num(info.study.n)} <span style={gnote}>{t('loc.asOf', { y: info.study.year })}</span></> })
-  if (info?.tfwp) volRows.push({ k: <>{t('loc.tfwp')} <span style={{ ...gnote, fontSize: 11 }}>TFWP</span></>, v: <>{num(info.tfwp.n)} <span style={gnote}>{t('loc.asOf', { y: info.tfwp.year })}</span></> })
-  if (info?.imp) volRows.push({ k: <>{t('loc.imp')} <span style={{ ...gnote, fontSize: 11 }}>{t('loc.impNote')}</span></>, v: <>{num(info.imp.n)} <span style={gnote}>{t('loc.asOf', { y: info.imp.year })}</span></> })
+  // Frank 走查#6:体量卡改三列对齐(标签 | 数值 | 年份注)——数值单列右对齐,故拆出 note 独立字段
+  const volRows: { k: React.ReactNode; v: React.ReactNode; note: React.ReactNode }[] = []
+  if (info?.study) volRows.push({ k: t('loc.study'), v: num(info.study.n), note: t('loc.asOf', { y: info.study.year }) })
+  if (info?.tfwp) volRows.push({ k: <>{t('loc.tfwp')} <span style={{ ...gnote, fontSize: 11 }}>TFWP</span></>, v: num(info.tfwp.n), note: t('loc.asOf', { y: info.tfwp.year }) })
+  if (info?.imp) volRows.push({ k: <>{t('loc.imp')} <span style={{ ...gnote, fontSize: 11 }}>{t('loc.impNote')}</span></>, v: num(info.imp.n), note: t('loc.asOf', { y: info.imp.year }) })
   if (!isQc && info?.alloc && (info.alloc.y2026 != null || info.alloc.y2025 != null)) {
     const a = info.alloc
-    volRows.push({ k: t('loc.alloc'), v: a.y2026 != null
-      ? <>{num(a.y2026)} <span style={gnote}>{a.y2025 != null ? t('loc.allocBoth', { b: num(a.y2025) }) : t('loc.allocY26')}</span></>
-      : <>{num(a.y2025 as number)} <span style={gnote}>{t('loc.allocY25')}</span></> })
+    volRows.push({ k: t('loc.alloc'),
+      v: a.y2026 != null ? num(a.y2026) : num(a.y2025 as number),
+      note: a.y2026 != null ? (a.y2025 != null ? t('loc.allocBoth', { b: num(a.y2025) }) : t('loc.allocY26')) : t('loc.allocY25') })
   }
-  if (!isQc && info?.pnpPr) volRows.push({ k: t('loc.pnpPr'), v: <>{num(info.pnpPr.n)} <span style={gnote}>{t('loc.prNote', { y: info.pnpPr.year })}</span></> })
+  if (!isQc && info?.pnpPr) volRows.push({ k: t('loc.pnpPr'), v: num(info.pnpPr.n), note: t('loc.prNote', { y: info.pnpPr.year }) })
 
   // 竖排单列(Frank 2026-07-23「别横着排列,其他的弹框都是竖着排列的」——两列版当天推翻,与全弹框族一致)
   return (
     <>
-      {/* 顶部钮行(Frank「这三个按钮也没有」):与职位/分类弹框同款位。中文对照/AI 速读不适用
-          (内容已随界面语言本地化、零 AI 设计),只出「打开完整页」=该省地区统计页 */}
+      {/* 顶部钮行(Frank 走查#2「只要弹框就直接显示这三个按钮」):三钮统一——
+          中文对照(地点内容现本地化,为「以后加英文」占位)/ AI 速读 / 打开完整页(=该省地区统计页,地点弹框有专属 SEO 页) */}
       {job.province && (
         <div style={{ display: 'flex', gap: 8, margin: '2px 0 12px', flexWrap: 'wrap' }}>
+          {lang !== 'en' && <button onClick={() => setShowZh((v) => !v)} style={{ ...PILL_BTN, ...(showZh ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}>{showZh ? t('cat.hideZh') : t('cat.showZh')}</button>}
           {factsReady && <button onClick={toggleAi} style={{ ...PILL_BTN, ...(aiOn ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}><IconCompass /> {t('cat.aiRead')} {aiOn ? '▾' : '▸'}</button>}
           <a href={`/stats/${job.province.toLowerCase()}`} target="_blank" rel="noreferrer" style={{ ...PILL_BTN, textDecoration: 'none', display: 'inline-block' }}>{t('detail.openFull')} ↗</a>
         </div>
@@ -3525,20 +3541,22 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news }: { job: Job
           {trend && <div style={drow}><span>{t('diff.trend', { v: pctS(trend.value) })}</span></div>}
           {act && <div style={drow}><span>{t('diff.act', { n: act.value, m: num(act.invitations || 0) })}</span></div>}
           {score && <div style={drow}><span>{t('diff.score', { p: score.value, s: score.latestScore, sc: score.scale || '—' })}</span></div>}
-          <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 8, lineHeight: 1.6 }}>{t('diff.note', { y: comp?.asOf || '' })}</div>
+          {/* Frank 走查#3:「口径:竞争基数=…」整句删(粗口径已在数字旁,长解释=废话) */}
         </div>
       )}
 
       {level === 'province' && volRows.length > 0 && (
         <div style={card}>
           <div style={MODAL_CARD_HEAD}>{t('loc.vol')} <span style={{ ...gnote, fontSize: 11.5, marginLeft: 8 }}>{t('loc.volTag')}</span></div>
-          {volRows.map((r, i) => (
-            <div key={i} style={{ display: 'flex', gap: 10, padding: '3px 6px', margin: '0 -6px', fontSize: 13 }}>
-              <span style={{ minWidth: 128, color: '#9ca3af', flexShrink: 0 }}>{r.k}</span>
-              <span style={{ flex: 1, color: '#374151' }}>{r.v}</span>
-            </div>
-          ))}
-          <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 8, lineHeight: 1.6 }}>{isQc ? t('loc.qc') : t('loc.src')}</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'max-content max-content 1fr', columnGap: 12, rowGap: 4, fontSize: 13, alignItems: 'baseline' }}>
+            {volRows.flatMap((r, i) => [
+              <span key={i + 'k'} style={{ color: '#9ca3af' }}>{r.k}</span>,
+              <span key={i + 'v'} style={{ color: '#374151', fontWeight: 600, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{r.v}</span>,
+              <span key={i + 'n'} style={{ ...gnote }}>{r.note}</span>,
+            ])}
+          </div>
+          {/* Frank 走查#4:非 QC 的「来源:IRCC 开放数据…」删(footer 已统一声明);QC 独立体系说明是实义,保留 */}
+          {isQc && <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 8, lineHeight: 1.6 }}>{t('loc.qc')}</div>}
         </div>
       )}
 
@@ -3688,7 +3706,7 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
     const ctrl = new AbortController()
     // AI 段只归移民弹框(分步方案)。公司弹框撤 AI 段=#167⑨(CompanyAiSection 结构化卡是唯一 AI 内容);
     // 分类弹框纯官方事实,零生成零额度(#176)。不发请求 = 不烧额度、不占朋友那台 qwen、不让用户干等。
-    if (group !== 'immigration') { setStatus('done'); setText(''); return }
+    if (group !== 'immigration' || !AI_ADVISOR_ON) { setStatus('done'); setText(''); return }   // 走查#15:AI 顾问关时不发请求
     setText(''); setStatus('loading'); setSug(''); pendingRef.current = ''; textRef.current = ''; doneRef.current = false
     ;(async () => {
       try {
@@ -3734,7 +3752,7 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
                 「职位描述」同款。「AI 顾问」标只留移民弹框(唯一真在流式生成顾问内容的;#176 分类零 AI,
                 公司弹框的 AI 段 #167⑨ 已撤、只剩检索卡,挂「AI 顾问」名不副实)。 */}
             {/* #189 公司组额度注已随 E8-11 B1 退役:公司数据走 /api/company 免额度(与页面同口径),没烧池无可显 */}
-            <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 600 }}>{group !== 'immigration'
+            <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 600 }}>{group !== 'immigration' || !AI_ADVISOR_ON
               ? t('grp.' + group)
               : <><IconCompass /> {t('advisor.tag')}<span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('grp.' + group)}</span>{freeLeft != null ? <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 8 }}>{t('advisor.left', { n: freeLeft })}</span> : null}</>}
               {/* #185:公司弹框「打开完整页」移入正文顶部钮行(与职位弹框同款),页眉不再重复 */}</div>
@@ -3752,8 +3770,9 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
               #161(Frank「公司显示这些信息也不合适吧」):公司面板不渲 —— 表里七个维度里
               职业方向/所在省/省提名粗筛/EE/技能层级/薪资 全是**岗位级**事实,挂在「Agilent Technologies」
               这个标题下答非所问(用户点公司是想了解公司)。岗位级判定留在岗位面板。 */}
-          {(group === 'pnp' || group === 'ee') && lang !== 'en' && (
-            <div style={{ margin: '2px 0 10px' }}>
+          {/* Frank 走查#2:中文对照按钮统一——移民组也上(内容现本地化,为「以后加英文」占位) */}
+          {(group === 'pnp' || group === 'ee' || group === 'immigration') && lang !== 'en' && (
+            <div style={{ display: 'flex', gap: 8, margin: '2px 0 12px', flexWrap: 'wrap' }}>
               <button onClick={() => { if (!showZh) track('imm-translate'); setShowZh((v) => !v) }} style={{ ...PILL_BTN, ...(showZh ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}>{showZh ? t('cat.hideZh') : t('cat.showZh')}</button>
             </div>
           )}
@@ -3771,7 +3790,7 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
           {/* 免责/AI 声明不进弹框(2026-07-06 用户拍板:合规统一在 footer 说明) */}
           {/* #174:AI 解读收进自己的卡(每卡必有 title)——只有移民组会请求 AI,
               职位/公司组(status 直置 done、text 空)不渲,免得出一张空卡孤儿标题 */}
-          {group === 'immigration' && (
+          {AI_ADVISOR_ON && group === 'immigration' && (
             <div style={MODAL_CARD}>
               <div style={MODAL_CARD_HEAD}><IconCompass /> {t('advisor.tag')}</div>
               {status === 'upgrade' ? (
@@ -4198,6 +4217,8 @@ export function JobBody({ job, lang, plan, inModal, onFreeLeft }: { job: JobRow;
                 <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 6 }}>
                   ✨ {fmtWhy === 'quota' ? t('act.aiQuota') : t('act.aiFail')}
                   {fmtWhy === 'fail' && <button onClick={() => loadFmt()} style={{ border: 'none', background: 'none', padding: 0, marginLeft: 8, color: '#2563eb', cursor: 'pointer', fontSize: 11.5, fontWeight: 600 }}>{t('ai.retry')}</button>}
+                  {/* Frank 走查#20:额度用完时,匿名用户补一句登录提额说明(登录态额度更高;登录入口在页头) */}
+                  {fmtWhy === 'quota' && !plan.loggedIn && <span style={{ marginLeft: 8 }}>{t('act.aiQuotaLogin')}</span>}
                 </div>
               )}
               {fmt && !showOrig ? <JdFormattedView text={fmt} t={t} fallbackPay={job.salaryText || job.salary || undefined} applyUrl={job.applyUrl || undefined} applyEmail={applyEmail || undefined} trans={showTrans && trans ? trans : undefined} /> : <JdTextView text={text} max={4000} />}
