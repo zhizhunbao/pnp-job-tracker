@@ -1392,7 +1392,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       else if (k === 'broad') { node = broadLabel(j.broad); Object.assign(extra, { whiteSpace: 'nowrap', color: cat.fg, fontWeight: 500 }) }
                       else if (k === 'mid') { node = (!j.mid || j.mid === '未分类') ? t('cell.uncat') : catLabel(j.mid); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'fine') { node = (j.mid === '未分类' || !j.mid) ? '—' : catLabel(j.fine); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
-                      else if (k === 'teer') { node = j.teer == null ? '—' : `TEER ${j.teer}`; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+                      else if (k === 'teer') { node = j.teer == null ? '—' : <span title={t('teer.tip', { n: j.teer, l: t('teer.' + j.teer) })}>{`TEER ${j.teer}`}</span>; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'empHours') { node = j.employmentHours ? t('emp.' + j.employmentHours) : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.employmentHours ? '#4b5563' : '#d1d5db', fontSize: 12.5 }) }
                       else if (k === 'empTerm') { node = j.employmentTerm ? t('term.' + j.employmentTerm) : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.employmentTerm ? '#4b5563' : '#d1d5db', fontSize: 12.5 }) }
                       // #175:职位/公司格的外链 href 摘除——点击行为只剩弹框(外链出口在弹框/详情页里,一格一个动作)
@@ -1562,9 +1562,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                     const anyRoute = j.pnpEligible || j.eeCategory || j.aip || isQc || pnpExcl || aipBlocked || (j.teer != null && j.teer <= 3)
                     if (!anyRoute) return null
                     return (<>
-                      {/* #214(第 26 轮体检续):卡上没有列头,裸「TEER 3」不说话 —— 人话档名作主文案,
-                          TEER 码退成 title 小注(同 ui-plain-language 铁律;点胶囊仍开职业分类弹框) */}
-                      {j.teer != null ? chip('#f3f4f6', '#6b7280', t('teer.' + j.teer), 'teer', `TEER ${j.teer}`) : null}
+                      {/* #214 回滚(Frank 2026-07-26「直接改回用 teer 不行么」):卡上显示回 TEER 码——
+                          受众看得懂这个术语,人话档名与官方口径退到 title(hover/点开都能看到),不占卡面 */}
+                      {j.teer != null ? chip('#f3f4f6', '#6b7280', `TEER ${j.teer}`, 'teer', t('teer.tip', { n: j.teer, l: t('teer.' + j.teer) })) : null}
                       {/* 批A 追拍(Frank「可提名和可省提名有什么区别」——字面分不出):对齐桌面三档,
                           命中具名清单显清单名(BC 医疗),通用才显「可提名」;cell.pnpYes 死键退役 */}
                       {j.pnpEligible ? chip('#fef3c7', '#92400e', j.pnpStream ? streamDisplay(t, j.pnpStream) : t('cell.pnpSkilled'), 'pnp')
