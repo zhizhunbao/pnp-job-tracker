@@ -123,14 +123,15 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
     if (step >= 2) toResult(); else setStep(step + 1)
   }
 
-  // Frank 2026-07-26 两拍(「可以铺满」→「入口改成全屏,这样方便用户看」):
-  // 520px 窄条 → 900 面板 → **整屏接管**。全屏后正文不通排(读起来会散),内层限宽 720 居中。
+  // Frank 2026-07-26 三拍,定稿=**居中弹框**:520 窄条 → 900 面板 → 整屏 → 退回居中弹框
+  //(「全屏看着内容太单薄了」——同样的内容摊到整屏,四周全是空地,反而更空)。
+  // 保留全屏那版加的品牌头与信任栏,只是装回一个有边界的卡里:960 宽、两栏、最高 88vh 自滚。
   const sheet: React.CSSProperties = {
-    background: '#fff', width: '100%', height: '100%', maxWidth: '100%', maxHeight: '100%',
-    borderRadius: 0, padding: '32px 20px 28px', overflowY: 'auto',
-    display: 'flex', flexDirection: 'column',   // 纵向居中交给媒体查询(内联样式会压过 CSS 类,别在这写 justifyContent)
+    background: '#fff', width: '100%', maxWidth: 960, maxHeight: '88vh',
+    borderRadius: 16, boxShadow: '0 18px 50px rgba(17,24,39,.22)', overflowY: 'auto',
+    display: 'flex', flexDirection: 'column',
   }
-  const inner: React.CSSProperties = { maxWidth: 1040, width: '100%', margin: '0 auto' }   // 全屏两栏,窄了右栏会挤
+  const inner: React.CSSProperties = { width: '100%', padding: '18px 20px 22px' }
   const opt = (on: boolean): React.CSSProperties => ({
     border: `1px solid ${on ? '#2563eb' : '#e5e7eb'}`, background: on ? '#eff6ff' : '#fff',
     color: on ? '#1d4ed8' : '#1f2937', fontWeight: on ? 600 : 400,
@@ -150,17 +151,17 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
   ].filter(Boolean) as [string, string][]
 
   return (
-    <div className="eqWrap" style={{ position: 'fixed', inset: 0, background: '#fff', zIndex: 80, display: 'flex', flexDirection: 'column' }}>
-      <style>{`@media (min-width:861px){.eqCols{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:44px;align-items:start}.eqSheet{justify-content:center}}
-        @media (max-width:860px){.eqAside{border-top:1px solid #f3f4f6;margin-top:18px;padding-top:14px}}`}</style>
-      {/* ① 品牌头:站名 + 定位 + 关闭。全屏页没有这条,用户不知道自己在哪个站(这正是「像钓鱼」的来源) */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 20px', borderBottom: '1px solid #f3f4f6', flexShrink: 0 }}>
-        <span style={{ fontSize: 17, fontWeight: 700, color: '#111827', whiteSpace: 'nowrap' }}>🍁 Offer2PR</span>
-        <span style={{ fontSize: 12, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('tagline')}</span>
-        <button onClick={skip} aria-label={t('quiz.skip')}
-          style={{ marginLeft: 'auto', border: 'none', background: 'none', color: '#9ca3af', fontSize: 24, lineHeight: 1, cursor: 'pointer', padding: 4 }}>×</button>
-      </div>
-      <div className="eqSheet" style={sheet}>
+    <div onClick={skip} className="eqWrap" style={{ position: 'fixed', inset: 0, background: 'rgba(17,24,39,.45)', zIndex: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <style>{`@media (min-width:861px){.eqCols{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr);gap:28px;align-items:stretch}}
+        @media (max-width:860px){.eqAside{border-top:1px solid #f3f4f6;margin-top:16px;padding-top:14px}.eqWrap{padding:0;align-items:flex-end}.eqSheet{max-height:92vh;border-radius:16px 16px 0 0}}`}</style>
+      <div className="eqSheet" onClick={(e) => e.stopPropagation()} style={sheet}>
+        {/* ① 品牌头:站名 + 定位 + 关闭。没有这条,用户不知道自己在哪个站(这正是「像钓鱼」的来源) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 20px', borderBottom: '1px solid #f3f4f6', flexShrink: 0 }}>
+          <span style={{ fontSize: 16.5, fontWeight: 700, color: '#111827', whiteSpace: 'nowrap' }}>🍁 Offer2PR</span>
+          <span style={{ fontSize: 12, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('tagline')}</span>
+          <button onClick={skip} aria-label={t('quiz.skip')}
+            style={{ marginLeft: 'auto', border: 'none', background: 'none', color: '#9ca3af', fontSize: 22, lineHeight: 1, cursor: 'pointer', padding: 4 }}>×</button>
+        </div>
         <div style={inner}>
         <div className="eqCols">
         <div>
@@ -243,7 +244,6 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
             )}
             {/* Frank「弹框太单薄」三:说清答完能拿到什么(库内真数,不是承诺) */}
             <div style={{ marginTop: 14, paddingTop: 10, borderTop: '1px solid #f3f4f6', fontSize: 12, color: '#6b7280', lineHeight: 1.6 }}>{t('quiz.payoff')}</div>
-            <div onClick={skip} style={{ textAlign: 'center', fontSize: 12.5, color: '#9ca3af', marginTop: 10, cursor: 'pointer' }}>{t('quiz.skip')}</div>
           </>
         ) : (
           <QuizResult t={t} lang={lang} answers={answers} facts={facts} provName={provName}
@@ -270,6 +270,9 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
           <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 10, lineHeight: 1.7 }}>{t('quiz.tr.src')}</div>
         </aside>
         </div>
+        {step < 3 ? (
+          <div onClick={skip} style={{ textAlign: 'center', fontSize: 12.5, color: '#9ca3af', marginTop: 14, cursor: 'pointer' }}>{t('quiz.skip')}</div>
+        ) : null}
         </div>
       </div>
     </div>
