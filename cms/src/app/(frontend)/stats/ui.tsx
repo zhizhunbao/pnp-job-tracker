@@ -63,7 +63,6 @@ export function CaliberLine({ t, srcs, fetched }: { t: TFn; srcs: SrcRow[]; fetc
       </button>
       {open && (
         <div style={{ marginTop: 6, lineHeight: 1.7 }}>
-          {t('stats.caliberText')}
           <div>
             {/* #106:官方来源外链撤(归拢到 /resources);出处名留纯文本 */}
             {srcs.map((s) => (

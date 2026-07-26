@@ -916,11 +916,21 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   // 中途试过「短值列钉定宽」——定宽和 + 文本列内容最小宽会超容器,反而**逼出横向滚动条**(实测,已推翻)。
   // 定案:默认列集走**固定布局 + 百分比列宽**,各列宽之和恒等于容器宽 → 数学上不可能横滚,窗口变宽等比放大。
   // 权重按内容长短分:职位/公司最多,日期/AIP 等恒短值最少;操作列 11% 留给以后加按钮(挤不下时格内换行)。
+  // 操作列按**按钮实宽**钉死(Frank 2026-07-26「这一列可以根据按钮宽度变窄」),不参与权重瓜分;
+  // 以后加按钮就调这一个数(格内 flex wrap 兜底,#85)。其余列用 calc 瓜分「容器宽 - 操作列」,
+  // 各列之和恒等于 100% —— 既不横滚,也不给单个收藏钮留一大片空地。
+  const ACTIONS_W = 96
   const FIT_WEIGHT: Partial<Record<ColKey, number>> = {
     datePosted: 10, broad: 4, teer: 4, company: 12, title: 14, province: 9, city: 8,
-    salary: 7, salaryYr: 7, wageMedHr: 8, wageMedYr: 8, vsMedian: 6, pnp: 8, ee: 6, aip: 3, actions: 10,
+    salary: 7, salaryYr: 7, wageMedHr: 8, wageMedYr: 8, vsMedian: 6, pnp: 8, ee: 6, aip: 3,
   }
-  const fitTotal = fitMode ? shown.reduce((s, c) => s + (FIT_WEIGHT[c.key] ?? 8), 0) : 0
+  const fitHasActions = fitMode && shown.some((c) => c.key === 'actions')
+  const fitTotal = fitMode ? shown.reduce((s, c) => s + (c.key === 'actions' ? 0 : FIT_WEIGHT[c.key] ?? 8), 0) : 0
+  const fitWidth = (k: ColKey) => {
+    if (k === 'actions') return `${ACTIONS_W}px`
+    const pct = ((FIT_WEIGHT[k] ?? 8) / fitTotal * 100).toFixed(3)
+    return fitHasActions ? `calc((100% - ${ACTIONS_W}px) * ${pct} / 100)` : `${pct}%`
+  }
   const colMin = (k: ColKey) => {
     if (hasWidths) return undefined
     if (fitMode) return undefined   // 百分比固定布局自己保证分配;再给最小宽会把表撑出容器=横滚(Frank「不需要滚动条」)
@@ -1320,7 +1330,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             {/* 末列宽设 auto:固定布局下吸收剩余空间,右缘始终贴齐容器,无右侧缝隙 */}
             {hasWidths && <colgroup>{shown.map((c, i) => <col key={c.key} style={{ width: i === shown.length - 1 ? 'auto' : widths[c.key] }} />)}</colgroup>}
             {/* 默认列集:百分比列宽,和恒为 100% → 永不横滚(见 FIT_WEIGHT 注释) */}
-            {fitMode && <colgroup>{shown.map((c) => <col key={c.key} style={{ width: `${((FIT_WEIGHT[c.key] ?? 8) / fitTotal * 100).toFixed(3)}%` }} />)}</colgroup>}
+            {fitMode && <colgroup>{shown.map((c) => <col key={c.key} style={{ width: fitWidth(c.key) }} />)}</colgroup>}
             <thead>
               <tr ref={headRowRef} style={{ textAlign: 'left', background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
                 {shown.map((c, idx) => {
@@ -1434,7 +1444,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                           node = <span style={{ background: '#fef3c7', color: '#b45309', fontWeight: 500, fontSize: 12, padding: '2px 8px', borderRadius: 6, whiteSpace: 'nowrap' }}>{streamDisplay(t, stream)}</span>
                           Object.assign(extra, { whiteSpace: 'nowrap' })
                         }
-                        else if (j.pnpEligible) { node = t('cell.pnpSkilled'); Object.assign(extra, { whiteSpace: 'nowrap', color: '#15803d', fontWeight: 500, fontSize: 12.5 }) }  // 中:可提名
+                        // 中:可提名 —— 带上省码(Frank 2026-07-26「最好是显示 可哪个省的提名」):
+                        // 省提名是**逐省**的,光写「可提名」会让人以为哪儿都能走;与紧缺徽章「MB 乡镇在需」同款省码前缀
+                        else if (j.pnpEligible) { node = t('cell.pnpSkilledProv', { p: j.province }); Object.assign(extra, { whiteSpace: 'nowrap', color: '#15803d', fontWeight: 500, fontSize: 12.5 }) }
                         // E6-09:命中官方具名排除清单 → 说结论(红字,格子可点看依据);其余走不了仍是灰「—」
                         else if (blockedKeys.pnp.has(j.province + '|' + j.noc)) { node = t('cell.pnpExcl'); Object.assign(extra, { whiteSpace: 'nowrap', color: '#b91c1c', fontSize: 12.5 }) }
                         else { node = '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#9ca3af', fontSize: 12.5 }) }  // 弱:不符
@@ -1586,7 +1598,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       {j.teer != null ? chip('#f3f4f6', '#6b7280', `TEER ${j.teer}`, 'teer', t('teer.tip', { n: j.teer, l: t('teer.' + j.teer) })) : null}
                       {/* 批A 追拍(Frank「可提名和可省提名有什么区别」——字面分不出):对齐桌面三档,
                           命中具名清单显清单名(BC 医疗),通用才显「可提名」;cell.pnpYes 死键退役 */}
-                      {j.pnpEligible ? chip('#fef3c7', '#92400e', j.pnpStream ? streamDisplay(t, j.pnpStream) : t('cell.pnpSkilled'), 'pnp')
+                      {j.pnpEligible ? chip('#fef3c7', '#92400e', j.pnpStream ? streamDisplay(t, j.pnpStream) : t('cell.pnpSkilledProv', { p: j.province }), 'pnp')
                         : pnpExcl ? chip('#fee2e2', '#b91c1c', aipBlocked ? t('cell.blockedBoth') : t('cell.pnpExcl'), 'pnp') : null}
                       {j.eeCategory ? (() => {
                         const lastDraw = eeLastDraw(j.eeCategory, dims.eeCategories)
@@ -2025,9 +2037,6 @@ export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [], s
               </div>
             )
           })}
-          {drawsCats.some((c) => (histOf.get(c.key)?.length ?? 0) > 0) ? (
-            <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 6 }}>{t('eelist.histNote')}</div>
-          ) : null}
         </div>
       ) : null}
       {/* E6-10:联邦抽选近况(全类型真轮次)。原来这里只有一句写死的口径注,现在给活数据 */}
@@ -3130,7 +3139,7 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
   if (SRC_FIELDS.has(field)) {
     // 来源/渠道/发布各看各的一行(07-06 用户拍板);口径注三者共用
     return (
-      <FactsBox note={t('fact.sourceNote')}>
+      <FactsBox>
         {field === 'source' && <FactRow k={t('col.source')}>{job.sourceLabel || job.source}</FactRow>}
         {field === 'origin' && <FactRow k={t('col.origin')}>{(() => { const v = t('origin.' + job.origin); return v.startsWith('origin.') ? job.origin : v })()}</FactRow>}
         {field === 'direct' && <FactRow k={t('col.direct')}>{isDirect(job) ? t('fact.firstParty') : t('fact.repost')}</FactRow>}
@@ -3146,7 +3155,7 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
     // 「下架口径」注只跟状态/下架(发布、抓取时间与下架判定无关)。
     const isStatusish = field === 'status' || field === 'closedAt'
     return (
-      <FactsBox note={isStatusish ? t('fact.timeNote') : undefined}>
+      <FactsBox>
         {isStatusish && <FactRow k={t('col.status')}>{t(job.status === 'closed' ? 'cell.closed' : 'cell.open')}</FactRow>}
         {field === 'datePosted' && <FactRow k={t('col.datePosted')}>{day(job.datePosted)}</FactRow>}
         {/* 挂帖时长(痛点盘点 P0 零抓取项):新鲜度信号,弹窗只在客户端开,无水合差异 */}
@@ -3754,7 +3763,6 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
               <span style={{ flex: 1, color: '#374151' }}>{v}</span>
             </div>
           ))}
-          <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 8, lineHeight: 1.6 }}>{t('loc.calNote')}</div>
         </div>
       )}
       {level === 'city' && cityInfo && cityInfo.dli.count > 0 && (
@@ -3803,7 +3811,6 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
               <span style={{ flex: 1, color: '#374151' }}>{v}</span>
             </div>
           ))}
-          <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 8, lineHeight: 1.6 }}>{t('loc.calNote')}</div>
         </div>
       )}
       {level === 'district' && cityInfo?.district && cityInfo.district.topEmployers.length > 0 && (

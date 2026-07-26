@@ -49,7 +49,6 @@ export function TimelineView({ events, cadence, eeCadence }: {
           { href: '/news', label: t('tl.tabNews') },
           { href: '/timeline', label: t('tl.title'), active: true },
         ]} />
-        <div style={{ fontSize: 12.5, color: '#6b7280', margin: '0 0 12px', lineHeight: 1.6 }}>{t('tl.note')}</div>
 
         {/* 抽选节奏(个人化钩 v1:省×流 距今/平均间隔;EE=距今) */}
         <SectionTitle>{t('tl.cadence')}</SectionTitle>

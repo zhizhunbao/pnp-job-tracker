@@ -119,8 +119,10 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
     if (step >= 2) toResult(); else setStep(step + 1)
   }
 
+  // Frank 2026-07-26「我觉得这个问题弹框可以铺满」:桌面原来是 520px 窄条居底,四周全是空地,
+  // 内容(带在招数的职业按钮)挤成许多行。改成铺开的居中大面板;手机维持整宽底部抽屉不变。
   const sheet: React.CSSProperties = {
-    background: '#fff', width: '100%', maxWidth: 520, borderRadius: 16, padding: '16px 16px 20px',
+    background: '#fff', width: '100%', maxWidth: 900, borderRadius: 16, padding: '18px 20px 22px',
     boxShadow: '0 -8px 30px rgba(0,0,0,.18)', maxHeight: '86vh', overflowY: 'auto',
   }
   const opt = (on: boolean): React.CSSProperties => ({
@@ -132,8 +134,8 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
   const provName = (p: string) => t('prov.' + p) !== 'prov.' + p ? t('prov.' + p) : p
 
   return (
-    <div onClick={skip} style={{ position: 'fixed', inset: 0, background: 'rgba(17,24,39,.35)', zIndex: 80, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-      <style>{'@media (min-width:641px){.eqSheet{margin-bottom:6vh}}'}</style>
+    <div onClick={skip} className="eqWrap" style={{ position: 'fixed', inset: 0, background: 'rgba(17,24,39,.35)', zIndex: 80, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+      <style>{'@media (min-width:641px){.eqWrap{align-items:center;padding:24px}.eqSheet{border-radius:16px}}'}</style>
       <div className="eqSheet" onClick={(e) => e.stopPropagation()} style={sheet}>
         {step < 3 ? (
           <>
