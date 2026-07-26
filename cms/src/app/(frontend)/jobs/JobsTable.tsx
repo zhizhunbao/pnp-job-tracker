@@ -6,7 +6,7 @@ import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, use
 // SSR 端 useLayoutEffect 无效且会告警 → 服务端退化成 useEffect。
 const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
-import { makeT, streamDisplay, eeDisplay, initialLang, LANGS, LANG_KEY, COLS_COOKIE, type Lang, type TFn } from './i18n'
+import { makeT, streamDisplay, eeDisplay, eeKeyDisplay, initialLang, LANGS, LANG_KEY, COLS_COOKIE, type Lang, type TFn } from './i18n'
 import { IconChart, IconCheck, IconClipboard, IconCompass, IconLock, IconMap, IconMapPin, IconMaximize, IconMinimize, IconNews, IconSave, IconSettings, IconStar, IconTarget, IconUser, IconWarn, IconX } from '../Icons'
 import { SiteHeader } from '../SiteHeader'
 import { BANNER_IMGS, Button, Notice, PageBanner } from '../ui/primitives'
@@ -911,6 +911,13 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   // 发布时间/操作两列保底不缩。自选加列(超出默认集)或手动拖宽 → 回原最小宽+横滚(#35 拍板不动)
   const DEFAULT_SET = new Set<ColKey>(DEFAULT_COLS)
   const fitMode = !hasWidths && shown.every((c) => DEFAULT_SET.has(c.key))
+  // Frank 2026-07-26「右边操作列有很多空间,改成自适应平均分配;以后操作列还要加按钮」:
+  // 原来 auto 布局把剩余宽度几乎全给了末列(操作列实测 265px 只放一个收藏钮),左边公司/职位却折成三四行。
+  // 改法:**内容恒短的列钉定宽**(日期/大分类/年薪/vs 中位/EE/AIP/操作,操作留 160 够放三钮),
+  // 其余宽度归文本列(公司/职位/省/市/薪资/PNP)——仍走 auto 布局,浏览器不会把任何列压到内容最小宽以下。
+  const FIT_FIXED: Partial<Record<ColKey, number>> = {
+    datePosted: 96, broad: 64, teer: 64, salaryYr: 92, wageMedHr: 92, wageMedYr: 92, vsMedian: 78, ee: 96, aip: 56, actions: 160,
+  }
   const colMin = (k: ColKey) => {
     if (hasWidths) return undefined
     if (fitMode) return k === 'datePosted' ? 92 : k === 'actions' ? 160 : undefined
@@ -1308,6 +1315,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           <table style={{ width: hasWidths ? totalW : '100%', minWidth: '100%', borderCollapse: 'collapse', fontSize: 13.5, tableLayout: hasWidths ? 'fixed' : 'auto' }}>
             {/* 末列宽设 auto:固定布局下吸收剩余空间,右缘始终贴齐容器,无右侧缝隙 */}
             {hasWidths && <colgroup>{shown.map((c, i) => <col key={c.key} style={{ width: i === shown.length - 1 ? 'auto' : widths[c.key] }} />)}</colgroup>}
+            {/* 默认列集:短值列钉定宽,剩余宽度自适应分给文本列(见 FIT_FIXED 注释) */}
+            {fitMode && <colgroup>{shown.map((c) => <col key={c.key} style={{ width: FIT_FIXED[c.key] }} />)}</colgroup>}
             <thead>
               <tr ref={headRowRef} style={{ textAlign: 'left', background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
                 {shown.map((c, idx) => {
@@ -1657,33 +1666,52 @@ type PnpStream = { stream: string; label: string; type: string; url: string; fet
 
 // 本省最近抽选事实块(E6-04)。score 是省自评分制(SIRS/WEOI/MPNP EOI),非 CRS —— 只陈列事实,不判定资格。
 // kind=notice(如 ON 2026-06 改制)渲染通告行;省内无数据(SK/QC 等)整块不出现。
-// 通道改制登记(Frank 2026-07-26「安省 旧通道已经关闭 再列历史没有意义」):
-// 某省整批通道被废止后,改制日之前的抽选属于**已不存在的通道** —— 照旧铺出来会让人以为还能走。
-// 这里只登记「改制日 + 一句现行说明」,行照旧显示但灰化并加注(历史是事实,不删;但要说清它已关闭)。
-// ON:O.Reg 47/26 废旧 9 流、204/26 立 Workforce Priority(2026-06)。新增省份往这加一行即可。
-const STREAM_REFORM: Record<string, { since: string; key: string }> = {
-  ON: { since: '2026-06-01', key: 'pnpdraws.reform.ON' },
+// 通道改制登记。Frank 2026-07-26 二拍:「老的历史记录删了吧,改成最新的打分规则」——
+// 上一版是灰化保留改制前的抽选行,实测整块被 8 条已关闭通道的历史占满,新规则反而看不见。
+// 现在:**改制日之前的抽选行直接不渲染**(它们属于已不存在的通道,不是本省现在的行情),改列现行规则。
+// ON 事实源(ontario.ca 实核 2026-07-26):O.Reg 422/17 修订 2026-06-25 生效,原 8 条流全部废止,
+// 只剩 Ontario Workforce Priority 一条(按 job offer 的 TEER 分档,全部 TEER 均有路径,另有自雇医生路径);
+// 新 EOI 系统官方称「今夏晚些时候开放」,旧 EOI 池已关闭不再发邀请 → 现阶段无抽选可列。
+// 规则行是**人工登记的政策事实**(同 on-workforce-priority.json 的性质);再多一两个省就该下沉数据层。
+const STREAM_REFORM: Record<string, { since: string; rules: [string, string][] }> = {
+  ON: {
+    since: '2026-06-01',
+    rules: [['pnpdraws.on.k1', 'pnpdraws.on.v1'], ['pnpdraws.on.k2', 'pnpdraws.on.v2'],
+      ['pnpdraws.on.k3', 'pnpdraws.on.v3'], ['pnpdraws.on.k4', 'pnpdraws.on.v4']],
+  },
 }
 
 function PnpDrawsBlock({ province, lang, draws, limit }: { province: string; lang: Lang; draws: PnpDraw[]; limit?: number }) {
   // limit(C2 走查拍板):省弹窗只留最近 1 条摘要(全量归 PNP 弹窗),消跨弹窗重复
   const t = makeT(lang)
+  const reform = STREAM_REFORM[province]
   const rows = draws.filter((d) => d.province === province)
     // 脏行过滤:流名/分数/邀请数全空的行没有任何信息量(ON 2026-07-20 实测就是这种),不占位
     .filter((d) => d.kind === 'notice' || d.stream || d.score != null || d.invitations != null)
+    // 改制省:改制日之前的抽选属已关闭通道,不再列出(通告行不受影响,它讲的就是改制本身)
+    .filter((d) => !reform || d.kind === 'notice' || d.drawDate >= reform.since)
     .slice(0, limit || undefined)
-  const reform = STREAM_REFORM[province]
-  if (!rows.length) return null
+  if (!rows.length && !reform) return null
   const src = rows[0]
   return (
     <div>
       {/* Frank 走查#9:卡要正式 title(原小灰头提为 MODAL_CARD_HEAD);#G 去内层 marginBottom(外层卡已有底距) */}
-      <div style={MODAL_CARD_HEAD}>{t('pnpdraws.title', { label: src.label })}</div>
-      {reform ? <div style={{ fontSize: 12, color: '#b45309', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '6px 10px', margin: '2px 0 6px', lineHeight: 1.7 }}>{t(reform.key)}</div> : null}
+      <div style={MODAL_CARD_HEAD}>{reform ? t('pnpdraws.nowTitle') : t('pnpdraws.title', { label: src?.label })}</div>
+      {/* 改制省:列现行规则(项 | 内容 两列左对齐),不再铺已关闭通道的历史 */}
+      {reform ? (
+        <div style={{ margin: '2px 0 6px' }}>
+          <FactGrid cols={2}>
+            {reform.rules.flatMap(([k, v]) => [
+              <span key={k} style={FG_K}>{t(k)}</span>,
+              <span key={v} style={{ color: '#374151' }}>{t(v)}</span>,
+            ])}
+          </FactGrid>
+        </div>
+      ) : null}
       {/* 2026-07-25 Frank 走查#12:抽选列表四列对齐(日期/流名/最低分/份邀请)——整块一个 grid,
           列宽跨行对齐(非逐行 flex);SIRS 口径脚注删(#11,「分数只与本省历史比」已是常识噪音)。
           notice 行跨全部列。 */}
-      <div style={{ border: '1px solid #f3f4f6', borderRadius: 8, display: 'grid', gridTemplateColumns: 'max-content 1fr max-content max-content', alignItems: 'baseline', columnGap: 10, rowGap: 2, padding: '4px 0' }}>
+      <div style={{ border: '1px solid #f3f4f6', borderRadius: 8, display: rows.length ? 'grid' : 'none', gridTemplateColumns: 'max-content 1fr max-content max-content', alignItems: 'baseline', columnGap: 10, rowGap: 2, padding: '4px 0' }}>
         {rows.flatMap((d, i) => d.kind === 'notice' ? [
           <div key={i + 'n'} style={{ gridColumn: '1 / -1', padding: '5px 10px', fontSize: 12.5, color: '#b45309', background: '#fffbeb' }}>
             {/* #153:直接渲染抓到的官方通告原文(note),缺 note 才退回旧模板 */}
@@ -1843,6 +1871,64 @@ export function eeIsDormant(lastDraw: string): boolean {
   return Date.now() - d.getTime() > EE_DORMANT_MONTHS * 30.4 * 86400000
 }
 
+// E6-10 · 联邦抽选近况(Frank「现在都是在抽 cec 和法语吧」)。
+// 上面的类别卡只讲**本岗那一类**;联邦轮次还有 CEC、法语、省提名、通用 —— 不铺出来,用户拿着 EE 标会误判现在的行情。
+// 数据源同一个 build_ee_draws.py:pnp_draws 的 province=FED 行(label=类别 key,零新表)。
+// 红线:法语按**语言能力**判定、不按职业,只在这里作通道说明与分数线参考,**绝不挂到岗位上**。
+const FED_TYPE_COLOR: Record<string, string> = { cec: '#2563eb', french: '#7c3aed', pnp: '#0f766e', general: '#4b5563', fsw: '#4b5563', fst: '#4b5563' }
+const FED_PROGRAM = ['cec', 'french', 'pnp', 'general', 'fsw', 'fst']   // 非「按职业类别」的轮次类型
+const FED_SHOW = 6, FED_MAX = 20   // 弹框只给最近 N 轮 + 可展开(#123 教训:别把全量塞进弹框)
+function FederalRoundsCard({ t, draws }: { t: TFn; draws: PnpDraw[] }) {
+  const [open, setOpen] = useState(false)
+  const fed = useMemo(() => draws.filter((d) => d.province === 'FED' && d.kind === 'draw' && d.drawDate)
+    .sort((a, b) => (a.drawDate < b.drawDate ? 1 : -1)).slice(0, FED_MAX), [draws])
+  // 口径注按真实轮次算(原来是写死的一句「现阶段以 CEC 与法语为主」——轮次结构随政策变,写死就会过期)。
+  // 计数说明:FED 行按类别各留 12 轮(build_ee_draws.HIST_PER_CAT),只要窗口内没被截断计数就准
+  // (实核这 20 轮跨约 3 个月,CEC 的 12 轮能回溯 6 个月以上,不截断)。桶按轮数降序,零轮的桶不出现。
+  const buckets = useMemo(() => {
+    const m = new Map<string, number>()
+    for (const d of fed) {
+      const k = FED_PROGRAM.includes(d.label) ? d.label : '__cat'
+      m.set(k, (m.get(k) || 0) + 1)
+    }
+    return [...m.entries()].sort((a, b) => b[1] - a[1])
+  }, [fed])
+  if (!fed.length) return null
+  const rows = open ? fed : fed.slice(0, FED_SHOW)
+  return (
+    <div style={MODAL_CARD}>
+      <div style={MODAL_CARD_HEAD}>{t('eefed.title')}</div>
+      <div style={{ fontSize: 12, color: '#374151' }}>
+        {t('eefed.mixHead', { n: fed.length })}
+        {buckets.map(([k, n], i) => (
+          <span key={k}>{i ? t('sep') : ''}
+            <span style={{ color: k === '__cat' ? '#b45309' : (FED_TYPE_COLOR[k] || '#4b5563') }}>
+              {k === '__cat' ? t('eefed.cat') : eeKeyDisplay(t, k)} {n}
+            </span>
+          </span>
+        ))}
+      </div>
+      <div style={{ margin: '6px 0 0', border: '1px solid #f3f4f6', borderRadius: 8, overflow: 'hidden' }}>
+        {rows.map((d, i) => (
+          <div key={`${d.drawDate}-${d.label}-${i}`} style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '4px 10px', fontSize: 12, background: i % 2 ? '#fafafa' : undefined }}>
+            <span style={{ fontVariantNumeric: 'tabular-nums', color: '#6b7280', whiteSpace: 'nowrap' }}>{d.drawDate.slice(0, 10)}</span>
+            <span title={d.stream} style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600, color: FED_TYPE_COLOR[d.label] || '#b45309' }}>{eeKeyDisplay(t, d.label)}</span>
+            <span style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 600, color: '#1f2937', whiteSpace: 'nowrap' }}>{t('eelist.crsN', { crs: d.score ?? '—' })}</span>
+            <span style={{ fontVariantNumeric: 'tabular-nums', color: '#6b7280', whiteSpace: 'nowrap' }}>{t('eefed.ita', { n: d.invitations ?? '—' })}</span>
+          </div>
+        ))}
+      </div>
+      {fed.length > FED_SHOW ? (
+        <button onClick={() => setOpen((v) => !v)}
+          style={{ border: 'none', background: 'none', padding: '6px 0 0', color: '#2563eb', cursor: 'pointer', fontSize: 12.5 }}>
+          {open ? `▴ ${t('eefed.less')}` : `▾ ${t('eefed.more', { n: fed.length - FED_SHOW })}`}
+        </button>
+      ) : null}
+      <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 6 }}>{t('eefed.french')}</div>
+    </div>
+  )
+}
+
 type EeCat = { key: string; label: string; drawCrs: number | null; drawDate: string; drawSize: number | null; occupations: { noc: string; teer: number | null; title: string }[] }
 export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [], showZh = true }: { job: JobRow; lang: Lang; cats: EeOcc[]; draws?: PnpDraw[]; nocDesc?: NocDesc[]; showZh?: boolean }) {
   const t = makeT(lang)
@@ -1938,11 +2024,10 @@ export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [], s
           {drawsCats.some((c) => (histOf.get(c.key)?.length ?? 0) > 0) ? (
             <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 6 }}>{t('eelist.histNote')}</div>
           ) : null}
-          {/* Frank 2026-07-26「现在都是在抽 CEC 和法语吧」:类别抽选只是联邦抽选的一部分,
-              法语类别按语言能力判定、不按职业划,所以本表(按 NOC 建)里没有它 —— 不说清就会误判 */}
-          <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 6 }}>{t('eelist.federalNote')}</div>
         </div>
       ) : null}
+      {/* E6-10:联邦抽选近况(全类型真轮次)。原来这里只有一句写死的口径注,现在给活数据 */}
+      <FederalRoundsCard t={t} draws={draws} />
       {shown.length ? (
         <div style={MODAL_CARD}>
           {/* Frank 走查#16:「类别清单」标签删——类别名(如「医疗社服 37 个职业」)本身即 title(下方粗体名行承担) */}
@@ -1996,6 +2081,20 @@ export function FactRow({ k, children }: { k: React.ReactNode; children: React.R
     </div>
   )
 }
+// 多值卡一律「网格列对齐、每列左对齐」(Frank 2026-07-26 走查:「都像最后一个卡片一样排列组合,
+// 每列都左对齐;没有拆成多个列的先拆」——基准=本省抽选卡的四列 grid)。
+// 用法:cols=列数,children 按行铺平(每行 cols 个格);前 cols-1 列宽 max-content 跨行对齐,末列吃剩余宽。
+// 铁律:一行里有多个事实就拆成列,别塞进一句话(那正是「废话多」的来源)。
+export function FactGrid({ cols, children }: { cols: number; children: React.ReactNode }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols - 1}, max-content) 1fr`, columnGap: 14, rowGap: 3, alignItems: 'baseline', fontSize: 13, textAlign: 'left' }}>
+      {children}
+    </div>
+  )
+}
+export const FG_K: React.CSSProperties = { color: '#9ca3af' }                                    // 标签列
+export const FG_V: React.CSSProperties = { color: '#374151', fontVariantNumeric: 'tabular-nums' } // 值列
+export const FG_N: React.CSSProperties = { color: '#9ca3af', fontSize: 11.5 }                     // 注列
 export function FactsBox({ children, note }: { children: React.ReactNode; note?: React.ReactNode }) {
   // Frank 走查#8:去掉卡片底部横线(borderBottom+paddingBottom 退役);组间留白靠 marginBottom
   return (
@@ -2990,16 +3089,21 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
         <FactRow k={t('fact.verdict')}>{vs != null ? <VerdictPill tone={vs >= 0 ? 'ok' : 'warn'}>{t(vs >= 0 ? 'sal.above' : 'sal.below', { p: Math.abs(vs) })}</VerdictPill> : null}</FactRow>
       </FactsBox>
     )
-    // ESDC 表卡(挂 wageMedHr 键):时薪优先,无时薪回退年薪;低/高缺=行不出(宁缺勿滥)
-    const row = (v: number | null | undefined, hr: boolean) => v == null ? null : hr ? `$${v}/hr` : `${K(v)}/yr`
-    const hr = mHr != null
-    return (
-      <FactsBox>
-        <FactRow k={t('sal.low')}>{row(hr ? lHr : lYr, hr)}</FactRow>
-        <FactRow k={t('sal.med')}>{row(hr ? mHr : mYr, hr)}</FactRow>
-        <FactRow k={t('sal.high')}>{row(hr ? hHr : hYr, hr)}</FactRow>
-      </FactsBox>
-    )
+    // ESDC 表卡(挂 wageMedHr 键):三档 × 时薪 + 折算年薪两列(Frank 2026-07-26「换算成年薪,同时显示,多一列」)。
+    // 年薪由数据层折算(04d 时薪×2080,单一口径),前端只显示不换算;某档两个值都缺=该行不出(宁缺勿滥)。
+    const bands: [string, number | null, number | null][] = [
+      [t('sal.low'), lHr, lYr], [t('sal.med'), mHr, mYr], [t('sal.high'), hHr, hYr],
+    ]
+    const cells: React.ReactNode[] = [
+      <span key="h0" style={FG_N} />, <span key="h1" style={FG_N}>{t('sal.hrCol')}</span>, <span key="h2" style={FG_N}>{t('col.salaryYr')}</span>,
+    ]
+    for (const [k, h, y] of bands) {
+      if (h == null && y == null) continue
+      cells.push(<span key={k + 'k'} style={FG_K}>{k}</span>,
+        <span key={k + 'h'} style={FG_V}>{h != null ? `$${h}/hr` : '—'}</span>,
+        <span key={k + 'y'} style={FG_V}>{y != null ? `${K(y)}/yr` : '—'}</span>)
+    }
+    return <FactsBox><FactGrid cols={3}>{cells}</FactGrid></FactsBox>
   }
   if (CLS_FIELDS.has(field)) {
     // 点哪级只看哪级(含上级路径,07-06 用户点名:大分类弹窗不该混进中/小分类):
@@ -3587,10 +3691,22 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
             {t('diff.title')}
             <span style={{ fontSize: 11.5, fontWeight: 600, padding: '1px 8px', borderRadius: 999, background: DIFF_TAG[d.tier]?.bg, color: DIFF_TAG[d.tier]?.fg, border: `1px solid ${DIFF_TAG[d.tier]?.bd}` }}>{t('diff.' + d.tier)}</span>
           </div>
-          {comp && <div style={drow}><span style={{ fontWeight: 600 }}>{t('diff.comp', { v: comp.value })}</span><span style={gnote}>{t('diff.compNote', { pool: num(comp.pool), quota: num(comp.quota), y: comp.quotaYear })}</span></div>}
-          {trend && <div style={drow}><span>{t('diff.trend', { v: pctS(trend.value) })}</span></div>}
-          {act && <div style={drow}><span>{t('diff.act', { n: act.value, m: num(act.invitations || 0) })}</span></div>}
-          {score && <div style={drow}><span>{t('diff.score', { p: score.value, s: score.latestScore, sc: score.scale || '—' })}</span></div>}
+          {/* Frank 2026-07-26 走查:三列(标签 | 值 | 注)跨行对齐,每列左对齐 —— 原来一行一整句,读不快也对不齐 */}
+          <FactGrid cols={3}>
+            {[
+              comp && [t('diff.k.comp'), t('diff.v.comp', { v: comp.value }), t('diff.compNote', { pool: num(comp.pool), quota: num(comp.quota), y: comp.quotaYear })],
+              trend && [t('diff.k.trend'), pctS(trend.value), ''],
+              // 改制省(ON)近 180 天的抽选全在改制之前 —— 不加注就与下方「旧 8 条流已关闭」自相矛盾。
+              // 判定走同一份 pnpDraws:改制日之后一条都没有才加注,新 EOI 一开抽注自动消失。
+              act && [t('diff.k.act'), t('diff.v.act', { n: act.value }),
+                t(STREAM_REFORM[job.province || ''] && !pnpDraws.some((x) => x.province === job.province && x.kind !== 'notice' && x.drawDate >= STREAM_REFORM[job.province || ''].since)
+                  ? 'diff.n.actOld' : 'diff.n.act', { m: num(act.invitations || 0) })],
+              score && [t('diff.k.score'), t('diff.v.score', { s: score.latestScore }), t('diff.n.score', { p: score.value, sc: score.scale || '—' })],
+            ].filter(Boolean).flatMap((r, i) => {
+              const [k, v, n] = r as string[]
+              return [<span key={i + 'k'} style={FG_K}>{k}</span>, <span key={i + 'v'} style={{ ...FG_V, fontWeight: 600 }}>{v}</span>, <span key={i + 'n'} style={FG_N}>{n}</span>]
+            })}
+          </FactGrid>
           {/* Frank 走查#3:「口径:竞争基数=…」整句删(粗口径已在数字旁,长解释=废话) */}
         </div>
       )}
@@ -3599,9 +3715,10 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
         <div style={card}>
           <div style={MODAL_CARD_HEAD}>{t('loc.vol')} <span style={{ ...gnote, fontSize: 11.5, marginLeft: 8 }}>{t('loc.volTag')}</span></div>
           <div style={{ display: 'grid', gridTemplateColumns: 'max-content max-content 1fr', columnGap: 12, rowGap: 4, fontSize: 13, alignItems: 'baseline' }}>
+            {/* Frank 2026-07-26「每列都保证左对齐」:数值列原为右对齐,与其他卡不一致 */}
             {volRows.flatMap((r, i) => [
               <span key={i + 'k'} style={{ color: '#9ca3af' }}>{r.k}</span>,
-              <span key={i + 'v'} style={{ color: '#374151', fontWeight: 600, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{r.v}</span>,
+              <span key={i + 'v'} style={{ ...FG_V, fontWeight: 600 }}>{r.v}</span>,
               <span key={i + 'n'} style={{ ...gnote }}>{r.note}</span>,
             ])}
           </div>
@@ -3819,6 +3936,15 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
               {/* #185:公司弹框「打开完整页」移入正文顶部钮行(与职位弹框同款),页眉不再重复 */}</div>
             <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{group === 'company' ? (job.company || title || a.title) : (job.title || title || a.title)}</h3>
             {/* 公司名下的中文行业行删除(Frank 2026-07-24「公司名下面的中文还是删掉」;了解公司改靠知名/政府章) */}
+            {/* Frank 2026-07-26「所有弹框的 job 名称下面都应该有中文翻译,像点击 job 弹框一样」:
+                岗位名弹框补 NOC 界面语译名(与职位弹框 ActModal 同一函数、同一「与英文标题相同则不重复」规则);
+                公司弹框不加(公司名没有译名,上面那条 2026-07-24 的决定不动)。 */}
+            {group !== 'company' && (() => {
+              const zh = nocLocalTitle(nocDesc.find((d) => d.noc === job.noc) || null, lang)
+              return zh && zh.toLowerCase() !== (job.title || '').toLowerCase()
+                ? <div style={{ fontSize: 12.5, color: '#9ca3af', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{zh}</div>
+                : null
+            })()}
           </div>
           <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
             {!narrow && <button onClick={toggleFull} title={t(full ? 'advisor.exitFull' : 'advisor.full')} style={iconBtn}>{full ? <IconMinimize /> : <IconMaximize />}</button>}

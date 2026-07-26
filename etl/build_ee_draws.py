@@ -29,7 +29,9 @@ CAT_MAP = [
     ("education", "education"), ("transport", "transport"), ("physician", "physicians"),
     ("senior manager", "senior-managers"), ("research", "researchers"), ("military", "military"),
     ("agricul", "agriculture"), ("french", "french"), ("canadian experience", "cec"),
-    ("provincial nominee", "pnp"), ("federal skilled", "fsw"), ("general", "general"),
+    ("provincial nominee", "pnp"),
+    # E6-10:「Federal Skilled Trades」含「federal skilled」,必须排在 fsw 前面,否则技工类被并进 FSW
+    ("federal skilled trades", "fst"), ("federal skilled", "fsw"), ("general", "general"),
 ]
 
 

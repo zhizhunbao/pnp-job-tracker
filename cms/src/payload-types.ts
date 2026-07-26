@@ -611,6 +611,10 @@ export interface PnpOccupation {
    * indemand(命中=符合) / ineligible(命中=不符合)
    */
   type?: string | null;
+  /**
+   * PNP(省提名,默认) / AIP(大西洋移民试点背书) —— 两条路分开判
+   */
+  program?: string | null;
   noc?: string | null;
   name?: string | null;
   /**
@@ -1521,6 +1525,7 @@ export interface PnpOccupationsSelect<T extends boolean = true> {
   stream?: T;
   label?: T;
   type?: T;
+  program?: T;
   noc?: T;
   name?: T;
   gtaRestricted?: T;
