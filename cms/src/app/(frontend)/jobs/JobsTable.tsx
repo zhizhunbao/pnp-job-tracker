@@ -4078,7 +4078,7 @@ function ApplyBar({ job, email, emailDone, t, plan }: { job: JobRow; email: stri
     <>
       {/* 2026-07-25 用户:全宽大蓝钮「太吓人」→ 右对齐紧凑钮;同日「复制要点」钮撤除,只留投递单钮;
           底 padding 14px = 吸底栏自带留白(容器底 padding 已归 0,补「穿墙」) */}
-      <div style={{ position: 'sticky', bottom: 0, background: '#fff', borderTop: '1px solid #e5e7eb', marginTop: 16, padding: '10px 0 14px', display: 'flex', gap: 8, justifyContent: 'flex-end', zIndex: 5 }}>
+      <div style={{ position: 'sticky', bottom: 0, background: '#fff', borderTop: '1px solid #e5e7eb', marginTop: 'auto', padding: '10px 0 14px', display: 'flex', gap: 8, justifyContent: 'flex-end', zIndex: 5 }}>
         <button onClick={onApply} style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}>
           {/* applyhow 在途时用中性「投递」占位——别先显「前往投递」再闪成「邮件投递」(Frank 问「为什么有的是前往有的是邮箱」,闪变加剧困惑) */}
           {email ? t('apply.email') : emailDone ? `${t('apply.web')} ↗` : t('apply.plain')}
@@ -4286,7 +4286,8 @@ function ActModal({ job, lang, plan, nocDesc, onClose }: { job: JobRow; lang: La
           </div>
         </div>
         {/* 2026-07-25 用户「穿墙」:底部原 20px padding 在 sticky 投递栏下方留缝,滚动到底 JD 从缝里透出卡片圆角外 → 底 padding 归 0,底部留白改由投递栏自带 */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '4px 20px 0', fontSize: 14, lineHeight: 1.7, color: '#374151' }}>
+        {/* Frank 走查#22:滚动容器改 flex 列,让投递栏 marginTop:auto 在内容短时也贴底 */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '4px 20px 0', fontSize: 14, lineHeight: 1.7, color: '#374151', display: 'flex', flexDirection: 'column' }}>
           <JobBody job={job} lang={lang} plan={plan} inModal onFreeLeft={setFreeLeft} />
         </div>
         {/* 八方向拉伸手柄(透明边条+角块;右下角保留视觉提示三角) */}
