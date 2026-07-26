@@ -119,12 +119,14 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
     if (step >= 2) toResult(); else setStep(step + 1)
   }
 
-  // Frank 2026-07-26「我觉得这个问题弹框可以铺满」:桌面原来是 520px 窄条居底,四周全是空地,
-  // 内容(带在招数的职业按钮)挤成许多行。改成铺开的居中大面板;手机维持整宽底部抽屉不变。
+  // Frank 2026-07-26 两拍(「可以铺满」→「入口改成全屏,这样方便用户看」):
+  // 520px 窄条 → 900 面板 → **整屏接管**。全屏后正文不通排(读起来会散),内层限宽 720 居中。
   const sheet: React.CSSProperties = {
-    background: '#fff', width: '100%', maxWidth: 900, borderRadius: 16, padding: '18px 20px 22px',
-    boxShadow: '0 -8px 30px rgba(0,0,0,.18)', maxHeight: '86vh', overflowY: 'auto',
+    background: '#fff', width: '100%', height: '100%', maxWidth: '100%', maxHeight: '100%',
+    borderRadius: 0, padding: '32px 20px 28px', overflowY: 'auto',
+    display: 'flex', flexDirection: 'column',   // 纵向居中交给媒体查询(内联样式会压过 CSS 类,别在这写 justifyContent)
   }
+  const inner: React.CSSProperties = { maxWidth: 720, width: '100%', margin: '0 auto' }
   const opt = (on: boolean): React.CSSProperties => ({
     border: `1px solid ${on ? '#2563eb' : '#e5e7eb'}`, background: on ? '#eff6ff' : '#fff',
     color: on ? '#1d4ed8' : '#1f2937', fontWeight: on ? 600 : 400,
@@ -134,9 +136,14 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
   const provName = (p: string) => t('prov.' + p) !== 'prov.' + p ? t('prov.' + p) : p
 
   return (
-    <div onClick={skip} className="eqWrap" style={{ position: 'fixed', inset: 0, background: 'rgba(17,24,39,.35)', zIndex: 80, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-      <style>{'@media (min-width:641px){.eqWrap{align-items:center;padding:24px}.eqSheet{border-radius:16px}}'}</style>
-      <div className="eqSheet" onClick={(e) => e.stopPropagation()} style={sheet}>
+    <div className="eqWrap" style={{ position: 'fixed', inset: 0, background: '#fff', zIndex: 80, display: 'flex' }}>
+      {/* 桌面全屏下内容若顶到最上,下面三分之二是空白 → 垂直居中;手机内容本就占满,保持顶部对齐 */}
+      <style>{'@media (min-width:641px){.eqSheet{justify-content:center}}'}</style>
+      {/* 全屏后没有「点旁边关掉」这个出口 → 右上角常驻关闭钮(底部「先随便看看」照旧在) */}
+      <button onClick={skip} aria-label={t('quiz.skip')}
+        style={{ position: 'absolute', top: 12, right: 16, border: 'none', background: 'none', color: '#9ca3af', fontSize: 24, lineHeight: 1, cursor: 'pointer', padding: 6, zIndex: 1 }}>×</button>
+      <div className="eqSheet" style={sheet}>
+        <div style={inner}>
         {step < 3 ? (
           <>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11.5, color: '#9ca3af', marginBottom: 10 }}>
@@ -224,6 +231,7 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
             onApply={() => { track('quiz-apply'); onApply(answers) }}
             onClose={() => { save(true); onClose() }} />
         )}
+        </div>
       </div>
     </div>
   )

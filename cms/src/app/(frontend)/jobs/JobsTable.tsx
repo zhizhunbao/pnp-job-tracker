@@ -2484,26 +2484,31 @@ export function CompanyGradesView({ detail, t, hideSponsor }: { detail: CoGradeD
   const gname = (g: number, name: string) => <b style={{ color: gradeColor(g) }}>{name}</b>
   // #190(Frank「很多冗余 titles,改成 bullets」):#186 的「每维一个加粗小标题」退役 →
   // 一维一行 bullet「维名: 档名 依据」,与 JD 整理版 bullet 同款(竖向密度减半,维名进行内不再抢层级)
-  const row = (label: string, tier: React.ReactNode, evidence?: React.ReactNode) => (
-    <li key={label}>
-      {label}: {tier}{evidence ? <span style={{ color: '#6b7280', marginLeft: 8 }}>{evidence}</span> : null}
-    </li>
-  )
+  // Frank 2026-07-26「没有拆成多个列的先拆,每列左对齐」:原来一维一行 bullet
+  //「担保: 常年担保 共 12 份,其中技能类 4,最近 2026Q2」——三个事实揉在一句里,四维之间也对不齐。
+  // 改三列(维名 | 档名 | 依据)跨行对齐,与站内其他卡同规格(FactGrid)。
+  const row = (label: string, tier: React.ReactNode, evidence?: React.ReactNode) => [
+    <span key={label + 'k'} style={FG_K}>{label}</span>,
+    <span key={label + 'v'}>{tier}</span>,
+    <span key={label + 'e'} style={FG_N}>{evidence}</span>,
+  ]
   const sp = detail.sponsor, act = detail.active, sal = detail.salary, fm = detail.fame
   const fameParts = fm ? [fm.v?.wiki ? t('gr.co.fm.wiki') : '', fm.v?.provs >= 2 ? t('gr.co.fm.provs', { n: fm.v.provs }) : '', fm.v?.open ? t('gr.co.fm.open', { n: fm.v.open }) : ''].filter(Boolean) : []
   return (
     <>
       {/* 字号/行高/色显式定在 ul(不靠继承):(frontend)/styles.css 的 body 白字 18px 会吃掉裸继承的 li
           (公司详情页实测中招;弹框有 13px 包裹层侥幸没事)——组件自带底座,两处上下文同渲 */}
-      <ul style={{ margin: 0, paddingLeft: 16, fontSize: 13, lineHeight: 1.75, color: '#374151' }}>
-        {/* hideSponsor:公司详情页把担保维让给独立「担保记录」详情卡,速览卡不再列(不重复,#182) */}
-        {hideSponsor ? null : sp ? row(t('gr.dim.coSponsor'), gname(sp.g, t('gr.sp.' + sp.g)), sp.v?.total ? t('gr.co.sp.d', { total: sp.v.total, n: sp.v.skilled ?? 0, q: sp.v.q || '—' }) : t('gr.co.sp.aip'))
-          : row(t('gr.dim.coSponsor'), <span style={{ color: '#9ca3af' }}>{t('gr.co.sp.na')}</span>)}
-        {act ? row(t('gr.dim.coActive'), gname(act.g, t('gr.act.' + act.g)), t('gr.co.act.d', { open: act.v?.open ?? 0, n: act.v?.new30 ?? 0 })) : null}
-        {sal ? row(t('gr.dim.coSalary'), gname(sal.g, t('gr.sal.' + sal.g)), t('gr.co.sal.d', { pct: sal.v >= 0 ? `+${sal.v}` : String(sal.v) }))
-          : row(t('gr.dim.coSalary'), <span style={{ color: '#9ca3af' }}>{t('gr.noData')}</span>)}
-        {fm ? row(t('gr.dim.coFame'), gname(fm.g, t('gr.fm.' + fm.g)), fameParts.length ? fameParts.join('、') : undefined) : null}
-      </ul>
+      <div style={{ fontSize: 13, color: '#374151' }}>
+        <FactGrid cols={3}>
+          {/* hideSponsor:公司详情页把担保维让给独立「担保记录」详情卡,速览卡不再列(不重复,#182) */}
+          {hideSponsor ? [] : sp ? row(t('gr.dim.coSponsor'), gname(sp.g, t('gr.sp.' + sp.g)), sp.v?.total ? t('gr.co.sp.d', { total: sp.v.total, n: sp.v.skilled ?? 0, q: sp.v.q || '—' }) : t('gr.co.sp.aip'))
+            : row(t('gr.dim.coSponsor'), <span style={{ color: '#9ca3af' }}>{t('gr.co.sp.na')}</span>)}
+          {act ? row(t('gr.dim.coActive'), gname(act.g, t('gr.act.' + act.g)), t('gr.co.act.d', { open: act.v?.open ?? 0, n: act.v?.new30 ?? 0 })) : []}
+          {sal ? row(t('gr.dim.coSalary'), gname(sal.g, t('gr.sal.' + sal.g)), t('gr.co.sal.d', { pct: sal.v >= 0 ? `+${sal.v}` : String(sal.v) }))
+            : row(t('gr.dim.coSalary'), <span style={{ color: '#9ca3af' }}>{t('gr.noData')}</span>)}
+          {fm ? row(t('gr.dim.coFame'), gname(fm.g, t('gr.fm.' + fm.g)), fameParts.length ? fameParts.join('、') : undefined) : []}
+        </FactGrid>
+      </div>
       {/* #192(Frank):免责灰注(互不加权/非资格认定/我的匹配)从公司块摘除;fact.scoreNote 仍在通道卡用 */}
     </>
   )
@@ -2634,18 +2639,19 @@ export function CompanyBody({ company, similar, t, lang, showTrans, hideTopInfo,
           {/* #200(Frank「这个废话不用加」):担保记录副标题(历史事实,非能担保判定)撤——彩底结论句已含参考限度 */}
           <div style={MODAL_CARD_HEAD}>{t('gr.dim.coSponsor')}</div>
           <div>
-            {streams.map((s, i) => (
-              <div key={i} style={{ display: 'flex', gap: 10, padding: '2px 0', fontSize: 13, alignItems: 'baseline' }}>
-                <span style={{ minWidth: 96, color: s.skilled ? '#15803d' : '#9ca3af', flexShrink: 0 }}>{s.label}{s.skilled ? <span style={{ fontSize: 10.5, marginLeft: 4 }}>{t('co.spSkilledTag')}</span> : null}</span>
-                <span style={{ flex: 1, color: '#374151', fontWeight: s.skilled ? 600 : 400 }}>{s.count}</span>
-              </div>
-            ))}
-            {company.lmiaLastQuarter ? (
-              <div style={{ display: 'flex', gap: 10, padding: '2px 0', fontSize: 13, alignItems: 'baseline' }}>
-                <span style={{ minWidth: 96, color: '#9ca3af', flexShrink: 0 }}>{t('co.spQuarter')}</span>
-                <span style={{ flex: 1, color: '#374151' }}>{t('co.spBatch', { q: company.lmiaLastQuarter, n: company.lmiaLmias ?? '—' })}</span>
-              </div>
-            ) : null}
+            {/* Frank 2026-07-26「没拆列的先拆」:最近获批原来把「季度 + 份数」揉在一格,现拆成三列跨行对齐 */}
+            <FactGrid cols={3}>
+              {streams.flatMap((s, i) => [
+                <span key={i + 'k'} style={{ color: s.skilled ? '#15803d' : '#9ca3af' }}>{s.label}{s.skilled ? <span style={{ fontSize: 10.5, marginLeft: 4 }}>{t('co.spSkilledTag')}</span> : null}</span>,
+                <span key={i + 'v'} style={{ ...FG_V, fontWeight: s.skilled ? 600 : 400 }}>{s.count}</span>,
+                <span key={i + 'n'} />,
+              ])}
+              {company.lmiaLastQuarter ? [
+                <span key="qk" style={FG_K}>{t('co.spQuarter')}</span>,
+                <span key="qv" style={FG_V}>{company.lmiaLastQuarter}</span>,
+                <span key="qn" style={FG_N}>{t('co.spBatchN', { n: company.lmiaLmias ?? '—' })}</span>,
+              ] : []}
+            </FactGrid>
             {/* #200(Frank「这个废话也是」):来源行(ESDC 名录、IRCC)撤 */}
             <div style={{ fontSize: 12, color: conc.fg, background: conc.bg, borderRadius: 8, padding: '6px 10px', margin: '6px 0 0', lineHeight: 1.55 }}>{t(conc.key)}</div>
           </div>
