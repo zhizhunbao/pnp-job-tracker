@@ -66,9 +66,8 @@ type Disposition = FieldGroup | 'map' | 'none'
 const FIELD_GROUP: Partial<Record<ColKey, Disposition>> = {
   // ① 分类族 → 职业分类弹框(#176:点分类看分类——「这职业是干嘛的」,轻、快、零额度)
   noc: 'category', teer: 'category', broad: 'category', mid: 'category', fine: 'category',
-  // ② 移民价值 → 移民弹框(#201 Frank「通道弱删了,用户看不懂」:通道列整列删除;
-  //    score 仅留作操作列「移民价值」按钮的 dispatch 键,不再是可点单元格)
-  score: 'immigration',
+  // ② 「匹配」列 → 个人化解读弹框(2026-07-26:操作列「移民通道」钮下架后,
+  //    「对我意味着什么」改挂它自己的字段;score 键随三维档卡一起退役)
   // ③ 公司 → 公司弹框;职位名不走本表(cellActionable 特判,直开 JD 弹框=职位弹框)
   company: 'company',
   // ④ 省/市/区 → 地点弹框(E8-12;格内文字仍是地图链接,两个动作分开);地址保持地图直连
@@ -79,7 +78,7 @@ const FIELD_GROUP: Partial<Record<ColKey, Disposition>> = {
   // ⑥ 薪资族 → 薪资弹框(同批拆分:帖面薪资+折算+当地 band+vs 中位一处看全)
   vsMedian: 'salary', salary: 'salary', salaryYr: 'salary', wageMedHr: 'salary', wageMedYr: 'salary',
   // ⑦ 其余一律不可点(Pro 锁位的锁自己链升级弹窗,不走本路由)
-  match: 'none', eligibility: 'none', empHours: 'none', empTerm: 'none', accessibility: 'none', lmia: 'none',
+  match: 'immigration', eligibility: 'none', empHours: 'none', empTerm: 'none', accessibility: 'none', lmia: 'none',
   country: 'none',
   source: 'none', origin: 'none', direct: 'none', status: 'none',
   datePosted: 'none', lastSeen: 'none', closedAt: 'none',
@@ -258,7 +257,7 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
 export type JobRow = {
   id: string | number
   match: 'high' | 'mid' | 'low' | 'na' | null   // 与我的匹配(E5-00,服务端算;null=未建档/免费限额外/未登录)
-  gradeChannel?: number | null   // E12-08:移民通道档 1-5(主表「通道」列,免费);明细走 /api/scoredetail 额度
+  gradeChannel?: number | null   // E12-08:移民通道档 1-5(2026-07-26 起不再展示,只供排序/筛选)
   sponsorGrade?: number | null   // E12-08:公司担保档 1-5(公司名旁药丸;null=无记录不评)
   title: string
   company: string
@@ -1281,13 +1280,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                     {shown.map((c, idx) => {
                       const k = c.key
                       const rowBg = i % 2 ? '#fcfcfd' : '#fff'
-                      if (k === 'actions') return (  // 操作列:「通道」(批A 头牌:三行直判「能走哪条通道」,顶原移民价值钮的位)+收藏
+                      if (k === 'actions') return (  // 操作列:只剩收藏(2026-07-26:「移民通道」钮下架,内容归各字段)
                         <td key={k} style={{ ...td, padding: `7px ${cellPad}`, minWidth: colMin('actions') }}>
                           <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
-                            <button onClick={(e) => { e.stopPropagation(); open('score', t('act.channel')) }}
-                              style={{ ...actBtn, whiteSpace: 'nowrap' }}>
-                              {t('act.channel')}
-                            </button>
                             <button onClick={(e) => { e.stopPropagation(); toggleSave(j) }}
                               style={{ ...actBtn, whiteSpace: 'nowrap', ...(saved[String(j.id)] ? { color: '#b45309', borderColor: '#fde68a', background: '#fffbeb' } : {}) }}>
                               {saved[String(j.id)] ? t('sj.saved') : t('sj.save')}
@@ -1424,8 +1419,6 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             // #129(Frank「卡片本身点不进去」):整卡可点=进详情页;卡内既有交互(弹框/收藏/chips)stopPropagation 保持原行为
             const stop = (fn: () => void) => (e: React.MouseEvent) => { e.stopPropagation(); fn() }
             const L = parseLoc(j)
-            const M: Record<string, { bg: string; fg: string }> = { high: { bg: '#dcfce7', fg: '#166534' }, mid: { bg: '#dbeafe', fg: '#1e40af' }, low: { bg: '#f3f4f6', fg: '#6b7280' } }
-            const mc = j.match ? M[j.match] : undefined
             // #175:不可点的 chip 连 onClick 也摘(stopPropagation 会吞整卡点击=点了没反应)
             const chip = (bg: string, fg: string, txt: string, k: ColKey) => (
               <span key={k} onClick={cellActionable(k) ? stop(() => open(k, txt)) : undefined} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: bg, color: fg, cursor: cellActionable(k) ? 'pointer' : 'default', whiteSpace: 'nowrap' }}>{txt}</span>
@@ -1485,8 +1478,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                   <span suppressHydrationWarning style={{ color: '#9ca3af', whiteSpace: 'nowrap', flexShrink: 0 }}>{(j.datePosted || '').slice(0, 10)}{days != null ? `(${days === 0 ? t('cell.today') : t('fact.daysUpVal', { n: days })})` : ''}</span>
                 </div>
                 <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
-                  {/* #167⑩:匹配度胶囊从右上角迁到此排首位(胶囊只此一处);它是个人化结论=最值钱,故排第一 */}
-                  {mc && <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: mc.bg, color: mc.fg, fontWeight: 600, whiteSpace: 'nowrap' }}>{t('match.' + j.match)}</span>}
+                  {/* 2026-07-26 Frank「高 低 …没必要显示」:匹配裸字胶囊下架 —— 卡上没有列头,
+                      孤零零一个「高」说不清是什么的高低(同 #132「全站禁裸 X/5」的理);个人化结论
+                      归桌面「匹配」列(点开=对我意味着什么)与「我的匹配」视图 */}
                   {/* 批A 追拍(Frank「每个岗位都要列 teer,pnp,ee 胶囊;aip/qc 单独列;什么都走不了就不用列」):
                       通道族胶囊统一门=任一通道可走(具名信号或 TEER≤3 或 QC);全走不了 → 通道胶囊整排不出。
                       TEER 从「无信号才兜底」升级为门内恒显(通用通道的依据);LMIA/红旗非通道胶囊,规则照旧 */}
@@ -1516,11 +1510,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                   {/* GAP1③:红旗 chip(手机卡片)——白投预警比正面信号更值得占位 */}
                   {j.eligibilityFlag ? chip('#fee2e2', '#b91c1c', t('cell.elig.' + j.eligibilityFlag), 'eligibility') : null}
                 </div>
-                {/* 批A 头牌:「通道」小钮(三行直判「能走哪条通道」;顶 fd2de0b 删掉的移民价值钮的位) */}
-                <button onClick={stop(() => open('score', t('act.channel')))}
-                  style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 12px', fontSize: 12.5, border: '1px solid #d1d5db', borderRadius: 6, background: '#fff', color: '#374151', cursor: 'pointer' }}>
-                  <IconCompass /> {t('act.channel')}
-                </button>
+                {/* 2026-07-26 Frank「移民通道…把对应的内容放到其他字段」:整钮下架 —— 它开的三块处处重复:
+                    通道档=PNP/EE/AIP 三 chip 已逐条直判(更具体)、薪资质量=vs 中位、雇佣质量=雇佣列。
+                    上面每枚 chip 点开就是各自的弹框,不需要再来一个汇总入口 */}
                 {/* #167⑦(Frank「这个卡片最好有个更新时间吧,年月日时分秒」):发布时间只有日期没时刻(Job Bank 原样),
                     判断不了「刚抓到还是躺了一天」;更新时间是本站每小时抓取的实际时刻,精确到秒。
                     **此处必须带标签**:一张卡上两个日期并排,值自己说不清谁是谁 ——
@@ -2630,160 +2622,14 @@ function pnpMatchOf(job: JobRow, occ: PnpOcc[]): { streams: PnpStream[]; matched
   }
   return { streams, matched, excluded: !!excludedBy, excludedBy, hasInclusion }
 }
-// 批A #134 头牌(Frank「就直接点,这个岗位是能走 EE 还是 PNP 还是 AIP」):
-// 通道弹框置顶三行直判;判定点名清单,清单挂行下可开可关(命中职业加粗标「← 本岗」)
-function ChannelVerdicts({ job, lang, pnpOcc, pnpDraws = [], eeOcc, nocDesc, showZh }: { job: JobRow; lang: Lang; pnpOcc: PnpOcc[]; pnpDraws?: PnpDraw[]; eeOcc: EeOcc[]; nocDesc: NocDesc[]; showZh?: boolean }) {
-  const t = makeT(lang)
-  const [openList, setOpenList] = useState<'' | 'pnp' | 'ee' | 'aip'>('')
-  const { matched, excludedBy } = useMemo(() => pnpMatchOf(job, pnpOcc), [job, pnpOcc])
-  const aipBlock = useMemo(() => aipBlockOf(job, pnpOcc), [job, pnpOcc])
-  const eeCats = useMemo(() => [...new Set(eeOcc.filter((r) => r.noc === job.noc).map((r) => r.label))], [eeOcc, job.noc])
-  const nocRowOf = useMemo(() => new Map(nocDesc.map((d) => [d.noc, d])), [nocDesc])
-  const skilled = job.teer != null && job.teer <= 3
-  const aip = aipVerdictOf(job)
-  // 2026-07-25 Frank「这种走不了的不用显示」:通道块只列能走的行;走不了(na/fail)整行不出。
-  // 2026-07-26 Frank 拍板放回一类:**命中官方具名排除清单**的走不了要说——那不是「没信号」,
-  // 是有名有据的结论(命中的清单名 + 可展开清单),与「TEER 不够」这种泛判定不同。
-  let pnpPill: React.ReactNode = null
-  if (job.province !== 'QC') {
-    if (matched) pnpPill = <VerdictPill tone="ok">{t('ch.pnp.on', { label: streamDisplay(t, matched.label) })}</VerdictPill>
-    else if (excludedBy) pnpPill = <VerdictPill tone="fail">{t('ch.pnp.exl', { label: streamDisplay(t, excludedBy.label) })}</VerdictPill>
-    else if (skilled) pnpPill = <VerdictPill tone="ok">{t('ch.pnp.generic')}</VerdictPill>
-  }
-  const pnpList = matched || excludedBy
-  // EE 类别多命中一行放不下 → 首类 +「等 N 类」(一行铁律)
-  const eeLabel = eeCats.length ? (eeCats.length === 1 ? eeDisplay(t, eeCats[0]) : t('ch.ee.more', { first: eeDisplay(t, eeCats[0]), n: eeCats.length })) : ''
-  const eePill: React.ReactNode = eeCats.length ? <VerdictPill tone="ok">{t('ch.ee.on', { cats: eeLabel })}</VerdictPill>
-    : skilled ? <VerdictPill tone="ok">{t('ch.ee.gen')}</VerdictPill> : null
-  const eeList = useMemo(() => {
-    const m = new Map<string, { noc: string; name: string }>()
-    for (const r of eeOcc) if (eeCats.includes(r.label) && !m.has(r.noc)) m.set(r.noc, { noc: r.noc, name: r.title })
-    return [...m.values()]
-  }, [eeOcc, eeCats])
-  const row = (label: React.ReactNode, pill: React.ReactNode, listKey?: 'pnp' | 'ee' | 'aip') => (
-    <div style={{ display: 'flex', gap: 10, padding: '3px 0', fontSize: 13, alignItems: 'baseline' }}>
-      <span style={{ minWidth: 88, color: '#9ca3af', flexShrink: 0 }}>{label}</span>
-      <span style={{ flex: 1, minWidth: 0 }}>{pill}</span>
-      {listKey ? (
-        <span onClick={() => setOpenList(openList === listKey ? '' : listKey)}
-          style={{ color: '#6b7280', cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap', fontSize: 12.5 }}>
-          {t('ch.list')} {openList === listKey ? '▴' : '▾'}</span>
-      ) : null}
-    </div>
-  )
-  const listRows = (rows: { noc: string; name: string }[]) => (
-    <div style={{ margin: '2px 0 6px 20px', borderLeft: '2px solid #f3f4f6', paddingLeft: 10 }}>
-      {rows.map((o) => {
-        const hit = o.noc === job.noc
-        const zh = showZh ? nocLocalTitle(nocRowOf.get(o.noc) || null, lang) : ''
-        return (
-          <div key={o.noc} style={{ padding: '2px 0', fontSize: 12.5, fontWeight: hit ? 600 : 400, color: hit ? '#111827' : '#374151' }}>
-            <span style={{ color: hit ? '#92400e' : '#9ca3af', fontVariantNumeric: 'tabular-nums' }}>{o.noc}</span> {o.name}
-            {zh && zh.toLowerCase() !== o.name.toLowerCase() ? <span style={{ color: '#9ca3af', fontWeight: 400 }}>　{zh}</span> : null}
-            {hit ? <span style={{ fontSize: 11 }}> ← {t('pnplist.your')}</span> : null}
-          </div>
-        )
-      })}
-    </div>
-  )
-  if (!pnpPill && !eePill && aip !== 'on' && !aipBlock) return null   // 全走不了=整卡不出(无空壳)
-  return (
-    <>
-      <div style={MODAL_CARD}>
-        <div style={MODAL_CARD_HEAD}>{t('ch.title')}</div>
-        {pnpPill ? row(t('ch.pnpRow'), pnpPill, pnpList ? 'pnp' : undefined) : null}
-        {eePill ? row('EE', eePill, eeCats.length ? 'ee' : undefined) : null}
-        {/* AIP:雇主在指定名单=能走;本岗职业在省里点名不受理的清单上=走不了(**两者可同时成立**,
-            官方原文对这些岗一律不受理背书 → 有指定雇主也照说,不能只显前者) */}
-        {aipBlock ? row('AIP', <VerdictPill tone="fail">{t(aip === 'on' ? 'ch.aip.onBlocked' : 'ch.aip.blocked')}</VerdictPill>, 'aip')
-          : aip === 'on' ? row('AIP', <VerdictPill tone="ok">{t('ch.aip.on')}</VerdictPill>) : null}
-      </div>
-      {/* Frank 走查#21:「清单▾」展开的清单拆成独立卡(不在汇总卡内内联),与 PNP/EE 清单卡同规格 */}
-      {openList === 'pnp' && pnpList ? (
-        <div style={MODAL_CARD}>
-          <div style={MODAL_CARD_HEAD}>{streamDisplay(t, pnpList.label)}</div>
-          {listRows(pnpList.occupations)}
-        </div>
-      ) : null}
-      {openList === 'aip' && aipBlock ? (
-        <div style={MODAL_CARD}>
-          <div style={MODAL_CARD_HEAD}>{streamDisplay(t, aipBlock.label)}</div>
-          {listRows(aipBlock.occupations)}
-        </div>
-      ) : null}
-      {openList === 'ee' ? (
-        <div style={MODAL_CARD}>
-          <div style={MODAL_CARD_HEAD}>{eeLabel || 'EE'}</div>
-          {listRows(eeList)}
-        </div>
-      ) : null}
-      {/* Frank 走查#10:通用雇主类通道(无具名清单)——单独卡列该省每轮抽选史+分数;
-          命中具名清单的岗走上面的职业清单卡,不在此重复(仅 generic:pnpPill 且非 matched) */}
-      {pnpPill && !matched && !excludedBy && job.province !== 'QC' && pnpDraws.some((d) => d.province === job.province) ? (
-        <div style={MODAL_CARD}><PnpDrawsBlock province={job.province} lang={lang} draws={pnpDraws} limit={3} /></div>
-      ) : null}
-    </>
-  )
-}
-// E12-08:拆解弹框——三维档(1-5)明细走 /api/scoredetail 额度端点(「先试用再付费」拍板;
-// 明细不随列表行下发=服务端真闸)。旧 0-100 加权分前端镜像 scoreBreakdown 随加权制退役。
-function ScoreGradesSection({ job, lang, loggedIn }: { job: JobRow; lang: Lang; loggedIn: boolean }) {
-  const t = makeT(lang)
-  type Detail = { channel?: { g: number; v: string } | null; salary?: { g: number; v: number } | null; emp?: { g: number; v: string[] } | null }
-  // E12-08 尾巴(#126):公司四维(担保/活跃/薪资/知名)——scoredetail 一直回传,此前 UI 只渲了担保档一行
-  type CoDetail = {
-    sponsor?: { g: number; v: { skilled?: number; total?: number; q?: string; aip?: boolean } } | null
-    active?: { g: number; v: { open?: number; new30?: number } } | null
-    salary?: { g: number; v: number } | null
-    fame?: { g: number; v: { wiki?: boolean; provs?: number; open?: number } } | null
-  }
-  const [d, setD] = useState<undefined | 'upgrade' | 'limited' | 'error' | { detail: Detail | null; sponsorGrade: number | null; companyDetail: CoDetail | null }>(undefined)
-  const [freeLeft, setFreeLeft] = useState<number | null>(null)
-  useEffect(() => {
-    let dead = false
-    setD(undefined)
-    fetch('/api/scoredetail', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: job.id }) })
-      .then(async (r) => {
-        const left = r.headers.get('X-Free-Left')
-        if (left != null && !dead) setFreeLeft(Number(left))
-        if (r.status === 402) return 'upgrade' as const
-        if (r.status === 429) return 'limited' as const
-        if (!r.ok) return 'error' as const
-        return await r.json()
-      })
-      .then((x) => { if (!dead) setD(x) })
-      .catch(() => { if (!dead) setD('error') })
-    return () => { dead = true }
-  }, [job])
-  // #133(Frank「直接写文字,不要分成五个单位」):点阵刻度与 X/5 数字全部退役,档名彩字+依据句即全部
-  const gname = (g: number, name: string) => <b style={{ color: gradeColor(g) }}>{name}</b>
-  const row = (label: string, body: React.ReactNode) => (
-    <div style={{ display: 'flex', gap: 10, padding: '5px 0', fontSize: 13, alignItems: 'baseline' }}>
-      <span style={{ minWidth: 88, color: '#9ca3af', flexShrink: 0 }}>{label}</span>
-      <span style={{ flex: 1, color: '#374151' }}>{body}</span>
-    </div>
-  )
-  if (d === 'upgrade') return <LockedText t={t} loggedIn={loggedIn} />
-  // #175:429 黄条退役 → 打码+锁行(全站限额态统一形态)
-  if (d === 'limited') return <LockedText t={t} loggedIn={loggedIn} msg={t('advisor.limit429')} ctaLabel={!loggedIn ? t('advisor.limitCta') : undefined} />
-  if (d === 'error') return <div style={{ fontSize: 13, color: '#9ca3af' }}>{t('advisor.unavail')}</div>
-  if (d === undefined) return <div style={{ fontSize: 13, color: '#9ca3af' }}>{t('act.loadingText')}</div>
-  const det = d.detail || {}
-  const ch = det.channel, sal = det.salary, emp = det.emp
-  // 2026-07-25 Frank「这些都是废话」:fact.scoreNote 长免责注 + 来源行(本站算法)双双退役
-  return (
-    <FactsBox>
-      {freeLeft != null && <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 4 }}>{t('advisor.left', { n: freeLeft })}</div>}
-      {ch ? row(t('gr.dim.channel'), <>{gname(ch.g, t('gr.ch.' + ch.g))}<div style={{ fontSize: 12.5, color: '#6b7280' }}>{t(`gr.channel.${ch.g}`, { v: ch.v || '' })}</div></>) : null}
-      {sal ? row(t('gr.dim.salary'), <>{gname(sal.g, t('gr.sal.' + sal.g))}<div style={{ fontSize: 12.5, color: '#6b7280' }}>{t('gr.salary.d', { pct: sal.v >= 0 ? `+${sal.v}` : String(sal.v) })}</div></>)
-        : row(t('gr.dim.salary'), <span style={{ color: '#9ca3af' }}>{t('gr.noData')}</span>)}
-      {emp ? row(t('gr.dim.emp'), <>{gname(emp.g, t('gr.empn.' + emp.g))}<div style={{ fontSize: 12.5, color: '#6b7280' }}>{emp.v?.length ? emp.v.map((h) => t('gr.emp.' + h)).join('、') : t('gr.emp.none')}</div></>) : null}
-      {/* #176(Frank「简化,精简才能长久」):参照区(公司四维行+省难度链)整块退役——
-          公司的事在公司弹框(担保/在库/简介),省难度在 /stats,一条信息只在一个家。
-          通道卡从此只回答一件事:这个岗自身的三维档。 */}
-    </FactsBox>
-  )
-}
+// 2026-07-26：「移民通道」钮下架后，批A #134 的三行直判汇总卡（ChannelVerdicts）随之退役 ——
+// 它是 PNP/EE/AIP 三列的汇总，而三列各自点开就有更具体的弹框（命中清单名、清单展开、本省公告）。
+// 想拿回来：revert 本次 commit 即可（组件全文在 git 史里）。
+// 2026-07-26 Frank「移民通道…没必要显示，内容放到其他字段」：E12-08 三维档拆解弹框整块退役 ——
+// 通道档=PNP/EE/AIP 三列已逐条直判、薪资质量=vs 中位列、雇佣质量=雇佣列，三行全是重复
+// （一条信息只出现一次）。档位数据照常入库（排序/筛选仍用），只是不再单独占一个弹框与一枚按钮；
+// 唯一调用方没了，/api/scoredetail 同批下架（免费额度池少一个消费端，池子本身不变）。
+
 const LOC_FIELDS = new Set<ColKey>(['country', 'province', 'city', 'district', 'address'])
 const SAL_FIELDS = new Set<ColKey>(['salary', 'salaryYr', 'wageMedHr', 'wageMedYr', 'vsMedian'])
 const CLS_FIELDS = new Set<ColKey>(['noc', 'teer', 'broad', 'mid', 'fine'])
@@ -2794,6 +2640,7 @@ const TIME_FIELDS = new Set<ColKey>(['status', 'datePosted', 'lastSeen', 'closed
 // 官方数据集页(分类=StatCan NOC、中位=ESDC 工资、AIP/PNP/EE=IRCC、LMIA=ESDC 名录);
 // 本站派生(评分/匹配)与公司(官网行即出处)不挂。vsMedian=对比字段,帖子+ESDC 两个输入都给。
 const DATASET_SRC_FIELDS = new Set<ColKey>(['noc', 'teer', 'broad', 'mid', 'fine', 'wageMedHr', 'wageMedYr', 'aip', 'lmia', 'pnp', 'ee'])
+// 本站派生字段(评分/匹配):无外部 URL,来源行显示算法说明文案(E8-04:所有字段都有来源,派生也诚实标注)
 // 本站派生字段(评分/匹配):无外部 URL,来源行显示算法说明文案(E8-04:所有字段都有来源,派生也诚实标注)
 const DERIVED_SRC_FIELDS = new Set<ColKey>(['score', 'match'])
 function fieldSrcUrls(field: ColKey, job: JobRow, sources: FieldSource[]): string[] {
@@ -2865,7 +2712,8 @@ function GroupFactsSection(props: Omit<Parameters<typeof FieldFactsSection>[0], 
   return (
     <>
       {/* 批A #134 头牌:移民组置顶三通道直判(通道档卡照旧在下) */}
-      {group === 'immigration' ? <ChannelVerdicts job={job} lang={lang} pnpOcc={rest.pnpOcc} pnpDraws={rest.pnpDraws} eeOcc={rest.eeOcc} nocDesc={rest.nocDesc} showZh={rest.showZh} /> : null}
+      {/* 2026-07-26:三行直判卡退役 —— 它是 PNP/EE/AIP 三列的汇总,三列点开各有更具体的弹框
+          (一条信息只出现一次);本弹框现只承载个人化解读「对我意味着什么」 */}
       {keys.map((k) => k === 'pnp' || k === 'ee' ? (
         // PNP/EE 节拆多卡(2026-07-25,EE=Frank「拆成三个卡片吧」):Section 自带 判定/抽选/清单 各一卡,
         // 壳卡退役——再包一层就是卡中卡;标题由判定卡自持(#173 每卡必有 title 不破)
@@ -2900,11 +2748,6 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
   const day = (s?: string) => (s || '').slice(0, 10)
 
   // field === 'company' 分支退役(2026-07-21):公司弹框走专用 CompanyPanel(平级卡),不再经本表
-
-  if (field === 'score') {
-    // E12-08:1-5 档三维拆解(额度 API);旧 0-100 加权分解表退役
-    return <ScoreGradesSection job={job} lang={lang} loggedIn={loggedIn} />
-  }
 
   if (field === 'aip') {
     // 批A #134:三态直判(空壳修)——未命中也要说,是结论不是空;来源注删(Frank「名单来源也不需要」)。

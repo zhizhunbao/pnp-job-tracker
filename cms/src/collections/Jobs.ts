@@ -49,7 +49,7 @@ export const Jobs: CollectionConfig = {
       options: ['co-op', 'junior', 'intermediate', 'senior', 'unknown'],
     },
     { name: 'score', type: 'number', index: true, admin: { description: '移民价值评分 0-100(E12-08 后仅作同档内排序兜底,不再对用户展示)' } },
-    // E12-08 档位(1-5,etl/grades.py 单一来源):通道档=主表「通道」列免费展示;三维明细 jsonb 走 /api/scoredetail 额度端点
+    // E12-08 档位(1-5,etl/grades.py 单一来源):2026-07-26 起前端不展示(通道档只供排序/筛选,三维明细 jsonb 留库不渲)
     { name: 'gradeChannel', type: 'number', index: true, admin: { description: '移民通道档 1-5(E12-08;5=省具名清单命中)' } },
     { name: 'scoreDetail', type: 'json', admin: { description: '职位三维档明细 {channel/salary/emp:{g,v}}(拆解弹框,试用额度制)' } },
     { name: 'pnpEligible', type: 'checkbox', index: true, defaultValue: false, admin: { description: '可走雇主offer省提名(TEER0-3 或紧缺低TEER通道)' } },
