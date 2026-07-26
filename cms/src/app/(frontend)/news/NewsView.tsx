@@ -52,7 +52,13 @@ function ImpBadge({ t, importance, note }: { t: TFn; importance: number | null; 
 
 // 省份地标图路径(本站静态,来源见 public/img/regions/SOURCES.md;致谢挂 title——Frank 2026-07-18「水印去掉」,
 // CC BY/BY-SA 致谢不能全删,挪 hover)
-const regionImg = (r: string) => `/img/regions/${r === 'federal' ? 'federal' : r.toLowerCase()}.jpg`
+// #206(第 26 轮体检):NB/NL/PE 没有地标图,原来照拼路径 → /img/regions/nb.jpg 404 裂图(全站唯一 4xx)。
+// 缺图退联邦通用图,不拿别省照片冒充;补齐真实地标照后把省码加进 HAS_IMG 即可。
+const HAS_IMG = new Set(['ab', 'bc', 'mb', 'ns', 'on', 'qc', 'sk'])
+const regionImg = (r: string) => {
+  const k = r.toLowerCase()
+  return `/img/regions/${HAS_IMG.has(k) ? k : 'federal'}.jpg`
+}
 const IMG_CREDIT = 'Wikimedia Commons'
 
 // 列表小色块(仅作缺图兜底;v5 主视觉换真实地标图——Frank 2026-07-18「整个真实的图片进来,大小裁剪也要包含」)
@@ -151,7 +157,8 @@ function FeaturedGrid({ t, lang, slides }: { t: TFn; lang: Lang; slides: NewsHer
         </div>
         <div style={{ padding: '14px 18px 16px', flex: 1, minHeight: 176 }}>{/* 176=最长文案实测(徽标行+2行标题+2行摘要+padding)——整卡高度轮播恒定 */}
           <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', fontSize: 11.5, color: '#9ca3af', marginBottom: 6, flexWrap: 'wrap' }}>
-            <span style={{ background: '#dc2626', color: '#fff', fontWeight: 700, borderRadius: 6, padding: '1px 7px', fontSize: 11 }}>{t('news.impN', { n: hero.importance ?? '' })}</span>
+            {/* #205:原为裸档「重要 5/5」(禁裸 X/5,#132 同规矩)——与列表统一走 ImpBadge,理由与口径挂 title */}
+            <ImpBadge t={t} importance={hero.importance} note={hero.importanceNote} />
             <RegionTag t={t} region={hero.region} />
             <span style={{ fontVariantNumeric: 'tabular-nums' }}>{hero.date}</span>
           </div>
@@ -188,7 +195,10 @@ export function NewsListView({ items, hero, cmtCounts }: { items: NewsCard[]; he
   return (
     <NewsShell>{(t, lang) => {
       const present = NEWS_REGIONS.filter((r) => items.some((i) => i.region === r))
-      const shown = items.filter((i) => !region || i.region === region)
+      // #210(第 26 轮体检):头条区那 5 条(1 大 + 4 小)在下方时间线里又出现一遍,同页同一条读两次。
+      // 头条区只在未筛选时显示 → 未筛选时把这 5 条从时间线剔掉;筛选态头条不显,列表照旧全给。
+      const heroSlugs = new Set(hero.map((h) => h.slug))
+      const shown = items.filter((i) => (region ? i.region === region : !heroSlugs.has(i.slug)))
       const byDay: [string, NewsCard[]][] = []
       for (const n of shown) {
         const last = byDay[byDay.length - 1]

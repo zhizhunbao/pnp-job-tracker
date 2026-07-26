@@ -29,13 +29,17 @@ export function StatsShell({ lang, setLang, t, children }: { lang: Lang; setLang
 
 export function MetricCards({ r, t }: { r: StatRow; t: TFn }) {
   const money = (v: number | null) => (v != null ? `$${Math.round(v / 1000)}K` : '—')
+  // #203(第 26 轮体检):0 是政策现实非缺数 —— 别再用裸「—」让人以为站没数,直接说「无清单」(口径挂 title);
+  // AIP 只有大西洋四省有(NB/NS/PE/NL),其余省这张卡永远是「—」= 纯噪声,不渲染
+  const AIP_PROVS = new Set(['NB', 'NS', 'PE', 'NL'])
+  const noList = <span title={t('stats.noList.tip')} style={{ color: '#9ca3af' }}>{t('stats.noList')}</span>
   const cards: [string, React.ReactNode][] = [
     [t('stats.openJobs'), r.openJobs ?? '—'],
     [t('stats.new7d'), r.new7d ?? '—'],
     [t('stats.medWage'), money(r.medianWageAnnual)],
     [t('stats.medSalary'), money(r.medianSalaryAnnual)],
-    [t('stats.named'), r.namedJobs || '—'],   // 0 → —(C4:0 是政策现实非缺数,口径说明里有脚注)
-    [t('stats.aip'), r.aipJobs || '—'],
+    [t('stats.named'), r.namedJobs || noList],
+    ...(AIP_PROVS.has(r.province) ? [[t('stats.aip'), r.aipJobs || '—'] as [string, React.ReactNode]] : []),
   ]
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, margin: '14px 0' }}>

@@ -169,7 +169,12 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
         {/* 方案 A(2026-07-17 用户拍板,与 /jobs 顶栏同款):导航/操作两组+竖线分隔;窄屏竖线隐藏。
             副标语 <1350px 隐藏(Frank 2026-07-18「长度自己换行了」——先牺牲标语保导航一行)。
             E8-07 D:≤640 平铺导航整组隐藏(汉堡抽屉接管),右端语言/账户保留。 */}
-        <style>{`@media (max-width:640px){.shDivider{display:none}.shNav{display:none !important}.shBurger{display:inline-block !important}.shSearch{display:block !important}}
+        {/* #204(第 26 轮体检):手机顶栏触控靶全部小于 40 —— 登录 25×19、注册 49×27、语言钮 31×25、☰ 34×34。
+            手机优先铁律下这是主入口与主转化钮,按 ≥40 补热区(字号与视觉不变,只长高) */}
+        <style>{`@media (max-width:640px){.shDivider{display:none}.shNav{display:none !important}.shBurger{display:inline-block !important}.shSearch{display:block !important}
+            .shBurger{width:40px !important;height:40px !important}
+            .shAuth a,.shAuth button{min-height:40px !important;min-width:40px !important;padding:0 12px !important;display:inline-flex !important;align-items:center;justify-content:center}
+            .shLang button{padding:0 14px !important}}
           @media (max-width:1350px){.shTagline{display:none}}`}</style>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, maxWidth: '100%', flexWrap: 'wrap' }}>
           <div className="shNav" style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
@@ -196,8 +201,8 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
               : <a href="/account" style={nav}><IconUser /> {t('nav.acctTab')}</a>)}
           </div>
           <span className="shDivider" style={{ width: 1, height: 16, background: '#e5e7eb' }} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <div style={{ display: 'inline-flex', border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
+          <div className="shAuth" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <div className="shLang" style={{ display: 'inline-flex', border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
               {LANGS.map((l) => (
                 <button key={l.code} onClick={() => setLang(l.code)}
                   style={{ border: 'none', padding: '3px 9px', fontSize: 12.5, cursor: 'pointer', background: lang === l.code ? '#2563eb' : '#fff', color: lang === l.code ? '#fff' : '#6b7280' }}>{l.label}</button>

@@ -103,7 +103,7 @@ const zh: Dict = {
   'res.note': '以上均为政府/官方机构页面,内容以官方发布为准;本站仅做整理归类,不控制其内容。链接失效或有补充请反馈。',
   'res.cat.federal': '联邦移民', 'res.cat.pnp': '各省提名(PNP)', 'res.cat.study': '留学 DLI', 'res.cat.language': '语言考试', 'res.cat.wage': '工资与职业数据', 'res.cat.lmia': 'LMIA 与雇主担保', 'res.cat.authority': '权威与合规',
   'foot.disclaimer': '数据自动聚合仅供参考,不构成移民/法律建议;非持牌顾问(RCIC),以官方来源为准。',
-  'search.placeholder': '搜索 职位/公司/地点/NOC…',
+  'search.placeholder': '搜索职位、公司、地点、NOC',
   'filter.geo': '地理', 'filter.cat': '职业分类', 'filter.src': '来源', 'filter.elig': '移民资格', 'filter.statusexp': '状态/经验', 'filter.status': '状态', 'filter.exp': '经验', 'filter.drawer': '筛选',
   // 职位类型(E6-06)+ 入职要求(E6-07A)
   'filter.emp': '职位类型', 'all.emp': '全部类型', 'emp.full': '全职', 'emp.part': '兼职', 'emp.gig': '零工·临时',
@@ -249,6 +249,7 @@ const zh: Dict = {
   'mv.entry': '我的匹配', 'mv.on': '只显示与你档案匹配的职位(高/中),按匹配度排序', 'mv.exit': '退出',
   'mv.empty': '暂无命中你档案的在招职位——试试放宽目标省或更新档案。', 'mv.editProfile': '改档案',
   'match.high': '高', 'match.mid': '中', 'match.low': '低', 'match.na': '不适用',
+  'match.tip': '你的档案与本岗的匹配度,点开看逐条依据', 'sep': '、',   // #207:裸字「高/中/低」的口径
   'match.needProfile': '建档案', 'match.overCap': '免费版每日仅前 {n} 岗可见匹配',
   'match.title': '对我意味着什么',
   'match.disclaimer': '以上是你自报档案与公开清单/抽选数据的机械比对,不构成移民建议;以官方发布为准。',
@@ -319,7 +320,7 @@ const zh: Dict = {
   'prof.title': '移民档案',
   'prof.hint': '档案用于逐岗计算「与我的匹配」;全部自报、只存在你的账户里,随时可改。',
   'prof.status': '你现在是什么情况?',
-  'prof.st.overseas': '还在国内/海外',
+  'prof.st.overseas': '还在境外',
   'prof.st.studying': '在加拿大读书',
   'prof.st.working': '有工签在工作',
   'prof.st.jobhunting': '在加拿大找工作',
@@ -394,7 +395,7 @@ const zh: Dict = {
   'news.back': '全部动态', 'news.more': '全部动态 →',
   'news.blockTitle': '该省移民动态', 'news.latest': '本省最新公告',
   'news.empty': '暂无动态',
-  'news.imp': '重要', 'news.topTitle': '重要动态', 'news.watch': '关注', 'news.impN': '重要 {n}/5',
+  'news.imp': '重要', 'news.topTitle': '重要动态', 'news.watch': '关注',
   'news.aiSum': 'AI 速读', 'news.read': '阅读全文 →', 'news.cmt.n': '{n} 条评论',
   'news.cmt.title': '评论 ({n})', 'news.cmt.login': '登录后参与讨论 →',
   'news.cmt.ph': '文明发言;评论经人工审核后显示,广告与中介引流将被移除',
@@ -417,7 +418,7 @@ const zh: Dict = {
   'pw.direct.s2': '拿到全职 offer:海外申请人凭 offer 申请工签,在加人士继续积累加拿大工作经验(工签规则见官方页)',
   'pw.direct.s3': '对照目标省的省提名通道递交省提名——职业在该省公开清单上是关键信号(各省要求见官方页)',
   'pw.direct.s4': '获省提名后申请 PR;联邦 EE 类别抽选是与此并行的独立通道(见官方页)',
-  'pw.hcw.name': '护工 / 家庭护理(低门槛通道)',
+  'pw.hcw.name': '护工与家庭护理(低门槛通道)',
   'pw.hcw.s1': '确认目标职业属于家庭护理类(NOC 44100 家庭儿童护理 / 44101 家庭支持工作者)',
   'pw.hcw.s2': '对照 Home Care Worker 移民试点的要求——语言/学历门槛相对较低,具体标准以官方页为准',
   'pw.hcw.s3': '拿到家庭护理类全职 offer(可在本站筛相关岗位)',
@@ -497,7 +498,7 @@ const zh: Dict = {
   'ce.title': '多雇主对比', 'ce.aip': 'AIP 指定雇主', 'ce.provDiff': '主要省·移民难度', 'ce.match': '与我的匹配', 'ce.matchHigh': '高匹配 {n} 岗', 'ce.matchMid': '中匹配 {n} 岗', 'ce.brief': 'AI 调查简介',
   'ce.note': '口径:LMIA=雇过外国人的历史记录,不代表会担保你;AIP 指定≠有配额;数字为本站库内口径,非资格认定。', 'ce.empty': '至少选 2 家雇主才能对比——去名录行点「+ 对比」', 'ce.goDir': '去雇主名录', 'ce.clear': '清空重选',
   'ce.v1': 'LMIA 担保记录并排看,技能类获批数一眼比高下', 'ce.v2': '在招岗、省提名清单命中、AIP 指定同屏对齐', 'ce.v3': '建档后逐家看「与我的匹配」高/中命中岗数', 'ce.add': '+ 对比', 'ce.added': '已在对比 ✓', 'ce.bar': '已选 {n} 家', 'ce.go': '去对比 →', 'price.f10': '多雇主对比(2-4 家并排)',
-  'stats.title': '{prov} 地区职位统计', 'stats.catTitle': '{prov} · {cat} 职位统计', 'stats.openJobs': '在招职位', 'stats.new7d': '近 7 天发布', 'stats.medWage': '中位年薪(ESDC)', 'stats.medSalary': '帖面中位年薪', 'stats.named': '省提名清单岗', 'stats.aip': 'AIP 指定雇主岗', 'stats.topCities': '主要城市', 'stats.streams': '命中通道', 'stats.byCat': '按职业大类', 'stats.entry': '地区统计', 'stats.toJobs': '看这些职位 →', 'stats.caliber': '口径说明', 'stats.caliberText': '在招/近 7 天发布=本站抓取口径(Job Bank 全国+ATS,按帖面发布日);中位年薪=ESDC 工资数据(同 NOC×省)的中位;省提名清单岗=岗位职业在该省省提名官网公开职业清单上;「—」= 该省当前无公开职业清单(如 OINP 2026-06 改制后),非数据缺失;均非资格认定。', 'stats.provIndex': '选择省份', 'stats.compare': '跨省对比(Pro)', 'stats.pickProv': '选 2-4 个省对比', 'stats.myNoc': '按我的档案高亮', 'stats.cardWork': '工签存量(TFWP+IMP)', 'stats.cardStudy': '学签存量', 'stats.cardPr': 'PNP 登陆(年)', 'stats.cardNote': '工签/学签=IRCC 年末存量,PNP 登陆=最新完整年;移民难度口径见各省页',
+  'stats.title': '{prov} 地区职位统计', 'stats.catTitle': '{prov} · {cat} 职位统计', 'stats.openJobs': '在招职位', 'stats.new7d': '近 7 天发布', 'stats.medWage': '中位年薪(ESDC)', 'stats.medSalary': '帖面中位年薪', 'stats.named': '省提名清单岗', 'stats.aip': 'AIP 指定雇主岗', 'stats.topCities': '主要城市', 'stats.streams': '命中通道', 'stats.byCat': '按职业大类', 'stats.entry': '地区统计', 'stats.toJobs': '看这些职位 →', 'stats.caliber': '口径说明', 'stats.caliberText': '在招/近 7 天发布=本站抓取口径(Job Bank 全国+ATS,按帖面发布日);中位年薪=ESDC 工资数据(同 NOC×省)的中位;省提名清单岗=岗位职业在该省省提名官网公开职业清单上;「—」= 该省当前无公开职业清单(如 OINP 2026-06 改制后),非数据缺失;均非资格认定。', 'stats.noList': '无清单', 'stats.noList.tip': '该省当前不公布省提名职业清单(如 OINP 2026-06 改制后),按 TEER 等条件判定,不是数据缺失。', 'stats.naQc': '不适用', 'stats.naQc.tip': '魁省不参加省提名(PNP),走自己的甄选体系。', 'stats.provIndex': '选择省份', 'stats.compare': '跨省对比(Pro)', 'stats.pickProv': '选 2-4 个省对比', 'stats.myNoc': '按我的档案高亮', 'stats.cardWork': '工签存量(TFWP+IMP)', 'stats.cardStudy': '学签存量', 'stats.cardPr': 'PNP 登陆(年)', 'stats.cardNote': '工签/学签=IRCC 年末存量,PNP 登陆=最新完整年;移民难度口径见各省页',
 }
 
 const en: Dict = {
@@ -567,7 +568,7 @@ const en: Dict = {
   'res.note': 'All links go to government/official pages; official publications prevail. We only organize them and do not control their content.',
   'res.cat.federal': 'Federal immigration', 'res.cat.pnp': 'Provincial nominees (PNP)', 'res.cat.study': 'Study & DLI', 'res.cat.language': 'Language tests', 'res.cat.wage': 'Wage & occupation data', 'res.cat.lmia': 'LMIA & employer sponsorship', 'res.cat.authority': 'Authority & compliance',
   'foot.disclaimer': 'Auto-aggregated data, for reference only — not immigration/legal advice; not an RCIC. Verify with official sources.',
-  'search.placeholder': 'Search title / company / location / NOC…',
+  'search.placeholder': 'Search title, company, location, NOC',
   'filter.geo': 'Location', 'filter.cat': 'Occupation', 'filter.src': 'Source', 'filter.elig': 'Eligibility', 'filter.statusexp': 'Status / level', 'filter.status': 'Status', 'filter.exp': 'Level', 'filter.drawer': 'Filters',
   'filter.emp': 'Job type', 'all.emp': 'All types', 'emp.full': 'Full-time', 'emp.part': 'Part-time', 'emp.gig': 'Gig / temp',
   'term.permanent': 'Permanent', 'term.term': 'Contract', 'term.casual': 'Casual', 'term.seasonal': 'Seasonal',
@@ -730,6 +731,7 @@ const en: Dict = {
   'mv.entry': 'My matches', 'mv.on': 'Showing only jobs matching your profile (high/mid), sorted by match', 'mv.exit': 'Exit',
   'mv.empty': 'No open jobs match your profile yet — try widening target provinces or updating your profile.', 'mv.editProfile': 'Edit profile',
   'match.high': 'High', 'match.mid': 'Mid', 'match.low': 'Low', 'match.na': 'N/A',
+  'match.tip': 'How well your profile fits this job — click for the reason chain', 'sep': ', ',
   'match.needProfile': 'Set up profile', 'match.overCap': 'Free plan shows match for the first {n} jobs per day',
   'match.title': 'What this means for me',
   'match.disclaimer': 'This is a mechanical comparison of your self-reported profile against published lists / draw data — not immigration advice; official sources prevail.',
@@ -865,7 +867,7 @@ const en: Dict = {
   'news.back': 'All updates', 'news.more': 'All updates →',
   'news.blockTitle': 'Immigration updates', 'news.latest': 'Latest provincial announcements',
   'news.empty': 'No updates yet',
-  'news.imp': 'Important', 'news.topTitle': 'Top updates', 'news.watch': 'Watch', 'news.impN': 'Importance {n}/5',
+  'news.imp': 'Important', 'news.topTitle': 'Top updates', 'news.watch': 'Watch',
   'news.aiSum': 'AI summary', 'news.read': 'Read more →', 'news.cmt.n': '{n} comments',
   'news.cmt.title': 'Comments ({n})', 'news.cmt.login': 'Log in to join the discussion →',
   'news.cmt.ph': 'Be civil. Comments appear after human review; ads and agent solicitation are removed.',
@@ -963,7 +965,7 @@ const en: Dict = {
   'ce.title': 'Compare employers', 'ce.aip': 'AIP designated', 'ce.provDiff': 'Main province & difficulty', 'ce.match': 'Match with my profile', 'ce.matchHigh': '{n} high-match jobs', 'ce.matchMid': '{n} mid-match jobs', 'ce.brief': 'AI research brief',
   'ce.note': 'Method: LMIA = past record of hiring foreign workers, not a promise to support you; AIP designation ≠ quota; figures are this site’s data, not an eligibility ruling.', 'ce.empty': 'Pick at least 2 employers to compare — use “+ Compare” in the directory', 'ce.goDir': 'Employer directory', 'ce.clear': 'Clear selection',
   'ce.v1': 'LMIA track records side by side — skilled-stream approvals at a glance', 'ce.v2': 'Open jobs, PNP-list hits and AIP status aligned on one screen', 'ce.v3': 'With a profile, see high/mid match counts per employer', 'ce.add': '+ Compare', 'ce.added': 'In compare ✓', 'ce.bar': '{n} selected', 'ce.go': 'Compare →', 'price.f10': 'Compare employers (2–4 side by side)',
-  'stats.title': '{prov} job statistics', 'stats.catTitle': '{prov} · {cat} job statistics', 'stats.openJobs': 'Open jobs', 'stats.new7d': 'Posted in last 7 days', 'stats.medWage': 'Median wage (ESDC)', 'stats.medSalary': 'Median posted salary', 'stats.named': 'PNP-list jobs', 'stats.aip': 'AIP designated-employer jobs', 'stats.topCities': 'Top cities', 'stats.streams': 'Streams hit', 'stats.byCat': 'By occupation group', 'stats.entry': 'Region stats', 'stats.toJobs': 'See these jobs →', 'stats.caliber': 'Methodology', 'stats.caliberText': 'Open / posted-in-7-days = this site’s scrape (Job Bank Canada-wide + ATS, by posting date); median wage = ESDC wage data (same NOC × province); PNP-list jobs = the job’s occupation appears on that province’s published PNP occupation list; “—” = that province currently publishes no occupation list (e.g. OINP after its 2026-06 redesign), not missing data; none of this is an eligibility ruling.', 'stats.provIndex': 'Choose a province', 'stats.compare': 'Compare provinces (Pro)', 'stats.pickProv': 'Pick 2–4 provinces', 'stats.myNoc': 'Highlight by my profile', 'stats.cardWork': 'Work permits (TFWP+IMP)', 'stats.cardStudy': 'Study permits', 'stats.cardPr': 'PNP admissions (yr)', 'stats.cardNote': 'Work/study permits = IRCC year-end stock; PNP admissions = latest full year; difficulty method on each province page',
+  'stats.title': '{prov} job statistics', 'stats.catTitle': '{prov} · {cat} job statistics', 'stats.openJobs': 'Open jobs', 'stats.new7d': 'Posted in last 7 days', 'stats.medWage': 'Median wage (ESDC)', 'stats.medSalary': 'Median posted salary', 'stats.named': 'PNP-list jobs', 'stats.aip': 'AIP designated-employer jobs', 'stats.topCities': 'Top cities', 'stats.streams': 'Streams hit', 'stats.byCat': 'By occupation group', 'stats.entry': 'Region stats', 'stats.toJobs': 'See these jobs →', 'stats.caliber': 'Methodology', 'stats.caliberText': 'Open / posted-in-7-days = this site’s scrape (Job Bank Canada-wide + ATS, by posting date); median wage = ESDC wage data (same NOC × province); PNP-list jobs = the job’s occupation appears on that province’s published PNP occupation list; “—” = that province currently publishes no occupation list (e.g. OINP after its 2026-06 redesign), not missing data; none of this is an eligibility ruling.', 'stats.noList': 'No list', 'stats.noList.tip': 'This province currently publishes no PNP occupation list (e.g. OINP after its 2026-06 redesign) — eligibility runs on TEER and other conditions. Not missing data.', 'stats.naQc': 'N/A', 'stats.naQc.tip': 'Quebec does not take part in the PNP — it runs its own selection system.', 'stats.provIndex': 'Choose a province', 'stats.compare': 'Compare provinces (Pro)', 'stats.pickProv': 'Pick 2–4 provinces', 'stats.myNoc': 'Highlight by my profile', 'stats.cardWork': 'Work permits (TFWP+IMP)', 'stats.cardStudy': 'Study permits', 'stats.cardPr': 'PNP admissions (yr)', 'stats.cardNote': 'Work/study permits = IRCC year-end stock; PNP admissions = latest full year; difficulty method on each province page',
 }
 
 const ko: Dict = {
@@ -1031,7 +1033,7 @@ const ko: Dict = {
   'res.note': '모두 정부/공식 기관 페이지이며 공식 발표가 우선합니다. 본 사이트는 정리만 하며 내용을 관리하지 않습니다.',
   'res.cat.federal': '연방 이민', 'res.cat.pnp': '주 지명(PNP)', 'res.cat.study': '유학·DLI', 'res.cat.language': '어학 시험', 'res.cat.wage': '임금·직업 데이터', 'res.cat.lmia': 'LMIA·고용주 지원', 'res.cat.authority': '권위·규정',
   'foot.disclaimer': '자동 수집 데이터는 참고용이며 이민/법률 자문이 아닙니다. RCIC가 아니므로 공식 출처를 기준으로 하세요.',
-  'search.placeholder': '직무 / 회사 / 지역 / NOC 검색…',
+  'search.placeholder': '직무, 회사, 지역, NOC 검색',
   'filter.geo': '지역', 'filter.cat': '직업 분류', 'filter.src': '출처', 'filter.elig': '이민 자격', 'filter.statusexp': '상태 / 경력', 'filter.status': '상태', 'filter.exp': '경력', 'filter.drawer': '필터',
   'filter.emp': '고용 형태', 'all.emp': '모든 유형', 'emp.full': '정규직', 'emp.part': '파트타임', 'emp.gig': '단기·임시',
   'term.permanent': '상시', 'term.term': '계약직', 'term.casual': '비정규직', 'term.seasonal': '계절직',
@@ -1194,6 +1196,7 @@ const ko: Dict = {
   'mv.entry': '내 매칭', 'mv.on': '내 프로필과 매칭되는 공고만 표시(높음/중간), 매칭도순 정렬', 'mv.exit': '나가기',
   'mv.empty': '아직 프로필과 매칭되는 공고가 없습니다 — 목표 주를 넓히거나 프로필을 갱신해 보세요.', 'mv.editProfile': '프로필 수정',
   'match.high': '높음', 'match.mid': '중간', 'match.low': '낮음', 'match.na': '해당없음',
+  'match.tip': '내 프로필과 이 공고의 매칭 정도 — 클릭하면 근거를 볼 수 있습니다', 'sep': ', ',
   'match.needProfile': '프로필 만들기', 'match.overCap': '무료 플랜은 하루 상위 {n}개 공고만 매칭 표시',
   'match.title': '나에게 의미하는 것',
   'match.disclaimer': '자가 보고 프로필과 공개 목록/추첨 데이터의 기계적 비교이며 이민 자문이 아닙니다. 공식 발표 기준.',
@@ -1329,7 +1332,7 @@ const ko: Dict = {
   'news.back': '전체 소식', 'news.more': '전체 소식 →',
   'news.blockTitle': '이민 소식', 'news.latest': '최신 주정부 공지',
   'news.empty': '새로운 소식이 없습니다',
-  'news.imp': '중요', 'news.topTitle': '주요 소식', 'news.watch': '관심', 'news.impN': '중요도 {n}/5',
+  'news.imp': '중요', 'news.topTitle': '주요 소식', 'news.watch': '관심',
   'news.aiSum': 'AI 요약', 'news.read': '전문 읽기 →', 'news.cmt.n': '댓글 {n}개',
   'news.cmt.title': '댓글 ({n})', 'news.cmt.login': '로그인하고 댓글 달기 →',
   'news.cmt.ph': '예의를 지켜주세요. 댓글은 검토 후 게시되며, 광고 및 중개 유도 내용은 삭제됩니다.',
@@ -1427,7 +1430,7 @@ const ko: Dict = {
   'ce.title': '고용주 비교', 'ce.aip': 'AIP 지정', 'ce.provDiff': '주요 주·이민 난이도', 'ce.match': '내 프로필 매칭', 'ce.matchHigh': '고매칭 {n}건', 'ce.matchMid': '중매칭 {n}건', 'ce.brief': 'AI 조사 요약',
   'ce.note': '기준: LMIA=외국인 고용 이력이며 보증 약속이 아님; AIP 지정≠쿼터; 자격 판정 아님.', 'ce.empty': '비교하려면 최소 2개 선택 — 디렉토리에서 「+ 비교」', 'ce.goDir': '고용주 디렉토리', 'ce.clear': '선택 초기화',
   'ce.v1': 'LMIA 이력을 나란히 비교', 'ce.v2': '채용 중·PNP 목록·AIP 한 화면 정렬', 'ce.v3': '프로필 있으면 고용주별 매칭 건수', 'ce.add': '+ 비교', 'ce.added': '비교 중 ✓', 'ce.bar': '{n}개 선택', 'ce.go': '비교 →', 'price.f10': '고용주 비교(2–4개)',
-  'stats.title': '{prov} 채용 통계', 'stats.catTitle': '{prov} · {cat} 채용 통계', 'stats.openJobs': '채용 중', 'stats.new7d': '최근 7일 게시', 'stats.medWage': '중위 연봉(ESDC)', 'stats.medSalary': '게시된 중위 연봉', 'stats.named': 'PNP 대상 공고', 'stats.aip': 'AIP 지정 고용주 공고', 'stats.topCities': '주요 도시', 'stats.streams': '해당 스트림', 'stats.byCat': '직업 대분류별', 'stats.entry': '지역 통계', 'stats.toJobs': '이 공고 보기 →', 'stats.caliber': '산정 기준', 'stats.caliberText': '채용 중/최근 7일 게시=본 사이트 수집 기준(Job Bank 전국+ATS, 게시일 기준); 중위 연봉=ESDC 임금 데이터(동일 NOC×주)의 중위값; PNP 대상 공고=직업이 해당 주 PNP 공개 직업 목록에 포함됨; 「—」=해당 주가 현재 공개 직업 목록을 제공하지 않음(예: OINP 2026-06 개편 후), 데이터 누락 아님; 이는 자격 판정이 아님.', 'stats.provIndex': '주 선택', 'stats.compare': '주 간 비교 (Pro)', 'stats.pickProv': '2–4개 주 선택', 'stats.myNoc': '내 프로필로 강조', 'stats.cardWork': '취업비자 보유량(TFWP+IMP)', 'stats.cardStudy': '학생비자 보유량', 'stats.cardPr': 'PNP 영주권 승인(연간)', 'stats.cardNote': '취업/학생비자 = IRCC 연말 보유량; PNP 승인 = 최신 완전 연도; 난이도 기준은 각 주 페이지 참조',
+  'stats.title': '{prov} 채용 통계', 'stats.catTitle': '{prov} · {cat} 채용 통계', 'stats.openJobs': '채용 중', 'stats.new7d': '최근 7일 게시', 'stats.medWage': '중위 연봉(ESDC)', 'stats.medSalary': '게시된 중위 연봉', 'stats.named': 'PNP 대상 공고', 'stats.aip': 'AIP 지정 고용주 공고', 'stats.topCities': '주요 도시', 'stats.streams': '해당 스트림', 'stats.byCat': '직업 대분류별', 'stats.entry': '지역 통계', 'stats.toJobs': '이 공고 보기 →', 'stats.caliber': '산정 기준', 'stats.caliberText': '채용 중/최근 7일 게시=본 사이트 수집 기준(Job Bank 전국+ATS, 게시일 기준); 중위 연봉=ESDC 임금 데이터(동일 NOC×주)의 중위값; PNP 대상 공고=직업이 해당 주 PNP 공개 직업 목록에 포함됨; 「—」=해당 주가 현재 공개 직업 목록을 제공하지 않음(예: OINP 2026-06 개편 후), 데이터 누락 아님; 이는 자격 판정이 아님.', 'stats.noList': '목록 없음', 'stats.noList.tip': '해당 주는 현재 PNP 직업 목록을 공개하지 않습니다(예: OINP 2026-06 개편 후). TEER 등 조건으로 판단하며 데이터 누락이 아닙니다.', 'stats.naQc': '해당없음', 'stats.naQc.tip': '퀘벡주는 PNP에 참여하지 않고 자체 선발 제도를 운영합니다.', 'stats.provIndex': '주 선택', 'stats.compare': '주 간 비교 (Pro)', 'stats.pickProv': '2–4개 주 선택', 'stats.myNoc': '내 프로필로 강조', 'stats.cardWork': '취업비자 보유량(TFWP+IMP)', 'stats.cardStudy': '학생비자 보유량', 'stats.cardPr': 'PNP 영주권 승인(연간)', 'stats.cardNote': '취업/학생비자 = IRCC 연말 보유량; PNP 승인 = 최신 완전 연도; 난이도 기준은 각 주 페이지 참조',
 }
 
 const MESSAGES: Record<Lang, Dict> = { zh, en, ko }
@@ -1464,5 +1467,6 @@ const EE_L10N: Record<string, string> = {
   '医疗社服': 'ee.healthcare', 'STEM': 'ee.stem', '技工': 'ee.trade', '教育': 'ee.education',
   '运输': 'ee.transport', '医生': 'ee.physicians', '高管': 'ee.seniorMgr', '研究': 'ee.researchers', '军职': 'ee.military',
 }
+// #209(第 26 轮体检):数据层用「/」拼接,显示层改顿号枚举(no-dot-separator 硬规矩:禁「·」「/」杂糅多信息)
 export const eeDisplay = (t: TFn, label: string): string =>
-  label.split('/').map((s) => (EE_L10N[s.trim()] ? t(EE_L10N[s.trim()]) : s.trim())).join('/')
+  label.split('/').map((s) => (EE_L10N[s.trim()] ? t(EE_L10N[s.trim()]) : s.trim())).join(t('sep'))

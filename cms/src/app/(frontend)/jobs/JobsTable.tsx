@@ -1155,8 +1155,10 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                 <IconSave /> {t('ss.save')}
               </button>
             )}
-            <div ref={colRef} className="jtHideNarrow" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 10, marginLeft: 'auto' }}>
-              {updatedAt && <span style={{ color: '#9ca3af', fontSize: 12, whiteSpace: 'nowrap' }}>{t('updated', { t: fmtLocal(updatedAt) })}</span>}
+            {/* #202(第 26 轮体检):「核对 时间」原在 jtHideNarrow 里,手机端整块藏掉 → 主流量端看不到心跳,
+                07-23 立的「最近核对」等于白做。提出来单挂,手机上随 flexWrap 落到筛选行下方。 */}
+            {updatedAt && <span style={{ color: '#9ca3af', fontSize: 12, whiteSpace: 'nowrap', marginLeft: 'auto' }}>{t('updated', { t: fmtLocal(updatedAt) })}</span>}
+            <div ref={colRef} className="jtHideNarrow" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 10 }}>
               <Button kind="secondary" onClick={() => setColOpen((o) => !o)} style={{ height: 38, display: 'inline-flex', alignItems: 'center', color: '#374151' }}><IconSettings style={{ marginRight: 5 }} />{t('fields', { n: shown.length })}</Button>
               {colOpen && (
                 <div style={colPanel}>
@@ -1311,7 +1313,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                         if (j.match) {
                           const M: Record<string, { bg: string; fg: string }> = { high: { bg: '#dcfce7', fg: '#166534' }, mid: { bg: '#dbeafe', fg: '#1e40af' }, low: { bg: '#f3f4f6', fg: '#6b7280' }, na: { bg: '#fafafa', fg: '#c4c4c8' } }
                           const c2 = M[j.match]
-                          node = <span style={{ background: c2.bg, color: c2.fg, fontWeight: 600, fontSize: 12, padding: '2px 8px', borderRadius: 6, whiteSpace: 'nowrap' }}>{t('match.' + j.match)}</span>
+                          // #207(第 26 轮体检):裸字「高/中/低」无口径 —— 挂 title 说清是什么的高低,点开仍是逐条依据链
+                          node = <span title={t('match.tip')} style={{ background: c2.bg, color: c2.fg, fontWeight: 600, fontSize: 12, padding: '2px 8px', borderRadius: 6, whiteSpace: 'nowrap' }}>{t('match.' + j.match)}</span>
                           Object.assign(extra, { whiteSpace: 'nowrap' })
                         } else if (!plan.loggedIn || !plan.profileOk) {
                           node = <a href="/account" style={{ fontSize: 12, color: '#2563eb', textDecoration: 'none', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>{t('match.needProfile')} →</a>

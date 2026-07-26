@@ -19,9 +19,12 @@ const td: React.CSSProperties = { padding: '8px 12px', fontSize: 13, color: '#37
 function TopCities({ raw, t }: { raw: string; t: TFn }) {
   const cities = useMemo(() => { try { return JSON.parse(raw) as { city: string; n: number }[] } catch { return [] } }, [raw])
   if (!cities.length) return null
+  // #208(第 26 轮体检):原为裸文字流,375 下城市名被拆行(Fort / McMurray)且胶囊互相重叠 →
+  // 改 flex 换行 + 胶囊内 nowrap,名字永不断行
   return (
-    <div style={{ margin: '8px 0', fontSize: 12.5, color: '#6b7280' }}>
-      {t('stats.topCities')}:{cities.map((c) => <span key={c.city} style={{ background: '#eef2ff', color: '#3730a3', borderRadius: 6, padding: '2px 8px', marginLeft: 6 }}>{c.city}　{c.n}</span>)}
+    <div style={{ margin: '8px 0', fontSize: 12.5, color: '#6b7280', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+      <span style={{ whiteSpace: 'nowrap' }}>{t('stats.topCities')}</span>
+      {cities.map((c) => <span key={c.city} style={{ background: '#eef2ff', color: '#3730a3', borderRadius: 6, padding: '2px 8px', whiteSpace: 'nowrap' }}>{c.city}　{c.n}</span>)}
     </div>
   )
 }
@@ -68,10 +71,14 @@ export function StatsIndexContent({ rows, srcs, t, provExtra = {} }: { rows: Sta
             </div>
             <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 8, lineHeight: 2 }}>
               {kv(t('stats.openJobs'), <strong>{r.openJobs != null ? numFmt(r.openJobs) : '—'}</strong>)}
-              {kv(t('stats.named'), r.namedJobs ? <span style={{ color: '#b45309', fontWeight: 600 }}>{numFmt(r.namedJobs)}</span> : '—')}
+              {/* #203(第 26 轮体检):首页成片裸「—」掉可信度 —— 无清单/不适用是政策事实,直接说人话(口径挂 title) */}
+              {kv(t('stats.named'), r.namedJobs
+                ? <span style={{ color: '#b45309', fontWeight: 600 }}>{numFmt(r.namedJobs)}</span>
+                : <span title={t('stats.noList.tip')} style={{ color: '#9ca3af' }}>{t('stats.noList')}</span>)}
               {kv(t('stats.cardWork'), work ? numFmt(work) : '—')}
               {kv(t('stats.cardStudy'), ex?.info?.study?.n ? numFmt(ex.info.study.n) : '—')}
-              {kv(t('stats.cardPr'), ex?.info?.pnpPr?.n ? numFmt(ex.info.pnpPr.n) : '—')}
+              {kv(t('stats.cardPr'), ex?.info?.pnpPr?.n ? numFmt(ex.info.pnpPr.n)
+                : r.province === 'QC' ? <span title={t('stats.naQc.tip')} style={{ color: '#9ca3af' }}>{t('stats.naQc')}</span> : '—')}
             </div>
           </a>
           )
@@ -280,7 +287,8 @@ export function CompareContent({ rows, srcs, isPro, loggedIn, myNocs, t }: { row
     [t('stats.new7d'), (r) => r.new7d],
     [t('stats.medWage'), (r) => money(r.medianWageAnnual)],
     [t('stats.medSalary'), (r) => money(r.medianSalaryAnnual)],
-    [t('stats.named'), (r) => (r.namedJobs ? <span style={{ color: '#b45309', fontWeight: 600 }}>{r.namedJobs}</span> : <span style={{ color: '#9ca3af' }}>—</span>)],
+    // #203:省级对比同口径——无清单是政策事实,说人话不留裸「—」
+    [t('stats.named'), (r) => (r.namedJobs ? <span style={{ color: '#b45309', fontWeight: 600 }}>{r.namedJobs}</span> : <span title={t('stats.noList.tip')} style={{ color: '#9ca3af' }}>{t('stats.noList')}</span>)],
     [t('stats.aip'), (r) => r.aipJobs],
     // W 规矩存量清理(#110):通道枚举「· 」杂糅拆一行一条
     [t('stats.streams'), (r) => (r.streamLabels ? <>{r.streamLabels.split('、').map((s) => <div key={s}>{streamDisplay(t, s)}</div>)}</> : '—')],
