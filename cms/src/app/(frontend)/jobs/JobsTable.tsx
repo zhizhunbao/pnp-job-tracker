@@ -1410,16 +1410,17 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             const chip = (bg: string, fg: string, txt: string, k: ColKey) => (
               <span key={k} onClick={cellActionable(k) ? stop(() => open(k, txt)) : undefined} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: bg, color: fg, cursor: cellActionable(k) ? 'pointer' : 'default', whiteSpace: 'nowrap' }}>{txt}</span>
             )
-            const days = j.datePosted && (j.status || 'open') !== 'closed' ? Math.max(0, Math.floor((Date.now() - new Date(j.datePosted).getTime()) / 86400000)) : null
+            // Frank 走查:发布当天显示 1 天 → new Date('YYYY-MM-DD') 按 UTC 午夜解析,EDT 晚上 Date.now() 已跨 UTC 次日差 1 天;改按本地午夜解析(+'T00:00:00')
+            const days = j.datePosted && (j.status || 'open') !== 'closed' ? Math.max(0, Math.floor((Date.now() - new Date(j.datePosted.slice(0, 10) + 'T00:00:00').getTime()) / 86400000)) : null
             // #200(Frank「岗位名称中文翻译默认都加上」):手机卡职位名挂 NOC 官方职业名译名(界面语言;与在招职位/弹框标题同款)
             const nz = nocLocalTitle(dims.nocDescriptions.find((d) => d.noc === j.noc) || null, lang)
             return (
               <div key={j.id}
                 style={{ border: '1px solid #e5e7eb', borderRadius: 12, padding: '10px 12px', background: '#fff' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'baseline' }}>
-                  {/* 批A 追拍(Frank「点击卡片不要跳了,只有点击文字才跳」):整卡 onClick 摘除(#129 退役),
-                      职位名文字=直接进详情页(#131 的 JD 弹框劫持一并退役,<a> 回归本义) */}
-                  <a href={`/jobs/${j.id}`}
+                  {/* Frank 走查:手机点职位名要开 JD 弹框(与桌面一致;#131 的「跳详情页」推翻)。
+                      保留 <a href>(爬虫/SEO/长按开页不丢),tap 时 preventDefault 开弹框——与本卡地点链接同款手法 */}
+                  <a href={`/jobs/${j.id}`} onClick={(e) => { e.preventDefault(); setActModal({ kind: 'desc', job: j }) }}
                     style={{ fontSize: 14.5, fontWeight: 600, color: '#2563eb', textDecoration: 'none' }}>{j.title}</a>
                   <span style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
                     {/* #167⑩(Frank「卡片胶囊应该统一放到一个位置吧」):匹配度胶囊原先孤零零挂在右上角,
