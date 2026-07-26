@@ -2592,7 +2592,7 @@ function pnpMatchOf(job: JobRow, occ: PnpOcc[]): { streams: PnpStream[]; matched
 }
 // 批A #134 头牌(Frank「就直接点,这个岗位是能走 EE 还是 PNP 还是 AIP」):
 // 通道弹框置顶三行直判;判定点名清单,清单挂行下可开可关(命中职业加粗标「← 本岗」)
-function ChannelVerdicts({ job, lang, pnpOcc, eeOcc, nocDesc, showZh }: { job: JobRow; lang: Lang; pnpOcc: PnpOcc[]; eeOcc: EeOcc[]; nocDesc: NocDesc[]; showZh?: boolean }) {
+function ChannelVerdicts({ job, lang, pnpOcc, pnpDraws = [], eeOcc, nocDesc, showZh }: { job: JobRow; lang: Lang; pnpOcc: PnpOcc[]; pnpDraws?: PnpDraw[]; eeOcc: EeOcc[]; nocDesc: NocDesc[]; showZh?: boolean }) {
   const t = makeT(lang)
   const [openList, setOpenList] = useState<'' | 'pnp' | 'ee'>('')
   const { matched, excluded } = useMemo(() => pnpMatchOf(job, pnpOcc), [job, pnpOcc])
@@ -2662,6 +2662,11 @@ function ChannelVerdicts({ job, lang, pnpOcc, eeOcc, nocDesc, showZh }: { job: J
           <div style={MODAL_CARD_HEAD}>{eeLabel || 'EE'}</div>
           {listRows(eeList)}
         </div>
+      ) : null}
+      {/* Frank 走查#10:通用雇主类通道(无具名清单)——单独卡列该省每轮抽选史+分数;
+          命中具名清单的岗走上面的职业清单卡,不在此重复(仅 generic:pnpPill 且非 matched) */}
+      {pnpPill && !matched && job.province !== 'QC' && pnpDraws.some((d) => d.province === job.province) ? (
+        <div style={MODAL_CARD}><PnpDrawsBlock province={job.province} lang={lang} draws={pnpDraws} limit={3} /></div>
       ) : null}
     </>
   )
@@ -2806,7 +2811,7 @@ function GroupFactsSection(props: Omit<Parameters<typeof FieldFactsSection>[0], 
   return (
     <>
       {/* 批A #134 头牌:移民组置顶三通道直判(通道档卡照旧在下) */}
-      {group === 'immigration' ? <ChannelVerdicts job={job} lang={lang} pnpOcc={rest.pnpOcc} eeOcc={rest.eeOcc} nocDesc={rest.nocDesc} showZh={rest.showZh} /> : null}
+      {group === 'immigration' ? <ChannelVerdicts job={job} lang={lang} pnpOcc={rest.pnpOcc} pnpDraws={rest.pnpDraws} eeOcc={rest.eeOcc} nocDesc={rest.nocDesc} showZh={rest.showZh} /> : null}
       {keys.map((k) => k === 'pnp' || k === 'ee' ? (
         // PNP/EE 节拆多卡(2026-07-25,EE=Frank「拆成三个卡片吧」):Section 自带 判定/抽选/清单 各一卡,
         // 壳卡退役——再包一层就是卡中卡;标题由判定卡自持(#173 每卡必有 title 不破)
@@ -3361,7 +3366,7 @@ type ProvInfo = { study?: ProvInfoNum; tfwp?: ProvInfoNum; imp?: ProvInfoNum; pn
 const DIFF_TAG: Record<string, { bg: string; fg: string; bd: string }> = {
   easy: { bg: '#dcfce7', fg: '#166534', bd: '#bbf7d0' }, mid: { bg: '#fef3c7', fg: '#b45309', bd: '#fde68a' }, tight: { bg: '#eef2ff', fg: '#3730a3', bd: '#e0e7ff' },
 }
-function LocationPanel({ job, lang, plan, srcField, pnpDraws, news }: { job: JobRow; lang: Lang; plan: Plan; srcField: ColKey; pnpDraws: PnpDraw[]; news: NewsSlim[] }) {
+function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [] }: { job: JobRow; lang: Lang; plan: Plan; srcField: ColKey; pnpDraws: PnpDraw[]; news: NewsSlim[]; desigEmp?: DesigEmp[] }) {
   const t = makeT(lang)
   const L = parseLoc(job)
   // 入口语义=内容(Frank「点省看省,点市看市」+「点区看区」):省格=省卡组,市格=市卡组,区格=区卡组
@@ -3597,15 +3602,25 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news }: { job: Job
           ))}
         </div>
       )}
-      {level === 'city' && cityInfo && cityInfo.aipEmployers > 0 && (
-        <div style={card}>
-          <div style={MODAL_CARD_HEAD}>{t('loc.aip')}</div>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'baseline', fontSize: 13 }}>
-            <span style={{ color: '#374151' }}>{t('loc.aipN', { n: num(cityInfo.aipEmployers) })}</span>
-            <a href="/employers" style={{ color: '#2563eb', textDecoration: 'none', fontSize: 12.5 }}>{t('loc.dirLink')}</a>
+      {/* Frank 走查#7:AIP 卡直接内联列出指定雇主名单(不再「雇主名录 →」点过去);
+          客户端筛已加载的 desigEmp,口径对齐后端(province + location ILIKE '%city%') */}
+      {level === 'city' && (() => {
+        const aipList = desigEmp.filter((e) => e.province === job.province && (e.location || '').toLowerCase().includes((job.city || '').toLowerCase()))
+        if (!aipList.length) return null
+        return (
+          <div style={card}>
+            <div style={MODAL_CARD_HEAD}>{t('loc.aip')} <span style={{ ...gnote, fontSize: 11.5, marginLeft: 8 }}>{t('loc.aipN', { n: aipList.length })}</span></div>
+            <div style={{ display: 'grid', rowGap: 2 }}>
+              {aipList.map((e, i) => (
+                <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'baseline', fontSize: 13, color: '#374151' }}>
+                  <span style={{ flex: 1, minWidth: 0 }}>{e.name}</span>
+                  {e.isTech && <span style={{ fontSize: 11, color: '#9ca3af', whiteSpace: 'nowrap' }}>{t('fact.aipTech')}</span>}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       {/* ── 区级卡组(点区进来;Frank「点区看区的信息」)────────── */}
       {level === 'district' && cityInfo?.district && (
@@ -3786,7 +3801,7 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
           {group === 'category'
             ? <CategoryPanel job={job} lang={lang} plan={plan} nocDesc={nocDesc} srcField={field} />
             : group === 'location'
-            ? <LocationPanel job={job} lang={lang} plan={plan} srcField={field} pnpDraws={pnpDraws} news={news} />
+            ? <LocationPanel job={job} lang={lang} plan={plan} srcField={field} pnpDraws={pnpDraws} news={news} desigEmp={desigEmp} />
             : group === 'company'
             ? <CompanyPanel job={job} jobs={companyJobs} lang={lang} plan={plan} onOpenJob={onOpenJob} />
             : <GroupFactsSection group={group} job={job} jobs={companyJobs} lang={lang} isPro={plan.isPro} loggedIn={plan.loggedIn} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} onOpenJob={onOpenJob} showZh={showZh} />}
