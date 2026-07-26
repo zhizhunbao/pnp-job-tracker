@@ -40,6 +40,7 @@ const zh: Dict = {
   'stream.abTech': 'AB 科技', 'stream.skHealth': 'SK 医疗', 'stream.skTech': 'SK 科技', 'stream.skAgri': 'SK 农业', 'stream.nsCritical': 'NS 紧缺空缺', 'stream.nsGrad': 'NS 毕业生', 'stream.aaipExcl': 'AAIP 不符合清单',
   'stream.bcHealth': 'BC 医疗', 'stream.bcChildcare': 'BC 幼教', 'stream.bcEdu': 'BC 法语教师', 'stream.bcVet': 'BC 兽医', 'stream.bcConstr': 'BC 建筑技工',
   'stream.mbIndemand': 'MB 在需职业', 'stream.mbRural': 'MB 乡镇在需', 'stream.nbExcl': 'NB 不符合清单', 'stream.nbExclFood': 'NB 餐饮住宿不符合',
+  'stream.nbAipExcl': 'NB AIP 不受理', 'stream.nbAipExclFood': 'NB AIP 餐饮住宿不受理',
   'ee.healthcare': '医疗社服', 'ee.stem': 'STEM', 'ee.trade': '技工', 'ee.education': '教育', 'ee.transport': '运输', 'ee.physicians': '医生', 'ee.seniorMgr': '高管', 'ee.researchers': '研究', 'ee.military': '军职',
   'chart.common': '常见图表', 'chart.custom': '自定义图表', 'chart.dim': '维度', 'chart.metric': '指标', 'chart.dimProv': '按省', 'chart.dimCat': '按职业大类', 'chart.all': '全部', 'chart.medianNote': '中位数不做跨省合并——请选择一个省查看各大类中位数。',
   'advisor.unavail': 'AI 判断暂时不可用,请稍后再试——上方事实与官方链接不受影响。',
@@ -123,6 +124,7 @@ const zh: Dict = {
   'th.tip': '点击表头排序', 'resize.tip': '拖动改本列宽 · 双击按内容自适应',
   'empty': '无匹配职位', 'allShown': '已全部显示 {total} 个', 'loadMore': '显示更多(还有 {n} 条)',
   'cell.uncat': '未分类', 'cell.first': '第一方', 'cell.repost': '转贴', 'cell.today': '今天',
+  'cell.pnpExcl': '不符合清单', 'cell.aipBlocked': '职业不受理',
   'cell.pnpSkilled': '可提名', 'cell.pnpIndemand': '紧缺', 'cell.pnpQc': '魁省', 'cell.aipYes': '指定雇主', 'cell.lmiaYes': '✓ {n} 职位　{q}', 'cell.closed': '已下架', 'cell.open': '在招',
   'pnplist.title': '省提名职业清单', 'pnplist.source': '来源', 'pnplist.your': '本岗', 'pnplist.gta': '大多区域外', 'pnplist.loading': '加载清单…', 'pnplist.showOther': '展开其他 {n} 个 ▾', 'pnplist.foldOther': '收起 ▴',
  
@@ -482,6 +484,8 @@ const zh: Dict = {
   'ch.pnp.on': '能走: {label}', 'ch.pnp.generic': '能走通用雇主类通道', 'ch.pnp.ex': '在排除清单,走不了', 'ch.pnp.no': '走不了(TEER {teer})', 'ch.pnp.qc': 'QC 走省独立体系',
   'ch.ee.on': '能进类别抽选: {cats}', 'ch.ee.more': '{first} 等 {n} 类', 'ch.ee.gen': '能走 CEC 通用抽选(分数线高)', 'ch.ee.no': '走不了(TEER {teer})',
   'ch.aip.on': '能走 AIP(雇主在指定名单)', 'ch.aip.miss': '走不了(雇主不在名单)', 'ch.aip.na': '走不了(仅大西洋四省)',
+  'ch.pnp.exl': '走不了:本岗在「{label}」内', 'ch.aip.blocked': '走不了:本省不受理本岗职业的背书', 'ch.aip.onBlocked': '雇主在指定名单,但本岗职业本省不受理',
+  'fact.aipBlockedHit': '本岗职业「{name}」在此清单内　NOC {noc}',
   'sal.cardPosted': '帖面薪资', 'sal.cardEsdc': 'ESDC 工资表(本职业,本省)', 'sal.esdcMed': 'ESDC 中位',
   'sal.low': '低位', 'sal.med': '中位', 'sal.high': '高位', 'sal.above': '比中位高 {p}%', 'sal.below': '比中位低 {p}%',
   'src.label': '来源', 'src.fetched': '抓取于 {d}', 'src.derived': '本站算法,由上方事实计算', 'src.official': '官方原帖', 'src.unverified': '未验证(仅链接)',
@@ -507,6 +511,7 @@ const en: Dict = {
   'stream.abTech': 'AB Tech', 'stream.skHealth': 'SK Health', 'stream.skTech': 'SK Tech', 'stream.skAgri': 'SK Agriculture', 'stream.nsCritical': 'NS Critical Vacancies', 'stream.nsGrad': 'NS Graduates', 'stream.aaipExcl': 'AAIP ineligible list',
   'stream.bcHealth': 'BC Health', 'stream.bcChildcare': 'BC Childcare', 'stream.bcEdu': 'BC French teachers', 'stream.bcVet': 'BC Veterinary', 'stream.bcConstr': 'BC Construction trades',
   'stream.mbIndemand': 'MB in-demand', 'stream.mbRural': 'MB rural in-demand', 'stream.nbExcl': 'NB ineligible list', 'stream.nbExclFood': 'NB hospitality ineligible',
+  'stream.nbAipExcl': 'NB AIP not accepted', 'stream.nbAipExclFood': 'NB AIP hospitality not accepted',
   'ee.healthcare': 'Healthcare', 'ee.stem': 'STEM', 'ee.trade': 'Trades', 'ee.education': 'Education', 'ee.transport': 'Transport', 'ee.physicians': 'Physicians', 'ee.seniorMgr': 'Senior managers', 'ee.researchers': 'Researchers', 'ee.military': 'Military',
   'chart.common': 'Common charts', 'chart.custom': 'Custom chart', 'chart.dim': 'Dimension', 'chart.metric': 'Metric', 'chart.dimProv': 'by province', 'chart.dimCat': 'by occupation group', 'chart.all': 'All', 'chart.medianNote': 'Medians are not merged across provinces — pick a province to see per-group medians.',
   'advisor.unavail': 'The AI read is temporarily unavailable — the facts and official links above are unaffected. Please try again later.',
@@ -582,6 +587,7 @@ const en: Dict = {
   'th.tip': 'Click to sort', 'resize.tip': 'Drag to resize · double-click to fit content',
   'empty': 'No matching jobs', 'allShown': 'All {total} shown', 'loadMore': 'Load more ({n} left)',
   'cell.uncat': 'Uncategorized', 'cell.first': 'Direct', 'cell.repost': 'Repost', 'cell.today': 'today',
+  'cell.pnpExcl': 'On exclusion list', 'cell.aipBlocked': 'Occupation not accepted',
   'cell.pnpSkilled': 'Eligible', 'cell.pnpIndemand': 'In-demand', 'cell.pnpQc': 'Quebec', 'cell.aipYes': 'Designated', 'cell.lmiaYes': '✓ {n} positions　{q}', 'cell.closed': 'Closed', 'cell.open': 'Open',
   'pnplist.title': 'PNP occupation list', 'pnplist.source': 'Source', 'pnplist.your': 'This job', 'pnplist.gta': 'Outside GTA', 'pnplist.loading': 'Loading list…', 'pnplist.showOther': 'Show other {n} ▾', 'pnplist.foldOther': 'Collapse ▴',
  
@@ -944,6 +950,8 @@ const en: Dict = {
   'ch.pnp.on': 'Eligible: {label}', 'ch.pnp.generic': 'General employer streams OK', 'ch.pnp.ex': 'On exclusion list', 'ch.pnp.no': 'Not eligible (TEER {teer})', 'ch.pnp.qc': 'QC has its own system',
   'ch.ee.on': 'Category draws: {cats}', 'ch.ee.more': '{first} +{n}', 'ch.ee.gen': 'CEC general draws (high cut-off)', 'ch.ee.no': 'Not eligible (TEER {teer})',
   'ch.aip.on': 'Eligible (designated employer)', 'ch.aip.miss': 'Not eligible (not designated)', 'ch.aip.na': 'Not eligible (Atlantic only)',
+  'ch.pnp.exl': 'Not eligible — on the {label} list', 'ch.aip.blocked': 'Not eligible — province not accepting this occupation', 'ch.aip.onBlocked': 'Employer designated, but this occupation is not accepted',
+  'fact.aipBlockedHit': 'This occupation, {name}, is on that list　NOC {noc}',
   'sal.cardPosted': 'Posted salary', 'sal.cardEsdc': 'ESDC wage table (occupation, province)', 'sal.esdcMed': 'ESDC median',
   'sal.low': 'Low', 'sal.med': 'Median', 'sal.high': 'High', 'sal.above': '{p}% above median', 'sal.below': '{p}% below median',
   'src.label': 'Source', 'src.fetched': 'fetched {d}', 'src.derived': 'Site algorithm, computed from the facts above', 'src.official': 'Official posting', 'src.unverified': 'unverified (link only)',
@@ -969,6 +977,7 @@ const ko: Dict = {
   'stream.abTech': 'AB 테크', 'stream.skHealth': 'SK 보건', 'stream.skTech': 'SK 테크', 'stream.skAgri': 'SK 농업', 'stream.nsCritical': 'NS 필수 인력', 'stream.nsGrad': 'NS 졸업생', 'stream.aaipExcl': 'AAIP 제외 목록',
   'stream.bcHealth': 'BC 보건', 'stream.bcChildcare': 'BC 보육', 'stream.bcEdu': 'BC 프랑스어 교사', 'stream.bcVet': 'BC 수의', 'stream.bcConstr': 'BC 건설 기능직',
   'stream.mbIndemand': 'MB 수요 직종', 'stream.mbRural': 'MB 농촌 수요 직종', 'stream.nbExcl': 'NB 제외 목록', 'stream.nbExclFood': 'NB 숙박 음식업 제외',
+  'stream.nbAipExcl': 'NB AIP 접수 제외', 'stream.nbAipExclFood': 'NB AIP 숙박 음식업 제외',
   'ee.healthcare': '보건·사회서비스', 'ee.stem': 'STEM', 'ee.trade': '기능직', 'ee.education': '교육', 'ee.transport': '운수', 'ee.physicians': '의사', 'ee.seniorMgr': '고위 관리자', 'ee.researchers': '연구', 'ee.military': '군 경력',
   'chart.common': '일반 차트', 'chart.custom': '사용자 지정 차트', 'chart.dim': '차원', 'chart.metric': '지표', 'chart.dimProv': '주별', 'chart.dimCat': '직업 대분류별', 'chart.all': '전체', 'chart.medianNote': '중위값은 주 간 합산되지 않습니다. 주를 선택해 각 그룹별 중위값을 확인하세요.',
   'advisor.unavail': 'AI 분석이 일시적으로 사용 불가합니다. 위의 사실 및 공식 링크에는 영향이 없습니다. 잠시 후 다시 시도하세요.',
@@ -1042,6 +1051,7 @@ const ko: Dict = {
   'th.tip': '클릭하여 정렬', 'resize.tip': '드래그로 너비 조정 · 더블클릭 시 내용에 맞춤',
   'empty': '일치하는 공고 없음', 'allShown': '전체 {total}개 표시', 'loadMore': '더 보기 (남은 {n}개)',
   'cell.uncat': '미분류', 'cell.first': '직접', 'cell.repost': '재게시', 'cell.today': '오늘',
+  'cell.pnpExcl': '제외 목록', 'cell.aipBlocked': '직종 접수 제외',
   'cell.pnpSkilled': '지명 가능', 'cell.pnpIndemand': '부족직종', 'cell.pnpQc': '퀘벡', 'cell.aipYes': '지정 고용주', 'cell.lmiaYes': '✓ {n} 포지션　{q}', 'cell.closed': '마감', 'cell.open': '채용중',
   'pnplist.title': 'PNP 직업 목록', 'pnplist.source': '출처', 'pnplist.your': '이 채용', 'pnplist.gta': 'GTA 외', 'pnplist.loading': '목록 불러오는 중…', 'pnplist.showOther': '다른 {n}개 보기 ▾', 'pnplist.foldOther': '접기 ▴',
  
@@ -1404,6 +1414,8 @@ const ko: Dict = {
   'ch.pnp.on': '가능: {label}', 'ch.pnp.generic': '일반 고용주 스트림 가능', 'ch.pnp.ex': '제외 목록, 불가', 'ch.pnp.no': '불가(TEER {teer})', 'ch.pnp.qc': 'QC 자체 시스템',
   'ch.ee.on': '카테고리 추첨 가능: {cats}', 'ch.ee.more': '{first} 등 {n}종', 'ch.ee.gen': 'CEC 일반 추첨 가능(커트라인 높음)', 'ch.ee.no': '불가(TEER {teer})',
   'ch.aip.on': 'AIP 가능(지정 고용주)', 'ch.aip.miss': '불가(고용주 미지정)', 'ch.aip.na': '불가(대서양 4개 주만)',
+  'ch.pnp.exl': '불가: 「{label}」에 포함', 'ch.aip.blocked': '불가: 주정부가 이 직종 추천을 접수하지 않음', 'ch.aip.onBlocked': '지정 고용주이지만 이 직종은 접수 제외',
+  'fact.aipBlockedHit': '이 포지션 직종 「{name}」이 목록에 포함　NOC {noc}',
   'sal.cardPosted': '공고 급여', 'sal.cardEsdc': 'ESDC 임금표(직업, 주)', 'sal.esdcMed': 'ESDC 중위',
   'sal.low': '하위', 'sal.med': '중위', 'sal.high': '상위', 'sal.above': '중위보다 {p}% 높음', 'sal.below': '중위보다 {p}% 낮음',
   'src.label': '출처', 'src.fetched': '{d} 수집', 'src.derived': '본 사이트 알고리즘(위 사실로 계산)', 'src.official': '공식 공고', 'src.unverified': '미검증(링크만)',
@@ -1442,6 +1454,7 @@ const STREAM_L10N: Record<string, string> = {
   'BC 兽医': 'stream.bcVet', 'BC 建筑技工': 'stream.bcConstr',
   'MB 在需职业': 'stream.mbIndemand', 'MB 乡镇在需': 'stream.mbRural',
   'NB 不符合清单': 'stream.nbExcl', 'NB 餐饮住宿不符合': 'stream.nbExclFood',
+  'NB AIP 不受理': 'stream.nbAipExcl', 'NB AIP 餐饮住宿不受理': 'stream.nbAipExclFood',
 }
 export const streamDisplay = (t: TFn, label: string): string => (STREAM_L10N[label] ? t(STREAM_L10N[label]) : label)
 

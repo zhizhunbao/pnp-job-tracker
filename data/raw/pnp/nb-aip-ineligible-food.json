@@ -1,11 +1,11 @@
 {
-  "stream": "NB Skilled Worker stream / NB Express Entry stream — occupations not being considered (EOI/ITA)",
-  "label": "NB 餐饮住宿不符合",
+  "stream": "Atlantic Immigration Program (NB) — occupations not being considered for endorsement",
+  "label": "NB AIP 餐饮住宿不受理",
   "province": "NB",
-  "program": "PNP",
+  "program": "AIP",
   "type": "ineligible",
   "overlay": true,
-  "note": "自 2026-02-03 起,NB 不受理住宿餐饮业(NAICS 72)这些职业的省提名 EOI/ITA。官方留了口子:雇主本身不属住宿餐饮业的同款岗仍可提交——本站无雇主行业字段,按多数情形判不符合,请按自己雇主的实际行业核对。",
+  "note": "自 2026-02-03 起,NB 不受理住宿餐饮业(NAICS 72)这些职业的 AIP 背书申请。官方留了口子:雇主本身不属住宿餐饮业的同款岗仍可提交——本站无雇主行业字段,按多数情形判不符合,请按自己雇主的实际行业核对。",
   "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/notice.html",
   "fetched": "2026-07-26",
   "occupations": [
@@ -48,18 +48,6 @@
     {
       "noc": "64314",
       "name": "Hotel front desk clerks"
-    },
-    {
-      "noc": "65200",
-      "name": "Food and beverage servers"
-    },
-    {
-      "noc": "65201",
-      "name": "Food counter attendants, kitchen helpers, and related occupations"
-    },
-    {
-      "noc": "65310",
-      "name": "Light duty cleaners"
     }
   ]
 }

@@ -159,7 +159,9 @@ export function orderByClause(sortKey?: string, dir?: string, pro = true): strin
 // ═══════════════════════════════════════════════════════════════════════════
 
 // 维度行映射(match 引擎口径;/api/jobs-data 自取维度时与 page.tsx 同一把尺)
-export const mapPnpOcc = (r: any) => ({ province: r.province, stream: r.stream, label: r.label, type: r.type, noc: r.noc, name: r.name, gtaRestricted: !!r.gtaRestricted, url: r.url, fetched: r.fetched })
+export const mapPnpOcc = (r: any) => ({ province: r.province, stream: r.stream, label: r.label, type: r.type, program: r.program || 'PNP', noc: r.noc, name: r.name, gtaRestricted: !!r.gtaRestricted, url: r.url, fetched: r.fetched })
+// 省提名匹配只吃 program=PNP 的清单:AIP 背书是另一条路,混进来会让「命中/被排除」判在错的项目上(E6-09)
+export const pnpOnly = <T extends { program?: string }>(rows: T[]): T[] => rows.filter((r) => (r.program || 'PNP') === 'PNP')
 export const mapEeCat = (r: any) => ({ category: r.category, label: r.label, noc: r.noc, teer: typeof r.teer === 'number' ? r.teer : null, title: r.title, url: r.url, fetched: r.fetched, drawCrs: typeof r.drawCrs === 'number' ? r.drawCrs : null, drawDate: r.drawDate ?? '', drawSize: typeof r.drawSize === 'number' ? r.drawSize : null })
 
 const JOB_COLUMNS = `j.id, j.title, c.name AS company_name, c.slug AS company_slug, c.address AS company_address, c.description AS company_description, c.sectors AS company_sectors,

@@ -2,9 +2,10 @@
   "stream": "NB Skilled Worker stream / NB Express Entry stream — occupations not being considered (EOI/ITA)",
   "label": "NB 不符合清单",
   "province": "NB",
+  "program": "PNP",
   "type": "ineligible",
   "overlay": true,
-  "note": "自 2026-02-03 起,NB 不受理这些职业的 EOI/ITA(不论雇主属什么行业)。",
+  "note": "自 2026-02-03 起,NB 不受理这些职业的省提名 EOI/ITA(不论雇主属什么行业)。",
   "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/notice.html",
   "fetched": "2026-07-26",
   "occupations": [

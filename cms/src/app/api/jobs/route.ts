@@ -10,7 +10,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { getUser, isPro } from '@/lib/entitlement'
 import { hasProfile, normalizeProfile, type MatchDims } from '@/lib/match'
-import { fetchJobsPage, fetchMatchPage, mapEeCat, mapPnpOcc } from '@/lib/jobsSql'
+import { fetchJobsPage, fetchMatchPage, mapEeCat, mapPnpOcc, pnpOnly } from '@/lib/jobsSql'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -28,7 +28,7 @@ async function getMatchDimsCached(payload: Awaited<ReturnType<typeof getPayload>
     payload.find({ collection: 'pnp-occupations', limit: 5000, depth: 0 }),
     payload.find({ collection: 'ee-categories', limit: 2000, depth: 0 }),
   ])
-  const dims: MatchDims = { pnpOccupations: pnp.docs.map(mapPnpOcc), eeCategories: ee.docs.map(mapEeCat) }
+  const dims: MatchDims = { pnpOccupations: pnpOnly(pnp.docs.map(mapPnpOcc)), eeCategories: ee.docs.map(mapEeCat) }
   dimsCache = { dims, ts: Date.now() }
   return dims
 }

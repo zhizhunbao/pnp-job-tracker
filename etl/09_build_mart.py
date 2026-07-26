@@ -449,6 +449,8 @@ def build():
                 if o.get("noc"):
                     pnp_occupations.append({
                         "province": prov, "stream": d.get("stream", ""), "label": label,
+                        # program:PNP(默认)/AIP —— 前端按项目分开判(AIP 与省提名是两条路,E6-09)
+                        "program": d.get("program", "PNP"),
                         "type": d.get("type", "indemand"), "url": d.get("url", ""), "fetched": d.get("fetched", ""),
                         "noc": o["noc"], "name": o.get("name", ""), "gtaRestricted": bool(o.get("gtaRestricted"))})
 

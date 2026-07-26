@@ -54,7 +54,7 @@ export default async function JobsPage() {
     nocCategories: nocDocs.docs.map((c: any) => ({ broad: c.broad, mid: c.mid, fine: c.fine, teer: typeof c.teer === 'number' ? c.teer : null })),
     sources: srcDocs.docs.map((s: any) => ({ name: s.name })),
     experienceLevels: expDocs.docs.map((e: any) => ({ name: e.name })),
-    pnpOccupations: pnpDocs.docs.map((r: any) => ({ province: r.province, stream: r.stream, label: r.label, type: r.type, noc: r.noc, name: r.name, gtaRestricted: !!r.gtaRestricted, url: r.url, fetched: r.fetched })),
+    pnpOccupations: pnpDocs.docs.map((r: any) => ({ province: r.province, stream: r.stream, label: r.label, type: r.type, program: r.program || 'PNP', noc: r.noc, name: r.name, gtaRestricted: !!r.gtaRestricted, url: r.url, fetched: r.fetched })),
     pnpDraws: pnpDrawDocs.docs.map((r: any) => ({ province: r.province, kind: r.kind, drawDate: r.drawDate ?? '', stream: r.stream ?? '', score: typeof r.score === 'number' ? r.score : null, scale: r.scale ?? '', invitations: typeof r.invitations === 'number' ? r.invitations : null, note: r.note ?? '', label: r.label ?? '', url: r.url ?? '', fetched: r.fetched ?? '' })),
     eeCategories: eeDocs.docs.map((r: any) => ({ category: r.category, label: r.label, noc: r.noc, teer: typeof r.teer === 'number' ? r.teer : null, title: r.title, url: r.url, fetched: r.fetched, drawCrs: typeof r.drawCrs === 'number' ? r.drawCrs : null, drawDate: r.drawDate ?? '', drawSize: typeof r.drawSize === 'number' ? r.drawSize : null })),
     designatedEmployers: [],  // SSR 瘦身:客户端从 /api/dims 拉后并入
@@ -64,7 +64,8 @@ export default async function JobsPage() {
   }
 
   // 首屏 50 行 + 总数(E10-01 P3:筛选/翻页由客户端打 /api/jobs 分页,同一查询层 jobsSql 同序)
-  const matchDims = { pnpOccupations: dims.pnpOccupations, eeCategories: dims.eeCategories }
+  // 匹配只吃省提名清单(AIP 背书清单是另一条路,见 lib/jobsSql.pnpOnly);展示维度仍是全量
+  const matchDims = { pnpOccupations: dims.pnpOccupations.filter((r) => r.program === 'PNP'), eeCategories: dims.eeCategories }
   // 差异化证言数字(第 5 轮 #14):省提名清单命中岗 + 有外劳记录雇主数 —— 首屏 3 秒讲清与聚合站的区别
   const [{ jobs, updatedAt }, tp] = await Promise.all([
     fetchJobRows(pool, { pro, profile, profileOk, matchDims, limit: FIRST_SCREEN_ROWS }),

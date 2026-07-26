@@ -538,7 +538,8 @@ const PAGE_ROWS = 50                    // 每页行数:首屏 50,点「显示�
 const ORIGIN_LABEL: Record<string, string> = { jobbank: 'Job Bank', ats: 'ATS', directory: '社区名单' }
 
 // E8-07:维度行类型 export 给详情页(SSR 取数按同一形状传入)
-export type PnpOcc = { province: string; stream: string; label: string; type: string; noc: string; name: string; gtaRestricted: boolean; url: string; fetched: string }
+// program:PNP(省提名,默认)/ AIP(大西洋移民试点背书)—— 两条路分开判(E6-09;NB 两套官方清单)
+export type PnpOcc = { province: string; stream: string; label: string; type: string; program?: string; noc: string; name: string; gtaRestricted: boolean; url: string; fetched: string }
 // 省抽选事实(E6-04):score 是省自评分制(scale 标注),非 CRS —— 只作事实展示,不做资格/差分判定
 export type PnpDraw = { province: string; kind: string; drawDate: string; stream: string; score: number | null; scale: string; invitations: number | null; note: string; label: string; url: string; fetched: string }
 export type EeOcc = { category: string; label: string; noc: string; teer: number | null; title: string; url: string; fetched: string; drawCrs: number | null; drawDate: string; drawSize: number | null }
@@ -815,6 +816,16 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   // v1 整列隐藏+小注 → 用户否;v2 容器收口到整列边界 → 用户否(表格变窄)。维持全宽横滚,末列
   // 在视口边缘被切属滚动常态,不再干预。此教训记档:改表格布局前先给用户看效果图。
   const shown = shownAll
+  // E6-09(2026-07-26 Frank「恢复可点」):命中官方具名排除清单的岗,格子要说结论、要能点开看依据
+  // ——与「TEER 不够」这种泛判定不同。整表算一次 province|noc 命中集,逐行 O(1) 查。
+  const blockedKeys = useMemo(() => {
+    const pnp = new Set<string>(), aip = new Set<string>()
+    for (const r of dims.pnpOccupations) {
+      if (r.type !== 'ineligible') continue
+      ;((r.program || 'PNP') === 'AIP' ? aip : pnp).add(r.province + '|' + r.noc)
+    }
+    return { pnp, aip }
+  }, [dims.pnpOccupations])
   const totalW = shown.reduce((s, c) => s + (widths[c.key] ?? 0), 0)
   const resetWidths = () => setWidths({})
 
@@ -1347,12 +1358,19 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                           Object.assign(extra, { whiteSpace: 'nowrap' })
                         }
                         else if (j.pnpEligible) { node = t('cell.pnpSkilled'); Object.assign(extra, { whiteSpace: 'nowrap', color: '#15803d', fontWeight: 500, fontSize: 12.5 }) }  // 中:可提名
+                        // E6-09:命中官方具名排除清单 → 说结论(红字,格子可点看依据);其余走不了仍是灰「—」
+                        else if (blockedKeys.pnp.has(j.province + '|' + j.noc)) { node = t('cell.pnpExcl'); Object.assign(extra, { whiteSpace: 'nowrap', color: '#b91c1c', fontSize: 12.5 }) }
                         else { node = '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#9ca3af', fontSize: 12.5 }) }  // 弱:不符
                       }
                       else if (k === 'ee') {  // 联邦 EE 类别抽选(全国单一源,数据层算);命中→蓝,未列入→—
                         node = j.eeCategory ? eeDisplay(t, j.eeCategory) : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.eeCategory ? '#2563eb' : '#d1d5db', fontSize: 12.5 })
                       }
-                      else if (k === 'aip') { node = j.aip ? t('cell.aipYes') : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.aip ? '#b45309' : '#d1d5db', fontSize: 12.5 }) }
+                      else if (k === 'aip') {
+                        // E6-09:省里逐条点名「这些职业不受理背书」→ 结论压过「雇主在指定名单」(官方一律不受理)
+                        const blocked = blockedKeys.aip.has(j.province + '|' + j.noc)
+                        node = blocked ? t('cell.aipBlocked') : j.aip ? t('cell.aipYes') : '—'
+                        Object.assign(extra, { whiteSpace: 'nowrap', color: blocked ? '#b91c1c' : j.aip ? '#b45309' : '#d1d5db', fontSize: 12.5 })
+                      }
                       else if (k === 'lmia') {  // E6-02:✓ 职位数 · 最近季度(历史事实;详情看弹框事实块)
                         node = j.lmiaPositions ? t('cell.lmiaYes', { n: j.lmiaPositions, q: j.lmiaLastQuarter }) : '—'
                         Object.assign(extra, { whiteSpace: 'nowrap', color: j.lmiaPositions ? '#0f766e' : '#d1d5db', fontSize: 12.5, fontWeight: j.lmiaPositions ? 500 : 400 })
@@ -1367,7 +1385,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       else { node = j.lastSeen ? fmtLocalSec(j.lastSeen) : '—'; Object.assign(extra, { color: '#9ca3af', fontSize: 12.5, whiteSpace: 'nowrap' }) }
                       // #175:hover 高亮只随可点格(可点必有态,不可点必无——E8-08 规范本来就这么写)
                       // 批A 追拍(Frank「走不了的就别给点了」):PNP/EE/AIP 的「—」格(无信号)摘可点——点开只会看到「走不了」,没有意义
-                      const act = cellActionable(k) && (k === 'pnp' ? !!j.pnpEligible : k === 'ee' ? !!j.eeCategory : k === 'aip' ? !!j.aip : true)
+                      // 2026-07-26 Frank「恢复可点」:命中官方具名清单的走不了=有依据可看,重新可点(泛判定的「—」仍不可点)
+                      const act = cellActionable(k) && (k === 'pnp' ? (!!j.pnpEligible || blockedKeys.pnp.has(j.province + '|' + j.noc))
+                        : k === 'ee' ? !!j.eeCategory : k === 'aip' ? (!!j.aip || blockedKeys.aip.has(j.province + '|' + j.noc)) : true)
                       return (
                         <td key={k} className={act ? 'jcell jcellAct' : 'jcell'} style={{ ...td, padding: `7px ${cellPad}`, ...extra, cursor: act ? 'pointer' : 'default', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', minWidth: colMin(k), ...(NOWRAP_COLS.has(k) ? { whiteSpace: 'nowrap' } : { whiteSpace: 'normal', overflowWrap: 'break-word' }), ...frozenStyle(k, rowBg) }} title={typeof node === 'string' ? node : undefined} onClick={() => {
                           if (!act) return
@@ -1606,7 +1626,7 @@ export function PnpListSection({ job, lang, occ, draws, news, nocDesc = [], show
   const [foldOpen, setFoldOpen] = useState<Record<string, boolean>>({})
   const isQc = job.province === 'QC'
   // 批A:命中计算抽 pnpMatchOf(与通道直判块共用,改一处两边同变)
-  const { streams, matched, excluded, hasInclusion } = useMemo(() => pnpMatchOf(job, occ), [job, occ])
+  const { streams, matched, excluded, excludedBy, hasInclusion } = useMemo(() => pnpMatchOf(job, occ), [job, occ])
   // 高亮行滚进视野(就近滚,尽量不动整个弹框)
   useEffect(() => { matchRef.current?.scrollIntoView({ block: 'nearest' }) }, [streams])
 
@@ -1614,7 +1634,7 @@ export function PnpListSection({ job, lang, occ, draws, news, nocDesc = [], show
   // 批A 追拍(Frank「可提名,但是显示却是这个」):判定行换直判药丸,与通道块/列头同一套语系(ch.* 键)
   let verdictPill: React.ReactNode
   if (isQc) verdictPill = <VerdictPill tone="na">{t('ch.pnp.qc')}</VerdictPill>
-  else if (excluded) verdictPill = <VerdictPill tone="fail">{t('ch.pnp.ex')}</VerdictPill>
+  else if (excludedBy) verdictPill = <VerdictPill tone="fail">{t('ch.pnp.exl', { label: streamDisplay(t, excludedBy.label) })}</VerdictPill>
   else if (matched) verdictPill = <VerdictPill tone="ok">{t('ch.pnp.on', { label: streamDisplay(t, matched.label) })}</VerdictPill>
   else if (skilled) verdictPill = <VerdictPill tone="ok">{t('ch.pnp.generic')}</VerdictPill>
   else verdictPill = <VerdictPill tone="na">{t('ch.pnp.no', { teer: teer ?? '?' })}</VerdictPill>
@@ -2564,6 +2584,16 @@ function aipVerdictOf(job: JobRow): 'on' | 'miss' | 'na' {
   if (job.aip) return 'on'
   return ATLANTIC.has(job.province) ? 'miss' : 'na'
 }
+// E6-09(2026-07-26 Frank「AIP 那个也一起补」):省里逐条点名「这些职业的 AIP 背书不受理」的清单
+// (NB 官方两张)。**与雇主是否指定雇主无关** —— 官方明说这些岗一律不受理,故指定雇主也要如实说。
+function aipBlockOf(job: JobRow, occ: PnpOcc[]): PnpStream | null {
+  if (!job.noc || !ATLANTIC.has(job.province)) return null
+  const r = occ.find((x) => x.program === 'AIP' && x.province === job.province && x.noc === job.noc)
+  if (!r) return null
+  const occupations = occ.filter((x) => x.program === 'AIP' && x.label === r.label && x.province === r.province)
+    .map((x) => ({ noc: x.noc, name: x.name, gtaRestricted: x.gtaRestricted }))
+  return { stream: r.stream, label: r.label, type: r.type, url: r.url, fetched: r.fetched, occupations }
+}
 // 判定药丸(直判行统一件):ok 绿=能走 / warn 琥珀 / fail 红=排除 / na 灰=走不了
 const VERDICT_PILL: Record<'ok' | 'warn' | 'fail' | 'na', { bg: string; fg: string }> = {
   ok: { bg: '#dcfce7', fg: '#15803d' }, warn: { bg: '#fef3c7', fg: '#b45309' },
@@ -2574,41 +2604,47 @@ function VerdictPill({ tone, children }: { tone: 'ok' | 'warn' | 'fail' | 'na'; 
   return <span style={{ display: 'inline-block', padding: '1px 10px', borderRadius: 999, fontSize: 12.5, fontWeight: 600, background: c.bg, color: c.fg, whiteSpace: 'nowrap' }}>{children}</span>
 }
 // PNP 命中计算(PnpListSection 与通道直判块两处共用;纯函数,改一处两边同变)
-function pnpMatchOf(job: JobRow, occ: PnpOcc[]): { streams: PnpStream[]; matched: PnpStream | null; excluded: boolean; hasInclusion: boolean } {
+function pnpMatchOf(job: JobRow, occ: PnpOcc[]): { streams: PnpStream[]; matched: PnpStream | null; excluded: boolean; excludedBy: PnpStream | null; hasInclusion: boolean } {
   const streams: PnpStream[] = []
   if (job.province !== 'QC' && job.province) {
     const byLabel = new Map<string, PnpStream>()
     for (const r of occ) {
-      if (r.province !== job.province) continue
+      // AIP 清单不参与省提名判定(另一条路,见 aipBlockOf)
+      if (r.province !== job.province || (r.program || 'PNP') !== 'PNP') continue
       let s = byLabel.get(r.label)
       if (!s) { s = { stream: r.stream, label: r.label, type: r.type, url: r.url, fetched: r.fetched, occupations: [] }; byLabel.set(r.label, s) }
       s.occupations.push({ noc: r.noc, name: r.name, gtaRestricted: r.gtaRestricted })
     }
     streams.push(...byLabel.values())
   }
-  let matched: PnpStream | null = null, excluded = false, hasInclusion = false
+  let matched: PnpStream | null = null, excludedBy: PnpStream | null = null, hasInclusion = false
   for (const s of streams) {
-    if (s.type === 'ineligible') { if (s.occupations.some((o) => o.noc === job.noc)) excluded = true }
+    if (s.type === 'ineligible') { if (s.occupations.some((o) => o.noc === job.noc)) excludedBy = s }
     else { hasInclusion = true; if (s.occupations.some((o) => o.noc === job.noc)) matched = s }
   }
-  return { streams, matched, excluded, hasInclusion }
+  return { streams, matched, excluded: !!excludedBy, excludedBy, hasInclusion }
 }
 // 批A #134 头牌(Frank「就直接点,这个岗位是能走 EE 还是 PNP 还是 AIP」):
 // 通道弹框置顶三行直判;判定点名清单,清单挂行下可开可关(命中职业加粗标「← 本岗」)
 function ChannelVerdicts({ job, lang, pnpOcc, pnpDraws = [], eeOcc, nocDesc, showZh }: { job: JobRow; lang: Lang; pnpOcc: PnpOcc[]; pnpDraws?: PnpDraw[]; eeOcc: EeOcc[]; nocDesc: NocDesc[]; showZh?: boolean }) {
   const t = makeT(lang)
-  const [openList, setOpenList] = useState<'' | 'pnp' | 'ee'>('')
-  const { matched, excluded } = useMemo(() => pnpMatchOf(job, pnpOcc), [job, pnpOcc])
+  const [openList, setOpenList] = useState<'' | 'pnp' | 'ee' | 'aip'>('')
+  const { matched, excludedBy } = useMemo(() => pnpMatchOf(job, pnpOcc), [job, pnpOcc])
+  const aipBlock = useMemo(() => aipBlockOf(job, pnpOcc), [job, pnpOcc])
   const eeCats = useMemo(() => [...new Set(eeOcc.filter((r) => r.noc === job.noc).map((r) => r.label))], [eeOcc, job.noc])
   const nocRowOf = useMemo(() => new Map(nocDesc.map((d) => [d.noc, d])), [nocDesc])
   const skilled = job.teer != null && job.teer <= 3
   const aip = aipVerdictOf(job)
-  // 2026-07-25 Frank「这种走不了的不用显示」:通道块只列能走的行;走不了(na/fail)整行不出,全走不了=整卡不出
+  // 2026-07-25 Frank「这种走不了的不用显示」:通道块只列能走的行;走不了(na/fail)整行不出。
+  // 2026-07-26 Frank 拍板放回一类:**命中官方具名排除清单**的走不了要说——那不是「没信号」,
+  // 是有名有据的结论(命中的清单名 + 可展开清单),与「TEER 不够」这种泛判定不同。
   let pnpPill: React.ReactNode = null
   if (job.province !== 'QC') {
     if (matched) pnpPill = <VerdictPill tone="ok">{t('ch.pnp.on', { label: streamDisplay(t, matched.label) })}</VerdictPill>
-    else if (!excluded && skilled) pnpPill = <VerdictPill tone="ok">{t('ch.pnp.generic')}</VerdictPill>
+    else if (excludedBy) pnpPill = <VerdictPill tone="fail">{t('ch.pnp.exl', { label: streamDisplay(t, excludedBy.label) })}</VerdictPill>
+    else if (skilled) pnpPill = <VerdictPill tone="ok">{t('ch.pnp.generic')}</VerdictPill>
   }
+  const pnpList = matched || excludedBy
   // EE 类别多命中一行放不下 → 首类 +「等 N 类」(一行铁律)
   const eeLabel = eeCats.length ? (eeCats.length === 1 ? eeDisplay(t, eeCats[0]) : t('ch.ee.more', { first: eeDisplay(t, eeCats[0]), n: eeCats.length })) : ''
   const eePill: React.ReactNode = eeCats.length ? <VerdictPill tone="ok">{t('ch.ee.on', { cats: eeLabel })}</VerdictPill>
@@ -2618,7 +2654,7 @@ function ChannelVerdicts({ job, lang, pnpOcc, pnpDraws = [], eeOcc, nocDesc, sho
     for (const r of eeOcc) if (eeCats.includes(r.label) && !m.has(r.noc)) m.set(r.noc, { noc: r.noc, name: r.title })
     return [...m.values()]
   }, [eeOcc, eeCats])
-  const row = (label: React.ReactNode, pill: React.ReactNode, listKey?: 'pnp' | 'ee') => (
+  const row = (label: React.ReactNode, pill: React.ReactNode, listKey?: 'pnp' | 'ee' | 'aip') => (
     <div style={{ display: 'flex', gap: 10, padding: '3px 0', fontSize: 13, alignItems: 'baseline' }}>
       <span style={{ minWidth: 88, color: '#9ca3af', flexShrink: 0 }}>{label}</span>
       <span style={{ flex: 1, minWidth: 0 }}>{pill}</span>
@@ -2644,20 +2680,29 @@ function ChannelVerdicts({ job, lang, pnpOcc, pnpDraws = [], eeOcc, nocDesc, sho
       })}
     </div>
   )
-  if (!pnpPill && !eePill && aip !== 'on') return null   // 全走不了=整卡不出(无空壳)
+  if (!pnpPill && !eePill && aip !== 'on' && !aipBlock) return null   // 全走不了=整卡不出(无空壳)
   return (
     <>
       <div style={MODAL_CARD}>
         <div style={MODAL_CARD_HEAD}>{t('ch.title')}</div>
-        {pnpPill ? row(t('ch.pnpRow'), pnpPill, matched ? 'pnp' : undefined) : null}
+        {pnpPill ? row(t('ch.pnpRow'), pnpPill, pnpList ? 'pnp' : undefined) : null}
         {eePill ? row('EE', eePill, eeCats.length ? 'ee' : undefined) : null}
-        {aip === 'on' ? row('AIP', <VerdictPill tone="ok">{t('ch.aip.on')}</VerdictPill>) : null}
+        {/* AIP:雇主在指定名单=能走;本岗职业在省里点名不受理的清单上=走不了(**两者可同时成立**,
+            官方原文对这些岗一律不受理背书 → 有指定雇主也照说,不能只显前者) */}
+        {aipBlock ? row('AIP', <VerdictPill tone="fail">{t(aip === 'on' ? 'ch.aip.onBlocked' : 'ch.aip.blocked')}</VerdictPill>, 'aip')
+          : aip === 'on' ? row('AIP', <VerdictPill tone="ok">{t('ch.aip.on')}</VerdictPill>) : null}
       </div>
       {/* Frank 走查#21:「清单▾」展开的清单拆成独立卡(不在汇总卡内内联),与 PNP/EE 清单卡同规格 */}
-      {openList === 'pnp' && matched ? (
+      {openList === 'pnp' && pnpList ? (
         <div style={MODAL_CARD}>
-          <div style={MODAL_CARD_HEAD}>{streamDisplay(t, matched.label)}</div>
-          {listRows(matched.occupations)}
+          <div style={MODAL_CARD_HEAD}>{streamDisplay(t, pnpList.label)}</div>
+          {listRows(pnpList.occupations)}
+        </div>
+      ) : null}
+      {openList === 'aip' && aipBlock ? (
+        <div style={MODAL_CARD}>
+          <div style={MODAL_CARD_HEAD}>{streamDisplay(t, aipBlock.label)}</div>
+          {listRows(aipBlock.occupations)}
         </div>
       ) : null}
       {openList === 'ee' ? (
@@ -2668,7 +2713,7 @@ function ChannelVerdicts({ job, lang, pnpOcc, pnpDraws = [], eeOcc, nocDesc, sho
       ) : null}
       {/* Frank 走查#10:通用雇主类通道(无具名清单)——单独卡列该省每轮抽选史+分数;
           命中具名清单的岗走上面的职业清单卡,不在此重复(仅 generic:pnpPill 且非 matched) */}
-      {pnpPill && !matched && job.province !== 'QC' && pnpDraws.some((d) => d.province === job.province) ? (
+      {pnpPill && !matched && !excludedBy && job.province !== 'QC' && pnpDraws.some((d) => d.province === job.province) ? (
         <div style={MODAL_CARD}><PnpDrawsBlock province={job.province} lang={lang} draws={pnpDraws} limit={3} /></div>
       ) : null}
     </>
@@ -2861,9 +2906,19 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
     const v = aipVerdictOf(job)
     const cn = normName(job.company)
     const matches = job.aip && cn ? desigEmp.filter((e) => normName(e.name) === cn) : []
+    // E6-09:省里逐条点名「这些职业的 AIP 背书不受理」——与雇主是否指定雇主是两件事,两条都要说
+    const blocked = aipBlockOf(job, pnpOcc)
     return (
       <FactsBox>
-        <FactRow k={t('fact.verdict')}><VerdictPill tone={v === 'on' ? 'ok' : 'na'}>{t('ch.aip.' + v)}</VerdictPill></FactRow>
+        <FactRow k={t('fact.verdict')}>
+          {blocked ? <VerdictPill tone="fail">{t(v === 'on' ? 'ch.aip.onBlocked' : 'ch.aip.blocked')}</VerdictPill>
+            : <VerdictPill tone={v === 'on' ? 'ok' : 'na'}>{t('ch.aip.' + v)}</VerdictPill>}
+        </FactRow>
+        {blocked ? (
+          <FactRow k={streamDisplay(t, blocked.label)}>
+            {t('fact.aipBlockedHit', { name: blocked.occupations.find((o) => o.noc === job.noc)?.name || job.noc, noc: job.noc })}
+          </FactRow>
+        ) : null}
         {matches.map((e, i) => (
           <FactRow key={i} k={e.name}>{[e.location, e.province, e.isTech ? t('fact.aipTech') : null].filter(Boolean).join('、')}</FactRow>
         ))}

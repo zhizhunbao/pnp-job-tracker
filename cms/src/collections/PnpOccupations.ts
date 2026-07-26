@@ -11,6 +11,7 @@ export const PnpOccupations: CollectionConfig = {
     { name: 'stream', type: 'text', admin: { description: '通道官方名(英文)' } },
     { name: 'label', type: 'text', index: true, admin: { description: '通道短标签(前端显示,如「OINP 紧缺技能」)' } },
     { name: 'type', type: 'text', admin: { description: 'indemand(命中=符合) / ineligible(命中=不符合)' } },
+    { name: 'program', type: 'text', defaultValue: 'PNP', admin: { description: 'PNP(省提名,默认) / AIP(大西洋移民试点背书) —— 两条路分开判' } },
     { name: 'noc', type: 'text', index: true },
     { name: 'name', type: 'text' },
     { name: 'gtaRestricted', type: 'checkbox', defaultValue: false, admin: { description: 'ON 限大多伦多区域外' } },

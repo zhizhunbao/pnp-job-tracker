@@ -1,0 +1,37 @@
+{
+  "stream": "Atlantic Immigration Program (NB) — occupations not being considered for endorsement",
+  "label": "NB AIP 不受理",
+  "province": "NB",
+  "program": "AIP",
+  "type": "ineligible",
+  "overlay": true,
+  "note": "自 2026-02-03 起,NB 不受理这些职业的 AIP 背书申请(不论雇主属什么行业),雇主是否指定雇主都一样。",
+  "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/notice.html",
+  "fetched": "2026-07-26",
+  "occupations": [
+    {
+      "noc": "14400",
+      "name": "Shippers and receivers"
+    },
+    {
+      "noc": "60020",
+      "name": "Retail and wholesale trade managers"
+    },
+    {
+      "noc": "62010",
+      "name": "Retail sales supervisors"
+    },
+    {
+      "noc": "62101",
+      "name": "Retail and wholesale buyers"
+    },
+    {
+      "noc": "64100",
+      "name": "Retail salespersons and visual merchandisers"
+    },
+    {
+      "noc": "94142",
+      "name": "Fish and seafood plant workers"
+    }
+  ]
+}

@@ -115,6 +115,10 @@ def _load_pnp_tables() -> dict[str, dict]:
                 data = json.loads(f.read_text(encoding="utf-8"))
             except Exception:  # noqa: BLE001
                 continue
+            # program=AIP 的表(如 NB 的 AIP 背书不受理清单)只作展示维度:AIP 与省提名是两条路,
+            # 混进来会让 pnpEligible 被 AIP 的规则误伤 → 这里跳过,前端在 AIP 那一行单独判。
+            if data.get("program", "PNP") != "PNP":
+                continue
             prov = data.get("province")
             nocs = {o["noc"] for o in data.get("occupations", []) if o.get("noc")}
             # 空表守卫:inclusion 空=坏抓取,跳过;exclusion 空是合法政策事实
