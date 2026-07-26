@@ -99,7 +99,9 @@ const zh: Dict = {
   // E12-08 尾巴(#126):公司四维行(拆解弹框参照区)
   // #123c:整理版 PAY 节帖面薪资兜底注
   'act.f.payFb': '(帖面薪资字段;原帖正文未写)',
-  'updated': '核对 {t}',
+  // Frank 2026-07-26 二次拍板改回「更新时间」(07-26 白天曾由「更新」改「核对」,理由是凌晨无新岗时
+  // max(last_seen) 冻结像站死了;现在时间源已是 etl_heartbeat=每轮跑完时刻,叫「更新」也说得通)
+  'updated': '更新时间 {t}',
   'tagline': '每日更新、全加拿大全职业、移民价值视角',
   'res.title': '官方资源导航', 'res.sub': '加拿大移民官方入口一页汇总:官方来源,可自行核实', 'res.go': '官方页', 'res.entry': '官方资源', 'res.search': '搜索官方资源…', 'res.empty': '没有匹配的资源',
   'res.cat.federal': '联邦移民', 'res.cat.pnp': '各省提名(PNP)', 'res.cat.study': '留学 DLI', 'res.cat.language': '语言考试', 'res.cat.wage': '工资与职业数据', 'res.cat.lmia': 'LMIA 与雇主担保', 'res.cat.authority': '权威与合规',
@@ -604,7 +606,7 @@ const en: Dict = {
   'gr.co.fm.wiki': 'on Wikipedia', 'gr.co.fm.provs': 'hiring in {n} provinces', 'gr.co.fm.open': '{n} open jobs',
   // #123c: formatted-JD PAY fallback note
   'act.f.payFb': '(from the posting’s pay field; not stated in the body)',
-  'updated': 'Checked {t}',
+  'updated': 'Updated {t}',
   'tagline': 'Daily updates, all of Canada, immigration-value lens',
   'res.title': 'Official resources', 'res.sub': 'Canadian immigration — official links in one place, verify for yourself', 'res.go': 'Official', 'res.entry': 'Official resources', 'res.search': 'Search official resources…', 'res.empty': 'No matching resources',
   'res.cat.federal': 'Federal immigration', 'res.cat.pnp': 'Provincial nominees (PNP)', 'res.cat.study': 'Study & DLI', 'res.cat.language': 'Language tests', 'res.cat.wage': 'Wage & occupation data', 'res.cat.lmia': 'LMIA & employer sponsorship', 'res.cat.authority': 'Authority & compliance',
@@ -1102,7 +1104,7 @@ const ko: Dict = {
   'gr.co.fm.wiki': '위키 등재', 'gr.co.fm.provs': '{n}개 주에서 채용', 'gr.co.fm.open': '채용 중 {n}건',
   // #123c: 정리본 PAY 급여 필드 대체 주석
   'act.f.payFb': '(공고 급여 필드 기준; 본문에는 없음)',
-  'updated': '{t} 확인',
+  'updated': '업데이트 {t}',
   'tagline': '매일 업데이트, 캐나다 전역, 이민 가치 관점',
   'res.title': '공식 자료 안내', 'res.sub': '캐나다 이민 공식 링크 한 페이지 모음, 직접 확인하세요', 'res.go': '공식', 'res.entry': '공식 자료', 'res.search': '공식 자료 검색…', 'res.empty': '일치하는 자료 없음',
   'res.cat.federal': '연방 이민', 'res.cat.pnp': '주 지명(PNP)', 'res.cat.study': '유학·DLI', 'res.cat.language': '어학 시험', 'res.cat.wage': '임금·직업 데이터', 'res.cat.lmia': 'LMIA·고용주 지원', 'res.cat.authority': '권위·규정',
