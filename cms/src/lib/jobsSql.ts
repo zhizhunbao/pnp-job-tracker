@@ -565,3 +565,62 @@ export async function fetchAlertHits(pool: any, filters: Record<string, unknown>
      ORDER BY j.grade_channel DESC NULLS LAST, j.date_posted DESC NULLS LAST LIMIT 20`, [since, ...w.params])
   return { rows, skipped: w.skipped }
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 入口三问(付费漏斗重设计-20260726):答完立刻出的**免费结果**。
+// 铁律:毫秒级、纯库内聚合、不碰 AI —— 用户答完三题不能盯着转圈。
+// 口径与列表一致(status='open' + pnp_eligible + pnp_stream),不另起一套判定。
+// ═══════════════════════════════════════════════════════════════════════════
+export type QuizFacts = {
+  noc: string; teer: number | null; title: string
+  titleZh: string
+  open: number; eligible: number; named: number
+  streams: { stream: string; n: number }[]
+  byProv: { province: string; n: number; eligible: number }[]
+  medianSalary: number | null
+}
+
+export async function fetchQuizFacts(pool: any, noc: string): Promise<QuizFacts | null> {
+  if (!/^\d{5}$/.test(noc)) return null
+  const [tot, prov, stream, desc] = await Promise.all([
+    pool.query(
+      `SELECT count(*)::int open,
+              count(*) FILTER (WHERE j.pnp_eligible)::int eligible,
+              count(*) FILTER (WHERE j.pnp_stream IS NOT NULL AND j.pnp_stream <> '')::int named,
+              max(j.teer) teer,
+              percentile_cont(0.5) WITHIN GROUP (ORDER BY j.salary_annual) med
+       FROM jobs j WHERE j.status = 'open' AND j.noc = $1`, [noc]),
+    pool.query(
+      `SELECT j.province, count(*)::int n, count(*) FILTER (WHERE j.pnp_eligible)::int eligible
+       FROM jobs j WHERE j.status = 'open' AND j.noc = $1 AND j.province <> ''
+       GROUP BY j.province ORDER BY count(*) DESC`, [noc]),
+    pool.query(
+      `SELECT j.pnp_stream stream, count(*)::int n
+       FROM jobs j WHERE j.status = 'open' AND j.noc = $1 AND j.pnp_stream IS NOT NULL AND j.pnp_stream <> ''
+       GROUP BY j.pnp_stream ORDER BY count(*) DESC LIMIT 4`, [noc]),
+    // 职业名取 NOC 官方名(noc_descriptions),不能拿某个岗位的标题冒充职业名
+    pool.query(`SELECT COALESCE(title,'') title, COALESCE(title_zh,'') title_zh FROM noc_descriptions WHERE noc = $1 LIMIT 1`, [noc]),
+  ])
+  const t = tot.rows[0] || {}
+  if (!t.open) return null
+  const d = desc.rows[0] || {}
+  return {
+    noc, teer: num(t.teer), title: d.title || noc, titleZh: d.title_zh || '',
+    open: t.open, eligible: t.eligible ?? 0, named: t.named ?? 0,
+    streams: stream.rows.map((r: any) => ({ stream: r.stream, n: r.n })),
+    byProv: prov.rows.map((r: any) => ({ province: r.province, n: r.n, eligible: r.eligible })),
+    medianSalary: num(t.med),
+  }
+}
+
+/** 入口三问第 2 题的职业搜索:按中/英职业名模糊找 NOC(noc_descriptions 维度表,≤8 条) */
+export async function searchNocByTitle(pool: any, q: string): Promise<{ noc: string; title: string; titleZh: string }[]> {
+  const s = q.trim()
+  if (s.length < 2) return []
+  const { rows } = await pool.query(
+    `SELECT d.noc, COALESCE(d.title,'') title, COALESCE(d.title_zh,'') title_zh
+     FROM noc_descriptions d
+     WHERE d.title ILIKE $1 OR d.title_zh ILIKE $1
+     ORDER BY length(COALESCE(d.title,'')) LIMIT 8`, [`%${s}%`])
+  return rows.map((r: any) => ({ noc: r.noc, title: r.title, titleZh: r.title_zh }))
+}

@@ -16,6 +16,7 @@ import { AuthModal } from './AuthForm'
 import { UpgradeCta, UpgradeModal } from './UpgradeModal'
 import { PricingModal } from './PricingModal'
 import { OnboardingWizard, OB_SEEN_KEY } from './OnboardingWizard'
+import { EntryQuiz, QUIZ_KEY, readQuiz, type QuizAnswers } from './EntryQuiz'   // 入口三问(付费漏斗-20260726)
 import { useOverlayClose } from './overlay'
 import { CARD, iconBtnS, SCRIM, useIsNarrow } from './Modal'
 import { match as matchJob, matchRank, hasProfile, normalizeProfile, type MatchProfile, type MatchJob, type MatchReason } from '@/lib/match'
@@ -672,7 +673,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   // C1 走查拍板(2026-07-07):删两套公司弹窗——操作列「公司信息」直接开顾问公司弹窗;ActModal 只剩 JD 快看
   const [actModal, setActModal] = useState<{ kind: 'desc'; job: JobRow } | null>(null)
   // 升级入口(Pro 锁列/保存筛选 gate)统一开独立升级弹框;未登录先走注册弹框(用户定:注册与购买分离)
-  const [upsell, setUpsell] = useState<false | 'lock' | 'ss' | 'login' | 'match'>(false)   // match=①匹配锁(弹框带 FOMO 数字)
+  const [upsell, setUpsell] = useState<false | 'lock' | 'ss' | 'login' | 'match' | 'quiz'>(false)   // match=①匹配锁(弹框带 FOMO 数字);quiz=入口三问结果页的「注册保存」
+  const [pendingQuiz, setPendingQuiz] = useState<QuizAnswers | null>(null)   // 三问答案:注册成功后落库成档案
   // E11-05②:分型引导 wizard。首访自动弹(登录且无档案且没弹过);关/完成置 OB_SEEN 不再自动弹;横幅「建档」手动开忽略它
   const [wizard, setWizard] = useState(false)
   const closeWizard = () => { try { localStorage.setItem(OB_SEEN_KEY, '1') } catch { /* ignore */ } setWizard(false) }
@@ -681,6 +683,34 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     try { if (localStorage.getItem(OB_SEEN_KEY)) return } catch { /* ignore */ }
     setWizard(true)
   }, [])
+  // 入口三问(付费漏斗重设计-20260726,Frank「一访问就弹问题」):**匿名首访**才弹,只弹一次;
+  // 登录用户走原 OnboardingWizard(已建档的更不弹),两者互斥不叠。
+  const [quiz, setQuiz] = useState(false)
+  useEffect(() => {
+    if (plan.loggedIn) return
+    try { if (localStorage.getItem(QUIZ_KEY)) return } catch { /* ignore */ }
+    const id = setTimeout(() => setQuiz(true), 1200)   // 让首屏先渲染出来,别一进门就糊脸
+    return () => clearTimeout(id)
+  }, [])
+  // 结果页两个出口:①把答案套进筛选看岗 ②注册保存(注册成功后落库成档案,不让用户填两遍)
+  const applyQuiz = (a: QuizAnswers) => {
+    setQuiz(false)
+    if (a.provs.length === 1) setFProv(a.provs[0])
+    if (a.nocs[0]) setQ(a.nocs[0])
+    track('quiz-apply-filter')
+  }
+  const quizToProfile = async (a: QuizAnswers) => {
+    try {
+      const me = await fetch('/api/users/me', { credentials: 'include' }).then((r) => r.json()).catch(() => null)
+      const uid = me?.user?.id
+      if (!uid) return
+      await fetch(`/api/users/${uid}`, {
+        method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profile: { currentStatus: a.status || null, nocCodes: a.nocs, targetProvinces: a.provs, profileUpdatedAt: new Date().toISOString() } }),
+      })
+      try { localStorage.setItem(OB_SEEN_KEY, '1') } catch { /* ignore */ }   // 已经问过三题,别再弹建档向导
+    } catch { /* 落库失败不卡用户:答案还在 localStorage */ }
+  }
   // 我的求职(E9-01):已收藏映射 jobId → {saved-jobs 行 id, status};匿名点收藏 → 注册框(转化钩子)
   const [saved, setSaved] = useState<Record<string, { id: number | string; status: string }>>({})
   useEffect(() => {
@@ -1557,12 +1587,19 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       {popup && <AdvisorModal group={popup.group} field={popup.srcField} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} news={dims.news} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} onOpenJob={(x) => setActModal({ kind: 'desc', job: x })} />}
       {actModal && <ActModal job={actModal.job} lang={lang} plan={plan} nocDesc={dims.nocDescriptions} onClose={() => setActModal(null)} />}
       {wizard && <OnboardingWizard t={t} initial={plan.profile} onClose={closeWizard} />}
+      {quiz && !wizard && (
+        <EntryQuiz t={t} lang={lang} onClose={() => setQuiz(false)} onApply={applyQuiz}
+          onRegister={(a) => { setQuiz(false); setPendingQuiz(a); setUpsell('quiz') }} />
+      )}
       {upsell && (plan.loggedIn
         ? <UpgradeModal t={t} reason={upsell === 'ss' ? t('ss.pro') : upsell === 'match' ? (matchTotals && matchTotals.high > plan.freeMatchCap ? t('up.matchN', { h: matchTotals.high, n: plan.freeMatchCap }) : t('up.match', { n: plan.freeMatchCap })) : undefined} onClose={() => setUpsell(false)} />
         : <AuthModal t={t} mode={upsell === 'login' ? 'login' : 'register'} onClose={() => setUpsell(false)}
             /* E9-04b:'login' 目前只有「我的匹配」入口在用——登录成功直接落匹配视图(邮箱路径 onDone,
                Google 路径 returnTo),不再回列表让用户再点一次(Frank「点我的匹配也一样」) */
-            onDone={() => { if (upsell === 'login') window.location.href = '/?view=match'; else window.location.reload() }}
+            onDone={async () => {
+              if (upsell === 'quiz' && pendingQuiz) { await quizToProfile(pendingQuiz) }   // 三问答案 → 档案(不让用户填两遍)
+              if (upsell === 'login') window.location.href = '/?view=match'; else window.location.reload()
+            }}
             returnTo={upsell === 'login' ? '/?view=match' : undefined} />)}
     </div>
   )
