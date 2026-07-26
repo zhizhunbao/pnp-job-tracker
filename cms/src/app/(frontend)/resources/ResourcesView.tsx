@@ -58,7 +58,6 @@ export function ResourcesView() {
           </section>
         ))}
 
-        <p style={{ fontSize: 11.5, color: '#9ca3af', lineHeight: 1.6, marginTop: 8 }}>{t('res.note')}</p>
       </div>
       <SiteFooter t={t} maxWidth={1320} />
     </div>

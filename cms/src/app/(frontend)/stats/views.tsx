@@ -85,7 +85,6 @@ export function StatsIndexContent({ rows, srcs, t, provExtra = {} }: { rows: Sta
         })}
       </div>
       {/* IRCC 年份口径一行说清,不在每卡重复(第25轮「同句重复=废话」口径) */}
-      <div style={{ fontSize: 11.5, color: '#9ca3af', margin: '-8px 0 14px' }}>{t('stats.cardNote')}</div>
       <StatsCharts rows={rows} t={t} />
       <div style={{ marginTop: 14 }}>
         <a href="/stats/compare" style={{ fontSize: 13, color: '#2563eb', textDecoration: 'none' }}><IconScale /> {t('stats.compare')} →</a>

@@ -153,7 +153,6 @@ export function ProfileForm({ t, userId, initial, onSaved }: { t: TFn; userId: s
       {/* 工签剩余(§3.4):区间单选。诚实注:match v1 不消费 PGWP */}
       <div style={lbl}>{t('prof.pgwp')}</div>
       <BucketRow opts={PGWP_OPTS} active={pgwpActive(pgwp)} onPick={(v) => setPgwp(v)} />
-      <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>{t('prof.pgwpNote')}</div>
 
       {/* 目标省(§3.4:省份多选 chips) */}
       <div style={lbl}>{t('prof.prov')}</div>

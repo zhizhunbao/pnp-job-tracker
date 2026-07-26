@@ -33,7 +33,7 @@ export function readQuiz(): (QuizAnswers & { done?: boolean }) | null {
   try { const s = localStorage.getItem(QUIZ_KEY); return s ? JSON.parse(s) : null } catch { return null }
 }
 
-export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, startAt }: {
+export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, startAt, stats }: {
   t: TFn
   lang: string
   onClose: () => void                      // 关闭/跳过:置位不再弹
@@ -41,6 +41,10 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
   onApply: (a: QuizAnswers) => void        // 结果页「看这些岗」:把答案套进列表筛选
   initial?: QuizAnswers | null             // 重答:预填上次答案(填错/跳过了都能回来改)
   startAt?: 0 | 3                          // 3=直接落结果页(「看上次结果」入口)
+  // Frank 2026-07-26「现在设计这么简陋,用户一看以为是钓鱼网站」:全屏页必须自证身份 ——
+  // 品牌头 + **库内真数字**(在招/命中省提名清单/有外劳雇佣记录的雇主/最近核对时间)。数字由调用方传,
+  // 与横幅同一份口径(不另查、不写死)。
+  stats?: { total?: number; named?: number; lmia?: number; checkedAt?: string }
 }) {
   const [step, setStep] = useState<number>(startAt ?? 0)   // 0/1/2 = 三题;3 = 结果
   const [status, setStatus] = useState(initial?.status || '')
@@ -126,7 +130,7 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
     borderRadius: 0, padding: '32px 20px 28px', overflowY: 'auto',
     display: 'flex', flexDirection: 'column',   // 纵向居中交给媒体查询(内联样式会压过 CSS 类,别在这写 justifyContent)
   }
-  const inner: React.CSSProperties = { maxWidth: 720, width: '100%', margin: '0 auto' }
+  const inner: React.CSSProperties = { maxWidth: 1040, width: '100%', margin: '0 auto' }   // 全屏两栏,窄了右栏会挤
   const opt = (on: boolean): React.CSSProperties => ({
     border: `1px solid ${on ? '#2563eb' : '#e5e7eb'}`, background: on ? '#eff6ff' : '#fff',
     color: on ? '#1d4ed8' : '#1f2937', fontWeight: on ? 600 : 400,
@@ -135,15 +139,31 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
   const pickedChip: React.CSSProperties = { fontSize: 11.5, color: '#1d4ed8', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 999, padding: '2px 9px' }
   const provName = (p: string) => t('prov.' + p) !== 'prov.' + p ? t('prov.' + p) : p
 
+  // Frank 2026-07-26「这个入口还是需要重新设计一下,专业、信任、能留住用户;现在这么简陋像钓鱼网站」:
+  // 全屏页三件事自证身份 —— ①站名与定位(用户得知道自己在哪);②**库里的真数字**(在招、命中省提名清单、
+  // 有外劳雇佣记录的雇主)+ 最近核对时间;③官方数据来源署名。这些都是事实,不是宣传语。
+  const num = (n?: number) => (n == null ? '' : n.toLocaleString('en-CA'))
+  const trust = [
+    stats?.total ? [num(stats.total), t('quiz.tr.jobs')] : null,
+    stats?.named ? [num(stats.named), t('quiz.tr.named')] : null,
+    stats?.lmia ? [num(stats.lmia), t('quiz.tr.lmia')] : null,
+  ].filter(Boolean) as [string, string][]
+
   return (
-    <div className="eqWrap" style={{ position: 'fixed', inset: 0, background: '#fff', zIndex: 80, display: 'flex' }}>
-      {/* 桌面全屏下内容若顶到最上,下面三分之二是空白 → 垂直居中;手机内容本就占满,保持顶部对齐 */}
-      <style>{'@media (min-width:641px){.eqSheet{justify-content:center}}'}</style>
-      {/* 全屏后没有「点旁边关掉」这个出口 → 右上角常驻关闭钮(底部「先随便看看」照旧在) */}
-      <button onClick={skip} aria-label={t('quiz.skip')}
-        style={{ position: 'absolute', top: 12, right: 16, border: 'none', background: 'none', color: '#9ca3af', fontSize: 24, lineHeight: 1, cursor: 'pointer', padding: 6, zIndex: 1 }}>×</button>
+    <div className="eqWrap" style={{ position: 'fixed', inset: 0, background: '#fff', zIndex: 80, display: 'flex', flexDirection: 'column' }}>
+      <style>{`@media (min-width:861px){.eqCols{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:44px;align-items:start}.eqSheet{justify-content:center}}
+        @media (max-width:860px){.eqAside{border-top:1px solid #f3f4f6;margin-top:18px;padding-top:14px}}`}</style>
+      {/* ① 品牌头:站名 + 定位 + 关闭。全屏页没有这条,用户不知道自己在哪个站(这正是「像钓鱼」的来源) */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 20px', borderBottom: '1px solid #f3f4f6', flexShrink: 0 }}>
+        <span style={{ fontSize: 17, fontWeight: 700, color: '#111827', whiteSpace: 'nowrap' }}>🍁 Offer2PR</span>
+        <span style={{ fontSize: 12, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('tagline')}</span>
+        <button onClick={skip} aria-label={t('quiz.skip')}
+          style={{ marginLeft: 'auto', border: 'none', background: 'none', color: '#9ca3af', fontSize: 24, lineHeight: 1, cursor: 'pointer', padding: 4 }}>×</button>
+      </div>
       <div className="eqSheet" style={sheet}>
         <div style={inner}>
+        <div className="eqCols">
+        <div>
         {step < 3 ? (
           <>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11.5, color: '#9ca3af', marginBottom: 10 }}>
@@ -161,7 +181,7 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
             ) : null}
             {step === 0 && (
               <>
-                <div style={{ fontSize: 17, fontWeight: 700, margin: '2px 0 4px' }}>{t('quiz.q1')}</div>
+                <div style={{ fontSize: 21, fontWeight: 700, margin: '2px 0 6px', color: '#111827' }}>{t('quiz.q1')}</div>
                 <div style={{ fontSize: 12.5, color: '#6b7280', marginBottom: 12 }}>{t('quiz.lead')}</div>
                 {STATUS_SLUGS.map((s) => (
                   <button key={s} onClick={() => { setStatus(s); track('quiz-step', { step: '0' }); setStep(1) }} style={opt(status === s)}>{t('quiz.st.' + s)}</button>
@@ -171,7 +191,7 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
             )}
             {step === 1 && (
               <>
-                <div style={{ fontSize: 17, fontWeight: 700, margin: '2px 0 4px' }}>{t('quiz.q2')}</div>
+                <div style={{ fontSize: 21, fontWeight: 700, margin: '2px 0 6px', color: '#111827' }}>{t('quiz.q2')}</div>
                 <div style={{ fontSize: 12.5, color: '#6b7280', marginBottom: 12 }}>{t('quiz.q2sub')}</div>
                 <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('quiz.q2ph')} enterKeyHint="search"
                   style={{ width: '100%', boxSizing: 'border-box', height: 42, padding: '0 12px', border: '1px solid #d1d5db', borderRadius: 10, fontSize: 14.5, background: '#fafafa', marginBottom: 10 }} />
@@ -201,7 +221,7 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
             )}
             {step === 2 && (
               <>
-                <div style={{ fontSize: 17, fontWeight: 700, margin: '2px 0 4px' }}>{t('quiz.q3')}</div>
+                <div style={{ fontSize: 21, fontWeight: 700, margin: '2px 0 6px', color: '#111827' }}>{t('quiz.q3')}</div>
                 <div style={{ fontSize: 12.5, color: '#6b7280', marginBottom: 12 }}>{t('quiz.q3sub')}</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 14 }}>
                   {PROVS.map((p) => {
@@ -231,6 +251,25 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
             onApply={() => { track('quiz-apply'); onApply(answers) }}
             onClose={() => { save(true); onClose() }} />
         )}
+        </div>
+        {/* ② 右栏(窄屏折到下方):库内真数字 + 最近核对 + 官方来源署名 —— 全部是事实,不是宣传语 */}
+        <aside className="eqAside">
+          {trust.length ? (
+            <div style={{ background: '#f9fafb', border: '1px solid #f3f4f6', borderRadius: 12, padding: '14px 16px' }}>
+              {trust.map(([n, label], i) => (
+                <div key={label} style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: i ? 8 : 0 }}>
+                  <span style={{ fontSize: 19, fontWeight: 700, color: '#1d4ed8', fontVariantNumeric: 'tabular-nums' }}>{n}</span>
+                  <span style={{ fontSize: 12.5, color: '#4b5563' }}>{label}</span>
+                </div>
+              ))}
+              {stats?.checkedAt ? (
+                <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 10 }}>{t('updated', { t: stats.checkedAt })}</div>
+              ) : null}
+            </div>
+          ) : null}
+          <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 10, lineHeight: 1.7 }}>{t('quiz.tr.src')}</div>
+        </aside>
+        </div>
         </div>
       </div>
     </div>

@@ -1658,6 +1658,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       {wizard && <OnboardingWizard t={t} initial={plan.profile} onClose={closeWizard} />}
       {quiz && !wizard && (
         <EntryQuiz t={t} lang={lang} initial={quiz.redo || quiz.result ? quizSaved : null} startAt={quiz.result ? 3 : 0}
+          stats={{ total: totalCount ?? total, named: proof?.named, lmia: proof?.lmia, checkedAt: updatedAt ? fmtLocal(updatedAt) : undefined }}
           onClose={() => { setQuiz(false); setQuizSaved(readQuiz()) }} onApply={applyQuiz}
           onRegister={(a) => { setQuiz(false); setPendingQuiz(a); setUpsell('quiz') }} />
       )}
