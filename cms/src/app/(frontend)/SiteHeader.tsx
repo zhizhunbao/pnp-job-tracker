@@ -4,7 +4,8 @@
 // /jobs 特有件走 props:matchButton(「我的匹配」切换态)/accountArea(带 plan 的完整账户下拉)/sticky/searchBar。
 // 二级页缺省:matchButton 不传=链接 /?view=match;accountArea 不传=AccountLite(登录=头像药丸,未登录=登录/注册)。
 // E8-07 C/D/E(2026-07-20 内容站骨架借鉴批):
-//   C=窄屏(≤640)header 下挂通栏搜索带(searchBar 槽:jobs 传受控输入保即时筛选;缺省=form 提交跳 /?q=);
+//   C=窄屏通栏搜索带**已退役**(Frank 2026-07-26:「搜索框怎么跑 banner 上面去了」「怎么所有页面都加了这个搜索框」)——
+//     搜索只留 /jobs 筛选区首格(banner 之下,手机整行独占);其余页要搜索先回首页。要恢复看 git 史 062e130。
 //   D=窄屏汉堡开左侧 4/5 宽侧滑抽屉(条目圆角块,资讯组 chevron 抽屉内展开二级,遮罩/×关,当前页高亮);
 //   E=桌面下拉统一 hover 开(离开 150ms 延时关防抖,键盘 focus 同样可开)——资料库改 hover,新增「资讯 ▾」聚合
 //     (移民新闻+政策时间线;时间线首次获得顶栏入口)。榜单/统计保持顶级不并组(IA 大改另拍)。
@@ -127,14 +128,13 @@ function MobileDrawer({ t, active, showAcctTab, onClose }: { t: TFn; active?: st
   )
 }
 
-export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, accountArea, loggedIn, searchBar }: {
+export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, accountArea, loggedIn }: {
   lang: Lang; setLang: (l: Lang) => void; t: TFn
   active?: 'rank' | 'stats' | 'account' | 'pathways' | 'news' | 'employers'
   sticky?: boolean
   matchButton?: { active: boolean; onClick: () => void }
   accountArea?: React.ReactNode
   loggedIn?: boolean   // 宿主已知登录态时传入(/jobs 走 plan);不传=本组件自查 /api/users/me
-  searchBar?: React.ReactNode   // C 件:窄屏搜索带内容(jobs 传受控输入;不传=form 提交跳 /?q=)
 }) {
   // 登录态上提(2026-07-19 Frank:「我的账户模块应该是登录之后才显示」)——原 AccountLite 私有 fetch
   // 提到 header 级,导航「我的账户」与右端账户区共用;loading 期间按未登录处理(不闪入口)
@@ -169,7 +169,7 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
         {/* 方案 A(2026-07-17 用户拍板,与 /jobs 顶栏同款):导航/操作两组+竖线分隔;窄屏竖线隐藏。
             副标语 <1350px 隐藏(Frank 2026-07-18「长度自己换行了」——先牺牲标语保导航一行)。
             E8-07 D:≤640 平铺导航整组隐藏(汉堡抽屉接管),右端语言/账户保留。 */}
-        <style>{`@media (max-width:640px){.shDivider{display:none}.shNav{display:none !important}.shBurger{display:inline-block !important}.shSearch{display:block !important}}
+        <style>{`@media (max-width:640px){.shDivider{display:none}.shNav{display:none !important}.shBurger{display:inline-block !important}}
           @media (max-width:1350px){.shTagline{display:none}}`}</style>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, maxWidth: '100%', flexWrap: 'wrap' }}>
           <div className="shNav" style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
@@ -207,15 +207,8 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
           </div>
         </div>
       </div>
-      {/* C 件:窄屏通栏搜索带(桌面藏;sticky 时随 header 一起吸顶)。jobs 传受控输入;缺省=GET / 提交(?q= 深链语义 #92 已有) */}
-      <div className="shSearch" style={{ display: 'none', maxWidth: 1320, margin: '0 auto', padding: '0 1.25rem 10px' }}>
-        {searchBar ?? (
-          <form action="/" method="get" style={{ margin: 0 }}>
-            <input name="q" placeholder={t('search.placeholder')} enterKeyHint="search"
-              style={{ width: '100%', boxSizing: 'border-box', height: 38, padding: '0 12px', border: '1px solid #d1d5db', borderRadius: 10, fontSize: 14, color: '#1f2937', background: '#fafafa' }} />
-          </form>
-        )}
-      </div>
+      {/* C 件:窄屏通栏搜索带(桌面藏;sticky 时随 header 一起吸顶)。jobs 传受控输入;缺省=GET / 提交(?q= 深链语义 #92 已有)。
+          hideSearch=页面自己在 banner 下有搜索框(/jobs),不在顶栏再挂一条 */}
       {drawer && <MobileDrawer t={t} active={active} showAcctTab={showAcctTab} onClose={() => setDrawer(false)} />}
     </header>
   )

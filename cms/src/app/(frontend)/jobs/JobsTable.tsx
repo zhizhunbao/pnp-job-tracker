@@ -1027,6 +1027,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           .jtCtl select,.jtCtl button,.jtCtl input{min-height:40px}
           .jtStar{min-width:40px;min-height:40px;display:inline-flex;align-items:center;justify-content:center;margin:-8px -8px -8px 0}
           /* 星标热区靠负 margin 抵消,视觉不变;其余小靶一律走全局 .tapPad(伪元素扩热区) */
+          /* 搜索框手机端整行独占(顶栏搜索带已退役,搜索归筛选区首格) */
+          .jtSearch{flex:1 0 100% !important;height:40px}
           .jtHideNarrow{display:none !important}
           .jtTableWrap{display:none !important}
           .jtCards{display:flex}
@@ -1039,9 +1041,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} sticky loggedIn={plan.loggedIn}
         matchButton={{ active: matchView, onClick: toggleMatchView }}
         accountArea={<AccountArea t={t} plan={plan} />}
-        searchBar={/* E8-07 C:窄屏常驻搜索=同一 q state(即时筛选不刷页);筛选区原输入窄屏藏(jtHideNarrow) */
-          <input placeholder={t('search.placeholder')} value={q} onChange={(e) => setQ(e.target.value)} enterKeyHint="search"
-            style={{ width: '100%', boxSizing: 'border-box', height: 38, padding: '0 12px', border: '1px solid #d1d5db', borderRadius: 10, fontSize: 14, color: '#1f2937', background: '#fafafa' }} />} />
+        />{/* Frank 2026-07-26「搜索框怎么跑 banner 上面去了」「怎么所有页面都加了这个搜索框」:
+          E8-07 C 顶栏搜索带全站退役,搜索回到筛选区第一格(banner 之下),手机整行独占 */}
       {/* 榜单/统计弹窗已退役(2026-07-11 用户拍板顶栏改跳转页面);/stats 页「看职位」?prov=&broad= 回流照旧 */}
       {/* 价值横幅退役(#65 收尾,Frank:「不需要两个蓝条」)——建档 CTA 并进下方 Jobs 页头右槽 */}
       <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1rem 1.25rem 1.5rem', width: '100%', boxSizing: 'border-box', flex: '1 0 auto' }}>
@@ -1125,7 +1126,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               窄屏抽屉(jtDrawerToggle)一并退役——一行+折叠对窄屏同样成立,靠 flexWrap 自然换行。
               右端=更新时间+字段钮(#56 拍板延续)。市/区、中/小类仍是省/大类的联动下级,只在折叠区出现。 ═══ */}
           <div className="jtCtl" style={filtRow}>
-            <input className="jtHideNarrow" placeholder={t('search.placeholder')} value={q} onChange={(e) => setQ(e.target.value)} style={{ ...ctrl, flex: '0 1 260px', minWidth: 160 }} />
+            <input className="jtSearch" placeholder={t('search.placeholder')} value={q} onChange={(e) => setQ(e.target.value)} enterKeyHint="search" style={{ ...ctrl, flex: '0 1 260px', minWidth: 160 }} />
             <Sel value={fProv} onChange={(v) => { setFProv(v); setFCity(''); setFDistrict('') }} opts={provOpts} all={t('all.prov')} />
             <Sel value={fBroad} onChange={(v) => { setFBroad(v); setFMid(''); setFFine('') }} opts={broadOpts} all={t('all.broad')} labelOf={broadLabel} />
             <Sel value={fPnp} onChange={setFPnp} opts={['yes', 'no']} all={t('all.pnp')} labelOf={(v) => t('opt.' + v)} />
