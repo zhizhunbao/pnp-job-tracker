@@ -23,9 +23,21 @@ description: 对 offer2pr.com 生产站跑一轮迭代式整改:全量截图(电
 
 改动合并为一个 commit(git 身份 Wang Peng、不带 Co-Authored-By,repo 已配置)。**push main = 直接上生产**(Render Auto-Deploy=On):push 前确认没动 collection schema(动了要先给 Supabase 补列,B4 事故教训);push 后等部署完成再进下一步(约 2-4 分钟,`curl -s -o /dev/null -w "%{http_code}" https://offer2pr.com/jobs` 200 且改动可见为准)。
 
-### 第 2 步 · 全量截图(两端)
+### 第 2 步 · 无截图体检(默认)→ 只对命中项截图
 
-依次跑捆绑脚本(系统 python,Playwright 只装在系统 python 里,别用 uv venv):
+**2026-07-26(第 26 轮)起改这一步**:先跑体检脚本量出可疑清单,再只对命中项补拍 3-5 张。
+截图占走查开销八九成,而查出来的问题绝大多数能用 DOM 量(设计:`docs/design/无截图体检-20260726.md`)。
+
+```bash
+python .claude/skills/iterate-audit/scripts/checkup.py --round <N> --out <scratchpad>/checkup-<N>.json
+```
+
+两视口 × 三语 × 匿名/测试号,~7 分钟,输出 JSON + **只打命中项**的终端摘要(规则 R1-R14:裸词、三语残留、
+重复、占位符、折行截断、出屏、重叠、触控靶、手型一致、死链、数字对库、空态、console、4xx/LCP)。
+逐条判真伪后,**只对真命中拍图确认**(照第 3 步看图);拍法复用下面两个 capture 脚本里的手法。
+留白舒适度、配色、"好不好看"脚本一条都不查——那些必须眼睛看,而且 Frank 自己判断比模型准。
+
+**全量截图轮改为按需**(大改版后、或 Frank 要看整体版面时),跑捆绑脚本(系统 python,Playwright 只装在系统 python 里,别用 uv venv):
 
 ```bash
 python .claude/skills/iterate-audit/scripts/capture_desktop.py --out <scratchpad>/shots
