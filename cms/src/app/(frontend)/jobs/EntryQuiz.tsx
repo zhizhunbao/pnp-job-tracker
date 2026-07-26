@@ -48,6 +48,10 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
   const [provs, setProvs] = useState<string[]>(initial?.provs || [])
   const [q, setQ] = useState('')
   const [cands, setCands] = useState<{ noc: string; title: string; titleZh: string }[]>([])
+  // Frank 2026-07-26「这个弹框看着还是太单薄了」:热门职业按钮挂**真在招数** —— 光一排职业名
+  // 既没信息也没说服力,挂上库里的数才是这个站与普通问卷的差别。一次拿全,不逐个查。
+  const [counts, setCounts] = useState<Record<string, { open: number; eligible: number }>>({})
+  const [nocTitle, setNocTitle] = useState('')   // 已选职业名(第 3 题顶部回显,让用户看见自己答到哪了)
   const [facts, setFacts] = useState<QuizFacts | null | 'loading'>(null)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -60,6 +64,21 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
     fetch(`/api/quiz?noc=${encodeURIComponent(noc)}`)
       .then((r) => r.json()).then((d) => setFacts(d?.facts ?? null)).catch(() => setFacts(null))
   }, [])   // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    fetch(`/api/quiz?counts=${POPULAR_NOCS.map((p) => p.noc).join(',')}`)
+      .then((r) => r.json()).then((d) => setCounts(d?.counts || {})).catch(() => { /* 没数就不显示,不挡答题 */ })
+  }, [])
+
+  // 进第 3 题即预取该职业事实:省按钮直接挂「该省多少岗」(Frank「弹框太单薄」——
+  // 让用户在**选省的当下**就看见各省行情,而不是答完才知道;端点与结果页同一个,结果页因此也秒开)
+  useEffect(() => {
+    const noc = nocs[0]
+    if (step !== 2 || !noc || facts) return
+    setFacts('loading')
+    fetch(`/api/quiz?noc=${encodeURIComponent(noc)}`)
+      .then((r) => r.json()).then((d) => setFacts(d?.facts ?? null)).catch(() => setFacts(null))
+  }, [step, nocs, facts])
 
   // 第 2 题搜索:250ms 防抖,≥2 字才打后端(库内 ILIKE,≤8 条)
   useEffect(() => {
@@ -81,6 +100,7 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
     setStep(3)
     const noc = nocs[0]
     if (!noc) { setFacts(null); return }
+    if (facts && facts !== 'loading' && facts.noc === noc) return   // 第 3 题已预取,别再打一次
     setFacts('loading')
     fetch(`/api/quiz?noc=${encodeURIComponent(noc)}`)
       .then((r) => r.json()).then((d) => setFacts(d?.facts ?? null))
@@ -108,6 +128,7 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
     color: on ? '#1d4ed8' : '#1f2937', fontWeight: on ? 600 : 400,
     borderRadius: 10, padding: '12px 14px', fontSize: 14.5, marginBottom: 8, cursor: 'pointer', width: '100%', textAlign: 'left',
   })
+  const pickedChip: React.CSSProperties = { fontSize: 11.5, color: '#1d4ed8', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 999, padding: '2px 9px' }
   const provName = (p: string) => t('prov.' + p) !== 'prov.' + p ? t('prov.' + p) : p
 
   return (
@@ -122,6 +143,13 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
                 <i style={{ display: 'block', height: '100%', width: `${((step + 1) / 3) * 100}%`, background: '#2563eb' }} />
               </span>
             </div>
+            {/* Frank「弹框太单薄」二:把已答的两题回显出来 —— 三步问答只给一句话时,用户看不见自己的进展 */}
+            {step > 0 && (status || nocTitle) ? (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+                {status ? <span style={pickedChip}>{t('quiz.st.' + status)}</span> : null}
+                {nocTitle ? <span style={pickedChip}>{nocTitle}</span> : null}
+              </div>
+            ) : null}
             {step === 0 && (
               <>
                 <div style={{ fontSize: 17, fontWeight: 700, margin: '2px 0 4px' }}>{t('quiz.q1')}</div>
@@ -141,7 +169,7 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
                 {cands.length > 0 && (
                   <div style={{ marginBottom: 10 }}>
                     {cands.map((c) => (
-                      <button key={c.noc} onClick={() => { setNocs([c.noc]); setQ(''); setCands([]); track('quiz-step', { step: '1' }); setStep(2) }} style={opt(nocs[0] === c.noc)}>
+                      <button key={c.noc} onClick={() => { setNocs([c.noc]); setNocTitle(lang === 'zh' && c.titleZh ? c.titleZh : c.title); setQ(''); setCands([]); track('quiz-step', { step: '1' }); setStep(2) }} style={opt(nocs[0] === c.noc)}>
                         {lang === 'zh' && c.titleZh ? c.titleZh : c.title}
                         <span style={{ color: '#9ca3af', fontSize: 12, marginLeft: 6 }}>{c.noc}</span>
                       </button>
@@ -149,9 +177,16 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
                   </div>
                 )}
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-                  {POPULAR_NOCS.map((p) => (
-                    <button key={p.noc} onClick={() => { setNocs([p.noc]); track('quiz-step', { step: '1' }); setStep(2) }} style={chipStyle(nocs[0] === p.noc)}>{t(p.key)}</button>
-                  ))}
+                  {POPULAR_NOCS.map((p) => {
+                    const c = counts[p.noc]
+                    return (
+                      <button key={p.noc} onClick={() => { setNocs([p.noc]); setNocTitle(t(p.key)); track('quiz-step', { step: '1' }); setStep(2) }}
+                        style={{ ...chipStyle(nocs[0] === p.noc), display: 'inline-flex', alignItems: 'baseline', gap: 6 }}>
+                        {t(p.key)}
+                        {c ? <span style={{ fontSize: 11.5, color: '#9ca3af' }}>{t('quiz.openN', { n: c.open.toLocaleString('en-CA') })}</span> : null}
+                      </button>
+                    )
+                  })}
                 </div>
               </>
             )}
@@ -162,7 +197,14 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 14 }}>
                   {PROVS.map((p) => {
                     const on = provs.includes(p)
-                    return <button key={p} onClick={() => setProvs(on ? provs.filter((x) => x !== p) : [...provs, p])} style={chipStyle(on)}>{provName(p)}</button>
+                    const n = facts && facts !== 'loading' ? facts.byProv.find((r) => r.province === p)?.n : undefined
+                    return (
+                      <button key={p} onClick={() => setProvs(on ? provs.filter((x) => x !== p) : [...provs, p])}
+                        style={{ ...chipStyle(on), display: 'inline-flex', alignItems: 'baseline', gap: 6 }}>
+                        {provName(p)}
+                        {n ? <span style={{ fontSize: 11.5, color: '#9ca3af' }}>{t('quiz.jobsN', { n })}</span> : null}
+                      </button>
+                    )
                   })}
                 </div>
                 <Button kind="primary" onClick={next} style={{ width: '100%', padding: '12px 0', fontSize: 15 }}>
@@ -170,7 +212,9 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
                 </Button>
               </>
             )}
-            <div onClick={skip} style={{ textAlign: 'center', fontSize: 12.5, color: '#9ca3af', marginTop: 12, cursor: 'pointer' }}>{t('quiz.skip')}</div>
+            {/* Frank「弹框太单薄」三:说清答完能拿到什么(库内真数,不是承诺) */}
+            <div style={{ marginTop: 14, paddingTop: 10, borderTop: '1px solid #f3f4f6', fontSize: 12, color: '#6b7280', lineHeight: 1.6 }}>{t('quiz.payoff')}</div>
+            <div onClick={skip} style={{ textAlign: 'center', fontSize: 12.5, color: '#9ca3af', marginTop: 10, cursor: 'pointer' }}>{t('quiz.skip')}</div>
           </>
         ) : (
           <QuizResult t={t} lang={lang} answers={answers} facts={facts} provName={provName}
@@ -221,7 +265,8 @@ function QuizResult({ t, lang, answers, facts, provName, onRegister, onApply, on
         <div style={{ fontSize: 13, color: '#1e40af', lineHeight: 1.75 }}>
           {t('quiz.sum', { open: facts.open.toLocaleString('en-CA'), elig: facts.eligible.toLocaleString('en-CA') })}
           {facts.named > 0 && facts.streams[0] ? ' ' + t('quiz.sumNamed', { n: facts.named, s: facts.streams[0].stream }) : ''}
-          {facts.teer != null ? ' ' + t('quiz.sumTeer', { teer: facts.teer }) : ''}
+          {/* 原来这里挂一句「TEER x —— 多数省提名通道门槛卡在 TEER 0-3」:与本人无关的通用科普,
+              且上一句「其中 N 个可提名」已经回答了同一个问题(Frank 2026-07-26「这种都属于废话」)→ 删 */}
         </div>
       </div>
       <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '13px 14px', marginBottom: 12 }}>

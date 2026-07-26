@@ -613,6 +613,22 @@ export async function fetchQuizFacts(pool: any, noc: string): Promise<QuizFacts 
   }
 }
 
+/**
+ * 入口三问第 2 题的热门职业在招数(Frank 2026-07-26「这个弹框看着还是太单薄了」)。
+ * 光铺职业名的按钮既没信息也没说服力;挂上「在招 / 其中可提名」两个真数才是这个站的本事。
+ * 一条 GROUP BY 出全部,不逐个查(懒查规矩是针对公司级数据,这里是聚合数)。
+ */
+export async function fetchNocOpenCounts(pool: any, nocs: string[]): Promise<Record<string, { open: number; eligible: number }>> {
+  const list = nocs.filter((n) => /^\d{5}$/.test(n))
+  if (!list.length) return {}
+  const { rows } = await pool.query(
+    `SELECT j.noc, count(*)::int n, count(*) FILTER (WHERE j.pnp_eligible)::int eligible
+     FROM jobs j WHERE j.status = 'open' AND j.noc = ANY($1) GROUP BY j.noc`, [list])
+  const out: Record<string, { open: number; eligible: number }> = {}
+  for (const r of rows) out[r.noc] = { open: r.n, eligible: r.eligible }
+  return out
+}
+
 /** 入口三问第 2 题的职业搜索:按中/英职业名模糊找 NOC(noc_descriptions 维度表,≤8 条) */
 export async function searchNocByTitle(pool: any, q: string): Promise<{ noc: string; title: string; titleZh: string }[]> {
   const s = q.trim()

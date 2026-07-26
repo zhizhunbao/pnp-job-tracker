@@ -7,7 +7,7 @@
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import { fetchQuizFacts, searchNocByTitle } from '@/lib/jobsSql'
+import { fetchNocOpenCounts, fetchQuizFacts, searchNocByTitle } from '@/lib/jobsSql'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -20,6 +20,9 @@ export async function GET(req: Request) {
   const pool = (payload.db as any).pool
 
   if (q) return Response.json({ candidates: await searchNocByTitle(pool, q) })
+  // ?counts=21232,63200 → 这些 NOC 的在招/可提名数(第 2 题热门职业按钮挂真数)
+  const counts = (sp.get('counts') || '').split(',').map((x) => x.trim()).filter(Boolean).slice(0, 30)
+  if (counts.length) return Response.json({ counts: await fetchNocOpenCounts(pool, counts) })
   if (!noc) return Response.json({ error: 'noc or q required' }, { status: 400 })
 
   const facts = await fetchQuizFacts(pool, noc)
