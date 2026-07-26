@@ -1426,8 +1426,14 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                         else if (blockedKeys.pnp.has(j.province + '|' + j.noc)) { node = t('cell.pnpExcl'); Object.assign(extra, { whiteSpace: 'nowrap', color: '#b91c1c', fontSize: 12.5 }) }
                         else { node = '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#9ca3af', fontSize: 12.5 }) }  // 弱:不符
                       }
-                      else if (k === 'ee') {  // 联邦 EE 类别抽选(全国单一源,数据层算);命中→蓝,未列入→—
-                        node = j.eeCategory ? eeDisplay(t, j.eeCategory) : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.eeCategory ? '#2563eb' : '#d1d5db', fontSize: 12.5 })
+                      else if (k === 'ee') {  // 联邦 EE 类别抽选(全国单一源,数据层算);命中→蓝,未列入→—;休眠类别→灰+上次抽选
+                        const lastDraw = j.eeCategory ? eeLastDraw(j.eeCategory, dims.eeCategories) : ''
+                        const dormant = !!j.eeCategory && eeIsDormant(lastDraw)
+                        node = j.eeCategory
+                          ? <span title={dormant ? t('ee.dormantTip', { d: lastDraw.slice(0, 7) || '—' }) : undefined}>
+                              {eeDisplay(t, j.eeCategory)}{dormant ? t('ee.lastDraw', { d: lastDraw.slice(0, 7) || '—' }) : ''}</span>
+                          : '—'
+                        Object.assign(extra, { whiteSpace: 'nowrap', color: j.eeCategory ? (dormant ? '#9ca3af' : '#2563eb') : '#d1d5db', fontSize: 12.5 })
                       }
                       else if (k === 'aip') {
                         // E6-09:省里逐条点名「这些职业不受理背书」→ 结论压过「雇主在指定名单」(官方一律不受理)
@@ -1568,9 +1574,17 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       {/* 批A 追拍(Frank「可提名和可省提名有什么区别」——字面分不出):对齐桌面三档,
                           命中具名清单显清单名(BC 医疗),通用才显「可提名」;cell.pnpYes 死键退役 */}
                       {j.pnpEligible ? chip('#fef3c7', '#92400e', j.pnpStream ? streamDisplay(t, j.pnpStream) : t('cell.pnpSkilled'), 'pnp')
-                        : pnpExcl ? chip('#fee2e2', '#b91c1c', t('cell.pnpExcl'), 'pnp') : null}
-                      {j.eeCategory ? chip('#dbeafe', '#1e40af', 'EE ' + eeDisplay(t, j.eeCategory), 'ee') : null}
-                      {aipBlocked ? chip('#fee2e2', '#b91c1c', t('cell.aipBlocked'), 'aip')
+                        : pnpExcl ? chip('#fee2e2', '#b91c1c', aipBlocked ? t('cell.blockedBoth') : t('cell.pnpExcl'), 'pnp') : null}
+                      {j.eeCategory ? (() => {
+                        const lastDraw = eeLastDraw(j.eeCategory, dims.eeCategories)
+                        const dormant = eeIsDormant(lastDraw)
+                        return dormant
+                          ? chip('#f3f4f6', '#6b7280', 'EE ' + eeDisplay(t, j.eeCategory) + t('ee.lastDraw', { d: lastDraw.slice(0, 7) || '—' }), 'ee', t('ee.dormantTip', { d: lastDraw.slice(0, 7) || '—' }))
+                          : chip('#dbeafe', '#1e40af', 'EE ' + eeDisplay(t, j.eeCategory), 'ee')
+                      })() : null}
+                      {/* Frank 2026-07-26「不符合清单 职业不受理 需要两个胶囊吗」:两条都命中排除时卡上只出一枚
+                          「本省不受理」(点开 PNP 弹框逐条讲哪张清单);只命中一条时照旧——那说的是不同的事 */}
+                      {aipBlocked && !pnpExcl ? chip('#fee2e2', '#b91c1c', t('cell.aipBlocked'), 'aip')
                         : j.aip ? chip('#ffedd5', '#9a3412', t('cell.aipYes'), 'aip') : null}
                       {isQc ? chip('#f3e8ff', '#7c3aed', 'QC', 'province') : null}
                     </>)
@@ -1643,16 +1657,29 @@ type PnpStream = { stream: string; label: string; type: string; url: string; fet
 
 // 本省最近抽选事实块(E6-04)。score 是省自评分制(SIRS/WEOI/MPNP EOI),非 CRS —— 只陈列事实,不判定资格。
 // kind=notice(如 ON 2026-06 改制)渲染通告行;省内无数据(SK/QC 等)整块不出现。
+// 通道改制登记(Frank 2026-07-26「安省 旧通道已经关闭 再列历史没有意义」):
+// 某省整批通道被废止后,改制日之前的抽选属于**已不存在的通道** —— 照旧铺出来会让人以为还能走。
+// 这里只登记「改制日 + 一句现行说明」,行照旧显示但灰化并加注(历史是事实,不删;但要说清它已关闭)。
+// ON:O.Reg 47/26 废旧 9 流、204/26 立 Workforce Priority(2026-06)。新增省份往这加一行即可。
+const STREAM_REFORM: Record<string, { since: string; key: string }> = {
+  ON: { since: '2026-06-01', key: 'pnpdraws.reform.ON' },
+}
+
 function PnpDrawsBlock({ province, lang, draws, limit }: { province: string; lang: Lang; draws: PnpDraw[]; limit?: number }) {
   // limit(C2 走查拍板):省弹窗只留最近 1 条摘要(全量归 PNP 弹窗),消跨弹窗重复
   const t = makeT(lang)
-  const rows = draws.filter((d) => d.province === province).slice(0, limit || undefined)
+  const rows = draws.filter((d) => d.province === province)
+    // 脏行过滤:流名/分数/邀请数全空的行没有任何信息量(ON 2026-07-20 实测就是这种),不占位
+    .filter((d) => d.kind === 'notice' || d.stream || d.score != null || d.invitations != null)
+    .slice(0, limit || undefined)
+  const reform = STREAM_REFORM[province]
   if (!rows.length) return null
   const src = rows[0]
   return (
     <div>
       {/* Frank 走查#9:卡要正式 title(原小灰头提为 MODAL_CARD_HEAD);#G 去内层 marginBottom(外层卡已有底距) */}
       <div style={MODAL_CARD_HEAD}>{t('pnpdraws.title', { label: src.label })}</div>
+      {reform ? <div style={{ fontSize: 12, color: '#b45309', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '6px 10px', margin: '2px 0 6px', lineHeight: 1.7 }}>{t(reform.key)}</div> : null}
       {/* 2026-07-25 Frank 走查#12:抽选列表四列对齐(日期/流名/最低分/份邀请)——整块一个 grid,
           列宽跨行对齐(非逐行 flex);SIRS 口径脚注删(#11,「分数只与本省历史比」已是常识噪音)。
           notice 行跨全部列。 */}
@@ -1663,8 +1690,8 @@ function PnpDrawsBlock({ province, lang, draws, limit }: { province: string; lan
             <IconWarn /> {d.note ? `${d.drawDate} ${d.note}` : t('pnpdraws.notice', { date: d.drawDate })}
           </div>,
         ] : [
-          <span key={i + 'd'} style={{ paddingLeft: 10, fontVariantNumeric: 'tabular-nums', color: '#9ca3af', whiteSpace: 'nowrap', fontSize: 12.5 }}>{d.drawDate}</span>,
-          <span key={i + 's'} style={{ minWidth: 0, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12.5 }} title={d.note || d.stream}>{d.stream}</span>,
+          <span key={i + 'd'} style={{ paddingLeft: 10, fontVariantNumeric: 'tabular-nums', color: '#9ca3af', whiteSpace: 'nowrap', fontSize: 12.5, opacity: reform && d.drawDate < reform.since ? .55 : 1 }}>{d.drawDate}</span>,
+          <span key={i + 's'} style={{ minWidth: 0, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12.5, opacity: reform && d.drawDate < reform.since ? .55 : 1 }} title={d.note || d.stream}>{d.stream}</span>,
           <span key={i + 'm'} style={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'right', color: '#374151', fontSize: 12.5 }}>{d.score != null ? t('pnpdraws.min', { score: d.score }) : ''}</span>,
           <span key={i + 'i'} style={{ paddingRight: 10, color: '#6b7280', whiteSpace: 'nowrap', textAlign: 'right', fontSize: 12.5 }}>{d.invitations != null ? t('pnpdraws.inv', { n: d.invitations }) : ''}</span>,
         ])}
@@ -1708,12 +1735,20 @@ export function PnpListSection({ job, lang, occ, draws, news, nocDesc = [], show
   useEffect(() => { matchRef.current?.scrollIntoView({ block: 'nearest' }) }, [streams])
 
   const noc = job.noc, teer = job.teer, skilled = teer != null && teer <= 3
-  // 批A 追拍(Frank「可提名,但是显示却是这个」):判定行换直判药丸,与通道块/列头同一套语系(ch.* 键)
+  // 判定行(Frank 2026-07-26「有些岗显示可提名 但是点进去却显示走不了」):
+  // 根因=两套判定 —— 列表用服务端 pnp_eligible(08_score:排除式省 ON/AB 的 TEER 0-5 默认可),
+  // 弹框却自己写死 teer<=3。实测 ON 3,254 / AB 1,328 / SK 106 个岗两边打架。
+  // 修:**服务端 pnpEligible 是单一真相**,清单只负责解释「凭什么」,弹框不再自行判定能不能走。
   let verdictPill: React.ReactNode
+  let genericWhy = ''
   if (isQc) verdictPill = <VerdictPill tone="na">{t('ch.pnp.qc')}</VerdictPill>
   else if (excludedBy) verdictPill = <VerdictPill tone="fail">{t('ch.pnp.exl', { label: streamDisplay(t, excludedBy.label) })}</VerdictPill>
   else if (matched) verdictPill = <VerdictPill tone="ok">{t('ch.pnp.on', { label: streamDisplay(t, matched.label) })}</VerdictPill>
-  else if (skilled) verdictPill = <VerdictPill tone="ok">{t('ch.pnp.generic')}</VerdictPill>
+  else if (job.pnpEligible) {
+    verdictPill = <VerdictPill tone="ok">{t('ch.pnp.generic')}</VerdictPill>
+    // Frank 同批「显示走通用 但是不知道具体走的是什么」:把「凭什么算通用」写出来,别让用户猜
+    genericWhy = skilled ? t('ch.pnp.whySkilled', { teer: teer ?? '?' }) : t('ch.pnp.whyOpen', { prov: t('prov.' + job.province) || job.province, teer: teer ?? '?' })
+  }
   else verdictPill = <VerdictPill tone="na">{t('ch.pnp.no', { teer: teer ?? '?' })}</VerdictPill>
 
   return (
@@ -1724,6 +1759,9 @@ export function PnpListSection({ job, lang, occ, draws, news, nocDesc = [], show
       <div style={MODAL_CARD}>
         <div style={MODAL_CARD_HEAD}>{t('col.pnp')}</div>
         <div>{verdictPill}</div>
+        {genericWhy ? <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 6, lineHeight: 1.7 }}>{genericWhy}</div> : null}
+        {/* Frank「qc 没有对应的通道 也没有历史」:QC 不参加 PNP 是制度事实,不是缺数 —— 把它走的是什么说清 */}
+        {isQc ? <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 6, lineHeight: 1.7 }}>{t('ch.pnp.qcWhy')}</div> : null}
       </div>
       {!isQc && job.province && draws.some((d) => d.province === job.province) ? (
         <div style={MODAL_CARD}><PnpDrawsBlock province={job.province} lang={lang} draws={draws} /></div>
@@ -1787,6 +1825,24 @@ export function PnpListSection({ job, lang, occ, draws, news, nocDesc = [], show
 // ── 联邦 EE 类别抽选区(点 EE 字段时显示)──────────────────────
 // 与 PnpListSection 同理:清单来自 DB 维度表(ee-categories,经 props 传入),全国单一源。
 // 命中→只展开该类别清单 + 高亮本岗;未命中→只列出各类别名+数量概览。EE ≠ PNP,独立信号。
+// EE 类别「休眠」判定(Frank 2026-07-26「ee stem 好久没有抽人了吧」——实核:STEM 上次 2024-04、运输 2024-03、教育 2025-09)。
+// 12 个月内有抽选=活跃;超过=休眠。休眠类别照旧显示(历史归属是事实),但降级变灰并标上次抽选年月,
+// 免得用户把两年没抽的类别当活路。判定与展示都走这一处,别再各写一份。
+const EE_DORMANT_MONTHS = 12
+export function eeLastDraw(label: string, cats: { label: string; drawDate: string }[]): string {
+  let best = ''
+  for (const seg of (label || '').split('/').map((x) => x.trim())) {
+    for (const c of cats) if (c.label === seg && (c.drawDate || '') > best) best = c.drawDate || ''
+  }
+  return best
+}
+export function eeIsDormant(lastDraw: string): boolean {
+  if (!lastDraw) return true
+  const d = new Date(lastDraw + 'T00:00:00')
+  if (isNaN(d.getTime())) return true
+  return Date.now() - d.getTime() > EE_DORMANT_MONTHS * 30.4 * 86400000
+}
+
 type EeCat = { key: string; label: string; drawCrs: number | null; drawDate: string; drawSize: number | null; occupations: { noc: string; teer: number | null; title: string }[] }
 export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [], showZh = true }: { job: JobRow; lang: Lang; cats: EeOcc[]; draws?: PnpDraw[]; nocDesc?: NocDesc[]; showZh?: boolean }) {
   const t = makeT(lang)
@@ -1882,6 +1938,9 @@ export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [], s
           {drawsCats.some((c) => (histOf.get(c.key)?.length ?? 0) > 0) ? (
             <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 6 }}>{t('eelist.histNote')}</div>
           ) : null}
+          {/* Frank 2026-07-26「现在都是在抽 CEC 和法语吧」:类别抽选只是联邦抽选的一部分,
+              法语类别按语言能力判定、不按职业划,所以本表(按 NOC 建)里没有它 —— 不说清就会误判 */}
+          <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 6 }}>{t('eelist.federalNote')}</div>
         </div>
       ) : null}
       {shown.length ? (
