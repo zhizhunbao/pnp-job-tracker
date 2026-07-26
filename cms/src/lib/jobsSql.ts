@@ -277,7 +277,8 @@ export async function fetchJobRows(pool: any, { pro, profile, profileOk, matchDi
      ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT $1`, [limit])
   const m = makeMatcher(profile, profileOk, matchDims)
   const jobs = rows.map((j: any) => mapJobRow(j, pro, m.of(j)))
-  const updatedAt = rows.reduce((acc: string, j: any) => { const ls = iso(j.last_seen); return ls > acc ? ls : acc }, '')
+  // 原来取「前 50 行的最大 last_seen」→ 比全站还旧(首屏行未必是最近被确认的那批),与 /api/jobs 口径也不一致
+  const updatedAt = await checkedAt(pool)
   return { jobs, updatedAt, matchHigh: m.high(), matchMid: m.mid() }
 }
 
@@ -291,6 +292,25 @@ export type JobsPageOpts = {
 const countCache = new Map<string, { n: number; ts: number }>()
 const COUNT_TTL = 30_000
 let updCache: { v: string; ts: number } | null = null
+
+/** 页面上那个时间 =「最近核对」:最近一轮 seed 成功完成的时刻(etl_heartbeat,每小时一轮)。
+ * 2026-07-26 Frank「前端数据时间怎么没更新」→ 原口径是 max(last_seen)=「数据最后真的变了」,
+ * 午夜后 Job Bank 当天还没发岗(00:30 那轮实测 0 行)→ 数据确实没变,时间冻在昨晚,读起来像站死了。
+ * 心跳表未落地(部署时序)→ 退回 max(last_seen),列到位自动恢复。30s 缓存(与 count 同档)。 */
+export async function checkedAt(pool: any): Promise<string> {
+  const now = Date.now()
+  if (updCache && now - updCache.ts < COUNT_TTL) return updCache.v
+  let v = ''
+  try {
+    const r = await pool.query('SELECT last_seed FROM etl_heartbeat WHERE id = 1')
+    v = iso(r.rows[0]?.last_seed)
+  } catch (e: any) {
+    if (e?.code !== '42P01') throw e
+  }
+  if (!v) v = iso((await pool.query('SELECT max(last_seen) AS upd FROM jobs')).rows[0]?.upd)
+  updCache = { v, ts: now }
+  return v
+}
 
 /** E10-01:服务端筛选+排序+分页。返回当前页行 + 同 WHERE 总数(count)+ 全局 updatedAt(max last_seen)。 */
 // #125(批C,Frank「不要有重复」):同 公司×岗名×城市 多帖(多源聚合/同岗重发,open 里 ~1900 行)只显最新。
@@ -307,18 +327,17 @@ export async function fetchJobsPage(
   const now = Date.now()
   const cntKey = w.sql + '|' + JSON.stringify(w.params)
   const cachedCnt = countCache.get(cntKey)
-  const cachedUpd = updCache && now - updCache.ts < COUNT_TTL ? updCache.v : null
   const run = async (cond: string) => Promise.all([
     pool.query(`SELECT ${JOB_COLUMNS} ${JOB_FROM} WHERE ${w.sql} AND ${cond} ${order} LIMIT ${limPh} OFFSET ${offPh}`, [...w.params, pageSize, page * pageSize]),
     cachedCnt && now - cachedCnt.ts < COUNT_TTL ? null : pool.query(`SELECT count(*)::int n ${JOB_FROM} WHERE ${w.sql} AND ${cond}`, w.params),
-    cachedUpd ? null : pool.query(`SELECT max(last_seen) AS upd FROM jobs`),   // 全局新鲜度(与筛选无关)
+    checkedAt(pool),   // 全局新鲜度(与筛选无关;自带 30s 缓存)
   ])
-  let listRes, cntRes, updRes
+  let listRes, cntRes, upd
   try {
-    ;[listRes, cntRes, updRes] = await run(DEDUPE_COND)
+    ;[listRes, cntRes, upd] = await run(DEDUPE_COND)
   } catch (e: any) {
     if (e?.code !== '42703') throw e   // is_dup 列未落地(部署时序)→ 不去重降级,列到位自动恢复
-    ;[listRes, cntRes, updRes] = await run('TRUE')
+    ;[listRes, cntRes, upd] = await run('TRUE')
   }
   let total: number
   if (cntRes) {
@@ -326,9 +345,7 @@ export async function fetchJobsPage(
     if (countCache.size > 300) countCache.clear()   // 粗暴防涨,300 组筛选签名足够日常
     countCache.set(cntKey, { n: total, ts: now })
   } else total = cachedCnt!.n
-  let updatedAt: string
-  if (updRes) { updatedAt = iso(updRes.rows[0]?.upd); updCache = { v: updatedAt, ts: now } }
-  else updatedAt = cachedUpd!
+  const updatedAt = upd as string
   const m = makeMatcher(profile, profileOk, matchDims)
   const jobs = listRes.rows.map((j: any) => mapJobRow(j, pro, m.of(j)))
   return { jobs, total, updatedAt }

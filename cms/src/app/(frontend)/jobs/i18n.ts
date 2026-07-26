@@ -97,7 +97,7 @@ const zh: Dict = {
   // E12-08 尾巴(#126):公司四维行(拆解弹框参照区)
   // #123c:整理版 PAY 节帖面薪资兜底注
   'act.f.payFb': '(帖面薪资字段;原帖正文未写)',
-  'updated': '更新 {t}',
+  'updated': '核对 {t}',
   'tagline': '每日更新、全加拿大全职业、移民价值视角',
   'res.title': '官方资源导航', 'res.sub': '加拿大移民官方入口一页汇总:官方来源,可自行核实', 'res.go': '官方页', 'res.entry': '官方资源', 'res.search': '搜索官方资源…', 'res.empty': '没有匹配的资源',
   'res.note': '以上均为政府/官方机构页面,内容以官方发布为准;本站仅做整理归类,不控制其内容。链接失效或有补充请反馈。',
@@ -561,7 +561,7 @@ const en: Dict = {
   'gr.co.fm.wiki': 'on Wikipedia', 'gr.co.fm.provs': 'hiring in {n} provinces', 'gr.co.fm.open': '{n} open jobs',
   // #123c: formatted-JD PAY fallback note
   'act.f.payFb': '(from the posting’s pay field; not stated in the body)',
-  'updated': 'Updated {t}',
+  'updated': 'Checked {t}',
   'tagline': 'Daily updates, all of Canada, immigration-value lens',
   'res.title': 'Official resources', 'res.sub': 'Canadian immigration — official links in one place, verify for yourself', 'res.go': 'Official', 'res.entry': 'Official resources', 'res.search': 'Search official resources…', 'res.empty': 'No matching resources',
   'res.note': 'All links go to government/official pages; official publications prevail. We only organize them and do not control their content.',
@@ -1025,7 +1025,7 @@ const ko: Dict = {
   'gr.co.fm.wiki': '위키 등재', 'gr.co.fm.provs': '{n}개 주에서 채용', 'gr.co.fm.open': '채용 중 {n}건',
   // #123c: 정리본 PAY 급여 필드 대체 주석
   'act.f.payFb': '(공고 급여 필드 기준; 본문에는 없음)',
-  'updated': '{t} 업데이트',
+  'updated': '{t} 확인',
   'tagline': '매일 업데이트, 캐나다 전역, 이민 가치 관점',
   'res.title': '공식 자료 안내', 'res.sub': '캐나다 이민 공식 링크 한 페이지 모음, 직접 확인하세요', 'res.go': '공식', 'res.entry': '공식 자료', 'res.search': '공식 자료 검색…', 'res.empty': '일치하는 자료 없음',
   'res.note': '모두 정부/공식 기관 페이지이며 공식 발표가 우선합니다. 본 사이트는 정리만 하며 내용을 관리하지 않습니다.',

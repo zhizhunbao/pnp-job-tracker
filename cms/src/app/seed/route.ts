@@ -329,6 +329,14 @@ export async function GET(req: Request) {
       WHERE jobs.id = x.id AND jobs.is_dup IS DISTINCT FROM x.dup`)
     await client.query(`UPDATE jobs SET is_dup = false WHERE status <> 'open' AND is_dup`)
 
+    // 2026-07-26:ETL 心跳 —— 每轮 seed 成功都写一笔,前端「最近核对」读它(docs/sql/etl-heartbeat.sql)。
+    // 与 max(last_seen) 的区别:数据没变也照样动,回答的是「刚核对过官方来源」而不是「数据变过」。
+    // 表未落地(部署时序)→ 42P01 忽略,不能让心跳把整轮灌库回滚。
+    await client.query(`INSERT INTO etl_heartbeat (id, last_seed) VALUES (1, now())
+      ON CONFLICT (id) DO UPDATE SET last_seed = now()`).catch((e: any) => {
+      if (e?.code !== '42P01') throw e
+    })
+
     await client.query('COMMIT')
   } catch (e) {
     await client.query('ROLLBACK').catch(() => {})
