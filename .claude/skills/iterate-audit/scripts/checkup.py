@@ -94,8 +94,11 @@ JS = r"""
     // 只管短标签:免责声明这类整句里的「移民/法律建议」是「或」的意思,不是枚举杂糅(首轮 37 条里 30 条是它)
     if (t.length <= 30 && !/[。;;,,]/.test(t) && /[一-鿿]\s*[·/]\s*[一-鿿]/.test(t)) add('R1斜杠点号杂糅', el, t);
     if (/TEER/.test(t)) {
+      // 第 27 轮豁免(#214 核销):Frank 拍板卡面保留 TEER 码,口径挂 title、chip 可点开分类弹框看说明 ——
+      // 「带 title」或「可点」即视为有注,不再当裸术语报(否则每轮 35 条常驻噪音)。
       const ctx = norm(el.parentElement ? el.parentElement.innerText : t);
-      if (!/技能|等级|说明|门槛|类别|skill|level|교육|숙련/i.test(ctx)) add('R1TEER无注', el, t);
+      const annotated = el.title || el.getAttribute('aria-label') || getComputedStyle(el).cursor === 'pointer';
+      if (!annotated && !/技能|等级|说明|门槛|类别|skill|level|교육|숙련/i.test(ctx)) add('R1TEER无注', el, t);
     }
   }
   // 属性里的文案也算 UI 文案(placeholder/title/aria-label 不是文本节点,首轮漏了搜索框占位符)
@@ -145,7 +148,9 @@ JS = r"""
     const cells = [...tr.children].map(td => norm(td.innerText));
     let run = 0, max = 0;
     for (const c of cells) { if (c === '—' || c === '-' || c === '') { run++; max = Math.max(max, run); } else run = 0; }
-    if (max >= 4) add('R4空态连片', tr, cells.join('|'), { run: max });
+    // 第 27 轮修:整行全空多半是扫到了渲染中途的骨架行(匹配视图实测 50 行零空行却报 8 条)——
+    // 整行都空不算「空态连片」,只报「有内容的行里连着 4 格空」。
+    if (max >= 4 && cells.some(c => c && c !== '—' && c !== '-')) add('R4空态连片', tr, cells.join('|'), { run: max });
   }
   // ---- 5 折行 / 截断 ----
   const CHIPY = 'button,a,th,td,label,option,h1,h2,h3,[role=button],[class*=chip],[class*=Chip],[class*=badge],[class*=Badge],[class*=tag],[class*=Tag],[class*=pill]';
@@ -153,7 +158,9 @@ JS = r"""
     if (!el.matches(CHIPY)) continue;
     const t = norm(el.innerText); if (!t) continue;
     const st = getComputedStyle(el);
-    if (el.scrollWidth > el.clientWidth + 2 && !/auto|scroll/.test(st.overflowX))
+    // 第 27 轮修:overflow 为 visible 时内容照样画得出来(只是盒子比内容窄)——不是截断。
+    // 只有 hidden/clip(通常配 text-overflow:ellipsis)才是真的看不全。
+    if (el.scrollWidth > el.clientWidth + 2 && /hidden|clip/.test(st.overflowX))
       add('R5截断', el, t, { sw: el.scrollWidth, cw: el.clientWidth });
     // 折行判定用 Range 的行盒数,不用高度阈值(td 的上下 padding 会把高度撑过 lineHeight,首轮假阳性全出在这);
     // 数据表格单元格(长英文职位名/公司名)天然要折,Frank 的「不折行」铁律管的是标签与按钮 → td/th 免检
@@ -182,6 +189,8 @@ JS = r"""
   for (const el of all) {
     const kids = [...el.children].filter(k => {
       const st = getComputedStyle(k);
+      // colgroup/col 是表格布局元素(无可视盒),与 thead/tbody 必然相交 —— 第 27 轮加百分比列宽后开始误报
+      if (k.matches('colgroup,col')) return false;
       return visible(k) && st.position !== 'absolute' && st.position !== 'fixed' && st.float === 'none';
     });
     if (kids.length < 2 || kids.length > 20) continue;
@@ -217,6 +226,7 @@ JS = r"""
     if (el.closest('[data-tap-card]')) continue;                  // 整卡可点,卡内内容链接不单独算靶
     const r = el.getBoundingClientRect();
     if (r.width >= 40 && r.height >= 40) continue;
+    if (r.height >= 32 && r.width >= 120) continue;   // 大条钮(如「购买 30 天 CA$19」296×36)点得中,不必凑 40
     const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
     const hit = (x, y) => { const h = document.elementFromPoint(x, y); return !!h && (h === el || el.contains(h) || h.contains(el)); };
     const ok = hit(cx, Math.max(1, cy - 14)) && hit(cx, Math.min(innerHeight - 1, cy + 14));
