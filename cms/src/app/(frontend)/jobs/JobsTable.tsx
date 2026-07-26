@@ -1026,8 +1026,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
              卡上星标 13×16、「显示更多」29 高同理——热区撑到 40,图标字号不动 */
           .jtCtl select,.jtCtl button,.jtCtl input{min-height:40px}
           .jtStar{min-width:40px;min-height:40px;display:inline-flex;align-items:center;justify-content:center;margin:-8px -8px -8px 0}
-          .jtMore button,.jtMore a{min-height:40px;display:inline-flex;align-items:center}
-          .jtX{min-width:40px;min-height:40px;display:inline-flex;align-items:center;justify-content:center}
+          /* 星标热区靠负 margin 抵消,视觉不变;其余小靶一律走全局 .tapPad(伪元素扩热区) */
           .jtHideNarrow{display:none !important}
           .jtTableWrap{display:none !important}
           .jtCards{display:flex}
@@ -1090,13 +1089,13 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                 <button onClick={() => { if (!plan.loggedIn) setUpsell('lock'); else setWizard(true) }}
                   style={{ marginLeft: 'auto', border: 'none', background: 'none', color: '#4f46e5', fontSize: 12.5, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>{t('rec.build')}</button>
                 <button onClick={() => { try { localStorage.setItem(PREF_HIDE, new Date().toLocaleDateString('en-CA')) } catch { /* ignore */ } setRecs([]) }}
-                  aria-label="close" className="jtX" style={{ border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 15, padding: '0 2px' }}>×</button>
+                  aria-label="close" className="tapPad" style={{ border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 15, padding: '0 2px' }}>×</button>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 10 }}>
                 {cards.map((j) => (
                   <div key={j.id} style={{ position: 'relative', background: '#f9fafb', borderRadius: 8, padding: '10px 12px' }}>
                     <button onClick={() => setDismissedRec((s) => new Set(s).add(String(j.id)))} title={t('rec.notInterested')} aria-label={t('rec.notInterested')}
-                      className="jtX" style={{ position: 'absolute', top: 6, right: 7, border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 13, padding: 0 }}>×</button>
+                      className="tapPad" style={{ position: 'absolute', top: 6, right: 7, border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 13, padding: 0 }}>×</button>
                     <button onClick={() => setActModal({ kind: 'desc', job: j })}
                       style={{ display: 'block', textAlign: 'left', border: 'none', background: 'none', padding: 0, cursor: 'pointer', width: '100%' }}>
                       <div style={{ fontSize: 13.5, fontWeight: 500, color: '#111827', paddingRight: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{j.title}</div>

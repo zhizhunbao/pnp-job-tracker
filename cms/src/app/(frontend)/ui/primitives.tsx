@@ -204,13 +204,11 @@ export function SectionTabs({ tabs, color = UI.primary }: {
 }) {
   return (
     <div className="uiTabs" style={{ display: 'flex', gap: 6, margin: '-6px 0 14px', borderBottom: `2px solid ${color}22` }}>
-      {/* #212(第 26 轮体检续):页签 31px 手机点不稳 → 热区 40(桌面不动) */}
-      <style>{'@media (max-width:640px){.uiTabs>a,.uiTabs>span{min-height:40px;display:inline-flex;align-items:center}}'}</style>
       {/* #205(第 26 轮体检):当前页签原来也是 <a> 只是不给 href —— 看着像链接点不动。当前页=span,别的才是链接 */}
       {tabs.map((tb) => {
         const Tag = (tb.active ? 'span' : 'a') as 'a'
         return (
-        <Tag key={tb.href} href={tb.active ? undefined : tb.href}
+        <Tag key={tb.href} href={tb.active ? undefined : tb.href} className={tb.active ? undefined : 'tapPad'}
           style={{
             fontSize: 12.5, padding: '5px 14px', borderRadius: '9px 9px 0 0', textDecoration: 'none',
             border: '1px solid', borderBottom: 'none',

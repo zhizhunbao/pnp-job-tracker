@@ -213,7 +213,7 @@ export function NewsListView({ items, hero, cmtCounts }: { items: NewsCard[]; he
         <>
           {/* v4:头条网格窄屏折单列;#212(第 26 轮体检续):手机触控靶——省份 chips、轮播箭头与圆点热区 ≥40 */}
           <style>{`@media (max-width:760px){.nwTop{grid-template-columns:1fr !important}}
-            @media (max-width:640px){.nwChips button{min-height:40px}
+            @media (max-width:640px){
               .nwDots{gap:0 !important}.nwDots button{width:40px !important;height:40px !important}
               .nwTop button[aria-label='prev'],.nwTop button[aria-label='next']{width:40px !important;height:40px !important}}`}</style>
           {/* 正文轨=PageShell 1320(Frank 2026-07-18 宽度统一拍板),原 1100 单轨退役 */}
@@ -226,8 +226,8 @@ export function NewsListView({ items, hero, cmtCounts }: { items: NewsCard[]; he
               { href: '/timeline', label: t('tl.title') },
             ]} />
             <div className="nwChips" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '10px 0 14px' }}>
-              <button style={chip(!region)} onClick={() => setRegion('')}>{t('chart.all')}</button>
-              {present.map((r) => <button key={r} style={chip(region === r)} onClick={() => setRegion(r)}>{regionLabel(t, r)}</button>)}
+              <button className="tapPad" style={chip(!region)} onClick={() => setRegion('')}>{t('chart.all')}</button>
+              {present.map((r) => <button key={r} className="tapPad" style={chip(region === r)} onClick={() => setRegion(r)}>{regionLabel(t, r)}</button>)}
             </div>
             {/* 头条区:1 大 + 4 小(大卡轮播);筛选态下不显(看筛选结果为主) */}
             {!region && <FeaturedGrid t={t} lang={lang} slides={hero} />}
