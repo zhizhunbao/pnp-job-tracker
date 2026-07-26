@@ -911,20 +911,24 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   // 发布时间/操作两列保底不缩。自选加列(超出默认集)或手动拖宽 → 回原最小宽+横滚(#35 拍板不动)
   const DEFAULT_SET = new Set<ColKey>(DEFAULT_COLS)
   const fitMode = !hasWidths && shown.every((c) => DEFAULT_SET.has(c.key))
-  // Frank 2026-07-26「右边操作列有很多空间,改成自适应平均分配;以后操作列还要加按钮」:
-  // 原来 auto 布局把剩余宽度几乎全给了末列(操作列实测 265px 只放一个收藏钮),左边公司/职位却折成三四行。
-  // 改法:**内容恒短的列钉定宽**(日期/大分类/年薪/vs 中位/EE/AIP/操作,操作留 160 够放三钮),
-  // 其余宽度归文本列(公司/职位/省/市/薪资/PNP)——仍走 auto 布局,浏览器不会把任何列压到内容最小宽以下。
-  const FIT_FIXED: Partial<Record<ColKey, number>> = {
-    datePosted: 96, broad: 64, teer: 64, salaryYr: 92, wageMedHr: 92, wageMedYr: 92, vsMedian: 78, ee: 96, aip: 56, actions: 160,
+  // Frank 2026-07-26「右边操作列有很多空间,改成自适应平均分配;以后操作列还要加按钮」+ 追加「不需要下面的滚动条」:
+  // 原来 auto 布局把剩余宽度几乎全给了末列(操作列实测 265px 只放一个收藏钮),左边公司/职位却折成三四行;
+  // 中途试过「短值列钉定宽」——定宽和 + 文本列内容最小宽会超容器,反而**逼出横向滚动条**(实测,已推翻)。
+  // 定案:默认列集走**固定布局 + 百分比列宽**,各列宽之和恒等于容器宽 → 数学上不可能横滚,窗口变宽等比放大。
+  // 权重按内容长短分:职位/公司最多,日期/AIP 等恒短值最少;操作列 11% 留给以后加按钮(挤不下时格内换行)。
+  const FIT_WEIGHT: Partial<Record<ColKey, number>> = {
+    datePosted: 10, broad: 4, teer: 4, company: 12, title: 14, province: 9, city: 8,
+    salary: 7, salaryYr: 7, wageMedHr: 8, wageMedYr: 8, vsMedian: 6, pnp: 8, ee: 6, aip: 3, actions: 10,
   }
+  const fitTotal = fitMode ? shown.reduce((s, c) => s + (FIT_WEIGHT[c.key] ?? 8), 0) : 0
   const colMin = (k: ColKey) => {
     if (hasWidths) return undefined
-    if (fitMode) return k === 'datePosted' ? 92 : k === 'actions' ? 160 : undefined
+    if (fitMode) return undefined   // 百分比固定布局自己保证分配;再给最小宽会把表撑出容器=横滚(Frank「不需要滚动条」)
     return MIN_W[k] ?? 78
   }
   // fit 模式格距 12→8:13 列默认集在 1280 视口实测超 61px,横距是最后一截肥肉(nowrap 列天然不缩)
-  const cellPad = fitMode ? '8px' : '12px'
+  // fit 模式格距再收 8→6:省下的 ~50px 全给文本列,「Saskatchewan」「Montréal」不再被拦腰断词
+  const cellPad = fitMode ? '6px' : '12px'
   // 量当前表头每个可见列的自然渲染宽(auto 布局下为真实内容宽),返回覆盖全可见列的完整 map
   const measureAll = (): Record<string, number> => {
     const head = headRowRef.current
@@ -1312,11 +1316,11 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           </div>
         )}
         <div className="jtTableWrap" style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflowX: 'auto', ...(loading && page === 0 && { opacity: 0.45, pointerEvents: 'none', transition: 'opacity .2s' }) }}>
-          <table style={{ width: hasWidths ? totalW : '100%', minWidth: '100%', borderCollapse: 'collapse', fontSize: 13.5, tableLayout: hasWidths ? 'fixed' : 'auto' }}>
+          <table style={{ width: hasWidths ? totalW : '100%', minWidth: '100%', borderCollapse: 'collapse', fontSize: 13.5, tableLayout: hasWidths || fitMode ? 'fixed' : 'auto' }}>
             {/* 末列宽设 auto:固定布局下吸收剩余空间,右缘始终贴齐容器,无右侧缝隙 */}
             {hasWidths && <colgroup>{shown.map((c, i) => <col key={c.key} style={{ width: i === shown.length - 1 ? 'auto' : widths[c.key] }} />)}</colgroup>}
-            {/* 默认列集:短值列钉定宽,剩余宽度自适应分给文本列(见 FIT_FIXED 注释) */}
-            {fitMode && <colgroup>{shown.map((c) => <col key={c.key} style={{ width: FIT_FIXED[c.key] }} />)}</colgroup>}
+            {/* 默认列集:百分比列宽,和恒为 100% → 永不横滚(见 FIT_WEIGHT 注释) */}
+            {fitMode && <colgroup>{shown.map((c) => <col key={c.key} style={{ width: `${((FIT_WEIGHT[c.key] ?? 8) / fitTotal * 100).toFixed(3)}%` }} />)}</colgroup>}
             <thead>
               <tr ref={headRowRef} style={{ textAlign: 'left', background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
                 {shown.map((c, idx) => {
@@ -1333,7 +1337,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                   )
                   return (
                     <th key={c.key} onClick={() => toggleSort(c.key)} title={t('th.tip')}
-                      style={{ padding: `8px ${cellPad}`, color: active ? '#2563eb' : '#374151', fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none', position: 'relative', borderRight: isLast ? undefined : '1px solid #e5e7eb', minWidth: colMin(c.key), ...frozenStyle(c.key, '#f9fafb') }}>{/* Frank 走查#23:表头完全显示——去省略截断,保 nowrap 不换行,列宽随表头撑开 */}
+                      style={{ padding: `8px ${cellPad}`, color: active ? '#2563eb' : '#374151', fontWeight: 600, whiteSpace: fitMode ? 'normal' : 'nowrap', cursor: 'pointer', userSelect: 'none', position: 'relative', borderRight: isLast ? undefined : '1px solid #e5e7eb', minWidth: colMin(c.key), ...frozenStyle(c.key, '#f9fafb') }}>{/* Frank 走查#23:表头完全显示——去省略截断;固定布局(默认列集)下改允许折行,否则窄窗口表头会互相压过去 */}
                       {t('col.' + c.key)}<span style={{ color: active ? '#2563eb' : '#d1d5db', fontSize: 11 }}>{active ? (sort.dir === 'desc' ? ' ▼' : ' ▲') : ' ↕'}</span>{handle}
                     </th>
                   )
