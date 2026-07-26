@@ -3770,10 +3770,14 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
               #161(Frank「公司显示这些信息也不合适吧」):公司面板不渲 —— 表里七个维度里
               职业方向/所在省/省提名粗筛/EE/技能层级/薪资 全是**岗位级**事实,挂在「Agilent Technologies」
               这个标题下答非所问(用户点公司是想了解公司)。岗位级判定留在岗位面板。 */}
-          {/* Frank 走查#2:中文对照按钮统一——移民组也上(内容现本地化,为「以后加英文」占位) */}
-          {(group === 'pnp' || group === 'ee' || group === 'immigration') && lang !== 'en' && (
+          {/* Frank 走查#2(2026-07-25「把按钮摆上,之后可能加新内容」):字段事实弹框(非 category/location/company——
+              那三个自带钮栏)统一摆三按钮栏。中文对照即时可用(pnp/ee 有译文;余为「以后加英文」占位);
+              AI 速读 / 打开完整页 = 前置占位(灰显 disabled,待该弹框接入 AI/专属页后点亮)。 */}
+          {group !== 'category' && group !== 'location' && group !== 'company' && (
             <div style={{ display: 'flex', gap: 8, margin: '2px 0 12px', flexWrap: 'wrap' }}>
-              <button onClick={() => { if (!showZh) track('imm-translate'); setShowZh((v) => !v) }} style={{ ...PILL_BTN, ...(showZh ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}>{showZh ? t('cat.hideZh') : t('cat.showZh')}</button>
+              {lang !== 'en' && <button onClick={() => { if (!showZh) track('imm-translate'); setShowZh((v) => !v) }} style={{ ...PILL_BTN, ...(showZh ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' } : {}) }}>{showZh ? t('cat.hideZh') : t('cat.showZh')}</button>}
+              <button disabled title={t('cat.aiRead')} style={{ ...PILL_BTN, opacity: 0.4, cursor: 'default' }}><IconCompass /> {t('cat.aiRead')}</button>
+              <button disabled title={t('detail.openFull')} style={{ ...PILL_BTN, opacity: 0.4, cursor: 'default' }}>{t('detail.openFull')}</button>
             </div>
           )}
           {group === 'immigration' && <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} nocDesc={nocDesc} />}
