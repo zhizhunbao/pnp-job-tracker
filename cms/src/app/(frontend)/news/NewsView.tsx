@@ -146,11 +146,14 @@ function FeaturedGrid({ t, lang, slides }: { t: TFn; lang: Lang; slides: NewsHer
           {n > 1 && (<>
             <button aria-label="prev" onClick={step(-1)} style={{ ...arrow, left: 10 }}>‹</button>
             <button aria-label="next" onClick={step(1)} style={{ ...arrow, right: 10 }}>›</button>
-            <span style={{ position: 'absolute', left: 0, right: 0, bottom: 10, display: 'flex', justifyContent: 'center', gap: 6, zIndex: 2 }}>
+            {/* #212(第 26 轮体检续):圆点原来钮就是那颗 8×8 的点 —— 钮改透明热区(手机 40×40),视觉点挪进内层 span */}
+            <span className="nwDots" style={{ position: 'absolute', left: 0, right: 0, bottom: 10, display: 'flex', justifyContent: 'center', gap: 6, zIndex: 2 }}>
               {slides.map((s, i) => (
                 <button key={s.slug} aria-label={`slide ${i + 1}`}
                   onClick={(e) => { e.preventDefault(); setIdx(i) }}
-                  style={{ width: 8, height: 8, borderRadius: '50%', border: 'none', padding: 0, cursor: 'pointer', background: i === idx % n ? '#fff' : 'rgba(255,255,255,.45)' }} />
+                  style={{ width: 8, height: 8, border: 'none', padding: 0, background: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: i === idx % n ? '#fff' : 'rgba(255,255,255,.45)' }} />
+                </button>
               ))}
             </span>
           </>)}
@@ -208,8 +211,11 @@ export function NewsListView({ items, hero, cmtCounts }: { items: NewsCard[]; he
       const chip = chipStyle   // P3 chips 归并(#114):与 primitives 同款,本地副本退役
       return (
         <>
-          {/* v4:头条网格窄屏折单列 */}
-          <style>{`@media (max-width:760px){.nwTop{grid-template-columns:1fr !important}}`}</style>
+          {/* v4:头条网格窄屏折单列;#212(第 26 轮体检续):手机触控靶——省份 chips、轮播箭头与圆点热区 ≥40 */}
+          <style>{`@media (max-width:760px){.nwTop{grid-template-columns:1fr !important}}
+            @media (max-width:640px){.nwChips button{min-height:40px}
+              .nwDots{gap:0 !important}.nwDots button{width:40px !important;height:40px !important}
+              .nwTop button[aria-label='prev'],.nwTop button[aria-label='next']{width:40px !important;height:40px !important}}`}</style>
           {/* 正文轨=PageShell 1320(Frank 2026-07-18 宽度统一拍板),原 1100 单轨退役 */}
           <PageShell>
             {/* 页头=PageBanner(#65 五模块统一浅色带,动态=青;口径句已删——P1f Frank「没什么用」) */}
@@ -219,7 +225,7 @@ export function NewsListView({ items, hero, cmtCounts }: { items: NewsCard[]; he
               { href: '/news', label: t('tl.tabNews'), active: true },
               { href: '/timeline', label: t('tl.title') },
             ]} />
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '10px 0 14px' }}>
+            <div className="nwChips" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '10px 0 14px' }}>
               <button style={chip(!region)} onClick={() => setRegion('')}>{t('chart.all')}</button>
               {present.map((r) => <button key={r} style={chip(region === r)} onClick={() => setRegion(r)}>{regionLabel(t, r)}</button>)}
             </div>

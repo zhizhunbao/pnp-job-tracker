@@ -7,9 +7,11 @@ export function SiteFooter({ t, maxWidth = 1100 }: { t: TFn; maxWidth?: number }
   // #79 免责已压短;资料库三链收进顶栏「资料库 ▾」(2026-07-19 Frank 批方案 A)→ 页脚回单行:免责+法务+©
   return (
     <footer style={{ borderTop: '1px solid #e5e7eb', background: '#fafafa', flexShrink: 0, marginTop: 'auto' }}>
+      {/* #212(第 26 轮体检续):手机端法务四链高 19px,点不中 —— 补热区到 40(字号与视觉不变) */}
+      <style>{'@media (max-width:640px){.sfLinks a{min-height:40px;display:inline-flex;align-items:center}}'}</style>
       <div style={{ maxWidth, margin: '0 auto', padding: '14px 1.25rem', display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'space-between', alignItems: 'center', color: '#9ca3af', fontSize: 12.5 }}>
         <span>{t('foot.disclaimer')}</span>
-        <span style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+        <span className="sfLinks" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
           <a href="/legal/disclaimer" style={{ color: '#6b7280', textDecoration: 'none' }}>{t('foot.disclaimerLink')}</a>
           <a href="/legal/privacy" style={{ color: '#6b7280', textDecoration: 'none' }}>{t('foot.privacy')}</a>
           <a href="/legal/terms" style={{ color: '#6b7280', textDecoration: 'none' }}>{t('foot.terms')}</a>

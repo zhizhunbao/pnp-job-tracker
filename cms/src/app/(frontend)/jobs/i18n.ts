@@ -216,7 +216,7 @@ const zh: Dict = {
   'mm.v.lmiaHas': '招过外劳', 'mm.v.lmiaLow': '低薪股为主', 'mm.v.lmiaNa': '中性信号', 'mm.v.lmiaNaTip': '多数雇主从未办过 LMIA,不是负面信号',
   'fact.nocTitle': '官方职业名', 'fact.nocDuties': '官方主要职责(NOC)', 'fact.nocReqs': '任职要求(NOC)',
   'fact.nocNote': 'NOC = 加拿大官方职业分类(编码第二位即 TEER);TEER = 教育/培训门槛等级,0(管理)→ 5(无学历要求)。',
-  'teer.0': '管理岗', 'teer.1': '本科起', 'teer.2': '大专/学徒', 'teer.3': '大专/短训', 'teer.4': '高中/在职培训', 'teer.5': '无学历门槛',
+  'teer.0': '管理岗', 'teer.1': '本科起', 'teer.2': '大专或学徒', 'teer.3': '大专或短训', 'teer.4': '高中或在职培训', 'teer.5': '无学历门槛',
   'fact.scoreNote': '各维度独立评估互不加权,与列表「通道」列同源;粗筛信号,非资格认定。评估对所有人相同——个人化结论请用「我的匹配」(需建档)', 'score.base': '基准', 'score.indemand': '紧缺大类', 'score.low': '省提名清单命中', 'score.direct': '第一方雇主', 'score.exp': '经验', 'score.prov': '省份(非 ON)', 'score.total': '合计', 'score.stored': '入库',
   'advisor.footTpl': '说明由榜单数据自动生成 · 仅供参考,不构成移民/法律建议',
   'advisor.applyLink': '投递页', 'advisor.siteLink': '公司官网',

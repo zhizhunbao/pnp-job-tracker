@@ -158,7 +158,8 @@ export function PageBanner({ module, icon, title, sub, right, images, stats }: {
   return (
     <div className="pbImgBanner" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
       style={{ position: 'relative', height: 130, borderRadius: 12, overflow: 'hidden', margin: '0 0 14px' }}>
-      <style>{`@media (max-width:640px){.pbImgBanner{height:104px !important}.pbStat{display:none !important}.pbProof{display:none !important}}`}</style>
+      <style>{`@media (max-width:640px){.pbImgBanner{height:104px !important}.pbStat{display:none !important}.pbProof{display:none !important}
+        .pbDots{right:4px !important;top:0 !important;gap:0 !important}.pbDots button{width:40px !important;height:40px !important}}`}</style>
       {imgs.map((src, i) => (
         // eslint-disable-next-line @next/next/no-img-element
         <img key={src} src={src} alt="" title="Wikimedia Commons" onError={() => setDead(true)}
@@ -180,11 +181,15 @@ export function PageBanner({ module, icon, title, sub, right, images, stats }: {
           {right && <span style={{ background: 'rgba(255,255,255,.92)', borderRadius: 8, padding: '6px 13px', fontSize: 13, whiteSpace: 'nowrap' }}>{right}</span>}
         </div>
       </div>
+      {/* #212(第 26 轮体检续):切图点原来钮就是那颗 6×6 的点,手机上点不中 —— 钮改透明热区、
+          圆点挪进内层 span:桌面维持 6px 间距 5(视觉不变),手机热区撑到 36×40 */}
       {imgs.length > 1 && (
-        <span style={{ position: 'absolute', right: 14, top: 10, display: 'flex', gap: 5, zIndex: 2 }}>
+        <span className="pbDots" style={{ position: 'absolute', right: 14, top: 10, display: 'flex', gap: 5, zIndex: 2 }}>
           {imgs.map((s, i) => (
             <button key={s} aria-label={`bg ${i + 1}`} onClick={() => setIdx(i)}
-              style={{ width: 6, height: 6, borderRadius: '50%', border: 'none', padding: 0, cursor: 'pointer', background: i === idx % imgs.length ? '#fff' : 'rgba(255,255,255,.45)' }} />
+              style={{ width: 6, height: 6, padding: 0, border: 'none', background: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: i === idx % imgs.length ? '#fff' : 'rgba(255,255,255,.45)' }} />
+            </button>
           ))}
         </span>
       )}
@@ -198,7 +203,9 @@ export function SectionTabs({ tabs, color = UI.primary }: {
   tabs: { href: string; label: React.ReactNode; active?: boolean }[]; color?: string
 }) {
   return (
-    <div style={{ display: 'flex', gap: 6, margin: '-6px 0 14px', borderBottom: `2px solid ${color}22` }}>
+    <div className="uiTabs" style={{ display: 'flex', gap: 6, margin: '-6px 0 14px', borderBottom: `2px solid ${color}22` }}>
+      {/* #212(第 26 轮体检续):页签 31px 手机点不稳 → 热区 40(桌面不动) */}
+      <style>{'@media (max-width:640px){.uiTabs>a,.uiTabs>span{min-height:40px;display:inline-flex;align-items:center}}'}</style>
       {/* #205(第 26 轮体检):当前页签原来也是 <a> 只是不给 href —— 看着像链接点不动。当前页=span,别的才是链接 */}
       {tabs.map((tb) => {
         const Tag = (tb.active ? 'span' : 'a') as 'a'

@@ -1022,6 +1022,12 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         html.recslot .recSlot{min-height:48px}
         .jtOnlyNarrow{display:none}
         @media (max-width:640px){
+          /* #212(第 26 轮体检续):筛选行下拉/按钮 38px 手机点不稳,统一 40(桌面维持 38);
+             卡上星标 13×16、「显示更多」29 高同理——热区撑到 40,图标字号不动 */
+          .jtCtl select,.jtCtl button,.jtCtl input{min-height:40px}
+          .jtStar{min-width:40px;min-height:40px;display:inline-flex;align-items:center;justify-content:center;margin:-8px -8px -8px 0}
+          .jtMore button,.jtMore a{min-height:40px;display:inline-flex;align-items:center}
+          .jtX{min-width:40px;min-height:40px;display:inline-flex;align-items:center;justify-content:center}
           .jtHideNarrow{display:none !important}
           .jtTableWrap{display:none !important}
           .jtCards{display:flex}
@@ -1084,13 +1090,13 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                 <button onClick={() => { if (!plan.loggedIn) setUpsell('lock'); else setWizard(true) }}
                   style={{ marginLeft: 'auto', border: 'none', background: 'none', color: '#4f46e5', fontSize: 12.5, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>{t('rec.build')}</button>
                 <button onClick={() => { try { localStorage.setItem(PREF_HIDE, new Date().toLocaleDateString('en-CA')) } catch { /* ignore */ } setRecs([]) }}
-                  aria-label="close" style={{ border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 15, padding: '0 2px' }}>×</button>
+                  aria-label="close" className="jtX" style={{ border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 15, padding: '0 2px' }}>×</button>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 10 }}>
                 {cards.map((j) => (
                   <div key={j.id} style={{ position: 'relative', background: '#f9fafb', borderRadius: 8, padding: '10px 12px' }}>
                     <button onClick={() => setDismissedRec((s) => new Set(s).add(String(j.id)))} title={t('rec.notInterested')} aria-label={t('rec.notInterested')}
-                      style={{ position: 'absolute', top: 6, right: 7, border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 13, padding: 0 }}>×</button>
+                      className="jtX" style={{ position: 'absolute', top: 6, right: 7, border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 13, padding: 0 }}>×</button>
                     <button onClick={() => setActModal({ kind: 'desc', job: j })}
                       style={{ display: 'block', textAlign: 'left', border: 'none', background: 'none', padding: 0, cursor: 'pointer', width: '100%' }}>
                       <div style={{ fontSize: 13.5, fontWeight: 500, color: '#111827', paddingRight: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{j.title}</div>
@@ -1119,7 +1125,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               「常用一行(搜索/省/大类/PNP/年薪)+ 更多筛选折叠(激活计数徽标)」;07-07 行序拍板与
               窄屏抽屉(jtDrawerToggle)一并退役——一行+折叠对窄屏同样成立,靠 flexWrap 自然换行。
               右端=更新时间+字段钮(#56 拍板延续)。市/区、中/小类仍是省/大类的联动下级,只在折叠区出现。 ═══ */}
-          <div style={filtRow}>
+          <div className="jtCtl" style={filtRow}>
             <input className="jtHideNarrow" placeholder={t('search.placeholder')} value={q} onChange={(e) => setQ(e.target.value)} style={{ ...ctrl, flex: '0 1 260px', minWidth: 160 }} />
             <Sel value={fProv} onChange={(v) => { setFProv(v); setFCity(''); setFDistrict('') }} opts={provOpts} all={t('all.prov')} />
             <Sel value={fBroad} onChange={(v) => { setFBroad(v); setFMid(''); setFFine('') }} opts={broadOpts} all={t('all.broad')} labelOf={broadLabel} />
@@ -1182,18 +1188,18 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           {/* #59 折叠区:低频筛选(市/区、中/小类、AIP/类型/对比中位/直发);state 全保留=老保存筛选照常生效 */}
           {fDrawer && (
             <div style={{ border: '1px dashed #d1d5db', borderRadius: 8, padding: '10px 12px', background: '#fafafa', display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={filtRow}>
+              <div className="jtCtl" style={filtRow}>
                 <span style={filtLabel}>{t('filter.geo')}</span>
                 <Sel value={fCity} onChange={(v) => { setFCity(v); setFDistrict('') }} opts={cityOpts} all={t('all.city')} />
                 <Sel value={fDistrict} onChange={setFDistrict} opts={distOpts} all={t('all.district')} />
               </div>
-              <div style={filtRow}>
+              <div className="jtCtl" style={filtRow}>
                 <span style={filtLabel}>{t('filter.cat')}</span>
                 <Sel value={fMid} onChange={(v) => { setFMid(v); setFFine('') }} opts={midOpts} all={t('all.mid')} labelOf={catLabel} />
                 <Sel value={fFine} onChange={setFFine} opts={fineOpts} all={t('all.fine')} labelOf={catLabel} />
               </div>
               {/* gig=兼职∪casual∪seasonal(E6-06);未标注岗选类型自然不命中,与「未分类」同一诚实口径 */}
-              <div style={filtRow}>
+              <div className="jtCtl" style={filtRow}>
                 <span style={filtLabel}>{t('filter.other')}</span>
                 <Sel value={fAip} onChange={setFAip} opts={['yes', 'no']} all={t('all.aip')} labelOf={(v) => t('opt.' + v)} />
                 <Sel value={fEmp} onChange={setFEmp} opts={['full', 'part', 'gig']} all={t('all.emp')} labelOf={(v) => t('emp.' + v)} />
@@ -1423,8 +1429,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             const stop = (fn: () => void) => (e: React.MouseEvent) => { e.stopPropagation(); fn() }
             const L = parseLoc(j)
             // #175:不可点的 chip 连 onClick 也摘(stopPropagation 会吞整卡点击=点了没反应)
-            const chip = (bg: string, fg: string, txt: string, k: ColKey) => (
-              <span key={k} onClick={cellActionable(k) ? stop(() => open(k, txt)) : undefined} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: bg, color: fg, cursor: cellActionable(k) ? 'pointer' : 'default', whiteSpace: 'nowrap' }}>{txt}</span>
+            const chip = (bg: string, fg: string, txt: string, k: ColKey, tip?: string) => (
+              <span key={k} title={tip} onClick={cellActionable(k) ? stop(() => open(k, txt)) : undefined} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: bg, color: fg, cursor: cellActionable(k) ? 'pointer' : 'default', whiteSpace: 'nowrap' }}>{txt}</span>
             )
             // Frank 走查:发布当天显示 1 天 → new Date('YYYY-MM-DD') 按 UTC 午夜解析,EDT 晚上 Date.now() 已跨 UTC 次日差 1 天;改按本地午夜解析(+'T00:00:00')
             const days = j.datePosted && (j.status || 'open') !== 'closed' ? Math.max(0, Math.floor((Date.now() - new Date(j.datePosted.slice(0, 10) + 'T00:00:00').getTime()) / 86400000)) : null
@@ -1443,7 +1449,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                         与卡底那排(可提名/技能岗/…)分处两地 —— 同类东西两个位置=没有位置。
                         已下移到卡底那一排并排**首位**(它最值钱,排第一)。此处只留星标:它是按钮不是胶囊。 */}
                     {/* #52:收藏入口手机也要有(E9-01 闭环第一环)——卡片寸土寸金只放星标,匿名点=注册框(与桌面 toggleSave 同一逻辑) */}
-                    <button onClick={(e) => { e.stopPropagation(); toggleSave(j) }} aria-label={saved[String(j.id)] ? t('sj.saved') : t('sj.save')}
+                    <button className="jtStar" onClick={(e) => { e.stopPropagation(); toggleSave(j) }} aria-label={saved[String(j.id)] ? t('sj.saved') : t('sj.save')}
                       style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', fontSize: 16, lineHeight: 1, color: saved[String(j.id)] ? '#b45309' : '#c4c9d4' }}>
                       {saved[String(j.id)] ? '★' : '☆'}
                     </button>
@@ -1496,7 +1502,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                     const anyRoute = j.pnpEligible || j.eeCategory || j.aip || isQc || pnpExcl || aipBlocked || (j.teer != null && j.teer <= 3)
                     if (!anyRoute) return null
                     return (<>
-                      {j.teer != null ? chip('#f3f4f6', '#6b7280', `TEER ${j.teer}`, 'teer') : null}
+                      {/* #214(第 26 轮体检续):卡上没有列头,裸「TEER 3」不说话 —— 人话档名作主文案,
+                          TEER 码退成 title 小注(同 ui-plain-language 铁律;点胶囊仍开职业分类弹框) */}
+                      {j.teer != null ? chip('#f3f4f6', '#6b7280', t('teer.' + j.teer), 'teer', `TEER ${j.teer}`) : null}
                       {/* 批A 追拍(Frank「可提名和可省提名有什么区别」——字面分不出):对齐桌面三档,
                           命中具名清单显清单名(BC 医疗),通用才显「可提名」;cell.pnpYes 死键退役 */}
                       {j.pnpEligible ? chip('#fef3c7', '#92400e', j.pnpStream ? streamDisplay(t, j.pnpStream) : t('cell.pnpSkilled'), 'pnp')
@@ -1535,7 +1543,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           )}
         </div>
         {/* 点击分页:不随滚动自动加载(用户拍板);按钮只报剩余条数——#42 同族,20000 载入护栏当分母像写死(2026-07-16 用户指出) */}
-        <div style={{ textAlign: 'center', padding: '12px', fontSize: 12.5, color: '#9ca3af' }}>
+        <div className="jtMore" style={{ textAlign: 'center', padding: '12px', fontSize: 12.5, color: '#9ca3af' }}>
           {rows.length === 0 ? ''
             : rows.length >= total ? t('allShown', { total })
             : <Button kind="secondary" sm disabled={loading} onClick={() => setPage((p) => p + 1)} style={{ opacity: loading ? 0.6 : 1 }}>{loading ? '…' : t('loadMore', { n: total - rows.length })}</Button>}

@@ -232,7 +232,9 @@ export function StatsCharts({ rows, t }: { rows: StatRow[]; t: TFn }) {
 
       <h2 style={h2S}>{t('chart.custom')}</h2>
       <div style={cardS}>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', fontSize: 12.5, color: '#6b7280', marginBottom: 8 }}>
+        {/* #212(第 26 轮体检续):图表三个下拉 28px 手机点不稳 → 热区 40(桌面不动) */}
+        <style>{'@media (max-width:640px){.stCtl select{min-height:40px}}'}</style>
+        <div className="stCtl" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', fontSize: 12.5, color: '#6b7280', marginBottom: 8 }}>
           <label>{t('chart.dim')}{' '}
             <select style={selS} value={dim} onChange={(e) => setDim(e.target.value as 'prov' | 'cat')}>
               <option value="prov">{t('chart.dimProv')}</option>
