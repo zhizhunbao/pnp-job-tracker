@@ -1492,15 +1492,21 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       TEER 从「无信号才兜底」升级为门内恒显(通用通道的依据);LMIA/红旗非通道胶囊,规则照旧 */}
                   {(() => {
                     const isQc = j.province === 'QC'
-                    const anyRoute = j.pnpEligible || j.eeCategory || j.aip || isQc || (j.teer != null && j.teer <= 3)
+                    // E6-09(手机优先):命中官方具名清单的「走不了」也要在卡上说——这是有依据的结论,
+                    // 不是「没信号」;点胶囊开对应弹框看清单(与桌面格子同口径)
+                    const key = j.province + '|' + j.noc
+                    const pnpExcl = blockedKeys.pnp.has(key), aipBlocked = blockedKeys.aip.has(key)
+                    const anyRoute = j.pnpEligible || j.eeCategory || j.aip || isQc || pnpExcl || aipBlocked || (j.teer != null && j.teer <= 3)
                     if (!anyRoute) return null
                     return (<>
                       {j.teer != null ? chip('#f3f4f6', '#6b7280', `TEER ${j.teer}`, 'teer') : null}
                       {/* 批A 追拍(Frank「可提名和可省提名有什么区别」——字面分不出):对齐桌面三档,
                           命中具名清单显清单名(BC 医疗),通用才显「可提名」;cell.pnpYes 死键退役 */}
-                      {j.pnpEligible ? chip('#fef3c7', '#92400e', j.pnpStream ? streamDisplay(t, j.pnpStream) : t('cell.pnpSkilled'), 'pnp') : null}
+                      {j.pnpEligible ? chip('#fef3c7', '#92400e', j.pnpStream ? streamDisplay(t, j.pnpStream) : t('cell.pnpSkilled'), 'pnp')
+                        : pnpExcl ? chip('#fee2e2', '#b91c1c', t('cell.pnpExcl'), 'pnp') : null}
                       {j.eeCategory ? chip('#dbeafe', '#1e40af', 'EE ' + eeDisplay(t, j.eeCategory), 'ee') : null}
-                      {j.aip ? chip('#ffedd5', '#9a3412', t('cell.aipYes'), 'aip') : null}
+                      {aipBlocked ? chip('#fee2e2', '#b91c1c', t('cell.aipBlocked'), 'aip')
+                        : j.aip ? chip('#ffedd5', '#9a3412', t('cell.aipYes'), 'aip') : null}
                       {isQc ? chip('#f3e8ff', '#7c3aed', 'QC', 'province') : null}
                     </>)
                   })()}
