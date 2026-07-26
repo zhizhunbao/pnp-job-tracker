@@ -203,4 +203,16 @@ button:not(:disabled):hover {
     min-width: 40px;
     min-height: 40px;
   }
+
+  /* 第 27 轮实测:伪元素热区**会被相邻元素抢点**(elementFromPoint 命中的是邻居,不是本元素)——
+     页脚法务链、新闻地区筛选这类成排小控件,光靠 ::after 点不中。这几处改用真实内边距把自身撑到 ≥36,
+     版式代价只有几像素(页脚与筛选行本就有余量);顶栏仍按 Frank 拍板豁免,不加高。 */
+  .sfLinks a.tapPad {
+    padding: 9px 0;
+    display: inline-block;
+  }
+
+  .nwChips button.tapPad {
+    min-height: 36px;
+  }
 }

@@ -1528,7 +1528,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             // #200(Frank「岗位名称中文翻译默认都加上」):手机卡职位名挂 NOC 官方职业名译名(界面语言;与在招职位/弹框标题同款)
             const nz = nocLocalTitle(dims.nocDescriptions.find((d) => d.noc === j.noc) || null, lang)
             return (
-              <div key={j.id}
+              <div key={j.id} data-tap-card
                 style={{ border: '1px solid #e5e7eb', borderRadius: 12, padding: '10px 12px', background: '#fff' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'baseline' }}>
                   {/* Frank 走查:手机点职位名要开 JD 弹框(与桌面一致;#131 的「跳详情页」推翻)。

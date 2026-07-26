@@ -58,7 +58,7 @@ export function CaliberLine({ t, srcs, fetched }: { t: TFn; srcs: SrcRow[]; fetc
   const [open, setOpen] = useState(false)
   return (
     <div style={{ fontSize: 11.5, color: '#9ca3af', margin: '10px 0' }}>
-      <button onClick={() => setOpen(!open)} style={{ border: 'none', background: 'none', color: '#6b7280', cursor: 'pointer', padding: 0, fontSize: 11.5 }}>
+      <button className="tapPad" onClick={() => setOpen(!open)} style={{ border: 'none', background: 'none', color: '#6b7280', cursor: 'pointer', padding: '8px 0', fontSize: 11.5 }}>
         <IconPaperclip /> {t('stats.caliber')} {open ? '▴' : '▾'}
       </button>
       {open && (

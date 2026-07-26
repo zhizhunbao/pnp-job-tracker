@@ -188,25 +188,39 @@ JS = r"""
     // 行内元素折行时 boundingRect 会横跨整块,与同行的兄弟(如「#20」+ 折行的职业名)假相交 ——
     // 多行盒的行内元素直接跳过(第 26 轮实拍复核:卡片版式其实好好的)
     if (kids.some(k => !/^(block|flex|grid|list-item|table)/.test(getComputedStyle(k).display) && k.getClientRects().length > 1)) continue;
-    const rs = kids.map(k => k.getBoundingClientRect());
+    // 第 27 轮再调:上面那条「多行盒整跳」漏判了「单行 span + 多行 a」的组合(#213 就是这么误报的)。
+    // 改成**逐行 rect 两两比**(getClientRects 给的是每一行的盒),行与行之间不再假相交。
+    const rects = kids.map(k => [...k.getClientRects()]);
     for (let i = 0; i < kids.length; i++) for (let j = i + 1; j < kids.length; j++) {
-      const a = rs[i], b = rs[j];
-      const ow = Math.min(a.right, b.right) - Math.max(a.left, b.left);
-      const oh = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
-      if (ow > 2 && oh > 2) {
-        const area = ow * oh, small = Math.min(a.width * a.height, b.width * b.height);
-        if (area > small * 0.25)
-          add('R7元素重叠', kids[i], norm(kids[i].innerText).slice(0, 40) + ' ⟂ ' + norm(kids[j].innerText).slice(0, 40), { area: Math.round(area) });
+      let worst = 0;
+      for (const a of rects[i]) for (const b of rects[j]) {
+        const ow = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+        const oh = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+        if (ow > 2 && oh > 2) worst = Math.max(worst, ow * oh);
       }
+      if (!worst) continue;
+      const ra = kids[i].getBoundingClientRect(), rb = kids[j].getBoundingClientRect();
+      const small = Math.min(ra.width * ra.height, rb.width * rb.height);
+      if (worst > small * 0.25)
+        add('R7元素重叠', kids[i], norm(kids[i].innerText).slice(0, 40) + ' ⟂ ' + norm(kids[j].innerText).slice(0, 40), { area: Math.round(worst) });
     }
   }
   // ---- 8 触控目标(仅手机)----
+  // 第 27 轮改判法(前一版按元素自身 rect 量,产出 153 条里绝大多数是假的):
+  //  ① 热区可以由 `.tapPad::after` 伪元素外扩 → 元素自身 rect 本来就该小,量 rect 必然误报;
+  //     改用**命中测试**:中心上下各偏 14px(手指落点误差)仍能点中本元素才算达标。
+  //  ② 卡片/行整块可点时(手机岗位卡 #129),卡内的职位名、城市、省只是内容,不是独立靶 —— 跳过。
   if (mobile) for (const el of all) {
     if (!el.matches('button,select,[role=button],a')) continue;   // input 是输入框不是点击靶,排除
     const st = getComputedStyle(el);
     if (el.tagName === 'A' && st.display.startsWith('inline') && !el.querySelector('*')) continue; // 正文行内链接不算
+    if (el.closest('[data-tap-card]')) continue;                  // 整卡可点,卡内内容链接不单独算靶
     const r = el.getBoundingClientRect();
-    if (r.width < 40 || r.height < 40) add('R8触控目标过小', el, norm(el.innerText), { w: Math.round(r.width), h: Math.round(r.height) });
+    if (r.width >= 40 && r.height >= 40) continue;
+    const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    const hit = (x, y) => { const h = document.elementFromPoint(x, y); return !!h && (h === el || el.contains(h) || h.contains(el)); };
+    const ok = hit(cx, Math.max(1, cy - 14)) && hit(cx, Math.min(innerHeight - 1, cy + 14));
+    if (!ok) add('R8触控目标过小', el, norm(el.innerText), { w: Math.round(r.width), h: Math.round(r.height) });
   }
   // ---- 9 可点必有态 / 不可点必无 ----
   for (const el of all) {
