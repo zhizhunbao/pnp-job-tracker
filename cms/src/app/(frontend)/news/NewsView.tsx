@@ -44,9 +44,13 @@ function RegionTag({ t, region }: { t: TFn; region: string }) {
 
 // AI 重要度徽标(P1d;P1f 收窄):只给 5 分挂红「重要」——琥珀「关注」档 Frank 拍板删(没用)。
 // hover=一句理由+口径声明(AI 评,非资格判定);「只看重要」筛选仍取 ≥4(重要动态梯队)。
-function ImpBadge({ t, importance, note }: { t: TFn; importance: number | null; note: string | null }) {
+function ImpBadge({ t, lang, importance, note }: { t: TFn; lang: string; importance: number | null; note: string | null }) {
   if (importance == null || importance < 5) return null
-  return <span title={`${note || ''}${note ? ' · ' : ''}${t('news.aiScore')}`}
+  // #216(第 27 轮体检):importanceNote 是数据层生成的**中文**理由,英/韩界面悬停会漏出中文(实测 12 处)。
+  // 非中文界面只挂口径声明,不拿中文当国际文案;要真给三语,得在数据层把 note 翻好(翻译管线另立项)。
+  // 顺手:原来两截用「·」拼(属性也是 UI 文案,no-dot 硬规矩),改成一行一条。
+  const tip = [lang === 'zh' ? note : '', t('news.aiScore')].filter(Boolean).join('\n')
+  return <span title={tip}
     style={{ background: '#dc2626', color: '#fff', borderRadius: 6, padding: '1px 7px', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap' }}>{t('news.imp')}</span>
 }
 
@@ -161,7 +165,7 @@ function FeaturedGrid({ t, lang, slides }: { t: TFn; lang: Lang; slides: NewsHer
         <div style={{ padding: '14px 18px 16px', flex: 1, minHeight: 176 }}>{/* 176=最长文案实测(徽标行+2行标题+2行摘要+padding)——整卡高度轮播恒定 */}
           <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', fontSize: 11.5, color: '#9ca3af', marginBottom: 6, flexWrap: 'wrap' }}>
             {/* #205:原为裸档「重要 5/5」(禁裸 X/5,#132 同规矩)——与列表统一走 ImpBadge,理由与口径挂 title */}
-            <ImpBadge t={t} importance={hero.importance} note={hero.importanceNote} />
+            <ImpBadge t={t} lang={lang} importance={hero.importance} note={hero.importanceNote} />
             <RegionTag t={t} region={hero.region} />
             <span style={{ fontVariantNumeric: 'tabular-nums' }}>{hero.date}</span>
           </div>
@@ -180,7 +184,7 @@ function FeaturedGrid({ t, lang, slides }: { t: TFn; lang: Lang; slides: NewsHer
           <a key={s.slug} href={`/news/${s.slug}`} style={{ display: 'block', padding: '10px 0', borderTop: i ? '1px solid #f3f4f6' : 'none', textDecoration: 'none', color: 'inherit' }}>
             <div style={{ fontSize: 13.5, fontWeight: 600, lineHeight: 1.45, color: '#111827', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{s.title}</div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', fontSize: 11.5, color: '#9ca3af', marginTop: 3 }}>
-              <ImpBadge t={t} importance={s.importance} note={s.importanceNote} />
+              <ImpBadge t={t} lang={lang} importance={s.importance} note={s.importanceNote} />
               <RegionTag t={t} region={s.region} />
               <span style={{ fontVariantNumeric: 'tabular-nums' }}>{s.date.slice(5)}</span>
             </div>
@@ -245,7 +249,7 @@ export function NewsListView({ items, hero, cmtCounts }: { items: NewsCard[]; he
                     <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: 4, height: '100%' }}>
                       <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', fontSize: 11.5, color: '#9ca3af', flexWrap: 'wrap', whiteSpace: 'nowrap', overflow: 'hidden' }}>
                         <RegionTag t={t} region={n.region} />
-                        <ImpBadge t={t} importance={n.importance} note={n.importanceNote} />
+                        <ImpBadge t={t} lang={lang} importance={n.importance} note={n.importanceNote} />
                         <span style={{ fontVariantNumeric: 'tabular-nums' }}>{n.date}</span>
                         {n.region === 'QC' && <span style={{ color: '#b45309' }}>{t('news.qcNote')}</span>}
                       </div>
@@ -428,7 +432,7 @@ export function NewsDetailView({ row, comments, loggedIn }: { row: NewsRow; comm
         <article style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '22px 26px' }}>
           <div style={{ fontSize: 11.5, color: '#9ca3af', display: 'flex', gap: 8, alignItems: 'baseline', flexWrap: 'wrap' }}>
             <RegionTag t={t} region={row.region} />
-            <ImpBadge t={t} importance={row.importance} note={row.importanceNote} />
+            <ImpBadge t={t} lang={lang} importance={row.importance} note={row.importanceNote} />
             <span>{t('news.published', { d: row.date })}</span>
           </div>
           <h1 style={{ fontSize: 21, margin: '8px 0 4px', lineHeight: 1.4 }}>{row.title}</h1>

@@ -122,7 +122,7 @@ export default function AccountPage() {
                   {nick == null ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <span style={{ fontSize: 16, fontWeight: 600, color: '#111827' }}>{me.displayName?.trim() || me.email.split('@')[0]}</span>
-                      <button onClick={() => setNick(me.displayName || '')} title={t('acct.nick')} aria-label={t('acct.nick')} style={{ border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', padding: 0, fontSize: 13 }}>✎</button>
+                      <button onClick={() => setNick(me.displayName || '')} title={t('acct.nick')} aria-label={t('acct.nick')} style={{ border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', padding: '10px 12px', margin: '-10px -12px', fontSize: 13 }}>✎</button>
                     </div>
                   ) : (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>

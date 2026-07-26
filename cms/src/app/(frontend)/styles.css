@@ -215,4 +215,14 @@ button:not(:disabled):hover {
   .nwChips button.tapPad {
     min-height: 36px;
   }
+
+  /* #217(第 27 轮体检判真):命中测试不达标的四处 —— /stats 三个下拉 28px 高、
+     「更多(剩 N 个)」按钮 29px、匹配视图同款。撑到 40 只影响手机,桌面一像素不动。 */
+  .stCtl select {
+    min-height: 40px;
+  }
+
+  .jtMore button {
+    min-height: 40px;
+  }
 }
