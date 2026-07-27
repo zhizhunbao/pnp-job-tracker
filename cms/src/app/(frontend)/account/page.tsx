@@ -122,7 +122,11 @@ export default function AccountPage() {
                   {nick == null ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <span style={{ fontSize: 16, fontWeight: 600, color: '#111827' }}>{me.displayName?.trim() || me.email.split('@')[0]}</span>
-                      <button onClick={() => setNick(me.displayName || '')} title={t('acct.nick')} aria-label={t('acct.nick')} style={{ border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', padding: '10px 12px', margin: '-10px -12px', fontSize: 13 }}>✎</button>
+                      {/* #219 触控靶 ≥40:原来靠 padding+负 margin 拼出来只有 ~37×35,手机上点不准。
+                          改成显式 40×40 的 inline-flex 方框(行高由 52px 头像撑着,不会把这行顶高)。 */}
+                      <button onClick={() => setNick(me.displayName || '')} title={t('acct.nick')} aria-label={t('acct.nick')}
+                        style={{ border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', padding: 0, fontSize: 15,
+                          minWidth: 40, minHeight: 40, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>✎</button>
                     </div>
                   ) : (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>

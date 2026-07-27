@@ -6,7 +6,7 @@ import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, use
 // SSR 端 useLayoutEffect 无效且会告警 → 服务端退化成 useEffect。
 const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
-import { BcSirsCard } from './BcSirsCard'
+import { PnpScoreCard } from './PnpScoreCard'
 import { makeT, streamDisplay, eeDisplay, eeKeyDisplay, initialLang, LANGS, LANG_KEY, COLS_COOKIE, type Lang, type TFn } from './i18n'
 import { IconChart, IconCheck, IconClipboard, IconCompass, IconLock, IconMap, IconMapPin, IconMaximize, IconMinimize, IconNews, IconSave, IconSettings, IconStar, IconTarget, IconUser, IconWarn, IconX } from '../Icons'
 import { SiteHeader } from '../SiteHeader'
@@ -546,7 +546,8 @@ export type PnpOcc = { province: string; stream: string; label: string; type: st
 // 红线:这是**官方分值**,按它自算出来的分只能叫「按官方分值表自算」,不是资格认定。
 export type ScoreFactor = { province: string; system: string; factor: string; kind: string; seq: number
   label: string; points: number | null; xorPrev: boolean; rule: string
-  factorMax: number | null; maxTotal: number | null; guideEffective: string; url: string }
+  factorMax: number | null; factorGroup: string; groupMax: number | null; passMark: number | null
+  maxTotal: number | null; guideEffective: string; fetched: string; url: string }
 export type PnpDraw = { province: string; kind: string; drawDate: string; stream: string; score: number | null; scale: string; invitations: number | null; note: string; label: string; url: string; fetched: string }
 export type EeOcc = { category: string; label: string; noc: string; teer: number | null; title: string; url: string; fetched: string; drawCrs: number | null; drawDate: string; drawSize: number | null }
 export type DesigEmp = { name: string; province: string; location: string; isTech: boolean }
@@ -1823,8 +1824,11 @@ export function PnpListSection({ job, lang, occ, draws, news, scoreFactors = [],
         <div style={MODAL_CARD_HEAD}>{t('col.pnp')}</div>
         <div>{verdictPill}</div>
       {/* E12-09:BC 岗位给「按官方分值表自算」的注册打分 + 与真实抽选线对照(Frank:分不够赶紧换省换岗) */}
-      {job.province === 'BC' && scoreFactors.some((f) => f.province === 'BC')
-        ? <BcSirsCard t={t} lang={lang} job={job} factors={scoreFactors} draws={draws} profileClb={profileClb} /> : null}
+      {/* key=岗位 id:自评面板的默认值按本岗算(时薪、地区、是否已有本省 offer),
+          换一个岗必须重置,否则 React 复用同一实例、useState 初值不再跑 = 显示上一个岗的默认值 */}
+      {scoreFactors.some((f) => f.province === job.province)
+        ? <PnpScoreCard key={job.id} t={t} lang={lang} job={job} factors={scoreFactors} draws={draws} profileClb={profileClb}
+            matchedStream={matched?.stream || ''} /> : null}
 
         {genericWhy ? <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 6, lineHeight: 1.7 }}>{genericWhy}</div> : null}
         {/* Frank「qc 没有对应的通道 也没有历史」:QC 不参加 PNP 是制度事实,不是缺数 —— 把它走的是什么说清 */}

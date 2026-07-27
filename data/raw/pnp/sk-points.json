@@ -1,0 +1,221 @@
+{
+  "province": "SK",
+  "system": "SINP Points Grid",
+  "maxTotal": 110,
+  "passMark": 60,
+  "source": "SINP International Skilled Worker Points Grid",
+  "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/assess-your-eligibility",
+  "pageUrl": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program",
+  "guideEffective": "",
+  "fetched": "2026-07-27",
+  "groupMax": {
+    "I": 80,
+    "II": 30
+  },
+  "factors": {
+    "education": {
+      "group": "I",
+      "rows": [
+        {
+          "label": "Master's or Doctorate degree (Canadian equivalency).",
+          "points": 23
+        },
+        {
+          "label": "Bachelor's degree OR at least a three-year degree at a university or college.",
+          "points": 20
+        },
+        {
+          "label": "Trade certification equivalent to journeyperson status in Saskatchewan.",
+          "points": 20
+        },
+        {
+          "label": "Canadian equivalency diploma that requires two (but less than three) years at a university, college, trade or technical school, or other post-secondary institution.",
+          "points": 15
+        },
+        {
+          "label": "Canadian equivalency certificate or at least two semesters (but less than a two-year program) at a university, college, trade or technical school, or other post-secondary institution.",
+          "points": 12
+        }
+      ],
+      "bonus": [],
+      "max": 23
+    },
+    "work5": {
+      "group": "I",
+      "rows": [
+        {
+          "label": "5 years",
+          "points": 10
+        },
+        {
+          "label": "4 years",
+          "points": 8
+        },
+        {
+          "label": "3 years",
+          "points": 6
+        },
+        {
+          "label": "2 years",
+          "points": 4
+        },
+        {
+          "label": "1 year",
+          "points": 2
+        }
+      ],
+      "bonus": [],
+      "max": 10
+    },
+    "work610": {
+      "group": "I",
+      "rows": [
+        {
+          "label": "5 years",
+          "points": 5
+        },
+        {
+          "label": "4 years",
+          "points": 4
+        },
+        {
+          "label": "3 years",
+          "points": 3
+        },
+        {
+          "label": "2 years",
+          "points": 2
+        },
+        {
+          "label": "Less than 1 year",
+          "points": 0
+        }
+      ],
+      "bonus": [],
+      "max": 5
+    },
+    "language1": {
+      "group": "I",
+      "rows": [
+        {
+          "label": "CLB 8 and higher",
+          "points": 20
+        },
+        {
+          "label": "CLB 7",
+          "points": 18
+        },
+        {
+          "label": "CLB 6",
+          "points": 16
+        },
+        {
+          "label": "CLB 5",
+          "points": 14
+        },
+        {
+          "label": "CLB 4",
+          "points": 12
+        },
+        {
+          "label": "English or French speaker without language test results.",
+          "points": 0
+        }
+      ],
+      "bonus": [],
+      "max": 20
+    },
+    "language2": {
+      "group": "I",
+      "rows": [
+        {
+          "label": "CLB 8 or higher",
+          "points": 10
+        },
+        {
+          "label": "CLB 7",
+          "points": 8
+        },
+        {
+          "label": "CLB 6",
+          "points": 6
+        },
+        {
+          "label": "CLB 5",
+          "points": 4
+        },
+        {
+          "label": "CLB 4",
+          "points": 2
+        },
+        {
+          "label": "Not Applicable",
+          "points": 0
+        }
+      ],
+      "bonus": [],
+      "max": 10
+    },
+    "age": {
+      "group": "I",
+      "rows": [
+        {
+          "label": "Less than 18 years",
+          "points": 0
+        },
+        {
+          "label": "18 – 21 years",
+          "points": 8
+        },
+        {
+          "label": "22 – 34 years",
+          "points": 12
+        },
+        {
+          "label": "35 – 45 years",
+          "points": 10
+        },
+        {
+          "label": "46 – 50 years",
+          "points": 8
+        },
+        {
+          "label": "More than 50 years",
+          "points": 0
+        }
+      ],
+      "bonus": [],
+      "max": 12
+    },
+    "offer": {
+      "group": "II",
+      "rows": [
+        {
+          "label": "High skilled employment offer from a Saskatchewan employer",
+          "points": 30
+        }
+      ],
+      "bonus": [],
+      "max": 30
+    },
+    "connection": {
+      "group": "II",
+      "rows": [],
+      "bonus": [
+        {
+          "label": "Close family relative in Saskatchewan",
+          "points": 20
+        },
+        {
+          "label": "Past work experience in Saskatchewan",
+          "points": 5
+        },
+        {
+          "label": "Past student experience in Saskatchewan",
+          "points": 5
+        }
+      ],
+      "max": 30
+    }
+  }
+}

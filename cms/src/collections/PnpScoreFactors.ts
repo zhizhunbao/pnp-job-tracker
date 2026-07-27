@@ -22,6 +22,10 @@ export const PnpScoreFactors: CollectionConfig = {
     { name: 'xorPrev', type: 'checkbox', admin: { description: '与上一条加分二选一(官方原文的「…, or」)' } },
     { name: 'rule', type: 'text', admin: { description: 'rule 行的公式与边界(JSON 串)' } },
     { name: 'factorMax', type: 'number', admin: { description: '该节上限(官方 Max)' } },
+    // 下面三列只有「官方把因素分了组」的省用得上(SK FACTOR I/II);BC 无分组 → 空
+    { name: 'factorGroup', type: 'text', admin: { description: '官方分组(SK 的 I / II);组内相加、组间按子类二选一' } },
+    { name: 'groupMax', type: 'number', admin: { description: '该组官方上限(SK I=80 / II=30)——前端按它封顶' } },
+    { name: 'passMark', type: 'number', admin: { description: '官方申请门槛(SK 60);没有门槛的省留空,改对照真实抽选线' } },
     { name: 'maxTotal', type: 'number', admin: { description: '该省总分上限' } },
     { name: 'guideEffective', type: 'text', admin: { description: '官方指南生效日期——过期检测锚点' } },
     { name: 'url', type: 'text' },

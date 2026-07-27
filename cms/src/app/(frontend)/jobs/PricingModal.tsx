@@ -27,6 +27,9 @@ export const PRICE = {
 export function PricingCard({ t, loggedIn, pro, caps, onRegister }: { t: TFn; loggedIn: boolean; pro: boolean; caps: PriceCaps; onRegister: () => void }) {
   const [busy, setBusy] = useState(false)
   const buy = async (plan: '30' | '90') => {
+    // E5-07 §3.4 漏斗第 4 步:pay-click 必须在登录判断**之前**发 —— 未登录点了也是付费意向,
+    // 放到后面等于把「点了但没注册」这段整个漏掉(checkout 只在已登录时发,两个事件不重复)
+    try { (window as any).umami?.track('pay-click', { plan, loggedIn: String(loggedIn) }) } catch { /* 静默 */ }
     if (!loggedIn) { onRegister(); return }
     setBusy(true)
     try { (window as any).umami?.track('checkout', { plan }) } catch { /* E7-02:Checkout 发起事件 */ }
@@ -63,54 +66,64 @@ export function PricingCard({ t, loggedIn, pro, caps, onRegister }: { t: TFn; lo
       <span style={{ fontSize: 11.5, color: '#9ca3af' }}> {per}</span>
     </div>
   )
+  // 每条 Pro 卖点 = 一句结论 + 底下小字写清具体给什么(标题不许只喊口号,小字是可核对的东西)
+  const Sell = ({ head, detail }: { head: string; detail: string }) => (
+    <li style={{ display: 'flex', gap: 7, alignItems: 'flex-start', lineHeight: 1.5 }}>
+      <IconCheck style={{ color: '#15803d', marginTop: 4, flexShrink: 0 }} />
+      <span>
+        <span style={{ fontSize: 12.8, color: '#374151', fontWeight: 600 }}>{head}</span>
+        <span style={{ display: 'block', fontSize: 11.5, color: '#9ca3af' }}>{detail}</span>
+      </span>
+    </li>
+  )
+  const ul: React.CSSProperties = { listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 5, flex: 1 }
   return (
     <div>
+      {/* E5-07:卡序 = 免费 → 90 天 → 30 天。主推 90 天靠**版式**(排在前、描边、省 N% 徽标),
+          不写「推荐」这类营销词;30 天保留作试水档。 */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: 12 }}>
-        {/* 免费卡 */}
+        {/* 免费卡:事实全给 —— 这是立身之本,也是获客本身,收了等于砸自己 */}
         <div style={cardS()}>
           <div style={{ fontSize: 14, fontWeight: 700, color: '#374151' }}>{t('price.free')}</div>
           {priceLine(t('price.freePrice'), '')}
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
+          <ul style={ul}>
             <Li>{t('price.f1')}</Li>
             <Li>{t('price.f2a')}</Li>
             <Li>{t('price.f2b')}</Li>
             <Li>{t('price.f2c')}</Li>
-            {/* 匹配全放开(Frank 2026-07-21):免费即全量匹配,不再「每日前 N 岗」——收费差异改由 f6 工资中位列承担 */}
+            <Li>{t('price.fLists')}</Li>
+            <Li>{t('price.fMedian')}</Li>
+            <Li>{t('price.fScoreTable')}</Li>
+            <Li>{t('price.fWeekly')}</Li>
             <Li>{t('price.f3')}</Li>
-            <Li>{t('price.f4')}({t('price.dayN', { n: caps.advisor })})</Li>
-            {/* #201(#96):JD 摘录=通用商品,免费不限——退出付费额度池,不再列日限也不再是 Pro 差异项 */}
+            <Li>{t('price.f4')}</Li>
             <Li>{t('price.f5')}</Li>
           </ul>
           {pro ? <div style={{ ...btn, textAlign: 'center', background: '#f9fafb', color: '#d1d5db', cursor: 'default' }}>—</div>
             : loggedIn ? <div style={{ ...btn, textAlign: 'center', background: '#f3f4f6', color: '#6b7280', cursor: 'default' }}><IconCheck /> {t('price.cur')}</div>
-            // 组件统一 P2(#113):免费注册钮=secondary(购买双钮按 A规格拍板保持现状不并入)
             : <Button kind="secondary" onClick={onRegister} style={{ width: '100%', padding: '8px 0', textAlign: 'center', fontSize: 13.5 }}>{t('price.regFree')}</Button>}
         </div>
-        {/* Pro 30 天卡 */}
-        <div style={cardS()}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: '#b45309' }}><IconStar /> {t('price.pro')} 30</div>
-          {priceLine(P30, `${t('price.per30')}　${t('price.perDay', { v: perDay(P30, 30) })}`)}
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
-            <Li dim>{t('price.plusFree')}</Li>
-            {/* 匹配已免费(含在「免费版全部功能」里)→ Pro 卡不再单列匹配;Pro 差异=f6 工资中位列 + 顾问额度等 */}
-            <Li>{t('price.f4')}({t('price.fairN', { n: caps.proAdvisor })})</Li>
-            <Li>{t('price.f6')}</Li>
-            <Li>{t('price.f7')}</Li>
-            <Li>{t('price.f8')}</Li>
-            <Li>{t('price.f9')}</Li>
-            <Li>{t('price.f10')}</Li>
-          </ul>
-          <button onClick={() => buy('30')} disabled={busy} style={{ ...btn, background: '#2563eb', color: '#fff', opacity: busy ? 0.6 : 1 }}>{t('price.cta.buy30')}　{P30}</button>
-        </div>
-        {/* Pro 90 天卡(更划算) */}
+        {/* Pro 90 天(主位) */}
         <div style={cardS(true)}>
           <span style={{ position: 'absolute', top: -10, right: 12, background: '#f59e0b', color: '#fff', borderRadius: 999, padding: '2px 10px', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap' }}>{t('price.save', { p: savePct })}</span>
           <div style={{ fontSize: 14, fontWeight: 700, color: '#b45309' }}><IconStar /> {t('price.pro')} 90</div>
           {priceLine(P90, `${t('price.per90')}　${t('price.perDay', { v: perDay(P90, 90) })}`)}
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
-            <Li dim>{t('price.same90')}</Li>
+          <ul style={ul}>
+            <Li dim>{t('price.plusFree')}</Li>
+            <Sell head={t('price.pA')} detail={t('price.pA.d')} />
+            <Sell head={t('price.pB')} detail={t('price.pB.d')} />
+            <Sell head={t('price.pC')} detail={t('price.pC.d')} />
           </ul>
           <button onClick={() => buy('90')} disabled={busy} style={{ ...btn, background: '#b45309', color: '#fff', opacity: busy ? 0.6 : 1 }}>{t('price.cta.buy90')}　{P90}</button>
+        </div>
+        {/* Pro 30 天(试水档) */}
+        <div style={cardS()}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: '#b45309' }}><IconStar /> {t('price.pro')} 30</div>
+          {priceLine(P30, `${t('price.per30')}　${t('price.perDay', { v: perDay(P30, 30) })}`)}
+          <ul style={ul}>
+            <Li dim>{t('price.same30')}</Li>
+          </ul>
+          <button onClick={() => buy('30')} disabled={busy} style={{ ...btn, background: '#2563eb', color: '#fff', opacity: busy ? 0.6 : 1 }}>{t('price.cta.buy30')}　{P30}</button>
         </div>
       </div>
       {/* 价值锚(第 5 轮 #18):v2 定位对标顾问咨询费;措辞循红线(不构成建议) */}

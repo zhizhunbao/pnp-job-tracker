@@ -65,6 +65,8 @@ export function SavedJobsList({ t, userId, weeklyOptOut, variant }: { t: ReturnT
           <input type="checkbox" checked={!optOut} onChange={async (e) => {
             const v = !e.target.checked
             setOptOut(v)
+            // E5-07 §3.4 漏斗第 3 步:周报是留存钩的主力,订阅/退订都要能看见(退订量本身就是信号)
+            try { (window as any).umami?.track('weekly-optin', { on: String(!v) }) } catch { /* 静默 */ }
             await fetch(`/api/users/${userId}`, {
               method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ weeklyOptOut: v }),

@@ -710,6 +710,18 @@ export interface PnpScoreFactor {
    */
   factorMax?: number | null;
   /**
+   * 官方分组(SK 的 I / II);组内相加、组间按子类二选一
+   */
+  factorGroup?: string | null;
+  /**
+   * 该组官方上限(SK I=80 / II=30)——前端按它封顶
+   */
+  groupMax?: number | null;
+  /**
+   * 官方申请门槛(SK 60);没有门槛的省留空,改对照真实抽选线
+   */
+  passMark?: number | null;
+  /**
    * 该省总分上限
    */
   maxTotal?: number | null;
@@ -1627,6 +1639,9 @@ export interface PnpScoreFactorsSelect<T extends boolean = true> {
   xorPrev?: T;
   rule?: T;
   factorMax?: T;
+  factorGroup?: T;
+  groupMax?: T;
+  passMark?: T;
   maxTotal?: T;
   guideEffective?: T;
   url?: T;

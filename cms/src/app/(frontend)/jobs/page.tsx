@@ -61,8 +61,10 @@ export default async function JobsPage() {
     pnpScoreFactors: sirsDocs.docs.map((r: any) => ({ province: r.province ?? '', system: r.system ?? '', factor: r.factor ?? '',
       kind: r.kind ?? '', seq: typeof r.seq === 'number' ? r.seq : 0, label: r.label ?? '',
       points: typeof r.points === 'number' ? r.points : null, xorPrev: !!r.xorPrev, rule: r.rule ?? '',
-      factorMax: typeof r.factorMax === 'number' ? r.factorMax : null, maxTotal: typeof r.maxTotal === 'number' ? r.maxTotal : null,
-      guideEffective: r.guideEffective ?? '', url: r.url ?? '' })),
+      factorMax: typeof r.factorMax === 'number' ? r.factorMax : null, factorGroup: r.factorGroup ?? '',
+      groupMax: typeof r.groupMax === 'number' ? r.groupMax : null, passMark: typeof r.passMark === 'number' ? r.passMark : null,
+      maxTotal: typeof r.maxTotal === 'number' ? r.maxTotal : null,
+      guideEffective: r.guideEffective ?? '', fetched: r.fetched ?? '', url: r.url ?? '' })),
     eeCategories: eeDocs.docs.map((r: any) => ({ category: r.category, label: r.label, noc: r.noc, teer: typeof r.teer === 'number' ? r.teer : null, title: r.title, url: r.url, fetched: r.fetched, drawCrs: typeof r.drawCrs === 'number' ? r.drawCrs : null, drawDate: r.drawDate ?? '', drawSize: typeof r.drawSize === 'number' ? r.drawSize : null })),
     designatedEmployers: [],  // SSR 瘦身:客户端从 /api/dims 拉后并入
     nocDescriptions: [],      // 同上(788KB 大头)

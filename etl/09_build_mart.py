@@ -36,7 +36,9 @@ IN_AIP = _paths.AIP / "aip-designated-employers.json"
 IN_WAGES = _paths.WAGES / "wages.json"   # NOC×省 中位工资(build_wages.py 从 ESDC 开放数据建)
 IN_PNP = _paths.PNP                      # raw/pnp/*.json(各省具名通道:每文件一条通道)
 IN_PNP_DRAWS = _paths.PNP / "draws.json"  # 省抽选事实(BC/AB/MB+ON通告,build_draws.py 产,E6-04)
-IN_BC_SIRS = _paths.PNP / "bc-sirs.json"  # BC 注册打分表(SIRS 200 分制,build_bc_sirs.py 从官方 PDF 抓,E12-09)
+# 省提名官方打分表(E12-09)——一省一个文件,加省就往这个 list 里加,下面的组装逻辑不用改。
+# BC=SIRS 200 分制(build_bc_sirs.py 从官方 PDF 抓)/ SK=SINP Points Grid 110 分制(build_sk_points.py 抓官网表)
+IN_SCORE_TABLES = [_paths.PNP / "bc-sirs.json", _paths.PNP / "sk-points.json"]
 IN_EE = _paths.EE / "federal-categories.json"  # 联邦 Express Entry 类别抽选(全国单一源)
 IN_EE_DRAWS = _paths.EE / "draws.json"          # 各类别最近一次抽选(CRS/日期/邀请数,build_ee_draws.py 产)
 IN_NOC_DESC = _paths.NOC / "descriptions.json"  # NOC 官方名+主要职责(build_noc_descriptions.py 产)
@@ -499,27 +501,33 @@ def build():
 
     # 省提名打分表维度(E12-09):一行一档 —— province/factor/kind(row|bonus)/label/points/xor + 该节上限。
     # 摊平存,前端算分只做加法;wage 那类「规则不穷举」的存 rule 行(points 为空,rule 里写公式)。
+    # 省提名官方打分表(E12-09):一行一档,各省表结构不同但列同一套。
+    # factorGroup/groupMax 是 SK 那种「官方分了 FACTOR I/II 且各有上限」的省才有(BC 无分组 → 留空);
+    # passMark 是官方硬门槛(SK 60 分才能申请),BC 没有这种门槛 → 留空,前端改对照真实抽选线。
     pnp_score_factors = []
-    if IN_BC_SIRS.exists():
+    for src in IN_SCORE_TABLES:
+        if not src.exists():
+            continue
         try:
-            _sirs = json.loads(IN_BC_SIRS.read_text(encoding="utf-8"))
-        except Exception:  # noqa: BLE001
-            _sirs = {}
-        base = {"province": _sirs.get("province", ""), "system": _sirs.get("system", ""),
-                "maxTotal": _sirs.get("maxTotal"), "url": _sirs.get("url", ""),
-                "guideEffective": _sirs.get("guideEffective", ""), "fetched": _sirs.get("fetched", "")}
-        for fname, f in (_sirs.get("factors") or {}).items():
+            tbl = json.loads(src.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001 — 单省表坏了不拖垮整个 mart
+            continue
+        gmax = tbl.get("groupMax") or {}
+        base = {"province": tbl.get("province", ""), "system": tbl.get("system", ""),
+                "maxTotal": tbl.get("maxTotal"), "passMark": tbl.get("passMark"), "url": tbl.get("url", ""),
+                "guideEffective": tbl.get("guideEffective", ""), "fetched": tbl.get("fetched", "")}
+        for fname, f in (tbl.get("factors") or {}).items():
+            fbase = {**base, "factor": fname, "factorMax": f.get("max"),
+                     "factorGroup": f.get("group", ""), "groupMax": gmax.get(f.get("group", ""))}
             for kind in ("rows", "bonus"):
                 for i, x in enumerate(f.get(kind, [])):
-                    pnp_score_factors.append({**base, "factor": fname, "kind": kind[:-1] if kind == "rows" else kind,
+                    pnp_score_factors.append({**fbase, "kind": kind[:-1] if kind == "rows" else kind,
                                               "seq": i, "label": x.get("label", ""), "points": x.get("points"),
-                                              "xorPrev": bool(x.get("xorWithPrev")), "rule": "",
-                                              "factorMax": f.get("max")})
+                                              "xorPrev": bool(x.get("xorWithPrev")), "rule": ""})
             if f.get("rule"):
-                pnp_score_factors.append({**base, "factor": fname, "kind": "rule", "seq": 0,
+                pnp_score_factors.append({**fbase, "kind": "rule", "seq": 0,
                                           "label": f.get("rule", ""), "points": None, "xorPrev": False,
-                                          "rule": json.dumps({k: f.get(k) for k in ("rule", "floorAt", "capAt")}, ensure_ascii=False),
-                                          "factorMax": f.get("max")})
+                                          "rule": json.dumps({k: f.get(k) for k in ("rule", "floorAt", "capAt")}, ensure_ascii=False)})
 
     # 联邦 EE 类别维度(每行=某类别内一个职业)
     ee_categories = []
