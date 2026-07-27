@@ -55,6 +55,9 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
   // Frank 2026-07-26「这个弹框看着还是太单薄了」:热门职业按钮挂**真在招数** —— 光一排职业名
   // 既没信息也没说服力,挂上库里的数才是这个站与普通问卷的差别。一次拿全,不逐个查。
   const [counts, setCounts] = useState<Record<string, { open: number; eligible: number }>>({})
+  // Frank 2026-07-26「还能加一些常规热门的职业吗」「列表可以列得全一些」:清单不手写,
+  // 按**库里在招量**取前 24(/api/quiz?top=24),会随市场自己变;拿不到就退回内置常用清单。
+  const [top, setTop] = useState<{ noc: string; title: string; titleZh: string; open: number }[]>([])
   const [nocTitle, setNocTitle] = useState('')   // 已选职业名(第 3 题顶部回显,让用户看见自己答到哪了)
   const [facts, setFacts] = useState<QuizFacts | null | 'loading'>(null)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -70,6 +73,7 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
   }, [])   // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
+    fetch('/api/quiz?top=24').then((r) => r.json()).then((d) => setTop(Array.isArray(d?.top) ? d.top : [])).catch(() => setTop([]))
     fetch(`/api/quiz?counts=${POPULAR_NOCS.map((p) => p.noc).join(',')}`)
       .then((r) => r.json()).then((d) => setCounts(d?.counts || {})).catch(() => { /* 没数就不显示,不挡答题 */ })
   }, [])
@@ -158,8 +162,7 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
         {/* ① 品牌头:站名 + 定位 + 关闭。没有这条,用户不知道自己在哪个站(这正是「像钓鱼」的来源) */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 20px', borderBottom: '1px solid #f3f4f6', flexShrink: 0 }}>
           <span style={{ fontSize: 16.5, fontWeight: 700, color: '#111827', whiteSpace: 'nowrap' }}>🍁 Offer2PR</span>
-          <span style={{ fontSize: 12, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('tagline')}</span>
-          <button onClick={skip} aria-label={t('quiz.skip')}
+            <button onClick={skip} aria-label={t('quiz.skip')}
             style={{ marginLeft: 'auto', border: 'none', background: 'none', color: '#9ca3af', fontSize: 22, lineHeight: 1, cursor: 'pointer', padding: 4 }}>×</button>
         </div>
         <div style={inner}>
@@ -199,7 +202,12 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
                 {cands.length > 0 && (
                   <div style={{ marginBottom: 10 }}>
                     {cands.map((c) => (
-                      <button key={c.noc} onClick={() => { setNocs([c.noc]); setNocTitle(lang === 'zh' && c.titleZh ? c.titleZh : c.title); setQ(''); setCands([]); track('quiz-step', { step: '1' }); setStep(2) }} style={opt(nocs[0] === c.noc)}>
+                      <button key={c.noc} onClick={() => {
+                        const on = nocs.includes(c.noc)
+                        setNocs(on ? nocs.filter((n) => n !== c.noc) : [...nocs, c.noc])
+                        setNocTitle(on ? '' : (lang === 'zh' && c.titleZh ? c.titleZh : c.title))
+                        setQ(''); setCands([])
+                      }} style={opt(nocs.includes(c.noc))}>
                         {lang === 'zh' && c.titleZh ? c.titleZh : c.title}
                         <span style={{ color: '#9ca3af', fontSize: 12, marginLeft: 6 }}>{c.noc}</span>
                       </button>
@@ -207,17 +215,42 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
                   </div>
                 )}
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-                  {POPULAR_NOCS.map((p) => {
-                    const c = counts[p.noc]
+                  {/* 多选(Frank「这个可以多选而且」):点=加/减,不再一点就跳下一题;下面给「下一步」。
+                      清单优先用库里在招量前 24(top),拿不到才退回内置常用清单。 */}
+                  {(top.length ? (() => {
+                    // 库里会出现同名不同码(「厨师」= 63200 与 62200):**重名的才**挂灰色 NOC 码区分,
+                    // 不重名的不挂(ui-plain-language:人话名主文案,代码只在必要时作小注)
+                    const seenLabel = new Map<string, number>()
+                    for (const x of top) { const l = (lang === 'zh' && x.titleZh) ? x.titleZh : x.title; seenLabel.set(l, (seenLabel.get(l) || 0) + 1) }
+                    return top.map((x) => {
+                      const l = (lang === 'zh' && x.titleZh) ? x.titleZh : x.title
+                      return { noc: x.noc, label: l, dup: (seenLabel.get(l) || 0) > 1, open: x.open }
+                    })
+                  })()
+                    : POPULAR_NOCS.map((p) => ({ noc: p.noc, label: t(p.key), dup: false, open: counts[p.noc]?.open }))
+                  ).map((x) => {
+                    const on = nocs.includes(x.noc)
                     return (
-                      <button key={p.noc} onClick={() => { setNocs([p.noc]); setNocTitle(t(p.key)); track('quiz-step', { step: '1' }); setStep(2) }}
-                        style={{ ...chipStyle(nocs[0] === p.noc), display: 'inline-flex', alignItems: 'baseline', gap: 6 }}>
-                        {t(p.key)}
-                        {c ? <span style={{ fontSize: 11.5, color: '#9ca3af' }}>{t('quiz.openN', { n: c.open.toLocaleString('en-CA') })}</span> : null}
+                      <button key={x.noc} title={x.label}
+                        onClick={() => {
+                          setNocs(on ? nocs.filter((n) => n !== x.noc) : [...nocs, x.noc])
+                          setNocTitle(on ? '' : x.label)
+                        }}
+                        style={{ ...chipStyle(on), display: 'inline-flex', alignItems: 'baseline', gap: 6, maxWidth: '100%' }}>
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{x.label}</span>
+                        {x.dup ? <span style={{ fontSize: 11, color: '#9ca3af', flexShrink: 0 }}>{x.noc}</span> : null}
+                        {x.open ? <span style={{ fontSize: 11.5, color: '#9ca3af', flexShrink: 0 }}>{t('quiz.openN', { n: x.open.toLocaleString('en-CA') })}</span> : null}
                       </button>
                     )
                   })}
                 </div>
+                {/* 多选后不能再靠「点一下就跳」推进 —— 给一个明确的下一步(未选时不出,别让人点空) */}
+                {nocs.length ? (
+                  <Button kind="primary" onClick={() => { track('quiz-step', { step: '1' }); setStep(2) }}
+                    style={{ width: '100%', padding: '11px 0', fontSize: 15, marginTop: 12 }}>
+                    {t('quiz.nextN', { n: nocs.length })}
+                  </Button>
+                ) : null}
               </>
             )}
             {step === 2 && (
@@ -242,8 +275,6 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
                 </Button>
               </>
             )}
-            {/* Frank「弹框太单薄」三:说清答完能拿到什么(库内真数,不是承诺) */}
-            <div style={{ marginTop: 14, paddingTop: 10, borderTop: '1px solid #f3f4f6', fontSize: 12, color: '#6b7280', lineHeight: 1.6 }}>{t('quiz.payoff')}</div>
           </>
         ) : (
           <QuizResult t={t} lang={lang} answers={answers} facts={facts} provName={provName}
@@ -267,7 +298,6 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
               ) : null}
             </div>
           ) : null}
-          <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 10, lineHeight: 1.7 }}>{t('quiz.tr.src')}</div>
         </aside>
         </div>
         {step < 3 ? (

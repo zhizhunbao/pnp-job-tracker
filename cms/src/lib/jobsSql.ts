@@ -629,6 +629,23 @@ export async function fetchNocOpenCounts(pool: any, nocs: string[]): Promise<Rec
   return out
 }
 
+/**
+ * 入口三问第 2 题的**热门职业清单**(Frank 2026-07-26「还能加一些常规热门的职业吗」「列表可以列得全一些」)。
+ * 不手写清单 —— 按**库里在招量**取前 N,自己会随市场变;顺带回中英职业名与可提名数,前端不必二次查。
+ * 只收 noc_descriptions 里有官方职业名的(没名字的码显示出来等于黑话)。
+ */
+export async function fetchTopNocs(pool: any, limit = 24): Promise<{ noc: string; title: string; titleZh: string; open: number; eligible: number }[]> {
+  const n = Math.min(Math.max(limit, 1), 60)
+  const { rows } = await pool.query(
+    `SELECT j.noc, COALESCE(d.title, '') title, COALESCE(d.title_zh, '') title_zh,
+            count(*)::int open, count(*) FILTER (WHERE j.pnp_eligible)::int eligible
+     FROM jobs j JOIN noc_descriptions d ON d.noc = j.noc
+     WHERE j.status = 'open' AND j.noc <> ''
+     GROUP BY j.noc, d.title, d.title_zh
+     ORDER BY count(*) DESC LIMIT $1`, [n])
+  return rows.map((r: any) => ({ noc: r.noc, title: r.title, titleZh: r.title_zh, open: r.open, eligible: r.eligible }))
+}
+
 /** 入口三问第 2 题的职业搜索:按中/英职业名模糊找 NOC(noc_descriptions 维度表,≤8 条) */
 export async function searchNocByTitle(pool: any, q: string): Promise<{ noc: string; title: string; titleZh: string }[]> {
   const s = q.trim()
