@@ -68,7 +68,10 @@ export function RankingTable({ slug, items, t }: { slug: string; items: RankRow[
   const showNamed = isCompany && items.some((i) => (i.namedJobs ?? 0) > 0)
   // 「更新于」= 榜内最新发布日(第 11 轮 #30),但**不超过今天**(第 12 轮 #32:帖面日期是 ET 时区
   // 可到「明天」,「更新于未来」损口径可信度)——用浏览者本地日期封顶
-  const today = new Date().toLocaleDateString('en-CA')  // en-CA = YYYY-MM-DD
+  // #218(第 28 轮体检:生产 console React #418 文本不一致,本地 dev 复现不出):
+  // 这行在**服务端(Render 跑 UTC)和浏览器(用户本地时区)各算一次** —— UTC 已过午夜而用户还在前一天时,
+  // 两端渲染出的日期不同 → hydration 文本不匹配。数据本身就是 ET 口径(帖面日期),索性两端都按 ET 算。
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Toronto' })  // en-CA = YYYY-MM-DD
   const maxPosted = items.reduce((m, i) => (i.datePosted && i.datePosted > m ? i.datePosted : m), '').slice(0, 10)
   const updated = (maxPosted && maxPosted < today ? maxPosted : today)
   return (
