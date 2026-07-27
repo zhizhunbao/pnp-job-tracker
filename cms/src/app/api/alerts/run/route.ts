@@ -85,11 +85,38 @@ function weeklyHtml(rows: { title: string; company: string; open: boolean }[], n
       <a href="${unsubUrl}" style="color:#9ca3af">退订本摘要 Unsubscribe</a> · <a href="${SITE}/account" style="color:#9ca3af">账户设置 Settings</a></p></div>`
 }
 
+// ── C2 档案版周报(E5-07,Frank 2026-07-27「用户点进来能留住」):
+// 原周报要求「有收藏」,刚答完入口三问、还没收藏任何岗的新用户一封都收不到 —— 那批人正是最该被叫回来的。
+// 没收藏就按**档案里的职业 + 目标省**发:本周新增多少岗、其中多少可提名、最高年薪多少 + 三条真岗。
+// 一个字都不编:数字全来自库内当周真实新增。
+function weeklyProfileHtml(
+  rows: { title: string; company: string; sal: string }[],
+  stat: { newN: number; eligN: number; medSal: number | null },
+  dims: string, unsubUrl: string,
+): string {
+  const tr = rows.map((r) => `<tr>
+    <td style="padding:6px 10px;border-bottom:1px solid #eee">${r.title}</td>
+    <td style="padding:6px 10px;border-bottom:1px solid #eee;color:#6b7280">${r.company}</td>
+    <td style="padding:6px 10px;border-bottom:1px solid #eee;color:#15803d">${r.sal}</td>
+  </tr>`).join('')
+  const k = (n: number | null) => (n == null ? '—' : `$${Math.round(n / 1000)}K`)
+  return `<div style="font-family:system-ui,sans-serif;color:#1f2937;font-size:14px">
+    <p>🍁 <strong>Offer2PR</strong></p>
+    <p>${dims} 本周新增 <strong>${stat.newN}</strong> 个岗,其中 <strong>${stat.eligN}</strong> 个可提名,中位年薪 <strong>${k(stat.medSal)}</strong><br>
+      <span style="color:#6b7280">${stat.newN} new jobs this week in your direction · ${stat.eligN} PNP-eligible · median ${k(stat.medSal)}</span></p>
+    <table style="border-collapse:collapse;font-size:13px">${tr}</table>
+    <p style="margin-top:14px"><a href="${SITE}" style="color:#2563eb">看这 ${stat.newN} 个新岗 / View →</a></p>
+    <p style="color:#9ca3af;font-size:12px">数据来自官方公开发布,状态以原帖为准 ·
+      <a href="${unsubUrl}" style="color:#9ca3af">退订本摘要 Unsubscribe</a> · <a href="${SITE}/account" style="color:#9ca3af">账户设置 Settings</a></p></div>`
+}
+
 export async function GET(req: NextRequest) {
   if (!process.env.SEED_TOKEN || req.headers.get('x-seed-token') !== process.env.SEED_TOKEN) {
     return new Response('unauthorized', { status: 401 })
   }
   const dry = !MAIL_ENABLED || req.nextUrl.searchParams.get('dry') === '1'
+  // ?preview=weekly:只渲染第一封档案版周报的 HTML 返回,不发信不写库 —— 走查时能直接看邮件长什么样
+  const preview = req.nextUrl.searchParams.get('preview') || ''
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
   const now = new Date().toISOString()
@@ -172,7 +199,44 @@ export async function GET(req: NextRequest) {
     if (out.weeklyEmails >= 200) break                    // 防超时上限;游标语义下一轮自动续
     if (!u.email) continue
     const sj = await payload.find({ collection: 'saved-jobs', limit: 200, depth: 0, overrideAccess: true, where: { user: { equals: u.id } } })
-    if (!sj.docs.length) continue                          // 无收藏=没内容,不硬发
+    if (!sj.docs.length) {
+      // 没收藏 → 走档案分支(E5-07);档案也空就真的没内容可发,保持「不硬发」
+      const nocs = Array.isArray(u.profile?.nocCodes) ? u.profile.nocCodes.filter((x: any) => /^\d{5}$/.test(String(x))) : []
+      const provs = Array.isArray(u.profile?.targetProvinces) ? u.profile.targetProvinces.filter((x: any) => typeof x === 'string' && x.length === 2) : []
+      if (!nocs.length) continue
+      out.weeklyChecked++
+      const provCond = provs.length ? ' AND j.province = ANY($3)' : ''
+      const params: any[] = provs.length ? [cut7, nocs, provs] : [cut7, nocs]
+      const { rows: agg } = await pool.query(
+        `SELECT count(*)::int n, count(*) FILTER (WHERE j.pnp_eligible)::int elig,
+                percentile_cont(0.5) WITHIN GROUP (ORDER BY j.salary_annual) med
+         FROM jobs j WHERE j.status = 'open' AND j.date_posted >= $1 AND j.noc = ANY($2)${provCond}`, params)
+      const st = { newN: agg[0]?.n || 0, eligN: agg[0]?.elig || 0, medSal: agg[0]?.med == null ? null : Number(agg[0].med) }
+      if (!st.newN) continue                               // 本周零新增=没内容,不硬发
+      const { rows: top3 } = await pool.query(
+        `SELECT j.title, COALESCE(c.name,'') company, COALESCE(j.salary_text,'') sal
+         FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
+         WHERE j.status = 'open' AND j.date_posted >= $1 AND j.noc = ANY($2)${provCond}
+         ORDER BY j.salary_annual DESC NULLS LAST LIMIT 3`, params)
+      const { rows: nameRows } = await pool.query(
+        `SELECT COALESCE(title_zh, title, '') nm FROM noc_descriptions WHERE noc = ANY($1) LIMIT 2`, [nocs])
+      const occ = nameRows.map((r: any) => r.nm).filter(Boolean).join('、') || `${nocs.length} 个职业`
+      const dimsP = provs.length ? `${provs.join('、')} 的${occ}` : `${occ}(全国)`
+      const subject = `你的方向本周新增 ${st.newN} 个岗(${st.eligN} 个可提名) — Offer2PR`
+      if (preview === 'weekly') {
+        return new Response(weeklyProfileHtml(top3 as any, st, dimsP, `${SITE}/api/alerts/unsub?u=0&t=preview`),
+          { headers: { 'content-type': 'text/html; charset=utf-8' } })
+      }
+      if (!dry) {
+        const unsubUrl = `${SITE}/api/alerts/unsub?u=${u.id}&t=${unsubToken(u.id)}`
+        const ok = await sendMail(u.email, subject, weeklyProfileHtml(top3 as any, st, dimsP, unsubUrl))
+        if (ok) {
+          out.weeklyEmails++
+          await payload.update({ collection: 'users', id: u.id, overrideAccess: true, data: { lastWeeklyAt: now } })
+        } else out.sendFails++
+      } else out.weeklyEmails++
+      continue
+    }
     out.weeklyChecked++
     const ids = sj.docs.map((d: any) => (typeof d.job === 'object' ? d.job?.id : d.job)).filter((x: any) => x != null)
     const { rows: jrows } = ids.length
