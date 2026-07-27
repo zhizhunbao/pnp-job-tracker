@@ -923,8 +923,10 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const FIT_WEIGHT: Partial<Record<ColKey, number>> = {
     // 权重按**最长的那种语言**定(英文/韩文比中文长得多):中文「大分类=服务」两字够宽,
     // 英文「Services」不给够就断成 Servi/ces;AIP 中文一格「—」,英文「Occupation not accepted」要三行。
-    datePosted: 10, broad: 7, teer: 7, company: 11, title: 13, province: 9, city: 8,
-    salary: 8, salaryYr: 7, wageMedHr: 8, wageMedYr: 8, vsMedian: 5, pnp: 8, ee: 6, aip: 6,
+    // 权重同时满足两头:**表头单行放得下**(Frank「header 的宽度不要变」——实测「Major group ↕」需 100px、
+    // 「vs median ↕」84px)与值不断字。三语里取最宽的那个定。
+    datePosted: 8, broad: 9, teer: 9, company: 11, title: 13, province: 9, city: 8,
+    salary: 8, salaryYr: 6, wageMedHr: 8, wageMedYr: 8, vsMedian: 8, pnp: 8, ee: 6, aip: 6,
   }
   const fitHasActions = fitMode && shown.some((c) => c.key === 'actions')
   const fitTotal = fitMode ? shown.reduce((s, c) => s + (c.key === 'actions' ? 0 : FIT_WEIGHT[c.key] ?? 8), 0) : 0
@@ -1352,9 +1354,11 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       {t('col.actions')}{handle}
                     </th>
                   )
+                  // 年薪列表头收短成「年薪」后,折算口径挂表头 title(悬停才出,不占版面)
                   return (
-                    <th key={c.key} onClick={() => toggleSort(c.key)} title={t('th.tip')}
-                      style={{ padding: `8px ${cellPad}`, color: active ? '#2563eb' : '#374151', fontWeight: 600, whiteSpace: fitMode ? 'normal' : 'nowrap', cursor: 'pointer', userSelect: 'none', position: 'relative', borderRight: isLast ? undefined : '1px solid #e5e7eb', minWidth: colMin(c.key), ...frozenStyle(c.key, '#f9fafb') }}>{/* Frank 走查#23:表头完全显示——去省略截断;固定布局(默认列集)下改允许折行,否则窄窗口表头会互相压过去 */}
+                    <th key={c.key} onClick={() => toggleSort(c.key)} title={c.key === 'salaryYr' ? t('fact.salYrNote') : t('th.tip')}
+                      style={{ padding: `8px ${cellPad}`, color: active ? '#2563eb' : '#374151', fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none', position: 'relative', borderRight: isLast ? undefined : '1px solid #e5e7eb', minWidth: colMin(c.key), ...(fitMode ? { overflow: 'hidden' } : {}), ...frozenStyle(c.key, '#f9fafb') }}>{/* Frank 走查#23:表头完全显示——去省略截断;#23b(2026-07-26「header 的宽度不要变」):一律不折行,
+                          表头挤不下就把标签本身收短(如「年薪(折算)」→「年薪」,折算口径挂 title),不靠换行救 */}
                       {t('col.' + c.key)}<span style={{ color: active ? '#2563eb' : '#d1d5db', fontSize: 11 }}>{active ? (sort.dir === 'desc' ? ' ▼' : ' ▲') : ' ↕'}</span>{handle}
                     </th>
                   )
