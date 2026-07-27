@@ -24,3 +24,17 @@ CREATE TABLE IF NOT EXISTS pnp_score_factors (
 
 CREATE INDEX IF NOT EXISTS pnp_score_factors_province_idx ON pnp_score_factors (province);
 CREATE INDEX IF NOT EXISTS pnp_score_factors_factor_idx   ON pnp_score_factors (factor);
+
+-- ⚠️ 手写建表还差这一步(2026-07-27 实撞):Payload 的 payload_locked_documents_rels 表**每个 collection 一列**,
+-- 少了它,seed 里的 `DELETE FROM payload_locked_documents_rels WHERE <table>_id IS NOT NULL` 直接 42703 报错,
+-- 整个 seed 事务回滚(表现为 /seed 返回 500、无 body)。新增 ETL 维度表时这段必须跟着跑。
+ALTER TABLE payload_locked_documents_rels ADD COLUMN IF NOT EXISTS pnp_score_factors_id integer;
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'payload_locked_documents_rels_pnp_score_factors_fk') THEN
+    ALTER TABLE payload_locked_documents_rels
+      ADD CONSTRAINT payload_locked_documents_rels_pnp_score_factors_fk
+      FOREIGN KEY (pnp_score_factors_id) REFERENCES pnp_score_factors(id) ON DELETE CASCADE;
+  END IF;
+END $$;
+CREATE INDEX IF NOT EXISTS payload_locked_documents_rels_pnp_score_factors_id_idx
+  ON payload_locked_documents_rels (pnp_score_factors_id);
