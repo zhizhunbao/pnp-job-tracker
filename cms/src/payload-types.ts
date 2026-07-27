@@ -73,6 +73,7 @@ export interface Config {
     jobs: Job;
     'pnp-occupations': PnpOccupation;
     'pnp-draws': PnpDraw;
+    'pnp-score-factors': PnpScoreFactor;
     dli: Dli;
     'ee-categories': EeCategory;
     'noc-descriptions': NocDescription;
@@ -104,6 +105,7 @@ export interface Config {
     jobs: JobsSelect<false> | JobsSelect<true>;
     'pnp-occupations': PnpOccupationsSelect<false> | PnpOccupationsSelect<true>;
     'pnp-draws': PnpDrawsSelect<false> | PnpDrawsSelect<true>;
+    'pnp-score-factors': PnpScoreFactorsSelect<false> | PnpScoreFactorsSelect<true>;
     dli: DliSelect<false> | DliSelect<true>;
     'ee-categories': EeCategoriesSelect<false> | EeCategoriesSelect<true>;
     'noc-descriptions': NocDescriptionsSelect<false> | NocDescriptionsSelect<true>;
@@ -662,6 +664,59 @@ export interface PnpDraw {
    * 省项目名(BC PNP Skills Immigration/AAIP/…)
    */
   label?: string | null;
+  url?: string | null;
+  fetched?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pnp-score-factors".
+ */
+export interface PnpScoreFactor {
+  id: number;
+  province?: string | null;
+  /**
+   * 分制名(SIRS 等)——各省互不相通,展示必带
+   */
+  system?: string | null;
+  /**
+   * work / education / language / wage / area
+   */
+  factor?: string | null;
+  /**
+   * row=档位 / bonus=加分 / rule=规则(wage 那种不穷举的)
+   */
+  kind?: string | null;
+  /**
+   * 同节内顺序(官方表的行序)
+   */
+  seq?: number | null;
+  label?: string | null;
+  /**
+   * rule 行为空
+   */
+  points?: number | null;
+  /**
+   * 与上一条加分二选一(官方原文的「…, or」)
+   */
+  xorPrev?: boolean | null;
+  /**
+   * rule 行的公式与边界(JSON 串)
+   */
+  rule?: string | null;
+  /**
+   * 该节上限(官方 Max)
+   */
+  factorMax?: number | null;
+  /**
+   * 该省总分上限
+   */
+  maxTotal?: number | null;
+  /**
+   * 官方指南生效日期——过期检测锚点
+   */
+  guideEffective?: string | null;
   url?: string | null;
   fetched?: string | null;
   updatedAt: string;
@@ -1245,6 +1300,10 @@ export interface PayloadLockedDocument {
         value: number | PnpDraw;
       } | null)
     | ({
+        relationTo: 'pnp-score-factors';
+        value: number | PnpScoreFactor;
+      } | null)
+    | ({
         relationTo: 'dli';
         value: number | Dli;
       } | null)
@@ -1548,6 +1607,28 @@ export interface PnpDrawsSelect<T extends boolean = true> {
   invitations?: T;
   note?: T;
   label?: T;
+  url?: T;
+  fetched?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pnp-score-factors_select".
+ */
+export interface PnpScoreFactorsSelect<T extends boolean = true> {
+  province?: T;
+  system?: T;
+  factor?: T;
+  kind?: T;
+  seq?: T;
+  label?: T;
+  points?: T;
+  xorPrev?: T;
+  rule?: T;
+  factorMax?: T;
+  maxTotal?: T;
+  guideEffective?: T;
   url?: T;
   fetched?: T;
   updatedAt?: T;

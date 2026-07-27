@@ -6,6 +6,7 @@ import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, use
 // SSR 端 useLayoutEffect 无效且会告警 → 服务端退化成 useEffect。
 const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
+import { BcSirsCard } from './BcSirsCard'
 import { makeT, streamDisplay, eeDisplay, eeKeyDisplay, initialLang, LANGS, LANG_KEY, COLS_COOKIE, type Lang, type TFn } from './i18n'
 import { IconChart, IconCheck, IconClipboard, IconCompass, IconLock, IconMap, IconMapPin, IconMaximize, IconMinimize, IconNews, IconSave, IconSettings, IconStar, IconTarget, IconUser, IconWarn, IconX } from '../Icons'
 import { SiteHeader } from '../SiteHeader'
@@ -541,6 +542,11 @@ const ORIGIN_LABEL: Record<string, string> = { jobbank: 'Job Bank', ats: 'ATS', 
 // program:PNP(省提名,默认)/ AIP(大西洋移民试点背书)—— 两条路分开判(E6-09;NB 两套官方清单)
 export type PnpOcc = { province: string; stream: string; label: string; type: string; program?: string; noc: string; name: string; gtaRestricted: boolean; url: string; fetched: string }
 // 省抽选事实(E6-04):score 是省自评分制(scale 标注),非 CRS —— 只作事实展示,不做资格/差分判定
+// E12-09:省提名官方分值表(一行一档;kind=row 档位 / bonus 加分 / rule 规则)。
+// 红线:这是**官方分值**,按它自算出来的分只能叫「按官方分值表自算」,不是资格认定。
+export type ScoreFactor = { province: string; system: string; factor: string; kind: string; seq: number
+  label: string; points: number | null; xorPrev: boolean; rule: string
+  factorMax: number | null; maxTotal: number | null; guideEffective: string; url: string }
 export type PnpDraw = { province: string; kind: string; drawDate: string; stream: string; score: number | null; scale: string; invitations: number | null; note: string; label: string; url: string; fetched: string }
 export type EeOcc = { category: string; label: string; noc: string; teer: number | null; title: string; url: string; fetched: string; drawCrs: number | null; drawDate: string; drawSize: number | null }
 export type DesigEmp = { name: string; province: string; location: string; isTech: boolean }
@@ -560,13 +566,14 @@ type Dims = {
   experienceLevels: { name: string }[]
   pnpOccupations: PnpOcc[]
   pnpDraws: PnpDraw[]
+  pnpScoreFactors: ScoreFactor[]
   eeCategories: EeOcc[]
   designatedEmployers: DesigEmp[]
   nocDescriptions: NocDesc[]
   fieldSources: FieldSource[]
   news: NewsSlim[]
 }
-const EMPTY_DIMS: Dims = { provinces: [], cities: [], districts: [], nocCategories: [], sources: [], experienceLevels: [], pnpOccupations: [], pnpDraws: [], eeCategories: [], designatedEmployers: [], nocDescriptions: [], fieldSources: [], news: [] }
+const EMPTY_DIMS: Dims = { provinces: [], cities: [], districts: [], nocCategories: [], sources: [], experienceLevels: [], pnpOccupations: [], pnpDraws: [], pnpScoreFactors: [], eeCategories: [], designatedEmployers: [], nocDescriptions: [], fieldSources: [], news: [] }
 const PROV_CODE: Record<string, string> = Object.fromEntries(Object.entries(PROV_NAMES).map(([c, n]) => [n, c]))
 
 export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdatedAt, dims: initialDims = EMPTY_DIMS, initialCols, plan = FREE_PLAN, totalCount, proof, deferFull }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims; initialCols?: string[]; plan?: Plan; initialBanner?: boolean; totalCount?: number; proof?: { named: number; lmia: number }; deferFull?: boolean }) {
@@ -1664,7 +1671,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       {/* footer:全站共享 SiteFooter(2026-07-16 用户拍板统一 header/footer) */}
       <SiteFooter t={t} maxWidth={1320} />
 
-      {popup && <AdvisorModal group={popup.group} field={popup.srcField} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} news={dims.news} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} onOpenJob={(x) => setActModal({ kind: 'desc', job: x })} />}
+      {popup && <AdvisorModal group={popup.group} field={popup.srcField} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} news={dims.news} scoreFactors={dims.pnpScoreFactors} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} onOpenJob={(x) => setActModal({ kind: 'desc', job: x })} />}
       {actModal && <ActModal job={actModal.job} lang={lang} plan={plan} nocDesc={dims.nocDescriptions} onClose={() => setActModal(null)} />}
       {wizard && <OnboardingWizard t={t} initial={plan.profile} onClose={closeWizard} />}
       {quiz && !wizard && (
@@ -1778,7 +1785,7 @@ function NewsLatestBlock({ province, lang, news }: { province: string; lang: Lan
   )
 }
 
-export function PnpListSection({ job, lang, occ, draws, news, nocDesc = [], showZh = true }: { job: JobRow; lang: Lang; occ: PnpOcc[]; draws: PnpDraw[]; news: NewsSlim[]; nocDesc?: NocDesc[]; showZh?: boolean }) {
+export function PnpListSection({ job, lang, occ, draws, news, scoreFactors = [], profileClb, nocDesc = [], showZh = true }: { job: JobRow; lang: Lang; occ: PnpOcc[]; draws: PnpDraw[]; news: NewsSlim[]; scoreFactors?: ScoreFactor[]; profileClb?: number | null; nocDesc?: NocDesc[]; showZh?: boolean }) {
   const t = makeT(lang)
   const matchRef = useRef<HTMLDivElement | null>(null)
   // 2026-07-25 Frank:清单可折叠+职业带界面语言译名+展开不内嵌滚动。译名=NOC 官方职业名(noc_descriptions)
@@ -1815,6 +1822,10 @@ export function PnpListSection({ job, lang, occ, draws, news, nocDesc = [], show
       <div style={MODAL_CARD}>
         <div style={MODAL_CARD_HEAD}>{t('col.pnp')}</div>
         <div>{verdictPill}</div>
+      {/* E12-09:BC 岗位给「按官方分值表自算」的注册打分 + 与真实抽选线对照(Frank:分不够赶紧换省换岗) */}
+      {job.province === 'BC' && scoreFactors.some((f) => f.province === 'BC')
+        ? <BcSirsCard t={t} lang={lang} job={job} factors={scoreFactors} draws={draws} profileClb={profileClb} /> : null}
+
         {genericWhy ? <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 6, lineHeight: 1.7 }}>{genericWhy}</div> : null}
         {/* Frank「qc 没有对应的通道 也没有历史」:QC 不参加 PNP 是制度事实,不是缺数 —— 把它走的是什么说清 */}
         {isQc ? <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 6, lineHeight: 1.7 }}>{t('ch.pnp.qcWhy')}</div> : null}
@@ -2997,20 +3008,20 @@ function GroupFactsSection(props: Omit<Parameters<typeof FieldFactsSection>[0], 
   )
 }
 
-function FieldFactsSection({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpDraws, news, eeOcc, desigEmp, nocDesc, fieldSources, onOpenJob, showZh }: { field: ColKey; job: JobRow; jobs: JobRow[]; lang: Lang; isPro: boolean; loggedIn: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; news: NewsSlim[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onOpenJob?: (j: JobRow) => void; showZh?: boolean }) {
+function FieldFactsSection({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpDraws, news, scoreFactors, profileClb, eeOcc, desigEmp, nocDesc, fieldSources, onOpenJob, showZh }: { field: ColKey; job: JobRow; jobs: JobRow[]; lang: Lang; isPro: boolean; loggedIn: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; news: NewsSlim[]; scoreFactors: ScoreFactor[]; profileClb: number | null; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onOpenJob?: (j: JobRow) => void; showZh?: boolean }) {
   const t = makeT(lang)
   return (
     <>
-      <FieldFactsInner field={field} job={job} jobs={jobs} lang={lang} isPro={isPro} loggedIn={loggedIn} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} onOpenJob={onOpenJob} showZh={showZh} />
+      <FieldFactsInner field={field} job={job} jobs={jobs} lang={lang} isPro={isPro} loggedIn={loggedIn} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} scoreFactors={scoreFactors} profileClb={profileClb} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} onOpenJob={onOpenJob} showZh={showZh} />
       {/* #106 撤官方外链;2026-07-25 Frank「这些都是废话」:「来源: 本站算法」派生注也退役 */}
     </>
   )
 }
 // CompanyJobsList 退役(E8-11 B1):在招职位富行(NOC 对照+薪资+通道档)收编进 CompanyBody,弹框页面同款
-function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpDraws, news, eeOcc, desigEmp, nocDesc, onOpenJob, showZh }: { field: ColKey; job: JobRow; jobs: JobRow[]; lang: Lang; isPro: boolean; loggedIn: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; news: NewsSlim[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; onOpenJob?: (j: JobRow) => void; showZh?: boolean }) {
+function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpDraws, news, scoreFactors, profileClb, eeOcc, desigEmp, nocDesc, onOpenJob, showZh }: { field: ColKey; job: JobRow; jobs: JobRow[]; lang: Lang; isPro: boolean; loggedIn: boolean; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; news: NewsSlim[]; scoreFactors: ScoreFactor[]; profileClb: number | null; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; onOpenJob?: (j: JobRow) => void; showZh?: boolean }) {
   const t = makeT(lang)
   const noc = nocDesc.find((d) => d.noc === job.noc) || null
-  if (field === 'pnp') return <PnpListSection job={job} lang={lang} occ={pnpOcc} draws={pnpDraws} news={news} nocDesc={nocDesc} showZh={showZh} />
+  if (field === 'pnp') return <PnpListSection job={job} lang={lang} occ={pnpOcc} draws={pnpDraws} news={news} scoreFactors={scoreFactors} profileClb={profileClb} nocDesc={nocDesc} showZh={showZh} />
   if (field === 'ee') return <EeCategorySection job={job} lang={lang} cats={eeOcc} draws={pnpDraws} nocDesc={nocDesc} showZh={showZh} />
   if (field === 'title') return <TitleFacts job={job} lang={lang} loggedIn={loggedIn} />
   const day = (s?: string) => (s || '').slice(0, 10)
@@ -3849,7 +3860,7 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
 }
 
 // E8-10:入参从 24 值的 field 改为 3 值的 group;field 保留仅用于「打开时锚到哪一节」,不再参与内容分支。
-export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnpDraws, news, eeOcc, desigEmp, nocDesc, fieldSources, onClose, onOpenJob }: { group: FieldGroup; field: ColKey; job: JobRow; title?: string; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; news: NewsSlim[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onClose: () => void; onOpenJob?: (j: JobRow) => void }) {
+export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnpDraws, news, scoreFactors, eeOcc, desigEmp, nocDesc, fieldSources, onClose, onOpenJob }: { group: FieldGroup; field: ColKey; job: JobRow; title?: string; lang: Lang; plan: Plan; pnpOcc: PnpOcc[]; pnpDraws: PnpDraw[]; news: NewsSlim[]; scoreFactors: ScoreFactor[]; eeOcc: EeOcc[]; desigEmp: DesigEmp[]; nocDesc: NocDesc[]; fieldSources: FieldSource[]; onClose: () => void; onOpenJob?: (j: JobRow) => void }) {
   const t = makeT(lang)
   const overlayClose = useOverlayClose(onClose)
   const a = advHeader(field, job, t)
@@ -4005,7 +4016,7 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
             ? <LocationPanel job={job} lang={lang} plan={plan} srcField={field} pnpDraws={pnpDraws} news={news} desigEmp={desigEmp} />
             : group === 'company'
             ? <CompanyPanel job={job} jobs={companyJobs} lang={lang} plan={plan} onOpenJob={onOpenJob} />
-            : <GroupFactsSection group={group} job={job} jobs={companyJobs} lang={lang} isPro={plan.isPro} loggedIn={plan.loggedIn} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} onOpenJob={onOpenJob} showZh={showZh} />}
+            : <GroupFactsSection group={group} job={job} jobs={companyJobs} lang={lang} isPro={plan.isPro} loggedIn={plan.loggedIn} pnpOcc={pnpOcc} pnpDraws={pnpDraws} news={news} scoreFactors={scoreFactors} profileClb={plan.profile?.clb ?? null} eeOcc={eeOcc} desigEmp={desigEmp} nocDesc={nocDesc} fieldSources={fieldSources} onOpenJob={onOpenJob} showZh={showZh} />}
           {/* 建档 CTA 删(2026-07-25 Frank「这个去掉没什么意义」;原第 5 轮 #17 弹框规范 D1) */}
           {/* 免责/AI 声明不进弹框(2026-07-06 用户拍板:合规统一在 footer 说明) */}
           {/* #174:AI 解读收进自己的卡(每卡必有 title)——只有移民组会请求 AI,
