@@ -36,6 +36,7 @@ IN_AIP = _paths.AIP / "aip-designated-employers.json"
 IN_WAGES = _paths.WAGES / "wages.json"   # NOC×省 中位工资(build_wages.py 从 ESDC 开放数据建)
 IN_PNP = _paths.PNP                      # raw/pnp/*.json(各省具名通道:每文件一条通道)
 IN_PNP_DRAWS = _paths.PNP / "draws.json"  # 省抽选事实(BC/AB/MB+ON通告,build_draws.py 产,E6-04)
+IN_BC_SIRS = _paths.PNP / "bc-sirs.json"  # BC 注册打分表(SIRS 200 分制,build_bc_sirs.py 从官方 PDF 抓,E12-09)
 IN_EE = _paths.EE / "federal-categories.json"  # 联邦 Express Entry 类别抽选(全国单一源)
 IN_EE_DRAWS = _paths.EE / "draws.json"          # 各类别最近一次抽选(CRS/日期/邀请数,build_ee_draws.py 产)
 IN_NOC_DESC = _paths.NOC / "descriptions.json"  # NOC 官方名+主要职责(build_noc_descriptions.py 产)
@@ -496,6 +497,30 @@ def build():
                 "invitations": dr.get("size"), "note": "",
             })
 
+    # 省提名打分表维度(E12-09):一行一档 —— province/factor/kind(row|bonus)/label/points/xor + 该节上限。
+    # 摊平存,前端算分只做加法;wage 那类「规则不穷举」的存 rule 行(points 为空,rule 里写公式)。
+    pnp_score_factors = []
+    if IN_BC_SIRS.exists():
+        try:
+            _sirs = json.loads(IN_BC_SIRS.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001
+            _sirs = {}
+        base = {"province": _sirs.get("province", ""), "system": _sirs.get("system", ""),
+                "maxTotal": _sirs.get("maxTotal"), "url": _sirs.get("url", ""),
+                "guideEffective": _sirs.get("guideEffective", ""), "fetched": _sirs.get("fetched", "")}
+        for fname, f in (_sirs.get("factors") or {}).items():
+            for kind in ("rows", "bonus"):
+                for i, x in enumerate(f.get(kind, [])):
+                    pnp_score_factors.append({**base, "factor": fname, "kind": kind[:-1] if kind == "rows" else kind,
+                                              "seq": i, "label": x.get("label", ""), "points": x.get("points"),
+                                              "xorPrev": bool(x.get("xorWithPrev")), "rule": "",
+                                              "factorMax": f.get("max")})
+            if f.get("rule"):
+                pnp_score_factors.append({**base, "factor": fname, "kind": "rule", "seq": 0,
+                                          "label": f.get("rule", ""), "points": None, "xorPrev": False,
+                                          "rule": json.dumps({k: f.get(k) for k in ("rule", "floorAt", "capAt")}, ensure_ascii=False),
+                                          "factorMax": f.get("max")})
+
     # 联邦 EE 类别维度(每行=某类别内一个职业)
     ee_categories = []
     if IN_EE.exists():
@@ -605,7 +630,7 @@ def build():
         "provinces": provinces, "cities": cities, "districts": districts,
         "designated_employers": designated,
         "noc_categories": noc_categories, "sources": sources, "experience_levels": experience_levels,
-        "pnp_occupations": pnp_occupations, "pnp_draws": pnp_draws, "ee_categories": ee_categories,
+        "pnp_occupations": pnp_occupations, "pnp_draws": pnp_draws, "pnp_score_factors": pnp_score_factors, "ee_categories": ee_categories,
         "noc_descriptions": noc_descriptions,
         "field_sources": field_sources,
         "dli": dli,
