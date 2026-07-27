@@ -1823,17 +1823,20 @@ export function PnpListSection({ job, lang, occ, draws, news, scoreFactors = [],
       <div style={MODAL_CARD}>
         <div style={MODAL_CARD_HEAD}>{t('col.pnp')}</div>
         <div>{verdictPill}</div>
-      {/* E12-09:BC 岗位给「按官方分值表自算」的注册打分 + 与真实抽选线对照(Frank:分不够赶紧换省换岗) */}
-      {/* key=岗位 id:自评面板的默认值按本岗算(时薪、地区、是否已有本省 offer),
-          换一个岗必须重置,否则 React 复用同一实例、useState 初值不再跑 = 显示上一个岗的默认值 */}
-      {scoreFactors.some((f) => f.province === job.province)
-        ? <PnpScoreCard key={job.id} t={t} lang={lang} job={job} factors={scoreFactors} draws={draws} profileClb={profileClb}
-            matchedStream={matched?.stream || ''} /> : null}
-
         {genericWhy ? <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 6, lineHeight: 1.7 }}>{genericWhy}</div> : null}
         {/* Frank「qc 没有对应的通道 也没有历史」:QC 不参加 PNP 是制度事实,不是缺数 —— 把它走的是什么说清 */}
         {isQc ? <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 6, lineHeight: 1.7 }}>{t('ch.pnp.qcWhy')}</div> : null}
       </div>
+      {/* E12-09 自评打分 = **独立一卡**(Frank 2026-07-27「算分的要单独一个卡片,不要嵌套到其他卡片里面」)——
+          原来塞在判定卡内部成了卡中卡;照本弹框「每块一卡」的既有排法平级摆。
+          key=岗位 id:面板默认值按本岗算(时薪、地区、是否已有本省 offer),换岗必须重置,
+          否则 React 复用同一实例、useState 初值不再跑 = 显示上一个岗的默认值 */}
+      {scoreFactors.some((f) => f.province === job.province) ? (
+        <div style={MODAL_CARD}>
+          <PnpScoreCard key={job.id} t={t} lang={lang} job={job} factors={scoreFactors} draws={draws}
+            profileClb={profileClb} matchedStream={matched?.stream || ''} />
+        </div>
+      ) : null}
       {!isQc && job.province && draws.some((d) => d.province === job.province) ? (
         <div style={MODAL_CARD}><PnpDrawsBlock province={job.province} lang={lang} draws={draws} /></div>
       ) : null}

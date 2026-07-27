@@ -136,7 +136,8 @@ export function PnpScoreCard({ t, lang, job, factors, draws, profileClb, matched
   const num = (n: number) => <span style={{ fontVariantNumeric: 'tabular-nums' }}>{n}</span>
 
   return (
-    <div style={{ border: '1px solid #e5e7eb', borderRadius: 12, padding: '13px 14px', marginBottom: 12 }}>
+    // 卡壳(边框/圆角/内边距)由外层 MODAL_CARD 提供 —— 这里再画一层就是卡中卡
+    <div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
         <span style={{ fontSize: 13.5, fontWeight: 700, color: '#111827' }}>{t('ps.title')}</span>
         <span style={{ fontSize: 11.5, color: '#9ca3af' }}>{scores.map((s) => `${s.province} ${s.system}`).join('、')}</span>
