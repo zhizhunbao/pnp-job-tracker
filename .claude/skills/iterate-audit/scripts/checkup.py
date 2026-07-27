@@ -135,7 +135,11 @@ JS = r"""
     const t = textOf(el);
     if (t.length < 12) continue;
     const s = sel(el);
-    if (seen.has(t)) { if (seen.get(t) !== s) { add('R3同页事实重复', el, t, { other: seen.get(t) }); seen.set(t, s); } }
+    // 第 28 轮:①一处在弹框、一处在被它盖住的页面 → 用户同时看不到,不算重复;
+    // ②页签名与当前榜标题同名 = 「你在哪一榜」的定位(第 26 轮已拍板保留)
+    const inModal = !!el.closest('[class*=eq], [role=dialog]');
+    const isTab = !!el.closest('[class*=Tabs], [class*=tabs]');
+    if (seen.has(t)) { if (seen.get(t) !== s && !inModal && !isTab) { add('R3同页事实重复', el, t, { other: seen.get(t) }); seen.set(t, s); } }
     else seen.set(t, s);
   }
   // ---- 4 占位符泄漏 ----
@@ -224,6 +228,7 @@ JS = r"""
     const st = getComputedStyle(el);
     if (el.tagName === 'A' && st.display.startsWith('inline') && !el.querySelector('*')) continue; // 正文行内链接不算
     if (el.closest('[data-tap-card]')) continue;                  // 整卡可点,卡内内容链接不单独算靶
+    if (el.closest('header')) continue;                          // 顶栏按 Frank 拍板豁免(加热区会把语言钮/登录撑肥)
     const r = el.getBoundingClientRect();
     if (r.width >= 40 && r.height >= 40) continue;
     if (r.height >= 32 && r.width >= 120) continue;   // 大条钮(如「购买 30 天 CA$19」296×36)点得中,不必凑 40
@@ -259,7 +264,8 @@ JS = r"""
   const body = document.body.innerText;
   const pick = re => { const m = body.match(re); return m ? m[0] : null; };
   const facts = {
-    heartbeat: pick(/核对[^\n]{0,24}|Checked[^\n]{0,24}|확인[^\n]{0,24}/),
+    // 标签 2026-07-26 晚改回「更新时间/Updated/업데이트」(Frank 二次拍板);旧词保留兼容,免得改名一次探针瞎一次
+    heartbeat: pick(/更新时间[^\n]{0,24}|核对[^\n]{0,24}|Updated[^\n]{0,24}|Checked[^\n]{0,24}|업데이트[^\n]{0,24}|확인[^\n]{0,24}/),
     // 在招总数:韩文页「PNP 목록 2571건 포함」会先命中,必须锚在「개 공고 / 个职位 / jobs」上
     hits: pick(/[\d,]+\s*(个职位|个在招|개 공고|jobs)/),
     title: document.title,
