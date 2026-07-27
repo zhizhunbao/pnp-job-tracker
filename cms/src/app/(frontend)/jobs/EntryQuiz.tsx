@@ -3,7 +3,8 @@
 // 四步:问 → 免费结果 → 注册保存 → 付费清单(付费包下一阶段)。本组件负责前两步 + 把注册接出去。
 //
 // 硬约束(写死在这,别再放宽):
-//   ① 三题封顶、每题一屏、进度条可见;「先随便看看 ×」永远在;只弹一次(localStorage)。
+//   ① 三题封顶、每题一屏、进度条可见;只弹一次(localStorage)。
+//      (底部「先随便看看」2026-07-27 撤 —— Frank「右上角不是有关闭的 ❌ 了吗」;出口仍在:× 与 Esc。)
 //   ② 答完**立刻**出结果——结果来自 /api/quiz 的库内聚合(毫秒级),不碰 AI、不转圈。
 //   ③ 跳过的人照常进职位板,不再骚扰。
 //   ④ 匿名答案存 localStorage,注册后由调用方落库成档案(不让用户填两遍)。
@@ -179,23 +180,19 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
                 ))}
               </div>
             ) : null}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11.5, color: '#9ca3af', marginBottom: 10 }}>
-              <span>{step + 1} / 3</span>
-              <span style={{ flex: 1, height: 4, background: '#eef2ff', borderRadius: 999, overflow: 'hidden' }}>
-                <i style={{ display: 'block', height: '100%', width: `${((step + 1) / 3) * 100}%`, background: '#2563eb' }} />
-              </span>
+            {/* 三段粗条 + 步骤名(Frank「进度条太细了」「这块排版混乱」;查了通行做法:stepper = 段 + 标签 + 状态,
+                标签让人知道后面还要答什么,不确定感降下来,完成率才上得去)。「2 / 3」那行字撤,段本身在表达。 */}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+              {(['quiz.step1', 'quiz.step2', 'quiz.step3'] as const).map((k, i) => (
+                <div key={k} style={{ flex: 1 }}>
+                  <span style={{ display: 'block', height: 8, borderRadius: 999, background: i <= step ? '#2563eb' : '#e5e7eb' }} />
+                  <span style={{ display: 'block', marginTop: 5, fontSize: 11, color: i === step ? '#1d4ed8' : '#9ca3af', fontWeight: i === step ? 600 : 400 }}>{t(k)}</span>
+                </div>
+              ))}
             </div>
-            {/* Frank「弹框太单薄」二:把已答的两题回显出来 —— 三步问答只给一句话时,用户看不见自己的进展 */}
-            {step > 0 && (status || nocTitle) ? (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
-                {status ? <span style={pickedChip}>{t('quiz.st.' + status)}</span> : null}
-                {nocTitle ? <span style={pickedChip}>{nocTitle}</span> : null}
-              </div>
-            ) : null}
             {step === 0 && (
               <>
                 <div style={{ fontSize: 21, fontWeight: 700, margin: '2px 0 6px', color: '#111827' }}>{t('quiz.q1')}</div>
-                <div style={{ fontSize: 12.5, color: '#6b7280', marginBottom: 12 }}>{t('quiz.lead')}</div>
                 {STATUS_SLUGS.map((s) => (
                   <button key={s} onClick={() => { setStatus(s); track('quiz-step', { step: '0' }); setStep(1) }} style={opt(status === s)}>{t('quiz.st.' + s)}</button>
                 ))}
@@ -206,6 +203,13 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
               <>
                 <div style={{ fontSize: 21, fontWeight: 700, margin: '2px 0 6px', color: '#111827' }}>{t('quiz.q2')}</div>
                 <div style={{ fontSize: 12.5, color: '#6b7280', marginBottom: 12 }}>{t('quiz.q2sub')}</div>
+                {/* 已答回显跟在副标题之后:层级 标题 > 副标题 > 已答,不再打断标题 */}
+                {(status || nocTitle) ? (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, margin: '0 0 12px' }}>
+                    {status ? <span style={pickedChip}>{t('quiz.st.' + status)}</span> : null}
+                    {nocTitle ? <span style={pickedChip}>{nocTitle}</span> : null}
+                  </div>
+                ) : null}
                 <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('quiz.q2ph')} enterKeyHint="search"
                   style={{ width: '100%', boxSizing: 'border-box', height: 42, padding: '0 12px', border: '1px solid #d1d5db', borderRadius: 10, fontSize: 14.5, background: '#fafafa', marginBottom: 10 }} />
                 {cands.length > 0 && (
@@ -273,6 +277,13 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
               <>
                 <div style={{ fontSize: 21, fontWeight: 700, margin: '2px 0 6px', color: '#111827' }}>{t('quiz.q3')}</div>
                 <div style={{ fontSize: 12.5, color: '#6b7280', marginBottom: 12 }}>{t('quiz.q3sub')}</div>
+                {/* 已答回显跟在副标题之后:层级 标题 > 副标题 > 已答,不再打断标题 */}
+                {(status || nocTitle) ? (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, margin: '0 0 12px' }}>
+                    {status ? <span style={pickedChip}>{t('quiz.st.' + status)}</span> : null}
+                    {nocTitle ? <span style={pickedChip}>{nocTitle}</span> : null}
+                  </div>
+                ) : null}
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 14 }}>
                   {PROVS.map((p) => {
                     const on = provs.includes(p)
@@ -298,9 +309,6 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
             onApply={() => { track('quiz-apply'); onApply(answers) }}
             onClose={() => { save(true); onClose() }} />
         )}
-        {step < 3 ? (
-          <div onClick={skip} style={{ textAlign: 'center', fontSize: 12.5, color: '#9ca3af', marginTop: 14, cursor: 'pointer' }}>{t('quiz.skip')}</div>
-        ) : null}
         </div>
       </div>
     </div>
