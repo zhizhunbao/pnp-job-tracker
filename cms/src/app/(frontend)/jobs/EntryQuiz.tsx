@@ -58,6 +58,7 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
   // Frank 2026-07-26「还能加一些常规热门的职业吗」「列表可以列得全一些」:清单不手写,
   // 按**库里在招量**取前 24(/api/quiz?top=24),会随市场自己变;拿不到就退回内置常用清单。
   const [top, setTop] = useState<{ noc: string; title: string; titleZh: string; open: number }[]>([])
+  const [moreNocs, setMoreNocs] = useState(false)   // 第 2 题默认只露 8 个(Frank「看着有点乱」),其余收起
   const [nocTitle, setNocTitle] = useState('')   // 已选职业名(第 3 题顶部回显,让用户看见自己答到哪了)
   const [facts, setFacts] = useState<QuizFacts | null | 'loading'>(null)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -156,8 +157,10 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
 
   return (
     <div onClick={skip} className="eqWrap" style={{ position: 'fixed', inset: 0, background: 'rgba(17,24,39,.45)', zIndex: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      <style>{`@media (min-width:861px){.eqCols{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr);gap:28px;align-items:stretch}}
-        @media (max-width:860px){.eqAside{border-top:1px solid #f3f4f6;margin-top:16px;padding-top:14px}.eqWrap{padding:0;align-items:flex-end}.eqSheet{max-height:92vh;border-radius:16px 16px 0 0}}`}</style>
+      {/* Frank 2026-07-27「问题弹框看着还是有点乱,很多人一看就跑偏了」:两栏(问题 + 信任卡)同屏
+          六件事 —— 进度、回显、标题、副标题、搜索、24 个 chip、右栏三个数字、跳过。重排为**单栏一屏一件事**:
+          信任数字压成标题上方一行小字;第 2 题默认只露 8 个热门,其余收进「更多职业」。 */}
+      <style>{`@media (max-width:860px){.eqWrap{padding:0;align-items:flex-end}.eqSheet{max-height:92vh;border-radius:16px 16px 0 0}}`}</style>
       <div className="eqSheet" onClick={(e) => e.stopPropagation()} style={sheet}>
         {/* ① 品牌头:站名 + 定位 + 关闭。没有这条,用户不知道自己在哪个站(这正是「像钓鱼」的来源) */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 20px', borderBottom: '1px solid #f3f4f6', flexShrink: 0 }}>
@@ -166,10 +169,16 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
             style={{ marginLeft: 'auto', border: 'none', background: 'none', color: '#9ca3af', fontSize: 22, lineHeight: 1, cursor: 'pointer', padding: 4 }}>×</button>
         </div>
         <div style={inner}>
-        <div className="eqCols">
-        <div>
         {step < 3 ? (
           <>
+            {/* 信任信息压成一行,且**只在第 1 题**出现:信任在开头建立就够,第 2、3 题让位给问题本身 */}
+            {trust.length && step === 0 ? (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, fontSize: 11.5, color: '#9ca3af', marginBottom: 10 }}>
+                {trust.map(([n, label]) => (
+                  <span key={label}><b style={{ color: '#4b5563', fontWeight: 600 }}>{n}</b> {label}</span>
+                ))}
+              </div>
+            ) : null}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11.5, color: '#9ca3af', marginBottom: 10 }}>
               <span>{step + 1} / 3</span>
               <span style={{ flex: 1, height: 4, background: '#eef2ff', borderRadius: 999, overflow: 'hidden' }}>
@@ -228,7 +237,7 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
                     })
                   })()
                     : POPULAR_NOCS.map((p) => ({ noc: p.noc, label: t(p.key), dup: false, open: counts[p.noc]?.open }))
-                  ).map((x) => {
+                  ).slice(0, moreNocs ? 99 : 8).map((x) => {
                     const on = nocs.includes(x.noc)
                     return (
                       <button key={x.noc} title={x.label}
@@ -244,6 +253,13 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
                     )
                   })}
                 </div>
+                {/* 24 个 chip 一次铺开是「乱」的主因;默认 8 个,想看全再展开 */}
+                {(top.length || POPULAR_NOCS.length) > 8 && !moreNocs ? (
+                  <button onClick={() => setMoreNocs(true)}
+                    style={{ border: 'none', background: 'none', padding: '8px 0 0', color: '#2563eb', cursor: 'pointer', fontSize: 12.5 }}>
+                    ▾ {t('quiz.moreNocs')}
+                  </button>
+                ) : null}
                 {/* 多选后不能再靠「点一下就跳」推进 —— 给一个明确的下一步(未选时不出,别让人点空) */}
                 {nocs.length ? (
                   <Button kind="primary" onClick={() => { track('quiz-step', { step: '1' }); setStep(2) }}
@@ -282,24 +298,6 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
             onApply={() => { track('quiz-apply'); onApply(answers) }}
             onClose={() => { save(true); onClose() }} />
         )}
-        </div>
-        {/* ② 右栏(窄屏折到下方):库内真数字 + 最近核对 + 官方来源署名 —— 全部是事实,不是宣传语 */}
-        <aside className="eqAside">
-          {trust.length ? (
-            <div style={{ background: '#f9fafb', border: '1px solid #f3f4f6', borderRadius: 12, padding: '14px 16px' }}>
-              {trust.map(([n, label], i) => (
-                <div key={label} style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: i ? 8 : 0 }}>
-                  <span style={{ fontSize: 19, fontWeight: 700, color: '#1d4ed8', fontVariantNumeric: 'tabular-nums' }}>{n}</span>
-                  <span style={{ fontSize: 12.5, color: '#4b5563' }}>{label}</span>
-                </div>
-              ))}
-              {stats?.checkedAt ? (
-                <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 10 }}>{t('updated', { t: stats.checkedAt })}</div>
-              ) : null}
-            </div>
-          ) : null}
-        </aside>
-        </div>
         {step < 3 ? (
           <div onClick={skip} style={{ textAlign: 'center', fontSize: 12.5, color: '#9ca3af', marginTop: 14, cursor: 'pointer' }}>{t('quiz.skip')}</div>
         ) : null}

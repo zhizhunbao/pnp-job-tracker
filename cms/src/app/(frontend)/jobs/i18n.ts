@@ -370,7 +370,7 @@ const zh: Dict = {
   'quiz.q3': '想去哪个省?', 'quiz.q3sub': '可多选;不选就看全国。',
   'quiz.see': '看结果', 'quiz.seeAny': '不限省份,看结果', 'quiz.skip': '先随便看看 ×',
   // Frank 2026-07-26「这个弹框看着还是太单薄了」:热门职业挂真在招数 + 说清答完能拿到什么
-  'quiz.openN': '{n} 在招', 'quiz.jobsN': '{n} 岗', 'quiz.nextN': '选好了({n} 个职业),下一步 →',
+  'quiz.openN': '{n} 在招', 'quiz.jobsN': '{n} 岗', 'quiz.nextN': '选好了({n} 个职业),下一步 →', 'quiz.moreNocs': '更多职业',
   // 入口全屏页的信任栏(Frank「像钓鱼网站」):全是库内真数与官方来源署名,不写宣传语
   'quiz.tr.jobs': '个在招职位', 'quiz.tr.named': '岗命中省提名清单', 'quiz.tr.lmia': '家雇主有外劳雇佣记录',
   'quiz.sum': '这个职业全国有 {open} 个在招岗,其中 {elig} 个可提名。',
@@ -878,7 +878,7 @@ const en: Dict = {
   'quiz.q2': 'What do you do?', 'quiz.q2sub': 'Pick as many as apply — results use the first.', 'quiz.q2ph': 'Search a job title, e.g. cook, nurse aide',
   'quiz.q3': 'Which province?', 'quiz.q3sub': 'Pick any number, or none for Canada-wide.',
   'quiz.see': 'See results', 'quiz.seeAny': 'Any province — see results', 'quiz.skip': 'Just browsing ×',
-  'quiz.openN': '{n} open', 'quiz.jobsN': '{n} jobs', 'quiz.nextN': 'Next — {n} selected →',
+  'quiz.openN': '{n} open', 'quiz.jobsN': '{n} jobs', 'quiz.nextN': 'Next — {n} selected →', 'quiz.moreNocs': 'More occupations',
   'quiz.tr.jobs': 'open jobs', 'quiz.tr.named': 'on provincial PNP lists', 'quiz.tr.lmia': 'employers with LMIA records',
   'quiz.sum': 'This occupation has {open} open jobs Canada-wide, {elig} of them PNP-eligible.',
   'quiz.sumNamed': '{n} hit the "{s}" list.',
@@ -1372,7 +1372,7 @@ const ko: Dict = {
   'quiz.q2': '어떤 일을 하시나요?', 'quiz.q2sub': '복수 선택 가능 — 결과는 첫 번째 기준입니다.', 'quiz.q2ph': '직무명 검색: 요리사, 요양보호사 등',
   'quiz.q3': '어느 주를 원하시나요?', 'quiz.q3sub': '복수 선택 가능하며, 선택하지 않으면 전국 기준입니다.',
   'quiz.see': '결과 보기', 'quiz.seeAny': '주 무관 — 결과 보기', 'quiz.skip': '그냥 둘러보기 ×',
-  'quiz.openN': '채용중 {n}건', 'quiz.jobsN': '{n}건', 'quiz.nextN': '{n}개 선택 완료 — 다음 →',
+  'quiz.openN': '채용중 {n}건', 'quiz.jobsN': '{n}건', 'quiz.nextN': '{n}개 선택 완료 — 다음 →', 'quiz.moreNocs': '직업 더 보기',
   'quiz.tr.jobs': '개 채용중', 'quiz.tr.named': '건 주정부 지명 목록 해당', 'quiz.tr.lmia': '개 고용주 LMIA 기록 보유',
   'quiz.sum': '이 직업은 전국에 {open}건의 채용이 있고, 그중 {elig}건이 주정부 지명 가능합니다.',
   'quiz.sumNamed': '{n}건이 「{s}」 목록에 해당합니다.',
