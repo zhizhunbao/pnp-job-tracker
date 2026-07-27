@@ -632,7 +632,7 @@ const en: Dict = {
   'empty': 'No matching jobs', 'allShown': 'All {total} shown', 'loadMore': 'Load more ({n} left)',
   'cell.uncat': 'Uncategorized', 'cell.first': 'Direct', 'cell.repost': 'Repost', 'cell.today': 'today',
   'cell.blockedBoth': 'Not accepted here',
-  'cell.pnpExcl': 'On exclusion list', 'cell.aipBlocked': 'Occupation not accepted',
+  'cell.pnpExcl': 'Excluded', 'cell.aipBlocked': 'Not accepted',
   'cell.pnpSkilled': 'Eligible', 'cell.pnpSkilledProv': '{p} eligible', 'cell.pnpIndemand': 'In-demand', 'cell.pnpQc': 'Quebec', 'cell.aipYes': 'Designated', 'cell.lmiaYes': '✓ {n} positions　{q}', 'cell.closed': 'Closed', 'cell.open': 'Open',
   'pnplist.title': 'PNP occupation list', 'pnplist.source': 'Source', 'pnplist.your': 'This job', 'pnplist.gta': 'Outside GTA', 'pnplist.loading': 'Loading list…', 'pnplist.showOther': 'Show other {n} ▾', 'pnplist.foldOther': 'Collapse ▴',
  

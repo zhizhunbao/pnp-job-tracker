@@ -921,16 +921,17 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   // 各列之和恒等于 100% —— 既不横滚,也不给单个收藏钮留一大片空地。
   const ACTIONS_W = 96
   const FIT_WEIGHT: Partial<Record<ColKey, number>> = {
-    datePosted: 10, broad: 4, teer: 4, company: 12, title: 14, province: 9, city: 8,
-    salary: 7, salaryYr: 7, wageMedHr: 8, wageMedYr: 8, vsMedian: 6, pnp: 8, ee: 6, aip: 3,
+    // 权重按**最长的那种语言**定(英文/韩文比中文长得多):中文「大分类=服务」两字够宽,
+    // 英文「Services」不给够就断成 Servi/ces;AIP 中文一格「—」,英文「Occupation not accepted」要三行。
+    datePosted: 10, broad: 7, teer: 7, company: 11, title: 13, province: 9, city: 8,
+    salary: 8, salaryYr: 7, wageMedHr: 8, wageMedYr: 8, vsMedian: 5, pnp: 8, ee: 6, aip: 6,
   }
   const fitHasActions = fitMode && shown.some((c) => c.key === 'actions')
   const fitTotal = fitMode ? shown.reduce((s, c) => s + (c.key === 'actions' ? 0 : FIT_WEIGHT[c.key] ?? 8), 0) : 0
-  const fitWidth = (k: ColKey) => {
-    if (k === 'actions') return `${ACTIONS_W}px`
-    const pct = ((FIT_WEIGHT[k] ?? 8) / fitTotal * 100).toFixed(3)
-    return fitHasActions ? `calc((100% - ${ACTIONS_W}px) * ${pct} / 100)` : `${pct}%`
-  }
+  // 坑(2026-07-26 实测):`<col width="calc((100% - 96px) * 12 / 100)">` 在 Chromium 固定布局下**被整条忽略**,
+  // 13 列全退回 98px 均分 —— 我加的权重一直没生效。改纯百分比:操作列钉 px,其余按权重给 %。
+  // 百分比之和 100% 加上那 96px 会略微超出表宽,浏览器按比例等比缩回,列宽比例正好保住。
+  const fitWidth = (k: ColKey) => (k === 'actions' ? `${ACTIONS_W}px` : `${((FIT_WEIGHT[k] ?? 8) / fitTotal * 100).toFixed(3)}%`)
   const colMin = (k: ColKey) => {
     if (hasWidths) return undefined
     if (fitMode) return undefined   // 百分比固定布局自己保证分配;再给最小宽会把表撑出容器=横滚(Frank「不需要滚动条」)
@@ -939,6 +940,12 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   // fit 模式格距 12→8:13 列默认集在 1280 视口实测超 61px,横距是最后一截肥肉(nowrap 列天然不缩)
   // fit 模式格距再收 8→6:省下的 ~50px 全给文本列,「Saskatchewan」「Montréal」不再被拦腰断词
   const cellPad = fitMode ? '6px' : '12px'
+  // Frank 2026-07-26「英文 table 还是跑偏」:固定布局 + nowrap 的长英文值(NS Critical Vacancies /
+  // Occupation not accepted)会**溢出压到隔壁列**。兜底:fit 模式下所有格子内容不许越界,长词强制断行。
+  const cellClip: React.CSSProperties = fitMode ? { overflow: 'hidden', overflowWrap: 'break-word' } : {}   // anywhere 会把 $3000/2wk 断成 2w/k,只在词放不下时才断
+  // 这几列的值是**短语**不是原子值(AIP「Occupation not accepted」、LMIA、资格、匹配),
+  // 中文短、英文长 —— fit 模式下让它们在本列内换行,别再挤隔壁。
+  const WRAP_IN_FIT = new Set<ColKey>(fitMode ? ['aip', 'lmia', 'eligibility', 'match'] : [])
   // 量当前表头每个可见列的自然渲染宽(auto 布局下为真实内容宽),返回覆盖全可见列的完整 map
   const measureAll = (): Record<string, number> => {
     const head = headRowRef.current
@@ -1439,16 +1446,16 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       else if (k === 'origin') { node = j.origin ? t('origin.' + j.origin) : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'pnp') {  // 三档强度 + 魁省N/A:强=具名紧缺通道(琥珀底色 chip,500)、中=可提名(绿,500)、弱=不符(灰—,400);魁省=紫,400(独立 N/A)
                         const stream = j.pnpStream  // 命中省 inclusion 清单才有,别处看不到的真信号
-                        if (j.province === 'QC') { node = t('cell.pnpQc'); Object.assign(extra, { whiteSpace: 'nowrap', color: '#7c3aed', fontSize: 12.5 }) }
+                        if (j.province === 'QC') { node = t('cell.pnpQc'); Object.assign(extra, { whiteSpace: 'normal', color: '#7c3aed', fontSize: 12.5 }) }
                         else if (stream) {       // 强:省点名招 → 浅琥珀底色徽章(全列唯一加底色的一档)
-                          node = <span style={{ background: '#fef3c7', color: '#b45309', fontWeight: 500, fontSize: 12, padding: '2px 8px', borderRadius: 6, whiteSpace: 'nowrap' }}>{streamDisplay(t, stream)}</span>
-                          Object.assign(extra, { whiteSpace: 'nowrap' })
+                          node = <span style={{ background: '#fef3c7', color: '#b45309', fontWeight: 500, fontSize: 12, padding: '2px 8px', borderRadius: 6, display: 'inline-block' }}>{streamDisplay(t, stream)}</span>
+                          Object.assign(extra, { whiteSpace: 'normal', overflowWrap: 'anywhere' })
                         }
                         // 中:可提名 —— 带上省码(Frank 2026-07-26「最好是显示 可哪个省的提名」):
                         // 省提名是**逐省**的,光写「可提名」会让人以为哪儿都能走;与紧缺徽章「MB 乡镇在需」同款省码前缀
-                        else if (j.pnpEligible) { node = t('cell.pnpSkilledProv', { p: j.province }); Object.assign(extra, { whiteSpace: 'nowrap', color: '#15803d', fontWeight: 500, fontSize: 12.5 }) }
+                        else if (j.pnpEligible) { node = t('cell.pnpSkilledProv', { p: j.province }); Object.assign(extra, { whiteSpace: 'normal', color: '#15803d', fontWeight: 500, fontSize: 12.5 }) }
                         // E6-09:命中官方具名排除清单 → 说结论(红字,格子可点看依据);其余走不了仍是灰「—」
-                        else if (blockedKeys.pnp.has(j.province + '|' + j.noc)) { node = t('cell.pnpExcl'); Object.assign(extra, { whiteSpace: 'nowrap', color: '#b91c1c', fontSize: 12.5 }) }
+                        else if (blockedKeys.pnp.has(j.province + '|' + j.noc)) { node = t('cell.pnpExcl'); Object.assign(extra, { whiteSpace: 'normal', color: '#b91c1c', fontSize: 12.5 }) }
                         else { node = '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#9ca3af', fontSize: 12.5 }) }  // 弱:不符
                       }
                       else if (k === 'ee') {  // 联邦 EE 类别抽选(全国单一源,数据层算);命中→蓝,未列入→—;休眠类别→灰+上次抽选
@@ -1458,13 +1465,13 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                           ? <span title={dormant ? t('ee.dormantTip', { d: lastDraw.slice(0, 7) || '—' }) : undefined}>
                               {eeDisplay(t, j.eeCategory)}{dormant ? t('ee.lastDraw', { d: lastDraw.slice(0, 7) || '—' }) : ''}</span>
                           : '—'
-                        Object.assign(extra, { whiteSpace: 'nowrap', color: j.eeCategory ? (dormant ? '#9ca3af' : '#2563eb') : '#d1d5db', fontSize: 12.5 })
+                        Object.assign(extra, { whiteSpace: 'normal', color: j.eeCategory ? (dormant ? '#9ca3af' : '#2563eb') : '#d1d5db', fontSize: 12.5 })
                       }
                       else if (k === 'aip') {
                         // E6-09:省里逐条点名「这些职业不受理背书」→ 结论压过「雇主在指定名单」(官方一律不受理)
                         const blocked = blockedKeys.aip.has(j.province + '|' + j.noc)
                         node = blocked ? t('cell.aipBlocked') : j.aip ? t('cell.aipYes') : '—'
-                        Object.assign(extra, { whiteSpace: 'nowrap', color: blocked ? '#b91c1c' : j.aip ? '#b45309' : '#d1d5db', fontSize: 12.5 })
+                        Object.assign(extra, { whiteSpace: 'normal', color: blocked ? '#b91c1c' : j.aip ? '#b45309' : '#d1d5db', fontSize: 12.5 })
                       }
                       else if (k === 'lmia') {  // E6-02:✓ 职位数 · 最近季度(历史事实;详情看弹框事实块)
                         node = j.lmiaPositions ? t('cell.lmiaYes', { n: j.lmiaPositions, q: j.lmiaLastQuarter }) : '—'
@@ -1484,7 +1491,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       const act = cellActionable(k) && (k === 'pnp' ? (!!j.pnpEligible || blockedKeys.pnp.has(j.province + '|' + j.noc))
                         : k === 'ee' ? !!j.eeCategory : k === 'aip' ? (!!j.aip || blockedKeys.aip.has(j.province + '|' + j.noc)) : true)
                       return (
-                        <td key={k} className={act ? 'jcell jcellAct' : 'jcell'} style={{ ...td, padding: `7px ${cellPad}`, ...extra, cursor: act ? 'pointer' : 'default', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', minWidth: colMin(k), ...(NOWRAP_COLS.has(k) ? { whiteSpace: 'nowrap' } : { whiteSpace: 'normal', overflowWrap: 'break-word' }), ...frozenStyle(k, rowBg) }} title={typeof node === 'string' ? node : undefined} onClick={() => {
+                        <td key={k} className={act ? 'jcell jcellAct' : 'jcell'} style={{ ...td, padding: `7px ${cellPad}`, ...extra, cursor: act ? 'pointer' : 'default', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', minWidth: colMin(k), ...(NOWRAP_COLS.has(k) && !WRAP_IN_FIT.has(k) ? { whiteSpace: 'nowrap' } : { whiteSpace: 'normal', overflowWrap: 'break-word' }), ...cellClip, ...frozenStyle(k, rowBg) }} title={typeof node === 'string' ? node : undefined} onClick={() => {
                           if (!act) return
                           // 职位格=直开职位描述(2026-07-19 Frank:「点职位也能显示职位描述」);title 顾问弹框由 JD 框标题栏「AI 顾问」钮承接(同日报障回补)
                           if (k === 'title') { setActModal({ kind: 'desc', job: j }); return }
