@@ -90,7 +90,9 @@ export function AuthForm({ t, onDone, initialMode, resetToken, returnTo, hero }:
         const r = await fetch('/api/users', {
           method: 'POST', credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password: pw }),
+          // locale:注册时把界面语言存下来(schema 早有这个字段,但从来没人写过 —— 于是周报只能发双语)。
+          // 有了它,邮件才能按本人语言发。读法与 i18n 同源(localStorage 的 jobs.lang)。
+          body: JSON.stringify({ email, password: pw, locale: (() => { try { return localStorage.getItem('jobs.lang') || 'zh' } catch { return 'zh' } })() }),
         })
         if (!r.ok) {
           // 分开报错:Payload 400 响应体带字段级错误——email 相关=已注册,password 相关=密码不合格

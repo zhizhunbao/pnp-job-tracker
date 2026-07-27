@@ -89,10 +89,20 @@ function weeklyHtml(rows: { title: string; company: string; open: boolean }[], n
 // 原周报要求「有收藏」,刚答完入口三问、还没收藏任何岗的新用户一封都收不到 —— 那批人正是最该被叫回来的。
 // 没收藏就按**档案里的职业 + 目标省**发:本周新增多少岗、其中多少可提名、最高年薪多少 + 三条真岗。
 // 一个字都不编:数字全来自库内当周真实新增。
+// 文案按 locale 出单语;locale 为空(老用户、Google 注册)才回双语 —— 不猜语言,也不让人读半篇看不懂的字。
+const WK = {
+  zh: { head: (d: string, n: number, e: number, m: string) => `${d} 本周新增 <strong>${n}</strong> 个岗,其中 <strong>${e}</strong> 个可提名,中位年薪 <strong>${m}</strong>`,
+    cta: (n: number) => `看这 ${n} 个新岗 →`, foot: '数据来自官方公开发布,状态以原帖为准', unsub: '退订本摘要', settings: '账户设置' },
+  en: { head: (d: string, n: number, e: number, m: string) => `<strong>${n}</strong> new jobs this week in ${d} · <strong>${e}</strong> PNP-eligible · median <strong>${m}</strong>`,
+    cta: (n: number) => `View these ${n} jobs →`, foot: 'Official public data; status per the original posting', unsub: 'Unsubscribe', settings: 'Settings' },
+  ko: { head: (d: string, n: number, e: number, m: string) => `${d} 이번 주 신규 <strong>${n}</strong>건 · 지명 가능 <strong>${e}</strong>건 · 중위 연봉 <strong>${m}</strong>`,
+    cta: (n: number) => `신규 ${n}건 보기 →`, foot: '공식 공개 데이터이며 상태는 원문 공고 기준입니다', unsub: '수신 거부', settings: '계정 설정' },
+} as const
+
 function weeklyProfileHtml(
   rows: { title: string; company: string; sal: string }[],
   stat: { newN: number; eligN: number; medSal: number | null },
-  dims: string, unsubUrl: string,
+  dimsOf: (L: 'zh' | 'en' | 'ko') => string, unsubUrl: string, locale: string,
 ): string {
   const tr = rows.map((r) => `<tr>
     <td style="padding:6px 10px;border-bottom:1px solid #eee">${r.title}</td>
@@ -100,14 +110,16 @@ function weeklyProfileHtml(
     <td style="padding:6px 10px;border-bottom:1px solid #eee;color:#15803d">${r.sal}</td>
   </tr>`).join('')
   const k = (n: number | null) => (n == null ? '—' : `$${Math.round(n / 1000)}K`)
+  const langs: ('zh' | 'en' | 'ko')[] = locale === 'en' ? ['en'] : locale === 'ko' ? ['ko'] : locale === 'zh' ? ['zh'] : ['zh', 'en']
+  const heads = langs.map((L, i) => `<p style="${i ? 'color:#6b7280;margin-top:-6px' : ''}">${WK[L].head(dimsOf(L), stat.newN, stat.eligN, k(stat.medSal))}</p>`).join('')
+  const F = WK[langs[0]]
   return `<div style="font-family:system-ui,sans-serif;color:#1f2937;font-size:14px">
     <p>🍁 <strong>Offer2PR</strong></p>
-    <p>${dims} 本周新增 <strong>${stat.newN}</strong> 个岗,其中 <strong>${stat.eligN}</strong> 个可提名,中位年薪 <strong>${k(stat.medSal)}</strong><br>
-      <span style="color:#6b7280">${stat.newN} new jobs this week in your direction · ${stat.eligN} PNP-eligible · median ${k(stat.medSal)}</span></p>
+    ${heads}
     <table style="border-collapse:collapse;font-size:13px">${tr}</table>
-    <p style="margin-top:14px"><a href="${SITE}" style="color:#2563eb">看这 ${stat.newN} 个新岗 / View →</a></p>
-    <p style="color:#9ca3af;font-size:12px">数据来自官方公开发布,状态以原帖为准 ·
-      <a href="${unsubUrl}" style="color:#9ca3af">退订本摘要 Unsubscribe</a> · <a href="${SITE}/account" style="color:#9ca3af">账户设置 Settings</a></p></div>`
+    <p style="margin-top:14px"><a href="${SITE}" style="color:#2563eb">${F.cta(stat.newN)}</a></p>
+    <p style="color:#9ca3af;font-size:12px">${F.foot} ·
+      <a href="${unsubUrl}" style="color:#9ca3af">${F.unsub}</a> · <a href="${SITE}/account" style="color:#9ca3af">${F.settings}</a></p></div>`
 }
 
 export async function GET(req: NextRequest) {
@@ -219,17 +231,25 @@ export async function GET(req: NextRequest) {
          WHERE j.status = 'open' AND j.date_posted >= $1 AND j.noc = ANY($2)${provCond}
          ORDER BY j.salary_annual DESC NULLS LAST LIMIT 3`, params)
       const { rows: nameRows } = await pool.query(
-        `SELECT COALESCE(title_zh, title, '') nm FROM noc_descriptions WHERE noc = ANY($1) LIMIT 2`, [nocs])
-      const occ = nameRows.map((r: any) => r.nm).filter(Boolean).join('、') || `${nocs.length} 个职业`
-      const dimsP = provs.length ? `${provs.join('、')} 的${occ}` : `${occ}(全国)`
-      const subject = `你的方向本周新增 ${st.newN} 个岗(${st.eligN} 个可提名) — Offer2PR`
+        `SELECT COALESCE(title_zh, '') zh, COALESCE(title, '') en FROM noc_descriptions WHERE noc = ANY($1) LIMIT 2`, [nocs])
+      // 职业名与范围按**邮件语言**取 —— 英文/韩文邮件里塞中文职业名,与 #216 是同一类漏
+      const dimsOf = (L: 'zh' | 'en' | 'ko') => {
+        const names = nameRows.map((r: any) => (L === 'zh' ? r.zh || r.en : r.en || r.zh)).filter(Boolean)
+        const occ = names.join(L === 'zh' ? '、' : ', ') || (L === 'zh' ? `${nocs.length} 个职业` : `${nocs.length} occupations`)
+        if (provs.length) return L === 'zh' ? `${provs.join('、')} 的${occ}` : `${occ} (${provs.join(', ')})`
+        return L === 'zh' ? `${occ}(全国)` : L === 'ko' ? `${occ}(전국)` : `${occ} (Canada-wide)`
+      }
+      const uLoc = typeof u.locale === 'string' ? u.locale : ''
+      const subject = uLoc === 'en' ? `${st.newN} new jobs in your direction (${st.eligN} PNP-eligible) — Offer2PR`
+        : uLoc === 'ko' ? `이번 주 신규 ${st.newN}건(지명 가능 ${st.eligN}건) — Offer2PR`
+        : `你的方向本周新增 ${st.newN} 个岗(${st.eligN} 个可提名) — Offer2PR`
       if (preview === 'weekly') {
-        return new Response(weeklyProfileHtml(top3 as any, st, dimsP, `${SITE}/api/alerts/unsub?u=0&t=preview`),
+        return new Response(weeklyProfileHtml(top3 as any, st, dimsOf, `${SITE}/api/alerts/unsub?u=0&t=preview`, req.nextUrl.searchParams.get('lang') || uLoc),
           { headers: { 'content-type': 'text/html; charset=utf-8' } })
       }
       if (!dry) {
         const unsubUrl = `${SITE}/api/alerts/unsub?u=${u.id}&t=${unsubToken(u.id)}`
-        const ok = await sendMail(u.email, subject, weeklyProfileHtml(top3 as any, st, dimsP, unsubUrl))
+        const ok = await sendMail(u.email, subject, weeklyProfileHtml(top3 as any, st, dimsOf, unsubUrl, uLoc))
         if (ok) {
           out.weeklyEmails++
           await payload.update({ collection: 'users', id: u.id, overrideAccess: true, data: { lastWeeklyAt: now } })
