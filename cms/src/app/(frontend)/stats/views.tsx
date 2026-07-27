@@ -125,7 +125,6 @@ function DifficultyCard({ raw, t }: { raw: StatRow['difficulty']; t: TFn }) {
       {trend && <div style={row}><span>{t('diff.trend', { v: pctS(trend.value) })}</span>{src(trend)}</div>}
       {act && <div style={row}><span>{t('diff.act', { n: act.value, m: Number(act.invitations || 0).toLocaleString() })}</span>{src(act)}</div>}
       {score && <div style={row}><span>{t('diff.score', { p: score.value, s: score.latestScore, sc: score.scale || '—' })}</span>{src(score)}</div>}
-      <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 8, lineHeight: 1.6 }}>{t('diff.note', { y: comp?.asOf || '' })}</div>
     </div>
   )
 }
