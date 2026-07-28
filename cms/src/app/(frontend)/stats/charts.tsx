@@ -229,7 +229,7 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
     let series: any[] = []
     let med: (number | null)[] = []
     let provMed: any[] = []   // 分省中位线(只在横轴=职业且簇内=省份时有)
-    let medAt: ((oi: number, pi: number) => number | null) | null = null
+    let cellTitle: ((k: number) => string | null) | null = null   // 分省时:第 k 格属于「职业/省」
     let end = 100
     const bar = (name: string, data: (number | null)[], i: number) =>
       ({ name, type: 'bar', data, itemStyle: { color: MC_PAL[i % MC_PAL.length] } })
@@ -249,36 +249,46 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
       med = ks.map((o) => o.medianSalaryAnnual)
       end = Math.min(100, (12 / Math.max(ks.length, 1)) * 100)
       if (g === 'prov') {
-        // 分省时**岗数与中位年薪都按省取**(Frank 2026-07-28「每个省的中位薪职还不一样」——
-        // 原来右轴只画一条全国线,与十根分省柱并排,等于用全国数解释各省柱)
+        // 分省时岗数与中位年薪**都按省取**(Frank:「每个省的中位薪资还不一样」),
+        // 中位连成**一根线穿过每一根柱**(Frank:「簇内的柱子要画薪资线,整个是一根线」)。
+        //
+        // 关键是**数据形状**,不是画法(Frank:「echart 没有对应的图表,我们直接填数就完事了吗」——对)。
+        // 前两版我拿「一个类目=一个职业」的形状,再手算「簇内第 j 根柱」的小数偏移去摆点:
+        // 类目轴不做插值 → 点全归到格心叠成竖线;改挂隐藏数值轴后又与 dataZoom 的取窗对不齐 → 跑偏。
+        // 定稿改成 **一个类目 = 一根柱**(职业×省,每组末尾插一个空类目当簇间距):
+        // 线与柱共用同一根类目轴,对齐是天生的,零偏移计算、零第二轴。
         const byNoc = new Map<string, Map<string, { jobs: number; med: number | null }>>()
         for (const o of occ) {
           if (o.province === 'all') continue
           if (!byNoc.has(o.noc)) byNoc.set(o.noc, new Map())
           byNoc.get(o.noc)!.set(o.province, { jobs: o.openJobs ?? 0, med: o.medianSalaryAnnual })
         }
-        series = PROVS.map((p, i) => bar(provLabel(p), ks.map((o) => byNoc.get(o.noc)?.get(p)?.jobs ?? 0), i))
-        // 中位线也按省拆,**与柱同名同色** → 图例仍是 10 项,点一下省名柱与线一起隐显
-        // 各省中位怎么呈现,四版才定(Frank 逐版看图裁):①十条折线穿插=面条 ②一簇十个点=看不出属于哪根柱
-        // ③柱头标数值=太密不要 ④**定稿=簇内一条折线穿过各省柱心**,数值看 tooltip。柱子上不标薪资。
-        // 簇内把各省中位连起来(Frank 2026-07-28:「内部也要用线连起来每个省」)。
-        // 类目轴上用**小数索引**定位到每根柱的中心:一簇占类目带宽的 80%(barCategoryGap 默认 20%),
-        // 第 j 根柱中心 = i - 0.4 + 0.8/n*(j+0.5);簇与簇之间插 null 断开,不跨职业连成一条。
-        // 定稿(Frank:「簇内的柱子要画薪资线,整个是一根线」):**一条连续折线穿过全图每一根柱**,
-        // 点落在该省该职业的中位上;簇与簇之间不断开 —— 全图就这一根线,原来那条全国中位线退役。
-        const slot = 0.8 / PROVS.length
-        const link: any[] = []
-        ks.forEach((o, i) => PROVS.forEach((p, j) => {
-          const m = byNoc.get(o.noc)?.get(p)?.med
-          link.push(m == null ? null : [i - 0.4 + slot * (j + 0.5), m])
-        }))
-        // 点必须落在**各自那根柱**的正上方(Frank 实拍:十个点叠成一条竖线)。
-        // 原因:类目轴对小数下标不做插值,统统归到格子中心 —— 换 echarts 正解:
-        // 给这条线单挂一根**隐藏的数值轴**(min=-0.5,max=n-0.5),它与类目轴逐格对齐,小数下标才真生效。
-        provMed = [{ name: t('stats.medSalary'), type: 'line', xAxisIndex: 1, yAxisIndex: 1, data: link,
-          symbol: 'circle', symbolSize: 3, connectNulls: true, z: 6,
-          lineStyle: { width: 1.4, color: '#111827' }, itemStyle: { color: '#111827' } }]
-        medAt = (oi: number, pi: number) => byNoc.get(ks[oi]?.noc || '')?.get(PROVS[pi])?.med ?? null
+        const P = PROVS.length
+        const cellOcc: number[] = []          // 每个类目属于第几个职业(-1=簇间距)
+        const cellProv: number[] = []         // 每个类目属于第几个省(-1=簇间距)
+        axis = []
+        ks.forEach((o, oi) => {
+          PROVS.forEach((_, pi) => {
+            cellOcc.push(oi); cellProv.push(pi)
+            axis.push(pi === (P >> 1) ? occName(o) : '')   // 职业名只标在本组中间那格
+          })
+          cellOcc.push(-1); cellProv.push(-1); axis.push('')
+        })
+        const val = (k: number, pi: number) => {
+          if (cellProv[k] !== pi) return null                 // 每个省只在自己那格有柱
+          return byNoc.get(ks[cellOcc[k]].noc)?.get(PROVS[pi])?.jobs ?? 0
+        }
+        // barGap:'-100%' = 各省系列叠在同一格里 → 每格只有一根柱,占满该格
+        series = PROVS.map((p, pi) => ({ ...bar(provLabel(p), axis.map((_, k) => val(k, pi)), pi),
+          barGap: '-100%', barCategoryGap: '12%' }))
+        med = axis.map((_, k) => (cellProv[k] < 0 ? null
+          : byNoc.get(ks[cellOcc[k]].noc)?.get(PROVS[cellProv[k]])?.med ?? null))
+        // 簇间距那格没数 → connectNulls 让线跨过去,全图仍是连续一根
+        provMed = [{ name: t('stats.medSalary'), type: 'line', yAxisIndex: 1, data: med, symbol: 'circle',
+          symbolSize: 3, connectNulls: true, z: 6, lineStyle: { width: 1.4, color: '#111827' },
+          itemStyle: { color: '#111827' } }]
+        cellTitle = (k: number) => (cellProv[k] < 0 ? null : `${occName(ks[cellOcc[k]])}　${provLabel(PROVS[cellProv[k]])}`)
+        end = Math.min(100, (12 * (P + 1) / Math.max(axis.length, 1)) * 100)   // 首屏约 12 个职业
       } else series = [bar(t('stats.openJobs'), ks.map((o) => o.openJobs), 0)]
     } else if (xKey === 'prov') {
       const cell = (p: string, b: string) => rows.find((r) => r.province === p && r.broad === b && r.mid === 'all')
@@ -303,17 +313,22 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
     const multi = series.length > 1
     // 可见类目数 → 每格宽度 → 标签折行宽(留 4px 间隙);窄屏与宽屏都按实际容器算
     const vw = typeof window !== 'undefined' ? Math.min(window.innerWidth - 80, 1200) : 1100
-    const visible = Math.max(1, Math.round(axis.length * (end / 100)))
+    // 分省时一个职业占 (省数+1) 个类目(末尾那格是簇间距) → 标签宽按**组**算,不按格算
+    const span = provMed.length ? PROVS.length + 1 : 1
+    const visible = Math.max(1, Math.round(axis.length * (end / 100) / span))
     const labelW = Math.max(38, Math.floor(vw / visible) - 6)
     return {
       // 分省时同一个省有柱也有线 → tooltip 合成一行「省名 岗数 中位年薪」,不铺成 20 行
       tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, confine: true, textStyle: { fontSize: 12 },
         formatter: !provMed.length ? undefined : (ps: any[]) => {
-          const bars = ps.filter((q: any) => q.seriesType === 'bar')
-          const oi = bars[0]?.dataIndex ?? 0
-          const row = (q: any, i: number) => { const m = medAt?.(oi, i)
-            return `${q.seriesName}　${q.value ?? 0}${m != null ? `　$${Math.round(m / 1000)}K` : ''}` }
-          return `<b>${ps[0]?.axisValue ?? ''}</b><br/>` + bars.map(row).join('<br/>')
+          const b0 = ps.find((q: any) => q.seriesType === 'bar' && q.value != null)
+          const ln = ps.find((q: any) => q.seriesType === 'line')
+          const k = (b0 ?? ln)?.dataIndex ?? 0
+          const head = cellTitle?.(k)
+          if (!head) return ''
+          const jobs = b0 ? `${t('stats.openJobs')}　${b0.value}` : ''
+          const m = ln?.value
+          return `<b>${head}</b><br/>${jobs}${m != null ? `<br/>${t('stats.medSalary')}　$${Math.round(m / 1000)}K` : ''}`
         } },
       legend: { show: multi, type: 'scroll', bottom: 36, itemWidth: 11, itemHeight: 11, textStyle: { fontSize: 11.5, color: '#6b7280' } },
       grid: { left: 8, right: showMed ? 8 : 4, top: 12, bottom: multi ? 62 : 40, containLabel: true },
@@ -325,16 +340,14 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
         // 折行/截断/留白全走 echarts 原生(Frank:「echart 本身就有这个功能」):
         // overflow:'break' 折行、height+lineOverflow:'truncate' 封顶三行、grid.containLabel 自动留边距
         axisLabel: { fontSize: 10.5, color: '#6b7280', interval: 0, rotate: 0, hideOverlap: true,
-          width: labelW, overflow: 'break', height: 38, lineOverflow: 'truncate', lineHeight: 12.5, margin: 10 } },
-        // 第二根 x 轴:隐藏的数值轴,专给「穿过每根柱」的中位线用(与类目轴逐格对齐)
-        { type: 'value', show: false, min: -0.5, max: axis.length - 0.5 }],
+          width: labelW, overflow: 'break', height: 38, lineOverflow: 'truncate', lineHeight: 12.5, margin: 10 } }],
       // 双轴:左=岗数(柱)、右=中位年薪(线)。量纲差两个数量级,同轴会把薪资线压成一条平线
       yAxis: [
         { type: 'value', splitLine: { lineStyle: { color: '#f3f4f6' } }, axisLabel: { fontSize: 11, color: '#9ca3af' } },
         { type: 'value', show: showMed, splitLine: { show: false },
           axisLabel: { fontSize: 11, color: '#9ca3af', formatter: (v: number) => '$' + Math.round(v / 1000) + 'K' } },
       ],
-      dataZoom: [{ type: 'inside', xAxisIndex: [0, 1], start: 0, end }, { type: 'slider', xAxisIndex: [0, 1], start: 0, end, height: 18, bottom: 8,
+      dataZoom: [{ type: 'inside', start: 0, end }, { type: 'slider', start: 0, end, height: 18, bottom: 8,
         borderColor: 'transparent', backgroundColor: '#f3f4f6', fillerColor: 'rgba(37,99,235,.12)',
         handleStyle: { color: '#2563eb' }, textStyle: { fontSize: 10, color: '#9ca3af' } }],
       series: !showMed ? series
