@@ -338,7 +338,10 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels }: { occ
     // 分省时一个职业占 (省数+1) 个类目(末尾那格是簇间距) → 标签宽按**组**算,不按格算
     const span = provMed.length ? PROVS.length + 1 : 1
     const visible = Math.max(1, Math.round(axis.length * (end / 100) / span))
-    const labelW = Math.max(38, Math.floor(vw / visible) - 6)
+    // 标签盒宽要**比格距窄一截**(留 14px 沟):等宽时相邻盒子边缘相接,echarts 判为重叠 →
+    // 上一版我为救「只剩一个名字」把 hideOverlap 整个关了,结果缩放到多组时全撞一起(Frank 实拍)。
+    // 正解=留沟 + hideOverlap 照常开:挤得下就全显,挤不下自动隐,放大即回。
+    const labelW = Math.max(30, Math.floor(vw / visible) - 14)
     return {
       // 分省时同一个省有柱也有线 → tooltip 合成一行「省名 岗数 中位年薪」,不铺成 20 行
       tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, confine: true, textStyle: { fontSize: 12 },
@@ -361,9 +364,7 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels }: { occ
       xAxis: [{ type: 'category', data: axis, axisTick: { show: false }, axisLine: { lineStyle: { color: '#e5e7eb' } },
         // 折行/截断/留白全走 echarts 原生(Frank:「echart 本身就有这个功能」):
         // overflow:'break' 折行、height+lineOverflow:'truncate' 封顶三行、grid.containLabel 自动留边距
-        // hideOverlap 只在「一格一名」时开;分省时名字已经是一组标一个(其余格空串),
-        // 再开它会把 87px 宽的名字互判为重叠 → 实拍只剩一个职业名。
-        axisLabel: { fontSize: 10.5, color: '#6b7280', interval: 0, rotate: 0, hideOverlap: !provMed.length,
+        axisLabel: { fontSize: 10.5, color: '#6b7280', interval: 0, rotate: 0, hideOverlap: true,
           width: labelW, overflow: 'break', height: 38, lineOverflow: 'truncate', lineHeight: 12.5, margin: 10 } }],
       // 双轴:左=岗数(柱)、右=中位年薪(线)。量纲差两个数量级,同轴会把薪资线压成一条平线
       yAxis: [
