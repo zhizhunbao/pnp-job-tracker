@@ -34,6 +34,17 @@ export function readQuiz(): (QuizAnswers & { done?: boolean }) | null {
   try { const s = localStorage.getItem(QUIZ_KEY); return s ? JSON.parse(s) : null } catch { return null }
 }
 
+// NOC 官方职业名是**分类名**不是岗位名,天生很长(「食品柜台服务员、厨房助手及相关辅助职业」)。
+// Frank 2026-07-27「很多职业名字是不是太长了啊」:选职业的人只需要认出**头一个**是不是自己那行,
+// 后面的「及相关职业」是分类学尾巴 → 显示层砍尾 + 取第一段;全名仍挂 title,不丢信息。
+// 只在「、」「及」处切(不切「和」——中文译名里「汽车服务技师卡车和公共汽车机械师」切了会更怪)。
+const shortOcc = (name: string): string => {
+  let s = (name || '').replace(/[、,]?\s*(?:及|和)?其?(?:他)?相关[^、,]*(?:职业|工作)$/, '').trim()
+  s = s.split(/[、,]/)[0].trim()
+  s = s.split(/及/)[0].trim()
+  return s || name
+}
+
 export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, startAt, stats }: {
   t: TFn
   lang: string
@@ -221,7 +232,7 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
                         setNocTitle(on ? '' : (lang === 'zh' && c.titleZh ? c.titleZh : c.title))
                         setQ(''); setCands([])
                       }} style={opt(nocs.includes(c.noc))}>
-                        {lang === 'zh' && c.titleZh ? c.titleZh : c.title}
+                        {shortOcc(lang === 'zh' && c.titleZh ? c.titleZh : c.title)}
                         <span style={{ color: '#9ca3af', fontSize: 12, marginLeft: 6 }}>{c.noc}</span>
                       </button>
                     ))}
@@ -253,7 +264,7 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
                           setNocTitle(on ? '' : x.label)
                         }}
                         style={{ ...chipStyle(on), display: 'inline-flex', alignItems: 'baseline', gap: 6, maxWidth: '100%' }}>
-                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{x.label}</span>
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 190 }}>{shortOcc(x.label)}</span>
                         {x.hint ? <span style={{ fontSize: 11, color: '#9ca3af', flexShrink: 0 }}>{x.hint}</span> : null}
                         {x.open ? <span style={{ fontSize: 11.5, color: '#9ca3af', flexShrink: 0 }}>{t('quiz.openN', { n: x.open.toLocaleString('en-CA') })}</span> : null}
                       </button>

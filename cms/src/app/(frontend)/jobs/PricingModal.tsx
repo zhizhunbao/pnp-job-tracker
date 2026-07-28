@@ -126,13 +126,14 @@ export function PricingCard({ t, loggedIn, pro, caps, onRegister }: { t: TFn; lo
           <button onClick={() => buy('30')} disabled={busy} style={{ ...btn, background: '#2563eb', color: '#fff', opacity: busy ? 0.6 : 1 }}>{t('price.cta.buy30')}　{P30}</button>
         </div>
       </div>
-      {/* 价值锚(第 5 轮 #18):v2 定位对标顾问咨询费;措辞循红线(不构成建议) */}
-      <div style={{ fontSize: 11.5, color: '#78716c', marginTop: 10, textAlign: 'center', lineHeight: 1.4 }}>{t('price.anchor')}</div>
-      <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4, textAlign: 'center', lineHeight: 1.4 }}>
-        {/* 第25轮:注文里已写「详见服务条款」,后面再挂同名链=一页三处重复;链接归页脚一处 */}
-        {t('price.note')}
-        {pro && <>{'　'}<a href="/account" style={{ color: '#2563eb', textDecoration: 'none' }}>{t('price.cta.acct')}</a></>}
-      </div>
+      {/* Frank 2026-07-27「这些内容也太频繁太多了,免责声明里不都有了吗」:
+          价值锚(顾问费对比)是营销废话,删;付款与退款条款页脚的服务条款里已有一份,页内是第二遍,删。
+          只留已是 Pro 时的账户页入口(那是动作,不是文案)。 */}
+      {pro && (
+        <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 8, textAlign: 'center' }}>
+          <a href="/account" style={{ color: '#2563eb', textDecoration: 'none' }}>{t('price.cta.acct')}</a>
+        </div>
+      )}
     </div>
   )
 }

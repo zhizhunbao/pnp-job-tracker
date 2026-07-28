@@ -95,7 +95,6 @@ export function PathwaysView({ evals, loggedIn, profileOk, scoreFactors = [], dr
           {/* 页头=PageBanner(#65 五模块统一浅色带,路径=紫);免责小字留 banner 外 */}
           <PageBanner module="pathways" icon={<IconCompass />} title={t('pw.title')} sub={t('pw.sub')} images={BANNER_IMGS.pathways}
             stats={[{ v: evals.length, label: t('pw.bnRoutes') }]} />
-          <p style={{ fontSize: 12, color: '#9ca3af', margin: '6px 0 0' }}>{t('pw.disc')}</p>
         </div>
 
         {/* E12-09 省提名自评打分(Frank 2026-07-27 拍板:单独一个功能,落在本页而不是 PNP 弹框)——
