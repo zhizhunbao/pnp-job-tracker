@@ -345,7 +345,8 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
           width: labelW, overflow: 'break', height: 38, lineOverflow: 'truncate', lineHeight: 12.5, margin: 10 } }],
       // 双轴:左=岗数(柱)、右=中位年薪(线)。量纲差两个数量级,同轴会把薪资线压成一条平线
       yAxis: [
-        { type: 'value', splitLine: { lineStyle: { color: '#f3f4f6' } }, axisLabel: { fontSize: 11, color: '#9ca3af' } },
+        // 岗位数是整数:minInterval 1(Frank 实拍「0.2 个岗位」——排到只有 1 个岗的职业时轴自动切小数)
+        { type: 'value', minInterval: 1, splitLine: { lineStyle: { color: '#f3f4f6' } }, axisLabel: { fontSize: 11, color: '#9ca3af' } },
         { type: 'value', show: showMed, splitLine: { show: false },
           axisLabel: { fontSize: 11, color: '#9ca3af', formatter: (v: number) => '$' + Math.round(v / 1000) + 'K' } },
       ],
