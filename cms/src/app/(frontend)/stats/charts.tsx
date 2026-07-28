@@ -258,30 +258,22 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
         }
         series = PROVS.map((p, i) => bar(provLabel(p), ks.map((o) => byNoc.get(o.noc)?.get(p)?.jobs ?? 0), i))
         // 中位线也按省拆,**与柱同名同色** → 图例仍是 10 项,点一下省名柱与线一起隐显
-        // 各省中位**标在各自柱子头上**(Frank 2026-07-28 定稿:「是要一根线,不同的中位标到不同的柱子上面」)。
-        // 前两版都被否:①十条折线互相穿插=面条 ②一簇十个点=看不出哪个点属于哪根柱。
-        // 标签值取该省该职业的中位(不是柱子自己的岗数)——labelLayout.hideOverlap 让挤不下的自动隐,
-        // 拉 dataZoom 放大后逐渐全显。线仍是那一根全国中位线,不动。
+        // 各省中位怎么呈现,四版才定(Frank 逐版看图裁):①十条折线穿插=面条 ②一簇十个点=看不出属于哪根柱
+        // ③柱头标数值=太密不要 ④**定稿=簇内一条折线穿过各省柱心**,数值看 tooltip。柱子上不标薪资。
         // 簇内把各省中位连起来(Frank 2026-07-28:「内部也要用线连起来每个省」)。
         // 类目轴上用**小数索引**定位到每根柱的中心:一簇占类目带宽的 80%(barCategoryGap 默认 20%),
         // 第 j 根柱中心 = i - 0.4 + 0.8/n*(j+0.5);簇与簇之间插 null 断开,不跨职业连成一条。
+        // 定稿(Frank:「簇内的柱子要画薪资线,整个是一根线」):**一条连续折线穿过全图每一根柱**,
+        // 点落在该省该职业的中位上;簇与簇之间不断开 —— 全图就这一根线,原来那条全国中位线退役。
         const slot = 0.8 / PROVS.length
         const link: any[] = []
-        ks.forEach((o, i) => {
-          PROVS.forEach((p, j) => {
-            const m = byNoc.get(o.noc)?.get(p)?.med
-            link.push(m == null ? null : [i - 0.4 + slot * (j + 0.5), m])
-          })
-          link.push(null)
-        })
-        provMed = [{ name: t('mkt.medLink'), type: 'line', yAxisIndex: 1, data: link, symbol: 'circle',
-          symbolSize: 3, connectNulls: false, z: 4, lineStyle: { width: 1, color: '#94a3b8' },
-          itemStyle: { color: '#94a3b8' } }]
-        series = series.map((b: any, i: number) => ({ ...b,
-          label: { show: true, position: 'top', fontSize: 9, color: '#9ca3af', rotate: 90, align: 'left',
-            formatter: (q: any) => { const m = byNoc.get(ks[q.dataIndex]?.noc || '')?.get(PROVS[i])?.med
-              return m == null ? '' : '$' + Math.round(m / 1000) + 'K' } },
-          labelLayout: { hideOverlap: true } }))
+        ks.forEach((o, i) => PROVS.forEach((p, j) => {
+          const m = byNoc.get(o.noc)?.get(p)?.med
+          link.push(m == null ? null : [i - 0.4 + slot * (j + 0.5), m])
+        }))
+        provMed = [{ name: t('stats.medSalary'), type: 'line', yAxisIndex: 1, data: link, symbol: 'circle',
+          symbolSize: 3, connectNulls: true, z: 6, lineStyle: { width: 1.4, color: '#111827' },
+          itemStyle: { color: '#111827' } }]
       } else series = [bar(t('stats.openJobs'), ks.map((o) => o.openJobs), 0)]
     } else if (xKey === 'prov') {
       const cell = (p: string, b: string) => rows.find((r) => r.province === p && r.broad === b && r.mid === 'all')
@@ -309,7 +301,7 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
     const visible = Math.max(1, Math.round(axis.length * (end / 100)))
     const labelW = Math.max(38, Math.floor(vw / visible) - 6)
     // 折行后标签占 3 行 ≈ 40px,底部要留够(否则名字被卡出画布)
-    const labelBox = 46
+    const labelBox = 52
     return {
       // 分省时同一个省有柱也有线 → tooltip 合成一行「省名 岗数 中位年薪」,不铺成 20 行
       tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, confine: true, textStyle: { fontSize: 12 },
@@ -330,7 +322,10 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
       // 原来横排斜切 7 个字 —— 中文短名勉强,英文直接成了「Transpo…」「Food co…」(他实拍),
       // 而英文用户是主要人群。改:不斜排、按可见宽度自动折行(echarts 原生 overflow:'break'),
       // 底部留出三行的高度;实在挤不下的由 hideOverlap 隐掉,拉 dataZoom 放大就全出来。
-      xAxis: { type: 'category', data: axis, axisTick: { show: false }, axisLine: { lineStyle: { color: '#e5e7eb' } },
+      xAxis: { type: 'category', data: axis.map((v) => {
+          const perLine = Math.max(4, Math.floor(labelW / 5.6))   // 5.6px ≈ 10.5px 字号的平均字宽
+          return v && v.length > perLine * 3 ? v.slice(0, perLine * 3 - 1) + '…' : v
+        }), axisTick: { show: false }, axisLine: { lineStyle: { color: '#e5e7eb' } },
         axisLabel: { fontSize: 10.5, color: '#6b7280', interval: 0, rotate: 0, hideOverlap: true,
           width: labelW, overflow: 'break', lineHeight: 12.5, margin: 10 } },
       // 双轴:左=岗数(柱)、右=中位年薪(线)。量纲差两个数量级,同轴会把薪资线压成一条平线
@@ -343,9 +338,10 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
         borderColor: 'transparent', backgroundColor: '#f3f4f6', fillerColor: 'rgba(37,99,235,.12)',
         handleStyle: { color: '#2563eb' }, textStyle: { fontSize: 10, color: '#9ca3af' } }],
       series: !showMed ? series
-        : series.concat(provMed).concat([{ name: t('stats.medSalary'), type: 'line', yAxisIndex: 1, data: med,
-          symbol: 'circle', symbolSize: 5, connectNulls: true, z: 5,
-          lineStyle: { width: 2, color: '#111827' }, itemStyle: { color: '#111827' } }]),
+        : provMed.length ? series.concat(provMed)
+          : series.concat([{ name: t('stats.medSalary'), type: 'line', yAxisIndex: 1, data: med,
+            symbol: 'circle', symbolSize: 5, connectNulls: true, z: 5,
+            lineStyle: { width: 2, color: '#111827' }, itemStyle: { color: '#111827' } }]),
     }
   }, [occ, city, rows, xKey, g, showMed, sortBy, sortDir, lang, t])
 
