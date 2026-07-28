@@ -37,15 +37,13 @@ export default async function JobsPage() {
   const newsRowsP = pool.query(`SELECT region, title, date, slug FROM news ORDER BY date DESC, id ASC LIMIT 60`)
     .then((r: any) => r.rows as { region: string; title: string; date: string; slug: string }[])
     .catch(() => [])
-  const [provDocs, nocDocs, srcDocs, expDocs, pnpDocs, pnpDrawDocs, sirsDocs, eeDocs, fieldSrcDocs] = await Promise.all([
+  const [provDocs, nocDocs, srcDocs, expDocs, pnpDocs, pnpDrawDocs, eeDocs, fieldSrcDocs] = await Promise.all([
     payload.find({ collection: 'provinces', limit: 100, depth: 0, sort: 'name' }),
     payload.find({ collection: 'noc-categories', limit: 1000, depth: 0 }),
     payload.find({ collection: 'sources', limit: 200, depth: 0, sort: 'name' }),
     payload.find({ collection: 'experience-levels', limit: 50, depth: 0 }),
     payload.find({ collection: 'pnp-occupations', limit: 5000, depth: 0 }),
     payload.find({ collection: 'pnp-draws', limit: 200, depth: 0, sort: '-drawDate' }),
-    // E12-09:省提名官方分值表(现有 BC SIRS,32 行 —— 小表整取)
-    payload.find({ collection: 'pnp-score-factors', limit: 200, depth: 0, sort: 'seq' }),
     payload.find({ collection: 'ee-categories', limit: 2000, depth: 0 }),
     payload.find({ collection: 'field-sources', limit: 200, depth: 0 }),
   ])
@@ -58,13 +56,6 @@ export default async function JobsPage() {
     experienceLevels: expDocs.docs.map((e: any) => ({ name: e.name })),
     pnpOccupations: pnpDocs.docs.map((r: any) => ({ province: r.province, stream: r.stream, label: r.label, type: r.type, program: r.program || 'PNP', noc: r.noc, name: r.name, gtaRestricted: !!r.gtaRestricted, url: r.url, fetched: r.fetched })),
     pnpDraws: pnpDrawDocs.docs.map((r: any) => ({ province: r.province, kind: r.kind, drawDate: r.drawDate ?? '', stream: r.stream ?? '', score: typeof r.score === 'number' ? r.score : null, scale: r.scale ?? '', invitations: typeof r.invitations === 'number' ? r.invitations : null, note: r.note ?? '', label: r.label ?? '', url: r.url ?? '', fetched: r.fetched ?? '' })),
-    pnpScoreFactors: sirsDocs.docs.map((r: any) => ({ province: r.province ?? '', system: r.system ?? '', factor: r.factor ?? '',
-      kind: r.kind ?? '', seq: typeof r.seq === 'number' ? r.seq : 0, label: r.label ?? '',
-      points: typeof r.points === 'number' ? r.points : null, xorPrev: !!r.xorPrev, rule: r.rule ?? '',
-      factorMax: typeof r.factorMax === 'number' ? r.factorMax : null, factorGroup: r.factorGroup ?? '',
-      groupMax: typeof r.groupMax === 'number' ? r.groupMax : null, passMark: typeof r.passMark === 'number' ? r.passMark : null,
-      maxTotal: typeof r.maxTotal === 'number' ? r.maxTotal : null,
-      guideEffective: r.guideEffective ?? '', fetched: r.fetched ?? '', url: r.url ?? '' })),
     eeCategories: eeDocs.docs.map((r: any) => ({ category: r.category, label: r.label, noc: r.noc, teer: typeof r.teer === 'number' ? r.teer : null, title: r.title, url: r.url, fetched: r.fetched, drawCrs: typeof r.drawCrs === 'number' ? r.drawCrs : null, drawDate: r.drawDate ?? '', drawSize: typeof r.drawSize === 'number' ? r.drawSize : null })),
     designatedEmployers: [],  // SSR 瘦身:客户端从 /api/dims 拉后并入
     nocDescriptions: [],      // 同上(788KB 大头)

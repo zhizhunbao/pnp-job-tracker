@@ -12,9 +12,13 @@
 //   ⑤ 默认值一律取保守值(非本岗省份的工作地区默认 0 分档),不许用有利默认把分数吹上去。
 import { useEffect, useMemo, useState } from 'react'
 
-import type { JobRow, PnpDraw, ScoreFactor } from './JobsTable'
 import type { TFn } from './i18n'
-import { DEFAULT_PROFILE, EDU_KEYS, scoreProvince, type EduKey, type SelfProfile } from './pnpSelfScore'
+import { DEFAULT_PROFILE, EDU_KEYS, scoreProvince, type DrawRow, type EduKey, type ScoreFactor, type SelfProfile } from './pnpSelfScore'
+
+// 打分是**关于你这个人**的功能,不绑某一个岗位(Frank 2026-07-27「应该单独弄个功能吧,
+// 不应该放到 pnp 弹框里面」)—— 所以只收一个轻量语境:职业(拿该省在招数)、目标省(排序)、
+// 时薪与城市(BC 的两项按官方规则要用,拿不到就让用户自己填)。全是可选。
+export type ScoreCtx = { noc?: string; province?: string; hourly?: number | null; city?: string; hasOffer?: boolean }
 
 // 大温地区(Area 1)成员市镇 —— 官方 PDF 只写「Metro Vancouver Regional District」,成员名单是公开事实。
 const MVRD = ['vancouver', 'surrey', 'burnaby', 'richmond', 'coquitlam', 'delta', 'langley', 'maple ridge',
@@ -26,18 +30,6 @@ const guessArea = (city: string): number => {
   if (MVRD.some((m) => c.includes(m))) return 0
   if (AREA2.some((m) => c.includes(m))) return 1
   return 2
-}
-
-/** 岗位时薪:优先帖面时薪,否则用数据层折算年薪反推(官方口径:年薪 ÷ 52 ÷ 每周小时,30-40 之间) */
-const hourlyOf = (job: JobRow): number | null => {
-  const txt = job.salaryText || job.salary || ''
-  const m = /\$?\s*(\d+(?:\.\d+)?)\s*(?:–|-|to)?\s*(\d+(?:\.\d+)?)?\s*\/?\s*(hr|hour|小时)/i.exec(txt)
-  if (m) {
-    const a = Number(m[1]), b = m[2] ? Number(m[2]) : null
-    return b ? (a + b) / 2 : a
-  }
-  if (job.salaryAnnual) return job.salaryAnnual / 52 / 40   // 官方允许 30-40,取 40 = 保守(算出的时薪更低)
-  return null
 }
 
 // 官方标签是英文原文;中文/韩文界面按这张表出人话(**只译不改口径**,分值仍来自官方表)。
@@ -87,36 +79,36 @@ function Tick({ on, onToggle, text, pts }: { on: boolean; onToggle: (v: boolean)
   )
 }
 
-export function PnpScoreCard({ t, lang, job, factors, draws, profileClb, matchedStream = '' }: {
-  t: TFn; lang: string; job: JobRow; factors: ScoreFactor[]; draws: PnpDraw[]; profileClb?: number | null
-  matchedStream?: string
+export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams = {} }: {
+  t: TFn; lang: string; ctx: ScoreCtx; factors: ScoreFactor[]; draws: DrawRow[]; profileClb?: number | null
+  /** 省 → 你的职业命中的具名通道名。抽选线按通道对照,对不上就不给差分结论(见 ProvinceResult) */
+  streams?: Record<string, string>
 }) {
-  // 有官方分值表的省(数据层决定,加省不用改这里)。本岗所在省排第一列,其余省作「换省」对照。
+  // 有官方分值表的省(数据层决定,加省不用改这里)。目标省排第一列,其余省作「换省」对照。
   const provinces = useMemo(() => {
     const all = Array.from(new Set(factors.map((f) => f.province))).filter(Boolean)
-    return all.sort((a, b) => (a === job.province ? -1 : b === job.province ? 1 : a < b ? -1 : 1))
-  }, [factors, job.province])
+    return all.sort((a, b) => (a === ctx.province ? -1 : b === ctx.province ? 1 : a < b ? -1 : 1))
+  }, [factors, ctx.province])
 
   const [profile, setProfile] = useState<SelfProfile>(() => ({ ...DEFAULT_PROFILE, clb1: profileClb ?? DEFAULT_PROFILE.clb1 }))
   const set = <K extends keyof SelfProfile>(k: K, v: SelfProfile[K]) => setProfile((p) => ({ ...p, [k]: v }))
   const [ticks, setTicks] = useState<Record<string, boolean>>({})
-  const hourly = hourlyOf(job)
-  const [wage, setWage] = useState<number>(() => Math.round(hourly ?? 0))
-  // 保守默认:本岗就在 BC 才按岗位城市猜地区;别的省的岗默认 Area 1(0 分),不许用有利默认吹分
-  const [areaI, setAreaI] = useState<number>(() => (job.province === 'BC' ? guessArea(job.city || '') : 0))
-  const [hasOffer, setHasOffer] = useState<boolean>(() => job.province === 'SK' && (job.teer ?? 9) <= 3)
+  const [wage, setWage] = useState<number>(() => Math.round(ctx.hourly ?? 0))
+  // 保守默认:知道城市才猜地区,否则默认 Area 1(0 分)—— 不许用有利默认把分数吹上去
+  const [areaI, setAreaI] = useState<number>(() => (ctx.city ? guessArea(ctx.city) : 0))
+  const [hasOffer, setHasOffer] = useState<boolean>(() => !!ctx.hasOffer)
 
   // 换省事实:同职业在各省的在招数(/api/quiz?noc= 已有,免费事实,不新增端点)
   const [byProv, setByProv] = useState<Record<string, { n: number; eligible: number }>>({})
   useEffect(() => {
-    if (!job.noc) return
+    if (!ctx.noc) return
     let dead = false
-    fetch(`/api/quiz?noc=${job.noc}`).then((r) => r.json()).then((d) => {
+    fetch(`/api/quiz?noc=${ctx.noc}`).then((r) => r.json()).then((d) => {
       if (dead || !d?.facts?.byProv) return
       setByProv(Object.fromEntries(d.facts.byProv.map((r: any) => [r.province, { n: r.n, eligible: r.eligible }])))
     }).catch(() => { /* 事实拿不到就不显示,不编 */ })
     return () => { dead = true }
-  }, [job.noc])
+  }, [ctx.noc])
 
   const scores = useMemo(() => provinces.map((prov) => {
     const mine = factors.filter((f) => f.province === prov)
@@ -150,10 +142,11 @@ export function PnpScoreCard({ t, lang, job, factors, draws, profileClb, matched
   return (
     // 卡壳(边框/圆角/内边距)由外层 MODAL_CARD 提供 —— 这里再画一层就是卡中卡
     <div>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 13.5, fontWeight: 700, color: '#111827' }}>{t('ps.title')}</span>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', margin: 0 }}>{t('ps.title')}</h2>
         <span style={{ fontSize: 11.5, color: '#9ca3af' }}>{scores.map((s) => `${s.province} ${s.system}`).join('、')}</span>
       </div>
+      <p style={{ fontSize: 12.5, color: '#6b7280', margin: '2px 0 10px', lineHeight: 1.6 }}>{t('ps.sub')}</p>
 
       {/* 你的条件 —— 一套答案,各省按各自官方表折算 */}
       <div style={lbl}>{t('ps.you')}</div>
@@ -228,7 +221,7 @@ export function PnpScoreCard({ t, lang, job, factors, draws, profileClb, matched
       {/* 各省结果:估分 + 官方对照线 + 差多少 */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 10, marginTop: 12 }}>
         {scores.map((s) => <ProvinceResult key={s.province} t={t} lang={lang} s={s} draws={draws} byProv={byProv}
-          switchable={s.province !== job.province} matchedStream={matchedStream} factors={factors} />)}
+          switchable={s.province !== ctx.province} matchedStream={streams[s.province] || ''} factors={factors} />)}
       </div>
 
       <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 8, lineHeight: 1.7 }}>
@@ -245,7 +238,7 @@ export function PnpScoreCard({ t, lang, job, factors, draws, profileClb, matched
 }
 
 function ProvinceResult({ t, lang, s, draws, byProv, switchable, matchedStream, factors }: {
-  t: TFn; lang: string; s: NonNullable<ReturnType<typeof scoreProvince>>; draws: PnpDraw[]
+  t: TFn; lang: string; s: NonNullable<ReturnType<typeof scoreProvince>>; draws: DrawRow[]
   byProv: Record<string, { n: number; eligible: number }>; switchable: boolean
   matchedStream: string; factors: ScoreFactor[]
 }) {

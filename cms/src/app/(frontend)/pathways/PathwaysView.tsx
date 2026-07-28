@@ -8,6 +8,8 @@ import { SiteFooter } from '../SiteFooter'
 import { IconCheck, IconCompass, IconWarn } from '../Icons'
 import { BANNER_IMGS, PageBanner } from '../ui/primitives'
 import type { PathwayEval, PathwaySignal } from '@/lib/pathways'
+import { PnpScoreCard, type ScoreCtx } from '../jobs/PnpScoreCard'
+import type { DrawRow, ScoreFactor } from '../jobs/pnpSelfScore'
 
 // #198(Frank「所有页面改成一样的风格」):卡片对齐详情页基准(1px #e5e7eb / r12 / 白底)
 const card: React.CSSProperties = { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '14px 16px' }
@@ -24,7 +26,10 @@ function SignalRow({ s, t }: { s: PathwaySignal; t: (k: string, v?: Record<strin
   )
 }
 
-export function PathwaysView({ evals, loggedIn, profileOk }: { evals: PathwayEval[]; loggedIn: boolean; profileOk: boolean }) {
+export function PathwaysView({ evals, loggedIn, profileOk, scoreFactors = [], draws = [], streams = {}, ctx = {}, clb = null }: {
+  evals: PathwayEval[]; loggedIn: boolean; profileOk: boolean
+  scoreFactors?: ScoreFactor[]; draws?: DrawRow[]; streams?: Record<string, string>; ctx?: ScoreCtx; clb?: number | null
+}) {
   const [lang, setLang] = useState<Lang>('zh')
   useEffect(() => { setLang(initialLang()) }, [])
   const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
@@ -92,6 +97,16 @@ export function PathwaysView({ evals, loggedIn, profileOk }: { evals: PathwayEva
             stats={[{ v: evals.length, label: t('pw.bnRoutes') }]} />
           <p style={{ fontSize: 12, color: '#9ca3af', margin: '6px 0 0' }}>{t('pw.disc')}</p>
         </div>
+
+        {/* E12-09 省提名自评打分(Frank 2026-07-27 拍板:单独一个功能,落在本页而不是 PNP 弹框)——
+            算的是「你这个人够不够分、不够该换去哪」,与本页其余卡同底同框。
+            没抓到任何官方分值表就整节不渲(不出空壳);分值全部来自官方表,前端不编分。 */}
+        {scoreFactors.length > 0 && (
+          <section style={card}>
+            {/* 标题由卡自己出(它还要带上各省分制名),节里不再重复一遍 */}
+            <PnpScoreCard t={t} lang={lang} ctx={ctx} factors={scoreFactors} draws={draws} streams={streams} profileClb={clb} />
+          </section>
+        )}
 
         {/* 建档 CTA:匿名→登录框深链;登录未建档→档案节 */}
         {!profileOk && (

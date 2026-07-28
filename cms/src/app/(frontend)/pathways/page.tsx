@@ -44,6 +44,40 @@ export default async function PathwaysPage() {
     dliStats = { byProv, atlantic: atlantic.sort(), total, url: first.url || '', fetched: first.fetched || '' }
   }
 
+  // E12-09 省提名自评打分(Frank 2026-07-27 拍板落在本页):官方分值表 + 抽选事实 +
+  // 「你的职业命中了哪条具名通道」—— 抽选线必须按通道对照(BC 是按通道分别设线的),对不上就不给差分结论。
+  const [sfRes, drawRes] = await Promise.all([
+    payload.find({ collection: 'pnp-score-factors', limit: 300, depth: 0, sort: 'seq' }).catch(() => ({ docs: [] as any[] })),
+    payload.find({ collection: 'pnp-draws', limit: 200, depth: 0, sort: '-drawDate' }).catch(() => ({ docs: [] as any[] })),
+  ])
+  const scoreFactors = (sfRes.docs as any[]).map((r) => ({
+    province: r.province ?? '', system: r.system ?? '', factor: r.factor ?? '', kind: r.kind ?? '',
+    seq: typeof r.seq === 'number' ? r.seq : 0, label: r.label ?? '',
+    points: typeof r.points === 'number' ? r.points : null, xorPrev: !!r.xorPrev, rule: r.rule ?? '',
+    factorMax: typeof r.factorMax === 'number' ? r.factorMax : null, factorGroup: r.factorGroup ?? '',
+    groupMax: typeof r.groupMax === 'number' ? r.groupMax : null, passMark: typeof r.passMark === 'number' ? r.passMark : null,
+    maxTotal: typeof r.maxTotal === 'number' ? r.maxTotal : null,
+    guideEffective: r.guideEffective ?? '', fetched: r.fetched ?? '', url: r.url ?? '',
+  }))
+  const draws = (drawRes.docs as any[]).map((r) => ({
+    province: r.province ?? '', kind: r.kind ?? '', drawDate: r.drawDate ?? '',
+    stream: r.stream ?? '', score: typeof r.score === 'number' ? r.score : null,
+  }))
+  const streams: Record<string, string> = {}
+  if (profile.nocCodes.length && scoreFactors.length) {
+    const occ = await payload.find({
+      collection: 'pnp-occupations', limit: 300, depth: 0,
+      where: { noc: { in: profile.nocCodes } },
+    }).catch(() => ({ docs: [] as any[] }))
+    for (const r of occ.docs as any[]) {
+      // 只认 inclusion 的具名通道(排除清单是「不可」的意思,不能拿来对抽选线);AIP 是另一条路
+      if (r.type === 'ineligible' || (r.program && r.program !== 'PNP')) continue
+      if (!streams[r.province]) streams[r.province] = r.stream || ''
+    }
+  }
+
   const evals = evalPathways(profile, dims, { dli: dliStats, desigEmployers: desigRes.totalDocs || 0 })
-  return <PathwaysView evals={evals} loggedIn={!!user} profileOk={hasProfile(profile)} />
+  return <PathwaysView evals={evals} loggedIn={!!user} profileOk={hasProfile(profile)}
+    scoreFactors={scoreFactors} draws={draws} streams={streams}
+    ctx={{ noc: profile.nocCodes[0] || '', province: profile.targetProvinces[0] || '' }} clb={profile.clb} />
 }
