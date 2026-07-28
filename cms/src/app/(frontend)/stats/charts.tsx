@@ -220,6 +220,9 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels }: { occ
   // 通道只放**职业粒度判得了**的两条:省提名具名清单、联邦 EE 类别。AIP 是雇主级、QC 数据层没清单 —— 不假装能筛。
   const [q, setQ] = useState('')
   const [chan, setChan] = useState<'all' | 'pnp' | 'ee'>('all')
+  // 最低在招岗数(Frank 2026-07-28 点「从低到高」实拍:最前面全是只有 1 个岗的职业,柱子齐刷刷是 1)。
+  // 1 个岗的职业进「分布图」没有意义 —— 默认 5,想看全部把它调回 1。
+  const [minJobs, setMinJobs] = useState(5)
   const [more, setMore] = useState(false)          // 更多筛选折叠(与职位板 #59 同款)
   const pnpSet = useMemo(() => new Set(channels?.pnp || []), [channels])
   const eeSet = useMemo(() => new Set(channels?.ee || []), [channels])
@@ -262,6 +265,7 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels }: { occ
     if (xKey === 'occ') {
       const kw = q.trim().toLowerCase()
       const hit = (o: OccRow) => (!kw || occName(o).toLowerCase().includes(kw) || (o.titleEn || '').toLowerCase().includes(kw) || o.noc.includes(kw))
+        && (o.openJobs ?? 0) >= minJobs
         && (chan === 'all' || (chan === 'pnp' ? pnpSet.has(o.noc) : eeSet.has(o.noc)))
       const ks = [...natl].filter(hit).sort((a, b) => by(sortBy === 'med' ? pick(a.medianWageAnnual, a.medianSalaryAnnual, a.salaryN) : a.openJobs,
         sortBy === 'med' ? pick(b.medianWageAnnual, b.medianSalaryAnnual, b.salaryN) : b.openJobs)).slice(0, 200)
@@ -323,7 +327,7 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels }: { occ
       } else series = [bar(t('stats.openJobs'), ps.map((p) => cell(p, 'all')?.openJobs ?? 0), 0)]
     } else {
       const kwc = q.trim().toLowerCase()
-      const cs = [...city].filter((c) => !kwc || c.city.toLowerCase().includes(kwc)
+      const cs = [...city].filter((c) => (c.openJobs ?? 0) >= minJobs).filter((c) => !kwc || c.city.toLowerCase().includes(kwc)
         || (c.cityZh || '').includes(q.trim()) || (c.cityKo || '').includes(q.trim())).sort((a, b) => by(sortBy === 'med' ? pick(a.medianWageAnnual, a.medianSalaryAnnual, a.salaryN) : a.openJobs,
         sortBy === 'med' ? pick(b.medianWageAnnual, b.medianSalaryAnnual, b.salaryN) : b.openJobs)).slice(0, 200)
       axis = cs.map((c) => (lang === 'zh' ? (c.cityZh || c.city) : lang === 'ko' ? (c.cityKo || c.city) : c.city))
@@ -386,7 +390,7 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels }: { occ
             symbol: 'circle', symbolSize: 5, connectNulls: true, z: 5,
             lineStyle: { width: 2, color: '#111827' }, itemStyle: { color: '#111827' } }]),
     }
-  }, [occ, city, rows, xKey, g, y2, showMed, medName, sortBy, sortDir, q, chan, pnpSet, eeSet, lang, t])
+  }, [occ, city, rows, xKey, g, y2, showMed, medName, sortBy, sortDir, q, chan, minJobs, pnpSet, eeSet, lang, t])
 
   if (!occ.length && !city.length) return null   // 数据层没落地 → 整块不渲(不出空壳)
 
@@ -434,7 +438,7 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels }: { occ
           ))}
         </span>
         <button onClick={() => setMore((v) => !v)} style={{ height: 32, border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', fontSize: 12.5, color: '#374151', padding: '0 11px', cursor: 'pointer' }}>
-          {t('mkt.more')}{chan !== 'all' || y2 !== 'wage' ? <span style={{ display: 'inline-block', background: '#2563eb', color: '#fff', borderRadius: 999, fontSize: 10.5, padding: '0 5px', marginLeft: 5 }}>{(chan !== 'all' ? 1 : 0) + (y2 !== 'wage' ? 1 : 0)}</span> : null}
+          {t('mkt.more')}{chan !== 'all' || y2 !== 'wage' || minJobs !== 5 ? <span style={{ display: 'inline-block', background: '#2563eb', color: '#fff', borderRadius: 999, fontSize: 10.5, padding: '0 5px', marginLeft: 5 }}>{(chan !== 'all' ? 1 : 0) + (y2 !== 'wage' ? 1 : 0) + (minJobs !== 5 ? 1 : 0)}</span> : null}
         </button>
       </div>
       {more && (
@@ -450,6 +454,10 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels }: { occ
             <option value="wage">{t('stats.medWage')}</option>
             <option value="posted">{t('stats.medSalary')}</option>
             <option value="off">{t('mkt.y2.off')}</option>
+          </select>
+          <span style={ctlLb}>{t('mkt.minJobs')}</span>
+          <select value={minJobs} onChange={(e) => setMinJobs(Number(e.target.value))} style={selS}>
+            {[1, 5, 10, 20, 50].map((n) => <option key={n} value={n}>{n}</option>)}
           </select>
           {xKey !== 'occ' ? <span style={{ fontSize: 11.5, color: '#9ca3af' }}>{t('mkt.chan.occOnly')}</span> : null}
         </div>
