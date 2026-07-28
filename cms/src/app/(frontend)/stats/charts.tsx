@@ -258,10 +258,11 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
         }
         series = PROVS.map((p, i) => bar(provLabel(p), ks.map((o) => byNoc.get(o.noc)?.get(p)?.jobs ?? 0), i))
         // 中位线也按省拆,**与柱同名同色** → 图例仍是 10 项,点一下省名柱与线一起隐显
+        // 画成**点不连线**:十条折线互相穿插是一锅面条(第一版实拍),而同一簇里十个点垂直排开,
+        // 一眼就看出「同一个职业各省中位差多少」——这正是要表达的东西。
         provMed = PROVS.map((p, i) => ({ name: provLabel(p), type: 'line', yAxisIndex: 1,
-          data: ks.map((o) => byNoc.get(o.noc)?.get(p)?.med ?? null), symbol: 'none', connectNulls: false,
-          z: 5, lineStyle: { width: 1.4, type: 'dashed', color: MC_PAL[i % MC_PAL.length] },
-          itemStyle: { color: MC_PAL[i % MC_PAL.length] } }))
+          data: ks.map((o) => byNoc.get(o.noc)?.get(p)?.med ?? null), symbol: 'circle', symbolSize: 5,
+          connectNulls: false, z: 6, lineStyle: { opacity: 0 }, itemStyle: { color: MC_PAL[i % MC_PAL.length] } }))
       } else series = [bar(t('stats.openJobs'), ks.map((o) => o.openJobs), 0)]
     } else if (xKey === 'prov') {
       const cell = (p: string, b: string) => rows.find((r) => r.province === p && r.broad === b && r.mid === 'all')
