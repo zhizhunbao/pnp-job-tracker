@@ -339,7 +339,9 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
       xAxis: [{ type: 'category', data: axis, axisTick: { show: false }, axisLine: { lineStyle: { color: '#e5e7eb' } },
         // 折行/截断/留白全走 echarts 原生(Frank:「echart 本身就有这个功能」):
         // overflow:'break' 折行、height+lineOverflow:'truncate' 封顶三行、grid.containLabel 自动留边距
-        axisLabel: { fontSize: 10.5, color: '#6b7280', interval: 0, rotate: 0, hideOverlap: true,
+        // hideOverlap 只在「一格一名」时开;分省时名字已经是一组标一个(其余格空串),
+        // 再开它会把 87px 宽的名字互判为重叠 → 实拍只剩一个职业名。
+        axisLabel: { fontSize: 10.5, color: '#6b7280', interval: 0, rotate: 0, hideOverlap: !provMed.length,
           width: labelW, overflow: 'break', height: 38, lineOverflow: 'truncate', lineHeight: 12.5, margin: 10 } }],
       // 双轴:左=岗数(柱)、右=中位年薪(线)。量纲差两个数量级,同轴会把薪资线压成一条平线
       yAxis: [
