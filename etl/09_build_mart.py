@@ -560,6 +560,8 @@ def build():
                 tr = noc_i18n.get(n, {})
                 noc_descriptions.append({
                     "noc": n, "title": v.get("title", ""),
+                    # E8-14 3.3:窄位(图表横轴/chip)用的中文短名(04g 产);没有就留空,前端回退完整译名
+                    "titleZhShort": tr.get("zhShort", ""),
                     "titleZh": tr.get("zh", ""), "titleKo": tr.get("ko", ""),
                     "duties": "\n".join(v.get("duties", [])),
                     "requirements": "\n".join(v.get("requirements", [])),

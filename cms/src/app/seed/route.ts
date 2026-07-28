@@ -118,8 +118,8 @@ export async function GET(req: Request) {
       (r) => ({ province: r.province, system: r.system, factor: r.factor, kind: r.kind, seq: r.seq, label: r.label, points: r.points, xor_prev: r.xorPrev, rule: r.rule, factor_max: r.factorMax, factor_group: r.factorGroup, group_max: r.groupMax, pass_mark: r.passMark, max_total: r.maxTotal, guide_effective: r.guideEffective, url: r.url, fetched: r.fetched })],
     ['ee_categories', 'ee_categories', ['category', 'label', 'noc', 'teer', 'title', 'url', 'fetched', 'draw_crs', 'draw_date', 'draw_size'],
       (r) => ({ category: r.category, label: r.label, noc: r.noc, teer: r.teer, title: r.title, url: r.url, fetched: r.fetched, draw_crs: r.drawCrs, draw_date: r.drawDate, draw_size: r.drawSize })],
-    ['noc_descriptions', 'noc_descriptions', ['noc', 'title', 'title_zh', 'title_ko', 'duties', 'requirements', 'fetched'],
-      (r) => ({ noc: r.noc, title: r.title, title_zh: r.titleZh, title_ko: r.titleKo, duties: r.duties, requirements: r.requirements, fetched: r.fetched })],
+    ['noc_descriptions', 'noc_descriptions', ['noc', 'title', 'title_zh', 'title_zh_short', 'title_ko', 'duties', 'requirements', 'fetched'],
+      (r) => ({ noc: r.noc, title: r.title, title_zh: r.titleZh, title_zh_short: r.titleZhShort, title_ko: r.titleKo, duties: r.duties, requirements: r.requirements, fetched: r.fetched })],
     // E12-03 PGWP 可申 DLI 子集(院校级,IRCC 官方名单)
     ['dli', 'dli', ['province', 'name', 'dli_number', 'city', 'campuses', 'is_public', 'grad_program', 'url', 'fetched'],
       (r) => ({ province: r.province, name: r.name, dli_number: r.dliNumber, city: r.city, campuses: r.campuses, is_public: r.isPublic, grad_program: r.gradProgram, url: r.url, fetched: r.fetched })],
@@ -133,8 +133,8 @@ export async function GET(req: Request) {
       (r) => ({ slug: r.slug, rank: r.rank, kind: r.kind, external_id: r.externalId, title: r.title, company: r.company, company_slug: r.companySlug, city: r.city, province: r.province, noc: r.noc, teer: r.teer, score: r.score, salary_text: r.salaryText, salary_annual: r.salaryAnnual, pnp_stream: r.pnpStream, ee_category: r.eeCategory, date_posted: r.datePosted, apply_url: r.applyUrl, official_url: r.officialUrl, open_jobs: r.openJobs, named_jobs: r.namedJobs, avg_score: r.avgScore, lmia_positions: r.lmiaPositions, lmia_quarter: r.lmiaQuarter })],
     // E8-14 主图两个新粒度(当下状态 → 照常清空重灌;历史那张 stats_daily 在下面单独 UPSERT)
     ['stats_occupation', 'stats_occupation',
-      ['noc', 'province', 'title_zh', 'title_en', 'teer', 'broad', 'open_jobs', 'new7d', 'median_salary_annual', 'named_jobs', 'fetched'],
-      (r) => ({ noc: r.noc, province: r.province, title_zh: r.titleZh, title_en: r.titleEn, teer: r.teer, broad: r.broad,
+      ['noc', 'province', 'title_zh', 'title_zh_short', 'title_en', 'teer', 'broad', 'open_jobs', 'new7d', 'median_salary_annual', 'named_jobs', 'fetched'],
+      (r) => ({ noc: r.noc, province: r.province, title_zh: r.titleZh, title_zh_short: r.titleZhShort, title_en: r.titleEn, teer: r.teer, broad: r.broad,
                 open_jobs: r.openJobs, new7d: r.new7d, median_salary_annual: r.medianSalaryAnnual, named_jobs: r.namedJobs, fetched: r.fetched })],
     ['stats_city', 'stats_city',
       ['city', 'province', 'open_jobs', 'new7d', 'median_salary_annual', 'named_jobs', 'fetched'],

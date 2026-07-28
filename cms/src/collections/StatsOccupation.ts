@@ -8,7 +8,9 @@ export const StatsOccupation: CollectionConfig = {
   fields: [
     { name: 'noc', type: 'text', index: true },
     { name: 'province', type: 'text', index: true, admin: { description: "'all' = 全国行" } },
-    { name: 'titleZh', type: 'text' }, { name: 'titleEn', type: 'text' },
+    { name: 'titleZh', type: 'text' },
+    { name: 'titleZhShort', type: 'text', admin: { description: '窄位短名(≤7 字,04g 生成);空=回退完整译名' } },
+    { name: 'titleEn', type: 'text', admin: { description: 'NOC 官方名(英文)——**唯一官方名**,中文是本站译名' } },
     { name: 'teer', type: 'number' }, { name: 'broad', type: 'text' },
     { name: 'openJobs', type: 'number' }, { name: 'new7d', type: 'number' },
     { name: 'medianSalaryAnnual', type: 'number' }, { name: 'namedJobs', type: 'number' },

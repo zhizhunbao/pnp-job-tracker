@@ -828,9 +828,13 @@ export interface NocDescription {
    */
   title?: string | null;
   /**
-   * 职业名中文(显示用灰注,非官方)
+   * 职业名中文(本站译名,非官方 —— NOC 官方只有英/法两版)
    */
   titleZh?: string | null;
+  /**
+   * 中文短名(≤7 字,04g 生成);窄位用,空则回退 titleZh
+   */
+  titleZhShort?: string | null;
   /**
    * 职业名韩文(显示用灰注,非官方)
    */
@@ -1144,6 +1148,13 @@ export interface StatsOccupation {
    */
   province?: string | null;
   titleZh?: string | null;
+  /**
+   * 窄位短名(≤7 字,04g 生成);空=回退完整译名
+   */
+  titleZhShort?: string | null;
+  /**
+   * NOC 官方名(英文)——**唯一官方名**,中文是本站译名
+   */
   titleEn?: string | null;
   teer?: number | null;
   broad?: string | null;
@@ -1771,6 +1782,7 @@ export interface NocDescriptionsSelect<T extends boolean = true> {
   noc?: T;
   title?: T;
   titleZh?: T;
+  titleZhShort?: T;
   titleKo?: T;
   duties?: T;
   requirements?: T;
@@ -1961,6 +1973,7 @@ export interface StatsOccupationSelect<T extends boolean = true> {
   noc?: T;
   province?: T;
   titleZh?: T;
+  titleZhShort?: T;
   titleEn?: T;
   teer?: T;
   broad?: T;

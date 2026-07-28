@@ -120,7 +120,8 @@ def main() -> None:
     for noc, js in by_noc.items():
         nd = noc_name.get(noc, {})
         base = {"noc": noc, "teer": js[0].get("teer"), "broad": js[0].get("broad", ""),
-                "titleZh": nd.get("titleZh", ""), "titleEn": nd.get("title", ""), "fetched": TODAY}
+                "titleZh": nd.get("titleZh", ""), "titleZhShort": nd.get("titleZhShort", ""),
+                "titleEn": nd.get("title", ""), "fetched": TODAY}
         occ_rows.append({**base, "province": "all", **agg(js)})       # 全国行
         by_p: dict[str, list] = defaultdict(list)
         for j in js:
