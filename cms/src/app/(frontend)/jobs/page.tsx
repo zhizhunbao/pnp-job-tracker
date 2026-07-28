@@ -19,20 +19,20 @@ export const metadata = {
   description: 'Daily-updated job board across all 10 provinces: PNP named streams, EE categories, wages vs ESDC median, profile matching. 全加拿大日更职位板:省提名通道/EE 类别/工资对比/档案匹配。',
 }
 
-export default async function JobsPage() {
-  const payload = await getPayload({ config: await config })
+// 维度进程内缓存(2026-07-28 Frank「职位板返回有时候老慢了」的根因之一):
+// 首屏 SSR 每次都重拉 8 张维度表(pnp-occupations ≤5000 行 + ee-categories 2000 + noc-categories 1000…),
+// 0.25CPU 小库上就是 1-2 秒 —— 这与 /api/jobs 里那层缓存治的是同一个病(2026-07-19「排序 3-4 秒」),
+// 当时只治了排序那条路,没治首页。串行实测旁证:同为动态页的 /pricing TTFB 0.13s,职位板 1.6~3.4s。
+// 维度表随 seed 小时级更新,10 分钟陈旧完全可接受;Render 单实例,进程缓存即全局缓存。
+// **只缓存与用户无关的维度**:职位行/总数/更新时间照常每次现查(页头「更新时间」不能陈旧)。
+type SsrDims = Awaited<ReturnType<typeof loadDims>>
+let ssrDimsCache: { dims: SsrDims; ts: number } | null = null
+const SSR_DIMS_TTL = 10 * 60_000
 
-  // 分层(E3-05):Pro 列(工资中位对比三件套 + 匹配)在 SELECT 源头裁掉 —— 免费用户的数据不进浏览器
-  const user = await getUser(await headers())
-  const pro = isPro(user)
-  const profile = normalizeProfile((user as any)?.profile)
-  const profileOk = hasProfile(profile)
-
-  // 列表查询在 lib/jobsSql.ts(与 /api/jobs-data 共用);首屏只取 FIRST_SCREEN_ROWS 行 + 总数
-  const pool = (payload.db as any).pool
-
-  // SSR 首屏只取小维度(2026-07-17 瘦身):cities/districts/designated_employers/noc_descriptions 这 4 张大表
-  // 移到 /api/jobs-data 随全量后台拉(首屏减 ~1.25MB);它们只在筛选下拉/顾问弹窗用,晚到无碍。
+// 与用户无关的维度装配(原来内联在 JobsPage 里,2026-07-28 抽出来只为套缓存,查询本身一字未改)。
+// SSR 首屏只取小维度(2026-07-17 瘦身):cities/districts/designated_employers/noc_descriptions 这 4 张大表
+// 移到 /api/dims 后台拉(首屏减 ~1.25MB);它们只在筛选下拉/顾问弹窗用,晚到无碍。
+async function loadDims(payload: Awaited<ReturnType<typeof getPayload>>, pool: any) {
   // 官方移民新闻瘦行(E12-06,PNP 弹框「本省最新公告」):只取 4 列不带正文;表缺/查询失败 → 空(宁可留空)
   const newsRowsP = pool.query(`SELECT region, title, date, slug FROM news ORDER BY date DESC, id ASC LIMIT 60`)
     .then((r: any) => r.rows as { region: string; title: string; date: string; slug: string }[])
@@ -62,6 +62,30 @@ export default async function JobsPage() {
     fieldSources: fieldSrcDocs.docs.map((r: any) => ({ field: r.field ?? '', kind: r.kind ?? '', publisher: r.publisher ?? '', url: r.url ?? '', title: r.title ?? '', description: r.description ?? '', status: r.status ?? '', fetched: r.fetched ?? '', note: r.note ?? '' })),
     news: await newsRowsP,
   }
+  return dims
+}
+
+async function getDimsCached(payload: Awaited<ReturnType<typeof getPayload>>, pool: any): Promise<SsrDims> {
+  if (ssrDimsCache && Date.now() - ssrDimsCache.ts < SSR_DIMS_TTL) return ssrDimsCache.dims
+  const dims = await loadDims(payload, pool)
+  ssrDimsCache = { dims, ts: Date.now() }
+  return dims
+}
+
+
+export default async function JobsPage() {
+  const payload = await getPayload({ config: await config })
+
+  // 分层(E3-05):Pro 列(工资中位对比三件套 + 匹配)在 SELECT 源头裁掉 —— 免费用户的数据不进浏览器
+  const user = await getUser(await headers())
+  const pro = isPro(user)
+  const profile = normalizeProfile((user as any)?.profile)
+  const profileOk = hasProfile(profile)
+
+  // 列表查询在 lib/jobsSql.ts(与 /api/jobs-data 共用);首屏只取 FIRST_SCREEN_ROWS 行 + 总数
+  const pool = (payload.db as any).pool
+
+  const dims = await getDimsCached(payload, pool)
 
   // 首屏 50 行 + 总数(E10-01 P3:筛选/翻页由客户端打 /api/jobs 分页,同一查询层 jobsSql 同序)
   // 匹配只吃省提名清单(AIP 背书清单是另一条路,见 lib/jobsSql.pnpOnly);展示维度仍是全量

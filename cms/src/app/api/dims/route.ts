@@ -23,5 +23,8 @@ export async function GET() {
     designatedEmployers: aipDocs.docs.map((r: any) => ({ name: r.name, province: r.province, location: r.location, isTech: !!r.isTech })),
     nocDescriptions: nocDescDocs.docs.map((r: any) => ({ noc: r.noc, title: r.title ?? '', titleZh: r.titleZh ?? '', titleKo: r.titleKo ?? '', duties: r.duties ?? '', requirements: r.requirements ?? '', fetched: r.fetched ?? '' })),
   }
-  return Response.json({ dims })
+  // 2026-07-28 实测:这份 1.4MB(压缩后 302KB)每次进职位板都白拉一遍,TTFB 1.2s。
+  // 内容是维度表(城市/区/AIP 雇主/NOC 描述),ETL 一小时才可能动一次,且**与用户无关** —— 给浏览器缓存 5 分钟,
+  // 过期后先用旧的再后台换新(stale-while-revalidate),返回/翻页不再重付这 1.2 秒。
+  return Response.json({ dims }, { headers: { 'Cache-Control': 'public, max-age=300, stale-while-revalidate=3600' } })
 }
