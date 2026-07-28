@@ -850,8 +850,11 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const invertCols = () => saveCols(TOGGLABLE.filter((k) => !visible.includes(k)))
   const mainCols = () => saveCols(DEFAULT_COLS) // 一键只显示默认的核心列
   const shownBase = COLUMNS.filter((c) => c.key !== 'match' && (c.always || visible.includes(c.key)))
-  // 匹配视图:match 固定第一列,其余照用户列偏好
-  const shownAll = matchView ? [COLUMNS.find((c) => c.key === 'match')!, ...shownBase] : shownBase
+  // 匹配档不再出列(Frank 2026-07-27 看着匹配视图整列全是「高」:「这一列没有必要吧」)——
+  // 这个视图本身就是「你的匹配」,再来一列逐行复读一遍「高」是零信息量;
+  // 匹配仍然是**筛选与排序**维度(view=match 的 WHERE、fElig 筛选、sort=match),只是不占一列。
+  // 同 2026-07-26 手机卡裸字胶囊下架那一刀的理由(没有列头的「高」说不清是什么的高)。
+  const shownAll = shownBase
 
   // ── 列宽:默认纯自动布局(table-layout:auto,永不截断);用户拖表头竖线/双击才切固定布局。
   //    会话内有效、不落 localStorage —— 刷新即回自动布局。当初 bug 正是「localStorage 固定布局 +
