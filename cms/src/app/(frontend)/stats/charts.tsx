@@ -258,11 +258,15 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
         }
         series = PROVS.map((p, i) => bar(provLabel(p), ks.map((o) => byNoc.get(o.noc)?.get(p)?.jobs ?? 0), i))
         // 中位线也按省拆,**与柱同名同色** → 图例仍是 10 项,点一下省名柱与线一起隐显
-        // 画成**点不连线**:十条折线互相穿插是一锅面条(第一版实拍),而同一簇里十个点垂直排开,
-        // 一眼就看出「同一个职业各省中位差多少」——这正是要表达的东西。
-        provMed = PROVS.map((p, i) => ({ name: provLabel(p), type: 'line', yAxisIndex: 1,
-          data: ks.map((o) => byNoc.get(o.noc)?.get(p)?.med ?? null), symbol: 'circle', symbolSize: 5,
-          connectNulls: false, z: 6, lineStyle: { opacity: 0 }, itemStyle: { color: MC_PAL[i % MC_PAL.length] } }))
+        // 各省中位**标在各自柱子头上**(Frank 2026-07-28 定稿:「是要一根线,不同的中位标到不同的柱子上面」)。
+        // 前两版都被否:①十条折线互相穿插=面条 ②一簇十个点=看不出哪个点属于哪根柱。
+        // 标签值取该省该职业的中位(不是柱子自己的岗数)——labelLayout.hideOverlap 让挤不下的自动隐,
+        // 拉 dataZoom 放大后逐渐全显。线仍是那一根全国中位线,不动。
+        series = series.map((b: any, i: number) => ({ ...b,
+          label: { show: true, position: 'top', fontSize: 9, color: '#9ca3af', rotate: 90, align: 'left',
+            formatter: (q: any) => { const m = byNoc.get(ks[q.dataIndex]?.noc || '')?.get(PROVS[i])?.med
+              return m == null ? '' : '$' + Math.round(m / 1000) + 'K' } },
+          labelLayout: { hideOverlap: true } }))
       } else series = [bar(t('stats.openJobs'), ks.map((o) => o.openJobs), 0)]
     } else if (xKey === 'prov') {
       const cell = (p: string, b: string) => rows.find((r) => r.province === p && r.broad === b && r.mid === 'all')
