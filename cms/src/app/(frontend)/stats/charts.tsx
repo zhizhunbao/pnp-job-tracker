@@ -337,6 +337,7 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels }: { occ
     const vw = typeof window !== 'undefined' ? Math.min(window.innerWidth - 80, 1200) : 1100
     // 分省时一个职业占 (省数+1) 个类目(末尾那格是簇间距) → 标签宽按**组**算,不按格算
     const span = provMed.length ? PROVS.length + 1 : 1
+    const mid = PROVS.length >> 1
     const visible = Math.max(1, Math.round(axis.length * (end / 100) / span))
     // 标签盒宽要**比格距窄一截**(留 14px 沟):等宽时相邻盒子边缘相接,echarts 判为重叠 →
     // 上一版我为救「只剩一个名字」把 hideOverlap 整个关了,结果缩放到多组时全撞一起(Frank 实拍)。
@@ -364,7 +365,10 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels }: { occ
       xAxis: [{ type: 'category', data: axis, axisTick: { show: false }, axisLine: { lineStyle: { color: '#e5e7eb' } },
         // 折行/截断/留白全走 echarts 原生(Frank:「echart 本身就有这个功能」):
         // overflow:'break' 折行、height+lineOverflow:'truncate' 封顶三行、grid.containLabel 自动留边距
-        axisLabel: { fontSize: 10.5, color: '#6b7280', interval: 0, rotate: 0, hideOverlap: true,
+        // interval 回调:分省时只在每组中间那格出标签,其余格**根本不渲染**(不是渲染空串);
+        // 空串会占满 width 的盒子 → 与相邻盒子相交 → hideOverlap 连真名字一起隐掉(2026-07-28 两次实拍教训)。
+        axisLabel: { fontSize: 10.5, color: '#6b7280', rotate: 0, hideOverlap: true,
+          interval: provMed.length ? ((idx: number) => idx % span === mid) : 0,
           width: labelW, overflow: 'break', height: 38, lineOverflow: 'truncate', lineHeight: 12.5, margin: 10 } }],
       // 双轴:左=岗数(柱)、右=中位年薪(线)。量纲差两个数量级,同轴会把薪资线压成一条平线
       yAxis: [
