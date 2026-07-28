@@ -472,5 +472,13 @@ for r in RESULTS:
     f = r.get("facts") or {}
     if r["page"] == "jobs" and (f.get("hits") or f.get("heartbeat")):
         print(f"  页面 {r['viewport']}/{r['lang']}/{r['auth']}: hits={f.get('hits')} heartbeat={f.get('heartbeat')}")
+# 判定带容差(第 28/29 轮同一个假警报):体检要跑 9 分钟,期间生产 ETL 可能落一轮 —— 页面数与 API 数
+# 差几十条是**取数时刻不同**,不是口径不一致。差 > 0.5% 才算真不一致。
+_pg = [int(m.group(0).replace(",", "")) for r in RESULTS for m in
+       [re.search(r"[\d,]+", str((r.get("facts") or {}).get("hits") or ""))] if r["page"] == "jobs" and m]
+if _pg and NUM.get("api_total"):
+    lo, hi, api = min(_pg), max(_pg), int(NUM["api_total"])
+    drift = max(abs(lo - api), abs(hi - api)) / max(api, 1)
+    print(f"  判定:页面 {lo}~{hi} vs API {api} —— {'一致(差 %.2f%% 在 ETL 落轮容差内)' % (drift * 100) if drift <= 0.005 else '★真不一致(差 %.2f%%),查口径' % (drift * 100)}")
 
 print("\nCHECKUP DONE ->", OUT, f"({payload['elapsed']}s, {sum(len(r['hits']) for r in RESULTS)} hits)")
