@@ -204,10 +204,19 @@ function DrillCard({ rows, t, title, kind, metric, money, broadLabel }: {
 // **全用 echarts 原生**(Frank「不要自己实现」):簇状柱=多 series 共 xAxis;缩放=dataZoom;不手搓柱子与滑块。
 const MC_PAL = ['#2563eb', '#f59e0b', '#10b981', '#8b5cf6', '#ef4444', '#06b6d4', '#84cc16', '#ec4899', '#6366f1', '#94a3b8']
 
-export function MarketChart({ occ, city, rows, t }: { occ: OccRow[]; city: CityRow[]; rows: StatRow[]; t: TFn }) {
+export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]; city: CityRow[]; rows: StatRow[]; t: TFn; lang?: string }) {
   const [xKey, setXKey] = useState<'occ' | 'prov' | 'city'>('occ')
   const [grp, setGrp] = useState<'none' | 'prov' | 'broad' | 'teer'>('prov')
   const [showMed, setShowMed] = useState(true)
+  // 排序(Frank 2026-07-28「加上排序按钮」):按岗位数 / 按中位年薪,各含高低两向;空值恒排最后
+  const [sortBy, setSortBy] = useState<'jobs' | 'med'>('jobs')
+  const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc')
+  // 职业名按界面语言取(Frank 实拍:韩文界面轴上全是中文)。中文=本站短名,英文=NOC 官方名,
+  // 韩文=noc_descriptions 的译名,缺则回退官方英文 —— 不拿中文名冒充国际化。
+  const occName = (o: OccRow) => (lang === 'zh' ? (o.titleZhShort || o.titleZh || o.titleEn)
+    : lang === 'ko' ? (o.titleKo || o.titleEn) : (o.titleEn || o.titleZh))
+  // 省名同理走三语键(#58 口径:界面显示全名,两字码只在幕后)
+  const provLabel = (p: string) => t('pr.' + p) || PROV_NAME[p] || p
 
   // 组合合法性:一个职业只对应一个大类与一个 TEER → 横轴=职业时按它们分簇是退化图(每组一根柱);
   // 城市 × 大类需再切一层聚合,数据层没有 → 只给不分组。**宁可禁用,不画退化图。**
@@ -219,36 +228,55 @@ export function MarketChart({ occ, city, rows, t }: { occ: OccRow[]; city: CityR
     let axis: string[] = []
     let series: any[] = []
     let med: (number | null)[] = []
+    let provMed: any[] = []   // 分省中位线(只在横轴=职业且簇内=省份时有)
     let end = 100
     const bar = (name: string, data: (number | null)[], i: number) =>
       ({ name, type: 'bar', data, itemStyle: { color: MC_PAL[i % MC_PAL.length] } })
 
+    // 排序比较器:空值永远垫底(不管升降),否则「低到高」会被一堆没薪资的职业占满头部
+    const by = (v: number | null | undefined, w: number | null | undefined) => {
+      if (v == null && w == null) return 0
+      if (v == null) return 1
+      if (w == null) return -1
+      return sortDir === 'desc' ? w - v : v - w
+    }
+
     if (xKey === 'occ') {
-      const ks = natl.slice(0, 200)
-      // 短名优先(04g 生成),没有才回退完整译名 —— 前端不裁字符串
-      axis = ks.map((o) => o.titleZhShort || o.titleZh || o.titleEn)
+      const ks = [...natl].sort((a, b) => by(sortBy === 'med' ? a.medianSalaryAnnual : a.openJobs,
+        sortBy === 'med' ? b.medianSalaryAnnual : b.openJobs)).slice(0, 200)
+      axis = ks.map(occName)
       med = ks.map((o) => o.medianSalaryAnnual)
       end = Math.min(100, (12 / Math.max(ks.length, 1)) * 100)
       if (g === 'prov') {
-        const byNoc = new Map<string, Map<string, number>>()
+        // 分省时**岗数与中位年薪都按省取**(Frank 2026-07-28「每个省的中位薪职还不一样」——
+        // 原来右轴只画一条全国线,与十根分省柱并排,等于用全国数解释各省柱)
+        const byNoc = new Map<string, Map<string, { jobs: number; med: number | null }>>()
         for (const o of occ) {
           if (o.province === 'all') continue
           if (!byNoc.has(o.noc)) byNoc.set(o.noc, new Map())
-          byNoc.get(o.noc)!.set(o.province, o.openJobs ?? 0)
+          byNoc.get(o.noc)!.set(o.province, { jobs: o.openJobs ?? 0, med: o.medianSalaryAnnual })
         }
-        series = PROVS.map((p, i) => bar(PROV_NAME[p] || p, ks.map((o) => byNoc.get(o.noc)?.get(p) ?? 0), i))
+        series = PROVS.map((p, i) => bar(provLabel(p), ks.map((o) => byNoc.get(o.noc)?.get(p)?.jobs ?? 0), i))
+        // 中位线也按省拆,**与柱同名同色** → 图例仍是 10 项,点一下省名柱与线一起隐显
+        provMed = PROVS.map((p, i) => ({ name: provLabel(p), type: 'line', yAxisIndex: 1,
+          data: ks.map((o) => byNoc.get(o.noc)?.get(p)?.med ?? null), symbol: 'none', connectNulls: false,
+          z: 5, lineStyle: { width: 1.4, type: 'dashed', color: MC_PAL[i % MC_PAL.length] },
+          itemStyle: { color: MC_PAL[i % MC_PAL.length] } }))
       } else series = [bar(t('stats.openJobs'), ks.map((o) => o.openJobs), 0)]
     } else if (xKey === 'prov') {
-      axis = PROVS.map((p) => PROV_NAME[p] || p)
       const cell = (p: string, b: string) => rows.find((r) => r.province === p && r.broad === b && r.mid === 'all')
-      med = PROVS.map((p) => cell(p, 'all')?.medianSalaryAnnual ?? null)
+      const ps = [...PROVS].sort((a, b) => by(sortBy === 'med' ? cell(a, 'all')?.medianSalaryAnnual : cell(a, 'all')?.openJobs,
+        sortBy === 'med' ? cell(b, 'all')?.medianSalaryAnnual : cell(b, 'all')?.openJobs))
+      axis = ps.map(provLabel)
+      med = ps.map((p) => cell(p, 'all')?.medianSalaryAnnual ?? null)
       if (g === 'broad') {
         // BROAD_SLUGS 是 [中文名, slug] 对,不是纯字符串数组 —— 取 slug 那一项
         const cats = BROAD_SLUGS.map((x) => (Array.isArray(x) ? x[1] : x)).filter((b) => b && b !== 'all')
-        series = cats.map((b, i) => bar(t('broad.' + b), PROVS.map((p) => cell(p, b)?.openJobs ?? 0), i))
-      } else series = [bar(t('stats.openJobs'), PROVS.map((p) => cell(p, 'all')?.openJobs ?? 0), 0)]
+        series = cats.map((b, i) => bar(t('broad.' + b), ps.map((p) => cell(p, b)?.openJobs ?? 0), i))
+      } else series = [bar(t('stats.openJobs'), ps.map((p) => cell(p, 'all')?.openJobs ?? 0), 0)]
     } else {
-      const cs = city.slice(0, 200)
+      const cs = [...city].sort((a, b) => by(sortBy === 'med' ? a.medianSalaryAnnual : a.openJobs,
+        sortBy === 'med' ? b.medianSalaryAnnual : b.openJobs)).slice(0, 200)
       axis = cs.map((c) => c.city)
       med = cs.map((c) => c.medianSalaryAnnual)
       end = Math.min(100, (14 / Math.max(cs.length, 1)) * 100)
@@ -257,7 +285,19 @@ export function MarketChart({ occ, city, rows, t }: { occ: OccRow[]; city: CityR
 
     const multi = series.length > 1
     return {
-      tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, confine: true, textStyle: { fontSize: 12 } },
+      // 分省时同一个省有柱也有线 → tooltip 合成一行「省名 岗数 中位年薪」,不铺成 20 行
+      tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, confine: true, textStyle: { fontSize: 12 },
+        formatter: !provMed.length ? undefined : (ps: any[]) => {
+          const byName = new Map<string, { jobs?: number; med?: number }>()
+          for (const q of ps) {
+            const e = byName.get(q.seriesName) || {}
+            if (q.seriesType === 'bar') e.jobs = q.value; else e.med = q.value
+            byName.set(q.seriesName, e)
+          }
+          const line = (n: string, v: { jobs?: number; med?: number }) =>
+            `${n}　${v.jobs ?? 0}${v.med != null ? `　$${Math.round(v.med / 1000)}K` : ''}`
+          return `<b>${ps[0]?.axisValue ?? ''}</b><br/>` + [...byName].map(([n, v]) => line(n, v)).join('<br/>')
+        } },
       legend: { show: multi, type: 'scroll', bottom: 36, itemWidth: 11, itemHeight: 11, textStyle: { fontSize: 11.5, color: '#6b7280' } },
       grid: { left: 54, right: showMed ? 54 : 14, top: 12, bottom: multi ? 112 : 90 },
       // 职业/城市名可能仍偏长 → 轴上截 7 字 + 斜排,全名在 tooltip
@@ -273,12 +313,12 @@ export function MarketChart({ occ, city, rows, t }: { occ: OccRow[]; city: CityR
       dataZoom: [{ type: 'inside', start: 0, end }, { type: 'slider', start: 0, end, height: 18, bottom: 8,
         borderColor: 'transparent', backgroundColor: '#f3f4f6', fillerColor: 'rgba(37,99,235,.12)',
         handleStyle: { color: '#2563eb' }, textStyle: { fontSize: 10, color: '#9ca3af' } }],
-      series: showMed
-        ? series.concat([{ name: t('stats.medSalary'), type: 'line', yAxisIndex: 1, data: med, symbol: 'circle',
-          symbolSize: 5, connectNulls: true, z: 5, lineStyle: { width: 2, color: '#111827' }, itemStyle: { color: '#111827' } }])
-        : series,
+      series: !showMed ? series
+        : provMed.length ? series.concat(provMed)
+          : series.concat([{ name: t('stats.medSalary'), type: 'line', yAxisIndex: 1, data: med, symbol: 'circle',
+            symbolSize: 5, connectNulls: true, z: 5, lineStyle: { width: 2, color: '#111827' }, itemStyle: { color: '#111827' } }]),
     }
-  }, [occ, city, rows, xKey, g, showMed, t])
+  }, [occ, city, rows, xKey, g, showMed, sortBy, sortDir, lang, t])
 
   if (!occ.length && !city.length) return null   // 数据层没落地 → 整块不渲(不出空壳)
 
@@ -305,6 +345,12 @@ export function MarketChart({ occ, city, rows, t }: { occ: OccRow[]; city: CityR
           <button key={k} disabled={!legal(k)} onClick={() => legal(k) && setGrp(k as 'none' | 'prov' | 'broad' | 'teer')}
             style={chip(g === k, !legal(k))}>{lb}</button>
         ))}
+      </Ctl>
+      <Ctl label={t('mkt.sort')}>
+        <button onClick={() => setSortBy('jobs')} style={chip(sortBy === 'jobs')}>{t('stats.openJobs')}</button>
+        <button onClick={() => setSortBy('med')} style={chip(sortBy === 'med')}>{t('stats.medSalary')}</button>
+        <button onClick={() => setSortDir('desc')} style={chip(sortDir === 'desc')}>{t('mkt.sort.desc')}</button>
+        <button onClick={() => setSortDir('asc')} style={chip(sortDir === 'asc')}>{t('mkt.sort.asc')}</button>
       </Ctl>
       <Ctl label={t('mkt.y2')}>
         <button onClick={() => setShowMed(true)} style={chip(showMed)}>{t('stats.medSalary')}</button>

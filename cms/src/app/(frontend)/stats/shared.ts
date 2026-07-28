@@ -35,7 +35,7 @@ export const PROV_NAME: Record<string, string> = {
 }
 
 // E8-14 统计主图的两个数据源(ETL 算好,前端零计算透传)
-export type OccRow = { noc: string; province: string; titleZh: string; titleZhShort: string; titleEn: string
+export type OccRow = { noc: string; province: string; titleZh: string; titleZhShort: string; titleEn: string; titleKo: string
   teer: number | null; broad: string; openJobs: number | null; new7d: number | null
   medianSalaryAnnual: number | null; namedJobs: number | null }
 export type CityRow = { city: string; province: string; openJobs: number | null; new7d: number | null
