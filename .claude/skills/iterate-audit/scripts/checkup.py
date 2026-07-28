@@ -380,7 +380,12 @@ def sweep(b, viewport, lang, pages, login=False):
                 page.goto(BASE + "/jobs", wait_until="domcontentloaded", timeout=60000)
                 page.wait_for_selector("table tbody tr", state="attached", timeout=30000)
                 page.wait_for_timeout(1500); close_banner()
-                b2 = page.locator(f"button:has-text('{btn}')").first if lang == "zh" else page.locator("table tbody button").first
+                # 第 29 轮修:JD 弹框没有「职位描述」按钮了(职位名 <a> 本身 preventDefault 开弹框,
+                # JobsTable.tsx:1551)—— 旧选择器每轮 30s 超时,弹框段等于没跑。
+                if name == "jd-modal":
+                    b2 = page.locator("a[href^='/jobs/']").first
+                else:
+                    b2 = page.locator(f"button:has-text('{btn}')").first if lang == "zh" else page.locator("table tbody button").first
                 b2.evaluate("el => el.click()")
                 page.wait_for_timeout(wait)
                 page.evaluate("document.querySelectorAll('div').forEach(d => { if (d.scrollTop > 0) d.scrollTop = 0 })")

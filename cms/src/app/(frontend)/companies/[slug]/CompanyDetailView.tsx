@@ -11,6 +11,7 @@ import type { CompanyDetail, SimilarEmployer } from '@/lib/jobsSql'
 import { SiteHeader } from '../../SiteHeader'
 import { SiteFooter } from '../../SiteFooter'
 import { Notice, PageShell } from '../../ui/primitives'
+import { goBackOr } from '../../BackLink'
 
 const aLink: React.CSSProperties = { color: '#2563eb', textDecoration: 'none' }
 
@@ -39,8 +40,9 @@ export default function CompanyDetailView({ company, similar = [], loggedIn }: {
           {/* #200(Frank「还分卡片,类似类别」):CompanyBody 各段改回卡片 → 详情页不再套外层白卡(禁卡套卡);
               H1 单独一张头卡,下面 CompanyBody 卡片自铺(与弹框同源) */}
           <div style={{ position: 'relative', border: '1px solid #e5e7eb', borderRadius: 12, background: '#fff', padding: '14px 16px', marginBottom: 14 }}>
-            {/* 返回(Frank 走查#18):右上角、浏览器返回(与详情页统一) */}
-            <button onClick={() => history.back()}
+            {/* 返回(Frank 走查#18):右上角、浏览器返回(与详情页统一);2026-07-28 同走 goBackOr —— 公司页
+                也是弹框里 target="_blank" 打开的,新标签页里裸 history.back() 是空操作 */}
+            <button onClick={() => goBackOr('/?back=1')}
               style={{ position: 'absolute', top: 12, right: 12, border: '1px solid #d1d5db', borderRadius: 8, padding: '6px 14px', fontSize: 12.5, color: '#374151', background: '#fff', whiteSpace: 'nowrap', cursor: 'pointer' }}>{t('detail.back')}</button>
             <h1 style={{ margin: 0, fontSize: 22, lineHeight: 1.35, color: '#111827', paddingRight: 84 }}>
               {company.name}{alias ? <span style={{ color: '#9ca3af', fontSize: 15, fontWeight: 400 }}>　{alias}</span> : null}
