@@ -89,6 +89,8 @@ export interface Config {
     rankings: Ranking;
     stats: Stat;
     'stats-daily': StatsDaily;
+    'stats-occupation': StatsOccupation;
+    'stats-city': StatsCity;
     'saved-searches': SavedSearch;
     'saved-jobs': SavedJob;
     news: News;
@@ -122,6 +124,8 @@ export interface Config {
     rankings: RankingsSelect<false> | RankingsSelect<true>;
     stats: StatsSelect<false> | StatsSelect<true>;
     'stats-daily': StatsDailySelect<false> | StatsDailySelect<true>;
+    'stats-occupation': StatsOccupationSelect<false> | StatsOccupationSelect<true>;
+    'stats-city': StatsCitySelect<false> | StatsCitySelect<true>;
     'saved-searches': SavedSearchesSelect<false> | SavedSearchesSelect<true>;
     'saved-jobs': SavedJobsSelect<false> | SavedJobsSelect<true>;
     news: NewsSelect<false> | NewsSelect<true>;
@@ -1130,6 +1134,45 @@ export interface StatsDaily {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stats-occupation".
+ */
+export interface StatsOccupation {
+  id: number;
+  noc?: string | null;
+  /**
+   * 'all' = 全国行
+   */
+  province?: string | null;
+  titleZh?: string | null;
+  titleEn?: string | null;
+  teer?: number | null;
+  broad?: string | null;
+  openJobs?: number | null;
+  new7d?: number | null;
+  medianSalaryAnnual?: number | null;
+  namedJobs?: number | null;
+  fetched?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stats-city".
+ */
+export interface StatsCity {
+  id: number;
+  city?: string | null;
+  province?: string | null;
+  openJobs?: number | null;
+  new7d?: number | null;
+  medianSalaryAnnual?: number | null;
+  namedJobs?: number | null;
+  fetched?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "saved-searches".
  */
 export interface SavedSearch {
@@ -1398,6 +1441,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'stats-daily';
         value: number | StatsDaily;
+      } | null)
+    | ({
+        relationTo: 'stats-occupation';
+        value: number | StatsOccupation;
+      } | null)
+    | ({
+        relationTo: 'stats-city';
+        value: number | StatsCity;
       } | null)
     | ({
         relationTo: 'saved-searches';
@@ -1899,6 +1950,40 @@ export interface StatsDailySelect<T extends boolean = true> {
   new7d?: T;
   medianSalaryAnnual?: T;
   namedJobs?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stats-occupation_select".
+ */
+export interface StatsOccupationSelect<T extends boolean = true> {
+  noc?: T;
+  province?: T;
+  titleZh?: T;
+  titleEn?: T;
+  teer?: T;
+  broad?: T;
+  openJobs?: T;
+  new7d?: T;
+  medianSalaryAnnual?: T;
+  namedJobs?: T;
+  fetched?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stats-city_select".
+ */
+export interface StatsCitySelect<T extends boolean = true> {
+  city?: T;
+  province?: T;
+  openJobs?: T;
+  new7d?: T;
+  medianSalaryAnnual?: T;
+  namedJobs?: T;
+  fetched?: T;
   updatedAt?: T;
   createdAt?: T;
 }

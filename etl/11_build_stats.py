@@ -33,6 +33,10 @@ OUT_STATS = _paths.MART / "stats.json"
 # E8-14 每日快照:只产出**今天这一天**的行,seed 按 (date,province,broad) UPSERT 追加,永不 DELETE。
 # 趋势图的唯一数据来源;历史补不回来 —— 落地那天才是第一个点,所以先于主图建起来。
 OUT_DAILY = _paths.MART / "stats_daily.json"
+# E8-14 主图的两个新粒度(现有 stats 是 省×大类×中类,出不了「具体职业」与「城市」两条横轴)
+IN_NOC_DESC = _paths.MART / "noc_descriptions.json"   # 职业名(官方名,已随 09 产出)
+OUT_OCC = _paths.MART / "stats_occupation.json"       # 职业 × 省(province='all' 为全国行)
+OUT_CITY = _paths.MART / "stats_city.json"            # 城市
 
 PROVS = ["ON", "BC", "AB", "SK", "MB", "QC", "NS", "NB", "NL", "PE"]
 TODAY = date.today().isoformat()
@@ -93,6 +97,50 @@ def main() -> None:
              for r in rows if r["mid"] == "all"]
     OUT_DAILY.write_text(json.dumps(daily, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"stats_daily: {len(daily)} 行(日期 {TODAY})→ {OUT_DAILY}")
+
+    # ── E8-14 主图数据源:职业粒度 + 城市粒度 ────────────────────────────────
+    # 都是「当下状态」的维度表(走 dims 的清空+重灌),与 stats_daily 的追加语义不同。
+    # 职业名取 noc_descriptions 的官方名 —— 不在这里造名字,拿不到就留空(宁可留空不瞎猜)。
+    noc_name: dict[str, dict] = {}
+    if IN_NOC_DESC.exists():
+        for d in json.loads(IN_NOC_DESC.read_text(encoding="utf-8")):
+            noc_name[d.get("noc", "")] = d
+
+    def agg(js: list) -> dict:
+        return {"openJobs": len(js),
+                "new7d": sum(1 for j in js if (j.get("datePosted") or "") >= cut7),
+                "medianSalaryAnnual": median_or_none([j.get("salaryAnnual") for j in js]),
+                "namedJobs": sum(1 for j in js if j.get("pnpStream"))}
+
+    occ_rows = []
+    by_noc: dict[str, list] = defaultdict(list)
+    for j in jobs:
+        if j.get("noc"):
+            by_noc[j["noc"]].append(j)
+    for noc, js in by_noc.items():
+        nd = noc_name.get(noc, {})
+        base = {"noc": noc, "teer": js[0].get("teer"), "broad": js[0].get("broad", ""),
+                "titleZh": nd.get("titleZh", ""), "titleEn": nd.get("title", ""), "fetched": TODAY}
+        occ_rows.append({**base, "province": "all", **agg(js)})       # 全国行
+        by_p: dict[str, list] = defaultdict(list)
+        for j in js:
+            if j.get("province"):
+                by_p[j["province"]].append(j)
+        for prov, pjs in by_p.items():
+            occ_rows.append({**base, "province": prov, **agg(pjs)})
+    OUT_OCC.write_text(json.dumps(occ_rows, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    city_rows = []
+    by_city: dict[tuple, list] = defaultdict(list)
+    for j in jobs:
+        if j.get("city"):
+            by_city[(j["city"], j.get("province", ""))].append(j)
+    for (city, prov), js in by_city.items():
+        city_rows.append({"city": city, "province": prov, "fetched": TODAY, **agg(js)})
+    city_rows.sort(key=lambda r: -r["openJobs"])
+    OUT_CITY.write_text(json.dumps(city_rows, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"stats_occupation: {len(occ_rows)} 行({len(by_noc)} 个职业)→ {OUT_OCC}")
+    print(f"stats_city: {len(city_rows)} 行 → {OUT_CITY}")
 
     provs = len({r["province"] for r in rows})
     base = sum(1 for r in rows if r["mid"] == "all")
