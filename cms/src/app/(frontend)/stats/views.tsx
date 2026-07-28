@@ -38,7 +38,7 @@ const DIFF_COLORS: Record<string, { bg: string; fg: string; bd: string }> = {
 const numFmt = (n: number) => n.toLocaleString('en-CA')
 
 // ── 省份索引(批B #133 重做:省卡挪最上;指标换血——中位年薪撤(省级单一中位=无效聚合),
-//    上 IRCC 学签/工签/PNP 登陆 + 移民难度(与 E8-12 省弹框同源同口径))──
+//    上 IRCC 学签/工签/PNP 拿到 PR + 移民难度(与 E8-12 省弹框同源同口径))──
 const SHORT_PROV: Record<string, string> = { NL: 'Newfoundland' }  // 卡上用通行短名(全名 218px 任何布局都放不下),悬停仍显全名
 export function StatsIndexContent({ rows, srcs, t, provExtra = {}, occ = [], city = [] }: { rows: StatRow[]; srcs: SrcRow[]; t: TFn; provExtra?: Record<string, ProvExtra>; occ?: OccRow[]; city?: CityRow[] }) {
   const provRows = rows.filter((r) => r.broad === 'all')

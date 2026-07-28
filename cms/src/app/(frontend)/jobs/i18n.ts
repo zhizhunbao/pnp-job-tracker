@@ -291,7 +291,7 @@ const zh: Dict = {
   'loc.vol': '该省移民体量', 'loc.volTag': 'IRCC 官方数',
   'loc.study': '学签持有人', 'loc.tfwp': '雇主担保类工签', 'loc.imp': '开放及豁免类工签', 'loc.impNote': 'IMP,含毕业工签',
   'loc.asOf': '({y} 年末在库)', 'loc.alloc': '省提名年度配额', 'loc.allocBoth': '(2026 年;2025 年为 {b})', 'loc.allocY26': '(2026 年)', 'loc.allocY25': '(2025 年)',
-  'loc.pnpPr': 'PR 登陆(省提名类)', 'loc.prNote': '({y} 年,含随行家属)',
+  'loc.pnpPr': '拿到 PR(省提名类)', 'loc.prNote': '({y} 年,含随行家属)',
   'loc.src': '来源:IRCC 开放数据(年末存量,官方数四舍五入到 5)。',
   'loc.qc': '魁省走独立甄选体系(不参与省提名),配额与抽选不适用。',
   // E8-12b 市级卡(点市看市):就业市场/PGWP 院校/AIP 雇主
@@ -566,7 +566,7 @@ const zh: Dict = {
   'mkt.x.occ': '职业', 'mkt.x.prov': '省份', 'mkt.x.city': '城市', 'mkt.g.none': '不分组', 'mkt.g.prov': '省份', 'mkt.g.broad': '职业大类',
   'mkt.y2.off': '不显示',
   'mkt.note': '数据来自官方 Job Bank(含其聚合的 Indeed、各省招聘板);在招量=当前在招职位数,不等于「缺人」。',
-  'stats.title': '{prov} 地区职位统计', 'stats.catTitle': '{prov} · {cat} 职位统计', 'stats.openJobs': '在招职位', 'stats.new7d': '近 7 天发布', 'stats.medWage': '中位年薪(ESDC)', 'stats.medSalary': '帖面中位年薪', 'stats.named': '省提名清单岗', 'stats.aip': 'AIP 指定雇主岗', 'stats.topCities': '主要城市', 'stats.streams': '命中通道', 'stats.byCat': '按职业大类', 'stats.entry': '地区统计', 'stats.toJobs': '看这些职位', 'stats.caliber': '口径说明', 'stats.noList': '无清单', 'stats.noList.tip': '该省当前不公布省提名职业清单(如 OINP 2026-06 改制后),按 TEER 等条件判定,不是数据缺失。', 'stats.naQc': '不适用', 'stats.naQc.tip': '魁省不参加省提名(PNP),走自己的甄选体系。', 'stats.provIndex': '选择省份', 'stats.compare': '跨省对比(Pro)', 'stats.pickProv': '选 2-4 个省对比', 'stats.myNoc': '按我的档案高亮', 'stats.cardWork': '工签存量(TFWP+IMP)', 'stats.cardStudy': '学签存量', 'stats.cardPr': 'PNP 登陆(年)',
+  'stats.title': '{prov} 地区职位统计', 'stats.catTitle': '{prov} · {cat} 职位统计', 'stats.openJobs': '在招职位', 'stats.new7d': '近 7 天发布', 'stats.medWage': '中位年薪(ESDC)', 'stats.medSalary': '帖面中位年薪', 'stats.named': '省提名清单岗', 'stats.aip': 'AIP 指定雇主岗', 'stats.topCities': '主要城市', 'stats.streams': '命中通道', 'stats.byCat': '按职业大类', 'stats.entry': '地区统计', 'stats.toJobs': '看这些职位', 'stats.caliber': '口径说明', 'stats.noList': '无清单', 'stats.noList.tip': '该省当前不公布省提名职业清单(如 OINP 2026-06 改制后),按 TEER 等条件判定,不是数据缺失。', 'stats.naQc': '不适用', 'stats.naQc.tip': '魁省不参加省提名(PNP),走自己的甄选体系。', 'stats.provIndex': '选择省份', 'stats.compare': '跨省对比(Pro)', 'stats.pickProv': '选 2-4 个省对比', 'stats.myNoc': '按我的档案高亮', 'stats.cardWork': '工签存量(TFWP+IMP)', 'stats.cardStudy': '学签存量', 'stats.cardPr': 'PNP 拿到 PR(年)',
 }
 
 const en: Dict = {
