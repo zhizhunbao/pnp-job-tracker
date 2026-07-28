@@ -142,11 +142,10 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
   return (
     // 卡壳(边框/圆角/内边距)由外层 MODAL_CARD 提供 —— 这里再画一层就是卡中卡
     <div>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
         <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', margin: 0 }}>{t('ps.title')}</h2>
         <span style={{ fontSize: 11.5, color: '#9ca3af' }}>{scores.map((s) => `${s.province} ${s.system}`).join('、')}</span>
       </div>
-      <p style={{ fontSize: 12.5, color: '#6b7280', margin: '2px 0 10px', lineHeight: 1.6 }}>{t('ps.sub')}</p>
 
       {/* 你的条件 —— 一套答案,各省按各自官方表折算 */}
       <div style={lbl}>{t('ps.you')}</div>
