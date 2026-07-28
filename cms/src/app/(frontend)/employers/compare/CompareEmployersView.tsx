@@ -37,7 +37,7 @@ export function CompareEmployersView({ names, rows, pro, loggedIn }: {
     { key: 'lmia', label: t('rank.col.lmia'), render: (r) => r.lmiaPositions ?? dash },
     { key: 'quarter', label: t('dir.col.quarter'), render: (r) => r.lmiaLastQuarter || dash },
     { key: 'aip', label: t('ce.aip'), render: (r) => r.aip ? <Tag variant="ok">✓</Tag> : dash },
-    { key: 'open', label: t('rank.col.openJobs'), render: (r) => r.openJobs ? <a href={`/?q=${encodeURIComponent(r.name)}`} style={{ color: UI.primary, textDecoration: 'none' }}>{r.openJobs} →</a> : <>0</> },
+    { key: 'open', label: t('rank.col.openJobs'), render: (r) => r.openJobs ? <a href={`/?q=${encodeURIComponent(r.name)}`} style={{ color: UI.primary, textDecoration: 'none' }}>{r.openJobs}</a> : <>0</> },
     { key: 'avg', label: t('rank.col.avgScore'), render: (r) => r.avgScore ?? dash },
     { key: 'named', label: t('stats.named'), render: (r) => r.namedJobs ? <b style={{ color: UI.warn }}>{r.namedJobs}</b> : dash },
     { key: 'sal', label: t('stats.medSalary'), render: (r) => money(r.medSalary) ?? dash },
@@ -107,7 +107,7 @@ export function CompareEmployersView({ names, rows, pro, loggedIn }: {
                 return (
                   <Card key={i}>
                     <div style={{ fontSize: 14.5, fontWeight: 600 }}>
-                      {r.website ? <a href={r.website} target="_blank" rel="noreferrer" style={{ color: UI.primary, textDecoration: 'none' }}>{r.name} ↗</a> : r.name}
+                      {r.website ? <a href={r.website} target="_blank" rel="noreferrer" style={{ color: UI.primary, textDecoration: 'none' }}>{r.name}</a> : r.name}
                     </div>
                     {alias ? <div style={{ fontSize: 12.5, color: '#9ca3af', marginTop: 2 }}>{alias}</div> : null}
                     <CardKV items={dims.map((d) => ({ k: d.label, v: d.render(r), wide: d.key === 'brief' }))} />
@@ -121,7 +121,7 @@ export function CompareEmployersView({ names, rows, pro, loggedIn }: {
               ...rows.map((r, i) => ({
                 key: `e${i}`,
                 label: <span style={{ fontSize: 13.5 }}>{r.website
-                  ? <a href={r.website} target="_blank" rel="noreferrer" style={{ color: UI.primary, textDecoration: 'none' }}>{r.name} ↗</a> : r.name}
+                  ? <a href={r.website} target="_blank" rel="noreferrer" style={{ color: UI.primary, textDecoration: 'none' }}>{r.name}</a> : r.name}
                   {(lang === 'zh' ? r.aliasZh : lang === 'ko' ? r.aliasKo : '') && <span style={{ display: 'block', color: '#9ca3af', fontWeight: 400, fontSize: 11.5 }}>{lang === 'zh' ? r.aliasZh : r.aliasKo}</span>}</span>,
                 render: (d: Dim) => d.render(r),
               })),

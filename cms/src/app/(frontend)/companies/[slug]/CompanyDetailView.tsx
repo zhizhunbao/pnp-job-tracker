@@ -41,7 +41,7 @@ export default function CompanyDetailView({ company, similar = [], loggedIn }: {
           <div style={{ position: 'relative', border: '1px solid #e5e7eb', borderRadius: 12, background: '#fff', padding: '14px 16px', marginBottom: 14 }}>
             {/* 返回(Frank 走查#18):右上角、浏览器返回(与详情页统一) */}
             <button onClick={() => history.back()}
-              style={{ position: 'absolute', top: 12, right: 12, border: '1px solid #d1d5db', borderRadius: 8, padding: '6px 14px', fontSize: 12.5, color: '#374151', background: '#fff', whiteSpace: 'nowrap', cursor: 'pointer' }}>← {t('detail.back')}</button>
+              style={{ position: 'absolute', top: 12, right: 12, border: '1px solid #d1d5db', borderRadius: 8, padding: '6px 14px', fontSize: 12.5, color: '#374151', background: '#fff', whiteSpace: 'nowrap', cursor: 'pointer' }}>{t('detail.back')}</button>
             <h1 style={{ margin: 0, fontSize: 22, lineHeight: 1.35, color: '#111827', paddingRight: 84 }}>
               {company.name}{alias ? <span style={{ color: '#9ca3af', fontSize: 15, fontWeight: 400 }}>　{alias}</span> : null}
             </h1>

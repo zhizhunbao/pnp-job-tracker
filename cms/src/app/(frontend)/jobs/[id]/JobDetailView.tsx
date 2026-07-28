@@ -60,7 +60,7 @@ export default function JobDetailView({ job, plan, dims }: { job: JobRow; plan: 
             <button className="jdBack" onClick={() => { setLeaving(true); history.back() }}
               style={{ position: 'absolute', top: 12, right: 12, border: '1px solid #d1d5db', borderRadius: 8, padding: '6px 14px', fontSize: 12.5, color: '#374151', background: leaving ? '#f3f4f6' : '#fff', opacity: leaving ? 0.7 : 1, whiteSpace: 'nowrap', cursor: 'pointer', transition: 'transform .06s' }}>
               <style>{'.jdBack:active{transform:scale(.95)}'}</style>
-              {leaving ? '… ' : '← '}{t('detail.back')}</button>
+              {leaving ? '… ' : ''}{t('detail.back')}</button>
             <h1 style={{ margin: '0 0 2px', fontSize: 22, lineHeight: 1.35, color: '#111827', paddingRight: 120 }}>{job.title}</h1>
             {nocZh && nocZh.toLowerCase() !== (job.title || '').toLowerCase() ? (
               <div style={{ fontSize: 13, color: '#9ca3af', marginBottom: 8 }}>{nocZh}</div>

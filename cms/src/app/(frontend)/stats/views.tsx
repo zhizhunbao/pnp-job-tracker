@@ -87,7 +87,7 @@ export function StatsIndexContent({ rows, srcs, t, provExtra = {} }: { rows: Sta
       {/* IRCC 年份口径一行说清,不在每卡重复(第25轮「同句重复=废话」口径) */}
       <StatsCharts rows={rows} t={t} />
       <div style={{ marginTop: 14 }}>
-        <a href="/stats/compare" style={{ fontSize: 13, color: '#2563eb', textDecoration: 'none' }}><IconScale /> {t('stats.compare')} →</a>
+        <a href="/stats/compare" style={{ fontSize: 13, color: '#2563eb', textDecoration: 'none' }}><IconScale /> {t('stats.compare')}</a>
       </div>
       <CaliberLine t={t} srcs={srcs} fetched={provRows[0]?.fetched || ''} />
     </>
@@ -162,7 +162,7 @@ export function StatsProvContent({ prov, rows, srcs, t, ranks, news = [] }: { pr
       {ranks && (ranks.open != null || ranks.wage != null) && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', background: '#eef2ff', border: '1px solid #e0e7ff', borderRadius: 8, padding: '8px 12px', margin: '10px 0 0', fontSize: 13 }}>
           <span style={{ color: '#3730a3' }}>{t('stats.rank', { a: ranks.open ?? '—', b: ranks.wage ?? '—', total: ranks.total })}</span>
-          <a href="/stats/compare" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 600, whiteSpace: 'nowrap' }}>{t('stats.compare')} →</a>
+          <a href="/stats/compare" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 600, whiteSpace: 'nowrap' }}>{t('stats.compare')}</a>
         </div>
       )}
       {all && <TopCities raw={all.topCities} t={t} />}

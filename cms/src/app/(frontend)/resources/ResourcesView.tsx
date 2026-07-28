@@ -49,7 +49,7 @@ export function ResourcesView() {
                 <a key={it.url} href={it.url} target="_blank" rel="noreferrer" className="resTile" style={tile}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13.5, color: '#1f2937', fontWeight: 500 }}>
                     <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>{it.name}</span>
-                    <span style={{ marginLeft: 'auto', flexShrink: 0, color: '#9ca3af', fontSize: 11 }}>↗</span>
+                    
                   </div>
                   <div style={{ fontSize: 11.5, color: '#9ca3af', lineHeight: 1.4, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.use[lang]}</div>
                 </a>

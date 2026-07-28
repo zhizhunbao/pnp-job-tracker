@@ -27,7 +27,7 @@ function RankCompanyCard({ r, t, showNamed }: { r: RankRow; t: TFn; showNamed: b
     <Card>
       <div style={{ fontSize: 14.5, fontWeight: 600 }}>
         <span style={{ color: '#9ca3af', fontWeight: 400 }}>#{r.rank}</span>{' '}
-        {r.officialUrl ? <a href={r.officialUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{r.company} ↗</a> : r.company}
+        {r.officialUrl ? <a href={r.officialUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{r.company}</a> : r.company}
       </div>
       {r.province ? <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 2 }}>{r.province}</div> : null}
       <CardKV items={[
@@ -46,7 +46,7 @@ function RankJobCard({ r, t }: { r: RankRow; t: TFn }) {
     <Card>
       <div style={{ fontSize: 14.5, fontWeight: 600 }}>
         <span style={{ color: '#9ca3af', fontWeight: 400 }}>#{r.rank}</span>{' '}
-        {r.applyUrl ? <a href={r.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{r.title} ↗</a> : r.title}
+        {r.applyUrl ? <a href={r.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{r.title}</a> : r.title}
       </div>
       {r.company ? <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 2 }}>{r.company}</div> : null}
       <CardKV items={[
@@ -103,7 +103,7 @@ export function RankingTable({ slug, items, t }: { slug: string; items: RankRow[
       ) : (
         <DataTable<RankRow> rows={items} rowKey={(r) => String(r.rank)} cols={[
           { key: 'rank', label: '#', nowrap: true, sort: (r) => r.rank, render: (r) => <span style={{ color: '#9ca3af' }}>{r.rank}</span> },
-          { key: 'title', label: t('col.title'), sort: (r) => r.title.toLowerCase(), render: (r) => <span style={{ fontWeight: 600, display: 'inline-block', maxWidth: 320 }}>{r.applyUrl ? <a href={r.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{r.title} ↗</a> : r.title}</span> },
+          { key: 'title', label: t('col.title'), sort: (r) => r.title.toLowerCase(), render: (r) => <span style={{ fontWeight: 600, display: 'inline-block', maxWidth: 320 }}>{r.applyUrl ? <a href={r.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{r.title}</a> : r.title}</span> },
           { key: 'company', label: t('col.company'), sort: (r) => r.company.toLowerCase(), render: (r) => <>{r.company}</> },
           { key: 'city', label: t('col.city'), nowrap: true, sort: (r) => r.city || null, render: (r) => <>{[r.city, r.province].filter(Boolean).join(', ')}</> },
           { key: 'salary', label: t('col.salary'), nowrap: true, sort: (r) => r.salaryAnnual ?? null, render: (r) => <span style={{ color: '#15803d' }}>{r.salaryText || '—'}</span> },

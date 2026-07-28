@@ -51,7 +51,7 @@ const L10N: Record<string, { zh: string; ko: string }> = {
   'Language proficiency in both English and French': { zh: '英法双语都达标', ko: '영어·프랑스어 모두 충족' },
   'Area 1: Metro Vancouver Regional District': { zh: 'Area 1 大温地区', ko: 'Area 1 메트로 밴쿠버' },
   'Area 2: Squamish, Abbotsford, Agassiz, Mission, and Chilliwack': { zh: 'Area 2 Squamish 等 5 市镇', ko: 'Area 2 Squamish 등 5개 지역' },
-  'Area 3: Areas of B.C. not included in Area 1 or 2': { zh: 'Area 3 BC 其余地区', ko: 'Area 3 BC 기타 지역' },
+  'Area 3: Areas of B.C. not included in Area 1 or 2': { zh: 'Area 3 其余地区', ko: 'Area 3 기타 지역' },
   'Regional Experience, or': { zh: '有地区工作经验或地区院校毕业', ko: '지역 근무 경력 또는 지역 졸업' },
   // SK
   'High skilled employment offer from a Saskatchewan employer': { zh: '有 SK 雇主的高技能岗 offer', ko: 'SK 고용주의 고숙련 오퍼 보유' },
@@ -73,6 +73,18 @@ const streamWords = (s: string) => (s || '').toLowerCase().replace(/[^a-z]+/g, '
 const streamMatches = (drawStream: string, jobStream: string) => {
   const a = streamWords(drawStream), b = new Set(streamWords(jobStream))
   return a.length > 0 && b.size > 0 && a.every((w) => b.has(w))
+}
+
+/** 加分项一条 = [勾选框 | 条目 | +N] 三列 —— +N 单独成列才对得齐(别塞回文字尾巴上) */
+function Tick({ on, onToggle, text, pts }: { on: boolean; onToggle: (v: boolean) => void; text: string; pts: number | null }) {
+  return (
+    <label style={{ display: 'grid', gridTemplateColumns: 'max-content 1fr max-content', alignItems: 'baseline',
+      columnGap: 5, fontSize: 12, color: '#374151', cursor: 'pointer', lineHeight: 1.7 }}>
+      <input type="checkbox" checked={on} onChange={(e) => onToggle(e.target.checked)} style={{ alignSelf: 'center' }} />
+      <span>{text}</span>
+      <span style={{ color: '#9ca3af', fontVariantNumeric: 'tabular-nums' }}>+{pts}</span>
+    </label>
+  )
 }
 
 export function PnpScoreCard({ t, lang, job, factors, draws, profileClb, matchedStream = '' }: {
@@ -194,20 +206,18 @@ export function PnpScoreCard({ t, lang, job, factors, draws, profileClb, matched
         return (
           <div key={prov} style={{ marginTop: 10 }}>
             <div style={lbl}>{t('ps.bonusOf', { prov })}</div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 14px' }}>
+            {/* 一行两个事实(条目、+N)必须拆成列 —— 原来 +N 跟在文字后面飘,长短不一就参差
+                (同 FactGrid 规矩:多值卡拆列、每列左对齐)。外层 auto-fit 决定几列,
+                每个条目内部再 [勾选框 | 条目 | +N] 三列,+N 因此在同一列上对齐。 */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '4px 16px' }}>
               {offerRow ? (
-                <label style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#374151', cursor: 'pointer' }}>
-                  <input type="checkbox" checked={hasOffer} onChange={(e) => setHasOffer(e.target.checked)} />
-                  {label(offerRow.label, lang)} <span style={{ color: '#9ca3af' }}>+{offerRow.points}</span>
-                </label>
+                <Tick on={hasOffer} onToggle={setHasOffer} text={label(offerRow.label, lang)} pts={offerRow.points} />
               ) : null}
               {list.map((b) => {
                 const key = `${prov}:${b.factor}:${b.seq}`
                 return (
-                  <label key={key} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#374151', cursor: 'pointer' }}>
-                    <input type="checkbox" checked={!!ticks[key]} onChange={(e) => setTicks((m) => ({ ...m, [key]: e.target.checked }))} />
-                    {label(b.label, lang)} <span style={{ color: '#9ca3af' }}>+{b.points}</span>
-                  </label>
+                  <Tick key={key} on={!!ticks[key]} onToggle={(v) => setTicks((m) => ({ ...m, [key]: v }))}
+                    text={label(b.label, lang)} pts={b.points} />
                 )
               })}
             </div>
@@ -226,7 +236,7 @@ export function PnpScoreCard({ t, lang, job, factors, draws, profileClb, matched
         <div>{scores.map((s) => `${s.province} ${s.guideEffective ? t('ps.eff', { d: s.guideEffective }) : t('ps.asof', { d: s.fetched })}`).join('、')}</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 2 }}>
           {scores.map((s) => (
-            <a key={s.province} href={s.url} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{s.province} {t('ps.official')} ↗</a>
+            <a key={s.province} href={s.url} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{s.province} {t('ps.official')}</a>
           ))}
         </div>
       </div>
@@ -268,10 +278,13 @@ function ProvinceResult({ t, lang, s, draws, byProv, switchable, matchedStream, 
       </div>
 
       {/* 分项:命中的官方原文标签一并显出来,好让用户核对我们选对了没有 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'max-content max-content', columnGap: 10, rowGap: 2, marginTop: 6, fontSize: 12 }}>
+      {/* 「12 / 40」是两个事实 —— 拆成 得分 / 上限 两列(斜杠自成一列),数字才跨行对齐。
+          标签列吃 max-content、数字列右对齐:两张省卡等宽,数字列因此也跨卡对齐。 */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'max-content 1fr max-content max-content', columnGap: 6, rowGap: 2, marginTop: 6, fontSize: 12, alignItems: 'baseline' }}>
         {s.parts.filter((p) => p.max > 0).map((p) => [
-          <span key={p.factor + 'k'} style={{ color: '#9ca3af' }} title={p.matched ? label(p.matched, lang) : ''}>{t('ps.f.' + p.factor) || p.factor}</span>,
-          <span key={p.factor + 'v'} style={{ color: '#374151', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{p.pts} / {p.max}</span>,
+          <span key={p.factor + 'k'} style={{ color: '#9ca3af', gridColumn: '1 / 3' }} title={p.matched ? label(p.matched, lang) : ''}>{t('ps.f.' + p.factor) || p.factor}</span>,
+          <span key={p.factor + 'v'} style={{ color: '#374151', fontWeight: 600, fontVariantNumeric: 'tabular-nums', textAlign: 'right', minWidth: 22 }}>{p.pts}</span>,
+          <span key={p.factor + 'm'} style={{ color: '#9ca3af', fontVariantNumeric: 'tabular-nums' }}>/ {p.max}</span>,
         ]).flat()}
       </div>
 

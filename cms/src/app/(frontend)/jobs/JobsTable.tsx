@@ -1320,7 +1320,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         {!matchView && (
           <button className="jtOnlyNarrow" onClick={toggleMatchView}
             style={{ width: '100%', alignItems: 'center', justifyContent: 'center', gap: 6, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', borderRadius: 9, padding: '9px 0', fontSize: 13.5, fontWeight: 600, marginBottom: 8, cursor: 'pointer' }}>
-            <IconTarget /> {t('mv.entry')} →
+            <IconTarget /> {t('mv.entry')}
           </button>
         )}
         {/* 匹配视图状态条(E5-05):说明口径 + 退出;免费限额提示(D1=B) */}
@@ -1523,7 +1523,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               })}
               {rows.length === 0 && (
                 <tr><td colSpan={shown.length} style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>
-                  {matchView ? <>{t('mv.empty')} <a href="/account" style={{ color: '#2563eb', textDecoration: 'none' }}>{t('mv.editProfile')} →</a></> : t('empty')}
+                  {matchView ? <>{t('mv.empty')} <a href="/account" style={{ color: '#2563eb', textDecoration: 'none' }}>{t('mv.editProfile')}</a></> : t('empty')}
                 </td></tr>
               )}
             </tbody>
@@ -1656,7 +1656,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           })}
           {rows.length === 0 && (
             <div style={{ padding: 24, textAlign: 'center', color: '#9ca3af', fontSize: 13 }}>
-              {matchView ? <>{t('mv.empty')} <a href="/account" style={{ color: '#2563eb', textDecoration: 'none' }}>{t('mv.editProfile')} →</a></> : t('empty')}
+              {matchView ? <>{t('mv.empty')} <a href="/account" style={{ color: '#2563eb', textDecoration: 'none' }}>{t('mv.editProfile')}</a></> : t('empty')}
             </div>
           )}
         </div>
@@ -1876,7 +1876,7 @@ export function PnpListSection({ job, lang, occ, draws, news, scoreFactors = [],
                     background: hit ? '#fef3c7' : undefined, fontWeight: hit ? 600 : 400, color: hit ? '#92400e' : '#374151' }}>
                   <span style={{ fontVariantNumeric: 'tabular-nums', color: hit ? '#92400e' : '#9ca3af' }}>{o.noc}</span>
                   <span style={{ flex: 1 }}>{o.name}{zh && zh.toLowerCase() !== o.name.toLowerCase() ? <span style={{ display: 'block', fontSize: 11.5, color: '#9ca3af', fontWeight: 400 }}>{zh}</span> : null}</span>
-                  {hit && <span style={{ fontSize: 11, whiteSpace: 'nowrap' }}>← {t('pnplist.your')}</span>}
+                  {hit && <span style={{ fontSize: 11, whiteSpace: 'nowrap' }}>{t('pnplist.your')}</span>}
                   {o.gtaRestricted && <span style={{ fontSize: 11, color: '#9ca3af', whiteSpace: 'nowrap' }}>{t('pnplist.gta')}</span>}
                 </div>
               )
@@ -2097,7 +2097,7 @@ export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [], s
                         <span style={{ fontVariantNumeric: 'tabular-nums', color: isHit ? '#1e40af' : '#9ca3af', flexShrink: 0 }}>{o.noc}</span>
                         <span style={{ flex: 1 }}>{o.title}{zh && zh.toLowerCase() !== o.title.toLowerCase() ? <span style={{ display: 'block', fontSize: 11.5, color: '#9ca3af', fontWeight: 400 }}>{zh}</span> : null}</span>
                         {o.teer != null && <span style={{ fontSize: 11, color: '#9ca3af' }}>T{o.teer}</span>}
-                        {isHit && <span style={{ fontSize: 11, whiteSpace: 'nowrap' }}>← {t('eelist.your')}</span>}
+                        {isHit && <span style={{ fontSize: 11, whiteSpace: 'nowrap' }}>{t('eelist.your')}</span>}
                       </div>
                     )
                   })}
@@ -4300,7 +4300,7 @@ function ApplyBar({ job, email, emailDone, t, plan }: { job: JobRow; email: stri
       <div style={{ position: 'sticky', bottom: 0, background: '#fff', borderTop: '1px solid #e5e7eb', marginTop: 'auto', padding: '10px 0 14px', display: 'flex', gap: 8, justifyContent: 'flex-end', zIndex: 5 }}>
         <button onClick={onApply} style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}>
           {/* applyhow 在途时用中性「投递」占位——别先显「前往投递」再闪成「邮件投递」(Frank 问「为什么有的是前往有的是邮箱」,闪变加剧困惑) */}
-          {email ? t('apply.email') : emailDone ? `${t('apply.web')} ↗` : t('apply.plain')}
+          {email ? t('apply.email') : emailDone ? t('apply.web') : t('apply.plain')}
         </button>
       </div>
       {stage === 'auth' && (

@@ -231,16 +231,19 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
                   {/* 多选(Frank「这个可以多选而且」):点=加/减,不再一点就跳下一题;下面给「下一步」。
                       清单优先用库里在招量前 24(top),拿不到才退回内置常用清单。 */}
                   {(top.length ? (() => {
-                    // 库里会出现同名不同码(「厨师」= 63200 与 62200):**重名的才**挂灰色 NOC 码区分,
-                    // 不重名的不挂(ui-plain-language:人话名主文案,代码只在必要时作小注)
+                    // 库里会出现同名不同码(中文都叫「厨师」= 63200 Cooks 与 62200 Chefs)。
+                    // Frank 2026-07-27「厨师为什么后面有个码」:甩个 5 位码,普通人分不清 63200 和 62200,
+                    // 等于只添噪音 —— **重名时改挂英文官方名**(Cooks / Chefs 才是真能区分的东西),
+                    // 英文名也一样才退回 NOC 码。不重名的什么都不挂。
                     const seenLabel = new Map<string, number>()
                     for (const x of top) { const l = (lang === 'zh' && x.titleZh) ? x.titleZh : x.title; seenLabel.set(l, (seenLabel.get(l) || 0) + 1) }
                     return top.map((x) => {
                       const l = (lang === 'zh' && x.titleZh) ? x.titleZh : x.title
-                      return { noc: x.noc, label: l, dup: (seenLabel.get(l) || 0) > 1, open: x.open }
+                      const dup = (seenLabel.get(l) || 0) > 1
+                      return { noc: x.noc, label: l, hint: dup ? (x.title && x.title !== l ? x.title : x.noc) : '', open: x.open }
                     })
                   })()
-                    : POPULAR_NOCS.map((p) => ({ noc: p.noc, label: t(p.key), dup: false, open: counts[p.noc]?.open }))
+                    : POPULAR_NOCS.map((p) => ({ noc: p.noc, label: t(p.key), hint: '', open: counts[p.noc]?.open }))
                   ).slice(0, moreNocs ? 99 : 8).map((x) => {
                     const on = nocs.includes(x.noc)
                     return (
@@ -251,7 +254,7 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
                         }}
                         style={{ ...chipStyle(on), display: 'inline-flex', alignItems: 'baseline', gap: 6, maxWidth: '100%' }}>
                         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{x.label}</span>
-                        {x.dup ? <span style={{ fontSize: 11, color: '#9ca3af', flexShrink: 0 }}>{x.noc}</span> : null}
+                        {x.hint ? <span style={{ fontSize: 11, color: '#9ca3af', flexShrink: 0 }}>{x.hint}</span> : null}
                         {x.open ? <span style={{ fontSize: 11.5, color: '#9ca3af', flexShrink: 0 }}>{t('quiz.openN', { n: x.open.toLocaleString('en-CA') })}</span> : null}
                       </button>
                     )

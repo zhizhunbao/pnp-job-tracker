@@ -62,7 +62,7 @@ function emailHtml(lang: Lang, rows: any[], drawLines: string[]): string {
     <p>🍁 <strong>Offer2PR</strong></p>
     ${drawLines.map((l) => `<p style="background:#fef3c7;padding:8px 12px;border-radius:8px">${l}</p>`).join('')}
     <p>${t.hi}</p>${jobsTable(rows)}
-    <p style="margin-top:14px"><a href="${SITE}" style="color:#2563eb">${t.open} →</a></p>
+    <p style="margin-top:14px"><a href="${SITE}" style="color:#2563eb">${t.open}</a></p>
     <p style="color:#9ca3af;font-size:12px">${t.unsub}</p></div>`
 }
 const langOf = (v: unknown): Lang => (v === 'en' || v === 'ko' ? v : 'zh')
@@ -80,7 +80,7 @@ function weeklyHtml(rows: { title: string; company: string; open: boolean }[], n
     <p>🍁 <strong>Offer2PR</strong> · 每周求职看板摘要 / Weekly saved-jobs digest</p>
     <table style="border-collapse:collapse;font-size:13px">${tr}</table>
     ${newN > 0 ? `<p>你的方向(${dims})近 7 天新增 <strong>${newN}</strong> 岗 / ${newN} new jobs this week in your saved directions — <a href="${SITE}" style="color:#2563eb">看新岗 View →</a></p>` : ''}
-    <p><a href="${SITE}/account" style="color:#2563eb">建档案,看每岗与你的匹配度 / Build a profile for per-job match →</a></p>
+    <p><a href="${SITE}/account" style="color:#2563eb">建档案,看每岗与你的匹配度 / Build a profile for per-job match</a></p>
     <p style="color:#9ca3af;font-size:12px">状态以官方原帖为准 · Status per official posting ·
       <a href="${unsubUrl}" style="color:#9ca3af">退订本摘要 Unsubscribe</a> · <a href="${SITE}/account" style="color:#9ca3af">账户设置 Settings</a></p></div>`
 }
@@ -92,11 +92,11 @@ function weeklyHtml(rows: { title: string; company: string; open: boolean }[], n
 // 文案按 locale 出单语;locale 为空(老用户、Google 注册)才回双语 —— 不猜语言,也不让人读半篇看不懂的字。
 const WK = {
   zh: { head: (d: string, n: number, e: number, m: string) => `${d} 本周新增 <strong>${n}</strong> 个岗,其中 <strong>${e}</strong> 个可提名,中位年薪 <strong>${m}</strong>`,
-    cta: (n: number) => `看这 ${n} 个新岗 →`, foot: '数据来自官方公开发布,状态以原帖为准', unsub: '退订本摘要', settings: '账户设置' },
+    cta: (n: number) => `看这 ${n} 个新岗`, foot: '数据来自官方公开发布,状态以原帖为准', unsub: '退订本摘要', settings: '账户设置' },
   en: { head: (d: string, n: number, e: number, m: string) => `<strong>${n}</strong> new jobs this week in ${d} · <strong>${e}</strong> PNP-eligible · median <strong>${m}</strong>`,
-    cta: (n: number) => `View these ${n} jobs →`, foot: 'Official public data; status per the original posting', unsub: 'Unsubscribe', settings: 'Settings' },
+    cta: (n: number) => `View these ${n} jobs`, foot: 'Official public data; status per the original posting', unsub: 'Unsubscribe', settings: 'Settings' },
   ko: { head: (d: string, n: number, e: number, m: string) => `${d} 이번 주 신규 <strong>${n}</strong>건 · 지명 가능 <strong>${e}</strong>건 · 중위 연봉 <strong>${m}</strong>`,
-    cta: (n: number) => `신규 ${n}건 보기 →`, foot: '공식 공개 데이터이며 상태는 원문 공고 기준입니다', unsub: '수신 거부', settings: '계정 설정' },
+    cta: (n: number) => `신규 ${n}건 보기`, foot: '공식 공개 데이터이며 상태는 원문 공고 기준입니다', unsub: '수신 거부', settings: '계정 설정' },
 } as const
 
 function weeklyProfileHtml(
