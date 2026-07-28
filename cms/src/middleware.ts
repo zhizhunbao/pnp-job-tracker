@@ -27,7 +27,17 @@ export function middleware(req: NextRequest) {
   if (req.nextUrl.pathname === '/jobs') {
     return NextResponse.redirect(new URL('/' + req.nextUrl.search, req.nextUrl.origin), 301)
   }
-  return NextResponse.next()
+  // bfcache 放行(2026-07-28 Frank 真机实测:后退要等 1-2 秒 = 页面被整个重拉,浏览器的「后退秒回」没生效)。
+  // Next 给动态页默认发 `private, no-cache, no-store, must-revalidate` —— 其中 **no-store 会让 Chrome
+  // 直接拒绝把页面放进 bfcache**。去掉 no-store 留 no-cache:语义仍是「每次用之前必须回源确认」,
+  // 而我们没发 ETag/Last-Modified,所以浏览器照样每次真取 —— **不会看到别人的或过期的页面**,
+  // 唯一的变化就是后退时允许原样恢复。private 保证任何中间缓存(CDN/代理)都不存。
+  // 只对**文档请求**动手:图片/静态资源走各自的长缓存,别被这条降级(matcher 里 /img 也会进来)。
+  const res = NextResponse.next()
+  if (req.headers.get('sec-fetch-dest') === 'document' || (req.headers.get('accept') || '').includes('text/html')) {
+    res.headers.set('Cache-Control', 'private, no-cache, must-revalidate')
+  }
+  return res
 }
 
 export const config = {
