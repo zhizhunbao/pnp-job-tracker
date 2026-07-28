@@ -289,7 +289,7 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
     } else {
       const cs = [...city].sort((a, b) => by(sortBy === 'med' ? a.medianSalaryAnnual : a.openJobs,
         sortBy === 'med' ? b.medianSalaryAnnual : b.openJobs)).slice(0, 200)
-      axis = cs.map((c) => c.city)
+      axis = cs.map((c) => (lang === 'zh' ? (c.cityZh || c.city) : lang === 'ko' ? (c.cityKo || c.city) : c.city))
       med = cs.map((c) => c.medianSalaryAnnual)
       end = Math.min(100, (14 / Math.max(cs.length, 1)) * 100)
       series = [bar(t('stats.openJobs'), cs.map((c) => c.openJobs), 0)]
@@ -300,8 +300,6 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
     const vw = typeof window !== 'undefined' ? Math.min(window.innerWidth - 80, 1200) : 1100
     const visible = Math.max(1, Math.round(axis.length * (end / 100)))
     const labelW = Math.max(38, Math.floor(vw / visible) - 6)
-    // 折行后标签占 3 行 ≈ 40px,底部要留够(否则名字被卡出画布)
-    const labelBox = 52
     return {
       // 分省时同一个省有柱也有线 → tooltip 合成一行「省名 岗数 中位年薪」,不铺成 20 行
       tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, confine: true, textStyle: { fontSize: 12 },
@@ -317,17 +315,16 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
           return `<b>${ps[0]?.axisValue ?? ''}</b><br/>` + [...byName].map(([n, v]) => line(n, v)).join('<br/>')
         } },
       legend: { show: multi, type: 'scroll', bottom: 36, itemWidth: 11, itemHeight: 11, textStyle: { fontSize: 11.5, color: '#6b7280' } },
-      grid: { left: 54, right: showMed ? 54 : 14, top: 12, bottom: (multi ? 112 : 90) + labelBox },
+      grid: { left: 8, right: showMed ? 8 : 4, top: 12, bottom: multi ? 62 : 40, containLabel: true },
       // 轴标签**往下折行显示全名**(Frank 2026-07-28:「名字可以往下扩展,显示完整,因为有很多空间」)。
       // 原来横排斜切 7 个字 —— 中文短名勉强,英文直接成了「Transpo…」「Food co…」(他实拍),
       // 而英文用户是主要人群。改:不斜排、按可见宽度自动折行(echarts 原生 overflow:'break'),
       // 底部留出三行的高度;实在挤不下的由 hideOverlap 隐掉,拉 dataZoom 放大就全出来。
-      xAxis: { type: 'category', data: axis.map((v) => {
-          const perLine = Math.max(4, Math.floor(labelW / 5.6))   // 5.6px ≈ 10.5px 字号的平均字宽
-          return v && v.length > perLine * 3 ? v.slice(0, perLine * 3 - 1) + '…' : v
-        }), axisTick: { show: false }, axisLine: { lineStyle: { color: '#e5e7eb' } },
+      xAxis: { type: 'category', data: axis, axisTick: { show: false }, axisLine: { lineStyle: { color: '#e5e7eb' } },
+        // 折行/截断/留白全走 echarts 原生(Frank:「echart 本身就有这个功能」):
+        // overflow:'break' 折行、height+lineOverflow:'truncate' 封顶三行、grid.containLabel 自动留边距
         axisLabel: { fontSize: 10.5, color: '#6b7280', interval: 0, rotate: 0, hideOverlap: true,
-          width: labelW, overflow: 'break', lineHeight: 12.5, margin: 10 } },
+          width: labelW, overflow: 'break', height: 38, lineOverflow: 'truncate', lineHeight: 12.5, margin: 10 } },
       // 双轴:左=岗数(柱)、右=中位年薪(线)。量纲差两个数量级,同轴会把薪资线压成一条平线
       yAxis: [
         { type: 'value', splitLine: { lineStyle: { color: '#f3f4f6' } }, axisLabel: { fontSize: 11, color: '#9ca3af' } },
@@ -381,7 +378,7 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
         <button onClick={() => setShowMed(true)} style={chip(showMed)}>{t('stats.medSalary')}</button>
         <button onClick={() => setShowMed(false)} style={chip(!showMed)}>{t('mkt.y2.off')}</button>
       </Ctl>
-      <EChart option={opt} height={470} />
+      <EChart option={opt} height={420} />
       <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 6, lineHeight: 1.6 }}>{t('mkt.note')}</div>
     </div>
   )

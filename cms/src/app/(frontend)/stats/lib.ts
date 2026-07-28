@@ -88,10 +88,13 @@ export async function loadCityStats(limit = 400): Promise<CityRow[]> {
   const num = (v: any) => (v == null ? null : Number(v))
   try {
     const rows = (await (payload.db as any).pool.query(
-      `SELECT city, province, open_jobs, new7d, median_salary_annual, named_jobs
-       FROM stats_city ORDER BY open_jobs DESC NULLS LAST LIMIT $1`, [limit])).rows
+      // 城市译名同样借 cities 维度表(48 个主要城市有中/韩名,小镇留空 → 前端回退英文原名)
+      `SELECT s.city, s.province, c.name_zh, c.name_ko, s.open_jobs, s.new7d, s.median_salary_annual, s.named_jobs
+       FROM stats_city s LEFT JOIN cities c ON c.name = s.city AND c.province = s.province
+       ORDER BY s.open_jobs DESC NULLS LAST LIMIT $1`, [limit])).rows
     return rows.map((r: any) => ({
-      city: r.city ?? '', province: r.province ?? '', openJobs: num(r.open_jobs), new7d: num(r.new7d),
+      city: r.city ?? '', cityZh: r.name_zh ?? '', cityKo: r.name_ko ?? '',
+      province: r.province ?? '', openJobs: num(r.open_jobs), new7d: num(r.new7d),
       medianSalaryAnnual: num(r.median_salary_annual), namedJobs: num(r.named_jobs),
     }))
   } catch (e: any) {

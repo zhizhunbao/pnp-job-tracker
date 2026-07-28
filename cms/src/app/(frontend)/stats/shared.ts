@@ -38,5 +38,5 @@ export const PROV_NAME: Record<string, string> = {
 export type OccRow = { noc: string; province: string; titleZh: string; titleZhShort: string; titleEn: string; titleKo: string
   teer: number | null; broad: string; openJobs: number | null; new7d: number | null
   medianSalaryAnnual: number | null; namedJobs: number | null }
-export type CityRow = { city: string; province: string; openJobs: number | null; new7d: number | null
+export type CityRow = { city: string; cityZh: string; cityKo: string; province: string; openJobs: number | null; new7d: number | null
   medianSalaryAnnual: number | null; namedJobs: number | null }
