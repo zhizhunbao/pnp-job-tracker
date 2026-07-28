@@ -54,7 +54,13 @@ export function StatsIndexContent({ rows, srcs, t, provExtra = {}, occ = [], cit
       {/* 页头=PageBanner(#65 五模块统一浅色带,统计=绿) */}
       <PageBanner module="stats" icon={<IconMapPin />} title={t('stats.entry')} images={BANNER_IMGS.stats}
         stats={[{ v: PROVS.length, label: t('stats.bnProvs') }, { v: BROAD_SLUGS.length, label: t('stats.bnBroads') }]} />
-      <h2 style={{ fontSize: 15.5, margin: '14px 0 8px' }}>{t('stats.provIndex')}</h2>
+      {/* E8-14 主图放**页头之下、省卡之上**(Frank 2026-07-28「图没显示啊」——实测它原来在
+          距页顶 867px 处,1280×900 的首屏根本看不到,手机更要滚过 10 张省卡)。
+          它是「页面最主要的统计图」,就该占首屏。 */}
+      <h2 style={{ fontSize: 15.5, margin: '14px 0 8px' }}>{t('mkt.title')}</h2>
+      <MarketChart occ={occ} city={city} rows={rows} t={t} />
+
+      <h2 style={{ fontSize: 15.5, margin: '18px 0 8px' }}>{t('stats.provIndex')}</h2>
       {/* min 270:装得下「Newfoundland and Labrador+NL+徽章」一行(230 时省名被截成 Onta…);超窄屏 min(100%,·) 防溢出 */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 270px), 1fr))', gap: 12, margin: '4px 0 16px' }}>
         {provRows.map((r) => {
@@ -85,9 +91,6 @@ export function StatsIndexContent({ rows, srcs, t, provExtra = {}, occ = [], cit
         })}
       </div>
       {/* IRCC 年份口径一行说清,不在每卡重复(第25轮「同句重复=废话」口径) */}
-      {/* E8-14 主图:排在既有四图之前 —— 它是「页面最主要的统计图」 */}
-      <h2 style={{ fontSize: 15.5, margin: '18px 0 8px' }}>{t('mkt.title')}</h2>
-      <MarketChart occ={occ} city={city} rows={rows} t={t} />
       <StatsCharts rows={rows} t={t} />
       <div style={{ marginTop: 14 }}>
         <a href="/stats/compare" style={{ fontSize: 13, color: '#2563eb', textDecoration: 'none' }}><IconScale /> {t('stats.compare')}</a>
