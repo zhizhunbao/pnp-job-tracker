@@ -204,7 +204,7 @@ function DrillCard({ rows, t, title, kind, metric, money, broadLabel }: {
 // **全用 echarts 原生**(Frank「不要自己实现」):簇状柱=多 series 共 xAxis;缩放=dataZoom;不手搓柱子与滑块。
 const MC_PAL = ['#2563eb', '#f59e0b', '#10b981', '#8b5cf6', '#ef4444', '#06b6d4', '#84cc16', '#ec4899', '#6366f1', '#94a3b8']
 
-export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]; city: CityRow[]; rows: StatRow[]; t: TFn; lang?: string }) {
+export function MarketChart({ occ, city, rows, t, lang = 'zh', channels }: { occ: OccRow[]; city: CityRow[]; rows: StatRow[]; t: TFn; lang?: string; channels?: { pnp: string[]; ee: string[] } }) {
   const [xKey, setXKey] = useState<'occ' | 'prov' | 'city'>('occ')
   const [grp, setGrp] = useState<'none' | 'prov' | 'broad' | 'teer'>('prov')
   // 右轴三档(2026-07-28 数据地基落地后):
@@ -216,6 +216,13 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
   // 排序(Frank 2026-07-28「加上排序按钮」):按岗位数 / 按中位年薪,各含高低两向;空值恒排最后
   const [sortBy, setSortBy] = useState<'jobs' | 'med'>('jobs')
   const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc')
+  // 搜索 + 通道筛选(Frank 2026-07-28:「加一些搜索和过滤条件」「哪些能走 ee pnp aip qc 的单独通道也需要筛选」)。
+  // 通道只放**职业粒度判得了**的两条:省提名具名清单、联邦 EE 类别。AIP 是雇主级、QC 数据层没清单 —— 不假装能筛。
+  const [q, setQ] = useState('')
+  const [chan, setChan] = useState<'all' | 'pnp' | 'ee'>('all')
+  const [more, setMore] = useState(false)          // 更多筛选折叠(与职位板 #59 同款)
+  const pnpSet = useMemo(() => new Set(channels?.pnp || []), [channels])
+  const eeSet = useMemo(() => new Set(channels?.ee || []), [channels])
   // 职业名按界面语言取(Frank 实拍:韩文界面轴上全是中文)。中文=本站短名,英文=NOC 官方名,
   // 韩文=noc_descriptions 的译名,缺则回退官方英文 —— 不拿中文名冒充国际化。
   const occName = (o: OccRow) => (lang === 'zh' ? (o.titleZhShort || o.titleZh || o.titleEn)
@@ -253,7 +260,10 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
     }
 
     if (xKey === 'occ') {
-      const ks = [...natl].sort((a, b) => by(sortBy === 'med' ? pick(a.medianWageAnnual, a.medianSalaryAnnual, a.salaryN) : a.openJobs,
+      const kw = q.trim().toLowerCase()
+      const hit = (o: OccRow) => (!kw || occName(o).toLowerCase().includes(kw) || (o.titleEn || '').toLowerCase().includes(kw) || o.noc.includes(kw))
+        && (chan === 'all' || (chan === 'pnp' ? pnpSet.has(o.noc) : eeSet.has(o.noc)))
+      const ks = [...natl].filter(hit).sort((a, b) => by(sortBy === 'med' ? pick(a.medianWageAnnual, a.medianSalaryAnnual, a.salaryN) : a.openJobs,
         sortBy === 'med' ? pick(b.medianWageAnnual, b.medianSalaryAnnual, b.salaryN) : b.openJobs)).slice(0, 200)
       axis = ks.map(occName)
       med = ks.map((o) => pick(o.medianWageAnnual, o.medianSalaryAnnual, o.salaryN))
@@ -312,7 +322,9 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
         series = cats.map((b, i) => bar(t('broad.' + b), ps.map((p) => cell(p, b)?.openJobs ?? 0), i))
       } else series = [bar(t('stats.openJobs'), ps.map((p) => cell(p, 'all')?.openJobs ?? 0), 0)]
     } else {
-      const cs = [...city].sort((a, b) => by(sortBy === 'med' ? pick(a.medianWageAnnual, a.medianSalaryAnnual, a.salaryN) : a.openJobs,
+      const kwc = q.trim().toLowerCase()
+      const cs = [...city].filter((c) => !kwc || c.city.toLowerCase().includes(kwc)
+        || (c.cityZh || '').includes(q.trim()) || (c.cityKo || '').includes(q.trim())).sort((a, b) => by(sortBy === 'med' ? pick(a.medianWageAnnual, a.medianSalaryAnnual, a.salaryN) : a.openJobs,
         sortBy === 'med' ? pick(b.medianWageAnnual, b.medianSalaryAnnual, b.salaryN) : b.openJobs)).slice(0, 200)
       axis = cs.map((c) => (lang === 'zh' ? (c.cityZh || c.city) : lang === 'ko' ? (c.cityKo || c.city) : c.city))
       med = cs.map((c) => pick(c.medianWageAnnual, c.medianSalaryAnnual, c.salaryN))
@@ -369,7 +381,7 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
             symbol: 'circle', symbolSize: 5, connectNulls: true, z: 5,
             lineStyle: { width: 2, color: '#111827' }, itemStyle: { color: '#111827' } }]),
     }
-  }, [occ, city, rows, xKey, g, y2, showMed, medName, sortBy, sortDir, lang, t])
+  }, [occ, city, rows, xKey, g, y2, showMed, medName, sortBy, sortDir, q, chan, pnpSet, eeSet, lang, t])
 
   if (!occ.length && !city.length) return null   // 数据层没落地 → 整块不渲(不出空壳)
 
@@ -378,6 +390,8 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
     border: `1px solid ${on ? '#bfdbfe' : '#e5e7eb'}`, background: on ? '#eff6ff' : '#fff',
     color: on ? '#1d4ed8' : '#374151', fontWeight: on ? 600 : 400, opacity: dis ? 0.4 : 1,
   })
+  const selS: React.CSSProperties = { height: 32, border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', color: '#374151', fontSize: 12.5, padding: '0 8px' }
+  const ctlLb: React.CSSProperties = { fontSize: 11.5, color: '#9ca3af' }
   const Ctl = ({ label, children }: { label: string; children: React.ReactNode }) => (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', margin: '8px 0 0' }}>
       <span style={{ fontSize: 12, color: '#6b7280', minWidth: 30 }}>{label}</span>{children}
@@ -386,28 +400,55 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
 
   return (
     <div style={cardS}>
-      <Ctl label={t('mkt.x')}>
-        {([['occ', t('mkt.x.occ')], ['prov', t('mkt.x.prov')], ['city', t('mkt.x.city')]] as const).map(([k, lb]) => (
-          <button key={k} onClick={() => setXKey(k as 'occ' | 'prov' | 'city')} style={chip(xKey === k)}>{lb}</button>
-        ))}
-      </Ctl>
-      <Ctl label={t('mkt.g')}>
-        {([['none', t('mkt.g.none')], ['prov', t('mkt.g.prov')], ['broad', t('mkt.g.broad')], ['teer', 'TEER']] as const).map(([k, lb]) => (
-          <button key={k} disabled={!legal(k)} onClick={() => legal(k) && setGrp(k as 'none' | 'prov' | 'broad' | 'teer')}
-            style={chip(g === k, !legal(k))}>{lb}</button>
-        ))}
-      </Ctl>
-      <Ctl label={t('mkt.sort')}>
-        <button onClick={() => setSortBy('jobs')} style={chip(sortBy === 'jobs')}>{t('stats.openJobs')}</button>
-        <button onClick={() => setSortBy('med')} style={chip(sortBy === 'med')}>{medName}</button>
-        <button onClick={() => setSortDir('desc')} style={chip(sortDir === 'desc')}>{t('mkt.sort.desc')}</button>
-        <button onClick={() => setSortDir('asc')} style={chip(sortDir === 'asc')}>{t('mkt.sort.asc')}</button>
-      </Ctl>
-      <Ctl label={t('mkt.y2')}>
-        <button onClick={() => setY2('wage')} style={chip(y2 === 'wage')}>{t('stats.medWage')}</button>
-        <button onClick={() => setY2('posted')} style={chip(y2 === 'posted')}>{t('stats.medSalary')}</button>
-        <button onClick={() => setY2('off')} style={chip(y2 === 'off')}>{t('mkt.y2.off')}</button>
-      </Ctl>
+      {/* 控件区重设计(Frank 2026-07-28:「这个地方是不是需要重新设计一下,并且加一些搜索和过滤条件」):
+          四行药丸 → **常用一行 + 更多筛选折叠**,与职位板筛选区同一套语言(#59 拍板的形态)。
+          原生 select 不用药丸:四组都是单选,药丸横铺白占竖向空间(效果图 Frank 过目后实施)。 */}
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', margin: '8px 0 0' }}>
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('mkt.search')}
+          style={{ height: 32, border: '1px solid #e5e7eb', borderRadius: 8, padding: '0 10px', fontSize: 12.5, width: 190 }} />
+        <span style={ctlLb}>{t('mkt.x')}</span>
+        <select value={xKey} onChange={(e) => setXKey(e.target.value as 'occ' | 'prov' | 'city')} style={selS}>
+          <option value="occ">{t('mkt.x.occ')}</option><option value="prov">{t('mkt.x.prov')}</option><option value="city">{t('mkt.x.city')}</option>
+        </select>
+        <span style={ctlLb}>{t('mkt.g')}</span>
+        <select value={g} onChange={(e) => setGrp(e.target.value as 'none' | 'prov' | 'broad' | 'teer')} style={selS}>
+          {([['none', t('mkt.g.none')], ['prov', t('mkt.g.prov')], ['broad', t('mkt.g.broad')], ['teer', 'TEER']] as const).map(([k, lb]) => (
+            <option key={k} value={k} disabled={!legal(k)}>{lb}</option>   /* 退化组合仍然置灰,不画退化图 */
+          ))}
+        </select>
+        <span style={ctlLb}>{t('mkt.sort')}</span>
+        <select value={sortBy} onChange={(e) => setSortBy(e.target.value as 'jobs' | 'med')} style={selS}>
+          <option value="jobs">{t('stats.openJobs')}</option><option value="med">{medName}</option>
+        </select>
+        <span style={{ display: 'inline-flex', border: '1px solid #e5e7eb', borderRadius: 8, overflow: 'hidden', height: 32 }}>
+          {([['desc', t('mkt.sort.desc')], ['asc', t('mkt.sort.asc')]] as const).map(([k, lb]) => (
+            <button key={k} onClick={() => setSortDir(k as 'desc' | 'asc')}
+              style={{ border: 'none', padding: '0 10px', fontSize: 12.5, cursor: 'pointer',
+                background: sortDir === k ? '#eff6ff' : '#fff', color: sortDir === k ? '#1d4ed8' : '#374151',
+                fontWeight: sortDir === k ? 600 : 400 }}>{lb}</button>
+          ))}
+        </span>
+        <button onClick={() => setMore((v) => !v)} style={{ height: 32, border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', fontSize: 12.5, color: '#374151', padding: '0 11px', cursor: 'pointer' }}>
+          {t('mkt.more')}{chan !== 'all' || y2 !== 'wage' ? <span style={{ display: 'inline-block', background: '#2563eb', color: '#fff', borderRadius: 999, fontSize: 10.5, padding: '0 5px', marginLeft: 5 }}>{(chan !== 'all' ? 1 : 0) + (y2 !== 'wage' ? 1 : 0)}</span> : null}
+        </button>
+      </div>
+      {more && (
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 10, paddingTop: 10, borderTop: '1px dashed #e5e7eb' }}>
+          <span style={ctlLb}>{t('mkt.chan')}</span>
+          <select value={chan} onChange={(e) => setChan(e.target.value as 'all' | 'pnp' | 'ee')} style={selS} disabled={xKey !== 'occ'}>
+            <option value="all">{t('mkt.chan.all')}</option>
+            <option value="pnp">{t('mkt.chan.pnp')}</option>
+            <option value="ee">{t('mkt.chan.ee')}</option>
+          </select>
+          <span style={ctlLb}>{t('mkt.y2')}</span>
+          <select value={y2} onChange={(e) => setY2(e.target.value as 'wage' | 'posted' | 'off')} style={selS}>
+            <option value="wage">{t('stats.medWage')}</option>
+            <option value="posted">{t('stats.medSalary')}</option>
+            <option value="off">{t('mkt.y2.off')}</option>
+          </select>
+          {xKey !== 'occ' ? <span style={{ fontSize: 11.5, color: '#9ca3af' }}>{t('mkt.chan.occOnly')}</span> : null}
+        </div>
+      )}
       <EChart option={opt} height={420} />
       <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 6, lineHeight: 1.6 }}>{t('mkt.note')}</div>
     </div>

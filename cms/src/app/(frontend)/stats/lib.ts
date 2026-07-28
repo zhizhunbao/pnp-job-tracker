@@ -104,3 +104,20 @@ export async function loadCityStats(limit = 400): Promise<CityRow[]> {
     return []
   }
 }
+
+// E8-14 ⑥ 通道筛选(Frank 2026-07-28:「哪些能走 ee pnp aip qc 的单独通道也需要筛选」):
+// 只取**职业粒度能判定**的两条 —— 省提名具名清单(pnp_occupations)与联邦 EE 类别(ee_categories)。
+// AIP 只有雇主级名单(职业粒度要先给统计表补列),QC 数据层没有职业清单 —— 两者不在此列,不假装能筛。
+export async function loadChannelNocs(): Promise<{ pnp: string[]; ee: string[] }> {
+  const payload = await getPayload({ config: await config })
+  const pool = (payload.db as any).pool
+  const one = async (sql: string) => {
+    try { return (await pool.query(sql)).rows.map((r: any) => String(r.noc || '')).filter(Boolean) }
+    catch (e: any) { if (e?.code === '42P01' || e?.code === '42703') return []; throw e }
+  }
+  const [pnp, ee] = await Promise.all([
+    one(`SELECT DISTINCT noc FROM pnp_occupations WHERE noc <> '' AND COALESCE(program,'PNP') = 'PNP'`),
+    one(`SELECT DISTINCT noc FROM ee_categories WHERE noc <> ''`),
+  ])
+  return { pnp, ee }
+}
