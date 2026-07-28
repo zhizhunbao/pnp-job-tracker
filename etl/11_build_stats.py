@@ -107,9 +107,19 @@ def main() -> None:
             noc_name[d.get("noc", "")] = d
 
     def agg(js: list) -> dict:
+        # 两个口径并存(2026-07-28 Frank 放行:这张表要撑留学/职业规划,不能只有自家算的数):
+        #   medianWageAnnual  = **ESDC 官方**中位年薪(每个岗按其 NOC×省 查官方表,再取中位)——权威基线,
+        #                       不随我们抓到多少帖子而漂;与省级 stats 表同一口径。
+        #   medianSalaryAnnual= 帖面中位(本站折算)——当下行情,样本薄时会失真。
+        #   salaryN           = 有帖面薪资的岗位数 = 帖面中位的**样本量**。
+        #                       实核:全国 17 个职业、分省 723 行是「1 个岗 + 一个中位」——
+        #                       样本量落表,前端才有依据决定报不报,而不是前端瞎定阈值。
+        sal = [j.get("salaryAnnual") for j in js if j.get("salaryAnnual")]
         return {"openJobs": len(js),
                 "new7d": sum(1 for j in js if (j.get("datePosted") or "") >= cut7),
+                "medianWageAnnual": median_or_none([j.get("wageMedAnnual") for j in js]),
                 "medianSalaryAnnual": median_or_none([j.get("salaryAnnual") for j in js]),
+                "salaryN": len(sal),
                 "namedJobs": sum(1 for j in js if j.get("pnpStream"))}
 
     occ_rows = []

@@ -207,7 +207,12 @@ const MC_PAL = ['#2563eb', '#f59e0b', '#10b981', '#8b5cf6', '#ef4444', '#06b6d4'
 export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]; city: CityRow[]; rows: StatRow[]; t: TFn; lang?: string }) {
   const [xKey, setXKey] = useState<'occ' | 'prov' | 'city'>('occ')
   const [grp, setGrp] = useState<'none' | 'prov' | 'broad' | 'teer'>('prov')
-  const [showMed, setShowMed] = useState(true)
+  // 右轴三档(2026-07-28 数据地基落地后):
+  //   wage   = ESDC 官方中位年薪 —— **权威基线**,不随我们抓到多少帖子漂,规划类结论只能站在它上面
+  //   posted = 帖面中位(本站折算) —— 当下行情;**样本 < MIN_N 的点留空**(1 个帖的「中位」不是中位)
+  const [y2, setY2] = useState<'wage' | 'posted' | 'off'>('wage')
+  const showMed = y2 !== 'off'
+  const medName = y2 === 'wage' ? t('stats.medWage') : t('stats.medSalary')   // 右轴那条线的名字随档走
   // 排序(Frank 2026-07-28「加上排序按钮」):按岗位数 / 按中位年薪,各含高低两向;空值恒排最后
   const [sortBy, setSortBy] = useState<'jobs' | 'med'>('jobs')
   const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc')
@@ -234,6 +239,11 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
     const bar = (name: string, data: (number | null)[], i: number) =>
       ({ name, type: 'bar', data, itemStyle: { color: MC_PAL[i % MC_PAL.length] } })
 
+    // 帖面中位的最小样本量:统计上中位数至少要几个观测才有意义。实核 489 个职业里
+    // 73 个帖面样本 <5(其中 17 个只有 1 个岗)—— 这些点在「帖面」档留空,但官方档照常有数。
+    const MIN_N = 5
+    const pick = (medWage: number | null | undefined, medPost: number | null | undefined, n: number | null | undefined) =>
+      (y2 === 'wage' ? (medWage ?? null) : ((n ?? 0) >= MIN_N ? (medPost ?? null) : null))
     // 排序比较器:空值永远垫底(不管升降),否则「低到高」会被一堆没薪资的职业占满头部
     const by = (v: number | null | undefined, w: number | null | undefined) => {
       if (v == null && w == null) return 0
@@ -243,10 +253,10 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
     }
 
     if (xKey === 'occ') {
-      const ks = [...natl].sort((a, b) => by(sortBy === 'med' ? a.medianSalaryAnnual : a.openJobs,
-        sortBy === 'med' ? b.medianSalaryAnnual : b.openJobs)).slice(0, 200)
+      const ks = [...natl].sort((a, b) => by(sortBy === 'med' ? pick(a.medianWageAnnual, a.medianSalaryAnnual, a.salaryN) : a.openJobs,
+        sortBy === 'med' ? pick(b.medianWageAnnual, b.medianSalaryAnnual, b.salaryN) : b.openJobs)).slice(0, 200)
       axis = ks.map(occName)
-      med = ks.map((o) => o.medianSalaryAnnual)
+      med = ks.map((o) => pick(o.medianWageAnnual, o.medianSalaryAnnual, o.salaryN))
       end = Math.min(100, (12 / Math.max(ks.length, 1)) * 100)
       if (g === 'prov') {
         // 分省时岗数与中位年薪**都按省取**(Frank:「每个省的中位薪资还不一样」),
@@ -261,7 +271,7 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
         for (const o of occ) {
           if (o.province === 'all') continue
           if (!byNoc.has(o.noc)) byNoc.set(o.noc, new Map())
-          byNoc.get(o.noc)!.set(o.province, { jobs: o.openJobs ?? 0, med: o.medianSalaryAnnual })
+          byNoc.get(o.noc)!.set(o.province, { jobs: o.openJobs ?? 0, med: pick(o.medianWageAnnual, o.medianSalaryAnnual, o.salaryN) })
         }
         const P = PROVS.length
         const cellOcc: number[] = []          // 每个类目属于第几个职业(-1=簇间距)
@@ -284,7 +294,7 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
         med = axis.map((_, k) => (cellProv[k] < 0 ? null
           : byNoc.get(ks[cellOcc[k]].noc)?.get(PROVS[cellProv[k]])?.med ?? null))
         // 簇间距那格没数 → connectNulls 让线跨过去,全图仍是连续一根
-        provMed = [{ name: t('stats.medSalary'), type: 'line', yAxisIndex: 1, data: med, symbol: 'circle',
+        provMed = [{ name: medName, type: 'line', yAxisIndex: 1, data: med, symbol: 'circle',
           symbolSize: 3, connectNulls: true, z: 6, lineStyle: { width: 1.4, color: '#111827' },
           itemStyle: { color: '#111827' } }]
         cellTitle = (k: number) => (cellProv[k] < 0 ? null : `${occName(ks[cellOcc[k]])}　${provLabel(PROVS[cellProv[k]])}`)
@@ -295,17 +305,17 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
       const ps = [...PROVS].sort((a, b) => by(sortBy === 'med' ? cell(a, 'all')?.medianSalaryAnnual : cell(a, 'all')?.openJobs,
         sortBy === 'med' ? cell(b, 'all')?.medianSalaryAnnual : cell(b, 'all')?.openJobs))
       axis = ps.map(provLabel)
-      med = ps.map((p) => cell(p, 'all')?.medianSalaryAnnual ?? null)
+      med = ps.map((p) => pick(cell(p, 'all')?.medianWageAnnual, cell(p, 'all')?.medianSalaryAnnual, cell(p, 'all')?.openJobs))
       if (g === 'broad') {
         // BROAD_SLUGS 是 [中文名, slug] 对,不是纯字符串数组 —— 取 slug 那一项
         const cats = BROAD_SLUGS.map((x) => (Array.isArray(x) ? x[1] : x)).filter((b) => b && b !== 'all')
         series = cats.map((b, i) => bar(t('broad.' + b), ps.map((p) => cell(p, b)?.openJobs ?? 0), i))
       } else series = [bar(t('stats.openJobs'), ps.map((p) => cell(p, 'all')?.openJobs ?? 0), 0)]
     } else {
-      const cs = [...city].sort((a, b) => by(sortBy === 'med' ? a.medianSalaryAnnual : a.openJobs,
-        sortBy === 'med' ? b.medianSalaryAnnual : b.openJobs)).slice(0, 200)
+      const cs = [...city].sort((a, b) => by(sortBy === 'med' ? pick(a.medianWageAnnual, a.medianSalaryAnnual, a.salaryN) : a.openJobs,
+        sortBy === 'med' ? pick(b.medianWageAnnual, b.medianSalaryAnnual, b.salaryN) : b.openJobs)).slice(0, 200)
       axis = cs.map((c) => (lang === 'zh' ? (c.cityZh || c.city) : lang === 'ko' ? (c.cityKo || c.city) : c.city))
-      med = cs.map((c) => c.medianSalaryAnnual)
+      med = cs.map((c) => pick(c.medianWageAnnual, c.medianSalaryAnnual, c.salaryN))
       end = Math.min(100, (14 / Math.max(cs.length, 1)) * 100)
       series = [bar(t('stats.openJobs'), cs.map((c) => c.openJobs), 0)]
     }
@@ -328,7 +338,7 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
           if (!head) return ''
           const jobs = b0 ? `${t('stats.openJobs')}　${b0.value}` : ''
           const m = ln?.value
-          return `<b>${head}</b><br/>${jobs}${m != null ? `<br/>${t('stats.medSalary')}　$${Math.round(m / 1000)}K` : ''}`
+          return `<b>${head}</b><br/>${jobs}${m != null ? `<br/>${medName}　$${Math.round(m / 1000)}K` : ''}`
         } },
       legend: { show: multi, type: 'scroll', bottom: 36, itemWidth: 11, itemHeight: 11, textStyle: { fontSize: 11.5, color: '#6b7280' } },
       grid: { left: 8, right: showMed ? 8 : 4, top: 12, bottom: multi ? 62 : 40, containLabel: true },
@@ -355,11 +365,11 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
         handleStyle: { color: '#2563eb' }, textStyle: { fontSize: 10, color: '#9ca3af' } }],
       series: !showMed ? series
         : provMed.length ? series.concat(provMed)
-          : series.concat([{ name: t('stats.medSalary'), type: 'line', yAxisIndex: 1, data: med,
+          : series.concat([{ name: medName, type: 'line', yAxisIndex: 1, data: med,
             symbol: 'circle', symbolSize: 5, connectNulls: true, z: 5,
             lineStyle: { width: 2, color: '#111827' }, itemStyle: { color: '#111827' } }]),
     }
-  }, [occ, city, rows, xKey, g, showMed, sortBy, sortDir, lang, t])
+  }, [occ, city, rows, xKey, g, y2, showMed, medName, sortBy, sortDir, lang, t])
 
   if (!occ.length && !city.length) return null   // 数据层没落地 → 整块不渲(不出空壳)
 
@@ -389,13 +399,14 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
       </Ctl>
       <Ctl label={t('mkt.sort')}>
         <button onClick={() => setSortBy('jobs')} style={chip(sortBy === 'jobs')}>{t('stats.openJobs')}</button>
-        <button onClick={() => setSortBy('med')} style={chip(sortBy === 'med')}>{t('stats.medSalary')}</button>
+        <button onClick={() => setSortBy('med')} style={chip(sortBy === 'med')}>{medName}</button>
         <button onClick={() => setSortDir('desc')} style={chip(sortDir === 'desc')}>{t('mkt.sort.desc')}</button>
         <button onClick={() => setSortDir('asc')} style={chip(sortDir === 'asc')}>{t('mkt.sort.asc')}</button>
       </Ctl>
       <Ctl label={t('mkt.y2')}>
-        <button onClick={() => setShowMed(true)} style={chip(showMed)}>{t('stats.medSalary')}</button>
-        <button onClick={() => setShowMed(false)} style={chip(!showMed)}>{t('mkt.y2.off')}</button>
+        <button onClick={() => setY2('wage')} style={chip(y2 === 'wage')}>{t('stats.medWage')}</button>
+        <button onClick={() => setY2('posted')} style={chip(y2 === 'posted')}>{t('stats.medSalary')}</button>
+        <button onClick={() => setY2('off')} style={chip(y2 === 'off')}>{t('mkt.y2.off')}</button>
       </Ctl>
       <EChart option={opt} height={420} />
       <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 6, lineHeight: 1.6 }}>{t('mkt.note')}</div>

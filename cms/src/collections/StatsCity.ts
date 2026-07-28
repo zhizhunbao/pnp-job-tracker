@@ -7,7 +7,7 @@ export const StatsCity: CollectionConfig = {
   fields: [
     { name: 'city', type: 'text', index: true }, { name: 'province', type: 'text', index: true },
     { name: 'openJobs', type: 'number' }, { name: 'new7d', type: 'number' },
-    { name: 'medianSalaryAnnual', type: 'number' }, { name: 'namedJobs', type: 'number' },
+    { name: 'medianWageAnnual', type: 'number' }, { name: 'medianSalaryAnnual', type: 'number' }, { name: 'salaryN', type: 'number' }, { name: 'namedJobs', type: 'number' },
     { name: 'fetched', type: 'text' },
   ],
 }

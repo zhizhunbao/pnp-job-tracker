@@ -13,7 +13,11 @@ export const StatsOccupation: CollectionConfig = {
     { name: 'titleEn', type: 'text', admin: { description: 'NOC 官方名(英文)——**唯一官方名**,中文是本站译名' } },
     { name: 'teer', type: 'number' }, { name: 'broad', type: 'text' },
     { name: 'openJobs', type: 'number' }, { name: 'new7d', type: 'number' },
-    { name: 'medianSalaryAnnual', type: 'number' }, { name: 'namedJobs', type: 'number' },
+    // 两个薪资口径并存(2026-07-28):官方=权威基线,帖面=当下行情,salaryN=帖面中位的样本量
+    { name: 'medianWageAnnual', type: 'number', admin: { description: 'ESDC 官方中位年薪(权威基线)' } },
+    { name: 'medianSalaryAnnual', type: 'number', admin: { description: '帖面中位(本站折算);样本量见 salaryN' } },
+    { name: 'salaryN', type: 'number', admin: { description: '有帖面薪资的岗位数 = 帖面中位的样本量' } },
+    { name: 'namedJobs', type: 'number' },
     { name: 'fetched', type: 'text' },
   ],
 }
