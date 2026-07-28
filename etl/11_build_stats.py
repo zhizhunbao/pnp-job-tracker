@@ -30,6 +30,9 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
 IN_JOBS = _paths.MART / "jobs.json"
 IN_DIFF = _paths.PROCESSED / "difficulty.json"   # E12-07:省难度指数(04e 产出;缺文件=不挂,列留空)
 OUT_STATS = _paths.MART / "stats.json"
+# E8-14 每日快照:只产出**今天这一天**的行,seed 按 (date,province,broad) UPSERT 追加,永不 DELETE。
+# 趋势图的唯一数据来源;历史补不回来 —— 落地那天才是第一个点,所以先于主图建起来。
+OUT_DAILY = _paths.MART / "stats_daily.json"
 
 PROVS = ["ON", "BC", "AB", "SK", "MB", "QC", "NS", "NB", "NL", "PE"]
 TODAY = date.today().isoformat()
@@ -80,6 +83,17 @@ def main() -> None:
         })
 
     OUT_STATS.write_text(json.dumps(rows, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    # ── E8-14 每日快照 ────────────────────────────────────────────────────────
+    # 粒度 = 日 × 省 × 大类(含 all 汇总行),取 stats 的大类层直接投影 —— 不重算,口径与主表天生一致。
+    # 一天多跑几轮 ETL 也只会 UPSERT 同一批行(date 是主键的一部分),不会灌出重复点。
+    daily = [{"date": TODAY, "province": r["province"], "broad": r["broad"],
+              "openJobs": r["openJobs"], "new7d": r["new7d"],
+              "medianSalaryAnnual": r["medianSalaryAnnual"], "namedJobs": r["namedJobs"]}
+             for r in rows if r["mid"] == "all"]
+    OUT_DAILY.write_text(json.dumps(daily, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"stats_daily: {len(daily)} 行(日期 {TODAY})→ {OUT_DAILY}")
+
     provs = len({r["province"] for r in rows})
     base = sum(1 for r in rows if r["mid"] == "all")
     print(f"stats: {len(rows)} 行({provs} 省;大类层 {base} 行 + 中类层 {len(rows) - base} 行)→ {OUT_STATS}")

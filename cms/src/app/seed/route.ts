@@ -164,6 +164,24 @@ export async function GET(req: Request) {
       counts[table] = rows.length
     }
 
+    // ── E8-14 stats_daily:**只追加,永不清空** ────────────────────────
+    // 趋势图的唯一数据来源。ETL 每轮只产出当天的行 → 按 (date,province,broad) UPSERT:
+    // 一天多跑几轮只更新今天这批,往前的日期一律不动。走 dims 的「清空+重灌」会把历史抹掉,所以单独一段。
+    // 不做表级哈希跳过 —— 行数很小(百来行),而且 date 每天都变,跳过没意义。
+    if (martPaths('stats_daily').length > 0) {
+      const dailyRows = (await mart('stats_daily')).map((r: any) => ({
+        date: r.date, province: r.province, broad: r.broad, open_jobs: r.openJobs, new7d: r.new7d,
+        median_salary_annual: r.medianSalaryAnnual, named_jobs: r.namedJobs,
+        created_at: now, updated_at: now,
+      })).filter((r) => r.date && r.province)
+      await insertBatch(client, 'stats_daily',
+        ['date', 'province', 'broad', 'open_jobs', 'new7d', 'median_salary_annual', 'named_jobs', 'created_at', 'updated_at'],
+        dailyRows,
+        `ON CONFLICT (date, province, broad) DO UPDATE SET open_jobs=EXCLUDED.open_jobs, new7d=EXCLUDED.new7d,
+         median_salary_annual=EXCLUDED.median_salary_annual, named_jobs=EXCLUDED.named_jobs, updated_at=EXCLUDED.updated_at`)
+      counts.stats_daily = dailyRows.length
+    }
+
     // ── news:按 slug upsert(E12-06 P1f)──────────────────────────
     // 懒翻译/速读缓存列(body_zh/body_ko/summary_zh/summary_ko/summary_en)由 /api/news-translate、
     // /api/news-summarize 线上写入,seed 不许碰——除非该条 body_en 变了(重抽正文)才连带清缓存(防错位陈译)。

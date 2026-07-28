@@ -88,6 +88,7 @@ export interface Config {
     'field-sources': FieldSource;
     rankings: Ranking;
     stats: Stat;
+    'stats-daily': StatsDaily;
     'saved-searches': SavedSearch;
     'saved-jobs': SavedJob;
     news: News;
@@ -120,6 +121,7 @@ export interface Config {
     'field-sources': FieldSourcesSelect<false> | FieldSourcesSelect<true>;
     rankings: RankingsSelect<false> | RankingsSelect<true>;
     stats: StatsSelect<false> | StatsSelect<true>;
+    'stats-daily': StatsDailySelect<false> | StatsDailySelect<true>;
     'saved-searches': SavedSearchesSelect<false> | SavedSearchesSelect<true>;
     'saved-jobs': SavedJobsSelect<false> | SavedJobsSelect<true>;
     news: NewsSelect<false> | NewsSelect<true>;
@@ -1106,6 +1108,28 @@ export interface Stat {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stats-daily".
+ */
+export interface StatsDaily {
+  id: number;
+  /**
+   * YYYY-MM-DD(ETL 跑的那天)
+   */
+  date?: string | null;
+  province?: string | null;
+  /**
+   * 职业大类;'all' = 该省汇总
+   */
+  broad?: string | null;
+  openJobs?: number | null;
+  new7d?: number | null;
+  medianSalaryAnnual?: number | null;
+  namedJobs?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "saved-searches".
  */
 export interface SavedSearch {
@@ -1370,6 +1394,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'stats';
         value: number | Stat;
+      } | null)
+    | ({
+        relationTo: 'stats-daily';
+        value: number | StatsDaily;
       } | null)
     | ({
         relationTo: 'saved-searches';
@@ -1856,6 +1884,21 @@ export interface StatsSelect<T extends boolean = true> {
   topCities?: T;
   difficulty?: T;
   fetched?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stats-daily_select".
+ */
+export interface StatsDailySelect<T extends boolean = true> {
+  date?: T;
+  province?: T;
+  broad?: T;
+  openJobs?: T;
+  new7d?: T;
+  medianSalaryAnnual?: T;
+  namedJobs?: T;
   updatedAt?: T;
   createdAt?: T;
 }
