@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8">
+<script src="echarts.min.js"></script><script src="data.js"></script>
+<style>
+  body{margin:0;background:#f9fafb;font-family:system-ui,sans-serif;color:#1f2937}
+  .wrap{max-width:1320px;margin:0 auto;padding:18px 20px}
+  .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px 16px;margin-bottom:14px}
+  h2{font-size:16px;margin:0}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:10px 0 4px}
+  .lb{font-size:12px;color:#6b7280;margin-right:2px;min-width:30px}
+  .chip{font-size:12.5px;padding:4px 10px;border:1px solid #e5e7eb;border-radius:999px;background:#fff;color:#374151;cursor:pointer}
+  .chip.on{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8;font-weight:600}
+  .chip.off{opacity:.4;cursor:not-allowed}
+  #chart{width:100%;height:460px;margin-top:8px}
+  .note{font-size:11px;color:#9ca3af;margin-top:8px;line-height:1.6}
+  .read{display:grid;grid-template-columns:max-content 1fr;column-gap:12px;row-gap:4px;margin-top:10px;font-size:12.5px;align-items:baseline}
+  .rk{color:#9ca3af;white-space:nowrap}.rv{color:#374151}.b{font-weight:700;color:#111827}
+  @media(max-width:640px){.wrap{padding:12px}#chart{height:400px}}
+</style></head><body><div class="wrap">
+
+<div class="card">
+  <h2 id="ttl">哪些职业在招最多</h2>
+  <div class="chips"><span class="lb">横轴</span>
+    <span class="chip on" data-x="occ">职业 489</span><span class="chip" data-x="prov">省份 10</span><span class="chip" data-x="city">城市 300</span></div>
+  <div class="chips"><span class="lb">簇内</span>
+    <span class="chip" data-g="none">不分组</span><span class="chip on" data-g="prov">省份</span>
+    <span class="chip" data-g="broad">职业大类</span><span class="chip" data-g="teer">TEER</span></div>
+  <div class="chips"><span class="lb">右轴</span>
+    <span class="chip on" data-y="med">中位年薪</span><span class="chip" data-y="off">不显示</span></div>
+  <div id="chart"></div>
+  <div class="read" id="read"></div>
+  <div class="note">在招量 = 当前在招职位数,不等于「缺人」。</div>
+</div>
+
+</div>
+<script>
+const D=window.D
+const PROVS=['ON','QC','BC','AB','SK','NS','MB','NB','NL','PE']
+const PN={ON:'安大略',QC:'魁北克',BC:'BC',AB:'阿尔伯塔',SK:'萨省',NS:'新斯科舍',MB:'曼省',NB:'新不伦瑞克',NL:'纽芬兰',PE:'PEI'}
+const CATS=['服务','技工','商务','教育','医疗','科技','资源','制造','文体','管理']
+const PAL=['#2563eb','#f59e0b','#10b981','#8b5cf6','#ef4444','#06b6d4','#84cc16','#ec4899','#6366f1','#94a3b8']
+// NOC 官方名是分类名,天生长 →「及相关…职业」尾巴砍掉、取第一段(与三问弹框同一条规则)
+const shortOcc=(s)=>{s=(s||'').replace(/[、,]?\s*(?:及|和)?其?(?:他)?相关[^、,]*(?:职业|工作)$/,'').trim()
+  return (s.split(/[、,]/)[0].split(/及/)[0].trim())||s}
+
+let X='occ', G='prov', Y='med'
+const chart=echarts.init(document.getElementById('chart'))
+
+// 组合合法性:一个职业只有一个 TEER、也只有一个大类 → x=职业 时按 TEER/大类分簇是退化图,禁用
+const legal=(x,g)=> x==='occ' ? ['none','prov'].includes(g) : (x==='city' ? g==='none' : true)
+
+function build(){
+  if(!legal(X,G)) G='prov'
+  let axis=[],series=[],end=100,read=[],med=[]
+  if(X==='occ'){
+    const ks=D.occ
+    axis=ks.map(o=>shortOcc(o.zh||o.en))
+    end=Math.min(100, 12/ks.length*100)              // 489 个 → 默认开前 12,靠 dataZoom 拖看全量
+    if(G==='prov') series=PROVS.map((p,i)=>({name:PN[p],type:'bar',stack:null,data:ks.map(o=>(D.OP[o.noc]||{})[p]||0),itemStyle:{color:PAL[i]}}))
+    else series=[{name:'在招',type:'bar',data:ks.map(o=>o.n),itemStyle:{color:PAL[0]}}]
+    const top=ks.slice(0,4).map(o=>`${shortOcc(o.zh||o.en)} ${o.n.toLocaleString()}`).join('、')
+    const tot=ks.reduce((a,o)=>a+o.n,0), t20=ks.slice(0,20).reduce((a,o)=>a+o.n,0)
+    med=ks.map(o=>o.med||null)
+    read=[['在招最多',top],['集中度',`共 ${ks.length} 个职业,前 20 名占全国在招 ${Math.round(t20/tot*100)}%`]]
+  } else if(X==='prov'){
+    axis=PROVS.map(p=>PN[p])
+    if(G==='broad') series=CATS.map((c,i)=>({name:c,type:'bar',data:PROVS.map(p=>(D.PB[p]||{})[c]||0),itemStyle:{color:PAL[i]}}))
+    else if(G==='teer') series=[0,1,2,3,4,5].map((t,i)=>({name:'TEER '+t,type:'bar',data:PROVS.map(p=>(D.PT[p]||{})['TEER '+t]||0),itemStyle:{color:PAL[i]}}))
+    else series=[{name:'在招',type:'bar',data:PROVS.map(p=>Object.values(D.PB[p]||{}).reduce((a,b)=>a+b,0)),itemStyle:{color:PAL[0]}}]
+    med=PROVS.map(p=>D.PMED[p]||null)
+    read=[['在招最多',PROVS.slice(0,4).map(p=>`${PN[p]} ${Object.values(D.PB[p]||{}).reduce((a,b)=>a+b,0).toLocaleString()}`).join('、')],
+          ['省内偏科','魁北克制造 972 岗全国最高;纽芬兰、新不伦瑞克医疗排到前二,与其它省不同']]
+  } else {
+    const cs=D.city
+    axis=cs.map(c=>c.city)
+    end=Math.min(100, 14/cs.length*100)
+    series=[{name:'在招',type:'bar',data:cs.map(c=>c.n),itemStyle:{color:PAL[0]}}]
+    med=cs.map(c=>c.med||null)
+    read=[['在招最多',cs.slice(0,5).map(c=>`${c.city} ${c.n.toLocaleString()}`).join('、')],
+          ['覆盖','全国 2,366 个城镇有在招,前 300 已占绝大多数']]
+  }
+  chart.setOption({
+    tooltip:{trigger:'axis',axisPointer:{type:'shadow'},confine:true,textStyle:{fontSize:12},
+      valueFormatter:null},
+    legend:{show:series.length>1,type:'scroll',bottom:36,itemWidth:11,itemHeight:11,textStyle:{fontSize:11.5,color:'#6b7280'}},
+    grid:{left:52,right:14,top:12,bottom:series.length>1?(X==='prov'?100:118):(X==='prov'?78:96)},
+    // 职业名再短也可能挤(「零售销售员和视觉陈列师」),轴上截 7 字 + 斜排;全名在 tooltip 里
+    xAxis:{type:'category',data:axis,axisTick:{show:false},axisLine:{lineStyle:{color:'#e5e7eb'}},
+      axisLabel:{fontSize:11,color:'#6b7280',interval:0,rotate:X==='prov'?0:24,
+        formatter:(v)=>v.length>7?v.slice(0,7)+'…':v}},
+    // 双轴:左=在招岗数(柱),右=中位年薪(线)。两者量纲不同,必须分轴,不然薪资线会被岗数压成一条平线
+    yAxis:[{type:'value',name:'在招',nameTextStyle:{fontSize:10,color:'#9ca3af'},splitLine:{lineStyle:{color:'#f3f4f6'}},axisLabel:{fontSize:11,color:'#9ca3af'}},
+           {type:'value',name:'中位年薪',nameTextStyle:{fontSize:10,color:'#9ca3af'},show:Y==='med',splitLine:{show:false},
+            axisLabel:{fontSize:11,color:'#9ca3af',formatter:(v)=>'$'+Math.round(v/1000)+'K'}}],
+    dataZoom:[{type:'inside',start:0,end},{type:'slider',start:0,end,height:18,bottom:8,borderColor:'transparent',
+      backgroundColor:'#f3f4f6',fillerColor:'rgba(37,99,235,.12)',handleStyle:{color:'#2563eb'},
+      textStyle:{fontSize:10,color:'#9ca3af'}}],
+    series: Y==='med' ? series.concat([{name:'中位年薪',type:'line',yAxisIndex:1,data:med,
+      symbol:'circle',symbolSize:5,connectNulls:true,z:5,
+      lineStyle:{width:2,color:'#111827'},itemStyle:{color:'#111827'}}]) : series,
+  },true)
+  document.getElementById('ttl').textContent=X==='occ'?'哪些职业在招最多':X==='prov'?'各省在招分布':'哪些城市在招最多'
+  document.getElementById('read').innerHTML=read.map(([k,v])=>`<span class="rk">${k}</span><span class="rv">${v}</span>`).join('')
+  document.querySelectorAll('[data-g]').forEach(el=>el.classList.toggle('off',!legal(X,el.dataset.g)))
+  document.querySelectorAll('[data-g]').forEach(el=>el.classList.toggle('on',el.dataset.g===G))
+}
+document.querySelectorAll('.chip').forEach(el=>el.addEventListener('click',()=>{
+  if(el.dataset.g && !legal(X,el.dataset.g)) return
+  if(el.dataset.x){ document.querySelectorAll('[data-x]').forEach(c=>c.classList.remove('on')); el.classList.add('on'); X=el.dataset.x }
+  if(el.dataset.g) G=el.dataset.g
+  if(el.dataset.y){ document.querySelectorAll('[data-y]').forEach(c=>c.classList.remove('on')); el.classList.add('on'); Y=el.dataset.y }
+  build()
+}))
+build(); addEventListener('resize',()=>chart.resize())
+</script></body></html>
