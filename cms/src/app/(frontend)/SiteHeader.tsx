@@ -17,14 +17,19 @@ import { IconTarget, IconChart, IconCompass, IconMapPin, IconNews, IconUser, Ico
 
 type AcctState = { state: 'loading' | 'out' | 'in'; u: { email: string; displayName: string | null; avatar: string | null; pro: boolean } }
 
+// 账户槽的宽度**必须先占住**:/api/me 是客户端拉的,首帧 loading 只占 32px、拿到结果换成
+// 「登录+注册」两钮(实测 84px),右侧整块跟着变宽 —— 表现就是 Frank 说的「header 缩一下再展开」。
+// 未登录是绝大多数(匿名流量),所以按未登录态的实宽占位;已登录换成 28px 头像时右对齐,同样不推挤。
+const ACCT_SLOT_W = 84
+
 function AccountLite({ t, acct }: { t: TFn; acct: AcctState }) {
   const { state, u } = acct
-  if (state === 'loading') return <span style={{ width: 32 }} />
+  if (state === 'loading') return <span style={{ display: 'inline-block', width: ACCT_SLOT_W, height: 28 }} />
   if (state === 'in') {
     // #63b(Frank「像 Google 那样只显示图标」):纯头像圆钮,名字/Pro 态挂 title
     return (
       <a href="/account" title={(u.displayName?.trim() || u.email.split('@')[0]) + (u.pro ? ' · Pro' : '')}
-        style={{ display: 'inline-flex', padding: 2, borderRadius: '50%', textDecoration: 'none' }}>
+        style={{ display: 'inline-flex', justifyContent: 'flex-end', minWidth: ACCT_SLOT_W, padding: 2, borderRadius: '50%', textDecoration: 'none' }}>
         <Avatar src={u.avatar} name={u.displayName || u.email} email={u.email} size={28} />
       </a>
     )
