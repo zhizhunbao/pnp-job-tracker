@@ -1,7 +1,7 @@
 // 地区统计服务端共用(E5-04):SELECT stats/field-sources → 行(零计算,页面只渲染)。
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import type { StatRow, SrcRow, ProvExtra, ProvVol } from './shared'
+import type { StatRow, SrcRow, ProvExtra, ProvVol, OccRow, CityRow } from './shared'
 
 // withMid=true 才带中类行(仅图表下钻用);默认只回大类层——既有页面(省页/对比/表格)口径不变不重复计数。
 // 缺列容错(E12-06 教训):mid 列 DDL 未落地时自动降级为无 mid 查询,行回退 mid='all',页面照常。
@@ -56,4 +56,43 @@ export async function loadStatSources(): Promise<SrcRow[]> {
   const payload = await getPayload({ config: await config })
   const res = await payload.find({ collection: 'field-sources', where: { field: { in: ['title', 'wageMedYr', 'pnp'] } }, limit: 10, depth: 0 })
   return res.docs.map((r: any) => ({ field: r.field ?? '', publisher: r.publisher ?? '', url: r.url ?? '', fetched: r.fetched ?? '' }))
+}
+
+// E8-14 统计主图:职业粒度与城市粒度(mart 算好的表,这里只 SELECT)。
+// 缺表容错(同 loadStats 的 42703 先例):DDL 未落地时回空数组,主图整块不渲,页面照常。
+export async function loadOccStats(): Promise<OccRow[]> {
+  const payload = await getPayload({ config: await config })
+  const num = (v: any) => (v == null ? null : Number(v))
+  try {
+    const rows = (await (payload.db as any).pool.query(
+      `SELECT noc, province, title_zh, title_zh_short, title_en, teer, broad,
+              open_jobs, new7d, median_salary_annual, named_jobs
+       FROM stats_occupation ORDER BY open_jobs DESC NULLS LAST`)).rows
+    return rows.map((r: any) => ({
+      noc: r.noc ?? '', province: r.province ?? '', titleZh: r.title_zh ?? '',
+      titleZhShort: r.title_zh_short ?? '', titleEn: r.title_en ?? '',
+      teer: num(r.teer), broad: r.broad ?? '', openJobs: num(r.open_jobs), new7d: num(r.new7d),
+      medianSalaryAnnual: num(r.median_salary_annual), namedJobs: num(r.named_jobs),
+    }))
+  } catch (e: any) {
+    if (e?.code !== '42P01' && e?.code !== '42703') throw e
+    return []
+  }
+}
+
+export async function loadCityStats(limit = 400): Promise<CityRow[]> {
+  const payload = await getPayload({ config: await config })
+  const num = (v: any) => (v == null ? null : Number(v))
+  try {
+    const rows = (await (payload.db as any).pool.query(
+      `SELECT city, province, open_jobs, new7d, median_salary_annual, named_jobs
+       FROM stats_city ORDER BY open_jobs DESC NULLS LAST LIMIT $1`, [limit])).rows
+    return rows.map((r: any) => ({
+      city: r.city ?? '', province: r.province ?? '', openJobs: num(r.open_jobs), new7d: num(r.new7d),
+      medianSalaryAnnual: num(r.median_salary_annual), namedJobs: num(r.named_jobs),
+    }))
+  } catch (e: any) {
+    if (e?.code !== '42P01' && e?.code !== '42703') throw e
+    return []
+  }
 }

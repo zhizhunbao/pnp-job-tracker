@@ -3,7 +3,7 @@
 // EChart 薄壳(echarts 动态 import 懒加载——打开统计页/弹窗才拉,/jobs 首屏不背体积)+ 预设四图 + 自定义区。
 // 数据=stats 表 119 行零计算透传;红线:计数类可跨省求和,中位数不做跨省合并(提示引导选省,不瞎算)。
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { BROAD_SLUGS, PROVS, PROV_NAME, type StatRow } from './shared'
+import { BROAD_SLUGS, PROVS, PROV_NAME, type StatRow, type OccRow, type CityRow } from './shared'
 import type { TFn } from '../jobs/i18n'
 import { track } from '@/lib/track'   // #129 功能级 umami 埋点
 
@@ -194,6 +194,124 @@ function DrillCard({ rows, t, title, kind, metric, money, broadLabel }: {
               setPath([...path, it])
             }} />
         : <p style={{ margin: '10px 0', fontSize: 13, color: '#9ca3af' }}>—</p>}
+    </div>
+  )
+}
+
+// ── E8-14 统计主图:一张图回答「在招的是什么工作、在哪、值多少钱」──────────────────
+// Frank 拍板「这个大图要做全,作为页面最主要的统计图之一」。
+// 横轴三切换(职业 / 省份 / 城市)× 簇内四选 × 右轴叠中位年薪。
+// **全用 echarts 原生**(Frank「不要自己实现」):簇状柱=多 series 共 xAxis;缩放=dataZoom;不手搓柱子与滑块。
+const MC_PAL = ['#2563eb', '#f59e0b', '#10b981', '#8b5cf6', '#ef4444', '#06b6d4', '#84cc16', '#ec4899', '#6366f1', '#94a3b8']
+
+export function MarketChart({ occ, city, rows, t }: { occ: OccRow[]; city: CityRow[]; rows: StatRow[]; t: TFn }) {
+  const [xKey, setXKey] = useState<'occ' | 'prov' | 'city'>('occ')
+  const [grp, setGrp] = useState<'none' | 'prov' | 'broad' | 'teer'>('prov')
+  const [showMed, setShowMed] = useState(true)
+
+  // 组合合法性:一个职业只对应一个大类与一个 TEER → 横轴=职业时按它们分簇是退化图(每组一根柱);
+  // 城市 × 大类需再切一层聚合,数据层没有 → 只给不分组。**宁可禁用,不画退化图。**
+  const legal = (k: string) => (xKey === 'occ' ? ['none', 'prov'].includes(k) : xKey === 'city' ? k === 'none' : true)
+  const g = legal(grp) ? grp : 'none'
+
+  const opt = useMemo(() => {
+    const natl = occ.filter((o) => o.province === 'all')
+    let axis: string[] = []
+    let series: any[] = []
+    let med: (number | null)[] = []
+    let end = 100
+    const bar = (name: string, data: (number | null)[], i: number) =>
+      ({ name, type: 'bar', data, itemStyle: { color: MC_PAL[i % MC_PAL.length] } })
+
+    if (xKey === 'occ') {
+      const ks = natl.slice(0, 200)
+      // 短名优先(04g 生成),没有才回退完整译名 —— 前端不裁字符串
+      axis = ks.map((o) => o.titleZhShort || o.titleZh || o.titleEn)
+      med = ks.map((o) => o.medianSalaryAnnual)
+      end = Math.min(100, (12 / Math.max(ks.length, 1)) * 100)
+      if (g === 'prov') {
+        const byNoc = new Map<string, Map<string, number>>()
+        for (const o of occ) {
+          if (o.province === 'all') continue
+          if (!byNoc.has(o.noc)) byNoc.set(o.noc, new Map())
+          byNoc.get(o.noc)!.set(o.province, o.openJobs ?? 0)
+        }
+        series = PROVS.map((p, i) => bar(PROV_NAME[p] || p, ks.map((o) => byNoc.get(o.noc)?.get(p) ?? 0), i))
+      } else series = [bar(t('stats.openJobs'), ks.map((o) => o.openJobs), 0)]
+    } else if (xKey === 'prov') {
+      axis = PROVS.map((p) => PROV_NAME[p] || p)
+      const cell = (p: string, b: string) => rows.find((r) => r.province === p && r.broad === b && r.mid === 'all')
+      med = PROVS.map((p) => cell(p, 'all')?.medianSalaryAnnual ?? null)
+      if (g === 'broad') {
+        // BROAD_SLUGS 是 [中文名, slug] 对,不是纯字符串数组 —— 取 slug 那一项
+        const cats = BROAD_SLUGS.map((x) => (Array.isArray(x) ? x[1] : x)).filter((b) => b && b !== 'all')
+        series = cats.map((b, i) => bar(t('broad.' + b), PROVS.map((p) => cell(p, b)?.openJobs ?? 0), i))
+      } else series = [bar(t('stats.openJobs'), PROVS.map((p) => cell(p, 'all')?.openJobs ?? 0), 0)]
+    } else {
+      const cs = city.slice(0, 200)
+      axis = cs.map((c) => c.city)
+      med = cs.map((c) => c.medianSalaryAnnual)
+      end = Math.min(100, (14 / Math.max(cs.length, 1)) * 100)
+      series = [bar(t('stats.openJobs'), cs.map((c) => c.openJobs), 0)]
+    }
+
+    const multi = series.length > 1
+    return {
+      tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, confine: true, textStyle: { fontSize: 12 } },
+      legend: { show: multi, type: 'scroll', bottom: 36, itemWidth: 11, itemHeight: 11, textStyle: { fontSize: 11.5, color: '#6b7280' } },
+      grid: { left: 54, right: showMed ? 54 : 14, top: 12, bottom: multi ? 112 : 90 },
+      // 职业/城市名可能仍偏长 → 轴上截 7 字 + 斜排,全名在 tooltip
+      xAxis: { type: 'category', data: axis, axisTick: { show: false }, axisLine: { lineStyle: { color: '#e5e7eb' } },
+        axisLabel: { fontSize: 11, color: '#6b7280', interval: 0, rotate: xKey === 'prov' ? 0 : 24,
+          formatter: (v: string) => (v && v.length > 7 ? v.slice(0, 7) + '…' : v) } },
+      // 双轴:左=岗数(柱)、右=中位年薪(线)。量纲差两个数量级,同轴会把薪资线压成一条平线
+      yAxis: [
+        { type: 'value', splitLine: { lineStyle: { color: '#f3f4f6' } }, axisLabel: { fontSize: 11, color: '#9ca3af' } },
+        { type: 'value', show: showMed, splitLine: { show: false },
+          axisLabel: { fontSize: 11, color: '#9ca3af', formatter: (v: number) => '$' + Math.round(v / 1000) + 'K' } },
+      ],
+      dataZoom: [{ type: 'inside', start: 0, end }, { type: 'slider', start: 0, end, height: 18, bottom: 8,
+        borderColor: 'transparent', backgroundColor: '#f3f4f6', fillerColor: 'rgba(37,99,235,.12)',
+        handleStyle: { color: '#2563eb' }, textStyle: { fontSize: 10, color: '#9ca3af' } }],
+      series: showMed
+        ? series.concat([{ name: t('stats.medSalary'), type: 'line', yAxisIndex: 1, data: med, symbol: 'circle',
+          symbolSize: 5, connectNulls: true, z: 5, lineStyle: { width: 2, color: '#111827' }, itemStyle: { color: '#111827' } }])
+        : series,
+    }
+  }, [occ, city, rows, xKey, g, showMed, t])
+
+  if (!occ.length && !city.length) return null   // 数据层没落地 → 整块不渲(不出空壳)
+
+  const chip = (on: boolean, dis?: boolean): React.CSSProperties => ({
+    fontSize: 12.5, padding: '4px 10px', borderRadius: 999, cursor: dis ? 'not-allowed' : 'pointer',
+    border: `1px solid ${on ? '#bfdbfe' : '#e5e7eb'}`, background: on ? '#eff6ff' : '#fff',
+    color: on ? '#1d4ed8' : '#374151', fontWeight: on ? 600 : 400, opacity: dis ? 0.4 : 1,
+  })
+  const Ctl = ({ label, children }: { label: string; children: React.ReactNode }) => (
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', margin: '8px 0 0' }}>
+      <span style={{ fontSize: 12, color: '#6b7280', minWidth: 30 }}>{label}</span>{children}
+    </div>
+  )
+
+  return (
+    <div style={cardS}>
+      <Ctl label={t('mkt.x')}>
+        {([['occ', t('mkt.x.occ')], ['prov', t('mkt.x.prov')], ['city', t('mkt.x.city')]] as const).map(([k, lb]) => (
+          <button key={k} onClick={() => setXKey(k as 'occ' | 'prov' | 'city')} style={chip(xKey === k)}>{lb}</button>
+        ))}
+      </Ctl>
+      <Ctl label={t('mkt.g')}>
+        {([['none', t('mkt.g.none')], ['prov', t('mkt.g.prov')], ['broad', t('mkt.g.broad')], ['teer', 'TEER']] as const).map(([k, lb]) => (
+          <button key={k} disabled={!legal(k)} onClick={() => legal(k) && setGrp(k as 'none' | 'prov' | 'broad' | 'teer')}
+            style={chip(g === k, !legal(k))}>{lb}</button>
+        ))}
+      </Ctl>
+      <Ctl label={t('mkt.y2')}>
+        <button onClick={() => setShowMed(true)} style={chip(showMed)}>{t('stats.medSalary')}</button>
+        <button onClick={() => setShowMed(false)} style={chip(!showMed)}>{t('mkt.y2.off')}</button>
+      </Ctl>
+      <EChart option={opt} height={420} />
+      <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 6, lineHeight: 1.6 }}>{t('mkt.note')}</div>
     </div>
   )
 }

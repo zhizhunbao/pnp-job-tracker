@@ -7,8 +7,8 @@ import { BackLink } from '../BackLink'
 import { BANNER_IMGS, Button, Card, CardAction, CardKV, Chip, PageBanner, Tag } from '../ui/primitives'
 import { DataTable } from '../ui/DataTable'
 import { IconMapPin, IconScale, IconStar, IconTarget } from '../Icons'
-import { BROAD_SLUGS, PROVS, PROV_NAME, type StatRow, type SrcRow, type ProvExtra } from './shared'
-import { StatsCharts } from './charts'
+import { BROAD_SLUGS, PROVS, PROV_NAME, type StatRow, type SrcRow, type ProvExtra, type OccRow, type CityRow } from './shared'
+import { MarketChart, StatsCharts } from './charts'
 import { PricingModal } from '../jobs/PricingModal'
 import { streamDisplay, type TFn } from '../jobs/i18n'
 
@@ -40,7 +40,7 @@ const numFmt = (n: number) => n.toLocaleString('en-CA')
 // ── 省份索引(批B #133 重做:省卡挪最上;指标换血——中位年薪撤(省级单一中位=无效聚合),
 //    上 IRCC 学签/工签/PNP 登陆 + 移民难度(与 E8-12 省弹框同源同口径))──
 const SHORT_PROV: Record<string, string> = { NL: 'Newfoundland' }  // 卡上用通行短名(全名 218px 任何布局都放不下),悬停仍显全名
-export function StatsIndexContent({ rows, srcs, t, provExtra = {} }: { rows: StatRow[]; srcs: SrcRow[]; t: TFn; provExtra?: Record<string, ProvExtra> }) {
+export function StatsIndexContent({ rows, srcs, t, provExtra = {}, occ = [], city = [] }: { rows: StatRow[]; srcs: SrcRow[]; t: TFn; provExtra?: Record<string, ProvExtra>; occ?: OccRow[]; city?: CityRow[] }) {
   const provRows = rows.filter((r) => r.broad === 'all')
   // 2026-07-25 Frank:卡内一律不折行——标签放不下省略号截断,数值不换行
   const kv = (label: React.ReactNode, val: React.ReactNode) => (
@@ -85,6 +85,9 @@ export function StatsIndexContent({ rows, srcs, t, provExtra = {} }: { rows: Sta
         })}
       </div>
       {/* IRCC 年份口径一行说清,不在每卡重复(第25轮「同句重复=废话」口径) */}
+      {/* E8-14 主图:排在既有四图之前 —— 它是「页面最主要的统计图」 */}
+      <h2 style={{ fontSize: 15.5, margin: '18px 0 8px' }}>{t('mkt.title')}</h2>
+      <MarketChart occ={occ} city={city} rows={rows} t={t} />
       <StatsCharts rows={rows} t={t} />
       <div style={{ marginTop: 14 }}>
         <a href="/stats/compare" style={{ fontSize: 13, color: '#2563eb', textDecoration: 'none' }}><IconScale /> {t('stats.compare')}</a>
@@ -93,9 +96,9 @@ export function StatsIndexContent({ rows, srcs, t, provExtra = {} }: { rows: Sta
     </>
   )
 }
-export function StatsIndexView({ rows, srcs, provExtra }: { rows: StatRow[]; srcs: SrcRow[]; provExtra?: Record<string, ProvExtra> }) {
+export function StatsIndexView({ rows, srcs, provExtra, occ = [], city = [] }: { rows: StatRow[]; srcs: SrcRow[]; provExtra?: Record<string, ProvExtra>; occ?: OccRow[]; city?: CityRow[] }) {
   const [lang, setLang, t] = useLang()
-  return <StatsShell lang={lang} setLang={setLang} t={t}><StatsIndexContent rows={rows} srcs={srcs} t={t} provExtra={provExtra} /></StatsShell>
+  return <StatsShell lang={lang} setLang={setLang} t={t}><StatsIndexContent rows={rows} srcs={srcs} t={t} provExtra={provExtra} occ={occ} city={city} /></StatsShell>
 }
 
 // ── E12-07 省难度卡(2026-07-20 Frank 拍板「stats 卡先行/人话档名」):分档+逐因子出处;

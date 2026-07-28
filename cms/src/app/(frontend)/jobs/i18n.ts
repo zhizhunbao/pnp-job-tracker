@@ -561,6 +561,11 @@ const zh: Dict = {
   'ce.title': '多雇主对比', 'ce.aip': 'AIP 指定雇主', 'ce.provDiff': '主要省·移民难度', 'ce.match': '与我的匹配', 'ce.matchHigh': '高匹配 {n} 岗', 'ce.matchMid': '中匹配 {n} 岗', 'ce.brief': 'AI 调查简介',
   'ce.note': '口径:LMIA=雇过外国人的历史记录,不代表会担保你;AIP 指定≠有配额;数字为本站库内口径,非资格认定。', 'ce.empty': '至少选 2 家雇主才能对比——去名录行点「+ 对比」', 'ce.goDir': '去雇主名录', 'ce.clear': '清空重选',
   'ce.v1': 'LMIA 担保记录并排看,技能类获批数一眼比高下', 'ce.v2': '在招岗、省提名清单命中、AIP 指定同屏对齐', 'ce.v3': '建档后逐家看「与我的匹配」高/中命中岗数', 'ce.add': '+ 对比', 'ce.added': '已在对比 ✓', 'ce.bar': '已选 {n} 家', 'ce.go': '去对比', 'price.f10': '多雇主对比(2-4 家并排)',
+  // E8-14 统计主图
+  'mkt.title': '在招职位分布', 'mkt.x': '横轴', 'mkt.g': '簇内', 'mkt.y2': '右轴',
+  'mkt.x.occ': '职业', 'mkt.x.prov': '省份', 'mkt.x.city': '城市', 'mkt.g.none': '不分组', 'mkt.g.prov': '省份', 'mkt.g.broad': '职业大类',
+  'mkt.y2.off': '不显示',
+  'mkt.note': '数据来自官方 Job Bank(含其聚合的 Indeed、各省招聘板);在招量=当前在招职位数,不等于「缺人」。',
   'stats.title': '{prov} 地区职位统计', 'stats.catTitle': '{prov} · {cat} 职位统计', 'stats.openJobs': '在招职位', 'stats.new7d': '近 7 天发布', 'stats.medWage': '中位年薪(ESDC)', 'stats.medSalary': '帖面中位年薪', 'stats.named': '省提名清单岗', 'stats.aip': 'AIP 指定雇主岗', 'stats.topCities': '主要城市', 'stats.streams': '命中通道', 'stats.byCat': '按职业大类', 'stats.entry': '地区统计', 'stats.toJobs': '看这些职位', 'stats.caliber': '口径说明', 'stats.noList': '无清单', 'stats.noList.tip': '该省当前不公布省提名职业清单(如 OINP 2026-06 改制后),按 TEER 等条件判定,不是数据缺失。', 'stats.naQc': '不适用', 'stats.naQc.tip': '魁省不参加省提名(PNP),走自己的甄选体系。', 'stats.provIndex': '选择省份', 'stats.compare': '跨省对比(Pro)', 'stats.pickProv': '选 2-4 个省对比', 'stats.myNoc': '按我的档案高亮', 'stats.cardWork': '工签存量(TFWP+IMP)', 'stats.cardStudy': '学签存量', 'stats.cardPr': 'PNP 登陆(年)',
 }
 
@@ -1079,6 +1084,10 @@ const en: Dict = {
   'ce.title': 'Compare employers', 'ce.aip': 'AIP designated', 'ce.provDiff': 'Main province & difficulty', 'ce.match': 'Match with my profile', 'ce.matchHigh': '{n} high-match jobs', 'ce.matchMid': '{n} mid-match jobs', 'ce.brief': 'AI research brief',
   'ce.note': 'Method: LMIA = past record of hiring foreign workers, not a promise to support you; AIP designation ≠ quota; figures are this site’s data, not an eligibility ruling.', 'ce.empty': 'Pick at least 2 employers to compare — use “+ Compare” in the directory', 'ce.goDir': 'Employer directory', 'ce.clear': 'Clear selection',
   'ce.v1': 'LMIA track records side by side — skilled-stream approvals at a glance', 'ce.v2': 'Open jobs, PNP-list hits and AIP status aligned on one screen', 'ce.v3': 'With a profile, see high/mid match counts per employer', 'ce.add': '+ Compare', 'ce.added': 'In compare ✓', 'ce.bar': '{n} selected', 'ce.go': 'Compare', 'price.f10': 'Compare employers (2–4 side by side)',
+  'mkt.title': 'Open jobs distribution', 'mkt.x': 'X axis', 'mkt.g': 'Grouped by', 'mkt.y2': 'Right axis',
+  'mkt.x.occ': 'Occupation', 'mkt.x.prov': 'Province', 'mkt.x.city': 'City', 'mkt.g.none': 'None', 'mkt.g.prov': 'Province', 'mkt.g.broad': 'Occupation group',
+  'mkt.y2.off': 'Hide',
+  'mkt.note': 'From Canada’s official Job Bank (including boards it aggregates such as Indeed). Open postings — not a measure of labour shortage.',
   'stats.title': '{prov} job statistics', 'stats.catTitle': '{prov} · {cat} job statistics', 'stats.openJobs': 'Open jobs', 'stats.new7d': 'Posted in last 7 days', 'stats.medWage': 'Median wage (ESDC)', 'stats.medSalary': 'Median posted salary', 'stats.named': 'PNP-list jobs', 'stats.aip': 'AIP designated-employer jobs', 'stats.topCities': 'Top cities', 'stats.streams': 'Streams hit', 'stats.byCat': 'By occupation group', 'stats.entry': 'Region stats', 'stats.toJobs': 'See these jobs', 'stats.caliber': 'Methodology', 'stats.noList': 'No list', 'stats.noList.tip': 'This province currently publishes no PNP occupation list (e.g. OINP after its 2026-06 redesign) — eligibility runs on TEER and other conditions. Not missing data.', 'stats.naQc': 'N/A', 'stats.naQc.tip': 'Quebec does not take part in the PNP — it runs its own selection system.', 'stats.provIndex': 'Choose a province', 'stats.compare': 'Compare provinces (Pro)', 'stats.pickProv': 'Pick 2–4 provinces', 'stats.myNoc': 'Highlight by my profile', 'stats.cardWork': 'Work permits (TFWP+IMP)', 'stats.cardStudy': 'Study permits', 'stats.cardPr': 'PNP admissions (yr)',
 }
 
@@ -1595,6 +1604,10 @@ const ko: Dict = {
   'ce.title': '고용주 비교', 'ce.aip': 'AIP 지정', 'ce.provDiff': '주요 주·이민 난이도', 'ce.match': '내 프로필 매칭', 'ce.matchHigh': '고매칭 {n}건', 'ce.matchMid': '중매칭 {n}건', 'ce.brief': 'AI 조사 요약',
   'ce.note': '기준: LMIA=외국인 고용 이력이며 보증 약속이 아님; AIP 지정≠쿼터; 자격 판정 아님.', 'ce.empty': '비교하려면 최소 2개 선택 — 디렉토리에서 「+ 비교」', 'ce.goDir': '고용주 디렉토리', 'ce.clear': '선택 초기화',
   'ce.v1': 'LMIA 이력을 나란히 비교', 'ce.v2': '채용 중·PNP 목록·AIP 한 화면 정렬', 'ce.v3': '프로필 있으면 고용주별 매칭 건수', 'ce.add': '+ 비교', 'ce.added': '비교 중 ✓', 'ce.bar': '{n}개 선택', 'ce.go': '비교', 'price.f10': '고용주 비교(2–4개)',
+  'mkt.title': '채용 공고 분포', 'mkt.x': 'X축', 'mkt.g': '그룹', 'mkt.y2': '오른쪽 축',
+  'mkt.x.occ': '직종', 'mkt.x.prov': '주', 'mkt.x.city': '도시', 'mkt.g.none': '그룹 없음', 'mkt.g.prov': '주', 'mkt.g.broad': '직업 대분류',
+  'mkt.y2.off': '숨기기',
+  'mkt.note': '캐나다 공식 Job Bank(Indeed 등 통합 포함) 기준. 현재 채용 중인 공고 수이며 인력 부족을 뜻하지 않습니다.',
   'stats.title': '{prov} 채용 통계', 'stats.catTitle': '{prov} · {cat} 채용 통계', 'stats.openJobs': '채용 중', 'stats.new7d': '최근 7일 게시', 'stats.medWage': '중위 연봉(ESDC)', 'stats.medSalary': '게시된 중위 연봉', 'stats.named': 'PNP 대상 공고', 'stats.aip': 'AIP 지정 고용주 공고', 'stats.topCities': '주요 도시', 'stats.streams': '해당 스트림', 'stats.byCat': '직업 대분류별', 'stats.entry': '지역 통계', 'stats.toJobs': '이 공고 보기', 'stats.caliber': '산정 기준', 'stats.noList': '목록 없음', 'stats.noList.tip': '해당 주는 현재 PNP 직업 목록을 공개하지 않습니다(예: OINP 2026-06 개편 후). TEER 등 조건으로 판단하며 데이터 누락이 아닙니다.', 'stats.naQc': '해당없음', 'stats.naQc.tip': '퀘벡주는 PNP에 참여하지 않고 자체 선발 제도를 운영합니다.', 'stats.provIndex': '주 선택', 'stats.compare': '주 간 비교 (Pro)', 'stats.pickProv': '2–4개 주 선택', 'stats.myNoc': '내 프로필로 강조', 'stats.cardWork': '취업비자 보유량(TFWP+IMP)', 'stats.cardStudy': '학생비자 보유량', 'stats.cardPr': 'PNP 영주권 승인(연간)',
 }
 
