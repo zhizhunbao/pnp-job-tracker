@@ -229,6 +229,7 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
     let series: any[] = []
     let med: (number | null)[] = []
     let provMed: any[] = []   // 分省中位线(只在横轴=职业且簇内=省份时有)
+    let medAt: ((oi: number, pi: number) => number | null) | null = null
     let end = 100
     const bar = (name: string, data: (number | null)[], i: number) =>
       ({ name, type: 'bar', data, itemStyle: { color: MC_PAL[i % MC_PAL.length] } })
@@ -271,9 +272,13 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
           const m = byNoc.get(o.noc)?.get(p)?.med
           link.push(m == null ? null : [i - 0.4 + slot * (j + 0.5), m])
         }))
-        provMed = [{ name: t('stats.medSalary'), type: 'line', yAxisIndex: 1, data: link, symbol: 'circle',
-          symbolSize: 3, connectNulls: true, z: 6, lineStyle: { width: 1.4, color: '#111827' },
-          itemStyle: { color: '#111827' } }]
+        // 点必须落在**各自那根柱**的正上方(Frank 实拍:十个点叠成一条竖线)。
+        // 原因:类目轴对小数下标不做插值,统统归到格子中心 —— 换 echarts 正解:
+        // 给这条线单挂一根**隐藏的数值轴**(min=-0.5,max=n-0.5),它与类目轴逐格对齐,小数下标才真生效。
+        provMed = [{ name: t('stats.medSalary'), type: 'line', xAxisIndex: 1, yAxisIndex: 1, data: link,
+          symbol: 'circle', symbolSize: 3, connectNulls: true, z: 6,
+          lineStyle: { width: 1.4, color: '#111827' }, itemStyle: { color: '#111827' } }]
+        medAt = (oi: number, pi: number) => byNoc.get(ks[oi]?.noc || '')?.get(PROVS[pi])?.med ?? null
       } else series = [bar(t('stats.openJobs'), ks.map((o) => o.openJobs), 0)]
     } else if (xKey === 'prov') {
       const cell = (p: string, b: string) => rows.find((r) => r.province === p && r.broad === b && r.mid === 'all')
@@ -304,15 +309,11 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
       // 分省时同一个省有柱也有线 → tooltip 合成一行「省名 岗数 中位年薪」,不铺成 20 行
       tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, confine: true, textStyle: { fontSize: 12 },
         formatter: !provMed.length ? undefined : (ps: any[]) => {
-          const byName = new Map<string, { jobs?: number; med?: number }>()
-          for (const q of ps) {
-            const e = byName.get(q.seriesName) || {}
-            if (q.seriesType === 'bar') e.jobs = q.value; else e.med = q.value
-            byName.set(q.seriesName, e)
-          }
-          const line = (n: string, v: { jobs?: number; med?: number }) =>
-            `${n}　${v.jobs ?? 0}${v.med != null ? `　$${Math.round(v.med / 1000)}K` : ''}`
-          return `<b>${ps[0]?.axisValue ?? ''}</b><br/>` + [...byName].map(([n, v]) => line(n, v)).join('<br/>')
+          const bars = ps.filter((q: any) => q.seriesType === 'bar')
+          const oi = bars[0]?.dataIndex ?? 0
+          const row = (q: any, i: number) => { const m = medAt?.(oi, i)
+            return `${q.seriesName}　${q.value ?? 0}${m != null ? `　$${Math.round(m / 1000)}K` : ''}` }
+          return `<b>${ps[0]?.axisValue ?? ''}</b><br/>` + bars.map(row).join('<br/>')
         } },
       legend: { show: multi, type: 'scroll', bottom: 36, itemWidth: 11, itemHeight: 11, textStyle: { fontSize: 11.5, color: '#6b7280' } },
       grid: { left: 8, right: showMed ? 8 : 4, top: 12, bottom: multi ? 62 : 40, containLabel: true },
@@ -320,18 +321,20 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh' }: { occ: OccRow[]
       // 原来横排斜切 7 个字 —— 中文短名勉强,英文直接成了「Transpo…」「Food co…」(他实拍),
       // 而英文用户是主要人群。改:不斜排、按可见宽度自动折行(echarts 原生 overflow:'break'),
       // 底部留出三行的高度;实在挤不下的由 hideOverlap 隐掉,拉 dataZoom 放大就全出来。
-      xAxis: { type: 'category', data: axis, axisTick: { show: false }, axisLine: { lineStyle: { color: '#e5e7eb' } },
+      xAxis: [{ type: 'category', data: axis, axisTick: { show: false }, axisLine: { lineStyle: { color: '#e5e7eb' } },
         // 折行/截断/留白全走 echarts 原生(Frank:「echart 本身就有这个功能」):
         // overflow:'break' 折行、height+lineOverflow:'truncate' 封顶三行、grid.containLabel 自动留边距
         axisLabel: { fontSize: 10.5, color: '#6b7280', interval: 0, rotate: 0, hideOverlap: true,
           width: labelW, overflow: 'break', height: 38, lineOverflow: 'truncate', lineHeight: 12.5, margin: 10 } },
+        // 第二根 x 轴:隐藏的数值轴,专给「穿过每根柱」的中位线用(与类目轴逐格对齐)
+        { type: 'value', show: false, min: -0.5, max: axis.length - 0.5 }],
       // 双轴:左=岗数(柱)、右=中位年薪(线)。量纲差两个数量级,同轴会把薪资线压成一条平线
       yAxis: [
         { type: 'value', splitLine: { lineStyle: { color: '#f3f4f6' } }, axisLabel: { fontSize: 11, color: '#9ca3af' } },
         { type: 'value', show: showMed, splitLine: { show: false },
           axisLabel: { fontSize: 11, color: '#9ca3af', formatter: (v: number) => '$' + Math.round(v / 1000) + 'K' } },
       ],
-      dataZoom: [{ type: 'inside', start: 0, end }, { type: 'slider', start: 0, end, height: 18, bottom: 8,
+      dataZoom: [{ type: 'inside', xAxisIndex: [0, 1], start: 0, end }, { type: 'slider', xAxisIndex: [0, 1], start: 0, end, height: 18, bottom: 8,
         borderColor: 'transparent', backgroundColor: '#f3f4f6', fillerColor: 'rgba(37,99,235,.12)',
         handleStyle: { color: '#2563eb' }, textStyle: { fontSize: 10, color: '#9ca3af' } }],
       series: !showMed ? series
