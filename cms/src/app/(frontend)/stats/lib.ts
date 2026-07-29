@@ -67,14 +67,15 @@ export async function loadOccStats(): Promise<OccRow[]> {
     const rows = (await (payload.db as any).pool.query(
       // 韩文职业名从 noc_descriptions 借(485/489 有值);stats_occupation 不另存一列 —— 名字的家在那张表。
       // 英文用 title_en(NOC 官方名,引用依据);中文用 title_zh_short(本站 04f/04g 译名)。
-      `SELECT s.noc, s.province, s.title_zh, s.title_zh_short, s.title_en, d.title_ko, s.teer, s.broad,
+      `SELECT s.noc, s.province, s.title_zh, s.title_zh_short, s.title_en, d.title_ko, s.teer, s.broad, s.mid, s.fine,
               s.open_jobs, s.new7d, s.median_wage_annual, s.median_salary_annual, s.salary_n, s.named_jobs
        FROM stats_occupation s LEFT JOIN noc_descriptions d ON d.noc = s.noc
        ORDER BY s.open_jobs DESC NULLS LAST`)).rows
     return rows.map((r: any) => ({
       noc: r.noc ?? '', province: r.province ?? '', titleZh: r.title_zh ?? '',
       titleZhShort: r.title_zh_short ?? '', titleEn: r.title_en ?? '', titleKo: r.title_ko ?? '',
-      teer: num(r.teer), broad: r.broad ?? '', openJobs: num(r.open_jobs), new7d: num(r.new7d),
+      teer: num(r.teer), broad: r.broad ?? '', mid: r.mid ?? '', fine: r.fine ?? '',
+      openJobs: num(r.open_jobs), new7d: num(r.new7d),
       medianWageAnnual: num(r.median_wage_annual), medianSalaryAnnual: num(r.median_salary_annual),
       salaryN: num(r.salary_n), namedJobs: num(r.named_jobs),
     }))

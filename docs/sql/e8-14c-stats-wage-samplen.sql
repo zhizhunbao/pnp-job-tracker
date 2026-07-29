@@ -16,3 +16,8 @@ ALTER TABLE stats_occupation ADD COLUMN IF NOT EXISTS salary_n           integer
 
 ALTER TABLE stats_city       ADD COLUMN IF NOT EXISTS median_wage_annual integer;
 ALTER TABLE stats_city       ADD COLUMN IF NOT EXISTS salary_n           integer;
+
+-- 追加(2026-07-28 Frank:「过滤需要加 职业 大类 种类 小类吧」):职业表带上中类/小类,
+-- 主图「更多筛选」才能做大→中→小三级联动。三者对同一个 NOC 是常量(etl/noc.py 单一来源)。
+ALTER TABLE stats_occupation ADD COLUMN IF NOT EXISTS mid  varchar;
+ALTER TABLE stats_occupation ADD COLUMN IF NOT EXISTS fine varchar;

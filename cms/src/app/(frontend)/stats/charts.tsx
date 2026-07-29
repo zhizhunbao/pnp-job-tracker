@@ -223,6 +223,16 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels }: { occ
   // 最低在招岗数(Frank 2026-07-28 点「从低到高」实拍:最前面全是只有 1 个岗的职业,柱子齐刷刷是 1)。
   // 1 个岗的职业进「分布图」没有意义 —— 默认 5,想看全部把它调回 1。
   const [minJobs, setMinJobs] = useState(5)
+  // 职业分类三级(Frank 2026-07-28:「过滤需要加 职业 大类 种类 小类吧」)——大→中→小逐级收窄,
+  // 选项从**当前数据**里长出来(不写死清单):选了大类,中类只列该大类下有职业的;小类同理。
+  const [fBroad, setFBroad] = useState('')
+  const [fMid, setFMid] = useState('')
+  const [fFine, setFFine] = useState('')
+  const natlAll = useMemo(() => occ.filter((o) => o.province === 'all'), [occ])
+  const uniq = (xs: string[]) => [...new Set(xs.filter(Boolean))].sort()
+  const broads = useMemo(() => uniq(natlAll.map((o) => o.broad)), [natlAll])
+  const mids = useMemo(() => uniq(natlAll.filter((o) => !fBroad || o.broad === fBroad).map((o) => o.mid)), [natlAll, fBroad])
+  const fines = useMemo(() => uniq(natlAll.filter((o) => (!fBroad || o.broad === fBroad) && (!fMid || o.mid === fMid)).map((o) => o.fine)), [natlAll, fBroad, fMid])
   const [more, setMore] = useState(false)          // 更多筛选折叠(与职位板 #59 同款)
   const pnpSet = useMemo(() => new Set(channels?.pnp || []), [channels])
   const eeSet = useMemo(() => new Set(channels?.ee || []), [channels])
@@ -266,6 +276,7 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels }: { occ
       const kw = q.trim().toLowerCase()
       const hit = (o: OccRow) => (!kw || occName(o).toLowerCase().includes(kw) || (o.titleEn || '').toLowerCase().includes(kw) || o.noc.includes(kw))
         && (o.openJobs ?? 0) >= minJobs
+        && (!fBroad || o.broad === fBroad) && (!fMid || o.mid === fMid) && (!fFine || o.fine === fFine)
         && (chan === 'all' || (chan === 'pnp' ? pnpSet.has(o.noc) : eeSet.has(o.noc)))
       const ks = [...natl].filter(hit).sort((a, b) => by(sortBy === 'med' ? pick(a.medianWageAnnual, a.medianSalaryAnnual, a.salaryN) : a.openJobs,
         sortBy === 'med' ? pick(b.medianWageAnnual, b.medianSalaryAnnual, b.salaryN) : b.openJobs)).slice(0, 200)
@@ -390,7 +401,7 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels }: { occ
             symbol: 'circle', symbolSize: 5, connectNulls: true, z: 5,
             lineStyle: { width: 2, color: '#111827' }, itemStyle: { color: '#111827' } }]),
     }
-  }, [occ, city, rows, xKey, g, y2, showMed, medName, sortBy, sortDir, q, chan, minJobs, pnpSet, eeSet, lang, t])
+  }, [occ, city, rows, xKey, g, y2, showMed, medName, sortBy, sortDir, q, chan, minJobs, fBroad, fMid, fFine, pnpSet, eeSet, lang, t])
 
   if (!occ.length && !city.length) return null   // 数据层没落地 → 整块不渲(不出空壳)
 
@@ -438,7 +449,7 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels }: { occ
           ))}
         </span>
         <button onClick={() => setMore((v) => !v)} style={{ height: 32, border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', fontSize: 12.5, color: '#374151', padding: '0 11px', cursor: 'pointer' }}>
-          {t('mkt.more')}{chan !== 'all' || y2 !== 'wage' || minJobs !== 5 ? <span style={{ display: 'inline-block', background: '#2563eb', color: '#fff', borderRadius: 999, fontSize: 10.5, padding: '0 5px', marginLeft: 5 }}>{(chan !== 'all' ? 1 : 0) + (y2 !== 'wage' ? 1 : 0) + (minJobs !== 5 ? 1 : 0)}</span> : null}
+          {t('mkt.more')}{chan !== 'all' || y2 !== 'wage' || minJobs !== 5 || fBroad || fMid || fFine ? <span style={{ display: 'inline-block', background: '#2563eb', color: '#fff', borderRadius: 999, fontSize: 10.5, padding: '0 5px', marginLeft: 5 }}>{(chan !== 'all' ? 1 : 0) + (y2 !== 'wage' ? 1 : 0) + (minJobs !== 5 ? 1 : 0) + (fBroad ? 1 : 0) + (fMid ? 1 : 0) + (fFine ? 1 : 0)}</span> : null}
         </button>
       </div>
       {more && (
@@ -454,6 +465,21 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels }: { occ
             <option value="wage">{t('stats.medWage')}</option>
             <option value="posted">{t('stats.medSalary')}</option>
             <option value="off">{t('mkt.y2.off')}</option>
+          </select>
+          <span style={ctlLb}>{t('mkt.broad')}</span>
+          <select value={fBroad} onChange={(e) => { setFBroad(e.target.value); setFMid(''); setFFine('') }} style={selS} disabled={xKey !== 'occ'}>
+            <option value="">{t('mkt.cat.all')}</option>
+            {broads.map((b) => <option key={b} value={b}>{t('broad.' + b) || b}</option>)}
+          </select>
+          <span style={ctlLb}>{t('mkt.mid')}</span>
+          <select value={fMid} onChange={(e) => { setFMid(e.target.value); setFFine('') }} style={selS} disabled={xKey !== 'occ'}>
+            <option value="">{t('mkt.cat.all')}</option>
+            {mids.map((m) => <option key={m} value={m}>{m}</option>)}
+          </select>
+          <span style={ctlLb}>{t('mkt.fine')}</span>
+          <select value={fFine} onChange={(e) => setFFine(e.target.value)} style={selS} disabled={xKey !== 'occ'}>
+            <option value="">{t('mkt.cat.all')}</option>
+            {fines.map((f) => <option key={f} value={f}>{f}</option>)}
           </select>
           <span style={ctlLb}>{t('mkt.minJobs')}</span>
           <select value={minJobs} onChange={(e) => setMinJobs(Number(e.target.value))} style={selS}>

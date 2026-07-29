@@ -12,6 +12,7 @@ export const StatsOccupation: CollectionConfig = {
     { name: 'titleZhShort', type: 'text', admin: { description: '窄位短名(≤7 字,04g 生成);空=回退完整译名' } },
     { name: 'titleEn', type: 'text', admin: { description: 'NOC 官方名(英文)——**唯一官方名**,中文是本站译名' } },
     { name: 'teer', type: 'number' }, { name: 'broad', type: 'text' },
+    { name: 'mid', type: 'text' }, { name: 'fine', type: 'text' },   // 大→中→小三级筛选用
     { name: 'openJobs', type: 'number' }, { name: 'new7d', type: 'number' },
     // 两个薪资口径并存(2026-07-28):官方=权威基线,帖面=当下行情,salaryN=帖面中位的样本量
     { name: 'medianWageAnnual', type: 'number', admin: { description: 'ESDC 官方中位年薪(权威基线)' } },

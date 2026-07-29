@@ -129,7 +129,10 @@ def main() -> None:
             by_noc[j["noc"]].append(j)
     for noc, js in by_noc.items():
         nd = noc_name.get(noc, {})
+        # 大/中/小三级都带上(2026-07-28 Frank:「过滤需要加 职业 大类 种类 小类吧」)——
+        # 三者对同一个 NOC 是常量(etl/noc.py 单一来源),取任一岗即可,不另算。
         base = {"noc": noc, "teer": js[0].get("teer"), "broad": js[0].get("broad", ""),
+                "mid": js[0].get("mid", ""), "fine": js[0].get("fine", ""),
                 "titleZh": nd.get("titleZh", ""), "titleZhShort": nd.get("titleZhShort", ""),
                 "titleEn": nd.get("title", ""), "fetched": TODAY}
         occ_rows.append({**base, "province": "all", **agg(js)})       # 全国行
