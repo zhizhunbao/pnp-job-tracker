@@ -15,7 +15,11 @@ export const Users: CollectionConfig = {
   slug: 'users',
   admin: {
     useAsTitle: 'email',
+    // 注册时间(createdAt)Payload 一直有存,只是列表默认不显示(Frank 2026-07-28:「这个怎么没有注册时间」)——
+    // 显式列进来,顺序按「谁、什么时候注册、付费状态」;默认排序改最新注册在前,看增长不用每次点表头。
+    defaultColumns: ['email', 'createdAt', 'role', 'proUntil', 'stripeCustomerId'],
   },
+  defaultSort: '-createdAt',
   // E3-07 忘记密码自助重置:Payload 内置 forgot/reset 端点,这里只定制邮件(链接指前端,默认指 /admin 不可用)。
   // token 有效期用默认 1 小时;防枚举由端点语义保证(存在与否都 200),前端文案配合。
   auth: {
