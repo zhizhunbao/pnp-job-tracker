@@ -688,14 +688,21 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   // 登录用户走原 OnboardingWizard(已建档的更不弹),两者互斥不叠。
   const [quiz, setQuiz] = useState<false | { redo?: boolean; result?: boolean }>(false)
   const [quizSaved, setQuizSaved] = useState<QuizAnswers | null>(null)   // 上次答案(localStorage),细带按它显示
+  const [quizDue, setQuizDue] = useState(false)   // 定时到点了,等一个「手上没开别的弹框」的时机再弹(#237)
   useEffect(() => {
     const saved = readQuiz()
     if (saved) setQuizSaved({ status: saved.status, nocs: saved.nocs, provs: saved.provs })
     if (plan.loggedIn) return
     if (saved) return                                   // 答过/跳过就不再自动弹(入口改由细带常驻)
-    const id = setTimeout(() => setQuiz({}), 1200)      // 让首屏先渲染出来,别一进门就糊脸
+    const id = setTimeout(() => setQuizDue(true), 1200) // 让首屏先渲染出来,别一进门就糊脸
     return () => clearTimeout(id)
   }, [])
+  // #237(第 30 轮体检):定时到点就弹,会盖在用户**已经打开**的弹框上(实拍与 JD 弹框相交 45,360px²)。
+  // 改成「到点 + 手上没开别的弹框」才弹;正在看别的东西时排队等着,等他关掉再弹 —— 漏斗不丢,不打断。
+  useEffect(() => {
+    if (!quizDue || popup || actModal) return
+    setQuiz({}); setQuizDue(false)
+  }, [quizDue, popup, actModal])
   // 结果页两个出口:①把答案套进筛选看岗 ②注册保存(注册成功后落库成档案,不让用户填两遍)
   const applyQuiz = (a: QuizAnswers) => {
     setQuiz(false)
@@ -4364,7 +4371,9 @@ export function JobBody({ job, lang, plan, inModal, onFreeLeft }: { job: JobRow;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [job])
   // 投递邮箱(E9-04,dd24-#110 从 ApplyBar 上提):JB 岗藏在「Show how to apply」JSF 后 → 懒查 /api/applyhow;
-  // 非 JB 岗正文常直接带邮箱 → 正则兜底。「怎么投」节与投递栏共用同一份结果。
+  // URL → 域名(#239):来源行只报出处,不铺整条链接;解析失败退原串(宁可原样也不吞)
+const hostOf = (u: string) => { try { return new URL(u).host.replace(/^www\./, '') } catch { return u } }
+// 非 JB 岗正文常直接带邮箱 → 正则兜底。「怎么投」节与投递栏共用同一份结果。
   const [jbEmail, setJbEmail] = useState('')
   const [jbDone, setJbDone] = useState(false)   // 出结果(成败都算);OAuth 回跳续投要等它,别把邮箱岗投成外跳
   useEffect(() => {
@@ -4456,7 +4465,9 @@ export function JobBody({ job, lang, plan, inModal, onFreeLeft }: { job: JobRow;
           「去掉 source 链接」)——整理版在屏时「怎么投」整节已链官方原帖,出处不丢 */}
       {job.applyUrl && !(status === 'done' && fmt && !showOrig) && status !== 'empty' && (
         <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #f3f4f6', fontSize: 11.5, color: '#9ca3af', overflowWrap: 'anywhere' }}>
-          {t('src.label')}: <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{job.applyUrl}</a>
+          {/* #239(第 30 轮体检):原来整条 URL 直铺,375 上折两行又长又丑(#110 只治了详情页「怎么投」)。
+              改显**域名**——出处照样看得见、点得开,合规不受影响,行内一行放得下。 */}
+          {t('src.label')}: <a href={job.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#6b7280', textDecoration: 'none' }}>{hostOf(job.applyUrl)} ↗</a>
         </div>
       )}
       {/* E9-04 投递栏:正文之后常驻(弹框与页面同渲;sticky 吸底)。
