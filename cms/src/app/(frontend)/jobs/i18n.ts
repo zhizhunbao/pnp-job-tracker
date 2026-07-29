@@ -663,7 +663,7 @@ const en: Dict = {
   'pnplist.qc': 'Quebec uses its own selection (CSQ/Arrima), not PNP',
   'pnpdraws.title': 'Recent draws {label}', 'pnpdraws.min': 'min {score}', 'pnpdraws.inv': '{n} invitations',
   'pnpdraws.notice': 'OINP redesign ({date}): former streams closed, EOI invitations stopped; new Ontario Workforce Priority stream criteria pending',
-  'col.datePosted': 'Posted', 'col.broad': 'Major group', 'col.mid': 'Sub-group', 'col.fine': 'Occupation', 'col.teer': 'TEER',
+  'col.datePosted': 'Posted', 'col.broad': 'Group', 'col.mid': 'Sub-group', 'col.fine': 'Occupation', 'col.teer': 'TEER',
   'col.company': 'Company', 'col.title': 'Title', 'col.noc': 'NOC', 'col.accessibility': 'Level',
   'col.country': 'Country', 'col.province': 'Province', 'col.city': 'City', 'col.district': 'District', 'col.address': 'Address',
   'col.salary': 'Salary', 'col.salaryYr': 'Annual', 'col.wageMedHr': 'Median $/hr', 'col.wageMedYr': 'Median $/yr', 'col.vsMedian': 'vs median', 'col.source': 'Source', 'col.origin': 'Channel', 'col.direct': 'Posting',

@@ -929,7 +929,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     // 英文「Services」不给够就断成 Servi/ces;AIP 中文一格「—」,英文「Occupation not accepted」要三行。
     // 权重同时满足两头:**表头单行放得下**(Frank「header 的宽度不要变」——实测「Major group ↕」需 100px、
     // 「vs median ↕」84px)与值不断字。三语里取最宽的那个定。
-    datePosted: 8, broad: 9, teer: 9, company: 11, title: 13, province: 9, city: 8,
+    // broad 9→6(Frank 2026-07-28「默认大类别 jobtable 不需要这么宽吧」):值是「服务」「科技」两三个字,
+    // 之前 9 是为了英文表头「Major group ↕」单行放得下 —— 表头缩成「Group」后这个理由没了。
+    datePosted: 8, broad: 6, teer: 9, company: 11, title: 13, province: 9, city: 8,
     salary: 8, salaryYr: 6, wageMedHr: 8, wageMedYr: 8, vsMedian: 8, pnp: 8, ee: 6, aip: 6,
   }
   const fitHasActions = fitMode && shown.some((c) => c.key === 'actions')
