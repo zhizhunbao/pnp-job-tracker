@@ -9,7 +9,7 @@
 //   D=窄屏汉堡开左侧 4/5 宽侧滑抽屉(条目圆角块,资讯组 chevron 抽屉内展开二级,遮罩/×关,当前页高亮);
 //   E=桌面下拉统一 hover 开(离开 150ms 延时关防抖,键盘 focus 同样可开)——资料库改 hover,新增「资讯 ▾」聚合
 //     (移民新闻+政策时间线;时间线首次获得顶栏入口)。榜单/统计保持顶级不并组(IA 大改另拍)。
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { LANGS, type Lang, type TFn } from './jobs/i18n'
 import { Avatar } from './Avatar'
 import { Button } from './ui/primitives'
@@ -21,6 +21,9 @@ type AcctState = { state: 'loading' | 'out' | 'in'; u: { email: string; displayN
 // 「登录+注册」两钮(实测 84px),右侧整块跟着变宽 —— 表现就是 Frank 说的「header 缩一下再展开」。
 // 未登录是绝大多数(匿名流量),所以按未登录态的实宽占位;已登录换成 28px 头像时右对齐,同样不推挤。
 const ACCT_SLOT_W = 84
+const ACCT_SEEN = 'acct.seen'   // 上次已知登录态(见 SiteHeader 里的说明)
+// SSR 没有 localStorage:服务端渲染用 useEffect(不跑),客户端用 useLayoutEffect(第一帧前就纠正,不闪)
+const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
 
 function AccountLite({ t, acct }: { t: TFn; acct: AcctState }) {
   const { state, u } = acct
@@ -143,16 +146,29 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
 }) {
   // 登录态上提(2026-07-19 Frank:「我的账户模块应该是登录之后才显示」)——原 AccountLite 私有 fetch
   // 提到 header 级,导航「我的账户」与右端账户区共用;loading 期间按未登录处理(不闪入口)
+  // 登录态**记在本地**(2026-07-29 Frank:「header 不同页面怎么跑偏」):
+  // 导航里的「我的账户」只在登录后渲染,而各页拿登录态的路子不同 —— /jobs 系列由服务端传 loggedIn,
+  // 第一帧就有;其余页面要等 /api/users/me 回来才补上,那一下整排导航被挤着移位 = 他看到的「跑偏」。
+  // 记住上次结果 → 每页第一帧就是对的;猜错了(如别处退出登录)等 fetch 回来自动纠,匿名照旧不占位。
   const [acct, setAcct] = useState<AcctState>({
-    state: loggedIn === undefined ? 'loading' : loggedIn ? 'in' : 'out',
+    state: loggedIn !== undefined ? (loggedIn ? 'in' : 'out') : 'loading',
     u: { email: '', displayName: null, avatar: null, pro: false },
   })
+  useIsoLayoutEffect(() => {
+    if (loggedIn !== undefined) return
+    try {
+      const seen = localStorage.getItem(ACCT_SEEN)
+      if (seen === '1' || seen === '0') setAcct((a) => ({ ...a, state: seen === '1' ? 'in' : 'out' }))
+    } catch { /* 隐私模式读不到就维持 loading */ }
+  }, [loggedIn])
   useEffect(() => {
     if (loggedIn !== undefined || accountArea) return   // 宿主自带账户区(/jobs)时由 loggedIn prop 定导航显隐
     fetch('/api/users/me', { credentials: 'include' })
       .then((r) => r.json())
       .then((d) => {
-        if (d?.user?.email) {
+        const isIn = !!d?.user?.email
+        try { localStorage.setItem(ACCT_SEEN, isIn ? '1' : '0') } catch { /* ignore */ }
+        if (isIn) {
           setAcct({ state: 'in', u: { email: d.user.email, displayName: d.user.displayName ?? null, avatar: d.user.avatar ?? null, pro: !!(d.user.proUntil && new Date(d.user.proUntil) > new Date()) } })
         } else setAcct((a) => ({ ...a, state: 'out' }))
       })
