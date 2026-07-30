@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Landing 页设计总表 — 架构 v2.0 的 L1 用户目标层</title>
+<style>
+  /* 取色一律来自 primitives UI tokens(cms/src/app/(frontend)/ui/primitives.tsx),不发明新色 */
+  :root{
+    --primary:#2563eb; --primaryDeep:#1e40af; --warn:#b45309; --ok:#15803d;
+    --text:#111827; --text2:#6b7280; --text3:#9ca3af;
+    --border:#e5e7eb; --hairline:#f3f4f6; --bg:#f9fafb; --card:#fff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+
+  /* 顶栏 1:1 照搬 SiteHeader.tsx(1320 内宽、10px 1.25rem 内距、12.5px 灰导航、竖线、语言段控、账户区)
+     断点同源:≤640 平铺导航隐藏+汉堡出现;≤1350 副标语隐藏 */
+  .hdr{background:var(--card);border-bottom:1px solid var(--border)}
+  .hdrIn{max-width:1320px;margin:0 auto;padding:10px 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .hdrL{display:flex;align-items:center;gap:8px;min-width:0}
+  .burger{display:none;width:34px;height:34px;border:1px solid var(--border);border-radius:8px;background:#fff;color:#374151;font-size:15px;flex-shrink:0}
+  .logo{font-size:17px;font-weight:700;color:var(--text);white-space:nowrap}
+  .tagline{font-size:12px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hdrR{display:flex;align-items:center;gap:12px;max-width:100%;flex-wrap:wrap}
+  .shNav{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .shNav a{font-size:12.5px;color:var(--text2);white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+  .shNav .caret{font-size:10px;color:var(--text3)}
+  .divider{width:1px;height:16px;background:var(--border)}
+  .langs{display:inline-flex;border:1px solid var(--border);border-radius:6px;overflow:hidden}
+  .langs button{border:none;padding:3px 9px;font-size:12.5px;background:#fff;color:var(--text2)}
+  .langs button.on{background:var(--primary);color:#fff}
+  .login{font-size:12.5px;font-weight:600;color:var(--primary);white-space:nowrap}
+  .signup{font-size:12.5px;font-weight:600;color:#fff;background:var(--primary);border-radius:8px;padding:4px 12px;white-space:nowrap}
+  svg{vertical-align:-0.125em}
+  @media (max-width:1350px){.tagline{display:none}}
+  @media (max-width:640px){.shNav,.divider{display:none}.burger{display:inline-block}}
+
+  main{max-width:1080px;margin:0 auto;padding:0 16px 28px}
+
+  /* 首屏 banner 沿用 PageBanner 图版语法(实景图 + 模块色暗化层 + 左下标题 + 右下数字胶囊),
+     只把定高从 130 放到 200(门面比模块页重);手机同规则降到 150 且数字胶囊隐藏 */
+  .hb{position:relative;height:150px;border-radius:12px;overflow:hidden;margin:14px 0 0}
+  .hb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .hb .mask{position:absolute;inset:0;background:linear-gradient(90deg,rgba(30,64,175,.82),rgba(30,64,175,.45) 55%,rgba(17,24,39,.25))}
+  .hb .in{position:relative;z-index:2;height:100%;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:0 20px 14px;color:#fff}
+  .hb h1{margin:0;font-size:22px;line-height:1.3;font-weight:700;text-shadow:0 1px 6px rgba(0,0,0,.5);white-space:nowrap}
+  .hb .pills{display:none;gap:8px;flex-shrink:0}
+  .hb .pill{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:4px 12px;font-size:12px;white-space:nowrap}
+  .hb .pill b{font-size:14px;margin-right:4px}
+  .hb .dots{position:absolute;right:14px;top:10px;display:flex;gap:5px;z-index:2}
+  .hb .dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.45);display:block}
+  .hb .dots i.on{background:#fff}
+  .cta{margin-top:14px;display:flex;flex-direction:column;gap:10px}
+  .btn{display:block;border-radius:8px;padding:12px 20px;font-size:14px;font-weight:600;text-align:center}
+  .btn.primary{background:var(--primary);color:#fff}
+  .btn.sec{background:var(--card);color:var(--primary);border:1px solid var(--border)}
+  .note{margin:10px 0 0;font-size:12px;color:var(--text3)}
+
+  .goals{margin-top:22px}
+  h2.secTitle{margin:0 0 10px;font-size:14px;font-weight:600}
+  h2.secTitle em{font-style:normal;font-weight:400;font-size:12px;color:var(--text3);margin-left:8px}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .tile{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:block}
+  .tile .nm{font-size:14px;font-weight:600;white-space:nowrap}
+  .tile .hint{margin-top:2px;font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tile.wide{grid-column:span 2;border-color:#bfdbfe;background:#f8fbff}
+  .tile.wide .nm{color:var(--primaryDeep)}
+  .tile.soon{background:var(--hairline);border-style:dashed}
+  .tile.soon .nm{color:var(--text3)}
+  .tile.soon .hint{color:var(--text3)}
+
+  .pulse{margin-top:22px}
+  .pulseCard{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  .row{display:flex;align-items:center;gap:10px;padding:11px 14px;border-top:1px solid var(--hairline);font-size:13px}
+  .row:first-child{border-top:none}
+  .row .dt{color:var(--text3);font-size:12px;white-space:nowrap}
+  .row .tx{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .row .more{color:var(--primary);font-size:12.5px;font-weight:600;white-space:nowrap}
+  .tag{background:#eef2ff;color:#3730a3;border-radius:6px;padding:1px 7px;font-size:11.5px;font-weight:600;white-space:nowrap}
+  .tag.ok{background:#dcfce7;color:var(--ok)}
+
+  .trust{margin-top:22px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+  .trust .ln{display:flex;gap:8px;align-items:baseline;font-size:12.5px;color:var(--text2)}
+  .trust .ln+.ln{margin-top:6px}
+  .trust b{color:var(--text);font-weight:600;white-space:nowrap}
+  /* 页脚 1:1 照搬 SiteFooter.tsx(1100 内宽、#fafafa 底、免责+法务四链+©,窄屏换行) */
+  .sf{border-top:1px solid var(--border);background:#fafafa;margin-top:26px}
+  .sfIn{max-width:1100px;margin:0 auto;padding:14px 1.25rem;display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center;color:var(--text3);font-size:12.5px}
+  .sfLinks{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .sfLinks a{color:var(--text2)}
+  .sfLinks .cr{white-space:nowrap}
+  .sfL .src{display:block;margin-top:3px}
+  /* styles.css 第 27 轮触控靶:手机端法务链用真实内边距撑到 ≥36(伪元素会被邻居抢点) */
+  @media (max-width:640px){.sfLinks a{padding:9px 0;display:inline-block}}
+
+  @media (min-width:900px){
+    .hb{height:200px}
+    .hb h1{font-size:30px}
+    .hb .pills{display:flex}
+    .cta{flex-direction:row;gap:12px;margin-top:16px}
+    .btn{padding:13px 28px;font-size:15px}
+    .grid{grid-template-columns:repeat(4,1fr);gap:12px}
+    .tile{padding:14px 16px}
+    .tile.wide{grid-column:span 2}
+    .trust .ln{font-size:13px}
+  }
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdrIn">
+    <div class="hdrL">
+      <button class="burger">☰</button>
+      <a class="logo" href="#">🍁 Offer2PR</a>
+      <span class="tagline">每日更新、全加拿大全职业、移民价值视角</span>
+    </div>
+    <div class="hdrR">
+      <nav class="shNav">
+        <a href="#"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>我的匹配</a>
+        <a href="#"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>移民路径</a>
+        <a href="#"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg>榜单</a>
+        <a href="#"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>资料库<span class="caret">▾</span></a>
+        <a href="#"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>地区统计</a>
+        <a href="#"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9h4"/><path d="M10 6h8M10 10h8M10 14h4"/></svg>资讯<span class="caret">▾</span></a>
+      </nav>
+      <span class="divider"></span>
+      <div class="langs"><button class="on">中</button><button>EN</button><button>한</button></div>
+      <a class="login" href="#">登录</a>
+      <a class="signup" href="#">注册</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="hb">
+      <img src="../../../cms/public/img/banners/pathways-2.jpg" alt="" title="Wikimedia Commons">
+      <div class="mask"></div>
+      <div class="in">
+        <h1>你的下一步,用数据算出来</h1>
+        <div class="pills">
+          <span class="pill"><b>39,933</b>在招岗位</span>
+          <span class="pill"><b>2,931</b>AIP 雇主</span>
+          <span class="pill"><b>295</b>所 DLI</span>
+        </div>
+      </div>
+      <span class="dots"><i class="on"></i><i></i><i></i></span>
+    </div>
+    <div class="cta">
+      <a class="btn primary" href="#">开始个性化评估</a>
+      <a class="btn sec" href="#">先浏览数据</a>
+    </div>
+  </section>
+
+  <section class="goals">
+    <h2 class="secTitle">我能帮你做这些决定</h2>
+    <div class="grid">
+      <a class="tile wide" href="#"><div class="nm">找工作</div><div class="hint">39,933 个在招岗位,日更</div></a>
+      <a class="tile" href="#"><div class="nm">拿 PR</div><div class="hint">通道判定与分数对照</div></a>
+      <a class="tile" href="#"><div class="nm">选省份</div><div class="hint">10 省规则与竞争</div></a>
+      <a class="tile" href="#"><div class="nm">选城市</div><div class="hint">2,436 城在招与薪资</div></a>
+      <a class="tile" href="#"><div class="nm">选学校</div><div class="hint">295 所可申 PGWP</div></a>
+      <a class="tile" href="#"><div class="nm">职业规划</div><div class="hint">3,435 个职业的行情</div></a>
+      <span class="tile soon"><div class="nm">选专业</div><div class="hint">数据补齐中</div></span>
+    </div>
+  </section>
+
+  <section class="pulse">
+    <h2 class="secTitle">最新动态</h2>
+    <div class="pulseCard">
+      <div class="row"><span class="dt">07-23</span><span class="tag">BC</span><span class="tx">抽选 50 分,发出 60 份邀请</span></div>
+      <div class="row"><span class="dt">07-29</span><span class="tag ok">日更</span><span class="tx">新增 1,744 岗,2,471 个可提名</span></div>
+      <div class="row"><span class="dt">07-28</span><span class="tag">IRCC</span><span class="tx">护照在线续期范围扩大</span><a class="more" href="#">全部动态</a></div>
+    </div>
+  </section>
+
+
+</main>
+
+<footer class="sf">
+  <div class="sfIn">
+    <span class="sfL">数据自动聚合仅供参考,不构成移民/法律建议;非持牌顾问(RCIC),以官方来源为准。
+      <span class="src">数据来源:Job Bank、IRCC、ESDC、各省官网</span></span>
+    <span class="sfLinks">
+      <a href="#">免责声明</a>
+      <a href="#">隐私政策</a>
+      <a href="#">服务条款</a>
+      <a href="#">关于</a>
+      <span class="cr">© 2026 Offer2PR</span>
+    </span>
+  </div>
+</footer>
+
+</body>
+</html>

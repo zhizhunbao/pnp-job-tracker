@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="610" viewBox="0 0 680 610" role="img"><title>Offer2PR 产品架构 v2.0 四层分层图</title><desc>自上而下四层:L1 用户目标层、L2 决策引擎层、L3 实体层、L4 数据层;L2 为付费面,L3 与 L4 为免费事实面。</desc>
+<style>
+text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif}
+.t{font-size:14px;font-weight:400;fill:#2C2C2A}
+.ts{font-size:12px;font-weight:400;fill:#5F5E5A}
+.th{font-size:14px;font-weight:500;fill:#2C2C2A}
+.arr{stroke:#888780;stroke-width:1.5;fill:none}
+.dash{fill:none;stroke:#B4B2A9;stroke-width:.5;stroke-dasharray:4 4}
+.c-gray>rect{fill:#F1EFE8;stroke:#5F5E5A;stroke-width:.5}
+.c-gray>text.th{fill:#444441}.c-gray>text.ts{fill:#5F5E5A}
+.c-purple>rect{fill:#EEEDFE;stroke:#534AB7;stroke-width:.5}
+.c-purple>text.th{fill:#3C3489}.c-purple>text.ts{fill:#534AB7}
+.c-teal>rect{fill:#E1F5EE;stroke:#0F6E56;stroke-width:.5}
+.c-teal>text.th{fill:#085041}.c-teal>text.ts{fill:#0F6E56}
+.c-coral>rect{fill:#FAECE7;stroke:#993C1D;stroke-width:.5}
+.c-coral>text.th{fill:#712B13}.c-coral>text.ts{fill:#993C1D}
+@media (prefers-color-scheme:dark){
+.t,.th{fill:#F1EFE8}.ts{fill:#B4B2A9}
+.dash{stroke:#5F5E5A}.arr{stroke:#888780}
+.c-gray>rect{fill:#444441;stroke:#B4B2A9}.c-gray>text.th{fill:#F1EFE8}.c-gray>text.ts{fill:#D3D1C7}
+.c-purple>rect{fill:#3C3489;stroke:#AFA9EC}.c-purple>text.th{fill:#CECBF6}.c-purple>text.ts{fill:#AFA9EC}
+.c-teal>rect{fill:#085041;stroke:#5DCAA5}.c-teal>text.th{fill:#9FE1CB}.c-teal>text.ts{fill:#5DCAA5}
+.c-coral>rect{fill:#712B13;stroke:#F0997B}.c-coral>text.th{fill:#F5C4B3}.c-coral>text.ts{fill:#F0997B}
+}
+</style>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<rect class="dash" x="40" y="40" width="600" height="130" rx="8"/><text class="th" x="56" y="66">L1 用户目标层</text><text class="ts" x="180" y="66">首页只答三问</text>
+<g class="c-purple"><rect x="240" y="76" width="200" height="36" rx="4"/><text class="th" x="340" y="99" text-anchor="middle">开始个性化评估</text></g>
+<g class="c-purple"><rect x="56" y="124" width="76" height="30" rx="4"/><text class="ts" x="94" y="143" text-anchor="middle">找工作</text></g><g class="c-purple"><rect x="138" y="124" width="76" height="30" rx="4"/><text class="ts" x="176" y="143" text-anchor="middle">拿 PR</text></g><g class="c-purple"><rect x="220" y="124" width="76" height="30" rx="4"/><text class="ts" x="258" y="143" text-anchor="middle">选学校</text></g><g class="c-purple"><rect x="302" y="124" width="76" height="30" rx="4"/><text class="ts" x="340" y="143" text-anchor="middle">选专业</text></g><g class="c-purple"><rect x="384" y="124" width="76" height="30" rx="4"/><text class="ts" x="422" y="143" text-anchor="middle">选城市</text></g><g class="c-purple"><rect x="466" y="124" width="76" height="30" rx="4"/><text class="ts" x="504" y="143" text-anchor="middle">选省份</text></g><g class="c-purple"><rect x="548" y="124" width="76" height="30" rx="4"/><text class="ts" x="586" y="143" text-anchor="middle">职业规划</text></g>
+<line class="arr" x1="340" y1="170" x2="340" y2="184" marker-end="url(#arrow)"/>
+<rect class="dash" x="40" y="186" width="600" height="104" rx="8"/><text class="th" x="56" y="212">L2 决策引擎层</text><text class="ts" x="180" y="212">背景进,推荐加证据出</text>
+<g class="c-coral"><rect x="56" y="222" width="160" height="52" rx="4"/><text class="th" x="136" y="244" text-anchor="middle">用户背景</text><text class="ts" x="136" y="263" text-anchor="middle">身份、学历、职业</text></g>
+<g class="c-coral"><rect x="260" y="222" width="160" height="52" rx="4"/><text class="th" x="340" y="244" text-anchor="middle">规则引擎</text><text class="ts" x="340" y="263" text-anchor="middle">算结论,AI 只解释</text></g>
+<g class="c-coral"><rect x="464" y="222" width="160" height="52" rx="4"/><text class="th" x="544" y="244" text-anchor="middle">结构化报告</text><text class="ts" x="544" y="263" text-anchor="middle">推荐、解释、证据链</text></g>
+<line class="arr" x1="216" y1="248" x2="258" y2="248" marker-end="url(#arrow)"/>
+<line class="arr" x1="420" y1="248" x2="462" y2="248" marker-end="url(#arrow)"/>
+<line class="arr" x1="340" y1="290" x2="340" y2="304" marker-end="url(#arrow)"/>
+<rect class="dash" x="40" y="306" width="600" height="138" rx="8"/><text class="th" x="56" y="332">L3 实体层</text><text class="ts" x="135" y="332">一实体一权威页,永不死路</text>
+<g class="c-teal"><rect x="56" y="342" width="64" height="28" rx="4"/><text class="ts" x="88" y="360" text-anchor="middle">国家</text></g><g class="c-teal"><rect x="128" y="342" width="64" height="28" rx="4"/><text class="ts" x="160" y="360" text-anchor="middle">省份</text></g><g class="c-teal"><rect x="200" y="342" width="64" height="28" rx="4"/><text class="ts" x="232" y="360" text-anchor="middle">城市</text></g><g class="c-teal"><rect x="272" y="342" width="64" height="28" rx="4"/><text class="ts" x="304" y="360" text-anchor="middle">学校</text></g><g class="c-teal"><rect x="344" y="342" width="64" height="28" rx="4"/><text class="ts" x="376" y="360" text-anchor="middle">专业</text></g><g class="c-teal"><rect x="416" y="342" width="64" height="28" rx="4"/><text class="ts" x="448" y="360" text-anchor="middle">公司</text></g><g class="c-teal"><rect x="488" y="342" width="64" height="28" rx="4"/><text class="ts" x="520" y="360" text-anchor="middle">职业</text></g><g class="c-teal"><rect x="560" y="342" width="64" height="28" rx="4"/><text class="ts" x="592" y="360" text-anchor="middle">技能</text></g>
+<g class="c-teal"><rect x="56" y="380" width="568" height="48" rx="4"/><text class="th" x="340" y="402" text-anchor="middle">统一模板:概览、统计、趋势、关联实体、AI 分析、推荐</text><text class="ts" x="340" y="420" text-anchor="middle">弹框与卡片只是本页的投影</text></g>
+<line class="arr" x1="340" y1="444" x2="340" y2="458" marker-end="url(#arrow)"/>
+<rect class="dash" x="40" y="460" width="600" height="104" rx="8"/><text class="th" x="56" y="486">L4 数据层</text><text class="ts" x="135" y="486">清洗下沉,前端只显示</text>
+<g class="c-gray"><rect x="56" y="496" width="104" height="52" rx="4"/><text class="th" x="108" y="518" text-anchor="middle">职位</text><text class="ts" x="108" y="536" text-anchor="middle">Job Bank</text></g><g class="c-gray"><rect x="172" y="496" width="104" height="52" rx="4"/><text class="th" x="224" y="518" text-anchor="middle">移民规则</text><text class="ts" x="224" y="536" text-anchor="middle">通道与抽选</text></g><g class="c-gray"><rect x="288" y="496" width="104" height="52" rx="4"/><text class="th" x="340" y="518" text-anchor="middle">劳动市场</text><text class="ts" x="340" y="536" text-anchor="middle">工资、LMIA</text></g><g class="c-gray"><rect x="404" y="496" width="104" height="52" rx="4"/><text class="th" x="456" y="518" text-anchor="middle">教育</text><text class="ts" x="456" y="536" text-anchor="middle">DLI 院校</text></g><g class="c-gray"><rect x="520" y="496" width="104" height="52" rx="4"/><text class="th" x="572" y="518" text-anchor="middle">地理</text><text class="ts" x="572" y="536" text-anchor="middle">省市区、FSA</text></g>
+<g class="c-coral"><rect x="56" y="578" width="12" height="12" rx="2"/></g><text class="ts" x="76" y="589">结论,付费面</text>
+<g class="c-teal"><rect x="200" y="578" width="12" height="12" rx="2"/></g><text class="ts" x="220" y="589">事实,免费面</text>
+<text class="ts" x="344" y="589">箭头向下=用户下钻,数据自下向上流</text>
+</svg>

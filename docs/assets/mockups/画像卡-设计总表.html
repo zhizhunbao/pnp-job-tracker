@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>画像卡设计总表 — 基本五问答完出的那张卡(标签可叠加)</title>
+<style>
+  /* 取色一律来自 primitives UI tokens;卡片语法沿用站内卡片(白底、#e5e7eb 边、10 圆角) */
+  :root{
+    --primary:#2563eb; --primaryDeep:#1e40af; --warn:#b45309; --ok:#15803d; --danger:#dc2626;
+    --text:#111827; --text2:#6b7280; --text3:#9ca3af;
+    --border:#e5e7eb; --hairline:#f3f4f6; --bg:#f9fafb; --card:#fff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  main{max-width:760px;margin:0 auto;padding:16px 16px 28px}
+
+  .dlabel{margin:22px 0 8px;font-size:12px;color:var(--text3)}
+  .dlabel:first-child{margin-top:4px}
+
+  /* ── 答题态:整屏只有题,不放任何结论/数字 ────────── */
+  .qz{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
+  .qzTop{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--text2)}
+  .qzBar{margin-top:6px;height:6px;border-radius:999px;background:var(--hairline);overflow:hidden}
+  .qzBar i{display:block;height:100%;background:var(--primary);border-radius:999px}
+  .qzQ{margin:16px 0 12px;font-size:17px;font-weight:600;line-height:1.4}
+  .qzOpts{display:flex;flex-direction:column;gap:8px}
+  .opt{border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;background:var(--card)}
+  .opt.on{border-color:var(--primary);background:#eff6ff;color:var(--primaryDeep);font-weight:600}
+  .qzFoot{display:flex;justify-content:space-between;align-items:center;margin-top:14px}
+  .qzSkip{font-size:12.5px;color:var(--text3)}
+  .qzNext{background:var(--primary);color:#fff;border-radius:8px;padding:9px 20px;font-size:14px;font-weight:600}
+
+  /* ── 画像卡本体 ────────────────────────────────── */
+  .pc{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .pcTop{padding:14px 16px 12px;border-bottom:1px solid var(--hairline)}
+  .ty{font-size:19px;font-weight:700;line-height:1.3}
+  .tyWhy{margin-top:3px;font-size:12px;color:var(--text2)}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .tg{border-radius:6px;padding:1px 8px;font-size:11.5px;font-weight:600;white-space:nowrap;background:#eef2ff;color:#3730a3}
+  .tg.warn{background:#fef3c7;color:#b45309}
+  .tg.bad{background:#fef2f2;color:#b91c1c}
+  .pills{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px 0}
+  .pill{border:1px solid var(--border);border-radius:999px;padding:4px 12px;font-size:12px;color:var(--text2);white-space:nowrap}
+  .pill b{color:var(--text);font-size:14px;font-weight:600;margin-right:4px}
+  .pill.hot{border-color:#fecaca;color:#b91c1c}
+  .pill.hot b{color:#b91c1c}
+
+  .prog{padding:12px 16px 0}
+  .prog .pl{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--text2)}
+  .prog .pl b{color:var(--text);font-size:13px}
+  .prog .bar{margin-top:5px;height:6px;border-radius:999px;background:var(--hairline);overflow:hidden}
+  .prog .bar i{display:block;height:100%;background:var(--primary);border-radius:999px}
+  .prog .next{margin-top:5px;font-size:12px;color:var(--text3)}
+  .rows{padding:12px 16px 4px}
+  .r{display:grid;grid-template-columns:62px 1fr;gap:10px;align-items:baseline;padding:7px 0;border-top:1px solid var(--hairline)}
+  .r:first-child{border-top:none}
+  .r .k{font-size:12px;color:var(--text3);white-space:nowrap}
+  .r .v{font-size:13.5px;min-width:0}
+  .r .v .why{display:block;margin-top:2px;font-size:12px;color:var(--text2)}
+  .r .v a{color:var(--primary);font-size:12px;font-weight:600}
+
+  .cta{display:flex;flex-direction:column;gap:10px;padding:12px 16px 14px}
+  .btn{display:block;border-radius:8px;padding:11px 18px;font-size:14px;font-weight:600;text-align:center}
+  .btn.primary{background:var(--primary);color:#fff}
+  .btn.sec{background:var(--card);color:var(--primary);border:1px solid var(--border)}
+  .note{padding:0 16px 14px;font-size:11.5px;color:var(--text3)}
+
+  /* ── 标签库总览(设计参考)────────────────────────── */
+  .types{display:flex;flex-wrap:wrap;gap:8px}
+  .tchip{border:1px solid var(--border);background:var(--card);border-radius:999px;padding:5px 12px;font-size:12.5px;color:var(--text2);white-space:nowrap}
+  .tchip.on{border-color:var(--primary);background:var(--primary);color:#fff;font-weight:600}
+  .tchip.off{border-style:dashed;color:var(--text3)}
+
+  @media (min-width:900px){
+    .pcTop{padding:16px 20px 14px}
+    .ty{font-size:22px}
+    .pills{padding:14px 20px 0}
+    .rows{padding:14px 20px 6px}
+    .r{grid-template-columns:70px 1fr}
+    .cta{flex-direction:row;padding:14px 20px 16px}
+    .note{padding:0 20px 16px}
+  }
+</style>
+</head>
+<body>
+<main>
+
+  <p class="dlabel">答题态 —— 只有题目与进度,不出现任何结论、数字、卡片</p>
+  <section class="qz">
+    <div class="qzTop"><span>基本问题</span><span>第 4 题,共 5 题</span></div>
+    <div class="qzBar"><i style="width:80%"></i></div>
+    <div class="qzQ">你的英语成绩到哪一档?</div>
+    <div class="qzOpts">
+      <span class="opt">初级,能应付日常</span>
+      <span class="opt on">中级,能工作沟通</span>
+      <span class="opt">流利</span>
+      <span class="opt">高分,接近满分</span>
+      <span class="opt">还没考过</span>
+    </div>
+    <div class="qzFoot"><span class="qzSkip">跳过这题</span><span class="qzNext">下一题</span></div>
+  </section>
+
+  <p class="dlabel">变体 A —— 在读学签,注册护士方向,目标 BC</p>
+  <section class="pc">
+    <div class="pcTop">
+      <div class="ty">在读学签的注册护士</div>
+      <div class="tyWhy">按你自报归类:在读学签、注册护士、目标 BC</div>
+      <div class="tags"><span class="tg">紧缺职业</span><span class="tg">BC 清单命中</span><span class="tg warn">需 NNAS 认证</span><span class="tg warn">毕业窗口内要落定</span></div>
+    </div>
+    <div class="pills">
+      <span class="pill"><b>17</b>BC 在招</span>
+      <span class="pill"><b>17</b>命中具体通道</span>
+      <span class="pill"><b>50</b>BC 最近抽选分</span>
+    </div>
+    <div class="rows">
+      <div class="r"><span class="k">适合方向</span><span class="v">毕业 → PGWP → 工作 → 省提名
+        <span class="why">BC 清单有此职业,17 岗全命中</span>
+        <a href="#">BC 清单原文</a></span></div>
+      <div class="r"><span class="k">主要风险</span><span class="v">在招量小,毕业时点撞不上要再等
+        <span class="why">全省仅 17 个在招,另需 NNAS 认证</span></span></div>
+      <div class="r"><span class="k">还缺</span><span class="v">语言成绩、毕业时间
+        <span class="why">补上才能算 EE 分与毕业窗口</span>
+        <a href="#">去补充 5 题</a></span></div>
+      <div class="r"><span class="k">依据</span><span class="v"><a href="#">BC 7-23 抽选 50 分,60 份邀请</a>
+        <span class="why">数据日期 2026-07-30,随日更刷新</span></span></div>
+    </div>
+    <div class="cta">
+      <a class="btn primary" href="#">看你的 PR 路径</a>
+      <a class="btn sec" href="#">按这个画像筛职位</a>
+    </div>
+    <p class="note">按你自报的情况归类,不等于资格认定。</p>
+  </section>
+
+  <p class="dlabel">变体 B —— 工签在职,家庭儿童照护,安省(低 TEER,风险要说白)</p>
+  <section class="pc">
+    <div class="pcTop">
+      <div class="ty">工签在职的家庭儿童照护</div>
+      <div class="tyWhy">按你自报归类:工签在职、家庭儿童照护、安省</div>
+      <div class="tags"><span class="tg">低 TEER</span><span class="tg bad">无具体通道</span><span class="tg bad">薪资低于门槛</span><span class="tg warn">安省不公布清单</span></div>
+    </div>
+    <div class="pills">
+      <span class="pill"><b>430</b>ON 在招</span>
+      <span class="pill hot"><b>0</b>命中具体通道</span>
+      <span class="pill"><b>$39,520</b>中位年薪</span>
+    </div>
+    <div class="rows">
+      <div class="r"><span class="k">适合方向</span><span class="v">先换有担保记录的雇主,再谈通道
+        <span class="why">安省不公布清单,按 TEER 判定</span>
+        <a href="#">安省规则原文</a></span></div>
+      <div class="r"><span class="k">主要风险</span><span class="v">中位年薪低于多数通道门槛
+        <span class="why">430 岗里 0 个命中具体通道</span></span></div>
+      <div class="r"><span class="k">还缺</span><span class="v">工签剩余时长
+        <span class="why">补上才能排换省的先后顺序</span>
+        <a href="#">去补充 4 题</a></span></div>
+      <div class="r"><span class="k">依据</span><span class="v"><a href="#">ESDC 工资中位、库内在招统计</a>
+        <span class="why">数据日期 2026-07-30,随日更刷新</span></span></div>
+    </div>
+    <div class="cta">
+      <a class="btn primary" href="#">看能换哪条路</a>
+      <a class="btn sec" href="#">看有担保记录的雇主</a>
+    </div>
+    <p class="note">按你自报的情况归类,不等于资格认定。</p>
+  </section>
+
+  <p class="dlabel">处境标签库(节选)—— 标签可叠加、可扩,不是九选一;蓝框=本页变体 A 命中</p>
+  <div class="types">
+    <span class="tchip on">紧缺职业</span>
+    <span class="tchip on">清单命中</span>
+    <span class="tchip on">需职业认证</span>
+    <span class="tchip on">毕业窗口内要落定</span>
+    <span class="tchip">海外无加拿大经验</span>
+    <span class="tchip">低 TEER</span>
+    <span class="tchip">无具体通道</span>
+    <span class="tchip">薪资低于门槛</span>
+    <span class="tchip">该省不公布清单</span>
+    <span class="tchip">雇主有担保记录</span>
+    <span class="tchip">偏远地区可加分</span>
+    <span class="tchip">语言分未达线</span>
+    <span class="tchip">工签剩余不足一年</span>
+    <span class="tchip off">配偶可做主申(缺字段不出)</span>
+  </div>
+
+</main>
+</body>
+</html>
