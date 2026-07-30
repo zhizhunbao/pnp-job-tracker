@@ -50,6 +50,23 @@ export type MatchReason = {
 export type MatchLevel = 'high' | 'mid' | 'low' | 'na'
 export type MatchResult = { level: MatchLevel; score: number; reasons: MatchReason[] }
 
+// ── 省清单覆盖判定(单一来源;报告/匹配/统计共用)────────────────────────
+// 「某省 0 命中」有四种不同含义,混为一谈=报告撒谎(2026-07-30 报告原型暴露):
+//   listed    清单式(BC/SK/MB/NS + AB 的清单部分):查过确实没命中 → 可下「不在清单」结论
+//   exclusion 排除式(AB 排除清单/NB;ON 政策上不公布清单=排除集为空):不在排除清单即按 TEER 粗筛
+//   uncovered 本站清单数据未覆盖(NL/PE 等):只能说「清单未收录本站」,不得当「查过没有」
+//   qc        魁省自有体系,不参加 PNP
+// NO_LIST_PROVINCES = 政策事实(人工核对,非数据缺失):ON 2026-06 改制后不公布职业清单。
+export type ProvListCoverage = 'listed' | 'exclusion' | 'uncovered' | 'qc'
+const NO_LIST_PROVINCES = new Set(['ON'])   // 核对 2026-07-30;政策变更时更新此表
+export function provListCoverage(prov: string, dims: MatchDims): ProvListCoverage {
+  if (prov === 'QC') return 'qc'
+  if (NO_LIST_PROVINCES.has(prov)) return 'exclusion'
+  const rows = dims.pnpOccupations.filter((r) => r.province === prov)
+  if (rows.length === 0) return 'uncovered'
+  return rows.some((r) => r.type !== 'ineligible') ? 'listed' : 'exclusion'
+}
+
 // 档案是否可用于匹配(全空档案不算建档)
 export function hasProfile(p: Partial<MatchProfile> | null | undefined): boolean {
   if (!p) return false
@@ -126,6 +143,10 @@ export function match(profile: MatchProfile, job: MatchJob, dims: MatchDims): Ma
     } else if (excluded) {
       score -= 20
       reasons.push({ rule: 'prov', verdict: 'fail', key: 'match.r.prov.excluded', params: { prov, label: excluded.label, noc: job.noc }, source: { label: excluded.label, url: excluded.url, fetched: excluded.fetched } })
+    } else if (provListCoverage(prov, dims) === 'uncovered') {
+      // 本站没有该省清单数据 → 不给「查过没有」的假结论;分数走 TEER 粗筛同档,但理由说实话
+      if (job.pnpEligible) score += 15
+      reasons.push({ rule: 'prov', verdict: 'na', key: 'match.r.prov.uncovered', params: { prov } })
     } else if (job.pnpEligible) {
       score += 15
       reasons.push({ rule: 'prov', verdict: 'pass', key: 'match.r.prov.generic', params: { prov } })

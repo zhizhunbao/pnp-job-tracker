@@ -3355,6 +3355,7 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
       else if (r.key === 'match.r.prov.named') rows.push({ dim: t('mm.dim.pnp'), jc: streamDisplay(t, String(p.label)), yc: '—', verdict: 'pass', v: t('mm.v.named'), src: r.source })
       else if (r.key === 'match.r.prov.excluded') rows.push({ dim: t('mm.dim.pnp'), jc: streamDisplay(t, String(p.label)), yc: '—', verdict: 'fail', v: t('mm.v.excluded'), src: r.source })
       else if (r.key === 'match.r.prov.generic') rows.push({ dim: t('mm.dim.pnpPre'), jc: teerCell(), yc: '—', verdict: 'pass', v: t('mm.v.generic') })
+      else if (r.key === 'match.r.prov.uncovered') rows.push({ dim: t('mm.dim.pnpPre'), jc: teerCell(), yc: '—', verdict: 'na', v: t('mm.v.uncovered') })
       else rows.push({ dim: t('mm.dim.pnpPre'), jc: teerCell(), yc: '—', verdict: 'fail', v: t('mm.v.provNone') })
     } else if (r.rule === 'ee') {
       if (r.key === 'match.r.ee.none') rows.push({ dim: t('mm.dim.ee'), jc: t('mm.job.eeNone'), yc: '—', verdict: 'na', v: '—' })
