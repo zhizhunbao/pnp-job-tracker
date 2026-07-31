@@ -45,11 +45,8 @@ const V_CHIP: Record<string, { bg: string; fg: string }> = {
 }
 const CARD: React.CSSProperties = { background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 12, padding: '12px 16px', margin: '10px 0' }
 
-// 尾链一律右对齐成一列(2026-07-31 Frank「不要在文字后面直接加链接,乱得很」):
-// 句子长短不一 → 紧跟文末的链接横向位置全是随机的;抽到右轨后是一条竖直的链列,与全站表格对齐口径一致。
+// 动作钮共用样式(报告态顶部的「改答案」「存为 PDF」)
 const BTN: React.CSSProperties = { border: `1px solid ${UI.border}`, background: '#fff', color: UI.text, borderRadius: 8, padding: '5px 14px', fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }
-
-const TAIL: React.CSSProperties = { flexShrink: 0, marginLeft: 12, fontSize: 12, color: UI.text3, textDecoration: 'none', whiteSpace: 'nowrap' }
 
 // 职业 chip:答题态常驻;报告态**没职业时**也出(空报告说「先选职业」却没有入口=死路,2026-07-31 实拍抓到)
 function OccChip({ noc, nocTitle, t, onPick }: { noc: string; nocTitle: string; t: TFn; onPick: () => void }) {
@@ -64,20 +61,55 @@ function OccChip({ noc, nocTitle, t, onPick }: { noc: string; nocTitle: string; 
   )
 }
 
-function Line({ l, t }: { l: RptLine; t: TFn }) {
-  const body = t(l.key, l.params)
+// 脚注编号:正文里只留 [n],链接与出处全部收在底部「依据与链接」一节
+// (2026-07-31 Frank「出处和跳转放到一个 section 统一管理」——原先每行尾巴挂一个链接,
+//  五六条结论就是五六个散落的入口,读的时候被打断,打印出来更是一堆没用的箭头)
+const Ref = ({ n }: { n: number }) => (
+  <sup style={{ color: UI.primary, fontSize: 10.5, fontWeight: 700, marginLeft: 3 }}>[{n}]</sup>
+)
+
+function Line({ l, t, refNo }: { l: RptLine; t: TFn; refNo?: number }) {
   return (
     <li style={{ margin: '7px 0', lineHeight: 1.7, listStyle: 'none', display: 'flex', gap: 9, alignItems: 'baseline' }}>
       <span style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: V_DOT[l.verdict ?? 'na'], position: 'relative', top: -1 }} />
       <span style={{ flex: 1, minWidth: 0 }}>
-        {l.url ? <a href={l.url} style={{ color: UI.primary, textDecoration: 'none' }}>{body}</a> : body}
+        {t(l.key, l.params)}{refNo ? <Ref n={refNo} /> : null}
       </span>
-      {l.source?.url && (
-        <a href={l.source.url} target="_blank" rel="noreferrer" title={`${l.source.label}${l.source.fetched ? ` · ${l.source.fetched}` : ''}`}
-          style={TAIL}>{t('rpt.src')} ↗</a>
-      )}
     </li>
   )
+}
+
+// 报告里所有对外链接的**唯一出口**:结论/缺口/备选的出处 + 下一步的跳转,按出现顺序编号去重。
+// label 用它自己的名字(官方清单名 / 动作名),不写「点这里」;日期跟着出处走。
+type RefRow = { n: number; label: string; url: string; fetched?: string }
+function collectRefs(r: Rpt, t: TFn): { rows: RefRow[]; of: (l: RptLine) => number | undefined } {
+  const rows: RefRow[] = []
+  const byUrl = new Map<string, number>()
+  const add = (url: string, label: string, fetched?: string): number => {
+    const seen = byUrl.get(url)
+    if (seen) return seen
+    const n = rows.length + 1
+    byUrl.set(url, n)
+    rows.push({ n, label, url, fetched })
+    return n
+  }
+  const urlOf = (l: RptLine): string => l.source?.url || l.url || ''
+  // 名字按**目的地**取,不按引用它的那一行取 —— 同一个页面被三行引用时,编号合并了,
+  // 名字却只留第一行的说法就对不上(实撞:三条都指 /pathways,却写着「BC 有官方分值表」)
+  const DEST: Record<string, string> = { '': 'rpt.dest.jobs', pathways: 'rpt.dest.pathways', stats: 'rpt.dest.stats', occupations: 'rpt.dest.occ' }
+  const labelOf = (l: RptLine): string => {
+    if (l.source?.label) return l.source.label
+    const u = urlOf(l)
+    if (!u) return ''
+    if (u.startsWith('http')) { try { return new URL(u).hostname.replace(/^www\./, '') } catch { return u } }
+    const seg = u.replace(/^\//, '').split(/[?#/]/)[0]
+    return DEST[seg] ? t(DEST[seg]) : t('rpt.dest.site')
+  }
+  for (const l of [...r.conclusions, ...r.gaps, ...r.alternatives, ...r.nextSteps]) {
+    const u = urlOf(l)
+    if (u) add(u, labelOf(l), l.source?.fetched)
+  }
+  return { rows, of: (l) => byUrl.get(urlOf(l)) }
 }
 
 // ① hero:大数字取自首条结论的真数(命中具名 named/open;不公布清单的省只有 open),
@@ -107,13 +139,10 @@ function Hero({ r, t }: { r: Rpt; t: TFn }) {
           <div style={{ fontSize: 15, fontWeight: 600, color: UI.primaryDeep, lineHeight: 1.6 }}>{t(c.key, c.params)}</div>
         ) : null}
       </div>
+      {/* 卡点句不自带链接:它的出处已经在底部「依据与链接」里(全站唯一出口) */}
       {r.hint && (
         <div style={{ fontSize: 14.5, fontWeight: 700, color: UI.primaryDeep, lineHeight: 1.6 }}>
           {t(r.hint.key, r.hint.params)}
-          {r.hint.source?.url && (
-            <a href={r.hint.source.url} target="_blank" rel="noreferrer" title={r.hint.source.label}
-              style={{ marginLeft: 6, color: UI.primary, textDecoration: 'none', fontWeight: 600 }}>↗</a>
-          )}
         </div>
       )}
     </div>
@@ -221,6 +250,11 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
       .catch(() => { if (!ctrl.signal.aborted) setRpt(null) })
     return () => ctrl.abort()
   }, [view, ready])
+
+  // 链接编号只算一次:正文的 [n] 与底部「依据与链接」是同一张表,不会对不上
+  const refs = useMemo(
+    () => (rpt && rpt !== 'loading' ? collectRefs(rpt, t) : { rows: [] as RefRow[], of: () => undefined as number | undefined }),
+    [rpt, t])
 
   const secH: React.CSSProperties = { fontSize: 14.5, fontWeight: 700, margin: '16px 0 4px', color: '#111827' }
 
@@ -336,9 +370,9 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                 {/* ③ 结论(免费两条)+ 缺口;分隔线代替小标题(卡片自解释,不写废话) */}
                 {(rpt.conclusions.length > 0 || rpt.gaps.length > 0) && (
                   <div style={CARD}>
-                    <ul style={{ margin: 0, padding: 0 }}>{rpt.conclusions.map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</ul>
+                    <ul style={{ margin: 0, padding: 0 }}>{rpt.conclusions.map((l, i) => <Line key={l.key + i} l={l} t={t} refNo={refs.of(l)} />)}</ul>
                     {rpt.conclusions.length > 0 && rpt.gaps.length > 0 && <div style={{ borderTop: `1px solid ${UI.hairline}`, margin: '8px 0' }} />}
-                    <ul style={{ margin: 0, padding: 0 }}>{rpt.gaps.map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</ul>
+                    <ul style={{ margin: 0, padding: 0 }}>{rpt.gaps.map((l, i) => <Line key={l.key + i} l={l} t={t} refNo={refs.of(l)} />)}</ul>
                   </div>
                 )}
 
@@ -348,11 +382,7 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                     {rpt.nextSteps.map((s, i) => (
                       <div key={s.key + i} style={{ display: 'flex', gap: 10, alignItems: 'baseline', margin: '7px 0', lineHeight: 1.7 }}>
                         <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: 6, background: '#eff6ff', color: UI.primary, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{i + 1}</span>
-                        <span style={{ flex: 1, minWidth: 0 }}>{t(s.key, s.params)}</span>
-                        {s.url && (
-                          <a href={s.url} target={s.url.startsWith('http') ? '_blank' : undefined} rel={s.url.startsWith('http') ? 'noreferrer' : undefined}
-                            style={TAIL}>{t(s.key + '.go')} ↗</a>
-                        )}
+                        <span style={{ flex: 1, minWidth: 0 }}>{t(s.key, s.params)}{refs.of(s) ? <Ref n={refs.of(s)!} /> : null}</span>
                       </div>
                     ))}
                   </div>
@@ -362,7 +392,25 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                 {rpt.alternatives.length > 0 && (
                   <div style={CARD}>
                     <div style={secH}>{t('rpt.sec.a')}</div>
-                    <ul style={{ margin: 0, padding: 0 }}>{rpt.alternatives.map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</ul>
+                    <ul style={{ margin: 0, padding: 0 }}>{rpt.alternatives.map((l, i) => <Line key={l.key + i} l={l} t={t} refNo={refs.of(l)} />)}</ul>
+                  </div>
+                )}
+
+                {/* 依据与链接:全报告唯一的对外出口(出处 + 跳转),编号与正文的 [n] 对应 */}
+                {refs.rows.length > 0 && (
+                  <div style={CARD}>
+                    <div style={secH}>{t('rpt.sec.ref')}</div>
+                    {refs.rows.map((r) => (
+                      <div key={r.n} style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'baseline', margin: '7px 0', fontSize: 13, lineHeight: 1.6 }}>
+                        <span style={{ flexShrink: 0, color: UI.primary, fontWeight: 700, minWidth: 22 }}>[{r.n}]</span>
+                        <a href={r.url} target={r.url.startsWith('http') ? '_blank' : undefined} rel={r.url.startsWith('http') ? 'noreferrer' : undefined}
+                          style={{ flex: 1, minWidth: 0, color: UI.primary, textDecoration: 'none' }}>{r.label}</a>
+                        {r.fetched && <span style={{ flexShrink: 0, fontSize: 11.5, color: UI.text3 }}>{r.fetched}</span>}
+                        {/* 打印稿里链接点不了 —— 把地址印出来,纸上才回得去 */}
+                        {/* 打印稿里链接点不了 —— 地址单独占一行印出来,纸上才回得去(挤在同一行会把名字压成竖排) */}
+                        <span className="printOnly" style={{ flex: '0 0 100%', marginLeft: 32, fontSize: 10.5, color: UI.text3, wordBreak: 'break-all' }}>{r.url.startsWith('http') ? r.url : `offer2pr.com${r.url}`}</span>
+                      </div>
+                    ))}
                   </div>
                 )}
 
