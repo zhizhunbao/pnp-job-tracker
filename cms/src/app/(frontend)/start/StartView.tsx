@@ -119,6 +119,11 @@ export function StartView({ stats }: { stats: HomeStats }) {
         .hmJobRow{display:grid;grid-template-columns:26px minmax(0,1fr) 46px 96px;gap:10px;align-items:baseline;padding:12px 14px;font-size:13.5px;text-decoration:none;color:inherit}
         .hmOccRow{display:grid;grid-template-columns:26px minmax(0,1fr) 78px 92px;gap:10px;align-items:baseline;padding:12px 14px;font-size:13.5px;text-decoration:none;color:inherit}
         .hmJobCo,.hmJobLoc,.hmOccElig{display:none}
+        /* 抽选块照职位板的范式(2026-07-31 Frank「电脑用表格 手机用卡片」):
+           五列表格在 375 上通道列只剩 ~100px,通道名一律省略号 —— 手机换成一岗一卡,通道名完整可换行 */
+        .hmDrawTable{display:none}
+        .hmDrawCards{display:flex;flex-direction:column}
+        @media (min-width:900px){ .hmDrawTable{display:table}.hmDrawCards{display:none} }
         @media (min-width:900px){
           .hmJobRow{grid-template-columns:26px minmax(0,1.2fr) minmax(0,1fr) 46px minmax(0,170px) 130px;gap:12px}
           /* 职业榜(2026-07-31 两轮拍板):名字形态与职位行同构(英文粗体+译名灰注);
@@ -261,7 +266,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
               <h2 style={secH}>{t('home.draws')}<a href="/pathways" style={moreA}>{t('pw.entry')}</a></h2>
               {/* 与 /pathways 抽选事实块同源(pnp_draws),这里是轻量投影;百分比固定布局永不横滚(站规) */}
               <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, overflow: 'hidden' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed', fontSize: 13 }}>
+                <table className="hmDrawTable" style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed', fontSize: 13 }}>
                   {/* 列宽按 375 实测定:日期/项目/分数线/邀请必须完整(数字不许截),通道列吃剩余宽度做省略 */}
                   <colgroup><col style={{ width: '19%' }} /><col style={{ width: '17%' }} /><col style={{ width: '28%' }} /><col style={{ width: '18%' }} /><col style={{ width: '18%' }} /></colgroup>
                   <thead><tr>
@@ -283,6 +288,22 @@ export function StartView({ stats }: { stats: HomeStats }) {
                     })}
                   </tbody>
                 </table>
+                {/* 手机卡片:日期与项目一行、通道名整行(不截)、两个数字各归各列右对齐 */}
+                <div className="hmDrawCards">
+                  {stats.draws.map((r, i) => (
+                    <div key={i} style={{ padding: '11px 14px', borderBottom: i === stats.draws.length - 1 ? 'none' : `1px solid ${UI.hairline}` }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
+                        <Tag>{r.province === 'FED' ? 'EE' : r.province}</Tag>
+                        <span style={{ fontSize: 12, color: UI.text3 }}>{mmdd(r.date)}</span>
+                      </div>
+                      <div style={{ fontSize: 13.5, lineHeight: 1.5, marginBottom: 6 }}>{drawStream(r)}</div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, fontSize: 12.5, color: UI.text2 }}>
+                        <span>{t('home.dr.score')}<b style={{ color: UI.text, marginLeft: 6, fontSize: 13.5 }}>{r.score != null ? num(r.score) : '—'}</b></span>
+                        <span>{t('home.dr.inv')}<b style={{ color: UI.text, marginLeft: 6, fontSize: 13.5 }}>{r.invitations != null ? num(r.invitations) : '—'}</b></span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </Band>
