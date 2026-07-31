@@ -783,11 +783,19 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   // 2026-07-17 根域直出后职位板=根路径)。未登录直接弹登录框(同日用户:「不要先跳转页面再弹窗」),
   // 已登录未建档才去 /account 建档
   const toggleMatchView = () => {
-    if (!plan.loggedIn) { setUpsell('login'); return }
+    if (!plan.loggedIn) {
+      // 2026-07-31 Frank「点这个的时候,如果答题,请先弹出答题,然后登录」:没答过三问的先答题
+      // (结果页「注册保存」接登录,答案落档,不让用户填两遍);答过的照旧直接弹登录。
+      const saved = readQuiz()
+      if (!saved?.done) { track('match-view-quiz'); setMatchIntent(true); setQuiz({ redo: !!saved }); return }
+      setUpsell('login'); return
+    }
     if (!plan.profileOk) { setWizard(true); return }   // E11-05②:未建档 → 开引导 wizard(原直跳 /account)
     if (!matchView) track('match-view')
     window.location.href = matchView ? '/' : '/?view=match'
   }
+  // 从「我的匹配」进的三问:注册落档后直接落匹配视图(E9-04b 同款语义,不回列表再点一次)
+  const [matchIntent, setMatchIntent] = useState(false)
   const colRef = useRef<HTMLDivElement>(null)
   // (E10-01 P3:客户端 limit 切片退役 → 服务端 page 分页,见下方 fetch effect)
   const [lang, setLang] = useState<Lang>('zh')    // 语言(localStorage 持久化)
@@ -1663,7 +1671,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       {quiz && !wizard && (
         <EntryQuiz t={t} lang={lang} initial={quiz.redo || quiz.result ? quizSaved : null} startAt={quiz.result ? 3 : 0}
           stats={{ total: totalCount ?? total, named: proof?.named, lmia: proof?.lmia, checkedAt: updatedAt ? fmtLocal(updatedAt) : undefined }}
-          onClose={() => { setQuiz(false); setQuizSaved(readQuiz()) }} onApply={applyQuiz}
+          onClose={() => { setQuiz(false); setMatchIntent(false); setQuizSaved(readQuiz()) }} onApply={applyQuiz}
           onRegister={(a) => { setQuiz(false); setPendingQuiz(a); setUpsell('quiz') }} />
       )}
       {upsell && (plan.loggedIn
@@ -1673,7 +1681,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                Google 路径 returnTo),不再回列表让用户再点一次(Frank「点我的匹配也一样」) */
             onDone={async () => {
               if (upsell === 'quiz' && pendingQuiz) { await quizToProfile(pendingQuiz) }   // 三问答案 → 档案(不让用户填两遍)
-              if (upsell === 'login') window.location.href = '/?view=match'; else window.location.reload()
+              if (upsell === 'login' || (upsell === 'quiz' && matchIntent)) window.location.href = '/?view=match'
+              else window.location.reload()
             }}
             returnTo={upsell === 'login' ? '/?view=match' : undefined} />)}
     </div>
