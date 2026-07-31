@@ -13,7 +13,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { LANGS, type Lang, type TFn } from './jobs/i18n'
 import { Avatar } from './Avatar'
 import { Button } from './ui/primitives'
-import { IconTarget, IconChart, IconCompass, IconMapPin, IconNews, IconUser, IconUsers } from './Icons'
+import { IconTarget, IconChart, IconCompass, IconMapPin, IconNews, IconRocket, IconUser, IconUsers } from './Icons'
 
 type AcctState = { state: 'loading' | 'out' | 'in'; u: { email: string; displayName: string | null; avatar: string | null; pro: boolean } }
 
@@ -112,6 +112,7 @@ function MobileDrawer({ t, active, showAcctTab, onClose }: { t: TFn; active?: st
         </div>
         <nav style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 20 }}>
           <a href="/" style={item('/', t('detail.crumbHome'), !active)}>{t('detail.crumbHome')}</a>
+          <a href="/start" style={item('/start', '', active === 'start')}>{t('home.entry')}</a>
           <a href="/?view=match" style={item('/?view=match', '', false)}>{t('mv.entry')}</a>
           <a href="/pathways" style={item('/pathways', '', active === 'pathways')}>{t('pw.entry')}</a>
           {grp('lib', t('nav.library'), [
@@ -138,7 +139,7 @@ function MobileDrawer({ t, active, showAcctTab, onClose }: { t: TFn; active?: st
 
 export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, accountArea, loggedIn }: {
   lang: Lang; setLang: (l: Lang) => void; t: TFn
-  active?: 'rank' | 'stats' | 'account' | 'pathways' | 'news' | 'employers'
+  active?: 'rank' | 'stats' | 'account' | 'pathways' | 'news' | 'employers' | 'start'
   sticky?: boolean
   matchButton?: { active: boolean; onClick: () => void }
   accountArea?: React.ReactNode
@@ -194,6 +195,8 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
           @media (max-width:1350px){.shTagline{display:none}}`}</style>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, maxWidth: '100%', flexWrap: 'wrap' }}>
           <div className="shNav" style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+            {/* L1-01 B 方案并行期:landing 入口进顶栏;切 A(landing 占根)后本项退役 */}
+            <a href="/start" style={{ ...nav, color: active === 'start' ? '#2563eb' : '#6b7280', fontWeight: active === 'start' ? 700 : 400 }}><IconRocket /> {t('home.entry')}</a>
             {matchButton
               ? <button onClick={matchButton.onClick} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: matchButton.active ? '#2563eb' : '#6b7280', fontWeight: matchButton.active ? 700 : 400, cursor: 'pointer', whiteSpace: 'nowrap' }}><IconTarget /> {t('mv.entry')}</button>
               : <a href="/?view=match" style={nav}><IconTarget /> {t('mv.entry')}</a>}

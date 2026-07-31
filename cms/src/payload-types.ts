@@ -883,7 +883,7 @@ export interface Province {
    */
   name: string;
   /**
-   * E8-12 省弹框体量卡:IRCC 学签/工签存量、PR 登陆、提名配额({study,tfwp,imp,pnpPr,alloc},各带年份)
+   * E8-12 省弹框体量卡:IRCC 学签/工签存量、拿到 PR 人数、提名配额({study,tfwp,imp,pnpPr,alloc},各带年份)
    */
   info?:
     | {
@@ -1158,9 +1158,22 @@ export interface StatsOccupation {
   titleEn?: string | null;
   teer?: number | null;
   broad?: string | null;
+  mid?: string | null;
+  fine?: string | null;
   openJobs?: number | null;
   new7d?: number | null;
+  /**
+   * ESDC 官方中位年薪(权威基线)
+   */
+  medianWageAnnual?: number | null;
+  /**
+   * 帖面中位(本站折算);样本量见 salaryN
+   */
   medianSalaryAnnual?: number | null;
+  /**
+   * 有帖面薪资的岗位数 = 帖面中位的样本量
+   */
+  salaryN?: number | null;
   namedJobs?: number | null;
   fetched?: string | null;
   updatedAt: string;
@@ -1176,7 +1189,9 @@ export interface StatsCity {
   province?: string | null;
   openJobs?: number | null;
   new7d?: number | null;
+  medianWageAnnual?: number | null;
   medianSalaryAnnual?: number | null;
+  salaryN?: number | null;
   namedJobs?: number | null;
   fetched?: string | null;
   updatedAt: string;
@@ -1977,9 +1992,13 @@ export interface StatsOccupationSelect<T extends boolean = true> {
   titleEn?: T;
   teer?: T;
   broad?: T;
+  mid?: T;
+  fine?: T;
   openJobs?: T;
   new7d?: T;
+  medianWageAnnual?: T;
   medianSalaryAnnual?: T;
+  salaryN?: T;
   namedJobs?: T;
   fetched?: T;
   updatedAt?: T;
@@ -1994,7 +2013,9 @@ export interface StatsCitySelect<T extends boolean = true> {
   province?: T;
   openJobs?: T;
   new7d?: T;
+  medianWageAnnual?: T;
   medianSalaryAnnual?: T;
+  salaryN?: T;
   namedJobs?: T;
   fetched?: T;
   updatedAt?: T;

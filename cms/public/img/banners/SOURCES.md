@@ -14,3 +14,6 @@
 
 许可以各 Commons 文件页为准;展示层致谢=img title 悬停(画面无水印,Frank 2026-07-18 拍板)。
 换图=同名覆盖 jpg;缺图/加载失败前端自动退浅色渐变带(PageBanner 兜底态)。
+
+home(L1-01 landing 首屏,2026-07-30):不新增下载,复用既有三张 —— pathways-2(Pier 21 移民博物馆)/
+jobs-1(多伦多夜景)/ stats-3(佩姬湾灯塔);出处同上。要换专属图改 primitives.tsx 的 BANNER_IMGS.home。

@@ -122,16 +122,18 @@ export function CardAction({ children }: { children: React.ReactNode }) {
 // prefers-reduced-motion 静止);不传/图挂=浅色渐变带(原形态即兜底,发布零风险)。
 // 图=cms/public/img/banners/(Commons 实景,SOURCES.md 记出处,致谢挂 img title,画面无水印)。
 const MODULE_STYLE: Record<string, { bg: string; fg: string; deep: string }> = {
+  home: { bg: 'linear-gradient(100deg,#eff6ff,#dbeafe)', fg: '#1e40af', deep: '30,64,175' },   // L1-01 landing:主品牌蓝,与 jobs 同档不发明新色
   jobs: { bg: 'linear-gradient(100deg,#eff6ff,#dbeafe)', fg: '#1e40af', deep: '30,64,175' },
   pathways: { bg: 'linear-gradient(100deg,#f5f3ff,#ede9fe)', fg: '#5b21b6', deep: '91,33,182' },
   rank: { bg: 'linear-gradient(100deg,#fffbeb,#fef3c7)', fg: '#92400e', deep: '146,64,14' },
   stats: { bg: 'linear-gradient(100deg,#f0fdf4,#dcfce7)', fg: '#166534', deep: '22,101,52' },
   news: { bg: 'linear-gradient(100deg,#f0fdfa,#ccfbf1)', fg: '#0f766e', deep: '15,118,110' },
 }
-export function PageBanner({ module, icon, title, sub, right, images, stats }: {
+export function PageBanner({ module, icon, title, sub, right, images, stats, tall }: {
   module: keyof typeof MODULE_STYLE; icon?: React.ReactNode; title: React.ReactNode
   sub?: React.ReactNode; right?: React.ReactNode; images?: string[]
   stats?: { v: React.ReactNode; label: React.ReactNode }[]   // 关键数字块(≤3,Frank:「显示关键信息但不能太多」;仅图版渲染,手机藏)
+  tall?: boolean   // L1-01 landing 首屏:定高 130→200(门面比二级页重),手机 150;其余槽位语法不变
 }) {
   const m = MODULE_STYLE[module]
   const [idx, setIdx] = useState(0)
@@ -156,9 +158,10 @@ export function PageBanner({ module, icon, title, sub, right, images, stats }: {
   // 2026-07-19 Frank 批新槽位(mockups/二级导航与banner-提案):标题+副题左下,数字胶囊(数字+标签同行)
   // 右下,轮播圆点右上;高度 150→130——治「数字与标签断裂悬在标题旁」
   return (
-    <div className="pbImgBanner" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
-      style={{ position: 'relative', height: 130, borderRadius: 12, overflow: 'hidden', margin: '0 0 14px' }}>
-      <style>{`@media (max-width:640px){.pbImgBanner{height:104px !important}.pbStat{display:none !important}.pbProof{display:none !important}
+    <div className={tall ? 'pbImgBanner pbTall' : 'pbImgBanner'} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
+      style={{ position: 'relative', height: tall ? 200 : 130, borderRadius: 12, overflow: 'hidden', margin: '0 0 14px' }}>
+      <style>{`.pbImgBanner.pbTall h1{font-size:30px !important}
+        @media (max-width:640px){.pbImgBanner{height:104px !important}.pbImgBanner.pbTall{height:150px !important}.pbImgBanner.pbTall h1{font-size:22px !important}.pbStat{display:none !important}.pbProof{display:none !important}
         .pbDots{right:4px !important;top:0 !important;gap:0 !important}.pbDots button{width:40px !important;height:40px !important}}`}</style>
       {imgs.map((src, i) => (
         // eslint-disable-next-line @next/next/no-img-element
@@ -223,6 +226,8 @@ export function SectionTabs({ tabs, color = UI.primary }: {
 }
 // 模块 → banner 图组(1280×300 已裁,SOURCES.md 在同目录);调用点传 BANNER_IMGS.jobs 即开图版
 export const BANNER_IMGS: Record<string, string[]> = {
+  // home(L1-01 landing 首屏):复用既有已裁图起步(Pier 21 移民博物馆/多伦多/佩姬湾),不新增下载;换专属图=改这三个路径
+  home: ['/img/banners/pathways-2.jpg', '/img/banners/jobs-1.jpg', '/img/banners/stats-3.jpg'],
   jobs: ['/img/banners/jobs-1.jpg', '/img/banners/jobs-2.jpg', '/img/banners/jobs-3.jpg'],
   pathways: ['/img/banners/pathways-1.jpg', '/img/banners/pathways-2.jpg', '/img/banners/pathways-3.jpg'],
   rank: ['/img/banners/rank-1.jpg', '/img/banners/rank-2.jpg', '/img/banners/rank-3.jpg'],

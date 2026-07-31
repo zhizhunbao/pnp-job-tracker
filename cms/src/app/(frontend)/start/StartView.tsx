@@ -1,0 +1,302 @@
+'use client'
+// L1-01 Landing 视图(/start,v3 分节版式 2026-07-30 Frank「参考 MongoDB 那类首页:分 sections,不把密集信息挤一屏」):
+// 一节一事、全宽色带交替(白/灰)、大节标题大留白;内容仍是 v2 拍板的真数块(B 骨架 + A 抽选表),只换排布节奏。
+// 每块都是**既有事实源的投影 + 入口**(架构 v2 判定式:通向 L2/L3,永不死路),不是裸数据橱窗:
+//   今日日更大数字(→职位板)/ 抽选表(pnp_draws,与 /pathways 同源)/ 职业行情卡(与 /api/quiz?top 同一 DAL →/occupations)/
+//   政策动态(news →/news)/ 全宽 CTA 带收束回评估主按钮。
+// 红线:数字全库内真数,查不到整节不渲;通道名映射不到显官方原文,前端不编翻译。
+import { useEffect, useMemo, useState } from 'react'
+
+import { eeKeyDisplay, initialLang, makeT, LANG_KEY, type Lang } from '../jobs/i18n'
+import { SiteHeader } from '../SiteHeader'
+import { SiteFooter } from '../SiteFooter'
+import { MarketChart } from '../stats/charts'
+import type { CityRow, OccRow, StatRow } from '../stats/shared'
+import { AuthModal } from '../jobs/AuthForm'
+import { EntryQuiz, quizToProfile, readQuiz, type QuizAnswers } from '../quiz/EntryQuiz'
+import { BANNER_IMGS, PageBanner, Tag, UI } from '../ui/primitives'
+import { track } from '@/lib/track'
+
+export type HomeStats = {
+  total: number | null; named: number | null; lmia: number | null
+  provinces: number | null; cities: number | null; dli: number | null
+  occupations: number | null; aipEmployers: number | null
+  draws: { date: string; province: string; stream: string; label: string; score: number | null; invitations: number | null }[]
+  daily: { date: string; n: number; eligible: number } | null
+  news: { date: string; region: string; title: string; slug: string }[]
+  latestJobs: { id: number | string; title: string; company: string; city: string; province: string; salaryText: string; pnp: boolean; date: string }[]
+  topPaidJobs: { id: number | string; title: string; company: string; city: string; province: string; salaryText: string; pnp: boolean; date: string }[]
+  statRows: StatRow[]
+  occStats: OccRow[]
+  cityStats: CityRow[]
+  channels: { pnp: string[]; ee: string[] }
+  checkedAt: string
+}
+
+const num = (n: number) => n.toLocaleString('en-CA')
+const mmdd = (iso: string) => (iso || '').slice(5, 10)
+
+// 全宽色带 + 1320 内轨(MongoDB 式分节;带色只用既有 token:白 / 页底灰,蓝 tint 只给 CTA 带)
+function Band({ bg, children }: { bg?: string; children: React.ReactNode }) {
+  return (
+    <div className="hmBand" style={{ background: bg }}>
+      <div style={{ maxWidth: 1320, margin: '0 auto', padding: '0 1.25rem', boxSizing: 'border-box' }}>{children}</div>
+    </div>
+  )
+}
+
+export function StartView({ stats }: { stats: HomeStats }) {
+  const [lang, setLang] = useState<Lang>('zh')
+  useEffect(() => { setLang(initialLang()) }, [])
+  const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
+  const t = useMemo(() => makeT(lang), [lang])
+
+  // 入口三问:主按钮手动拉起(landing 不自动弹);答过的预填可改
+  const [quiz, setQuiz] = useState(false)
+  const [quizSaved, setQuizSaved] = useState<QuizAnswers | null>(null)
+  useEffect(() => {
+    const s = readQuiz()
+    if (s) setQuizSaved({ status: s.status, nocs: s.nocs, provs: s.provs })
+  }, [])
+  const [pendingQuiz, setPendingQuiz] = useState<QuizAnswers | null>(null)
+  // 职位榜控件:最新/高薪两榜 × Top 10/20/50(数据两份各 50 条已在服务端备好,切换零请求)
+  const [jobsTab, setJobsTab] = useState<'new' | 'paid'>('new')
+  const [jobsN, setJobsN] = useState(10)
+  // 结果页「看这些岗」:答案经 ?prov / ?q 深链套进职位板筛选(#92 深链语义,与 JobsTable applyQuiz 同口径)
+  const applyQuiz = (a: QuizAnswers) => {
+    const u = new URLSearchParams()
+    if (a.provs.length === 1) u.set('prov', a.provs[0])
+    if (a.nocs[0]) u.set('q', a.nocs[0])
+    const qs = u.toString()
+    window.location.href = qs ? '/?' + qs : '/'
+  }
+  const openQuiz = (pos: 'top' | 'bottom') => { track('landing_cta_quiz', { pos }); setQuiz(true) }
+
+  // 七目标入口(架构 v2 L1:能力声明+深链入口,七卡同尺寸):小注=人话+真数,数字缺整条小注不渲
+  const goals: { key: string; href?: string; hot?: boolean; hint: string | null }[] = [
+    { key: 'jobs', href: '/', hot: true, hint: stats.total != null ? t('home.g.jobs.n', { n: num(stats.total) }) : null },
+    { key: 'pr', href: '/pathways', hint: t('home.g.pr.n') },
+    { key: 'prov', href: '/stats', hint: stats.provinces != null ? t('home.g.prov.n', { n: stats.provinces }) : null },
+    { key: 'city', href: '/stats', hint: stats.cities != null ? t('home.g.city.n', { n: num(stats.cities) }) : null },
+    { key: 'school', href: '/pathways', hint: stats.dli != null ? t('home.g.school.n', { n: stats.dli }) : null },
+    { key: 'career', href: '/occupations', hint: stats.occupations != null ? t('home.g.career.n', { n: num(stats.occupations) }) : null },
+    { key: 'major', hint: t('home.g.major.n') },
+  ]
+
+  const pills = [
+    stats.total != null ? { v: num(stats.total), label: t('home.st.jobs') } : null,
+    stats.aipEmployers != null ? { v: num(stats.aipEmployers), label: t('home.st.aip') } : null,
+    stats.dli != null ? { v: String(stats.dli), label: t('home.st.dli') } : null,
+  ].filter(Boolean) as { v: string; label: string }[]
+
+  // 抽选行显示:FED=联邦轮(tag EE,label 是 cat_key 走 eeKeyDisplay);省轮 stream 官方原文,映射不到不编译文
+  const drawStream = (r: HomeStats['draws'][number]) =>
+    r.province === 'FED' ? eeKeyDisplay(t, r.label) : (r.stream || r.label)
+
+  const tileNm: React.CSSProperties = { fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }
+  const tileHint: React.CSSProperties = { marginTop: 2, fontSize: 12, color: UI.text2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }
+  const secH: React.CSSProperties = { margin: '0 0 18px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 10, color: UI.text }
+  const moreA: React.CSSProperties = { marginLeft: 'auto', fontSize: 13, fontWeight: 600, color: UI.primary, textDecoration: 'none', whiteSpace: 'nowrap' }
+  const th: React.CSSProperties = { fontSize: 11.5, color: UI.text3, fontWeight: 600, textAlign: 'left', padding: '9px 12px', borderBottom: `1px solid ${UI.hairline}`, background: '#fafafa' }
+  const td: React.CSSProperties = { padding: '9px 12px', borderBottom: `1px solid ${UI.hairline}`, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
+  const numCell: React.CSSProperties = { textAlign: 'right' }
+
+  return (
+    <div style={{ background: UI.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
+      {/* 分节版式(v3):.hmBand 全宽色带,节内 1320 轨;节纵距 40/72px,节标题 20/24px —— 一节一事不挤屏 */}
+      <style>{`
+        .hmBand{padding:40px 0}
+        .hmBand h2{font-size:20px}
+        .hmHero.hmBand{padding:14px 0 0}
+        .hmBtn{display:block;border-radius:8px;padding:12px 20px;font-size:14px;font-weight:600;text-align:center;cursor:pointer;text-decoration:none;border:none;font-family:inherit}
+        .hmGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+        .hmNums{display:flex;gap:28px;flex-wrap:wrap;justify-content:center;text-align:center}
+        .hmNums b{display:block;font-size:32px;line-height:1.15;font-weight:700}
+        .hmCtaBand{display:flex;flex-direction:column;gap:12px}
+        @media (max-width:640px){.hmJobCo{display:none}.hmJobLoc{display:none}}
+        @media (min-width:900px){
+          .hmBand{padding:72px 0}
+          .hmBand h2{font-size:24px}
+          .hmHero.hmBand{padding:14px 0 0}
+          .hmBtn{padding:13px 28px;font-size:15px}
+          .hmGrid{grid-template-columns:repeat(4,1fr);gap:12px}
+          .hmNums{gap:64px}
+          .hmNums b{font-size:44px}
+          .hmCtaBand{flex-direction:row;align-items:center}
+          .hmCtaBand .hmBtn{flex:0 0 auto;padding:12px 28px}
+        }`}</style>
+      <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="start" />
+      <main style={{ flex: '1 0 auto' }}>
+
+        {/* ① Hero:PageBanner 图版(home 档 200/150)。双按钮 2026-07-30 Frank 拍板挪到页底 CTA 带 */}
+        <div className="hmBand hmHero">
+          <div style={{ maxWidth: 1320, margin: '0 auto', padding: '0 1.25rem', boxSizing: 'border-box' }}>
+            <PageBanner module="home" tall title={t('home.title')} images={BANNER_IMGS.home} stats={pills} />
+          </div>
+        </div>
+
+        {/* ② 七目标(白带) */}
+        <Band bg="#fff">
+          <h2 style={secH}>{t('home.goals')}</h2>
+          <div className="hmGrid">
+            {goals.map((g) => g.href ? (
+              <a key={g.key} href={g.href}
+                onClick={() => track(`landing_goal_${g.key}`)}
+                style={{ display: 'block', minWidth: 0, background: g.hot ? '#f8fbff' : UI.card, border: `1px solid ${g.hot ? '#bfdbfe' : UI.border}`, borderRadius: 10, padding: '14px 16px', textDecoration: 'none', color: 'inherit' }}>
+                <div style={{ ...tileNm, ...(g.hot && { color: UI.primaryDeep }) }}>{t(`home.g.${g.key}`)}</div>
+                {g.hint && <div style={tileHint}>{g.hint}</div>}
+              </a>
+            ) : (
+              // 灰态「选专业」:span 非 a,虚线框,无 cursor 无 hover(不上假入口)
+              <span key={g.key} style={{ display: 'block', minWidth: 0, background: UI.hairline, border: `1px dashed ${UI.border}`, borderRadius: 10, padding: '14px 16px' }}>
+                <div style={{ ...tileNm, color: UI.text3 }}>{t(`home.g.${g.key}`)}</div>
+                {g.hint && <div style={{ ...tileHint, color: UI.text3 }}>{g.hint}</div>}
+              </span>
+            ))}
+          </div>
+        </Band>
+
+        {/* ③ 今日日更(灰带,居中大数字;点数字进职位板) */}
+        {stats.daily && (
+          <Band>
+            <h2 style={{ ...secH, justifyContent: 'center', marginBottom: 6 }}>{t('home.daily')}</h2>
+            <div style={{ textAlign: 'center', fontSize: 12.5, color: UI.text3, marginBottom: 22 }}>{mmdd(stats.daily.date)}</div>
+            <a href="/" style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+              <div className="hmNums">
+                <span><b style={{ color: UI.primaryDeep }}>{num(stats.daily.n)}</b><span style={{ fontSize: 12.5, color: UI.text2 }}>{t('home.daily.new')}</span></span>
+                {stats.daily.eligible > 0 && <span><b style={{ color: UI.ok }}>{num(stats.daily.eligible)}</b><span style={{ fontSize: 12.5, color: UI.text2 }}>{t('home.daily.elig')}</span></span>}
+                {stats.total != null && <span><b style={{ color: UI.text }}>{num(stats.total)}</b><span style={{ fontSize: 12.5, color: UI.text2 }}>{t('home.daily.total')}</span></span>}
+              </div>
+            </a>
+          </Band>
+        )}
+
+        {/* ④ 职位榜(白带,Frank「单独 section 展示 job」+「最新/薪资 × Top 10/20/50」+「老外喜欢排名」):
+            最新榜=fetchJobRows 发布序,高薪榜=fetchJobsPage 年薪序,行首挂名次,行点进详情页 */}
+        {stats.latestJobs.length > 0 && (
+          <Band bg="#fff">
+            <h2 style={secH}>{t('home.jobs')}
+              <span style={{ display: 'inline-flex', border: `1px solid ${UI.border}`, borderRadius: 8, overflow: 'hidden' }}>
+                {([['new', t('home.jobs.new')], ['paid', t('home.jobs.paid')]] as const).map(([k, lb]) => (
+                  <button key={k} onClick={() => setJobsTab(k)}
+                    style={{ border: 'none', padding: '5px 12px', fontSize: 12.5, cursor: 'pointer',
+                      background: jobsTab === k ? '#eff6ff' : '#fff', color: jobsTab === k ? '#1d4ed8' : '#374151', fontWeight: jobsTab === k ? 600 : 400 }}>{lb}</button>
+                ))}
+              </span>
+              <select value={jobsN} onChange={(e) => setJobsN(Number(e.target.value))}
+                style={{ height: 30, border: `1px solid ${UI.border}`, borderRadius: 8, background: '#fff', fontSize: 12.5, color: '#374151', padding: '0 6px' }}>
+                <option value={10}>Top 10</option><option value={20}>Top 20</option><option value={50}>Top 50</option>
+              </select>
+              <a href="/" style={moreA} onClick={() => track('landing_goal_jobs')}>{t('home.jobs.all')}</a></h2>
+            <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, overflow: 'hidden' }}>
+              {(jobsTab === 'new' ? stats.latestJobs : stats.topPaidJobs).slice(0, jobsN).map((j, i) => (
+                <a key={j.id} href={`/jobs/${j.id}`}
+                  style={{ display: 'flex', gap: 12, alignItems: 'baseline', padding: '12px 14px', borderTop: i ? `1px solid ${UI.hairline}` : 'none', fontSize: 13.5, textDecoration: 'none', color: 'inherit' }}>
+                  <span style={{ width: 26, flexShrink: 0, fontSize: 12.5, fontWeight: 700, color: i < 3 ? UI.primary : UI.text3 }}>#{i + 1}</span>
+                  <span style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 1, minWidth: 0 }}>{j.title}</span>
+                  <span className="hmJobCo" style={{ color: UI.text2, fontSize: 12.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 2, minWidth: 0 }}>{j.company}</span>
+                  {j.pnp && <Tag variant="ok">PNP</Tag>}
+                  <span className="hmJobLoc" style={{ marginLeft: 'auto', color: UI.text2, fontSize: 12.5, whiteSpace: 'nowrap', flexShrink: 0 }}>{j.city ? `${j.city}, ${j.province}` : j.province}</span>
+                  <span style={{ color: UI.text, fontSize: 12.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180, flexShrink: 0 }}>{j.salaryText}</span>
+                </a>
+              ))}
+            </div>
+          </Band>
+        )}
+
+        {/* ⑤ 最近抽选(灰带,A 表;窄轨撤,与各节同走 1320) */}
+        {stats.draws.length > 0 && (
+          <Band>
+            <div>
+              <h2 style={secH}>{t('home.draws')}<a href="/pathways" style={moreA}>{t('pw.entry')}</a></h2>
+              {/* 与 /pathways 抽选事实块同源(pnp_draws),这里是轻量投影;百分比固定布局永不横滚(站规) */}
+              <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, overflow: 'hidden' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed', fontSize: 13 }}>
+                  {/* 列宽按 375 实测定:日期/项目/分数线/邀请必须完整(数字不许截),通道列吃剩余宽度做省略 */}
+                  <colgroup><col style={{ width: '19%' }} /><col style={{ width: '17%' }} /><col style={{ width: '28%' }} /><col style={{ width: '18%' }} /><col style={{ width: '18%' }} /></colgroup>
+                  <thead><tr>
+                    <th style={th}>{t('home.dr.date')}</th><th style={th}>{t('home.dr.prog')}</th><th style={th}>{t('home.dr.stream')}</th>
+                    <th style={{ ...th, ...numCell }}>{t('home.dr.score')}</th><th style={{ ...th, ...numCell }}>{t('home.dr.inv')}</th>
+                  </tr></thead>
+                  <tbody>
+                    {stats.draws.map((r, i) => {
+                      const last = i === stats.draws.length - 1
+                      return (
+                        <tr key={i}>
+                          <td style={{ ...td, ...(last && { borderBottom: 'none' }) }}>{mmdd(r.date)}</td>
+                          <td style={{ ...td, ...(last && { borderBottom: 'none' }) }}><Tag>{r.province === 'FED' ? 'EE' : r.province}</Tag></td>
+                          <td style={{ ...td, ...(last && { borderBottom: 'none' }) }} title={drawStream(r)}>{drawStream(r)}</td>
+                          <td style={{ ...td, ...numCell, ...(last && { borderBottom: 'none' }) }}>{r.score != null ? num(r.score) : '—'}</td>
+                          <td style={{ ...td, ...numCell, ...(last && { borderBottom: 'none' }) }}>{r.invitations != null ? num(r.invitations) : '—'}</td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </Band>
+        )}
+
+        {/* ⑤ 在招职位分布主图(灰带,1320 全轨与各节同宽):/stats 主图整块投影
+            (同一 MarketChart 组件、同一 loadOccStats/loadCityStats/loadStats 口径,单一真相源;echarts 懒加载)。
+            v2 的「热门职业行情」横滑卡节撤(2026-07-30 自检):与主图默认职业轴同批职业同一排序,
+            两节讲同一件事 —— 按 Frank「不同 section 显示不同的信息」原则,留超集(主图带筛选/下钻)。 */}
+        {stats.occStats.length > 0 && (
+          <Band>
+            <h2 style={secH}>{t('mkt.title')}<a href="/stats" style={moreA}>{t('home.stats.more')}</a></h2>
+            {/* 默认只看 top 10 职业(2026-07-30 Frank;Top N 可切 10/20/50/全部,排序控件切数量榜/薪资榜) */}
+            <MarketChart occ={stats.occStats} city={stats.cityStats} rows={stats.statRows} t={t} lang={lang} channels={stats.channels} defaultTopN={10} />
+          </Band>
+        )}
+
+        {/* ⑥ 政策动态(白带;窄轨撤,与各节同走 1320) */}
+        {stats.news.length > 0 && (
+          <Band bg="#fff">
+            <div>
+              <h2 style={secH}>{t('home.policy')}<a href="/news" style={moreA}>{t('home.pulse.all')}</a></h2>
+              <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, overflow: 'hidden' }}>
+                {stats.news.map((r, i) => (
+                  <a key={r.slug || i} href={r.slug ? `/news/${r.slug}` : '/news'}
+                    style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '12px 14px', borderTop: i ? `1px solid ${UI.hairline}` : 'none', fontSize: 13, textDecoration: 'none', color: 'inherit' }}>
+                    <span style={{ color: UI.text3, fontSize: 12, whiteSpace: 'nowrap' }}>{mmdd(r.date)}</span>
+                    <Tag>{r.region === 'federal' ? 'IRCC' : (r.region || '').toUpperCase()}</Tag>
+                    <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.title}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </Band>
+        )}
+
+        {/* ⑦ 全宽 CTA 带:数据节收束回主按钮(架构 v2 判定式——数据是证据,行动是评估) */}
+        <div className="hmBand" style={{ background: 'linear-gradient(100deg,#eff6ff,#dbeafe)' }}>
+          <div className="hmCtaBand" style={{ maxWidth: 1320, margin: '0 auto', padding: '0 1.25rem', boxSizing: 'border-box' }}>
+            <span style={{ flex: 1 }}>
+              <span style={{ fontSize: 17, fontWeight: 700, color: UI.primaryDeep, display: 'block', marginBottom: 4 }}>{t('home.cta2.t')}</span>
+              <span style={{ fontSize: 13, color: UI.text2 }}>{t('home.cta2.s')}</span>
+            </span>
+            {/* 双按钮从 hero 挪到这(2026-07-30 Frank「这两个按钮放到最下面」):主=评估,次=进职位板 */}
+            <button className="hmBtn" style={{ background: UI.primary, color: '#fff' }} onClick={() => openQuiz('bottom')}>{t('home.ctaQuiz')}</button>
+            <a className="hmBtn" style={{ background: UI.card, color: UI.primary, border: `1px solid ${UI.border}` }}
+              href="/" onClick={() => track('landing_cta_browse')}>{t('home.ctaBrowse')}</a>
+          </div>
+        </div>
+      </main>
+      {/* 免责与数据来源都在页脚(全站同一条),页内不再重复写 */}
+      <SiteFooter t={t} />
+
+      {quiz && (
+        <EntryQuiz t={t} lang={lang} initial={quizSaved}
+          stats={{ total: stats.total ?? undefined, named: stats.named ?? undefined, lmia: stats.lmia ?? undefined, checkedAt: stats.checkedAt ? stats.checkedAt.slice(0, 10) : undefined }}
+          onClose={() => { setQuiz(false); const s = readQuiz(); if (s) setQuizSaved({ status: s.status, nocs: s.nocs, provs: s.provs }) }}
+          onApply={applyQuiz}
+          onRegister={(a) => { setQuiz(false); setPendingQuiz(a) }} />
+      )}
+      {pendingQuiz && (
+        <AuthModal t={t} mode="register" onClose={() => setPendingQuiz(null)}
+          onDone={async () => { await quizToProfile(pendingQuiz); window.location.href = '/' }} />
+      )}
+    </div>
+  )
+}
