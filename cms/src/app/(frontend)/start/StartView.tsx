@@ -56,9 +56,13 @@ export function StartView({ stats }: { stats: HomeStats }) {
   const [pendingQuiz, setPendingQuiz] = useState<QuizAnswers | null>(null)
   // 主图四份数据挂载后拉 /api/market-stats(SSR 瘦身:occ ~3400 行不再进 HTML);null=加载中渲占位高度
   const market = useMarketStats()
-  // 职位榜控件:最新/高薪两榜 × Top 10/20/50(数据两份各 50 条已在服务端备好,切换零请求)
-  const [jobsTab, setJobsTab] = useState<'new' | 'paid'>('new')
+  // 职位榜控件:最新/高薪/最多三榜 × Top 10/20/50。最新/高薪两份各 50 条服务端备好;
+  // 最多=职业在招榜(2026-07-31 Frank 拍板),数据吃 useMarketStats 已到手的 occ 全国行,零新请求
+  const [jobsTab, setJobsTab] = useState<'new' | 'paid' | 'most'>('new')
   const [jobsN, setJobsN] = useState(10)
+  const occTop = market === null ? null : market.occ.filter((o) => o.province === 'all')
+  const occName = (o: { titleZhShort: string; titleZh: string; titleEn: string; titleKo: string }) =>
+    lang === 'zh' ? (o.titleZhShort || o.titleZh || o.titleEn) : lang === 'ko' ? (o.titleKo || o.titleEn) : (o.titleEn || o.titleZh)
   // 结果页「看这些岗」:答案经 ?prov / ?q 深链套进职位板筛选(#92 深链语义,与 JobsTable applyQuiz 同口径)
   const applyQuiz = (a: QuizAnswers) => {
     const u = new URLSearchParams()
@@ -92,7 +96,8 @@ export function StartView({ stats }: { stats: HomeStats }) {
 
   const tileNm: React.CSSProperties = { fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }
   const tileHint: React.CSSProperties = { marginTop: 2, fontSize: 12, color: UI.text2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }
-  const secH: React.CSSProperties = { margin: '0 0 18px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 10, color: UI.text }
+  // flexWrap:375 职位榜三 tab + Top N 挤不进一行(2026-07-31 实拍标题折行、tab 截断)→ 控件整组下折,不压缩不截字
+  const secH: React.CSSProperties = { margin: '0 0 18px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 10, rowGap: 8, flexWrap: 'wrap', color: UI.text }
   const moreA: React.CSSProperties = { marginLeft: 'auto', fontSize: 13, fontWeight: 600, color: UI.primary, textDecoration: 'none', whiteSpace: 'nowrap' }
   const th: React.CSSProperties = { fontSize: 11.5, color: UI.text3, fontWeight: 600, textAlign: 'left', padding: '9px 12px', borderBottom: `1px solid ${UI.hairline}`, background: '#fafafa' }
   const td: React.CSSProperties = { padding: '9px 12px', borderBottom: `1px solid ${UI.hairline}`, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
@@ -110,7 +115,16 @@ export function StartView({ stats }: { stats: HomeStats }) {
         .hmNums{display:flex;gap:28px;flex-wrap:wrap;justify-content:center;text-align:center}
         .hmNums b{display:block;font-size:32px;line-height:1.15;font-weight:700}
         .hmCtaBand{display:flex;flex-direction:column;gap:12px}
-        @media (max-width:640px){.hmJobCo{display:none}.hmJobLoc{display:none}}
+        /* 职位榜/职业榜行:网格定列(2026-07-31 Frank「对齐也比较好吧」)——PNP 标签、地点、薪资各归各列,
+           不再随标题长短漂;手机砍公司/地点/可提名列(站规:多值拆列网格对齐,数值列右对齐) */
+        .hmJobRow{display:grid;grid-template-columns:26px minmax(0,1fr) 46px 96px;gap:10px;align-items:baseline;padding:12px 14px;font-size:13.5px;text-decoration:none;color:inherit}
+        .hmOccRow{display:grid;grid-template-columns:26px minmax(0,1fr) 86px 76px;gap:10px;align-items:baseline;padding:12px 14px;font-size:13.5px;text-decoration:none;color:inherit}
+        .hmJobCo,.hmJobLoc,.hmOccElig{display:none}
+        @media (min-width:900px){
+          .hmJobRow{grid-template-columns:26px minmax(0,1.2fr) minmax(0,1fr) 46px minmax(0,170px) 130px;gap:12px}
+          .hmOccRow{grid-template-columns:26px minmax(0,1fr) 110px 110px 110px;gap:12px}
+          .hmJobCo,.hmJobLoc{display:block}.hmOccElig{display:block}
+        }
         @media (min-width:900px){
           .hmBand{padding:72px 0}
           .hmBand h2{font-size:24px}
@@ -168,13 +182,15 @@ export function StartView({ stats }: { stats: HomeStats }) {
           </Band>
         )}
 
-        {/* ④ 职位榜(白带,Frank「单独 section 展示 job」+「最新/薪资 × Top 10/20/50」+「老外喜欢排名」):
-            最新榜=fetchJobRows 发布序,高薪榜=fetchJobsPage 年薪序,行首挂名次,行点进详情页 */}
+        {/* ④ 职位榜(白带,Frank「单独 section 展示 job」+「老外喜欢排名」+ 2026-07-31「加个最多」):
+            最新榜=fetchJobRows 发布序,高薪榜=fetchJobsPage 年薪序,最多榜=职业×在招量(market.occ 投影);
+            行首挂名次,职位行点详情页、职业行点职位板按 NOC 筛;Top 10/20/50 三榜通用 */}
         {stats.latestJobs.length > 0 && (
           <Band bg="#fff">
             <h2 style={secH}>{t('home.jobs')}
               <span style={{ display: 'inline-flex', border: `1px solid ${UI.border}`, borderRadius: 8, overflow: 'hidden' }}>
-                {([['new', t('home.jobs.new')], ['paid', t('home.jobs.paid')]] as const).map(([k, lb]) => (
+                {/* 「最多」=职业在招榜:market 拉完确认没数据才收起该钮(查不到不上假入口) */}
+                {([['new', t('home.jobs.new')], ['paid', t('home.jobs.paid')], ...(occTop === null || occTop.length ? [['most', t('home.jobs.most')]] : [])] as ['new' | 'paid' | 'most', string][]).map(([k, lb]) => (
                   <button key={k} onClick={() => setJobsTab(k)}
                     style={{ border: 'none', padding: '5px 12px', fontSize: 12.5, cursor: 'pointer',
                       background: jobsTab === k ? '#eff6ff' : '#fff', color: jobsTab === k ? '#1d4ed8' : '#374151', fontWeight: jobsTab === k ? 600 : 400 }}>{lb}</button>
@@ -186,15 +202,27 @@ export function StartView({ stats }: { stats: HomeStats }) {
               </select>
               <a href="/" style={moreA} onClick={() => track('landing_goal_jobs')}>{t('home.jobs.all')}</a></h2>
             <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, overflow: 'hidden' }}>
-              {(jobsTab === 'new' ? stats.latestJobs : stats.topPaidJobs).slice(0, jobsN).map((j, i) => (
-                <a key={j.id} href={`/jobs/${j.id}`}
-                  style={{ display: 'flex', gap: 12, alignItems: 'baseline', padding: '12px 14px', borderTop: i ? `1px solid ${UI.hairline}` : 'none', fontSize: 13.5, textDecoration: 'none', color: 'inherit' }}>
-                  <span style={{ width: 26, flexShrink: 0, fontSize: 12.5, fontWeight: 700, color: i < 3 ? UI.primary : UI.text3 }}>#{i + 1}</span>
-                  <span style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 1, minWidth: 0 }}>{j.title}</span>
-                  <span className="hmJobCo" style={{ color: UI.text2, fontSize: 12.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 2, minWidth: 0 }}>{j.company}</span>
-                  {j.pnp && <Tag variant="ok">PNP</Tag>}
-                  <span className="hmJobLoc" style={{ marginLeft: 'auto', color: UI.text2, fontSize: 12.5, whiteSpace: 'nowrap', flexShrink: 0 }}>{j.city ? `${j.city}, ${j.province}` : j.province}</span>
-                  <span style={{ color: UI.text, fontSize: 12.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180, flexShrink: 0 }}>{j.salaryText}</span>
+              {jobsTab === 'most' ? (
+                // 职业在招榜:market.occ 全国行(SQL 已按在招量降序),行点进职位板按该 NOC 筛(与三问深链同口径)
+                occTop === null
+                  ? <div style={{ height: 45 * jobsN }} />
+                  : occTop.slice(0, jobsN).map((o, i) => (
+                    <a key={o.noc} href={`/?q=${o.noc}`} className="hmOccRow" style={{ borderTop: i ? `1px solid ${UI.hairline}` : 'none' }}>
+                      <span style={{ fontSize: 12.5, fontWeight: 700, color: i < 3 ? UI.primary : UI.text3 }}>#{i + 1}</span>
+                      <span style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{occName(o)}</span>
+                      <span style={{ color: UI.text, fontSize: 12.5, whiteSpace: 'nowrap', textAlign: 'right' }}>{o.openJobs != null ? t('quiz.openN', { n: o.openJobs.toLocaleString('en-CA') }) : ''}</span>
+                      <span className="hmOccElig" style={{ color: UI.ok, fontSize: 12.5, whiteSpace: 'nowrap', textAlign: 'right' }}>{o.namedJobs ? t('quiz.eligN', { n: o.namedJobs.toLocaleString('en-CA') }) : ''}</span>
+                      <span style={{ color: UI.text2, fontSize: 12.5, whiteSpace: 'nowrap', textAlign: 'right' }}>{o.medianWageAnnual != null ? '$' + Math.round(o.medianWageAnnual / 1000) + 'K' : ''}</span>
+                    </a>
+                  ))
+              ) : (jobsTab === 'new' ? stats.latestJobs : stats.topPaidJobs).slice(0, jobsN).map((j, i) => (
+                <a key={j.id} href={`/jobs/${j.id}`} className="hmJobRow" style={{ borderTop: i ? `1px solid ${UI.hairline}` : 'none' }}>
+                  <span style={{ fontSize: 12.5, fontWeight: 700, color: i < 3 ? UI.primary : UI.text3 }}>#{i + 1}</span>
+                  <span style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{j.title}</span>
+                  <span className="hmJobCo" style={{ color: UI.text2, fontSize: 12.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{j.company}</span>
+                  <span>{j.pnp && <Tag variant="ok">PNP</Tag>}</span>
+                  <span className="hmJobLoc" style={{ color: UI.text2, fontSize: 12.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'right' }}>{j.city ? `${j.city}, ${j.province}` : j.province}</span>
+                  <span style={{ color: UI.text, fontSize: 12.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'right' }}>{j.salaryText}</span>
                 </a>
               ))}
             </div>
@@ -246,7 +274,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
             <h2 style={secH}>{t('mkt.title')}<a href="/stats" style={moreA}>{t('home.stats.more')}</a></h2>
             {market === null
               ? <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, height: 560 }} />
-              : <MarketChart occ={market.occ} city={market.city} rows={market.rows} t={t} lang={lang} channels={market.channels} defaultTopN={10} />}
+              : <MarketChart occ={market.occ} city={market.city} rows={market.rows} t={t} lang={lang} channels={market.channels} />}
           </Band>
         )}
 

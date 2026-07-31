@@ -221,9 +221,9 @@ export function useMarketStats(): MarketData | null {
 // **全用 echarts 原生**(Frank「不要自己实现」):簇状柱=多 series 共 xAxis;缩放=dataZoom;不手搓柱子与滑块。
 const MC_PAL = ['#2563eb', '#f59e0b', '#10b981', '#8b5cf6', '#ef4444', '#06b6d4', '#84cc16', '#ec4899', '#6366f1', '#94a3b8']
 
-export function MarketChart({ occ, city, rows, t, lang = 'zh', channels, firstScreen = 12, defaultTopN = 0 }: { occ: OccRow[]; city: CityRow[]; rows: StatRow[]; t: TFn; lang?: string; channels?: { pnp: string[]; ee: string[] }; firstScreen?: number; defaultTopN?: number }) {
-  // firstScreen=横轴职业时首屏露几个职业(dataZoom 初窗);defaultTopN=职业轴默认只看前 N(0=全部)——
-  // L1-01 landing 传 10(Frank「默认 top 10,可选 10/20/50」,配合排序控件即数量榜/薪资榜),/stats 默认全部
+export function MarketChart({ occ, city, rows, t, lang = 'zh', channels, firstScreen = 12 }: { occ: OccRow[]; city: CityRow[]; rows: StatRow[]; t: TFn; lang?: string; channels?: { pnp: string[]; ee: string[] }; firstScreen?: number }) {
+  // firstScreen=横轴职业时首屏露几个职业(dataZoom 初窗)。Top N 选择器 2026-07-31 Frank「这个 top 去掉」撤:
+  // 排行职责移交 landing 职位榜「最多」tab,主图回归完整分布(缩放窗仍在,拉 dataZoom 看全)
   const [xKey, setXKey] = useState<'occ' | 'prov' | 'city'>('occ')
   const [grp, setGrp] = useState<'none' | 'prov' | 'broad' | 'teer'>('prov')
   // 右轴三档(2026-07-28 数据地基落地后):
@@ -235,7 +235,6 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels, firstSc
   // 排序(Frank 2026-07-28「加上排序按钮」):按岗位数 / 按中位年薪,各含高低两向;空值恒排最后
   const [sortBy, setSortBy] = useState<'jobs' | 'med'>('jobs')
   const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc')
-  const [topN, setTopN] = useState(defaultTopN)   // 职业轴只看前 N(0=全部);与排序组合=数量榜/薪资榜
   // 搜索 + 通道筛选(Frank 2026-07-28:「加一些搜索和过滤条件」「哪些能走 ee pnp aip qc 的单独通道也需要筛选」)。
   // 通道只放**职业粒度判得了**的两条:省提名具名清单、联邦 EE 类别。AIP 是雇主级、QC 数据层没清单 —— 不假装能筛。
   const [q, setQ] = useState('')
@@ -299,7 +298,7 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels, firstSc
         && (!fBroad || o.broad === fBroad) && (!fMid || o.mid === fMid) && (!fFine || o.fine === fFine)
         && (chan === 'all' || (chan === 'pnp' ? pnpSet.has(o.noc) : eeSet.has(o.noc)))
       const ks = [...natl].filter(hit).sort((a, b) => by(sortBy === 'med' ? pick(a.medianWageAnnual, a.medianSalaryAnnual, a.salaryN) : a.openJobs,
-        sortBy === 'med' ? pick(b.medianWageAnnual, b.medianSalaryAnnual, b.salaryN) : b.openJobs)).slice(0, topN > 0 ? topN : 200)
+        sortBy === 'med' ? pick(b.medianWageAnnual, b.medianSalaryAnnual, b.salaryN) : b.openJobs)).slice(0, 200)
       axis = ks.map(occName)
       med = ks.map((o) => pick(o.medianWageAnnual, o.medianSalaryAnnual, o.salaryN))
       end = Math.min(100, (firstScreen / Math.max(ks.length, 1)) * 100)
@@ -421,7 +420,7 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels, firstSc
             symbol: 'circle', symbolSize: 5, connectNulls: true, z: 5,
             lineStyle: { width: 2, color: '#111827' }, itemStyle: { color: '#111827' } }]),
     }
-  }, [occ, city, rows, xKey, g, y2, showMed, medName, sortBy, sortDir, topN, q, chan, minJobs, fBroad, fMid, fFine, pnpSet, eeSet, lang, t])
+  }, [occ, city, rows, xKey, g, y2, showMed, medName, sortBy, sortDir, q, chan, minJobs, fBroad, fMid, fFine, pnpSet, eeSet, lang, t])
 
   if (!occ.length && !city.length) return null   // 数据层没落地 → 整块不渲(不出空壳)
 
@@ -468,13 +467,6 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels, firstSc
                 fontWeight: sortDir === k ? 600 : 400 }}>{lb}</button>
           ))}
         </span>
-        {/* Top N(仅职业轴;Frank 2026-07-30「数量 top10 和薪资 top10 都要,可选 10 20 50」——排序选数量/薪资,这里选 N) */}
-        {xKey === 'occ' && (
-          <select value={topN} onChange={(e) => setTopN(Number(e.target.value))} style={selS}>
-            <option value={10}>Top 10</option><option value={20}>Top 20</option><option value={50}>Top 50</option>
-            <option value={0}>{t('chart.all')}</option>
-          </select>
-        )}
         <button onClick={() => setMore((v) => !v)} style={{ height: 32, border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', fontSize: 12.5, color: '#374151', padding: '0 11px', cursor: 'pointer' }}>
           {t('mkt.more')}{chan !== 'all' || y2 !== 'wage' || minJobs !== 5 || fBroad || fMid || fFine ? <span style={{ display: 'inline-block', background: '#2563eb', color: '#fff', borderRadius: 999, fontSize: 10.5, padding: '0 5px', marginLeft: 5 }}>{(chan !== 'all' ? 1 : 0) + (y2 !== 'wage' ? 1 : 0) + (minJobs !== 5 ? 1 : 0) + (fBroad ? 1 : 0) + (fMid ? 1 : 0) + (fFine ? 1 : 0)}</span> : null}
         </button>
