@@ -38,7 +38,7 @@ export type ReportLine = {
   url?: string                                  // 站内深链(下一步/备选用)
 }
 export type Report = {
-  goal: 'pr' | 'job' | 'career'
+  goal: 'pr' | 'job' | 'career' | 'prov'
   noc: string
   title: string
   conclusions: ReportLine[]
@@ -233,6 +233,88 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
   return { goal: 'pr', noc, title: facts.title, conclusions, gaps, nextSteps, alternatives, confidence, asOf: facts.fetched ?? '' }
 }
 
+// ── 卡③「选省份」:十省对照,专属题只有一道(手上有没有 offer)──────────────────
+// 免费=库里查得到的(哪个省把你这行放进公开清单、当地在招多少、抽选线区间);
+// 锁区=拿你的答案排出来的完整顺序与每省差距。QC 走自己体系不参与排序(不是 PNP)。
+export type ProvExtra = { hasJobOffer: boolean | null }
+export function buildProvReport(profile: MatchProfile, extra: ProvExtra, dims: MatchDims, facts: ReportFacts): Report {
+  const conclusions: ReportLine[] = []
+  const gaps: ReportLine[] = []
+  const nextSteps: ReportLine[] = []
+  const alternatives: ReportLine[] = []
+  const noc = facts.noc
+  if (!noc) {
+    gaps.push({ key: 'rpt.g.noNoc', params: {}, verdict: 'na' })
+    return { goal: 'prov', noc: '', title: '', conclusions, gaps, nextSteps, alternatives, confidence: 'low', asOf: facts.fetched ?? '' }
+  }
+
+  // 候选=有在招数据的省 ∪ 公开清单里收了这个职业的省(某省 0 在招但清单收了它,仍然是个真选项)
+  const provs = new Set<string>([
+    ...facts.byProv.map((r) => r.province),
+    ...dims.pnpOccupations.filter((r) => r.noc === noc && r.type !== 'ineligible').map((r) => r.province),
+  ])
+  type Cand = { prov: string; open: number; named: number; cov: string; label: string; url: string; fetched: string; excluded: boolean }
+  const cands: Cand[] = []
+  let uncovered = 0
+  for (const prov of provs) {
+    const cov = provListCoverage(prov, dims)
+    if (cov === 'qc') { gaps.push({ key: 'rpt.c.qc', params: { prov }, verdict: 'na' }); continue }
+    if (cov === 'uncovered') { uncovered += 1; continue }
+    const f = facts.byProv.find((r) => r.province === prov) ?? { province: prov, open: 0, named: 0 }
+    const row = dims.pnpOccupations.find((r) => r.province === prov && r.noc === noc && r.type !== 'ineligible')
+    // 排除清单上的省不是「备选」——它是明确走不了的,归缺口(复用 rpt.c.excluded,带官方出处)
+    const ex = dims.pnpOccupations.find((r) => r.province === prov && r.noc === noc && r.type === 'ineligible')
+    if (ex && !row) {
+      gaps.push({
+        key: 'rpt.c.excluded', params: { prov, noc, label: ex.label }, verdict: 'fail',
+        source: { label: ex.label, url: ex.url, fetched: ex.fetched },
+      })
+      continue
+    }
+    cands.push({ prov, open: f.open, named: f.named, cov, label: row?.label ?? '', url: row?.url ?? '', fetched: row?.fetched ?? '', excluded: false })
+  }
+  // 排序:进了公开清单的优先(那是官方具名认可),其次看当地在招量;排除清单上的沉底
+  const rank = cands.sort((a, b) =>
+    Number(Boolean(b.label)) - Number(Boolean(a.label)) || b.named - a.named || b.open - a.open)
+
+  for (const [i, c] of rank.slice(0, 2).entries()) {
+    if (c.label) {
+      conclusions.push({
+        key: i === 0 ? 'rpt.p.best' : 'rpt.p.second',
+        params: { prov: c.prov, open: c.open, named: c.named, label: c.label },
+        verdict: 'pass', source: { label: c.label, url: c.url, fetched: c.fetched },
+      })
+    } else {
+      // 不公布清单的省(ON):0 具名是制度性的,只能按 TEER 粗筛口径陈述,不得说「不在清单」
+      conclusions.push({ key: 'rpt.p.screen', params: { prov: c.prov, open: c.open, teer: facts.teer ?? '' }, verdict: 'warn' })
+    }
+  }
+  if (rank[0]?.open) nextSteps.push({ key: 'rpt.n.jobs', params: { prov: rank[0].prov, n: rank[0].open }, url: `/?prov=${rank[0].prov}&q=${noc}` })
+
+  // 锁区:完整顺序与每省差距(要拿他的答案才排得出来)
+  if (rank.length > 2) {
+    conclusions.push({ key: 'rpt.p.rank', params: { n: rank.length }, verdict: 'na' })
+    for (const c of rank.slice(2, 2 + ALT_CAP)) {
+      alternatives.push({
+        key: 'rpt.a.prov', params: { prov: c.prov, open: c.open, named: c.named, label: c.label },
+        verdict: c.label ? 'pass' : 'na', ...(c.url ? { source: { label: c.label, url: c.url, fetched: c.fetched } } : {}),
+      })
+    }
+  }
+
+  // 唯一的专属题:雇主担保类通道按定义要先有 offer —— 没有就是真缺口,有就把对照通道排成下一步
+  if (extra.hasJobOffer === true) nextSteps.unshift({ key: 'rpt.n.employer', params: { prov: rank[0]?.prov ?? '' }, url: '/pathways' })
+  else if (extra.hasJobOffer === false) gaps.push({ key: 'rpt.g.noOffer', params: {}, verdict: 'warn' })
+
+  if (uncovered > 0) gaps.push({ key: 'rpt.g.uncoveredN', params: { n: uncovered }, verdict: 'na' })
+  nextSteps.push({ key: 'rpt.n.pathways', params: {}, url: '/pathways' })
+
+  return {
+    goal: 'prov', noc, title: facts.title, conclusions, gaps, nextSteps, alternatives,
+    confidence: !rank.length ? 'low' : extra.hasJobOffer != null ? 'high' : 'mid', asOf: facts.fetched ?? '',
+  }
+}
+
 // ── 卡①「找工作」:同一 Report 契约,零新题(职业/处境/目标省已在共用底座里)────────
 // 免费=库里查得到的(在招量、具名命中、帖面薪资 vs ESDC 中位);
 // 锁区=拿他的答案算出来的(有担保记录的雇主是哪几家、按他在意的维度排好的岗位短名单)。
@@ -378,9 +460,9 @@ const LOCK_CAT: Record<string, string> = {
   'rpt.c.scoreAbove': 'score', 'rpt.c.scoreBelow': 'score', 'rpt.c.scoreBand': 'score',
   'rpt.c.window': 'window', 'rpt.c.eeAbove': 'ee', 'rpt.c.eeBelow': 'ee',
   // 卡①/⑥:担保雇主名单与跃迁排序都要用他的答案才筛得出来 → 锁区(自由查得到的在招量与中位薪资照旧免费)
-  'rpt.j.sponsors': 'sponsors', 'rpt.k.peerGap': 'move',
+  'rpt.j.sponsors': 'sponsors', 'rpt.k.peerGap': 'move', 'rpt.p.rank': 'rank',
 }
-const LOCK_ORDER = ['score', 'window', 'alts', 'ee', 'sponsors', 'move', 'more']   // 锁行固定序(有序去重)
+const LOCK_ORDER = ['score', 'window', 'alts', 'ee', 'sponsors', 'move', 'rank', 'more']   // 锁行固定序(有序去重)
 const HINT: Record<string, string> = { 'rpt.c.regulated': 'rpt.hint.cert', 'rpt.g.expShort': 'rpt.hint.exp' }
 
 export function gateReport(report: Report, pro: boolean): GatedReport {
@@ -408,7 +490,7 @@ export function gateReport(report: Report, pro: boolean): GatedReport {
   if (report.goal !== 'pr') {
     const free = report.conclusions.filter((c) => !LOCK_CAT[c.key])
     const cats2 = new Set(report.conclusions.filter((c) => LOCK_CAT[c.key]).map((c) => LOCK_CAT[c.key]))
-    if (report.alternatives.length) cats2.add('move')
+    if (report.alternatives.length) cats2.add(report.goal === 'prov' ? 'rank' : 'move')
     return {
       ...report, conclusions: free, alternatives: [],
       lanes: [], hint, locked: LOCK_ORDER.filter((k) => cats2.has(k)), pro: false,

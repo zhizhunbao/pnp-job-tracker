@@ -16,7 +16,7 @@ import { BANNER_IMGS, PageBanner, Tag, UI } from '../ui/primitives'
 import { track } from '@/lib/track'
 
 // 有自己的题库与报告的目标卡 → 进两态答题页;加一张卡=加一行(与 lib/decisions 同一个加卡口径)
-const PLAN_CARDS: Record<string, string> = { pr: '/plan/pr', jobs: '/plan/job', career: '/plan/career' }
+const PLAN_CARDS: Record<string, string> = { pr: '/plan/pr', jobs: '/plan/job', career: '/plan/career', prov: '/plan/province' }
 
 export type HomeStats = {
   total: number | null; named: number | null; lmia: number | null

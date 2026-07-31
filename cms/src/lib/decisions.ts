@@ -16,6 +16,9 @@ export const DECISIONS: Record<string, Decision> = {
   // 这就是横向扩面成立的原因:同一批答案,三张卡都能出报告。
   job: { basic: ['status', 'provBand'], explore: [] },
   career: { basic: ['provBand'], explore: [] },
+  // 卡③选省份:只问一道专属题 —— 目标省是这张卡要**算出来**的东西,不能拿它当输入问;
+  // 处境/英语已在底座里但改不了本卡任何结论(省级语言门槛未建模),照铁律不重复问。
+  prov: { basic: ['offerBand'], explore: [] },
 }
 
 export const fieldsOf = (decision: string, stage: Stage, batch = 0): string[] => {

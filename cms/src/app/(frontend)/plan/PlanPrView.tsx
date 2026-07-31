@@ -85,8 +85,8 @@ function Hero({ r, t }: { r: Rpt; t: TFn }) {
   const big = c?.key === 'rpt.c.listedHit' ? { n: c.params.named, of: c.params.open, cap: t('rpt.hero.hit', { prov: c.params.prov }) }
     : c?.key === 'rpt.c.screenPass' ? { n: c.params.open, of: null, cap: t('rpt.hero.open', { prov: c.params.prov }) }
     // 卡①找工作:大数字=目标省在招量;卡⑥职业规划:=你这行全国在招量(都是库里的真数,不合成分)
-    : c?.key === 'rpt.j.openNamed' ? { n: c.params.named, of: c.params.open, cap: t('rpt.hero.hit', { prov: c.params.prov }) }
-      : c?.key === 'rpt.j.open' ? { n: c.params.open, of: null, cap: t('rpt.hero.jobs', { prov: c.params.prov }) }
+    : c?.key === 'rpt.p.best' || c?.key === 'rpt.j.openNamed' ? { n: c.params.named, of: c.params.open, cap: t('rpt.hero.hit', { prov: c.params.prov }) }
+      : c?.key === 'rpt.p.screen' || c?.key === 'rpt.j.open' ? { n: c.params.open, of: null, cap: t('rpt.hero.jobs', { prov: c.params.prov }) }
         : c?.key === 'rpt.k.self' || c?.key === 'rpt.k.selfWage' ? { n: c.params.open, of: null, cap: t('rpt.hero.self') }
           : null
   if (!big && !r.hint && !c) return null
@@ -138,7 +138,7 @@ function Lanes({ lanes, t }: { lanes: Lane[]; t: TFn }) {
 }
 
 // 一个决定=一个参数(统一题库 §3:入口三处共用同一答题器与同一报告页,差别只有问哪些字段、答完出哪份报告)
-export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'career' } = {}) {
+export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'career' | 'prov' } = {}) {
   const hasExplore = (DECISIONS[decision]?.explore.length ?? 0) > 0
   const [lang, setLang] = useState<Lang>('zh')
   useEffect(() => { setLang(initialLang()) }, [])

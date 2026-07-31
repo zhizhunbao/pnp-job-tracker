@@ -97,6 +97,24 @@ export const FIELDS: Record<string, FieldDef> = {
       ],
     },
   },
+  // 卡③「选省份」唯一的专属题:雇主担保类通道按定义要先有 offer —— 有/没有各改一条真结论
+  // (有 → 下一步换成对照该省雇主通道;没有 → 出缺口)。「面试中/自雇」都按「还没有」算,不含糊。
+  offerBand: {
+    engineKey: 'hasJobOffer',
+    unlocks: ['rpt.n.employer', 'rpt.g.noOffer'],
+    tier: 'free',
+    toAnswer: (b: number) => (b ? b === 1 : undefined),
+    q: {
+      type: 'radiogroup', name: 'offerBand', isRequired: true,
+      title: l('Do you have a job offer in hand?', '手上有 offer 吗?', '받은 잡오퍼가 있나요?'),
+      choices: [
+        { value: 1, text: l('Yes', '有', '있음') },
+        { value: 2, text: l('In interviews', '面试中', '면접 중') },
+        { value: 3, text: l('No', '没有', '없음') },
+        { value: 4, text: l('Self-employed', '自雇', '자영업') },
+      ],
+    },
+  },
   // 探索层:CRS → EE 分差(锁区 ee)
   crsBand: {
     engineKey: 'crs',
