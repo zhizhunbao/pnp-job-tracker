@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 
 import { initialLang, makeT, LANG_KEY, LANGS, type Lang } from '../i18n'
 import { catName, JobBody, nocLocalTitle, provName, type JobRow, type NocDesc, type Plan } from '../JobsTable'
+import { OccReportCard } from './OccReportCard'
 import { SiteHeader } from '../../SiteHeader'
 import { SiteFooter } from '../../SiteFooter'
 import { PageShell } from '../../ui/primitives'
@@ -70,6 +71,9 @@ export default function JobDetailView({ job, plan, dims }: { job: JobRow; plan: 
             ) : null}
             <JobBody job={job} lang={lang} plan={plan} />
           </div>
+
+          {/* 刀 1(入口下沉-20260731):报告入口,自包含组件,老结构不动;拿不到数/本省零在招=整卡不渲 */}
+          <OccReportCard noc={job.noc || ''} province={job.province || ''} t={t} />
 
         </div>
       </PageShell>

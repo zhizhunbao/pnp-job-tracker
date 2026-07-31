@@ -103,7 +103,10 @@ function collectRefs(r: Rpt, t: TFn): { rows: RefRow[]; of: (l: RptLine) => numb
     if (!u) return ''
     if (u.startsWith('http')) { try { return new URL(u).hostname.replace(/^www\./, '') } catch { return u } }
     const seg = u.replace(/^\//, '').split(/[?#/]/)[0]
-    return DEST[seg] ? t(DEST[seg]) : t('rpt.dest.site')
+    if (!DEST[seg]) return t('rpt.dest.site')
+    // 同一个目的地被多条引用时,靠参数区分(两条「职位板」看不出谁是哪个省)
+    const prov = u.match(/[?&]prov=([A-Z]{2})/)?.[1]
+    return t(DEST[seg]) + (prov ? ` ${prov}` : '')
   }
   for (const l of [...r.conclusions, ...r.gaps, ...r.alternatives, ...r.nextSteps]) {
     const u = urlOf(l)
@@ -186,10 +189,13 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
   const [rpt, setRpt] = useState<Rpt | null | 'loading'>(null)
 
   useEffect(() => {
-    const a = readAnswers()
+    const sp = new URLSearchParams(window.location.search)
+    // 入口带职业进来(职位详情页/弹框的报告入口):落地即用,不逼他先答题
+    const fromUrl = (sp.get('noc') || '').trim()
+    const a = /^\d{5}$/.test(fromUrl) ? writeAnswers({ nocs: [fromUrl] }) : readAnswers()
     setBands(a)
     setNoc(a.nocs[0] || '')
-    if (new URLSearchParams(window.location.search).get('view') === 'report') setView('report')
+    if (sp.get('view') === 'report') setView('report')
     setReady(true)
     track(`plan-${decision}-open`)
   }, [])
