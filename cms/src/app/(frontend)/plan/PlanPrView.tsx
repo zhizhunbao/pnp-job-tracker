@@ -253,10 +253,12 @@ export function PlanPrView() {
           本页初版自造 760 main 违规,2026-07-31 Frank 点名纠正);答题/报告列 760 居中保行长可读(news 阅读页先例) */}
       <div style={{ flex: '1 0 auto' }}>
         <PageShell pad="1rem 1.25rem 40px">
-          <div style={{ maxWidth: 760, margin: '0 auto' }}>
+          <div style={{ maxWidth: view === 'quiz' ? 560 : 760, margin: '0 auto' }}>
         <h1 style={{ fontSize: 22, margin: '6px 0 4px' }}>{t('plan.pr.title')}</h1>
 
         {view === 'quiz' ? (
+          // 答题列比报告列更窄(2026-07-31 Frank「这个问题页面跟狗屎一样」):一屏一题在桌面
+          // 撑满 760 轨 = 四个字的选项拉一整行、右边全是空白。Typeform 范式的前提是窄列居中。
           <>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 12, color: UI.text3, margin: '2px 0 14px' }}>
               <span>{t(stage === 'explore' ? 'plan.explore.sub' : 'plan.pr.sub')}</span>
@@ -265,10 +267,35 @@ export function PlanPrView() {
               )}
             </div>
             {/* 职业 chip 常驻(非四题之一):三问答过直接用,没答→页内拉起 EntryQuiz */}
-            <div style={{ marginBottom: 6 }}><OccChip noc={noc} nocTitle={nocTitle} t={t} onPick={() => setQuizOpen(true)} /></div>
-            {/* 框架容器贴站底色(默认奶白与页面灰打架);题库/进度/导航/多语全在框架里 */}
-            <style>{`.plSurvey .sd-root-modern{background:transparent}.plSurvey .sd-body{padding-left:0 !important;padding-right:0 !important}`}</style>
-            <div className="plSurvey">{survey && <Survey model={survey} />}</div>
+            <div style={{ marginBottom: 10 }}><OccChip noc={noc} nocTitle={nocTitle} t={t} onPick={() => setQuizOpen(true)} /></div>
+            {/* 题卡:框架只出题与导航,壳与配色归站内 token —— 选项做成可点的卡(能点才有 hover 和小手),
+                主按钮=站蓝(全站按钮统一,不留框架灰块) */}
+            <style>{`
+.plSurvey .sd-root-modern{background:transparent}
+.plSurvey .sd-body{padding:0 !important}
+.plSurvey .sd-page{padding:0}
+.plSurvey .sd-question__title{font-size:17px;font-weight:700;color:${UI.text};margin-bottom:14px}
+.plSurvey .sd-selectbase{gap:0}
+.plSurvey .sd-item{background:#fff;border:1px solid ${UI.border};border-radius:10px;padding:11px 14px;margin-bottom:9px;cursor:pointer}
+.plSurvey .sd-item--allowhover:hover{border-color:#93c5fd;background:#f8fbff}
+.plSurvey .sd-item--checked{border-color:${UI.primary};background:#eff6ff}
+.plSurvey .sd-selectbase__label{cursor:pointer}
+.plSurvey .sd-progress{background:${UI.hairline};border-radius:999px;height:5px;margin:0 0 26px}
+.plSurvey .sd-progress__bar{border-radius:999px}
+/* 框架把进度文字绝对定位在进度条上,窄列里正好压住题干 → 拉回文档流,单独一行右对齐 */
+.plSurvey .sd-progress__text{position:static;margin:6px 0 0;padding:0;font-size:11.5px;font-weight:400;color:${UI.text3};text-align:right}
+.plSurvey .sd-btn{border-radius:8px;font-size:14px;font-weight:600;padding:11px 26px;box-shadow:none;font-family:inherit;width:auto}
+/* 框架用 background-color 覆盖 background 简写,且导航条走 float 布局(sd-clearfix)——
+   这两处必须 !important 才压得住,是与框架抢版式的最小面积 */
+.plSurvey .sd-navigation__next-btn,.plSurvey .sd-navigation__complete-btn{background-color:${UI.primary} !important;color:#fff}
+.plSurvey .sd-navigation__next-btn:hover,.plSurvey .sd-navigation__complete-btn:hover{background-color:${UI.primaryDeep} !important}
+.plSurvey .sd-navigation__prev-btn{background-color:#fff !important;color:${UI.text2};border:1px solid ${UI.border}}
+/* 按钮各占半幅是框架默认;收成内容宽、靠右(主按钮在右=站内表单惯例) */
+.plSurvey .sd-body__navigation{display:flex !important;padding:18px 0 0;justify-content:flex-end;gap:10px}
+.plSurvey .sd-body__navigation .sv-action,.plSurvey .sd-body__navigation .sd-btn{flex:0 0 auto;width:auto;min-width:0;float:none !important}
+/* 框架的禁用态=主按钮透明度 25%(蓝底白字褪成一团看不清);换成站内灰底灰字的正经禁用样式 */
+.plSurvey .sd-btn:disabled{opacity:1;background:${UI.hairline};color:${UI.text3};cursor:default}`}</style>
+            <div className="plSurvey" style={{ ...CARD, padding: '18px 20px 6px' }}>{survey && <Survey model={survey} />}</div>
           </>
         ) : (
           <>
