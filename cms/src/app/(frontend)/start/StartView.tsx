@@ -228,7 +228,8 @@ export function StartView({ stats }: { stats: HomeStats }) {
                       </span>
                       <span style={{ color: UI.text2, fontSize: 12.5, whiteSpace: 'nowrap', textAlign: 'right' }}>{o.openJobs != null ? t('quiz.openN', { n: o.openJobs.toLocaleString('en-CA') }) : ''}</span>
                       <span className="hmOccElig" style={{ color: UI.ok, fontSize: 12.5, whiteSpace: 'nowrap', textAlign: 'right' }}>{o.namedJobs ? t('quiz.eligN', { n: o.namedJobs.toLocaleString('en-CA') }) : ''}</span>
-                      <span style={{ color: UI.text, fontSize: 12.5, whiteSpace: 'nowrap', textAlign: 'right' }}>{o.medianWageAnnual != null ? '$' + Math.round(o.medianWageAnnual / 1000) + 'K' : ''}</span>
+                      {/* ESDC 官方中位=单值非区间(Frank 2026-07-31 问「为什么不是范围」)——数字给名分,出处挂 title */}
+                      <span title={t('stats.medWage')} style={{ color: UI.text, fontSize: 12.5, whiteSpace: 'nowrap', textAlign: 'right' }}>{o.medianWageAnnual != null ? t('home.jobs.med', { v: '$' + Math.round(o.medianWageAnnual / 1000) + 'K' }) : ''}</span>
                     </a>
                     )
                   })
