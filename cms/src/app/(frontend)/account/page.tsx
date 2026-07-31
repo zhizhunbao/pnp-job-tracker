@@ -12,9 +12,35 @@ import { ProfileForm, type ProfileValue } from './ProfileForm'
 import { SavedSearchList } from './SavedSearchList'
 import { SavedJobsList } from './SavedJobsList'
 import { Avatar } from '../Avatar'
-import { Button, Notice } from '../ui/primitives'
+import { Button, Notice, UI } from '../ui/primitives'
+import { readAnswers } from '@/lib/answers'
+import { shortOcc } from '../quiz/EntryQuiz'
 
 type Me = { id: string | number; email: string; role?: string; proUntil?: string | null; profile?: ProfileValue | null; displayName?: string | null; avatar?: string | null; locale?: string | null } | null
+
+// 你答过的条件(答题器那份答案):没答过就一行入口,答过就把答案摆出来 + 两个动作。
+// 名字懒查 /api/quiz?noc= —— 与详情页入口卡同一个端点,不新写。
+function AnswersRow({ t }: { t: (k: string, p?: Record<string, string | number>) => string }) {
+  const [a, setA] = useState<{ nocs: string[]; provs: string[] } | null>(null)
+  const [name, setName] = useState('')
+  useEffect(() => { const x = readAnswers(); setA({ nocs: x.nocs, provs: x.provs }) }, [])
+  useEffect(() => {
+    const noc = a?.nocs?.[0]
+    if (!noc) return
+    fetch(`/api/quiz?noc=${encodeURIComponent(noc)}`).then((r) => r.json())
+      .then((d) => setName(d?.facts?.titleZh || d?.facts?.title || noc)).catch(() => setName(noc))
+  }, [a])
+  const has = Boolean(a?.nocs?.length)
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 10, background: '#eff6ff', border: '1px solid #dbeafe', borderRadius: 9, padding: '8px 12px', margin: '0 0 14px', fontSize: 12.5 }}>
+      <span style={{ color: '#1e40af', flex: 1, minWidth: 120 }}>
+        {has ? `${t('quiz.bar.saved')}${name ? `:${shortOcc(name)}` : ''}${a?.provs?.length ? `、${a.provs.join('、')}` : ''}` : t('quiz.bar.new')}
+      </span>
+      {has && <a href="/plan/job?view=report" style={{ color: UI.primary, fontWeight: 600, textDecoration: 'none' }}>{t('quiz.bar.result')}</a>}
+      <a href="/plan/job" style={{ color: has ? '#6b7280' : UI.primary, fontWeight: has ? 400 : 600, textDecoration: 'none' }}>{t(has ? 'quiz.bar.redo' : 'quiz.bar.go')}</a>
+    </div>
+  )
+}
 
 function RedirectToLogin() {
   useEffect(() => { window.location.replace('/?login=1') }, [])
@@ -146,8 +172,13 @@ export default function AccountPage() {
                 </div>
               </div>
             </>)}
-            {/* 移民档案(E5-00):匹配层输入;key 按 id 防换号残留 */}
-            {sec === 'profile' && <ProfileForm key={String(me.id)} t={t} userId={me.id} initial={me.profile ?? null} />}
+            {/* 移民档案(E5-00):匹配层输入;key 按 id 防换号残留。
+                答题条件条(2026-07-31 Frank「放到我的档案里面」):从职位板搬来的那条,家在这里 ——
+                它显示的是**答题器里那份答案**(统一存储),两个入口:改条件 / 直接看报告 */}
+            {sec === 'profile' && (<>
+              <AnswersRow t={t} />
+              <ProfileForm key={String(me.id)} t={t} userId={me.id} initial={me.profile ?? null} />
+            </>)}
             {/* 已保存筛选(E5-03):邮件提醒管理 */}
             {/* 我的收藏(#62A):同一收藏数据的纯列表视图,独立成节 */}
             {sec === 'favs' && <SavedJobsList t={t} variant="favs" />}

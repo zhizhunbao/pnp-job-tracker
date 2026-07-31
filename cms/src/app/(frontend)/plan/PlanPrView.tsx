@@ -287,7 +287,8 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
             照职位详情页那把 —— 有历史走 history.back(保留来处的滚动与筛选),新标签页无处可回就落职位板 */}
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
           <h1 style={{ fontSize: 22, margin: '6px 0 4px', flex: 1, minWidth: 0 }}>{t(`plan.${decision}.title`)}</h1>
-          <button onClick={() => goBackOr('/')} style={{ ...BTN, flexShrink: 0 }}>{t('detail.back')}</button>
+          {/* 样式与全站返回口径一致(BackLink 药丸、无箭头);这里要 goBackOr 的行为所以用 button 同款样式 */}
+          <button onClick={() => goBackOr('/')} style={{ flexShrink: 0, border: `1px solid ${UI.border}`, background: '#fff', color: UI.primary, borderRadius: 999, padding: '4px 14px', fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{t('detail.back')}</button>
         </div>
 
         {view === 'quiz' ? (

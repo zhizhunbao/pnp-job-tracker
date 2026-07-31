@@ -232,11 +232,12 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
               <a href="/account?sec=profile" style={menuItem}><IconUser /> {t('prof.title')}</a>
               <a href="/account?sec=saved" style={menuItem}><IconSave /> {t('ss.title')}</a>
               <a href="/account" style={menuItem}><IconSettings /> {t('nav.acctTab')}</a>
+              {/* 2026-07-31 Frank「升级 Pro 这个按钮太宽太突兀了吧」:通栏实心橙钮改成与其它条目同构的一行,
+                  靠 Pro 色的星与文字区分即可 —— 菜单里塞一块广告位,点的人不会多,烦的人一定多 */}
               {!plan.isPro && (
-                <Button kind="pro" sm onClick={() => { setMenu(false); setPricing(true) }}
-                  style={{ display: 'block', width: 'calc(100% - 20px)', margin: '4px 10px', padding: '5px 0', textAlign: 'center' }}>
+                <button onClick={() => { setMenu(false); setPricing(true) }} style={{ ...menuItem, color: '#b45309', fontWeight: 600 }}>
                   <IconStar /> {t('up.cta2')}
-                </Button>
+                </button>
               )}
               <div style={{ borderTop: '1px solid #f3f4f6', margin: '2px 0' }} />
               <button onClick={logout} style={{ ...menuItem, color: '#9ca3af' }}>{t('acct.logout')}</button>
@@ -656,17 +657,6 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   // 三问弹框已退役(2026-07-31 Frank「不需要弹框答题了,统一一下答题功能」):
   // 答题只剩 /plan/* 的 SurveyJS 答题器;职位板只读答案做回显与筛选,自己不再问问题。
   // 自动弹窗(#237 的排队逻辑)随之删掉 —— 没有弹框就没有「盖住别的弹框」这回事。
-  const [quizSaved, setQuizSaved] = useState<QuizAnswers | null>(null)   // 上次答案(统一存储),细带按它显示
-  useEffect(() => {
-    const saved = readQuiz()
-    if (saved) setQuizSaved({ status: saved.status, nocs: saved.nocs, provs: saved.provs })
-  }, [])
-  // 把已有答案套进列表筛选(细带「看结果」,不再经过弹框结果页)
-  const applyQuiz = (a: QuizAnswers) => {
-    if (a.provs.length === 1) setFProv(a.provs[0])
-    if (a.nocs[0]) setQ(a.nocs[0])
-    track('quiz-apply-filter')
-  }
   // quizToProfile(三问答案 → 档案落库)随组件提级抽到 quiz/EntryQuiz.tsx —— jobs 与 /start 同一份
   // 我的求职(E9-01):已收藏映射 jobId → {saved-jobs 行 id, status};匿名点收藏 → 注册框(转化钩子)
   const [saved, setSaved] = useState<Record<string, { id: number | string; status: string }>>({})
@@ -1040,24 +1030,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           )} />
 
 
-        {/* 三问细带(Frank「要是用户之前没填或者填错了,不能刷新修改吗」):答过=显示上次答案 + 看结果/改;
-            没答过=一句话入口。常驻不打扰,弹窗只弹一次的缺口靠它补上。 */}
-        {!plan.profileOk && (
-          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, background: '#eff6ff', border: '1px solid #dbeafe', borderRadius: 9, padding: '7px 12px', margin: '10px 0 0', fontSize: 12.5 }}>
-            {quizSaved?.nocs?.length ? (
-              <>
-                <span style={{ color: '#1e40af', flex: 1, minWidth: 110, whiteSpace: 'nowrap' }}>{t('quiz.bar.saved')}</span>
-                <button onClick={() => quizSaved && applyQuiz(quizSaved)} style={{ border: 'none', background: 'none', color: '#2563eb', fontWeight: 600, cursor: 'pointer', fontSize: 12.5, padding: 0, fontFamily: 'inherit' }}>{t('quiz.bar.result')}</button>
-                <a href="/plan/job" style={{ color: '#6b7280', fontSize: 12.5, textDecoration: 'none' }}>{t('quiz.bar.redo')}</a>
-              </>
-            ) : (
-              <>
-                <span style={{ color: '#1e40af', flex: 1, minWidth: 110 }}>{t('quiz.bar.new')}</span>
-                <a href="/plan/job" style={{ color: '#2563eb', fontWeight: 600, fontSize: 12.5, textDecoration: 'none' }}>{t('quiz.bar.go')}</a>
-              </>
-            )}
-          </div>
-        )}
+        {/* 三问细带已移出职位板(2026-07-31 Frank「我觉得放在这不合适,应该放到我的档案里面」):
+            答案的家是档案页 —— 职位板只管找工作,不再在列表上方常驻一条「你上次填了什么」。 */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '1rem 0' }}>
           {/* ═══ #59 筛选区重设计(2026-07-18 效果图过目后 Frank「可以」):5 行 label+下拉收成
               「常用一行(搜索/省/大类/PNP/年薪)+ 更多筛选折叠(激活计数徽标)」;07-07 行序拍板与
