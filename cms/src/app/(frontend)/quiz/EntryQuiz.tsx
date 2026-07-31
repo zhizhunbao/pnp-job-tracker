@@ -97,7 +97,9 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
   // 按**库里在招量**取前 24(/api/quiz?top=24),会随市场自己变;拿不到就退回内置常用清单。
   const [top, setTop] = useState<{ noc: string; title: string; titleZh: string; open: number }[]>([])
   const [moreNocs, setMoreNocs] = useState(false)   // 第 2 题默认只露 8 个(Frank「看着有点乱」),其余收起
-  const [nocTitle, setNocTitle] = useState('')   // 已选职业名(第 3 题顶部回显,让用户看见自己答到哪了)
+  // 已选职业名映射(回显 chip 用)。Frank 2026-07-31「重新答题显示的还是老的结果」根因之一:
+  // 旧版只存「最后一次点的名字」,重答预填的旧职业(尤其搜索选的)在界面上**看不见也摘不掉**。
+  const [titles, setTitles] = useState<Record<string, string>>({})
   const [facts, setFacts] = useState<QuizFacts | null | 'loading'>(null)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -118,10 +120,12 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
   }, [])
 
   // 进第 3 题即预取该职业事实:省按钮直接挂「该省多少岗」(Frank「弹框太单薄」——
-  // 让用户在**选省的当下**就看见各省行情,而不是答完才知道;端点与结果页同一个,结果页因此也秒开)
+  // 让用户在**选省的当下**就看见各省行情,而不是答完才知道;端点与结果页同一个,结果页因此也秒开)。
+  // 守卫按 NOC 比对不按「有没有 facts」:重答换了职业,旧 facts 在手也必须重取(2026-07-31 老结果 bug)
   useEffect(() => {
     const noc = nocs[0]
-    if (step !== 2 || !noc || facts) return
+    if (step !== 2 || !noc) return
+    if (facts === 'loading' || (facts && facts.noc === noc)) return
     setFacts('loading')
     fetch(`/api/quiz?noc=${encodeURIComponent(noc)}`)
       .then((r) => r.json()).then((d) => setFacts(d?.facts ?? null)).catch(() => setFacts(null))
@@ -182,6 +186,28 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
   })
   const pickedChip: React.CSSProperties = { fontSize: 11.5, color: '#1d4ed8', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 999, padding: '2px 9px' }
   const provName = (p: string) => t('prov.' + p) !== 'prov.' + p ? t('prov.' + p) : p
+  // 职业码 → 显示名:点选时存的名 → 热门清单 → 内置常用清单 → 兜底显码(预填的旧选择也要能认出来)
+  const nocLabel = (n: string): string => {
+    if (titles[n]) return titles[n]
+    const tp = top.find((x) => x.noc === n)
+    if (tp) return (lang === 'zh' && tp.titleZh) ? tp.titleZh : tp.title
+    const pop = POPULAR_NOCS.find((p) => p.noc === n)
+    return pop ? t(pop.key) : n
+  }
+  const toggleNoc = (n: string, label: string) => {
+    // 新选的排**最前**:结果页/预取都按 nocs[0] 取数 —— 重答时新答案必须赢过预填的旧职业(2026-07-31)
+    setNocs(nocs.includes(n) ? nocs.filter((x) => x !== n) : [n, ...nocs])
+    if (label) setTitles((m) => ({ ...m, [n]: label }))
+  }
+  // 已选职业回显:第 2 题可逐个摘除(×),第 3 题只读 —— 所有已选都看得见,不再有「看不见的旧选择」
+  const nocChips = (removable: boolean) => nocs.map((n) => removable ? (
+    <button key={n} onClick={() => setNocs(nocs.filter((x) => x !== n))} title={nocLabel(n)}
+      style={{ ...pickedChip, cursor: 'pointer', fontFamily: 'inherit', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+      {shortOcc(nocLabel(n))}<span aria-hidden style={{ color: '#93c5fd', fontWeight: 700 }}>×</span>
+    </button>
+  ) : (
+    <span key={n} style={pickedChip}>{shortOcc(nocLabel(n))}</span>
+  ))
 
   // Frank 2026-07-26「这个入口还是需要重新设计一下,专业、信任、能留住用户;现在这么简陋像钓鱼网站」:
   // 全屏页三件事自证身份 —— ①站名与定位(用户得知道自己在哪);②**库里的真数字**(在招、命中省提名清单、
@@ -240,11 +266,12 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
               <>
                 <div style={{ fontSize: 21, fontWeight: 700, margin: '2px 0 6px', color: '#111827' }}>{t('quiz.q2')}</div>
                 <div style={{ fontSize: 12.5, color: '#6b7280', marginBottom: 12 }}>{t('quiz.q2sub')}</div>
-                {/* 已答回显跟在副标题之后:层级 标题 > 副标题 > 已答,不再打断标题 */}
-                {(status || nocTitle) ? (
+                {/* 已答回显跟在副标题之后:层级 标题 > 副标题 > 已答。职业列**全部已选**且可 × 摘除 ——
+                    重答预填的旧职业必须看得见摘得掉,否则结果页(按 nocs[0] 取数)显示的还是老职业(2026-07-31) */}
+                {(status || nocs.length) ? (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, margin: '0 0 12px' }}>
                     {status ? <span style={pickedChip}>{t('quiz.st.' + status)}</span> : null}
-                    {nocTitle ? <span style={pickedChip}>{nocTitle}</span> : null}
+                    {nocChips(true)}
                   </div>
                 ) : null}
                 <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('quiz.q2ph')} enterKeyHint="search"
@@ -253,9 +280,7 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
                   <div style={{ marginBottom: 10 }}>
                     {cands.map((c) => (
                       <button key={c.noc} onClick={() => {
-                        const on = nocs.includes(c.noc)
-                        setNocs(on ? nocs.filter((n) => n !== c.noc) : [...nocs, c.noc])
-                        setNocTitle(on ? '' : (lang === 'zh' && c.titleZh ? c.titleZh : c.title))
+                        toggleNoc(c.noc, lang === 'zh' && c.titleZh ? c.titleZh : c.title)
                         setQ(''); setCands([])
                       }} style={opt(nocs.includes(c.noc))}>
                         {shortOcc(lang === 'zh' && c.titleZh ? c.titleZh : c.title)}
@@ -285,10 +310,7 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
                     const on = nocs.includes(x.noc)
                     return (
                       <button key={x.noc} title={x.label}
-                        onClick={() => {
-                          setNocs(on ? nocs.filter((n) => n !== x.noc) : [...nocs, x.noc])
-                          setNocTitle(on ? '' : x.label)
-                        }}
+                        onClick={() => toggleNoc(x.noc, x.label)}
                         style={{ ...chipStyle(on), display: 'inline-flex', alignItems: 'baseline', gap: 6, maxWidth: '100%' }}>
                         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 190 }}>{shortOcc(x.label)}</span>
                         {x.hint ? <span style={{ fontSize: 11, color: '#9ca3af', flexShrink: 0 }}>{x.hint}</span> : null}
@@ -317,11 +339,11 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
               <>
                 <div style={{ fontSize: 21, fontWeight: 700, margin: '2px 0 6px', color: '#111827' }}>{t('quiz.q3')}</div>
                 <div style={{ fontSize: 12.5, color: '#6b7280', marginBottom: 12 }}>{t('quiz.q3sub')}</div>
-                {/* 已答回显跟在副标题之后:层级 标题 > 副标题 > 已答,不再打断标题 */}
-                {(status || nocTitle) ? (
+                {/* 已答回显跟在副标题之后:层级 标题 > 副标题 > 已答。第 3 题只读回显全部已选职业 */}
+                {(status || nocs.length) ? (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, margin: '0 0 12px' }}>
                     {status ? <span style={pickedChip}>{t('quiz.st.' + status)}</span> : null}
-                    {nocTitle ? <span style={pickedChip}>{nocTitle}</span> : null}
+                    {nocChips(false)}
                   </div>
                 ) : null}
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 14 }}>
