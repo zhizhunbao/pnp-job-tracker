@@ -8,7 +8,7 @@ const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : use
 
 import { makeT, streamDisplay, eeDisplay, eeKeyDisplay, initialLang, LANGS, LANG_KEY, COLS_COOKIE, type Lang, type TFn } from './i18n'
 import { IconChart, IconCheck, IconClipboard, IconCompass, IconLock, IconMap, IconMapPin, IconMaximize, IconMinimize, IconNews, IconSave, IconSettings, IconStar, IconTarget, IconUser, IconWarn, IconX } from '../Icons'
-import { SiteHeader } from '../SiteHeader'
+import { ACCT_SLOT_W, SiteHeader } from '../SiteHeader'
 import { BANNER_IMGS, Button, Notice, PageBanner } from '../ui/primitives'
 import { SiteFooter } from '../SiteFooter'
 import { Avatar } from '../Avatar'
@@ -201,8 +201,9 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
       {plan.loggedIn ? (
         // 用户按钮+下拉(2026-07-16 拍板):圆形首字头像 + 邮箱前缀 + ▾;菜单右缘与按钮右缘对齐,
         // 菜单头=完整邮箱;Pro 徽标折进菜单,退出登录不再非去 /account 不可
-        <span ref={menuRef} style={{ position: 'relative', display: 'inline-flex' }}>
-          {/* E11-02 账户下拉;#63b(Frank「像 Google 那样只显示图标」):按钮=纯头像圆钮,名字挂 title */}
+        <span ref={menuRef} style={{ position: 'relative', display: 'inline-flex', minWidth: ACCT_SLOT_W, justifyContent: 'flex-end' }}>
+          {/* E11-02 账户下拉;#63b(Frank「像 Google 那样只显示图标」):按钮=纯头像圆钮,名字挂 title。
+              minWidth=ACCT_SLOT_W:与 AccountLite 同槽宽,否则登录态导航整排比其他页右移 52px(2026-07-31) */}
           <button onClick={() => setMenu((o) => !o)} title={displayName?.trim() || email || undefined}
             style={{ display: 'inline-flex', border: 'none', background: 'none', padding: 2, cursor: 'pointer', borderRadius: '50%', boxShadow: menu ? '0 0 0 2px #bfdbfe' : 'none' }}>
             <Avatar src={avatar} name={displayName || email} email={email} size={28} />

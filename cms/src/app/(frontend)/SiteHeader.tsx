@@ -20,7 +20,10 @@ type AcctState = { state: 'loading' | 'out' | 'in'; u: { email: string; displayN
 // 账户槽的宽度**必须先占住**:/api/me 是客户端拉的,首帧 loading 只占 32px、拿到结果换成
 // 「登录+注册」两钮(实测 84px),右侧整块跟着变宽 —— 表现就是 Frank 说的「header 缩一下再展开」。
 // 未登录是绝大多数(匿名流量),所以按未登录态的实宽占位;已登录换成 28px 头像时右对齐,同样不推挤。
-const ACCT_SLOT_W = 84
+// 账户区定宽槽(单一来源):/jobs 的 AccountArea 与本组件 AccountLite 必须同宽 ——
+// 导航整排右锚定,账户区差 1px 全排平移 1px(2026-07-31 Frank「header 为什么会不一致」实撞:
+// jobs 头像钮裸宽 32 vs 这里 84,登录态两类页面导航错位 52px)
+export const ACCT_SLOT_W = 84
 const ACCT_SEEN = 'acct.seen'   // 上次已知登录态(见 SiteHeader 里的说明)
 // SSR 没有 localStorage:服务端渲染用 useEffect(不跑),客户端用 useLayoutEffect(第一帧前就纠正,不闪)
 const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
