@@ -16,7 +16,7 @@ import { AuthModal } from './AuthForm'
 import { UpgradeCta, UpgradeModal } from './UpgradeModal'
 import { PricingModal } from './PricingModal'
 import { OnboardingWizard, OB_SEEN_KEY } from './OnboardingWizard'
-import { EntryQuiz, QUIZ_KEY, readQuiz, type QuizAnswers } from './EntryQuiz'   // 入口三问(付费漏斗-20260726)
+import { EntryQuiz, QUIZ_KEY, quizToProfile, readQuiz, type QuizAnswers } from '../quiz/EntryQuiz'   // 入口三问(付费漏斗-20260726;2026-07-30 提级到 quiz/,landing 复用)
 import { useOverlayClose } from './overlay'
 import { CARD, iconBtnS, SCRIM, useIsNarrow } from './Modal'
 import { match as matchJob, matchRank, hasProfile, normalizeProfile, type MatchProfile, type MatchJob, type MatchReason } from '@/lib/match'
@@ -710,27 +710,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     if (a.nocs[0]) setQ(a.nocs[0])
     track('quiz-apply-filter')
   }
-  const quizToProfile = async (a: QuizAnswers) => {
-    try {
-      const me = await fetch('/api/users/me', { credentials: 'include' }).then((r) => r.json()).catch(() => null)
-      const uid = me?.user?.id
-      if (!uid) return
-      // #107 同类保险丝(空白覆盖真档案):三问只管三个字段,**先读回既有档案再合并**,
-      // 语言分/CRS/PGWP 这些三问没问的一律原样带回,不能被整组 PATCH 抹掉
-      const old = me?.user?.profile || {}
-      await fetch(`/api/users/${uid}`, {
-        method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ profile: {
-          ...old,
-          currentStatus: a.status || old.currentStatus || null,
-          nocCodes: a.nocs.length ? a.nocs : (old.nocCodes || []),
-          targetProvinces: a.provs.length ? a.provs : (old.targetProvinces || []),
-          profileUpdatedAt: new Date().toISOString(),
-        } }),
-      })
-      try { localStorage.setItem(OB_SEEN_KEY, '1') } catch { /* ignore */ }   // 已经问过三题,别再弹建档向导
-    } catch { /* 落库失败不卡用户:答案还在 localStorage */ }
-  }
+  // quizToProfile(三问答案 → 档案落库)随组件提级抽到 quiz/EntryQuiz.tsx —— jobs 与 /start 同一份
   // 我的求职(E9-01):已收藏映射 jobId → {saved-jobs 行 id, status};匿名点收藏 → 注册框(转化钩子)
   const [saved, setSaved] = useState<Record<string, { id: number | string; status: string }>>({})
   useEffect(() => {

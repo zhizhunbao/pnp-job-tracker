@@ -1,6 +1,7 @@
 'use client'
 // 入口三问(付费漏斗重设计-20260726,Frank「用户一访问页面就应该弹出一些问题,吸引用户填,然后最终拿结果付费」)。
 // 四步:问 → 免费结果 → 注册保存 → 付费清单(付费包下一阶段)。本组件负责前两步 + 把注册接出去。
+// 住址:(frontend)/quiz/(L1-01 landing 页复用,2026-07-30 从 jobs/ 提级)——jobs 与 /start 同一处 import,不复制组件。
 //
 // 硬约束(写死在这,别再放宽):
 //   ① 三题封顶、每题一屏、进度条可见;只弹一次(localStorage)。
@@ -11,9 +12,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { POPULAR_NOCS } from '../account/profileOptions'
+import { OB_SEEN_KEY } from '../jobs/OnboardingWizard'
 import { Button, chipStyle } from '../ui/primitives'
 import { track } from '@/lib/track'
-import type { TFn } from './i18n'
+import type { TFn } from '../jobs/i18n'
 
 export const QUIZ_KEY = 'jobs_quiz_v1'   // 记忆键(单一来源;JobsTable 判定是否弹也用它)
 
@@ -34,11 +36,35 @@ export function readQuiz(): (QuizAnswers & { done?: boolean }) | null {
   try { const s = localStorage.getItem(QUIZ_KEY); return s ? JSON.parse(s) : null } catch { return null }
 }
 
+// 三问答案 → 档案落库(注册成功后由宿主调;原内联在 JobsTable,2026-07-30 随组件提级抽到这——
+// jobs 与 /start 两个宿主同一份落库逻辑,不复制)。
+// #107 同类保险丝(空白覆盖真档案):三问只管三个字段,**先读回既有档案再合并**,
+// 语言分/CRS/PGWP 这些三问没问的一律原样带回,不能被整组 PATCH 抹掉。
+export async function quizToProfile(a: QuizAnswers): Promise<void> {
+  try {
+    const me = await fetch('/api/users/me', { credentials: 'include' }).then((r) => r.json()).catch(() => null)
+    const uid = me?.user?.id
+    if (!uid) return
+    const old = me?.user?.profile || {}
+    await fetch(`/api/users/${uid}`, {
+      method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ profile: {
+        ...old,
+        currentStatus: a.status || old.currentStatus || null,
+        nocCodes: a.nocs.length ? a.nocs : (old.nocCodes || []),
+        targetProvinces: a.provs.length ? a.provs : (old.targetProvinces || []),
+        profileUpdatedAt: new Date().toISOString(),
+      } }),
+    })
+    try { localStorage.setItem(OB_SEEN_KEY, '1') } catch { /* ignore */ }   // 已经问过三题,别再弹建档向导
+  } catch { /* 落库失败不卡用户:答案还在 localStorage */ }
+}
+
 // NOC 官方职业名是**分类名**不是岗位名,天生很长(「食品柜台服务员、厨房助手及相关辅助职业」)。
 // Frank 2026-07-27「很多职业名字是不是太长了啊」:选职业的人只需要认出**头一个**是不是自己那行,
 // 后面的「及相关职业」是分类学尾巴 → 显示层砍尾 + 取第一段;全名仍挂 title,不丢信息。
 // 只在「、」「及」处切(不切「和」——中文译名里「汽车服务技师卡车和公共汽车机械师」切了会更怪)。
-const shortOcc = (name: string): string => {
+export const shortOcc = (name: string): string => {   // landing 行情卡同用这把刀(2026-07-30 v2)
   let s = (name || '').replace(/[、,]?\s*(?:及|和)?其?(?:他)?相关[^、,]*(?:职业|工作)$/, '').trim()
   s = s.split(/[、,]/)[0].trim()
   s = s.split(/及/)[0].trim()
