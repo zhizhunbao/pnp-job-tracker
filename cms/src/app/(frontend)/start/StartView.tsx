@@ -12,7 +12,7 @@ import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { MarketChart, useMarketStats } from '../stats/charts'
 import { AuthModal } from '../jobs/AuthForm'
-import { EntryQuiz, quizToProfile, readQuiz, type QuizAnswers } from '../quiz/EntryQuiz'
+import { EntryQuiz, quizToProfile, readQuiz, shortOcc, type QuizAnswers } from '../quiz/EntryQuiz'
 import { BANNER_IMGS, PageBanner, Tag, UI } from '../ui/primitives'
 import { track } from '@/lib/track'
 
@@ -23,8 +23,8 @@ export type HomeStats = {
   draws: { date: string; province: string; stream: string; label: string; score: number | null; invitations: number | null }[]
   daily: { date: string; n: number; eligible: number } | null
   news: { date: string; region: string; title: string; slug: string }[]
-  latestJobs: { id: number | string; title: string; company: string; city: string; province: string; salaryText: string; pnp: boolean; date: string }[]
-  topPaidJobs: { id: number | string; title: string; company: string; city: string; province: string; salaryText: string; pnp: boolean; date: string }[]
+  latestJobs: { id: number | string; title: string; company: string; city: string; province: string; salaryText: string; pnp: boolean; date: string; noc: string }[]
+  topPaidJobs: { id: number | string; title: string; company: string; city: string; province: string; salaryText: string; pnp: boolean; date: string; noc: string }[]
   checkedAt: string
 }
 
@@ -60,9 +60,15 @@ export function StartView({ stats }: { stats: HomeStats }) {
   // 最多=职业在招榜(2026-07-31 Frank 拍板),数据吃 useMarketStats 已到手的 occ 全国行,零新请求
   const [jobsTab, setJobsTab] = useState<'new' | 'paid' | 'most'>('new')
   const [jobsN, setJobsN] = useState(10)
-  const occTop = market === null ? null : market.occ.filter((o) => o.province === 'all')
+  const occTop = useMemo(() => market === null ? null : market.occ.filter((o) => o.province === 'all'), [market])
   const occName = (o: { titleZhShort: string; titleZh: string; titleEn: string; titleKo: string }) =>
     lang === 'zh' ? (o.titleZhShort || o.titleZh || o.titleEn) : lang === 'ko' ? (o.titleKo || o.titleEn) : (o.titleEn || o.titleZh)
+  // NOC → 职业译名查表(中/韩榜行灰注用):market.occ 已在手,零新请求;英文界面/查不到 → 无注
+  const nocNote = useMemo(() => {
+    if (!occTop || lang === 'en') return () => ''
+    const m = new Map(occTop.map((o) => [o.noc, lang === 'zh' ? (o.titleZhShort || o.titleZh) : o.titleKo]))
+    return (noc: string) => m.get(noc) || ''
+  }, [occTop, lang])
   // 结果页「看这些岗」:答案经 ?prov / ?q 深链套进职位板筛选(#92 深链语义,与 JobsTable applyQuiz 同口径)
   const applyQuiz = (a: QuizAnswers) => {
     const u = new URLSearchParams()
@@ -215,16 +221,23 @@ export function StartView({ stats }: { stats: HomeStats }) {
                       <span style={{ color: UI.text2, fontSize: 12.5, whiteSpace: 'nowrap', textAlign: 'right' }}>{o.medianWageAnnual != null ? '$' + Math.round(o.medianWageAnnual / 1000) + 'K' : ''}</span>
                     </a>
                   ))
-              ) : (jobsTab === 'new' ? stats.latestJobs : stats.topPaidJobs).slice(0, jobsN).map((j, i) => (
+              ) : (jobsTab === 'new' ? stats.latestJobs : stats.topPaidJobs).slice(0, jobsN).map((j, i) => {
+                // 帖子标题是逐帖英文原文,无逐帖译名 —— 中/韩界面挂 NOC 职业译名灰注(人话名+灰字小注站规)
+                const note = nocNote(j.noc)
+                return (
                 <a key={j.id} href={`/jobs/${j.id}`} className="hmJobRow" style={{ borderTop: i ? `1px solid ${UI.hairline}` : 'none' }}>
                   <span style={{ fontSize: 12.5, fontWeight: 700, color: i < 3 ? UI.primary : UI.text3 }}>#{i + 1}</span>
-                  <span style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{j.title}</span>
+                  <span title={note ? `${j.title}(${note})` : j.title} style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>
+                    {j.title}
+                    {note ? <span style={{ color: UI.text3, fontWeight: 400, fontSize: 12 }}>　{shortOcc(note)}</span> : null}
+                  </span>
                   <span className="hmJobCo" style={{ color: UI.text2, fontSize: 12.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{j.company}</span>
                   <span>{j.pnp && <Tag variant="ok">PNP</Tag>}</span>
                   <span className="hmJobLoc" style={{ color: UI.text2, fontSize: 12.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'right' }}>{j.city ? `${j.city}, ${j.province}` : j.province}</span>
                   <span style={{ color: UI.text, fontSize: 12.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'right' }}>{j.salaryText}</span>
                 </a>
-              ))}
+                )
+              })}
             </div>
           </Band>
         )}
