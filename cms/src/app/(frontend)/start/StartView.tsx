@@ -156,13 +156,15 @@ export function StartView({ stats }: { stats: HomeStats }) {
         <Band bg="#fff">
           <h2 style={secH}>{t('home.goals')}</h2>
           <div className="hmGrid">
+            {/* 2026-07-31 Frank「这个不应该是跳答题页面吗」:目标卡=决策入口(L2 架构),点卡拉起答题
+                (现阶段=三问基本层,答过预填;每卡专属深入问题随 L2 两态 UI 接上),不再直跳站内数据页 */}
             {goals.map((g) => g.href ? (
-              <a key={g.key} href={g.href} className="cardHover"
-                onClick={() => track(`landing_goal_${g.key}`)}
-                style={{ display: 'block', minWidth: 0, background: g.hot ? '#f8fbff' : UI.card, border: `1px solid ${g.hot ? '#bfdbfe' : UI.border}`, borderRadius: 10, padding: '14px 16px', textDecoration: 'none', color: 'inherit' }}>
+              <button key={g.key} className="cardHover"
+                onClick={() => { track(`landing_goal_${g.key}`); setQuiz(true) }}
+                style={{ display: 'block', minWidth: 0, width: '100%', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', background: g.hot ? '#f8fbff' : UI.card, border: `1px solid ${g.hot ? '#bfdbfe' : UI.border}`, borderRadius: 10, padding: '14px 16px', color: 'inherit' }}>
                 <div style={{ ...tileNm, ...(g.hot && { color: UI.primaryDeep }) }}>{t(`home.g.${g.key}`)}</div>
                 {g.hint && <div style={tileHint}>{g.hint}</div>}
-              </a>
+              </button>
             ) : (
               // 灰态「选专业」:span 非 a,虚线框,无 cursor 无 hover(不上假入口)
               <span key={g.key} style={{ display: 'block', minWidth: 0, background: UI.hairline, border: `1px dashed ${UI.border}`, borderRadius: 10, padding: '14px 16px' }}>
