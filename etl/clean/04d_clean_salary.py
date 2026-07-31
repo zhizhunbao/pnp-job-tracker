@@ -48,7 +48,17 @@ SUB = {"hr": "/hr", "day": "/day", "wk": "/wk", "biwk": "/2wk", "mo": "/mo", "yr
 # 全库合法最高年薪 ~$810K(医生岗),合法区间高/低比 ≤~9;超限=源 typo,置 NULL 不猜
 ANNUAL_MAX = 1_000_000
 RATIO_MAX = 10
-GUARDED = {"absurd": 0, "ratio": 0, "cap": 0}  # 三道护栏各拦了多少条(main 里汇报)
+# E6-12 诚实年化:时薪中点>150 的全是出诊/计费价(医生 $200-400、验光师 $300-400)或可疑帖
+# ($200-300/hr 的 "software developer"),×2080 折出 $52-94 万冒充年薪霸占 salaryYr 榜首;
+# 真高薪岗直接标 annually(皮肤科 $550K-850K)不受影响。超阈值=保留时薪文本,年薪置空不折算
+# (ESDC 对医生类 NOC 的中位时薪本身就 $200+/hr 计费价口径 —— 高时薪不是异常值,×2080 才是)。
+HOURLY_FOLD_MAX = 150
+# 计次/计程价(per night/km/mile…):基数不是时间,无法年化;漏检会走 hi<2000→hr 兜底
+# (DJ "$400-$500 per night" 折出 $93.6 万实撞)。搜 raw:计价词可能落在佣金剪切段里
+# ("$.30 commission per kilometre" 剪剩 "$.30")。只在单位兜底分支触发,不影响
+# "$67,500 annually + commission per sale" 这类带明确时间单位的帖。
+_PER_UNIT = re.compile(r"\bper\s+(?:night|km|kilometre|kilometer|mile|sale|piece|load|trip|visit|session)\b", re.I)
+GUARDED = {"absurd": 0, "ratio": 0, "cap": 0, "gig": 0, "hifold": 0}  # 各护栏拦截计数(main 里汇报)
 
 
 def _amounts(text: str) -> list[float]:
@@ -93,6 +103,9 @@ def parse_salary(raw: str) -> tuple[int | None, str]:
         unit = "day"
     elif re.search(r"hour|/\s?hr|hourly", low):
         unit = "hr"
+    elif hi < 2000 and _PER_UNIT.search(raw):  # E6-12:计次/计程价,不年化。hi<2000 限定=只拦
+        GUARDED["gig"] += 1                     # 「将被兜底猜成时薪」的路径;"$67,500 annually +
+        return None, raw                        # commission per sale" 走 ≥2000→yr,不受 per sale 干扰
     else:
         unit = "hr" if hi < 2000 else "yr"
     if unit == "hr" and lo >= 1000:  # 时薪值≥$1000 → 实为年薪(源误标)
@@ -106,6 +119,9 @@ def parse_salary(raw: str) -> tuple[int | None, str]:
     sub = SUB[unit]
     money = (lambda n: f"${round(n / 1000)}K") if unit == "yr" else (lambda n: f"${round(n)}")
     text = f"{money(lo)}{sub}" if lo == hi else f"{money(lo)}–{money(hi)}{sub}"
+    if unit == "hr" and (lo + hi) / 2 > HOURLY_FOLD_MAX:  # E6-12:高时薪只展示,不冒充年薪
+        GUARDED["hifold"] += 1
+        return None, text
     return annual, text
 
 
@@ -156,7 +172,8 @@ def main() -> None:
 
     guarded = sum(GUARDED.values())
     print(f"Salary cleaned: {updated} jobs updated · {priced}/{total} have a salary")
-    print(f"  护栏拦截 {guarded} 条置 NULL:离谱金额 {GUARDED['absurd']} · 区间比>{RATIO_MAX} {GUARDED['ratio']} · 年化>{ANNUAL_MAX:,} {GUARDED['cap']}")
+    print(f"  护栏拦截 {guarded} 条置 NULL:离谱金额 {GUARDED['absurd']} · 区间比>{RATIO_MAX} {GUARDED['ratio']} · 年化>{ANNUAL_MAX:,} {GUARDED['cap']}"
+          f" · 计次价 {GUARDED['gig']} · 时薪>{HOURLY_FOLD_MAX} {GUARDED['hifold']}")
 
 
 if __name__ == "__main__":
