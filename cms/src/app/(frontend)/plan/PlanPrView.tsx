@@ -17,7 +17,9 @@ import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { EntryQuiz, readQuiz, shortOcc } from '../quiz/EntryQuiz'
 import { Button, Notice, PageShell, Tag, UI } from '../ui/primitives'
-import { PR_BASIC_SURVEY, PR_EXPLORE_SURVEY, SURVEY_THEME } from '@/lib/questions'
+import { readAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
+import { fieldsOf } from '@/lib/decisions'
+import { buildSurvey, SURVEY_THEME } from '@/lib/questions'
 import { track } from '@/lib/track'
 
 // 框架中文进度条误译修正:questionsProgressText 原文是 "Answered {0}/{1} questions",
@@ -25,13 +27,8 @@ import { track } from '@/lib/track'
 // 改回「已答」语义(页内不再另写一份计数,进度只此一处)。
 surveyLocalization.locales['zh-cn'].questionsProgressText = '已答 {0}/{1} 题'
 
-const KEY = 'plan_pr_v1'
-type Bands = { status: string; clbBand: number; expBand: number; provBand: number; crsBand: number; pgwpBand: number }
-const CLB = [0, 5, 7, 9, 0]            // 档→CLB(a4 还没考=null 走 0 哨兵)
-const EXP = [0, 0, 6, 18, 30]          // 档→月数(a1 没有=0 个月,是答案不是缺答)
-const PROVS: string[][] = [[], ['BC'], ['ON'], ['AB', 'SK', 'MB'], []]   // a4 先看哪个够得着=不限省
-const CRS = [0, 0, 380, 425, 480]      // 探索题:档→CRS(a1 没算过=不传,引擎照旧出「没填 CRS」)
-const PGWP = [0, 4, 9, 18, 30]         // 探索题:档→签证剩余月数(解锁时间窗结论)
+// 答案存储与档位换算都归 lib/answers + lib/fields(2026-07-31 统一题库:一个 key、一处换算);
+// 本页只管两态与版式,不再自己存答案、不再自己抄 CLB/EXP/PROVS 映射表。
 
 type RptLine = { key: string; params: Record<string, string | number>; verdict?: string; source?: { label: string; url: string; fetched: string }; url?: string }
 type Lane = { kind: 'prov' | 'ee' | 'alts'; verdict?: string; key: string; params: Record<string, string | number> }
@@ -136,26 +133,13 @@ function Lanes({ lanes, t }: { lanes: Lane[]; t: TFn }) {
   )
 }
 
-const readBands = (): Bands => {
-  const q = readQuiz()
-  let saved: Partial<Bands> = {}
-  try { saved = JSON.parse(localStorage.getItem(KEY) || '{}') } catch { /* ignore */ }
-  return {
-    status: saved.status || q?.status || '',
-    clbBand: saved.clbBand || 0, expBand: saved.expBand || 0,
-    crsBand: saved.crsBand || 0, pgwpBand: saved.pgwpBand || 0,
-    // 目标省预填:三问选过省 → 映射到最近的档(单选 BC/ON 精确档;别的组合走「先看哪个够得着」)
-    provBand: saved.provBand || (q?.provs?.length ? (q.provs.length === 1 && q.provs[0] === 'BC' ? 1 : q.provs.length === 1 && q.provs[0] === 'ON' ? 2 : 4) : 0),
-  }
-}
-
 export function PlanPrView() {
   const [lang, setLang] = useState<Lang>('zh')
   useEffect(() => { setLang(initialLang()) }, [])
   const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
   const t = useMemo(() => makeT(lang), [lang])
 
-  const [bands, setBands] = useState<Bands>({ status: '', clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0 })
+  const [bands, setBands] = useState<Answers>({ status: '', nocs: [], provs: [], clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0 })
   const [noc, setNoc] = useState('')
   const [nocTitle, setNocTitle] = useState('')
   const [quizOpen, setQuizOpen] = useState(false)
@@ -165,8 +149,9 @@ export function PlanPrView() {
   const [rpt, setRpt] = useState<Rpt | null | 'loading'>(null)
 
   useEffect(() => {
-    setBands(readBands())
-    setNoc(readQuiz()?.nocs?.[0] || '')
+    const a = readAnswers()
+    setBands(a)
+    setNoc(a.nocs[0] || '')
     if (new URLSearchParams(window.location.search).get('view') === 'report') setView('report')
     setReady(true)
     track('plan-pr-open')
@@ -194,28 +179,23 @@ export function PlanPrView() {
   // ready 后才建(要先读回预填);lang / stage 切换重建(换语言或换卷),当前答案原样带回。
   const survey = useMemo(() => {
     if (!ready || view !== 'quiz') return null
-    const explore = stage === 'explore'
-    const m = new Model(explore ? PR_EXPLORE_SURVEY : PR_BASIC_SURVEY)
+    const m = new Model(buildSurvey('pr', stage))
     m.applyTheme(SURVEY_THEME as any)
     m.locale = lang === 'zh' ? 'zh-cn' : lang === 'ko' ? 'ko' : 'en'
-    const b = readBands()
-    const names = explore ? (['crsBand', 'pgwpBand'] as const) : (['status', 'clbBand', 'expBand', 'provBand'] as const)
-    m.data = Object.fromEntries(names.map((n) => [n, b[n]]).filter(([, v]) => v))
+    const b = readAnswers()
+    const names = fieldsOf('pr', stage)
+    m.data = Object.fromEntries(names.map((n) => [n, (b as any)[n]]).filter(([, v]) => v))
     // 起步落在第一道没答的题(答过的不重走,上一题仍可回去改)。
     // v2 的 questionPerPage 模式导航不走 currentPageNo,走 currentSingleQuestion(实撞:设页号被无视)
-    const firstUnanswered = names.map((n) => b[n]).findIndex((v) => !v)
+    const firstUnanswered = names.map((n) => (b as any)[n]).findIndex((v) => !v)
     if (firstUnanswered > 0) {
       const target = m.getQuestionByName(names[firstUnanswered])
       if (target) m.currentSingleQuestion = target
     }
-    // 只合并本卷答到的字段(两卷共用一个 KEY,整体覆盖会把另一卷的答案抹掉)
+    // 只合并本卷答到的字段(两卷同住一份答案,整体覆盖会把另一卷的答案抹掉)
     m.onValueChanged.add((s) => {
-      const d = s.data as Partial<Bands>
-      setBands((prev) => {
-        const next = { ...prev, ...Object.fromEntries(Object.entries(d).filter(([, v]) => v)) } as Bands
-        try { localStorage.setItem(KEY, JSON.stringify(next)) } catch { /* ignore */ }
-        return next
-      })
+      const patch = Object.fromEntries(Object.entries(s.data as Record<string, unknown>).filter(([, v]) => v))
+      setBands(writeAnswers(patch as Partial<Answers>))
     })
     m.onComplete.add(() => gotoReport())
     return m
@@ -225,20 +205,10 @@ export function PlanPrView() {
   useEffect(() => {
     if (view !== 'report' || !ready) return
     setRpt('loading')
-    const b = readBands()
     const ctrl = new AbortController()
     fetch('/api/report', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', signal: ctrl.signal,
-      body: JSON.stringify({ goal: 'pr', answers: {
-        noc: readQuiz()?.nocs?.[0] || '',
-        currentStatus: b.status || undefined,
-        clb: CLB[b.clbBand] || undefined,
-        canadianExpMonths: b.expBand ? EXP[b.expBand] : undefined,
-        targetProvinces: PROVS[b.provBand],
-        crs: CRS[b.crsBand] || undefined,
-        // 境外没有加拿大签证,「还剩多久」对他无意义 —— 不拿档位硬造时间窗
-        pgwpMonthsLeft: b.status === 'overseas' ? undefined : PGWP[b.pgwpBand] || undefined,
-      } }),
+      body: JSON.stringify({ goal: 'pr', answers: toEngineAnswers(readAnswers()) }),
     }).then((r) => (r.ok ? r.json() : null)).then((d) => setRpt(d?.report ?? null))
       .catch(() => { if (!ctrl.signal.aborted) setRpt(null) })
     return () => ctrl.abort()

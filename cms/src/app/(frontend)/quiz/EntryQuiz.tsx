@@ -14,10 +14,13 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { POPULAR_NOCS } from '../account/profileOptions'
 import { OB_SEEN_KEY } from '../jobs/OnboardingWizard'
 import { Button, chipStyle } from '../ui/primitives'
+import { ANSWERS_KEY, answeredBasics, readAnswers, writeAnswers } from '@/lib/answers'
 import { track } from '@/lib/track'
 import type { TFn } from '../jobs/i18n'
 
-export const QUIZ_KEY = 'jobs_quiz_v1'   // 记忆键(单一来源;JobsTable 判定是否弹也用它)
+// 记忆键收敛到 lib/answers 一个 key(2026-07-31 统一题库):三问与拿 PR 的答案同住一份,
+// 处境与目标省不再各存一份。本文件不再直接碰 localStorage,读写都过门面。
+export const QUIZ_KEY = ANSWERS_KEY       // 兼容导出:JobsTable 仍按名引它做「答过没有」的判定
 
 export type QuizAnswers = { status: string; nocs: string[]; provs: string[] }
 export type QuizFacts = {
@@ -32,8 +35,11 @@ export type QuizFacts = {
 const STATUS_SLUGS = ['overseas', 'studying', 'working', 'jobhunting'] as const
 const PROVS = ['ON', 'BC', 'AB', 'SK', 'MB', 'NS', 'NB', 'NL', 'PE']
 
+// 语义不变:从没答过 → null(职位板据此决定弹不弹)。三问只关心三个字段,档位字段留给答题器。
 export function readQuiz(): (QuizAnswers & { done?: boolean }) | null {
-  try { const s = localStorage.getItem(QUIZ_KEY); return s ? JSON.parse(s) : null } catch { return null }
+  const a = readAnswers()
+  if (!answeredBasics(a)) return null
+  return { status: a.status, nocs: a.nocs, provs: a.provs, ...(a.done ? { done: true } : {}) }
 }
 
 // 三问答案 → 档案落库(注册成功后由宿主调;原内联在 JobsTable,2026-07-30 随组件提级抽到这——
@@ -144,7 +150,8 @@ export function EntryQuiz({ t, lang, onClose, onRegister, onApply, initial, star
   }, [q])
 
   const answers = useMemo<QuizAnswers>(() => ({ status, nocs, provs }), [status, nocs, provs])
-  const save = (done: boolean) => { try { localStorage.setItem(QUIZ_KEY, JSON.stringify({ ...answers, done })) } catch { /* ignore */ } }
+  // 门面写入:目标省两种表示(省份数组 / 答题档位)自动同步 —— 三问选过省,拿 PR 就不再问一遍
+  const save = (done: boolean) => { writeAnswers({ status: answers.status, nocs: answers.nocs, provs: answers.provs, done }) }
 
   const toResult = () => {
     save(true); track('quiz-done', { step: '3' })

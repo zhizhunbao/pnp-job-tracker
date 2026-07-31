@@ -1,0 +1,92 @@
+// 答案门面与字段库(统一题库,docs/design/统一题库与付费面-20260731.md)。
+// 锁死三件事:① 老答案迁得过来(丢了=让用户重答,红线);② 目标省两种表示始终同步
+// (只写一边 → 另一个入口会重新问一遍,那正是这次收敛掉的病);③ 档位→引擎输入的换算与重构前逐字一致。
+import { describe, it, expect, beforeEach } from 'vitest'
+import { ANSWERS_KEY, answeredBasics, readAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
+import { DECISIONS, batchLeadsFree, KNOWN_NO_FREE_LEAD } from '@/lib/decisions'
+import { FIELDS } from '@/lib/fields'
+
+const OLD_QUIZ = 'jobs_quiz_v1'
+const OLD_PR = 'plan_pr_v1'
+const base = (p: Partial<Answers> = {}): Answers =>
+  ({ status: '', nocs: [], provs: [], clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0, ...p })
+
+beforeEach(() => localStorage.clear())
+
+describe('旧 key 迁移', () => {
+  it('两个旧 key 合并进新 key,旧 key 迁完即删', () => {
+    localStorage.setItem(OLD_QUIZ, JSON.stringify({ status: 'studying', nocs: ['31301'], provs: ['BC'], done: true }))
+    localStorage.setItem(OLD_PR, JSON.stringify({ status: 'working', clbBand: 2, expBand: 3, provBand: 1, crsBand: 0, pgwpBand: 2 }))
+    const a = readAnswers()
+    expect(a.status).toBe('working')        // 处境两处都有 → 答得更细的拿 PR 那份优先
+    expect(a.nocs).toEqual(['31301'])
+    expect(a.done).toBe(true)
+    expect(a.clbBand).toBe(2)
+    expect(localStorage.getItem(OLD_QUIZ)).toBeNull()
+    expect(localStorage.getItem(OLD_PR)).toBeNull()
+    expect(JSON.parse(localStorage.getItem(ANSWERS_KEY)!).expBand).toBe(3)
+  })
+
+  it('只答过三问也迁得过来,目标省档位从省份数组推出来', () => {
+    localStorage.setItem(OLD_QUIZ, JSON.stringify({ status: 'overseas', nocs: [], provs: ['ON'], done: true }))
+    expect(readAnswers().provBand).toBe(2)   // 单选 ON → 2 档(与重构前 readBands 同式)
+  })
+
+  it('没有任何旧答案 → 空答案,不炸', () => {
+    expect(readAnswers()).toEqual(base())
+    expect(answeredBasics(readAnswers())).toBe(false)
+  })
+})
+
+describe('目标省两种表示同步', () => {
+  it('写档位 → 省份数组跟着变', () => {
+    expect(writeAnswers({ provBand: 3 }).provs).toEqual(['AB', 'SK', 'MB'])
+  })
+  it('写省份数组 → 档位跟着变(三问答过省,拿 PR 不再问)', () => {
+    expect(writeAnswers({ provs: ['BC'] }).provBand).toBe(1)
+    expect(writeAnswers({ provs: ['ON', 'BC'] }).provBand).toBe(4)   // 多选 → 先看哪个够得着
+  })
+})
+
+describe('档位 → 引擎输入', () => {
+  it('与重构前 PlanPrView 的五张映射表逐字一致', () => {
+    const out = toEngineAnswers(base({ status: 'working', nocs: ['31301'], clbBand: 2, expBand: 3, provBand: 1, crsBand: 4, pgwpBand: 2 }))
+    expect(out).toEqual({
+      noc: '31301', currentStatus: 'working', clb: 7, canadianExpMonths: 18,
+      targetProvinces: ['BC'], crs: 480, pgwpMonthsLeft: 9,
+    })
+  })
+
+  it('「没有」加拿大经验 = 0 个月,是答案不是缺答', () => {
+    expect(toEngineAnswers(base({ expBand: 1 })).canadianExpMonths).toBe(0)
+  })
+
+  it('「还没考」英语 / 「没算过」CRS 不传(引擎照旧出缺口行)', () => {
+    const out = toEngineAnswers(base({ clbBand: 4, crsBand: 1 }))
+    expect(out.clb).toBeUndefined()
+    expect(out.crs).toBeUndefined()
+  })
+
+  it('境外不传签证剩余 —— 没有加拿大签证,拿档位造时间窗=编数', () => {
+    expect(toEngineAnswers(base({ status: 'overseas', pgwpBand: 2 })).pgwpMonthsLeft).toBeUndefined()
+    expect(toEngineAnswers(base({ status: 'studying', pgwpBand: 2 })).pgwpMonthsLeft).toBe(9)
+  })
+})
+
+describe('题库铁律', () => {
+  it('每个字段都挂着引擎里真实存在的结论 key', () => {
+    for (const [name, def] of Object.entries(FIELDS)) {
+      expect(def.unlocks.length, `${name} 挂不上结论就不该入库`).toBeGreaterThan(0)
+      for (const k of def.unlocks) expect(k).toMatch(/^rpt\.[cgna]\./)
+    }
+  })
+
+  it('每批探索题第一道是 free 题(先兑现一次再谈钱),例外必须在白名单里', () => {
+    for (const [decision, d] of Object.entries(DECISIONS)) {
+      d.explore.forEach((batch, i) => {
+        if (KNOWN_NO_FREE_LEAD.has(`${decision}:${i}`)) return
+        expect(batchLeadsFree(batch), `${decision} 探索批 ${i} 全是 pro 题`).toBe(true)
+      })
+    }
+  })
+})
