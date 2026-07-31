@@ -97,7 +97,7 @@ function collectRefs(r: Rpt, t: TFn): { rows: RefRow[]; of: (l: RptLine) => numb
   const urlOf = (l: RptLine): string => l.source?.url || l.url || ''
   // 名字按**目的地**取,不按引用它的那一行取 —— 同一个页面被三行引用时,编号合并了,
   // 名字却只留第一行的说法就对不上(实撞:三条都指 /pathways,却写着「BC 有官方分值表」)
-  const DEST: Record<string, string> = { '': 'rpt.dest.jobs', pathways: 'rpt.dest.pathways', stats: 'rpt.dest.stats', occupations: 'rpt.dest.occ' }
+  const DEST: Record<string, string> = { '': 'rpt.dest.jobs', pathways: 'rpt.dest.pathways', stats: 'rpt.dest.stats', occupations: 'rpt.dest.occ', plan: 'rpt.dest.plan' }
   const labelOf = (l: RptLine): string => {
     if (l.source?.label) return l.source.label
     const u = urlOf(l)
@@ -107,7 +107,8 @@ function collectRefs(r: Rpt, t: TFn): { rows: RefRow[]; of: (l: RptLine) => numb
     if (!DEST[seg]) return t('rpt.dest.site')
     // 同一个目的地被多条引用时,靠参数区分(两条「职位板」看不出谁是哪个省)
     const prov = u.match(/[?&]prov=([A-Z]{2})/)?.[1]
-    return t(DEST[seg]) + (prov ? ` ${prov}` : '')
+    const noc = u.match(/[?&]noc=(\d{5})/)?.[1]
+    return t(DEST[seg]) + (prov ? ` ${prov}` : noc ? ` ${noc}` : '')
   }
   for (const l of [...r.conclusions, ...r.gaps, ...r.alternatives, ...r.nextSteps]) {
     const u = urlOf(l)

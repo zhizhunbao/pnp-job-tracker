@@ -21,7 +21,7 @@ const facts: ReportFacts = {
 }
 
 const occStat = (p: Partial<OccStat>): OccStat => ({
-  noc: '31301', province: 'all', titleEn: 'Registered nurses', titleZh: '注册护士', titleKo: '등록 간호사', teer: 1, broad: '3',
+  noc: '31301', province: 'all', titleEn: 'Registered nurses', titleZh: '注册护士', titleKo: '등록 간호사', teer: 1, broad: '3', mid: '31', fine: '3130',
   open: 300, named: 120, medianWage: 90_000, medianPosted: 81_000, ...p,
 })
 const occ = (p: Partial<OccStats> = {}): OccStats => ({ self: occStat({}), byProv: [], peers: [], sponsors: 0, ...p })
@@ -54,6 +54,18 @@ describe('卡① 找工作', () => {
     const r = buildJobReport(normalizeProfile({}), dims, { ...facts, noc: '' }, occ({ self: null }))
     expect(r.conclusions).toHaveLength(0)
     expect(r.gaps[0].key).toBe('rpt.g.noNoc')
+  })
+
+  it('相关职业也在招:同小类邻居免费给两条,各带自己的报告深链(一个人不该被一个 NOC 框死)', () => {
+    const peers = [
+      occStat({ noc: '21231', titleEn: 'Software engineers', titleZh: '软件工程师', open: 900 }),
+      occStat({ noc: '21211', titleEn: 'Data scientists', titleZh: '数据科学家', open: 300 }),
+      occStat({ noc: '21220', titleEn: 'Cybersecurity', titleZh: '网络安全', open: 0 }),   // 零在招不进
+    ]
+    const r = buildJobReport(normalizeProfile({ targetProvinces: ['BC'] }), dims, facts, occ({ peers }))
+    const rel = r.conclusions.filter((c) => c.key === 'rpt.j.related')
+    expect(rel.map((c) => c.params.noc)).toEqual(['21231', '21211'])
+    expect(rel[0].url).toBe('/plan/job?noc=21231&view=report')
   })
 
   it('免费端:在招与薪资照给,担保雇主进锁区', () => {

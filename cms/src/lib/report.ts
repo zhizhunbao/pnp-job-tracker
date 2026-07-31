@@ -377,6 +377,17 @@ export function buildJobReport(profile: MatchProfile, dims: MatchDims, facts: Re
   // 担保雇主:只说有几家(名单进锁区 —— 这是拿答案筛出来的,不是库里随便查得到的)
   if (occ.sponsors > 0) conclusions.push({ key: 'rpt.j.sponsors', params: { n: occ.sponsors }, verdict: 'pass' })
 
+  // 相关职业(Frank 2026-07-31「干 IT 可能同时适合大数据/AI/全栈/cloud」):同小类/中类的邻居也在招,
+  // 免费给 —— 这是库里查得到的事实,而且一个人本来就不该被自己填的那一个 NOC 框死。
+  // 每条挂各自的报告深链:换个职业看结论,不用重新答题。
+  for (const p of occ.peers.filter((x) => x.open > 0).slice(0, 2)) {
+    conclusions.push({
+      key: 'rpt.j.related',
+      params: { occ: p.titleEn || p.noc, occZh: p.titleZh || p.titleEn || p.noc, occKo: p.titleKo || p.titleEn || p.noc, noc: p.noc, open: p.open },
+      verdict: 'na', url: `/plan/job?noc=${p.noc}&view=report`,
+    })
+  }
+
   nextSteps.push({ key: 'rpt.n.pathways', params: {}, url: '/pathways' })
   const answered = [profile.currentStatus != null, profile.targetProvinces.length > 0].filter(Boolean).length
   if (answered < 2) gaps.push({ key: 'rpt.g.basics', params: { n: 2 - answered }, verdict: 'na' })
@@ -408,7 +419,8 @@ export function buildCareerReport(profile: MatchProfile, facts: ReportFacts, occ
     })
   }
 
-  // 相邻职业:比现职中位薪资高的排前面(跃迁是这张卡的用处);每条都带在招量,不给「钱多但没岗」的空头
+  // 相邻职业(= NOC 官方 minor group 的同门,见 reportFacts;不用本站中文分类,那套有杂物桶):
+  // 比现职中位薪资高的排前面(跃迁是这张卡的用处);每条都带在招量,不给「钱多但没岗」的空头
   const mine = s?.medianWage ?? null
   const peers = occ.peers
     .filter((p) => p.open > 0)
