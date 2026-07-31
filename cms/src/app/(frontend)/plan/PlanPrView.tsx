@@ -21,6 +21,7 @@ import { Button, Notice, PageShell, Tag, UI } from '../ui/primitives'
 import { clearAnswers, readAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
 import { DECISIONS, fieldsOf } from '@/lib/decisions'
 import { buildSurvey, SURVEY_THEME } from '@/lib/questions'
+import { goBackOr } from '../BackLink'
 import { track } from '@/lib/track'
 
 // 框架中文进度条误译修正:questionsProgressText 原文是 "Answered {0}/{1} questions",
@@ -190,6 +191,12 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
   const [ready, setReady] = useState(false)
   const [resetArmed, setResetArmed] = useState(false)   // 重置两步:点一下变「确认重置」,再点才清(不弹系统 confirm)
   const [resetNonce, setResetNonce] = useState(0)       // 清完要让 SurveyJS 模型重建,否则旧答案还留在卷里
+  // 「确认重置」不能一直红着等在那(Frank 实拍到):8 秒没下文就自己收回
+  useEffect(() => {
+    if (!resetArmed) return
+    const id = setTimeout(() => setResetArmed(false), 8000)
+    return () => clearTimeout(id)
+  }, [resetArmed])
   const [rpt, setRpt] = useState<Rpt | null | 'loading'>(null)
 
   useEffect(() => {
@@ -276,7 +283,12 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
       <div style={{ flex: '1 0 auto' }}>
         <PageShell pad="1rem 1.25rem 40px">
           <div style={{ maxWidth: view === 'quiz' ? 560 : 760, margin: '0 auto' }}>
-        <h1 style={{ fontSize: 22, margin: '6px 0 4px' }}>{t(`plan.${decision}.title`)}</h1>
+        {/* 返回(铁律 2026-07-31 Frank「以后加新页面都要加这个返回按钮」):
+            照职位详情页那把 —— 有历史走 history.back(保留来处的滚动与筛选),新标签页无处可回就落职位板 */}
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
+          <h1 style={{ fontSize: 22, margin: '6px 0 4px', flex: 1, minWidth: 0 }}>{t(`plan.${decision}.title`)}</h1>
+          <button onClick={() => goBackOr('/')} style={{ ...BTN, flexShrink: 0 }}>{t('detail.back')}</button>
+        </div>
 
         {view === 'quiz' ? (
           // 答题列比报告列更窄(2026-07-31 Frank「这个问题页面跟狗屎一样」):一屏一题在桌面
@@ -298,7 +310,7 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                 </button>
               </span>
             </div>
-            {/* 职业 chip 常驻(非四题之一):三问答过直接用,没答→页内拉起 EntryQuiz */}
+            {/* 职业 chip 常驻(非四题之一):答过直接用,没答→拉起选职业控件 */}
             <div style={{ marginBottom: 10 }}><OccChip noc={noc} nocTitle={nocTitle} t={t} onPick={() => setQuizOpen(true)} /></div>
             {/* 题卡:框架只出题与导航,壳与配色归站内 token —— 选项做成可点的卡(能点才有 hover 和小手),
                 主按钮=站蓝(全站按钮统一,不留框架灰块) */}
@@ -337,12 +349,22 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
 .plSurvey .sd-body__navigation>.sv-action,.plSurvey .sd-body__navigation .sd-btn{flex:0 0 auto !important;width:auto;min-width:0;float:none !important}
 /* 框架的禁用态=主按钮透明度 25%(蓝底白字褪成一团看不清);换成站内灰底灰字的正经禁用样式 */
 .plSurvey .sd-btn:disabled{opacity:1;background:${UI.hairline};color:${UI.text3};cursor:default}`}</style>
-            <div style={{ ...CARD, padding: '14px 20px 6px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', paddingBottom: 12, marginBottom: 14, borderBottom: `1px solid ${UI.hairline}` }}>
-                <Tag variant={stage === 'explore' ? 'warn' : 'region'}>{t(stage === 'explore' ? 'plan.set.explore' : 'plan.set.basic')}</Tag>
+            {/* 没选职业 → 第一步就是选职业(2026-07-31 Frank「找工作第一问不应该是选择职业吗」):
+                这张卡的每条结论都要 NOC 才算得出,先问处境是把顺序搞反了 */}
+            {!noc ? (
+              <div style={{ ...CARD, padding: '18px 20px 20px' }}>
+                <div style={{ fontSize: 19, fontWeight: 700, lineHeight: 1.55, marginBottom: 6 }}>{t('quiz.q2')}</div>
+                <div style={{ fontSize: 12.5, color: UI.text2, marginBottom: 14 }}>{t('quiz.q2sub')}</div>
+                <Button kind="primary" onClick={() => setQuizOpen(true)} style={{ width: '100%', padding: '11px 0', fontSize: 15 }}>{t('plan.occ.pick')}</Button>
               </div>
-              <div className="plSurvey">{survey && <Survey model={survey} />}</div>
-            </div>
+            ) : (
+              <div style={{ ...CARD, padding: '14px 20px 6px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', paddingBottom: 12, marginBottom: 14, borderBottom: `1px solid ${UI.hairline}` }}>
+                  <Tag variant={stage === 'explore' ? 'warn' : 'region'}>{t(stage === 'explore' ? 'plan.set.explore' : 'plan.set.basic')}</Tag>
+                </div>
+                <div className="plSurvey">{survey && <Survey model={survey} />}</div>
+              </div>
+            )}
           </>
         ) : (
           <>
