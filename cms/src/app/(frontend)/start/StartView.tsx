@@ -122,7 +122,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
         /* 职位榜/职业榜行:网格定列(2026-07-31 Frank「对齐也比较好吧」)——PNP 标签、地点、薪资各归各列,
            不再随标题长短漂;手机砍公司/地点/可提名列(站规:多值拆列网格对齐,数值列右对齐) */
         .hmJobRow{display:grid;grid-template-columns:26px minmax(0,1fr) 46px 96px;gap:10px;align-items:baseline;padding:12px 14px;font-size:13.5px;text-decoration:none;color:inherit}
-        .hmOccRow{display:grid;grid-template-columns:26px minmax(0,1fr) 86px 76px;gap:10px;align-items:baseline;padding:12px 14px;font-size:13.5px;text-decoration:none;color:inherit}
+        .hmOccRow{display:grid;grid-template-columns:26px minmax(0,1fr) 78px 92px;gap:10px;align-items:baseline;padding:12px 14px;font-size:13.5px;text-decoration:none;color:inherit}
         .hmJobCo,.hmJobLoc,.hmOccElig{display:none}
         @media (min-width:900px){
           .hmJobRow{grid-template-columns:26px minmax(0,1.2fr) minmax(0,1fr) 46px minmax(0,170px) 130px;gap:12px}
@@ -228,8 +228,13 @@ export function StartView({ stats }: { stats: HomeStats }) {
                       </span>
                       <span style={{ color: UI.text2, fontSize: 12.5, whiteSpace: 'nowrap', textAlign: 'right' }}>{o.openJobs != null ? t('quiz.openN', { n: o.openJobs.toLocaleString('en-CA') }) : ''}</span>
                       <span className="hmOccElig" style={{ color: UI.ok, fontSize: 12.5, whiteSpace: 'nowrap', textAlign: 'right' }}>{o.namedJobs ? t('quiz.eligN', { n: o.namedJobs.toLocaleString('en-CA') }) : ''}</span>
-                      {/* ESDC 官方中位=单值非区间(Frank 2026-07-31 问「为什么不是范围」)——数字给名分,出处挂 title */}
-                      <span title={t('stats.medWage')} style={{ color: UI.text, fontSize: 12.5, whiteSpace: 'nowrap', textAlign: 'right' }}>{o.medianWageAnnual != null ? t('home.jobs.med', { v: '$' + Math.round(o.medianWageAnnual / 1000) + 'K' }) : ''}</span>
+                      {/* 薪资=ESDC 官方低–高位区间(Frank 2026-07-31「改成范围」;口径同中位:岗位加权取中位);
+                          区间列未灌到(部署时序)回退「中位 $NK」,再不行留空 —— 宁可留空不瞎猜 */}
+                      <span title={t('home.jobs.rangeTip')} style={{ color: UI.text, fontSize: 12.5, whiteSpace: 'nowrap', textAlign: 'right' }}>
+                        {o.wageLowAnnual != null && o.wageHighAnnual != null
+                          ? `$${Math.round(o.wageLowAnnual / 1000)}K–$${Math.round(o.wageHighAnnual / 1000)}K`
+                          : o.medianWageAnnual != null ? t('home.jobs.med', { v: '$' + Math.round(o.medianWageAnnual / 1000) + 'K' }) : ''}
+                      </span>
                     </a>
                     )
                   })

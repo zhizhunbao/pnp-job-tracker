@@ -118,6 +118,10 @@ def main() -> None:
         return {"openJobs": len(js),
                 "new7d": sum(1 for j in js if (j.get("datePosted") or "") >= cut7),
                 "medianWageAnnual": median_or_none([j.get("wageMedAnnual") for j in js]),
+                # ESDC 低/高位年薪(2026-07-31 Frank「改成范围」):与中位同口径——每岗按其 NOC×省
+                # 查官方表的 low/high,再取中位;不是全省极值,也不发明全国聚合
+                "wageLowAnnual": median_or_none([j.get("wageLowAnnual") for j in js]),
+                "wageHighAnnual": median_or_none([j.get("wageHighAnnual") for j in js]),
                 "medianSalaryAnnual": median_or_none([j.get("salaryAnnual") for j in js]),
                 "salaryN": len(sal),
                 "namedJobs": sum(1 for j in js if j.get("pnpStream"))}

@@ -16,6 +16,9 @@ export const StatsOccupation: CollectionConfig = {
     { name: 'openJobs', type: 'number' }, { name: 'new7d', type: 'number' },
     // 两个薪资口径并存(2026-07-28):官方=权威基线,帖面=当下行情,salaryN=帖面中位的样本量
     { name: 'medianWageAnnual', type: 'number', admin: { description: 'ESDC 官方中位年薪(权威基线)' } },
+    // 范围(2026-07-31 Frank 拍板):与中位同口径 —— 各岗 ESDC low/high 取中位;DDL 见 docs/sql/e8-14b-occ-wage-range.sql
+    { name: 'wageLowAnnual', type: 'number', admin: { description: 'ESDC 官方低位年薪(口径同中位:岗位加权取中位)' } },
+    { name: 'wageHighAnnual', type: 'number', admin: { description: 'ESDC 官方高位年薪(口径同上)' } },
     { name: 'medianSalaryAnnual', type: 'number', admin: { description: '帖面中位(本站折算);样本量见 salaryN' } },
     { name: 'salaryN', type: 'number', admin: { description: '有帖面薪资的岗位数 = 帖面中位的样本量' } },
     { name: 'namedJobs', type: 'number' },
