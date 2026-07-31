@@ -274,12 +274,19 @@ export function PlanPrView() {
 .plSurvey .sd-root-modern{background:transparent}
 .plSurvey .sd-body{padding:0 !important}
 .plSurvey .sd-page{padding:0}
-.plSurvey .sd-question__title{font-size:17px;font-weight:700;color:${UI.text};margin-bottom:14px}
-.plSurvey .sd-selectbase{gap:0}
-.plSurvey .sd-item{background:#fff;border:1px solid ${UI.border};border-radius:10px;padding:11px 14px;margin-bottom:9px;cursor:pointer}
+.plSurvey .sd-question__title{font-size:19px;font-weight:700;color:${UI.text};margin-bottom:16px;line-height:1.55}
+.plSurvey .sd-selectbase{gap:0;counter-reset:opt}
+.plSurvey .sd-item{background:#fff;border:1px solid ${UI.border};border-radius:10px;padding:11px 14px;margin-bottom:10px;cursor:pointer;counter-increment:opt}
 .plSurvey .sd-item--allowhover:hover{border-color:#93c5fd;background:#f8fbff}
 .plSurvey .sd-item--checked{border-color:${UI.primary};background:#eff6ff}
-.plSurvey .sd-selectbase__label{cursor:pointer}
+/* 选项字母徽标(照 Frank 的三个答题项目:A/B/C/D 徽标 + 选中反白)——原生 radio 圆点点击目标感弱 */
+.plSurvey .sd-selectbase__label{cursor:pointer;display:flex;align-items:center;gap:12px}
+.plSurvey .sd-radio__decorator{display:none}
+.plSurvey .sd-selectbase__label::before{content:counter(opt,upper-alpha);flex-shrink:0;width:26px;height:26px;
+  border:1px solid ${UI.border};border-radius:7px;background:#fff;color:${UI.text2};
+  font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.plSurvey .sd-item--checked .sd-selectbase__label::before{background:${UI.primary};border-color:${UI.primary};color:#fff}
+.plSurvey .sd-item--checked .sd-item__control-label{color:${UI.primaryDeep};font-weight:600}
 .plSurvey .sd-progress{background:${UI.hairline};border-radius:999px;height:5px;margin:0 0 26px}
 .plSurvey .sd-progress__bar{border-radius:999px}
 /* 框架把进度文字绝对定位在进度条上,窄列里正好压住题干 → 拉回文档流,单独一行右对齐 */
@@ -291,11 +298,17 @@ export function PlanPrView() {
 .plSurvey .sd-navigation__next-btn:hover,.plSurvey .sd-navigation__complete-btn:hover{background-color:${UI.primaryDeep} !important}
 .plSurvey .sd-navigation__prev-btn{background-color:#fff !important;color:${UI.text2};border:1px solid ${UI.border}}
 /* 按钮各占半幅是框架默认;收成内容宽、靠右(主按钮在右=站内表单惯例) */
-.plSurvey .sd-body__navigation{display:flex !important;padding:18px 0 0;justify-content:flex-end;gap:10px}
-.plSurvey .sd-body__navigation .sv-action,.plSurvey .sd-body__navigation .sd-btn{flex:0 0 auto;width:auto;min-width:0;float:none !important}
+.plSurvey .sd-body__navigation{display:flex !important;margin-top:18px;padding:16px 0 0;border-top:1px solid ${UI.hairline};justify-content:space-between !important;gap:10px}
+.plSurvey .sd-body__navigation>.sv-action:only-child{margin-left:auto}
+.plSurvey .sd-body__navigation>.sv-action,.plSurvey .sd-body__navigation .sd-btn{flex:0 0 auto !important;width:auto;min-width:0;float:none !important}
 /* 框架的禁用态=主按钮透明度 25%(蓝底白字褪成一团看不清);换成站内灰底灰字的正经禁用样式 */
 .plSurvey .sd-btn:disabled{opacity:1;background:${UI.hairline};color:${UI.text3};cursor:default}`}</style>
-            <div className="plSurvey" style={{ ...CARD, padding: '18px 20px 6px' }}>{survey && <Survey model={survey} />}</div>
+            <div style={{ ...CARD, padding: '14px 20px 6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', paddingBottom: 12, marginBottom: 14, borderBottom: `1px solid ${UI.hairline}` }}>
+                <Tag variant={stage === 'explore' ? 'warn' : 'region'}>{t(stage === 'explore' ? 'plan.set.explore' : 'plan.set.basic')}</Tag>
+              </div>
+              <div className="plSurvey">{survey && <Survey model={survey} />}</div>
+            </div>
           </>
         ) : (
           <>

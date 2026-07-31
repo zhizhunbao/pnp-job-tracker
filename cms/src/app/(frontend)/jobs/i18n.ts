@@ -298,6 +298,7 @@ const zh: Dict = {
   'rpt.a.prov': '{prov}:你的职业在其公开清单「{label}」上——在招 {open} 岗,{named} 个命中具名通道',
   // v2c 报告分层(L2-03):hero 大数字 → 三卡判定 → 两条结论 → 编号下一步 → 锁区。判定词是事实(免费),分差/时间窗是结论(Pro)
   'plan.explore.sub': '再答 2 题:算 EE 分差与时间窗', 'plan.explore.basic': '改基本题',
+  'plan.set.basic': '基本题', 'plan.set.explore': '探索题',
   'rpt.hero.hit': '{prov} 在招岗中命中具名通道', 'rpt.hero.open': '{prov} 在招岗位',
   'rpt.lane.t.prov': '{prov} 省提名', 'rpt.lane.t.ee': '联邦 EE', 'rpt.lane.t.alts': '备选省',
   'rpt.lane.prov.hit': '清单命中', 'rpt.lane.prov.hit.b': '可走',
@@ -922,6 +923,7 @@ const en: Dict = {
   'rpt.n.jobs': 'See the {n} open postings in {prov}', 'rpt.n.score': 'Estimate your {prov} score on the official grid', 'rpt.n.pathways': 'Compare full immigration pathways',
   'rpt.a.prov': '{prov}: your occupation is on its published list "{label}" - {open} open postings, {named} on the named stream',
   'plan.explore.sub': '2 more questions: your EE gap and time window', 'plan.explore.basic': 'Edit basics',
+  'plan.set.basic': 'Basics', 'plan.set.explore': 'Deeper',
   'rpt.hero.hit': 'of {prov} openings hit the named stream', 'rpt.hero.open': 'open postings in {prov}',
   'rpt.lane.t.prov': '{prov} PNP', 'rpt.lane.t.ee': 'Federal EE', 'rpt.lane.t.alts': 'Other provinces',
   'rpt.lane.prov.hit': 'On the list', 'rpt.lane.prov.hit.b': 'open route',
@@ -1520,6 +1522,7 @@ const ko: Dict = {
   'rpt.n.jobs': '{prov}의 채용 {n}건 보기', 'rpt.n.score': '{prov} 공식 점수표로 추정하기', 'rpt.n.pathways': '전체 이민 경로 비교',
   'rpt.a.prov': '{prov}: 내 직업이 공개 목록 "{label}"에 있습니다 - 채용 {open}건, 지정 스트림 {named}건',
   'plan.explore.sub': '2문항 더: EE 점수 격차와 체류 기간', 'plan.explore.basic': '기본 문항 수정',
+  'plan.set.basic': '기본 문항', 'plan.set.explore': '심화 문항',
   'rpt.hero.hit': '{prov} 채용 중 지정 스트림 해당', 'rpt.hero.open': '{prov} 채용 건수',
   'rpt.lane.t.prov': '{prov} 주정부 지명', 'rpt.lane.t.ee': '연방 EE', 'rpt.lane.t.alts': '대체 주',
   'rpt.lane.prov.hit': '목록 해당', 'rpt.lane.prov.hit.b': '가능',
