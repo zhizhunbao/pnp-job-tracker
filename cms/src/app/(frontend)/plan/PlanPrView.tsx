@@ -47,6 +47,8 @@ const CARD: React.CSSProperties = { background: '#fff', border: `1px solid ${UI.
 
 // 尾链一律右对齐成一列(2026-07-31 Frank「不要在文字后面直接加链接,乱得很」):
 // 句子长短不一 → 紧跟文末的链接横向位置全是随机的;抽到右轨后是一条竖直的链列,与全站表格对齐口径一致。
+const BTN: React.CSSProperties = { border: `1px solid ${UI.border}`, background: '#fff', color: UI.text, borderRadius: 8, padding: '5px 14px', fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }
+
 const TAIL: React.CSSProperties = { flexShrink: 0, marginLeft: 12, fontSize: 12, color: UI.text3, textDecoration: 'none', whiteSpace: 'nowrap' }
 
 // 职业 chip:答题态常驻;报告态**没职业时**也出(空报告说「先选职业」却没有入口=死路,2026-07-31 实拍抓到)
@@ -292,18 +294,42 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
             <style>{`.rptHero{display:flex;flex-direction:column;gap:10px}
 .rptLanes{display:grid;gap:10px;grid-template-columns:repeat(3,1fr)}
 @media(max-width:640px){.rptHero{gap:8px}.rptLanes{grid-template-columns:repeat(2,1fr)}.rptLanes>:first-child{grid-column:1/-1}}
-@media(min-width:641px){.rptHero{flex-direction:row;align-items:center;gap:30px}}`}</style>
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', margin: '2px 0 10px' }}>
+@media(min-width:641px){.rptHero{flex-direction:row;align-items:center;gap:30px}}
+/* 存 PDF = 浏览器打印(react-pdf 已评估否决:CJK 字体必须内嵌是决定性成本)。
+   打印稿只留内容:导航、按钮、锁区与 CTA 都不印(那是屏幕上的操作件与营销位,印在纸上是噪音);
+   抬头与免责声明改成打印专用行 —— 纸上必须能认出这是谁的什么报告、什么日期、不是法律建议 */
+.printOnly{display:none}
+@media print{
+  header,footer,.noPrint{display:none !important}
+  .printOnly{display:block !important}
+  body{background:#fff}
+  .rptHero{background:none !important;border:1px solid #ddd !important}
+  a{color:#111 !important;text-decoration:none}
+  @page{margin:14mm}
+}`}</style>
+            <div className="printOnly" style={{ borderBottom: '1px solid #ddd', paddingBottom: 8, marginBottom: 12, fontSize: 12, color: UI.text2 }}>
+              Offer2PR{rpt && rpt !== 'loading' && rpt.asOf ? ` — ${rpt.asOf}` : ''}
+            </div>
+            <div className="noPrint" style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', margin: '2px 0 10px' }}>
               {/* 人话名优先(nocTitle 走 /api/quiz 出中文名),代码作灰字小注 */}
               {rpt && rpt !== 'loading' && (rpt.noc
                 ? <span style={{ fontSize: 15, fontWeight: 700, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{shortOcc(nocTitle || rpt.title)}<span style={{ color: UI.text3, fontWeight: 400, fontSize: 12, marginLeft: 6 }}>{rpt.noc}</span></span>
                 : <OccChip noc="" nocTitle="" t={t} onPick={() => setQuizOpen(true)} />)}
-              <button onClick={() => gotoQuiz()} style={{ marginLeft: 'auto', border: `1px solid ${UI.border}`, background: '#fff', color: UI.text, borderRadius: 8, padding: '5px 14px', fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit' }}>{t('plan.back')}</button>
+              {/* 两个动作钮同组靠右:窄屏一起换行,不会一个贴右一个掉到左边 */}
+              <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+                <button onClick={() => gotoQuiz()} style={BTN}>{t('plan.back')}</button>
+                {rpt && rpt !== 'loading' && rpt.noc && (
+                  <button onClick={() => { track(`plan-${decision}-print`); window.print() }} style={BTN}>{t('plan.pdf')}</button>
+                )}
+              </span>
             </div>
             {rpt === 'loading' || rpt === null ? (
               <div style={{ background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 12, minHeight: 220 }} />
             ) : (
               <>
+                <div className="printOnly" style={{ fontSize: 15, fontWeight: 700, marginBottom: 8 }}>
+                  {shortOcc(nocTitle || rpt.title)}<span style={{ color: UI.text3, fontWeight: 400, fontSize: 12, marginLeft: 6 }}>{rpt.noc}</span>
+                </div>
                 <Hero r={rpt} t={t} />
                 {rpt.lanes.length > 0 && <Lanes lanes={rpt.lanes} t={t} />}
 
@@ -342,7 +368,7 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
 
                 {/* ⑤ 锁区:只有类别标题(正文服务端就没下发)+ CTA(价格归 /pricing 不硬编)+ 答题 hook */}
                 {rpt.locked.length > 0 && (
-                  <div style={CARD}>
+                  <div className="noPrint" style={CARD}>
                     {rpt.locked.map((k) => (
                       <div key={k} style={{ display: 'flex', gap: 9, alignItems: 'center', margin: '9px 0' }}>
                         <span style={{ flexShrink: 0 }}>🔒</span>
@@ -355,19 +381,22 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                 {/* CTA 只在真锁住了东西时才出(2026-07-31 实拍抓到:没选职业的空报告什么都算不出,
                     却照样挂「完整报告 + 30 天全站 Pro」—— 那是卖不存在的东西,红线) */}
                 {!rpt.pro && rpt.locked.length > 0 && (
-                  <Notice kind="warn" lead={t('rpt.cta.t')} style={{ margin: '10px 0' }}
+                  <Notice kind="warn" lead={t('rpt.cta.t')} style={{ margin: '10px 0' }} className="noPrint"
                     action={<span onClick={() => track(`plan-${decision}-cta`)}><Button kind="pro" href="/pricing">{t('rpt.cta.btn')}</Button></span>}>
                     <span style={{ display: 'block', fontSize: 12 }}>{t('rpt.cta.s')}</span>
                   </Notice>
                 )}
                 {/* 同理:没职业时探索两题也改不了任何结论,不劝答 */}
                 {!rpt.pro && rpt.noc && hasExplore && (!bands.crsBand || !bands.pgwpBand) && (
-                  <div style={{ textAlign: 'center', fontSize: 12.5, color: UI.text2, margin: '10px 0 0' }}>
+                  <div className="noPrint" style={{ textAlign: 'center', fontSize: 12.5, color: UI.text2, margin: '10px 0 0' }}>
                     {t('rpt.hook')}
                     <button onClick={() => gotoQuiz('explore')} style={{ marginLeft: 8, border: 'none', background: 'none', color: UI.primary, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}>{t('rpt.hook.go')} →</button>
                   </div>
                 )}
                 {/* 数据诚实脚注:置信度与数据日期(v2c 头部只留职业,这两项挪到脚注不丢) */}
+                <div className="printOnly" style={{ marginTop: 14, paddingTop: 8, borderTop: '1px solid #ddd', fontSize: 11, color: UI.text2 }}>
+                  {t('foot.disclaimer')}
+                </div>
                 <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', fontSize: 11.5, color: UI.text3, margin: '12px 0 0' }}>
                   <span>{t('rpt.conf')}:{t('rpt.conf.' + rpt.confidence)}</span>
                   {rpt.asOf && <span>{t('rpt.asOf', { d: rpt.asOf })}</span>}

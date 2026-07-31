@@ -77,13 +77,13 @@ const NOTICE_KIND: Record<string, { bg: string; bd: string; fg: string; icon: st
   info: { bg: '#eff6ff', bd: '#bfdbfe', fg: '#1e40af', icon: 'ⓘ' },
   ok: { bg: '#ecfdf5', bd: '#a7f3d0', fg: '#047857', icon: '✓' },
 }
-export function Notice({ kind = 'info', lead, action, style, children }: {
+export function Notice({ kind = 'info', lead, action, style, className, children }: {
   kind?: keyof typeof NOTICE_KIND; lead?: React.ReactNode; action?: React.ReactNode
-  style?: React.CSSProperties; children?: React.ReactNode
+  style?: React.CSSProperties; className?: string; children?: React.ReactNode
 }) {
   const k = NOTICE_KIND[kind]
   return (
-    <div style={{ background: k.bg, border: `1px solid ${k.bd}`, borderRadius: 10, padding: '10px 14px', fontSize: 13, color: k.fg, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, ...style }}>
+    <div className={className} style={{ background: k.bg, border: `1px solid ${k.bd}`, borderRadius: 10, padding: '10px 14px', fontSize: 13, color: k.fg, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, ...style }}>
       <span style={{ flex: 1, minWidth: 160 }}>
         <span style={{ marginRight: 6 }}>{k.icon}</span>
         {lead != null && <b style={{ marginRight: 6 }}>{lead}</b>}
