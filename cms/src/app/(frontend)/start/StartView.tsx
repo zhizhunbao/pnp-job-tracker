@@ -10,8 +10,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { eeKeyDisplay, initialLang, makeT, LANG_KEY, type Lang } from '../jobs/i18n'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
-import { MarketChart } from '../stats/charts'
-import type { CityRow, OccRow, StatRow } from '../stats/shared'
+import { MarketChart, useMarketStats } from '../stats/charts'
 import { AuthModal } from '../jobs/AuthForm'
 import { EntryQuiz, quizToProfile, readQuiz, type QuizAnswers } from '../quiz/EntryQuiz'
 import { BANNER_IMGS, PageBanner, Tag, UI } from '../ui/primitives'
@@ -26,10 +25,6 @@ export type HomeStats = {
   news: { date: string; region: string; title: string; slug: string }[]
   latestJobs: { id: number | string; title: string; company: string; city: string; province: string; salaryText: string; pnp: boolean; date: string }[]
   topPaidJobs: { id: number | string; title: string; company: string; city: string; province: string; salaryText: string; pnp: boolean; date: string }[]
-  statRows: StatRow[]
-  occStats: OccRow[]
-  cityStats: CityRow[]
-  channels: { pnp: string[]; ee: string[] }
   checkedAt: string
 }
 
@@ -59,6 +54,8 @@ export function StartView({ stats }: { stats: HomeStats }) {
     if (s) setQuizSaved({ status: s.status, nocs: s.nocs, provs: s.provs })
   }, [])
   const [pendingQuiz, setPendingQuiz] = useState<QuizAnswers | null>(null)
+  // 主图四份数据挂载后拉 /api/market-stats(SSR 瘦身:occ ~3400 行不再进 HTML);null=加载中渲占位高度
+  const market = useMarketStats()
   // 职位榜控件:最新/高薪两榜 × Top 10/20/50(数据两份各 50 条已在服务端备好,切换零请求)
   const [jobsTab, setJobsTab] = useState<'new' | 'paid'>('new')
   const [jobsN, setJobsN] = useState(10)
@@ -239,14 +236,17 @@ export function StartView({ stats }: { stats: HomeStats }) {
         )}
 
         {/* ⑤ 在招职位分布主图(灰带,1320 全轨与各节同宽):/stats 主图整块投影
-            (同一 MarketChart 组件、同一 loadOccStats/loadCityStats/loadStats 口径,单一真相源;echarts 懒加载)。
+            (同一 MarketChart 组件、同一 /api/market-stats 数据,单一真相源;echarts 懒加载)。
+            数据挂载后 useMarketStats 后台拉:加载中渲固定高占位(不渲空壳控件、375 不跳版),
+            拉完为空(缺表/查询挂)整节撤 —— 与 SSR 时代「查不到整节不渲」同一红线。
             v2 的「热门职业行情」横滑卡节撤(2026-07-30 自检):与主图默认职业轴同批职业同一排序,
             两节讲同一件事 —— 按 Frank「不同 section 显示不同的信息」原则,留超集(主图带筛选/下钻)。 */}
-        {stats.occStats.length > 0 && (
+        {(market === null || market.occ.length > 0) && (
           <Band>
             <h2 style={secH}>{t('mkt.title')}<a href="/stats" style={moreA}>{t('home.stats.more')}</a></h2>
-            {/* 默认只看 top 10 职业(2026-07-30 Frank;Top N 可切 10/20/50/全部,排序控件切数量榜/薪资榜) */}
-            <MarketChart occ={stats.occStats} city={stats.cityStats} rows={stats.statRows} t={t} lang={lang} channels={stats.channels} defaultTopN={10} />
+            {market === null
+              ? <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, height: 560 }} />
+              : <MarketChart occ={market.occ} city={market.city} rows={market.rows} t={t} lang={lang} channels={market.channels} defaultTopN={10} />}
           </Band>
         )}
 

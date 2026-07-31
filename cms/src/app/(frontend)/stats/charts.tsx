@@ -198,6 +198,23 @@ function DrillCard({ rows, t, title, kind, metric, money, broadLabel }: {
   )
 }
 
+// ── /api/market-stats 客户端拉取(SSR 瘦身,手法照 /jobs 的 /api/dims):主图四份数据与用户无关、
+// mart 日更,不该 SSR 直出(occ ~3400 行占 /start HTML 大头)。null=加载中(调用侧渲占位高度防 CLS);
+// 失败/缺表回空数组 → 调用侧整节不渲(红线:查不到不出空壳)。/start 与 /stats 首页同吃这一个端点。
+export type MarketData = { occ: OccRow[]; city: CityRow[]; rows: StatRow[]; channels: { pnp: string[]; ee: string[] } }
+export function useMarketStats(): MarketData | null {
+  const [d, setD] = useState<MarketData | null>(null)
+  useEffect(() => {
+    const ctrl = new AbortController()
+    fetch('/api/market-stats', { signal: ctrl.signal })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => setD({ occ: j?.occ ?? [], city: j?.city ?? [], rows: j?.rows ?? [], channels: j?.channels ?? { pnp: [], ee: [] } }))
+      .catch(() => { if (!ctrl.signal.aborted) setD({ occ: [], city: [], rows: [], channels: { pnp: [], ee: [] } }) })
+    return () => ctrl.abort()
+  }, [])
+  return d
+}
+
 // ── E8-14 统计主图:一张图回答「在招的是什么工作、在哪、值多少钱」──────────────────
 // Frank 拍板「这个大图要做全,作为页面最主要的统计图之一」。
 // 横轴三切换(职业 / 省份 / 城市)× 簇内四选 × 右轴叠中位年薪。

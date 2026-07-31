@@ -6,7 +6,6 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { checkedAt, fetchJobRows, fetchJobsPage, fetchTotalAndProof } from '@/lib/jobsSql'
 import { normalizeProfile } from '@/lib/match'
-import { loadChannelNocs, loadCityStats, loadOccStats, loadStats } from '../stats/lib'
 import { StartView, type HomeStats } from './StartView'
 
 export const dynamic = 'force-dynamic'
@@ -26,7 +25,7 @@ async function loadHomeStats(pool: any): Promise<Omit<HomeStats, 'checkedAt'>> {
   // 每项独立 .catch(null):一张表缺/查询挂只丢它自己那行,页面照常(宁可留空)
   const cnt = (sql: string) => pool.query(sql).then((r: any) => Number(r.rows[0]?.n) || null).catch(() => null)
   const ANON = { profile: normalizeProfile(null), matchDims: { pnpOccupations: [], eeCategories: [] } }
-  const [proof, provinces, cities, dli, occupations, aipEmployers, drawRes, dailyRes, newsRes, statRows, occStats, cityStats, channels, jobRows, paidRows] = await Promise.all([
+  const [proof, provinces, cities, dli, occupations, aipEmployers, drawRes, dailyRes, newsRes, jobRows, paidRows] = await Promise.all([
     fetchTotalAndProof(pool).catch(() => null),
     cnt('SELECT count(*)::int n FROM provinces'),
     cnt('SELECT count(*)::int n FROM cities'),
@@ -46,11 +45,8 @@ async function loadHomeStats(pool: any): Promise<Omit<HomeStats, 'checkedAt'>> {
     // 多取几条再按标题去重(同题新闻隔日重抓会出重复行,landing 三行里出现两条同题很难看;取最新那条)
     pool.query(`SELECT region, title, date, slug FROM news ORDER BY date DESC, id DESC LIMIT 8`)
       .then((r: any) => r.rows as any[]).catch(() => []),
-    // 地区统计主图(v3,Frank「用在招职位分布这个图」):与 /stats 首页同组件同 loader 同口径,landing 只是投影
-    loadStats('', [], { withMid: true }).catch(() => []),
-    loadOccStats().catch(() => []),
-    loadCityStats().catch(() => []),
-    loadChannelNocs().catch(() => ({ pnp: [], ee: [] })),
+    // 地区统计主图四份数据(occ/city/rows/channels)不再 SSR 直出:occ ~3400 行占 HTML 大头(实测 1.85MB),
+    // 移到 /api/market-stats,StartView 挂载后后台拉(SSR 瘦身,手法照 /jobs 的 /api/dims)
     // 职位节(Frank「单独一个 section 展示 job,最新/高薪 × Top 10/20/50」):与职位板同一 DAL,
     // 匿名口径(无档案无匹配);最新=fetchJobRows 发布时间序,高薪=fetchJobsPage 年薪序(同一查询层同一去重)
     fetchJobRows(pool, { pro: false, profile: ANON.profile, profileOk: false, matchDims: ANON.matchDims, limit: 50 })
@@ -80,7 +76,6 @@ async function loadHomeStats(pool: any): Promise<Omit<HomeStats, 'checkedAt'>> {
         .slice(0, 3)
         .map((r) => ({ date: String(r.date), region: r.region ?? '', title: r.title ?? '', slug: r.slug ?? '' }))
     })(),
-    statRows, occStats, cityStats, channels,
     latestJobs: (jobRows as any[]).map(slimJob),
     topPaidJobs: (paidRows as any[]).map(slimJob),
   }
