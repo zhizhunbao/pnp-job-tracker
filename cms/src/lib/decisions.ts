@@ -12,6 +12,10 @@ export type Decision = {
 
 export const DECISIONS: Record<string, Decision> = {
   pr: { basic: ['status', 'clbBand', 'expBand', 'provBand'], explore: [['crsBand', 'pgwpBand']] },
+  // 卡①找工作 / 卡⑥职业规划:零新题 —— 职业来自选职业(不是四选一题),其余全在共用底座里。
+  // 这就是横向扩面成立的原因:同一批答案,三张卡都能出报告。
+  job: { basic: ['status', 'provBand'], explore: [] },
+  career: { basic: ['provBand'], explore: [] },
 }
 
 export const fieldsOf = (decision: string, stage: Stage, batch = 0): string[] => {

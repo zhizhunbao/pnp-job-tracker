@@ -11,8 +11,8 @@ import config from '@/payload.config'
 import { getUser, isPro } from '@/lib/entitlement'
 import { normalizeProfile } from '@/lib/match'
 import { loadMatchDims } from '@/lib/matchDims'
-import { buildPrReport, gateReport } from '@/lib/report'
-import { assembleReportFacts } from '@/lib/reportFacts'
+import { buildCareerReport, buildJobReport, buildPrReport, gateReport } from '@/lib/report'
+import { assembleOccStats, assembleReportFacts } from '@/lib/reportFacts'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -20,7 +20,8 @@ export const runtime = 'nodejs'
 export async function POST(req: Request) {
   let body: any = null
   try { body = await req.json() } catch { /* 无 body 走纯档案 */ }
-  if (body?.goal && body.goal !== 'pr') return Response.json({ error: 'unknown goal' }, { status: 400 })
+  const goal: 'pr' | 'job' | 'career' = body?.goal ?? 'pr'
+  if (!['pr', 'job', 'career'].includes(goal)) return Response.json({ error: 'unknown goal' }, { status: 400 })
   const a = body?.answers ?? {}
 
   const user = await getUser(await headers()).catch(() => null)
@@ -33,8 +34,16 @@ export async function POST(req: Request) {
 
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
-  const [dims, facts] = await Promise.all([loadMatchDims(), assembleReportFacts(pool, noc)])
+  // 卡①/⑥ 要职业级统计(stats_occupation);拿 PR 不查,省一次往返
+  const [dims, facts, occ] = await Promise.all([
+    loadMatchDims(),
+    assembleReportFacts(pool, noc),
+    goal === 'pr' ? Promise.resolve(null) : assembleOccStats(pool, noc),
+  ])
+  const built = goal === 'job' ? buildJobReport(profile, dims, facts, occ!)
+    : goal === 'career' ? buildCareerReport(profile, facts, occ!)
+      : buildPrReport(profile, extra, dims, facts)
   // 付费闸在服务端(L2-03):免费响应里根本没有锁区正文,前端只负责显示锁行标题
-  const report = gateReport(buildPrReport(profile, extra, dims, facts), isPro(user))
+  const report = gateReport(built, isPro(user))
   return Response.json({ report })
 }

@@ -15,6 +15,9 @@ import { shortOcc } from '../quiz/EntryQuiz'
 import { BANNER_IMGS, PageBanner, Tag, UI } from '../ui/primitives'
 import { track } from '@/lib/track'
 
+// 有自己的题库与报告的目标卡 → 进两态答题页;加一张卡=加一行(与 lib/decisions 同一个加卡口径)
+const PLAN_CARDS: Record<string, string> = { pr: '/plan/pr', jobs: '/plan/job', career: '/plan/career' }
+
 export type HomeStats = {
   total: number | null; named: number | null; lmia: number | null
   provinces: number | null; cities: number | null; dli: number | null
@@ -45,7 +48,8 @@ export function StartView({ stats }: { stats: HomeStats }) {
   const t = useMemo(() => makeT(lang), [lang])
 
   // 老三问弹框 2026-07-31 在 landing 全下架(Frank「现在只有拿 PR 有题,其他还是老的弹框 → 先都关掉」):
-  // 七卡里只有「拿 PR」有自己的题库与报告,其余六卡先回深链等各自 builder,主 CTA 直接进 /plan/pr。
+  // 有 builder 的卡进答题页,其余先回深链等各自 builder;主 CTA 直接进 /plan/pr。
+  // 加一张卡 = 加一行(同 lib/decisions 的加卡即加一行)。
   // 主图四份数据挂载后拉 /api/market-stats(SSR 瘦身:occ ~3400 行不再进 HTML);null=加载中渲占位高度
   const market = useMarketStats()
   // 职位榜控件:最新=逐岗(服务端 50 条);高薪/最多=职业级(2026-07-31 两次拍板:「最多」加榜、
@@ -149,10 +153,10 @@ export function StartView({ stats }: { stats: HomeStats }) {
           <h2 style={secH}>{t('home.goals')}</h2>
           <div className="hmGrid">
             {/* 目标卡=决策入口(L2 架构)。只有做完题库与 builder 的卡才进答题页:
-                拿 PR → /plan/pr 两态页;其余六卡先回各自数据页深链(2026-07-31 Frank「先把老的弹框都关掉」——
-                点卡弹一套不相干的三问,比直接给数据更糟),各卡 builder 做一个换一个 */}
+                拿 PR / 找工作 / 职业规划 → /plan/* 两态页(横向扩面第 1 批);
+                其余四卡先回各自数据页深链(点卡弹一套不相干的三问比直接给数据更糟),builder 做一个换一个 */}
             {goals.map((g) => g.href ? (
-              <a key={g.key} href={g.key === 'pr' ? '/plan/pr' : g.href} className="cardHover" onClick={() => track(`landing_goal_${g.key}`)}
+              <a key={g.key} href={PLAN_CARDS[g.key] ?? g.href} className="cardHover" onClick={() => track(`landing_goal_${g.key}`)}
                 style={{ display: 'block', minWidth: 0, background: g.hot ? '#f8fbff' : UI.card, border: `1px solid ${g.hot ? '#bfdbfe' : UI.border}`, borderRadius: 10, padding: '14px 16px', textDecoration: 'none', color: 'inherit' }}>
                 <div style={{ ...tileNm, ...(g.hot && { color: UI.primaryDeep }) }}>{t(`home.g.${g.key}`)}</div>
                 {g.hint && <div style={tileHint}>{g.hint}</div>}

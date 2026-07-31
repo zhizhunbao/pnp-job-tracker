@@ -18,7 +18,7 @@ import { SiteFooter } from '../SiteFooter'
 import { EntryQuiz, readQuiz, shortOcc } from '../quiz/EntryQuiz'
 import { Button, Notice, PageShell, Tag, UI } from '../ui/primitives'
 import { readAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
-import { fieldsOf } from '@/lib/decisions'
+import { DECISIONS, fieldsOf } from '@/lib/decisions'
 import { buildSurvey, SURVEY_THEME } from '@/lib/questions'
 import { track } from '@/lib/track'
 
@@ -84,7 +84,11 @@ function Hero({ r, t }: { r: Rpt; t: TFn }) {
   const c = r.conclusions[0]
   const big = c?.key === 'rpt.c.listedHit' ? { n: c.params.named, of: c.params.open, cap: t('rpt.hero.hit', { prov: c.params.prov }) }
     : c?.key === 'rpt.c.screenPass' ? { n: c.params.open, of: null, cap: t('rpt.hero.open', { prov: c.params.prov }) }
-    : null
+    // 卡①找工作:大数字=目标省在招量;卡⑥职业规划:=你这行全国在招量(都是库里的真数,不合成分)
+    : c?.key === 'rpt.j.openNamed' ? { n: c.params.named, of: c.params.open, cap: t('rpt.hero.hit', { prov: c.params.prov }) }
+      : c?.key === 'rpt.j.open' ? { n: c.params.open, of: null, cap: t('rpt.hero.jobs', { prov: c.params.prov }) }
+        : c?.key === 'rpt.k.self' || c?.key === 'rpt.k.selfWage' ? { n: c.params.open, of: null, cap: t('rpt.hero.self') }
+          : null
   if (!big && !r.hint && !c) return null
   return (
     <div className="rptHero" style={{ background: 'linear-gradient(180deg,#eff6ff,#e0edff)', border: '1px solid #dbeafe', borderRadius: 12, padding: '16px 18px', margin: '10px 0' }}>
@@ -133,7 +137,9 @@ function Lanes({ lanes, t }: { lanes: Lane[]; t: TFn }) {
   )
 }
 
-export function PlanPrView() {
+// 一个决定=一个参数(统一题库 §3:入口三处共用同一答题器与同一报告页,差别只有问哪些字段、答完出哪份报告)
+export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'career' } = {}) {
+  const hasExplore = (DECISIONS[decision]?.explore.length ?? 0) > 0
   const [lang, setLang] = useState<Lang>('zh')
   useEffect(() => { setLang(initialLang()) }, [])
   const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
@@ -154,7 +160,7 @@ export function PlanPrView() {
     setNoc(a.nocs[0] || '')
     if (new URLSearchParams(window.location.search).get('view') === 'report') setView('report')
     setReady(true)
-    track('plan-pr-open')
+    track(`plan-${decision}-open`)
   }, [])
   // 职业名回显(代码不裸奔):/api/quiz?noc 与三问结果页同端点
   useEffect(() => {
@@ -165,7 +171,7 @@ export function PlanPrView() {
   }, [noc, lang])
 
   const gotoReport = () => {
-    track('plan-pr-report')
+    track(`plan-${decision}-report`)
     setView('report')
     try { window.history.replaceState(null, '', '?view=report') } catch { /* ignore */ }
   }
@@ -179,11 +185,11 @@ export function PlanPrView() {
   // ready 后才建(要先读回预填);lang / stage 切换重建(换语言或换卷),当前答案原样带回。
   const survey = useMemo(() => {
     if (!ready || view !== 'quiz') return null
-    const m = new Model(buildSurvey('pr', stage))
+    const m = new Model(buildSurvey(decision, stage))
     m.applyTheme(SURVEY_THEME as any)
     m.locale = lang === 'zh' ? 'zh-cn' : lang === 'ko' ? 'ko' : 'en'
     const b = readAnswers()
-    const names = fieldsOf('pr', stage)
+    const names = fieldsOf(decision, stage)
     m.data = Object.fromEntries(names.map((n) => [n, (b as any)[n]]).filter(([, v]) => v))
     // 起步落在第一道没答的题(答过的不重走,上一题仍可回去改)。
     // v2 的 questionPerPage 模式导航不走 currentPageNo,走 currentSingleQuestion(实撞:设页号被无视)
@@ -199,7 +205,7 @@ export function PlanPrView() {
     })
     m.onComplete.add(() => gotoReport())
     return m
-  }, [ready, view, stage, lang])   // eslint-disable-line react-hooks/exhaustive-deps
+  }, [ready, view, stage, lang, decision])   // eslint-disable-line react-hooks/exhaustive-deps
 
   // 报告态进入即拉(改答案回来再进=重算;答案是幂等输入)
   useEffect(() => {
@@ -208,7 +214,7 @@ export function PlanPrView() {
     const ctrl = new AbortController()
     fetch('/api/report', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', signal: ctrl.signal,
-      body: JSON.stringify({ goal: 'pr', answers: toEngineAnswers(readAnswers()) }),
+      body: JSON.stringify({ goal: decision, answers: toEngineAnswers(readAnswers()) }),
     }).then((r) => (r.ok ? r.json() : null)).then((d) => setRpt(d?.report ?? null))
       .catch(() => { if (!ctrl.signal.aborted) setRpt(null) })
     return () => ctrl.abort()
@@ -224,14 +230,14 @@ export function PlanPrView() {
       <div style={{ flex: '1 0 auto' }}>
         <PageShell pad="1rem 1.25rem 40px">
           <div style={{ maxWidth: view === 'quiz' ? 560 : 760, margin: '0 auto' }}>
-        <h1 style={{ fontSize: 22, margin: '6px 0 4px' }}>{t('plan.pr.title')}</h1>
+        <h1 style={{ fontSize: 22, margin: '6px 0 4px' }}>{t(`plan.${decision}.title`)}</h1>
 
         {view === 'quiz' ? (
           // 答题列比报告列更窄(2026-07-31 Frank「这个问题页面跟狗屎一样」):一屏一题在桌面
           // 撑满 760 轨 = 四个字的选项拉一整行、右边全是空白。Typeform 范式的前提是窄列居中。
           <>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 12, color: UI.text3, margin: '2px 0 14px' }}>
-              <span>{t(stage === 'explore' ? 'plan.explore.sub' : 'plan.pr.sub')}</span>
+              <span>{t(stage === 'explore' ? 'plan.explore.sub' : `plan.${decision}.sub`)}</span>
               {stage === 'explore' && (
                 <button onClick={() => setStage('basic')} style={{ border: 'none', background: 'none', color: UI.primary, fontSize: 12, cursor: 'pointer', padding: 0, whiteSpace: 'nowrap', fontFamily: 'inherit' }}>{t('plan.explore.basic')}</button>
               )}
@@ -350,12 +356,12 @@ export function PlanPrView() {
                     却照样挂「完整报告 + 30 天全站 Pro」—— 那是卖不存在的东西,红线) */}
                 {!rpt.pro && rpt.locked.length > 0 && (
                   <Notice kind="warn" lead={t('rpt.cta.t')} style={{ margin: '10px 0' }}
-                    action={<span onClick={() => track('plan-pr-cta')}><Button kind="pro" href="/pricing">{t('rpt.cta.btn')}</Button></span>}>
+                    action={<span onClick={() => track(`plan-${decision}-cta`)}><Button kind="pro" href="/pricing">{t('rpt.cta.btn')}</Button></span>}>
                     <span style={{ display: 'block', fontSize: 12 }}>{t('rpt.cta.s')}</span>
                   </Notice>
                 )}
                 {/* 同理:没职业时探索两题也改不了任何结论,不劝答 */}
-                {!rpt.pro && rpt.noc && (!bands.crsBand || !bands.pgwpBand) && (
+                {!rpt.pro && rpt.noc && hasExplore && (!bands.crsBand || !bands.pgwpBand) && (
                   <div style={{ textAlign: 'center', fontSize: 12.5, color: UI.text2, margin: '10px 0 0' }}>
                     {t('rpt.hook')}
                     <button onClick={() => gotoQuiz('explore')} style={{ marginLeft: 8, border: 'none', background: 'none', color: UI.primary, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}>{t('rpt.hook.go')} →</button>

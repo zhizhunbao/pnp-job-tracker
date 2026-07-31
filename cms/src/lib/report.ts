@@ -10,6 +10,7 @@
 // exclusion(ON)是制度性无清单、uncovered 是本站没数据 —— 三者混为一谈=报告撒谎。
 // 抽选线红线(2026-07-27):线按通道设,对不上通道就不给差分结论,只摆区间;样本小就说小(params 带 n)。
 import { provListCoverage, type MatchDims, type MatchProfile, type MatchVerdict } from './match'
+import type { OccStats } from './reportFacts'   // 纯类型(reportFacts 反向引 ReportFacts,两边都是 type-only,不成环)
 
 // ── 输入:事实聚合(由 API 层查库组装;引擎不碰 SQL)─────────────────────────
 export type OccProvFacts = { province: string; open: number; named: number }   // 该 NOC 在该省:在招 / 命中具名清单岗
@@ -37,7 +38,7 @@ export type ReportLine = {
   url?: string                                  // 站内深链(下一步/备选用)
 }
 export type Report = {
-  goal: 'pr'
+  goal: 'pr' | 'job' | 'career'
   noc: string
   title: string
   conclusions: ReportLine[]
@@ -47,6 +48,9 @@ export type Report = {
   confidence: 'low' | 'mid' | 'high'
   asOf: string
 }
+
+// 薪资一律显示成 $88.4K(站内既有口径:职位卡 $49K/yr、统计页 $74.9K);裸 88400 读起来像编号
+const k = (n: number): string => `${(n / 1000).toFixed(1).replace(/\.0$/, '')}K`
 
 const RECENT_DRAWS = 6      // 抽选区间取近 N 次(区间/节奏都基于它;params 恒带实际条数,样本小就说小)
 const ALT_CAP = 2           // 备选省上限(④ 预判下一问:给对照不铺全表)
@@ -229,6 +233,122 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
   return { goal: 'pr', noc, title: facts.title, conclusions, gaps, nextSteps, alternatives, confidence, asOf: facts.fetched ?? '' }
 }
 
+// ── 卡①「找工作」:同一 Report 契约,零新题(职业/处境/目标省已在共用底座里)────────
+// 免费=库里查得到的(在招量、具名命中、帖面薪资 vs ESDC 中位);
+// 锁区=拿他的答案算出来的(有担保记录的雇主是哪几家、按他在意的维度排好的岗位短名单)。
+export function buildJobReport(profile: MatchProfile, dims: MatchDims, facts: ReportFacts, occ: OccStats): Report {
+  const conclusions: ReportLine[] = []
+  const gaps: ReportLine[] = []
+  const nextSteps: ReportLine[] = []
+  const noc = facts.noc
+  if (!noc) {
+    gaps.push({ key: 'rpt.g.noNoc', params: {}, verdict: 'na' })
+    return { goal: 'job', noc: '', title: '', conclusions, gaps, nextSteps, alternatives: [], confidence: 'low', asOf: facts.fetched ?? '' }
+  }
+
+  // 目标省;没选就按在招量取前 2(找工作看的是岗多不多,与拿 PR 按具名排序不同)
+  const targets = profile.targetProvinces.length
+    ? profile.targetProvinces
+    : [...facts.byProv].sort((a, b) => b.open - a.open).slice(0, 2).map((r) => r.province)
+
+  for (const prov of targets) {
+    const f = facts.byProv.find((r) => r.province === prov) ?? { province: prov, open: 0, named: 0 }
+    if (f.open === 0) { gaps.push({ key: 'rpt.g.zeroJobs', params: { prov }, verdict: 'warn' }); continue }
+    const named = dims.pnpOccupations.find((r) => r.province === prov && r.noc === noc && r.type !== 'ineligible')
+    conclusions.push({
+      key: f.named > 0 ? 'rpt.j.openNamed' : 'rpt.j.open',
+      params: { prov, open: f.open, named: f.named },
+      verdict: 'pass',
+      ...(named ? { source: { label: named.label, url: named.url, fetched: named.fetched } } : {}),
+    })
+    nextSteps.push({ key: 'rpt.n.jobs', params: { prov, n: f.open }, url: `/?prov=${prov}&q=${noc}` })
+  }
+
+  // 薪资对照:帖面中位 vs ESDC 官方中位(两个口径都摆出来,不合成一个「值不值」的分)
+  const s = occ.self
+  if (s?.medianPosted != null && s.medianWage != null && s.medianWage > 0) {
+    const pct = Math.round(((s.medianPosted - s.medianWage) / s.medianWage) * 100)
+    conclusions.push({
+      key: Math.abs(pct) < 5 ? 'rpt.j.wageSame' : pct > 0 ? 'rpt.j.wageAbove' : 'rpt.j.wageBelow',
+      params: { posted: k(s.medianPosted), esdc: k(s.medianWage), pct: Math.abs(pct) },
+      verdict: pct >= 0 ? 'pass' : 'warn',
+    })
+  } else if (s?.medianWage != null) {
+    conclusions.push({ key: 'rpt.j.wageEsdc', params: { esdc: k(s.medianWage) }, verdict: 'na' })
+  }
+
+  // 担保雇主:只说有几家(名单进锁区 —— 这是拿答案筛出来的,不是库里随便查得到的)
+  if (occ.sponsors > 0) conclusions.push({ key: 'rpt.j.sponsors', params: { n: occ.sponsors }, verdict: 'pass' })
+
+  nextSteps.push({ key: 'rpt.n.pathways', params: {}, url: '/pathways' })
+  const answered = [profile.currentStatus != null, profile.targetProvinces.length > 0].filter(Boolean).length
+  if (answered < 2) gaps.push({ key: 'rpt.g.basics', params: { n: 2 - answered }, verdict: 'na' })
+
+  return {
+    goal: 'job', noc, title: facts.title, conclusions, gaps, nextSteps, alternatives: [],
+    confidence: answered < 2 ? 'low' : occ.self ? 'high' : 'mid', asOf: facts.fetched ?? '',
+  }
+}
+
+// ── 卡⑥「职业规划」:同大类相邻职业对照,零新题 ────────────────────────────
+// 数据缺口照实说:职业转换路径(A→B 到底能不能转)本站没有数据 —— 只摆对照,不判「你能转」。
+export function buildCareerReport(profile: MatchProfile, facts: ReportFacts, occ: OccStats): Report {
+  const conclusions: ReportLine[] = []
+  const gaps: ReportLine[] = []
+  const nextSteps: ReportLine[] = []
+  const alternatives: ReportLine[] = []
+  const noc = facts.noc
+  if (!noc) {
+    gaps.push({ key: 'rpt.g.noNoc', params: {}, verdict: 'na' })
+    return { goal: 'career', noc: '', title: '', conclusions, gaps, nextSteps, alternatives, confidence: 'low', asOf: facts.fetched ?? '' }
+  }
+
+  const s = occ.self
+  if (s) {
+    conclusions.push({
+      key: s.medianWage != null ? 'rpt.k.selfWage' : 'rpt.k.self',
+      params: { open: s.open, teer: s.teer ?? '', esdc: s.medianWage != null ? k(s.medianWage) : '' }, verdict: 'na',
+    })
+  }
+
+  // 相邻职业:比现职中位薪资高的排前面(跃迁是这张卡的用处);每条都带在招量,不给「钱多但没岗」的空头
+  const mine = s?.medianWage ?? null
+  const peers = occ.peers
+    .filter((p) => p.open > 0)
+    .sort((a, b) => (b.medianWage ?? 0) - (a.medianWage ?? 0))
+  // 免费:相邻职业本身(名字、在招、官方中位)—— 这些 /stats 与 /occupations 也查得到,锁了只是挡路。
+  for (const p of peers.slice(0, 2)) {
+    conclusions.push({
+      // 人话名优先(中/韩界面用译名,英文界面用 NOC 官方名);译名缺失退英文,不留空
+      key: 'rpt.k.peer', params: { occ: p.titleEn || p.noc, occZh: p.titleZh || p.titleEn || p.noc, occKo: p.titleKo || p.titleEn || p.noc, noc: p.noc, open: p.open, esdc: p.medianWage != null ? k(p.medianWage) : '' },
+      verdict: 'pass', url: `/?q=${p.noc}`,
+    })
+  }
+  // 锁区:跃迁幅度与先后 —— 这条要拿他自己的职业做基准才算得出来
+  const top = peers.find((p) => p.medianWage != null && mine != null && p.medianWage > mine)
+  if (top && mine) {
+    conclusions.push({
+      key: 'rpt.k.peerGap',
+      params: { occ: top.titleEn || top.noc, occZh: top.titleZh || top.titleEn || top.noc, occKo: top.titleKo || top.titleEn || top.noc, pct: Math.round((((top.medianWage as number) - mine) / mine) * 100) },
+      verdict: 'pass',
+    })
+  }
+  for (const p of peers.slice(2, 5)) {
+    alternatives.push({ key: 'rpt.k.alt', params: { occ: p.titleEn || p.noc, occZh: p.titleZh || p.titleEn || p.noc, occKo: p.titleKo || p.titleEn || p.noc, noc: p.noc, open: p.open, esdc: p.medianWage != null ? k(p.medianWage) : '' }, verdict: 'pass', url: `/?q=${p.noc}` })
+  }
+  if (!peers.length) gaps.push({ key: 'rpt.k.none', params: {}, verdict: 'na' })
+  // 「能不能转」需要技能/学历映射,本站没有 —— 明说,不拿模型编
+  gaps.push({ key: 'rpt.k.noPath', params: {}, verdict: 'na' })
+
+  nextSteps.push({ key: 'rpt.n.stats', params: {}, url: '/stats' })
+  nextSteps.push({ key: 'rpt.n.pathways', params: {}, url: '/pathways' })
+
+  return {
+    goal: 'career', noc, title: facts.title, conclusions, gaps, nextSteps, alternatives,
+    confidence: !s ? 'low' : peers.length ? 'high' : 'mid', asOf: facts.fetched ?? '',
+  }
+}
+
 // ── 付费闸(L2-03 v2c):服务端裁剪,免费响应里根本没有锁区正文 ──────────────
 // 与 PRO_COLUMNS「SELECT 源头裁掉」同哲学:锁 = 后端不下发,不是前端打码;devtools 也翻不出来。
 // 免费层留什么由「事实免费、结论收费」定:三卡判定词/卡点短句/前 2 条结论/缺口/下一步全免费
@@ -257,8 +377,10 @@ const LANE_EE: Record<string, string> = {
 const LOCK_CAT: Record<string, string> = {
   'rpt.c.scoreAbove': 'score', 'rpt.c.scoreBelow': 'score', 'rpt.c.scoreBand': 'score',
   'rpt.c.window': 'window', 'rpt.c.eeAbove': 'ee', 'rpt.c.eeBelow': 'ee',
+  // 卡①/⑥:担保雇主名单与跃迁排序都要用他的答案才筛得出来 → 锁区(自由查得到的在招量与中位薪资照旧免费)
+  'rpt.j.sponsors': 'sponsors', 'rpt.k.peerGap': 'move',
 }
-const LOCK_ORDER = ['score', 'window', 'alts', 'ee', 'more']   // 锁行固定序(有序去重)
+const LOCK_ORDER = ['score', 'window', 'alts', 'ee', 'sponsors', 'move', 'more']   // 锁行固定序(有序去重)
 const HINT: Record<string, string> = { 'rpt.c.regulated': 'rpt.hint.cert', 'rpt.g.expShort': 'rpt.hint.exp' }
 
 export function gateReport(report: Report, pro: boolean): GatedReport {
@@ -269,14 +391,29 @@ export function gateReport(report: Report, pro: boolean): GatedReport {
     ? { key: HINT[hintLine.key], params: hintLine.params, verdict: hintLine.verdict, source: hintLine.source }
     : undefined
 
+  // 三卡是省提名/EE/备选省三个维度 —— 只有拿 PR 这张卡有这三条轴,别张卡硬套会出「备选省」这种驴唇不对马嘴的章
   const lanes: ReportLane[] = []
-  if (provLine) lanes.push({ kind: 'prov', verdict: provLine.verdict ?? 'na', key: LANE_PROV[provLine.key], params: { prov: provLine.params.prov ?? '' } })
-  if (eeLine) lanes.push({ kind: 'ee', verdict: eeLine.verdict ?? 'na', key: LANE_EE[eeLine.key], params: {} })
-  if (report.alternatives.length) {
-    lanes.push({ kind: 'alts', verdict: 'pass', key: 'rpt.lane.alts', params: { prov: report.alternatives[0].params.prov ?? '', n: report.alternatives.length } })
+  if (report.goal === 'pr') {
+    if (provLine) lanes.push({ kind: 'prov', verdict: provLine.verdict ?? 'na', key: LANE_PROV[provLine.key], params: { prov: provLine.params.prov ?? '' } })
+    if (eeLine) lanes.push({ kind: 'ee', verdict: eeLine.verdict ?? 'na', key: LANE_EE[eeLine.key], params: {} })
+    if (report.alternatives.length) {
+      lanes.push({ kind: 'alts', verdict: 'pass', key: 'rpt.lane.alts', params: { prov: report.alternatives[0].params.prov ?? '', n: report.alternatives.length } })
+    }
   }
 
   if (pro) return { ...report, lanes, hint, locked: [], pro: true }
+
+  // 卡①/⑥ 走口径闸(库里查得到的免费,拿你的答案算出来的付费):在招量与薪资对照本来就查得到,
+  // 按「前 2 条」硬切会把免费的事实也锁掉 —— 那是收不到钱只挡路。锁的是真要答案才筛得出来的那几条。
+  if (report.goal !== 'pr') {
+    const free = report.conclusions.filter((c) => !LOCK_CAT[c.key])
+    const cats2 = new Set(report.conclusions.filter((c) => LOCK_CAT[c.key]).map((c) => LOCK_CAT[c.key]))
+    if (report.alternatives.length) cats2.add('move')
+    return {
+      ...report, conclusions: free, alternatives: [],
+      lanes: [], hint, locked: LOCK_ORDER.filter((k) => cats2.has(k)), pro: false,
+    }
+  }
 
   const trimmed = report.conclusions.slice(FREE_CONCLUSIONS)
   const shownFree = new Set([provLine?.key, eeLine?.key, hintLine?.key])   // 已在三卡/卡点里露过的,不再计入「其余结论」
