@@ -24,7 +24,6 @@ export type HomeStats = {
   daily: { date: string; n: number; eligible: number } | null
   news: { date: string; region: string; title: string; slug: string }[]
   latestJobs: { id: number | string; title: string; company: string; city: string; province: string; salaryText: string; pnp: boolean; date: string; noc: string }[]
-  topPaidJobs: { id: number | string; title: string; company: string; city: string; province: string; salaryText: string; pnp: boolean; date: string; noc: string }[]
   checkedAt: string
 }
 
@@ -56,11 +55,19 @@ export function StartView({ stats }: { stats: HomeStats }) {
   const [pendingQuiz, setPendingQuiz] = useState<QuizAnswers | null>(null)
   // 主图四份数据挂载后拉 /api/market-stats(SSR 瘦身:occ ~3400 行不再进 HTML);null=加载中渲占位高度
   const market = useMarketStats()
-  // 职位榜控件:最新/高薪/最多三榜 × Top 10/20/50。最新/高薪两份各 50 条服务端备好;
-  // 最多=职业在招榜(2026-07-31 Frank 拍板),数据吃 useMarketStats 已到手的 occ 全国行,零新请求
+  // 职位榜控件:最新=逐岗(服务端 50 条);高薪/最多=职业级(2026-07-31 两次拍板:「最多」加榜、
+  // 「高薪要的是职业薪资排名,不是具体某些职位——top50 全是医生帖,程序员排在哪」),
+  // 数据吃 useMarketStats 已到手的 occ 全国行,零新请求
   const [jobsTab, setJobsTab] = useState<'new' | 'paid' | 'most'>('new')
   const [jobsN, setJobsN] = useState(10)
   const occTop = useMemo(() => market === null ? null : market.occ.filter((o) => o.province === 'all'), [market])
+  // 高薪=ESDC 中位年薪降序;在招 <5 的职业不上榜(与主图 minJobs 同拍板:1 个岗的职业没有统计意义)
+  const occList = useMemo(() => {
+    if (!occTop) return null
+    if (jobsTab !== 'paid') return occTop   // 最多榜:SQL 已按在招量降序
+    return occTop.filter((o) => (o.openJobs ?? 0) >= 5 && o.medianWageAnnual != null)
+      .sort((a, b) => (b.medianWageAnnual as number) - (a.medianWageAnnual as number))
+  }, [occTop, jobsTab])
   // NOC → 职业译名查表(中/韩榜行灰注用):market.occ 已在手,零新请求;英文界面/查不到 → 无注
   const nocNote = useMemo(() => {
     if (!occTop || lang === 'en') return () => ''
@@ -198,8 +205,8 @@ export function StartView({ stats }: { stats: HomeStats }) {
           <Band bg="#fff">
             <h2 style={secH}>{t('home.jobs')}
               <span style={{ display: 'inline-flex', border: `1px solid ${UI.border}`, borderRadius: 8, overflow: 'hidden' }}>
-                {/* 「最多」=职业在招榜:market 拉完确认没数据才收起该钮(查不到不上假入口) */}
-                {([['new', t('home.jobs.new')], ['paid', t('home.jobs.paid')], ...(occTop === null || occTop.length ? [['most', t('home.jobs.most')]] : [])] as ['new' | 'paid' | 'most', string][]).map(([k, lb]) => (
+                {/* 高薪/最多都是职业级(吃 occ):market 拉完确认没数据才收起这两钮(查不到不上假入口) */}
+                {([['new', t('home.jobs.new')], ...(occTop === null || occTop.length ? [['paid', t('home.jobs.paid')], ['most', t('home.jobs.most')]] : [])] as ['new' | 'paid' | 'most', string][]).map(([k, lb]) => (
                   <button key={k} onClick={() => setJobsTab(k)}
                     style={{ border: 'none', padding: '5px 12px', fontSize: 12.5, cursor: 'pointer',
                       background: jobsTab === k ? '#eff6ff' : '#fff', color: jobsTab === k ? '#1d4ed8' : '#374151', fontWeight: jobsTab === k ? 600 : 400 }}>{lb}</button>
@@ -211,11 +218,11 @@ export function StartView({ stats }: { stats: HomeStats }) {
               </select>
               <a href="/" style={moreA} onClick={() => track('landing_goal_jobs')}>{t('home.jobs.all')}</a></h2>
             <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, overflow: 'hidden' }}>
-              {jobsTab === 'most' ? (
-                // 职业在招榜:market.occ 全国行(SQL 已按在招量降序),行点进职位板按该 NOC 筛(与三问深链同口径)
-                occTop === null
+              {jobsTab !== 'new' ? (
+                // 职业级榜(高薪=薪资序/最多=在招序):行点进职位板按该 NOC 筛(与三问深链同口径)
+                occList === null
                   ? <div style={{ height: 45 * jobsN }} />
-                  : occTop.slice(0, jobsN).map((o, i) => {
+                  : occList.slice(0, jobsN).map((o, i) => {
                     // 与职位行同一形态:英文官方名做主文案 + 中/韩译名灰注(Frank「为什么长得不一样」)
                     const main = o.titleEn || o.titleZh || o.noc
                     const note = lang === 'zh' ? (o.titleZhShort || o.titleZh) : lang === 'ko' ? o.titleKo : ''
@@ -238,7 +245,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
                     </a>
                     )
                   })
-              ) : (jobsTab === 'new' ? stats.latestJobs : stats.topPaidJobs).slice(0, jobsN).map((j, i) => {
+              ) : stats.latestJobs.slice(0, jobsN).map((j, i) => {
                 // 帖子标题是逐帖英文原文,无逐帖译名 —— 中/韩界面挂 NOC 职业译名灰注(人话名+灰字小注站规)
                 const note = nocNote(j.noc)
                 return (

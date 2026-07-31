@@ -25,7 +25,7 @@ async function loadHomeStats(pool: any): Promise<Omit<HomeStats, 'checkedAt'>> {
   // 每项独立 .catch(null):一张表缺/查询挂只丢它自己那行,页面照常(宁可留空)
   const cnt = (sql: string) => pool.query(sql).then((r: any) => Number(r.rows[0]?.n) || null).catch(() => null)
   const ANON = { profile: normalizeProfile(null), matchDims: { pnpOccupations: [], eeCategories: [] } }
-  const [proof, provinces, cities, dli, occupations, aipEmployers, drawRes, dailyRes, newsRes, jobRows, paidRows] = await Promise.all([
+  const [proof, provinces, cities, dli, occupations, aipEmployers, drawRes, dailyRes, newsRes, jobRows] = await Promise.all([
     fetchTotalAndProof(pool).catch(() => null),
     cnt('SELECT count(*)::int n FROM provinces'),
     cnt('SELECT count(*)::int n FROM cities'),
@@ -47,14 +47,10 @@ async function loadHomeStats(pool: any): Promise<Omit<HomeStats, 'checkedAt'>> {
       .then((r: any) => r.rows as any[]).catch(() => []),
     // 地区统计主图四份数据(occ/city/rows/channels)不再 SSR 直出:occ ~3400 行占 HTML 大头(实测 1.85MB),
     // 移到 /api/market-stats,StartView 挂载后后台拉(SSR 瘦身,手法照 /jobs 的 /api/dims)
-    // 职位节(Frank「单独一个 section 展示 job,最新/高薪 × Top 10/20/50」):与职位板同一 DAL,
-    // 匿名口径(无档案无匹配);最新=fetchJobRows 发布时间序,高薪=fetchJobsPage 年薪序(同一查询层同一去重)
+    // 职位节:最新榜=fetchJobRows 发布时间序(与职位板同一 DAL,匿名口径)。
+    // 逐岗高薪榜 2026-07-31 退役(Frank「要的是职业薪资排名,不是具体某些职位;top50 全是医生帖,
+    // 程序员排在哪」)→ 高薪 tab 改职业级,吃 market.occ(StartView 客户端排序),SSR 不再背这查询
     fetchJobRows(pool, { pro: false, profile: ANON.profile, profileOk: false, matchDims: ANON.matchDims, limit: 50 })
-      .then((r) => r.jobs).catch(() => []),
-    // 高薪榜限全职(fEmp=full):零工/活动价的时薪按 40h×52 折年薪会出「DJ $400/hr≈$90 万年薪」霸榜的离群值,
-    // 全职口径是诚实筛选不是改数;时薪折算的根治属清洗层(04d)
-    fetchJobsPage(pool, { pro: false, profile: ANON.profile, profileOk: false, matchDims: ANON.matchDims,
-      filters: { fEmp: 'full' }, sort: { key: 'salaryYr', dir: 'desc' }, page: 0, pageSize: 50 })
       .then((r) => r.jobs).catch(() => []),
   ])
   return {
@@ -77,7 +73,6 @@ async function loadHomeStats(pool: any): Promise<Omit<HomeStats, 'checkedAt'>> {
         .map((r) => ({ date: String(r.date), region: r.region ?? '', title: r.title ?? '', slug: r.slug ?? '' }))
     })(),
     latestJobs: (jobRows as any[]).map(slimJob),
-    topPaidJobs: (paidRows as any[]).map(slimJob),
   }
 }
 

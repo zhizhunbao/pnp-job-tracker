@@ -2288,8 +2288,14 @@ export function JdFormattedView({ text, t, fallbackPay, applyUrl, applyEmail, un
             none && m === 'PAY' && fallbackPay ? (
               <div style={{ paddingLeft: 14 }}>{fallbackPay}</div>
             ) : none ? <div style={{ paddingLeft: 14, color: '#9ca3af' }}>{t('act.f.none')}</div>
-              : hasBullets ? <ul style={{ margin: 0, paddingLeft: 30 }}>{lines.map((l, i) => <li key={i}>{l.replace(/^-\s*/, '')}{zh(i)}</li>)}</ul>
-              : lines.map((l, i) => <div key={i} style={{ paddingLeft: 14 }}>{l}{zh(i)}</div>)}
+              : <>
+                  {/* Frank 2026-07-31「整理后的怎么薪资没显示」:模型抄了福利漏了钱数(#123c 只管整节空)——
+                      PAY 节一行都不含数字=视为缺薪资,帖面薪资字段照 #123c 口径顶到节首(真数不靠 LLM 抄) */}
+                  {m === 'PAY' && fallbackPay && !lines.some((l) => /[$€£]\s?\d|\d[\d,]{2,}/.test(l)) &&
+                    <div style={{ paddingLeft: 14 }}>{fallbackPay}</div>}
+                  {hasBullets ? <ul style={{ margin: 0, paddingLeft: 30 }}>{lines.map((l, i) => <li key={i}>{l.replace(/^-\s*/, '')}{zh(i)}</li>)}</ul>
+                    : lines.map((l, i) => <div key={i} style={{ paddingLeft: 14 }}>{l}{zh(i)}</div>)}
+                </>}
           </div>
         )
       })}
