@@ -51,18 +51,23 @@ export function PlanPrView() {
   const [nocTitle, setNocTitle] = useState('')
   const [quizOpen, setQuizOpen] = useState(false)
   const [view, setView] = useState<'quiz' | 'report'>('quiz')
+  const [step, setStep] = useState(0)   // 一屏一题(2026-07-31 Frank「一次只显示一个题,上一题下一题那种」)
   const [rpt, setRpt] = useState<Rpt | null | 'loading'>(null)
 
   useEffect(() => {
     const q = readQuiz()
     let saved: Partial<Bands> = {}
     try { saved = JSON.parse(localStorage.getItem(KEY) || '{}') } catch { /* ignore */ }
-    setBands({
+    const b: Bands = {
       status: saved.status || q?.status || '',
       clbBand: saved.clbBand || 0, expBand: saved.expBand || 0,
       // 目标省预填:三问选过省 → 映射到最近的档(单选 BC/ON 精确档;别的组合走「先看哪个够得着」)
       provBand: saved.provBand || (q?.provs?.length ? (q.provs.length === 1 && q.provs[0] === 'BC' ? 1 : q.provs.length === 1 && q.provs[0] === 'ON' ? 2 : 4) : 0),
-    })
+    }
+    setBands(b)
+    // 起步落在第一道没答的题上(答过的不重走,上一题仍可回去改)
+    const firstUnanswered = [!!b.status, !!b.clbBand, !!b.expBand, !!b.provBand].indexOf(false)
+    setStep(firstUnanswered === -1 ? 3 : firstUnanswered)
     setNoc(q?.nocs?.[0] || '')
     if (new URLSearchParams(window.location.search).get('view') === 'report') setView('report')
     track('plan-pr-open')
@@ -106,22 +111,23 @@ export function PlanPrView() {
     return () => ctrl.abort()
   }, [view])   // eslint-disable-line react-hooks/exhaustive-deps
 
-  const opt = (on: boolean): React.CSSProperties => ({
-    border: `1px solid ${on ? UI.primary : UI.border}`, background: on ? '#eff6ff' : '#fff',
-    color: on ? '#1d4ed8' : '#1f2937', fontWeight: on ? 600 : 400,
-    borderRadius: 10, padding: '11px 14px', fontSize: 14, cursor: 'pointer', width: '100%', textAlign: 'left', fontFamily: 'inherit', marginBottom: 8,
-  })
-  const qTitle: React.CSSProperties = { fontSize: 15.5, fontWeight: 700, margin: '18px 0 8px', color: '#111827' }
   const secH: React.CSSProperties = { fontSize: 14.5, fontWeight: 700, margin: '16px 0 4px', color: '#111827' }
-  // 三档题配置(status 复用 quiz.st.*;其余三题 plan.* 四选一含兜底)
-  const bandQ = (qKey: string, aPrefix: string, field: keyof Bands) => (
-    <div key={qKey}>
-      <div style={qTitle}>{t(qKey)}</div>
-      {[1, 2, 3, 4].map((i) => (
-        <button key={i} onClick={() => save({ ...bands, [field]: i })} style={opt(bands[field] === i)}>{t(`${aPrefix}.a${i}`)}</button>
-      ))}
-    </div>
-  )
+  // 一屏一题(2026-07-31 Frank「一次只显示一个题,上一题下一题那种」「参考其他答题网站」——
+  // Typeform 范式照效果图落:连续进度条、第 N 题计数、大题干、字母章选项大卡、点选自动进下一题):
+  // 四题统一配置;status 复用 quiz.st.*(跨卡复用),其余三题 plan.* 四选一含兜底
+  const QUESTIONS: { title: string; labels: string[]; value: () => number; pick: (i: number) => Bands }[] = [
+    { title: 'quiz.q1', labels: ['quiz.st.overseas', 'quiz.st.studying', 'quiz.st.working', 'quiz.st.jobhunting'],
+      value: () => ['overseas', 'studying', 'working', 'jobhunting'].indexOf(bands.status) + 1,
+      pick: (i) => ({ ...bands, status: ['overseas', 'studying', 'working', 'jobhunting'][i - 1] }) },
+    { title: 'plan.q.clb', labels: [1, 2, 3, 4].map((i) => `plan.clb.a${i}`), value: () => bands.clbBand, pick: (i) => ({ ...bands, clbBand: i }) },
+    { title: 'plan.q.exp', labels: [1, 2, 3, 4].map((i) => `plan.exp.a${i}`), value: () => bands.expBand, pick: (i) => ({ ...bands, expBand: i }) },
+    { title: 'plan.q.prov', labels: [1, 2, 3, 4].map((i) => `plan.prov.a${i}`), value: () => bands.provBand, pick: (i) => ({ ...bands, provBand: i }) },
+  ]
+  const q = QUESTIONS[step]
+  const pickOpt = (i: number) => {
+    save(q.pick(i))
+    if (step < 3) setTimeout(() => setStep(step + 1), 200)   // 点选即进下一题(200ms 留选中反馈)
+  }
 
   return (
     <div style={{ background: UI.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
@@ -131,33 +137,56 @@ export function PlanPrView() {
 
         {view === 'quiz' ? (
           <>
-            <div style={{ fontSize: 12.5, color: UI.text2, marginBottom: 12 }}>{t('plan.pr.sub')}</div>
-            {/* 进度:四段粗条(与三问 stepper 同语言) */}
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center', margin: '0 0 6px' }}>
-              {[bands.status, bands.clbBand, bands.expBand, bands.provBand].map((v, i) => (
-                <span key={i} style={{ flex: 1, height: 8, borderRadius: 999, background: v ? UI.primary : '#e5e7eb' }} />
-              ))}
-              <span style={{ fontSize: 12, color: UI.text3, whiteSpace: 'nowrap' }}>{t('plan.answered', { n: answered })}</span>
+            {/* 换题淡入(题卡 key=step 触发);选项 hover=卡 token 同族 */}
+            <style>{`@keyframes plFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+              .plQ{animation:plFade .22s ease}
+              .plOpt:hover{border-color:#bfdbfe !important;background:#f8faff !important;filter:none}`}</style>
+            {/* 连续进度条(答一题涨 1/4)+ 计数 */}
+            <div style={{ height: 6, borderRadius: 999, background: '#e5e7eb', overflow: 'hidden', marginTop: 6 }}>
+              <span style={{ display: 'block', height: '100%', width: `${answered * 25}%`, background: UI.primary, borderRadius: 999, transition: 'width .25s ease' }} />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: UI.text3, margin: '6px 0 18px' }}>
+              <span>{t('plan.pr.sub')}</span><span style={{ whiteSpace: 'nowrap', marginLeft: 12 }}>{t('plan.answered', { n: answered })}</span>
+            </div>
+            {/* 职业 chip 常驻(非四题之一):三问答过直接用,没答→页内拉起 EntryQuiz */}
+            <div style={{ marginBottom: 22 }}>
+              <span style={{ display: 'inline-flex', gap: 8, alignItems: 'center', maxWidth: '100%', fontSize: 12.5, color: UI.text2, background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 999, padding: '5px 12px' }}>
+                <span style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>{t('plan.occ')}</span>
+                {noc
+                  ? <b style={{ color: '#111827', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{shortOcc(nocTitle || noc)}</b>
+                  : <span style={{ color: '#b45309', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('plan.occ.none')}</span>}
+                <button onClick={() => setQuizOpen(true)} style={{ border: 'none', background: 'none', color: UI.primary, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', padding: 0, whiteSpace: 'nowrap', fontFamily: 'inherit' }}>{t('plan.occ.pick')}</button>
+              </span>
             </div>
 
-            {/* 职业行:三问已答直接用(跨卡复用),没答→拉起 EntryQuiz */}
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center', background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 10, padding: '11px 14px', margin: '12px 0 0' }}>
-              <span style={{ fontSize: 12.5, color: UI.text3, whiteSpace: 'nowrap' }}>{t('plan.occ')}</span>
-              {noc
-                ? <span style={{ fontSize: 14, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{shortOcc(nocTitle || noc)}<span style={{ color: UI.text3, fontWeight: 400, fontSize: 12, marginLeft: 6 }}>{noc}</span></span>
-                : <span style={{ fontSize: 12.5, color: '#b45309' }}>{t('plan.occ.none')}</span>}
-              <button onClick={() => setQuizOpen(true)} style={{ marginLeft: 'auto', border: 'none', background: 'none', color: UI.primary, fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>{t('plan.occ.pick')}</button>
+            {/* 一屏一题:题号 → 大题干 → 字母章选项卡 */}
+            <div key={step} className="plQ">
+              <div style={{ fontSize: 13, color: UI.primary, fontWeight: 700, marginBottom: 6 }}>{t('plan.qn', { n: step + 1 })}</div>
+              <h2 style={{ fontSize: 22, fontWeight: 700, margin: '0 0 18px', color: '#111827' }}>{t(q.title)}</h2>
+              {q.labels.map((lb, i) => {
+                const on = q.value() === i + 1
+                return (
+                  <button key={lb} onClick={() => pickOpt(i + 1)} className="plOpt"
+                    style={{ display: 'flex', gap: 12, alignItems: 'center', width: '100%', textAlign: 'left', fontFamily: 'inherit', fontSize: 15, cursor: 'pointer', marginBottom: 10, borderRadius: 12, padding: '14px 16px', border: `1px solid ${on ? UI.primary : UI.border}`, background: on ? '#eff6ff' : '#fff', color: on ? '#1d4ed8' : '#1f2937', fontWeight: on ? 600 : 400 }}>
+                    <span style={{ width: 24, height: 24, borderRadius: 6, border: `1px solid ${on ? UI.primary : '#d1d5db'}`, color: on ? '#fff' : UI.text2, background: on ? UI.primary : '#fff', fontSize: 12.5, fontWeight: 700, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{'ABCD'[i]}</span>
+                    {t(lb)}
+                  </button>
+                )
+              })}
             </div>
 
-            <div style={qTitle}>{t('quiz.q1')}</div>
-            {(['overseas', 'studying', 'working', 'jobhunting'] as const).map((s) => (
-              <button key={s} onClick={() => save({ ...bands, status: s })} style={opt(bands.status === s)}>{t('quiz.st.' + s)}</button>
-            ))}
-            {bandQ('plan.q.clb', 'plan.clb', 'clbBand')}
-            {bandQ('plan.q.exp', 'plan.exp', 'expBand')}
-            {bandQ('plan.q.prov', 'plan.prov', 'provBand')}
-
-            <Button kind="primary" onClick={gotoReport} style={{ width: '100%', padding: '12px 0', fontSize: 15, marginTop: 16 }}>{t('plan.toReport')}</Button>
+            {/* 上一题/下一题(Typeform 成对导航);最后一题主按钮=出报告 */}
+            <div style={{ display: 'flex', alignItems: 'center', marginTop: 22 }}>
+              {step > 0 && (
+                <button onClick={() => setStep(step - 1)} style={{ border: 'none', background: 'none', color: UI.text2, fontSize: 13.5, cursor: 'pointer', padding: '8px 0', fontFamily: 'inherit' }}>← {t('plan.prev')}</button>
+              )}
+              {step < 3 ? (
+                <button onClick={() => setStep(step + 1)} disabled={!q.value()}
+                  style={{ marginLeft: 'auto', border: 'none', borderRadius: 10, background: q.value() ? UI.primary : '#e5e7eb', color: q.value() ? '#fff' : '#9ca3af', fontSize: 14.5, fontWeight: 600, padding: '12px 26px', cursor: q.value() ? 'pointer' : 'not-allowed', fontFamily: 'inherit' }}>{t('plan.next')} →</button>
+              ) : (
+                <Button kind="primary" onClick={gotoReport} style={{ marginLeft: 'auto', padding: '12px 26px', fontSize: 14.5 }}>{t('plan.toReport')}</Button>
+              )}
+            </div>
           </>
         ) : (
           <>
