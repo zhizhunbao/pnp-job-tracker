@@ -6,7 +6,7 @@
 // 跨卡复用铁律:currentStatus/目标省/职业从三问预填(答过的不重新问,预填可改);职业用三问的 nocs[0],
 // 没答过 → 页内拉起 EntryQuiz(同一组件不复制)。答案存 localStorage,改答案 → 报告立刻重算。
 import { useEffect, useMemo, useState } from 'react'
-import { Model } from 'survey-core'
+import { Model, surveyLocalization } from 'survey-core'
 import { Survey } from 'survey-react-ui'
 import 'survey-core/survey-core.css'
 import 'survey-core/i18n/simplified-chinese'
@@ -19,6 +19,11 @@ import { EntryQuiz, readQuiz, shortOcc } from '../quiz/EntryQuiz'
 import { Button, Notice, PageShell, Tag, UI } from '../ui/primitives'
 import { PR_BASIC_SURVEY, PR_EXPLORE_SURVEY, SURVEY_THEME } from '@/lib/questions'
 import { track } from '@/lib/track'
+
+// 框架中文进度条误译修正:questionsProgressText 原文是 "Answered {0}/{1} questions",
+// zh-cn 包译成「第 {0}/{1} 题」—— 第一题时显示「第 0/4 题」,读起来像页码且是错的。
+// 改回「已答」语义(页内不再另写一份计数,进度只此一处)。
+surveyLocalization.locales['zh-cn'].questionsProgressText = '已答 {0}/{1} 题'
 
 const KEY = 'plan_pr_v1'
 type Bands = { status: string; clbBand: number; expBand: number; provBand: number; crsBand: number; pgwpBand: number }
@@ -46,6 +51,19 @@ const CARD: React.CSSProperties = { background: '#fff', border: `1px solid ${UI.
 // 尾链一律右对齐成一列(2026-07-31 Frank「不要在文字后面直接加链接,乱得很」):
 // 句子长短不一 → 紧跟文末的链接横向位置全是随机的;抽到右轨后是一条竖直的链列,与全站表格对齐口径一致。
 const TAIL: React.CSSProperties = { flexShrink: 0, marginLeft: 12, fontSize: 12, color: UI.text3, textDecoration: 'none', whiteSpace: 'nowrap' }
+
+// 职业 chip:答题态常驻;报告态**没职业时**也出(空报告说「先选职业」却没有入口=死路,2026-07-31 实拍抓到)
+function OccChip({ noc, nocTitle, t, onPick }: { noc: string; nocTitle: string; t: TFn; onPick: () => void }) {
+  return (
+    <span style={{ display: 'inline-flex', gap: 8, alignItems: 'center', maxWidth: '100%', fontSize: 12.5, color: UI.text2, background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 999, padding: '5px 12px' }}>
+      <span style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>{t('plan.occ')}</span>
+      {noc
+        ? <b style={{ color: '#111827', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{shortOcc(nocTitle || noc)}</b>
+        : <span style={{ color: '#b45309', whiteSpace: 'nowrap' }}>{t('plan.occ.none')}</span>}
+      <button onClick={onPick} style={{ border: 'none', background: 'none', color: UI.primary, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', padding: 0, whiteSpace: 'nowrap', fontFamily: 'inherit' }}>{t('plan.occ.pick')}</button>
+    </span>
+  )
+}
 
 function Line({ l, t }: { l: RptLine; t: TFn }) {
   const body = t(l.key, l.params)
@@ -226,7 +244,6 @@ export function PlanPrView() {
     return () => ctrl.abort()
   }, [view, ready])
 
-  const answered = [bands.status, bands.clbBand, bands.expBand, bands.provBand].filter(Boolean).length
   const secH: React.CSSProperties = { fontSize: 14.5, fontWeight: 700, margin: '16px 0 4px', color: '#111827' }
 
   return (
@@ -243,20 +260,12 @@ export function PlanPrView() {
           <>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 12, color: UI.text3, margin: '2px 0 14px' }}>
               <span>{t(stage === 'explore' ? 'plan.explore.sub' : 'plan.pr.sub')}</span>
-              {stage === 'explore'
-                ? <button onClick={() => setStage('basic')} style={{ border: 'none', background: 'none', color: UI.primary, fontSize: 12, cursor: 'pointer', padding: 0, whiteSpace: 'nowrap', fontFamily: 'inherit' }}>{t('plan.explore.basic')}</button>
-                : <span style={{ whiteSpace: 'nowrap' }}>{t('plan.answered', { n: answered })}</span>}
+              {stage === 'explore' && (
+                <button onClick={() => setStage('basic')} style={{ border: 'none', background: 'none', color: UI.primary, fontSize: 12, cursor: 'pointer', padding: 0, whiteSpace: 'nowrap', fontFamily: 'inherit' }}>{t('plan.explore.basic')}</button>
+              )}
             </div>
             {/* 职业 chip 常驻(非四题之一):三问答过直接用,没答→页内拉起 EntryQuiz */}
-            <div style={{ marginBottom: 6 }}>
-              <span style={{ display: 'inline-flex', gap: 8, alignItems: 'center', maxWidth: '100%', fontSize: 12.5, color: UI.text2, background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 999, padding: '5px 12px' }}>
-                <span style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>{t('plan.occ')}</span>
-                {noc
-                  ? <b style={{ color: '#111827', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{shortOcc(nocTitle || noc)}</b>
-                  : <span style={{ color: '#b45309', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('plan.occ.none')}</span>}
-                <button onClick={() => setQuizOpen(true)} style={{ border: 'none', background: 'none', color: UI.primary, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', padding: 0, whiteSpace: 'nowrap', fontFamily: 'inherit' }}>{t('plan.occ.pick')}</button>
-              </span>
-            </div>
+            <div style={{ marginBottom: 6 }}><OccChip noc={noc} nocTitle={nocTitle} t={t} onPick={() => setQuizOpen(true)} /></div>
             {/* 框架容器贴站底色(默认奶白与页面灰打架);题库/进度/导航/多语全在框架里 */}
             <style>{`.plSurvey .sd-root-modern{background:transparent}.plSurvey .sd-body{padding-left:0 !important;padding-right:0 !important}`}</style>
             <div className="plSurvey">{survey && <Survey model={survey} />}</div>
@@ -270,7 +279,9 @@ export function PlanPrView() {
 @media(min-width:641px){.rptHero{flex-direction:row;align-items:center;gap:30px}}`}</style>
             <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', margin: '2px 0 10px' }}>
               {/* 人话名优先(nocTitle 走 /api/quiz 出中文名),代码作灰字小注 */}
-              {rpt && rpt !== 'loading' && (nocTitle || rpt.title) && <span style={{ fontSize: 15, fontWeight: 700 }}>{shortOcc(nocTitle || rpt.title)}<span style={{ color: UI.text3, fontWeight: 400, fontSize: 12, marginLeft: 6 }}>{rpt.noc}</span></span>}
+              {rpt && rpt !== 'loading' && (rpt.noc
+                ? <span style={{ fontSize: 15, fontWeight: 700, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{shortOcc(nocTitle || rpt.title)}<span style={{ color: UI.text3, fontWeight: 400, fontSize: 12, marginLeft: 6 }}>{rpt.noc}</span></span>
+                : <OccChip noc="" nocTitle="" t={t} onPick={() => setQuizOpen(true)} />)}
               <button onClick={() => gotoQuiz()} style={{ marginLeft: 'auto', border: `1px solid ${UI.border}`, background: '#fff', color: UI.text, borderRadius: 8, padding: '5px 14px', fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit' }}>{t('plan.back')}</button>
             </div>
             {rpt === 'loading' || rpt === null ? (
@@ -325,13 +336,16 @@ export function PlanPrView() {
                     ))}
                   </div>
                 )}
-                {!rpt.pro && (
+                {/* CTA 只在真锁住了东西时才出(2026-07-31 实拍抓到:没选职业的空报告什么都算不出,
+                    却照样挂「完整报告 + 30 天全站 Pro」—— 那是卖不存在的东西,红线) */}
+                {!rpt.pro && rpt.locked.length > 0 && (
                   <Notice kind="warn" lead={t('rpt.cta.t')} style={{ margin: '10px 0' }}
                     action={<span onClick={() => track('plan-pr-cta')}><Button kind="pro" href="/pricing">{t('rpt.cta.btn')}</Button></span>}>
                     <span style={{ display: 'block', fontSize: 12 }}>{t('rpt.cta.s')}</span>
                   </Notice>
                 )}
-                {!rpt.pro && (!bands.crsBand || !bands.pgwpBand) && (
+                {/* 同理:没职业时探索两题也改不了任何结论,不劝答 */}
+                {!rpt.pro && rpt.noc && (!bands.crsBand || !bands.pgwpBand) && (
                   <div style={{ textAlign: 'center', fontSize: 12.5, color: UI.text2, margin: '10px 0 0' }}>
                     {t('rpt.hook')}
                     <button onClick={() => gotoQuiz('explore')} style={{ marginLeft: 8, border: 'none', background: 'none', color: UI.primary, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}>{t('rpt.hook.go')} →</button>

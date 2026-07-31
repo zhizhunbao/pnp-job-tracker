@@ -69,7 +69,8 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
 
   // 没填职业 → 几乎全部结论悬空:单缺口报告(无解不给空页,缺口本身就是结论)
   if (!noc) {
-    gaps.push({ key: 'rpt.g.noNoc', params: {}, verdict: 'na', url: '/account?sec=profile' })
+    // 不给 /account 深链:匿名用户点过去是登录墙(死路);选职业入口由页面的职业 chip 承担
+    gaps.push({ key: 'rpt.g.noNoc', params: {}, verdict: 'na' })
     return { goal: 'pr', noc: '', title: '', conclusions, gaps, nextSteps, alternatives, confidence: 'low', asOf: facts.fetched ?? '' }
   }
 
