@@ -126,9 +126,10 @@ export function StartView({ stats }: { stats: HomeStats }) {
         .hmJobCo,.hmJobLoc,.hmOccElig{display:none}
         @media (min-width:900px){
           .hmJobRow{grid-template-columns:26px minmax(0,1.2fr) minmax(0,1fr) 46px minmax(0,170px) 130px;gap:12px}
-          /* 职业榜列与职位榜同构对齐(2026-07-31 Frank「为什么长得不一样」):名列同宽、在招落公司列位、
-             可提名右缘对齐地点列、中位对齐薪资列(无 PNP 标签列,其余各列同轨) */
-          .hmOccRow{grid-template-columns:26px minmax(0,1.2fr) minmax(0,1fr) minmax(0,170px) 130px;gap:12px}
+          /* 职业榜(2026-07-31 两轮拍板):名字形态与职位行同构(英文粗体+译名灰注);
+             列宽改「名列吃满剩余、三数字列定宽靠右」——名列 1.2fr 会被 1fr 的在招列白占空间,
+             长职业名明明有地方却被截断(Frank「长度明明够用为什么截断」)。右两列仍与职位榜同轨 */
+          .hmOccRow{grid-template-columns:26px minmax(0,1fr) 110px minmax(0,170px) 130px;gap:12px}
           .hmJobCo,.hmJobLoc{display:block}.hmOccElig{display:block}
         }
         @media (min-width:900px){
@@ -225,7 +226,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
                         {main}
                         {note ? <span style={{ color: UI.text3, fontWeight: 400, fontSize: 12 }}>　{shortOcc(note)}</span> : null}
                       </span>
-                      <span style={{ color: UI.text2, fontSize: 12.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{o.openJobs != null ? t('quiz.openN', { n: o.openJobs.toLocaleString('en-CA') }) : ''}</span>
+                      <span style={{ color: UI.text2, fontSize: 12.5, whiteSpace: 'nowrap', textAlign: 'right' }}>{o.openJobs != null ? t('quiz.openN', { n: o.openJobs.toLocaleString('en-CA') }) : ''}</span>
                       <span className="hmOccElig" style={{ color: UI.ok, fontSize: 12.5, whiteSpace: 'nowrap', textAlign: 'right' }}>{o.namedJobs ? t('quiz.eligN', { n: o.namedJobs.toLocaleString('en-CA') }) : ''}</span>
                       <span style={{ color: UI.text, fontSize: 12.5, whiteSpace: 'nowrap', textAlign: 'right' }}>{o.medianWageAnnual != null ? '$' + Math.round(o.medianWageAnnual / 1000) + 'K' : ''}</span>
                     </a>
