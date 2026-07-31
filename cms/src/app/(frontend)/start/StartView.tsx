@@ -61,8 +61,6 @@ export function StartView({ stats }: { stats: HomeStats }) {
   const [jobsTab, setJobsTab] = useState<'new' | 'paid' | 'most'>('new')
   const [jobsN, setJobsN] = useState(10)
   const occTop = useMemo(() => market === null ? null : market.occ.filter((o) => o.province === 'all'), [market])
-  const occName = (o: { titleZhShort: string; titleZh: string; titleEn: string; titleKo: string }) =>
-    lang === 'zh' ? (o.titleZhShort || o.titleZh || o.titleEn) : lang === 'ko' ? (o.titleKo || o.titleEn) : (o.titleEn || o.titleZh)
   // NOC → 职业译名查表(中/韩榜行灰注用):market.occ 已在手,零新请求;英文界面/查不到 → 无注
   const nocNote = useMemo(() => {
     if (!occTop || lang === 'en') return () => ''
@@ -128,7 +126,9 @@ export function StartView({ stats }: { stats: HomeStats }) {
         .hmJobCo,.hmJobLoc,.hmOccElig{display:none}
         @media (min-width:900px){
           .hmJobRow{grid-template-columns:26px minmax(0,1.2fr) minmax(0,1fr) 46px minmax(0,170px) 130px;gap:12px}
-          .hmOccRow{grid-template-columns:26px minmax(0,1fr) 110px 110px 110px;gap:12px}
+          /* 职业榜列与职位榜同构对齐(2026-07-31 Frank「为什么长得不一样」):名列同宽、在招落公司列位、
+             可提名右缘对齐地点列、中位对齐薪资列(无 PNP 标签列,其余各列同轨) */
+          .hmOccRow{grid-template-columns:26px minmax(0,1.2fr) minmax(0,1fr) minmax(0,170px) 130px;gap:12px}
           .hmJobCo,.hmJobLoc{display:block}.hmOccElig{display:block}
         }
         @media (min-width:900px){
@@ -214,15 +214,23 @@ export function StartView({ stats }: { stats: HomeStats }) {
                 // 职业在招榜:market.occ 全国行(SQL 已按在招量降序),行点进职位板按该 NOC 筛(与三问深链同口径)
                 occTop === null
                   ? <div style={{ height: 45 * jobsN }} />
-                  : occTop.slice(0, jobsN).map((o, i) => (
+                  : occTop.slice(0, jobsN).map((o, i) => {
+                    // 与职位行同一形态:英文官方名做主文案 + 中/韩译名灰注(Frank「为什么长得不一样」)
+                    const main = o.titleEn || o.titleZh || o.noc
+                    const note = lang === 'zh' ? (o.titleZhShort || o.titleZh) : lang === 'ko' ? o.titleKo : ''
+                    return (
                     <a key={o.noc} href={`/?q=${o.noc}`} className="hmOccRow rowHover" style={{ borderTop: i ? `1px solid ${UI.hairline}` : 'none' }}>
                       <span style={{ fontSize: 12.5, fontWeight: 700, color: i < 3 ? UI.primary : UI.text3 }}>#{i + 1}</span>
-                      <span style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{occName(o)}</span>
-                      <span style={{ color: UI.text, fontSize: 12.5, whiteSpace: 'nowrap', textAlign: 'right' }}>{o.openJobs != null ? t('quiz.openN', { n: o.openJobs.toLocaleString('en-CA') }) : ''}</span>
+                      <span title={note ? `${main}(${note})` : main} style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>
+                        {main}
+                        {note ? <span style={{ color: UI.text3, fontWeight: 400, fontSize: 12 }}>　{shortOcc(note)}</span> : null}
+                      </span>
+                      <span style={{ color: UI.text2, fontSize: 12.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{o.openJobs != null ? t('quiz.openN', { n: o.openJobs.toLocaleString('en-CA') }) : ''}</span>
                       <span className="hmOccElig" style={{ color: UI.ok, fontSize: 12.5, whiteSpace: 'nowrap', textAlign: 'right' }}>{o.namedJobs ? t('quiz.eligN', { n: o.namedJobs.toLocaleString('en-CA') }) : ''}</span>
-                      <span style={{ color: UI.text2, fontSize: 12.5, whiteSpace: 'nowrap', textAlign: 'right' }}>{o.medianWageAnnual != null ? '$' + Math.round(o.medianWageAnnual / 1000) + 'K' : ''}</span>
+                      <span style={{ color: UI.text, fontSize: 12.5, whiteSpace: 'nowrap', textAlign: 'right' }}>{o.medianWageAnnual != null ? '$' + Math.round(o.medianWageAnnual / 1000) + 'K' : ''}</span>
                     </a>
-                  ))
+                    )
+                  })
               ) : (jobsTab === 'new' ? stats.latestJobs : stats.topPaidJobs).slice(0, jobsN).map((j, i) => {
                 // 帖子标题是逐帖英文原文,无逐帖译名 —— 中/韩界面挂 NOC 职业译名灰注(人话名+灰字小注站规)
                 const note = nocNote(j.noc)
