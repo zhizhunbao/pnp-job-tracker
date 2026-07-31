@@ -12,10 +12,10 @@ const l = (en: string, zh: string, ko: string): L => ({ default: en, 'zh-cn': zh
 const chrome = (stage: Stage) => ({
   showQuestionNumbers: 'off',
   questionsOnPageMode: 'questionPerPage',
-  // v2 正名 autoAdvance*(旧名是弃用别名)。答完即出报告=设计:逐题点选零冗余点击;
-  // 预填(三问/上次答案)把题补满时会链跳直达报告 —— 等价「看上次结果」,报告页「改答案」可回
-  autoAdvanceEnabled: true,
-  autoAdvanceAllowComplete: true,
+  // 2026-07-31 Frank「选完题不要自动跳,要等用户点下一题再跳」:自动前进关掉。
+  // 原因不只是节奏 —— 一道题的卷(卡③)开着自动前进时,点下去当场就完成跳报告,
+  // 用户看到的是「选项根本选不上」(他实拍反馈的正是这个)。选中要停得住,跳转由他自己按。
+  autoAdvanceEnabled: false,
   showProgressBar: 'top',
   progressBarType: 'questions',
   showTitle: false,

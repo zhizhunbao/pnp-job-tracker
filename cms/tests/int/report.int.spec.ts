@@ -221,7 +221,8 @@ describe('gateReport 付费闸', () => {
     const g = gateReport(full(), false)
     expect(keys(g.conclusions)).toEqual(['rpt.c.listedHit', 'rpt.c.drawBand'])   // 引擎顺序=清单命中 + 抽选区间
     expect(g.alternatives).toEqual([])
-    expect(g.locked).toEqual(['score', 'window', 'alts', 'more'])
+    // score 不在锁行里:报告算不出省估分(facts.scores 永远为空),锁一个算不出的东西=卖空气
+    expect(g.locked).toEqual(['window', 'alts', 'more'])
     expect(g.pro).toBe(false)
     // 缺口与下一步全给(钩子与引流不锁)
     expect(keys(g.gaps)).toContain('rpt.g.answerScore')
@@ -296,5 +297,17 @@ describe('CRS 缺口不能是死路', () => {
     const step = r.nextSteps.find((s) => s.key === 'rpt.n.crs')
     expect(gap?.url).toContain('canada.ca')
     expect(step?.url).toContain('canada.ca')
+  })
+})
+
+describe('锁区不许卖算不出来的东西', () => {
+  it('有官方分值表的省也不锁「分差」——报告没收集打分要的 8 个字段,解锁后背后是空的', () => {
+    const r = gateReport(buildPrReport(base(), exp12, dims, facts({
+      noc: '31301', teer: 1, byProv: [{ province: 'BC', open: 19, named: 18 }],
+      draws: [{ province: 'BC', drawDate: '2026-07-20', stream: 'Care: Health', score: 96 }],
+    })), false)
+    expect(r.gaps.some((g) => g.key === 'rpt.g.answerScore')).toBe(true)   // 缺口照说
+    expect(r.nextSteps.some((s) => s.key === 'rpt.n.score')).toBe(true)    // 去估分的路照给
+    expect(r.locked).not.toContain('score')                                // 但不当付费卖点
   })
 })

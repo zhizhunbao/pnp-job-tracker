@@ -512,7 +512,10 @@ export function gateReport(report: Report, pro: boolean): GatedReport {
     if (LOCK_CAT[c.key]) cats.add(LOCK_CAT[c.key])
     else if (!shownFree.has(c.key)) cats.add('more')
   }
-  if (report.gaps.some((g) => g.key === 'rpt.g.answerScore')) cats.add('score')   // 有官方分值表的省:分差是算得出的
+  // 2026-07-31 红线复查:**不能**拿「该省有官方分值表」当锁区理由 —— 报告流程只问 4+2 题,
+  // 省估分要 8 个字段(学历/近5年经验/更早经验/首考语言/二语/年龄/时薪/城市),`facts.scores` 从来没被填过,
+  // 所以 scoreAbove/Below 在生产永不触发:解锁后那一行背后是空的 = 卖不存在的东西。
+  // 缺口行与「去估分」的跳转照旧免费给。等打分题进了题库、报告真能算分,score 自然由结论行触发。
   if (report.alternatives.length) cats.add('alts')
 
   return {

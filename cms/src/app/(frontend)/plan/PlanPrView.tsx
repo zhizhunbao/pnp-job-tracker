@@ -1,7 +1,7 @@
 'use client'
 // 卡②「拿 PR」两态页(L2-01/L2-02:答题与看报告是两个界面,互跳靠一个按钮)。
 // 答题态=SurveyJS(2026-07-31 Frank「用框架吧」):题库=lib/questions.ts 纯 JSON 配置,一屏一题/
-// 进度条/上一题下一题/多语全由框架出;点选自动进下一题,答完 Complete=出报告。
+// 进度条/上一题下一题/多语全由框架出;**选中不自动跳**(2026-07-31 Frank),跳转由用户按「下一题/出报告」。
 // 报告态=结论/缺口/下一步/备选(/api/report → rpt.* 三语渲染),与引擎契约同构。
 // 跨卡复用铁律:currentStatus/目标省/职业从三问预填(答过的不重新问,预填可改);职业用三问的 nocs[0],
 // 没答过 → 页内拉起 EntryQuiz(同一组件不复制)。答案存 localStorage,改答案 → 报告立刻重算。
@@ -292,7 +292,9 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
 .plSurvey .sd-item--allowhover:hover{border-color:#93c5fd;background:#f8fbff}
 .plSurvey .sd-item--checked{border-color:${UI.primary};background:#eff6ff}
 /* 选项字母徽标(照 Frank 的三个答题项目:A/B/C/D 徽标 + 选中反白)——原生 radio 圆点点击目标感弱 */
-.plSurvey .sd-selectbase__label{cursor:pointer;display:flex;align-items:center;gap:12px}
+/* label 必须铺满整行:它只包住文字时,短选项(「中级」「有」)的行中间点下去落在 sd-item 上,
+   不在 label 上 —— 用户看到的就是「点了没反应」(2026-07-31 Frank 在卡③实拍到,四个选项都是两个字) */
+.plSurvey .sd-selectbase__label{cursor:pointer;display:flex;align-items:center;gap:12px;width:100%;margin:0}
 .plSurvey .sd-radio__decorator{display:none}
 .plSurvey .sd-selectbase__label::before{content:counter(opt,upper-alpha);flex-shrink:0;width:26px;height:26px;
   border:1px solid ${UI.border};border-radius:7px;background:#fff;color:${UI.text2};
