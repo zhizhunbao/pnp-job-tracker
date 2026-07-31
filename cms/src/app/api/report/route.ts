@@ -8,10 +8,10 @@ import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import { getUser } from '@/lib/entitlement'
+import { getUser, isPro } from '@/lib/entitlement'
 import { normalizeProfile } from '@/lib/match'
 import { loadMatchDims } from '@/lib/matchDims'
-import { buildPrReport } from '@/lib/report'
+import { buildPrReport, gateReport } from '@/lib/report'
 import { assembleReportFacts } from '@/lib/reportFacts'
 
 export const dynamic = 'force-dynamic'
@@ -34,6 +34,7 @@ export async function POST(req: Request) {
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
   const [dims, facts] = await Promise.all([loadMatchDims(), assembleReportFacts(pool, noc)])
-  const report = buildPrReport(profile, extra, dims, facts)
+  // 付费闸在服务端(L2-03):免费响应里根本没有锁区正文,前端只负责显示锁行标题
+  const report = gateReport(buildPrReport(profile, extra, dims, facts), isPro(user))
   return Response.json({ report })
 }

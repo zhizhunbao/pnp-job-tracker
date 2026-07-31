@@ -4,7 +4,7 @@
 // 规则改动 → 这里必然红 → 有意识地更新,不静默漂移。
 import { describe, it, expect } from 'vitest'
 import { normalizeProfile, type MatchDims } from '@/lib/match'
-import { buildPrReport, reportLineEn, type ReportFacts } from '@/lib/report'
+import { buildPrReport, gateReport, reportLineEn, type ReportFacts } from '@/lib/report'
 
 // ── fixture 维度(形状与生产 dims 一致,数据虚构但结构真实)──
 // BC/AB 清单式(有 named 行);ON 不公布清单(NO_LIST_PROVINCES → exclusion);NL 本站未覆盖(无行)
@@ -14,6 +14,7 @@ const dims: MatchDims = {
     { province: 'BC', label: 'BC childcare stream', type: 'indemand', noc: '42202', url: 'https://gov.bc.ca/childcare', fetched: '2026-07-20' },
     { province: 'AB', label: 'Alberta tech list', type: 'indemand', noc: '21232', url: 'https://alberta.ca/tech', fetched: '2026-07-18' },
     { province: 'AB', label: 'AAIP ineligible list', type: 'ineligible', noc: '65200', url: 'https://alberta.ca/inelig', fetched: '2026-07-18' },
+    { province: 'SK', label: 'SK health stream', type: 'indemand', noc: '31301', url: 'https://sk.ca/health', fetched: '2026-07-19' },
   ],
   eeCategories: [
     { category: 'stem', label: 'STEM', noc: '21232', drawCrs: 491, drawDate: '2026-06-04', url: 'https://canada.ca/ee', fetched: '2026-07-01' },
@@ -181,6 +182,10 @@ describe('无解不给空页 + confidence + EN 渲染', () => {
     expect(r.confidence).toBe('low')
     expect(r.gaps.find((g) => g.key === 'rpt.g.basics')?.params).toMatchObject({ n: 2 })
   })
+  it('注册类职业:认证排下一步①(v2c 编号行第一条就是最耗时的那步)', () => {
+    const r = buildPrReport(base(), exp12, dims, facts({ noc: '31301', title: 'RN', teer: 1, byProv: [{ province: 'BC', open: 17, named: 17 }] }))
+    expect(keys(r.nextSteps)[0]).toBe('rpt.n.cert')
+  })
   it('每个 key 都有 EN 渲染(advisor grounding 不落回裸键)', () => {
     const r = buildPrReport(base({ crs: 480, pgwpMonthsLeft: 8 }), { canadianExpMonths: 6 }, dims, facts({
       noc: '31301', title: 'RN', teer: 1,
@@ -194,5 +199,92 @@ describe('无解不给空页 + confidence + EN 渲染', () => {
     for (const l of [...r.conclusions, ...r.gaps, ...r.nextSteps, ...r.alternatives]) {
       expect(reportLineEn(l), l.key).not.toBe(l.key)
     }
+  })
+})
+
+// ── 付费闸(L2-03 v2c):裁剪在服务端 —— 免费响应里根本没有锁区正文 ──────────────
+describe('gateReport 付费闸', () => {
+  const bcDraws = [
+    { province: 'BC', drawDate: '2026-07-22', stream: 'Skilled Worker', score: 118 },
+    { province: 'BC', drawDate: '2026-07-08', stream: 'Health Authority', score: 60 },
+    { province: 'BC', drawDate: '2026-06-25', stream: 'Skilled Worker', score: 121 },
+    { province: 'BC', drawDate: '2026-06-10', stream: 'Skilled Worker', score: 116 },
+  ]
+  // 定稿效果图那一例:BC 护士,19 在招 18 具名;近 4 次多通道抽选;签证剩 8 个月;SK 可作备选
+  const full = () => buildPrReport(base({ pgwpMonthsLeft: 8 }), exp12, dims, facts({
+    noc: '31301', title: 'Registered nurses', teer: 1,
+    byProv: [{ province: 'BC', open: 19, named: 18 }, { province: 'SK', open: 6, named: 6 }],
+    draws: bcDraws,
+  }))
+
+  it('免费:结论只留前 2 条、备选清空、锁行按固定序去重', () => {
+    const g = gateReport(full(), false)
+    expect(keys(g.conclusions)).toEqual(['rpt.c.listedHit', 'rpt.c.drawBand'])   // 引擎顺序=清单命中 + 抽选区间
+    expect(g.alternatives).toEqual([])
+    expect(g.locked).toEqual(['score', 'window', 'alts', 'more'])
+    expect(g.pro).toBe(false)
+    // 缺口与下一步全给(钩子与引流不锁)
+    expect(keys(g.gaps)).toContain('rpt.g.answerScore')
+    expect(keys(g.nextSteps)).toContain('rpt.n.cert')
+  })
+
+  it('免费响应体里 grep 不到锁区正文(裁剪在服务端,devtools 也翻不出来)', () => {
+    const body = JSON.stringify(gateReport(full(), false))
+    expect(body).not.toContain('rpt.c.window')       // 时间窗:轮数是结论
+    expect(body).not.toContain('rpt.a.prov')         // 备选省完整对照
+    expect(body).not.toContain('rpt.c.expOk')
+    expect(body).toContain('rpt.c.listedHit')        // 免费两条照旧下发
+  })
+
+  it('锁行只列引擎真能算的类别 —— 不卖不存在的东西', () => {
+    // 无签证剩余(无 window)、无备选省、该省不公布分值表(无 score)
+    const r = buildPrReport(base({ targetProvinces: ['ON'] }), exp12, dims, facts({
+      noc: '42202', title: 'ECE', teer: 2, byProv: [{ province: 'ON', open: 430, named: 0 }],
+    }))
+    const g = gateReport(r, false)
+    expect(g.locked).not.toContain('window')
+    expect(g.locked).not.toContain('alts')
+    expect(g.locked).not.toContain('score')
+  })
+
+  it('没填 CRS 时不锁 EE(该卖的是答题 hook);填了 CRS 才有分差可锁', () => {
+    const noCrs = gateReport(full(), false)
+    expect(noCrs.locked).not.toContain('ee')
+    expect(noCrs.lanes.find((l) => l.kind === 'ee')?.key).toBe('rpt.lane.ee.noCrs')
+    const withCrs = gateReport(buildPrReport(base({ crs: 400 }), exp12, dims, facts({
+      noc: '31301', title: 'RN', teer: 1, byProv: [{ province: 'BC', open: 19, named: 18 }], draws: bcDraws,
+    })), false)
+    expect(withCrs.locked).toContain('ee')
+    expect(withCrs.lanes.find((l) => l.kind === 'ee')?.key).toBe('rpt.lane.ee.below')
+  })
+
+  it('三卡=判定词(事实,免费):省提名 / EE / 备选省', () => {
+    const g = gateReport(full(), false)
+    expect(g.lanes.map((l) => l.kind)).toEqual(['prov', 'ee', 'alts'])
+    const prov = g.lanes[0]
+    expect(prov).toMatchObject({ key: 'rpt.lane.prov.hit', verdict: 'pass', params: { prov: 'BC' } })
+    expect(g.lanes[2]).toMatchObject({ key: 'rpt.lane.alts', params: { prov: 'SK', n: 1 } })
+  })
+
+  it('卡点短句在免费层(说中他没说出口的事),带官方出处', () => {
+    const g = gateReport(full(), false)
+    expect(g.hint?.key).toBe('rpt.hint.cert')
+    expect(g.hint?.source?.url).toBe('https://www.nnas.ca/')
+    // 非注册职业:经验不足也是卡点
+    const exp = gateReport(buildPrReport(base(), { canadianExpMonths: 6 }, dims, facts({
+      noc: '21232', title: 'SW dev', teer: 1, byProv: [{ province: 'BC', open: 5, named: 0 }],
+    })), false)
+    expect(exp.hint?.key).toBe('rpt.hint.exp')
+    expect(exp.hint?.params).toMatchObject({ months: 6, need: 12 })
+  })
+
+  it('Pro:全量下发,locked 空,备选照旧', () => {
+    const g = gateReport(full(), true)
+    expect(g.pro).toBe(true)
+    expect(g.locked).toEqual([])
+    expect(keys(g.conclusions)).toContain('rpt.c.window')
+    expect(keys(g.alternatives)).toContain('rpt.a.prov')
+    expect(g.lanes).toHaveLength(3)          // 三卡与卡点 Pro 也照出
+    expect(g.hint?.key).toBe('rpt.hint.cert')
   })
 })

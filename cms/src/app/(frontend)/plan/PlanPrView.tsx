@@ -16,20 +16,32 @@ import { initialLang, makeT, LANG_KEY, type Lang, type TFn } from '../jobs/i18n'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { EntryQuiz, readQuiz, shortOcc } from '../quiz/EntryQuiz'
-import { PageShell, UI } from '../ui/primitives'
-import { PR_BASIC_SURVEY, SURVEY_THEME } from '@/lib/questions'
+import { Button, Notice, PageShell, Tag, UI } from '../ui/primitives'
+import { PR_BASIC_SURVEY, PR_EXPLORE_SURVEY, SURVEY_THEME } from '@/lib/questions'
 import { track } from '@/lib/track'
 
 const KEY = 'plan_pr_v1'
-type Bands = { status: string; clbBand: number; expBand: number; provBand: number }
+type Bands = { status: string; clbBand: number; expBand: number; provBand: number; crsBand: number; pgwpBand: number }
 const CLB = [0, 5, 7, 9, 0]            // 档→CLB(a4 还没考=null 走 0 哨兵)
 const EXP = [0, 0, 6, 18, 30]          // 档→月数(a1 没有=0 个月,是答案不是缺答)
 const PROVS: string[][] = [[], ['BC'], ['ON'], ['AB', 'SK', 'MB'], []]   // a4 先看哪个够得着=不限省
+const CRS = [0, 0, 380, 425, 480]      // 探索题:档→CRS(a1 没算过=不传,引擎照旧出「没填 CRS」)
+const PGWP = [0, 4, 9, 18, 30]         // 探索题:档→签证剩余月数(解锁时间窗结论)
 
 type RptLine = { key: string; params: Record<string, string | number>; verdict?: string; source?: { label: string; url: string; fetched: string }; url?: string }
-type Rpt = { noc: string; title: string; conclusions: RptLine[]; gaps: RptLine[]; nextSteps: RptLine[]; alternatives: RptLine[]; confidence: 'low' | 'mid' | 'high'; asOf: string }
+type Lane = { kind: 'prov' | 'ee' | 'alts'; verdict?: string; key: string; params: Record<string, string | number> }
+type Rpt = {
+  noc: string; title: string; conclusions: RptLine[]; gaps: RptLine[]; nextSteps: RptLine[]; alternatives: RptLine[]
+  confidence: 'low' | 'mid' | 'high'; asOf: string
+  lanes: Lane[]; hint?: RptLine; locked: string[]; pro: boolean   // 付费闸(服务端已裁剪,locked 只有类别键没有正文)
+}
 
 const V_DOT: Record<string, string> = { pass: UI.ok, warn: '#b45309', fail: '#b91c1c', na: '#9ca3af' }
+const V_CHIP: Record<string, { bg: string; fg: string }> = {
+  pass: { bg: '#dcfce7', fg: '#166534' }, warn: { bg: '#fef3c7', fg: '#92400e' },
+  fail: { bg: '#fee2e2', fg: '#991b1b' }, na: { bg: '#f3f4f6', fg: '#6b7280' },
+}
+const CARD: React.CSSProperties = { background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 12, padding: '12px 16px', margin: '10px 0' }
 
 function Line({ l, t }: { l: RptLine; t: TFn }) {
   const body = t(l.key, l.params)
@@ -47,6 +59,61 @@ function Line({ l, t }: { l: RptLine; t: TFn }) {
   )
 }
 
+// ① hero:大数字取自首条结论的真数(命中具名 named/open;不公布清单的省只有 open),
+// 取不出数就退成纯文本行 —— 不发明合成分(65/100 式移民可行度总分是伪权威)。
+function Hero({ r, t }: { r: Rpt; t: TFn }) {
+  const c = r.conclusions[0]
+  const big = c?.key === 'rpt.c.listedHit' ? { n: c.params.named, of: c.params.open, cap: t('rpt.hero.hit', { prov: c.params.prov }) }
+    : c?.key === 'rpt.c.screenPass' ? { n: c.params.open, of: null, cap: t('rpt.hero.open', { prov: c.params.prov }) }
+    : null
+  if (!big && !r.hint && !c) return null
+  return (
+    <div className="rptHero" style={{ background: 'linear-gradient(180deg,#eff6ff,#e0edff)', border: '1px solid #dbeafe', borderRadius: 12, padding: '16px 18px', margin: '10px 0' }}>
+      <div style={{ flexShrink: 0 }}>
+        {big ? (
+          <>
+            <div style={{ lineHeight: 1 }}>
+              <span style={{ fontSize: 40, fontWeight: 800, color: UI.primary, letterSpacing: -1 }}>{big.n}</span>
+              {big.of != null && <span style={{ fontSize: 20, fontWeight: 700, color: '#60a5fa' }}>/{big.of}</span>}
+            </div>
+            <div style={{ fontSize: 12.5, color: '#3b82f6', marginTop: 5 }}>{big.cap}</div>
+          </>
+        ) : c ? (
+          <div style={{ fontSize: 15, fontWeight: 600, color: UI.primaryDeep, lineHeight: 1.6 }}>{t(c.key, c.params)}</div>
+        ) : null}
+      </div>
+      {r.hint && (
+        <div style={{ fontSize: 14.5, fontWeight: 700, color: UI.primaryDeep, lineHeight: 1.6 }}>
+          {t(r.hint.key, r.hint.params)}
+          {r.hint.source?.url && (
+            <a href={r.hint.source.url} target="_blank" rel="noreferrer" title={r.hint.source.label}
+              style={{ marginLeft: 6, color: UI.primary, textDecoration: 'none', fontWeight: 600 }}>↗</a>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ② 三卡(Resume Worded 范式:维度名 + 判定词 + 状态章)。判定词是事实,免费;数字在锁区。
+function Lanes({ lanes, t }: { lanes: Lane[]; t: TFn }) {
+  const NAME: Record<string, string> = { prov: 'rpt.lane.t.prov', ee: 'rpt.lane.t.ee', alts: 'rpt.lane.t.alts' }
+  return (
+    <div className="rptLanes">
+      {lanes.map((l) => {
+        const chip = V_CHIP[l.verdict ?? 'na']
+        return (
+          <div key={l.kind} style={{ ...CARD, margin: 0, padding: '12px 10px', textAlign: 'center' }}>
+            <div style={{ fontSize: 12, color: UI.text2 }}>{t(NAME[l.kind], l.params)}</div>
+            <div style={{ fontSize: 17, fontWeight: 700, margin: '6px 0 7px', color: V_DOT[l.verdict ?? 'na'] }}>{t(l.key, l.params)}</div>
+            <span style={{ background: chip.bg, color: chip.fg, borderRadius: 6, padding: '2px 8px', fontSize: 11.5, fontWeight: 600 }}>{t(l.key + '.b')}</span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 const readBands = (): Bands => {
   const q = readQuiz()
   let saved: Partial<Bands> = {}
@@ -54,6 +121,7 @@ const readBands = (): Bands => {
   return {
     status: saved.status || q?.status || '',
     clbBand: saved.clbBand || 0, expBand: saved.expBand || 0,
+    crsBand: saved.crsBand || 0, pgwpBand: saved.pgwpBand || 0,
     // 目标省预填:三问选过省 → 映射到最近的档(单选 BC/ON 精确档;别的组合走「先看哪个够得着」)
     provBand: saved.provBand || (q?.provs?.length ? (q.provs.length === 1 && q.provs[0] === 'BC' ? 1 : q.provs.length === 1 && q.provs[0] === 'ON' ? 2 : 4) : 0),
   }
@@ -65,11 +133,12 @@ export function PlanPrView() {
   const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
   const t = useMemo(() => makeT(lang), [lang])
 
-  const [bands, setBands] = useState<Bands>({ status: '', clbBand: 0, expBand: 0, provBand: 0 })
+  const [bands, setBands] = useState<Bands>({ status: '', clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0 })
   const [noc, setNoc] = useState('')
   const [nocTitle, setNocTitle] = useState('')
   const [quizOpen, setQuizOpen] = useState(false)
   const [view, setView] = useState<'quiz' | 'report'>('quiz')
+  const [stage, setStage] = useState<'basic' | 'explore'>('basic')   // 探索卷=报告 hook 的落点(基本 4 题满才进得来)
   const [ready, setReady] = useState(false)
   const [rpt, setRpt] = useState<Rpt | null | 'loading'>(null)
 
@@ -93,42 +162,42 @@ export function PlanPrView() {
     setView('report')
     try { window.history.replaceState(null, '', '?view=report') } catch { /* ignore */ }
   }
-  const gotoQuiz = () => {
+  const gotoQuiz = (to: 'basic' | 'explore' = 'basic') => {
+    setStage(to)
     setView('quiz')
     try { window.history.replaceState(null, '', window.location.pathname) } catch { /* ignore */ }
   }
 
   // SurveyJS 模型:题库 JSON → Model;预填=survey.data;答案变更实时落 localStorage(改答案立刻重算的底座)。
-  // ready 后才建(要先读回预填);lang 切换重建换语言,当前答案原样带回。
+  // ready 后才建(要先读回预填);lang / stage 切换重建(换语言或换卷),当前答案原样带回。
   const survey = useMemo(() => {
     if (!ready || view !== 'quiz') return null
-    const m = new Model(PR_BASIC_SURVEY)
+    const explore = stage === 'explore'
+    const m = new Model(explore ? PR_EXPLORE_SURVEY : PR_BASIC_SURVEY)
     m.applyTheme(SURVEY_THEME as any)
     m.locale = lang === 'zh' ? 'zh-cn' : lang === 'ko' ? 'ko' : 'en'
     const b = readBands()
-    m.data = {
-      ...(b.status ? { status: b.status } : {}),
-      ...(b.clbBand ? { clbBand: b.clbBand } : {}),
-      ...(b.expBand ? { expBand: b.expBand } : {}),
-      ...(b.provBand ? { provBand: b.provBand } : {}),
-    }
+    const names = explore ? (['crsBand', 'pgwpBand'] as const) : (['status', 'clbBand', 'expBand', 'provBand'] as const)
+    m.data = Object.fromEntries(names.map((n) => [n, b[n]]).filter(([, v]) => v))
     // 起步落在第一道没答的题(答过的不重走,上一题仍可回去改)。
     // v2 的 questionPerPage 模式导航不走 currentPageNo,走 currentSingleQuestion(实撞:设页号被无视)
-    const names = ['status', 'clbBand', 'expBand', 'provBand'] as const
-    const firstUnanswered = [b.status, b.clbBand, b.expBand, b.provBand].findIndex((v) => !v)
+    const firstUnanswered = names.map((n) => b[n]).findIndex((v) => !v)
     if (firstUnanswered > 0) {
       const target = m.getQuestionByName(names[firstUnanswered])
       if (target) m.currentSingleQuestion = target
     }
+    // 只合并本卷答到的字段(两卷共用一个 KEY,整体覆盖会把另一卷的答案抹掉)
     m.onValueChanged.add((s) => {
       const d = s.data as Partial<Bands>
-      const next: Bands = { status: d.status || '', clbBand: d.clbBand || 0, expBand: d.expBand || 0, provBand: d.provBand || 0 }
-      setBands(next)
-      try { localStorage.setItem(KEY, JSON.stringify(next)) } catch { /* ignore */ }
+      setBands((prev) => {
+        const next = { ...prev, ...Object.fromEntries(Object.entries(d).filter(([, v]) => v)) } as Bands
+        try { localStorage.setItem(KEY, JSON.stringify(next)) } catch { /* ignore */ }
+        return next
+      })
     })
     m.onComplete.add(() => gotoReport())
     return m
-  }, [ready, view, lang])   // eslint-disable-line react-hooks/exhaustive-deps
+  }, [ready, view, stage, lang])   // eslint-disable-line react-hooks/exhaustive-deps
 
   // 报告态进入即拉(改答案回来再进=重算;答案是幂等输入)
   useEffect(() => {
@@ -144,6 +213,9 @@ export function PlanPrView() {
         clb: CLB[b.clbBand] || undefined,
         canadianExpMonths: b.expBand ? EXP[b.expBand] : undefined,
         targetProvinces: PROVS[b.provBand],
+        crs: CRS[b.crsBand] || undefined,
+        // 境外没有加拿大签证,「还剩多久」对他无意义 —— 不拿档位硬造时间窗
+        pgwpMonthsLeft: b.status === 'overseas' ? undefined : PGWP[b.pgwpBand] || undefined,
       } }),
     }).then((r) => (r.ok ? r.json() : null)).then((d) => setRpt(d?.report ?? null))
       .catch(() => { if (!ctrl.signal.aborted) setRpt(null) })
@@ -166,7 +238,10 @@ export function PlanPrView() {
         {view === 'quiz' ? (
           <>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 12, color: UI.text3, margin: '2px 0 14px' }}>
-              <span>{t('plan.pr.sub')}</span><span style={{ whiteSpace: 'nowrap' }}>{t('plan.answered', { n: answered })}</span>
+              <span>{t(stage === 'explore' ? 'plan.explore.sub' : 'plan.pr.sub')}</span>
+              {stage === 'explore'
+                ? <button onClick={() => setStage('basic')} style={{ border: 'none', background: 'none', color: UI.primary, fontSize: 12, cursor: 'pointer', padding: 0, whiteSpace: 'nowrap', fontFamily: 'inherit' }}>{t('plan.explore.basic')}</button>
+                : <span style={{ whiteSpace: 'nowrap' }}>{t('plan.answered', { n: answered })}</span>}
             </div>
             {/* 职业 chip 常驻(非四题之一):三问答过直接用,没答→页内拉起 EntryQuiz */}
             <div style={{ marginBottom: 6 }}>
@@ -184,29 +259,88 @@ export function PlanPrView() {
           </>
         ) : (
           <>
+            {/* v2c 五段:① hero 大数字 ② 三卡判定 ③ 结论/缺口 ④ 编号下一步 ⑤ 锁区+CTA+hook */}
+            <style>{`.rptHero{display:flex;flex-direction:column;gap:10px}
+.rptLanes{display:grid;gap:10px;grid-template-columns:repeat(3,1fr)}
+@media(max-width:640px){.rptHero{gap:8px}.rptLanes{grid-template-columns:repeat(2,1fr)}.rptLanes>:first-child{grid-column:1/-1}}
+@media(min-width:641px){.rptHero{flex-direction:row;align-items:center;gap:30px}}`}</style>
             <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', margin: '2px 0 10px' }}>
-              {rpt && rpt !== 'loading' && rpt.title && <span style={{ fontSize: 14, fontWeight: 600 }}>{shortOcc(rpt.title)}<span style={{ color: UI.text3, fontWeight: 400, fontSize: 12, marginLeft: 6 }}>{rpt.noc}</span></span>}
-              {rpt && rpt !== 'loading' && (
-                <span style={{ fontSize: 11.5, fontWeight: 600, padding: '2px 10px', borderRadius: 999, background: rpt.confidence === 'high' ? '#dcfce7' : rpt.confidence === 'mid' ? '#fef9c3' : '#f3f4f6', color: rpt.confidence === 'high' ? '#166534' : rpt.confidence === 'mid' ? '#854d0e' : '#6b7280' }}>
-                  {t('rpt.conf')}:{t('rpt.conf.' + rpt.confidence)}
-                </span>
-              )}
-              {rpt && rpt !== 'loading' && rpt.asOf && <span style={{ fontSize: 11.5, color: UI.text3 }}>{t('rpt.asOf', { d: rpt.asOf })}</span>}
-              <button onClick={gotoQuiz} style={{ marginLeft: 'auto', border: `1px solid ${UI.border}`, background: '#fff', color: UI.text, borderRadius: 8, padding: '5px 14px', fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit' }}>{t('plan.back')}</button>
+              {/* 人话名优先(nocTitle 走 /api/quiz 出中文名),代码作灰字小注 */}
+              {rpt && rpt !== 'loading' && (nocTitle || rpt.title) && <span style={{ fontSize: 15, fontWeight: 700 }}>{shortOcc(nocTitle || rpt.title)}<span style={{ color: UI.text3, fontWeight: 400, fontSize: 12, marginLeft: 6 }}>{rpt.noc}</span></span>}
+              <button onClick={() => gotoQuiz()} style={{ marginLeft: 'auto', border: `1px solid ${UI.border}`, background: '#fff', color: UI.text, borderRadius: 8, padding: '5px 14px', fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit' }}>{t('plan.back')}</button>
             </div>
             {rpt === 'loading' || rpt === null ? (
               <div style={{ background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 12, minHeight: 220 }} />
             ) : (
-              <div style={{ background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 12, padding: '6px 18px 14px' }}>
-                {([['rpt.sec.c', rpt.conclusions], ['rpt.sec.g', rpt.gaps], ['rpt.sec.n', rpt.nextSteps], ['rpt.sec.a', rpt.alternatives]] as [string, RptLine[]][])
-                  .filter(([, ls]) => ls.length > 0)
-                  .map(([k, ls]) => (
-                    <div key={k}>
-                      <div style={secH}>{t(k)}</div>
-                      <ul style={{ margin: 0, padding: 0 }}>{ls.map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</ul>
-                    </div>
-                  ))}
-              </div>
+              <>
+                <Hero r={rpt} t={t} />
+                {rpt.lanes.length > 0 && <Lanes lanes={rpt.lanes} t={t} />}
+
+                {/* ③ 结论(免费两条)+ 缺口;分隔线代替小标题(卡片自解释,不写废话) */}
+                {(rpt.conclusions.length > 0 || rpt.gaps.length > 0) && (
+                  <div style={CARD}>
+                    <ul style={{ margin: 0, padding: 0 }}>{rpt.conclusions.map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</ul>
+                    {rpt.conclusions.length > 0 && rpt.gaps.length > 0 && <div style={{ borderTop: `1px solid ${UI.hairline}`, margin: '8px 0' }} />}
+                    <ul style={{ margin: 0, padding: 0 }}>{rpt.gaps.map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</ul>
+                  </div>
+                )}
+
+                {/* ④ 下一步:编号 1/2/3 + 尾链 */}
+                {rpt.nextSteps.length > 0 && (
+                  <div style={CARD}>
+                    {rpt.nextSteps.map((s, i) => (
+                      <div key={s.key + i} style={{ display: 'flex', gap: 10, alignItems: 'baseline', margin: '7px 0', lineHeight: 1.7 }}>
+                        <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: 6, background: '#eff6ff', color: UI.primary, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{i + 1}</span>
+                        <span style={{ minWidth: 0 }}>
+                          {t(s.key, s.params)}
+                          {s.url && (
+                            <a href={s.url} target={s.url.startsWith('http') ? '_blank' : undefined} rel={s.url.startsWith('http') ? 'noreferrer' : undefined}
+                              style={{ marginLeft: 6, fontSize: 12, color: UI.text3, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t(s.key + '.go')} ↗</a>
+                          )}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Pro:备选省完整对照(免费端服务端已清空) */}
+                {rpt.alternatives.length > 0 && (
+                  <div style={CARD}>
+                    <div style={secH}>{t('rpt.sec.a')}</div>
+                    <ul style={{ margin: 0, padding: 0 }}>{rpt.alternatives.map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</ul>
+                  </div>
+                )}
+
+                {/* ⑤ 锁区:只有类别标题(正文服务端就没下发)+ CTA(价格归 /pricing 不硬编)+ 答题 hook */}
+                {rpt.locked.length > 0 && (
+                  <div style={CARD}>
+                    {rpt.locked.map((k) => (
+                      <div key={k} style={{ display: 'flex', gap: 9, alignItems: 'center', margin: '9px 0' }}>
+                        <span style={{ flexShrink: 0 }}>🔒</span>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: UI.text, minWidth: 0 }}>{t('rpt.lock.' + k)}</span>
+                        <span style={{ marginLeft: 'auto' }}><Tag variant="pro">{t('rpt.pro')}</Tag></span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {!rpt.pro && (
+                  <Notice kind="warn" lead={t('rpt.cta.t')} style={{ margin: '10px 0' }}
+                    action={<span onClick={() => track('plan-pr-cta')}><Button kind="pro" href="/pricing">{t('rpt.cta.btn')}</Button></span>}>
+                    <span style={{ display: 'block', fontSize: 12 }}>{t('rpt.cta.s')}</span>
+                  </Notice>
+                )}
+                {!rpt.pro && (!bands.crsBand || !bands.pgwpBand) && (
+                  <div style={{ textAlign: 'center', fontSize: 12.5, color: UI.text2, margin: '10px 0 0' }}>
+                    {t('rpt.hook')}
+                    <button onClick={() => gotoQuiz('explore')} style={{ marginLeft: 8, border: 'none', background: 'none', color: UI.primary, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}>{t('rpt.hook.go')} →</button>
+                  </div>
+                )}
+                {/* 数据诚实脚注:置信度与数据日期(v2c 头部只留职业,这两项挪到脚注不丢) */}
+                <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', fontSize: 11.5, color: UI.text3, margin: '12px 0 0' }}>
+                  <span>{t('rpt.conf')}:{t('rpt.conf.' + rpt.confidence)}</span>
+                  {rpt.asOf && <span>{t('rpt.asOf', { d: rpt.asOf })}</span>}
+                </div>
+              </>
             )}
           </>
         )}

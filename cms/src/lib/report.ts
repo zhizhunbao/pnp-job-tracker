@@ -188,6 +188,7 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
   // ── 句式①:注册类职业的认证卡点(他只说了职业,认证是替他想到的)─────────────
   if (REGULATED_NURSE.has(noc)) {
     conclusions.push({ key: 'rpt.c.regulated', params: { noc }, verdict: 'warn', source: NNAS_SRC })
+    nextSteps.unshift({ key: 'rpt.n.cert', params: {}, url: NNAS_SRC.url })   // 认证最耗时 → 排下一步①
   }
 
   // ── 加拿大经验(卡② Q3):只对照公开门槛,不判资格 ────────────────────────
@@ -227,6 +228,73 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
   return { goal: 'pr', noc, title: facts.title, conclusions, gaps, nextSteps, alternatives, confidence, asOf: facts.fetched ?? '' }
 }
 
+// ── 付费闸(L2-03 v2c):服务端裁剪,免费响应里根本没有锁区正文 ──────────────
+// 与 PRO_COLUMNS「SELECT 源头裁掉」同哲学:锁 = 后端不下发,不是前端打码;devtools 也翻不出来。
+// 免费层留什么由「事实免费、结论收费」定:三卡判定词/卡点短句/前 2 条结论/缺口/下一步全免费
+// (aha 必须在掏钱之前),分差、时间窗、备选完整对照进锁区。锁行只列引擎真能算的类别 —— 不卖不存在的东西。
+export type ReportLane = {
+  kind: 'prov' | 'ee' | 'alts'
+  verdict: MatchVerdict
+  key: string                                   // rpt.lane.*(判定词=事实;章文案取 key + '.b')
+  params: Record<string, string | number>
+}
+export type GatedReport = Report & { lanes: ReportLane[]; hint?: ReportLine; locked: string[]; pro: boolean }
+
+const FREE_CONCLUSIONS = 2      // 引擎顺序天然=清单命中 + 抽选区间,正是 v2c 免费两条
+const LANE_PROV: Record<string, string> = {
+  'rpt.c.listedHit': 'rpt.lane.prov.hit', 'rpt.c.listedMiss': 'rpt.lane.prov.miss',
+  'rpt.c.excluded': 'rpt.lane.prov.excluded', 'rpt.c.screenPass': 'rpt.lane.prov.screen',
+  'rpt.c.screenTeer': 'rpt.lane.prov.screenNo', 'rpt.c.uncovered': 'rpt.lane.prov.uncovered',
+  'rpt.c.qc': 'rpt.lane.prov.qc',
+}
+const LANE_EE: Record<string, string> = {
+  'rpt.c.eeAbove': 'rpt.lane.ee.above', 'rpt.c.eeBelow': 'rpt.lane.ee.below',
+  'rpt.c.ee': 'rpt.lane.ee.noCrs', 'rpt.c.eeNone': 'rpt.lane.ee.none',
+}
+// 被裁结论 → 锁区类别。EE 只锁「有 CRS 才算得出的分差」;没填 CRS 时 EE 卡已说「差 CRS」,
+// 该卖的是答题(hook)不是锁区。
+const LOCK_CAT: Record<string, string> = {
+  'rpt.c.scoreAbove': 'score', 'rpt.c.scoreBelow': 'score', 'rpt.c.scoreBand': 'score',
+  'rpt.c.window': 'window', 'rpt.c.eeAbove': 'ee', 'rpt.c.eeBelow': 'ee',
+}
+const LOCK_ORDER = ['score', 'window', 'alts', 'ee', 'more']   // 锁行固定序(有序去重)
+const HINT: Record<string, string> = { 'rpt.c.regulated': 'rpt.hint.cert', 'rpt.g.expShort': 'rpt.hint.exp' }
+
+export function gateReport(report: Report, pro: boolean): GatedReport {
+  const provLine = report.conclusions.find((c) => LANE_PROV[c.key])
+  const eeLine = report.conclusions.find((c) => LANE_EE[c.key])
+  const hintLine = [...report.conclusions, ...report.gaps].find((l) => HINT[l.key])
+  const hint: ReportLine | undefined = hintLine
+    ? { key: HINT[hintLine.key], params: hintLine.params, verdict: hintLine.verdict, source: hintLine.source }
+    : undefined
+
+  const lanes: ReportLane[] = []
+  if (provLine) lanes.push({ kind: 'prov', verdict: provLine.verdict ?? 'na', key: LANE_PROV[provLine.key], params: { prov: provLine.params.prov ?? '' } })
+  if (eeLine) lanes.push({ kind: 'ee', verdict: eeLine.verdict ?? 'na', key: LANE_EE[eeLine.key], params: {} })
+  if (report.alternatives.length) {
+    lanes.push({ kind: 'alts', verdict: 'pass', key: 'rpt.lane.alts', params: { prov: report.alternatives[0].params.prov ?? '', n: report.alternatives.length } })
+  }
+
+  if (pro) return { ...report, lanes, hint, locked: [], pro: true }
+
+  const trimmed = report.conclusions.slice(FREE_CONCLUSIONS)
+  const shownFree = new Set([provLine?.key, eeLine?.key, hintLine?.key])   // 已在三卡/卡点里露过的,不再计入「其余结论」
+  const cats = new Set<string>()
+  for (const c of trimmed) {
+    if (LOCK_CAT[c.key]) cats.add(LOCK_CAT[c.key])
+    else if (!shownFree.has(c.key)) cats.add('more')
+  }
+  if (report.gaps.some((g) => g.key === 'rpt.g.answerScore')) cats.add('score')   // 有官方分值表的省:分差是算得出的
+  if (report.alternatives.length) cats.add('alts')
+
+  return {
+    ...report,
+    conclusions: report.conclusions.slice(0, FREE_CONCLUSIONS),
+    alternatives: [],
+    lanes, hint, locked: LOCK_ORDER.filter((k) => cats.has(k)), pro: false,
+  }
+}
+
 // ── 英文渲染(advisor grounding / 测试可读断言;与 UI 三语同源同数字,同 match.ts reasonEn 手法)──
 const EN: Record<string, (p: Record<string, string | number>) => string> = {
   'rpt.c.listedHit': (p) => `NOC ${p.noc} is on ${p.prov}'s published list "${p.label}"; ${p.open} open postings there, ${p.named} hitting the named stream.`,
@@ -254,6 +322,7 @@ const EN: Record<string, (p: Record<string, string | number>) => string> = {
   'rpt.g.answerScore': (p) => `${p.prov} publishes an official points grid — answer the scoring questions to compute your gap.`,
   'rpt.g.noScoreTable': (p) => `${p.prov} does not publish a points grid or per-draw cutoffs — only a rules comparison is possible, no score gap.`,
   'rpt.g.basics': (p) => `${p.n} basic question(s) unanswered — the report stays coarse until they are.`,
+  'rpt.n.cert': () => `Start the NNAS credential assessment — registration is the long pole for regulated nursing.`,
   'rpt.n.jobs': (p) => `See the ${p.n} open postings in ${p.prov} for this occupation.`,
   'rpt.n.score': (p) => `Estimate your ${p.prov} score against the official grid.`,
   'rpt.n.pathways': () => `Compare full immigration pathways.`,

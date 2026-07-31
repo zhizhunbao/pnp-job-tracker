@@ -65,6 +65,44 @@ export const PR_BASIC_SURVEY = {
   ],
 }
 
+// 探索题第一批(L2-03):铁律「每题必改结论」筛过 —— 只上引擎真有规则的两题。
+// 学历/法语暂不加(引擎无规则 → 答了不改任何结论 = 白问)。CRS 档 → EE 分差结论;
+// 签证剩余 → pgwpMonthsLeft → 解锁时间窗结论。两题答完 confidence 自动升 high。
+export const PR_EXPLORE_SURVEY = {
+  showQuestionNumbers: 'off',
+  questionsOnPageMode: 'questionPerPage',
+  autoAdvanceEnabled: true,
+  autoAdvanceAllowComplete: true,
+  showProgressBar: 'top',
+  progressBarType: 'questions',
+  showTitle: false,
+  pagePrevText: l('Previous', '上一题', '이전'),
+  pageNextText: l('Next', '下一题', '다음'),
+  completeText: l('Update my report', '更新报告', '보고서 갱신'),
+  elements: [
+    {
+      type: 'radiogroup', name: 'crsBand', isRequired: true,
+      title: l('Your Express Entry CRS score?', '你的 EE 综合排名分(CRS)?', 'Express Entry CRS 점수는?'),
+      choices: [
+        { value: 1, text: l('Never calculated it', '没算过', '계산해 본 적 없음') },
+        { value: 2, text: l('Under 400', '400 以下', '400 미만') },
+        { value: 3, text: l('400-450', '400-450', '400-450') },
+        { value: 4, text: l('450+', '450 以上', '450 이상') },
+      ],
+    },
+    {
+      type: 'radiogroup', name: 'pgwpBand', isRequired: true,
+      title: l('How long is left on your permit?', '你的签证还剩多久?', '비자 잔여 기간은?'),
+      choices: [
+        { value: 1, text: l('Under 6 months', '不到 6 个月', '6개월 미만') },
+        { value: 2, text: l('6-12 months', '6-12 个月', '6-12개월') },
+        { value: 3, text: l('1-2 years', '1-2 年', '1-2년') },
+        { value: 4, text: l('2+ years', '2 年以上', '2년 이상') },
+      ],
+    },
+  ],
+}
+
 // 站内品牌主题(SurveyJS v2 theme:面板拍平贴站内白卡风,主色=站蓝,圆角同站)
 export const SURVEY_THEME = {
   themeName: 'default',
