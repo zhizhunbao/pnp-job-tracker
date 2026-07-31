@@ -90,7 +90,7 @@ export function PathwaysView({ evals, loggedIn, profileOk, scoreFactors = [], dr
     <div style={{ background: '#f9fafb', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="pathways" />
       {/* #67 宽度统一(2026-07-19 Frank:「移民路径和其他的页面不一样宽」):860 → PageShell 1320 同轨 */}
-      <main style={{ maxWidth: 1320, width: '100%', margin: '2rem auto', padding: '0 1.25rem', boxSizing: 'border-box', flex: '1 0 auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <main style={{ maxWidth: 1320, width: '100%', margin: '1rem auto 2rem', padding: '0 1.25rem', boxSizing: 'border-box', flex: '1 0 auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div>
           {/* 页头=PageBanner(#65 五模块统一浅色带,路径=紫);免责小字留 banner 外 */}
           <PageBanner module="pathways" icon={<IconCompass />} title={t('pw.title')} sub={t('pw.sub')} images={BANNER_IMGS.pathways}

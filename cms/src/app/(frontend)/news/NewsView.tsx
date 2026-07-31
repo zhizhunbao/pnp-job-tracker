@@ -12,7 +12,7 @@ import { useLang } from '../stats/ui'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { BackLink } from '../BackLink'
-import { PageBanner, PageShell, SectionTabs, chipStyle } from '../ui/primitives'
+import { BANNER_IMGS, PageBanner, PageShell, SectionTabs, chipStyle } from '../ui/primitives'
 import { IconNews } from '../Icons'
 import { newsPublisher, newsRegionName, NEWS_REGIONS, type NewsCard, type NewsComment, type NewsHero, type NewsRow } from './shared'
 
@@ -221,10 +221,10 @@ export function NewsListView({ items, hero, cmtCounts }: { items: NewsCard[]; he
               .nwDots{gap:0 !important}.nwDots button{width:40px !important;height:40px !important}
               .nwTop button[aria-label='prev'],.nwTop button[aria-label='next']{width:40px !important;height:40px !important}}`}</style>
           {/* 正文轨=PageShell 1320(Frank 2026-07-18 宽度统一拍板),原 1100 单轨退役 */}
-          <PageShell>
-            {/* 页头=PageBanner(#65 五模块统一浅色带,动态=青;口径句已删——P1f Frank「没什么用」) */}
+          <PageShell pad="1rem 1.25rem 32px">
+            {/* 页头=PageBanner 图版(2026-07-31 banner 统一:上距全站 1rem、补 news 图组,原 marginTop:16 包层撤) */}
             {/* 2026-07-19 Frank 批提案:二级导航=统一 SectionTabs(公告|时间线),右槽链接退役 */}
-            <div style={{ marginTop: 16 }}><PageBanner module="news" icon={<IconNews />} title={t('news.title')} /></div>
+            <PageBanner module="news" icon={<IconNews />} title={t('news.title')} images={BANNER_IMGS.news} />
             <SectionTabs color="#0f766e" tabs={[
               { href: '/news', label: t('tl.tabNews'), active: true },
               { href: '/timeline', label: t('tl.title') },

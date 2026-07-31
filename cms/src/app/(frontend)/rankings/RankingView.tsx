@@ -143,7 +143,7 @@ export function RankingView({ slug, items, slugs = [] }: { slug: string; items: 
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="rank" />
 
       {/* #67 宽度统一:1100 → 1320 与头轨/职位板同宽 */}
-      <div style={{ maxWidth: 1320, width: '100%', boxSizing: 'border-box', margin: '2rem auto', padding: '0 1.25rem' }}>
+      <div style={{ maxWidth: 1320, width: '100%', boxSizing: 'border-box', margin: '1rem auto 2rem', padding: '0 1.25rem' }}>
         {/* 页头=PageBanner(#65 五模块统一浅色带,榜单=金) */}
         <PageBanner module="rank" icon={<IconChart />} title={rankTitle(t, slug)} images={BANNER_IMGS.rank}
           sub={t('rank.bnSub')} stats={[{ v: boards.length, label: t('rank.bnBoards') }, { v: items.length, label: t('rank.bnRows') }]} />

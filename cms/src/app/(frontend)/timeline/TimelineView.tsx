@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState, type KeyboardEvent } from 'react'
 import { initialLang, makeT, LANG_KEY, type Lang } from '../jobs/i18n'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
-import { PageBanner, PageShell, SectionTabs, SectionTitle, Tag, UI, chipStyle } from '../ui/primitives'
+import { BANNER_IMGS, PageBanner, PageShell, SectionTabs, SectionTitle, Tag, UI, chipStyle } from '../ui/primitives'
 import { IconNews } from '../Icons'
 import type { TlCadence, TlEvent } from '@/lib/timeline'
 
@@ -42,8 +42,8 @@ export function TimelineView({ events, cadence, eeCadence }: {
   return (
     <div style={{ background: '#f9fafb', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="news" />
-      <PageShell pad="2rem 1.25rem 32px">
-        <PageBanner module="news" icon={<IconNews />} title={t('tl.title')} sub={t('tl.sub')} />
+      <PageShell pad="1rem 1.25rem 32px">
+        <PageBanner module="news" icon={<IconNews />} title={t('tl.title')} sub={t('tl.sub')} images={BANNER_IMGS.news} />
         {/* 2026-07-19 Frank 批提案:统一二级 tab 条(与 /news 互为切换) */}
         <SectionTabs color="#0f766e" tabs={[
           { href: '/news', label: t('tl.tabNews') },

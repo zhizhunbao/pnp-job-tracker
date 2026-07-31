@@ -232,6 +232,9 @@ export const BANNER_IMGS: Record<string, string[]> = {
   pathways: ['/img/banners/pathways-1.jpg', '/img/banners/pathways-2.jpg', '/img/banners/pathways-3.jpg'],
   rank: ['/img/banners/rank-1.jpg', '/img/banners/rank-2.jpg', '/img/banners/rank-3.jpg'],
   stats: ['/img/banners/stats-1.jpg', '/img/banners/stats-2.jpg', '/img/banners/stats-3.jpg'],
+  // news(2026-07-31 Frank「没有图片的 banner 加上对应的图片」):照 home 先例复用既有已裁图不新增下载 ——
+  // 国会山(政策感最贴动态)/ 雾中高楼 / 卡尔加里天际线;要换专属图改这三个路径
+  news: ['/img/banners/pathways-1.jpg', '/img/banners/rank-1.jpg', '/img/banners/jobs-3.jpg'],
 }
 
 // ── PageShell(全站统一正文轨:1320 与 SiteHeader 头轨同宽——Frank 2026-07-18「每个页面的宽度应该

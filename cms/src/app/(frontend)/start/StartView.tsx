@@ -115,7 +115,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
       <style>{`
         .hmBand{padding:40px 0}
         .hmBand h2{font-size:20px}
-        .hmHero.hmBand{padding:14px 0 0}
+        .hmHero.hmBand{padding:16px 0 0}
         .hmBtn{display:block;border-radius:8px;padding:12px 20px;font-size:14px;font-weight:600;text-align:center;cursor:pointer;text-decoration:none;border:none;font-family:inherit}
         .hmGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
         .hmNums{display:flex;gap:28px;flex-wrap:wrap;justify-content:center;text-align:center}
@@ -134,7 +134,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
         @media (min-width:900px){
           .hmBand{padding:72px 0}
           .hmBand h2{font-size:24px}
-          .hmHero.hmBand{padding:14px 0 0}
+          .hmHero.hmBand{padding:16px 0 0}
           .hmBtn{padding:13px 28px;font-size:15px}
           .hmGrid{grid-template-columns:repeat(4,1fr);gap:12px}
           .hmNums{gap:64px}

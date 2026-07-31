@@ -8,7 +8,7 @@ import { provName } from '../jobs/JobsTable'
 import { track } from '@/lib/track'   // #129 功能级 umami 埋点
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
-import { Button, Card, CardAction, CardKV, PageBanner, PageShell, Tag, UI, chipStyle } from '../ui/primitives'
+import { BANNER_IMGS, Button, Card, CardAction, CardKV, PageBanner, PageShell, Tag, UI, chipStyle } from '../ui/primitives'
 import { DataTable } from '../ui/DataTable'
 import { IconUsers } from '../Icons'
 import { DIR_PAGE_SIZE, type AipRow, type LmiaRow } from '@/lib/directory'
@@ -96,9 +96,9 @@ export function EmployersView({ type, q, prov, page, aip, lmia, counts }: {
   return (
     <div style={{ background: '#f9fafb', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="employers" />
-      <PageShell pad="2rem 1.25rem 32px">
+      <PageShell pad="1rem 1.25rem 32px">
         {/* 页头浅色带(B 模块蓝,循 #65 收口不发明新色;banner 图版留后续凑手) */}
-        <PageBanner module="jobs" icon={<IconUsers />} title={t('dir.title')} sub={t('dir.sub')} />
+        <PageBanner module="jobs" icon={<IconUsers />} title={t('dir.title')} sub={t('dir.sub')} images={BANNER_IMGS.jobs} />
 
         {/* tab 二分 + 搜索(表单 GET 刷新=每个结果页都有 URL,SEO 可抓) */}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', margin: '0 0 12px' }}>

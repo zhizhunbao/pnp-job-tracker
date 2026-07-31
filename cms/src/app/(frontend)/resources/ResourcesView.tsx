@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { initialLang, makeT, LANG_KEY, type Lang } from '../jobs/i18n'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
-import { PageBanner } from '../ui/primitives'
+import { BANNER_IMGS, PageBanner } from '../ui/primitives'
 import { RES } from './data'
 
 export function ResourcesView() {
@@ -30,7 +30,7 @@ export function ResourcesView() {
       <style>{'.resTile:hover{border-color:#bfdbfe !important;background:#f8faff !important}'}</style>
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} />
       <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1rem 1.25rem 1.5rem', width: '100%', boxSizing: 'border-box', flex: '1 0 auto' }}>
-        <PageBanner module="pathways" title={t('res.title')} sub={t('res.sub')} />
+        <PageBanner module="pathways" title={t('res.title')} sub={t('res.sub')} images={BANNER_IMGS.pathways} />
 
         {/* 顶部搜索框(Frank「上面带一个文本框搜索」) */}
         <div style={{ margin: '14px 0' }}>
