@@ -288,3 +288,13 @@ describe('gateReport 付费闸', () => {
     expect(g.hint?.key).toBe('rpt.hint.cert')
   })
 })
+
+describe('CRS 缺口不能是死路', () => {
+  it('没填 CRS → 缺口与下一步都指官方 CRS 工具(站内没有计算器,别让人卡在这)', () => {
+    const r = buildPrReport(base({ nocCodes: ['21232'] }), { canadianExpMonths: null }, dims, facts({ noc: '21232', teer: 1, byProv: [{ province: 'BC', open: 12, named: 0 }] }))
+    const gap = r.gaps.find((g) => g.key === 'rpt.g.noCrs')
+    const step = r.nextSteps.find((s) => s.key === 'rpt.n.crs')
+    expect(gap?.url).toContain('canada.ca')
+    expect(step?.url).toContain('canada.ca')
+  })
+})

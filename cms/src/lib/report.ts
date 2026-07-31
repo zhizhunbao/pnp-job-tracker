@@ -57,6 +57,13 @@ const ALT_CAP = 2           // 备选省上限(④ 预判下一问:给对照不�
 // 受监管护士(与 pathways.ts 同口径):注册类职业先过认证才能执业 —— 句式①「说中他没提的卡点」
 const REGULATED_NURSE = new Set(['31301', '32101'])
 const NNAS_SRC = { label: 'NNAS — internationally educated nurses', url: 'https://www.nnas.ca/', fetched: '' }
+// 站内没有 CRS 计算器(省估分只做了 BC/SK)。问了 CRS 却不给算的地方 = 死路,
+// 所以缺口行与下一步都指官方工具;要不要自建 CRS 算分是单独一件事,别在这里编公式。
+const CRS_TOOL = {
+  label: 'IRCC — Comprehensive Ranking System tool',
+  url: 'https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/check-score.html',
+  fetched: '',
+}
 const CEC_SRC = {
   label: 'IRCC — Canadian Experience Class eligibility',
   url: 'https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/eligibility/canadian-experience-class.html',
@@ -177,7 +184,8 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
     const src = { label: ee.label, url: ee.url, fetched: ee.fetched }
     if (profile.crs == null) {
       conclusions.push({ key: 'rpt.c.ee', params: { cat: ee.label, draw: ee.drawCrs as number, date: (ee.drawDate || '').slice(0, 10) }, verdict: 'warn', source: src })
-      gaps.push({ key: 'rpt.g.noCrs', params: { cat: ee.label }, verdict: 'na' })
+      gaps.push({ key: 'rpt.g.noCrs', params: { cat: ee.label }, verdict: 'na', url: CRS_TOOL.url })
+      nextSteps.push({ key: 'rpt.n.crs', params: {}, url: CRS_TOOL.url })
     } else {
       const diff = profile.crs - (ee.drawCrs as number)
       conclusions.push({

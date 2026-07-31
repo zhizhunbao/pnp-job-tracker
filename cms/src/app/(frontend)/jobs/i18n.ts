@@ -309,6 +309,7 @@ const zh: Dict = {
   'rpt.g.answerScore': '{prov} 有官方分值表——答几道打分题就能算出差多少',
   'rpt.g.noScoreTable': '{prov} 不公布分值表和逐次分数线——只能给规则对照,给不出分差',
   'rpt.g.basics': '还有 {n} 道基本题没答——答完报告会更准',
+  'rpt.n.crs': '用官方工具算出你的 CRS 分',
   'rpt.n.jobs': '看 {prov} 这 {n} 个在招岗', 'rpt.n.score': '按 {prov} 官方分值表估个分', 'rpt.n.pathways': '对照完整移民路径',
   'rpt.a.prov': '{prov}:你的职业在其公开清单「{label}」上——在招 {open} 岗,{named} 个命中具名通道',
   // v2c 报告分层(L2-03):hero 大数字 → 三卡判定 → 两条结论 → 编号下一步 → 锁区。判定词是事实(免费),分差/时间窗是结论(Pro)
@@ -965,6 +966,7 @@ const en: Dict = {
   'rpt.g.answerScore': '{prov} publishes an official points grid - answer the scoring questions to compute your gap',
   'rpt.g.noScoreTable': '{prov} publishes no points grid or per-draw cutoffs - only a rules comparison is possible, no score gap',
   'rpt.g.basics': '{n} basic question(s) unanswered - the report stays coarse until they are',
+  'rpt.n.crs': 'Get your CRS score from the official tool',
   'rpt.n.jobs': 'See the {n} open postings in {prov}', 'rpt.n.score': 'Estimate your {prov} score on the official grid', 'rpt.n.pathways': 'Compare full immigration pathways',
   'rpt.a.prov': '{prov}: your occupation is on its published list "{label}" - {open} open postings, {named} on the named stream',
   'plan.explore.sub': '2 more questions: your EE gap and time window', 'plan.explore.basic': 'Edit basics',
@@ -1593,6 +1595,7 @@ const ko: Dict = {
   'rpt.g.answerScore': '{prov}는 공식 점수표를 공개합니다 - 점수 문항에 답하면 격차를 계산할 수 있습니다',
   'rpt.g.noScoreTable': '{prov}는 점수표와 회차별 커트라인을 공개하지 않습니다 - 규정 대조만 가능, 점수 격차 산출 불가',
   'rpt.g.basics': '기본 문항 {n}개 미답 - 답하면 보고서가 더 정확해집니다',
+  'rpt.n.crs': '공식 도구로 CRS 점수 계산하기',
   'rpt.n.jobs': '{prov}의 채용 {n}건 보기', 'rpt.n.score': '{prov} 공식 점수표로 추정하기', 'rpt.n.pathways': '전체 이민 경로 비교',
   'rpt.a.prov': '{prov}: 내 직업이 공개 목록 "{label}"에 있습니다 - 채용 {open}건, 지정 스트림 {named}건',
   'plan.explore.sub': '2문항 더: EE 점수 격차와 체류 기간', 'plan.explore.basic': '기본 문항 수정',
