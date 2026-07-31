@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Landing v2 方案B「决策台」— 三块状卡+职业横滑,块面视觉优先</title>
+<style>
+  /* 取色一律来自 primitives UI tokens,不发明新色;数字全部为 2026-07-30 库内真数 */
+  :root{
+    --primary:#2563eb; --primaryDeep:#1e40af; --ok:#15803d;
+    --text:#111827; --text2:#6b7280; --text3:#9ca3af;
+    --border:#e5e7eb; --hairline:#f3f4f6; --bg:#f9fafb; --card:#fff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 system-ui,sans-serif}
+  a{color:inherit;text-decoration:none}
+  .hdr{background:var(--card);border-bottom:1px solid var(--border)}
+  .hdrIn{max-width:1320px;margin:0 auto;padding:10px 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .logo{font-size:17px;font-weight:700;white-space:nowrap}
+  .nav{display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--text2)}
+  .nav b{color:var(--primary);font-weight:700}
+  .langs{display:inline-flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;font-size:12.5px}
+  .langs span{padding:3px 9px}.langs .on{background:var(--primary);color:#fff}
+  .signup{font-size:12.5px;font-weight:600;color:#fff;background:var(--primary);border-radius:8px;padding:4px 12px}
+  .burger{display:none;width:34px;height:34px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:15px;align-items:center;justify-content:center}
+  @media (max-width:640px){.nav{display:none}.burger{display:inline-flex}}
+
+  main{max-width:1320px;margin:0 auto;padding:14px 1.25rem 28px}
+  .hb{position:relative;height:150px;border-radius:12px;overflow:hidden}
+  .hb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .hb .mask{position:absolute;inset:0;background:linear-gradient(90deg,rgba(30,64,175,.82),rgba(30,64,175,.45) 55%,rgba(17,24,39,.25))}
+  .hb .in{position:relative;z-index:2;height:100%;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:0 20px 14px;color:#fff}
+  .hb h1{margin:0;font-size:22px;font-weight:700;text-shadow:0 1px 6px rgba(0,0,0,.5);white-space:nowrap}
+  .pills{display:none;gap:8px}
+  .pill{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:4px 12px;font-size:12px;white-space:nowrap}
+  .pill b{font-size:14px;margin-right:4px}
+  .cta{margin-top:14px;display:flex;flex-direction:column;gap:10px}
+  .btn{display:block;border-radius:8px;padding:12px 20px;font-size:14px;font-weight:600;text-align:center}
+  .btn.primary{background:var(--primary);color:#fff}
+  .btn.sec{background:var(--card);color:var(--primary);border:1px solid var(--border)}
+
+  h2.sec{margin:22px 0 10px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+  h2.sec .more{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--primary)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .tile{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+  .tile .nm{font-size:14px;font-weight:600;white-space:nowrap}
+  .tile .hint{margin-top:2px;font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tile.hot{border-color:#bfdbfe;background:#f8fbff}.tile.hot .nm{color:var(--primaryDeep)}
+  .tile.soon{background:var(--hairline);border-style:dashed}.tile.soon .nm,.tile.soon .hint{color:var(--text3)}
+
+  /* 三块状卡:今日日更(大数字)/最近抽选/政策动态 */
+  .blocks{display:grid;grid-template-columns:1fr;gap:12px}
+  .blk{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;min-width:0}
+  .blk h3{margin:0 0 8px;font-size:13px;font-weight:700;display:flex;gap:8px;align-items:center}
+  .blk h3 .more{margin-left:auto;font-size:12px;font-weight:600;color:var(--primary)}
+  .blk.daily{background:linear-gradient(100deg,#eff6ff,#dbeafe);border-color:#bfdbfe}
+  .bigN{font-size:28px;font-weight:700;color:var(--primaryDeep);line-height:1.2}
+  .bigL{font-size:12px;color:var(--text2)}
+  .bigRow{display:flex;gap:22px;flex-wrap:wrap}
+  .ln{display:flex;gap:8px;align-items:baseline;padding:6px 0;border-top:1px solid var(--hairline);font-size:13px}
+  .ln:first-of-type{border-top:none}
+  .ln .dt{color:var(--text3);font-size:12px;white-space:nowrap}
+  .ln .tx{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ln .n{font-weight:700;white-space:nowrap}
+  .tag{background:#eef2ff;color:#3730a3;border-radius:6px;padding:1px 7px;font-size:11.5px;font-weight:600;white-space:nowrap}
+  .tag.ok{background:#dcfce7;color:var(--ok)}
+
+  /* 职业横滑卡 */
+  .occRow{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+  .occ{flex:0 0 168px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px 13px}
+  .occ .nm{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .occ .n1{margin-top:4px;font-size:12.5px;color:var(--text2);white-space:nowrap}
+  .occ .n1 b{color:var(--text);font-size:14px}
+  .occ .n2{font-size:12px;color:var(--ok);font-weight:600;white-space:nowrap}
+  .occ .sal{margin-top:2px;font-size:11.5px;color:var(--text3);white-space:nowrap}
+
+  .ctaBand{margin-top:22px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px}
+  .ctaBand .t{font-size:14.5px;font-weight:700;color:var(--primaryDeep)}
+  .ctaBand .s{font-size:12.5px;color:var(--text2)}
+
+  .sf{border-top:1px solid var(--border);background:#fafafa;margin-top:26px}
+  .sfIn{max-width:1320px;margin:0 auto;padding:14px 1.25rem;display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center;color:var(--text3);font-size:12.5px}
+  .sfLinks{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .sfLinks a{color:var(--text2)}
+
+  @media (min-width:900px){
+    .hb{height:200px}.hb h1{font-size:30px}.pills{display:flex}
+    .cta{flex-direction:row;gap:12px;margin-top:16px}.btn{padding:13px 28px;font-size:15px;flex:1}
+    .grid{grid-template-columns:repeat(4,1fr);gap:12px}
+    .blocks{grid-template-columns:1.1fr 1.2fr 1fr}
+    .ctaBand{flex-direction:row;align-items:center}
+    .ctaBand .btn{flex:0 0 auto;padding:11px 26px}
+    .ctaBand .txt{flex:1}
+  }
+</style>
+</head>
+<body>
+
+<header class="hdr"><div class="hdrIn">
+  <span style="display:flex;align-items:center;gap:8px"><span class="burger">☰</span><span class="logo">🍁 Offer2PR</span></span>
+  <span style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <nav class="nav"><b>🚀 开始规划</b><span>◎ 我的匹配</span><span>◇ 移民路径</span><span>▥ 榜单</span><span>👥 资料库 ▾</span><span>◉ 地区统计</span><span>▤ 资讯 ▾</span></nav>
+    <span class="langs"><span class="on">中</span><span>EN</span><span>한</span></span>
+    <span style="font-size:12.5px;font-weight:600;color:var(--primary)">登录</span><span class="signup">注册</span>
+  </span>
+</div></header>
+
+<main>
+  <div class="hb">
+    <img src="../../../cms/public/img/banners/pathways-2.jpg" alt="">
+    <div class="mask"></div>
+    <div class="in">
+      <h1>你的下一步,用数据算出来</h1>
+      <div class="pills"><span class="pill"><b>43,733</b>在招岗位</span><span class="pill"><b>2,931</b>AIP 雇主</span><span class="pill"><b>295</b>所 DLI</span></div>
+    </div>
+  </div>
+  <div class="cta"><a class="btn primary" href="#">开始个性化评估</a><a class="btn sec" href="#">先浏览数据</a></div>
+
+  <h2 class="sec">我能帮你做这些决定</h2>
+  <div class="grid">
+    <a class="tile hot" href="#"><div class="nm">找工作</div><div class="hint">43,733 个在招岗位,日更</div></a>
+    <a class="tile" href="#"><div class="nm">拿 PR</div><div class="hint">通道判定与分数对照</div></a>
+    <a class="tile" href="#"><div class="nm">选省份</div><div class="hint">10 省规则与竞争</div></a>
+    <a class="tile" href="#"><div class="nm">选城市</div><div class="hint">2,452 城在招与薪资</div></a>
+    <a class="tile" href="#"><div class="nm">选学校</div><div class="hint">295 所可申 PGWP</div></a>
+    <a class="tile" href="#"><div class="nm">职业规划</div><div class="hint">3,453 个职业的行情</div></a>
+    <span class="tile soon"><div class="nm">选专业</div><div class="hint">数据补齐中</div></span>
+  </div>
+
+  <h2 class="sec">今天的数据</h2>
+  <div class="blocks">
+    <div class="blk daily">
+      <h3>今日日更<span class="more">07-30</span></h3>
+      <div class="bigRow">
+        <span><span class="bigN">1,077</span><br><span class="bigL">新增岗位</span></span>
+        <span><span class="bigN" style="color:var(--ok)">646</span><br><span class="bigL">其中可提名</span></span>
+        <span><span class="bigN" style="color:var(--text)">43,733</span><br><span class="bigL">全站在招</span></span>
+      </div>
+    </div>
+    <div class="blk">
+      <h3>最近抽选<span class="more">移民路径</span></h3>
+      <div class="ln"><span class="dt">07-23</span><span class="tag">BC</span><span class="tx">乡镇医疗支持</span><span class="n">50 分</span><span class="dt">60 邀</span></div>
+      <div class="ln"><span class="dt">07-22</span><span class="tag">EE</span><span class="tx">法语类别</span><span class="n">CRS 399</span><span class="dt">5,000 邀</span></div>
+      <div class="ln"><span class="dt">07-15</span><span class="tag">AB</span><span class="tx">机会通道</span><span class="n">53 分</span><span class="dt">833 邀</span></div>
+    </div>
+    <div class="blk">
+      <h3>政策动态<span class="more">全部动态</span></h3>
+      <div class="ln"><span class="dt">07-29</span><span class="tag">IRCC</span><span class="tx">Canada expands online passport renewal</span></div>
+      <div class="ln"><span class="dt">07-21</span><span class="tag">EE</span><span class="tx">经验类抽选 CRS 516,发出 2,000 份邀请</span></div>
+      <div class="ln"><span class="dt">07-16</span><span class="tag">MB</span><span class="tx">技术工人抽选 825 分,发出 78 份邀请</span></div>
+    </div>
+  </div>
+
+  <h2 class="sec">热门职业行情<span style="font-weight:400;font-size:12px;color:var(--text3)">按在招量</span><a class="more" href="#">全部职业</a></h2>
+  <div class="occRow">
+    <a class="occ" href="#"><div class="nm">厨师</div><div class="n1"><b>2,314</b> 在招</div><div class="n2">1,889 可提名</div><div class="sal">中位年薪 $42K</div></a>
+    <a class="occ" href="#"><div class="nm">运输卡车司机</div><div class="n1"><b>1,268</b> 在招</div><div class="n2">1,024 可提名</div><div class="sal">中位年薪 $69K</div></a>
+    <a class="occ" href="#"><div class="nm">食品柜台服务员</div><div class="n1"><b>1,266</b> 在招</div><div class="n2">462 可提名</div><div class="sal">中位年薪 $37K</div></a>
+    <a class="occ" href="#"><div class="nm">零售销售员</div><div class="n1"><b>1,254</b> 在招</div><div class="n2">530 可提名</div><div class="sal">中位年薪 $41K</div></a>
+    <a class="occ" href="#"><div class="nm">餐饮服务经理</div><div class="n1"><b>1,113</b> 在招</div><div class="n2">994 可提名</div><div class="sal">中位年薪 $75K</div></a>
+    <a class="occ" href="#"><div class="nm">家庭儿童保育</div><div class="n1"><b>1,029</b> 在招</div><div class="n2">440 可提名</div><div class="sal">中位年薪 $43K</div></a>
+  </div>
+
+  <div class="ctaBand">
+    <span class="txt"><span class="t">答三道题,看你的职业在哪个省最好走</span><br><span class="s">结果全部来自上面这些库内数据,免费</span></span>
+    <a class="btn primary" href="#">开始个性化评估</a>
+  </div>
+</main>
+
+<footer class="sf"><div class="sfIn">
+  <span>数据自动聚合仅供参考,不构成移民/法律建议;非持牌顾问(RCIC),以官方来源为准。　数据来源:Job Bank、IRCC、ESDC、各省官网</span>
+  <span class="sfLinks"><a href="#">免责声明</a><a href="#">隐私政策</a><a href="#">服务条款</a><a href="#">关于</a><span>© 2026 Offer2PR</span></span>
+</div></footer>
+
+</body>
+</html>
