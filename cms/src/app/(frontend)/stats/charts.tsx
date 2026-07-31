@@ -24,7 +24,10 @@ function EChart({ option, height, onBarClick }: { option: object; height: number
       // #128(批A):下钻条数变化 → 容器高度变,canvas 尺寸不跟 → 残影透叠进相邻卡。
       // clear 掉旧帧 + notMerge 全量换 option + resize 对齐新高度,三连根治
       inst.current.clear()
-      inst.current.setOption(option, true)
+      // 铁律「不能点就不要 hover 和小手」(Frank 2026-07-31):echarts 系列默认 cursor:pointer,
+      // 没挂 onBarClick 的图(landing 主图、末级下钻)柱子悬停会出小手但点了没反应 → 集中归 default
+      const opt = clickRef.current ? option : { ...option, series: ((option as any).series ?? []).map((s: any) => ({ ...s, cursor: 'default' })) }
+      inst.current.setOption(opt, true)
       inst.current.resize()
     })
     const onResize = () => inst.current?.resize()
