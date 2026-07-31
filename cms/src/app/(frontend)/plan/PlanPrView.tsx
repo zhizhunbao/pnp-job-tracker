@@ -43,18 +43,22 @@ const V_CHIP: Record<string, { bg: string; fg: string }> = {
 }
 const CARD: React.CSSProperties = { background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 12, padding: '12px 16px', margin: '10px 0' }
 
+// 尾链一律右对齐成一列(2026-07-31 Frank「不要在文字后面直接加链接,乱得很」):
+// 句子长短不一 → 紧跟文末的链接横向位置全是随机的;抽到右轨后是一条竖直的链列,与全站表格对齐口径一致。
+const TAIL: React.CSSProperties = { flexShrink: 0, marginLeft: 12, fontSize: 12, color: UI.text3, textDecoration: 'none', whiteSpace: 'nowrap' }
+
 function Line({ l, t }: { l: RptLine; t: TFn }) {
   const body = t(l.key, l.params)
   return (
     <li style={{ margin: '7px 0', lineHeight: 1.7, listStyle: 'none', display: 'flex', gap: 9, alignItems: 'baseline' }}>
       <span style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: V_DOT[l.verdict ?? 'na'], position: 'relative', top: -1 }} />
-      <span style={{ minWidth: 0 }}>
+      <span style={{ flex: 1, minWidth: 0 }}>
         {l.url ? <a href={l.url} style={{ color: UI.primary, textDecoration: 'none' }}>{body}</a> : body}
-        {l.source?.url && (
-          <a href={l.source.url} target="_blank" rel="noreferrer" title={`${l.source.label}${l.source.fetched ? ` · ${l.source.fetched}` : ''}`}
-            style={{ marginLeft: 6, fontSize: 12, color: UI.text3, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('rpt.src')} ↗</a>
-        )}
       </span>
+      {l.source?.url && (
+        <a href={l.source.url} target="_blank" rel="noreferrer" title={`${l.source.label}${l.source.fetched ? ` · ${l.source.fetched}` : ''}`}
+          style={TAIL}>{t('rpt.src')} ↗</a>
+      )}
     </li>
   )
 }
@@ -291,13 +295,11 @@ export function PlanPrView() {
                     {rpt.nextSteps.map((s, i) => (
                       <div key={s.key + i} style={{ display: 'flex', gap: 10, alignItems: 'baseline', margin: '7px 0', lineHeight: 1.7 }}>
                         <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: 6, background: '#eff6ff', color: UI.primary, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{i + 1}</span>
-                        <span style={{ minWidth: 0 }}>
-                          {t(s.key, s.params)}
-                          {s.url && (
-                            <a href={s.url} target={s.url.startsWith('http') ? '_blank' : undefined} rel={s.url.startsWith('http') ? 'noreferrer' : undefined}
-                              style={{ marginLeft: 6, fontSize: 12, color: UI.text3, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t(s.key + '.go')} ↗</a>
-                          )}
-                        </span>
+                        <span style={{ flex: 1, minWidth: 0 }}>{t(s.key, s.params)}</span>
+                        {s.url && (
+                          <a href={s.url} target={s.url.startsWith('http') ? '_blank' : undefined} rel={s.url.startsWith('http') ? 'noreferrer' : undefined}
+                            style={TAIL}>{t(s.key + '.go')} ↗</a>
+                        )}
                       </div>
                     ))}
                   </div>
