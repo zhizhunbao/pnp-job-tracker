@@ -11,8 +11,7 @@ import { eeKeyDisplay, initialLang, makeT, LANG_KEY, type Lang } from '../jobs/i
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { MarketChart, useMarketStats } from '../stats/charts'
-import { AuthModal } from '../jobs/AuthForm'
-import { EntryQuiz, quizToProfile, readQuiz, shortOcc, type QuizAnswers } from '../quiz/EntryQuiz'
+import { shortOcc } from '../quiz/EntryQuiz'
 import { BANNER_IMGS, PageBanner, Tag, UI } from '../ui/primitives'
 import { track } from '@/lib/track'
 
@@ -45,14 +44,8 @@ export function StartView({ stats }: { stats: HomeStats }) {
   const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
   const t = useMemo(() => makeT(lang), [lang])
 
-  // 入口三问:主按钮手动拉起(landing 不自动弹);答过的预填可改
-  const [quiz, setQuiz] = useState(false)
-  const [quizSaved, setQuizSaved] = useState<QuizAnswers | null>(null)
-  useEffect(() => {
-    const s = readQuiz()
-    if (s) setQuizSaved({ status: s.status, nocs: s.nocs, provs: s.provs })
-  }, [])
-  const [pendingQuiz, setPendingQuiz] = useState<QuizAnswers | null>(null)
+  // 老三问弹框 2026-07-31 在 landing 全下架(Frank「现在只有拿 PR 有题,其他还是老的弹框 → 先都关掉」):
+  // 七卡里只有「拿 PR」有自己的题库与报告,其余六卡先回深链等各自 builder,主 CTA 直接进 /plan/pr。
   // 主图四份数据挂载后拉 /api/market-stats(SSR 瘦身:occ ~3400 行不再进 HTML);null=加载中渲占位高度
   const market = useMarketStats()
   // 职位榜控件:最新=逐岗(服务端 50 条);高薪/最多=职业级(2026-07-31 两次拍板:「最多」加榜、
@@ -74,15 +67,6 @@ export function StartView({ stats }: { stats: HomeStats }) {
     const m = new Map(occTop.map((o) => [o.noc, lang === 'zh' ? (o.titleZhShort || o.titleZh) : o.titleKo]))
     return (noc: string) => m.get(noc) || ''
   }, [occTop, lang])
-  // 结果页「看这些岗」:答案经 ?prov / ?q 深链套进职位板筛选(#92 深链语义,与 JobsTable applyQuiz 同口径)
-  const applyQuiz = (a: QuizAnswers) => {
-    const u = new URLSearchParams()
-    if (a.provs.length === 1) u.set('prov', a.provs[0])
-    if (a.nocs[0]) u.set('q', a.nocs[0])
-    const qs = u.toString()
-    window.location.href = qs ? '/?' + qs : '/'
-  }
-  const openQuiz = (pos: 'top' | 'bottom') => { track('landing_cta_quiz', { pos }); setQuiz(true) }
 
   // 七目标入口(架构 v2 L1:能力声明+深链入口,七卡同尺寸):小注=人话+真数,数字缺整条小注不渲
   const goals: { key: string; href?: string; hot?: boolean; hint: string | null }[] = [
@@ -164,21 +148,15 @@ export function StartView({ stats }: { stats: HomeStats }) {
         <Band bg="#fff">
           <h2 style={secH}>{t('home.goals')}</h2>
           <div className="hmGrid">
-            {/* 2026-07-31 Frank「这个不应该是跳答题页面吗」:目标卡=决策入口(L2 架构),点卡进答题。
-                拿 PR 卡=专属两态页 /plan/pr(答题/报告,报告引擎已接);其余卡先拉三问,随各卡 builder 逐个换 */}
-            {goals.map((g) => g.key === 'pr' ? (
-              <a key={g.key} href="/plan/pr" className="cardHover" onClick={() => track('landing_goal_pr')}
-                style={{ display: 'block', minWidth: 0, background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 10, padding: '14px 16px', textDecoration: 'none', color: 'inherit' }}>
-                <div style={tileNm}>{t('home.g.pr')}</div>
-                {g.hint && <div style={tileHint}>{g.hint}</div>}
-              </a>
-            ) : g.href ? (
-              <button key={g.key} className="cardHover"
-                onClick={() => { track(`landing_goal_${g.key}`); setQuiz(true) }}
-                style={{ display: 'block', minWidth: 0, width: '100%', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', background: g.hot ? '#f8fbff' : UI.card, border: `1px solid ${g.hot ? '#bfdbfe' : UI.border}`, borderRadius: 10, padding: '14px 16px', color: 'inherit' }}>
+            {/* 目标卡=决策入口(L2 架构)。只有做完题库与 builder 的卡才进答题页:
+                拿 PR → /plan/pr 两态页;其余六卡先回各自数据页深链(2026-07-31 Frank「先把老的弹框都关掉」——
+                点卡弹一套不相干的三问,比直接给数据更糟),各卡 builder 做一个换一个 */}
+            {goals.map((g) => g.href ? (
+              <a key={g.key} href={g.key === 'pr' ? '/plan/pr' : g.href} className="cardHover" onClick={() => track(`landing_goal_${g.key}`)}
+                style={{ display: 'block', minWidth: 0, background: g.hot ? '#f8fbff' : UI.card, border: `1px solid ${g.hot ? '#bfdbfe' : UI.border}`, borderRadius: 10, padding: '14px 16px', textDecoration: 'none', color: 'inherit' }}>
                 <div style={{ ...tileNm, ...(g.hot && { color: UI.primaryDeep }) }}>{t(`home.g.${g.key}`)}</div>
                 {g.hint && <div style={tileHint}>{g.hint}</div>}
-              </button>
+              </a>
             ) : (
               // 灰态「选专业」:span 非 a,虚线框,无 cursor 无 hover(不上假入口)
               <span key={g.key} style={{ display: 'block', minWidth: 0, background: UI.hairline, border: `1px dashed ${UI.border}`, borderRadius: 10, padding: '14px 16px' }}>
@@ -347,8 +325,10 @@ export function StartView({ stats }: { stats: HomeStats }) {
               <span style={{ fontSize: 17, fontWeight: 700, color: UI.primaryDeep, display: 'block', marginBottom: 4 }}>{t('home.cta2.t')}</span>
               <span style={{ fontSize: 13, color: UI.text2 }}>{t('home.cta2.s')}</span>
             </span>
-            {/* 双按钮从 hero 挪到这(2026-07-30 Frank「这两个按钮放到最下面」):主=评估,次=进职位板 */}
-            <button className="hmBtn" style={{ background: UI.primary, color: '#fff' }} onClick={() => openQuiz('bottom')}>{t('home.ctaQuiz')}</button>
+            {/* 双按钮从 hero 挪到这(2026-07-30 Frank「这两个按钮放到最下面」):主=评估,次=进职位板。
+                主按钮原先拉三问弹框,2026-07-31 改直接进 /plan/pr —— 站内唯一真有题、真出报告的地方 */}
+            <a className="hmBtn" style={{ background: UI.primary, color: '#fff' }}
+              href="/plan/pr" onClick={() => track('landing_cta_quiz', { pos: 'bottom' })}>{t('home.ctaQuiz')}</a>
             <a className="hmBtn" style={{ background: UI.card, color: UI.primary, border: `1px solid ${UI.border}` }}
               href="/" onClick={() => track('landing_cta_browse')}>{t('home.ctaBrowse')}</a>
           </div>
@@ -357,17 +337,6 @@ export function StartView({ stats }: { stats: HomeStats }) {
       {/* 免责与数据来源都在页脚(全站同一条),页内不再重复写 */}
       <SiteFooter t={t} />
 
-      {quiz && (
-        <EntryQuiz t={t} lang={lang} initial={quizSaved}
-          stats={{ total: stats.total ?? undefined, named: stats.named ?? undefined, lmia: stats.lmia ?? undefined, checkedAt: stats.checkedAt ? stats.checkedAt.slice(0, 10) : undefined }}
-          onClose={() => { setQuiz(false); const s = readQuiz(); if (s) setQuizSaved({ status: s.status, nocs: s.nocs, provs: s.provs }) }}
-          onApply={applyQuiz}
-          onRegister={(a) => { setQuiz(false); setPendingQuiz(a) }} />
-      )}
-      {pendingQuiz && (
-        <AuthModal t={t} mode="register" onClose={() => setPendingQuiz(null)}
-          onDone={async () => { await quizToProfile(pendingQuiz); window.location.href = '/' }} />
-      )}
     </div>
   )
 }
