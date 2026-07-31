@@ -9,6 +9,9 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { fetchNocOpenCounts, fetchQuizFacts, fetchTopNocs, searchNocByTitle } from '@/lib/jobsSql'
 
+// 热门职业清单的进程内缓存(键=limit);Render 单实例,重启即失效,不需要额外依赖
+const topCache = new Map<number, { at: number; rows: unknown[] }>()
+
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
@@ -20,8 +23,17 @@ export async function GET(req: Request) {
   const pool = (payload.db as any).pool
 
   if (q) return Response.json({ candidates: await searchNocByTitle(pool, q) })
-  // ?top=24 → 按在招量排的热门职业(第 2 题的清单本身,不手写)
-  if (sp.get('top')) return Response.json({ top: await fetchTopNocs(pool, Number(sp.get('top')) || 24) })
+  // ?top=N → 按在招量排的热门职业(清单本身不手写)。进程内缓存 10 分钟:
+  // 这条要对 4 万多在招岗做 GROUP BY,实测 3.6s;选职业控件每次打开都等它是不可接受的,
+  // 而它一天也变不了几次(同 /api/market-stats、homeCache 的手法)。
+  if (sp.get('top')) {
+    const n = Number(sp.get('top')) || 24
+    const hit = topCache.get(n)
+    if (hit && Date.now() - hit.at < 10 * 60_000) return Response.json({ top: hit.rows })
+    const rows = await fetchTopNocs(pool, n)
+    topCache.set(n, { at: Date.now(), rows })
+    return Response.json({ top: rows })
+  }
   // ?counts=21232,63200 → 这些 NOC 的在招/可提名数(第 2 题热门职业按钮挂真数)
   const counts = (sp.get('counts') || '').split(',').map((x) => x.trim()).filter(Boolean).slice(0, 30)
   if (counts.length) return Response.json({ counts: await fetchNocOpenCounts(pool, counts) })

@@ -634,17 +634,23 @@ export async function fetchNocOpenCounts(pool: any, nocs: string[]): Promise<Rec
  * 不手写清单 —— 按**库里在招量**取前 N,自己会随市场变;顺带回中英职业名与可提名数,前端不必二次查。
  * 只收 noc_descriptions 里有官方职业名的(没名字的码显示出来等于黑话)。
  */
-export async function fetchTopNocs(pool: any, limit = 24): Promise<{ noc: string; title: string; titleZh: string; open: number; eligible: number; medianSalary: number | null }[]> {
-  const n = Math.min(Math.max(limit, 1), 60)
+export async function fetchTopNocs(pool: any, limit = 24): Promise<{ noc: string; title: string; titleZh: string; broad: string; open: number; eligible: number; medianSalary: number | null }[]> {
+  // 上限放到 200:选职业控件要按大类分组浏览(Frank 2026-07-31「那么多职业用户怎么选」),
+  // 只给 24 个连一个大类都铺不满。大类取自岗位行的 broad(与职位板筛选同一套分类,不另造)。
+  const n = Math.min(Math.max(limit, 1), 200)
+  // 大清单(选职业控件按大类浏览)不要中位薪资:percentile_cont 是这条查询的大头,
+  // 实测带它 200 行要 3.2s,去掉后只剩计数 —— 控件里也用不到那个数,不为没人看的列付延迟。
+  const withMed = n <= 24
   const { rows } = await pool.query(
     `SELECT j.noc, COALESCE(d.title, '') title, COALESCE(d.title_zh, '') title_zh,
-            count(*)::int open, count(*) FILTER (WHERE j.pnp_eligible)::int eligible,
-            percentile_cont(0.5) WITHIN GROUP (ORDER BY j.salary_annual) med
+            COALESCE(mode() WITHIN GROUP (ORDER BY j.broad), '') broad,
+            count(*)::int open, count(*) FILTER (WHERE j.pnp_eligible)::int eligible
+            ${withMed ? ', percentile_cont(0.5) WITHIN GROUP (ORDER BY j.salary_annual) med' : ''}
      FROM jobs j JOIN noc_descriptions d ON d.noc = j.noc
      WHERE j.status = 'open' AND j.noc <> ''
      GROUP BY j.noc, d.title, d.title_zh
      ORDER BY count(*) DESC LIMIT $1`, [n])
-  return rows.map((r: any) => ({ noc: r.noc, title: r.title, titleZh: r.title_zh, open: r.open, eligible: r.eligible, medianSalary: num(r.med) }))
+  return rows.map((r: any) => ({ noc: r.noc, title: r.title, titleZh: r.title_zh, broad: r.broad, open: r.open, eligible: r.eligible, medianSalary: num(r.med) }))
 }
 
 /** 入口三问第 2 题的职业搜索:按中/英职业名模糊找 NOC(noc_descriptions 维度表,≤8 条) */

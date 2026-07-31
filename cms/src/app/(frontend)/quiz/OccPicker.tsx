@@ -15,7 +15,7 @@ import { shortOcc } from './EntryQuiz'
 import type { TFn } from '../jobs/i18n'
 
 type Cand = { noc: string; title: string; titleZh: string }
-type Top = Cand & { open: number }
+type Top = Cand & { open: number; broad?: string }
 
 export function OccPicker({ t, lang, initial, onDone, onClose }: {
   t: TFn
@@ -30,20 +30,26 @@ export function OccPicker({ t, lang, initial, onDone, onClose }: {
   const [cands, setCands] = useState<Cand[]>([])
   const [top, setTop] = useState<Top[]>([])
   const [more, setMore] = useState(false)
+  const [cat, setCat] = useState('')     // 大类筛选(空=热门)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // 热门清单:库里在招量前 24;拿不到(慢/挂了)退回内置常用清单 —— 控件不能因为一个可选请求就变空壳
   useEffect(() => {
     let dead = false
-    fetch('/api/quiz?top=24')
+    fetch('/api/quiz?top=200')
       .then((r) => r.json())
       .then((d) => { if (!dead) setTop(Array.isArray(d?.top) && d.top.length ? d.top : []) })
       .catch(() => { /* 用兜底清单 */ })
     return () => { dead = true }
   }, [])
-  const list: Top[] = top.length
+  // 大类清单按在招量排(有货的类排前面),与职位板的分类同一套 —— 不另造一套分类名
+  const cats: string[] = Object.entries(
+    top.reduce<Record<string, number>>((m, x) => (x.broad && x.broad !== '未分类' ? { ...m, [x.broad]: (m[x.broad] || 0) + x.open } : m), {}),
+  ).sort((a, b) => b[1] - a[1]).map(([k]) => k)
+  const base: Top[] = top.length
     ? top
     : POPULAR_NOCS.map((x) => ({ noc: x.noc, title: t(x.key), titleZh: t(x.key), open: 0 }))
+  const list: Top[] = cat ? base.filter((x) => x.broad === cat) : base
 
   useEffect(() => {
     if (timer.current) clearTimeout(timer.current)
@@ -95,6 +101,17 @@ export function OccPicker({ t, lang, initial, onDone, onClose }: {
                 style={{ display: 'block', width: '100%', textAlign: 'left', border: `1px solid ${UI.border}`, borderRadius: 10, background: nocs.includes(c.noc) ? '#eff6ff' : '#fff', padding: '9px 12px', marginBottom: 6, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit' }}>
                 {shortOcc(label(c))}<span style={{ color: UI.text3, fontSize: 12, marginLeft: 6 }}>{c.noc}</span>
               </button>
+            ))}
+          </div>
+        )}
+
+        {/* 先分类再选(Frank 2026-07-31「那么多职业用户怎么选」):一行大类 chip,
+            默认「热门」= 在招量前列;选中某类就在下面铺这一类的职业 */}
+        {cats.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+            <button onClick={() => { setCat(''); setMore(false) }} style={chipStyle(!cat)}>{t('occ.cat.hot')}</button>
+            {cats.map((c) => (
+              <button key={c} onClick={() => { setCat(c); setMore(true) }} style={chipStyle(cat === c)}>{t('broad.' + c)}</button>
             ))}
           </div>
         )}
