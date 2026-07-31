@@ -16,7 +16,7 @@ import { AuthModal } from './AuthForm'
 import { UpgradeCta, UpgradeModal } from './UpgradeModal'
 import { PricingModal } from './PricingModal'
 import { OnboardingWizard, OB_SEEN_KEY } from './OnboardingWizard'
-import { EntryQuiz, QUIZ_KEY, quizToProfile, readQuiz, type QuizAnswers } from '../quiz/EntryQuiz'   // 入口三问(付费漏斗-20260726;2026-07-30 提级到 quiz/,landing 复用)
+import { QUIZ_KEY, quizToProfile, readQuiz, type QuizAnswers } from '../quiz/EntryQuiz'   // 答案读写与落档(弹框本体已退役,2026-07-31 统一答题)
 import { useOverlayClose } from './overlay'
 import { CARD, iconBtnS, SCRIM, useIsNarrow } from './Modal'
 import { match as matchJob, matchRank, hasProfile, normalizeProfile, type MatchProfile, type MatchJob, type MatchReason } from '@/lib/match'
@@ -645,7 +645,6 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const [actModal, setActModal] = useState<{ kind: 'desc'; job: JobRow } | null>(null)
   // 升级入口(Pro 锁列/保存筛选 gate)统一开独立升级弹框;未登录先走注册弹框(用户定:注册与购买分离)
   const [upsell, setUpsell] = useState<false | 'lock' | 'ss' | 'login' | 'match' | 'quiz'>(false)   // match=①匹配锁(弹框带 FOMO 数字);quiz=入口三问结果页的「注册保存」
-  const [pendingQuiz, setPendingQuiz] = useState<QuizAnswers | null>(null)   // 三问答案:注册成功后落库成档案
   // E11-05②:分型引导 wizard。首访自动弹(登录且无档案且没弹过);关/完成置 OB_SEEN 不再自动弹;横幅「建档」手动开忽略它
   const [wizard, setWizard] = useState(false)
   const closeWizard = () => { try { localStorage.setItem(OB_SEEN_KEY, '1') } catch { /* ignore */ } setWizard(false) }
@@ -654,28 +653,16 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     try { if (localStorage.getItem(OB_SEEN_KEY)) return } catch { /* ignore */ }
     setWizard(true)
   }, [])
-  // 入口三问(付费漏斗重设计-20260726,Frank「一访问就弹问题」):**匿名首访**才弹,只弹一次;
-  // 登录用户走原 OnboardingWizard(已建档的更不弹),两者互斥不叠。
-  const [quiz, setQuiz] = useState<false | { redo?: boolean; result?: boolean }>(false)
-  const [quizSaved, setQuizSaved] = useState<QuizAnswers | null>(null)   // 上次答案(localStorage),细带按它显示
-  const [quizDue, setQuizDue] = useState(false)   // 定时到点了,等一个「手上没开别的弹框」的时机再弹(#237)
+  // 三问弹框已退役(2026-07-31 Frank「不需要弹框答题了,统一一下答题功能」):
+  // 答题只剩 /plan/* 的 SurveyJS 答题器;职位板只读答案做回显与筛选,自己不再问问题。
+  // 自动弹窗(#237 的排队逻辑)随之删掉 —— 没有弹框就没有「盖住别的弹框」这回事。
+  const [quizSaved, setQuizSaved] = useState<QuizAnswers | null>(null)   // 上次答案(统一存储),细带按它显示
   useEffect(() => {
     const saved = readQuiz()
     if (saved) setQuizSaved({ status: saved.status, nocs: saved.nocs, provs: saved.provs })
-    if (plan.loggedIn) return
-    if (saved) return                                   // 答过/跳过就不再自动弹(入口改由细带常驻)
-    const id = setTimeout(() => setQuizDue(true), 1200) // 让首屏先渲染出来,别一进门就糊脸
-    return () => clearTimeout(id)
   }, [])
-  // #237(第 30 轮体检):定时到点就弹,会盖在用户**已经打开**的弹框上(实拍与 JD 弹框相交 45,360px²)。
-  // 改成「到点 + 手上没开别的弹框」才弹;正在看别的东西时排队等着,等他关掉再弹 —— 漏斗不丢,不打断。
-  useEffect(() => {
-    if (!quizDue || popup || actModal) return
-    setQuiz({}); setQuizDue(false)
-  }, [quizDue, popup, actModal])
-  // 结果页两个出口:①把答案套进筛选看岗 ②注册保存(注册成功后落库成档案,不让用户填两遍)
+  // 把已有答案套进列表筛选(细带「看结果」,不再经过弹框结果页)
   const applyQuiz = (a: QuizAnswers) => {
-    setQuiz(false)
     if (a.provs.length === 1) setFProv(a.provs[0])
     if (a.nocs[0]) setQ(a.nocs[0])
     track('quiz-apply-filter')
@@ -724,18 +711,15 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   // 已登录未建档才去 /account 建档
   const toggleMatchView = () => {
     if (!plan.loggedIn) {
-      // 2026-07-31 Frank「点这个的时候,如果答题,请先弹出答题,然后登录」:没答过三问的先答题
-      // (结果页「注册保存」接登录,答案落档,不让用户填两遍);答过的照旧直接弹登录。
+      // 没答过的先去统一答题页(三问弹框已退役);答过的照旧弹登录
       const saved = readQuiz()
-      if (!saved?.done) { track('match-view-quiz'); setMatchIntent(true); setQuiz({ redo: !!saved }); return }
+      if (!saved?.nocs?.length) { track('match-view-quiz'); window.location.href = '/plan/job'; return }
       setUpsell('login'); return
     }
     if (!plan.profileOk) { setWizard(true); return }   // E11-05②:未建档 → 开引导 wizard(原直跳 /account)
     if (!matchView) track('match-view')
     window.location.href = matchView ? '/' : '/?view=match'
   }
-  // 从「我的匹配」进的三问:注册落档后直接落匹配视图(E9-04b 同款语义,不回列表再点一次)
-  const [matchIntent, setMatchIntent] = useState(false)
   const colRef = useRef<HTMLDivElement>(null)
   // (E10-01 P3:客户端 limit 切片退役 → 服务端 page 分页,见下方 fetch effect)
   const [lang, setLang] = useState<Lang>('zh')    // 语言(localStorage 持久化)
@@ -1063,13 +1047,13 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             {quizSaved?.nocs?.length ? (
               <>
                 <span style={{ color: '#1e40af', flex: 1, minWidth: 110, whiteSpace: 'nowrap' }}>{t('quiz.bar.saved')}</span>
-                <button onClick={() => setQuiz({ result: true })} style={{ border: 'none', background: 'none', color: '#2563eb', fontWeight: 600, cursor: 'pointer', fontSize: 12.5, padding: 0 }}>{t('quiz.bar.result')}</button>
-                <button onClick={() => setQuiz({ redo: true })} style={{ border: 'none', background: 'none', color: '#6b7280', cursor: 'pointer', fontSize: 12.5, padding: 0 }}>{t('quiz.bar.redo')}</button>
+                <button onClick={() => quizSaved && applyQuiz(quizSaved)} style={{ border: 'none', background: 'none', color: '#2563eb', fontWeight: 600, cursor: 'pointer', fontSize: 12.5, padding: 0, fontFamily: 'inherit' }}>{t('quiz.bar.result')}</button>
+                <a href="/plan/job" style={{ color: '#6b7280', fontSize: 12.5, textDecoration: 'none' }}>{t('quiz.bar.redo')}</a>
               </>
             ) : (
               <>
                 <span style={{ color: '#1e40af', flex: 1, minWidth: 110 }}>{t('quiz.bar.new')}</span>
-                <button onClick={() => setQuiz({})} style={{ border: 'none', background: 'none', color: '#2563eb', fontWeight: 600, cursor: 'pointer', fontSize: 12.5, padding: 0 }}>{t('quiz.bar.go')}</button>
+                <a href="/plan/job" style={{ color: '#2563eb', fontWeight: 600, fontSize: 12.5, textDecoration: 'none' }}>{t('quiz.bar.go')}</a>
               </>
             )}
           </div>
@@ -1531,20 +1515,17 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       {popup && <AdvisorModal group={popup.group} field={popup.srcField} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} news={dims.news} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} onOpenJob={(x) => setActModal({ kind: 'desc', job: x })} />}
       {actModal && <ActModal job={actModal.job} lang={lang} plan={plan} nocDesc={dims.nocDescriptions} onClose={() => setActModal(null)} />}
       {wizard && <OnboardingWizard t={t} initial={plan.profile} onClose={closeWizard} />}
-      {quiz && !wizard && (
-        <EntryQuiz t={t} lang={lang} initial={quiz.redo || quiz.result ? quizSaved : null} startAt={quiz.result ? 3 : 0}
-          stats={{ total: totalCount ?? total, named: proof?.named, lmia: proof?.lmia, checkedAt: updatedAt ? fmtLocal(updatedAt) : undefined }}
-          onClose={() => { setQuiz(false); setMatchIntent(false); setQuizSaved(readQuiz()) }} onApply={applyQuiz}
-          onRegister={(a) => { setQuiz(false); setPendingQuiz(a); setUpsell('quiz') }} />
-      )}
+      {/* 三问弹框已删(2026-07-31 统一答题):答题只在 /plan/*,这页只读答案做回显与筛选 */}
       {upsell && (plan.loggedIn
         ? <UpgradeModal t={t} reason={upsell === 'ss' ? t('ss.pro') : upsell === 'match' ? (matchTotals && matchTotals.high > plan.freeMatchCap ? t('up.matchN', { h: matchTotals.high, n: plan.freeMatchCap }) : t('up.match', { n: plan.freeMatchCap })) : undefined} onClose={() => setUpsell(false)} />
         : <AuthModal t={t} mode={upsell === 'login' ? 'login' : 'register'} onClose={() => setUpsell(false)}
             /* E9-04b:'login' 目前只有「我的匹配」入口在用——登录成功直接落匹配视图(邮箱路径 onDone,
                Google 路径 returnTo),不再回列表让用户再点一次(Frank「点我的匹配也一样」) */
             onDone={async () => {
-              if (upsell === 'quiz' && pendingQuiz) { await quizToProfile(pendingQuiz) }   // 三问答案 → 档案(不让用户填两遍)
-              if (upsell === 'login' || (upsell === 'quiz' && matchIntent)) window.location.href = '/?view=match'
+              // 注册成功就把本地答案落成档案(不让用户填两遍);答案来自统一存储,不再靠弹框回传
+              const a0 = readQuiz()
+              if (a0?.nocs?.length) { await quizToProfile({ status: a0.status, nocs: a0.nocs, provs: a0.provs }) }
+              if (upsell === 'login') window.location.href = '/?view=match'
               else window.location.reload()
             }}
             returnTo={upsell === 'login' ? '/?view=match' : undefined} />)}

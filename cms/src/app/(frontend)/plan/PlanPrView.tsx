@@ -15,7 +15,8 @@ import 'survey-core/i18n/korean'
 import { initialLang, makeT, LANG_KEY, type Lang, type TFn } from '../jobs/i18n'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
-import { EntryQuiz, readQuiz, shortOcc } from '../quiz/EntryQuiz'
+import { shortOcc } from '../quiz/EntryQuiz'
+import { OccPicker } from '../quiz/OccPicker'
 import { Button, Notice, PageShell, Tag, UI } from '../ui/primitives'
 import { clearAnswers, readAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
 import { DECISIONS, fieldsOf } from '@/lib/decisions'
@@ -477,11 +478,11 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
         </PageShell>
       </div>
       <SiteFooter t={t} />
+      {/* 选职业是控件不是问卷(统一答题:四选一归答题器,选职业归 OccPicker) */}
       {quizOpen && (
-        <EntryQuiz t={t} lang={lang} initial={(() => { const q = readQuiz(); return q ? { status: q.status, nocs: q.nocs, provs: q.provs } : null })()}
-          onClose={() => { setQuizOpen(false); const q = readQuiz(); setNoc(q?.nocs?.[0] || '') }}
-          onApply={() => { const q = readQuiz(); setNoc(q?.nocs?.[0] || ''); setQuizOpen(false) }}
-          onRegister={() => { window.location.href = '/?signup=1' }} />
+        <OccPicker t={t} lang={lang} initial={bands.nocs}
+          onClose={() => setQuizOpen(false)}
+          onDone={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || ''); setQuizOpen(false) }} />
       )}
     </div>
   )
