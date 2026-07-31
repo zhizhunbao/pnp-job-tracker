@@ -55,11 +55,11 @@ describe('match rules v1', () => {
     expect(prov.source?.url).toBe('https://ontario.ca/tech')
   })
 
-  it('dev × 非目标省(SK)同岗:目标省警示扣分但仍可 mid+', () => {
+  it('dev × 非目标省(SK)同岗:目标省只警示不扣分(2026-07-21 拍板:目标省是偏好不是资格)', () => {
     const r = match(dev, job({ noc: '21232', teer: 1, province: 'SK', pnpEligible: true, eeCategory: 'STEM' }), dims)
     expect(r.reasons.find((x) => x.key === 'match.r.prov.notTarget')).toBeTruthy()
-    expect(r.score).toBe(40 - 10 + 15 + 0 + 10) // exact - notTarget + generic + ee.below(0) + teer.ok
-    expect(r.level).toBe('mid')
+    expect(r.score).toBe(40 + 15 + 0 + 10) // exact + generic + ee.below(0) + teer.ok;notTarget 不再 −10
+    expect(r.level).toBe('high')
   })
 
   it('psw × AB 排除清单岗:excluded fail + TEER5 无通道 → low', () => {
@@ -84,21 +84,23 @@ describe('match rules v1', () => {
     expect(r.reasons.find((x) => x.key === 'match.r.prov.qc')).toBeTruthy()
   })
 
-  it('同小类 NOC 记 minor 分', () => {
+  it('同小类 NOC 记 minor 分(2026-07-21 三档:精确 40 / 同小类 30 / 同族 20)', () => {
     const r = match(dev, job({ noc: '21233', teer: 1, province: 'BC', pnpEligible: true }), dims)
     expect(r.reasons.find((x) => x.key === 'match.r.noc.minor')).toBeTruthy()
-    expect(r.score).toBe(25 + 15 + 10) // minor + generic + teer.ok
+    expect(r.score).toBe(30 + 15 + 10) // minor + generic + teer.ok
   })
 
   it('措辞红线:所有 reason 键都不含承诺性词(能/不能移民)——键名审计', () => {
     // reason 只允许出现在这份白名单里;新增键必须过这里(=有意识地过一遍措辞)
     const allowed = new Set([
-      'match.r.noc.jobUncat', 'match.r.noc.noProfile', 'match.r.noc.exact', 'match.r.noc.minor', 'match.r.noc.none',
+      'match.r.noc.jobUncat', 'match.r.noc.noProfile', 'match.r.noc.exact', 'match.r.noc.minor', 'match.r.noc.submajor', 'match.r.noc.none',
       'match.r.prov.qc', 'match.r.prov.notTarget', 'match.r.prov.named', 'match.r.prov.excluded', 'match.r.prov.generic', 'match.r.prov.none',
+      'match.r.prov.uncovered',   // 四态判定(078135e):「清单未收录本站」是数据边界事实,非资格断言
       'match.r.ee.none', 'match.r.ee.noDraw', 'match.r.ee.noCrs', 'match.r.ee.above', 'match.r.ee.below',
       'match.r.teer.ok', 'match.r.teer.channel', 'match.r.teer.low',
       'match.r.wage.above', 'match.r.wage.near', 'match.r.wage.below', 'match.r.wage.na',
       'match.r.lmia.has', 'match.r.lmia.na',  // E6-02:陈述「有/无获批记录」的历史事实,无担保承诺
+      'match.r.lmia.skilled', 'match.r.lmia.lowOnly',  // B4-02 技能股分路:仍是历史事实措辞
     ])
     const jobs: MatchJob[] = [
       job({ noc: '21232', teer: 1, province: 'ON', pnpEligible: true, eeCategory: 'STEM', salaryAnnual: 60000, wageMedAnnual: 90000 }),

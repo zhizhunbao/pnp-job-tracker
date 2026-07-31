@@ -1,0 +1,262 @@
+// 报告引擎(L2-01/L2-02,决策引擎层)。规则只住这一处:答题页出报告、advisor 联动都消费它的输出。
+// 纯函数、无 IO、前后端同构:报告 = 基本 4 题答案 × 现有维度(pnp_occupations/ee_categories/pnp_draws)
+// × 职业事实聚合(jobs 按 NOC×省)。v1 只做卡②「拿 PR」;七卡共用 Report 契约,加卡=加 builder 不改契约。
+//
+// 契约(L2-02 §1):结论(一句话)→ 依据(数据+出处+日期)→ 缺口(差什么差多少)→ 下一步 → 备选。
+// 四条铁律(L2-01 §2.2):无解不给空页(0 命中给缺口与备选);每条结论带证据(source);
+// 数据不足降 confidence 并写明为什么;缺口照实说(不公布算分的省只给规则对照,不硬编分差)。
+// 措辞红线(与 match.ts 同族):只陈述「在/不在公开清单」「高于/低于抽选线」等可核验事实,永不说「你能/不能移民」。
+// 「0 命中」必须过 provListCoverage 四态(2026-07-30 报告原型教训):listed 才可说「查过不在」,
+// exclusion(ON)是制度性无清单、uncovered 是本站没数据 —— 三者混为一谈=报告撒谎。
+// 抽选线红线(2026-07-27):线按通道设,对不上通道就不给差分结论,只摆区间;样本小就说小(params 带 n)。
+import { provListCoverage, type MatchDims, type MatchProfile, type MatchVerdict } from './match'
+
+// ── 输入:事实聚合(由 API 层查库组装;引擎不碰 SQL)─────────────────────────
+export type OccProvFacts = { province: string; open: number; named: number }   // 该 NOC 在该省:在招 / 命中具名清单岗
+export type ReportDraw = { province: string; drawDate: string; stream: string; score: number | null }
+export type ReportFacts = {
+  noc: string
+  title: string                     // NOC 官方名(noc_descriptions,不拿岗位标题冒充)
+  teer: number | null
+  byProv: OccProvFacts[]
+  draws: ReportDraw[]               // pnp_draws(省抽选;FED 行=联邦 EE,本引擎省节不取)
+  medianSalary?: number | null
+  scoreProvinces?: string[]         // 有官方分值表的省(pnp_score_factors 覆盖,如 BC/SK)
+  scores?: Record<string, { total: number; passMark: number | null; system: string; url: string; fetched: string }>  // 用户已算的省估分(pnpSelfScore 输出)
+  fetched?: string                  // 事实聚合的数据日期
+}
+// 卡②基本 4 题里引擎新增消费的字段(currentStatus/clb/targetProvinces 已在 MatchProfile)
+export type ReportExtra = { canadianExpMonths: number | null }
+
+// ── 输出:七卡同一契约 ───────────────────────────────────────────────────────
+export type ReportLine = {
+  key: string                                   // i18n 键(rpt.*)
+  params: Record<string, string | number>
+  verdict?: MatchVerdict                        // UI 着色用(pass/warn/fail/na)
+  source?: { label: string; url: string; fetched: string }   // 依据链:指回具体维度记录/官方页
+  url?: string                                  // 站内深链(下一步/备选用)
+}
+export type Report = {
+  goal: 'pr'
+  noc: string
+  title: string
+  conclusions: ReportLine[]
+  gaps: ReportLine[]
+  nextSteps: ReportLine[]
+  alternatives: ReportLine[]
+  confidence: 'low' | 'mid' | 'high'
+  asOf: string
+}
+
+const RECENT_DRAWS = 6      // 抽选区间取近 N 次(区间/节奏都基于它;params 恒带实际条数,样本小就说小)
+const ALT_CAP = 2           // 备选省上限(④ 预判下一问:给对照不铺全表)
+// 受监管护士(与 pathways.ts 同口径):注册类职业先过认证才能执业 —— 句式①「说中他没提的卡点」
+const REGULATED_NURSE = new Set(['31301', '32101'])
+const NNAS_SRC = { label: 'NNAS — internationally educated nurses', url: 'https://www.nnas.ca/', fetched: '' }
+const CEC_SRC = {
+  label: 'IRCC — Canadian Experience Class eligibility',
+  url: 'https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/eligibility/canadian-experience-class.html',
+  fetched: '',
+}
+
+export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: MatchDims, facts: ReportFacts): Report {
+  const conclusions: ReportLine[] = []
+  const gaps: ReportLine[] = []
+  const nextSteps: ReportLine[] = []
+  const alternatives: ReportLine[] = []
+  const noc = facts.noc
+  const provFacts = (p: string): OccProvFacts => facts.byProv.find((r) => r.province === p) ?? { province: p, open: 0, named: 0 }
+
+  // 没填职业 → 几乎全部结论悬空:单缺口报告(无解不给空页,缺口本身就是结论)
+  if (!noc) {
+    gaps.push({ key: 'rpt.g.noNoc', params: {}, verdict: 'na', url: '/account?sec=profile' })
+    return { goal: 'pr', noc: '', title: '', conclusions, gaps, nextSteps, alternatives, confidence: 'low', asOf: facts.fetched ?? '' }
+  }
+
+  // 目标省;没选就按「命中具名清单岗多 → 在招多」取前 3(报告要有落点,不铺十省)
+  const targets = profile.targetProvinces.length
+    ? profile.targetProvinces
+    : [...facts.byProv].sort((a, b) => b.named - a.named || b.open - a.open).slice(0, 3).map((r) => r.province)
+
+  // ── 逐省:清单命中(四态)→ 抽选参考 → 估分对照 ──────────────────────────
+  for (const prov of targets) {
+    const f = provFacts(prov)
+    const cov = provListCoverage(prov, dims)
+    const rows = dims.pnpOccupations.filter((r) => r.province === prov && r.noc === noc)
+    const named = rows.find((r) => r.type !== 'ineligible')
+    const excluded = rows.find((r) => r.type === 'ineligible')
+
+    if (cov === 'qc') {
+      conclusions.push({ key: 'rpt.c.qc', params: { prov }, verdict: 'na' })
+      continue
+    }
+    if (named) {
+      conclusions.push({
+        key: 'rpt.c.listedHit', params: { prov, noc, label: named.label, open: f.open, named: f.named },
+        verdict: 'pass', source: { label: named.label, url: named.url, fetched: named.fetched },
+      })
+      if (f.open > 0) nextSteps.push({ key: 'rpt.n.jobs', params: { prov, n: f.open }, url: `/?prov=${prov}&q=${noc}` })
+    } else if (excluded) {
+      conclusions.push({
+        key: 'rpt.c.excluded', params: { prov, noc, label: excluded.label },
+        verdict: 'fail', source: { label: excluded.label, url: excluded.url, fetched: excluded.fetched },
+      })
+    } else if (cov === 'listed') {
+      // 清单式省查过确实不在 —— 可以下「不在清单」结论;开在招数给落差感(430 岗与你无关的诚实版)
+      conclusions.push({ key: 'rpt.c.listedMiss', params: { prov, noc, open: f.open }, verdict: 'fail' })
+    } else if (cov === 'exclusion') {
+      // 排除式/不公布清单(ON):0 具名是制度性的,不得说「不在清单」;按 TEER 粗筛口径陈述
+      const pass = facts.teer != null && facts.teer <= 3
+      conclusions.push({ key: pass ? 'rpt.c.screenPass' : 'rpt.c.screenTeer', params: { prov, open: f.open, teer: facts.teer ?? '' }, verdict: pass ? 'warn' : 'fail' })
+      if (pass && f.open > 0) nextSteps.push({ key: 'rpt.n.jobs', params: { prov, n: f.open }, url: `/?prov=${prov}&q=${noc}` })
+    } else {
+      // uncovered:本站没该省清单数据,只能说没收录,不冒充「查过没有」
+      conclusions.push({ key: 'rpt.c.uncovered', params: { prov }, verdict: 'na' })
+    }
+    if (f.open === 0) gaps.push({ key: 'rpt.g.zeroJobs', params: { prov }, verdict: 'warn' })
+
+    // 抽选参考:近 N 次该省有分数的轮次。通道对不上不给差分 —— 单一通道才敢差分,否则只摆区间
+    const recent = facts.draws
+      .filter((d) => d.province === prov && d.score != null)
+      .sort((a, b) => (a.drawDate < b.drawDate ? 1 : -1))
+      .slice(0, RECENT_DRAWS)
+    if (recent.length) {
+      const scores = recent.map((d) => d.score as number)
+      const lo = Math.min(...scores)
+      const hi = Math.max(...scores)
+      const est = facts.scores?.[prov]
+      if (est) {
+        const streams = new Set(recent.map((d) => d.stream))
+        if (streams.size === 1) {
+          const last = recent[0]
+          const diff = est.total - (last.score as number)
+          conclusions.push({
+            key: diff >= 0 ? 'rpt.c.scoreAbove' : 'rpt.c.scoreBelow',
+            params: { prov, total: est.total, cutoff: last.score as number, stream: last.stream, date: last.drawDate.slice(0, 10), [diff >= 0 ? 'diff' : 'gap']: Math.abs(diff) },
+            verdict: diff >= 0 ? 'pass' : 'warn',
+            source: { label: est.system, url: est.url, fetched: est.fetched },
+          })
+        } else {
+          conclusions.push({
+            key: 'rpt.c.scoreBand', params: { prov, total: est.total, lo, hi, n: recent.length },
+            verdict: 'warn', source: { label: est.system, url: est.url, fetched: est.fetched },
+          })
+        }
+      } else {
+        conclusions.push({ key: 'rpt.c.drawBand', params: { prov, lo, hi, n: recent.length }, verdict: 'na' })
+        if (facts.scoreProvinces?.includes(prov)) {
+          gaps.push({ key: 'rpt.g.answerScore', params: { prov }, verdict: 'na', url: '/pathways' })
+          nextSteps.push({ key: 'rpt.n.score', params: { prov }, url: '/pathways' })
+        }
+      }
+      // 句式⑤:签证窗口 × 抽选节奏 —— 近 N 次平均间隔,能赶上约几轮(样本小就说小:params 带 n)
+      if (profile.pgwpMonthsLeft != null && recent.length >= 2) {
+        const first = Date.parse(recent[0].drawDate)
+        const last = Date.parse(recent[recent.length - 1].drawDate)
+        const gapDays = Math.round((first - last) / 86_400_000 / (recent.length - 1))
+        if (gapDays > 0) {
+          const rounds = Math.floor((profile.pgwpMonthsLeft * 30.4) / gapDays)
+          conclusions.push({ key: 'rpt.c.window', params: { months: profile.pgwpMonthsLeft, days: gapDays, rounds, n: recent.length }, verdict: 'warn' })
+        }
+      }
+    } else if (facts.scoreProvinces && !facts.scoreProvinces.includes(prov) && cov !== 'uncovered') {
+      // 该省不公布算分/无逐次线数据 → 明说只给规则对照(L2-01 ②缺口:confidence 低,不硬编分差)
+      gaps.push({ key: 'rpt.g.noScoreTable', params: { prov }, verdict: 'na' })
+    }
+  }
+
+  // ── 联邦 EE 类别(独立信号,不混省提名)───────────────────────────────────
+  const eeRows = dims.eeCategories.filter((r) => r.noc === noc && r.drawCrs != null)
+  const ee = eeRows.sort((a, b) => (a.drawDate < b.drawDate ? 1 : -1))[0]
+  if (ee) {
+    const src = { label: ee.label, url: ee.url, fetched: ee.fetched }
+    if (profile.crs == null) {
+      conclusions.push({ key: 'rpt.c.ee', params: { cat: ee.label, draw: ee.drawCrs as number, date: (ee.drawDate || '').slice(0, 10) }, verdict: 'warn', source: src })
+      gaps.push({ key: 'rpt.g.noCrs', params: { cat: ee.label }, verdict: 'na' })
+    } else {
+      const diff = profile.crs - (ee.drawCrs as number)
+      conclusions.push({
+        key: diff >= 0 ? 'rpt.c.eeAbove' : 'rpt.c.eeBelow',
+        params: { cat: ee.label, crs: profile.crs, draw: ee.drawCrs as number, date: (ee.drawDate || '').slice(0, 10), [diff >= 0 ? 'diff' : 'gap']: Math.abs(diff) },
+        verdict: diff >= 0 ? 'pass' : 'warn', source: src,
+      })
+    }
+  } else {
+    conclusions.push({ key: 'rpt.c.eeNone', params: { noc }, verdict: 'na' })
+  }
+
+  // ── 句式①:注册类职业的认证卡点(他只说了职业,认证是替他想到的)─────────────
+  if (REGULATED_NURSE.has(noc)) {
+    conclusions.push({ key: 'rpt.c.regulated', params: { noc }, verdict: 'warn', source: NNAS_SRC })
+  }
+
+  // ── 加拿大经验(卡② Q3):只对照公开门槛,不判资格 ────────────────────────
+  if (extra.canadianExpMonths != null) {
+    if (extra.canadianExpMonths >= 12) {
+      conclusions.push({ key: 'rpt.c.expOk', params: { months: extra.canadianExpMonths }, verdict: 'pass', source: CEC_SRC })
+    } else {
+      gaps.push({ key: 'rpt.g.expShort', params: { months: extra.canadianExpMonths, need: 12 }, verdict: 'warn', source: CEC_SRC })
+    }
+  }
+
+  // ── 备选省(④ 预判下一问):非目标省里具名清单命中的,按具名岗数取前 2 ─────────
+  if (profile.targetProvinces.length) {
+    const cands = facts.byProv
+      .filter((r) => !profile.targetProvinces.includes(r.province) && r.province !== 'QC')
+      .filter((r) => dims.pnpOccupations.some((d) => d.province === r.province && d.noc === noc && d.type !== 'ineligible'))
+      .sort((a, b) => b.named - a.named || b.open - a.open)
+      .slice(0, ALT_CAP)
+    for (const c of cands) {
+      const row = dims.pnpOccupations.find((d) => d.province === c.province && d.noc === noc && d.type !== 'ineligible')!
+      alternatives.push({
+        key: 'rpt.a.prov', params: { prov: c.province, open: c.open, named: c.named, label: row.label },
+        verdict: 'pass', source: { label: row.label, url: row.url, fetched: row.fetched },
+      })
+    }
+  }
+
+  nextSteps.push({ key: 'rpt.n.pathways', params: {}, url: '/pathways' })
+
+  // ── confidence:基本 4 题答满 → mid;再有 CRS 或省估分(探索层)→ high;缺基本题 → low ──
+  const basicsAnswered = [profile.currentStatus != null, profile.clb != null, extra.canadianExpMonths != null, profile.targetProvinces.length > 0]
+    .filter(Boolean).length
+  const hasDeep = profile.crs != null || Object.keys(facts.scores ?? {}).length > 0
+  const confidence: Report['confidence'] = basicsAnswered < 4 ? 'low' : hasDeep ? 'high' : 'mid'
+  if (basicsAnswered < 4) gaps.push({ key: 'rpt.g.basics', params: { n: 4 - basicsAnswered }, verdict: 'na' })
+
+  return { goal: 'pr', noc, title: facts.title, conclusions, gaps, nextSteps, alternatives, confidence, asOf: facts.fetched ?? '' }
+}
+
+// ── 英文渲染(advisor grounding / 测试可读断言;与 UI 三语同源同数字,同 match.ts reasonEn 手法)──
+const EN: Record<string, (p: Record<string, string | number>) => string> = {
+  'rpt.c.listedHit': (p) => `NOC ${p.noc} is on ${p.prov}'s published list "${p.label}"; ${p.open} open postings there, ${p.named} hitting the named stream.`,
+  'rpt.c.listedMiss': (p) => `Checked ${p.prov}'s published list: NOC ${p.noc} is not on it. ${p.open} open postings there cannot use a named stream.`,
+  'rpt.c.excluded': (p) => `NOC ${p.noc} is on ${p.prov}'s exclusion list "${p.label}".`,
+  'rpt.c.screenPass': (p) => `${p.prov} publishes no occupation list; TEER ${p.teer} passes its generic screen. ${p.open} open postings.`,
+  'rpt.c.screenTeer': (p) => `${p.prov} publishes no occupation list and TEER ${p.teer} does not pass the generic skilled screen. ${p.open} open postings.`,
+  'rpt.c.uncovered': (p) => `${p.prov}'s occupation list is not yet covered by this site — cannot verify a list hit either way.`,
+  'rpt.c.qc': () => `Quebec runs its own selection system (not PNP); not assessed here.`,
+  'rpt.c.scoreAbove': (p) => `Your estimated ${p.prov} score ${p.total} is ${p.diff} above the last "${p.stream}" cutoff ${p.cutoff} (${p.date}).`,
+  'rpt.c.scoreBelow': (p) => `Your estimated ${p.prov} score ${p.total} is ${p.gap} below the last "${p.stream}" cutoff ${p.cutoff} (${p.date}).`,
+  'rpt.c.scoreBand': (p) => `Your estimated ${p.prov} score is ${p.total}; the last ${p.n} draws cut off between ${p.lo} and ${p.hi} (varies by stream — no single gap can be stated).`,
+  'rpt.c.drawBand': (p) => `${p.prov}'s last ${p.n} recorded draws cut off between ${p.lo} and ${p.hi} (varies by stream).`,
+  'rpt.c.window': (p) => `Your permit has ~${p.months} months left; based on the last ${p.n} draws (avg ${p.days} days apart) that is roughly ${p.rounds} more rounds within your window.`,
+  'rpt.c.ee': (p) => `This occupation is in the federal EE category "${p.cat}" (last draw CRS ${p.draw}, ${p.date}); you have not reported a CRS score.`,
+  'rpt.c.eeAbove': (p) => `Your self-reported CRS ${p.crs} is ${p.diff} above the last "${p.cat}" draw cutoff ${p.draw} (${p.date}).`,
+  'rpt.c.eeBelow': (p) => `Your self-reported CRS ${p.crs} is ${p.gap} below the last "${p.cat}" draw cutoff ${p.draw} (${p.date}).`,
+  'rpt.c.eeNone': (p) => `NOC ${p.noc} is not on any federal EE category-based selection list.`,
+  'rpt.c.regulated': (p) => `NOC ${p.noc} is a regulated nursing occupation — registration/credential assessment is required before practising.`,
+  'rpt.c.expOk': (p) => `You report ${p.months} months of Canadian experience — at or above the 12-month experience-class threshold (see source).`,
+  'rpt.g.noNoc': () => `No occupation on file — list hits, draws and wages all hinge on it. Add your NOC first.`,
+  'rpt.g.zeroJobs': (p) => `Zero open postings for this occupation in ${p.prov} right now.`,
+  'rpt.g.noCrs': (p) => `Report a CRS score to compute your gap to the "${p.cat}" category draws.`,
+  'rpt.g.expShort': (p) => `You report ${p.months} months of Canadian experience; experience-class streams generally require ${p.need} (see source).`,
+  'rpt.g.answerScore': (p) => `${p.prov} publishes an official points grid — answer the scoring questions to compute your gap.`,
+  'rpt.g.noScoreTable': (p) => `${p.prov} does not publish a points grid or per-draw cutoffs — only a rules comparison is possible, no score gap.`,
+  'rpt.g.basics': (p) => `${p.n} basic question(s) unanswered — the report stays coarse until they are.`,
+  'rpt.n.jobs': (p) => `See the ${p.n} open postings in ${p.prov} for this occupation.`,
+  'rpt.n.score': (p) => `Estimate your ${p.prov} score against the official grid.`,
+  'rpt.n.pathways': () => `Compare full immigration pathways.`,
+  'rpt.a.prov': (p) => `${p.prov}: NOC is on its published list "${p.label}" — ${p.open} open postings, ${p.named} on the named stream.`,
+}
+export const reportLineEn = (l: ReportLine): string => (EN[l.key] ? EN[l.key](l.params) : l.key)
