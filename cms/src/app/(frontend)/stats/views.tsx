@@ -76,7 +76,7 @@ export function StatsIndexContent({ rows, srcs, t, lang = 'zh', provExtra = {}, 
           const work = (ex?.info?.tfwp?.n ?? 0) + (ex?.info?.imp?.n ?? 0)
           const tier = ex?.tier && DIFF_COLORS[ex.tier] ? ex.tier : null
           return (
-          <a key={r.province} href={`/stats/${r.province.toLowerCase()}`}
+          <a key={r.province} href={`/stats/${r.province.toLowerCase()}`} className="cardHover"
             style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '14px 16px', textDecoration: 'none', color: '#1f2937' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
               <span title={PROV_NAME[r.province] || r.province} style={{ fontWeight: 700, fontSize: 15, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{SHORT_PROV[r.province] || PROV_NAME[r.province] || r.province}</span>

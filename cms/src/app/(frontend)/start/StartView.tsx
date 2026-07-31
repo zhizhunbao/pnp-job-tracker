@@ -157,7 +157,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
           <h2 style={secH}>{t('home.goals')}</h2>
           <div className="hmGrid">
             {goals.map((g) => g.href ? (
-              <a key={g.key} href={g.href}
+              <a key={g.key} href={g.href} className="cardHover"
                 onClick={() => track(`landing_goal_${g.key}`)}
                 style={{ display: 'block', minWidth: 0, background: g.hot ? '#f8fbff' : UI.card, border: `1px solid ${g.hot ? '#bfdbfe' : UI.border}`, borderRadius: 10, padding: '14px 16px', textDecoration: 'none', color: 'inherit' }}>
                 <div style={{ ...tileNm, ...(g.hot && { color: UI.primaryDeep }) }}>{t(`home.g.${g.key}`)}</div>
@@ -213,7 +213,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
                 occTop === null
                   ? <div style={{ height: 45 * jobsN }} />
                   : occTop.slice(0, jobsN).map((o, i) => (
-                    <a key={o.noc} href={`/?q=${o.noc}`} className="hmOccRow" style={{ borderTop: i ? `1px solid ${UI.hairline}` : 'none' }}>
+                    <a key={o.noc} href={`/?q=${o.noc}`} className="hmOccRow rowHover" style={{ borderTop: i ? `1px solid ${UI.hairline}` : 'none' }}>
                       <span style={{ fontSize: 12.5, fontWeight: 700, color: i < 3 ? UI.primary : UI.text3 }}>#{i + 1}</span>
                       <span style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{occName(o)}</span>
                       <span style={{ color: UI.text, fontSize: 12.5, whiteSpace: 'nowrap', textAlign: 'right' }}>{o.openJobs != null ? t('quiz.openN', { n: o.openJobs.toLocaleString('en-CA') }) : ''}</span>
@@ -225,7 +225,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
                 // 帖子标题是逐帖英文原文,无逐帖译名 —— 中/韩界面挂 NOC 职业译名灰注(人话名+灰字小注站规)
                 const note = nocNote(j.noc)
                 return (
-                <a key={j.id} href={`/jobs/${j.id}`} className="hmJobRow" style={{ borderTop: i ? `1px solid ${UI.hairline}` : 'none' }}>
+                <a key={j.id} href={`/jobs/${j.id}`} className="hmJobRow rowHover" style={{ borderTop: i ? `1px solid ${UI.hairline}` : 'none' }}>
                   <span style={{ fontSize: 12.5, fontWeight: 700, color: i < 3 ? UI.primary : UI.text3 }}>#{i + 1}</span>
                   <span title={note ? `${j.title}(${note})` : j.title} style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>
                     {j.title}
@@ -298,7 +298,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
               <h2 style={secH}>{t('home.policy')}<a href="/news" style={moreA}>{t('home.pulse.all')}</a></h2>
               <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, overflow: 'hidden' }}>
                 {stats.news.map((r, i) => (
-                  <a key={r.slug || i} href={r.slug ? `/news/${r.slug}` : '/news'}
+                  <a key={r.slug || i} href={r.slug ? `/news/${r.slug}` : '/news'} className="rowHover"
                     style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '12px 14px', borderTop: i ? `1px solid ${UI.hairline}` : 'none', fontSize: 13, textDecoration: 'none', color: 'inherit' }}>
                     <span style={{ color: UI.text3, fontSize: 12, whiteSpace: 'nowrap' }}>{mmdd(r.date)}</span>
                     <Tag>{r.region === 'federal' ? 'IRCC' : (r.region || '').toUpperCase()}</Tag>

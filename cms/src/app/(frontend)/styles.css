@@ -96,6 +96,20 @@ button:not(:disabled):hover {
   filter: brightness(0.94);
 }
 
+/* hover 统一 token(2026-07-31 Frank「现在 hover 看着是灰色的」→ docs/design/hover统一-20260731.md 落地):
+   块状链接(整行/整卡是 <a>)不再整块变暗发灰 —— 行=底色高亮、卡=蓝框+浅底,内容原样;
+   filter:none 挡掉全局 a:hover 变暗;!important 压行内 background/border(resTile 同款手法)。
+   铁律不变:只有能点的才挂这两个类,不可点的不挂。文字链接/按钮仍走上面的全局规范。 */
+a.rowHover:hover {
+  background: #f8fafc !important;
+  filter: none;
+}
+a.cardHover:hover {
+  border-color: #bfdbfe !important;
+  background: #f8faff !important;
+  filter: none;
+}
+
 /* E8-08 表卡双形态切换:桌面=表格,≤640=卡片(CSS 双渲染零水合差异,jtCards 同手法) */
 .tcCards {
   display: none;

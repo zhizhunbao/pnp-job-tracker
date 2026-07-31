@@ -27,7 +27,7 @@ export function ResourcesView() {
   }
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f9fafb' }}>
-      <style>{'.resTile:hover{border-color:#bfdbfe !important;background:#f8faff !important}'}</style>
+      {/* resTile 自有 hover 退役 → 全站 cardHover token(hover统一-20260731,值相同零视觉变化) */}
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} />
       <div style={{ maxWidth: 1320, margin: '0 auto', padding: '1rem 1.25rem 1.5rem', width: '100%', boxSizing: 'border-box', flex: '1 0 auto' }}>
         <PageBanner module="pathways" title={t('res.title')} sub={t('res.sub')} images={BANNER_IMGS.pathways} />
@@ -46,7 +46,7 @@ export function ResourcesView() {
             {/* 每条一卡的密集网格(hao123 式) */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(min(100%,220px),1fr))', gap: 10 }}>
               {g.items.map((it) => (
-                <a key={it.url} href={it.url} target="_blank" rel="noreferrer" className="resTile" style={tile}>
+                <a key={it.url} href={it.url} target="_blank" rel="noreferrer" className="cardHover" style={tile}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13.5, color: '#1f2937', fontWeight: 500 }}>
                     <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>{it.name}</span>
                     

@@ -181,7 +181,7 @@ function FeaturedGrid({ t, lang, slides }: { t: TFn; lang: Lang; slides: NewsHer
       <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 14, padding: '6px 16px 10px' }}>
         <h3 style={{ fontSize: 12.5, color: '#9ca3af', fontWeight: 600, margin: '10px 0 4px', letterSpacing: 0.5 }}>{t('news.topTitle')}</h3>
         {side.map((s, i) => (
-          <a key={s.slug} href={`/news/${s.slug}`} style={{ display: 'block', padding: '10px 0', borderTop: i ? '1px solid #f3f4f6' : 'none', textDecoration: 'none', color: 'inherit' }}>
+          <a key={s.slug} href={`/news/${s.slug}`} className="rowHover" style={{ display: 'block', padding: '10px 0', borderTop: i ? '1px solid #f3f4f6' : 'none', textDecoration: 'none', color: 'inherit' }}>
             <div style={{ fontSize: 13.5, fontWeight: 600, lineHeight: 1.45, color: '#111827', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{s.title}</div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', fontSize: 11.5, color: '#9ca3af', marginTop: 3 }}>
               <ImpBadge t={t} lang={lang} importance={s.importance} note={s.importanceNote} />
@@ -242,7 +242,7 @@ export function NewsListView({ items, hero, cmtCounts }: { items: NewsCard[]; he
                   {day}<span style={{ flex: 1, height: 1, background: '#e5e7eb' }} />
                 </div>
                 {rows.map((n) => (
-                  <a key={n.slug} href={`/news/${n.slug}`}
+                  <a key={n.slug} href={`/news/${n.slug}`} className="cardHover"
                     style={{ display: 'flex', gap: 14, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '12px 14px', marginBottom: 10, textDecoration: 'none', color: 'inherit', alignItems: 'flex-start', height: 128, boxSizing: 'border-box', overflow: 'hidden' }}>
                     {/* 行定高 128(Frank:「卡片的宽度和高度也应该是固定的」);标题 2 行/摘要 1 行截断,脚钉底 */}
                     <ListTile region={n.region} />
