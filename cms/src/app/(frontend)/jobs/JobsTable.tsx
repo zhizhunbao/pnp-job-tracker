@@ -1161,8 +1161,11 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
                 <span style={{ fontSize: 14, fontWeight: 500, color: '#374151' }}>{t(r.src === 'geo' ? 'rec.geoPrefix' : 'rec.prefix')}</span>
                 <span style={{ fontSize: 12, color: '#4338ca', background: '#eef2ff', borderRadius: 20, padding: '3px 10px' }}>{chips}</span>
-                <button onClick={() => { if (!plan.loggedIn) setUpsell('lock'); else setWizard(true) }}
-                  style={{ marginLeft: 'auto', border: 'none', background: 'none', color: '#4f46e5', fontSize: 12.5, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>{t('rec.build')}</button>
+                {/* 2026-07-31 Frank 拍板:这里原来拉起建档向导(未登录还撞登录墙)——向导问的六个字段
+                    就是 /plan 答题器的字段库,重复入口。改指卡①「找工作」两态页:匿名可答可看免费区。
+                    向导本身还兼着简历预填与投递流意向表单,退役单开一批,不在这一刀里 */}
+                <a href="/plan/job" onClick={() => track('jobs-rec-plan')}
+                  style={{ marginLeft: 'auto', color: '#4f46e5', fontSize: 12.5, textDecoration: 'underline' }}>{t('rec.build')}</a>
                 <button onClick={() => { try { localStorage.setItem(PREF_HIDE, new Date().toLocaleDateString('en-CA')) } catch { /* ignore */ } setRecs([]) }}
                   aria-label="close" className="tapPad" style={{ border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 15, padding: '0 2px' }}>×</button>
               </div>
