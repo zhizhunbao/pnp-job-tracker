@@ -76,6 +76,13 @@ export function writeAnswers(patch: Partial<Answers>): Answers {
   return next
 }
 
+// 重置(Frank 2026-07-31「答题给一个重置的功能」):把这份答案整份丢掉,回到从没答过的状态。
+// 连 done 一起清 —— 留着它职位板就不再问三问了,那不叫重置。
+export function clearAnswers(): Answers {
+  try { localStorage.removeItem(ANSWERS_KEY) } catch { /* ignore */ }
+  return { ...EMPTY }
+}
+
 // 答过三问没有(职位板判断弹不弹、拿 PR 判断要不要拉起选职业)
 export const answeredBasics = (a: Answers): boolean => Boolean(a.done || a.status || a.nocs.length || a.provs.length)
 

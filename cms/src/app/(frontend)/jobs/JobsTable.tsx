@@ -492,40 +492,9 @@ const writeColsCookie = (keys: string[]) => {
 }
 // ── 本地偏好画像(E9-02 推荐横幅,2026-07-17 拍板「1+3」):浏览/收藏信号存 localStorage,
 // **不上传**(隐私政策口径:浏览偏好存于设备)。打开任一岗位弹窗 +1,收藏 +3;维度=省/大类/薪资档。
-const PREF_LS = 'jobsPref1'
-const PREF_HIDE = 'jobsPrefHide'   // 当日关闭横幅
-// combo(F2,2026-07-17 用户「最近浏览应该可以有多条,也可以删」):按省×大类**组合**记账——
-// 原三维度各自最高票再拼,可能拼出用户从没浏览过的假组合;组合账才是真浏览轨迹。旧画像无 combo 键时,
-// 组合账攒够(权重≥3)之前不出推荐(2026-07-17「去掉任何兜底分支」——不再退回假组合)。
-type Combo = { w: number; sal: Record<string, number> }
-type Pref = { ev: number; prov: Record<string, number>; broad: Record<string, number>; sal: Record<string, number>; combo: Record<string, Combo> }
-const salBand = (a: number | null | undefined): string => (a == null ? '' : a >= 100000 ? 'ge100' : a >= 80000 ? '80' : a >= 60000 ? '60' : 'u60')
-const readPref = (): Pref => {
-  try { return { ev: 0, prov: {}, broad: {}, sal: {}, combo: {}, ...JSON.parse(localStorage.getItem(PREF_LS) || '{}') } }
-  catch { return { ev: 0, prov: {}, broad: {}, sal: {}, combo: {} } }
-}
-const recordPref = (j: JobRow, w: number) => {
-  try {
-    const p = readPref()
-    p.ev += w
-    if (j.province) p.prov[j.province] = (p.prov[j.province] || 0) + w
-    if (j.broad) p.broad[j.broad] = (p.broad[j.broad] || 0) + w
-    const b = salBand(j.salaryAnnual)
-    if (b) p.sal[b] = (p.sal[b] || 0) + w
-    if (j.province || j.broad) {
-      const ck = `${j.province || ''}|${j.broad || ''}`
-      const c = p.combo[ck] || { w: 0, sal: {} }
-      c.w += w
-      if (b) c.sal[b] = (c.sal[b] || 0) + w
-      p.combo[ck] = c
-    }
-    localStorage.setItem(PREF_LS, JSON.stringify(p))
-  } catch { /* 本地存储不可用则放弃(无痕模式等) */ }
-}
-const topOf = (m: Record<string, number>, min: number): string => {
-  const e = Object.entries(m).sort((a, b) => b[1] - a[1])[0]
-  return e && e[1] >= min ? e[0] : ''
-}
+// 浏览画像(PREF_HIDE / readPref / recordPref / topOf)随推荐条一并退役
+// (2026-07-31 Frank「不需要再瞎推荐了」)—— 没有消费者的采集就是白攒数据,连带隐私面也小一圈。
+
 // E9-03 地区冷启动:首访无画像时用浏览器时区映射省(零依赖零上传,与画像同一隐私口径)。
 // 白名单外(含 NT/YT/NU 与非加时区)不显示;Halifax→NS 为可接受近似(大西洋时区取人口主省,拍板点②)。
 // export 给 page.tsx 的占位预判内联脚本(2026-07-17 用户「刷新怎么后弹出来」——横幅槽位首帧预留,反 CLS)
@@ -724,41 +693,11 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         setSaved(m)
       }).catch(() => {})
   }, [plan.loggedIn])
-  // E9-02 推荐横幅(方案 1+3):本地画像凑够信号(ev≥5 且省或大类有主导项)→ 顶部一行推荐;
-  // 当日可关;已有筛选时不打扰。CTA1=套筛选看岗,CTA2=建档反哺(匿名→注册框,登录→/account)
-  type Rec = { key?: string; prov: string; broad: string; sal: string; src: 'pref' | 'geo' }
-  const [recs, setRecs] = useState<Rec[]>([])
-  const [dismissedRec, setDismissedRec] = useState<Set<string>>(new Set())  // 推荐卡「不感兴趣」隐藏(会话级)
-  useEffect(() => {
-    try {
-      if (localStorage.getItem(PREF_HIDE) === new Date().toLocaleDateString('en-CA')) return
-      const pf = readPref()
-      if (pf.ev < 5) {
-        // E9-03 冷启动:无画像时时区映射省(推荐非断言,套错一键可改);画像成型(ev≥5)即让位
-        const gp = TZ_PROV[Intl.DateTimeFormat().resolvedOptions().timeZone || '']
-        if (gp) setRecs([{ prov: gp, broad: '', sal: '', src: 'geo' }])
-        return
-      }
-      // F2 多组合(2026-07-17 拍板):只按**真实浏览的省×大类组合**(权重≥3)出最多 2 条,各自可删。
-      // 无兜底(2026-07-17 用户「去掉任何兜底分支」):组合账未成熟就不出推荐——绝不用各维度最高票
-      // 硬拼假组合(那正是本功能要消灭的毛病)。全新无画像用户仍由上面 ev<5 的 geo 冷启动覆盖。
-      const combos = Object.entries(pf.combo || {})
-        .filter(([, c]) => c.w >= 3)
-        .sort((a, b) => b[1].w - a[1].w).slice(0, 2)
-        .map(([k, c]) => {
-          const [prov, broad] = k.split('|')
-          const sal = topOf(c.sal, 3)
-          return { key: k, prov, broad, sal: sal === 'u60' ? '' : sal, src: 'pref' as const }
-        })
-      if (combos.length) setRecs(combos)
-    } catch { /* ignore */ }
-  }, [])
-  // E9-02 信号采集:任一岗位弹窗打开 +1(popup=字段顾问族,actModal=公司/JD)
-  useEffect(() => { if (popup?.job) recordPref(popup.job, 1) }, [popup])
-  useEffect(() => { if (actModal?.job) recordPref(actModal.job, 1) }, [actModal])
+  // 推荐条已下架(2026-07-31 Frank「我想推荐也不需要了吧,不是有我的匹配吗?不需要再瞎推荐了」):
+  // 「按你最近浏览/你所在地区」是猜的,而「我的匹配」是拿用户自己给的答案算的 —— 同屏两套推荐,
+  // 猜的那套只会稀释真的那套。画像采集(recordPref)随之退役,localStorage 里的旧画像不再有人读。
   const toggleSave = async (j: JobRow) => {
     if (!plan.loggedIn) { setUpsell('lock'); return }
-    recordPref(j, 3)  // 收藏=最强偏好信号
     const key = String(j.id)
     const cur = saved[key]
     if (cur) {
@@ -1059,32 +998,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dq, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, fEmp, fElig, sort, matchView, page])
 
-  // 推荐板(E10-01 P3:blob 没了 → 用 /api/jobs 按组合拉前 3 + 总数;组合由 recs[0] 给,评分降序)
-  const [recData, setRecData] = useState<{ cards: JobRow[]; total: number } | null>(null)
-  useEffect(() => {
-    const r = recs[0]
-    if (!r || anyFilter || matchView) { setRecData(null); return }
-    const sp = new URLSearchParams()
-    if (r.prov) sp.set('fProv', PROV_NAMES[r.prov] || r.prov)
-    if (r.broad) sp.set('fBroad', r.broad)
-    if (r.sal) sp.set('fSal', r.sal)
-    sp.set('sort', 'score'); sp.set('dir', 'desc'); sp.set('page', '0')
-    let dead = false
-    fetch('/api/jobs?' + sp.toString(), { credentials: 'include' })
-      .then((x) => (x.ok ? x.json() : null))
-      .then((d) => { if (!dead) setRecData({ cards: d?.rows || [], total: d?.total || 0 }) })
-      .catch(() => { if (!dead) setRecData({ cards: [], total: 0 }) })
-    return () => { dead = true }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [recs, anyFilter, matchView])
-  // 横幅槽位联动(反 CLS):水合后按真实显隐纠正 <html> 的 recslot 类——预判错了收回空槽,关横幅/套筛选后也收回。
-  // 必须置于 anyFilter/recData 声明之后:effect 依赖数组在渲染时求值,不能引用声明在后的变量(TDZ)。
-  // #75:纠正必须看「卡片实际可见数」——cards 拉空/全被「不感兴趣」时 section 渲染 null,只看 recs.length
-  // 会把 48px 空带永久留在页头下;recData 未回(null)期间保留占位,维持反 CLS 初衷。
-  useEffect(() => {
-    const visible = recData ? recData.cards.filter((j) => !dismissedRec.has(String(j.id))).length : 1
-    try { document.documentElement.classList.toggle('recslot', recs.length > 0 && !anyFilter && !matchView && visible > 0) } catch { /* ignore */ }
-  }, [recs, anyFilter, matchView, recData, dismissedRec])
+
 
   return (
     <div style={{ background: '#fff', color: '#1f2937', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column' }}>
@@ -1092,8 +1006,6 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         .colResize:hover{background:#93c5fd}
         .colResize:active{background:#3b82f6}
         .jtCards{display:none}
-        .recSlot{min-height:0}
-        html.recslot .recSlot{min-height:48px}
         .jtOnlyNarrow{display:none}
         @media (max-width:640px){
           /* #212(第 26 轮体检续):筛选行下拉/按钮 38px 手机点不稳,统一 40(桌面维持 38);
@@ -1131,8 +1043,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                 只留「N 个职位」;证言是说服性内容,在首屏抢不过职位数。 */}
             {proof && (proof.named > 0 || proof.lmia > 0) && <span className="pbProof" style={{ marginLeft: 10 }}>{t('subtitle.proof', { named: proof.named, lmia: proof.lmia })}</span>}
           </>}
-          right={!plan.loggedIn && !(recs.length > 0 && !anyFilter && !matchView) && (
-            // 第25轮:推荐条可见时它自带「建档案精确匹配」钮,横幅再出「免费建档案」=同屏双 CTA 重复,让位
+          right={!plan.loggedIn && (
             // #165(Frank 报障「这个按钮在手机端会挡住信息」):CTA 在横幅右槽带 nowrap + flexShrink:0,
             // **既不换行也不收缩** → 375px 上整条字占掉右半边,左边标题与职位数被压成省略号。
             // 旁边的数字胶囊(.pbStat)本就做了窄屏隐藏,这个漏了。
@@ -1144,59 +1055,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             </a>
           )} />
 
-        {/* 推荐板块(2026-07-17「找工作为主」重构):原蓝条降级为职位列表上方的「推荐岗位」内容行——
-            取最强组合出前 3 张匹配岗卡片,每张可「不感兴趣」;有筛选/匹配视图时不打扰。
-            外层 .recSlot=首帧占位槽(page.tsx 内联脚本预判,反「刷新后弹」CLS) */}
-        <div className="recSlot">
-        {recs.length > 0 && !anyFilter && !matchView && (() => {
-          const r = recs[0]  // v1 只出最强的那个组合(多组合切换留后续)
-          const cards = (recData?.cards || []).filter((j) => !dismissedRec.has(String(j.id))).slice(0, 3)  // E10-01 P3:组合前 3 从 /api/jobs 拉
-          if (!cards.length) return null
-          const chips = [r.prov, r.broad ? broadLabel(r.broad) : '', r.sal ? t('sal.' + r.sal) : ''].filter(Boolean).join('、')
-          // fProv 值域=省全称(行过滤比较);r.prov 是省码,转全称再落,否则套出空列表
-          const applyFilter = () => { setFProv(r.prov ? (PROV_NAMES[r.prov] || r.prov) : ''); setFCity(''); setFDistrict(''); if (r.broad) { setFBroad(r.broad); setFMid(''); setFFine('') } if (r.sal) setFSal(r.sal) }
-          const tag = (bg: string, c: string, s: string) => <span style={{ fontSize: 11, color: c, background: bg, borderRadius: 5, padding: '2px 7px' }}>{s}</span>
-          return (
-            <section style={{ border: '0.5px solid #e5e7eb', borderRadius: 12, padding: '12px 14px', margin: '12px 0 0' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
-                <span style={{ fontSize: 14, fontWeight: 500, color: '#374151' }}>{t(r.src === 'geo' ? 'rec.geoPrefix' : 'rec.prefix')}</span>
-                <span style={{ fontSize: 12, color: '#4338ca', background: '#eef2ff', borderRadius: 20, padding: '3px 10px' }}>{chips}</span>
-                {/* 2026-07-31 Frank 拍板:这里原来拉起建档向导(未登录还撞登录墙)——向导问的六个字段
-                    就是 /plan 答题器的字段库,重复入口。改指卡①「找工作」两态页:匿名可答可看免费区。
-                    向导本身还兼着简历预填与投递流意向表单,退役单开一批,不在这一刀里 */}
-                <a href="/plan/job" onClick={() => track('jobs-rec-plan')}
-                  style={{ marginLeft: 'auto', color: '#4f46e5', fontSize: 12.5, textDecoration: 'underline' }}>{t('rec.build')}</a>
-                <button onClick={() => { try { localStorage.setItem(PREF_HIDE, new Date().toLocaleDateString('en-CA')) } catch { /* ignore */ } setRecs([]) }}
-                  aria-label="close" className="tapPad" style={{ border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 15, padding: '0 2px' }}>×</button>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 10 }}>
-                {cards.map((j) => (
-                  <div key={j.id} style={{ position: 'relative', background: '#f9fafb', borderRadius: 8, padding: '10px 12px' }}>
-                    <button onClick={() => setDismissedRec((s) => new Set(s).add(String(j.id)))} title={t('rec.notInterested')} aria-label={t('rec.notInterested')}
-                      className="tapPad" style={{ position: 'absolute', top: 6, right: 7, border: 'none', background: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 13, padding: 0 }}>×</button>
-                    <button onClick={() => setActModal({ kind: 'desc', job: j })}
-                      style={{ display: 'block', textAlign: 'left', border: 'none', background: 'none', padding: 0, cursor: 'pointer', width: '100%' }}>
-                      <div style={{ fontSize: 13.5, fontWeight: 500, color: '#111827', paddingRight: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{j.title}</div>
-                      <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{[j.company, j.city].filter(Boolean).join('　')}</div>
-                      {j.salaryAnnual != null && <div style={{ fontSize: 12.5, color: '#111827', marginTop: 4 }}>${Math.round(j.salaryAnnual / 1000)}K/yr</div>}
-                    </button>
-                    <div style={{ display: 'flex', gap: 5, marginTop: 7, flexWrap: 'wrap' }}>
-                      {j.pnpEligible && tag('#dcfce7', '#15803d', 'PNP')}
-                      {j.lmiaPositions ? tag('#eef2ff', '#4338ca', 'LMIA') : null}
-                      {j.eeCategory && tag('#dbeafe', '#1e40af', 'EE')}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div style={{ marginTop: 10 }}>
-                <button onClick={applyFilter} style={{ border: 'none', background: 'none', color: '#4f46e5', fontSize: 12.5, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
-                  {t('rec.seeAll', { n: recData?.total ?? 0 })}
-                </button>
-              </div>
-            </section>
-          )
-        })()}
-        </div>
+
         {/* 三问细带(Frank「要是用户之前没填或者填错了,不能刷新修改吗」):答过=显示上次答案 + 看结果/改;
             没答过=一句话入口。常驻不打扰,弹窗只弹一次的缺口靠它补上。 */}
         {!plan.profileOk && (

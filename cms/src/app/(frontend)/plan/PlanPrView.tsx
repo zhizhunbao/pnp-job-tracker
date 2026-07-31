@@ -17,7 +17,7 @@ import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { EntryQuiz, readQuiz, shortOcc } from '../quiz/EntryQuiz'
 import { Button, Notice, PageShell, Tag, UI } from '../ui/primitives'
-import { readAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
+import { clearAnswers, readAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
 import { DECISIONS, fieldsOf } from '@/lib/decisions'
 import { buildSurvey, SURVEY_THEME } from '@/lib/questions'
 import { track } from '@/lib/track'
@@ -186,6 +186,8 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
   const [view, setView] = useState<'quiz' | 'report'>('quiz')
   const [stage, setStage] = useState<'basic' | 'explore'>('basic')   // 探索卷=报告 hook 的落点(基本 4 题满才进得来)
   const [ready, setReady] = useState(false)
+  const [resetArmed, setResetArmed] = useState(false)   // 重置两步:点一下变「确认重置」,再点才清(不弹系统 confirm)
+  const [resetNonce, setResetNonce] = useState(0)       // 清完要让 SurveyJS 模型重建,否则旧答案还留在卷里
   const [rpt, setRpt] = useState<Rpt | null | 'loading'>(null)
 
   useEffect(() => {
@@ -242,7 +244,7 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
     })
     m.onComplete.add(() => gotoReport())
     return m
-  }, [ready, view, stage, lang, decision])   // eslint-disable-line react-hooks/exhaustive-deps
+  }, [ready, view, stage, lang, decision, resetNonce])   // eslint-disable-line react-hooks/exhaustive-deps
 
   // 报告态进入即拉(改答案回来再进=重算;答案是幂等输入)
   useEffect(() => {
@@ -280,9 +282,19 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
           <>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 12, color: UI.text3, margin: '2px 0 14px' }}>
               <span>{t(stage === 'explore' ? 'plan.explore.sub' : `plan.${decision}.sub`)}</span>
-              {stage === 'explore' && (
-                <button onClick={() => setStage('basic')} style={{ border: 'none', background: 'none', color: UI.primary, fontSize: 12, cursor: 'pointer', padding: 0, whiteSpace: 'nowrap', fontFamily: 'inherit' }}>{t('plan.explore.basic')}</button>
-              )}
+              <span style={{ display: 'flex', gap: 12, flexShrink: 0 }}>
+                {stage === 'explore' && (
+                  <button onClick={() => setStage('basic')} style={{ border: 'none', background: 'none', color: UI.primary, fontSize: 12, cursor: 'pointer', padding: 0, whiteSpace: 'nowrap', fontFamily: 'inherit' }}>{t('plan.explore.basic')}</button>
+                )}
+                {/* 重置:把答案整份丢掉(含三问那份)。两步确认,不用系统 confirm 弹窗 */}
+                <button onClick={() => {
+                  if (!resetArmed) { setResetArmed(true); return }
+                  setBands(clearAnswers()); setNoc(''); setResetArmed(false); setResetNonce((n) => n + 1)
+                  track(`plan-${decision}-reset`)
+                }} style={{ border: 'none', background: 'none', color: resetArmed ? '#b91c1c' : UI.text3, fontSize: 12, fontWeight: resetArmed ? 700 : 400, cursor: 'pointer', padding: 0, whiteSpace: 'nowrap', fontFamily: 'inherit' }}>
+                  {t(resetArmed ? 'plan.reset.ok' : 'plan.reset')}
+                </button>
+              </span>
             </div>
             {/* 职业 chip 常驻(非四题之一):三问答过直接用,没答→页内拉起 EntryQuiz */}
             <div style={{ marginBottom: 10 }}><OccChip noc={noc} nocTitle={nocTitle} t={t} onPick={() => setQuizOpen(true)} /></div>

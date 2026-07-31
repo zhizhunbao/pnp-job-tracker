@@ -64,6 +64,13 @@ const CRS_TOOL = {
   url: 'https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/check-score.html',
   fetched: '',
 }
+// 魁省走自己的甄选体系(Arrima/PSTQ),不属于省提名 —— 本站没有魁省数据,所以不判、也不装作判过,
+// 但要把官方入口给出去(Frank:「魁省如果有通道好移民那不是更好么」——好不好我们没数据,别替他关门)
+const QC_SRC = {
+  label: 'Québec — immigration permanente (Arrima)',
+  url: 'https://www.quebec.ca/en/immigration/permanent',
+  fetched: '',
+}
 const CEC_SRC = {
   label: 'IRCC — Canadian Experience Class eligibility',
   url: 'https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/eligibility/canadian-experience-class.html',
@@ -99,7 +106,7 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
     const excluded = rows.find((r) => r.type === 'ineligible')
 
     if (cov === 'qc') {
-      conclusions.push({ key: 'rpt.c.qc', params: { prov }, verdict: 'na' })
+      conclusions.push({ key: 'rpt.c.qc', params: { prov }, verdict: 'na', source: QC_SRC })
       continue
     }
     if (named) {
@@ -266,7 +273,7 @@ export function buildProvReport(profile: MatchProfile, extra: ProvExtra, dims: M
   let uncovered = 0
   for (const prov of provs) {
     const cov = provListCoverage(prov, dims)
-    if (cov === 'qc') { gaps.push({ key: 'rpt.c.qc', params: { prov }, verdict: 'na' }); continue }
+    if (cov === 'qc') { gaps.push({ key: 'rpt.c.qc', params: { prov }, verdict: 'na', source: QC_SRC }); continue }
     if (cov === 'uncovered') { uncovered += 1; continue }
     const f = facts.byProv.find((r) => r.province === prov) ?? { province: prov, open: 0, named: 0 }
     const row = dims.pnpOccupations.find((r) => r.province === prov && r.noc === noc && r.type !== 'ineligible')

@@ -2,7 +2,7 @@ import { cookies, headers } from 'next/headers'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import JobsTable, { BANNER_COOKIE, TZ_PROV } from './JobsTable'
+import JobsTable, { BANNER_COOKIE } from './JobsTable'
 import { COLS_COOKIE } from './i18n'
 import { getUser, isPro } from '@/lib/entitlement'
 import { FREE_MATCH_JOBS_PER_DAY } from '@/lib/plan'
@@ -121,17 +121,8 @@ export default async function JobsPage() {
     avatar: (user as any)?.avatar ?? null,
     proUntil: String((user as any)?.proUntil || '').slice(0, 10),
   }
-  // 推荐横幅槽位预判(2026-07-17 用户「刷新怎么后弹出来」):画像在 localStorage,SSR 画不出横幅,
-  // 水合后插入会把内容整体下推(CLS)。内联脚本在首帧前同步预判「会出横幅」→ <html> 挂 recslot 类,
-  // CSS 先把 .recSlot 那一行高度占好,横幅水合后原位填入;水合后 JobsTable 按真实显隐纠正该类。
-  // 预判口径镜像横幅逻辑(当日关闭/ev≥5 主导项/geo 时区),近似即可——错了只是短暂多/少一条空带。
-  const recSlotScript = `try{var d=new Date().toLocaleDateString('en-CA');
-if(localStorage.getItem('jobsPrefHide')!==d){var p=JSON.parse(localStorage.getItem('jobsPref1')||'{}');var s=false;
-if((p.ev||0)>=5){var has=function(m){for(var k in (m||{}))if(m[k]&&(m[k].w||m[k])>=3)return true;return false};s=has(p.combo)}
-else{s=!!(${JSON.stringify(TZ_PROV)})[Intl.DateTimeFormat().resolvedOptions().timeZone]}
-if(s)document.documentElement.classList.add('recslot')}}catch(e){}`
+  // 推荐横幅槽位预判内联脚本随推荐条一并删除(2026-07-31):没有横幅就没有 CLS 要防
   return <>
-    <script dangerouslySetInnerHTML={{ __html: recSlotScript }} />
     <JobsTable jobs={jobs} updatedAt={updatedAt} dims={dims} initialCols={initialCols} plan={plan}
       initialBanner={initialBanner} totalCount={totalCount} proof={proof} deferFull />
   </>
