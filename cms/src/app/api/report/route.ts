@@ -1,0 +1,39 @@
+/**
+ * POST /api/report — 报告引擎服务端出口(L2-01/L2-02,卡②「拿 PR」先通)。
+ * body: { goal: 'pr', answers?: { noc?, currentStatus?, clb?, crs?, canadianExpMonths?, targetProvinces? } }
+ * 合并序:登录档案为底、本次答案覆盖(改答案立刻重算铁律);匿名可用(结论摘要免费,aha 在掏钱之前)。
+ * 引擎纯函数(lib/report.ts),这里只做:身份合并 → dims(1h 缓存)→ facts 组装 → buildPrReport。
+ */
+import { headers } from 'next/headers'
+import { getPayload } from 'payload'
+
+import config from '@/payload.config'
+import { getUser } from '@/lib/entitlement'
+import { normalizeProfile } from '@/lib/match'
+import { loadMatchDims } from '@/lib/matchDims'
+import { buildPrReport } from '@/lib/report'
+import { assembleReportFacts } from '@/lib/reportFacts'
+
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+
+export async function POST(req: Request) {
+  let body: any = null
+  try { body = await req.json() } catch { /* 无 body 走纯档案 */ }
+  if (body?.goal && body.goal !== 'pr') return Response.json({ error: 'unknown goal' }, { status: 400 })
+  const a = body?.answers ?? {}
+
+  const user = await getUser(await headers()).catch(() => null)
+  const base = (user as any)?.profile ?? {}
+  // 档案为底、答案覆盖;canadianExpMonths 是题库新增字段(挂 Users.profile json,无需加列)
+  const merged = { ...base, ...a }
+  const profile = normalizeProfile(merged)
+  const extra = { canadianExpMonths: typeof merged.canadianExpMonths === 'number' && Number.isFinite(merged.canadianExpMonths) ? merged.canadianExpMonths : null }
+  const noc = (typeof a.noc === 'string' && a.noc.trim()) || profile.nocCodes[0] || ''
+
+  const payload = await getPayload({ config: await config })
+  const pool = (payload.db as any).pool
+  const [dims, facts] = await Promise.all([loadMatchDims(), assembleReportFacts(pool, noc)])
+  const report = buildPrReport(profile, extra, dims, facts)
+  return Response.json({ report })
+}
