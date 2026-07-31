@@ -16,7 +16,7 @@ import { initialLang, makeT, LANG_KEY, type Lang, type TFn } from '../jobs/i18n'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { EntryQuiz, readQuiz, shortOcc } from '../quiz/EntryQuiz'
-import { UI } from '../ui/primitives'
+import { PageShell, UI } from '../ui/primitives'
 import { PR_BASIC_SURVEY, SURVEY_THEME } from '@/lib/questions'
 import { track } from '@/lib/track'
 
@@ -156,7 +156,11 @@ export function PlanPrView() {
   return (
     <div style={{ background: UI.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="start" />
-      <main style={{ flex: '1 0 auto', width: '100%', maxWidth: 760, margin: '1rem auto 2.5rem', padding: '0 1.25rem', boxSizing: 'border-box' }}>
+      {/* 外轨=PageShell 1320(全站统一容器铁律,2026-07-18 拍板「新页面按这个宽度套壳」——
+          本页初版自造 760 main 违规,2026-07-31 Frank 点名纠正);答题/报告列 760 居中保行长可读(news 阅读页先例) */}
+      <div style={{ flex: '1 0 auto' }}>
+        <PageShell pad="1rem 1.25rem 40px">
+          <div style={{ maxWidth: 760, margin: '0 auto' }}>
         <h1 style={{ fontSize: 22, margin: '6px 0 4px' }}>{t('plan.pr.title')}</h1>
 
         {view === 'quiz' ? (
@@ -206,8 +210,10 @@ export function PlanPrView() {
             )}
           </>
         )}
-      </main>
-      <SiteFooter t={t} maxWidth={760} />
+          </div>
+        </PageShell>
+      </div>
+      <SiteFooter t={t} />
       {quizOpen && (
         <EntryQuiz t={t} lang={lang} initial={(() => { const q = readQuiz(); return q ? { status: q.status, nocs: q.nocs, provs: q.provs } : null })()}
           onClose={() => { setQuizOpen(false); const q = readQuiz(); setNoc(q?.nocs?.[0] || '') }}
