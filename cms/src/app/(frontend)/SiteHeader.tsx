@@ -184,7 +184,7 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
   const nav: React.CSSProperties = { textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }
   return (
     <header style={{ background: '#fff', borderBottom: '1px solid #e5e7eb', ...(sticky && { position: 'sticky', top: 0, zIndex: 30 }) }}>
-      <div style={{ maxWidth: 1320, margin: '0 auto', padding: '10px 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+      <div className="shBar" style={{ maxWidth: 1320, margin: '0 auto', padding: '10px 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
           {/* D 件:窄屏汉堡(桌面藏);抽屉替代窄屏平铺导航 */}
           <button className="shBurger" onClick={() => setDrawer(true)} aria-label={t('nav.menu')}
@@ -195,9 +195,13 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
         {/* 方案 A(2026-07-17 用户拍板,与 /jobs 顶栏同款):导航/操作两组+竖线分隔;窄屏竖线隐藏。
             副标语 <1350px 隐藏(Frank 2026-07-18「长度自己换行了」——先牺牲标语保导航一行)。
             E8-07 D:≤640 平铺导航整组隐藏(汉堡抽屉接管),右端语言/账户保留。 */}
+        {/* ≥1351(标语在显)整条禁折行、右组禁压缩:flex 换行按内容假想宽算,不会先压标语再折 ——
+            英文导航长,浏览器宁可把整排导航折下去(2026-07-31 Frank 实拍 EN 折两行);
+            改成弹性全给标语(自带省略号),导航永一行。<1350 标语已藏,原折行策略照旧。 */}
         <style>{`@media (max-width:640px){.shDivider{display:none}.shNav{display:none !important}.shBurger{display:inline-block !important}}
-          @media (max-width:1350px){.shTagline{display:none}}`}</style>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, maxWidth: '100%', flexWrap: 'wrap' }}>
+          @media (max-width:1350px){.shTagline{display:none}}
+          @media (min-width:1351px){.shBar{flex-wrap:nowrap !important}.shRight{flex-wrap:nowrap !important;flex-shrink:0}}`}</style>
+        <div className="shRight" style={{ display: 'flex', alignItems: 'center', gap: 12, maxWidth: '100%', flexWrap: 'wrap' }}>
           <div className="shNav" style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
             {/* L1-01 B 方案并行期:landing 入口进顶栏;切 A(landing 占根)后本项退役 */}
             <a href="/start" style={{ ...nav, color: active === 'start' ? '#2563eb' : '#6b7280', fontWeight: active === 'start' ? 700 : 400 }}><IconRocket /> {t('home.entry')}</a>
