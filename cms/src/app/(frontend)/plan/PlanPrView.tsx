@@ -38,7 +38,7 @@ type RptLine = { key: string; params: Record<string, string | number>; verdict?:
 type Lane = { kind: 'prov' | 'ee' | 'alts'; verdict?: string; key: string; params: Record<string, string | number> }
 type Emp = { name: string; slug: string; named: number; eligible: number; city: string; province: string; lastPosted: string; lmiaPositions: number | null; lmiaQuarter: string; aip: boolean; area: string; empRevenue: number | null; empStaff: number | null }
 type Rpt = {
-  noc: string; title: string; conclusions: RptLine[]; requirements: RptLine[]; employers: Emp[]; gaps: RptLine[]; nextSteps: RptLine[]; alternatives: RptLine[]
+  noc: string; title: string; conclusions: RptLine[]; requirements: RptLine[]; employers: Emp[]; switches: RptLine[]; gaps: RptLine[]; nextSteps: RptLine[]; alternatives: RptLine[]
   confidence: 'low' | 'mid' | 'high'; asOf: string
   lanes: Lane[]; hint?: RptLine; locked: string[]; pro: boolean   // 付费闸(服务端已裁剪,locked 只有类别键没有正文)
 }
@@ -110,7 +110,7 @@ function collectRefs(r: Rpt, t: TFn): { rows: RefRow[]; of: (l: RptLine) => numb
     const noc = u.match(/[?&]noc=(\d{5})/)?.[1]
     return t(DEST[seg]) + (prov ? ` ${prov}` : noc ? ` ${noc}` : '')
   }
-  for (const l of [...r.conclusions, ...(r.requirements ?? []), ...r.gaps, ...r.alternatives, ...r.nextSteps]) {
+  for (const l of [...r.conclusions, ...(r.requirements ?? []), ...(r.switches ?? []), ...r.gaps, ...r.alternatives, ...r.nextSteps]) {
     const u = urlOf(l)
     if (u) add(u, labelOf(l), l.source?.fetched)
   }
@@ -467,6 +467,10 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                       </div>
                     ))}
                   </Sec>
+                )}
+                {/* 换省对照(L2-08):位置照 v5 定稿 —— 雇主线索之后、薪资之前 */}
+                {rpt.switches?.length > 0 && (
+                  <Sec title={t('rpt.q.switch')}>{rpt.switches.map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</Sec>
                 )}
                 {group(rpt.conclusions, 'pay').length > 0 && (
                   <Sec title={t('rpt.q.pay')}>{group(rpt.conclusions, 'pay').map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</Sec>

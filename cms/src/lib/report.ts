@@ -10,6 +10,7 @@
 // exclusion(ON)是制度性无清单、uncovered 是本站没数据 —— 三者混为一谈=报告撒谎。
 // 抽选线红线(2026-07-27):线按通道设,对不上通道就不给差分结论,只摆区间;样本小就说小(params 带 n)。
 import { provListCoverage, type MatchDims, type MatchProfile, type MatchVerdict } from './match'
+import { gridStreamOf, scoreProvince, streamMatches, systemShort, type ScoreFactor, type SelfProfile } from './pnpSelfScore'
 import { areaOfPlace, employerBar, evaluateRequirements, type Requirement, type RuleResult } from './rules'
 import type { OccStats } from './reportFacts'   // 纯类型(reportFacts 反向引 ReportFacts,两边都是 type-only,不成环)
 
@@ -24,7 +25,8 @@ export type ReportFacts = {
   byProv: OccProvFacts[]
   draws: ReportDraw[]               // pnp_draws(省抽选;FED 行=联邦 EE,本引擎省节不取)
   medianSalary?: number | null
-  scoreProvinces?: string[]         // 有官方分值表的省(pnp_score_factors 覆盖,如 BC/SK)
+  scoreFactors?: ScoreFactor[]      // 官方分值表整张(pnp_score_factors;换省对照节按行匹档位)
+  scoreProvinces?: string[]         // 有官方分值表的省(由 scoreFactors 派生,如 BC/SK/ON)
   scores?: Record<string, { total: number; passMark: number | null; system: string; url: string; fetched: string }>  // 用户已算的省估分(pnpSelfScore 输出)
   requirements?: Requirement[]      // 官方门槛(pnp_requirements;规则引擎的输入,只 BC 有数据时其余省=未收录)
   fetched?: string                  // 事实聚合的数据日期
@@ -58,6 +60,7 @@ export type Report = {
   conclusions: ReportLine[]
   employers: ReportEmployer[]       // 雇主线索(锁区):免费层服务端清空,只留「有 N 家」那句话
   requirements: ReportLine[]        // 门槛对照(规则引擎;设计 §6 新增的一节)—— 官方要求 × 你的情况
+  switches: ReportLine[]            // 换省对照(L2-08)—— 现选省 vs 备选省,按官方分值表自算下界分
   gaps: ReportLine[]
   nextSteps: ReportLine[]
   alternatives: ReportLine[]
@@ -164,6 +167,90 @@ function requirementLines(prov: string, facts: ReportFacts, profile: MatchProfil
   return out
 }
 
+// ── 换省对照(L2-08「换一个省会更有利吗?」)────────────────────────────────────
+// 报告只问 4+2 题,官方分值表要 8 个字段 —— 所以这里算的是**下界**:
+// 只拿已答的语言与加拿大经验去匹官方档位(白名单 only),其余因素一律当未答(0 分)。
+// 分值全为非负 ⇒ 已答项之和确实是「至少这么多分」,句子也照实写「至少」。
+// 三条红线:① 未答的因素不许参与匹配(否则「没考语言」会被兜到最低档白捡分);
+// ② 只在下界已过门槛时才说「已达标」,低于门槛**不说不达标**(补齐后只会更高);
+// ③ 免责常驻:自算≠官方审核,各省分制互不相通、分数之间不可横向比较。
+const SWITCH_CAP = 3        // 备选省上限(给对照不铺全表,与 ALT_CAP 同精神)
+const SWITCH_NOTE: ReportLine = { key: 'rpt.s.note', params: {}, verdict: 'na' }
+
+function recentDrawsOf(facts: ReportFacts, prov: string): ReportDraw[] {
+  return facts.draws
+    .filter((d) => d.province === prov && d.score != null)
+    .sort((a, b) => (a.drawDate < b.drawDate ? 1 : -1))
+    .slice(0, RECENT_DRAWS)
+}
+
+/** 已答字段 → SelfProfile + 自动匹配白名单。没答的字段给中性值,靠 only 挡住,不让它去匹档位 */
+function selfFromAnswers(profile: MatchProfile, months: number | null): { self: SelfProfile; only: Set<string> } {
+  const only = new Set<string>()
+  if (profile.clb != null) { only.add('language'); only.add('language1') }
+  // 加拿大经验当「同职业经验年数」用是下界口径(境外经验也算分,本站没问)——句子里写清是「已答的加拿大经验」
+  if (months != null) { only.add('work'); only.add('work5') }
+  return {
+    self: { edu: 'highschool', expRecent: months != null ? months / 12 : 0, expOlder: 0, clb1: profile.clb ?? 0, clb2: 0, age: 0 },
+    only,
+  }
+}
+
+function switchLines(facts: ReportFacts, dims: MatchDims, profile: MatchProfile, months: number | null, targets: string[]): ReportLine[] {
+  const factors = facts.scoreFactors ?? []
+  const cur = targets[0]
+  if (!cur || !factors.length) return []
+  const { self, only } = selfFromAnswers(profile, months)
+  const scoreOf = (prov: string) => scoreProvince(factors, prov, self, {}, {}, only)
+
+  // 一个省一行:有分值表就报下界分,没有就明说未公布
+  const lineFor = (prov: string, isCur: boolean): ReportLine => {
+    const s = scoreOf(prov)
+    if (!s) return { key: isCur ? 'rpt.s.cur.noTable' : 'rpt.s.alt.noTable', params: { prov }, verdict: 'na' }
+    const src = { label: s.system, url: s.url, fetched: s.fetched }
+    const have = s.parts.filter((p) => p.matched).length
+    // 分制名印进句子时去掉自报通道那截(整串「OINP EOI points (Ontario Workforce Priority stream)」一行放不下)
+    const base = { prov, system: systemShort(s.system), total: s.total, have, all: s.parts.length }
+    if (isCur) return { key: 'rpt.s.cur', params: base, verdict: 'na', source: src }
+    if (s.passMark != null) {
+      return s.total >= s.passMark
+        ? { key: 'rpt.s.alt.pass', params: { ...base, mark: s.passMark }, verdict: 'pass', source: src }
+        : { key: 'rpt.s.alt.mark', params: { ...base, mark: s.passMark, rest: s.parts.length - have }, verdict: 'na', source: src }
+    }
+    // 抽选线红线(E12-09 §5):打分表自报了通道(ON 新通道)就只认同通道的抽选 ——
+    // ON 官方逐轮公布的分数线全属改制前已关停的通道,拿来配新分制就是错的锚。
+    // 该省有线但都是别的通道 → 明说「这条通道还没有抽选记录」,不含糊说成「未公布」。
+    const gridStream = gridStreamOf(s.system)
+    const all = recentDrawsOf(facts, prov)
+    const recent = gridStream ? all.filter((d) => streamMatches(d.stream, gridStream)) : all
+    if (recent.length) {
+      const scores = recent.map((d) => d.score as number)
+      return { key: 'rpt.s.alt.band', params: { ...base, lo: Math.min(...scores), hi: Math.max(...scores), n: recent.length }, verdict: 'na', source: src }
+    }
+    return { key: all.length ? 'rpt.s.alt.noDraw' : 'rpt.s.alt.plain', params: base, verdict: 'na', source: src }
+  }
+
+  // 备选省:该职业在当地有在招或在公开清单上的省(排除现选省、QC、排除清单省);
+  // 有官方分值表的排前面(这一节的用处就是对分数),其次具名命中、在招量
+  const hasTable = (p: string) => factors.some((f) => f.province === p)
+  const cands = Array.from(new Set([
+    ...facts.byProv.map((r) => r.province),
+    ...dims.pnpOccupations.filter((r) => r.noc === facts.noc && r.type !== 'ineligible').map((r) => r.province),
+  ]))
+    .filter((p) => p && p !== cur && p !== 'QC')
+    .filter((p) => !dims.pnpOccupations.some((r) => r.province === p && r.noc === facts.noc && r.type === 'ineligible'))
+    .map((p) => ({ prov: p, ...(facts.byProv.find((r) => r.province === p) ?? { open: 0, named: 0 }) }))
+    .sort((a, b) => Number(hasTable(b.prov)) - Number(hasTable(a.prov)) || b.named - a.named || b.open - a.open)
+    .slice(0, SWITCH_CAP)
+
+  const out: ReportLine[] = [lineFor(cur, true), ...cands.map((c) => lineFor(c.prov, false))]
+  // 缺项钩子:整节只出一次,不带数字 —— 每个省的因素条数不一样(BC 5 / SK 7 / ON 11),
+  // 拿其中一个省的 x/y 当整节的说法就对不上;逐省的「已答 x/y」已经在各自那行里了
+  if (out.some((l) => !l.key.endsWith('noTable'))) out.push({ key: 'rpt.s.partial', params: {}, verdict: 'na', url: '/pathways' })
+  out.push(SWITCH_NOTE)
+  return out
+}
+
 export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: MatchDims, facts: ReportFacts): Report {
   const conclusions: ReportLine[] = []
   const gaps: ReportLine[] = []
@@ -176,7 +263,7 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
   if (!noc) {
     // 不给 /account 深链:匿名用户点过去是登录墙(死路);选职业入口由页面的职业 chip 承担
     gaps.push({ key: 'rpt.g.noNoc', params: {}, verdict: 'na' })
-    return { goal: 'pr', noc: '', title: '', conclusions, requirements: [], employers: [], gaps, nextSteps, alternatives, confidence: 'low', asOf: facts.fetched ?? '' }
+    return { goal: 'pr', noc: '', title: '', conclusions, requirements: [], employers: [], switches: [], gaps, nextSteps, alternatives, confidence: 'low', asOf: facts.fetched ?? '' }
   }
 
   // 目标省;没选就按「命中具名清单岗多 → 在招多」取前 3(报告要有落点,不铺十省)
@@ -282,6 +369,9 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
     requirements.push(...requirementLines(prov, facts, profile, extra))
   }
 
+  // ── 换省对照(L2-08):现选省 vs 备选省,按官方分值表自算下界分 ────────────────
+  const switches = switchLines(facts, dims, profile, extra.canadianExpMonths, targets)
+
   // ── 联邦 EE 类别(独立信号,不混省提名)───────────────────────────────────
   const eeRows = dims.eeCategories.filter((r) => r.noc === noc && r.drawCrs != null)
   const ee = eeRows.sort((a, b) => (a.drawDate < b.drawDate ? 1 : -1))[0]
@@ -343,13 +433,13 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
   const confidence: Report['confidence'] = basicsAnswered < 4 ? 'low' : hasDeep ? 'high' : 'mid'
   if (basicsAnswered < 4) gaps.push({ key: 'rpt.g.basics', params: { n: 4 - basicsAnswered }, verdict: 'na' })
 
-  return { goal: 'pr', noc, title: facts.title, conclusions, requirements, employers: [], gaps, nextSteps, alternatives, confidence, asOf: facts.fetched ?? '' }
+  return { goal: 'pr', noc, title: facts.title, conclusions, requirements, employers: [], switches, gaps, nextSteps, alternatives, confidence, asOf: facts.fetched ?? '' }
 }
 
 // ── 卡③「选省份」:十省对照,专属题只有一道(手上有没有 offer)──────────────────
 // 免费=库里查得到的(哪个省把你这行放进公开清单、当地在招多少、抽选线区间);
 // 锁区=拿你的答案排出来的完整顺序与每省差距。QC 走自己体系不参与排序(不是 PNP)。
-export type ProvExtra = { hasJobOffer: boolean | null }
+export type ProvExtra = { hasJobOffer: boolean | null; canadianExpMonths?: number | null }
 export function buildProvReport(profile: MatchProfile, extra: ProvExtra, dims: MatchDims, facts: ReportFacts): Report {
   const conclusions: ReportLine[] = []
   const gaps: ReportLine[] = []
@@ -358,7 +448,7 @@ export function buildProvReport(profile: MatchProfile, extra: ProvExtra, dims: M
   const noc = facts.noc
   if (!noc) {
     gaps.push({ key: 'rpt.g.noNoc', params: {}, verdict: 'na' })
-    return { goal: 'prov', noc: '', title: '', conclusions, requirements: [], employers: [], gaps, nextSteps, alternatives, confidence: 'low', asOf: facts.fetched ?? '' }
+    return { goal: 'prov', noc: '', title: '', conclusions, requirements: [], employers: [], switches: [], gaps, nextSteps, alternatives, confidence: 'low', asOf: facts.fetched ?? '' }
   }
 
   // 候选=有在招数据的省 ∪ 公开清单里收了这个职业的省(某省 0 在招但清单收了它,仍然是个真选项)
@@ -422,8 +512,12 @@ export function buildProvReport(profile: MatchProfile, extra: ProvExtra, dims: M
   if (uncovered > 0) gaps.push({ key: 'rpt.g.uncoveredN', params: { n: uncovered }, verdict: 'na' })
   nextSteps.push({ key: 'rpt.n.pathways', params: {}, url: '/pathways' })
 
+  // 换省对照(L2-08):这张卡的现选省=用户选的目标省,没选就用排序第一的省
+  const switches = switchLines(facts, dims, profile, extra.canadianExpMonths ?? null,
+    profile.targetProvinces.length ? profile.targetProvinces : rank.slice(0, 1).map((c) => c.prov))
+
   return {
-    goal: 'prov', noc, title: facts.title, conclusions, requirements: [], employers: [], gaps, nextSteps, alternatives,
+    goal: 'prov', noc, title: facts.title, conclusions, requirements: [], employers: [], switches, gaps, nextSteps, alternatives,
     confidence: !rank.length ? 'low' : extra.hasJobOffer != null ? 'high' : 'mid', asOf: facts.fetched ?? '',
   }
 }
@@ -431,14 +525,14 @@ export function buildProvReport(profile: MatchProfile, extra: ProvExtra, dims: M
 // ── 卡①「找工作」:同一 Report 契约,零新题(职业/处境/目标省已在共用底座里)────────
 // 免费=库里查得到的(在招量、具名命中、帖面薪资 vs ESDC 中位);
 // 锁区=拿他的答案算出来的(有担保记录的雇主是哪几家、按他在意的维度排好的岗位短名单)。
-export function buildJobReport(profile: MatchProfile, dims: MatchDims, facts: ReportFacts, occ: OccStats): Report {
+export function buildJobReport(profile: MatchProfile, dims: MatchDims, facts: ReportFacts, occ: OccStats, extra: ReportExtra = { canadianExpMonths: null }): Report {
   const conclusions: ReportLine[] = []
   const gaps: ReportLine[] = []
   const nextSteps: ReportLine[] = []
   const noc = facts.noc
   if (!noc) {
     gaps.push({ key: 'rpt.g.noNoc', params: {}, verdict: 'na' })
-    return { goal: 'job', noc: '', title: '', conclusions, requirements: [], employers: [], gaps, nextSteps, alternatives: [], confidence: 'low', asOf: facts.fetched ?? '' }
+    return { goal: 'job', noc: '', title: '', conclusions, requirements: [], employers: [], switches: [], gaps, nextSteps, alternatives: [], confidence: 'low', asOf: facts.fetched ?? '' }
   }
 
   // 目标省;没选就按在招量取前 2(找工作看的是岗多不多,与拿 PR 按具名排序不同)
@@ -497,11 +591,12 @@ export function buildJobReport(profile: MatchProfile, dims: MatchDims, facts: Re
   })
 
   nextSteps.push({ key: 'rpt.n.pathways', params: {}, url: '/pathways' })
+  const switches = switchLines(facts, dims, profile, extra.canadianExpMonths, targets)
   const answered = [profile.currentStatus != null, profile.targetProvinces.length > 0].filter(Boolean).length
   if (answered < 2) gaps.push({ key: 'rpt.g.basics', params: { n: 2 - answered }, verdict: 'na' })
 
   return {
-    goal: 'job', noc, title: facts.title, conclusions, requirements: [], employers, gaps, nextSteps, alternatives: [],
+    goal: 'job', noc, title: facts.title, conclusions, requirements: [], employers, switches, gaps, nextSteps, alternatives: [],
     confidence: answered < 2 ? 'low' : occ.self ? 'high' : 'mid', asOf: facts.fetched ?? '',
   }
 }
@@ -516,7 +611,7 @@ export function buildCareerReport(profile: MatchProfile, facts: ReportFacts, occ
   const noc = facts.noc
   if (!noc) {
     gaps.push({ key: 'rpt.g.noNoc', params: {}, verdict: 'na' })
-    return { goal: 'career', noc: '', title: '', conclusions, requirements: [], employers: [], gaps, nextSteps, alternatives, confidence: 'low', asOf: facts.fetched ?? '' }
+    return { goal: 'career', noc: '', title: '', conclusions, requirements: [], employers: [], switches: [], gaps, nextSteps, alternatives, confidence: 'low', asOf: facts.fetched ?? '' }
   }
 
   const s = occ.self
@@ -561,7 +656,7 @@ export function buildCareerReport(profile: MatchProfile, facts: ReportFacts, occ
   nextSteps.push({ key: 'rpt.n.pathways', params: {}, url: '/pathways' })
 
   return {
-    goal: 'career', noc, title: facts.title, conclusions, requirements: [], employers: [], gaps, nextSteps, alternatives,
+    goal: 'career', noc, title: facts.title, conclusions, requirements: [], employers: [], switches: [], gaps, nextSteps, alternatives,
     confidence: !s ? 'low' : peers.length ? 'high' : 'mid', asOf: facts.fetched ?? '',
   }
 }
@@ -608,6 +703,16 @@ const REQ_FREE: Record<string, string> = {
   'rpt.r.income.fail': 'rpt.r.income.failFree',
 }
 const HINT: Record<string, string> = { 'rpt.c.regulated': 'rpt.hint.cert', 'rpt.g.expShort': 'rpt.hint.exp' }
+// 换省对照的免费/付费界线(L2-08):免费=该省有没有官方分值表、官方申请门槛、近 N 次抽选线
+// (三样都是库里查得到的省级事实,锁了只是挡路);付费=**你的自算下界分与达标判定**,那才是拿他答案算出来的。
+// 免费层换成不带分数的同义句,`total`/`have`/`all` 根本不下发;缺项钩子讲的是分数,免费层整行不出。
+const SWITCH_FREE: Record<string, string> = {
+  'rpt.s.cur': 'rpt.s.cur.free',
+  'rpt.s.alt.pass': 'rpt.s.alt.mark.free', 'rpt.s.alt.mark': 'rpt.s.alt.mark.free',
+  'rpt.s.alt.band': 'rpt.s.alt.band.free', 'rpt.s.alt.plain': 'rpt.s.alt.plain.free',
+  'rpt.s.alt.noDraw': 'rpt.s.alt.noDraw.free',
+  'rpt.s.partial': '',
+}
 
 export function gateReport(report: Report, pro: boolean): GatedReport {
   const provLine = report.conclusions.find((c) => LANE_PROV[c.key])
@@ -640,6 +745,16 @@ export function gateReport(report: Report, pro: boolean): GatedReport {
     return { ...l, key: REQ_FREE[l.key], params: rest }
   })
 
+  // 换省对照:分数摘掉、省级事实留着(同 REQ_FREE 手法);有分数被摘 → 锁行落 score 类别
+  const scoreLocked = report.switches.some((l) => SWITCH_FREE[l.key] != null)
+  const switches = report.switches.flatMap((l): ReportLine[] => {
+    const to = SWITCH_FREE[l.key]
+    if (to == null) return [l]
+    if (!to) return []
+    const { total, have, all, rest, ...keep } = l.params   // eslint-disable-line @typescript-eslint/no-unused-vars
+    return [{ ...l, key: to, params: keep }]
+  })
+
   // 卡①/⑥ 走口径闸(库里查得到的免费,拿你的答案算出来的付费):在招量与薪资对照本来就查得到,
   // 按「前 2 条」硬切会把免费的事实也锁掉 —— 那是收不到钱只挡路。锁的是真要答案才筛得出来的那几条。
   if (report.goal !== 'pr') {
@@ -648,8 +763,9 @@ export function gateReport(report: Report, pro: boolean): GatedReport {
     if (report.alternatives.length) cats2.add(report.goal === 'prov' ? 'rank' : 'move')
     if (report.employers.length) cats2.add('sponsors')   // 名单有货才挂锁行(不卖不存在的东西)
     if (reqLocked) cats2.add('req')
+    if (scoreLocked) cats2.add('score')
     return {
-      ...report, conclusions: free, alternatives: [], requirements, employers,
+      ...report, conclusions: free, alternatives: [], requirements, employers, switches,
       lanes: [], hint, locked: LOCK_ORDER.filter((k) => cats2.has(k)), pro: false,
     }
   }
@@ -661,17 +777,17 @@ export function gateReport(report: Report, pro: boolean): GatedReport {
     if (LOCK_CAT[c.key]) cats.add(LOCK_CAT[c.key])
     else if (!shownFree.has(c.key)) cats.add('more')
   }
-  // 2026-07-31 红线复查:**不能**拿「该省有官方分值表」当锁区理由 —— 报告流程只问 4+2 题,
-  // 省估分要 8 个字段(学历/近5年经验/更早经验/首考语言/二语/年龄/时薪/城市),`facts.scores` 从来没被填过,
-  // 所以 scoreAbove/Below 在生产永不触发:解锁后那一行背后是空的 = 卖不存在的东西。
-  // 缺口行与「去估分」的跳转照旧免费给。等打分题进了题库、报告真能算分,score 自然由结论行触发。
+  // 2026-07-31 那条红线(「不能拿『该省有官方分值表』当锁区理由,facts.scores 永远为空」)
+  // 在 2026-08-01 换省对照节(L2-08)落地后**有了真货**:报告自己按已答项算下界分,
+  // 锁的是那个分与达标判定 —— 解锁后确实有东西。所以 score 由 scoreLocked 触发,不再由「有分值表」触发。
   if (report.alternatives.length) cats.add('alts')
   if (reqLocked) cats.add('req')
+  if (scoreLocked) cats.add('score')
 
   return {
     ...report,
     conclusions: report.conclusions.slice(0, FREE_CONCLUSIONS),
-    alternatives: [], requirements, employers,
+    alternatives: [], requirements, employers, switches,
     lanes, hint, locked: LOCK_ORDER.filter((k) => cats.has(k)), pro: false,
   }
 }
@@ -717,6 +833,22 @@ const EN: Record<string, (p: Record<string, string | number>) => string> = {
   'rpt.r.emp.staff.metro': (p) => `Employer-side: at least ${p.metro} full-time staff inside Metro Vancouver (${p.rest} outside) — only the employer can evidence this.`,
   'rpt.r.emp.staff.gta': (p) => `Employer-side: at least ${p.metro} full-time staff (citizens or PRs) at a GTA work location, ${p.rest} outside the GTA — only the employer can evidence this.`,
   'rpt.r.none': (p) => `${p.prov}'s official thresholds are not yet covered by this site — no rule comparison can be made.`,
+  // 换省对照(L2-08):下界口径,句子里必须留住「at least」与「x of y answered」
+  'rpt.s.cur': (p) => `Currently targeting ${p.prov}: on its official ${p.system} your answers score at least ${p.total} (${p.have} of ${p.all} factors answered).`,
+  'rpt.s.cur.free': (p) => `Currently targeting ${p.prov}: the province publishes an official points grid (${p.system}).`,
+  'rpt.s.cur.noTable': (p) => `Currently targeting ${p.prov}: the province publishes no points grid, so no score can be computed.`,
+  'rpt.s.alt.pass': (p) => `Switching to ${p.prov}: at least ${p.total} on the official ${p.system} points grid — already at or above its ${p.mark}-point application threshold.`,
+  'rpt.s.alt.mark': (p) => `Switching to ${p.prov}: at least ${p.total} on the official ${p.system} points grid; its application threshold is ${p.mark} — ${p.rest} more factor(s) needed before that can be judged.`,
+  'rpt.s.alt.mark.free': (p) => `Switching to ${p.prov}: official application threshold ${p.mark} points (${p.system}).`,
+  'rpt.s.alt.band': (p) => `Switching to ${p.prov}: at least ${p.total} on the official ${p.system} points grid; its last ${p.n} draws cut off between ${p.lo} and ${p.hi}.`,
+  'rpt.s.alt.band.free': (p) => `Switching to ${p.prov}: its last ${p.n} draws cut off between ${p.lo} and ${p.hi} (${p.system}).`,
+  'rpt.s.alt.plain': (p) => `Switching to ${p.prov}: at least ${p.total} on the official ${p.system} points grid (no published threshold or draw cutoffs yet).`,
+  'rpt.s.alt.plain.free': (p) => `Switching to ${p.prov}: the province publishes an official points grid (${p.system}).`,
+  'rpt.s.alt.noDraw': (p) => `Switching to ${p.prov}: at least ${p.total} on the official ${p.system} points grid; this stream has no draw record yet.`,
+  'rpt.s.alt.noDraw.free': (p) => `Switching to ${p.prov}: it has an official points grid, but this stream has no draw record yet.`,
+  'rpt.s.alt.noTable': (p) => `Switching to ${p.prov}: the province publishes no points grid, so no score can be computed.`,
+  'rpt.s.partial': () => `Scores above use only the answers on file (language, Canadian experience). Education, age, second language, wage and location are not asked here — fill them in for a full estimate.`,
+  'rpt.s.note': () => `Scores are self-computed from each province's official grid and do not represent an official assessment; the grids are separate systems and the scores cannot be compared with each other.`,
   'rpt.g.noNoc': () => `No occupation on file — list hits, draws and wages all hinge on it. Add your NOC first.`,
   'rpt.g.zeroJobs': (p) => `Zero open postings for this occupation in ${p.prov} right now.`,
   'rpt.g.noCrs': (p) => `Report a CRS score to compute your gap to the "${p.cat}" category draws.`,

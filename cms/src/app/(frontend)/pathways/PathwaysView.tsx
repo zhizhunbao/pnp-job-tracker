@@ -9,7 +9,7 @@ import { IconCheck, IconCompass, IconWarn } from '../Icons'
 import { BANNER_IMGS, PageBanner } from '../ui/primitives'
 import type { PathwayEval, PathwaySignal } from '@/lib/pathways'
 import { PnpScoreCard, type ScoreCtx } from '../jobs/PnpScoreCard'
-import type { DrawRow, ScoreFactor } from '../jobs/pnpSelfScore'
+import type { DrawRow, ScoreFactor } from '@/lib/pnpSelfScore'
 
 // #198(Frank「所有页面改成一样的风格」):卡片对齐详情页基准(1px #e5e7eb / r12 / 白底)
 const card: React.CSSProperties = { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '14px 16px' }

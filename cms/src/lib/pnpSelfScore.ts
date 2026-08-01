@@ -1,4 +1,6 @@
 // E12-09 ② · 省提名自评打分引擎(纯函数,无 React)。
+// 2026-08-01 从 app/(frontend)/jobs/ 搬到 lib/:换省对照节(L2-08)让报告引擎也消费它,
+// 两个消费方(/pathways 打分卡 与 lib/report.ts)都在这层之上 —— 引擎不该住在某个页面目录里。
 //
 // 为什么要这层:两个省的官方分值表结构完全不同(BC SIRS 200 分制有时薪/地区,SK SINP 110 分制有年龄/二语),
 // 但用户只想填**一套**自己的条件,然后看「哪个省更快」。所以这里做的是
@@ -24,6 +26,22 @@ export type ScoreFactor = {
 // 省抽选事实(pnp_draws 的用得着的几列;与 JobsTable.PnpDraw 结构兼容)
 export type DrawRow = { province: string; kind: string; drawDate: string; stream: string; score: number | null }
 
+
+// 抽选线要对得上通道:BC 现行是**按通道分别设线**(近 12 次里 Build 97 / Care: Health 96 / Innovate 132 /
+// 偏远医疗 50),拿最近一次的 50 去比一个木匠的分是错的对照。所以先按通道名匹配,匹配不上就不给差分结论。
+// 通道名两边写法不同(岗位侧「BC PNP Build: construction trades targeted ITA」/ 抽选侧「Build: Construction Trades」)
+// → 取实词做子集判断,不做字面相等。
+// 2026-08-01 从 PnpScoreCard 提到这层:换省对照节(L2-08)也要守这条红线,规则只许有一份。
+const STREAM_STOP = new Set(['bc', 'pnp', 'the', 'and', 'targeted', 'ita', 'stream', 'authority', 'initiative', 'only', 'all'])
+const streamWords = (s: string) => (s || '').toLowerCase().replace(/[^a-z]+/g, ' ').split(' ').filter((w) => w.length > 2 && !STREAM_STOP.has(w))
+export const streamMatches = (drawStream: string, gridStream: string): boolean => {
+  const a = streamWords(drawStream), b = new Set(streamWords(gridStream))
+  return a.length > 0 && b.size > 0 && a.every((w) => b.has(w))
+}
+/** 打分表自报的通道名:`system` 结尾括号里那段(如「OINP EOI points (Ontario Workforce Priority stream)」)*/
+export const gridStreamOf = (system: string): string => /\(([^)]+)\)\s*$/.exec(system)?.[1] ?? ''
+/** 显示用的分制短名:去掉自报通道的括号(整串印在句子里太长) */
+export const systemShort = (system: string): string => system.replace(/\s*\([^)]*\)\s*$/, '')
 
 export type EduKey = 'doctorate' | 'master' | 'bachelor' | 'tradeCert' | 'diploma2y' | 'cert1y' | 'highschool'
 export const EDU_KEYS: EduKey[] = ['doctorate', 'master', 'bachelor', 'tradeCert', 'diploma2y', 'cert1y', 'highschool']
@@ -149,11 +167,16 @@ export type ProvinceScore = {
  * 算一个省的估分。
  * @param overrides 手动/自动项的分数(BC 的时薪与地区、SK 的雇主 offer 等),由 UI 传进来
  * @param ticks     加分项勾选状态,key = `${factor}:${seq}`
+ * @param only      自动匹配的**白名单**(L2-08 换省对照节):只有这些因素拿 profile 去匹官方档位,
+ *                  其余一律当「未答」(0 分、matched 空)。缺省=不限,老调用方(/pathways 打分卡)行为不变。
+ *                  为什么需要它:报告只问了语言与加拿大经验,若让缺答的字段照常匹配,
+ *                  「没考语言」会被 pickByThreshold 兜到最低档白捡分 —— 那是编数。
  */
 export function scoreProvince(
   factors: ScoreFactor[], province: string, profile: SelfProfile,
   overrides: Record<string, { pts: number; matched: string; source: ScorePart['source'] }> = {},
   ticks: Record<string, boolean> = {},
+  only?: Set<string>,
 ): ProvinceScore | null {
   const all = factors.filter((f) => f.province === province)
   if (!all.length) return null
@@ -173,7 +196,7 @@ export function scoreProvince(
     let source: ScorePart['source'] = 'profile'
     if (ov) {
       pts = ov.pts; matched = ov.matched; source = ov.source
-    } else if (AUTO_PICK[name] && rows.length) {
+    } else if (AUTO_PICK[name] && rows.length && (!only || only.has(name))) {
       const hit = AUTO_PICK[name](rows, profile)
       pts = hit?.points ?? 0
       matched = hit?.label ?? ''

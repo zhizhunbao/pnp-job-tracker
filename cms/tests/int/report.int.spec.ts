@@ -5,6 +5,7 @@
 import { describe, it, expect } from 'vitest'
 import { normalizeProfile, type MatchDims } from '@/lib/match'
 import { buildPrReport, gateReport, reportLineEn, type ReportFacts } from '@/lib/report'
+import type { ScoreFactor } from '@/lib/pnpSelfScore'
 
 // ── fixture 维度(形状与生产 dims 一致,数据虚构但结构真实)──
 // BC/AB 清单式(有 named 行);ON 不公布清单(NO_LIST_PROVINCES → exclusion);NL 本站未覆盖(无行)
@@ -302,7 +303,9 @@ describe('CRS 缺口不能是死路', () => {
 })
 
 describe('锁区不许卖算不出来的东西', () => {
-  it('有官方分值表的省也不锁「分差」——报告没收集打分要的 8 个字段,解锁后背后是空的', () => {
+  // 2026-08-01 换省对照(L2-08)之后口径改了:报告能按已答项算下界分了,score 由**算出来的那几行**触发。
+  // 这条守的是另一半 —— 分值表数据没到位时(scoreFactors 空),照旧不挂 score 锁行,不卖空气。
+  it('拿不到官方分值表时不锁「分差」——解锁后背后是空的', () => {
     const r = gateReport(buildPrReport(base(), exp12, dims, facts({
       noc: '31301', teer: 1, byProv: [{ province: 'BC', open: 19, named: 18 }],
       draws: [{ province: 'BC', drawDate: '2026-07-20', stream: 'Care: Health', score: 96 }],
@@ -310,5 +313,122 @@ describe('锁区不许卖算不出来的东西', () => {
     expect(r.gaps.some((g) => g.key === 'rpt.g.answerScore')).toBe(true)   // 缺口照说
     expect(r.nextSteps.some((s) => s.key === 'rpt.n.score')).toBe(true)    // 去估分的路照给
     expect(r.locked).not.toContain('score')                                // 但不当付费卖点
+  })
+})
+
+// ── 换省对照节(L2-08):下界口径的四条红线 ──────────────────────────────────
+// 分值表 fixture:BC(SIRS 200 分制、无申请门槛)/ SK(110 分制、门槛 60)/ AB 无表。
+// 每省都留一个「未答就不该被匹上」的档位(BC 的 Below CLB 4、SK 的年龄档)。
+const sf = (o: Partial<ScoreFactor>): ScoreFactor => ({
+  province: 'BC', system: 'SIRS', factor: 'language', kind: 'row', seq: 0, label: '', points: 0,
+  xorPrev: false, rule: '', factorMax: null, factorGroup: '', groupMax: null, passMark: null,
+  maxTotal: 200, guideEffective: '2026-06-10', fetched: '2026-07-27', url: 'https://welcomebc.ca/grid',
+  ...o,
+})
+const SK = { province: 'SK', system: 'SINP Points Grid', maxTotal: 110, passMark: 60, url: 'https://sk.ca/grid' }
+const factors: ScoreFactor[] = [
+  sf({ factor: 'language', seq: 0, label: 'CLB 9 or higher', points: 30 }),
+  sf({ factor: 'language', seq: 1, label: 'CLB 8', points: 25 }),
+  sf({ factor: 'language', seq: 2, label: 'CLB 7', points: 20 }),
+  sf({ factor: 'language', seq: 3, label: 'Below CLB 4', points: 5 }),
+  sf({ factor: 'work', seq: 0, label: '5 or more years', points: 20 }),
+  sf({ factor: 'work', seq: 1, label: '1 year', points: 4 }),
+  sf({ factor: 'education', seq: 0, label: "Master's degree", points: 17 }),
+  sf({ ...SK, factor: 'language1', seq: 0, label: 'CLB 8 and higher', points: 20 }),
+  sf({ ...SK, factor: 'language1', seq: 1, label: 'CLB 7', points: 18 }),
+  sf({ ...SK, factor: 'work5', seq: 0, label: '5 years', points: 10 }),
+  sf({ ...SK, factor: 'work5', seq: 1, label: '1 year', points: 2 }),
+  sf({ ...SK, factor: 'age', seq: 0, label: '22 – 34 years', points: 12 }),
+]
+const swFacts = (o: Partial<ReportFacts> = {}) => facts({
+  noc: '31301', title: 'RN', teer: 1, scoreFactors: factors,
+  byProv: [{ province: 'BC', open: 19, named: 18 }, { province: 'SK', open: 12, named: 12 }],
+  ...o,
+})
+const sw = (r: { switches: { key: string; params: Record<string, string | number>; url?: string }[] }, key: string) =>
+  r.switches.find((l) => l.key === key)
+
+describe('换省对照节(L2-08)', () => {
+  it('现选省 BC:按已答的两项算下界分,并说清「已答 2/3 项」', () => {
+    const r = buildPrReport(base(), exp12, dims, swFacts())
+    const cur = sw(r, 'rpt.s.cur')
+    expect(cur?.params.prov).toBe('BC')
+    expect(cur?.params.total).toBe(29)    // CLB8 25 + 1 年经验 4;学历未答 0
+    expect(cur?.params.have).toBe(2)
+    expect(cur?.params.all).toBe(3)
+  })
+
+  it('未答的因素不许白捡分:没填语言时不会被兜到「Below CLB 4」那档', () => {
+    const noClb = buildPrReport(normalizeProfile({ currentStatus: 'working', targetProvinces: ['BC'] }), exp12, dims, swFacts())
+    const cur = sw(noClb, 'rpt.s.cur')
+    expect(cur?.params.total).toBe(4)     // 只剩经验那 4 分,语言一分不给
+    expect(cur?.params.have).toBe(1)
+  })
+
+  it('下界低于门槛只摆门槛、不说不达标;过了门槛才判「已达标」', () => {
+    const below = sw(buildPrReport(base(), exp12, dims, swFacts()), 'rpt.s.alt.mark')
+    expect(below?.params.mark).toBe(60)
+    expect(below?.params.total).toBe(22)  // CLB8 20 + 1 年 2;年龄未答
+    expect(below?.params.rest).toBe(1)    // 还差年龄这一项才判得了
+    const easy = factors.map((f) => (f.province === 'SK' ? { ...f, passMark: 10 } : f))
+    const passed = buildPrReport(base(), exp12, dims, swFacts({ scoreFactors: easy }))
+    expect(sw(passed, 'rpt.s.alt.pass')?.params.mark).toBe(10)
+    expect(sw(passed, 'rpt.s.alt.mark')).toBeUndefined()
+  })
+
+  it('无门槛但有抽选记录 → 摆抽选区间;没有分值表的省明说未公布', () => {
+    const r = buildPrReport(base({ targetProvinces: ['SK'] }), exp12, dims, swFacts({
+      draws: [
+        { province: 'BC', drawDate: '2026-07-20', stream: 'Care: Health', score: 96 },
+        { province: 'BC', drawDate: '2026-07-06', stream: 'Care: Health', score: 88 },
+      ],
+    }))
+    const band = sw(r, 'rpt.s.alt.band')
+    expect(band?.params.prov).toBe('BC')
+    expect([band?.params.lo, band?.params.hi, band?.params.n]).toEqual([88, 96, 2])
+    const ab = buildPrReport(base({ targetProvinces: ['AB'] }), exp12, dims, swFacts())
+    expect(sw(ab, 'rpt.s.cur.noTable')?.params.prov).toBe('AB')
+  })
+
+  it('抽选线红线:打分表自报了通道,就只认同通道的抽选 —— 对不上说「这条通道还没抽选记录」', () => {
+    // ON 的实况:新通道的分值表 + 逐轮公布的旧通道分数线,两者不是同一套分制,配在一起就是错的锚
+    const on: ScoreFactor[] = factors.map((f) => (f.province === 'SK'
+      ? { ...f, province: 'ON', system: 'OINP EOI points (Ontario Workforce Priority stream)', passMark: null, maxTotal: null }
+      : f))
+    const r = buildPrReport(base(), exp12, dims, swFacts({
+      scoreFactors: on,
+      byProv: [{ province: 'BC', open: 19, named: 18 }, { province: 'ON', open: 40, named: 0 }],
+      draws: [{ province: 'ON', drawDate: '2026-05-14', stream: 'Employer Job Offer: Foreign Worker', score: 57 }],
+    }))
+    expect(sw(r, 'rpt.s.alt.band')).toBeUndefined()
+    const nd = sw(r, 'rpt.s.alt.noDraw')
+    expect(nd?.params.prov).toBe('ON')
+    expect(nd?.params.system).toBe('OINP EOI points')   // 分制短名:自报通道那截不印进句子
+  })
+
+  it('免责常驻 + 缺项钩子指完整估分器', () => {
+    const r = buildPrReport(base(), exp12, dims, swFacts())
+    expect(r.switches[r.switches.length - 1].key).toBe('rpt.s.note')
+    expect(sw(r, 'rpt.s.partial')?.url).toBe('/pathways')
+  })
+
+  it('付费闸:免费层只剩省级官方事实,分数一个都不下发,锁行落 score', () => {
+    const built = buildPrReport(base(), exp12, dims, swFacts())
+    const free = gateReport(built, false)
+    expect(keys(free.switches)).toContain('rpt.s.cur.free')
+    expect(keys(free.switches)).toContain('rpt.s.alt.mark.free')
+    expect(keys(free.switches)).not.toContain('rpt.s.partial')
+    expect(free.switches.every((l) => l.params.total === undefined && l.params.have === undefined)).toBe(true)
+    expect(JSON.stringify(free.switches)).not.toContain('"total"')
+    expect(free.locked).toContain('score')
+    const pro = gateReport(built, true)
+    expect(keys(pro.switches)).toContain('rpt.s.cur')
+    expect(pro.locked).toEqual([])
+  })
+
+  it('免费层留住的是事实:门槛分与抽选区间照给(锁的只是你的分)', () => {
+    const free = gateReport(buildPrReport(base(), exp12, dims, swFacts()), false)
+    expect(sw(free, 'rpt.s.alt.mark.free')?.params.mark).toBe(60)
+    expect(reportLineEn(free.switches[0])).toContain('official points grid')
   })
 })

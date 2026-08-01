@@ -40,9 +40,10 @@ export async function POST(req: Request) {
     assembleReportFacts(pool, noc),
     goal === 'job' || goal === 'career' ? assembleOccStats(pool, noc) : Promise.resolve(null),
   ])
-  const built = goal === 'job' ? buildJobReport(profile, dims, facts, occ!)
+  // extra 三张卡都要传:换省对照(L2-08)拿加拿大经验算下界分,卡①/③ 少了它会比卡② 少算一项
+  const built = goal === 'job' ? buildJobReport(profile, dims, facts, occ!, extra)
     : goal === 'career' ? buildCareerReport(profile, facts, occ!)
-      : goal === 'prov' ? buildProvReport(profile, { hasJobOffer: typeof merged.hasJobOffer === 'boolean' ? merged.hasJobOffer : null }, dims, facts)
+      : goal === 'prov' ? buildProvReport(profile, { hasJobOffer: typeof merged.hasJobOffer === 'boolean' ? merged.hasJobOffer : null, ...extra }, dims, facts)
         : buildPrReport(profile, extra, dims, facts)
   // 付费闸在服务端(L2-03):免费响应里根本没有锁区正文,前端只负责显示锁行标题
   const report = gateReport(built, isPro(user))

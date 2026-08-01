@@ -3,6 +3,7 @@
 //   byProv 的 named 与职位板 pnp_stream 口径同、draws 与 /pathways 抽选块同表、
 //   scoreProvinces=pnp_score_factors 实际覆盖的省(BC/SK),不写死。
 import { NO_LIST_PROVINCES } from './match'   // 不公布清单的省(ON):雇主线索改用粗筛可提名口径
+import type { ScoreFactor } from './pnpSelfScore'
 import type { ReportFacts } from './report'
 import type { Requirement } from './rules'
 
@@ -122,7 +123,12 @@ export async function assembleReportFacts(pool: any, noc: string): Promise<Repor
       `SELECT province, draw_date, stream, score FROM pnp_draws
        WHERE score IS NOT NULL AND COALESCE(draw_date,'') <> '' AND province <> 'FED'
        ORDER BY draw_date DESC LIMIT 120`).catch(() => ({ rows: [] })),
-    pool.query(`SELECT DISTINCT province FROM pnp_score_factors`).catch(() => ({ rows: [] })),
+    // 官方分值表整张取回(120 行级):换省对照节(L2-08)要按行匹档位,不只要省名 ——
+    // 省名由这张表派生,原先那条 SELECT DISTINCT 撤掉,少一次往返
+    pool.query(
+      `SELECT province, system, factor, kind, seq, label, points, xor_prev, rule,
+              factor_max, factor_group, group_max, pass_mark, max_total, guide_effective, url, fetched
+       FROM pnp_score_factors ORDER BY province, factor, seq`).catch(() => ({ rows: [] })),
     // 职业名=NOC 官方名(不拿岗位标题冒充);teer 优先统计表,缺行退 NOC 码第 2 位(2021 版编码即 TEER,结构事实)
     pool.query(
       `SELECT COALESCE(s.title_en, d.title, '') title, s.teer
@@ -139,6 +145,14 @@ export async function assembleReportFacts(pool: any, noc: string): Promise<Repor
       .catch(() => ({ rows: [] })),
   ])
   const h = head.rows[0] ?? {}
+  // 官方分值表一行 → ScoreFactor(命名换成驼峰,值一分不改)
+  const factorRows: ScoreFactor[] = scoreProv.rows.map((r: any): ScoreFactor => ({
+    province: r.province ?? '', system: r.system ?? '', factor: r.factor ?? '', kind: r.kind ?? 'row',
+    seq: Number(r.seq ?? 0), label: r.label ?? '', points: num(r.points), xorPrev: !!r.xor_prev, rule: r.rule ?? '',
+    factorMax: num(r.factor_max), factorGroup: r.factor_group ?? '', groupMax: num(r.group_max),
+    passMark: num(r.pass_mark), maxTotal: num(r.max_total),
+    guideEffective: r.guide_effective ?? '', fetched: r.fetched ?? '', url: r.url ?? '',
+  }))
   const wageOf = new Map<string, number | null>(wages.rows.map((r: any) => [r.province, num(r.median_wage_annual)]))
   return {
     noc,
@@ -157,7 +171,8 @@ export async function assembleReportFacts(pool: any, noc: string): Promise<Repor
     draws: draws.rows.map((r: any) => ({
       province: r.province ?? '', drawDate: String(r.draw_date ?? ''), stream: r.stream ?? '', score: num(r.score),
     })),
-    scoreProvinces: scoreProv.rows.map((r: any) => String(r.province)),
+    scoreFactors: factorRows,
+    scoreProvinces: Array.from(new Set(factorRows.map((f) => f.province))),
     fetched: TODAY(),
   }
 }

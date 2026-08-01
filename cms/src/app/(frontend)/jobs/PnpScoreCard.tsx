@@ -13,7 +13,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import type { TFn } from './i18n'
-import { DEFAULT_PROFILE, EDU_KEYS, scoreProvince, type DrawRow, type EduKey, type ScoreFactor, type SelfProfile } from './pnpSelfScore'
+import { DEFAULT_PROFILE, EDU_KEYS, scoreProvince, streamMatches, type DrawRow, type EduKey, type ScoreFactor, type SelfProfile } from '@/lib/pnpSelfScore'
 
 // 打分是**关于你这个人**的功能,不绑某一个岗位(Frank 2026-07-27「应该单独弄个功能吧,
 // 不应该放到 pnp 弹框里面」)—— 所以只收一个轻量语境:职业(拿该省在招数)、目标省(排序)、
@@ -55,17 +55,6 @@ const label = (raw: string, lang: string) => (lang === 'zh' ? L10N[raw]?.zh : la
 
 const sel: React.CSSProperties = { width: '100%', height: 34, border: '1px solid #d1d5db', borderRadius: 8, fontSize: 13, background: '#fff', padding: '0 8px' }
 const lbl: React.CSSProperties = { fontSize: 12, color: '#6b7280', marginBottom: 3 }
-
-// 抽选线要对得上通道:BC 现行是**按通道分别设线**(近 12 次里 Build 97 / Care: Health 96 / Innovate 132 /
-// 偏远医疗 50),拿最近一次的 50 去比一个木匠的分是错的对照。所以先按通道名匹配,匹配不上就不给差分结论。
-// 通道名两边写法不同(岗位侧「BC PNP Build: construction trades targeted ITA」/ 抽选侧「Build: Construction Trades」)
-// → 取实词做子集判断,不做字面相等。
-const STREAM_STOP = new Set(['bc', 'pnp', 'the', 'and', 'targeted', 'ita', 'stream', 'authority', 'initiative', 'only', 'all'])
-const streamWords = (s: string) => (s || '').toLowerCase().replace(/[^a-z]+/g, ' ').split(' ').filter((w) => w.length > 2 && !STREAM_STOP.has(w))
-const streamMatches = (drawStream: string, jobStream: string) => {
-  const a = streamWords(drawStream), b = new Set(streamWords(jobStream))
-  return a.length > 0 && b.size > 0 && a.every((w) => b.has(w))
-}
 
 /** 加分项一条 = [勾选框 | 条目 | +N] 三列 —— +N 单独成列才对得齐(别塞回文字尾巴上) */
 function Tick({ on, onToggle, text, pts }: { on: boolean; onToggle: (v: boolean) => void; text: string; pts: number | null }) {
