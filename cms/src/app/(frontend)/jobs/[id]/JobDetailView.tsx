@@ -73,7 +73,7 @@ export default function JobDetailView({ job, plan, dims }: { job: JobRow; plan: 
           </div>
 
           {/* 刀 1(入口下沉-20260731):报告入口,自包含组件,老结构不动;拿不到数/本省零在招=整卡不渲 */}
-          <OccReportCard noc={job.noc || ''} province={job.province || ''} t={t} />
+          <OccReportCard noc={job.noc || ''} province={job.province || ''} salaryAnnual={job.salaryAnnual ?? null} t={t} />
 
         </div>
       </PageShell>

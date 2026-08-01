@@ -107,11 +107,20 @@ export function OccPicker({ t, lang, initial, onDone, onClose }: {
 
         {/* 先分类再选(Frank 2026-07-31「那么多职业用户怎么选」):一行大类 chip,
             默认「热门」= 在招量前列;选中某类就在下面铺这一类的职业 */}
+        {/* 分类是**导航**,下面的职业才是**选项**(Frank 2026-07-31「这个分类和下面的职位不应该有明显的界限吗」):
+            两排都做成药丸,视觉上分不出层级 —— 分类改成文字标签页(选中站蓝加粗带下划线),
+            再用一条发丝线与职业区隔开 */}
         {cats.length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
-            <button onClick={() => { setCat(''); setMore(false) }} style={chipStyle(!cat)}>{t('occ.cat.hot')}</button>
-            {cats.map((c) => (
-              <button key={c} onClick={() => { setCat(c); setMore(true) }} style={chipStyle(cat === c)}>{t('broad.' + c)}</button>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, paddingBottom: 10, marginBottom: 12, borderBottom: `1px solid ${UI.border}` }}>
+            {['', ...cats].map((c) => (
+              <button key={c || 'hot'} onClick={() => { setCat(c); setMore(Boolean(c)) }}
+                style={{
+                  border: 'none', background: 'none', padding: '2px 0', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13.5,
+                  color: cat === c ? UI.primary : UI.text2, fontWeight: cat === c ? 700 : 400,
+                  borderBottom: cat === c ? `2px solid ${UI.primary}` : '2px solid transparent',
+                }}>
+                {c ? t('broad.' + c) : t('occ.cat.hot')}
+              </button>
             ))}
           </div>
         )}

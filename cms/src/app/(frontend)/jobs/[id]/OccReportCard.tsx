@@ -12,7 +12,7 @@
 //   ④ 拿不到数 / 本省零在招 → 整卡不渲,不出空壳。
 import { useEffect, useRef, useState } from 'react'
 
-import { UI } from '../../ui/primitives'
+import { Button, UI } from '../../ui/primitives'
 import { track } from '@/lib/track'
 import type { TFn } from '../i18n'
 
@@ -23,7 +23,7 @@ type Facts = {
 
 // 标题里用省码(BC/ON):provName 的全称是「British Columbia(不列颠哥伦比亚省)」,
 // 放进卡头会把一行标题撑成两行,而这页正文早就说清是哪个省了
-export function OccReportCard({ noc, province, t }: { noc: string; province: string; t: TFn }) {
+export function OccReportCard({ noc, province, salaryAnnual, t }: { noc: string; province: string; salaryAnnual: number | null; t: TFn }) {
   const box = useRef<HTMLDivElement | null>(null)
   const [facts, setFacts] = useState<Facts | null>(null)
 
@@ -46,21 +46,34 @@ export function OccReportCard({ noc, province, t }: { noc: string; province: str
 
   const here = facts?.byProv.find((r) => r.province === province)
   const show = Boolean(facts && here && here.n > 0)
+  // 本岗年薪 vs 该职业全国帖面中位:差 5% 以内不说话(噪音),两边有一个没有也不说
+  const med = facts?.medianSalary ?? null
+  const raw = salaryAnnual != null && med != null && med > 0 ? Math.round(((salaryAnnual - med) / med) * 100) : null
+  const pct = raw != null && Math.abs(raw) >= 5 ? raw : null
 
   return (
     <div ref={box}>
       {show && here && facts && (
         <div style={{ background: '#f8fbff', border: '1px solid #bfdbfe', borderRadius: 12, padding: '14px 16px', margin: '12px 0 0' }}>
-          <div style={{ fontSize: 13.5, fontWeight: 700, color: UI.primaryDeep, marginBottom: 10 }}>{t('jd.rep.t', { prov: province })}</div>
-          <Row k={t('jd.rep.open')} v={String(here.n)} />
+          {/* 标题删了(2026-07-31 Frank「上面导航本来就有显示省份,多此一举」):口径写进每行标签即可。
+              第一行改成**对眼前这个岗的判断**——用户正在看它,「这个岗比同职业中位高/低多少」
+              比三行统计更有点开的理由(数都是库里的:本岗年薪 vs 该职业全国帖面中位)。 */}
+          {pct != null && (
+            <div style={{ fontSize: 14.5, fontWeight: 700, color: pct >= 0 ? '#047857' : '#b45309', lineHeight: 1.5, marginBottom: 10 }}>
+              {t(pct >= 0 ? 'jd.rep.vsHi' : 'jd.rep.vsLo', { pct: Math.abs(pct) })}
+            </div>
+          )}
+          <Row k={t('jd.rep.open', { prov: province })} v={String(here.n)} />
           <Row k={t('jd.rep.elig')} v={String(here.eligible)} />
           {facts.medianSalary != null && <Row k={t('jd.rep.med')} v={`$${Math.round(facts.medianSalary / 1000)}K`} />}
           {/* 直接落报告态:卡上写的是「看报告」,落地却是两道题=说话不算数。
               引擎不给目标省也算得出(按在招量取前两个省),缺的两题在报告里作缺口行请他补 */}
-          <a href={`/plan/job?noc=${encodeURIComponent(noc)}&view=report`} onClick={() => track('jd-report-open', { noc })}
-            style={{ display: 'inline-block', marginTop: 10, color: UI.primary, fontSize: 13.5, fontWeight: 600, textDecoration: 'none' }}>
-            {t('jd.rep.go')} →
-          </a>
+          {/* 站内统一按钮(不是裸文字链),且**不带箭头**(2026-07-27 拍板:按钮上的箭头一律删) */}
+          <div style={{ marginTop: 12 }}>
+            <span onClick={() => track('jd-report-open', { noc })}>
+              <Button kind="primary" href={`/plan/job?noc=${encodeURIComponent(noc)}&view=report`}>{t('jd.rep.go')}</Button>
+            </span>
+          </div>
         </div>
       )}
     </div>
