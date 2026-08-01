@@ -283,25 +283,21 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
           本页初版自造 760 main 违规,2026-07-31 Frank 点名纠正);答题/报告列 760 居中保行长可读(news 阅读页先例) */}
       <div style={{ flex: '1 0 auto' }}>
         <PageShell pad="1rem 1.25rem 40px">
-          <div style={{ maxWidth: view === 'quiz' ? 560 : 760, margin: '0 auto' }}>
-        {/* 面包屑(照职位详情页的骨架,2026-07-31 Frank「这个像 job 的导航也没有」):
-            入口是 /start 的七目标卡,所以上一级就是「开始规划」 */}
+          {/* 骨架照职位详情页(铁律 page-template-job-detail;2026-07-31 Frank「这两个布局怎么不一样呢」):
+              面包屑在卡外 → **一张白卡包住 H1 + 右上返回 + 副题 + 正文**,列宽 860 与详情页同轨。
+              答题态的题目区在卡内再收窄(见下面 plQ),因为四选一撑满 860 就成了「四个字拉一整行」。 */}
+          <div style={{ maxWidth: 860, margin: '0 auto' }}>
         <div style={{ fontSize: 12, color: UI.text2, marginBottom: 8, lineHeight: 1.7 }}>
           <a href="/start" style={{ color: UI.primary, textDecoration: 'none' }}>{t('home.entry')}</a>
           {' › '}{t(`plan.${decision}.title`)}
         </div>
-        {/* 返回(铁律 2026-07-31 Frank「以后加新页面都要加这个返回按钮」):
-            照职位详情页那把 —— 有历史走 history.back(保留来处的滚动与筛选),新标签页无处可回就落职位板 */}
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
-          <h1 style={{ fontSize: 22, margin: '6px 0 4px', flex: 1, minWidth: 0 }}>{t(`plan.${decision}.title`)}</h1>
-          {/* 样式与全站返回口径一致(BackLink 药丸、无箭头);这里要 goBackOr 的行为所以用 button 同款样式 */}
-          <button onClick={() => goBackOr('/')} style={{ flexShrink: 0, border: `1px solid ${UI.border}`, background: '#fff', color: UI.primary, borderRadius: 999, padding: '4px 14px', fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{t('detail.back')}</button>
-        </div>
-
-        {view === 'quiz' ? (
-          // 答题列比报告列更窄(2026-07-31 Frank「这个问题页面跟狗屎一样」):一屏一题在桌面
-          // 撑满 760 轨 = 四个字的选项拉一整行、右边全是空白。Typeform 范式的前提是窄列居中。
-          <>
+        <div style={{ ...CARD, position: 'relative', margin: '0 0 10px', padding: '14px 16px 16px' }}>
+          {/* 返回:与详情页同一把(方角、灰边白底、绝对定位右上);行为仍是 goBackOr */}
+          <button onClick={() => goBackOr('/')}
+            style={{ position: 'absolute', top: 12, right: 12, border: '1px solid #d1d5db', borderRadius: 8, padding: '6px 14px', fontSize: 12.5, color: '#374151', background: '#fff', whiteSpace: 'nowrap', cursor: 'pointer', fontFamily: 'inherit' }}>{t('detail.back')}</button>
+          <h1 style={{ margin: '0 0 2px', fontSize: 22, lineHeight: 1.35, color: '#111827', paddingRight: 100 }}>{t(`plan.${decision}.title`)}</h1>
+          {/* 卡头第二行:答题态=这张卡问什么 + 清空重填;报告态=职业名 + 改答案/存 PDF */}
+          {view === 'quiz' ? (
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 12, color: UI.text3, margin: '2px 0 14px' }}>
               <span>{t(stage === 'explore' ? 'plan.explore.sub' : `plan.${decision}.sub`)}</span>
               <span style={{ display: 'flex', gap: 12, flexShrink: 0 }}>
@@ -318,6 +314,27 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                 </button>
               </span>
             </div>
+          ) : (
+            <div className="noPrint" style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', margin: '2px 0 10px' }}>
+              {/* 人话名优先(nocTitle 走 /api/quiz 出中文名),代码作灰字小注 */}
+              {rpt && rpt !== 'loading' && (rpt.noc
+                ? <span style={{ fontSize: 15, fontWeight: 700, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{shortOcc(nocTitle || rpt.title)}<span style={{ color: UI.text3, fontWeight: 400, fontSize: 12, marginLeft: 6 }}>{rpt.noc}</span></span>
+                : <OccChip noc="" nocTitle="" t={t} onPick={() => gotoQuiz()} />)}
+              {/* 两个动作钮同组靠右:窄屏一起换行,不会一个贴右一个掉到左边 */}
+              <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+                <button onClick={() => gotoQuiz()} style={BTN}>{t('plan.back')}</button>
+                {rpt && rpt !== 'loading' && rpt.noc && (
+                  <button onClick={() => { track(`plan-${decision}-print`); window.print() }} style={BTN}>{t('plan.pdf')}</button>
+                )}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {view === 'quiz' ? (
+          // 答题列比报告列更窄(2026-07-31 Frank「这个问题页面跟狗屎一样」):一屏一题在桌面
+          // 撑满 760 轨 = 四个字的选项拉一整行、右边全是空白。Typeform 范式的前提是窄列居中。
+          <>
             {/* 职业进了流程(第一步),这里不再另挂常驻 chip —— 同一件事只出现一次 */}
             {/* 题卡:框架只出题与导航,壳与配色归站内 token —— 选项做成可点的卡(能点才有 hover 和小手),
                 主按钮=站蓝(全站按钮统一,不留框架灰块) */}
@@ -367,17 +384,20 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                 <div style={{ display: 'flex', alignItems: 'center', paddingBottom: 12, marginBottom: 14, borderBottom: `1px solid ${UI.hairline}` }}>
                   <Tag variant="region">{t('plan.set.basic')}</Tag>
                 </div>
+                <div style={{ maxWidth: 600 }}>
                 <div style={{ fontSize: 19, fontWeight: 700, lineHeight: 1.55, marginBottom: 6 }}>{t('quiz.q2')}</div>
                 <div style={{ fontSize: 12.5, color: UI.text2, marginBottom: 12 }}>{t('quiz.q2sub')}</div>
                 <OccPicker inline t={t} lang={lang} initial={bands.nocs} doneLabel={t('plan.next')}
                   onDone={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || ''); setOccStep(false) }} />
+                </div>
               </div>
             ) : (
               <div style={{ ...CARD, padding: '14px 20px 6px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', paddingBottom: 12, marginBottom: 14, borderBottom: `1px solid ${UI.hairline}` }}>
                   <Tag variant={stage === 'explore' ? 'warn' : 'region'}>{t(stage === 'explore' ? 'plan.set.explore' : 'plan.set.basic')}</Tag>
                 </div>
-                <div className="plSurvey">{survey && <Survey model={survey} />}</div>
+                {/* 题目区限宽但**左对齐**:与卡头的题组标签同一条左边线;居中会跟标签错开一截(实拍) */}
+                <div className="plSurvey" style={{ maxWidth: 600 }}>{survey && <Survey model={survey} />}</div>
               </div>
             )}
           </>
@@ -402,19 +422,6 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
 }`}</style>
             <div className="printOnly" style={{ borderBottom: '1px solid #ddd', paddingBottom: 8, marginBottom: 12, fontSize: 12, color: UI.text2 }}>
               Offer2PR{rpt && rpt !== 'loading' && rpt.asOf ? ` — ${rpt.asOf}` : ''}
-            </div>
-            <div className="noPrint" style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', margin: '2px 0 10px' }}>
-              {/* 人话名优先(nocTitle 走 /api/quiz 出中文名),代码作灰字小注 */}
-              {rpt && rpt !== 'loading' && (rpt.noc
-                ? <span style={{ fontSize: 15, fontWeight: 700, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{shortOcc(nocTitle || rpt.title)}<span style={{ color: UI.text3, fontWeight: 400, fontSize: 12, marginLeft: 6 }}>{rpt.noc}</span></span>
-                : <OccChip noc="" nocTitle="" t={t} onPick={() => gotoQuiz()} />)}
-              {/* 两个动作钮同组靠右:窄屏一起换行,不会一个贴右一个掉到左边 */}
-              <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-                <button onClick={() => gotoQuiz()} style={BTN}>{t('plan.back')}</button>
-                {rpt && rpt !== 'loading' && rpt.noc && (
-                  <button onClick={() => { track(`plan-${decision}-print`); window.print() }} style={BTN}>{t('plan.pdf')}</button>
-                )}
-              </span>
             </div>
             {rpt === 'loading' || rpt === null ? (
               <div style={{ background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 12, minHeight: 220 }} />
