@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><title>规则引擎 · 门槛对照 — 效果图</title>
+<style>
+  :root{--pri:#2563eb;--priD:#1e40af;--t:#111827;--t2:#6b7280;--t3:#9ca3af;--bd:#e5e7eb;--hl:#f3f4f6;--bg:#f9fafb;--ok:#047857;--warn:#b45309}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--t)}
+  .wrap{max-width:1320px;margin:0 auto;padding:20px 16px 40px}
+  h1{font-size:20px;margin:8px 0 4px}
+  .sub{font-size:13px;color:var(--t2);margin-bottom:20px;line-height:1.7}
+  .two{display:grid;grid-template-columns:1fr;gap:22px}
+  @media(min-width:900px){.two{grid-template-columns:420px 1fr}}
+  .panel{margin-bottom:22px}
+  .ph{display:flex;align-items:baseline;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+  .ph b{font-size:15px}
+  .ph span{font-size:12.5px;color:var(--t2)}
+  .card{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:14px 16px}
+  .secH{font-size:14.5px;font-weight:700;margin:0 0 10px}
+  .row{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--hl);font-size:13.5px;line-height:1.6}
+  .row:last-child{border-bottom:0}
+  .dot{width:8px;height:8px;border-radius:50%;margin-top:6px}
+  .ok{background:#10b981}.no{background:#f59e0b}.na{background:#9ca3af}
+  .need{color:var(--t2);font-size:12.5px;display:block;margin-top:2px}
+  .val{white-space:nowrap;font-weight:700}
+  .val.ok{background:none;color:var(--ok)}
+  .val.no{background:none;color:var(--warn)}
+  .val.na{background:none;color:var(--t3);font-weight:400}
+  table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--hl);vertical-align:top}
+  th{color:var(--t2);font-weight:600;font-size:12.5px}
+  code{background:var(--hl);border-radius:4px;padding:1px 5px;font-size:12px}
+  .lock{display:flex;align-items:center;gap:9px;padding:9px 0;font-size:13.5px;font-weight:600}
+  .tag{font-size:11.5px;padding:1px 8px;border-radius:999px;background:#fffbeb;color:#92400e;border:1px solid #fde68a;margin-left:auto}
+</style></head><body><div class="wrap">
+
+<h1>规则引擎 · 门槛对照 — 效果图</h1>
+<div class="sub">配 docs/design/规则引擎与题库配对-20260731.md。左=报告里新增的「门槛对照」节(申请人侧 + 雇主侧);右=规则表形状与配对关系。</div>
+
+<div class="two">
+<div>
+  <div class="panel">
+    <div class="ph"><b>报告新增节</b><span>BC 医疗通道 · 护士样例</span></div>
+    <div class="card">
+      <div class="secH">门槛对照</div>
+      <div class="row"><span class="dot ok"></span><span>语言<span class="need">这条通道要 CLB 7</span></span><span class="val ok">达标</span></div>
+      <div class="row"><span class="dot no"></span><span>工资<span class="need">要求不低于该职业省中位 $57K,这个岗 $52K</span></span><span class="val no">差 $5K</span></div>
+      <div class="row"><span class="dot ok"></span><span>加拿大经验<span class="need">这条通道要 12 个月,你填的是 1-2 年</span></span><span class="val ok">达标</span></div>
+      <div class="row"><span class="dot na"></span><span>学历<span class="need">这条通道的学历要求本站未收录</span></span><span class="val na">未收录</span></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><b>雇主侧</b><span>OINP 起,ON 的雇主 offer 类通道</span></div>
+    <div class="card">
+      <div class="secH">这条通道对雇主的要求</div>
+      <div class="row"><span class="dot ok"></span><span>地点<span class="need">GTA 外要求更低,这个岗在 London</span></span><span class="val ok">满足</span></div>
+      <div class="row"><span class="dot na"></span><span>营业额<span class="need">GTA 外 ≥ $50 万;这项要雇主出材料</span></span><span class="val na">要雇主提供</span></div>
+      <div class="row"><span class="dot na"></span><span>全职雇员数<span class="need">GTA 外 ≥ 3 人;这项要雇主出材料</span></span><span class="val na">要雇主提供</span></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><b>锁区</b><span>免费给门槛与判定,差多少与补法收费</span></div>
+    <div class="card">
+      <div class="secH">解锁后能看到</div>
+      <div class="lock">🔒 差的这两项按什么顺序补<span class="tag">Pro</span></div>
+      <div class="lock">🔒 补完够得着哪几条通道<span class="tag">Pro</span></div>
+    </div>
+  </div>
+</div>
+
+<div>
+  <div class="panel">
+    <div class="ph"><b>规则表形状</b><span>一条规则 = 一个可核验的官方门槛</span></div>
+    <div class="card">
+      <table>
+        <tr><th style="width:26%">列</th><th>说明</th></tr>
+        <tr><td><code>subject</code></td><td>门槛落在谁身上:applicant / <b>employer</b>(OINP 起必须有这一维)</td></tr>
+        <tr><td><code>factor</code></td><td>language / wage / experience / education / age / offer;雇主侧 empRevenue / empStaff / empYears / empLocation</td></tr>
+        <tr><td><code>op·value</code></td><td>≥ CLB 7、≥ 12 个月;工资类 <code>basis=occMedian</code>(不低于该职业省中位)</td></tr>
+        <tr><td><code>label·url·fetched·effective</code></td><td>官方原文 + 官方页 + 抓取日期 + 生效日期,每句话都能点回官方</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><b>规则 ↔ 题</b><span>六条规则里四条用的是已经在问的字段</span></div>
+    <div class="card">
+      <table>
+        <tr><th style="width:30%">规则</th><th style="width:26%">要哪个字段</th><th>题</th></tr>
+        <tr><td>语言门槛</td><td>clb</td><td>已在问</td></tr>
+        <tr><td>工资门槛</td><td>本岗年薪</td><td>不用问(岗位自带)</td></tr>
+        <tr><td>加拿大经验</td><td>canadianExpMonths</td><td>已在问</td></tr>
+        <tr><td>雇主 offer</td><td>hasJobOffer</td><td>已在问</td></tr>
+        <tr><td>学历门槛</td><td>eduLevel</td><td><b>新题一道</b></td></tr>
+        <tr><td>年龄(分值表省)</td><td>age</td><td><b>新题一道</b>,仅 BC/SK 出</td></tr>
+        <tr><td>雇主门槛(ON)</td><td>岗位地址(已有)</td><td>不加题</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><b>红线</b><span>抓不到就是抓不到</span></div>
+    <div class="card">
+      <table>
+        <tr><td>阈值一个不许前端编,全部来自抓取入库的官方页</td></tr>
+        <tr><td>门槛未收录 → unknown,写「本站未收录」,不猜、不拿别省套</td></tr>
+        <tr><td>只说「达标 / 差 N」,不说「你能移民 / 不能移民」</td></tr>
+        <tr><td>雇主的营业额与雇员数我们没有 → 明说要雇主出材料,不替雇主打包票</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+
+</div></body></html>
