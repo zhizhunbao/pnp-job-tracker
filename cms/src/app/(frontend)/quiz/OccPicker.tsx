@@ -14,6 +14,8 @@ import { Button, chipStyle, UI } from '../ui/primitives'
 import { shortOcc } from './EntryQuiz'
 import type { TFn } from '../jobs/i18n'
 
+const HOT = 24   // 热门页签展示的职业数(库里在招量前 24,与最初的 /api/quiz?top=24 口径同)
+
 type Cand = { noc: string; title: string; titleZh: string }
 type Top = Cand & { open: number; broad?: string }
 
@@ -35,7 +37,6 @@ export function OccPicker({ t, lang, initial, onDone, onClose, inline, doneLabel
   // null=还在拉(不是空清单!)。分清这两态才不会「先渲一套内置清单、两秒后整块换成分类版」——
   // Frank 2026-08-01 实拍「点找工作为什么会切换一下」就是这个:兜底清单被当成首屏内容渲了出去。
   const [top, setTop] = useState<Top[] | null>(null)
-  const [more, setMore] = useState(false)
   const [cat, setCat] = useState('')     // 大类筛选(空=热门)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -56,7 +57,10 @@ export function OccPicker({ t, lang, initial, onDone, onClose, inline, doneLabel
   const base: Top[] = top?.length
     ? top
     : POPULAR_NOCS.map((x) => ({ noc: x.noc, title: t(x.key), titleZh: t(x.key), open: 0 }))
-  const list: Top[] = cat ? base.filter((x) => x.broad === cat) : base
+  // 「热门」= 在招量前 HOT 个(拉回来的 200 条是**分类浏览**的料,不是热门本身)。
+  // 2026-08-01 Frank「热门没有多少职业吧,可以都展示出来吧」——所以热门是短清单、一次摊开,
+  // 不再折成 8 个 +「更多职业」;想看全的走上面的分类页签或搜索。
+  const list: Top[] = cat ? base.filter((x) => x.broad === cat) : base.slice(0, HOT)
 
   useEffect(() => {
     if (timer.current) clearTimeout(timer.current)
@@ -132,7 +136,7 @@ export function OccPicker({ t, lang, initial, onDone, onClose, inline, doneLabel
         {!loading && cats.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, paddingBottom: 10, marginBottom: 12, borderBottom: `1px solid ${UI.border}` }}>
             {['', ...cats].map((c) => (
-              <button key={c || 'hot'} onClick={() => { setCat(c); setMore(Boolean(c)) }}
+              <button key={c || 'hot'} onClick={() => setCat(c)}
                 style={{
                   border: 'none', background: 'none', padding: '2px 0', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13.5,
                   color: cat === c ? UI.primary : UI.text2, fontWeight: cat === c ? 700 : 400,
@@ -145,7 +149,7 @@ export function OccPicker({ t, lang, initial, onDone, onClose, inline, doneLabel
         )}
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-          {(loading ? [] : list.slice(0, more ? 99 : 8)).map((x) => {
+          {(loading ? [] : list).map((x) => {
             const l = label(x)
             const hint = (dupCount.get(l) || 0) > 1 ? (x.title && x.title !== l ? x.title : x.noc) : ''
             return (
@@ -158,9 +162,6 @@ export function OccPicker({ t, lang, initial, onDone, onClose, inline, doneLabel
             )
           })}
         </div>
-        {!loading && list.length > 8 && !more && (
-          <button onClick={() => setMore(true)} style={{ border: 'none', background: 'none', padding: '8px 0 0', color: UI.primary, cursor: 'pointer', fontSize: 12.5, fontFamily: 'inherit' }}>▾ {t('quiz.moreNocs')}</button>
-        )}
 
         {nocs.length > 0 && (
           inline
