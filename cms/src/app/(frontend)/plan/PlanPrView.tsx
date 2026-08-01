@@ -271,9 +271,21 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
         </div>
         <div style={{ ...CARD, position: 'relative', margin: '0 0 10px', padding: '14px 16px 16px' }}>
           {/* 返回:与详情页同一把(方角、灰边白底、绝对定位右上);行为仍是 goBackOr */}
-          <button onClick={() => goBackOr('/')}
-            style={{ position: 'absolute', top: 12, right: 12, border: '1px solid #d1d5db', borderRadius: 8, padding: '6px 14px', fontSize: 12.5, color: '#374151', background: '#fff', whiteSpace: 'nowrap', cursor: 'pointer', fontFamily: 'inherit' }}>{t('detail.back')}</button>
-          <h1 style={{ margin: '0 0 2px', fontSize: 22, lineHeight: 1.35, color: '#111827', paddingRight: 100 }}>{t(`plan.${decision}.title`)}</h1>
+          {/* 一行两个钮(2026-08-01 Frank「返回按钮和下面的按钮是不是放到一行」):
+              报告态多一个「修改条件」,答题态只有返回 */}
+          <div className="noPrint" style={{ position: 'absolute', top: 12, right: 12, display: 'flex', gap: 8 }}>
+            {view === 'report' && rpt && rpt !== 'loading' && (
+              <button onClick={() => gotoQuiz()} style={BTN}>{t('plan.back')}</button>
+            )}
+            <button onClick={() => goBackOr('/')} style={BTN}>{t('detail.back')}</button>
+          </div>
+          {/* 报告态的主角是**这个职业**,不是「找工作」——「找工作」面包屑里已经有了(2026-08-01 Frank
+              「找工作这个还需要显示吗」)。答题态还没选完职业,标题才用决定名。 */}
+          <h1 style={{ margin: '0 0 2px', fontSize: 22, lineHeight: 1.35, color: '#111827', paddingRight: 170 }}>
+            {view === 'report' && rpt && rpt !== 'loading' && rpt.noc
+              ? <>{shortOcc(nocTitle || rpt.title)}<span style={{ color: UI.text3, fontWeight: 400, fontSize: 13, marginLeft: 8 }}>{rpt.noc}</span></>
+              : t(`plan.${decision}.title`)}
+          </h1>
           {/* 卡头第二行:答题态=这张卡问什么 + 清空重填;报告态=职业名 + 改答案/存 PDF */}
           {view === 'quiz' ? (
             // 卡头只留一句副题:「清空重填」是**对这张题卡的操作**,2026-08-01 Frank
@@ -282,16 +294,10 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
               {t(stage === 'explore' ? 'plan.explore.sub' : `plan.${decision}.sub`)}
             </div>
           ) : (
-            <div className="noPrint" style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', margin: '2px 0 10px' }}>
-              {/* 人话名优先(nocTitle 走 /api/quiz 出中文名),代码作灰字小注 */}
-              {rpt && rpt !== 'loading' && (rpt.noc
-                ? <span style={{ fontSize: 15, fontWeight: 700, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{shortOcc(nocTitle || rpt.title)}<span style={{ color: UI.text3, fontWeight: 400, fontSize: 12, marginLeft: 6 }}>{rpt.noc}</span></span>
-                : <OccChip noc="" nocTitle="" t={t} onPick={() => gotoQuiz()} />)}
-              {/* 两个动作钮同组靠右:窄屏一起换行,不会一个贴右一个掉到左边 */}
-              <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-                <button onClick={() => gotoQuiz()} style={BTN}>{t('plan.back')}</button>
-              </span>
-            </div>
+            // 职业名已经升成 H1;这里只在**还没选职业**时留一个入口(空报告说「先选职业」却没入口=死路)
+            rpt && rpt !== 'loading' && !rpt.noc
+              ? <div className="noPrint" style={{ margin: '6px 0 2px' }}><OccChip noc="" nocTitle="" t={t} onPick={() => gotoQuiz()} /></div>
+              : <div style={{ fontSize: 12.5, color: UI.text3 }}>{rpt && rpt !== 'loading' && rpt.asOf ? t('rpt.asOf', { d: rpt.asOf }) : ''}</div>
           )}
         </div>
 
