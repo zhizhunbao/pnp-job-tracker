@@ -5,7 +5,7 @@
 // 报告态=结论/缺口/下一步/备选(/api/report → rpt.* 三语渲染),与引擎契约同构。
 // 跨卡复用铁律:currentStatus/目标省/职业从三问预填(答过的不重新问,预填可改);职业用三问的 nocs[0],
 // 没答过 → 页内拉起 EntryQuiz(同一组件不复制)。答案存 localStorage,改答案 → 报告立刻重算。
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Model, surveyLocalization } from 'survey-core'
 import { Survey } from 'survey-react-ui'
 import 'survey-core/survey-core.css'
@@ -201,6 +201,23 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
   }, [resetArmed])
   const [rpt, setRpt] = useState<Rpt | null | 'loading'>(null)
   const [addedProvs, setAddedProvs] = useState<string[]>([])   // 换省对照:用户从下拉里加出来看的省
+  // 漏斗第 3 步(主线 M2):锁区**进了视口**才算曝光 —— 渲染即算会把「拉到一半就走」的人也算进去,
+  // 那样 M3 的分叉判断(曝光够点击少 vs 根本没人看见)就分不开了。一次会话只记一次。
+  const lockBox = useRef<HTMLDivElement | null>(null)
+  const lockSeen = useRef(false)
+  useEffect(() => {
+    const el = lockBox.current
+    if (!el || lockSeen.current || typeof IntersectionObserver === 'undefined') return
+    const io = new IntersectionObserver((es) => {
+      if (es.some((e) => e.isIntersecting) && !lockSeen.current) {
+        lockSeen.current = true
+        track('rpt-lock-seen', { card: decision })
+        io.disconnect()
+      }
+    }, { threshold: 0.4 })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [rpt, decision])
 
   useEffect(() => {
     const sp = new URLSearchParams(window.location.search)
@@ -594,7 +611,7 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
 
                 {/* ⑤ 锁区:只有类别标题(正文服务端就没下发)+ CTA(价格归 /pricing 不硬编)+ 答题 hook */}
                 {rpt.locked.length > 0 && (
-                  <div className="noPrint" style={CARD}>
+                  <div className="noPrint" style={CARD} ref={lockBox}>
                     <div style={secH}>{t('rpt.sec.lock')}</div>
                     {rpt.locked.map((k) => (
                       <div key={k} style={{ display: 'flex', gap: 9, alignItems: 'center', margin: '9px 0' }}>

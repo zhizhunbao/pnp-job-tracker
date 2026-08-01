@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react'
 import type { TFn } from './i18n'
 import { Modal } from './Modal'
+import { track } from '@/lib/track'
 import { IconStar } from '../Icons'
 import { PricingModal, PRICE } from './PricingModal'
 import { AuthModal } from './AuthForm'
@@ -32,7 +33,7 @@ export function UpgradeCta({ t, loggedIn, sm = true, reason, label, style, link 
 
 export function UpgradeModal({ t, onClose, reason }: { t: TFn; onClose: () => void; reason?: string }) {
   // 漏斗补洞:访客→(此事件)→checkout→付款之间缺「看到卖点」一环,零付费无从定位断点
-  useEffect(() => { try { (window as any).umami?.track('upgrade-open') } catch { /* 同 checkout 事件,静默 */ } }, [])
+  useEffect(() => { track('upgrade-open') }, [])   // 走统一入口:umami + 第一方漏斗(M2)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
   const [compare, setCompare] = useState(false)  // 对比表开定价弹窗(E8-02:站内不跳页)

@@ -8,6 +8,7 @@ import { Modal } from './Modal'
 import { Button } from '../ui/primitives'
 import { IconCheck, IconStar } from '../Icons'
 import { AuthModal } from './AuthForm'
+import { track } from '@/lib/track'
 import { FREE_ADVISOR_TRIES, FREE_JOBTEXT_TRIES, FREE_MATCH_JOBS_PER_DAY, PRO_ADVISOR_DAILY } from '@/lib/plan'
 
 export type PriceCaps = { advisor: number; jobtext: number; match: number; proAdvisor: number }
@@ -29,7 +30,7 @@ export function PricingCard({ t, loggedIn, pro, caps, onRegister }: { t: TFn; lo
   const buy = async (plan: '30' | '90') => {
     // E5-07 §3.4 漏斗第 4 步:pay-click 必须在登录判断**之前**发 —— 未登录点了也是付费意向,
     // 放到后面等于把「点了但没注册」这段整个漏掉(checkout 只在已登录时发,两个事件不重复)
-    try { (window as any).umami?.track('pay-click', { plan, loggedIn: String(loggedIn) }) } catch { /* 静默 */ }
+    track('pay-click', { plan, loggedIn: String(loggedIn) })   // 走统一入口:umami + 第一方漏斗(M2)
     if (!loggedIn) { onRegister(); return }
     setBusy(true)
     try { (window as any).umami?.track('checkout', { plan }) } catch { /* E7-02:Checkout 发起事件 */ }
@@ -140,7 +141,7 @@ export function PricingCard({ t, loggedIn, pro, caps, onRegister }: { t: TFn; lo
 
 export function PricingModal({ t, loggedIn, pro, onClose, z = 50 }: { t: TFn; loggedIn: boolean; pro: boolean; onClose: () => void; z?: number }) {
   // 漏斗补洞:与 upgrade-open 同理,记「定价被看到」;/pricing 直链页不发(pageview 已覆盖)
-  useEffect(() => { try { (window as any).umami?.track('pricing-open') } catch { /* 同 checkout 事件,静默 */ } }, [])
+  useEffect(() => { track('pricing-open') }, [])
   const [auth, setAuth] = useState(false)
   return (
     // vh=94:对照表 10 行是站内最长弹框,85vh 在普通笔记本必出滚动条(2026-07-17 用户「不要有滚动框」)
