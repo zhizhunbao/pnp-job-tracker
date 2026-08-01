@@ -504,11 +504,9 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                 <div className="printOnly" style={{ marginTop: 14, paddingTop: 8, borderTop: '1px solid #ddd', fontSize: 11, color: UI.text2 }}>
                   {t('foot.disclaimer')}
                 </div>
-                {/* 数据日期删掉(2026-07-31 Frank「日期有必要吗」):出处行各自带日期,页脚再报一次是重复;
-                    置信度留着 —— 它说的是这份报告有多少把握,不是日期 */}
-                <div style={{ fontSize: 11.5, color: UI.text3, margin: '12px 0 0' }}>
-                  {t('rpt.conf')}:{t('rpt.conf.' + rpt.confidence)}
-                </div>
+                {/* 页脚的置信度也删了(2026-07-31 Frank「置信度低是什么意思」):
+                    它是内部术语,而且与缺口行「还有 N 项条件没填」说的是同一件事 ——
+                    那句具体、能照着做,这句只是把它换成抽象等级再讲一遍。数据日期同理(出处行各自带)。 */}
               </>
             )}
           </>
