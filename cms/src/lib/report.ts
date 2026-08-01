@@ -17,7 +17,7 @@ import type { OccStats } from './reportFacts'   // 纯类型(reportFacts 反向�
 // ── 输入:事实聚合(由 API 层查库组装;引擎不碰 SQL)─────────────────────────
 // medianWage=该职业在该省的 ESDC 官方中位年薪(最低收入门槛的对照基准:岗位自带的事实,不问用户)
 export type OccProvFacts = { province: string; open: number; named: number; medianWage?: number | null }
-export type ReportDraw = { province: string; drawDate: string; stream: string; score: number | null }
+export type ReportDraw = { province: string; drawDate: string; stream: string; score: number | null; invitations?: number | null }
 export type ReportFacts = {
   noc: string
   title: string                     // NOC 官方名(noc_descriptions,不拿岗位标题冒充)
@@ -38,6 +38,9 @@ export type ReportExtra = { canadianExpMonths: number | null }
 export type ReportLine = {
   key: string                                   // i18n 键(rpt.*)
   params: Record<string, string | number>
+  // 行尾灰字(v5 定稿 HTML 的 .tail):主句之外那个「顺带一说」的事实,桌面右对齐、手机自成一行。
+  // 换省对照用它挂该省最近一次抽选(Frank 2026-08-01「不需要显示一下最近的最低分数吗」)。
+  tail?: { key: string; params: Record<string, string | number> }
   verdict?: MatchVerdict                        // UI 着色用(pass/warn/fail/na)
   source?: { label: string; url: string; fetched: string }   // 依据链:指回具体维度记录/官方页
   url?: string                                  // 站内深链(下一步/备选用)
@@ -171,11 +174,11 @@ function requirementLines(prov: string, facts: ReportFacts, profile: MatchProfil
 // 报告只问 4+2 题,官方分值表要 8 个字段 —— 所以这里算的是**下界**:
 // 只拿已答的语言与加拿大经验去匹官方档位(白名单 only),其余因素一律当未答(0 分)。
 // 分值全为非负 ⇒ 已答项之和确实是「至少这么多分」,句子也照实写「至少」。
-// 三条红线:① 未答的因素不许参与匹配(否则「没考语言」会被兜到最低档白捡分);
-// ② 只在下界已过门槛时才说「已达标」,低于门槛**不说不达标**(补齐后只会更高);
-// ③ 免责常驻:自算≠官方审核,各省分制互不相通、分数之间不可横向比较。
+// 两条红线:① 未答的因素不许参与匹配(否则「没考语言」会被兜到最低档白捡分);
+// ② 只在下界已过门槛时才说「已达标」,低于门槛**不说不达标**(补齐后只会更高)。
+// 免责句 2026-08-01 撤掉(Frank「这个废话删了」):法律免责由全站页脚那句统一承担,
+// 每节再来一遍就是废话;每行都写「离**该省**门槛多少」,本来也没请人横向比分数。
 const SWITCH_CAP = 3        // 备选省上限(给对照不铺全表,与 ALT_CAP 同精神)
-const SWITCH_NOTE: ReportLine = { key: 'rpt.s.note', params: {}, verdict: 'na' }
 
 function recentDrawsOf(facts: ReportFacts, prov: string): ReportDraw[] {
   return facts.draws
@@ -203,33 +206,51 @@ function switchLines(facts: ReportFacts, dims: MatchDims, profile: MatchProfile,
   const { self, only } = selfFromAnswers(profile, months)
   const scoreOf = (prov: string) => scoreProvince(factors, prov, self, {}, {}, only)
 
-  // 一个省一行:有分值表就报下界分,没有就明说未公布
+  // 抽选事实 → 行尾灰字(Frank 2026-08-01「不需要显示一下最近的最低分数吗」)。
+  // 红线两条:① 打分表自报了通道就只认同通道的抽选(ON 的旧通道分数线不配新分制);
+  // ② 该省近几轮跨了多个通道就只给区间 —— BC 近几轮 Rural Health 50 / Innovate 132,
+  //    把 50 说成「BC 最近一次」会让人以为自己够线了。
+  // 邀请人数是官方每轮公布的真数,单通道时一并给;
+  // **候选池规模与在池时长各省都不公布,本站没有这两个数,宁可不写也不编。**
+  const tailOf = (prov: string, gridStream: string): ReportLine['tail'] => {
+    const all = recentDrawsOf(facts, prov)
+    const recent = gridStream ? all.filter((d) => streamMatches(d.stream, gridStream)) : all
+    if (!recent.length) return undefined
+    const scores = recent.map((d) => d.score as number)
+    if (new Set(recent.map((d) => d.stream)).size > 1) {
+      return { key: 'rpt.s.tail.band', params: { n: recent.length, lo: Math.min(...scores), hi: Math.max(...scores) } }
+    }
+    const inv = recent[0].invitations
+    return {
+      key: inv ? 'rpt.s.tail.oneInv' : 'rpt.s.tail.one',
+      params: { date: recent[0].drawDate.slice(0, 10), cut: scores[0], ...(inv ? { inv } : {}) },
+    }
+  }
+
+  // 一个省一行:有分值表就报下界分,没有就明说未公布(没分值表也照样给抽选事实 —— 那是另一回事)
   const lineFor = (prov: string, isCur: boolean): ReportLine => {
     const s = scoreOf(prov)
-    if (!s) return { key: isCur ? 'rpt.s.cur.noTable' : 'rpt.s.alt.noTable', params: { prov }, verdict: 'na' }
+    if (!s) {
+      const t0 = tailOf(prov, '')
+      return { key: isCur ? 'rpt.s.cur.noTable' : 'rpt.s.alt.noTable', params: { prov }, verdict: 'na', ...(t0 ? { tail: t0 } : {}) }
+    }
     const src = { label: s.system, url: s.url, fetched: s.fetched }
     const have = s.parts.filter((p) => p.matched).length
     // 分制名印进句子时去掉自报通道那截(整串「OINP EOI points (Ontario Workforce Priority stream)」一行放不下)
     const base = { prov, system: systemShort(s.system), total: s.total, have, all: s.parts.length }
-    if (isCur) return { key: 'rpt.s.cur', params: base, verdict: 'na', source: src }
+    const gridStream = gridStreamOf(s.system)
+    const all = recentDrawsOf(facts, prov)
+    const tail = tailOf(prov, gridStream)
+
+    if (isCur) return { key: 'rpt.s.cur', params: base, verdict: 'na', source: src, ...(tail ? { tail } : {}) }
     if (s.passMark != null) {
       // 差多少分:下界与门槛的距离是**差距的上界**(补齐未答项只会更小)——句子必须带这层意思,
       // 不能写成「你还差 38 分」那种确定语气。
       return s.total >= s.passMark
-        ? { key: 'rpt.s.alt.pass', params: { ...base, mark: s.passMark }, verdict: 'pass', source: src }
-        : { key: 'rpt.s.alt.mark', params: { ...base, mark: s.passMark, gap: s.passMark - s.total, rest: s.parts.length - have }, verdict: 'na', source: src }
+        ? { key: 'rpt.s.alt.pass', params: { ...base, mark: s.passMark }, verdict: 'pass', source: src, ...(tail ? { tail } : {}) }
+        : { key: 'rpt.s.alt.mark', params: { ...base, mark: s.passMark, gap: s.passMark - s.total, rest: s.parts.length - have }, verdict: 'na', source: src, ...(tail ? { tail } : {}) }
     }
-    // 抽选线红线(E12-09 §5):打分表自报了通道(ON 新通道)就只认同通道的抽选 ——
-    // ON 官方逐轮公布的分数线全属改制前已关停的通道,拿来配新分制就是错的锚。
-    // 该省有线但都是别的通道 → 明说「这条通道还没有抽选记录」,不含糊说成「未公布」。
-    const gridStream = gridStreamOf(s.system)
-    const all = recentDrawsOf(facts, prov)
-    const recent = gridStream ? all.filter((d) => streamMatches(d.stream, gridStream)) : all
-    if (recent.length) {
-      const scores = recent.map((d) => d.score as number)
-      return { key: 'rpt.s.alt.band', params: { ...base, lo: Math.min(...scores), hi: Math.max(...scores), n: recent.length }, verdict: 'na', source: src }
-    }
-    return { key: all.length ? 'rpt.s.alt.noDraw' : 'rpt.s.alt.plain', params: base, verdict: 'na', source: src }
+    return { key: all.length ? 'rpt.s.alt.noDraw' : 'rpt.s.alt.plain', params: base, verdict: 'na', source: src, ...(tail ? { tail } : {}) }
   }
 
   // 备选省:该职业在当地有在招或在公开清单上的省(排除现选省、QC、排除清单省);
@@ -266,7 +287,6 @@ function switchLines(facts: ReportFacts, dims: MatchDims, profile: MatchProfile,
       out.push({ key: 'rpt.s.offer', params: { prov: c.prov, pts: offer.points as number }, verdict: 'na', source: { label: s2.system, url: s2.url, fetched: s2.fetched } })
     }
   }
-  out.push(SWITCH_NOTE)
   return out
 }
 
@@ -845,11 +865,9 @@ const EN: Record<string, (p: Record<string, string | number>) => string> = {
   'rpt.s.alt.mark': (p) => `Switching to ${p.prov}: at least ${p.total} against its official ${p.mark}-point threshold — at most ${p.gap} short, and ${p.rest} unanswered factor(s) can only narrow that.`,
   'rpt.s.next': (p) => `Of the factors you have not answered, ${p.factor} is worth the most in ${p.prov} (up to ${p.pts} points) — fill it in first.`,
   'rpt.s.offer': (p) => `${p.prov} awards ${p.pts} points on its official grid for holding a job offer there.`,
-  'rpt.s.alt.band': (p) => `Switching to ${p.prov}: at least ${p.total}; its last ${p.n} draws cut off between ${p.lo} and ${p.hi}.`,
   'rpt.s.alt.plain': (p) => `Switching to ${p.prov}: at least ${p.total} (no published threshold or draw cutoffs yet).`,
   'rpt.s.alt.noDraw': (p) => `Switching to ${p.prov}: at least ${p.total}; this stream has no draw record yet.`,
   'rpt.s.alt.noTable': (p) => `Switching to ${p.prov}: the province publishes no points grid, so no score can be computed.`,
-  'rpt.s.note': () => `Scores are self-computed from each province's official grid and do not represent an official assessment; the grids are separate systems and the scores cannot be compared with each other.`,
   'rpt.g.noNoc': () => `No occupation on file — list hits, draws and wages all hinge on it. Add your NOC first.`,
   'rpt.g.zeroJobs': (p) => `Zero open postings for this occupation in ${p.prov} right now.`,
   'rpt.g.noCrs': (p) => `Report a CRS score to compute your gap to the "${p.cat}" category draws.`,

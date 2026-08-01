@@ -345,7 +345,7 @@ const swFacts = (o: Partial<ReportFacts> = {}) => facts({
   byProv: [{ province: 'BC', open: 19, named: 18 }, { province: 'SK', open: 12, named: 12 }],
   ...o,
 })
-const sw = (r: { switches: { key: string; params: Record<string, string | number>; url?: string }[] }, key: string) =>
+const sw = (r: { switches: { key: string; params: Record<string, string | number>; url?: string; tail?: { key: string; params: Record<string, string | number> } }[] }, key: string) =>
   r.switches.find((l) => l.key === key)
 
 describe('换省对照节(L2-08)', () => {
@@ -376,16 +376,27 @@ describe('换省对照节(L2-08)', () => {
     expect(sw(passed, 'rpt.s.alt.mark')).toBeUndefined()
   })
 
-  it('无门槛但有抽选记录 → 摆抽选区间;没有分值表的省明说未公布', () => {
-    const r = buildPrReport(base({ targetProvinces: ['SK'] }), exp12, dims, swFacts({
+  it('抽选事实进行尾灰字:同一通道给「最近一次 X 分 + 邀请数」,跨通道只给区间', () => {
+    // 单通道:最近一次的线与官方公布的邀请人数都是真数(候选池规模与在池时长各省不公布,本站不编)
+    const one = buildPrReport(base({ targetProvinces: ['SK'] }), exp12, dims, swFacts({
       draws: [
-        { province: 'BC', drawDate: '2026-07-20', stream: 'Care: Health', score: 96 },
-        { province: 'BC', drawDate: '2026-07-06', stream: 'Care: Health', score: 88 },
+        { province: 'BC', drawDate: '2026-07-20', stream: 'Care: Health', score: 96, invitations: 60 },
+        { province: 'BC', drawDate: '2026-07-06', stream: 'Care: Health', score: 88, invitations: 44 },
       ],
     }))
-    const band = sw(r, 'rpt.s.alt.band')
-    expect(band?.params.prov).toBe('BC')
-    expect([band?.params.lo, band?.params.hi, band?.params.n]).toEqual([88, 96, 2])
+    const bc = one.switches.find((l) => l.params.prov === 'BC')!
+    expect(bc.tail?.key).toBe('rpt.s.tail.oneInv')
+    expect(bc.tail?.params).toMatchObject({ date: '2026-07-20', cut: 96, inv: 60 })
+    // 跨通道混抽:不给「最近一次 50 分」(BC 近几轮 Health 50 / Innovate 132,拿 50 当门面会让人以为够线了)
+    const mixed = buildPrReport(base({ targetProvinces: ['SK'] }), exp12, dims, swFacts({
+      draws: [
+        { province: 'BC', drawDate: '2026-07-23', stream: 'Rural Health', score: 50, invitations: 60 },
+        { province: 'BC', drawDate: '2026-07-16', stream: 'Innovate', score: 132, invitations: 346 },
+      ],
+    }))
+    const bc2 = mixed.switches.find((l) => l.params.prov === 'BC')!
+    expect(bc2.tail?.key).toBe('rpt.s.tail.band')
+    expect(bc2.tail?.params).toMatchObject({ n: 2, lo: 50, hi: 132 })
     const ab = buildPrReport(base({ targetProvinces: ['AB'] }), exp12, dims, swFacts())
     expect(sw(ab, 'rpt.s.cur.noTable')?.params.prov).toBe('AB')
   })
@@ -406,9 +417,9 @@ describe('换省对照节(L2-08)', () => {
     expect(nd?.params.system).toBe('OINP EOI points')   // 分制短名:自报通道那截不印进句子
   })
 
-  it('免责常驻 + 缺项钩子指完整估分器', () => {
+  it('缺项钩子指完整估分器;免责句不再逐节重复(全站页脚已有)', () => {
     const r = buildPrReport(base(), exp12, dims, swFacts())
-    expect(r.switches[r.switches.length - 1].key).toBe('rpt.s.note')
+    expect(keys(r.switches)).not.toContain('rpt.s.note')
     expect(sw(r, 'rpt.s.next')?.url).toBe('/pathways')
   })
 

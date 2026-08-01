@@ -34,7 +34,7 @@ surveyLocalization.locales.ko.questionsProgressText = '{0}/{1} 완료'
 // 答案存储与档位换算都归 lib/answers + lib/fields(2026-07-31 统一题库:一个 key、一处换算);
 // 本页只管两态与版式,不再自己存答案、不再自己抄 CLB/EXP/PROVS 映射表。
 
-type RptLine = { key: string; params: Record<string, string | number>; verdict?: string; source?: { label: string; url: string; fetched: string }; url?: string }
+type RptLine = { key: string; params: Record<string, string | number>; verdict?: string; source?: { label: string; url: string; fetched: string }; url?: string; tail?: { key: string; params: Record<string, string | number> } }
 type Lane = { kind: 'prov' | 'ee' | 'alts'; verdict?: string; key: string; params: Record<string, string | number> }
 type Emp = { name: string; slug: string; named: number; eligible: number; city: string; province: string; lastPosted: string; lmiaPositions: number | null; lmiaQuarter: string; aip: boolean; area: string; empRevenue: number | null; empStaff: number | null }
 type Rpt = {
@@ -80,6 +80,8 @@ function Line({ l, t }: { l: RptLine; t: TFn }) {
     <li style={{ margin: 0, padding: '14px 0', borderTop: `1px solid ${UI.hairline}`, lineHeight: 1.75, fontSize: 15, listStyle: 'none', display: 'flex', gap: 11, alignItems: 'baseline' }}>
       <span style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: V_DOT[l.verdict ?? 'na'], position: 'relative', top: -1 }} />
       <span style={{ flex: 1, minWidth: 0 }}>{t(l.key, params)}</span>
+      {/* 行尾灰字(v5 定稿 .tail):桌面靠右一列,手机(<=640)自成一行、跟正文左对齐 */}
+      {l.tail ? <span className="rptTail" style={{ color: UI.text3, fontSize: 13.5, whiteSpace: 'nowrap', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>{t(l.tail.key, l.tail.params)}</span> : null}
     </li>
   )
 }
@@ -298,10 +300,12 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
               {t(stage === 'explore' ? 'plan.explore.sub' : `plan.${decision}.sub`)}
             </div>
           ) : (
-            // 职业名已经升成 H1;这里只在**还没选职业**时留一个入口(空报告说「先选职业」却没入口=死路)
+            // 职业名已经升成 H1;这里只在**还没选职业**时留一个入口(空报告说「先选职业」却没入口=死路)。
+            // 「数据日期」那行 2026-08-01 撤掉(Frank):它的值是请求当天的 new Date(),
+            // 跟数据新不新毫无关系 —— 真日期跟着各自出处走,已经逐条列在底部「依据与链接」里。
             rpt && rpt !== 'loading' && !rpt.noc
               ? <div className="noPrint" style={{ margin: '6px 0 2px' }}><OccChip noc="" nocTitle="" t={t} onPick={() => gotoQuiz()} /></div>
-              : <div style={{ fontSize: 12.5, color: UI.text3 }}>{rpt && rpt !== 'loading' && rpt.asOf ? t('rpt.asOf', { d: rpt.asOf }) : ''}</div>
+              : null
           )}
         </div>
 
@@ -387,7 +391,10 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
             {/* v2c 五段:① hero 大数字 ② 三卡判定 ③ 结论/缺口 ④ 编号下一步 ⑤ 锁区+CTA+hook */}
             <style>{`.rptHero{display:flex;flex-direction:column;gap:10px}
 .rptLanes{display:grid;gap:10px;grid-template-columns:repeat(3,1fr)}
-@media(max-width:640px){.rptHero{gap:8px}.rptLanes{grid-template-columns:repeat(2,1fr)}.rptLanes>:first-child{grid-column:1/-1}}
+@media(max-width:640px){.rptHero{gap:8px}.rptLanes{grid-template-columns:repeat(2,1fr)}.rptLanes>:first-child{grid-column:1/-1}
+  /* 行尾灰字在手机上自成一行(挤在句尾会把正文压成一列一个字) */
+  .rptTail{width:100%;padding-left:19px;white-space:normal !important}}
+@media(min-width:641px){.rptTail{margin-left:auto}}
 @media(min-width:641px){.rptHero{flex-direction:row;align-items:center;gap:30px}}
 /* 存 PDF = 浏览器打印(react-pdf 已评估否决:CJK 字体必须内嵌是决定性成本)。
    打印稿只留内容:导航、按钮、锁区与 CTA 都不印(那是屏幕上的操作件与营销位,印在纸上是噪音);

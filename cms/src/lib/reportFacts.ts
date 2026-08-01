@@ -7,6 +7,9 @@ import type { ScoreFactor } from './pnpSelfScore'
 import type { ReportFacts } from './report'
 import type { Requirement } from './rules'
 
+// 注意:这是**报告生成日**(请求当天),不是数据的新鲜度 —— 各条事实的真实日期跟着自己的出处走
+// (清单 fetched / 分值表 fetched / 抽选轮次日期),报告里也是逐条列在「依据与链接」。
+// 2026-08-01 起卡头不再拿它冒充「数据日期」,只留在打印页眉当文件生成日。
 const TODAY = () => new Date().toISOString().slice(0, 10)
 const EMPTY: ReportFacts = { noc: '', title: '', teer: null, byProv: [], draws: [], scoreProvinces: [], requirements: [], fetched: '' }
 
@@ -120,7 +123,7 @@ export async function assembleReportFacts(pool: any, noc: string): Promise<Repor
        GROUP BY province`, [noc]),
     // 省抽选(FED=联邦轮次在引擎里走 EE 独立信号,这里不带);近 120 行足够覆盖各省近 6 次
     pool.query(
-      `SELECT province, draw_date, stream, score FROM pnp_draws
+      `SELECT province, draw_date, stream, score, invitations FROM pnp_draws
        WHERE score IS NOT NULL AND COALESCE(draw_date,'') <> '' AND province <> 'FED'
        ORDER BY draw_date DESC LIMIT 120`).catch(() => ({ rows: [] })),
     // 官方分值表整张取回(120 行级):换省对照节(L2-08)要按行匹档位,不只要省名 ——
@@ -169,7 +172,7 @@ export async function assembleReportFacts(pool: any, noc: string): Promise<Repor
       effective: r.effective ?? '', url: r.url ?? '', pageUrl: r.page_url ?? '', fetched: r.fetched ?? '',
     })),
     draws: draws.rows.map((r: any) => ({
-      province: r.province ?? '', drawDate: String(r.draw_date ?? ''), stream: r.stream ?? '', score: num(r.score),
+      province: r.province ?? '', drawDate: String(r.draw_date ?? ''), stream: r.stream ?? '', score: num(r.score), invitations: num(r.invitations),
     })),
     scoreFactors: factorRows,
     scoreProvinces: Array.from(new Set(factorRows.map((f) => f.province))),
