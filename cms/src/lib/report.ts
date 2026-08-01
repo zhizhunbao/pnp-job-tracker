@@ -55,6 +55,8 @@ export type Report = {
 
 // 薪资一律显示成 $88.4K(站内既有口径:职位卡 $49K/yr、统计页 $74.9K);裸 88400 读起来像编号
 const k = (n: number): string => `${(n / 1000).toFixed(1).replace(/\.0$/, '')}K`
+// 百万级(雇主营业额门槛)另走一档:$1000K 没人这么读,官方写的就是 $1,000,000
+const m = (n: number): string => (n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1).replace(/\.0$/, '')}M` : k(n))
 
 const RECENT_DRAWS = 6      // 抽选区间取近 N 次(区间/节奏都基于它;params 恒带实际条数,样本小就说小)
 const ALT_CAP = 2           // 备选省上限(④ 预判下一问:给对照不铺全表)
@@ -93,6 +95,7 @@ function requirementLines(prov: string, facts: ReportFacts, profile: MatchProfil
 
   const f = facts.byProv.find((r) => r.province === prov)
   const results = evaluateRequirements(reqs, {
+    noc: facts.noc,              // ON 的语言分档要看职业是不是官方列的技工
     teer: facts.teer,
     clb: profile.clb,
     canadianExpMonths: extra.canadianExpMonths,
@@ -127,10 +130,23 @@ function requirementLines(prov: string, facts: ReportFacts, profile: MatchProfil
       const months = r.need ?? 0
       if (r.verdict === 'pass') out.push(line(r, 'rpt.r.exp.pass', { need: months, have: r.have ?? '' }))
       else out.push(line(r, 'rpt.r.exp.unknown', { need: months, have: r.have ?? '' }))
+    } else if (r.factor === 'languageExempt') {
+      out.push(line(r, 'rpt.r.langExempt', { n: r.need ?? '' }))
+    } else if (r.factor === 'wage') {
+      // basis=occMedian:阈值就是该职业该地区的官方中位;取不到中位就只陈述规则本身
+      out.push(line(r, r.need != null ? 'rpt.r.wage.median' : 'rpt.r.wage.rule', { need: r.need != null ? k(r.need) : '' }))
     } else if (r.factor === 'empYears') {
       out.push(line(r, 'rpt.r.emp.years', { n: r.need ?? '' }))
+    } else if (r.factor === 'empRevenue') {
+      // 三档按区域摆(GTA / 指定普查区 / 其余);档位名各省各叫各的,所以键按最高档的区域取
+      out.push(line(r, 'rpt.r.emp.rev', {
+        hi: r.need != null ? m(r.need) : '', lo: r.needLow != null ? m(r.needLow) : '',
+        mid: r.tiers?.length === 3 && r.tiers[1].value != null ? m(r.tiers[1].value as number) : '',
+      }))
     } else if (r.factor === 'empStaff') {
-      out.push(line(r, 'rpt.r.emp.staff', { metro: r.need ?? '', rest: r.needLow ?? '' }))
+      // BC 说「大温 / 大温以外」、ON 说「GTA 内 / 外」—— 同一件事两套地名,按最高档的区域名选句子
+      const area = r.tiers?.[0]?.area ?? ''
+      out.push(line(r, area === 'gta' ? 'rpt.r.emp.staff.gta' : 'rpt.r.emp.staff.metro', { metro: r.need ?? '', rest: r.needLow ?? '' }))
     }
   }
   return out
@@ -659,8 +675,13 @@ const EN: Record<string, (p: Record<string, string | number>) => string> = {
   'rpt.r.income.unknown': (p) => `${p.prov} sets a minimum family income of $${p.needLow}–$${p.need} depending on where you live and family size; the official median wage for this occupation there is $${p.have}.`,
   'rpt.r.exp.pass': (p) => `${p.prov}'s skilled worker stream requires ${p.need} months of skilled work experience; you report ${p.have} months in Canada — meets it.`,
   'rpt.r.exp.unknown': (p) => `${p.prov}'s skilled worker stream requires ${p.need} months of skilled work experience (in or outside Canada); only Canadian months are on file, so this cannot be judged here.`,
+  'rpt.r.langExempt': (p) => `${p.prov} waives the language test if you graduated from an eligible ${p.prov} institution within the last ${p.n} years — education is not on file, so this is not applied here.`,
+  'rpt.r.wage.median': (p) => `${p.prov} requires the offered wage to be at or above the regional median for the occupation — that median is $${p.need} per year.`,
+  'rpt.r.wage.rule': (p) => `${p.prov} requires the offered wage to be at or above the regional median wage level for the occupation.`,
   'rpt.r.emp.years': (p) => `Employer-side: the employer needs ${p.n}+ years of operation in ${p.prov} — only the employer can evidence this.`,
-  'rpt.r.emp.staff': (p) => `Employer-side: the employer needs at least ${p.metro} full-time staff inside Metro Vancouver (${p.rest} outside) — only the employer can evidence this.`,
+  'rpt.r.emp.rev': (p) => `Employer-side: gross annual revenue of $${p.hi} (GTA), $${p.mid} (listed census divisions) or $${p.lo} (elsewhere) — only the employer can evidence this.`,
+  'rpt.r.emp.staff.metro': (p) => `Employer-side: at least ${p.metro} full-time staff inside Metro Vancouver (${p.rest} outside) — only the employer can evidence this.`,
+  'rpt.r.emp.staff.gta': (p) => `Employer-side: at least ${p.metro} full-time staff (citizens or PRs) at a GTA work location, ${p.rest} outside the GTA — only the employer can evidence this.`,
   'rpt.r.none': (p) => `${p.prov}'s official thresholds are not yet covered by this site — no rule comparison can be made.`,
   'rpt.g.noNoc': () => `No occupation on file — list hits, draws and wages all hinge on it. Add your NOC first.`,
   'rpt.g.zeroJobs': (p) => `Zero open postings for this occupation in ${p.prov} right now.`,

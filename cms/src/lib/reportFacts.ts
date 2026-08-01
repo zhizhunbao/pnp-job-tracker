@@ -87,7 +87,7 @@ export async function assembleReportFacts(pool: any, noc: string): Promise<Repor
     // 官方门槛(规则引擎输入):全表也就几十行,整张取回,按省的筛选交给引擎(纯函数好测)
     pool.query(
       `SELECT province, program, stream, subject, factor, op, value, value_text, unit,
-              applies_teer, applies_area, applies_family_size, basis, label, section, effective, url, page_url, fetched
+              applies_teer, applies_noc, excludes_noc, applies_area, applies_family_size, basis, label, section, effective, url, page_url, fetched
        FROM pnp_requirements ORDER BY province, seq`).catch(() => ({ rows: [] })),
     // 最低收入门槛的对照基准=该职业在该省的 ESDC 官方中位年薪(岗位自带的事实,不问用户)
     pool.query(
@@ -105,7 +105,8 @@ export async function assembleReportFacts(pool: any, noc: string): Promise<Repor
       province: r.province ?? '', program: r.program ?? 'PNP', stream: r.stream ?? '',
       subject: r.subject === 'employer' ? 'employer' : 'applicant',
       factor: r.factor ?? '', op: r.op ?? '>=', value: num(r.value), valueText: r.value_text ?? '', unit: r.unit ?? '',
-      appliesTeer: r.applies_teer ?? '', appliesArea: r.applies_area ?? '', familySize: num(r.applies_family_size),
+      appliesTeer: r.applies_teer ?? '', appliesNoc: r.applies_noc ?? '', excludesNoc: r.excludes_noc ?? '',
+      appliesArea: r.applies_area ?? '', familySize: num(r.applies_family_size),
       basis: r.basis ?? '', label: r.label ?? '', section: r.section ?? '',
       effective: r.effective ?? '', url: r.url ?? '', pageUrl: r.page_url ?? '', fetched: r.fetched ?? '',
     })),

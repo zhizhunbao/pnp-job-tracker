@@ -783,7 +783,15 @@ export interface PnpRequirement {
    */
   appliesTeer?: string | null;
   /**
-   * metro-vancouver / rest-of-bc —— 空=全省
+   * NOC 码前缀白名单(ON 技工低档语言门槛);空=不分职业
+   */
+  appliesNoc?: string | null;
+  /**
+   * NOC 码前缀排除表(官方原文的 excluding Sub-Major Group …)
+   */
+  excludesNoc?: string | null;
+  /**
+   * metro-vancouver / rest-of-bc / gta / outside-gta —— 空=全省
    */
   appliesArea?: string | null;
   /**
@@ -1854,6 +1862,8 @@ export interface PnpRequirementsSelect<T extends boolean = true> {
   valueText?: T;
   unit?: T;
   appliesTeer?: T;
+  appliesNoc?: T;
+  excludesNoc?: T;
   appliesArea?: T;
   appliesFamilySize?: T;
   basis?: T;

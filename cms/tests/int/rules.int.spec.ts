@@ -111,7 +111,7 @@ describe('报告「门槛对照」节', () => {
   it('BC 目标省 → 语言/收入/经验/雇主四类都出行,出处指官方指南', () => {
     const r = buildPrReport(base(), { canadianExpMonths: 30 }, dims, facts({}))
     expect(r.requirements.map((l) => l.key)).toEqual([
-      'rpt.r.lang.pass', 'rpt.r.income.unknown', 'rpt.r.exp.pass', 'rpt.r.emp.years', 'rpt.r.emp.staff',
+      'rpt.r.lang.pass', 'rpt.r.income.unknown', 'rpt.r.exp.pass', 'rpt.r.emp.years', 'rpt.r.emp.staff.metro',
     ])
     expect(r.requirements[0].source?.url).toContain('welcomebc.ca')
   })
@@ -140,5 +140,63 @@ describe('报告「门槛对照」节', () => {
   it('门槛全过时不挂锁行(没有「差多少」可卖就不卖)', () => {
     const free = gateReport(buildPrReport(base(), { canadianExpMonths: 30 }, dims, facts({})), false)
     expect(free.locked).not.toContain('req')
+  })
+})
+
+// ── 第二刀:ON(OINP)—— 雇主侧三条 + 技工语言分档 + basis=occMedian 的工资档 ──────────
+const ON_REQS: Requirement[] = [
+  R({ province: 'ON', stream: 'Ontario Workforce Priority stream', factor: 'language', value: 6, unit: 'CLB', appliesTeer: '0,1,2,3' }),
+  R({ province: 'ON', factor: 'language', value: 4, unit: 'CLB', appliesTeer: '4,5' }),
+  // 技工低一档:官方大组白名单 + 两个排除组(726 / 932)
+  R({ province: 'ON', factor: 'language', value: 5, unit: 'CLB', appliesTeer: '0,1,2,3', appliesNoc: '72,73,82,83,93,6320,62200', excludesNoc: '726,932' }),
+  R({ province: 'ON', factor: 'languageExempt', op: 'none', value: 3, unit: 'years', appliesTeer: '0,1,2,3' }),
+  R({ province: 'ON', factor: 'wage', op: '>=', basis: 'occMedian', unit: 'CAD/yr' }),
+  R({ province: 'ON', subject: 'employer', factor: 'empYears', value: 3, unit: 'years' }),
+  R({ province: 'ON', subject: 'employer', factor: 'empRevenue', value: 1000000, unit: 'CAD/yr', appliesArea: 'gta' }),
+  R({ province: 'ON', subject: 'employer', factor: 'empRevenue', value: 500000, unit: 'CAD/yr', appliesArea: 'on-listed-cd' }),
+  R({ province: 'ON', subject: 'employer', factor: 'empRevenue', value: 250000, unit: 'CAD/yr', appliesArea: 'on-other' }),
+  R({ province: 'ON', subject: 'employer', factor: 'empStaff', value: 5, unit: 'employees', appliesArea: 'gta' }),
+  R({ province: 'ON', subject: 'employer', factor: 'empStaff', value: 3, unit: 'employees', appliesArea: 'outside-gta' }),
+]
+
+describe('ON(OINP)—— 雇主侧与技工分档', () => {
+  it('技工职业(NOC 72xxx)走低一档 CLB 5,不走通用的 CLB 6', () => {
+    const r = byFactor(evaluateRequirements(ON_REQS, P({ noc: '72200', teer: 2, clb: 5 })), 'language')
+    expect([r.need, r.verdict]).toEqual([5, 'pass'])
+  })
+
+  it('非技工职业走通用 CLB 6;同样填 CLB 5 就是差一档', () => {
+    const r = byFactor(evaluateRequirements(ON_REQS, P({ noc: '21232', teer: 1, clb: 5 })), 'language')
+    expect([r.need, r.verdict, r.short]).toEqual([6, 'fail', 1])
+  })
+
+  it('排除组(Sub-Major 726)不算技工 —— 官方原文的 excluding 必须生效', () => {
+    const r = byFactor(evaluateRequirements(ON_REQS, P({ noc: '72600', teer: 2, clb: 5 })), 'language')
+    expect(r.need).toBe(6)
+  })
+
+  it('免考条款只陈述不判定(本站没问学历)', () => {
+    expect(byFactor(evaluateRequirements(ON_REQS, P({ noc: '21232', teer: 1, clb: 9 })), 'languageExempt').verdict).toBe('unknown')
+  })
+
+  it('工资档 basis=occMedian:阈值取该职业该省中位,报告层没有具体岗位 → unknown', () => {
+    const r = byFactor(evaluateRequirements(ON_REQS, P({ noc: '21232', teer: 1, annualIncome: 96000 })), 'wage')
+    expect([r.need, r.have, r.verdict]).toEqual([96000, null, 'unknown'])
+  })
+
+  it('雇主三条恒 unknown,营业额三档按大小排好(GTA 100 万 → 其余 25 万)', () => {
+    const rs = evaluateRequirements(ON_REQS, P({ noc: '21232', teer: 1 }))
+    expect(byFactor(rs, 'empYears').need).toBe(3)
+    const rev = byFactor(rs, 'empRevenue')
+    expect(rev.verdict).toBe('unknown')
+    expect(rev.tiers?.map((t) => t.value)).toEqual([1000000, 500000, 250000])
+    expect(rev.tiers?.[0].area).toBe('gta')
+    const staff = byFactor(rs, 'empStaff')
+    expect([staff.need, staff.needLow]).toEqual([5, 3])
+  })
+
+  it('ON 与 BC 的行互不串味(引擎只吃传进来的那一省)', () => {
+    const rs = evaluateRequirements(ON_REQS, P({ noc: '21232', teer: 1, clb: 9 }))
+    expect(rs.find((r) => r.factor === 'income')).toBeUndefined()   // 最低家庭收入是 BC 的东西
   })
 })

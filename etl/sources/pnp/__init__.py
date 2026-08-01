@@ -27,5 +27,6 @@ META = {
         # ↓ 自校失败会 exit 1 的步骤一律排在最后:本役是「一步失败就中止本役」,
         #   排前面会把后面的清单/DLI 一起拖掉(build_bc_sirs / build_sk_points 同理,故至今仍手动跑)。
         ["python", "etl/pnp/build_bc_req.py"],  # E13-01 BC 官方门槛(语言/最低收入/经验/雇主侧;解析不全则保留旧表 exit 1)
+        ["python", "etl/pnp/build_on_req.py"],  # E13-02 ON/OINP 门槛(雇主侧经营年限/营业额/雇员数 + 技工语言分档;同上)
     ],
 }
