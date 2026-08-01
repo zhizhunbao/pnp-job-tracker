@@ -32,18 +32,20 @@ async function loadHomeStats(pool: any): Promise<Omit<HomeStats, 'checkedAt'>> {
     cnt('SELECT count(*)::int n FROM dli'),
     cnt('SELECT count(*)::int n FROM stats_occupation'),
     cnt('SELECT count(*)::int n FROM designated_employers'),
-    // 最近抽选表(v2 B+A 拍板):pnp_draws 含省抽选与联邦轮次(province=FED),最近 5 次有分/有邀请数的。
+    // 最近抽选表(v2 B+A 拍板):pnp_draws 含省抽选与联邦轮次(province=FED),有分/有邀请数的。
+    // 2026-08-01 Frank 队列③:表上加 10/20/50 条数下拉 → SSR 取 50 条,前端切(50 行 ≈ 6KB,不值得再开端点)。
     // 单一真相源:与 /pathways 抽选事实块同表同口径,本页只是轻量投影
     pool.query(`SELECT province, draw_date, stream, label, score, invitations FROM pnp_draws
       WHERE (score IS NOT NULL OR invitations IS NOT NULL) AND COALESCE(draw_date,'') <> ''
-      ORDER BY draw_date DESC LIMIT 5`).then((r: any) => r.rows as any[]).catch(() => []),
+      ORDER BY draw_date DESC LIMIT 50`).then((r: any) => r.rows as any[]).catch(() => []),
     // 日更卡:最新发布日的新增岗数 + 其中可提名数(与职位板 pnp_eligible 同口径)
     pool.query(`SELECT to_char(date_posted,'YYYY-MM-DD') d, count(*)::int n,
         count(*) FILTER (WHERE COALESCE(pnp_eligible,false))::int elig
       FROM jobs WHERE date_posted = (SELECT max(date_posted) FROM jobs)
       GROUP BY date_posted`).then((r: any) => r.rows[0] ?? null).catch(() => null),
     // 多取几条再按标题去重(同题新闻隔日重抓会出重复行,landing 三行里出现两条同题很难看;取最新那条)
-    pool.query(`SELECT region, title, date, slug FROM news ORDER BY date DESC, id DESC LIMIT 8`)
+    // 2026-08-01 Frank 队列④:政策动态同样加 10/20/50 下拉 → 多取一批,去重后前端切
+    pool.query(`SELECT region, title, date, slug FROM news ORDER BY date DESC, id DESC LIMIT 80`)
       .then((r: any) => r.rows as any[]).catch(() => []),
     // 地区统计主图四份数据(occ/city/rows/channels)不再 SSR 直出:occ ~3400 行占 HTML 大头(实测 1.85MB),
     // 移到 /api/market-stats,StartView 挂载后后台拉(SSR 瘦身,手法照 /jobs 的 /api/dims)
@@ -69,7 +71,7 @@ async function loadHomeStats(pool: any): Promise<Omit<HomeStats, 'checkedAt'>> {
       const seen = new Set<string>()
       return (newsRes as any[])
         .filter((r) => { const k = norm(r.title ?? ''); if (seen.has(k)) return false; seen.add(k); return true })
-        .slice(0, 3)
+        .slice(0, 50)
         .map((r) => ({ date: String(r.date), region: r.region ?? '', title: r.title ?? '', slug: r.slug ?? '' }))
     })(),
     latestJobs: (jobRows as any[]).map(slimJob),

@@ -704,6 +704,7 @@ const zh: Dict = {
   'mkt.title': '在招职位分布', 'mkt.x': '横轴', 'mkt.g': '簇内', 'mkt.y2': '右轴',
   'mkt.x.occ': '职业', 'mkt.x.prov': '省份', 'mkt.x.city': '城市', 'mkt.g.none': '不分组', 'mkt.g.prov': '省份', 'mkt.g.broad': '职业大类',
   'mkt.search': '搜职业、城市', 'mkt.more': '更多筛选', 'mkt.chan': '通道', 'mkt.chan.all': '全部职业', 'mkt.chan.pnp': '省提名清单上的职业', 'mkt.chan.ee': 'EE 类别覆盖的职业', 'mkt.chan.occOnly': '通道筛选只在横轴=职业时生效', 'mkt.minJobs': '最低在招岗数', 'mkt.broad': '大类', 'mkt.mid': '中类', 'mkt.fine': '小类', 'mkt.cat.all': '全部', 'mkt.y2.off': '不显示', 'mkt.medLink': '各省中位', 'mkt.sort': '排序', 'mkt.sort.desc': '从高到低', 'mkt.sort.asc': '从低到高',
+  'mkt.fs': '全屏看图', 'mkt.fs.exit': '退出全屏',
   'mkt.note': '数据来自官方 Job Bank;在招量=当前在招职位数,不等于「缺人」',
   'stats.title': '{prov} 地区职位统计', 'stats.catTitle': '{prov} · {cat} 职位统计', 'stats.openJobs': '在招职位', 'stats.new7d': '近 7 天发布', 'stats.medWage': '中位年薪(ESDC)', 'stats.medSalary': '帖面中位年薪', 'stats.named': '省提名清单岗', 'stats.aip': 'AIP 指定雇主岗', 'stats.topCities': '主要城市', 'stats.streams': '命中通道', 'stats.byCat': '按职业大类', 'stats.entry': '地区统计', 'stats.toJobs': '看这些职位', 'stats.caliber': '口径说明', 'stats.noList': '无清单', 'stats.noList.tip': '该省当前不公布省提名职业清单(如 OINP 2026-06 改制后),按 TEER 等条件判定,不是数据缺失。', 'stats.naQc': '不适用', 'stats.naQc.tip': '魁省不参加省提名(PNP),走自己的甄选体系。', 'stats.provIndex': '选择省份', 'stats.compare': '跨省对比(Pro)', 'stats.pickProv': '选 2-4 个省对比', 'stats.myNoc': '按我的档案高亮', 'stats.cardWork': '工签存量(TFWP+IMP)', 'stats.cardStudy': '学签存量', 'stats.cardPr': 'PNP 拿到 PR(年)',
 }
@@ -1360,6 +1361,7 @@ const en: Dict = {
   'mkt.title': 'Open jobs distribution', 'mkt.x': 'X axis', 'mkt.g': 'Grouped by', 'mkt.y2': 'Right axis',
   'mkt.x.occ': 'Occupation', 'mkt.x.prov': 'Province', 'mkt.x.city': 'City', 'mkt.g.none': 'None', 'mkt.g.prov': 'Province', 'mkt.g.broad': 'Occupation group',
   'mkt.search': 'Search occupation or city', 'mkt.more': 'More filters', 'mkt.chan': 'Stream', 'mkt.chan.all': 'All occupations', 'mkt.chan.pnp': 'On a PNP occupation list', 'mkt.chan.ee': 'Covered by an EE category', 'mkt.chan.occOnly': 'Stream filter applies when the x axis is Occupation', 'mkt.minJobs': 'Min open jobs', 'mkt.broad': 'Group', 'mkt.mid': 'Sub-group', 'mkt.fine': 'Category', 'mkt.cat.all': 'All', 'mkt.y2.off': 'Hide', 'mkt.medLink': 'Median by province', 'mkt.sort': 'Sort', 'mkt.sort.desc': 'High to low', 'mkt.sort.asc': 'Low to high',
+  'mkt.fs': 'Fullscreen', 'mkt.fs.exit': 'Exit fullscreen',
   'mkt.note': 'From Canada’s official Job Bank. Open postings — not a measure of labour shortage',
   'stats.title': '{prov} job statistics', 'stats.catTitle': '{prov} · {cat} job statistics', 'stats.openJobs': 'Open jobs', 'stats.new7d': 'Posted in last 7 days', 'stats.medWage': 'Median wage (ESDC)', 'stats.medSalary': 'Median posted salary', 'stats.named': 'PNP-list jobs', 'stats.aip': 'AIP designated-employer jobs', 'stats.topCities': 'Top cities', 'stats.streams': 'Streams hit', 'stats.byCat': 'By occupation group', 'stats.entry': 'Region stats', 'stats.toJobs': 'See these jobs', 'stats.caliber': 'Methodology', 'stats.noList': 'No list', 'stats.noList.tip': 'This province currently publishes no PNP occupation list (e.g. OINP after its 2026-06 redesign) — eligibility runs on TEER and other conditions. Not missing data.', 'stats.naQc': 'N/A', 'stats.naQc.tip': 'Quebec does not take part in the PNP — it runs its own selection system.', 'stats.provIndex': 'Choose a province', 'stats.compare': 'Compare provinces (Pro)', 'stats.pickProv': 'Pick 2–4 provinces', 'stats.myNoc': 'Highlight by my profile', 'stats.cardWork': 'Work permits (TFWP+IMP)', 'stats.cardStudy': 'Study permits', 'stats.cardPr': 'PNP admissions (yr)',
 }
@@ -2013,6 +2015,7 @@ const ko: Dict = {
   'mkt.title': '채용 공고 분포', 'mkt.x': 'X축', 'mkt.g': '그룹', 'mkt.y2': '오른쪽 축',
   'mkt.x.occ': '직종', 'mkt.x.prov': '주', 'mkt.x.city': '도시', 'mkt.g.none': '그룹 없음', 'mkt.g.prov': '주', 'mkt.g.broad': '직업 대분류',
   'mkt.search': '직업·도시 검색', 'mkt.more': '필터 더보기', 'mkt.chan': '경로', 'mkt.chan.all': '전체 직업', 'mkt.chan.pnp': 'PNP 목록에 있는 직업', 'mkt.chan.ee': 'EE 카테고리 해당 직업', 'mkt.chan.occOnly': '경로 필터는 X축이 직종일 때만 적용', 'mkt.minJobs': '최소 채용 공고 수', 'mkt.broad': '대분류', 'mkt.mid': '중분류', 'mkt.fine': '소분류', 'mkt.cat.all': '전체', 'mkt.y2.off': '숨기기', 'mkt.medLink': '주별 중위', 'mkt.sort': '정렬', 'mkt.sort.desc': '높은 순', 'mkt.sort.asc': '낮은 순',
+  'mkt.fs': '전체 화면', 'mkt.fs.exit': '전체 화면 종료',
   'mkt.note': '캐나다 공식 Job Bank 기준. 현재 채용 중인 공고 수이며 인력 부족을 뜻하지 않습니다',
   'stats.title': '{prov} 채용 통계', 'stats.catTitle': '{prov} · {cat} 채용 통계', 'stats.openJobs': '채용 중', 'stats.new7d': '최근 7일 게시', 'stats.medWage': '중위 연봉(ESDC)', 'stats.medSalary': '게시된 중위 연봉', 'stats.named': 'PNP 대상 공고', 'stats.aip': 'AIP 지정 고용주 공고', 'stats.topCities': '주요 도시', 'stats.streams': '해당 스트림', 'stats.byCat': '직업 대분류별', 'stats.entry': '지역 통계', 'stats.toJobs': '이 공고 보기', 'stats.caliber': '산정 기준', 'stats.noList': '목록 없음', 'stats.noList.tip': '해당 주는 현재 PNP 직업 목록을 공개하지 않습니다(예: OINP 2026-06 개편 후). TEER 등 조건으로 판단하며 데이터 누락이 아닙니다.', 'stats.naQc': '해당없음', 'stats.naQc.tip': '퀘벡주는 PNP에 참여하지 않고 자체 선발 제도를 운영합니다.', 'stats.provIndex': '주 선택', 'stats.compare': '주 간 비교 (Pro)', 'stats.pickProv': '2–4개 주 선택', 'stats.myNoc': '내 프로필로 강조', 'stats.cardWork': '취업비자 보유량(TFWP+IMP)', 'stats.cardStudy': '학생비자 보유량', 'stats.cardPr': 'PNP 영주권 승인(연간)',
 }
@@ -2029,6 +2032,38 @@ export function makeT(lang: Lang): TFn {
     if (vars) for (const k of Object.keys(vars)) s = s.split(`{${k}}`).join(String(vars[k]))
     return s
   }
+}
+
+// 省抽选的**官方通道名**译名(2026-08-01 Frank 队列⑤:「中文界面官方英文名 + 中文译名,英文界面只显英文」)。
+// 有限集人工定表(现 17 条,取自 pnp_draws 实际出现过的通道名),照「宁可留空也不瞎猜」——
+// 表里没有的原样只显英文,不让模型现编译名。官方英文名永远是主文案,译名只是灰字小注。
+const DRAW_STREAM_L10N: Record<string, { zh: string; ko: string }> = {
+  // AB(AAIP)
+  'Rural Renewal Stream': { zh: '乡镇振兴通道', ko: '농촌 재생 스트림' },
+  'Alberta Opportunity Stream': { zh: '阿尔伯塔机会通道', ko: '앨버타 기회 스트림' },
+  'Dedicated Health Care Pathway – Express Entry': { zh: '医护专项(EE 通道)', ko: '의료 전용 경로(EE)' },
+  'Dedicated Health Care Pathway – non-Express Entry': { zh: '医护专项(非 EE)', ko: '의료 전용 경로(비 EE)' },
+  'Alberta Express Entry Stream – Law Enforcement Pathway': { zh: 'EE 定向:执法', ko: 'EE 지정: 법 집행' },
+  'Alberta Express Entry Stream – Accelerated Tech Pathway': { zh: 'EE 定向:科技加速', ko: 'EE 지정: 기술 가속' },
+  'Alberta Express Entry Stream – Priority Sectors (Agriculture)': { zh: 'EE 定向:农业', ko: 'EE 지정: 농업' },
+  'Alberta Express Entry Stream – Priority Sectors (Construction)': { zh: 'EE 定向:建筑', ko: 'EE 지정: 건설' },
+  // BC(2026 新政三大类)
+  'Innovate: High Economic Impact': { zh: 'Innovate:高经济贡献', ko: 'Innovate: 높은 경제 기여' },
+  'Care: Health': { zh: 'Care:医疗', ko: 'Care: 의료' },
+  'Care: Childcare': { zh: 'Care:幼教', ko: 'Care: 보육' },
+  'Care: Veterinary Care': { zh: 'Care:兽医', ko: 'Care: 수의' },
+  'Build: Construction Trades': { zh: 'Build:建筑技工', ko: 'Build: 건설 기능직' },
+  'Temporary Rural/Remote Health Support Initiative': { zh: '乡镇偏远医疗支援(临时)', ko: '농촌·오지 의료 지원(임시)' },
+  // MB / ON
+  'Skilled Worker Stream': { zh: '技术工人通道', ko: '숙련 인력 스트림' },
+  'Employer Job Offer: Foreign Worker stream': { zh: '雇主 offer:海外工人(已关停)', ko: '고용주 오퍼: 해외 근로자(폐지)' },
+  'Employer Job Offer: International Student stream': { zh: '雇主 offer:国际学生(已关停)', ko: '고용주 오퍼: 유학생(폐지)' },
+}
+/** 官方通道名 → 界面语言的译名;英文界面与表里没有的一律返回空(只显官方英文名) */
+export const drawStreamNote = (stream: string, lang: Lang): string => {
+  if (lang === 'en') return ''
+  const hit = DRAW_STREAM_L10N[(stream || '').trim()]
+  return hit ? (lang === 'ko' ? hit.ko : hit.zh) : ''
 }
 
 // 具名通道 chip 的 label 存在数据层且是中文(有限小集合)——显示层三语映射,未知值原样回退

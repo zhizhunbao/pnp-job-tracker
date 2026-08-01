@@ -228,6 +228,26 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels, firstSc
   // firstScreen=横轴职业时首屏露几个职业(dataZoom 初窗)。Top N 选择器 2026-07-31 Frank「这个 top 去掉」撤:
   // 排行职责移交 landing 职位榜「最多」tab,主图回归完整分布(缩放窗仍在,拉 dataZoom 看全)
   const [xKey, setXKey] = useState<'occ' | 'prov' | 'city'>('occ')
+  // 全屏态:fs 跟着浏览器的 fullscreenchange 走(用户按 ESC / 返回手势退出时也要还原图高)
+  const fsRef = useRef<HTMLDivElement | null>(null)
+  const [fs, setFs] = useState(false)
+  const [vh, setVh] = useState(420)
+  useEffect(() => {
+    const onFs = () => {
+      const on = document.fullscreenElement === fsRef.current
+      setFs(on)
+      setVh(window.innerHeight)
+    }
+    document.addEventListener('fullscreenchange', onFs)
+    return () => document.removeEventListener('fullscreenchange', onFs)
+  }, [])
+  const toggleFs = () => {
+    const el = fsRef.current
+    if (!el) return
+    if (document.fullscreenElement) { document.exitFullscreen?.(); return }
+    // iOS Safari 不支持元素全屏(只有 video)——调不动就静默留在页面里,不弹错误
+    el.requestFullscreen?.().catch(() => { /* 不支持就算了 */ })
+  }
   const [grp, setGrp] = useState<'none' | 'prov' | 'broad' | 'teer'>('prov')
   // 右轴三档(2026-07-28 数据地基落地后):
   //   wage   = ESDC 官方中位年薪 —— **权威基线**,不随我们抓到多少帖子漂,规划类结论只能站在它上面
@@ -510,7 +530,18 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels, firstSc
           {xKey !== 'occ' ? <span style={{ fontSize: 11.5, color: '#9ca3af' }}>{t('mkt.chan.occOnly')}</span> : null}
         </div>
       )}
-      <EChart option={opt} height={420} />
+      {/* 全屏(2026-08-01 Frank 队列⑥「主图手机端加全屏按钮」):375 上图挤成一团,横过来看才读得动。
+          走浏览器原生 requestFullscreen —— 退出由 ESC/返回手势管,不自己造关闭态;
+          全屏时图撑满视口高度(fs ? '100vh' : 420),退出自动还原。桌面不出这个钮(用不上)。 */}
+      <div ref={fsRef} style={{ position: 'relative', background: '#fff' }}>
+        <button className="mktFs" onClick={toggleFs}
+          style={{ position: 'absolute', top: 6, right: 6, zIndex: 2, border: '1px solid #e5e7eb', borderRadius: 8,
+            background: '#fff', color: '#374151', fontSize: 12, padding: '5px 10px', cursor: 'pointer', fontFamily: 'inherit' }}>
+          {t(fs ? 'mkt.fs.exit' : 'mkt.fs')}
+        </button>
+        <EChart option={opt} height={fs ? Math.max(320, vh - 24) : 420} />
+      </div>
+      <style>{'@media(min-width:900px){.mktFs{display:none}}'}</style>
       <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 6, lineHeight: 1.6 }}>{t('mkt.note')}</div>
     </div>
   )
