@@ -17,12 +17,16 @@ import type { TFn } from '../jobs/i18n'
 type Cand = { noc: string; title: string; titleZh: string }
 type Top = Cand & { open: number; broad?: string }
 
-export function OccPicker({ t, lang, initial, onDone, onClose }: {
+// inline=true:不套弹层,直接铺在答题卡里(2026-07-31 Frank「选职业和其他问题都放到一个方式,
+// 不要只有职业是弹框」)—— 职业是第一题,就该和别的题长一个样,而不是另开一层。
+export function OccPicker({ t, lang, initial, onDone, onClose, inline, doneLabel }: {
   t: TFn
   lang: string
   initial: string[]
   onDone: (nocs: string[]) => void
-  onClose: () => void
+  onClose?: () => void
+  inline?: boolean
+  doneLabel?: string
 }) {
   const [nocs, setNocs] = useState<string[]>(initial)
   const [titles, setTitles] = useState<Record<string, string>>({})
@@ -73,13 +77,14 @@ export function OccPicker({ t, lang, initial, onDone, onClose }: {
   const dupCount = new Map<string, number>()
   for (const x of list) { const l = label(x); dupCount.set(l, (dupCount.get(l) || 0) + 1) }
 
-  return (
-    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(17,24,39,.45)', zIndex: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 14, width: '100%', maxWidth: 520, maxHeight: '86vh', overflow: 'auto', padding: '18px 18px 20px' }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
-          <div style={{ fontSize: 19, fontWeight: 700 }}>{t('quiz.q2')}</div>
-          <button onClick={onClose} aria-label="close" style={{ border: 'none', background: 'none', color: UI.text3, fontSize: 18, cursor: 'pointer', padding: 0 }}>×</button>
-        </div>
+  const body = (
+    <>
+        {!inline && (
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
+            <div style={{ fontSize: 19, fontWeight: 700 }}>{t('quiz.q2')}</div>
+            <button onClick={onClose} aria-label="close" style={{ border: 'none', background: 'none', color: UI.text3, fontSize: 18, cursor: 'pointer', padding: 0 }}>×</button>
+          </div>
+        )}
 
         {nocs.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
@@ -144,10 +149,23 @@ export function OccPicker({ t, lang, initial, onDone, onClose }: {
         )}
 
         {nocs.length > 0 && (
-          <Button kind="primary" onClick={() => onDone(nocs)} style={{ width: '100%', padding: '11px 0', fontSize: 15, marginTop: 14 }}>
-            {t('quiz.nextN', { n: nocs.length })}
-          </Button>
+          inline
+            // 内联时用与问卷同一套动作区:上边框断开 + 主按钮靠右(和「下一题」一个样)
+            ? <div style={{ borderTop: `1px solid ${UI.hairline}`, marginTop: 18, paddingTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
+                <Button kind="primary" onClick={() => onDone(nocs)}>{doneLabel || t('quiz.nextN', { n: nocs.length })}</Button>
+              </div>
+            : <Button kind="primary" onClick={() => onDone(nocs)} style={{ width: '100%', padding: '11px 0', fontSize: 15, marginTop: 14 }}>
+                {t('quiz.nextN', { n: nocs.length })}
+              </Button>
         )}
+    </>
+  )
+
+  if (inline) return body
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(17,24,39,.45)', zIndex: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 14, width: '100%', maxWidth: 520, maxHeight: '86vh', overflow: 'auto', padding: '18px 18px 20px' }}>
+        {body}
       </div>
     </div>
   )

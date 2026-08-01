@@ -183,9 +183,11 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
   const [bands, setBands] = useState<Answers>({ status: '', nocs: [], provs: [], clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0 })
   const [noc, setNoc] = useState('')
   const [nocTitle, setNocTitle] = useState('')
-  const [quizOpen, setQuizOpen] = useState(false)
   const [view, setView] = useState<'quiz' | 'report'>('quiz')
   const [stage, setStage] = useState<'basic' | 'explore'>('basic')   // 探索卷=报告 hook 的落点(基本 4 题满才进得来)
+  // 职业是第一步(2026-07-31 Frank「第一个问题可以先选职业吗」):每条决定的每条结论都要 NOC,
+  // 所以它不是常驻 chip 而是流程第一步;已经选过的照样先看到这一步(可换),按「下一题」才进问卷。
+  const [occStep, setOccStep] = useState(true)
   const [ready, setReady] = useState(false)
   const [resetArmed, setResetArmed] = useState(false)   // 重置两步:点一下变「确认重置」,再点才清(不弹系统 confirm)
   const [resetNonce, setResetNonce] = useState(0)       // 清完要让 SurveyJS 模型重建,否则旧答案还留在卷里
@@ -223,6 +225,7 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
   }
   const gotoQuiz = (to: 'basic' | 'explore' = 'basic') => {
     setStage(to)
+    setOccStep(to === 'basic')   // 回来改条件,还是从第一步(职业)看起
     setView('quiz')
     try { window.history.replaceState(null, '', window.location.pathname) } catch { /* ignore */ }
   }
@@ -315,8 +318,7 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                 </button>
               </span>
             </div>
-            {/* 职业 chip 常驻(非四题之一):答过直接用,没答→拉起选职业控件 */}
-            <div style={{ marginBottom: 10 }}><OccChip noc={noc} nocTitle={nocTitle} t={t} onPick={() => setQuizOpen(true)} /></div>
+            {/* 职业进了流程(第一步),这里不再另挂常驻 chip —— 同一件事只出现一次 */}
             {/* 题卡:框架只出题与导航,壳与配色归站内 token —— 选项做成可点的卡(能点才有 hover 和小手),
                 主按钮=站蓝(全站按钮统一,不留框架灰块) */}
             <style>{`
@@ -357,13 +359,18 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
 .plSurvey .sd-body__navigation>.sv-action,.plSurvey .sd-body__navigation .sd-btn{flex:0 0 auto !important;width:auto;min-width:0;float:none !important}
 /* 框架的禁用态=主按钮透明度 25%(蓝底白字褪成一团看不清);换成站内灰底灰字的正经禁用样式 */
 .plSurvey .sd-btn:disabled{opacity:1;background:${UI.hairline};color:${UI.text3};cursor:default}`}</style>
-            {/* 没选职业 → 第一步就是选职业(2026-07-31 Frank「找工作第一问不应该是选择职业吗」):
-                这张卡的每条结论都要 NOC 才算得出,先问处境是把顺序搞反了 */}
-            {!noc ? (
-              <div style={{ ...CARD, padding: '18px 20px 20px' }}>
+            {/* 第一步:职业。没选→只有选职业按钮;已选→显示已选职业 + 换一个,再「下一题」进问卷 */}
+            {occStep || !noc ? (
+              // 第一步=选职业,**内联**在同一张答题卡里(Frank「不要只有职业是弹框」):
+              // 题干 + 搜索 + 分类 + 选项 + 靠右的「下一题」,与四选一题一个样
+              <div style={{ ...CARD, padding: '14px 20px 18px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', paddingBottom: 12, marginBottom: 14, borderBottom: `1px solid ${UI.hairline}` }}>
+                  <Tag variant="region">{t('plan.set.basic')}</Tag>
+                </div>
                 <div style={{ fontSize: 19, fontWeight: 700, lineHeight: 1.55, marginBottom: 6 }}>{t('quiz.q2')}</div>
-                <div style={{ fontSize: 12.5, color: UI.text2, marginBottom: 14 }}>{t('quiz.q2sub')}</div>
-                <Button kind="primary" onClick={() => setQuizOpen(true)} style={{ width: '100%', padding: '11px 0', fontSize: 15 }}>{t('plan.occ.pick')}</Button>
+                <div style={{ fontSize: 12.5, color: UI.text2, marginBottom: 12 }}>{t('quiz.q2sub')}</div>
+                <OccPicker inline t={t} lang={lang} initial={bands.nocs} doneLabel={t('plan.next')}
+                  onDone={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || ''); setOccStep(false) }} />
               </div>
             ) : (
               <div style={{ ...CARD, padding: '14px 20px 6px' }}>
@@ -400,7 +407,7 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
               {/* 人话名优先(nocTitle 走 /api/quiz 出中文名),代码作灰字小注 */}
               {rpt && rpt !== 'loading' && (rpt.noc
                 ? <span style={{ fontSize: 15, fontWeight: 700, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{shortOcc(nocTitle || rpt.title)}<span style={{ color: UI.text3, fontWeight: 400, fontSize: 12, marginLeft: 6 }}>{rpt.noc}</span></span>
-                : <OccChip noc="" nocTitle="" t={t} onPick={() => setQuizOpen(true)} />)}
+                : <OccChip noc="" nocTitle="" t={t} onPick={() => gotoQuiz()} />)}
               {/* 两个动作钮同组靠右:窄屏一起换行,不会一个贴右一个掉到左边 */}
               <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
                 <button onClick={() => gotoQuiz()} style={BTN}>{t('plan.back')}</button>
@@ -515,12 +522,7 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
         </PageShell>
       </div>
       <SiteFooter t={t} />
-      {/* 选职业是控件不是问卷(统一答题:四选一归答题器,选职业归 OccPicker) */}
-      {quizOpen && (
-        <OccPicker t={t} lang={lang} initial={bands.nocs}
-          onClose={() => setQuizOpen(false)}
-          onDone={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || ''); setQuizOpen(false) }} />
-      )}
+      {/* 选职业不再有弹层版本:它是答题流程的第一步,内联在卡里(2026-07-31 Frank 拍板) */}
     </div>
   )
 }
