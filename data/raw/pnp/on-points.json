@@ -1,0 +1,295 @@
+{
+  "province": "ON",
+  "system": "OINP EOI points (Ontario Workforce Priority stream)",
+  "maxTotal": null,
+  "passMark": null,
+  "source": "OINP — Ontario Workforce Priority stream, scoring factors",
+  "url": "https://www.ontario.ca/page/ontario-workforce-priority-stream",
+  "pageUrl": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp",
+  "guideEffective": "",
+  "fetched": "2026-07-31",
+  "groupMax": {},
+  "factors": {
+    "teerCat": {
+      "group": "employment",
+      "rows": [
+        {
+          "label": "NOC TEER 0 or 1",
+          "points": 9
+        },
+        {
+          "label": "NOC TEER 2 or 3",
+          "points": 6
+        },
+        {
+          "label": "NOC TEER 4",
+          "points": 0
+        },
+        {
+          "label": "NOC TEER 5",
+          "points": 0
+        }
+      ],
+      "bonus": [],
+      "max": 9
+    },
+    "occCat": {
+      "group": "employment",
+      "rows": [
+        {
+          "label": "Occupational Category 3",
+          "points": 10
+        },
+        {
+          "label": "Occupational Category 7",
+          "points": 8
+        },
+        {
+          "label": "Occupational Category 2",
+          "points": 6
+        },
+        {
+          "label": "Occupational Category 0, 1, 4, 8, 9",
+          "points": 4
+        },
+        {
+          "label": "Occupational Category 5, 6",
+          "points": 2
+        }
+      ],
+      "bonus": [],
+      "max": 10
+    },
+    "wage": {
+      "group": "employment",
+      "rows": [
+        {
+          "label": "$40 per hour or higher",
+          "points": 15
+        },
+        {
+          "label": "$35 to $39.99 per hour",
+          "points": 12
+        },
+        {
+          "label": "$30 to $34.99 per hour",
+          "points": 10
+        },
+        {
+          "label": "$25 to $29.99 per hour",
+          "points": 8
+        },
+        {
+          "label": "$20 to $24.99 per hour",
+          "points": 5
+        },
+        {
+          "label": "Less than $20 per hour",
+          "points": 0
+        }
+      ],
+      "bonus": [],
+      "max": 15
+    },
+    "onExp": {
+      "group": "employment",
+      "rows": [
+        {
+          "label": "Over 24 months working in job offer position",
+          "points": 18
+        },
+        {
+          "label": "13 to 24 months working in job offer position",
+          "points": 15
+        },
+        {
+          "label": "6 to 12 months working in job offer position",
+          "points": 12
+        },
+        {
+          "label": "Less than 6 months working in job offer position or not currently working in position",
+          "points": 0
+        }
+      ],
+      "bonus": [],
+      "max": 18
+    },
+    "earnings": {
+      "group": "employment",
+      "rows": [
+        {
+          "label": "$70k or more earnings in a year",
+          "points": 8
+        },
+        {
+          "label": "$50k to $69,999",
+          "points": 6
+        },
+        {
+          "label": "$30k to $49,999",
+          "points": 4
+        },
+        {
+          "label": "Under $30k earnings in a year",
+          "points": 0
+        }
+      ],
+      "bonus": [],
+      "max": 8
+    },
+    "status": {
+      "group": "employment",
+      "rows": [
+        {
+          "label": "With valid work permit",
+          "points": 10
+        },
+        {
+          "label": "With valid study permit",
+          "points": 5
+        },
+        {
+          "label": "Without valid work or study permit",
+          "points": 0
+        }
+      ],
+      "bonus": [],
+      "max": 10
+    },
+    "education": {
+      "group": "education",
+      "rows": [
+        {
+          "label": "Doctorate or degree in medicine, dentistry, veterinary medicine or optometry",
+          "points": 10
+        },
+        {
+          "label": "Masters degree",
+          "points": 8
+        },
+        {
+          "label": "University certificate or diploma above a bachelor level",
+          "points": 6
+        },
+        {
+          "label": "Bachelors degree or equivalent",
+          "points": 6
+        },
+        {
+          "label": "Ontario College Graduate Certificate",
+          "points": 5
+        },
+        {
+          "label": "University certificate or diploma below a bachelor level",
+          "points": 5
+        },
+        {
+          "label": "College, CEGEP or other non-university certificate or diploma that is not an Ontario College Graduate Certificate",
+          "points": 5
+        },
+        {
+          "label": "Apprenticeship or trades certificate or diploma",
+          "points": 5
+        },
+        {
+          "label": "Less than college or trade certificate",
+          "points": 0
+        }
+      ],
+      "bonus": [],
+      "max": 10
+    },
+    "canEdu": {
+      "group": "education",
+      "rows": [
+        {
+          "label": "More than one Canadian credential",
+          "points": 10
+        },
+        {
+          "label": "One Canadian credential",
+          "points": 5
+        },
+        {
+          "label": "No Canadian credential",
+          "points": 0
+        }
+      ],
+      "bonus": [],
+      "max": 10
+    },
+    "language": {
+      "group": "language",
+      "rows": [
+        {
+          "label": "CLB 9 or higher",
+          "points": 15
+        },
+        {
+          "label": "CLB 8",
+          "points": 12
+        },
+        {
+          "label": "CLB 7",
+          "points": 8
+        },
+        {
+          "label": "CLB 6",
+          "points": 4
+        },
+        {
+          "label": "CLB 5 or lower",
+          "points": 0
+        }
+      ],
+      "bonus": [],
+      "max": 15
+    },
+    "language2": {
+      "group": "language",
+      "rows": [
+        {
+          "label": "2 official languages",
+          "points": 10
+        },
+        {
+          "label": "1 official language",
+          "points": 5
+        }
+      ],
+      "bonus": [],
+      "max": 10
+    },
+    "area": {
+      "group": "region",
+      "rows": [
+        {
+          "label": "Northern Ontario",
+          "points": 15
+        },
+        {
+          "label": "Eastern Ontario",
+          "points": 10
+        },
+        {
+          "label": "Central Ontario outside GTA",
+          "points": 10
+        },
+        {
+          "label": "Southwestern Ontario",
+          "points": 10
+        },
+        {
+          "label": "Inside GTA (except Toronto)",
+          "points": 5
+        },
+        {
+          "label": "Toronto",
+          "points": 0
+        }
+      ],
+      "bonus": [],
+      "max": 15
+    }
+  }
+}

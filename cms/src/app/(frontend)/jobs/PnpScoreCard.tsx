@@ -243,12 +243,19 @@ function ProvinceResult({ t, lang, s, draws, byProv, switchable, matchedStream, 
 }) {
   // 对照锚,按可信度排序:①本岗所在通道的最近一次抽选;②官方申请门槛;
   // ③都没有 → 只摆近期各通道分数线区间,**不给差分结论**(拿别的通道的线判你差多少分是编)。
+  // 打分表可以自报它属于哪条通道(system 里的括号,如「OINP EOI points (Ontario Workforce Priority stream)」)——
+  // ON 已公布的分数线全是改制前已关停通道的 EOI 分,与新通道不是同一套分制,拿来对照就是错的锚。
+  // 声明了通道的省,只认同一条通道的抽选;没声明的(BC SIRS / SK)照旧全取。
+  const gridStream = /\(([^)]+)\)\s*$/.exec(s.system)?.[1] ?? ''
   const scored = draws.filter((d) => d.province === s.province && d.kind !== 'notice' && d.score != null)
+    .filter((d) => !gridStream || streamMatches(d.stream, gridStream))
     .sort((a, b) => (a.drawDate < b.drawDate ? 1 : -1))
   const latest = scored.find((d) => streamMatches(d.stream, matchedStream))
   const line = latest?.score ?? s.passMark ?? null
   const gap = line == null ? null : s.total - line
   const ok = (gap ?? 0) >= 0
+  // 该省有分数线、但全是别的通道的(ON:旧通道已关停)→ 说清楚为什么这里没有线,而不是含糊说「未公布」
+  const hasOtherStreamDraws = !scored.length && draws.some((d) => d.province === s.province && d.kind !== 'notice' && d.score != null)
   const range = line == null && scored.length
     ? { lo: Math.min(...scored.map((d) => d.score as number)), hi: Math.max(...scored.map((d) => d.score as number)), n: scored.length }
     : null
@@ -266,7 +273,9 @@ function ProvinceResult({ t, lang, s, draws, byProv, switchable, matchedStream, 
         <span style={{ fontSize: 11, color: '#9ca3af' }}>{s.system}</span>
       </div>
       <div style={{ fontSize: 20, fontWeight: 700, color: '#1d4ed8', fontVariantNumeric: 'tabular-nums', marginTop: 2 }}>
-        {s.total} <span style={{ fontSize: 13, color: '#9ca3af', fontWeight: 500 }}>/ {s.maxTotal}</span>
+        {/* 「/ 总分」只在官方**公布了**总分上限时才显示:ON 的 OINP EOI 页只印各项分值、不印总分,
+            拿各项相加冒充官方总分就是编数(BC 200 / SK 110 都是官方白纸黑字印着的) */}
+        {s.total}{s.maxTotal ? <span style={{ fontSize: 13, color: '#9ca3af', fontWeight: 500 }}> / {s.maxTotal}</span> : null}
       </div>
 
       {/* 分项:命中的官方原文标签一并显出来,好让用户核对我们选对了没有 */}
@@ -282,7 +291,7 @@ function ProvinceResult({ t, lang, s, draws, byProv, switchable, matchedStream, 
 
       <div style={{ marginTop: 8, padding: '8px 10px', borderRadius: 8, fontSize: 12.5, lineHeight: 1.6,
         background: line == null ? '#f9fafb' : ok ? '#f0fdf4' : '#fffbeb', color: line == null ? '#6b7280' : ok ? '#166534' : '#b45309' }}>
-        {line == null ? (range ? t('ps.range', { lo: range.lo, hi: range.hi, n: range.n }) : t('ps.noLine')) : (
+        {line == null ? (range ? t('ps.range', { lo: range.lo, hi: range.hi, n: range.n }) : t(hasOtherStreamDraws ? 'ps.noLineStream' : 'ps.noLine')) : (
           <>
             {latest?.score != null
               ? t('ps.cut', { n: line, date: (latest.drawDate || '').slice(0, 10), stream: latest.stream })
@@ -296,7 +305,7 @@ function ProvinceResult({ t, lang, s, draws, byProv, switchable, matchedStream, 
       {/* 换省这一步具体怎么走:官方给的 offer 分 + 该省同职业在招数(都是事实,不评价「更容易」) */}
       {offerGain > 0 ? (
         <div style={{ fontSize: 12, color: '#374151', marginTop: 6, lineHeight: 1.6 }}>
-          {t('ps.switch', { prov: t('prov.' + s.province) || s.province, n: offerGain, total: Math.min(s.total + offerGain, s.maxTotal) })}
+          {t('ps.switch', { prov: t('prov.' + s.province) || s.province, n: offerGain, total: s.maxTotal ? Math.min(s.total + offerGain, s.maxTotal) : s.total + offerGain })}
         </div>
       ) : null}
       {jobs ? (

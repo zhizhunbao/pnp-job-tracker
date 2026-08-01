@@ -28,6 +28,9 @@ BC_URL = "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nomi
 AB_URL = "https://www.alberta.ca/aaip-processing-information"
 MB_URL = "https://immigratemanitoba.com/draws/"
 ON_URL = "https://www.ontario.ca/page/2026-ontario-immigrant-nominee-program-updates"
+# ON 的**抽选记录**在另一页(逐轮公布日期/邀请数/分数区间/说明),更新页只当通告用。
+# 2026-07-31 复核推翻旧结论「OINP 不公布分数线」——invitations 页有 Score range 一列(如「57 and above」)。
+ON_INV_URL = "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp-invitations-apply"
 
 MAX_PER_PROV = 12  # raw 留最近 N 条;mart 再截
 
@@ -218,18 +221,64 @@ def parse_on(html: str) -> tuple[list[dict], dict | None]:
     return draws[:MAX_PER_PROV], notice
 
 
+# invitations 页:一张表一条通道,表头 Date issued / Number of invitations / Date profiles created /
+# Score range / Notes。分数写成「57 and above」(区间下界)——取那个数当分数线,取不到就留空不猜。
+ON_SCORE = re.compile(r"(\d{2,3})\s*(?:and above|\+|or higher)", re.I)
+
+
+def parse_on_draws(html: str) -> list[dict]:
+    soup = BeautifulSoup(html, "html.parser")
+    draws: list[dict] = []
+    for table in soup.find_all("table"):
+        grid = expand_table(table)
+        if not grid:
+            continue
+        head = " ".join(grid[0]).lower()
+        if "score range" not in head:
+            continue
+        # 通道名 = 表格前面最近的一个标题(官方一张表一条通道)
+        h = table.find_previous(["h2", "h3", "h4"])
+        stream = re.sub(r"\s+", " ", h.get_text(" ", strip=True))[:120] if h else ""
+        cols = {name: i for i, name in enumerate(x.lower() for x in grid[0])}
+        i_date = next((i for n, i in cols.items() if "date issued" in n), 0)
+        i_num = next((i for n, i in cols.items() if "number of invitations" in n), 1)
+        i_score = next((i for n, i in cols.items() if "score range" in n), 3)
+        i_note = next((i for n, i in cols.items() if n.startswith("notes")), None)
+        for row in grid[1:]:
+            if len(row) <= max(i_date, i_num, i_score):
+                continue
+            d = _iso(row[i_date])
+            if not d:
+                continue
+            m = ON_SCORE.search(row[i_score])
+            draws.append({"date": d, "stream": stream, "note": (row[i_note][:160] if i_note is not None and len(row) > i_note else ""),
+                          "score": int(m.group(1)) if m else None, "invitations": _int(row[i_num])})
+    draws.sort(key=lambda x: x["date"], reverse=True)
+    return draws[:MAX_PER_PROV]
+
+
 def build_on(old: dict) -> dict:
     try:
-        draws, notice = parse_on(fetch(ON_URL))
+        _, notice = parse_on(fetch(ON_URL))          # 通告仍取更新页(新通道细则的第一手动静)
     except Exception as e:  # noqa: BLE001
-        print(f"  ✗ ON 抓取失败: {type(e).__name__} {e}(保留旧数据)")
+        print(f"  ✗ ON 更新页抓取失败: {type(e).__name__} {e}(保留旧数据)")
         return old.get("ON") or {}
     if not notice:
         print("  ✗ ON 没解析到更新条目(保留旧数据)")
         return old.get("ON") or {}
-    print(f"  ✓ ON  {len(draws):>2} 条抽选  最新通告 {notice['date']} {notice['note'][:50]}")
-    # scale=None:OINP 按轮次公布邀请数但不公布分数线,不假装有分制(各省分制不可比红线)
-    return {"label": "OINP", "scale": None, "url": ON_URL, "draws": draws, "notice": notice}
+    # 抽选记录改取 invitations 页(带分数区间)——抓不到就退回旧数据里的 draws,不清空
+    try:
+        draws = parse_on_draws(fetch(ON_INV_URL))
+    except Exception as e:  # noqa: BLE001
+        print(f"  ✗ ON invitations 页抓取失败: {type(e).__name__} {e}(保留旧抽选)")
+        draws = (old.get("ON") or {}).get("draws") or []
+    if not draws:
+        draws = (old.get("ON") or {}).get("draws") or []
+    scored = sum(1 for d in draws if d.get("score") is not None)
+    print(f"  ✓ ON  {len(draws):>2} 条抽选(其中 {scored} 条带分数线)  最新通告 {notice['date']} {notice['note'][:50]}")
+    # scale:OINP 的 EOI 分制(与 BC SIRS / AB WEOI 互不可比,前端必须带标注)
+    return {"label": "OINP", "scale": "OINP EOI" if scored else None,
+            "url": ON_INV_URL, "draws": draws, "notice": notice}
 
 
 def main() -> None:

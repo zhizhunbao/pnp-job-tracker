@@ -38,7 +38,7 @@ IN_PNP = _paths.PNP                      # raw/pnp/*.json(各省具名通道:每
 IN_PNP_DRAWS = _paths.PNP / "draws.json"  # 省抽选事实(BC/AB/MB+ON通告,build_draws.py 产,E6-04)
 # 省提名官方打分表(E12-09)——一省一个文件,加省就往这个 list 里加,下面的组装逻辑不用改。
 # BC=SIRS 200 分制(build_bc_sirs.py 从官方 PDF 抓)/ SK=SINP Points Grid 110 分制(build_sk_points.py 抓官网表)
-IN_SCORE_TABLES = [_paths.PNP / "bc-sirs.json", _paths.PNP / "sk-points.json"]
+IN_SCORE_TABLES = [_paths.PNP / "bc-sirs.json", _paths.PNP / "sk-points.json", _paths.PNP / "on-points.json"]
 # 省提名官方**门槛**(规则引擎第一刀)——打分表管「能打几分」,这张管「打分之前先要满足什么」。
 # 一省一个文件,加省=往这个 list 里加一个(build_<省>_req.py 产,列同一套)。
 IN_REQ_TABLES = [_paths.PNP / "bc-req.json", _paths.PNP / "on-req.json"]
