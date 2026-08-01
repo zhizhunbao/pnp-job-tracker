@@ -37,7 +37,7 @@ surveyLocalization.locales.ko.questionsProgressText = '{0}/{1} 완료'
 type RptLine = { key: string; params: Record<string, string | number>; verdict?: string; source?: { label: string; url: string; fetched: string }; url?: string }
 type Lane = { kind: 'prov' | 'ee' | 'alts'; verdict?: string; key: string; params: Record<string, string | number> }
 type Rpt = {
-  noc: string; title: string; conclusions: RptLine[]; gaps: RptLine[]; nextSteps: RptLine[]; alternatives: RptLine[]
+  noc: string; title: string; conclusions: RptLine[]; requirements: RptLine[]; gaps: RptLine[]; nextSteps: RptLine[]; alternatives: RptLine[]
   confidence: 'low' | 'mid' | 'high'; asOf: string
   lanes: Lane[]; hint?: RptLine; locked: string[]; pro: boolean   // 付费闸(服务端已裁剪,locked 只有类别键没有正文)
 }
@@ -109,7 +109,7 @@ function collectRefs(r: Rpt, t: TFn): { rows: RefRow[]; of: (l: RptLine) => numb
     const noc = u.match(/[?&]noc=(\d{5})/)?.[1]
     return t(DEST[seg]) + (prov ? ` ${prov}` : noc ? ` ${noc}` : '')
   }
-  for (const l of [...r.conclusions, ...r.gaps, ...r.alternatives, ...r.nextSteps]) {
+  for (const l of [...r.conclusions, ...(r.requirements ?? []), ...r.gaps, ...r.alternatives, ...r.nextSteps]) {
     const u = urlOf(l)
     if (u) add(u, labelOf(l), l.source?.fetched)
   }
@@ -433,6 +433,14 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                   <div style={CARD}>
                     <div style={secH}>{t('rpt.sec.c')}</div>
                     <ul style={{ margin: 0, padding: 0 }}>{rpt.conclusions.map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</ul>
+                  </div>
+                )}
+                {/* 门槛对照(规则引擎):官方门槛 × 你的情况,一行一条,出处照旧收在底部「依据与链接」。
+                    免费层已在服务端把「差多少」摘掉(gateReport),这里不做任何裁剪判断 */}
+                {rpt.requirements?.length > 0 && (
+                  <div style={CARD}>
+                    <div style={secH}>{t('rpt.sec.r')}</div>
+                    <ul style={{ margin: 0, padding: 0 }}>{rpt.requirements.map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</ul>
                   </div>
                 )}
                 {rpt.gaps.length > 0 && (

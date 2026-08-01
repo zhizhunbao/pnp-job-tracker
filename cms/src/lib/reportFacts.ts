@@ -3,9 +3,10 @@
 //   byProv 的 named 与职位板 pnp_stream 口径同、draws 与 /pathways 抽选块同表、
 //   scoreProvinces=pnp_score_factors 实际覆盖的省(BC/SK),不写死。
 import type { ReportFacts } from './report'
+import type { Requirement } from './rules'
 
 const TODAY = () => new Date().toISOString().slice(0, 10)
-const EMPTY: ReportFacts = { noc: '', title: '', teer: null, byProv: [], draws: [], scoreProvinces: [], fetched: '' }
+const EMPTY: ReportFacts = { noc: '', title: '', teer: null, byProv: [], draws: [], scoreProvinces: [], requirements: [], fetched: '' }
 
 // 职业级统计(卡①找工作 / 卡⑥职业规划共用):stats_occupation 是 mart 算好的表,这里只 SELECT。
 // 缺表容错同 loadOccStats 先例(42P01/42703 → 回空,报告少两条结论,页面不炸)。
@@ -66,7 +67,7 @@ export async function assembleOccStats(pool: any, noc: string): Promise<OccStats
 export async function assembleReportFacts(pool: any, noc: string): Promise<ReportFacts> {
   if (!/^\d{5}$/.test(noc)) return { ...EMPTY, fetched: TODAY() }
   const num = (v: any) => (v == null ? null : Number(v))
-  const [prov, draws, scoreProv, head] = await Promise.all([
+  const [prov, draws, scoreProv, head, reqs, wages] = await Promise.all([
     pool.query(
       `SELECT province, count(*)::int open,
               count(*) FILTER (WHERE pnp_stream IS NOT NULL AND pnp_stream <> '')::int named
@@ -83,13 +84,31 @@ export async function assembleReportFacts(pool: any, noc: string): Promise<Repor
       `SELECT COALESCE(s.title_en, d.title, '') title, s.teer
        FROM noc_descriptions d LEFT JOIN stats_occupation s ON s.noc = d.noc AND s.province = 'all'
        WHERE d.noc = $1 LIMIT 1`, [noc]).catch(() => ({ rows: [] })),
+    // 官方门槛(规则引擎输入):全表也就几十行,整张取回,按省的筛选交给引擎(纯函数好测)
+    pool.query(
+      `SELECT province, program, stream, subject, factor, op, value, value_text, unit,
+              applies_teer, applies_area, applies_family_size, basis, label, section, effective, url, page_url, fetched
+       FROM pnp_requirements ORDER BY province, seq`).catch(() => ({ rows: [] })),
+    // 最低收入门槛的对照基准=该职业在该省的 ESDC 官方中位年薪(岗位自带的事实,不问用户)
+    pool.query(
+      `SELECT province, median_wage_annual FROM stats_occupation WHERE noc = $1 AND province <> 'all'`, [noc])
+      .catch(() => ({ rows: [] })),
   ])
   const h = head.rows[0] ?? {}
+  const wageOf = new Map<string, number | null>(wages.rows.map((r: any) => [r.province, num(r.median_wage_annual)]))
   return {
     noc,
     title: h.title || noc,
     teer: h.teer != null ? Number(h.teer) : (/^\d{5}$/.test(noc) ? Number(noc[1]) : null),
-    byProv: prov.rows.map((r: any) => ({ province: r.province, open: r.open ?? 0, named: r.named ?? 0 })),
+    byProv: prov.rows.map((r: any) => ({ province: r.province, open: r.open ?? 0, named: r.named ?? 0, medianWage: wageOf.get(r.province) ?? null })),
+    requirements: reqs.rows.map((r: any): Requirement => ({
+      province: r.province ?? '', program: r.program ?? 'PNP', stream: r.stream ?? '',
+      subject: r.subject === 'employer' ? 'employer' : 'applicant',
+      factor: r.factor ?? '', op: r.op ?? '>=', value: num(r.value), valueText: r.value_text ?? '', unit: r.unit ?? '',
+      appliesTeer: r.applies_teer ?? '', appliesArea: r.applies_area ?? '', familySize: num(r.applies_family_size),
+      basis: r.basis ?? '', label: r.label ?? '', section: r.section ?? '',
+      effective: r.effective ?? '', url: r.url ?? '', pageUrl: r.page_url ?? '', fetched: r.fetched ?? '',
+    })),
     draws: draws.rows.map((r: any) => ({
       province: r.province ?? '', drawDate: String(r.draw_date ?? ''), stream: r.stream ?? '', score: num(r.score),
     })),

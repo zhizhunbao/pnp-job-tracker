@@ -10,10 +10,12 @@
 // exclusion(ON)是制度性无清单、uncovered 是本站没数据 —— 三者混为一谈=报告撒谎。
 // 抽选线红线(2026-07-27):线按通道设,对不上通道就不给差分结论,只摆区间;样本小就说小(params 带 n)。
 import { provListCoverage, type MatchDims, type MatchProfile, type MatchVerdict } from './match'
+import { evaluateRequirements, type Requirement, type RuleResult } from './rules'
 import type { OccStats } from './reportFacts'   // 纯类型(reportFacts 反向引 ReportFacts,两边都是 type-only,不成环)
 
 // ── 输入:事实聚合(由 API 层查库组装;引擎不碰 SQL)─────────────────────────
-export type OccProvFacts = { province: string; open: number; named: number }   // 该 NOC 在该省:在招 / 命中具名清单岗
+// medianWage=该职业在该省的 ESDC 官方中位年薪(最低收入门槛的对照基准:岗位自带的事实,不问用户)
+export type OccProvFacts = { province: string; open: number; named: number; medianWage?: number | null }
 export type ReportDraw = { province: string; drawDate: string; stream: string; score: number | null }
 export type ReportFacts = {
   noc: string
@@ -24,6 +26,7 @@ export type ReportFacts = {
   medianSalary?: number | null
   scoreProvinces?: string[]         // 有官方分值表的省(pnp_score_factors 覆盖,如 BC/SK)
   scores?: Record<string, { total: number; passMark: number | null; system: string; url: string; fetched: string }>  // 用户已算的省估分(pnpSelfScore 输出)
+  requirements?: Requirement[]      // 官方门槛(pnp_requirements;规则引擎的输入,只 BC 有数据时其余省=未收录)
   fetched?: string                  // 事实聚合的数据日期
 }
 // 卡②基本 4 题里引擎新增消费的字段(currentStatus/clb/targetProvinces 已在 MatchProfile)
@@ -42,6 +45,7 @@ export type Report = {
   noc: string
   title: string
   conclusions: ReportLine[]
+  requirements: ReportLine[]        // 门槛对照(规则引擎;设计 §6 新增的一节)—— 官方要求 × 你的情况
   gaps: ReportLine[]
   nextSteps: ReportLine[]
   alternatives: ReportLine[]
@@ -77,6 +81,61 @@ const CEC_SRC = {
   fetched: '',
 }
 
+// ── 门槛对照(规则引擎;设计《规则引擎与题库配对》§6)────────────────────────
+// 求值全在 lib/rules.ts(纯函数、阈值来自 pnp_requirements),这里只把结果排成句子:
+// 一行一条官方门槛,左=官方要求、右=你的情况。**该省没收录门槛就说没收录**,不拿别省套。
+// 收入这条的对照基准是「该职业在该省的官方中位年薪」(岗位自带的事实,不是他本人的工资)——
+// 句子里必须写清是职业中位,否则等于替他填了一个他没说过的数。
+const REQ_VERDICT: Record<string, MatchVerdict> = { pass: 'pass', fail: 'fail', unknown: 'na' }
+function requirementLines(prov: string, facts: ReportFacts, profile: MatchProfile, extra: ReportExtra): ReportLine[] {
+  const reqs = (facts.requirements ?? []).filter((r) => r.province === prov)
+  if (!reqs.length) return [{ key: 'rpt.r.none', params: { prov }, verdict: 'na' }]
+
+  const f = facts.byProv.find((r) => r.province === prov)
+  const results = evaluateRequirements(reqs, {
+    teer: facts.teer,
+    clb: profile.clb,
+    canadianExpMonths: extra.canadianExpMonths,
+    familySize: null,            // 家庭人数尚未入题库 → 引擎按「1 人档」做下界推理(不默认成 1 人)
+    annualIncome: f?.medianWage ?? null,
+    incomeIsOccMedian: true,
+    area: null,                  // 住大温还是 BC 其余没问 → 引擎两档都摆,只在确定时下判定
+  })
+
+  // 出处:所有门槛都指同一份官方指南 → 底部「依据与链接」按 URL 去重后就该是一条,
+  // 所以 label 用文件名而不是某一条的官方原句(拿第一条的句子当整份文件的名字会对不上后面几条)
+  const src = { label: `${prov} PNP — official program guide`, url: reqs[0].url || reqs[0].pageUrl, fetched: reqs[0].fetched }
+  const line = (r: RuleResult, key: string, params: Record<string, string | number>): ReportLine => ({
+    key, params: { prov, ...params }, verdict: REQ_VERDICT[r.verdict], source: src,
+  })
+  const out: ReportLine[] = []
+  for (const r of results) {
+    if (r.factor === 'language') {
+      const teer = facts.teer ?? ''
+      if (r.need == null) out.push(line(r, 'rpt.r.langNone', { teer }))
+      else if (r.verdict === 'unknown') out.push(line(r, 'rpt.r.lang.unknown', { teer, need: r.need }))
+      else if (r.verdict === 'pass') out.push(line(r, 'rpt.r.lang.pass', { teer, need: r.need, have: r.have ?? '' }))
+      else out.push(line(r, 'rpt.r.lang.fail', { teer, need: r.need, have: r.have ?? '', short: r.short ?? '' }))
+    } else if (r.factor === 'income') {
+      const need = r.need != null ? k(r.need) : ''
+      const needLow = r.needLow != null ? k(r.needLow) : ''
+      const have = r.have != null ? k(r.have) : ''
+      if (r.verdict === 'pass') out.push(line(r, 'rpt.r.income.pass', { need, have }))
+      else if (r.verdict === 'fail') out.push(line(r, 'rpt.r.income.fail', { need: needLow || need, have, short: r.short != null ? k(r.short) : '' }))
+      else out.push(line(r, 'rpt.r.income.unknown', { need, needLow, have }))
+    } else if (r.factor === 'experience') {
+      const months = r.need ?? 0
+      if (r.verdict === 'pass') out.push(line(r, 'rpt.r.exp.pass', { need: months, have: r.have ?? '' }))
+      else out.push(line(r, 'rpt.r.exp.unknown', { need: months, have: r.have ?? '' }))
+    } else if (r.factor === 'empYears') {
+      out.push(line(r, 'rpt.r.emp.years', { n: r.need ?? '' }))
+    } else if (r.factor === 'empStaff') {
+      out.push(line(r, 'rpt.r.emp.staff', { metro: r.need ?? '', rest: r.needLow ?? '' }))
+    }
+  }
+  return out
+}
+
 export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: MatchDims, facts: ReportFacts): Report {
   const conclusions: ReportLine[] = []
   const gaps: ReportLine[] = []
@@ -89,7 +148,7 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
   if (!noc) {
     // 不给 /account 深链:匿名用户点过去是登录墙(死路);选职业入口由页面的职业 chip 承担
     gaps.push({ key: 'rpt.g.noNoc', params: {}, verdict: 'na' })
-    return { goal: 'pr', noc: '', title: '', conclusions, gaps, nextSteps, alternatives, confidence: 'low', asOf: facts.fetched ?? '' }
+    return { goal: 'pr', noc: '', title: '', conclusions, requirements: [], gaps, nextSteps, alternatives, confidence: 'low', asOf: facts.fetched ?? '' }
   }
 
   // 目标省;没选就按「命中具名清单岗多 → 在招多」取前 3(报告要有落点,不铺十省)
@@ -184,6 +243,13 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
     }
   }
 
+  // ── 门槛对照(规则引擎):逐目标省一节。QC 不参与(走自己的甄选体系,不是 PNP)──────
+  const requirements: ReportLine[] = []
+  for (const prov of targets) {
+    if (provListCoverage(prov, dims) === 'qc') continue
+    requirements.push(...requirementLines(prov, facts, profile, extra))
+  }
+
   // ── 联邦 EE 类别(独立信号,不混省提名)───────────────────────────────────
   const eeRows = dims.eeCategories.filter((r) => r.noc === noc && r.drawCrs != null)
   const ee = eeRows.sort((a, b) => (a.drawDate < b.drawDate ? 1 : -1))[0]
@@ -245,7 +311,7 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
   const confidence: Report['confidence'] = basicsAnswered < 4 ? 'low' : hasDeep ? 'high' : 'mid'
   if (basicsAnswered < 4) gaps.push({ key: 'rpt.g.basics', params: { n: 4 - basicsAnswered }, verdict: 'na' })
 
-  return { goal: 'pr', noc, title: facts.title, conclusions, gaps, nextSteps, alternatives, confidence, asOf: facts.fetched ?? '' }
+  return { goal: 'pr', noc, title: facts.title, conclusions, requirements, gaps, nextSteps, alternatives, confidence, asOf: facts.fetched ?? '' }
 }
 
 // ── 卡③「选省份」:十省对照,专属题只有一道(手上有没有 offer)──────────────────
@@ -260,7 +326,7 @@ export function buildProvReport(profile: MatchProfile, extra: ProvExtra, dims: M
   const noc = facts.noc
   if (!noc) {
     gaps.push({ key: 'rpt.g.noNoc', params: {}, verdict: 'na' })
-    return { goal: 'prov', noc: '', title: '', conclusions, gaps, nextSteps, alternatives, confidence: 'low', asOf: facts.fetched ?? '' }
+    return { goal: 'prov', noc: '', title: '', conclusions, requirements: [], gaps, nextSteps, alternatives, confidence: 'low', asOf: facts.fetched ?? '' }
   }
 
   // 候选=有在招数据的省 ∪ 公开清单里收了这个职业的省(某省 0 在招但清单收了它,仍然是个真选项)
@@ -325,7 +391,7 @@ export function buildProvReport(profile: MatchProfile, extra: ProvExtra, dims: M
   nextSteps.push({ key: 'rpt.n.pathways', params: {}, url: '/pathways' })
 
   return {
-    goal: 'prov', noc, title: facts.title, conclusions, gaps, nextSteps, alternatives,
+    goal: 'prov', noc, title: facts.title, conclusions, requirements: [], gaps, nextSteps, alternatives,
     confidence: !rank.length ? 'low' : extra.hasJobOffer != null ? 'high' : 'mid', asOf: facts.fetched ?? '',
   }
 }
@@ -340,7 +406,7 @@ export function buildJobReport(profile: MatchProfile, dims: MatchDims, facts: Re
   const noc = facts.noc
   if (!noc) {
     gaps.push({ key: 'rpt.g.noNoc', params: {}, verdict: 'na' })
-    return { goal: 'job', noc: '', title: '', conclusions, gaps, nextSteps, alternatives: [], confidence: 'low', asOf: facts.fetched ?? '' }
+    return { goal: 'job', noc: '', title: '', conclusions, requirements: [], gaps, nextSteps, alternatives: [], confidence: 'low', asOf: facts.fetched ?? '' }
   }
 
   // 目标省;没选就按在招量取前 2(找工作看的是岗多不多,与拿 PR 按具名排序不同)
@@ -393,7 +459,7 @@ export function buildJobReport(profile: MatchProfile, dims: MatchDims, facts: Re
   if (answered < 2) gaps.push({ key: 'rpt.g.basics', params: { n: 2 - answered }, verdict: 'na' })
 
   return {
-    goal: 'job', noc, title: facts.title, conclusions, gaps, nextSteps, alternatives: [],
+    goal: 'job', noc, title: facts.title, conclusions, requirements: [], gaps, nextSteps, alternatives: [],
     confidence: answered < 2 ? 'low' : occ.self ? 'high' : 'mid', asOf: facts.fetched ?? '',
   }
 }
@@ -408,7 +474,7 @@ export function buildCareerReport(profile: MatchProfile, facts: ReportFacts, occ
   const noc = facts.noc
   if (!noc) {
     gaps.push({ key: 'rpt.g.noNoc', params: {}, verdict: 'na' })
-    return { goal: 'career', noc: '', title: '', conclusions, gaps, nextSteps, alternatives, confidence: 'low', asOf: facts.fetched ?? '' }
+    return { goal: 'career', noc: '', title: '', conclusions, requirements: [], gaps, nextSteps, alternatives, confidence: 'low', asOf: facts.fetched ?? '' }
   }
 
   const s = occ.self
@@ -453,7 +519,7 @@ export function buildCareerReport(profile: MatchProfile, facts: ReportFacts, occ
   nextSteps.push({ key: 'rpt.n.pathways', params: {}, url: '/pathways' })
 
   return {
-    goal: 'career', noc, title: facts.title, conclusions, gaps, nextSteps, alternatives,
+    goal: 'career', noc, title: facts.title, conclusions, requirements: [], gaps, nextSteps, alternatives,
     confidence: !s ? 'low' : peers.length ? 'high' : 'mid', asOf: facts.fetched ?? '',
   }
 }
@@ -489,7 +555,13 @@ const LOCK_CAT: Record<string, string> = {
   // 卡①/⑥:担保雇主名单与跃迁排序都要用他的答案才筛得出来 → 锁区(自由查得到的在招量与中位薪资照旧免费)
   'rpt.j.sponsors': 'sponsors', 'rpt.k.peerGap': 'move', 'rpt.p.rank': 'rank',
 }
-const LOCK_ORDER = ['score', 'window', 'alts', 'ee', 'sponsors', 'move', 'rank', 'more']   // 锁行固定序(有序去重)
+const LOCK_ORDER = ['req', 'score', 'window', 'alts', 'ee', 'sponsors', 'move', 'rank', 'more']   // 锁行固定序(有序去重)
+// 门槛对照的免费/付费界线(设计 §6):免费=门槛是多少 + 达标/不达标的判定(官方事实,库里查得到);
+// 付费=**差多少**、按什么顺序补。所以免费层把带差值的那条换成不带差值的同义句,`short` 根本不下发。
+const REQ_FREE: Record<string, string> = {
+  'rpt.r.lang.fail': 'rpt.r.lang.failFree',
+  'rpt.r.income.fail': 'rpt.r.income.failFree',
+}
 const HINT: Record<string, string> = { 'rpt.c.regulated': 'rpt.hint.cert', 'rpt.g.expShort': 'rpt.hint.exp' }
 
 export function gateReport(report: Report, pro: boolean): GatedReport {
@@ -512,14 +584,23 @@ export function gateReport(report: Report, pro: boolean): GatedReport {
 
   if (pro) return { ...report, lanes, hint, locked: [], pro: true }
 
+  // 门槛对照:免费层保留全部行(门槛是官方事实,锁了就是挡路),只把「差多少」那半句摘掉
+  const reqLocked = report.requirements.some((l) => REQ_FREE[l.key])
+  const requirements = report.requirements.map((l) => {
+    if (!REQ_FREE[l.key]) return l
+    const { short, ...rest } = l.params            // eslint-disable-line @typescript-eslint/no-unused-vars
+    return { ...l, key: REQ_FREE[l.key], params: rest }
+  })
+
   // 卡①/⑥ 走口径闸(库里查得到的免费,拿你的答案算出来的付费):在招量与薪资对照本来就查得到,
   // 按「前 2 条」硬切会把免费的事实也锁掉 —— 那是收不到钱只挡路。锁的是真要答案才筛得出来的那几条。
   if (report.goal !== 'pr') {
     const free = report.conclusions.filter((c) => !LOCK_CAT[c.key])
     const cats2 = new Set(report.conclusions.filter((c) => LOCK_CAT[c.key]).map((c) => LOCK_CAT[c.key]))
     if (report.alternatives.length) cats2.add(report.goal === 'prov' ? 'rank' : 'move')
+    if (reqLocked) cats2.add('req')
     return {
-      ...report, conclusions: free, alternatives: [],
+      ...report, conclusions: free, alternatives: [], requirements,
       lanes: [], hint, locked: LOCK_ORDER.filter((k) => cats2.has(k)), pro: false,
     }
   }
@@ -536,11 +617,12 @@ export function gateReport(report: Report, pro: boolean): GatedReport {
   // 所以 scoreAbove/Below 在生产永不触发:解锁后那一行背后是空的 = 卖不存在的东西。
   // 缺口行与「去估分」的跳转照旧免费给。等打分题进了题库、报告真能算分,score 自然由结论行触发。
   if (report.alternatives.length) cats.add('alts')
+  if (reqLocked) cats.add('req')
 
   return {
     ...report,
     conclusions: report.conclusions.slice(0, FREE_CONCLUSIONS),
-    alternatives: [],
+    alternatives: [], requirements,
     lanes, hint, locked: LOCK_ORDER.filter((k) => cats.has(k)), pro: false,
   }
 }
@@ -565,6 +647,21 @@ const EN: Record<string, (p: Record<string, string | number>) => string> = {
   'rpt.c.eeNone': (p) => `NOC ${p.noc} is not on any federal EE category-based selection list.`,
   'rpt.c.regulated': (p) => `NOC ${p.noc} is a regulated nursing occupation — registration/credential assessment is required before practising.`,
   'rpt.c.expOk': (p) => `You report ${p.months} months of Canadian experience — at or above the 12-month experience-class threshold (see source).`,
+  // 门槛对照(规则引擎):左=官方门槛、右=你的情况;unknown 一律照实说「判不了」而不是含糊带过
+  'rpt.r.lang.pass': (p) => `${p.prov} requires CLB ${p.need} for TEER ${p.teer} jobs; you report CLB ${p.have} — meets it.`,
+  'rpt.r.lang.fail': (p) => `${p.prov} requires CLB ${p.need} for TEER ${p.teer} jobs; you report CLB ${p.have} — ${p.short} band(s) short.`,
+  'rpt.r.lang.failFree': (p) => `${p.prov} requires CLB ${p.need} for TEER ${p.teer} jobs; you report CLB ${p.have} — below it.`,
+  'rpt.r.lang.unknown': (p) => `${p.prov} requires CLB ${p.need} for TEER ${p.teer} jobs; you have not reported a language band.`,
+  'rpt.r.langNone': (p) => `${p.prov} does not require a language test at registration for TEER ${p.teer} (it may still be requested during assessment).`,
+  'rpt.r.income.pass': (p) => `${p.prov} sets a minimum family income of $${p.need}; the official median wage for this occupation there is $${p.have} — above it.`,
+  'rpt.r.income.fail': (p) => `${p.prov} sets a minimum family income of $${p.need}; the official median wage for this occupation there is $${p.have} — $${p.short} short even at the lowest bracket.`,
+  'rpt.r.income.failFree': (p) => `${p.prov} sets a minimum family income of $${p.need}; the official median wage for this occupation there is $${p.have} — below it.`,
+  'rpt.r.income.unknown': (p) => `${p.prov} sets a minimum family income of $${p.needLow}–$${p.need} depending on where you live and family size; the official median wage for this occupation there is $${p.have}.`,
+  'rpt.r.exp.pass': (p) => `${p.prov}'s skilled worker stream requires ${p.need} months of skilled work experience; you report ${p.have} months in Canada — meets it.`,
+  'rpt.r.exp.unknown': (p) => `${p.prov}'s skilled worker stream requires ${p.need} months of skilled work experience (in or outside Canada); only Canadian months are on file, so this cannot be judged here.`,
+  'rpt.r.emp.years': (p) => `Employer-side: the employer needs ${p.n}+ years of operation in ${p.prov} — only the employer can evidence this.`,
+  'rpt.r.emp.staff': (p) => `Employer-side: the employer needs at least ${p.metro} full-time staff inside Metro Vancouver (${p.rest} outside) — only the employer can evidence this.`,
+  'rpt.r.none': (p) => `${p.prov}'s official thresholds are not yet covered by this site — no rule comparison can be made.`,
   'rpt.g.noNoc': () => `No occupation on file — list hits, draws and wages all hinge on it. Add your NOC first.`,
   'rpt.g.zeroJobs': (p) => `Zero open postings for this occupation in ${p.prov} right now.`,
   'rpt.g.noCrs': (p) => `Report a CRS score to compute your gap to the "${p.cat}" category draws.`,

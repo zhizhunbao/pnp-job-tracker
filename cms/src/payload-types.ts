@@ -74,6 +74,7 @@ export interface Config {
     'pnp-occupations': PnpOccupation;
     'pnp-draws': PnpDraw;
     'pnp-score-factors': PnpScoreFactor;
+    'pnp-requirements': PnpRequirement;
     dli: Dli;
     'ee-categories': EeCategory;
     'noc-descriptions': NocDescription;
@@ -109,6 +110,7 @@ export interface Config {
     'pnp-occupations': PnpOccupationsSelect<false> | PnpOccupationsSelect<true>;
     'pnp-draws': PnpDrawsSelect<false> | PnpDrawsSelect<true>;
     'pnp-score-factors': PnpScoreFactorsSelect<false> | PnpScoreFactorsSelect<true>;
+    'pnp-requirements': PnpRequirementsSelect<false> | PnpRequirementsSelect<true>;
     dli: DliSelect<false> | DliSelect<true>;
     'ee-categories': EeCategoriesSelect<false> | EeCategoriesSelect<true>;
     'noc-descriptions': NocDescriptionsSelect<false> | NocDescriptionsSelect<true>;
@@ -742,6 +744,77 @@ export interface PnpScoreFactor {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pnp-requirements".
+ */
+export interface PnpRequirement {
+  id: number;
+  province?: string | null;
+  /**
+   * PNP / AIP —— 与 pnp_occupations 同族分路
+   */
+  program?: string | null;
+  /**
+   * 官方通道名;通用要求写「(all streams)」
+   */
+  stream?: string | null;
+  /**
+   * applicant=落在申请人 / employer=落在雇主(OINP 起雇主也有门槛)
+   */
+  subject?: string | null;
+  /**
+   * language / income / experience / education / empYears / empStaff
+   */
+  factor?: string | null;
+  /**
+   * >= / <= / in / none(none=官方明说这档不要求)
+   */
+  op?: string | null;
+  /**
+   * 数值阈值(CLB 4 / 24 个月 / 31264 加元)
+   */
+  value?: number | null;
+  /**
+   * 非数值阈值(学历档名等)
+   */
+  valueText?: string | null;
+  unit?: string | null;
+  /**
+   * "2,3,4,5" —— 空=不分 TEER
+   */
+  appliesTeer?: string | null;
+  /**
+   * metro-vancouver / rest-of-bc —— 空=全省
+   */
+  appliesArea?: string | null;
+  /**
+   * 最低收入表专用(1..7,7=7 人及以上)
+   */
+  appliesFamilySize?: number | null;
+  /**
+   * occMedian 等「阈值不是绝对数」的口径
+   */
+  basis?: string | null;
+  /**
+   * 官方原文(英文)—— 报告挂出处供核对
+   */
+  label?: string | null;
+  /**
+   * 官方文件节号(3.4 / 3.10 / 6.8)
+   */
+  section?: string | null;
+  seq?: number | null;
+  /**
+   * 官方生效日 —— 过期检测锚点
+   */
+  effective?: string | null;
+  url?: string | null;
+  pageUrl?: string | null;
+  fetched?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "dli".
  */
 export interface Dli {
@@ -1167,6 +1240,14 @@ export interface StatsOccupation {
    */
   medianWageAnnual?: number | null;
   /**
+   * ESDC 官方低位年薪(口径同中位:岗位加权取中位)
+   */
+  wageLowAnnual?: number | null;
+  /**
+   * ESDC 官方高位年薪(口径同上)
+   */
+  wageHighAnnual?: number | null;
+  /**
    * 帖面中位(本站折算);样本量见 salaryN
    */
   medianSalaryAnnual?: number | null;
@@ -1407,6 +1488,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'pnp-score-factors';
         value: number | PnpScoreFactor;
+      } | null)
+    | ({
+        relationTo: 'pnp-requirements';
+        value: number | PnpRequirement;
       } | null)
     | ({
         relationTo: 'dli';
@@ -1756,6 +1841,34 @@ export interface PnpScoreFactorsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pnp-requirements_select".
+ */
+export interface PnpRequirementsSelect<T extends boolean = true> {
+  province?: T;
+  program?: T;
+  stream?: T;
+  subject?: T;
+  factor?: T;
+  op?: T;
+  value?: T;
+  valueText?: T;
+  unit?: T;
+  appliesTeer?: T;
+  appliesArea?: T;
+  appliesFamilySize?: T;
+  basis?: T;
+  label?: T;
+  section?: T;
+  seq?: T;
+  effective?: T;
+  url?: T;
+  pageUrl?: T;
+  fetched?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "dli_select".
  */
 export interface DliSelect<T extends boolean = true> {
@@ -1997,6 +2110,8 @@ export interface StatsOccupationSelect<T extends boolean = true> {
   openJobs?: T;
   new7d?: T;
   medianWageAnnual?: T;
+  wageLowAnnual?: T;
+  wageHighAnnual?: T;
   medianSalaryAnnual?: T;
   salaryN?: T;
   namedJobs?: T;

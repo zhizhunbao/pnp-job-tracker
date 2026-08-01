@@ -116,6 +116,10 @@ export async function GET(req: Request) {
       (r) => ({ province: r.province, kind: r.kind, draw_date: r.drawDate, stream: r.stream, score: r.score, scale: r.scale, invitations: r.invitations, note: r.note, label: r.label, url: r.url, fetched: r.fetched })],
     ['pnp_score_factors', 'pnp_score_factors', ['province', 'system', 'factor', 'kind', 'seq', 'label', 'points', 'xor_prev', 'rule', 'factor_max', 'factor_group', 'group_max', 'pass_mark', 'max_total', 'guide_effective', 'url', 'fetched'],
       (r) => ({ province: r.province, system: r.system, factor: r.factor, kind: r.kind, seq: r.seq, label: r.label, points: r.points, xor_prev: r.xorPrev, rule: r.rule, factor_max: r.factorMax, factor_group: r.factorGroup, group_max: r.groupMax, pass_mark: r.passMark, max_total: r.maxTotal, guide_effective: r.guideEffective, url: r.url, fetched: r.fetched })],
+    // E13-01 省提名官方门槛(规则引擎):一行一条,subject 区分申请人/雇主,applies_* 是适用条件
+    ['pnp_requirements', 'pnp_requirements',
+      ['province', 'program', 'stream', 'subject', 'factor', 'op', 'value', 'value_text', 'unit', 'applies_teer', 'applies_area', 'applies_family_size', 'basis', 'label', 'section', 'seq', 'effective', 'url', 'page_url', 'fetched'],
+      (r) => ({ province: r.province, program: r.program, stream: r.stream, subject: r.subject, factor: r.factor, op: r.op, value: r.value, value_text: r.valueText, unit: r.unit, applies_teer: r.appliesTeer, applies_area: r.appliesArea, applies_family_size: r.familySize, basis: r.basis, label: r.label, section: r.section, seq: r.seq, effective: r.effective, url: r.url, page_url: r.pageUrl, fetched: r.fetched })],
     ['ee_categories', 'ee_categories', ['category', 'label', 'noc', 'teer', 'title', 'url', 'fetched', 'draw_crs', 'draw_date', 'draw_size'],
       (r) => ({ category: r.category, label: r.label, noc: r.noc, teer: r.teer, title: r.title, url: r.url, fetched: r.fetched, draw_crs: r.drawCrs, draw_date: r.drawDate, draw_size: r.drawSize })],
     ['noc_descriptions', 'noc_descriptions', ['noc', 'title', 'title_zh', 'title_zh_short', 'title_ko', 'duties', 'requirements', 'fetched'],

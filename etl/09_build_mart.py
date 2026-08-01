@@ -39,6 +39,9 @@ IN_PNP_DRAWS = _paths.PNP / "draws.json"  # 省抽选事实(BC/AB/MB+ON通告,bu
 # 省提名官方打分表(E12-09)——一省一个文件,加省就往这个 list 里加,下面的组装逻辑不用改。
 # BC=SIRS 200 分制(build_bc_sirs.py 从官方 PDF 抓)/ SK=SINP Points Grid 110 分制(build_sk_points.py 抓官网表)
 IN_SCORE_TABLES = [_paths.PNP / "bc-sirs.json", _paths.PNP / "sk-points.json"]
+# 省提名官方**门槛**(规则引擎第一刀)——打分表管「能打几分」,这张管「打分之前先要满足什么」。
+# 一省一个文件,加省=往这个 list 里加一个(build_<省>_req.py 产,列同一套)。
+IN_REQ_TABLES = [_paths.PNP / "bc-req.json"]
 IN_EE = _paths.EE / "federal-categories.json"  # 联邦 Express Entry 类别抽选(全国单一源)
 IN_EE_DRAWS = _paths.EE / "draws.json"          # 各类别最近一次抽选(CRS/日期/邀请数,build_ee_draws.py 产)
 IN_NOC_DESC = _paths.NOC / "descriptions.json"  # NOC 官方名+主要职责(build_noc_descriptions.py 产)
@@ -529,6 +532,33 @@ def build():
                                           "label": f.get("rule", ""), "points": None, "xorPrev": False,
                                           "rule": json.dumps({k: f.get(k) for k in ("rule", "floorAt", "capAt")}, ensure_ascii=False)})
 
+    # 省提名官方门槛维度(规则引擎):一行一条可核验的官方门槛,列对齐 DB。
+    # 与 pnp_occupations(在不在清单)、pnp_score_factors(能打几分)并列,三张表各答一个问题。
+    # appliesTeer/appliesArea/familySize 是**适用条件**(该条只对某些 TEER / 某个区域 / 某个家庭人数生效),
+    # 引擎按它挑行;挑不到就是 unknown —— 不拿别省别档的门槛套(设计 §3)。
+    pnp_requirements = []
+    for src in IN_REQ_TABLES:
+        if not src.exists():
+            continue
+        try:
+            tbl = json.loads(src.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001 — 单省表坏了不拖垮整个 mart
+            continue
+        base = {"province": tbl.get("province", ""), "program": tbl.get("program", "PNP"),
+                "url": tbl.get("url", ""), "pageUrl": tbl.get("pageUrl", ""),
+                "effective": tbl.get("guideEffective", ""), "fetched": tbl.get("fetched", "")}
+        for i, r in enumerate(tbl.get("requirements", [])):
+            pnp_requirements.append({
+                **base, "seq": i,
+                "stream": r.get("stream", ""), "subject": r.get("subject", "applicant"),
+                "factor": r.get("factor", ""), "op": r.get("op", ">="),
+                "value": r.get("value"), "valueText": r.get("valueText", ""), "unit": r.get("unit", ""),
+                # TEER 列表存成 "2,3,4,5" 文本(Payload 没有整型数组列;前端 split 即可)
+                "appliesTeer": ",".join(str(x) for x in (r.get("appliesTeer") or [])),
+                "appliesArea": r.get("appliesArea", ""), "familySize": r.get("familySize"),
+                "basis": r.get("basis", ""), "label": r.get("label", ""), "section": r.get("section", ""),
+            })
+
     # 联邦 EE 类别维度(每行=某类别内一个职业)
     ee_categories = []
     if IN_EE.exists():
@@ -640,7 +670,8 @@ def build():
         "provinces": provinces, "cities": cities, "districts": districts,
         "designated_employers": designated,
         "noc_categories": noc_categories, "sources": sources, "experience_levels": experience_levels,
-        "pnp_occupations": pnp_occupations, "pnp_draws": pnp_draws, "pnp_score_factors": pnp_score_factors, "ee_categories": ee_categories,
+        "pnp_occupations": pnp_occupations, "pnp_draws": pnp_draws, "pnp_score_factors": pnp_score_factors,
+        "pnp_requirements": pnp_requirements, "ee_categories": ee_categories,
         "noc_descriptions": noc_descriptions,
         "field_sources": field_sources,
         "dli": dli,
