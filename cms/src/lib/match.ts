@@ -58,7 +58,7 @@ export type MatchResult = { level: MatchLevel; score: number; reasons: MatchReas
 //   qc        魁省自有体系,不参加 PNP
 // NO_LIST_PROVINCES = 政策事实(人工核对,非数据缺失):ON 2026-06 改制后不公布职业清单。
 export type ProvListCoverage = 'listed' | 'exclusion' | 'uncovered' | 'qc'
-const NO_LIST_PROVINCES = new Set(['ON'])   // 核对 2026-07-30;政策变更时更新此表
+export const NO_LIST_PROVINCES = new Set(['ON'])   // 核对 2026-07-30;政策变更时更新此表
 export function provListCoverage(prov: string, dims: MatchDims): ProvListCoverage {
   if (prov === 'QC') return 'qc'
   if (NO_LIST_PROVINCES.has(prov)) return 'exclusion'

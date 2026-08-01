@@ -36,7 +36,7 @@ surveyLocalization.locales.ko.questionsProgressText = '{0}/{1} 완료'
 
 type RptLine = { key: string; params: Record<string, string | number>; verdict?: string; source?: { label: string; url: string; fetched: string }; url?: string }
 type Lane = { kind: 'prov' | 'ee' | 'alts'; verdict?: string; key: string; params: Record<string, string | number> }
-type Emp = { name: string; slug: string; named: number; city: string; province: string; lastPosted: string; lmiaPositions: number | null; lmiaQuarter: string; aip: boolean }
+type Emp = { name: string; slug: string; named: number; eligible: number; city: string; province: string; lastPosted: string; lmiaPositions: number | null; lmiaQuarter: string; aip: boolean; area: string; empRevenue: number | null; empStaff: number | null }
 type Rpt = {
   noc: string; title: string; conclusions: RptLine[]; requirements: RptLine[]; employers: Emp[]; gaps: RptLine[]; nextSteps: RptLine[]; alternatives: RptLine[]
   confidence: 'low' | 'mid' | 'high'; asOf: string
@@ -466,20 +466,36 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                   <div style={CARD}>
                     <div style={secH}>{t('rpt.sec.emp')}</div>
                     <div style={{ fontSize: 12, color: UI.text3, margin: '-2px 0 8px', lineHeight: 1.6 }}>{t('rpt.emp.note')}</div>
-                    <style>{`.empRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:9px 0;border-top:1px solid ${UI.hairline}}
+                    {/* 手机:名字+岗数一行、地点一行、事实一行(左对齐,别让地点飘到右边);
+                        桌面:名字 | 岗数 | 地点 三列,事实收在名字下面那行 */}
+                    <style>{`.empRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:9px 0;border-top:1px solid ${UI.hairline};
+  grid-template-areas:"name named" "loc loc" "meta meta"}
 .empRow:first-of-type{border-top:none}
-.empMeta{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:${UI.text3}}
-@media(min-width:641px){.empRow{grid-template-columns:minmax(0,1fr) 96px 150px;align-items:baseline}
-.empMeta{grid-column:1/2;grid-row:2}}`}</style>
+.empName{grid-area:name}.empNamed{grid-area:named}.empLoc{grid-area:loc;text-align:left}
+.empMeta{grid-area:meta;display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:${UI.text3}}
+@media(min-width:641px){.empRow{grid-template-columns:minmax(0,1fr) 110px 150px;align-items:baseline;
+  grid-template-areas:"name named loc" "meta meta meta"}
+.empLoc{text-align:right}}`}</style>
                     {rpt.employers.map((e) => (
                       <div key={e.slug || e.name} className="empRow">
-                        <a href={e.slug ? `/companies/${e.slug}` : '/'} style={{ fontWeight: 600, color: UI.primary, textDecoration: 'none', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.name}</a>
-                        <span style={{ fontSize: 12.5, color: UI.text2, whiteSpace: 'nowrap' }}>{t('rpt.emp.named', { n: e.named })}</span>
-                        <span style={{ fontSize: 12.5, color: UI.text3, whiteSpace: 'nowrap', textAlign: 'right' }}>{[e.city, e.province].filter(Boolean).join(', ')}</span>
+                        <a className="empName" href={e.slug ? `/companies/${e.slug}` : '/'} style={{ fontWeight: 600, color: UI.primary, textDecoration: 'none', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.name}</a>
+                        <span className="empNamed" style={{ fontSize: 12.5, color: UI.text2, whiteSpace: 'nowrap' }}>
+                          {e.named > 0 ? t('rpt.emp.named', { n: e.named }) : t('rpt.emp.screened', { n: e.eligible })}
+                        </span>
+                        <span className="empLoc" style={{ fontSize: 12.5, color: UI.text3, whiteSpace: 'nowrap' }}>{[e.city, e.province].filter(Boolean).join(', ')}</span>
                         <span className="empMeta">
                           {e.lmiaPositions ? <span>{t('rpt.emp.lmia', { n: e.lmiaPositions, q: e.lmiaQuarter || '—' })}</span> : null}
                           {e.aip ? <span>{t('rpt.emp.aip')}</span> : null}
                           {e.lastPosted ? <span>{t('rpt.emp.last', { d: e.lastPosted })}</span> : null}
+                          {/* 雇主侧门槛落到这一家:地点这项本站判得了(GTA 内外 / 大温内外),
+                              营业额认不出普查区时只说雇员数 —— 缺的那半照实不写 */}
+                          {e.empStaff ? (
+                            <span style={{ color: UI.text2 }}>
+                              {t(e.area === 'gta' ? 'rpt.emp.bar.gta' : e.area === 'on-listed-cd' ? 'rpt.emp.bar.cd'
+                                : e.area === 'outside-gta' ? 'rpt.emp.bar.outGta' : e.area === 'metro-vancouver' ? 'rpt.emp.bar.metro' : 'rpt.emp.bar.restBc',
+                              { staff: e.empStaff, rev: e.empRevenue != null ? (e.empRevenue >= 1e6 ? `${e.empRevenue / 1e6}M` : `${Math.round(e.empRevenue / 1000)}K`) : '' })}
+                            </span>
+                          ) : null}
                         </span>
                       </div>
                     ))}

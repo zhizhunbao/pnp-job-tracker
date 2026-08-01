@@ -8,6 +8,77 @@
 //
 // 加省 = 数据层加一个 build_<省>_req.py;加因素 = 这里加一个分支。builder 只把结果排成句子。
 
+
+// ── 地点 → 官方分档区域(设计 §3.5:「地点(GTA 内外)有 → 直接判档」)──────────────
+// 这几张表是**官方自己枚举的行政区**(不是我们的判断):
+//   ON:GTA = 多伦多市 + Durham/Halton/Peel/York 四个区域自治体(OINP 雇主指南原文);
+//       $500K 那一档另点名了 14 个普查区/县 —— 我们只认得出它们的主城,认不出就说认不出。
+//   BC:Metro Vancouver Regional District 的成员市(BC PNP 指南 6.8 用同一个界线)。
+// 认不出的地名一律返回 ''(unknown),不硬塞档位 —— 档位说低了比不说更糟。
+const norm = (s: string) => (s || '').toLowerCase().replace(/[^a-z ]/g, '').trim()
+const GTA = new Set([
+  'toronto', 'scarborough', 'north york', 'etobicoke', 'east york', 'york',            // 多伦多市及其区
+  'ajax', 'brock', 'clarington', 'oshawa', 'pickering', 'scugog', 'uxbridge', 'whitby', // Durham
+  'burlington', 'halton hills', 'milton', 'oakville', 'georgetown', 'acton',            // Halton
+  'brampton', 'caledon', 'mississauga', 'bolton',                                       // Peel
+  'aurora', 'east gwillimbury', 'georgina', 'king', 'markham', 'newmarket',             // York
+  'richmond hill', 'vaughan', 'whitchurchstouffville', 'stouffville', 'thornhill', 'maple', 'woodbridge', 'unionville', 'keswick',
+])
+// 官方点名的 14 个普查区 → 我们认得出的主城(认不全,认不出就退 unknown 那档)
+const ON_LISTED = new Set([
+  'ottawa', 'nepean', 'kanata', 'orleans', 'gloucester', 'stittsville', 'barrhaven',    // Ottawa
+  'waterloo', 'kitchener', 'cambridge', 'woolwich', 'wilmot', 'north dumfries', 'wellesley', // Waterloo
+  'hamilton', 'stoney creek', 'ancaster', 'dundas', 'waterdown', 'flamborough',         // Hamilton
+  'barrie', 'orillia', 'bradford', 'innisfil', 'collingwood', 'midland', 'wasaga beach',
+  'alliston', 'new tecumseth', 'penetanguishene', 'ramara', 'springwater',              // Simcoe
+  'london', 'strathroy',                                                                // Middlesex
+  'st catharines', 'niagara falls', 'welland', 'grimsby', 'fort erie', 'thorold', 'niagaraonthelake',
+  'port colborne', 'lincoln', 'pelham', 'wainfleet', 'west lincoln',                    // Niagara
+  'windsor', 'leamington', 'lasalle', 'tecumseh', 'amherstburg', 'kingsville', 'essex', 'lakeshore', // Essex
+  'guelph', 'fergus', 'elora',                                                          // Wellington
+  'sudbury', 'greater sudbury',                                                         // Greater Sudbury
+  'kingston',                                                                           // Frontenac
+  'brantford', 'paris',                                                                 // Brant
+  'peterborough',                                                                       // Peterborough
+  'belleville', 'trenton', 'quinte west',                                               // Hastings
+  'thunder bay',                                                                        // Thunder Bay
+])
+const METRO_VAN = new Set([
+  'vancouver', 'surrey', 'burnaby', 'richmond', 'coquitlam', 'port coquitlam', 'port moody',
+  'new westminster', 'delta', 'ladner', 'tsawwassen', 'north vancouver', 'west vancouver',
+  'langley', 'maple ridge', 'pitt meadows', 'white rock', 'bowen island', 'anmore', 'belcarra', 'lions bay',
+])
+
+/**
+ * 岗位地点 → 该省官方分档区域键(与 pnp_requirements.appliesArea 同一套值)。
+ * 认不出返回 '' —— 上游据此只摆能确定的那半(如 ON 认不出普查区时只说雇员数,不说营业额)。
+ */
+export function areaOfPlace(province: string, city: string, district = ''): string {
+  const names = [norm(district), norm(city)].filter(Boolean)
+  if (province === 'ON') {
+    if (names.some((n) => GTA.has(n))) return 'gta'
+    if (names.some((n) => ON_LISTED.has(n))) return 'on-listed-cd'
+    return names.length ? 'outside-gta' : ''    // ON 境内、认得出地名但不在上面两张表 → GTA 外(营业额档另说)
+  }
+  if (province === 'BC') {
+    if (names.some((n) => METRO_VAN.has(n))) return 'metro-vancouver'
+    return names.length ? 'rest-of-bc' : ''
+  }
+  return ''
+}
+
+/** 该省雇主侧门槛在这个区域的取值:营业额(认不出普查区时为 null)与全职雇员数 */
+export function employerBar(reqs: Requirement[], province: string, area: string): { revenue: number | null; staff: number | null } {
+  const of = (factor: string, areas: string[]) => reqs
+    .filter((r) => r.province === province && r.subject === 'employer' && r.factor === factor)
+    .find((r) => areas.includes(r.appliesArea))?.value ?? null
+  // 雇员数只分 GTA 内外(BC 是大温内外)—— 区域一确定就定了
+  const staffArea = area === 'gta' || area === 'metro-vancouver' ? [area] : ['outside-gta', 'rest-of-bc']
+  // 营业额 ON 分三档:GTA / 官方点名普查区 / 其余;认不出普查区(outside-gta)时不给数
+  const revArea = area === 'on-listed-cd' ? ['on-listed-cd'] : area === 'gta' ? ['gta'] : area === 'outside-gta' ? [] : [area]
+  return { revenue: revArea.length ? of('empRevenue', revArea) : null, staff: of('empStaff', staffArea) }
+}
+
 export type ReqSubject = 'applicant' | 'employer'
 export type Requirement = {
   province: string

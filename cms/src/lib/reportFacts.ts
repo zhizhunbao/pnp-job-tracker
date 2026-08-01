@@ -2,6 +2,7 @@
 // 引擎不碰库、这里不做判定 —— 单一职责;查询口径全部与既有页面同源:
 //   byProv 的 named 与职位板 pnp_stream 口径同、draws 与 /pathways 抽选块同表、
 //   scoreProvinces=pnp_score_factors 实际覆盖的省(BC/SK),不写死。
+import { NO_LIST_PROVINCES } from './match'   // 不公布清单的省(ON):雇主线索改用粗筛可提名口径
 import type { ReportFacts } from './report'
 import type { Requirement } from './rules'
 
@@ -19,7 +20,8 @@ export type OccStat = {
 // 红线:不出现「这家好签/容易担保」这类判断,雇主愿不愿意担保只有雇主自己知道。
 export type Sponsor = {
   name: string; slug: string
-  named: number            // 该职业命中具名通道的在招岗数
+  named: number            // 命中具名清单通道的在招岗数(清单式省:BC/SK/MB/NS/AB)
+  eligible: number         // 粗筛可提名的在招岗数(**不公布清单的省**只有这个口径,见下面 WHERE 的说明)
   city: string; province: string
   lastPosted: string       // 最近一条在招岗的发布日
   lmiaPositions: number | null; lmiaQuarter: string   // ESDC 正面 LMIA 历史(公司级,E6-02)
@@ -59,24 +61,34 @@ export async function assembleOccStats(pool: any, noc: string): Promise<OccStats
          ${from}
          WHERE s.province = 'all' AND s.noc <> $1 AND left(s.noc,3) = left($1,3)
          ORDER BY kin, s.open_jobs DESC NULLS LAST LIMIT 8`, [noc]),
+      // 计数与下面的名单**必须同一个 WHERE**(2026-08-01 实撞:计数只算具名、名单还收了 ON 的粗筛可提名岗,
+      // 结果「有 83 家」与名单里的 ON 雇主对不上号)
       pool.query(
         `SELECT count(DISTINCT company_id)::int n FROM jobs
-         WHERE COALESCE(status,'open') <> 'closed' AND noc = $1 AND pnp_stream IS NOT NULL AND pnp_stream <> '' AND company_id IS NOT NULL`, [noc])
+         WHERE COALESCE(status,'open') <> 'closed' AND noc = $1 AND company_id IS NOT NULL
+           AND ((pnp_stream IS NOT NULL AND pnp_stream <> '')
+                OR (province = ANY($2::text[]) AND COALESCE(pnp_eligible, false)))`, [noc, [...NO_LIST_PROVINCES]])
         .catch(() => ({ rows: [] })),
-      // 雇主线索名单:同一口径(命中具名通道的在招岗)按雇主聚合,挂上公司级的 LMIA / AIP 事实。
+      // 雇主线索名单:按雇主聚合,挂上公司级的 LMIA / AIP 事实。
+      // **两种口径都要收**(2026-08-01 实撞:ON 一条都出不来):
+      //   · 清单式省(BC/SK/MB/NS/AB):命中具名通道的岗 → named;
+      //   · 不公布清单的省(ON,NO_LIST_PROVINCES):0 具名是**制度性**的,该省用粗筛可提名口径 → eligible。
+      // 两个数分开存,显示层各说各的话 —— 把 ON 的岗说成「命中清单」就是撒谎。
       // 排序=命中岗多的在前,同数看谁最近还在发(「还在招」比「历史上招过」有用)。
       pool.query(
         `SELECT co.name, co.slug, co.is_designated_employer aip, co.lmia_positions, co.lmia_last_quarter,
-                count(*)::int named,
+                count(*) FILTER (WHERE j.pnp_stream IS NOT NULL AND j.pnp_stream <> '')::int named,
+                count(*) FILTER (WHERE COALESCE(j.pnp_eligible, false))::int eligible,
                 (array_agg(j.province ORDER BY j.date_posted DESC NULLS LAST))[1] province,
                 (array_agg(j.city      ORDER BY j.date_posted DESC NULLS LAST))[1] city,
                 max(j.date_posted)::text last_posted
          FROM jobs j JOIN companies co ON co.id = j.company_id
          WHERE COALESCE(j.status,'open') <> 'closed' AND j.noc = $1
-           AND j.pnp_stream IS NOT NULL AND j.pnp_stream <> ''
+           AND ((j.pnp_stream IS NOT NULL AND j.pnp_stream <> '')
+                OR (j.province = ANY($2::text[]) AND COALESCE(j.pnp_eligible, false)))
          GROUP BY co.id, co.name, co.slug, co.is_designated_employer, co.lmia_positions, co.lmia_last_quarter
-         ORDER BY named DESC, max(j.date_posted) DESC NULLS LAST
-         LIMIT ${SPONSOR_CAP}`, [noc]).catch(() => ({ rows: [] })),
+         ORDER BY named DESC, eligible DESC, max(j.date_posted) DESC NULLS LAST
+         LIMIT ${SPONSOR_CAP}`, [noc, [...NO_LIST_PROVINCES]]).catch(() => ({ rows: [] })),
     ])
     const rows: OccStat[] = mine.rows.map(row)
     return {
@@ -85,7 +97,7 @@ export async function assembleOccStats(pool: any, noc: string): Promise<OccStats
       peers: peers.rows.map(row),
       sponsors: Number(sponsors.rows[0]?.n ?? 0),
       sponsorList: sponsorRows.rows.map((r: any): Sponsor => ({
-        name: r.name ?? '', slug: r.slug ?? '', named: Number(r.named ?? 0),
+        name: r.name ?? '', slug: r.slug ?? '', named: Number(r.named ?? 0), eligible: Number(r.eligible ?? 0),
         city: r.city ?? '', province: r.province ?? '', lastPosted: String(r.last_posted ?? '').slice(0, 10),
         lmiaPositions: num(r.lmia_positions), lmiaQuarter: r.lmia_last_quarter ?? '', aip: !!r.aip,
       })),

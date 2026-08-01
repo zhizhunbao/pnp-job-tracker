@@ -71,7 +71,7 @@ describe('卡① 找工作', () => {
   // 2026-08-01 雇主线索落地时改口径:「有 N 家雇主发过清单岗」这句**留在免费层**
   //(它是这张卡最像 aha 的一句,锁掉等于免费层什么都没有);锁的是名单本体,锁行由 employers 非空触发。
   it('免费端:在招/薪资/「有 N 家」照给,雇主名单进锁区', () => {
-    const sponsorList = [{ name: 'A Health', slug: 'a-health', named: 2, city: 'Regina', province: 'SK', lastPosted: '2026-07-17', lmiaPositions: 5, lmiaQuarter: '2026Q1', aip: false }]
+    const sponsorList = [{ name: 'A Health', slug: 'a-health', named: 2, eligible: 2, city: 'Regina', province: 'SK', lastPosted: '2026-07-17', lmiaPositions: 5, lmiaQuarter: '2026Q1', aip: false }]
     const r = gateReport(buildJobReport(normalizeProfile({ targetProvinces: ['BC'] }), dims, facts, occ({ sponsors: 7, sponsorList })), false)
     expect(r.conclusions.map((c) => c.key)).toEqual(['rpt.j.openNamed', 'rpt.j.wageBelow', 'rpt.j.sponsors'])
     expect(r.employers).toEqual([])     // 名单不在响应体里(不是前端打码)

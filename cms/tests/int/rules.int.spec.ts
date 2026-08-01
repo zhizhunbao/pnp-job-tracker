@@ -6,7 +6,7 @@
 import { describe, it, expect } from 'vitest'
 import { normalizeProfile, type MatchDims } from '@/lib/match'
 import { buildJobReport, buildPrReport, gateReport, type ReportFacts } from '@/lib/report'
-import { evaluateRequirements, type Requirement } from '@/lib/rules'
+import { areaOfPlace, employerBar, evaluateRequirements, type Requirement } from '@/lib/rules'
 
 const dims: MatchDims = {
   pnpOccupations: [
@@ -207,8 +207,8 @@ describe('雇主线索', () => {
     self: { noc: '31301', province: 'all', titleEn: 'Registered nurses', titleZh: '注册护士', titleKo: '', teer: 1, broad: '3', mid: '31', fine: '3130', open: 300, named: 120, medianWage: 90000, medianPosted: 81000 },
     byProv: [], peers: [], sponsors: 2,
     sponsorList: [
-      { name: 'Saskatchewan Health Authority', slug: 'sk-health', named: 3, city: 'Regina', province: 'SK', lastPosted: '2026-07-17', lmiaPositions: 39, lmiaQuarter: '2026Q1', aip: false },
-      { name: 'Northern Health Authority', slug: 'north-health', named: 3, city: 'Mackenzie', province: 'BC', lastPosted: '2026-07-27', lmiaPositions: 2, lmiaQuarter: '2025Q3', aip: true },
+      { name: 'Saskatchewan Health Authority', slug: 'sk-health', named: 3, eligible: 3, city: 'Regina', province: 'SK', lastPosted: '2026-07-17', lmiaPositions: 39, lmiaQuarter: '2026Q1', aip: false },
+      { name: 'Northern Health Authority', slug: 'north-health', named: 3, eligible: 3, city: 'Mackenzie', province: 'BC', lastPosted: '2026-07-27', lmiaPositions: 2, lmiaQuarter: '2025Q3', aip: true },
     ],
   } as any
 
@@ -226,5 +226,38 @@ describe('雇主线索', () => {
     expect(free.employers).toEqual([])
     expect(free.conclusions.some((c) => c.key === 'rpt.j.sponsors')).toBe(true)
     expect(free.locked).toContain('sponsors')
+  })
+})
+
+// ── 雇主侧门槛落到具体雇主(设计 §3.5「地点这项本站判得了」)────────────────────────
+describe('地点 → 官方分档区域', () => {
+  it('GTA:多伦多市与四个区域自治体都算(Mississauga/Markham/Oshawa/Oakville)', () => {
+    for (const c of ['Toronto', 'Scarborough', 'Mississauga', 'Markham', 'Oshawa', 'Oakville', 'Vaughan']) {
+      expect(areaOfPlace('ON', c)).toBe('gta')
+    }
+  })
+
+  it('官方点名的普查区认主城(Ottawa/Kitchener/Hamilton/London/Windsor)', () => {
+    for (const c of ['Ottawa', 'Kitchener', 'Hamilton', 'London', 'Windsor', 'Kingston']) {
+      expect(areaOfPlace('ON', c)).toBe('on-listed-cd')
+    }
+  })
+
+  it('ON 其余地名 → GTA 外;地名为空 → 不判(空串)', () => {
+    expect(areaOfPlace('ON', 'Timmins')).toBe('outside-gta')
+    expect(areaOfPlace('ON', '')).toBe('')
+  })
+
+  it('BC 走大温内外;别的省一律不判', () => {
+    expect(areaOfPlace('BC', 'Surrey')).toBe('metro-vancouver')
+    expect(areaOfPlace('BC', 'Kelowna')).toBe('rest-of-bc')
+    expect(areaOfPlace('SK', 'Regina')).toBe('')
+  })
+
+  it('雇主门槛按区域取:GTA=$1M/5 人;点名普查区=$500K/3 人;GTA 外只给人数(营业额看普查区)', () => {
+    expect(employerBar(ON_REQS, 'ON', 'gta')).toEqual({ revenue: 1_000_000, staff: 5 })
+    expect(employerBar(ON_REQS, 'ON', 'on-listed-cd')).toEqual({ revenue: 500_000, staff: 3 })
+    expect(employerBar(ON_REQS, 'ON', 'outside-gta')).toEqual({ revenue: null, staff: 3 })
+    expect(employerBar(BC_REQS, 'BC', 'metro-vancouver')).toEqual({ revenue: null, staff: 5 })
   })
 })

@@ -10,7 +10,7 @@
 // exclusion(ON)是制度性无清单、uncovered 是本站没数据 —— 三者混为一谈=报告撒谎。
 // 抽选线红线(2026-07-27):线按通道设,对不上通道就不给差分结论,只摆区间;样本小就说小(params 带 n)。
 import { provListCoverage, type MatchDims, type MatchProfile, type MatchVerdict } from './match'
-import { evaluateRequirements, type Requirement, type RuleResult } from './rules'
+import { areaOfPlace, employerBar, evaluateRequirements, type Requirement, type RuleResult } from './rules'
 import type { OccStats } from './reportFacts'   // 纯类型(reportFacts 反向引 ReportFacts,两边都是 type-only,不成环)
 
 // ── 输入:事实聚合(由 API 层查库组装;引擎不碰 SQL)─────────────────────────
@@ -44,9 +44,12 @@ export type ReportLine = {
 // 「这家发过命中省提名清单的岗」「ESDC 批过多少 LMIA」「在不在 AIP 指定雇主名单」「最近还在发」。
 // 措辞红线同 match.ts:永远不说「这家好签 / 容易担保」——雇主愿不愿意担保只有雇主自己知道。
 export type ReportEmployer = {
-  name: string; slug: string; named: number
+  name: string; slug: string; named: number; eligible: number
   city: string; province: string; lastPosted: string
   lmiaPositions: number | null; lmiaQuarter: string; aip: boolean
+  // 雇主侧门槛落到这一家(设计 §3.5「地点这项本站判得了」):area=官方分档区域键,
+  // empRevenue/empStaff=该区域对应的官方阈值;认不出普查区时 empRevenue 为空,只给雇员数。
+  area: string; empRevenue: number | null; empStaff: number | null
 }
 export type Report = {
   goal: 'pr' | 'job' | 'career' | 'prov'
@@ -479,12 +482,21 @@ export function buildJobReport(profile: MatchProfile, dims: MatchDims, facts: Re
     })
   }
 
+  // 雇主线索 + 雇主侧门槛(L2-06 后续①):岗位地址已洗到市/区 → **GTA 内外这一档本站判得了**,
+  // 每家挂上该区域的官方阈值;认不出地名(或该省没收录雇主门槛)就只给名单,不编档位。
+  const reqs = facts.requirements ?? []
+  const employers: ReportEmployer[] = (occ.sponsorList ?? []).map((e) => {
+    const area = areaOfPlace(e.province, e.city)
+    const bar = area ? employerBar(reqs, e.province, area) : { revenue: null, staff: null }
+    return { ...e, area, empRevenue: bar.revenue, empStaff: bar.staff }
+  })
+
   nextSteps.push({ key: 'rpt.n.pathways', params: {}, url: '/pathways' })
   const answered = [profile.currentStatus != null, profile.targetProvinces.length > 0].filter(Boolean).length
   if (answered < 2) gaps.push({ key: 'rpt.g.basics', params: { n: 2 - answered }, verdict: 'na' })
 
   return {
-    goal: 'job', noc, title: facts.title, conclusions, requirements: [], employers: occ.sponsorList ?? [], gaps, nextSteps, alternatives: [],
+    goal: 'job', noc, title: facts.title, conclusions, requirements: [], employers, gaps, nextSteps, alternatives: [],
     confidence: answered < 2 ? 'low' : occ.self ? 'high' : 'mid', asOf: facts.fetched ?? '',
   }
 }
