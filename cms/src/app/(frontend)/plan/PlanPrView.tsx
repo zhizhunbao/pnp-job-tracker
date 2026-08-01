@@ -232,6 +232,18 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
 
   // SurveyJS 模型:题库 JSON → Model;预填=survey.data;答案变更实时落 localStorage(改答案立刻重算的底座)。
   // ready 后才建(要先读回预填);lang / stage 切换重建(换语言或换卷),当前答案原样带回。
+  // 清空重填:两步确认(点一下变「确认重置」,8 秒没下文自己收回),样式与「返回」「改答案」同一把钮 ——
+  // 原先是卡头右上的裸文字,2026-08-01 Frank 点名「放到下面的 section,样式保持一致」
+  const ResetBtn = () => (
+    <button onClick={() => {
+      if (!resetArmed) { setResetArmed(true); return }
+      setBands(clearAnswers()); setNoc(''); setResetArmed(false); setResetNonce((n) => n + 1); setOccStep(true)
+      track(`plan-${decision}-reset`)
+    }} style={{ ...BTN, ...(resetArmed ? { color: '#b91c1c', borderColor: '#fecaca', fontWeight: 600 } : {}) }}>
+      {t(resetArmed ? 'plan.reset.ok' : 'plan.reset')}
+    </button>
+  )
+
   const survey = useMemo(() => {
     if (!ready || view !== 'quiz') return null
     const m = new Model(buildSurvey(decision, stage))
@@ -298,21 +310,10 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
           <h1 style={{ margin: '0 0 2px', fontSize: 22, lineHeight: 1.35, color: '#111827', paddingRight: 100 }}>{t(`plan.${decision}.title`)}</h1>
           {/* 卡头第二行:答题态=这张卡问什么 + 清空重填;报告态=职业名 + 改答案/存 PDF */}
           {view === 'quiz' ? (
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 12, color: UI.text3, margin: '2px 0 14px' }}>
-              <span>{t(stage === 'explore' ? 'plan.explore.sub' : `plan.${decision}.sub`)}</span>
-              <span style={{ display: 'flex', gap: 12, flexShrink: 0 }}>
-                {stage === 'explore' && (
-                  <button onClick={() => setStage('basic')} style={{ border: 'none', background: 'none', color: UI.primary, fontSize: 12, cursor: 'pointer', padding: 0, whiteSpace: 'nowrap', fontFamily: 'inherit' }}>{t('plan.explore.basic')}</button>
-                )}
-                {/* 重置:把答案整份丢掉(含三问那份)。两步确认,不用系统 confirm 弹窗 */}
-                <button onClick={() => {
-                  if (!resetArmed) { setResetArmed(true); return }
-                  setBands(clearAnswers()); setNoc(''); setResetArmed(false); setResetNonce((n) => n + 1)
-                  track(`plan-${decision}-reset`)
-                }} style={{ border: 'none', background: 'none', color: resetArmed ? '#b91c1c' : UI.text3, fontSize: 12, fontWeight: resetArmed ? 700 : 400, cursor: 'pointer', padding: 0, whiteSpace: 'nowrap', fontFamily: 'inherit' }}>
-                  {t(resetArmed ? 'plan.reset.ok' : 'plan.reset')}
-                </button>
-              </span>
+            // 卡头只留一句副题:「清空重填」是**对这张题卡的操作**,2026-08-01 Frank
+            //(「这个按钮应该放到下面的 section,样式应该保持一致」)→ 搬进题卡的动作位,并换成站内钮样式
+            <div style={{ fontSize: 12, color: UI.text3, margin: '2px 0 0' }}>
+              {t(stage === 'explore' ? 'plan.explore.sub' : `plan.${decision}.sub`)}
             </div>
           ) : (
             <div className="noPrint" style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', margin: '2px 0 10px' }}>
@@ -381,8 +382,9 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
               // 第一步=选职业,**内联**在同一张答题卡里(Frank「不要只有职业是弹框」):
               // 题干 + 搜索 + 分类 + 选项 + 靠右的「下一题」,与四选一题一个样
               <div style={{ ...CARD, padding: '14px 20px 18px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', paddingBottom: 12, marginBottom: 14, borderBottom: `1px solid ${UI.hairline}` }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingBottom: 12, marginBottom: 14, borderBottom: `1px solid ${UI.hairline}` }}>
                   <Tag variant="region">{t('plan.set.basic')}</Tag>
+                  <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}><ResetBtn /></span>
                 </div>
                 <div style={{ maxWidth: 600 }}>
                 <div style={{ fontSize: 19, fontWeight: 700, lineHeight: 1.55, marginBottom: 6 }}>{t('quiz.q2')}</div>
@@ -393,8 +395,14 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
               </div>
             ) : (
               <div style={{ ...CARD, padding: '14px 20px 6px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', paddingBottom: 12, marginBottom: 14, borderBottom: `1px solid ${UI.hairline}` }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingBottom: 12, marginBottom: 14, borderBottom: `1px solid ${UI.hairline}` }}>
                   <Tag variant={stage === 'explore' ? 'warn' : 'region'}>{t(stage === 'explore' ? 'plan.set.explore' : 'plan.set.basic')}</Tag>
+                  <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+                    {stage === 'explore' && (
+                      <button onClick={() => setStage('basic')} style={BTN}>{t('plan.explore.basic')}</button>
+                    )}
+                    <ResetBtn />
+                  </span>
                 </div>
                 {/* 题目区限宽但**左对齐**:与卡头的题组标签同一条左边线;居中会跟标签错开一截(实拍) */}
                 <div className="plSurvey" style={{ maxWidth: 600 }}>{survey && <Survey model={survey} />}</div>

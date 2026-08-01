@@ -32,7 +32,9 @@ export function OccPicker({ t, lang, initial, onDone, onClose, inline, doneLabel
   const [titles, setTitles] = useState<Record<string, string>>({})
   const [q, setQ] = useState('')
   const [cands, setCands] = useState<Cand[]>([])
-  const [top, setTop] = useState<Top[]>([])
+  // null=还在拉(不是空清单!)。分清这两态才不会「先渲一套内置清单、两秒后整块换成分类版」——
+  // Frank 2026-08-01 实拍「点找工作为什么会切换一下」就是这个:兜底清单被当成首屏内容渲了出去。
+  const [top, setTop] = useState<Top[] | null>(null)
   const [more, setMore] = useState(false)
   const [cat, setCat] = useState('')     // 大类筛选(空=热门)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -43,14 +45,15 @@ export function OccPicker({ t, lang, initial, onDone, onClose, inline, doneLabel
     fetch('/api/quiz?top=200')
       .then((r) => r.json())
       .then((d) => { if (!dead) setTop(Array.isArray(d?.top) && d.top.length ? d.top : []) })
-      .catch(() => { /* 用兜底清单 */ })
+      .catch(() => { if (!dead) setTop([]) })   // 失败才落到内置兜底清单(这时换内容是对的:没别的可显示)
     return () => { dead = true }
   }, [])
   // 大类清单按在招量排(有货的类排前面),与职位板的分类同一套 —— 不另造一套分类名
+  const loading = top === null
   const cats: string[] = Object.entries(
-    top.reduce<Record<string, number>>((m, x) => (x.broad && x.broad !== '未分类' ? { ...m, [x.broad]: (m[x.broad] || 0) + x.open } : m), {}),
+    (top ?? []).reduce<Record<string, number>>((m, x) => (x.broad && x.broad !== '未分类' ? { ...m, [x.broad]: (m[x.broad] || 0) + x.open } : m), {}),
   ).sort((a, b) => b[1] - a[1]).map(([k]) => k)
-  const base: Top[] = top.length
+  const base: Top[] = top?.length
     ? top
     : POPULAR_NOCS.map((x) => ({ noc: x.noc, title: t(x.key), titleZh: t(x.key), open: 0 }))
   const list: Top[] = cat ? base.filter((x) => x.broad === cat) : base
@@ -115,7 +118,18 @@ export function OccPicker({ t, lang, initial, onDone, onClose, inline, doneLabel
         {/* 分类是**导航**,下面的职业才是**选项**(Frank 2026-07-31「这个分类和下面的职位不应该有明显的界限吗」):
             两排都做成药丸,视觉上分不出层级 —— 分类改成文字标签页(选中站蓝加粗带下划线),
             再用一条发丝线与职业区隔开 */}
-        {cats.length > 0 && (
+        {/* 加载中:分类行与 chip 区各渲同高占位,拉回来直接就位 —— 不先渲一套再换掉(防跳版) */}
+        {loading ? (
+          <>
+            <div style={{ display: 'flex', gap: 14, paddingBottom: 10, marginBottom: 12, borderBottom: `1px solid ${UI.border}` }}>
+              {[54, 40, 40, 40, 40, 40].map((w, i) => <span key={i} style={{ width: w, height: 17, borderRadius: 4, background: UI.hairline }} />)}
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+              {[128, 104, 150, 118, 96, 140, 110, 126].map((w, i) => <span key={i} style={{ width: w, height: 32, borderRadius: 999, background: UI.hairline }} />)}
+            </div>
+          </>
+        ) : null}
+        {!loading && cats.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, paddingBottom: 10, marginBottom: 12, borderBottom: `1px solid ${UI.border}` }}>
             {['', ...cats].map((c) => (
               <button key={c || 'hot'} onClick={() => { setCat(c); setMore(Boolean(c)) }}
@@ -131,7 +145,7 @@ export function OccPicker({ t, lang, initial, onDone, onClose, inline, doneLabel
         )}
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-          {list.slice(0, more ? 99 : 8).map((x) => {
+          {(loading ? [] : list.slice(0, more ? 99 : 8)).map((x) => {
             const l = label(x)
             const hint = (dupCount.get(l) || 0) > 1 ? (x.title && x.title !== l ? x.title : x.noc) : ''
             return (
@@ -144,7 +158,7 @@ export function OccPicker({ t, lang, initial, onDone, onClose, inline, doneLabel
             )
           })}
         </div>
-        {list.length > 8 && !more && (
+        {!loading && list.length > 8 && !more && (
           <button onClick={() => setMore(true)} style={{ border: 'none', background: 'none', padding: '8px 0 0', color: UI.primary, cursor: 'pointer', fontSize: 12.5, fontFamily: 'inherit' }}>▾ {t('quiz.moreNocs')}</button>
         )}
 
