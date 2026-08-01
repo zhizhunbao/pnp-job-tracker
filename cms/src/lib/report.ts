@@ -213,9 +213,11 @@ function switchLines(facts: ReportFacts, dims: MatchDims, profile: MatchProfile,
     const base = { prov, system: systemShort(s.system), total: s.total, have, all: s.parts.length }
     if (isCur) return { key: 'rpt.s.cur', params: base, verdict: 'na', source: src }
     if (s.passMark != null) {
+      // 差多少分:下界与门槛的距离是**差距的上界**(补齐未答项只会更小)——句子必须带这层意思,
+      // 不能写成「你还差 38 分」那种确定语气。
       return s.total >= s.passMark
         ? { key: 'rpt.s.alt.pass', params: { ...base, mark: s.passMark }, verdict: 'pass', source: src }
-        : { key: 'rpt.s.alt.mark', params: { ...base, mark: s.passMark, rest: s.parts.length - have }, verdict: 'na', source: src }
+        : { key: 'rpt.s.alt.mark', params: { ...base, mark: s.passMark, gap: s.passMark - s.total, rest: s.parts.length - have }, verdict: 'na', source: src }
     }
     // 抽选线红线(E12-09 §5):打分表自报了通道(ON 新通道)就只认同通道的抽选 ——
     // ON 官方逐轮公布的分数线全属改制前已关停的通道,拿来配新分制就是错的锚。
@@ -244,9 +246,26 @@ function switchLines(facts: ReportFacts, dims: MatchDims, profile: MatchProfile,
     .slice(0, SWITCH_CAP)
 
   const out: ReportLine[] = [lineFor(cur, true), ...cands.map((c) => lineFor(c.prov, false))]
-  // 缺项钩子:整节只出一次,不带数字 —— 每个省的因素条数不一样(BC 5 / SK 7 / ON 11),
-  // 拿其中一个省的 x/y 当整节的说法就对不上;逐省的「已答 x/y」已经在各自那行里了
-  if (out.some((l) => !l.key.endsWith('noTable'))) out.push({ key: 'rpt.s.partial', params: {}, verdict: 'na', url: '/pathways' })
+
+  // 可操作的两条(锁区的价值就在这里,不然解锁完还是一堆「至少 N 分」):
+  // ① 先补哪一项最值钱 —— 未答的因素里官方分值最高的那个,按**现选省**的官方表说
+  //    (每个省的最值钱项不同,整节只说一次就得挑一个省,现选省是他最可能动手的地方);
+  // ② 拿到该省 offer 官方给几分 —— 只有官方表里真有 offer 这一项的省才出(SK 有,BC/ON 没有,不编)。
+  const curScore = scoreOf(cur)
+  const worst = curScore?.parts.filter((x) => !x.matched && x.max > 0).sort((a, b) => b.max - a.max)[0]
+  if (worst) {
+    out.push({
+      key: 'rpt.s.next', params: { prov: cur, factor: worst.factor, factorKey: `ps.f.${worst.factor}`, pts: worst.max },
+      verdict: 'na', url: '/pathways',
+    })
+  }
+  for (const c of cands) {
+    const s2 = scoreOf(c.prov)
+    const offer = factors.find((f) => f.province === c.prov && f.factor === 'offer' && f.kind === 'row' && (f.points ?? 0) > 0)
+    if (s2 && offer && (s2.parts.find((x) => x.factor === 'offer')?.pts ?? 0) === 0) {
+      out.push({ key: 'rpt.s.offer', params: { prov: c.prov, pts: offer.points as number }, verdict: 'na', source: { label: s2.system, url: s2.url, fetched: s2.fetched } })
+    }
+  }
   out.push(SWITCH_NOTE)
   return out
 }
@@ -703,17 +722,6 @@ const REQ_FREE: Record<string, string> = {
   'rpt.r.income.fail': 'rpt.r.income.failFree',
 }
 const HINT: Record<string, string> = { 'rpt.c.regulated': 'rpt.hint.cert', 'rpt.g.expShort': 'rpt.hint.exp' }
-// 换省对照的免费/付费界线(L2-08):免费=该省有没有官方分值表、官方申请门槛、近 N 次抽选线
-// (三样都是库里查得到的省级事实,锁了只是挡路);付费=**你的自算下界分与达标判定**,那才是拿他答案算出来的。
-// 免费层换成不带分数的同义句,`total`/`have`/`all` 根本不下发;缺项钩子讲的是分数,免费层整行不出。
-const SWITCH_FREE: Record<string, string> = {
-  'rpt.s.cur': 'rpt.s.cur.free',
-  'rpt.s.alt.pass': 'rpt.s.alt.mark.free', 'rpt.s.alt.mark': 'rpt.s.alt.mark.free',
-  'rpt.s.alt.band': 'rpt.s.alt.band.free', 'rpt.s.alt.plain': 'rpt.s.alt.plain.free',
-  'rpt.s.alt.noDraw': 'rpt.s.alt.noDraw.free',
-  'rpt.s.partial': '',
-}
-
 export function gateReport(report: Report, pro: boolean): GatedReport {
   const provLine = report.conclusions.find((c) => LANE_PROV[c.key])
   const eeLine = report.conclusions.find((c) => LANE_EE[c.key])
@@ -745,15 +753,12 @@ export function gateReport(report: Report, pro: boolean): GatedReport {
     return { ...l, key: REQ_FREE[l.key], params: rest }
   })
 
-  // 换省对照:分数摘掉、省级事实留着(同 REQ_FREE 手法);有分数被摘 → 锁行落 score 类别
-  const scoreLocked = report.switches.some((l) => SWITCH_FREE[l.key] != null)
-  const switches = report.switches.flatMap((l): ReportLine[] => {
-    const to = SWITCH_FREE[l.key]
-    if (to == null) return [l]
-    if (!to) return []
-    const { total, have, all, rest, ...keep } = l.params   // eslint-disable-line @typescript-eslint/no-unused-vars
-    return [{ ...l, key: to, params: keep }]
-  })
+  // 换省对照:**免费层整节不下发**(Frank 2026-08-01 看实拍拍板:
+  // 「你这说完不是等于没说么」——把分数锁掉之后,免费层剩下的只有「该省有没有分值表」,
+  // 那是废话不是 aha)。这一节的存在理由就是分数,分数收费 → 整节进锁区,
+  // 免费层只留锁行那一句问句当钩子(问题本身就是广告)。
+  const scoreLocked = report.switches.length > 0
+  const switches: ReportLine[] = []
 
   // 卡①/⑥ 走口径闸(库里查得到的免费,拿你的答案算出来的付费):在招量与薪资对照本来就查得到,
   // 按「前 2 条」硬切会把免费的事实也锁掉 —— 那是收不到钱只挡路。锁的是真要答案才筛得出来的那几条。
@@ -835,19 +840,15 @@ const EN: Record<string, (p: Record<string, string | number>) => string> = {
   'rpt.r.none': (p) => `${p.prov}'s official thresholds are not yet covered by this site — no rule comparison can be made.`,
   // 换省对照(L2-08):下界口径,句子里必须留住「at least」与「x of y answered」
   'rpt.s.cur': (p) => `Currently targeting ${p.prov}: on its official ${p.system} your answers score at least ${p.total} (${p.have} of ${p.all} factors answered).`,
-  'rpt.s.cur.free': (p) => `Currently targeting ${p.prov}: the province publishes an official points grid (${p.system}).`,
   'rpt.s.cur.noTable': (p) => `Currently targeting ${p.prov}: the province publishes no points grid, so no score can be computed.`,
-  'rpt.s.alt.pass': (p) => `Switching to ${p.prov}: at least ${p.total} on the official ${p.system} points grid — already at or above its ${p.mark}-point application threshold.`,
-  'rpt.s.alt.mark': (p) => `Switching to ${p.prov}: at least ${p.total} on the official ${p.system} points grid; its application threshold is ${p.mark} — ${p.rest} more factor(s) needed before that can be judged.`,
-  'rpt.s.alt.mark.free': (p) => `Switching to ${p.prov}: official application threshold ${p.mark} points (${p.system}).`,
-  'rpt.s.alt.band': (p) => `Switching to ${p.prov}: at least ${p.total} on the official ${p.system} points grid; its last ${p.n} draws cut off between ${p.lo} and ${p.hi}.`,
-  'rpt.s.alt.band.free': (p) => `Switching to ${p.prov}: its last ${p.n} draws cut off between ${p.lo} and ${p.hi} (${p.system}).`,
-  'rpt.s.alt.plain': (p) => `Switching to ${p.prov}: at least ${p.total} on the official ${p.system} points grid (no published threshold or draw cutoffs yet).`,
-  'rpt.s.alt.plain.free': (p) => `Switching to ${p.prov}: the province publishes an official points grid (${p.system}).`,
-  'rpt.s.alt.noDraw': (p) => `Switching to ${p.prov}: at least ${p.total} on the official ${p.system} points grid; this stream has no draw record yet.`,
-  'rpt.s.alt.noDraw.free': (p) => `Switching to ${p.prov}: it has an official points grid, but this stream has no draw record yet.`,
+  'rpt.s.alt.pass': (p) => `Switching to ${p.prov}: at least ${p.total} — already at or above its official ${p.mark}-point threshold.`,
+  'rpt.s.alt.mark': (p) => `Switching to ${p.prov}: at least ${p.total} against its official ${p.mark}-point threshold — at most ${p.gap} short, and ${p.rest} unanswered factor(s) can only narrow that.`,
+  'rpt.s.next': (p) => `Of the factors you have not answered, ${p.factor} is worth the most in ${p.prov} (up to ${p.pts} points) — fill it in first.`,
+  'rpt.s.offer': (p) => `${p.prov} awards ${p.pts} points on its official grid for holding a job offer there.`,
+  'rpt.s.alt.band': (p) => `Switching to ${p.prov}: at least ${p.total}; its last ${p.n} draws cut off between ${p.lo} and ${p.hi}.`,
+  'rpt.s.alt.plain': (p) => `Switching to ${p.prov}: at least ${p.total} (no published threshold or draw cutoffs yet).`,
+  'rpt.s.alt.noDraw': (p) => `Switching to ${p.prov}: at least ${p.total}; this stream has no draw record yet.`,
   'rpt.s.alt.noTable': (p) => `Switching to ${p.prov}: the province publishes no points grid, so no score can be computed.`,
-  'rpt.s.partial': () => `Scores above use only the answers on file (language, Canadian experience). Education, age, second language, wage and location are not asked here — fill them in for a full estimate.`,
   'rpt.s.note': () => `Scores are self-computed from each province's official grid and do not represent an official assessment; the grids are separate systems and the scores cannot be compared with each other.`,
   'rpt.g.noNoc': () => `No occupation on file — list hits, draws and wages all hinge on it. Add your NOC first.`,
   'rpt.g.zeroJobs': (p) => `Zero open postings for this occupation in ${p.prov} right now.`,

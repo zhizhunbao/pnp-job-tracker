@@ -71,11 +71,15 @@ function OccChip({ noc, nocTitle, t, onPick }: { noc: string; nocTitle: string; 
 //  五六条结论就是五六个散落的入口,读的时候被打断,打印出来更是一堆没用的箭头)
 // 正文只留文字:上标编号 2026-07-31 撤掉(Frank「每一行后面都有一个小数字是什么」——
 // 要靠解释才懂的记号就是没做对)。出处与跳转仍统一收在底部「依据与链接」,按名字自解释。
+// 参数里带 i18n 键的(如换省对照的 factorKey='ps.f.education')先翻成人话再代入 ——
+// 官方因素名的三语只住 `ps.f.*` 一处(打分卡也用它),引擎不该再抄一份译名表
 function Line({ l, t }: { l: RptLine; t: TFn }) {
+  const params = Object.fromEntries(Object.entries(l.params).map(([k, v]) =>
+    [k, typeof v === 'string' && v.startsWith('ps.f.') ? t(v) : v]))
   return (
     <li style={{ margin: 0, padding: '14px 0', borderTop: `1px solid ${UI.hairline}`, lineHeight: 1.75, fontSize: 15, listStyle: 'none', display: 'flex', gap: 11, alignItems: 'baseline' }}>
       <span style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: V_DOT[l.verdict ?? 'na'], position: 'relative', top: -1 }} />
-      <span style={{ flex: 1, minWidth: 0 }}>{t(l.key, l.params)}</span>
+      <span style={{ flex: 1, minWidth: 0 }}>{t(l.key, params)}</span>
     </li>
   )
 }

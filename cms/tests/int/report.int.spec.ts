@@ -327,18 +327,18 @@ const sf = (o: Partial<ScoreFactor>): ScoreFactor => ({
 })
 const SK = { province: 'SK', system: 'SINP Points Grid', maxTotal: 110, passMark: 60, url: 'https://sk.ca/grid' }
 const factors: ScoreFactor[] = [
-  sf({ factor: 'language', seq: 0, label: 'CLB 9 or higher', points: 30 }),
-  sf({ factor: 'language', seq: 1, label: 'CLB 8', points: 25 }),
-  sf({ factor: 'language', seq: 2, label: 'CLB 7', points: 20 }),
-  sf({ factor: 'language', seq: 3, label: 'Below CLB 4', points: 5 }),
-  sf({ factor: 'work', seq: 0, label: '5 or more years', points: 20 }),
-  sf({ factor: 'work', seq: 1, label: '1 year', points: 4 }),
-  sf({ factor: 'education', seq: 0, label: "Master's degree", points: 17 }),
-  sf({ ...SK, factor: 'language1', seq: 0, label: 'CLB 8 and higher', points: 20 }),
-  sf({ ...SK, factor: 'language1', seq: 1, label: 'CLB 7', points: 18 }),
-  sf({ ...SK, factor: 'work5', seq: 0, label: '5 years', points: 10 }),
-  sf({ ...SK, factor: 'work5', seq: 1, label: '1 year', points: 2 }),
-  sf({ ...SK, factor: 'age', seq: 0, label: '22 – 34 years', points: 12 }),
+  sf({ factor: 'language', seq: 0, label: 'CLB 9 or higher', points: 30, factorMax: 30 }),
+  sf({ factor: 'language', seq: 1, label: 'CLB 8', points: 25, factorMax: 30 }),
+  sf({ factor: 'language', seq: 2, label: 'CLB 7', points: 20, factorMax: 30 }),
+  sf({ factor: 'language', seq: 3, label: 'Below CLB 4', points: 5, factorMax: 30 }),
+  sf({ factor: 'work', seq: 0, label: '5 or more years', points: 20, factorMax: 20 }),
+  sf({ factor: 'work', seq: 1, label: '1 year', points: 4, factorMax: 20 }),
+  sf({ factor: 'education', seq: 0, label: "Master's degree", points: 17, factorMax: 17 }),
+  sf({ ...SK, factor: 'language1', seq: 0, label: 'CLB 8 and higher', points: 20, factorMax: 20 }),
+  sf({ ...SK, factor: 'language1', seq: 1, label: 'CLB 7', points: 18, factorMax: 20 }),
+  sf({ ...SK, factor: 'work5', seq: 0, label: '5 years', points: 10, factorMax: 10 }),
+  sf({ ...SK, factor: 'work5', seq: 1, label: '1 year', points: 2, factorMax: 10 }),
+  sf({ ...SK, factor: 'age', seq: 0, label: '22 – 34 years', points: 12, factorMax: 12 }),
 ]
 const swFacts = (o: Partial<ReportFacts> = {}) => facts({
   noc: '31301', title: 'RN', teer: 1, scoreFactors: factors,
@@ -409,26 +409,34 @@ describe('换省对照节(L2-08)', () => {
   it('免责常驻 + 缺项钩子指完整估分器', () => {
     const r = buildPrReport(base(), exp12, dims, swFacts())
     expect(r.switches[r.switches.length - 1].key).toBe('rpt.s.note')
-    expect(sw(r, 'rpt.s.partial')?.url).toBe('/pathways')
+    expect(sw(r, 'rpt.s.next')?.url).toBe('/pathways')
   })
 
-  it('付费闸:免费层只剩省级官方事实,分数一个都不下发,锁行落 score', () => {
+  it('付费闸:免费层整节不下发(拍板 2026-08-01),锁行落 score', () => {
+    // Frank 看实拍原话:「你这说完不是等于没说么」—— 分数锁掉后免费层只剩「该省有没有分值表」,
+    // 那是废话不是 aha。这一节的存在理由就是分数 → 整节进锁区,问句留在锁行里当广告。
     const built = buildPrReport(base(), exp12, dims, swFacts())
     const free = gateReport(built, false)
-    expect(keys(free.switches)).toContain('rpt.s.cur.free')
-    expect(keys(free.switches)).toContain('rpt.s.alt.mark.free')
-    expect(keys(free.switches)).not.toContain('rpt.s.partial')
-    expect(free.switches.every((l) => l.params.total === undefined && l.params.have === undefined)).toBe(true)
-    expect(JSON.stringify(free.switches)).not.toContain('"total"')
+    expect(free.switches).toEqual([])
+    expect(JSON.stringify(free)).not.toContain('rpt.s.')
     expect(free.locked).toContain('score')
     const pro = gateReport(built, true)
     expect(keys(pro.switches)).toContain('rpt.s.cur')
     expect(pro.locked).toEqual([])
   })
 
-  it('免费层留住的是事实:门槛分与抽选区间照给(锁的只是你的分)', () => {
-    const free = gateReport(buildPrReport(base(), exp12, dims, swFacts()), false)
-    expect(sw(free, 'rpt.s.alt.mark.free')?.params.mark).toBe(60)
-    expect(reportLineEn(free.switches[0])).toContain('official points grid')
+  it('锁区里有可操作的三样:差多少分、先补哪一项、该省 offer 加几分', () => {
+    const r = buildPrReport(base(), exp12, dims, swFacts())
+    // ① 差多少分 = 下界与门槛的距离(差距的上界:补齐未答项只会更小)
+    expect(sw(r, 'rpt.s.alt.mark')?.params.gap).toBe(38)   // SK 门槛 60 − 下界 22
+    // ② 先补哪一项:现选省 BC 未答项里官方分值最高的那个(education 17 分),译名走 ps.f.* 单一来源
+    const next = sw(r, 'rpt.s.next')
+    expect(next?.params).toMatchObject({ prov: 'BC', factor: 'education', factorKey: 'ps.f.education', pts: 17 })
+    expect(next?.url).toBe('/pathways')
+    // ③ 该省 offer 加几分:官方表里真有 offer 这一项才出(SK 有,BC 没有 → 不编)
+    const offerFactors = [...factors, sf({ province: 'SK', system: 'SINP Points Grid', maxTotal: 110, passMark: 60, factor: 'offer', seq: 0, label: 'Job offer from a SK employer', points: 30, factorMax: 30 })]
+    const withOffer = buildPrReport(base(), exp12, dims, swFacts({ scoreFactors: offerFactors }))
+    expect(sw(withOffer, 'rpt.s.offer')?.params).toMatchObject({ prov: 'SK', pts: 30 })
+    expect(sw(r, 'rpt.s.offer')).toBeUndefined()
   })
 })
