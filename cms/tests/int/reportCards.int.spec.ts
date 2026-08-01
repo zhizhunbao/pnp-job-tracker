@@ -24,7 +24,7 @@ const occStat = (p: Partial<OccStat>): OccStat => ({
   noc: '31301', province: 'all', titleEn: 'Registered nurses', titleZh: '注册护士', titleKo: '등록 간호사', teer: 1, broad: '3', mid: '31', fine: '3130',
   open: 300, named: 120, medianWage: 90_000, medianPosted: 81_000, ...p,
 })
-const occ = (p: Partial<OccStats> = {}): OccStats => ({ self: occStat({}), byProv: [], peers: [], sponsors: 0, ...p })
+const occ = (p: Partial<OccStats> = {}): OccStats => ({ self: occStat({}), byProv: [], peers: [], sponsors: 0, sponsorList: [], ...p })
 
 describe('卡① 找工作', () => {
   it('目标省出在招与具名结论,并给职位板下一步', () => {
@@ -68,11 +68,20 @@ describe('卡① 找工作', () => {
     expect(rel[0].url).toBe('/plan/job?noc=21231&view=report')
   })
 
-  it('免费端:在招与薪资照给,担保雇主进锁区', () => {
-    const r = gateReport(buildJobReport(normalizeProfile({ targetProvinces: ['BC'] }), dims, facts, occ({ sponsors: 7 })), false)
-    expect(r.conclusions.map((c) => c.key)).toEqual(['rpt.j.openNamed', 'rpt.j.wageBelow'])
+  // 2026-08-01 雇主线索落地时改口径:「有 N 家雇主发过清单岗」这句**留在免费层**
+  //(它是这张卡最像 aha 的一句,锁掉等于免费层什么都没有);锁的是名单本体,锁行由 employers 非空触发。
+  it('免费端:在招/薪资/「有 N 家」照给,雇主名单进锁区', () => {
+    const sponsorList = [{ name: 'A Health', slug: 'a-health', named: 2, city: 'Regina', province: 'SK', lastPosted: '2026-07-17', lmiaPositions: 5, lmiaQuarter: '2026Q1', aip: false }]
+    const r = gateReport(buildJobReport(normalizeProfile({ targetProvinces: ['BC'] }), dims, facts, occ({ sponsors: 7, sponsorList })), false)
+    expect(r.conclusions.map((c) => c.key)).toEqual(['rpt.j.openNamed', 'rpt.j.wageBelow', 'rpt.j.sponsors'])
+    expect(r.employers).toEqual([])     // 名单不在响应体里(不是前端打码)
     expect(r.locked).toEqual(['sponsors'])
     expect(r.lanes).toHaveLength(0)     // 三卡是拿 PR 那张卡的三条轴,别张卡不硬套
+  })
+
+  it('免费端:名单为空时不挂锁行(不卖不存在的东西)', () => {
+    const r = gateReport(buildJobReport(normalizeProfile({ targetProvinces: ['BC'] }), dims, facts, occ({ sponsors: 0 })), false)
+    expect(r.locked).not.toContain('sponsors')
   })
 
   it('Pro 端:担保雇主结论完整下发,锁区为空', () => {

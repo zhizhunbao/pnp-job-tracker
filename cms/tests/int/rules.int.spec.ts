@@ -5,7 +5,7 @@
 //   · 收入表家庭人数/居住区域未知时,只有「最低那档都够不到」才敢判 fail(下界推理)。
 import { describe, it, expect } from 'vitest'
 import { normalizeProfile, type MatchDims } from '@/lib/match'
-import { buildPrReport, gateReport, type ReportFacts } from '@/lib/report'
+import { buildJobReport, buildPrReport, gateReport, type ReportFacts } from '@/lib/report'
 import { evaluateRequirements, type Requirement } from '@/lib/rules'
 
 const dims: MatchDims = {
@@ -198,5 +198,33 @@ describe('ON(OINP)—— 雇主侧与技工分档', () => {
   it('ON 与 BC 的行互不串味(引擎只吃传进来的那一省)', () => {
     const rs = evaluateRequirements(ON_REQS, P({ noc: '21232', teer: 1, clb: 9 }))
     expect(rs.find((r) => r.factor === 'income')).toBeUndefined()   // 最低家庭收入是 BC 的东西
+  })
+})
+
+// ── 雇主线索(锁区正文)——免费层服务端就没有名单,Pro 才有 ────────────────────────
+describe('雇主线索', () => {
+  const occStats = {
+    self: { noc: '31301', province: 'all', titleEn: 'Registered nurses', titleZh: '注册护士', titleKo: '', teer: 1, broad: '3', mid: '31', fine: '3130', open: 300, named: 120, medianWage: 90000, medianPosted: 81000 },
+    byProv: [], peers: [], sponsors: 2,
+    sponsorList: [
+      { name: 'Saskatchewan Health Authority', slug: 'sk-health', named: 3, city: 'Regina', province: 'SK', lastPosted: '2026-07-17', lmiaPositions: 39, lmiaQuarter: '2026Q1', aip: false },
+      { name: 'Northern Health Authority', slug: 'north-health', named: 3, city: 'Mackenzie', province: 'BC', lastPosted: '2026-07-27', lmiaPositions: 2, lmiaQuarter: '2025Q3', aip: true },
+    ],
+  } as any
+
+  const built = () => buildJobReport(base(), dims, facts({ byProv: [{ province: 'BC', open: 17, named: 17, medianWage: 91000 }] }), occStats)
+
+  it('Pro:名单下发,字段照抄事实(不合成任何判断)', () => {
+    const pro = gateReport(built(), true)
+    expect(pro.employers.map((e) => e.name)).toEqual(['Saskatchewan Health Authority', 'Northern Health Authority'])
+    expect(pro.employers[1]).toMatchObject({ aip: true, lmiaPositions: 2, province: 'BC' })
+    expect(pro.locked).toHaveLength(0)
+  })
+
+  it('免费:名单**不在响应体里**(不是前端打码),但「有 N 家」那句结论与锁行都在', () => {
+    const free = gateReport(built(), false)
+    expect(free.employers).toEqual([])
+    expect(free.conclusions.some((c) => c.key === 'rpt.j.sponsors')).toBe(true)
+    expect(free.locked).toContain('sponsors')
   })
 })

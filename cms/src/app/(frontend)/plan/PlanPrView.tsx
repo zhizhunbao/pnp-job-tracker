@@ -36,8 +36,9 @@ surveyLocalization.locales.ko.questionsProgressText = '{0}/{1} 완료'
 
 type RptLine = { key: string; params: Record<string, string | number>; verdict?: string; source?: { label: string; url: string; fetched: string }; url?: string }
 type Lane = { kind: 'prov' | 'ee' | 'alts'; verdict?: string; key: string; params: Record<string, string | number> }
+type Emp = { name: string; slug: string; named: number; city: string; province: string; lastPosted: string; lmiaPositions: number | null; lmiaQuarter: string; aip: boolean }
 type Rpt = {
-  noc: string; title: string; conclusions: RptLine[]; requirements: RptLine[]; gaps: RptLine[]; nextSteps: RptLine[]; alternatives: RptLine[]
+  noc: string; title: string; conclusions: RptLine[]; requirements: RptLine[]; employers: Emp[]; gaps: RptLine[]; nextSteps: RptLine[]; alternatives: RptLine[]
   confidence: 'low' | 'mid' | 'high'; asOf: string
   lanes: Lane[]; hint?: RptLine; locked: string[]; pro: boolean   // 付费闸(服务端已裁剪,locked 只有类别键没有正文)
 }
@@ -456,6 +457,32 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                   <div style={CARD}>
                     <div style={secH}>{t('rpt.sec.r')}</div>
                     <ul style={{ margin: 0, padding: 0 }}>{rpt.requirements.map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</ul>
+                  </div>
+                )}
+                {/* 雇主线索(锁区正文,只有 Pro 拿得到):一行一家,全是可核验事实 ——
+                    命中清单的在招岗数 / 地点 / ESDC LMIA 历史 / AIP 名单 / 最近发布。
+                    永不写「这家好签」:愿不愿意担保只有雇主自己知道(措辞红线同 match.ts) */}
+                {rpt.employers?.length > 0 && (
+                  <div style={CARD}>
+                    <div style={secH}>{t('rpt.sec.emp')}</div>
+                    <div style={{ fontSize: 12, color: UI.text3, margin: '-2px 0 8px', lineHeight: 1.6 }}>{t('rpt.emp.note')}</div>
+                    <style>{`.empRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:9px 0;border-top:1px solid ${UI.hairline}}
+.empRow:first-of-type{border-top:none}
+.empMeta{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:${UI.text3}}
+@media(min-width:641px){.empRow{grid-template-columns:minmax(0,1fr) 96px 150px;align-items:baseline}
+.empMeta{grid-column:1/2;grid-row:2}}`}</style>
+                    {rpt.employers.map((e) => (
+                      <div key={e.slug || e.name} className="empRow">
+                        <a href={e.slug ? `/companies/${e.slug}` : '/'} style={{ fontWeight: 600, color: UI.primary, textDecoration: 'none', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.name}</a>
+                        <span style={{ fontSize: 12.5, color: UI.text2, whiteSpace: 'nowrap' }}>{t('rpt.emp.named', { n: e.named })}</span>
+                        <span style={{ fontSize: 12.5, color: UI.text3, whiteSpace: 'nowrap', textAlign: 'right' }}>{[e.city, e.province].filter(Boolean).join(', ')}</span>
+                        <span className="empMeta">
+                          {e.lmiaPositions ? <span>{t('rpt.emp.lmia', { n: e.lmiaPositions, q: e.lmiaQuarter || '—' })}</span> : null}
+                          {e.aip ? <span>{t('rpt.emp.aip')}</span> : null}
+                          {e.lastPosted ? <span>{t('rpt.emp.last', { d: e.lastPosted })}</span> : null}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 )}
                 {rpt.gaps.length > 0 && (

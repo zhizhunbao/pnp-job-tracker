@@ -14,13 +14,26 @@ export type OccStat = {
   noc: string; province: string; titleEn: string; titleZh: string; titleKo: string; teer: number | null; broad: string; mid: string; fine: string
   open: number; named: number; medianWage: number | null; medianPosted: number | null
 }
+// 雇主线索一行(锁区正文):**全是可核验的事实**,一条推断都不放 ——
+// 「这家发过命中省提名清单的岗」「近两年 ESDC 批过多少 LMIA」「是不是 AIP 指定雇主」「最近还在发」。
+// 红线:不出现「这家好签/容易担保」这类判断,雇主愿不愿意担保只有雇主自己知道。
+export type Sponsor = {
+  name: string; slug: string
+  named: number            // 该职业命中具名通道的在招岗数
+  city: string; province: string
+  lastPosted: string       // 最近一条在招岗的发布日
+  lmiaPositions: number | null; lmiaQuarter: string   // ESDC 正面 LMIA 历史(公司级,E6-02)
+  aip: boolean             // AIP 指定雇主名单在册
+}
 export type OccStats = {
   self: OccStat | null            // 全国行(province='all')
   byProv: OccStat[]               // 该职业各省行
   peers: OccStat[]                // 相邻职业(NOC 官方 minor group 同门,全国行,按在招降序)
-  sponsors: number                // 该职业命中具名通道的岗涉及多少家雇主(锁区:名单要付费)
+  sponsors: number                // 该职业命中具名通道的岗涉及多少家雇主(免费层只给这个数)
+  sponsorList: Sponsor[]          // 名单本体(付费层;gateReport 在服务端裁掉,免费响应里根本没有)
 }
-const EMPTY_OCC: OccStats = { self: null, byProv: [], peers: [], sponsors: 0 }
+const EMPTY_OCC: OccStats = { self: null, byProv: [], peers: [], sponsors: 0, sponsorList: [] }
+const SPONSOR_CAP = 12   // 名单上限:给得完够用,不把整张表倒出去
 
 export async function assembleOccStats(pool: any, noc: string): Promise<OccStats> {
   if (!/^\d{5}$/.test(noc)) return EMPTY_OCC
@@ -34,7 +47,7 @@ export async function assembleOccStats(pool: any, noc: string): Promise<OccStats
   const cols = 's.noc, s.province, s.title_en, s.title_zh, s.title_zh_short, d.title_ko, s.teer, s.broad, s.mid, s.fine, s.open_jobs, s.named_jobs, s.median_wage_annual, s.median_salary_annual'
   const from = 'FROM stats_occupation s LEFT JOIN noc_descriptions d ON d.noc = s.noc'   // 韩文名的家在 noc_descriptions
   try {
-    const [mine, peers, sponsors] = await Promise.all([
+    const [mine, peers, sponsors, sponsorRows] = await Promise.all([
       pool.query(`SELECT ${cols} ${from} WHERE s.noc = $1`, [noc]),
       // 相邻职业(Frank 2026-07-31「干 IT 可能同时适合大数据/AI/全栈/cloud」)。
       // **按 NOC 官方编码层级取,不用本站的中文分类** —— 实测本站 mid='IT' 是个杂物桶(52 个职业里
@@ -50,6 +63,20 @@ export async function assembleOccStats(pool: any, noc: string): Promise<OccStats
         `SELECT count(DISTINCT company_id)::int n FROM jobs
          WHERE COALESCE(status,'open') <> 'closed' AND noc = $1 AND pnp_stream IS NOT NULL AND pnp_stream <> '' AND company_id IS NOT NULL`, [noc])
         .catch(() => ({ rows: [] })),
+      // 雇主线索名单:同一口径(命中具名通道的在招岗)按雇主聚合,挂上公司级的 LMIA / AIP 事实。
+      // 排序=命中岗多的在前,同数看谁最近还在发(「还在招」比「历史上招过」有用)。
+      pool.query(
+        `SELECT co.name, co.slug, co.is_designated_employer aip, co.lmia_positions, co.lmia_last_quarter,
+                count(*)::int named,
+                (array_agg(j.province ORDER BY j.date_posted DESC NULLS LAST))[1] province,
+                (array_agg(j.city      ORDER BY j.date_posted DESC NULLS LAST))[1] city,
+                max(j.date_posted)::text last_posted
+         FROM jobs j JOIN companies co ON co.id = j.company_id
+         WHERE COALESCE(j.status,'open') <> 'closed' AND j.noc = $1
+           AND j.pnp_stream IS NOT NULL AND j.pnp_stream <> ''
+         GROUP BY co.id, co.name, co.slug, co.is_designated_employer, co.lmia_positions, co.lmia_last_quarter
+         ORDER BY named DESC, max(j.date_posted) DESC NULLS LAST
+         LIMIT ${SPONSOR_CAP}`, [noc]).catch(() => ({ rows: [] })),
     ])
     const rows: OccStat[] = mine.rows.map(row)
     return {
@@ -57,6 +84,11 @@ export async function assembleOccStats(pool: any, noc: string): Promise<OccStats
       byProv: rows.filter((r) => r.province !== 'all'),
       peers: peers.rows.map(row),
       sponsors: Number(sponsors.rows[0]?.n ?? 0),
+      sponsorList: sponsorRows.rows.map((r: any): Sponsor => ({
+        name: r.name ?? '', slug: r.slug ?? '', named: Number(r.named ?? 0),
+        city: r.city ?? '', province: r.province ?? '', lastPosted: String(r.last_posted ?? '').slice(0, 10),
+        lmiaPositions: num(r.lmia_positions), lmiaQuarter: r.lmia_last_quarter ?? '', aip: !!r.aip,
+      })),
     }
   } catch (e: any) {
     if (e?.code !== '42P01' && e?.code !== '42703') throw e

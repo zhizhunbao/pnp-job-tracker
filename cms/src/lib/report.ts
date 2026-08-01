@@ -40,11 +40,20 @@ export type ReportLine = {
   source?: { label: string; url: string; fetched: string }   // 依据链:指回具体维度记录/官方页
   url?: string                                  // 站内深链(下一步/备选用)
 }
+// 雇主线索一行(锁区正文,付费层才下发)。全是可核验事实,一条判断都不放 ——
+// 「这家发过命中省提名清单的岗」「ESDC 批过多少 LMIA」「在不在 AIP 指定雇主名单」「最近还在发」。
+// 措辞红线同 match.ts:永远不说「这家好签 / 容易担保」——雇主愿不愿意担保只有雇主自己知道。
+export type ReportEmployer = {
+  name: string; slug: string; named: number
+  city: string; province: string; lastPosted: string
+  lmiaPositions: number | null; lmiaQuarter: string; aip: boolean
+}
 export type Report = {
   goal: 'pr' | 'job' | 'career' | 'prov'
   noc: string
   title: string
   conclusions: ReportLine[]
+  employers: ReportEmployer[]       // 雇主线索(锁区):免费层服务端清空,只留「有 N 家」那句话
   requirements: ReportLine[]        // 门槛对照(规则引擎;设计 §6 新增的一节)—— 官方要求 × 你的情况
   gaps: ReportLine[]
   nextSteps: ReportLine[]
@@ -164,7 +173,7 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
   if (!noc) {
     // 不给 /account 深链:匿名用户点过去是登录墙(死路);选职业入口由页面的职业 chip 承担
     gaps.push({ key: 'rpt.g.noNoc', params: {}, verdict: 'na' })
-    return { goal: 'pr', noc: '', title: '', conclusions, requirements: [], gaps, nextSteps, alternatives, confidence: 'low', asOf: facts.fetched ?? '' }
+    return { goal: 'pr', noc: '', title: '', conclusions, requirements: [], employers: [], gaps, nextSteps, alternatives, confidence: 'low', asOf: facts.fetched ?? '' }
   }
 
   // 目标省;没选就按「命中具名清单岗多 → 在招多」取前 3(报告要有落点,不铺十省)
@@ -327,7 +336,7 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
   const confidence: Report['confidence'] = basicsAnswered < 4 ? 'low' : hasDeep ? 'high' : 'mid'
   if (basicsAnswered < 4) gaps.push({ key: 'rpt.g.basics', params: { n: 4 - basicsAnswered }, verdict: 'na' })
 
-  return { goal: 'pr', noc, title: facts.title, conclusions, requirements, gaps, nextSteps, alternatives, confidence, asOf: facts.fetched ?? '' }
+  return { goal: 'pr', noc, title: facts.title, conclusions, requirements, employers: [], gaps, nextSteps, alternatives, confidence, asOf: facts.fetched ?? '' }
 }
 
 // ── 卡③「选省份」:十省对照,专属题只有一道(手上有没有 offer)──────────────────
@@ -342,7 +351,7 @@ export function buildProvReport(profile: MatchProfile, extra: ProvExtra, dims: M
   const noc = facts.noc
   if (!noc) {
     gaps.push({ key: 'rpt.g.noNoc', params: {}, verdict: 'na' })
-    return { goal: 'prov', noc: '', title: '', conclusions, requirements: [], gaps, nextSteps, alternatives, confidence: 'low', asOf: facts.fetched ?? '' }
+    return { goal: 'prov', noc: '', title: '', conclusions, requirements: [], employers: [], gaps, nextSteps, alternatives, confidence: 'low', asOf: facts.fetched ?? '' }
   }
 
   // 候选=有在招数据的省 ∪ 公开清单里收了这个职业的省(某省 0 在招但清单收了它,仍然是个真选项)
@@ -407,7 +416,7 @@ export function buildProvReport(profile: MatchProfile, extra: ProvExtra, dims: M
   nextSteps.push({ key: 'rpt.n.pathways', params: {}, url: '/pathways' })
 
   return {
-    goal: 'prov', noc, title: facts.title, conclusions, requirements: [], gaps, nextSteps, alternatives,
+    goal: 'prov', noc, title: facts.title, conclusions, requirements: [], employers: [], gaps, nextSteps, alternatives,
     confidence: !rank.length ? 'low' : extra.hasJobOffer != null ? 'high' : 'mid', asOf: facts.fetched ?? '',
   }
 }
@@ -422,7 +431,7 @@ export function buildJobReport(profile: MatchProfile, dims: MatchDims, facts: Re
   const noc = facts.noc
   if (!noc) {
     gaps.push({ key: 'rpt.g.noNoc', params: {}, verdict: 'na' })
-    return { goal: 'job', noc: '', title: '', conclusions, requirements: [], gaps, nextSteps, alternatives: [], confidence: 'low', asOf: facts.fetched ?? '' }
+    return { goal: 'job', noc: '', title: '', conclusions, requirements: [], employers: [], gaps, nextSteps, alternatives: [], confidence: 'low', asOf: facts.fetched ?? '' }
   }
 
   // 目标省;没选就按在招量取前 2(找工作看的是岗多不多,与拿 PR 按具名排序不同)
@@ -475,7 +484,7 @@ export function buildJobReport(profile: MatchProfile, dims: MatchDims, facts: Re
   if (answered < 2) gaps.push({ key: 'rpt.g.basics', params: { n: 2 - answered }, verdict: 'na' })
 
   return {
-    goal: 'job', noc, title: facts.title, conclusions, requirements: [], gaps, nextSteps, alternatives: [],
+    goal: 'job', noc, title: facts.title, conclusions, requirements: [], employers: occ.sponsorList ?? [], gaps, nextSteps, alternatives: [],
     confidence: answered < 2 ? 'low' : occ.self ? 'high' : 'mid', asOf: facts.fetched ?? '',
   }
 }
@@ -490,7 +499,7 @@ export function buildCareerReport(profile: MatchProfile, facts: ReportFacts, occ
   const noc = facts.noc
   if (!noc) {
     gaps.push({ key: 'rpt.g.noNoc', params: {}, verdict: 'na' })
-    return { goal: 'career', noc: '', title: '', conclusions, requirements: [], gaps, nextSteps, alternatives, confidence: 'low', asOf: facts.fetched ?? '' }
+    return { goal: 'career', noc: '', title: '', conclusions, requirements: [], employers: [], gaps, nextSteps, alternatives, confidence: 'low', asOf: facts.fetched ?? '' }
   }
 
   const s = occ.self
@@ -535,7 +544,7 @@ export function buildCareerReport(profile: MatchProfile, facts: ReportFacts, occ
   nextSteps.push({ key: 'rpt.n.pathways', params: {}, url: '/pathways' })
 
   return {
-    goal: 'career', noc, title: facts.title, conclusions, requirements: [], gaps, nextSteps, alternatives,
+    goal: 'career', noc, title: facts.title, conclusions, requirements: [], employers: [], gaps, nextSteps, alternatives,
     confidence: !s ? 'low' : peers.length ? 'high' : 'mid', asOf: facts.fetched ?? '',
   }
 }
@@ -568,8 +577,11 @@ const LANE_EE: Record<string, string> = {
 const LOCK_CAT: Record<string, string> = {
   'rpt.c.scoreAbove': 'score', 'rpt.c.scoreBelow': 'score', 'rpt.c.scoreBand': 'score',
   'rpt.c.window': 'window', 'rpt.c.eeAbove': 'ee', 'rpt.c.eeBelow': 'ee',
-  // 卡①/⑥:担保雇主名单与跃迁排序都要用他的答案才筛得出来 → 锁区(自由查得到的在招量与中位薪资照旧免费)
-  'rpt.j.sponsors': 'sponsors', 'rpt.k.peerGap': 'move', 'rpt.p.rank': 'rank',
+  // 卡⑥跃迁排序要用他的职业做基准才算得出来 → 锁区(自由查得到的在招量与中位薪资照旧免费)。
+  // **「有 N 家雇主发过清单岗」这句留在免费层**(2026-08-01 做雇主线索时改):
+  // 它是这张卡最像 aha 的一句,把它也锁掉等于免费层什么都没有;锁的是**名单本体**(employers),
+  // 那才是「花钱买省下来的时间」。锁行由 employers 非空触发,见下面 cats2.add('sponsors')。
+  'rpt.k.peerGap': 'move', 'rpt.p.rank': 'rank',
 }
 const LOCK_ORDER = ['req', 'score', 'window', 'alts', 'ee', 'sponsors', 'move', 'rank', 'more']   // 锁行固定序(有序去重)
 // 门槛对照的免费/付费界线(设计 §6):免费=门槛是多少 + 达标/不达标的判定(官方事实,库里查得到);
@@ -600,6 +612,9 @@ export function gateReport(report: Report, pro: boolean): GatedReport {
 
   if (pro) return { ...report, lanes, hint, locked: [], pro: true }
 
+  // 雇主线索:名单整段不下发(免费层留「有 N 家」那句结论 + 锁行标题,devtools 也翻不出名字)
+  const employers: ReportEmployer[] = []
+
   // 门槛对照:免费层保留全部行(门槛是官方事实,锁了就是挡路),只把「差多少」那半句摘掉
   const reqLocked = report.requirements.some((l) => REQ_FREE[l.key])
   const requirements = report.requirements.map((l) => {
@@ -614,9 +629,10 @@ export function gateReport(report: Report, pro: boolean): GatedReport {
     const free = report.conclusions.filter((c) => !LOCK_CAT[c.key])
     const cats2 = new Set(report.conclusions.filter((c) => LOCK_CAT[c.key]).map((c) => LOCK_CAT[c.key]))
     if (report.alternatives.length) cats2.add(report.goal === 'prov' ? 'rank' : 'move')
+    if (report.employers.length) cats2.add('sponsors')   // 名单有货才挂锁行(不卖不存在的东西)
     if (reqLocked) cats2.add('req')
     return {
-      ...report, conclusions: free, alternatives: [], requirements,
+      ...report, conclusions: free, alternatives: [], requirements, employers,
       lanes: [], hint, locked: LOCK_ORDER.filter((k) => cats2.has(k)), pro: false,
     }
   }
@@ -638,7 +654,7 @@ export function gateReport(report: Report, pro: boolean): GatedReport {
   return {
     ...report,
     conclusions: report.conclusions.slice(0, FREE_CONCLUSIONS),
-    alternatives: [], requirements,
+    alternatives: [], requirements, employers,
     lanes, hint, locked: LOCK_ORDER.filter((k) => cats.has(k)), pro: false,
   }
 }
