@@ -73,7 +73,7 @@ function OccChip({ noc, nocTitle, t, onPick }: { noc: string; nocTitle: string; 
 // 要靠解释才懂的记号就是没做对)。出处与跳转仍统一收在底部「依据与链接」,按名字自解释。
 function Line({ l, t }: { l: RptLine; t: TFn }) {
   return (
-    <li style={{ margin: '7px 0', lineHeight: 1.7, listStyle: 'none', display: 'flex', gap: 9, alignItems: 'baseline' }}>
+    <li style={{ margin: 0, padding: '14px 0', borderTop: `1px solid ${UI.hairline}`, lineHeight: 1.75, fontSize: 15, listStyle: 'none', display: 'flex', gap: 11, alignItems: 'baseline' }}>
       <span style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: V_DOT[l.verdict ?? 'na'], position: 'relative', top: -1 }} />
       <span style={{ flex: 1, minWidth: 0 }}>{t(l.key, l.params)}</span>
     </li>
@@ -117,63 +117,28 @@ function collectRefs(r: Rpt, t: TFn): { rows: RefRow[]; of: (l: RptLine) => numb
   return { rows, of: (l) => byUrl.get(urlOf(l)) }
 }
 
-// ① hero:大数字取自首条结论的真数(命中具名 named/open;不公布清单的省只有 open),
-// 取不出数就退成纯文本行 —— 不发明合成分(65/100 式移民可行度总分是伪权威)。
-function Hero({ r, t }: { r: Rpt; t: TFn }) {
-  const c = r.conclusions[0]
-  const big = c?.key === 'rpt.c.listedHit' ? { n: c.params.named, of: c.params.open, cap: t('rpt.hero.hit', { prov: c.params.prov }) }
-    : c?.key === 'rpt.c.screenPass' ? { n: c.params.open, of: null, cap: t('rpt.hero.open', { prov: c.params.prov }) }
-    // 卡①找工作:大数字=目标省在招量;卡⑥职业规划:=你这行全国在招量(都是库里的真数,不合成分)
-    : c?.key === 'rpt.p.best' || c?.key === 'rpt.j.openNamed' ? { n: c.params.named, of: c.params.open, cap: t('rpt.hero.hit', { prov: c.params.prov }) }
-      : c?.key === 'rpt.p.screen' || c?.key === 'rpt.j.open' ? { n: c.params.open, of: null, cap: t('rpt.hero.jobs', { prov: c.params.prov }) }
-        : c?.key === 'rpt.k.self' || c?.key === 'rpt.k.selfWage' ? { n: c.params.open, of: null, cap: t('rpt.hero.self') }
-          : null
-  if (!big && !r.hint && !c) return null
-  return (
-    <div className="rptHero" style={{ background: 'linear-gradient(180deg,#eff6ff,#e0edff)', border: '1px solid #dbeafe', borderRadius: 12, padding: '16px 18px', margin: '10px 0' }}>
-      <div style={{ flexShrink: 0 }}>
-        {big ? (
-          <>
-            <div style={{ lineHeight: 1 }}>
-              <span style={{ fontSize: 40, fontWeight: 800, color: UI.primary, letterSpacing: -1 }}>{big.n}</span>
-              {big.of != null && <span style={{ fontSize: 20, fontWeight: 700, color: '#60a5fa' }}>/{big.of}</span>}
-            </div>
-            <div style={{ fontSize: 12.5, color: '#3b82f6', marginTop: 5 }}>{big.cap}</div>
-          </>
-        ) : c ? (
-          <div style={{ fontSize: 15, fontWeight: 600, color: UI.primaryDeep, lineHeight: 1.6 }}>{t(c.key, c.params)}</div>
-        ) : null}
-      </div>
-      {/* 卡点句不自带链接:它的出处已经在底部「依据与链接」里(全站唯一出口) */}
-      {r.hint && (
-        <div style={{ fontSize: 14.5, fontWeight: 700, color: UI.primaryDeep, lineHeight: 1.6 }}>
-          {t(r.hint.key, r.hint.params)}
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ② 三卡(Resume Worded 范式:维度名 + 判定词 + 状态章)。判定词是事实,免费;数字在锁区。
-function Lanes({ lanes, t }: { lanes: Lane[]; t: TFn }) {
-  const NAME: Record<string, string> = { prov: 'rpt.lane.t.prov', ee: 'rpt.lane.t.ee', alts: 'rpt.lane.t.alts' }
-  return (
-    <div className="rptLanes">
-      {lanes.map((l) => {
-        const chip = V_CHIP[l.verdict ?? 'na']
-        return (
-          <div key={l.kind} style={{ ...CARD, margin: 0, padding: '12px 10px', textAlign: 'center' }}>
-            <div style={{ fontSize: 12, color: UI.text2 }}>{t(NAME[l.kind], l.params)}</div>
-            <div style={{ fontSize: 17, fontWeight: 700, margin: '6px 0 7px', color: V_DOT[l.verdict ?? 'na'] }}>{t(l.key, l.params)}</div>
-            <span style={{ background: chip.bg, color: chip.fg, borderRadius: 6, padding: '2px 8px', fontSize: 11.5, fontWeight: 600 }}>{t(l.key + '.b')}</span>
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
 // 一个决定=一个参数(统一题库 §3:入口三处共用同一答题器与同一报告页,差别只有问哪些字段、答完出哪份报告)
+// v5 定稿(2026-08-01 Frank「网页尽量给结论,详细放 PDF」+「文字太密集」):
+// 一节 = 一个用户会问的问题(小灰标)+ 一张白卡;标题降级成灰字,卡里靠发丝线分行 ——
+// 页面从「每块都是同样粗的白卡」变成有主次。撤掉了 hero 大数字与三判定卡(同批拍板)。
+function Sec({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section style={{ margin: '22px 0 0' }}>
+      <div style={{ fontSize: 14, color: UI.text3, margin: '0 0 9px' }}>{title}</div>
+      <div style={{ background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 12, padding: '2px 18px' }}>{children}</div>
+    </section>
+  )
+}
+
+// 结论按「用户会问的问题」分桶(只在显示层分,引擎照旧给一个数组):
+// prov=省份口径 / pay=薪资 / peer=相关职业;没登记的键一律归 prov,不丢行。
+const BUCKET: Record<string, 'prov' | 'pay' | 'peer' | 'emp'> = {
+  'rpt.j.sponsors': 'emp',
+  'rpt.j.wageAbove': 'pay', 'rpt.j.wageBelow': 'pay', 'rpt.j.wageSame': 'pay', 'rpt.j.wageEsdc': 'pay',
+  'rpt.k.selfWage': 'pay', 'rpt.j.related': 'peer', 'rpt.k.peer': 'peer', 'rpt.k.alt': 'peer',
+}
+const group = (ls: RptLine[], b: 'prov' | 'pay' | 'peer' | 'emp'): RptLine[] => ls.filter((l) => (BUCKET[l.key] ?? 'prov') === b)
+
 export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'career' | 'prov' } = {}) {
   const hasExplore = (DECISIONS[decision]?.explore.length ?? 0) > 0
   const [lang, setLang] = useState<Lang>('zh')
@@ -325,9 +290,6 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
               {/* 两个动作钮同组靠右:窄屏一起换行,不会一个贴右一个掉到左边 */}
               <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
                 <button onClick={() => gotoQuiz()} style={BTN}>{t('plan.back')}</button>
-                {rpt && rpt !== 'loading' && rpt.noc && (
-                  <button onClick={() => { track(`plan-${decision}-print`); window.print() }} style={BTN}>{t('plan.pdf')}</button>
-                )}
               </span>
             </div>
           )}
@@ -425,6 +387,8 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
   header,footer,.noPrint{display:none !important}
   .printOnly{display:block !important}
   body{background:#fff}
+  /* 网页删掉的细节在纸上要回来,并保持原来的排布(printOnly 默认 block 会把并排的事实压成竖排) */
+  .empMeta.printOnly{display:flex !important}
   .rptHero{background:none !important;border:1px solid #ddd !important}
   a{color:#111 !important;text-decoration:none}
   @page{margin:14mm}
@@ -439,33 +403,27 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                 <div className="printOnly" style={{ fontSize: 15, fontWeight: 700, marginBottom: 8 }}>
                   {shortOcc(nocTitle || rpt.title)}<span style={{ color: UI.text3, fontWeight: 400, fontSize: 12, marginLeft: 6 }}>{rpt.noc}</span>
                 </div>
-                <Hero r={rpt} t={t} />
-                {rpt.lanes.length > 0 && <Lanes lanes={rpt.lanes} t={t} />}
-
                 {/* ③ 结论(免费两条)+ 缺口;分隔线代替小标题(卡片自解释,不写废话) */}
                 {/* 每节带标题(2026-07-31 Frank「每个 section 连个 title 都没有」):
                     v2c 当初撤标题是因为只有两条结论、卡片自解释;内容变多之后就成了一锅粥 */}
-                {rpt.conclusions.length > 0 && (
-                  <div style={CARD}>
-                    <div style={secH}>{t('rpt.sec.c')}</div>
-                    <ul style={{ margin: 0, padding: 0 }}>{rpt.conclusions.map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</ul>
-                  </div>
+                {/* 结论按「用户会问的问题」分组(2026-08-01 定稿 v5):省份 / 薪资 / 相关职业各成一节,
+                    不再一锅粥地平铺。分组只在显示层做 —— 引擎契约(conclusions 一个数组)不动。 */}
+                {group(rpt.conclusions, 'prov').length > 0 && (
+                  <Sec title={t('rpt.q.prov')}>{group(rpt.conclusions, 'prov').map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</Sec>
                 )}
                 {/* 门槛对照(规则引擎):官方门槛 × 你的情况,一行一条,出处照旧收在底部「依据与链接」。
                     免费层已在服务端把「差多少」摘掉(gateReport),这里不做任何裁剪判断 */}
                 {rpt.requirements?.length > 0 && (
-                  <div style={CARD}>
-                    <div style={secH}>{t('rpt.sec.r')}</div>
-                    <ul style={{ margin: 0, padding: 0 }}>{rpt.requirements.map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</ul>
-                  </div>
+                  <Sec title={t('rpt.q.req')}>{rpt.requirements.map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</Sec>
                 )}
                 {/* 雇主线索(锁区正文,只有 Pro 拿得到):一行一家,全是可核验事实 ——
                     命中清单的在招岗数 / 地点 / ESDC LMIA 历史 / AIP 名单 / 最近发布。
                     永不写「这家好签」:愿不愿意担保只有雇主自己知道(措辞红线同 match.ts) */}
-                {rpt.employers?.length > 0 && (
-                  <div style={CARD}>
-                    <div style={secH}>{t('rpt.sec.emp')}</div>
-                    <div style={{ fontSize: 12, color: UI.text3, margin: '-2px 0 8px', lineHeight: 1.6 }}>{t('rpt.emp.note')}</div>
+                {(rpt.employers?.length > 0 || group(rpt.conclusions, 'emp').length > 0) && (
+                  <Sec title={t('rpt.q.emp')}>
+                    {group(rpt.conclusions, 'emp').map((l, i) => <Line key={l.key + i} l={l} t={t} />)}
+                    {/* 那段口径说明网页不显示(太长),打印稿里才出 —— 网页给结论、PDF 给解释 */}
+                    <div className="printOnly" style={{ fontSize: 12, color: UI.text3, margin: '-2px 0 8px', lineHeight: 1.6 }}>{t('rpt.emp.note')}</div>
                     {/* 手机:名字+岗数一行、地点一行、事实一行(左对齐,别让地点飘到右边);
                         桌面:名字 | 岗数 | 地点 三列,事实收在名字下面那行 */}
                     <style>{`.empRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:9px 0;border-top:1px solid ${UI.hairline};
@@ -473,6 +431,9 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
 .empRow:first-of-type{border-top:none}
 .empName{grid-area:name}.empNamed{grid-area:named}.empLoc{grid-area:loc;text-align:left}
 .empMeta{grid-area:meta;display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:${UI.text3}}
+/* 雇主的细节(LMIA / AIP / 最近发布 / 雇主门槛)网页不出、只进 PDF —— 但 .empMeta 的 display:flex
+   写在 .printOnly 之后,同权重下后写的赢,所以这里要显式再关一次(实拍抓到:网页上还在显示) */
+.empMeta.printOnly{display:none}
 @media(min-width:641px){.empRow{grid-template-columns:minmax(0,1fr) 110px 150px;align-items:baseline;
   grid-template-areas:"name named loc" "meta meta meta"}
 .empLoc{text-align:right}}`}</style>
@@ -483,7 +444,7 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                           {e.named > 0 ? t('rpt.emp.named', { n: e.named }) : t('rpt.emp.screened', { n: e.eligible })}
                         </span>
                         <span className="empLoc" style={{ fontSize: 12.5, color: UI.text3, whiteSpace: 'nowrap' }}>{[e.city, e.province].filter(Boolean).join(', ')}</span>
-                        <span className="empMeta">
+                        <span className="empMeta printOnly">
                           {e.lmiaPositions ? <span>{t('rpt.emp.lmia', { n: e.lmiaPositions, q: e.lmiaQuarter || '—' })}</span> : null}
                           {e.aip ? <span>{t('rpt.emp.aip')}</span> : null}
                           {e.lastPosted ? <span>{t('rpt.emp.last', { d: e.lastPosted })}</span> : null}
@@ -499,39 +460,38 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                         </span>
                       </div>
                     ))}
-                  </div>
+                  </Sec>
+                )}
+                {group(rpt.conclusions, 'pay').length > 0 && (
+                  <Sec title={t('rpt.q.pay')}>{group(rpt.conclusions, 'pay').map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</Sec>
                 )}
                 {rpt.gaps.length > 0 && (
-                  <div style={CARD}>
-                    <div style={secH}>{t('rpt.sec.g')}</div>
-                    <ul style={{ margin: 0, padding: 0 }}>{rpt.gaps.map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</ul>
-                  </div>
+                  <Sec title={t('rpt.q.gap')}>{rpt.gaps.map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</Sec>
                 )}
 
                 {/* ④ 下一步:编号 1/2/3 + 尾链 */}
-                {rpt.nextSteps.length > 0 && (
-                  <div style={CARD}>
-                    <div style={secH}>{t('rpt.sec.n')}</div>
+                {/* 相关职业那两条属于「还能往哪走」,归到下一步里,不再混在结论中间 */}
+                {(rpt.nextSteps.length > 0 || group(rpt.conclusions, 'peer').length > 0) && (
+                  <Sec title={t('rpt.q.next')}>
                     {rpt.nextSteps.map((s, i) => (
-                      <div key={s.key + i} style={{ display: 'flex', gap: 10, alignItems: 'baseline', margin: '7px 0', lineHeight: 1.7 }}>
-                        <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: 6, background: '#eff6ff', color: UI.primary, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{i + 1}</span>
-                        <span style={{ flex: 1, minWidth: 0 }}>{t(s.key, s.params)}</span>
+                      <div key={s.key + i} style={{ padding: '14px 0', borderTop: `1px solid ${UI.hairline}`, lineHeight: 1.75, fontSize: 15 }}>
+                        {s.url
+                          ? <a href={s.url} style={{ color: UI.primary, textDecoration: 'none' }}>{t(s.key, s.params)}</a>
+                          : <span>{t(s.key, s.params)}</span>}
                       </div>
                     ))}
-                  </div>
+                    {group(rpt.conclusions, 'peer').map((l, i) => <Line key={l.key + i} l={l} t={t} />)}
+                  </Sec>
                 )}
 
                 {/* Pro:备选省完整对照(免费端服务端已清空) */}
                 {rpt.alternatives.length > 0 && (
-                  <div style={CARD}>
-                    <div style={secH}>{t('rpt.sec.a')}</div>
-                    <ul style={{ margin: 0, padding: 0 }}>{rpt.alternatives.map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</ul>
-                  </div>
+                  <Sec title={t('rpt.q.alt')}>{rpt.alternatives.map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</Sec>
                 )}
 
                 {/* 依据与链接:全报告唯一的对外出口(出处 + 跳转),编号与正文的 [n] 对应 */}
                 {refs.rows.length > 0 && (
-                  <div style={CARD}>
+                  <div className="printOnly" style={CARD}>
                     <div style={secH}>{t('rpt.sec.ref')}</div>
                     {refs.rows.map((r) => (
                       <div key={r.n} style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'baseline', margin: '7px 0', fontSize: 13, lineHeight: 1.6 }}>
@@ -544,6 +504,20 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                         <span className="printOnly" style={{ flex: '0 0 100%', marginLeft: 32, fontSize: 10.5, color: UI.text3, wordBreak: 'break-all' }}>{r.url.startsWith('http') ? r.url : `offer2pr.com${r.url}`}</span>
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {/* PDF 带(2026-08-01 拍板「网页给结论,详细放 PDF」):网页删掉的出处/门槛明细/雇主细节
+                    都在打印稿里 —— 所以这条只在屏幕上出,纸上不印(印出来叫人下载 PDF 是废话) */}
+                {rpt.noc && (
+                  <div className="noPrint rptPdf" style={{ ...CARD, borderColor: '#bfdbfe', display: 'flex', alignItems: 'center', gap: 14, marginTop: 22 }}>
+                    <div style={{ minWidth: 0 }}>
+                      <b style={{ fontSize: 14, fontWeight: 600, display: 'block' }}>{t('rpt.pdf.t')}</b>
+                      <span style={{ fontSize: 12.5, color: UI.text3 }}>{t('rpt.pdf.sub')}</span>
+                    </div>
+                    <span style={{ marginLeft: 'auto', flexShrink: 0 }}>
+                      <Button kind="primary" onClick={() => { track(`plan-${decision}-print`); window.print() }}>{t('rpt.pdf.btn')}</Button>
+                    </span>
                   </div>
                 )}
 

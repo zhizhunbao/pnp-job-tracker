@@ -197,8 +197,12 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
       continue
     }
     if (named) {
+      // 清单收的是**职业**不是岗位:该职业在清单上,该省这个职业的在招岗自然全都算 ——
+      // 所以「在招 12 岗,其中 12 个是清单岗」是句废话(2026-08-01 Frank 点名「就一个职位,怎么叫全部」)。
+      // 只有 named < open(如 ON 的 GTA 限制岗、AIP 与 PNP 分路)才值得说 N/M。
       conclusions.push({
-        key: 'rpt.c.listedHit', params: { prov, noc, label: named.label, open: f.open, named: f.named },
+        key: f.named < f.open ? 'rpt.c.listedHitPart' : 'rpt.c.listedHit',
+        params: { prov, noc, label: named.label, open: f.open, named: f.named },
         verdict: 'pass', source: { label: named.label, url: named.url, fetched: named.fetched },
       })
       if (f.open > 0) nextSteps.push({ key: 'rpt.n.jobs', params: { prov, n: f.open }, url: `/?prov=${prov}&q=${noc}` })
@@ -447,7 +451,8 @@ export function buildJobReport(profile: MatchProfile, dims: MatchDims, facts: Re
     if (f.open === 0) { gaps.push({ key: 'rpt.g.zeroJobs', params: { prov }, verdict: 'warn' }); continue }
     const named = dims.pnpOccupations.find((r) => r.province === prov && r.noc === noc && r.type !== 'ineligible')
     conclusions.push({
-      key: f.named > 0 ? 'rpt.j.openNamed' : 'rpt.j.open',
+      // 同上:全命中不说「其中 N 个」,主语是这个职业在不在该省清单上
+      key: f.named === 0 ? 'rpt.j.open' : f.named < f.open ? 'rpt.j.openNamed' : 'rpt.j.openAll',
       params: { prov, open: f.open, named: f.named },
       verdict: 'pass',
       ...(named ? { source: { label: named.label, url: named.url, fetched: named.fetched } } : {}),
@@ -575,7 +580,7 @@ export type GatedReport = Report & { lanes: ReportLane[]; hint?: ReportLine; loc
 
 const FREE_CONCLUSIONS = 2      // 引擎顺序天然=清单命中 + 抽选区间,正是 v2c 免费两条
 const LANE_PROV: Record<string, string> = {
-  'rpt.c.listedHit': 'rpt.lane.prov.hit', 'rpt.c.listedMiss': 'rpt.lane.prov.miss',
+  'rpt.c.listedHit': 'rpt.lane.prov.hit', 'rpt.c.listedHitPart': 'rpt.lane.prov.hit', 'rpt.c.listedMiss': 'rpt.lane.prov.miss',
   'rpt.c.excluded': 'rpt.lane.prov.excluded', 'rpt.c.screenPass': 'rpt.lane.prov.screen',
   'rpt.c.screenTeer': 'rpt.lane.prov.screenNo', 'rpt.c.uncovered': 'rpt.lane.prov.uncovered',
   'rpt.c.qc': 'rpt.lane.prov.qc',
@@ -673,7 +678,8 @@ export function gateReport(report: Report, pro: boolean): GatedReport {
 
 // ── 英文渲染(advisor grounding / 测试可读断言;与 UI 三语同源同数字,同 match.ts reasonEn 手法)──
 const EN: Record<string, (p: Record<string, string | number>) => string> = {
-  'rpt.c.listedHit': (p) => `NOC ${p.noc} is on ${p.prov}'s published list "${p.label}"; ${p.open} open postings there, ${p.named} hitting the named stream.`,
+  'rpt.c.listedHit': (p) => `NOC ${p.noc} is on ${p.prov}'s published list "${p.label}" — ${p.open} open postings there.`,
+  'rpt.c.listedHitPart': (p) => `NOC ${p.noc} is on ${p.prov}'s published list "${p.label}"; ${p.named} of ${p.open} open postings there qualify for the named stream.`,
   'rpt.c.listedMiss': (p) => `Checked ${p.prov}'s published list: NOC ${p.noc} is not on it. ${p.open} open postings there cannot use a named stream.`,
   'rpt.c.excluded': (p) => `NOC ${p.noc} is on ${p.prov}'s exclusion list "${p.label}".`,
   'rpt.c.screenPass': (p) => `${p.prov} publishes no occupation list; TEER ${p.teer} passes its generic screen. ${p.open} open postings.`,

@@ -219,7 +219,8 @@ describe('gateReport 付费闸', () => {
 
   it('免费:结论只留前 2 条、备选清空、锁行按固定序去重', () => {
     const g = gateReport(full(), false)
-    expect(keys(g.conclusions)).toEqual(['rpt.c.listedHit', 'rpt.c.drawBand'])   // 引擎顺序=清单命中 + 抽选区间
+    // 这一例 19 开 18 具名 = 真·部分命中 → listedHitPart(全命中时不说「其中 N 个」,2026-08-01 口径)
+    expect(keys(g.conclusions)).toEqual(['rpt.c.listedHitPart', 'rpt.c.drawBand'])
     expect(g.alternatives).toEqual([])
     // score 不在锁行里:报告算不出省估分(facts.scores 永远为空),锁一个算不出的东西=卖空气
     expect(g.locked).toEqual(['window', 'alts', 'more'])
