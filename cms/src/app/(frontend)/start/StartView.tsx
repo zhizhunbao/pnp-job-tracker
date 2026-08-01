@@ -92,8 +92,11 @@ export function StartView({ stats }: { stats: HomeStats }) {
     { key: 'jobs', href: '/', hot: true, hint: stats.total != null ? t('home.g.jobs.n', { n: num(stats.total) }) : null },
     { key: 'pr', href: '/pathways', hint: t('home.g.pr.n') },
     { key: 'prov', href: '/stats', hint: stats.provinces != null ? t('home.g.prov.n', { n: stats.provinces }) : null },
-    { key: 'city', href: '/stats', hint: stats.cities != null ? t('home.g.city.n', { n: num(stats.cities) }) : null },
-    { key: 'school', href: '/pathways', hint: stats.dli != null ? t('home.g.school.n', { n: stats.dli }) : null },
+    // 2026-08-01 Frank「不完善的卡片先关掉,免得影响用户使用」:
+    // 选城市/选学校原本深链到 /stats 与 /pathways —— 卡上写着「选城市」,点进去是一页地区统计,
+    // 那是**没兑现的承诺**,比暂时关掉更伤。等它们有自己的报告(builder)再亮回来。
+    { key: 'city', hint: t('home.g.soon') },
+    { key: 'school', hint: t('home.g.soon') },
     { key: 'career', href: '/occupations', hint: stats.occupations != null ? t('home.g.career.n', { n: num(stats.occupations) }) : null },
     { key: 'major', hint: t('home.g.major.n') },
   ]
@@ -198,7 +201,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
                 {g.hint && <div style={tileHint}>{g.hint}</div>}
               </a>
             ) : (
-              // 灰态「选专业」:span 非 a,虚线框,无 cursor 无 hover(不上假入口)
+              // 灰态卡(选城市/选学校/选专业):span 非 a,虚线框,无 cursor 无 hover(不上假入口)
               <span key={g.key} style={{ display: 'block', minWidth: 0, background: UI.hairline, border: `1px dashed ${UI.border}`, borderRadius: 10, padding: '14px 16px' }}>
                 <div style={{ ...tileNm, color: UI.text3 }}>{t(`home.g.${g.key}`)}</div>
                 {g.hint && <div style={{ ...tileHint, color: UI.text3 }}>{g.hint}</div>}

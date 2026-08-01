@@ -187,9 +187,8 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
   const [nocTitle, setNocTitle] = useState('')
   const [view, setView] = useState<'quiz' | 'report'>('quiz')
   const [stage, setStage] = useState<'basic' | 'explore'>('basic')   // 探索卷=报告 hook 的落点(基本 4 题满才进得来)
-  // 职业是第一步(2026-07-31 Frank「第一个问题可以先选职业吗」):每条决定的每条结论都要 NOC,
-  // 所以它不是常驻 chip 而是流程第一步;已经选过的照样先看到这一步(可换),按「下一题」才进问卷。
-  const [occStep, setOccStep] = useState(true)
+  // 职业是这卷的第一道题(2026-07-31 Frank「第一个问题可以先选职业吗」):每条结论都要 NOC。
+  // 2026-08-01 起它不再是**独立一步** —— 与基本题同屏(Frank「不能同时显示出来吗」),选中即写入。
   const [ready, setReady] = useState(false)
   const [resetArmed, setResetArmed] = useState(false)   // 重置两步:点一下变「确认重置」,再点才清(不弹系统 confirm)
   const [resetNonce, setResetNonce] = useState(0)       // 清完要让 SurveyJS 模型重建,否则旧答案还留在卷里
@@ -245,7 +244,6 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
   }
   const gotoQuiz = (to: 'basic' | 'explore' = 'basic') => {
     setStage(to)
-    setOccStep(to === 'basic')   // 回来改条件,还是从第一步(职业)看起
     setView('quiz')
     try { window.history.replaceState(null, '', window.location.pathname) } catch { /* ignore */ }
   }
@@ -257,7 +255,7 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
   const ResetBtn = () => (
     <button onClick={() => {
       if (!resetArmed) { setResetArmed(true); return }
-      setBands(clearAnswers()); setNoc(''); setResetArmed(false); setResetNonce((n) => n + 1); setOccStep(true)
+      setBands(clearAnswers()); setNoc(''); setResetArmed(false); setResetNonce((n) => n + 1)
       track(`plan-${decision}-reset`)
     }} style={{ ...BTN, ...(resetArmed ? { color: '#b91c1c', borderColor: '#fecaca', fontWeight: 600 } : {}) }}>
       {t(resetArmed ? 'plan.reset.ok' : 'plan.reset')}
@@ -323,6 +321,10 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
           <a href="/start" style={{ color: UI.primary, textDecoration: 'none' }}>{t('home.entry')}</a>
           {' › '}{t(`plan.${decision}.title`)}
         </div>
+        {/* 答题态**不出卡头**(2026-08-01 Frank「为什么要有一个重复的 title」):
+            面包屑已经写着「开始规划 › 找工作」,卡头再写一遍「找工作」是同一句话说两遍;
+            屏幕上真正的标题是第一道题的题干。返回与清空重填搬进题卡自己的动作行。 */}
+        {view === 'report' && (
         <div style={{ ...CARD, position: 'relative', margin: '0 0 10px', padding: '14px 16px 16px' }}>
           {/* 返回:与详情页同一把(方角、灰边白底、绝对定位右上);行为仍是 goBackOr */}
           {/* 一行两个钮(2026-08-01 Frank「返回按钮和下面的按钮是不是放到一行」):
@@ -333,29 +335,21 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
             )}
             <button onClick={() => goBackOr('/')} style={BTN}>{t('detail.back')}</button>
           </div>
-          {/* 报告态的主角是**这个职业**,不是「找工作」——「找工作」面包屑里已经有了(2026-08-01 Frank
-              「找工作这个还需要显示吗」)。答题态还没选完职业,标题才用决定名。 */}
+          {/* 报告态的主角是**这个职业**,不是「找工作」——那个词面包屑里已经有了(2026-08-01 Frank
+              「找工作这个还需要显示吗」/「为什么要有一个重复的 title」)。 */}
           <h1 style={{ margin: '0 0 2px', fontSize: 22, lineHeight: 1.35, color: '#111827', paddingRight: 170 }}>
-            {view === 'report' && rpt && rpt !== 'loading' && rpt.noc
+            {rpt && rpt !== 'loading' && rpt.noc
               ? <>{shortOcc(nocTitle || rpt.title)}<span style={{ color: UI.text3, fontWeight: 400, fontSize: 13, marginLeft: 8 }}>{rpt.noc}</span></>
               : t(`plan.${decision}.title`)}
           </h1>
-          {/* 卡头第二行:答题态=这张卡问什么 + 清空重填;报告态=职业名 + 改答案/存 PDF */}
-          {view === 'quiz' ? (
-            // 卡头只留一句副题:「清空重填」是**对这张题卡的操作**,2026-08-01 Frank
-            //(「这个按钮应该放到下面的 section,样式应该保持一致」)→ 搬进题卡的动作位,并换成站内钮样式
-            <div style={{ fontSize: 12, color: UI.text3, margin: '2px 0 0' }}>
-              {t(stage === 'explore' ? 'plan.explore.sub' : `plan.${decision}.sub`)}
-            </div>
-          ) : (
-            // 职业名已经升成 H1;这里只在**还没选职业**时留一个入口(空报告说「先选职业」却没入口=死路)。
-            // 「数据日期」那行 2026-08-01 撤掉(Frank):它的值是请求当天的 new Date(),
-            // 跟数据新不新毫无关系 —— 真日期跟着各自出处走,已经逐条列在底部「依据与链接」里。
-            rpt && rpt !== 'loading' && !rpt.noc
-              ? <div className="noPrint" style={{ margin: '6px 0 2px' }}><OccChip noc="" nocTitle="" t={t} onPick={() => gotoQuiz()} /></div>
-              : null
-          )}
+          {/* 没选职业的空报告:留一个选职业入口(说「先选职业」却没入口=死路)。
+              「数据日期」那行 2026-08-01 撤掉(Frank):它的值是请求当天的 new Date(),
+              跟数据新不新毫无关系 —— 真日期跟着各自出处走,已经逐条列在底部「依据与链接」里。 */}
+          {rpt && rpt !== 'loading' && !rpt.noc
+            ? <div className="noPrint" style={{ margin: '6px 0 2px' }}><OccChip noc="" nocTitle="" t={t} onPick={() => gotoQuiz()} /></div>
+            : null}
         </div>
+        )}
 
         {view === 'quiz' ? (
           // 答题列比报告列更窄(2026-07-31 Frank「这个问题页面跟狗屎一样」):一屏一题在桌面
@@ -402,37 +396,34 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
 .plSurvey .sd-body__navigation>.sv-action,.plSurvey .sd-body__navigation .sd-btn{flex:0 0 auto !important;width:auto;min-width:0;float:none !important}
 /* 框架的禁用态=主按钮透明度 25%(蓝底白字褪成一团看不清);换成站内灰底灰字的正经禁用样式 */
 .plSurvey .sd-btn:disabled{opacity:1;background:${UI.hairline};color:${UI.text3};cursor:default}`}</style>
-            {/* 第一步:职业。没选→只有选职业按钮;已选→显示已选职业 + 换一个,再「下一题」进问卷 */}
-            {occStep || !noc ? (
-              // 第一步=选职业,**内联**在同一张答题卡里(Frank「不要只有职业是弹框」):
-              // 题干 + 搜索 + 分类 + 选项 + 靠右的「下一题」,与四选一题一个样
-              <div style={{ ...CARD, padding: '14px 20px 18px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingBottom: 12, marginBottom: 14, borderBottom: `1px solid ${UI.hairline}` }}>
-                  <Tag variant="region">{t('plan.set.basic')}</Tag>
-                  <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}><ResetBtn /></span>
-                </div>
-                <div style={{ maxWidth: 600 }}>
-                <div style={{ fontSize: 19, fontWeight: 700, lineHeight: 1.55, marginBottom: 6 }}>{t('quiz.q2')}</div>
-                <div style={{ fontSize: 12.5, color: UI.text2, marginBottom: 12 }}>{t('quiz.q2sub')}</div>
-                <OccPicker inline t={t} lang={lang} initial={bands.nocs} doneLabel={t('plan.next')}
-                  onDone={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || ''); setOccStep(false) }} />
-                </div>
+            {/* 一张卡、一屏:选职业 + 基本题 + 一个「出报告」(2026-08-01 Frank「不能同时显示出来吗」)。
+                原先职业是独立第一步、题目又一屏一题 —— 找工作卡要点三次才看得到结论。
+                探索题批次仍单独一屏(它是「再答两题解锁」的钩子,不混进基本题)。 */}
+            <div style={{ ...CARD, padding: '14px 20px 6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingBottom: 12, marginBottom: 14, borderBottom: `1px solid ${UI.hairline}` }}>
+                <Tag variant={stage === 'explore' ? 'warn' : 'region'}>{t(stage === 'explore' ? 'plan.set.explore' : 'plan.set.basic')}</Tag>
+                <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+                  {stage === 'explore' && (
+                    <button onClick={() => setStage('basic')} style={BTN}>{t('plan.explore.basic')}</button>
+                  )}
+                  <ResetBtn />
+                  <button onClick={() => goBackOr('/')} style={BTN}>{t('detail.back')}</button>
+                </span>
               </div>
-            ) : (
-              <div style={{ ...CARD, padding: '14px 20px 6px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingBottom: 12, marginBottom: 14, borderBottom: `1px solid ${UI.hairline}` }}>
-                  <Tag variant={stage === 'explore' ? 'warn' : 'region'}>{t(stage === 'explore' ? 'plan.set.explore' : 'plan.set.basic')}</Tag>
-                  <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-                    {stage === 'explore' && (
-                      <button onClick={() => setStage('basic')} style={BTN}>{t('plan.explore.basic')}</button>
-                    )}
-                    <ResetBtn />
-                  </span>
+              {/* 职业:它就是这卷的第一道题(题干与四选一同一套字号),只是控件不是单选框。
+                  选中即写入(onChange),自己的动作按钮收起 —— 动作只留卷底那一个 */}
+              {stage === 'basic' && (
+                <div style={{ maxWidth: 600, marginBottom: 22 }}>
+                  <div style={{ fontSize: 19, fontWeight: 700, lineHeight: 1.55, marginBottom: 6 }}>{t('quiz.q2')}</div>
+                  <div style={{ fontSize: 12.5, color: UI.text2, marginBottom: 12 }}>{t('quiz.q2sub')}</div>
+                  <OccPicker inline hideDone t={t} lang={lang} initial={bands.nocs}
+                    onChange={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || '') }}
+                    onDone={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || '') }} />
                 </div>
-                {/* 题目区限宽但**左对齐**:与卡头的题组标签同一条左边线;居中会跟标签错开一截(实拍) */}
-                <div className="plSurvey" style={{ maxWidth: 600 }}>{survey && <Survey model={survey} />}</div>
-              </div>
-            )}
+              )}
+              {/* 题目区限宽但**左对齐**:与卡头的题组标签同一条左边线;居中会跟标签错开一截(实拍) */}
+              <div className="plSurvey" style={{ maxWidth: 600 }}>{survey && <Survey model={survey} />}</div>
+            </div>
           </>
         ) : (
           <>

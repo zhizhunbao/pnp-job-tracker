@@ -252,6 +252,7 @@ const zh: Dict = {
   'home.g.school': '选学校', 'home.g.school.n': '{n} 所可申 PGWP',
   'home.g.career': '职业规划', 'home.g.career.n': '{n} 个职业的行情',
   'home.g.major': '选专业', 'home.g.major.n': '数据补齐中',
+  'home.g.soon': '报告开发中',   // 有数据但还没有这张卡自己的报告 → 先灰着,不给没兑现的入口
   // v3(2026-07-30 拍板链:B为主抽选用A表 → 分节版式 → 主图版):日更大数字/抽选表/主图/政策
   'home.daily': '今日日更', 'home.daily.new': '新增岗位', 'home.daily.elig': '其中可提名', 'home.daily.total': '全站在招',
   'home.draws': '最近抽选',
@@ -971,6 +972,7 @@ const en: Dict = {
   'home.g.school': 'Pick a school', 'home.g.school.n': '{n} PGWP-eligible schools',
   'home.g.career': 'Career planning', 'home.g.career.n': '{n} occupation market profiles',
   'home.g.major': 'Pick a major', 'home.g.major.n': 'Data coming soon',
+  'home.g.soon': 'Report in progress',
   'home.daily': 'Daily update', 'home.daily.new': 'new jobs', 'home.daily.elig': 'PNP-eligible', 'home.daily.total': 'total open',
   'home.draws': 'Recent draws',
   'home.dr.date': 'Date', 'home.dr.prog': 'Program', 'home.dr.stream': 'Stream', 'home.dr.score': 'Cutoff', 'home.dr.inv': 'Invites',
@@ -1656,6 +1658,7 @@ const ko: Dict = {
   'home.g.school': '학교 선택', 'home.g.school.n': 'PGWP 가능 {n}곳',
   'home.g.career': '커리어 계획', 'home.g.career.n': '직업 시장 데이터 {n}건',
   'home.g.major': '전공 선택', 'home.g.major.n': '데이터 준비 중',
+  'home.g.soon': '리포트 준비 중',
   'home.daily': '오늘 갱신', 'home.daily.new': '신규 공고', 'home.daily.elig': 'PNP 대상', 'home.daily.total': '전체 채용 중',
   'home.draws': '최근 추첨',
   'home.dr.date': '날짜', 'home.dr.prog': '프로그램', 'home.dr.stream': '스트림', 'home.dr.score': '커트라인', 'home.dr.inv': '초청',

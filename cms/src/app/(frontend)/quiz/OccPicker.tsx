@@ -21,14 +21,18 @@ type Top = Cand & { open: number; broad?: string }
 
 // inline=true:不套弹层,直接铺在答题卡里(2026-07-31 Frank「选职业和其他问题都放到一个方式,
 // 不要只有职业是弹框」)—— 职业是第一题,就该和别的题长一个样,而不是另开一层。
-export function OccPicker({ t, lang, initial, onDone, onClose, inline, doneLabel }: {
+export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline, doneLabel, hideDone }: {
   t: TFn
   lang: string
   initial: string[]
   onDone: (nocs: string[]) => void
+  // 2026-08-01(Frank「不能同时显示出来吗」):合并成一屏后,选职业不再是独立一步 ——
+  // 选中即回传(onChange),自己的动作按钮收起(hideDone),整卷底部只留一个「出报告」。
+  onChange?: (nocs: string[]) => void
   onClose?: () => void
   inline?: boolean
   doneLabel?: string
+  hideDone?: boolean
 }) {
   const [nocs, setNocs] = useState<string[]>(initial)
   const [titles, setTitles] = useState<Record<string, string>>({})
@@ -90,7 +94,11 @@ export function OccPicker({ t, lang, initial, onDone, onClose, inline, doneLabel
   const label = (x: { title: string; titleZh: string }) => (lang === 'zh' && x.titleZh ? x.titleZh : x.title)
   const toggle = (noc: string, name: string) => {
     setTitles((m) => ({ ...m, [noc]: name }))
-    setNocs((cur) => (cur.includes(noc) ? cur.filter((n) => n !== noc) : [...cur, noc]))
+    setNocs((cur) => {
+      const next = cur.includes(noc) ? cur.filter((n) => n !== noc) : [...cur, noc]
+      onChange?.(next)
+      return next
+    })
   }
 
   // 库里会出现同名不同码(中文都叫「厨师」= 63200 Cooks 与 62200 Chefs)——重名时挂英文官方名区分,
@@ -107,7 +115,7 @@ export function OccPicker({ t, lang, initial, onDone, onClose, inline, doneLabel
           </div>
         )}
 
-        {nocs.length > 0 && (
+        {nocs.length > 0 && !hideDone && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
             {nocs.map((n) => (
               <button key={n} onClick={() => toggle(n, titles[n] || n)} style={{ ...chipStyle(true), display: 'inline-flex', gap: 6, alignItems: 'center' }}>
