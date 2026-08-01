@@ -38,6 +38,10 @@ export function OccPicker({ t, lang, initial, onDone, onClose, inline, doneLabel
   // Frank 2026-08-01 实拍「点找工作为什么会切换一下」就是这个:兜底清单被当成首屏内容渲了出去。
   const [top, setTop] = useState<Top[] | null>(null)
   const [cat, setCat] = useState('')     // 大类筛选(空=热门)
+  // A–Z 索引**只在英文界面出**(2026-08-01 Frank 拍板照建议走):英文界面的标签本身就是拉丁字母,
+  // 官方职业名又长又相似(Retail sales supervisors / Retail and wholesale trade managers),按首字母切一刀好扫;
+  // 中/韩界面标签是中文/韩文,头顶挂 A/B/C 对不上眼睛看到的字,那件事交给搜索框。
+  const [letter, setLetter] = useState('')
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // 热门清单:库里在招量前 24;拿不到(慢/挂了)退回内置常用清单 —— 控件不能因为一个可选请求就变空壳
@@ -60,7 +64,17 @@ export function OccPicker({ t, lang, initial, onDone, onClose, inline, doneLabel
   // 「热门」= 在招量前 HOT 个(拉回来的 200 条是**分类浏览**的料,不是热门本身)。
   // 2026-08-01 Frank「热门没有多少职业吧,可以都展示出来吧」——所以热门是短清单、一次摊开,
   // 不再折成 8 个 +「更多职业」;想看全的走上面的分类页签或搜索。
-  const list: Top[] = cat ? base.filter((x) => x.broad === cat) : base.slice(0, HOT)
+  const azOn = lang === 'en'
+  const scoped: Top[] = cat ? base.filter((x) => x.broad === cat) : base
+  const initial1 = (x: Top) => (x.title || '').trim().charAt(0).toUpperCase()
+  // 只列真有职业的字母(空字母格点了什么也不出,是死键)
+  const letters: string[] = azOn
+    ? Array.from(new Set(scoped.map(initial1).filter((c) => /[A-Z]/.test(c)))).sort()
+    : []
+  // 选了字母 = 在**全量**里按首字母找(热门那 24 个是「逛」的入口,不该限制「找」);没选就照旧
+  const list: Top[] = letter
+    ? scoped.filter((x) => initial1(x) === letter)
+    : (cat ? scoped : scoped.slice(0, HOT))
 
   useEffect(() => {
     if (timer.current) clearTimeout(timer.current)
@@ -136,7 +150,7 @@ export function OccPicker({ t, lang, initial, onDone, onClose, inline, doneLabel
         {!loading && cats.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, paddingBottom: 10, marginBottom: 12, borderBottom: `1px solid ${UI.border}` }}>
             {['', ...cats].map((c) => (
-              <button key={c || 'hot'} onClick={() => setCat(c)}
+              <button key={c || 'hot'} onClick={() => { setCat(c); setLetter('') }}
                 style={{
                   border: 'none', background: 'none', padding: '2px 0', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13.5,
                   color: cat === c ? UI.primary : UI.text2, fontWeight: cat === c ? 700 : 400,
@@ -144,6 +158,20 @@ export function OccPicker({ t, lang, initial, onDone, onClose, inline, doneLabel
                 }}>
                 {c ? t('broad.' + c) : t('occ.cat.hot')}
               </button>
+            ))}
+          </div>
+        )}
+
+        {/* A–Z 索引条(仅英文界面):与分类页签并列的第二个入口,再点一次同一个字母=取消 */}
+        {!loading && azOn && letters.length > 1 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 12 }}>
+            <button onClick={() => setLetter('')}
+              style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', fontSize: 12.5,
+                color: letter ? UI.text2 : UI.primary, fontWeight: letter ? 400 : 700 }}>{t('occ.az.all')}</button>
+            {letters.map((c) => (
+              <button key={c} onClick={() => setLetter(letter === c ? '' : c)}
+                style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', fontSize: 12.5,
+                  color: letter === c ? UI.primary : UI.text2, fontWeight: letter === c ? 700 : 400 }}>{c}</button>
             ))}
           </div>
         )}
