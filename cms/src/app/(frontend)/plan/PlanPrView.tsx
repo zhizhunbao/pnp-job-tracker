@@ -12,7 +12,7 @@ import 'survey-core/survey-core.css'
 import 'survey-core/i18n/simplified-chinese'
 import 'survey-core/i18n/korean'
 
-import { initialLang, makeT, LANG_KEY, type Lang, type TFn } from '../jobs/i18n'
+import { initialLang, makeT, streamDisplay, LANG_KEY, type Lang, type TFn } from '../jobs/i18n'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { shortOcc } from '../quiz/EntryQuiz'
@@ -34,7 +34,8 @@ surveyLocalization.locales.ko.questionsProgressText = '{0}/{1} 완료'
 // 答案存储与档位换算都归 lib/answers + lib/fields(2026-07-31 统一题库:一个 key、一处换算);
 // 本页只管两态与版式,不再自己存答案、不再自己抄 CLB/EXP/PROVS 映射表。
 
-type RptLine = { key: string; params: Record<string, string | number>; verdict?: string; source?: { label: string; url: string; fetched: string }; url?: string; tail?: { key: string; params: Record<string, string | number> } }
+type DrawDetail = { date: string; stream: string; score: number | null; invitations: number | null }
+type RptLine = { key: string; params: Record<string, string | number>; verdict?: string; source?: { label: string; url: string; fetched: string }; url?: string; more?: boolean; tail?: { key: string; params: Record<string, string | number>; rows?: DrawDetail[] } }
 type Lane = { kind: 'prov' | 'ee' | 'alts'; verdict?: string; key: string; params: Record<string, string | number> }
 type Emp = { name: string; slug: string; named: number; eligible: number; city: string; province: string; lastPosted: string; lmiaPositions: number | null; lmiaQuarter: string; aip: boolean; area: string; empRevenue: number | null; empStaff: number | null }
 type Rpt = {
@@ -74,14 +75,43 @@ function OccChip({ noc, nocTitle, t, onPick }: { noc: string; nocTitle: string; 
 // 参数里带 i18n 键的(如换省对照的 factorKey='ps.f.education')先翻成人话再代入 ——
 // 官方因素名的三语只住 `ps.f.*` 一处(打分卡也用它),引擎不该再抄一份译名表
 function Line({ l, t }: { l: RptLine; t: TFn }) {
+  const [open, setOpen] = useState(false)
   const params = Object.fromEntries(Object.entries(l.params).map(([k, v]) =>
     [k, typeof v === 'string' && v.startsWith('ps.f.') ? t(v) : v]))
+  const rows = l.tail?.rows ?? []
   return (
-    <li style={{ margin: 0, padding: '14px 0', borderTop: `1px solid ${UI.hairline}`, lineHeight: 1.75, fontSize: 15, listStyle: 'none', display: 'flex', gap: 11, alignItems: 'baseline' }}>
+    <li style={{ margin: 0, padding: '14px 0', borderTop: `1px solid ${UI.hairline}`, lineHeight: 1.75, fontSize: 15, listStyle: 'none', display: 'flex', flexWrap: 'wrap', gap: 11, alignItems: 'baseline' }}>
       <span style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: V_DOT[l.verdict ?? 'na'], position: 'relative', top: -1 }} />
       <span style={{ flex: 1, minWidth: 0 }}>{t(l.key, params)}</span>
-      {/* 行尾灰字(v5 定稿 .tail):桌面靠右一列,手机(<=640)自成一行、跟正文左对齐 */}
-      {l.tail ? <span className="rptTail" style={{ color: UI.text3, fontSize: 13.5, whiteSpace: 'nowrap', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>{t(l.tail.key, l.tail.params)}</span> : null}
+      {/* 行尾灰字(v5 定稿 .tail):桌面靠右一列,手机(<=640)自成一行、跟正文左对齐。
+          有明细就可点开 —— 摘要只说得下一个数,逐轮的日期/通道/分数线/邀请数收在这里面 */}
+      {l.tail ? (
+        rows.length ? (
+          <button className="rptTail" onClick={() => setOpen((v) => !v)}
+            style={{ color: UI.text3, fontSize: 13.5, whiteSpace: 'nowrap', flexShrink: 0, fontVariantNumeric: 'tabular-nums', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+            {t(l.tail.key, l.tail.params)}<span style={{ marginLeft: 5 }}>{open ? '▴' : '▾'}</span>
+          </button>
+        ) : (
+          <span className="rptTail" style={{ color: UI.text3, fontSize: 13.5, whiteSpace: 'nowrap', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>{t(l.tail.key, l.tail.params)}</span>
+        )
+      ) : null}
+      {open && rows.length ? (
+        <div style={{ width: '100%', paddingLeft: 19, marginTop: 6 }}>
+          <div className="drawRow" style={{ fontSize: 12, color: UI.text3 }}>
+            <span>{t('rpt.s.d.date')}</span><span>{t('rpt.s.d.stream')}</span><span>{t('rpt.s.d.score')}</span><span>{t('rpt.s.d.inv')}</span>
+          </div>
+          {rows.map((d, i) => (
+            <div key={d.date + i} className="drawRow" style={{ fontSize: 13, color: UI.text2, borderTop: `1px solid ${UI.hairline}`, paddingTop: 5, marginTop: 5 }}>
+              <span style={{ fontVariantNumeric: 'tabular-nums' }}>{d.date}</span>
+              {/* 通道名长得离谱(「Temporary Rural/Remote Health Support Initiative」),窄屏折成五行 ——
+                  截断 + title 兜住全名,一行一条不折行 */}
+              <span title={streamDisplay(t, d.stream)} style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{streamDisplay(t, d.stream)}</span>
+              <span style={{ fontVariantNumeric: 'tabular-nums' }}>{d.score ?? '—'}</span>
+              <span style={{ fontVariantNumeric: 'tabular-nums' }}>{d.invitations ?? '—'}</span>
+            </div>
+          ))}
+        </div>
+      ) : null}
     </li>
   )
 }
@@ -170,6 +200,7 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
     return () => clearTimeout(id)
   }, [resetArmed])
   const [rpt, setRpt] = useState<Rpt | null | 'loading'>(null)
+  const [addedProvs, setAddedProvs] = useState<string[]>([])   // 换省对照:用户从下拉里加出来看的省
 
   useEffect(() => {
     const sp = new URLSearchParams(window.location.search)
@@ -395,6 +426,10 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
   /* 行尾灰字在手机上自成一行(挤在句尾会把正文压成一列一个字) */
   .rptTail{width:100%;padding-left:19px;white-space:normal !important}}
 @media(min-width:641px){.rptTail{margin-left:auto}}
+.drawRow{display:grid;grid-template-columns:88px minmax(0,1fr) 52px 56px;column-gap:10px;align-items:baseline}
+@media(max-width:640px){.drawRow{grid-template-columns:78px minmax(0,1fr) 42px 44px;column-gap:6px;font-size:12px}
+  /* 手机上没有 hover 看不到 title:通道名给两行的余地(截成「Temporary R...」等于没显示) */
+  .drawRow>span:nth-child(2){white-space:normal !important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.35}}
 @media(min-width:641px){.rptHero{flex-direction:row;align-items:center;gap:30px}}
 /* 存 PDF = 浏览器打印(react-pdf 已评估否决:CJK 字体必须内嵌是决定性成本)。
    打印稿只留内容:导航、按钮、锁区与 CTA 都不印(那是屏幕上的操作件与营销位,印在纸上是噪音);
@@ -481,7 +516,22 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                 )}
                 {/* 换省对照(L2-08):位置照 v5 定稿 —— 雇主线索之后、薪资之前 */}
                 {rpt.switches?.length > 0 && (
-                  <Sec title={t('rpt.q.switch')}>{rpt.switches.map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</Sec>
+                  <Sec title={t('rpt.q.switch')}>
+                    {rpt.switches.filter((l) => !l.more || addedProvs.includes(String(l.params.prov))).map((l, i) => <Line key={l.key + i} l={l} t={t} />)}
+                    {/* 还没露面的省进下拉(Frank 2026-08-01「最好有个下拉列表吧」):
+                        哪几个省值得看是用户的判断,引擎已经把每个省都算好了,这里只管显示 */}
+                    {rpt.switches.some((l) => l.more && !addedProvs.includes(String(l.params.prov))) && (
+                      <div style={{ padding: '12px 0', borderTop: `1px solid ${UI.hairline}` }}>
+                        <select value="" onChange={(e) => e.target.value && setAddedProvs((p) => [...p, e.target.value])}
+                          style={{ height: 32, border: `1px solid ${UI.border}`, borderRadius: 8, fontSize: 13, background: '#fff', padding: '0 8px', color: UI.text2, fontFamily: 'inherit', maxWidth: '100%' }}>
+                          <option value="">{t('rpt.s.pick')}</option>
+                          {rpt.switches.filter((l) => l.more && !addedProvs.includes(String(l.params.prov))).map((l) => (
+                            <option key={String(l.params.prov)} value={String(l.params.prov)}>{t('prov.' + l.params.prov) || String(l.params.prov)}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </Sec>
                 )}
                 {group(rpt.conclusions, 'pay').length > 0 && (
                   <Sec title={t('rpt.q.pay')}>{group(rpt.conclusions, 'pay').map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</Sec>

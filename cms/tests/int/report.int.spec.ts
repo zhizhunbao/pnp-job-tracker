@@ -345,7 +345,7 @@ const swFacts = (o: Partial<ReportFacts> = {}) => facts({
   byProv: [{ province: 'BC', open: 19, named: 18 }, { province: 'SK', open: 12, named: 12 }],
   ...o,
 })
-const sw = (r: { switches: { key: string; params: Record<string, string | number>; url?: string; tail?: { key: string; params: Record<string, string | number> } }[] }, key: string) =>
+const sw = (r: { switches: { key: string; params: Record<string, string | number>; url?: string; more?: boolean; tail?: { key: string; params: Record<string, string | number> } }[] }, key: string) =>
   r.switches.find((l) => l.key === key)
 
 describe('换省对照节(L2-08)', () => {
@@ -415,6 +415,44 @@ describe('换省对照节(L2-08)', () => {
     const nd = sw(r, 'rpt.s.alt.noDraw')
     expect(nd?.params.prov).toBe('ON')
     expect(nd?.params.system).toBe('OINP EOI points')   // 分制短名:自报通道那截不印进句子
+  })
+
+  it('每个省都算好,前 3 个直接摆、其余标 more 交给下拉(不替用户决定看哪几个省)', () => {
+    const r = buildPrReport(base(), exp12, dims, swFacts({
+      byProv: [
+        { province: 'BC', open: 19, named: 18 }, { province: 'SK', open: 12, named: 12 },
+        { province: 'ON', open: 40, named: 0 }, { province: 'MB', open: 8, named: 0 },
+        { province: 'NS', open: 3, named: 0 }, { province: 'AB', open: 5, named: 0 },
+      ],
+    }))
+    const provLines = r.switches.filter((l) => l.key.startsWith('rpt.s.cur') || l.key.startsWith('rpt.s.alt'))
+    expect(provLines).toHaveLength(6)                                   // 现选省 + 5 个备选,一个不落
+    expect(provLines.filter((l) => l.more)).toHaveLength(2)             // 前 3 个备选直接摆,其余收起
+    expect(provLines.slice(0, 4).every((l) => !l.more)).toBe(true)
+  })
+
+  it('行尾灰字点得开:明细逐轮给日期/通道/分数线/邀请数,且同样只收同通道的轮次', () => {
+    const r = buildPrReport(base({ targetProvinces: ['SK'] }), exp12, dims, swFacts({
+      draws: [
+        { province: 'BC', drawDate: '2026-07-20', stream: 'Care: Health', score: 96, invitations: 60 },
+        { province: 'BC', drawDate: '2026-07-06', stream: 'Care: Health', score: 88, invitations: 44 },
+      ],
+    }))
+    const bc = r.switches.find((l) => l.params.prov === 'BC')!
+    expect(bc.tail?.rows).toEqual([
+      { date: '2026-07-20', stream: 'Care: Health', score: 96, invitations: 60 },
+      { date: '2026-07-06', stream: 'Care: Health', score: 88, invitations: 44 },
+    ])
+    // 打分表自报通道的省(ON):对不上的轮次连明细都不能收进来,否则点开又看见旧通道的分
+    const on: ScoreFactor[] = factors.map((f) => (f.province === 'SK'
+      ? { ...f, province: 'ON', system: 'OINP EOI points (Ontario Workforce Priority stream)', passMark: null, maxTotal: null }
+      : f))
+    const r2 = buildPrReport(base(), exp12, dims, swFacts({
+      scoreFactors: on,
+      byProv: [{ province: 'BC', open: 19, named: 18 }, { province: 'ON', open: 40, named: 0 }],
+      draws: [{ province: 'ON', drawDate: '2026-05-14', stream: 'Employer Job Offer: Foreign Worker', score: 57, invitations: 900 }],
+    }))
+    expect(r2.switches.find((l) => l.params.prov === 'ON')?.tail).toBeUndefined()
   })
 
   it('缺项钩子指完整估分器;免责句不再逐节重复(全站页脚已有)', () => {

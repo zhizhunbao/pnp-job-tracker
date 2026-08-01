@@ -18,6 +18,8 @@ import type { OccStats } from './reportFacts'   // 纯类型(reportFacts 反向�
 // medianWage=该职业在该省的 ESDC 官方中位年薪(最低收入门槛的对照基准:岗位自带的事实,不问用户)
 export type OccProvFacts = { province: string; open: number; named: number; medianWage?: number | null }
 export type ReportDraw = { province: string; drawDate: string; stream: string; score: number | null; invitations?: number | null }
+// 抽选明细一行(行尾灰字点开看的):全是官方逐轮公布的字段,一个推断都不放
+export type DrawDetail = { date: string; stream: string; score: number | null; invitations: number | null }
 export type ReportFacts = {
   noc: string
   title: string                     // NOC 官方名(noc_descriptions,不拿岗位标题冒充)
@@ -39,8 +41,10 @@ export type ReportLine = {
   key: string                                   // i18n 键(rpt.*)
   params: Record<string, string | number>
   // 行尾灰字(v5 定稿 HTML 的 .tail):主句之外那个「顺带一说」的事实,桌面右对齐、手机自成一行。
-  // 换省对照用它挂该省最近一次抽选(Frank 2026-08-01「不需要显示一下最近的最低分数吗」)。
-  tail?: { key: string; params: Record<string, string | number> }
+  // 换省对照用它挂该省最近一次抽选(Frank 2026-08-01「不需要显示一下最近的最低分数吗」);
+  // rows=点开能看的明细(逐轮日期/通道/分数线/邀请数),显示层决定展不展开。
+  tail?: { key: string; params: Record<string, string | number>; rows?: DrawDetail[] }
+  more?: boolean                                // 默认收起(换省对照:前 3 个备选省之外的省,由下拉选出来看)
   verdict?: MatchVerdict                        // UI 着色用(pass/warn/fail/na)
   source?: { label: string; url: string; fetched: string }   // 依据链:指回具体维度记录/官方页
   url?: string                                  // 站内深链(下一步/备选用)
@@ -216,14 +220,16 @@ function switchLines(facts: ReportFacts, dims: MatchDims, profile: MatchProfile,
     const all = recentDrawsOf(facts, prov)
     const recent = gridStream ? all.filter((d) => streamMatches(d.stream, gridStream)) : all
     if (!recent.length) return undefined
+    const rows: DrawDetail[] = recent.map((d) => ({ date: d.drawDate.slice(0, 10), stream: d.stream, score: d.score, invitations: d.invitations ?? null }))
     const scores = recent.map((d) => d.score as number)
     if (new Set(recent.map((d) => d.stream)).size > 1) {
-      return { key: 'rpt.s.tail.band', params: { n: recent.length, lo: Math.min(...scores), hi: Math.max(...scores) } }
+      return { key: 'rpt.s.tail.band', params: { n: recent.length, lo: Math.min(...scores), hi: Math.max(...scores) }, rows }
     }
     const inv = recent[0].invitations
     return {
       key: inv ? 'rpt.s.tail.oneInv' : 'rpt.s.tail.one',
       params: { date: recent[0].drawDate.slice(0, 10), cut: scores[0], ...(inv ? { inv } : {}) },
+      rows,
     }
   }
 
@@ -264,9 +270,13 @@ function switchLines(facts: ReportFacts, dims: MatchDims, profile: MatchProfile,
     .filter((p) => !dims.pnpOccupations.some((r) => r.province === p && r.noc === facts.noc && r.type === 'ineligible'))
     .map((p) => ({ prov: p, ...(facts.byProv.find((r) => r.province === p) ?? { open: 0, named: 0 }) }))
     .sort((a, b) => Number(hasTable(b.prov)) - Number(hasTable(a.prov)) || b.named - a.named || b.open - a.open)
-    .slice(0, SWITCH_CAP)
 
-  const out: ReportLine[] = [lineFor(cur, true), ...cands.map((c) => lineFor(c.prov, false))]
+  // 前 SWITCH_CAP 个直接摆出来,其余省照样算好、标 more —— 显示层用下拉让用户自己挑
+  // (Frank 2026-08-01「最好有个下拉列表吧」:哪几个省值得看是**他的**判断,引擎只负责算完给全)
+  const out: ReportLine[] = [
+    lineFor(cur, true),
+    ...cands.map((c, i) => (i < SWITCH_CAP ? lineFor(c.prov, false) : { ...lineFor(c.prov, false), more: true })),
+  ]
 
   // 可操作的两条(锁区的价值就在这里,不然解锁完还是一堆「至少 N 分」):
   // ① 先补哪一项最值钱 —— 未答的因素里官方分值最高的那个,按**现选省**的官方表说
@@ -280,7 +290,7 @@ function switchLines(facts: ReportFacts, dims: MatchDims, profile: MatchProfile,
       verdict: 'na', url: '/pathways',
     })
   }
-  for (const c of cands) {
+  for (const c of cands.slice(0, SWITCH_CAP)) {
     const s2 = scoreOf(c.prov)
     const offer = factors.find((f) => f.province === c.prov && f.factor === 'offer' && f.kind === 'row' && (f.points ?? 0) > 0)
     if (s2 && offer && (s2.parts.find((x) => x.factor === 'offer')?.pts ?? 0) === 0) {
