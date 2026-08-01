@@ -1,7 +1,7 @@
 // 职位数据访问层(DAL)—— 一领域一文件:职位相关的**所有 SQL + 行映射 + match** 都在这里,
 // 路由/页面/提醒只调函数、不写裸 SQL(E10-01 收拢;Frank「所有职位 SQL 拆一个文件」)。
 // 列名是 Payload snake_case(老坑 5):改 Jobs schema 只动这里。
-import { match, matchRank, type MatchDims, type MatchJob, type MatchProfile } from './match'
+import { match, matchRank, type MatchDims, type MatchJob, type MatchProfile, NO_LIST_PROVINCES } from './match'
 import type { JobRow } from '@/app/(frontend)/jobs/JobsTable'
 
 const iso = (v: any) => (v instanceof Date ? v.toISOString() : (v ?? ''))
@@ -578,11 +578,12 @@ export type QuizFacts = {
   streams: { stream: string; n: number }[]
   byProv: { province: string; n: number; eligible: number }[]
   medianSalary: number | null
+  sponsors: number      // 发过「能走省提名的岗」的雇主家数(**只给数,不给名单** —— 名单是锁区正文)
 }
 
 export async function fetchQuizFacts(pool: any, noc: string): Promise<QuizFacts | null> {
   if (!/^\d{5}$/.test(noc)) return null
-  const [tot, prov, stream, desc] = await Promise.all([
+  const [tot, prov, stream, desc, spon] = await Promise.all([
     pool.query(
       `SELECT count(*)::int open,
               count(*) FILTER (WHERE j.pnp_eligible)::int eligible,
@@ -600,6 +601,15 @@ export async function fetchQuizFacts(pool: any, noc: string): Promise<QuizFacts 
        GROUP BY j.pnp_stream ORDER BY count(*) DESC LIMIT 4`, [noc]),
     // 职业名取 NOC 官方名(noc_descriptions),不能拿某个岗位的标题冒充职业名
     pool.query(`SELECT COALESCE(title,'') title, COALESCE(title_zh,'') title_zh FROM noc_descriptions WHERE noc = $1 LIMIT 1`, [noc]),
+    // 雇主线索的**家数**(M1:把锁区铺到人真正落地的详情页)。
+    // WHERE 必须与 reportFacts 的名单口径**逐字一致**:清单式省认具名通道,不公布清单的省(ON)认粗筛可提名 ——
+    // 两处对不上,详情页说「有 23 家」、报告里名单却是另一批,用户第一眼就抓到我们数不准(2026-08-01 已撞过一次)。
+    pool.query(
+      `SELECT count(DISTINCT j.company_id)::int n FROM jobs j
+       WHERE COALESCE(j.status,'open') <> 'closed' AND j.noc = $1 AND j.company_id IS NOT NULL
+         AND ((j.pnp_stream IS NOT NULL AND j.pnp_stream <> '')
+              OR (j.province = ANY($2::text[]) AND COALESCE(j.pnp_eligible, false)))`,
+      [noc, [...NO_LIST_PROVINCES]]).catch(() => ({ rows: [] })),
   ])
   const t = tot.rows[0] || {}
   if (!t.open) return null
@@ -610,6 +620,7 @@ export async function fetchQuizFacts(pool: any, noc: string): Promise<QuizFacts 
     streams: stream.rows.map((r: any) => ({ stream: r.stream, n: r.n })),
     byProv: prov.rows.map((r: any) => ({ province: r.province, n: r.n, eligible: r.eligible })),
     medianSalary: num(t.med),
+    sponsors: Number(spon.rows[0]?.n ?? 0),
   }
 }
 

@@ -19,8 +19,16 @@ import type { TFn } from '../i18n'
 type Facts = {
   open: number; eligible: number; named: number; medianSalary: number | null
   byProv: { province: string; n: number; eligible: number }[]
+  sponsors: number
 }
 
+// M1(主线,2026-08-01):**锁区铺到人真正落地的地方**。
+// 30 天数据:入口=出口=职位详情页、67.5% 只看一页、/pricing 30 天只被打开 1 次 ——
+// 锁区一直挂在报告页里,而人根本走不到那儿。这里直接把锁行摆在他眼前(只摆标题与家数,名单仍在服务端锁着)。
+// 两条不能破:①**有货才挂**(sponsors=0 就不出锁行,不卖不存在的东西);
+//            ②免费的那半必须先给足(在招/可提名/中位薪资/本岗 vs 中位)——aha 在掏钱之前。
+// 埋点是 M2 的原料:lock-seen(曝光,进视口才算,一次)/ lock-click(点了)。
+//
 // 标题里用省码(BC/ON):provName 的全称是「British Columbia(不列颠哥伦比亚省)」,
 // 放进卡头会把一行标题撑成两行,而这页正文早就说清是哪个省了
 export function OccReportCard({ noc, province, salaryAnnual, t }: { noc: string; province: string; salaryAnnual: number | null; t: TFn }) {
@@ -44,12 +52,21 @@ export function OccReportCard({ noc, province, salaryAnnual, t }: { noc: string;
     return () => { dead = true; io.disconnect() }
   }, [noc])
 
+  const seen = useRef(false)
   const here = facts?.byProv.find((r) => r.province === province)
   const show = Boolean(facts && here && here.n > 0)
   // 本岗年薪 vs 该职业全国帖面中位:差 5% 以内不说话(噪音),两边有一个没有也不说
   const med = facts?.medianSalary ?? null
   const raw = salaryAnnual != null && med != null && med > 0 ? Math.round(((salaryAnnual - med) / med) * 100) : null
   const pct = raw != null && Math.abs(raw) >= 5 ? raw : null
+  const sponsors = facts?.sponsors ?? 0
+
+  // 曝光只算一次,且**只在锁行真的渲染出来时**算 —— 否则 M2 的漏斗第一格就是假的
+  useEffect(() => {
+    if (!show || sponsors <= 0 || seen.current) return
+    seen.current = true
+    track('jd-lock-seen', { noc })
+  }, [show, sponsors, noc])
 
   return (
     <div ref={box}>
@@ -69,6 +86,21 @@ export function OccReportCard({ noc, province, salaryAnnual, t }: { noc: string;
           {/* 直接落报告态:卡上写的是「看报告」,落地却是两道题=说话不算数。
               引擎不给目标省也算得出(按在招量取前两个省),缺的两题在报告里作缺口行请他补 */}
           {/* 站内统一按钮(不是裸文字链),且**不带箭头**(2026-07-27 拍板:按钮上的箭头一律删) */}
+          {/* 锁行:有货才挂。只说家数与它是什么,名单本体在服务端(免费响应里根本没有) */}
+          {sponsors > 0 && (
+            <a href={`/plan/job?noc=${encodeURIComponent(noc)}&view=report`}
+              onClick={() => track('jd-lock-click', { noc })}
+              className="rowHover"
+              style={{ display: 'flex', alignItems: 'center', gap: 9, marginTop: 12, padding: '10px 12px',
+                background: '#fff', border: '1px solid #bfdbfe', borderRadius: 10, textDecoration: 'none', color: 'inherit' }}>
+              <span style={{ flexShrink: 0 }}>🔒</span>
+              <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, lineHeight: 1.5 }}>
+                <b style={{ color: UI.text }}>{t('jd.rep.lock', { n: sponsors })}</b>
+                <span style={{ display: 'block', color: UI.text3, fontSize: 12 }}>{t('jd.rep.lock.sub')}</span>
+              </span>
+              <span style={{ flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: '#92400e', background: '#fef3c7', borderRadius: 6, padding: '2px 8px' }}>Pro</span>
+            </a>
+          )}
           <div style={{ marginTop: 12 }}>
             <span onClick={() => track('jd-report-open', { noc })}>
               <Button kind="primary" href={`/plan/job?noc=${encodeURIComponent(noc)}&view=report`}>{t('jd.rep.go')}</Button>
