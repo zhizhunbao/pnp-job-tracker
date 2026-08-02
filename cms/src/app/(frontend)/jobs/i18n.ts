@@ -809,7 +809,7 @@ const en: Dict = {
   // #123c: formatted-JD PAY fallback note
   'act.f.payFb': '(from the posting’s pay field; not stated in the body)',
   'updated': 'Updated {t}',
-  'tagline': 'Daily updates, all of Canada, immigration-value lens',
+  'tagline': 'All of Canada, updated daily',
   'res.title': 'Official resources', 'res.sub': 'Canadian immigration — official links in one place, verify for yourself', 'res.go': 'Official', 'res.entry': 'Official resources', 'res.search': 'Search official resources…', 'res.empty': 'No matching resources',
   'res.cat.federal': 'Federal immigration', 'res.cat.pnp': 'Provincial nominees (PNP)', 'res.cat.study': 'Study & DLI', 'res.cat.language': 'Language tests', 'res.cat.wage': 'Wage & occupation data', 'res.cat.lmia': 'LMIA & employer sponsorship', 'res.cat.authority': 'Authority & compliance',
   'foot.disclaimer': 'Data is for reference only, all from official sources; not immigration or legal advice',
@@ -1083,7 +1083,7 @@ const en: Dict = {
   'rpt.g.expShort': 'You report {months} months of Canadian experience; experience-class streams generally require {need}+ (see source)',
   'rpt.g.answerScore': '{prov} publishes an official points grid - answer the scoring questions to compute your gap',
   'rpt.g.noScoreTable': '{prov} publishes no points grid or per-draw cutoffs - only a rules comparison is possible, no score gap',
-  'rpt.g.basics': '{n} basic question(s) unanswered - the report stays coarse until they are',
+  'rpt.g.basics': 'Basic details still unanswered: {n} — the report stays coarse until then',
   'rpt.n.crs': 'Get your CRS score from the official tool',
   'rpt.n.jobs': 'See the {n} open postings in {prov}', 'rpt.n.score': 'Estimate your {prov} score on the official grid', 'rpt.n.pathways': 'Compare full immigration pathways',
   'rpt.a.prov': '{prov}: your occupation is on its published list "{label}" - {open} open postings, {named} on the named stream',

@@ -12,7 +12,7 @@ import 'survey-core/survey-core.css'
 import 'survey-core/i18n/simplified-chinese'
 import 'survey-core/i18n/korean'
 
-import { initialLang, makeT, streamDisplay, LANG_KEY, type Lang, type TFn } from '../jobs/i18n'
+import { initialLang, makeT, streamDisplay, eeDisplay, LANG_KEY, type Lang, type TFn } from '../jobs/i18n'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { shortOcc } from '../quiz/EntryQuiz'
@@ -87,8 +87,17 @@ function OccChip({ noc, nocTitle, t, onPick }: { noc: string; nocTitle: string; 
 // 官方因素名的三语只住 `ps.f.*` 一处(打分卡也用它),引擎不该再抄一份译名表
 function Line({ l, t }: { l: RptLine; t: TFn }) {
   const [open, setOpen] = useState(false)
-  const params = Object.fromEntries(Object.entries(l.params).map(([k, v]) =>
-    [k, typeof v === 'string' && v.startsWith('ps.f.') ? t(v) : v]))
+  // 清单名与 EE 类别名在数据层是**中文有限集**(STREAM_L10N / EE_L10N 早就把它们映射成三语,
+  // 职位板一直在用)—— 报告页先前直接甩原值,于是英文界面第一屏就是
+  // `This occupation is on the BC PNP list "BC 医疗"`(#247,2026-08-03 375/en 实拍;
+  // 88% 流量是英文用户)。这里走同一套映射:不新造字段、不改数据层,顺带韩文也对了,
+  // 而且映射出来的是**短名**(「B.C. Health Authority」而不是官方全名),手机上少折一行。
+  const params = Object.fromEntries(Object.entries(l.params).map(([k, v]) => {
+    if (typeof v !== 'string') return [k, v]
+    if (k === 'label') return [k, streamDisplay(t, v)]
+    if (k === 'cat') return [k, eeDisplay(t, v)]
+    return [k, v.startsWith('ps.f.') ? t(v) : v]
+  }))
   const rows = l.tail?.rows ?? []
   return (
     <li style={{ margin: 0, padding: '14px 0', borderTop: `1px solid ${UI.hairline}`, lineHeight: 1.75, fontSize: 15, listStyle: 'none', display: 'flex', flexWrap: 'wrap', gap: 11, alignItems: 'baseline' }}>
@@ -146,7 +155,9 @@ function collectRefs(r: Rpt, t: TFn): { rows: RefRow[]; of: (l: RptLine) => numb
   // 名字却只留第一行的说法就对不上(实撞:三条都指 /pathways,却写着「BC 有官方分值表」)
   const DEST: Record<string, string> = { '': 'rpt.dest.jobs', pathways: 'rpt.dest.pathways', stats: 'rpt.dest.stats', occupations: 'rpt.dest.occ', plan: 'rpt.dest.plan' }
   const labelOf = (l: RptLine): string => {
-    if (l.source?.label) return l.source.label
+    // 出处名也是数据层那套中文清单名 —— 屏幕上这一块是 printOnly(0×0),但**会印进 PDF**,
+    // 于是英文用户下下来的报告底部一串「BC 医疗」(#247 收口,2026-08-03 375/en 实测定位到这里)
+    if (l.source?.label) return streamDisplay(t, l.source.label)
     const u = urlOf(l)
     if (!u) return ''
     if (u.startsWith('http')) { try { return new URL(u).hostname.replace(/^www\./, '') } catch { return u } }
@@ -650,6 +661,9 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                     都在打印稿里 —— 所以这条只在屏幕上出,纸上不印(印出来叫人下载 PDF 是废话) */}
                 {rpt.noc && (
                   <div className="noPrint rptPdf" style={{ ...CARD, borderColor: '#bfdbfe', display: 'flex', alignItems: 'center', gap: 14, marginTop: 22 }}>
+                    {/* #248:375/en 上「文字 + 右侧按钮」抢横向 —— 标题折 2 行、小注折 3 行,挤成一团。
+                        手机改上下堆叠(文字整块一行、按钮独占一行),桌面维持并排。 */}
+                    <style>{`@media(max-width:640px){.rptPdf{flex-direction:column;align-items:stretch;gap:10px}.rptPdf>span{margin-left:0 !important}}`}</style>
                     <div style={{ minWidth: 0 }}>
                       <b style={{ fontSize: 14, fontWeight: 600, display: 'block' }}>{t('rpt.pdf.t')}</b>
                       {/* #242(第 31 轮收费走查,P0):这一块**没有任何 pro 判断**,免费态却承诺
