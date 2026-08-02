@@ -5,12 +5,8 @@
 // 报告态=结论/缺口/下一步/备选(/api/report → rpt.* 三语渲染),与引擎契约同构。
 // 跨卡复用铁律:currentStatus/目标省/职业从三问预填(答过的不重新问,预填可改);职业用三问的 nocs[0],
 // 没答过 → 页内拉起 EntryQuiz(同一组件不复制)。答案存 localStorage,改答案 → 报告立刻重算。
+import dynamic from 'next/dynamic'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Model, surveyLocalization } from 'survey-core'
-import { Survey } from 'survey-react-ui'
-import 'survey-core/survey-core.css'
-import 'survey-core/i18n/simplified-chinese'
-import 'survey-core/i18n/korean'
 
 import { initialLang, makeT, streamDisplay, eeDisplay, LANG_KEY, type Lang, type TFn } from '../jobs/i18n'
 import { SiteHeader } from '../SiteHeader'
@@ -20,27 +16,28 @@ import { OccPicker } from '../quiz/OccPicker'
 import { Button, Notice, PageShell, Tag, UI } from '../ui/primitives'
 import { EMPTY, clearAnswers, readAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
 import { DECISIONS, fieldsOf, missingFields } from '@/lib/decisions'
-import { buildSurvey, SURVEY_THEME } from '@/lib/questions'
 import { goBackOr } from '../BackLink'
 import { pickName } from '@/lib/occName'
 import { track } from '@/lib/track'
 
-// 进度文字:框架 zh-cn 包把 "Answered {0}/{1} questions" 译成「第 {0}/{1} 题」(第一题显示「第 0/4 题」,
-// 像页码且是错的)。2026-07-31 Frank 又指出「已答 0/2 题」这套考试口吻不专业、不像会付费的东西 ——
-// 改成建档口吻「已填 {0}/{1} 项」(英韩同族),卡头标签同步从「基本题」改「你的条件」。
-surveyLocalization.locales['zh-cn'].questionsProgressText = '已填 {0}/{1} 项'
-surveyLocalization.locales.en.questionsProgressText = '{0}/{1} completed'
-surveyLocalization.locales.ko.questionsProgressText = '{0}/{1} 완료'
+// 答题器(1.43 MB)按需加载:第一屏是选职业,一个字节都用不到它;深链直接看报告的更用不到
+// (漏斗里 16 次出报告有 12 次是这条来路)。见 PlanSurvey.tsx 顶部。
+const PlanSurvey = dynamic(() => import('./PlanSurvey'), {
+  ssr: false,
+  // 占位与一道题等高:加载那一下不要把整页塌一截再弹回来
+  loading: () => <div style={{ minHeight: 300 }} />,
+})
 
-// 选职业那一页不是 SurveyJS 的题(自绘控件),先前它连进度都没有 ——
-// 决定线**最劝退的第一屏**偏偏不告诉用户「一共几步」(#253,2026-08-03 375/en 逐页实测)。
+// 进度文字(#253):选职业那一页不是 SurveyJS 的题(自绘控件),先前它连进度都没有 ——
+// 决定线**最劝退的第一屏**偏偏不告诉用户「一共几步」(2026-08-03 375/en 逐页实测)。
 // 框架的进度条只数得到它自己那几道题:哪怕把文字改成「1/8」,条还是按 0/7 空着
 // (实拍到:选完职业进第一题,文字说 1/8、条一格没走)—— 所以整条进度自己出,
 // 两页共用同一个组件、同一套口径(职业 = 第 1 项),`showProgressBar:'off'` 关掉框架那条。
-// 文字仍借卷面那三句(改文案只有一处),{0}/{1} 自己代入。
+// 三句文案原先是覆盖框架的 questionsProgressText(考试口吻「已答 0/2 题」被 Frank 2026-07-31 点名),
+// 进度归自己出之后就住在这里 —— 顺带首屏不必为三句话把 survey-core 拽进主包。
+const PROGRESS: Record<Lang, string> = { zh: '已填 {0}/{1} 项', en: '{0}/{1} completed', ko: '{0}/{1} 완료' }
 const progressText = (lang: Lang, done: number, total: number) =>
-  String(surveyLocalization.locales[lang === 'zh' ? 'zh-cn' : lang === 'ko' ? 'ko' : 'en'].questionsProgressText)
-    .replace('{0}', String(done)).replace('{1}', String(total))
+  PROGRESS[lang].replace('{0}', String(done)).replace('{1}', String(total))
 
 function Progress({ lang, done, total }: { lang: Lang; done: number; total: number }) {
   return (
@@ -322,29 +319,13 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
     </button>
   )
 
-  const survey = useMemo(() => {
-    if (!ready || view !== 'quiz') return null
-    const m = new Model(buildSurvey(decision, stage))
-    m.applyTheme(SURVEY_THEME as any)
-    m.locale = lang === 'zh' ? 'zh-cn' : lang === 'ko' ? 'ko' : 'en'
-    const b = readAnswers()
-    const names = fieldsOf(decision, stage)
-    m.data = Object.fromEntries(names.map((n) => [n, (b as any)[n]]).filter(([, v]) => v))
-    // 起步落在第一道没答的题(答过的不重走,上一题仍可回去改)。
-    // v2 的 questionPerPage 模式导航不走 currentPageNo,走 currentSingleQuestion(实撞:设页号被无视)
-    const firstUnanswered = names.map((n) => (b as any)[n]).findIndex((v) => !v)
-    if (firstUnanswered > 0) {
-      const target = m.getQuestionByName(names[firstUnanswered])
-      if (target) m.currentSingleQuestion = target
-    }
-    // 只合并本卷答到的字段(两卷同住一份答案,整体覆盖会把另一卷的答案抹掉)
-    m.onValueChanged.add((s) => {
-      const patch = Object.fromEntries(Object.entries(s.data as Record<string, unknown>).filter(([, v]) => v))
-      setBands(writeAnswers(patch as Partial<Answers>))
-    })
-    m.onComplete.add(() => gotoReport())
-    return m
-  }, [ready, view, stage, lang, decision, resetNonce])   // eslint-disable-line react-hooks/exhaustive-deps
+  // 答题器预取:第一屏(选职业)用不到那 1.43 MB,但用户选完马上就要 ——
+  // 首屏画完之后在空闲里悄悄拉,轮到答题时已经在缓存里(看报告的那一态不拉)
+  useEffect(() => {
+    if (view !== 'quiz' || !ready) return
+    const id = setTimeout(() => { void import('./PlanSurvey') }, 1200)
+    return () => clearTimeout(id)
+  }, [view, ready])
 
   // 漏斗第 2 步(主线 M2 收口 2026-08-02):**报告态真渲染**才算「打开报告」,
   // 而不是「点了出报告那个按钮」—— 从详情页进来的是深链 `?view=report`,按钮根本没被按过,
@@ -524,7 +505,10 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                     onDone={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || ''); setOccStep(false) }} />
                 </div>
               ) : (
-                <div className="plSurvey plQuizPad" style={{ maxWidth: 600, margin: '0 auto' }}>{survey && <Survey model={survey} />}</div>
+                <div className="plSurvey plQuizPad" style={{ maxWidth: 600, margin: '0 auto' }}>
+                  <PlanSurvey decision={decision} stage={stage} lang={lang} resetNonce={resetNonce}
+                    onPatch={(patch) => setBands(writeAnswers(patch))} onComplete={gotoReport} />
+                </div>
               )}
             </div>
           </>

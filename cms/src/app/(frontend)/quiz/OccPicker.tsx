@@ -146,6 +146,11 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
 
   const body = (
     <>
+        {/* 横划的 chip 行:放不下时最后一个 chip 正好被卡片边缘齐刷刷切断,看着像排版坏了
+            (「Physician assis」在 375 上被切在半个词上)。右缘给一段渐隐 = 「还有,往右划」;
+            滚动条在手机上本来就不显示,桌面上也藏掉(它会把 34px 的行再挤矮一截) */}
+        <style>{`.chipRow{scrollbar-width:none;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 22px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 22px),transparent)}
+.chipRow::-webkit-scrollbar{display:none}`}</style>
         {!inline && (
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
             <div style={{ fontSize: 19, fontWeight: 700 }}>{t('quiz.q2')}</div>
@@ -157,10 +162,13 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
             要不然整个页面老跳」):先前两块都是「有才渲」,一选中就把搜索框、分类、整片热门 chip 全顶下去,
             眼睛刚点完的位置整个跑掉。现在容器恒在、留出容纳一行 chip + 一行同族的高度,
             空着的时候放一句空态引导(空态是 CLAUDE.md 允许保留的四类文案之一)。 */}
+        {/* 高度必须**装得下两行**:先前写死 96,而实际内容(已选 34 + 间距 8 + 同族 60)是 102,
+            外面又扣着 overflow:hidden —— 同族那排 chip 被削掉 6px,看着就是「胶囊跑偏」
+            (2026-08-03 Frank 实机报;375 实测 used=102 > box=96)。改成 minHeight 让它宁可长高也不裁。 */}
         {!hideDone && (
-          <div style={{ height: 96, marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 8, overflow: 'hidden' }}>
+          <div style={{ minHeight: 102, marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
             {nocs.length > 0 ? (
-              <div style={{ display: 'flex', gap: 6, overflowX: 'auto', whiteSpace: 'nowrap', height: 34, alignItems: 'center', flexShrink: 0 }}>
+              <div className="chipRow" style={{ display: 'flex', gap: 6, overflowX: 'auto', whiteSpace: 'nowrap', height: 34, alignItems: 'center', flexShrink: 0 }}>
                 {nocs.map((n) => (
                   <button key={n} onClick={() => toggle(n, titles[n] || n)} style={{ ...chipStyle(true), display: 'inline-flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
                     {/* 名字还没拉回来时**留个占位**,不拿 5 位码顶上去 —— 2026-08-02 Frank
@@ -179,7 +187,7 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
             {kin.length > 0 && (
               <div style={{ flexShrink: 0 }}>
                 <div style={{ fontSize: 12.5, color: UI.text3, marginBottom: 6 }}>{t('quiz.kin')}</div>
-                <div style={{ display: 'flex', gap: 6, overflowX: 'auto', whiteSpace: 'nowrap', height: 34, alignItems: 'center' }}>
+                <div className="chipRow" style={{ display: 'flex', gap: 6, overflowX: 'auto', whiteSpace: 'nowrap', height: 34, alignItems: 'center' }}>
                   {kin.map((x) => (
                     <button key={x.noc} onClick={() => toggle(x.noc, label(x))} style={{ ...chipStyle(nocs.includes(x.noc)), display: 'inline-flex', gap: 6, alignItems: 'baseline', flexShrink: 0 }}>
                       {shortOcc(label(x))}
