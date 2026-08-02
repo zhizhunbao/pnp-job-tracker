@@ -4300,7 +4300,7 @@ function ActModal({ job, lang, plan, nocDesc, onClose }: { job: JobRow; lang: La
   const overlayClose = useOverlayClose(onClose)
   const { narrow, full, toggleFull, panel, startDrag, startResize } = useFloatPanel(JD_PREF, 760, 640)
   const [freeLeft, setFreeLeft] = useState<number | null>(null)  // 第 5 轮 #16:试用额度可见化(JobBody 回传)
-  useEffect(() => { track('modal-jd') }, [])  // #129 功能级埋点:JD 弹框打开
+  useEffect(() => { track('modal-jd', { kind: 'modal' }) }, [])  // #129 埋点 + 漏斗第 1 步(kind 分开弹框与整页)
   return (
     <div {...overlayClose} style={{ ...SCRIM, zIndex: 50 }}>
       <div onClick={(e) => e.stopPropagation()} style={{ ...CARD, ...panel, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>

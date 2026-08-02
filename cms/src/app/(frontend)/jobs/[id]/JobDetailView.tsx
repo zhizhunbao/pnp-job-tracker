@@ -12,6 +12,7 @@ import { SiteHeader } from '../../SiteHeader'
 import { SiteFooter } from '../../SiteFooter'
 import { PageShell } from '../../ui/primitives'
 import { goBackOr } from '../../BackLink'
+import { track } from '@/lib/track'
 
 // dims 收窄:B2 后页面只用 nocDesc(职位名译名对照);其余维度(pnp/ee/新闻…)随移民卡砍一并不用
 type Dims = { nocDesc: NocDesc[] }
@@ -26,6 +27,10 @@ export default function JobDetailView({ job, plan, dims }: { job: JobRow; plan: 
   const [leaving, setLeaving] = useState(false)
   useEffect(() => {
     setLangState(initialLang())
+    // 漏斗第 1 步(主线 M2 收口 2026-08-02):这个页面一直没有第一方浏览埋点 ——
+    // 于是库里只有第 3 步「锁区曝光」有数,分母是空的,M3 的两种分叉(锁的东西不值钱 / 根本没人看见)
+    // 照样分不开。30 天数据里入口=出口就是本页,它才是漏斗真正的第一格(列表页弹框另计 kind=modal)。
+    track('jd-open', { kind: 'page' })
   }, [])
   const setLang = (l: Lang) => { setLangState(l); try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } }
   const t = makeT(lang)

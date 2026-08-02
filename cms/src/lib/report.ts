@@ -119,7 +119,9 @@ const CEC_SRC = {
 const REQ_VERDICT: Record<string, MatchVerdict> = { pass: 'pass', fail: 'fail', unknown: 'na' }
 function requirementLines(prov: string, facts: ReportFacts, profile: MatchProfile, extra: ReportExtra): ReportLine[] {
   const reqs = (facts.requirements ?? []).filter((r) => r.province === prov)
-  if (!reqs.length) return [{ key: 'rpt.r.none', params: { prov }, verdict: 'na' }]
+  // 该省门槛本站没收录 → 这一节对它**一行都不出**(Frank 2026-08-02「这条对照不了 那还显示干什么」)。
+  // 一行「我们没有数据」对读的人零价值;报告里也没有任何「已对照过」的暗示,不构成隐瞒。
+  if (!reqs.length) return []
 
   const f = facts.byProv.find((r) => r.province === prov)
   const results = evaluateRequirements(reqs, {
@@ -127,6 +129,7 @@ function requirementLines(prov: string, facts: ReportFacts, profile: MatchProfil
     teer: facts.teer,
     clb: profile.clb,
     canadianExpMonths: extra.canadianExpMonths,
+    totalExpMonths: extra.totalExpMonths ?? null,   // 官方 experience 要的就是这个口径(境内外都算)
     familySize: null,            // 家庭人数尚未入题库 → 引擎按「1 人档」做下界推理(不默认成 1 人)
     annualIncome: f?.medianWage ?? null,
     incomeIsOccMedian: true,
@@ -157,9 +160,10 @@ function requirementLines(prov: string, facts: ReportFacts, profile: MatchProfil
     } else if (r.factor === 'experience') {
       const months = r.need ?? 0
       if (r.verdict === 'pass') out.push(line(r, 'rpt.r.exp.pass', { need: months, have: r.have ?? '' }))
-      else out.push(line(r, 'rpt.r.exp.unknown', { need: months, have: r.have ?? '' }))
-    } else if (r.factor === 'languageExempt') {
-      out.push(line(r, 'rpt.r.langExempt', { n: r.need ?? '' }))
+      else if (r.verdict === 'fail') out.push(line(r, 'rpt.r.exp.fail', { need: months, have: r.have ?? '', short: r.short ?? '' }))
+      else out.push(line(r, 'rpt.r.exp.unknown', { need: months }))
+    // languageExempt(ON 的安省学历免考条款)这一行 2026-08-02 撤掉:免考看的是「在哪读的」,
+    // 题库问的是学历层级 —— 判不了。判不了就别占一行(Frank「这一条不参与判定,那还显示干什么」)。
     } else if (r.factor === 'wage') {
       // basis=occMedian:阈值就是该职业该地区的官方中位;取不到中位就只陈述规则本身
       out.push(line(r, r.need != null ? 'rpt.r.wage.median' : 'rpt.r.wage.rule', { need: r.need != null ? k(r.need) : '' }))
@@ -188,6 +192,16 @@ function requirementLines(prov: string, facts: ReportFacts, profile: MatchProfil
 // ② 只在下界已过门槛时才说「已达标」,低于门槛**不说不达标**(补齐后只会更高)。
 // 免责句 2026-08-01 撤掉(Frank「这个废话删了」):法律免责由全站页脚那句统一承担,
 // 每节再来一遍就是废话;每行都写「离**该省**门槛多少」,本来也没请人横向比分数。
+// 类别停抽多久算「不再抽」:一年。官方从不宣布「停用」某个类别,只是不再抽 ——
+// 所以只能用「多久没抽过」这个可核验事实(2026-08-02 Frank「STEM 都暂停多长时间了」)。
+const EE_STALE_DAYS = 365
+/** 两个 YYYY-MM-DD 相差几天;任一为空/不合法 → null(不猜) */
+function daysBetween(from: string, to: string): number | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(from) || !/^\d{4}-\d{2}-\d{2}$/.test(to)) return null
+  const d = (Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86400000
+  return Number.isFinite(d) ? Math.round(d) : null
+}
+
 const SWITCH_CAP = 3        // 备选省上限(给对照不铺全表,与 ALT_CAP 同精神)
 
 function recentDrawsOf(facts: ReportFacts, prov: string): ReportDraw[] {
@@ -277,9 +291,18 @@ function switchLines(facts: ReportFacts, dims: MatchDims, profile: MatchProfile,
     return { key: all.length ? 'rpt.s.alt.noDraw' : 'rpt.s.alt.plain', params: base, verdict: 'na', source: src, ...(tail ? { tail } : {}) }
   }
 
-  // 备选省:该职业在当地有在招或在公开清单上的省(排除现选省、QC、排除清单省);
-  // 有官方分值表的排前面(这一节的用处就是对分数),其次具名命中、在招量
+  // 备选省:该职业在当地有在招或在公开清单上的省(排除现选省、QC、排除清单省)。
+  // 排序=有分值表**且该分制真的在抽人** > 有分值表 > 具名命中 > 在招量。
+  // 中间那一档是 2026-08-02 加的(Frank「安省现在是最难的吧 你还推荐安省」):
+  // 摆在前三名事实上就是推荐,而 ON 恰恰是**改制后新通道一轮抽选都没有**的省 ——
+  // 它有 51 行分值表所以原先排第一。判据只用可核验事实:打分表自报的通道有没有抽选记录。
   const hasTable = (p: string) => factors.some((f) => f.province === p)
+  const drawsLive = (p: string) => {
+    const rows = recentDrawsOf(facts, p)
+    const gs = gridStreamOf(factors.find((f) => f.province === p)?.system ?? '')
+    return gs ? rows.some((d) => streamMatches(d.stream, gs)) : rows.length > 0
+  }
+  const rank = (p: string) => (hasTable(p) ? (drawsLive(p) ? 2 : 1) : 0)
   const cands = Array.from(new Set([
     ...facts.byProv.map((r) => r.province),
     ...dims.pnpOccupations.filter((r) => r.noc === facts.noc && r.type !== 'ineligible').map((r) => r.province),
@@ -287,7 +310,7 @@ function switchLines(facts: ReportFacts, dims: MatchDims, profile: MatchProfile,
     .filter((p) => p && p !== cur && p !== 'QC')
     .filter((p) => !dims.pnpOccupations.some((r) => r.province === p && r.noc === facts.noc && r.type === 'ineligible'))
     .map((p) => ({ prov: p, ...(facts.byProv.find((r) => r.province === p) ?? { open: 0, named: 0 }) }))
-    .sort((a, b) => Number(hasTable(b.prov)) - Number(hasTable(a.prov)) || b.named - a.named || b.open - a.open)
+    .sort((a, b) => rank(b.prov) - rank(a.prov) || b.named - a.named || b.open - a.open)
 
   // 前 SWITCH_CAP 个直接摆出来,其余省照样算好、标 more —— 显示层用下拉让用户自己挑
   // (Frank 2026-08-01「最好有个下拉列表吧」:哪几个省值得看是**他的**判断,引擎只负责算完给全)
@@ -440,11 +463,20 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
   const switches = switchLines(facts, dims, profile, extra, targets)
 
   // ── 联邦 EE 类别(独立信号,不混省提名)───────────────────────────────────
+  // 2026-08-02 Frank 两句实核:「STEM 都暂停多长时间了还算 CRS 分数呢」「除非条件特别好才推荐 EE」。
+  // 库里坐实:STEM 上一次类别抽选是 2024-04-11、transport 2024-03、education 2025-09 ——
+  // 拿两年前的分数线当锚,是在给一条**已经不抽的路**报价。
+  // 停抽的判定用数据日期减抽选日期(引擎无 IO 也不许 new Date());数据日期缺失就不判(不猜)。
   const eeRows = dims.eeCategories.filter((r) => r.noc === noc && r.drawCrs != null)
   const ee = eeRows.sort((a, b) => (a.drawDate < b.drawDate ? 1 : -1))[0]
   if (ee) {
     const src = { label: ee.label, url: ee.url, fetched: ee.fetched }
-    if (profile.crs == null) {
+    const days = daysBetween((ee.drawDate || '').slice(0, 10), (facts.fetched || ee.fetched || '').slice(0, 10))
+    const stale = days != null && days > EE_STALE_DAYS
+    if (stale) {
+      // 只陈述可核验的事实:上一次按这个类别抽选是什么时候、隔了多久。不给分数线对照、不劝他去算 CRS。
+      conclusions.push({ key: 'rpt.c.eeStale', params: { cat: ee.label, date: (ee.drawDate || '').slice(0, 10), months: Math.floor((days as number) / 30) }, verdict: 'na', source: src })
+    } else if (profile.crs == null) {
       conclusions.push({ key: 'rpt.c.ee', params: { cat: ee.label, draw: ee.drawCrs as number, date: (ee.drawDate || '').slice(0, 10) }, verdict: 'warn', source: src })
       gaps.push({ key: 'rpt.g.noCrs', params: { cat: ee.label }, verdict: 'na', url: CRS_TOOL.url })
       nextSteps.push({ key: 'rpt.n.crs', params: {}, url: CRS_TOOL.url })
@@ -750,6 +782,9 @@ const LANE_PROV: Record<string, string> = {
 const LANE_EE: Record<string, string> = {
   'rpt.c.eeAbove': 'rpt.lane.ee.above', 'rpt.c.eeBelow': 'rpt.lane.ee.below',
   'rpt.c.ee': 'rpt.lane.ee.noCrs', 'rpt.c.eeNone': 'rpt.lane.ee.none',
+  // 停抽的类别也要进 EE 那张卡:免费层只留前两条结论,不挂上卡这句「这条路现在不抽了」
+  // 会被截进锁区 —— 拿一条**劝退**的事实去卖钱,那是最没道理的收费(2026-08-02)
+  'rpt.c.eeStale': 'rpt.lane.ee.stale',
 }
 // 被裁结论 → 锁区类别。EE 只锁「有 CRS 才算得出的分差」;没填 CRS 时 EE 卡已说「差 CRS」,
 // 该卖的是答题(hook)不是锁区。
@@ -768,7 +803,10 @@ const LOCK_ORDER = ['req', 'score', 'window', 'alts', 'ee', 'sponsors', 'move', 
 const REQ_FREE: Record<string, string> = {
   'rpt.r.lang.fail': 'rpt.r.lang.failFree',
   'rpt.r.income.fail': 'rpt.r.income.failFree',
+  'rpt.r.exp.fail': 'rpt.r.exp.failFree',
 }
+// 免费层必留的结论(不受「免费两条」截断):停抽的 EE 类别 —— 劝退的话不该收费
+const ALWAYS_FREE = new Set(['rpt.c.eeStale'])
 const HINT: Record<string, string> = { 'rpt.c.regulated': 'rpt.hint.cert', 'rpt.g.expShort': 'rpt.hint.exp' }
 export function gateReport(report: Report, pro: boolean): GatedReport {
   const provLine = report.conclusions.find((c) => LANE_PROV[c.key])
@@ -823,7 +861,10 @@ export function gateReport(report: Report, pro: boolean): GatedReport {
     }
   }
 
-  const trimmed = report.conclusions.slice(FREE_CONCLUSIONS)
+  // 劝退型事实永远留在免费层(2026-08-02):「这个 EE 类别已经 X 个月没抽过了」是**叫人别等**的话,
+  // 把它截进锁区等于拿劝退去卖钱。免费两条的额度照旧,这类行是额外附加、也不计入「其余结论」的锁行计数。
+  const alwaysFree = report.conclusions.slice(FREE_CONCLUSIONS).filter((c) => ALWAYS_FREE.has(c.key))
+  const trimmed = report.conclusions.slice(FREE_CONCLUSIONS).filter((c) => !ALWAYS_FREE.has(c.key))
   const shownFree = new Set([provLine?.key, eeLine?.key, hintLine?.key])   // 已在三卡/卡点里露过的,不再计入「其余结论」
   const cats = new Set<string>()
   for (const c of trimmed) {
@@ -839,7 +880,7 @@ export function gateReport(report: Report, pro: boolean): GatedReport {
 
   return {
     ...report,
-    conclusions: report.conclusions.slice(0, FREE_CONCLUSIONS),
+    conclusions: [...report.conclusions.slice(0, FREE_CONCLUSIONS), ...alwaysFree],
     alternatives: [], requirements, employers, switches,
     lanes, hint, locked: LOCK_ORDER.filter((k) => cats.has(k)), pro: false,
   }
@@ -864,6 +905,7 @@ const EN: Record<string, (p: Record<string, string | number>) => string> = {
   'rpt.c.eeAbove': (p) => `Your self-reported CRS ${p.crs} is ${p.diff} above the last "${p.cat}" draw cutoff ${p.draw} (${p.date}).`,
   'rpt.c.eeBelow': (p) => `Your self-reported CRS ${p.crs} is ${p.gap} below the last "${p.cat}" draw cutoff ${p.draw} (${p.date}).`,
   'rpt.c.eeNone': (p) => `NOC ${p.noc} is not on any federal EE category-based selection list.`,
+  'rpt.c.eeStale': (p) => `This occupation is in the federal EE category "${p.cat}", but the last draw for that category was ${p.date} — ${p.months} months before this data date.`,
   'rpt.c.regulated': (p) => `NOC ${p.noc} is a regulated nursing occupation — registration/credential assessment is required before practising.`,
   'rpt.c.expOk': (p) => `You report ${p.months} months of Canadian experience — at or above the 12-month experience-class threshold (see source).`,
   // 门槛对照(规则引擎):左=官方门槛、右=你的情况;unknown 一律照实说「判不了」而不是含糊带过
@@ -876,16 +918,16 @@ const EN: Record<string, (p: Record<string, string | number>) => string> = {
   'rpt.r.income.fail': (p) => `${p.prov} sets a minimum family income of $${p.need}; the official median wage for this occupation there is $${p.have} — $${p.short} short even at the lowest bracket.`,
   'rpt.r.income.failFree': (p) => `${p.prov} sets a minimum family income of $${p.need}; the official median wage for this occupation there is $${p.have} — below it.`,
   'rpt.r.income.unknown': (p) => `${p.prov} sets a minimum family income of $${p.needLow}–$${p.need} depending on where you live and family size; the official median wage for this occupation there is $${p.have}.`,
-  'rpt.r.exp.pass': (p) => `${p.prov}'s skilled worker stream requires ${p.need} months of skilled work experience; you report ${p.have} months in Canada — meets it.`,
-  'rpt.r.exp.unknown': (p) => `${p.prov}'s skilled worker stream requires ${p.need} months of skilled work experience (in or outside Canada); only Canadian months are on file, so this cannot be judged here.`,
-  'rpt.r.langExempt': (p) => `${p.prov} waives the language test if you graduated from an eligible ${p.prov} institution within the last ${p.n} years — education is not on file, so this is not applied here.`,
+  'rpt.r.exp.pass': (p) => `${p.prov}'s skilled worker stream requires ${p.need} months of skilled work experience; you report ${p.have} months — meets it.`,
+  'rpt.r.exp.unknown': (p) => `${p.prov}'s skilled worker stream requires ${p.need} months of skilled work experience (in or outside Canada); you have not reported your experience.`,
+  'rpt.r.exp.fail': (p) => `${p.prov}'s skilled worker stream requires ${p.need} months of skilled work experience (in or outside Canada); you report ${p.have} months — ${p.short} months short.`,
+  'rpt.r.exp.failFree': (p) => `${p.prov}'s skilled worker stream requires ${p.need} months of skilled work experience (in or outside Canada); you report ${p.have} months — below it.`,
   'rpt.r.wage.median': (p) => `${p.prov} requires the offered wage to be at or above the regional median for the occupation — that median is $${p.need} per year.`,
   'rpt.r.wage.rule': (p) => `${p.prov} requires the offered wage to be at or above the regional median wage level for the occupation.`,
   'rpt.r.emp.years': (p) => `Employer-side: the employer needs ${p.n}+ years of operation in ${p.prov} — only the employer can evidence this.`,
   'rpt.r.emp.rev': (p) => `Employer-side: gross annual revenue of $${p.hi} (GTA), $${p.mid} (listed census divisions) or $${p.lo} (elsewhere) — only the employer can evidence this.`,
   'rpt.r.emp.staff.metro': (p) => `Employer-side: at least ${p.metro} full-time staff inside Metro Vancouver (${p.rest} outside) — only the employer can evidence this.`,
   'rpt.r.emp.staff.gta': (p) => `Employer-side: at least ${p.metro} full-time staff (citizens or PRs) at a GTA work location, ${p.rest} outside the GTA — only the employer can evidence this.`,
-  'rpt.r.none': (p) => `${p.prov}'s official thresholds are not yet covered by this site — no rule comparison can be made.`,
   // 换省对照(L2-08):下界口径,句子里必须留住「at least」与「x of y answered」
   'rpt.s.cur': (p) => `Currently targeting ${p.prov}: on its official ${p.system} your answers score at least ${p.total} (${p.have} of ${p.all} factors answered).`,
   'rpt.s.cur.noTable': (p) => `Currently targeting ${p.prov}: the province publishes no points grid, so no score can be computed.`,

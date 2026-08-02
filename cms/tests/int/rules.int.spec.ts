@@ -35,7 +35,7 @@ const BC_REQS: Requirement[] = [
   R({ subject: 'employer', factor: 'empStaff', value: 5, unit: 'employees', appliesArea: 'metro-vancouver', section: '6.8' }),
   R({ subject: 'employer', factor: 'empStaff', value: 3, unit: 'employees', appliesArea: 'rest-of-bc', section: '6.8' }),
 ]
-const P = (o: object = {}) => ({ teer: 2, clb: null, canadianExpMonths: null, familySize: null, annualIncome: null, incomeIsOccMedian: true, area: null, ...o }) as any
+const P = (o: object = {}) => ({ teer: 2, clb: null, canadianExpMonths: null, totalExpMonths: null, familySize: null, annualIncome: null, incomeIsOccMedian: true, area: null, ...o }) as any
 const byFactor = (rs: ReturnType<typeof evaluateRequirements>, f: string) => rs.find((r) => r.factor === f)!
 
 describe('evaluateRequirements —— 判定口径', () => {
@@ -81,9 +81,19 @@ describe('evaluateRequirements —— 判定口径', () => {
     expect(r.need).toBe(38922)
   })
 
-  it('经验:加拿大 30 个月 ≥ 24 → pass;只有 6 个月 → unknown(海外经验也算,不能判 fail)', () => {
+  it('经验:加拿大 30 个月 ≥ 24 → pass;只答加拿大 6 个月 → unknown(海外那截没问,不能判 fail)', () => {
     expect(byFactor(evaluateRequirements(BC_REQS, P({ canadianExpMonths: 30 })), 'experience').verdict).toBe('pass')
     expect(byFactor(evaluateRequirements(BC_REQS, P({ canadianExpMonths: 6 })), 'experience').verdict).toBe('unknown')
+  })
+
+  // 题库 20260802 补上总经验(含海外)之后,这条门槛**真的判得了**了 ——
+  // 先前不够也只能出「本站只问了加拿大经验,判不了」,那一行等于没说(Frank 点名)
+  it('经验:总经验(含海外)就是官方口径 —— 够→pass、不够→fail 带差值;都没答→unknown', () => {
+    const pass = byFactor(evaluateRequirements(BC_REQS, P({ totalExpMonths: 60, canadianExpMonths: 6 })), 'experience')
+    expect([pass.verdict, pass.have]).toEqual(['pass', 60])       // 两个都答:取大的那个(加拿大是子集)
+    const fail = byFactor(evaluateRequirements(BC_REQS, P({ totalExpMonths: 6 })), 'experience')
+    expect([fail.verdict, fail.short]).toEqual(['fail', 18])      // 24 - 6
+    expect(byFactor(evaluateRequirements(BC_REQS, P()), 'experience').verdict).toBe('unknown')
   })
 
   it('雇主侧两条恒为 unknown(本站没有雇主的经营年限与雇员数),阈值照摆', () => {
@@ -116,10 +126,10 @@ describe('报告「门槛对照」节', () => {
     expect(r.requirements[0].source?.url).toContain('welcomebc.ca')
   })
 
-  it('未收录的省(SK 没有门槛行)→ 只出一句「本站未收录」,不拿 BC 的门槛套', () => {
+  // 2026-08-02 改口径(Frank「这条对照不了,那还显示干什么」):一行「我们没有数据」对读的人零价值
+  it('未收录的省(SK 没有门槛行)→ 这一节一行都不出,更不拿 BC 的门槛套', () => {
     const r = buildPrReport(base({ targetProvinces: ['SK'] }), { canadianExpMonths: null }, dims, facts({}))
-    expect(r.requirements.map((l) => l.key)).toEqual(['rpt.r.none'])
-    expect(r.requirements[0].params.prov).toBe('SK')
+    expect(r.requirements).toEqual([])
   })
 
   it('免费层:差一档的语言行摘掉差值并挂锁行;Pro 层保留差值、不挂锁行', () => {
@@ -175,8 +185,12 @@ describe('ON(OINP)—— 雇主侧与技工分档', () => {
     expect(r.need).toBe(6)
   })
 
-  it('免考条款只陈述不判定(本站没问学历)', () => {
+  // 引擎层照旧把这条官方门槛算出来(unknown 是一等公民),但**报告层不再摆这一行** ——
+  // 免考看的是「在哪读的」,题库问的是学历层级,判不了(Frank 2026-08-02「这一条不参与判定,那还显示干什么」)
+  it('免考条款:引擎照旧出 unknown,报告层不占行', () => {
     expect(byFactor(evaluateRequirements(ON_REQS, P({ noc: '21232', teer: 1, clb: 9 })), 'languageExempt').verdict).toBe('unknown')
+    const r = buildPrReport(base({ targetProvinces: ['ON'] }), { canadianExpMonths: 30 }, dims, facts({ requirements: ON_REQS }))
+    expect(r.requirements.map((l) => l.key)).not.toContain('rpt.r.langExempt')
   })
 
   it('工资档 basis=occMedian:阈值取该职业该省中位,报告层没有具体岗位 → unknown', () => {

@@ -348,6 +348,41 @@ const swFacts = (o: Partial<ReportFacts> = {}) => facts({
 const sw = (r: { switches: { key: string; params: Record<string, string | number>; url?: string; more?: boolean; tail?: { key: string; params: Record<string, string | number> } }[] }, key: string) =>
   r.switches.find((l) => l.key === key)
 
+// ── 联邦 EE:停抽的类别不当锚(2026-08-02 Frank「STEM 都暂停多长时间了,还算 CRS 分数呢」)──
+// 库里坐实:STEM 上一次类别抽选是 2024-04-11。拿两年前的线给一条已经不抽的路报价,比不说更糟。
+describe('EE 类别停抽', () => {
+  const staleDims: MatchDims = {
+    ...dims,
+    eeCategories: [{ category: 'stem', label: 'STEM', noc: '21232', drawCrs: 491, drawDate: '2024-04-11', url: 'https://canada.ca/ee', fetched: '2026-07-01' }],
+  }
+  const stale = (over: object = {}) => buildPrReport(base(over), exp12, staleDims, facts({ noc: '21232', title: 'SW dev', teer: 1, byProv: [] }))
+
+  it('超过一年没抽 → 只说「上一次是什么时候」,不给分数线对照、不劝他去算 CRS', () => {
+    const r = stale()
+    expect(keys(r.conclusions)).toContain('rpt.c.eeStale')
+    expect(keys(r.conclusions)).not.toContain('rpt.c.ee')
+    expect(keys(r.gaps)).not.toContain('rpt.g.noCrs')
+    expect(keys(r.nextSteps)).not.toContain('rpt.n.crs')
+    const line = r.conclusions.find((l) => l.key === 'rpt.c.eeStale')!
+    expect(line.params.date).toBe('2024-04-11')
+    expect(Number(line.params.months)).toBeGreaterThan(24)
+  })
+
+  it('填了 CRS 也不拿旧线判高低 —— 那条路现在根本不抽', () => {
+    expect(keys(stale({ crs: 500 }).conclusions)).not.toContain('rpt.c.eeAbove')
+  })
+
+  it('免费层必留:劝退的话不进锁区(免费两条之外照样下发)', () => {
+    const free = gateReport(stale(), false)
+    expect(keys(free.conclusions)).toContain('rpt.c.eeStale')
+  })
+
+  it('还在抽的类别照旧对照(这条闸只关停抽的)', () => {
+    const r = buildPrReport(base({ crs: 500 }), exp12, dims, facts({ noc: '21232', title: 'SW dev', teer: 1, byProv: [] }))
+    expect(keys(r.conclusions)).toContain('rpt.c.eeAbove')
+  })
+})
+
 describe('换省对照节(L2-08)', () => {
   it('现选省 BC:按已答的两项算下界分,并说清「已答 2/3 项」', () => {
     const r = buildPrReport(base(), exp12, dims, swFacts())
@@ -476,6 +511,21 @@ describe('换省对照节(L2-08)', () => {
     const r = buildPrReport(base(), { ...exp12, edu: null, age: null }, dims, swFacts())
     expect(sw(r, 'rpt.s.cur')?.params.total).toBe(29)      // 与扩充前逐字一致
     expect(sw(r, 'rpt.s.alt.mark')?.params.total).toBe(22)
+  })
+
+  // 2026-08-02(Frank「安省现在是最难的吧,你还推荐安省」):摆在前排事实上就是推荐 ——
+  // 有分值表但**自报通道一轮抽选都没有**的省(ON 改制后就是这样)不该排在真在抽人的省前面。
+  it('排序:有分值表且真在抽人的省排前面,只有表没抽选的往后靠', () => {
+    const on: ScoreFactor[] = factors.map((f) => (f.province === 'SK'
+      ? { ...f, province: 'ON', system: 'OINP EOI points (Ontario Workforce Priority stream)', passMark: null, maxTotal: null }
+      : f))
+    const r = buildPrReport(base(), exp12, dims, swFacts({
+      scoreFactors: [...on, ...factors.filter((f) => f.province === 'SK')],
+      byProv: [{ province: 'BC', open: 19, named: 18 }, { province: 'ON', open: 400, named: 0 }, { province: 'SK', open: 12, named: 12 }],
+      draws: [{ province: 'SK', drawDate: '2026-07-22', stream: 'SINP Points Grid', score: 68, invitations: 300 }],
+    }))
+    const alts = r.switches.filter((l) => l.key.startsWith('rpt.s.alt')).map((l) => String(l.params.prov))
+    expect(alts[0]).toBe('SK')     // SK 有表且有同通道抽选;ON 有表但新通道没抽过 → 不占第一
   })
 
   it('缺项钩子指完整估分器;免责句不再逐节重复(全站页脚已有)', () => {

@@ -240,7 +240,6 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
   }, [noc, lang])
 
   const gotoReport = () => {
-    track(`plan-${decision}-report`)
     setView('report')
     try { window.history.replaceState(null, '', '?view=report') } catch { /* ignore */ }
   }
@@ -288,6 +287,16 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
     m.onComplete.add(() => gotoReport())
     return m
   }, [ready, view, stage, lang, decision, resetNonce])   // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 漏斗第 2 步(主线 M2 收口 2026-08-02):**报告态真渲染**才算「打开报告」,
+  // 而不是「点了出报告那个按钮」—— 从详情页进来的是深链 `?view=report`,按钮根本没被按过,
+  // 先前那种记法会把这条最主要的来路整条漏掉。一次页面加载只记一次(来回切答题/报告不重复计)。
+  const reportCounted = useRef(false)
+  useEffect(() => {
+    if (view !== 'report' || reportCounted.current) return
+    reportCounted.current = true
+    track(`plan-${decision}-report`)
+  }, [view, decision])
 
   // 报告态进入即拉(改答案回来再进=重算;答案是幂等输入)
   useEffect(() => {

@@ -110,6 +110,7 @@ export type RuleProfile = {
   teer: number | null
   clb: number | null                    // 四项中的最低档(站内 clb 口径)
   canadianExpMonths: number | null
+  totalExpMonths: number | null         // 同职业总经验(含海外)——官方 experience 要的就是这个口径(题库 20260802 起有)
   familySize: number | null             // 暂未入题库 → 多数为 null,按「1 人档」做下界推理
   annualIncome: number | null           // 该职业在该省的中位年薪(岗位自带的事实,不问用户;设计 §4 规则 2)
   incomeIsOccMedian: boolean            // 上面那个数是不是「职业中位」——措辞要说清这不是他本人的工资
@@ -206,13 +207,22 @@ export function evaluateRequirements(reqs: Requirement[], p: RuleProfile): RuleR
     }
   }
 
-  // ── 工作经验:官方要的是「境内外都算」的技术工作经验,而站内只问了**加拿大**经验 ——
-  //    够了就是够了(加拿大经验是它的子集),不够**不能判 fail**(他可能有海外经验)→ unknown。
+  // ── 工作经验:官方要的是「境内外都算」的技术工作经验。
+  //    2026-08-02 题库补上总经验(含海外)后这条**真的判得了**了 —— 先前只有加拿大经验,
+  //    不够也只能出 unknown(「本站只问了加拿大经验,判不了」),那一行等于没说(Frank 点名)。
+  //    口径:两个都答就取大的(加拿大经验是总经验的子集);
+  //    只答了加拿大经验且不够 → 仍是 unknown(海外那截没问,不能判 fail);总经验答了且不够 → fail。
   const exp = of('experience')[0]
   if (exp && exp.value != null) {
-    const have = p.canadianExpMonths
-    const ok = have != null && have >= exp.value
-    out.push({ factor: 'experience', subject: 'applicant', verdict: ok ? 'pass' : 'unknown', need: exp.value, needLow: null, have, short: null, unit: exp.unit, evidence: ev(exp) })
+    const answered = [p.totalExpMonths, p.canadianExpMonths].filter((v): v is number => v != null)
+    const have = answered.length ? Math.max(...answered) : null
+    const verdict: RuleVerdict = have == null ? 'unknown'
+      : have >= exp.value ? 'pass'
+        : p.totalExpMonths != null ? 'fail' : 'unknown'
+    out.push({
+      factor: 'experience', subject: 'applicant', verdict, need: exp.value, needLow: null, have,
+      short: verdict === 'fail' ? exp.value - (have as number) : null, unit: exp.unit, evidence: ev(exp),
+    })
   }
 
   // ── 语言免考条款(ON):官方允许指定安省学历免考。本站没问学历 → 只陈述,不拿它改语言判定。

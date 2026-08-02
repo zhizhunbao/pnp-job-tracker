@@ -9,11 +9,12 @@
 export const FUNNEL_STEPS = ['jd-open', 'report-open', 'lock-seen', 'pricing-open', 'pay-click'] as const
 export type FunnelStep = (typeof FUNNEL_STEPS)[number]
 
-// 站内既有的埋点名 → 漏斗步骤(调用点一个都不用改名;umami 那边照旧用原名,两套口径互不干扰)
+// 站内既有的埋点名 → 漏斗步骤(调用点一个都不用改名;umami 那边照旧用原名,两套口径互不干扰)。
+// 2026-08-02 收口:详情页的 `jd-report-open`(点了「看报告」)**不再算第 2 步** ——
+// 它是点击不是打开,而且同一次跳转报告页自己也会记一次,留着就是双计。报告态真渲染才算。
 const ALIAS: Record<string, FunnelStep> = {
   'modal-jd': 'jd-open',
   'jd-open': 'jd-open',
-  'jd-report-open': 'report-open',
   'plan-pr-report': 'report-open',
   'plan-job-report': 'report-open',
   'plan-prov-report': 'report-open',
@@ -30,7 +31,7 @@ const PROP_OK = /^[a-z0-9-]{1,24}$/
 
 /** 事件从哪来的(详情页 / 报告页 / 别处)—— 曝光那一步要能分开看,不然 M3 分叉时不知道该改哪个入口 */
 const SOURCE: Record<string, string> = {
-  'jd-lock-seen': 'jd', 'rpt-lock-seen': 'rpt', 'jd-report-open': 'jd',
+  'jd-lock-seen': 'jd', 'rpt-lock-seen': 'rpt',
   'plan-pr-report': 'pr', 'plan-job-report': 'job', 'plan-prov-report': 'prov', 'plan-career-report': 'career',
   'upgrade-open': 'upgrade', 'pricing-open': 'pricing',
 }

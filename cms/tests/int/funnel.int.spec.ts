@@ -12,6 +12,14 @@ describe('漏斗事件白名单', () => {
     expect(toFunnelHit('upgrade-open')).toEqual({ event: 'pricing-open', prop: 'upgrade' })
   })
 
+  // 2026-08-02 收口:第 1 步先前**根本没有调用点**(详情页没埋),库里只有第 3 步有数、分母是空的。
+  // 详情页那个「点了看报告」不再算第 2 步 —— 同一次跳转报告页自己也会记一次,留着就是双计。
+  it('第 1 步分弹框与整页;详情页的「点了看报告」不进漏斗(报告态真渲染才算打开)', () => {
+    expect(toFunnelHit('jd-open', 'page')).toEqual({ event: 'jd-open', prop: 'page' })
+    expect(toFunnelHit('modal-jd', 'modal')).toEqual({ event: 'jd-open', prop: 'modal' })
+    expect(toFunnelHit('jd-report-open')).toBeNull()
+  })
+
   it('白名单之外一律丢掉(埋点调用点几十处,全塞进来这张表就没法读了)', () => {
     for (const junk of ['save-job', 'ai-read-jd', 'cat-translate', '', 'DROP TABLE', null, 42]) {
       expect(toFunnelHit(junk as unknown)).toBeNull()
