@@ -13,8 +13,9 @@ export type FunnelRow = { step: string; label: string; d30: number; d7: number; 
 const TH: React.CSSProperties = { textAlign: 'right', padding: '8px 10px', fontSize: 12, color: UI.text3, fontWeight: 400, whiteSpace: 'nowrap' }
 const TD: React.CSSProperties = { textAlign: 'right', padding: '11px 10px', fontSize: 14, fontVariantNumeric: 'tabular-nums', borderTop: `1px solid ${UI.hairline}` }
 
-export function FunnelView({ rows, pro, stripe, byEntry }: {
-  rows: FunnelRow[]; pro: number; stripe: number; byEntry: { prop: string; n: number }[]
+export function FunnelView({ rows, pro, stripe, byEntry, byPricing = [] }: {
+  rows: FunnelRow[]; pro: number; stripe: number
+  byEntry: { prop: string; n: number }[]; byPricing?: { prop: string; n: number }[]
 }) {
   const [lang, setLang] = useState<Lang>('zh')
   useEffect(() => { setLang(initialLang()) }, [])
@@ -71,6 +72,17 @@ export function FunnelView({ rows, pro, stripe, byEntry }: {
               锁区曝光按入口(30 天):{byEntry.map((e) => <span key={e.prop} style={{ marginLeft: 10 }}>{e.prop} {e.n}</span>)}
             </div>
           )}
+          {/* 定价也要分来路:报告锁区 CTA 带 ?from=rpt-<卡>,其余算直达 —— 报告到底卖不卖得动就看这一行 */}
+          {byPricing.length > 0 && (
+            <div style={{ marginTop: 6, fontSize: 13, color: UI.text2 }}>
+              打开定价按来路(30 天):{byPricing.map((e) => <span key={e.prop} style={{ marginLeft: 10 }}>{e.prop} {e.n}</span>)}
+            </div>
+          )}
+          {/* ② 那一格空着是有意的:详情页不是报告的唯一来路(首页 CTA 直接进 /plan/pr),
+              拿 ① 当分母算出来的是 200% 这种数,不如不给 */}
+          <div style={{ marginTop: 10, fontSize: 12.5, color: UI.text3, lineHeight: 1.6 }}>
+            ② 不给「比上一步」:详情页不是报告的唯一来路(首页 CTA 直接进 /plan/pr),① 不是它的分母。
+          </div>
           {empty && <div style={{ marginTop: 12, fontSize: 13, color: '#b45309' }}>还没有任何计数 —— 表刚建好,或事件还没打到生产。</div>}
         </div>
       </PageShell>

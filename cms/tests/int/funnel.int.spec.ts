@@ -20,6 +20,18 @@ describe('漏斗事件白名单', () => {
     expect(toFunnelHit('jd-report-open')).toBeNull()
   })
 
+  // 2026-08-03 第一次读这张表撞到的洞:站内唯一直链 /pricing 的入口是报告锁区那个 CTA,
+  // 而 /pricing 页面从来没发过 `pricing-open`(只有两个弹框在发)—— 于是「报告 → 定价」这条
+  // **主转化边整条不计数**,第 4 步恒为 0。补上之后来路走 `?from=rpt-<卡>`,这里锁住它过得了白名单。
+  it('报告锁区来的定价页带来路,四张卡的 from 都过得了低基数白名单', () => {
+    for (const card of ['pr', 'job', 'prov', 'career']) {
+      expect(toFunnelHit('pricing-open', `rpt-${card}`)).toEqual({ event: 'pricing-open', prop: `rpt-${card}` })
+    }
+    expect(toFunnelHit('pricing-open', 'direct')).toEqual({ event: 'pricing-open', prop: 'direct' })
+    // 来路是 URL 参数 = 用户可随手改 → 脏值退回入口名,不许污染这张低基数表
+    expect(toFunnelHit('pricing-open', 'rpt pr <script>')?.prop).toBe('pricing')
+  })
+
   it('白名单之外一律丢掉(埋点调用点几十处,全塞进来这张表就没法读了)', () => {
     for (const junk of ['save-job', 'ai-read-jd', 'cat-translate', '', 'DROP TABLE', null, 42]) {
       expect(toFunnelHit(junk as unknown)).toBeNull()

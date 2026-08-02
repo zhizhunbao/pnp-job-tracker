@@ -670,7 +670,7 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                     却照样挂「完整报告 + 30 天全站 Pro」—— 那是卖不存在的东西,红线) */}
                 {!rpt.pro && rpt.locked.length > 0 && (
                   <Notice kind="warn" lead={t('rpt.cta.t')} style={{ margin: '10px 0' }} className="noPrint"
-                    action={<span onClick={() => track(`plan-${decision}-cta`)}><Button kind="pro" href="/pricing">{t('rpt.cta.btn')}</Button></span>} />
+                    action={<span onClick={() => track(`plan-${decision}-cta`)}><Button kind="pro" href={`/pricing?from=rpt-${decision}`}>{t('rpt.cta.btn')}</Button></span>} />
                 )}
                 {/* 同理:没职业时探索两题也改不了任何结论,不劝答。
                     文案按**真能兑现的**说(2026-08-02 走查实见):这个职业不在任何 EE 类别时,

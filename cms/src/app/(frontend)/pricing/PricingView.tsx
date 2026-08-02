@@ -8,10 +8,23 @@ import { PricingCard, type PriceCaps } from '../jobs/PricingModal'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { PageShell } from '../ui/primitives'
+import { track } from '@/lib/track'
+
+// 来路白名单(低基数,与 lib/funnel 的 PROP_OK 同口径):报告锁区 CTA 带 ?from=rpt-<卡>,其余算直达
+const FROM_OK = /^[a-z0-9-]{1,24}$/
 
 export function PricingView({ loggedIn, pro, caps }: { loggedIn: boolean; pro: boolean; caps: PriceCaps }) {
   const [lang, setLang] = useState<Lang>('zh')
   useEffect(() => { setLang(initialLang()) }, [])
+  // 漏斗第 4 步(2026-08-03 量数才发现):这一页**从来没有发过 `pricing-open`** ——
+  // 先前只有 PricingModal/UpgradeModal 在 mount 时发,而站内唯一直链 /pricing 的入口正是
+  // 报告锁区那个 CTA。于是「报告 → 定价」这条**主转化边整条不计数**,面板上第 4 步恒为 0:
+  // 那个 0 是量不到,不是没人点。跟 08-02 抓到的「jd-open 从来没有调用点」是同一类洞,往下挪了一格。
+  // 带上来路 → 面板能分开看「从报告来的」与「从别处来的」,M3 分叉才有得分。
+  useEffect(() => {
+    const raw = new URLSearchParams(window.location.search).get('from') ?? ''
+    track('pricing-open', { kind: FROM_OK.test(raw) ? raw : 'direct' })
+  }, [])
   const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
   const t = makeT(lang)
   const [auth, setAuth] = useState(false)

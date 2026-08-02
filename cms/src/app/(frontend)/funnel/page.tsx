@@ -39,11 +39,17 @@ export default async function FunnelPage() {
 
   const sum = (step: string, k: 'd30' | 'd7' | 'd1') => raw.filter((r) => r.event === step).reduce((a, r) => a + r[k], 0)
   const rates = stepRates(Object.fromEntries(FUNNEL_STEPS.map((s) => [s, sum(s, 'd30')])))
+  // ② 不给「比上一步」(2026-08-03 第一次读这张表就撞到:① 8 次、② 16 次 = 200%)。
+  // 职位详情页**不是**报告的唯一来路 —— 首页 CTA 直接进 /plan/pr 的占了绝大多数(实测 16 里 12 条是 pr 卡),
+  // 拿 ① 当 ② 的分母算出来的百分比没有意义。③④⑤ 是真父子关系,照旧给。
   const rows: FunnelRow[] = FUNNEL_STEPS.map((s, i) => ({
     step: s, label: LABEL[s], d30: sum(s, 'd30'), d7: sum(s, 'd7'), d1: sum(s, 'd1'),
-    rate: i === 0 ? null : rates[i - 1],
+    rate: i === 0 || s === 'report-open' ? null : rates[i - 1],
   }))
-  const byEntry = raw.filter((r) => r.event === 'lock-seen' && r.prop).sort((a, b) => b.d30 - a.d30).map((r) => ({ prop: r.prop, n: r.d30 }))
+  const group = (event: string) =>
+    raw.filter((r) => r.event === event && r.prop).sort((a, b) => b.d30 - a.d30).map((r) => ({ prop: r.prop, n: r.d30 }))
+  const byEntry = group('lock-seen')
+  const byPricing = group('pricing-open')
 
   // 真实付费两个数分开摆:proUntil 有值的(含人工赠送)与真走过 Checkout 的 —— 手工开的 Pro 不能冒充收款。
   // 信号用 stripe_sessions(webhook 拨 proUntil 时写的 session id),**不用 stripe_customer_id**:
@@ -55,5 +61,5 @@ export default async function FunnelPage() {
     .then((r: any) => ({ pro: Number(r.rows[0]?.pro ?? 0), stripe: Number(r.rows[0]?.stripe ?? 0) }))
     .catch(() => ({ pro: 0, stripe: 0 }))
 
-  return <FunnelView rows={rows} pro={pro} stripe={stripe} byEntry={byEntry} />
+  return <FunnelView rows={rows} pro={pro} stripe={stripe} byEntry={byEntry} byPricing={byPricing} />
 }
