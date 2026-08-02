@@ -595,8 +595,14 @@ export function buildProvReport(profile: MatchProfile, extra: ProvExtra, dims: M
 
   for (const [i, c] of rank.slice(0, 2).entries()) {
     if (c.label) {
+      // 全命中不说「其中 N 个」:清单收的是**职业**,该职业在清单上,该省这个职业的在招岗自然全都算 ——
+      // 「在招 12 岗,其中 12 个是清单岗」是废话(2026-08-01 Frank 点名)。拿 PR 与找工作两张卡当天
+      // 就改成了多态,**这张卡漏了**,2026-08-03 读全文才发现。
+      // named=0 也走全量句式:那时「其中 0 个是清单岗」与上半句「在公开清单上」自相矛盾,
+      // 而「在清单上 + 当地在招 N 岗」两句都为真(0 具名多半是该省岗位没打 pnp_stream,不是他不在清单上)。
+      const part = c.named > 0 && c.named < c.open
       conclusions.push({
-        key: i === 0 ? 'rpt.p.best' : 'rpt.p.second',
+        key: i === 0 ? (part ? 'rpt.p.best' : 'rpt.p.bestAll') : (part ? 'rpt.p.second' : 'rpt.p.secondAll'),
         params: { prov: c.prov, open: c.open, named: c.named, label: c.label },
         verdict: 'pass', source: { label: c.label, url: c.url, fetched: c.fetched },
       })
@@ -862,6 +868,16 @@ export function gateReport(report: Report, pro: boolean): GatedReport {
 
   // 卡①/⑥ 走口径闸(库里查得到的免费,拿你的答案算出来的付费):在招量与薪资对照本来就查得到,
   // 按「前 2 条」硬切会把免费的事实也锁掉 —— 那是收不到钱只挡路。锁的是真要答案才筛得出来的那几条。
+  // 卡⑥「职业规划」整卡不设锁(2026-08-03 把四张卡的报告读全文得出的结论)。它的锁区只有两样:
+  //   ① `rpt.k.peerGap`「执业护士的中位年薪比你这行高 48%」—— $129K 与 $87.4K 免费层刚并排摆过,
+  //      收钱卖一次除法;
+  //   ② `alternatives` = 再多 3 个同门职业的在招量与官方中位 —— 而这张卡的「下一步」正把用户往
+  //      /stats 送,那页免费列着全职业的同样两列。**卖我们同时在白送的东西**,一次就把付费信任赔光,
+  //      而信任是拿 PR 那张卡(真有货)收得到钱的前提。
+  // 这张卡真该卖的是「你能不能转过去」,而职业转换路径本站没有数据(gaps 里自己也这么说)——
+  // 等那份数据有了再开闸,不拿现有的算术凑一个付费墙。
+  if (report.goal === 'career') return { ...report, lanes: [], hint, locked: [], pro: false }
+
   if (report.goal !== 'pr') {
     const free = report.conclusions.filter((c) => !LOCK_CAT[c.key])
     const cats2 = new Set(report.conclusions.filter((c) => LOCK_CAT[c.key]).map((c) => LOCK_CAT[c.key]))

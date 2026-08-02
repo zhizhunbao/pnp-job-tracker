@@ -124,14 +124,17 @@ describe('卡⑥ 职业规划', () => {
     expect(r.confidence).toBe('mid')
   })
 
-  it('免费端:现状与相邻职业本身免费(库里查得到),跃迁幅度与完整榜进锁区', () => {
+  // 2026-08-03 把四张卡读全文之后拆掉这张卡的付费墙:锁区只有「$130K 比 $90K 高 44%」这一次除法,
+  // 加上再多 3 个同门职业的在招与中位 —— 而本卡的「下一步」正把用户往 /stats 送,那页免费列着同样两列。
+  // 卖我们同时白送的东西,会把拿 PR 那张卡(真有货)的付费信任一起赔进去。
+  it('整卡不设锁:跃迁幅度与完整榜都免费(锁区只有一次除法,那不值钱)', () => {
     const r = gateReport(buildCareerReport(normalizeProfile({}), facts, occ({ peers })), false)
-    expect(r.conclusions.map((c) => c.key)).toEqual(['rpt.k.selfWage', 'rpt.k.peer', 'rpt.k.peer'])
-    expect(r.alternatives).toHaveLength(0)
-    expect(r.locked).toEqual(['move'])
+    expect(r.locked).toEqual([])
+    expect(r.conclusions.map((c) => c.key)).toEqual(['rpt.k.selfWage', 'rpt.k.peer', 'rpt.k.peer', 'rpt.k.peerGap'])
+    expect(r.alternatives.length).toBeGreaterThan(0)     // 完整榜照给
   })
 
-  it('跃迁幅度以你自己的职业为基准算,所以它在锁区', () => {
+  it('跃迁幅度以你自己的职业为基准算(免费给,但数得对)', () => {
     const r = buildCareerReport(normalizeProfile({}), facts, occ({ peers }))
     const g = r.conclusions.find((c) => c.key === 'rpt.k.peerGap')!
     expect(g.params).toMatchObject({ occ: 'Nurse practitioners', pct: 44 })   // 130K vs 90K
@@ -166,6 +169,24 @@ describe('卡③ 选省份', () => {
     expect(r.alternatives.some((a) => a.params.prov === 'AB')).toBe(false)
     const ab = r.gaps.find((g) => g.key === 'rpt.c.excluded' && g.params.prov === 'AB')!
     expect(ab.source?.url).toBe('https://alberta.ca/inelig')
+  })
+
+  // 2026-08-01 Frank 点名的那句废话(「就一个职位,怎么叫全部」):清单收的是**职业**,
+  // 该职业在清单上,该省这个职业的在招岗自然全都算 —— 拿 PR 与找工作当天改成了多态,这张卡漏了,
+  // 2026-08-03 读全文才发现(实见 SK「在招 12 岗,其中 12 个是省提名清单岗」)。
+  it('全命中不说「其中 N 个」;0 具名也不说(会跟上半句「在清单上」打架)', () => {
+    const all = buildProvReport(normalizeProfile({}), { hasJobOffer: null }, provDims, {
+      ...provFacts, byProv: [{ province: 'BC', open: 19, named: 19 }, { province: 'SK', open: 12, named: 12 }],
+    })
+    expect(all.conclusions.map((c) => c.key)).toEqual(['rpt.p.bestAll', 'rpt.p.secondAll'])
+    // 部分命中才值得说 N/M(BC 19 开 18 具名 = ON 那种 GTA 限制岗/AIP 分路的真·部分)
+    expect(buildProvReport(normalizeProfile({}), { hasJobOffer: null }, provDims, provFacts)
+      .conclusions[0].key).toBe('rpt.p.best')
+    // 在清单上却 0 具名(该省岗位没打 pnp_stream 的数据缺口)→ 走全量句式,不写「其中 0 个」
+    const zero = buildProvReport(normalizeProfile({}), { hasJobOffer: null }, provDims, {
+      ...provFacts, byProv: [{ province: 'BC', open: 19, named: 0 }],
+    })
+    expect(zero.conclusions[0].key).toBe('rpt.p.bestAll')
   })
 
   it('QC 单独说明走自己体系,不参与排序', () => {
