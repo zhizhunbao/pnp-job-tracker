@@ -1,7 +1,9 @@
 # STATUS / 交接文档（2026-07-05）
 
 > 新 session 接手先读这份 + `CLAUDE.md`(设计宪法)+ `prd.md`(v2 定位见头部标注)。仓库:github.com/zhizhunbao/pnp-job-tracker
-> **🚀 站点已公网上线并真实收款:https://pnp-cms.onrender.com**(Render + Supabase;**live Stripe,M3 已开闸**)。批次进度=`docs/implementation/_开发批次顺序.md`:**B0-B8 全部落地(2026-07-04 一天从 B4 打到 B8),24 工作项代码侧全完**。
+> **🚀 站点已公网上线:https://offer2pr.com**(Render + Supabase;**live Stripe,M3 收费闸已开**)。
+> ⚠️ **「真实收款」这四个字 2026-08-03 撤掉**:live 通道验过没错(07-04 开闸演练,已退款),但库里两条
+> Stripe session 一条是测试号、一条是 Frank 自己那笔 —— **陌生用户付费至今 0 笔**。别再把「已收款」当既成事实。批次进度=`docs/implementation/_开发批次顺序.md`:**B0-B8 全部落地(2026-07-04 一天从 B4 打到 B8),24 工作项代码侧全完**。
 >
 > **⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡ 最新交接(2026-08-03,「M2 第一次真读漏斗」)——409c9bd 生产已验**
 > - **第一次真读 `funnel_events`**(这张表 08-01 建好之后一直**只写没读**;`/funnel` 面板在,但没人打开过)。
