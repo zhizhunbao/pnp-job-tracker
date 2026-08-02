@@ -578,3 +578,51 @@ describe('换省对照节(L2-08)', () => {
     expect(sw(r, 'rpt.s.offer')).toBeUndefined()
   })
 })
+
+// ── 行为树:穷举「省覆盖态 × 画像」,扫**自相矛盾**(2026-08-02 Frank「先跑拿 PR 这棵树」)────────
+// 生产数据上跑过一轮 216 条路径 / 74 种形态;这里用 fixture 常驻,规则每条都对应一次真实的实读事故。
+// 注意:检查的是「有没有说自相矛盾的话」,不是「话说得好不好」—— 语义问题仍要人肉读全文。
+describe('行为树:不许自相矛盾', () => {
+  const PROVS = ['BC', 'AB', 'SK', 'ON', 'NL', 'QC']
+  const NOCS = ['31301', '21232', '65200', '42202']
+  const SHAPES = [
+    { name: 'full', over: { clb: 8, crs: 500, pgwpMonthsLeft: 24 }, extra: { canadianExpMonths: 36, totalExpMonths: 60, edu: 'master' as const, age: 28 } },
+    { name: 'thin', over: {}, extra: { canadianExpMonths: null } },
+  ]
+  const prov = (l: { params: Record<string, string | number> }) => String(l.params.prov ?? '')
+
+  it('每条路径都不许出现这六种矛盾', () => {
+    const bad: string[] = []
+    for (const noc of NOCS) {
+      const f = facts({ noc, title: noc, teer: noc === '65200' ? 5 : 1, byProv: [{ province: 'BC', open: 9, named: 3 }, { province: 'AB', open: 5, named: 0 }], draws: [{ province: 'BC', drawDate: '2026-07-22', stream: 'SW', score: 118 }, { province: 'AB', drawDate: '2026-07-21', stream: 'AB EE', score: 65 }] })
+      for (const p of PROVS) {
+        for (const sh of SHAPES) {
+          const r = buildPrReport(normalizeProfile({ currentStatus: 'working', targetProvinces: [p], ...sh.over }), sh.extra, dims, f)
+          const g = gateReport(r, false)
+          const tag = `${noc}/${p}/${sh.name}`
+          // ① 被该省排除,却又摆该省的分数线
+          const ex = r.conclusions.filter((l) => l.key === 'rpt.c.excluded').map(prov)
+          for (const l of r.conclusions) {
+            if (['rpt.c.drawBand', 'rpt.c.scoreBand', 'rpt.c.scoreAbove', 'rpt.c.scoreBelow'].includes(l.key) && ex.includes(prov(l))) bad.push(`${tag}: 被排除还摆分数线`)
+          }
+          // ② 同一省既在清单上又查过不在
+          const hit = new Set(r.conclusions.filter((l) => l.key.startsWith('rpt.c.listedHit')).map(prov))
+          for (const l of r.conclusions) if (l.key === 'rpt.c.listedMiss' && hit.has(prov(l))) bad.push(`${tag}: 既命中又不命中`)
+          // ③ 下一步指向的省,免费层结论里没提过(读起来像串台)
+          const freeProvs = new Set(g.conclusions.map(prov).filter(Boolean))
+          for (const n of g.nextSteps) if (prov(n) && !freeProvs.has(prov(n))) bad.push(`${tag}: 下一步指向 ${prov(n)} 但免费层没提`)
+          // ④ 说了「本站未收录」又出门槛行
+          const unc = new Set(r.conclusions.filter((l) => l.key === 'rpt.c.uncovered').map(prov))
+          for (const l of r.requirements) if (unc.has(prov(l))) bad.push(`${tag}: 未收录却出门槛行`)
+          // ⑤ 卖不存在的东西:挂了锁行但那一类正文是空的
+          if (g.locked.includes('score') && r.switches.length === 0) bad.push(`${tag}: score 锁行但换省对照空`)
+          if (g.locked.includes('sponsors') && r.employers.length === 0) bad.push(`${tag}: sponsors 锁行但名单空`)
+          if (g.locked.includes('req') && r.requirements.length === 0) bad.push(`${tag}: req 锁行但门槛空`)
+          // ⑥ 结论里冒出用户没选的省
+          for (const l of r.conclusions) if (prov(l) && prov(l) !== p) bad.push(`${tag}: 结论提到 ${prov(l)}`)
+        }
+      }
+    }
+    expect(bad.slice(0, 5).join(' | ')).toBe('')
+  })
+})
