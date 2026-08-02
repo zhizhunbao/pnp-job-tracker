@@ -52,6 +52,8 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
   // 官方职业名又长又相似(Retail sales supervisors / Retail and wholesale trade managers),按首字母切一刀好扫;
   // 中/韩界面标签是中文/韩文,头顶挂 A/B/C 对不上眼睛看到的字,那件事交给搜索框。
   const [letter, setLetter] = useState('')
+  // 同族职业(Frank「21231/21232 那种对儿自动挨一起」):选了之后才出 —— 它是**补全**不是浏览入口
+  const [kin, setKin] = useState<Top[]>([])
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // 热门清单:库里在招量前 24;拿不到(慢/挂了)退回内置常用清单 —— 控件不能因为一个可选请求就变空壳
@@ -111,6 +113,19 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
     return () => { dead = true }
   }, [nocs, lang])   // eslint-disable-line react-hooks/exhaustive-deps -- titles 是这个 effect 的产物,进依赖会自己触发自己
 
+  // 同族职业:选中之后按 NOC 前 4 位(官方 unit group)现拉。**选满 3 个就不再拉** ——
+  // 报告最多算 3 个职业(/api/report 的 MAX_NOCS),再推就是让他做没用的动作。
+  // 服务端查库,不拿热门 200 条筛:那 200 条只覆盖 41% 的职业,冷门职业会静默出不来。
+  useEffect(() => {
+    if (!nocs.length || nocs.length >= 3) { setKin([]); return }
+    let dead = false
+    fetch(`/api/quiz?kin=${encodeURIComponent(nocs.slice(0, 3).join(','))}`)
+      .then((r) => r.json())
+      .then((d) => { if (!dead) setKin(Array.isArray(d?.kin) ? d.kin : []) })
+      .catch(() => { if (!dead) setKin([]) })   // 拉不到就不出这一行(可选功能不该让控件变空壳)
+    return () => { dead = true }
+  }, [nocs])
+
   // 显示名优先用库里的短名(三语,ETL 04g 产)——前端不自己截字符串,清洗归数据层
   const label = (x: Cand) => pickName(x, lang)
   // onChange 必须在 updater **外面**调:React 的 setState updater 跑在渲染阶段,
@@ -147,6 +162,23 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
                 {titles[n] ? shortOcc(titles[n]) : <Skeleton />}<span style={{ opacity: .7 }}>×</span>
               </button>
             ))}
+          </div>
+        )}
+
+        {/* 同族职业(Frank「21231/21232 那种对儿自动挨一起」):选了之后才出,一行 chip,点一下即加选。
+            官方 unit group(NOC 前 4 位)分族,不用本站的中文大类(那套有杂物桶)。
+            **不写「推荐」二字**:这不是我们替他判断哪个更好,只是把官方同一族里还在招的摆出来让他自己认。 */}
+        {kin.length > 0 && (
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: 12.5, color: UI.text3, marginBottom: 6 }}>{t('quiz.kin')}</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {kin.map((x) => (
+                <button key={x.noc} onClick={() => toggle(x.noc, label(x))} style={{ ...chipStyle(nocs.includes(x.noc)), display: 'inline-flex', gap: 6, alignItems: 'baseline' }}>
+                  {shortOcc(label(x))}
+                  <span style={{ opacity: .7, fontSize: 11.5 }}>{t('quiz.openN', { n: x.open })}</span>
+                </button>
+              ))}
+            </div>
           </div>
         )}
 

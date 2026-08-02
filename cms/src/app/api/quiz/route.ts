@@ -7,7 +7,7 @@
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import { fetchNocOpenCounts, fetchQuizFacts, fetchTopNocs, searchNocByTitle } from '@/lib/jobsSql'
+import { fetchKinNocs, fetchNocOpenCounts, fetchQuizFacts, fetchTopNocs, searchNocByTitle } from '@/lib/jobsSql'
 
 // 热门职业清单的进程内缓存(键=limit);Render 单实例,重启即失效,不需要额外依赖
 const topCache = new Map<number, { at: number; rows: unknown[] }>()
@@ -34,6 +34,10 @@ export async function GET(req: Request) {
     topCache.set(n, { at: Date.now(), rows })
     return Response.json({ top: rows })
   }
+  // ?kin=21232 → 同族职业(NOC 前 4 位相同)。**不拿前端已有的热门 200 条筛** ——
+  // 那 200 条只覆盖 41% 的职业,冷门职业的同族根本不在里面,靠它筛会**静默失效**(看着像「没有同族」)。
+  const kin = (sp.get('kin') || '').split(',').map((x) => x.trim()).filter(Boolean).slice(0, 3)
+  if (kin.length) return Response.json({ kin: await fetchKinNocs(pool, kin) })
   // ?counts=21232,63200 → 这些 NOC 的在招/可提名数(第 2 题热门职业按钮挂真数)
   const counts = (sp.get('counts') || '').split(',').map((x) => x.trim()).filter(Boolean).slice(0, 30)
   if (counts.length) return Response.json({ counts: await fetchNocOpenCounts(pool, counts) })

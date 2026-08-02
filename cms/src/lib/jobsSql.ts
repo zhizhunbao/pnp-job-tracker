@@ -671,6 +671,29 @@ export async function fetchTopNocs(pool: any, limit = 24): Promise<{ noc: string
   return rows.map((r: any) => ({ noc: r.noc, title: r.title, titleZh: r.title_zh, titleZhShort: r.title_zh_short, titleKoShort: r.title_ko_short, titleEnShort: r.title_en_short, broad: r.broad, open: r.open, eligible: r.eligible, medianSalary: num(r.med) }))
 }
 
+/**
+ * 选职业控件的**同族职业**(Frank「21231/21232 那种对儿自动挨一起」)。
+ * 「同族」= NOC 码前 4 位相同(官方 unit group)。**用官方码分,不用本站的中文大类** ——
+ * 实测本站 broad/mid 是有杂物桶的(#126 另账),而 NOC 2021 的码本身就是层级,不受我们错标影响
+ * (同 reportFacts 取相邻职业的理由)。比报告里的「相关职业」(前 3 位 minor group)更紧一档:
+ * 这里是替他补全「他其实也干得了的那几个」,放太宽会变成推荐一整个行业。
+ * 零在招的不推:控件里每个 chip 都挂在招数,推一个「0 岗」等于让他白点(同卡⑥不给空头的口径)。
+ */
+export async function fetchKinNocs(pool: any, nocs: string[], limit = 6): Promise<{ noc: string; title: string; titleZh: string; titleZhShort: string; titleKoShort: string; titleEnShort: string; open: number; eligible: number }[]> {
+  const list = nocs.filter((n) => /^\d{5}$/.test(n)).slice(0, 3)
+  if (!list.length) return []
+  const groups = Array.from(new Set(list.map((n) => n.slice(0, 4))))
+  const { rows } = await pool.query(
+    `SELECT j.noc, COALESCE(d.title,'') title, COALESCE(d.title_zh,'') title_zh, COALESCE(d.title_zh_short,'') title_zh_short,
+            COALESCE(d.title_ko_short,'') title_ko_short, COALESCE(d.title_en_short,'') title_en_short,
+            count(*)::int open, count(*) FILTER (WHERE j.pnp_eligible)::int eligible
+     FROM jobs j JOIN noc_descriptions d ON d.noc = j.noc
+     WHERE j.status = 'open' AND left(j.noc, 4) = ANY($1) AND NOT (j.noc = ANY($2))
+     GROUP BY j.noc, d.title, d.title_zh, d.title_zh_short, d.title_ko_short, d.title_en_short
+     ORDER BY count(*) DESC LIMIT $3`, [groups, list, Math.min(Math.max(limit, 1), 12)])
+  return rows.map((r: any) => ({ noc: r.noc, title: r.title, titleZh: r.title_zh, titleZhShort: r.title_zh_short, titleKoShort: r.title_ko_short, titleEnShort: r.title_en_short, open: r.open, eligible: r.eligible }))
+}
+
 /** 入口三问第 2 题的职业搜索:按中/英职业名模糊找 NOC(noc_descriptions 维度表,≤8 条) */
 export async function searchNocByTitle(pool: any, q: string): Promise<{ noc: string; title: string; titleZh: string; titleZhShort: string; titleKoShort: string; titleEnShort: string }[]> {
   const s = q.trim()
