@@ -97,7 +97,7 @@ export const FIELDS: Record<string, FieldDef> = {
     toAnswer: (b: number) => (b ? TOTAL_EXP[b] : undefined),
     q: {
       type: 'radiogroup', name: 'totalExpBand', isRequired: true,
-      title: l('Total experience in this occupation?', '做过这行一共多久?(含海外)', '이 직종 총 경력은?(해외 포함)'),
+      title: l('Total experience in this occupation?', '做这个职业一共多久了?(含海外)', '이 직종 총 경력은?(해외 포함)'),
       choices: [
         { value: 1, text: l('None', '没有', '없음') },
         { value: 2, text: l('Under 1 year', '不到 1 年', '1년 미만') },
