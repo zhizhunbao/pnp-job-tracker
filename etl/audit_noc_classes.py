@@ -22,7 +22,8 @@ import sys
 from collections import Counter, defaultdict
 
 from _paths import MART, PROCESSED
-from noc import BROAD, MID_PREFIX, NOC_INFO, classify
+from noc import classify, official_broad_of
+from noc_buckets import BROADS, bucket_of
 
 IN_STATS = MART / "stats_occupation.json"      # 每职业一行(province=all 那批带在招量与中位薪资)
 IN_DESCR = MART / "noc_descriptions.json"      # 官方名 + 中文名(职业名的真相来源)
@@ -45,12 +46,15 @@ OFFICIAL_BROAD = {
 # 关键词线索:职业名里出现这些词时,它「通常」属于右边那个大类。
 # 命中 ≠ 分错(见文件头);只是把该看的行挑出来,省得 494 条一条条扫。
 SMELL = [
-    (("园艺", "园林", "农场", "农业", "林业", "渔", "矿", "油气", "钻井"), "资源"),
-    (("维修", "修理", "安装", "焊", "管道", "电工", "木工", "机械师", "技师"), "技工"),
-    (("司机", "驾驶", "运输", "仓储", "搬运"), "技工"),
-    (("护士", "护理", "医生", "药剂", "牙科", "理疗", "影像"), "医疗"),
-    (("教师", "幼教", "讲师", "社工"), "教育"),
-    (("清洁", "保洁", "服务员", "收银", "导购", "厨"), "服务"),
+    (("园艺", "园林", "农场", "农业", "林业", "渔", "矿", "钻井"), "农林渔与资源"),
+    (("焊", "管道", "电工", "木工", "机械师", "维修", "安装"), "技工与建筑"),
+    (("司机", "驾驶", "货运", "仓储", "搬运"), "运输与仓储"),
+    (("护士", "护理", "医生", "药剂", "牙科", "理疗"), "医疗"),
+    (("教师", "幼教", "讲师", "社工"), "教育与社会服务"),
+    (("厨师", "厨工", "餐饮", "服务员"), "餐饮与住宿"),
+    (("清洁", "保洁"), "生活服务"),
+    (("收银", "导购", "零售销售"), "销售与零售"),
+    (("软件", "程序员", "网页", "数据库", "网络安全"), "IT"),
 ]
 
 
@@ -73,32 +77,41 @@ def main():
             "noc": noc, "teer": c["teer"], "broad": c["broad"], "mid": c["mid"], "fine": c["fine"],
             "zh": zh, "en": r.get("titleEn") or d.get("title") or "",
             "open": r.get("openJobs") or 0,
-            "byHand": noc in NOC_INFO,                       # 中/小类是人工表给的,还是前缀兜底
+            "byHand": bucket_of(noc) is not None,             # 有没有被映射覆盖(硬检查:必须全覆盖)
+            "official": official_broad_of(noc),               # 官方第 1 位的组(对照用)
             "noFine": c["fine"] == c["mid"],                 # 小类 == 中类:等于没分小类
         })
 
     print(f"职业 {len(rows)} 个(mart/stats_occupation 的 province=all)\n")
 
-    # ① 每个大类装了什么
-    print("=== ① 大类:本站简称 vs 官方组名 ===")
+    # ① 每个分类装了什么
+    print("=== ① 本站浏览分类里装了什么(括号=它们在官方属于哪一组) ===")
     by_broad = defaultdict(list)
     for x in rows:
         by_broad[x["broad"]].append(x)
-    for digit, label in BROAD.items():
+    for label in BROADS + ["未分类"]:
         lst = sorted(by_broad.get(label, []), key=lambda x: -x["open"])
-        print(f"\n[{digit}] {label}  ← 官方:{OFFICIAL_BROAD[digit]}")
-        print(f"    职业 {len(lst)} 个 · 在招 {sum(x['open'] for x in lst):,}")
-        for x in (lst if show_all else lst[:8]):
-            print(f"    {x['noc']}  T{x['teer']}  {x['mid']:<10}/{x['fine']:<14} {x['zh'][:22]:<24} {x['open']:>6,} 在招")
-        if not show_all and len(lst) > 8:
-            print(f"    …… 其余 {len(lst) - 8} 个(--all 看全量,或读 {OUT_TSV.name})")
+        if not lst:
+            continue
+        srcs = Counter(x["official"] for x in lst)
+        print(f"\n【{label}】 职业 {len(lst)} · 在招 {sum(x['open'] for x in lst):,}"
+              f"  ← 官方来源:{'、'.join(f'{k}×{v}' for k, v in srcs.most_common())}")
+        for x in (lst if show_all else lst[:6]):
+            print(f"    {x['noc']}  T{x['teer']}  {x['mid']:<10}/{x['fine'][:14]:<16} {x['zh'][:20]:<22} {x['open']:>6,} 在招")
+        if not show_all and len(lst) > 6:
+            print(f"    …… 其余 {len(lst) - 6} 个(--all 看全量,或读 {OUT_TSV.name})")
 
     # ② 三级到底分过没有
     print("\n=== ② 中/小类的成色 ===")
     hand = sum(1 for x in rows if x["byHand"])
     nofine = sum(1 for x in rows if x["noFine"])
-    print(f"    中/小类人工确认过(在 noc.py 的 NOC_INFO 里): {hand:>4} / {len(rows)}")
-    print(f"    走前缀兜底(MID_PREFIX {len(MID_PREFIX)} 条规则)  : {len(rows) - hand:>4} / {len(rows)}")
+    print(f"    ✅ 映射覆盖: {hand} / {len(rows)}" if hand == len(rows) else
+          f"    ❌ 漏映射 {len(rows) - hand} 个(必须补进 noc_buckets,不许兜底):")
+    for x in rows:
+        if not x["byHand"]:
+            print(f"        {x['noc']} {x['zh'][:24]} {x['open']} 在招")
+    bad = [x for x in rows if x["broad"] not in BROADS]
+    print(f"    ✅ 大类值全在本站清单内" if not bad else f"    ❌ {len(bad)} 个职业的大类不在清单里")
     print(f"    小类 == 中类(等于没有小类)                  : {nofine:>4} / {len(rows)}")
     mids = Counter(x["mid"] for x in rows)
     print("    最挤的中类(装的职业数):", "、".join(f"{m} {n}" for m, n in mids.most_common(6)))

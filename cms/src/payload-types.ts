@@ -1035,6 +1035,11 @@ export interface NocCategory {
   fine?: string | null;
   teer?: number | null;
   /**
+   * 大分类(本站浏览分类的英文名)
+   */
+  broadEn?: string | null;
+  broadKo?: string | null;
+  /**
    * 中分类(官方英文名,去掉套话前缀)
    */
   midEn?: string | null;
@@ -2007,6 +2012,8 @@ export interface NocCategoriesSelect<T extends boolean = true> {
   mid?: T;
   fine?: T;
   teer?: T;
+  broadEn?: T;
+  broadKo?: T;
   midEn?: T;
   midKo?: T;
   fineEn?: T;

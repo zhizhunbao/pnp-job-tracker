@@ -441,10 +441,12 @@ def build():
     cat_i18n = {}
     for n in {j.get("noc") for j in jobs if j.get("noc")}:
         c = NOC.classify(n)
+        cat_i18n.setdefault(c["broad"], (c["broadEn"], c["broadKo"]))
         cat_i18n.setdefault(c["mid"], (c["midEn"], c["midKo"]))
         cat_i18n.setdefault(c["fine"], (c["fineEn"], c["fineKo"]))
     noc_categories = [{
         "broad": b, "mid": m, "fine": f, "teer": (t if t >= 0 else None),
+        "broadEn": cat_i18n.get(b, (None, None))[0], "broadKo": cat_i18n.get(b, (None, None))[1],
         "midEn": cat_i18n.get(m, (None, None))[0], "midKo": cat_i18n.get(m, (None, None))[1],
         "fineEn": cat_i18n.get(f, (None, None))[0], "fineKo": cat_i18n.get(f, (None, None))[1],
     } for b, m, f, t in cat_keys]

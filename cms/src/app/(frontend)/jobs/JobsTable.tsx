@@ -46,8 +46,9 @@ const FREE_PLAN: Plan = { isPro: false, loggedIn: false, profileOk: false, profi
 // noc_categories 每行自带 mid_en/mid_ko/fine_en/fine_ko,页面拿到 dims 时登记一次。
 // 登记表查不到才退回老路:cat.* → broad.*(老值仍在库里) → 原值。
 const CAT_L10N: Record<string, { en?: string; ko?: string }> = {}
-export function registerCatLabels(rows: { mid?: string; fine?: string; midEn?: string; midKo?: string; fineEn?: string; fineKo?: string }[]): void {
+export function registerCatLabels(rows: { broad?: string; mid?: string; fine?: string; broadEn?: string; broadKo?: string; midEn?: string; midKo?: string; fineEn?: string; fineKo?: string }[]): void {
   for (const r of rows) {
+    if (r.broad && (r.broadEn || r.broadKo)) CAT_L10N[r.broad] = { en: r.broadEn, ko: r.broadKo }
     if (r.mid && (r.midEn || r.midKo)) CAT_L10N[r.mid] = { en: r.midEn, ko: r.midKo }
     if (r.fine && (r.fineEn || r.fineKo)) CAT_L10N[r.fine] = { en: r.fineEn, ko: r.fineKo }
   }
@@ -548,7 +549,7 @@ type Dims = {
   cities: { name: string; province: string }[]
   districts: { name: string; city: string; province: string }[]
   // 中/小分类的英韩名跟着维度表下发(2026-08-03 换官方分类那批):显示层不再自己攒翻译表
-  nocCategories: { broad: string; mid: string; fine: string; teer: number | null; midEn?: string; midKo?: string; fineEn?: string; fineKo?: string }[]
+  nocCategories: { broad: string; mid: string; fine: string; teer: number | null; broadEn?: string; broadKo?: string; midEn?: string; midKo?: string; fineEn?: string; fineKo?: string }[]
   sources: { name: string }[]
   experienceLevels: { name: string }[]
   pnpOccupations: PnpOcc[]
@@ -738,7 +739,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
   const t = makeT(lang)
   // 大分类标签:'未分类' 复用规范 key cell.uncat(字典无 broad.未分类,否则会回退成原样输出 "broad.未分类")
-  const broadLabel = (v?: string) => (v && v !== '未分类' ? t('broad.' + v) : t('cell.uncat'))
+  // 大类显示名同样走 catName:名字住 noc_categories(broad_en/broad_ko),
+  // 分类换一版就不必再往 i18n 里手加 17×3 个键(#256 那类事故的同一个根)
+  const broadLabel = (v?: string) => (v && v !== '未分类' ? catName(t, v) : t('cell.uncat'))
   const catLabel = (v?: string) => (!v || v === '未分类' ? t('cell.uncat') : catName(t, v))
   const toggleSort = (key: ColKey) =>
     setSort((s) => {
@@ -3085,7 +3088,7 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
           {noc?.title ? <FactRow k={t('fact.nocTitle')}>{noc.title}</FactRow> : null}
         </> : null}
         {(field === 'noc' || field === 'teer') && <FactRow k={t('col.teer')}>{job.teer != null ? `TEER ${job.teer} (${t('teer.' + job.teer)})` : null}</FactRow>}
-        {(field === 'noc' || depth >= 1) && <FactRow k={t('col.broad')}>{job.broad && job.broad !== '未分类' ? t('broad.' + job.broad) : null}</FactRow>}
+        {(field === 'noc' || depth >= 1) && <FactRow k={t('col.broad')}>{job.broad && job.broad !== '未分类' ? catName(t, job.broad) : null}</FactRow>}
         {(field === 'noc' || depth >= 2) && <FactRow k={t('col.mid')}>{job.mid && job.mid !== '未分类' ? catName(t, job.mid) : null}</FactRow>}
         {/* 官方层级里有 36 个中类只有一个小类(两级同名)——那时小类不再重复一遍,留空 */}
         {(field === 'noc' || depth >= 3) && <FactRow k={t('col.fine')}>{job.fine && job.fine !== '未分类' && job.fine !== job.mid ? catName(t, job.fine) : null}</FactRow>}

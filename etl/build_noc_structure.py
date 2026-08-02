@@ -60,7 +60,37 @@ PROMPT = """把下面这个加拿大官方职业分类(NOC 2021)的**类别名**
 
 类别名:{title}"""
 
-LANGS = {"zh": "简体中文", "ko": "한국어"}
+LANGS = {"zh": "简体中文", "ko": "한국어", "en": "English"}
+
+# 人话名(2026-08-03 Frank 实拍「你现在这个大类 中类 小类 让人看不懂」):
+# 官方名是**统计年鉴的话**(「行政服务金融与商业服务及通信专业中层管理职业(不含广播)」),
+# 拿它当界面文案 = 让求职者读普查表。官方名留作数据与灰字小注,显示层用这一版。
+UI_PROMPT = """下面是加拿大官方职业分类里的一类职业(官方名写得很学术)。
+用**招聘网站的分类口吻**给这一类起个名字,翻译成{lang}。
+
+规则:
+- 只输出名字本身,不要解释、不要引号。
+- **4-10 个字**(韩文相当长度),像招聘网站左侧的分类名。
+- 不要「职业」「人员」「相关」「专业」这类套话,不要括号补语,不要「不含 X」。
+- 用求职者会说的词:计算机相关就说 IT,护理就说 护理,餐饮就说 餐饮。
+- 保留这一类真正的区分点(技术员 vs 专业人员、中层管理 vs 一线)。
+
+官方名:{title}"""
+
+# 十个大类的人话名**手写**(它们是浏览入口,最该是人话;模型不必掺和)。
+# 官方名照旧在 en/zh 里,界面把它当灰字小注 —— 人话名主文案 + 官方名小注(CLAUDE.md 展示约定)。
+UI_FIX = {
+    ("0", "zh"): "管理层", ("0", "en"): "Management", ("0", "ko"): "관리직",
+    ("1", "zh"): "商务与行政", ("1", "en"): "Business & admin", ("1", "ko"): "비즈니스·행정",
+    ("2", "zh"): "科技与工程", ("2", "en"): "Tech & engineering", ("2", "ko"): "기술·엔지니어링",
+    ("3", "zh"): "医疗与健康", ("3", "en"): "Healthcare", ("3", "ko"): "의료·헬스케어",
+    ("4", "zh"): "教育与社会服务", ("4", "en"): "Education & social", ("4", "ko"): "교육·사회서비스",
+    ("5", "zh"): "文化艺术与体育", ("5", "en"): "Arts & sport", ("5", "ko"): "예술·스포츠",
+    ("6", "zh"): "销售与服务", ("6", "en"): "Sales & service", ("6", "ko"): "영업·서비스",
+    ("7", "zh"): "技工与运输", ("7", "en"): "Trades & transport", ("7", "ko"): "기능직·운송",
+    ("8", "zh"): "农林渔与资源", ("8", "en"): "Resources & farming", ("8", "ko"): "자원·농업",
+    ("9", "zh"): "制造与公用事业", ("9", "en"): "Manufacturing", ("9", "ko"): "제조·공공사업",
+}
 
 # 人工裁决表(同 04g 的 SHORT_FIX):模型连着几轮都过不了校验的,手写进来 ——
 # 写在脚本里而不是改产出文件,重跑才不会丢。留空也行(前端回退英文),但这两条是中类,出现频率高。
@@ -95,12 +125,12 @@ def short_en(title: str) -> str:
     return s[:1].upper() + s[1:] if s else title
 
 
-def translate(title: str, lang: str) -> str:
-    """一条一译,逐条校验;不过关返回空 —— 空的前端回退英文,不瞎编。"""
+def translate(title: str, lang: str, ui: bool = False) -> str:
+    """一条一译,逐条校验;不过关返回空 —— 空的前端回退,不瞎编。ui=True 出人话名(界面用)。"""
     try:
         r = httpx.post(f"{OLLAMA}/api/generate", timeout=120, json={
             "model": MODEL, "stream": False, "think": False,
-            "prompt": PROMPT.format(lang=LANGS[lang], title=title),
+            "prompt": (UI_PROMPT if ui else PROMPT).format(lang=LANGS[lang], title=title),
             "options": {"temperature": 0},
         })
         r.raise_for_status()
@@ -108,7 +138,9 @@ def translate(title: str, lang: str) -> str:
     except Exception as e:                                    # 网络/模型抽风:这一条留空,下次续跑
         print(f"    ! {lang} {title[:40]}: {e}")
         return ""
-    if not out or len(out) > 40:
+    if not out or len(out) > (16 if ui else 40):
+        return ""
+    if ui and ("职业" in out or "人员" in out or "(" in out or "(" in out):   # 套话/括号补语一律退回重来
         return ""
     if lang == "zh" and (not CJK.search(out) or LATIN.search(out)):
         return ""
@@ -133,12 +165,16 @@ def main() -> None:
             continue
         prev = old.get(code, {})
         levels[code] = {"level": int(lvl), "en": title, "enShort": short_en(title),
-                        "zh": prev.get("zh", ""), "ko": prev.get("ko", "")}
+                        "zh": prev.get("zh", ""), "ko": prev.get("ko", ""),
+                        # 人话名(界面显示用;官方名留作灰字小注与出处)
+                        "zhUi": UI_FIX.get((code, "zh"), prev.get("zhUi", "")),
+                        "koUi": UI_FIX.get((code, "ko"), prev.get("koUi", "")),
+                        "enUi": UI_FIX.get((code, "en"), prev.get("enUi", ""))}
     print(f"  层级:大类 {sum(1 for v in levels.values() if v['level'] == 1)}"
           f" · 中类 {sum(1 for v in levels.values() if v['level'] == 3)}"
           f" · 小类 {sum(1 for v in levels.values() if v['level'] == 4)}")
 
-    todo = [c for c, v in levels.items() if not v["zh"] or not v["ko"]]
+    todo = [c for c, v in levels.items() if not all(v[k] for k in ("zh", "ko", "zhUi", "koUi", "enUi"))]
     if limit:
         todo = todo[:limit]
     print(f"  待翻 {len(todo)} 条(已翻的跳过;--retranslate 全部重来)")
@@ -147,11 +183,14 @@ def main() -> None:
         for lang in ("zh", "ko"):
             if not v[lang]:
                 v[lang] = FIX.get((code, lang)) or translate(v["enShort"], lang)
-        print(f"  [{i}/{len(todo)}] {code} {v['enShort'][:44]:<46} zh={v['zh'] or '(空)'} ko={v['ko'] or '(空)'}")
+        for lang, key in (("zh", "zhUi"), ("ko", "koUi"), ("en", "enUi")):
+            if not v[key]:
+                v[key] = translate(v["enShort"], lang, ui=True) if lang != "en" else short_en(v["en"])
+        print(f"  [{i}/{len(todo)}] {code} {v['enShort'][:34]:<36} 人话 zh={v['zhUi'] or '(空)'} ko={v['koUi'] or '(空)'}")
 
     # 撞车检测(04g 短名那次的教训:逐条翻的模型看不见别的条目,两个类别翻成同一个名字它不会知道;
     # 而分类名撞车 = 筛选下拉里出现两个一模一样的选项,点哪个都对不上)。**只报不改**,人工裁决。
-    for lang in ("enShort", "zh", "ko"):
+    for lang in ("enShort", "zh", "ko", "zhUi"):
         seen: dict[str, list[str]] = {}
         for code, v in levels.items():
             if v[lang]:
@@ -174,7 +213,7 @@ def main() -> None:
         else:
             print(f"  ✓ {lang} 无撞车(官方父子同名占位 {official} 组不算)")
 
-    miss = {lang: sum(1 for v in levels.values() if not v[lang]) for lang in ("zh", "ko")}
+    miss = {lang: sum(1 for v in levels.values() if not v[lang]) for lang in ("zh", "ko", "zhUi", "koUi")}
     OUT.write_text(json.dumps({"fetched": datetime.date.today().isoformat(), "source": URL, "levels": levels},
                               ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"\n写出 {OUT}  共 {len(levels)} 条;留空 zh {miss['zh']} · ko {miss['ko']}")

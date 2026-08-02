@@ -18,3 +18,7 @@ ALTER TABLE noc_categories ADD COLUMN IF NOT EXISTS fine_ko varchar;
 
 -- 灌数前清掉表级哈希(这张表这次是整表换血:104 行 → 官方层级下的新组合)
 -- DELETE FROM seed_state WHERE name = 'noc_categories';
+
+-- 追加(2026-08-03 晚,浏览分类换成本站分类树那一批):大类名也进维度表
+ALTER TABLE noc_categories ADD COLUMN IF NOT EXISTS broad_en varchar;
+ALTER TABLE noc_categories ADD COLUMN IF NOT EXISTS broad_ko varchar;
