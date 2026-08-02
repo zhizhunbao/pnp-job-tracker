@@ -405,6 +405,11 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
     }
     if (f.open === 0) gaps.push({ key: 'rpt.g.zeroJobs', params: { prov }, verdict: 'warn' })
 
+    // 排除清单上的省:上一句刚说完「这个职业在该省的排除清单上」,紧接着再摆该省的抽选分数线
+    // 是**自相矛盾的误导** —— 那条线跟他没关系,他根本进不了这个省的池子(2026-08-02 走查实见:
+    // 「NOC 44101 在 AB 的排除清单上」下面跟着「AB 近 6 次抽选线 52–65」)。整段跳过。
+    if (excluded) continue
+
     // 抽选参考:近 N 次该省有分数的轮次。通道对不上不给差分 —— 单一通道才敢差分,否则只摆区间
     const recent = facts.draws
       .filter((d) => d.province === prov && d.score != null)

@@ -81,6 +81,22 @@ describe('四态其余两态 + 排除清单', () => {
     const r = buildPrReport(base({ targetProvinces: ['QC'] }), exp12, dims, facts({ noc: '31301', title: 'RN', teer: 1 }))
     expect(keys(r.conclusions)).toContain('rpt.c.qc')
   })
+  // 2026-08-02 走查实见:「NOC 44101 在 AB 的排除清单上」下面紧跟着「AB 近 6 次抽选线 52–65」——
+  // 他根本进不了这个省的池子,那条线跟他没关系,摆出来就是误导
+  it('被该省排除的职业:不再摆这个省的抽选线(自相矛盾)', () => {
+    const r = buildPrReport(base({ targetProvinces: ['AB'] }), exp12, dims, facts({
+      noc: '65200', title: 'Food service', teer: 5,
+      byProv: [{ province: 'AB', open: 12, named: 0 }],
+      draws: [
+        { province: 'AB', drawDate: '2026-07-21', stream: 'Alberta Express Entry', score: 65 },
+        { province: 'AB', drawDate: '2026-07-07', stream: 'Alberta Express Entry', score: 52 },
+      ],
+    }))
+    expect(keys(r.conclusions)).toContain('rpt.c.excluded')
+    expect(keys(r.conclusions)).not.toContain('rpt.c.drawBand')
+    expect(keys(r.conclusions)).not.toContain('rpt.c.scoreBand')
+  })
+
   it('AB 排除清单职业 → excluded fail 带出处', () => {
     const r = buildPrReport(base({ targetProvinces: ['AB'] }), exp12, dims, facts({ noc: '65200', title: 'Food service', teer: 5 }))
     const ex = r.conclusions.find((c) => c.key === 'rpt.c.excluded')!

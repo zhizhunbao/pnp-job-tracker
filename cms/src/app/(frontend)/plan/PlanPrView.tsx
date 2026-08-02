@@ -55,6 +55,13 @@ const CARD: React.CSSProperties = { background: '#fff', border: `1px solid ${UI.
 // 动作钮共用样式(报告态顶部的「改答案」「存为 PDF」)
 const BTN: React.CSSProperties = { border: `1px solid ${UI.border}`, background: '#fff', color: UI.text, borderRadius: 8, padding: '5px 14px', fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }
 
+// 探索两题到底能兑现什么(走查 2026-08-02):
+// · EE 分差 —— 只有这个职业**真在某个还在抽的 EE 类别**里才算得出。
+//   判据用免费层一定在的那条缺口行(rpt.g.noCrs = 「补个 CRS 就能算你与 X 类别的差距」);
+//   不在类别(eeNone)或类别停抽(eeStale)时它根本不会出现。
+// · 时间窗 —— 境外没有加拿大签证,拿档位造时间窗=编数(字段库里 pgwpBand 对 overseas 就不传)。
+const eeLive = (r: Rpt): boolean => r.gaps.some((g) => g.key === 'rpt.g.noCrs')
+
 // 职业 chip:答题态常驻;报告态**没职业时**也出(空报告说「先选职业」却没有入口=死路,2026-07-31 实拍抓到)
 function OccChip({ noc, nocTitle, t, onPick }: { noc: string; nocTitle: string; t: TFn; onPick: () => void }) {
   return (
@@ -331,6 +338,7 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
   }, [view, ready])
 
   // 链接编号只算一次:正文的 [n] 与底部「依据与链接」是同一张表,不会对不上
+  const canWindow = bands.status !== 'overseas'   // 境外没有加拿大签证 → 时间窗算不出(见 fields.ts 的 pgwpBand)
   const refs = useMemo(
     () => (rpt && rpt !== 'loading' ? collectRefs(rpt, t) : { rows: [] as RefRow[], of: () => undefined as number | undefined }),
     [rpt, t])
@@ -664,10 +672,13 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                   <Notice kind="warn" lead={t('rpt.cta.t')} style={{ margin: '10px 0' }} className="noPrint"
                     action={<span onClick={() => track(`plan-${decision}-cta`)}><Button kind="pro" href="/pricing">{t('rpt.cta.btn')}</Button></span>} />
                 )}
-                {/* 同理:没职业时探索两题也改不了任何结论,不劝答 */}
-                {!rpt.pro && rpt.noc && hasExplore && (!bands.crsBand || !bands.pgwpBand) && (
+                {/* 同理:没职业时探索两题也改不了任何结论,不劝答。
+                    文案按**真能兑现的**说(2026-08-02 走查实见):这个职业不在任何 EE 类别时,
+                    答完 CRS 也算不出「EE 分差」—— 承诺里就不能有它。境外没有加拿大签证,时间窗同理算不出,
+                    两样都兑现不了就整条不挂(说了做不到比不说更伤)。 */}
+                {!rpt.pro && rpt.noc && hasExplore && (!bands.crsBand || !bands.pgwpBand) && (eeLive(rpt) || canWindow) && (
                   <div className="noPrint" style={{ textAlign: 'center', fontSize: 12.5, color: UI.text2, margin: '10px 0 0' }}>
-                    {t('rpt.hook')}
+                    {t(eeLive(rpt) ? (canWindow ? 'rpt.hook' : 'rpt.hook.ee') : 'rpt.hook.win')}
                     <button onClick={() => gotoQuiz('explore')} style={{ marginLeft: 8, border: 'none', background: 'none', color: UI.primary, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}>{t('rpt.hook.go')} →</button>
                   </div>
                 )}

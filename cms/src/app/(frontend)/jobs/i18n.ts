@@ -407,6 +407,7 @@ const zh: Dict = {
   'rpt.pro': 'Pro',
   'rpt.cta.t': '完整报告 + 30 天全站 Pro', 'rpt.cta.s': '一次付清,无自动续费', 'rpt.cta.btn': '解锁',
   'rpt.hook': '再答 2 题可算 EE 分差与时间窗', 'rpt.hook.go': '继续答题',
+  'rpt.hook.ee': '再答 1 题可算 EE 分差', 'rpt.hook.win': '再答 1 题可算时间窗:还赶得上几轮',
 
   'home.cta2.t': '答几道题,看你的职业在哪个省最好走', 'home.cta2.s': '结果全部来自上面这些库内数据,免费',
   'home.st.jobs': '在招岗位', 'home.st.aip': 'AIP 雇主', 'home.st.dli': '所 DLI',
@@ -1120,6 +1121,7 @@ const en: Dict = {
   'rpt.pro': 'Pro',
   'rpt.cta.t': 'Full report + 30 days of site-wide Pro', 'rpt.cta.s': 'One-time payment, no auto-renewal', 'rpt.cta.btn': 'Unlock',
   'rpt.hook': '2 more questions unlock your EE gap and time window', 'rpt.hook.go': 'Continue',
+  'rpt.hook.ee': 'One more question unlocks your EE gap', 'rpt.hook.win': 'One more question unlocks your time window',
 
   'home.cta2.t': 'Answer a few questions — see which province suits your occupation', 'home.cta2.s': 'Free, computed from the data above',
   'home.st.jobs': 'open jobs', 'home.st.aip': 'AIP employers', 'home.st.dli': 'DLIs',
@@ -1806,6 +1808,7 @@ const ko: Dict = {
   'rpt.pro': 'Pro',
   'rpt.cta.t': '전체 보고서 + 30일 전체 Pro', 'rpt.cta.s': '1회 결제, 자동 갱신 없음', 'rpt.cta.btn': '잠금 해제',
   'rpt.hook': '2문항 더 답하면 EE 격차와 체류 기간 계산', 'rpt.hook.go': '계속 답하기',
+  'rpt.hook.ee': '1문항 더 답하면 EE 격차 계산', 'rpt.hook.win': '1문항 더 답하면 체류 기간 계산',
 
   'home.cta2.t': '몇 가지 문항으로 내 직업에 유리한 주 확인', 'home.cta2.s': '위 데이터로 계산, 무료',
   'home.st.jobs': '채용 중', 'home.st.aip': 'AIP 고용주', 'home.st.dli': 'DLI',
