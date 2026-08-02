@@ -91,6 +91,20 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
     return () => { if (timer.current) clearTimeout(timer.current) }
   }, [q])
 
+  // 已选职业的名字:答过一轮再回到这一步时,存档里只有 5 位码 —— 名字得现拉,
+  // 不拉就在 chip 上甩一个「31301」(代码不裸奔,2026-08-01 翻页改回来后实拍撞到)
+  useEffect(() => {
+    const miss = nocs.filter((n) => !titles[n])
+    if (!miss.length) return
+    let dead = false
+    Promise.all(miss.map((n) => fetch(`/api/quiz?noc=${encodeURIComponent(n)}`)
+      .then((r) => r.json())
+      .then((d) => [n, (lang === 'zh' && d?.facts?.titleZh) || d?.facts?.title || n] as [string, string])
+      .catch(() => [n, n] as [string, string])))
+      .then((rows) => { if (!dead) setTitles((m) => ({ ...m, ...Object.fromEntries(rows) })) })
+    return () => { dead = true }
+  }, [nocs, lang])   // eslint-disable-line react-hooks/exhaustive-deps -- titles 是这个 effect 的产物,进依赖会自己触发自己
+
   const label = (x: { title: string; titleZh: string }) => (lang === 'zh' && x.titleZh ? x.titleZh : x.title)
   const toggle = (noc: string, name: string) => {
     setTitles((m) => ({ ...m, [noc]: name }))

@@ -187,8 +187,10 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
   const [nocTitle, setNocTitle] = useState('')
   const [view, setView] = useState<'quiz' | 'report'>('quiz')
   const [stage, setStage] = useState<'basic' | 'explore'>('basic')   // 探索卷=报告 hook 的落点(基本 4 题满才进得来)
-  // 职业是这卷的第一道题(2026-07-31 Frank「第一个问题可以先选职业吗」):每条结论都要 NOC。
-  // 2026-08-01 起它不再是**独立一步** —— 与基本题同屏(Frank「不能同时显示出来吗」),选中即写入。
+  // 职业是流程第一步(2026-07-31 Frank「第一个问题可以先选职业吗」):每条结论都要 NOC。
+  // 2026-08-01 走过一轮「与基本题同屏」,题库扩到 7 道后一屏太长 → 随卷面一起改回翻页,
+  // 它就是第 1 页;已经选过的照样先看到这一步(可换),按「下一题」才进问卷。
+  const [occStep, setOccStep] = useState(true)
   const [ready, setReady] = useState(false)
   const [resetArmed, setResetArmed] = useState(false)   // 重置两步:点一下变「确认重置」,再点才清(不弹系统 confirm)
   const [resetNonce, setResetNonce] = useState(0)       // 清完要让 SurveyJS 模型重建,否则旧答案还留在卷里
@@ -244,6 +246,7 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
   }
   const gotoQuiz = (to: 'basic' | 'explore' = 'basic') => {
     setStage(to)
+    setOccStep(to === 'basic')   // 回来改条件,还是从第一步(职业)看起
     setView('quiz')
     try { window.history.replaceState(null, '', window.location.pathname) } catch { /* ignore */ }
   }
@@ -255,7 +258,7 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
   const ResetBtn = () => (
     <button onClick={() => {
       if (!resetArmed) { setResetArmed(true); return }
-      setBands(clearAnswers()); setNoc(''); setResetArmed(false); setResetNonce((n) => n + 1)
+      setBands(clearAnswers()); setNoc(''); setResetArmed(false); setResetNonce((n) => n + 1); setOccStep(true)
       track(`plan-${decision}-reset`)
     }} style={{ ...BTN, ...(resetArmed ? { color: '#b91c1c', borderColor: '#fecaca', fontWeight: 600 } : {}) }}>
       {t(resetArmed ? 'plan.reset.ok' : 'plan.reset')}
@@ -264,8 +267,7 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
 
   const survey = useMemo(() => {
     if (!ready || view !== 'quiz') return null
-    const startIdx = stage === 'basic' ? 1 : DECISIONS[decision].basic.length + 1
-    const m = new Model(buildSurvey(decision, stage, 0, startIdx))
+    const m = new Model(buildSurvey(decision, stage))
     m.applyTheme(SURVEY_THEME as any)
     m.locale = lang === 'zh' ? 'zh-cn' : lang === 'ko' ? 'ko' : 'en'
     const b = readAnswers()
@@ -397,10 +399,10 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
 .plSurvey .sd-body__navigation>.sv-action,.plSurvey .sd-body__navigation .sd-btn{flex:0 0 auto !important;width:auto;min-width:0;float:none !important}
 /* 框架的禁用态=主按钮透明度 25%(蓝底白字褪成一团看不清);换成站内灰底灰字的正经禁用样式 */
 .plSurvey .sd-btn:disabled{opacity:1;background:${UI.hairline};color:${UI.text3};cursor:default}`}</style>
-            {/* 一张卡、一屏:选职业 + 基本题 + 一个「出报告」(2026-08-01 Frank「不能同时显示出来吗」)。
-                原先职业是独立第一步、题目又一屏一题 —— 找工作卡要点三次才看得到结论。
-                探索题批次仍单独一屏(它是「再答两题解锁」的钩子,不混进基本题)。 */}
-            <div style={{ ...CARD, padding: '14px 20px 6px' }}>
+            {/* 翻页(Frank 2026-08-01「还是改成翻页的吧」):职业=第 1 页,其余一屏一题。
+                中途试过一屏全放,题库扩到 7 道后手机上要滚三四屏才看得到「出报告」。
+                动作行(清空重填/返回)两页共用一套,卡头照旧不出标题 —— 面包屑已经写着「开始规划 › 拿 PR」。 */}
+            <div style={{ ...CARD, padding: '14px 20px 18px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingBottom: 12, marginBottom: 14, borderBottom: `1px solid ${UI.hairline}` }}>
                 {stage === 'explore' && <Tag variant="warn">{t('plan.set.explore')}</Tag>}
                 <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
@@ -411,17 +413,20 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                   <button onClick={() => goBackOr('/')} style={BTN}>{t('detail.back')}</button>
                 </span>
               </div>
-              {/* 职业:它就是这卷的第一道题(题干与四选一同一套字号),只是控件不是单选框。
-                  选中即写入(onChange),自己的动作按钮收起 —— 动作只留卷底那一个 */}
-              {stage === 'basic' && (
-                <div style={{ maxWidth: 600, margin: '0 auto 22px' }}>
+              {/* 第 1 页=职业(题干与四选一同一套字号,只是控件不是单选框):
+                  选中即写入(onChange),按自己的「下一题」才进问卷 —— 跳转永远由用户按 */}
+              {/* 读盘(readAnswers)在 effect 里,所以第一页必须等 ready 再挂 ——
+                  提前挂 OccPicker 会拿着空的 initial 定型,已经选过的职业回显不出来(实拍撞到) */}
+              {!ready ? null : stage === 'basic' && (occStep || !noc) ? (
+                <div style={{ maxWidth: 600, margin: '0 auto' }}>
                   <div style={{ fontSize: 19, fontWeight: 700, lineHeight: 1.55, marginBottom: 6 }}>{t('quiz.q2')}</div>
-                  <OccPicker inline hideDone t={t} lang={lang} initial={bands.nocs}
+                  <OccPicker inline t={t} lang={lang} initial={bands.nocs} doneLabel={t('plan.next')}
                     onChange={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || '') }}
-                    onDone={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || '') }} />
+                    onDone={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || ''); setOccStep(false) }} />
                 </div>
+              ) : (
+                <div className="plSurvey" style={{ maxWidth: 600, margin: '0 auto' }}>{survey && <Survey model={survey} />}</div>
               )}
-              <div className="plSurvey" style={{ maxWidth: 600, margin: '0 auto' }}>{survey && <Survey model={survey} />}</div>
             </div>
           </>
         ) : (
