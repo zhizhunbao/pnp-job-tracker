@@ -39,8 +39,24 @@ export type Plan = {
   proUntil?: string
 }
 const FREE_PLAN: Plan = { isPro: false, loggedIn: false, profileOk: false, profile: null, freeMatchCap: 0 }
-// 中/小分类显示翻译(值仍是数据层中文,筛选/查询语义不变):cat.* 缺键退 broad.*(noc.py 兜底会把大类名当中/小类),再退原值
+// 中/小分类显示名(值仍是数据层中文,筛选/查询语义不变)。
+// 2026-08-03 起**名字住维度表**:分类换成 NOC 官方层级(89 个中类 + 162 个小类)之后,
+// 再靠 i18n 里人肉维护 cat.* 就是等着英文界面冒中文(#247 那类事故)——
+// noc_categories 每行自带 mid_en/mid_ko/fine_en/fine_ko,页面拿到 dims 时登记一次。
+// 登记表查不到才退回老路:cat.* → broad.*(老值仍在库里) → 原值。
+const CAT_L10N: Record<string, { en?: string; ko?: string }> = {}
+export function registerCatLabels(rows: { mid?: string; fine?: string; midEn?: string; midKo?: string; fineEn?: string; fineKo?: string }[]): void {
+  for (const r of rows) {
+    if (r.mid && (r.midEn || r.midKo)) CAT_L10N[r.mid] = { en: r.midEn, ko: r.midKo }
+    if (r.fine && (r.fineEn || r.fineKo)) CAT_L10N[r.fine] = { en: r.fineEn, ko: r.fineKo }
+  }
+}
 export function catName(t: TFn, v: string): string {
+  const lang = t.lang ?? 'zh'
+  if (lang !== 'zh') {
+    const hit = CAT_L10N[v]?.[lang === 'ko' ? 'ko' : 'en']
+    if (hit) return hit
+  }
   for (const k of ['cat.' + v, 'broad.' + v]) { const s = t(k); if (s !== k) return s }
   return v
 }
@@ -527,7 +543,8 @@ type Dims = {
   provinces: { code: string; name: string }[]
   cities: { name: string; province: string }[]
   districts: { name: string; city: string; province: string }[]
-  nocCategories: { broad: string; mid: string; fine: string; teer: number | null }[]
+  // 中/小分类的英韩名跟着维度表下发(2026-08-03 换官方分类那批):显示层不再自己攒翻译表
+  nocCategories: { broad: string; mid: string; fine: string; teer: number | null; midEn?: string; midKo?: string; fineEn?: string; fineKo?: string }[]
   sources: { name: string }[]
   experienceLevels: { name: string }[]
   pnpOccupations: PnpOcc[]
@@ -925,8 +942,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const provOpts = useMemo(() => dims.provinces.map((p) => p.name), [dims])
   const cityOpts = useMemo(() => { const code = fProv ? PROV_CODE[fProv] : ''; return uniq(dims.cities.filter((c) => !code || c.province === code).map((c) => c.name)) }, [dims, fProv])
   const distOpts = useMemo(() => { const code = fProv ? PROV_CODE[fProv] : ''; return uniq(dims.districts.filter((d) => (!code || d.province === code) && (!fCity || d.city === fCity)).map((d) => d.name)) }, [dims, fProv, fCity])
-  // 分类筛选项来自维度表(noc_categories)
+  // 分类筛选项来自维度表(noc_categories);中/小类的英韩名也在这张表里,一并登记给 catName
   const nc = dims.nocCategories
+  useMemo(() => registerCatLabels(nc), [nc])
   const broadOpts = useMemo(() => uniq(nc.map((c) => c.broad)), [nc])
   const midOpts = useMemo(() => uniq(nc.filter((c) => !fBroad || c.broad === fBroad).map((c) => c.mid)), [nc, fBroad])
   const fineOpts = useMemo(() => uniq(nc.filter((c) => (!fBroad || c.broad === fBroad) && (!fMid || c.mid === fMid)).map((c) => c.fine)), [nc, fBroad, fMid])
@@ -1247,7 +1265,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       else if (k === 'score') { node = j.gradeChannel != null ? t('gr.ch.' + j.gradeChannel) : (j.score ?? '—'); Object.assign(extra, { fontWeight: 500, whiteSpace: 'nowrap', fontSize: 12.5, color: gradeColor(j.gradeChannel) }) }  // #132 档名人话化(Frank「X/5 看不懂」);旧库未回填退 0-100 旧分
                       else if (k === 'broad') { node = broadLabel(j.broad); Object.assign(extra, { whiteSpace: 'nowrap', color: cat.fg, fontWeight: 500 }) }
                       else if (k === 'mid') { node = (!j.mid || j.mid === '未分类') ? t('cell.uncat') : catLabel(j.mid); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
-                      else if (k === 'fine') { node = (j.mid === '未分类' || !j.mid) ? '—' : catLabel(j.fine); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
+                      else if (k === 'fine') { node = (j.mid === '未分类' || !j.mid || j.fine === j.mid) ? '—' : catLabel(j.fine); Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'teer') { node = j.teer == null ? '—' : <span title={t('teer.tip', { n: j.teer, l: t('teer.' + j.teer) })}>{`TEER ${j.teer}`}</span>; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       else if (k === 'empHours') { node = j.employmentHours ? t('emp.' + j.employmentHours) : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.employmentHours ? '#4b5563' : '#d1d5db', fontSize: 12.5 }) }
                       else if (k === 'empTerm') { node = j.employmentTerm ? t('term.' + j.employmentTerm) : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.employmentTerm ? '#4b5563' : '#d1d5db', fontSize: 12.5 }) }
@@ -2977,7 +2995,8 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
         {(field === 'noc' || field === 'teer') && <FactRow k={t('col.teer')}>{job.teer != null ? `TEER ${job.teer} (${t('teer.' + job.teer)})` : null}</FactRow>}
         {(field === 'noc' || depth >= 1) && <FactRow k={t('col.broad')}>{job.broad && job.broad !== '未分类' ? t('broad.' + job.broad) : null}</FactRow>}
         {(field === 'noc' || depth >= 2) && <FactRow k={t('col.mid')}>{job.mid && job.mid !== '未分类' ? catName(t, job.mid) : null}</FactRow>}
-        {(field === 'noc' || depth >= 3) && <FactRow k={t('col.fine')}>{job.fine && job.fine !== '未分类' ? catName(t, job.fine) : null}</FactRow>}
+        {/* 官方层级里有 36 个中类只有一个小类(两级同名)——那时小类不再重复一遍,留空 */}
+        {(field === 'noc' || depth >= 3) && <FactRow k={t('col.fine')}>{job.fine && job.fine !== '未分类' && job.fine !== job.mid ? catName(t, job.fine) : null}</FactRow>}
         {field === 'noc' && <NocDutiesView noc={noc} lang={lang} />}
       </FactsBox>
     )
@@ -3294,7 +3313,7 @@ function CategoryPanel({ job, lang, plan, nocDesc, srcField }: { job: JobRow; la
     { f: 'teer', k: t('col.teer'), v: job.teer != null ? `TEER ${job.teer} (${t('teer.' + job.teer)})` : null },
     { f: 'broad', k: t('col.broad'), v: job.broad && job.broad !== '未分类' ? t('broad.' + job.broad) : null },
     { f: 'mid', k: t('col.mid'), v: job.mid && job.mid !== '未分类' ? catName(t, job.mid) : null },
-    { f: 'fine', k: t('col.fine'), v: job.fine && job.fine !== '未分类' ? catName(t, job.fine) : null },
+    { f: 'fine', k: t('col.fine'), v: job.fine && job.fine !== '未分类' && job.fine !== job.mid ? catName(t, job.fine) : null },
   ]
 
   const btn = PILL_BTN

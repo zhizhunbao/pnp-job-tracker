@@ -1,0 +1,1833 @@
+{
+ "fetched": "2026-08-02",
+ "source": "https://www.statcan.gc.ca/en/subjects/standard/noc/2021/indexV1/noc-2021-v1.0-classification-structure.csv",
+ "levels": {
+  "0": {
+   "level": 1,
+   "en": "Legislative and senior management occupations",
+   "enShort": "Legislative and senior management occupations",
+   "zh": "立法与高级管理职业",
+   "ko": "입법 및 고위 관리 직업"
+  },
+  "000": {
+   "level": 3,
+   "en": "Legislative and senior managers",
+   "enShort": "Legislative and senior managers",
+   "zh": "立法人员及高级管理人员",
+   "ko": "입법가 및 고위 관리자"
+  },
+  "0001": {
+   "level": 4,
+   "en": "Legislative and senior managers",
+   "enShort": "Legislative and senior managers",
+   "zh": "立法人员及高级管理人员",
+   "ko": "입법가 및 고위 관리자"
+  },
+  "1": {
+   "level": 1,
+   "en": "Business, finance and administration occupations",
+   "enShort": "Business, finance and administration occupations",
+   "zh": "商业金融和行政职业",
+   "ko": "비즈니스 금융 및 행정 직업"
+  },
+  "100": {
+   "level": 3,
+   "en": "Specialized middle management occupations in administrative services, financial and business services and communication (except broadcasting)",
+   "enShort": "Specialized middle management occupations in administrative services, financial and business services and communication (except broadcasting)",
+   "zh": "行政服务金融与商业服务及通信专业中层管理职业(不含广播)",
+   "ko": "행정, 금융, 비즈니스 서비스 및 통신 전문 중간관리직(방송 제외)"
+  },
+  "1001": {
+   "level": 4,
+   "en": "Administrative services managers",
+   "enShort": "Administrative services managers",
+   "zh": "行政服务经理",
+   "ko": "행정 서비스 관리자"
+  },
+  "1002": {
+   "level": 4,
+   "en": "Managers in financial and business services",
+   "enShort": "Managers in financial and business services",
+   "zh": "金融和商业服务经理",
+   "ko": "금융 및 비즈니스 서비스 관리자"
+  },
+  "1003": {
+   "level": 4,
+   "en": "Managers in communication (except broadcasting)",
+   "enShort": "Managers in communication (except broadcasting)",
+   "zh": "通信经理（不含广播）",
+   "ko": "통신 관리자(방송 제외)"
+  },
+  "111": {
+   "level": 3,
+   "en": "Professional occupations in finance",
+   "enShort": "Professional occupations in finance",
+   "zh": "金融专业职业",
+   "ko": "금융 전문 직업"
+  },
+  "1110": {
+   "level": 4,
+   "en": "Auditors, accountants and investment professionals",
+   "enShort": "Auditors, accountants and investment professionals",
+   "zh": "审计师会计师和投资专业人士",
+   "ko": "감사원 회계사 및 투자 전문가"
+  },
+  "112": {
+   "level": 3,
+   "en": "Professional occupations in business",
+   "enShort": "Professional occupations in business",
+   "zh": "商业专业职业",
+   "ko": "비즈니스 전문 직업"
+  },
+  "1120": {
+   "level": 4,
+   "en": "Human resources and business service professionals",
+   "enShort": "Human resources and business service professionals",
+   "zh": "人力资源和商业服务专业人员",
+   "ko": "인사 및 비즈니스 서비스 전문가"
+  },
+  "120": {
+   "level": 3,
+   "en": "Administrative and financial supervisors",
+   "enShort": "Administrative and financial supervisors",
+   "zh": "行政和金融主管(不含具体执行人员)",
+   "ko": "행정 및 금융 감독자"
+  },
+  "1201": {
+   "level": 4,
+   "en": "Administrative and financial supervisors",
+   "enShort": "Administrative and financial supervisors",
+   "zh": "行政和金融主管(不含具体执行人员)",
+   "ko": "행정 및 금융 감독자"
+  },
+  "121": {
+   "level": 3,
+   "en": "Specialized administrative occupations",
+   "enShort": "Specialized administrative occupations",
+   "zh": "专业行政职业",
+   "ko": "전문 행정 직업"
+  },
+  "1210": {
+   "level": 4,
+   "en": "Administrative and regulatory occupations",
+   "enShort": "Administrative and regulatory occupations",
+   "zh": "行政和监管职业",
+   "ko": "행정 및 규제 직업"
+  },
+  "1211": {
+   "level": 4,
+   "en": "Court reporters, transcriptionists, records management technicians and statistical officers",
+   "enShort": "Court reporters, transcriptionists, records management technicians and statistical officers",
+   "zh": "速记员、记录转录员、档案管理技术员和统计官员",
+   "ko": "법정 기록원, 전사원, 기록 관리 기술자 및 통계 공무원"
+  },
+  "122": {
+   "level": 3,
+   "en": "Accounting, insurance and related business administrative occupations",
+   "enShort": "Accounting, insurance and related business administrative occupations",
+   "zh": "会计保险及相关商业行政职业",
+   "ko": "회계 보험 및 관련 비즈니스 행정 직업"
+  },
+  "1220": {
+   "level": 4,
+   "en": "Accounting, insurance and related business administrative occupations",
+   "enShort": "Accounting, insurance and related business administrative occupations",
+   "zh": "会计保险及相关商业行政职业",
+   "ko": "회계 보험 및 관련 비즈니스 행정 직업"
+  },
+  "131": {
+   "level": 3,
+   "en": "Administrative occupations",
+   "enShort": "Administrative occupations",
+   "zh": "行政职业",
+   "ko": "행정 직업"
+  },
+  "1310": {
+   "level": 4,
+   "en": "Administrative, property and payroll officers",
+   "enShort": "Administrative, property and payroll officers",
+   "zh": "行政物业及薪酬官员",
+   "ko": "행정·재산·급여 담당관"
+  },
+  "1311": {
+   "level": 4,
+   "en": "Office administrative assistants - general, legal and medical",
+   "enShort": "Office administrative assistants - general, legal and medical",
+   "zh": "一般法律及医疗行政助理",
+   "ko": "일반·법률·의료 사무 보조원"
+  },
+  "132": {
+   "level": 3,
+   "en": "Transportation and production logistics coordinators and customs brokers and related broker occupations",
+   "enShort": "Transportation and production logistics coordinators and customs brokers and related broker occupations",
+   "zh": "运输与生产物流协调员及报关员和相关经纪职业(不含报关员)",
+   "ko": "수송 및 생산 물류 조정사, 세관 브로커 및 관련 중개 직업"
+  },
+  "1320": {
+   "level": 4,
+   "en": "Transportation and production logistics coordinators and customs brokers and related broker occupations",
+   "enShort": "Transportation and production logistics coordinators and customs brokers and related broker occupations",
+   "zh": "运输与生产物流协调员及报关员和相关经纪职业(不含报关员)",
+   "ko": "수송 및 생산 물류 조정사, 세관 브로커 및 관련 중개 직업"
+  },
+  "141": {
+   "level": 3,
+   "en": "Office, court, and data support occupations",
+   "enShort": "Office, court, and data support occupations",
+   "zh": "办公室法庭及数据支持职业",
+   "ko": "사무, 법원 및 데이터 지원 직업"
+  },
+  "1410": {
+   "level": 4,
+   "en": "Office support and court services occupations",
+   "enShort": "Office support and court services occupations",
+   "zh": "办公室支持和法院服务职业",
+   "ko": "사무 보조 및 법정 서비스 직업"
+  },
+  "1411": {
+   "level": 4,
+   "en": "Survey, statistical and data entry occupations",
+   "enShort": "Survey, statistical and data entry occupations",
+   "zh": "测量统计和数据录入职业",
+   "ko": "측량 통계 및 데이터 입력 직업"
+  },
+  "142": {
+   "level": 3,
+   "en": "Financial, insurance and related administrative support workers",
+   "enShort": "Financial, insurance and related administrative support workers",
+   "zh": "金融保险及相关行政支持人员",
+   "ko": "금융·보험 및 관련 행정 지원 근로자"
+  },
+  "1420": {
+   "level": 4,
+   "en": "Financial, insurance and related administrative support workers",
+   "enShort": "Financial, insurance and related administrative support workers",
+   "zh": "金融保险及相关行政支持人员",
+   "ko": "금융·보험 및 관련 행정 지원 근로자"
+  },
+  "143": {
+   "level": 3,
+   "en": "Library, correspondence and other clerks",
+   "enShort": "Library, correspondence and other clerks",
+   "zh": "图书、通信及其他文员",
+   "ko": "도서관·우편 및 기타 사무직원"
+  },
+  "1430": {
+   "level": 4,
+   "en": "Library, correspondence and other clerks",
+   "enShort": "Library, correspondence and other clerks",
+   "zh": "图书、通信及其他文员",
+   "ko": "도서관·우편 및 기타 사무직원"
+  },
+  "144": {
+   "level": 3,
+   "en": "Supply chain logistics, tracking and scheduling coordination occupations",
+   "enShort": "Supply chain logistics, tracking and scheduling coordination occupations",
+   "zh": "供应链物流跟踪与调度协调职业(不含具体操作工种)",
+   "ko": "공급망 물류 추적 및 일정 조정 직업"
+  },
+  "1440": {
+   "level": 4,
+   "en": "Supply chain logistics, tracking and scheduling coordination occupations",
+   "enShort": "Supply chain logistics, tracking and scheduling coordination occupations",
+   "zh": "供应链物流跟踪与调度协调职业(不含具体操作工种)",
+   "ko": "공급망 물류 추적 및 일정 조정 직업"
+  },
+  "2": {
+   "level": 1,
+   "en": "Natural and applied sciences and related occupations",
+   "enShort": "Natural and applied sciences and related occupations",
+   "zh": "自然和应用科学及相关职业",
+   "ko": "자연과학 및 응용과학 관련 직업"
+  },
+  "200": {
+   "level": 3,
+   "en": "Specialized middle management occupations in engineering, architecture, science and information systems",
+   "enShort": "Specialized middle management occupations in engineering, architecture, science and information systems",
+   "zh": "工程建筑科学与信息系统类中高级管理职业",
+   "ko": "공학 건축 과학 정보시스템 분야의 전문 중층 관리직"
+  },
+  "2001": {
+   "level": 4,
+   "en": "Managers in engineering, architecture, science and information systems",
+   "enShort": "Managers in engineering, architecture, science and information systems",
+   "zh": "工程建筑科学与信息系统类经理(不含具体技术岗位)",
+   "ko": "공학·건축·과학 및 정보시스템 분야 관리자"
+  },
+  "211": {
+   "level": 3,
+   "en": "Professional occupations in natural sciences",
+   "enShort": "Professional occupations in natural sciences",
+   "zh": "自然科学专业职业",
+   "ko": "자연과학 전문직"
+  },
+  "2110": {
+   "level": 4,
+   "en": "Physical science professionals",
+   "enShort": "Physical science professionals",
+   "zh": "物理科学专业人员",
+   "ko": "물리 과학 전문가"
+  },
+  "2111": {
+   "level": 4,
+   "en": "Life science professionals",
+   "enShort": "Life science professionals",
+   "zh": "生命科学专业人员",
+   "ko": "생명과학 전문가"
+  },
+  "2112": {
+   "level": 4,
+   "en": "Public and environmental health and safety professionals",
+   "enShort": "Public and environmental health and safety professionals",
+   "zh": "公共卫生与环境健康安全专业人员",
+   "ko": "공중 및 환경 보건 안전 전문가"
+  },
+  "212": {
+   "level": 3,
+   "en": "Professional occupations in applied sciences (except engineering)",
+   "enShort": "Professional occupations in applied sciences (except engineering)",
+   "zh": "应用科学类专业职业（不含工程）",
+   "ko": "응용과학 전문직(공학 제외)"
+  },
+  "2120": {
+   "level": 4,
+   "en": "Architects, urban planners and land surveyors",
+   "enShort": "Architects, urban planners and land surveyors",
+   "zh": "建筑师、城市规划师和土地测量师",
+   "ko": "건축가 도시계획사 측량사"
+  },
+  "2121": {
+   "level": 4,
+   "en": "Mathematicians, statisticians, actuaries and data scientists",
+   "enShort": "Mathematicians, statisticians, actuaries and data scientists",
+   "zh": "数学家、统计学家、精算师和数据科学家",
+   "ko": "수학자, 통계학자, 정액보험계리학자 및 데이터 과학자"
+  },
+  "2122": {
+   "level": 4,
+   "en": "Computer and information systems professionals",
+   "enShort": "Computer and information systems professionals",
+   "zh": "计算机和信息系统专业人员",
+   "ko": "컴퓨터 및 정보 시스템 전문가"
+  },
+  "2123": {
+   "level": 4,
+   "en": "Computer, software and Web designers and developers",
+   "enShort": "Computer, software and Web designers and developers",
+   "zh": "计算机、软件和网页设计师及开发人员",
+   "ko": "컴퓨터 소프트웨어 및 웹 디자이너 및 개발자"
+  },
+  "213": {
+   "level": 3,
+   "en": "Professional occupations in engineering",
+   "enShort": "Professional occupations in engineering",
+   "zh": "工程专业职业",
+   "ko": "엔지니어링 전문 직업"
+  },
+  "2130": {
+   "level": 4,
+   "en": "Civil and mechanical engineers",
+   "enShort": "Civil and mechanical engineers",
+   "zh": "土木和机械工程师",
+   "ko": "토목 및 기계 엔지니어"
+  },
+  "2131": {
+   "level": 4,
+   "en": "Electrical, electronics and computer engineers",
+   "enShort": "Electrical, electronics and computer engineers",
+   "zh": "电气电子和计算机工程师",
+   "ko": "전기전자컴퓨터공학자"
+  },
+  "2132": {
+   "level": 4,
+   "en": "Manufacturing and processing engineers",
+   "enShort": "Manufacturing and processing engineers",
+   "zh": "制造与加工工程师",
+   "ko": "제조 및 가공 엔지니어"
+  },
+  "2133": {
+   "level": 4,
+   "en": "Natural resources engineers",
+   "enShort": "Natural resources engineers",
+   "zh": "自然资源工程师",
+   "ko": "자연자원 엔지니어"
+  },
+  "2139": {
+   "level": 4,
+   "en": "Other engineers",
+   "enShort": "Other engineers",
+   "zh": "其他工程师",
+   "ko": "기타 엔지니어"
+  },
+  "221": {
+   "level": 3,
+   "en": "Technical occupations related to natural sciences",
+   "enShort": "Technical occupations related to natural sciences",
+   "zh": "与自然科学相关的技术职业",
+   "ko": "자연과학 관련 기술직"
+  },
+  "2210": {
+   "level": 4,
+   "en": "Technical occupations in physical sciences",
+   "enShort": "Technical occupations in physical sciences",
+   "zh": "物理科学领域的技术职业",
+   "ko": "물리과학 기술직종"
+  },
+  "2211": {
+   "level": 4,
+   "en": "Technical occupations in life sciences",
+   "enShort": "Technical occupations in life sciences",
+   "zh": "生命科学技术职业",
+   "ko": "생명과학 기술직"
+  },
+  "222": {
+   "level": 3,
+   "en": "Technical occupations related to applied sciences (except engineering)",
+   "enShort": "Technical occupations related to applied sciences (except engineering)",
+   "zh": "与工程无关的应用科学相关技术职业",
+   "ko": "응용과학 관련 기술직(공학 제외)"
+  },
+  "2221": {
+   "level": 4,
+   "en": "Technical occupations in architecture, drafting, surveying, geomatics and meteorology",
+   "enShort": "Technical occupations in architecture, drafting, surveying, geomatics and meteorology",
+   "zh": "建筑绘图测绘气象技术职业(不含建筑师)",
+   "ko": "건축 도면 측량 지리정보 기상학 기술 직업(不含 무역)"
+  },
+  "2222": {
+   "level": 4,
+   "en": "Technical occupations in computer and information systems",
+   "enShort": "Technical occupations in computer and information systems",
+   "zh": "计算机和信息系统技术职业",
+   "ko": "컴퓨터 및 정보 시스템 기술 직업"
+  },
+  "2223": {
+   "level": 4,
+   "en": "Technical inspectors and regulatory officers",
+   "enShort": "Technical inspectors and regulatory officers",
+   "zh": "技术检查员和监管官员",
+   "ko": "기술 검사원 및 규제 담당관"
+  },
+  "223": {
+   "level": 3,
+   "en": "Technical occupations related to engineering",
+   "enShort": "Technical occupations related to engineering",
+   "zh": "与工程相关的技术职业",
+   "ko": "엔지니어링 관련 기술 직업"
+  },
+  "2230": {
+   "level": 4,
+   "en": "Technical occupations in civil, mechanical and industrial engineering",
+   "enShort": "Technical occupations in civil, mechanical and industrial engineering",
+   "zh": "土木机械和工业工程技术职业",
+   "ko": "토목·기계·산업 공학 기술 직업"
+  },
+  "2231": {
+   "level": 4,
+   "en": "Technical occupations in electronics and electrical engineering",
+   "enShort": "Technical occupations in electronics and electrical engineering",
+   "zh": "电子与电气工程技术人员",
+   "ko": "전자 및 전기 공학 기술 직업"
+  },
+  "3": {
+   "level": 1,
+   "en": "Health occupations",
+   "enShort": "Health occupations",
+   "zh": "卫生职业",
+   "ko": "보건 직업군"
+  },
+  "300": {
+   "level": 3,
+   "en": "Specialized middle management occupations in health care",
+   "enShort": "Specialized middle management occupations in health care",
+   "zh": "医疗保健专业中层管理职业",
+   "ko": "의료 분야의 전문 중층 관리 직업"
+  },
+  "3001": {
+   "level": 4,
+   "en": "Managers in health care",
+   "enShort": "Managers in health care",
+   "zh": "医疗保健业经理",
+   "ko": "의료 관리 관리자"
+  },
+  "311": {
+   "level": 3,
+   "en": "Health treating and consultation services professionals",
+   "enShort": "Health treating and consultation services professionals",
+   "zh": "健康治疗与咨询服务业专业人员",
+   "ko": "건강 치료 및 상담 서비스 전문가"
+  },
+  "3110": {
+   "level": 4,
+   "en": "Physicians and veterinarians",
+   "enShort": "Physicians and veterinarians",
+   "zh": "医师和兽医",
+   "ko": "의사와 수의학사"
+  },
+  "3111": {
+   "level": 4,
+   "en": "Dentists, optometrists and audiologists",
+   "enShort": "Dentists, optometrists and audiologists",
+   "zh": "牙医、验光师和听力学家",
+   "ko": "치과의사, 안과 전문의 및 청각 전문가"
+  },
+  "3112": {
+   "level": 4,
+   "en": "Pharmacists and dietitians",
+   "enShort": "Pharmacists and dietitians",
+   "zh": "药剂师和营养师",
+   "ko": "약사 및 영양사"
+  },
+  "312": {
+   "level": 3,
+   "en": "Therapy and assessment professionals",
+   "enShort": "Therapy and assessment professionals",
+   "zh": "治疗与评估专业人员",
+   "ko": "치료 및 평가 전문가"
+  },
+  "3120": {
+   "level": 4,
+   "en": "Therapy and assessment professionals",
+   "enShort": "Therapy and assessment professionals",
+   "zh": "治疗与评估专业人员",
+   "ko": "치료 및 평가 전문가"
+  },
+  "313": {
+   "level": 3,
+   "en": "Nursing and allied health professionals",
+   "enShort": "Nursing and allied health professionals",
+   "zh": "护士及卫生专业人员",
+   "ko": "간호사 및 관련 보건 전문가"
+  },
+  "3130": {
+   "level": 4,
+   "en": "Nursing and allied health professionals",
+   "enShort": "Nursing and allied health professionals",
+   "zh": "护士及卫生专业人员",
+   "ko": "간호사 및 관련 보건 전문가"
+  },
+  "321": {
+   "level": 3,
+   "en": "Technical occupations in health (except practitioners of natural healing)",
+   "enShort": "Technical occupations in health (except practitioners of natural healing)",
+   "zh": "健康技术职业（不含自然疗法从业者）",
+   "ko": "건강 관련 기술 직업(자연 치유 전문가 제외)"
+  },
+  "3210": {
+   "level": 4,
+   "en": "Technical occupations in therapy and assessment",
+   "enShort": "Technical occupations in therapy and assessment",
+   "zh": "治疗与评估技术职业",
+   "ko": "치료 및 평가 분야의 기술직"
+  },
+  "3211": {
+   "level": 4,
+   "en": "Technical occupations in dental health care",
+   "enShort": "Technical occupations in dental health care",
+   "zh": "牙科保健技术职业",
+   "ko": "치과 보건 분야의 기술직"
+  },
+  "3212": {
+   "level": 4,
+   "en": "Medical technologists and technicians",
+   "enShort": "Medical technologists and technicians",
+   "zh": "医学技师和技术员",
+   "ko": "의료기술사 및 의료기사"
+  },
+  "322": {
+   "level": 3,
+   "en": "Practitioners of natural healing",
+   "enShort": "Practitioners of natural healing",
+   "zh": "自然疗法从业者",
+   "ko": "자연요법 실천가"
+  },
+  "3220": {
+   "level": 4,
+   "en": "Practitioners of natural healing",
+   "enShort": "Practitioners of natural healing",
+   "zh": "自然疗法从业者",
+   "ko": "자연요법 실천가"
+  },
+  "331": {
+   "level": 3,
+   "en": "Assisting occupations in support of health services",
+   "enShort": "Assisting occupations in support of health services",
+   "zh": "保健服务辅助职业",
+   "ko": "건강 서비스 지원 보조 직업"
+  },
+  "3310": {
+   "level": 4,
+   "en": "Assisting occupations in support of health services",
+   "enShort": "Assisting occupations in support of health services",
+   "zh": "保健服务辅助职业",
+   "ko": "건강 서비스 지원 보조 직업"
+  },
+  "4": {
+   "level": 1,
+   "en": "Occupations in education, law and social, community and government services",
+   "enShort": "Education, law and social, community and government services",
+   "zh": "教育法律及社会社区政府服务",
+   "ko": "교육, 법률 및 사회, 지역사회 및 정부 서비스"
+  },
+  "400": {
+   "level": 3,
+   "en": "Managers in public administration, in education and social and community services and in public protection services",
+   "enShort": "Managers in public administration, in education and social and community services and in public protection services",
+   "zh": "公共行政教育社会社区服务及公共安全服务类管理者(不含具体岗位)",
+   "ko": "공공 행정 교육 사회 및 지역사회 서비스 공공 보호 서비스 분야 관리자"
+  },
+  "4001": {
+   "level": 4,
+   "en": "Managers in public administration",
+   "enShort": "Managers in public administration",
+   "zh": "公共行政管理人员",
+   "ko": "공공 행정 관리자"
+  },
+  "4002": {
+   "level": 4,
+   "en": "Managers in education",
+   "enShort": "Managers in education",
+   "zh": "教育业经理",
+   "ko": "교육 분야 관리자"
+  },
+  "4003": {
+   "level": 4,
+   "en": "Managers in social, community and correctional services",
+   "enShort": "Managers in social, community and correctional services",
+   "zh": "社会社区及矫正服务经理(不含社工)",
+   "ko": "사회·지역사회 및 교정 서비스 관리자"
+  },
+  "4004": {
+   "level": 4,
+   "en": "Managers in public protection services",
+   "enShort": "Managers in public protection services",
+   "zh": "公共安全服务经理",
+   "ko": "공공 보호 서비스 관리자"
+  },
+  "411": {
+   "level": 3,
+   "en": "Professional occupations in law",
+   "enShort": "Professional occupations in law",
+   "zh": "法律专业职业",
+   "ko": "법률 전문 직업"
+  },
+  "4110": {
+   "level": 4,
+   "en": "Judges, lawyers and Quebec notaries",
+   "enShort": "Judges, lawyers and Quebec notaries",
+   "zh": "法官、律师和魁北克公证员",
+   "ko": "판사, 변호사 및 퀘벡 공증인"
+  },
+  "412": {
+   "level": 3,
+   "en": "Professional occupations in education services",
+   "enShort": "Professional occupations in education services",
+   "zh": "教育服务领域的专业职业",
+   "ko": "교육 서비스 전문 직업"
+  },
+  "4120": {
+   "level": 4,
+   "en": "University professors and post-secondary assistants",
+   "enShort": "University professors and post-secondary assistants",
+   "zh": "大学教授及大学助理",
+   "ko": "대학 교수 및 대학원 조교"
+  },
+  "4121": {
+   "level": 4,
+   "en": "College and other vocational instructors",
+   "enShort": "College and other vocational instructors",
+   "zh": "学院及其他职业指导教师",
+   "ko": "대학 및 기타 직업 교육 강사"
+  },
+  "4122": {
+   "level": 4,
+   "en": "Secondary, elementary and kindergarten school teachers",
+   "enShort": "Secondary, elementary and kindergarten school teachers",
+   "zh": "中学小学及幼儿园教师",
+   "ko": "중등·초등·유치원 교사"
+  },
+  "413": {
+   "level": 3,
+   "en": "Professional occupations in social and community services",
+   "enShort": "Professional occupations in social and community services",
+   "zh": "社会和社区服务专业职业",
+   "ko": "사회 및 지역사회 서비스 전문직"
+  },
+  "4130": {
+   "level": 4,
+   "en": "Social and community service professionals",
+   "enShort": "Social and community service professionals",
+   "zh": "社会和社区服务专业人员",
+   "ko": "사회 및 지역사회 서비스 전문가"
+  },
+  "4131": {
+   "level": 4,
+   "en": "Police investigators and probation officers",
+   "enShort": "Police investigators and probation officers",
+   "zh": "警察调查员和缓刑官",
+   "ko": "경찰 조사관 및 보호관찰관"
+  },
+  "4132": {
+   "level": 4,
+   "en": "Educational and employment counsellors",
+   "enShort": "Educational and employment counsellors",
+   "zh": "教育与就业顾问",
+   "ko": "교육 및 취업 상담사"
+  },
+  "414": {
+   "level": 3,
+   "en": "Professional occupations in government services",
+   "enShort": "Professional occupations in government services",
+   "zh": "政府服务中的专业职业",
+   "ko": "정부 서비스 전문직"
+  },
+  "4140": {
+   "level": 4,
+   "en": "Policy and program researchers, consultants and officers",
+   "enShort": "Policy and program researchers, consultants and officers",
+   "zh": "政策与项目研究员、顾问和官员",
+   "ko": "정책 및 프로그램 연구원·컨설턴트·책임자"
+  },
+  "421": {
+   "level": 3,
+   "en": "Occupations in front-line public protection services",
+   "enShort": "Front-line public protection services",
+   "zh": "前线公共安全服务",
+   "ko": "전방 공공 보호 서비스"
+  },
+  "4210": {
+   "level": 4,
+   "en": "Occupations in front-line public protection services",
+   "enShort": "Front-line public protection services",
+   "zh": "前线公共安全服务",
+   "ko": "전방 공공 보호 서비스"
+  },
+  "422": {
+   "level": 3,
+   "en": "Paraprofessional occupations in legal, social, community and education services",
+   "enShort": "Paraprofessional occupations in legal, social, community and education services",
+   "zh": "法律社会社区教育服务类辅助专业人员",
+   "ko": "법률·사회·지역사회 및 교육 서비스 분야의 준전문가 직업"
+  },
+  "4220": {
+   "level": 4,
+   "en": "Paraprofessional occupations in legal, social, community and education services",
+   "enShort": "Paraprofessional occupations in legal, social, community and education services",
+   "zh": "法律社会社区教育服务类辅助专业人员",
+   "ko": "법률·사회·지역사회 및 교육 서비스 분야의 준전문가 직업"
+  },
+  "431": {
+   "level": 3,
+   "en": "Assisting occupations in educational",
+   "enShort": "Assisting occupations in educational",
+   "zh": "教育辅助职业",
+   "ko": "교육 보조 직업"
+  },
+  "4310": {
+   "level": 4,
+   "en": "Assisting occupations in education",
+   "enShort": "Assisting occupations in education",
+   "zh": "教育辅助职业",
+   "ko": "교육 보조 직업"
+  },
+  "432": {
+   "level": 3,
+   "en": "Assisting occupations in legal and public protection",
+   "enShort": "Assisting occupations in legal and public protection",
+   "zh": "法律与公共安全辅助职业",
+   "ko": "법률 및 공공 보호 보조 직업"
+  },
+  "4320": {
+   "level": 4,
+   "en": "Assisting occupations in legal and public protection",
+   "enShort": "Assisting occupations in legal and public protection",
+   "zh": "法律与公共安全辅助职业",
+   "ko": "법률 및 공공 보호 보조 직업"
+  },
+  "441": {
+   "level": 3,
+   "en": "Home care provider occupations",
+   "enShort": "Home care provider occupations",
+   "zh": "家庭护理提供者职业",
+   "ko": "가정 돌봄 제공자 직업군"
+  },
+  "4410": {
+   "level": 4,
+   "en": "Home care provider occupations",
+   "enShort": "Home care provider occupations",
+   "zh": "家庭护理提供者职业",
+   "ko": "가정 돌봄 제공자 직업군"
+  },
+  "442": {
+   "level": 3,
+   "en": "Primary combat members of the Canadian Armed Forces",
+   "enShort": "Primary combat members of the Canadian Armed Forces",
+   "zh": "加拿大武装部队初级作战人员",
+   "ko": "캐나다 군의 주요 전투 요원"
+  },
+  "4420": {
+   "level": 4,
+   "en": "Primary combat members of the Canadian Armed Forces",
+   "enShort": "Primary combat members of the Canadian Armed Forces",
+   "zh": "加拿大武装部队初级作战人员",
+   "ko": "캐나다 군의 주요 전투 요원"
+  },
+  "451": {
+   "level": 3,
+   "en": "Student monitors, crossing guards and related occupations",
+   "enShort": "Student monitors, crossing guards and related occupations",
+   "zh": "学生监督员、交通协管员及相关职业",
+   "ko": "학생 감시원, 횡단보도 안내원 및 관련 직업"
+  },
+  "4510": {
+   "level": 4,
+   "en": "Student monitors, crossing guards and related occupations",
+   "enShort": "Student monitors, crossing guards and related occupations",
+   "zh": "学生监督员、交通协管员及相关职业",
+   "ko": "학생 감시원, 횡단보도 안내원 및 관련 직업"
+  },
+  "5": {
+   "level": 1,
+   "en": "Occupations in art, culture, recreation and sport",
+   "enShort": "Art, culture, recreation and sport",
+   "zh": "艺术文化娱乐和体育",
+   "ko": "예술 문화 레크리에이션 스포츠"
+  },
+  "500": {
+   "level": 3,
+   "en": "Specialized middle management occupations in art, culture, recreation and sport",
+   "enShort": "Specialized middle management occupations in art, culture, recreation and sport",
+   "zh": "艺术文化娱乐和体育专业中层管理职业",
+   "ko": "예술 문화 레크리에이션 스포츠 분야의 전문 중층 관리 직업"
+  },
+  "5001": {
+   "level": 4,
+   "en": "Managers in art, culture, recreation and sport",
+   "enShort": "Managers in art, culture, recreation and sport",
+   "zh": "艺术文化娱乐和体育经理(不含其他)",
+   "ko": "예술 문화 레크리에이션 및 스포츠 분야 관리자"
+  },
+  "511": {
+   "level": 3,
+   "en": "Professional occupations in art and culture",
+   "enShort": "Professional occupations in art and culture",
+   "zh": "艺术和文化专业职业",
+   "ko": "예술 및 문화 전문직"
+  },
+  "5110": {
+   "level": 4,
+   "en": "Librarians, archivists, conservators and curators",
+   "enShort": "Librarians, archivists, conservators and curators",
+   "zh": "图书管理员、档案员、文物保管员和策展人",
+   "ko": "사서, 기록관 사서, 보존 전문가 및 큐레이터"
+  },
+  "5111": {
+   "level": 4,
+   "en": "Writing, translating and related communications professionals",
+   "enShort": "Writing, translating and related communications professionals",
+   "zh": "写作翻译及相关传播专业人员",
+   "ko": "작가 번역 및 관련 커뮤니케이션 전문가"
+  },
+  "5112": {
+   "level": 4,
+   "en": "Creative and performing artists",
+   "enShort": "Creative and performing artists",
+   "zh": "创意与表演艺术家",
+   "ko": "창작 및 공연 예술가"
+  },
+  "521": {
+   "level": 3,
+   "en": "Technical occupations in art and culture",
+   "enShort": "Technical occupations in art and culture",
+   "zh": "艺术与文化领域的技术职业",
+   "ko": "예술 및 문화 분야의 기술직"
+  },
+  "5210": {
+   "level": 4,
+   "en": "Technical occupations in libraries and public archives",
+   "enShort": "Technical occupations in libraries and public archives",
+   "zh": "图书馆和公共档案馆的技术职业",
+   "ko": "도서관 및 공공 기록관 기술 직업"
+  },
+  "5211": {
+   "level": 4,
+   "en": "Technical occupations in motion pictures, broadcasting and the performing arts",
+   "enShort": "Technical occupations in motion pictures, broadcasting and the performing arts",
+   "zh": "电影广播与表演艺术技术职业",
+   "ko": "영화 방송 및 공연 예술 분야의 기술직"
+  },
+  "5212": {
+   "level": 4,
+   "en": "Graphic and interior designers",
+   "enShort": "Graphic and interior designers",
+   "zh": "平面设计师和室内设计师",
+   "ko": "그래픽 및 인테리어 디자이너"
+  },
+  "531": {
+   "level": 3,
+   "en": "Occupations in art and culture",
+   "enShort": "Art and culture",
+   "zh": "艺术和文化",
+   "ko": "예술 및 문화"
+  },
+  "5310": {
+   "level": 4,
+   "en": "Occupations related to museums and art galleries",
+   "enShort": "Related to museums and art galleries",
+   "zh": "博物馆和美术馆相关",
+   "ko": "박물관 및 미술관 관련"
+  },
+  "5311": {
+   "level": 4,
+   "en": "Photographers and support occupations in arts and culture",
+   "enShort": "Photographers and support occupations in arts and culture",
+   "zh": "摄影师及艺术文化支持职业",
+   "ko": "사진가 및 예술·문화 분야 지원 직업"
+  },
+  "5312": {
+   "level": 4,
+   "en": "Occupations in creative and performing art",
+   "enShort": "Creative and performing art",
+   "zh": "创意与表演艺术",
+   "ko": "창작 및 공연 예술"
+  },
+  "532": {
+   "level": 3,
+   "en": "Occupations in sports",
+   "enShort": "Sports",
+   "zh": "体育",
+   "ko": "스포츠"
+  },
+  "5320": {
+   "level": 4,
+   "en": "Athletes, coaches, referees and related occupations",
+   "enShort": "Athletes, coaches, referees and related occupations",
+   "zh": "运动员、教练、裁判及相关职业",
+   "ko": "운동선수, 코치, 심판 및 관련 직업"
+  },
+  "541": {
+   "level": 3,
+   "en": "Support occupations in sport",
+   "enShort": "Support occupations in sport",
+   "zh": "体育支持职业",
+   "ko": "스포츠 지원 직업"
+  },
+  "5410": {
+   "level": 4,
+   "en": "Program leaders and instructors in recreation, sport and fitness",
+   "enShort": "Program leaders and instructors in recreation, sport and fitness",
+   "zh": "休闲体育健身项目主管与讲师",
+   "ko": "레크리에이션 스포츠 피트니스 프로그램 지도자 및 강사"
+  },
+  "551": {
+   "level": 3,
+   "en": "Support occupations in art and culture",
+   "enShort": "Support occupations in art and culture",
+   "zh": "艺术和文化支持职业",
+   "ko": "예술 및 문화 지원 직업"
+  },
+  "5510": {
+   "level": 4,
+   "en": "Support occupations in art and culture",
+   "enShort": "Support occupations in art and culture",
+   "zh": "艺术和文化支持职业",
+   "ko": "예술 및 문화 지원 직업"
+  },
+  "6": {
+   "level": 1,
+   "en": "Sales and service occupations",
+   "enShort": "Sales and service occupations",
+   "zh": "销售和服务职业",
+   "ko": "판매 및 서비스 직업"
+  },
+  "600": {
+   "level": 3,
+   "en": "Middle management occupations in retail and wholesale trade and customer services",
+   "enShort": "Middle management occupations in retail and wholesale trade and customer services",
+   "zh": "零售和批发贸易及客户服务的中层管理职业",
+   "ko": "도소매 및 고객 서비스 분야의 중층 관리직"
+  },
+  "6001": {
+   "level": 4,
+   "en": "Corporate sales managers",
+   "enShort": "Corporate sales managers",
+   "zh": "企业销售经理",
+   "ko": "기업 영업 관리자"
+  },
+  "6002": {
+   "level": 4,
+   "en": "Retail and wholesale trade managers",
+   "enShort": "Retail and wholesale trade managers",
+   "zh": "零售和批发贸易经理",
+   "ko": "도소매 무역 관리자"
+  },
+  "6003": {
+   "level": 4,
+   "en": "Managers in food service and accommodation",
+   "enShort": "Managers in food service and accommodation",
+   "zh": "餐饮和住宿业经理",
+   "ko": "식품 서비스 및 숙박 관리직"
+  },
+  "6004": {
+   "level": 4,
+   "en": "Managers in customer and personal services",
+   "enShort": "Managers in customer and personal services",
+   "zh": "客户和个人服务经理",
+   "ko": "고객 및 개인 서비스 관리자"
+  },
+  "620": {
+   "level": 3,
+   "en": "Retail sales and service supervisors",
+   "enShort": "Retail sales and service supervisors",
+   "zh": "零售和客户服务主管",
+   "ko": "도매 및 소매 판매 서비스 감독자"
+  },
+  "6201": {
+   "level": 4,
+   "en": "Retail sales supervisors",
+   "enShort": "Retail sales supervisors",
+   "zh": "零售销售主管",
+   "ko": "소매 판매 감독자"
+  },
+  "6202": {
+   "level": 4,
+   "en": "Service supervisors",
+   "enShort": "Service supervisors",
+   "zh": "服务主管",
+   "ko": "서비스 감독관"
+  },
+  "621": {
+   "level": 3,
+   "en": "Specialized sales occupations",
+   "enShort": "Specialized sales occupations",
+   "zh": "专业销售职业",
+   "ko": "전문 판매 직업"
+  },
+  "6210": {
+   "level": 4,
+   "en": "Technical sales specialists in wholesale trade and retail and wholesale buyers",
+   "enShort": "Technical sales specialists in wholesale trade and retail and wholesale buyers",
+   "zh": "批发和零售技术销售专员及批发采购员",
+   "ko": "도소매업 기술 영업 전문가 및 도소매 구매원"
+  },
+  "622": {
+   "level": 3,
+   "en": "Specialized services occupations",
+   "enShort": "Specialized services occupations",
+   "zh": "专业服务职业",
+   "ko": "전문 서비스 직업"
+  },
+  "6220": {
+   "level": 4,
+   "en": "Specialized occupations in services",
+   "enShort": "Specialized occupations in services",
+   "zh": "服务类专门职业",
+   "ko": "서비스 분야의 전문 직업"
+  },
+  "631": {
+   "level": 3,
+   "en": "Occupations in sales",
+   "enShort": "Sales",
+   "zh": "销售",
+   "ko": "판매"
+  },
+  "6310": {
+   "level": 4,
+   "en": "Insurance, real estate and financial sales occupations",
+   "enShort": "Insurance, real estate and financial sales occupations",
+   "zh": "保险房地产和金融销售职业(不含具体岗位)",
+   "ko": "보험 부동산 금융 판매 직업"
+  },
+  "632": {
+   "level": 3,
+   "en": "Occupations in services",
+   "enShort": "Services",
+   "zh": "服务类职业",
+   "ko": "서비스"
+  },
+  "6320": {
+   "level": 4,
+   "en": "Cooks, butchers and bakers",
+   "enShort": "Cooks, butchers and bakers",
+   "zh": "厨师、屠夫和面包师",
+   "ko": "요리사, 정육점원 및 제빵사"
+  },
+  "6321": {
+   "level": 4,
+   "en": "Hairstylists and estheticians",
+   "enShort": "Hairstylists and estheticians",
+   "zh": "发型师和美容师",
+   "ko": "미용사 및 에스테티션"
+  },
+  "6322": {
+   "level": 4,
+   "en": "Shoe repairers, shoemakers and upholsterers",
+   "enShort": "Shoe repairers, shoemakers and upholsterers",
+   "zh": "修鞋工、制鞋工和家具软包工",
+   "ko": "신발 수리공, 신발 제조공 및 가구 upholsterer"
+  },
+  "641": {
+   "level": 3,
+   "en": "Retail salespersons and non-technical wholesale trade sales and account representatives",
+   "enShort": "Retail salespersons and non-technical wholesale trade sales and account representatives",
+   "zh": "零售销售人员与非技术批发贸易销售及客户经理",
+   "ko": "소매 판매원 및 비기술적 도매 무역 영업 및 계정 담당자"
+  },
+  "6410": {
+   "level": 4,
+   "en": "Retail salespersons and non-technical wholesale trade sales and account representatives",
+   "enShort": "Retail salespersons and non-technical wholesale trade sales and account representatives",
+   "zh": "零售销售人员与非技术批发贸易销售及客户经理",
+   "ko": "소매 판매원 및 비기술적 도매 무역 영업 및 계정 담당자"
+  },
+  "642": {
+   "level": 3,
+   "en": "Occupations in personal service",
+   "enShort": "Personal service",
+   "zh": "个人服务",
+   "ko": "개인 서비스"
+  },
+  "6420": {
+   "level": 4,
+   "en": "Occupations in personal service",
+   "enShort": "Personal service",
+   "zh": "个人服务",
+   "ko": "개인 서비스"
+  },
+  "643": {
+   "level": 3,
+   "en": "Occupations in food, accommodation and tourism",
+   "enShort": "Food, accommodation and tourism",
+   "zh": "餐饮住宿与旅游业",
+   "ko": "식품·숙박·관광"
+  },
+  "6430": {
+   "level": 4,
+   "en": "Occupations in food and beverage service",
+   "enShort": "Food and beverage service",
+   "zh": "餐饮服务员",
+   "ko": "음식 및 음료 서비스"
+  },
+  "6431": {
+   "level": 4,
+   "en": "Occupations in travel and accommodation",
+   "enShort": "Travel and accommodation",
+   "zh": "旅行与住宿",
+   "ko": "여행 및 숙박"
+  },
+  "6432": {
+   "level": 4,
+   "en": "Tourism and amusement services occupations",
+   "enShort": "Tourism and amusement services occupations",
+   "zh": "旅游和娱乐服务职业",
+   "ko": "관광 및 오락 서비스 직업"
+  },
+  "644": {
+   "level": 3,
+   "en": "Occupations in customer, information and protective services",
+   "enShort": "Customer, information and protective services",
+   "zh": "客户服务、信息保护服务",
+   "ko": "고객 정보 및 보호 서비스"
+  },
+  "6440": {
+   "level": 4,
+   "en": "Customer and information services representatives",
+   "enShort": "Customer and information services representatives",
+   "zh": "客户与信息服务代表",
+   "ko": "고객 및 정보 서비스 대표"
+  },
+  "6441": {
+   "level": 4,
+   "en": "Security guards and related security service occupations",
+   "enShort": "Security guards and related security service occupations",
+   "zh": "保安及相关安全服务职业",
+   "ko": "경비원 및 관련 보안 서비스 직업"
+  },
+  "651": {
+   "level": 3,
+   "en": "Sales support occupations",
+   "enShort": "Sales support occupations",
+   "zh": "销售支持职业",
+   "ko": "영업 지원 직업"
+  },
+  "6510": {
+   "level": 4,
+   "en": "Cashiers and other sales support occupations",
+   "enShort": "Cashiers and other sales support occupations",
+   "zh": "收银员及其他销售支持职业",
+   "ko": "계산원 및 기타 판매 지원 직업"
+  },
+  "652": {
+   "level": 3,
+   "en": "Support occupations in food, accommodation and tourism",
+   "enShort": "Support occupations in food, accommodation and tourism",
+   "zh": "食品住宿旅游支持职业",
+   "ko": "식품·숙박·관광 지원 직업"
+  },
+  "6520": {
+   "level": 4,
+   "en": "Food support occupations",
+   "enShort": "Food support occupations",
+   "zh": "食品支持职业",
+   "ko": "식품 지원 직업"
+  },
+  "6521": {
+   "level": 4,
+   "en": "Support occupations in accommodation, travel, tourism and amusement services",
+   "enShort": "Support occupations in accommodation, travel, tourism and amusement services",
+   "zh": "住宿旅游娱乐服务支持职业（不含住宿）",
+   "ko": "숙박 여행 관광 및 오락 서비스 지원 직업"
+  },
+  "6522": {
+   "level": 4,
+   "en": "Support occupations in personal services",
+   "enShort": "Support occupations in personal services",
+   "zh": "个人服务支持职业",
+   "ko": "개인 서비스 지원 직업"
+  },
+  "653": {
+   "level": 3,
+   "en": "Support occupations in cleaning and related services",
+   "enShort": "Support occupations in cleaning and related services",
+   "zh": "清洁及相关服务支持职业",
+   "ko": "청소 및 관련 서비스 지원 직업"
+  },
+  "6531": {
+   "level": 4,
+   "en": "Cleaners",
+   "enShort": "Cleaners",
+   "zh": "清洁工",
+   "ko": "청소원"
+  },
+  "6532": {
+   "level": 4,
+   "en": "Service support and related occupations",
+   "enShort": "Service support and related occupations",
+   "zh": "服务支持及相关职业",
+   "ko": "서비스 지원 및 관련 직업"
+  },
+  "7": {
+   "level": 1,
+   "en": "Trades, transport and equipment operators and related occupations",
+   "enShort": "Trades, transport and equipment operators and related occupations",
+   "zh": "技工、运输和设备操作员及相关职业",
+   "ko": "기능직 운송 및 장비 조작 관련 직업"
+  },
+  "700": {
+   "level": 3,
+   "en": "Middle management occupations in trades and transportation",
+   "enShort": "Middle management occupations in trades and transportation",
+   "zh": "技工与运输中层管理职业",
+   "ko": "도량 및 운송 분야 중층 관리직"
+  },
+  "7001": {
+   "level": 4,
+   "en": "Managers in construction and facility operation and maintenance",
+   "enShort": "Managers in construction and facility operation and maintenance",
+   "zh": "建筑和设施运营维护经理",
+   "ko": "건설 및 시설 운영 및 유지보수 관리자"
+  },
+  "7002": {
+   "level": 4,
+   "en": "Managers in transportation and postal and courier services",
+   "enShort": "Managers in transportation and postal and courier services",
+   "zh": "交通运输及邮政快递业经理",
+   "ko": "운송 및 우편·택배 서비스 관리자"
+  },
+  "720": {
+   "level": 3,
+   "en": "Technical trades contractors and supervisors",
+   "enShort": "Technical trades contractors and supervisors",
+   "zh": "技术工种承包商及主管",
+   "ko": "기술직 도급업자 및 감독자"
+  },
+  "7201": {
+   "level": 4,
+   "en": "Contractors and supervisors, technical industrial, electrical and construction trades and related workers",
+   "enShort": "Contractors and supervisors, technical industrial, electrical and construction trades and related workers",
+   "zh": "技术工业电气和建筑工种及相关工人的承包商和监督人员",
+   "ko": "기술 산업 전기 및 건설 직종 계약자 감독자 관련 근로자"
+  },
+  "7202": {
+   "level": 4,
+   "en": "Contractors and supervisors, technical maintenance trades and heavy equipment and transport operators",
+   "enShort": "Contractors and supervisors, technical maintenance trades and heavy equipment and transport operators",
+   "zh": "技术维修工种及重型设备和运输操作员的主管与承包商",
+   "ko": "계약자 및 감독자, 기술 유지보수 직종 및 중장비 운송 조종사"
+  },
+  "721": {
+   "level": 3,
+   "en": "Technical industrial trades",
+   "enShort": "Technical industrial trades",
+   "zh": "技术工业技工",
+   "ko": "기술 산업 직종"
+  },
+  "7210": {
+   "level": 4,
+   "en": "Machining, metal forming, shaping and erecting trades",
+   "enShort": "Machining, metal forming, shaping and erecting trades",
+   "zh": "机械加工金属成型成形和架设工种",
+   "ko": "기계 가공, 금속 성형, 형상화 및 조립 직종"
+  },
+  "722": {
+   "level": 3,
+   "en": "Technical electrical trades",
+   "enShort": "Technical electrical trades",
+   "zh": "电气技术工种",
+   "ko": "기술 전기 직종"
+  },
+  "7220": {
+   "level": 4,
+   "en": "Technical electrical trades and electrical power line and telecommunications workers",
+   "enShort": "Technical electrical trades and electrical power line and telecommunications workers",
+   "zh": "电气技术工种及电力线路与电信工人(不含电工)",
+   "ko": "기술 전기 공종 및 전력선 통신 작업자"
+  },
+  "723": {
+   "level": 3,
+   "en": "Technical construction trades",
+   "enShort": "Technical construction trades",
+   "zh": "建筑技术工种",
+   "ko": "기술 건설 직종"
+  },
+  "7230": {
+   "level": 4,
+   "en": "Plumbers, pipefitters and gas fitters",
+   "enShort": "Plumbers, pipefitters and gas fitters",
+   "zh": "水管工、管道安装工和燃气安装工",
+   "ko": "배관공, 파이프 피터 및 가스 피터"
+  },
+  "7231": {
+   "level": 4,
+   "en": "Carpenters and cabinetmakers",
+   "enShort": "Carpenters and cabinetmakers",
+   "zh": "木工和橱柜制作工",
+   "ko": "목수 및 캐비닛 제작자"
+  },
+  "7232": {
+   "level": 4,
+   "en": "Bricklayers and insulators",
+   "enShort": "Bricklayers and insulators",
+   "zh": "泥瓦工和绝缘工",
+   "ko": "벽돌공 및 단열공사 기술자"
+  },
+  "724": {
+   "level": 3,
+   "en": "Technical maintenance trades",
+   "enShort": "Technical maintenance trades",
+   "zh": "技术维护工种",
+   "ko": "기술 유지 보수 기능직"
+  },
+  "7240": {
+   "level": 4,
+   "en": "Machinery and transportation equipment mechanics (except motor vehicles)",
+   "enShort": "Machinery and transportation equipment mechanics (except motor vehicles)",
+   "zh": "机械和运输设备维修工(不含机动车)",
+   "ko": "기계 및 운송 장비 정비사(자동차 제외)"
+  },
+  "7241": {
+   "level": 4,
+   "en": "Automotive service technicians",
+   "enShort": "Automotive service technicians",
+   "zh": "汽车服务技工",
+   "ko": "자동차 서비스 기술자"
+  },
+  "7242": {
+   "level": 4,
+   "en": "Small engine and equipment mechanics and related repairers (including electrical components)",
+   "enShort": "Small engine and equipment mechanics and related repairers (including electrical components)",
+   "zh": "小型发动机及设备机械师及相关维修人员（含电气部件）",
+   "ko": "소형 엔진 및 장비 정비사 및 관련 수리공(전기 부품 포함)"
+  },
+  "725": {
+   "level": 3,
+   "en": "Technical equipment operation trades",
+   "enShort": "Technical equipment operation trades",
+   "zh": "技术设备操作工种",
+   "ko": "기술 장비 운영 기능직"
+  },
+  "7250": {
+   "level": 4,
+   "en": "Crane operators and water well drillers",
+   "enShort": "Crane operators and water well drillers",
+   "zh": "起重机操作员和水井钻机工",
+   "ko": "크레인 조작원 및 수리정 굴착공"
+  },
+  "726": {
+   "level": 3,
+   "en": "Transportation officers and controllers",
+   "enShort": "Transportation officers and controllers",
+   "zh": "运输官员和控制器",
+   "ko": "교통 관제사 및 통제원"
+  },
+  "7260": {
+   "level": 4,
+   "en": "Transportation officers and controllers",
+   "enShort": "Transportation officers and controllers",
+   "zh": "运输官员和控制器",
+   "ko": "교통 관제사 및 통제원"
+  },
+  "729": {
+   "level": 3,
+   "en": "Other technical trades",
+   "enShort": "Other technical trades",
+   "zh": "其他技术工种",
+   "ko": "기타 기술 직종"
+  },
+  "7299": {
+   "level": 4,
+   "en": "Other technical trades",
+   "enShort": "Other technical trades",
+   "zh": "其他技术工种",
+   "ko": "기타 기술 직종"
+  },
+  "731": {
+   "level": 3,
+   "en": "General construction trades",
+   "enShort": "General construction trades",
+   "zh": "一般建筑工种",
+   "ko": "일반 건설 직종"
+  },
+  "7310": {
+   "level": 4,
+   "en": "Concrete finishers, tilesetters and plasterers",
+   "enShort": "Concrete finishers, tilesetters and plasterers",
+   "zh": "混凝土整平工、瓷砖铺贴工和抹灰工",
+   "ko": "콘크리트 마감공, 타일 시공공 및 석고공사"
+  },
+  "7311": {
+   "level": 4,
+   "en": "Roofers, glaziers, painters, decorators and floor covering installers",
+   "enShort": "Roofers, glaziers, painters, decorators and floor covering installers",
+   "zh": "屋顶工、玻璃安装工、油漆工、装饰工和地板铺设工",
+   "ko": "옥수공, 유리공, 도색공, 장식공 및 바닥재 설치공"
+  },
+  "732": {
+   "level": 3,
+   "en": "Building maintenance installers, servicers and repairers",
+   "enShort": "Building maintenance installers, servicers and repairers",
+   "zh": "建筑维护安装维修工",
+   "ko": "건물 유지 설치원, 서비스 및 수리공"
+  },
+  "7320": {
+   "level": 4,
+   "en": "Building maintenance installers, servicers and repairers",
+   "enShort": "Building maintenance installers, servicers and repairers",
+   "zh": "建筑维护安装维修工",
+   "ko": "건물 유지 설치원, 서비스 및 수리공"
+  },
+  "733": {
+   "level": 3,
+   "en": "Transportation occupations",
+   "enShort": "Transportation occupations",
+   "zh": "运输职业",
+   "ko": "운송 직업"
+  },
+  "7330": {
+   "level": 4,
+   "en": "Transport truck and transit drivers",
+   "enShort": "Transport truck and transit drivers",
+   "zh": "运输卡车和公共交通驾驶员",
+   "ko": "화물 트럭 및 대중교통 운전자"
+  },
+  "7331": {
+   "level": 4,
+   "en": "Train crew operating occupations",
+   "enShort": "Train crew operating occupations",
+   "zh": "列车组操作职业",
+   "ko": "열차 조종 직업군"
+  },
+  "734": {
+   "level": 3,
+   "en": "Operators, drillers and blasters",
+   "enShort": "Operators, drillers and blasters",
+   "zh": "操作员、钻机工和爆破工",
+   "ko": "작업원, 드릴러 및 발파공"
+  },
+  "7340": {
+   "level": 4,
+   "en": "Operators, drillers and blasters",
+   "enShort": "Operators, drillers and blasters",
+   "zh": "操作员、钻机工和爆破工",
+   "ko": "작업원, 드릴러 및 발파공"
+  },
+  "741": {
+   "level": 3,
+   "en": "Mail and message distribution occupations",
+   "enShort": "Mail and message distribution occupations",
+   "zh": "邮件和信件分发职业",
+   "ko": "우편 및 메시지 배포 직업"
+  },
+  "7410": {
+   "level": 4,
+   "en": "Mail and message distribution occupations",
+   "enShort": "Mail and message distribution occupations",
+   "zh": "邮件和信件分发职业",
+   "ko": "우편 및 메시지 배포 직업"
+  },
+  "742": {
+   "level": 3,
+   "en": "Transport equipment operators, utility maintenance and related workers",
+   "enShort": "Transport equipment operators, utility maintenance and related workers",
+   "zh": "运输设备操作员、公用事业维修及相关工人",
+   "ko": "운송 장비 조작원, 유틸리티 유지보수 및 관련 직종"
+  },
+  "7420": {
+   "level": 4,
+   "en": "Transport equipment operators, utility maintenance and related maintenance workers",
+   "enShort": "Transport equipment operators, utility maintenance and related maintenance workers",
+   "zh": "运输设备操作员、公用事业维护及相关维修工人",
+   "ko": "운송 장비 운영자, 유틸리티 유지보수 및 관련 유지보수 근로자"
+  },
+  "751": {
+   "level": 3,
+   "en": "Helpers and labourers",
+   "enShort": "Helpers and labourers",
+   "zh": "助手和劳工",
+   "ko": "보조원 및 노동자"
+  },
+  "7510": {
+   "level": 4,
+   "en": "Longshore workers and material handlers",
+   "enShort": "Longshore workers and material handlers",
+   "zh": "码头工人和物料搬运工",
+   "ko": "하역 노동자 및 자재 취급원"
+  },
+  "7511": {
+   "level": 4,
+   "en": "Trades helpers and labourers",
+   "enShort": "Trades helpers and labourers",
+   "zh": "工种辅助工和劳工",
+   "ko": "기능 보조원 및 노동자"
+  },
+  "752": {
+   "level": 3,
+   "en": "Transport drivers, operators and labourers",
+   "enShort": "Transport drivers, operators and labourers",
+   "zh": "运输司机操作员和劳工",
+   "ko": "운전사, 조종사 및 노동자"
+  },
+  "7520": {
+   "level": 4,
+   "en": "Taxi, personal service and delivery service drivers",
+   "enShort": "Taxi, personal service and delivery service drivers",
+   "zh": "出租车、个人服务和配送服务司机",
+   "ko": "택시·개인서비스 및 배송 서비스 운전자"
+  },
+  "7521": {
+   "level": 4,
+   "en": "Water and rail transport operators and labourers and related occupations",
+   "enShort": "Water and rail transport operators and labourers and related occupations",
+   "zh": "水和铁路运输操作员及劳工及相关职业",
+   "ko": "수상 및 철도 운송 운영자, 노동자 및 관련 직업"
+  },
+  "8": {
+   "level": 1,
+   "en": "Natural resources, agriculture and related production occupations",
+   "enShort": "Natural resources, agriculture and related production occupations",
+   "zh": "自然资源农业及相关生产职业",
+   "ko": "자연자원 농업 및 관련 생산 직종"
+  },
+  "800": {
+   "level": 3,
+   "en": "Middle management occupations in production and agriculture",
+   "enShort": "Middle management occupations in production and agriculture",
+   "zh": "生产和农业的中层管理职业",
+   "ko": "생산 및 농업 분야 중층 관리직"
+  },
+  "8001": {
+   "level": 4,
+   "en": "Managers in natural resources production and fishing",
+   "enShort": "Managers in natural resources production and fishing",
+   "zh": "自然资源生产和渔业经理(不含捕捞业)",
+   "ko": "자연자원 생산 및 어업 관리자(不含 X)"
+  },
+  "8002": {
+   "level": 4,
+   "en": "Managers in agriculture, horticulture and aquaculture",
+   "enShort": "Managers in agriculture, horticulture and aquaculture",
+   "zh": "农业园艺及水产养殖业经理",
+   "ko": "농업·원예·양식 분야 관리자(不含 X)"
+  },
+  "820": {
+   "level": 3,
+   "en": "Supervisors in natural resources, agriculture and related production",
+   "enShort": "Supervisors in natural resources, agriculture and related production",
+   "zh": "自然资源农业及相关生产监督人员",
+   "ko": "자연자원·농업 및 관련 생산 분야 감독자"
+  },
+  "8201": {
+   "level": 4,
+   "en": "Supervisors, logging and forestry",
+   "enShort": "Supervisors, logging and forestry",
+   "zh": "伐木和林业监督人员",
+   "ko": "산림 및 벌목 감독자"
+  },
+  "8202": {
+   "level": 4,
+   "en": "Contractors and supervisors, mining, oil and gas",
+   "enShort": "Contractors and supervisors, mining, oil and gas",
+   "zh": "采矿、石油和天然气行业的承包商及主管(不含技工)",
+   "ko": "광산 석유 가스 분야 계약자 및 감독자"
+  },
+  "8203": {
+   "level": 4,
+   "en": "Contractors and supervisors, agriculture, horticulture and related operations and services",
+   "enShort": "Contractors and supervisors, agriculture, horticulture and related operations and services",
+   "zh": "农业园艺及相关作业与服务的主管及承包商(不含技工)",
+   "ko": "농업·원예 및 관련 운영 및 서비스 분야의 계약직 및 감독자"
+  },
+  "831": {
+   "level": 3,
+   "en": "Occupations in natural resources and fisheries",
+   "enShort": "Natural resources and fisheries",
+   "zh": "自然资源与渔业",
+   "ko": "자연자원 및 어업"
+  },
+  "8310": {
+   "level": 4,
+   "en": "Underground miners, oil and gas drillers and related occupations",
+   "enShort": "Underground miners, oil and gas drillers and related occupations",
+   "zh": "地下矿工、油气钻探工及相关职业",
+   "ko": "지하 광산 노동자, 석유 및 가스 시추공 작업자 및 관련 직업"
+  },
+  "8311": {
+   "level": 4,
+   "en": "Logging machinery operators",
+   "enShort": "Logging machinery operators",
+   "zh": "伐木机械操作员",
+   "ko": "벌목 기계 조작원"
+  },
+  "8312": {
+   "level": 4,
+   "en": "Fishing vessel masters and fishermen/women",
+   "enShort": "Fishing vessel masters and fishermen/women",
+   "zh": "渔船船长和渔民",
+   "ko": "어선 선장 및 어부"
+  },
+  "841": {
+   "level": 3,
+   "en": "Workers in natural resources and fisheries",
+   "enShort": "Workers in natural resources and fisheries",
+   "zh": "自然资源及渔业工人",
+   "ko": "천연자원 및 어업 근로자"
+  },
+  "8410": {
+   "level": 4,
+   "en": "Mine service workers and operators in oil and gas drilling",
+   "enShort": "Mine service workers and operators in oil and gas drilling",
+   "zh": "油气钻探矿场服务工和操作员",
+   "ko": "석유 및 가스 시추용 광산 서비스 작업자 및 운영자"
+  },
+  "8411": {
+   "level": 4,
+   "en": "Logging and forestry workers",
+   "enShort": "Logging and forestry workers",
+   "zh": "伐木与林业工人",
+   "ko": "임업 및 벌목 작업자"
+  },
+  "8412": {
+   "level": 4,
+   "en": "Workers in agriculture and fishing occupations",
+   "enShort": "Workers in agriculture and fishing occupations",
+   "zh": "农业和渔业工人",
+   "ko": "농업 및 어업 관련 직종 종사자"
+  },
+  "851": {
+   "level": 3,
+   "en": "Harvesting, landscaping and natural resources labourers",
+   "enShort": "Harvesting, landscaping and natural resources labourers",
+   "zh": "收获景观与自然资材劳工(不含技工)",
+   "ko": "수확 조경 및 자연 자원 노동자"
+  },
+  "8510": {
+   "level": 4,
+   "en": "Agriculture, horticulture and harvesting labourers and related occupations",
+   "enShort": "Agriculture, horticulture and harvesting labourers and related occupations",
+   "zh": "农业园艺及收获劳工及相关职业",
+   "ko": "농업·원예 및 수확 노동자 관련 직업"
+  },
+  "8511": {
+   "level": 4,
+   "en": "Mine and oil and gas drilling, services and related labourers",
+   "enShort": "Mine and oil and gas drilling, services and related labourers",
+   "zh": "矿山和油气钻井及相关劳工(不含服务)",
+   "ko": "광산 및 석유·가스 시추 서비스 관련 노동자"
+  },
+  "8512": {
+   "level": 4,
+   "en": "Logging, forestry, landscaping and other related labourers",
+   "enShort": "Logging, forestry, landscaping and other related labourers",
+   "zh": "伐木林业景观美化及其他相关劳工(不含技工)",
+   "ko": "벌목 임업 조경 및 기타 관련 노동자"
+  },
+  "9": {
+   "level": 1,
+   "en": "Occupations in manufacturing and utilities",
+   "enShort": "Manufacturing and utilities",
+   "zh": "制造业和公用事业",
+   "ko": "제조업 및 공공사업"
+  },
+  "900": {
+   "level": 3,
+   "en": "Middle management occupations in manufacturing and utilities",
+   "enShort": "Middle management occupations in manufacturing and utilities",
+   "zh": "制造业和公用事业的中层管理职业",
+   "ko": "제조업 및 공공사업 분야 중층 관리직"
+  },
+  "9001": {
+   "level": 4,
+   "en": "Managers in manufacturing and utilities",
+   "enShort": "Managers in manufacturing and utilities",
+   "zh": "制造和公用事业经理(不含其他)",
+   "ko": "제조업 및 공공사업 관리자"
+  },
+  "920": {
+   "level": 3,
+   "en": "Supervisors, processing, manufacturing, assembly and fabrication occupations",
+   "enShort": "Supervisors, processing, manufacturing, assembly and fabrication occupations",
+   "zh": "加工制造装配和制造职业主管(不含其他)",
+   "ko": "가공 제조 조립 및 제작 직종 감독자"
+  },
+  "9201": {
+   "level": 4,
+   "en": "Supervisors, processing and manufacturing occupations",
+   "enShort": "Supervisors, processing and manufacturing occupations",
+   "zh": "加工和制造业监督人员",
+   "ko": "가공 및 제조 직업 감독자"
+  },
+  "9202": {
+   "level": 4,
+   "en": "Supervisors, assembly and fabrication",
+   "enShort": "Supervisors, assembly and fabrication",
+   "zh": "装配和制造监督人员",
+   "ko": "조립 및 제조 감독자"
+  },
+  "921": {
+   "level": 3,
+   "en": "Utilities equipment operators and controllers",
+   "enShort": "Utilities equipment operators and controllers",
+   "zh": "公用事业设备操作员和控制员",
+   "ko": "공용설비 조작원 및 제어원"
+  },
+  "9210": {
+   "level": 4,
+   "en": "Utilities equipment operators and controllers",
+   "enShort": "Utilities equipment operators and controllers",
+   "zh": "公用事业设备操作员和控制员",
+   "ko": "공용설비 조작원 및 제어원"
+  },
+  "931": {
+   "level": 3,
+   "en": "Central control and process operators in processing and manufacturing",
+   "enShort": "Central control and process operators in processing and manufacturing",
+   "zh": "加工和制造中央控制与工艺操作员",
+   "ko": "가공 및 제조업 중앙 제어 및 공정 운영자"
+  },
+  "9310": {
+   "level": 4,
+   "en": "Central control and process operators in processing and manufacturing",
+   "enShort": "Central control and process operators in processing and manufacturing",
+   "zh": "加工和制造中央控制与工艺操作员",
+   "ko": "가공 및 제조업 중앙 제어 및 공정 운영자"
+  },
+  "932": {
+   "level": 3,
+   "en": "Aircraft assemblers and aircraft assembly inspectors",
+   "enShort": "Aircraft assemblers and aircraft assembly inspectors",
+   "zh": "飞机装配工和飞机装配检验员",
+   "ko": "항공기 조립공 및 항공기 조립 검사원"
+  },
+  "9320": {
+   "level": 4,
+   "en": "Aircraft assemblers and aircraft assembly inspectors",
+   "enShort": "Aircraft assemblers and aircraft assembly inspectors",
+   "zh": "飞机装配工和飞机装配检验员",
+   "ko": "항공기 조립공 및 항공기 조립 검사원"
+  },
+  "941": {
+   "level": 3,
+   "en": "Processing and manufacturing machine operators and related production workers",
+   "enShort": "Processing and manufacturing machine operators and related production workers",
+   "zh": "加工和制造机器操作员及相关生产工人",
+   "ko": "가공 및 제조 기계 조작원 및 관련 생산 근로자"
+  },
+  "9410": {
+   "level": 4,
+   "en": "Machine operators and related workers in mineral and metal products processing and manufacturing",
+   "enShort": "Machine operators and related workers in mineral and metal products processing and manufacturing",
+   "zh": "矿物和金属产品加工制造类机械操作工及相关工人",
+   "ko": "광물 및 금속 제품 가공 제조 기계 조작원 및 관련 직종"
+  },
+  "9411": {
+   "level": 4,
+   "en": "Machine operators and related workers in chemical, plastic and rubber processing",
+   "enShort": "Machine operators and related workers in chemical, plastic and rubber processing",
+   "zh": "化学塑料和橡胶加工机械操作员及相关工人",
+   "ko": "화학 플라스틱 고무 가공 기계 조작원 및 관련 직종"
+  },
+  "9412": {
+   "level": 4,
+   "en": "Machine operators and related workers in pulp and paper production and wood processing and manufacturing",
+   "enShort": "Machine operators and related workers in pulp and paper production and wood processing and manufacturing",
+   "zh": "纸浆造纸业及木材加工制造业的机器操作员及相关工人",
+   "ko": "펄프 및 제지 생산과 목재 가공 제조 분야의 기계 조작원 및 관련 직종"
+  },
+  "9413": {
+   "level": 4,
+   "en": "Machine operators and related workers in textile, fabric, fur and leather products processing and manufacturing",
+   "enShort": "Machine operators and related workers in textile, fabric, fur and leather products processing and manufacturing",
+   "zh": "纺织品织物毛皮皮革制品加工制造机械操作工及相关工人",
+   "ko": "섬유 직물 모피 가죽 제품 가공 제조 기계 조작원 및 관련 근로자"
+  },
+  "9414": {
+   "level": 4,
+   "en": "Machine operators and related workers in food, beverage and associated products processing",
+   "enShort": "Machine operators and related workers in food, beverage and associated products processing",
+   "zh": "食品饮料及相关产品加工机械操作员及相关工人",
+   "ko": "식품·음료 및 관련 제품 가공 기계 조작원 및 관련 직종"
+  },
+  "9415": {
+   "level": 4,
+   "en": "Printing equipment operators and related occupations",
+   "enShort": "Printing equipment operators and related occupations",
+   "zh": "印刷设备操作员及相关职业",
+   "ko": "인쇄 장비 조작원 및 관련 직업"
+  },
+  "942": {
+   "level": 3,
+   "en": "Assemblers and inspectors in manufacturing",
+   "enShort": "Assemblers and inspectors in manufacturing",
+   "zh": "制造业装配工和检验员",
+   "ko": "제조업 조립원 및 검사원"
+  },
+  "9420": {
+   "level": 4,
+   "en": "Mechanical, electrical and electronics assemblers and inspectors",
+   "enShort": "Mechanical, electrical and electronics assemblers and inspectors",
+   "zh": "机械电气和电子装配工及检验员",
+   "ko": "기계·전기·전자 조립원 및 검사원"
+  },
+  "9421": {
+   "level": 4,
+   "en": "Furniture, wood, plastic and other products assemblers, finishers and inspectors",
+   "enShort": "Furniture, wood, plastic and other products assemblers, finishers and inspectors",
+   "zh": "家具木材塑料及其他产品装配工涂装工检验员",
+   "ko": "가구, 목재, 플라스틱 및 기타 제품 조립원, 마감공, 검사원"
+  },
+  "951": {
+   "level": 3,
+   "en": "Labourers in processing, manufacturing and utilities",
+   "enShort": "Labourers in processing, manufacturing and utilities",
+   "zh": "加工制造和公用事业工人",
+   "ko": "가공 제조 및 공공사업 노동자"
+  },
+  "9510": {
+   "level": 4,
+   "en": "Labourers in processing, manufacturing and utilities",
+   "enShort": "Labourers in processing, manufacturing and utilities",
+   "zh": "加工制造和公用事业工人",
+   "ko": "가공 제조 및 공공사업 노동자"
+  }
+ }
+}

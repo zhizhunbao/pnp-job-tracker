@@ -51,7 +51,8 @@ async function loadDims(payload: Awaited<ReturnType<typeof getPayload>>, pool: a
     provinces: provDocs.docs.map((p: any) => ({ code: p.code, name: p.name })),
     cities: [],          // SSR 瘦身:客户端从 /api/dims 拉后并入
     districts: [],       // 同上
-    nocCategories: nocDocs.docs.map((c: any) => ({ broad: c.broad, mid: c.mid, fine: c.fine, teer: typeof c.teer === 'number' ? c.teer : null })),
+    nocCategories: nocDocs.docs.map((c: any) => ({ broad: c.broad, mid: c.mid, fine: c.fine, teer: typeof c.teer === 'number' ? c.teer : null,
+      midEn: c.midEn ?? '', midKo: c.midKo ?? '', fineEn: c.fineEn ?? '', fineKo: c.fineKo ?? '' })),
     sources: srcDocs.docs.map((s: any) => ({ name: s.name })),
     experienceLevels: expDocs.docs.map((e: any) => ({ name: e.name })),
     pnpOccupations: pnpDocs.docs.map((r: any) => ({ province: r.province, stream: r.stream, label: r.label, type: r.type, program: r.program || 'PNP', noc: r.noc, name: r.name, gtaRestricted: !!r.gtaRestricted, url: r.url, fetched: r.fetched })),

@@ -2178,16 +2178,20 @@ const ko: Dict = {
 
 const MESSAGES: Record<Lang, Dict> = { zh, en, ko }
 
-export type TFn = (key: string, vars?: Record<string, string | number>) => string
+export type TFn = ((key: string, vars?: Record<string, string | number>) => string) & { lang?: Lang }
 
 // 取词:缺失回退 zh,再回退 key 本身;支持 {var} 插值。
 export function makeT(lang: Lang): TFn {
   const dict = MESSAGES[lang] || zh
-  return (key, vars) => {
+  const t: TFn = (key, vars) => {
     let s = dict[key] ?? zh[key] ?? key
     if (vars) for (const k of Object.keys(vars)) s = s.split(`{${k}}`).join(String(vars[k]))
     return s
   }
+  // 语言挂在 t 上:分类名这类**来自维度表**的显示名要按语言取列(见 JobsTable catName),
+  // 而调用点拿到的往往只有 t —— 挂一个只读字段比给几十处调用签名多传一个参数便宜
+  t.lang = lang
+  return t
 }
 
 // 省抽选的**官方通道名**译名(2026-08-01 Frank 队列⑤:「中文界面官方英文名 + 中文译名,英文界面只显英文」)。
