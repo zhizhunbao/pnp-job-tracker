@@ -156,10 +156,10 @@ function requirementLines(prov: string, facts: ReportFacts, profile: MatchProfil
       const have = r.have != null ? k(r.have) : ''
       if (r.verdict === 'pass') out.push(line(r, 'rpt.r.income.pass', { need, have }))
       else if (r.verdict === 'fail') out.push(line(r, 'rpt.r.income.fail', { need: needLow || need, have, short: r.short != null ? k(r.short) : '' }))
-      // 判不了的时候只摆门槛,**不再并排摆「你这行的职业中位年薪」**(2026-08-02 实读):
-      // 门槛算的是**全家**收入(本站没问),职业中位既不是他的工资也不是家庭口径 ——
-      // 两个不可比的数并排放,读者会读成「我够了」。
-      else out.push(line(r, 'rpt.r.income.unknown', { need, needLow }))
+      // 判不了就整行不出(#243,2026-08-03):门槛算的是**全家**收入,而本站没问家庭口径 ——
+      // 「$26.1K–$31.3K;算的是全家收入,本站没问」对读者零信息量,还等于自证判不了他的事。
+      // 同 Frank 2026-08-02 拍板的「这一条不参与判定,那还显示干什么」;那轮改了别处,这行漏了。
+      // (先前这里还并排摆过「你这行的职业中位年薪」,08-02 已撤 —— 两个不可比的数会被读成「我够了」。)
     } else if (r.factor === 'experience') {
       const months = r.need ?? 0
       if (r.verdict === 'pass') out.push(line(r, 'rpt.r.exp.pass', { need: months, have: r.have ?? '' }))
@@ -170,18 +170,11 @@ function requirementLines(prov: string, facts: ReportFacts, profile: MatchProfil
     } else if (r.factor === 'wage') {
       // basis=occMedian:阈值就是该职业该地区的官方中位;取不到中位就只陈述规则本身
       out.push(line(r, r.need != null ? 'rpt.r.wage.median' : 'rpt.r.wage.rule', { need: r.need != null ? k(r.need) : '' }))
-    } else if (r.factor === 'empYears') {
-      out.push(line(r, 'rpt.r.emp.years', { n: r.need ?? '' }))
-    } else if (r.factor === 'empRevenue') {
-      // 三档按区域摆(GTA / 指定普查区 / 其余);档位名各省各叫各的,所以键按最高档的区域取
-      out.push(line(r, 'rpt.r.emp.rev', {
-        hi: r.need != null ? m(r.need) : '', lo: r.needLow != null ? m(r.needLow) : '',
-        mid: r.tiers?.length === 3 && r.tiers[1].value != null ? m(r.tiers[1].value as number) : '',
-      }))
-    } else if (r.factor === 'empStaff') {
-      // BC 说「大温 / 大温以外」、ON 说「GTA 内 / 外」—— 同一件事两套地名,按最高档的区域名选句子
-      const area = r.tiers?.[0]?.area ?? ''
-      out.push(line(r, area === 'gta' ? 'rpt.r.emp.staff.gta' : 'rpt.r.emp.staff.metro', { metro: r.need ?? '', rest: r.needLow ?? '' }))
+    // 雇主侧三项(empYears / empRevenue / empStaff)**整体不进这一节**(#243,2026-08-03):
+    // 「这项只有雇主拿得出材料」——求职者既不知道也改不了,连着两三行读下来只会得出
+    // 「这网站判不了我的事」,而那正是他不掏钱的理由。这些档位已经按区域挂在
+    // **雇主线索的每一家**上(employerBar),对着具体公司看够不够格,在那里才是可行动的。
+    // 这里不写分支 = 落不进任何 else-if,天然跳过(留一个空分支只是死代码)。
     }
   }
   return out
@@ -344,7 +337,7 @@ function switchLines(facts: ReportFacts, dims: MatchDims, profile: MatchProfile,
   return out
 }
 
-export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: MatchDims, facts: ReportFacts): Report {
+export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: MatchDims, facts: ReportFacts, occ: OccStats | null = null): Report {
   const conclusions: ReportLine[] = []
   const gaps: ReportLine[] = []
   const nextSteps: ReportLine[] = []
@@ -546,14 +539,19 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
   const confidence: Report['confidence'] = basicsAnswered < 4 ? 'low' : hasDeep ? 'high' : 'mid'
   if (basicsAnswered < 4) gaps.push({ key: 'rpt.g.basics', params: { n: 4 - basicsAnswered }, verdict: 'na' })
 
-  return { goal: 'pr', noc, title: facts.title, conclusions, requirements, employers: [], switches, gaps, nextSteps, alternatives, confidence, asOf: facts.fetched ?? '' }
+  // 雇主线索(L1,2026-08-03):这句「有 N 家」是免费层唯一的 aha(卡① 2026-08-01 已验证),
+  // 名单本体进锁区 —— 花钱买的是省下来的时间,不是这个数。
+  if (occ && occ.sponsors > 0) conclusions.push({ key: 'rpt.j.sponsors', params: { n: occ.sponsors }, verdict: 'pass' })
+  const employers = employerLines(occ, facts)
+
+  return { goal: 'pr', noc, title: facts.title, conclusions, requirements, employers, switches, gaps, nextSteps, alternatives, confidence, asOf: facts.fetched ?? '' }
 }
 
 // ── 卡③「选省份」:十省对照,专属题只有一道(手上有没有 offer)──────────────────
 // 免费=库里查得到的(哪个省把你这行放进公开清单、当地在招多少、抽选线区间);
 // 锁区=拿你的答案排出来的完整顺序与每省差距。QC 走自己体系不参与排序(不是 PNP)。
 export type ProvExtra = Partial<ReportExtra> & { hasJobOffer: boolean | null }
-export function buildProvReport(profile: MatchProfile, extra: ProvExtra, dims: MatchDims, facts: ReportFacts): Report {
+export function buildProvReport(profile: MatchProfile, extra: ProvExtra, dims: MatchDims, facts: ReportFacts, occ: OccStats | null = null): Report {
   const conclusions: ReportLine[] = []
   const gaps: ReportLine[] = []
   const nextSteps: ReportLine[] = []
@@ -635,10 +633,28 @@ export function buildProvReport(profile: MatchProfile, extra: ProvExtra, dims: M
   const switches = switchLines(facts, dims, profile, extra,
     profile.targetProvinces.length ? profile.targetProvinces : rank.slice(0, 1).map((c) => c.prov))
 
+  // 雇主线索(L1,2026-08-03):这句「有 N 家」是免费层唯一的 aha(卡① 2026-08-01 已验证),
+  // 名单本体进锁区 —— 花钱买的是省下来的时间,不是这个数。
+  if (occ && occ.sponsors > 0) conclusions.push({ key: 'rpt.j.sponsors', params: { n: occ.sponsors }, verdict: 'pass' })
+  const employers = employerLines(occ, facts)
+
   return {
-    goal: 'prov', noc, title: facts.title, conclusions, requirements: [], employers: [], switches, gaps, nextSteps, alternatives,
+    goal: 'prov', noc, title: facts.title, conclusions, requirements: [], employers, switches, gaps, nextSteps, alternatives,
     confidence: !rank.length ? 'low' : extra.hasJobOffer != null ? 'high' : 'mid', asOf: facts.fetched ?? '',
   }
+}
+
+// 雇主线索 + 雇主侧门槛(L2-06 后续①):岗位地址已洗到市/区 → **GTA 内外这一档本站判得了**,
+// 每家挂上该区域的官方阈值;认不出地名(或该省没收录雇主门槛)就只给名单,不编档位。
+// 2026-08-03(L1)抽成三张卡共用:先前只有卡① 有雇主线索,而漏斗实测 16 次出报告 12 次是拿 PR 卡 ——
+// 锁区里唯一的真货偏偏不在大多数人面前(设计:docs/design/付费概率提升计划-20260803.md §3 L1)。
+const employerLines = (occ: OccStats | null, facts: ReportFacts): ReportEmployer[] => {
+  const reqs = facts.requirements ?? []
+  return (occ?.sponsorList ?? []).map((e) => {
+    const area = areaOfPlace(e.province, e.city)
+    const bar = area ? employerBar(reqs, e.province, area) : { revenue: null, staff: null }
+    return { ...e, area, empRevenue: bar.revenue, empStaff: bar.staff }
+  })
 }
 
 // ── 卡①「找工作」:同一 Report 契约,零新题(职业/处境/目标省已在共用底座里)────────
@@ -700,14 +716,7 @@ export function buildJobReport(profile: MatchProfile, dims: MatchDims, facts: Re
     })
   }
 
-  // 雇主线索 + 雇主侧门槛(L2-06 后续①):岗位地址已洗到市/区 → **GTA 内外这一档本站判得了**,
-  // 每家挂上该区域的官方阈值;认不出地名(或该省没收录雇主门槛)就只给名单,不编档位。
-  const reqs = facts.requirements ?? []
-  const employers: ReportEmployer[] = (occ.sponsorList ?? []).map((e) => {
-    const area = areaOfPlace(e.province, e.city)
-    const bar = area ? employerBar(reqs, e.province, area) : { revenue: null, staff: null }
-    return { ...e, area, empRevenue: bar.revenue, empStaff: bar.staff }
-  })
+  const employers = employerLines(occ, facts)
 
   nextSteps.push({ key: 'rpt.n.pathways', params: {}, url: '/pathways' })
   const switches = switchLines(facts, dims, profile, extra, targets)
@@ -829,7 +838,7 @@ const REQ_FREE: Record<string, string> = {
   'rpt.r.exp.fail': 'rpt.r.exp.failFree',
 }
 // 免费层必留的结论(不受「免费两条」截断):停抽的 EE 类别 —— 劝退的话不该收费
-const ALWAYS_FREE = new Set(['rpt.c.eeStale'])
+const ALWAYS_FREE = new Set(['rpt.c.eeStale', 'rpt.j.sponsors'])
 const HINT: Record<string, string> = { 'rpt.c.regulated': 'rpt.hint.cert', 'rpt.g.expShort': 'rpt.hint.exp' }
 export function gateReport(report: Report, pro: boolean): GatedReport {
   const provLine = report.conclusions.find((c) => LANE_PROV[c.key])
@@ -928,6 +937,7 @@ export function gateReport(report: Report, pro: boolean): GatedReport {
   // 在 2026-08-01 换省对照节(L2-08)落地后**有了真货**:报告自己按已答项算下界分,
   // 锁的是那个分与达标判定 —— 解锁后确实有东西。所以 score 由 scoreLocked 触发,不再由「有分值表」触发。
   if (report.alternatives.length) cats.add('alts')
+  if (report.employers.length) cats.add('sponsors')   // 名单有货才挂锁行(不卖不存在的东西)
   if (reqLocked) cats.add('req')
   if (scoreLocked) cats.add('score')
 

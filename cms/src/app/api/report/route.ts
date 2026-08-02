@@ -57,8 +57,10 @@ export async function POST(req: Request) {
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
   const dims = await loadMatchDims()
-  // 一个职业一份报告(卡①/⑥ 还要职业级统计 stats_occupation;拿 PR 不查,省一次往返)
-  const wantOcc = goal === 'job' || goal === 'career'
+  // 一个职业一份报告,四张卡都要职业级统计 stats_occupation。
+  // 2026-08-03(L1):拿 PR / 选省份**也查** —— 先前为省一次往返不查,代价是雇主线索(锁区唯一的真货)
+  // 只长在卡①,而漏斗实测 16 次出报告 12 次是拿 PR 卡(设计:docs/design/付费概率提升计划-20260803.md)。
+  const wantOcc = true
   const reports = await Promise.all((nocs.length ? nocs : ['']).map(async (n) => {
     const [facts, occ] = await Promise.all([
       assembleReportFacts(pool, n),
@@ -72,8 +74,8 @@ export async function POST(req: Request) {
     // extra 三张卡都要传:换省对照(L2-08)拿加拿大经验算下界分,卡①/③ 少了它会比卡② 少算一项
     const built = goal === 'job' ? buildJobReport(profile, dims, facts, occ!, extra)
       : goal === 'career' ? buildCareerReport(profile, facts, occ!)
-        : goal === 'prov' ? buildProvReport(profile, { hasJobOffer: typeof merged.hasJobOffer === 'boolean' ? merged.hasJobOffer : null, ...extra }, dims, facts)
-          : buildPrReport(profile, extra, dims, facts)
+        : goal === 'prov' ? buildProvReport(profile, { hasJobOffer: typeof merged.hasJobOffer === 'boolean' ? merged.hasJobOffer : null, ...extra }, dims, facts, occ)
+          : buildPrReport(profile, extra, dims, facts, occ)
     // 付费闸在服务端(L2-03):免费响应里根本没有锁区正文,前端只负责显示锁行标题
     return gateReport(built, isPro(user))
   }

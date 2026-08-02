@@ -118,12 +118,17 @@ const facts = (o: Partial<ReportFacts>): ReportFacts => ({
 const base = (over: object = {}) => normalizeProfile({ currentStatus: 'working', clb: 8, targetProvinces: ['BC'], ...over })
 
 describe('报告「门槛对照」节', () => {
-  it('BC 目标省 → 语言/收入/经验/雇主四类都出行,出处指官方指南', () => {
+  // 2026-08-03 收窄口径(#243,收费走查):这一节只留**他自己能动的**门槛。
+  // 先前五行里四行是「跟你无关 / 我判不了」——「算的是全家收入,本站没问」、两条「这项只有雇主拿得出材料」——
+  // 连着读下来只会得出「这网站判不了我的事」,而那正是他不掏钱的理由(设计:付费概率提升计划-20260803 §3 L4)。
+  it('BC 目标省 → 只留他自己动得了的门槛(语言、经验);判不了的与雇主侧的都不占行', () => {
     const r = buildPrReport(base(), { canadianExpMonths: 30 }, dims, facts({}))
-    expect(r.requirements.map((l) => l.key)).toEqual([
-      'rpt.r.lang.pass', 'rpt.r.income.unknown', 'rpt.r.exp.pass', 'rpt.r.emp.years', 'rpt.r.emp.staff.metro',
-    ])
+    expect(r.requirements.map((l) => l.key)).toEqual(['rpt.r.lang.pass', 'rpt.r.exp.pass'])
     expect(r.requirements[0].source?.url).toContain('welcomebc.ca')
+    // 收入判不了(门槛是全家口径,题库没问家庭)→ 整行不出,不留「本站没问」那种自证判不了的话
+    expect(r.requirements.some((l) => l.key.startsWith('rpt.r.income'))).toBe(false)
+    // 雇主侧三项改由**雇主线索每一家**挂档位(employerBar),在那里对着具体公司看才可行动
+    expect(r.requirements.some((l) => l.key.startsWith('rpt.r.emp'))).toBe(false)
   })
 
   // 2026-08-02 改口径(Frank「这条对照不了,那还显示干什么」):一行「我们没有数据」对读的人零价值
