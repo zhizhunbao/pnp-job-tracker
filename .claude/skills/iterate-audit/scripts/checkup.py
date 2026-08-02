@@ -3,7 +3,8 @@
 #
 # 用法(系统 Python312,playwright 只装在那儿;PYTHONUTF8=1 必加):
 #   python .claude/skills/iterate-audit/scripts/checkup.py --round 25 --out <scratchpad>/checkup-25.json
-#   可选 --quick 只跑中文桌面 + 中文手机(冒烟);--no-login 跳过测试号段。
+#   可选 --quick 只跑中文桌面 + 中文手机(冒烟);--no-login 跳过测试号段;
+#   --only jobs,pricing 只体检指定模块(模块名见下方 MODULES,全量 ~7min → 单模块 1-2min)。
 #
 # 覆盖:两视口(375×812 / 1440×900)× 三语(zh/en/ko,非中文跑精简页集)× 匿名态 + 测试号。
 # 检查项编号对齐设计文档 4 节:1 裸词 / 2 三语残留 / 3 重复 / 4 占位符 / 5 折行截断 / 6 出屏
@@ -22,8 +23,33 @@ ap.add_argument("--round", default="x")
 ap.add_argument("--out", required=True)
 ap.add_argument("--quick", action="store_true")
 ap.add_argument("--no-login", action="store_true")
+ap.add_argument("--only", default="", help="只体检指定模块(逗号分隔),不传=全跑;模块名见 MODULES")
 A = ap.parse_args()
 OUT = Path(A.out); OUT.parent.mkdir(parents=True, exist_ok=True)
+
+# 模块 → 该模块下的页面/弹框名(名字对齐 FULL/LITE 与弹框段的 name)。
+# 每轮往往只动一两个页面,全量 ~7 分钟里绝大部分是白跑 —— `--only jobs` 降到 1-2 分钟。
+MODULES = {
+    "jobs":     {"jobs", "immig-modal", "jd-modal", "match-view"},
+    "pricing":  {"pricing"},
+    "stats":    {"stats-index", "stats-province", "stats-compare"},
+    "rankings": {"rank-weekly", "rank-sponsor", "rank-daily"},
+    "news":     {"news"},
+    "pathways": {"pathways"},
+    "plan":     {"plan-pr"},   # SurveyJS 表单是客户端渲染,visit() 里给它多等 2s
+    "account":  {"account", "match-view"},
+}
+WANT = None
+if A.only.strip():
+    mods = [m.strip() for m in A.only.replace("，", ",").split(",") if m.strip()]
+    bad = [m for m in mods if m not in MODULES]
+    if bad:
+        sys.exit("未知模块 %s;可选:%s" % (", ".join(bad), " / ".join(MODULES)))
+    WANT = set().union(*(MODULES[m] for m in mods))
+    print("== --only %s → 只体检 %s ==" % (",".join(mods), ", ".join(sorted(WANT))))
+
+def wanted(name):
+    return WANT is None or name in WANT
 
 # ============ 注入的体检 JS(单函数,返回 {hits, counts, facts, stats}) ============
 # 剪枝:同一父节点超 20 个同构子节点(20000 行 SSR 表格 / 手机卡片流)只体检前 10 个,
@@ -290,7 +316,7 @@ PERF = """() => ({
 FULL = [("/jobs", "jobs"), ("/pricing", "pricing"), ("/stats", "stats-index"), ("/stats/ab", "stats-province"),
         ("/stats/compare", "stats-compare"), ("/rankings/weekly-top", "rank-weekly"),
         ("/rankings/sponsor-likely", "rank-sponsor"), ("/rankings/daily-top", "rank-daily"),
-        ("/news", "news"), ("/pathways", "pathways")]
+        ("/news", "news"), ("/pathways", "pathways"), ("/plan/pr", "plan-pr")]
 LITE = [("/jobs", "jobs"), ("/pricing", "pricing"), ("/stats", "stats-index"),
         ("/rankings/weekly-top", "rank-weekly"), ("/news", "news")]
 
@@ -345,7 +371,7 @@ def sweep(b, viewport, lang, pages, login=False):
         page.goto(BASE + path, wait_until="domcontentloaded", timeout=60000)
         if path.startswith("/jobs"):
             page.wait_for_selector("table tbody tr", state="attached", timeout=30000)
-        page.wait_for_timeout(2200)
+        page.wait_for_timeout(4200 if path.startswith("/plan/") else 2200)   # SurveyJS 客户端渲染,慢一拍
         close_banner()
         try: RUNTIME.append({"kind": "perf", "page": name, "viewport": viewport, "lang": lang, **page.evaluate(PERF)})
         except Exception: pass
@@ -368,6 +394,7 @@ def sweep(b, viewport, lang, pages, login=False):
             traceback.print_exc()
 
     for path, name in pages:
+        if not wanted(name): continue
         try: visit(path, name)
         except Exception as e: print("  !! visit failed:", name, repr(e)[:120])
 
@@ -375,6 +402,7 @@ def sweep(b, viewport, lang, pages, login=False):
     if lang in ("zh", "en"):
         for btn, name, wait in [("移民价值", "immig-modal", 12000), ("职位描述", "jd-modal", 8000)]:
             if lang == "en" and name != "immig-modal": continue
+            if not wanted(name): continue
             try:
                 cur["name"] = name
                 page.goto(BASE + "/jobs", wait_until="domcontentloaded", timeout=60000)
@@ -396,6 +424,7 @@ def sweep(b, viewport, lang, pages, login=False):
     # 登录态专属:匹配视图 + 账户页
     if login and auth == "user":
         for path, name in [("/jobs?view=match", "match-view"), ("/account", "account")]:
+            if not wanted(name): continue
             try: visit(path, name)
             except Exception as e: print("  !! visit failed:", name, repr(e)[:120])
 
@@ -426,7 +455,8 @@ with sync_playwright() as p:
     for vp, lang, pages in combos:
         print(f"== {lang} @ {vp} (anon) ==")
         sweep(b, vp, lang, pages)
-    if not A.no_login:
+    # 登录段本身要 ~10s/视口,--only 没选到登录态页面时整段跳过
+    if not A.no_login and any(wanted(n) for n in ("jobs", "match-view", "account")):
         for vp in ["375x812", "1440x900"]:
             print(f"== zh @ {vp} (user) ==")
             sweep(b, vp, "zh", [("/jobs", "jobs")], login=True)
