@@ -84,11 +84,16 @@ export function allocateColWidths(cols: Alloc[], avail: number): Record<string, 
   return out
 }
 
+// cookie 名与解析在 colWidths.shared.ts(服务端也要读,那边不能带 hook);这里原样转出,
+// 客户端照旧只 import 这一个文件
+export { COLW_COOKIE, parseColWidthSeed, type ColWidthSeed } from './colWidths.shared'
+import { COLW_COOKIE, type ColWidthSeed } from './colWidths.shared'
+
 export type ColWidths = {
-  /** 量到了没:没量到就别下 colgroup,让浏览器 auto 布局顶一帧(不闪半屏 44px 窄条) */
+  /** 有宽度可下没:量到了 or 有 cookie 种子。没有就先让浏览器 auto 布局顶一帧 */
   ready: boolean
-  /** colgroup 用:每列的像素宽 */
-  width: (key: string) => number | undefined
+  /** colgroup 用:量到了给像素,只有种子时给百分比(服务端渲染就能定版式,水合不再抻一下) */
+  width: (key: string) => number | string | undefined
   /** table 的 width:不溢出时 '100%',溢出时总像素 */
   tableWidth: string | number
   /** 总宽超容器(表头都放不下 / 手动拖宽)→ 需要横滚,此时才有必要固定左列 */
@@ -106,6 +111,7 @@ export type ColWidths = {
  * @param pinnedPx  固定像素列(操作列按钮宽,不参与瓜分)
  * @param dataKey   数据指纹:列集/语言/当前这批行 —— 变了就重量
  * @param pad       单元格左右内边距之和(量到的是纯内容宽,分宽时要加上)
+ * @param seed      服务端从 cookie 读到的上次比例:首屏就按它定版式,免得水合后抻一下
  */
 export function useColWidths(opts: {
   keys: string[]
@@ -113,8 +119,9 @@ export function useColWidths(opts: {
   pinnedPx?: Record<string, number>
   dataKey: string
   pad: number
+  seed?: ColWidthSeed | null
 }): ColWidths {
-  const { keys, headRowRef, pinnedPx, dataKey, pad } = opts
+  const { keys, headRowRef, pinnedPx, dataKey, pad, seed } = opts
   const [measured, setMeasured] = useState<Record<string, ColMeasure>>({})
   const [wrapW, setWrapW] = useState(0)
   const [manual, setManual] = useState<Record<string, number>>({})
@@ -235,12 +242,29 @@ export function useColWidths(opts: {
     setManual((p) => { const n = { ...p }; delete n[key]; return n })
   }, [])
 
-  const ready = avail > 0 && Object.keys(measured).length > 0
+  const measuredReady = avail > 0 && Object.keys(measured).length > 0
+
+  // ── 首屏不抻:把算好的**比例**记进 cookie,下次刷新服务端就能把 colgroup 一起渲出来。
+  //    存比例不存像素:视口宽窄不同也照样对得上(百分比之和 = 100% = 容器宽)。
+  //    只在比例真的变了时写(±0.3% 以内算没变),避免每次重分都碰 document.cookie。
+  const seedOut = useRef('')
+  useEffect(() => {
+    if (!measuredReady || !total) return
+    const pct = keys.map((k) => +((px[k] ?? 0) / total * 100).toFixed(2))
+    const val = JSON.stringify({ keys: keysKey, pct })
+    if (val === seedOut.current) return
+    seedOut.current = val
+    try { document.cookie = `${COLW_COOKIE}=${encodeURIComponent(val)}; path=/; max-age=2592000; SameSite=Lax` } catch { /* ignore */ }
+  })   // eslint-disable-line react-hooks/exhaustive-deps -- 自己比对去重,依赖数组写不全反而漏写
+
+  // 种子只在「还没量到 + 列集对得上」时顶班:量到了立刻换成像素(同一批数据,差几像素看不出来)
+  const useSeed = !measuredReady && seed?.keys === keysKey
+  const ready = measuredReady || useSeed
   return {
     ready,
-    width: (k) => (ready ? px[k] : undefined),
-    tableWidth: ready && overflow ? total : '100%',
-    overflow: ready && overflow,
+    width: (k) => (measuredReady ? px[k] : useSeed ? `${seed!.pct[keys.indexOf(k)]}%` : undefined),
+    tableWidth: measuredReady && overflow ? total : '100%',
+    overflow: measuredReady && overflow,
     startResize,
     autoFit,
     hasManual: Object.keys(manual).length > 0,

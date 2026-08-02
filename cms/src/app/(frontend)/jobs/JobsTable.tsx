@@ -18,7 +18,7 @@ import { UpgradeCta, UpgradeModal } from './UpgradeModal'
 import { PricingModal } from './PricingModal'
 import { OnboardingWizard, OB_SEEN_KEY } from './OnboardingWizard'
 import { QUIZ_KEY, quizToProfile, readQuiz, type QuizAnswers } from '../quiz/EntryQuiz'   // 答案读写与落档(弹框本体已退役,2026-07-31 统一答题)
-import { useColWidths } from './colWidths'   // 列宽唯一控制点(刷新/筛选/拖竖线共用一套规则)
+import { useColWidths, type ColWidthSeed } from './colWidths'   // 列宽唯一控制点(刷新/筛选/拖竖线共用一套规则)
 import { useOverlayClose } from './overlay'
 import { CARD, iconBtnS, SCRIM, useIsNarrow } from './Modal'
 import { match as matchJob, matchRank, hasProfile, normalizeProfile, type MatchProfile, type MatchJob, type MatchReason } from '@/lib/match'
@@ -564,7 +564,7 @@ type Dims = {
 const EMPTY_DIMS: Dims = { provinces: [], cities: [], districts: [], nocCategories: [], sources: [], experienceLevels: [], pnpOccupations: [], pnpDraws: [], eeCategories: [], designatedEmployers: [], nocDescriptions: [], fieldSources: [], news: [] }
 const PROV_CODE: Record<string, string> = Object.fromEntries(Object.entries(PROV_NAMES).map(([c, n]) => [n, c]))
 
-export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdatedAt, dims: initialDims = EMPTY_DIMS, initialCols, plan = FREE_PLAN, totalCount, proof, deferFull }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims; initialCols?: string[]; plan?: Plan; initialBanner?: boolean; totalCount?: number; proof?: { named: number; lmia: number }; deferFull?: boolean }) {
+export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdatedAt, dims: initialDims = EMPTY_DIMS, initialCols, initialColW, plan = FREE_PLAN, totalCount, proof, deferFull }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims; initialCols?: string[]; initialColW?: ColWidthSeed | null; plan?: Plan; initialBanner?: boolean; totalCount?: number; proof?: { named: number; lmia: number }; deferFull?: boolean }) {
   // 首屏拆分:SSR 带最近 50 行秒开;筛选/搜索/翻页由 fetch effect 打 /api/jobs 分页(E10-01 P3,旧 20k blob 已废);
   // 失败保底留首屏 50 行可用,loadedAll 复位以显示计数而非假「全量」。
   // E10-01 P3:服务端分页/筛选取代 20k blob。rows=当前累计页(SSR 首屏 50 起),total=同 WHERE 总数,page=已翻页数。
@@ -835,7 +835,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const ACTIONS_W = 96      // 操作列按按钮实宽钉死,不参与瓜分;以后加按钮就调这一个数
   const CELL_PAD = 14       // 单元格左右内边距(6+6)+ 1px 列分隔线:量到的是纯内容宽,分宽要算上
   const dataKey = `${shownKey}|${lang}|${rows.length}|${rows[0]?.id ?? ''}|${rows[rows.length - 1]?.id ?? ''}`
-  const cw = useColWidths({ keys: shown.map((c) => c.key), headRowRef, pinnedPx: { actions: ACTIONS_W }, dataKey, pad: CELL_PAD })
+  const cw = useColWidths({ keys: shown.map((c) => c.key), headRowRef, pinnedPx: { actions: ACTIONS_W }, dataKey, pad: CELL_PAD, seed: initialColW })
 
   // ── 固定左列(发布时间/大分类/公司/职位):只有**真的横滚**时才需要(默认总宽=容器宽,压根不滚)。
   //    顺带收掉一个副作用:border-collapse 的表里 sticky 单元格的右边框 Chromium 不画 ——

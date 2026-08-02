@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import JobsTable, { BANNER_COOKIE } from './JobsTable'
 import { COLS_COOKIE } from './i18n'
+import { COLW_COOKIE, DEFAULT_COLW_SEED, parseColWidthSeed, type ColWidthSeed } from './colWidths.shared'
 import { getUser, isPro } from '@/lib/entitlement'
 import { FREE_MATCH_JOBS_PER_DAY } from '@/lib/plan'
 import { normalizeProfile, hasProfile } from '@/lib/match'
@@ -102,11 +103,15 @@ export default async function JobsPage() {
 
   // 列偏好从 cookie 读(浏览器/服务器都能读)→ SSR 直接渲对的列,零闪烁。客户端选列时写这个 cookie。
   let initialCols: string[] | undefined
+  let initialColW: ColWidthSeed | null = null
   let initialBanner = true
   try {
     const jar = await cookies()
     const raw = jar.get(COLS_COOKIE)?.value
     if (raw) { const arr = JSON.parse(decodeURIComponent(raw)); if (Array.isArray(arr)) initialCols = arr.filter((x) => typeof x === 'string') }
+    // 列宽比例也从 cookie 读:SSR 就把 colgroup 渲成上次算好的比例,水合后换像素时看不出变化
+    // (原来首屏走浏览器自动布局,量完再换固定布局 → 表格明显抻一下,实测 CLS 0.087)
+    initialColW = parseColWidthSeed(jar.get(COLW_COOKIE)?.value) ?? DEFAULT_COLW_SEED   // 头回来的人用默认比例兜底
     if (jar.get(BANNER_COOKIE)?.value) initialBanner = false  // 关过横幅 → SSR 首帧即不渲(不再等水合后才弹)
   } catch { /* 无 cookie/解析失败 → 用默认列 */ }
 
@@ -125,7 +130,7 @@ export default async function JobsPage() {
   }
   // 推荐横幅槽位预判内联脚本随推荐条一并删除(2026-07-31):没有横幅就没有 CLS 要防
   return <>
-    <JobsTable jobs={jobs} updatedAt={updatedAt} dims={dims} initialCols={initialCols} plan={plan}
+    <JobsTable jobs={jobs} updatedAt={updatedAt} dims={dims} initialCols={initialCols} initialColW={initialColW} plan={plan}
       initialBanner={initialBanner} totalCount={totalCount} proof={proof} deferFull />
   </>
 }
