@@ -153,7 +153,12 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
         {/* 弹层里用(职位板/详情页)也要带上答题壳的 CSS —— inline 那条路由 PlanPrView 挂了同一份 */}
         {!inline && <QuizStyle />}
         <style>{`.occCatSel{display:none}
-@media(max-width:640px){.occCatSel{display:block}.occCatTabs{display:none !important}}
+@media(max-width:640px){.occCatSel{display:block}.occCatTabs{display:none !important}
+/* 触控靶下限(第 33 轮 #260):胶囊按 4px 内边距 + 12.5px 字算出来只有 29px,手机上要点中
+   一个得瞄 —— 而这是决定线第一步、漏斗最宽处。只抬手机端的**选项**(职业胶囊、A–Z 字母),
+   已选/同族那两排是定高 34 的横滑条,抬了会撑破;可访问性不上砧板(CLAUDE.md) */
+.occChips button,.occAz button{min-height:44px}
+.occAz button{display:inline-flex;align-items:center}}
 .chipRow{scrollbar-width:none;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 22px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 22px),transparent)}
 .chipRow::-webkit-scrollbar{display:none}`}</style>
         {!inline && (
@@ -189,6 +194,20 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
         {/* 同族职业(Frank「21231/21232 那种对儿自动挨一起」):选了之后才出,一行 chip,点一下即加选。
             官方 unit group(NOC 前 4 位)分族,不用本站的中文大类(那套有杂物桶)。
             **不写「推荐」二字**:这不是我们替他判断哪个更好,只是把官方同一族里还在招的摆出来让他自己认。 */}
+            {/* 同族还没拉回来时,这格是**纯白 68px**(第 33 轮 #262:1440 实拍胶囊 250 结束、
+                搜索框 330 才开始,中间什么都没有)。常驻高度是为了不跳版(#251 那批),不能撤 ——
+                改成渲同族的占位条,空白变成「在加载」。拉回来是空的就照旧留白,不硬编内容。 */}
+            {kin.length === 0 && loading && nocs.length > 0 && (
+              <div style={{ flexShrink: 0 }}>
+                <div style={{ fontSize: 12.5, color: UI.text3, marginBottom: 6 }}>{t('quiz.kin')}</div>
+                <div style={{ display: 'flex', gap: 6, height: 34, alignItems: 'center' }}>
+                  {[132, 108, 146].map((w, i) => (
+                    <span key={i} style={{ width: w, height: 26, borderRadius: 999, background: UI.hairline }} />
+                  ))}
+                </div>
+              </div>
+            )}
+
             {kin.length > 0 && (
               <div style={{ flexShrink: 0 }}>
                 <div style={{ fontSize: 12.5, color: UI.text3, marginBottom: 6 }}>{t('quiz.kin')}</div>
@@ -264,7 +283,7 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
 
         {/* A–Z 索引条(仅英文界面):与分类页签并列的第二个入口,再点一次同一个字母=取消 */}
         {!loading && azOn && letters.length > 1 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 12 }}>
+          <div className="occAz" style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 12 }}>
             <button onClick={() => setLetter('')}
               style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', fontSize: 12.5,
                 color: letter ? UI.text2 : UI.primary, fontWeight: letter ? 400 : 700 }}>{t('occ.az.all')}</button>
@@ -276,7 +295,7 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
           </div>
         )}
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+        <div className="occChips" style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
           {(loading ? [] : list).map((x) => {
             const l = label(x)
             const hint = (dupCount.get(l) || 0) > 1 ? (x.title && x.title !== l ? x.title : x.noc) : ''

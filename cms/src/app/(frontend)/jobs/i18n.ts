@@ -160,9 +160,13 @@ const zh: Dict = {
   'sj.st.wish': '想投', 'sj.st.applied': '已投', 'sj.st.interview': '面试中', 'sj.st.offer': '拿到 offer',
   'sj.save': '☆ 收藏', 'sj.saved': '★ 已收藏', 'sj.view': '在职位板查看', 'sj.del': '移除', 'sj.weekly': '每周邮件摘要(收藏岗动态,可随时退订)',
   'fav.title': '我的收藏', 'fav.note': '收藏过的职位都在这里;要跟踪投递进度去「我的求职」。',
-  // 大分类(数据值→显示)
-  'broad.管理': '管理', 'broad.商务': '商务', 'broad.科技': '科技', 'broad.医疗': '医疗', 'broad.教育': '教育',
-  'broad.文体': '文体', 'broad.服务': '服务', 'broad.技工': '技工', 'broad.资源': '资源', 'broad.制造': '制造',
+  // 大分类(数据值→显示)。单一来源 = etl/noc_buckets.py 的 BROADS + I18N,改那边要同步这里。
+  'broad.管理层': '管理层', 'broad.商务': '商务', 'broad.行政': '行政', 'broad.文员': '文员', 'broad.金融': '金融',
+  'broad.会计': '会计', 'broad.法律': '法律', 'broad.IT': 'IT', 'broad.工程': '工程', 'broad.科学': '科学',
+  'broad.医疗': '医疗', 'broad.教育': '教育', 'broad.社会服务': '社会服务', 'broad.艺术': '艺术', 'broad.体育': '体育',
+  'broad.销售': '销售', 'broad.零售': '零售', 'broad.餐饮': '餐饮', 'broad.住宿': '住宿', 'broad.生活服务': '生活服务',
+  'broad.技工': '技工', 'broad.建筑': '建筑', 'broad.运输': '运输', 'broad.物流': '物流', 'broad.农业': '农业',
+  'broad.矿业': '矿业', 'broad.制造': '制造',
   // 经验级别
   'acc.co-op': 'co-op', 'acc.junior': '初级', 'acc.intermediate': '中级', 'acc.senior': '高级', 'acc.unknown': '—', 'acc.none': '未知(帖内未写)',
   // 渠道
@@ -864,7 +868,12 @@ const en: Dict = {
   'sj.st.wish': 'To apply', 'sj.st.applied': 'Applied', 'sj.st.interview': 'Interviewing', 'sj.st.offer': 'Offer',
   'sj.save': '☆ Save', 'sj.saved': '★ Saved', 'sj.view': 'View on board', 'sj.del': 'Remove', 'sj.weekly': 'Weekly email digest (saved jobs; unsubscribe anytime)',
   'fav.title': 'My saved jobs', 'fav.note': 'Every job you starred lives here; track applications under “My applications”.',
-  'broad.管理': 'Management', 'broad.商务': 'Business', 'broad.科技': 'Tech', 'broad.医疗': 'Health', 'broad.教育': 'Education',
+  'broad.管理层': 'Management', 'broad.商务': 'Business', 'broad.行政': 'Administration', 'broad.文员': 'Office clerks', 'broad.金融': 'Finance',
+  'broad.会计': 'Accounting', 'broad.法律': 'Legal', 'broad.IT': 'IT', 'broad.工程': 'Engineering', 'broad.科学': 'Science',
+  'broad.医疗': 'Healthcare', 'broad.教育': 'Education', 'broad.社会服务': 'Social services', 'broad.艺术': 'Arts', 'broad.体育': 'Sport',
+  'broad.销售': 'Sales', 'broad.零售': 'Retail', 'broad.餐饮': 'Food service', 'broad.住宿': 'Hospitality', 'broad.生活服务': 'Personal services',
+  'broad.技工': 'Trades', 'broad.建筑': 'Construction', 'broad.运输': 'Transport', 'broad.物流': 'Logistics', 'broad.农业': 'Agriculture',
+  'broad.矿业': 'Mining', 'broad.制造': 'Manufacturing',
   // NOC 中/小分类(数据值=etl/noc.py 中文;与大类同名的值走 broad.* 回退,不重复)
   // 第 2 大类(自然与应用科学)2026-08-03 按 NOC 第 3 位重分之后的中/小类
   'cat.科技管理': 'Science & tech management', 'cat.自然科学': 'Natural sciences', 'cat.建筑与规划': 'Architecture & planning',
@@ -912,7 +921,6 @@ const en: Dict = {
   'cat.汽修/钳工': 'Auto mechanics & millwrights', 'cat.油漆/装修': 'Painting & finishing', 'cat.货车司机': 'Truck drivers',
   'cat.物料搬运/仓储': 'Material handling & warehousing', 'cat.建筑劳工': 'Construction labourers', 'cat.农场工': 'Farm workers',
   'cat.农林劳工': 'Agriculture & forestry labourers', 'cat.园林劳工': 'Landscaping labourers', 'cat.生产劳工': 'Production labourers',
-  'broad.文体': 'Arts & sport', 'broad.服务': 'Service', 'broad.技工': 'Trades', 'broad.资源': 'Resources', 'broad.制造': 'Manufacturing',
   'acc.co-op': 'Co-op', 'acc.junior': 'Junior', 'acc.intermediate': 'Intermediate', 'acc.senior': 'Senior', 'acc.unknown': '—', 'acc.none': 'Unknown (not stated in the posting)',
   'origin.jobbank': 'Job Bank', 'origin.ats': 'ATS', 'origin.directory': 'Directory',
   'advisor.tag': 'AI Advisor',
@@ -1577,7 +1585,12 @@ const ko: Dict = {
   'sj.st.wish': '지원 예정', 'sj.st.applied': '지원함', 'sj.st.interview': '면접 중', 'sj.st.offer': '오퍼 받음',
   'sj.save': '☆ 저장', 'sj.saved': '★ 저장됨', 'sj.view': '공고 목록에서 보기', 'sj.del': '삭제', 'sj.weekly': '주간 이메일 요약(저장 공고, 언제든 구독 취소)',
   'fav.title': '내 저장 공고', 'fav.note': '저장한 공고가 모두 여기에 있습니다. 지원 진행은 「내 지원 현황」에서 확인하세요.',
-  'broad.管理': '관리', 'broad.商务': '비즈니스', 'broad.科技': '기술', 'broad.医疗': '의료', 'broad.教育': '교육',
+  'broad.管理层': '관리직', 'broad.商务': '비즈니스', 'broad.行政': '행정', 'broad.文员': '사무직', 'broad.金融': '금융',
+  'broad.会计': '회계', 'broad.法律': '법률', 'broad.IT': 'IT', 'broad.工程': '엔지니어링', 'broad.科学': '과학',
+  'broad.医疗': '의료', 'broad.教育': '교육', 'broad.社会服务': '사회 서비스', 'broad.艺术': '예술', 'broad.体育': '스포츠',
+  'broad.销售': '영업', 'broad.零售': '리테일', 'broad.餐饮': '요식업', 'broad.住宿': '숙박', 'broad.生活服务': '생활 서비스',
+  'broad.技工': '기능직', 'broad.建筑': '건설', 'broad.运输': '운송', 'broad.物流': '물류', 'broad.农业': '농업',
+  'broad.矿业': '광업', 'broad.制造': '제조',
   // NOC 中/小分类(数据值=etl/noc.py 中文;与大类同名的值走 broad.* 回退,不重复)
   // 第 2 大类(自然与应用科学)2026-08-03 按 NOC 第 3 位重分之后的中/小类
   'cat.科技管理': '과학기술 관리', 'cat.自然科学': '자연과학', 'cat.建筑与规划': '건축 및 도시계획',
@@ -1625,7 +1638,6 @@ const ko: Dict = {
   'cat.汽修/钳工': '자동차 정비·기계 정비', 'cat.油漆/装修': '도장·마감', 'cat.货车司机': '트럭 운전기사',
   'cat.物料搬运/仓储': '자재 운반·창고', 'cat.建筑劳工': '건설 노무', 'cat.农场工': '농장 노동자',
   'cat.农林劳工': '농림 노무', 'cat.园林劳工': '조경 노무', 'cat.生产劳工': '생산 노무',
-  'broad.文体': '예술·스포츠', 'broad.服务': '서비스', 'broad.技工': '기능직', 'broad.资源': '자원', 'broad.制造': '제조',
   'acc.co-op': '인턴십', 'acc.junior': '주니어', 'acc.intermediate': '중급', 'acc.senior': '시니어', 'acc.unknown': '—', 'acc.none': '알 수 없음(공고 미기재)',
   'origin.jobbank': 'Job Bank', 'origin.ats': 'ATS', 'origin.directory': '디렉토리',
   'advisor.tag': 'AI 어드바이저',

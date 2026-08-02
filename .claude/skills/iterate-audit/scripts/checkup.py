@@ -221,7 +221,9 @@ JS = r"""
       const st = getComputedStyle(k);
       // colgroup/col 是表格布局元素(无可视盒),与 thead/tbody 必然相交 —— 第 27 轮加百分比列宽后开始误报
       if (k.matches('colgroup,col')) return false;
-      return visible(k) && st.position !== 'absolute' && st.position !== 'fixed' && st.float === 'none';
+      // sticky 也要排除(第 33 轮 #261):粘住之后它的 rect 会挪到视口边并盖住兄弟,这是**设计上的浮层**
+      // 不是排版坏了 —— /plan 四页的 .quizBar(动作条 sticky bottom:0)每轮都被报成「重叠」
+      return visible(k) && !/^(absolute|fixed|sticky)$/.test(st.position) && st.float === 'none';
     });
     if (kids.length < 2 || kids.length > 20) continue;
     // 行内元素折行时 boundingRect 会横跨整块,与同行的兄弟(如「#20」+ 折行的职业名)假相交 ——
