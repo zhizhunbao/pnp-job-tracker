@@ -19,7 +19,7 @@ description: 迭代整改快捷指令。用户发来「dd」「DD」「/dd」(�
 | `dd pricing` | `--only pricing` |
 | `dd stats` | `--only stats`(总览 + 分省 + 对比) |
 | `dd rankings` | `--only rankings`(周榜/雇主榜/日榜) |
-| `dd plan` | `--only plan`(/plan/pr 拿 PR 方案,SurveyJS 表单) |
+| `dd plan` | `--only plan`(/plan 四页:pr / job / career / province,SurveyJS 表单) |
 | `dd news` / `dd pathways` / `dd account` | 对应 `--only` |
 | `dd jobs pricing` | `--only jobs,pricing`(可叠加) |
 

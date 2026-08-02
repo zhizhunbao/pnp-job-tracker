@@ -36,7 +36,7 @@ MODULES = {
     "rankings": {"rank-weekly", "rank-sponsor", "rank-daily"},
     "news":     {"news"},
     "pathways": {"pathways"},
-    "plan":     {"plan-pr"},   # SurveyJS 表单是客户端渲染,visit() 里给它多等 2s
+    "plan":     {"plan-pr", "plan-job", "plan-career", "plan-province"},   # SurveyJS 客户端渲染,visit() 多等 2s
     "account":  {"account", "match-view"},
 }
 WANT = None
@@ -316,7 +316,9 @@ PERF = """() => ({
 FULL = [("/jobs", "jobs"), ("/pricing", "pricing"), ("/stats", "stats-index"), ("/stats/ab", "stats-province"),
         ("/stats/compare", "stats-compare"), ("/rankings/weekly-top", "rank-weekly"),
         ("/rankings/sponsor-likely", "rank-sponsor"), ("/rankings/daily-top", "rank-daily"),
-        ("/news", "news"), ("/pathways", "pathways"), ("/plan/pr", "plan-pr")]
+        ("/news", "news"), ("/pathways", "pathways"),
+        ("/plan/pr", "plan-pr"), ("/plan/job", "plan-job"),
+        ("/plan/career", "plan-career"), ("/plan/province", "plan-province")]
 LITE = [("/jobs", "jobs"), ("/pricing", "pricing"), ("/stats", "stats-index"),
         ("/rankings/weekly-top", "rank-weekly"), ("/news", "news")]
 
