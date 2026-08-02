@@ -113,13 +113,15 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
 
   // 显示名优先用库里的短名(三语,ETL 04g 产)——前端不自己截字符串,清洗归数据层
   const label = (x: Cand) => pickName(x, lang)
+  // onChange 必须在 updater **外面**调:React 的 setState updater 跑在渲染阶段,
+  // 在里面回调父组件的 setState = 「渲染 A 的时候更新 B」,控制台会红(2026-08-02 走查在 console 抓到:
+  // Cannot update a component `PlanPrView` while rendering a different component `OccPicker`)。
+  // 事件处理器里 nocs 就是最新值,不需要 updater 形式。
   const toggle = (noc: string, name: string) => {
     setTitles((m) => ({ ...m, [noc]: name }))
-    setNocs((cur) => {
-      const next = cur.includes(noc) ? cur.filter((n) => n !== noc) : [...cur, noc]
-      onChange?.(next)
-      return next
-    })
+    const next = nocs.includes(noc) ? nocs.filter((n) => n !== noc) : [...nocs, noc]
+    setNocs(next)
+    onChange?.(next)
   }
 
   // 库里会出现同名不同码(中文都叫「厨师」= 63200 Cooks 与 62200 Chefs)——重名时挂英文官方名区分,
