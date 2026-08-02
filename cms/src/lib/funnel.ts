@@ -59,3 +59,11 @@ export function stepRates(counts: Record<string, number>): (number | null)[] {
     return from > 0 ? Math.round((to / from) * 1000) / 10 : null
   })
 }
+
+/**
+ * 这次计数来自本机开发吗?本地 dev **直连生产库**(2026-07-04 起的约定)——
+ * 于是在 localhost 上验一次版式,生产漏斗表就多几条假数(2026-08-02 实撞:当天 report-open 里有 3 条是截图跑出来的)。
+ * 漏斗是拿来做 M3 分叉判断的,掺了开发流量比没有数更坏 → 本机来源一律不计。
+ */
+export const isLocalHost = (host: string): boolean =>
+  /^(localhost|127\.0\.0\.1|\[::1\]|0\.0\.0\.0)(:\d+)?$/.test((host || '').trim().toLowerCase())

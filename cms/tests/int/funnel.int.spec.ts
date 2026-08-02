@@ -1,7 +1,7 @@
 // 漏斗五个数(主线 M2 / E7-05):白名单与归一的行为锁死 —— 纯函数,不需要 DB。
 // 这张表的价值全在「只留能读的数」:白名单一松,它就变成垃圾桶,以后没人敢读。
 import { describe, it, expect } from 'vitest'
-import { FUNNEL_STEPS, stepRates, toFunnelHit } from '@/lib/funnel'
+import { FUNNEL_STEPS, isLocalHost, stepRates, toFunnelHit } from '@/lib/funnel'
 
 describe('漏斗事件白名单', () => {
   it('站内既有埋点名归到五步(调用点一个都不用改名)', () => {
@@ -43,5 +43,16 @@ describe('转化率', () => {
     expect(stepRates({})).toEqual([null, null, null, null])
     const r = stepRates({ 'jd-open': 200, 'report-open': 50, 'lock-seen': 25, 'pricing-open': 0, 'pay-click': 0 })
     expect(r).toEqual([25, 50, 0, null])   // 最后一格分母 0 → null,不是 0%
+  })
+})
+
+describe('开发流量不进表', () => {
+  it('本机来源一律不计 —— dev 直连生产库,验一次版式就会多几条假数', () => {
+    for (const h of ['localhost:3000', 'LOCALHOST', '127.0.0.1:3000', '[::1]', '0.0.0.0:8080']) {
+      expect(isLocalHost(h), h).toBe(true)
+    }
+    for (const h of ['offer2pr.com', 'www.offer2pr.com', 'pnp-cms.onrender.com', '']) {
+      expect(isLocalHost(h), h).toBe(false)
+    }
   })
 })

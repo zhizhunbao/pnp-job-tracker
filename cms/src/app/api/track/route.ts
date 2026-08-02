@@ -7,7 +7,7 @@
  */
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { toFunnelHit } from '@/lib/funnel'
+import { isLocalHost, toFunnelHit } from '@/lib/funnel'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -20,6 +20,11 @@ export async function POST(req: Request) {
   try { body = await req.json() } catch { return OK }
   const hit = toFunnelHit(body?.event, body?.prop)
   if (!hit) return OK
+  try {
+    const origin = req.headers.get('origin') || ''
+    const host = origin ? new URL(origin).host : (req.headers.get('host') || '')
+    if (isLocalHost(host)) return OK   // 本机开发流量不计(判据与理由见 lib/funnel)
+  } catch { /* 头不合法就按线上算(宁可多记一条,也不静默丢线上流量) */ }
   try {
     const payload = await getPayload({ config: await config })
     const pool = (payload.db as any).pool
