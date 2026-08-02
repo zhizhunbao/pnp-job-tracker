@@ -458,8 +458,17 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
 .plSurvey .sd-navigation__next-btn:hover,.plSurvey .sd-navigation__complete-btn:hover{background-color:${UI.primaryDeep} !important}
 .plSurvey .sd-navigation__prev-btn{background-color:#fff !important;color:${UI.text2};border:1px solid ${UI.border}}
 /* 按钮各占半幅是框架默认;收成内容宽、靠右(主按钮在右=站内表单惯例) */
-.plSurvey .sd-body__navigation{display:flex !important;margin-top:18px;padding:16px 0 0;border-top:1px solid ${UI.hairline};justify-content:space-between !important;gap:10px}
+.plSurvey .sd-body__navigation{display:flex !important;margin-top:18px;padding:14px 0 6px;border-top:1px solid ${UI.hairline};justify-content:space-between !important;gap:10px;position:sticky;bottom:0;background:#fff;z-index:2}
 .plSurvey .sd-body__navigation>.sv-action:only-child{margin-left:auto}
+/* 手机上把「下一题」钉在视口底(2026-08-03 Frank「下一题在最下面点不到」「下一题位置还不统一」):
+   答题页内容短、撑不满一屏,sticky 压根不触发 —— 实测选职业页 756、后续页 574/619/619,每页都不一样。
+   固定在底才是**每一页同一个地方**,选职业那一条动作条(.quizBar)走同一套。内容区补 padding 免得被盖住。 */
+@media(max-width:640px){
+  .quizBar,.plSurvey .sd-body__navigation{position:fixed !important;left:0;right:0;bottom:0;margin:0 !important;
+    padding:10px 16px !important;height:auto !important;border-top:1px solid ${UI.border};background:#fff;z-index:30;
+    box-shadow:0 -2px 8px rgba(0,0,0,.04)}
+  .plQuizPad{padding-bottom:78px}
+}
 .plSurvey .sd-body__navigation>.sv-action,.plSurvey .sd-body__navigation .sd-btn{flex:0 0 auto !important;width:auto;min-width:0;float:none !important}
 /* 框架的禁用态=主按钮透明度 25%(蓝底白字褪成一团看不清);换成站内灰底灰字的正经禁用样式 */
 .plSurvey .sd-btn:disabled{opacity:1;background:${UI.hairline};color:${UI.text3};cursor:default}`}</style>
@@ -482,14 +491,14 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
               {/* 读盘(readAnswers)在 effect 里,所以第一页必须等 ready 再挂 ——
                   提前挂 OccPicker 会拿着空的 initial 定型,已经选过的职业回显不出来(实拍撞到) */}
               {!ready ? null : stage === 'basic' && (occStep || !noc) ? (
-                <div style={{ maxWidth: 600, margin: '0 auto' }}>
+                <div className="plQuizPad" style={{ maxWidth: 600, margin: '0 auto' }}>
                   <div style={{ fontSize: 19, fontWeight: 700, lineHeight: 1.55, marginBottom: 6 }}>{t('quiz.q2')}</div>
                   <OccPicker inline t={t} lang={lang} initial={bands.nocs} doneLabel={t('plan.next')}
                     onChange={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || '') }}
                     onDone={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || ''); setOccStep(false) }} />
                 </div>
               ) : (
-                <div className="plSurvey" style={{ maxWidth: 600, margin: '0 auto' }}>{survey && <Survey model={survey} />}</div>
+                <div className="plSurvey plQuizPad" style={{ maxWidth: 600, margin: '0 auto' }}>{survey && <Survey model={survey} />}</div>
               )}
             </div>
           </>

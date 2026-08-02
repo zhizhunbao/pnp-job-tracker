@@ -153,32 +153,42 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
           </div>
         )}
 
-        {nocs.length > 0 && !hideDone && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
-            {nocs.map((n) => (
-              <button key={n} onClick={() => toggle(n, titles[n] || n)} style={{ ...chipStyle(true), display: 'inline-flex', gap: 6, alignItems: 'center' }}>
-                {/* 名字还没拉回来时**留个占位**,不拿 5 位码顶上去 —— 2026-08-02 Frank
-                    「点击跳转为什么先显示的是数字,后变成文字」:码是给机器看的,不该在人眼前闪一下 */}
-                {titles[n] ? shortOcc(titles[n]) : <Skeleton />}<span style={{ opacity: .7 }}>×</span>
-              </button>
-            ))}
-          </div>
-        )}
+        {/* 已选 + 同族 = 一个**常驻** section(2026-08-03 Frank「新生成的胶囊可以放到一个固定的 section 吗,
+            要不然整个页面老跳」):先前两块都是「有才渲」,一选中就把搜索框、分类、整片热门 chip 全顶下去,
+            眼睛刚点完的位置整个跑掉。现在容器恒在、留出容纳一行 chip + 一行同族的高度,
+            空着的时候放一句空态引导(空态是 CLAUDE.md 允许保留的四类文案之一)。 */}
+        {!hideDone && (
+          <div style={{ height: 96, marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 8, overflow: 'hidden' }}>
+            {nocs.length > 0 ? (
+              <div style={{ display: 'flex', gap: 6, overflowX: 'auto', whiteSpace: 'nowrap', height: 34, alignItems: 'center', flexShrink: 0 }}>
+                {nocs.map((n) => (
+                  <button key={n} onClick={() => toggle(n, titles[n] || n)} style={{ ...chipStyle(true), display: 'inline-flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
+                    {/* 名字还没拉回来时**留个占位**,不拿 5 位码顶上去 —— 2026-08-02 Frank
+                        「点击跳转为什么先显示的是数字,后变成文字」:码是给机器看的,不该在人眼前闪一下 */}
+                    {titles[n] ? shortOcc(titles[n]) : <Skeleton />}<span style={{ opacity: .7 }}>×</span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div style={{ fontSize: 13, color: UI.text3, lineHeight: 1.6 }}>{t('quiz.pickHint')}</div>
+            )}
 
         {/* 同族职业(Frank「21231/21232 那种对儿自动挨一起」):选了之后才出,一行 chip,点一下即加选。
             官方 unit group(NOC 前 4 位)分族,不用本站的中文大类(那套有杂物桶)。
             **不写「推荐」二字**:这不是我们替他判断哪个更好,只是把官方同一族里还在招的摆出来让他自己认。 */}
-        {kin.length > 0 && (
-          <div style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: 12.5, color: UI.text3, marginBottom: 6 }}>{t('quiz.kin')}</div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {kin.map((x) => (
-                <button key={x.noc} onClick={() => toggle(x.noc, label(x))} style={{ ...chipStyle(nocs.includes(x.noc)), display: 'inline-flex', gap: 6, alignItems: 'baseline' }}>
-                  {shortOcc(label(x))}
-                  <span style={{ opacity: .7, fontSize: 11.5 }}>{t('quiz.openN', { n: x.open })}</span>
-                </button>
-              ))}
-            </div>
+            {kin.length > 0 && (
+              <div style={{ flexShrink: 0 }}>
+                <div style={{ fontSize: 12.5, color: UI.text3, marginBottom: 6 }}>{t('quiz.kin')}</div>
+                <div style={{ display: 'flex', gap: 6, overflowX: 'auto', whiteSpace: 'nowrap', height: 34, alignItems: 'center' }}>
+                  {kin.map((x) => (
+                    <button key={x.noc} onClick={() => toggle(x.noc, label(x))} style={{ ...chipStyle(nocs.includes(x.noc)), display: 'inline-flex', gap: 6, alignItems: 'baseline', flexShrink: 0 }}>
+                      {shortOcc(label(x))}
+                      <span style={{ opacity: .7, fontSize: 11.5 }}>{t('quiz.openN', { n: x.open })}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -256,19 +266,20 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
           })}
         </div>
 
-        {nocs.length > 0 && (
-          inline
-            // 内联时用与问卷同一套动作区:上边框断开 + 主按钮靠右(和「下一题」一个样)
-            // #251(2026-08-03 决定线走查,375/en 实拍):选完职业后「Next」被埋在浏览区下面 ——
-            // 整页 1670px、视口 812px,用户选完得往下滚一屏半才找得到下一步,而这是决定线**第一步**、
-            // 漏斗最宽的地方。改成**粘在视口底**:选中即出现、随时能走,浏览区照旧想逛就逛。
-            ? <div style={{ position: 'sticky', bottom: 0, zIndex: 2, background: '#fff', borderTop: `1px solid ${UI.hairline}`, marginTop: 18, padding: '14px 0 6px', display: 'flex', justifyContent: 'flex-end' }}>
-                <Button kind="primary" onClick={() => onDone(nocs)}>{doneLabel || t('quiz.nextN', { n: nocs.length })}</Button>
-              </div>
-            : <Button kind="primary" onClick={() => onDone(nocs)} style={{ width: '100%', padding: '11px 0', fontSize: 15, marginTop: 14 }}>
-                {t('quiz.nextN', { n: nocs.length })}
-              </Button>
-        )}
+        {/* 动作条**永远在**(2026-08-03 Frank「下一题在最下面点不到」「下一题位置还不统一」):
+            先前是「选中才出现」——按钮凭空冒出来又把布局顶一下,而且没选中时这一格是空的,
+            用户翻到底发现无处可点。现在恒在、粘在视口底,没选中时放一句灰字说明,
+            **位置与答题页的「下一题」对齐**(那边同批也改了 sticky),整条决定线的下一步都在同一个地方。 */}
+        {inline ? (
+          <div className="quizBar" style={{ position: 'sticky', bottom: 0, zIndex: 2, background: '#fff', borderTop: `1px solid ${UI.hairline}`, marginTop: 18, padding: '10px 0 8px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 12, height: 56, boxSizing: 'border-box' }}>
+            {nocs.length === 0 && <span style={{ fontSize: 12.5, color: UI.text3, marginRight: 'auto' }}>{t('quiz.pickFirst')}</span>}
+            {nocs.length > 0 && <Button kind="primary" onClick={() => onDone(nocs)}>{doneLabel || t('quiz.nextN', { n: nocs.length })}</Button>}
+          </div>
+        ) : nocs.length > 0 ? (
+          <Button kind="primary" onClick={() => onDone(nocs)} style={{ width: '100%', padding: '11px 0', fontSize: 15, marginTop: 14 }}>
+            {t('quiz.nextN', { n: nocs.length })}
+          </Button>
+        ) : null}
     </>
   )
 
