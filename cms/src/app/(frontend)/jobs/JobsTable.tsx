@@ -19,6 +19,7 @@ import { PricingModal } from './PricingModal'
 import { OnboardingWizard, OB_SEEN_KEY } from './OnboardingWizard'
 import { QUIZ_KEY, quizToProfile, readQuiz, type QuizAnswers } from '../quiz/EntryQuiz'   // 答案读写与落档(弹框本体已退役,2026-07-31 统一答题)
 import { useColWidths, type ColWidthSeed } from './colWidths'   // 列宽唯一控制点(刷新/筛选/拖竖线共用一套规则)
+import { BROAD_SLUGS } from '../stats/shared'   // 大类的行业顺序(镜像 etl/noc_buckets.BROADS)
 import { useOverlayClose } from './overlay'
 import { CARD, iconBtnS, SCRIM, useIsNarrow } from './Modal'
 import { match as matchJob, matchRank, hasProfile, normalizeProfile, type MatchProfile, type MatchJob, type MatchReason } from '@/lib/match'
@@ -346,12 +347,25 @@ const accLabel: Record<string, string> = {
 // 存在 job 字段上,前端不再用 NOC 现算 —— 单一来源在数据层。
 type Cat = { bg: string; fg: string }
 const NA: Cat = { bg: '#fafafa', fg: '#9ca3af' }
+// 同一行业族共用色相(蓝=办公室、青=钱与法、天蓝紫=科技、绿紫=人、粉=文体、
+// 黄=卖、橙=吃住、红灰=蓝领、青柠=运、土色=一二产),扫一眼能按族分堆。
 const BROAD_COLOR: Record<string, Cat> = {
-  管理: { bg: '#dbeafe', fg: '#1e40af' }, 商务: { bg: '#e0e7ff', fg: '#3730a3' },
-  科技: { bg: '#cffafe', fg: '#155e75' }, 医疗: { bg: '#dcfce7', fg: '#166534' },
-  教育: { bg: '#fae8ff', fg: '#86198f' }, 文体: { bg: '#fce7f3', fg: '#9d174d' },
-  服务: { bg: '#fef9c3', fg: '#854d0e' }, 技工: { bg: '#ffedd5', fg: '#9a3412' },
-  资源: { bg: '#ecfccb', fg: '#3f6212' }, 制造: { bg: '#f3f4f6', fg: '#374151' },
+  管理层: { bg: '#dbeafe', fg: '#1e40af' }, 商务: { bg: '#e0e7ff', fg: '#3730a3' },
+  行政: { bg: '#eef2ff', fg: '#4338ca' }, 文员: { bg: '#f1f5f9', fg: '#334155' },
+  金融: { bg: '#ccfbf1', fg: '#115e59' }, 会计: { bg: '#d1fae5', fg: '#065f46' },
+  法律: { bg: '#e2e8f0', fg: '#1f2937' },
+  IT: { bg: '#cffafe', fg: '#155e75' }, 工程: { bg: '#e0f2fe', fg: '#075985' },
+  科学: { bg: '#ede9fe', fg: '#5b21b6' },
+  医疗: { bg: '#dcfce7', fg: '#166534' }, 教育: { bg: '#fae8ff', fg: '#86198f' },
+  社会服务: { bg: '#f5d0fe', fg: '#701a75' },
+  艺术: { bg: '#fce7f3', fg: '#9d174d' }, 体育: { bg: '#ffe4e6', fg: '#9f1239' },
+  销售: { bg: '#fef3c7', fg: '#92400e' }, 零售: { bg: '#fef9c3', fg: '#854d0e' },
+  餐饮: { bg: '#ffedd5', fg: '#9a3412' }, 住宿: { bg: '#fed7aa', fg: '#7c2d12' },
+  生活服务: { bg: '#fff7ed', fg: '#7c2d12' },
+  技工: { bg: '#fee2e2', fg: '#991b1b' }, 建筑: { bg: '#e7e5e4', fg: '#57534e' },
+  运输: { bg: '#d9f99d', fg: '#3f6212' }, 物流: { bg: '#ecfccb', fg: '#4d7c0f' },
+  农业: { bg: '#dcfce7', fg: '#14532d' }, 矿业: { bg: '#fde68a', fg: '#713f12' },
+  制造: { bg: '#f3f4f6', fg: '#374151' },
 }
 const colorOf = (broad?: string): Cat => (broad && BROAD_COLOR[broad]) || NA
 
@@ -908,7 +922,12 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   // 分类筛选项来自维度表(noc_categories);中/小类的英韩名也在这张表里,一并登记给 catName
   const nc = dims.nocCategories
   useMemo(() => registerCatLabels(nc), [nc])
-  const broadOpts = useMemo(() => uniq(nc.map((c) => c.broad)), [nc])
+  // 大类按行业顺序(BROAD_SLUGS = etl/noc_buckets.BROADS 的镜像),不用 uniq 的字母序 ——
+  // 对中文那是按码位排的,等于乱序;清单外的值(未分类)垫底。
+  const broadOpts = useMemo(() => {
+    const order = new Map(BROAD_SLUGS.map(([, b], i) => [b, i]))
+    return uniq(nc.map((c) => c.broad)).sort((a, b) => (order.get(a) ?? 99) - (order.get(b) ?? 99))
+  }, [nc])
   const midOpts = useMemo(() => uniq(nc.filter((c) => !fBroad || c.broad === fBroad).map((c) => c.mid)), [nc, fBroad])
   const fineOpts = useMemo(() => uniq(nc.filter((c) => (!fBroad || c.broad === fBroad) && (!fMid || c.mid === fMid)).map((c) => c.fine)), [nc, fBroad, fMid])
   // 来源/状态/经验/评分下拉已下架(2026-07-16 拍板只留薪资);state 与谓词保留=URL/老保存筛选照常生效

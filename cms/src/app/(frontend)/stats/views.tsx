@@ -248,10 +248,10 @@ export function StatsCatView({ prov, row, srcs }: { prov: string; row: StatRow; 
 }
 
 // ── Pro 跨省对比(E5-04 §3.4):选 2-4 省并排;已建档用户按「我的 NOC」预选大类并高亮 ──
-const NOC_FIRST_TO_BROAD: Record<string, string> = { '0': '管理', '1': '商务', '2': '科技', '3': '医疗', '4': '教育', '5': '文体', '6': '服务', '7': '技工', '8': '资源', '9': '制造' }
+// 原先按「我的 NOC」首位猜大类预选 —— 本站大类不再是官方首位的一一对应(官方一个首位里
+// 混着好几个行业),猜出来的大类经常空表。照「宁可留空也不瞎猜」,默认全部,用户自己挑。
 export function CompareContent({ rows, srcs, isPro, loggedIn, myNocs, t }: { rows: StatRow[]; srcs: SrcRow[]; isPro: boolean; loggedIn: boolean; myNocs: string[]; t: TFn }) {
-  const myBroad = myNocs.length ? NOC_FIRST_TO_BROAD[myNocs[0][0]] || 'all' : 'all'
-  const [broad, setBroad] = useState<string>(myBroad)
+  const [broad, setBroad] = useState<string>('all')
   const [picked, setPicked] = useState<string[]>(['ON', 'BC'])
   const [pricing, setPricing] = useState(false)  // 升级 CTA 开定价弹窗(E8-02:站内不跳页)
   const provs = [...new Set(rows.map((r) => r.province))]
@@ -310,7 +310,7 @@ export function CompareContent({ rows, srcs, isPro, loggedIn, myNocs, t }: { row
   return (
     <>
       <h1 style={{ fontSize: 22, margin: 0 }}><IconScale /> {t('stats.compare')}</h1>
-      <div style={{ margin: '12px 0', fontSize: 12.5, color: '#6b7280' }}>{t('stats.pickProv')}{myNocs.length ? <span style={{ marginLeft: 10, color: '#3730a3' }}><IconTarget /> {t('stats.myNoc')}:NOC {myNocs.join('/')} → {broadLabel(myBroad)}</span> : null}</div>
+      <div style={{ margin: '12px 0', fontSize: 12.5, color: '#6b7280' }}>{t('stats.pickProv')}{myNocs.length ? <span style={{ marginLeft: 10, color: '#3730a3' }}><IconTarget /> {t('stats.myNoc')}:NOC {myNocs.join('/')}</span> : null}</div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
         {provs.map((p) => (
           <Chip key={p} active={picked.includes(p)} onClick={() => toggle(p)}>{p}</Chip>

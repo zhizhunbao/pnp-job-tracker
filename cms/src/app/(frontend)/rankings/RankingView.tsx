@@ -8,6 +8,7 @@ import { SiteFooter } from '../SiteFooter'
 import { BANNER_IMGS, Card, CardAction, CardKV, PageBanner } from '../ui/primitives'
 import { DataTable } from '../ui/DataTable'
 import { IconChart } from '../Icons'
+import { BROAD_SLUGS, slugToBroad } from '../stats/shared'
 
 export type RankRow = {
   rank: number; kind: string; externalId: string
@@ -120,11 +121,11 @@ export function RankingTable({ slug, items, t }: { slug: string; items: RankRow[
   )
 }
 
-// 每日分类榜(E9-02):slug 段 → 大类 zh(与 etl/10_build_rankings BROAD_SLUG 镜像,勿单改)
-const BROAD_BY_SLUG: Record<string, string> = { tech: '科技', health: '医疗', trades: '技工', service: '服务', business: '商务', education: '教育', manufacturing: '制造', resources: '资源', arts: '文体', management: '管理' }
+// 每日分类榜(E9-02):slug 段 → 大类 zh。slug 表只有一份(stats/shared 的 BROAD_SLUGS,
+// 它自己镜像 etl/noc_buckets.SLUGS),这里不再抄一遍。
 const rankTitle = (t: TFn, slug: string): string => {
   if (!slug.startsWith('daily-top')) return t('rank.title.' + slug)
-  const zh = BROAD_BY_SLUG[slug.replace('daily-top-', '')]
+  const zh = slugToBroad(slug.replace('daily-top-', ''))
   return t('rank.title.daily-top') + (zh ? '　' + t('broad.' + zh) : '')
 }
 
@@ -134,7 +135,7 @@ export function RankingView({ slug, items, slugs = [] }: { slug: string; items: 
   const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
   const t = makeT(lang)
   // 有数据的榜单清单(导航与 banner 数字块共用)
-  const boards = ['daily-top', ...Object.keys(BROAD_BY_SLUG).map((k) => `daily-top-${k}`), 'weekly-top', 'sponsor-likely']
+  const boards = ['daily-top', ...BROAD_SLUGS.map(([s]) => `daily-top-${s}`), 'weekly-top', 'sponsor-likely']
     .filter((x) => x === slug || slugs.includes(x) || x === 'weekly-top' || x === 'sponsor-likely')
 
   return (

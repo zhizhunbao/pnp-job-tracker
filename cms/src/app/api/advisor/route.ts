@@ -63,7 +63,7 @@ const SYSTEM = (lang: Lang) =>
   `That line must be written entirely in ${LANG_NAME[lang]} — never mix languages: refer to the employer generically ("这家公司" / "this company" / "이 회사" per language) instead of its name; only site-wide abbreviations (PNP, EE, AIP, CLB, NOC, TEER) may stay Latin. Nothing after that line.`
 
 type Job = {
-  title?: string; company?: string; companyDescription?: string; companySectors?: string; noc?: string; province?: string
+  title?: string; company?: string; companyDescription?: string; companySectors?: string; noc?: string; broad?: string; province?: string
   duties?: string; requirements?: string  // occRead(分类弹框 AI 速读)用:官方职责/任职要求原文,接地不凭空
   locationFacts?: string  // provRead/cityRead(地点弹框 AI 解读)用:面板同源的 IRCC/库内数字块,接地不凭空
   city?: string; district?: string; address?: string; officialUrl?: string; applyUrl?: string
@@ -76,17 +76,10 @@ type Job = {
   datePosted?: string; lastSeen?: string; status?: string
 }
 
-const BROAD: Record<string, string> = {
-  '0': '管理', '1': '商务', '2': 'IT', '3': '医疗', '4': '教育',
-  '5': '文体', '6': '服务', '7': '技工', '8': '资源', '9': '制造',
-}
 const teerOf = (noc?: string) => (noc && noc.length === 5 && /\d/.test(noc[1]) ? Number(noc[1]) : null)
-const catOf = (noc?: string) => {
-  if (!noc || !/^\d/.test(noc)) return '未分类'
-  if (noc[0] === '2' && /^21[345]/.test(noc)) return '工程'
-  if (noc[0] === '7' && noc[1] === '3') return '运输'
-  return BROAD[noc[0]] || '未分类'
-}
+// 大类直接读 job.broad(ETL etl/noc_buckets.py 算好存字段)。这里原先拿 NOC 首位现推
+// —— 本站大类不是官方首位的一一对应(官方第 2 组混着 IT/工程/科学/园艺),推出来的常年是错的。
+const catOf = (j: Job) => j.broad || '未分类'
 
 // 评分事实(E12-08 档位制,#126 修):旧 0-100 加权镜像退役——弹框 UI 已是 1-5 档,解读再报「总分 80」
 // 就是两套口径打架。喂档位语义(与 etl/grades.py grade_channel 同源信号),并明令禁提 0-100 总分。
@@ -120,7 +113,7 @@ function jobFacts(j: Job): string {
     // C.7:公司行业/简介喂进事实(companies 富化,抓官网)——对话/其它字段问公司时也 grounded,不凭名字编
     j.companySectors?.trim() ? `Company sector/industry: ${j.companySectors.trim()} [src: company website]` : '',
     j.companyDescription?.trim() ? `Company about: ${j.companyDescription.trim().slice(0, 600)} [src: company website]` : '',
-    `NOC: ${j.noc || '—'} (TEER ${t ?? '—'}, ${catOf(j.noc)}) [src: StatCan NOC 2021]`,
+    `NOC: ${j.noc || '—'} (TEER ${t ?? '—'}, ${catOf(j)}) [src: StatCan NOC 2021]`,
     // #168:**省全名**喂模型 —— 实测 NS 的岗被顾问说成「符合新不伦瑞克省提名」,两字母码它猜错了
     `Location: ${[j.district, j.city, provFullName(j.province)].filter(Boolean).join(', ') || '—'} [src: official posting]`,
     `Score: ${j.score ?? '—'}/100 [src: site-derived rubric]; PNP-eligible: ${j.pnpEligible ? 'yes' : 'no'} [src: provincial published lists]; Federal EE category: ${j.eeCategory || 'none'} [src: IRCC category-based selection]; AIP designated: ${j.aip ? 'yes' : 'no'} [src: designated-employer lists]; experience: ${j.accessibility || '—'} [src: site-derived]`,
@@ -208,7 +201,7 @@ NEGATIVE SIGNALS: if a supplied signal says this job does NOT match a route (e.g
 function buildPrompt(field: string, j: Job, jd: string, lang: Lang, pf = '', web: CompanyResearch | null = null): string {
   const loc = j.address || [j.city, provFullName(j.province)].filter(Boolean).join(', ') || '—'
   const t = teerOf(j.noc)
-  const nocLine = j.noc ? `NOC ${j.noc} (TEER ${t ?? '—'}, ${catOf(j.noc)})` : 'NOC not identified'
+  const nocLine = j.noc ? `NOC ${j.noc} (TEER ${t ?? '—'}, ${catOf(j)})` : 'NOC not identified'
   const H = HEADINGS[lang]
   const inLang = `keep the 【】 brackets, write the content in ${LANG_NAME[lang]}`
   if (field === 'company') {
@@ -253,7 +246,7 @@ function buildPrompt(field: string, j: Job, jd: string, lang: Lang, pf = '', web
     const dutiesTxt = (j.duties || '').split('\n').map((s) => s.trim()).filter(Boolean).slice(0, 30).join('\n').slice(0, 2000)
     const reqTxt = (j.requirements || '').split('\n').map((s) => s.trim()).filter(Boolean).slice(0, 20).join('\n').slice(0, 1400)
     const facts = [
-      `NOC ${j.noc || '—'} (TEER ${t2 ?? '—'}, ${catOf(j.noc)})`,
+      `NOC ${j.noc || '—'} (TEER ${t2 ?? '—'}, ${catOf(j)})`,
       dutiesTxt ? `Official main duties:\n${dutiesTxt}` : '',
       reqTxt ? `Official employment requirements:\n${reqTxt}` : '',
     ].filter(Boolean).join('\n\n')

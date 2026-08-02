@@ -20,6 +20,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _paths  # noqa: E402
+from noc_buckets import SLUGS as BROAD_SLUG  # noqa: E402  大类 zh → URL slug 段,单一来源在 noc_buckets
 
 if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
     sys.stdout.reconfigure(encoding="utf-8")
@@ -33,9 +34,6 @@ SPONSOR_N = 30
 DAILY_N = 20            # 每日精选 TOP N(全国与各大类同)
 DAILY_MIN = 5           # 大类榜起榜门槛
 DAILY_SCORE_GATE = 60   # 质量门槛(与 match「高」档同线)
-# 大类 zh → URL slug 段(与前端 RankingView BROAD_BY_SLUG 镜像,勿单改)
-BROAD_SLUG = {"科技": "tech", "医疗": "health", "技工": "trades", "服务": "service", "商务": "business",
-              "教育": "education", "制造": "manufacturing", "资源": "resources", "文体": "arts", "管理": "management"}
 AGENCY = re.compile(r"recruit|staffing|talent|personnel|placement|outsourc|mercor|adecco|randstad|source code|manpower", re.I)
 
 
