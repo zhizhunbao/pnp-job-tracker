@@ -1,6 +1,9 @@
 /**
  * POST /api/report — 报告引擎服务端出口(L2-01/L2-02,卡②「拿 PR」先通)。
- * body: { goal: 'pr', answers?: { noc?, currentStatus?, clb?, crs?, canadianExpMonths?, targetProvinces?, edu?, age?, totalExpMonths? } }
+ * body: { goal: 'pr', answers?: { noc? | nocs?[], currentStatus?, clb?, crs?, canadianExpMonths?, targetProvinces?, edu?, age?, totalExpMonths? } }
+ * 多职业(2026-08-02 Frank「选多个职业,报告也应该支持多个职业」):**一个职业一份报告,不混算** ——
+ * 清单命中、门槛、抽选线全是按职业来的,把两个职业的数合起来算没有任何官方口径支持。
+ * 返回 { report, reports[] }:report=第一份(老前端与 advisor 不受影响),reports=全部。
  * 合并序:登录档案为底、本次答案覆盖(改答案立刻重算铁律);匿名可用(结论摘要免费,aha 在掏钱之前)。
  * 引擎纯函数(lib/report.ts),这里只做:身份合并 → dims(1h 缓存)→ facts 组装 → buildPrReport。
  */
@@ -17,6 +20,8 @@ import { assembleOccStats, assembleReportFacts } from '@/lib/reportFacts'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
+
+const MAX_NOCS = 3   // 报告最多同时算几个职业(每多一个 = 多两次库往返)
 
 export async function POST(req: Request) {
   let body: any = null
@@ -39,22 +44,37 @@ export async function POST(req: Request) {
     age: num(merged.age),
     totalExpMonths: num(merged.totalExpMonths),
   }
-  const noc = (typeof a.noc === 'string' && a.noc.trim()) || profile.nocCodes[0] || ''
+  // 职业清单:nocs 优先(多选),退到单值 noc,再退到登录档案。上限 MAX_NOCS ——
+  // 每多一个职业就多两次库往返,选十个职业等于把报告接口变成慢查询。
+  const raw: string[] = Array.isArray(a.nocs) ? a.nocs : []
+  const nocs = Array.from(new Set([
+    ...raw.filter((n: unknown) => typeof n === 'string' && /^\d{5}$/.test(n.trim())).map((n: string) => n.trim()),
+    ...((typeof a.noc === 'string' && a.noc.trim()) ? [a.noc.trim()] : []),
+    ...profile.nocCodes,
+  ])).slice(0, MAX_NOCS)
+  const noc = nocs[0] ?? ''
 
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
-  // 卡①/⑥ 要职业级统计(stats_occupation);拿 PR 不查,省一次往返
-  const [dims, facts, occ] = await Promise.all([
-    loadMatchDims(),
-    assembleReportFacts(pool, noc),
-    goal === 'job' || goal === 'career' ? assembleOccStats(pool, noc) : Promise.resolve(null),
-  ])
-  // extra 三张卡都要传:换省对照(L2-08)拿加拿大经验算下界分,卡①/③ 少了它会比卡② 少算一项
-  const built = goal === 'job' ? buildJobReport(profile, dims, facts, occ!, extra)
-    : goal === 'career' ? buildCareerReport(profile, facts, occ!)
-      : goal === 'prov' ? buildProvReport(profile, { hasJobOffer: typeof merged.hasJobOffer === 'boolean' ? merged.hasJobOffer : null, ...extra }, dims, facts)
-        : buildPrReport(profile, extra, dims, facts)
-  // 付费闸在服务端(L2-03):免费响应里根本没有锁区正文,前端只负责显示锁行标题
-  const report = gateReport(built, isPro(user))
-  return Response.json({ report })
+  const dims = await loadMatchDims()
+  // 一个职业一份报告(卡①/⑥ 还要职业级统计 stats_occupation;拿 PR 不查,省一次往返)
+  const wantOcc = goal === 'job' || goal === 'career'
+  const reports = await Promise.all((nocs.length ? nocs : ['']).map(async (n) => {
+    const [facts, occ] = await Promise.all([
+      assembleReportFacts(pool, n),
+      wantOcc ? assembleOccStats(pool, n) : Promise.resolve(null),
+    ])
+    return buildOne(facts, occ)
+  }))
+  return Response.json({ report: reports[0], reports })
+
+  function buildOne(facts: Awaited<ReturnType<typeof assembleReportFacts>>, occ: Awaited<ReturnType<typeof assembleOccStats>> | null) {
+    // extra 三张卡都要传:换省对照(L2-08)拿加拿大经验算下界分,卡①/③ 少了它会比卡② 少算一项
+    const built = goal === 'job' ? buildJobReport(profile, dims, facts, occ!, extra)
+      : goal === 'career' ? buildCareerReport(profile, facts, occ!)
+        : goal === 'prov' ? buildProvReport(profile, { hasJobOffer: typeof merged.hasJobOffer === 'boolean' ? merged.hasJobOffer : null, ...extra }, dims, facts)
+          : buildPrReport(profile, extra, dims, facts)
+    // 付费闸在服务端(L2-03):免费响应里根本没有锁区正文,前端只负责显示锁行标题
+    return gateReport(built, isPro(user))
+  }
 }

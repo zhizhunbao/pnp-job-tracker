@@ -54,10 +54,17 @@ describe('档位 → 引擎输入', () => {
   it('每档取下界:CLB 6-7 那档按 6 传,不按 7', () => {
     const out = toEngineAnswers(base({ status: 'working', nocs: ['31301'], clbBand: 3, expBand: 3, provBand: 1, crsBand: 4, pgwpBand: 2 }))
     expect(out).toEqual({
-      noc: '31301', currentStatus: 'working', clb: 6, canadianExpMonths: 18,
+      noc: '31301', nocs: ['31301'], currentStatus: 'working', clb: 6, canadianExpMonths: 18,
       targetProvinces: ['BC'], crs: 480, pgwpMonthsLeft: 9,
     })
     expect(toEngineAnswers(base({ clbBand: 5 })).clb).toBe(10)
+  })
+
+  // 多职业(2026-08-02):选几个报几个;`noc` 保留单值只为老前端与 advisor 不受影响
+  it('选了两个职业就报两个,单值 noc 仍是第一个', () => {
+    const out = toEngineAnswers(base({ nocs: ['31301', '21232'] }))
+    expect(out.nocs).toEqual(['31301', '21232'])
+    expect(out.noc).toBe('31301')
   })
 
   it('「没有」加拿大经验 = 0 个月,是答案不是缺答', () => {

@@ -99,7 +99,9 @@ export const answeredBasics = (a: Answers): boolean => Boolean(a.done || a.statu
 
 // 档位 → /api/report 的 answers。换算全在字段库的 toAnswer 里,这里只做遍历与职业。
 export function toEngineAnswers(a: Answers): Record<string, unknown> {
-  const out: Record<string, unknown> = { noc: a.nocs[0] || '' }
+  // 选了几个职业就报几个(2026-08-02):`noc` 保留单值是为了老前端与 advisor 不受影响,
+  // 引擎按 `nocs` 一个职业一份报告 —— 两个职业的清单命中/门槛/抽选线不能合起来算。
+  const out: Record<string, unknown> = { noc: a.nocs[0] || '', nocs: a.nocs }
   for (const [name, def] of Object.entries(FIELDS)) {
     const v = def.toAnswer ? def.toAnswer((a as any)[name], a) : (a as any)[name]
     if (v !== undefined) out[def.engineKey ?? name] = v

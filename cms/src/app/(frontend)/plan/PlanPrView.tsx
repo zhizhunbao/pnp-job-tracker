@@ -187,7 +187,7 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
 
   const [bands, setBands] = useState<Answers>(EMPTY)
   const [noc, setNoc] = useState('')
-  const [nocTitle, setNocTitle] = useState('')
+  const [nocTitles, setNocTitles] = useState<Record<string, string>>({})
   const [view, setView] = useState<'quiz' | 'report'>('quiz')
   const [stage, setStage] = useState<'basic' | 'explore'>('basic')   // 探索卷=报告 hook 的落点(基本 4 题满才进得来)
   // 职业是流程第一步(2026-07-31 Frank「第一个问题可以先选职业吗」):每条结论都要 NOC。
@@ -203,7 +203,11 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
     const id = setTimeout(() => setResetArmed(false), 8000)
     return () => clearTimeout(id)
   }, [resetArmed])
-  const [rpt, setRpt] = useState<Rpt | null | 'loading'>(null)
+  // 多职业(2026-08-02 Frank「选多个职业,报告也应该支持多个职业」):一个职业一份报告,
+  // 顶部切一下换一份 —— 不混算(清单命中/门槛/抽选线全是按职业来的),也不重新请求(一次全拿回来)
+  const [rpts, setRpts] = useState<Rpt[] | null | 'loading'>(null)
+  const [rptIdx, setRptIdx] = useState(0)
+  const rpt: Rpt | null | 'loading' = rpts === 'loading' ? 'loading' : (rpts?.[rptIdx] ?? null)
   const [addedProvs, setAddedProvs] = useState<string[]>([])   // 换省对照:用户从下拉里加出来看的省
   // 漏斗第 3 步(主线 M2):锁区**进了视口**才算曝光 —— 渲染即算会把「拉到一半就走」的人也算进去,
   // 那样 M3 的分叉判断(曝光够点击少 vs 根本没人看见)就分不开了。一次会话只记一次。
@@ -234,13 +238,18 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
     setReady(true)
     track(`plan-${decision}-open`)
   }, [])
-  // 职业名回显(代码不裸奔):/api/quiz?noc 与三问结果页同端点
+  // 职业名回显(代码不裸奔):/api/quiz?noc 与三问结果页同端点。
+  // 多职业下要**每个都拉** —— 切到第二个职业时 H1 退回英文官方名就等于中文界面上突然冒出英文
   useEffect(() => {
-    if (!noc) { setNocTitle(''); return }
-    fetch(`/api/quiz?noc=${encodeURIComponent(noc)}`).then((r) => r.json())
-      .then((d) => setNocTitle(lang === 'zh' && d?.facts?.titleZh ? d.facts.titleZh : d?.facts?.title || noc))
-      .catch(() => setNocTitle(noc))
-  }, [noc, lang])
+    const list = bands.nocs.length ? bands.nocs : (noc ? [noc] : [])
+    if (!list.length) { setNocTitles({}); return }
+    let dead = false
+    Promise.all(list.map((n) => fetch(`/api/quiz?noc=${encodeURIComponent(n)}`).then((r) => r.json())
+      .then((d) => [n, (lang === 'zh' && d?.facts?.titleZh) || d?.facts?.title || ''] as [string, string])
+      .catch(() => [n, ''] as [string, string])))
+      .then((rows) => { if (!dead) setNocTitles(Object.fromEntries(rows)) })
+    return () => { dead = true }
+  }, [bands.nocs, noc, lang])
 
   const gotoReport = () => {
     setView('report')
@@ -304,13 +313,17 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
   // 报告态进入即拉(改答案回来再进=重算;答案是幂等输入)
   useEffect(() => {
     if (view !== 'report' || !ready) return
-    setRpt('loading')
+    setRpts('loading')
     const ctrl = new AbortController()
     fetch('/api/report', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', signal: ctrl.signal,
       body: JSON.stringify({ goal: decision, answers: toEngineAnswers(readAnswers()) }),
-    }).then((r) => (r.ok ? r.json() : null)).then((d) => setRpt(d?.report ?? null))
-      .catch(() => { if (!ctrl.signal.aborted) setRpt(null) })
+    }).then((r) => (r.ok ? r.json() : null)).then((d) => {
+      const list: Rpt[] = Array.isArray(d?.reports) ? d.reports : (d?.report ? [d.report] : [])
+      setRpts(list.length ? list : null)
+      setRptIdx(0)
+    })
+      .catch(() => { if (!ctrl.signal.aborted) setRpts(null) })
     return () => ctrl.abort()
   }, [view, ready])
 
@@ -354,7 +367,7 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
               「找工作这个还需要显示吗」/「为什么要有一个重复的 title」)。 */}
           <h1 style={{ margin: '0 0 2px', fontSize: 22, lineHeight: 1.35, color: '#111827', paddingRight: 170 }}>
             {rpt && rpt !== 'loading' && rpt.noc
-              ? <>{shortOcc(nocTitle || rpt.title)}<span style={{ color: UI.text3, fontWeight: 400, fontSize: 13, marginLeft: 8 }}>{rpt.noc}</span></>
+              ? <>{shortOcc(nocTitles[rpt.noc] || rpt.title)}<span style={{ color: UI.text3, fontWeight: 400, fontSize: 13, marginLeft: 8 }}>{rpt.noc}</span></>
               : t(`plan.${decision}.title`)}
           </h1>
           {/* 没选职业的空报告:留一个选职业入口(说「先选职业」却没入口=死路)。
@@ -363,6 +376,19 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
           {rpt && rpt !== 'loading' && !rpt.noc
             ? <div className="noPrint" style={{ margin: '6px 0 2px' }}><OccChip noc="" nocTitle="" t={t} onPick={() => gotoQuiz()} /></div>
             : null}
+          {/* 多职业:一个职业一份报告,这里只负责切 —— 结论不混算(清单/门槛/抽选线都是按职业的)。
+              一个职业时整条不渲染(单选的人不该看见一个只有一格的切换器)。 */}
+          {Array.isArray(rpts) && rpts.length > 1 && (
+            <div className="noPrint" style={{ display: 'flex', flexWrap: 'wrap', gap: 6, margin: '10px 0 0' }}>
+              {rpts.map((r, i) => (
+                <button key={r.noc || i} onClick={() => setRptIdx(i)}
+                  style={{ ...BTN, padding: '6px 12px', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis',
+                    ...(i === rptIdx ? { background: '#eff6ff', borderColor: '#bfdbfe', color: UI.primaryDeep, fontWeight: 600 } : {}) }}>
+                  {shortOcc(nocTitles[r.noc] || r.title || r.noc)}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         )}
 
@@ -477,7 +503,7 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
             ) : (
               <>
                 <div className="printOnly" style={{ fontSize: 15, fontWeight: 700, marginBottom: 8 }}>
-                  {shortOcc(nocTitle || rpt.title)}<span style={{ color: UI.text3, fontWeight: 400, fontSize: 12, marginLeft: 6 }}>{rpt.noc}</span>
+                  {shortOcc(nocTitles[rpt.noc] || rpt.title)}<span style={{ color: UI.text3, fontWeight: 400, fontSize: 12, marginLeft: 6 }}>{rpt.noc}</span>
                 </div>
                 {/* ③ 结论(免费两条)+ 缺口;分隔线代替小标题(卡片自解释,不写废话) */}
                 {/* 每节带标题(2026-07-31 Frank「每个 section 连个 title 都没有」):
