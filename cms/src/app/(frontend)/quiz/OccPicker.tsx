@@ -152,7 +152,9 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
             滚动条在手机上本来就不显示,桌面上也藏掉(它会把 34px 的行再挤矮一截) */}
         {/* 弹层里用(职位板/详情页)也要带上答题壳的 CSS —— inline 那条路由 PlanPrView 挂了同一份 */}
         {!inline && <QuizStyle />}
-        <style>{`.chipRow{scrollbar-width:none;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 22px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 22px),transparent)}
+        <style>{`.occCatSel{display:none}
+@media(max-width:640px){.occCatSel{display:block}.occCatTabs{display:none !important}}
+.chipRow{scrollbar-width:none;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 22px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 22px),transparent)}
 .chipRow::-webkit-scrollbar{display:none}`}</style>
         {!inline && (
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>
@@ -233,19 +235,31 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
             </div>
           </>
         ) : null}
+        {/* 大类名 2026-08-03 换成官方口径的全称(「科技」→「自然与应用科学」:园艺技师、家电维修
+            在官方第 2 组里本来就成立,是我们的两字简称把它显得离谱)。Frank「不要改成装得下的名字」——
+            所以名字不缩,**换控件**:手机上十个全称要占九行(实拍),把职业列表全顶到屏外,
+            于是窄屏走下拉(名字多长都是一行),桌面照旧页签(实测两行,放得下)。 */}
         {!loading && cats.length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, paddingBottom: 10, marginBottom: 12, borderBottom: `1px solid ${UI.border}` }}>
-            {['', ...cats].map((c) => (
-              <button key={c || 'hot'} onClick={() => { setCat(c); setLetter('') }}
-                style={{
-                  border: 'none', background: 'none', padding: '2px 0', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13.5,
-                  color: cat === c ? UI.primary : UI.text2, fontWeight: cat === c ? 700 : 400,
-                  borderBottom: cat === c ? `2px solid ${UI.primary}` : '2px solid transparent',
-                }}>
-                {c ? t('broad.' + c) : t('occ.cat.hot')}
-              </button>
-            ))}
-          </div>
+          <>
+            <select className="occCatSel" value={cat} onChange={(e) => { setCat(e.target.value); setLetter('') }}
+              style={{ width: '100%', boxSizing: 'border-box', height: 40, padding: '0 10px', marginBottom: 12,
+                border: `1px solid ${UI.border}`, borderRadius: 10, fontSize: 14, fontFamily: 'inherit', background: '#fff', color: UI.text }}>
+              <option value="">{t('occ.cat.hot')}</option>
+              {cats.map((c) => <option key={c} value={c}>{t('broad.' + c)}</option>)}
+            </select>
+            <div className="occCatTabs" style={{ display: 'flex', flexWrap: 'wrap', gap: 14, paddingBottom: 10, marginBottom: 12, borderBottom: `1px solid ${UI.border}` }}>
+              {['', ...cats].map((c) => (
+                <button key={c || 'hot'} onClick={() => { setCat(c); setLetter('') }}
+                  style={{
+                    border: 'none', background: 'none', padding: '2px 0', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13.5,
+                    color: cat === c ? UI.primary : UI.text2, fontWeight: cat === c ? 700 : 400,
+                    borderBottom: cat === c ? `2px solid ${UI.primary}` : '2px solid transparent',
+                  }}>
+                  {c ? t('broad.' + c) : t('occ.cat.hot')}
+                </button>
+              ))}
+            </div>
+          </>
         )}
 
         {/* A–Z 索引条(仅英文界面):与分类页签并列的第二个入口,再点一次同一个字母=取消 */}
