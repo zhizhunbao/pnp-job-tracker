@@ -244,8 +244,11 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
     const list = bands.nocs.length ? bands.nocs : (noc ? [noc] : [])
     if (!list.length) { setNocTitles({}); return }
     let dead = false
+    // 名字优先用**库里算好的短名**(noc_descriptions.title_zh_short,ETL 04f 产出):
+    // 「注册护士和注册精神科护士」在 375 的 H1 上折三行,短名是「注册护士」。
+    // 前端不再自己截字符串 —— 清洗归数据层(CLAUDE.md);en/ko 还没有短名字段,暂时走 shortOcc 兜底(已立项)。
     Promise.all(list.map((n) => fetch(`/api/quiz?noc=${encodeURIComponent(n)}`).then((r) => r.json())
-      .then((d) => [n, (lang === 'zh' && d?.facts?.titleZh) || d?.facts?.title || ''] as [string, string])
+      .then((d) => [n, (lang === 'zh' && (d?.facts?.titleZhShort || d?.facts?.titleZh)) || d?.facts?.title || ''] as [string, string])
       .catch(() => [n, ''] as [string, string])))
       .then((rows) => { if (!dead) setNocTitles(Object.fromEntries(rows)) })
     return () => { dead = true }

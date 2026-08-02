@@ -574,6 +574,7 @@ export async function fetchAlertHits(pool: any, filters: Record<string, unknown>
 export type QuizFacts = {
   noc: string; teer: number | null; title: string
   titleZh: string
+  titleZhShort: string   // 窄位显示名(ETL 04f 产出;「注册护士和注册精神科护士」→「注册护士」)
   open: number; eligible: number; named: number
   streams: { stream: string; n: number }[]
   byProv: { province: string; n: number; eligible: number }[]
@@ -600,7 +601,7 @@ export async function fetchQuizFacts(pool: any, noc: string): Promise<QuizFacts 
        FROM jobs j WHERE j.status = 'open' AND j.noc = $1 AND j.pnp_stream IS NOT NULL AND j.pnp_stream <> ''
        GROUP BY j.pnp_stream ORDER BY count(*) DESC LIMIT 4`, [noc]),
     // 职业名取 NOC 官方名(noc_descriptions),不能拿某个岗位的标题冒充职业名
-    pool.query(`SELECT COALESCE(title,'') title, COALESCE(title_zh,'') title_zh FROM noc_descriptions WHERE noc = $1 LIMIT 1`, [noc]),
+    pool.query(`SELECT COALESCE(title,'') title, COALESCE(title_zh,'') title_zh, COALESCE(title_zh_short,'') title_zh_short FROM noc_descriptions WHERE noc = $1 LIMIT 1`, [noc]),
     // 雇主线索的**家数**(M1:把锁区铺到人真正落地的详情页)。
     // WHERE 必须与 reportFacts 的名单口径**逐字一致**:清单式省认具名通道,不公布清单的省(ON)认粗筛可提名 ——
     // 两处对不上,详情页说「有 23 家」、报告里名单却是另一批,用户第一眼就抓到我们数不准(2026-08-01 已撞过一次)。
@@ -615,7 +616,7 @@ export async function fetchQuizFacts(pool: any, noc: string): Promise<QuizFacts 
   if (!t.open) return null
   const d = desc.rows[0] || {}
   return {
-    noc, teer: num(t.teer), title: d.title || noc, titleZh: d.title_zh || '',
+    noc, teer: num(t.teer), title: d.title || noc, titleZh: d.title_zh || '', titleZhShort: d.title_zh_short || '',
     open: t.open, eligible: t.eligible ?? 0, named: t.named ?? 0,
     streams: stream.rows.map((r: any) => ({ stream: r.stream, n: r.n })),
     byProv: prov.rows.map((r: any) => ({ province: r.province, n: r.n, eligible: r.eligible })),
@@ -645,7 +646,7 @@ export async function fetchNocOpenCounts(pool: any, nocs: string[]): Promise<Rec
  * 不手写清单 —— 按**库里在招量**取前 N,自己会随市场变;顺带回中英职业名与可提名数,前端不必二次查。
  * 只收 noc_descriptions 里有官方职业名的(没名字的码显示出来等于黑话)。
  */
-export async function fetchTopNocs(pool: any, limit = 24): Promise<{ noc: string; title: string; titleZh: string; broad: string; open: number; eligible: number; medianSalary: number | null }[]> {
+export async function fetchTopNocs(pool: any, limit = 24): Promise<{ noc: string; title: string; titleZh: string; titleZhShort: string; broad: string; open: number; eligible: number; medianSalary: number | null }[]> {
   // 上限放到 200:选职业控件要按大类分组浏览(Frank 2026-07-31「那么多职业用户怎么选」),
   // 只给 24 个连一个大类都铺不满。大类取自岗位行的 broad(与职位板筛选同一套分类,不另造)。
   const n = Math.min(Math.max(limit, 1), 200)
@@ -653,25 +654,25 @@ export async function fetchTopNocs(pool: any, limit = 24): Promise<{ noc: string
   // 实测带它 200 行要 3.2s,去掉后只剩计数 —— 控件里也用不到那个数,不为没人看的列付延迟。
   const withMed = n <= 24
   const { rows } = await pool.query(
-    `SELECT j.noc, COALESCE(d.title, '') title, COALESCE(d.title_zh, '') title_zh,
+    `SELECT j.noc, COALESCE(d.title, '') title, COALESCE(d.title_zh, '') title_zh, COALESCE(d.title_zh_short, '') title_zh_short,
             COALESCE(mode() WITHIN GROUP (ORDER BY j.broad), '') broad,
             count(*)::int open, count(*) FILTER (WHERE j.pnp_eligible)::int eligible
             ${withMed ? ', percentile_cont(0.5) WITHIN GROUP (ORDER BY j.salary_annual) med' : ''}
      FROM jobs j JOIN noc_descriptions d ON d.noc = j.noc
      WHERE j.status = 'open' AND j.noc <> ''
-     GROUP BY j.noc, d.title, d.title_zh
+     GROUP BY j.noc, d.title, d.title_zh, d.title_zh_short
      ORDER BY count(*) DESC LIMIT $1`, [n])
-  return rows.map((r: any) => ({ noc: r.noc, title: r.title, titleZh: r.title_zh, broad: r.broad, open: r.open, eligible: r.eligible, medianSalary: num(r.med) }))
+  return rows.map((r: any) => ({ noc: r.noc, title: r.title, titleZh: r.title_zh, titleZhShort: r.title_zh_short, broad: r.broad, open: r.open, eligible: r.eligible, medianSalary: num(r.med) }))
 }
 
 /** 入口三问第 2 题的职业搜索:按中/英职业名模糊找 NOC(noc_descriptions 维度表,≤8 条) */
-export async function searchNocByTitle(pool: any, q: string): Promise<{ noc: string; title: string; titleZh: string }[]> {
+export async function searchNocByTitle(pool: any, q: string): Promise<{ noc: string; title: string; titleZh: string; titleZhShort: string }[]> {
   const s = q.trim()
   if (s.length < 2) return []
   const { rows } = await pool.query(
-    `SELECT d.noc, COALESCE(d.title,'') title, COALESCE(d.title_zh,'') title_zh
+    `SELECT d.noc, COALESCE(d.title,'') title, COALESCE(d.title_zh,'') title_zh, COALESCE(d.title_zh_short,'') title_zh_short
      FROM noc_descriptions d
      WHERE d.title ILIKE $1 OR d.title_zh ILIKE $1
      ORDER BY length(COALESCE(d.title,'')) LIMIT 8`, [`%${s}%`])
-  return rows.map((r: any) => ({ noc: r.noc, title: r.title, titleZh: r.title_zh }))
+  return rows.map((r: any) => ({ noc: r.noc, title: r.title, titleZh: r.title_zh, titleZhShort: r.title_zh_short }))
 }
