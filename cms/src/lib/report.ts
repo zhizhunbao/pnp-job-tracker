@@ -790,7 +790,10 @@ export type ReportLane = {
   key: string                                   // rpt.lane.*(判定词=事实;章文案取 key + '.b')
   params: Record<string, string | number>
 }
-export type GatedReport = Report & { lanes: ReportLane[]; hint?: ReportLine; locked: string[]; pro: boolean }
+// moreN = 锁行「其余 N 条结论」里的 N(#245 第 31 轮:「其余结论全文」是个空口袋,
+// 没人为一个不知道是什么的口袋掏钱)。只给**条数**不编类别 —— 被裁的是哪几条随画像而变,
+// 硬写「抽选区间、经验与认证等」会在某些画像下变成假话(宁可少说也不瞎猜)。
+export type GatedReport = Report & { lanes: ReportLane[]; hint?: ReportLine; locked: string[]; moreN: number; pro: boolean }
 
 const FREE_CONCLUSIONS = 2      // 免费结论的**下限**(单省时=清单命中 + 抽选区间,正是 v2c 免费两条);多省按「每省保底一条」上浮
 const LANE_PROV: Record<string, string> = {
@@ -846,7 +849,7 @@ export function gateReport(report: Report, pro: boolean): GatedReport {
     }
   }
 
-  if (pro) return { ...report, lanes, hint, locked: [], pro: true }
+  if (pro) return { ...report, lanes, hint, locked: [], moreN: 0, pro: true }
 
   // 雇主线索:名单整段不下发(免费层留「有 N 家」那句结论 + 锁行标题,devtools 也翻不出名字)
   const employers: ReportEmployer[] = []
@@ -876,7 +879,7 @@ export function gateReport(report: Report, pro: boolean): GatedReport {
   //      而信任是拿 PR 那张卡(真有货)收得到钱的前提。
   // 这张卡真该卖的是「你能不能转过去」,而职业转换路径本站没有数据(gaps 里自己也这么说)——
   // 等那份数据有了再开闸,不拿现有的算术凑一个付费墙。
-  if (report.goal === 'career') return { ...report, lanes: [], hint, locked: [], pro: false }
+  if (report.goal === 'career') return { ...report, lanes: [], hint, locked: [], moreN: 0, pro: false }
 
   if (report.goal !== 'pr') {
     const free = report.conclusions.filter((c) => !LOCK_CAT[c.key])
@@ -887,7 +890,7 @@ export function gateReport(report: Report, pro: boolean): GatedReport {
     if (scoreLocked) cats2.add('score')
     return {
       ...report, conclusions: free, alternatives: [], requirements, employers, switches,
-      lanes: [], hint, locked: LOCK_ORDER.filter((k) => cats2.has(k)), pro: false,
+      lanes: [], hint, locked: LOCK_ORDER.filter((k) => cats2.has(k)), moreN: 0, pro: false,
     }
   }
 
@@ -916,9 +919,10 @@ export function gateReport(report: Report, pro: boolean): GatedReport {
   const trimmed = report.conclusions.filter((c, i) => !freeIdx.has(i) && !ALWAYS_FREE.has(c.key))
   const shownFree = new Set([provLine?.key, eeLine?.key, hintLine?.key])   // 已在三卡/卡点里露过的,不再计入「其余结论」
   const cats = new Set<string>()
+  let moreN = 0
   for (const c of trimmed) {
     if (LOCK_CAT[c.key]) cats.add(LOCK_CAT[c.key])
-    else if (!shownFree.has(c.key)) cats.add('more')
+    else if (!shownFree.has(c.key)) { cats.add('more'); moreN++ }
   }
   // 2026-07-31 那条红线(「不能拿『该省有官方分值表』当锁区理由,facts.scores 永远为空」)
   // 在 2026-08-01 换省对照节(L2-08)落地后**有了真货**:报告自己按已答项算下界分,
@@ -931,7 +935,7 @@ export function gateReport(report: Report, pro: boolean): GatedReport {
     ...report,
     conclusions: report.conclusions.filter((c, i) => freeIdx.has(i) || ALWAYS_FREE.has(c.key)),
     alternatives: [], requirements, employers, switches,
-    lanes, hint, locked: LOCK_ORDER.filter((k) => cats.has(k)), pro: false,
+    lanes, hint, locked: LOCK_ORDER.filter((k) => cats.has(k)), moreN, pro: false,
   }
 }
 

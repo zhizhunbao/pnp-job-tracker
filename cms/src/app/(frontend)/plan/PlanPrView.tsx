@@ -42,7 +42,7 @@ type Emp = { name: string; slug: string; named: number; eligible: number; city: 
 type Rpt = {
   noc: string; title: string; conclusions: RptLine[]; requirements: RptLine[]; employers: Emp[]; switches: RptLine[]; gaps: RptLine[]; nextSteps: RptLine[]; alternatives: RptLine[]
   confidence: 'low' | 'mid' | 'high'; asOf: string
-  lanes: Lane[]; hint?: RptLine; locked: string[]; pro: boolean   // 付费闸(服务端已裁剪,locked 只有类别键没有正文)
+  lanes: Lane[]; hint?: RptLine; locked: string[]; moreN: number; pro: boolean   // 付费闸(服务端已裁剪,locked 只有类别键没有正文;moreN=「其余 N 条结论」的 N)
 }
 
 const V_DOT: Record<string, string> = { pass: UI.ok, warn: '#b45309', fail: '#b91c1c', na: '#9ca3af' }
@@ -652,7 +652,11 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                   <div className="noPrint rptPdf" style={{ ...CARD, borderColor: '#bfdbfe', display: 'flex', alignItems: 'center', gap: 14, marginTop: 22 }}>
                     <div style={{ minWidth: 0 }}>
                       <b style={{ fontSize: 14, fontWeight: 600, display: 'block' }}>{t('rpt.pdf.t')}</b>
-                      <span style={{ fontSize: 12.5, color: UI.text3 }}>{t('rpt.pdf.sub')}</span>
+                      {/* #242(第 31 轮收费走查,P0):这一块**没有任何 pro 判断**,免费态却承诺
+                          「雇主明细与 LMIA 记录」—— 而免费报告的 employers 是服务端清空的,
+                          他下下来会发现没有。文案按**这份 PDF 真有什么**说:免费只承诺出处与门槛对照。
+                          「真实数据」是这个站的命,自家文案先撒谎,后面卖什么都不作数。 */}
+                      <span style={{ fontSize: 12.5, color: UI.text3 }}>{t(rpt.pro ? 'rpt.pdf.sub' : 'rpt.pdf.subFree')}</span>
                     </div>
                     <span style={{ marginLeft: 'auto', flexShrink: 0 }}>
                       <Button kind="primary" onClick={() => { track(`plan-${decision}-print`); window.print() }}>{t('rpt.pdf.btn')}</Button>
@@ -667,7 +671,8 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                     {rpt.locked.map((k) => (
                       <div key={k} style={{ display: 'flex', gap: 9, alignItems: 'center', margin: '9px 0' }}>
                         <span style={{ flexShrink: 0 }}>🔒</span>
-                        <span style={{ fontSize: 14, fontWeight: 600, color: UI.text, minWidth: 0 }}>{t('rpt.lock.' + k)}</span>
+                        {/* #245:「其余结论全文」改成带条数 —— 只有这一行需要参数,其余锁行文案没有占位符 */}
+                        <span style={{ fontSize: 14, fontWeight: 600, color: UI.text, minWidth: 0 }}>{t('rpt.lock.' + k, k === 'more' ? { n: rpt.moreN } : undefined)}</span>
                         <span style={{ marginLeft: 'auto' }}><Tag variant="pro">{t('rpt.pro')}</Tag></span>
                       </div>
                     ))}
