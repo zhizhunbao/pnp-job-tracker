@@ -20,7 +20,10 @@ type L = { default: string; 'zh-cn': string; ko: string }
 const l = (en: string, zh: string, ko: string): L => ({ default: en, 'zh-cn': zh, ko })
 
 // 档 → 引擎输入(原先散在 PlanPrView 顶部的五张表,收拢到字段自己身上)
-const CLB = [0, 5, 7, 9, 0]            // a4「还没考」= 没有分,走 0 哨兵
+// 语言:问**实测档位**,不问自评(2026-08-02 Frank「我选的是英语流利,为什么显示 CLB 9」)——
+// 「初级/中级/流利 → CLB 5/7/9」那套映射是本站编的,报告却写成「你报的 CLB 9」= 替他填了个他没说过的数;
+// 而且自评偏乐观(自认流利常是 CLB 7),门槛判定会因此说「达标」而实际不达标。取每档**下界**,宁可低报。
+const CLB = [0, 0, 4, 6, 8, 10]        // a1「还没考」= 没有分,不传
 const EXP = [0, 0, 6, 18, 30]          // a1「没有」= 0 个月,是答案不是缺答
 export const PROVS: string[][] = [[], ['BC'], ['ON'], ['AB', 'SK', 'MB'], []]   // a4「先看哪个够得着」= 不限省
 const CRS = [0, 0, 380, 425, 480]      // a1「没算过」= 不传,引擎照旧出「没填 CRS」
@@ -113,12 +116,13 @@ export const FIELDS: Record<string, FieldDef> = {
     toAnswer: (b: number) => CLB[b] || undefined,
     q: {
       type: 'radiogroup', name: 'clbBand', isRequired: true,
-      title: l('Where is your English?', '英语到哪一档?', '영어 수준은?'),
+      title: l('Your official language level (CLB)?', '你的语言成绩到 CLB 几?', '공인 언어 점수(CLB)는?'),
       choices: [
-        { value: 1, text: l('Basic', '初级', '초급') },
-        { value: 2, text: l('Intermediate', '中级', '중급') },
-        { value: 3, text: l('Fluent', '流利', '유창') },
-        { value: 4, text: l('Not tested yet', '还没考', '시험 전') },
+        { value: 1, text: l('Not tested yet', '还没考', '시험 전') },
+        { value: 2, text: l('CLB 4-5', 'CLB 4-5', 'CLB 4-5') },
+        { value: 3, text: l('CLB 6-7', 'CLB 6-7', 'CLB 6-7') },
+        { value: 4, text: l('CLB 8-9', 'CLB 8-9', 'CLB 8-9') },
+        { value: 5, text: l('CLB 10 or higher', 'CLB 10 以上', 'CLB 10 이상') },
       ],
     },
   },
@@ -130,6 +134,10 @@ export const FIELDS: Record<string, FieldDef> = {
     toAnswer: (b: number) => (b ? EXP[b] : undefined),
     q: {
       type: 'radiogroup', name: 'expBand', isRequired: true,
+      // 「其中」是真的其中:加拿大经验选不出比总经验更长的档(2026-08-02 实撞 —— 总经验答「没有」、
+      // 加拿大答「2 年以上」,引擎取大的那个,句子写成「你填的 30 个月」,看着就像胡说)。
+      // 两套档位序号天然对齐(0/6/18/30 对 0/6/24/48/60),所以一个表达式就够,不写换算表。
+      choicesVisibleIf: '{totalExpBand} = 0 or {item} <= {totalExpBand}',
       // 紧跟在总经验那道题后面问 → 题干写「其中」,一眼看出是子集(全称在一屏里重复一遍是废话)
       title: l('Of that, how long in Canada?', '其中在加拿大多久?', '그중 캐나다에서는?'),
       choices: [

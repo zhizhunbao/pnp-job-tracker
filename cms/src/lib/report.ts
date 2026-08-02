@@ -156,7 +156,10 @@ function requirementLines(prov: string, facts: ReportFacts, profile: MatchProfil
       const have = r.have != null ? k(r.have) : ''
       if (r.verdict === 'pass') out.push(line(r, 'rpt.r.income.pass', { need, have }))
       else if (r.verdict === 'fail') out.push(line(r, 'rpt.r.income.fail', { need: needLow || need, have, short: r.short != null ? k(r.short) : '' }))
-      else out.push(line(r, 'rpt.r.income.unknown', { need, needLow, have }))
+      // 判不了的时候只摆门槛,**不再并排摆「你这行的职业中位年薪」**(2026-08-02 实读):
+      // 门槛算的是**全家**收入(本站没问),职业中位既不是他的工资也不是家庭口径 ——
+      // 两个不可比的数并排放,读者会读成「我够了」。
+      else out.push(line(r, 'rpt.r.income.unknown', { need, needLow }))
     } else if (r.factor === 'experience') {
       const months = r.need ?? 0
       if (r.verdict === 'pass') out.push(line(r, 'rpt.r.exp.pass', { need: months, have: r.have ?? '' }))
@@ -431,7 +434,13 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
         }
       } else {
         conclusions.push({ key: 'rpt.c.drawBand', params: { prov, lo, hi, n: recent.length }, verdict: 'na' })
-        if (facts.scoreProvinces?.includes(prov)) {
+        // 「答几道打分题就能算出差多少」只在**真还没算**时说(2026-08-02 实读发现口不对心):
+        // 题库扩充后学历/年龄/语言/总经验都问过了,换省对照已经在拿它们算这个省的下界分 ——
+        // 这时再劝他「去答打分题」,他刚答完,等于我们没记住他说过的话。
+        const answeredAny = extra.edu != null || extra.age != null || profile.clb != null
+          || extra.totalExpMonths != null || extra.canadianExpMonths != null
+        const gridScored = (facts.scoreFactors ?? []).some((f) => f.province === prov) && answeredAny
+        if (facts.scoreProvinces?.includes(prov) && !gridScored) {
           gaps.push({ key: 'rpt.g.answerScore', params: { prov }, verdict: 'na', url: '/pathways' })
           nextSteps.push({ key: 'rpt.n.score', params: { prov }, url: '/pathways' })
         }
@@ -917,7 +926,7 @@ const EN: Record<string, (p: Record<string, string | number>) => string> = {
   'rpt.r.income.pass': (p) => `${p.prov} sets a minimum family income of $${p.need}; the official median wage for this occupation there is $${p.have} — above it.`,
   'rpt.r.income.fail': (p) => `${p.prov} sets a minimum family income of $${p.need}; the official median wage for this occupation there is $${p.have} — $${p.short} short even at the lowest bracket.`,
   'rpt.r.income.failFree': (p) => `${p.prov} sets a minimum family income of $${p.need}; the official median wage for this occupation there is $${p.have} — below it.`,
-  'rpt.r.income.unknown': (p) => `${p.prov} sets a minimum family income of $${p.needLow}–$${p.need} depending on where you live and family size; the official median wage for this occupation there is $${p.have}.`,
+  'rpt.r.income.unknown': (p) => `${p.prov} sets a minimum family income of $${p.needLow}–$${p.need} depending on where you live and family size — it counts household income, which is not on file.`,
   'rpt.r.exp.pass': (p) => `${p.prov}'s skilled worker stream requires ${p.need} months of skilled work experience; you report ${p.have} months — meets it.`,
   'rpt.r.exp.unknown': (p) => `${p.prov}'s skilled worker stream requires ${p.need} months of skilled work experience (in or outside Canada); you have not reported your experience.`,
   'rpt.r.exp.fail': (p) => `${p.prov}'s skilled worker stream requires ${p.need} months of skilled work experience (in or outside Canada); you report ${p.have} months — ${p.short} months short.`,

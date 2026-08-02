@@ -49,12 +49,15 @@ describe('目标省两种表示同步', () => {
 })
 
 describe('档位 → 引擎输入', () => {
-  it('与重构前 PlanPrView 的五张映射表逐字一致', () => {
-    const out = toEngineAnswers(base({ status: 'working', nocs: ['31301'], clbBand: 2, expBand: 3, provBand: 1, crsBand: 4, pgwpBand: 2 }))
+  // 语言 2026-08-02 从自评(初级/中级/流利)改成**实测 CLB 档**,取每档下界 ——
+  // 自评映射是本站编的,报告却写成「你报的 CLB 9」(Frank 实拍点名),而且偏乐观会把不达标说成达标
+  it('每档取下界:CLB 6-7 那档按 6 传,不按 7', () => {
+    const out = toEngineAnswers(base({ status: 'working', nocs: ['31301'], clbBand: 3, expBand: 3, provBand: 1, crsBand: 4, pgwpBand: 2 }))
     expect(out).toEqual({
-      noc: '31301', currentStatus: 'working', clb: 7, canadianExpMonths: 18,
+      noc: '31301', currentStatus: 'working', clb: 6, canadianExpMonths: 18,
       targetProvinces: ['BC'], crs: 480, pgwpMonthsLeft: 9,
     })
+    expect(toEngineAnswers(base({ clbBand: 5 })).clb).toBe(10)
   })
 
   it('「没有」加拿大经验 = 0 个月,是答案不是缺答', () => {
@@ -78,7 +81,7 @@ describe('档位 → 引擎输入', () => {
   })
 
   it('「还没考」英语 / 「没算过」CRS 不传(引擎照旧出缺口行)', () => {
-    const out = toEngineAnswers(base({ clbBand: 4, crsBand: 1 }))
+    const out = toEngineAnswers(base({ clbBand: 1, crsBand: 1 }))
     expect(out.clb).toBeUndefined()
     expect(out.crs).toBeUndefined()
   })

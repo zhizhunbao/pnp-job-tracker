@@ -21,6 +21,11 @@ type Top = Cand & { open: number; broad?: string }
 
 // inline=true:不套弹层,直接铺在答题卡里(2026-07-31 Frank「选职业和其他问题都放到一个方式,
 // 不要只有职业是弹框」)—— 职业是第一题,就该和别的题长一个样,而不是另开一层。
+// 名字加载中的占位条(与文字同高,避免拿到名字时行高跳一下)
+const Skeleton = () => (
+  <span aria-hidden style={{ display: 'inline-block', width: 76, height: '0.85em', borderRadius: 4, background: 'rgba(255,255,255,.45)' }} />
+)
+
 export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline, doneLabel, hideDone }: {
   t: TFn
   lang: string
@@ -133,7 +138,9 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
             {nocs.map((n) => (
               <button key={n} onClick={() => toggle(n, titles[n] || n)} style={{ ...chipStyle(true), display: 'inline-flex', gap: 6, alignItems: 'center' }}>
-                {shortOcc(titles[n] || n)}<span style={{ opacity: .7 }}>×</span>
+                {/* 名字还没拉回来时**留个占位**,不拿 5 位码顶上去 —— 2026-08-02 Frank
+                    「点击跳转为什么先显示的是数字,后变成文字」:码是给机器看的,不该在人眼前闪一下 */}
+                {titles[n] ? shortOcc(titles[n]) : <Skeleton />}<span style={{ opacity: .7 }}>×</span>
               </button>
             ))}
           </div>

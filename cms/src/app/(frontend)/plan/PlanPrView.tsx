@@ -60,7 +60,10 @@ function OccChip({ noc, nocTitle, t, onPick }: { noc: string; nocTitle: string; 
     <span style={{ display: 'inline-flex', gap: 8, alignItems: 'center', maxWidth: '100%', fontSize: 12.5, color: UI.text2, background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 999, padding: '5px 12px' }}>
       <span style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>{t('plan.occ')}</span>
       {noc
-        ? <b style={{ color: '#111827', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{shortOcc(nocTitle || noc)}</b>
+        ? (nocTitle
+          ? <b style={{ color: '#111827', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{shortOcc(nocTitle)}</b>
+          // 名字异步拉(/api/quiz),没到就留占位 —— 先闪一个 5 位码再换成文字,用户看到的是「乱码变字」
+          : <span aria-hidden style={{ display: 'inline-block', width: 84, height: '0.85em', borderRadius: 4, background: UI.hairline }} />)
         : <span style={{ color: '#b45309', whiteSpace: 'nowrap' }}>{t('plan.occ.none')}</span>}
       <button onClick={onPick} style={{ border: 'none', background: 'none', color: UI.primary, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', padding: 0, whiteSpace: 'nowrap', fontFamily: 'inherit' }}>{t('plan.occ.pick')}</button>
     </span>
