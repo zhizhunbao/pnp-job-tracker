@@ -776,7 +776,7 @@ export function buildCareerReport(profile: MatchProfile, facts: ReportFacts, occ
 
 // ── 付费闸(L2-03 v2c):服务端裁剪,免费响应里根本没有锁区正文 ──────────────
 // 与 PRO_COLUMNS「SELECT 源头裁掉」同哲学:锁 = 后端不下发,不是前端打码;devtools 也翻不出来。
-// 免费层留什么由「事实免费、结论收费」定:三卡判定词/卡点短句/前 2 条结论/缺口/下一步全免费
+// 免费层留什么由「事实免费、结论收费」定:三卡判定词/卡点短句/每个目标省至少一条结论/缺口/下一步全免费
 // (aha 必须在掏钱之前),分差、时间窗、备选完整对照进锁区。锁行只列引擎真能算的类别 —— 不卖不存在的东西。
 export type ReportLane = {
   kind: 'prov' | 'ee' | 'alts'
@@ -786,7 +786,7 @@ export type ReportLane = {
 }
 export type GatedReport = Report & { lanes: ReportLane[]; hint?: ReportLine; locked: string[]; pro: boolean }
 
-const FREE_CONCLUSIONS = 2      // 引擎顺序天然=清单命中 + 抽选区间,正是 v2c 免费两条
+const FREE_CONCLUSIONS = 2      // 免费结论的**下限**(单省时=清单命中 + 抽选区间,正是 v2c 免费两条);多省按「每省保底一条」上浮
 const LANE_PROV: Record<string, string> = {
   'rpt.c.listedHit': 'rpt.lane.prov.hit', 'rpt.c.listedHitPart': 'rpt.lane.prov.hit', 'rpt.c.listedMiss': 'rpt.lane.prov.miss',
   'rpt.c.excluded': 'rpt.lane.prov.excluded', 'rpt.c.screenPass': 'rpt.lane.prov.screen',
@@ -875,10 +875,29 @@ export function gateReport(report: Report, pro: boolean): GatedReport {
     }
   }
 
+  // 免费额度按「每个目标省至少一条」发(2026-08-03 Frank 拍板)。先前是扁平的前 2 条,而结论是
+  // **逐省生成**的 —— 第一个省往往自己就占满两条(口径判定 + 抽选区间),选了三个省时
+  // 第二、三个省一句话都没有,读起来像根本没查过那两个省。
+  // 保底的是每省的**口径判定行**(清单命中四态/排除/未收录)——库里查得到的官方事实,本来就属免费层;
+  // 分差、时间窗这些「拿你的答案算出来的」照旧进锁区(freeIdx 只保底非锁类的那条)。
+  const provOrder: string[] = []
+  for (const c of report.conclusions) {
+    const p = typeof c.params.prov === 'string' ? c.params.prov : ''
+    if (p && !provOrder.includes(p)) provOrder.push(p)
+  }
+  // 用下标不用 key:两个省可能同为 rpt.c.listedMiss,按 key 去重会把第二个省的判定行吃掉
+  const freeIdx = new Set<number>()
+  for (const prov of provOrder) {
+    const i = report.conclusions.findIndex((c) => c.params.prov === prov && !LOCK_CAT[c.key])
+    if (i >= 0) freeIdx.add(i)
+  }
+  // 只选一个省时额度不缩水:按原序补齐到原来的两条
+  for (let i = 0; i < report.conclusions.length && freeIdx.size < FREE_CONCLUSIONS; i++) freeIdx.add(i)
+
   // 劝退型事实永远留在免费层(2026-08-02):「这个 EE 类别已经 X 个月没抽过了」是**叫人别等**的话,
-  // 把它截进锁区等于拿劝退去卖钱。免费两条的额度照旧,这类行是额外附加、也不计入「其余结论」的锁行计数。
-  const alwaysFree = report.conclusions.slice(FREE_CONCLUSIONS).filter((c) => ALWAYS_FREE.has(c.key))
-  const trimmed = report.conclusions.slice(FREE_CONCLUSIONS).filter((c) => !ALWAYS_FREE.has(c.key))
+  // 把它截进锁区等于拿劝退去卖钱。这类行是额外附加、也不计入「其余结论」的锁行计数。
+  const alwaysFree = report.conclusions.filter((c, i) => !freeIdx.has(i) && ALWAYS_FREE.has(c.key))
+  const trimmed = report.conclusions.filter((c, i) => !freeIdx.has(i) && !ALWAYS_FREE.has(c.key))
   const shownFree = new Set([provLine?.key, eeLine?.key, hintLine?.key])   // 已在三卡/卡点里露过的,不再计入「其余结论」
   const cats = new Set<string>()
   for (const c of trimmed) {
@@ -894,7 +913,7 @@ export function gateReport(report: Report, pro: boolean): GatedReport {
 
   return {
     ...report,
-    conclusions: [...report.conclusions.slice(0, FREE_CONCLUSIONS), ...alwaysFree],
+    conclusions: report.conclusions.filter((c, i) => freeIdx.has(i) || ALWAYS_FREE.has(c.key)),
     alternatives: [], requirements, employers, switches,
     lanes, hint, locked: LOCK_ORDER.filter((k) => cats.has(k)), pro: false,
   }

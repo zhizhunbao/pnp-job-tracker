@@ -247,6 +247,22 @@ describe('gateReport 付费闸', () => {
     expect(keys(g.nextSteps)).toContain('rpt.n.cert')
   })
 
+  // 2026-08-03 Frank 拍板:选了三个省,免费层不能只说第一个省 —— 结论是逐省生成的,
+  // 扁平「前 2 条」会被第一个省(判定 + 抽选区间)吃干净,后两个省一句话都没有 = 像根本没查过。
+  it('免费:选三个省时每个省至少一条结论(不再被第一个省吃满额度)', () => {
+    const r = buildPrReport(base({ targetProvinces: ['BC', 'SK', 'ON'] }), exp12, dims, facts({
+      noc: '31301', title: 'Registered nurses', teer: 1,
+      byProv: [{ province: 'BC', open: 19, named: 18 }, { province: 'SK', open: 6, named: 6 }, { province: 'ON', open: 88, named: 0 }],
+      draws: bcDraws,      // BC 有抽选 → 先前 listedHitPart + drawBand 两条就占满免费额度
+    }))
+    const g = gateReport(r, false)
+    const provs = g.conclusions.map((c) => c.params.prov).filter(Boolean)
+    for (const p of ['BC', 'SK', 'ON']) expect(provs).toContain(p)
+    // 保底的是各省**口径判定行**(库里查得到的官方事实);BC 的抽选区间照旧退进锁区,额度不是白涨的
+    expect(keys(g.conclusions)).toEqual(['rpt.c.listedHitPart', 'rpt.c.listedHit', 'rpt.c.screenPass'])
+    expect(g.locked).toContain('more')
+  })
+
   it('免费响应体里 grep 不到锁区正文(裁剪在服务端,devtools 也翻不出来)', () => {
     const body = JSON.stringify(gateReport(full(), false))
     expect(body).not.toContain('rpt.c.window')       // 时间窗:轮数是结论
@@ -590,16 +606,22 @@ describe('行为树:不许自相矛盾', () => {
     { name: 'thin', over: {}, extra: { canadianExpMonths: null } },
   ]
   const prov = (l: { params: Record<string, string | number> }) => String(l.params.prov ?? '')
+  // 目标省**组合**:六种覆盖态各走一遍单省,再加多省组合 —— 免费层「每省至少一条」(2026-08-03)
+  // 只有多省时才生效,单省树扫不到它;组合特意混着排除态(AB)、未收录(NL)、走自己体系的(QC)
+  const TARGETS: string[][] = [
+    ...PROVS.map((p) => [p]),
+    ['BC', 'SK', 'ON'], ['AB', 'BC'], ['ON', 'NL', 'QC'], ['BC', 'AB', 'NL'],
+  ]
 
-  it('每条路径都不许出现这六种矛盾', () => {
+  it('每条路径都不许出现这七种矛盾', () => {
     const bad: string[] = []
     for (const noc of NOCS) {
       const f = facts({ noc, title: noc, teer: noc === '65200' ? 5 : 1, byProv: [{ province: 'BC', open: 9, named: 3 }, { province: 'AB', open: 5, named: 0 }], draws: [{ province: 'BC', drawDate: '2026-07-22', stream: 'SW', score: 118 }, { province: 'AB', drawDate: '2026-07-21', stream: 'AB EE', score: 65 }] })
-      for (const p of PROVS) {
+      for (const target of TARGETS) {
         for (const sh of SHAPES) {
-          const r = buildPrReport(normalizeProfile({ currentStatus: 'working', targetProvinces: [p], ...sh.over }), sh.extra, dims, f)
+          const r = buildPrReport(normalizeProfile({ currentStatus: 'working', targetProvinces: target, ...sh.over }), sh.extra, dims, f)
           const g = gateReport(r, false)
-          const tag = `${noc}/${p}/${sh.name}`
+          const tag = `${noc}/${target.join('+')}/${sh.name}`
           // ① 被该省排除,却又摆该省的分数线
           const ex = r.conclusions.filter((l) => l.key === 'rpt.c.excluded').map(prov)
           for (const l of r.conclusions) {
@@ -619,7 +641,10 @@ describe('行为树:不许自相矛盾', () => {
           if (g.locked.includes('sponsors') && r.employers.length === 0) bad.push(`${tag}: sponsors 锁行但名单空`)
           if (g.locked.includes('req') && r.requirements.length === 0) bad.push(`${tag}: req 锁行但门槛空`)
           // ⑥ 结论里冒出用户没选的省
-          for (const l of r.conclusions) if (prov(l) && prov(l) !== p) bad.push(`${tag}: 结论提到 ${prov(l)}`)
+          for (const l of r.conclusions) if (prov(l) && !target.includes(prov(l))) bad.push(`${tag}: 结论提到 ${prov(l)}`)
+          // ⑦ 免费层每个目标省至少一条结论(2026-08-03 Frank 拍板):
+          // 先前扁平「前 2 条」会被第一个省吃满,选了三个省时后两个一句话没有 = 读起来像根本没查过
+          for (const p of target) if (!freeProvs.has(p)) bad.push(`${tag}: 免费层一句没提 ${p}`)
         }
       }
     }
