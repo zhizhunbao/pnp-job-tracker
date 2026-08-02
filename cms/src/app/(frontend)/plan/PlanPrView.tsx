@@ -193,7 +193,7 @@ function Sec({ title, children }: { title: string; children: React.ReactNode }) 
 const BUCKET: Record<string, 'prov' | 'pay' | 'peer' | 'emp'> = {
   'rpt.j.sponsors': 'emp',
   'rpt.j.wageAbove': 'pay', 'rpt.j.wageBelow': 'pay', 'rpt.j.wageSame': 'pay', 'rpt.j.wageEsdc': 'pay',
-  'rpt.k.selfWage': 'pay', 'rpt.j.related': 'peer', 'rpt.k.peer': 'peer', 'rpt.k.alt': 'peer',
+  'rpt.k.selfWage': 'pay', 'rpt.k.selfProv': 'pay', 'rpt.k.selfProvWage': 'pay', 'rpt.j.related': 'peer', 'rpt.k.peer': 'peer', 'rpt.k.alt': 'peer',
   // 2026-08-03 卡⑥ 撤锁后**才暴露**出来的漏网:peerGap 先前被付费闸摘掉,免费层从来没渲过它,
   // 于是它一直靠 `?? 'prov'` 的兜底落在「这个职业在哪个省更有优势?」下面 ——
   // 生产实拍:那个标题下面跟着「执业护士的中位年薪比你这行高 48%」,驴唇不对马嘴。

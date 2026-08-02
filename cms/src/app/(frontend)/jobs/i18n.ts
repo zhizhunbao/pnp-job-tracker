@@ -403,6 +403,7 @@ const zh: Dict = {
   // 卡⑥职业规划
   'rpt.k.self': '你这行当前在招 {open} 岗,TEER {teer}',
   'rpt.k.selfWage': '你这行当前在招 {open} 岗,TEER {teer},ESDC 官方中位年薪 ${esdc}',
+  'rpt.k.selfProv': '在 {prov}:这行在招 {open} 岗', 'rpt.k.selfProvWage': '在 {prov}:这行在招 {open} 岗,中位年薪 ${esdc}',
   'rpt.k.peer': '{occZh}(NOC {noc}):在招 {open} 岗,中位年薪 ${esdc}', 'rpt.k.peerGap': '{occZh}的中位年薪比你这行高 {pct}%',
   'rpt.k.alt': '{occZh}(NOC {noc}):在招 {open} 岗,中位年薪 ${esdc}',
   'rpt.k.none': '同大类里没有其他在招职业可对照', 'rpt.k.noPath': '没有职业转换路径数据,只摆对照',
@@ -1119,6 +1120,7 @@ const en: Dict = {
   'rpt.j.related': 'Related occupation {occ} (NOC {noc}): {open} open postings in Canada',
   'rpt.k.self': '{open} open postings in your occupation, TEER {teer}',
   'rpt.k.selfWage': '{open} open postings in your occupation, TEER {teer}, ESDC median ${esdc}',
+  'rpt.k.selfProv': 'In {prov}: {open} open postings in this occupation', 'rpt.k.selfProvWage': 'In {prov}: {open} open postings, median ${esdc}',
   'rpt.k.peer': '{occ} (NOC {noc}): {open} open postings, median ${esdc}', 'rpt.k.peerGap': '{occ} pays {pct}% more than your occupation at the median',
   'rpt.k.alt': '{occ} (NOC {noc}): {open} open postings, median ${esdc}',
   'rpt.k.none': 'No other occupation in the same major group has open postings to compare',
@@ -1809,6 +1811,7 @@ const ko: Dict = {
   'rpt.j.related': '연관 직업 {occKo}(NOC {noc}): 전국 채용 {open}건',
   'rpt.k.self': '내 직종 현재 채용 {open}건, TEER {teer}',
   'rpt.k.selfWage': '내 직종 현재 채용 {open}건, TEER {teer}, ESDC 공식 중위 연봉 ${esdc}',
+  'rpt.k.selfProv': '{prov}: 이 직종 채용 {open}건', 'rpt.k.selfProvWage': '{prov}: 이 직종 채용 {open}건, 중위 연봉 ${esdc}',
   'rpt.k.peer': '{occKo}(NOC {noc}): 채용 {open}건, 중위 연봉 ${esdc}', 'rpt.k.peerGap': '{occKo}의 중위 연봉이 내 직종보다 {pct}% 높음',
   'rpt.k.alt': '{occKo}(NOC {noc}): 채용 {open}건, 중위 연봉 ${esdc}',
   'rpt.k.none': '같은 대분류에 대조할 채용 중인 직업이 없습니다',

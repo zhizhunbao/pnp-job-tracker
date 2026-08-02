@@ -259,7 +259,10 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
         {nocs.length > 0 && (
           inline
             // 内联时用与问卷同一套动作区:上边框断开 + 主按钮靠右(和「下一题」一个样)
-            ? <div style={{ borderTop: `1px solid ${UI.hairline}`, marginTop: 18, paddingTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
+            // #251(2026-08-03 决定线走查,375/en 实拍):选完职业后「Next」被埋在浏览区下面 ——
+            // 整页 1670px、视口 812px,用户选完得往下滚一屏半才找得到下一步,而这是决定线**第一步**、
+            // 漏斗最宽的地方。改成**粘在视口底**:选中即出现、随时能走,浏览区照旧想逛就逛。
+            ? <div style={{ position: 'sticky', bottom: 0, zIndex: 2, background: '#fff', borderTop: `1px solid ${UI.hairline}`, marginTop: 18, padding: '14px 0 6px', display: 'flex', justifyContent: 'flex-end' }}>
                 <Button kind="primary" onClick={() => onDone(nocs)}>{doneLabel || t('quiz.nextN', { n: nocs.length })}</Button>
               </div>
             : <Button kind="primary" onClick={() => onDone(nocs)} style={{ width: '100%', padding: '11px 0', fontSize: 15, marginTop: 14 }}>

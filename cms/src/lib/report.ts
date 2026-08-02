@@ -749,6 +749,20 @@ export function buildCareerReport(profile: MatchProfile, facts: ReportFacts, occ
       params: { open: s.open, teer: s.teer ?? '', esdc: s.medianWage != null ? k(s.medianWage) : '' }, verdict: 'na',
     })
   }
+  // #252(2026-08-03 引擎完善度实测):这张卡**只问一道题(目标省),而引擎一次都没消费它** ——
+  // 逐项抹掉答案跑未裁剪报告,career 卡八项全「白问」。那正是 decisions.ts 自己写着的铁律
+  // (「挂不上结论就不问」)被违反的样子。选了省就把那个省的事实摆出来:在招量与中位薪资各省差很远,
+  // 拿全国数回答「我这行值多少钱」是答非所问。
+  // **另起一行,不改上面那行的口径** —— 上面那行是同门对比的基准(peers 是全国口径),
+  // 把它换成省级会让下面「比你这行高 N%」变成拿省级比全国,读起来就是自相矛盾。
+  const prov0 = profile.targetProvinces[0] ?? ''
+  const local = prov0 ? occ.byProv.find((r) => r.province === prov0) : null
+  if (local && local.open > 0) {
+    conclusions.push({
+      key: local.medianWage != null ? 'rpt.k.selfProvWage' : 'rpt.k.selfProv',
+      params: { prov: prov0, open: local.open, esdc: local.medianWage != null ? k(local.medianWage) : '' }, verdict: 'na',
+    })
+  }
 
   // 相邻职业(= NOC 官方 minor group 的同门,见 reportFacts;不用本站中文分类,那套有杂物桶):
   // 比现职中位薪资高的排前面(跃迁是这张卡的用处);每条都带在招量,不给「钱多但没岗」的空头
