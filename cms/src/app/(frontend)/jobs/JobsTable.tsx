@@ -487,10 +487,13 @@ const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean 
   { key: 'source', label: '来源', default: false },
   { key: 'origin', label: '渠道', default: false },
   { key: 'direct', label: '发布', default: false },
-  // 2026-07-25 Frank「默认显示这些字段如何」:PNP/EE/AIP 三信号列转默认——差异化信号该默认亮,与手机卡 chips 对齐
-  { key: 'pnp', label: 'PNP', default: true },
-  { key: 'ee', label: 'EE 类别', default: true },
-  { key: 'aip', label: 'AIP', default: true },
+  // PNP/EE/AIP 三信号列:2026-07-25 Frank 让它们默认亮(「差异化信号该默认亮」),
+  // 2026-08-03 他自己推翻(「页面看着别扭,很多人一进来看这个页面设计就跑路了」)——
+  // 首屏 13 列在 1440 上还要横滚,一进来是一张密密麻麻的表格,差异化没被读到就先被劝退了。
+  // **信号没丢**:三样都在「操作」列的移民价值弹框里,手机卡片 chips 照旧;字段面板一键调回。
+  { key: 'pnp', label: 'PNP', default: false },
+  { key: 'ee', label: 'EE 类别', default: false },
+  { key: 'aip', label: 'AIP', default: false },
   { key: 'lmia', label: '外劳记录', default: false },  // E6-02:雇主近两年 LMIA 获批史(公司级信号)
   { key: 'eligibility', label: '身份预筛', default: false },  // GAP1③:JD 明确不担保/须 PR 红旗(C14/C15)
   { key: 'status', label: '状态', default: false },
@@ -850,6 +853,15 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   // 以后加按钮就调这一个数(格内 flex wrap 兜底,#85)。其余列用 calc 瓜分「容器宽 - 操作列」,
   // 各列之和恒等于 100% —— 既不横滚,也不给单个收藏钮留一大片空地。
   const ACTIONS_W = 96
+  // ── 2026-08-03 Frank 定调:「别腾地方了,平均分配单元格就行,从左到右,优先左边的不折叠,
+  //    平均分配按内容宽度来分」。于是这版**不再手调权重**(那张表每加删一列就得重配一次,
+  //    删掉 PNP/EE/AIP 之后每列等比变胖、vs 中位分到 130px 空地就是这么来的),改成:
+  //    ① 量每列**不折行需要多宽**(自然宽:临时全格 nowrap + max-content 量一次);
+  //    ② 够分 → 各列先拿够自然宽,余量按自然宽比例摊(宽的多拿,窄的少拿 = 按内容分);
+  //    ③ 不够分 → **从左往右**依次拿满,右边的让步,但每列保底不低于表头单行宽。
+  //    权重表只留给非默认列集(用户自选加列)的旧路径。
+  const [natural, setNatural] = useState<Record<string, number>>({})
+  const naturalKey = useRef('')
   const FIT_WEIGHT: Partial<Record<ColKey, number>> = {
     // 权重按**最长的那种语言**定(英文/韩文比中文长得多):中文「大分类=服务」两字够宽,
     // 英文「Services」不给够就断成 Servi/ces;AIP 中文一格「—」,英文「Occupation not accepted」要三行。
@@ -857,15 +869,123 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     // 「vs median ↕」84px)与值不断字。三语里取最宽的那个定。
     // broad 9→6(Frank 2026-07-28「默认大类别 jobtable 不需要这么宽吧」):值是「服务」「科技」两三个字,
     // 之前 9 是为了英文表头「Major group ↕」单行放得下 —— 表头缩成「Group」后这个理由没了。
-    datePosted: 8, broad: 6, teer: 9, company: 11, title: 13, province: 9, city: 8,
-    salary: 8, salaryYr: 6, wageMedHr: 8, wageMedYr: 8, vsMedian: 8, pnp: 8, ee: 6, aip: 6,
+    // 2026-08-03 重配:PNP/EE/AIP 三列转默认不显示之后,权重总和变小 → **每一列都等比变胖**,
+    // 于是「vs 中位」这种恒短值(+31%)也分到 130px 一大片空地,而公司/职位照旧折两行
+    // (Frank 实拍点名)。剩下的宽度要给真正装不下的列,不是雨露均沾:
+    // 文本列(职位/公司/大分类)加,原子值列(vs 中位/年薪/日期)减到「表头单行放得下」为止。
+    // 大分类同批加宽:官方类名比原来的两字简称长(「制造与公用事业」/「Manufacturing and utilities」)。
+    datePosted: 8, broad: 11, teer: 9, company: 14, title: 18, province: 9, city: 8,
+    salary: 9, salaryYr: 7, wageMedHr: 8, wageMedYr: 8, vsMedian: 7, pnp: 8, ee: 6, aip: 6,
   }
   const fitHasActions = fitMode && shown.some((c) => c.key === 'actions')
   const fitTotal = fitMode ? shown.reduce((s, c) => s + (c.key === 'actions' ? 0 : FIT_WEIGHT[c.key] ?? 8), 0) : 0
   // 坑(2026-07-26 实测):`<col width="calc((100% - 96px) * 12 / 100)">` 在 Chromium 固定布局下**被整条忽略**,
   // 13 列全退回 98px 均分 —— 我加的权重一直没生效。改纯百分比:操作列钉 px,其余按权重给 %。
   // 百分比之和 100% 加上那 96px 会略微超出表宽,浏览器按比例等比缩回,列宽比例正好保住。
-  const fitWidth = (k: ColKey) => (k === 'actions' ? `${ACTIONS_W}px` : `${((FIT_WEIGHT[k] ?? 8) / fitTotal * 100).toFixed(3)}%`)
+  // 自然宽量一次:临时让整张表 nowrap + 按内容撑开(max-content),读每列真实需要的宽度,立刻还原。
+  // 只在「列集 / 语言 / 首屏数据到位」变化时量 —— 用 useLayoutEffect,量完再画,用户看不到中间态。
+  const measureNatural = () => {
+    const head = headRowRef.current
+    const table = head?.closest('table') as HTMLTableElement | null
+    if (!table || !table.querySelector('tbody tr')) return
+    const prev = { tl: table.style.tableLayout, w: table.style.width, mw: table.style.minWidth }
+    table.classList.add('jtMeasure')
+    table.style.tableLayout = 'auto'
+    table.style.width = 'max-content'
+    table.style.minWidth = '0'
+    // 自然宽取**九成位**而不是最大值:整列宽度不该被一条超长值绑架
+    // (实测:一条「Manufacturing and utilities」把大分类撑到 249px,右边四列全压到底线、反而更折行)。
+    // 底线是表头本身 —— 表头折行比值折行更难看,它是这一列的名字。
+    const rowsEl = [...table.querySelectorAll('tbody tr')].slice(0, 60)
+    // 量的是**内容**不是格子:量宽模式下每个格子都被拉到整列宽,读 td 宽度只会读回「最长那条」。
+    // 用 Range 圈住格内内容量它自己的宽度,才分得出「这一列大多数值有多宽」。
+    const contentW = (el: HTMLElement): number => {
+      const r = document.createRange()
+      r.selectNodeContents(el)
+      return Math.ceil(r.getBoundingClientRect().width)
+    }
+    const PAD = 16   // 左右内边距 + 1px 余量(fit 模式 cellPad=6)
+    const m: Record<string, number> = {}
+    shown.forEach((c, i) => {
+      const th = head!.children[i] as HTMLElement | undefined
+      const cells = rowsEl.map((tr) => tr.children[i] as HTMLElement | undefined)
+        .filter(Boolean).map((el) => contentW(el!)).sort((a, b) => a - b)
+      const p90 = cells.length ? cells[Math.min(cells.length - 1, Math.floor(cells.length * 0.9))] : 0
+      m[c.key] = Math.max(th ? contentW(th) : 0, p90) + PAD
+    })
+    table.classList.remove('jtMeasure')
+    table.style.tableLayout = prev.tl
+    table.style.width = prev.w
+    table.style.minWidth = prev.mw
+    setNatural(m)
+  }
+  useIsoLayoutEffect(() => {
+    if (!fitMode) return
+    const key = shownKey + '|' + lang + '|' + (rows.length ? '1' : '0')
+    if (naturalKey.current === key) return
+    naturalKey.current = key
+    measureNatural()
+  })   // eslint-disable-line react-hooks/exhaustive-deps -- key 自己去重,依赖数组写不全反而漏量
+
+  // 容器宽变了要重算(窗口缩放 / 侧栏开合):列宽是 px,不跟着算就会超出容器 = 横滚。
+  // 用百分比虽然能自动缩放,但那样窗口一宽,「vs 中位」这种恒短值又会跟着变胖 —— 正是这次要修的病。
+  const [wrapW, setWrapW] = useState(0)
+  useEffect(() => {
+    const el = headRowRef.current?.closest('.jtTableWrap') as HTMLElement | null
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(() => setWrapW(el.clientWidth))
+    ro.observe(el)
+    setWrapW(el.clientWidth)
+    return () => ro.disconnect()
+  }, [shownKey])
+
+  // 分配:够分就各拿自然宽 + 余量按自然宽比例摊;不够就从左往右拿满,右边让步(每列保底=表头单行)
+  const HEAD_MIN = 62
+  const fitPx = useMemo(() => {
+    const cols = shown.filter((c) => c.key !== 'actions')
+    const avail = (wrapW || (headRowRef.current?.closest('.jtTableWrap') as HTMLElement | null)?.clientWidth || 1180)
+      - (shown.some((c) => c.key === 'actions') ? ACTIONS_W : 0) - 2
+    const need = cols.map((c) => Math.max(natural[c.key] ?? 0, HEAD_MIN))
+    const sum = need.reduce((a, b) => a + b, 0)
+    if (!sum) return {}
+    const out: Record<string, number> = {}
+    if (sum <= avail) {                       // 够分:各拿自然宽,余量按内容宽度比例摊(宽的多拿)
+      const extra = avail - sum
+      cols.forEach((c, i) => { out[c.key] = need[i] + extra * (need[i] / sum) })
+      return out
+    }
+    // 不够分时**谁让步**:纯「从左到右先拿满」试过一轮 —— 公司拿走 309px,右边省/市/薪资/年薪
+    // 全被压到底线,于是金额和百分比在折行(实测 City 25 行、Salary 22 行)。那比公司名折行难看得多。
+    // 定案:**原子值列先拿够**(日期/金额/百分比/省市:短、固定、不该断),剩下的按内容宽度比例
+    // 分给文本列(大分类/公司/职位)—— Frank 的「左优先」在文本列之间照旧生效(它们本来就从左排到右)。
+    const ATOMIC = new Set<ColKey>(['datePosted', 'lastSeen', 'closedAt', 'salary', 'salaryYr',
+      'wageMedHr', 'wageMedYr', 'vsMedian', 'teer', 'province', 'city', 'empHours', 'empTerm', 'status'])
+    const atomicSum = cols.reduce((s, c, i) => s + (ATOMIC.has(c.key) ? need[i] : 0), 0)
+    const textNeed = cols.map((c, i) => (ATOMIC.has(c.key) ? 0 : need[i]))
+    const textSum = textNeed.reduce((a, b) => a + b, 0)
+    if (atomicSum < avail && textSum > 0) {
+      const pool = avail - atomicSum
+      cols.forEach((c, i) => {
+        out[c.key] = ATOMIC.has(c.key) ? need[i] : Math.max(HEAD_MIN, pool * (textNeed[i] / textSum))
+      })
+      return out
+    }
+    // 极窄视口:原子值列自己都放不下 → 退回从左到右拿满,右边保底表头宽
+    let budget = avail
+    cols.forEach((c, i) => {
+      const restMin = (cols.length - 1 - i) * HEAD_MIN
+      const w = Math.max(HEAD_MIN, Math.min(need[i], budget - restMin))
+      out[c.key] = w
+      budget -= w
+    })
+    return out
+  }, [natural, shownKey, shown.length, wrapW])   // eslint-disable-line react-hooks/exhaustive-deps
+  const fitWidth = (k: ColKey) => {
+    if (k === 'actions') return `${ACTIONS_W}px`
+    const px = fitPx[k]
+    if (px) return `${px.toFixed(1)}px`
+    return `${((FIT_WEIGHT[k] ?? 8) / fitTotal * 100).toFixed(3)}%`   // 还没量到(首帧)先用老权重顶一下
+  }
   const colMin = (k: ColKey) => {
     if (hasWidths) return undefined
     if (fitMode) return undefined   // 百分比固定布局自己保证分配;再给最小宽会把表撑出容器=横滚(Frank「不需要滚动条」)
@@ -1012,7 +1132,12 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           .jtCards{display:flex}
           .jtOnlyNarrow{display:flex}
         }
-        @media (max-width:1350px){.jtTagline{display:none}}`}</style>
+        @media (max-width:1350px){.jtTagline{display:none}}
+        /* 量自然宽用(见 measureNatural):整表临时不折行、按内容撑开,量完立刻摘掉 —— 只存在一帧,不进画面 */
+        .jtMeasure td,.jtMeasure th{white-space:nowrap !important;overflow:visible !important}
+        /* 量宽时把列宽拖拽条藏掉:它是 position:absolute;right:0,量内容的 Range 会把它算进去,
+           于是每个表头都被量成「整列宽」(实测 vs 中位表头量出 132px,真实文字只要 56px) */
+        .jtMeasure .colResize{display:none !important}`}</style>
       {/* 顶栏=全站统一 SiteHeader(#65 header 合一,2026-07-18 Frank 拍板;内联头退役,1320 头轨全站一致)。
           /jobs 特有件走 props:matchButton 切换态 + 完整 AccountArea(plan 下拉/弹框)。
           差异认账:未登录点「我的账户」由弹框改为 /account 302 回 /?login=1(终点同为登录框)。 */}
