@@ -12,11 +12,12 @@ import { useEffect, useRef, useState } from 'react'
 import { POPULAR_NOCS } from '../account/profileOptions'
 import { Button, chipStyle, UI } from '../ui/primitives'
 import { shortOcc } from './EntryQuiz'
+import { pickName } from '@/lib/occName'
 import type { TFn } from '../jobs/i18n'
 
 const HOT = 24   // 热门页签展示的职业数(库里在招量前 24,与最初的 /api/quiz?top=24 口径同)
 
-type Cand = { noc: string; title: string; titleZh: string; titleZhShort?: string }
+type Cand = { noc: string; title: string; titleZh: string; titleZhShort?: string; titleKoShort?: string; titleEnShort?: string }
 type Top = Cand & { open: number; broad?: string }
 
 // inline=true:不套弹层,直接铺在答题卡里(2026-07-31 Frank「选职业和其他问题都放到一个方式,
@@ -104,16 +105,14 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
     let dead = false
     Promise.all(miss.map((n) => fetch(`/api/quiz?noc=${encodeURIComponent(n)}`)
       .then((r) => r.json())
-      .then((d) => [n, (lang === 'zh' && (d?.facts?.titleZhShort || d?.facts?.titleZh)) || d?.facts?.title || n] as [string, string])
+      .then((d) => [n, pickName(d?.facts, lang) || n] as [string, string])
       .catch(() => [n, n] as [string, string])))
       .then((rows) => { if (!dead) setTitles((m) => ({ ...m, ...Object.fromEntries(rows) })) })
     return () => { dead = true }
   }, [nocs, lang])   // eslint-disable-line react-hooks/exhaustive-deps -- titles 是这个 effect 的产物,进依赖会自己触发自己
 
-  // 显示名优先用库里的短名(title_zh_short)——前端不自己截字符串,清洗归数据层。
-  // en/ko 暂无短名字段(已立项),仍走官方名 + shortOcc 兜底。
-  const label = (x: { title: string; titleZh: string; titleZhShort?: string }) =>
-    (lang === 'zh' && (x.titleZhShort || x.titleZh)) || x.title
+  // 显示名优先用库里的短名(三语,ETL 04g 产)——前端不自己截字符串,清洗归数据层
+  const label = (x: Cand) => pickName(x, lang)
   const toggle = (noc: string, name: string) => {
     setTitles((m) => ({ ...m, [noc]: name }))
     setNocs((cur) => {

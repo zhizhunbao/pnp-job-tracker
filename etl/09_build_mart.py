@@ -594,8 +594,11 @@ def build():
                 tr = noc_i18n.get(n, {})
                 noc_descriptions.append({
                     "noc": n, "title": v.get("title", ""),
-                    # E8-14 3.3:窄位(图表横轴/chip)用的中文短名(04g 产);没有就留空,前端回退完整译名
+                    # 窄位(图表横轴/chip/报告 H1)用的短名(04g 产,2026-08-02 起三语);
+                    # 没有就留空,前端回退完整译名 —— 官方英文 title 一个字不动,短名是**另一列**
                     "titleZhShort": tr.get("zhShort", ""),
+                    "titleKoShort": tr.get("koShort", ""),
+                    "titleEnShort": tr.get("enShort", ""),
                     "titleZh": tr.get("zh", ""), "titleKo": tr.get("ko", ""),
                     "duties": "\n".join(v.get("duties", [])),
                     "requirements": "\n".join(v.get("requirements", [])),

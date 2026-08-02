@@ -122,8 +122,10 @@ export async function GET(req: Request) {
       (r) => ({ province: r.province, program: r.program, stream: r.stream, subject: r.subject, factor: r.factor, op: r.op, value: r.value, value_text: r.valueText, unit: r.unit, applies_teer: r.appliesTeer, applies_noc: r.appliesNoc, excludes_noc: r.excludesNoc, applies_area: r.appliesArea, applies_family_size: r.familySize, basis: r.basis, label: r.label, section: r.section, seq: r.seq, effective: r.effective, url: r.url, page_url: r.pageUrl, fetched: r.fetched })],
     ['ee_categories', 'ee_categories', ['category', 'label', 'noc', 'teer', 'title', 'url', 'fetched', 'draw_crs', 'draw_date', 'draw_size'],
       (r) => ({ category: r.category, label: r.label, noc: r.noc, teer: r.teer, title: r.title, url: r.url, fetched: r.fetched, draw_crs: r.drawCrs, draw_date: r.drawDate, draw_size: r.drawSize })],
-    ['noc_descriptions', 'noc_descriptions', ['noc', 'title', 'title_zh', 'title_zh_short', 'title_ko', 'duties', 'requirements', 'fetched'],
-      (r) => ({ noc: r.noc, title: r.title, title_zh: r.titleZh, title_zh_short: r.titleZhShort, title_ko: r.titleKo, duties: r.duties, requirements: r.requirements, fetched: r.fetched })],
+    ['noc_descriptions', 'noc_descriptions', ['noc', 'title', 'title_zh', 'title_zh_short', 'title_ko', 'title_ko_short', 'title_en_short', 'duties', 'requirements', 'fetched'],
+      (r) => ({ noc: r.noc, title: r.title, title_zh: r.titleZh, title_zh_short: r.titleZhShort, title_ko: r.titleKo,
+        title_ko_short: r.titleKoShort, title_en_short: r.titleEnShort,
+        duties: r.duties, requirements: r.requirements, fetched: r.fetched })],
     // E12-03 PGWP 可申 DLI 子集(院校级,IRCC 官方名单)
     ['dli', 'dli', ['province', 'name', 'dli_number', 'city', 'campuses', 'is_public', 'grad_program', 'url', 'fetched'],
       (r) => ({ province: r.province, name: r.name, dli_number: r.dliNumber, city: r.city, campuses: r.campuses, is_public: r.isPublic, grad_program: r.gradProgram, url: r.url, fetched: r.fetched })],
