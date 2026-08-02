@@ -161,8 +161,8 @@ const zh: Dict = {
   'sj.save': '☆ 收藏', 'sj.saved': '★ 已收藏', 'sj.view': '在职位板查看', 'sj.del': '移除', 'sj.weekly': '每周邮件摘要(收藏岗动态,可随时退订)',
   'fav.title': '我的收藏', 'fav.note': '收藏过的职位都在这里;要跟踪投递进度去「我的求职」。',
   // 大分类(数据值→显示)
-  'broad.管理': '立法与高级管理', 'broad.商务': '商务、金融与行政', 'broad.科技': '自然与应用科学', 'broad.医疗': '医疗', 'broad.教育': '教育、法律与社会服务',
-  'broad.文体': '艺术、文化与体育', 'broad.服务': '销售与服务', 'broad.技工': '技工与运输', 'broad.资源': '自然资源与农业', 'broad.制造': '制造与公用事业',
+  'broad.管理': '管理', 'broad.商务': '商务', 'broad.科技': '科技', 'broad.医疗': '医疗', 'broad.教育': '教育',
+  'broad.文体': '文体', 'broad.服务': '服务', 'broad.技工': '技工', 'broad.资源': '资源', 'broad.制造': '制造',
   // 经验级别
   'acc.co-op': 'co-op', 'acc.junior': '初级', 'acc.intermediate': '中级', 'acc.senior': '高级', 'acc.unknown': '—', 'acc.none': '未知(帖内未写)',
   // 渠道
@@ -864,7 +864,7 @@ const en: Dict = {
   'sj.st.wish': 'To apply', 'sj.st.applied': 'Applied', 'sj.st.interview': 'Interviewing', 'sj.st.offer': 'Offer',
   'sj.save': '☆ Save', 'sj.saved': '★ Saved', 'sj.view': 'View on board', 'sj.del': 'Remove', 'sj.weekly': 'Weekly email digest (saved jobs; unsubscribe anytime)',
   'fav.title': 'My saved jobs', 'fav.note': 'Every job you starred lives here; track applications under “My applications”.',
-  'broad.管理': 'Legislative and senior management', 'broad.商务': 'Business, finance and administration', 'broad.科技': 'Natural and applied sciences', 'broad.医疗': 'Health', 'broad.教育': 'Education, law and social services',
+  'broad.管理': 'Management', 'broad.商务': 'Business', 'broad.科技': 'Tech', 'broad.医疗': 'Health', 'broad.教育': 'Education',
   // NOC 中/小分类(数据值=etl/noc.py 中文;与大类同名的值走 broad.* 回退,不重复)
   // 第 2 大类(自然与应用科学)2026-08-03 按 NOC 第 3 位重分之后的中/小类
   'cat.科技管理': 'Science & tech management', 'cat.自然科学': 'Natural sciences', 'cat.建筑与规划': 'Architecture & planning',
@@ -912,7 +912,7 @@ const en: Dict = {
   'cat.汽修/钳工': 'Auto mechanics & millwrights', 'cat.油漆/装修': 'Painting & finishing', 'cat.货车司机': 'Truck drivers',
   'cat.物料搬运/仓储': 'Material handling & warehousing', 'cat.建筑劳工': 'Construction labourers', 'cat.农场工': 'Farm workers',
   'cat.农林劳工': 'Agriculture & forestry labourers', 'cat.园林劳工': 'Landscaping labourers', 'cat.生产劳工': 'Production labourers',
-  'broad.文体': 'Art, culture and sport', 'broad.服务': 'Sales and service', 'broad.技工': 'Trades and transport', 'broad.资源': 'Natural resources and agriculture', 'broad.制造': 'Manufacturing and utilities',
+  'broad.文体': 'Arts & sport', 'broad.服务': 'Service', 'broad.技工': 'Trades', 'broad.资源': 'Resources', 'broad.制造': 'Manufacturing',
   'acc.co-op': 'Co-op', 'acc.junior': 'Junior', 'acc.intermediate': 'Intermediate', 'acc.senior': 'Senior', 'acc.unknown': '—', 'acc.none': 'Unknown (not stated in the posting)',
   'origin.jobbank': 'Job Bank', 'origin.ats': 'ATS', 'origin.directory': 'Directory',
   'advisor.tag': 'AI Advisor',
@@ -1577,7 +1577,7 @@ const ko: Dict = {
   'sj.st.wish': '지원 예정', 'sj.st.applied': '지원함', 'sj.st.interview': '면접 중', 'sj.st.offer': '오퍼 받음',
   'sj.save': '☆ 저장', 'sj.saved': '★ 저장됨', 'sj.view': '공고 목록에서 보기', 'sj.del': '삭제', 'sj.weekly': '주간 이메일 요약(저장 공고, 언제든 구독 취소)',
   'fav.title': '내 저장 공고', 'fav.note': '저장한 공고가 모두 여기에 있습니다. 지원 진행은 「내 지원 현황」에서 확인하세요.',
-  'broad.管理': '입법 및 고위 관리', 'broad.商务': '비즈니스, 금융 및 행정', 'broad.科技': '자연 및 응용과학', 'broad.医疗': '의료', 'broad.教育': '교육, 법률 및 사회 서비스',
+  'broad.管理': '관리', 'broad.商务': '비즈니스', 'broad.科技': '기술', 'broad.医疗': '의료', 'broad.教育': '교육',
   // NOC 中/小分类(数据值=etl/noc.py 中文;与大类同名的值走 broad.* 回退,不重复)
   // 第 2 大类(自然与应用科学)2026-08-03 按 NOC 第 3 位重分之后的中/小类
   'cat.科技管理': '과학기술 관리', 'cat.自然科学': '자연과학', 'cat.建筑与规划': '건축 및 도시계획',
@@ -1625,7 +1625,7 @@ const ko: Dict = {
   'cat.汽修/钳工': '자동차 정비·기계 정비', 'cat.油漆/装修': '도장·마감', 'cat.货车司机': '트럭 운전기사',
   'cat.物料搬运/仓储': '자재 운반·창고', 'cat.建筑劳工': '건설 노무', 'cat.农场工': '농장 노동자',
   'cat.农林劳工': '농림 노무', 'cat.园林劳工': '조경 노무', 'cat.生产劳工': '생산 노무',
-  'broad.文体': '예술, 문화 및 스포츠', 'broad.服务': '영업 및 서비스', 'broad.技工': '기능직 및 운송', 'broad.资源': '천연자원 및 농업', 'broad.制造': '제조 및 공공사업',
+  'broad.文体': '예술·스포츠', 'broad.服务': '서비스', 'broad.技工': '기능직', 'broad.资源': '자원', 'broad.制造': '제조',
   'acc.co-op': '인턴십', 'acc.junior': '주니어', 'acc.intermediate': '중급', 'acc.senior': '시니어', 'acc.unknown': '—', 'acc.none': '알 수 없음(공고 미기재)',
   'origin.jobbank': 'Job Bank', 'origin.ats': 'ATS', 'origin.directory': '디렉토리',
   'advisor.tag': 'AI 어드바이저',
