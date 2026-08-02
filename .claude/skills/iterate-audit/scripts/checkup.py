@@ -319,8 +319,11 @@ FULL = [("/jobs", "jobs"), ("/pricing", "pricing"), ("/stats", "stats-index"), (
         ("/news", "news"), ("/pathways", "pathways"),
         ("/plan/pr", "plan-pr"), ("/plan/job", "plan-job"),
         ("/plan/career", "plan-career"), ("/plan/province", "plan-province")]
+# /plan 四页在付费转化链上,漏翻直接砸转化 → 破例进 LITE(2026-08-02)
 LITE = [("/jobs", "jobs"), ("/pricing", "pricing"), ("/stats", "stats-index"),
-        ("/rankings/weekly-top", "rank-weekly"), ("/news", "news")]
+        ("/rankings/weekly-top", "rank-weekly"), ("/news", "news"),
+        ("/plan/pr", "plan-pr"), ("/plan/job", "plan-job"),
+        ("/plan/career", "plan-career"), ("/plan/province", "plan-province")]
 
 RESULTS = []   # 每条 = 一个 (page, viewport, lang, auth) 上下文的体检结果
 RUNTIME = []   # console / network / perf
