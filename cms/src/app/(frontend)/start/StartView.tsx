@@ -126,10 +126,15 @@ export function StartView({ stats }: { stats: HomeStats }) {
   const tileNm: React.CSSProperties = { fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }
   const tileHint: React.CSSProperties = { marginTop: 2, fontSize: 12, color: UI.text2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }
   // flexWrap:375 职位榜三 tab + Top N 挤不进一行(2026-07-31 实拍标题折行、tab 截断)→ 控件整组下折,不压缩不截字
-  // 节头整组居中(2026-08-02 Frank「title 要居中」):标题、控件、右侧「全部职位」同一行居中 ——
-  // 「全部职位」原先 marginLeft:auto 顶到最右,留着的话标题就只能在剩余空间里居中,看着还是偏的
-  const secH: React.CSSProperties = { margin: '0 0 18px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, rowGap: 8, flexWrap: 'wrap', color: UI.text }
+  // 节头分左右两部分(2026-08-02 Frank 看过居中版后拍板「还是要像以前一样分左右两部分 不要居中」):
+  // 左=标题与控件,右=「全部职位」顶到最右(marginLeft:auto)。居中版在 375 上把这个链接挤到第二行
+  // 单独一行,看着像按钮而不是出口 —— 实拍抓到后撤回
+  const secH: React.CSSProperties = { margin: '0 0 18px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 10, rowGap: 8, flexWrap: 'wrap', color: UI.text }
   const moreA: React.CSSProperties = { fontSize: 13, fontWeight: 600, color: UI.primary, textDecoration: 'none', whiteSpace: 'nowrap' }
+  // 右组(2026-08-02 Frank「top 下拉框放到右边」+「top 10 和 全部职位放一行」):
+  // Top N 与链接**包成一个元素**再顶右 —— 各自散着挂时,375 上折行会把它俩拆到两行去;
+  // 包起来后整组一起折,永远同一行。auto 也只能给这一个包(两个元素各写 auto 会平分空隙,右组散成两段)
+  const hmRight: React.CSSProperties = { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }
   const th: React.CSSProperties = { fontSize: 11.5, color: UI.text3, fontWeight: 600, textAlign: 'left', padding: '9px 12px', borderBottom: `1px solid ${UI.hairline}`, background: '#fafafa' }
   // 榜单(grid 行)的表头:与抽选表 th 同一套灰底小字,只是走 grid 不走 table —— 列宽仍由 .hmJobRow/.hmOccRow 定
   const headS: React.CSSProperties = { ...th, padding: '9px 14px' }
@@ -224,11 +229,13 @@ export function StartView({ stats }: { stats: HomeStats }) {
           </div>
         </Band>
 
-        {/* ③ 今日日更(灰带,居中大数字;点数字进职位板) */}
+        {/* ③ 今日日更(灰带,居中大数字;点数字进职位板)
+            节头与其余各节同规:标题左、日期跟在标题后当灰注(2026-08-02 Frank「这个页面其他 title 也这样搞」)。
+            大数字仍居中 —— 那是这节的焦点排布,不是标题的事(节头一致 ≠ 内容也得跟着改) */}
         {stats.daily && (
           <Band>
-            <h2 style={{ ...secH, justifyContent: 'center', marginBottom: 6 }}>{t('home.daily')}</h2>
-            <div style={{ textAlign: 'center', fontSize: 12.5, color: UI.text3, marginBottom: 22 }}>{ymd(stats.daily.date)}</div>
+            <h2 style={{ ...secH, marginBottom: 22 }}>{t('home.daily')}
+              <span style={{ fontSize: 12.5, fontWeight: 400, color: UI.text3 }}>{ymd(stats.daily.date)}</span></h2>
             <a href="/" style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
               <div className="hmNums">
                 <span><b style={{ color: UI.primaryDeep }}>{num(stats.daily.n)}</b><span style={{ fontSize: 12.5, color: UI.text2 }}>{t('home.daily.new')}</span></span>
@@ -253,11 +260,13 @@ export function StartView({ stats }: { stats: HomeStats }) {
                       background: jobsTab === k ? '#eff6ff' : '#fff', color: jobsTab === k ? '#1d4ed8' : '#374151', fontWeight: jobsTab === k ? 600 : 400 }}>{lb}</button>
                 ))}
               </span>
-              <select value={jobsN} onChange={(e) => setJobsN(Number(e.target.value))}
-                style={{ height: 30, border: `1px solid ${UI.border}`, borderRadius: 8, background: '#fff', fontSize: 12.5, color: '#374151', padding: '0 6px' }}>
-                <option value={10}>Top 10</option><option value={20}>Top 20</option><option value={50}>Top 50</option>
-              </select>
-              <a href="/" style={moreA} onClick={() => track('landing_goal_jobs')}>{t('home.jobs.all')}</a></h2>
+              <span style={hmRight}>
+                <select value={jobsN} onChange={(e) => setJobsN(Number(e.target.value))}
+                  style={{ height: 30, border: `1px solid ${UI.border}`, borderRadius: 8, background: '#fff', fontSize: 12.5, color: '#374151', padding: '0 6px' }}>
+                  <option value={10}>Top 10</option><option value={20}>Top 20</option><option value={50}>Top 50</option>
+                </select>
+                <a href="/" style={moreA} onClick={() => track('landing_goal_jobs')}>{t('home.jobs.all')}</a>
+              </span></h2>
             {/* 桌面=表格、手机=卡片(站规「电脑用表格 手机用卡片」),两套 DOM 各渲各的:
                 卡片的行序与字段取舍本来就与表格不同,硬用同一份 DOM 会两头将就(此前实测:
                 卡片要的发布日期挤不进七列表格,表格要的名次在卡上是重复)。
@@ -378,8 +387,10 @@ export function StartView({ stats }: { stats: HomeStats }) {
           <Band>
             <div>
               <h2 style={secH}>{t('home.draws')}
-                <TopN v={drawsN} on={setDrawsN} max={stats.draws.length} />
-                <a href="/pathways" style={moreA}>{t('pw.entry')}</a></h2>
+                <span style={hmRight}>
+                  <TopN v={drawsN} on={setDrawsN} max={stats.draws.length} />
+                  <a href="/pathways" style={moreA}>{t('pw.entry')}</a>
+                </span></h2>
               {/* 与 /pathways 抽选事实块同源(pnp_draws),这里是轻量投影;百分比固定布局永不横滚(站规) */}
               <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, overflow: 'hidden' }}>
                 <table className="hmDrawTable" style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed', fontSize: 13 }}>
@@ -449,7 +460,8 @@ export function StartView({ stats }: { stats: HomeStats }) {
             两节讲同一件事 —— 按 Frank「不同 section 显示不同的信息」原则,留超集(主图带筛选/下钻)。 */}
         {(market === null || market.occ.length > 0) && (
           <Band>
-            <h2 style={secH}>{t('mkt.title')}<a href="/stats" style={moreA}>{t('home.stats.more')}</a></h2>
+            {/* 这节没有 Top N,右组只有链接一个 —— 仍走同一个包,不另写一套 */}
+            <h2 style={secH}>{t('mkt.title')}<span style={hmRight}><a href="/stats" style={moreA}>{t('home.stats.more')}</a></span></h2>
             {market === null
               ? <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, height: 560 }} />
               : <MarketChart occ={market.occ} city={market.city} rows={market.rows} t={t} lang={lang} channels={market.channels} />}
@@ -461,8 +473,10 @@ export function StartView({ stats }: { stats: HomeStats }) {
           <Band bg="#fff">
             <div>
               <h2 style={secH}>{t('home.policy')}
-                <TopN v={newsN} on={setNewsN} max={stats.news.length} />
-                <a href="/news" style={moreA}>{t('home.pulse.all')}</a></h2>
+                <span style={hmRight}>
+                  <TopN v={newsN} on={setNewsN} max={stats.news.length} />
+                  <a href="/news" style={moreA}>{t('home.pulse.all')}</a>
+                </span></h2>
               <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, overflow: 'hidden' }}>
                 {stats.news.slice(0, newsN).map((r, i) => (
                   <a key={r.slug || i} href={r.slug ? `/news/${r.slug}` : '/news'} className="rowHover"
