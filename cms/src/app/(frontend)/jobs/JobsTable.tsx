@@ -18,6 +18,7 @@ import { UpgradeCta, UpgradeModal } from './UpgradeModal'
 import { PricingModal } from './PricingModal'
 import { OnboardingWizard, OB_SEEN_KEY } from './OnboardingWizard'
 import { QUIZ_KEY, quizToProfile, readQuiz, type QuizAnswers } from '../quiz/EntryQuiz'   // 答案读写与落档(弹框本体已退役,2026-07-31 统一答题)
+import { useColWidths } from './colWidths'   // 列宽唯一控制点(刷新/筛选/拖竖线共用一套规则)
 import { useOverlayClose } from './overlay'
 import { CARD, iconBtnS, SCRIM, useIsNarrow } from './Modal'
 import { match as matchJob, matchRank, hasProfile, normalizeProfile, type MatchProfile, type MatchJob, type MatchReason } from '@/lib/match'
@@ -601,6 +602,20 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     const v = (initialCols ?? []).filter((k): k is ColKey => COLUMNS.some((c) => c.key === k))
     return v.length ? v : DEFAULT_COLS
   })
+  // ── 筛选 ↔ URL:读(刷新/深链/前进后退)与写(改筛选)共用这一张表,别处不再各自拼参数。
+  //    Frank 2026-08-03「右键一刷新,之前的选项也没有保持」→ 筛选进 URL:刷新能复原、链接能分享,
+  //    而搜索引擎进来的干净 /jobs 依旧是干净板(没参数就没筛选,不会替陌生人预设条件)。
+  //    参数名沿用既有深链(q/prov/broad/mid/fine 三方在用,不能改),新增的取短名。
+  const urlFields = (): Record<string, { v: string; set: (s: string) => void }> => ({
+    q: { v: q, set: setQ }, prov: { v: fProv, set: setFProv }, broad: { v: fBroad, set: setFBroad },
+    mid: { v: fMid, set: setFMid }, fine: { v: fFine, set: setFFine }, city: { v: fCity, set: setFCity },
+    dist: { v: fDistrict, set: setFDistrict }, country: { v: fCountry, set: setFCountry },
+    teer: { v: fTeer, set: setFTeer }, src: { v: fSource, set: setFSource }, acc: { v: fAcc, set: setFAcc },
+    pnp: { v: fPnp, set: setFPnp }, aip: { v: fAip, set: setFAip }, st: { v: fStatus, set: setFStatus },
+    org: { v: fOrigin, set: setFOrigin }, score: { v: fScore, set: setFScore }, sal: { v: fSal, set: setFSal },
+    vs: { v: fVs, set: setFVs }, emp: { v: fEmp, set: setFEmp }, elig: { v: fElig, set: setFElig },
+  })
+  const hydrated = useRef(false)
   // URL 参数 → 初始筛选(stats/rankings 入口回流:?q= ?prov= ?broad=)
   useIsoLayoutEffect(() => {
     try {
@@ -622,20 +637,34 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         sp.delete('back')
         window.history.replaceState(null, '', window.location.pathname + (sp.toString() ? `?${sp.toString()}` : ''))
       }
-      const q0 = sp.get('q'); const pv = sp.get('prov'); const bd = sp.get('broad'); const md = sp.get('mid'); const fn = sp.get('fine')
-      if (q0) setQ(q0)
-      if (pv) setFProv(PROV_NAMES[pv.toUpperCase()] || pv)
-      if (bd) setFBroad(bd)
-      if (md) setFMid(md)  // stats 图表 L2 下钻深链(2026-07-19)
-      if (fn) setFFine(fn)  // #142:详情页职业分类三级可点,小类深链补齐
+      // 一张表读完:含 stats 图表 L2 下钻深链(mid,2026-07-19)与详情页小类深链(fine,#142)
+      const fields = urlFields()
+      for (const [key, f] of Object.entries(fields)) {
+        const raw = sp.get(key)
+        if (!raw) continue
+        f.set(key === 'prov' ? (PROV_NAMES[raw.toUpperCase()] || raw) : raw)   // 省接受两位码或全名
+      }
+      if (sp.get('direct') === '1') setDirectOnly(true)
       // E5-05 直链回流;进匹配视图默认按匹配度排(2026-07-21 Frank:横幅写「按匹配度排序」得名副其实,
       // 原默认发布时间序把非今日的高匹配全压在今日中匹配下面)
       if (sp.get('view') === 'match' && plan.loggedIn && plan.profileOk) { setMatchView(true); setSort({ key: 'match', dir: 'desc' }) }
     } catch { /* ignore */ }
+    hydrated.current = true
   }, [])
-  // 筛选快照 → localStorage(返回保筛选的数据面):只记非默认值,全默认就清掉,不留陈年空快照。
-  // 与上面 back=1 回放同一键;快照持续写入,回放只在带参回流时发生
+  // 筛选 → URL(刷新保选项)+ localStorage 快照(返回保筛选的数据面):都只记非默认值,
+  // 全默认就把参数/快照清掉,不留陈年状态。URL 只动自己管的那几个 key,别人的参数(view 等)原样留着。
   useEffect(() => {
+    if (hydrated.current) try {
+      const u = new URL(window.location.href)
+      for (const [key, f] of Object.entries(urlFields())) {
+        if (f.v) u.searchParams.set(key, f.v); else u.searchParams.delete(key)
+      }
+      if (directOnly) u.searchParams.set('direct', '1'); else u.searchParams.delete('direct')
+      const next = u.pathname + (u.searchParams.toString() ? '?' + u.searchParams.toString() : '') + u.hash
+      if (next !== window.location.pathname + window.location.search + window.location.hash) {
+        window.history.replaceState(null, '', next)
+      }
+    } catch { /* ignore */ }
     try {
       const snap: Record<string, string | boolean> = {}
       const pairs: [string, string | boolean][] = [['q', q], ['directOnly', directOnly], ['fElig', fElig],
@@ -766,8 +795,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const saveCols = (next: ColKey[]) => {
     writeColsCookie(next)                                      // 写 cookie:下次刷新服务端直接渲对
     try { localStorage.setItem(PREF_KEY, JSON.stringify(next)) } catch { /* ignore */ }  // 留一份兜底
-    setVisible(next)
-    setWidths({})                                             // 列集变了 → 回自动布局(否则新列在固定布局里塌陷成 0)
+    setVisible(next)                                          // 列集变了 → useColWidths 自己重量重分(手动宽同时作废)
   }
   const toggleCol = (key: ColKey) => saveCols(visible.includes(key) ? visible.filter((k) => k !== key) : [...visible, key])
   // match 列不进列选择器(E5-05:独立视图专属;老 cookie 里的 match 也在 shown 处剔除)
@@ -782,13 +810,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   // 同 2026-07-26 手机卡裸字胶囊下架那一刀的理由(没有列头的「高」说不清是什么的高)。
   const shownAll = shownBase
 
-  // ── 列宽:默认纯自动布局(table-layout:auto,永不截断);用户拖表头竖线/双击才切固定布局。
-  //    会话内有效、不落 localStorage —— 刷新即回自动布局。当初 bug 正是「localStorage 固定布局 +
-  //    缺测列兜底 130px」导致加载后截断/收缩;此处切固定前**全量实测**每列自然宽,无任何常量兜底,
-  //    故任何列都不会被压窄。切换可见列时清回自动(防新列塌陷成 0)。
-  const [widths, setWidths] = useState<Record<string, number>>({})
+  // ── 列宽:全部逻辑在 ./colWidths.ts 一个文件里(Frank 2026-08-03「宽度控制放到一个地方」)。
+  //    刷新 / 筛选查完 / 拖竖线 三条触发共用同一套规则:表头宽优先 → 内容宽其次 → 总宽=容器宽。
   const headRowRef = useRef<HTMLTableRowElement>(null)
-  const hasWidths = Object.keys(widths).length > 0
 
   // #35 已整轮回滚(2026-07-11 用户三轮拍板互斥后收敛:宽度不变+可滑动+无小注 = 原状):
   // v1 整列隐藏+小注 → 用户否;v2 容器收口到整列边界 → 用户否(表格变窄)。维持全宽横滚,末列
@@ -804,12 +828,19 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     }
     return { pnp, aip }
   }, [dims.pnpOccupations])
-  const totalW = shown.reduce((s, c) => s + (widths[c.key] ?? 0), 0)
-  const resetWidths = () => setWidths({})
-
-  // ── 固定左列(发布时间/大分类/公司/职位):横滚时 sticky 不动;其余列超宽则横向滚动可见 ──
-  //    列给最小宽 → 列多时表格自然超容器 → 滚动看隐藏列;列少时 width:100% 拉满平均分配。
   const shownKey = shown.map((c) => c.key).join(',')
+  // ── 列宽唯一控制点(见 ./colWidths.ts):刷新页面 / 查完筛选 / 拖列竖线 三条触发共用一套规则。
+  //    数据指纹变了就重量 —— 换列、换语言、换了这一批行(筛选/翻页)都按新内容重分;
+  //    老版本只看「有没有行」,筛完「IT」还按上一批的宽度占地(Frank 2026-08-03 实拍)。
+  const ACTIONS_W = 96      // 操作列按按钮实宽钉死,不参与瓜分;以后加按钮就调这一个数
+  const CELL_PAD = 14       // 单元格左右内边距(6+6)+ 1px 列分隔线:量到的是纯内容宽,分宽要算上
+  const dataKey = `${shownKey}|${lang}|${rows.length}|${rows[0]?.id ?? ''}|${rows[rows.length - 1]?.id ?? ''}`
+  const cw = useColWidths({ keys: shown.map((c) => c.key), headRowRef, pinnedPx: { actions: ACTIONS_W }, dataKey, pad: CELL_PAD })
+
+  // ── 固定左列(发布时间/大分类/公司/职位):只有**真的横滚**时才需要(默认总宽=容器宽,压根不滚)。
+  //    顺带收掉一个副作用:border-collapse 的表里 sticky 单元格的右边框 Chromium 不画 ——
+  //    Frank「查询之后列竖线没了,点一下竖线才恢复」就是它(点竖线=切旧的手动宽模式,sticky 关了才回来)。
+  //    现在默认不 sticky,横滚态下的竖线也改用 inset 阴影画,任何模式下都看得见。
   const FROZEN = new Set<ColKey>(['datePosted', 'broad', 'company', 'title'])
   // 只冻结**最左连续**的固定列:中间插了非固定列就停,保证 sticky 偏移=真实累计位置(不会错位)
   const frozenKeys: ColKey[] = []
@@ -829,220 +860,26 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     })
     setStickyLeft(offs)
   }
-  useIsoLayoutEffect(() => { measureSticky() }, [shownKey, hasWidths])  // eslint-disable-line react-hooks/exhaustive-deps
+  useIsoLayoutEffect(() => { measureSticky() }, [shownKey, cw.overflow])  // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     window.addEventListener('resize', measureSticky)
     return () => window.removeEventListener('resize', measureSticky)
   }, [shownKey])  // eslint-disable-line react-hooks/exhaustive-deps
 
-  // 固定列单元格:sticky + 累计 left + 不透明底色(挡住滚动内容);末固定列加右阴影分隔
-  const frozenStyle = (key: ColKey, bg: string): React.CSSProperties =>
-    !hasWidths && frozenSet.has(key) && stickyLeft[key] != null
-      ? { position: 'sticky', left: stickyLeft[key], zIndex: 3, background: bg, ...(key === lastFrozen ? { boxShadow: '3px 0 5px -3px rgba(0,0,0,.18)' } : null) }
+  // 固定列单元格:sticky + 累计 left + 不透明底色(挡住滚动内容);竖线走 inset 阴影(sticky 下 border 不画)
+  const frozenStyle = (key: ColKey, bg: string, line: string): React.CSSProperties =>
+    cw.overflow && frozenSet.has(key) && stickyLeft[key] != null
+      ? { position: 'sticky', left: stickyLeft[key], zIndex: 3, background: bg, borderRight: 'none',
+          boxShadow: `inset -1px 0 0 ${line}` + (key === lastFrozen ? ', 3px 0 5px -3px rgba(0,0,0,.18)' : '') }
       : {}
-  // 每列最小宽:文本列宽些(列内换行),其余够放原子值即可 → 列多时整表超容器可横滚
-  // #85(Frank「最后一列宽度叠一起」):actions 原默认 78px 塞不下三钮 → 给足最小宽,配合 cell 内 flex wrap 兜底
-  const MIN_W: Partial<Record<ColKey, number>> = { title: 170, company: 140, address: 150, datePosted: 92, lastSeen: 96, closedAt: 92, salary: 100, salaryYr: 86, wageMedHr: 88, wageMedYr: 88, actions: 160 }
-  // 批A #134-⑧(Frank「保证所有列都能显示出来/哪个最宽优先缩哪个/发布时间不要缩」):
-  // 默认列集去掉最小宽 → auto 布局在视口内分配,最宽列(公司→职位→省)自然先折行,nowrap 短值列天然不缩;
-  // 发布时间/操作两列保底不缩。自选加列(超出默认集)或手动拖宽 → 回原最小宽+横滚(#35 拍板不动)
-  const DEFAULT_SET = new Set<ColKey>(DEFAULT_COLS)
-  const fitMode = !hasWidths && shown.every((c) => DEFAULT_SET.has(c.key))
-  // Frank 2026-07-26「右边操作列有很多空间,改成自适应平均分配;以后操作列还要加按钮」+ 追加「不需要下面的滚动条」:
-  // 原来 auto 布局把剩余宽度几乎全给了末列(操作列实测 265px 只放一个收藏钮),左边公司/职位却折成三四行;
-  // 中途试过「短值列钉定宽」——定宽和 + 文本列内容最小宽会超容器,反而**逼出横向滚动条**(实测,已推翻)。
-  // 定案:默认列集走**固定布局 + 百分比列宽**,各列宽之和恒等于容器宽 → 数学上不可能横滚,窗口变宽等比放大。
-  // 权重按内容长短分:职位/公司最多,日期/AIP 等恒短值最少;操作列 11% 留给以后加按钮(挤不下时格内换行)。
-  // 操作列按**按钮实宽**钉死(Frank 2026-07-26「这一列可以根据按钮宽度变窄」),不参与权重瓜分;
-  // 以后加按钮就调这一个数(格内 flex wrap 兜底,#85)。其余列用 calc 瓜分「容器宽 - 操作列」,
-  // 各列之和恒等于 100% —— 既不横滚,也不给单个收藏钮留一大片空地。
-  const ACTIONS_W = 96
-  // ── 2026-08-03 Frank 定调:「别腾地方了,平均分配单元格就行,从左到右,优先左边的不折叠,
-  //    平均分配按内容宽度来分」。于是这版**不再手调权重**(那张表每加删一列就得重配一次,
-  //    删掉 PNP/EE/AIP 之后每列等比变胖、vs 中位分到 130px 空地就是这么来的),改成:
-  //    ① 量每列**不折行需要多宽**(自然宽:临时全格 nowrap + max-content 量一次);
-  //    ② 够分 → 各列先拿够自然宽,余量按自然宽比例摊(宽的多拿,窄的少拿 = 按内容分);
-  //    ③ 不够分 → **从左往右**依次拿满,右边的让步,但每列保底不低于表头单行宽。
-  //    权重表只留给非默认列集(用户自选加列)的旧路径。
-  const [natural, setNatural] = useState<Record<string, number>>({})
-  const naturalKey = useRef('')
-  const FIT_WEIGHT: Partial<Record<ColKey, number>> = {
-    // 权重按**最长的那种语言**定(英文/韩文比中文长得多):中文「大分类=服务」两字够宽,
-    // 英文「Services」不给够就断成 Servi/ces;AIP 中文一格「—」,英文「Occupation not accepted」要三行。
-    // 权重同时满足两头:**表头单行放得下**(Frank「header 的宽度不要变」——实测「Major group ↕」需 100px、
-    // 「vs median ↕」84px)与值不断字。三语里取最宽的那个定。
-    // broad 9→6(Frank 2026-07-28「默认大类别 jobtable 不需要这么宽吧」):值是「服务」「科技」两三个字,
-    // 之前 9 是为了英文表头「Major group ↕」单行放得下 —— 表头缩成「Group」后这个理由没了。
-    // 2026-08-03 重配:PNP/EE/AIP 三列转默认不显示之后,权重总和变小 → **每一列都等比变胖**,
-    // 于是「vs 中位」这种恒短值(+31%)也分到 130px 一大片空地,而公司/职位照旧折两行
-    // (Frank 实拍点名)。剩下的宽度要给真正装不下的列,不是雨露均沾:
-    // 文本列(职位/公司/大分类)加,原子值列(vs 中位/年薪/日期)减到「表头单行放得下」为止。
-    // 大分类同批加宽:官方类名比原来的两字简称长(「制造与公用事业」/「Manufacturing and utilities」)。
-    datePosted: 8, broad: 11, teer: 9, company: 14, title: 18, province: 9, city: 8,
-    salary: 9, salaryYr: 7, wageMedHr: 8, wageMedYr: 8, vsMedian: 7, pnp: 8, ee: 6, aip: 6,
-  }
-  const fitHasActions = fitMode && shown.some((c) => c.key === 'actions')
-  const fitTotal = fitMode ? shown.reduce((s, c) => s + (c.key === 'actions' ? 0 : FIT_WEIGHT[c.key] ?? 8), 0) : 0
-  // 坑(2026-07-26 实测):`<col width="calc((100% - 96px) * 12 / 100)">` 在 Chromium 固定布局下**被整条忽略**,
-  // 13 列全退回 98px 均分 —— 我加的权重一直没生效。改纯百分比:操作列钉 px,其余按权重给 %。
-  // 百分比之和 100% 加上那 96px 会略微超出表宽,浏览器按比例等比缩回,列宽比例正好保住。
-  // 自然宽量一次:临时让整张表 nowrap + 按内容撑开(max-content),读每列真实需要的宽度,立刻还原。
-  // 只在「列集 / 语言 / 首屏数据到位」变化时量 —— 用 useLayoutEffect,量完再画,用户看不到中间态。
-  const measureNatural = () => {
-    const head = headRowRef.current
-    const table = head?.closest('table') as HTMLTableElement | null
-    if (!table || !table.querySelector('tbody tr')) return
-    const prev = { tl: table.style.tableLayout, w: table.style.width, mw: table.style.minWidth }
-    table.classList.add('jtMeasure')
-    table.style.tableLayout = 'auto'
-    table.style.width = 'max-content'
-    table.style.minWidth = '0'
-    // 自然宽取**九成位**而不是最大值:整列宽度不该被一条超长值绑架
-    // (实测:一条「Manufacturing and utilities」把大分类撑到 249px,右边四列全压到底线、反而更折行)。
-    // 底线是表头本身 —— 表头折行比值折行更难看,它是这一列的名字。
-    const rowsEl = [...table.querySelectorAll('tbody tr')].slice(0, 60)
-    // 量的是**内容**不是格子:量宽模式下每个格子都被拉到整列宽,读 td 宽度只会读回「最长那条」。
-    // 用 Range 圈住格内内容量它自己的宽度,才分得出「这一列大多数值有多宽」。
-    const contentW = (el: HTMLElement): number => {
-      const r = document.createRange()
-      r.selectNodeContents(el)
-      return Math.ceil(r.getBoundingClientRect().width)
-    }
-    const PAD = 16   // 左右内边距 + 1px 余量(fit 模式 cellPad=6)
-    const m: Record<string, number> = {}
-    shown.forEach((c, i) => {
-      const th = head!.children[i] as HTMLElement | undefined
-      const cells = rowsEl.map((tr) => tr.children[i] as HTMLElement | undefined)
-        .filter(Boolean).map((el) => contentW(el!)).sort((a, b) => a - b)
-      const p90 = cells.length ? cells[Math.min(cells.length - 1, Math.floor(cells.length * 0.9))] : 0
-      m[c.key] = Math.max(th ? contentW(th) : 0, p90) + PAD
-    })
-    table.classList.remove('jtMeasure')
-    table.style.tableLayout = prev.tl
-    table.style.width = prev.w
-    table.style.minWidth = prev.mw
-    setNatural(m)
-  }
-  useIsoLayoutEffect(() => {
-    if (!fitMode) return
-    const key = shownKey + '|' + lang + '|' + (rows.length ? '1' : '0')
-    if (naturalKey.current === key) return
-    naturalKey.current = key
-    measureNatural()
-  })   // eslint-disable-line react-hooks/exhaustive-deps -- key 自己去重,依赖数组写不全反而漏量
-
-  // 容器宽变了要重算(窗口缩放 / 侧栏开合):列宽是 px,不跟着算就会超出容器 = 横滚。
-  // 用百分比虽然能自动缩放,但那样窗口一宽,「vs 中位」这种恒短值又会跟着变胖 —— 正是这次要修的病。
-  const [wrapW, setWrapW] = useState(0)
-  useEffect(() => {
-    const el = headRowRef.current?.closest('.jtTableWrap') as HTMLElement | null
-    if (!el || typeof ResizeObserver === 'undefined') return
-    const ro = new ResizeObserver(() => setWrapW(el.clientWidth))
-    ro.observe(el)
-    setWrapW(el.clientWidth)
-    return () => ro.disconnect()
-  }, [shownKey])
-
-  // 分配:够分就各拿自然宽 + 余量按自然宽比例摊;不够就从左往右拿满,右边让步(每列保底=表头单行)
-  const HEAD_MIN = 62
-  const fitPx = useMemo(() => {
-    const cols = shown.filter((c) => c.key !== 'actions')
-    const avail = (wrapW || (headRowRef.current?.closest('.jtTableWrap') as HTMLElement | null)?.clientWidth || 1180)
-      - (shown.some((c) => c.key === 'actions') ? ACTIONS_W : 0) - 2
-    const need = cols.map((c) => Math.max(natural[c.key] ?? 0, HEAD_MIN))
-    const sum = need.reduce((a, b) => a + b, 0)
-    if (!sum) return {}
-    const out: Record<string, number> = {}
-    if (sum <= avail) {                       // 够分:各拿自然宽,余量按内容宽度比例摊(宽的多拿)
-      const extra = avail - sum
-      cols.forEach((c, i) => { out[c.key] = need[i] + extra * (need[i] / sum) })
-      return out
-    }
-    // 不够分时**谁让步**:纯「从左到右先拿满」试过一轮 —— 公司拿走 309px,右边省/市/薪资/年薪
-    // 全被压到底线,于是金额和百分比在折行(实测 City 25 行、Salary 22 行)。那比公司名折行难看得多。
-    // 定案:**原子值列先拿够**(日期/金额/百分比/省市:短、固定、不该断),剩下的按内容宽度比例
-    // 分给文本列(大分类/公司/职位)—— Frank 的「左优先」在文本列之间照旧生效(它们本来就从左排到右)。
-    const ATOMIC = new Set<ColKey>(['datePosted', 'lastSeen', 'closedAt', 'salary', 'salaryYr',
-      'wageMedHr', 'wageMedYr', 'vsMedian', 'teer', 'province', 'city', 'empHours', 'empTerm', 'status'])
-    const atomicSum = cols.reduce((s, c, i) => s + (ATOMIC.has(c.key) ? need[i] : 0), 0)
-    const textNeed = cols.map((c, i) => (ATOMIC.has(c.key) ? 0 : need[i]))
-    const textSum = textNeed.reduce((a, b) => a + b, 0)
-    if (atomicSum < avail && textSum > 0) {
-      const pool = avail - atomicSum
-      cols.forEach((c, i) => {
-        out[c.key] = ATOMIC.has(c.key) ? need[i] : Math.max(HEAD_MIN, pool * (textNeed[i] / textSum))
-      })
-      return out
-    }
-    // 极窄视口:原子值列自己都放不下 → 退回从左到右拿满,右边保底表头宽
-    let budget = avail
-    cols.forEach((c, i) => {
-      const restMin = (cols.length - 1 - i) * HEAD_MIN
-      const w = Math.max(HEAD_MIN, Math.min(need[i], budget - restMin))
-      out[c.key] = w
-      budget -= w
-    })
-    return out
-  }, [natural, shownKey, shown.length, wrapW])   // eslint-disable-line react-hooks/exhaustive-deps
-  const fitWidth = (k: ColKey) => {
-    if (k === 'actions') return `${ACTIONS_W}px`
-    const px = fitPx[k]
-    // **整数像素**:小数列宽会把格子右缘落在半个设备像素上,1px 的列分隔线在部分缩放比例下被整条吃掉
-    // (Frank 2026-08-03 实拍「列的竖线怎么没了」)。四舍五入之后边框恒定可见。
-    if (px) return `${Math.round(px)}px`
-    return `${((FIT_WEIGHT[k] ?? 8) / fitTotal * 100).toFixed(3)}%`   // 还没量到(首帧)先用老权重顶一下
-  }
-  const colMin = (k: ColKey) => {
-    if (hasWidths) return undefined
-    if (fitMode) return undefined   // 百分比固定布局自己保证分配;再给最小宽会把表撑出容器=横滚(Frank「不需要滚动条」)
-    return MIN_W[k] ?? 78
-  }
-  // fit 模式格距 12→8:13 列默认集在 1280 视口实测超 61px,横距是最后一截肥肉(nowrap 列天然不缩)
-  // fit 模式格距再收 8→6:省下的 ~50px 全给文本列,「Saskatchewan」「Montréal」不再被拦腰断词
-  const cellPad = fitMode ? '6px' : '12px'
-  // Frank 2026-07-26「英文 table 还是跑偏」:固定布局 + nowrap 的长英文值(NS Critical Vacancies /
-  // Occupation not accepted)会**溢出压到隔壁列**。兜底:fit 模式下所有格子内容不许越界,长词强制断行。
-  const cellClip: React.CSSProperties = fitMode ? { overflow: 'hidden', overflowWrap: 'break-word' } : {}   // anywhere 会把 $3000/2wk 断成 2w/k,只在词放不下时才断
+  // ── 单元格排版:跟着列宽走,不再另设最小宽(最小宽会把表撑出容器 = 横滚,Frank「不需要滚动条」)
+  const cellPad = '6px'   // 格距 12→6:省下的宽度全给文本列,「Saskatchewan」不再被拦腰断词
+  // 固定布局下长英文值(NS Critical Vacancies / Occupation not accepted)会溢出压到隔壁列:
+  // 格内容一律不许越界,放不下的词才断行(anywhere 会把 $3000/2wk 断成 2w/k)。
+  const cellClip: React.CSSProperties = { overflow: 'hidden', overflowWrap: 'break-word' }
   // 这几列的值是**短语**不是原子值(AIP「Occupation not accepted」、LMIA、资格、匹配),
-  // 中文短、英文长 —— fit 模式下让它们在本列内换行,别再挤隔壁。
-  const WRAP_IN_FIT = new Set<ColKey>(fitMode ? ['aip', 'lmia', 'eligibility', 'match'] : [])
-  // 量当前表头每个可见列的自然渲染宽(auto 布局下为真实内容宽),返回覆盖全可见列的完整 map
-  const measureAll = (): Record<string, number> => {
-    const head = headRowRef.current
-    const m: Record<string, number> = {}
-    if (head) shown.forEach((c, i) => {
-      const el = head.children[i] as HTMLElement | undefined
-      if (el) m[c.key] = Math.round(el.getBoundingClientRect().width)
-    })
-    return m
-  }
-  // 拖某列右缘竖线:先以全量实测作基线(已有手动宽优先),再只改本列宽 —— 左列不动、右列平移
-  const startResize = (e: React.MouseEvent, key: string) => {
-    e.preventDefault(); e.stopPropagation()
-    const base = { ...measureAll(), ...widths }
-    const startX = e.clientX
-    const startW = base[key] ?? 120
-    setWidths(base)
-    const onMove = (ev: MouseEvent) => setWidths((p) => ({ ...p, [key]: Math.max(56, startW + (ev.clientX - startX)) }))
-    const onUp = () => {
-      document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); document.body.style.cursor = ''
-    }
-    document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp); document.body.style.cursor = 'col-resize'
-  }
-  // 双击竖线:按内容自适应该列(量表头+各行该列 scrollWidth 取 max+余量)——只会变宽,永不截断
-  const autoFitColumn = (idx: number, key: string) => {
-    const head = headRowRef.current
-    const table = head?.closest('table') as HTMLTableElement | null
-    if (!head || !table) return
-    const base = { ...measureAll(), ...widths }
-    let max = (head.children[idx] as HTMLElement).scrollWidth
-    table.querySelectorAll('tbody tr').forEach((tr) => {
-      const cell = (tr as HTMLElement).children[idx] as HTMLElement | undefined
-      if (cell) max = Math.max(max, cell.scrollWidth)
-    })
-    base[key] = Math.max(56, max + 6)
-    setWidths(base)
-  }
+  // 中文短、英文长 —— 让它们在本列内换行,别再挤隔壁。
+  const WRAP_COLS = new Set<ColKey>(['aip', 'lmia', 'eligibility', 'match'])
 
   // Esc 关弹框
   useEffect(() => {
@@ -1078,12 +915,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const anyFilter = q || directOnly || fCountry || fProv || fCity || fDistrict || fBroad || fMid || fFine || fTeer || fSource || fAcc || fPnp || fAip || fStatus || fOrigin || fScore || fSal || fVs || fEmp || fElig
   const clearAll = () => {
     setQ(''); setDirectOnly(false); setFCountry(''); setFProv(''); setFCity(''); setFDistrict(''); setFBroad(''); setFMid(''); setFFine(''); setFTeer(''); setFSource(''); setFAcc(''); setFPnp(''); setFAip(''); setFStatus(''); setFOrigin(''); setFScore(''); setFSal(''); setFVs(''); setFEmp(''); setFElig('')
-    // 深链参数一并摘除(2026-07-19 Frank:「点击清除筛选,一刷新又回去了」)——否则刷新时 URL 初始化又读回来
-    try {
-      const u = new URL(window.location.href)
-      for (const k of ['q', 'prov', 'broad', 'mid']) u.searchParams.delete(k)
-      window.history.replaceState(null, '', u.pathname + (u.searchParams.toString() ? '?' + u.searchParams.toString() : '') + u.hash)
-    } catch { /* ignore */ }
+    // URL 参数不用在这儿摘:上面「筛选 → URL」那一处会把清空后的状态同步回地址栏
+    // (2026-07-19 Frank「点击清除筛选,一刷新又回去了」的老补丁已并入同一出口)
   }
 
   // ── E10-01 P3:筛选/搜索/排序/翻页全部打 /api/jobs(服务端 WHERE+分页);rows/total 来自服务端。
@@ -1233,7 +1066,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                     <button onClick={mainCols} style={{ ...colBtn, fontWeight: 600, color: '#2563eb', borderColor: '#bfdbfe' }}>{t('fields.main')}</button>
                     <button onClick={selectAllCols} style={colBtn}>{t('fields.all')}</button>
                     <button onClick={invertCols} style={colBtn}>{t('fields.invert')}</button>
-                    {hasWidths && <button onClick={resetWidths} style={colBtn}>{t('fields.resetW')}</button>}
+                    {cw.hasManual && <button onClick={cw.reset} style={colBtn}>{t('fields.resetW')}</button>}
                   </div>
                   {/* match 列是「我的匹配」视图专属(E5-05),勾了也不出列——不进选择器(第 2 轮 #11) */}
                   {COLUMNS.filter((c) => c.key !== 'match').map((c) => (
@@ -1306,29 +1139,28 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           </div>
         )}
         <div className="jtTableWrap" style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflowX: 'auto', ...(loading && page === 0 && { opacity: 0.45, pointerEvents: 'none', transition: 'opacity .2s' }) }}>
-          <table style={{ width: hasWidths ? totalW : '100%', minWidth: '100%', borderCollapse: 'collapse', fontSize: 13.5, tableLayout: hasWidths || fitMode ? 'fixed' : 'auto' }}>
-            {/* 末列宽设 auto:固定布局下吸收剩余空间,右缘始终贴齐容器,无右侧缝隙 */}
-            {hasWidths && <colgroup>{shown.map((c, i) => <col key={c.key} style={{ width: i === shown.length - 1 ? 'auto' : widths[c.key] }} />)}</colgroup>}
-            {/* 默认列集:百分比列宽,和恒为 100% → 永不横滚(见 FIT_WEIGHT 注释) */}
-            {fitMode && <colgroup>{shown.map((c) => <col key={c.key} style={{ width: fitWidth(c.key) }} />)}</colgroup>}
+          <table style={{ width: cw.tableWidth, minWidth: '100%', borderCollapse: 'collapse', fontSize: 13.5, tableLayout: cw.ready ? 'fixed' : 'auto' }}>
+            {/* 列宽全部来自 useColWidths(表头宽优先→内容宽其次→和恒等于容器宽);还没量到时不下 colgroup,
+                让浏览器 auto 布局顶一帧,量完(绘制前)即换成算好的像素 */}
+            {cw.ready && <colgroup>{shown.map((c) => <col key={c.key} style={{ width: cw.width(c.key) }} />)}</colgroup>}
             <thead>
               <tr ref={headRowRef} style={{ textAlign: 'left', background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
                 {shown.map((c, idx) => {
                   const active = sort.key === c.key
                   const isLast = idx === shown.length - 1
-                  const handle = (  // 列右缘竖线:拖动调本列宽 / 双击按内容自适应
-                    <span className="colResize" onMouseDown={(e) => startResize(e, c.key)} onClick={(e) => e.stopPropagation()} onDoubleClick={(e) => { e.stopPropagation(); autoFitColumn(idx, c.key) }} title={t('resize.tip')}
+                  const handle = (  // 列右缘竖线:拖动钉死本列宽(其余列照同一套规则重分)/ 双击该列回归自动
+                    <span className="colResize" onMouseDown={(e) => cw.startResize(e, c.key)} onClick={(e) => e.stopPropagation()} onDoubleClick={(e) => { e.stopPropagation(); cw.autoFit(c.key) }} title={t('resize.tip')}
                       style={{ position: 'absolute', top: 0, right: 0, width: 13, height: '100%', cursor: 'col-resize', zIndex: 2 }} />
                   )
                   if (c.key === 'actions') return (  // 操作列:普通末列,不排序
-                    <th key={c.key} style={{ padding: `8px ${cellPad}`, color: '#374151', fontWeight: 600, whiteSpace: 'nowrap', userSelect: 'none', position: 'relative', minWidth: colMin('actions') }}>
+                    <th key={c.key} style={{ padding: `8px ${cellPad}`, color: '#374151', fontWeight: 600, whiteSpace: 'nowrap', userSelect: 'none', position: 'relative' }}>
                       {t('col.actions')}{handle}
                     </th>
                   )
                   // 年薪列表头收短成「年薪」后,折算口径挂表头 title(悬停才出,不占版面)
                   return (
                     <th key={c.key} onClick={() => toggleSort(c.key)} title={c.key === 'salaryYr' ? t('fact.salYrNote') : t('th.tip')}
-                      style={{ padding: `8px ${cellPad}`, color: active ? '#2563eb' : '#374151', fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none', position: 'relative', borderRight: isLast ? undefined : '1px solid #e5e7eb', minWidth: colMin(c.key), ...(fitMode ? { overflow: 'hidden' } : {}), ...frozenStyle(c.key, '#f9fafb') }}>{/* Frank 走查#23:表头完全显示——去省略截断;#23b(2026-07-26「header 的宽度不要变」):一律不折行,
+                      style={{ padding: `8px ${cellPad}`, color: active ? '#2563eb' : '#374151', fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none', position: 'relative', borderRight: isLast ? undefined : '1px solid #e5e7eb', overflow: 'hidden', ...frozenStyle(c.key, '#f9fafb', '#e5e7eb') }}>{/* Frank 走查#23:表头完全显示——去省略截断;#23b(2026-07-26「header 的宽度不要变」):一律不折行,
                           表头挤不下就把标签本身收短(如「年薪(折算)」→「年薪」,折算口径挂 title),不靠换行救 */}
                       {t('col.' + c.key)}<span style={{ color: active ? '#2563eb' : '#d1d5db', fontSize: 11 }}>{active ? (sort.dir === 'desc' ? ' ▼' : ' ▲') : ' ↕'}</span>{handle}
                     </th>
@@ -1354,7 +1186,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       const k = c.key
                       const rowBg = i % 2 ? '#fcfcfd' : '#fff'
                       if (k === 'actions') return (  // 操作列:只剩收藏(2026-07-26:「移民通道」钮下架,内容归各字段)
-                        <td key={k} style={{ ...td, padding: `7px ${cellPad}`, minWidth: colMin('actions') }}>
+                        <td key={k} style={{ ...td, padding: `7px ${cellPad}` }}>
                           <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
                             <button onClick={(e) => { e.stopPropagation(); toggleSave(j) }}
                               style={{ ...actBtn, whiteSpace: 'nowrap', ...(saved[String(j.id)] ? { color: '#b45309', borderColor: '#fde68a', background: '#fffbeb' } : {}) }}>
@@ -1401,8 +1233,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       else if (k === 'empHours') { node = j.employmentHours ? t('emp.' + j.employmentHours) : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.employmentHours ? '#4b5563' : '#d1d5db', fontSize: 12.5 }) }
                       else if (k === 'empTerm') { node = j.employmentTerm ? t('term.' + j.employmentTerm) : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.employmentTerm ? '#4b5563' : '#d1d5db', fontSize: 12.5 }) }
                       // #175:职位/公司格的外链 href 摘除——点击行为只剩弹框(外链出口在弹框/详情页里,一格一个动作)
-                      else if (k === 'title') { node = j.title; Object.assign(extra, wrapCell(360), { color: '#2563eb' }) }
-                      else if (k === 'company') { node = j.company; Object.assign(extra, wrapCell(190), { color: '#2563eb' }) }
+                      else if (k === 'title') { node = j.title; Object.assign(extra, wrapCell(), { color: '#2563eb' }) }
+                      else if (k === 'company') { node = j.company; Object.assign(extra, wrapCell(), { color: '#2563eb' }) }
                       else if (k === 'noc') node = j.noc || '—'
                       else if (k === 'accessibility') node = t('acc.' + (j.accessibility || 'unknown'))
                       else if (k === 'salary') { node = <span title={j.salary || ''}>{j.salaryText || '—'}</span>; Object.assign(extra, { color: j.salary ? '#15803d' : '#9ca3af' }) }
@@ -1410,7 +1242,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       else if (k === 'wageMedHr') { node = j.wageMedHourly != null ? `$${j.wageMedHourly}/hr` : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.wageMedHourly != null ? '#4b5563' : '#9ca3af' }) }
                       else if (k === 'wageMedYr') { const m = j.wageMedAnnual; node = m != null ? `$${Math.round(m / 1000)}K/yr` : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: m != null ? '#4b5563' : '#9ca3af' }) }
                       else if (k === 'vsMedian') { const a = j.salaryAnnual, m = j.wageMedAnnual; if (a != null && m) { const p = Math.round((a / m - 1) * 100); node = `${p >= 0 ? '+' : ''}${p}%`; Object.assign(extra, { whiteSpace: 'nowrap', fontWeight: 600, color: p >= 0 ? '#15803d' : '#b45309' }) } else { node = '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#9ca3af' }) } }
-                      else if (k === 'address') { href = j.address ? mapsUrl(j.address) : null; node = j.address || '—'; Object.assign(extra, wrapCell(220)) }
+                      else if (k === 'address') { href = j.address ? mapsUrl(j.address) : null; node = j.address || '—'; Object.assign(extra, wrapCell()) }
                       else if (k === 'direct') { const dr = isDirect(j); node = dr ? t('cell.first') : t('cell.repost'); Object.assign(extra, { whiteSpace: 'nowrap', color: dr ? '#15803d' : '#9ca3af', fontSize: 12.5 }) }
                       else if (k === 'country') { node = L.country || '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: '#4b5563' }) }
                       // 省/市/区 → 文字=地图链接、格子=地点弹框(E8-12 Frank「点文字跳 map,点框弹框」)
@@ -1466,7 +1298,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       const act = cellActionable(k) && (k === 'pnp' ? (!!j.pnpEligible || blockedKeys.pnp.has(j.province + '|' + j.noc))
                         : k === 'ee' ? !!j.eeCategory : k === 'aip' ? (!!j.aip || blockedKeys.aip.has(j.province + '|' + j.noc)) : true)
                       return (
-                        <td key={k} className={act ? 'jcell jcellAct' : 'jcell'} style={{ ...td, padding: `7px ${cellPad}`, ...extra, cursor: act ? 'pointer' : 'default', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', minWidth: colMin(k), ...(NOWRAP_COLS.has(k) && !WRAP_IN_FIT.has(k) ? { whiteSpace: 'nowrap' } : { whiteSpace: 'normal', overflowWrap: 'break-word' }), ...cellClip, ...frozenStyle(k, rowBg) }} title={typeof node === 'string' ? node : undefined} onClick={() => {
+                        <td key={k} className={act ? 'jcell jcellAct' : 'jcell'} style={{ ...td, padding: `7px ${cellPad}`, ...extra, cursor: act ? 'pointer' : 'default', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', ...(NOWRAP_COLS.has(k) && !WRAP_COLS.has(k) ? { whiteSpace: 'nowrap' } : { whiteSpace: 'normal', overflowWrap: 'break-word' }), ...cellClip, ...frozenStyle(k, rowBg, '#f3f4f6') }} title={typeof node === 'string' ? node : undefined} onClick={() => {
                           if (!act) return
                           // 职位格=直开职位描述(2026-07-19 Frank:「点职位也能显示职位描述」);title 顾问弹框由 JD 框标题栏「AI 顾问」钮承接(同日报障回补)
                           if (k === 'title') { setActModal({ kind: 'desc', job: j }); return }
@@ -4491,8 +4323,10 @@ function Sel({ value, onChange, opts, all, labelOf }: { value: string; onChange:
   )
 }
 const td: React.CSSProperties = { padding: '7px 12px', verticalAlign: 'top' }
-// 按词换行(不逐字断词);不设 wordBreak 以免列被挤成 1 字符宽
-const wrapCell = (w: number): React.CSSProperties => ({ maxWidth: w, whiteSpace: 'normal', overflowWrap: 'break-word', wordBreak: 'normal' })
+// 按词换行(不逐字断词);不设 wordBreak 以免列被挤成 1 字符宽。
+// 2026-08-03:去掉原来的 maxWidth 上限 —— 列宽已由 useColWidths 统一分配,格子再自设上限
+// 就会出现「列有 250px、格子卡在 190px」→ 文字被 overflow:hidden 齐刷刷切掉(Frank 实拍公司名被截)
+const wrapCell = (): React.CSSProperties => ({ whiteSpace: 'normal', overflowWrap: 'break-word', wordBreak: 'normal' })
 const link: React.CSSProperties = { color: '#2563eb', textDecoration: 'none' }
 const colPanel: React.CSSProperties = { position: 'absolute', top: '110%', right: 0, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, boxShadow: '0 10px 30px rgba(0,0,0,.12)', padding: 8, zIndex: 20, minWidth: 210 }
 const colBtn: React.CSSProperties = { flex: 1, whiteSpace: 'nowrap', padding: '4px 8px', fontSize: 12.5, border: '1px solid #d1d5db', borderRadius: 5, background: '#f9fafb', color: '#374151', cursor: 'pointer' }

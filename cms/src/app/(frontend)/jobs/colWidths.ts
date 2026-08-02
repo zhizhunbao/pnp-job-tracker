@@ -1,0 +1,249 @@
+'use client'
+
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type RefObject } from 'react'
+
+const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
+
+/**
+ * ─────────────────────────────────────────────────────────────────────────────
+ * 职位表列宽:**唯一控制点**(Frank 2026-08-03「宽度控制放到一个地方」)。
+ * 刷新页面 / 查完筛选 / 拖列竖线 —— 三条触发全走这一个 hook,不再有第二套分支。
+ *
+ * 规则(按优先级,Frank「列宽应该优先考虑 title 宽度,其次是内容宽度」):
+ *   ① **表头第一**:每列先拿够表头单行宽 —— 表头永不折行、永不截断。
+ *   ② **内容第二**:余量先把各列补到「九成的值不折行」(p90),还有余再补到最长值(max);
+ *      不够分就按「还差多少」按比例给(缺得多的多拿),不搞雨露均沾。
+ *   ③ **谁都不缺了还有剩**:全给内容最长的那列 —— 免得「vs 中位」这种恒短值白占一片空地。
+ *   ④ 总宽恒等于容器宽 → **永不横滚**;只有「表头都放不下」或用户手动拖宽才允许滚。
+ *   ⑤ 手动拖过的列钉死在拖出来的宽度,其余列照 ①②③ 重分;双击竖线取消该列的手动值。
+ *
+ * 历史教训(别再走回头路):
+ *   - 手配权重表(FIT_WEIGHT):每加删一列就得重配一次,删了三列后每列等比变胖 —— 已废。
+ *   - 量宽的 key 在**量之前**就标记为「已量」:首帧 tbody 还没行 → 量空了也不会重来,
+ *     线上于是所有列一律 120px 均分(2026-08-03 实测 prod)。现在只有**量到了**才记 key。
+ *   - 筛选换了数据不重量 → 筛「IT」后大分类列还按上一批的宽度占地。现在数据指纹变了就重量。
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
+/** 一列量到的宽度(含单元格内边距)。word=最长的那个词,列再窄也不能把词拦腰断开 */
+export type ColMeasure = { head: number; word: number; p90: number; max: number }
+
+type Alloc = { key: string; head: number; word: number; p90: number; max: number; pinned?: number }
+
+/** 任何列都不低于这个宽(表头量不到时的兜底) */
+const FLOOR = 44
+
+/**
+ * 纯函数:按 ①②③ 把 avail 像素分给各列。返回整数像素,和恒等于 avail(除非表头都放不下)。
+ */
+export function allocateColWidths(cols: Alloc[], avail: number): Record<string, number> {
+  const out: Record<string, number> = {}
+  if (!cols.length) return out
+  const flex: Alloc[] = []
+  let room = avail
+  for (const c of cols) {
+    if (c.pinned != null) { out[c.key] = Math.round(c.pinned); room -= out[c.key] }
+    else flex.push(c)
+  }
+  if (!flex.length) return out
+
+  // ① 表头优先(顺带保底:再挤也不把一个词拦腰断成「Newfoundlan / d」)
+  for (const c of flex) out[c.key] = Math.max(FLOOR, c.head, c.word)
+  let extra = room - flex.reduce((s, c) => s + out[c.key], 0)
+
+  // ② 内容:先把各列补到 p90(九成的值不折行),还有余再补到最长值。
+  //    **缺口小的先补满**:薪资/省市这种原子值只差几十像素,补满就彻底不折行;
+  //    职位/公司这种长文本再怎么给也给不完,让它们分剩下的 —— 一句话:短值列不折行,
+  //    挤压全压在本来就要多行的文本列上(和 Frank「哪个最宽优先缩哪个」同一个意思)。
+  for (const target of ['p90', 'max'] as const) {
+    if (extra <= 0) break
+    let rest = flex.map((c) => ({ key: c.key, want: Math.max(0, c[target] - out[c.key]) }))
+      .filter((x) => x.want > 0).sort((a, b) => a.want - b.want)
+    while (rest.length && extra > 0) {
+      if (rest[0].want <= extra / rest.length) {        // 均分下来够它补满 → 先把它喂饱,剩下的再分
+        out[rest[0].key] += rest[0].want
+        extra -= rest[0].want
+        rest = rest.slice(1)
+        continue
+      }
+      const restWant = rest.reduce((s, x) => s + x.want, 0)   // 谁都补不满了 → 按缺口比例分掉余量
+      for (const x of rest) out[x.key] += extra * (x.want / restWant)
+      extra = 0
+    }
+  }
+
+  // ③ 还有剩:给内容最长的那列(通常是职位/公司),别摊给恒短值列
+  if (extra > 0) out[flex.reduce((a, b) => (b.max > a.max ? b : a)).key] += extra
+
+  // 整数化:小数列宽会让 1px 列分隔线落在半个设备像素上被吃掉(Frank 实拍「列的竖线怎么没了」)。
+  // 四舍五入后把误差补回最宽那列,保证总和不多不少 = avail。
+  let sum = 0
+  for (const c of flex) { out[c.key] = Math.round(out[c.key]); sum += out[c.key] }
+  const drift = room - sum
+  if (drift !== 0) out[flex.reduce((a, b) => (b.max > a.max ? b : a)).key] += drift
+  return out
+}
+
+export type ColWidths = {
+  /** 量到了没:没量到就别下 colgroup,让浏览器 auto 布局顶一帧(不闪半屏 44px 窄条) */
+  ready: boolean
+  /** colgroup 用:每列的像素宽 */
+  width: (key: string) => number | undefined
+  /** table 的 width:不溢出时 '100%',溢出时总像素 */
+  tableWidth: string | number
+  /** 总宽超容器(表头都放不下 / 手动拖宽)→ 需要横滚,此时才有必要固定左列 */
+  overflow: boolean
+  startResize: (e: ReactMouseEvent, key: string) => void
+  /** 双击竖线:该列回归自动 */
+  autoFit: (key: string) => void
+  hasManual: boolean
+  reset: () => void
+}
+
+/**
+ * @param keys      当前可见列(顺序即渲染顺序)
+ * @param headRowRef 表头 <tr>(量宽的锚点,同时用于定位 table / 容器)
+ * @param pinnedPx  固定像素列(操作列按钮宽,不参与瓜分)
+ * @param dataKey   数据指纹:列集/语言/当前这批行 —— 变了就重量
+ * @param pad       单元格左右内边距之和(量到的是纯内容宽,分宽时要加上)
+ */
+export function useColWidths(opts: {
+  keys: string[]
+  headRowRef: RefObject<HTMLTableRowElement | null>
+  pinnedPx?: Record<string, number>
+  dataKey: string
+  pad: number
+}): ColWidths {
+  const { keys, headRowRef, pinnedPx, dataKey, pad } = opts
+  const [measured, setMeasured] = useState<Record<string, ColMeasure>>({})
+  const [wrapW, setWrapW] = useState(0)
+  const [manual, setManual] = useState<Record<string, number>>({})
+  const doneKey = useRef('')
+  const keysKey = keys.join(',')
+
+  // ── 量宽:整表临时「不折行 + 按内容撑开」,读每列真实需要多宽,量完立刻还原(只存在一帧)
+  const measure = useCallback((): boolean => {
+    const head = headRowRef.current
+    const table = head?.closest('table') as HTMLTableElement | null
+    if (!head || !table || !table.querySelector('tbody tr')) return false
+    const wrap = table.closest('.jtTableWrap') as HTMLElement | null
+    if (!wrap || !wrap.clientWidth) return false      // 手机端容器 display:none → 量不了,等桌面再说
+
+    const prev = { tl: table.style.tableLayout, w: table.style.width, mw: table.style.minWidth }
+    table.classList.add('jtMeasure')
+    table.style.tableLayout = 'auto'
+    table.style.width = 'max-content'
+    table.style.minWidth = '0'
+    // 量的是**内容**不是格子:量宽模式下格子被拉到整列宽,读 td 宽度只会读回「最长那条」。
+    // 用 Range 圈住格内内容量它自己,才分得出「这一列大多数值有多宽」。
+    // +1:文字实宽是小数(85.2px),向上取整还差半个像素就会折行 —— 留 1px 富余
+    const contentW = (el: HTMLElement): number => {
+      const r = document.createRange()
+      r.selectNodeContents(el)
+      return Math.ceil(r.getBoundingClientRect().width) + 1
+    }
+    const rows = [...table.querySelectorAll('tbody tr')].slice(0, 60)
+    const cellsOf = (i: number) => rows.map((tr) => tr.children[i] as HTMLElement | undefined)
+      .filter(Boolean).map((el) => contentW(el!))
+    const m: Record<string, ColMeasure> = {}
+    keys.forEach((key, i) => {
+      const th = head.children[i] as HTMLElement | undefined
+      const cells = cellsOf(i).sort((a, b) => a - b)
+      // 九成位而不是最大值:整列宽度不该被一条超长值绑架(一条「Manufacturing and utilities」
+      // 能把大分类撑到 249px,右边几列全被压到底线反而更折行)。最长值留给「还有余量」那步。
+      const p90 = cells.length ? cells[Math.min(cells.length - 1, Math.floor(cells.length * 0.9))] : 0
+      m[key] = { head: (th ? contentW(th) : 0) + pad, word: 0, p90: p90 + pad, max: (cells[cells.length - 1] ?? 0) + pad }
+    })
+    // 第二趟:整表按 min-content 摊开(允许折行)→ 每格的 Range 宽 = 它最宽的那一行 = 最长的那个词。
+    // 这就是「列的下限」:比它还窄就会出现「Newfoundlan / d and Labrador」这种断词。
+    table.classList.remove('jtMeasure')
+    table.style.width = 'min-content'
+    keys.forEach((key, i) => { m[key].word = Math.max(...cellsOf(i), 0) + pad })
+    table.style.tableLayout = prev.tl
+    table.style.width = prev.w
+    table.style.minWidth = prev.mw
+    setMeasured(m)
+    setWrapW(wrap.clientWidth)
+    return true
+  }, [keys, headRowRef, pad])
+
+  // 触发点一:首屏/刷新、换列、换语言、筛选换数据 —— 全靠 dataKey。
+  // **量到了才记 key**:首帧还没数据时量不到,下一帧继续试(老版本在这儿把 key 提前记死,
+  // 于是线上永远停在「没量到」的均分状态)。
+  useIsoLayoutEffect(() => {
+    if (doneKey.current === dataKey) return
+    if (measure()) doneKey.current = dataKey
+  })
+
+  // 字体加载完再量一次:首帧用兜底字体量出来的宽度会偏(中文字形差异尤其大)
+  const [tick, setTick] = useState(0)
+  useEffect(() => {
+    const f = (document as unknown as { fonts?: { ready?: Promise<unknown> } }).fonts
+    if (!f?.ready) return
+    let alive = true
+    f.ready.then(() => { if (alive) { doneKey.current = ''; setTick((n) => n + 1) } })
+    return () => { alive = false }
+  }, [])
+  void tick   // 只为触发一次重量,值本身不参与计算
+
+  // 触发点二:容器宽变了(窗口缩放/侧栏开合)——内容自然宽不变,只要重分即可
+  useEffect(() => {
+    const wrap = headRowRef.current?.closest('.jtTableWrap') as HTMLElement | null
+    if (!wrap || typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(() => setWrapW(wrap.clientWidth))
+    ro.observe(wrap)
+    setWrapW(wrap.clientWidth)
+    return () => ro.disconnect()
+  }, [headRowRef, keysKey])
+
+  // 换列集 → 手动宽作废(新列在固定布局里会塌成 0)
+  useEffect(() => { setManual({}) }, [keysKey])
+
+  // ── 分宽(唯一出口)
+  const avail = (wrapW || 0) - 2      // 容器左右各 1px 边框
+  const cols: Alloc[] = keys.map((k) => ({
+    key: k,
+    head: measured[k]?.head ?? FLOOR,
+    word: measured[k]?.word ?? 0,
+    p90: measured[k]?.p90 ?? FLOOR,
+    max: measured[k]?.max ?? FLOOR,
+    pinned: manual[k] ?? pinnedPx?.[k],
+  }))
+  const minTotal = cols.reduce((s, c) => s + (c.pinned ?? Math.max(FLOOR, c.head, c.word)), 0)
+  const overflow = avail > 0 && minTotal > avail
+  const px = allocateColWidths(cols, Math.max(avail, minTotal))
+  const total = keys.reduce((s, k) => s + (px[k] ?? 0), 0)
+
+  // ── 触发点三:拖列竖线 —— 只把这一列钉成手动宽,其余列**照同一套规则重分**
+  const startResize = useCallback((e: React.MouseEvent, key: string) => {
+    e.preventDefault(); e.stopPropagation()
+    const th = (e.currentTarget as HTMLElement).closest('th') as HTMLElement | null
+    const startW = th ? th.getBoundingClientRect().width : 120
+    const startX = e.clientX
+    const onMove = (ev: MouseEvent) => setManual((p) => ({ ...p, [key]: Math.max(FLOOR, Math.round(startW + (ev.clientX - startX))) }))
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+      document.body.style.cursor = ''
+    }
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+    document.body.style.cursor = 'col-resize'
+  }, [])
+
+  const autoFit = useCallback((key: string) => {
+    setManual((p) => { const n = { ...p }; delete n[key]; return n })
+  }, [])
+
+  const ready = avail > 0 && Object.keys(measured).length > 0
+  return {
+    ready,
+    width: (k) => (ready ? px[k] : undefined),
+    tableWidth: ready && overflow ? total : '100%',
+    overflow: ready && overflow,
+    startResize,
+    autoFit,
+    hasManual: Object.keys(manual).length > 0,
+    reset: () => setManual({}),
+  }
+}
