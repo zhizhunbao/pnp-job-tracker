@@ -10,6 +10,7 @@ import { makeT, streamDisplay, eeDisplay, eeKeyDisplay, initialLang, LANGS, LANG
 import { IconChart, IconCheck, IconClipboard, IconCompass, IconLock, IconMap, IconMapPin, IconMaximize, IconMinimize, IconNews, IconSave, IconSettings, IconStar, IconTarget, IconUser, IconWarn, IconX } from '../Icons'
 import { ACCT_SLOT_W, SiteHeader } from '../SiteHeader'
 import { BANNER_IMGS, Button, Notice, PageBanner } from '../ui/primitives'
+import { JobCard } from '../ui/JobCard'   // 全站唯一那张职位卡(2026-08-02 拍板);landing 职位榜吃的是同一张
 import { SiteFooter } from '../SiteFooter'
 import { Avatar } from '../Avatar'
 import { AuthModal } from './AuthForm'
@@ -983,7 +984,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const fitWidth = (k: ColKey) => {
     if (k === 'actions') return `${ACTIONS_W}px`
     const px = fitPx[k]
-    if (px) return `${px.toFixed(1)}px`
+    // **整数像素**:小数列宽会把格子右缘落在半个设备像素上,1px 的列分隔线在部分缩放比例下被整条吃掉
+    // (Frank 2026-08-03 实拍「列的竖线怎么没了」)。四舍五入之后边框恒定可见。
+    if (px) return `${Math.round(px)}px`
     return `${((FIT_WEIGHT[k] ?? 8) / fitTotal * 100).toFixed(3)}%`   // 还没量到(首帧)先用老权重顶一下
   }
   const colMin = (k: ColKey) => {
@@ -1488,7 +1491,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         </div>
         {/* 窄屏卡片列表(E8-03 续,2026-07-07 用户拍板):≤640px 表格→卡片,CSS 双渲染零水合差异(同 E8-03 抽屉手法)。
             卡=职位 / 公司·地点 / 薪资·时间 / 信号 chips;每处可点,开对应字段顾问弹窗(与桌面单元格同一 open());
-            拍板:免费限额外的岗不显示匹配位(不放锁标,卡片寸土寸金);中位/渠道/NOC 码等低频字段留给弹窗。 */}
+            拍板:免费限额外的岗不显示匹配位(不放锁标,卡片寸土寸金);中位/渠道/NOC 码等低频字段留给弹窗。
+            2026-08-02(Frank「卡片也用 jobtable 的卡片」「以后这个定死」):版式抽到 ui/JobCard 由全站共用,
+            这里只负责喂数据与交互(弹框/星标/胶囊可点),长相由组件定 —— landing 职位榜吃的是同一张卡。 */}
         <div className="jtCards" style={{ flexDirection: 'column', gap: 8, ...(loading && page === 0 && { opacity: 0.45, pointerEvents: 'none' }) }}>
           {rows.map((j) => {
             const open = (field: ColKey, title: string) => openField(field, j, title)  // 与表格行同一签名
@@ -1503,112 +1508,74 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             const days = j.datePosted && (j.status || 'open') !== 'closed' ? Math.max(0, Math.floor((Date.now() - new Date(j.datePosted.slice(0, 10) + 'T00:00:00').getTime()) / 86400000)) : null
             // #200(Frank「岗位名称中文翻译默认都加上」):手机卡职位名挂 NOC 官方职业名译名(界面语言;与在招职位/弹框标题同款)
             const nz = nocLocalTitle(dims.nocDescriptions.find((d) => d.noc === j.noc) || null, lang)
+            // 通道胶囊排(批A 追拍「每个岗位都要列 teer,pnp,ee 胶囊;aip/qc 单独列;什么都走不了就不用列」):
+            // 统一门=任一通道可走(具名信号或 TEER≤3 或 QC);全走不了 → 通道胶囊整排不出。
+            // E6-09(手机优先):命中官方具名清单的「走不了」也要在卡上说 —— 那是有依据的结论,不是「没信号」。
+            // 2026-07-26 Frank「高 低 …没必要显示」:匹配裸字胶囊不在此列(卡上没有列头,孤零零一个「高」说不清)
+            const isQc = j.province === 'QC'
+            const bk = j.province + '|' + j.noc
+            const pnpExcl = blockedKeys.pnp.has(bk), aipBlocked = blockedKeys.aip.has(bk)
+            const anyRoute = j.pnpEligible || j.eeCategory || j.aip || isQc || pnpExcl || aipBlocked || (j.teer != null && j.teer <= 3)
+            const eeLast = j.eeCategory ? eeLastDraw(j.eeCategory, dims.eeCategories) : ''
+            const eeDorm = !!j.eeCategory && eeIsDormant(eeLast)
+            const chips = [
+              // #214 回滚(Frank 2026-07-26「直接改回用 teer 不行么」):卡上显示回 TEER 码,人话档名退到 title
+              anyRoute && j.teer != null ? chip('#f3f4f6', '#6b7280', `TEER ${j.teer}`, 'teer', t('teer.tip', { n: j.teer, l: t('teer.' + j.teer) })) : null,
+              // 批A 追拍(Frank「可提名和可省提名有什么区别」):命中具名清单显清单名(BC 医疗),通用才显「可提名」
+              anyRoute && j.pnpEligible ? chip('#fef3c7', '#92400e', j.pnpStream ? streamDisplay(t, j.pnpStream) : t('cell.pnpSkilledProv', { p: j.province }), 'pnp')
+                : anyRoute && pnpExcl ? chip('#fee2e2', '#b91c1c', aipBlocked ? t('cell.blockedBoth') : t('cell.pnpExcl'), 'pnp') : null,
+              anyRoute && j.eeCategory ? (eeDorm
+                ? chip('#f3f4f6', '#6b7280', 'EE ' + eeDisplay(t, j.eeCategory) + t('ee.lastDraw', { d: eeLast.slice(0, 7) || '—' }), 'ee', t('ee.dormantTip', { d: eeLast.slice(0, 7) || '—' }))
+                : chip('#dbeafe', '#1e40af', 'EE ' + eeDisplay(t, j.eeCategory), 'ee')) : null,
+              // Frank 2026-07-26「不符合清单 职业不受理 需要两个胶囊吗」:两条都命中排除时只出一枚「本省不受理」
+              anyRoute && aipBlocked && !pnpExcl ? chip('#fee2e2', '#b91c1c', t('cell.aipBlocked'), 'aip')
+                : anyRoute && j.aip ? chip('#ffedd5', '#9a3412', t('cell.aipYes'), 'aip') : null,
+              anyRoute && isQc ? chip('#f3e8ff', '#7c3aed', 'QC', 'province') : null,
+              // #145(Frank「这两个重复不」):是。LMIA 数与公司名旁的担保档同源 —— 有担保档就不再出 LMIA chip
+              j.lmiaPositions && j.sponsorGrade == null ? chip('#ccfbf1', '#0f766e', 'LMIA ✓' + j.lmiaPositions, 'lmia') : null,
+              // GAP1③:红旗 chip —— 白投预警比正面信号更值得占位
+              j.eligibilityFlag ? chip('#fee2e2', '#b91c1c', t('cell.elig.' + j.eligibilityFlag), 'eligibility') : null,
+            ].filter(Boolean)
             return (
-              <div key={j.id} data-tap-card
-                style={{ border: '1px solid #e5e7eb', borderRadius: 12, padding: '10px 12px', background: '#fff' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'baseline' }}>
-                  {/* Frank 走查:手机点职位名要开 JD 弹框(与桌面一致;#131 的「跳详情页」推翻)。
-                      保留 <a href>(爬虫/SEO/长按开页不丢),tap 时 preventDefault 开弹框——与本卡地点链接同款手法 */}
-                  <a href={`/jobs/${j.id}`} onClick={(e) => { e.preventDefault(); setActModal({ kind: 'desc', job: j }) }}
-                    style={{ fontSize: 14.5, fontWeight: 600, color: '#2563eb', textDecoration: 'none' }}>{j.title}</a>
-                  <span style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
-                    {/* #167⑩(Frank「卡片胶囊应该统一放到一个位置吧」):匹配度胶囊原先孤零零挂在右上角,
-                        与卡底那排(可提名/技能岗/…)分处两地 —— 同类东西两个位置=没有位置。
-                        已下移到卡底那一排并排**首位**(它最值钱,排第一)。此处只留星标:它是按钮不是胶囊。 */}
-                    {/* #52:收藏入口手机也要有(E9-01 闭环第一环)——卡片寸土寸金只放星标,匿名点=注册框(与桌面 toggleSave 同一逻辑) */}
-                    <button className="jtStar" onClick={(e) => { e.stopPropagation(); toggleSave(j) }} aria-label={saved[String(j.id)] ? t('sj.saved') : t('sj.save')}
-                      style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', fontSize: 16, lineHeight: 1, color: saved[String(j.id)] ? '#b45309' : '#c4c9d4' }}>
-                      {saved[String(j.id)] ? '★' : '☆'}
-                    </button>
-                  </span>
-                </div>
-                {/* #200:职位名下挂 NOC 官方职业名译名(岗位名看不懂时靠这条;英文界面出英文官方名) */}
-                {nz && nz.toLowerCase() !== (j.title || '').toLowerCase() ? <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 1, lineHeight: 1.4 }}>{nz}</div> : null}
-                {/* #148 两列布局(Frank「卡片可以搞成左右两列」):**左列=身份**(公司/地点)、**右列=数字**(薪资/时间)。
-                    右列右对齐后,整列在卡片流里连成一条竖线——手指下滑时眼睛只走右边就能比薪资、比新鲜度。
-                    实现用 flex space-between 而非 grid:左列长内容(公司名)自己换行时不会把右列挤歪。 */}
-                {(j.company || j.salaryText || j.salary) ? (
-                  <div style={{ marginTop: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, flexWrap: 'wrap' }}>
-                      {/* 点公司名=开公司弹框(2026-07-22 Frank「其他弹框都很清晰」:与职位/分类一致,不特殊化;
-                          #182 手机直跳页退役——弹框里有「打开完整页」进深页,入口统一从弹框进);stop 保整卡进职位详情不被抢 */}
-                      {j.company ? <span onClick={stop(() => open('company', j.company))} style={{ fontSize: 12.5, color: '#2563eb', cursor: 'pointer' }}>{j.company}</span> : null}
-                      {j.sponsorGrade != null && <span title={t('gr.sponsorTip')} style={{ fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sp.' + j.sponsorGrade)}</span>}
-                    </span>
-                    {/* #175:薪资退出可点集合——写死的 pointer+onClick 摘除(看着能点点了没反应比不能点更糟) */}
-                    {(j.salaryText || j.salary) ? <span style={{ fontSize: 13, color: '#15803d', fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}>{j.salaryText || j.salary}</span> : null}
-                  </div>
-                ) : null}
-                <div style={{ fontSize: 12.5, marginTop: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
-                  {/* E8-12(Frank「手机卡片呢?」+「省和市没法分开点」):市名/省码各自可点,各开各的弹框
-                      (点市看市、点省看省);<a href> 语义保留给爬虫/长按新开对应层级地图(#131 同款);stop 保整卡进详情页 */}
-                  {L.city ? (
-                    <span style={{ minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      <a href={mapsUrl(mapQuery('city', j))} target="_blank" rel="noreferrer" onClick={(e) => { e.preventDefault(); e.stopPropagation(); open('city', L.city) }} style={{ color: '#2563eb', textDecoration: 'none' }}>{L.city}</a>
-                      {j.province ? <>
-                        <span style={{ color: '#9ca3af' }}>, </span>
-                        <a href={mapsUrl(mapQuery('province', j))} target="_blank" rel="noreferrer" onClick={(e) => { e.preventDefault(); e.stopPropagation(); open('province', L.prov) }} style={{ color: '#2563eb', textDecoration: 'none' }}>{j.province}</a>
-                      </> : null}
-                    </span>
-                  ) : <span />}
-                  <span suppressHydrationWarning style={{ color: '#9ca3af', whiteSpace: 'nowrap', flexShrink: 0 }}>{(j.datePosted || '').slice(0, 10)}{days != null ? `(${days === 0 ? t('cell.today') : t('fact.daysUpVal', { n: days })})` : ''}</span>
-                </div>
-                <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
-                  {/* 2026-07-26 Frank「高 低 …没必要显示」:匹配裸字胶囊下架 —— 卡上没有列头,
-                      孤零零一个「高」说不清是什么的高低(同 #132「全站禁裸 X/5」的理);个人化结论
-                      归桌面「匹配」列(点开=对我意味着什么)与「我的匹配」视图 */}
-                  {/* 批A 追拍(Frank「每个岗位都要列 teer,pnp,ee 胶囊;aip/qc 单独列;什么都走不了就不用列」):
-                      通道族胶囊统一门=任一通道可走(具名信号或 TEER≤3 或 QC);全走不了 → 通道胶囊整排不出。
-                      TEER 从「无信号才兜底」升级为门内恒显(通用通道的依据);LMIA/红旗非通道胶囊,规则照旧 */}
-                  {(() => {
-                    const isQc = j.province === 'QC'
-                    // E6-09(手机优先):命中官方具名清单的「走不了」也要在卡上说——这是有依据的结论,
-                    // 不是「没信号」;点胶囊开对应弹框看清单(与桌面格子同口径)
-                    const key = j.province + '|' + j.noc
-                    const pnpExcl = blockedKeys.pnp.has(key), aipBlocked = blockedKeys.aip.has(key)
-                    const anyRoute = j.pnpEligible || j.eeCategory || j.aip || isQc || pnpExcl || aipBlocked || (j.teer != null && j.teer <= 3)
-                    if (!anyRoute) return null
-                    return (<>
-                      {/* #214 回滚(Frank 2026-07-26「直接改回用 teer 不行么」):卡上显示回 TEER 码——
-                          受众看得懂这个术语,人话档名与官方口径退到 title(hover/点开都能看到),不占卡面 */}
-                      {j.teer != null ? chip('#f3f4f6', '#6b7280', `TEER ${j.teer}`, 'teer', t('teer.tip', { n: j.teer, l: t('teer.' + j.teer) })) : null}
-                      {/* 批A 追拍(Frank「可提名和可省提名有什么区别」——字面分不出):对齐桌面三档,
-                          命中具名清单显清单名(BC 医疗),通用才显「可提名」;cell.pnpYes 死键退役 */}
-                      {j.pnpEligible ? chip('#fef3c7', '#92400e', j.pnpStream ? streamDisplay(t, j.pnpStream) : t('cell.pnpSkilledProv', { p: j.province }), 'pnp')
-                        : pnpExcl ? chip('#fee2e2', '#b91c1c', aipBlocked ? t('cell.blockedBoth') : t('cell.pnpExcl'), 'pnp') : null}
-                      {j.eeCategory ? (() => {
-                        const lastDraw = eeLastDraw(j.eeCategory, dims.eeCategories)
-                        const dormant = eeIsDormant(lastDraw)
-                        return dormant
-                          ? chip('#f3f4f6', '#6b7280', 'EE ' + eeDisplay(t, j.eeCategory) + t('ee.lastDraw', { d: lastDraw.slice(0, 7) || '—' }), 'ee', t('ee.dormantTip', { d: lastDraw.slice(0, 7) || '—' }))
-                          : chip('#dbeafe', '#1e40af', 'EE ' + eeDisplay(t, j.eeCategory), 'ee')
-                      })() : null}
-                      {/* Frank 2026-07-26「不符合清单 职业不受理 需要两个胶囊吗」:两条都命中排除时卡上只出一枚
-                          「本省不受理」(点开 PNP 弹框逐条讲哪张清单);只命中一条时照旧——那说的是不同的事 */}
-                      {aipBlocked && !pnpExcl ? chip('#fee2e2', '#b91c1c', t('cell.aipBlocked'), 'aip')
-                        : j.aip ? chip('#ffedd5', '#9a3412', t('cell.aipYes'), 'aip') : null}
-                      {isQc ? chip('#f3e8ff', '#7c3aed', 'QC', 'province') : null}
-                    </>)
-                  })()}
-                  {/* #145(Frank「这两个重复不」):是。LMIA 数与公司名旁的担保档同源(档位就是按 LMIA 份数+新近度算的),
-                      手机卡上并排出现=一件事说两遍;有担保档时不再出 LMIA chip,无档(纯 AIP 等)才退回显数 */}
-                  {j.lmiaPositions && j.sponsorGrade == null ? chip('#ccfbf1', '#0f766e', 'LMIA ✓' + j.lmiaPositions, 'lmia') : null}
-                  {/* GAP1③:红旗 chip(手机卡片)——白投预警比正面信号更值得占位 */}
-                  {j.eligibilityFlag ? chip('#fee2e2', '#b91c1c', t('cell.elig.' + j.eligibilityFlag), 'eligibility') : null}
-                </div>
-                {/* 2026-07-26 Frank「移民通道…把对应的内容放到其他字段」:整钮下架 —— 它开的三块处处重复:
-                    通道档=PNP/EE/AIP 三 chip 已逐条直判(更具体)、薪资质量=vs 中位、雇佣质量=雇佣列。
-                    上面每枚 chip 点开就是各自的弹框,不需要再来一个汇总入口 */}
-                {/* #167⑦(Frank「这个卡片最好有个更新时间吧,年月日时分秒」):发布时间只有日期没时刻(Job Bank 原样),
-                    判断不了「刚抓到还是躺了一天」;更新时间是本站每小时抓取的实际时刻,精确到秒。
-                    **此处必须带标签**:一张卡上两个日期并排,值自己说不清谁是谁 ——
-                    正是 #166 定的「值自证就删标签」的那条例外。 */}
-                {j.lastSeen ? (
-                  <div suppressHydrationWarning style={{ marginTop: 6, fontSize: 11, color: '#9ca3af' }}>
-                    {t('col.lastSeen')} {fmtLocalSec(j.lastSeen)}
-                  </div>
-                ) : null}
-              </div>
+              <JobCard key={j.id}
+                href={`/jobs/${j.id}`}
+                /* Frank 走查:手机点职位名要开 JD 弹框(与桌面一致;#131 的「跳详情页」推翻)。
+                   href 保留给爬虫/SEO/长按开页,tap 时 preventDefault 开弹框 */
+                title={{ text: j.title, onClick: (e) => { e.preventDefault(); setActModal({ kind: 'desc', job: j }) } }}
+                /* #200:职位名下挂 NOC 官方职业名译名(岗位名看不懂时靠这条;英文界面出英文官方名) */
+                note={nz && nz.toLowerCase() !== (j.title || '').toLowerCase() ? nz : undefined}
+                /* 点公司名=开公司弹框(2026-07-22 Frank「其他弹框都很清晰」:与职位/分类一致,不特殊化;
+                   #182 手机直跳页退役——弹框里有「打开完整页」进深页);stop 保整卡进职位详情不被抢 */
+                company={j.company ? { text: j.company, onClick: stop(() => open('company', j.company)) } : undefined}
+                companyBadge={j.sponsorGrade != null ? <span title={t('gr.sponsorTip')} style={{ fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sp.' + j.sponsorGrade)}</span> : undefined}
+                /* #175:薪资退出可点集合——写死的 pointer+onClick 摘除(看着能点点了没反应比不能点更糟) */
+                salary={(j.salaryText || j.salary) || undefined}
+                /* E8-12(Frank「手机卡片呢?」+「省和市没法分开点」):市名/省码各自可点,各开各的弹框;
+                   <a href> 语义保留给爬虫/长按新开对应层级地图 */
+                location={L.city ? (
+                  <>
+                    <a href={mapsUrl(mapQuery('city', j))} target="_blank" rel="noreferrer" onClick={(e) => { e.preventDefault(); e.stopPropagation(); open('city', L.city) }} style={{ color: '#2563eb', textDecoration: 'none' }}>{L.city}</a>
+                    {j.province ? <>
+                      <span style={{ color: '#9ca3af' }}>, </span>
+                      <a href={mapsUrl(mapQuery('province', j))} target="_blank" rel="noreferrer" onClick={(e) => { e.preventDefault(); e.stopPropagation(); open('province', L.prov) }} style={{ color: '#2563eb', textDecoration: 'none' }}>{j.province}</a>
+                    </> : null}
+                  </>
+                ) : undefined}
+                date={<span suppressHydrationWarning>{(j.datePosted || '').slice(0, 10)}{days != null ? `(${days === 0 ? t('cell.today') : t('fact.daysUpVal', { n: days })})` : ''}</span>}
+                /* #167⑩(Frank「卡片胶囊应该统一放到一个位置吧」):胶囊都归卡底那排,右上角只留星标——它是按钮不是胶囊。
+                   #52:收藏入口手机也要有(E9-01 闭环第一环),匿名点=注册框(与桌面 toggleSave 同一逻辑) */
+                action={
+                  <button className="jtStar" onClick={(e) => { e.stopPropagation(); toggleSave(j) }} aria-label={saved[String(j.id)] ? t('sj.saved') : t('sj.save')}
+                    style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', fontSize: 16, lineHeight: 1, color: saved[String(j.id)] ? '#b45309' : '#c4c9d4' }}>
+                    {saved[String(j.id)] ? '★' : '☆'}
+                  </button>
+                }
+                chips={chips.length ? chips : undefined}
+                /* #167⑦(Frank「这个卡片最好有个更新时间吧,年月日时分秒」):发布时间只有日期没时刻(Job Bank 原样),
+                   判断不了「刚抓到还是躺了一天」;更新时间是本站每小时抓取的实际时刻,精确到秒。
+                   **此处必须带标签**:一张卡上两个日期并排,值自己说不清谁是谁——#166「值自证就删标签」的那条例外 */
+                footer={j.lastSeen ? <span suppressHydrationWarning>{t('col.lastSeen')} {fmtLocalSec(j.lastSeen)}</span> : undefined}
+              />
             )
           })}
           {rows.length === 0 && (

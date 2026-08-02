@@ -244,9 +244,21 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels, firstSc
   const toggleFs = () => {
     const el = fsRef.current
     if (!el) return
-    if (document.fullscreenElement) { document.exitFullscreen?.(); return }
+    // 退出:先解锁朝向再退全屏(顺序反了 unlock 会因为已不在全屏而报错)
+    if (document.fullscreenElement) {
+      try { (screen.orientation as unknown as { unlock?: () => void })?.unlock?.() } catch { /* 不支持 */ }
+      document.exitFullscreen?.()
+      return
+    }
     // iOS Safari 不支持元素全屏(只有 video)——调不动就静默留在页面里,不弹错误
-    el.requestFullscreen?.().catch(() => { /* 不支持就算了 */ })
+    el.requestFullscreen?.()
+      // 全屏后自动转横屏(Frank 2026-08-02:「变成横屏的全屏」)。
+      // 只有全屏态下才允许 lock;Android Chrome 生效,iOS Safari 没有 orientation.lock —— 失败就留竖屏,用户自己转手机
+      .then(() => {
+        const o = screen.orientation as unknown as { lock?: (t: string) => Promise<void> } | undefined
+        return o?.lock?.('landscape')?.catch(() => { /* 不支持就算了 */ })
+      })
+      .catch(() => { /* 不支持就算了 */ })
   }
   const [grp, setGrp] = useState<'none' | 'prov' | 'broad' | 'teer'>('prov')
   // 右轴三档(2026-07-28 数据地基落地后):

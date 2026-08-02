@@ -81,10 +81,12 @@ async function loadHomeStats(pool: any): Promise<Omit<HomeStats, 'checkedAt'>> {
 // landing 职位行瘦身:只留展示字段(全量 JobRow 50×2 行会白背几百 KB 的公司简介/JD 字段)。
 // noc(2026-07-31 Frank「榜单要国际化」):帖子标题无逐帖译名,中/韩界面在前端拿 market.occ
 // 已到手的 NOC 三语短名查表做灰注 —— 人话名主文案+灰字小注站规,零新数据零新查询
+// ee/aip(2026-08-02 Frank「除了 pnp 能走 ee aip 的胶囊也加上」):三个通道信号同源于职位板同一 DAL,
+// 这里只多带两个标量字段(eeCategory 是短 label,aip 是布尔)——不引入新查询
 const slimJob = (j: any) => ({
   id: j.id, title: j.title, company: j.company, city: j.city, province: j.province,
   salaryText: j.salaryText || j.salary || '', pnp: !!j.pnpEligible, date: String(j.datePosted || '').slice(0, 10),
-  noc: j.noc || '',
+  noc: j.noc || '', ee: j.eeCategory || '', aip: !!j.aip,
 })
 
 export default async function StartPage() {

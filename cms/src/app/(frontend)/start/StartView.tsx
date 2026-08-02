@@ -7,11 +7,12 @@
 // 红线:数字全库内真数,查不到整节不渲;通道名映射不到显官方原文,前端不编翻译。
 import { useEffect, useMemo, useState } from 'react'
 
-import { eeKeyDisplay, initialLang, makeT, LANG_KEY, type Lang, drawStreamNote } from '../jobs/i18n'
+import { eeDisplay, eeKeyDisplay, initialLang, makeT, LANG_KEY, type Lang, drawStreamNote } from '../jobs/i18n'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { MarketChart, useMarketStats } from '../stats/charts'
 import { shortOcc } from '../quiz/EntryQuiz'
+import { JobCard } from '../ui/JobCard'
 import { BANNER_IMGS, PageBanner, Tag, UI } from '../ui/primitives'
 import { track } from '@/lib/track'
 
@@ -25,12 +26,14 @@ export type HomeStats = {
   draws: { date: string; province: string; stream: string; label: string; score: number | null; invitations: number | null }[]
   daily: { date: string; n: number; eligible: number } | null
   news: { date: string; region: string; title: string; slug: string }[]
-  latestJobs: { id: number | string; title: string; company: string; city: string; province: string; salaryText: string; pnp: boolean; date: string; noc: string }[]
+  latestJobs: { id: number | string; title: string; company: string; city: string; province: string; salaryText: string; pnp: boolean; ee: string; aip: boolean; date: string; noc: string }[]
   checkedAt: string
 }
 
 const num = (n: number) => n.toLocaleString('en-CA')
-const mmdd = (iso: string) => (iso || '').slice(5, 10)
+// 日期带年(2026-08-02 Frank「08-02 加上年份啊」):月日单出在跨年边界读不出是今年还是去年,
+// 而这页的日期(发帖日/抽选日/公告日)是要拿来判断新鲜度的
+const ymd = (iso: string) => (iso || '').slice(0, 10)
 
 // 全宽色带 + 1320 内轨(MongoDB 式分节;带色只用既有 token:白 / 页底灰,蓝 tint 只给 CTA 带)
 function Band({ bg, children }: { bg?: string; children: React.ReactNode }) {
@@ -107,16 +110,29 @@ export function StartView({ stats }: { stats: HomeStats }) {
     stats.dli != null ? { v: String(stats.dli), label: t('home.st.dli') } : null,
   ].filter(Boolean) as { v: string; label: string }[]
 
-  // 抽选行显示:FED=联邦轮(tag EE,label 是 cat_key 走 eeKeyDisplay);省轮 stream 官方原文,映射不到不编译文
-  const drawStream = (r: HomeStats['draws'][number]) =>
-    r.province === 'FED' ? eeKeyDisplay(t, r.label) : (r.stream || r.label)
+  // 抽选行显示:省轮 stream 是官方英文原文 + 中文灰注;联邦轮(province=FED)的 label 是 cat_key,
+  // 原先直接出**中文**类别名 —— 同一张表里两种长相(Frank 2026-08-02「只有中文名的改成 上面英文下面中文翻译统一风格」)。
+  // 改成一律「英文官方名主文案 + 译名灰注」:主文案拿英文 t 取,灰注拿界面语言 t 取;映射不到就原样回退,不编译文。
+  const tEn = useMemo(() => makeT('en'), [])
+  const drawMain = (r: HomeStats['draws'][number]) =>
+    r.province === 'FED' ? eeKeyDisplay(tEn, r.label) : (r.stream || r.label)
+  const drawNote = (r: HomeStats['draws'][number]) => {
+    if (lang === 'en') return ''
+    if (r.province !== 'FED') return drawStreamNote(r.stream || '', lang)
+    const zh = eeKeyDisplay(t, r.label)
+    return zh === drawMain(r) ? '' : zh   // 映射不到时中英同字,不重复出一遍
+  }
 
   const tileNm: React.CSSProperties = { fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }
   const tileHint: React.CSSProperties = { marginTop: 2, fontSize: 12, color: UI.text2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }
   // flexWrap:375 职位榜三 tab + Top N 挤不进一行(2026-07-31 实拍标题折行、tab 截断)→ 控件整组下折,不压缩不截字
-  const secH: React.CSSProperties = { margin: '0 0 18px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 10, rowGap: 8, flexWrap: 'wrap', color: UI.text }
-  const moreA: React.CSSProperties = { marginLeft: 'auto', fontSize: 13, fontWeight: 600, color: UI.primary, textDecoration: 'none', whiteSpace: 'nowrap' }
+  // 节头整组居中(2026-08-02 Frank「title 要居中」):标题、控件、右侧「全部职位」同一行居中 ——
+  // 「全部职位」原先 marginLeft:auto 顶到最右,留着的话标题就只能在剩余空间里居中,看着还是偏的
+  const secH: React.CSSProperties = { margin: '0 0 18px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, rowGap: 8, flexWrap: 'wrap', color: UI.text }
+  const moreA: React.CSSProperties = { fontSize: 13, fontWeight: 600, color: UI.primary, textDecoration: 'none', whiteSpace: 'nowrap' }
   const th: React.CSSProperties = { fontSize: 11.5, color: UI.text3, fontWeight: 600, textAlign: 'left', padding: '9px 12px', borderBottom: `1px solid ${UI.hairline}`, background: '#fafafa' }
+  // 榜单(grid 行)的表头:与抽选表 th 同一套灰底小字,只是走 grid 不走 table —— 列宽仍由 .hmJobRow/.hmOccRow 定
+  const headS: React.CSSProperties = { ...th, padding: '9px 14px' }
   const td: React.CSSProperties = { padding: '9px 12px', borderBottom: `1px solid ${UI.hairline}`, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
   const numCell: React.CSSProperties = { textAlign: 'right' }
 
@@ -133,40 +149,37 @@ export function StartView({ stats }: { stats: HomeStats }) {
         .hmNums{display:flex;gap:28px;flex-wrap:wrap;justify-content:center;text-align:center}
         .hmNums b{display:block;font-size:32px;line-height:1.15;font-weight:700}
         .hmCtaBand{display:flex;flex-direction:column;gap:12px}
-        /* 职位榜/职业榜行:网格定列(2026-07-31 Frank「对齐也比较好吧」)——PNP 标签、地点、薪资各归各列,
-           不再随标题长短漂;**译名单独一列**(2026-08-01 Frank 队列①:原先紧跟英文名后,位置随英文长短漂)。
-           手机改卡片(队列②,与抽选块同手法):同一份 DOM 用命名区域重排 —— 名次+标题一行、译名一行、
-           标签与地点薪资一行;不复制标记,断点只换 grid-template。 */
-        .hmJobRow,.hmOccRow{display:grid;gap:4px 10px;padding:12px 14px;font-size:13.5px;text-decoration:none;color:inherit;align-items:baseline}
-        .hmJobRow{grid-template-columns:26px minmax(0,1fr) auto;
-          grid-template-areas:"rank title title" ". note note" ". meta pay"}
-        .hmOccRow{grid-template-columns:26px minmax(0,1fr) auto;
-          grid-template-areas:"rank title title" ". note note" ". meta pay"}
-        .hmRank{grid-area:rank}.hmTitle{grid-area:title}.hmNote{grid-area:note}
-        .hmPnp,.hmOccOpen{grid-area:meta}.hmPay{grid-area:pay}
-        .hmJobCo,.hmJobLoc,.hmOccElig{display:none}
-        /* 手机上译名那行是灰注,空的时候不占行高 */
-        .hmNote:empty{display:none}
+        /* 榜单:桌面表格 / 手机卡片,两套 DOM 各渲各的(站规「电脑用表格 手机用卡片」)。
+           手机卡片走 ui/JobCard(全站唯一那张,与职位板同源)——**这里的 .hmJobRow/.hmOccRow 只管桌面**,
+           它们全在 .hmListTable 里,而 .hmListTable 手机端 display:none,所以不必再写断点。 */
+        .hmListTable{display:none}
+        .hmCards{display:flex;flex-direction:column;gap:8px}
+        @media (min-width:900px){ .hmListTable{display:block}.hmCards{display:none} }
+        /* 网格定列(2026-07-31 Frank「对齐也比较好吧」)——胶囊、地点、薪资各归各列,不随标题长短漂;
+           **译名单独一列**(2026-08-01 队列①:原先紧跟英文名后,位置随英文长短漂)。
+           序号列 20px:行里是裸数字,# 只作表头列标(Frank「rank 为什么要带 # 这个符号」)。
+           通道列 170px:EE/AIP 进来后要三枚胶囊并排(原 46px 只放得下 PNP 一枚)。 */
+        .hmJobRow,.hmOccRow{display:grid;gap:12px;padding:12px 14px;font-size:13.5px;text-decoration:none;color:inherit;align-items:baseline}
+        .hmJobRow{grid-template-columns:20px minmax(0,1.1fr) minmax(0,0.8fr) minmax(0,0.9fr) minmax(0,170px) minmax(0,150px) 130px;
+          grid-template-areas:"rank title note co pnp loc pay"}
+        .hmOccRow{grid-template-columns:20px minmax(0,1fr) minmax(0,0.7fr) 110px minmax(0,150px) 130px;
+          grid-template-areas:"rank title note open elig pay"}
+        .hmRank{grid-area:rank}.hmTitle{grid-area:title}.hmNote{grid-area:note}.hmPay{grid-area:pay}
+        .hmJobRow .hmPnp{grid-area:pnp;display:flex;gap:6px;flex-wrap:wrap}
+        .hmJobRow .hmJobCo{grid-area:co}.hmJobRow .hmJobLoc{grid-area:loc}
+        .hmOccRow .hmOccOpen{grid-area:open}.hmOccRow .hmOccElig{grid-area:elig}
+        /* 职位名/职业名蓝字表示可点、**不加粗**(Frank 2026-08-02):蓝色已说明是入口,再加粗是同一件事说两遍 */
+        .hmTitle{color:#2563eb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .hmNote{font-size:12px}.hmNote:empty{display:none}
+        .hmJobLoc,.hmOccOpen,.hmPay{font-size:12.5px;text-align:right}
+        /* 表头(2026-08-02 Frank「这个也是需要加一个表头吧」):复用同一 grid 类 → 与数据行天然同列,
+           改列宽只改一处;单元格不吃数据行那套色/字号,统一回灰底小字 */
+        .hmHead .hmTitle,.hmHead .hmNote,.hmHead .hmJobCo,.hmHead .hmPay,.hmHead .hmJobLoc,.hmHead .hmOccOpen{font-size:11.5px;font-weight:600;color:inherit}
         /* 抽选块照职位板的范式(2026-07-31 Frank「电脑用表格 手机用卡片」):
            五列表格在 375 上通道列只剩 ~100px,通道名一律省略号 —— 手机换成一岗一卡,通道名完整可换行 */
         .hmDrawTable{display:none}
         .hmDrawCards{display:flex;flex-direction:column}
         @media (min-width:900px){ .hmDrawTable{display:table}.hmDrawCards{display:none} }
-        @media (min-width:900px){
-          /* 桌面:一行到底,译名占**自己的一列**(名次/英文名/译名/公司/PNP/地点/薪资) */
-          .hmJobRow{grid-template-columns:26px minmax(0,1.1fr) minmax(0,0.8fr) minmax(0,0.9fr) 46px minmax(0,150px) 130px;gap:12px;
-            grid-template-areas:"rank title note co pnp loc pay"}
-          /* 职业榜(2026-07-31 两轮拍板):名字形态与职位行同构;名列吃满剩余、数字列定宽靠右 */
-          .hmOccRow{grid-template-columns:26px minmax(0,1fr) minmax(0,0.7fr) 110px minmax(0,150px) 130px;gap:12px;
-            grid-template-areas:"rank title note open elig pay"}
-          /* 桌面必须逐个重挂区域名:base 里 .hmPnp 挂的是手机的 meta,桌面模板里没有 meta 这个名字 →
-             它会被丢进隐式行,PNP 标签就单独掉到第二行(实拍抓到) */
-          .hmJobRow .hmPnp{grid-area:pnp}
-          .hmJobRow .hmJobCo{grid-area:co}.hmJobRow .hmJobLoc{grid-area:loc}
-          .hmOccRow .hmOccOpen{grid-area:open}.hmOccRow .hmOccElig{grid-area:elig}
-          .hmJobCo,.hmJobLoc{display:block}.hmOccElig{display:block}
-          .hmNote{text-align:left}
-        }
         @media (min-width:900px){
           .hmBand{padding:72px 0}
           .hmBand h2{font-size:24px}
@@ -215,7 +228,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
         {stats.daily && (
           <Band>
             <h2 style={{ ...secH, justifyContent: 'center', marginBottom: 6 }}>{t('home.daily')}</h2>
-            <div style={{ textAlign: 'center', fontSize: 12.5, color: UI.text3, marginBottom: 22 }}>{mmdd(stats.daily.date)}</div>
+            <div style={{ textAlign: 'center', fontSize: 12.5, color: UI.text3, marginBottom: 22 }}>{ymd(stats.daily.date)}</div>
             <a href="/" style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
               <div className="hmNums">
                 <span><b style={{ color: UI.primaryDeep }}>{num(stats.daily.n)}</b><span style={{ fontSize: 12.5, color: UI.text2 }}>{t('home.daily.new')}</span></span>
@@ -245,7 +258,32 @@ export function StartView({ stats }: { stats: HomeStats }) {
                 <option value={10}>Top 10</option><option value={20}>Top 20</option><option value={50}>Top 50</option>
               </select>
               <a href="/" style={moreA} onClick={() => track('landing_goal_jobs')}>{t('home.jobs.all')}</a></h2>
-            <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, overflow: 'hidden' }}>
+            {/* 桌面=表格、手机=卡片(站规「电脑用表格 手机用卡片」),两套 DOM 各渲各的:
+                卡片的行序与字段取舍本来就与表格不同,硬用同一份 DOM 会两头将就(此前实测:
+                卡片要的发布日期挤不进七列表格,表格要的名次在卡上是重复)。
+                卡片一律用 ui/JobCard —— 全站唯一那张,与职位板同源(2026-08-02 Frank「以后这个定死」)。 */}
+            <div className="hmListTable" style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, overflow: 'hidden' }}>
+              {/* 译名列表头留空 —— 它是上一列名字的中文注,英文界面本就没内容,不给空列硬编标签 */}
+              {jobsTab !== 'new' ? (
+                <div className="hmOccRow hmHead" style={headS}>
+                  <span className="hmRank">#</span>
+                  <span className="hmTitle">{t('quiz.step2')}</span>
+                  <span className="hmNote" />
+                  <span className="hmOccOpen">{t('stats.openJobs')}</span>
+                  <span className="hmOccElig">{t('stats.named')}</span>
+                  <span className="hmPay">{t('col.salaryYr')}</span>
+                </div>
+              ) : (
+                <div className="hmJobRow hmHead" style={headS}>
+                  <span className="hmRank">#</span>
+                  <span className="hmTitle">{t('col.title')}</span>
+                  <span className="hmNote" />
+                  <span className="hmJobCo">{t('col.company')}</span>
+                  <span className="hmPnp">{t('col.score')}</span>
+                  <span className="hmJobLoc">{t('col.city')}</span>
+                  <span className="hmPay">{t('col.salary')}</span>
+                </div>
+              )}
               {jobsTab !== 'new' ? (
                 // 职业级榜(高薪=薪资序/最多=在招序):行点进职位板按该 NOC 筛(与三问深链同口径)
                 occList === null
@@ -256,15 +294,15 @@ export function StartView({ stats }: { stats: HomeStats }) {
                     const note = lang === 'zh' ? (o.titleZhShort || o.titleZh) : lang === 'ko' ? o.titleKo : ''
                     return (
                     <a key={o.noc} href={`/?q=${o.noc}`} className="hmOccRow rowHover" style={{ borderTop: i ? `1px solid ${UI.hairline}` : 'none' }}>
-                      <span className="hmRank" style={{ fontSize: 12.5, fontWeight: 700, color: i < 3 ? UI.primary : UI.text3 }}>#{i + 1}</span>
-                      <span className="hmTitle" title={main} style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{main}</span>
+                      <span className="hmRank" style={{ fontSize: 12.5, fontWeight: 700, color: i < 3 ? UI.primary : UI.text3 }}>{i + 1}</span>
+                      <span className="hmTitle" title={main} style={{ minWidth: 0 }}>{main}</span>
                       {/* 译名自己一列:跟着列走,不再随英文名长短漂(2026-08-01 Frank 队列①) */}
-                      <span className="hmNote" title={note} style={{ color: UI.text3, fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{note ? shortOcc(note) : ''}</span>
-                      <span className="hmOccOpen" style={{ color: UI.text2, fontSize: 12.5, whiteSpace: 'nowrap', textAlign: 'right' }}>{o.openJobs != null ? t('quiz.openN', { n: o.openJobs.toLocaleString('en-CA') }) : ''}</span>
+                      <span className="hmNote" title={note} style={{ color: UI.text3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{note ? shortOcc(note) : ''}</span>
+                      <span className="hmOccOpen" style={{ color: UI.text2, whiteSpace: 'nowrap' }}>{o.openJobs != null ? t('quiz.openN', { n: o.openJobs.toLocaleString('en-CA') }) : ''}</span>
                       <span className="hmOccElig" style={{ color: UI.ok, fontSize: 12.5, whiteSpace: 'nowrap', textAlign: 'right' }}>{o.namedJobs ? t('quiz.eligN', { n: o.namedJobs.toLocaleString('en-CA') }) : ''}</span>
                       {/* 薪资=ESDC 官方低–高位区间(Frank 2026-07-31「改成范围」;口径同中位:岗位加权取中位);
                           区间列未灌到(部署时序)回退「中位 $NK」,再不行留空 —— 宁可留空不瞎猜 */}
-                      <span className="hmPay" title={t('home.jobs.rangeTip')} style={{ color: UI.text, fontSize: 12.5, whiteSpace: 'nowrap', textAlign: 'right' }}>
+                      <span className="hmPay" title={t('home.jobs.rangeTip')} style={{ whiteSpace: 'nowrap' }}>
                         {o.wageLowAnnual != null && o.wageHighAnnual != null
                           ? `$${Math.round(o.wageLowAnnual / 1000)}K–$${Math.round(o.wageHighAnnual / 1000)}K`
                           : o.medianWageAnnual != null ? t('home.jobs.med', { v: '$' + Math.round(o.medianWageAnnual / 1000) + 'K' }) : ''}
@@ -277,14 +315,58 @@ export function StartView({ stats }: { stats: HomeStats }) {
                 const note = nocNote(j.noc)
                 return (
                 <a key={j.id} href={`/jobs/${j.id}`} className="hmJobRow rowHover" style={{ borderTop: i ? `1px solid ${UI.hairline}` : 'none' }}>
-                  <span className="hmRank" style={{ fontSize: 12.5, fontWeight: 700, color: i < 3 ? UI.primary : UI.text3 }}>#{i + 1}</span>
-                  <span className="hmTitle" title={j.title} style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{j.title}</span>
-                  <span className="hmNote" title={note} style={{ color: UI.text3, fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{note ? shortOcc(note) : ''}</span>
-                  <span className="hmJobCo" style={{ color: UI.text2, fontSize: 12.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{j.company}</span>
-                  <span className="hmPnp">{j.pnp && <Tag variant="ok">PNP</Tag>}</span>
-                  <span className="hmJobLoc" style={{ color: UI.text2, fontSize: 12.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'right' }}>{j.city ? `${j.city}, ${j.province}` : j.province}</span>
-                  <span className="hmPay" style={{ color: UI.text, fontSize: 12.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'right' }}>{j.salaryText}</span>
+                  <span className="hmRank" style={{ fontSize: 12.5, fontWeight: 700, color: i < 3 ? UI.primary : UI.text3 }}>{i + 1}</span>
+                  <span className="hmTitle" title={j.title} style={{ minWidth: 0 }}>{j.title}</span>
+                  <span className="hmNote" title={note} style={{ color: UI.text3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{note ? shortOcc(note) : ''}</span>
+                  <span className="hmJobCo" style={{ color: UI.text2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{j.company}</span>
+                  {/* 通道胶囊排(Frank 2026-08-02「除了 pnp 能走 ee aip 的胶囊也加上」):三个正向信号并列。
+                      职位板卡上还有「本省不受理」「久未抽选」等否定态,那要排除清单 + 抽选历史两份数据,
+                      landing 不带这两份 —— 这里只报「能走」,不报「走不了」(宁可不说,不说错) */}
+                  <span className="hmPnp">
+                    {j.pnp ? <Tag variant="ok">PNP</Tag> : null}
+                    {j.ee ? <Tag variant="region">{'EE ' + eeDisplay(t, j.ee)}</Tag> : null}
+                    {j.aip ? <Tag variant="warn">AIP</Tag> : null}
+                  </span>
+                  <span className="hmJobLoc" style={{ color: UI.text2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{j.city ? `${j.city}, ${j.province}` : j.province}</span>
+                  <span className="hmPay" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{j.salaryText}</span>
                 </a>
+                )
+              })}
+            </div>
+            {/* 手机卡片列表:与职位板同一张 JobCard。landing 整卡只有一个去处(职位详情/按 NOC 筛),
+                所以不传逐字段 onClick —— 组件里不可点的字段自动渲成纯文本,不假装成入口 */}
+            <div className="hmCards">
+              {jobsTab !== 'new' ? (
+                occList === null
+                  ? <div style={{ height: 92 * jobsN }} />
+                  : occList.slice(0, jobsN).map((o) => {
+                    const main = o.titleEn || o.titleZh || o.noc
+                    const note = lang === 'zh' ? (o.titleZhShort || o.titleZh) : lang === 'ko' ? o.titleKo : ''
+                    const pay = o.wageLowAnnual != null && o.wageHighAnnual != null
+                      ? `$${Math.round(o.wageLowAnnual / 1000)}K–$${Math.round(o.wageHighAnnual / 1000)}K`
+                      : o.medianWageAnnual != null ? t('home.jobs.med', { v: '$' + Math.round(o.medianWageAnnual / 1000) + 'K' }) : ''
+                    return (
+                      <JobCard key={o.noc} href={`/?q=${o.noc}`} title={{ text: main }}
+                        note={note ? shortOcc(note) : undefined}
+                        company={o.openJobs != null ? { text: t('quiz.openN', { n: o.openJobs.toLocaleString('en-CA') }) } : undefined}
+                        salary={pay || undefined} />
+                    )
+                  })
+              ) : stats.latestJobs.slice(0, jobsN).map((j) => {
+                const note = nocNote(j.noc)
+                const chips = [
+                  j.pnp ? <Tag key="pnp" variant="ok">PNP</Tag> : null,
+                  j.ee ? <Tag key="ee" variant="region">{'EE ' + eeDisplay(t, j.ee)}</Tag> : null,
+                  j.aip ? <Tag key="aip" variant="warn">AIP</Tag> : null,
+                ].filter(Boolean)
+                return (
+                  <JobCard key={j.id} href={`/jobs/${j.id}`} title={{ text: j.title }}
+                    note={note ? shortOcc(note) : undefined}
+                    company={j.company ? { text: j.company } : undefined}
+                    salary={j.salaryText || undefined}
+                    location={j.city ? `${j.city}, ${j.province}` : j.province}
+                    date={ymd(j.date)}
+                    chips={chips.length ? chips : undefined} />
                 )
               })}
             </div>
@@ -312,14 +394,14 @@ export function StartView({ stats }: { stats: HomeStats }) {
                       const last = i === Math.min(drawsN, stats.draws.length) - 1
                       return (
                         <tr key={i}>
-                          <td style={{ ...td, ...(last && { borderBottom: 'none' }) }}>{mmdd(r.date)}</td>
+                          <td style={{ ...td, ...(last && { borderBottom: 'none' }) }}>{ymd(r.date)}</td>
                           <td style={{ ...td, ...(last && { borderBottom: 'none' }) }}><Tag>{r.province === 'FED' ? 'EE' : r.province}</Tag></td>
                           {/* 通道名双语(队列⑤):官方英文名为主,译名灰字第二行 —— 加一列会把已经很窄的
                               通道列再切一半,长名字全成省略号;英文界面无第二行(国际化口径) */}
-                          <td style={{ ...td, ...(last && { borderBottom: 'none' }), whiteSpace: 'normal' }} title={drawStream(r)}>
-                            <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{drawStream(r)}</span>
-                            {drawStreamNote(r.stream || '', lang) ? (
-                              <span style={{ display: 'block', fontSize: 11.5, color: UI.text3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{drawStreamNote(r.stream || '', lang)}</span>
+                          <td style={{ ...td, ...(last && { borderBottom: 'none' }), whiteSpace: 'normal' }} title={drawMain(r)}>
+                            <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{drawMain(r)}</span>
+                            {drawNote(r) ? (
+                              <span style={{ display: 'block', fontSize: 11.5, color: UI.text3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{drawNote(r)}</span>
                             ) : null}
                           </td>
                           <td style={{ ...td, ...numCell, ...(last && { borderBottom: 'none' }) }}>{r.score != null ? num(r.score) : '—'}</td>
@@ -329,22 +411,27 @@ export function StartView({ stats }: { stats: HomeStats }) {
                     })}
                   </tbody>
                 </table>
-                {/* 手机卡片:日期与项目一行、通道名整行(不截)、两个数字各归各列右对齐 */}
+                {/* 手机卡片:与职位榜/职业榜卡同一范式(左信息右数字,详见 .hmJobRow 那段注释)——
+                    行1 左 省胶囊+日期、右 分数线与邀请;行2 通道名整行(不截、可折);行3 译名灰注(空则不占行)。
+                    两个数字同挂行1 右侧:英文界面没有译名,行3 一空,邀请数就孤零零吊在下面白一行(实拍抓到) */}
                 <div className="hmDrawCards">
                   {stats.draws.slice(0, drawsN).map((r, i) => (
-                    <div key={i} style={{ padding: '11px 14px', borderBottom: i === Math.min(drawsN, stats.draws.length) - 1 ? 'none' : `1px solid ${UI.hairline}` }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
-                        <Tag>{r.province === 'FED' ? 'EE' : r.province}</Tag>
-                        <span style={{ fontSize: 12, color: UI.text3 }}>{mmdd(r.date)}</span>
-                      </div>
-                      <div style={{ fontSize: 13.5, lineHeight: 1.5 }}>{drawStream(r)}</div>
-                      {drawStreamNote(r.stream || '', lang) ? (
-                        <div style={{ fontSize: 12, color: UI.text3, lineHeight: 1.5 }}>{drawStreamNote(r.stream || '', lang)}</div>
+                    <div key={i} style={{ padding: '12px 14px', borderBottom: i === Math.min(drawsN, stats.draws.length) - 1 ? 'none' : `1px solid ${UI.hairline}` }}>
+                      {/* 通道名与职位卡主名同字号(14.5/600),但**不上蓝**:抽选行不可点,蓝色会假装成链接 */}
+                      <div style={{ fontSize: 14.5, fontWeight: 600, lineHeight: 1.35 }}>{drawMain(r)}</div>
+                      {/* 译名紧跟通道名下面(与职位/职业卡同序:名 → 译名 → 信息行) */}
+                      {drawNote(r) ? (
+                        <div style={{ fontSize: 11.5, color: UI.text3, lineHeight: 1.4 }}>{drawNote(r)}</div>
                       ) : null}
-                      <div style={{ height: 6 }} />
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, fontSize: 12.5, color: UI.text2 }}>
-                        <span>{t('home.dr.score')}<b style={{ color: UI.text, marginLeft: 6, fontSize: 13.5 }}>{r.score != null ? num(r.score) : '—'}</b></span>
-                        <span>{t('home.dr.inv')}<b style={{ color: UI.text, marginLeft: 6, fontSize: 13.5 }}>{r.invitations != null ? num(r.invitations) : '—'}</b></span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4 }}>
+                        <Tag>{r.province === 'FED' ? 'EE' : r.province}</Tag>
+                        <span style={{ fontSize: 12, color: UI.text3 }}>{ymd(r.date)}</span>
+                        <span style={{ marginLeft: 'auto', fontSize: 12, color: UI.text2, whiteSpace: 'nowrap' }}>
+                          {t('home.dr.score')}<span style={{ color: UI.text, fontSize: 13.5, marginLeft: 6 }}>{r.score != null ? num(r.score) : '—'}</span>
+                        </span>
+                        <span style={{ fontSize: 12, color: UI.text2, whiteSpace: 'nowrap' }}>
+                          {t('home.dr.inv')}<span style={{ color: UI.text, fontSize: 13.5, marginLeft: 6 }}>{r.invitations != null ? num(r.invitations) : '—'}</span>
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -380,7 +467,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
                 {stats.news.slice(0, newsN).map((r, i) => (
                   <a key={r.slug || i} href={r.slug ? `/news/${r.slug}` : '/news'} className="rowHover"
                     style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '12px 14px', borderTop: i ? `1px solid ${UI.hairline}` : 'none', fontSize: 13, textDecoration: 'none', color: 'inherit' }}>
-                    <span style={{ color: UI.text3, fontSize: 12, whiteSpace: 'nowrap' }}>{mmdd(r.date)}</span>
+                    <span style={{ color: UI.text3, fontSize: 12, whiteSpace: 'nowrap' }}>{ymd(r.date)}</span>
                     <Tag>{r.region === 'federal' ? 'IRCC' : (r.region || '').toUpperCase()}</Tag>
                     <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.title}</span>
                   </a>
