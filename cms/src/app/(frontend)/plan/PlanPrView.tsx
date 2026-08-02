@@ -183,6 +183,10 @@ const BUCKET: Record<string, 'prov' | 'pay' | 'peer' | 'emp'> = {
   'rpt.j.sponsors': 'emp',
   'rpt.j.wageAbove': 'pay', 'rpt.j.wageBelow': 'pay', 'rpt.j.wageSame': 'pay', 'rpt.j.wageEsdc': 'pay',
   'rpt.k.selfWage': 'pay', 'rpt.j.related': 'peer', 'rpt.k.peer': 'peer', 'rpt.k.alt': 'peer',
+  // 2026-08-03 卡⑥ 撤锁后**才暴露**出来的漏网:peerGap 先前被付费闸摘掉,免费层从来没渲过它,
+  // 于是它一直靠 `?? 'prov'` 的兜底落在「这个职业在哪个省更有优势?」下面 ——
+  // 生产实拍:那个标题下面跟着「执业护士的中位年薪比你这行高 48%」,驴唇不对马嘴。
+  'rpt.k.peerGap': 'peer',
 }
 const group = (ls: RptLine[], b: 'prov' | 'pay' | 'peer' | 'emp'): RptLine[] => ls.filter((l) => (BUCKET[l.key] ?? 'prov') === b)
 
@@ -618,7 +622,10 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
 
                 {/* Pro:备选省完整对照(免费端服务端已清空) */}
                 {rpt.alternatives.length > 0 && (
-                  <Sec title={t('rpt.q.alt')}>{rpt.alternatives.map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</Sec>
+                  // 标题按**这一节装的是什么**来定,不按卡名:拿 PR / 选省份的备选是省,
+                  // 卡⑥ 职业规划的备选是**职业** —— 生产实拍「其他可考虑的省」下面摆着「医师助理(NOC 31303)」。
+                  // 同样是撤锁之后才暴露的(先前 alternatives 被付费闸清空,免费层根本没这一节)。
+                  <Sec title={t(rpt.alternatives.some((l) => BUCKET[l.key] === 'peer') ? 'rpt.q.altOcc' : 'rpt.q.alt')}>{rpt.alternatives.map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</Sec>
                 )}
 
                 {/* 依据与链接:全报告唯一的对外出口(出处 + 跳转),编号与正文的 [n] 对应 */}
