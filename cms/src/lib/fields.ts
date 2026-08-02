@@ -1,22 +1,30 @@
 // 字段库 = 全站单一来源(设计:docs/design/统一题库与付费面-20260731.md §1/§3)。
 // 每个字段带四件事:
-//   q        SurveyJS 题 JSON(原生多语对象,加语言=加键)
+//   q        题面(题干 + 选项,三语对象:加一门语言 = 加一个键)
 //   unlocks  答完能算出哪几条结论 —— 写的是引擎里真实存在的 key(lib/report.ts),不是口号
 //   tier     那几条结论落免费区还是锁区:free=留存题(答完立刻多一条能看的),pro=转化题
 //   toAnswer 档位 → 引擎输入(换算只此一处;页面不再各存一份 CLB/EXP/PROVS 映射表)
 // 铁律:挂不上任何结论的字段不入库。
+// 2026-08-03:题面原先是 SurveyJS 的题 JSON(type/name/isRequired 全是给框架看的),
+// 撤掉框架后收成本站自己的最小形状 —— 全部是必答单选,类型与必答不用逐题再声明一遍。
 import type { Answers } from './answers'
 
 export type Tier = 'free' | 'pro'
+export type L = { default: string; 'zh-cn': string; ko: string }
+export type Question = {
+  title: L
+  choices: { value: number | string; text: L }[]
+  // 选项过滤(目前只有一处:加拿大经验不得超过总经验)。先前是框架的字符串表达式,现在是普通函数
+  choiceVisible?: (a: Answers, v: number) => boolean
+}
 export type FieldDef = {
   engineKey?: string                                   // /api/report answers 的键名(缺省=字段名)
-  q: Record<string, unknown>
+  q: Question
   unlocks: string[]
   tier: Tier
   toAnswer?: (v: any, all: Answers) => unknown         // 返回 undefined = 不传(缺答与「答案是 0」要分开)
 }
 
-type L = { default: string; 'zh-cn': string; ko: string }
 const l = (en: string, zh: string, ko: string): L => ({ default: en, 'zh-cn': zh, ko })
 
 // 档 → 引擎输入(原先散在 PlanPrView 顶部的五张表,收拢到字段自己身上)
@@ -41,7 +49,6 @@ export const FIELDS: Record<string, FieldDef> = {
     tier: 'free',
     toAnswer: (v: string) => v || undefined,
     q: {
-      type: 'radiogroup', name: 'status', isRequired: true,
       title: l('Where are you today?', '你现在的情况?', '현재 상황은?'),
       choices: [
         { value: 'overseas', text: l('Outside Canada, planning the move', '还在境外,想来加拿大工作', '해외에서 캐나다 취업 준비 중') },
@@ -59,7 +66,6 @@ export const FIELDS: Record<string, FieldDef> = {
     tier: 'free',
     toAnswer: (b: number) => EDU[b] || undefined,
     q: {
-      type: 'radiogroup', name: 'eduBand', isRequired: true,
       title: l('Your highest education?', '最高学历?', '최종 학력은?'),
       choices: [
         { value: 1, text: l('High school or less', '高中或以下', '고졸 이하') },
@@ -77,7 +83,6 @@ export const FIELDS: Record<string, FieldDef> = {
     tier: 'free',
     toAnswer: (b: number) => AGE[b] || undefined,
     q: {
-      type: 'radiogroup', name: 'ageBand', isRequired: true,
       title: l('Your age?', '年龄段?', '연령대는?'),
       choices: [
         { value: 1, text: l('24 or under', '24 岁及以下', '24세 이하') },
@@ -96,7 +101,6 @@ export const FIELDS: Record<string, FieldDef> = {
     tier: 'free',
     toAnswer: (b: number) => (b ? TOTAL_EXP[b] : undefined),
     q: {
-      type: 'radiogroup', name: 'totalExpBand', isRequired: true,
       title: l('Total experience in this occupation?', '做这个职业一共多久了?(含海外)', '이 직종 총 경력은?(해외 포함)'),
       choices: [
         { value: 1, text: l('None', '没有', '없음') },
@@ -115,7 +119,6 @@ export const FIELDS: Record<string, FieldDef> = {
     tier: 'free',
     toAnswer: (b: number) => CLB[b] || undefined,
     q: {
-      type: 'radiogroup', name: 'clbBand', isRequired: true,
       title: l('Your official language level (CLB)?', '你的语言成绩到 CLB 几?', '공인 언어 점수(CLB)는?'),
       choices: [
         { value: 1, text: l('Not tested yet', '还没考', '시험 전') },
@@ -133,11 +136,10 @@ export const FIELDS: Record<string, FieldDef> = {
     tier: 'free',
     toAnswer: (b: number) => (b ? EXP[b] : undefined),
     q: {
-      type: 'radiogroup', name: 'expBand', isRequired: true,
       // 「其中」是真的其中:加拿大经验选不出比总经验更长的档(2026-08-02 实撞 —— 总经验答「没有」、
       // 加拿大答「2 年以上」,引擎取大的那个,句子写成「你填的 30 个月」,看着就像胡说)。
-      // 两套档位序号天然对齐(0/6/18/30 对 0/6/24/48/60),所以一个表达式就够,不写换算表。
-      choicesVisibleIf: '{totalExpBand} = 0 or {item} <= {totalExpBand}',
+      // 两套档位序号天然对齐(0/6/18/30 对 0/6/24/48/60),所以比一下序号就够,不写换算表。
+      choiceVisible: (a, v) => !a.totalExpBand || v <= a.totalExpBand,
       // 紧跟在总经验那道题后面问 → 题干写「其中」,一眼看出是子集(全称在一屏里重复一遍是废话)
       title: l('Of that, how long in Canada?', '其中在加拿大多久?', '그중 캐나다에서는?'),
       choices: [
@@ -155,7 +157,6 @@ export const FIELDS: Record<string, FieldDef> = {
     tier: 'free',
     toAnswer: (b: number) => PROVS[b] ?? [],
     q: {
-      type: 'radiogroup', name: 'provBand', isRequired: true,
       title: l('Target province?', '目标省?', '희망 주?'),
       choices: [
         { value: 1, text: l('BC', 'BC', 'BC') },
@@ -173,7 +174,6 @@ export const FIELDS: Record<string, FieldDef> = {
     tier: 'free',
     toAnswer: (b: number) => (b ? b === 1 : undefined),
     q: {
-      type: 'radiogroup', name: 'offerBand', isRequired: true,
       title: l('Do you have a job offer in hand?', '手上有 offer 吗?', '받은 잡오퍼가 있나요?'),
       choices: [
         { value: 1, text: l('Yes', '有', '있음') },
@@ -190,7 +190,6 @@ export const FIELDS: Record<string, FieldDef> = {
     tier: 'pro',
     toAnswer: (b: number) => CRS[b] || undefined,
     q: {
-      type: 'radiogroup', name: 'crsBand', isRequired: true,
       title: l('Your Express Entry CRS score?', '你的 EE 综合排名分(CRS)?', 'Express Entry CRS 점수는?'),
       choices: [
         { value: 1, text: l('Never calculated it', '没算过', '계산해 본 적 없음') },
@@ -207,7 +206,6 @@ export const FIELDS: Record<string, FieldDef> = {
     tier: 'pro',
     toAnswer: (b: number, all: Answers) => (all.status === 'overseas' ? undefined : PGWP[b] || undefined),
     q: {
-      type: 'radiogroup', name: 'pgwpBand', isRequired: true,
       title: l('How long is left on your permit?', '你的签证还剩多久?', '비자 잔여 기간은?'),
       choices: [
         { value: 1, text: l('Under 6 months', '不到 6 个月', '6개월 미만') },

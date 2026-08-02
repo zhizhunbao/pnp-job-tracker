@@ -10,6 +10,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { POPULAR_NOCS } from '../account/profileOptions'
+import { QuizBar, QuizStyle, QuizTitle } from './QuizUI'
 import { Button, chipStyle, UI } from '../ui/primitives'
 import { shortOcc } from './EntryQuiz'
 import { pickName } from '@/lib/occName'
@@ -149,11 +150,13 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
         {/* 横划的 chip 行:放不下时最后一个 chip 正好被卡片边缘齐刷刷切断,看着像排版坏了
             (「Physician assis」在 375 上被切在半个词上)。右缘给一段渐隐 = 「还有,往右划」;
             滚动条在手机上本来就不显示,桌面上也藏掉(它会把 34px 的行再挤矮一截) */}
+        {/* 弹层里用(职位板/详情页)也要带上答题壳的 CSS —— inline 那条路由 PlanPrView 挂了同一份 */}
+        {!inline && <QuizStyle />}
         <style>{`.chipRow{scrollbar-width:none;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 22px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 22px),transparent)}
 .chipRow::-webkit-scrollbar{display:none}`}</style>
         {!inline && (
-          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
-            <div style={{ fontSize: 19, fontWeight: 700 }}>{t('quiz.q2')}</div>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>
+            <QuizTitle>{t('quiz.q2')}</QuizTitle>
             <button onClick={onClose} aria-label="close" style={{ border: 'none', background: 'none', color: UI.text3, fontSize: 18, cursor: 'pointer', padding: 0 }}>×</button>
           </div>
         )}
@@ -279,10 +282,13 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
             用户翻到底发现无处可点。现在恒在、粘在视口底,没选中时放一句灰字说明,
             **位置与答题页的「下一题」对齐**(那边同批也改了 sticky),整条决定线的下一步都在同一个地方。 */}
         {inline ? (
-          <div className="quizBar" style={{ position: 'sticky', bottom: 0, zIndex: 2, background: '#fff', borderTop: `1px solid ${UI.hairline}`, marginTop: 18, padding: '10px 0 8px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 12, height: 56, boxSizing: 'border-box' }}>
-            {nocs.length === 0 && <span style={{ fontSize: 12.5, color: UI.text3, marginRight: 'auto' }}>{t('quiz.pickFirst')}</span>}
-            {nocs.length > 0 && <Button kind="primary" onClick={() => onDone(nocs)}>{doneLabel || t('quiz.nextN', { n: nocs.length })}</Button>}
-          </div>
+          // 动作条与答题页是**同一个组件**(QuizUI 的 QuizBar),不是照着抄的一套样式 ——
+          // 「下一题位置不统一」的病根就是各写各的(2026-08-03 Frank「保证所有答题页面一致」)
+          <QuizBar hint={nocs.length === 0 ? t('quiz.pickFirst') : undefined}>
+            {nocs.length > 0
+              ? <Button kind="primary" onClick={() => onDone(nocs)} style={{ padding: '11px 26px', fontSize: 14 }}>{doneLabel || t('quiz.nextN', { n: nocs.length })}</Button>
+              : <Button kind="primary" disabled style={{ padding: '11px 26px', fontSize: 14, background: UI.hairline, color: UI.text3, cursor: 'default' }}>{doneLabel || t('plan.next')}</Button>}
+          </QuizBar>
         ) : nocs.length > 0 ? (
           <Button kind="primary" onClick={() => onDone(nocs)} style={{ width: '100%', padding: '11px 0', fontSize: 15, marginTop: 14 }}>
             {t('quiz.nextN', { n: nocs.length })}

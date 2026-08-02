@@ -5,7 +5,6 @@
 // 报告态=结论/缺口/下一步/备选(/api/report → rpt.* 三语渲染),与引擎契约同构。
 // 跨卡复用铁律:currentStatus/目标省/职业从三问预填(答过的不重新问,预填可改);职业用三问的 nocs[0],
 // 没答过 → 页内拉起 EntryQuiz(同一组件不复制)。答案存 localStorage,改答案 → 报告立刻重算。
-import dynamic from 'next/dynamic'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { initialLang, makeT, streamDisplay, eeDisplay, LANG_KEY, type Lang, type TFn } from '../jobs/i18n'
@@ -13,42 +12,14 @@ import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { shortOcc } from '../quiz/EntryQuiz'
 import { OccPicker } from '../quiz/OccPicker'
+import { QuizProgress, QuizStyle, QuizTitle } from '../quiz/QuizUI'
+import { QuizForm } from './QuizForm'
 import { Button, Notice, PageShell, Tag, UI } from '../ui/primitives'
 import { EMPTY, clearAnswers, readAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
 import { DECISIONS, fieldsOf, missingFields } from '@/lib/decisions'
 import { goBackOr } from '../BackLink'
 import { pickName } from '@/lib/occName'
 import { track } from '@/lib/track'
-
-// 答题器(1.43 MB)按需加载:第一屏是选职业,一个字节都用不到它;深链直接看报告的更用不到
-// (漏斗里 16 次出报告有 12 次是这条来路)。见 PlanSurvey.tsx 顶部。
-const PlanSurvey = dynamic(() => import('./PlanSurvey'), {
-  ssr: false,
-  // 占位与一道题等高:加载那一下不要把整页塌一截再弹回来
-  loading: () => <div style={{ minHeight: 300 }} />,
-})
-
-// 进度文字(#253):选职业那一页不是 SurveyJS 的题(自绘控件),先前它连进度都没有 ——
-// 决定线**最劝退的第一屏**偏偏不告诉用户「一共几步」(2026-08-03 375/en 逐页实测)。
-// 框架的进度条只数得到它自己那几道题:哪怕把文字改成「1/8」,条还是按 0/7 空着
-// (实拍到:选完职业进第一题,文字说 1/8、条一格没走)—— 所以整条进度自己出,
-// 两页共用同一个组件、同一套口径(职业 = 第 1 项),`showProgressBar:'off'` 关掉框架那条。
-// 三句文案原先是覆盖框架的 questionsProgressText(考试口吻「已答 0/2 题」被 Frank 2026-07-31 点名),
-// 进度归自己出之后就住在这里 —— 顺带首屏不必为三句话把 survey-core 拽进主包。
-const PROGRESS: Record<Lang, string> = { zh: '已填 {0}/{1} 项', en: '{0}/{1} completed', ko: '{0}/{1} 완료' }
-const progressText = (lang: Lang, done: number, total: number) =>
-  PROGRESS[lang].replace('{0}', String(done)).replace('{1}', String(total))
-
-function Progress({ lang, done, total }: { lang: Lang; done: number; total: number }) {
-  return (
-    <div style={{ margin: '0 0 26px' }}>
-      <div style={{ height: 5, borderRadius: 999, background: UI.hairline, overflow: 'hidden' }}>
-        <div style={{ height: '100%', borderRadius: 999, background: UI.primary, width: `${Math.round((done / total) * 100)}%`, transition: 'width .2s' }} />
-      </div>
-      <div style={{ margin: '6px 0 0', fontSize: 11.5, color: UI.text3, textAlign: 'right' }}>{progressText(lang, done, total)}</div>
-    </div>
-  )
-}
 
 // 答案存储与档位换算都归 lib/answers + lib/fields(2026-07-31 统一题库:一个 key、一处换算);
 // 本页只管两态与版式,不再自己存答案、不再自己抄 CLB/EXP/PROVS 映射表。
@@ -319,14 +290,6 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
     </button>
   )
 
-  // 答题器预取:第一屏(选职业)用不到那 1.43 MB,但用户选完马上就要 ——
-  // 首屏画完之后在空闲里悄悄拉,轮到答题时已经在缓存里(看报告的那一态不拉)
-  useEffect(() => {
-    if (view !== 'quiz' || !ready) return
-    const id = setTimeout(() => { void import('./PlanSurvey') }, 1200)
-    return () => clearTimeout(id)
-  }, [view, ready])
-
   // 漏斗第 2 步(主线 M2 收口 2026-08-02):**报告态真渲染**才算「打开报告」,
   // 而不是「点了出报告那个按钮」—— 从详情页进来的是深链 `?view=report`,按钮根本没被按过,
   // 先前那种记法会把这条最主要的来路整条漏掉。一次页面加载只记一次(来回切答题/报告不重复计)。
@@ -431,51 +394,10 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
           // 撑满 760 轨 = 四个字的选项拉一整行、右边全是空白。Typeform 范式的前提是窄列居中。
           <>
             {/* 职业进了流程(第一步),这里不再另挂常驻 chip —— 同一件事只出现一次 */}
-            {/* 题卡:框架只出题与导航,壳与配色归站内 token —— 选项做成可点的卡(能点才有 hover 和小手),
-                主按钮=站蓝(全站按钮统一,不留框架灰块) */}
-            <style>{`
-.plSurvey .sd-root-modern{background:transparent}
-.plSurvey .sd-body{padding:0 !important}
-.plSurvey .sd-page{padding:0}
-.plSurvey .sd-question__title{font-size:19px;font-weight:700;color:${UI.text};margin-bottom:16px;line-height:1.55}
-.plSurvey .sd-selectbase{gap:0;counter-reset:opt}
-/* 内边距归 label 不归 item(2026-07-31 Frank「点一下还不行,要点好几下」):
-   padding 留在 item 上时,那一圈 11-14px 的边不属于 label,点在上面 radio 收不到 —— 
-   看起来就是「有时候点不动」。把 padding 挪进 label,整块卡片才真的是一个点击目标。 */
-.plSurvey .sd-item{background:#fff;border:1px solid ${UI.border};border-radius:10px;padding:0;margin-bottom:10px;cursor:pointer;counter-increment:opt}
-.plSurvey .sd-item--allowhover:hover{border-color:#93c5fd;background:#f8fbff}
-.plSurvey .sd-item--checked{border-color:${UI.primary};background:#eff6ff}
-/* 选项字母徽标(照 Frank 的三个答题项目:A/B/C/D 徽标 + 选中反白)——原生 radio 圆点点击目标感弱 */
-/* label 必须铺满整行:它只包住文字时,短选项(「中级」「有」)的行中间点下去落在 sd-item 上,
-   不在 label 上 —— 用户看到的就是「点了没反应」(2026-07-31 Frank 在卡③实拍到,四个选项都是两个字) */
-.plSurvey .sd-selectbase__label{cursor:pointer;display:flex;align-items:center;gap:12px;width:100%;margin:0;padding:11px 14px;box-sizing:border-box}
-.plSurvey .sd-radio__decorator{display:none}
-.plSurvey .sd-selectbase__label::before{content:counter(opt,upper-alpha);flex-shrink:0;width:26px;height:26px;
-  border:1px solid ${UI.border};border-radius:7px;background:#fff;color:${UI.text2};
-  font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:center}
-.plSurvey .sd-item--checked .sd-selectbase__label::before{background:${UI.primary};border-color:${UI.primary};color:#fff}
-.plSurvey .sd-item--checked .sd-item__control-label{color:${UI.primaryDeep};font-weight:600}
-.plSurvey .sd-btn{border-radius:8px;font-size:14px;font-weight:600;padding:11px 26px;box-shadow:none;font-family:inherit;width:auto}
-/* 框架用 background-color 覆盖 background 简写,且导航条走 float 布局(sd-clearfix)——
-   这两处必须 !important 才压得住,是与框架抢版式的最小面积 */
-.plSurvey .sd-navigation__next-btn,.plSurvey .sd-navigation__complete-btn{background-color:${UI.primary} !important;color:#fff}
-.plSurvey .sd-navigation__next-btn:hover,.plSurvey .sd-navigation__complete-btn:hover{background-color:${UI.primaryDeep} !important}
-.plSurvey .sd-navigation__prev-btn{background-color:#fff !important;color:${UI.text2};border:1px solid ${UI.border}}
-/* 按钮各占半幅是框架默认;收成内容宽、靠右(主按钮在右=站内表单惯例) */
-.plSurvey .sd-body__navigation{display:flex !important;margin-top:18px;padding:14px 0 6px;border-top:1px solid ${UI.hairline};justify-content:space-between !important;gap:10px;position:sticky;bottom:0;background:#fff;z-index:2}
-.plSurvey .sd-body__navigation>.sv-action:only-child{margin-left:auto}
-/* 手机上把「下一题」钉在视口底(2026-08-03 Frank「下一题在最下面点不到」「下一题位置还不统一」):
-   答题页内容短、撑不满一屏,sticky 压根不触发 —— 实测选职业页 756、后续页 574/619/619,每页都不一样。
-   固定在底才是**每一页同一个地方**,选职业那一条动作条(.quizBar)走同一套。内容区补 padding 免得被盖住。 */
-@media(max-width:640px){
-  .quizBar,.plSurvey .sd-body__navigation{position:fixed !important;left:0;right:0;bottom:0;margin:0 !important;
-    padding:10px 16px !important;height:auto !important;border-top:1px solid ${UI.border};background:#fff;z-index:30;
-    box-shadow:0 -2px 8px rgba(0,0,0,.04)}
-  .plQuizPad{padding-bottom:78px}
-}
-.plSurvey .sd-body__navigation>.sv-action,.plSurvey .sd-body__navigation .sd-btn{flex:0 0 auto !important;width:auto;min-width:0;float:none !important}
-/* 框架的禁用态=主按钮透明度 25%(蓝底白字褪成一团看不清);换成站内灰底灰字的正经禁用样式 */
-.plSurvey .sd-btn:disabled{opacity:1;background:${UI.hairline};color:${UI.text3};cursor:default}`}</style>
+            {/* 版式全部来自 quiz/QuizUI:选工作页与四选一那几页共用同一段 CSS
+                (2026-08-03 Frank「保证所有答题页面一致,包括选工作」)。
+                先前这里是 25 行压 SurveyJS 默认样式的 .sd-* 覆盖 —— 框架撤掉,它们一起没了。 */}
+            <QuizStyle />
             {/* 翻页(Frank 2026-08-01「还是改成翻页的吧」):职业=第 1 页,其余一屏一题。
                 中途试过一屏全放,题库扩到 7 道后手机上要滚三四屏才看得到「出报告」。
                 动作行(清空重填/返回)两页共用一套,卡头照旧不出标题 —— 面包屑已经写着「开始规划 › 拿 PR」。 */}
@@ -492,21 +414,22 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
               </div>
               {/* 进度行两页共用(#253):选职业页先前一格进度都没有,而它是决定线第一步、漏斗最宽的地方。
                   职业算第 1 项 —— 用户看到的步数从头到尾是同一套(基本卷 1/8 → 8/8) */}
-              {ready && <div style={{ maxWidth: 600, margin: '0 auto' }}><Progress lang={lang} done={stepDone} total={stepTotal} /></div>}
+              {ready && <div style={{ maxWidth: 600, margin: '0 auto' }}><QuizProgress lang={lang} done={stepDone} total={stepTotal} /></div>}
               {/* 第 1 页=职业(题干与四选一同一套字号,只是控件不是单选框):
                   选中即写入(onChange),按自己的「下一题」才进问卷 —— 跳转永远由用户按 */}
               {/* 读盘(readAnswers)在 effect 里,所以第一页必须等 ready 再挂 ——
                   提前挂 OccPicker 会拿着空的 initial 定型,已经选过的职业回显不出来(实拍撞到) */}
               {!ready ? null : stage === 'basic' && (occStep || !noc) ? (
                 <div className="plQuizPad" style={{ maxWidth: 600, margin: '0 auto' }}>
-                  <div style={{ fontSize: 19, fontWeight: 700, lineHeight: 1.55, marginBottom: 6 }}>{t('quiz.q2')}</div>
+                  <QuizTitle>{t('quiz.q2')}</QuizTitle>
                   <OccPicker inline t={t} lang={lang} initial={bands.nocs} doneLabel={t('plan.next')}
                     onChange={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || '') }}
                     onDone={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || ''); setOccStep(false) }} />
                 </div>
               ) : (
-                <div className="plSurvey plQuizPad" style={{ maxWidth: 600, margin: '0 auto' }}>
-                  <PlanSurvey decision={decision} stage={stage} lang={lang} resetNonce={resetNonce}
+                <div className="plQuizPad" style={{ maxWidth: 600, margin: '0 auto' }}>
+                  {/* key=resetNonce:清空重填之后从第一题重新起步(答案已清,停在原位会指着一道空题) */}
+                  <QuizForm key={resetNonce} decision={decision} stage={stage} lang={lang} t={t} answers={bands}
                     onPatch={(patch) => setBands(writeAnswers(patch))} onComplete={gotoReport} />
                 </div>
               )}
