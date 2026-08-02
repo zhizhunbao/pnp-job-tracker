@@ -19,7 +19,7 @@ import { shortOcc } from '../quiz/EntryQuiz'
 import { OccPicker } from '../quiz/OccPicker'
 import { Button, Notice, PageShell, Tag, UI } from '../ui/primitives'
 import { EMPTY, clearAnswers, readAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
-import { DECISIONS, fieldsOf } from '@/lib/decisions'
+import { DECISIONS, fieldsOf, missingFields } from '@/lib/decisions'
 import { buildSurvey, SURVEY_THEME } from '@/lib/questions'
 import { goBackOr } from '../BackLink'
 import { pickName } from '@/lib/occName'
@@ -31,6 +31,27 @@ import { track } from '@/lib/track'
 surveyLocalization.locales['zh-cn'].questionsProgressText = '已填 {0}/{1} 项'
 surveyLocalization.locales.en.questionsProgressText = '{0}/{1} completed'
 surveyLocalization.locales.ko.questionsProgressText = '{0}/{1} 완료'
+
+// 选职业那一页不是 SurveyJS 的题(自绘控件),先前它连进度都没有 ——
+// 决定线**最劝退的第一屏**偏偏不告诉用户「一共几步」(#253,2026-08-03 375/en 逐页实测)。
+// 框架的进度条只数得到它自己那几道题:哪怕把文字改成「1/8」,条还是按 0/7 空着
+// (实拍到:选完职业进第一题,文字说 1/8、条一格没走)—— 所以整条进度自己出,
+// 两页共用同一个组件、同一套口径(职业 = 第 1 项),`showProgressBar:'off'` 关掉框架那条。
+// 文字仍借卷面那三句(改文案只有一处),{0}/{1} 自己代入。
+const progressText = (lang: Lang, done: number, total: number) =>
+  String(surveyLocalization.locales[lang === 'zh' ? 'zh-cn' : lang === 'ko' ? 'ko' : 'en'].questionsProgressText)
+    .replace('{0}', String(done)).replace('{1}', String(total))
+
+function Progress({ lang, done, total }: { lang: Lang; done: number; total: number }) {
+  return (
+    <div style={{ margin: '0 0 26px' }}>
+      <div style={{ height: 5, borderRadius: 999, background: UI.hairline, overflow: 'hidden' }}>
+        <div style={{ height: '100%', borderRadius: 999, background: UI.primary, width: `${Math.round((done / total) * 100)}%`, transition: 'width .2s' }} />
+      </div>
+      <div style={{ margin: '6px 0 0', fontSize: 11.5, color: UI.text3, textAlign: 'right' }}>{progressText(lang, done, total)}</div>
+    </div>
+  )
+}
 
 // 答案存储与档位换算都归 lib/answers + lib/fields(2026-07-31 统一题库:一个 key、一处换算);
 // 本页只管两态与版式,不再自己存答案、不再自己抄 CLB/EXP/PROVS 映射表。
@@ -360,6 +381,12 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
 
   const secH: React.CSSProperties = { fontSize: 14.5, fontWeight: 700, margin: '16px 0 4px', color: '#111827' }
 
+  // 进度(#253):本卷要哪几项走 fieldsOf、答没答走 missingFields —— 都是既有单一来源,不在这里另数一遍。
+  // 基本卷把职业算成第 1 项(它是自绘的第 1 页);探索卷是另起的一小批,不带职业。
+  const stepNames = fieldsOf(decision, stage)
+  const stepTotal = stepNames.length + (stage === 'basic' ? 1 : 0)
+  const stepDone = stepNames.length - missingFields(stepNames, bands).length + (stage === 'basic' && noc ? 1 : 0)
+
   return (
     <div style={{ background: UI.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="start" />
@@ -447,10 +474,6 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
   font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:center}
 .plSurvey .sd-item--checked .sd-selectbase__label::before{background:${UI.primary};border-color:${UI.primary};color:#fff}
 .plSurvey .sd-item--checked .sd-item__control-label{color:${UI.primaryDeep};font-weight:600}
-.plSurvey .sd-progress{background:${UI.hairline};border-radius:999px;height:5px;margin:0 0 26px}
-.plSurvey .sd-progress__bar{border-radius:999px}
-/* 框架把进度文字绝对定位在进度条上,窄列里正好压住题干 → 拉回文档流,单独一行右对齐 */
-.plSurvey .sd-progress__text{position:static;margin:6px 0 0;padding:0;font-size:11.5px;font-weight:400;color:${UI.text3};text-align:right}
 .plSurvey .sd-btn{border-radius:8px;font-size:14px;font-weight:600;padding:11px 26px;box-shadow:none;font-family:inherit;width:auto}
 /* 框架用 background-color 覆盖 background 简写,且导航条走 float 布局(sd-clearfix)——
    这两处必须 !important 才压得住,是与框架抢版式的最小面积 */
@@ -486,6 +509,9 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                   <button onClick={() => goBackOr('/')} style={BTN}>{t('detail.back')}</button>
                 </span>
               </div>
+              {/* 进度行两页共用(#253):选职业页先前一格进度都没有,而它是决定线第一步、漏斗最宽的地方。
+                  职业算第 1 项 —— 用户看到的步数从头到尾是同一套(基本卷 1/8 → 8/8) */}
+              {ready && <div style={{ maxWidth: 600, margin: '0 auto' }}><Progress lang={lang} done={stepDone} total={stepTotal} /></div>}
               {/* 第 1 页=职业(题干与四选一同一套字号,只是控件不是单选框):
                   选中即写入(onChange),按自己的「下一题」才进问卷 —— 跳转永远由用户按 */}
               {/* 读盘(readAnswers)在 effect 里,所以第一页必须等 ready 再挂 ——

@@ -20,8 +20,9 @@ const chrome = (stage: Stage) => ({
   // 原因不只是节奏 —— 一道题的卷(卡③)开着自动前进时,点下去当场就完成跳报告,
   // 用户看到的是「选项根本选不上」(他实拍反馈的正是这个)。选中要停得住,跳转由他自己按。
   autoAdvanceEnabled: false,
-  showProgressBar: 'top',
-  progressBarType: 'questions',
+  // 进度条自己出(PlanPrView 的 Progress,#253):选职业是决定线第 1 步却不是本框架的题,
+  // 框架那条永远少数一格 —— 文字能改、条改不了(实拍:文字 1/8、条一格没走)。两页共用一条才对得上。
+  showProgressBar: 'off',
   showTitle: false,
   pagePrevText: l('Previous', '上一题', '이전'),
   pageNextText: l('Next', '下一题', '다음'),
