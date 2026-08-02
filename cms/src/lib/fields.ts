@@ -25,6 +25,10 @@ const EXP = [0, 0, 6, 18, 30]          // a1「没有」= 0 个月,是答案不�
 export const PROVS: string[][] = [[], ['BC'], ['ON'], ['AB', 'SK', 'MB'], []]   // a4「先看哪个够得着」= 不限省
 const CRS = [0, 0, 380, 425, 480]      // a1「没算过」= 不传,引擎照旧出「没填 CRS」
 const PGWP = [0, 4, 9, 18, 30]
+// 官方分值表要的三样(题库扩充 20260802):学历阶梯 / 年龄取区间中点 / 同职业总经验(含海外)
+const EDU = ['', 'highschool', 'diploma2y', 'bachelor', 'master', 'doctorate']
+const AGE = [0, 23, 28, 33, 38, 43]
+const TOTAL_EXP = [0, 0, 6, 24, 48, 60]   // a1「没有」= 0 个月,是答案不是缺答(同 EXP 口径)
 
 export const FIELDS: Record<string, FieldDef> = {
   // 处境:决定签证题算不算数(境外没有加拿大签证),并计入基本题完整度
@@ -44,12 +48,67 @@ export const FIELDS: Record<string, FieldDef> = {
       ],
     },
   },
-  // 英语:**当前只驱动完整度**(各省语言门槛尚未建模,见矩阵「数据缺口」列)。
-  // 严格按铁律它现在不配单独入库,留在基本题里是因为 confidence 要它、且门槛一建模它立刻挂上结论。
-  // 建模后把真结论 key 补进 unlocks —— 别让这行注释烂在这。
+  // 学历:官方分值表里分最重的一项(BC SIRS 0-26、SK SINP 0-23)。
+  // 先前引擎写死 highschool —— 每个省都少算十几分,「至少 N 分」低得没意义(题库扩充 20260802 §1)
+  eduBand: {
+    engineKey: 'edu',
+    unlocks: ['rpt.s.cur', 'rpt.s.alt.mark'],
+    tier: 'free',
+    toAnswer: (b: number) => EDU[b] || undefined,
+    q: {
+      type: 'radiogroup', name: 'eduBand', isRequired: true,
+      title: l('Your highest education?', '最高学历?', '최종 학력은?'),
+      choices: [
+        { value: 1, text: l('High school or less', '高中或以下', '고졸 이하') },
+        { value: 2, text: l('College diploma', '大专或证书', '전문대·수료증') },
+        { value: 3, text: l('Bachelor', '本科', '학사') },
+        { value: 4, text: l('Master', '硕士', '석사') },
+        { value: 5, text: l('Doctorate', '博士', '박사') },
+      ],
+    },
+  },
+  // 年龄:SK 年龄分 0-12(18-35 满分、≥50 归零),BC 不算年龄 —— 引擎按区间中点匹官方档
+  ageBand: {
+    engineKey: 'age',
+    unlocks: ['rpt.s.cur', 'rpt.s.alt.mark'],
+    tier: 'free',
+    toAnswer: (b: number) => AGE[b] || undefined,
+    q: {
+      type: 'radiogroup', name: 'ageBand', isRequired: true,
+      title: l('Your age?', '年龄段?', '연령대는?'),
+      choices: [
+        { value: 1, text: l('24 or under', '24 岁及以下', '24세 이하') },
+        { value: 2, text: l('25-30', '25-30 岁', '25-30세') },
+        { value: 3, text: l('31-35', '31-35 岁', '31-35세') },
+        { value: 4, text: l('36-40', '36-40 岁', '36-40세') },
+        { value: 5, text: l('41 or over', '41 岁以上', '41세 이상') },
+      ],
+    },
+  },
+  // 同职业总经验(含海外):省级分值表的 work 因素按**总年数**给分,不限加拿大。
+  // 与 expBand(加拿大经验)分工:那道题管 CEC 的 12 个月,这道题管省级 work 档位。
+  totalExpBand: {
+    engineKey: 'totalExpMonths',
+    unlocks: ['rpt.s.cur', 'rpt.s.alt.mark'],
+    tier: 'free',
+    toAnswer: (b: number) => (b ? TOTAL_EXP[b] : undefined),
+    q: {
+      type: 'radiogroup', name: 'totalExpBand', isRequired: true,
+      title: l('Total experience in this occupation?', '做过这行一共多久?(含海外)', '이 직종 총 경력은?(해외 포함)'),
+      choices: [
+        { value: 1, text: l('None', '没有', '없음') },
+        { value: 2, text: l('Under 1 year', '不到 1 年', '1년 미만') },
+        { value: 3, text: l('1-3 years', '1-3 年', '1-3년') },
+        { value: 4, text: l('3-5 years', '3-5 年', '3-5년') },
+        { value: 5, text: l('5+ years', '5 年以上', '5년 이상') },
+      ],
+    },
+  },
+  // 英语:门槛建模(L2-04/05 的 BC 20 条 + ON 11 条)与换省对照(L2-08)落地后,
+  // 它已经真的驱动结论 —— 原先「只驱动完整度」那行注释同批销账。
   clbBand: {
     engineKey: 'clb',
-    unlocks: ['rpt.g.basics'],
+    unlocks: ['rpt.g.basics', 'rpt.s.cur'],
     tier: 'free',
     toAnswer: (b: number) => CLB[b] || undefined,
     q: {
@@ -71,7 +130,8 @@ export const FIELDS: Record<string, FieldDef> = {
     toAnswer: (b: number) => (b ? EXP[b] : undefined),
     q: {
       type: 'radiogroup', name: 'expBand', isRequired: true,
-      title: l('Canadian experience in this occupation?', '在加拿大做过这行多久?', '캐나다에서 이 직종 경력은?'),
+      // 紧跟在总经验那道题后面问 → 题干写「其中」,一眼看出是子集(全称在一屏里重复一遍是废话)
+      title: l('Of that, how long in Canada?', '其中在加拿大多久?', '그중 캐나다에서는?'),
       choices: [
         { value: 1, text: l('None', '没有', '없음') },
         { value: 2, text: l('Under 1 year', '不到 1 年', '1년 미만') },

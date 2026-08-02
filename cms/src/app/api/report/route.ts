@@ -1,6 +1,6 @@
 /**
  * POST /api/report — 报告引擎服务端出口(L2-01/L2-02,卡②「拿 PR」先通)。
- * body: { goal: 'pr', answers?: { noc?, currentStatus?, clb?, crs?, canadianExpMonths?, targetProvinces? } }
+ * body: { goal: 'pr', answers?: { noc?, currentStatus?, clb?, crs?, canadianExpMonths?, targetProvinces?, edu?, age?, totalExpMonths? } }
  * 合并序:登录档案为底、本次答案覆盖(改答案立刻重算铁律);匿名可用(结论摘要免费,aha 在掏钱之前)。
  * 引擎纯函数(lib/report.ts),这里只做:身份合并 → dims(1h 缓存)→ facts 组装 → buildPrReport。
  */
@@ -10,6 +10,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { getUser, isPro } from '@/lib/entitlement'
 import { normalizeProfile } from '@/lib/match'
+import { EDU_KEYS, type EduKey } from '@/lib/pnpSelfScore'
 import { loadMatchDims } from '@/lib/matchDims'
 import { buildCareerReport, buildJobReport, buildPrReport, buildProvReport, gateReport } from '@/lib/report'
 import { assembleOccStats, assembleReportFacts } from '@/lib/reportFacts'
@@ -29,7 +30,15 @@ export async function POST(req: Request) {
   // 档案为底、答案覆盖;canadianExpMonths 是题库新增字段(挂 Users.profile json,无需加列)
   const merged = { ...base, ...a }
   const profile = normalizeProfile(merged)
-  const extra = { canadianExpMonths: typeof merged.canadianExpMonths === 'number' && Number.isFinite(merged.canadianExpMonths) ? merged.canadianExpMonths : null }
+  // 题库扩充 20260802:edu/age/totalExpMonths 与 canadianExpMonths 同路(挂 Users.profile json,无需加列);
+  // 形状不可信 → 逐个校验,学历只收 EDU_KEYS 里的枚举(脏值当没答,宁可少算也不拿它去匹官方档位)
+  const num = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null)
+  const extra = {
+    canadianExpMonths: num(merged.canadianExpMonths),
+    edu: typeof merged.edu === 'string' && (EDU_KEYS as string[]).includes(merged.edu) ? (merged.edu as EduKey) : null,
+    age: num(merged.age),
+    totalExpMonths: num(merged.totalExpMonths),
+  }
   const noc = (typeof a.noc === 'string' && a.noc.trim()) || profile.nocCodes[0] || ''
 
   const payload = await getPayload({ config: await config })

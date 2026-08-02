@@ -9,7 +9,7 @@ import { FIELDS } from '@/lib/fields'
 const OLD_QUIZ = 'jobs_quiz_v1'
 const OLD_PR = 'plan_pr_v1'
 const base = (p: Partial<Answers> = {}): Answers =>
-  ({ status: '', nocs: [], provs: [], clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0, ...p })
+  ({ status: '', nocs: [], provs: [], clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0, eduBand: 0, ageBand: 0, totalExpBand: 0, offerBand: 0, ...p })
 
 beforeEach(() => localStorage.clear())
 
@@ -61,6 +61,22 @@ describe('档位 → 引擎输入', () => {
     expect(toEngineAnswers(base({ expBand: 1 })).canadianExpMonths).toBe(0)
   })
 
+  // 题库扩充 20260802:三个新字段的换算也只此一处(学历给引擎枚举、年龄给区间中点、总经验给月数)
+  it('学历/年龄/总经验档 → 引擎输入', () => {
+    const out = toEngineAnswers(base({ eduBand: 4, ageBand: 2, totalExpBand: 5 }))
+    expect(out.edu).toBe('master')
+    expect(out.age).toBe(28)
+    expect(out.totalExpMonths).toBe(60)
+  })
+
+  it('「没有」总经验 = 0 个月是答案;三个新字段未答一律不传', () => {
+    expect(toEngineAnswers(base({ totalExpBand: 1 })).totalExpMonths).toBe(0)
+    const empty = toEngineAnswers(base())
+    expect(empty.edu).toBeUndefined()
+    expect(empty.age).toBeUndefined()
+    expect(empty.totalExpMonths).toBeUndefined()
+  })
+
   it('「还没考」英语 / 「没算过」CRS 不传(引擎照旧出缺口行)', () => {
     const out = toEngineAnswers(base({ clbBand: 4, crsBand: 1 }))
     expect(out.clb).toBeUndefined()
@@ -77,7 +93,7 @@ describe('题库铁律', () => {
   it('每个字段都挂着引擎里真实存在的结论 key', () => {
     for (const [name, def] of Object.entries(FIELDS)) {
       expect(def.unlocks.length, `${name} 挂不上结论就不该入库`).toBeGreaterThan(0)
-      for (const k of def.unlocks) expect(k).toMatch(/^rpt\.[cgna]\./)
+      for (const k of def.unlocks) expect(k).toMatch(/^rpt\.[cgnas]\./)   // s = 换省对照节(L2-08)
     }
   })
 

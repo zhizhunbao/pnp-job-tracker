@@ -18,9 +18,19 @@ export type Answers = {
   provBand: number
   crsBand: number
   pgwpBand: number
+  // 题库扩充 20260802:官方分值表本来就要的三样(先前引擎写死 → 每个省都少算十几分)
+  eduBand: number
+  ageBand: number
+  totalExpBand: number
+  offerBand: number       // 已有字段(卡③专属题),类型里先前漏声明
 }
 
-const EMPTY: Answers = { status: '', nocs: [], provs: [], clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0 }
+// 空答案(页面初始 state 也用它:再抄一份就会漏掉新字段)
+export const EMPTY: Answers = {
+  status: '', nocs: [], provs: [],
+  clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0,
+  eduBand: 0, ageBand: 0, totalExpBand: 0, offerBand: 0,
+}
 
 const parse = (s: string | null): any => { try { return s ? JSON.parse(s) : null } catch { return null } }
 const num = (v: any): number => (typeof v === 'number' && Number.isFinite(v) ? v : 0)
@@ -62,6 +72,7 @@ export function readAnswers(): Answers {
       nocs: arr(cur.nocs), provs: arr(cur.provs),
       clbBand: num(cur.clbBand), expBand: num(cur.expBand), provBand: num(cur.provBand),
       crsBand: num(cur.crsBand), pgwpBand: num(cur.pgwpBand),
+      eduBand: num(cur.eduBand), ageBand: num(cur.ageBand), totalExpBand: num(cur.totalExpBand), offerBand: num(cur.offerBand),
     }
   }
   return migrate() ?? { ...EMPTY }

@@ -10,7 +10,7 @@
 // exclusion(ON)是制度性无清单、uncovered 是本站没数据 —— 三者混为一谈=报告撒谎。
 // 抽选线红线(2026-07-27):线按通道设,对不上通道就不给差分结论,只摆区间;样本小就说小(params 带 n)。
 import { provListCoverage, type MatchDims, type MatchProfile, type MatchVerdict } from './match'
-import { gridStreamOf, scoreProvince, streamMatches, systemShort, type ScoreFactor, type SelfProfile } from './pnpSelfScore'
+import { gridStreamOf, scoreProvince, streamMatches, systemShort, type EduKey, type ScoreFactor, type SelfProfile } from './pnpSelfScore'
 import { areaOfPlace, employerBar, evaluateRequirements, type Requirement, type RuleResult } from './rules'
 import type { OccStats } from './reportFacts'   // 纯类型(reportFacts 反向引 ReportFacts,两边都是 type-only,不成环)
 
@@ -33,8 +33,14 @@ export type ReportFacts = {
   requirements?: Requirement[]      // 官方门槛(pnp_requirements;规则引擎的输入,只 BC 有数据时其余省=未收录)
   fetched?: string                  // 事实聚合的数据日期
 }
-// 卡②基本 4 题里引擎新增消费的字段(currentStatus/clb/targetProvinces 已在 MatchProfile)
-export type ReportExtra = { canadianExpMonths: number | null }
+// 基本题里引擎新增消费的字段(currentStatus/clb/targetProvinces 已在 MatchProfile)。
+// edu/age/totalExpMonths = 题库扩充 20260802:官方分值表本来就要的三样,先前写死(高中/0 岁/无海外经验)。
+export type ReportExtra = {
+  canadianExpMonths: number | null
+  edu?: EduKey | null
+  age?: number | null              // 年龄段中点(题库存档位,换算在 fields.ts)
+  totalExpMonths?: number | null   // 同职业总经验(含海外)
+}
 
 // ── 输出:七卡同一契约 ───────────────────────────────────────────────────────
 export type ReportLine = {
@@ -175,8 +181,8 @@ function requirementLines(prov: string, facts: ReportFacts, profile: MatchProfil
 }
 
 // ── 换省对照(L2-08「换一个省会更有利吗?」)────────────────────────────────────
-// 报告只问 4+2 题,官方分值表要 8 个字段 —— 所以这里算的是**下界**:
-// 只拿已答的语言与加拿大经验去匹官方档位(白名单 only),其余因素一律当未答(0 分)。
+// 官方分值表要 8 个字段,题库问到其中 5 个(学历/年龄/语言/总经验/加拿大经验,20260802 扩充)——
+// 所以这里算的仍是**下界**:只拿已答的去匹官方档位(白名单 only),没问的(法语、6-10 年前旧经验)一律当未答(0 分)。
 // 分值全为非负 ⇒ 已答项之和确实是「至少这么多分」,句子也照实写「至少」。
 // 两条红线:① 未答的因素不许参与匹配(否则「没考语言」会被兜到最低档白捡分);
 // ② 只在下界已过门槛时才说「已达标」,低于门槛**不说不达标**(补齐后只会更高)。
@@ -192,22 +198,34 @@ function recentDrawsOf(facts: ReportFacts, prov: string): ReportDraw[] {
 }
 
 /** 已答字段 → SelfProfile + 自动匹配白名单。没答的字段给中性值,靠 only 挡住,不让它去匹档位 */
-function selfFromAnswers(profile: MatchProfile, months: number | null): { self: SelfProfile; only: Set<string> } {
+function selfFromAnswers(profile: MatchProfile, extra: Partial<ReportExtra>): { self: SelfProfile; only: Set<string> } {
   const only = new Set<string>()
   if (profile.clb != null) { only.add('language'); only.add('language1') }
-  // 加拿大经验当「同职业经验年数」用是下界口径(境外经验也算分,本站没问)——句子里写清是「已答的加拿大经验」
-  if (months != null) { only.add('work'); only.add('work5') }
+  // 经验:官方 work 因素按**总年数**给分,加拿大经验是它的子集 → 两个都答就取大的那个。
+  // 任一答了就参与匹配(答「没有」= 0 年,也是答案)。
+  const months = extra.canadianExpMonths ?? null
+  const total = extra.totalExpMonths ?? null
+  if (months != null || total != null) { only.add('work'); only.add('work5') }
+  if (extra.edu) only.add('education')
+  if (extra.age) only.add('age')
   return {
-    self: { edu: 'highschool', expRecent: months != null ? months / 12 : 0, expOlder: 0, clb1: profile.clb ?? 0, clb2: 0, age: 0 },
+    self: {
+      edu: extra.edu ?? 'highschool',
+      expRecent: Math.max(months ?? 0, total ?? 0) / 12,
+      expOlder: 0,                    // 6-10 年前那段没问(SK 才拆);不问就不匹,不拿 0 去兜档
+      clb1: profile.clb ?? 0,
+      clb2: 0,                        // 法语没问(见题库扩充 §3 路线图)
+      age: extra.age ?? 0,
+    },
     only,
   }
 }
 
-function switchLines(facts: ReportFacts, dims: MatchDims, profile: MatchProfile, months: number | null, targets: string[]): ReportLine[] {
+function switchLines(facts: ReportFacts, dims: MatchDims, profile: MatchProfile, extra: Partial<ReportExtra>, targets: string[]): ReportLine[] {
   const factors = facts.scoreFactors ?? []
   const cur = targets[0]
   if (!cur || !factors.length) return []
-  const { self, only } = selfFromAnswers(profile, months)
+  const { self, only } = selfFromAnswers(profile, extra)
   const scoreOf = (prov: string) => scoreProvince(factors, prov, self, {}, {}, only)
 
   // 抽选事实 → 行尾灰字(Frank 2026-08-01「不需要显示一下最近的最低分数吗」)。
@@ -419,7 +437,7 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
   }
 
   // ── 换省对照(L2-08):现选省 vs 备选省,按官方分值表自算下界分 ────────────────
-  const switches = switchLines(facts, dims, profile, extra.canadianExpMonths, targets)
+  const switches = switchLines(facts, dims, profile, extra, targets)
 
   // ── 联邦 EE 类别(独立信号,不混省提名)───────────────────────────────────
   const eeRows = dims.eeCategories.filter((r) => r.noc === noc && r.drawCrs != null)
@@ -488,7 +506,7 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
 // ── 卡③「选省份」:十省对照,专属题只有一道(手上有没有 offer)──────────────────
 // 免费=库里查得到的(哪个省把你这行放进公开清单、当地在招多少、抽选线区间);
 // 锁区=拿你的答案排出来的完整顺序与每省差距。QC 走自己体系不参与排序(不是 PNP)。
-export type ProvExtra = { hasJobOffer: boolean | null; canadianExpMonths?: number | null }
+export type ProvExtra = Partial<ReportExtra> & { hasJobOffer: boolean | null }
 export function buildProvReport(profile: MatchProfile, extra: ProvExtra, dims: MatchDims, facts: ReportFacts): Report {
   const conclusions: ReportLine[] = []
   const gaps: ReportLine[] = []
@@ -562,7 +580,7 @@ export function buildProvReport(profile: MatchProfile, extra: ProvExtra, dims: M
   nextSteps.push({ key: 'rpt.n.pathways', params: {}, url: '/pathways' })
 
   // 换省对照(L2-08):这张卡的现选省=用户选的目标省,没选就用排序第一的省
-  const switches = switchLines(facts, dims, profile, extra.canadianExpMonths ?? null,
+  const switches = switchLines(facts, dims, profile, extra,
     profile.targetProvinces.length ? profile.targetProvinces : rank.slice(0, 1).map((c) => c.prov))
 
   return {
@@ -640,7 +658,7 @@ export function buildJobReport(profile: MatchProfile, dims: MatchDims, facts: Re
   })
 
   nextSteps.push({ key: 'rpt.n.pathways', params: {}, url: '/pathways' })
-  const switches = switchLines(facts, dims, profile, extra.canadianExpMonths, targets)
+  const switches = switchLines(facts, dims, profile, extra, targets)
   const answered = [profile.currentStatus != null, profile.targetProvinces.length > 0].filter(Boolean).length
   if (answered < 2) gaps.push({ key: 'rpt.g.basics', params: { n: 2 - answered }, verdict: 'na' })
 

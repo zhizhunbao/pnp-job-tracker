@@ -87,18 +87,18 @@ export function StartView({ stats }: { stats: HomeStats }) {
     return (noc: string) => m.get(noc) || ''
   }, [occTop, lang])
 
-  // 七目标入口(架构 v2 L1:能力声明+深链入口,七卡同尺寸):小注=人话+真数,数字缺整条小注不渲
-  const goals: { key: string; href?: string; hot?: boolean; hint: string | null }[] = [
-    { key: 'jobs', href: '/', hot: true, hint: stats.total != null ? t('home.g.jobs.n', { n: num(stats.total) }) : null },
-    { key: 'pr', href: '/pathways', hint: t('home.g.pr.n') },
-    { key: 'prov', href: '/stats', hint: stats.provinces != null ? t('home.g.prov.n', { n: stats.provinces }) : null },
-    // 2026-08-01 Frank「不完善的卡片先关掉,免得影响用户使用」:
-    // 选城市/选学校原本深链到 /stats 与 /pathways —— 卡上写着「选城市」,点进去是一页地区统计,
-    // 那是**没兑现的承诺**,比暂时关掉更伤。等它们有自己的报告(builder)再亮回来。
-    { key: 'city', hint: t('home.g.soon') },
-    { key: 'school', hint: t('home.g.soon') },
-    { key: 'career', href: '/occupations', hint: stats.occupations != null ? t('home.g.career.n', { n: num(stats.occupations) }) : null },
-    { key: 'major', hint: t('home.g.major.n') },
+  // 决策引擎七个出口:上面 4 个有 builder 能出报告,下面 3 个占位(即将上线)。
+  // 2×2 + 3-col 两层网格;占位卡虚线框,不给假入口。加一张卡=加一行。
+  const activeGoals = [
+    { key: 'pr', hint: t('home.g.pr.n') },
+    { key: 'jobs', hint: t('home.g.jobs.n') },
+    { key: 'prov', hint: t('home.g.prov.n') },
+    { key: 'career', hint: t('home.g.career.n') },
+  ]
+  const upcomingGoals = [
+    { key: 'city' },
+    { key: 'school' },
+    { key: 'major' },
   ]
 
   const pills = [
@@ -129,6 +129,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
         .hmHero.hmBand{padding:16px 0 0}
         .hmBtn{display:block;border-radius:8px;padding:12px 20px;font-size:14px;font-weight:600;text-align:center;cursor:pointer;text-decoration:none;border:none;font-family:inherit}
         .hmGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+        .hmGrid3{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
         .hmNums{display:flex;gap:28px;flex-wrap:wrap;justify-content:center;text-align:center}
         .hmNums b{display:block;font-size:32px;line-height:1.15;font-weight:700}
         .hmCtaBand{display:flex;flex-direction:column;gap:12px}
@@ -171,7 +172,8 @@ export function StartView({ stats }: { stats: HomeStats }) {
           .hmBand h2{font-size:24px}
           .hmHero.hmBand{padding:16px 0 0}
           .hmBtn{padding:13px 28px;font-size:15px}
-          .hmGrid{grid-template-columns:repeat(4,1fr);gap:12px}
+          .hmGrid{gap:12px}
+          .hmGrid3{grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
           .hmNums{gap:64px}
           .hmNums b{font-size:44px}
           .hmCtaBand{flex-direction:row;align-items:center}
@@ -187,24 +189,23 @@ export function StartView({ stats }: { stats: HomeStats }) {
           </div>
         </div>
 
-        {/* ② 七目标(白带) */}
+        {/* ② 决策引擎七个出口(白带):上 4 活卡 2×2 + 下 3 占位 3-col */}
         <Band bg="#fff">
           <h2 style={secH}>{t('home.goals')}</h2>
           <div className="hmGrid">
-            {/* 目标卡=决策入口(L2 架构)。只有做完题库与 builder 的卡才进答题页:
-                拿 PR / 找工作 / 职业规划 → /plan/* 两态页(横向扩面第 1 批);
-                其余四卡先回各自数据页深链(点卡弹一套不相干的三问比直接给数据更糟),builder 做一个换一个 */}
-            {goals.map((g) => g.href ? (
-              <a key={g.key} href={PLAN_CARDS[g.key] ?? g.href} className="cardHover" onClick={() => track(`landing_goal_${g.key}`)}
-                style={{ display: 'block', minWidth: 0, background: g.hot ? '#f8fbff' : UI.card, border: `1px solid ${g.hot ? '#bfdbfe' : UI.border}`, borderRadius: 10, padding: '14px 16px', textDecoration: 'none', color: 'inherit' }}>
-                <div style={{ ...tileNm, ...(g.hot && { color: UI.primaryDeep }) }}>{t(`home.g.${g.key}`)}</div>
-                {g.hint && <div style={tileHint}>{g.hint}</div>}
+            {activeGoals.map((g) => (
+              <a key={g.key} href={PLAN_CARDS[g.key]} className="cardHover" onClick={() => track(`landing_goal_${g.key}`)}
+                style={{ display: 'block', minWidth: 0, background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 10, padding: '14px 16px', textDecoration: 'none', color: 'inherit' }}>
+                <div style={tileNm}>{t(`home.g.${g.key}`)}</div>
+                <div style={tileHint}>{g.hint}</div>
               </a>
-            ) : (
-              // 灰态卡(选城市/选学校/选专业):span 非 a,虚线框,无 cursor 无 hover(不上假入口)
+            ))}
+          </div>
+          <div className="hmGrid3">
+            {upcomingGoals.map((g) => (
               <span key={g.key} style={{ display: 'block', minWidth: 0, background: UI.hairline, border: `1px dashed ${UI.border}`, borderRadius: 10, padding: '14px 16px' }}>
                 <div style={{ ...tileNm, color: UI.text3 }}>{t(`home.g.${g.key}`)}</div>
-                {g.hint && <div style={{ ...tileHint, color: UI.text3 }}>{g.hint}</div>}
+                <div style={{ ...tileHint, color: UI.text3 }}>{t('home.g.soon')}</div>
               </span>
             ))}
           </div>

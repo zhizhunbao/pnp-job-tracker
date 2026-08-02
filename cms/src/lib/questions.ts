@@ -28,8 +28,19 @@ const chrome = (stage: Stage) => ({
     : l('See my report', '出报告', '보고서 보기'),
 })
 
-export function buildSurvey(decision: string, stage: Stage, batch = 0) {
-  return { ...chrome(stage), elements: fieldsOf(decision, stage, batch).map((n) => FIELDS[n].q) }
+const CIRCLED = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩']
+
+export function buildSurvey(decision: string, stage: Stage, batch = 0, startIndex = 1) {
+  return {
+    ...chrome(stage),
+    elements: fieldsOf(decision, stage, batch).map((n, i) => {
+      const q = { ...FIELDS[n].q }
+      const prefix = CIRCLED[startIndex + i - 1] ?? `${startIndex + i}.`
+      const t = q.title as L
+      q.title = { default: `${prefix} ${t.default}`, 'zh-cn': `${prefix} ${t['zh-cn']}`, ko: `${prefix} ${t.ko}` }
+      return q
+    }),
+  }
 }
 
 // 站内品牌主题(SurveyJS v2 theme:面板拍平贴站内白卡风,主色=站蓝,圆角同站)

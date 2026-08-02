@@ -455,6 +455,29 @@ describe('换省对照节(L2-08)', () => {
     expect(r2.switches.find((l) => l.params.prov === 'ON')?.tail).toBeUndefined()
   })
 
+  // 题库扩充 20260802:学历/年龄/总经验先前在引擎里写死(高中 / 0 岁 / 只算加拿大经验)——
+  // 问到了就必须真的进官方分值表,否则这三道题白问。
+  it('答了学历与年龄:BC 学历档、SK 年龄档跟着命中(不再按高中与 0 岁算)', () => {
+    const r = buildPrReport(base(), { ...exp12, edu: 'master', age: 28 }, dims, swFacts())
+    const cur = sw(r, 'rpt.s.cur')
+    expect(cur?.params.total).toBe(46)                     // CLB8 25 + 1 年 4 + 硕士 17
+    expect(cur?.params.have).toBe(3)                       // 三项全答 → 不再是「已答 2/3」
+    const sk = sw(r, 'rpt.s.alt.mark')
+    expect(sk?.params.total).toBe(34)                      // 20 + 2 + 年龄 12
+    expect(sk?.params.rest).toBe(0)
+  })
+
+  it('总经验(含海外)与加拿大经验取大的那个 —— 海外 5 年不再被当成 1 年', () => {
+    const r = buildPrReport(base(), { ...exp12, totalExpMonths: 60 }, dims, swFacts())
+    expect(sw(r, 'rpt.s.cur')?.params.total).toBe(45)      // CLB8 25 + 5 年 20(学历仍未答=0)
+  })
+
+  it('新字段没答照旧不白捡分:学历/年龄缺答时那两档一分不给', () => {
+    const r = buildPrReport(base(), { ...exp12, edu: null, age: null }, dims, swFacts())
+    expect(sw(r, 'rpt.s.cur')?.params.total).toBe(29)      // 与扩充前逐字一致
+    expect(sw(r, 'rpt.s.alt.mark')?.params.total).toBe(22)
+  })
+
   it('缺项钩子指完整估分器;免责句不再逐节重复(全站页脚已有)', () => {
     const r = buildPrReport(base(), exp12, dims, swFacts())
     expect(keys(r.switches)).not.toContain('rpt.s.note')

@@ -10,15 +10,21 @@ export type Decision = {
   explore: string[][]      // 探索题按批推进,一批一屏组
 }
 
+// 题库扩充 20260802:基本题按「你是谁 → 技能 → 经验 → 工作 → 去哪」排,一屏内就是对话顺序。
+// 每张卡只取自己算得动的子集(挂不上结论的字段不问,铁律没变)。
 export const DECISIONS: Record<string, Decision> = {
-  pr: { basic: ['status', 'clbBand', 'expBand', 'provBand'], explore: [['crsBand', 'pgwpBand']] },
+  pr: {
+    basic: ['status', 'eduBand', 'ageBand', 'clbBand', 'totalExpBand', 'expBand', 'provBand'],
+    explore: [['crsBand', 'pgwpBand']],
+  },
   // 卡①找工作 / 卡⑥职业规划:零新题 —— 职业来自选职业(不是四选一题),其余全在共用底座里。
   // 这就是横向扩面成立的原因:同一批答案,三张卡都能出报告。
+  // 「手上有没有 offer」不进本卡:buildJobReport 不消费它,问了改不了任何一行(挂不上结论就不问)。
   job: { basic: ['status', 'provBand'], explore: [] },
   career: { basic: ['provBand'], explore: [] },
-  // 卡③选省份:只问一道专属题 —— 目标省是这张卡要**算出来**的东西,不能拿它当输入问;
-  // 处境/英语已在底座里但改不了本卡任何结论(省级语言门槛未建模),照铁律不重复问。
-  prov: { basic: ['offerBand'], explore: [] },
+  // 卡③选省份:目标省是这张卡要**算出来**的东西,不能拿它当输入问;其余四道都真的进换省对照的分值表
+  // (先前只问 offer 一道 —— 于是每个省都按「高中、0 岁、无海外经验」算,那才是本卡最不准的一环)。
+  prov: { basic: ['eduBand', 'ageBand', 'clbBand', 'totalExpBand', 'offerBand'], explore: [] },
 }
 
 export const fieldsOf = (decision: string, stage: Stage, batch = 0): string[] => {

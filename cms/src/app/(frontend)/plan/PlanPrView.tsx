@@ -18,7 +18,7 @@ import { SiteFooter } from '../SiteFooter'
 import { shortOcc } from '../quiz/EntryQuiz'
 import { OccPicker } from '../quiz/OccPicker'
 import { Button, Notice, PageShell, Tag, UI } from '../ui/primitives'
-import { clearAnswers, readAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
+import { EMPTY, clearAnswers, readAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
 import { DECISIONS, fieldsOf } from '@/lib/decisions'
 import { buildSurvey, SURVEY_THEME } from '@/lib/questions'
 import { goBackOr } from '../BackLink'
@@ -182,7 +182,7 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
   const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
   const t = useMemo(() => makeT(lang), [lang])
 
-  const [bands, setBands] = useState<Answers>({ status: '', nocs: [], provs: [], clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0 })
+  const [bands, setBands] = useState<Answers>(EMPTY)
   const [noc, setNoc] = useState('')
   const [nocTitle, setNocTitle] = useState('')
   const [view, setView] = useState<'quiz' | 'report'>('quiz')
@@ -264,7 +264,8 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
 
   const survey = useMemo(() => {
     if (!ready || view !== 'quiz') return null
-    const m = new Model(buildSurvey(decision, stage))
+    const startIdx = stage === 'basic' ? 1 : DECISIONS[decision].basic.length + 1
+    const m = new Model(buildSurvey(decision, stage, 0, startIdx))
     m.applyTheme(SURVEY_THEME as any)
     m.locale = lang === 'zh' ? 'zh-cn' : lang === 'ko' ? 'ko' : 'en'
     const b = readAnswers()
@@ -401,7 +402,7 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                 探索题批次仍单独一屏(它是「再答两题解锁」的钩子,不混进基本题)。 */}
             <div style={{ ...CARD, padding: '14px 20px 6px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingBottom: 12, marginBottom: 14, borderBottom: `1px solid ${UI.hairline}` }}>
-                <Tag variant={stage === 'explore' ? 'warn' : 'region'}>{t(stage === 'explore' ? 'plan.set.explore' : 'plan.set.basic')}</Tag>
+                {stage === 'explore' && <Tag variant="warn">{t('plan.set.explore')}</Tag>}
                 <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
                   {stage === 'explore' && (
                     <button onClick={() => setStage('basic')} style={BTN}>{t('plan.explore.basic')}</button>
@@ -413,16 +414,14 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
               {/* 职业:它就是这卷的第一道题(题干与四选一同一套字号),只是控件不是单选框。
                   选中即写入(onChange),自己的动作按钮收起 —— 动作只留卷底那一个 */}
               {stage === 'basic' && (
-                <div style={{ maxWidth: 600, marginBottom: 22 }}>
+                <div style={{ maxWidth: 600, margin: '0 auto 22px' }}>
                   <div style={{ fontSize: 19, fontWeight: 700, lineHeight: 1.55, marginBottom: 6 }}>{t('quiz.q2')}</div>
-                  <div style={{ fontSize: 12.5, color: UI.text2, marginBottom: 12 }}>{t('quiz.q2sub')}</div>
                   <OccPicker inline hideDone t={t} lang={lang} initial={bands.nocs}
                     onChange={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || '') }}
                     onDone={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || '') }} />
                 </div>
               )}
-              {/* 题目区限宽但**左对齐**:与卡头的题组标签同一条左边线;居中会跟标签错开一截(实拍) */}
-              <div className="plSurvey" style={{ maxWidth: 600 }}>{survey && <Survey model={survey} />}</div>
+              <div className="plSurvey" style={{ maxWidth: 600, margin: '0 auto' }}>{survey && <Survey model={survey} />}</div>
             </div>
           </>
         ) : (
