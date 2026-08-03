@@ -41,7 +41,8 @@ def remote_head() -> str | None:
     try:
         out = subprocess.run(
             ["git", "ls-remote", "origin", "refs/heads/main"],
-            capture_output=True, text=True, timeout=TIMEOUT, check=True,
+            capture_output=True, text=True, encoding="utf-8", errors="replace",
+            timeout=TIMEOUT, check=True,
         ).stdout.strip()
         return out.split()[0] if out else None
     except (subprocess.SubprocessError, OSError, IndexError):
@@ -54,6 +55,34 @@ def live_commit() -> str | None:
             return (json.load(r).get("commit") or "").strip() or None
     except (urllib.error.URLError, json.JSONDecodeError, TimeoutError, OSError):
         return None
+
+
+# Render 只在 head 提交消息不含 skip 标记时才构建 —— 项目惯例:纯文档/纯数据提交一律带 [skip render]。
+# 于是「线上 SHA 落后」有两种完全不同的含义,混为一谈的代价是哨兵天天喊狼来了、喊到没人信,
+# 正好毁掉它 2026-07-21 那次事故(六提交白躺一天)换来的价值:
+#   · 差集里有**不带 skip** 的提交 → 真没上线,要报警
+#   · 差集**全是带 skip** 的提交   → 本来就不该构建,线上是对的
+SKIP_MARKERS = ("[skip render]", "[skip ci]", "[skip cd]", "[no ci]")
+
+
+def unshipped(live: str, want: str) -> list[str] | None:
+    """线上..origin/main 之间**该部署却没部署**的提交(带 skip 标记的不算)。
+    取不到本地对象(浅克隆/没 fetch)→ None,调用方退回旧的「只比 SHA」口径,宁可误报不漏报。"""
+    try:
+        subprocess.run(["git", "fetch", "--quiet", "origin"], capture_output=True, timeout=TIMEOUT)
+        # ⚠️ 必须显式 utf-8:Windows 上 text=True 走 cp1252,提交消息是中文 → 读取线程里
+        # UnicodeDecodeError,而异常在 reader thread 里,外面只看到「拿不到」(2026-08-03 实撞)。
+        out = subprocess.run(
+            ["git", "log", "--format=%h	%s", f"{live}..{want}"],
+            capture_output=True, text=True, encoding="utf-8", errors="replace",
+            timeout=TIMEOUT, check=True,
+        ).stdout.strip()
+    except (subprocess.SubprocessError, OSError):
+        return None
+    if not out:
+        return []
+    rows = [ln.split("	", 1) for ln in out.splitlines() if "	" in ln]
+    return [f"{h} {m}" for h, m in rows if not any(k in m.lower() for k in SKIP_MARKERS)]
 
 
 def main() -> int:
@@ -72,6 +101,15 @@ def main() -> int:
             print(f"[部署哨兵] ✓ 线上 == origin/main ({live[:12]})")
         return 0
 
+    # 差集里全是带 skip 标记的提交(纯文档/纯数据)→ 本来就不该构建,线上是对的,不报警。
+    # 拿不到本地对象时 unshipped() 返回 None → 退回旧的「只比 SHA」口径,宁可误报不漏报。
+    pending = unshipped(live, want)
+    if pending is not None and not pending:
+        if not quiet:
+            print(f"[部署哨兵] ✓ 线上 {live[:12]} 落后 origin/main {want[:12]},"
+                  "但差的提交**全带 skip 标记**(纯文档/纯数据),本来就不该构建 —— 正常")
+        return 0
+
     print(
         "[部署哨兵] ⚠ 线上不是最新提交 —— **代码推上去了但没上线**\n"
         f"    origin/main : {want[:12]}\n"
@@ -80,6 +118,10 @@ def main() -> int:
         "    (最常见原因:构建分钟耗尽 + spend limit 拦住自动补买)\n"
         "    在此之前,任何「改了怎么没生效」都不必当代码 bug 查。"
     )
+    if pending:
+        print(f"    该上线却没上线的提交({len(pending)} 个):")
+        for p in pending[:8]:
+            print(f"      · {p[:110]}")
     return 1
 
 
