@@ -17,7 +17,10 @@
 >   serverExternalPackages;Linux 缺 DOMMatrix→shim;**生产=standalone,pdfjs worker 动态加载
 >   tracing 追不到**→outputFileTracingIncludes 点名。三层全被裸 catch 吞过 —— 修=错误留痕 +
 >   **@test.local detail 探针**(拿不到 Render 日志时最快的眼睛)。E11-07 的 PDF 上传因此从上线就是坏的,同批治愈。
-> - 手上欠着:Frank 真号跑 LLM 对照全链(匿名面/上传面都验了,就差登录态真跑一次 Haiku);死键清理批。
+> - **LLM 换道朋友的 qwen3.6**(75b4244,Frank「不用 Haiku」;生产测试号真跑 200:10 行 8 命中、
+>   缺项排前、扣次正常):completeText 加 opts.provider 按调用点定向,只有 resume-match 换道,
+>   advisor/建档照旧走全局 LLM_PROVIDER;服务挂了报 rm.err 不静默切云(#102 账单教训)。
+>   **LLM 全链已验**(测试号),Frank 真号可选验。手上欠着:死键清理批(rpt.lock.<类>/rpt.cta.*/jd.rep.lock*/rm.eyebrow)。
 >
 > **🔥 生产僵死事故(2026-08-03 16:0x–16:28,约 20 分钟,a195ee3 已修)**:seed 大改 jobs 表后,
 > 首页 `fetchTotalAndProof` 三连 count(全表扫、**每请求现算无缓存**)从 ~2s 涨到 ~10s,
