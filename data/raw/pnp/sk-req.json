@@ -1,0 +1,47 @@
+{
+  "province": "SK",
+  "program": "PNP",
+  "source": "SINP — International Skilled Worker (Employment Offer & Occupations In-Demand)",
+  "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/international-skilled-worker-with-employment-offer",
+  "pageUrl": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/international-skilled-worker-occupations-in-demand",
+  "guideEffective": "",
+  "fetched": "2026-08-03",
+  "requirements": [
+    {
+      "stream": "SINP International Skilled Worker (Employment Offer / Occupations In-Demand / Express Entry)",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 4,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "Canadian Language Benchmark (CLB) 4 or higher; employers and regulatory bodies may require higher scores",
+      "section": "Eligibility — Language",
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/international-skilled-worker-with-employment-offer",
+      "factor": "language"
+    },
+    {
+      "stream": "SINP International Skilled Worker (Employment Offer / Occupations In-Demand / Express Entry)",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 12,
+      "valueText": "",
+      "unit": "months",
+      "appliesTeer": [],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "One year of full-time (at least 30 hours per week) paid work experience in your intended occupation within the past 10 years",
+      "section": "Eligibility — Work experience",
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/international-skilled-worker-with-employment-offer",
+      "factor": "experience"
+    }
+  ]
+}

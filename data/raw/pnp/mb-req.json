@@ -1,0 +1,3192 @@
+{
+  "province": "MB",
+  "program": "PNP",
+  "source": "MPNP — In-Demand Occupations List & Skilled Worker Overseas eligibility",
+  "url": "https://immigratemanitoba.com/mpnp/idol/",
+  "pageUrl": "https://immigratemanitoba.com/mpnp/skilled-worker/swo/eligibility/",
+  "guideEffective": "",
+  "fetched": "2026-08-03",
+  "requirements": [
+    {
+      "stream": "MPNP Skilled Worker Overseas",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 4,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        4,
+        5
+      ],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "Applicants whose occupation is classified at NOC TEER 4 or 5 must have at least CLB/NCLC 4 to be eligible to apply",
+      "section": "Skilled Worker Overseas — Factor 1: Language Proficiency",
+      "url": "https://immigratemanitoba.com/mpnp/skilled-worker/swo/eligibility/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        0
+      ],
+      "appliesNoc": "10010",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 10010 (Financial managers, TEER 0)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        0
+      ],
+      "appliesNoc": "10011",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 10011 (Human resources managers, TEER 0)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        0
+      ],
+      "appliesNoc": "10019",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 10019 (Other administrative services managers, TEER 0)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        0
+      ],
+      "appliesNoc": "10020",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 10020 (Insurance, real estate and financial brokerage managers, TEER 0)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        0
+      ],
+      "appliesNoc": "10021",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 10021 (Banking, credit and other investment managers, TEER 0)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        0
+      ],
+      "appliesNoc": "10022",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 10022 (Advertising, marketing and public relations managers, TEER 0)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "11100",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 11100 (Financial auditors and accountants, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "11101",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 11101 (Financial and investment analysts, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "11102",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 11102 (Financial advisors, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "11109",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 11109 (Other financial officers, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "11200",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 11200 (Human resources professionals, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "11201",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 11201 (Professional occupations in business management consulting, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "11202",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 11202 (Professional occupations in advertising, marketing and public relations, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "12011",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 12011 (Supervisors, finance and insurance office workers, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "12013",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 12013 (Supervisors, supply chain, tracking and scheduling coordination occupations, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "12101",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 12101 (Human resources and recruitment officers, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "12110",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 12110 (Court reporters, medical transcriptionists and related occupations, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "12200",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 12200 (Accounting technicians and bookkeepers, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        3
+      ],
+      "appliesNoc": "13100",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 13100 (Administrative officers, TEER 3)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        3
+      ],
+      "appliesNoc": "13101",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 13101 (Property administrators, TEER 3)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        3
+      ],
+      "appliesNoc": "13110",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 13110 (Administrative assistants, TEER 3)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        3
+      ],
+      "appliesNoc": "13111",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 13111 (Legal administrative assistants, TEER 3)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        3
+      ],
+      "appliesNoc": "13201",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 13201 (Production and transportation logistics coordinators, TEER 3)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        0
+      ],
+      "appliesNoc": "20010",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 20010 (Engineering managers, TEER 0)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        0
+      ],
+      "appliesNoc": "20011",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 20011 (Architecture and science managers, TEER 0)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        0
+      ],
+      "appliesNoc": "20012",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 20012 (Computer and information systems managers, TEER 0)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "21110",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 21110 (Biologists and related scientists, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "21112",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 21112 (Agricultural representatives, consultants and specialists, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "21200",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 21200 (Architects, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "21203",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 21203 (Land surveyors, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "21210",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 21210 (Mathematicians, statisticians and actuaries, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "21211",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 21211 (Data scientists, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "21220",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 21220 (Cybersecurity specialists, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "21221",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 21221 (Business systems specialists, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "21222",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 21222 (Information systems specialists, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "21223",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 21223 (Database analysts and data administrators, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "21230",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 21230 (Computer systems developers and programmers, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "21231",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 21231 (Software engineers and designers, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "21232",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 21232 (Software developers and programmers, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "21233",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 21233 (Web designers, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "21234",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 21234 (Web developers and programmers, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "21300",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 21300 (Civil engineers, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "21301",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 21301 (Mechanical engineers, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "21310",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 21310 (Electrical and electronics engineers, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "21311",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 21311 (Computer engineers (except software engineers and designers), TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "21321",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 21321 (Industrial and manufacturing engineers, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "22100",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 22100 (Chemical technologists and technicians, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "22101",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 22101 (Geological and mineral technologists and technicians, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "22110",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 22110 (Biological technologists and technicians, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "22111",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 22111 (Agricultural and fish products inspectors, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "22212",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 22212 (Drafting technologists and technicians, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "22220",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 22220 (Computer network and web technicians, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "22221",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 22221 (User support technicians, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "22232",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 22232 (Occupational health and safety specialists, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "22300",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 22300 (Civil engineering technologists and technicians, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "22301",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 22301 (Mechanical engineering technologists and technicians, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "22302",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 22302 (Industrial engineering and manufacturing technologists and technicians, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "22303",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 22303 (Construction estimators, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "22310",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 22310 (Electrical and electronics engineering technologists and technicians, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "22311",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 22311 (Electronic service technicians (household and business equipment), TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "22313",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 22313 (Aircraft instrument, electrical and avionics mechanics, technicians and inspectors, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        0
+      ],
+      "appliesNoc": "30010",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 30010 (Managers in health care, TEER 0)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "31112",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 31112 (Audiologists and speech-language pathologists, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "31120",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 31120 (Pharmacists, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "31121",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 31121 (Dietitians and nutritionists, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "31200",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 31200 (Psychologists, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "31202",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 31202 (Physiotherapists, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "31203",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 31203 (Occupational therapists, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "31301",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 31301 (Registered nurses and registered psychiatric nurses, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "31303",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 31303 (Physician assistants, midwives and allied health professionals, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "32101",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 32101 (Licensed practical nurses, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "32103",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 32103 (Respiratory therapists, clinical perfusionists and cardiopulmonary technologists, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "32104",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 32104 (Animal health technologists and veterinary technicians, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "32109",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 32109 (Other technical occupations in therapy and assessment, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "32111",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 32111 (Dental hygienists and dental therapists, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "32120",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 32120 (Medical laboratory technologists, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "32121",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 32121 (Medical radiation technologists, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "32124",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 32124 (Pharmacy technicians, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "32129",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 32129 (Other medical technologists and technicians, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "32201",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 32201 (Massage therapists, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        3
+      ],
+      "appliesNoc": "33101",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 33101 (Medical laboratory assistants and related technical occupations, TEER 3)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        3
+      ],
+      "appliesNoc": "33102",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 33102 (Nurse aides, orderlies and patient service associates, TEER 3)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        3
+      ],
+      "appliesNoc": "33103",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 33103 (Pharmacy technical assistants and pharmacy assistants, TEER 3)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        0
+      ],
+      "appliesNoc": "40030",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 40030 (Managers in social, community and correctional services, TEER 0)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "41101",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 41101 (Lawyers and Quebec notaries, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "41300",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 41300 (Social workers, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "41301",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 41301 (Therapists in counselling and related specialized therapies, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "41310",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 41310 (Police investigators and other investigative occupations, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "41321",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 41321 (Career development practitioners and career counsellors (except education), TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "41400",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 41400 (Natural and applied science policy researchers, consultants and program officers, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "41402",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 41402 (Business development officers and market researchers and analysts, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "41403",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 41403 (Social policy researchers, consultants and program officers, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "41404",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 41404 (Health policy researchers, consultants and program officers, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "41405",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 41405 (Education policy researchers, consultants and program officers, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "41406",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 41406 (Recreation, sports and fitness policy researchers, consultants and program officers, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "41407",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 41407 (Program officers unique to government, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "42200",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 42200 (Paralegal and related occupations, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "42201",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 42201 (Social and community service workers, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "42202",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 42202 (Early childhood educators and assistants, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "42203",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 42203 (Instructors of persons with disabilities, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        0
+      ],
+      "appliesNoc": "50012",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 50012 (Recreation, sports and fitness program and service directors, TEER 0)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        1
+      ],
+      "appliesNoc": "51120",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 51120 (Producers, directors, choreographers and related occupations, TEER 1)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "52113",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 52113 (Audio and video recording technicians, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "52120",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 52120 (Graphic designers and illustrators, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "52121",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 52121 (Interior designers and interior decorators, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        3
+      ],
+      "appliesNoc": "53123",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 53123 (Theatre, fashion, exhibit and other creative designers, TEER 3)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        4
+      ],
+      "appliesNoc": "54100",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 54100 (Program leaders and instructors in recreation, sport and fitness, TEER 4)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        0
+      ],
+      "appliesNoc": "60010",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 60010 (Corporate sales managers, TEER 0)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        0
+      ],
+      "appliesNoc": "60020",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 60020 (Retail and wholesale trade managers, TEER 0)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        0
+      ],
+      "appliesNoc": "60040",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 60040 (Managers in customer and personal services, TEER 0)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "62010",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 62010 (Retail sales supervisors, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "62020",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 62020 (Food service supervisors, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "62100",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 62100 (Technical sales specialists – wholesale trade, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "62101",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 62101 (Retail and wholesale buyers, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        3
+      ],
+      "appliesNoc": "63101",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 63101 (Real estate agents and salespersons, TEER 3)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        3
+      ],
+      "appliesNoc": "63102",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 63102 (Financial sales representatives, TEER 3)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        3
+      ],
+      "appliesNoc": "63200",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 63200 (Cooks, TEER 3)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        3
+      ],
+      "appliesNoc": "63202",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 63202 (Bakers, TEER 3)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        4
+      ],
+      "appliesNoc": "64100",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 64100 (Retail salespersons and visual merchandisers, TEER 4)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        4
+      ],
+      "appliesNoc": "64409",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 64409 (Other customer and information services representatives, TEER 4)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        0
+      ],
+      "appliesNoc": "70010",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 70010 (Construction managers, TEER 0)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        0
+      ],
+      "appliesNoc": "70011",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 70011 (Home building and renovation managers, TEER 0)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        0
+      ],
+      "appliesNoc": "70012",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 70012 (Facility operation and maintenance managers, TEER 0)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        0
+      ],
+      "appliesNoc": "70020",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 70020 (Managers in transportation, TEER 0)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "72100",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 72100 (Machinists and machining and tooling inspectors, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "72101",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 72101 (Tool and die makers, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "72102",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 72102 (Sheet metal workers, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "72106",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 72106 (Welders and related machine operators, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 6,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "72200",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 6 for NOC 72200 (Electricians (except industrial and power system), TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 6,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "72201",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 6 for NOC 72201 (Industrial electricians, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "72203",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 72203 (Electrical power line and cable workers, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "72204",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 72204 (Telecommunications line and cable workers, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "72205",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 72205 (Telecommunications equipment installation and cable television service technicians, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "72300",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 72300 (Plumbers, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "72310",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 72310 (Carpenters, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "72400",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 72400 (Construction millwrights and industrial mechanics, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "72401",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 72401 (Heavy-duty equipment mechanics, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 6,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "72402",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 6 for NOC 72402 (Heating, refrigeration and air conditioning mechanics, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "72404",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 72404 (Aircraft mechanics and aircraft inspectors, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "72405",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 72405 (Machine fitters, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "72410",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 72410 (Automotive service technicians, truck and bus mechanics and mechanical repairers, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "72411",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 72411 (Auto body collision, refinishing and glass technicians and damage repair estimators, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 6,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "72500",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 6 for NOC 72500 (Crane operators, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "72600",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 72600 (Air pilots, flight engineers and flying instructors, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        3
+      ],
+      "appliesNoc": "73100",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 73100 (Concrete finishers, TEER 3)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        3
+      ],
+      "appliesNoc": "73102",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 73102 (Plasterers, drywall installers and finishers and lathers, TEER 3)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        3
+      ],
+      "appliesNoc": "73112",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 73112 (Painters and decorators (except interior decorators), TEER 3)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        3
+      ],
+      "appliesNoc": "73113",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 73113 (Floor covering installers, TEER 3)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        3
+      ],
+      "appliesNoc": "73310",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 73310 (Railway and yard locomotive engineers, TEER 3)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        3
+      ],
+      "appliesNoc": "73311",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 73311 (Railway conductors and brakemen/women, TEER 3)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        4
+      ],
+      "appliesNoc": "74202",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 74202 (Air transport ramp attendants, TEER 4)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        5
+      ],
+      "appliesNoc": "75101",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 75101 (Material handlers, TEER 5)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 6,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        5
+      ],
+      "appliesNoc": "75110",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 6 for NOC 75110 (Construction trades helpers and labourers, TEER 5)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        0
+      ],
+      "appliesNoc": "80020",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 80020 (Managers in agriculture, TEER 0)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        0
+      ],
+      "appliesNoc": "90010",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 90010 (Manufacturing managers, TEER 0)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        0
+      ],
+      "appliesNoc": "90011",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 90011 (Utilities managers, TEER 0)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        2
+      ],
+      "appliesNoc": "92100",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 5 for NOC 92100 (Power engineers and power systems operators, TEER 2)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP In-Demand Occupations List",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 7,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        4
+      ],
+      "appliesNoc": "94141",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The MPNP In-Demand Occupations List sets a minimum CLB 7 for NOC 94141 (Industrial butchers and meat cutters, poultry preparers and related workers, TEER 4)",
+      "section": "In-Demand Occupations List — Minimum CLB",
+      "url": "https://immigratemanitoba.com/mpnp/idol/",
+      "factor": "language"
+    }
+  ]
+}

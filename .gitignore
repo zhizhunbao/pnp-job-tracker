@@ -50,3 +50,6 @@ cms/dev.log
 # ESDC LMIA 季度源 + 聚合表(16MB+,可重建;E6-02)
 /data/raw/lmia/
 .claude/skills/iterate-audit/credentials.local.json
+
+# 政策雷达产物(crawl 役时更再生成:manifest/changes/html_cache,후자上千文件)
+/data/crawl/

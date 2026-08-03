@@ -1,0 +1,55 @@
+{
+  "province": "NL",
+  "program": "PNP",
+  "source": "NLPNP — Skilled Worker Category Eligibility Criteria Policy",
+  "url": "https://www.gov.nl.ca/immigration/4-skilled-worker-category-eligibility-criteria/",
+  "pageUrl": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/skilled-worker-category/",
+  "guideEffective": "",
+  "fetched": "2026-08-03",
+  "requirements": [
+    {
+      "stream": "NLPNP Skilled Worker Category",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 4,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        4,
+        5
+      ],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "Applicants with NOC TEER 4 or 5 job offers must submit a valid language test at CLB/NCLC 4 equivalent, valid throughout processing",
+      "section": "Skilled Worker Category Eligibility Criteria — language",
+      "url": "https://www.gov.nl.ca/immigration/4-skilled-worker-category-eligibility-criteria/",
+      "factor": "language"
+    },
+    {
+      "stream": "NLPNP Skilled Worker Category",
+      "subject": "applicant",
+      "op": "none",
+      "value": null,
+      "valueText": "",
+      "unit": "",
+      "appliesTeer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "No language test is required for NOC TEER 0, 1, 2, 3 job offers; the category accepts job offers in TEER 0, 1, 2, 3, 4 or 5 occupations",
+      "section": "Skilled Worker Category Eligibility Criteria — language",
+      "url": "https://www.gov.nl.ca/immigration/4-skilled-worker-category-eligibility-criteria/",
+      "factor": "language"
+    }
+  ]
+}

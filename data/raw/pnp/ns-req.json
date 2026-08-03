@@ -1,0 +1,87 @@
+{
+  "province": "NS",
+  "program": "PNP",
+  "source": "Nova Scotia Nominee Program — Skilled Worker Application Guide",
+  "url": "https://liveinnovascotia.com/sites/default/files/2026-02/Guide-NSNP-Skilled-Worker-English.pdf",
+  "pageUrl": "https://liveinnovascotia.com/skilled-worker",
+  "guideEffective": "July 2026",
+  "fetched": "2026-08-03",
+  "requirements": [
+    {
+      "stream": "Nova Scotia Nominee Program — Skilled Worker stream",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 5,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "Canadian Language Benchmarks (CLB) or NCLC Level 5 or higher for jobs in NOC TEER 0, 1, 2, and 3 (Skilled Worker, Critical Construction Worker and Occupations in Demand categories)",
+      "section": "Language — NOC TEER 0, 1, 2 and 3",
+      "factor": "language"
+    },
+    {
+      "stream": "Nova Scotia Nominee Program — Skilled Worker stream",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 4,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        4,
+        5
+      ],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "An approved language test showing at least CLB/NCLC 4 is mandatory for jobs in NOC TEER 4 and 5, issued within two years of the NSNP submission",
+      "section": "Language — NOC TEER 4 and 5",
+      "factor": "language"
+    },
+    {
+      "stream": "Nova Scotia Nominee Program — Skilled Worker stream",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 12,
+      "valueText": "",
+      "unit": "months",
+      "appliesTeer": [],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "12 complete calendar months of paid work within the last 5 years and a minimum of 1,560 hours, related to the job being offered (volunteer work and unpaid internships do not count)",
+      "section": "Skilled Workers — work experience",
+      "factor": "experience"
+    },
+    {
+      "stream": "Nova Scotia Nominee Program — Skilled Worker stream",
+      "subject": "employer",
+      "op": ">=",
+      "value": 2,
+      "valueText": "",
+      "unit": "years",
+      "appliesTeer": [],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The employer must have operated in Nova Scotia for at least 2 years",
+      "section": "Core Requirements — employer",
+      "factor": "empYears"
+    }
+  ]
+}

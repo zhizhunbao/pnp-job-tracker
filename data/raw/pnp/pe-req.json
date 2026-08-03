@@ -1,0 +1,52 @@
+{
+  "province": "PE",
+  "program": "PNP",
+  "source": "PEI Workforce Application Guide",
+  "url": "https://www.princeedwardisland.ca/sites/default/files/publications/pei_workforce_application_guide.pdf",
+  "pageUrl": "https://www.princeedwardisland.ca/en/information/office-of-immigration/pei-pnp-workforce-streams",
+  "guideEffective": "January 2026",
+  "fetched": "2026-08-03",
+  "requirements": [
+    {
+      "stream": "PEI PNP Workforce streams (Skilled Worker / Critical Worker / International Graduate / Occupations in Demand)",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 4,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "A valid language test from an IRCC-approved institution with a minimum score of CLB/NCLC 4 (test valid for 2 years); required by all PEI Workforce streams",
+      "section": "Step 1: Assess Your Eligibility",
+      "url": "https://www.princeedwardisland.ca/sites/default/files/publications/pei_workforce_application_guide.pdf",
+      "factor": "language"
+    },
+    {
+      "stream": "PEI PNP Workforce — Skilled Worker stream",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 24,
+      "valueText": "",
+      "unit": "months",
+      "appliesTeer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "At least two years (24 months) of full-time work experience in the past five (5) years, with a full-time non-seasonal job offer in NOC TEER 0-3 (the Occupations in Demand stream requires only 12 months, but is limited to its named NOC list)",
+      "section": "Skilled Worker Stream",
+      "url": "https://www.princeedwardisland.ca/sites/default/files/publications/pei_workforce_application_guide.pdf",
+      "factor": "experience"
+    }
+  ]
+}
