@@ -2,8 +2,8 @@
 // 多雇主对比视图(D3 / E5-06):维度行 × 雇主列(stats compare 转置先例);
 // 免费=⑤价值时刻先例(价值点+模糊示例+升级钮,真值不出服务端);Pro=全维度+「与我的匹配」计数行。
 // 红线:摆事实高亮差异不下结论;LMIA=历史事实≠担保(ce.note);缺数「—」不猜。
-import { useEffect, useState } from 'react'
-import { type Lang, type TFn } from '../../jobs/i18n'
+import { useState } from 'react'
+import { type TFn } from '../../jobs/i18n'
 import { useLang } from '../../LangProvider'
 import { SiteHeader } from '../../SiteHeader'
 import { SiteFooter } from '../../SiteFooter'

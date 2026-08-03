@@ -2,7 +2,6 @@
 // 定价页视图(E5-01):对照表与按钮三态在 jobs/PricingModal.tsx 的 PricingCard(单一来源,弹窗/页面共用);
 // 本页只是 SEO/直链/Stripe 回跳用的页面壳(E8-02 拍板:站内入口一律开定价弹窗)。caps 由服务端 plan.ts 传入。
 import { useEffect, useState } from 'react'
-import { type Lang } from '../jobs/i18n'
 import { useLang } from '../LangProvider'
 import { AuthModal } from '../jobs/AuthForm'
 import { PricingCard, type PriceCaps } from '../jobs/PricingModal'

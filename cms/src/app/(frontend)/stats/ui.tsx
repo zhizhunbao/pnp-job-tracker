@@ -1,5 +1,6 @@
 'use client'
 // 地区统计共享 UI(E5-04):壳(顶栏+语言)+ slug 映射 + 指标卡/口径行。页面零计算,只渲染 stats 行。
+import { useState } from 'react'
 import { type Lang, type TFn } from '../jobs/i18n'
 import { IconPaperclip } from '../Icons'
 import { SiteHeader } from '../SiteHeader'

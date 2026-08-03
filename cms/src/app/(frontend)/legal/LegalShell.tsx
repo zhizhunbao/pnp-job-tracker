@@ -1,7 +1,6 @@
 'use client'
 // 法务页共享外壳(E4-02):四件套(免责/隐私/条款/关于)共用。内容各页自带三语字典(章节数组),
 // i18n.ts 只管 UI 壳 —— 法务长文不进全局字典。文案为模板级自拟,不构成法律意见(收入后请专业审阅,backlog)。
-import { useEffect, useState } from 'react'
 import { type Lang } from '../jobs/i18n'
 import { useLang } from '../LangProvider'
 import { SiteHeader } from '../SiteHeader'

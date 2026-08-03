@@ -7,7 +7,7 @@
 // 没答过 → 页内拉起 EntryQuiz(同一组件不复制)。答案存 localStorage,改答案 → 报告立刻重算。
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { streamDisplay, eeDisplay, type Lang, type TFn } from '../jobs/i18n'
+import { streamDisplay, eeDisplay, type TFn } from '../jobs/i18n'
 import { useLang } from '../LangProvider'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'

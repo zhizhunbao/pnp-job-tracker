@@ -22,7 +22,13 @@ export function useLang(): [Lang, (l: Lang) => void, TFn] {
 
 export function LangProvider({ initial, children }: { initial: Lang; children: React.ReactNode }) {
   const [lang, setLangState] = useState<Lang>(initial)
-  const setLang = (l: Lang) => { saveLang(l); setLangState(l) }
+  // html lang 由 SSR 按 cookie 渲;当场切换时同步改掉,否则「内容已是韩文、lang 还写着 en」——
+  // 读屏器会用错发音规则(搜索引擎看到的永远是 SSR 那份,不受影响)
+  const setLang = (l: Lang) => {
+    saveLang(l)
+    setLangState(l)
+    try { document.documentElement.lang = l } catch { /* ignore */ }
+  }
 
   // 老用户迁移(照列偏好 cookie 的先例):改造前的偏好只写进了 localStorage,没有 cookie →
   // 服务端第一次仍按 Accept-Language 猜。这里补写一次 cookie,并按 localStorage 纠正当前语言;

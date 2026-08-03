@@ -2,7 +2,9 @@
 // 目标省是这张卡要算出来的东西,所以不拿它当输入问;QC 走自己体系不参与排序。
 import { PlanPrView } from '../PlanPrView'
 
-export const dynamic = 'force-static'
+// 渲染模式跟全站一致(2026-08-03 Frank「所有页面都改成一样的,防止之后出错」):
+// 原来这四页是 force-static —— 静态页里读不到 cookie,界面语言只能出默认中文,
+// 英韩用户在这几页永远闪一次。四页都是纯壳(不查库),转动态只多渲一层 React 外壳。
 
 export const metadata = {
   title: 'Which province fits your occupation | Offer2PR',

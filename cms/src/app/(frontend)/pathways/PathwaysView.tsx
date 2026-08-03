@@ -1,8 +1,6 @@
 'use client'
 // 方案卡渲染(E12-01):分组(与你的处境相关/其他路径)+ 每卡步骤/信号/缺口补法/出处。
 // 纯显示——命中/缺口全由 lib/pathways.ts 算好传入;措辞红线在 i18n 键里落实(摆信息不下结论)。
-import { useEffect, useMemo, useState } from 'react'
-import { type Lang } from '../jobs/i18n'
 import { useLang } from '../LangProvider'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'

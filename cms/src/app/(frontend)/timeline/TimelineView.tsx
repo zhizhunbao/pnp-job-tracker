@@ -1,8 +1,7 @@
 'use client'
 // 政策时间线视图(C6-01):三路事件混排时间轴 + 抽选节奏块;省筛/类型筛纯客户端(事件 <100)。
 // 诚实红线:省分数带分制标注(≠CRS);节奏=历史统计,不预测下一次(tl.note 写死)。
-import { useEffect, useMemo, useState, type KeyboardEvent } from 'react'
-import { type Lang } from '../jobs/i18n'
+import { useMemo, useState, type KeyboardEvent } from 'react'
 import { useLang } from '../LangProvider'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'

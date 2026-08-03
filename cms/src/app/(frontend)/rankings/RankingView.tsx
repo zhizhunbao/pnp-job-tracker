@@ -1,8 +1,7 @@
 'use client'
 // 榜单视图(E5-02):纯渲染(计算在 ETL);三语壳;岗位行链官方原帖,公司行链官网。
 // RankingTable = 内容单一来源(E8-02):页面版与 /jobs 榜单弹窗共用,不许 fork。
-import { useEffect, useState } from 'react'
-import { streamDisplay, eeDisplay, type Lang, type TFn } from '../jobs/i18n'
+import { streamDisplay, eeDisplay, type TFn } from '../jobs/i18n'
 import { useLang } from '../LangProvider'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'

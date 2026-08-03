@@ -3,7 +3,6 @@
 // 登录入口全站只有一个 = /jobs 顶栏弹框(用户定):未登录访问本页 → 跳回 /jobs?login=1 自动弹框。
 // E3-03:时长包购买入口(30/90 天)——前端只拿 Checkout URL 跳转,回跳 ?ok=1 提示(到期日由 webhook 拨)。
 import { useEffect, useState } from 'react'
-import { type Lang } from '../jobs/i18n'
 import { useLang } from '../LangProvider'
 import { useIsNarrow } from '../jobs/Modal'
 import { IconStar, IconUser } from '../Icons'

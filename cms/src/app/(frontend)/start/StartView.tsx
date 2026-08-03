@@ -5,9 +5,9 @@
 //   今日日更大数字(→职位板)/ 抽选表(pnp_draws,与 /pathways 同源)/ 职业行情卡(与 /api/quiz?top 同一 DAL →/occupations)/
 //   政策动态(news →/news)/ 全宽 CTA 带收束回评估主按钮。
 // 红线:数字全库内真数,查不到整节不渲;通道名映射不到显官方原文,前端不编翻译。
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
-import { eeDisplay, eeKeyDisplay, makeT, type Lang, drawStreamNote } from '../jobs/i18n'
+import { eeDisplay, eeKeyDisplay, makeT, drawStreamNote } from '../jobs/i18n'
 import { useLang } from '../LangProvider'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
