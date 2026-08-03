@@ -23,9 +23,13 @@ export async function POST(req: NextRequest) {
 
   const buf = Buffer.from(await file.arrayBuffer())
   // 保留换行(回填 textarea 要可读),只压回车与行内连空格
-  const raw = await extractText(file.name || '', buf)
+  const { text: raw, err } = await extractText(file.name || '', buf)
   const text = raw?.replace(/\r/g, '').replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim() ?? null
-  if (text == null) return Response.json({ error: 'parse' }, { status: 422 })
+  if (text == null) {
+    // 真实解析错误只回给 @test.local(生产排障用;普通用户只见统一 parse 码)
+    const dbg = String((user as any).email || '').endsWith('@test.local')
+    return Response.json({ error: 'parse', ...(dbg ? { detail: err.slice(0, 300) } : {}) }, { status: 422 })
+  }
   if (text.length < 120) return Response.json({ error: 'scan' }, { status: 422 })  // 扫描件/空文件:无文本层
 
   console.log(`[resume-extract] ok user=${(user as any).id} file=${file.size}b text=${text.length}ch`)
