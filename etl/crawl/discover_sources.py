@@ -85,6 +85,11 @@ SEEDS: list[dict] = [
     {"slug": "fed-rcip",     "seed": "https://www.canada.ca/en/immigration-refugees-citizenship/services/"
                                      "immigrate-canada/rural-franco-pilots.html",
      "depth": 3, "max_pages": 300, "keywords": "rural-franco,rural-community,francophone-community"},
+    # B1-4 PGWP 规则库(2026-08-03,铁律 4「没有数据先补 URL」):时长叠加 / field-of-study 的官方页。
+    # canada.ca 扁平路径同 fed-rcip;PGWP 规则全挂在 study-canada/work 区(after-graduation 一族)
+    {"slug": "fed-pgwp",     "seed": "https://www.canada.ca/en/immigration-refugees-citizenship/services/"
+                                     "study-canada/work/after-graduation.html",
+     "depth": 3, "max_pages": 200, "keywords": "after-graduation,post-graduation,study-canada/work"},
 ]
 
 
