@@ -52,21 +52,12 @@ export function OccReportCard({ noc, province, salaryAnnual, t }: { noc: string;
     return () => { dead = true; io.disconnect() }
   }, [noc])
 
-  const seen = useRef(false)
   const here = facts?.byProv.find((r) => r.province === province)
   const show = Boolean(facts && here && here.n > 0)
   // 本岗年薪 vs 该职业全国帖面中位:差 5% 以内不说话(噪音),两边有一个没有也不说
   const med = facts?.medianSalary ?? null
   const raw = salaryAnnual != null && med != null && med > 0 ? Math.round(((salaryAnnual - med) / med) * 100) : null
   const pct = raw != null && Math.abs(raw) >= 5 ? raw : null
-  const sponsors = facts?.sponsors ?? 0
-
-  // 曝光只算一次,且**只在锁行真的渲染出来时**算 —— 否则 M2 的漏斗第一格就是假的
-  useEffect(() => {
-    if (!show || sponsors <= 0 || seen.current) return
-    seen.current = true
-    track('jd-lock-seen', { noc })
-  }, [show, sponsors, noc])
 
   return (
     <div ref={box}>
@@ -86,21 +77,9 @@ export function OccReportCard({ noc, province, salaryAnnual, t }: { noc: string;
           {/* 直接落报告态:卡上写的是「看报告」,落地却是两道题=说话不算数。
               引擎不给目标省也算得出(按在招量取前两个省),缺的两题在报告里作缺口行请他补 */}
           {/* 站内统一按钮(不是裸文字链),且**不带箭头**(2026-07-27 拍板:按钮上的箭头一律删) */}
-          {/* 锁行:有货才挂。只说家数与它是什么,名单本体在服务端(免费响应里根本没有) */}
-          {sponsors > 0 && (
-            <a href={`/plan/job?noc=${encodeURIComponent(noc)}&view=report`}
-              onClick={() => track('jd-lock-click', { noc })}
-              className="rowHover"
-              style={{ display: 'flex', alignItems: 'center', gap: 9, marginTop: 12, padding: '10px 12px',
-                background: '#fff', border: '1px solid #bfdbfe', borderRadius: 10, textDecoration: 'none', color: 'inherit' }}>
-              <span style={{ flexShrink: 0 }}>🔒</span>
-              <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, lineHeight: 1.5 }}>
-                <b style={{ color: UI.text }}>{t('jd.rep.lock', { n: sponsors })}</b>
-                <span style={{ display: 'block', color: UI.text3, fontSize: 12 }}>{t('jd.rep.lock.sub')}</span>
-              </span>
-              <span style={{ flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: '#92400e', background: '#fef3c7', borderRadius: 6, padding: '2px 8px' }}>Pro</span>
-            </a>
-          )}
+          {/* 锁行删了(2026-08-03 Frank「没有必要了」):与下面报告按钮同链接纯重复,
+              且「N 家雇主」是全国口径贴在本省数字旁读着打架;正经锁区在报告页(G3 打码版)。
+              jd-lock-seen/click 随之退役,漏斗第 3 步只剩 rpt-lock-seen 一条真口径 */}
           <div style={{ marginTop: 12 }}>
             <span onClick={() => track('jd-report-open', { noc })}>
               <Button kind="primary" href={`/plan/job?noc=${encodeURIComponent(noc)}&view=report`}>{t('jd.rep.go')}</Button>

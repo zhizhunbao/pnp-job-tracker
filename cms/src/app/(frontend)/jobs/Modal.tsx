@@ -31,11 +31,11 @@ export const iconBtnS: React.CSSProperties = {
 const closeBtnS: React.CSSProperties = { ...iconBtnS, position: 'absolute', top: 12, right: 12 }
 const WIDTH = { sm: 390, md: 560, lg: 720 } as const
 
-/** eyebrow 小字 + 17px 标题(右侧给关闭钮留位);颜色按场景传(顾问靛蓝/升级琥珀) */
-export function ModalTitle({ eyebrow, color = '#6366f1', title }: { eyebrow: React.ReactNode; color?: string; title: React.ReactNode }) {
+/** eyebrow 小字(可省)+ 17px 标题(右侧给关闭钮留位);颜色按场景传(顾问靛蓝/升级琥珀) */
+export function ModalTitle({ eyebrow, color = '#6366f1', title }: { eyebrow?: React.ReactNode; color?: string; title: React.ReactNode }) {
   return (
     <div style={{ minWidth: 0, paddingRight: 44 }}>
-      <div style={{ fontSize: 12, color, fontWeight: 600, letterSpacing: 0.3 }}>{eyebrow}</div>
+      {eyebrow ? <div style={{ fontSize: 12, color, fontWeight: 600, letterSpacing: 0.3 }}>{eyebrow}</div> : null}
       <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</h3>
     </div>
   )

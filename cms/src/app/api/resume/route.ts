@@ -8,11 +8,11 @@ import { getUser } from '@/lib/entitlement'
 import { FREE_DAILY_TRIES } from '@/lib/plan'
 import { freeGate } from '@/lib/freeQuota'
 import { completeText, LlmError } from '@/lib/llm'
+import { extractText, RESUME_MAX_BYTES } from '@/lib/resumeExtract'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-const MAX_BYTES = 5 * 1024 * 1024
 const MAX_CHARS = 12000   // 送 LLM 的正文上限(简历超长截断,前两页信息足够)
 
 // IELTS(G 类)→ CLB:四技能各自换算取最小(IRCC 官方对照;简历极少直接写 CLB)
@@ -32,21 +32,7 @@ function ieltsToClb(b: { listening?: number; reading?: number; writing?: number;
   return null
 }
 
-async function extractText(name: string, buf: Buffer): Promise<string | null> {
-  const ext = name.toLowerCase().split('.').pop() || ''
-  try {
-    if (ext === 'pdf') {
-      const { PDFParse } = await import('pdf-parse')
-      const parser = new PDFParse({ data: new Uint8Array(buf) })
-      try { return (await parser.getText())?.text ?? '' } finally { await parser.destroy().catch(() => {}) }
-    }
-    if (ext === 'docx') {
-      const mammoth = (await import('mammoth')).default
-      return (await mammoth.extractRawText({ buffer: buf }))?.value ?? ''
-    }
-  } catch { return null }  // 加密 PDF/损坏文件等 → 统一走 parse 失败回退
-  return null
-}
+// extractText 抽去 lib/resumeExtract(G3 上传复用同一套解析,别复制)
 
 // LLM 输出容错解析:剥 ```json 围栏,取首尾大括号段
 function parseJson(raw: string): any | null {
@@ -75,7 +61,7 @@ export async function POST(req: NextRequest) {
   let file: File | null = null
   try { file = (await req.formData()).get('file') as File | null } catch { /* 非 multipart */ }
   if (!file || typeof file === 'string') return Response.json({ error: 'nofile' }, { status: 400 })
-  if (file.size > MAX_BYTES) return Response.json({ error: 'size' }, { status: 413 })
+  if (file.size > RESUME_MAX_BYTES) return Response.json({ error: 'size' }, { status: 413 })
 
   const buf = Buffer.from(await file.arrayBuffer())
   const text = (await extractText(file.name || '', buf))?.replace(/\s+/g, ' ').trim() ?? null
