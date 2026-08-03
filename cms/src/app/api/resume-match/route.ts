@@ -40,7 +40,8 @@ export async function POST(req: Request) {
 
   let text: string
   try {
-    text = await completeText(matchPrompt(jd.slice(0, CLAMP), resume.slice(0, CLAMP), lang, pro), { maxTokens: pro ? 1600 : 900 })
+    // 通道定向 friend(2026-08-03 Frank「不用 Haiku 用朋友的大模型」):挂了就报 rm.err,不静默切云烧钱
+    text = await completeText(matchPrompt(jd.slice(0, CLAMP), resume.slice(0, CLAMP), lang, pro), { maxTokens: pro ? 1600 : 900, provider: 'friend' })
   } catch (e) {
     return Response.json({ error: e instanceof LlmError ? e.message : 'llm' }, { status: 502 })
   }
