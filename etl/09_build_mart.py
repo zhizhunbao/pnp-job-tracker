@@ -55,6 +55,8 @@ IN_IRCC_PR = _paths.IRCC / "pnp_admissions.json"      # PNP 类别 PR 登陆数
 IN_IRCC_ALLOC = _paths.IRCC / "pnp_allocations.json"  # PNP 年度提名配额(人工核对维护表)
 IN_IRCC_FLOW = _paths.IRCC / "study_flow.json"        # 新发学签流量(月度;2026-08-03 接入,存量停在 2024 时的当期口径)
 OUT_MART = _paths.DATA / "mart"
+# 「还在板上」的 jobbank 帖号(verify_expired 拿它筛掉已 closed / 已被同名去重丢掉的帖,别白验)
+OUT_MART_OPEN_IDS = _paths.PROCESSED_JOBBANK / "mart_open_ids.json"
 
 PROV_FULL = {
     "ON": "Ontario", "QC": "Quebec", "BC": "British Columbia", "AB": "Alberta",
@@ -721,6 +723,12 @@ def build():
 def main() -> None:
     OUT_MART.mkdir(parents=True, exist_ok=True)
     mart = build()
+    # 验尸用的「还在板上」名单(2026-08-03):verify_expired 的预算只该花在用户看得见的岗上。
+    # 不在 mart 的帖有两种——库里早已 closed、或被同名去重丢掉——验它们对用户零收益,实测占候选 26%。
+    # 写 processed/ 不写 mart/:mart 目录整个会被 upload_mart 传去 cms,这张表纯属 ETL 内部协作。
+    OUT_MART_OPEN_IDS.write_text(json.dumps(sorted(
+        j["externalId"][3:] for j in mart["jobs"] if str(j.get("externalId", "")).startswith("jb:")
+    )), encoding="utf-8")
     for table, rows in mart.items():
         # 原子写(tmp+replace,04c 惯例):直写遇并发跑 09(手动 exec × 每小时例行轮)会截断失败留尾部垃圾
         # ——2026-07-18 news.json 实撞;upload_mart 上传前验 JSON 是下游防线,这里断根

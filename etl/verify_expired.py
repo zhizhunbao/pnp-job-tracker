@@ -35,6 +35,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _paths  # noqa: E402
 
 IN_POSTINGS = _paths.PROCESSED_JOBBANK / "postings.json"
+IN_MART_OPEN_IDS = _paths.PROCESSED_JOBBANK / "mart_open_ids.json"   # 09 上一轮落的「还在板上」帖号
 OUT_STATE = _paths.PROCESSED_JOBBANK / "expired_ids.json"
 
 RECHECK_DAYS = 7          # 活帖复检间隔(上次活着,7 天后可再验)
@@ -65,6 +66,11 @@ def main() -> None:
 
     postings = json.loads(IN_POSTINGS.read_text(encoding="utf-8"))
     recheck_before = (now - timedelta(days=RECHECK_DAYS)).isoformat()
+    # 只验「还在板上」的帖(09 上一轮落的名单;文件缺=首跑,退回全验)。不在板上的两种帖——库里早已
+    # closed、或被 09 的同名去重丢掉——用户根本点不到,验它们等于把预算和 Job Bank 的带宽一起烧掉。
+    # 实测:不筛的话候选里 26% 是这种,队头 900 个中 216 个白验。名单晚一轮无妨:新帖最不可能是死的。
+    on_board = set(json.loads(IN_MART_OPEN_IDS.read_text(encoding="utf-8"))) if IN_MART_OPEN_IDS.exists() else None
+    off_board = 0
     cands = []
     for p in postings:
         pid, url = p.get("posting_id", ""), p.get("url", "")
@@ -72,13 +78,16 @@ def main() -> None:
             continue
         if state["checked"].get(pid, "") > recheck_before:
             continue
+        if on_board is not None and pid not in on_board:
+            off_board += 1
+            continue
         # 风险键:last_seen 越旧越先验(缺 last_seen 的是早期帖,一并排最前);同龄按发布日老的先
         d = parse_date(p.get("date", ""))
         cands.append(((p.get("last_seen") or "", d.isoformat() if d else ""), pid, url))
     cands.sort()
     fresh = sum(1 for k, _, _ in cands if k[0] > (now - timedelta(days=3)).isoformat())
-    print(f"verify_expired: 候选 {len(cands)} 帖(其中 last_seen 近 3 天内的 {fresh} 个排在队尾),"
-          f"本轮验 {min(len(cands), MAX_CHECKS)}")
+    print(f"verify_expired: 候选 {len(cands)} 帖(已跳过不在板上的 {off_board} 个;"
+          f"last_seen 近 3 天内的 {fresh} 个排在队尾),本轮验 {min(len(cands), MAX_CHECKS)}")
     if not cands:
         return
 
