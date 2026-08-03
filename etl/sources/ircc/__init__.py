@@ -18,5 +18,6 @@ META = {
         # B1-4 PGWP 规则库(2026-08-03):quote-anchored 自校(官方引用消失→保留旧表 exit 1)。
         # 硬闸步骤照役规矩钉最末尾,红了拖不到别人;raw/ircc/*.json 的 glob 已让它自动进新鲜度哨兵
         ["python", "etl/build_pgwp.py"],
+        ["python", "etl/build_fees.py"],   # G8:联邦段官方规费(段落定位+交叉自校硬闸;拆中介报价的原料)
     ],
 }

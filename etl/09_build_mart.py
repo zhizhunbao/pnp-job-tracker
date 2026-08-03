@@ -45,7 +45,9 @@ IN_REQ_TABLES = [_paths.PNP / f"{p}-req.json"
                  for p in ("bc", "on", "ab", "sk", "mb", "ns", "nb", "pe", "nl")] + [
                  # B1-4:联邦 PGWP 规则库(province='FED' program='PGWP',build_pgwp.py 产,quote-anchored)。
                  # 走同一张表=引擎 facts.requirements 免费拿到;FED 行不会漏进省级门槛节(那边按省名挑行)
-                 _paths.IRCC / "pgwp_rules.json"]
+                 _paths.IRCC / "pgwp_rules.json",
+                 # G8:联邦段官方规费(program='PR-fees',build_fees.py 产)—— 第三次复用,同上安全
+                 _paths.IRCC / "fees.json"]
 IN_EE = _paths.EE / "federal-categories.json"  # 联邦 Express Entry 类别抽选(全国单一源)
 IN_EE_DRAWS = _paths.EE / "draws.json"          # 各类别最近一次抽选(CRS/日期/邀请数,build_ee_draws.py 产)
 IN_NOC_DESC = _paths.NOC / "descriptions.json"  # NOC 官方名+主要职责(build_noc_descriptions.py 产)

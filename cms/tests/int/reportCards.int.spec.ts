@@ -68,6 +68,20 @@ describe('卡① 找工作', () => {
     expect(free.conclusions.some((c) => c.key === 'rpt.j.noFee')).toBe(true)
   })
 
+  // G8(案例库 C14 拆中介):FED/PR-fees 行在 → 合规行后跟联邦规费账(免费);行不在 → 不出不编
+  it('联邦规费行:有 FED 费率行才出,带永居权费差值;免费层必留', () => {
+    const FEES = [
+      { province: 'FED', program: 'PR-fees', subject: 'applicant', factor: 'fee', stream: 'principal', value: 1590, label: 'Principal', url: 'https://ircc.canada.ca/fees', fetched: '2026-08-03' },
+      { province: 'FED', program: 'PR-fees', subject: 'applicant', factor: 'fee', stream: 'principalNoRprf', value: 990 },
+      { province: 'FED', program: 'PR-fees', subject: 'applicant', factor: 'fee', stream: 'biometricsPerson', value: 85 },
+    ] as unknown as import('@/lib/rules').Requirement[]
+    const r = buildJobReport(normalizeProfile({ targetProvinces: ['BC'] }), dims, { ...facts, requirements: FEES }, occ({ sponsors: 7 }))
+    expect(r.conclusions.find((c) => c.key === 'rpt.j.feeFed')?.params).toMatchObject({ a: 1590, rprf: 600, bio: 85 })
+    expect(gateReport(r, false).conclusions.some((c) => c.key === 'rpt.j.feeFed')).toBe(true)
+    const bare = buildJobReport(normalizeProfile({ targetProvinces: ['BC'] }), dims, facts, occ({ sponsors: 7 }))
+    expect(bare.conclusions.some((c) => c.key === 'rpt.j.feeFed')).toBe(false)
+  })
+
   it('没选职业 → 单缺口报告(不给空页)', () => {
     const r = buildJobReport(normalizeProfile({}), dims, { ...facts, noc: '' }, occ({ self: null }))
     expect(r.conclusions).toHaveLength(0)

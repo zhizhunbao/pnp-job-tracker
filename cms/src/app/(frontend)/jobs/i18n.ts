@@ -448,6 +448,7 @@ const zh: Dict = {
   'rpt.j.sponsors': '全国有 {n} 家雇主发过能走省提名的岗',
   'rpt.j.sponsorsLmia': '全国有 {n} 家雇主发过能走省提名的岗,其中 {m} 家有 ESDC 外籍招聘(LMIA)获批记录',
   'rpt.j.noFee': '联邦规定雇主不得让你承担招聘相关费用 —— 要你花钱换 offer 的不是服务,是违法',
+  'rpt.j.feeFed': '联邦段官方规费:主申 ${a}(含 ${rprf} 永居权费)+ 生物识别 ${bio} —— 中介报价超出官方费的是服务费',
   'rpt.j.related': '相关职业 {occZh}(NOC {noc})全国在招 {open} 岗',
   // 卡⑥职业规划
   'rpt.k.self': '你的职业当前在招 {open} 岗,TEER {teer}',
@@ -1215,6 +1216,7 @@ const en: Dict = {
   'rpt.j.sponsors': '{n} employers across Canada have posted jobs that can go through a PNP',
   'rpt.j.sponsorsLmia': '{n} employers across Canada have posted jobs that can go through a PNP - {m} of them have approved ESDC LMIA records (they have hired foreign workers before)',
   'rpt.j.noFee': 'Federal rules bar employers from passing recruitment fees to you - paying for a job offer is not a service, it is illegal',
+  'rpt.j.feeFed': 'Official federal fees for the PR stage: principal ${a} (incl. ${rprf} right of PR fee) + biometrics ${bio} - anything above official fees in an agent quote is service charge',
   'rpt.j.related': 'Related occupation {occ} (NOC {noc}): {open} open postings in Canada',
   'rpt.k.self': '{open} open postings in your occupation, TEER {teer}',
   'rpt.k.selfWage': '{open} open postings in your occupation, TEER {teer}, ESDC median ${esdc}',
@@ -1956,6 +1958,7 @@ const ko: Dict = {
   'rpt.j.sponsors': '전국에서 주정부 지명 경로가 가능한 채용을 낸 고용주 {n}곳',
   'rpt.j.sponsorsLmia': '전국에서 주정부 지명 경로가 가능한 채용을 낸 고용주 {n}곳, 그중 {m}곳은 ESDC LMIA 승인 이력 보유(외국인 채용 실적 있음)',
   'rpt.j.noFee': '연방 규정상 고용주는 채용 관련 비용을 노동자에게 전가할 수 없음 - 돈 내고 받는 오퍼는 서비스가 아니라 불법',
+  'rpt.j.feeFed': '연방 단계 공식 수수료: 주신청자 ${a}(영주권 취득비 ${rprf} 포함) + 생체정보 ${bio} - 이민 업체 견적에서 이를 넘는 부분은 서비스 요금',
   'rpt.j.related': '연관 직업 {occKo}(NOC {noc}): 전국 채용 {open}건',
   'rpt.k.self': '내 직종 현재 채용 {open}건, TEER {teer}',
   'rpt.k.selfWage': '내 직종 현재 채용 {open}건, TEER {teer}, ESDC 공식 중위 연봉 ${esdc}',

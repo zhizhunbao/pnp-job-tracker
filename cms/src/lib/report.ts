@@ -114,12 +114,26 @@ const NOFEE_SRC = {
 }
 // 雇主线索的免费句(三卡同句,B2-2 起多态):有 LMIA 记录的家数是比「发过可提名岗」硬一档的证据 ——
 // 同一个 WHERE 数出来(口径两坑之一:计数与名单必须同源)。合规行跟着名单走:名单在哪,提醒在哪。
-const sponsorLines = (occ: OccStats | null): ReportLine[] => {
+const sponsorLines = (occ: OccStats | null, facts?: ReportFacts): ReportLine[] => {
   if (!occ || occ.sponsors <= 0) return []
   const out: ReportLine[] = [occ.sponsorsLmia > 0
     ? { key: 'rpt.j.sponsorsLmia', params: { n: occ.sponsors, m: occ.sponsorsLmia }, verdict: 'pass' as MatchVerdict }
     : { key: 'rpt.j.sponsors', params: { n: occ.sponsors }, verdict: 'pass' as MatchVerdict }]
   out.push({ key: 'rpt.j.noFee', params: {}, verdict: 'warn', source: NOFEE_SRC })
+  // G8(案例库 C14 拆中介):联邦段官方规费一句摆平(IRCC 官方费用表 FED/PR-fees 行,build_fees 逐轮验)。
+  // 跟着合规行走 —— 同属「中介报价里哪部分是真钱」这一簇;省级申请费 = G8 二期,没数就不提。
+  const fees = (facts?.requirements ?? []).filter((r) => r.province === 'FED' && r.program === 'PR-fees')
+  const fee = (stream: string) => fees.find((r) => r.stream === stream)
+  const main = fee('principal')
+  const bio = fee('biometricsPerson')
+  if (main?.value != null && bio?.value != null) {
+    const noRprf = fee('principalNoRprf')?.value
+    out.push({
+      key: 'rpt.j.feeFed',
+      params: { a: main.value, bio: bio.value, ...(noRprf != null ? { rprf: main.value - noRprf } : {}) },
+      verdict: 'na', source: { label: main.label, url: main.url, fetched: main.fetched },
+    })
+  }
   return out
 }
 // 站内没有 CRS 计算器(省估分只做了 BC/SK)。问了 CRS 却不给算的地方 = 死路,
@@ -656,7 +670,7 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
 
   // 雇主线索(L1,2026-08-03):这句「有 N 家」是免费层唯一的 aha(卡① 2026-08-01 已验证),
   // 名单本体进锁区 —— 花钱买的是省下来的时间,不是这个数。
-  conclusions.push(...sponsorLines(occ))
+  conclusions.push(...sponsorLines(occ, facts))
   const employers = employerLines(occ, facts)
 
   return { goal: 'pr', noc, title: facts.title, conclusions, requirements, employers, switches, gaps, nextSteps, alternatives, confidence, asOf: facts.fetched ?? '' }
@@ -842,7 +856,7 @@ export function buildProvReport(profile: MatchProfile, extra: ProvExtra, dims: M
 
   // 雇主线索(L1,2026-08-03):这句「有 N 家」是免费层唯一的 aha(卡① 2026-08-01 已验证),
   // 名单本体进锁区 —— 花钱买的是省下来的时间,不是这个数。
-  conclusions.push(...sponsorLines(occ))
+  conclusions.push(...sponsorLines(occ, facts))
   const employers = employerLines(occ, facts)
 
   return {
@@ -911,7 +925,7 @@ export function buildJobReport(profile: MatchProfile, dims: MatchDims, facts: Re
   }
 
   // 担保雇主:只说有几家(名单进锁区 —— 这是拿答案筛出来的,不是库里随便查得到的)
-  conclusions.push(...sponsorLines(occ))
+  conclusions.push(...sponsorLines(occ, facts))
 
   // 相关职业(Frank 2026-07-31「干 IT 可能同时适合大数据/AI/全栈/cloud」):同小类/中类的邻居也在招,
   // 免费给 —— 这是库里查得到的事实,而且一个人本来就不该被自己填的那一个 NOC 框死。
@@ -1066,7 +1080,7 @@ const REQ_FREE: Record<string, string> = {
 // 免费层必留的结论(不受「免费两条」截断):停抽的 EE 类别 —— 劝退的话不该收费;
 // PGWP 六行(B1-4)—— 免费探索题承诺的解锁,被「其余 N 条」桶吃掉=答了题什么都没多看到
 //(2026-08-03 生产实撞:引擎算出来了,免费响应里 moreN+3 却一行不见);且口径就是规则+一次查表,算术不收钱(卡⑥教训)
-const ALWAYS_FREE = new Set(['rpt.c.eeStale', 'rpt.j.sponsors', 'rpt.j.sponsorsLmia', 'rpt.j.noFee',
+const ALWAYS_FREE = new Set(['rpt.c.eeStale', 'rpt.j.sponsors', 'rpt.j.sponsorsLmia', 'rpt.j.noFee', 'rpt.j.feeFed',
   'rpt.c.pgwpLen', 'rpt.c.pgwpNone', 'rpt.c.pgwpCombine', 'rpt.c.pgwpLang', 'rpt.c.pgwpLangOk', 'rpt.c.pgwpLangShort'])
 const HINT: Record<string, string> = { 'rpt.c.regulated': 'rpt.hint.cert', 'rpt.g.expShort': 'rpt.hint.exp' }
 export function gateReport(report: Report, pro: boolean): GatedReport {
@@ -1232,6 +1246,7 @@ const EN: Record<string, (p: Record<string, string | number>) => string> = {
   'rpt.c.pgwpLangShort': (p) => `PGWP language bar for this program level is CLB ${p.need} (since 2024-11-01); you report CLB ${p.have} — below it.`,
   'rpt.j.sponsorsLmia': (p) => `${p.n} employers across Canada have posted jobs that can go through a PNP — ${p.m} of them have approved ESDC LMIA records (they have actually hired foreign workers before).`,
   'rpt.j.noFee': () => `Federal rules bar employers from passing recruitment fees to you — paying for a job offer is not a service, it is illegal.`,
+  'rpt.j.feeFed': (p) => `Official federal fees for the PR stage: principal applicant $${p.a} (incl. $${p.rprf} right of PR fee) + biometrics $${p.bio} — anything above official fees in an agent's quote is service charge.`,
   'rpt.c.routeWindow': (p) => `The PGWP you would graduate with (${p.permit} months) covers the ${p.remain} months of experience you still need for ${p.prov} (bar: ${p.need} months) — the study route window works.`,
   'rpt.c.routeWindowShort': (p) => `The PGWP you would graduate with (${p.permit} months) is shorter than the ${p.remain} months of experience you still need for ${p.prov} (bar: ${p.need} months) — the window does not cover it.`,
   'rpt.c.routeDelay': (p) => `Against the same ${p.prov} bar of ${p.need} months of experience: studying first reaches the filing line about ${p.months} months later than working now (counting no full-time experience during study).`,
