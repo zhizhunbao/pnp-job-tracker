@@ -43,6 +43,10 @@ from converters import get_converter  # noqa: E402
 
 IDOL_URL = "https://immigratemanitoba.com/mpnp/idol/"
 SWO_URL = "https://immigratemanitoba.com/mpnp/skilled-worker/swo/eligibility/"
+# B2-4(2026-08-03):雇主侧 —— MB 雇主招外籍走 Employer Direct Initiative(EDI;TRRP 同文):
+# 「owned and actively operated the business for at least three consecutive years」。
+# MPNP SWM 主线本身不设雇主年限数字(SWM 的 6 个月是申请人在职时长,见头注);EDI 是雇主端的申请通道。
+EDI_URL = "https://immigratemanitoba.com/employer-services/edi/"
 OUT = _paths.PNP / "mb-req.json"
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
 _PROFILE = {"content_selector": None, "remove_selectors": [], "css_file": None, "direct_suffix": None, "converter": None}
@@ -58,6 +62,9 @@ ROW = re.compile(r"^\|\s*(\d{5})\s*\|\s*(\d)\s*\|\s*([^|]+?)\s*\|\s*(\d+)\s*\|")
 # 「Applicants whose occupation is classified at TEER 4 or 5 … must … have at least CLB/NCLC 4」
 RE_SWO_FLOOR = re.compile(r"occupation is classified at TEER ([\d ]*or \d).{0,140}?"
                           r"have at least CLB/NCLC (\d)", re.I)
+# EDI:「owned and actively operated the business for at least three consecutive years」(B2-4)
+_WORD_N = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5}
+RE_EDI_YEARS = re.compile(r"owned and actively operated the business for at least (\w+) consecutive years", re.I)
 
 
 def page_text(url: str) -> str:
@@ -120,6 +127,21 @@ def main() -> None:
                         section="In-Demand Occupations List — Minimum CLB",
                         label=f"The MPNP In-Demand Occupations List sets a minimum CLB {clb} for NOC {noc} "
                               f"({title}, TEER {teer})"))
+
+    # ── 雇主侧(B2-4):EDI 经营年限(全省一档,无雇员数/营业额数字门槛)─────────────
+    edi = RE_EDI_YEARS.search(page_text(EDI_URL))
+    if not edi:
+        problems.append("EDI 雇主经营年限没解析到(employer-services/edi 页可能改版)")
+    else:
+        years = _WORD_N.get(edi.group(1).lower()) or (int(edi.group(1)) if edi.group(1).isdigit() else None)
+        if years is None:
+            problems.append(f"EDI 年限词认不出:{edi.group(1)!r}")
+        else:
+            reqs.append(req(stream="MPNP Employer Direct Initiative (EDI)", subject="employer",
+                            factor="empYears", value=years, unit="years", url=EDI_URL,
+                            section="EDI — employer eligibility",
+                            label=f"Employer must have owned and actively operated the business for at least "
+                                  f"{edi.group(1)} consecutive years immediately prior to applying (TRRP: same bar)"))
 
     if problems:
         print("✗ 自校未过,保留旧表不覆盖:")

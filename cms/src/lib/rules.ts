@@ -48,6 +48,14 @@ const METRO_VAN = new Set([
   'new westminster', 'delta', 'ladner', 'tsawwassen', 'north vancouver', 'west vancouver',
   'langley', 'maple ridge', 'pitt meadows', 'white rock', 'bowen island', 'anmore', 'belcarra', 'lions bay',
 ])
+// NL 官方雇主门槛写「In St. John's area」但没给区界 —— 按 StatCan 圣约翰斯 CMA 组成取
+// (METRO_VAN 手工集同一先例);认不出地名照旧返回 '',宁缺不猜。
+// ⚠️ 条目写的是 norm() 之后的形态:撇号/句点/连字符都被剥掉('St. John's'→'st johns','Portugal Cove-St. Philip's'→'portugal covest philips')
+const ST_JOHNS = new Set([
+  'st johns', 'saint johns', 'mount pearl', 'paradise', 'conception bay south',
+  'portugal covest philips', 'portugal cove', 'torbay', 'logy baymiddle coveouter cove', 'flatrock',
+  'pouch cove', 'bauline', 'petty harbourmaddox cove', 'petty harbour', 'bay bulls', 'witless bay',
+])
 
 /**
  * 岗位地点 → 该省官方分档区域键(与 pnp_requirements.appliesArea 同一套值)。
@@ -64,19 +72,30 @@ export function areaOfPlace(province: string, city: string, district = ''): stri
     if (names.some((n) => METRO_VAN.has(n))) return 'metro-vancouver'
     return names.length ? 'rest-of-bc' : ''
   }
+  if (province === 'NL') {
+    if (names.some((n) => ST_JOHNS.has(n))) return 'st-johns'
+    return names.length ? 'rest-of-nl' : ''
+  }
   return ''
 }
 
-/** 该省雇主侧门槛在这个区域的取值:营业额(认不出普查区时为 null)与全职雇员数 */
-export function employerBar(reqs: Requirement[], province: string, area: string): { revenue: number | null; staff: number | null } {
-  const of = (factor: string, areas: string[]) => reqs
-    .filter((r) => r.province === province && r.subject === 'employer' && r.factor === factor)
-    .find((r) => areas.includes(r.appliesArea))?.value ?? null
-  // 雇员数只分 GTA 内外(BC 是大温内外)—— 区域一确定就定了
-  const staffArea = area === 'gta' || area === 'metro-vancouver' ? [area] : ['outside-gta', 'rest-of-bc']
+/** 该省雇主侧门槛:经营年限(全省一档,B2-4 起真消费)+ 该区域的营业额与全职雇员数。
+ *  认不出区域(area='')时年限照给(不分区),雇员/营业额留空 —— 宁缺不猜。 */
+export function employerBar(reqs: Requirement[], province: string, area: string): { years: number | null; revenue: number | null; staff: number | null } {
+  const rows = reqs.filter((r) => r.province === province && r.subject === 'employer')
+  const of = (factor: string, areas: string[]) =>
+    rows.filter((r) => r.factor === factor).find((r) => areas.includes(r.appliesArea))?.value ?? null
+  // 经营年限不分区(BC 1 年 / ON 3 年 / NS / MB EDI 3 年 / NL 2 年,appliesArea 全空)
+  const years = of('empYears', [''])
+  // 雇员数:ON 点名普查区的雇员档併回 GTA 外(官方雇员数只分 GTA 内外;BC/NL 的区键与行一一对应)
+  const staffArea = area === 'on-listed-cd' ? ['outside-gta'] : area ? [area] : []
   // 营业额 ON 分三档:GTA / 官方点名普查区 / 其余;认不出普查区(outside-gta)时不给数
-  const revArea = area === 'on-listed-cd' ? ['on-listed-cd'] : area === 'gta' ? ['gta'] : area === 'outside-gta' ? [] : [area]
-  return { revenue: revArea.length ? of('empRevenue', revArea) : null, staff: of('empStaff', staffArea) }
+  const revArea = area === 'on-listed-cd' ? ['on-listed-cd'] : area === 'gta' ? ['gta'] : area === 'outside-gta' ? [] : area ? [area] : []
+  return {
+    years,
+    revenue: revArea.length ? of('empRevenue', revArea) : null,
+    staff: staffArea.length ? of('empStaff', staffArea) : null,
+  }
 }
 
 export type ReqSubject = 'applicant' | 'employer'

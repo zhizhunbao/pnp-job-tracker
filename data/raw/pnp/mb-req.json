@@ -3187,6 +3187,24 @@
       "section": "In-Demand Occupations List — Minimum CLB",
       "url": "https://immigratemanitoba.com/mpnp/idol/",
       "factor": "language"
+    },
+    {
+      "stream": "MPNP Employer Direct Initiative (EDI)",
+      "subject": "employer",
+      "op": ">=",
+      "value": 3,
+      "valueText": "",
+      "unit": "years",
+      "appliesTeer": [],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "Employer must have owned and actively operated the business for at least three consecutive years immediately prior to applying (TRRP: same bar)",
+      "section": "EDI — employer eligibility",
+      "url": "https://immigratemanitoba.com/employer-services/edi/",
+      "factor": "empYears"
     }
   ]
 }

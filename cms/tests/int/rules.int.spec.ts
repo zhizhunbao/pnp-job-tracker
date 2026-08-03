@@ -327,17 +327,36 @@ describe('地点 → 官方分档区域', () => {
     expect(areaOfPlace('ON', '')).toBe('')
   })
 
-  it('BC 走大温内外;别的省一律不判', () => {
+  it('BC 走大温内外;NL 走圣约翰斯内外(B2-4);别的省一律不判', () => {
     expect(areaOfPlace('BC', 'Surrey')).toBe('metro-vancouver')
     expect(areaOfPlace('BC', 'Kelowna')).toBe('rest-of-bc')
+    expect(areaOfPlace('NL', "St. John's")).toBe('st-johns')
+    expect(areaOfPlace('NL', 'Mount Pearl')).toBe('st-johns')
+    expect(areaOfPlace('NL', 'Corner Brook')).toBe('rest-of-nl')
+    expect(areaOfPlace('NL', '')).toBe('')
     expect(areaOfPlace('SK', 'Regina')).toBe('')
   })
 
   it('雇主门槛按区域取:GTA=$1M/5 人;点名普查区=$500K/3 人;GTA 外只给人数(营业额看普查区)', () => {
-    expect(employerBar(ON_REQS, 'ON', 'gta')).toEqual({ revenue: 1_000_000, staff: 5 })
-    expect(employerBar(ON_REQS, 'ON', 'on-listed-cd')).toEqual({ revenue: 500_000, staff: 3 })
-    expect(employerBar(ON_REQS, 'ON', 'outside-gta')).toEqual({ revenue: null, staff: 3 })
-    expect(employerBar(BC_REQS, 'BC', 'metro-vancouver')).toEqual({ revenue: null, staff: 5 })
+    expect(employerBar(ON_REQS, 'ON', 'gta')).toEqual({ years: 3, revenue: 1_000_000, staff: 5 })
+    expect(employerBar(ON_REQS, 'ON', 'on-listed-cd')).toEqual({ years: 3, revenue: 500_000, staff: 3 })
+    expect(employerBar(ON_REQS, 'ON', 'outside-gta')).toEqual({ years: 3, revenue: null, staff: 3 })
+    expect(employerBar(BC_REQS, 'BC', 'metro-vancouver')).toEqual({ years: 1, revenue: null, staff: 5 })
+  })
+
+  // B2-4(2026-08-03):经营年限全省一档 → 认不出地名也给;NL 雇员数按圣约翰斯内外;
+  // MB 只有 EDI 年限(无雇员/营业额数字)→ 那两格留空,不编
+  it('B2-4:年限不分区照给;NL 圣约翰斯内外两档;MB 只有年限', () => {
+    const NL_REQS = [
+      R({ province: 'NL', subject: 'employer', factor: 'empYears', value: 2, unit: 'years' }),
+      R({ province: 'NL', subject: 'employer', factor: 'empStaff', value: 2, unit: 'employees', appliesArea: 'st-johns' }),
+      R({ province: 'NL', subject: 'employer', factor: 'empStaff', value: 1, unit: 'employees', appliesArea: 'rest-of-nl' }),
+    ]
+    expect(employerBar(NL_REQS, 'NL', 'st-johns')).toEqual({ years: 2, revenue: null, staff: 2 })
+    expect(employerBar(NL_REQS, 'NL', 'rest-of-nl')).toEqual({ years: 2, revenue: null, staff: 1 })
+    expect(employerBar(NL_REQS, 'NL', '')).toEqual({ years: 2, revenue: null, staff: null })
+    const MB_REQS = [R({ province: 'MB', subject: 'employer', factor: 'empYears', value: 3, unit: 'years' })]
+    expect(employerBar(MB_REQS, 'MB', '')).toEqual({ years: 3, revenue: null, staff: null })
   })
 })
 

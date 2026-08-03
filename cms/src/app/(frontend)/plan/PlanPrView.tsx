@@ -28,7 +28,7 @@ import { track } from '@/lib/track'
 type DrawDetail = { date: string; stream: string; score: number | null; invitations: number | null }
 type RptLine = { key: string; params: Record<string, string | number>; verdict?: string; source?: { label: string; url: string; fetched: string }; url?: string; more?: boolean; tail?: { key: string; params: Record<string, string | number>; rows?: DrawDetail[] } }
 type Lane = { kind: 'prov' | 'ee' | 'alts'; verdict?: string; key: string; params: Record<string, string | number> }
-type Emp = { name: string; slug: string; named: number; eligible: number; city: string; province: string; lastPosted: string; lmiaPositions: number | null; lmiaQuarter: string; aip: boolean; area: string; empRevenue: number | null; empStaff: number | null }
+type Emp = { name: string; slug: string; named: number; eligible: number; city: string; province: string; lastPosted: string; lmiaPositions: number | null; lmiaQuarter: string; aip: boolean; area: string; empYears: number | null; empRevenue: number | null; empStaff: number | null }
 type Rpt = {
   noc: string; title: string; conclusions: RptLine[]; requirements: RptLine[]; employers: Emp[]; switches: RptLine[]; gaps: RptLine[]; nextSteps: RptLine[]; alternatives: RptLine[]
   confidence: 'low' | 'mid' | 'high'; asOf: string
@@ -521,10 +521,13 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                           {e.empStaff ? (
                             <span style={{ color: UI.text2 }}>
                               {t(e.area === 'gta' ? 'rpt.emp.bar.gta' : e.area === 'on-listed-cd' ? 'rpt.emp.bar.cd'
-                                : e.area === 'outside-gta' ? 'rpt.emp.bar.outGta' : e.area === 'metro-vancouver' ? 'rpt.emp.bar.metro' : 'rpt.emp.bar.restBc',
+                                : e.area === 'outside-gta' ? 'rpt.emp.bar.outGta' : e.area === 'metro-vancouver' ? 'rpt.emp.bar.metro'
+                                  : e.area === 'st-johns' ? 'rpt.emp.bar.stJohns' : e.area === 'rest-of-nl' ? 'rpt.emp.bar.restNl' : 'rpt.emp.bar.restBc',
                               { staff: e.empStaff, rev: e.empRevenue != null ? (e.empRevenue >= 1e6 ? `${e.empRevenue / 1e6}M` : `${Math.round(e.empRevenue / 1000)}K`) : '' })}
                             </span>
                           ) : null}
+                          {/* B2-4:经营年限不分区,认不出地名也给(BC/ON/NS/MB/NL 有数) */}
+                          {e.empYears ? <span style={{ color: UI.text2 }}>{t('rpt.emp.bar.years', { n: e.empYears })}</span> : null}
                         </span>
                       </div>
                     ))}

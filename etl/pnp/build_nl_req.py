@@ -40,6 +40,10 @@ import _paths  # noqa: E402
 POLICY_URL = "https://www.gov.nl.ca/immigration/4-skilled-worker-category-eligibility-criteria/"
 PAGE_URL = ("https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/"
             "provincial-nominee-program/applicants/skilled-worker-category/")
+# B2-4(2026-08-03):雇主侧门槛 —— NLPNP 官方雇主资格页发的正是引擎那套形状:
+# 现管经营 ≥2 年(特殊情形 1 年)+ 本地全职雇员(圣约翰斯区 ≥2 / 区外 ≥1)
+EMPLOYER_URL = ("https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/"
+                "provincial-nominee-program/employers/employer-criteria")
 OUT = _paths.PNP / "nl-req.json"
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                     "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"}
@@ -55,6 +59,14 @@ RE_TEST_TEERS = re.compile(r"Applicants with TEER ([\d ]*or \d) job offers must 
                            r"proficiency test", re.I)
 # 「Minimum scores (CLB 4 equivalent)」—— 逐个考试重复,取唯一值
 RE_CLB = re.compile(r"Minimum scores \(CLB (\d) equivalent\)", re.I)
+
+# ── 雇主侧(B2-4)——三个数各一条正则,任何一条没解析到整表不更新 ──────────────
+# 「Operated under current management for at least 2 years (or 1 year in special cases)」
+RE_EMP_YEARS = re.compile(r"Operated under current management for at least (\d+) years?", re.I)
+# 「In St. John's area: at least 2 full-time local employees」(弯引号在 page_text 已压成空白无碍)
+RE_STAFF_SJ = re.compile(r"In St\.?\s*John.{0,3}s area:? at least (\d+) full-?time local employees?", re.I)
+# 「Outside St. John's: at least 1 full-time local employee」
+RE_STAFF_OUT = re.compile(r"Outside St\.?\s*John.{0,3}s:? at least (\d+) full-?time local employees?", re.I)
 
 
 def page_text(url: str) -> str:
@@ -110,6 +122,27 @@ def main() -> None:
                             label=f"No language test is required for NOC TEER "
                                   f"{', '.join(str(t) for t in exempt)} job offers; the category accepts job offers "
                                   f"in TEER {all_m.group(1)} occupations"))
+
+    # ── 雇主侧(B2-4):经营年限(全省)+ 本地全职雇员(圣约翰斯区/区外两档,照 BC 大温内外先例)──
+    emp_txt = page_text(EMPLOYER_URL)
+    m_years, m_sj, m_out = RE_EMP_YEARS.search(emp_txt), RE_STAFF_SJ.search(emp_txt), RE_STAFF_OUT.search(emp_txt)
+    for m, what in ((m_years, "经营年限"), (m_sj, "圣约翰斯区雇员数"), (m_out, "区外雇员数")):
+        if not m:
+            problems.append(f"雇主侧「{what}」没解析到(雇主资格页可能改版)")
+    if m_years and m_sj and m_out:
+        emp_stream = "NLPNP (employer criteria, all streams)"
+        reqs.append(req(stream=emp_stream, subject="employer", factor="empYears", value=int(m_years.group(1)),
+                        unit="years", url=EMPLOYER_URL, section="Employer Criteria — established in NL",
+                        label=f"Employer must be permanently based in NL, registered with Service NL, and operated "
+                              f"under current management for at least {m_years.group(1)} years (1 year in special cases)"))
+        reqs.append(req(stream=emp_stream, subject="employer", factor="empStaff", value=int(m_sj.group(1)),
+                        unit="employees", appliesArea="st-johns", url=EMPLOYER_URL,
+                        section="Employer Criteria — local staff",
+                        label=f"In the St. John's area: at least {m_sj.group(1)} full-time local employees"))
+        reqs.append(req(stream=emp_stream, subject="employer", factor="empStaff", value=int(m_out.group(1)),
+                        unit="employees", appliesArea="rest-of-nl", url=EMPLOYER_URL,
+                        section="Employer Criteria — local staff",
+                        label=f"Outside St. John's: at least {m_out.group(1)} full-time local employee(s)"))
 
     if problems:
         print("✗ 自校未过,保留旧表不覆盖:")

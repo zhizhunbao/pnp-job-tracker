@@ -76,7 +76,8 @@ export type ReportEmployer = {
   lmiaPositions: number | null; lmiaQuarter: string; aip: boolean
   // 雇主侧门槛落到这一家(设计 §3.5「地点这项本站判得了」):area=官方分档区域键,
   // empRevenue/empStaff=该区域对应的官方阈值;认不出普查区时 empRevenue 为空,只给雇员数。
-  area: string; empRevenue: number | null; empStaff: number | null
+  // empYears=该省雇主经营年限门槛(全省一档,不分区;B2-4 起 BC/ON/NS/MB/NL 有数)
+  area: string; empYears: number | null; empRevenue: number | null; empStaff: number | null
 }
 export type Report = {
   goal: 'pr' | 'job' | 'career' | 'prov'
@@ -830,8 +831,9 @@ const employerLines = (occ: OccStats | null, facts: ReportFacts): ReportEmployer
   const reqs = facts.requirements ?? []
   return (occ?.sponsorList ?? []).map((e) => {
     const area = areaOfPlace(e.province, e.city)
-    const bar = area ? employerBar(reqs, e.province, area) : { revenue: null, staff: null }
-    return { ...e, area, empRevenue: bar.revenue, empStaff: bar.staff }
+    // B2-4:经营年限不分区 → area 认不出也照给;雇员/营业额仍要区域确定才给(宁缺不猜)
+    const bar = employerBar(reqs, e.province, area)
+    return { ...e, area, empYears: bar.years, empRevenue: bar.revenue, empStaff: bar.staff }
   })
 }
 
