@@ -1013,8 +1013,11 @@ const REQ_FREE: Record<string, string> = {
   'rpt.r.income.fail': 'rpt.r.income.failFree',
   'rpt.r.exp.fail': 'rpt.r.exp.failFree',
 }
-// 免费层必留的结论(不受「免费两条」截断):停抽的 EE 类别 —— 劝退的话不该收费
-const ALWAYS_FREE = new Set(['rpt.c.eeStale', 'rpt.j.sponsors'])
+// 免费层必留的结论(不受「免费两条」截断):停抽的 EE 类别 —— 劝退的话不该收费;
+// PGWP 六行(B1-4)—— 免费探索题承诺的解锁,被「其余 N 条」桶吃掉=答了题什么都没多看到
+//(2026-08-03 生产实撞:引擎算出来了,免费响应里 moreN+3 却一行不见);且口径就是规则+一次查表,算术不收钱(卡⑥教训)
+const ALWAYS_FREE = new Set(['rpt.c.eeStale', 'rpt.j.sponsors',
+  'rpt.c.pgwpLen', 'rpt.c.pgwpNone', 'rpt.c.pgwpCombine', 'rpt.c.pgwpLang', 'rpt.c.pgwpLangOk', 'rpt.c.pgwpLangShort'])
 const HINT: Record<string, string> = { 'rpt.c.regulated': 'rpt.hint.cert', 'rpt.g.expShort': 'rpt.hint.exp' }
 export function gateReport(report: Report, pro: boolean): GatedReport {
   const provLine = report.conclusions.find((c) => LANE_PROV[c.key])

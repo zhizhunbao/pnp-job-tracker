@@ -171,6 +171,16 @@ describe('报告「门槛对照」节', () => {
     expect(none.conclusions.some((c) => c.key === 'rpt.c.pgwpLen')).toBe(false)
   })
 
+  // 2026-08-03 生产实撞:引擎算出了 pgwp 行,免费闸的「其余 N 条」桶把它们全裁进锁区(moreN+3)——
+  // 免费探索题承诺的解锁被吃掉 = 答了题什么都没多看到。ALWAYS_FREE 保底,这条测试锁死。
+  it('PGWP:免费层必留(不受「免费两条」截断)', () => {
+    const built = buildPrReport(base(), { canadianExpMonths: null, studyMonths: 12, studyLevel: 'college' }, dims, pgwpFacts())
+    const free = gateReport(built, false)
+    expect(free.conclusions.some((c) => c.key === 'rpt.c.pgwpLen')).toBe(true)
+    expect(free.conclusions.some((c) => c.key === 'rpt.c.pgwpCombine')).toBe(true)
+    expect(free.conclusions.some((c) => c.key === 'rpt.c.pgwpLangOk')).toBe(true)
+  })
+
   it('PGWP:没答课程题一行不出;FED 行不漏进省级门槛节', () => {
     const r = buildPrReport(base(), { canadianExpMonths: 30 }, dims, pgwpFacts())
     expect(r.conclusions.some((c) => c.key.startsWith('rpt.c.pgwp'))).toBe(false)
