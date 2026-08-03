@@ -11,6 +11,7 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { getUser, isPro } from '@/lib/entitlement'
+import { jobDescription } from '@/lib/jobDescription'
 import { completeText, LlmError } from '@/lib/llm'
 import { CLAMP, DAILY_FREE, gateMatch, matchPrompt, MIN_RESUME, normalizeRows, parseLlmJson } from '@/lib/resumeMatch'
 
@@ -21,7 +22,7 @@ export async function POST(req: Request) {
   let body: any = null
   try { body = await req.json() } catch { /* 落到下面的校验 */ }
   const resume = typeof body?.resume === 'string' ? body.resume.trim() : ''
-  const jd = typeof body?.jd === 'string' ? body.jd.trim() : ''
+  let jd = typeof body?.jd === 'string' ? body.jd.trim() : ''
   const lang = typeof body?.lang === 'string' ? body.lang : 'en'
 
   const user = await getUser(await headers()).catch(() => null)
@@ -29,6 +30,15 @@ export async function POST(req: Request) {
   const pro = isPro(user)
 
   if (resume.length < MIN_RESUME) return Response.json({ error: 'tooShort' }, { status: 400 })
+  // 前端没带 JD(弹框场景 JD 可能没渲/没抓)→ 服务端按 jobId 走统一入口兜一次(库内 description
+  // ∪ #123 懒抓;2026-08-03 Frank 实撞 noJd 被报成「稍后再试」)。兜不到才真 noJd。
+  if (jd.length < 40 && body?.jobId != null) {
+    try {
+      const payload = await getPayload({ config: await config })
+      const { rows } = await (payload.db as any).pool.query('SELECT apply_url FROM jobs WHERE id = $1 LIMIT 1', [body.jobId])
+      if (rows[0]?.apply_url) jd = (await jobDescription(rows[0].apply_url)).trim()
+    } catch { /* 兜底失败走 noJd */ }
+  }
   if (jd.length < 40) return Response.json({ error: 'noJd' }, { status: 400 })
 
   // 日限(非 Pro):users.profile.matchUses = "YYYY-MM-DD:N"(挂 json 档案,无需加列;跨日自动清零)
@@ -38,18 +48,23 @@ export async function POST(req: Request) {
   const used = d === today ? Number(nRaw) || 0 : 0
   if (!pro && used >= DAILY_FREE) return Response.json({ error: 'limit', left: 0 }, { status: 429 })
 
+  // 真实错误只回 @test.local(standalone-dynamic-loads 探针惯例);错误码归一(旧版把 LlmError
+  // 中文消息塞进 error 字段,前端匹配不上还泄内部话术)
+  const dbg = String((user as any).email || '').endsWith('@test.local')
   let text: string
   try {
     // 通道定向 friend(2026-08-03 Frank「不用 Haiku 用朋友的大模型」):挂了就报 rm.err,不静默切云烧钱
     text = await completeText(matchPrompt(jd.slice(0, CLAMP), resume.slice(0, CLAMP), lang, pro), { maxTokens: pro ? 1600 : 900, provider: 'friend' })
   } catch (e) {
-    return Response.json({ error: e instanceof LlmError ? e.message : 'llm' }, { status: 502 })
+    const msg = e instanceof Error ? e.message : String(e)
+    console.log(`[resume-match] llm fail user=${(user as any).id}: ${msg.slice(0, 200)}`)
+    return Response.json({ error: 'llm', ...(dbg ? { detail: msg.slice(0, 300) } : {}) }, { status: 502 })
   }
   const parsed = parseLlmJson(text)
   const rows = normalizeRows(parsed)
   if (!rows) {
-    console.log(`[resume-match] parse fail user=${(user as any).id} jd=${jd.length}ch resume=${resume.length}ch`)
-    return Response.json({ error: 'parse' }, { status: 502 })
+    console.log(`[resume-match] parse fail user=${(user as any).id} jd=${jd.length}ch resume=${resume.length}ch raw=${text.slice(0, 200)}`)
+    return Response.json({ error: 'parse', ...(dbg ? { detail: text.slice(0, 300) } : {}) }, { status: 502 })
   }
 
   // 记账(成功才计次;Pro 不计)。失败不扣次数 —— 模型抽风不该消耗用户额度

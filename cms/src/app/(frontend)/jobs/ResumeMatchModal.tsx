@@ -56,7 +56,9 @@ export function ResumeMatchModal({ jobId, jd, loggedIn, onClose }: {
       })
       const d = await r.json().catch(() => null)
       if (!r.ok || !d || d.error) {
-        setErr(d?.error === 'tooShort' ? t('rm.tooShort') : d?.error === 'limit' ? t('rm.limit') : t('rm.err'))
+        // 每个错误码说自己的实话(2026-08-03 Frank 实撞:noJd 被笼统报成「稍后再试」,重试也没用)
+        const key = ({ tooShort: 'rm.tooShort', limit: 'rm.limit', noJd: 'rm.noJd', auth: 'rm.login' } as Record<string, string>)[d?.error] || 'rm.err'
+        setErr(t(key))
       } else setRes(d)
     } catch { setErr(t('rm.err')) }
     setBusy(false)
