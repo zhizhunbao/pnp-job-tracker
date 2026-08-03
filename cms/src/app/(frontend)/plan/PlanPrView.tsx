@@ -15,7 +15,7 @@ import { shortOcc } from '../quiz/EntryQuiz'
 import { OccPicker } from '../quiz/OccPicker'
 import { QuizProgress, QuizStyle, QuizTitle } from '../quiz/QuizUI'
 import { QuizForm } from './QuizForm'
-import { Button, Notice, PageShell, Tag, UI } from '../ui/primitives'
+import { Button, LockedRows, Notice, PageShell, Tag, UI } from '../ui/primitives'
 import { EMPTY, clearAnswers, readAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
 import { DECISIONS, fieldsOf, missingFields } from '@/lib/decisions'
 import { goBackOr } from '../BackLink'
@@ -621,25 +621,17 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                   </div>
                 )}
 
-                {/* ⑤ 锁区:只有类别标题(正文服务端就没下发)+ CTA(价格归 /pricing 不硬编)+ 答题 hook */}
+                {/* ⑤ 锁区:G3 统一打码规范全站换装(2026-08-03,规范=G3 文档 §1)——
+                    码行数=真实剩余条数(moreN + 非 more 类数,数字真、纹理假;正文服务端就没下发),
+                    ProCard 替掉旧的 🔒 行列表 + Notice CTA(没选职业的空报告 locked=[] 整块不出,红线照旧) */}
                 {rpt.locked.length > 0 && (
                   <div className="noPrint" style={CARD} ref={lockBox}>
                     <div style={secH}>{t('rpt.sec.lock')}</div>
-                    {rpt.locked.map((k) => (
-                      <div key={k} style={{ display: 'flex', gap: 9, alignItems: 'center', margin: '9px 0' }}>
-                        <span style={{ flexShrink: 0 }}>🔒</span>
-                        {/* #245:「其余结论全文」改成带条数 —— 只有这一行需要参数,其余锁行文案没有占位符 */}
-                        <span style={{ fontSize: 14, fontWeight: 600, color: UI.text, minWidth: 0 }}>{t('rpt.lock.' + k, k === 'more' ? { n: rpt.moreN } : undefined)}</span>
-                        <span style={{ marginLeft: 'auto' }}><Tag variant="pro">{t('rpt.pro')}</Tag></span>
-                      </div>
-                    ))}
+                    <LockedRows n={rpt.moreN + rpt.locked.filter((k) => k !== 'more').length}
+                      text={t('rpt.lock.more', { n: rpt.moreN + rpt.locked.filter((k) => k !== 'more').length })}
+                      cta={t('pro.unlock')}
+                      onClick={() => { track(`plan-${decision}-cta`); window.location.href = `/pricing?from=rpt-${decision}` }} />
                   </div>
-                )}
-                {/* CTA 只在真锁住了东西时才出(2026-07-31 实拍抓到:没选职业的空报告什么都算不出,
-                    却照样挂「完整报告 + 30 天全站 Pro」—— 那是卖不存在的东西,红线) */}
-                {!rpt.pro && rpt.locked.length > 0 && (
-                  <Notice kind="warn" lead={t('rpt.cta.t')} style={{ margin: '10px 0' }} className="noPrint"
-                    action={<span onClick={() => track(`plan-${decision}-cta`)}><Button kind="pro" href={`/pricing?from=rpt-${decision}`}>{t('rpt.cta.btn')}</Button></span>} />
                 )}
                 {/* 同理:没职业时探索两题也改不了任何结论,不劝答。
                     文案按**真能兑现的**说(2026-08-02 走查实见):这个职业不在任何 EE 类别时,
