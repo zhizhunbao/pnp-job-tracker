@@ -5,6 +5,20 @@
 > ⚠️ **「真实收款」这四个字 2026-08-03 撤掉**:live 通道验过没错(07-04 开闸演练,已退款),但库里两条
 > Stripe session 一条是测试号、一条是 Frank 自己那笔 —— **陌生用户付费至今 0 笔**。别再把「已收款」当既成事实。批次进度=`docs/implementation/_开发批次顺序.md`:**B0-B8 全部落地(2026-07-04 一天从 B4 打到 B8),24 工作项代码侧全完**。
 >
+> **⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡ 最新交接(2026-08-03 晚,「Frank 实测五连改 + 简历上传全链」)**
+> - Frank 真号实测简历对照,连发五条全落地(ff2c630+6931b7e+2f89f68+f5582d6,生产复验过):
+>   ① **文件上传 pdf/docx/md/txt**(G3 二期提前):复用 E11-07 解析器抽成 `lib/resumeExtract`,新端点
+>   `/api/resume-extract` 只抽文本不碰 LLM(登录+5MB,不占日限),md/txt 前端 FileReader 直读,
+>   文本回填粘贴框;不落库红线照旧。② 眉题「AI 工具」删(ModalTitle eyebrow 可选)。③ 详情页锁行删
+>   (与报告钮同链接纯重复 + 全国口径贴本省数字旁;**jd-lock-seen/click 退役,漏斗第 3 步只剩 rpt-lock-seen**)。
+>   ④ 弹框小注砍成「免费每天 3 次」。⑤ **简历存档多岗复用已立项**(G3 §3b:默认不存点了才存、
+>   账户页能看能删、隐私页同步)——「按你的建议来」拍板。
+> - **PDF「dev 通生产必败」连剥三层**(教训进 memory [standalone-dynamic-loads]):bundle 化→
+>   serverExternalPackages;Linux 缺 DOMMatrix→shim;**生产=standalone,pdfjs worker 动态加载
+>   tracing 追不到**→outputFileTracingIncludes 点名。三层全被裸 catch 吞过 —— 修=错误留痕 +
+>   **@test.local detail 探针**(拿不到 Render 日志时最快的眼睛)。E11-07 的 PDF 上传因此从上线就是坏的,同批治愈。
+> - 手上欠着:Frank 真号跑 LLM 对照全链(匿名面/上传面都验了,就差登录态真跑一次 Haiku);死键清理批。
+>
 > **🔥 生产僵死事故(2026-08-03 16:0x–16:28,约 20 分钟,a195ee3 已修)**:seed 大改 jobs 表后,
 > 首页 `fetchTotalAndProof` 三连 count(全表扫、**每请求现算无缓存**)从 ~2s 涨到 ~10s,
 > 应用池(pg 默认 max=10)被排队打满 → /、/stats、/jobs/[id] 与所有走池的 API 全超时;
