@@ -155,10 +155,25 @@ describe('卡③ 选省份', () => {
     ...facts,
     byProv: [
       { province: 'BC', open: 19, named: 18 }, { province: 'SK', open: 31, named: 5 },
-      { province: 'ON', open: 430, named: 0 }, { province: 'AB', open: 40, named: 0 },
+      { province: 'ON', open: 43, named: 0 }, { province: 'AB', open: 40, named: 0 },
       { province: 'QC', open: 60, named: 0 }, { province: 'NL', open: 3, named: 0 },
     ],
   }
+
+  // 2026-08-03:命中清单仍排前面,但「首选」这个词只给**够得着**的省(在招 ≥ 全国最大省的 1/10)。
+  // 实撞:软开 21232 在 AB 科技清单上却只有 2 个在招(ON 有 47),旧文案照样叫「首选 AB」——
+  // 具名通道再好,没 offer 一切归零。降级会让「清单收了你」整条消失,所以改措辞不改排序。
+  it('命中但当地几乎没岗:不叫「首选」,并指出岗位实际在哪', () => {
+    const thin = buildProvReport(normalizeProfile({}), { hasJobOffer: null }, provDims, {
+      ...provFacts, byProv: [{ province: 'BC', open: 2, named: 2 }, { province: 'ON', open: 47, named: 0 }],
+    })
+    // 2026-08-03 当天二次改判:ON 是 exclusion 省(不公布清单),TEER 达标即算「能走」,
+    // 47 岗的它当首选;2 岗的 BC 落到后面,但**「清单收了你、可惜没岗」这句仍要出**,不许整条消失。
+    const thinLine = thin.conclusions.find((c) => c.key === 'rpt.p.thinHit')!
+    expect(thinLine.params).toMatchObject({ prov: 'BC', open: 2, maxProv: 'ON', maxOpen: 47 })
+    expect(thin.conclusions.filter((c) => c.key === 'rpt.p.best' || c.key === 'rpt.p.bestAll')
+      .every((c) => c.params.prov !== 'BC')).toBe(true)   // 2 岗的省不许叫「首选」
+  })
 
   it('进了公开清单的省排前面,排除清单上的沉底', () => {
     const r = buildProvReport(normalizeProfile({}), { hasJobOffer: null }, provDims, provFacts)
@@ -195,9 +210,14 @@ describe('卡③ 选省份', () => {
     expect(r.conclusions.some((c) => c.params.prov === 'QC')).toBe(false)
   })
 
-  it('本站没收录清单的省只计数,不冒充「查过没有」', () => {
-    const r = buildProvReport(normalizeProfile({}), { hasJobOffer: null }, provDims, provFacts)
-    expect(r.gaps.find((g) => g.key === 'rpt.g.uncoveredN')?.params.n).toBe(1)   // NL
+  // 2026-08-03:NL 已核为 exclusion(主线不列职业),不再算「未收录」→ 十省里已无 uncovered。
+  // 这条护栏改成盯**真没数据的辖区**(如未核对的三级地区),口径不变:只计数,不冒充「查过没有」。
+  it('本站没收录清单的辖区只计数,不冒充「查过没有」', () => {
+    const dims = { ...provDims }
+    const facts = { ...provFacts, byProv: [...provFacts.byProv, { province: 'YT', open: 3, named: 0 }] }
+    const r = buildProvReport(normalizeProfile({}), { hasJobOffer: null }, dims, facts)
+    expect(r.gaps.find((g) => g.key === 'rpt.g.uncoveredN')?.params.n).toBe(1)   // YT
+    expect(r.conclusions.every((c) => c.key !== 'rpt.c.listedMiss')).toBe(true)
   })
 
   it('有 offer → 雇主通道排进下一步;没有 → 出缺口', () => {

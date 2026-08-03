@@ -16,13 +16,30 @@ export const LANG_KEY = 'jobs.lang'
 // 红线:不许按 IP 判(加拿大华人 IP=加拿大会被错切英文,浏览器语言才是本人信号)。
 export const initialLang = (): Lang => {
   try {
-    const s = localStorage.getItem(LANG_KEY)
-    if (s === 'zh' || s === 'en' || s === 'ko') return s
-    const n = (navigator.language || '').toLowerCase()
-    if (n.startsWith('zh')) return 'zh'
-    if (n.startsWith('ko')) return 'ko'
-    return 'en'
+    const s = parseLang(localStorage.getItem(LANG_KEY))
+    if (s) return s
+    return langFromAccept(navigator.language)
   } catch { return 'zh' }
+}
+// ── 语言也走 cookie(2026-08-03 Frank「英韩版刷新为什么先闪中文」):
+// 原来只存 localStorage —— 服务端读不到,于是 SSR 一律渲中文,浏览器先画中文那一帧,
+// 等水合后才换语言。cookie 服务端读得到 → 首帧就是对的(同列偏好 COLS_COOKIE 的老路)。
+// localStorage 继续写:它是老用户的既有偏好来源,且 cookie 被清时还能兜住。
+export const LANG_COOKIE = 'jt.lang.v1'
+export const parseLang = (raw: string | null | undefined): Lang | null =>
+  raw === 'zh' || raw === 'en' || raw === 'ko' ? raw : null
+/** 首访没偏好时按浏览器语言判(navigator.language 或 Accept-Language 头,同一套判据)。
+ *  红线:不许按 IP 判 —— 加拿大华人 IP=加拿大,会被错切英文,浏览器语言才是本人信号。 */
+export const langFromAccept = (raw: string | null | undefined): Lang => {
+  const n = (raw || '').toLowerCase()
+  if (n.startsWith('zh')) return 'zh'
+  if (n.startsWith('ko')) return 'ko'
+  return n ? 'en' : 'zh'   // 头都没有(爬虫/直连)→ 站点默认中文,与改造前 useState('zh') 一致
+}
+/** 显式切换语言时落盘:localStorage(既有)+ cookie(给 SSR 看)。一年期,path=/ 全站通用。 */
+export const saveLang = (l: Lang): void => {
+  try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ }
+  try { document.cookie = `${LANG_COOKIE}=${l}; path=/; max-age=31536000; samesite=lax` } catch { /* ignore */ }
 }
 export const COLS_COOKIE = 'jobsCols3'   // 列偏好 cookie 名(放共享非 client 模块,服务端 page.tsx 也能读到真实值);v2:新默认 10 列,bump 名让旧 cookie 失效
 
@@ -270,10 +287,10 @@ const zh: Dict = {
   'jd.rep.vsHi': '这个岗比同职业中位高 {pct}%', 'jd.rep.vsLo': '这个岗比同职业中位低 {pct}%',
   'jd.rep.lock': '{n} 家雇主发过能走省提名的岗', 'jd.rep.lock.sub': '公司名、命中岗数、LMIA 记录',
   'plan.prov.title': '选省份', 'plan.prov.sub': '填 1 项条件,看哪个省对你的职业最合适',
-  'rpt.p.best': '{prov} 最合适:你的职业在其公开清单「{label}」上,当地在招 {open} 岗,其中 {named} 个是省提名清单岗',
-  'rpt.p.second': '{prov} 次选:在招 {open} 岗,其中 {named} 个是省提名清单岗',
-  'rpt.p.bestAll': '{prov} 最合适:你的职业在其公开清单「{label}」上,当地在招 {open} 岗',
-  'rpt.p.secondAll': '{prov} 次选:你的职业也在其公开清单「{label}」上,当地在招 {open} 岗',
+  'rpt.p.best': '首选 {prov}:你的职业在其公开清单「{label}」上,当地在招 {open} 岗,其中 {named} 个是省提名清单岗',
+  'rpt.p.second': '次选 {prov}:在招 {open} 岗,其中 {named} 个是省提名清单岗',
+  'rpt.p.bestAll': '首选 {prov}:你的职业在其公开清单「{label}」上,当地在招 {open} 岗',
+  'rpt.p.secondAll': '次选 {prov}:你的职业同样在其公开清单「{label}」上,当地在招 {open} 岗',
   'rpt.p.screen': '{prov} 不公布职业清单,按 TEER {teer} 粗筛可走,当地在招 {open} 岗',
   'rpt.p.rank': '{n} 个省的完整顺序与每省差什么',
   'rpt.g.noOffer': '雇主担保类通道要先有 offer;这条只管这一类,别的路不受它影响',
@@ -346,6 +363,12 @@ const zh: Dict = {
   'rpt.c.listedHit': '该职业已列入 {prov} 省提名清单「{label}」—— 当地在招 {open} 岗',
   'rpt.c.listedHitPart': '该职业已列入 {prov} 省提名清单「{label}」;当地在招 {open} 岗,其中 {named} 个走得了该通道',
   'rpt.c.listedMiss': '{prov} 公开清单查过:NOC {noc} 不在上面;当地 {open} 个在招岗走不了具体通道',
+  'rpt.p.thinHit': '{prov} 的清单确实收了 NOC {noc}(「{label}」),但当地眼下只有 {open} 个在招;岗位其实在 {maxProv}({maxOpen} 个)——具名通道也得先有 offer',
+  'rpt.p.notExcluded': '{prov}:排除清单「{label}」查过,NOC {noc} 不在上面,TEER {teer} 也过 0-3 门槛;当地在招 {open} 岗',
+  'rpt.p.easiest': '最容易拿提名的是 {prov}:每个提名名额只有 {comp} 人在争,{topProv} 是 {topComp} 人;当地在招 {open} 岗',
+  'rpt.p.mostJobs': '岗位最多的是 {prov}({open} 个),但那边每个提名名额有 {comp} 人在争,{topProv} 只有 {topComp} 人({asOf} 年末)——岗多不等于容易拿提名',
+  'rpt.c.notExcluded': '{prov} 的排除清单「{label}」查过:NOC {noc} 不在上面,TEER {teer} 也过 0-3 门槛;当地在招 {open} 岗',
+  'rpt.c.partialMiss': '{prov} 本站覆盖的 {n} 条专项通道全查过:NOC {noc} 都不在;该省主线不另发职业清单,具名命中无法两向核实;当地 {open} 个在招岗',
   'rpt.c.excluded': 'NOC {noc} 在 {prov} 的排除清单「{label}」上',
   'rpt.c.screenPass': '{prov} 不公布职业清单;TEER {teer} 过通用粗筛,当地在招 {open} 岗',
   'rpt.c.screenTeer': '{prov} 不公布职业清单,且 TEER {teer} 不过通用技术类粗筛;当地在招 {open} 岗',
@@ -380,6 +403,8 @@ const zh: Dict = {
   'rpt.lane.t.prov': '{prov} 省提名', 'rpt.lane.t.ee': '联邦 EE', 'rpt.lane.t.alts': '备选省',
   'rpt.lane.prov.hit': '清单命中', 'rpt.lane.prov.hit.b': '可走',
   'rpt.lane.prov.miss': '不在清单', 'rpt.lane.prov.miss.b': '换省',
+  'rpt.lane.prov.partial': '专项未收', 'rpt.lane.prov.partial.b': '看主线',
+  'rpt.lane.prov.jobs': '岗位最多', 'rpt.lane.prov.jobs.b': '看职位', 'rpt.lane.prov.room': '最不挤', 'rpt.lane.prov.room.b': '看该省',
   'rpt.lane.prov.excluded': '在排除清单', 'rpt.lane.prov.excluded.b': '换省',
   'rpt.lane.prov.screen': '过通用粗筛', 'rpt.lane.prov.screen.b': '待核',
   'rpt.lane.prov.screenNo': '不过粗筛', 'rpt.lane.prov.screenNo.b': '换省',
@@ -704,9 +729,6 @@ const zh: Dict = {
   'price.pC.d': '你的职业有新岗就到邮箱',
   'price.save': '更划算,省 {p}%', 'price.perDay': '≈ {v}/天', 'price.cur': '当前方案', 'price.regFree': '免费注册',
   'price.cta.reg': '注册后购买', 'price.cta.buy30': '购买 30 天', 'price.cta.buy90': '购买 90 天', 'price.cta.acct': '已是 Pro · 去账户页',
-  'banner.text': '免费建档案,看每份工作对你的匹配度',
-  // #165:手机窄屏用短标签——长文案在 375px 上不换行不收缩,把标题与职位数挤成省略号
-  'banner.textShort': '免费建档案',
   'ss.save': '保存此筛选', 'ss.name': '给这个筛选起个名字:', 'ss.saved': '已保存,可在账户页管理', 'ss.err': '保存失败(可能已达上限)', 'ss.pro': '免费可存 2 个筛选,Pro 可存 5 个', 'ss.title': '已保存的筛选', 'ss.none': '还没有保存的筛选 —— 在职位板设好筛选后点「保存此筛选」', 'ss.del': '删除', 'ss.note': '保存的筛选可随时在这里管理;有新职位命中时会发邮件提醒',
   // 批A #134 通道直判+薪资三卡(文案铁律:一行放下,无废话)
   'fact.verdict': '判定', 'act.channel': '移民通道', 'eelist.drawsTitle': '最近抽选', 'eelist.listTitle': '类别清单',
@@ -739,7 +761,7 @@ const zh: Dict = {
   'diff.k.comp': '竞争比', 'diff.v.comp': '{v} : 1',
   'diff.k.trend': '配额同比', 'diff.k.act': '近 180 天抽选', 'diff.v.act': '{n} 次', 'diff.n.act': '邀请 {m} 人', 'diff.n.actOld': '邀请 {m} 人(均为改制前旧通道)',
   'diff.k.score': '最新分数线', 'diff.v.score': '{s} 分', 'diff.n.score': '处自身近两年 {p}% 分位({sc} 分制)',
-  'diff.comp': '竞争比 {v}:1', 'diff.compNote': '学签+工签在库 {pool} 人 ÷ 提名配额 {quota}({y} 年配额)',
+  'diff.comp': '竞争比 {v}:1', 'diff.compNote': '学签+工签在库 {pool} 人({py} 年末,官方年度数据)÷ 提名配额 {quota}({y} 年配额)',
   'diff.trend': '配额同比 {v}', 'diff.act': '近 180 天抽选 {n} 次(邀请 {m} 人)', 'diff.score': '分数线处自身近两年 {p}% 分位(最新 {s} 分,{sc} 分制)',
   'ce.title': '多雇主对比', 'ce.aip': 'AIP 指定雇主', 'ce.provDiff': '主要省·移民难度', 'ce.match': '与我的匹配', 'ce.matchHigh': '高匹配 {n} 岗', 'ce.matchMid': '中匹配 {n} 岗', 'ce.brief': 'AI 调查简介',
   'ce.note': '口径:LMIA=雇过外国人的历史记录,不代表会担保你;AIP 指定≠有配额;数字为本站库内口径,非资格认定。', 'ce.empty': '至少选 2 家雇主才能对比——去名录行点「+ 对比」', 'ce.goDir': '去雇主名录', 'ce.clear': '清空重选',
@@ -1018,10 +1040,10 @@ const en: Dict = {
   'jd.rep.vsHi': 'This job pays {pct}% above the median for the occupation', 'jd.rep.vsLo': 'This job pays {pct}% below the median for the occupation',
   'jd.rep.lock': '{n} employers have posted jobs that can go through a PNP', 'jd.rep.lock.sub': 'Names, matching postings, LMIA record',
   'plan.prov.title': 'Choose a province', 'plan.prov.sub': '1 detail: which province fits your occupation',
-  'rpt.p.best': '{prov} fits best: your occupation is on its published list "{label}"; {open} open postings there, {named} hitting the named stream',
-  'rpt.p.second': '{prov} is second: {open} open postings, {named} hitting the named stream',
-  'rpt.p.bestAll': '{prov} fits best: your occupation is on its published list "{label}"; {open} open postings there',
-  'rpt.p.secondAll': '{prov} is second: your occupation is on its published list "{label}" too; {open} open postings there',
+  'rpt.p.best': 'Top pick — {prov}: your occupation is on the published list "{label}"; {open} open postings there, {named} hitting the named stream',
+  'rpt.p.second': 'Runner-up — {prov}: {open} open postings, {named} hitting the named stream',
+  'rpt.p.bestAll': 'Top pick — {prov}: your occupation is on the published list "{label}"; {open} open postings there',
+  'rpt.p.secondAll': 'Runner-up — {prov}: your occupation is on its published list "{label}" too; {open} open postings there',
   'rpt.p.screen': '{prov} publishes no occupation list; TEER {teer} passes its generic screen, {open} open postings there',
   'rpt.p.rank': 'The full order across {n} provinces and what each one is missing',
   'rpt.g.noOffer': 'Employer-sponsored streams need an offer first; that applies to those streams only',
@@ -1091,6 +1113,12 @@ const en: Dict = {
   'rpt.c.listedHit': 'This occupation is on the {prov} PNP list "{label}" - {open} open postings there',
   'rpt.c.listedHitPart': 'This occupation is on the {prov} PNP list "{label}"; {named} of {open} open postings there qualify for that stream',
   'rpt.c.listedMiss': 'Checked the {prov} published list: NOC {noc} is not on it; {open} open postings there cannot use a named stream',
+  'rpt.p.thinHit': '{prov} does list NOC {noc} ("{label}"), but only {open} openings there; the jobs are in {maxProv} ({maxOpen}) — a named stream still needs an offer',
+  'rpt.p.notExcluded': '{prov}: checked its exclusion list "{label}" — NOC {noc} is not on it and TEER {teer} clears the 0-3 bar; {open} openings there',
+  'rpt.p.easiest': 'Best nomination odds are in {prov}: only {comp} permit holders per nomination space vs {topComp} in {topProv}; {open} openings there',
+  'rpt.p.mostJobs': '{prov} has the most openings ({open}) — but {comp} permit holders there compete for each nomination space, against {topComp} in {topProv} (year-end {asOf}); more jobs does not mean an easier nomination',
+  'rpt.c.notExcluded': 'Checked the {prov} exclusion list ("{label}"): NOC {noc} is not on it and TEER {teer} clears the 0-3 bar; {open} open postings there',
+  'rpt.c.partialMiss': 'Checked all {n} targeted streams we cover for {prov}: NOC {noc} is on none; the province publishes no main occupation list to verify against; {open} open postings there',
   'rpt.c.excluded': 'NOC {noc} is on the {prov} exclusion list "{label}"',
   'rpt.c.screenPass': '{prov} publishes no occupation list; TEER {teer} passes its generic screen, {open} open postings there',
   'rpt.c.screenTeer': '{prov} publishes no occupation list and TEER {teer} does not pass the generic skilled screen; {open} open postings there',
@@ -1124,6 +1152,8 @@ const en: Dict = {
   'rpt.lane.t.prov': '{prov} PNP', 'rpt.lane.t.ee': 'Federal EE', 'rpt.lane.t.alts': 'Other provinces',
   'rpt.lane.prov.hit': 'On the list', 'rpt.lane.prov.hit.b': 'open route',
   'rpt.lane.prov.miss': 'Not on the list', 'rpt.lane.prov.miss.b': 'switch province',
+  'rpt.lane.prov.partial': 'Not on targeted lists', 'rpt.lane.prov.partial.b': 'check main stream',
+  'rpt.lane.prov.jobs': 'Most openings', 'rpt.lane.prov.jobs.b': 'see jobs', 'rpt.lane.prov.room': 'Least crowded', 'rpt.lane.prov.room.b': 'see province',
   'rpt.lane.prov.excluded': 'On the exclusion list', 'rpt.lane.prov.excluded.b': 'switch province',
   'rpt.lane.prov.screen': 'Passes generic screen', 'rpt.lane.prov.screen.b': 'to verify',
   'rpt.lane.prov.screenNo': 'Fails generic screen', 'rpt.lane.prov.screenNo.b': 'switch province',
@@ -1429,8 +1459,6 @@ const en: Dict = {
   'price.pC.d': 'New jobs in your occupation, by email',
   'price.save': 'Best value, save {p}%', 'price.perDay': '≈ {v}/day', 'price.cur': 'Current plan', 'price.regFree': 'Sign up free',
   'price.cta.reg': 'Sign up to buy', 'price.cta.buy30': 'Buy 30 days', 'price.cta.buy90': 'Buy 90 days', 'price.cta.acct': 'Already Pro · account page',
-  'banner.text': 'Create a free profile and see how well each job matches you',
-  'banner.textShort': 'Free profile',
   'ss.save': 'Save this search', 'ss.name': 'Name this search:', 'ss.saved': 'Saved — manage on your account page', 'ss.err': 'Save failed (limit may be reached)', 'ss.pro': 'Free saves 2 searches — Pro saves 5', 'ss.title': 'Saved searches', 'ss.none': 'No saved searches yet — set filters on the job board and hit Save this search', 'ss.del': 'Delete', 'ss.note': 'Manage saved searches here anytime; we email you when new jobs match',
   'fact.verdict': 'Verdict', 'act.channel': 'PR routes', 'eelist.drawsTitle': 'Recent draws', 'eelist.listTitle': 'Category list',
   'ch.title': 'Routes this job can take', 'ch.pnpRow': 'PNP', 'ch.list': 'List',
@@ -1459,7 +1487,7 @@ const en: Dict = {
   'diff.k.comp': 'Competition ratio', 'diff.v.comp': '{v} : 1',
   'diff.k.trend': 'Allocation YoY', 'diff.k.act': 'Draws in 180 days', 'diff.v.act': '{n}', 'diff.n.act': '{m} invitations', 'diff.n.actOld': '{m} invitations, all from streams closed in the redesign',
   'diff.k.score': 'Latest cutoff', 'diff.v.score': '{s}', 'diff.n.score': '{p}th percentile of its own 2-year history ({sc})',
-  'diff.comp': 'Competition ratio {v}:1', 'diff.compNote': '{pool} study+work permit holders ÷ {quota} nomination spaces ({y} allocation)',
+  'diff.comp': 'Competition ratio {v}:1', 'diff.compNote': '{pool} study+work permit holders (year-end {py}, latest annual IRCC data) ÷ {quota} nomination spaces ({y} allocation)',
   'diff.trend': 'Allocation YoY {v}', 'diff.act': '{n} draws in last 180 days ({m} invitations)', 'diff.score': 'Cutoff at the {p}th percentile of this province’s own 2-year history (latest {s}, {sc} scale)',
   'ce.title': 'Compare employers', 'ce.aip': 'AIP designated', 'ce.provDiff': 'Main province & difficulty', 'ce.match': 'Match with my profile', 'ce.matchHigh': '{n} high-match jobs', 'ce.matchMid': '{n} mid-match jobs', 'ce.brief': 'AI research brief',
   'ce.note': 'Method: LMIA = past record of hiring foreign workers, not a promise to support you; AIP designation ≠ quota; figures are this site’s data, not an eligibility ruling.', 'ce.empty': 'Pick at least 2 employers to compare — use “+ Compare” in the directory', 'ce.goDir': 'Employer directory', 'ce.clear': 'Clear selection',
@@ -1807,6 +1835,12 @@ const ko: Dict = {
   'rpt.c.listedHit': '이 직종은 {prov} 주정부 지명 목록 "{label}"에 포함 - 현지 채용 {open}건',
   'rpt.c.listedHitPart': '이 직종은 {prov} 주정부 지명 목록 "{label}"에 포함. 현지 채용 {open}건 중 {named}건이 해당 스트림 가능',
   'rpt.c.listedMiss': '{prov} 공개 목록 확인 결과 NOC {noc}은 목록에 없습니다. 현지 {open}건은 지정 스트림 이용 불가',
+  'rpt.p.thinHit': '{prov} 목록에 NOC {noc}("{label}") 포함되지만 현지 채용은 {open}건뿐; 일자리는 {maxProv}({maxOpen}건)에 — 지정 스트림도 오퍼가 먼저',
+  'rpt.p.notExcluded': '{prov}: 제외 목록 「{label}」 확인 — NOC {noc}은 없고 TEER {teer}도 0-3 충족; 현지 {open}건',
+  'rpt.p.easiest': '지명 확률이 가장 높은 곳은 {prov}: 1자리당 {comp}명 경쟁({topProv}는 {topComp}명); 현지 {open}건',
+  'rpt.p.mostJobs': '채용이 가장 많은 곳은 {prov}({open}건) — 다만 지명 1자리당 {comp}명이 경쟁({topProv}는 {topComp}명, {asOf}년 말). 채용이 많다고 지명이 쉬운 건 아닙니다',
+  'rpt.c.notExcluded': '{prov} 제외 목록("{label}") 확인 결과 NOC {noc}은 목록에 없고 TEER {teer}도 0-3 기준 충족. 현지 {open}건',
+  'rpt.c.partialMiss': '{prov}에서 저희가 수집한 특별 스트림 {n}개를 모두 확인했으나 NOC {noc}은 어디에도 없습니다. 해당 주 본류는 직업 목록을 공개하지 않아 확인 불가. 현지 {open}건',
   'rpt.c.excluded': 'NOC {noc}은 {prov} 제외 목록 "{label}"에 있습니다',
   'rpt.c.screenPass': '{prov}는 직업 목록을 공개하지 않습니다. TEER {teer}는 일반 심사 통과, 현지 채용 {open}건',
   'rpt.c.screenTeer': '{prov}는 직업 목록을 공개하지 않으며 TEER {teer}는 일반 기술직 심사를 통과하지 못합니다. 현지 채용 {open}건',
@@ -1840,6 +1874,8 @@ const ko: Dict = {
   'rpt.lane.t.prov': '{prov} 주정부 지명', 'rpt.lane.t.ee': '연방 EE', 'rpt.lane.t.alts': '대체 주',
   'rpt.lane.prov.hit': '목록 해당', 'rpt.lane.prov.hit.b': '가능',
   'rpt.lane.prov.miss': '목록에 없음', 'rpt.lane.prov.miss.b': '주 변경',
+  'rpt.lane.prov.partial': '특별 스트림 미포함', 'rpt.lane.prov.partial.b': '본류 확인',
+  'rpt.lane.prov.jobs': '채용 최다', 'rpt.lane.prov.jobs.b': '채용 보기', 'rpt.lane.prov.room': '가장 여유', 'rpt.lane.prov.room.b': '주 보기',
   'rpt.lane.prov.excluded': '제외 목록', 'rpt.lane.prov.excluded.b': '주 변경',
   'rpt.lane.prov.screen': '일반 심사 통과', 'rpt.lane.prov.screen.b': '확인 필요',
   'rpt.lane.prov.screenNo': '일반 심사 미통과', 'rpt.lane.prov.screenNo.b': '주 변경',
@@ -2145,8 +2181,6 @@ const ko: Dict = {
   'price.pC.d': '내 직종에 새 공고가 나오면 이메일로',
   'price.save': '가장 이득, {p}% 절약', 'price.perDay': '≈ {v}/일', 'price.cur': '현재 플랜', 'price.regFree': '무료 가입',
   'price.cta.reg': '가입 후 구매', 'price.cta.buy30': '30일권 구매', 'price.cta.buy90': '90일권 구매', 'price.cta.acct': '이미 Pro · 계정 페이지로 이동',
-  'banner.text': '무료로 프로필을 만들고 각 공고와의 매칭도를 확인하세요',
-  'banner.textShort': '무료 프로필',
   'ss.save': '이 필터 저장', 'ss.name': '필터 이름:', 'ss.saved': '저장됨 — 계정 페이지에서 관리', 'ss.err': '저장 실패(상한 도달 가능)', 'ss.pro': '무료는 필터 2개, Pro는 5개 저장', 'ss.title': '저장된 필터', 'ss.none': '저장된 필터가 없습니다 — 채용 보드에서 필터 설정 후 「이 필터 저장」', 'ss.del': '삭제', 'ss.note': '저장된 필터는 언제든 여기서 관리; 새 공고가 있으면 이메일로 알려 드립니다',
   'fact.verdict': '판정', 'act.channel': '이민 경로', 'eelist.drawsTitle': '최근 추첨', 'eelist.listTitle': '카테고리 목록',
   'ch.title': '이 포지션이 갈 수 있는 경로', 'ch.pnpRow': 'PNP(주정부)', 'ch.list': '목록',
@@ -2175,7 +2209,7 @@ const ko: Dict = {
   'diff.k.comp': '경쟁률', 'diff.v.comp': '{v} : 1',
   'diff.k.trend': '쿼터 전년 대비', 'diff.k.act': '최근 180일 추첨', 'diff.v.act': '{n}회', 'diff.n.act': '초청 {m}명', 'diff.n.actOld': '초청 {m}명(모두 개편 전 폐지 스트림)',
   'diff.k.score': '최신 커트라인', 'diff.v.score': '{s}점', 'diff.n.score': '자체 2년 기준 상위 {p}% ({sc})',
-  'diff.comp': '경쟁률 {v}:1', 'diff.compNote': '학업+취업 허가 보유 {pool}명 ÷ 지명 쿼터 {quota}({y}년 쿼터)',
+  'diff.comp': '경쟁률 {v}:1', 'diff.compNote': '학업+취업 허가 보유 {pool}명({py}년 말, 최신 연간 IRCC 데이터) ÷ 지명 쿼터 {quota}({y}년 쿼터)',
   'diff.trend': '쿼터 전년 대비 {v}', 'diff.act': '최근 180일 추첨 {n}회(초청 {m}명)', 'diff.score': '컷오프가 해당 주 자체 2년 분포의 {p}% 분위(최근 {s}점, {sc})',
   'ce.title': '고용주 비교', 'ce.aip': 'AIP 지정', 'ce.provDiff': '주요 주·이민 난이도', 'ce.match': '내 프로필 매칭', 'ce.matchHigh': '고매칭 {n}건', 'ce.matchMid': '중매칭 {n}건', 'ce.brief': 'AI 조사 요약',
   'ce.note': '기준: LMIA=외국인 고용 이력이며 보증 약속이 아님; AIP 지정≠쿼터; 자격 판정 아님.', 'ce.empty': '비교하려면 최소 2개 선택 — 디렉토리에서 「+ 비교」', 'ce.goDir': '고용주 디렉토리', 'ce.clear': '선택 초기화',

@@ -31,10 +31,18 @@ export type ReportFacts = {
   scoreProvinces?: string[]         // 有官方分值表的省(由 scoreFactors 派生,如 BC/SK/ON)
   scores?: Record<string, { total: number; passMark: number | null; system: string; url: string; fetched: string }>  // 用户已算的省估分(pnpSelfScore 输出)
   requirements?: Requirement[]      // 官方门槛(pnp_requirements;规则引擎的输入,只 BC 有数据时其余省=未收录)
+  // 省移民难度(E12-07 已算好的 stats.difficulty)。2026-08-03 接进决策层:
+  // 此前它 9 省齐备、天天重算,却**只活在 /stats 与地点弹框**,决策引擎引用 0 次 ——
+  // 于是卡③ 只按「清单命中 → 在招量」排,给木匠推 BC(246 岗但 comp 84.2 全国最卷),
+  // 而曼省(清单命中 + comp 11.9 + 抽选活跃)被压进锁区看不见。
+  difficulty?: ProvDifficulty[]
   fetched?: string                  // 事实聚合的数据日期
 }
 // 基本题里引擎新增消费的字段(currentStatus/clb/targetProvinces 已在 MatchProfile)。
 // edu/age/totalExpMonths = 题库扩充 20260802:官方分值表本来就要的三样,先前写死(高中/0 岁/无海外经验)。
+// tier 三档 = 04e 的产出(easy/mid/tight);comp=国际生存量 ÷ 提名配额,越大越卷
+export type ProvDifficulty = { province: string; tier: string; comp: number | null; asOf?: string }
+
 export type ReportExtra = {
   canadianExpMonths: number | null
   edu?: EduKey | null
@@ -387,10 +395,26 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
     } else if (cov === 'listed') {
       // 清单式省查过确实不在 —— 可以下「不在清单」结论;开在招数给落差感(430 岗与你无关的诚实版)
       conclusions.push({ key: 'rpt.c.listedMiss', params: { prov, noc, open: f.open }, verdict: 'fail' })
+    } else if (cov === 'partial') {
+      // 只有专项通道清单的省(BC/PE):说得出「这几条专项都查过、都没有」,但**不得**冒充查过主线。
+      // n 给的是本站覆盖了几条通道 —— 用户看得见我们查到哪一步,而不是一句「未收录」。
+      // 按 label 数通道:维度表每条通道一个短标签(BC 医疗 / BC 建筑技工…),label 去重即通道数
+      const lanes = new Set(dims.pnpOccupations.filter((r) => r.province === prov && r.type !== 'ineligible').map((r) => r.label))
+      conclusions.push({ key: 'rpt.c.partialMiss', params: { prov, noc, open: f.open, n: lanes.size }, verdict: 'warn' })
     } else if (cov === 'exclusion') {
-      // 排除式/不公布清单(ON):0 具名是制度性的,不得说「不在清单」;按 TEER 粗筛口径陈述
+      // exclusion 有两种,措辞不能混(2026-08-03 实撞:SK 被写成「不公布职业清单」,而萨省明明**公布了排除清单**):
+      //   ① 手上有该省排除清单(SK/AB/NB/BC)→ 「查过排除清单,你不在上面」是**可核验的正面结论**,带官方出处;
+      //   ② 制度性无清单(ON/NS/NL)→ 只能按 TEER 粗筛口径陈述,不得暗示查过任何名单。
       const pass = facts.teer != null && facts.teer <= 3
-      conclusions.push({ key: pass ? 'rpt.c.screenPass' : 'rpt.c.screenTeer', params: { prov, open: f.open, teer: facts.teer ?? '' }, verdict: pass ? 'warn' : 'fail' })
+      const exList = dims.pnpOccupations.find((r) => r.province === prov && r.type === 'ineligible')
+      if (pass && exList) {
+        conclusions.push({
+          key: 'rpt.c.notExcluded', params: { prov, noc, open: f.open, teer: facts.teer ?? '', label: exList.label },
+          verdict: 'pass', source: { label: exList.label, url: exList.url, fetched: exList.fetched },
+        })
+      } else {
+        conclusions.push({ key: pass ? 'rpt.c.screenPass' : 'rpt.c.screenTeer', params: { prov, open: f.open, teer: facts.teer ?? '' }, verdict: pass ? 'warn' : 'fail' })
+      }
       if (pass && f.open > 0) nextSteps.push({ key: 'rpt.n.jobs', params: { prov, n: f.open }, url: `/?prov=${prov}&q=${noc}` })
     } else {
       // uncovered:本站没该省清单数据,只能说没收录,不冒充「查过没有」
@@ -550,7 +574,15 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
 // ── 卡③「选省份」:十省对照,专属题只有一道(手上有没有 offer)──────────────────
 // 免费=库里查得到的(哪个省把你这行放进公开清单、当地在招多少、抽选线区间);
 // 锁区=拿你的答案排出来的完整顺序与每省差距。QC 走自己体系不参与排序(不是 PNP)。
-export type ProvExtra = Partial<ReportExtra> & { hasJobOffer: boolean | null }
+// 「够得着」门槛:命中清单要能当首选,该省在招量至少得有全国最大省的 1/10(且不少于 3 个)。
+// **相对不绝对**——绝对值 20 试过,护士 BC 16 岗(全国最大 54)被误杀,而软开 AB 2 岗又漏网。
+// 三个真实案例校准:木匠 MB 25/246 ✓、护士 BC 16/54 ✓、软开 AB 2/47 ✗(正确排除,不推去抢 2 个岗)。
+const REACHABLE_SHARE = 0.1
+const REACHABLE_FLOOR = 3
+
+// goal = 这张卡的**目标函数**(2026-08-03):'pr'=容易拿提名优先,'work'=先找到工作优先。
+// 缺答时按 'pr' 走 —— 站的定位是移民价值视角,不填也该给移民口径的答案。
+export type ProvExtra = Partial<ReportExtra> & { hasJobOffer: boolean | null; goal?: 'pr' | 'work' | null }
 export function buildProvReport(profile: MatchProfile, extra: ProvExtra, dims: MatchDims, facts: ReportFacts, occ: OccStats | null = null): Report {
   const conclusions: ReportLine[] = []
   const gaps: ReportLine[] = []
@@ -587,9 +619,44 @@ export function buildProvReport(profile: MatchProfile, extra: ProvExtra, dims: M
     }
     cands.push({ prov, open: f.open, named: f.named, cov, label: row?.label ?? '', url: row?.url ?? '', fetched: row?.fetched ?? '', excluded: false })
   }
-  // 排序:进了公开清单的优先(那是官方具名认可),其次看当地在招量;排除清单上的沉底
+  // 排序:进了公开清单的优先(官方具名认可),其次具名数、在招量。**难度不当排序键** ——
+  // 2026-08-03 试过把 tier 插进排序,19 岗与 20 岗之间立刻出现悬崖;而且「BC 岗多 10 倍」与
+  // 「MB 松 7 倍」本来就谁也不压倒谁,压成一个名次就是替用户拿主意。
+  // 难度改为出一条**退路**结论(见下):先去在招最多的地方找 offer,拿不到就转最不挤的那个省。
+  const TIER_RANK: Record<string, number> = { easy: 0, mid: 1, tight: 2 }
+  const diffOf = new Map((facts.difficulty ?? []).map((d) => [d.province, d]))
+  const tierOf = (p: string) => TIER_RANK[diffOf.get(p)?.tier ?? ''] ?? 9
+  // ── 首选按「哪个省容易拿 PR」排,不按「哪个省岗位多」──────────────────────────
+  // Frank 2026-08-03:「肯定是容易拿 PR 啊」。这站的目标函数是**拿到提名**,找工作只是手段:
+  // BC 246 个木匠岗听着好,但那边 84.2 个人抢一个提名名额 —— offer 拿到了提名也轮不上;
+  // 曼省 25 个岗、11.9 人抢一个名额。所以排序键:
+  //   ① 命中公开清单 **且** 够得着(在招 ≥ 全国最大省的 1/10;见 REACHABLE_*)
+  //   ② 难度档 easy > mid > tight ← 这一格就是「容易拿 PR」
+  //   ③ 具名数 ④ 在招量
+  // ② 之所以夹在 ① 之后:难度再松,只有 2 个在招岗也拿不到 offer(软开 AB 案例)。
+  // 「岗位最多」的省若不是首选,另出一条提示,把「岗多 ≠ 容易拿提名」这句话摊开说。
+  const maxOpen = Math.max(0, ...cands.map((c) => c.open))
+  const reachable = (c: { open: number }) => c.open >= Math.max(REACHABLE_FLOOR, maxOpen * REACHABLE_SHARE)
+  // 「能走」不等于「在在需清单上」(2026-08-03 Frank:「sk 海洋四省为什么不选????」)——
+  // 萨省是**排除式**:不在那 152 条排除清单上 + TEER 0-3 就能申请 OID/EE,可走性跟「命中在需清单」
+  // 是一个量级。旧判据 strong = label && reachable 把 exclusion 省当二等公民,于是全国最松的萨省
+  // (每个提名名额 9.0 人)被压到前二之外。具名清单的额外价值是**专属通道/优先处理**,那是加分项
+  // (排序里当 tiebreak),不是能不能走的门槛。
+  const teerOk = facts.teer != null && facts.teer <= 3
+  const walkable = (c: { label: string; cov: string }) => Boolean(c.label) || (c.cov === 'exclusion' && teerOk)
+  const strong = (c: { label: string; cov: string; open: number }) => walkable(c) && reachable(c)
+  // 排序目标由**用户的诉求**定,不由助手拍(Frank 2026-08-03:「每个人诉求不一样」)。
+  // 助手先按岗位量写死过一版、又按难度写死过一版,两版都错在替用户选目标函数。
+  const workFirst = extra.goal === 'work'
+  const compOf = (p: string) => diffOf.get(p)?.comp ?? Number.POSITIVE_INFINITY
   const rank = cands.sort((a, b) =>
-    Number(Boolean(b.label)) - Number(Boolean(a.label)) || b.named - a.named || b.open - a.open)
+    Number(strong(b)) - Number(strong(a))
+    || (workFirst ? b.open - a.open : tierOf(a.prov) - tierOf(b.prov))
+    // 同一难度档内,具名命中优先(有专属通道/优先处理),再比竞争比细数
+    || Number(Boolean(b.label)) - Number(Boolean(a.label))
+    || (workFirst ? 0 : compOf(a.prov) - compOf(b.prov))
+    || b.named - a.named || b.open - a.open)
+  const mostJobs = [...cands].sort((a, b) => b.open - a.open)[0]
 
   for (const [i, c] of rank.slice(0, 2).entries()) {
     if (c.label) {
@@ -599,16 +666,47 @@ export function buildProvReport(profile: MatchProfile, extra: ProvExtra, dims: M
       // named=0 也走全量句式:那时「其中 0 个是清单岗」与上半句「在公开清单上」自相矛盾,
       // 而「在清单上 + 当地在招 N 岗」两句都为真(0 具名多半是该省岗位没打 pnp_stream,不是他不在清单上)。
       const part = c.named > 0 && c.named < c.open
+      const key = reachable(c)
+        ? (i === 0 ? (part ? 'rpt.p.best' : 'rpt.p.bestAll') : (part ? 'rpt.p.second' : 'rpt.p.secondAll'))
+        : 'rpt.p.thinHit'   // 命中了但当地几乎没岗:说清楚,并指出岗位实际在哪
       conclusions.push({
-        key: i === 0 ? (part ? 'rpt.p.best' : 'rpt.p.bestAll') : (part ? 'rpt.p.second' : 'rpt.p.secondAll'),
-        params: { prov: c.prov, open: c.open, named: c.named, label: c.label },
-        verdict: 'pass', source: { label: c.label, url: c.url, fetched: c.fetched },
+        key,
+        params: { prov: c.prov, noc, open: c.open, named: c.named, label: c.label,
+                  maxProv: mostJobs?.prov ?? '', maxOpen: mostJobs?.open ?? 0 },
+        verdict: reachable(c) ? 'pass' : 'warn', source: { label: c.label, url: c.url, fetched: c.fetched },
       })
     } else {
-      // 不公布清单的省(ON):0 具名是制度性的,只能按 TEER 粗筛口径陈述,不得说「不在清单」
-      conclusions.push({ key: 'rpt.p.screen', params: { prov: c.prov, open: c.open, teer: facts.teer ?? '' }, verdict: 'warn' })
+      // exclusion 两种,措辞不能混(2026-08-03 卡② 已修,卡③ 当天漏网):
+      //   ① 手上有该省排除清单(SK 152 条 / AB 34 / NB 43 / BC 12)→ 「查过排除清单你不在上面」,带出处
+      //   ② 制度性无清单(ON / NS / NL)→ 才是「不公布职业清单,按 TEER 粗筛」
+      const exList = dims.pnpOccupations.find((r) => r.province === c.prov && r.type === 'ineligible')
+      if (exList && teerOk) {
+        conclusions.push({
+          key: 'rpt.p.notExcluded',
+          params: { prov: c.prov, noc, open: c.open, teer: facts.teer ?? '', label: exList.label },
+          verdict: 'pass', source: { label: exList.label, url: exList.url, fetched: exList.fetched },
+        })
+      } else {
+        conclusions.push({ key: 'rpt.p.screen', params: { prov: c.prov, open: c.open, teer: facts.teer ?? '' }, verdict: 'warn' })
+      }
     }
   }
+  // 对称提示:首选按你的诉求排出来了,另一头是什么样也得说 ——
+  //   诉求=拿 PR   → 提「岗位最多的是谁、那边多挤」(岗多 ≠ 容易拿提名)
+  //   诉求=先找工作 → 提「最容易拿提名的是谁」(别让他不知道自己放弃了什么)
+  const top = rank[0]
+  const other = workFirst
+    ? [...rank].filter((c) => strong(c) && diffOf.has(c.prov)).sort((a, b) => tierOf(a.prov) - tierOf(b.prov))[0]
+    : mostJobs
+  if (top && other && other.prov !== top.prov && diffOf.has(other.prov) && diffOf.has(top.prov)) {
+    const [dm, dt] = [diffOf.get(other.prov)!, diffOf.get(top.prov)!]
+    conclusions.push({
+      key: workFirst ? 'rpt.p.easiest' : 'rpt.p.mostJobs', verdict: 'na',
+      params: { prov: other.prov, open: other.open, comp: dm.comp ?? '', label: other.label || '',
+                topProv: top.prov, topComp: dt.comp ?? '', asOf: dm.asOf ?? '' },
+    })
+  }
+
   if (rank[0]?.open) nextSteps.push({ key: 'rpt.n.jobs', params: { prov: rank[0].prov, n: rank[0].open }, url: `/?prov=${rank[0].prov}&q=${noc}` })
 
   // 锁区:完整顺序与每省差距(要拿他的答案才排得出来)
@@ -821,6 +919,8 @@ export type GatedReport = Report & { lanes: ReportLane[]; hint?: ReportLine; loc
 const FREE_CONCLUSIONS = 2      // 免费结论的**下限**(单省时=清单命中 + 抽选区间,正是 v2c 免费两条);多省按「每省保底一条」上浮
 const LANE_PROV: Record<string, string> = {
   'rpt.c.listedHit': 'rpt.lane.prov.hit', 'rpt.c.listedHitPart': 'rpt.lane.prov.hit', 'rpt.c.listedMiss': 'rpt.lane.prov.miss',
+  'rpt.c.partialMiss': 'rpt.lane.prov.partial', 'rpt.c.notExcluded': 'rpt.lane.prov.hit',
+  'rpt.p.thinHit': 'rpt.lane.prov.hit', 'rpt.p.mostJobs': 'rpt.lane.prov.jobs',
   'rpt.c.excluded': 'rpt.lane.prov.excluded', 'rpt.c.screenPass': 'rpt.lane.prov.screen',
   'rpt.c.screenTeer': 'rpt.lane.prov.screenNo', 'rpt.c.uncovered': 'rpt.lane.prov.uncovered',
   'rpt.c.qc': 'rpt.lane.prov.qc',
@@ -968,6 +1068,12 @@ const EN: Record<string, (p: Record<string, string | number>) => string> = {
   'rpt.c.listedHit': (p) => `NOC ${p.noc} is on ${p.prov}'s published list "${p.label}" — ${p.open} open postings there.`,
   'rpt.c.listedHitPart': (p) => `NOC ${p.noc} is on ${p.prov}'s published list "${p.label}"; ${p.named} of ${p.open} open postings there qualify for the named stream.`,
   'rpt.c.listedMiss': (p) => `Checked ${p.prov}'s published list: NOC ${p.noc} is not on it. ${p.open} open postings there cannot use a named stream.`,
+  'rpt.c.notExcluded': (p) => `Checked ${p.prov}'s published exclusion list ("${p.label}"): NOC ${p.noc} is not on it, and TEER ${p.teer} clears the 0-3 bar — ${p.open} open postings there.`,
+  'rpt.p.thinHit': (p) => `${p.prov} does list NOC ${p.noc} ("${p.label}"), but only ${p.open} openings there right now — the jobs are in ${p.maxProv} (${p.maxOpen}). A named stream still needs an offer.`,
+  'rpt.p.notExcluded': (p) => `${p.prov}: checked its published exclusion list ("${p.label}") — NOC ${p.noc} is not on it and TEER ${p.teer} clears the 0-3 bar; ${p.open} openings there.`,
+  'rpt.p.easiest': (p) => `Easiest nomination odds are in ${p.prov} — only ${p.comp} permit holders per nomination space vs ${p.topComp} in ${p.topProv}${p.label ? `, and your occupation is on "${p.label}"` : ''}; ${p.open} openings there.`,
+  'rpt.p.mostJobs': (p) => `${p.prov} has the most openings (${p.open}) — but ${p.comp} permit holders there compete for each nomination space, against ${p.topComp} in ${p.topProv} (year-end ${p.asOf}). More jobs does not mean an easier nomination.`,
+  'rpt.c.partialMiss': (p) => `Checked all ${p.n} of ${p.prov}'s targeted streams we cover: NOC ${p.noc} is on none of them. ${p.prov}'s main stream publishes no occupation list we can verify against, so a named-stream hit cannot be ruled in or out there — ${p.open} open postings locally.`,
   'rpt.c.excluded': (p) => `NOC ${p.noc} is on ${p.prov}'s exclusion list "${p.label}".`,
   'rpt.c.screenPass': (p) => `${p.prov} publishes no occupation list; TEER ${p.teer} passes its generic screen. ${p.open} open postings.`,
   'rpt.c.screenTeer': (p) => `${p.prov} publishes no occupation list and TEER ${p.teer} does not pass the generic skilled screen. ${p.open} open postings.`,

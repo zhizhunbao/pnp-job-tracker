@@ -58,13 +58,19 @@ describe('黄金样例(省清单四态 × 报告口径)', () => {
     // 备选(④ 预判下一问):BC 有童护清单 → 该省若有岗应入 alternatives(此例 byProv 无 BC 行,不出)
   })
 
-  it('软工 21232:BC 清单查过不在(listedMiss)+ AB 9 全命中入备选', () => {
+  // 2026-08-03 两次改判,记下过程免得下次又改回去:
+  //   ① 旧断言要 listedMiss(「查过 BC 公开清单,软工不在」)—— 那是谎话:库里 BC 只有 Care/Build **专项**清单;
+  //   ② 当天补抓了 BC 指南 §3.11「对任何 Skills Immigration 通道都不合格」的 12 条排除清单 →
+  //      BC 主线口径确定为**排除式**,软工不在那 12 条里 → 该给粗筛结论(screenPass),
+  //      既不说「不在清单」也不含糊说「只覆盖了 N 条专项」。**数据补全会让结论变强,断言跟着变强。**
+  it('软工 21232:BC 排除式 → 不在排除清单即给粗筛口径 + AB 9 全命中入备选', () => {
     const r = buildPrReport(base(), exp12, dims, facts({
       noc: '21232', title: 'Software developers', teer: 1,
       byProv: [{ province: 'BC', open: 120, named: 0 }, { province: 'AB', open: 9, named: 9 }],
     }))
-    const miss = r.conclusions.find((c) => c.key === 'rpt.c.listedMiss')!
-    expect(miss.params).toMatchObject({ prov: 'BC', open: 120 })
+    expect(keys(r.conclusions)).not.toContain('rpt.c.listedMiss')
+    const screen = r.conclusions.find((c) => c.key === 'rpt.c.screenPass')!
+    expect(screen.params).toMatchObject({ prov: 'BC', open: 120 })
     const alt = r.alternatives.find((a) => a.key === 'rpt.a.prov')!
     expect(alt.params).toMatchObject({ prov: 'AB', open: 9, named: 9 })
     expect(alt.source?.url).toBe('https://alberta.ca/tech')
@@ -72,8 +78,44 @@ describe('黄金样例(省清单四态 × 报告口径)', () => {
 })
 
 describe('四态其余两态 + 排除清单', () => {
-  it('uncovered(NL):只说未收录,不下结论', () => {
+  // exclusion 的两种措辞不能混(2026-08-03):手上有该省排除清单时,「查过排除清单你不在上面」是
+  // 可核验的**正面**结论(带官方出处);只有制度性无清单的省才退回「不公布清单 + TEER 粗筛」。
+  // 病灶原文:SK 明明公布了 152 条排除清单,报告却写「SK 不公布职业清单」。
+  it('exclusion + 手上有排除清单(SK):给「不在排除清单」的正面结论,带出处', () => {
+    const d = { ...dims, pnpOccupations: [...dims.pnpOccupations,
+      { province: 'SK', label: 'SK 主线不合格清单', type: 'ineligible', noc: '11100', url: 'https://sk/excl', fetched: '2026-08-02' }] }
+    const r = buildPrReport(base({ targetProvinces: ['SK'] }), exp12, d, facts({
+      noc: '72310', title: 'Carpenters', teer: 2, byProv: [{ province: 'SK', open: 30, named: 0 }],
+    }))
+    const ok = r.conclusions.find((c) => c.key === 'rpt.c.notExcluded')!
+    expect(ok.params).toMatchObject({ prov: 'SK', noc: '72310', teer: 2 })
+    expect(ok.source?.url).toBe('https://sk/excl')
+    expect(keys(r.conclusions)).not.toContain('rpt.c.screenPass')   // 不许再说「不公布职业清单」
+    expect(keys(r.conclusions)).not.toContain('rpt.c.listedMiss')
+  })
+
+  // partial 态的护栏(2026-08-03 新增):PE 有具名 OID 清单,但 PEI 另有不列职业的通道 →
+  // 未命中时只许说「本站覆盖的 N 条通道都查过、都没有」,**不许**说「查过 PE 公开清单不在」。
+  it('partial(PE):未命中说清查了几条通道,不冒充查全主线', () => {
+    const d = { ...dims, pnpOccupations: [...dims.pnpOccupations,
+      { province: 'PE', label: 'PE 在需职业', type: 'indemand', noc: '73300', url: 'https://pe/oid', fetched: '2026-08-02' }] }
+    const r = buildPrReport(base({ targetProvinces: ['PE'] }), exp12, d, facts({ noc: '31301', title: 'RN', teer: 1 }))
+    expect(keys(r.conclusions)).not.toContain('rpt.c.listedMiss')
+    const miss = r.conclusions.find((c) => c.key === 'rpt.c.partialMiss')!
+    expect(miss.params.prov).toBe('PE')
+    expect(Number(miss.params.n)).toBeGreaterThan(0)
+  })
+
+  // 2026-08-03 核 gov.nl.ca:NLPNP Skilled Worker **不列职业**(整页 0 个 NOC 码),按 offer+TEER 判 →
+  // NL 是 exclusion(制度性无清单),不是「本站未收录」。给粗筛口径才是答案;「未收录」对用户是废话。
+  it('exclusion(NL):主线不列职业 → 给粗筛口径,不说「不在清单」也不说「未收录」', () => {
     const r = buildPrReport(base({ targetProvinces: ['NL'] }), exp12, dims, facts({ noc: '31301', title: 'RN', teer: 1 }))
+    expect(keys(r.conclusions)).toContain('rpt.c.screenPass')
+    expect(keys(r.conclusions)).not.toContain('rpt.c.listedMiss')
+    expect(keys(r.conclusions)).not.toContain('rpt.c.uncovered')
+  })
+  it('uncovered:只对真没数据的辖区说未收录(如未核对的地区)', () => {
+    const r = buildPrReport(base({ targetProvinces: ['YT'] }), exp12, dims, facts({ noc: '31301', title: 'RN', teer: 1 }))
     expect(keys(r.conclusions)).toContain('rpt.c.uncovered')
     expect(keys(r.conclusions)).not.toContain('rpt.c.listedMiss')
   })

@@ -57,13 +57,38 @@ export type MatchResult = { level: MatchLevel; score: number; reasons: MatchReas
 //   uncovered 本站清单数据未覆盖(NL/PE 等):只能说「清单未收录本站」,不得当「查过没有」
 //   qc        魁省自有体系,不参加 PNP
 // NO_LIST_PROVINCES = 政策事实(人工核对,非数据缺失):ON 2026-06 改制后不公布职业清单。
-export type ProvListCoverage = 'listed' | 'exclusion' | 'uncovered' | 'qc'
+export type ProvListCoverage = 'listed' | 'partial' | 'exclusion' | 'uncovered' | 'qc'
 export const NO_LIST_PROVINCES = new Set(['ON'])   // 核对 2026-07-30;政策变更时更新此表
+
+// ── 主线口径表(2026-08-03 逐省核过官方页,政策事实,非数据推断)─────────────────
+// 旧判据是「该省有没有非 ineligible 行」→ 有就算 listed。**这条判据会撒谎**:
+// 2026-08-03 实撞——库里 SK 的 91 行全是三条**行业专项**(医疗/科技/农业)Talent Pathway,
+// 判成 listed 后,报告对着付费用户说「查过萨省公开清单,你不在上面」,而我们**从没查过萨省主线**。
+// 现在主线口径逐省人工核对(同 NO_LIST_PROVINCES 惯例),核对依据写在每行后面:
+//   listed    该省公布**全省主清单**,不在上面 = 可下「查过不在」结论
+//   exclusion 主线**不列职业**(按 offer/TEER 判)或走排除清单 → 只能按粗筛口径陈述
+//   partial   本站只有该省的**专项通道**清单,主线未核实 → 命中可说命中,未命中不得说「查过不在」
+const MAIN_LIST_COVERAGE: Record<string, ProvListCoverage> = {
+  QC: 'qc',
+  MB: 'listed',      // MPNP In-Demand Occupations List 是全省主清单(158 条)
+  ON: 'exclusion',   // 2026-06 改制后官方不公布职业清单(排除集为空)
+  SK: 'exclusion',   // SINP 主线 OID/EE 走**排除清单**(152 条)+ 要求 TEER 0-3;官方原话见 build_sk.py
+  AB: 'exclusion',   // AAIP Alberta Opportunity Stream 排除清单(34 条)
+  NB: 'exclusion',   // NB 技术工人 / AIP 两张不受理清单(43 条)
+  NS: 'exclusion',   // 主线 Skilled Worker 不列职业(按 offer+TEER);OID 通道官方明示当前为空
+  NL: 'exclusion',   // NLPNP Skilled Worker 不列职业(2026-08-03 核:整页 0 个 NOC 码)
+  BC: 'exclusion',   // 主线 Skills Immigration 有全通道排除清单(指南 §3.11,12 条,2026-06-13 起)+ 5 条 targeted ITA 专项
+  PE: 'partial',     // Occupations in Demand 是具名 8 个,但 PEI 另有不列职业的通道
+}
+
 export function provListCoverage(prov: string, dims: MatchDims): ProvListCoverage {
-  if (prov === 'QC') return 'qc'
-  if (NO_LIST_PROVINCES.has(prov)) return 'exclusion'
+  const declared = MAIN_LIST_COVERAGE[prov]
+  if (declared === 'qc') return 'qc'
   const rows = dims.pnpOccupations.filter((r) => r.province === prov)
-  if (rows.length === 0) return 'uncovered'
+  // 没核对过的省(将来新增)一律保守:有清单数据也只算 partial,绝不冒充「查全了」
+  if (!declared) return rows.length === 0 ? 'uncovered' : 'partial'
+  if (rows.length === 0 && declared !== 'exclusion') return 'uncovered'
+  if (declared !== 'listed') return declared
   return rows.some((r) => r.type !== 'ineligible') ? 'listed' : 'exclusion'
 }
 

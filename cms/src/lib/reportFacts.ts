@@ -115,7 +115,7 @@ export async function assembleOccStats(pool: any, noc: string): Promise<OccStats
 export async function assembleReportFacts(pool: any, noc: string): Promise<ReportFacts> {
   if (!/^\d{5}$/.test(noc)) return { ...EMPTY, fetched: TODAY() }
   const num = (v: any) => (v == null ? null : Number(v))
-  const [prov, draws, scoreProv, head, reqs, wages] = await Promise.all([
+  const [prov, draws, scoreProv, head, reqs, wages, diff] = await Promise.all([
     pool.query(
       `SELECT province, count(*)::int open,
               count(*) FILTER (WHERE pnp_stream IS NOT NULL AND pnp_stream <> '')::int named
@@ -146,6 +146,11 @@ export async function assembleReportFacts(pool: any, noc: string): Promise<Repor
     pool.query(
       `SELECT province, median_wage_annual FROM stats_occupation WHERE noc = $1 AND province <> 'all'`, [noc])
       .catch(() => ({ rows: [] })),
+    // 省难度(E12-07;与 /stats DifficultyCard、地点弹框同一行 broad='all',不 fork 口径)
+    pool.query(
+      `SELECT province, difficulty FROM stats
+       WHERE broad = 'all' AND (mid = 'all' OR mid IS NULL) AND difficulty IS NOT NULL`)
+      .catch(() => ({ rows: [] })),
   ])
   const h = head.rows[0] ?? {}
   // 官方分值表一行 → ScoreFactor(命名换成驼峰,值一分不改)
@@ -162,6 +167,12 @@ export async function assembleReportFacts(pool: any, noc: string): Promise<Repor
     title: h.title || noc,
     teer: h.teer != null ? Number(h.teer) : (/^\d{5}$/.test(noc) ? Number(noc[1]) : null),
     byProv: prov.rows.map((r: any) => ({ province: r.province, open: r.open ?? 0, named: r.named ?? 0, medianWage: wageOf.get(r.province) ?? null })),
+    // difficulty 列是 04e 写进 stats 的 json:{tier, factors:[{key:'comp',value,asOf},…]}
+    difficulty: diff.rows.map((r: any) => {
+      const d = r.difficulty ?? {}
+      const comp = (d.factors ?? []).find((f: any) => f.key === 'comp')
+      return { province: r.province, tier: d.tier ?? '', comp: comp ? Number(comp.value) : null, asOf: comp?.asOf ?? '' }
+    }).filter((d: any) => d.tier),
     requirements: reqs.rows.map((r: any): Requirement => ({
       province: r.province ?? '', program: r.program ?? 'PNP', stream: r.stream ?? '',
       subject: r.subject === 'employer' ? 'employer' : 'applicant',

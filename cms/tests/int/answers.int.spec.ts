@@ -103,7 +103,8 @@ describe('题库铁律', () => {
   it('每个字段都挂着引擎里真实存在的结论 key', () => {
     for (const [name, def] of Object.entries(FIELDS)) {
       expect(def.unlocks.length, `${name} 挂不上结论就不该入库`).toBeGreaterThan(0)
-      for (const k of def.unlocks) expect(k).toMatch(/^rpt\.[cgnas]\./)   // s = 换省对照节(L2-08)
+      // p = 卡③ 选省份的结论命名空间(rpt.p.best / mostJobs / notExcluded …),2026-08-03 加 goalBand 时补进白名单
+      for (const k of def.unlocks) expect(k).toMatch(/^rpt\.[cgnaps]\./)   // s = 换省对照节(L2-08)
     }
   })
 

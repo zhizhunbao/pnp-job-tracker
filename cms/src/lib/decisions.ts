@@ -22,9 +22,13 @@ export const DECISIONS: Record<string, Decision> = {
   // 「手上有没有 offer」不进本卡:buildJobReport 不消费它,问了改不了任何一行(挂不上结论就不问)。
   job: { basic: ['status', 'provBand'], explore: [] },
   career: { basic: ['provBand'], explore: [] },
-  // 卡③选省份:目标省是这张卡要**算出来**的东西,不能拿它当输入问;其余四道都真的进换省对照的分值表
-  // (先前只问 offer 一道 —— 于是每个省都按「高中、0 岁、无海外经验」算,那才是本卡最不准的一环)。
-  prov: { basic: ['eduBand', 'ageBand', 'clbBand', 'totalExpBand', 'offerBand'], explore: [] },
+  // 卡③选省份:目标省是这张卡要**算出来**的东西,不能拿它当输入问。
+  // 2026-08-03 砍掉 edu/age/clb/totalExp 四道 —— 实测 buildProvReport 对它们的消费次数是 **0**
+  //(而这行原注释还写着「都真的进换省对照的分值表」,注释撒了谎)。Frank:「这种问题和语言成绩、
+  // 工作经验都没什么关系,用户根本不需要填」「那些都是个人能克服的问题,主要是政策和环境不好克服」——
+  // 这张卡讲的就是政策与环境(哪个省清单收你、多挤、多少岗),个人可改变的因素不在其中。
+  // 留下的两道都真消费:goal 决定排序目标函数,hasJobOffer 决定雇主担保通道那条结论。
+  prov: { basic: ['goalBand', 'offerBand'], explore: [] },
 }
 
 export const fieldsOf = (decision: string, stage: Stage, batch = 0): string[] => {

@@ -33,7 +33,9 @@ const l = (en: string, zh: string, ko: string): L => ({ default: en, 'zh-cn': zh
 // 而且自评偏乐观(自认流利常是 CLB 7),门槛判定会因此说「达标」而实际不达标。取每档**下界**,宁可低报。
 const CLB = [0, 0, 4, 6, 8, 10]        // a1「还没考」= 没有分,不传
 const EXP = [0, 0, 6, 18, 30]          // a1「没有」= 0 个月,是答案不是缺答
-export const PROVS: string[][] = [[], ['BC'], ['ON'], ['AB', 'SK', 'MB'], []]   // a4「先看哪个够得着」= 不限省
+// a4「先看哪个够得着」= 不限省。**海洋四省挂 5 不挂 4**:4 已经在生产用了,改它的含义会把
+// 已存档案里的「不限省」静默变成「海洋四省」(2026-08-03 加这一档时的取舍——显示顺序看 choices 数组,与值无关)。
+export const PROVS: string[][] = [[], ['BC'], ['ON'], ['AB', 'SK', 'MB'], [], ['NS', 'NB', 'PE', 'NL']]
 const CRS = [0, 0, 380, 425, 480]      // a1「没算过」= 不传,引擎照旧出「没填 CRS」
 const PGWP = [0, 4, 9, 18, 30]
 // 官方分值表要的三样(题库扩充 20260802):学历阶梯 / 年龄取区间中点 / 同职业总经验(含海外)
@@ -162,7 +164,24 @@ export const FIELDS: Record<string, FieldDef> = {
         { value: 1, text: l('BC', 'BC', 'BC') },
         { value: 2, text: l('Ontario', '安省', '온타리오') },
         { value: 3, text: l('Prairies', '草原三省', '프레리 3주') },
+        { value: 5, text: l('Atlantic', '海洋四省', '애틀랜틱 4주') },
         { value: 4, text: l('Show me what is reachable', '先看哪个够得着', '가능한 곳부터 보기') },
+      ],
+    },
+  },
+  // 诉求(2026-08-03 Frank:「肯定是容易拿 PR 啊」→「如果不拿 PR 肯定去岗位多的啊」→「每个人诉求不一样」)。
+  // 选省份的排序目标本来被助手写死过两版(先按岗位量、后按难度),两版都错 —— 排序该由用户的诉求定。
+  // 一道题定一个目标函数:拿 PR = 按「容易拿提名」排;先找工作 = 按在招量排。两者都给对方那条当提示。
+  goalBand: {
+    engineKey: 'goal',
+    unlocks: ['rpt.p.best', 'rpt.p.mostJobs'],
+    tier: 'free',
+    toAnswer: (b: number) => (b === 1 ? 'pr' : b === 2 ? 'work' : undefined),
+    q: {
+      title: l('What matters more right now?', '你现在更看重哪个?', '지금 무엇이 더 중요한가요?'),
+      choices: [
+        { value: 1, text: l('Getting nominated (PR)', '容易拿身份(省提名)', '영주권(주정부 지명)') },
+        { value: 2, text: l('Finding a job first', '先找到工作', '우선 취업') },
       ],
     },
   },
