@@ -43,6 +43,10 @@ _HTML_CHALLENGE_MARKERS = (
     "just a moment", "请稍候", "正在进行安全验证", "请验证您是真人",
     "checking your browser", "attention required",
     "cf-browser-verification", "/cdn-cgi/challenge-platform",
+    "verifying your browser",   # Radware 文字版
+    # Radware EUDA 的 JS 加载器壳(princeedwardisland.ca 实见,2026-08-03):200 + 125KB webpack JS,
+    # 「Verifying your browser」文字在 12 万字开外,前 4000 字检测窗口里只有 EUDA 的常量名可认
+    "eudaenableagent",
 )
 
 

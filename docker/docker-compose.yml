@@ -58,6 +58,18 @@ services:
       SCRAPE_INTERVAL: '3600'      # 1h(#128 Frank「都改成小时更,不知道什么时候有新数据」;原周更——抽选结果最多滞后一周不可接受)
       TZ: EST5EDT
 
+  crawl:                           # 九省官方站 URL 探索 + 站点地图 diff(政策雷达;只产 data/crawl/,不灌库)
+    <<: *etl
+    build:                         # 用带 Playwright 的重镜像(非 httpx 轻镜像):PE 在 Radware 后面,
+      context: ..                  # bfs_crawler 的浏览器兜底(403/验证壳→chromium)只有这个镜像跑得动
+      dockerfile: docker/etl/crawl/Dockerfile
+    environment:
+      SOURCE: crawl
+      HEALTHCHECK_PING_CRAWL: ${HEALTHCHECK_PING_CRAWL:-}
+      SCRAPE_INTERVAL: '3600'      # 1h(2026-08-03 Frank 拍板,周更→日更→时更三连升;#128 同风格。负载 ~1,740 页/轮≈单站 0.2 req/s,有墙站并发已压 1)
+      BROWSER_HEADLESS: '1'
+      TZ: EST5EDT
+
   ee:                              # 联邦 EE 类别+抽选(2026-07 改 httpx:类别页无 Akamai、行全量;月更,只刷 raw)
     <<: *etl
     environment:
