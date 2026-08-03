@@ -49,6 +49,9 @@ export type ReportExtra = {
   edu?: EduKey | null
   age?: number | null              // 年龄段中点(题库存档位,换算在 fields.ts)
   totalExpMonths?: number | null   // 同职业总经验(含海外)
+  // B1-4 PGWP(探索批 2):计划课程时长(档下界)与层级;规则行在 facts.requirements 的 FED/PGWP 行
+  studyMonths?: number | null
+  studyLevel?: 'college' | 'bachelor' | 'master' | 'doctorate' | null
 }
 
 // ── 输出:七卡同一契约 ───────────────────────────────────────────────────────
@@ -539,6 +542,43 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
       conclusions.push({ key: 'rpt.c.expOk', params: { months: extra.canadianExpMonths }, verdict: 'pass', source: CEC_SRC })
     } else {
       gaps.push({ key: 'rpt.g.expShort', params: { months: extra.canadianExpMonths, need: 12 }, verdict: 'warn', source: CEC_SRC })
+    }
+  }
+
+  // ── PGWP 规则库(B1-4,2026-08-03 Frank 拍板「原文为准」):答了「计划读的课程」才出。
+  // 规则行 = pnp_requirements 的 FED/PGWP 行(quote-anchored,ircc 役逐轮验官方原文仍在页面上)。
+  // 合并条款官方只写「可合并各段时长」,**没写**合并后是否触发「≥2 年 → 3 年」档 —— 只复述,不替官方补这一跳。
+  const fed = (facts.requirements ?? []).filter((r) => r.province === 'FED' && r.program === 'PGWP')
+  if (fed.length && extra.studyMonths != null && extra.studyMonths > 0) {
+    const rsrc = (r: Requirement) => ({ label: r.label, url: r.url, fetched: r.fetched })
+    const rule = (factor: string, stream = '') => fed.find((r) => r.factor === factor && (r.stream || '') === stream)
+    const minR = rule('pgwpMinProgram')
+    if (extra.studyMonths < 8) {
+      if (minR) conclusions.push({ key: 'rpt.c.pgwpNone', params: {}, verdict: 'fail', source: rsrc(minR) })
+    } else {
+      const r = extra.studyLevel === 'master' ? rule('pgwpLength', 'masters')
+        : extra.studyMonths >= 24 ? rule('pgwpLength', 'long') : rule('pgwpLength', 'short')
+      if (r) {
+        conclusions.push({
+          key: 'rpt.c.pgwpLen', params: { months: extra.studyMonths, permit: r.value ?? extra.studyMonths },
+          verdict: 'pass', source: rsrc(r),
+        })
+      }
+    }
+    const comb = rule('pgwpCombine')
+    if (comb) conclusions.push({ key: 'rpt.c.pgwpCombine', params: {}, verdict: 'na', source: rsrc(comb) })
+    // 语言(2024-11-01 起):学位类 CLB 7 / 大专类 CLB 5。已报语言就对照,没报只摆门槛(不猜)
+    const lang = extra.studyLevel ? rule('pgwpLanguage', extra.studyLevel === 'college' ? 'college' : 'degree') : undefined
+    if (lang && lang.value != null) {
+      if (profile.clb == null) {
+        conclusions.push({ key: 'rpt.c.pgwpLang', params: { need: lang.value }, verdict: 'na', source: rsrc(lang) })
+      } else {
+        const ok = profile.clb >= lang.value
+        conclusions.push({
+          key: ok ? 'rpt.c.pgwpLangOk' : 'rpt.c.pgwpLangShort', params: { need: lang.value, have: profile.clb },
+          verdict: ok ? 'pass' : 'warn', source: rsrc(lang),
+        })
+      }
     }
   }
 
@@ -1131,6 +1171,12 @@ const EN: Record<string, (p: Record<string, string | number>) => string> = {
   'rpt.g.zeroExp': (p) => `You report no experience in this occupation — provinces that set an experience bar ask for at least ${p.need} months, so the first step is a job that builds it, not picking a province.`,
   'rpt.n.firstJob': (p) => `Land your first job in this occupation — the experience clock starts there; ${p.n} openings in ${p.prov}.`,
   'rpt.n.firstJobA': (p) => `Land your first job in this occupation — ${p.n} openings in ${p.prov}, ${p.aN} officially marked will-train / no experience required.`,
+  'rpt.c.pgwpLen': (p) => `Your planned program (counted at ${p.months} months) can lead to a PGWP of up to ${p.permit} months under the official length rules.`,
+  'rpt.c.pgwpNone': () => `A program under 8 months (900 hours for Quebec programs) is not eligible for a PGWP.`,
+  'rpt.c.pgwpCombine': () => `Completing more than one program: lengths may combine in a single application if each program is PGWP-eligible and at least 8 months — and a PGWP is issued once per lifetime.`,
+  'rpt.c.pgwpLang': (p) => `PGWP applications (since 2024-11-01) require CLB ${p.need} in all 4 language areas for this program level; you have not reported a language result.`,
+  'rpt.c.pgwpLangOk': (p) => `PGWP language bar for this program level is CLB ${p.need} (since 2024-11-01); you report CLB ${p.have} — meets it.`,
+  'rpt.c.pgwpLangShort': (p) => `PGWP language bar for this program level is CLB ${p.need} (since 2024-11-01); you report CLB ${p.have} — below it.`,
   'rpt.r.wage.median': (p) => `${p.prov} requires the offered wage to be at or above the regional median for the occupation — that median is $${p.need} per year.`,
   'rpt.r.wage.rule': (p) => `${p.prov} requires the offered wage to be at or above the regional median wage level for the occupation.`,
   'rpt.r.emp.years': (p) => `Employer-side: the employer needs ${p.n}+ years of operation in ${p.prov} — only the employer can evidence this.`,

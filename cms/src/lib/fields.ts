@@ -42,6 +42,9 @@ const PGWP = [0, 4, 9, 18, 30]
 const EDU = ['', 'highschool', 'diploma2y', 'bachelor', 'master', 'doctorate']
 const AGE = [0, 23, 28, 33, 38, 43]
 const TOTAL_EXP = [0, 0, 6, 24, 48, 60]   // a1「没有」= 0 个月,是答案不是缺答(同 EXP 口径)
+// B1-4 PGWP:课程时长档下界 / 层级(引擎只对 master 有特例,其余按时长档)
+const STUDY_MONTHS = [0, 4, 8, 12, 24]
+const STUDY_LEVEL = ['', 'college', 'bachelor', 'master', 'doctorate']
 
 export const FIELDS: Record<string, FieldDef> = {
   // 处境:决定签证题算不算数(境外没有加拿大签证),并计入基本题完整度
@@ -231,6 +234,39 @@ export const FIELDS: Record<string, FieldDef> = {
         { value: 2, text: l('6-12 months', '6-12 个月', '6-12개월') },
         { value: 3, text: l('1-2 years', '1-2 年', '1-2년') },
         { value: 4, text: l('2+ years', '2 年以上', '2년 이상') },
+      ],
+    },
+  },
+  // ── B1-4 PGWP(20260803,Frank 拍板只加两道;探索批 2)──────────────────────
+  // 「读书 vs 直接工作」的官方算术:课程时长档 + 层级 → 毕业后 PGWP 几个月(规则行 quote-anchored,
+  // 见 etl/build_pgwp.py)。档取下界(同 CLB/经验口径);「不到 8 个月」给 4 只为让引擎判「不足 8 个月无 PGWP」。
+  studyMonthsBand: {
+    engineKey: 'studyMonths',
+    unlocks: ['rpt.c.pgwpLen', 'rpt.c.pgwpCombine'],
+    tier: 'free',
+    toAnswer: (b: number) => (b ? STUDY_MONTHS[b] : undefined),
+    q: {
+      title: l('How long is the program you plan to take (or are in)?', '计划读(或在读)的课程有多长?', '계획 중(재학 중)인 과정 길이는?'),
+      choices: [
+        { value: 1, text: l('Under 8 months', '不到 8 个月', '8개월 미만') },
+        { value: 2, text: l('8 months - 1 year', '8 个月-1 年', '8개월-1년') },
+        { value: 3, text: l('1-2 years', '1-2 年', '1-2년') },
+        { value: 4, text: l('2 years or more', '2 年及以上', '2년 이상') },
+      ],
+    },
+  },
+  studyLevelBand: {
+    engineKey: 'studyLevel',
+    unlocks: ['rpt.c.pgwpLen', 'rpt.c.pgwpLang'],
+    tier: 'free',
+    toAnswer: (b: number) => STUDY_LEVEL[b] || undefined,
+    q: {
+      title: l('What level is that program?', '这个课程是什么层级?', '그 과정의 학위 수준은?'),
+      choices: [
+        { value: 1, text: l('College cert / diploma / post-grad cert', '大专文凭、证书或研文', '컬리지 수료증·디플로마') },
+        { value: 2, text: l('Bachelor', '本科', '학사') },
+        { value: 3, text: l('Master', '硕士', '석사') },
+        { value: 4, text: l('Doctorate', '博士', '박사') },
       ],
     },
   },

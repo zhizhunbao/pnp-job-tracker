@@ -42,7 +42,10 @@ IN_SCORE_TABLES = [_paths.PNP / "bc-sirs.json", _paths.PNP / "sk-points.json", _
 # 省提名官方**门槛**(规则引擎第一刀)——打分表管「能打几分」,这张管「打分之前先要满足什么」。
 # 一省一个文件,加省=往这个 list 里加一个(build_<省>_req.py 产,列同一套)。
 IN_REQ_TABLES = [_paths.PNP / f"{p}-req.json"
-                 for p in ("bc", "on", "ab", "sk", "mb", "ns", "nb", "pe", "nl")]
+                 for p in ("bc", "on", "ab", "sk", "mb", "ns", "nb", "pe", "nl")] + [
+                 # B1-4:联邦 PGWP 规则库(province='FED' program='PGWP',build_pgwp.py 产,quote-anchored)。
+                 # 走同一张表=引擎 facts.requirements 免费拿到;FED 行不会漏进省级门槛节(那边按省名挑行)
+                 _paths.IRCC / "pgwp_rules.json"]
 IN_EE = _paths.EE / "federal-categories.json"  # 联邦 Express Entry 类别抽选(全国单一源)
 IN_EE_DRAWS = _paths.EE / "draws.json"          # 各类别最近一次抽选(CRS/日期/邀请数,build_ee_draws.py 产)
 IN_NOC_DESC = _paths.NOC / "descriptions.json"  # NOC 官方名+主要职责(build_noc_descriptions.py 产)

@@ -23,6 +23,9 @@ export type Answers = {
   ageBand: number
   totalExpBand: number
   offerBand: number       // 已有字段(卡③专属题),类型里先前漏声明
+  // B1-4 PGWP(20260803,拿 PR 探索批 2):计划读的课程时长档 + 层级档
+  studyMonthsBand: number
+  studyLevelBand: number
 }
 
 // 空答案(页面初始 state 也用它:再抄一份就会漏掉新字段)
@@ -30,6 +33,7 @@ export const EMPTY: Answers = {
   status: '', nocs: [], provs: [],
   clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0,
   eduBand: 0, ageBand: 0, totalExpBand: 0, offerBand: 0,
+  studyMonthsBand: 0, studyLevelBand: 0,
 }
 
 const parse = (s: string | null): any => { try { return s ? JSON.parse(s) : null } catch { return null } }

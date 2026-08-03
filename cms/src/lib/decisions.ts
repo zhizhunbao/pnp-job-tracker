@@ -15,7 +15,9 @@ export type Decision = {
 export const DECISIONS: Record<string, Decision> = {
   pr: {
     basic: ['status', 'eduBand', 'ageBand', 'clbBand', 'totalExpBand', 'expBand', 'provBand'],
-    explore: [['crsBand', 'pgwpBand']],
+    // 批 2 = B1-4 PGWP(20260803):批首 studyMonthsBand 是 free 题(batchLeadsFree ✓)——
+    // 批 1 的历史偏差(KNOWN_NO_FREE_LEAD)不因此消,但新批守规矩
+    explore: [['crsBand', 'pgwpBand'], ['studyMonthsBand', 'studyLevelBand']],
   },
   // 卡①找工作 / 卡⑥职业规划:零新题 —— 职业来自选职业(不是四选一题),其余全在共用底座里。
   // 这就是横向扩面成立的原因:同一批答案,三张卡都能出报告。

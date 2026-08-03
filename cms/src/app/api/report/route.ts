@@ -43,6 +43,9 @@ export async function POST(req: Request) {
     edu: typeof merged.edu === 'string' && (EDU_KEYS as string[]).includes(merged.edu) ? (merged.edu as EduKey) : null,
     age: num(merged.age),
     totalExpMonths: num(merged.totalExpMonths),
+    // B1-4 PGWP(探索批 2):计划课程时长(档下界)+ 层级(白名单,脏值当没答)
+    studyMonths: num(merged.studyMonths),
+    studyLevel: ['college', 'bachelor', 'master', 'doctorate'].includes(merged.studyLevel) ? (merged.studyLevel as 'college' | 'bachelor' | 'master' | 'doctorate') : null,
   }
   // 职业清单:nocs 优先(多选),退到单值 noc,再退到登录档案。上限 MAX_NOCS ——
   // 每多一个职业就多两次库往返,选十个职业等于把报告接口变成慢查询。

@@ -15,5 +15,8 @@ META = {
         # 不在 IRCC 口径里(IRCC 不发分母),故单独一步走 StatCan WDS(免密钥,季度发布 + 会修订前序季度)。
         ["python", "etl/scrape_statcan_npr.py"],
         ["python", "etl/clean/04e_difficulty.py"],
+        # B1-4 PGWP 规则库(2026-08-03):quote-anchored 自校(官方引用消失→保留旧表 exit 1)。
+        # 硬闸步骤照役规矩钉最末尾,红了拖不到别人;raw/ircc/*.json 的 glob 已让它自动进新鲜度哨兵
+        ["python", "etl/build_pgwp.py"],
     ],
 }

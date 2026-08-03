@@ -137,6 +137,46 @@ describe('报告「门槛对照」节', () => {
     expect(r.requirements).toEqual([])
   })
 
+  // ── B1-4 PGWP 规则库(2026-08-03,Frank 拍板「原文为准/只加两道/CIP 第二期」)──
+  // 规则行走 pnp_requirements 的 FED/PGWP 行(quote-anchored,build_pgwp.py 逐轮验官方原文)。
+  const F = (o: Partial<Requirement>): Requirement => R({ province: 'FED', program: 'PGWP', stream: '', url: 'https://canada.ca/pgwp-about', ...o })
+  const FED_PGWP: Requirement[] = [
+    F({ factor: 'pgwpLength', stream: 'masters', value: 36, unit: 'months', effective: '2024-02-15' }),
+    F({ factor: 'pgwpLength', stream: 'short', value: null }),
+    F({ factor: 'pgwpLength', stream: 'long', value: 36 }),
+    F({ factor: 'pgwpCombine', value: null }),
+    F({ factor: 'pgwpMinProgram', value: 8 }),
+    F({ factor: 'pgwpLanguage', stream: 'degree', value: 7, unit: 'CLB' }),
+    F({ factor: 'pgwpLanguage', stream: 'college', value: 5, unit: 'CLB' }),
+  ]
+  const pgwpFacts = () => facts({ requirements: [...BC_REQS, ...FED_PGWP] })
+
+  it('PGWP:12 个月大专 → 许可=课程等长;合并+一生一次行必出;语言按大专档对照', () => {
+    const r = buildPrReport(base(), { canadianExpMonths: null, studyMonths: 12, studyLevel: 'college' }, dims, pgwpFacts())
+    const len = r.conclusions.find((c) => c.key === 'rpt.c.pgwpLen')!
+    expect(len.params).toMatchObject({ months: 12, permit: 12 })
+    expect(len.source?.url).toBe('https://canada.ca/pgwp-about')
+    expect(r.conclusions.some((c) => c.key === 'rpt.c.pgwpCombine')).toBe(true)
+    // base() 报了 CLB 8 ≥ 大专档 5 → 达标行
+    expect(r.conclusions.find((c) => c.key === 'rpt.c.pgwpLangOk')?.params).toMatchObject({ need: 5, have: 8 })
+  })
+
+  it('PGWP:硕士 ≥8 个月走 3 年特例;≥2 年走 3 年档;不足 8 个月无 PGWP', () => {
+    const m = buildPrReport(base(), { canadianExpMonths: null, studyMonths: 12, studyLevel: 'master' }, dims, pgwpFacts())
+    expect(m.conclusions.find((c) => c.key === 'rpt.c.pgwpLen')?.params.permit).toBe(36)
+    const long = buildPrReport(base(), { canadianExpMonths: null, studyMonths: 24, studyLevel: 'college' }, dims, pgwpFacts())
+    expect(long.conclusions.find((c) => c.key === 'rpt.c.pgwpLen')?.params.permit).toBe(36)
+    const none = buildPrReport(base(), { canadianExpMonths: null, studyMonths: 4, studyLevel: 'college' }, dims, pgwpFacts())
+    expect(none.conclusions.some((c) => c.key === 'rpt.c.pgwpNone')).toBe(true)
+    expect(none.conclusions.some((c) => c.key === 'rpt.c.pgwpLen')).toBe(false)
+  })
+
+  it('PGWP:没答课程题一行不出;FED 行不漏进省级门槛节', () => {
+    const r = buildPrReport(base(), { canadianExpMonths: 30 }, dims, pgwpFacts())
+    expect(r.conclusions.some((c) => c.key.startsWith('rpt.c.pgwp'))).toBe(false)
+    expect(r.requirements.every((l) => !l.key.includes('pgwp'))).toBe(true)
+  })
+
   // B1-2(2026-08-03 木匠案例):0 经验的 fail 换措辞 ——「你填 0 个月,差 24 个月」读起来像资格否决,
   // 而经验是**排期**(从第一份岗起算)。0 时差值恒等于门槛,付费侧没有增量 → 免费付费同句,不进 REQ_FREE。
   it('0 经验的经验行走 rpt.r.exp.zero(排期措辞);免费层不换键', () => {
