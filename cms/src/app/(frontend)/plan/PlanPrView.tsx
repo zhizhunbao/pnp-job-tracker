@@ -181,7 +181,7 @@ function Sec({ title, children }: { title: string; children: React.ReactNode }) 
 // 结论按「用户会问的问题」分桶(只在显示层分,引擎照旧给一个数组):
 // prov=省份口径 / pay=薪资 / peer=相关职业;没登记的键一律归 prov,不丢行。
 const BUCKET: Record<string, 'prov' | 'pay' | 'peer' | 'emp'> = {
-  'rpt.j.sponsors': 'emp',
+  'rpt.j.sponsors': 'emp', 'rpt.j.sponsorsLmia': 'emp', 'rpt.j.noFee': 'emp',   // B2-2/2-3:同属「雇主」桶
   'rpt.j.wageAbove': 'pay', 'rpt.j.wageBelow': 'pay', 'rpt.j.wageSame': 'pay', 'rpt.j.wageEsdc': 'pay',
   'rpt.k.selfWage': 'pay', 'rpt.k.selfProv': 'pay', 'rpt.k.selfProvWage': 'pay', 'rpt.j.related': 'peer', 'rpt.k.peer': 'peer', 'rpt.k.alt': 'peer',
   // 2026-08-03 卡⑥ 撤锁后**才暴露**出来的漏网:peerGap 先前被付费闸摘掉,免费层从来没渲过它,

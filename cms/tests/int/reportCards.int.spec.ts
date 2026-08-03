@@ -24,7 +24,7 @@ const occStat = (p: Partial<OccStat>): OccStat => ({
   noc: '31301', province: 'all', titleEn: 'Registered nurses', titleZh: '注册护士', titleKo: '등록 간호사', teer: 1, broad: '3', mid: '31', fine: '3130',
   open: 300, named: 120, medianWage: 90_000, medianPosted: 81_000, ...p,
 })
-const occ = (p: Partial<OccStats> = {}): OccStats => ({ self: occStat({}), byProv: [], peers: [], sponsors: 0, sponsorList: [], ...p })
+const occ = (p: Partial<OccStats> = {}): OccStats => ({ self: occStat({}), byProv: [], peers: [], sponsors: 0, sponsorsLmia: 0, sponsorList: [], ...p })
 
 describe('卡① 找工作', () => {
   it('目标省出在招与具名结论,并给职位板下一步', () => {
@@ -50,6 +50,24 @@ describe('卡① 找工作', () => {
     expect(r.conclusions.some((c) => c.key.startsWith('rpt.j.open'))).toBe(false)
   })
 
+  // B2-2/B2-3(2026-08-03):LMIA 家数是比「发过可提名岗」硬一档的证据,与 sponsors 同一个 WHERE 数出来;
+  // 合规行(联邦规定雇主不得转嫁招聘费)跟着雇主句走 —— 「包 offer 套餐」最贵的部分是违法的,这句免费。
+  it('雇主句多态:有 LMIA 记录带「其中 M 家」;合规提醒跟随;0 家雇主两句都不出', () => {
+    const withLmia = buildJobReport(normalizeProfile({ targetProvinces: ['BC'] }), dims, facts, occ({ sponsors: 40, sponsorsLmia: 12 }))
+    expect(withLmia.conclusions.find((c) => c.key === 'rpt.j.sponsorsLmia')?.params).toMatchObject({ n: 40, m: 12 })
+    const noFee = withLmia.conclusions.find((c) => c.key === 'rpt.j.noFee')!
+    expect(noFee.source?.url).toContain('protected-rights')
+    const noLmia = buildJobReport(normalizeProfile({ targetProvinces: ['BC'] }), dims, facts, occ({ sponsors: 40 }))
+    expect(noLmia.conclusions.some((c) => c.key === 'rpt.j.sponsors')).toBe(true)
+    expect(noLmia.conclusions.some((c) => c.key === 'rpt.j.sponsorsLmia')).toBe(false)
+    const zero = buildJobReport(normalizeProfile({ targetProvinces: ['BC'] }), dims, facts, occ())
+    expect(zero.conclusions.some((c) => c.key.startsWith('rpt.j.sponsors') || c.key === 'rpt.j.noFee')).toBe(false)
+    // 免费层必留(ALWAYS_FREE):这两句是免费层的 aha 与法律提醒,不许被「其余 N 条」桶吃掉
+    const free = gateReport(withLmia, false)
+    expect(free.conclusions.some((c) => c.key === 'rpt.j.sponsorsLmia')).toBe(true)
+    expect(free.conclusions.some((c) => c.key === 'rpt.j.noFee')).toBe(true)
+  })
+
   it('没选职业 → 单缺口报告(不给空页)', () => {
     const r = buildJobReport(normalizeProfile({}), dims, { ...facts, noc: '' }, occ({ self: null }))
     expect(r.conclusions).toHaveLength(0)
@@ -73,7 +91,8 @@ describe('卡① 找工作', () => {
   it('免费端:在招/薪资/「有 N 家」照给,雇主名单进锁区', () => {
     const sponsorList = [{ name: 'A Health', slug: 'a-health', named: 2, eligible: 2, city: 'Regina', province: 'SK', lastPosted: '2026-07-17', lmiaPositions: 5, lmiaQuarter: '2026Q1', aip: false }]
     const r = gateReport(buildJobReport(normalizeProfile({ targetProvinces: ['BC'] }), dims, facts, occ({ sponsors: 7, sponsorList })), false)
-    expect(r.conclusions.map((c) => c.key)).toEqual(['rpt.j.openNamed', 'rpt.j.wageBelow', 'rpt.j.sponsors'])
+    // B2-3 起雇主句后跟合规行(联邦不得转嫁招聘费);此例 sponsorsLmia=0 → 雇主句走无 LMIA 形态
+    expect(r.conclusions.map((c) => c.key)).toEqual(['rpt.j.openNamed', 'rpt.j.wageBelow', 'rpt.j.sponsors', 'rpt.j.noFee'])
     expect(r.employers).toEqual([])     // 名单不在响应体里(不是前端打码)
     expect(r.locked).toEqual(['sponsors'])
     expect(r.lanes).toHaveLength(0)     // 三卡是拿 PR 那张卡的三条轴,别张卡不硬套

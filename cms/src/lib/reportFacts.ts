@@ -36,9 +36,10 @@ export type OccStats = {
   byProv: OccStat[]               // 该职业各省行
   peers: OccStat[]                // 相邻职业(NOC 官方 minor group 同门,全国行,按在招降序)
   sponsors: number                // 该职业命中具名通道的岗涉及多少家雇主(免费层只给这个数)
+  sponsorsLmia: number            // 其中几家有 ESDC LMIA 获批记录(B2-2;与 sponsors 同一个 WHERE)
   sponsorList: Sponsor[]          // 名单本体(付费层;gateReport 在服务端裁掉,免费响应里根本没有)
 }
-const EMPTY_OCC: OccStats = { self: null, byProv: [], peers: [], sponsors: 0, sponsorList: [] }
+const EMPTY_OCC: OccStats = { self: null, byProv: [], peers: [], sponsors: 0, sponsorsLmia: 0, sponsorList: [] }
 const SPONSOR_CAP = 12   // 名单上限:给得完够用,不把整张表倒出去
 
 export async function assembleOccStats(pool: any, noc: string): Promise<OccStats> {
@@ -67,11 +68,15 @@ export async function assembleOccStats(pool: any, noc: string): Promise<OccStats
          ORDER BY kin, s.open_jobs DESC NULLS LAST LIMIT 8`, [noc]),
       // 计数与下面的名单**必须同一个 WHERE**(2026-08-01 实撞:计数只算具名、名单还收了 ON 的粗筛可提名岗,
       // 结果「有 83 家」与名单里的 ON 雇主对不上号)
+      // B2-2(2026-08-03):同一个 WHERE 里顺手数「其中几家有 ESDC LMIA 获批记录」——
+      // 「历史上真办过外籍招聘」是比「发过可提名岗」硬一档的证据,免费层这句 aha 因此更有分量
       pool.query(
-        `SELECT count(DISTINCT company_id)::int n FROM jobs
-         WHERE COALESCE(status,'open') <> 'closed' AND noc = $1 AND company_id IS NOT NULL
-           AND ((pnp_stream IS NOT NULL AND pnp_stream <> '')
-                OR (province = ANY($2::text[]) AND COALESCE(pnp_eligible, false)))`, [noc, [...NO_LIST_PROVINCES]])
+        `SELECT count(DISTINCT j.company_id)::int n,
+                count(DISTINCT j.company_id) FILTER (WHERE COALESCE(co.lmia_positions, 0) > 0)::int lmia_n
+         FROM jobs j JOIN companies co ON co.id = j.company_id
+         WHERE COALESCE(j.status,'open') <> 'closed' AND j.noc = $1
+           AND ((j.pnp_stream IS NOT NULL AND j.pnp_stream <> '')
+                OR (j.province = ANY($2::text[]) AND COALESCE(j.pnp_eligible, false)))`, [noc, [...NO_LIST_PROVINCES]])
         .catch(() => ({ rows: [] })),
       // 雇主线索名单:按雇主聚合,挂上公司级的 LMIA / AIP 事实。
       // **两种口径都要收**(2026-08-01 实撞:ON 一条都出不来):
@@ -91,7 +96,9 @@ export async function assembleOccStats(pool: any, noc: string): Promise<OccStats
            AND ((j.pnp_stream IS NOT NULL AND j.pnp_stream <> '')
                 OR (j.province = ANY($2::text[]) AND COALESCE(j.pnp_eligible, false)))
          GROUP BY co.id, co.name, co.slug, co.is_designated_employer, co.lmia_positions, co.lmia_last_quarter
-         ORDER BY named DESC, eligible DESC, max(j.date_posted) DESC NULLS LAST
+         ORDER BY named DESC, eligible DESC,
+                  (COALESCE(co.lmia_positions, 0) > 0) DESC,
+                  max(j.date_posted) DESC NULLS LAST
          LIMIT ${SPONSOR_CAP}`, [noc, [...NO_LIST_PROVINCES]]).catch(() => ({ rows: [] })),
     ])
     const rows: OccStat[] = mine.rows.map(row)
@@ -100,6 +107,7 @@ export async function assembleOccStats(pool: any, noc: string): Promise<OccStats
       byProv: rows.filter((r) => r.province !== 'all'),
       peers: peers.rows.map(row),
       sponsors: Number(sponsors.rows[0]?.n ?? 0),
+      sponsorsLmia: Number(sponsors.rows[0]?.lmia_n ?? 0),
       sponsorList: sponsorRows.rows.map((r: any): Sponsor => ({
         name: r.name ?? '', slug: r.slug ?? '', named: Number(r.named ?? 0), eligible: Number(r.eligible ?? 0),
         city: r.city ?? '', province: r.province ?? '', lastPosted: String(r.last_posted ?? '').slice(0, 10),
