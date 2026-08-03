@@ -23,7 +23,8 @@ import { useColWidths, type ColWidthSeed } from './colWidths'   // 列宽唯一�
 import { filterSig, PROV_NAMES, URL_TO_FILTER, DIRECT_URL_KEY, type JobFilters } from './filters.shared'   // URL↔筛选映射(与 SSR 共用)
 import { BROAD_SLUGS } from '../stats/shared'   // 大类的行业顺序(镜像 etl/noc_buckets.BROADS)
 import { useOverlayClose } from './overlay'
-import { CARD, iconBtnS, SCRIM, useIsNarrow } from './Modal'
+import { CARD, iconBtnS, Modal, SCRIM, useIsNarrow } from './Modal'
+import { ResumeMatchModal } from './ResumeMatchModal'   // G3 简历对照(入口在 ApplyBar)
 import { match as matchJob, matchRank, hasProfile, normalizeProfile, type MatchProfile, type MatchJob, type MatchReason } from '@/lib/match'
 import type { CompanyDetail, SimilarEmployer } from '@/lib/jobsSql'   // E8-11 B1:公司域同源数据形状(type-only,不拉服务端码)
 import { lmiaWageClass, isExemptSector } from '@/lib/lmiaStatus'
@@ -3169,7 +3170,7 @@ export function MeansForMe({ job, lang, plan, pnpOcc, eeOcc, nocDesc }: { job: J
     <div style={MODAL_CARD}>
       {/* #C 一致性:换用统一卡常量(值与原手写完全一致) */}
       <div style={MODAL_CARD_HEAD}>
-        <IconTarget /> {t('match.title')}
+        <IconTarget /> {t('rm.title')}
         <span style={{ marginLeft: 10, fontWeight: 600, color: lvColor[result.level] }}>{t('match.levelLine', { level: t('match.' + result.level) })}</span>
       </div>
       {/* 一维度一段,分隔线分组(Frank「不要卡片套卡片更清晰」——#172 的灰内卡铺平):
@@ -4005,6 +4006,14 @@ const applyEmailOf = (text: string): string => {
 }
 function ApplyBar({ job, email, emailDone, t, plan }: { job: JobRow; email: string; emailDone: boolean; t: TFn; plan: Plan }) {
   const [stage, setStage] = useState<'idle' | 'auth' | 'intent'>('idle')
+  // G3 简历对照(设计 docs/design/G3-简历对照JD-20260803.md):JD 文本走既有懒抓缓存(fetchJobText),
+  // 拿不到全文就不开弹框空转 —— 直接用 t('rm.noJd') 提示
+  const [matchJd, setMatchJd] = useState<string | null>(null)   // null=未开;''=拿不到 JD
+  const openMatch = async () => {
+    track('jd-match-open', {})
+    const r = await fetchJobText(job.applyUrl || '').catch(() => null)
+    setMatchJd(r?.text || '')
+  }
   const [authed, setAuthed] = useState(false)  // 流程内放行(不整页 reload,SSR plan 下次导航自然更新)
   const [freshProfile, setFreshProfile] = useState<MatchProfile | null>(null)  // 流程内登录后拉到的真实档案
   // 已投递记录:已有收藏行 → 状态改 applied,没有 → 新建;失败不打扰投递
@@ -4063,6 +4072,11 @@ function ApplyBar({ job, email, emailDone, t, plan }: { job: JobRow; email: stri
       {/* 2026-07-25 用户:全宽大蓝钮「太吓人」→ 右对齐紧凑钮;同日「复制要点」钮撤除,只留投递单钮;
           底 padding 14px = 吸底栏自带留白(容器底 padding 已归 0,补「穿墙」) */}
       <div style={{ position: 'sticky', bottom: 0, background: '#fff', borderTop: '1px solid #e5e7eb', marginTop: 'auto', padding: '10px 0 14px', display: 'flex', gap: 8, justifyContent: 'flex-end', zIndex: 5 }}>
+        {/* G3 简历对照:AI 靛蓝钮(色语义:靛=AI 功能),在投递钮左侧;下架岗照给(改简历不受岗位死活影响) */}
+        <button onClick={openMatch}
+          style={{ background: '#eef2ff', color: '#4338ca', border: '1px solid #c7d2fe', borderRadius: 8, padding: '9px 14px', fontSize: 13.5, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+          {t('rm.btn')}
+        </button>
         {/* 已下架岗(2026-08-03):主钮还写「前往投递」等于继续把人往死链上送 —— 降级成灰色的「查看官方页」。
             不直接禁掉:closed 有一部分来自「本次未见+30天」的推断(非逐帖实测),留个口子让用户自己核。 */}
         {job.status === 'closed' ? (
@@ -4077,6 +4091,9 @@ function ApplyBar({ job, email, emailDone, t, plan }: { job: JobRow; email: stri
           </button>
         )}
       </div>
+      {matchJd != null && (matchJd
+        ? <ResumeMatchModal jobId={job.id} jd={matchJd} loggedIn={plan.loggedIn || authed} onClose={() => setMatchJd(null)} />
+        : <Modal onClose={() => setMatchJd(null)} size="sm"><div style={{ fontSize: 13.5, color: '#6b7280', paddingTop: 8 }}>{t('rm.noJd')}</div></Modal>)}
       {stage === 'auth' && (
         /* returnTo 一律指本岗详情页(Frank「登录没有弹出之前的 job」):列表弹框里发起的 Google 登录,
            回跳「当前页」=列表,弹框状态不在 URL 里回不来——详情页挂着 ApplyBar,续投机制自动接手 */

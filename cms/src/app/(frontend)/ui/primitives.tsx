@@ -68,6 +68,43 @@ export function Tag({ variant = 'region', title, children }: { variant?: keyof t
   return <span title={title} style={{ ...TAG_VARIANT[variant], borderRadius: 6, padding: '1px 7px', fontSize: 11.5, fontWeight: 600, whiteSpace: 'nowrap' }}>{children}</span>
 }
 
+// ── ProCard(全站统一升级卡,G3 起;规范:docs/design/G3-简历对照JD-20260803.md §1,Frank 八轮收敛定稿)──
+// 单行:淡黄底 + 琥珀短句(零符号、超长删词不折行)+ 蓝钮「解锁 Pro」。全站升级入口一律用它,不再自造。
+export function ProCard({ text, cta, onClick, overlay = false }: {
+  text: string; cta: string; onClick: () => void; overlay?: boolean   // overlay=悬浮在打码区正中(LockedRows 内部用)
+}) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 10, background: '#fffbeb', border: '1px solid #fde68a',
+      borderRadius: 10, padding: '10px 12px',
+      ...(overlay
+        ? { position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', margin: 0, width: 'max-content', maxWidth: '92%', boxShadow: '0 4px 14px rgba(0,0,0,.08)' }
+        : { marginTop: 12 }),
+    }}>
+      <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: '#92400e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{text}</span>
+      <button onClick={onClick} style={{ flex: 'none', background: UI.primary, color: '#fff', fontSize: 13, fontWeight: 600, padding: '7px 13px', borderRadius: 8, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}>{cta}</button>
+    </div>
+  )
+}
+
+// ── LockedRows(打码锁区,G3 起):行数=真实剩余条数(数字真、纹理假 —— 真内容服务端不下发,
+// 这里渲染的是固定占位假词);n≥4 时 ProCard 悬浮正中,n<4 卡放码尾(卡不许盖住超过一半的码,Frank 拍)──
+const BLUR_FILL = ['屏蔽的结论文字示例这里是一句完整的结论', '屏蔽的结论示例文字这一行也是一句结论', '屏蔽的一句结论文字示例内容占位']
+export function LockedRows({ n, text, cta, onClick }: { n: number; text: string; cta: string; onClick: () => void }) {
+  if (n <= 0) return null
+  const overlay = n >= 4
+  return (
+    <div style={{ position: 'relative', marginTop: 6 }}>
+      {Array.from({ length: n }, (_, i) => (
+        <div key={i} aria-hidden style={{ filter: 'blur(5px)', userSelect: 'none', color: UI.text3, fontSize: 13.5, padding: '7px 0', borderBottom: `1px solid ${UI.hairline}` }}>
+          {BLUR_FILL[i % BLUR_FILL.length]}
+        </div>
+      ))}
+      <ProCard text={text} cta={cta} onClick={onClick} overlay={overlay} />
+    </div>
+  )
+}
+
 // ── Notice(F 提醒/通知统一,#114 E-I 批):四色四用禁新配色——warn 升级/额度(琥珀)、
 // err 错误(红,说人话+给出路)、info 口径/注记(蓝)、ok 成功(绿);圆角 10 · padding 10×14 · 13px,
 // 图标+粗体引导语(lead,可省)+正文+右侧钮槽(action,可省)。散装提醒框一律换用本组件。──
