@@ -1,19 +1,29 @@
-"""死岗验尸(第25轮 #124,批C)。
+"""死岗验尸(第25轮 #124,批C;2026-08-03 拆掉 30 天门槛)。
 
 背景:发布>30 天仍 open 的桶抽样 63% 已在 Job Bank 过期(第25轮三组对照实测),用户点开撞
 「Job posting expired」;而下架老逻辑刻意保守(「本次未见 且 >30 天」,805 误杀教训)拦不住它们
 ——postings.json 全量累积,帖永远「在见」。
 
-做法:主动逐帖验尸,不动老逻辑。
-- 候选:postings.json 里 jobbank 帖 且 发布>EXPIRE_DAYS 天,未判死过,距上次检查>RECHECK_DAYS;
+2026-08-03 实测(Fort Qu'Appelle 用户从 Google 招聘富结果进来、注册、点两次申请,撞的正是过期页):
+岗位远在 30 天前就死了,而验尸和下架两道闸门都卡在 30 天,于是**第 0-30 天完全没人验**。
+随机 100 个「在招」实测死亡率:≤7天 8% · 8-14天 24% · **15-30天 48%** · 31-60天 32%(本脚本已排水)。
+加权全库约 1/3 的「在招」是死链——而它们正带着无 validThrough 的 JobPosting 结构化数据喂给 Google。
+
+做法:主动逐帖验尸,不动「本次未见」那条老逻辑。
+- 候选:postings.json 里全部 jobbank 帖(不再限发布龄),未判死过,距上次检查>RECHECK_DAYS;
+- 排序:按死亡风险,不按发布龄。预测器 = last_seen 陈旧度(实测:陈旧>14天 52% 死 / ≤3天 9% 死),
+  越久没在增量抓取里露面的越先验;预算 MAX_CHECKS 花在最可能死的那一头;
 - 判死:GET 帖页 <title> 含 "Job posting expired"(服务端渲染裸抓可判;过期横幅是 JS 注入判不了,
-  第25轮判死正则误报的教训:判据必须过对照组)+ HTTP 404;网络错误=保留(宁可留活);
-- 结果累积 expired_ids.json;09_build_mart 组装时剔除 → 帖退出 mart/seen →
-  seed 既有下架规则(不在 seen 且 >30 天)自然置 closed,不改任何灌库语义;
+  第25轮判死正则误报的教训:判据必须过对照组)+ HTTP 404/410 —— 实测死帖全部返 **410** 不是 404,
+  老判据靠 marker 兜住了,410 这半条一直是摆设;网络错误=保留(宁可留活);
+- 结果累积 expired_ids.json;09_build_mart 一手剔出 mart,一手写 closed_jobs.json 显式下发 →
+  seed 见判死名单**立即置 closed(不等 30 天)**:410 是实锤事实,不该受「防误杀」的保守规则约束;
 - 节奏:每轮小批(MAX_CHECKS)连续排水,不做周聚合——一次 2.5k 帖 ≈20 分钟会拖垮那轮 seed 时效
-  (enrich 拆独立角色的同一教训);积压几轮排完,稳态=每轮只验新过 30 天线的+到复检期的,分钟级。
+  (enrich 拆独立角色的同一教训);积压几轮排完,稳态=每轮只验到复检期的,分钟级。
+  一次性排水(补历史欠账)走环境变量:VERIFY_MAX=5000 VERIFY_SLEEP=0.25 python etl/verify_expired.py
 """
 import json
+import os
 import sys
 import time
 from datetime import datetime, timedelta, timezone
@@ -27,10 +37,10 @@ import _paths  # noqa: E402
 IN_POSTINGS = _paths.PROCESSED_JOBBANK / "postings.json"
 OUT_STATE = _paths.PROCESSED_JOBBANK / "expired_ids.json"
 
-EXPIRE_DAYS = 30          # 与 seed 下架规则同口径
 RECHECK_DAYS = 7          # 活帖复检间隔(上次活着,7 天后可再验)
-MAX_CHECKS = 600          # 单轮请求上限(0.4s 节流 ≈4 分钟,不拖垮本轮 seed 时效)
-SLEEP_S = 0.4             # 节流:官方站,温柔点
+# 单轮请求上限:候选 ≈5.5 万,7 天复检周期要求 ≈8k/天;900/轮 × 每轮约 2h ≈ 1万/天,刚够且不拖垮 seed
+MAX_CHECKS = int(os.environ.get("VERIFY_MAX", "900"))
+SLEEP_S = float(os.environ.get("VERIFY_SLEEP", "0.25"))   # 节流:官方站,温柔点
 TIMEOUT_S = 15
 HEAD_BYTES = 6000         # <title> 在页头,读这么多足够
 MARKER = "Job posting expired"
@@ -54,29 +64,31 @@ def main() -> None:
         state = json.loads(OUT_STATE.read_text(encoding="utf-8"))
 
     postings = json.loads(IN_POSTINGS.read_text(encoding="utf-8"))
-    cutoff = now - timedelta(days=EXPIRE_DAYS)
     recheck_before = (now - timedelta(days=RECHECK_DAYS)).isoformat()
     cands = []
     for p in postings:
         pid, url = p.get("posting_id", ""), p.get("url", "")
         if not pid or "jobbank.gc.ca" not in url or pid in state["dead"]:
             continue
-        d = parse_date(p.get("date", ""))
-        if d is None or d > cutoff:
-            continue
         if state["checked"].get(pid, "") > recheck_before:
             continue
-        cands.append((pid, url))
-    print(f"verify_expired: 候选 {len(cands)}(发布>{EXPIRE_DAYS}天的 jobbank 帖),本轮验 {min(len(cands), MAX_CHECKS)}")
+        # 风险键:last_seen 越旧越先验(缺 last_seen 的是早期帖,一并排最前);同龄按发布日老的先
+        d = parse_date(p.get("date", ""))
+        cands.append(((p.get("last_seen") or "", d.isoformat() if d else ""), pid, url))
+    cands.sort()
+    fresh = sum(1 for k, _, _ in cands if k[0] > (now - timedelta(days=3)).isoformat())
+    print(f"verify_expired: 候选 {len(cands)} 帖(其中 last_seen 近 3 天内的 {fresh} 个排在队尾),"
+          f"本轮验 {min(len(cands), MAX_CHECKS)}")
     if not cands:
         return
 
     dead_new = alive = errs = 0
     with httpx.Client(headers=UA, timeout=TIMEOUT_S, follow_redirects=True) as c:
-        for pid, url in cands[:MAX_CHECKS]:
+        for _key, pid, url in cands[:MAX_CHECKS]:
             try:
                 r = c.get(url)
-                if r.status_code == 404 or MARKER in r.text[:HEAD_BYTES]:
+                # 410 = Job Bank 对过期帖的实际返回码(2026-08-03 抽样 28/28 全是 410,没有一个 404)
+                if r.status_code in (404, 410) or MARKER in r.text[:HEAD_BYTES]:
                     state["dead"][pid] = now.isoformat()
                     dead_new += 1
                 else:

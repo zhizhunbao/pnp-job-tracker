@@ -797,7 +797,7 @@ const en: Dict = {
   'ob.valueApply': 'A few taps now — similar jobs will land in your inbox', 'ob.finishApply': 'Save and continue applying',
   // E8-07 job detail page
   'detail.openFull': 'Open full page', 'detail.back': 'Back', 'detail.related': 'Related jobs', 'detail.factsTitle': 'Pay and conditions',
-  'detail.sameCo': 'same employer', 'detail.sameOcc': 'same occupation in province', 'detail.closedNote': 'This posting has closed; shown for reference only',
+  'detail.sameCo': 'same employer', 'detail.sameOcc': 'same occupation in province', 'detail.closedNote': 'Posting closed, shown for reference only',
   'detail.pnpSec': 'PNP streams', 'detail.pnpSecNote': 'rough signal, not an eligibility decision', 'detail.eeSec': 'Federal EE categories', 'detail.crumbHome': 'Job board',
   'detail.catSec': 'Occupation category',
   // en 必须显式给(makeT 缺键会回退 zh,否则英文用户会看到「Ontario(安大略省)」);

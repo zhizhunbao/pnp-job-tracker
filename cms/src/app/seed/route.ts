@@ -158,6 +158,7 @@ export async function GET(req: Request) {
   // 单连接 + 单事务:任一步失败整体回滚,不再有半写状态(老逐行版没有原子性)
   const client: PgClient = await (payload.db as any).pool.connect()
   let closed = 0
+  let closedDead = 0   // 实测判死立即下架的条数(与上面「本次未见+30天」那条分开计,好在响应里看清谁在干活)
   try {
     await client.query('BEGIN')
     // #118 表级哈希态(响应计数:-1=本轮无上传跳过,-2=内容与上轮一致跳过)
@@ -337,6 +338,28 @@ export async function GET(req: Request) {
       counts.jobs += jobRows.length
     }
 
+    // ── 实测判死 → 立即下架(2026-08-03),不受下面那条 30 天规则约束 ──
+    // 为什么单开一条:老规则的保守是给「本次没抓到」这种**推断**兜底的(805 误杀教训);而 closed_jobs
+    // 是 verify_expired 逐帖 GET 拿到 410/「Job posting expired」的**事实**,不需要拿 30 天去对冲。
+    // 之前只把死帖剔出 mart,遇上 28 天前就死掉的岗,要再等两天才下架 —— 这两天里用户点申请全撞过期页
+    // (Fort Qu'Appelle 那位从 Google 招聘富结果进来、注册、点了两次申请)。closedAt 用判死时刻,
+    // 详情页 JSON-LD 的 validThrough 直接吃它,过期岗才不会继续以「有效招聘」的身份喂给 Google。
+    if (!reset && martPaths('closed_jobs').length > 0) {
+      const seen = new Set<string>()
+      const deadRows = mart('closed_jobs')
+        .filter((r: any) => r?.externalId && !seen.has(r.externalId) && seen.add(r.externalId))
+        .map((r: any) => ({ external_id: r.externalId, closed_at: r.closedAt || now }))
+      if (deadRows.length > 0) {
+        await client.query('CREATE TEMP TABLE dead_ext (external_id text PRIMARY KEY, closed_at timestamptz) ON COMMIT DROP')
+        await insertBatch(client, 'dead_ext', ['external_id', 'closed_at'], deadRows)
+        await client.query('ANALYZE dead_ext')
+        const r = await client.query(
+          `UPDATE jobs SET status='closed', closed_at=COALESCE(jobs.closed_at, d.closed_at), updated_at=$1
+           FROM dead_ext d WHERE d.external_id = jobs.external_id AND jobs.status='open'`, [now])
+        closedDead = r.rowCount ?? 0
+      }
+    }
+
     // ── 下架(非 reset):只下架「本次未见 且 发布已超 EXPIRE_DAYS 天」的岗 ──
     // 不用「本次没出现就 closed」对账:增量抓取只含最近几天,会误杀仍在招的旧岗(实测 805,见 docs/source-framework.md)
     const EXPIRE_DAYS = 30
@@ -384,5 +407,5 @@ export async function GET(req: Request) {
     client.release()
   }
 
-  return Response.json({ ok: true, reset, counts, closed, updatedAt: now })
+  return Response.json({ ok: true, reset, counts, closed, closedDead, updatedAt: now })
 }

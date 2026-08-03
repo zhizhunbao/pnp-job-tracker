@@ -696,8 +696,16 @@ def build():
         except Exception:  # noqa: BLE001
             dli = []
 
+    # 判死名单显式下发(2026-08-03):光把死帖剔出 mart 不够 —— seed 的下架规则还要求「发布>30 天」,
+    # 于是 28 天前就死掉的岗一直挂着「在招」(Fort Qu'Appelle 用户点两次申请撞过期页的那一单)。
+    # 验尸拿到的 410/过期页是**事实**,不是「本次没抓到」的推断,不该受那条防误杀规则约束 →
+    # 单独出一张 closed_jobs,seed 见名单即置 closed,closedAt 用判死时刻(喂 JSON-LD 的 validThrough)。
+    closed_jobs = [{"externalId": f"jb:{pid}", "closedAt": ts} for pid, ts in
+                   (json.loads(IN_EXPIRED.read_text(encoding="utf-8")).get("dead", {}).items()
+                    if IN_EXPIRED.exists() else [])]
+
     return {
-        "companies": list(companies.values()), "jobs": jobs,
+        "companies": list(companies.values()), "jobs": jobs, "closed_jobs": closed_jobs,
         "provinces": provinces, "cities": cities, "districts": districts,
         "designated_employers": designated,
         "noc_categories": noc_categories, "sources": sources, "experience_levels": experience_levels,

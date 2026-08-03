@@ -4063,10 +4063,19 @@ function ApplyBar({ job, email, emailDone, t, plan }: { job: JobRow; email: stri
       {/* 2026-07-25 用户:全宽大蓝钮「太吓人」→ 右对齐紧凑钮;同日「复制要点」钮撤除,只留投递单钮;
           底 padding 14px = 吸底栏自带留白(容器底 padding 已归 0,补「穿墙」) */}
       <div style={{ position: 'sticky', bottom: 0, background: '#fff', borderTop: '1px solid #e5e7eb', marginTop: 'auto', padding: '10px 0 14px', display: 'flex', gap: 8, justifyContent: 'flex-end', zIndex: 5 }}>
-        <button onClick={onApply} style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}>
-          {/* applyhow 在途时用中性「投递」占位——别先显「前往投递」再闪成「邮件投递」(Frank 问「为什么有的是前往有的是邮箱」,闪变加剧困惑) */}
-          {email ? t('apply.email') : emailDone ? t('apply.web') : t('apply.plain')}
-        </button>
+        {/* 已下架岗(2026-08-03):主钮还写「前往投递」等于继续把人往死链上送 —— 降级成灰色的「查看官方页」。
+            不直接禁掉:closed 有一部分来自「本次未见+30天」的推断(非逐帖实测),留个口子让用户自己核。 */}
+        {job.status === 'closed' ? (
+          <a href={job.applyUrl} target="_blank" rel="noreferrer"
+            style={{ background: '#f3f4f6', color: '#6b7280', border: '1px solid #d1d5db', borderRadius: 8, padding: '9px 18px', fontSize: 13.5, fontWeight: 600, textDecoration: 'none' }}>
+            {t('act.seeOfficial')}
+          </a>
+        ) : (
+          <button onClick={onApply} style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}>
+            {/* applyhow 在途时用中性「投递」占位——别先显「前往投递」再闪成「邮件投递」(Frank 问「为什么有的是前往有的是邮箱」,闪变加剧困惑) */}
+            {email ? t('apply.email') : emailDone ? t('apply.web') : t('apply.plain')}
+          </button>
+        )}
       </div>
       {stage === 'auth' && (
         /* returnTo 一律指本岗详情页(Frank「登录没有弹出之前的 job」):列表弹框里发起的 Google 登录,
@@ -4178,6 +4187,14 @@ const hostOf = (u: string) => { try { return new URL(u).host.replace(/^www\./, '
   }, [job])
   return (
     <>
+      {/* 已下架横幅(2026-08-03):closed 岗页面照旧保留可访问(已收录不 404),但必须当面说清 ——
+          Google 招聘富结果把人直接送到详情页,他不经列表、看不到「状态」列,点了申请才撞过期页。
+          文案 detail.closedNote 早就写好了,一直没人挂上去。弹框与整页同源,挂这一处两边都有。 */}
+      {job.status === 'closed' ? (
+        <div style={{ background: '#fef3c7', border: '1px solid #fde68a', borderRadius: 8, padding: '6px 10px', margin: '2px 0 10px', fontSize: 12.5, color: '#92400e' }}>
+          {t('detail.closedNote')}
+        </div>
+      ) : null}
       {/* 顶部钮行(2026-07-21 Frank「参考类别」):中文对照(英文界面不出;整理版在屏才可翻)+
           AI 速读(点了才生成,不点不烧)+ 打开完整页(仅弹框;页面自己就是完整页) */}
       <div style={{ display: 'flex', gap: 8, margin: '2px 0 12px', flexWrap: 'wrap' }}>
