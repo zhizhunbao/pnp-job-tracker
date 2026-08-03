@@ -35,5 +35,22 @@ META = {
         # 它们自校失败会 exit 1 中止本役,所以钉在**最末尾**,失败也拖不到任何人。
         ["python", "etl/pnp/build_bc_sirs.py"],    # BC SIRS 分值表(手动 → 入役,2026-08-03)
         ["python", "etl/pnp/build_sk_points.py"],  # SINP 分值表(手动 → 入役,2026-08-03)
+        # ↓ B1-1(2026-08-03):其余七省的官方门槛(语言/经验/雇主侧)。QC 走自有体系不属 PNP,
+        #   所以「其余八省」实际是七个。全部照 build_bc_req 的硬闸:解析不全 → 保留旧表 + exit 1。
+        #   ⚠️ 本役一步失败即中止本役 → 排在这里的七步是**串在同一根绳上**的:AB 挂了,后面六个
+        #   本轮不会跑(各自保留旧表,不会写坏数据)。这正是 B3-1「新鲜度告警」要盯的场景 ——
+        #   在 B3-1 落地前,判断某省是否停更看 raw/pnp/<省>-req.json 的 fetched,不要只看容器 healthy。
+        ["python", "etl/pnp/build_ab_req.py"],  # AAIP AOS:语言按 TEER + 33102 单档、经验 24 个月
+        ["python", "etl/pnp/build_sk_req.py"],  # SINP 主线:CLB 4 + 近 10 年 1 年经验(两页交叉校验)
+        ["python", "etl/pnp/build_mb_req.py"],  # MPNP:**逐职业** Minimum CLB(158 个)+ TEER 4/5 下限
+        ["python", "etl/pnp/build_ns_req.py"],  # NSNP:指南 PDF(链接从通道页现取)语言两档 + 经验 + 雇主年限
+        ["python", "etl/pnp/build_nb_req.py"],  # NBPNP:三份 pathway 指南 PDF 互校,CLB 4
+        ["python", "etl/pnp/build_pe_req.py"],  # PEI Workforce:指南 PDF,CLB 4 + TEER 0-3 经验 24 个月
+        ["python", "etl/pnp/build_nl_req.py"],  # NLPNP:TEER 4/5 要 CLB 4、TEER 0-3 免考(档位算出来的)
+        # ↓ 官方运营统计(2026-08-03,Frank「官方没有数据么」问出来的;此前误断言「分母没有省公布」):
+        #   「等多久 / 还剩多少名额 / 被捞概率」的官方答案。同为硬闸自校,失败保留旧表。
+        ["python", "etl/pnp/build_sk_stats.py"],  # SINP:季度处理时长 + 配额三档 YTD(日更)+ 优先/受限行业
+        ["python", "etl/pnp/build_ab_stats.py"],  # AAIP:逐 stream 配额/已发/剩余 + 积压游标 + **EOI 池人数**(分母!)+ 64 轮抽选史
+        ["python", "etl/pnp/build_bc_stats.py"],  # BC PNP:注册池 **SIRS 分数分布**(三省分母里颗粒度最细;与 build_draws 同页,分工见脚本头)
     ],
 }

@@ -212,7 +212,10 @@ export function evaluateRequirements(reqs: Requirement[], p: RuleProfile): RuleR
   //    不够也只能出 unknown(「本站只问了加拿大经验,判不了」),那一行等于没说(Frank 点名)。
   //    口径:两个都答就取大的(加拿大经验是总经验的子集);
   //    只答了加拿大经验且不够 → 仍是 unknown(海外那截没问,不能判 fail);总经验答了且不够 → fail。
-  const exp = of('experience')[0]
+  //    分 TEER 的经验门槛按 TEER 挑行(PE:Skilled Worker 通道 24 个月只对 TEER 0-3 —— TEER 4/5 的
+  //    Critical Worker 官方给了「2 年经验**或**相关学历」的替代路径,当硬门槛会误判)。
+  //    不分 TEER 的行(BC/ON/AB/SK/NS)teerHit 恒真,行为不变。
+  const exp = of('experience').filter((r) => teerHit(r, p.teer))[0]
   if (exp && exp.value != null) {
     const answered = [p.totalExpMonths, p.canadianExpMonths].filter((v): v is number => v != null)
     const have = answered.length ? Math.max(...answered) : null

@@ -41,7 +41,8 @@ IN_PNP_DRAWS = _paths.PNP / "draws.json"  # 省抽选事实(BC/AB/MB+ON通告,bu
 IN_SCORE_TABLES = [_paths.PNP / "bc-sirs.json", _paths.PNP / "sk-points.json", _paths.PNP / "on-points.json"]
 # 省提名官方**门槛**(规则引擎第一刀)——打分表管「能打几分」,这张管「打分之前先要满足什么」。
 # 一省一个文件,加省=往这个 list 里加一个(build_<省>_req.py 产,列同一套)。
-IN_REQ_TABLES = [_paths.PNP / "bc-req.json", _paths.PNP / "on-req.json"]
+IN_REQ_TABLES = [_paths.PNP / f"{p}-req.json"
+                 for p in ("bc", "on", "ab", "sk", "mb", "ns", "nb", "pe", "nl")]
 IN_EE = _paths.EE / "federal-categories.json"  # 联邦 Express Entry 类别抽选(全国单一源)
 IN_EE_DRAWS = _paths.EE / "draws.json"          # 各类别最近一次抽选(CRS/日期/邀请数,build_ee_draws.py 产)
 IN_NOC_DESC = _paths.NOC / "descriptions.json"  # NOC 官方名+主要职责(build_noc_descriptions.py 产)
@@ -581,8 +582,12 @@ def build():
                 "stream": r.get("stream", ""), "subject": r.get("subject", "applicant"),
                 "factor": r.get("factor", ""), "op": r.get("op", ">="),
                 "value": r.get("value"), "valueText": r.get("valueText", ""), "unit": r.get("unit", ""),
-                # TEER 列表存成 "2,3,4,5" 文本(Payload 没有整型数组列;前端 split 即可)
-                "appliesTeer": ",".join(str(x) for x in (r.get("appliesTeer") or [])),
+                # TEER 列表存成 "2,3,4,5" 文本(Payload 没有整型数组列;前端 split 即可)。
+                # ⚠️ 源里既有 list[int](BC 及本轮七省)也有现成字符串(ON):对字符串 join 会逐字符
+                # 插逗号,ON 那几行一直是 "0,,,1,,,2,,,3",引擎 split(',') 按 TEER 挑行永远挑空
+                # (2026-08-03 修)。两种形态都归一到同一串。
+                "appliesTeer": (r["appliesTeer"] if isinstance(r.get("appliesTeer"), str)
+                                else ",".join(str(x) for x in (r.get("appliesTeer") or []))),
                 # NOC 适用范围(E13-02):ON 的技工低档语言门槛靠它区分;存 NOC 码前缀,引擎按前缀匹配
                 "appliesNoc": r.get("appliesNoc", ""), "excludesNoc": r.get("excludesNoc", ""),
                 "appliesArea": r.get("appliesArea", ""), "familySize": r.get("familySize"),

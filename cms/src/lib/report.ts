@@ -1096,7 +1096,7 @@ const EN: Record<string, (p: Record<string, string | number>) => string> = {
   'rpt.r.lang.fail': (p) => `${p.prov} requires CLB ${p.need} for TEER ${p.teer} jobs; you report CLB ${p.have} — ${p.short} band(s) short.`,
   'rpt.r.lang.failFree': (p) => `${p.prov} requires CLB ${p.need} for TEER ${p.teer} jobs; you report CLB ${p.have} — below it.`,
   'rpt.r.lang.unknown': (p) => `${p.prov} requires CLB ${p.need} for TEER ${p.teer} jobs; you have not reported a language band.`,
-  'rpt.r.langNone': (p) => `${p.prov} does not require a language test at registration for TEER ${p.teer} (it may still be requested during assessment).`,
+  'rpt.r.langNone': (p) => `${p.prov} does not require a language test for TEER ${p.teer} (it may still be requested during assessment).`,
   'rpt.r.income.pass': (p) => `${p.prov} sets a minimum family income of $${p.need}; the official median wage for this occupation there is $${p.have} — above it.`,
   'rpt.r.income.fail': (p) => `${p.prov} sets a minimum family income of $${p.need}; the official median wage for this occupation there is $${p.have} — $${p.short} short even at the lowest bracket.`,
   'rpt.r.income.failFree': (p) => `${p.prov} sets a minimum family income of $${p.need}; the official median wage for this occupation there is $${p.have} — below it.`,

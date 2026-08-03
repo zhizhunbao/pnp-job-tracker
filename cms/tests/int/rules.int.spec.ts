@@ -280,3 +280,78 @@ describe('地点 → 官方分档区域', () => {
     expect(employerBar(BC_REQS, 'BC', 'metro-vancouver')).toEqual({ revenue: null, staff: 5 })
   })
 })
+
+// ── B1-1(2026-08-03):其余七省的官方门槛入库后,引擎挑行的三条口径 ────────────────
+// 取值都是当天实抓的真数(见 raw/pnp/<省>-req.json),改了这些断言前先去核官方页。
+describe('evaluateRequirements —— 七省门槛的挑行口径', () => {
+  // MPNP 把语言门槛发在**每个在需职业**上(In-Demand Occupations List 的 Minimum CLB 一列),
+  // 另有一条 TEER 4/5 的通用下限。命中职业 → 用职业那一档;没命中 → 落通用下限。
+  const MB_REQS: Requirement[] = [
+    R({ province: 'MB', stream: 'MPNP Skilled Worker Overseas', factor: 'language', value: 4, unit: 'CLB', appliesTeer: '4,5' }),
+    R({ province: 'MB', stream: 'MPNP In-Demand Occupations List', factor: 'language', value: 5, unit: 'CLB', appliesNoc: '72310', appliesTeer: '2' }),
+    R({ province: 'MB', stream: 'MPNP In-Demand Occupations List', factor: 'language', value: 7, unit: 'CLB', appliesNoc: '33102', appliesTeer: '3' }),
+  ]
+
+  it('MB:在需清单上的职业用它自己那一档(木匠 72310 → CLB 5),不落通用下限', () => {
+    const r = byFactor(evaluateRequirements(MB_REQS, P({ teer: 2, noc: '72310', clb: 4 })), 'language')
+    expect(r.need).toBe(5)
+    expect(r.verdict).toBe('fail')
+    expect(r.short).toBe(1)
+  })
+
+  it('MB:不在在需清单上的 TEER 4/5 职业落通用下限 CLB 4', () => {
+    const r = byFactor(evaluateRequirements(MB_REQS, P({ teer: 5, noc: '65100', clb: 4 })), 'language')
+    expect(r.need).toBe(4)
+    expect(r.verdict).toBe('pass')
+  })
+
+  it('MB:不在清单上的 TEER 0-3 职业**一行都不出**(官方没发这档的下限,不许拿别档套)', () => {
+    expect(evaluateRequirements(MB_REQS, P({ teer: 1, noc: '21231', clb: 4 })).find((r) => r.factor === 'language')).toBeUndefined()
+  })
+
+  // PE 的 24 个月只写在 Skilled Worker 通道(TEER 0-3);TEER 4/5 的 Critical Worker 官方给了
+  // 「2 年经验**或**相关学历」的替代路径 → 那档不挂经验门槛,引擎必须按 TEER 挑行。
+  const PE_REQS: Requirement[] = [
+    R({ province: 'PE', stream: 'PEI PNP Workforce — Skilled Worker stream', factor: 'experience', value: 24, unit: 'months', appliesTeer: '0,1,2,3' }),
+  ]
+
+  it('PE:TEER 0-3 吃 24 个月经验门槛', () => {
+    const r = byFactor(evaluateRequirements(PE_REQS, P({ teer: 2, totalExpMonths: 6 })), 'experience')
+    expect(r.need).toBe(24)
+    expect(r.verdict).toBe('fail')
+  })
+
+  it('PE:TEER 4/5 不吃那条(整行不出)—— 拿别档的门槛套人就是撒谎', () => {
+    expect(evaluateRequirements(PE_REQS, P({ teer: 5, totalExpMonths: 6 })).find((r) => r.factor === 'experience')).toBeUndefined()
+  })
+
+  // NL 的档位是从官方两句话相减算出来的:收 TEER 0-5,但只有 TEER 4/5 要交成绩。
+  const NL_REQS: Requirement[] = [
+    R({ province: 'NL', stream: 'NLPNP Skilled Worker Category', factor: 'language', value: 4, unit: 'CLB', appliesTeer: '4,5' }),
+    R({ province: 'NL', stream: 'NLPNP Skilled Worker Category', factor: 'language', op: 'none', appliesTeer: '0,1,2,3' }),
+  ]
+
+  it('NL:TEER 0-3 免交成绩 → pass 且 need 为空(文案走 langNone,不是「达标」)', () => {
+    const r = byFactor(evaluateRequirements(NL_REQS, P({ teer: 2, clb: null })), 'language')
+    expect(r.verdict).toBe('pass')
+    expect(r.need).toBeNull()
+  })
+
+  it('NL:TEER 4/5 要 CLB 4,没填语言 → unknown(不猜)', () => {
+    const r = byFactor(evaluateRequirements(NL_REQS, P({ teer: 5, clb: null })), 'language')
+    expect(r.verdict).toBe('unknown')
+    expect(r.need).toBe(4)
+  })
+
+  // AB 给 33102(护理助理)单开 CLB 7,盖过 TEER 0-3 的通用 CLB 5 —— 同 ON 技工低档的机制。
+  const AB_REQS: Requirement[] = [
+    R({ province: 'AB', stream: 'AAIP Alberta Opportunity Stream', factor: 'language', value: 5, unit: 'CLB', appliesTeer: '0,1,2,3' }),
+    R({ province: 'AB', stream: 'AAIP Alberta Opportunity Stream', factor: 'language', value: 4, unit: 'CLB', appliesTeer: '4,5' }),
+    R({ province: 'AB', stream: 'AAIP Alberta Opportunity Stream', factor: 'language', value: 7, unit: 'CLB', appliesNoc: '33102' }),
+  ]
+
+  it('AB:33102 用它自己的 CLB 7,不用 TEER 3 的通用 CLB 5', () => {
+    expect(byFactor(evaluateRequirements(AB_REQS, P({ teer: 3, noc: '33102', clb: 6 })), 'language').need).toBe(7)
+    expect(byFactor(evaluateRequirements(AB_REQS, P({ teer: 3, noc: '32104', clb: 6 })), 'language').need).toBe(5)
+  })
+})
