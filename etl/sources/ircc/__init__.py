@@ -10,6 +10,10 @@ META = {
     "seed": False,             # 只刷 raw/processed,build 角色统一进 mart
     "steps": [
         ["python", "etl/scrape_ircc_stats.py"],
+        # StatCan 非永久居民占比(2026-08-03 接入,Frank「政府说要降到 5% 以下,现在是多少了」):
+        # 联邦「临时人口降到 5%」目标的唯一可核验刻度,也是各省配额被砍的上游原因。
+        # 不在 IRCC 口径里(IRCC 不发分母),故单独一步走 StatCan WDS(免密钥,季度发布 + 会修订前序季度)。
+        ["python", "etl/scrape_statcan_npr.py"],
         ["python", "etl/clean/04e_difficulty.py"],
     ],
 }

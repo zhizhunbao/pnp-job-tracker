@@ -1,5 +1,5 @@
 {
- "generated": "2026-07-22",
+ "generated": "2026-08-02",
  "trYear": "2024",
  "rows": [
   {
@@ -25,11 +25,20 @@
     },
     {
      "key": "activity",
-     "value": 10,
-     "invitations": 6188,
+     "value": 12,
+     "invitations": 2573,
      "tier": "easy",
-     "source": "https://www.ontario.ca/page/2026-ontario-immigrant-nominee-program-updates",
-     "asOf": "2026-07-22"
+     "source": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp-invitations-apply",
+     "asOf": "2026-08-02"
+    },
+    {
+     "key": "scoreLevel",
+     "value": 67,
+     "latestScore": 81,
+     "scale": "OINP EOI",
+     "tier": "mid",
+     "source": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp-invitations-apply",
+     "asOf": "2026-04-30"
     }
    ]
   },
@@ -57,19 +66,19 @@
     {
      "key": "activity",
      "value": 12,
-     "invitations": 1533,
+     "invitations": 1465,
      "tier": "easy",
      "source": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply",
-     "asOf": "2026-07-22"
+     "asOf": "2026-08-02"
     },
     {
      "key": "scoreLevel",
-     "value": 90,
-     "latestScore": 132,
+     "value": 10,
+     "latestScore": 50,
      "scale": "SIRS",
-     "tier": "tight",
+     "tier": "easy",
      "source": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply",
-     "asOf": "2026-07-16"
+     "asOf": "2026-07-23"
     }
    ]
   },
@@ -97,19 +106,19 @@
     {
      "key": "activity",
      "value": 12,
-     "invitations": 2204,
+     "invitations": 1505,
      "tier": "easy",
      "source": "https://www.alberta.ca/aaip-processing-information",
-     "asOf": "2026-07-22"
+     "asOf": "2026-08-02"
     },
     {
      "key": "scoreLevel",
-     "value": 33,
-     "latestScore": 53,
+     "value": 100,
+     "latestScore": 65,
      "scale": "WEOI",
-     "tier": "easy",
+     "tier": "tight",
      "source": "https://www.alberta.ca/aaip-processing-information",
-     "asOf": "2026-07-15"
+     "asOf": "2026-07-21"
     }
    ]
   },
@@ -146,10 +155,10 @@
     {
      "key": "activity",
      "value": 10,
-     "invitations": 1090,
+     "invitations": 1118,
      "tier": "easy",
      "source": "https://immigratemanitoba.com/draws/",
-     "asOf": "2026-07-22"
+     "asOf": "2026-08-02"
     }
    ]
   },
@@ -198,6 +207,14 @@
      "tier": "easy",
      "source": "https://www.ircc.canada.ca/opendata-donneesouvertes/data/EN_ODP_annual-TR-Study-IS_PT_study_level_year_end.xlsx",
      "asOf": "2024"
+    },
+    {
+     "key": "activity",
+     "value": 9,
+     "invitations": 1989,
+     "tier": "easy",
+     "source": "https://www.gov.nl.ca/immigration/invitations-to-apply-updates/",
+     "asOf": "2026-08-02"
     }
    ]
   },

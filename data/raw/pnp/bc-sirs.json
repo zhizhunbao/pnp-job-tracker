@@ -1,0 +1,171 @@
+{
+  "province": "BC",
+  "system": "SIRS",
+  "maxTotal": 200,
+  "source": "BC PNP Skills Immigration Program Guide",
+  "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-si-program-guide-pdf",
+  "pageUrl": "https://www.welcomebc.ca/immigrate-to-b-c/for-workers",
+  "guideEffective": "2026-06-10",
+  "fetched": "2026-08-02",
+  "factors": {
+    "work": {
+      "max": 40,
+      "rows": [
+        {
+          "label": "5 or more years",
+          "points": 20
+        },
+        {
+          "label": "At least 4 but less than 5 years",
+          "points": 16
+        },
+        {
+          "label": "At least 3 but less than 4 years",
+          "points": 12
+        },
+        {
+          "label": "At least 2 but less than 3 years",
+          "points": 8
+        },
+        {
+          "label": "At least 1 but less than 2 years",
+          "points": 4
+        },
+        {
+          "label": "Less than 1 year",
+          "points": 1
+        },
+        {
+          "label": "No experience",
+          "points": 0
+        }
+      ],
+      "bonus": [
+        {
+          "label": "At least 1 year of directly related experience in Canada",
+          "points": 10
+        },
+        {
+          "label": "Currently working full-time in B.C. for the employer in the occupation identified in the BC PNP registration",
+          "points": 10
+        }
+      ]
+    },
+    "education": {
+      "max": 40,
+      "rows": [
+        {
+          "label": "Doctoral Degree",
+          "points": 27
+        },
+        {
+          "label": "Master’s Degree",
+          "points": 22
+        },
+        {
+          "label": "Post-Graduate Certificate or Diploma*",
+          "points": 15
+        },
+        {
+          "label": "Bachelor’s Degree",
+          "points": 15
+        },
+        {
+          "label": "Associate Degree",
+          "points": 5
+        },
+        {
+          "label": "Post-secondary Diploma/Certificate (Trades or Non-Trades)",
+          "points": 5
+        },
+        {
+          "label": "Secondary School (High School) or Less",
+          "points": 0
+        }
+      ],
+      "bonus": [
+        {
+          "label": "Post-secondary education completed in B.C., or",
+          "points": 8
+        },
+        {
+          "label": "Post-secondary education completed in Canada (outside of B.C.)",
+          "points": 6,
+          "xorWithPrev": true
+        },
+        {
+          "label": "Eligible professional designation in B.C.",
+          "points": 5
+        }
+      ]
+    },
+    "language": {
+      "max": 40,
+      "rows": [
+        {
+          "label": "9+",
+          "points": 30
+        },
+        {
+          "label": "8",
+          "points": 25
+        },
+        {
+          "label": "7",
+          "points": 20
+        },
+        {
+          "label": "6",
+          "points": 15
+        },
+        {
+          "label": "5",
+          "points": 10
+        },
+        {
+          "label": "4",
+          "points": 5
+        },
+        {
+          "label": "Below 4 or no test submitted",
+          "points": 0
+        }
+      ],
+      "bonus": [
+        {
+          "label": "Language proficiency in both English and French",
+          "points": 10
+        }
+      ]
+    },
+    "wage": {
+      "max": 55,
+      "rule": "floor(hourlyCAD) - 15",
+      "floorAt": 16,
+      "capAt": 70
+    },
+    "area": {
+      "max": 25,
+      "rows": [
+        {
+          "label": "Area 1: Metro Vancouver Regional District",
+          "points": 0
+        },
+        {
+          "label": "Area 2: Squamish, Abbotsford, Agassiz, Mission, and Chilliwack",
+          "points": 5
+        },
+        {
+          "label": "Area 3: Areas of B.C. not included in Area 1 or 2",
+          "points": 15
+        }
+      ],
+      "bonus": [
+        {
+          "label": "Regional Experience, or",
+          "points": 10
+        }
+      ]
+    }
+  }
+}

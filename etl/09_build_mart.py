@@ -53,6 +53,7 @@ IN_NEWS = _paths.NEWS / "news.json"              # 官方移民新闻累积表(e
 IN_IRCC_TR = _paths.IRCC / "temp_residents.json"      # E8-12 省弹框体量卡:学签/工签年末存量
 IN_IRCC_PR = _paths.IRCC / "pnp_admissions.json"      # PNP 类别 PR 登陆数
 IN_IRCC_ALLOC = _paths.IRCC / "pnp_allocations.json"  # PNP 年度提名配额(人工核对维护表)
+IN_IRCC_FLOW = _paths.IRCC / "study_flow.json"        # 新发学签流量(月度;2026-08-03 接入,存量停在 2024 时的当期口径)
 OUT_MART = _paths.DATA / "mart"
 
 PROV_FULL = {
@@ -409,6 +410,16 @@ def build():
             for c, v in (pr.get("byProv") or {}).items():
                 if c in info:
                     info[c]["pnpPr"] = {"n": v, "year": pr.get("year", "")}
+        # 新发学签流量(2026-08-03):存量表官方停在 2024,这条是唯一能反映当期的官方学签数字。
+        # **口径独立不混用**——存量=在库人数(竞争比分母),流量=当期新增;各带自己的年份与「至几月」。
+        if IN_IRCC_FLOW.exists():
+            fl = json.loads(IN_IRCC_FLOW.read_text(encoding="utf-8"))
+            for c, years in (fl.get("byProv") or {}).items():
+                if c not in info or not years:
+                    continue
+                latest = max(years)
+                info[c]["studyFlow"] = {"year": latest, **years[latest],
+                                        "prev": (years.get(str(int(latest) - 1)) or {}).get("n")}
         if IN_IRCC_ALLOC.exists():
             alloc = json.loads(IN_IRCC_ALLOC.read_text(encoding="utf-8"))
             for r in alloc.get("rows", []):

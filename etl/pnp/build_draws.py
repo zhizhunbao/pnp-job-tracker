@@ -32,6 +32,11 @@ ON_URL = "https://www.ontario.ca/page/2026-ontario-immigrant-nominee-program-upd
 # 2026-07-31 复核推翻旧结论「OINP 不公布分数线」——invitations 页有 Score range 一列(如「57 and above」)。
 ON_INV_URL = "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp-invitations-apply"
 
+NL_URL = "https://www.gov.nl.ca/immigration/invitations-to-apply-updates/"
+# NL(2026-08-03 接入,海洋四省的第一份抽选):OIM 自 2025-02 起走 EOI 模型,按批次发 ITA。
+# **只公布日期与邀请数,不公布分数线** —— score 一律 None、scale 一律 None(不是抓漏了,是官方不发)。
+# Notes 列写 NLPNP / AIP 各多少,原样留在 note 里(AIP 是联邦大西洋项目,与省提名同批发)。
+
 MAX_PER_PROV = 12  # raw 留最近 N 条;mart 再截
 
 
@@ -257,6 +262,27 @@ def parse_on_draws(html: str) -> list[dict]:
     return draws[:MAX_PER_PROV]
 
 
+def parse_nl(html: str) -> list[dict]:
+    """NL ITA 批次表:| Date Issued | Number of ITAs Issued | Notes |。无分数线(官方不发)。"""
+    soup = BeautifulSoup(html, "lxml")
+    draws: list[dict] = []
+    for table in soup.find_all("table"):
+        grid = expand_table(table)
+        if not grid:
+            continue
+        head = " ".join(grid[0]).lower()          # NL 这张表没有 <th>,表头是首行 <td>
+        if "date issued" not in head or "ita" not in head:
+            continue
+        for row in grid[1:]:
+            if len(row) < 2 or not (d := _iso(row[0])):
+                continue
+            draws.append({"date": d, "stream": "NLPNP + AIP (ITA batch)",
+                          "note": re.sub(r"\s+", " ", row[2])[:160] if len(row) > 2 else "",
+                          "score": None, "invitations": _int(row[1])})
+    draws.sort(key=lambda x: x["date"], reverse=True)
+    return draws[:MAX_PER_PROV]
+
+
 def build_on(old: dict) -> dict:
     try:
         _, notice = parse_on(fetch(ON_URL))          # 通告仍取更新页(新通道细则的第一手动静)
@@ -295,6 +321,8 @@ def main() -> None:
         "AB": build("AB", AB_URL, parse_ab, "WEOI", "AAIP", old),
         "MB": build("MB", MB_URL, parse_mb, "MPNP EOI", "MPNP Expression of Interest", old),
         "ON": build_on(old),
+        # NL:scale=None —— 官方只发邀请数不发分数线,前端不得凭空造一条「分数线」列
+        "NL": build("NL", NL_URL, parse_nl, None, "NLPNP + AIP(ITA 批次)", old),
     }
     provinces = {k: v for k, v in provinces.items() if v}
 

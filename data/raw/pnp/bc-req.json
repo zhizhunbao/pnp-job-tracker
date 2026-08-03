@@ -5,7 +5,7 @@
   "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-si-program-guide-pdf",
   "pageUrl": "https://www.welcomebc.ca/immigrate-to-b-c/for-workers",
   "guideEffective": "2026-06-10",
-  "fetched": "2026-07-31",
+  "fetched": "2026-08-02",
   "requirements": [
     {
       "stream": "BC PNP Skills Immigration (all streams)",
@@ -281,7 +281,7 @@
       "appliesArea": "",
       "familySize": null,
       "basis": "",
-      "label": "Employer must have operated in B.C. for at least one year(s)",
+      "label": "Employer must have operated in B.C. for at least one year",
       "section": "6.7",
       "factor": "empYears"
     },

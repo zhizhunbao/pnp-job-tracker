@@ -1,8 +1,15 @@
 {
   "source": "Express Entry rounds of invitations",
   "url": "https://www.canada.ca/content/dam/ircc/documents/json/ee_rounds_123_en.json",
-  "fetched": "2026-07-23",
+  "fetched": "2026-08-02",
   "byCategory": {
+    "military": {
+      "date": "2026-07-23",
+      "crs": 368,
+      "size": 4,
+      "drawName": "Skilled Military Recruits, 2026-Version 1",
+      "drawNumber": 430
+    },
     "french": {
       "date": "2026-07-22",
       "crs": 399,
@@ -96,6 +103,15 @@
     }
   },
   "history": {
+    "military": [
+      {
+        "date": "2026-07-23",
+        "crs": 368,
+        "size": 4,
+        "drawName": "Skilled Military Recruits, 2026-Version 1",
+        "drawNumber": 430
+      }
+    ],
     "french": [
       {
         "date": "2026-07-22",
@@ -505,6 +521,13 @@
   },
   "recent": [
     {
+      "date": "2026-07-23",
+      "crs": 368,
+      "size": 4,
+      "name": "Skilled Military Recruits, 2026-Version 1",
+      "number": 430
+    },
+    {
       "date": "2026-07-22",
       "crs": 399,
       "size": 5000,
@@ -636,13 +659,6 @@
       "size": 4000,
       "name": "French-Language proficiency 2026-Version 2",
       "number": 411
-    },
-    {
-      "date": "2026-04-14",
-      "crs": 515,
-      "size": 2000,
-      "name": "Canadian Experience Class",
-      "number": 410
     }
   ]
 }

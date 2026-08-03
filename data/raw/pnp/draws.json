@@ -1,6 +1,6 @@
 {
   "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
-  "fetched": "2026-07-31",
+  "fetched": "2026-08-02",
   "provinces": {
     "BC": {
       "label": "BC PNP Skills Immigration",
@@ -355,6 +355,97 @@
         "date": "2026-07-20",
         "note": "Web pages updated for new Ontario Workforce Priority Stream"
       }
+    },
+    "NL": {
+      "label": "NLPNP + AIP(ITA 批次)",
+      "scale": null,
+      "url": "https://www.gov.nl.ca/immigration/invitations-to-apply-updates/",
+      "draws": [
+        {
+          "date": "2026-07-28",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 400, AIP – 45",
+          "score": null,
+          "invitations": 445
+        },
+        {
+          "date": "2026-07-10",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 17, AIP – 40",
+          "score": null,
+          "invitations": 57
+        },
+        {
+          "date": "2026-06-10",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 89, AIP – 19",
+          "score": null,
+          "invitations": 108
+        },
+        {
+          "date": "2026-05-28",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 84, AIP – 19",
+          "score": null,
+          "invitations": 103
+        },
+        {
+          "date": "2026-05-11",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 168, AIP – 18",
+          "score": null,
+          "invitations": 186
+        },
+        {
+          "date": "2026-05-01",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 157, AIP – 33",
+          "score": null,
+          "invitations": 190
+        },
+        {
+          "date": "2026-04-13",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 177, AIP – 33",
+          "score": null,
+          "invitations": 210
+        },
+        {
+          "date": "2026-03-30",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 209, AIP – 36",
+          "score": null,
+          "invitations": 245
+        },
+        {
+          "date": "2026-03-06",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 362, AIP – 83",
+          "score": null,
+          "invitations": 445
+        },
+        {
+          "date": "2025-11-12",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 220, AIP – 110",
+          "score": null,
+          "invitations": 330
+        },
+        {
+          "date": "2025-10-22",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 55, AIP – 45",
+          "score": null,
+          "invitations": 100
+        },
+        {
+          "date": "2025-10-09",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 73, AIP – 52",
+          "score": null,
+          "invitations": 125
+        }
+      ]
     }
   }
 }

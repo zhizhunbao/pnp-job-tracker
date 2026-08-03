@@ -20,6 +20,8 @@ META = {
         ["python", "etl/pnp/build_ns.py"],   # NS 两通道(实时)
         ["python", "etl/pnp/build_mb.py"],   # MB MPNP 在需职业 + 乡镇在需(实时,E6-09;旧「MB 无清单」假设已纠正)
         ["python", "etl/pnp/build_nb.py"],   # NB 不受理职业两表(实时,E6-09;叠加式排除 overlay)
+        ["python", "etl/pnp/build_nl.py"],   # NL 优先处理职位(2026-08-03;职位名文本非 NOC,不参与打分)
+        ["python", "etl/pnp/build_pe.py"],   # PE 在需职业 8 个(2026-08-03;走官方指南 PDF——PEI 网页在 Radware 后面)
         ["python", "etl/pnp/build_draws.py"],  # E6-04 省抽选事实(BC/AB/MB+ON通告;无 occupations 键,08 扫表跳过)
         ["python", "etl/06_scrape_aip_employers.py"],  # AIP 指定雇主(NL/NB/NS;PE 仍 TODO)
         ["python", "etl/build_field_sources.py"],     # 字段级来源注册表(E4-04:验证 URL+抽 title/meta)
@@ -29,5 +31,9 @@ META = {
         ["python", "etl/pnp/build_bc_req.py"],  # E13-01 BC 官方门槛(语言/最低收入/经验/雇主侧;解析不全则保留旧表 exit 1)
         ["python", "etl/pnp/build_on_req.py"],     # E13-02 ON/OINP 门槛(雇主侧经营年限/营业额/雇员数 + 技工语言分档;同上)
         ["python", "etl/pnp/build_on_points.py"],  # E12-09 第三个省:ON EOI 打分表(自校同上)
+        # 2026-08-03 Frank 立铁律「抓完就要 docker 定时跑,不是抓一次完事」→ 这两个不再手动:
+        # 它们自校失败会 exit 1 中止本役,所以钉在**最末尾**,失败也拖不到任何人。
+        ["python", "etl/pnp/build_bc_sirs.py"],    # BC SIRS 分值表(手动 → 入役,2026-08-03)
+        ["python", "etl/pnp/build_sk_points.py"],  # SINP 分值表(手动 → 入役,2026-08-03)
     ],
 }

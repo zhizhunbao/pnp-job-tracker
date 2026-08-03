@@ -1,0 +1,147 @@
+{
+ "source": {
+  "population": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710000901",
+  "npr": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710012101"
+ },
+ "fetched": "2026-08-02",
+ "fetchedAt": "2026-08-03T01:00:33+00:00",
+ "target": 0.05,
+ "quarters": [
+  {
+   "refPer": "2021-07-01",
+   "population": 38239864,
+   "npr": 1361855,
+   "share": 0.03561
+  },
+  {
+   "refPer": "2021-10-01",
+   "population": 38460257,
+   "npr": 1442604,
+   "share": 0.03751
+  },
+  {
+   "refPer": "2022-01-01",
+   "population": 38565380,
+   "npr": 1413706,
+   "share": 0.03666
+  },
+  {
+   "refPer": "2022-04-01",
+   "population": 38693009,
+   "npr": 1447790,
+   "share": 0.03742
+  },
+  {
+   "refPer": "2022-07-01",
+   "population": 38950132,
+   "npr": 1586570,
+   "share": 0.04073
+  },
+  {
+   "refPer": "2022-10-01",
+   "population": 39284491,
+   "npr": 1800833,
+   "share": 0.04584
+  },
+  {
+   "refPer": "2023-01-01",
+   "population": 39501329,
+   "npr": 1952417,
+   "share": 0.04943
+  },
+  {
+   "refPer": "2023-04-01",
+   "population": 39727297,
+   "npr": 2052904,
+   "share": 0.05167
+  },
+  {
+   "refPer": "2023-07-01",
+   "population": 40049088,
+   "npr": 2258095,
+   "share": 0.05638
+  },
+  {
+   "refPer": "2023-10-01",
+   "population": 40467722,
+   "npr": 2572154,
+   "share": 0.06356
+  },
+  {
+   "refPer": "2024-01-01",
+   "population": 40724526,
+   "npr": 2741523,
+   "share": 0.06732
+  },
+  {
+   "refPer": "2024-04-01",
+   "population": 40990297,
+   "npr": 2903415,
+   "share": 0.07083
+  },
+  {
+   "refPer": "2024-07-01",
+   "population": 41262329,
+   "npr": 3039170,
+   "share": 0.07365
+  },
+  {
+   "refPer": "2024-10-01",
+   "population": 41494132,
+   "npr": 3149131,
+   "share": 0.07589
+  },
+  {
+   "refPer": "2025-01-01",
+   "population": 41574517,
+   "npr": 3138129,
+   "share": 0.07548
+  },
+  {
+   "refPer": "2025-04-01",
+   "population": 41604555,
+   "npr": 3082935,
+   "share": 0.0741
+  },
+  {
+   "refPer": "2025-07-01",
+   "population": 41651653,
+   "npr": 3024216,
+   "share": 0.07261
+  },
+  {
+   "refPer": "2025-10-01",
+   "population": 41575585,
+   "npr": 2847737,
+   "share": 0.0685
+  },
+  {
+   "refPer": "2026-01-01",
+   "population": 41472081,
+   "npr": 2676441,
+   "share": 0.06454
+  },
+  {
+   "refPer": "2026-04-01",
+   "population": 41417056,
+   "npr": 2558562,
+   "share": 0.06178
+  }
+ ],
+ "latest": {
+  "refPer": "2026-04-01",
+  "population": 41417056,
+  "npr": 2558562,
+  "share": 0.06178
+ },
+ "peak": {
+  "refPer": "2024-10-01",
+  "population": 41494132,
+  "npr": 3149131,
+  "share": 0.07589
+ },
+ "perQuarterChange": -0.00308,
+ "gapToTargetPeople": 487709,
+ "quartersToTarget": 3.8,
+ "note": "NPR=非永久居民(含学签/工签持有人及其家属、访客、庇护申请人),分母=StatCan 季度总人口估算。**与 IRCC 许可持有人数不可混用**(后者会重复计人且不含访客/庇护)。StatCan 每季度发布并修订前序季度,故每轮全量重取。quartersToTarget 是按最近四季降速的线性外推,不是官方预测。"
+}

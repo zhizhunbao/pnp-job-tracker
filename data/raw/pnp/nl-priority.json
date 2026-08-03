@@ -1,0 +1,189 @@
+{
+  "stream": "NL priority processing / labour market testing exemption",
+  "label": "NL 优先处理职位",
+  "province": "NL",
+  "program": "PNP+AIP",
+  "type": "priority",
+  "codeless": true,
+  "note": "NL 优先处理职位:免省级劳动力市场测试(Job Vacancy Assessment / AIP 招工测试)并优先处理。**不在表上不等于不能申请**,只是没有这份加速。官方给的是职位名称文本、不是 NOC 码,故本站不做 NOC 映射。",
+  "url": "https://www.gov.nl.ca/immigration/excluded-positions/",
+  "fetched": "2026-08-02",
+  "positions": [
+    {
+      "sector": "Health Care",
+      "group": "",
+      "title": "Physician",
+      "detail": "Family Medicine; Psychiatry; Pathology; General Internal Medicine; Radiology; Obstetrics and Gynecology; Anesthesia; Pediatric Intensivists (PICU); Neonatologists (NICU); Pathology (Hemopathology)"
+    },
+    {
+      "sector": "Health Care",
+      "group": "",
+      "title": "Nurse Practitioner (NP)"
+    },
+    {
+      "sector": "Health Care",
+      "group": "",
+      "title": "Licensed Practical Nurse (LPN)"
+    },
+    {
+      "sector": "Health Care",
+      "group": "",
+      "title": "Personal Care Attendant (PCA)"
+    },
+    {
+      "sector": "Health Care",
+      "group": "",
+      "title": "Clinical Psychologist"
+    },
+    {
+      "sector": "Health Care",
+      "group": "",
+      "title": "Medical Physicist"
+    },
+    {
+      "sector": "Health Care",
+      "group": "",
+      "title": "Radiation Therapist"
+    },
+    {
+      "sector": "Health Care",
+      "group": "",
+      "title": "Dosimetrist"
+    },
+    {
+      "sector": "Information and Communications Technology (ICT)",
+      "group": "Engineers and Developers",
+      "title": "Software Developer"
+    },
+    {
+      "sector": "Information and Communications Technology (ICT)",
+      "group": "Engineers and Developers",
+      "title": "Biomedical Engineer"
+    },
+    {
+      "sector": "Information and Communications Technology (ICT)",
+      "group": "Engineers and Developers",
+      "title": "UI/UX Developer"
+    },
+    {
+      "sector": "Information and Communications Technology (ICT)",
+      "group": "Engineers and Developers",
+      "title": "Electrical Engineer"
+    },
+    {
+      "sector": "Information and Communications Technology (ICT)",
+      "group": "Engineers and Developers",
+      "title": "AI Developer"
+    },
+    {
+      "sector": "Information and Communications Technology (ICT)",
+      "group": "Engineers and Developers",
+      "title": "Mechanical Engineer"
+    },
+    {
+      "sector": "Information and Communications Technology (ICT)",
+      "group": "Engineers and Developers",
+      "title": "Python Developer"
+    },
+    {
+      "sector": "Information and Communications Technology (ICT)",
+      "group": "Engineers and Developers",
+      "title": "Web Developer"
+    },
+    {
+      "sector": "Information and Communications Technology (ICT)",
+      "group": "Engineers and Developers",
+      "title": ".NET Developer"
+    },
+    {
+      "sector": "Information and Communications Technology (ICT)",
+      "group": "Engineers and Developers",
+      "title": "Infrastructure Engineer"
+    },
+    {
+      "sector": "Information and Communications Technology (ICT)",
+      "group": "Technical Specialists",
+      "title": "Security Specialist"
+    },
+    {
+      "sector": "Information and Communications Technology (ICT)",
+      "group": "Technical Specialists",
+      "title": "Cloud Specialist"
+    },
+    {
+      "sector": "Information and Communications Technology (ICT)",
+      "group": "Technical Specialists",
+      "title": "Bioinformatician"
+    },
+    {
+      "sector": "Information and Communications Technology (ICT)",
+      "group": "Technical Specialists",
+      "title": "Computer Network Support"
+    },
+    {
+      "sector": "Information and Communications Technology (ICT)",
+      "group": "Technical Specialists",
+      "title": "Research Associate"
+    },
+    {
+      "sector": "Information and Communications Technology (ICT)",
+      "group": "Technical Specialists",
+      "title": "Data Analytics"
+    },
+    {
+      "sector": "Information and Communications Technology (ICT)",
+      "group": "Technical Specialists",
+      "title": "Offshore Technician"
+    },
+    {
+      "sector": "Information and Communications Technology (ICT)",
+      "group": "Technical Specialists",
+      "title": "ROV Operator"
+    },
+    {
+      "sector": "Information and Communications Technology (ICT)",
+      "group": "Technical Specialists",
+      "title": "Ocean Mapping Specialist"
+    },
+    {
+      "sector": "Information and Communications Technology (ICT)",
+      "group": "Technical Specialists",
+      "title": "Technical Writer"
+    },
+    {
+      "sector": "aquaculture",
+      "group": "",
+      "title": "Captain (FM4 certification required)"
+    },
+    {
+      "sector": "aquaculture",
+      "group": "",
+      "title": "Farming and Feeding Manager"
+    },
+    {
+      "sector": "aquaculture",
+      "group": "",
+      "title": "Facility Technician"
+    },
+    {
+      "sector": "aquaculture",
+      "group": "",
+      "title": "Assistant Manager"
+    },
+    {
+      "sector": "aquaculture",
+      "group": "",
+      "title": "Cage Site Technician"
+    },
+    {
+      "sector": "aquaculture",
+      "group": "",
+      "title": "Site Manager (with water quality expertise)"
+    },
+    {
+      "sector": "aquaculture",
+      "group": "",
+      "title": "Area Manager"
+    }
+  ]
+}

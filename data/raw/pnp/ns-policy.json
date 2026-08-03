@@ -1,0 +1,28 @@
+{
+  "stream": "Nova Scotia Nominee Program — Skilled Worker (main)",
+  "label": "NS 主线口径",
+  "province": "NS",
+  "program": "PNP",
+  "type": "policy",
+  "codeless": true,
+  "url": "https://liveinnovascotia.com/skilled-worker",
+  "fetched": "2026-08-02",
+  "facts": [
+    {
+      "key": "noMainList",
+      "statement": "Skilled Worker 主线不公布职业清单:按雇主 offer + TEER 判定;Construction 子条件按行业(NAICS 23 建筑业)判,不是 NOC 清单。",
+      "url": "https://liveinnovascotia.com/skilled-worker"
+    },
+    {
+      "key": "oidList",
+      "statement": "Occupations in Demand 通道当前**没有任何职业在列**(官方原话:There are no occupations listed in this category at this time)。",
+      "url": "https://liveinnovascotia.com/skilled-worker"
+    },
+    {
+      "key": "priority",
+      "statement": "提名优先级:医疗与技术工种(skilled trades)在 TEER 0-4 为首选;TEER 5 不在优先之列。页面原文命中「TEER levels 0–4」。",
+      "url": "https://liveinnovascotia.com/resources/nominee-program-priorities-nova-scotia",
+      "asOf": "April 27, 2026"
+    }
+  ]
+}

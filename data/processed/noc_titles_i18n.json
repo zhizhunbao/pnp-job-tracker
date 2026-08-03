@@ -2,539 +2,742 @@
  "00011": {
   "zh": "高级政府管理人员和官员",
   "ko": "고위 정부 관리 및 공무원",
-  "zhShort": "高级政府官员"
+  "zhShort": "高级政府官员",
+  "koShort": "고위 정부 관리",
+  "enShort": "Senior gov managers"
  },
  "00012": {
   "zh": "高级经理 - 金融、通信和其他商业服务",
   "ko": "고급 관리자 - 금융 통신 및 기타 비즈니스 서비스",
-  "zhShort": "高级商务经理"
+  "zhShort": "高级商务经理",
+  "koShort": "고급관리자-금융",
+  "enShort": "Senior managers - financial"
  },
  "00013": {
   "zh": "高级经理 - 健康、教育、社会和社区服务及会员组织",
   "ko": "고위 관리자 - 건강 교육 사회 및 커뮤니티 서비스 및 회원 조직",
-  "zhShort": "高级经理-民生"
+  "zhShort": "高级经理-民生",
+  "koShort": "고급관리자-보건",
+  "enShort": "Senior managers - health"
  },
  "00014": {
   "zh": "高级经理 - 贸易、广播和其他服务",
   "ko": "고급 관리자 - 무역 방송 및 기타 서비스",
-  "zhShort": "高级经理-贸易"
+  "zhShort": "高级经理-贸易",
+  "koShort": "고급관리자-무역",
+  "enShort": "Senior managers - trade"
  },
  "00015": {
   "zh": "高级经理 - 建筑、运输、生产和公用事业",
   "ko": "고급 관리자 - 건설 운송 생산 유틸리티",
-  "zhShort": "高级经理-工程"
+  "zhShort": "高级经理-工程",
+  "koShort": "고급관리자-공학",
+  "enShort": "Senior managers - construction"
  },
  "10010": {
   "zh": "财务经理",
   "ko": "재무 관리자",
-  "zhShort": "财务经理"
+  "zhShort": "财务经理",
+  "koShort": "재무 관리자",
+  "enShort": "Financial managers"
  },
  "10011": {
   "zh": "人力资源经理",
   "ko": "인사 관리자",
-  "zhShort": "人力资源经理"
+  "zhShort": "人力资源经理",
+  "koShort": "인사 관리자",
+  "enShort": "Human resources managers"
  },
  "10012": {
   "zh": "采购经理",
   "ko": "구매 관리자",
-  "zhShort": "采购经理"
+  "zhShort": "采购经理",
+  "koShort": "구매 관리자",
+  "enShort": "Purchasing managers"
  },
  "10019": {
   "zh": "其他行政服务经理",
   "ko": "기타 행정 서비스 관리자",
-  "zhShort": "行政服务经理"
+  "zhShort": "行政服务经理",
+  "koShort": "행정 서비스 관리자",
+  "enShort": "Other admin services managers"
  },
  "10020": {
   "zh": "保险房地产和金融经纪业经理",
   "ko": "보험 부동산 및 금융 중개 관리자",
-  "zhShort": "保险金融经纪人"
+  "zhShort": "保险金融经纪人",
+  "koShort": "보험금융중개관리자"
  },
  "10021": {
   "zh": "银行信贷及其他投资经理",
   "ko": "은행 신용 및 기타 투자 관리자",
-  "zhShort": "银行信贷经理"
+  "zhShort": "银行信贷经理",
+  "koShort": "은행 신용 관리자"
  },
  "10022": {
   "zh": "广告、营销和公共关系经理",
-  "ko": "광고 마케팅 및 대외 관계 관리자"
+  "ko": "광고 마케팅 및 대외 관계 관리자",
+  "koShort": "광고 마케팅 관리자"
  },
  "10029": {
   "zh": "其他商业服务经理",
-  "ko": "기타 비즈니스 서비스 관리자"
+  "ko": "기타 비즈니스 서비스 관리자",
+  "koShort": "비즈니스 서비스 관리자",
+  "enShort": "Other business services managers"
  },
  "10030": {
   "zh": "电信运营商经理",
   "ko": "통신 운송업 관리자",
-  "zhShort": "电信运营商经理"
+  "zhShort": "电信运营商经理",
+  "koShort": "통신 운송업 관리자"
  },
  "11100": {
   "zh": "财务审计员和会计师",
   "ko": "금융 감사원 및 회계사",
-  "zhShort": "财务审计员"
+  "zhShort": "财务审计员",
+  "koShort": "금융 감사원 및 회계사",
+  "enShort": "Financial auditors"
  },
  "11101": {
   "zh": "金融和投资分析师",
   "ko": "금융 및 투자 분석가",
-  "zhShort": "金融投资分析师"
+  "zhShort": "金融投资分析师",
+  "koShort": "금융 및 투자 분석가"
  },
  "11102": {
   "zh": "财务顾问",
   "ko": "금융 고문",
-  "zhShort": "财务顾问"
+  "zhShort": "财务顾问",
+  "koShort": "금융 고문",
+  "enShort": "Financial advisors"
  },
  "11103": {
   "zh": "证券代理、投资经销商和经纪人",
   "ko": "증권 대리인 투자 딜러 및 브로커",
-  "zhShort": "证券经纪人"
+  "zhShort": "证券经纪人",
+  "koShort": "증권 대리인",
+  "enShort": "Securities agents"
  },
  "11109": {
   "zh": "其他财务官员",
   "ko": "기타 금융 책임자",
-  "zhShort": "其他财务官员"
+  "zhShort": "其他财务官员",
+  "koShort": "기타 금융 책임자",
+  "enShort": "Other financial officers"
  },
  "11200": {
   "zh": "人力资源专业人员",
   "ko": "인사 전문가",
-  "zhShort": "人力资源专员"
+  "zhShort": "人力资源专员",
+  "koShort": "인사 전문가",
+  "enShort": "HR professionals"
  },
  "11201": {
   "zh": "商业管理咨询专业人员",
   "ko": "비즈니스 관리 컨설팅 전문가",
-  "zhShort": "商业管理咨询师"
+  "zhShort": "商业管理咨询师",
+  "koShort": "비즈니스 관리 컨설턴트"
  },
  "11202": {
   "zh": "广告市场营销和公共关系专业职业",
-  "ko": "광고 마케팅 및 대외 관계 전문가"
+  "ko": "광고 마케팅 및 대외 관계 전문가",
+  "koShort": "광고마케팅전문가",
+  "enShort": "Prof occs in ad mktg & PR"
  },
  "12010": {
   "zh": "一般办公室和行政支持工作主管",
   "ko": "일반 사무 및 행정 지원 작업자 감독관",
-  "zhShort": "行政主管"
+  "zhShort": "行政主管",
+  "koShort": "사무감독관",
+  "enShort": "Supervisors general office"
  },
  "12011": {
   "zh": "财务和保险办公室工作主管",
   "ko": "금융 및 보험 사무실 직원 감독자",
-  "zhShort": "财务主管"
+  "zhShort": "财务主管",
+  "koShort": "금융감독자"
  },
  "12013": {
   "zh": "供应链、跟踪和调度协调监督职业",
   "ko": "공급망 추적 및 일정 조정 감독 직업",
-  "zhShort": "供应链主管"
+  "zhShort": "供应链主管",
+  "koShort": "공급망 감독",
+  "enShort": "Supply chain supervisors"
  },
  "12100": {
   "zh": "行政助理",
   "ko": "임원 비서",
-  "zhShort": "高管助理"
+  "zhShort": "高管助理",
+  "koShort": "임원 비서",
+  "enShort": "Executive assistants"
  },
  "12101": {
   "zh": "人力资源和招聘专员",
   "ko": "인사 및 채용 담당자",
-  "zhShort": "招聘专员"
+  "zhShort": "招聘专员",
+  "koShort": "인사 및 채용 담당자",
+  "enShort": "Human resources officers"
  },
  "12102": {
   "zh": "采购代理和官员",
   "ko": "조달 및 구매 대리인 및 직원",
-  "zhShort": "采购代理和官员"
+  "zhShort": "采购代理和官员",
+  "koShort": "구매 담당자"
  },
  "12103": {
   "zh": "会议和活动策划师",
   "ko": "회의 및 행사 기획자",
-  "zhShort": "会议策划师"
+  "zhShort": "会议策划师",
+  "koShort": "회의 및 행사 기획자",
+  "enShort": "Conference and event planners"
  },
  "12104": {
   "zh": "就业保险与税务官员",
-  "ko": "고용보험 및 세무 담당관"
+  "ko": "고용보험 및 세무 담당관",
+  "koShort": "세무 담당관"
  },
  "12110": {
   "zh": "法庭速记员、医学转录员及相关职业",
   "ko": "법정 기록원, 의료 전사원 및 관련 직업",
-  "zhShort": "法庭速记员"
+  "zhShort": "法庭速记员",
+  "koShort": "법정기록원",
+  "enShort": "Court reporters"
  },
  "12111": {
   "zh": "健康信息管理职业",
   "ko": "건강 정보 관리 직업",
-  "zhShort": "健康信息管理员"
+  "zhShort": "健康信息管理员",
+  "koShort": "건강 정보 관리 직업",
+  "enShort": "Health info mgmt occs"
  },
  "12112": {
   "zh": "记录管理技术员",
   "ko": "기록 관리 기술자",
-  "zhShort": "记录管理技术员"
+  "zhShort": "记录管理技术员",
+  "koShort": "기록 관리 기술자",
+  "enShort": "Records mgmt techs"
  },
  "12200": {
   "zh": "会计技术员和簿记员",
   "ko": "회계 기술자 및 장부 작성자",
-  "zhShort": "会计技术员"
+  "zhShort": "会计技术员",
+  "koShort": "회계 기술자",
+  "enShort": "Accounting technicians"
  },
  "12201": {
   "zh": "保险理赔员和索赔审查员",
   "ko": "보험 조정사 및 청구 심사관",
-  "zhShort": "保险理赔员"
+  "zhShort": "保险理赔员",
+  "koShort": "보험 조정사",
+  "enShort": "Insurance adjusters"
  },
  "12202": {
   "zh": "保险承保人",
   "ko": "보험 심사원",
-  "zhShort": "保险承保人"
+  "zhShort": "保险承保人",
+  "koShort": "보험 심사원",
+  "enShort": "Insurance underwriters"
  },
  "12203": {
   "zh": "商业估值师和评估师",
   "ko": "사업가치평가사 및 감정사",
-  "zhShort": "商业估值师"
+  "zhShort": "商业估值师",
+  "koShort": "사업가치평가사",
+  "enShort": "Business valuators"
  },
  "13100": {
   "zh": "行政官员",
   "ko": "행정관",
-  "zhShort": "行政官员"
+  "zhShort": "行政官员",
+  "koShort": "행정관",
+  "enShort": "Administrative officers"
  },
  "13101": {
   "zh": "物业管理员",
   "ko": "부동산 관리자",
-  "zhShort": "物业管理员"
+  "zhShort": "物业管理员",
+  "koShort": "부동산 관리자",
+  "enShort": "Property administrators"
  },
  "13102": {
   "zh": "薪资管理员",
   "ko": "급여 행정 담당자",
-  "zhShort": "薪资管理员"
+  "zhShort": "薪资管理员",
+  "koShort": "급여 행정 담당자",
+  "enShort": "Payroll administrators"
  },
  "13110": {
   "zh": "行政助理",
   "ko": "행정 보조원",
-  "zhShort": "行政助理"
+  "zhShort": "行政助理",
+  "koShort": "행정 보조원",
+  "enShort": "Administrative assistants"
  },
  "13111": {
   "zh": "法律行政助理",
   "ko": "법정 행정 보조원",
-  "zhShort": "法律行政助理"
+  "zhShort": "法律行政助理",
+  "koShort": "법정 행정 보조원",
+  "enShort": "Legal admin assistants"
  },
  "13112": {
   "zh": "医疗行政助理",
   "ko": "의료 행정 보조원",
-  "zhShort": "医疗行政助理"
+  "zhShort": "医疗行政助理",
+  "koShort": "의료 행정 보조원",
+  "enShort": "Medical admin assistants"
  },
  "13200": {
   "zh": "海关船舶及其他经纪人",
   "ko": "관세·선박 및 기타 중개인",
-  "zhShort": "报关员"
+  "zhShort": "报关员",
+  "koShort": "중개인",
+  "enShort": "Customs, ship and other brokers"
  },
  "13201": {
   "zh": "生产和运输物流协调员",
   "ko": "생산 및 운송 물류 조정자",
-  "zhShort": "物流协调员"
+  "zhShort": "物流协调员",
+  "koShort": "물류 조정자"
  },
  "14100": {
   "zh": "一般办公室支持人员",
   "ko": "일반 사무 보조 직원",
-  "zhShort": "办公室文员"
+  "zhShort": "办公室文员",
+  "koShort": "일반 사무 보조 직원",
+  "enShort": "General office support"
  },
  "14101": {
   "zh": "接待员",
   "ko": "응접원",
-  "zhShort": "接待员"
+  "zhShort": "接待员",
+  "koShort": "응접원",
+  "enShort": "Receptionists"
  },
  "14102": {
   "zh": "人事文员",
   "ko": "인사 서기",
-  "zhShort": "人事文员"
+  "zhShort": "人事文员",
+  "koShort": "인사 서기",
+  "enShort": "Personnel clerks"
  },
  "14103": {
   "zh": "法院书记员及相关法院服务职业",
   "ko": "법원 서기 및 관련 법원 서비스 직업",
-  "zhShort": "法院书记员"
+  "zhShort": "法院书记员",
+  "koShort": "법원 서기",
+  "enShort": "Court clerks"
  },
  "14111": {
   "zh": "数据录入员",
   "ko": "데이터 입력 직원",
-  "zhShort": "数据录入员"
+  "zhShort": "数据录入员",
+  "koShort": "데이터 입력 직원",
+  "enShort": "Data entry clerks"
  },
  "14112": {
   "zh": "桌面排版操作员及相关职业",
   "ko": "데스크톱 출판 운영자 및 관련 직업",
-  "zhShort": "桌面排版员"
+  "zhShort": "桌面排版员",
+  "koShort": "출판 운영자",
+  "enShort": "Desktop publishing operators"
  },
  "14200": {
   "zh": "会计及相关文员",
   "ko": "회계 및 관련 사무원",
-  "zhShort": "会计及相关文员"
+  "zhShort": "会计及相关文员",
+  "koShort": "회계 및 관련 사무원",
+  "enShort": "Accounting clerks"
  },
  "14201": {
   "zh": "银行保险及其他金融文员",
   "ko": "은행 보험 기타 금융 직원",
-  "zhShort": "金融文员"
+  "zhShort": "金融文员",
+  "koShort": "금융 직원",
+  "enShort": "Banking insurance clerks"
  },
  "14202": {
   "zh": "收款员",
   "ko": "수금 직원",
-  "zhShort": "收款员"
+  "zhShort": "收款员",
+  "koShort": "수금 직원",
+  "enShort": "Collection clerks"
  },
  "14300": {
   "zh": "图书馆助理和文员",
   "ko": "사서 보조원 및 서기",
-  "zhShort": "图书馆助理"
+  "zhShort": "图书馆助理",
+  "koShort": "사서 보조원 및 서기",
+  "enShort": "Library assistants"
  },
  "14301": {
   "zh": "通信出版及监管文员",
-  "ko": "편지 출판 규제 서기"
+  "ko": "편지 출판 규제 서기",
+  "koShort": "편지 출판 규제 서기",
+  "enShort": "Correspondence clerks"
  },
  "14400": {
   "zh": "发货员和收货员",
   "ko": "선적 및 수령 담당자",
-  "zhShort": "发货员和收货员"
+  "zhShort": "发货员和收货员",
+  "koShort": "선적 및 수령 담당자",
+  "enShort": "Shippers and receivers"
  },
  "14401": {
   "zh": "仓库管理员和零件员",
   "ko": "창고관리자 및 부품담당자",
-  "zhShort": "仓库管理员"
+  "zhShort": "仓库管理员",
+  "koShort": "창고관리자",
+  "enShort": "Storekeepers"
  },
  "14402": {
   "zh": "生产物流工人",
   "ko": "생산 물류 작업원",
-  "zhShort": "生产物流工人"
+  "zhShort": "生产物流工人",
+  "koShort": "생산 물류 작업원",
+  "enShort": "Production logistics workers"
  },
  "14403": {
   "zh": "采购与库存控制员",
   "ko": "구매 및 재고 관리 직원",
-  "zhShort": "采购文员"
+  "zhShort": "采购文员",
+  "koShort": "구매재고관리직",
+  "enShort": "Purchasing and inventory control"
  },
  "14404": {
   "zh": "调度员",
   "ko": "배차원",
-  "zhShort": "调度员"
+  "zhShort": "调度员",
+  "koShort": "배차원",
+  "enShort": "Dispatchers"
  },
  "14405": {
   "zh": "运输路线和机组排班员",
   "ko": "교통 노선 및 승무원 스케줄러",
-  "zhShort": "运输调度员"
+  "zhShort": "运输调度员",
+  "koShort": "교통 스케줄러",
+  "enShort": "Transportation route schedulers"
  },
  "20010": {
   "zh": "工程经理",
   "ko": "엔지니어링 관리자",
-  "zhShort": "工程经理"
+  "zhShort": "工程经理",
+  "koShort": "엔지니어링 관리자",
+  "enShort": "Engineering managers"
  },
  "20011": {
   "zh": "建筑与科学经理",
   "ko": "건축 및 과학 관리자",
-  "zhShort": "建筑与科学经理"
+  "zhShort": "建筑与科学经理",
+  "koShort": "건축 및 과학 관리자"
  },
  "20012": {
   "zh": "计算机和信息系统经理",
-  "ko": "컴퓨터 및 정보 시스템 관리자"
+  "ko": "컴퓨터 및 정보 시스템 관리자",
+  "koShort": "IT 관리자"
  },
  "21100": {
   "zh": "物理学家和天文学家",
   "ko": "물리학과 천문학자",
-  "zhShort": "物理学家"
+  "zhShort": "物理学家",
+  "koShort": "물리학과 천문학자",
+  "enShort": "Physicists"
  },
  "21101": {
   "zh": "化学师",
   "ko": "화학자",
-  "zhShort": "化学师"
+  "zhShort": "化学师",
+  "koShort": "화학자",
+  "enShort": "Chemists"
  },
  "21102": {
   "zh": "地质学家和海洋学家",
   "ko": "지질학자 및 해양학자",
-  "zhShort": "地质学家"
+  "zhShort": "地质学家",
+  "koShort": "지질학자 및 해양학자",
+  "enShort": "Geoscientists"
  },
  "21110": {
   "zh": "生物学家及相关科学家",
   "ko": "생물학자 및 관련 과학자",
-  "zhShort": "生物学家"
+  "zhShort": "生物学家",
+  "koShort": "생물학자",
+  "enShort": "Biologists"
  },
  "21111": {
   "zh": "林业专业人员",
   "ko": "임업 전문가",
-  "zhShort": "林业专业人员"
+  "zhShort": "林业专业人员",
+  "koShort": "임업 전문가",
+  "enShort": "Forestry professionals"
  },
  "21112": {
   "zh": "农业代表顾问和专家",
   "ko": "농업 대표자, 컨설턴트 및 전문가",
-  "zhShort": "农业顾问"
+  "zhShort": "农业顾问",
+  "koShort": "농업 전문가",
+  "enShort": "Agricultural representatives"
  },
  "21120": {
   "zh": "公共卫生与环境安全专业人员",
-  "ko": "공중 및 환경 보건 안전 전문가"
+  "ko": "공중 및 환경 보건 안전 전문가",
+  "koShort": "보건안전전문가",
+  "enShort": "Public and environmental health"
  },
  "21200": {
   "zh": "建筑师",
   "ko": "건축가",
-  "zhShort": "建筑师"
+  "zhShort": "建筑师",
+  "koShort": "건축가",
+  "enShort": "Architects"
  },
  "21201": {
   "zh": "景观建筑师",
   "ko": "조경 건축가",
-  "zhShort": "景观建筑师"
+  "zhShort": "景观建筑师",
+  "koShort": "조경 건축가",
+  "enShort": "Landscape architects"
  },
  "21202": {
   "zh": "城市和土地利用规划师",
   "ko": "도시 및 토지 이용 계획 전문가",
-  "zhShort": "城市规划师"
+  "zhShort": "城市规划师",
+  "koShort": "도시계획가",
+  "enShort": "Urban land use planners"
  },
  "21203": {
   "zh": "土地测量师",
   "ko": "측량사",
-  "zhShort": "土地测量师"
+  "zhShort": "土地测量师",
+  "koShort": "측량사",
+  "enShort": "Land surveyors"
  },
  "21210": {
   "zh": "数学家、统计师和精算师",
   "ko": "수학자 통계학자 및 보험계리학자",
-  "zhShort": "数学家"
+  "zhShort": "数学家",
+  "koShort": "수학자",
+  "enShort": "Mathematicians"
  },
  "21211": {
   "zh": "数据科学家",
   "ko": "데이터 과학자",
-  "zhShort": "数据科学家"
+  "zhShort": "数据科学家",
+  "koShort": "데이터 과학자",
+  "enShort": "Data scientists"
  },
  "21220": {
   "zh": "网络安全专家",
   "ko": "사이버 보안 전문가",
-  "zhShort": "网络安全专家"
+  "zhShort": "网络安全专家",
+  "koShort": "사이버 보안 전문가",
+  "enShort": "Cybersecurity specialists"
  },
  "21221": {
   "zh": "商业系统专家",
   "ko": "비즈니스 시스템 전문가",
-  "zhShort": "商业系统专家"
+  "zhShort": "商业系统专家",
+  "koShort": "비즈니스 시스템 전문가",
+  "enShort": "Business systems specialists"
  },
  "21222": {
   "zh": "信息系统专家",
   "ko": "정보 시스템 전문가",
-  "zhShort": "信息系统专家"
+  "zhShort": "信息系统专家",
+  "koShort": "정보 시스템 전문가",
+  "enShort": "Information systems specialists"
  },
  "21223": {
   "zh": "数据库分析师和数据管理员",
   "ko": "데이터 분석가 및 데이터 관리자",
-  "zhShort": "数据库分析师"
+  "zhShort": "数据库分析师",
+  "koShort": "데이터 분석가",
+  "enShort": "Database analysts"
  },
  "21230": {
   "zh": "计算机系统开发人员和程序员",
   "ko": "컴퓨터 시스템 개발자 및 프로그래머",
-  "zhShort": "计算机程序员"
+  "zhShort": "计算机程序员",
+  "koShort": "컴퓨터 시스템 개발자",
+  "enShort": "Computer systems developers"
  },
  "21231": {
   "zh": "软件工程师和设计师",
   "ko": "소프트웨어 엔지니어 및 디자이너",
-  "zhShort": "软件工程师"
+  "zhShort": "软件工程师",
+  "koShort": "소프트웨어 엔지니어",
+  "enShort": "Software engineers"
  },
  "21232": {
   "zh": "软件开发员和程序员",
   "ko": "소프트웨어 개발자 및 프로그래머",
-  "zhShort": "软件开发者"
+  "zhShort": "软件开发者",
+  "koShort": "소프트웨어 개발자",
+  "enShort": "Software developers"
  },
  "21233": {
   "zh": "网页设计师",
   "ko": "웹 디자이너",
-  "zhShort": "网页设计师"
+  "zhShort": "网页设计师",
+  "koShort": "웹 디자이너",
+  "enShort": "Web designers"
  },
  "21234": {
   "zh": "网页开发人员和程序员",
   "ko": "웹 개발자 및 프로그래머",
-  "zhShort": "网页开发人员"
+  "zhShort": "网页开发人员",
+  "koShort": "웹 개발자",
+  "enShort": "Web developers"
  },
  "21300": {
   "zh": "土木工程师",
   "ko": "토목공학자",
-  "zhShort": "土木工程师"
+  "zhShort": "土木工程师",
+  "koShort": "토목공학자",
+  "enShort": "Civil engineers"
  },
  "21301": {
   "zh": "机械工程师",
   "ko": "기계공학자",
-  "zhShort": "机械工程师"
+  "zhShort": "机械工程师",
+  "koShort": "기계공학자",
+  "enShort": "Mechanical engineers"
  },
  "21310": {
   "zh": "电气和电子工程师",
   "ko": "전기 및 전자 공학자",
-  "zhShort": "电气工程师"
+  "zhShort": "电气工程师",
+  "koShort": "전기 및 전자 공학자",
+  "enShort": "Electronics engineers"
  },
  "21311": {
   "zh": "计算机工程师（不含软件工程师和设计师）",
   "ko": "컴퓨터 엔지니어(소프트웨어 엔지니어 및 디자이너 제외)",
-  "zhShort": "计算机工程师"
+  "zhShort": "计算机工程师",
+  "koShort": "컴퓨터 엔지니어",
+  "enShort": "Computer engineers"
  },
  "21320": {
   "zh": "化学工程师",
   "ko": "화학 엔지니어",
-  "zhShort": "化学工程师"
+  "zhShort": "化学工程师",
+  "koShort": "화학 엔지니어",
+  "enShort": "Chemical engineers"
  },
  "21321": {
   "zh": "工业和制造工程师",
   "ko": "산업 및 제조 엔지니어",
-  "zhShort": "工业制造工程师"
+  "zhShort": "工业制造工程师",
+  "koShort": "산업 및 제조 엔지니어",
+  "enShort": "Industrial engineers"
  },
  "21330": {
   "zh": "采矿工程师",
   "ko": "광산 엔지니어",
-  "zhShort": "采矿工程师"
+  "zhShort": "采矿工程师",
+  "koShort": "광산 엔지니어",
+  "enShort": "Mining engineers"
  },
  "21331": {
   "zh": "地质工程师",
   "ko": "지질공학자",
-  "zhShort": "地质工程师"
+  "zhShort": "地质工程师",
+  "koShort": "지질공학자",
+  "enShort": "Geological engineers"
  },
  "21332": {
   "zh": "石油工程师",
   "ko": "석유 엔지니어",
-  "zhShort": "石油工程师"
+  "zhShort": "石油工程师",
+  "koShort": "석유 엔지니어",
+  "enShort": "Petroleum engineers"
  },
  "21390": {
   "zh": "航空航天工程师",
   "ko": "항공우주 엔지니어",
-  "zhShort": "航空航天工程师"
+  "zhShort": "航空航天工程师",
+  "koShort": "항공우주 엔지니어",
+  "enShort": "Aerospace engineers"
  },
  "21399": {
   "zh": "其他专业工程师",
   "ko": "기타 전문 엔지니어",
-  "zhShort": "其他专业工程师"
+  "zhShort": "其他专业工程师",
+  "koShort": "기타 전문 엔지니어",
+  "enShort": "Other prof engineers"
  },
  "22100": {
   "zh": "化学技术员",
   "ko": "화학 기술자 및 보조원",
-  "zhShort": "化学技术员"
+  "zhShort": "化学技术员",
+  "koShort": "화학 기술자 및 보조원",
+  "enShort": "Chemical technologists"
  },
  "22101": {
   "zh": "地质与矿物技术员",
   "ko": "지질 및 광물 기술자",
-  "zhShort": "地质矿物技术员"
+  "zhShort": "地质矿物技术员",
+  "koShort": "지질 및 광물 기술자",
+  "enShort": "Geological technologists"
  },
  "22110": {
   "zh": "生物技术员和技术员",
   "ko": "생명공학 기술자 및 보조원",
-  "zhShort": "生物技术员"
+  "zhShort": "生物技术员",
+  "koShort": "생명공학 기술자",
+  "enShort": "Biological technologists"
  },
  "22111": {
   "zh": "农牧渔产品检验员",
-  "ko": "농수산품 검사관"
+  "ko": "농수산품 검사관",
+  "koShort": "농수산품 검사관"
  },
  "22112": {
   "zh": "林业技术员",
   "ko": "산림 기술자 및 보조원",
-  "zhShort": "林业技术员"
+  "zhShort": "林业技术员",
+  "koShort": "산림 기술자 및 보조원",
+  "enShort": "Forestry technologists"
  },
  "22113": {
   "zh": "保育及渔业督察",
   "ko": "보전 및 어업 담당관",
-  "zhShort": "保育及渔业督察"
+  "zhShort": "保育及渔业督察",
+  "koShort": "보전 및 어업 담당관"
  },
  "22114": {
   "zh": "景观和园艺技术员及专家",
   "ko": "조경 및 원예 기술자 및 전문가",
-  "zhShort": "景观园艺技师"
+  "zhShort": "景观园艺技师",
+  "koShort": "조경 기술자"
  },
  "22210": {
   "zh": "建筑技术员和技术员",
   "ko": "건축 기술자 및 보조원",
-  "zhShort": "建筑技术员"
+  "zhShort": "建筑技术员",
+  "koShort": "건축 기술자 및 보조원",
+  "enShort": "Architectural technologists"
  },
  "22211": {
   "zh": "工业设计师",
   "ko": "산업 디자이너",
-  "zhShort": "工业设计师"
+  "zhShort": "工业设计师",
+  "koShort": "산업 디자이너",
+  "enShort": "Industrial designers"
  },
  "22212": {
   "zh": "制图技术员和技术员",
   "ko": "도면 기술자 및 기술사",
-  "zhShort": "制图技术员"
+  "zhShort": "制图技术员",
+  "koShort": "도면 기술자 및 기술사",
+  "enShort": "Drafting technologists"
  },
  "22213": {
   "zh": "土地测量技术员",
   "ko": "측량 기술자 및 보조원",
-  "zhShort": "土地测量技术员"
+  "zhShort": "土地测量技术员",
+  "koShort": "측량 기술자 및 보조원",
+  "enShort": "Land survey technologists"
  },
  "22214": {
   "zh": "大地测量学和气象学技术职业",
@@ -544,549 +747,755 @@
  "22220": {
   "zh": "计算机网络和网站技术员",
   "ko": "컴퓨터 네트워크 및 웹 기술자",
-  "zhShort": "网管"
+  "zhShort": "网管",
+  "koShort": "네트워크 기술자",
+  "enShort": "Computer network and web techs"
  },
  "22221": {
   "zh": "用户支持技术员",
   "ko": "사용자 지원 기술자",
-  "zhShort": "用户支持技术员"
+  "zhShort": "用户支持技术员",
+  "koShort": "사용자 지원 기술자",
+  "enShort": "User support technicians"
  },
  "22222": {
   "zh": "信息系统测试技术员",
   "ko": "정보 시스템 테스트 기술자",
-  "zhShort": "软件测试员"
+  "zhShort": "软件测试员",
+  "koShort": "시스템 테스터",
+  "enShort": "Info systems test techs"
  },
  "22230": {
   "zh": "无损检测员和检验员",
   "ko": "비파괴 검사원 및 검사관",
-  "zhShort": "无损检测员"
+  "zhShort": "无损检测员",
+  "koShort": "비파괴 검사원",
+  "enShort": "Non-destructive testers"
  },
  "22231": {
   "zh": "工程检查员和监管官员",
   "ko": "엔지니어링 검사관 및 규제 담당자",
-  "zhShort": "工程检查员"
+  "zhShort": "工程检查员",
+  "koShort": "엔지니어링 검사관",
+  "enShort": "Engineering inspectors"
  },
  "22232": {
   "zh": "职业健康与安全专家",
-  "ko": "직업 건강 및 안전 전문가"
+  "ko": "직업 건강 및 안전 전문가",
+  "koShort": "직업건강안전전문가"
  },
  "22233": {
   "zh": "建筑检查员",
   "ko": "건설 검사관",
-  "zhShort": "建筑检查员"
+  "zhShort": "建筑检查员",
+  "koShort": "건설 검사관",
+  "enShort": "Construction inspectors"
  },
  "22300": {
   "zh": "土木工程技术员和技术员",
   "ko": "토목공학 기술자 및 기술사",
-  "zhShort": "土木技术员"
+  "zhShort": "土木技术员",
+  "koShort": "토목공학기술자",
+  "enShort": "Civil engineering technologists"
  },
  "22301": {
   "zh": "机械工程技术员和技术员",
   "ko": "기계공학 기술자 및 기술사",
-  "zhShort": "机械技术员"
+  "zhShort": "机械技术员",
+  "koShort": "기계공학 기술자"
  },
  "22302": {
   "zh": "工业工程与制造技术员",
   "ko": "산업공학 및 제조 기술자",
-  "zhShort": "工业工程师"
+  "zhShort": "工业工程师",
+  "koShort": "산업공학기술자",
+  "enShort": "Industrial eng techs"
  },
  "22303": {
   "zh": "建筑估价员",
   "ko": "건설 견적사",
-  "zhShort": "建筑估价员"
+  "zhShort": "建筑估价员",
+  "koShort": "건설 견적사",
+  "enShort": "Construction estimators"
  },
  "22310": {
   "zh": "电气和电子工程技术人员",
   "ko": "전기전자 공학 기술자 및 기술사",
-  "zhShort": "电气电子工程师"
+  "zhShort": "电气电子工程师",
+  "koShort": "전기전자공학기술자",
+  "enShort": "Electronics eng techs"
  },
  "22311": {
   "zh": "电子服务技术员（家用及商用设备）",
   "ko": "전자 서비스 기술자 (가정용 및 업무용 장비)",
-  "zhShort": "家电维修技师"
+  "zhShort": "家电维修技师",
+  "koShort": "가전수리공",
+  "enShort": "Electronic service techs"
  },
  "22312": {
   "zh": "工业仪器技术员和机械师",
   "ko": "산업용 계측기 기술자 및 정비공",
-  "zhShort": "工业仪器技师"
+  "zhShort": "工业仪器技师",
+  "koShort": "계측기 기술자"
  },
  "22313": {
   "zh": "航空仪表电气和航电机械师技术员和检验员",
   "ko": "항공기 계기 전기 및 항공전자 기계공 기술자 검사관",
-  "zhShort": "航空仪表技师"
+  "zhShort": "航空仪表技师",
+  "koShort": "항공전자정비사"
  },
  "30010": {
   "zh": "医疗保健业经理",
   "ko": "의료 관리 관리자",
-  "zhShort": "医疗保健业经理"
+  "zhShort": "医疗保健业经理",
+  "koShort": "의료 관리 관리자",
+  "enShort": "Managers in health care"
  },
  "31100": {
   "zh": "临床和实验室医学专家",
-  "ko": "임상 및 실험실 의학 전문가"
+  "ko": "임상 및 실험실 의학 전문가",
+  "koShort": "임상의학전문가",
+  "enShort": "Clinical lab specialists"
  },
  "31101": {
   "zh": "外科专科医生",
   "ko": "외과 전문의",
-  "zhShort": "外科专科医生"
+  "zhShort": "外科专科医生",
+  "koShort": "외과 전문의",
+  "enShort": "Specialists in surgery"
  },
  "31102": {
   "zh": "全科医生和家庭医师",
   "ko": "일반 개업의 및 가족 의사",
-  "zhShort": "全科医生"
+  "zhShort": "全科医生",
+  "koShort": "개업의",
+  "enShort": "General practitioners"
  },
  "31103": {
   "zh": "兽医",
   "ko": "수의사",
-  "zhShort": "兽医"
+  "zhShort": "兽医",
+  "koShort": "수의사",
+  "enShort": "Veterinarians"
  },
  "31110": {
   "zh": "牙医",
   "ko": "치과의사",
-  "zhShort": "牙医"
+  "zhShort": "牙医",
+  "koShort": "치과의사",
+  "enShort": "Dentists"
  },
  "31111": {
   "zh": "验光师",
   "ko": "안경사",
-  "zhShort": "验光师"
+  "zhShort": "验光师",
+  "koShort": "검안사",
+  "enShort": "Optometrists"
  },
  "31112": {
   "zh": "语言治疗师和言语病理学家",
   "ko": "청각학자 및 언어치료사",
-  "zhShort": "语言治疗师"
+  "zhShort": "语言治疗师",
+  "koShort": "청각학자 및 언어치료사",
+  "enShort": "Audiologists"
  },
  "31120": {
   "zh": "药剂师",
   "ko": "약사",
-  "zhShort": "药剂师"
+  "zhShort": "药剂师",
+  "koShort": "약사",
+  "enShort": "Pharmacists"
  },
  "31121": {
   "zh": "营养师和营养学家",
   "ko": "영양사 및 영양학자",
-  "zhShort": "营养师"
+  "zhShort": "营养师",
+  "koShort": "영양사 및 영양학자",
+  "enShort": "Dietitians"
  },
  "31200": {
   "zh": "心理学家",
   "ko": "심리학자",
-  "zhShort": "心理学家"
+  "zhShort": "心理学家",
+  "koShort": "심리학자",
+  "enShort": "Psychologists"
  },
  "31201": {
   "zh": "脊骨神经医师",
   "ko": "추나치료사",
-  "zhShort": "脊骨神经医师"
+  "zhShort": "脊骨神经医师",
+  "koShort": "추나치료사",
+  "enShort": "Chiropractors"
  },
  "31202": {
   "zh": "物理治疗师",
   "ko": "물리치료사",
-  "zhShort": "物理治疗师"
+  "zhShort": "物理治疗师",
+  "koShort": "물리치료사",
+  "enShort": "Physiotherapists"
  },
  "31203": {
   "zh": "职业治疗师",
   "ko": "작업치료사",
-  "zhShort": "职业治疗师"
+  "zhShort": "职业治疗师",
+  "koShort": "작업치료사",
+  "enShort": "Occupational therapists"
  },
  "31204": {
   "zh": "运动生理学家及其他治疗与评估专业职业",
   "ko": "운동치료사 및 기타 치료·평가 전문직",
-  "zhShort": "运动生理学家"
+  "zhShort": "运动生理学家",
+  "koShort": "운동치료사",
+  "enShort": "Kinesiologists"
  },
  "31209": {
   "zh": "其他健康诊断和治疗专业职业",
-  "ko": "건강 진단 및 치료의 기타 전문 직업"
+  "ko": "건강 진단 및 치료의 기타 전문 직업",
+  "koShort": "기타 건강진단전문가"
  },
  "31300": {
   "zh": "护理协调员和主管",
   "ko": "간호 조정자 및 감독관",
-  "zhShort": "护理协调员"
+  "zhShort": "护理协调员",
+  "koShort": "간호 조정자 및 감독관",
+  "enShort": "Nursing coordinators"
  },
  "31301": {
   "zh": "注册护士和注册精神科护士",
   "ko": "등록 간호사 및 등록 정신과 간호사",
-  "zhShort": "注册护士"
+  "zhShort": "注册护士",
+  "koShort": "간호사",
+  "enShort": "Registered nurses"
  },
  "31302": {
   "zh": "执业护士",
   "ko": "간호사 실무자",
-  "zhShort": "执业护士"
+  "zhShort": "执业护士",
+  "koShort": "간호사 실무자",
+  "enShort": "Nurse practitioners"
  },
  "31303": {
   "zh": "医师助理、助产士及相关卫生专业人员",
   "ko": "의사 보조원 조산사 및 관련 보건 전문가",
-  "zhShort": "医师助理"
+  "zhShort": "医师助理",
+  "koShort": "의사 보조원",
+  "enShort": "Physician assistants"
  },
  "32100": {
   "zh": "验光师",
   "ko": "안경사",
-  "zhShort": "配镜师"
+  "zhShort": "配镜师",
+  "koShort": "안경사",
+  "enShort": "Opticians"
  },
  "32101": {
   "zh": "注册实用护士",
   "ko": "면허 실무 간호사",
-  "zhShort": "注册实用护士"
+  "zhShort": "注册实用护士",
+  "koShort": "면허 실무 간호사",
+  "enShort": "Licensed practical nurses"
  },
  "32102": {
   "zh": "辅助医疗职业",
   "ko": "간호 보조 직업",
-  "zhShort": "辅助医疗职业"
+  "zhShort": "辅助医疗职业",
+  "koShort": "간호 보조 직업",
+  "enShort": "Paramedical occupations"
  },
  "32103": {
   "zh": "呼吸治疗师、临床灌注技师和心肺技术员",
   "ko": "호흡 치료사 임상 관류 기술자 및 심폐 기술자",
-  "zhShort": "呼吸治疗师"
+  "zhShort": "呼吸治疗师",
+  "koShort": "호흡치료사",
+  "enShort": "Respiratory therapists"
  },
  "32104": {
   "zh": "动物健康技术员和兽医技术员",
   "ko": "동물 건강 기술자 및 수의학 기술자",
-  "zhShort": "兽医技术员"
+  "zhShort": "兽医技术员",
+  "koShort": "수의학기술자",
+  "enShort": "Animal health technologists"
  },
  "32109": {
   "zh": "治疗与评估领域的其他技术职业",
   "ko": "치료 및 평가 분야의 기타 기술직",
-  "zhShort": "治疗评估技术员"
+  "zhShort": "治疗评估技术员",
+  "koShort": "기타 치료 평가 기술직",
+  "enShort": "Other tech occs therapy"
  },
  "32110": {
   "zh": "假牙师",
   "ko": "치과기공사",
-  "zhShort": "假牙师"
+  "zhShort": "假牙师",
+  "koShort": "치과기공사",
+  "enShort": "Denturists"
  },
  "32111": {
   "zh": "牙科卫生员和牙科治疗师",
   "ko": "치위생사 및 치과 치료사",
-  "zhShort": "牙科卫生员"
+  "zhShort": "牙科卫生员",
+  "koShort": "치위생사",
+  "enShort": "Dental hygienists"
  },
  "32112": {
   "zh": "牙科技术员",
   "ko": "치기공사와 치과기술사",
-  "zhShort": "牙科技术员"
+  "zhShort": "牙科技术员",
+  "koShort": "치기공사와 치과기술사",
+  "enShort": "Dental technologists"
  },
  "32120": {
   "zh": "医学实验室技术员",
   "ko": "의료실험실기술사",
-  "zhShort": "医学检验师"
+  "zhShort": "医学检验师",
+  "koShort": "의료실험실기술사",
+  "enShort": "Medical laboratory technologists"
  },
  "32121": {
   "zh": "医学放射技师",
   "ko": "의료방사선기술사",
-  "zhShort": "医学放射技师"
+  "zhShort": "医学放射技师",
+  "koShort": "의료방사선기술사",
+  "enShort": "Medical radiation techs"
  },
  "32122": {
   "zh": "医学超声技师",
   "ko": "의료 초음파 검사사",
-  "zhShort": "医学超声技师"
+  "zhShort": "医学超声技师",
+  "koShort": "의료 초음파 검사사",
+  "enShort": "Medical sonographers"
  },
  "32123": {
   "zh": "心脏病学技术员和电生理诊断技术员",
   "ko": "심장병 기술자 및 전기생리학적 진단 기술자",
-  "zhShort": "心脏病学技术员"
+  "zhShort": "心脏病学技术员",
+  "koShort": "심장병 기술자",
+  "enShort": "Cardiology technologists"
  },
  "32124": {
   "zh": "药剂技术员",
   "ko": "약사 기술자",
-  "zhShort": "药剂技术员"
+  "zhShort": "药剂技术员",
+  "koShort": "약사 기술자",
+  "enShort": "Pharmacy technicians"
  },
  "32129": {
   "zh": "其他医学技师和技术员",
   "ko": "기타 의료 기술자 및 보조원",
-  "zhShort": "其他医学技师"
+  "zhShort": "其他医学技师",
+  "koShort": "의료기술자",
+  "enShort": "Other med techs"
  },
  "32200": {
   "zh": "中医从业者及针灸师",
   "ko": "중의학 의사 및 침술사",
-  "zhShort": "中医师"
+  "zhShort": "中医师",
+  "koShort": "중의학 의사 및 침술사"
  },
  "32201": {
   "zh": "按摩治疗师",
   "ko": "마사지 치료사",
-  "zhShort": "按摩治疗师"
+  "zhShort": "按摩治疗师",
+  "koShort": "마사지 치료사",
+  "enShort": "Massage therapists"
  },
  "32209": {
   "zh": "其他自然疗法从业者",
   "ko": "기타 자연요법 전문가",
-  "zhShort": "自然疗法从业者"
+  "zhShort": "自然疗法从业者",
+  "koShort": "기타 자연요법 전문가",
+  "enShort": "Other natural healers"
  },
  "33100": {
   "zh": "牙科助理和牙科实验室助理",
   "ko": "치과 보조원 및 치과 기공사",
-  "zhShort": "牙科助理"
+  "zhShort": "牙科助理",
+  "koShort": "치과 보조원",
+  "enShort": "Dental assistants"
  },
  "33101": {
   "zh": "医学实验室助理及相关技术职业",
   "ko": "의료 실험실 보조원 및 관련 기술 직업",
-  "zhShort": "医学实验室助理"
+  "zhShort": "医学实验室助理",
+  "koShort": "의료실험실보조원",
+  "enShort": "Medical lab assistants"
  },
  "33102": {
   "zh": "护士助理、护理员和患者服务专员",
   "ko": "간호 보조원 및 환자 서비스 담당자",
-  "zhShort": "护士助理"
+  "zhShort": "护士助理",
+  "koShort": "간호 보조원",
+  "enShort": "Nurse aides"
  },
  "33103": {
   "zh": "药剂技术员和药剂助理",
   "ko": "약국 기술 보조원 및 약국 보조원",
-  "zhShort": "药剂员"
+  "zhShort": "药剂员",
+  "koShort": "약국 보조원",
+  "enShort": "Pharmacy technical assistants"
  },
  "33109": {
   "zh": "其他健康服务辅助职业",
   "ko": "건강 서비스 지원의 기타 보조 직업",
-  "zhShort": "健康服务辅助工"
+  "zhShort": "健康服务辅助工",
+  "koShort": "건강서비스보조원"
  },
  "40010": {
   "zh": "政府经理 - 健康与社会政策制定及项目行政",
   "ko": "정부 관리자 - 건강 및 사회 정책 개발과 프로그램 관리",
-  "zhShort": "政府经理-民生"
+  "zhShort": "政府经理-民生",
+  "koShort": "보건사회정책관리자",
+  "enShort": "Health gov managers"
  },
  "40011": {
   "zh": "政府经理 - 经济分析、政策制定和项目管理",
   "ko": "정부 관리자 - 경제 분석 정책 개발 및 프로그램 관리",
-  "zhShort": "政府经理-经济"
+  "zhShort": "政府经理-经济",
+  "koShort": "정부 경제정책 관리자"
  },
  "40012": {
   "zh": "政府经理 - 教育政策制定与项目管理",
   "ko": "정부 관리자 - 교육 정책 개발 및 프로그램 관리",
-  "zhShort": "教育政策经理"
+  "zhShort": "教育政策经理",
+  "koShort": "교육 정책 관리자",
+  "enShort": "Govt managers education"
  },
  "40019": {
   "zh": "其他公共行政管理人员",
-  "ko": "기타 공공행정 관리자"
+  "ko": "기타 공공행정 관리자",
+  "koShort": "기타 공공행정 관리자",
+  "enShort": "Other managers in public admin"
  },
  "40020": {
   "zh": "行政人员 - 高等教育和职业培训",
   "ko": "행정 관리자 - 고등 교육 및 직업 훈련",
-  "zhShort": "高校行政人员"
+  "zhShort": "高校行政人员",
+  "koShort": "고등교육 행정관리자"
  },
  "40021": {
   "zh": "小学和中学学校校长及行政管理人员",
   "ko": "초중등 교육 학교 교장 및 행정가",
-  "zhShort": "中小学校长"
+  "zhShort": "中小学校长",
+  "koShort": "학교 교장",
+  "enShort": "School principals"
  },
  "40030": {
   "zh": "社会社区和矫正服务经理",
-  "ko": "사회·지역사회 및 교정 서비스 관리자"
+  "ko": "사회·지역사회 및 교정 서비스 관리자",
+  "koShort": "사회서비스 관리자",
+  "enShort": "Managers in social"
  },
  "40041": {
   "zh": "消防队长和高级消防员",
   "ko": "소방대장 및 고위 소방관",
-  "zhShort": "消防队长"
+  "zhShort": "消防队长",
+  "koShort": "소방대장",
+  "enShort": "Fire chiefs"
  },
  "40042": {
   "zh": "加拿大武装部队委任军官",
   "ko": "캐나다 군의 임관 장교",
-  "zhShort": "军官"
+  "zhShort": "军官",
+  "koShort": "캐나다 군의 임관 장교",
+  "enShort": "Commissioned officers"
  },
  "41100": {
   "zh": "法官",
   "ko": "판사",
-  "zhShort": "法官"
+  "zhShort": "法官",
+  "koShort": "판사",
+  "enShort": "Judges"
  },
  "41101": {
   "zh": "律师和魁北克公证员",
   "ko": "변호사 및 퀘벡 공증인",
-  "zhShort": "律师"
+  "zhShort": "律师",
+  "koShort": "변호사 및 퀘벡 공증인",
+  "enShort": "Lawyers"
  },
  "41200": {
   "zh": "大学教授和讲师",
   "ko": "대학 교수 및 강사",
-  "zhShort": "大学教授和讲师"
+  "zhShort": "大学教授和讲师",
+  "koShort": "대학 교수 및 강사",
+  "enShort": "University professors"
  },
  "41201": {
   "zh": "大专院校教学与研究助理",
   "ko": "대학원 교육 및 연구 보조원",
-  "zhShort": "高校助教"
+  "zhShort": "高校助教",
+  "koShort": "대학원 조교",
+  "enShort": "Post-secondary teaching"
  },
  "41210": {
   "zh": "学院及其他职业教育讲师",
   "ko": "대학 및 기타 직업 교육 강사",
-  "zhShort": "职教讲师"
+  "zhShort": "职教讲师",
+  "koShort": "직업교육강사",
+  "enShort": "Vocational instructors"
  },
  "41220": {
   "zh": "中学教师",
   "ko": "중등학교 교사",
-  "zhShort": "中学教师"
+  "zhShort": "中学教师",
+  "koShort": "중등학교 교사",
+  "enShort": "Secondary school teachers"
  },
  "41221": {
   "zh": "小学和幼儿园教师",
-  "ko": "초등학교 및 유치원 교사"
+  "ko": "초등학교 및 유치원 교사",
+  "koShort": "초등학교 교사",
+  "enShort": "Elementary school teachers"
  },
  "41300": {
   "zh": "社会工作者",
   "ko": "사회복지사",
-  "zhShort": "社会工作者"
+  "zhShort": "社会工作者",
+  "koShort": "사회복지사",
+  "enShort": "Social workers"
  },
  "41301": {
   "zh": "咨询及相关专业治疗师",
   "ko": "상담 및 관련 전문 치료사",
-  "zhShort": "心理咨询师"
+  "zhShort": "心理咨询师",
+  "koShort": "상담 치료사",
+  "enShort": "Counselling therapists"
  },
  "41302": {
   "zh": "宗教领袖",
   "ko": "종교 지도자",
-  "zhShort": "宗教领袖"
+  "zhShort": "宗教领袖",
+  "koShort": "종교 지도자",
+  "enShort": "Religious leaders"
  },
  "41310": {
   "zh": "警察调查员及其他调查职业",
   "ko": "경찰 조사관 및 기타 수사 직업",
-  "zhShort": "警察调查员"
+  "zhShort": "警察调查员",
+  "koShort": "경찰 조사관",
+  "enShort": "Police investigators"
  },
  "41311": {
   "zh": "缓刑和假释官员",
   "ko": "보호관찰 및 가석방 담당관",
-  "zhShort": "缓刑和假释官员"
+  "zhShort": "缓刑和假释官员",
+  "koShort": "보호관찰관",
+  "enShort": "Probation and parole officers"
  },
  "41320": {
   "zh": "教育顾问",
   "ko": "교육 상담사",
-  "zhShort": "教育顾问"
+  "zhShort": "教育顾问",
+  "koShort": "교육 상담사",
+  "enShort": "Educational counsellors"
  },
  "41321": {
   "zh": "职业发展从业者与职业顾问（非教育领域）",
   "ko": "커리어 개발 전문가 및 커리어 상담사 (교육 분야 제외)",
-  "zhShort": "职业顾问"
+  "zhShort": "职业顾问",
+  "koShort": "커리어 개발 전문가",
+  "enShort": "Career development practitioners"
  },
  "41400": {
   "zh": "自然和应用科学政策研究员、顾问和项目官员",
   "ko": "자연 및 응용 과학 정책 연구원, 컨설턴트 및 프로그램 책임자",
-  "zhShort": "科研政策顾问"
+  "zhShort": "科研政策顾问",
+  "koShort": "정책 연구원"
  },
  "41401": {
   "zh": "经济学家和经济政策研究人员及分析师",
   "ko": "경제학자 및 경제 정책 연구원·분석가",
-  "zhShort": "经济师"
+  "zhShort": "经济师",
+  "koShort": "경제학자",
+  "enShort": "Economists"
  },
  "41402": {
   "zh": "业务发展专员及市场研究员和分析员",
   "ko": "비즈니스 개발 책임자 및 시장 연구원 분석가",
-  "zhShort": "业务开发专员"
+  "zhShort": "业务开发专员",
+  "koShort": "비즈니스 개발 책임자",
+  "enShort": "Business development officers"
  },
  "41403": {
   "zh": "社会政策研究员、顾问和项目官员",
   "ko": "사회정책 연구자 컨설턴트 및 프로그램 책임자",
-  "zhShort": "社会政策研究员"
+  "zhShort": "社会政策研究员",
+  "koShort": "사회정책 연구자",
+  "enShort": "Social policy researchers"
  },
  "41404": {
   "zh": "健康政策研究员、顾问和项目官员",
   "ko": "보건 정책 연구자, 컨설턴트 및 프로그램 책임자",
-  "zhShort": "健康政策研究员"
+  "zhShort": "健康政策研究员",
+  "koShort": "보건정책연구자",
+  "enShort": "Health policy researchers"
  },
  "41405": {
   "zh": "教育政策研究员、顾问和项目官员",
   "ko": "교육 정책 연구자, 컨설턴트 및 프로그램 책임자",
-  "zhShort": "教育政策研究员"
+  "zhShort": "教育政策研究员",
+  "koShort": "교육정책연구원",
+  "enShort": "Education policy researchers"
  },
  "41406": {
   "zh": "休闲体育与健身政策研究员顾问及项目官员",
-  "ko": "레크리에이션 스포츠 피트니스 정책 연구자 컨설턴트 프로그램 책임자"
+  "ko": "레크리에이션 스포츠 피트니스 정책 연구자 컨설턴트 프로그램 책임자",
+  "koShort": "스포츠 정책 전문가"
  },
  "41407": {
   "zh": "政府专属项目官员",
   "ko": "정부 고유 프로그램 담당관",
-  "zhShort": "政府项目官员"
+  "zhShort": "政府项目官员",
+  "koShort": "정부 프로그램 담당관",
+  "enShort": "Program officers"
  },
  "41409": {
   "zh": "社会科学其他专业职业",
   "ko": "사회과학의 기타 전문 직업",
-  "zhShort": "社科专业职业"
+  "zhShort": "社科专业职业",
+  "koShort": "사회과학 전문가",
+  "enShort": "Other prof soc sci occs"
  },
  "42100": {
   "zh": "警察（非委任）",
   "ko": "경찰관 (임명된 제외)",
-  "zhShort": "警察（非委任）"
+  "zhShort": "警察（非委任）",
+  "koShort": "경찰관 (임명된 제외)",
+  "enShort": "Police officers"
  },
  "42101": {
   "zh": "消防员",
   "ko": "소방관",
-  "zhShort": "消防员"
+  "zhShort": "消防员",
+  "koShort": "소방관",
+  "enShort": "Firefighters"
  },
  "42102": {
   "zh": "加拿大武装部队专业人员",
   "ko": "캐나다 군 특수부대원",
-  "zhShort": "军队专业人员"
+  "zhShort": "军队专业人员",
+  "koShort": "캐나다 군 특수부대원"
  },
  "42200": {
   "zh": "律师助理及相关职业",
   "ko": "변호사 보조 및 관련 직업",
-  "zhShort": "律师助理"
+  "zhShort": "律师助理",
+  "koShort": "변호사 보조",
+  "enShort": "Paralegals"
  },
  "42201": {
   "zh": "社会和社区服务工作者",
   "ko": "사회 및 지역사회 서비스 직원",
-  "zhShort": "社工"
+  "zhShort": "社工",
+  "koShort": "지역사회복지원"
  },
  "42202": {
   "zh": "幼儿教育工作者及助理",
   "ko": "유아 교육자 및 보조교사",
-  "zhShort": "幼教工作者"
+  "zhShort": "幼教工作者",
+  "koShort": "유아교육자",
+  "enShort": "Early childhood educators"
  },
  "42203": {
   "zh": "残障人士指导员",
   "ko": "장애인 강사",
-  "zhShort": "残障人士指导员"
+  "zhShort": "残障人士指导员",
+  "koShort": "장애인 강사"
  },
  "43100": {
   "zh": "中小学教师助理",
   "ko": "초중등학교 교사 보조원",
-  "zhShort": "中小学教师助理"
+  "zhShort": "中小学教师助理",
+  "koShort": "초중등학교 교사 보조원"
  },
  "43109": {
   "zh": "其他讲师",
   "ko": "기타 강사",
-  "zhShort": "其他讲师"
+  "zhShort": "其他讲师",
+  "koShort": "기타 강사",
+  "enShort": "Other instructors"
  },
  "43200": {
   "zh": "警长和法警",
   "ko": "법집행관 및 구류소장",
-  "zhShort": "警长和法警"
+  "zhShort": "警长和法警",
+  "koShort": "법집행관 및 구류소장",
+  "enShort": "Sheriffs and bailiffs"
  },
  "43201": {
   "zh": "矫正服务官员",
   "ko": "교정 서비스 직원",
-  "zhShort": "矫正服务官员"
+  "zhShort": "矫正服务官员",
+  "koShort": "교정 서비스 직원",
+  "enShort": "Correctional service officers"
  },
  "43202": {
   "zh": "法规执法及其他监管官员",
   "ko": "법규 집행 및 기타 규제 담당관",
-  "zhShort": "法规执法人员"
+  "zhShort": "法规执法人员",
+  "koShort": "법규집행담당관",
+  "enShort": "By-law enforcement officers"
  },
  "43204": {
   "zh": "加拿大武装部队作战成员",
   "ko": "캐나다 군 작전 요원",
-  "zhShort": "军人"
+  "zhShort": "军人",
+  "koShort": "캐나다 군 작전 요원",
+  "enShort": "Operations members"
  },
  "44100": {
   "zh": "家庭儿童保育提供者",
   "ko": "가정 아동 돌봄 제공자",
-  "zhShort": "家庭儿童保育员"
+  "zhShort": "家庭儿童保育员",
+  "koShort": "가정 아동 돌봄 제공자",
+  "enShort": "Home child care"
  },
  "44101": {
   "zh": "家庭支持工作者、护理员及相关职业",
   "ko": "가정 지원 근로자, 돌봄 제공자 및 관련 직업",
-  "zhShort": "家庭护理员"
+  "zhShort": "家庭护理员",
+  "koShort": "가정 지원 근로자",
+  "enShort": "Home support workers"
  },
  "44200": {
   "zh": "加拿大武装部队主要作战成员",
   "ko": "캐나다 군대 주요 전투원",
-  "zhShort": "作战人员"
+  "zhShort": "作战人员",
+  "koShort": "군대 주요 전투원",
+  "enShort": "Primary combat members"
  },
  "45100": {
   "zh": "学生监督员、交通协管员及相关职业",
   "ko": "학생 감시원, 횡단보도 보호대 및 관련 직업",
-  "zhShort": "学生监督员"
+  "zhShort": "学生监督员",
+  "koShort": "학생 감시원",
+  "enShort": "Student monitors"
  },
  "50010": {
   "zh": "图书馆档案馆博物馆美术馆经理",
   "ko": "도서관 아카이브 박물관 미술관 관리자",
-  "zhShort": "图书馆馆长"
+  "zhShort": "图书馆馆长",
+  "koShort": "도서관 관리자",
+  "enShort": "Library managers"
  },
  "50011": {
   "zh": "出版、电影、广播和表演艺术经理",
-  "ko": "출판·영화·방송 및 공연 예술 관리자"
+  "ko": "출판·영화·방송 및 공연 예술 관리자",
+  "enShort": "Managers - publishing"
  },
  "50012": {
   "zh": "休闲体育和健身项目与服务总监",
   "ko": "레크리에이션 스포츠 피트니스 프로그램 및 서비스 감독자",
-  "zhShort": "休闲体育总监"
+  "zhShort": "休闲体育总监",
+  "koShort": "스포츠 프로그램 감독자",
+  "enShort": "Recreation directors"
  },
  "51100": {
   "zh": "图书管理员",
   "ko": "사서",
-  "zhShort": "图书管理员"
+  "zhShort": "图书管理员",
+  "koShort": "사서",
+  "enShort": "Librarians"
  },
  "51101": {
   "zh": "文物修复师和策展人",
@@ -1096,132 +1505,182 @@
  "51102": {
   "zh": "档案员",
   "ko": "기록관리사",
-  "zhShort": "档案员"
+  "zhShort": "档案员",
+  "koShort": "기록관리사",
+  "enShort": "Archivists"
  },
  "51110": {
   "zh": "编辑",
   "ko": "편집자",
-  "zhShort": "编辑"
+  "zhShort": "编辑",
+  "koShort": "편집자",
+  "enShort": "Editors"
  },
  "51111": {
   "zh": "作家和撰稿人（非技术类）",
   "ko": "저자와 작가 (기술서적 제외)",
-  "zhShort": "作家和撰稿人"
+  "zhShort": "作家和撰稿人",
+  "koShort": "작가",
+  "enShort": "Authors and writers"
  },
  "51112": {
   "zh": "技术作家",
   "ko": "기술 작가",
-  "zhShort": "技术作家"
+  "zhShort": "技术作家",
+  "koShort": "기술 작가",
+  "enShort": "Technical writers"
  },
  "51113": {
   "zh": "记者",
   "ko": "기자",
-  "zhShort": "记者"
+  "zhShort": "记者",
+  "koShort": "기자",
+  "enShort": "Journalists"
  },
  "51114": {
   "zh": "翻译员、术语学家和口译员",
   "ko": "번역가, 용어학자 및 통역사",
-  "zhShort": "翻译员"
+  "zhShort": "翻译员",
+  "koShort": "번역가",
+  "enShort": "Translators"
  },
  "51120": {
   "zh": "制作人导演编舞师及相关职业",
   "ko": "제작자, 감독, 안무가 및 관련 직업",
-  "zhShort": "编导制作人员"
+  "zhShort": "编导制作人员",
+  "koShort": "제작자",
+  "enShort": "Producers"
  },
  "51121": {
   "zh": "指挥家、作曲家和编曲家",
   "ko": "지휘자 작곡가 편곡가",
-  "zhShort": "指挥家"
+  "zhShort": "指挥家",
+  "koShort": "지휘자 작곡가 편곡가",
+  "enShort": "Conductors"
  },
  "51122": {
   "zh": "音乐家和歌手",
   "ko": "음악가와 가수",
-  "zhShort": "音乐家和歌手"
+  "zhShort": "音乐家和歌手",
+  "koShort": "음악가와 가수",
+  "enShort": "Musicians and singers"
  },
  "52100": {
   "zh": "图书馆和公共档案技术员",
   "ko": "도서관 및 공공 기록관 기술자",
-  "zhShort": "图书档案技术员"
+  "zhShort": "图书档案技术员",
+  "koShort": "도서관 기술자",
+  "enShort": "Library archivists"
  },
  "52110": {
   "zh": "电影和摄像机操作员",
   "ko": "영화 및 비디오 카메라 조작원",
-  "zhShort": "摄像师"
+  "zhShort": "摄像师",
+  "koShort": "카메라 조작원",
+  "enShort": "Film and video camera operators"
  },
  "52111": {
   "zh": "图形艺术技术员",
   "ko": "그래픽 아트 기술자",
-  "zhShort": "图形艺术技术员"
+  "zhShort": "图形艺术技术员",
+  "koShort": "그래픽 아트 기술자",
+  "enShort": "Graphic arts technicians"
  },
  "52112": {
   "zh": "广播技术员",
   "ko": "방송 기술자",
-  "zhShort": "广播技术员"
+  "zhShort": "广播技术员",
+  "koShort": "방송 기술자",
+  "enShort": "Broadcast technicians"
  },
  "52113": {
   "zh": "音视频录制技术员",
   "ko": "오디오 및 비디오 녹음 기술자",
-  "zhShort": "音视频技术员"
+  "zhShort": "音视频技术员",
+  "koShort": "녹음 기술자",
+  "enShort": "Audio and video recording techs"
  },
  "52114": {
   "zh": "播音员和其他广播员",
   "ko": "아나운서 및 기타 방송인",
-  "zhShort": "播音员"
+  "zhShort": "播音员",
+  "koShort": "아나운서",
+  "enShort": "Announcers"
  },
  "52119": {
   "zh": "电影广播和表演艺术其他技术和协调职业",
   "ko": "영화 방송 및 공연 예술 분야의 기타 기술 및 조정 직무",
-  "zhShort": "影视技术协调员"
+  "zhShort": "影视技术协调员",
+  "koShort": "기타 기술 조정 직무"
  },
  "52120": {
   "zh": "平面设计师和插画师",
   "ko": "그래픽 디자이너 및 일러스트레이터",
-  "zhShort": "平面设计师"
+  "zhShort": "平面设计师",
+  "koShort": "그래픽 디자이너",
+  "enShort": "Graphic designers"
  },
  "52121": {
   "zh": "室内设计师和室内装饰师",
   "ko": "실내 디자이너 및 인테리어 장식사",
-  "zhShort": "室内设计师"
+  "zhShort": "室内设计师",
+  "koShort": "실내 디자이너",
+  "enShort": "Interior designers"
  },
  "53100": {
   "zh": "登记员修复员翻译员及其他与博物馆和美术馆相关的职业",
   "ko": "박물관 및 미술관 관련 등록사 복원가 번역가 기타 직업",
-  "zhShort": "博物馆管理员"
+  "zhShort": "博物馆管理员",
+  "koShort": "박물관 등록사",
+  "enShort": "Registrars"
  },
  "53110": {
   "zh": "摄影师",
   "ko": "사진가",
-  "zhShort": "摄影师"
+  "zhShort": "摄影师",
+  "koShort": "사진가",
+  "enShort": "Photographers"
  },
  "53111": {
   "zh": "电影广播摄影和表演艺术助理及操作员",
   "ko": "영화 방송 사진 촬영 및 공연 예술 보조원 및 운영자",
-  "zhShort": "影视制作员"
+  "zhShort": "影视制作员",
+  "koShort": "영상 방송 사진 보조원"
  },
  "53120": {
   "zh": "舞者",
   "ko": "무용가",
-  "zhShort": "舞者"
+  "zhShort": "舞者",
+  "koShort": "무용가",
+  "enShort": "Dancers"
  },
  "53121": {
   "zh": "演员、喜剧演员和马戏团表演者",
   "ko": "배우, 코미디언 및 서커스 공연자",
-  "zhShort": "演员"
+  "zhShort": "演员",
+  "koShort": "배우",
+  "enShort": "Actors"
  },
  "53122": {
   "zh": "画家、雕塑家和其他视觉艺术家",
   "ko": "화가 조각가 기타 시각 예술가",
-  "zhShort": "画家"
+  "zhShort": "画家",
+  "koShort": "화가",
+  "enShort": "Painters"
  },
  "53123": {
   "zh": "剧院时装展览及其他创意设计师",
   "ko": "극장 패션 전시 및 기타 창의적 디자이너",
-  "zhShort": "创意设计师"
+  "zhShort": "创意设计师",
+  "koShort": "창의적 디자이너",
+  "enShort": "Theatre designers"
  },
  "53124": {
   "zh": "工匠和手工艺人",
   "ko": "장인과 공예가",
-  "zhShort": "工匠和手工艺人"
+  "zhShort": "工匠和手工艺人",
+  "koShort": "장인과 공예가",
+  "enShort": "Artisans and craftspersons"
  },
  "53125": {
   "zh": "纺织品皮革和毛皮产品制版工",
@@ -1234,12 +1693,16 @@
  "53201": {
   "zh": "教练",
   "ko": "코치",
-  "zhShort": "教练"
+  "zhShort": "教练",
+  "koShort": "코치",
+  "enShort": "Coaches"
  },
  "54100": {
   "zh": "休闲体育健身项目领导与指导员",
   "ko": "레크리에이션 스포츠 피트니스 프로그램 지도자 및 강사",
-  "zhShort": "休闲体育指导员"
+  "zhShort": "休闲体育指导员",
+  "koShort": "스포츠 강사",
+  "enShort": "Program leaders and instructors"
  },
  "55109": {
   "zh": "其他表演者",
@@ -1249,470 +1712,648 @@
  "60010": {
   "zh": "企业销售经理",
   "ko": "기업 영업 관리자",
-  "zhShort": "企业销售经理"
+  "zhShort": "企业销售经理",
+  "koShort": "기업 영업 관리자",
+  "enShort": "Corporate sales managers"
  },
  "60020": {
   "zh": "零售和批发贸易经理",
   "ko": "도소매 무역 관리자",
-  "zhShort": "零售批发经理"
+  "zhShort": "零售批发经理",
+  "koShort": "도소매 무역 관리자"
  },
  "60030": {
   "zh": "餐厅和餐饮服务经理",
   "ko": "식당 및 식품 서비스 관리자",
-  "zhShort": "餐饮经理"
+  "zhShort": "餐饮经理",
+  "koShort": "식당 관리자"
  },
  "60031": {
   "zh": "住宿服务经理",
   "ko": "숙박 서비스 관리자",
-  "zhShort": "住宿服务经理"
+  "zhShort": "住宿服务经理",
+  "koShort": "숙박 서비스 관리자",
+  "enShort": "Accommodation service managers"
  },
  "60040": {
   "zh": "客户和个人服务经理",
   "ko": "고객 및 개인 서비스 관리자",
-  "zhShort": "客户服务经理"
+  "zhShort": "客户服务经理",
+  "koShort": "고객 서비스 관리자"
  },
  "62010": {
   "zh": "零售销售主管",
   "ko": "소매 판매 감독관",
-  "zhShort": "零售销售主管"
+  "zhShort": "零售销售主管",
+  "koShort": "소매 판매 감독관",
+  "enShort": "Retail sales supervisors"
  },
  "62020": {
   "zh": "餐饮服务主管",
   "ko": "식품 서비스 감독관",
-  "zhShort": "餐饮服务主管"
+  "zhShort": "餐饮服务主管",
+  "koShort": "식품 서비스 감독관",
+  "enShort": "Food service supervisors"
  },
  "62021": {
   "zh": "行政管家",
   "ko": "수석 하우스키퍼",
-  "zhShort": "行政管家"
+  "zhShort": "行政管家",
+  "koShort": "수석 하우스키퍼",
+  "enShort": "Executive housekeepers"
  },
  "62022": {
   "zh": "住宿、旅游、旅游业及相关服务主管",
   "ko": "숙박 여행 관광 및 관련 서비스 감독자",
-  "zhShort": "旅宿业主管"
+  "zhShort": "旅宿业主管",
+  "koShort": "관광감독자",
+  "enShort": "Accommodation supervisors"
  },
  "62023": {
   "zh": "客户和信息服务主管",
   "ko": "고객 및 정보 서비스 감독관",
-  "zhShort": "客户服务主管"
+  "zhShort": "客户服务主管",
+  "koShort": "고객서비스감독관"
  },
  "62024": {
   "zh": "清洁主管",
   "ko": "청소 감독관",
-  "zhShort": "清洁主管"
+  "zhShort": "清洁主管",
+  "koShort": "청소 감독관",
+  "enShort": "Cleaning supervisors"
  },
  "62029": {
   "zh": "其他服务主管",
   "ko": "기타 서비스 감독관",
-  "zhShort": "其他服务主管"
+  "zhShort": "其他服务主管",
+  "koShort": "기타 서비스 감독관",
+  "enShort": "Other services supervisors"
  },
  "62100": {
   "zh": "技术销售专员 - 批发贸易",
   "ko": "기술 영업 전문가 - 도매 무역",
-  "zhShort": "技术销售专员"
+  "zhShort": "技术销售专员",
+  "koShort": "기술 영업 전문가",
+  "enShort": "Technical sales specialists"
  },
  "62101": {
   "zh": "零售和批发采购员",
   "ko": "도소매 구매 담당자",
-  "zhShort": "零售采购员"
+  "zhShort": "零售采购员",
+  "koShort": "도소매 구매 담당자",
+  "enShort": "Retail and wholesale buyers"
  },
  "62200": {
   "zh": "厨师",
   "ko": "요리사",
-  "zhShort": "主厨"
+  "zhShort": "主厨",
+  "koShort": "셰프",
+  "enShort": "Chefs"
  },
  "62201": {
   "zh": "殡葬承办人和遗体防腐师",
   "ko": "장례지도사와 시신인부",
-  "zhShort": "殡葬承办人"
+  "zhShort": "殡葬承办人",
+  "koShort": "장례지도사와 시신인부",
+  "enShort": "Funeral directors"
  },
  "62202": {
   "zh": "珠宝商、首饰和手表修理员及相关职业",
   "ko": "보석상 주얼리 및 시계 수리공 관련 직업",
-  "zhShort": "珠宝商"
+  "zhShort": "珠宝商",
+  "koShort": "보석상 및 시계 수리공",
+  "enShort": "Jewellers"
  },
  "63100": {
   "zh": "保险代理人和经纪人",
   "ko": "보험 대리점 및 중개인",
-  "zhShort": "保险代理人"
+  "zhShort": "保险代理人",
+  "koShort": "보험 대리점 및 중개인",
+  "enShort": "Insurance agents"
  },
  "63101": {
   "zh": "房地产经纪人和销售员",
   "ko": "부동산 중개업자 및 판매원",
-  "zhShort": "房地产经纪人"
+  "zhShort": "房地产经纪人",
+  "koShort": "부동산 중개업자",
+  "enShort": "Real estate agents"
  },
  "63102": {
   "zh": "金融销售代表",
   "ko": "금융 판매 대리인",
-  "zhShort": "金融销售代表"
+  "zhShort": "金融销售代表",
+  "koShort": "금융 판매 대리인",
+  "enShort": "Financial sales reps"
  },
  "63200": {
   "zh": "厨师",
   "ko": "요리사",
-  "zhShort": "厨师"
+  "zhShort": "厨师",
+  "koShort": "요리사",
+  "enShort": "Cooks"
  },
  "63201": {
   "zh": "屠夫 - 零售和批发",
   "ko": "도매 및 소매 도살업자",
-  "zhShort": "屠夫"
+  "zhShort": "屠夫",
+  "koShort": "도매 및 소매 도살업자",
+  "enShort": "Butchers - retail and wholesale"
  },
  "63202": {
   "zh": "面包师",
   "ko": "제빵사",
-  "zhShort": "面包师"
+  "zhShort": "面包师",
+  "koShort": "제빵사",
+  "enShort": "Bakers"
  },
  "63210": {
   "zh": "发型师和理发师",
   "ko": "헤어스타일리스트 및 이발사",
-  "zhShort": "发型师和理发师"
+  "zhShort": "发型师和理发师",
+  "koShort": "이발사",
+  "enShort": "Hairstylists and barbers"
  },
  "63211": {
   "zh": "美容师、电蚀脱毛师及相关职业",
   "ko": "에스테티션, 전기영양사 및 관련 직업",
-  "zhShort": "美容师"
+  "zhShort": "美容师",
+  "koShort": "에스테티션",
+  "enShort": "Estheticians"
  },
  "63221": {
   "zh": "家具软垫工",
   "ko": "가구 upholsterer",
-  "zhShort": "家具软垫工"
+  "zhShort": "家具软垫工",
+  "koShort": "가구 장인",
+  "enShort": "Upholsterers"
  },
  "64100": {
   "zh": "零售销售员和视觉陈列师",
   "ko": "소매 판매원 및 시각적 진열 전문가",
-  "zhShort": "零售店员"
+  "zhShort": "零售店员",
+  "koShort": "소매 판매원",
+  "enShort": "Retail salespersons"
  },
  "64101": {
   "zh": "销售代表 - 批发贸易（非技术）",
   "ko": "도매 무역 영업 및 계정 대리인 (비기술직)",
-  "zhShort": "批发销售代表"
+  "zhShort": "批发销售代表",
+  "koShort": "도매 영업 담당자",
+  "enShort": "Sales account reps"
  },
  "64200": {
   "zh": "裁缝、服装设计师、皮草商和制帽师",
   "ko": "재봉사, 드레스메이커, 모피공예가 및 모자장인",
-  "zhShort": "裁缝"
+  "zhShort": "裁缝",
+  "koShort": "재봉사",
+  "enShort": "Tailors"
  },
  "64300": {
   "zh": "餐厅领班和迎宾员",
   "ko": "호텔 매니저 및 호스트/호스테스",
-  "zhShort": "餐厅领班"
+  "zhShort": "餐厅领班",
+  "koShort": "호텔 매니저",
+  "enShort": "Maîtres dhôtel"
  },
  "64301": {
   "zh": "调酒师",
   "ko": "바텐더",
-  "zhShort": "调酒师"
+  "zhShort": "调酒师",
+  "koShort": "바텐더",
+  "enShort": "Bartenders"
  },
  "64310": {
   "zh": "旅行顾问",
   "ko": "여행 상담사",
-  "zhShort": "旅行顾问"
+  "zhShort": "旅行顾问",
+  "koShort": "여행 상담사",
+  "enShort": "Travel counsellors"
  },
  "64312": {
   "zh": "航空票务与服务代理",
   "ko": "항공권 및 서비스 대리인",
-  "zhShort": "航空票务员"
+  "zhShort": "航空票务员",
+  "koShort": "항공권 대리인",
+  "enShort": "Airline ticket agents"
  },
  "64313": {
   "zh": "地面和水路运输票务代理、货运服务代表及相关文员",
   "ko": "지상 및 수송 티켓 대리인, 화물 서비스 대표 및 관련 직원",
-  "zhShort": "运输票务代理"
+  "zhShort": "运输票务代理",
+  "koShort": "티켓 대리인"
  },
  "64314": {
   "zh": "酒店前台职员",
   "ko": "호텔 프론트 데스크 직원",
-  "zhShort": "酒店前台职员"
+  "zhShort": "酒店前台职员",
+  "enShort": "Hotel front desk clerks"
  },
  "64320": {
   "zh": "旅游和旅行导游",
   "ko": "관광 및 여행 가이드",
-  "zhShort": "旅游和旅行导游"
+  "zhShort": "旅游和旅行导游",
+  "koShort": "관광 및 여행 가이드",
+  "enShort": "Tour and travel guides"
  },
  "64321": {
   "zh": "赌场工作人员",
   "ko": "카지노 직원",
-  "zhShort": "赌场工作人员"
+  "zhShort": "赌场工作人员",
+  "koShort": "카지노 직원",
+  "enShort": "Casino workers"
  },
  "64322": {
   "zh": "户外运动和休闲导游",
   "ko": "야외 스포츠 및 레크리에이션 가이드",
-  "zhShort": "户外导游"
+  "zhShort": "户外导游",
+  "koShort": "야외 스포츠 가이드",
+  "enShort": "Outdoor sport guides"
  },
  "64400": {
   "zh": "金融机构客户服务代表",
   "ko": "금융 기관 고객 서비스 대표",
-  "zhShort": "金融客服代表"
+  "zhShort": "金融客服代表",
+  "koShort": "금융 고객서비스",
+  "enShort": "Customer services reps"
  },
  "64401": {
   "zh": "邮政服务代表",
   "ko": "우편 서비스 대표",
-  "zhShort": "邮政服务代表"
+  "zhShort": "邮政服务代表",
+  "koShort": "우편 서비스 대표",
+  "enShort": "Postal services reps"
  },
  "64409": {
   "zh": "其他客户和信息服务代表",
   "ko": "기타 고객 및 정보 서비스 대표",
-  "zhShort": "客户服务代表"
+  "zhShort": "客户服务代表",
+  "koShort": "고객 서비스 담당자"
  },
  "64410": {
   "zh": "保安员及相关安全服务职业",
   "ko": "경비원 및 관련 보안 서비스 직업",
-  "zhShort": "保安员"
+  "zhShort": "保安员",
+  "koShort": "경비원",
+  "enShort": "Security guards"
  },
  "65100": {
   "zh": "收银员",
   "ko": "계산원",
-  "zhShort": "收银员"
+  "zhShort": "收银员",
+  "koShort": "계산원",
+  "enShort": "Cashiers"
  },
  "65101": {
   "zh": "加油站服务员",
   "ko": "주유소 직원",
-  "zhShort": "加油站服务员"
+  "zhShort": "加油站服务员",
+  "koShort": "주유소 직원",
+  "enShort": "Service station attendants"
  },
  "65102": {
   "zh": "商店货架理货员、店员和订单拣货员",
   "ko": "매장 진열대 적재원, 점원 및 주문 처리원",
-  "zhShort": "理货员"
+  "zhShort": "理货员",
+  "koShort": "매장 진열대 적재원",
+  "enShort": "Store shelf stockers"
  },
  "65109": {
   "zh": "其他销售相关职业",
-  "ko": "기타 판매 관련 직업"
+  "ko": "기타 판매 관련 직업",
+  "koShort": "기타 판매 관련 직업",
+  "enShort": "Other sales occupations"
  },
  "65200": {
   "zh": "餐饮服务人员",
   "ko": "음식 및 음료 서빙 직원",
-  "zhShort": "餐饮服务人员"
+  "zhShort": "餐饮服务人员",
+  "koShort": "서빙 직원",
+  "enShort": "Food and bev servers"
  },
  "65201": {
   "zh": "食品柜台服务员、厨房助手及相关辅助职业",
   "ko": "식품 카운터 보조원, 주방 보조원 및 관련 지원 직업",
-  "zhShort": "餐饮服务员"
+  "zhShort": "餐饮服务员",
+  "koShort": "식품 카운터 보조원",
+  "enShort": "Food counter attendants"
  },
  "65202": {
   "zh": "肉品切割师和鱼类批发商 - 零售和批发",
   "ko": "육류 도살공 및 생선상인 - 소매 및 도매",
-  "zhShort": "肉品切割师"
+  "zhShort": "肉品切割师",
+  "koShort": "정육사 및 수산판매원",
+  "enShort": "Meat cutters"
  },
  "65210": {
   "zh": "住宿旅游和设施搭建服务支持职业",
-  "ko": "숙박 여행 및 시설 설치 서비스의 지원 직업"
+  "ko": "숙박 여행 및 시설 설치 서비스의 지원 직업",
+  "koShort": "숙박 여행 지원직"
  },
  "65211": {
   "zh": "娱乐、休闲和体育设施操作员及服务员",
-  "ko": "유원지 레크리에이션 및 스포츠 운영자 및 보조원"
+  "ko": "유원지 레크리에이션 및 스포츠 운영자 및 보조원",
+  "koShort": "레크리에이션 운영자",
+  "enShort": "Amusement operators"
  },
  "65220": {
   "zh": "宠物美容师和动物护理员",
   "ko": "애완동물 미용사 및 동물 돌봄 근로자",
-  "zhShort": "宠物美容师"
+  "zhShort": "宠物美容师",
+  "koShort": "애완동물 미용사",
+  "enShort": "Pet groomers"
  },
  "65310": {
   "zh": "轻体力清洁工",
   "ko": "경량 청소부",
-  "zhShort": "轻体力清洁工"
+  "zhShort": "轻体力清洁工",
+  "koShort": "경량 청소부",
+  "enShort": "Light duty cleaners"
  },
  "65311": {
   "zh": "专业清洁工",
   "ko": "전문 청소원",
-  "zhShort": "专业清洁工"
+  "zhShort": "专业清洁工",
+  "koShort": "전문 청소원",
+  "enShort": "Specialized cleaners"
  },
  "65312": {
   "zh": "门卫、看门人和重型清洁工",
   "ko": "청소원 및 경호원",
-  "zhShort": "保洁员"
+  "zhShort": "保洁员",
+  "koShort": "청소원 및 경호원",
+  "enShort": "Janitors caretakers"
  },
  "65320": {
   "zh": "干洗、洗衣及相关职业",
   "ko": "건조 세탁 및 관련 직업",
-  "zhShort": "干洗工"
+  "zhShort": "干洗工",
+  "koShort": "세탁원",
+  "enShort": "Dry cleaning laundry"
  },
  "65329": {
   "zh": "其他服务支持职业",
-  "ko": "기타 서비스 지원 직업"
+  "ko": "기타 서비스 지원 직업",
+  "koShort": "기타 서비스 지원 직업",
+  "enShort": "Other service support"
  },
  "70010": {
   "zh": "建筑经理",
   "ko": "건설 관리자",
-  "zhShort": "建筑经理"
+  "zhShort": "建筑经理",
+  "koShort": "건설 관리자",
+  "enShort": "Construction managers"
  },
  "70011": {
   "zh": "房屋建筑与翻新经理",
-  "ko": "주택 건설 및 리모델링 관리자"
+  "ko": "주택 건설 및 리모델링 관리자",
+  "koShort": "주택건설관리자",
+  "enShort": "Home building managers"
  },
  "70012": {
   "zh": "设施运营与维护经理",
   "ko": "시설 운영 및 유지보수 관리자",
-  "zhShort": "设施运维经理"
+  "zhShort": "设施运维经理",
+  "koShort": "시설운영관리자"
  },
  "70020": {
   "zh": "运输业经理",
   "ko": "운송 관리자",
-  "zhShort": "运输业经理"
+  "zhShort": "运输业经理",
+  "koShort": "운송 관리자",
+  "enShort": "Transportation managers"
  },
  "70021": {
   "zh": "邮政和快递服务经理",
   "ko": "우편 및 택배 서비스 관리자",
-  "zhShort": "邮政快递经理"
+  "zhShort": "邮政快递经理",
+  "koShort": "우편택배관리자"
  },
  "72010": {
   "zh": "机加工金属成型成形和装配行业及相关职业的承包商和监督人员",
-  "ko": "기계금속성형조립관련직종감독자및계약자"
+  "ko": "기계금속성형조립관련직종감독자및계약자",
+  "koShort": "기계금속감독자",
+  "enShort": "Machining supervisors"
  },
  "72011": {
   "zh": "电气技工和电信职业的承包商和监督人员",
   "ko": "전기 및 통신 분야 계약자 및 감독자",
-  "zhShort": "电气电信主管"
+  "zhShort": "电气电信主管",
+  "koShort": "전기감독자",
+  "enShort": "Electrical contractors"
  },
  "72012": {
   "zh": "管道安装工承包商和主管",
   "ko": "배관공 견적자 및 감독자",
-  "zhShort": "管道安装工"
+  "zhShort": "管道安装工",
+  "koShort": "배관공 감독자",
+  "enShort": "Pipefitting supervisors"
  },
  "72013": {
   "zh": "木工行业承包商和主管",
   "ko": "목공 기술자 및 감독자",
-  "zhShort": "木工承包商"
+  "zhShort": "木工承包商",
+  "koShort": "목공 기술자 및 감독자",
+  "enShort": "Carpentry supervisors"
  },
  "72014": {
   "zh": "其他建筑技工、安装工、维修工和服务工的承包人和主管",
   "ko": "건설 기타 직종 설치자 수리공 및 서비스 담당자 감독관",
-  "zhShort": "建筑承包主管"
+  "zhShort": "建筑承包主管",
+  "koShort": "건설감독관",
+  "enShort": "Construction supervisors"
  },
  "72020": {
   "zh": "承包商和主管，机械行业",
   "ko": "기계 직종 계약자 및 감독자",
-  "zhShort": "机械行业承包商"
+  "zhShort": "机械行业承包商",
+  "koShort": "기계직 감독자"
  },
  "72021": {
   "zh": "重型设备操作员班组的承包商和监督员",
   "ko": "중장비 작업반 계약자 및 감독자",
-  "zhShort": "重型设备工长"
+  "zhShort": "重型设备工长",
+  "koShort": "중장비감독자",
+  "enShort": "Heavy equip operators"
  },
  "72022": {
   "zh": "印刷及相关职业主管",
   "ko": "인쇄 및 관련 직업 감독자",
-  "zhShort": "印刷主管"
+  "zhShort": "印刷主管",
+  "koShort": "인쇄감독자",
+  "enShort": "Supervisors printing"
  },
  "72024": {
   "zh": "机动车运输及其他地面交通操作员主管",
   "ko": "모터 운송 및 기타 지상 교통 운영 감독자",
-  "zhShort": "交通操作员主管"
+  "zhShort": "交通操作员主管",
+  "koShort": "운송감독자",
+  "enShort": "Supervisors motor transport"
  },
  "72025": {
   "zh": "邮件和信件分发主管",
   "ko": "우편 및 메시지 배포 업무 감독자",
-  "zhShort": "邮件分发主管"
+  "zhShort": "邮件分发主管",
+  "koShort": "우편배달감독자",
+  "enShort": "Mail supervisors"
  },
  "72100": {
   "zh": "机械师和机加工及工具检验员",
   "ko": "기계공 및 기계가공·공구 검사원",
-  "zhShort": "机械师"
+  "zhShort": "机械师",
+  "koShort": "기계공",
+  "enShort": "Machinists"
  },
  "72101": {
   "zh": "模具和冲模制造工",
   "ko": "공구 및 금형 제작원",
-  "zhShort": "模具制造工"
+  "zhShort": "模具制造工",
+  "koShort": "공구 및 금형 제작원",
+  "enShort": "Tool and die makers"
  },
  "72102": {
   "zh": "钣金工",
   "ko": "금속판 작업자",
-  "zhShort": "钣金工"
+  "zhShort": "钣金工",
+  "koShort": "금속판 작업자",
+  "enShort": "Sheet metal workers"
  },
  "72103": {
   "zh": "锅炉工",
   "ko": "보일러메이커",
-  "zhShort": "锅炉工"
+  "zhShort": "锅炉工",
+  "koShort": "보일러메이커",
+  "enShort": "Boilermakers"
  },
  "72104": {
   "zh": "结构金属和板材制造装配工",
-  "ko": "구조용 금속 및 판금 제작자 및 조립공"
+  "ko": "구조용 금속 및 판금 제작자 및 조립공",
+  "koShort": "금속제작자",
+  "enShort": "Structural metal fabricators"
  },
  "72105": {
   "zh": "铁工",
   "ko": "철근공",
-  "zhShort": "铁工"
+  "zhShort": "铁工",
+  "koShort": "철근공",
+  "enShort": "Ironworkers"
  },
  "72106": {
   "zh": "焊工及相关机械操作员",
   "ko": "용접공 및 관련 기계 조작원",
-  "zhShort": "焊工"
+  "zhShort": "焊工",
+  "koShort": "용접공",
+  "enShort": "Welders and related"
  },
  "72200": {
   "zh": "电工（不含工业和电力系统）",
   "ko": "전기공 (산업 및 전력 시스템 제외)",
-  "zhShort": "电工"
+  "zhShort": "电工",
+  "koShort": "전기공",
+  "enShort": "Electricians"
  },
  "72201": {
   "zh": "工业电工",
   "ko": "산업 전기공",
-  "zhShort": "工业电工"
+  "zhShort": "工业电工",
+  "koShort": "산업 전기공",
+  "enShort": "Industrial electricians"
  },
  "72202": {
   "zh": "电力系统电工",
   "ko": "전력 시스템 전기공",
-  "zhShort": "电力系统电工"
+  "zhShort": "电力系统电工",
+  "koShort": "전력 시스템 전기공",
+  "enShort": "Power system electricians"
  },
  "72203": {
   "zh": "电力线路和电缆工人",
   "ko": "전기 송전선 및 케이블 작업원",
-  "zhShort": "电力线路工"
+  "zhShort": "电力线路工",
+  "koShort": "전력선 작업원",
+  "enShort": "Electrical power line workers"
  },
  "72204": {
   "zh": "电信线路和电缆安装与维修员",
   "ko": "통신선 및 케이블 설치 및 수리공",
-  "zhShort": "电信线路工"
+  "zhShort": "电信线路工",
+  "koShort": "통신선 설치공",
+  "enShort": "Telecom line installers"
  },
  "72205": {
   "zh": "电信设备安装和有线电视服务技术员",
   "ko": "통신 장비 설치 및 케이블 텔레비전 서비스 기술자",
-  "zhShort": "电信设备技术员"
+  "zhShort": "电信设备技术员",
+  "koShort": "통신장비설치기술자",
+  "enShort": "Telecom install techs"
  },
  "72300": {
   "zh": "水管工",
   "ko": "배관공",
-  "zhShort": "水管工"
+  "zhShort": "水管工",
+  "koShort": "배관공",
+  "enShort": "Plumbers"
  },
  "72301": {
   "zh": "蒸汽管道工、管道安装工和喷淋系统安装工",
   "ko": "스팀파이터 파이프피터 스프링클러 시스템 설치공",
-  "zhShort": "管道工"
+  "zhShort": "管道工",
+  "koShort": "파이프피터",
+  "enShort": "Steamfitters pipefitters"
  },
  "72302": {
   "zh": "燃气安装工",
   "ko": "가스 설치공",
-  "zhShort": "燃气安装工"
+  "zhShort": "燃气安装工",
+  "koShort": "가스 설치공",
+  "enShort": "Gas fitters"
  },
  "72310": {
   "zh": "木匠",
   "ko": "목수",
-  "zhShort": "木匠"
+  "zhShort": "木匠",
+  "koShort": "목수",
+  "enShort": "Carpenters"
  },
  "72311": {
   "zh": "橱柜木工",
   "ko": "가구장인",
-  "zhShort": "橱柜木工"
+  "zhShort": "橱柜木工",
+  "koShort": "가구장인",
+  "enShort": "Cabinetmakers"
  },
  "72320": {
   "zh": "砖瓦工",
   "ko": "벽돌공",
-  "zhShort": "砖瓦工"
+  "zhShort": "砖瓦工",
+  "koShort": "벽돌공",
+  "enShort": "Bricklayers"
  },
  "72321": {
   "zh": "绝缘工",
   "ko": "단열공",
-  "zhShort": "绝缘工"
+  "zhShort": "绝缘工",
+  "koShort": "단열공",
+  "enShort": "Insulators"
  },
  "72400": {
   "zh": "建筑机械安装工和工业机械师",
   "ko": "건설 밀라이트 및 산업 기계공",
-  "zhShort": "机械安装工"
+  "zhShort": "机械安装工",
+  "koShort": "건설 밀라이트",
+  "enShort": "Construction millwrights"
  },
  "72401": {
   "zh": "重型设备机械师",
   "ko": "중장비 정비공",
-  "zhShort": "重型设备机械师"
+  "zhShort": "重型设备机械师",
+  "koShort": "중장비 정비공",
+  "enShort": "Heavy-duty equipment mechanics"
  },
  "72402": {
   "zh": "暖通空调机械师",
   "ko": "난방 냉동 및 공기조절 기계공",
-  "zhShort": "暖通空调机械师"
+  "zhShort": "暖通空调机械师",
+  "koShort": "냉동기계공"
  },
  "72403": {
   "zh": "铁路男女工人",
@@ -1722,670 +2363,909 @@
  "72404": {
   "zh": "飞机机械师和飞机检验员",
   "ko": "항공기 정비사 및 항공기 검사관",
-  "zhShort": "飞机机械师"
+  "zhShort": "飞机机械师",
+  "koShort": "항공정비사",
+  "enShort": "Aircraft mechanics"
  },
  "72405": {
   "zh": "机械装配工",
   "ko": "기계 조립공",
-  "zhShort": "机械装配工"
+  "zhShort": "机械装配工",
+  "koShort": "기계 조립공",
+  "enShort": "Machine fitters"
  },
  "72406": {
   "zh": "电梯安装工和机械师",
   "ko": "엘리베이터 설치공 및 정비공",
-  "zhShort": "电梯安装工"
+  "zhShort": "电梯安装工",
+  "koShort": "엘리베이터 설치공",
+  "enShort": "Elevator constructors"
  },
  "72410": {
   "zh": "汽车服务技师卡车和公共汽车机械师及机械维修员",
   "ko": "자동차 서비스 기술자, 트럭 및 버스 기계공 및 기계 수리공",
-  "zhShort": "汽修技师"
+  "zhShort": "汽修技师",
+  "koShort": "자동차정비사",
+  "enShort": "Auto service technicians"
  },
  "72411": {
   "zh": "汽车车身碰撞修复、喷漆和玻璃技师及损失评估员",
   "ko": "자동차 충돌 수리 및 도장 기술자, 손상 수리 견적사",
-  "zhShort": "钣金喷漆工"
+  "zhShort": "钣金喷漆工",
+  "koShort": "자동차 수리 기술자",
+  "enShort": "Auto body collision technicians"
  },
  "72420": {
   "zh": "石油和固体燃料供暖机械师",
   "ko": "석유 및 고체 연료 난방 기계공",
-  "zhShort": "供暖机械师"
+  "zhShort": "供暖机械师",
+  "koShort": "난방 기계공"
  },
  "72421": {
   "zh": "设备维修员",
   "ko": "가전제품 수리공",
-  "zhShort": "设备维修员"
+  "zhShort": "设备维修员",
+  "koShort": "가전제품 수리공",
+  "enShort": "Appliance servicers"
  },
  "72422": {
   "zh": "电气机械师",
   "ko": "전기 기계공",
-  "zhShort": "电气机械师"
+  "zhShort": "电气机械师",
+  "koShort": "전기 기계공",
+  "enShort": "Electrical mechanics"
  },
  "72423": {
   "zh": "摩托车、全地形车及相关机械师",
   "ko": "모터사이클, 전지차 및 기타 관련 정비사",
-  "zhShort": "摩托维修技师"
+  "zhShort": "摩托维修技师",
+  "koShort": "이륜차 정비사",
+  "enShort": "Motorcycle mechanics"
  },
  "72429": {
   "zh": "其他小型发动机和小型设备维修工",
   "ko": "기타 소형 엔진 및 소형 장비 수리공",
-  "zhShort": "小机械维修工"
+  "zhShort": "小机械维修工",
+  "koShort": "소형 엔진 수리공",
+  "enShort": "Small engine repairers"
  },
  "72500": {
   "zh": "起重机操作员",
   "ko": "크레인 조작원",
-  "zhShort": "起重机操作员"
+  "zhShort": "起重机操作员",
+  "koShort": "크레인 조작원",
+  "enShort": "Crane operators"
  },
  "72501": {
   "zh": "水井钻探工",
   "ko": "수리공",
-  "zhShort": "水井钻探工"
+  "zhShort": "水井钻探工",
+  "koShort": "수리공",
+  "enShort": "Water well drillers"
  },
  "72600": {
   "zh": "飞行员、飞行工程师和飞行教员",
   "ko": "항공 조종사, 비행 엔지니어 및 비행 교관",
-  "zhShort": "飞行员"
+  "zhShort": "飞行员",
+  "koShort": "항공 조종사",
+  "enShort": "Air pilots"
  },
  "72601": {
   "zh": "空中交通管制员及相关职业",
   "ko": "항공교통관제사 및 관련 직업",
-  "zhShort": "空中交通管制员"
+  "zhShort": "空中交通管制员",
+  "koShort": "항공교통관제사",
+  "enShort": "Air traffic controllers"
  },
  "72602": {
   "zh": "水上运输甲板军官",
   "ko": "선박 항해사",
-  "zhShort": "甲板军官"
+  "zhShort": "甲板军官",
+  "koShort": "선박 항해사",
+  "enShort": "Deck officers"
  },
  "72603": {
   "zh": "船舶轮机员",
   "ko": "선박 기관사",
-  "zhShort": "船舶轮机员"
+  "zhShort": "船舶轮机员",
+  "koShort": "선박 기관사",
+  "enShort": "Engineer officers"
  },
  "72999": {
   "zh": "其他技术工种及相关职业",
   "ko": "기타 기술직 및 관련 직업",
-  "zhShort": "其他技术工种"
+  "zhShort": "其他技术工种",
+  "koShort": "기술직",
+  "enShort": "Other technical trades"
  },
  "73100": {
   "zh": "混凝土整平工",
   "ko": "콘크리트 마감공",
-  "zhShort": "混凝土整平工"
+  "zhShort": "混凝土整平工",
+  "koShort": "콘크리트 마감공",
+  "enShort": "Concrete finishers"
  },
  "73101": {
   "zh": "瓷砖铺设工",
   "ko": "타일 설치공",
-  "zhShort": "瓷砖铺设工"
+  "zhShort": "瓷砖铺设工",
+  "koShort": "타일 설치공",
+  "enShort": "Tilesetters"
  },
  "73102": {
   "zh": "石膏板安装工和抹灰工",
   "ko": "석고공, 건식벽 설치 및 마감공, 석고판 시공공",
-  "zhShort": "石膏板安装工"
+  "zhShort": "石膏板安装工",
+  "koShort": "석고공",
+  "enShort": "Plasterers"
  },
  "73110": {
   "zh": "屋顶工和瓦片工",
   "ko": "지붕공사와 샤링 작업원",
-  "zhShort": "屋顶工和瓦片工"
+  "zhShort": "屋顶工和瓦片工",
+  "koShort": "지붕공사와 샤링 작업원",
+  "enShort": "Roofers and shinglers"
  },
  "73111": {
   "zh": "玻璃安装工",
   "ko": "글라스공",
-  "zhShort": "玻璃安装工"
+  "zhShort": "玻璃安装工",
+  "koShort": "글라스공",
+  "enShort": "Glaziers"
  },
  "73112": {
   "zh": "油漆工和装饰工（不包括室内装饰师）",
   "ko": "화가가 및 장식공 (실내 장식사 제외)",
-  "zhShort": "油漆工"
+  "zhShort": "油漆工",
+  "koShort": "화가 및 장식공",
+  "enShort": "Painters and decorators"
  },
  "73113": {
   "zh": "地板铺设安装工",
   "ko": "바닥재 설치공",
-  "zhShort": "地板铺设安装工"
+  "zhShort": "地板铺设安装工",
+  "koShort": "바닥재 설치공",
+  "enShort": "Floor covering installers"
  },
  "73200": {
   "zh": "住宅和商业安装及维修人员",
   "ko": "주거용 및 상업용 설치 및 서비스 기술자",
-  "zhShort": "安装维修工"
+  "zhShort": "安装维修工",
+  "koShort": "설치기술자",
+  "enShort": "Residential installers"
  },
  "73201": {
   "zh": "一般建筑维修工人和建筑管理员",
   "ko": "일반 건물 유지보수 직원 및 건물 관리자",
-  "zhShort": "建筑维修工"
+  "zhShort": "建筑维修工",
+  "koShort": "건물 유지보수 직원"
  },
  "73202": {
   "zh": "害虫控制员和熏蒸工",
   "ko": "해충 방제 및 훈증 작업자",
-  "zhShort": "害虫控制员"
+  "zhShort": "害虫控制员",
+  "koShort": "해충 방제사",
+  "enShort": "Pest controllers"
  },
  "73209": {
   "zh": "其他维修员和服务员",
   "ko": "기타 수리 및 정비사",
-  "zhShort": "其他维修员"
+  "zhShort": "其他维修员",
+  "koShort": "기타 수리 및 정비사",
+  "enShort": "Other repairers"
  },
  "73300": {
   "zh": "运输卡车司机",
   "ko": "트럭 운전자",
-  "zhShort": "运输卡车司机"
+  "zhShort": "运输卡车司机",
+  "koShort": "트럭 운전자",
+  "enShort": "Transport truck drivers"
  },
  "73301": {
   "zh": "公共汽车司机地铁操作员及其他运输操作员",
   "ko": "버스 기사, 지하철 운전자 및 기타 대중교통 운전자",
-  "zhShort": "公交司机"
+  "zhShort": "公交司机",
+  "koShort": "버스 기사",
+  "enShort": "Bus drivers"
  },
  "73400": {
   "zh": "重型设备操作员",
   "ko": "중장비 조작원",
-  "zhShort": "重型设备操作员"
+  "zhShort": "重型设备操作员",
+  "koShort": "중장비 조작원",
+  "enShort": "Heavy equipment operators"
  },
  "73401": {
   "zh": "印刷机操作员",
   "ko": "인쇄기 조작원",
-  "zhShort": "印刷机操作员"
+  "zhShort": "印刷机操作员",
+  "koShort": "인쇄기 조작원",
+  "enShort": "Printing press operators"
  },
  "73402": {
   "zh": "钻机操作员和爆破员 - 露天采矿、采石和建筑",
   "ko": "굴착 및 발파 작업자 - 표면 채광 석재 채석 건설",
-  "zhShort": "钻机操作员"
+  "zhShort": "钻机操作员",
+  "koShort": "굴착발파작업자",
+  "enShort": "Drillers and blasters"
  },
  "74100": {
   "zh": "邮件和包裹分拣员及相关职业",
   "ko": "우편 및 소포 분류원 및 관련 직업",
-  "zhShort": "邮件包裹分拣员"
+  "zhShort": "邮件包裹分拣员",
+  "koShort": "우편 분류원",
+  "enShort": "Mail and parcel sorters"
  },
  "74102": {
   "zh": "快递员和信使",
   "ko": "택배 및 메신저",
-  "zhShort": "快递员和信使"
+  "zhShort": "快递员和信使",
+  "koShort": "택배 및 메신저",
+  "enShort": "Couriers and messengers"
  },
  "74200": {
   "zh": "铁路站场和轨道维护工人",
   "ko": "철도 차량기지 및 궤도 유지보수 작업원",
-  "zhShort": "铁路轨道维护工"
+  "zhShort": "铁路轨道维护工",
+  "koShort": "철도 유지보수 작업원",
+  "enShort": "Railway yard maintenance"
  },
  "74201": {
   "zh": "水上运输甲板及机舱船员",
   "ko": "수상 운송 데크 및 엔진실 승무원",
-  "zhShort": "水运船员"
+  "zhShort": "水运船员",
+  "koShort": "선박 승무원"
  },
  "74202": {
   "zh": "航空运输地面勤务员",
   "ko": "항공기 지상 조업원",
-  "zhShort": "地勤人员"
+  "zhShort": "地勤人员",
+  "koShort": "항공기 지상 조업원",
+  "enShort": "Air transport ramp attendants"
  },
  "74203": {
   "zh": "汽车重型卡车及设备零部件安装与维修工",
   "ko": "자동차 및 중형 트럭 및 장비 부품 설치 및 정비사",
-  "zhShort": "汽车服务工"
+  "zhShort": "汽车服务工",
+  "koShort": "부품설치원"
  },
  "74204": {
   "zh": "公用设施维护工人",
-  "ko": "유지보수 작업원"
+  "ko": "유지보수 작업원",
+  "koShort": "유지보수 작업원",
+  "enShort": "Utility maintenance workers"
  },
  "74205": {
   "zh": "公共工程维护设备操作员及相关工人",
   "ko": "공공 시설 유지보수 장비 조작원 및 관련 근로자",
-  "zhShort": "公维设备操作员"
+  "zhShort": "公维设备操作员",
+  "koShort": "시설 유지보수 작업원"
  },
  "75100": {
   "zh": "码头工人",
   "ko": "항만 하역 작업원",
-  "zhShort": "码头工人"
+  "zhShort": "码头工人",
+  "koShort": "항만 하역 작업원",
+  "enShort": "Longshore workers"
  },
  "75101": {
   "zh": "物料搬运工",
   "ko": "자재 취급원",
-  "zhShort": "物料搬运工"
+  "zhShort": "物料搬运工",
+  "koShort": "자재 취급원",
+  "enShort": "Material handlers"
  },
  "75110": {
   "zh": "建筑技工辅助工和劳工",
   "ko": "건설 작업 보조원 및 노동자",
-  "zhShort": "建筑小工"
+  "zhShort": "建筑小工",
+  "koShort": "건설 보조원",
+  "enShort": "Construction trades helpers"
  },
  "75119": {
   "zh": "其他技工助手和劳工",
   "ko": "기타 숙련공 보조원 및 노동자",
-  "zhShort": "技工助手和劳工"
+  "zhShort": "技工助手和劳工",
+  "koShort": "숙련공 보조원",
+  "enShort": "Other trades helpers"
  },
  "75200": {
   "zh": "出租车和豪华轿车司机及驾驶员",
   "ko": "택시 및 리무진 운전사",
-  "zhShort": "出租车司机"
+  "zhShort": "出租车司机",
+  "koShort": "택시 및 리무진 운전사",
+  "enShort": "Taxi and limo drivers"
  },
  "75201": {
   "zh": "配送服务司机和上门分发员",
   "ko": "배송 서비스 운전자 및 방문 판매원",
-  "zhShort": "配送司机"
+  "zhShort": "配送司机",
+  "koShort": "배송 운전자",
+  "enShort": "Delivery service drivers"
  },
  "75210": {
   "zh": "船缆渡轮操作员及相关职业",
   "ko": "보트 및 케이블 페리 운영자 및 관련 직업",
-  "zhShort": "渡轮操作员"
+  "zhShort": "渡轮操作员",
+  "koShort": "페리 운항원",
+  "enShort": "Boat and cable ferry operators"
  },
  "75211": {
   "zh": "铁路和机动车运输工人",
-  "ko": "철도 및 자동차 운송 노동자"
+  "ko": "철도 및 자동차 운송 노동자",
+  "koShort": "철도자동차운송노동자"
  },
  "75212": {
   "zh": "公共工程及维护工人",
   "ko": "공공 시설 및 유지보수 노동자",
-  "zhShort": "公维工人"
+  "zhShort": "公维工人",
+  "koShort": "공공시설노동자",
+  "enShort": "Public works maintenance"
  },
  "80010": {
   "zh": "自然资源生产和渔业经理",
   "ko": "천연자원 생산 및 어업 관리자",
-  "zhShort": "资源生产经理"
+  "zhShort": "资源生产经理",
+  "koShort": "천연자원 관리자",
+  "enShort": "Managers in natural resources"
  },
  "80020": {
   "zh": "农业经理",
   "ko": "농업 관리자",
-  "zhShort": "农业经理"
+  "zhShort": "农业经理",
+  "koShort": "농업 관리자",
+  "enShort": "Managers in agriculture"
  },
  "80021": {
   "zh": "园艺业经理",
   "ko": "원예 분야 관리자",
-  "zhShort": "园艺业经理"
+  "zhShort": "园艺业经理",
+  "koShort": "원예 분야 관리자",
+  "enShort": "Managers in horticulture"
  },
  "80022": {
   "zh": "水产养殖经理",
   "ko": "양식업 관리자",
-  "zhShort": "水产养殖经理"
+  "zhShort": "水产养殖经理",
+  "koShort": "양식업 관리자",
+  "enShort": "Managers in aquaculture"
  },
  "82010": {
   "zh": "林业和伐木监督者",
   "ko": "임업 및 벌목 감독자",
-  "zhShort": "林业主管"
+  "zhShort": "林业主管",
+  "koShort": "임업 및 벌목 감독자",
+  "enShort": "Logging supervisors"
  },
  "82020": {
   "zh": "采矿和采石监督人员",
   "ko": "광산 및 채석장 감독자",
-  "zhShort": "采矿主管"
+  "zhShort": "采矿主管",
+  "koShort": "광산 및 채석장 감독자",
+  "enShort": "Mining supervisors"
  },
  "82021": {
   "zh": "石油和天然气钻井及服务承包商及主管",
   "ko": "석유 및 가스 시추 및 서비스 계약자 및 감독자",
-  "zhShort": "油气钻井主管"
+  "zhShort": "油气钻井主管",
+  "koShort": "석유가스시추감독자",
+  "enShort": "Oil and gas drilling supervisors"
  },
  "82030": {
   "zh": "农业服务承包商和农场主管",
   "ko": "농업 서비스 계약자 및 농장 감독관",
-  "zhShort": "农场主管"
+  "zhShort": "农场主管",
+  "koShort": "농업서비스계약자",
+  "enShort": "Agricultural service contractors"
  },
  "82031": {
   "zh": "景观、场地维护和园艺服务承包商及主管",
   "ko": "조경 및 정원 관리 서비스 계약자 및 감독자",
-  "zhShort": "景观园艺主管"
+  "zhShort": "景观园艺主管",
+  "koShort": "조경감독자",
+  "enShort": "Landscaping supervisors"
  },
  "83100": {
   "zh": "地下开采和发展矿工",
   "ko": "지하 생산 및 개발 광부",
-  "zhShort": "地下矿工"
+  "zhShort": "地下矿工",
+  "koShort": "지하 광부",
+  "enShort": "Underground miners"
  },
  "83101": {
   "zh": "石油和天然气井钻探工、服务工、测试工及相关工人",
   "ko": "석유 및 가스 시추공 드릴러, 서비스업자, 테스트업자 및 관련 근로자",
-  "zhShort": "油气井钻探工"
+  "zhShort": "油气井钻探工",
+  "koShort": "석유 시추공 드릴러",
+  "enShort": "Oil and gas well drillers"
  },
  "83110": {
   "zh": "伐木机械操作员",
   "ko": "벌목 기계 조작원",
-  "zhShort": "伐木机械操作员"
+  "zhShort": "伐木机械操作员",
+  "koShort": "벌목 기계 조작원",
+  "enShort": "Logging machinery operators"
  },
  "84100": {
   "zh": "地下矿山服务与支持工人",
   "ko": "지하 광산 서비스 및 지원 근로자",
-  "zhShort": "矿山服务人员"
+  "zhShort": "矿山服务人员",
+  "koShort": "지하광산지원근로자",
+  "enShort": "Underground mine service"
  },
  "84101": {
   "zh": "石油和天然气井钻探及相关服务人员操作员",
   "ko": "석유 및 가스 시추 관련 작업자 및 서비스 운영자",
-  "zhShort": "钻井工"
+  "zhShort": "钻井工",
+  "koShort": "석유가스시추작업자"
  },
  "84110": {
   "zh": "链锯和拖缆机操作员",
   "ko": "체인톱 및 스키더 조작원",
-  "zhShort": "油锯操作员"
+  "zhShort": "油锯操作员",
+  "koShort": "체인톱조작원",
+  "enShort": "Chain saw and skidder operators"
  },
  "84111": {
   "zh": "林业工人",
   "ko": "임업 및 산림 작업원",
-  "zhShort": "林业工人"
+  "zhShort": "林业工人",
+  "koShort": "임업 및 산림 작업원",
+  "enShort": "Forestry workers"
  },
  "84120": {
   "zh": "特种牲畜饲养员和农场机械操作员",
   "ko": "전문 가축 작업원 및 농기계 조작원",
-  "zhShort": "特种牲畜饲养员"
+  "zhShort": "特种牲畜饲养员",
+  "koShort": "축산 작업원",
+  "enShort": "Specialized livestock workers"
  },
  "84121": {
   "zh": "渔船甲板水手",
   "ko": "어선 선원",
-  "zhShort": "渔船甲板水手"
+  "zhShort": "渔船甲板水手",
+  "koShort": "어선 선원",
+  "enShort": "Fishing vessel deckhands"
  },
  "85100": {
   "zh": "牲畜劳工",
   "ko": "가축 노동자",
-  "zhShort": "牲畜劳工"
+  "zhShort": "牲畜劳工",
+  "koShort": "가축 노동자",
+  "enShort": "Livestock labourers"
  },
  "85101": {
   "zh": "收获劳工",
   "ko": "수확 노동자",
-  "zhShort": "收获劳工"
+  "zhShort": "收获劳工",
+  "koShort": "수확 노동자",
+  "enShort": "Harvesting labourers"
  },
  "85102": {
   "zh": "水产养殖和海洋捕捞劳工",
-  "ko": "양식 및 해양 수확 노동자"
+  "ko": "양식 및 해양 수확 노동자",
+  "koShort": "양식노동자",
+  "enShort": "Aquaculture labourers"
  },
  "85103": {
   "zh": "苗圃和温室工人",
   "ko": "묘장 및 온실 노동자",
-  "zhShort": "苗圃和温室工人"
+  "zhShort": "苗圃和温室工人",
+  "koShort": "묘장 및 온실 노동자",
+  "enShort": "Nursery and greenhouse"
  },
  "85110": {
   "zh": "矿工",
   "ko": "광부 보조원",
-  "zhShort": "矿工"
+  "zhShort": "矿工",
+  "koShort": "광부 보조원",
+  "enShort": "Mine labourers"
  },
  "85111": {
   "zh": "石油和天然气钻探、服务及相关劳工",
   "ko": "석유 및 가스 시추 서비스 관련 노동자",
-  "zhShort": "油气钻井工"
+  "zhShort": "油气钻井工",
+  "koShort": "석유가스시추노동자",
+  "enShort": "Oil and gas drilling labourers"
  },
  "85120": {
   "zh": "伐木和林业工人",
   "ko": "벌목 및 임업 노동자",
-  "zhShort": "伐木和林业工人"
+  "zhShort": "伐木和林业工人",
+  "koShort": "벌목 및 임업 노동자",
+  "enShort": "Logging and forestry labourers"
  },
  "85121": {
   "zh": "景观和场地维护工人",
   "ko": "조경 및 정원 유지 노동자",
-  "zhShort": "园林绿化工人"
+  "zhShort": "园林绿化工人",
+  "koShort": "조경 노동자",
+  "enShort": "Landscaping labourers"
  },
  "90010": {
   "zh": "制造经理",
   "ko": "제조업 관리자",
-  "zhShort": "制造经理"
+  "zhShort": "制造经理",
+  "koShort": "제조업 관리자",
+  "enShort": "Manufacturing managers"
  },
  "90011": {
   "zh": "公用事业经理",
   "ko": "유틸리티 관리자",
-  "zhShort": "公用事业经理"
+  "zhShort": "公用事业经理",
+  "koShort": "유틸리티 관리자",
+  "enShort": "Utilities managers"
  },
  "92010": {
   "zh": "矿物和金属加工监督者",
   "ko": "광물 및 금속 가공 감독자",
-  "zhShort": "矿冶主管"
+  "zhShort": "矿冶主管",
+  "koShort": "광물금속감독자"
  },
  "92011": {
   "zh": "石油、天然气和化学加工及公用事业主管",
   "ko": "석유 가스 및 화학 가공 및 유틸리티 감독자",
-  "zhShort": "石化主管"
+  "zhShort": "石化主管",
+  "koShort": "석유가스화학감독자",
+  "enShort": "Supervisors petroleum"
  },
  "92012": {
   "zh": "食品和饮料加工监督者",
   "ko": "식품 및 음료 가공 감독자",
-  "zhShort": "食品加工厂主管"
+  "zhShort": "食品加工厂主管",
+  "koShort": "식품음료감독"
  },
  "92013": {
   "zh": "塑料和橡胶制品制造主管",
   "ko": "플라스틱 및 고무 제품 제조 감독자",
-  "zhShort": "塑橡制品主管"
+  "zhShort": "塑橡制品主管",
+  "koShort": "플라스틱제조감독",
+  "enShort": "Supervisors plastic"
  },
  "92014": {
   "zh": "森林产品加工监督者",
   "ko": "산림 제품 가공 감독자",
-  "zhShort": "林产加工主管"
+  "zhShort": "林产加工主管",
+  "koShort": "산림 제품 가공 감독자",
+  "enShort": "Supervisors forest products"
  },
  "92015": {
   "zh": "纺织品、织物、毛皮和皮革产品加工制造主管",
   "ko": "섬유 직물 모피 및 가죽 제품 가공 제조 감독자",
-  "zhShort": "纺织皮革主管"
+  "zhShort": "纺织皮革主管",
+  "koShort": "섬유가죽감독자",
+  "enShort": "Textile supervisors"
  },
  "92021": {
   "zh": "电子和电气产品制造主管",
-  "ko": "전자 및 전기 제품 제조 감독자"
+  "ko": "전자 및 전기 제품 제조 감독자",
+  "koShort": "전자전기제조감독",
+  "enShort": "Electronics supervisors"
  },
  "92022": {
   "zh": "家具和固定装置制造主管",
   "ko": "가구 및 고정물 제조 감독자",
-  "zhShort": "家具制造主管"
+  "zhShort": "家具制造主管",
+  "koShort": "가구 제조 감독"
  },
  "92023": {
   "zh": "其他机械和金属产品制造主管",
-  "ko": "기타 기계 및 금속 제품 제조 감독자"
+  "ko": "기타 기계 및 금속 제품 제조 감독자",
+  "koShort": "기계금속제조감독자",
+  "enShort": "Supervisors mechanical"
  },
  "92024": {
   "zh": "其他产品制造和装配监督者",
   "ko": "기타 제품 제조 및 조립 감독자",
-  "zhShort": "制造业主管"
+  "zhShort": "制造业主管",
+  "koShort": "제조감독자"
  },
  "92100": {
   "zh": "动力工程师和动力系统操作员",
   "ko": "발전 기사 및 전력 시스템 운영자",
-  "zhShort": "动力工程师"
+  "zhShort": "动力工程师",
+  "koShort": "발전 기사",
+  "enShort": "Power engineers"
  },
  "92101": {
   "zh": "水处理和废水处理厂操作员",
   "ko": "수처리 및 폐수 처리 공장 운영자",
-  "zhShort": "水处理操作员"
+  "zhShort": "水处理操作员",
+  "koShort": "수처리 공장 운영자"
  },
  "93100": {
   "zh": "矿物和金属加工中央控制与过程操作员",
   "ko": "광물 및 금속 가공 중앙 제어 및 공정 조작원",
-  "zhShort": "矿冶中控员"
+  "zhShort": "矿冶中控员",
+  "koShort": "광물금속조작원"
  },
  "93101": {
   "zh": "石油、天然气和化学加工中央控制与工艺操作员",
   "ko": "석유 가스 및 화학 가공 중앙 제어 및 공정 조작원",
-  "zhShort": "石化中控员"
+  "zhShort": "石化中控员",
+  "koShort": "중앙제어조작원"
  },
  "93200": {
   "zh": "飞机装配工和飞机装配检验员",
   "ko": "항공기 조립공 및 항공기 조립 검사원",
-  "zhShort": "飞机装配工"
+  "zhShort": "飞机装配工",
+  "koShort": "항공기 조립공",
+  "enShort": "Aircraft assemblers"
  },
  "94100": {
   "zh": "矿物和金属加工机械操作员",
   "ko": "광물 및 금속 가공 기계 조작원",
-  "zhShort": "矿金加工操作员"
+  "zhShort": "矿金加工操作员",
+  "koShort": "광물금속가공조작원"
  },
  "94101": {
   "zh": "铸造工人",
   "ko": "주조 작업자",
-  "zhShort": "铸造工人"
+  "zhShort": "铸造工人",
+  "koShort": "주조 작업자",
+  "enShort": "Foundry workers"
  },
  "94102": {
   "zh": "玻璃成型和精加工机械操作员及玻璃切割工",
   "ko": "유리 성형 및 마감 기계 조작원 및 유리 절단공",
-  "zhShort": "玻璃成型工"
+  "zhShort": "玻璃成型工",
+  "koShort": "유리 성형 조작원"
  },
  "94103": {
   "zh": "混凝土粘土和石材成型操作员",
   "ko": "콘크리트 점토 및 석재 성형 작업자",
-  "zhShort": "成型操作员"
+  "zhShort": "成型操作员",
+  "koShort": "성형작업자"
  },
  "94104": {
   "zh": "矿物和金属加工检验员与测试员",
   "ko": "광물 및 금속 가공 검사원 및 시험관",
-  "zhShort": "矿金加工检验员"
+  "zhShort": "矿金加工检验员",
+  "koShort": "광물금속검사원",
+  "enShort": "Inspectors and testers mineral"
  },
  "94105": {
   "zh": "金属加工和锻造机操作员",
   "ko": "금속 가공 및 단조 기계 조작원",
-  "zhShort": "金属加工操作工"
+  "zhShort": "金属加工操作工",
+  "koShort": "금속가공조작원"
  },
  "94106": {
   "zh": "机床操作员",
   "ko": "기계공작기계조작원",
-  "zhShort": "机床操作员"
+  "zhShort": "机床操作员",
+  "koShort": "기계공작기계조작원",
+  "enShort": "Machining tool operators"
  },
  "94107": {
   "zh": "其他金属制品机械操作员",
-  "ko": "기타 금속 제품 기계 조작원"
+  "ko": "기타 금속 제품 기계 조작원",
+  "koShort": "금속제품기계조작원",
+  "enShort": "Metal prod machine ops"
  },
  "94110": {
   "zh": "化工厂机器操作员",
-  "ko": "화학 공장 기계 조작원"
+  "ko": "화학 공장 기계 조작원",
+  "koShort": "화학 공장 기계 조작원",
+  "enShort": "Chemical plant operators"
  },
  "94111": {
   "zh": "塑料加工机械操作员",
   "ko": "플라스틱 가공 기계 조작원",
-  "zhShort": "塑料加工操作员"
+  "zhShort": "塑料加工操作员",
+  "koShort": "플라스틱 가공 조작원"
  },
  "94112": {
   "zh": "橡胶加工机械操作员及相关工人",
-  "ko": "고무 가공 기계 조작원 및 관련 근로자"
+  "ko": "고무 가공 기계 조작원 및 관련 근로자",
+  "koShort": "고무 가공 기계 조작원"
  },
  "94120": {
   "zh": "锯木厂机器操作员",
   "ko": "제재소 기계 조작원",
-  "zhShort": "锯木厂操作工"
+  "zhShort": "锯木厂操作工",
+  "koShort": "제재소 기계 조작원",
+  "enShort": "Sawmill machine operators"
  },
  "94122": {
   "zh": "纸品加工机械操作员",
   "ko": "종이 가공 기계 조작원",
-  "zhShort": "纸品加工工"
+  "zhShort": "纸品加工工",
+  "koShort": "종이 가공 기계 조작원"
  },
  "94124": {
   "zh": "木工机械操作员",
   "ko": "목공 기계 조작원",
-  "zhShort": "木工机械操作员"
+  "zhShort": "木工机械操作员",
+  "koShort": "목공 기계 조작원",
+  "enShort": "Woodworking machine operators"
  },
  "94129": {
   "zh": "其他木材加工机械操作员",
   "ko": "기타 목재 가공 기계 조작원",
-  "zhShort": "木材加工操作员"
+  "zhShort": "木材加工操作员",
+  "koShort": "목재 가공 조작원"
  },
  "94130": {
   "zh": "纺织纤维和纱线皮革加工机械操作员及工人",
   "ko": "직물 섬유 및 실, 가죽 및 모피 가공 기계 조작원 및 작업자",
-  "zhShort": "纺织皮革操作工"
+  "zhShort": "纺织皮革操作工",
+  "koShort": "섬유가공조작원",
+  "enShort": "Textile fibre and yarn"
  },
  "94131": {
   "zh": "织工、针织工及其他织物制造职业",
   "ko": "직조공, 뜨개질공 및 기타 직물 제조 직업",
-  "zhShort": "纺织工"
+  "zhShort": "纺织工",
+  "koShort": "직조공",
+  "enShort": "Weavers"
  },
  "94132": {
   "zh": "工业缝纫机操作员",
   "ko": "산업용 재봉 기계 조작원",
-  "zhShort": "工业缝纫工"
+  "zhShort": "工业缝纫工",
+  "koShort": "산업용 재봉조작원"
  },
  "94133": {
   "zh": "纺织品、织物、毛皮和皮革产品制造检验员和分级员",
   "ko": "섬유 직물 모피 및 가죽 제품 제조 검사원 및 등급 판정사",
-  "zhShort": "纺织皮革质检员"
+  "zhShort": "纺织皮革质检员",
+  "koShort": "섬유 피혁 검사원"
  },
  "94140": {
   "zh": "食品和饮料加工过程控制与机器操作员",
   "ko": "식품 및 음료 가공 공정 제어 및 기계 조작원",
-  "zhShort": "食品饮料加工员"
+  "zhShort": "食品饮料加工员",
+  "koShort": "식품 가공 조작원"
  },
  "94141": {
   "zh": "工业屠夫和肉品切割工家禽准备及相关工人",
   "ko": "산업용 도축공 및 고기 분할공, 가금류 준비공 및 관련 근로자",
-  "zhShort": "屠宰工"
+  "zhShort": "屠宰工",
+  "koShort": "도축공",
+  "enShort": "Industrial butchers"
  },
  "94142": {
   "zh": "鱼类和海鲜加工厂工人",
   "ko": "어류 및 해산물 공장 근로자",
-  "zhShort": "水产加工工"
+  "zhShort": "水产加工工",
+  "koShort": "수산물 공장 근로자",
+  "enShort": "Fish and seafood plant workers"
  },
  "94143": {
   "zh": "食品和饮料加工测试员和分级员",
   "ko": "식품 및 음료 가공 검사원 및 등급 판정사",
-  "zhShort": "食品检验员"
+  "zhShort": "食品检验员",
+  "koShort": "식품검사원",
+  "enShort": "Food and beverage testers"
  },
  "94150": {
   "zh": "无版印刷设备操作员",
   "ko": "플레이트리스 인쇄 장비 조작원",
-  "zhShort": "无版印刷操作员"
+  "zhShort": "无版印刷操作员",
+  "koShort": "플레이트리스 인쇄조작원"
  },
  "94151": {
   "zh": "照相机制版及其他印前职业",
   "ko": "카메라, 플레이트 제작 및 기타 인쇄 전 공정 직업",
-  "zhShort": "印前技工"
+  "zhShort": "印前技工",
+  "koShort": "인쇄 전 공정 직업",
+  "enShort": "Camera platemaking prepress occ"
  },
  "94152": {
   "zh": "装订和整饰机操作员",
   "ko": "제본 및 마감 기계 조작원",
-  "zhShort": "装订工"
+  "zhShort": "装订工",
+  "koShort": "제본조작원"
  },
  "94200": {
   "zh": "机动车装配工检验员和测试员",
   "ko": "자동차 조립 검사원 및 시험관",
-  "zhShort": "机动车装配工"
+  "zhShort": "机动车装配工",
+  "koShort": "자동차 조립 검사원",
+  "enShort": "Motor vehicle assemblers"
  },
  "94201": {
   "zh": "电子装配工、制造工、检验员和测试员",
   "ko": "전자 조립공, 제조공, 검사원 및 시험공",
-  "zhShort": "电子装配工"
+  "zhShort": "电子装配工",
+  "koShort": "전자 조립공",
+  "enShort": "Electronics assemblers"
  },
  "94202": {
   "zh": "电气器具装置及设备制造装配工和检验员",
   "ko": "전기 기기 장치 및 장비 제조 조립 검사원",
-  "zhShort": "电器装配检验工"
+  "zhShort": "电器装配检验工",
+  "koShort": "전기기기 조립검사원",
+  "enShort": "Electrical assemblers"
  },
  "94203": {
   "zh": "工业电动机和变压器装配工、制造工和检验员",
-  "ko": "산업용 전기 모터 및 변압기 조립원, 제조원 및 검사원"
+  "ko": "산업용 전기 모터 및 변압기 조립원, 제조원 및 검사원",
+  "koShort": "산업용전기기계조립원"
  },
  "94204": {
   "zh": "机械装配工和检验员",
   "ko": "기계 조립원 및 검사원",
-  "zhShort": "装配检验工"
+  "zhShort": "装配检验工",
+  "koShort": "기계 조립원 및 검사원",
+  "enShort": "Mechanical assemblers"
  },
  "94210": {
   "zh": "家具和固定装置装配工、饰面工、翻新工和检验员",
   "ko": "가구 및 고정물 조립원, 마감공, 재도장공 및 검사원",
-  "zhShort": "家具装配工"
+  "zhShort": "家具装配工",
+  "koShort": "가구 조립원",
+  "enShort": "Furniture and fixture assemblers"
  },
  "94211": {
   "zh": "其他木制品装配和检验员",
-  "ko": "기타 목재 제품 조립원 및 검사원"
+  "ko": "기타 목재 제품 조립원 및 검사원",
+  "koShort": "목재 제품 조립원",
+  "enShort": "Wood product assemblers"
  },
  "94212": {
   "zh": "塑料制品装配工、精加工工和检验员",
   "ko": "플라스틱 제품 조립원, 마감공 및 검사원",
-  "zhShort": "塑料产品装配工"
+  "zhShort": "塑料产品装配工",
+  "koShort": "플라스틱 조립원",
+  "enShort": "Plastic products assemblers"
  },
  "94213": {
   "zh": "工业油漆工、涂层工和金属表面处理工艺操作员",
   "ko": "산업용 페인트 도포 및 금속 표면 처리 공정 조작원",
-  "zhShort": "工业油漆工"
+  "zhShort": "工业油漆工",
+  "koShort": "산업용 페인트 도포공",
+  "enShort": "Industrial painters"
  },
  "94219": {
   "zh": "其他产品装配工、精加工工和检验员",
   "ko": "기타 제품 조립원 마감공 검사원",
-  "zhShort": "产品装配工"
+  "zhShort": "产品装配工",
+  "koShort": "제품 조립원",
+  "enShort": "Other products assemblers"
  },
  "95100": {
   "zh": "矿物和金属加工劳工",
   "ko": "광물 및 금속 가공 노동자",
-  "zhShort": "矿冶劳工"
+  "zhShort": "矿冶劳工",
+  "koShort": "광물금속가공노동자"
  },
  "95101": {
   "zh": "金属制造劳工",
   "ko": "금속 가공 노동자",
-  "zhShort": "金属制造劳工"
+  "zhShort": "金属制造劳工",
+  "koShort": "금속 가공 노동자",
+  "enShort": "Metal fab labourers"
  },
  "95102": {
   "zh": "化学制品加工和公用事业工人",
   "ko": "화학 제품 가공 및 유틸리티 노동자",
-  "zhShort": "化工普工"
+  "zhShort": "化工普工",
+  "koShort": "화학제품가공노동자"
  },
  "95103": {
   "zh": "木材纸浆和造纸加工工人",
-  "ko": "목재 펄프 및 제지 가공 노동자"
+  "ko": "목재 펄프 및 제지 가공 노동자",
+  "koShort": "목재 펄프 가공 노동자"
  },
  "95104": {
   "zh": "橡胶和塑料制品制造工人",
-  "ko": "고무 및 플라스틱 제품 제조 노동자"
+  "ko": "고무 및 플라스틱 제품 제조 노동자",
+  "enShort": "Rubber plastic labourers"
  },
  "95105": {
   "zh": "纺织加工和裁剪工人",
   "ko": "섬유 가공 및 절단 노동자",
-  "zhShort": "纺织普工"
+  "zhShort": "纺织普工",
+  "koShort": "섬유 가공 노동자",
+  "enShort": "Labourers in textile processing"
  },
  "95106": {
   "zh": "食品和饮料加工工人",
   "ko": "식품 및 음료 가공 노동자",
-  "zhShort": "食品饮料加工工"
+  "zhShort": "食品饮料加工工",
+  "koShort": "식품 음료 가공 노동자"
  },
  "95107": {
   "zh": "鱼类和海鲜加工工人",
@@ -2395,26 +3275,45 @@
  "95109": {
   "zh": "加工制造和公用事业其他劳工",
   "ko": "가공 제조 및 유틸리티 분야의 기타 노동자",
-  "zhShort": "加工制造劳工"
+  "zhShort": "加工制造劳工",
+  "koShort": "기타 가공 제조 노동자",
+  "enShort": "Labourers in processing"
  },
  "14110": {
   "zh": "调查访问员和统计文员",
-  "ko": "조사 면접원 및 통계 사무원"
+  "ko": "조사 면접원 및 통계 사무원",
+  "koShort": "조사원",
+  "enShort": "Survey interviewers"
  },
  "63220": {
   "zh": "修鞋工和制鞋工",
-  "ko": "신발 수선공 및 신발 제작공"
+  "ko": "신발 수선공 및 신발 제작공",
+  "koShort": "신발 수선공",
+  "enShort": "Shoe repairers"
  },
  "64201": {
   "zh": "图像、社交及其他个人顾问",
-  "ko": "이미지·사회 및 기타 개인 컨설턴트"
+  "ko": "이미지·사회 및 기타 개인 컨설턴트",
+  "koShort": "개인 컨설턴트"
  },
  "92020": {
   "zh": "机动车装配主管",
-  "ko": "자동차 조립 감독자"
+  "ko": "자동차 조립 감독자",
+  "koShort": "자동차 조립 감독자"
  },
  "94121": {
   "zh": "纸浆厂造纸及后加工机械操作员",
-  "ko": "펄프 밀 제지 및 마무리 기계 조작원"
+  "ko": "펄프 밀 제지 및 마무리 기계 조작원",
+  "koShort": "제지 기계 조작원",
+  "enShort": "Pulp mill operators"
+ },
+ "12113": {
+  "enShort": "Statistical officers"
+ },
+ "21322": {
+  "enShort": "Metallurgical engineers"
+ },
+ "94153": {
+  "enShort": "Photographic processors"
  }
 }

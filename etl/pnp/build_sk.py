@@ -47,6 +47,79 @@ NOC_PATTERNS = [
     re.compile(r"^\|\s*(\d{5})\s*\|\s*([^|]+?)\s*\|"),     # | 21211 | Data scientists |
 ]
 
+# ── SINP 主线(OID / Express Entry):官方**不发在需清单,发的是排除清单** ────────────
+# 2026-08-03 补:此前本站只抓了上面三条 Talent Pathway(行业专项),于是「SK 主线」在库里是空的,
+# 而 provListCoverage 见到有行就判 listed → 报告对用户说「查过萨省清单,你不在上面」。
+# 我们从没查过那张表 —— 主线在这里,而且是排除式:不在清单上 = 可以申请(还要 TEER 0-3)。
+# 清单是 PDF(publications.saskatchewan.ca 产品号 102709),格式 id 从产品 API 现取,不写死。
+EXCL_PRODUCT = 102709
+EXCL_API = f"https://publications.saskatchewan.ca/api/v1/products/{EXCL_PRODUCT}"
+EXCL_DL = "https://publications.saskatchewan.ca/api/v1/products/{p}/formats/{f}/download"
+EXCL_PAGE = _SK + "occupation-restrictions-and-requirements"
+EXCL_NOTE = ("SINP 主线(Occupations In-Demand / Express Entry)是**排除式**:不在本清单上即可申请;"
+             "官方同页明示 NOC TEER 4/5 不合格(即需 TEER 0-3)。"
+             "在清单上的职业仍可能走 Employment Offer 或萨省经验类——但需萨省雇主注册并获 EPA 批准。")
+# PDF 是两列表格,pymupdf 把 NOC 与职业名拆成相邻两行(「11100」\n「Financial auditors…」);
+# 少数导出会并成一行,两种都认。
+EXCL_ROW = re.compile(r"^\s*(\d{5})\s+([A-Za-z].*?)\s*$")
+EXCL_CODE = re.compile(r"^\s*(\d{5})\s*$")
+EXCL_UPDATED = re.compile(r"Updated:\s*([A-Z][a-z]+)\s+(\d{1,2}),\s*(\d{4})")
+_MONTHS = ("january", "february", "march", "april", "may", "june",
+           "july", "august", "september", "october", "november", "december")
+
+
+def build_excluded() -> None:
+    """SINP 排除清单(主线口径)→ raw/pnp/sk-excluded.json。抓不到/解析空 → 保留旧表。"""
+    import fitz  # pymupdf(已在 pyproject 依赖里;只有这一步用得上,按需导入)
+
+    try:
+        meta = httpx.get(EXCL_API, headers={"User-Agent": UA}, follow_redirects=True, timeout=40).json()
+        fmt = (meta.get("productFormats") or [{}])[0].get("productFormatId")
+        if not fmt:
+            print("  ✗ SK 排除清单:产品 API 没给格式 id(保留旧表)")
+            return
+        pdf = httpx.get(EXCL_DL.format(p=EXCL_PRODUCT, f=fmt), headers={"User-Agent": UA},
+                        follow_redirects=True, timeout=60).content
+    except Exception as e:  # noqa: BLE001
+        print(f"  ✗ SK 排除清单抓取失败: {type(e).__name__} {e}(保留旧表)")
+        return
+    with fitz.open(stream=pdf, filetype="pdf") as doc:
+        text = "\n".join(page.get_text() for page in doc)
+    lines = [ln.strip() for ln in text.splitlines()]
+    occ: dict[str, str] = {}
+    for i, ln in enumerate(lines):
+        if (m := EXCL_ROW.match(ln)):
+            noc, name = m.group(1), m.group(2)
+        elif EXCL_CODE.match(ln):
+            nxt = next((x for x in lines[i + 1:i + 3] if x), "")     # 紧邻的下一行非空 = 职业名
+            if not nxt or not nxt[0].isalpha():
+                continue
+            noc, name = ln.strip(), nxt
+        else:
+            continue
+        name = re.sub(r"\s+", " ", name).strip(" .")
+        if name.upper() in ("NOC", "OCCUPATION", "OCCUPATION TITLE"):
+            continue
+        occ.setdefault(noc, name)
+    if not occ:
+        print("  ✗ SK 排除清单没解析到 NOC(保留旧表)")
+        return
+    # 官方在 PDF 首页自己标的更新日期 —— 比我们的 fetched 更该给用户看(这份表可能几年不动)
+    effective = ""
+    if (u := EXCL_UPDATED.search(text)):
+        mon = _MONTHS.index(u.group(1).lower()) + 1 if u.group(1).lower() in _MONTHS else 0
+        if mon:
+            effective = f"{u.group(3)}-{mon:02d}-{int(u.group(2)):02d}"
+    table = {
+        "stream": "SINP Occupations In-Demand / Express Entry", "label": "SK 主线不合格清单",
+        "province": PROVINCE, "program": "PNP", "type": "ineligible", "note": EXCL_NOTE,
+        "url": EXCL_PAGE, "fetched": date.today().isoformat(), "effective": effective,
+        "occupations": [{"noc": n, "name": nm} for n, nm in sorted(occ.items())],
+    }
+    (_paths.PNP / "sk-excluded.json").write_text(json.dumps(table, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"  ✓ {'SK 主线排除':<10} {len(occ):>3} 个职业 → pnp/sk-excluded.json  "
+          f"(实时 {table['fetched']};官方标注更新 {effective or '未标'})")
+
 
 def fetch_md(url: str) -> str:
     html = httpx.get(url, headers={"User-Agent": UA}, follow_redirects=True, timeout=40).text
@@ -87,6 +160,7 @@ def main() -> None:
         }
         (_paths.PNP / s["out"]).write_text(json.dumps(table, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"  ✓ {s['label']:<10} {len(occs):>3} 个职业 → pnp/{s['out']}  (实时 {table['fetched']})")
+    build_excluded()   # 主线口径(排除式);三条专项通道之外单独一张表
 
 
 if __name__ == "__main__":

@@ -1,0 +1,626 @@
+{
+ "source": "https://www.ircc.canada.ca/opendata-donneesouvertes/data/EN_ODP-TR-Study-IS_PT_study_level_sign.xlsx",
+ "byProv": {
+  "NL": {
+   "2015": {
+    "n": 1640,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2016": {
+    "n": 1990,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2017": {
+    "n": 2230,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2018": {
+    "n": 2295,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2019": {
+    "n": 2615,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2020": {
+    "n": 1380,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2021": {
+    "n": 3295,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2022": {
+    "n": 3885,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2023": {
+    "n": 4135,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2024": {
+    "n": 3385,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2025": {
+    "n": 3225,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2026": {
+    "n": 1155,
+    "complete": false,
+    "throughMonth": "May"
+   }
+  },
+  "PE": {
+   "2015": {
+    "n": 905,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2016": {
+    "n": 1175,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2017": {
+    "n": 1445,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2018": {
+    "n": 1855,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2019": {
+    "n": 1900,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2020": {
+    "n": 1295,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2021": {
+    "n": 1895,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2022": {
+    "n": 2415,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2023": {
+    "n": 3060,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2024": {
+    "n": 2165,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2025": {
+    "n": 1940,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2026": {
+    "n": 550,
+    "complete": false,
+    "throughMonth": "May"
+   }
+  },
+  "NS": {
+   "2015": {
+    "n": 6245,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2016": {
+    "n": 7025,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2017": {
+    "n": 7770,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2018": {
+    "n": 9890,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2019": {
+    "n": 10350,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2020": {
+    "n": 5025,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2021": {
+    "n": 9970,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2022": {
+    "n": 13170,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2023": {
+    "n": 16020,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2024": {
+    "n": 10865,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2025": {
+    "n": 9260,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2026": {
+    "n": 3115,
+    "complete": false,
+    "throughMonth": "May"
+   }
+  },
+  "NB": {
+   "2015": {
+    "n": 2320,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2016": {
+    "n": 2620,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2017": {
+    "n": 2910,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2018": {
+    "n": 3730,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2019": {
+    "n": 4370,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2020": {
+    "n": 2265,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2021": {
+    "n": 5930,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2022": {
+    "n": 7695,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2023": {
+    "n": 10930,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2024": {
+    "n": 8095,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2025": {
+    "n": 8090,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2026": {
+    "n": 2555,
+    "complete": false,
+    "throughMonth": "May"
+   }
+  },
+  "QC": {
+   "2015": {
+    "n": 30210,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2016": {
+    "n": 33395,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2017": {
+    "n": 37965,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2018": {
+    "n": 43995,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2019": {
+    "n": 57100,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2020": {
+    "n": 42385,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2021": {
+    "n": 63895,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2022": {
+    "n": 63495,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2023": {
+    "n": 78485,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2024": {
+    "n": 72680,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2025": {
+    "n": 61110,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2026": {
+    "n": 16925,
+    "complete": false,
+    "throughMonth": "May"
+   }
+  },
+  "ON": {
+   "2015": {
+    "n": 96090,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2016": {
+    "n": 123800,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2017": {
+    "n": 155410,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2018": {
+    "n": 174160,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2019": {
+    "n": 198215,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2020": {
+    "n": 119560,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2021": {
+    "n": 219775,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2022": {
+    "n": 291035,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2023": {
+    "n": 363145,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2024": {
+    "n": 248345,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2025": {
+    "n": 163855,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2026": {
+    "n": 48765,
+    "complete": false,
+    "throughMonth": "May"
+   }
+  },
+  "MB": {
+   "2015": {
+    "n": 6925,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2016": {
+    "n": 8575,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2017": {
+    "n": 10450,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2018": {
+    "n": 11985,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2019": {
+    "n": 12020,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2020": {
+    "n": 8380,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2021": {
+    "n": 12605,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2022": {
+    "n": 14850,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2023": {
+    "n": 19230,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2024": {
+    "n": 15260,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2025": {
+    "n": 13340,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2026": {
+    "n": 4805,
+    "complete": false,
+    "throughMonth": "May"
+   }
+  },
+  "SK": {
+   "2015": {
+    "n": 3905,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2016": {
+    "n": 4335,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2017": {
+    "n": 4515,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2018": {
+    "n": 5765,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2019": {
+    "n": 6255,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2020": {
+    "n": 3485,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2021": {
+    "n": 6395,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2022": {
+    "n": 8465,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2023": {
+    "n": 12095,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2024": {
+    "n": 9410,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2025": {
+    "n": 7770,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2026": {
+    "n": 2820,
+    "complete": false,
+    "throughMonth": "May"
+   }
+  },
+  "AB": {
+   "2015": {
+    "n": 14545,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2016": {
+    "n": 16205,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2017": {
+    "n": 16625,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2018": {
+    "n": 18740,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2019": {
+    "n": 20435,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2020": {
+    "n": 12825,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2021": {
+    "n": 23740,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2022": {
+    "n": 28705,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2023": {
+    "n": 42225,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2024": {
+    "n": 39605,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2025": {
+    "n": 33770,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2026": {
+    "n": 12790,
+    "complete": false,
+    "throughMonth": "May"
+   }
+  },
+  "BC": {
+   "2015": {
+    "n": 56750,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2016": {
+    "n": 65650,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2017": {
+    "n": 76375,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2018": {
+    "n": 81615,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2019": {
+    "n": 86060,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2020": {
+    "n": 58975,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2021": {
+    "n": 94070,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2022": {
+    "n": 110725,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2023": {
+    "n": 127280,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2024": {
+    "n": 101680,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2025": {
+    "n": 76915,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2026": {
+    "n": 25810,
+    "complete": false,
+    "throughMonth": "May"
+   }
+  }
+ },
+ "note": "新发学签**流量**(按许可生效月份,非年末存量)。月度粒度,进行年为 YTD(complete=false 时 n 是已公布月份求和,throughMonth 是最后一个有数月份)。与存量口径不可混用:存量=在库人数(竞争比分母),流量=当期新增趋势。"
+}

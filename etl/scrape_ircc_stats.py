@@ -24,7 +24,13 @@ SRC = {
     "tfwp": BASE + "EN_ODP_annual-TR-work-TFW_PT_program_year_end.xlsx",
     "imp": BASE + "EN_ODP_annual-TR-work-IMP_PT_program_year_end.xlsx",
     "pr": BASE + "EN_ODP-PR-ProvImmCat.xlsx",
+    # 2026-08-03 补:上面 study/tfwp/imp 全是**年末存量**(Dec 31),官方那张表最后一列就停在 2024,
+    # 2025 年末存量至今未发(数据集本身 2026-07-21 还更新过,不是僵尸文件)。
+    # 但同一数据集的**新发流量**表是**月度**粒度、年份列一直排到 2026 —— 我们一列都没碰过。
+    # Frank「是他们没公布还是我们没抓到」→ 存量是他们没发,流量是我们没抓。这一步补后者。
+    "study_flow": BASE + "EN_ODP-TR-Study-IS_PT_study_level_sign.xlsx",
 }
+OUT_FLOW = _paths.IRCC / "study_flow.json"
 PROV = {
     "Newfoundland and Labrador": "NL", "Prince Edward Island": "PE", "Nova Scotia": "NS",
     "New Brunswick": "NB", "Quebec": "QC", "Ontario": "ON", "Manitoba": "MB",
@@ -82,6 +88,43 @@ def pnp_latest_full_year(ws) -> tuple[str, dict[str, int]]:
             pend = None
     return year, out
 
+# 表头三层:第 3 行=年(每年起始列,步长 17)、第 4 行=Q1..Q4 与「YYYY Total」、第 5 行=月份。
+# 年总计 = 起始列 + 16;进行年(2026)没有年总计列 → 按已有月份列求和作 YTD,并记最后一个有数月份。
+MONTHS = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+
+
+def study_flow(ws) -> dict:
+    rows = [list(r) for r in ws.iter_rows(values_only=True)]
+    yr_row = next(r for r in rows if sum(1 for c in r if str(c or "").strip().isdigit() and str(c or "").strip()[:2] == "20") > 3)
+    mo_row = rows[rows.index(yr_row) + 2]
+    starts = {str(c).strip(): i for i, c in enumerate(yr_row) if str(c or "").strip().isdigit()}
+    at = lambda r, i: num(r[i]) if i < len(r) else 0
+    out: dict[str, dict] = {}
+    for r in rows:
+        if not r:                                  # 前几行是标题/空行,长度可能为 0
+            continue
+        name = str(r[0] or "").replace(" Total", "").strip()
+        if name not in PROV or "Total" not in str(r[0] or ""):
+            continue
+        prov: dict[str, dict] = {}
+        for y, s0 in starts.items():
+            months = [(str(mo_row[k] or "").strip(), k) for k in range(s0, min(s0 + 16, len(mo_row)))]
+            months = [(m, k) for m, k in months if m in MONTHS]
+            got = [(m, at(r, k)) for m, k in months if k < len(r) and str(r[k] or "").strip() not in ("", "None")]
+            if not got:
+                continue
+            total_col = s0 + 16
+            prov[y] = {
+                # 年内 12 个月齐 → 用官方年总计列;否则 YTD=已有月份求和,并标出最后一个有数月份
+                "n": at(r, total_col) if (len(got) == 12 and total_col < len(r) and at(r, total_col)) else sum(v for _, v in got),
+                "complete": len(got) == 12,
+                "throughMonth": got[-1][0],
+            }
+        if prov:
+            out[PROV[name]] = prov
+    return out
+
+
 def main() -> None:
     _paths.IRCC.mkdir(parents=True, exist_ok=True)
     tr: dict = {"source": {k: SRC[k] for k in ("study", "tfwp", "imp")}, "note": "IRCC 年末存量(Dec 31 holders);数值官方四舍五入到 5,'--' 小值抑制当 0"}
@@ -95,6 +138,20 @@ def main() -> None:
     OUT_PNP.write_text(json.dumps({"source": SRC["pr"], "year": year, "byProv": pnp,
                                    "note": "PNP 类别 PR 登陆数(含随行家属,人头口径)最新完整年"}, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"pnp admissions: {year} · {len(pnp)} 省 · ON={pnp.get('ON')}", flush=True)
+
+    flow = study_flow(fetch(SRC["study_flow"]))
+    OUT_FLOW.write_text(json.dumps({
+        "source": SRC["study_flow"], "byProv": flow,
+        "note": ("新发学签**流量**(按许可生效月份,非年末存量)。月度粒度,进行年为 YTD(complete=false 时 "
+                 "n 是已公布月份求和,throughMonth 是最后一个有数月份)。与存量口径不可混用:"
+                 "存量=在库人数(竞争比分母),流量=当期新增趋势。"),
+    }, ensure_ascii=False, indent=1), encoding="utf-8")
+    yrs = sorted({y for p in flow.values() for y in p})
+    on = flow.get("ON", {})
+    tail = "  ".join(
+        f"{y}={on[y]['n']:,}" + ("" if on[y]["complete"] else " (至 " + on[y]["throughMonth"] + ")")
+        for y in yrs[-3:] if y in on)
+    print(f"study flow: {len(flow)} 省 · 年份 {yrs[0]}–{yrs[-1]} · ON {tail}", flush=True)
 
 if __name__ == "__main__":
     main()
