@@ -53,8 +53,11 @@ export async function POST(req: Request) {
   const dbg = String((user as any).email || '').endsWith('@test.local')
   let text: string
   try {
-    // 通道定向 friend(2026-08-03 Frank「不用 Haiku 用朋友的大模型」):挂了就报 rm.err,不静默切云烧钱
-    text = await completeText(matchPrompt(jd.slice(0, CLAMP), resume.slice(0, CLAMP), lang, pro), { maxTokens: pro ? 1600 : 900, provider: 'friend' })
+    // 通道定向 friend(2026-08-03 Frank「不用 Haiku 用朋友的大模型」):挂了就报 rm.err,不静默切云烧钱。
+    // ⚠️ 朋友服务 prompt 上限 6000 字符(实测 400「prompt too long」;system 不占额)——
+    // CLAMP 8000 是给云通道的,这里必须按 6000 预算切:JD 2800 + 简历 3100 + 标签 23 ≈ 5.9k。
+    // Frank 真简历实测就是这么撞的:小输入全通、真简历+真 JD 一合计秒 400。
+    text = await completeText(matchPrompt(jd.slice(0, 2800), resume.slice(0, 3100), lang, pro), { maxTokens: pro ? 1600 : 900, provider: 'friend' })
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)
     console.log(`[resume-match] llm fail user=${(user as any).id}: ${msg.slice(0, 200)}`)
