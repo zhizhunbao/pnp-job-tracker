@@ -1,0 +1,13 @@
+{
+  "note": "数据契约 v1(B3-1/B3-2,2026-08-03):每源该多新。check_freshness.py 读这份表,超期即红(钉在 pnp 役末尾,红了整轮记失败 → healthchecks 不 ping → 报警;ping 从此证明「数据是新的」而不只是「脚本跑完」)。glob 默认让新落的抓取产物自动进哨兵(铁律 2 的机器检查);cadence_days 是**抓取回写节奏**的宽限,不是官方发布节奏。",
+  "defaults": [
+    { "glob": "raw/pnp/*.json", "cadence_days": 2 },
+    { "glob": "raw/ee/*.json", "cadence_days": 2 },
+    { "glob": "raw/ircc/*.json", "cadence_days": 4 }
+  ],
+  "overrides": [
+    { "file": "raw/pnp/on-workforce-priority.json", "cadence_days": 60, "note": "人工核对表(官方公告后手改,Frank 抽查制)" },
+    { "file": "raw/ircc/pnp_allocations.json", "cadence_days": 60, "key": "checkedAt", "note": "人工核对表(配额)" },
+    { "file": "raw/aip/aip-designated-employers.json", "cadence_days": 7, "key": "mtime", "note": "名录是 list 无 fetched(B3-3 未销),先看文件 mtime" }
+  ]
+}

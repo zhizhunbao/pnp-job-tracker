@@ -52,5 +52,9 @@ META = {
         ["python", "etl/pnp/build_sk_stats.py"],  # SINP:季度处理时长 + 配额三档 YTD(日更)+ 优先/受限行业
         ["python", "etl/pnp/build_ab_stats.py"],  # AAIP:逐 stream 配额/已发/剩余 + 积压游标 + **EOI 池人数**(分母!)+ 64 轮抽选史
         ["python", "etl/pnp/build_bc_stats.py"],  # BC PNP:注册池 **SIRS 分数分布**(三省分母里颗粒度最细;与 build_draws 同页,分工见脚本头)
+        # ↓ B3-1 新鲜度哨兵(2026-08-03)——上面第 40 行预言的那只表来了:按 etl/source_manifest.json
+        #   逐文件核 fetched vs cadence,超期 exit 1 → 本轮记失败 → healthchecks 不 ping → 报警。
+        #   钉死在最末尾:它红了不挡任何真实步骤,但让 ping 第一次证明「数据是新的」。
+        ["python", "etl/check_freshness.py"],
     ],
 }

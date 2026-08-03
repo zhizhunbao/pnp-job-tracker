@@ -6,6 +6,7 @@
 import json
 import sys
 import urllib.request
+from datetime import datetime, timezone
 from io import BytesIO
 from pathlib import Path
 
@@ -127,7 +128,9 @@ def study_flow(ws) -> dict:
 
 def main() -> None:
     _paths.IRCC.mkdir(parents=True, exist_ok=True)
-    tr: dict = {"source": {k: SRC[k] for k in ("study", "tfwp", "imp")}, "note": "IRCC 年末存量(Dec 31 holders);数值官方四舍五入到 5,'--' 小值抑制当 0"}
+    # fetched = 本轮抓取日(B3-3):要拿来下结论的数据必须知道是哪天的;新鲜度哨兵(check_freshness)也读它
+    fetched = datetime.now(timezone.utc).date().isoformat()
+    tr: dict = {"fetched": fetched, "source": {k: SRC[k] for k in ("study", "tfwp", "imp")}, "note": "IRCC 年末存量(Dec 31 holders);数值官方四舍五入到 5,'--' 小值抑制当 0"}
     for key in ("study", "tfwp", "imp"):
         year, totals = latest_year_totals(fetch(SRC[key]))
         tr[key] = {"year": year, "byProv": totals}
@@ -135,13 +138,13 @@ def main() -> None:
     OUT_TR.write_text(json.dumps(tr, ensure_ascii=False, indent=1), encoding="utf-8")
 
     year, pnp = pnp_latest_full_year(fetch(SRC["pr"]))
-    OUT_PNP.write_text(json.dumps({"source": SRC["pr"], "year": year, "byProv": pnp,
+    OUT_PNP.write_text(json.dumps({"fetched": fetched, "source": SRC["pr"], "year": year, "byProv": pnp,
                                    "note": "PNP 类别 PR 登陆数(含随行家属,人头口径)最新完整年"}, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"pnp admissions: {year} · {len(pnp)} 省 · ON={pnp.get('ON')}", flush=True)
 
     flow = study_flow(fetch(SRC["study_flow"]))
     OUT_FLOW.write_text(json.dumps({
-        "source": SRC["study_flow"], "byProv": flow,
+        "fetched": fetched, "source": SRC["study_flow"], "byProv": flow,
         "note": ("新发学签**流量**(按许可生效月份,非年末存量)。月度粒度,进行年为 YTD(complete=false 时 "
                  "n 是已公布月份求和,throughMonth 是最后一个有数月份)。与存量口径不可混用:"
                  "存量=在库人数(竞争比分母),流量=当期新增趋势。"),
