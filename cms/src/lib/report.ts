@@ -568,6 +568,7 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
   // 规则行 = pnp_requirements 的 FED/PGWP 行(quote-anchored,ircc 役逐轮验官方原文仍在页面上)。
   // 合并条款官方只写「可合并各段时长」,**没写**合并后是否触发「≥2 年 → 3 年」档 —— 只复述,不替官方补这一跳。
   const fed = (facts.requirements ?? []).filter((r) => r.province === 'FED' && r.program === 'PGWP')
+  let permitMonths: number | null = null      // 算出的 PGWP 时长(G2 路线账要用;<8 个月无 PGWP 时保持 null)
   if (fed.length && extra.studyMonths != null && extra.studyMonths > 0) {
     const rsrc = (r: Requirement) => ({ label: r.label, url: r.url, fetched: r.fetched })
     const rule = (factor: string, stream = '') => fed.find((r) => r.factor === factor && (r.stream || '') === stream)
@@ -578,8 +579,9 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
       const r = extra.studyLevel === 'master' ? rule('pgwpLength', 'masters')
         : extra.studyMonths >= 24 ? rule('pgwpLength', 'long') : rule('pgwpLength', 'short')
       if (r) {
+        permitMonths = r.value ?? extra.studyMonths
         conclusions.push({
-          key: 'rpt.c.pgwpLen', params: { months: extra.studyMonths, permit: r.value ?? extra.studyMonths },
+          key: 'rpt.c.pgwpLen', params: { months: extra.studyMonths, permit: permitMonths },
           verdict: 'pass', source: rsrc(r),
         })
       }
@@ -598,6 +600,32 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
           verdict: ok ? 'pass' : 'warn', source: rsrc(lang),
         })
       }
+    }
+  }
+
+  // ── G2 路线账(案例库 C02/C08「两条路一张账」的第一格):只做官方数字的算术,不编找工时长。
+  // 递交线 = 首目标省的官方经验门槛(teerHit 挑行,同 rules.ts 口径);两条结论:
+  //   ① 窗口自洽:毕业拿的 PGWP 够不够攒满还缺的经验;② 代价:先读书比直接工作晚约课程时长
+  //  (按课程期间不攒全职经验计 —— 学签打工算不算各通道口径不一,判不了就按不算,宁可保守)。
+  if (permitMonths != null && targets[0]) {
+    const expRow = (facts.requirements ?? []).find((r) =>
+      r.province === targets[0] && r.subject === 'applicant' && r.factor === 'experience'
+      && r.value != null && teerHit(r, facts.teer))
+    if (expRow) {
+      const have = Math.max(extra.totalExpMonths ?? 0, extra.canadianExpMonths ?? 0)
+      const remain = Math.max(0, (expRow.value as number) - have)
+      const fits = permitMonths >= remain
+      conclusions.push({
+        key: fits ? 'rpt.c.routeWindow' : 'rpt.c.routeWindowShort',
+        params: { prov: targets[0], permit: permitMonths, need: expRow.value as number, remain },
+        verdict: fits ? 'pass' : 'warn',
+        source: { label: expRow.label, url: expRow.url, fetched: expRow.fetched },
+      })
+      conclusions.push({
+        key: 'rpt.c.routeDelay',
+        params: { prov: targets[0], need: expRow.value as number, months: extra.studyMonths as number },
+        verdict: 'na',
+      })
     }
   }
 
@@ -1024,8 +1052,10 @@ const LOCK_CAT: Record<string, string> = {
   // 它是这张卡最像 aha 的一句,把它也锁掉等于免费层什么都没有;锁的是**名单本体**(employers),
   // 那才是「花钱买省下来的时间」。锁行由 employers 非空触发,见下面 cats2.add('sponsors')。
   'rpt.k.peerGap': 'move', 'rpt.p.rank': 'rank',
+  // G2 路线账(2026-08-03):「两条路一张账」是拿他的答案算出来的结论 → 锁区,给专属锁行(不落 more 桶)
+  'rpt.c.routeWindow': 'route', 'rpt.c.routeWindowShort': 'route', 'rpt.c.routeDelay': 'route',
 }
-const LOCK_ORDER = ['req', 'score', 'window', 'alts', 'ee', 'sponsors', 'move', 'rank', 'more']   // 锁行固定序(有序去重)
+const LOCK_ORDER = ['req', 'score', 'window', 'route', 'alts', 'ee', 'sponsors', 'move', 'rank', 'more']   // 锁行固定序(有序去重)
 // 门槛对照的免费/付费界线(设计 §6):免费=门槛是多少 + 达标/不达标的判定(官方事实,库里查得到);
 // 付费=**差多少**、按什么顺序补。所以免费层把带差值的那条换成不带差值的同义句,`short` 根本不下发。
 const REQ_FREE: Record<string, string> = {
@@ -1202,6 +1232,9 @@ const EN: Record<string, (p: Record<string, string | number>) => string> = {
   'rpt.c.pgwpLangShort': (p) => `PGWP language bar for this program level is CLB ${p.need} (since 2024-11-01); you report CLB ${p.have} — below it.`,
   'rpt.j.sponsorsLmia': (p) => `${p.n} employers across Canada have posted jobs that can go through a PNP — ${p.m} of them have approved ESDC LMIA records (they have actually hired foreign workers before).`,
   'rpt.j.noFee': () => `Federal rules bar employers from passing recruitment fees to you — paying for a job offer is not a service, it is illegal.`,
+  'rpt.c.routeWindow': (p) => `The PGWP you would graduate with (${p.permit} months) covers the ${p.remain} months of experience you still need for ${p.prov} (bar: ${p.need} months) — the study route window works.`,
+  'rpt.c.routeWindowShort': (p) => `The PGWP you would graduate with (${p.permit} months) is shorter than the ${p.remain} months of experience you still need for ${p.prov} (bar: ${p.need} months) — the window does not cover it.`,
+  'rpt.c.routeDelay': (p) => `Against the same ${p.prov} bar of ${p.need} months of experience: studying first reaches the filing line about ${p.months} months later than working now (counting no full-time experience during study).`,
   'rpt.r.wage.median': (p) => `${p.prov} requires the offered wage to be at or above the regional median for the occupation — that median is $${p.need} per year.`,
   'rpt.r.wage.rule': (p) => `${p.prov} requires the offered wage to be at or above the regional median wage level for the occupation.`,
   'rpt.r.emp.years': (p) => `Employer-side: the employer needs ${p.n}+ years of operation in ${p.prov} — only the employer can evidence this.`,

@@ -181,6 +181,18 @@ describe('报告「门槛对照」节', () => {
     expect(free.conclusions.some((c) => c.key === 'rpt.c.pgwpLangOk')).toBe(true)
   })
 
+  // G2 路线账(案例库 C02/C08):两条结论都是拿他的答案算出来的 → 锁区专属锁行(route),不落 more 桶
+  it('G2 路线账:permit 够/不够攒满还缺的经验;先读书晚约课程时长;免费层整类进 route 锁行', () => {
+    const ok = buildPrReport(base(), { canadianExpMonths: null, studyMonths: 12, studyLevel: 'master' }, dims, pgwpFacts())
+    expect(ok.conclusions.find((c) => c.key === 'rpt.c.routeWindow')?.params).toMatchObject({ prov: 'BC', permit: 36, need: 24, remain: 24 })
+    expect(ok.conclusions.find((c) => c.key === 'rpt.c.routeDelay')?.params).toMatchObject({ months: 12 })
+    const short = buildPrReport(base(), { canadianExpMonths: null, studyMonths: 8, studyLevel: 'college' }, dims, pgwpFacts())
+    expect(short.conclusions.find((c) => c.key === 'rpt.c.routeWindowShort')?.params).toMatchObject({ permit: 8, remain: 24 })
+    const free = gateReport(ok, false)
+    expect(free.locked).toContain('route')
+    expect(free.conclusions.some((c) => c.key.startsWith('rpt.c.route'))).toBe(false)
+  })
+
   it('PGWP:没答课程题一行不出;FED 行不漏进省级门槛节', () => {
     const r = buildPrReport(base(), { canadianExpMonths: 30 }, dims, pgwpFacts())
     expect(r.conclusions.some((c) => c.key.startsWith('rpt.c.pgwp'))).toBe(false)
