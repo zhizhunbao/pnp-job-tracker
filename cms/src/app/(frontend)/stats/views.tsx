@@ -134,7 +134,7 @@ function DifficultyCard({ raw, t }: { raw: StatRow['difficulty']; t: TFn }) {
       {comp && (
         <div style={row}>
           <span style={{ fontWeight: 600 }}>{t('diff.comp', { v: comp.value })}</span>
-          <span style={{ color: '#9ca3af', fontSize: 12 }}>{t('diff.compNote', { pool: Number(comp.pool).toLocaleString(), quota: Number(comp.quota).toLocaleString(), y: comp.quotaYear })}</span>
+          <span style={{ color: '#9ca3af', fontSize: 12 }}>{t('diff.compNote', { pool: Number(comp.pool).toLocaleString(), quota: Number(comp.quota).toLocaleString(), y: comp.quotaYear, py: comp.asOf ?? '' })}</span>
           {src(comp)}
         </div>
       )}

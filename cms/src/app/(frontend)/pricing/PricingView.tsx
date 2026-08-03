@@ -2,7 +2,8 @@
 // 定价页视图(E5-01):对照表与按钮三态在 jobs/PricingModal.tsx 的 PricingCard(单一来源,弹窗/页面共用);
 // 本页只是 SEO/直链/Stripe 回跳用的页面壳(E8-02 拍板:站内入口一律开定价弹窗)。caps 由服务端 plan.ts 传入。
 import { useEffect, useState } from 'react'
-import { initialLang, makeT, LANG_KEY, type Lang } from '../jobs/i18n'
+import { type Lang } from '../jobs/i18n'
+import { useLang } from '../LangProvider'
 import { AuthModal } from '../jobs/AuthForm'
 import { PricingCard, type PriceCaps } from '../jobs/PricingModal'
 import { SiteHeader } from '../SiteHeader'
@@ -14,8 +15,7 @@ import { track } from '@/lib/track'
 const FROM_OK = /^[a-z0-9-]{1,24}$/
 
 export function PricingView({ loggedIn, pro, caps }: { loggedIn: boolean; pro: boolean; caps: PriceCaps }) {
-  const [lang, setLang] = useState<Lang>('zh')
-  useEffect(() => { setLang(initialLang()) }, [])
+  const [lang, setLangSaved, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
   // 漏斗第 4 步(2026-08-03 量数才发现):这一页**从来没有发过 `pricing-open`** ——
   // 先前只有 PricingModal/UpgradeModal 在 mount 时发,而站内唯一直链 /pricing 的入口正是
   // 报告锁区那个 CTA。于是「报告 → 定价」这条**主转化边整条不计数**,面板上第 4 步恒为 0:
@@ -25,8 +25,6 @@ export function PricingView({ loggedIn, pro, caps }: { loggedIn: boolean; pro: b
     const raw = new URLSearchParams(window.location.search).get('from') ?? ''
     track('pricing-open', { kind: FROM_OK.test(raw) ? raw : 'direct' })
   }, [])
-  const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
-  const t = makeT(lang)
   const [auth, setAuth] = useState(false)
 
   return (

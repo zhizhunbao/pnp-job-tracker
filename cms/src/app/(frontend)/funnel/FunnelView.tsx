@@ -2,7 +2,8 @@
 // 漏斗五个数的显示层(主线 M2 / E7-05)。**内部页**:数据由服务端组件鉴权后传进来,这里零业务逻辑。
 // 文案只有中文 —— 这页只给 Frank 看,不是产品页面,翻三语是浪费。
 import { useEffect, useMemo, useState } from 'react'
-import { initialLang, makeT, LANG_KEY, type Lang } from '../jobs/i18n'
+import { type Lang } from '../jobs/i18n'
+import { useLang } from '../LangProvider'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { PageShell, UI } from '../ui/primitives'
@@ -17,10 +18,7 @@ export function FunnelView({ rows, pro, stripe, byEntry, byPricing = [] }: {
   rows: FunnelRow[]; pro: number; stripe: number
   byEntry: { prop: string; n: number }[]; byPricing?: { prop: string; n: number }[]
 }) {
-  const [lang, setLang] = useState<Lang>('zh')
-  useEffect(() => { setLang(initialLang()) }, [])
-  const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
-  const t = useMemo(() => makeT(lang), [lang])
+  const [lang, setLangSaved, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
   const empty = rows.every((r) => r.d30 === 0)
 
   return (

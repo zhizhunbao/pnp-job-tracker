@@ -2,7 +2,8 @@
 // 政策时间线视图(C6-01):三路事件混排时间轴 + 抽选节奏块;省筛/类型筛纯客户端(事件 <100)。
 // 诚实红线:省分数带分制标注(≠CRS);节奏=历史统计,不预测下一次(tl.note 写死)。
 import { useEffect, useMemo, useState, type KeyboardEvent } from 'react'
-import { initialLang, makeT, LANG_KEY, type Lang } from '../jobs/i18n'
+import { type Lang } from '../jobs/i18n'
+import { useLang } from '../LangProvider'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { BANNER_IMGS, PageBanner, PageShell, SectionTabs, SectionTitle, Tag, UI, chipStyle } from '../ui/primitives'
@@ -13,10 +14,7 @@ export function TimelineView({ events, cadence, eeCadence }: {
   events: TlEvent[]; cadence: TlCadence[]
   eeCadence: { category: string; label: string; last: string; daysSince: number }[]
 }) {
-  const [lang, setLang] = useState<Lang>('zh')
-  useEffect(() => { setLang(initialLang()) }, [])
-  const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
-  const t = makeT(lang)
+  const [lang, setLangSaved, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
   const [fProv, setFProv] = useState('')      // ''=全部;'FED'=联邦;两字码=省
   const [fKind, setFKind] = useState('')      // ''=全部;draw;policy(notice 归 draw 组显示)
   const [fStream, setFStream] = useState('')  // ''=全部;节奏卡点击带入的流名(=事件 title,分组键同源)

@@ -5,7 +5,8 @@
 //   省提名/EE 卡、相关职位 —— 一条信息一个家,移民信号在移民弹框,公司在公司弹框/页。
 import { useEffect, useState } from 'react'
 
-import { initialLang, makeT, LANG_KEY, LANGS, type Lang } from '../i18n'
+import { LANGS } from '../i18n'
+import { useLang } from '../../LangProvider'
 import { catName, JobBody, nocLocalTitle, provName, type JobRow, type NocDesc, type Plan } from '../JobsTable'
 import { OccReportCard } from './OccReportCard'
 import { SiteHeader } from '../../SiteHeader'
@@ -21,19 +22,15 @@ const aLink: React.CSSProperties = { color: '#2563eb', textDecoration: 'none' }
 const sec: React.CSSProperties = { border: '1px solid #e5e7eb', borderRadius: 12, background: '#fff', padding: '12px 16px', marginBottom: 14 }
 
 export default function JobDetailView({ job, plan, dims }: { job: JobRow; plan: Plan; dims: Dims }) {
-  // 语言:与全站同一 localStorage 键;SSR 首帧 zh,水合后纠正(二级页惯例)
-  const [lang, setLangState] = useState<Lang>('zh')
+  const [lang, setLang, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
   // 2026-07-25 Frank「点击要有动画,不然不知道点没点,跳页有延迟」:按下即置忙态(变灰+省略号),导航期间可感
   const [leaving, setLeaving] = useState(false)
   useEffect(() => {
-    setLangState(initialLang())
     // 漏斗第 1 步(主线 M2 收口 2026-08-02):这个页面一直没有第一方浏览埋点 ——
     // 于是库里只有第 3 步「锁区曝光」有数,分母是空的,M3 的两种分叉(锁的东西不值钱 / 根本没人看见)
     // 照样分不开。30 天数据里入口=出口就是本页,它才是漏斗真正的第一格(列表页弹框另计 kind=modal)。
     track('jd-open', { kind: 'page' })
   }, [])
-  const setLang = (l: Lang) => { setLangState(l); try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } }
-  const t = makeT(lang)
 
   const provFull = provName(t, job.province || '')
   const nocRow = dims.nocDesc.find((d) => d.noc === job.noc) || null

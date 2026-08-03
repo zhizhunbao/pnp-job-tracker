@@ -7,7 +7,8 @@
 // 没答过 → 页内拉起 EntryQuiz(同一组件不复制)。答案存 localStorage,改答案 → 报告立刻重算。
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { initialLang, makeT, streamDisplay, eeDisplay, LANG_KEY, type Lang, type TFn } from '../jobs/i18n'
+import { streamDisplay, eeDisplay, type Lang, type TFn } from '../jobs/i18n'
+import { useLang } from '../LangProvider'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { shortOcc } from '../quiz/EntryQuiz'
@@ -192,10 +193,7 @@ const group = (ls: RptLine[], b: 'prov' | 'pay' | 'peer' | 'emp'): RptLine[] => 
 
 export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'career' | 'prov' } = {}) {
   const hasExplore = (DECISIONS[decision]?.explore.length ?? 0) > 0
-  const [lang, setLang] = useState<Lang>('zh')
-  useEffect(() => { setLang(initialLang()) }, [])
-  const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
-  const t = useMemo(() => makeT(lang), [lang])
+  const [lang, setLangSaved, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
 
   const [bands, setBands] = useState<Answers>(EMPTY)
   const [noc, setNoc] = useState('')

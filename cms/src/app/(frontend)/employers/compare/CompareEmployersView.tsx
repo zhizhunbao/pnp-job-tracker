@@ -3,7 +3,8 @@
 // 免费=⑤价值时刻先例(价值点+模糊示例+升级钮,真值不出服务端);Pro=全维度+「与我的匹配」计数行。
 // 红线:摆事实高亮差异不下结论;LMIA=历史事实≠担保(ce.note);缺数「—」不猜。
 import { useEffect, useState } from 'react'
-import { initialLang, makeT, LANG_KEY, type Lang, type TFn } from '../../jobs/i18n'
+import { type Lang, type TFn } from '../../jobs/i18n'
+import { useLang } from '../../LangProvider'
 import { SiteHeader } from '../../SiteHeader'
 import { SiteFooter } from '../../SiteFooter'
 import { BackLink } from '../../BackLink'
@@ -22,10 +23,7 @@ type Dim = { key: string; label: React.ReactNode; tip?: string; render: (r: Comp
 export function CompareEmployersView({ names, rows, pro, loggedIn }: {
   names: string[]; rows: CompareRow[]; pro: boolean; loggedIn: boolean
 }) {
-  const [lang, setLang] = useState<Lang>('zh')
-  useEffect(() => { setLang(initialLang()) }, [])
-  const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
-  const t = makeT(lang)
+  const [lang, setLangSaved, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
   const [pricing, setPricing] = useState(false)
   const clear = () => { try { localStorage.removeItem(CMP_KEY) } catch { /* ignore */ } ; window.location.href = '/employers' }
 

@@ -2,7 +2,8 @@
 // 紧缺职业清单视图(B4-01):183 行按 省→通道 分组一页展示;行级官方来源链+抓取日(既有 url/fetched 列)。
 // 口径红线:清单命中=粗筛信号,非资格认定(dir.occ.note)。
 import { useEffect, useState } from 'react'
-import { initialLang, makeT, streamDisplay, LANG_KEY, type Lang } from '../jobs/i18n'
+import { streamDisplay, type Lang } from '../jobs/i18n'
+import { useLang } from '../LangProvider'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { BANNER_IMGS, PageBanner, PageShell, SectionTitle, Tag, UI } from '../ui/primitives'
@@ -11,10 +12,7 @@ import { IconClipboard } from '../Icons'
 import type { OccRow } from '@/lib/directory'
 
 export function OccupationsView({ rows }: { rows: OccRow[] }) {
-  const [lang, setLang] = useState<Lang>('zh')
-  useEffect(() => { setLang(initialLang()) }, [])
-  const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
-  const t = makeT(lang)
+  const [lang, setLangSaved, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
 
   // 省→通道 两级分组(数据已按 province/stream/noc 排序)
   const provs: { prov: string; streams: { stream: string; label: string; url: string; fetched: string; occ: OccRow[] }[] }[] = []

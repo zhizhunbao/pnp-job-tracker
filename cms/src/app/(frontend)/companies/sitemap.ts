@@ -1,5 +1,6 @@
 // E8-09 B:公司详情页 sitemap 分片(仅有在招岗的公司=有内容+可收录;无岗公司页 noindex 不进)。
-// 固定 8 片×5000 = 4 万容量(有岗公司 ~2.3 万,余量足);空片返回空列表无害。robots.ts + sitemap-index 列出全部分片。
+// 分片数按实际公司数现算,不写死 —— 同 jobs/sitemap.ts 的 2026-08-02 定案(那边有事故详述)。
+// 现值约 28,119 家(6 片),没爆过;改成自适应是为了不留第二颗同款雷。
 import type { MetadataRoute } from 'next'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
@@ -9,23 +10,34 @@ export const dynamic = 'force-dynamic'
 
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://offer2pr.com').replace(/\/$/, '')
 export const CO_SHARD_SIZE = 5000
-export const CO_SHARDS = 8
 
-export function generateSitemaps() {
-  return Array.from({ length: CO_SHARDS }, (_, id) => ({ id }))
+// 「有在招岗的公司」——列表与计数必须同一套条件,否则片数和内容对不上
+const CO_FROM = `FROM companies c JOIN jobs j ON j.company_id = c.id
+   WHERE COALESCE(j.status,'open') <> 'closed' AND c.slug IS NOT NULL AND c.slug <> ''`
+
+async function pool() {
+  const payload = await getPayload({ config: await config })
+  return (payload.db as any).pool
+}
+
+/** 有岗公司数 → 需要几片。库不可达时回落 1 片,绝不 0 片。 */
+export async function companyShardCount(): Promise<number> {
+  try {
+    const { rows } = await (await pool()).query(`SELECT count(DISTINCT c.id)::int AS n ${CO_FROM}`)
+    return Math.max(1, Math.ceil((rows[0]?.n ?? 0) / CO_SHARD_SIZE))
+  } catch (e) { console.error('[companies-sitemap] count', e); return 1 }
+}
+
+export async function generateSitemaps() {
+  return Array.from({ length: await companyShardCount() }, (_, id) => ({ id }))
 }
 
 export default async function sitemap({ id }: { id: number | Promise<number | string> }): Promise<MetadataRoute.Sitemap> {
   const shard = Number(await Promise.resolve(id))
   if (!Number.isFinite(shard)) return []
   try {
-    const payload = await getPayload({ config: await config })
-    const pool = (payload.db as any).pool
-    // 只收有在招岗的公司(DISTINCT company_id),按 id 稳定分片
-    const { rows } = await pool.query(
-      `SELECT c.slug, max(j.last_seen) AS last_seen
-       FROM companies c JOIN jobs j ON j.company_id = c.id
-       WHERE COALESCE(j.status,'open') <> 'closed' AND c.slug IS NOT NULL AND c.slug <> ''
+    const { rows } = await (await pool()).query(
+      `SELECT c.slug, max(j.last_seen) AS last_seen ${CO_FROM}
        GROUP BY c.id, c.slug
        ORDER BY c.id ASC LIMIT $1 OFFSET $2`, [CO_SHARD_SIZE, shard * CO_SHARD_SIZE])
     return rows.map((r: any) => ({

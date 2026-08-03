@@ -1,5 +1,7 @@
 import React from 'react'
 import './styles.css'
+import { LangProvider } from './LangProvider'
+import { ssrLang } from '@/lib/lang.server'
 
 // 站点默认 metadata(各页 generateMetadata 覆盖);E7-02:umami 轻量 analytics(无 cookie,env 未设=本地不注入)
 export const metadata = {
@@ -29,15 +31,21 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   const { children } = props
   const umamiSrc = process.env.NEXT_PUBLIC_UMAMI_SRC
   const umamiId = process.env.NEXT_PUBLIC_UMAMI_ID
+  // 界面语言在这里读**一次**(cookie → Accept-Language),往下靠 LangProvider 的 context 分发:
+  // 各页 page.tsx 不必传 prop,各视图不必自己读 localStorage —— 首帧就是对的语言,不再闪一下中文。
+  const lang = await ssrLang()
 
   return (
-    <html lang="en">
+    // html lang 原来写死 'en':页面出中韩文时对搜索引擎/读屏器都是错的语种声明,跟着一起修
+    <html lang={lang}>
       <head>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd) }} />
         {umamiSrc && umamiId ? <script defer src={umamiSrc} data-website-id={umamiId} /> : null}
       </head>
       <body>
-        <main>{children}</main>
+        <LangProvider initial={lang}>
+          <main>{children}</main>
+        </LangProvider>
       </body>
     </html>
   )

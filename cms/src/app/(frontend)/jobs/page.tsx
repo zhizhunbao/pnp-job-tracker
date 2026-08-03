@@ -5,10 +5,11 @@ import config from '@/payload.config'
 import JobsTable, { BANNER_COOKIE } from './JobsTable'
 import { COLS_COOKIE } from './i18n'
 import { COLW_COOKIE, DEFAULT_COLW_SEED, parseColWidthSeed, type ColWidthSeed } from './colWidths.shared'
+import { parseJobFilters, toSearchParams } from './filters.shared'
 import { getUser, isPro } from '@/lib/entitlement'
 import { FREE_MATCH_JOBS_PER_DAY } from '@/lib/plan'
 import { normalizeProfile, hasProfile } from '@/lib/match'
-import { fetchJobRows, fetchTotalAndProof } from '@/lib/jobsSql'
+import { fetchJobRows, fetchJobsPage, fetchTotalAndProof } from '@/lib/jobsSql'
 
 // 首屏行数(2026-07-05 用户拍板):SSR 只带最近 N 行秒开,全量 /api/jobs-data 后台拉(拉完筛选/搜索照旧)
 const FIRST_SCREEN_ROWS = 50
@@ -76,8 +77,13 @@ async function getDimsCached(payload: Awaited<ReturnType<typeof getPayload>>, po
 }
 
 
-export default async function JobsPage() {
+export default async function JobsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const payload = await getPayload({ config: await config })
+
+  // 筛选在 SSR 就生效(2026-08-03):地址栏带 ?prov=/?broad= 时首帧直接渲筛选后的板 ——
+  // 原来只有水合后的客户端读 URL,首帧永远是「全部」,于是刷新先抖一下。映射见 filters.shared。
+  const filters = parseJobFilters(toSearchParams(await searchParams))
+  const filtered = Object.keys(filters).length > 0
 
   // 分层(E3-05):Pro 列(工资中位对比三件套 + 匹配)在 SELECT 源头裁掉 —— 免费用户的数据不进浏览器
   const user = await getUser(await headers())
@@ -94,11 +100,16 @@ export default async function JobsPage() {
   // 匹配只吃省提名清单(AIP 背书清单是另一条路,见 lib/jobsSql.pnpOnly);展示维度仍是全量
   const matchDims = { pnpOccupations: dims.pnpOccupations.filter((r) => r.program === 'PNP'), eeCategories: dims.eeCategories }
   // 差异化证言数字(第 5 轮 #14):省提名清单命中岗 + 有外劳记录雇主数 —— 首屏 3 秒讲清与聚合站的区别
-  const [{ jobs, updatedAt }, tp] = await Promise.all([
-    fetchJobRows(pool, { pro, profile, profileOk, matchDims, limit: FIRST_SCREEN_ROWS }),
-    fetchTotalAndProof(pool),
-  ])
-  const totalCount: number = tp.total || jobs.length
+  // 有筛选就走 fetchJobsPage(与 /api/jobs 同一条查询路径 → SSR 与水合后客户端逐行一致,不会换一次内容);
+  // 没筛选照旧走 fetchJobRows(全站首屏,total 用全站数)。
+  const listP = filtered
+    ? fetchJobsPage(pool, { pro, profile, profileOk, matchDims, filters, page: 0, pageSize: FIRST_SCREEN_ROWS })
+      .then((r) => ({ jobs: r.jobs, updatedAt: r.updatedAt, total: r.total as number | null }))
+    : fetchJobRows(pool, { pro, profile, profileOk, matchDims, limit: FIRST_SCREEN_ROWS })
+      .then((r) => ({ jobs: r.jobs, updatedAt: r.updatedAt, total: null as number | null }))
+  const [list, tp] = await Promise.all([listP, fetchTotalAndProof(pool)])
+  const { jobs, updatedAt } = list
+  const totalCount: number = list.total ?? (tp.total || jobs.length)   // 筛选后 0 条也得是 0,不能退回全站数
   const proof = { named: tp.named, lmia: tp.lmia }
 
   // 列偏好从 cookie 读(浏览器/服务器都能读)→ SSR 直接渲对的列,零闪烁。客户端选列时写这个 cookie。
@@ -131,6 +142,6 @@ export default async function JobsPage() {
   // 推荐横幅槽位预判内联脚本随推荐条一并删除(2026-07-31):没有横幅就没有 CLS 要防
   return <>
     <JobsTable jobs={jobs} updatedAt={updatedAt} dims={dims} initialCols={initialCols} initialColW={initialColW} plan={plan}
-      initialBanner={initialBanner} totalCount={totalCount} proof={proof} deferFull />
+      initialBanner={initialBanner} totalCount={totalCount} proof={proof} initialFilters={filters} deferFull />
   </>
 }

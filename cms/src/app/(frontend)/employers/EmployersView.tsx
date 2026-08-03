@@ -3,7 +3,8 @@
 // 付费透镜:名录免费=C7 头号痛点(哪个雇主真的担保)的 browse 面;转化钩=每行「查在招 →」深链 /?q=。
 // 语义红线循 E6-02:LMIA=雇过外国人的历史事实 ≠ 能担保;AIP 指定 ≠ 有配额(口径行写死,见 dir.note.*)。
 import { useEffect, useState } from 'react'
-import { initialLang, makeT, LANG_KEY, type Lang, type TFn } from '../jobs/i18n'
+import { type Lang, type TFn } from '../jobs/i18n'
+import { useLang } from '../LangProvider'
 import { provName } from '../jobs/JobsTable'
 import { track } from '@/lib/track'   // #129 功能级 umami 埋点
 import { SiteHeader } from '../SiteHeader'
@@ -77,10 +78,7 @@ export function EmployersView({ type, q, prov, page, aip, lmia, counts }: {
   aip: AipRow[] | null; lmia: LmiaRow[] | null
   counts: { aip: number; lmia: number; pageTotal: number }
 }) {
-  const [lang, setLang] = useState<Lang>('zh')
-  useEffect(() => { setLang(initialLang()) }, [])
-  const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
-  const t = makeT(lang)
+  const [lang, setLangSaved, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
   const [qInput, setQInput] = useState(q)
   // D3 对比选择篮(localStorage,与公司弹框共写;LMIA tab 行=companies 行才可比,AIP tab 不挂)
   const [cmp, setCmp] = useState<string[]>([])

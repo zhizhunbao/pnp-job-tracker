@@ -2,7 +2,8 @@
 // 榜单视图(E5-02):纯渲染(计算在 ETL);三语壳;岗位行链官方原帖,公司行链官网。
 // RankingTable = 内容单一来源(E8-02):页面版与 /jobs 榜单弹窗共用,不许 fork。
 import { useEffect, useState } from 'react'
-import { initialLang, makeT, streamDisplay, eeDisplay, LANG_KEY, type Lang, type TFn } from '../jobs/i18n'
+import { streamDisplay, eeDisplay, type Lang, type TFn } from '../jobs/i18n'
+import { useLang } from '../LangProvider'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { BANNER_IMGS, Card, CardAction, CardKV, PageBanner } from '../ui/primitives'
@@ -130,10 +131,7 @@ const rankTitle = (t: TFn, slug: string): string => {
 }
 
 export function RankingView({ slug, items, slugs = [] }: { slug: string; items: RankRow[]; slugs?: string[] }) {
-  const [lang, setLang] = useState<Lang>('zh')
-  useEffect(() => { setLang(initialLang()) }, [])
-  const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
-  const t = makeT(lang)
+  const [lang, setLangSaved, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
   // 有数据的榜单清单(导航与 banner 数字块共用)
   const boards = ['daily-top', ...BROAD_SLUGS.map(([s]) => `daily-top-${s}`), 'weekly-top', 'sponsor-likely']
     .filter((x) => x === slug || slugs.includes(x) || x === 'weekly-top' || x === 'sponsor-likely')

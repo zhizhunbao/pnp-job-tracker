@@ -3,9 +3,8 @@
 // 骨架与公司弹框同一组件同一份 CompanyDetail(改一处两边生效);排版随弹框换 JD 扁平——
 // 原「一节一卡」多卡壳退役,整页一张白卡容器(#187「先只改弹框」的另一半在此收口)。
 // 三条铁律(E8-09 §1)不变:一页一域、一条信息一个家、公司页全事实层免费。
-import { useEffect, useState } from 'react'
-
-import { initialLang, makeT, LANG_KEY, LANGS, type Lang } from '../../jobs/i18n'
+import { LANGS } from '../../jobs/i18n'
+import { useLang } from '../../LangProvider'
 import { CompanyBody, provName } from '../../jobs/JobsTable'
 import type { CompanyDetail, SimilarEmployer } from '@/lib/jobsSql'
 import { SiteHeader } from '../../SiteHeader'
@@ -16,12 +15,7 @@ import { goBackOr } from '../../BackLink'
 const aLink: React.CSSProperties = { color: '#2563eb', textDecoration: 'none' }
 
 export default function CompanyDetailView({ company, similar = [], loggedIn }: { company: CompanyDetail; similar?: SimilarEmployer[]; loggedIn: boolean }) {
-  const [lang, setLangState] = useState<Lang>('zh')
-  useEffect(() => {
-    setLangState(initialLang())
-  }, [])
-  const setLang = (l: Lang) => { setLangState(l); try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } }
-  const t = makeT(lang)
+  const [lang, setLang, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
   const alias = lang === 'zh' ? company.aliasZh : lang === 'ko' ? company.aliasKo : ''   // #151 口径:界面语言译名作灰注,英文界面不出
   const provFull = company.province ? provName(t, company.province) : ''
 

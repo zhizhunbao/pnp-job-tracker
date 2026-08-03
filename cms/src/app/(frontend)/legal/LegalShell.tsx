@@ -2,7 +2,8 @@
 // 法务页共享外壳(E4-02):四件套(免责/隐私/条款/关于)共用。内容各页自带三语字典(章节数组),
 // i18n.ts 只管 UI 壳 —— 法务长文不进全局字典。文案为模板级自拟,不构成法律意见(收入后请专业审阅,backlog)。
 import { useEffect, useState } from 'react'
-import { initialLang, makeT, LANG_KEY, type Lang } from '../jobs/i18n'
+import { type Lang } from '../jobs/i18n'
+import { useLang } from '../LangProvider'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 
@@ -12,11 +13,8 @@ export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'wangsansi
 export type LegalDoc = { title: string; updated: string; sections: { h: string; body: string[] }[] }
 
 export function LegalShell({ docs, icon }: { docs: Record<Lang, LegalDoc>; icon?: React.ReactNode }) {
-  const [lang, setLang] = useState<Lang>('zh')
-  useEffect(() => { setLang(initialLang()) }, [])
-  const t = makeT(lang)
+  const [lang, setLangSaved, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
   const doc = docs[lang]
-  const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
 
   return (
     <div style={{ background: '#f9fafb', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>

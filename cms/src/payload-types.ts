@@ -408,7 +408,7 @@ export interface Job {
    */
   teer?: number | null;
   /**
-   * 大分类(NOC 第1位)
+   * 大分类(本站浏览分类,etl/noc_buckets.py)
    */
   broad?: string | null;
   /**

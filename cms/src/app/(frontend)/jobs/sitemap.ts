@@ -1,5 +1,14 @@
 // E8-07:职位详情页 sitemap 分片(仅 active 岗,Frank 拍板;closed 页面保留可访问但不进 sitemap+noindex)。
-// 固定 8 片×5000 = 4 万容量(在库 ~2.1 万,余量足);空片返回空列表无害。robots.ts 列出全部分片。
+//
+// ⚠️ 2026-08-02 事故 + 定案:分片数**不再写死**。
+// 原先 `SHARDS = 8` 固定 4 万容量,被在库 45,883 个在招岗撑爆(实测,按本文件的 ACTIVE 条件)。撑爆的方式是静默的:
+// `ORDER BY id ASC LIMIT/OFFSET` 只取前 4 万,砍掉的正好是 **id 最大 = 最新入库的那批岗**
+// (末片止于 id 11976493,而当日新岗 id 已到 15729081)—— 恰好砍掉最该被 Google 抓的那头,
+// 无报错无日志。手动扩容只是把同一颗雷往后埋,所以改成按实际岗位数现算片数:岗位涨,片数自己涨。
+//
+// 关键前提(读 next-metadata-route-loader 源码确认):Next 16 的分片路由**每次请求都会 await
+// generateSitemaps()**,并用它当白名单校验 id —— 所以它①可以是 async 查库,②不列出的 id 会 404
+// (这也是扩容必须同时改这个函数的原因,光加容量不改白名单没用)。
 import type { MetadataRoute } from 'next'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
@@ -10,10 +19,23 @@ export const dynamic = 'force-dynamic'
 
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://offer2pr.com').replace(/\/$/, '')
 export const SHARD_SIZE = 5000
-export const SHARDS = 8
+const ACTIVE = `COALESCE(status,'open') <> 'closed'`
 
-export function generateSitemaps() {
-  return Array.from({ length: SHARDS }, (_, id) => ({ id }))
+async function pool() {
+  const payload = await getPayload({ config: await config })
+  return (payload.db as any).pool
+}
+
+/** 在招岗数 → 需要几片。库不可达时回落 1 片(空片无害),绝不 0 片(0 片 = 整个 sitemap 消失)。 */
+export async function jobShardCount(): Promise<number> {
+  try {
+    const { rows } = await (await pool()).query(`SELECT count(*)::int AS n FROM jobs WHERE ${ACTIVE}`)
+    return Math.max(1, Math.ceil((rows[0]?.n ?? 0) / SHARD_SIZE))
+  } catch (e) { console.error('[jobs-sitemap] count', e); return 1 }
+}
+
+export async function generateSitemaps() {
+  return Array.from({ length: await jobShardCount() }, (_, id) => ({ id }))
 }
 
 export default async function sitemap({ id }: { id: number | Promise<number | string> }): Promise<MetadataRoute.Sitemap> {
@@ -21,10 +43,8 @@ export default async function sitemap({ id }: { id: number | Promise<number | st
   const shard = Number(await Promise.resolve(id))
   if (!Number.isFinite(shard)) return []
   try {
-    const payload = await getPayload({ config: await config })
-    const pool = (payload.db as any).pool
-    const { rows } = await pool.query(
-      `SELECT id, last_seen FROM jobs WHERE COALESCE(status,'open') <> 'closed'
+    const { rows } = await (await pool()).query(
+      `SELECT id, last_seen FROM jobs WHERE ${ACTIVE}
        ORDER BY id ASC LIMIT $1 OFFSET $2`, [SHARD_SIZE, shard * SHARD_SIZE])
     return rows.map((r: any) => ({
       url: `${SITE}/jobs/${r.id}`,

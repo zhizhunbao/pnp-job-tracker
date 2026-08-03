@@ -1,19 +1,15 @@
 'use client'
 // 地区统计共享 UI(E5-04):壳(顶栏+语言)+ slug 映射 + 指标卡/口径行。页面零计算,只渲染 stats 行。
-import { useEffect, useState } from 'react'
-import { initialLang, makeT, LANG_KEY, type Lang, type TFn } from '../jobs/i18n'
+import { type Lang, type TFn } from '../jobs/i18n'
 import { IconPaperclip } from '../Icons'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import type { StatRow, SrcRow } from './shared'
 export type { StatRow, SrcRow } from './shared'
 
-export function useLang(): [Lang, (l: Lang) => void, TFn] {
-  const [lang, setLang] = useState<Lang>('zh')
-  useEffect(() => { setLang(initialLang()) }, [])
-  const set = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
-  return [lang, set, makeT(lang)]
-}
+// useLang 已搬到 ../LangProvider(状态进 context,初值由服务端 cookie 定 → 首帧不再闪中文);
+// 这里原样再导出,stats/news 那几处 import 不动。
+export { useLang } from '../LangProvider'
 
 export function StatsShell({ lang, setLang, t, children }: { lang: Lang; setLang: (l: Lang) => void; t: TFn; children: React.ReactNode }) {
   // 顶栏换全站共享 SiteHeader(2026-07-11 用户指出子页 header 与 /jobs 样式不一致)

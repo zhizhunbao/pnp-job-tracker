@@ -2,7 +2,8 @@
 // 方案卡渲染(E12-01):分组(与你的处境相关/其他路径)+ 每卡步骤/信号/缺口补法/出处。
 // 纯显示——命中/缺口全由 lib/pathways.ts 算好传入;措辞红线在 i18n 键里落实(摆信息不下结论)。
 import { useEffect, useMemo, useState } from 'react'
-import { initialLang, makeT, LANG_KEY, type Lang } from '../jobs/i18n'
+import { type Lang } from '../jobs/i18n'
+import { useLang } from '../LangProvider'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { IconCheck, IconCompass, IconWarn } from '../Icons'
@@ -30,10 +31,7 @@ export function PathwaysView({ evals, loggedIn, profileOk, scoreFactors = [], dr
   evals: PathwayEval[]; loggedIn: boolean; profileOk: boolean
   scoreFactors?: ScoreFactor[]; draws?: DrawRow[]; streams?: Record<string, string>; ctx?: ScoreCtx; clb?: number | null
 }) {
-  const [lang, setLang] = useState<Lang>('zh')
-  useEffect(() => { setLang(initialLang()) }, [])
-  const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
-  const t = useMemo(() => makeT(lang), [lang])
+  const [lang, setLangSaved, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
 
   const grouped = evals.some((e) => e.forYou === true)   // 有分型且至少一条相关 → 分组;否则平铺
   const forYou = evals.filter((e) => e.forYou === true)

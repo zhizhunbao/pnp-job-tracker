@@ -6,7 +6,8 @@ import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, use
 // SSR 端 useLayoutEffect 无效且会告警 → 服务端退化成 useEffect。
 const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
-import { makeT, streamDisplay, eeDisplay, eeKeyDisplay, initialLang, LANGS, LANG_KEY, COLS_COOKIE, type Lang, type TFn } from './i18n'
+import { makeT, streamDisplay, eeDisplay, eeKeyDisplay, LANGS, COLS_COOKIE, type Lang, type TFn } from './i18n'
+import { useLang } from '../LangProvider'
 import { IconChart, IconCheck, IconClipboard, IconCompass, IconLock, IconMap, IconMapPin, IconMaximize, IconMinimize, IconNews, IconSave, IconSettings, IconStar, IconTarget, IconUser, IconWarn, IconX } from '../Icons'
 import { ACCT_SLOT_W, SiteHeader } from '../SiteHeader'
 import { BANNER_IMGS, Button, Notice, PageBanner } from '../ui/primitives'
@@ -19,6 +20,7 @@ import { PricingModal } from './PricingModal'
 import { OnboardingWizard, OB_SEEN_KEY } from './OnboardingWizard'
 import { QUIZ_KEY, quizToProfile, readQuiz, type QuizAnswers } from '../quiz/EntryQuiz'   // 答案读写与落档(弹框本体已退役,2026-07-31 统一答题)
 import { useColWidths, type ColWidthSeed } from './colWidths'   // 列宽唯一控制点(刷新/筛选/拖竖线共用一套规则)
+import { filterSig, PROV_NAMES, URL_TO_FILTER, DIRECT_URL_KEY, type JobFilters } from './filters.shared'   // URL↔筛选映射(与 SSR 共用)
 import { BROAD_SLUGS } from '../stats/shared'   // 大类的行业顺序(镜像 etl/noc_buckets.BROADS)
 import { useOverlayClose } from './overlay'
 import { CARD, iconBtnS, SCRIM, useIsNarrow } from './Modal'
@@ -428,11 +430,8 @@ const isDirect = (j: JobRow): boolean => (fromJobBank(j) ? j.source === 'Job Ban
 
 // ── 地点拆 省/市/区 ──
 // E8-07:export 给 /jobs/[id] 详情页(面包屑省全名)。详情页复用策略=只加 export 不搬代码(零回归;大搬家瘦身另立批)
-export const PROV_NAMES: Record<string, string> = {
-  ON: 'Ontario', BC: 'British Columbia', AB: 'Alberta', QC: 'Quebec', MB: 'Manitoba', SK: 'Saskatchewan',
-  NS: 'Nova Scotia', NB: 'New Brunswick', NL: 'Newfoundland and Labrador', PE: 'Prince Edward Island',
-  NT: 'Northwest Territories', YT: 'Yukon', NU: 'Nunavut',
-}
+// 表本身搬去 filters.shared(服务端 page.tsx 解析 ?prov= 也要用,那边不能 import 带 hook 的本文件);这里原样再导出。
+export { PROV_NAMES }
 // #146 显示用省名(Frank「中韩用户只看英文难理解」,拍板英文在前):中韩界面出「Ontario(安大略省)」,
 // 英文界面译名==英文名故只出英文。**只用于显示**——筛选值仍是 PROV_NAMES 的英文全名(fProv/深链/保存的筛选都依赖它)
 export const provName = (t: TFn, code: string): string => {
@@ -578,7 +577,7 @@ type Dims = {
 const EMPTY_DIMS: Dims = { provinces: [], cities: [], districts: [], nocCategories: [], sources: [], experienceLevels: [], pnpOccupations: [], pnpDraws: [], eeCategories: [], designatedEmployers: [], nocDescriptions: [], fieldSources: [], news: [] }
 const PROV_CODE: Record<string, string> = Object.fromEntries(Object.entries(PROV_NAMES).map(([c, n]) => [n, c]))
 
-export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdatedAt, dims: initialDims = EMPTY_DIMS, initialCols, initialColW, plan = FREE_PLAN, totalCount, proof, deferFull }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims; initialCols?: string[]; initialColW?: ColWidthSeed | null; plan?: Plan; initialBanner?: boolean; totalCount?: number; proof?: { named: number; lmia: number }; deferFull?: boolean }) {
+export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdatedAt, dims: initialDims = EMPTY_DIMS, initialCols, initialColW, plan = FREE_PLAN, totalCount, proof, initialFilters = {}, deferFull }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims; initialCols?: string[]; initialColW?: ColWidthSeed | null; plan?: Plan; initialBanner?: boolean; totalCount?: number; proof?: { named: number; lmia: number }; initialFilters?: JobFilters; deferFull?: boolean }) {
   // 首屏拆分:SSR 带最近 50 行秒开;筛选/搜索/翻页由 fetch effect 打 /api/jobs 分页(E10-01 P3,旧 20k blob 已废);
   // 失败保底留首屏 50 行可用,loadedAll 复位以显示计数而非假「全量」。
   // E10-01 P3:服务端分页/筛选取代 20k blob。rows=当前累计页(SSR 首屏 50 起),total=同 WHERE 总数,page=已翻页数。
@@ -597,15 +596,18 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     fetch('/api/dims').then((r) => (r.ok ? r.json() : null)).then((d) => { if (!dead && d?.dims) setDims((prev) => ({ ...prev, ...d.dims })) }).catch(() => {})
     return () => { dead = true }
   }, [])
-  const [q, setQ] = useState('')
-  const [directOnly, setDirectOnly] = useState(false)
-  const [fElig, setFElig] = useState('')   // GAP1③:'ok'=排除明确不担保/须 PR 岗
-  const [fCountry, setFCountry] = useState(''); const [fProv, setFProv] = useState(''); const [fCity, setFCity] = useState(''); const [fDistrict, setFDistrict] = useState('')
-  const [fBroad, setFBroad] = useState(''); const [fMid, setFMid] = useState(''); const [fFine, setFFine] = useState('')
-  const [fTeer, setFTeer] = useState(''); const [fSource, setFSource] = useState(''); const [fAcc, setFAcc] = useState('')
-  const [fPnp, setFPnp] = useState(''); const [fAip, setFAip] = useState(''); const [fStatus, setFStatus] = useState(''); const [fOrigin, setFOrigin] = useState('')
-  const [fScore, setFScore] = useState(''); const [fSal, setFSal] = useState(''); const [fVs, setFVs] = useState('')  // 数值预设(下拉,不手填)
-  const [fEmp, setFEmp] = useState('')  // 职位类型(E6-06):full/part/gig
+  // 筛选初值来自服务端(page.tsx 已按 URL 解析并据此查过库)→ 首帧下拉就是选中的那项、行就是筛选后的行,
+  // 水合零差异,不再「先抖一下全部」。没参数进来 initialFilters={} = 干净板,行为与以前一致。
+  const seed = (k: string) => (typeof initialFilters[k] === 'string' ? (initialFilters[k] as string) : '')
+  const [q, setQ] = useState(seed('q'))
+  const [directOnly, setDirectOnly] = useState(initialFilters.directOnly === true)
+  const [fElig, setFElig] = useState(seed('fElig'))   // GAP1③:'ok'=排除明确不担保/须 PR 岗
+  const [fCountry, setFCountry] = useState(seed('fCountry')); const [fProv, setFProv] = useState(seed('fProv')); const [fCity, setFCity] = useState(seed('fCity')); const [fDistrict, setFDistrict] = useState(seed('fDistrict'))
+  const [fBroad, setFBroad] = useState(seed('fBroad')); const [fMid, setFMid] = useState(seed('fMid')); const [fFine, setFFine] = useState(seed('fFine'))
+  const [fTeer, setFTeer] = useState(seed('fTeer')); const [fSource, setFSource] = useState(seed('fSource')); const [fAcc, setFAcc] = useState(seed('fAcc'))
+  const [fPnp, setFPnp] = useState(seed('fPnp')); const [fAip, setFAip] = useState(seed('fAip')); const [fStatus, setFStatus] = useState(seed('fStatus')); const [fOrigin, setFOrigin] = useState(seed('fOrigin'))
+  const [fScore, setFScore] = useState(seed('fScore')); const [fSal, setFSal] = useState(seed('fSal')); const [fVs, setFVs] = useState(seed('fVs'))  // 数值预设(下拉,不手填)
+  const [fEmp, setFEmp] = useState(seed('fEmp'))  // 职位类型(E6-06):full/part/gig
   // 「更多筛选」折叠恢复(2026-07-11 用户二次拍板:五行常驻太占竖向空间,恢复默认收起);
   // 开关行右侧带更新时间+字段按钮(同日「放到一行」拍板保留,只是宿主行从薪资行换成开关行)
   // 窄屏筛选抽屉(E8-03):≤640px 整个筛选区默认收起,一行「筛选」开关展开;CSS 媒体查询控制显隐,零水合差异
@@ -616,21 +618,32 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     const v = (initialCols ?? []).filter((k): k is ColKey => COLUMNS.some((c) => c.key === k))
     return v.length ? v : DEFAULT_COLS
   })
-  // ── 筛选 ↔ URL:读(刷新/深链/前进后退)与写(改筛选)共用这一张表,别处不再各自拼参数。
+  // ── 筛选的唯一出口:一张 fState 表喂五处 —— URL 写、URL 读(兜底)、快照写、快照回放、请求参数。
+  //    键=筛选键(= buildJobsWhere 的键 = /api/jobs 参数名);URL 短名的映射在 filters.shared(与 SSR 共用)。
   //    Frank 2026-08-03「右键一刷新,之前的选项也没有保持」→ 筛选进 URL:刷新能复原、链接能分享,
   //    而搜索引擎进来的干净 /jobs 依旧是干净板(没参数就没筛选,不会替陌生人预设条件)。
-  //    参数名沿用既有深链(q/prov/broad/mid/fine 三方在用,不能改),新增的取短名。
-  const urlFields = (): Record<string, { v: string; set: (s: string) => void }> => ({
-    q: { v: q, set: setQ }, prov: { v: fProv, set: setFProv }, broad: { v: fBroad, set: setFBroad },
-    mid: { v: fMid, set: setFMid }, fine: { v: fFine, set: setFFine }, city: { v: fCity, set: setFCity },
-    dist: { v: fDistrict, set: setFDistrict }, country: { v: fCountry, set: setFCountry },
-    teer: { v: fTeer, set: setFTeer }, src: { v: fSource, set: setFSource }, acc: { v: fAcc, set: setFAcc },
-    pnp: { v: fPnp, set: setFPnp }, aip: { v: fAip, set: setFAip }, st: { v: fStatus, set: setFStatus },
-    org: { v: fOrigin, set: setFOrigin }, score: { v: fScore, set: setFScore }, sal: { v: fSal, set: setFSal },
-    vs: { v: fVs, set: setFVs }, emp: { v: fEmp, set: setFEmp }, elig: { v: fElig, set: setFElig },
-  })
+  const fState: Record<string, { v: string; set: (s: string) => void }> = {
+    q: { v: q, set: setQ }, fProv: { v: fProv, set: setFProv }, fBroad: { v: fBroad, set: setFBroad },
+    fMid: { v: fMid, set: setFMid }, fFine: { v: fFine, set: setFFine }, fCity: { v: fCity, set: setFCity },
+    fDistrict: { v: fDistrict, set: setFDistrict }, fCountry: { v: fCountry, set: setFCountry },
+    fTeer: { v: fTeer, set: setFTeer }, fSource: { v: fSource, set: setFSource }, fAcc: { v: fAcc, set: setFAcc },
+    fPnp: { v: fPnp, set: setFPnp }, fAip: { v: fAip, set: setFAip }, fStatus: { v: fStatus, set: setFStatus },
+    fOrigin: { v: fOrigin, set: setFOrigin }, fScore: { v: fScore, set: setFScore }, fSal: { v: fSal, set: setFSal },
+    fVs: { v: fVs, set: setFVs }, fEmp: { v: fEmp, set: setFEmp }, fElig: { v: fElig, set: setFElig },
+  }
+  /** 当前非默认筛选(qv 传 dq 可用防抖后的搜索词);空对象 = 干净板 */
+  const curFilters = (qv: string = q): JobFilters => {
+    const f: JobFilters = {}
+    for (const [k, s] of Object.entries(fState)) { const v = k === 'q' ? qv.trim() : s.v; if (v) f[k] = v }
+    if (directOnly) f.directOnly = true
+    return f
+  }
+  const applyFilters = (f: JobFilters) => {   // 快照回放/URL 兜底共用的落地口
+    for (const [k, s] of Object.entries(fState)) { const v = f[k]; if (typeof v === 'string' && v) s.set(v) }
+    if (f.directOnly) setDirectOnly(true)
+  }
   const hydrated = useRef(false)
-  // URL 参数 → 初始筛选(stats/rankings 入口回流:?q= ?prov= ?broad=)
+  const ssrSig = useRef(filterSig(initialFilters))   // SSR 已按这套筛选查过库 → 首次别再原样重打一遍 /api/jobs
   useIsoLayoutEffect(() => {
     try {
       const sp = new URLSearchParams(window.location.search)
@@ -639,26 +652,14 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       if (sp.get('back') === '1') {
         try {
           const s = JSON.parse(localStorage.getItem('boardFilters') || 'null')
-          if (s) {
-            if (s.q) setQ(s.q); if (s.directOnly) setDirectOnly(true); if (s.fElig) setFElig(s.fElig)
-            if (s.fCountry) setFCountry(s.fCountry); if (s.fProv) setFProv(s.fProv); if (s.fCity) setFCity(s.fCity); if (s.fDistrict) setFDistrict(s.fDistrict)
-            if (s.fBroad) setFBroad(s.fBroad); if (s.fMid) setFMid(s.fMid); if (s.fFine) setFFine(s.fFine)
-            if (s.fTeer) setFTeer(s.fTeer); if (s.fSource) setFSource(s.fSource); if (s.fAcc) setFAcc(s.fAcc)
-            if (s.fPnp) setFPnp(s.fPnp); if (s.fAip) setFAip(s.fAip); if (s.fStatus) setFStatus(s.fStatus); if (s.fOrigin) setFOrigin(s.fOrigin)
-            if (s.fScore) setFScore(s.fScore); if (s.fSal) setFSal(s.fSal); if (s.fVs) setFVs(s.fVs); if (s.fEmp) setFEmp(s.fEmp)
-          }
+          if (s) applyFilters(s as JobFilters)
         } catch { /* ignore */ }
         sp.delete('back')
         window.history.replaceState(null, '', window.location.pathname + (sp.toString() ? `?${sp.toString()}` : ''))
       }
-      // 一张表读完:含 stats 图表 L2 下钻深链(mid,2026-07-19)与详情页小类深链(fine,#142)
-      const fields = urlFields()
-      for (const [key, f] of Object.entries(fields)) {
-        const raw = sp.get(key)
-        if (!raw) continue
-        f.set(key === 'prov' ? (PROV_NAMES[raw.toUpperCase()] || raw) : raw)   // 省接受两位码或全名
-      }
-      if (sp.get('direct') === '1') setDirectOnly(true)
+      // URL 里的筛选(stats/rankings 回流、stats L2 下钻 mid、详情页小类 fine)已由服务端解析成
+      // initialFilters 当了 state 初值 —— 这里再读一遍只作兜底(值相同,React 自会跳过重渲)。
+      applyFilters(initialFilters)
       // E5-05 直链回流;进匹配视图默认按匹配度排(2026-07-21 Frank:横幅写「按匹配度排序」得名副其实,
       // 原默认发布时间序把非今日的高匹配全压在今日中匹配下面)
       if (sp.get('view') === 'match' && plan.loggedIn && plan.profileOk) { setMatchView(true); setSort({ key: 'match', dir: 'desc' }) }
@@ -668,28 +669,24 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   // 筛选 → URL(刷新保选项)+ localStorage 快照(返回保筛选的数据面):都只记非默认值,
   // 全默认就把参数/快照清掉,不留陈年状态。URL 只动自己管的那几个 key,别人的参数(view 等)原样留着。
   useEffect(() => {
+    const snap = curFilters()
     if (hydrated.current) try {
       const u = new URL(window.location.href)
-      for (const [key, f] of Object.entries(urlFields())) {
-        if (f.v) u.searchParams.set(key, f.v); else u.searchParams.delete(key)
+      for (const [urlKey, fKey] of Object.entries(URL_TO_FILTER)) {
+        const v = snap[fKey]
+        if (typeof v === 'string' && v) u.searchParams.set(urlKey, v); else u.searchParams.delete(urlKey)
       }
-      if (directOnly) u.searchParams.set('direct', '1'); else u.searchParams.delete('direct')
+      if (snap.directOnly) u.searchParams.set(DIRECT_URL_KEY, '1'); else u.searchParams.delete(DIRECT_URL_KEY)
       const next = u.pathname + (u.searchParams.toString() ? '?' + u.searchParams.toString() : '') + u.hash
       if (next !== window.location.pathname + window.location.search + window.location.hash) {
         window.history.replaceState(null, '', next)
       }
     } catch { /* ignore */ }
     try {
-      const snap: Record<string, string | boolean> = {}
-      const pairs: [string, string | boolean][] = [['q', q], ['directOnly', directOnly], ['fElig', fElig],
-        ['fCountry', fCountry], ['fProv', fProv], ['fCity', fCity], ['fDistrict', fDistrict],
-        ['fBroad', fBroad], ['fMid', fMid], ['fFine', fFine], ['fTeer', fTeer], ['fSource', fSource], ['fAcc', fAcc],
-        ['fPnp', fPnp], ['fAip', fAip], ['fStatus', fStatus], ['fOrigin', fOrigin],
-        ['fScore', fScore], ['fSal', fSal], ['fVs', fVs], ['fEmp', fEmp]]
-      for (const [k, v] of pairs) if (v) snap[k] = v
       if (Object.keys(snap).length) localStorage.setItem('boardFilters', JSON.stringify(snap))
       else localStorage.removeItem('boardFilters')
     } catch { /* ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q, directOnly, fElig, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, fEmp])
   // E8-10:popup 存**分组**不再存字段(24 → 3);srcField 只用于打开时锚到哪一节,不参与内容分支
   const [popup, setPopup] = useState<{ group: FieldGroup; srcField: ColKey; job: JobRow; title: string } | null>(null)
@@ -777,10 +774,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   }
   const colRef = useRef<HTMLDivElement>(null)
   // (E10-01 P3:客户端 limit 切片退役 → 服务端 page 分页,见下方 fetch effect)
-  const [lang, setLang] = useState<Lang>('zh')    // 语言(localStorage 持久化)
-  useIsoLayoutEffect(() => { setLang(initialLang()) }, [])   // 首访跟浏览器语言(i18n.initialLang 单一来源)
-  const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
-  const t = makeT(lang)
+  const [lang, setLangSaved, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
   // 大分类标签:'未分类' 复用规范 key cell.uncat(字典无 broad.未分类,否则会回退成原样输出 "broad.未分类")
   // 大类显示名同样走 catName:名字住 noc_categories(broad_en/broad_ko),
   // 分类换一版就不必再往 i18n 里手加 17×3 个键(#256 那类事故的同一个根)
@@ -943,15 +937,15 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const dq = useDeferredValue(q)
   const firstFetch = useRef(true)
   useEffect(() => {
+    const cur = curFilters(dq)                       // 筛选参数与 URL/快照同一个出口(fState 一张表)
     const sp = new URLSearchParams()
-    const term = dq.trim(); if (term) sp.set('q', term)
-    if (directOnly) sp.set('directOnly', '1')
-    for (const [k, v] of ([['fProv', fProv], ['fCity', fCity], ['fDistrict', fDistrict], ['fCountry', fCountry], ['fBroad', fBroad], ['fMid', fMid], ['fFine', fFine], ['fTeer', fTeer], ['fSource', fSource], ['fAcc', fAcc], ['fPnp', fPnp], ['fAip', fAip], ['fStatus', fStatus], ['fOrigin', fOrigin], ['fScore', fScore], ['fSal', fSal], ['fVs', fVs], ['fEmp', fEmp], ['fElig', fElig]] as [string, string][])) if (v) sp.set(k, v)
+    for (const [k, v] of Object.entries(cur)) sp.set(k, v === true ? '1' : String(v))
     if (sort.key) { sp.set('sort', sort.key); sp.set('dir', sort.dir) }
     if (matchView) sp.set('view', 'match')
     sp.set('page', String(page))
-    // 首屏 page0 且无筛选非匹配 = SSR 已给 → 跳过首次重复拉取(不闪)
-    if (firstFetch.current) { firstFetch.current = false; if (page === 0 && !matchView && !anyFilter) return }
+    // 首屏 page0 非匹配、且筛选与 SSR 那次完全一致 = 服务端已经给过这批行 → 跳过首次重复拉取(不闪)。
+    // 无筛选时两边都是空签名,与改造前的 !anyFilter 等价。
+    if (firstFetch.current) { firstFetch.current = false; if (page === 0 && !matchView && filterSig(cur) === ssrSig.current) return }
     const seq = ++reqSeq.current
     setLoading(true)
     fetch('/api/jobs?' + sp.toString(), { credentials: 'include' })
@@ -1018,17 +1012,12 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                 只留「N 个职位」;证言是说服性内容,在首屏抢不过职位数。 */}
             {proof && (proof.named > 0 || proof.lmia > 0) && <span className="pbProof" style={{ marginLeft: 10 }}>{t('subtitle.proof', { named: proof.named, lmia: proof.lmia })}</span>}
           </>}
-          right={!plan.loggedIn && (
-            // #165(Frank 报障「这个按钮在手机端会挡住信息」):CTA 在横幅右槽带 nowrap + flexShrink:0,
-            // **既不换行也不收缩** → 375px 上整条字占掉右半边,左边标题与职位数被压成省略号。
-            // 旁边的数字胶囊(.pbStat)本就做了窄屏隐藏,这个漏了。
-            // 不能直接隐藏它(手机是主要流量,建档是转化入口)→ 窄屏换短标签,长短同一枚不重复排版。
-            // 注:JSX 属性位不能放 {/* */} 注释(TS1005),注释要写在表达式内 —— 与「return( 后不能跟注释」同类。
-            <a href="/?signup=1" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'none' }}>
-              <style>{'@media(max-width:640px){.ctaLong{display:none}.ctaShort{display:inline}}@media(min-width:641px){.ctaShort{display:none}}'}</style>
-              <IconTarget /> <span className="ctaLong">{t('banner.text')}</span><span className="ctaShort">{t('banner.textShort')}</span>
-            </a>
-          )} />
+          />
+        {/* 横幅右槽「免费建档案,看每份工作对你的匹配度」CTA 已删(2026-08-02 Frank:「删掉」)。
+            理由=旧漏斗残肢:它跳 /?signup=1 一个光秃秃注册框(无题无报告),而现在的获客链是
+            答题 → 报告 → 落库建档(/plan/pr;实测报告来路 16 条里 12 条是首页 pr 卡直进)。
+            同屏另有三个同义入口(顶栏注册钮 / 顶栏「我的匹配」/ 手机整行「我的匹配」),
+            它是第四个、且全站唯一没埋点的转化入口 —— 带没带来注册无从判断,还是 #165 的病灶。 */}
 
 
         {/* 三问细带已移出职位板(2026-07-31 Frank「我觉得放在这不合适,应该放到我的档案里面」):
@@ -3384,7 +3373,7 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
       const c0 = (d0?.factors || []).find((x: any) => x.key === 'comp')
       const t0 = (d0?.factors || []).find((x: any) => x.key === 'quotaTrend')
       const a0 = (d0?.factors || []).find((x: any) => x.key === 'activity')
-      if (d0?.tier) out.push(`PNP difficulty tier: ${d0.tier}${c0 ? `; competition ratio ${c0.value}:1 (study+work permit holders ${c0.pool} ÷ nomination allocation ${c0.quota}, ${c0.quotaYear})` : ''}${t0 ? `; allocation YoY ${Math.round(t0.value * 100)}%` : ''}${a0 ? `; ${a0.value} draws in last 180 days (${a0.invitations ?? 0} invitations)` : ''}`)
+      if (d0?.tier) out.push(`PNP difficulty tier: ${d0.tier}${c0 ? `; competition ratio ${c0.value}:1 (study+work permit holders ${c0.pool} as of year-end ${c0.asOf ?? '?'} ÷ nomination allocation ${c0.quota} for ${c0.quotaYear})` : ''}${t0 ? `; allocation YoY ${Math.round(t0.value * 100)}%` : ''}${a0 ? `; ${a0.value} draws in last 180 days (${a0.invitations ?? 0} invitations)` : ''}`)
       if (inf?.study) out.push(`Study permit holders: ${inf.study.n} (${inf.study.year} year-end)`)
       if (inf?.tfwp) out.push(`Employer-specific work permits (TFWP): ${inf.tfwp.n} (${inf.tfwp.year} year-end)`)
       if (inf?.imp) out.push(`Open/exempt work permits (IMP, incl. PGWP): ${inf.imp.n} (${inf.imp.year} year-end)`)
@@ -3519,7 +3508,7 @@ function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp = [
           {/* Frank 2026-07-26 走查:三列(标签 | 值 | 注)跨行对齐,每列左对齐 —— 原来一行一整句,读不快也对不齐 */}
           <FactGrid cols={3}>
             {[
-              comp && [t('diff.k.comp'), t('diff.v.comp', { v: comp.value }), t('diff.compNote', { pool: num(comp.pool), quota: num(comp.quota), y: comp.quotaYear })],
+              comp && [t('diff.k.comp'), t('diff.v.comp', { v: comp.value }), t('diff.compNote', { pool: num(comp.pool), quota: num(comp.quota), y: comp.quotaYear, py: comp.asOf ?? '' })],
               trend && [t('diff.k.trend'), pctS(trend.value), ''],
               // 改制省(ON)近 180 天的抽选全在改制之前 —— 不加注就与下方「旧 8 条流已关闭」自相矛盾。
               // 判定走同一份 pnpDraws:改制日之后一条都没有才加注,新 EOI 一开抽注自动消失。

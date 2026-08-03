@@ -2,18 +2,16 @@
 // 官方资源导航(E4-05):hao123 式导航——顶部搜索框 + 每条一卡的密集网格,按分类分区。
 // curated 常量(非 ETL);红线=宁缺毋滥,失效宁可不列。链接=可点卡片(整卡跳官方页)。
 import { useEffect, useMemo, useState } from 'react'
-import { initialLang, makeT, LANG_KEY, type Lang } from '../jobs/i18n'
+import { type Lang } from '../jobs/i18n'
+import { useLang } from '../LangProvider'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { BANNER_IMGS, PageBanner } from '../ui/primitives'
 import { RES } from './data'
 
 export function ResourcesView() {
-  const [lang, setLang] = useState<Lang>('zh')
+  const [lang, setLangSaved, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
   const [q, setQ] = useState('')
-  useEffect(() => { setLang(initialLang()) }, [])
-  const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
-  const t = useMemo(() => makeT(lang), [lang])
 
   const ql = q.trim().toLowerCase()
   const groups = useMemo(() => RES.map((g) => ({

@@ -7,7 +7,8 @@
 // 红线:数字全库内真数,查不到整节不渲;通道名映射不到显官方原文,前端不编翻译。
 import { useEffect, useMemo, useState } from 'react'
 
-import { eeDisplay, eeKeyDisplay, initialLang, makeT, LANG_KEY, type Lang, drawStreamNote } from '../jobs/i18n'
+import { eeDisplay, eeKeyDisplay, makeT, type Lang, drawStreamNote } from '../jobs/i18n'
+import { useLang } from '../LangProvider'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { MarketChart, useMarketStats } from '../stats/charts'
@@ -36,9 +37,9 @@ const num = (n: number) => n.toLocaleString('en-CA')
 const ymd = (iso: string) => (iso || '').slice(0, 10)
 
 // 全宽色带 + 1320 内轨(MongoDB 式分节;带色只用既有 token:白 / 页底灰,蓝 tint 只给 CTA 带)
-function Band({ bg, children }: { bg?: string; children: React.ReactNode }) {
+function Band({ bg, className, children }: { bg?: string; className?: string; children: React.ReactNode }) {
   return (
-    <div className="hmBand" style={{ background: bg }}>
+    <div className={'hmBand' + (className ? ' ' + className : '')} style={{ background: bg }}>
       <div style={{ maxWidth: 1320, margin: '0 auto', padding: '0 1.25rem', boxSizing: 'border-box' }}>{children}</div>
     </div>
   )
@@ -57,10 +58,7 @@ function TopN({ v, on, max }: { v: number; on: (n: number) => void; max: number 
 }
 
 export function StartView({ stats }: { stats: HomeStats }) {
-  const [lang, setLang] = useState<Lang>('zh')
-  useEffect(() => { setLang(initialLang()) }, [])
-  const setLangSaved = (l: Lang) => { try { localStorage.setItem(LANG_KEY, l) } catch { /* ignore */ } ; setLang(l) }
-  const t = useMemo(() => makeT(lang), [lang])
+  const [lang, setLangSaved, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
 
   // 老三问弹框 2026-07-31 在 landing 全下架(Frank「现在只有拿 PR 有题,其他还是老的弹框 → 先都关掉」):
   // 有 builder 的卡进答题页,其余先回深链等各自 builder;主 CTA 直接进 /plan/pr。
@@ -146,12 +144,21 @@ export function StartView({ stats }: { stats: HomeStats }) {
       {/* 分节版式(v3):.hmBand 全宽色带,节内 1320 轨;节纵距 40/72px,节标题 20/24px —— 一节一事不挤屏 */}
       <style>{`
         .hmBand{padding:40px 0}
+        /* 矮内容节收紧带高(2026-08-03 Frank「这个 title 不应该贴到上边吗」):节距 72/72 是给
+           整屏内容定的,今日日更只有一行数字(130px)—— 撑在 273px 的带子里,标题看着浮在带中间。
+           只收这一节,其余节的节奏不动。 */
+        .hmBand.hmTight{padding:28px 0}
         .hmBand h2{font-size:20px}
         .hmHero.hmBand{padding:16px 0 0}
         .hmBtn{display:block;border-radius:8px;padding:12px 20px;font-size:14px;font-weight:600;text-align:center;cursor:pointer;text-decoration:none;border:none;font-family:inherit}
         .hmGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
         .hmGrid3{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
-        .hmNums{display:flex;gap:28px;flex-wrap:wrap;justify-content:center;text-align:center}
+        /* 数字组与节标题同一条左轨、等宽分列(站规「多值拆列网格对齐、优先左对齐」)。
+           原来是 justify-content:center —— 标题在左轨、数字群居中,两条轴打架,桌面右侧空掉 400+px
+           (2026-08-03 Frank 报「这个布局有问题」)。flex:1 1 0 + min-width:max-content = 等宽分列但永不压字,
+           列数随数字个数(eligible/total 可能不渲)自适应,不必写死三列。 */
+        .hmNums{display:flex;gap:28px;flex-wrap:wrap;text-align:left}
+        .hmNums>span{flex:1 1 0;min-width:max-content}
         .hmNums b{display:block;font-size:32px;line-height:1.15;font-weight:700}
         .hmCtaBand{display:flex;flex-direction:column;gap:12px}
         /* 榜单:桌面表格 / 手机卡片,两套 DOM 各渲各的(站规「电脑用表格 手机用卡片」)。
@@ -187,6 +194,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
         @media (min-width:900px){ .hmDrawTable{display:table}.hmDrawCards{display:none} }
         @media (min-width:900px){
           .hmBand{padding:72px 0}
+          .hmBand.hmTight{padding:40px 0}
           .hmBand h2{font-size:24px}
           .hmHero.hmBand{padding:16px 0 0}
           .hmBtn{padding:13px 28px;font-size:15px}
@@ -229,13 +237,14 @@ export function StartView({ stats }: { stats: HomeStats }) {
           </div>
         </Band>
 
-        {/* ③ 今日日更(灰带,居中大数字;点数字进职位板)
-            节头与其余各节同规:标题左、日期跟在标题后当灰注(2026-08-02 Frank「这个页面其他 title 也这样搞」)。
-            大数字仍居中 —— 那是这节的焦点排布,不是标题的事(节头一致 ≠ 内容也得跟着改) */}
+        {/* ③ 今日日更(灰带,大数字;点数字进职位板)
+            节头与其余各节同规:左上角一个光标题,不挂日期灰注(2026-08-03 Frank「不需要日期」——
+            全页九个节头只有这一个挂过,而节名已经说了是「今日」,日期是同一件事说两遍)。
+            大数字原本居中(「那是这节的焦点排布」)—— 同日实拍推翻:标题在左轨、数字群居中,
+            桌面右侧空 400+px,读起来像没排完。改回与标题同轨的等宽分列(排布规则见 .hmNums) */}
         {stats.daily && (
-          <Band>
-            <h2 style={{ ...secH, marginBottom: 22 }}>{t('home.daily')}
-              <span style={{ fontSize: 12.5, fontWeight: 400, color: UI.text3 }}>{ymd(stats.daily.date)}</span></h2>
+          <Band className="hmTight">
+            <h2 style={secH}>{t('home.daily')}</h2>
             <a href="/" style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
               <div className="hmNums">
                 <span><b style={{ color: UI.primaryDeep }}>{num(stats.daily.n)}</b><span style={{ fontSize: 12.5, color: UI.text2 }}>{t('home.daily.new')}</span></span>
