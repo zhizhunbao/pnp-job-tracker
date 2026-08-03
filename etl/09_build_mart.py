@@ -277,7 +277,7 @@ def build():
                         city=j.get("city"), district=j.get("district"), address=j.get("address"),
                         applyUrl=j.get("url"), officialUrl=prof.get("website"),
                         salary=j.get("salary"), salaryAnnual=j.get("salaryAnnual"), salaryText=j.get("salaryText"),
-                        aip=bool(j.get("aip")), datePosted=j.get("posted"), lastSeen=ats_seen)
+                        aip=bool(j.get("aip")), apprenticeFriendly=False, datePosted=j.get("posted"), lastSeen=ats_seen)
 
     # 2) Job Bank(全国全职业)
     if IN_JOBBANK.exists():
@@ -303,7 +303,8 @@ def build():
                     city=j.get("city"), district=j.get("district"), address=j.get("address"),
                     applyUrl=j.get("url"), officialUrl=j.get("website"),
                     salary=j.get("salary"), salaryAnnual=j.get("salaryAnnual"), salaryText=j.get("salaryText"),
-                    aip=bool(j.get("aip")), datePosted=j.get("date"), lastSeen=j.get("last_seen"),
+                    aip=bool(j.get("aip")), apprenticeFriendly=bool(j.get("apprentice_friendly")),
+                    datePosted=j.get("date"), lastSeen=j.get("last_seen"),
                     # 雇佣形态 + 入职要求(E6-06/E6-07A,05b 解析):空值靠 add_job 的 (None,"") 过滤/or None 剔除
                     employmentTerm=j.get("employment_term"), employmentHours=j.get("employment_hours"),
                     certificates=j.get("certificates") or None, education=j.get("education"))

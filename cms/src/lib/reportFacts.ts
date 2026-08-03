@@ -118,7 +118,8 @@ export async function assembleReportFacts(pool: any, noc: string): Promise<Repor
   const [prov, draws, scoreProv, head, reqs, wages, diff] = await Promise.all([
     pool.query(
       `SELECT province, count(*)::int open,
-              count(*) FILTER (WHERE pnp_stream IS NOT NULL AND pnp_stream <> '')::int named
+              count(*) FILTER (WHERE pnp_stream IS NOT NULL AND pnp_stream <> '')::int named,
+              count(*) FILTER (WHERE apprentice_friendly)::int apprentice
        FROM jobs WHERE COALESCE(status,'open') <> 'closed' AND noc = $1 AND COALESCE(province,'') <> ''
        GROUP BY province`, [noc]),
     // 省抽选(FED=联邦轮次在引擎里走 EE 独立信号,这里不带);近 120 行足够覆盖各省近 6 次
@@ -166,7 +167,7 @@ export async function assembleReportFacts(pool: any, noc: string): Promise<Repor
     noc,
     title: h.title || noc,
     teer: h.teer != null ? Number(h.teer) : (/^\d{5}$/.test(noc) ? Number(noc[1]) : null),
-    byProv: prov.rows.map((r: any) => ({ province: r.province, open: r.open ?? 0, named: r.named ?? 0, medianWage: wageOf.get(r.province) ?? null })),
+    byProv: prov.rows.map((r: any) => ({ province: r.province, open: r.open ?? 0, named: r.named ?? 0, apprentice: r.apprentice ?? 0, medianWage: wageOf.get(r.province) ?? null })),
     // difficulty 列是 04e 写进 stats 的 json:{tier, factors:[{key:'comp',value,asOf},…]}
     difficulty: diff.rows.map((r: any) => {
       const d = r.difficulty ?? {}

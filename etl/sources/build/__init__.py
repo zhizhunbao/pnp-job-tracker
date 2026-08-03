@@ -13,6 +13,7 @@ META = {
         ["python", "etl/clean/04c_clean_ats_locations.py"],
         ["python", "etl/clean/04d_clean_salary.py"],
         ["python", "etl/clean/05c_flag_aip.py"],
+        ["python", "etl/clean/05e_flag_apprentice.py"],  # B1-3:官方标「不要经验/带训」+ 学徒标题 → apprentice_friendly
         ["python", "etl/clean/05d_noc_sanity.py"],  # #47:标题↔NOC 失配护栏(泛词标题×TEER0/1×低薪 → NOC 置空转未分类)
         ["python", "etl/verify_expired.py"],        # #124 批C:死岗验尸(周节奏,7 天内跑过=秒退;判死帖 09 剔除出 mart)
         # 官网富化已拆独立 enrich 角色(2026-07-16「分开来跑」拍板):每轮 10-17 分钟拖垮 seed 时效;

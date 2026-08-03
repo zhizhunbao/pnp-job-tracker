@@ -398,6 +398,7 @@ const zh: Dict = {
   'rpt.n.jobs': '看 {prov} 这 {n} 个在招岗', 'rpt.n.score': '按 {prov} 官方分值表估个分', 'rpt.n.pathways': '对照完整移民路径',
   'rpt.g.zeroExp': '你还没有这行的经验 —— 设经验门槛的省最低也要 {need} 个月,先解决第一份岗,再谈选省',
   'rpt.n.firstJob': '先拿下这行的第一份岗(经验从那天起算)—— {prov} 在招 {n} 个',
+  'rpt.n.firstJobA': '先拿下这行的第一份岗 —— {prov} 在招 {n} 个,其中 {aN} 个官方标了不要经验/带训',
   'rpt.a.prov': '{prov}:你的职业在其公开清单「{label}」上——在招 {open} 岗,其中 {named} 个是省提名清单岗',
   // v2c 报告分层(L2-03):hero 大数字 → 三卡判定 → 两条结论 → 编号下一步 → 锁区。判定词是事实(免费),分差/时间窗是结论(Pro)
   'plan.explore.sub': '再答 2 题:算 EE 分差与时间窗', 'plan.explore.basic': '改基本题',
@@ -1151,6 +1152,7 @@ const en: Dict = {
   'rpt.n.jobs': 'See the {n} open postings in {prov}', 'rpt.n.score': 'Estimate your {prov} score on the official grid', 'rpt.n.pathways': 'Compare full immigration pathways',
   'rpt.g.zeroExp': 'You report no experience in this occupation - provinces that set an experience bar ask for at least {need} months, so the first step is a first job, not picking a province',
   'rpt.n.firstJob': 'Land your first job in this occupation (the experience clock starts there) - {n} openings in {prov}',
+  'rpt.n.firstJobA': 'Land your first job in this occupation - {n} openings in {prov}, {aN} officially marked will-train / no experience',
   'rpt.a.prov': '{prov}: your occupation is on its published list "{label}" - {open} open postings, {named} on the named stream',
   'plan.explore.sub': '2 more questions: your EE gap and time window', 'plan.explore.basic': 'Edit basics',
   'plan.set.basic': 'Your details', 'plan.set.explore': 'More details',
@@ -1876,6 +1878,7 @@ const ko: Dict = {
   'rpt.n.jobs': '{prov}의 채용 {n}건 보기', 'rpt.n.score': '{prov} 공식 점수표로 추정하기', 'rpt.n.pathways': '전체 이민 경로 비교',
   'rpt.g.zeroExp': '이 직종 경력이 아직 없음 - 경력 요건을 두는 주는 최소 {need}개월 요구. 주 선택보다 첫 일자리가 먼저',
   'rpt.n.firstJob': '이 직종 첫 일자리부터 잡기(경력은 그날부터 계산) - {prov} 채용 {n}건',
+  'rpt.n.firstJobA': '이 직종 첫 일자리부터 잡기 - {prov} 채용 {n}건, 그중 {aN}건은 공식 무경력/훈련 제공 표기',
   'rpt.a.prov': '{prov}: 내 직업이 공개 목록 "{label}"에 있습니다 - 채용 {open}건, 지정 스트림 {named}건',
   'plan.explore.sub': '2문항 더: EE 점수 격차와 체류 기간', 'plan.explore.basic': '기본 문항 수정',
   'plan.set.basic': '기본 정보', 'plan.set.explore': '추가 정보',

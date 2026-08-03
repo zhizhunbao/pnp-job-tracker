@@ -251,6 +251,13 @@ describe('卡③ 选省份', () => {
     const bare = buildProvReport(normalizeProfile({}), { hasJobOffer: null, totalExpMonths: 0 }, provDims, provFacts)
     expect(bare.gaps.some((g) => g.key === 'rpt.g.zeroExp')).toBe(false)
     expect(bare.nextSteps.some((s) => s.key === 'rpt.n.firstJob')).toBe(true)
+    // B1-3:首选省有官方标「不要经验/带训」的岗 → 第一份岗那条带具体数(rpt.n.firstJobA)
+    const withA = buildProvReport(normalizeProfile({}), { hasJobOffer: null, totalExpMonths: 0 }, provDims, {
+      ...provFacts, requirements: reqs,
+      byProv: provFacts.byProv.map((r) => (r.province === 'BC' ? { ...r, apprentice: 4 } : r)),
+    })
+    const fj = withA.nextSteps.find((s) => s.key === 'rpt.n.firstJobA')!
+    expect(fj.params).toMatchObject({ prov: 'BC', aN: 4 })
   })
 
   it('有 offer → 雇主通道排进下一步;没有 → 出缺口', () => {

@@ -16,7 +16,8 @@ import type { OccStats } from './reportFacts'   // 纯类型(reportFacts 反向�
 
 // ── 输入:事实聚合(由 API 层查库组装;引擎不碰 SQL)─────────────────────────
 // medianWage=该职业在该省的 ESDC 官方中位年薪(最低收入门槛的对照基准:岗位自带的事实,不问用户)
-export type OccProvFacts = { province: string; open: number; named: number; medianWage?: number | null }
+// apprentice = 官方标「不要经验/带训」或学徒标题的在招岗数(B1-3,05e 清洗;undercount 安全:漏标只会少数)
+export type OccProvFacts = { province: string; open: number; named: number; apprentice?: number; medianWage?: number | null }
 export type ReportDraw = { province: string; drawDate: string; stream: string; score: number | null; invitations?: number | null }
 // 抽选明细一行(行尾灰字点开看的):全是官方逐轮公布的字段,一个推断都不放
 export type DrawDetail = { date: string; stream: string; score: number | null; invitations: number | null }
@@ -720,7 +721,15 @@ export function buildProvReport(profile: MatchProfile, extra: ProvExtra, dims: M
       .map((r) => r.value as number)
     if (expNeeds.length) gaps.push({ key: 'rpt.g.zeroExp', params: { need: Math.min(...expNeeds) }, verdict: 'warn' })
   }
-  if (rank[0]?.open) nextSteps.push({ key: zeroExp ? 'rpt.n.firstJob' : 'rpt.n.jobs', params: { prov: rank[0].prov, n: rank[0].open }, url: `/?prov=${rank[0].prov}&q=${noc}` })
+  if (rank[0]?.open) {
+    // B1-3:首选省有官方标「不要经验/带训」的岗(05e 清洗)→ 第一份岗那条带上具体数(漏标只会少数,不会错数)
+    const aN = zeroExp ? (facts.byProv.find((r) => r.province === rank[0].prov)?.apprentice ?? 0) : 0
+    nextSteps.push({
+      key: zeroExp ? (aN > 0 ? 'rpt.n.firstJobA' : 'rpt.n.firstJob') : 'rpt.n.jobs',
+      params: { prov: rank[0].prov, n: rank[0].open, ...(aN > 0 ? { aN } : {}) },
+      url: `/?prov=${rank[0].prov}&q=${noc}`,
+    })
+  }
 
   // 锁区:完整顺序与每省差距(要拿他的答案才排得出来)
   if (rank.length > 2) {
@@ -1121,6 +1130,7 @@ const EN: Record<string, (p: Record<string, string | number>) => string> = {
   'rpt.r.exp.zero': (p) => `${p.prov}'s skilled worker stream requires ${p.need} months of experience in this occupation; you report none — a timeline gap, not a disqualification: the clock starts with your first job.`,
   'rpt.g.zeroExp': (p) => `You report no experience in this occupation — provinces that set an experience bar ask for at least ${p.need} months, so the first step is a job that builds it, not picking a province.`,
   'rpt.n.firstJob': (p) => `Land your first job in this occupation — the experience clock starts there; ${p.n} openings in ${p.prov}.`,
+  'rpt.n.firstJobA': (p) => `Land your first job in this occupation — ${p.n} openings in ${p.prov}, ${p.aN} officially marked will-train / no experience required.`,
   'rpt.r.wage.median': (p) => `${p.prov} requires the offered wage to be at or above the regional median for the occupation — that median is $${p.need} per year.`,
   'rpt.r.wage.rule': (p) => `${p.prov} requires the offered wage to be at or above the regional median wage level for the occupation.`,
   'rpt.r.emp.years': (p) => `Employer-side: the employer needs ${p.n}+ years of operation in ${p.prov} — only the employer can evidence this.`,

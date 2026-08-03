@@ -533,6 +533,10 @@ export interface Job {
    */
   aip?: boolean | null;
   /**
+   * B1-3:官方 Experience 标「Will train/Experience an asset」或标题含学徒(05e 算);False=没被标,不是要经验
+   */
+  apprenticeFriendly?: boolean | null;
+  /**
    * #125 展示层重复标记:同 公司×岗名×城市 非最新帖(09 算);列表隐藏,行保留统计不动
    */
   isDup?: boolean | null;
@@ -1785,6 +1789,7 @@ export interface JobsSelect<T extends boolean = true> {
   pnpStream?: T;
   eeCategory?: T;
   aip?: T;
+  apprenticeFriendly?: T;
   isDup?: T;
   employmentTerm?: T;
   employmentHours?: T;
