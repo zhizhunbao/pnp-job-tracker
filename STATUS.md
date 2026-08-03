@@ -21,6 +21,11 @@
 >   缺项排前、扣次正常):completeText 加 opts.provider 按调用点定向,只有 resume-match 换道,
 >   advisor/建档照旧走全局 LLM_PROVIDER;服务挂了报 rm.err 不静默切云(#102 账单教训)。
 >   **LLM 全链已验**(测试号),Frank 真号可选验。手上欠着:死键清理批(rpt.lock.<类>/rpt.cta.*/jd.rep.lock*/rm.eyebrow)。
+> - **Frank 真简历必败追凶三连**(7e8e674+73c4d6a,生产顶格复验 200):真凶=**朋友服务 prompt 上限
+>   6000 字符**(400 拒收),我们 JD/简历各切 8000 一合计必超;短输入探针全绕开它 →「我测全通你点全挂」。
+>   修=JD 2800+简历 3100 贴 6000 切(system 不占额)。顺带:noJd 服务端按 jobId 懒抓兜底、
+>   前端错误码各说各话(noJd/auth 原先笼统报「稍后再试」)、llm/parse 接 @test.local detail 探针。
+>   **教训:验 LLM 链路必须带一发顶格输入**(小探针测不出上游限额)。
 >
 > **🔥 生产僵死事故(2026-08-03 16:0x–16:28,约 20 分钟,a195ee3 已修)**:seed 大改 jobs 表后,
 > 首页 `fetchTotalAndProof` 三连 count(全表扫、**每请求现算无缓存**)从 ~2s 涨到 ~10s,
