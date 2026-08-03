@@ -74,7 +74,13 @@ export async function POST(req: Request) {
     // extra 三张卡都要传:换省对照(L2-08)拿加拿大经验算下界分,卡①/③ 少了它会比卡② 少算一项
     const built = goal === 'job' ? buildJobReport(profile, dims, facts, occ!, extra)
       : goal === 'career' ? buildCareerReport(profile, facts, occ!)
-        : goal === 'prov' ? buildProvReport(profile, { hasJobOffer: typeof merged.hasJobOffer === 'boolean' ? merged.hasJobOffer : null, ...extra }, dims, facts, occ)
+        // answers.goal 是卡③的诉求(goalBand → 'pr'|'work'),与 body.goal(卡种)同名不同物 ——
+        // 2026-08-03 上线时这里漏传,生产上两种诉求返回逐字节相同,排序目标形同虚设
+        : goal === 'prov' ? buildProvReport(profile, {
+          hasJobOffer: typeof merged.hasJobOffer === 'boolean' ? merged.hasJobOffer : null,
+          goal: merged.goal === 'pr' || merged.goal === 'work' ? merged.goal : null,
+          ...extra,
+        }, dims, facts, occ)
           : buildPrReport(profile, extra, dims, facts, occ)
     // 付费闸在服务端(L2-03):免费响应里根本没有锁区正文,前端只负责显示锁行标题
     return gateReport(built, isPro(user))

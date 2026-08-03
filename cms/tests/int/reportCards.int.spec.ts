@@ -186,6 +186,17 @@ describe('卡③ 选省份', () => {
     expect(ab.source?.url).toBe('https://alberta.ca/inelig')
   })
 
+  // 2026-08-03 实撞:路由没把 answers.goal 传进 ProvExtra(与 body.goal 卡种同名不同物),
+  // 生产上两种诉求返回逐字节相同 —— 排序目标形同虚设。引擎侧从这条锁死两种诉求必须排出不同的头名。
+  it('诉求改变排序:先找工作按在招量排,拿身份按清单排', () => {
+    const pr = buildProvReport(normalizeProfile({}), { hasJobOffer: null, goal: 'pr' }, provDims, provFacts)
+    expect(pr.conclusions[0].params.prov).toBe('BC')
+    const work = buildProvReport(normalizeProfile({}), { hasJobOffer: null, goal: 'work' }, provDims, provFacts)
+    expect(work.conclusions[0].params.prov).toBe('ON')       // 43 岗,在招量第一
+    expect(work.conclusions[0].key).toBe('rpt.p.screen')     // ON 制度性无清单 → 粗筛措辞,不冒充查过
+    expect(work.conclusions[1]).toMatchObject({ key: 'rpt.p.second', params: expect.objectContaining({ prov: 'SK' }) })
+  })
+
   // 2026-08-01 Frank 点名的那句废话(「就一个职位,怎么叫全部」):清单收的是**职业**,
   // 该职业在清单上,该省这个职业的在招岗自然全都算 —— 拿 PR 与找工作当天改成了多态,这张卡漏了,
   // 2026-08-03 读全文才发现(实见 SK「在招 12 岗,其中 12 个是省提名清单岗」)。
