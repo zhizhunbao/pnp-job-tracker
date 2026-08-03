@@ -19,53 +19,34 @@ export const dynamic = 'force-dynamic'
 export const maxDuration = 300
 
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://offer2pr.com').replace(/\/$/, '')
-type Lang = 'zh' | 'en' | 'ko'
-const T: Record<Lang, { subject: (n: number) => string; matchSubject: (n: number) => string; hi: string; drawGapAbove: (cat: string, crs: number, draw: number, d: number) => string; drawGapBelow: (cat: string, crs: number, draw: number, d: number) => string; open: string; unsub: string }> = {
-  zh: {
-    subject: (n) => `你保存的筛选有 ${n} 个新职位 — Offer2PR`,
-    matchSubject: (n) => `${n} 个新职位命中你的移民路径 — Offer2PR`,
-    hi: '以下新职位与你相关(点击职位看官方原帖):',
-    drawGapAbove: (c, crs, dr, d) => `新抽选:「${c}」抽到 ${dr} 分 —— 你自报 CRS ${crs},高出 ${d} 分`,
-    drawGapBelow: (c, crs, dr, d) => `新抽选:「${c}」抽到 ${dr} 分 —— 你自报 CRS ${crs},还差 ${d} 分`,
-    open: '打开职位板', unsub: '在账户页可删除保存的筛选以停止提醒',
-  },
-  en: {
-    subject: (n) => `${n} new jobs match your saved search — Offer2PR`,
-    matchSubject: (n) => `${n} new jobs match your immigration path — Offer2PR`,
-    hi: 'New jobs relevant to you (click a title for the official posting):',
-    drawGapAbove: (c, crs, dr, d) => `New draw: "${c}" cutoff ${dr} — your CRS ${crs} is ${d} above`,
-    drawGapBelow: (c, crs, dr, d) => `New draw: "${c}" cutoff ${dr} — your CRS ${crs} is ${d} below`,
-    open: 'Open job board', unsub: 'Delete the saved search on your account page to stop alerts',
-  },
-  ko: {
-    subject: (n) => `저장한 필터에 새 공고 ${n}건 — Offer2PR`,
-    matchSubject: (n) => `이민 경로에 맞는 새 공고 ${n}건 — Offer2PR`,
-    hi: '나와 관련된 새 공고(제목 클릭 시 공식 공고):',
-    drawGapAbove: (c, crs, dr, d) => `새 추첨: "${c}" 커트라인 ${dr} — 내 CRS ${crs}, ${d}점 높음`,
-    drawGapBelow: (c, crs, dr, d) => `새 추첨: "${c}" 커트라인 ${dr} — 내 CRS ${crs}, ${d}점 부족`,
-    open: '채용 보드 열기', unsub: '계정 페이지에서 저장 필터를 삭제하면 알림이 중지됩니다',
-  },
+// 2026-08-03 Frank:提醒信一律英文(88% 流量是英文;zh/ko 文案在 git 历史里,要恢复翻回来即可)
+const T = {
+  subject: (n: number) => `${n} new jobs match your saved search — Offer2PR`,
+  matchSubject: (n: number) => `${n} new jobs match your immigration path — Offer2PR`,
+  hi: 'New jobs relevant to you (click a title for details):',
+  drawGapAbove: (c: string, crs: number, dr: number, d: number) => `New draw: "${c}" cutoff ${dr} — your CRS ${crs} is ${d} above`,
+  drawGapBelow: (c: string, crs: number, dr: number, d: number) => `New draw: "${c}" cutoff ${dr} — your CRS ${crs} is ${d} below`,
+  open: 'Open job board', unsub: 'Delete the saved search on your account page to stop alerts',
 }
 
+// 链接落本站详情页(2026-08-03 Frank:原先直跳 Job Bank 原帖=流量白送;详情页有翻译/报告/官方原帖入口)
 function jobsTable(rows: any[]): string {
   const tr = rows.map((j) => `<tr>
-    <td style="padding:6px 10px;border-bottom:1px solid #eee"><a href="${j.apply_url || SITE}" style="color:#2563eb;text-decoration:none">${j.title}</a></td>
+    <td style="padding:6px 10px;border-bottom:1px solid #eee"><a href="${j.id != null ? `${SITE}/jobs/${j.id}` : SITE}" style="color:#2563eb;text-decoration:none">${j.title}</a></td>
     <td style="padding:6px 10px;border-bottom:1px solid #eee">${j.company_name || ''}</td>
     <td style="padding:6px 10px;border-bottom:1px solid #eee">${[j.city, j.province].filter(Boolean).join(', ')}</td>
     <td style="padding:6px 10px;border-bottom:1px solid #eee">${j.salary_text || ''}</td>
   </tr>`).join('')
   return `<table style="border-collapse:collapse;font-size:13px;font-family:system-ui,sans-serif">${tr}</table>`
 }
-function emailHtml(lang: Lang, rows: any[], drawLines: string[]): string {
-  const t = T[lang]
+function emailHtml(rows: any[], drawLines: string[]): string {
   return `<div style="font-family:system-ui,sans-serif;color:#1f2937;font-size:14px">
     <p>🍁 <strong>Offer2PR</strong></p>
     ${drawLines.map((l) => `<p style="background:#fef3c7;padding:8px 12px;border-radius:8px">${l}</p>`).join('')}
-    <p>${t.hi}</p>${jobsTable(rows)}
-    <p style="margin-top:14px"><a href="${SITE}" style="color:#2563eb">${t.open}</a></p>
-    <p style="color:#9ca3af;font-size:12px">${t.unsub}</p></div>`
+    <p>${T.hi}</p>${jobsTable(rows)}
+    <p style="margin-top:14px"><a href="${SITE}" style="color:#2563eb">${T.open}</a></p>
+    <p style="color:#9ca3af;font-size:12px">${T.unsub}</p></div>`
 }
-const langOf = (v: unknown): Lang => (v === 'en' || v === 'ko' ? v : 'zh')
 
 // ── C 免费周报(E9-02b):zh+en 双语一封(免费用户多无档案语言偏好,不猜) ──
 function weeklyHtml(rows: { title: string; company: string; open: boolean }[], newN: number, dims: string, unsubUrl: string): string {
@@ -151,29 +132,32 @@ export async function GET(req: NextRequest) {
     out.usersChecked++
     const since = u.lastAlertAt || new Date(Date.now() - 36 * 3600_000).toISOString()  // 首轮只回看 36h,不倒灌历史
     const { rows } = await pool.query(
-      `SELECT j.title, j.city, j.province, j.salary_text, j.apply_url, j.noc, j.teer, j.pnp_eligible, j.pnp_stream,
+      `SELECT j.id, j.title, j.city, j.province, j.salary_text, j.noc, j.teer, j.pnp_eligible, j.pnp_stream,
               j.ee_category, j.salary_annual, j.wage_med_annual, j.score, c.name AS company_name
        FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
        WHERE j.status = 'open' AND j.first_seen > $1 ORDER BY j.score DESC NULLS LAST LIMIT 2000`, [since])
+    // 目标省的岗排前面(2026-08-03 Frank「该按用户地理推」):偏好不是资格(07-21 拍板),
+    // 外省对口岗不排除,只往后放;stable sort 保住组内原 score 序
+    const inTarget = (j: any) => (profile.targetProvinces.includes((j.province || '').toUpperCase()) ? 0 : 1)
     const hits = rows.filter((j: any) => {
       const mj: MatchJob = { noc: j.noc ?? '', teer: j.teer == null ? null : Number(j.teer), province: j.province ?? '', pnpEligible: !!j.pnp_eligible, pnpStream: j.pnp_stream ?? '', eeCategory: j.ee_category ?? '', salaryAnnual: j.salary_annual == null ? null : Number(j.salary_annual), wageMedAnnual: j.wage_med_annual == null ? null : Number(j.wage_med_annual) }
       const m = match(profile, mj, dims)
       return m.level === 'high' || (ALERT_MATCH_LEVEL === 'mid' && m.level === 'mid')
-    }).slice(0, 10)
+    })
+    if (profile.targetProvinces.length) hits.sort((a: any, b: any) => inTarget(a) - inTarget(b))
+    const top = hits.slice(0, 10)
     const drawLines = profile.crs != null ? newDraws.map((d) => {
       const diff = profile.crs! - (d.drawCrs as number)
-      const t = T[langOf(u.profileLang)]
-      return diff >= 0 ? t.drawGapAbove(d.label, profile.crs!, d.drawCrs as number, diff) : t.drawGapBelow(d.label, profile.crs!, d.drawCrs as number, -diff)
+      return diff >= 0 ? T.drawGapAbove(d.label, profile.crs!, d.drawCrs as number, diff) : T.drawGapBelow(d.label, profile.crs!, d.drawCrs as number, -diff)
     }) : []
-    if (!hits.length && !drawLines.length) continue
+    if (!top.length && !drawLines.length) continue
     if (!dry) {
-      const lang = langOf(u.profileLang)
-      const ok = await sendMail(u.email, T[lang].matchSubject(hits.length), emailHtml(lang, hits, drawLines))
+      const ok = await sendMail(u.email, T.matchSubject(top.length), emailHtml(top, drawLines))
       if (ok) {
         out.matchEmails++
         await payload.update({ collection: 'users', id: u.id, overrideAccess: true, data: { lastAlertAt: now } })
       } else out.sendFails++
-    } else if (hits.length) out.matchEmails++
+    } else if (top.length) out.matchEmails++
   }
 
   // ── B saved search 提醒 ──
@@ -187,8 +171,7 @@ export async function GET(req: NextRequest) {
     out.skippedFilters.push(...skipped)
     if (!rows.length) continue
     if (!dry) {
-      const lang = langOf(sdoc.lang)
-      const ok = await sendMail(owner.email, T[lang].subject(rows.length), emailHtml(lang, rows, []))
+      const ok = await sendMail(owner.email, T.subject(rows.length), emailHtml(rows, []))
       if (ok) {
         out.searchEmails++
         await payload.update({ collection: 'saved-searches', id: sdoc.id, overrideAccess: true, data: { lastNotifiedAt: now } })

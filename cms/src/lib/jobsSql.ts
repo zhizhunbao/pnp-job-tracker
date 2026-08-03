@@ -553,13 +553,13 @@ export async function fetchSimilarEmployers(pool: any, opts: { province: string;
   return rows.map((r: any) => ({ slug: r.slug, name: r.name || '', industry: r.industry || '', sponsorGrade: num(r.sponsor_grade), openCount: r.open_count ?? 0 }))
 }
 
-export type AlertHit = { title: string; city: string; province: string; salary_text: string; apply_url: string; company_name: string }
+export type AlertHit = { id: number; title: string; city: string; province: string; salary_text: string; company_name: string }
 
 /** 邮件提醒命中查询(E5-03):某条保存筛选自 since 起的新岗(status=open ∩ first_seen>since ∩ filters)。原在 alerts/run 裸 SQL,收编于此。 */
 export async function fetchAlertHits(pool: any, filters: Record<string, unknown>, since: string): Promise<{ rows: AlertHit[]; skipped: string[] }> {
   const w = buildJobsWhere(await resolveQCompanyIds(pool, filters), 2)   // $1 留给 since
   const { rows } = await pool.query(
-    `SELECT j.title, j.city, j.province, j.salary_text, j.apply_url, c.name AS company_name
+    `SELECT j.id, j.title, j.city, j.province, j.salary_text, c.name AS company_name
      ${JOB_FROM}
      WHERE j.status = 'open' AND j.first_seen > $1 AND ${w.sql}
      ORDER BY j.grade_channel DESC NULLS LAST, j.date_posted DESC NULLS LAST LIMIT 20`, [since, ...w.params])
