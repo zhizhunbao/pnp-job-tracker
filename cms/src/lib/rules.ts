@@ -133,7 +133,7 @@ export type RuleResult = {
 }
 
 const ev = (r: Requirement) => ({ label: r.label, url: r.url, fetched: r.fetched, section: r.section, effective: r.effective })
-const teerHit = (r: Requirement, teer: number | null): boolean => {
+export const teerHit = (r: Requirement, teer: number | null): boolean => {
   if (!r.appliesTeer) return true                    // 不分 TEER → 该条对谁都适用
   if (teer == null) return false                     // 分 TEER 但不知道 TEER → 挑不出行(上游会落成 unknown)
   return r.appliesTeer.split(',').map((x) => Number(x.trim())).includes(teer)

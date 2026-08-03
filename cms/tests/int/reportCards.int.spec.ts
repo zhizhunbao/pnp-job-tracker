@@ -231,6 +231,28 @@ describe('卡③ 选省份', () => {
     expect(r.conclusions.every((c) => c.key !== 'rpt.c.listedMiss')).toBe(true)
   })
 
+  // B1-2 学徒序(2026-08-03 木匠案例):0 经验时「选省」是第二步。缺口行拿**最宽松那档**官方经验门槛
+  // 说话(TEER 不匹配的行不算;库里没有经验行就不出 —— 判不了不编);下一步同一条链接换措辞:
+  // 「看在招岗」→「先拿下第一份岗」。有经验或没答 → 一切照旧。
+  it('0 经验:出学徒序缺口(最宽松官方门槛)+ 下一步换成先找第一份岗', () => {
+    const reqs = [
+      { province: 'SK', subject: 'applicant', factor: 'experience', value: 12, appliesTeer: '' },
+      { province: 'AB', subject: 'applicant', factor: 'experience', value: 24, appliesTeer: '' },
+      { province: 'PE', subject: 'applicant', factor: 'experience', value: 6, appliesTeer: '4,5' },   // TEER 不匹配,不许当最宽松
+    ] as unknown as import('@/lib/rules').Requirement[]
+    const r = buildProvReport(normalizeProfile({}), { hasJobOffer: null, totalExpMonths: 0 }, provDims, { ...provFacts, requirements: reqs })
+    expect(r.gaps.find((g) => g.key === 'rpt.g.zeroExp')?.params.need).toBe(12)
+    expect(r.nextSteps.some((s) => s.key === 'rpt.n.firstJob')).toBe(true)
+    expect(r.nextSteps.some((s) => s.key === 'rpt.n.jobs')).toBe(false)
+    const exp = buildProvReport(normalizeProfile({}), { hasJobOffer: null, totalExpMonths: 24 }, provDims, { ...provFacts, requirements: reqs })
+    expect(exp.gaps.some((g) => g.key === 'rpt.g.zeroExp')).toBe(false)
+    expect(exp.nextSteps.some((s) => s.key === 'rpt.n.jobs')).toBe(true)
+    // 库里没有官方经验行 → 缺口不出(不拿「先攒经验」冒充官方结论),但下一步措辞照换(那是建议不是判定)
+    const bare = buildProvReport(normalizeProfile({}), { hasJobOffer: null, totalExpMonths: 0 }, provDims, provFacts)
+    expect(bare.gaps.some((g) => g.key === 'rpt.g.zeroExp')).toBe(false)
+    expect(bare.nextSteps.some((s) => s.key === 'rpt.n.firstJob')).toBe(true)
+  })
+
   it('有 offer → 雇主通道排进下一步;没有 → 出缺口', () => {
     const yes = buildProvReport(normalizeProfile({}), { hasJobOffer: true }, provDims, provFacts)
     expect(yes.nextSteps[0].key).toBe('rpt.n.employer')

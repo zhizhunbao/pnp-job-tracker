@@ -99,7 +99,7 @@ export const FIELDS: Record<string, FieldDef> = {
   // 与 expBand(加拿大经验)分工:那道题管 CEC 的 12 个月,这道题管省级 work 档位。
   totalExpBand: {
     engineKey: 'totalExpMonths',
-    unlocks: ['rpt.s.cur', 'rpt.s.alt.mark'],
+    unlocks: ['rpt.s.cur', 'rpt.s.alt.mark', 'rpt.g.zeroExp', 'rpt.n.firstJob'],
     tier: 'free',
     toAnswer: (b: number) => (b ? TOTAL_EXP[b] : undefined),
     q: {

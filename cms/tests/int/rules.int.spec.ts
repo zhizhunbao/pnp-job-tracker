@@ -137,6 +137,16 @@ describe('报告「门槛对照」节', () => {
     expect(r.requirements).toEqual([])
   })
 
+  // B1-2(2026-08-03 木匠案例):0 经验的 fail 换措辞 ——「你填 0 个月,差 24 个月」读起来像资格否决,
+  // 而经验是**排期**(从第一份岗起算)。0 时差值恒等于门槛,付费侧没有增量 → 免费付费同句,不进 REQ_FREE。
+  it('0 经验的经验行走 rpt.r.exp.zero(排期措辞);免费层不换键', () => {
+    const built = buildPrReport(base(), { canadianExpMonths: null, totalExpMonths: 0 }, dims, facts({}))
+    const zero = built.requirements.find((l) => l.key.startsWith('rpt.r.exp'))!
+    expect(zero.key).toBe('rpt.r.exp.zero')
+    expect(zero.params.need).toBe(24)
+    expect(gateReport(built, false).requirements.find((l) => l.key.startsWith('rpt.r.exp'))!.key).toBe('rpt.r.exp.zero')
+  })
+
   it('免费层:差一档的语言行摘掉差值并挂锁行;Pro 层保留差值、不挂锁行', () => {
     const built = buildPrReport(base({ clb: 3 }), { canadianExpMonths: 30 }, dims, facts({}))
     const free = gateReport(built, false)

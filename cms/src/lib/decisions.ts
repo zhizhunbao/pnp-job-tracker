@@ -28,7 +28,10 @@ export const DECISIONS: Record<string, Decision> = {
   // 工作经验都没什么关系,用户根本不需要填」「那些都是个人能克服的问题,主要是政策和环境不好克服」——
   // 这张卡讲的就是政策与环境(哪个省清单收你、多挤、多少岗),个人可改变的因素不在其中。
   // 留下的两道都真消费:goal 决定排序目标函数,hasJobOffer 决定雇主担保通道那条结论。
-  prov: { basic: ['goalBand', 'offerBand'], explore: [] },
+  // totalExpBand 是 B1-2(学徒序,2026-08-03)加回来的——与被砍那四道不同,它真消费:
+  // 0 经验 → 报告改写下一步(先解决第一份岗,再谈选省;rpt.g.zeroExp / rpt.n.firstJob),
+  // 有经验 → 进换省对照的下界分(switchLines 的 work 因素)。复用共用底座那道题,不新造字段。
+  prov: { basic: ['goalBand', 'totalExpBand', 'offerBand'], explore: [] },
 }
 
 export const fieldsOf = (decision: string, stage: Stage, batch = 0): string[] => {

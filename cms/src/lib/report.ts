@@ -11,7 +11,7 @@
 // 抽选线红线(2026-07-27):线按通道设,对不上通道就不给差分结论,只摆区间;样本小就说小(params 带 n)。
 import { provListCoverage, type MatchDims, type MatchProfile, type MatchVerdict } from './match'
 import { gridStreamOf, scoreProvince, streamMatches, systemShort, type EduKey, type ScoreFactor, type SelfProfile } from './pnpSelfScore'
-import { areaOfPlace, employerBar, evaluateRequirements, type Requirement, type RuleResult } from './rules'
+import { areaOfPlace, employerBar, evaluateRequirements, teerHit, type Requirement, type RuleResult } from './rules'
 import type { OccStats } from './reportFacts'   // 纯类型(reportFacts 反向引 ReportFacts,两边都是 type-only,不成环)
 
 // ── 输入:事实聚合(由 API 层查库组装;引擎不碰 SQL)─────────────────────────
@@ -171,6 +171,9 @@ function requirementLines(prov: string, facts: ReportFacts, profile: MatchProfil
     } else if (r.factor === 'experience') {
       const months = r.need ?? 0
       if (r.verdict === 'pass') out.push(line(r, 'rpt.r.exp.pass', { need: months, have: r.have ?? '' }))
+      // 0 经验单独措辞(B1-2):「你填 0 个月——差 24 个月」读起来像资格否决,而经验是**排期**——
+      // 从第一份岗起算,人人都攒得出来。差值恒等于门槛(0 差 need 就是 need),付费侧也没有增量,免费付费同句。
+      else if (r.verdict === 'fail' && r.have === 0) out.push(line(r, 'rpt.r.exp.zero', { need: months }))
       else if (r.verdict === 'fail') out.push(line(r, 'rpt.r.exp.fail', { need: months, have: r.have ?? '', short: r.short ?? '' }))
       else out.push(line(r, 'rpt.r.exp.unknown', { need: months }))
     // languageExempt(ON 的安省学历免考条款)这一行 2026-08-02 撤掉:免考看的是「在哪读的」,
@@ -707,7 +710,17 @@ export function buildProvReport(profile: MatchProfile, extra: ProvExtra, dims: M
     })
   }
 
-  if (rank[0]?.open) nextSteps.push({ key: 'rpt.n.jobs', params: { prov: rank[0].prov, n: rank[0].open }, url: `/?prov=${rank[0].prov}&q=${noc}` })
+  // 学徒序(B1-2,2026-08-03 木匠案例):0 经验时「选省」是第二步 —— 官方经验门槛是**排期**不是资格,
+  // 第一步是拿下第一份能攒经验的岗。缺口行只在库里真有官方经验门槛时出(拿最宽松那档说话,判不了不编);
+  // 「下一步」同一条链接换个说法:从「看在招岗」变成「先拿下第一份岗」。
+  const zeroExp = extra.totalExpMonths === 0
+  if (zeroExp) {
+    const expNeeds = (facts.requirements ?? [])
+      .filter((r) => r.subject === 'applicant' && r.factor === 'experience' && r.value != null && teerHit(r, facts.teer))
+      .map((r) => r.value as number)
+    if (expNeeds.length) gaps.push({ key: 'rpt.g.zeroExp', params: { need: Math.min(...expNeeds) }, verdict: 'warn' })
+  }
+  if (rank[0]?.open) nextSteps.push({ key: zeroExp ? 'rpt.n.firstJob' : 'rpt.n.jobs', params: { prov: rank[0].prov, n: rank[0].open }, url: `/?prov=${rank[0].prov}&q=${noc}` })
 
   // 锁区:完整顺序与每省差距(要拿他的答案才排得出来)
   if (rank.length > 2) {
@@ -1105,6 +1118,9 @@ const EN: Record<string, (p: Record<string, string | number>) => string> = {
   'rpt.r.exp.unknown': (p) => `${p.prov}'s skilled worker stream requires ${p.need} months of skilled work experience (in or outside Canada); you have not reported your experience.`,
   'rpt.r.exp.fail': (p) => `${p.prov}'s skilled worker stream requires ${p.need} months of skilled work experience (in or outside Canada); you report ${p.have} months — ${p.short} months short.`,
   'rpt.r.exp.failFree': (p) => `${p.prov}'s skilled worker stream requires ${p.need} months of skilled work experience (in or outside Canada); you report ${p.have} months — below it.`,
+  'rpt.r.exp.zero': (p) => `${p.prov}'s skilled worker stream requires ${p.need} months of experience in this occupation; you report none — a timeline gap, not a disqualification: the clock starts with your first job.`,
+  'rpt.g.zeroExp': (p) => `You report no experience in this occupation — provinces that set an experience bar ask for at least ${p.need} months, so the first step is a job that builds it, not picking a province.`,
+  'rpt.n.firstJob': (p) => `Land your first job in this occupation — the experience clock starts there; ${p.n} openings in ${p.prov}.`,
   'rpt.r.wage.median': (p) => `${p.prov} requires the offered wage to be at or above the regional median for the occupation — that median is $${p.need} per year.`,
   'rpt.r.wage.rule': (p) => `${p.prov} requires the offered wage to be at or above the regional median wage level for the occupation.`,
   'rpt.r.emp.years': (p) => `Employer-side: the employer needs ${p.n}+ years of operation in ${p.prov} — only the employer can evidence this.`,
