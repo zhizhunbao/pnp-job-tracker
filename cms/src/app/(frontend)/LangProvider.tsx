@@ -22,13 +22,15 @@ export function useLang(): [Lang, (l: Lang) => void, TFn] {
 
 export function LangProvider({ initial, children }: { initial: Lang; children: React.ReactNode }) {
   const [lang, setLangState] = useState<Lang>(initial)
-  // html lang 由 SSR 按 cookie 渲;当场切换时同步改掉,否则「内容已是韩文、lang 还写着 en」——
-  // 读屏器会用错发音规则(搜索引擎看到的永远是 SSR 那份,不受影响)
-  const setLang = (l: Lang) => {
-    saveLang(l)
+  // 语言一变,html lang 跟着变 —— **改语言的每条路都得走这里**。
+  // (2026-08-03 生产实拍:下面那条迁移分支原先直接调 setLangState,绕开了同步 →
+  //  页面已经是英文、html lang 还写着 zh;读屏器会照中文发音规则念英文。
+  //  搜索引擎看到的永远是 SSR 那份,不受影响。)
+  const apply = (l: Lang) => {
     setLangState(l)
     try { document.documentElement.lang = l } catch { /* ignore */ }
   }
+  const setLang = (l: Lang) => { saveLang(l); apply(l) }
 
   // 老用户迁移(照列偏好 cookie 的先例):改造前的偏好只写进了 localStorage,没有 cookie →
   // 服务端第一次仍按 Accept-Language 猜。这里补写一次 cookie,并按 localStorage 纠正当前语言;
@@ -40,7 +42,7 @@ export function LangProvider({ initial, children }: { initial: Lang; children: R
       const saved = parseLang(localStorage.getItem(LANG_KEY))
       if (!saved) return                      // 没有旧偏好 → 服务端按 Accept-Language 猜的就是最终结果
       document.cookie = `${LANG_COOKIE}=${saved}; path=/; max-age=31536000; samesite=lax`
-      if (saved !== initial) setLangState(saved)
+      if (saved !== initial) apply(saved)
     } catch { /* ignore */ }
   }, [initial])
 

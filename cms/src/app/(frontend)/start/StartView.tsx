@@ -153,13 +153,13 @@ export function StartView({ stats }: { stats: HomeStats }) {
         .hmBtn{display:block;border-radius:8px;padding:12px 20px;font-size:14px;font-weight:600;text-align:center;cursor:pointer;text-decoration:none;border:none;font-family:inherit}
         .hmGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
         .hmGrid3{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
-        /* 数字组与节标题同一条左轨、等宽分列(站规「多值拆列网格对齐、优先左对齐」)。
-           原来是 justify-content:center —— 标题在左轨、数字群居中,两条轴打架,桌面右侧空掉 400+px
-           (2026-08-03 Frank 报「这个布局有问题」)。flex:1 1 0 + min-width:max-content = 等宽分列但永不压字,
-           列数随数字个数(eligible/total 可能不渲)自适应,不必写死三列。 */
-        .hmNums{display:flex;gap:28px;flex-wrap:wrap;text-align:left}
-        .hmNums>span{flex:1 1 0;min-width:max-content}
-        .hmNums b{display:block;font-size:32px;line-height:1.15;font-weight:700}
+        /* 三个数字 = 三张卡,与上一节的目标卡同一副长相、同一套列宽(所以两节的列轨对得上)。
+           前两版都错在「裸文字铺灰底」:先是居中(标题在左轨,两条轴打架,右边空 400+px),
+           改成等宽分列后又变成三段文字隔着 380px 各自漂,读不成一组
+           —— 2026-08-03 Frank 两次实拍打回。这一页所有内容都住在白卡/表格里,
+           这节没有容器才是根因,不是留白多少的事。列数随数字个数自适应(eligible/total 可能不渲)。 */
+        .hmNums{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+        .hmNums b{display:block;font-size:28px;line-height:1.15;font-weight:700}
         .hmCtaBand{display:flex;flex-direction:column;gap:12px}
         /* 榜单:桌面表格 / 手机卡片,两套 DOM 各渲各的(站规「电脑用表格 手机用卡片」)。
            手机卡片走 ui/JobCard(全站唯一那张,与职位板同源)——**这里的 .hmJobRow/.hmOccRow 只管桌面**,
@@ -200,8 +200,8 @@ export function StartView({ stats }: { stats: HomeStats }) {
           .hmBtn{padding:13px 28px;font-size:15px}
           .hmGrid{gap:12px}
           .hmGrid3{grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
-          .hmNums{gap:64px}
-          .hmNums b{font-size:44px}
+          .hmNums{grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:12px}
+          .hmNums b{font-size:40px}
           .hmCtaBand{flex-direction:row;align-items:center}
           .hmCtaBand .hmBtn{flex:0 0 auto;padding:12px 28px}
         }`}</style>
@@ -243,15 +243,21 @@ export function StartView({ stats }: { stats: HomeStats }) {
             大数字原本居中(「那是这节的焦点排布」)—— 同日实拍推翻:标题在左轨、数字群居中,
             桌面右侧空 400+px,读起来像没排完。改回与标题同轨的等宽分列(排布规则见 .hmNums) */}
         {stats.daily && (
-          <Band className="hmTight">
+          <Band bg="#fff" className="hmTight">
             <h2 style={secH}>{t('home.daily')}</h2>
-            <a href="/" style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
-              <div className="hmNums">
-                <span><b style={{ color: UI.primaryDeep }}>{num(stats.daily.n)}</b><span style={{ fontSize: 12.5, color: UI.text2 }}>{t('home.daily.new')}</span></span>
-                {stats.daily.eligible > 0 && <span><b style={{ color: UI.ok }}>{num(stats.daily.eligible)}</b><span style={{ fontSize: 12.5, color: UI.text2 }}>{t('home.daily.elig')}</span></span>}
-                {stats.total != null && <span><b style={{ color: UI.text }}>{num(stats.total)}</b><span style={{ fontSize: 12.5, color: UI.text2 }}>{t('home.daily.total')}</span></span>}
-              </div>
-            </a>
+            <div className="hmNums">
+              {([
+                [num(stats.daily.n), t('home.daily.new'), UI.primaryDeep],
+                stats.daily.eligible > 0 ? [num(stats.daily.eligible), t('home.daily.elig'), UI.ok] : null,
+                stats.total != null ? [num(stats.total), t('home.daily.total'), UI.text] : null,
+              ].filter(Boolean) as [string, string, string][]).map(([v, label, color]) => (
+                <a key={label} href="/" className="cardHover"
+                  style={{ display: 'block', minWidth: 0, background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 10, padding: '14px 16px', textDecoration: 'none', color: 'inherit' }}>
+                  <b style={{ color }}>{v}</b>
+                  <span style={{ fontSize: 12.5, color: UI.text2 }}>{label}</span>
+                </a>
+              ))}
+            </div>
           </Band>
         )}
 
