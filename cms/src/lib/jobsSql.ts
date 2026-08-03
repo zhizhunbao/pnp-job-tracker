@@ -458,7 +458,13 @@ export async function fetchRelatedJobs(pool: any, job: { id: string | number; co
 }
 
 /** 头条总数 + 差异化证言数字(省提名清单命中岗 named + 有外劳记录雇主数 lmia)。原在 page.tsx 裸 SQL,收编于此。 */
+// 2026-08-03 生产僵死事故:这三连 count 是全表扫,首页/start 每个请求都跑一遍,seed 后 DB 变慢时
+// 单次涨到 ~10s → 默认 10 连接的应用池被排队打满,整站 DB 页超时。TTL 缓存(60s,countCache 同惯例):
+// 这三个数是站级证言数字,分钟级新鲜度绰绰有余。
+let tpCache: { v: { total: number; named: number; lmia: number }; ts: number } | null = null
+const TP_TTL = 60_000
 export async function fetchTotalAndProof(pool: any): Promise<{ total: number; named: number; lmia: number }> {
+  if (tpCache && Date.now() - tpCache.ts < TP_TTL) return tpCache.v
   // 副标题总数与列表同口径(#125 后修+#136):去重+排除已下架,与默认列表 WHERE 一致
   const OPEN_COND = `COALESCE(j.status,'open') <> 'closed'`
   const q = (cond: string) => pool.query(`SELECT count(*) FILTER (WHERE ${cond})::int AS n,
@@ -472,7 +478,8 @@ export async function fetchTotalAndProof(pool: any): Promise<{ total: number; na
     if (e?.code !== '42703') throw e   // is_dup 列未落地(部署时序)→ 降级不去重,列到位自动恢复
     ;({ rows } = await q(OPEN_COND))
   }
-  return { total: rows[0]?.n ?? 0, named: rows[0]?.named ?? 0, lmia: rows[0]?.lmia ?? 0 }
+  tpCache = { v: { total: rows[0]?.n ?? 0, named: rows[0]?.named ?? 0, lmia: rows[0]?.lmia ?? 0 }, ts: Date.now() }
+  return tpCache.v
 }
 
 // ── E8-09 B:公司详情页 /companies/[slug] 数据(零新抓取:companies 行 + 该司在招岗聚合) ──
