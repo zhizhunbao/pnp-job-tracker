@@ -107,6 +107,22 @@ export const Users: CollectionConfig = {
         { name: 'targetProvinces', type: 'json', admin: { description: '目标省(省码 string[])' } },
         { name: 'pgwpMonthsLeft', type: 'number', admin: { description: 'PGWP 剩余月数' } },
         { name: 'profileUpdatedAt', type: 'date' },
+        // 简历存档(E11-08):默认不存 —— 只有用户在对照弹框勾了「存进档案」才写;原件(PDF/DOCX)照旧不落盘,只存抽出的文本。
+        // 列由 docs/sql/resume-archive.sql 手写添加(不走 DB_PUSH,见 [[db-push-minefield]])。
+        {
+          name: 'resumeText',
+          type: 'textarea',
+          maxLength: 20000,
+          // 后台只读:这是 PII,管理员能看已经够,不该在 admin 里随手改用户简历(清除走账户页本人操作)。
+          admin: { readOnly: true, description: '简历文本(PII,上限 2 万字符):用户勾选后由 /api/resume-match 写入' },
+        },
+        { name: 'resumeSavedAt', type: 'date', admin: { description: '简历存档时刻(账户页显示新旧)' } },
+        {
+          name: 'matchUses',
+          type: 'text',
+          // E11-08 §3 ①:这个键以前没在 collection 声明 → drizzle 静默丢弃 → 日限闸门在生产上一直失效。
+          admin: { readOnly: true, description: '简历对照免费日限计数 "YYYY-MM-DD:N"(服务端记账,跨日自动清零)' },
+        },
       ],
     },
   ],

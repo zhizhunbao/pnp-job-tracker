@@ -1,9 +1,12 @@
 /**
  * POST /api/resume-match — 简历对照 JD(G3,设计 docs/design/G3-简历对照JD-20260803.md)。
- * body: { jobId, jd, resume, lang }
- * 铁律:① 简历不落库(内存里比完即弃,日志只记长度);② 免费/付费闸在服务端(锁区正文不下发,
- * lockedN=真实剩余行数,前端打几行码看它);③ 双闸控成本(#102 账单教训):登录墙 + 每账号每天
- * DAILY_FREE 次(Pro 不限,计数挂 users.profile json,无需加列)+ 输入两侧截断 + 免费不生成 rewrite。
+ * body: { jobId, jd, resume, lang, save }
+ * 铁律:① 简历**默认不落库**(内存里比完即弃,日志只记长度);只有 body.save===true(用户勾了
+ * 「存进档案」)才写 profile.resumeText —— 存档设计见 docs/implementation/E11-用户身份与分型引导/08_简历存档与多岗复用.md;
+ * ② 免费/付费闸在服务端(锁区正文不下发,lockedN=真实剩余行数,前端打几行码看它);③ 双闸控成本
+ * (#102 账单教训):登录墙 + 每账号每天 DAILY_FREE 次(Pro 不限,计数落 users.profile.matchUses —— 该列
+ * 由 docs/sql/resume-archive.sql 手写添加;E11-08 之前这键没在 collection 声明,写了被静默丢弃,闸门一直失效)
+ * + 输入两侧截断 + 免费不生成 rewrite。
  * JD 文本由前端传(它已经渲染着;只影响该用户自己的结果,服务端只截断不信任)。
  */
 import { headers } from 'next/headers'
@@ -13,6 +16,7 @@ import config from '@/payload.config'
 import { getUser, isPro } from '@/lib/entitlement'
 import { jobDescription } from '@/lib/jobDescription'
 import { completeText, LlmError } from '@/lib/llm'
+import { patchProfile, type ProfilePatch } from '@/lib/profile'
 import { CLAMP, DAILY_FREE, gateMatch, matchPrompt, MIN_RESUME, normalizeRows, parseLlmJson } from '@/lib/resumeMatch'
 
 export const dynamic = 'force-dynamic'
@@ -24,6 +28,7 @@ export async function POST(req: Request) {
   const resume = typeof body?.resume === 'string' ? body.resume.trim() : ''
   let jd = typeof body?.jd === 'string' ? body.jd.trim() : ''
   const lang = typeof body?.lang === 'string' ? body.lang : 'en'
+  const save = body?.save === true   // 存档只在用户显式勾选时发生(默认不存是红线,别用真值判断)
 
   const user = await getUser(await headers()).catch(() => null)
   if (!user) return Response.json({ error: 'auth' }, { status: 401 })
@@ -41,7 +46,7 @@ export async function POST(req: Request) {
   }
   if (jd.length < 40) return Response.json({ error: 'noJd' }, { status: 400 })
 
-  // 日限(非 Pro):users.profile.matchUses = "YYYY-MM-DD:N"(挂 json 档案,无需加列;跨日自动清零)
+  // 日限(非 Pro):users.profile.matchUses = "YYYY-MM-DD:N"(跨日自动清零;E11-08 起该字段真在 collection 里声明了,闸门才真生效)
   const today = new Date().toISOString().slice(0, 10)
   const prof = ((user as any).profile ?? {}) as Record<string, unknown>
   const [d, nRaw] = String(prof.matchUses ?? '').split(':')
@@ -70,19 +75,33 @@ export async function POST(req: Request) {
     return Response.json({ error: 'parse', ...(dbg ? { detail: text.slice(0, 300) } : {}) }, { status: 502 })
   }
 
-  // 记账(成功才计次;Pro 不计)。失败不扣次数 —— 模型抽风不该消耗用户额度
-  if (!pro) {
+  // 记账 + 存档:一次 patchProfile 写完(别写两次库)。记账只对非 Pro、且只在成功后计次
+  // —— 模型抽风不该消耗用户额度;存档只在 save===true 时发生(不勾一个字都不存)。
+  let saved = false
+  const patch: ProfilePatch = {}
+  if (!pro) patch.matchUses = `${today}:${used + 1}`
+  if (save) {
+    patch.resumeText = resume.slice(0, 20000)   // 与 collection 的 maxLength 对齐,服务端截断不信前端
+    patch.resumeSavedAt = new Date()
+  }
+  if (Object.keys(patch).length > 0) {
     try {
-      const payload = await getPayload({ config: await config })
-      await payload.update({ collection: 'users', id: (user as any).id, data: { profile: { ...prof, matchUses: `${today}:${used + 1}` } } as any })
-    } catch { /* 记账失败不挡结果;下次重读还是旧数,最坏多送一次 */ }
+      await patchProfile((user as any).id, patch)
+      saved = save
+    } catch (e) {
+      // 记账/存档失败都不挡结果(记账最坏多送一次,存档下次再存);但必须留痕 —— 裸 catch 是老教训。
+      // 日志只记长度不记内容(简历是 PII)。
+      const msg = e instanceof Error ? e.message : String(e)
+      console.log(`[resume-match] profile write fail user=${(user as any).id} save=${save} resume=${save ? resume.length : 0}ch: ${msg.slice(0, 200)}`)
+    }
   }
 
   const gated = gateMatch(rows, pro)
   const rewrite = pro && typeof parsed?.rewrite === 'string' ? parsed.rewrite.trim().slice(0, 1200) : undefined
-  console.log(`[resume-match] ok user=${(user as any).id} rows=${rows.length} pro=${pro} jd=${jd.length}ch resume=${resume.length}ch`)
+  console.log(`[resume-match] ok user=${(user as any).id} rows=${rows.length} pro=${pro} jd=${jd.length}ch resume=${resume.length}ch saved=${saved}`)
   return Response.json({
     ...gated, ...(rewrite ? { rewrite } : {}),
     left: pro ? null : Math.max(0, DAILY_FREE - used - 1),
+    saved,   // 前端据此显示「已存进档案」(勾了但写库失败 = false,不骗用户)
   })
 }

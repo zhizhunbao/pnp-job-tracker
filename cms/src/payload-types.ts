@@ -256,6 +256,18 @@ export interface User {
      */
     pgwpMonthsLeft?: number | null;
     profileUpdatedAt?: string | null;
+    /**
+     * 简历文本(PII,上限 2 万字符):用户勾选后由 /api/resume-match 写入
+     */
+    resumeText?: string | null;
+    /**
+     * 简历存档时刻(账户页显示新旧)
+     */
+    resumeSavedAt?: string | null;
+    /**
+     * 简历对照免费日限计数 "YYYY-MM-DD:N"(服务端记账,跨日自动清零)
+     */
+    matchUses?: string | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -1672,6 +1684,9 @@ export interface UsersSelect<T extends boolean = true> {
         targetProvinces?: T;
         pgwpMonthsLeft?: T;
         profileUpdatedAt?: T;
+        resumeText?: T;
+        resumeSavedAt?: T;
+        matchUses?: T;
       };
   updatedAt?: T;
   createdAt?: T;
