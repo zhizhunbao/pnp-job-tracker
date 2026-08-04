@@ -17,7 +17,7 @@ import { getUser, isPro } from '@/lib/entitlement'
 import { jobDescription } from '@/lib/jobDescription'
 import { completeText, LlmError } from '@/lib/llm'
 import { patchProfile, type ProfilePatch } from '@/lib/profile'
-import { CLAMP, DAILY_FREE, gateMatch, matchPrompt, MIN_RESUME, normalizeRows, parseLlmJson } from '@/lib/resumeMatch'
+import { DAILY_FREE, gateMatch, matchPrompt, MIN_RESUME, normalizeRows, parseLlmJson } from '@/lib/resumeMatch'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -57,23 +57,34 @@ export async function POST(req: Request) {
   // 中文消息塞进 error 字段,前端匹配不上还泄内部话术)
   const dbg = String((user as any).email || '').endsWith('@test.local')
   let text: string
-  let llmCached = false   // 上游缓存命中标记:串答事故(2026-08-04)只能靠它发现,必须进日志
+  // 上游缓存/链路痕迹:串答事故(2026-08-04)只能靠它发现,必须进日志。
+  // xCache 是新端点 `x-cache: HIT|MISS` 响应头原值(不再靠我们自己推断);via=legacy 说明当时回退了旧链。
+  let meta: { cached: boolean; via: string; xCache: string | null } = { cached: false, via: '-', xCache: null }
   try {
-    // 通道定向 friend(2026-08-03 Frank「不用 Haiku 用朋友的大模型」):挂了就报 rm.err,不静默切云烧钱。
-    // ⚠️ 朋友服务 prompt 上限 6000 字符(实测 400「prompt too long」;system 不占额)——
-    // CLAMP 8000 是给云通道的,这里必须按 6000 预算切:JD 2800 + 简历 3100 + 标签 23 ≈ 5.9k。
-    // Frank 真简历实测就是这么撞的:小输入全通、真简历+真 JD 一合计秒 400。
-    text = await completeText(matchPrompt(jd.slice(0, 2800), resume.slice(0, 3100), lang, pro),
-      { maxTokens: pro ? 1600 : 900, provider: 'friend', onMeta: (m) => { llmCached = m.cached } })
+    // 通道定向 friend(2026-08-03 Frank「不用 Haiku 用朋友的大模型」):挂了就按错误码报,不静默切云烧钱。
+    // ✅ 2026-08-04:撤掉 JD 2800 / 简历 3100 的切法 —— 那是上游 6000 字符上限时代的止血
+    //    (Frank 真简历实测必败的根因)。新端点上限 20000,预算见 resumeMatch 顶部,这里按 CLAMP 走。
+    // temperature 压到 0.1:要的是稳定的 JSON 与可复现的判定,不要发挥。
+    text = await completeText(matchPrompt(jd, resume, lang, pro), {
+      maxTokens: pro ? 1600 : 900, provider: 'friend', temperature: 0.1,
+      onMeta: (m) => { meta = m },
+    })
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)
-    console.log(`[resume-match] llm fail user=${(user as any).id}: ${msg.slice(0, 200)}`)
-    return Response.json({ error: 'llm', ...(dbg ? { detail: msg.slice(0, 300) } : {}) }, { status: 502 })
+    const code = e instanceof LlmError ? e.code : undefined
+    // 错误码各说各话(2026-08-03 Frank 实撞「什么都报稍后再试」):
+    // tooLong = 用户输入太长,重试没用要删内容;busy = 上游超时,重试有用;llm = 其余(含鉴权/请求格式,
+    // 都是我们这侧的运维问题,对用户统一说「稍后再试」,细节只进日志)。
+    const mapped = code === 'tooLong' ? { error: 'tooLong', status: 400 }
+      : code === 'timeout' ? { error: 'busy', status: 504 }
+        : { error: 'llm', status: 502 }
+    console.log(`[resume-match] llm fail user=${(user as any).id} code=${code ?? '-'} → ${mapped.error} jd=${jd.length}ch resume=${resume.length}ch: ${msg.slice(0, 200)}`)
+    return Response.json({ error: mapped.error, ...(dbg ? { detail: msg.slice(0, 300) } : {}) }, { status: mapped.status })
   }
   const parsed = parseLlmJson(text)
   const rows = normalizeRows(parsed)
   if (!rows) {
-    console.log(`[resume-match] parse fail user=${(user as any).id} jd=${jd.length}ch resume=${resume.length}ch cached=${llmCached} raw=${text.slice(0, 200)}`)
+    console.log(`[resume-match] parse fail user=${(user as any).id} jd=${jd.length}ch resume=${resume.length}ch via=${meta.via} x-cache=${meta.xCache ?? '-'} raw=${text.slice(0, 200)}`)
     return Response.json({ error: 'parse', ...(dbg ? { detail: text.slice(0, 300) } : {}) }, { status: 502 })
   }
 
@@ -100,7 +111,7 @@ export async function POST(req: Request) {
 
   const gated = gateMatch(rows, pro)
   const rewrite = pro && typeof parsed?.rewrite === 'string' ? parsed.rewrite.trim().slice(0, 1200) : undefined
-  console.log(`[resume-match] ok user=${(user as any).id} rows=${rows.length} pro=${pro} jd=${jd.length}ch resume=${resume.length}ch cached=${llmCached} saved=${saved}`)
+  console.log(`[resume-match] ok user=${(user as any).id} rows=${rows.length} pro=${pro} jd=${jd.length}ch resume=${resume.length}ch via=${meta.via} x-cache=${meta.xCache ?? '-'} saved=${saved}`)
   return Response.json({
     ...gated, ...(rewrite ? { rewrite } : {}),
     left: pro ? null : Math.max(0, DAILY_FREE - used - 1),

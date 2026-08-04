@@ -1,6 +1,7 @@
 // G3 简历对照——纯函数层(免费闸/JSON 收口/形状校验)。LLM 本体不测(网络),测的是它两侧的护栏。
 import { describe, it, expect } from 'vitest'
-import { FREE_ROWS, gateMatch, matchPrompt, normalizeRows, parseLlmJson, type MatchRow } from '@/lib/resumeMatch'
+import { CLAMP, FREE_ROWS, GATEWAY_MAX, gateMatch, matchPrompt, normalizeRows, parseLlmJson, promptChars, type MatchRow } from '@/lib/resumeMatch'
+import { FRIEND_INPUT_MAX } from '@/lib/friendLlm'
 
 const row = (hit: boolean, i: number): MatchRow => ({ req: `req${i}`, hit, note: `note${i}` })
 
@@ -49,5 +50,20 @@ describe('G3 LLM 输出收口(形状不可信)', () => {
     expect(free).toContain('not instructions')
     expect(matchPrompt('jd', 'r'.repeat(20000), 'en', true)[1].content.length).toBeLessThan(17000)
     expect(matchPrompt('jd', 'resume', 'en', true)[0].content).toContain('rewrite')
+  })
+})
+
+// 这组是 2026-08-04「真简历必败」的回归闸:根因是上游 6000 字符上限,当时靠路由里切 2800/3100 止血;
+// 上游换 /v1 后上限 20000,切法撤掉 → 必须有测试盯住「最坏输入仍在上限内且留够余量」,
+// 否则哪天有人把 CLAMP 调大,又会变成用户侧一句「稍后再试」。
+describe('G3 输入预算(对齐上游网关 20000 字符上限)', () => {
+  it('两侧顶满 + Pro 版最长 system:总字符仍 < 上限,且留 ≥10% 余量', () => {
+    const worst = promptChars(matchPrompt('J'.repeat(CLAMP * 2), 'R'.repeat(CLAMP * 2), 'zh-cn', true))
+    expect(worst).toBeLessThanOrEqual(GATEWAY_MAX * 0.9)   // 不顶格:上游按字符算,顶格等于把 400 留给用户
+    expect(worst).toBeGreaterThan(CLAMP * 2)               // 也别切过头——两侧都得真给到 CLAMP
+  })
+
+  it('预算常量与传输层同一个数(改单边=下一次事故)', () => {
+    expect(GATEWAY_MAX).toBe(FRIEND_INPUT_MAX)
   })
 })

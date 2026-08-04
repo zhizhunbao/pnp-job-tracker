@@ -5,7 +5,7 @@
 //   friend        = 朋友公网 API(ngrok→qwen3.6,friendLlm 传输层;2026-07-19 Frank 拍板初判切本地生态,
 //                   #102 自动生成后 Haiku 调用量翻倍→账单归零;Render 置 LLM_PROVIDER=friend 即切,回退=删该 env)
 import Anthropic from '@anthropic-ai/sdk'
-import { friendChat } from './friendLlm'
+import { friendChat, friendChatOrThrow, FriendLlmError, type FriendErrCode } from './friendLlm'
 
 export type ChatMessage = { role: 'system' | 'user' | 'assistant'; content: string }
 
@@ -14,8 +14,25 @@ const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434'
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'qwen3:4b'
 const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || 'claude-haiku-4-5'
 
+// code 透到路由层:让「各说各话」成立(项目踩过「什么都报稍后再试」的坑)。
+// 不带 code 的老抛点 = undefined,路由按兜底处理,零改动。
 export class LlmError extends Error {
-  constructor(msg: string) { super(msg); this.name = 'LlmError' }
+  constructor(msg: string, public code?: FriendErrCode) { super(msg); this.name = 'LlmError' }
+}
+
+// friend 后端的错误码 → 给用户看的话术(路由再决定 HTTP 状态/错误字段,见 api/resume-match)
+const FRIEND_MSG: Record<FriendErrCode, string> = {
+  offline: '无法连接本地模型服务,请稍后再试。',
+  tooLong: '输入太长,超过模型服务的单次上限。',
+  timeout: '模型服务响应超时,请稍后再试。',
+  upstream: '模型服务暂时不可用,请稍后再试。',
+  authKey: '模型服务鉴权失败(API key 无效)。',
+  badRequest: '模型服务拒绝了本次请求(请求格式不对)。',
+  empty: '模型没有返回内容,请稍后再试。',
+}
+function toLlmError(e: unknown): LlmError {
+  if (e instanceof FriendLlmError) return new LlmError(FRIEND_MSG[e.code], e.code)
+  return new LlmError('无法连接本地模型服务,请稍后再试。')
 }
 
 // fetchUrl(E6-03):给 anthropic 后端声明服务端 web_fetch 工具,让模型现场抓该 URL(公司官网)做 grounding。
@@ -23,7 +40,7 @@ export class LlmError extends Error {
 export async function streamChat(
   messages: ChatMessage[], opts: { maxTokens: number; fetchUrl?: string },
 ): Promise<ReadableStream<Uint8Array>> {
-  if (PROVIDER === 'friend') return friendStream(messages)
+  if (PROVIDER === 'friend') return friendStream(messages, opts)
   return PROVIDER === 'anthropic' ? anthropicStream(messages, opts) : ollamaStream(messages, opts)
 }
 
@@ -34,9 +51,10 @@ function friendMsgSplit(messages: ChatMessage[]) {
     prompt: messages.filter((m) => m.role !== 'system').map((m) => m.content).join('\n\n'),
   }
 }
-async function friendStream(messages: ChatMessage[]): Promise<ReadableStream<Uint8Array>> {
+async function friendStream(messages: ChatMessage[], opts: { maxTokens: number }): Promise<ReadableStream<Uint8Array>> {
   const { system, prompt } = friendMsgSplit(messages)
-  const r = await friendChat({ prompt, system, timeoutMs: 90_000 })
+  // maxTokens 现在真生效(2026-08-04 换 /v1 端点,实测 finish_reason=length);temperature 沿用对话侧的 0.4
+  const r = await friendChat({ prompt, system, timeoutMs: 90_000, maxTokens: opts.maxTokens, temperature: 0.4 })
   if (!r) throw new LlmError('无法连接本地模型服务,请稍后再试。')
   return new ReadableStream({ start(c) { c.enqueue(new TextEncoder().encode(r.answer)); c.close() } })
 }
@@ -44,15 +62,24 @@ async function friendStream(messages: ChatMessage[]): Promise<ReadableStream<Uin
 // ── 非流式整段补全(E11-07 简历解析用:一次调用抽结构化 JSON,不需要流)──
 // opts.provider = 按调用点定向通道(2026-08-03 Frank「简历对照不用 Haiku 用朋友的大模型」:
 // resume-match 传 'friend';不传照旧走全局 LLM_PROVIDER,其他调用点零影响)
-// opts.onMeta = 把后端的元信息(目前只有 friend 的 cached)回传给调用方打日志——
-// 上游缓存串答类事故只能靠 cached 发现,不透出来下次还得靠人肉撞见(2026-08-04 事故)。
-export async function completeText(messages: ChatMessage[], opts: { maxTokens: number; provider?: 'friend' | 'anthropic' | 'ollama'; onMeta?: (m: { cached: boolean }) => void }): Promise<string> {
+// opts.onMeta = 把后端的元信息回传给调用方打日志——上游缓存串答类事故只能靠它发现,不透出来下次
+// 还得靠人肉撞见(2026-08-04 事故)。**xCache 是上游 `x-cache: HIT|MISS` 响应头的原值**(换 /v1 端点后
+// 直接读头,不再靠我们自己推断);via 记这次走的是新端点还是回退到了旧 /api/chat。
+// opts.temperature = 要确定性的调用点(抽 JSON、对照打分)显式压低;不传走上游默认 0.4。
+export async function completeText(messages: ChatMessage[], opts: {
+  maxTokens: number
+  provider?: 'friend' | 'anthropic' | 'ollama'
+  temperature?: number
+  onMeta?: (m: { cached: boolean; via: 'v1' | 'legacy'; xCache: string | null }) => void
+}): Promise<string> {
   const prov = opts.provider || PROVIDER
   if (prov === 'friend') {
     const { system, prompt } = friendMsgSplit(messages)
-    const r = await friendChat({ prompt, system, timeoutMs: 90_000 })
-    if (!r) throw new LlmError('无法连接本地模型服务,请稍后再试。')
-    opts.onMeta?.({ cached: r.cached })
+    // maxTokens 现在真发出去(旧结论「上游不收长度参数」已随 /v1 端点作废,见 friendLlm 文件头)
+    const r = await friendChatOrThrow({
+      prompt, system, timeoutMs: 90_000, maxTokens: opts.maxTokens, temperature: opts.temperature,
+    }).catch((e) => { throw toLlmError(e) })
+    opts.onMeta?.({ cached: r.cached, via: r.via, xCache: r.xCache })
     return r.answer
   }
   if (prov === 'anthropic') {
