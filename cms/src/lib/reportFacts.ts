@@ -150,9 +150,13 @@ export async function assembleReportFacts(pool: any, noc: string): Promise<Repor
        WHERE d.noc = $1 LIMIT 1`, [noc]).catch(() => ({ rows: [] })),
     // 官方门槛(规则引擎输入):全表也就几十行,整张取回,按省的筛选交给引擎(纯函数好测)
     pool.query(
+      // applies_condition 走 to_jsonb 取:列缺失时返回 NULL 而不是 42703 —— additive 列上生产**之前**
+      // 这段代码也能照常查(否则整表查询报错 → 门槛全省回落「本站未收录」,DDL/push 谁先谁后成了线上开关)
       `SELECT province, program, stream, subject, factor, op, value, value_text, unit,
-              applies_teer, applies_noc, excludes_noc, applies_area, applies_family_size, basis, label, section, effective, url, page_url, fetched
-       FROM pnp_requirements ORDER BY province, seq`).catch(() => ({ rows: [] })),
+              applies_teer, applies_noc, excludes_noc, applies_area,
+              to_jsonb(q) ->> 'applies_condition' AS applies_condition,
+              applies_family_size, basis, label, section, effective, url, page_url, fetched
+       FROM pnp_requirements q ORDER BY province, seq`).catch(() => ({ rows: [] })),
     // 最低收入门槛的对照基准=该职业在该省的 ESDC 官方中位年薪(岗位自带的事实,不问用户)
     pool.query(
       `SELECT province, median_wage_annual FROM stats_occupation WHERE noc = $1 AND province <> 'all'`, [noc])
@@ -189,7 +193,8 @@ export async function assembleReportFacts(pool: any, noc: string): Promise<Repor
       subject: r.subject === 'employer' ? 'employer' : 'applicant',
       factor: r.factor ?? '', op: r.op ?? '>=', value: num(r.value), valueText: r.value_text ?? '', unit: r.unit ?? '',
       appliesTeer: r.applies_teer ?? '', appliesNoc: r.applies_noc ?? '', excludesNoc: r.excludes_noc ?? '',
-      appliesArea: r.applies_area ?? '', familySize: num(r.applies_family_size),
+      appliesArea: r.applies_area ?? '', appliesCondition: r.applies_condition ?? '',
+      familySize: num(r.applies_family_size),
       basis: r.basis ?? '', label: r.label ?? '', section: r.section ?? '',
       effective: r.effective ?? '', url: r.url ?? '', pageUrl: r.page_url ?? '', fetched: r.fetched ?? '',
     })),

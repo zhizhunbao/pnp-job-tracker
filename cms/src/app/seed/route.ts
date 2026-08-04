@@ -119,8 +119,10 @@ export async function GET(req: Request) {
       (r) => ({ province: r.province, system: r.system, factor: r.factor, kind: r.kind, seq: r.seq, label: r.label, points: r.points, xor_prev: r.xorPrev, rule: r.rule, factor_max: r.factorMax, factor_group: r.factorGroup, group_max: r.groupMax, pass_mark: r.passMark, max_total: r.maxTotal, guide_effective: r.guideEffective, url: r.url, fetched: r.fetched })],
     // E13-01 省提名官方门槛(规则引擎):一行一条,subject 区分申请人/雇主,applies_* 是适用条件
     ['pnp_requirements', 'pnp_requirements',
-      ['province', 'program', 'stream', 'subject', 'factor', 'op', 'value', 'value_text', 'unit', 'applies_teer', 'applies_noc', 'excludes_noc', 'applies_area', 'applies_family_size', 'basis', 'label', 'section', 'seq', 'effective', 'url', 'page_url', 'fetched'],
-      (r) => ({ province: r.province, program: r.program, stream: r.stream, subject: r.subject, factor: r.factor, op: r.op, value: r.value, value_text: r.valueText, unit: r.unit, applies_teer: r.appliesTeer, applies_noc: r.appliesNoc, excludes_noc: r.excludesNoc, applies_area: r.appliesArea, applies_family_size: r.familySize, basis: r.basis, label: r.label, section: r.section, seq: r.seq, effective: r.effective, url: r.url, page_url: r.pageUrl, fetched: r.fetched })],
+      // ⚠️ applies_condition 是 G6 新列:**必须先在生产跑 docs/sql/g6-pnp-requirements-condition.sql**,
+      // 否则这条 INSERT 撞 42703 → 整个 seed 事务回滚(表现为 /seed 500、无 body)
+      ['province', 'program', 'stream', 'subject', 'factor', 'op', 'value', 'value_text', 'unit', 'applies_teer', 'applies_noc', 'excludes_noc', 'applies_area', 'applies_condition', 'applies_family_size', 'basis', 'label', 'section', 'seq', 'effective', 'url', 'page_url', 'fetched'],
+      (r) => ({ province: r.province, program: r.program, stream: r.stream, subject: r.subject, factor: r.factor, op: r.op, value: r.value, value_text: r.valueText, unit: r.unit, applies_teer: r.appliesTeer, applies_noc: r.appliesNoc, excludes_noc: r.excludesNoc, applies_area: r.appliesArea, applies_condition: r.appliesCondition, applies_family_size: r.familySize, basis: r.basis, label: r.label, section: r.section, seq: r.seq, effective: r.effective, url: r.url, page_url: r.pageUrl, fetched: r.fetched })],
     // G5 三省运营统计(对话即产品 §三 lookupOps):配额/已用/待处理/积压游标/EOI 池/处理周数/SIRS 分数段
     // ⚠️ value 保持可空 —— 官方隐私抑制值(AB「Less than 10」、BC「<5」)与不适用一律 null + value_text 存原文,禁 `?? 0`
     ['pnp_ops_stats', 'pnp_ops_stats',

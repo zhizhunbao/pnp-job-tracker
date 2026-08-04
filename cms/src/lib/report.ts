@@ -191,6 +191,10 @@ function requirementLines(prov: string, facts: ReportFacts, profile: MatchProfil
   })
   const out: ReportLine[] = []
   for (const r of results) {
+    // 口径对不上就整行不出(G6 2026-08-04):MB SWM 的门槛量的是「在**这家**雇主连续全职多久」,
+    // 而本节的经验文案写的是「N 个月技术工作经验(境内外都算)」—— 拿它去讲在职时长,句子本身是假的。
+    // 这一条现在只走对话层(lookupThresholds 会带官方原句一起给出),报告要摆得等它有自己的文案。
+    if (r.basis === 'employerTenure') continue
     if (r.factor === 'language') {
       const teer = facts.teer ?? ''
       if (r.need == null) out.push(line(r, 'rpt.r.langNone', { teer }))
@@ -671,6 +675,9 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
   if (permitMonths != null && targets[0]) {
     const expRow = (facts.requirements ?? []).find((r) =>
       r.province === targets[0] && r.subject === 'applicant' && r.factor === 'experience'
+      // basis='employerTenure'(MB SWM)量的是在该雇主的在职时长,不是 PGWP 能攒的职业经验 ——
+      // 拿它当递交线算「窗口够不够」是拿两把尺子相减(G6 2026-08-04)
+      && r.basis !== 'employerTenure'
       && r.value != null && teerHit(r, facts.teer))
     if (expRow) {
       const have = Math.max(extra.totalExpMonths ?? 0, extra.canadianExpMonths ?? 0)
@@ -865,7 +872,10 @@ export function buildProvReport(profile: MatchProfile, extra: ProvExtra, dims: M
   const zeroExp = extra.totalExpMonths === 0
   if (zeroExp) {
     const expNeeds = (facts.requirements ?? [])
-      .filter((r) => r.subject === 'applicant' && r.factor === 'experience' && r.value != null && teerHit(r, facts.teer))
+      // 同上:在职时长(MB SWM 6 个月)不是「攒得出的职业经验」,混进来会把「至少 N 个月」
+      // 的最小值从 24 拉到 6,那句话就成了假的(G6 2026-08-04)
+      .filter((r) => r.subject === 'applicant' && r.factor === 'experience' && r.basis !== 'employerTenure'
+        && r.value != null && teerHit(r, facts.teer))
       .map((r) => r.value as number)
     if (expNeeds.length) gaps.push({ key: 'rpt.g.zeroExp', params: { need: Math.min(...expNeeds) }, verdict: 'warn' })
   }

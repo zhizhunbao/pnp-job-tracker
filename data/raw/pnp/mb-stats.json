@@ -1,0 +1,148 @@
+{
+  "province": "MB",
+  "program": "PNP",
+  "source": "MPNP Monthly Data 2026 & MPNP Annual Report 2024",
+  "url": "https://immigratemanitoba.com/resources/data/monthly-data-2026",
+  "note": "MPNP 官方运营统计:年度配额与年初至今提名/拒/LAA/收件(月度数据页)、在审与待审库存(逐月,取最新月)、逐通道平均处理天数与「6 个月」服务承诺(年报 §9)。单位照官方原单位(天/月),不换算。⚠️ 2026-08-04 更正:此前站内写着「MB 官方不发运营统计」是错的 —— 那是爬取种子只圈了 /mpnp/、漏了 /resources/data/ 造成的误判。",
+  "asOf": "",
+  "fetched": "2026-08-04",
+  "monthly": {
+    "nominationsYtd": {
+      "section": "Nominations and approvals",
+      "rows": [
+        {
+          "scope": "",
+          "label": "Total Nominations",
+          "value": 2673
+        },
+        {
+          "scope": "Skilled Worker",
+          "label": "SW Nominations",
+          "value": 2670
+        },
+        {
+          "scope": "Business Investor Stream",
+          "label": "BIS Nominations*",
+          "value": 3
+        }
+      ]
+    },
+    "refusalsYtd": {
+      "section": "Refusals",
+      "rows": [
+        {
+          "scope": "",
+          "label": "Total",
+          "value": 372
+        },
+        {
+          "scope": "Skilled Worker",
+          "label": "SW",
+          "value": 371
+        },
+        {
+          "scope": "Business Investor Stream",
+          "label": "BIS*",
+          "value": 1
+        }
+      ]
+    },
+    "laaYtd": {
+      "section": "Expressions of Interest",
+      "rows": [
+        {
+          "scope": "Skilled Worker",
+          "label": "SW LAAs",
+          "value": 1833
+        },
+        {
+          "scope": "Business Investor Stream",
+          "label": "BIS LAAs",
+          "value": 22
+        },
+        {
+          "scope": "Business Investor Stream — Business Concepts",
+          "label": "BIS BCs",
+          "value": 35
+        }
+      ]
+    },
+    "receivedYtd": {
+      "section": "Applications received",
+      "rows": [
+        {
+          "scope": "",
+          "label": "Total",
+          "value": 1893
+        },
+        {
+          "scope": "Skilled Worker",
+          "label": "SW",
+          "value": 1885
+        },
+        {
+          "scope": "Business Investor Stream",
+          "label": "BIS",
+          "value": 8
+        }
+      ]
+    },
+    "enhancedYtd": {
+      "section": "Enhanced nominations",
+      "label": "Enhanced nominations (made through Express Entry) — Total",
+      "value": 886
+    },
+    "inventory": {
+      "section": "Applications in assessment and pending assessment",
+      "month": "2026-06",
+      "inAssessment": 1050,
+      "pending": 641,
+      "total": 1691
+    },
+    "through": "2026-06",
+    "throughMonth": "June",
+    "url": "https://immigratemanitoba.com/resources/data/monthly-data-2026",
+    "fetched": "2026-08-04",
+    "year": 2026,
+    "section": "MPNP Monthly Data 2026",
+    "allocation": {
+      "section": "Enhanced nominations",
+      "label": "For 2026, Manitoba was allocated 6,239 nominations in total.",
+      "value": 6239
+    }
+  },
+  "annual": {
+    "url": "https://immigratemanitoba.com/resources/data/annual-report-2024",
+    "fetched": "2026-08-04",
+    "year": 2024,
+    "section": "MPNP Annual Report 2024 — 9. Processing Times",
+    "commitmentMonths": 6,
+    "commitmentLabel": "The MPNP’s commitment to assesses complete applications is within 6 months. Incomplete applications or with Expression of Interest discrepancies may exceed this processing standard.",
+    "processing": [
+      {
+        "stream": "Skilled Worker in Manitoba",
+        "approvedDays": 205,
+        "refusedDays": 379,
+        "overallDays": 207
+      },
+      {
+        "stream": "International Education",
+        "approvedDays": 172,
+        "refusedDays": 360,
+        "overallDays": 175
+      },
+      {
+        "stream": "Skilled Worker Overseas",
+        "approvedDays": 160,
+        "refusedDays": 359,
+        "overallDays": 174
+      },
+      {
+        "stream": "Business Investor",
+        "approvedDays": 190,
+        "refusedDays": 182,
+        "overallDays": 189
+      }
+    ]
+  }
+}

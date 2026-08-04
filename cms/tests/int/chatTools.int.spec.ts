@@ -63,6 +63,38 @@ d('对话工具层(生产库只读)', () => {
       expect(assertEvidence(r)).toBeGreaterThan(0)
     })
 
+    // G6 2026-08-04:金标那句临门一脚 —— 外省毕业生想走曼省,官方要的是「与该雇主连续全职 1 年」
+    // (一般情形 6 个月)。这一条以前只写在 ETL 注释里,库里查不到 = 报告说不出 = 用户以为没这条路。
+    it('MB SWM 在职时长:一般 6 个月 / 外省毕业 1 年,两档各挂自己的官方原句,且**不下判定**', async (ctx) => {
+      const r = await lookupThresholds(pool, {
+        noc: CARPENTER,
+        provs: ['MB'],
+        // 故意给一个「同职业总经验 5 年」的人:口径不同,引擎绝不能据此说他达标
+        profile: { totalExpMonths: 60, canadianExpMonths: 60 },
+      })
+      const mb = r.provinces[0]
+      expect(mb.availability).toBe('ok')
+      const exp = mb.rows.find((x) => x.factor === 'experience')
+      expect(exp, 'MB 的在职时长门槛一行都没有 —— 官方写在 SWM 资格页,查不到就是本站没灌').toBeTruthy()
+      expect(exp!.need).toBe(6)
+      expect(exp!.unit).toBe('months')
+      // 🔴 口径隔离:量的是「在这家雇主干了多久」,本站没问过 → 只摆门槛,永远 unknown
+      expect(exp!.verdict, '拿同职业总经验去判在职时长 = 假话').toBe('unknown')
+      expect(exp!.have).toBeNull()
+      // 两档并列,外省毕业那档是 12 个月,且挂的是**它自己那一行**的原文。
+      // applies_condition 是 additive 列(docs/sql/g6-pnp-requirements-condition.sql):
+      // DDL + 重灌 seed 之后两档才分得开。列还没上生产时整条跳过(同 streamKey 那条的先例)——
+      // 不让「先跑 SQL 还是先 push」的排期顺序把测试染红;上了就自动开始守。
+      if (!exp!.tiers?.some((t) => t.area)) return ctx.skip()
+      const grad = exp!.tiers?.find((t) => t.area === 'grad-other-province')
+      expect(grad, '外省毕业那一档没出来').toBeTruthy()
+      expect(grad!.value).toBe(12)
+      expect(grad!.evidence.label).toMatch(/graduated from a post-secondary program in another Canadian province/i)
+      expect(grad!.evidence.url).toMatch(/immigratemanitoba\.com/)
+      expect(exp!.evidence.label).toMatch(/six months or more of continuous full-time employment/i)
+      assertEvidence(r)
+    })
+
     it('清单覆盖:NS 具名命中(Critical Vacancies)出得来,ON 是「官方不公布」不是空清单', async () => {
       const r = await lookupCoverage(pool, { noc: CARPENTER })
       const ns = r.provinces.find((p) => p.province === 'NS')!
@@ -169,13 +201,16 @@ d('对话工具层(生产库只读)', () => {
     })
 
     // 2026-08-04(G5 入库后)改写:AB 已有 52 行 → 不再是 not-collected。三态断言留在下面 lookupOps 专组。
-    it('运营统计:AB 已入库 → ok + 官方页;MB 官方不发 → not-published', async () => {
+    // 同日(G6)再改:MB 那半原写「官方不发 → not-published」,是错的(MPNP 月度数据页 + 年报都在发),
+    // 改成 ok —— 详见下面 lookupOps 专组里那条注释。
+    it('运营统计:AB 已入库 → ok + 官方页;MB 也已入库 → ok', async () => {
       const ab = await lookupOps(pool, { prov: 'AB' })
       expect(ab.availability).toBe('ok')
       expect(ab.metrics.length).toBeGreaterThan(0)
       expect(ab.officialUrl).toMatch(/alberta\.ca/)
       const mb = await lookupOps(pool, { prov: 'MB' })
-      expect(mb.availability).toBe('not-published')
+      expect(mb.availability).toBe('ok')
+      expect(mb.officialUrl).toMatch(/immigratemanitoba\.com/)
       const qc = await lookupOps(pool, { prov: 'QC' })
       expect(qc.availability).toBe('not-applicable')
     })
@@ -235,15 +270,64 @@ d('对话工具层(生产库只读)', () => {
       assertEvidence(r)
     })
 
+    // G6 2026-08-04:站内曾写着「BC 没有处理时长」,是错的 —— 通道页印着三档。
+    it('金标 BC 处理时长:申请 3 个月 / 提名后请求 1 个月 / 复核 6 个月,单位是月不是周', async () => {
+      const r = await lookupOps(pool, { prov: 'BC' })
+      const proc = r.metrics.filter((m) => m.key === 'processing_months')
+      expect(proc, 'BC 处理时长一行都没有 —— 官方是发的,查不到就是本站没灌').toHaveLength(3)
+      const of = (stage: string) => proc.find((m) => m.scope === stage)!
+      expect(of('Application').value).toBe(3)
+      expect(of('Post-nomination request').value).toBe(1)
+      expect(of('Request for review').value).toBe(6)
+      // 🔴 官方给的是月,不许折算成周(折算=替官方编了它没给的精度)
+      expect(proc.every((m) => m.unit === 'months')).toBe(true)
+      expect(r.metrics.some((m) => m.key === 'processing_weeks'), 'BC 不该出现 processing_weeks').toBe(false)
+      // 「约 80% 的案子」是这三个数的全部意义,必须在每一行的官方原文里
+      expect(proc.every((m) => /80% of cases/i.test(m.evidence.label ?? ''))).toBe(true)
+      expect(proc.every((m) => m.scopeKind === 'stage' && /welcomebc\.ca/.test(m.evidence.url))).toBe(true)
+      assertEvidence(r)
+    })
+
+    // G6 2026-08-04:MB 从「官方不发」→ 全国披露最厚的省之一。这条守住两件事:
+    // ① 处理时长确实查得到(逐通道天数 + 6 个月服务承诺);② 配额与提名摆得出「还剩多少」。
+    it('金标 MB:配额 6239 / 至 6 月提名 2673 / SWM 平均 207 天 / 承诺 6 个月', async () => {
+      const r = await lookupOps(pool, { prov: 'MB' })
+      expect(r.availability).toBe('ok')
+      const one = (key: string, scope = '') => r.metrics.find((m) => m.key === key && m.scope === scope)!
+      expect(one('allocation').value).toBe(6239)
+      expect(one('allocation').unit).toBe('spots')
+      expect(one('nominations_ytd').value).toBe(2673)
+      expect(one('nominations_enhanced_ytd').value).toBe(886)
+      // 库存(在审 + 待审):「等多久」的另一半分母,必须写明是哪个月的快照,不能说成「当前」
+      expect(one('in_assessment').value).toBe(1050)
+      expect(one('pending_assessment').value).toBe(641)
+      expect(one('inventory').value).toBe(1691)
+      expect(one('inventory').period).toMatch(/^\d{4}-\d{2}$/)
+      // 年报 §9:逐通道平均处理天数(官方单位是天,不折算)
+      const swm = one('processing_days', 'Skilled Worker in Manitoba')
+      expect(swm.value).toBe(207)
+      expect(swm.unit).toBe('days')
+      expect(r.metrics.find((m) => m.key === 'processing_days_approved' && m.scope === 'Skilled Worker in Manitoba')!.value).toBe(205)
+      expect(r.metrics.find((m) => m.key === 'processing_days_refused' && m.scope === 'Skilled Worker in Manitoba')!.value).toBe(379)
+      expect(one('processing_commitment').value).toBe(6)
+      expect(one('processing_commitment').unit).toBe('months')
+      // 两个源不同页:年报的天数不许挂月度页的出处
+      expect(swm.evidence.url).toMatch(/annual-report/)
+      expect(one('allocation').evidence.url).toMatch(/monthly-data/)
+      assertEvidence(r)
+    })
+
     it('🔴 红线:value=null 必须配官方原文;全表不许拿 0 冒充「官方压了这个数」', async () => {
-      const all = (await Promise.all(['AB', 'SK', 'BC'].map((p) => lookupOps(pool, { prov: p })))).flatMap((r) => r.metrics)
+      const all = (await Promise.all(['AB', 'SK', 'BC', 'MB'].map((p) => lookupOps(pool, { prov: p })))).flatMap((r) => r.metrics)
       expect(all.length).toBeGreaterThan(80)
       const suppressed = all.filter((m) => m.value === null)
       expect(suppressed.length, '一行 null 都没有 = 抑制值多半被折成了数字,先查 ETL').toBeGreaterThan(0)
       for (const m of suppressed) {
         expect(m.valueText, `${m.key}/${m.scope} 是 null 却没有官方原文,等于什么都没说`).toBeTruthy()
       }
-      // 0 是「真的一个都没有」,不是「官方没给」——本表里目前一个 0 都不该出现
+      // 0 是「真的一个都没有」,不是「官方没给」——本表里目前一个 0 都不该出现。
+      // ⚠️ MB 加进来之后这条更容易红:官方哪年真出个「某通道整年零提名」就是合法的 0。
+      //    红了先去核官方页,确认是真 0 再单独放行,**别顺手改成 >= 0** —— 那就把这道防线拆了。
       const zeros = all.filter((m) => m.value === 0)
       expect(zeros, `疑似把抑制值折成了 0:${JSON.stringify(zeros).slice(0, 300)}`).toHaveLength(0)
       // assessing_up_to 是纯文本游标:恒 null + 原文,不许被读成数字
@@ -252,12 +336,17 @@ d('对话工具层(生产库只读)', () => {
       expect(cursor.every((m) => m.value === null && !!m.valueText && m.unit === 'text')).toBe(true)
     })
 
-    it('三态:MB → not-published、QC → not-applicable,空 metrics 但必须说清为什么空', async () => {
+    // 2026-08-04(G6)改写:原断言是「MB → not-published」,**那条断言本身是错的** ——
+    // MPNP 每年一页月度运营数据 + 每年一份年报(§9 处理时长),官方公布得比多数省都厚。
+    // 错因是 2026-08-03 那轮爬取只圈了 immigratemanitoba.com/mpnp/,漏了 /resources/data/,
+    // 把「这一轮没爬到」写成了「官方不公布」。测试跟着假结论一起绿,是这类错最贵的地方。
+    // 现在 not-published 这一态改用**清单侧**的 ON 守(那条是真的:2026-06 改制后不公布职业清单)。
+    it('三态:MB → ok(官方公布,已入库)、QC → not-applicable、NS → 本站未收录', async () => {
       const mb = await lookupOps(pool, { prov: 'MB' })
-      expect(mb.availability).toBe('not-published')
-      expect(mb.metrics).toHaveLength(0)
+      expect(mb.availability, 'MB 官方公布运营统计,查不到行说明 seed 没灌(先跑 DDL+seed)').toBe('ok')
+      expect(mb.metrics.length).toBeGreaterThan(0)
       expect(mb.note).toBeTruthy()
-      expect(mb.note).toMatch(/不发|不公布/)
+      expect(mb.note, 'MB 的 note 不许再说「不发/不公布」').not.toMatch(/不发|不公布/)
       const qc = await lookupOps(pool, { prov: 'QC' })
       expect(qc.availability).toBe('not-applicable')
       expect(qc.metrics).toHaveLength(0)

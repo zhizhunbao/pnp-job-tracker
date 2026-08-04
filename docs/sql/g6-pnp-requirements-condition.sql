@@ -1,0 +1,47 @@
+-- G6 · pnp_requirements 加 applies_condition(非地域的适用条件)  2026-08-04
+-- 只加一列,additive,不动任何既有列/数据。**先跑本文件,再 push 带 collection 的代码,最后灌 seed**。
+-- 惯例见 db-push-minefield:dev 默认不推 schema,加列/删列一律手写 SQL,别让 DB_PUSH 猜。
+--
+-- 为什么要这一列(病根,别当锦上添花):
+--   MPNP 的 Skilled Worker in Manitoba(SWM)通道对「在职时长」发了**两档**,一句话两个 bullet:
+--     · 一般情形            与该雇主连续全职 **6 个月**
+--     · 在**加拿大其他省/地区**读的书  与该雇主连续全职 **1 年**
+--   第二档正是「外省毕业生怎么走曼省」这个真问题的临门一脚。两行的 province/program/factor/subject
+--   全一样,只有适用条件不同 —— 没有这一列,两行在库里除了英文原句以外**分不开**,
+--   消费端只能二选一(挑错就是拿这一档的官方原句去配另一档的数,等于撒谎)。
+--
+-- 为什么不塞进 applies_area:那一列存的是**官方枚举的行政区**(metro-vancouver / gta / …,
+--   由 rules.areaOfPlace 按岗位地点算出来的键)。混一个非地理值进去,按区域挑行的那几处
+--   (BC 最低收入表、ON/BC 雇主雇员数与营业额)迟早挑到不该挑的行 —— 静默错配,不报错。
+--
+-- 取值(ETL 只产这些,别自造):
+--   ''                    该条对谁都适用(既有全部行都是这个,加列后天然 NULL/空串,行为不变)
+--   grad-other-province   申请人在加拿大**其他省/地区**完成了 post-secondary 课程
+--
+-- 配套口径列 basis(既有列,本轮多一个取值,不需要 DDL):
+--   employerTenure  阈值量的是「在**这家**雇主连续全职干了多久」,不是本站问的同职业总经验。
+--                   规则引擎(cms/src/lib/rules.ts)见到它**只摆门槛不判定** —— 拿「海外干过 5 年」
+--                   去判「6 个月达标」是假话,判 fail 也是假话(本站根本没问过在职时长)。
+
+ALTER TABLE pnp_requirements ADD COLUMN IF NOT EXISTS applies_condition varchar;
+
+-- ⚠️ 跑完本文件后必须做这一步(本项目栽过两次):
+--   DELETE FROM seed_state WHERE name = 'pnp_requirements';
+--   seed 的跳过判据是 **mart 文件裸字节哈希**。本次 mart 多了 appliesCondition 字段 + MB 三行,
+--   哈希本来就变了、不会被跳;但凡「只改列白名单、mart 内容一字未动」的改动,哈希一致
+--   = 整表静默跳过、新列永远 NULL。养成习惯别赌。
+--
+-- 顺序:① 跑本文件 → ② DELETE seed_state 那两行(pnp_requirements、pnp_ops_stats)→ ③ 跑 seed(带 token)
+--       → ④ 抽查下面两条:
+--   -- MB SWM 在职时长两档,一档一行原文
+--   SELECT applies_condition, value, unit, basis, left(label, 60)
+--     FROM pnp_requirements WHERE province='MB' AND factor='experience' ORDER BY value;
+--   -- MB 运营统计(应 29 行)与 BC 处理时长(应 3 行,单位是月不是周)
+--   SELECT province, metric, count(*) FROM pnp_ops_stats
+--    WHERE province='MB' OR metric LIKE 'processing_%' GROUP BY 1,2 ORDER BY 1,2;
+
+-- 本轮 pnp_ops_stats **不需要 DDL**:MB 的 29 行与 BC 处理时长的 3 行都只用既有列
+-- (新增的只是 metric/unit/scope_kind 的**取值**:processing_months/processing_days(_approved,_refused)/
+--  processing_commitment/nominations_enhanced_ytd/refusals_ytd/laa_ytd/applications_received_ytd/
+--  in_assessment/pending_assessment/inventory;unit 多了 months/days/applications/invitations;
+--  scope_kind 多了 stage)。词表说明已写进 collections/PnpOpsStats.ts 与 docs/sql/g5-pnp-ops-stats.sql。

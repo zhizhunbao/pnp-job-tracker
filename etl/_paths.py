@@ -38,6 +38,10 @@ POLICY = RAW / "policy"                                 # 各省移民政策原�
 DLI = RAW / "dli"                                       # PGWP 可申 DLI 子集(dli.json,build_dli.py 产,E12-03)
 NEWS = RAW / "news"                                     # 官方移民新闻累积表(news.json,etl/news/ 产,E12-06)
 
+# crawl 役产物(etl/crawl/discover_sources.py,每小时):<slug>/manifest.json + html_cache/<md5>.html
+# 定向抽取脚本先查这里再考虑发请求(2026-08-03 Frank 拍板;读取入口见 etl/crawl/cache.py)
+CRAWL = DATA / "crawl"
+
 PROCESSED = DATA / "processed"                          # transform
 PROCESSED_ATS = PROCESSED / "ats"                       # ATS 清洗后根(扁平:<slug>/ 直接挂)
 COMPANIES = PROCESSED_ATS                               # 各公司文件夹的根(= processed/ats)

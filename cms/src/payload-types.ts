@@ -75,6 +75,7 @@ export interface Config {
     'pnp-draws': PnpDraw;
     'pnp-score-factors': PnpScoreFactor;
     'pnp-requirements': PnpRequirement;
+    'pnp-ops-stats': PnpOpsStat;
     dli: Dli;
     'ee-categories': EeCategory;
     'noc-descriptions': NocDescription;
@@ -111,6 +112,7 @@ export interface Config {
     'pnp-draws': PnpDrawsSelect<false> | PnpDrawsSelect<true>;
     'pnp-score-factors': PnpScoreFactorsSelect<false> | PnpScoreFactorsSelect<true>;
     'pnp-requirements': PnpRequirementsSelect<false> | PnpRequirementsSelect<true>;
+    'pnp-ops-stats': PnpOpsStatsSelect<false> | PnpOpsStatsSelect<true>;
     dli: DliSelect<false> | DliSelect<true>;
     'ee-categories': EeCategoriesSelect<false> | EeCategoriesSelect<true>;
     'noc-descriptions': NocDescriptionsSelect<false> | NocDescriptionsSelect<true>;
@@ -778,7 +780,7 @@ export interface PnpRequirement {
    */
   subject?: string | null;
   /**
-   * language / income / experience / education / empYears / empStaff
+   * language / income / experience / education / empYears / empStaff;experienceExcluded=官方点名不计入经验的时段(自雇、无授权工作、全日制在读期间的 co-op),不是阈值,引擎不拿它判定
    */
   factor?: string | null;
   /**
@@ -811,11 +813,15 @@ export interface PnpRequirement {
    */
   appliesArea?: string | null;
   /**
+   * 非地域的适用条件:grad-other-province(MB SWM「在加拿大其他省/地区读的书」那一档要 1 年而不是 6 个月)—— 空=对谁都适用。不与 appliesArea 混用:那一列只存官方枚举的行政区
+   */
+  appliesCondition?: string | null;
+  /**
    * 最低收入表专用(1..7,7=7 人及以上)
    */
   appliesFamilySize?: number | null;
   /**
-   * occMedian 等「阈值不是绝对数」的口径
+   * 阈值口径:occMedian=按该职业该地区中位工资;employerTenure=量的是「在这家雇主连续全职多久」(MB SWM),不是同职业总经验 —— 规则引擎见到它只摆门槛不判定
    */
   basis?: string | null;
   /**
@@ -834,6 +840,70 @@ export interface PnpRequirement {
   url?: string | null;
   pageUrl?: string | null;
   fetched?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pnp-ops-stats".
+ */
+export interface PnpOpsStat {
+  id: number;
+  /**
+   * AB / BC / SK
+   */
+  province?: string | null;
+  /**
+   * PNP / AIP —— 与 pnp_occupations 同族分路
+   */
+  program?: string | null;
+  /**
+   * AB: allocation/issued/remaining/to_process/assessing_up_to/eoi_pool/eoi_pool_total · SK: processing_weeks/allocation/nominations_ytd/capped_pct/capped_spots/priority_sector · BC: sirs_pool/processing_months · MB: allocation/nominations_ytd/nominations_enhanced_ytd/refusals_ytd/laa_ytd/applications_received_ytd/in_assessment/pending_assessment/inventory/processing_days(_approved,_refused)/processing_commitment。⚠️ 处理时长的后缀=官方发布的单位,不换算(SK 周 / BC 月 / MB 天)
+   */
+  metric?: string | null;
+  /**
+   * 具体范围值:官方通道名 / 行业 / SIRS 分数段 "100 - 109" / 阶段名 "Request for review";省级留空串。官方措辞原样,报告要引用
+   */
+  scope?: string | null;
+  /**
+   * stream / sector / category / scoreRange / stage —— 说明 scope 是哪一类;省级留空串
+   */
+  scopeKind?: string | null;
+  /**
+   * 跨指标 join 键(ETL 归一:去括号补充说明+小写压空白)。官网两张表通道名写法不一,不归一则配额与池人数拼不上且静默漏配。只对 scopeKind=stream 算,不展示给用户
+   */
+  streamKey?: string | null;
+  /**
+   * 官方原文(英文)—— 报告挂出处供核对
+   */
+  label?: string | null;
+  /**
+   * 🔴 可空:隐私抑制(「Less than 10」/「<5」)或不适用一律留空,原文进 valueText,绝不写 0
+   */
+  value?: number | null;
+  /**
+   * 官方原文的非数值表述("Less than 10" / "<5" / "n/a")
+   */
+  valueText?: string | null;
+  /**
+   * people / spots / weeks / months / days / nominations / applications / invitations / percent / text / flag
+   */
+  unit?: string | null;
+  /**
+   * 官方口径日(ISO 字符串)—— 过期检测锚点;官方没印就留空,别拿别的日子顶(SK/MB 与 BC 处理时长都没有,看 period)
+   */
+  asOf?: string | null;
+  /**
+   * 统计期("2026" / "2026Q2" / "2026 Jan-Jun" / "2026-06" —— MB 库存是该月首个工作日的快照,不是「当前」)
+   */
+  period?: string | null;
+  url?: string | null;
+  fetched?: string | null;
+  /**
+   * 官方文件节号/表名
+   */
+  section?: string | null;
+  seq?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1533,6 +1603,10 @@ export interface PayloadLockedDocument {
         value: number | PnpRequirement;
       } | null)
     | ({
+        relationTo: 'pnp-ops-stats';
+        value: number | PnpOpsStat;
+      } | null)
+    | ({
         relationTo: 'dli';
         value: number | Dli;
       } | null)
@@ -1900,6 +1974,7 @@ export interface PnpRequirementsSelect<T extends boolean = true> {
   appliesNoc?: T;
   excludesNoc?: T;
   appliesArea?: T;
+  appliesCondition?: T;
   appliesFamilySize?: T;
   basis?: T;
   label?: T;
@@ -1909,6 +1984,30 @@ export interface PnpRequirementsSelect<T extends boolean = true> {
   url?: T;
   pageUrl?: T;
   fetched?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pnp-ops-stats_select".
+ */
+export interface PnpOpsStatsSelect<T extends boolean = true> {
+  province?: T;
+  program?: T;
+  metric?: T;
+  scope?: T;
+  scopeKind?: T;
+  streamKey?: T;
+  label?: T;
+  value?: T;
+  valueText?: T;
+  unit?: T;
+  asOf?: T;
+  period?: T;
+  url?: T;
+  fetched?: T;
+  section?: T;
+  seq?: T;
   updatedAt?: T;
   createdAt?: T;
 }

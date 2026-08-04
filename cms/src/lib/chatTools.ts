@@ -31,7 +31,10 @@ export type Evidence = {
 /**
  * 数据可得性(铁律 ②)。四态互不替代:
  *   ok              有数据,可以直接说
- *   not-published   官方制度性不公布(ON 不公布职业清单、MB 不发运营统计)—— 不是我们没查
+ *   not-published   官方制度性不公布(ON 2026-06 改制后不公布职业清单;SK 不公布逐轮抽选)—— 不是我们没查
+ *                   ⚠️ 这一态是**最容易说谎的一态**:说「官方不公布」而官方其实公布了,比说「我不知道」
+ *                   坏得多(中介正好钻这个空子)。写进 *_POLICY 之前必须有实证,爬完一个目录不算爬完全站
+ *                   (MB「不发运营统计」那条错就是这么来的,2026-08-04 已推翻)。
  *   not-collected   本站未收录(官方有或未核实)—— **不得说成「没有」**
  *   not-applicable  该省不走这套制度(QC 自有体系)
  */
@@ -81,17 +84,24 @@ const OPS_POLICY: Record<string, { published: boolean; url: string; note: string
     // url 必须与 etl/pnp/build_bc_stats.py 抓的那一页一致(数字真正的来源页),别写导航别名
     published: true,
     url: 'https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply',
-    note: 'BC PNP 官方发 Skills Immigration 注册池按 SIRS 分数段的人数分布(三省分母里颗粒度最细),配合同页最近一轮最低邀请分即可读出自己压着多少人。「<5」为官方隐私抑制值,原样保留不猜',
+    note: 'BC PNP 官方发 Skills Immigration 注册池按 SIRS 分数段的人数分布(三省分母里颗粒度最细),配合同页最近一轮最低邀请分即可读出自己压着多少人。「<5」为官方隐私抑制值,原样保留不猜。**处理时长也发**:通道页印着「约 80% 的案子」在 申请 3 个月 / 提名后请求 1 个月 / 复核 6 个月 内办完(官方给的单位是月,本站不折算成周)',
   },
   MB: {
-    published: false,
-    url: 'https://immigratemanitoba.com/',
-    note: 'MB 官方不发处理时长/池子统计(2026-08-03 全站 324 页爬完确认),只有逐轮抽选页与年度年报',
+    // 2026-08-04 更正:原来这条写着 published:false「MB 官方不发处理时长/池子统计」——**是错的**。
+    // 病根:那轮爬取的种子只圈了 immigratemanitoba.com/mpnp/,/resources/data/ 整个目录没进去,
+    // 「这一轮没爬到」被写成了「官方不公布」。MB 其实是披露最厚的省之一(2018–2026 月度页 + 2017–2024 年报)。
+    published: true,
+    url: 'https://immigratemanitoba.com/resources/data/monthly-data-2026',
+    note: 'MPNP 官方发**月度运营数据**(年度配额、年初至今提名/增强提名/拒/LAA/收件、在审与待审库存,逐月)与**年报 §9 处理时长**(逐通道 批准/拒/总体 平均天数 + 「6 个月内评估完整申请」的服务承诺)。天数是官方原单位,本站不折算;库存是该月首个工作日的快照,不是「当前」',
   },
   ON: {
-    published: false,
+    // 2026-08-04 更正:改成 published:true —— ON 确实没有处理时长/池子统计页,但**年度配额是公布的**
+    // (2026-02-06 OINP updates:「The province's 2026 allocation is 14,119 nominations.」)。
+    // 留 false 会让工具答「ON 官方不公布配额」,那是假话;改 true 后没数据即 not-collected(本站未收录),
+    // 这才是实情。要转 ok 只差一个从 updates 公告页抓配额的 builder(G6 遗留项)。
+    published: true,
     url: 'https://www.ontario.ca/page/2026-ontario-immigrant-nominee-program-updates',
-    note: 'ON 无处理时长/配额页,运营数据只有抽选史(多为改制前旧 stream)与公告页',
+    note: 'ON 没有处理时长/池子统计页,运营数据只有抽选史(多为改制前旧 stream)与公告页;**年度配额在公告页发**(2026-02-06:14,119 nominations)—— 本站尚未收录这一条',
   },
   QC: { published: false, url: '', note: '魁省自有体系,不属 PNP' },
 }
@@ -101,6 +111,13 @@ const OPS_POLICY: Record<string, { published: boolean; url: string; note: string
 export type ThresholdRow = {
   factor: string                 // language / income / experience / wage / empYears / empRevenue / empStaff …
   subject: ReqSubject
+  /**
+   * 阈值口径(rules.ts 原样带出)。**说这一行之前先看它**:
+   * basis='employerTenure'(MB SWM)量的是「在**这家**雇主连续全职多久」,不是「N 个月技术工作经验」——
+   * 用错话术,句子本身就是假的(所以这类行的 verdict 恒 unknown,have 恒空)。
+   * basis='occMedian'(ON 工资档)则表示阈值不是绝对数,而是该职业该地区的官方中位。
+   */
+  basis?: string
   verdict: RuleVerdict           // pass / fail / unknown —— 判定出自 rules.ts,本层不改
   need: number | null
   needLow: number | null
@@ -161,9 +178,11 @@ export async function lookupThresholds(
           url: r.evidence.url || fallback,
           fetched: r.evidence.fetched, label: r.evidence.label, section: r.evidence.section, effective: r.evidence.effective,
         }
-        // 档位回到 pnp_requirements 里认领自己那一行(factor + appliesArea 唯一定位),认不到就只留 url
+        // 档位回到 pnp_requirements 里认领自己那一行(factor + 档名唯一定位),认不到就只留 url。
+        // 档名对雇主侧是区域(appliesArea),对 MB SWM 在职时长是非地域条件(appliesCondition)——
+        // 认错行 = 拿这一档的官方原句去配另一档的数,就是撒谎(见 ThresholdRow.tiers 注释)
         const tiers = r.tiers?.map((t) => {
-          const own = reqs.find((q) => q.factor === r.factor && q.appliesArea === t.area)
+          const own = reqs.find((q) => q.factor === r.factor && (q.appliesArea || q.appliesCondition || '') === t.area)
           return {
             ...t,
             evidence: own
@@ -172,7 +191,7 @@ export async function lookupThresholds(
           }
         }).filter((t) => !!t.evidence.url)
         return {
-          factor: r.factor, subject: r.subject, verdict: r.verdict,
+          factor: r.factor, subject: r.subject, ...(r.basis ? { basis: r.basis } : {}), verdict: r.verdict,
           need: r.need, needLow: r.needLow, have: r.have, short: r.short, unit: r.unit,
           ...(tiers?.length ? { tiers } : {}),
           evidence,
@@ -341,9 +360,20 @@ export async function lookupDraws(pool: any, args: { prov: string; limit?: numbe
 // ── ⑤ lookupOps:官方运营统计(处理时长 / 配额 / 池内人数 / 池分布)────────────────
 
 export type OpsMetric = {
-  key: string            // metric 词表:allocation/issued/remaining/to_process/assessing_up_to/eoi_pool(_total)/processing_weeks/nominations_ytd/capped_pct/capped_spots/priority_sector/sirs_pool
-  scope: string          // 适用范围值(通道名 / 行业 / SIRS 分数段;省级为空串)
-  scopeKind: string      // stream / sector / category / scoreRange(省级为空串)—— 说明 scope 是哪一类
+  /**
+   * metric 词表(ETL 只产这些):
+   *   AB  allocation / issued / remaining / to_process / assessing_up_to / eoi_pool(_total)
+   *   SK  processing_weeks / allocation / nominations_ytd / capped_pct / capped_spots / priority_sector
+   *   BC  sirs_pool / processing_months
+   *   MB  allocation / nominations_ytd / nominations_enhanced_ytd / refusals_ytd / laa_ytd /
+   *       applications_received_ytd / in_assessment / pending_assessment / inventory /
+   *       processing_days(_approved/_refused)/ processing_commitment
+   * ⚠️ 处理时长的后缀 = **官方发布的单位**,不换算(SK 发周、BC 发月、MB 发天)——
+   *    3 个月折成 13 周是替官方编了个它没给的精度。
+   */
+  key: string
+  scope: string          // 适用范围值(通道名 / 行业 / SIRS 分数段 / 阶段名;省级为空串)
+  scopeKind: string      // stream / sector / category / scoreRange / stage(省级为空串)—— 说明 scope 是哪一类
   /**
    * 跨指标 join 的键(ETL 在 mart 侧归一,本层只读不算 —— 清洗下沉,见 09_build_mart.stream_key)。
    * 为什么要它:官网两张表对同一条通道措辞不同(streams[]「Accelerated Tech Pathway (eligible list…)」
@@ -360,9 +390,9 @@ export type OpsMetric = {
    */
   value: number | null
   valueText: string      // value=null 时的官方原文("Less than 10" / "Not applicable" / "May 8, 2026 …")
-  unit: string           // people / weeks / nominations / percent / spots / text / flag
-  asOf: string           // 官方口径日(AB/BC 有);SK 没有,看 period
-  period: string         // 统计期(SK 用 "2026Q2";AB/BC 为空)
+  unit: string           // people / weeks / months / days / nominations / applications / invitations / percent / spots / text / flag
+  asOf: string           // 官方口径日(AB 与 BC 池分布有);SK/MB 与 BC 处理时长没有,看 period
+  period: string         // 统计期(SK "2026Q2" / MB "2026 Jan-Jun"、"2026-06"、"2024";AB 与 BC 为空)
   evidence: Evidence
 }
 export type OpsResult = {
@@ -375,8 +405,10 @@ export type OpsResult = {
 
 /**
  * 「等多久 / 名额还剩多少 / 被捞概率」= SELECT pnp_ops_stats(G5,2026-08-04 起真查库)。
- * availability 按**查到的行**说话:有行=ok;没行但官方公布(AB/SK/BC)=not-collected(本站未收录,不是「没有」);
- * 官方不公布(MB/ON)=not-published;QC 不走这套体系=not-applicable。
+ * availability 按**查到的行**说话:有行=ok;没行但官方公布(AB/SK/BC/MB/ON)=not-collected
+ * (本站未收录,不是「没有」);官方确实不公布=not-published;QC 不走这套体系=not-applicable。
+ * 2026-08-04 起运营统计这一路**没有 not-published 的省** —— 九省逐个核过,能查到的官方披露都进了库
+ * 或至少落在 not-collected(ON 的年度配额)。再往 OPS_POLICY 里写 published:false 前先拿出实证。
  */
 export async function lookupOps(pool: any, args: { prov: string }): Promise<OpsResult> {
   const province = upper(args.prov)
@@ -396,7 +428,13 @@ export async function lookupOps(pool: any, args: { prov: string }): Promise<OpsR
     valueText: r.value_text ?? '', unit: r.unit ?? '', asOf: r.as_of ?? '', period: r.period ?? '',
     evidence: { url: r.url, fetched: r.fetched ?? '', label: r.label ?? '', ...(r.section ? { section: r.section } : {}) },
   }))
-  const officialUrl = metrics[0]?.evidence.url || p?.url || ''
+  // 一个省可能有**多个官方源**(BC:池分布页 + 通道页的处理时长;MB:月度数据页 + 年报)——
+  // officialUrl 取「行数最多的那一页」= 该省运营统计的主页面,而不是排序碰巧排在前面的那一行,
+  // 否则加一个小节(3 行处理时长)就能把主出处顶掉,报告里的「官方页」链接随之漂移。
+  // 逐个数字的出处一律看 metric.evidence.url,本字段只是给「去哪看」用的便利入口。
+  const urlCount = new Map<string, number>()
+  for (const m of metrics) if (m.evidence.url) urlCount.set(m.evidence.url, (urlCount.get(m.evidence.url) ?? 0) + 1)
+  const officialUrl = [...urlCount.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || p?.url || ''
   if (metrics.length) return { province, availability: 'ok', officialUrl, note: p?.note ?? '', metrics }
   if (province === 'QC') return { province, availability: 'not-applicable', officialUrl, note: p!.note, metrics: [] }
   if (p && !p.published) return { province, availability: 'not-published', officialUrl, note: p.note, metrics: [] }

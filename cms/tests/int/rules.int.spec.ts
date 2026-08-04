@@ -416,6 +416,34 @@ describe('evaluateRequirements —— 七省门槛的挑行口径', () => {
     expect(evaluateRequirements(PE_REQS, P({ teer: 5, totalExpMonths: 6 })).find((r) => r.factor === 'experience')).toBeUndefined()
   })
 
+  // MB SWM(G6 2026-08-04):官方要的是「与**该雇主**连续全职多久」——
+  // 一般 6 个月、在加拿大其他省/地区读的书则 1 年。口径与本站问的「同职业总经验」不是一回事,
+  // 靠 basis='employerTenure' 隔离:摆得出门槛,但永远不下判定。
+  const MB_TENURE: Requirement[] = [
+    R({ province: 'MB', stream: 'MPNP SWM', factor: 'experience', value: 6, unit: 'months', basis: 'employerTenure' }),
+    R({ province: 'MB', stream: 'MPNP SWM (grad elsewhere)', factor: 'experience', value: 12, unit: 'months', basis: 'employerTenure', appliesCondition: 'grad-other-province' }),
+  ]
+
+  it('MB:在职时长两档都摆出来,need 取低档 6 个月,外省毕业那档进 tiers', () => {
+    const r = byFactor(evaluateRequirements(MB_TENURE, P({ totalExpMonths: 60 })), 'experience')
+    expect(r.need).toBe(6)
+    expect(r.unit).toBe('months')
+    expect(r.tiers?.map((t) => [t.area, t.value])).toEqual([['', 6], ['grad-other-province', 12]])
+  })
+
+  it('🔴 MB:同职业总经验 5 年也判不了在职时长 —— 恒 unknown、have 留空,绝不滑成 pass', () => {
+    for (const p of [P({ totalExpMonths: 60, canadianExpMonths: 60 }), P({ totalExpMonths: 1 }), P()]) {
+      const r = byFactor(evaluateRequirements(MB_TENURE, p), 'experience')
+      expect(r.verdict).toBe('unknown')
+      expect(r.have).toBeNull()
+      expect(r.short).toBeNull()
+    }
+  })
+
+  it('别省不受影响:basis 为空的经验门槛照旧判定(BC 24 个月仍然 fail)', () => {
+    expect(byFactor(evaluateRequirements(BC_REQS, P({ totalExpMonths: 6 })), 'experience').verdict).toBe('fail')
+  })
+
   // NL 的档位是从官方两句话相减算出来的:收 TEER 0-5,但只有 TEER 4/5 要交成绩。
   const NL_REQS: Requirement[] = [
     R({ province: 'NL', stream: 'NLPNP Skilled Worker Category', factor: 'language', value: 4, unit: 'CLB', appliesTeer: '4,5' }),

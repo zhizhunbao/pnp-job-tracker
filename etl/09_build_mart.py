@@ -50,7 +50,7 @@ IN_REQ_TABLES = [_paths.PNP / f"{p}-req.json"
                  _paths.IRCC / "fees.json"]
 # G5 省级官方运营统计(配额/已发/剩余、积压游标、EOI 池、处理时长、SIRS 池分布)——
 # 一省一个文件,加省=往这个 list 里加一个;各省字段形状不同,按 province 分派(下面 build_pnp_ops_stats)。
-IN_PNP_STATS = [_paths.PNP / f"{p}-stats.json" for p in ("ab", "sk", "bc")]
+IN_PNP_STATS = [_paths.PNP / f"{p}-stats.json" for p in ("ab", "sk", "bc", "mb")]
 IN_EE = _paths.EE / "federal-categories.json"  # 联邦 Express Entry 类别抽选(全国单一源)
 IN_EE_DRAWS = _paths.EE / "draws.json"          # 各类别最近一次抽选(CRS/日期/邀请数,build_ee_draws.py 产)
 IN_NOC_DESC = _paths.NOC / "descriptions.json"  # NOC 官方名+主要职责(build_noc_descriptions.py 产)
@@ -196,20 +196,69 @@ def stream_key(scope: str) -> str:
     return STREAM_KEY_FIX.get(k, k)
 
 
+def build_pnp_requirements(files) -> list:
+    """省提名官方门槛维度(规则引擎):一行一条可核验的官方门槛,列对齐 DB。
+    与 pnp_occupations(在不在清单)、pnp_score_factors(能打几分)并列,三张表各答一个问题。
+    applies*(Teer/Area/Condition/familySize)是**适用条件**(该条只对某些 TEER / 某个区域 /
+    某个非地域条件 / 某个家庭人数生效),引擎按它挑行;挑不到就是 unknown —— 不拿别省别档的门槛套(设计 §3)。
+    抽成函数是为了能单独重算这张表:改了某个省的 build_<省>_req.py 之后不必跑全量 09。"""
+    pnp_requirements = []
+    for src in files:
+        if not src.exists():
+            continue
+        try:
+            tbl = json.loads(src.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001 — 单省表坏了不拖垮整个 mart
+            continue
+        base = {"province": tbl.get("province", ""), "program": tbl.get("program", "PNP"),
+                "url": tbl.get("url", ""), "pageUrl": tbl.get("pageUrl", ""),
+                "effective": tbl.get("guideEffective", ""), "fetched": tbl.get("fetched", "")}
+        for i, r in enumerate(tbl.get("requirements", [])):
+            pnp_requirements.append({
+                **base, "seq": i,
+                # 一条门槛可以自带出处页(ON 的申请人侧在通道页、雇主侧在雇主指南)——没写才回退表级 url
+                **({"url": r["url"]} if r.get("url") else {}),
+                "stream": r.get("stream", ""), "subject": r.get("subject", "applicant"),
+                "factor": r.get("factor", ""), "op": r.get("op", ">="),
+                "value": r.get("value"), "valueText": r.get("valueText", ""), "unit": r.get("unit", ""),
+                # TEER 列表存成 "2,3,4,5" 文本(Payload 没有整型数组列;前端 split 即可)。
+                # ⚠️ 源里既有 list[int](BC 及本轮七省)也有现成字符串(ON):对字符串 join 会逐字符
+                # 插逗号,ON 那几行一直是 "0,,,1,,,2,,,3",引擎 split(',') 按 TEER 挑行永远挑空
+                # (2026-08-03 修)。两种形态都归一到同一串。
+                "appliesTeer": (r["appliesTeer"] if isinstance(r.get("appliesTeer"), str)
+                                else ",".join(str(x) for x in (r.get("appliesTeer") or []))),
+                # NOC 适用范围(E13-02):ON 的技工低档语言门槛靠它区分;存 NOC 码前缀,引擎按前缀匹配
+                "appliesNoc": r.get("appliesNoc", ""), "excludesNoc": r.get("excludesNoc", ""),
+                "appliesArea": r.get("appliesArea", ""),
+                # 非地域的适用条件(G6:MB SWM「在加拿大其他省/地区读的书」那一档 = grad-other-province)。
+                # 空 = 该条对谁都适用。为什么不塞进 appliesArea:那一列存的是**官方枚举的行政区**
+                # (rules.areaOfPlace 按岗位地点算出来的键),混进一个非地理值,按区域挑行的那几处
+                # (收入表 / 雇主雇员数)迟早挑到不该挑的行。
+                "appliesCondition": r.get("appliesCondition", ""), "familySize": r.get("familySize"),
+                "basis": r.get("basis", ""), "label": r.get("label", ""), "section": r.get("section", ""),
+            })
+    return pnp_requirements
+
 def build_pnp_ops_stats(files) -> list:
-    """省级官方运营统计 → 一行一指标(metric 固定词表;scope=通道/行业/分数段,省级留空)。
-    label 一律官方措辞原文(不翻译不改写);section 三份 raw 都没有 → 留空不编。
-    streamKey:scope 的归一键,只对 scopeKind='stream' 算,供跨指标拼装用(见上)。"""
+    """省级官方运营统计 → 一行一指标(metric 固定词表;scope=通道/行业/分数段/阶段,省级留空)。
+    label 一律官方措辞原文(不翻译不改写);AB/SK/BC 池分布三份 raw 没有节号 → section 留空不编,
+    BC 处理时长与 MB(月度页/年报)自带官方小标题,照原文写进 section。
+    streamKey:scope 的归一键,只对 scopeKind='stream' 算,供跨指标拼装用(见上)。
+
+    ⚠️ 单位不换算:官方发 months 就 processing_months、发 weeks 就 processing_weeks、发 days 就
+    processing_days。3 个月折成 13 周 = 替官方编了个它没给的精度(BC 只说「约 80% 的案子在 3 个月内」)。
+    metric 名带单位后缀,消费端一眼看得出官方到底给的是什么。"""
     rows: list = []
     seqs: dict = {}
 
-    def add(base, metric, scope, kind, label, raw, unit, text=""):
+    def add(base, metric, scope, kind, label, raw, unit, text="", section="", period=None):
         val, vtext = _stat_val(raw, text)
         k = (base["province"], metric)
         seqs[k] = seqs.get(k, -1) + 1   # 每 (province, metric) 组内稳定序号,重跑顺序一致
         rows.append({**base, "metric": metric, "scope": scope, "scopeKind": kind, "label": label,
                      "streamKey": stream_key(scope) if kind == "stream" else "",
-                     "value": val, "valueText": vtext, "unit": unit, "section": "", "seq": seqs[k]})
+                     "value": val, "valueText": vtext, "unit": unit, "section": section,
+                     "seq": seqs[k], **({} if period is None else {"period": period})})
 
     for src in files:
         if not src.exists():
@@ -259,6 +308,60 @@ def build_pnp_ops_stats(files) -> list:
             for p in d.get("pool", []):
                 add(base, "sirs_pool", p.get("scoreRange", ""), "scoreRange", p.get("scoreRange", ""),
                     p.get("registrations"), "people")   # 「<5」= 官方隐私抑制 → None + 原文
+            # 处理时长与池分布**不同源、不同口径日**(池子那页印 as-of,时长这页不印)→ 用自己那一节的出处,
+            # 别让报告拿池子的 as-of 去给时长背书。「约 80% 的案子」这句进每一行 label:
+            # 它就是这三个数的全部意义,分开存迟早会有人把它读成「所有案子」。
+            pr = d.get("processing") or {}
+            pbase = {**base, "url": pr.get("url", ""), "fetched": pr.get("fetched", ""), "asOf": pr.get("asOf", "")}
+            pctl = pr.get("percentileLabel", "")
+            for p in pr.get("rows", []):
+                stage, raw_txt = p.get("stage", ""), p.get("raw", "")
+                add(pbase, f"processing_{p.get('unit') or 'months'}", stage, "stage",
+                    f"{pctl}: {stage} — {raw_txt}" if pctl else f"{stage} — {raw_txt}",
+                    p.get("value"), p.get("unit", ""), section="Skills Immigration — Processing times")
+        elif prov == "MB":
+            # MB 有**两个**官方源(月度数据页 + 年报),各自的 url/fetched/统计期都不一样 ——
+            # 一行的出处必须指向那个数字真正的来源页,别拿月度页给年报的处理天数背书。
+            m = d.get("monthly") or {}
+            page = m.get("section", "")                       # 「MPNP Monthly Data 2026」
+            year = str(m.get("year") or "")
+            thru = str(m.get("throughMonth") or "")
+            ytd = f"{year} Jan-{thru[:3]}" if thru else year   # 月度表是**年初至今累计**,期次必须写明到哪个月
+            mbase = {**base, "url": m.get("url", ""), "fetched": m.get("fetched", ""), "asOf": ""}
+            a = m.get("allocation") or {}
+            add(mbase, "allocation", "", "", a.get("label", ""), a.get("value"), "spots",
+                section=f"{page} — {a.get('section', '')}", period=year)
+            e = m.get("enhancedYtd") or {}
+            add(mbase, "nominations_enhanced_ytd", "", "", e.get("label", ""), e.get("value"), "nominations",
+                section=f"{page} — {e.get('section', '')}", period=ytd)
+            for key, metric, unit in (("nominationsYtd", "nominations_ytd", "nominations"),
+                                      ("refusalsYtd", "refusals_ytd", "applications"),
+                                      ("laaYtd", "laa_ytd", "invitations"),
+                                      ("receivedYtd", "applications_received_ytd", "applications")):
+                g = m.get(key) or {}
+                for r in g.get("rows", []):
+                    scope = r.get("scope", "")
+                    add(mbase, metric, scope, "stream" if scope else "", f"{g.get('section', '')}: {r.get('label', '')}",
+                        r.get("value"), unit, section=f"{page} — {g.get('section', '')}", period=ytd)
+            inv = m.get("inventory") or {}
+            for metric, key, lab in (("in_assessment", "inAssessment", "In Assessment"),
+                                     ("pending_assessment", "pending", "Pending"),
+                                     ("inventory", "total", "Total")):
+                # 库存是**某个月首个工作日的快照**,不是「当前」:period 写死到月份,谁引用都得带上
+                add(mbase, metric, "", "", f"{inv.get('section', '')}: {lab}", inv.get(key), "applications",
+                    section=f"{page} — {inv.get('section', '')}", period=inv.get("month", ""))
+            an = d.get("annual") or {}
+            abase = {**base, "url": an.get("url", ""), "fetched": an.get("fetched", ""), "asOf": ""}
+            ayear, asec = str(an.get("year") or ""), an.get("section", "")
+            add(abase, "processing_commitment", "", "", an.get("commitmentLabel", ""),
+                an.get("commitmentMonths"), "months", section=asec, period=ayear)
+            for p in an.get("processing", []):
+                st = p.get("stream", "")
+                for metric, key, lab in (("processing_days", "overallDays", "Overall Average"),
+                                         ("processing_days_approved", "approvedDays", "Approved Applications"),
+                                         ("processing_days_refused", "refusedDays", "Refused Applications")):
+                    add(abase, metric, st, "stream", f"{st} — {lab}: {p.get(key)} days",
+                        p.get(key), "days", section=asec, period=ayear)
     # 撞车检测:**同一个 (province, metric) 内**两个不同的官方通道名压出同一个 key = 归一切过头了
     # (跨 metric 同键正是要的效果,不算撞)。撞了就报出来 —— 静默合并两条通道比漏配更毒。
     seen_key: dict = {}
@@ -672,40 +775,7 @@ def build():
                                           "label": f.get("rule", ""), "points": None, "xorPrev": False,
                                           "rule": json.dumps({k: f.get(k) for k in ("rule", "floorAt", "capAt")}, ensure_ascii=False)})
 
-    # 省提名官方门槛维度(规则引擎):一行一条可核验的官方门槛,列对齐 DB。
-    # 与 pnp_occupations(在不在清单)、pnp_score_factors(能打几分)并列,三张表各答一个问题。
-    # appliesTeer/appliesArea/familySize 是**适用条件**(该条只对某些 TEER / 某个区域 / 某个家庭人数生效),
-    # 引擎按它挑行;挑不到就是 unknown —— 不拿别省别档的门槛套(设计 §3)。
-    pnp_requirements = []
-    for src in IN_REQ_TABLES:
-        if not src.exists():
-            continue
-        try:
-            tbl = json.loads(src.read_text(encoding="utf-8"))
-        except Exception:  # noqa: BLE001 — 单省表坏了不拖垮整个 mart
-            continue
-        base = {"province": tbl.get("province", ""), "program": tbl.get("program", "PNP"),
-                "url": tbl.get("url", ""), "pageUrl": tbl.get("pageUrl", ""),
-                "effective": tbl.get("guideEffective", ""), "fetched": tbl.get("fetched", "")}
-        for i, r in enumerate(tbl.get("requirements", [])):
-            pnp_requirements.append({
-                **base, "seq": i,
-                # 一条门槛可以自带出处页(ON 的申请人侧在通道页、雇主侧在雇主指南)——没写才回退表级 url
-                **({"url": r["url"]} if r.get("url") else {}),
-                "stream": r.get("stream", ""), "subject": r.get("subject", "applicant"),
-                "factor": r.get("factor", ""), "op": r.get("op", ">="),
-                "value": r.get("value"), "valueText": r.get("valueText", ""), "unit": r.get("unit", ""),
-                # TEER 列表存成 "2,3,4,5" 文本(Payload 没有整型数组列;前端 split 即可)。
-                # ⚠️ 源里既有 list[int](BC 及本轮七省)也有现成字符串(ON):对字符串 join 会逐字符
-                # 插逗号,ON 那几行一直是 "0,,,1,,,2,,,3",引擎 split(',') 按 TEER 挑行永远挑空
-                # (2026-08-03 修)。两种形态都归一到同一串。
-                "appliesTeer": (r["appliesTeer"] if isinstance(r.get("appliesTeer"), str)
-                                else ",".join(str(x) for x in (r.get("appliesTeer") or []))),
-                # NOC 适用范围(E13-02):ON 的技工低档语言门槛靠它区分;存 NOC 码前缀,引擎按前缀匹配
-                "appliesNoc": r.get("appliesNoc", ""), "excludesNoc": r.get("excludesNoc", ""),
-                "appliesArea": r.get("appliesArea", ""), "familySize": r.get("familySize"),
-                "basis": r.get("basis", ""), "label": r.get("label", ""), "section": r.get("section", ""),
-            })
+    pnp_requirements = build_pnp_requirements(IN_REQ_TABLES)
 
     # 联邦 EE 类别维度(每行=某类别内一个职业)
     ee_categories = []

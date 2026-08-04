@@ -113,7 +113,20 @@ export type Requirement = {
   appliesNoc?: string            // NOC 码前缀白名单(ON 技工低档语言门槛);空=不分职业
   excludesNoc?: string           // NOC 码前缀排除表(官方原文的 excluding Sub-Major Group …)
   appliesArea: string            // metro-vancouver / rest-of-bc / gta / outside-gta;空=全省
+  /**
+   * 非地域的适用条件(MB SWM 的 grad-other-province = 「在加拿大其他省/地区读的书」那一档)。
+   * 空=该条对谁都适用。与 appliesArea 分开是因为那一列存的是**官方枚举的行政区**(areaOfPlace 的输出),
+   * 混一个非地理值进去,按区域挑行的收入表/雇主雇员数迟早挑到不该挑的行。
+   * 本站题库还没问「你在哪个省读的书」→ 引擎不拿它做判定,只把两档一起摆出来(tiers)。
+   */
+  appliesCondition?: string
   familySize: number | null      // 最低收入表专用
+  /**
+   * 阈值的**口径**(不是绝对数时说清按什么算):
+   *   occMedian      阈值 = 该职业该地区的官方中位工资(ON 工资档)
+   *   employerTenure 阈值量的是「在**这家**雇主连续全职干了多久」(MB SWM),
+   *                  **不是**本站问的同职业总经验 —— 见下面 experience 分支的口径隔离
+   */
   basis: string
   label: string                  // 官方原文
   section: string                // 官方节号
@@ -140,6 +153,12 @@ export type RuleVerdict = 'pass' | 'fail' | 'unknown'
 export type RuleResult = {
   factor: string
   subject: ReqSubject
+  /**
+   * 阈值口径(原样带出 Requirement.basis;多数行为空)。消费端**必须**看这一格:
+   * 同一个 factor='experience',basis='employerTenure' 量的是「在这家雇主干了多久」,
+   * 拿「N 个月技术工作经验(境内外都算)」那套话术去讲它,句子本身就是假的。
+   */
+  basis?: string
   verdict: RuleVerdict
   need: number | null              // 官方阈值
   needLow: number | null           // 同一因素有两档时的低档(如收入表大温 / BC 其余)
@@ -234,7 +253,23 @@ export function evaluateRequirements(reqs: Requirement[], p: RuleProfile): RuleR
   //    分 TEER 的经验门槛按 TEER 挑行(PE:Skilled Worker 通道 24 个月只对 TEER 0-3 —— TEER 4/5 的
   //    Critical Worker 官方给了「2 年经验**或**相关学历」的替代路径,当硬门槛会误判)。
   //    不分 TEER 的行(BC/ON/AB/SK/NS)teerHit 恒真,行为不变。
-  const exp = of('experience').filter((r) => teerHit(r, p.teer))[0]
+  const expRows = of('experience').filter((r) => teerHit(r, p.teer))
+  // 口径隔离(2026-08-04):basis='employerTenure' 的行量的是「在这家雇主连续全职多久」(MB SWM
+  // 6 个月 / 外省毕业 1 年),**不是**本站问的同职业总经验。拿总经验去判它,「海外干过 5 年」会被
+  // 判成达标 —— 那是假话;判 fail 也是假话(本站根本没问过在职时长)。所以这类行**只摆门槛不判定**,
+  // 而且必须摆:那句话正是「外省毕业生怎么走曼省」的答案,藏起来等于告诉用户曼省没这条路。
+  const tenure = expRows.filter((r) => r.basis === 'employerTenure' && r.value != null)
+    .sort((a, b) => (a.value as number) - (b.value as number))
+  if (tenure.length) {
+    out.push({
+      factor: 'experience', subject: 'applicant', basis: 'employerTenure', verdict: 'unknown',
+      need: tenure[0].value, needLow: null, have: null, short: null, unit: tenure[0].unit,
+      // 两档并列(一般 6 个月 / 外省毕业 1 年):档名用 appliesCondition,每档挂**自己那一行**的原文
+      ...(tenure.length > 1 ? { tiers: tenure.map((r) => ({ area: r.appliesCondition || '', value: r.value })) } : {}),
+      evidence: ev(tenure[0]),
+    })
+  }
+  const exp = expRows.filter((r) => r.basis !== 'employerTenure')[0]
   if (exp && exp.value != null) {
     const answered = [p.totalExpMonths, p.canadianExpMonths].filter((v): v is number => v != null)
     const have = answered.length ? Math.max(...answered) : null
