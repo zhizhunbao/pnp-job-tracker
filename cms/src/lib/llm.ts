@@ -44,12 +44,15 @@ async function friendStream(messages: ChatMessage[]): Promise<ReadableStream<Uin
 // ── 非流式整段补全(E11-07 简历解析用:一次调用抽结构化 JSON,不需要流)──
 // opts.provider = 按调用点定向通道(2026-08-03 Frank「简历对照不用 Haiku 用朋友的大模型」:
 // resume-match 传 'friend';不传照旧走全局 LLM_PROVIDER,其他调用点零影响)
-export async function completeText(messages: ChatMessage[], opts: { maxTokens: number; provider?: 'friend' | 'anthropic' | 'ollama' }): Promise<string> {
+// opts.onMeta = 把后端的元信息(目前只有 friend 的 cached)回传给调用方打日志——
+// 上游缓存串答类事故只能靠 cached 发现,不透出来下次还得靠人肉撞见(2026-08-04 事故)。
+export async function completeText(messages: ChatMessage[], opts: { maxTokens: number; provider?: 'friend' | 'anthropic' | 'ollama'; onMeta?: (m: { cached: boolean }) => void }): Promise<string> {
   const prov = opts.provider || PROVIDER
   if (prov === 'friend') {
     const { system, prompt } = friendMsgSplit(messages)
     const r = await friendChat({ prompt, system, timeoutMs: 90_000 })
     if (!r) throw new LlmError('无法连接本地模型服务,请稍后再试。')
+    opts.onMeta?.({ cached: r.cached })
     return r.answer
   }
   if (prov === 'anthropic') {

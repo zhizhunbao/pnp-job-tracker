@@ -58,7 +58,11 @@ async function generate(pool: any, row: { id: number; description: string; emplo
   const term = out.match(/\[TERM\]=\s*(\w+)/)?.[1]?.toLowerCase()
   const hrs = out.match(/\[HRS\]=\s*(\w+)/)?.[1]?.toLowerCase()
   out = out.replace(/\[(TERM|HRS)\]=[^\n]*/g, '').trim()
-  if (!validate(out, src)) return null
+  const ok = validate(out, src)
+  // cached=上游命中它自己的缓存(2026-08-04 串答事故后透出):同一岗重复生成时 true 是正常复用,
+  // **不同岗却一直 true** 就是缓存键又出问题了,别再靠人肉发现。
+  console.log(`[jdformat] job=${row.id} src=${src.length}ch cached=${r.cached} valid=${ok}`)
+  if (!ok) return null
   out = scrubPii(out)
   await pool.query('UPDATE jobs SET jd_formatted = $1, jd_formatted_at = now() WHERE id = $2', [out, row.id])
   // 顺带补缺失的职位类型字段(只补空,不覆盖官方标注)

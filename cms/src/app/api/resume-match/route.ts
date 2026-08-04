@@ -57,12 +57,14 @@ export async function POST(req: Request) {
   // 中文消息塞进 error 字段,前端匹配不上还泄内部话术)
   const dbg = String((user as any).email || '').endsWith('@test.local')
   let text: string
+  let llmCached = false   // 上游缓存命中标记:串答事故(2026-08-04)只能靠它发现,必须进日志
   try {
     // 通道定向 friend(2026-08-03 Frank「不用 Haiku 用朋友的大模型」):挂了就报 rm.err,不静默切云烧钱。
     // ⚠️ 朋友服务 prompt 上限 6000 字符(实测 400「prompt too long」;system 不占额)——
     // CLAMP 8000 是给云通道的,这里必须按 6000 预算切:JD 2800 + 简历 3100 + 标签 23 ≈ 5.9k。
     // Frank 真简历实测就是这么撞的:小输入全通、真简历+真 JD 一合计秒 400。
-    text = await completeText(matchPrompt(jd.slice(0, 2800), resume.slice(0, 3100), lang, pro), { maxTokens: pro ? 1600 : 900, provider: 'friend' })
+    text = await completeText(matchPrompt(jd.slice(0, 2800), resume.slice(0, 3100), lang, pro),
+      { maxTokens: pro ? 1600 : 900, provider: 'friend', onMeta: (m) => { llmCached = m.cached } })
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)
     console.log(`[resume-match] llm fail user=${(user as any).id}: ${msg.slice(0, 200)}`)
@@ -71,7 +73,7 @@ export async function POST(req: Request) {
   const parsed = parseLlmJson(text)
   const rows = normalizeRows(parsed)
   if (!rows) {
-    console.log(`[resume-match] parse fail user=${(user as any).id} jd=${jd.length}ch resume=${resume.length}ch raw=${text.slice(0, 200)}`)
+    console.log(`[resume-match] parse fail user=${(user as any).id} jd=${jd.length}ch resume=${resume.length}ch cached=${llmCached} raw=${text.slice(0, 200)}`)
     return Response.json({ error: 'parse', ...(dbg ? { detail: text.slice(0, 300) } : {}) }, { status: 502 })
   }
 
@@ -98,7 +100,7 @@ export async function POST(req: Request) {
 
   const gated = gateMatch(rows, pro)
   const rewrite = pro && typeof parsed?.rewrite === 'string' ? parsed.rewrite.trim().slice(0, 1200) : undefined
-  console.log(`[resume-match] ok user=${(user as any).id} rows=${rows.length} pro=${pro} jd=${jd.length}ch resume=${resume.length}ch saved=${saved}`)
+  console.log(`[resume-match] ok user=${(user as any).id} rows=${rows.length} pro=${pro} jd=${jd.length}ch resume=${resume.length}ch cached=${llmCached} saved=${saved}`)
   return Response.json({
     ...gated, ...(rewrite ? { rewrite } : {}),
     left: pro ? null : Math.max(0, DAILY_FREE - used - 1),

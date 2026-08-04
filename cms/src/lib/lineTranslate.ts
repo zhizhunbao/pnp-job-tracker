@@ -8,9 +8,18 @@
  *     不构成错行风险(对位红线不破)。
  */
 
+import { contentTag } from './friendLlm'
+
 const BASE = (process.env.TRANSLATE_API_BASE || '').replace(/\/$/, '')
 const KEY = process.env.TRANSLATE_API_KEY || ''
 export const translateReady = () => !!(BASE && KEY)
+
+// 🔴 /api/translate 与 /api/chat 同坑:**上游按 text 的前 ~2000 字符做缓存键**(2026-08-04 实测,
+// 两段只有尾部不同的 2190 字符文本,第二段 cached=true 拿到第一段的译文)。额外字段(cache_key/nonce/
+// fingerprint)上游一律忽略——请求体是无类型 object,不进缓存键,实测无效。
+// 修法:在编号块**前面**加一行 `[ref:<内容指纹>]`。它落在 @0 必在窗口内;指纹**纯字母不含数字**,
+// parseNumbered 的 `\[(\d+)\]` 匹配不到它 → 整行落在 split 的 parts[0] 里被天然丢弃,**编号解析零改动**。
+const refLine = (text: string, lang: string) => `[ref:${contentTag(text + '|' + lang)}]\n${text}`
 
 const stripMd = (s: string) => s.replace(/\*\*(.+?)\*\*/g, '$1').replace(/^#+\s*/gm, '').replace(/\*\*/g, '')
 
@@ -41,7 +50,7 @@ export async function translateLinesAligned(lines: string[], lang: string, signa
         const resp = await fetch(`${BASE}/api/translate`, {
           method: 'POST', signal,
           headers: { 'Content-Type': 'application/json', 'X-API-Key': KEY },
-          body: JSON.stringify({ text: numbered, source_lang: 'en', target_lang: lang }),
+          body: JSON.stringify({ text: refLine(numbered, lang), source_lang: 'en', target_lang: lang }),
         })
         if (!resp.ok) throw new Error(`upstream ${resp.status}`)
         const m = parseNumbered(String((await resp.json()).translated_text || ''))

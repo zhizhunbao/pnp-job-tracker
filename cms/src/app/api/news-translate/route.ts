@@ -7,6 +7,7 @@
  */
 import { getPayload } from 'payload'
 import config from '@/payload.config'
+import { contentTag } from '@/lib/friendLlm'
 import { checkLimit, ipOf } from '@/lib/rateLimit'
 
 export const dynamic = 'force-dynamic'
@@ -57,7 +58,11 @@ export async function POST(req: Request) {
     if (used + p.length > BODY_CAP && paras.length) break
     paras.push(p); used += p.length
   }
+  // 🔴 上游按 text 前 ~2000 字符做缓存键(2026-08-04 实测),长稿只有尾段不同会串答;额外字段不进键。
+  // 修法同 lineTranslate:开头加一行 `[ref:<内容指纹>]`——纯字母不含数字,parseNumbered 的 `\[(\d+)\]`
+  // 匹配不到,整行落在 split 的 parts[0] 被丢弃,编号解析零改动(缺号拒收那条红线不动)。
   const numbered = paras.map((p, i) => `[${i + 1}] ${p}`).join('\n\n')
+  const payloadText = `[ref:${contentTag(`${numbered}|${lang}`)}]\n${numbered}`
 
   const ctl = new AbortController()
   const timer = setTimeout(() => ctl.abort(), 90_000)
@@ -65,7 +70,7 @@ export async function POST(req: Request) {
     const resp = await fetch(`${BASE}/api/translate`, {
       method: 'POST', signal: ctl.signal,
       headers: { 'Content-Type': 'application/json', 'X-API-Key': KEY },
-      body: JSON.stringify({ text: numbered, source_lang: 'en', target_lang: lang }),
+      body: JSON.stringify({ text: payloadText, source_lang: 'en', target_lang: lang }),
     })
     if (!resp.ok) throw new Error(`upstream ${resp.status}`)
     const out = String((await resp.json()).translated_text || '')
