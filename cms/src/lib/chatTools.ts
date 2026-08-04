@@ -70,17 +70,18 @@ const OPS_POLICY: Record<string, { published: boolean; url: string; note: string
   AB: {
     published: true,
     url: 'https://www.alberta.ca/aaip-processing-information',
-    note: 'AAIP 官方发逐 stream 配额/已发/剩余、积压游标与 **EOI 池内人数**(全国唯一发分母的省)。本站数据层已抓(etl/pnp/build_ab_stats.py → data/raw/pnp/ab-stats.json)但**尚未接 mart/入库**,所以这里给不出数 —— 数在官方页上,不是不存在',
+    note: 'AAIP 官方发逐 stream 配额/已发/剩余/待处理、积压游标(assessing_up_to,纯文本)与 **EOI 池内人数**(全国唯一发分母的省)。「Less than 10」「Not applicable」是官方的隐私抑制/不适用,本站存 value=null + 原文,不折成 0',
   },
   SK: {
     published: true,
     url: 'https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/sinp-processing-statistics',
-    note: 'SINP 官方发季度处理时长(80% 分位)与 Nominations YTD 日更。本站已抓 raw(build_sk_stats.py)未入库',
+    note: 'SINP 官方发季度处理时长(80% 分位)、分行业配额与 Nominations YTD。SK 只给统计期不给口径日 —— 看 period(如 2026Q2),asOf 恒空',
   },
   BC: {
+    // url 必须与 etl/pnp/build_bc_stats.py 抓的那一页一致(数字真正的来源页),别写导航别名
     published: true,
-    url: 'https://www.welcomebc.ca/immigrate-to-b-c/bc-provincial-nominee-program-invitations-to-apply',
-    note: 'BC PNP 官方发注册池按 SIRS 分数段的人数分布(三省分母里颗粒度最细)。本站已抓 raw(build_bc_stats.py)未入库',
+    url: 'https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply',
+    note: 'BC PNP 官方发 Skills Immigration 注册池按 SIRS 分数段的人数分布(三省分母里颗粒度最细),配合同页最近一轮最低邀请分即可读出自己压着多少人。「<5」为官方隐私抑制值,原样保留不猜',
   },
   MB: {
     published: false,
@@ -339,33 +340,58 @@ export async function lookupDraws(pool: any, args: { prov: string; limit?: numbe
 
 // ── ⑤ lookupOps:官方运营统计(处理时长 / 配额 / 池内人数 / 池分布)────────────────
 
-export type OpsMetric = { key: string; label: string; value: number; unit: string; asOf: string; evidence: Evidence }
+export type OpsMetric = {
+  key: string            // metric 词表:allocation/issued/remaining/to_process/assessing_up_to/eoi_pool(_total)/processing_weeks/nominations_ytd/capped_pct/capped_spots/priority_sector/sirs_pool
+  scope: string          // 适用范围值(通道名 / 行业 / SIRS 分数段;省级为空串)
+  scopeKind: string      // stream / sector / category / scoreRange(省级为空串)—— 说明 scope 是哪一类
+  label: string          // 官方原文
+  /**
+   * 🔴 可空是本字段的立身之本(建表 SQL 同款红线):官方的**隐私抑制值**(AB「Less than 10」)
+   * 与「本项不适用」(Not applicable)、纯文本游标(assessing_up_to 恒 null)一律 value=null,
+   * 原文进 valueText。**null 不是 0** —— 折成 0 就是替官方编了个数字,报告会说出「已发 0」这种假话。
+   * 本层绝不用 `?? 0` 兜底;调用方看到 null 就该念 valueText,不许自己填数。
+   */
+  value: number | null
+  valueText: string      // value=null 时的官方原文("Less than 10" / "Not applicable" / "May 8, 2026 …")
+  unit: string           // people / weeks / nominations / percent / spots / text / flag
+  asOf: string           // 官方口径日(AB/BC 有);SK 没有,看 period
+  period: string         // 统计期(SK 用 "2026Q2";AB/BC 为空)
+  evidence: Evidence
+}
 export type OpsResult = {
   province: string
   availability: Availability
-  officialUrl: string    // 官方页:本站给不出数时,至少把用户送到能看到数的地方
+  officialUrl: string    // 官方页:优先取查到的行自己的 url(出处必须指向数字真正的来源页),查不到才回落常量表
   note: string
   metrics: OpsMetric[]   // 只在 availability='ok' 时非空;空数组**不表示"官方没有"**
 }
 
 /**
- * 「等多久 / 名额还剩多少 / 被捞概率」。
- * ⚠️ 2026-08-04 现状:AB/SK/BC 三省官方**确实公布**这些数(本站 raw 已抓),但三张表尚未接 mart/入库,
- * 所以本工具此刻对全部省份都给不出数字 —— availability 分开表达"官方不发"(MB/ON)与"本站未收录"(AB/SK/BC)。
- * 不查库:库里根本没有这几张表,查一次只是白跑一趟。数据入库后这里换成 SELECT。
+ * 「等多久 / 名额还剩多少 / 被捞概率」= SELECT pnp_ops_stats(G5,2026-08-04 起真查库)。
+ * availability 按**查到的行**说话:有行=ok;没行但官方公布(AB/SK/BC)=not-collected(本站未收录,不是「没有」);
+ * 官方不公布(MB/ON)=not-published;QC 不走这套体系=not-applicable。
  */
-export function lookupOps(args: { prov: string }): OpsResult {
+export async function lookupOps(pool: any, args: { prov: string }): Promise<OpsResult> {
   const province = upper(args.prov)
   const p = OPS_POLICY[province]
-  if (!p) {
-    return { province, availability: 'not-collected', officialUrl: '', note: `本站未核实 ${province} 是否公布运营统计`, metrics: [] }
-  }
-  if (province === 'QC') return { province, availability: 'not-applicable', officialUrl: p.url, note: p.note, metrics: [] }
+  const { rows } = await pool.query(
+    `SELECT metric, scope, scope_kind, label, value, value_text, unit, as_of, period, url, fetched, section
+     FROM pnp_ops_stats WHERE province = $1 AND COALESCE(url,'') <> ''
+     ORDER BY metric, seq, scope`, [province],
+  ).catch(() => ({ rows: [] }))
+  const metrics: OpsMetric[] = (rows ?? []).map((r: any) => ({
+    key: r.metric ?? '', scope: r.scope ?? '', scopeKind: r.scope_kind ?? '', label: r.label ?? '',
+    value: r.value == null ? null : numOf(r.value),   // 🔴 null 原样带出,永远不 `?? 0`
+    valueText: r.value_text ?? '', unit: r.unit ?? '', asOf: r.as_of ?? '', period: r.period ?? '',
+    evidence: { url: r.url, fetched: r.fetched ?? '', label: r.label ?? '', ...(r.section ? { section: r.section } : {}) },
+  }))
+  const officialUrl = metrics[0]?.evidence.url || p?.url || ''
+  if (metrics.length) return { province, availability: 'ok', officialUrl, note: p?.note ?? '', metrics }
+  if (province === 'QC') return { province, availability: 'not-applicable', officialUrl, note: p!.note, metrics: [] }
+  if (p && !p.published) return { province, availability: 'not-published', officialUrl, note: p.note, metrics: [] }
   return {
-    province,
-    availability: p.published ? 'not-collected' : 'not-published',
-    officialUrl: p.url,
-    note: p.note,
+    province, availability: 'not-collected', officialUrl,
+    note: p ? `${p.note};但本站库里此刻一行都没有 —— 是本站未收录,不是官方没有` : `本站未核实 ${province} 是否公布运营统计`,
     metrics: [],
   }
 }
@@ -472,7 +498,7 @@ export async function checkClaims(pool: any, args: { noc: string; teer?: number 
       facts = d
       why = d.note ?? ''
     } else if (claim.topic === 'ops') {
-      const o = lookupOps({ prov })
+      const o = await lookupOps(pool, { prov })
       availability = o.availability
       facts = o
       why = o.note

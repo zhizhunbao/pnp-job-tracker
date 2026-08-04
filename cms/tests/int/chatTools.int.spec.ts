@@ -168,20 +168,113 @@ d('对话工具层(生产库只读)', () => {
       expect(r.note).toMatch(/未收录/)
     })
 
-    it('运营统计:AB 官方发了但本站未入库 → not-collected + 官方页;MB 官方不发 → not-published', () => {
-      const ab = lookupOps({ prov: 'AB' })
-      expect(ab.availability).toBe('not-collected')
-      expect(ab.metrics).toHaveLength(0)               // 给不出数就一个数都不给(宁缺不猜)
+    // 2026-08-04(G5 入库后)改写:AB 已有 52 行 → 不再是 not-collected。三态断言留在下面 lookupOps 专组。
+    it('运营统计:AB 已入库 → ok + 官方页;MB 官方不发 → not-published', async () => {
+      const ab = await lookupOps(pool, { prov: 'AB' })
+      expect(ab.availability).toBe('ok')
+      expect(ab.metrics.length).toBeGreaterThan(0)
       expect(ab.officialUrl).toMatch(/alberta\.ca/)
-      const mb = lookupOps({ prov: 'MB' })
+      const mb = await lookupOps(pool, { prov: 'MB' })
       expect(mb.availability).toBe('not-published')
-      const qc = lookupOps({ prov: 'QC' })
+      const qc = await lookupOps(pool, { prov: 'QC' })
       expect(qc.availability).toBe('not-applicable')
     })
 
     it('QC 清单 → not-applicable(自有体系,不属 PNP)', async () => {
       const r = await lookupCoverage(pool, { noc: DEV, provs: ['QC'] })
       expect(r.provinces[0].availability).toBe('not-applicable')
+    })
+  })
+
+  // ── ⑤ lookupOps 真查库(G5,2026-08-04 pnp_ops_stats 入库 93 行)──────────────
+  // 这张表存在的全部目的:让「0 / 官方压了这个数 / 本站没收录 / 官方不公布」四件事分得开。
+  describe('运营统计 lookupOps(pnp_ops_stats)', () => {
+    it('金标 AB:EOI 池 Alberta Opportunity Stream = 23056,带出处', async () => {
+      const r = await lookupOps(pool, { prov: 'AB' })
+      expect(r.availability).toBe('ok')
+      const aos = r.metrics.find((m) => m.key === 'eoi_pool' && m.scope === 'Alberta Opportunity Stream')!
+      expect(aos, 'AB EOI 池里没有 Alberta Opportunity Stream 这一行').toBeTruthy()
+      expect(aos.value).toBe(23056)
+      expect(aos.unit).toBe('people')
+      expect(aos.scopeKind).toBe('stream')
+      expect(aos.evidence.url).toBeTruthy()
+      expect(r.officialUrl).toBe(aos.evidence.url)      // 出处指向数字真正的来源页,不是常量表里的别名
+      // 省级总数与逐 stream 分母同时在(AAIP 是全国唯一发分母的省)
+      expect(r.metrics.find((m) => m.key === 'eoi_pool_total')?.value).toBe(36948)
+      assertEvidence(r)
+    })
+
+    it('金标 SK:省级配额 4761 / YTD 提名 2628,统计期 2026Q2(SK 无 as_of)', async () => {
+      const r = await lookupOps(pool, { prov: 'SK' })
+      expect(r.availability).toBe('ok')
+      const prov = (key: string) => r.metrics.find((m) => m.key === key && m.scope === '')!
+      expect(prov('allocation').value).toBe(4761)
+      expect(prov('allocation').unit).toBe('spots')
+      expect(prov('nominations_ytd').value).toBe(2628)
+      expect(prov('nominations_ytd').unit).toBe('nominations')
+      for (const k of ['allocation', 'nominations_ytd']) {
+        expect(prov(k).period, k).toBe('2026Q2')
+        expect(prov(k).asOf, `${k}:SK 官方不给口径日,asOf 必须留空而不是编一个`).toBe('')
+        expect(prov(k).evidence.url, k).toBeTruthy()
+      }
+      // 处理时长按 category 分行(「等多久」的答案就在这)
+      expect(r.metrics.filter((m) => m.key === 'processing_weeks').length).toBeGreaterThan(0)
+      assertEvidence(r)
+    })
+
+    it('金标 BC:SIRS 注册池 11 个分数段齐全,每档带出处与口径日', async () => {
+      const r = await lookupOps(pool, { prov: 'BC' })
+      expect(r.availability).toBe('ok')
+      const pool11 = r.metrics.filter((m) => m.key === 'sirs_pool')
+      expect(pool11).toHaveLength(11)
+      expect(pool11.every((m) => m.scopeKind === 'scoreRange' && m.scope !== '')).toBe(true)
+      expect(pool11.every((m) => !!m.evidence.url && !!m.asOf)).toBe(true)
+      expect(pool11.find((m) => m.scope === '100 - 109')?.value).toBe(1728)
+      // 官方页别名坑:出处必须是 ETL 实抓的那一页(about-the-…/invitations-to-apply)
+      expect(r.officialUrl).toMatch(/welcomebc\.ca\/.*invitations-to-apply/)
+      assertEvidence(r)
+    })
+
+    it('🔴 红线:value=null 必须配官方原文;全表不许拿 0 冒充「官方压了这个数」', async () => {
+      const all = (await Promise.all(['AB', 'SK', 'BC'].map((p) => lookupOps(pool, { prov: p })))).flatMap((r) => r.metrics)
+      expect(all.length).toBeGreaterThan(80)
+      const suppressed = all.filter((m) => m.value === null)
+      expect(suppressed.length, '一行 null 都没有 = 抑制值多半被折成了数字,先查 ETL').toBeGreaterThan(0)
+      for (const m of suppressed) {
+        expect(m.valueText, `${m.key}/${m.scope} 是 null 却没有官方原文,等于什么都没说`).toBeTruthy()
+      }
+      // 0 是「真的一个都没有」,不是「官方没给」——本表里目前一个 0 都不该出现
+      const zeros = all.filter((m) => m.value === 0)
+      expect(zeros, `疑似把抑制值折成了 0:${JSON.stringify(zeros).slice(0, 300)}`).toHaveLength(0)
+      // assessing_up_to 是纯文本游标:恒 null + 原文,不许被读成数字
+      const cursor = all.filter((m) => m.key === 'assessing_up_to')
+      expect(cursor.length).toBeGreaterThan(0)
+      expect(cursor.every((m) => m.value === null && !!m.valueText && m.unit === 'text')).toBe(true)
+    })
+
+    it('三态:MB → not-published、QC → not-applicable,空 metrics 但必须说清为什么空', async () => {
+      const mb = await lookupOps(pool, { prov: 'MB' })
+      expect(mb.availability).toBe('not-published')
+      expect(mb.metrics).toHaveLength(0)
+      expect(mb.note).toBeTruthy()
+      expect(mb.note).toMatch(/不发|不公布/)
+      const qc = await lookupOps(pool, { prov: 'QC' })
+      expect(qc.availability).toBe('not-applicable')
+      expect(qc.metrics).toHaveLength(0)
+      expect(qc.note).toBeTruthy()
+      // 常量表里没有的省 = 本站未收录,绝不能说成「官方不公布」
+      const ns = await lookupOps(pool, { prov: 'NS' })
+      expect(ns.availability).toBe('not-collected')
+      expect(ns.metrics).toHaveLength(0)
+      expect(ns.note).toBeTruthy()
+    })
+
+    it('metrics 顺序稳定:同一次查询连查两遍必须一模一样', async () => {
+      const key = (r: { metrics: { key: string; scope: string }[] }) => r.metrics.map((m) => `${m.key}|${m.scope}`).join(',')
+      for (const p of ['AB', 'SK', 'BC']) {
+        const [a, b] = await Promise.all([lookupOps(pool, { prov: p }), lookupOps(pool, { prov: p })])
+        expect(key(a), p).toBe(key(b))
+      }
     })
   })
 
