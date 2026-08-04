@@ -12,8 +12,7 @@
 //   ④ 拿不到数 / 本省零在招 → 整卡不渲,不出空壳。
 import { useEffect, useRef, useState } from 'react'
 
-import { Button, UI } from '../../ui/primitives'
-import { track } from '@/lib/track'
+import { UI } from '../../ui/primitives'
 import type { TFn } from '../i18n'
 
 type Facts = {
@@ -74,17 +73,12 @@ export function OccReportCard({ noc, province, salaryAnnual, t }: { noc: string;
           <Row k={t('jd.rep.open', { prov: province })} v={String(here.n)} />
           <Row k={t('jd.rep.elig')} v={String(here.eligible)} />
           {facts.medianSalary != null && <Row k={t('jd.rep.med')} v={`$${Math.round(facts.medianSalary / 1000)}K`} />}
-          {/* 直接落报告态:卡上写的是「看报告」,落地却是两道题=说话不算数。
-              引擎不给目标省也算得出(按在招量取前两个省),缺的两题在报告里作缺口行请他补 */}
-          {/* 站内统一按钮(不是裸文字链),且**不带箭头**(2026-07-27 拍板:按钮上的箭头一律删) */}
-          {/* 锁行删了(2026-08-03 Frank「没有必要了」):与下面报告按钮同链接纯重复,
-              且「N 家雇主」是全国口径贴在本省数字旁读着打架;正经锁区在报告页(G3 打码版)。
+          {/* 锁行删了(2026-08-03 Frank「没有必要了」):与报告按钮同链接纯重复,
+              且「N 家雇主」是全国口径贴在本省数字旁读着打架。
               jd-lock-seen/click 随之退役,漏斗第 3 步只剩 rpt-lock-seen 一条真口径 */}
-          <div style={{ marginTop: 12 }}>
-            <span onClick={() => track('jd-report-open', { noc })}>
-              <Button kind="primary" href={`/plan/job?noc=${encodeURIComponent(noc)}&view=report`}>{t('jd.rep.go')}</Button>
-            </span>
-          </div>
+          {/* 「看报告」按钮(→ /plan/job?view=report,埋点 jd-report-open)2026-08-04 摘除:
+              答题卡功能摘入口、保留路由。这张卡剩下的是本岗行情事实(vs 中位 / 本省在招 / 可提名 /
+              全国中位年薪),自己就成立,所以卡本身保留 —— 只是不再往站外功能送人 */}
         </div>
       )}
     </div>

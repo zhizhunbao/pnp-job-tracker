@@ -764,9 +764,10 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   // 已登录未建档才去 /account 建档
   const toggleMatchView = () => {
     if (!plan.loggedIn) {
-      // 没答过的先去统一答题页(三问弹框已退役);答过的照旧弹登录
+      // 手里没有职业答案的先去 /account 建档(2026-08-04:原先送去 /plan/job 答题 —— 答题卡已摘入口,
+      // 而匹配吃的就是档案里的职业/目标省,建档是保留下来的那条路);有答案的照旧弹登录
       const saved = readQuiz()
-      if (!saved?.nocs?.length) { track('match-view-quiz'); window.location.href = '/plan/job'; return }
+      if (!saved?.nocs?.length) { track('match-view-quiz'); window.location.href = '/account'; return }
       setUpsell('login'); return
     }
     if (!plan.profileOk) { setWizard(true); return }   // E11-05②:未建档 → 开引导 wizard(原直跳 /account)

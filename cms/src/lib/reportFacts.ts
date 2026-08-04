@@ -132,7 +132,9 @@ export async function assembleReportFacts(pool: any, noc: string): Promise<Repor
        GROUP BY province`, [noc]),
     // 省抽选(FED=联邦轮次在引擎里走 EE 独立信号,这里不带);近 120 行足够覆盖各省近 6 次
     pool.query(
-      `SELECT province, draw_date, stream, score, invitations FROM pnp_draws
+      // scale=分制名(SIRS/WEOI/MPNP EOI):PnpDraws collection 自己写着「展示必须带 scale」——
+      // 各省分制互不相通,报告摆区间时要印进句子(2026-08-04)
+      `SELECT province, draw_date, stream, score, scale, invitations FROM pnp_draws
        WHERE score IS NOT NULL AND COALESCE(draw_date,'') <> '' AND province <> 'FED'
        ORDER BY draw_date DESC LIMIT 120`).catch(() => ({ rows: [] })),
     // 官方分值表整张取回(120 行级):换省对照节(L2-08)要按行匹档位,不只要省名 ——
@@ -192,7 +194,7 @@ export async function assembleReportFacts(pool: any, noc: string): Promise<Repor
       effective: r.effective ?? '', url: r.url ?? '', pageUrl: r.page_url ?? '', fetched: r.fetched ?? '',
     })),
     draws: draws.rows.map((r: any) => ({
-      province: r.province ?? '', drawDate: String(r.draw_date ?? ''), stream: r.stream ?? '', score: num(r.score), invitations: num(r.invitations),
+      province: r.province ?? '', drawDate: String(r.draw_date ?? ''), stream: r.stream ?? '', score: num(r.score), scale: r.scale ?? '', invitations: num(r.invitations),
     })),
     scoreFactors: factorRows,
     scoreProvinces: Array.from(new Set(factorRows.map((f) => f.province))),

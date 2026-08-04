@@ -49,7 +49,8 @@ const BTN: React.CSSProperties = { border: `1px solid ${UI.border}`, background:
 // · EE 分差 —— 只有这个职业**真在某个还在抽的 EE 类别**里才算得出。
 //   判据用免费层一定在的那条缺口行(rpt.g.noCrs = 「补个 CRS 就能算你与 X 类别的差距」);
 //   不在类别(eeNone)或类别停抽(eeStale)时它根本不会出现。
-// · 时间窗 —— 境外没有加拿大签证,拿档位造时间窗=编数(字段库里 pgwpBand 对 overseas 就不传)。
+// · 时间窗 —— 2026-08-04 整条撤掉:「窗口内还有 N 轮」是拿轮数冒充机会的假承诺(见 report.ts)。
+//   引擎不再产出它,这里也不能再拿它当钩子(说了做不到比不说更伤)。钩子只剩 EE 分差这一样。
 const eeLive = (r: Rpt): boolean => r.gaps.some((g) => g.key === 'rpt.g.noCrs')
 
 // 职业 chip:答题态常驻;报告态**没职业时**也出(空报告说「先选职业」却没有入口=死路,2026-07-31 实拍抓到)
@@ -180,16 +181,42 @@ function Sec({ title, children }: { title: string; children: React.ReactNode }) 
 
 // 结论按「用户会问的问题」分桶(只在显示层分,引擎照旧给一个数组):
 // prov=省份口径 / pay=薪资 / peer=相关职业;没登记的键一律归 prov,不丢行。
-const BUCKET: Record<string, 'prov' | 'pay' | 'peer' | 'emp'> = {
-  'rpt.j.sponsors': 'emp', 'rpt.j.sponsorsLmia': 'emp', 'rpt.j.noFee': 'emp',   // B2-2/2-3:同属「雇主」桶
+// 2026-08-04:兜底从 `?? 'prov'` 改成中性节 —— 先前**任何没登记的键都掉进「哪个省更有优势?」**,
+// 于是联邦 EE(rpt.c.eeNone)和加拿大经验(rpt.c.expOk)这些跟省份毫无关系的行挂在那个标题下面
+// (生产实拍)。代价是省份节的键必须**逐个登记**,漏一个就掉进「其他事实」——那是能一眼看出来的错,
+// 比现在这种「看着像在讲省份、其实驴唇不对马嘴」好排查。
+type Bucket = 'prov' | 'ee' | 'me' | 'pay' | 'peer' | 'emp' | 'other'
+const BUCKET: Record<string, Bucket> = {
+  // 省份口径(卡②):清单命中四态 / 择优 / 在招量 / 抽选线
+  'rpt.c.listedHit': 'prov', 'rpt.c.listedOpen': 'prov', 'rpt.c.listedOpenPart': 'prov',
+  'rpt.c.listedMiss': 'prov', 'rpt.c.partialMiss': 'prov', 'rpt.c.notExcluded': 'prov', 'rpt.c.excluded': 'prov',
+  'rpt.c.screenPass': 'prov', 'rpt.c.screenTeer': 'prov', 'rpt.c.uncovered': 'prov', 'rpt.c.qc': 'prov',
+  'rpt.c.pickNamed': 'prov', 'rpt.c.pickOfficial': 'prov', 'rpt.c.pickTie': 'prov', 'rpt.c.pickTieN': 'prov',
+  'rpt.c.scoreAbove': 'prov', 'rpt.c.scoreBelow': 'prov', 'rpt.c.scoreBand': 'prov',
+  'rpt.c.drawBand': 'prov', 'rpt.c.drawBandSys': 'prov',
+  // 省份口径(卡③ 选省份 / 卡① 找工作的省级在招)
+  'rpt.p.best': 'prov', 'rpt.p.bestAll': 'prov', 'rpt.p.second': 'prov', 'rpt.p.secondAll': 'prov',
+  'rpt.p.thinHit': 'prov', 'rpt.p.notExcluded': 'prov', 'rpt.p.screen': 'prov',
+  'rpt.p.easiest': 'prov', 'rpt.p.mostJobs': 'prov', 'rpt.p.rank': 'prov',
+  'rpt.j.open': 'prov', 'rpt.j.openNamed': 'prov', 'rpt.j.openAll': 'prov',
+  // 联邦 EE:独立信号,与省提名不是一回事 —— 自己一节
+  'rpt.c.ee': 'ee', 'rpt.c.eeAbove': 'ee', 'rpt.c.eeBelow': 'ee', 'rpt.c.eeNone': 'ee', 'rpt.c.eeStale': 'ee',
+  // 你的身份与资格:加拿大经验 / 注册认证 / PGWP 规则 / 读书还是直接工作
+  'rpt.c.expOk': 'me', 'rpt.c.regulated': 'me',
+  'rpt.c.pgwpLen': 'me', 'rpt.c.pgwpNone': 'me', 'rpt.c.pgwpCombine': 'me',
+  'rpt.c.pgwpLang': 'me', 'rpt.c.pgwpLangOk': 'me', 'rpt.c.pgwpLangShort': 'me',
+  'rpt.c.routeWindow': 'me', 'rpt.c.routeWindowShort': 'me', 'rpt.c.routeDelay': 'me',
+  // B2-2/2-3:同属「雇主」桶(feeFed 先前漏登记,靠兜底落进省份节)
+  'rpt.j.sponsors': 'emp', 'rpt.j.sponsorsLmia': 'emp', 'rpt.j.noFee': 'emp', 'rpt.j.feeFed': 'emp',
   'rpt.j.wageAbove': 'pay', 'rpt.j.wageBelow': 'pay', 'rpt.j.wageSame': 'pay', 'rpt.j.wageEsdc': 'pay',
-  'rpt.k.selfWage': 'pay', 'rpt.k.selfProv': 'pay', 'rpt.k.selfProvWage': 'pay', 'rpt.j.related': 'peer', 'rpt.k.peer': 'peer', 'rpt.k.alt': 'peer',
+  'rpt.k.self': 'pay', 'rpt.k.selfWage': 'pay', 'rpt.k.selfProv': 'pay', 'rpt.k.selfProvWage': 'pay',
+  'rpt.j.related': 'peer', 'rpt.k.peer': 'peer', 'rpt.k.alt': 'peer',
   // 2026-08-03 卡⑥ 撤锁后**才暴露**出来的漏网:peerGap 先前被付费闸摘掉,免费层从来没渲过它,
   // 于是它一直靠 `?? 'prov'` 的兜底落在「这个职业在哪个省更有优势?」下面 ——
   // 生产实拍:那个标题下面跟着「执业护士的中位年薪比你这行高 48%」,驴唇不对马嘴。
   'rpt.k.peerGap': 'peer',
 }
-const group = (ls: RptLine[], b: 'prov' | 'pay' | 'peer' | 'emp'): RptLine[] => ls.filter((l) => (BUCKET[l.key] ?? 'prov') === b)
+const group = (ls: RptLine[], b: Bucket): RptLine[] => ls.filter((l) => (BUCKET[l.key] ?? 'other') === b)
 
 export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'career' | 'prov' } = {}) {
   const hasExplore = (DECISIONS[decision]?.explore.length ?? 0) > 0
@@ -316,7 +343,6 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
   }, [view, ready])
 
   // 链接编号只算一次:正文的 [n] 与底部「依据与链接」是同一张表,不会对不上
-  const canWindow = bands.status !== 'overseas'   // 境外没有加拿大签证 → 时间窗算不出(见 fields.ts 的 pgwpBand)
   const refs = useMemo(
     () => (rpt && rpt !== 'loading' ? collectRefs(rpt, t) : { rows: [] as RefRow[], of: () => undefined as number | undefined }),
     [rpt, t])
@@ -479,10 +505,18 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                 {group(rpt.conclusions, 'prov').length > 0 && (
                   <Sec title={t('rpt.q.prov')}>{group(rpt.conclusions, 'prov').map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</Sec>
                 )}
+                {/* 联邦 EE 自成一节(2026-08-04):它跟省提名是两条独立的路,挂在省份标题下面读起来是串台 */}
+                {group(rpt.conclusions, 'ee').length > 0 && (
+                  <Sec title={t('rpt.q.ee')}>{group(rpt.conclusions, 'ee').map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</Sec>
+                )}
                 {/* 门槛对照(规则引擎):官方门槛 × 你的情况,一行一条,出处照旧收在底部「依据与链接」。
                     免费层已在服务端把「差多少」摘掉(gateReport),这里不做任何裁剪判断 */}
                 {rpt.requirements?.length > 0 && (
                   <Sec title={t('rpt.q.req')}>{rpt.requirements.map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</Sec>
+                )}
+                {/* 你的身份与资格:加拿大经验 / 注册认证 / PGWP 规则 / 读书还是直接工作 —— 跟着门槛对照走(都是「我这边」的事) */}
+                {group(rpt.conclusions, 'me').length > 0 && (
+                  <Sec title={t('rpt.q.me')}>{group(rpt.conclusions, 'me').map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</Sec>
                 )}
                 {/* 雇主线索(锁区正文,只有 Pro 拿得到):一行一家,全是可核验事实 ——
                     命中清单的在招岗数 / 地点 / ESDC LMIA 历史 / AIP 名单 / 最近发布。
@@ -554,6 +588,10 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                 )}
                 {group(rpt.conclusions, 'pay').length > 0 && (
                   <Sec title={t('rpt.q.pay')}>{group(rpt.conclusions, 'pay').map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</Sec>
+                )}
+                {/* 兜底节:没登记进任何桶的结论落这里,而不是被塞进省份节冒充「哪个省更有优势」的答案 */}
+                {group(rpt.conclusions, 'other').length > 0 && (
+                  <Sec title={t('rpt.q.other')}>{group(rpt.conclusions, 'other').map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</Sec>
                 )}
                 {rpt.gaps.length > 0 && (
                   <Sec title={t('rpt.q.gap')}>{rpt.gaps.map((l, i) => <Line key={l.key + i} l={l} t={t} />)}</Sec>
@@ -637,9 +675,9 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                     文案按**真能兑现的**说(2026-08-02 走查实见):这个职业不在任何 EE 类别时,
                     答完 CRS 也算不出「EE 分差」—— 承诺里就不能有它。境外没有加拿大签证,时间窗同理算不出,
                     两样都兑现不了就整条不挂(说了做不到比不说更伤)。 */}
-                {!rpt.pro && rpt.noc && hasExplore && (!bands.crsBand || !bands.pgwpBand) && (eeLive(rpt) || canWindow) && (
+                {!rpt.pro && rpt.noc && hasExplore && !bands.crsBand && eeLive(rpt) && (
                   <div className="noPrint" style={{ textAlign: 'center', fontSize: 12.5, color: UI.text2, margin: '10px 0 0' }}>
-                    {t(eeLive(rpt) ? (canWindow ? 'rpt.hook' : 'rpt.hook.ee') : 'rpt.hook.win')}
+                    {t('rpt.hook.ee')}
                     <button onClick={() => gotoQuiz('explore')} style={{ marginLeft: 8, border: 'none', background: 'none', color: UI.primary, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}>{t('rpt.hook.go')} →</button>
                   </div>
                 )}

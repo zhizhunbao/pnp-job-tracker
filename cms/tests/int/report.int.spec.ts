@@ -189,8 +189,12 @@ describe('抽选线红线:通道对不上不给差分', () => {
   })
 })
 
-describe('句式⑤ 时间窗 + EE 独立信号 + 经验门槛', () => {
-  it('签证 8 个月 × 近 4 次抽选 → window 带 rounds 与 n(样本数)', () => {
+describe('抽选节奏 + EE 独立信号 + 经验门槛', () => {
+  // 2026-08-04 改判(旧断言锁的是「句式⑤ 时间窗」):`floor(签证剩余月 × 30.4 / 平均间隔)` 把
+  // 「轮次多」当成「机会多」,是**假承诺** —— 轮次再多,不够线一轮也轮不上;而且那行在每个目标省的
+  // 循环里,「你的签证约剩 8 个月」会被重印 N 遍。旧断言逐字锁死了这个乘法,所以它跟着一起撤。
+  // 留下的是官方逐轮公布出来的那个**事实**:近 N 次平均几天一轮 —— 挂 drawBand 的行尾灰字。
+  it('抽选节奏只报事实:近 4 次平均 12 天一轮,不做「还赶得上几轮」的乘法', () => {
     const p = normalizeProfile({ currentStatus: 'working', clb: 8, targetProvinces: ['BC'], pgwpMonthsLeft: 8 })
     const r = buildPrReport(p, exp12, dims, facts({
       noc: '31301', title: 'RN', teer: 1, byProv: [{ province: 'BC', open: 17, named: 17 }],
@@ -201,9 +205,30 @@ describe('句式⑤ 时间窗 + EE 独立信号 + 经验门槛', () => {
         { province: 'BC', drawDate: '2026-06-16', stream: 'SW', score: 119 },
       ],
     }))
-    const w = r.conclusions.find((c) => c.key === 'rpt.c.window')!
-    expect(w.params).toMatchObject({ months: 8, days: 12, n: 4 })
-    expect(w.params.rounds).toBe(Math.floor((8 * 30.4) / 12))
+    expect(keys(r.conclusions)).not.toContain('rpt.c.window')
+    const band = r.conclusions.find((c) => c.key === 'rpt.c.drawBand')!
+    expect(band.tail).toMatchObject({ key: 'rpt.c.pace', params: { days: 12, n: 4 } })
+    // 整份报告不再复述签证剩余月数(它在省循环里被印 N 遍,且脱了乘法就是复读他自己的答案)
+    expect(JSON.stringify(r)).not.toContain('"months":8')
+  })
+
+  // 各省分制互不相通(AB=WEOI / MB=MPNP EOI 满分 1000 / BC=SIRS),裸并排看着像数据错乱
+  it('抽选区间带分制名;pnp_draws 没给 scale 就回退旧句式,不瞎标', () => {
+    const withScale = buildPrReport(base({ targetProvinces: ['AB'] }), exp12, dims, facts({
+      noc: '21232', title: 'SW dev', teer: 1, byProv: [{ province: 'AB', open: 1, named: 1 }],
+      draws: [
+        { province: 'AB', drawDate: '2026-07-21', stream: 'Alberta Opportunity Stream', score: 65, scale: 'WEOI' },
+        { province: 'AB', drawDate: '2026-07-07', stream: 'Rural Renewal Stream', score: 52, scale: 'WEOI' },
+      ],
+    }))
+    const sys = withScale.conclusions.find((c) => c.key === 'rpt.c.drawBandSys')!
+    expect(sys.params).toMatchObject({ prov: 'AB', lo: 52, hi: 65, n: 2, system: 'WEOI' })
+    const noScale = buildPrReport(base({ targetProvinces: ['AB'] }), exp12, dims, facts({
+      noc: '21232', title: 'SW dev', teer: 1, byProv: [{ province: 'AB', open: 1, named: 1 }],
+      draws: [{ province: 'AB', drawDate: '2026-07-21', stream: 'AOS', score: 65 }],
+    }))
+    expect(keys(noScale.conclusions)).toContain('rpt.c.drawBand')
+    expect(keys(noScale.conclusions)).not.toContain('rpt.c.drawBandSys')
   })
   it('EE:没 CRS → 类别线事实 + noCrs 缺口;有 CRS → 差分', () => {
     const noCrs = buildPrReport(base(), exp12, dims, facts({ noc: '21232', title: 'SW dev', teer: 1, byProv: [{ province: 'BC', open: 5, named: 0 }] }))
@@ -278,11 +303,14 @@ describe('gateReport 付费闸', () => {
 
   it('免费:结论只留前 2 条、备选清空、锁行按固定序去重', () => {
     const g = gateReport(full(), false)
-    // 这一例 19 开 18 具名 = 真·部分命中 → listedHitPart(全命中时不说「其中 N 个」,2026-08-01 口径)
-    expect(keys(g.conclusions)).toEqual(['rpt.c.listedHitPart', 'rpt.c.drawBand'])
+    // 2026-08-04 改判:旧断言里那一条 listedHitPart 把「官方清单收了这个职业」和「本站收录到几个岗」
+    // 焊在一句话里 —— 生产实读「已列入 AB 清单 —— 当地在招 1 岗」被理解成「AB 全省就 1 个这行的岗」。
+    // 拆成两句后免费层是三条:官方事实 + 本站在招口径(ALWAYS_FREE,职位板上白送的数)+ 抽选区间。
+    expect(keys(g.conclusions)).toEqual(['rpt.c.listedHit', 'rpt.c.listedOpenPart', 'rpt.c.drawBand'])
     expect(g.alternatives).toEqual([])
     // score 不在锁行里:报告算不出省估分(facts.scores 永远为空),锁一个算不出的东西=卖空气
-    expect(g.locked).toEqual(['window', 'alts', 'more'])
+    // window 锁行 2026-08-04 随「还赶得上几轮」一起退役(假承诺,见上面那组测试的改判说明)
+    expect(g.locked).toEqual(['alts', 'more'])
     expect(g.pro).toBe(false)
     // 缺口与下一步全给(钩子与引流不锁)
     expect(keys(g.gaps)).toContain('rpt.g.answerScore')
@@ -295,13 +323,16 @@ describe('gateReport 付费闸', () => {
     const r = buildPrReport(base({ targetProvinces: ['BC', 'SK', 'ON'] }), exp12, dims, facts({
       noc: '31301', title: 'Registered nurses', teer: 1,
       byProv: [{ province: 'BC', open: 19, named: 18 }, { province: 'SK', open: 6, named: 6 }, { province: 'ON', open: 88, named: 0 }],
-      draws: bcDraws,      // BC 有抽选 → 先前 listedHitPart + drawBand 两条就占满免费额度
+      draws: bcDraws,      // BC 有抽选 → 先前 listedHit + drawBand 两条就占满免费额度
     }))
     const g = gateReport(r, false)
     const provs = g.conclusions.map((c) => c.params.prov).filter(Boolean)
     for (const p of ['BC', 'SK', 'ON']) expect(provs).toContain(p)
-    // 保底的是各省**口径判定行**(库里查得到的官方事实);BC 的抽选区间照旧退进锁区,额度不是白涨的
-    expect(keys(g.conclusions)).toEqual(['rpt.c.listedHitPart', 'rpt.c.listedHit', 'rpt.c.screenPass'])
+    // 保底的是各省**口径判定行**(库里查得到的官方事实);BC 的抽选区间照旧退进锁区,额度不是白涨的。
+    // 头一条是择优行(2026-08-04):这一节的标题在问「哪个省更有优势」,总得有人回答它;
+    // 三个省官方口径打平时照实说打平,不硬排(判据只有库里查得到的官方事实)。
+    expect(keys(g.conclusions)).toEqual(['rpt.c.pickTie', 'rpt.c.listedHit', 'rpt.c.listedOpenPart',
+      'rpt.c.listedHit', 'rpt.c.listedOpen', 'rpt.c.screenPass'])
     expect(g.locked).toContain('more')
   })
 
@@ -359,7 +390,7 @@ describe('gateReport 付费闸', () => {
     const g = gateReport(full(), true)
     expect(g.pro).toBe(true)
     expect(g.locked).toEqual([])
-    expect(keys(g.conclusions)).toContain('rpt.c.window')
+    expect(keys(g.conclusions)).toContain('rpt.c.drawBand')   // 旧断言这里是 rpt.c.window(已随假承诺撤掉)
     expect(keys(g.alternatives)).toContain('rpt.a.prov')
     expect(g.lanes).toHaveLength(3)          // 三卡与卡点 Pro 也照出
     expect(g.hint?.key).toBe('rpt.hint.cert')

@@ -18,7 +18,9 @@ import type { OccStats } from './reportFacts'   // 纯类型(reportFacts 反向�
 // medianWage=该职业在该省的 ESDC 官方中位年薪(最低收入门槛的对照基准:岗位自带的事实,不问用户)
 // apprentice = 官方标「不要经验/带训」或学徒标题的在招岗数(B1-3,05e 清洗;undercount 安全:漏标只会少数)
 export type OccProvFacts = { province: string; open: number; named: number; apprentice?: number; medianWage?: number | null }
-export type ReportDraw = { province: string; drawDate: string; stream: string; score: number | null; invitations?: number | null }
+// scale = 该轮抽选用的**分制名**(pnp_draws.scale:BC=SIRS / AB=WEOI / MB=MPNP EOI)。
+// 各省分制互不相通(AB 52–65 与 MB 632–825 不是一把尺),摆区间必须带它,否则读起来像数据错乱。
+export type ReportDraw = { province: string; drawDate: string; stream: string; score: number | null; invitations?: number | null; scale?: string | null }
 // 抽选明细一行(行尾灰字点开看的):全是官方逐轮公布的字段,一个推断都不放
 export type DrawDetail = { date: string; stream: string; score: number | null; invitations: number | null }
 export type ReportFacts = {
@@ -401,9 +403,34 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
   }
 
   // 目标省;没选就按「命中具名清单岗多 → 在招多」取前 3(报告要有落点,不铺十省)
-  const targets = profile.targetProvinces.length
+  const picked = profile.targetProvinces.length
     ? profile.targetProvinces
     : [...facts.byProv].sort((a, b) => b.named - a.named || b.open - a.open).slice(0, 3).map((r) => r.province)
+  // 这一节的标题在问「哪个省更有优势」,就不能按用户勾选的原序平铺(2026-08-04 Frank 实读:零择优)。
+  // 排序键只用**官方口径**:命中具名清单 > 有官方分值表或近期抽选记录 > 在招量
+  //(在招量是本站收录口径,不是省级市场规模,只配当末位 tiebreak)。
+  const namedIn = (p: string) => dims.pnpOccupations.some((r) => r.province === p && r.noc === noc && r.type !== 'ineligible')
+  const officialIn = (p: string) => (facts.scoreProvinces ?? []).includes(p) || facts.draws.some((d) => d.province === p && d.score != null)
+  const provRank = (p: string) => (namedIn(p) ? 2 : 0) + (officialIn(p) ? 1 : 0)
+  const targets = [...picked].sort((a, b) => provRank(b) - provRank(a) || provFacts(b).open - provFacts(a).open)
+
+  // 节首一条结论:点名官方口径最靠前的省 + 凭什么。判据打平就照实说打平 —— 语言与分数不在库里,
+  // 本站不替他排(铁律:结论只能建立在库里查得到的官方事实上)。QC 走自己的体系,不参与比较。
+  // 参数用 top/alt 不用 prov:它是**跨省**结论,挂上 prov 会被付费闸当成某个省的保底行,把那省的口径判定挤进锁区。
+  const cmp = targets.filter((p) => provListCoverage(p, dims) !== 'qc')
+  if (cmp.length >= 2) {
+    const [top, alt] = cmp
+    const tied = cmp.filter((p) => provRank(p) === provRank(top)).length
+    if (tied > 2) {
+      // 打平的不止两个就不点名(点两个会让第三个看着像落后了),只说有几个打平
+      conclusions.push({ key: 'rpt.c.pickTieN', params: { n: tied }, verdict: 'na' })
+    } else if (provRank(top) === provRank(alt)) {
+      conclusions.push({ key: 'rpt.c.pickTie', params: { top, alt }, verdict: 'na' })
+    } else {
+      // 两句都只跟**并列第二**的那个省比,不说「只有它」——第三个省可能也有分值表,那样就成了假话
+      conclusions.push({ key: namedIn(top) && !namedIn(alt) ? 'rpt.c.pickNamed' : 'rpt.c.pickOfficial', params: { top, alt }, verdict: 'pass' })
+    }
+  }
 
   // ── 逐省:清单命中(四态)→ 抽选参考 → 估分对照 ──────────────────────────
   for (const prov of targets) {
@@ -418,15 +445,25 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
       continue
     }
     if (named) {
-      // 清单收的是**职业**不是岗位:该职业在清单上,该省这个职业的在招岗自然全都算 ——
-      // 所以「在招 12 岗,其中 12 个是清单岗」是句废话(2026-08-01 Frank 点名「就一个职位,怎么叫全部」)。
-      // 只有 named < open(如 ON 的 GTA 限制岗、AIP 与 PNP 分路)才值得说 N/M。
+      // 清单命中是**官方事实**,与本站收录到几个岗是两件事 —— 2026-08-04 Frank 实读:
+      // 「已列入 AB 清单 —— 当地在招 1 岗」被读成「AB 全省就这一个岗」。句尾不再挂在招数。
       conclusions.push({
-        key: f.named < f.open ? 'rpt.c.listedHitPart' : 'rpt.c.listedHit',
+        key: 'rpt.c.listedHit',
         params: { prov, noc, label: named.label, open: f.open, named: f.named },
         verdict: 'pass', source: { label: named.label, url: named.url, fetched: named.fetched },
       })
-      if (f.open > 0) nextSteps.push({ key: 'rpt.n.jobs', params: { prov, n: f.open }, url: `/?prov=${prov}&q=${noc}` })
+      // 在招量另起一句,且写明是**本站当前收录**的口径(不是省级市场规模)。
+      // 0 在招时整句一个字都不出(缺口里那条 rpt.g.zeroJobs 顶上),但上面那条清单命中照旧留着 ——
+      // 它是官方事实,不该因为岗位数是 0 就被丢掉。
+      // 清单收的是**职业**不是岗位:全命中时不说「其中 N 个」(2026-08-01 Frank 点名「就一个职位,怎么叫全部」),
+      // 只有 0 < named < open(如 ON 的 GTA 限制岗、AIP 与 PNP 分路)才值得说 N/M。
+      if (f.open > 0) {
+        conclusions.push({
+          key: f.named > 0 && f.named < f.open ? 'rpt.c.listedOpenPart' : 'rpt.c.listedOpen',
+          params: { prov, open: f.open, named: f.named }, verdict: 'na',
+        })
+        nextSteps.push({ key: 'rpt.n.jobs', params: { prov, n: f.open }, url: `/?prov=${prov}&q=${noc}` })
+      }
     } else if (excluded) {
       conclusions.push({
         key: 'rpt.c.excluded', params: { prov, noc, label: excluded.label },
@@ -495,7 +532,25 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
           })
         }
       } else {
-        conclusions.push({ key: 'rpt.c.drawBand', params: { prov, lo, hi, n: recent.length }, verdict: 'na' })
+        // 分制名必须印进句子(2026-08-04 Frank 实读):AB 的 52–65 是 WEOI 分、MB 的 632–825 是 1000 分制的
+        // MPNP EOI 分,两行并排看着像数据错乱。取不到 scale(或一省混着几套分制)就回退旧句式,不瞎标。
+        // 现有那句「(按通道各异)」说的是通道不是分制,两者分开说。
+        const scales = new Set(recent.map((d) => d.scale).filter(Boolean))
+        const system = scales.size === 1 ? String([...scales][0]) : ''
+        // 抽选节奏(近 N 次平均几天一轮)是官方逐轮公布的事实 → 挂行尾灰字。
+        // **不再做「窗口内还有 N 轮」那个乘法**(2026-08-04 撤):它把「轮次多」当成「机会多」,是假承诺;
+        // 而且它在每个目标省的循环里,「你的签证约剩 N 个月」会被重印一遍又一遍。
+        // 按**不同的抽选日**算,不按轮次:ON 同一天并排发好几轮定向抽选,按轮次算出来是「平均 1 天一轮」,
+        // 那跟「还赶得上 N 轮」是同一种误导(2026-08-04 生产实测撞到)。
+        const days = [...new Set(recent.map((d) => d.drawDate.slice(0, 10)))].sort()
+        const pace = days.length >= 2
+          ? Math.round((Date.parse(days[days.length - 1]) - Date.parse(days[0])) / 86_400_000 / (days.length - 1))
+          : 0
+        conclusions.push({
+          key: system ? 'rpt.c.drawBandSys' : 'rpt.c.drawBand',
+          params: { prov, lo, hi, n: recent.length, ...(system ? { system } : {}) }, verdict: 'na',
+          ...(pace > 0 ? { tail: { key: 'rpt.c.pace', params: { days: pace, n: days.length } } } : {}),
+        })
         // 「答几道打分题就能算出差多少」只在**真还没算**时说(2026-08-02 实读发现口不对心):
         // 题库扩充后学历/年龄/语言/总经验都问过了,换省对照已经在拿它们算这个省的下界分 ——
         // 这时再劝他「去答打分题」,他刚答完,等于我们没记住他说过的话。
@@ -507,16 +562,8 @@ export function buildPrReport(profile: MatchProfile, extra: ReportExtra, dims: M
           nextSteps.push({ key: 'rpt.n.score', params: { prov }, url: '/pathways' })
         }
       }
-      // 句式⑤:签证窗口 × 抽选节奏 —— 近 N 次平均间隔,能赶上约几轮(样本小就说小:params 带 n)
-      if (profile.pgwpMonthsLeft != null && recent.length >= 2) {
-        const first = Date.parse(recent[0].drawDate)
-        const last = Date.parse(recent[recent.length - 1].drawDate)
-        const gapDays = Math.round((first - last) / 86_400_000 / (recent.length - 1))
-        if (gapDays > 0) {
-          const rounds = Math.floor((profile.pgwpMonthsLeft * 30.4) / gapDays)
-          conclusions.push({ key: 'rpt.c.window', params: { months: profile.pgwpMonthsLeft, days: gapDays, rounds, n: recent.length }, verdict: 'warn' })
-        }
-      }
+      // 句式⑤(签证窗口 × 抽选节奏 = 还赶得上 N 轮)2026-08-04 整条撤掉,理由见上面 pace 处的注释。
+      // 抽选节奏那个**事实**留在 drawBand 的行尾灰字里;签证剩余月数不再由本引擎复述。
     } else if (facts.scoreProvinces && !facts.scoreProvinces.includes(prov) && cov !== 'uncovered') {
       // 该省不公布算分/无逐次线数据 → 明说只给规则对照(L2-01 ②缺口:confidence 低,不硬编分差)
       gaps.push({ key: 'rpt.g.noScoreTable', params: { prov }, verdict: 'na' })
@@ -1042,7 +1089,7 @@ export type GatedReport = Report & { lanes: ReportLane[]; hint?: ReportLine; loc
 
 const FREE_CONCLUSIONS = 2      // 免费结论的**下限**(单省时=清单命中 + 抽选区间,正是 v2c 免费两条);多省按「每省保底一条」上浮
 const LANE_PROV: Record<string, string> = {
-  'rpt.c.listedHit': 'rpt.lane.prov.hit', 'rpt.c.listedHitPart': 'rpt.lane.prov.hit', 'rpt.c.listedMiss': 'rpt.lane.prov.miss',
+  'rpt.c.listedHit': 'rpt.lane.prov.hit', 'rpt.c.listedMiss': 'rpt.lane.prov.miss',
   'rpt.c.partialMiss': 'rpt.lane.prov.partial', 'rpt.c.notExcluded': 'rpt.lane.prov.hit',
   'rpt.p.thinHit': 'rpt.lane.prov.hit', 'rpt.p.mostJobs': 'rpt.lane.prov.jobs',
   'rpt.c.excluded': 'rpt.lane.prov.excluded', 'rpt.c.screenPass': 'rpt.lane.prov.screen',
@@ -1060,7 +1107,8 @@ const LANE_EE: Record<string, string> = {
 // 该卖的是答题(hook)不是锁区。
 const LOCK_CAT: Record<string, string> = {
   'rpt.c.scoreAbove': 'score', 'rpt.c.scoreBelow': 'score', 'rpt.c.scoreBand': 'score',
-  'rpt.c.window': 'window', 'rpt.c.eeAbove': 'ee', 'rpt.c.eeBelow': 'ee',
+  // 'rpt.c.window' 2026-08-04 随「还赶得上 N 轮」一起撤(假承诺),锁行 window 也跟着退役
+  'rpt.c.eeAbove': 'ee', 'rpt.c.eeBelow': 'ee',
   // 卡⑥跃迁排序要用他的职业做基准才算得出来 → 锁区(自由查得到的在招量与中位薪资照旧免费)。
   // **「有 N 家雇主发过清单岗」这句留在免费层**(2026-08-01 做雇主线索时改):
   // 它是这张卡最像 aha 的一句,把它也锁掉等于免费层什么都没有;锁的是**名单本体**(employers),
@@ -1069,7 +1117,7 @@ const LOCK_CAT: Record<string, string> = {
   // G2 路线账(2026-08-03):「两条路一张账」是拿他的答案算出来的结论 → 锁区,给专属锁行(不落 more 桶)
   'rpt.c.routeWindow': 'route', 'rpt.c.routeWindowShort': 'route', 'rpt.c.routeDelay': 'route',
 }
-const LOCK_ORDER = ['req', 'score', 'window', 'route', 'alts', 'ee', 'sponsors', 'move', 'rank', 'more']   // 锁行固定序(有序去重)
+const LOCK_ORDER = ['req', 'score', 'route', 'alts', 'ee', 'sponsors', 'move', 'rank', 'more']   // 锁行固定序(有序去重)
 // 门槛对照的免费/付费界线(设计 §6):免费=门槛是多少 + 达标/不达标的判定(官方事实,库里查得到);
 // 付费=**差多少**、按什么顺序补。所以免费层把带差值的那条换成不带差值的同义句,`short` 根本不下发。
 const REQ_FREE: Record<string, string> = {
@@ -1080,7 +1128,12 @@ const REQ_FREE: Record<string, string> = {
 // 免费层必留的结论(不受「免费两条」截断):停抽的 EE 类别 —— 劝退的话不该收费;
 // PGWP 六行(B1-4)—— 免费探索题承诺的解锁,被「其余 N 条」桶吃掉=答了题什么都没多看到
 //(2026-08-03 生产实撞:引擎算出来了,免费响应里 moreN+3 却一行不见);且口径就是规则+一次查表,算术不收钱(卡⑥教训)
+// 择优行(rpt.c.pick*)同样必留:它是这一节的**标题问句的答案**(「哪个省更有优势」),
+// 而且只由已经免费下发的官方事实推出来 —— 锁掉它,免费层就退回 2026-08-04 之前那种「零择优的平铺」。
+// 在招量(rpt.c.listedOpen*)也必留:同一个数**免费的职位板上就摆着**,下一步那行还写着「看 BC 这 19 个在招岗」——
+// 把它关进锁区就是卖我们同时在白送的东西,而且报告会自相矛盾(下一步指着一个上面不肯说的数)。
 const ALWAYS_FREE = new Set(['rpt.c.eeStale', 'rpt.j.sponsors', 'rpt.j.sponsorsLmia', 'rpt.j.noFee', 'rpt.j.feeFed',
+  'rpt.c.pickNamed', 'rpt.c.pickOfficial', 'rpt.c.pickTie', 'rpt.c.pickTieN', 'rpt.c.listedOpen', 'rpt.c.listedOpenPart',
   'rpt.c.pgwpLen', 'rpt.c.pgwpNone', 'rpt.c.pgwpCombine', 'rpt.c.pgwpLang', 'rpt.c.pgwpLangOk', 'rpt.c.pgwpLangShort'])
 const HINT: Record<string, string> = { 'rpt.c.regulated': 'rpt.hint.cert', 'rpt.g.expShort': 'rpt.hint.exp' }
 export function gateReport(report: Report, pro: boolean): GatedReport {
@@ -1162,8 +1215,11 @@ export function gateReport(report: Report, pro: boolean): GatedReport {
     const i = report.conclusions.findIndex((c) => c.params.prov === prov && !LOCK_CAT[c.key])
     if (i >= 0) freeIdx.add(i)
   }
-  // 只选一个省时额度不缩水:按原序补齐到原来的两条
-  for (let i = 0; i < report.conclusions.length && freeIdx.size < FREE_CONCLUSIONS; i++) freeIdx.add(i)
+  // 只选一个省时额度不缩水:按原序补齐到原来的两条。
+  // ALWAYS_FREE 的行跳过 —— 它们本来就下发,占一格额度等于白白挤掉一条真能多给的结论(2026-08-04)
+  for (let i = 0; i < report.conclusions.length && freeIdx.size < FREE_CONCLUSIONS; i++) {
+    if (!ALWAYS_FREE.has(report.conclusions[i].key)) freeIdx.add(i)
+  }
 
   // 劝退型事实永远留在免费层(2026-08-02):「这个 EE 类别已经 X 个月没抽过了」是**叫人别等**的话,
   // 把它截进锁区等于拿劝退去卖钱。这类行是额外附加、也不计入「其余结论」的锁行计数。
@@ -1194,8 +1250,13 @@ export function gateReport(report: Report, pro: boolean): GatedReport {
 
 // ── 英文渲染(advisor grounding / 测试可读断言;与 UI 三语同源同数字,同 match.ts reasonEn 手法)──
 const EN: Record<string, (p: Record<string, string | number>) => string> = {
-  'rpt.c.listedHit': (p) => `NOC ${p.noc} is on ${p.prov}'s published list "${p.label}" — ${p.open} open postings there.`,
-  'rpt.c.listedHitPart': (p) => `NOC ${p.noc} is on ${p.prov}'s published list "${p.label}"; ${p.named} of ${p.open} open postings there qualify for the named stream.`,
+  'rpt.c.listedHit': (p) => `NOC ${p.noc} is on ${p.prov}'s published list "${p.label}".`,
+  'rpt.c.listedOpen': (p) => `This site currently has ${p.open} open postings for this occupation in ${p.prov}.`,
+  'rpt.c.listedOpenPart': (p) => `This site currently has ${p.open} open postings for this occupation in ${p.prov}; ${p.named} of them qualify for that named stream.`,
+  'rpt.c.pickNamed': (p) => `Officially ${p.top} ranks ahead: this occupation is on its named list, ${p.alt}'s does not carry it.`,
+  'rpt.c.pickOfficial': (p) => `Officially ${p.top} ranks ahead: it publishes a points grid or recent draw records, ${p.alt} does not.`,
+  'rpt.c.pickTieN': (p) => `${p.n} of your target provinces read the same officially — the difference is language and points, which this site will not rank for you.`,
+  'rpt.c.pickTie': (p) => `${p.top} and ${p.alt} read the same officially — the difference is language and points, which this site will not rank for you.`,
   'rpt.c.listedMiss': (p) => `Checked ${p.prov}'s published list: NOC ${p.noc} is not on it. ${p.open} open postings there cannot use a named stream.`,
   'rpt.c.notExcluded': (p) => `Checked ${p.prov}'s published exclusion list ("${p.label}"): NOC ${p.noc} is not on it, and TEER ${p.teer} clears the 0-3 bar — ${p.open} open postings there.`,
   'rpt.p.thinHit': (p) => `${p.prov} does list NOC ${p.noc} ("${p.label}"), but only ${p.open} openings there right now — the jobs are in ${p.maxProv} (${p.maxOpen}). A named stream still needs an offer.`,
@@ -1212,7 +1273,7 @@ const EN: Record<string, (p: Record<string, string | number>) => string> = {
   'rpt.c.scoreBelow': (p) => `Your estimated ${p.prov} score ${p.total} is ${p.gap} below the last "${p.stream}" cutoff ${p.cutoff} (${p.date}).`,
   'rpt.c.scoreBand': (p) => `Your estimated ${p.prov} score is ${p.total}; the last ${p.n} draws cut off between ${p.lo} and ${p.hi} (varies by stream — no single gap can be stated).`,
   'rpt.c.drawBand': (p) => `${p.prov}'s last ${p.n} recorded draws cut off between ${p.lo} and ${p.hi} (varies by stream).`,
-  'rpt.c.window': (p) => `Your permit has ~${p.months} months left; based on the last ${p.n} draws (avg ${p.days} days apart) that is roughly ${p.rounds} more rounds within your window.`,
+  'rpt.c.drawBandSys': (p) => `${p.prov}'s last ${p.n} recorded draws cut off between ${p.lo} and ${p.hi} on the ${p.system} scale (varies by stream).`,
   'rpt.c.ee': (p) => `This occupation is in the federal EE category "${p.cat}" (last draw CRS ${p.draw}, ${p.date}); you have not reported a CRS score.`,
   'rpt.c.eeAbove': (p) => `Your self-reported CRS ${p.crs} is ${p.diff} above the last "${p.cat}" draw cutoff ${p.draw} (${p.date}).`,
   'rpt.c.eeBelow': (p) => `Your self-reported CRS ${p.crs} is ${p.gap} below the last "${p.cat}" draw cutoff ${p.draw} (${p.date}).`,

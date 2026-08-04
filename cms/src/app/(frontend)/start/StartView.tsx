@@ -17,8 +17,9 @@ import { JobCard } from '../ui/JobCard'
 import { BANNER_IMGS, PageBanner, Tag, UI } from '../ui/primitives'
 import { track } from '@/lib/track'
 
-// 有自己的题库与报告的目标卡 → 进两态答题页;加一张卡=加一行(与 lib/decisions 同一个加卡口径)
-const PLAN_CARDS: Record<string, string> = { pr: '/plan/pr', jobs: '/plan/job', career: '/plan/career', prov: '/plan/province' }
+// 「决策引擎目标卡」网格 2026-08-04 摘除(Frank 拍板:答题卡功能摘入口、保留路由)——
+// /plan/* 仍可直达,但 landing 不再挂任何入口。占位卡(选城市/学校/专业)随该节一并撤:
+// 整节只剩「即将上线」虚线卡=空壳,按站规「空了就整块不渲」处理,不编内容填充。
 
 export type HomeStats = {
   total: number | null; named: number | null; lmia: number | null
@@ -60,9 +61,8 @@ function TopN({ v, on, max }: { v: number; on: (n: number) => void; max: number 
 export function StartView({ stats }: { stats: HomeStats }) {
   const [lang, setLangSaved, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
 
-  // 老三问弹框 2026-07-31 在 landing 全下架(Frank「现在只有拿 PR 有题,其他还是老的弹框 → 先都关掉」):
-  // 有 builder 的卡进答题页,其余先回深链等各自 builder;主 CTA 直接进 /plan/pr。
-  // 加一张卡 = 加一行(同 lib/decisions 的加卡即加一行)。
+  // 老三问弹框 2026-07-31 在 landing 全下架;目标卡与主 CTA 2026-08-04 一并摘除(见文件头注释)——
+  // 这页现在只剩「数据事实 + 进职位板」,不再往答题卡送人。
   // 主图四份数据挂载后拉 /api/market-stats(SSR 瘦身:occ ~3400 行不再进 HTML);null=加载中渲占位高度
   const market = useMarketStats()
   // 职位榜控件:最新=逐岗(服务端 50 条);高薪/最多=职业级(2026-07-31 两次拍板:「最多」加榜、
@@ -88,20 +88,6 @@ export function StartView({ stats }: { stats: HomeStats }) {
     return (noc: string) => m.get(noc) || ''
   }, [occTop, lang])
 
-  // 决策引擎七个出口:上面 4 个有 builder 能出报告,下面 3 个占位(即将上线)。
-  // 2×2 + 3-col 两层网格;占位卡虚线框,不给假入口。加一张卡=加一行。
-  const activeGoals = [
-    { key: 'pr', hint: t('home.g.pr.n') },
-    { key: 'jobs', hint: t('home.g.jobs.n') },
-    { key: 'prov', hint: t('home.g.prov.n') },
-    { key: 'career', hint: t('home.g.career.n') },
-  ]
-  const upcomingGoals = [
-    { key: 'city' },
-    { key: 'school' },
-    { key: 'major' },
-  ]
-
   const pills = [
     stats.total != null ? { v: num(stats.total), label: t('home.st.jobs') } : null,
     stats.aipEmployers != null ? { v: num(stats.aipEmployers), label: t('home.st.aip') } : null,
@@ -121,8 +107,6 @@ export function StartView({ stats }: { stats: HomeStats }) {
     return zh === drawMain(r) ? '' : zh   // 映射不到时中英同字,不重复出一遍
   }
 
-  const tileNm: React.CSSProperties = { fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }
-  const tileHint: React.CSSProperties = { marginTop: 2, fontSize: 12, color: UI.text2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }
   // flexWrap:375 职位榜三 tab + Top N 挤不进一行(2026-07-31 实拍标题折行、tab 截断)→ 控件整组下折,不压缩不截字
   // 节头分左右两部分(2026-08-02 Frank 看过居中版后拍板「还是要像以前一样分左右两部分 不要居中」):
   // 左=标题与控件,右=「全部职位」顶到最右(marginLeft:auto)。居中版在 375 上把这个链接挤到第二行
@@ -151,9 +135,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
         .hmBand h2{font-size:20px}
         .hmHero.hmBand{padding:16px 0 0}
         .hmBtn{display:block;border-radius:8px;padding:12px 20px;font-size:14px;font-weight:600;text-align:center;cursor:pointer;text-decoration:none;border:none;font-family:inherit}
-        .hmGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-        .hmGrid3{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
-        /* 三个数字 = 三张卡,与上一节的目标卡同一副长相、同一套列宽(所以两节的列轨对得上)。
+        /* 三个数字 = 三张卡(原目标卡节同款长相,该节 2026-08-04 已摘)。
            前两版都错在「裸文字铺灰底」:先是居中(标题在左轨,两条轴打架,右边空 400+px),
            改成等宽分列后又变成三段文字隔着 380px 各自漂,读不成一组
            —— 2026-08-03 Frank 两次实拍打回。这一页所有内容都住在白卡/表格里,
@@ -198,8 +180,6 @@ export function StartView({ stats }: { stats: HomeStats }) {
           .hmBand h2{font-size:24px}
           .hmHero.hmBand{padding:16px 0 0}
           .hmBtn{padding:13px 28px;font-size:15px}
-          .hmGrid{gap:12px}
-          .hmGrid3{grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
           .hmNums{grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:12px}
           .hmNums b{font-size:40px}
           .hmCtaBand{flex-direction:row;align-items:center}
@@ -215,27 +195,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
           </div>
         </div>
 
-        {/* ② 决策引擎七个出口(白带):上 4 活卡 2×2 + 下 3 占位 3-col */}
-        <Band bg="#fff">
-          <h2 style={secH}>{t('home.goals')}</h2>
-          <div className="hmGrid">
-            {activeGoals.map((g) => (
-              <a key={g.key} href={PLAN_CARDS[g.key]} className="cardHover" onClick={() => track(`landing_goal_${g.key}`)}
-                style={{ display: 'block', minWidth: 0, background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 10, padding: '14px 16px', textDecoration: 'none', color: 'inherit' }}>
-                <div style={tileNm}>{t(`home.g.${g.key}`)}</div>
-                <div style={tileHint}>{g.hint}</div>
-              </a>
-            ))}
-          </div>
-          <div className="hmGrid3">
-            {upcomingGoals.map((g) => (
-              <span key={g.key} style={{ display: 'block', minWidth: 0, background: UI.hairline, border: `1px dashed ${UI.border}`, borderRadius: 10, padding: '14px 16px' }}>
-                <div style={{ ...tileNm, color: UI.text3 }}>{t(`home.g.${g.key}`)}</div>
-                <div style={{ ...tileHint, color: UI.text3 }}>{t('home.g.soon')}</div>
-              </span>
-            ))}
-          </div>
-        </Band>
+        {/* ② 决策引擎目标卡节:2026-08-04 摘除(见文件头注释) */}
 
         {/* ③ 今日日更(灰带,大数字;点数字进职位板)
             节头与其余各节同规:左上角一个光标题,不挂日期灰注(2026-08-03 Frank「不需要日期」——
@@ -513,11 +473,10 @@ export function StartView({ stats }: { stats: HomeStats }) {
               <span style={{ fontSize: 17, fontWeight: 700, color: UI.primaryDeep, display: 'block', marginBottom: 4 }}>{t('home.cta2.t')}</span>
               <span style={{ fontSize: 13, color: UI.text2 }}>{t('home.cta2.s')}</span>
             </span>
-            {/* 双按钮从 hero 挪到这(2026-07-30 Frank「这两个按钮放到最下面」):主=评估,次=进职位板。
-                主按钮原先拉三问弹框,2026-07-31 改直接进 /plan/pr —— 站内唯一真有题、真出报告的地方 */}
+            {/* 按钮从 hero 挪到这(2026-07-30 Frank「这两个按钮放到最下面」)。
+                主按钮(→ /plan/pr,埋点 landing_cta_quiz)2026-08-04 摘除:答题卡摘入口、保留路由。
+                只剩「进职位板」一个去处,带文案随之改准(不再写「答几道题」) */}
             <a className="hmBtn" style={{ background: UI.primary, color: '#fff' }}
-              href="/plan/pr" onClick={() => track('landing_cta_quiz', { pos: 'bottom' })}>{t('home.ctaQuiz')}</a>
-            <a className="hmBtn" style={{ background: UI.card, color: UI.primary, border: `1px solid ${UI.border}` }}
               href="/" onClick={() => track('landing_cta_browse')}>{t('home.ctaBrowse')}</a>
           </div>
         </div>

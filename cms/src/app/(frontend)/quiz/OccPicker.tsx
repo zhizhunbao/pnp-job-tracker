@@ -17,6 +17,9 @@ import { pickName } from '@/lib/occName'
 import type { TFn } from '../jobs/i18n'
 
 const HOT = 24   // 热门页签展示的职业数(库里在招量前 24,与最初的 /api/quiz?top=24 口径同)
+// 选职业上限:与 /api/report 的 MAX_NOCS 同一个数(那边超了就 .slice(0,3) 静默丢)。
+// 上限**必须在前端也拦一道** —— 否则用户选了 4 个、亮着 4 颗 chip,报告只算前 3 个,他不知道丢了哪个。
+const MAX_NOCS = 3
 
 type Cand = { noc: string; title: string; titleZh: string; titleZhShort?: string; titleKoShort?: string; titleEnShort?: string }
 type Top = Cand & { open: number; broad?: string }
@@ -55,6 +58,8 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
   const [letter, setLetter] = useState('')
   // 同族职业(Frank「21231/21232 那种对儿自动挨一起」):选了之后才出 —— 它是**补全**不是浏览入口
   const [kin, setKin] = useState<Top[]>([])
+  // 同族请求**自己的**在途标记:骨架条只在它真的在拉的时候占位(热门 200 条那个 loading 与它无关)
+  const [kinLoading, setKinLoading] = useState(false)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // 热门清单:库里在招量前 24;拿不到(慢/挂了)退回内置常用清单 —— 控件不能因为一个可选请求就变空壳
@@ -68,6 +73,12 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
   }, [])
   // 大类清单按在招量排(有货的类排前面),与职位板的分类同一套 —— 不另造一套分类名
   const loading = top === null
+  // 选满上限:未选中的 chip 一律置灰不可点(已选的仍可取消,不然就锁死了)
+  const full = nocs.length >= MAX_NOCS
+  const lockedOut = (noc: string) => full && !nocs.includes(noc)
+  // 置灰态跟着 chipStyle 走,不另调一套颜色 —— 只压透明度 + 换光标
+  const lockedStyle = (noc: string): React.CSSProperties =>
+    lockedOut(noc) ? { opacity: .4, cursor: 'not-allowed' } : {}
   const cats: string[] = Object.entries(
     (top ?? []).reduce<Record<string, number>>((m, x) => (x.broad && x.broad !== '未分类' ? { ...m, [x.broad]: (m[x.broad] || 0) + x.open } : m), {}),
   ).sort((a, b) => b[1] - a[1]).map(([k]) => k)
@@ -118,12 +129,14 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
   // 报告最多算 3 个职业(/api/report 的 MAX_NOCS),再推就是让他做没用的动作。
   // 服务端查库,不拿热门 200 条筛:那 200 条只覆盖 41% 的职业,冷门职业会静默出不来。
   useEffect(() => {
-    if (!nocs.length || nocs.length >= 3) { setKin([]); return }
+    if (!nocs.length || nocs.length >= MAX_NOCS) { setKin([]); setKinLoading(false); return }
     let dead = false
-    fetch(`/api/quiz?kin=${encodeURIComponent(nocs.slice(0, 3).join(','))}`)
+    setKinLoading(true)
+    fetch(`/api/quiz?kin=${encodeURIComponent(nocs.slice(0, MAX_NOCS).join(','))}`)
       .then((r) => r.json())
       .then((d) => { if (!dead) setKin(Array.isArray(d?.kin) ? d.kin : []) })
       .catch(() => { if (!dead) setKin([]) })   // 拉不到就不出这一行(可选功能不该让控件变空壳)
+      .finally(() => { if (!dead) setKinLoading(false) })
     return () => { dead = true }
   }, [nocs])
 
@@ -134,6 +147,9 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
   // Cannot update a component `PlanPrView` while rendering a different component `OccPicker`)。
   // 事件处理器里 nocs 就是最新值,不需要 updater 形式。
   const toggle = (noc: string, name: string) => {
+    // 选满了就只让**取消**,不让再加(加了也会被 /api/report 悄悄丢掉)。
+    // 未选中的 chip 同时置灰不可点 —— 拦截逻辑和视觉状态必须是同一个判断,别让用户点了没反应。
+    if (full && !nocs.includes(noc)) return
     setTitles((m) => ({ ...m, [noc]: name }))
     const next = nocs.includes(noc) ? nocs.filter((n) => n !== noc) : [...nocs, noc]
     setNocs(next)
@@ -147,20 +163,19 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
 
   const body = (
     <>
-        {/* 横划的 chip 行:放不下时最后一个 chip 正好被卡片边缘齐刷刷切断,看着像排版坏了
-            (「Physician assis」在 375 上被切在半个词上)。右缘给一段渐隐 = 「还有,往右划」;
-            滚动条在手机上本来就不显示,桌面上也藏掉(它会把 34px 的行再挤矮一截) */}
+        {/* 已选/同族两排 chip **换行不横滑**(2026-08-04 Frank 实拍:选到第 4 个,最后那颗被卡片
+            右缘切成半透明的一截,桌面既没滚动条也没「还有更多」的提示)。先前的解法是横向滚动
+            + 右缘渐隐 mask,但全站铁律是「永不横滚」(CLAUDE.md 展示约定),渐隐本身也读作
+            「排版坏了」。改成 flexWrap 让行高自适应:放不下就往下掉一行,一颗也不裁。 */}
         {/* 弹层里用(职位板/详情页)也要带上答题壳的 CSS —— inline 那条路由 PlanPrView 挂了同一份 */}
         {!inline && <QuizStyle />}
         <style>{`.occCatSel{display:none}
 @media(max-width:640px){.occCatSel{display:block}.occCatTabs{display:none !important}
 /* 触控靶下限(第 33 轮 #260):胶囊按 4px 内边距 + 12.5px 字算出来只有 29px,手机上要点中
    一个得瞄 —— 而这是决定线第一步、漏斗最宽处。只抬手机端的**选项**(职业胶囊、A–Z 字母),
-   已选/同族那两排是定高 34 的横滑条,抬了会撑破;可访问性不上砧板(CLAUDE.md) */
+   已选/同族那两排换行后行高自适应,不参与这条(抬了会把两行撑得更高);可访问性不上砧板(CLAUDE.md) */
 .occChips button,.occAz button{min-height:44px}
-.occAz button{display:inline-flex;align-items:center}}
-.chipRow{scrollbar-width:none;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 22px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 22px),transparent)}
-.chipRow::-webkit-scrollbar{display:none}`}</style>
+.occAz button{display:inline-flex;align-items:center}}`}</style>
         {!inline && (
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>
             <QuizTitle>{t('quiz.q2')}</QuizTitle>
@@ -170,17 +185,20 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
 
         {/* 已选 + 同族 = 一个**常驻** section(2026-08-03 Frank「新生成的胶囊可以放到一个固定的 section 吗,
             要不然整个页面老跳」):先前两块都是「有才渲」,一选中就把搜索框、分类、整片热门 chip 全顶下去,
-            眼睛刚点完的位置整个跑掉。现在容器恒在、留出容纳一行 chip + 一行同族的高度,
+            眼睛刚点完的位置整个跑掉。现在容器恒在、保底一行 chip 的高度,
             空着的时候放一句空态引导(空态是 CLAUDE.md 允许保留的四类文案之一)。 */}
-        {/* 高度必须**装得下两行**:先前写死 96,而实际内容(已选 34 + 间距 8 + 同族 60)是 102,
-            外面又扣着 overflow:hidden —— 同族那排 chip 被削掉 6px,看着就是「胶囊跑偏」
-            (2026-08-03 Frank 实机报;375 实测 used=102 > box=96)。改成 minHeight 让它宁可长高也不裁。 */}
+        {/* 高度**只按当前真有的内容算**(2026-08-04 Frank 实拍:选 4 个职业时 chips 与搜索框之间
+            空着一大片)。先前写死 minHeight:102 = 「已选 34 + 间距 8 + 同族 60」两行的高度,
+            但选满 3 个后同族那块**根本不发请求**(见上面的 kin effect),第二行永远不渲,102px
+            就成了纯白占位。防跳版改由两处兜:① 这个 section 恒在(空时放空态引导),并保底一行
+            chip 的高度(34)—— 空态↔一行已选之间不会跳;② 同族在**真的在拉**(kinLoading)时渲
+            骨架条,占的正是它自己将要占的高度,拉回来直接就位。没内容 = 不占位。 */}
         {!hideDone && (
-          <div style={{ minHeight: 102, marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ minHeight: 34, marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
             {nocs.length > 0 ? (
-              <div className="chipRow" style={{ display: 'flex', gap: 6, overflowX: 'auto', whiteSpace: 'nowrap', height: 34, alignItems: 'center', flexShrink: 0 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
                 {nocs.map((n) => (
-                  <button key={n} onClick={() => toggle(n, titles[n] || n)} style={{ ...chipStyle(true), display: 'inline-flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
+                  <button key={n} onClick={() => toggle(n, titles[n] || n)} style={{ ...chipStyle(true), display: 'inline-flex', gap: 6, alignItems: 'center', maxWidth: '100%' }}>
                     {/* 名字还没拉回来时**留个占位**,不拿 5 位码顶上去 —— 2026-08-02 Frank
                         「点击跳转为什么先显示的是数字,后变成文字」:码是给机器看的,不该在人眼前闪一下 */}
                     {titles[n] ? shortOcc(titles[n]) : <Skeleton />}<span style={{ opacity: .7 }}>×</span>
@@ -191,14 +209,22 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
               <div style={{ fontSize: 13, color: UI.text3, lineHeight: 1.6 }}>{t('quiz.pickHint')}</div>
             )}
 
+            {/* 选满 3 个的小注:后端 /api/report 的 MAX_NOCS=3 会 .slice(0,3) **静默丢掉**第 4 个,
+                而 UI 上 4 颗 chip 全亮着 —— 用户无从知道哪个没算。上限改在前端拦住,并说一句为什么。 */}
+            {full && (
+              <div style={{ fontSize: 12.5, color: UI.text3, lineHeight: 1.5 }}>{t('occ.max')}</div>
+            )}
+
         {/* 同族职业(Frank「21231/21232 那种对儿自动挨一起」):选了之后才出,一行 chip,点一下即加选。
             官方 unit group(NOC 前 4 位)分族,不用本站的中文大类(那套有杂物桶)。
             **不写「推荐」二字**:这不是我们替他判断哪个更好,只是把官方同一族里还在招的摆出来让他自己认。 */}
             {/* 同族还没拉回来时,这格是**纯白 68px**(第 33 轮 #262:1440 实拍胶囊 250 结束、
-                搜索框 330 才开始,中间什么都没有)。常驻高度是为了不跳版(#251 那批),不能撤 ——
-                改成渲同族的占位条,空白变成「在加载」。拉回来是空的就照旧留白,不硬编内容。 */}
-            {kin.length === 0 && loading && nocs.length > 0 && (
-              <div style={{ flexShrink: 0 }}>
+                搜索框 330 才开始,中间什么都没有)。骨架条把「空白」变成「在加载」,占的就是
+                拉回来之后自己要占的高度 —— 这是**唯一**给最小高度的时机。
+                门槛用 kinLoading(同族这个请求自己的在途标记),不是 loading(那是热门 200 条的,
+                两件事无关:热门早就回来了、同族还在拉,先前的写法根本渲不出骨架)。 */}
+            {kinLoading && kin.length === 0 && (
+              <div>
                 <div style={{ fontSize: 12.5, color: UI.text3, marginBottom: 6 }}>{t('quiz.kin')}</div>
                 <div style={{ display: 'flex', gap: 6, height: 34, alignItems: 'center' }}>
                   {[132, 108, 146].map((w, i) => (
@@ -209,11 +235,11 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
             )}
 
             {kin.length > 0 && (
-              <div style={{ flexShrink: 0 }}>
+              <div>
                 <div style={{ fontSize: 12.5, color: UI.text3, marginBottom: 6 }}>{t('quiz.kin')}</div>
-                <div className="chipRow" style={{ display: 'flex', gap: 6, overflowX: 'auto', whiteSpace: 'nowrap', height: 34, alignItems: 'center' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
                   {kin.map((x) => (
-                    <button key={x.noc} onClick={() => toggle(x.noc, label(x))} style={{ ...chipStyle(nocs.includes(x.noc)), display: 'inline-flex', gap: 6, alignItems: 'baseline', flexShrink: 0 }}>
+                    <button key={x.noc} disabled={lockedOut(x.noc)} onClick={() => toggle(x.noc, label(x))} style={{ ...chipStyle(nocs.includes(x.noc)), display: 'inline-flex', gap: 6, alignItems: 'baseline', maxWidth: '100%', ...lockedStyle(x.noc) }}>
                       {shortOcc(label(x))}
                       <span style={{ opacity: .7, fontSize: 11.5 }}>{t('quiz.openN', { n: x.open })}</span>
                     </button>
@@ -230,8 +256,8 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
         {cands.length > 0 && (
           <div style={{ marginBottom: 10 }}>
             {cands.map((c) => (
-              <button key={c.noc} onClick={() => { toggle(c.noc, label(c)); setQ(''); setCands([]) }}
-                style={{ display: 'block', width: '100%', textAlign: 'left', border: `1px solid ${UI.border}`, borderRadius: 10, background: nocs.includes(c.noc) ? '#eff6ff' : '#fff', padding: '9px 12px', marginBottom: 6, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit' }}>
+              <button key={c.noc} disabled={lockedOut(c.noc)} onClick={() => { toggle(c.noc, label(c)); setQ(''); setCands([]) }}
+                style={{ display: 'block', width: '100%', textAlign: 'left', border: `1px solid ${UI.border}`, borderRadius: 10, background: nocs.includes(c.noc) ? '#eff6ff' : '#fff', padding: '9px 12px', marginBottom: 6, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', ...lockedStyle(c.noc) }}>
                 {shortOcc(label(c))}<span style={{ color: UI.text3, fontSize: 12, marginLeft: 6 }}>{c.noc}</span>
               </button>
             ))}
@@ -300,8 +326,8 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
             const l = label(x)
             const hint = (dupCount.get(l) || 0) > 1 ? (x.title && x.title !== l ? x.title : x.noc) : ''
             return (
-              <button key={x.noc} title={l} onClick={() => toggle(x.noc, l)}
-                style={{ ...chipStyle(nocs.includes(x.noc)), display: 'inline-flex', alignItems: 'baseline', gap: 6, maxWidth: '100%' }}>
+              <button key={x.noc} title={l} disabled={lockedOut(x.noc)} onClick={() => toggle(x.noc, l)}
+                style={{ ...chipStyle(nocs.includes(x.noc)), display: 'inline-flex', alignItems: 'baseline', gap: 6, maxWidth: '100%', ...lockedStyle(x.noc) }}>
                 <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 190 }}>{shortOcc(l)}</span>
                 {hint ? <span style={{ fontSize: 11, color: UI.text3, flexShrink: 0 }}>{hint}</span> : null}
                 {x.open ? <span style={{ fontSize: 11.5, color: UI.text3, flexShrink: 0 }}>{t('quiz.openN', { n: x.open.toLocaleString('en-CA') })}</span> : null}
