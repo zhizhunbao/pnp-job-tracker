@@ -121,6 +121,11 @@ export async function GET(req: Request) {
     ['pnp_requirements', 'pnp_requirements',
       ['province', 'program', 'stream', 'subject', 'factor', 'op', 'value', 'value_text', 'unit', 'applies_teer', 'applies_noc', 'excludes_noc', 'applies_area', 'applies_family_size', 'basis', 'label', 'section', 'seq', 'effective', 'url', 'page_url', 'fetched'],
       (r) => ({ province: r.province, program: r.program, stream: r.stream, subject: r.subject, factor: r.factor, op: r.op, value: r.value, value_text: r.valueText, unit: r.unit, applies_teer: r.appliesTeer, applies_noc: r.appliesNoc, excludes_noc: r.excludesNoc, applies_area: r.appliesArea, applies_family_size: r.familySize, basis: r.basis, label: r.label, section: r.section, seq: r.seq, effective: r.effective, url: r.url, page_url: r.pageUrl, fetched: r.fetched })],
+    // G5 三省运营统计(对话即产品 §三 lookupOps):配额/已用/待处理/积压游标/EOI 池/处理周数/SIRS 分数段
+    // ⚠️ value 保持可空 —— 官方隐私抑制值(AB「Less than 10」、BC「<5」)与不适用一律 null + value_text 存原文,禁 `?? 0`
+    ['pnp_ops_stats', 'pnp_ops_stats',
+      ['province', 'program', 'metric', 'scope', 'scope_kind', 'label', 'value', 'value_text', 'unit', 'as_of', 'period', 'url', 'fetched', 'section', 'seq'],
+      (r) => ({ province: r.province, program: r.program, metric: r.metric, scope: r.scope, scope_kind: r.scopeKind, label: r.label, value: r.value ?? null, value_text: r.valueText, unit: r.unit, as_of: r.asOf, period: r.period, url: r.url, fetched: r.fetched, section: r.section, seq: r.seq })],
     ['ee_categories', 'ee_categories', ['category', 'label', 'noc', 'teer', 'title', 'url', 'fetched', 'draw_crs', 'draw_date', 'draw_size'],
       (r) => ({ category: r.category, label: r.label, noc: r.noc, teer: r.teer, title: r.title, url: r.url, fetched: r.fetched, draw_crs: r.drawCrs, draw_date: r.drawDate, draw_size: r.drawSize })],
     ['noc_descriptions', 'noc_descriptions', ['noc', 'title', 'title_zh', 'title_zh_short', 'title_ko', 'title_ko_short', 'title_en_short', 'duties', 'requirements', 'fetched'],

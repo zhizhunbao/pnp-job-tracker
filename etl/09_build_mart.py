@@ -48,6 +48,9 @@ IN_REQ_TABLES = [_paths.PNP / f"{p}-req.json"
                  _paths.IRCC / "pgwp_rules.json",
                  # G8:联邦段官方规费(program='PR-fees',build_fees.py 产)—— 第三次复用,同上安全
                  _paths.IRCC / "fees.json"]
+# G5 省级官方运营统计(配额/已发/剩余、积压游标、EOI 池、处理时长、SIRS 池分布)——
+# 一省一个文件,加省=往这个 list 里加一个;各省字段形状不同,按 province 分派(下面 build_pnp_ops_stats)。
+IN_PNP_STATS = [_paths.PNP / f"{p}-stats.json" for p in ("ab", "sk", "bc")]
 IN_EE = _paths.EE / "federal-categories.json"  # 联邦 Express Entry 类别抽选(全国单一源)
 IN_EE_DRAWS = _paths.EE / "draws.json"          # 各类别最近一次抽选(CRS/日期/邀请数,build_ee_draws.py 产)
 IN_NOC_DESC = _paths.NOC / "descriptions.json"  # NOC 官方名+主要职责(build_noc_descriptions.py 产)
@@ -163,6 +166,79 @@ def jd_body(path) -> str | None:
         return None
     body = re.sub(r"^---.*?\n---\s*", "", raw, count=1, flags=re.S).strip()
     return clean_jd(body) or None
+
+
+def _stat_val(v, text: str = "") -> tuple:
+    """整数才进 value;官方隐私抑制/不适用值(AB「Less than 10」「Not applicable」、BC「<5」、SK「N/A」/null)
+    → value=None + valueText=原文,**绝不折成 0**。这张表存在的全部意义就是让
+    「0」「本站没有」「官方不公布」三件事分得开——折成 0 等于自毁。"""
+    if isinstance(v, int) and not isinstance(v, bool):
+        return v, ""
+    return None, (text or ("" if v is None else str(v)))
+
+
+def build_pnp_ops_stats(files) -> list:
+    """省级官方运营统计 → 一行一指标(metric 固定词表;scope=通道/行业/分数段,省级留空)。
+    label 一律官方措辞原文(不翻译不改写);section 三份 raw 都没有 → 留空不编。"""
+    rows: list = []
+    seqs: dict = {}
+
+    def add(base, metric, scope, kind, label, raw, unit, text=""):
+        val, vtext = _stat_val(raw, text)
+        k = (base["province"], metric)
+        seqs[k] = seqs.get(k, -1) + 1   # 每 (province, metric) 组内稳定序号,重跑顺序一致
+        rows.append({**base, "metric": metric, "scope": scope, "scopeKind": kind, "label": label,
+                     "value": val, "valueText": vtext, "unit": unit, "section": "", "seq": seqs[k]})
+
+    for src in files:
+        if not src.exists():
+            continue
+        try:
+            d = json.loads(src.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001 — 单省表坏了不拖垮整个 mart
+            continue
+        prov = d.get("province", "")
+        # SK 官方没有 asOf,只有季度口径 → asOf 留空、period 放 quarter(其余省 period 留空)
+        base = {"province": prov, "program": d.get("program", "PNP"),
+                "asOf": d.get("asOf", ""), "period": d.get("quarter", ""),
+                "url": d.get("url", ""), "fetched": d.get("fetched", "")}
+        if prov == "AB":
+            for m, key in (("allocation", "allocation"), ("issued", "issued"),
+                           ("remaining", "remaining"), ("to_process", "toProcess")):
+                unit = "spots" if m in ("allocation", "remaining") else "people"
+                add(base, m, "", "", "", (d.get("summary") or {}).get(key), unit)   # 省级汇总
+                for s in d.get("streams", []):
+                    add(base, m, s.get("stream", ""), "stream", s.get("stream", ""), s.get(key), unit)
+            for s in d.get("streams", []):   # 积压游标:自由文本日期 → 永远 value=None + 原文
+                add(base, "assessing_up_to", s.get("stream", ""), "stream", s.get("stream", ""),
+                    None, "text", text=str(s.get("assessingUpTo") or ""))
+            for e in d.get("eoiPool", []):
+                st = e.get("stream", "")
+                tot = st.strip().rstrip(":").lower() == "total"   # 哨兵行「Total:」→ 省级 eoi_pool_total
+                add(base, "eoi_pool_total" if tot else "eoi_pool",
+                    "" if tot else st, "" if tot else "stream", st, e.get("count"), "people")
+            # draws[] 忽略:抽选史 canonical 归 build_draws.py(本表不重复)
+        elif prov == "SK":
+            for p in d.get("processing", []):
+                add(base, "processing_weeks", p.get("category", ""), "category",
+                    f"{p.get('group', '')}: {p.get('category', '')}", p.get("weeks"), "weeks",
+                    text=str(p.get("raw") or ""))   # weeks=null → 原文 raw(「N/A」)
+            for a in d.get("allocation", []):
+                sec = a.get("sector", "")
+                tot = sec.strip().lower() == "total"
+                for m, key, unit in (("allocation", "allocation", "spots"),
+                                     ("nominations_ytd", "nominationsYtd", "nominations")):
+                    add(base, m, "" if tot else sec, "" if tot else "sector", sec, a.get(key), unit)
+            for c in d.get("cappedSectors", []):
+                add(base, "capped_pct", c.get("sector", ""), "sector", c.get("sector", ""), c.get("pct"), "percent")
+                add(base, "capped_spots", c.get("sector", ""), "sector", c.get("sector", ""), c.get("spots"), "spots")
+            for s in d.get("prioritySectors", []):   # 标记行:value=1 表「在清单里」(留 None 会和「官方不公布」混淆)
+                add(base, "priority_sector", s, "sector", s, 1, "flag")
+        elif prov == "BC":
+            for p in d.get("pool", []):
+                add(base, "sirs_pool", p.get("scoreRange", ""), "scoreRange", p.get("scoreRange", ""),
+                    p.get("registrations"), "people")   # 「<5」= 官方隐私抑制 → None + 原文
+    return rows
 
 
 def build():
@@ -723,7 +799,8 @@ def build():
         "designated_employers": designated,
         "noc_categories": noc_categories, "sources": sources, "experience_levels": experience_levels,
         "pnp_occupations": pnp_occupations, "pnp_draws": pnp_draws, "pnp_score_factors": pnp_score_factors,
-        "pnp_requirements": pnp_requirements, "ee_categories": ee_categories,
+        "pnp_requirements": pnp_requirements, "pnp_ops_stats": build_pnp_ops_stats(IN_PNP_STATS),
+        "ee_categories": ee_categories,
         "noc_descriptions": noc_descriptions,
         "field_sources": field_sources,
         "dli": dli,
