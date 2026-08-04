@@ -177,9 +177,29 @@ def _stat_val(v, text: str = "") -> tuple:
     return None, (text or ("" if v is None else str(v)))
 
 
+# ── 通道名归一(streamKey):跨指标 join 的键,**不展示给用户** ──────────────────
+# 病根:官网两张表对同一条通道措辞不同 —— streams[] 写
+# 「Accelerated Tech Pathway (eligible list of occupations includes jobs that support data centre needs…)」,
+# eoiPool[] 只写「Accelerated Tech Pathway」;「Dedicated Health Care Pathways (Express Entry and Non-Express Entry)」同理。
+# 编排层要把「配额 + 池内人数 + 积压游标」拼成一条通道的全貌,靠 scope 字符串等值就会**静默漏配**(join 不上=当没有)。
+# 规则而不是映射表(官网改个字映射表就失效):括号里一律是补充说明不是通道身份 → 去括号;再小写、压空白、去首尾标点。
+# scope 原样保留(官方措辞,报告要引用);streamKey 只做键。
+_PAREN = re.compile(r"\s*\([^()]*\)")
+# 规则切不动的个例才手写进来(照 04g 的 SHORT_FIX 惯例;留空是**有意**的,不是忘了)。撞车检测见函数末尾。
+STREAM_KEY_FIX: dict[str, str] = {}
+
+
+def stream_key(scope: str) -> str:
+    k = _PAREN.sub("", scope or "")                       # 去括号补充说明(可能不止一处)
+    k = re.sub(r"\s+", " ", k).strip().lower()            # 压空白 + 小写
+    k = re.sub(r"^[^\w]+|[^\w]+$", "", k)                 # 去首尾标点(「Total:」→ total)
+    return STREAM_KEY_FIX.get(k, k)
+
+
 def build_pnp_ops_stats(files) -> list:
     """省级官方运营统计 → 一行一指标(metric 固定词表;scope=通道/行业/分数段,省级留空)。
-    label 一律官方措辞原文(不翻译不改写);section 三份 raw 都没有 → 留空不编。"""
+    label 一律官方措辞原文(不翻译不改写);section 三份 raw 都没有 → 留空不编。
+    streamKey:scope 的归一键,只对 scopeKind='stream' 算,供跨指标拼装用(见上)。"""
     rows: list = []
     seqs: dict = {}
 
@@ -188,6 +208,7 @@ def build_pnp_ops_stats(files) -> list:
         k = (base["province"], metric)
         seqs[k] = seqs.get(k, -1) + 1   # 每 (province, metric) 组内稳定序号,重跑顺序一致
         rows.append({**base, "metric": metric, "scope": scope, "scopeKind": kind, "label": label,
+                     "streamKey": stream_key(scope) if kind == "stream" else "",
                      "value": val, "valueText": vtext, "unit": unit, "section": "", "seq": seqs[k]})
 
     for src in files:
@@ -238,6 +259,16 @@ def build_pnp_ops_stats(files) -> list:
             for p in d.get("pool", []):
                 add(base, "sirs_pool", p.get("scoreRange", ""), "scoreRange", p.get("scoreRange", ""),
                     p.get("registrations"), "people")   # 「<5」= 官方隐私抑制 → None + 原文
+    # 撞车检测:**同一个 (province, metric) 内**两个不同的官方通道名压出同一个 key = 归一切过头了
+    # (跨 metric 同键正是要的效果,不算撞)。撞了就报出来 —— 静默合并两条通道比漏配更毒。
+    seen_key: dict = {}
+    for r in rows:
+        if not r.get("streamKey"):
+            continue
+        k = (r["province"], r["metric"], r["streamKey"])
+        if seen_key.setdefault(k, r["scope"]) != r["scope"]:
+            print(f"  ⚠ streamKey 撞车 {r['province']}/{r['metric']}: "
+                  f"「{seen_key[k]}」与「{r['scope']}」都压成 '{r['streamKey']}' → 加 STREAM_KEY_FIX 裁决")
     return rows
 
 

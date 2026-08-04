@@ -124,8 +124,8 @@ export async function GET(req: Request) {
     // G5 三省运营统计(对话即产品 §三 lookupOps):配额/已用/待处理/积压游标/EOI 池/处理周数/SIRS 分数段
     // ⚠️ value 保持可空 —— 官方隐私抑制值(AB「Less than 10」、BC「<5」)与不适用一律 null + value_text 存原文,禁 `?? 0`
     ['pnp_ops_stats', 'pnp_ops_stats',
-      ['province', 'program', 'metric', 'scope', 'scope_kind', 'label', 'value', 'value_text', 'unit', 'as_of', 'period', 'url', 'fetched', 'section', 'seq'],
-      (r) => ({ province: r.province, program: r.program, metric: r.metric, scope: r.scope, scope_kind: r.scopeKind, label: r.label, value: r.value ?? null, value_text: r.valueText, unit: r.unit, as_of: r.asOf, period: r.period, url: r.url, fetched: r.fetched, section: r.section, seq: r.seq })],
+      ['province', 'program', 'metric', 'scope', 'scope_kind', 'stream_key', 'label', 'value', 'value_text', 'unit', 'as_of', 'period', 'url', 'fetched', 'section', 'seq'],
+      (r) => ({ province: r.province, program: r.program, metric: r.metric, scope: r.scope, scope_kind: r.scopeKind, stream_key: r.streamKey, label: r.label, value: r.value ?? null, value_text: r.valueText, unit: r.unit, as_of: r.asOf, period: r.period, url: r.url, fetched: r.fetched, section: r.section, seq: r.seq })],
     ['ee_categories', 'ee_categories', ['category', 'label', 'noc', 'teer', 'title', 'url', 'fetched', 'draw_crs', 'draw_date', 'draw_size'],
       (r) => ({ category: r.category, label: r.label, noc: r.noc, teer: r.teer, title: r.title, url: r.url, fetched: r.fetched, draw_crs: r.drawCrs, draw_date: r.drawDate, draw_size: r.drawSize })],
     ['noc_descriptions', 'noc_descriptions', ['noc', 'title', 'title_zh', 'title_zh_short', 'title_ko', 'title_ko_short', 'title_en_short', 'duties', 'requirements', 'fetched'],

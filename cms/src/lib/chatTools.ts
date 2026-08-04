@@ -344,6 +344,13 @@ export type OpsMetric = {
   key: string            // metric 词表:allocation/issued/remaining/to_process/assessing_up_to/eoi_pool(_total)/processing_weeks/nominations_ytd/capped_pct/capped_spots/priority_sector/sirs_pool
   scope: string          // 适用范围值(通道名 / 行业 / SIRS 分数段;省级为空串)
   scopeKind: string      // stream / sector / category / scoreRange(省级为空串)—— 说明 scope 是哪一类
+  /**
+   * 跨指标 join 的键(ETL 在 mart 侧归一,本层只读不算 —— 清洗下沉,见 09_build_mart.stream_key)。
+   * 为什么要它:官网两张表对同一条通道措辞不同(streams[]「Accelerated Tech Pathway (eligible list…)」
+   * vs eoiPool[]「Accelerated Tech Pathway」),编排层拿 scope 字符串等值拼「配额+池内人数+积压游标」会**静默漏配**。
+   * 只对 scopeKind='stream' 非空;**不展示给用户**(要引用就用 scope/label 的官方原文)。
+   */
+  streamKey: string
   label: string          // 官方原文
   /**
    * 🔴 可空是本字段的立身之本(建表 SQL 同款红线):官方的**隐私抑制值**(AB「Less than 10」)
@@ -375,12 +382,16 @@ export async function lookupOps(pool: any, args: { prov: string }): Promise<OpsR
   const province = upper(args.prov)
   const p = OPS_POLICY[province]
   const { rows } = await pool.query(
-    `SELECT metric, scope, scope_kind, label, value, value_text, unit, as_of, period, url, fetched, section
-     FROM pnp_ops_stats WHERE province = $1 AND COALESCE(url,'') <> ''
+    // stream_key 走 to_jsonb 取:列缺失时返回 NULL 而不是 42703。additive 列上生产**之前**这段代码
+    // 也能照常查(否则整表查询报错 → 全省回落 not-collected,DDL/push 谁先谁后就成了线上开关)。
+    `SELECT metric, scope, scope_kind, to_jsonb(t) ->> 'stream_key' AS stream_key,
+            label, value, value_text, unit, as_of, period, url, fetched, section
+     FROM pnp_ops_stats t WHERE province = $1 AND COALESCE(url,'') <> ''
      ORDER BY metric, seq, scope`, [province],
   ).catch(() => ({ rows: [] }))
   const metrics: OpsMetric[] = (rows ?? []).map((r: any) => ({
-    key: r.metric ?? '', scope: r.scope ?? '', scopeKind: r.scope_kind ?? '', label: r.label ?? '',
+    key: r.metric ?? '', scope: r.scope ?? '', scopeKind: r.scope_kind ?? '',
+    streamKey: r.stream_key ?? '', label: r.label ?? '',
     value: r.value == null ? null : numOf(r.value),   // 🔴 null 原样带出,永远不 `?? 0`
     valueText: r.value_text ?? '', unit: r.unit ?? '', asOf: r.as_of ?? '', period: r.period ?? '',
     evidence: { url: r.url, fetched: r.fetched ?? '', label: r.label ?? '', ...(r.section ? { section: r.section } : {}) },

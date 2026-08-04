@@ -15,9 +15,10 @@ export const PnpOpsStats: CollectionConfig = {
   fields: [
     { name: 'province', type: 'text', index: true, admin: { description: 'AB / BC / SK' } },
     { name: 'program', type: 'text', admin: { description: 'PNP / AIP —— 与 pnp_occupations 同族分路' } },
-    { name: 'metric', type: 'text', index: true, admin: { description: 'quota / used / pending / backlogCursor / poolSize / processingWeeks / bandCount' } },
-    { name: 'scope', type: 'text', admin: { description: '具体范围值(官方通道名 / SIRS 分数段 "80-89" / all)' } },
-    { name: 'scopeKind', type: 'text', admin: { description: 'stream / category / scoreBand / all —— 说明 scope 是哪一类' } },
+    { name: 'metric', type: 'text', index: true, admin: { description: 'AB: allocation/issued/remaining/to_process/assessing_up_to/eoi_pool/eoi_pool_total · SK: processing_weeks/allocation/nominations_ytd/capped_pct/capped_spots/priority_sector · BC: sirs_pool' } },
+    { name: 'scope', type: 'text', admin: { description: '具体范围值:官方通道名 / 行业 / SIRS 分数段 "100 - 109";省级留空串。官方措辞原样,报告要引用' } },
+    { name: 'scopeKind', type: 'text', admin: { description: 'stream / sector / category / scoreRange —— 说明 scope 是哪一类;省级留空串' } },
+    { name: 'streamKey', type: 'text', admin: { description: '跨指标 join 键(ETL 归一:去括号补充说明+小写压空白)。官网两张表通道名写法不一,不归一则配额与池人数拼不上且静默漏配。只对 scopeKind=stream 算,不展示给用户' } },
     { name: 'label', type: 'text', admin: { description: '官方原文(英文)—— 报告挂出处供核对' } },
     { name: 'value', type: 'number', admin: { description: '🔴 可空:隐私抑制(「Less than 10」/「<5」)或不适用一律留空,原文进 valueText,绝不写 0' } },
     { name: 'valueText', type: 'text', admin: { description: '官方原文的非数值表述("Less than 10" / "<5" / "n/a")' } },

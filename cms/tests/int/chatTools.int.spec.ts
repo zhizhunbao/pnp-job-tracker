@@ -269,6 +269,40 @@ d('对话工具层(生产库只读)', () => {
       expect(ns.note).toBeTruthy()
     })
 
+    // 跨指标拼装(G5 补漏 2026-08-04):AAIP 官网两张表对同一条通道措辞不一致 ——
+    // streams[]「Accelerated Tech Pathway (eligible list…)」vs eoiPool[]「Accelerated Tech Pathway」,
+    // 拿 scope 等值 join 会**静默漏配**(8 条通道只有 4 条拼得齐,而且不报错)。金标那条
+    // Alberta Opportunity Stream 恰好三处同名,所以上面几条断言测不出来 —— 这条专测措辞不一致的。
+    // 归一在 ETL(mart)侧算,本层只读 streamKey(CLAUDE.md:清洗下沉)。
+    it('跨指标可拼:AB 至少 6 条通道能按 streamKey 同时拿到 allocation + eoi_pool', async (ctx) => {
+      const r = await lookupOps(pool, { prov: 'AB' })
+      const streams = r.metrics.filter((m) => m.scopeKind === 'stream')
+      expect(streams.length).toBeGreaterThan(0)
+      // stream_key 是 additive 列(docs/sql/g5-ops-stream-key.sql):DDL + 重灌 seed 之后才有值。
+      // 列还没上生产时整条跳过 —— 不让「先跑 SQL 还是先 push」的排期顺序把测试染红;上了就自动开始守。
+      if (!streams.some((m) => m.streamKey)) return ctx.skip()
+      const byKey = new Map<string, Set<string>>()
+      for (const m of streams) {
+        expect(m.streamKey, `${m.key}/${m.scope}:stream 行的 streamKey 不该为空`).toBeTruthy()
+        if (!byKey.has(m.streamKey)) byKey.set(m.streamKey, new Set())
+        byKey.get(m.streamKey)!.add(m.key)
+      }
+      const joined = [...byKey].filter(([, ks]) => ks.has('allocation') && ks.has('eoi_pool'))
+      expect(joined.length, `按 streamKey 只拼齐 ${joined.length} 条:${JSON.stringify([...byKey.keys()])}`).toBeGreaterThanOrEqual(6)
+      // 修之前正是这三条漏配(括号补充说明只出现在一张表里)
+      for (const k of ['accelerated tech pathway', 'dedicated health care pathways', 'priority sector draws and other initiatives']) {
+        expect([...(byKey.get(k) ?? [])].sort(), `通道「${k}」没拼齐`).toEqual(
+          expect.arrayContaining(['allocation', 'assessing_up_to', 'eoi_pool', 'issued', 'remaining', 'to_process']))
+      }
+      // 反向红线:归一切过头会把两条不同通道压成一个键 —— 同一 metric 内一个 key 只许对应一个官方 scope
+      const seen = new Map<string, string>()
+      for (const m of streams) {
+        const k = `${m.key}|${m.streamKey}`
+        expect(seen.get(k) ?? m.scope, `${k}:两条不同通道压成了同一个 streamKey`).toBe(m.scope)
+        seen.set(k, m.scope)
+      }
+    })
+
     it('metrics 顺序稳定:同一次查询连查两遍必须一模一样', async () => {
       const key = (r: { metrics: { key: string; scope: string }[] }) => r.metrics.map((m) => `${m.key}|${m.scope}`).join(',')
       for (const p of ['AB', 'SK', 'BC']) {
