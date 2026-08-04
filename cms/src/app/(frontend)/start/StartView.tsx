@@ -7,6 +7,7 @@
 // 红线:数字全库内真数,查不到整节不渲;通道名映射不到显官方原文,前端不编翻译。
 import { useMemo, useState } from 'react'
 
+import { ChatBox } from '../chat/ChatBox'
 import { eeDisplay, eeKeyDisplay, makeT, drawStreamNote } from '../jobs/i18n'
 import { useLang } from '../LangProvider'
 import { SiteHeader } from '../SiteHeader'
@@ -195,7 +196,16 @@ export function StartView({ stats }: { stats: HomeStats }) {
           </div>
         </div>
 
-        {/* ② 决策引擎目标卡节:2026-08-04 摘除(见文件头注释) */}
+        {/* ② 一句话问(C2「对话即产品」,设计 docs/design/对话即产品-20260803.md §二/§六 第 1 条):
+            答题卡 2026-08-04 摘除后这个位置由对话接主位 —— landing 的**主入口**就是这个输入框。
+            紧贴 Hero 之下、今日日更之上;整节走 hmTight(它只有一张卡,不占整屏节距)。
+            服务挂了怎么办:输入框照渲,提交后按错误码说实话(见 ChatBox 头注释红线②),不牵连下面的数据节 */}
+        <Band bg="#fff" className="hmTight">
+          <h2 style={secH}>{t('chat.title')}</h2>
+          <ChatBox />
+        </Band>
+
+        {/* ②b 决策引擎目标卡节:2026-08-04 摘除(见文件头注释) */}
 
         {/* ③ 今日日更(灰带,大数字;点数字进职位板)
             节头与其余各节同规:左上角一个光标题,不挂日期灰注(2026-08-03 Frank「不需要日期」——

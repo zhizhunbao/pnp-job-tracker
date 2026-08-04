@@ -467,6 +467,8 @@ const zh: Dict = {
   'rm.cover': '覆盖 {hit}/{total}', 'rm.proText': '完整对照和重写', 'pro.unlock': '解锁 Pro',
   'rm.note': '免费每天 3 次', 'rm.tooShort': '简历文本太短,贴完整一些',
   'rm.limit': '今天的免费次数用完了', 'rm.err': '对照失败,稍后再试', 'rm.noJd': '这个岗还没有拿到职位描述全文',
+  // 模型侧两个错误码各说各话(route 的 tooLong/busy):重试没用的和重试有用的,不能都说「稍后再试」
+  'rm.tooLong': '内容太长,删掉一些再试', 'rm.busy': '模型服务忙,稍等几秒重试',
   // 简历存档(E11-08):弹框勾选 + 账户页档案节
   'rm.arch.save': '存进档案,下次直接用', 'rm.arch.used': '用的是你 {d} 存的简历', 'rm.arch.done': '已存进档案',
   'rm.arch.title': '简历存档', 'rm.arch.meta': '{d} 存入,{n} 字', 'rm.arch.empty': '对照职位时可以存下来,下次直接用',
@@ -486,6 +488,16 @@ const zh: Dict = {
 
   'home.cta2.t': '每天更新的全加拿大职位', 'home.cta2.s': '按省份、职业、省提名信号筛选,免费',
   'home.st.jobs': '在招岗位', 'home.st.aip': 'AIP 雇主', 'home.st.dli': '所 DLI',
+  // 对话即产品(C2):landing 主输入框。错误码一句一说 —— 笼统的「稍后再试」让用户白重试(简历对照实撞)
+  'chat.title': '说说你的情况', 'chat.ph': '一句话说说你的情况', 'chat.send': '提问',
+  'chat.waiting': '正在查官方数据', 'chat.sources': '官方来源', 'chat.followups': '接着问',
+  // 错误文案一律 ≤20 字:375 上错误框可写宽约 265px,超了就折行(文案一行放下站规)
+  'chat.err.tooShort': '再多说两句,你做什么工作、在哪个省',
+  'chat.err.noOcc': '说说你做的是什么工作,才查得到',
+  'chat.err.limit': '今天问得有点多,明天再来',
+  'chat.err.llm': '这次没答上来,换个说法再问',
+  'chat.err.guard': '这次答复没对上官方出处,不显示',
+  'chat.err.net': '没连上服务,请重试',
   'advisor.disclaimer': 'AI 生成判断,非移民建议(我们非持牌顾问 RCIC),以官方来源为准',
   'legal.title': '免责声明',
   'legal.wip': '完整版法律页面(隐私政策 / 使用条款 / 关于)将在正式收费前发布。',
@@ -1254,6 +1266,7 @@ const en: Dict = {
   'rm.cover': 'Covered {hit}/{total}', 'rm.proText': 'Full comparison and rewrite', 'pro.unlock': 'Unlock Pro',
   'rm.note': 'Free 3 times a day', 'rm.tooShort': 'Resume text too short, paste more',
   'rm.limit': 'No free runs left today', 'rm.err': 'Comparison failed, try again later', 'rm.noJd': 'Full job description not available for this posting yet',
+  'rm.tooLong': 'Too long, trim it and retry', 'rm.busy': 'Model service busy, retry in a moment',
   'rm.arch.save': 'Save to my profile for next time', 'rm.arch.used': 'Using the resume you saved on {d}', 'rm.arch.done': 'Saved to your profile',
   'rm.arch.title': 'Saved resume', 'rm.arch.meta': 'Saved {d}, {n} chars', 'rm.arch.empty': 'Save your resume in a job match to reuse it',
   'rm.arch.view': 'View', 'rm.arch.hide': 'Hide', 'rm.arch.clear': 'Clear', 'rm.arch.sure': 'Confirm clear', 'rm.arch.cancel': 'Cancel',
@@ -1272,6 +1285,16 @@ const en: Dict = {
 
   'home.cta2.t': 'Canada-wide jobs, updated daily', 'home.cta2.s': 'Filter by province, occupation and PNP signals — free',
   'home.st.jobs': 'open jobs', 'home.st.aip': 'AIP employers', 'home.st.dli': 'DLIs',
+  // Chat-first landing (C2). Every error code says its own thing — a generic "try later" makes users retry for nothing
+  'chat.title': 'Tell us your situation', 'chat.ph': 'Your situation in one sentence', 'chat.send': 'Ask',
+  'chat.waiting': 'Checking official data', 'chat.sources': 'Source', 'chat.followups': 'Ask next',
+  // Keep every error under ~38 chars: the error box has ~265px of writable width at 375
+  'chat.err.tooShort': 'Add your job and your province',
+  'chat.err.noOcc': 'Tell us what work you do',
+  'chat.err.limit': "That's a lot for today — try tomorrow",
+  'chat.err.llm': 'Could not answer that — try rephrasing',
+  'chat.err.guard': 'Failed our source check — not shown',
+  'chat.err.net': 'Could not reach the service — retry',
   'advisor.disclaimer': 'AI-generated assessment, not immigration advice (we are not RCIC); verify with official sources',
   'legal.title': 'Disclaimer',
   'legal.wip': 'Full legal pages (privacy policy / terms of use / about) will be published before paid plans go live.',
@@ -2014,6 +2037,7 @@ const ko: Dict = {
   'rm.cover': '충족 {hit}/{total}', 'rm.proText': '전체 대조와 재작성', 'pro.unlock': 'Pro 잠금해제',
   'rm.note': '무료 하루 3회', 'rm.tooShort': '이력서 텍스트가 너무 짧음',
   'rm.limit': '오늘 무료 횟수 소진', 'rm.err': '대조 실패, 잠시 후 다시 시도', 'rm.noJd': '이 공고의 상세 설명을 아직 가져오지 못함',
+  'rm.tooLong': '내용이 너무 깁니다, 줄여서 다시 시도', 'rm.busy': '모델 서비스 혼잡, 잠시 후 재시도',
   'rm.arch.save': '내 프로필에 저장, 다음에 바로 사용', 'rm.arch.used': '{d}에 저장한 이력서 사용 중', 'rm.arch.done': '프로필에 저장됨',
   'rm.arch.title': '저장된 이력서', 'rm.arch.meta': '{d} 저장, {n}자', 'rm.arch.empty': '공고 대조할 때 저장하면 다음에 바로 사용',
   'rm.arch.view': '보기', 'rm.arch.hide': '접기', 'rm.arch.clear': '삭제', 'rm.arch.sure': '삭제 확인', 'rm.arch.cancel': '취소',
@@ -2032,6 +2056,16 @@ const ko: Dict = {
 
   'home.cta2.t': '매일 갱신되는 캐나다 전역 채용 공고', 'home.cta2.s': '주, 직업, PNP 신호로 필터링, 무료',
   'home.st.jobs': '채용 중', 'home.st.aip': 'AIP 고용주', 'home.st.dli': 'DLI',
+  // 대화형 랜딩(C2). 오류 코드마다 다른 안내 — 뭉뚱그린 "잠시 후 다시"는 헛된 재시도만 부름
+  'chat.title': '상황을 알려 주세요', 'chat.ph': '한 문장으로 상황을 알려 주세요', 'chat.send': '질문',
+  'chat.waiting': '공식 데이터 확인 중', 'chat.sources': '공식 출처', 'chat.followups': '이어서 질문',
+  // 오류 문구는 20자 이내: 375에서 오류 박스의 가용 폭은 약 265px(넘으면 줄바꿈)
+  'chat.err.tooShort': '직업과 주를 알려 주세요',
+  'chat.err.noOcc': '어떤 일을 하시는지 알려 주세요',
+  'chat.err.limit': '오늘 질문 한도에 도달했습니다',
+  'chat.err.llm': '답하지 못했습니다. 다르게 물어보세요',
+  'chat.err.guard': '출처 확인을 통과하지 못한 답변입니다',
+  'chat.err.net': '서비스에 연결하지 못했습니다',
   'advisor.disclaimer': 'AI 기반 판단이며 이민 자문이 아닙니다(당사는 RCIC가 아님) · 공식 출처를 기준으로 확인하세요.',
   'legal.title': '면책 조항',
   'legal.wip': '전체 법률 페이지(개인정보 처리방침 / 이용약관 / 소개)는 유료 서비스 시작 전에 게시됩니다.',
