@@ -77,8 +77,13 @@ export function ResumeMatchModal({ jobId, jd, loggedIn, onClose }: {
       })
       const d = await r.json().catch(() => null)
       if (!r.ok || !d || d.error) {
-        // 每个错误码说自己的实话(2026-08-03 Frank 实撞:noJd 被笼统报成「稍后再试」,重试也没用)
-        const key = ({ tooShort: 'rm.tooShort', limit: 'rm.limit', noJd: 'rm.noJd', auth: 'rm.login' } as Record<string, string>)[d?.error] || 'rm.err'
+        // 每个错误码说自己的实话(2026-08-03 Frank 实撞:noJd 被笼统报成「稍后再试」,重试也没用)。
+        // tooLong/busy 是端点迁移时 route 新发的两个码(见 api/resume-match/route.ts 的 mapped):
+        // tooLong=重试没用,得删内容;busy=重试有用。漏了它俩就又变回笼统的「稍后再试」。
+        const key = ({
+          tooShort: 'rm.tooShort', limit: 'rm.limit', noJd: 'rm.noJd', auth: 'rm.login',
+          tooLong: 'rm.tooLong', busy: 'rm.busy',
+        } as Record<string, string>)[d?.error] || 'rm.err'
         setErr(t(key))
       } else setRes(d)
     } catch { setErr(t('rm.err')) }

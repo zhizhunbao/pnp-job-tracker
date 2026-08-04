@@ -31,10 +31,13 @@ export type Evidence = {
 /**
  * 数据可得性(铁律 ②)。四态互不替代:
  *   ok              有数据,可以直接说
- *   not-published   官方制度性不公布(ON 2026-06 改制后不公布职业清单;SK 不公布逐轮抽选)—— 不是我们没查
+ *   not-published   官方制度性不公布(ON 2026-06 改制后不公布职业清单;中介与雇主的「合作关系」
+ *                   没有任何一级政府建名录)—— 不是我们没查
  *                   ⚠️ 这一态是**最容易说谎的一态**:说「官方不公布」而官方其实公布了,比说「我不知道」
- *                   坏得多(中介正好钻这个空子)。写进 *_POLICY 之前必须有实证,爬完一个目录不算爬完全站
- *                   (MB「不发运营统计」那条错就是这么来的,2026-08-04 已推翻)。
+ *                   坏得多(中介正好钻这个空子)。写进 *_POLICY 之前必须**在 data/crawl 的 html_cache 里
+ *                   找到官方原句**并把 URL + 原句抄进注释,爬完一个目录不算爬完全站。
+ *                   两次翻车都在这上头:MB「不发运营统计」(2026-08-04 推翻)、SK「不公布逐轮抽选」
+ *                   (同日推翻 —— 官方 EOI 页自己挂着结果下载件)。
  *   not-collected   本站未收录(官方有或未核实)—— **不得说成「没有」**
  *   not-applicable  该省不走这套制度(QC 自有体系)
  */
@@ -58,8 +61,17 @@ const numOf = (v: unknown): number | null => {
 /** 抽选:哪些省制度上就没有"等抽选"这一步 / 官方不公布逐轮记录 */
 const DRAWS_POLICY: Record<string, { availability: Availability; note: string; url: string }> = {
   SK: {
-    availability: 'not-published',
-    note: 'SINP 不公布逐轮抽选记录;且 International Skilled Worker 的 Employment Offer 子类**不递 EOI、不进池**(官方 EOI 页明示只有 Occupations In-Demand 与 Express Entry 递 EOI)—— 有雇主 offer 即直接递申请,不存在"被抽中"这一步',
+    // 2026-08-04 复核(data/crawl/sk-sinp/html_cache,ISW EOI System 页)——原来这条写 not-published
+    // 「SINP 不公布逐轮抽选记录」,**是错的**:官方同一页的「EOI Selection Results」节挂着结果下载件
+    //   「Download SINP ISW EOI Selection Results」
+    //   → https://publications.saskatchewan.ca/api/v1/products/102708/formats/113850/download
+    // 官方只说**事前**不预告:「The dates of the selections will not be posted before they take place.」
+    // 事后公布 ≠ 不公布,所以降级成 not-collected(本站还没把这份下载件入库)。
+    // 后半句「Employment Offer 子类不进池」有据,同页原文:
+    //   「If you are eligible under the Occupations In-Demand or Express Entry, you will be able to
+    //     submit an Expression of Interest (EOI).」—— 名单里没有 Employment Offer,故保留。
+    availability: 'not-collected',
+    note: 'SINP 官方在 EOI 页挂「SINP ISW EOI Selection Results」下载件公布逐轮结果(只是不预告下一轮日期),本站尚未收录这份下载件 —— 不是官方没有。另:International Skilled Worker 的 Employment Offer 子类**不递 EOI、不进池**(官方 EOI 页明示只有 Occupations In-Demand 与 Express Entry 递 EOI)—— 有雇主 offer 即直接递申请,不存在"被抽中"这一步',
     url: 'https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/international-skilled-worker-eoi-system',
   },
   NS: { availability: 'not-collected', note: '本站未收录 NS 抽选记录(官方是否公布逐轮数据待核,B4-3)', url: '' },
@@ -103,6 +115,9 @@ const OPS_POLICY: Record<string, { published: boolean; url: string; note: string
     url: 'https://www.ontario.ca/page/2026-ontario-immigrant-nominee-program-updates',
     note: 'ON 没有处理时长/池子统计页,运营数据只有抽选史(多为改制前旧 stream)与公告页;**年度配额在公告页发**(2026-02-06:14,119 nominations)—— 本站尚未收录这一条',
   },
+  // 全表唯一的 published:false。它**永远产不出 not-published** —— lookupOps 里 QC 在这个判断之前
+  // 就被短路成 not-applicable(魁省不走 PNP,不是"官方藏着数据不发")。留 false 只是别让它掉进
+  // 「本站未收录」那句(那会暗示魁省有一份 PNP 运营统计等我们去抓)。
   QC: { published: false, url: '', note: '魁省自有体系,不属 PNP' },
 }
 
@@ -245,6 +260,11 @@ export async function lookupCoverage(pool: any, args: { noc: string; provs?: str
     if (coverage === 'qc') return { province: prov, coverage, availability: 'not-applicable', hits, excluded, note: '魁省自有体系,不参加 PNP' }
     if (coverage === 'listed') return { province: prov, coverage, availability: 'ok', hits, excluded, note: `${prov} 公布全省主清单,查过:${noc} 不在上面` }
     if (coverage === 'exclusion') {
+      // ON 这条 not-published 有据(data/crawl/on-oinp/html_cache,OINP Employer Job Offer 雇主指南
+      // https://www.ontario.ca/page/oinp-employer-job-offer-streams-employer-guide 「Eligible occupation」节):
+      //   「Under the Ontario Workforce Priority stream, the job offered can be in any location in Ontario
+      //     and in any National Occupational Classification (NOC) occupation.」
+      // 官方明写"任何 NOC 都行"= 没有职业清单可公布,不是我们没抓到清单页。
       return {
         province: prov, coverage, availability: 'not-published', hits, excluded,
         note: NO_LIST_PROVINCES.has(prov)
@@ -489,7 +509,17 @@ export async function lookupEE(pool: any, args: { noc: string }): Promise<EeResu
 
 // ── ⑦ checkClaims:外部主张对账三分法 ────────────────────────────────────────
 
-export type ClaimTopic = 'coverage' | 'thresholds' | 'jobs' | 'draws' | 'ops' | 'ee'
+/**
+ * 主张能落到哪张官方表上。前六个各对应一个查询工具;`private-promise` 是**第七个桶,它不查任何表** ——
+ * 「某省有合作公司 / 内部渠道 / 保 offer / 我认识人」这类私人承诺,库里根本没有对应的事实。
+ *
+ * 为什么必须单列(2026-08-04 实录):用户说「中介说曼省有合作公司让我去曼省」,编排层把它归到 ops,
+ * checkClaims 就真去查 MPNP 月度运营统计,答出来是「MPNP 发不发月度运营数据」——
+ * **问的是"有没有合作公司",答的是"发不发统计报表"**。硬查一张不相干的表再把结果当答复,
+ * 比说"核不了"坏得多:数据一变(MB 运营数据进库那天)这条主张就从"官方不公布"变成了"ok",
+ * 等于替中介的承诺背了书。
+ */
+export type ClaimTopic = 'coverage' | 'thresholds' | 'jobs' | 'draws' | 'ops' | 'ee' | 'private-promise'
 /** 中介/朋友的一句话。text 原样带回(不改写别人的话);topic/province 由编排层从自然语言里抽。 */
 export type Claim = { text: string; topic: ClaimTopic; province?: string }
 export type ClaimCheck = {
@@ -504,8 +534,39 @@ export type UnsaidItem = { province: string; facts: ProvCoverage }
 export type ClaimsResult = { noc: string; checked: ClaimCheck[]; uncheckable: ClaimCheck[]; unsaid: UnsaidItem[] }
 
 /**
+ * 私人承诺的判据 = **原话**,不是编排层给的 topic。
+ * topic 是模型猜的:遇到「有合作公司」它只会在六个官方 topic 里挑一个最像的(实测挑了 ops),
+ * 于是一条核不了的主张被硬塞进一张查得到的表。这里按原话兜底改判,任何 topic 进来都先过这道筛。
+ * 只收**承诺私人关系/内部通道/打包票**的词;「两个月就下来」(ops)、「曼省缺木匠」(coverage)
+ * 这些是能对账的事实主张,不许被吃掉。
+ */
+export const PRIVATE_PROMISE =
+  /合作(公司|企业|雇主|单位|关系)|内部(渠道|名额|指标|关系|价)|内推名额|走关系|有关系|认识(人|领导|移民官)|特殊渠道|绿色通道|包(过|下来|拿)|保(过|证过|证拿|证能|你拿|你过)|包?保\s*offer|保证.{0,4}(offer|提名|批)|partner(ed|ship)? (compan|employer|firm)|inside (track|channel|connection)|guarantee\w* (an? )?(offer|nomination|pr\b|approval)|special (channel|access)|connections? (at|with|inside)/i
+
+/**
+ * availability='ok' 时的 why:**一句结论**,不超过一行。
+ * 消费端(chatOrchestrate 的 fact())把 why 截到 110 字 —— 原来 ops 的 why 直接引 OPS_POLICY.note
+ * (实测 200+ 字),截完是半句话。完整的官方原文注留在 facts 里(coverage.note / ops.note …),
+ * 前端出处用那一份,这里只回一句"能对照,数字在上面"。
+ */
+const OK_WHY: Record<ClaimTopic, string> = {
+  coverage: '这条能对照:官方职业清单本站已收录,收没收这个职业见上面的清单行',
+  thresholds: '这条能对照:该省官方门槛条款本站已收录,逐条列在上面',
+  jobs: '这条能对照:上面是本站职位板索引里的在招数(不是该省全部空缺)',
+  draws: '这条能对照:该省官方抽选记录本站已收录,最近一轮见上面',
+  ops: '这条能对照:该省官方运营统计本站已收录,数字与口径见上面',
+  ee: '这条能对照:IRCC 类别抽选清单本站已收录,命中与否见上面',
+  'private-promise': '',    // 私人承诺永远到不了 ok
+}
+/** 私人承诺的答复:说清"核不了"和"为什么谁也核不了",一句话,不评价对方。 */
+const PRIVATE_PROMISE_WHY =
+  '这类主张本站核不了:没有任何一级政府公布中介与雇主的合作名单或内部渠道,省提名只认官方条款,不认私下承诺'
+
+/**
  * 「中介说 X」。本工具**只对账,不评价**:每条主张挂上对应的官方事实与出处,
  * 核不了的说清核不了的原因,再把"他没提的省"单列一格(中介只会说他有渠道的那个省)。
+ * 私人承诺(合作公司/内部渠道/保 offer)按原话改判进 private-promise 桶,**不查任何表**:
+ * 拿一张不相干的官方表去应付它,答出来的就是答非所问(见 ClaimTopic 注释的实录)。
  */
 export async function checkClaims(pool: any, args: { noc: string; teer?: number | null; claims: Claim[] }): Promise<ClaimsResult> {
   const noc = (args.noc || '').trim()
@@ -524,29 +585,36 @@ export async function checkClaims(pool: any, args: { noc: string; teer?: number 
   const uncheckable: ClaimCheck[] = []
   for (const claim of claims) {
     const prov = upper(claim.province ?? '')
+    // 原话优先于 topic:模型认不出私人承诺,只会挑一个最像的官方 topic(见 ClaimTopic 注释的实录)
+    const topic: ClaimTopic =
+      claim.topic === 'private-promise' || PRIVATE_PROMISE.test(claim.text || '') ? 'private-promise' : claim.topic
     let availability: Availability = 'not-collected'
     let facts: unknown = null
     let why = ''
-    if (claim.topic === 'coverage') {
+    if (topic === 'private-promise') {
+      // 一张表都不查:查了也只会查出一个不相干的答案(这就是本桶存在的理由)
+      availability = 'not-published'
+      why = PRIVATE_PROMISE_WHY
+    } else if (topic === 'coverage') {
       const c = prov ? covOf(prov) : null
       availability = c?.availability ?? 'not-collected'
       facts = c ?? null
       why = c?.note ?? '主张没指明省份,查不了'
-    } else if (claim.topic === 'thresholds') {
+    } else if (topic === 'thresholds') {
       const t = thresholds?.provinces.find((r) => r.province === prov) ?? null
       availability = t?.availability ?? 'not-collected'
       facts = t
       why = t?.note ?? '主张没指明省份,查不了'
-    } else if (claim.topic === 'jobs') {
+    } else if (topic === 'jobs') {
       const rows = prov ? jobs.rows.filter((r) => r.province === prov) : jobs.rows
       availability = jobs.availability
       facts = { scope: jobs.scope, checkedAt: jobs.checkedAt, rows }
-    } else if (claim.topic === 'draws') {
+    } else if (topic === 'draws') {
       const d = await lookupDraws(pool, { prov })
       availability = d.availability
       facts = d
       why = d.note ?? ''
-    } else if (claim.topic === 'ops') {
+    } else if (topic === 'ops') {
       const o = await lookupOps(pool, { prov })
       availability = o.availability
       facts = o
@@ -557,7 +625,10 @@ export async function checkClaims(pool: any, args: { noc: string; teer?: number 
       facts = e
       why = e.note
     }
-    const row: ClaimCheck = { claim, bucket: availability === 'ok' ? 'checked' : 'uncheckable', availability, facts, ...(why ? { why } : {}) }
+    // ok 的 why 一律换成一句结论(长注留在 facts 里给出处用),见 OK_WHY 注释
+    if (availability === 'ok') why = OK_WHY[topic]
+    // topic 带回**改判后**的值:原话说了算,消费端才知道这条为什么没去查表(text 仍是原话,一字不改)
+    const row: ClaimCheck = { claim: { ...claim, topic }, bucket: availability === 'ok' ? 'checked' : 'uncheckable', availability, facts, ...(why ? { why } : {}) }
     ;(row.bucket === 'checked' ? checked : uncheckable).push(row)
   }
 

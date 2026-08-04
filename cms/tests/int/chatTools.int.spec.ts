@@ -126,18 +126,43 @@ d('对话工具层(生产库只读)', () => {
       assertEvidence(r)
     })
 
-    it('中介对账三分法:说了的核到 MB,没说的把 BC/NS 单列出来', async () => {
+    it('中介对账三分法:能核的核到 MB,没说的把 BC/NS 单列出来', async () => {
       const r = await checkClaims(pool, {
         noc: CARPENTER, teer: 2,
-        claims: [{ text: '中介说曼省有合作公司,让我去曼省', topic: 'coverage', province: 'MB' }],
+        claims: [{ text: '中介说曼省清单收木匠', topic: 'coverage', province: 'MB' }],
       })
       expect(r.checked).toHaveLength(1)
       expect(r.checked[0].availability).toBe('ok')
+      // ok 的 why 是**一句结论**,不是 200 字取证注(消费端截 110 字会截成半句话)
+      expect(r.checked[0].why!.length).toBeLessThanOrEqual(60)
       const unsaidProvs = r.unsaid.map((u) => u.province)
       expect(unsaidProvs).toContain('BC')
       expect(unsaidProvs).toContain('NS')
       expect(unsaidProvs).not.toContain('MB')          // 他说过的不进第三格
       assertEvidence(r)
+    })
+
+    // 2026-08-04 修正:这条原来断言「合作公司」→ checked/ok,那正是答非所问的病灶
+    // (模型把它归到 ops → 工具去查 MPNP 月度运营统计 → 答"发不发统计报表")。
+    it('私人承诺不查表:「曼省有合作公司」按原话改判,不拿运营统计冒充答复', async () => {
+      const r = await checkClaims(pool, {
+        noc: CARPENTER, teer: 2,
+        claims: [
+          { text: '中介说曼省有合作公司,让我去曼省', topic: 'ops', province: 'MB' },   // 模型给的是 ops
+          { text: '他说保 offer,包过', topic: 'coverage', province: 'MB' },
+        ],
+      })
+      expect(r.checked).toHaveLength(0)
+      expect(r.uncheckable).toHaveLength(2)
+      for (const c of r.uncheckable) {
+        expect(c.claim.topic).toBe('private-promise')   // 原话说了算,topic 被改判
+        expect(c.claim.text).toMatch(/中介说|他说/)      // 但原话一字不改
+        expect(c.availability).toBe('not-published')
+        expect(c.facts).toBeNull()                      // 一张表都没查
+        expect(c.why).toMatch(/核不了/)
+        expect(c.why).not.toMatch(/运营统计|处理时长|月度/)
+      }
+      expect(r.unsaid.map((u) => u.province)).not.toContain('MB')
     })
   })
 
@@ -186,11 +211,15 @@ d('对话工具层(生产库只读)', () => {
       expect(on.hits).toHaveLength(0)                  // 空是空,但 availability 已经说清为什么空
     })
 
-    it('SK 抽选 → not-published(EO 不进池,制度上没有抽选这一步)', async () => {
+    // 2026-08-04 复核推翻:原断言是「SK → not-published(官方不公布逐轮抽选)」,**那是替官方背书**。
+    // 官方 ISW EOI 页自己挂着「Download SINP ISW EOI Selection Results」下载件,只是不预告下一轮日期
+    // (「The dates of the selections will not be posted before they take place.」)→ 降级 not-collected。
+    it('SK 抽选 → not-collected(官方发结果下载件,本站还没收录),不许说成"官方不公布"', async () => {
       const r = await lookupDraws(pool, { prov: 'SK' })
-      expect(r.availability).toBe('not-published')
+      expect(r.availability).toBe('not-collected')
       expect(r.rows).toHaveLength(0)
       expect(r.note).toMatch(/EOI|抽选/)
+      expect(r.note).toMatch(/本站尚未收录|未收录/)
     })
 
     it('NS 抽选 → not-collected(本站未收录),绝不说成 0 轮', async () => {
