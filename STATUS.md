@@ -32,10 +32,24 @@
 >   13 测试绿。两条硬约束落进**类型系统**而不是 prompt:每个数字挂 `evidence{url,fetched,...}`,
 >   `Availability` 四态 `ok / not-published(官方制度性不公布)/ not-collected(本站未收录,不得说成没有)/
 >   not-applicable`。**历史坐实**:`/api/advisor` 当初被关掉(「看着是废话」)的根子就是它从没吃到官方事实表。
-> - **🕳️ 挖出 G5 的真身份**:`lookupOps` 全省给不出数字 —— AB/SK/BC 官方**确实公布**池子人数(AAIP 23,056)、
->   处理时长、配额 YTD,ETL 早抓成 `data/raw/pnp/*-stats.json`,但**三张表从未接 mart、库里没有**。
->   金标那句「23,056/833 ≈ 3.6%」现在只拿得到分子。**G5 不是锦上添花,是「等多久/名额剩多少/被捞概率」
->   这一整类问题的前置条件 → 下一件就是它。**
+> - **🕳️ 挖出 G5 的真身份 → 当天做完**:`lookupOps` 原先全省给不出数字 —— AB/SK/BC 官方**确实公布**
+>   池子人数、处理时长、配额 YTD,ETL 早抓成 `data/raw/pnp/*-stats.json`,却**从未接 mart**。
+>   **G5 不是锦上添花,是「等多久/名额剩多少/被捞概率」这一整类问题的前置条件。**
+> - **✅ G5 全链落地**(`941326f`+`61a873f`,生产库已灌 **93 行**:AB 52 / SK 30 / BC 11):
+>   新表 `pnp_ops_stats`(**一张窄表**,不是三省各一张 —— 三省公布的指标本就不同,宽表必然一堆 NULL;
+>   `lookupOps` 返回 `metrics[]` 正好对上,加第四个省 = 加数据行)。DDL 已代跑生产(含
+>   `payload_locked_documents_rels` 补列)。**金标第一次两头都在库里且同一个官方页**:
+>   AOS 池 **23,056 人**(as_of 07-30)与该通道 **833 邀**(07-15)。**工具只出这两个事实不做除法**——
+>   概率是结论,归编排层。
+>   **🔴 这张表的立身之本**:官方隐私抑制值(AB「Less than 10」/「Not applicable」、BC「<5」、SK「N/A」)
+>   一律 `value=NULL` + `value_text` 存原文,**绝不折成 0** —— 折了就等于替官方编数字,报告会说出
+>   「配额已用 0」这种假话。实测 `value=0` 的行 **0 条**,12 行抑制值全部活着。
+>   `lookupOps` 已换 SELECT,三态按查到的行说话;顺带修 `OPS_POLICY.BC` 的 url 与 ETL 实抓页不一致。179 测试绿。
+> - **📌 G5 记账(下一件)**:AB 通道名在不同 metric 间写法不一致(`Accelerated Tech Pathway` vs
+>   `…(eligible list …)`)→ 编排层按 scope 跨指标拼「某通道配额 + 池内人数」会**静默漏配**三个通道;
+>   金标那个 AOS 恰好同名所以测不出来。**运营类现在仍答不了的**:AB/BC 的等待时间(AB 只有文本积压游标、
+>   BC 无处理时长)、BC 的名额与总分母、NS/NB/NL/PE 连官方页都给不出、全表只存最新一期快照(无趋势)、
+>   所有行无 NOC 维度(「我这职业在池里排第几」答不了)。
 > - **📌 债**:`fields.ts` 的 `status.unlocks` / `pgwpBand.unlocks` 仍指向被删的 `rpt.c.window`(悬空键),
 >   且 `pgwpBand` 这道 Pro 题唯一的消费者就是那行 —— 答了它引擎一个字都不多说。答题卡已摘入口,不修,记账。
 >   死键清单(`landing_cta_quiz`/`jd-report-open`/`home.g.*`/`quiz.bar.*` 等)保留未删,回装还用得上。
