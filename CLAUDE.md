@@ -49,6 +49,11 @@ etl/ (Python: 抓取 → 清洗 → 评分, 写 data/) ──> cms/ (Payload + N
 5. **seed 只入库不清洗;前端只显示不清洗。** 发现前端在做清洗/换算(如已下沉的 `parseSalary` 年薪折算),那是技术债 —— 应下沉成清洗脚本。
 
 ## 数据约定
+
+- **铁律:URL → 数据 → SQL,顺序不许倒**(2026-08-04 立)。找官方数据先 grep `data/crawl/<slug>/manifest.json`(crawl 役周更,全文在 `html_cache/`),**禁止凭印象猜 URL**;抓下来先落 raw/mart,再进库,消费端只读库。
+- **「官方不公布」是需要举证的断言,不是默认值。** 举证 = 一个 URL + 一句官方原句(quote-anchored)。举不出来只能落「本站未收录」。
+  两者在用户那里意思相反:*本站未收录* = 我们的问题,他该去官网看;*官方不公布* = **官方的问题**,他该警惕任何敢承诺时间的人。搞反 = 拿假前提教用户防中介。
+  踩过:`OPS_POLICY.MB.published=false` 凭「爬完 324 页没看见」就写下「官方不发处理时长」,而它发在年报 §9 与月度数据页里;BC 同款。抓不到(如 PE 挡在 WAF 后)一律 `not-collected`。
 - **地点**:大渥太华的各社区(Kanata/Nepean/Orléans…)是「区」,统一 `city=Ottawa`;Orléans 合并(含 Orleans South)。精确地址需含街号,否则 `address` 留空。社区判定:文本社区名优先,文本没写但地址带邮编时用**高置信郊区 FSA 兜底**(central Ottawa 不猜,留空)。
 - **来源真相**:Job Bank 自己聚合 indeed/Talent 等 → 统一显示「Job Bank」;`source` 字段保留原始板。
   `origin`(jobbank/ats/directory)是**发布渠道**,不代表雇主真假;中介已按公司名过滤。
