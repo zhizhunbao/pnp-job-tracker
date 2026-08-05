@@ -105,8 +105,17 @@ export function ChatBox({ compact = false, autoFocus = false }: { compact?: bool
   const taRef = useRef<HTMLTextAreaElement | null>(null)
   const stick = useRef(true)            // 用户往回翻看旧答复时别把他甩到底
   const coarse = useRef(false)          // 触屏:Enter 是换行不是发送(手机上写三句话被 Enter 截断很恼人)
+  // 同一个判据的可渲染版:手机上「Enter 发送,Shift+Enter 换行」是**纯噪音**(没有 Shift 键、
+  // 回车本来就是换行),还白占 composer 下面一行 —— 挂件面板本就窄。按文案铁律它一条都不沾,
+  // 所以**不渲染**而不是渲了再 CSS 藏。初值 false = SSR/首帧当桌面,effect 落地后翻;
+  // 窄视口那条 @media 仍留着当兜底(翻之前的那一帧就已经是藏的)。
+  const [touch, setTouch] = useState(false)
 
-  useEffect(() => { coarse.current = !!window.matchMedia?.('(pointer: coarse)').matches }, [])
+  useEffect(() => {
+    const m = !!window.matchMedia?.('(pointer: coarse)').matches
+    coarse.current = m
+    setTouch(m)
+  }, [])
 
   // autoFocus:翻成 true 就聚焦(挂件每次展开翻一次)。触屏不聚焦 —— 见 props 注释。
   // 这里读 matchMedia 而不是 coarse.current:两个 effect 的执行顺序不该成为聚焦与否的依据。
@@ -280,7 +289,9 @@ export function ChatBox({ compact = false, autoFocus = false }: { compact?: bool
         /* justify-end:手机上 .cbHint 藏了(没有实体 Enter 键,提示是废话),发送钮仍须顶右 */
         .cbBar{display:flex;align-items:center;gap:10px;margin-top:6px;justify-content:flex-end}
         .cbHint,.cbNum{flex:1;min-width:0;font-size:11.5px;color:${UI.text3};white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        @media (max-width:560px){.cbHint{display:none}}   /* .cbNum 不藏:快撞上限了手机上更要看得见 */
+        /* 手机主判据是 coarse pointer(上面的 touch,整条不渲染);这条 @media 只兜首帧那一瞬
+           和「窄视口但非触屏」。.cbNum 不藏:快撞上限了手机上更要看得见 */
+        @media (max-width:560px){.cbHint{display:none}}
         ${CHAT_ANSWER_CSS}
       `}</style>
 
@@ -369,9 +380,11 @@ export function ChatBox({ compact = false, autoFocus = false }: { compact?: bool
             }}
             onKeyDown={onKeyDown} />
           <div className="cbBar">
+            {/* 字数只在快撞上限时出(手机上更要看得见);Enter 提示手机整条不渲染。
+                两个都不出时 .cbBar 的 justify-content:flex-end 顶着发送钮,不会塌回左边 */}
             {input.length > MAX_TEXT - 200
               ? <span className="cbNum">{input.length}/{MAX_TEXT}</span>
-              : <span className="cbHint">{t('chat.hint')}</span>}
+              : touch ? null : <span className="cbHint">{t('chat.hint')}</span>}
             <Button lg disabled={busy || !input.trim()} onClick={() => void ask(input)}>{t('chat.send')}</Button>
           </div>
         </div>

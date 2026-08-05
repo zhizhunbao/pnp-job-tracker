@@ -7,11 +7,12 @@
 // 2026-08-04 傍晚 Frank 拍板再进一步:内联框整节撤掉,**挂件是全站唯一的对话入口**(含 /start)。
 // 于是可发现性从「锦上添花」变成主路径要求 —— 见 HINT_MAX(提示出到用户真的点开为止)。
 //
-// 四条实现红线:
+// 五条实现红线:
 //   ① 平台特性优先(Ponytail 第 3 格):面板是原生 `popover`,顶层渲染,不受任何父级
 //      stacking context / overflow 影响,也不用手搓一套浮层与焦点管理。用 `manual` 而非 `auto`:
 //      auto 的 light-dismiss 会让「点一下页面就收起」,与 Intercom/Crisp 的手感不符;
 //      Esc 关闭由下面 4 行自己挂(manual 不带 Esc)。
+//      **但 popover 只是增强,不是可见性的依据** —— 见红线⑤。
 //   ② **绝不压住吸底动作条** —— 详情页 ApplyBar 是全站主转化。生产实测(offer2pr.com/jobs/17728077):
 //      ApplyBar `position:sticky;bottom:0;z-index:5`,高 60px(1280)/ 73px(375),右缘距视口
 //      227px(1280)/ 39.5px(375)—— 375 上横向压根没地方躲,窄桌面(~900)同样躲不开。
@@ -21,8 +22,12 @@
 //      /plan/* 四张评估页的 .quizBar 手机上是 fixed 78px、z-index 30,同一套测量自动覆盖。
 //      挂件自身 z-index 40:压得住 ApplyBar(5)、quizBar(30),但**在弹框 SCRIM(50)与 AuthModal(70)之下**。
 //   ③ **不自动弹开** —— SaaS 挂件最招人烦的一条。首访只给一句静默提示,9 秒后自己消失,一辈子只出一次。
-//   ④ 面板打开过一次就**常驻 DOM**(popover 只切显示)→ 最小化后本页会话还在;
+//   ④ 面板**壳首帧就常驻 DOM**(内容仍等第一次点开才懒加载)→ 最小化后本页会话还在;
 //      刷新即丢是设计如此(对话不落库、不做长记忆)。
+//   ⑤ **「呼不出来」是不可接受的**(2026-08-04 手机生产事故,三层修):
+//      a. 可见性单一真相 = React 的 `open`(写出 `.clOpen`),`showPopover()` 成不成功都不影响;
+//      b. 懒加载内容套 PanelGuard 错误边界 —— 事故正主是 ChunkLoadError **掀掉了整站**;
+//      c. 看门狗:开了 300ms 还量不到高度就强制普通层,900ms 还不行就把启动器还回去,两级都打点。
 //
 // 与 ChatBox 的边界:壳只传 compact / autoFocus 两个 prop,**不覆盖它的任何类名**
 // (2026-08-04 傍晚拆掉了原来那套 .cbCard/.cbThread 父级覆盖 —— 它的类名一改就静默退化成卡中卡)。
@@ -31,7 +36,7 @@
 // 壳只管开合与避让,一句文案都不生成:正文、结论、出处全在 ChatBox / 服务端工具层。
 import dynamic from 'next/dynamic'
 import { usePathname } from 'next/navigation'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Component, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 
 import { IconChat, IconChevronDown, IconMaximize, IconMinimize } from '../Icons'
 import { useLang } from '../LangProvider'
@@ -40,7 +45,30 @@ import { track } from '@/lib/track'
 
 // 懒加载:挂件挂在全站 layout 上,不该让每个页面都背对话那份 JS —— 第一次点开才下载。
 // next/dynamic 是框架自带能力,不是新依赖。
-const ChatBox = dynamic(() => import('./ChatBox').then((m) => m.ChatBox), { ssr: false })
+// loading 不是装饰:弱网上这个 chunk 要几秒,没它就是一张全屏白纸(手机上面板是全屏接管)。
+const ChatBox = dynamic(() => import('./ChatBox').then((m) => m.ChatBox), {
+  ssr: false,
+  loading: () => <div className="clLoad" aria-hidden><i /><i /><i /></div>,
+})
+
+/**
+ * 🔴 面板内容的错误边界 —— **2026-08-04 生产事故的正主**(手机「呼不出来」)。
+ * next/dynamic 给的是 Suspense **不是** ErrorBoundary:懒加载 chunk 取不到时
+ * `ChunkLoadError` 会一路冒到 Next 的全局边界,**整站被替换成「This page couldn't load」**
+ * (playwright 复现:拦掉 /_next/static/chunks/* 后点挂件 → main 内容清零、启动器一起消失)。
+ * 为什么偏偏是手机:① 弱网/切后台 fetch 被掐;② 手机标签页能活好几天,
+ * 期间任何一次部署都会换 chunk 哈希 → 旧页面点开必 404。桌面刚部署完就刷新,永远撞不上。
+ * React 里没有函数式错误边界,这个 class 是 Ponytail 第 6 格的「最小必要实现」。
+ */
+class PanelGuard extends Component<{ fallback: ReactNode; children: ReactNode }, { dead: boolean }> {
+  state = { dead: false }
+  static getDerivedStateFromError() { return { dead: true } }
+  componentDidCatch(err: unknown) {
+    console.warn('[chat] 面板内容加载失败(多半是 chunk 取不到)', err)
+    track('widget-load-fail')
+  }
+  render() { return this.state.dead ? this.props.fallback : this.props.children }
+}
 
 const HINT_KEY = 'jt.chat.hint.v1'
 // 桌面最大化的记忆位(手机不用:那边本来就是全屏接管)。记住它是因为**这是个人偏好不是一次性动作** ——
@@ -77,7 +105,7 @@ export function ChatLauncher() {
   const [open, setOpen] = useState(false)
   const [mounted, setMounted] = useState(false)   // 打开过一次就不再卸载(会话不因最小化丢失)
   const [hint, setHint] = useState(false)
-  const [noPopover, setNoPopover] = useState(false)  // 老浏览器(Safari<17)退成普通 fixed 层
+  const [force, setForce] = useState(false)          // 看门狗判定「开了却量不到高度」→ 内联 display 硬顶上去
   const [max, setMax] = useState(false)              // 桌面最大化(手机 ≤640 恒为全屏,这个钮那边不出现)
   const [clear, setClear] = useState(BASE)           // 离视口底的实测距离(躲吸底动作条)
   const panel = useRef<HTMLDivElement | null>(null)
@@ -99,15 +127,51 @@ export function ChatLauncher() {
     })
   }, [])
 
-  // 开合走原生 popover;`:popover-open` 的 matches() 同时充当特性检测(不支持会抛 → 退普通层)
+  /**
+   * popover 只是**增强**(顶层渲染、绕开父级 stacking context),**不是可见性的依据** ——
+   * 可见性单一真相是 React 的 `open`,由 `.clOpen` 那条 CSS 兑现(见 CSS 段)。
+   * 所以这里三条:① 只在 effect 里调(元素早已 commit,不会撞未连接的 InvalidStateError);
+   * ② 全包 try/catch,老引擎(Safari<17 没有 showPopover、`:popover-open` 选择器还解析不了)静默降级;
+   * ③ 重开前先问一次当前状态 —— 对已开的 popover 再调 showPopover 会抛 already-open。
+   * 面板从首帧就挂在 DOM 里(见 render),所以依赖只有 open。
+   */
   useEffect(() => {
     const el = panel.current
     if (!el) return
     try {
-      if (open && !el.matches(':popover-open')) el.showPopover()
-      else if (!open && el.matches(':popover-open')) el.hidePopover()
-    } catch { setNoPopover(true) }
-  }, [open, mounted])
+      let on = false
+      try { on = el.matches(':popover-open') } catch { on = false }  // 老引擎:选择器解析不了,当作没开
+      if (open && !on) el.showPopover()
+      else if (!open && on) el.hidePopover()
+    } catch (e) {
+      console.warn('[chat] popover 不可用,退普通 fixed 层', e)
+    }
+  }, [open])
+
+  /**
+   * 看门狗(红线:**呼不出来是不可接受的**)。open 之后 300ms 还量不到高度,说明
+   * 上面那套 CSS/popover 在这个引擎上没兑现 → 把它从顶层拽下来、用内联 display 硬顶上去,并留痕。
+   * 再等 600ms 仍是 0 = 遇到了我们没预料到的引擎:**把面板收掉,让启动器回来** ——
+   * 用户至少还看得见那个钮,而不是对着一张什么都没有的页面。两条都打点,下次出问题有据可查。
+   */
+  useEffect(() => {
+    if (!open) { setForce(false); return }
+    const invisible = () => !panel.current || panel.current.getBoundingClientRect().height === 0
+    const a = setTimeout(() => {
+      if (!invisible()) return
+      console.warn('[chat] 面板开了 300ms 仍不可见 —— 强制退普通 fixed 层')
+      try { panel.current?.hidePopover() } catch { /* 本来就没在顶层 */ }
+      setForce(true)
+      track('widget-fallback')
+    }, 300)
+    const b = setTimeout(() => {
+      if (!invisible()) return
+      console.warn('[chat] 强制普通层后仍不可见 —— 收起面板,把启动器还回去')
+      track('widget-stuck')
+      setOpen(false)
+    }, 900)
+    return () => { clearTimeout(a); clearTimeout(b) }
+  }, [open])
 
   // Esc 关闭(manual popover 不自带)。只在打开时挂,避免全站常驻一个 keydown 监听
   useEffect(() => {
@@ -184,9 +248,15 @@ export function ChatLauncher() {
           </button>
         </div>
       )}
-      {mounted && (
-        <div ref={panel} popover="manual" role="dialog" aria-label={t('chat.title')} style={bottom}
-          className={'clPanel' + (noPopover && open ? ' clOpen' : '') + (max ? ' clMaxed' : '')}>
+      {/* 面板**首帧就在 DOM 里**(display:none),不再「点了才创建」。
+          代价:全站每页多挂一个空壳(一个 div + 三行头部,display:none 不参与布局/绘制)——
+          换来的是 ref 从第一次 commit 就存在,showPopover 永远撞不上「元素还没连接」。
+          ChatBox 的懒加载优势没丢:**壳先在,内容仍等 mounted**(第一次点开才下载那份 JS)。 */}
+      <div ref={panel} popover="manual" role="dialog" aria-label={t('chat.title')}
+        style={force ? { ...bottom, display: 'flex' } : bottom}
+        className={'clPanel' + (open ? ' clOpen' : '') + (max ? ' clMaxed' : '')}>
+        {mounted && (
+          <>
           <div className="clHead">
             <span className="clTitle">{t('chat.title')}</span>
             {/* 桌面最大化:380×600 里读一段长答复很憋(Frank 实测)。手机侧 CSS 里整个藏掉 —— 那边已经全屏。
@@ -200,10 +270,21 @@ export function ChatLauncher() {
             </button>
           </div>
           {/* compact/autoFocus 是 ChatBox 自己声明的契约(2026-08-04 加):壳不再靠覆盖它的类名做样式。
-              autoFocus 跟着 open 翻,每次展开聚焦一次;触屏侧 ChatBox 内部会跳过 */}
-          <div className="clBody"><ChatBox compact autoFocus={open} /></div>
-        </div>
-      )}
+              autoFocus 跟着 open 翻,每次展开聚焦一次;触屏侧 ChatBox 内部会跳过。
+              PanelGuard 兜住 chunk 取不到 —— 不兜的话它会掀掉整站(见类注释) */}
+          <div className="clBody">
+            <PanelGuard fallback={
+              <div className="clFail">
+                <span>{t('chat.err.net')}</span>
+                <button className="clRetry" onClick={() => location.reload()}>{t('chat.retry')}</button>
+              </div>
+            }>
+              <ChatBox compact autoFocus={open} />
+            </PanelGuard>
+          </div>
+          </>
+        )}
+      </div>
     </>
   )
 }
@@ -230,8 +311,13 @@ const CSS = `
   width:min(380px,calc(100vw - 32px));height:min(600px,calc(100dvh - 96px));
   flex-direction:column;overflow:hidden;background:${UI.card};color:${UI.text};
   border:1px solid ${UI.border};border-radius:16px;box-shadow:0 20px 52px rgba(15,23,42,.20)}
-.clPanel:popover-open{display:flex}
-.clPanel.clOpen{display:flex}          /* 不支持 popover 的浏览器:退成普通 fixed 层 */
+/* 🔴 可见性**只认 React 的 open**(它写出 .clOpen),不认 popover 开没开。
+   原来这里还有一条 .clPanel:popover-open{display:flex},两条规则各说各话:
+   ① 老引擎里 :popover-open 解析不了 → 整条被丢弃,可见性就悬在 showPopover 成没成功上;
+   ② 反向更阴 —— hidePopover 万一没生效,那条会把已经 open=false 的面板继续显示出来。
+   .clPanel.clOpen(0,2,0)压得过本文件的 .clPanel,也压得过 UA 那条
+   [popover]:not(:popover-open){display:none}(作者样式 > UA 样式),所以顶层与否都显示得出来。 */
+.clPanel.clOpen{display:flex}
 .clHead{flex:none;display:flex;align-items:center;gap:8px;padding:11px 8px 11px 14px;
   border-bottom:1px solid ${UI.hairline}}
 .clTitle{flex:1;min-width:0;font-size:14px;font-weight:700;color:${UI.text};
@@ -246,6 +332,18 @@ const CSS = `
 .clPanel.clMaxed{inset:12px 12px 12px auto;width:min(1100px,calc(100vw - 24px));height:calc(100dvh - 24px)}
 /* 卡壳与历史区高度由 ChatBox 的 compact 自己管(它的 .cbFill),这里只给容器 —— 壳**不覆盖别人的类名** */
 .clBody{flex:1;min-height:0;display:flex;flex-direction:column;padding:10px 12px 12px;overflow:hidden}
+/* 懒加载那份 JS 在路上(弱网几秒)。手机是全屏接管,没这行就是一张全屏白纸 */
+.clLoad{flex:1;display:flex;align-items:center;justify-content:center;gap:4px}
+.clLoad i{width:6px;height:6px;border-radius:50%;background:#93c5fd;animation:clBlink 1.2s infinite}
+.clLoad i:nth-child(2){animation-delay:.2s}
+.clLoad i:nth-child(3){animation-delay:.4s}
+@keyframes clBlink{0%,80%,100%{opacity:.28}40%{opacity:1}}
+/* chunk 取不到(手机弱网 / 标签页跨了一次部署)。重载是**真的解法**:换回新哈希那份 */
+.clFail{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  padding:16px;font-size:13px;line-height:1.5;color:${UI.text2};text-align:center}
+.clRetry{border:1px solid ${UI.border};background:${UI.card};color:${UI.text};font-family:inherit;
+  font-size:13px;border-radius:8px;padding:7px 16px;cursor:pointer}
+.clRetry:hover{border-color:#bfdbfe}
 
 /* 手机:展开=全屏接管(缩在角落挤成一条没法读长答复);底部留出 iPhone 横条。
    .clPanel.clMaxed 必须一起点名(它比单个 .clPanel 更具体),不点名的话
@@ -255,5 +353,5 @@ const CSS = `
     padding-bottom:env(safe-area-inset-bottom,0px)}
   .clMax{display:none}           /* 已经是全屏,这个钮在这儿没有意义 */
 }
-@media (prefers-reduced-motion:reduce){.clBtn{transition:none}}
+@media (prefers-reduced-motion:reduce){.clBtn{transition:none}.clLoad i{animation:none;opacity:.6}}
 `
