@@ -29,6 +29,22 @@ _mod = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_mod)
 norm_name = _mod.norm_name
 
+# 薪资归一(clean/04d)同一把尺子 —— 这里只做**兜底**,不是第二套清洗逻辑。
+# 为什么需要:抓取(jobbank 容器)与建表(build 容器)并行,jobbank 整文件重写 postings.json,
+# 落在「04d 跑完 → 09 建表」之间的新帖就没人给它算过薪资,带着空值进库(2026-08-05 实撞:
+# 00:22 跑 04d → 00:25 写入 24 条新帖 → 00:42 建表 → 那 24 条在页面上薪资列全空,下一轮才自愈)。
+# 编排顺序已把窗口从 20 分钟压到十几秒,但窗口不为零 —— **mart 是最终表,它不该依赖谁先跑**。
+_sal_spec = importlib.util.spec_from_file_location("clean_salary", Path(__file__).resolve().parent / "clean" / "04d_clean_salary.py")
+_sal_mod = importlib.util.module_from_spec(_sal_spec)
+_sal_spec.loader.exec_module(_sal_mod)
+LATE_SALARY = [0]
+
+
+def fill_salary(j: dict) -> None:
+    """有原文却没归一产物 → 当场补(apply_to 幂等,已有值一律不动)。"""
+    if j.get("salary") and j.get("salaryText") is None and _sal_mod.apply_to(j):
+        LATE_SALARY[0] += 1
+
 # ── 输入/输出全路径 ──────────────────────────────────────────────
 IN_JOBBANK = _paths.PROCESSED_JOBBANK / "postings.json"
 IN_EXPIRED = _paths.PROCESSED_JOBBANK / "expired_ids.json"   # #124 批C:verify_expired.py 判死累积
@@ -49,12 +65,19 @@ IN_REQ_TABLES = [_paths.PNP / f"{p}-req.json"
                  # 走同一张表=引擎 facts.requirements 免费拿到;FED 行不会漏进省级门槛节(那边按省名挑行)
                  _paths.IRCC / "pgwp_rules.json",
                  # G8:联邦段官方规费(program='PR-fees',build_fees.py 产)—— 第三次复用,同上安全
-                 _paths.IRCC / "fees.json"]
+                 _paths.IRCC / "fees.json",
+                 # G9:联邦 Express Entry 三个项目的资格门槛(province='FED',build_ee_rules.py 产,
+                 # quote-anchored)。**一个文件三个项目** → program 逐行写在 requirements[].program
+                 # ('CEC'/'FSW'/'FST'),表级只有 province —— 下面按行覆盖 program,零新表
+                 _paths.EE / "fed-eligibility.json"]
 # G5 省级官方运营统计(配额/已发/剩余、积压游标、EOI 池、处理时长、SIRS 池分布)——
 # 一省一个文件,加省=往这个 list 里加一个;各省字段形状不同,按 province 分派(下面 build_pnp_ops_stats)。
 IN_PNP_STATS = [_paths.PNP / f"{p}-stats.json" for p in ("ab", "sk", "bc", "mb")]
 IN_EE = _paths.EE / "federal-categories.json"  # 联邦 Express Entry 类别抽选(全国单一源)
 IN_EE_DRAWS = _paths.EE / "draws.json"          # 各类别最近一次抽选(CRS/日期/邀请数,build_ee_draws.py 产)
+# G9 联邦官方计分表(两套分,同一张窄表,grid 列区分)——build_ee_rules.py 产,只读 crawl 缓存。
+IN_EE_CRS = _paths.EE / "crs-grid.json"         # CRS 排名分 A/B/C/D 四段(rows)
+IN_EE_ELIG = _paths.EE / "fed-eligibility.json"  # 资格门槛(上面 IN_REQ_TABLES 消费)+ FSW 67 分表(selectionFactors)
 IN_NOC_DESC = _paths.NOC / "descriptions.json"  # NOC 官方名+主要职责(build_noc_descriptions.py 产)
 IN_FIELD_SOURCES = _paths.RAW / "sources" / "field-sources.json"  # 字段级来源注册表(build_field_sources.py 产,E4-04)
 IN_DLI = _paths.DLI / "dli.json"                # PGWP 可申 DLI 子集(build_dli.py 产,E12-03)
@@ -215,14 +238,33 @@ def build_pnp_requirements(files) -> list:
         base = {"province": tbl.get("province", ""), "program": tbl.get("program", "PNP"),
                 "url": tbl.get("url", ""), "pageUrl": tbl.get("pageUrl", ""),
                 "effective": tbl.get("guideEffective", ""), "fetched": tbl.get("fetched", "")}
+        # 源表没写 province = 引擎按省挑行永远挑不到这几条,而且一声不吭(G9 实撞:
+        # fed-eligibility.json 起初没有表级 province)。宁可吵一句,别静默丢门槛。
+        if not base["province"] and tbl.get("requirements"):
+            print(f"  ⚠ {src.name} 缺表级 province → {len(tbl['requirements'])} 条门槛会落成 province='',引擎挑不到")
         for i, r in enumerate(tbl.get("requirements", [])):
+            # value 列是 **integer**。G9 的 EE 规则里 13/23 条的 value 是编码字符串
+            # ('0,1,2,3' / 'outside-QC' / 'eca-required' …),直灌 → 22P02 → 整个 seed 事务回滚。
+            # 照 pgwp 的 rule 行先例:value 留空,机器可读的编码折进 basis 那个 `k=v;k=v` 包
+            # (它已经装着 windowYears=3;minYears=1 这类口径)。valueText=官方原文,一个字不动。
+            # 为什么不塞 appliesNoc/appliesTeer:那两列是**适用范围**(不在范围内=本条不适用),
+            # 而这里是**门槛**(不在名单内=不合格),两者对同一个人给出相反结论。
+            val, basis = r.get("value"), r.get("basis", "")
+            if isinstance(val, str):
+                basis = ";".join(x for x in (basis, f"valueCode={val}") if x)
+                val = None
             pnp_requirements.append({
                 **base, "seq": i,
                 # 一条门槛可以自带出处页(ON 的申请人侧在通道页、雇主侧在雇主指南)——没写才回退表级 url
                 **({"url": r["url"]} if r.get("url") else {}),
+                # 一条门槛也可以自带 program:联邦 EE 一个文件装 CEC/FSW/FST 三个项目(G9),
+                # 三者的门槛互不通用 —— 落成同一个 program 会让引擎拿 FST 的工时去卡 CEC 申请人。
+                # 逐行覆盖,表级 program 仍是默认(省级文件一个文件一个 program,行内不写)
+                **({"program": r["program"]} if r.get("program") else {}),
+                **({"fetched": r["fetched"]} if r.get("fetched") else {}),
                 "stream": r.get("stream", ""), "subject": r.get("subject", "applicant"),
                 "factor": r.get("factor", ""), "op": r.get("op", ">="),
-                "value": r.get("value"), "valueText": r.get("valueText", ""), "unit": r.get("unit", ""),
+                "value": val, "valueText": r.get("valueText", ""), "unit": r.get("unit", ""),
                 # TEER 列表存成 "2,3,4,5" 文本(Payload 没有整型数组列;前端 split 即可)。
                 # ⚠️ 源里既有 list[int](BC 及本轮七省)也有现成字符串(ON):对字符串 join 会逐字符
                 # 插逗号,ON 那几行一直是 "0,,,1,,,2,,,3",引擎 split(',') 按 TEER 挑行永远挑空
@@ -237,7 +279,7 @@ def build_pnp_requirements(files) -> list:
                 # (rules.areaOfPlace 按岗位地点算出来的键),混进一个非地理值,按区域挑行的那几处
                 # (收入表 / 雇主雇员数)迟早挑到不该挑的行。
                 "appliesCondition": r.get("appliesCondition", ""), "familySize": r.get("familySize"),
-                "basis": r.get("basis", ""), "label": r.get("label", ""), "section": r.get("section", ""),
+                "basis": basis, "label": r.get("label", ""), "section": r.get("section", ""),
             })
     return pnp_requirements
 
@@ -377,6 +419,44 @@ def build_pnp_ops_stats(files) -> list:
     return rows
 
 
+def build_ee_points_grid(crs_src, elig_src) -> list:
+    """联邦官方计分表 → 窄表:一行 = 一个 criterion × 一个列表头(build_ee_rules.py 已解析成这个形状,这里直通+加列)。
+
+    **两套分,一张表**:CRS 排名分(池子里排队用)与 FSW 67 分选择因素(够不够格进池子用)是官方
+    明确写明的两回事,但表格形状完全一样(段/小标题/因素/档位/列表头/分值)→ 同一张窄表用 `grid`
+    列区分('CRS' / 'FSW67')。拆两张表只会逼消费端把同一套查表逻辑写两遍,还得记住哪张表叫什么。
+    消费端一律先按 grid 过滤,再按 section/factor/criterion 挑行 —— 不过滤就会把两套分加在一起。
+
+    🔴 points 可空:官方非数字格(「n/a」「Not eligible to apply」)一律 None + 原文留 pointsText,
+    绝不折成 0 —— 折了就等于替官方说「这档 0 分」,而官方说的是「这档根本不能申」。
+
+    与 pnp_* 四表的分工:那四张答省提名的四个问题,本表答联邦段「这一格官方给几分」。
+    抽成函数是为了能单独重算这张表(改了 build_ee_rules.py 之后不必跑全量 09)。"""
+    rows: list = []
+    for grid, src, key in (("CRS", crs_src, "rows"), ("FSW67", elig_src, "selectionFactors")):
+        if not src.exists():
+            continue
+        try:
+            d = json.loads(src.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001 — 单个源坏了不拖垮整个 mart
+            continue
+        for i, r in enumerate(d.get(key, [])):
+            rows.append({
+                "grid": grid,
+                "section": r.get("section", ""), "sectionLabel": r.get("sectionLabel", ""),
+                # summary=各段封顶速览表 / detail=逐档明细表:两者的分值不能相加(明细是速览的展开)
+                "kind": r.get("kind", ""),
+                "tableNo": r.get("table"),     # 页内第几张表(0 起)——列名不叫 table:SQL 保留字
+                "heading": r.get("heading", ""), "factor": r.get("factor", ""),
+                "criterion": r.get("criterion", ""),
+                "columnLabel": r.get("column", ""),   # 同上:column 也是 SQL 保留字
+                "points": r.get("points"), "pointsText": r.get("pointsText", ""),
+                "seq": i,                      # 官方页内原序,重跑稳定(报告要按官方顺序摆)
+                "url": r.get("url", ""), "fetched": r.get("fetched", ""),
+            })
+    return rows
+
+
 def build():
     scored = {}
     if IN_SCORED.exists():
@@ -497,6 +577,7 @@ def build():
                 if key in seen:
                     continue
                 seen.add(key)
+                fill_salary(j)   # 兜底:04d 之后才落盘的行(见文件头),现算现补
                 add_job(ext, slug, title=j.get("title"), source=jd.get("ats") or "ats", origin="ats",
                         country=j.get("country"), province=j.get("province") or guess_prov(j.get("location", "")),
                         city=j.get("city"), district=j.get("district"), address=j.get("address"),
@@ -525,6 +606,7 @@ def build():
             seen.add(key)
             add_company(j.get("employer") or "—", cslug, website=j.get("website"),
                         address=j.get("address"), region=j.get("province"), source="jobbank")
+            fill_salary(j)   # 兜底:04d 之后才落盘的行(见文件头),现算现补
             add_job(ext, cslug, title=j.get("title"), source=j.get("source") or "Job Bank", origin="jobbank",
                     country=j.get("country"), province=j.get("province") or guess_prov(j.get("city", "")),
                     city=j.get("city"), district=j.get("district"), address=j.get("address"),
@@ -606,6 +688,10 @@ def build():
     print(f"  JD 正文匹配: {matched}/{len(jobs)} 岗写入 description;身份预筛: {flagged}")
     if dropped_expired[0]:
         print(f"  #124 验尸剔除: {dropped_expired[0]} 个已过期帖不进 mart(seed 将按既有规则置 closed)")
+    if LATE_SALARY[0]:
+        # 留痕:这个数 = 本轮抢在 04d 之后落盘的新帖。恒为 0 说明窗口已关;持续偏大 = 抓取与建表撞得厉害,
+        # 该去看编排顺序而不是加大兜底。
+        print(f"  薪资兜底: {LATE_SALARY[0]} 个新帖在 04d 之后落盘,09 现算现补(否则页面薪资列为空)")
 
     # #125 批C 首跑教训:重复跨轮累积在 DB(同岗重发 externalId 会换),单轮 mart 快照内每岗唯一 →
     # 快照内标记恒 0。isDup 改由 seed 事务内窗口 UPDATE 全量重算(见 cms seed route),mart 不再携带该位
@@ -921,6 +1007,7 @@ def build():
         "pnp_occupations": pnp_occupations, "pnp_draws": pnp_draws, "pnp_score_factors": pnp_score_factors,
         "pnp_requirements": pnp_requirements, "pnp_ops_stats": build_pnp_ops_stats(IN_PNP_STATS),
         "ee_categories": ee_categories,
+        "ee_points_grid": build_ee_points_grid(IN_EE_CRS, IN_EE_ELIG),
         "noc_descriptions": noc_descriptions,
         "field_sources": field_sources,
         "dli": dli,
