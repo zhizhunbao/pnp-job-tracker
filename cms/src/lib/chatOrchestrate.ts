@@ -220,6 +220,10 @@ export function normalizeSlots(raw: any): Omit<Slots, 'noc'> & { noc: string | n
   const status = ['student', 'graduated', 'working', 'visitor', 'abroad'].includes(statusRaw) ? statusRaw : null
   const claims: SlotClaim[] = (Array.isArray(raw?.claims) ? raw.claims : [])
     .filter((c: any) => typeof c?.text === 'string' && c.text.trim())
+    // 🔴 **问句不是主张**(2026-08-05 实测 C06:抽槽位把用户自己那句「毕业后能留下来吗」当成了一条 claim
+    //    → checkClaims 给它一个「本站尚未收录」→ 答复第一句变成一句没主语的「本站尚未收录这项数据」,
+    //    正对着 Frank 那句「第一句在不在回答问题」)。别人跟你说的话不会是个问句,机械判得掉就别留给模型。
+    .filter((c: any) => !/[?？]\s*$|(?:吗|呢)\s*[?？]?\s*$|까요\s*[?？]?\s*$/.test(String(c.text).trim()))
     .map((c: any): SlotClaim => {
       const p = normProv(c.province)
       const text = c.text.trim().slice(0, 160)
@@ -300,7 +304,10 @@ const AVAIL_SENTENCE: Record<ChatLang, Record<Availability, string>> = {
 // 破折号被模型抄丢了,两个分句直接怼一起,读起来是病句。改成**冒号收口**:即使模型只抄了词,
 // 「On what you were told ("X"): the government does not publish this」本身就是一句完整的话,不靠标点续命。
 const CLAIM_LEAD: Record<ChatLang, [string, string, string]> = {   // [开头, 收尾, 接四态的连接]
-  zh: ['有人跟你说「', '」', '——'],
+  // 「有人跟你说「X」」是记录口吻,不是说话口吻;照抄出去就是一句公文。改成「你听到的「X」这句话——…」,
+  // 整句抄下来读起来就是 Frank 要的那个调子(「老板口头说帮你办,这句话本身没法核实——…」)。
+  // 连接词保持中性:availability='ok' 的主张接的是「这条可以拿下面的官方数字对照」,不能预设「核不了」。
+  zh: ['你听到的「', '」这句话', '——'],
   en: ['On what you were told ("', '")', ': '],
   ko: ['「', '」라고 들으신 건', ' — '],
 }
@@ -313,7 +320,8 @@ const CLAIM_LEAD: Record<ChatLang, [string, string, string]> = {   // [开头, �
  */
 export const MONEY_WHY: Record<ChatLang, string> = {
   zh: '没有任何一级政府公布中介的收费或承诺,所以这条金额谁也核不了,只能看官方条款怎么写',
-  en: 'no government publishes what a private agent charges or promises, so nobody can check this figure against anything official',
+  // 大写开头:它接在四态句的句号后面(`… (not that we failed to find it). no government publishes …` 是实测出来的病句)
+  en: 'No government publishes what a private agent charges or promises, so nobody can check this figure against anything official',
   ko: '중개인의 수수료나 약속을 공개하는 정부는 없으므로 이 금액은 누구도 확인할 수 없습니다',
 }
 /**
@@ -349,7 +357,7 @@ export const AVAIL_MARKERS: Record<ChatLang, Record<Exclude<Availability, 'ok'>,
   },
   en: {
     'not-published': ['does not publish', 'is not published', 'not published', 'do not publish', 'no government publishes', 'nobody can check'],
-    'not-collected': ['not indexed', 'has not indexed', 'not collected', 'no data on', 'not in our index'],
+    'not-collected': ['not indexed', 'has not indexed', 'unindexed', 'not collected', 'no data on', 'not in our index'],
     'not-applicable': ['not applicable', 'outside the provincial nominee'],
   },
   ko: {
@@ -368,63 +376,75 @@ export const AVAIL_MARKERS: Record<ChatLang, Record<Exclude<Availability, 'ok'>,
  *
  * factor 那几条尤其要连主语一起写死:实测模型把 empYears「雇主经营年限」读成「申请人要 3 年经验」,
  * 一句话把结论说反 —— 主语必须长在标签里。
+ *
+ * 🔴 2026-08-05 改形状(Frank:「现在这回答不像人话」):门槛类 label 从**字段名**改成**半句话**。
+ * 病根不在 RULE 而在喂进去的形状 —— `X 要求申请人要达到的语言等级(CLB) = 5 CLB` 是一行表格,
+ * **给它表格它就还你表格**(生产实录整段答复就是逐行念字段名)。现在 label 写成一句话的前半截,
+ * 值接上去就是完整的一句(`NS 要求申请人的语言达到` + `5 CLB`),模型抄到的已经是人话。
+ * 同一个字典还要撑住**出处表**(前端左列 label、右列数值)—— 半句话在表里读作「名目」,
+ * 在 prompt 里读作「句子」,一份文案两处都成立,不必养两套词表(养了必分叉)。
+ * 计数类(岗位数/池子/抽选)保持「名目」形态,由 factLine 用冒号接值 —— `=` 一律不进 prompt。
  */
 type LabelDict = {
   apprOpenings: string; openPostings: string; qcOutside: string; indexNote: string; checked: string
-  listIn: string; listEx: string; occList: string; officialReq: string; requires: string; claimOk: string
+  listIn: string; listEx: string; occList: string; officialReq: string; claimOk: string
+  /** 查过了但一条都没命中(availability='ok' 却没有行):不是「不公布」也不是「没收录」 */
+  noneFound: string
   pass: string; fail: string; unknown: string; short: string
   drawCut: string; drawInv: string; draws: string; opsStats: string
   eeCat: string; eeAll: string; unsaid: string
   opsKeys: Record<string, string>
+  /** 半句话:`${省码} ${factor}` + 值 = 一句完整的话。主语(申请人 / 雇主)必须长在里面。 */
   factor: Record<string, string>
 }
 export const LBL: Record<ChatLang, LabelDict> = {
   zh: {
-    apprOpenings: '可带学徒的在招岗位', openPostings: '在招岗位', qcOutside: '(魁省不走省提名)',
+    apprOpenings: '现在可带学徒的在招岗位', openPostings: '现在的在招岗位', qcOutside: '(魁省不走省提名)',
     indexNote: '索引口径说明:0 表示本站当前索引里没有,不代表该省没有空缺', checked: '查询时间',
-    listIn: '职业清单收录了', listEx: '职业清单排除了', occList: '职业清单', officialReq: '官方门槛', requires: '要求',
-    claimOk: '这条可以拿下面的官方数字对照',
+    listIn: '的官方职业清单收了', listEx: '的官方职业清单排除了', occList: '的官方职业清单', officialReq: '的官方门槛',
+    claimOk: '这条可以拿下面的官方数字对照', noneFound: '本站查过了,这一项没有命中的记录',
     pass: '已达标', fail: '未达标', unknown: '未判定(没拿到你的情况)', short: '还差',
-    drawCut: '最近一轮抽选的最低分数线', drawInv: '最近一轮抽选发出的邀请数', draws: '抽选记录', opsStats: '运营统计',
-    eeCat: '联邦 EE 通道', eeAll: '联邦 EE 通道', unsaid: '官方清单收了这个职业、但对方没提过的省',
-    opsKeys: { eoi_pool_total: 'EOI 池子总人数', eoi_pool: 'EOI 池内人数', allocation: '年度提名名额', remaining: '剩余名额', nominations_ytd: '年内已提名', processing_weeks: '处理周期(周)' },
+    drawCut: '最近一轮抽选的最低分数线', drawInv: '最近一轮抽选发出的邀请数', draws: '的抽选记录', opsStats: '的运营统计',
+    eeCat: '联邦 EE 通道', eeAll: '联邦 EE 通道', unsaid: '官方清单也收了这个职业、但对方没提过的省',
+    opsKeys: { eoi_pool_total: '的 EOI 池子现有人数', eoi_pool: '的 EOI 池内人数', allocation: '今年的提名名额', remaining: '今年剩余的提名名额', nominations_ytd: '今年已经发出的提名数', processing_weeks: '官方公布的处理周期' },
     factor: {
-      language: '申请人要达到的语言等级(CLB)', languageExempt: '可豁免语言的等级(申请人)',
-      experience: '申请人要有的工作经验', income: '申请人家庭要有的收入', wage: '这份工作至少要给到的工资',
-      empYears: '雇主(不是申请人)已经营的年限', empRevenue: '雇主(不是申请人)的年营业额', empStaff: '雇主(不是申请人)的员工数',
+      language: '要求申请人的语言达到', languageExempt: '规定申请人可以豁免语言的等级是',
+      experience: '要求申请人的工作经验满', income: '要求申请人家庭的收入达到', wage: '要求这份工作至少给到',
+      empYears: '要求雇主(不是申请人)已经营满', empRevenue: '要求雇主(不是申请人)的年营业额至少', empStaff: '要求雇主(不是申请人)至少有员工',
     },
   },
   en: {
-    apprOpenings: 'apprentice-friendly openings', openPostings: 'open postings', qcOutside: '(QC is outside PNP)',
+    apprOpenings: 'apprentice-friendly openings right now', openPostings: 'open postings right now', qcOutside: '(QC is outside PNP)',
     indexNote: 'index note: 0 means nothing in our index right now, not that the province has none', checked: 'checked',
-    listIn: 'occupation list includes', listEx: 'occupation list EXCLUDES', occList: 'occupation list', officialReq: 'official requirements', requires: 'requires',
+    listIn: 'officially lists', listEx: 'officially EXCLUDES', occList: 'official occupation list', officialReq: 'official requirements',
     claimOk: 'we do have official numbers to check this against, see the figures below',
+    noneFound: 'we did check this record — this occupation simply does not appear in it',
     pass: 'met', fail: 'not met', unknown: 'not judged (your situation not given)', short: 'short by',
     drawCut: 'latest draw cutoff', drawInv: 'invitations in the latest draw', draws: 'draw history', opsStats: 'operational stats',
     eeCat: 'federal EE category', eeAll: 'federal EE categories',
     // 这句会被整句抄进答复,写成能直接当句子用的形状(旧版「provinces whose … but nobody mentioned」抄出来不成句)
     unsaid: 'other provinces whose official lists also cover this occupation, which nobody mentioned',
-    opsKeys: { eoi_pool_total: 'people in the EOI pool (total)', eoi_pool: 'people in the EOI pool', allocation: 'yearly nomination allocation', remaining: 'allocation left', nominations_ytd: 'nominations so far this year', processing_weeks: 'processing time (weeks)' },
+    opsKeys: { eoi_pool_total: 'EOI pool size right now', eoi_pool: 'EOI pool size right now', allocation: 'nomination allocation for the year', remaining: 'nomination allocation still left', nominations_ytd: 'nominations issued so far this year', processing_weeks: 'processing time the province publishes' },
     factor: {
-      language: 'the applicant to reach this language level (CLB)', languageExempt: 'this language level for the applicant to be exempt',
-      experience: 'the applicant to have this much work experience', income: 'the applicant to have this household income',
-      wage: 'the job to pay at least this wage', empYears: 'the employer (not the applicant) to have been in business this long',
-      empRevenue: 'the employer (not the applicant) to have at least this annual revenue', empStaff: 'the employer (not the applicant) to have at least this many staff',
+      language: 'requires the applicant to reach a language level of', languageExempt: 'lets the applicant skip the language test at a level of',
+      experience: 'requires the applicant to have work experience of', income: 'requires the applicant household income of at least',
+      wage: 'requires this job to pay at least', empYears: 'requires the employer, not the applicant, to have been in business for',
+      empRevenue: 'requires the employer, not the applicant, to have annual revenue of at least', empStaff: 'requires the employer, not the applicant, to have staff of at least',
     },
   },
   ko: {
-    apprOpenings: '견습 가능 채용 공고', openPostings: '채용 공고', qcOutside: '(퀘벡은 주정부 이민 대상 아님)',
+    apprOpenings: '현재 견습 가능 채용 공고', openPostings: '현재 채용 공고', qcOutside: '(퀘벡은 주정부 이민 대상 아님)',
     indexNote: '색인 안내: 0은 현재 본 사이트 색인에 없다는 뜻이며 해당 주에 공석이 없다는 뜻이 아닙니다', checked: '조회 시각',
-    listIn: '직업 목록에 포함됨', listEx: '직업 목록에서 제외됨', occList: '직업 목록', officialReq: '공식 요건', requires: '요건',
-    claimOk: '이 건은 아래 공식 수치와 대조할 수 있습니다',
+    listIn: '공식 직업 목록에 들어 있는 직업', listEx: '공식 직업 목록에서 제외된 직업', occList: '공식 직업 목록', officialReq: '공식 요건',
+    claimOk: '이 건은 아래 공식 수치와 대조할 수 있습니다', noneFound: '조회했으나 이 직업에 해당하는 기록이 없습니다',
     pass: '충족', fail: '미충족', unknown: '판정 불가(본인 상황 미제공)', short: '부족분',
     drawCut: '최근 추첨 커트라인', drawInv: '최근 추첨 초청 건수', draws: '추첨 기록', opsStats: '운영 통계',
     eeCat: '연방 EE 카테고리', eeAll: '연방 EE 카테고리', unsaid: '공식 목록에 이 직업이 있으나 상대가 말하지 않은 주',
-    opsKeys: { eoi_pool_total: 'EOI 풀 전체 인원', eoi_pool: 'EOI 풀 인원', allocation: '연간 지명 배정', remaining: '남은 배정', nominations_ytd: '올해 누적 지명', processing_weeks: '처리 기간(주)' },
+    opsKeys: { eoi_pool_total: 'EOI 풀 전체 인원', eoi_pool: 'EOI 풀 인원', allocation: '올해 지명 배정', remaining: '남은 지명 배정', nominations_ytd: '올해 누적 지명', processing_weeks: '주정부가 공개한 처리 기간' },
     factor: {
-      language: '신청인이 도달해야 할 언어 등급(CLB)', languageExempt: '언어 면제 기준 등급(신청인)',
-      experience: '신청인에게 필요한 경력', income: '신청인 가구 소득', wage: '이 일자리가 지급해야 할 최저 임금',
-      empYears: '고용주(신청인 아님)의 사업 운영 기간', empRevenue: '고용주(신청인 아님)의 연 매출', empStaff: '고용주(신청인 아님)의 직원 수',
+      language: '요건 — 신청인의 언어 등급은', languageExempt: '요건 — 언어 면제 기준 등급(신청인)은',
+      experience: '요건 — 신청인의 경력은', income: '요건 — 신청인 가구 소득은', wage: '요건 — 이 일자리의 최저 임금은',
+      empYears: '요건 — 고용주(신청인 아님)의 사업 운영 기간은', empRevenue: '요건 — 고용주(신청인 아님)의 연 매출은', empStaff: '요건 — 고용주(신청인 아님)의 직원 수는',
     },
   },
 }
@@ -432,9 +452,17 @@ export const LBL: Record<ChatLang, LabelDict> = {
 const fact = (tool: string, label: string, value: number | null, valueText: string, unit: string, ev: { url: string; fetched: string }): Fact => ({
   tool, label: label.slice(0, 320), value, valueText: valueText.slice(0, 110), unit, evidence: { url: ev.url, fetched: ev.fetched },
 })
-/** 四态成句 + 官方原文摘要一起带走:摘要跟着 valueText 截到 110 字,够模型分清「不公布」和「没收录」,又不吃光 prompt 预算。 */
+/**
+ * 四态成句 + 官方原文摘要一起带走:摘要跟着 valueText 截到 110 字,够模型分清「不公布」和「没收录」,又不吃光 prompt 预算。
+ *
+ * 🔴 `availability === 'ok'` 却走到这条路 = **查过了但没有命中**(EE 全表查完这个职业一个类别都不在、
+ * 某省清单查过但没这个职业)。旧版把 AVAIL_SENTENCE.ok 那个内部占位符 `ok` 原样喂了出去,
+ * 于是英文答复里出现「Federal Express Entry categories are open for this occupation」——
+ * 把「一个类别都不在」说成了「都能走」,**意思正好说反**(2026-08-05 实测 C06 英文)。
+ * 中文侥幸没错是因为 C1 的中文 note 补了后半句,en/ko 没有 note → 只剩一个 `ok`。所以在这里就换成人话。
+ */
 const statusFact = (tool: string, label: string, av: Availability, note: string, url: string, lang: ChatLang) =>
-  fact(tool, label, null, `${AVAIL_SENTENCE[lang][av]}${note ? ` — ${note}` : ''}`, 'status', { url, fetched: '' })
+  fact(tool, label, null, `${av === 'ok' ? LBL[lang].noneFound : AVAIL_SENTENCE[lang][av]}${note ? ` — ${note}` : ''}`, 'status', { url, fetched: '' })
 
 /**
  * 剧本(设计 §四):`expMonths === 0` 必加学徒岗计数;有 claims 必调 checkClaims。
@@ -504,12 +532,20 @@ export async function collectFacts(
     }
   }
   // ③ 官方门槛(只摆被点名省的;need 是官方数,verdict 出自 rules.ts,本层不改)
-  for (const p of thresholds.provinces) {
+  // 🔴 **材料不是提纲**(和上面岗位数同一条教训):没点名省时 lookupThresholds 会把九个省全给回来,
+  //    九省 × 四行 = 三十多条门槛,模型必然一省一句地念(2026-08-05 实测 C14 英文,一句话点了九个省)。
+  //    点过名的省排前,最多三个 —— 追问「别的省什么要求」照样答得了,「省份点名册」这条诱惑掐掉。
+  const thrProvs = [...thresholds.provinces]
+    .sort((a, b) => Number(slots.provs.includes(b.province)) - Number(slots.provs.includes(a.province)))
+    .slice(0, 3)
+  for (const p of thrProvs) {
     if (p.availability !== 'ok') { out.push(statusFact('lookupThresholds', `${p.province} ${T.officialReq}`, p.availability, zhOnly(p.note, lang), '', lang)); continue }
     for (const r of p.rows.filter((x) => x.need != null).slice(0, 4)) {
-      // verdict/short 也是内部速记(verdict= 在泄露词表里),同样在这一层就换成人话
-      const v = T[r.verdict as 'pass' | 'fail' | 'unknown'] ?? ''
-      out.push(fact('lookupThresholds', `${p.province} ${T.requires}: ${T.factor[r.factor] ?? r.factor}`, r.need,
+      // verdict/short 也是内部速记(verdict= 在泄露词表里),同样在这一层就换成人话。
+      // 🔴 「未判定」且没差额 = 一个字的信息都没有,却会被模型抄成「具体未判定」这种废话
+      //    (2026-08-05 实录 C13 中文答复最后半句)。没话说就别给材料 —— 少给比多写一条 RULE 管用。
+      const v = r.verdict === 'unknown' && r.short == null ? '' : (T[r.verdict as 'pass' | 'fail' | 'unknown'] ?? '')
+      out.push(fact('lookupThresholds', `${p.province} ${T.factor[r.factor] ?? r.factor}`, r.need,
         `${v}${r.short != null ? `,${T.short} ${r.short}` : ''}`, r.unit, r.evidence))
     }
   }
@@ -564,7 +600,10 @@ export async function collectFacts(
       const sep = sepOf(lang)
       const isPromise = c.claim.topic === 'private-promise' || PRIVATE_PROMISE.test(c.claim.text || '')
       const why = zhOnly(c.why, lang).trim()
-      const tail = isPromise ? `${sep}${PROMISE_WHY[lang]}` : (why && why.length <= 80 ? `${sep}${why}` : '')
+      // availability='ok' 时连 why 都不要:T.claimOk 已经把「这条能拿下面的官方数字对照」说完了,
+      // 再接一句 C1 的「这条能对照:上面是本站职位板索引里的在招数」就是同一句话说两遍(2026-08-05 实测)。
+      const tail = isPromise ? `${sep}${PROMISE_WHY[lang]}`
+        : (c.availability !== 'ok' && why && why.length <= 80 ? `${sep}${why}` : '')
       out.push(fact('checkClaims', `${lead}${quote(c.claim.text)}${close}${state}${tail}`, null, zhOnly(c.why, lang), 'claim',
         { url: c.claim.province ? `/?prov=${c.claim.province}` : '/', fetched: '' }))
     }
@@ -586,13 +625,28 @@ export async function collectFacts(
 // 自己给自己制造 guard 违规。无编号的破折号行没有这个副作用。
 // 单位也按用户语言给:prompt 里留着 `= 3 jobs`,模型就会抄出「3 jobs 个带学徒岗位」这种叠词
 // (2026-08-04 实测)。喂进去就是干净的,比回来再修便宜。
-const factLine = (f: Fact, lang: ChatLang) => {
-  // 四态行写成**带主语的一句话**(`MB draw history: 本站尚未收录…`)。旧形状 `X = - | 句子` 让模型只抄了
-  // 后半句,答复里就浮着一句没主语的「Our site has not indexed this yet」(2026-08-04 实录)。
-  if (f.unit === 'status') return `- ${f.label}: ${f.valueText}`
-  const u = f.value != null ? unitText(f.unit, lang) : ''
-  return `- ${f.label} = ${f.value != null ? f.value : '-'}${u ? ` ${u}` : ''}${f.valueText ? ` | ${f.valueText}` : ''}`
+//
+// 🔴 2026-08-05:`=` 从这里彻底消失。旧形状 `- 标签 = 值 | 备注` 是**一行表格**,模型最省力的路
+// 就是照抄一行表格 —— 生产实录整段答复就是这么来的(韩文那轮甚至把 `=` 原样抄了出去,撞 findFactDump
+// 连撞两次,一段本来能用的答复被降级成清单)。现在一条 fact 渲染出来就是**一句话**:
+//   门槛类(lookupThresholds)label 是半句话,值直接续上 → 「NS 要求申请人的语言达到 5 CLB」;
+//   计数类 label 是名目,冒号接值 → 「MB 现在的在招岗位 (NOC 72310): 3 个岗位」;
+//   四态/主张行 label 本身已经是成品句。
+/** 一条 fact → 一句话(prompt 与降级清单共用同一份口径,不许两处各写各的)。 */
+export function sayFact(f: Fact, lang: ChatLang): string {
+  if (f.unit === 'status') return `${f.label}: ${f.valueText}`
+  // 英文单复数:喂进去的是 `1 jobs`,抄出来的就是「1 jobs in ON」(2026-08-05 实测)。
+  // 88% 是英文流量,这种小语法错读者一眼看得见 —— 在喂之前就改对,比回来再修便宜。
+  const u0 = f.value != null ? unitText(f.unit, lang) : ''
+  const u = lang === 'en' && f.value === 1 ? u0.replace(/s$/, '') : u0
+  const v = f.value != null ? `${f.value}${u ? ` ${u}` : ''}` : f.valueText
+  if (!v) return f.label                                   // 主张行:label 就是整句话,别再甩个「: -」
+  // 门槛行的 label 是半句话(值是这句话的宾语);其余是「名目 + 数值」,冒号连
+  const head = f.tool === 'lookupThresholds' ? `${f.label} ${v}` : `${f.label}: ${v}`
+  const note = f.value != null && f.valueText ? f.valueText : ''
+  return note ? `${head}(${note})` : head
 }
+const factLine = (f: Fact, lang: ChatLang) => `- ${sayFact(f, lang)}`
 
 /** facts → 紧凑文本(预算内逐条塞,塞不下就停;尾部优先级最低,砍掉不影响主线)。 */
 export function factsBlock(facts: Fact[], budget = PROMPT_BUDGET, lang: ChatLang = 'en'): string {
@@ -613,11 +667,11 @@ const PLAYBOOK_ZERO_EXP =
   + 'An experience requirement is a matter of TIMING, not eligibility: say how many months short they are and where the work counts. '
   + 'NEVER phrase it as "you do not qualify" or "you fail".'
 const PLAYBOOK_CLAIMS =
-  'PLAYBOOK: a third party told them something. Answer in three buckets: what the official data confirms or contradicts, '
-  + 'what cannot be checked and WHY (not published vs not indexed), and which provinces that person never mentioned. '
-  + 'Each claim gets its own sentence carrying its own state sentence from FACTS — never one sentence for two claims. '
-  + 'If they ask whether it is worth it or whether to trust someone, you do NOT judge: say what can be checked against '
-  + 'official records and what cannot, and let those two lists be the answer.'
+  'PLAYBOOK: a third party told them something, so what they really want to know is whether it holds up and what they should go '
+  + 'and check. Sentence one: say straight out whether that promise can be checked at all, and why not if it cannot. Then the '
+  + 'things they CAN check, together in one sentence. Each claim gets its own sentence carrying its own state — never one sentence '
+  + 'for two claims. If they ask whether it is worth it or whether to trust someone, you do NOT judge: what can be checked against '
+  + 'official records and what cannot IS the answer.'
 /**
  * 🔴 概率类问题走自己的路(2026-08-04 生产实录:追问「What are my odds of being picked?」
  * 回来的是上一轮那批清单与门槛,一个字没答概率)。本站红线是**不算胜率**,所以正确答复不是绕开话题,
@@ -636,6 +690,10 @@ const ODDS_RE = /\bodds\b|\bchances?\b|probabilit|likelihood|how likely|概率|�
 /** 「找到工作的机会」问的是岗位不是抽选池:带这些词就不走概率剧本(否则会把一句抽选池的话答给找工作的人)。 */
 const JOBWORD_RE = /\bjobs?\b|\bposting|\bwork\b|\bhir(?:e|ing)|\bemploy|岗位|職位|工作|就业|就業|일자리|취업/i
 export const isOddsQuestion = (text: string) => ODDS_RE.test(text) && !JOBWORD_RE.test(text)
+/** 「他问的是抽选/名额/等多久吗」:只有问到了,那两个工具的四态行才是答案而不是管道内情。 */
+const DRAW_TOPIC_RE =
+  // ⚠️ 「提名 / nomination」不收:满大街的问题都带这两个字(「中介说包省提名」),收了等于没过滤
+  /\bdraws?\b|cutoff|invitation|quota|allocation|processing time|how long|\bwait\b|抽选|抽籤|分数线|名额|邀请|处理周期|等多久|多久|추첨|커트라인|초청|배정|처리 기간|얼마나 걸리/i
 
 /**
  * facts 指纹(FNV-1a → 7 个字母)。**这不是装饰,是正确性**:
@@ -656,7 +714,10 @@ export function factsFingerprint(facts: Fact[]): string {
 
 export function synthMessages(
   facts: Fact[], userText: string, lang: ChatLang,
-  opts: { zeroExp: boolean; hasClaims: boolean; occ: string; forbid?: string[]; banned?: string[]; history?: ChatTurn[] },
+  opts: {
+    zeroExp: boolean; hasClaims: boolean; occ: string
+    forbid?: string[]; banned?: string[]; sameOpen?: string[]; history?: ChatTurn[]
+  },
 ): ChatMessage[] {
   const L = LANG_NAME[lang]
   const isOdds = isOddsQuestion(userText)
@@ -665,11 +726,22 @@ export function synthMessages(
     // 🔴 病根就在这条(2026-08-04 生产实录):这一步的目标曾经是「把 facts 组织成人话」,于是模型
     //    按 FACTS 的顺序背材料 —— 问「值不值」答的是清单与门槛,追问「概率多大」回来的还是那批清单,
     //    两轮几乎一字不差。目标必须是**回答这一个问题**,facts 是材料不是提纲。
-    'RULE 0 (this outranks every other rule): you are answering ONE question. Read QUESTION first, work out what it actually asks, '
-      + 'and make your FIRST sentence the answer to it. FACTS are raw material, not an outline — never walk through them in order, '
-      + 'and leave out every line that does not bear on the question. If FACTS cannot answer it, say exactly that in the first '
-      + 'sentence and name what is missing (for example that the government does not publish it); never answer a different question '
-      + 'instead, and never pad the reply with facts nobody asked about.',
+    'RULE 0 (this outranks every other rule): you are answering ONE person, not filling in a form. Read QUESTION first and work out '
+      + 'what they are actually worried about or trying to decide, then make your FIRST sentence speak to THAT worry. FACTS are raw '
+      + 'material, not an outline — their order is our storage order and it must never become the order of your reply; leave out every '
+      + 'line that does not bear on the worry. If FACTS has nothing on it, say in the first sentence that WE do not have that record — '
+      + 'and never say that a government does not publish something unless a FACTS line says so about that exact thing (blaming the '
+      + 'government for a gap that is ours is a lie in the other direction). Never answer a different question instead, and never pad '
+      + 'the reply with facts nobody asked about.',
+    // 🔴 组织方式(2026-08-05,Frank:「按自己的字段顺序倾倒」):读者要的是「这事靠不靠谱、我该去核什么」,
+    //    所以第二句起按**他能拿去做什么**分两拨,能核的排前 —— 不是按我们的表分。
+    'RULE 0b: after that first sentence, sort what is left by what the READER can do with it, never by what kind of record it came '
+      + 'from. First the things he can check or settle himself — put them together in ONE sentence as a short list ("the province asks '
+      + 'the employer to have been in business N years, you to reach CLB N, and N months of experience"), never one sentence per '
+      + 'requirement and never one sentence per province. Then, only if it still matters, the things nobody can check, each with its own '
+      + 'state sentence. You may end with ONE short sentence saying what single question or document settles one of those checkable '
+      + 'items (for example that how long the company has been running is settled by asking the employer) — state it as a fact about '
+      + 'what settles it, never as advice, never with the words recommend / should / make sure / hurry.',
     `RULE 1 (hard): every number you write MUST appear verbatim in FACTS or in the QUESTION. Do not add up, average, convert or `
       + 'estimate anything — a number you computed yourself is a lie here. That includes re-notating a number the reader wrote: if they '
       + 'typed 2 万, write 2 万, never 20,000.',
@@ -679,10 +751,12 @@ export function synthMessages(
       + 'written in Arabic digits exactly as FACTS has it (3, 15, 477), never spelled out in words.',
     // ② 语义要留、代码要走:四态是我们的内部枚举,读者看不懂 NOT-PUBLISHED,但「不公布」和「没收录」的区别一步都不能少
     // ② + 状态合并回归:句子已经在数据层写好了,模型只许照抄,一句只能盖一条主张
-    `RULE 3 (hard): each FACTS line that has no number already carries its state as a finished sentence in ${L}. Copy that sentence `
-      + 'for that line — do not translate it, do not shorten it, do not drop the part in brackets. Two different state sentences may '
-      + 'NEVER be covered by one sentence of yours: "the government does not publish this" and "our site has not indexed this yet" are '
-      + 'different facts, and merging them is a lie. Give each claim its own sentence with its own state. Never print an internal code '
+    `RULE 3 (hard): each FACTS line that has no number already carries its state as a finished sentence in ${L}. Use that wording for `
+      + 'that line: you may fold it into one natural sentence of your own about that one claim, but the sentence must still say WHO does '
+      + 'not have the information (the government does not publish it / our site has not indexed it) and WHAT it is about. Two different '
+      + 'state sentences may NEVER be covered by one sentence of yours: "the government does not publish this" and "our site has not '
+      + 'indexed this yet" are different facts, and merging them — or softening either one into "there is no data" — is a lie. Give each '
+      + 'claim its own sentence with its own state. Never print an internal code '
       + '(NOT-PUBLISHED, NOT-COLLECTED, N-A, INDEX SCOPE) or a field name (availability, evidence, verdict, scope, tool names), and '
       + 'never merge any state into "there is none". Always name WHAT the sentence is about (the label on that line): a state sentence '
       + 'floating with no subject ("our site has not indexed this yet", about nothing) tells the reader nothing.',
@@ -692,9 +766,13 @@ export function synthMessages(
       + 'FACTS lines are unnumbered — never refer to "fact number N" and never repeat the two-letter tags as codes the reader must decode.',
     // 🔴 实测的失败形态就是这个:把 FACTS 当稿子逐行抄(「ON requires … = 5 CLB」「AB open postings … equal 162 jobs」)。
     //    数字全溯得回 facts,所以 guard 放行 —— 只能在这条规则 + 出口的 findFactDump 两头堵。
-    'RULE 5b (hard): never transcribe a FACTS line. No "=" anywhere in the reply, no "label = value" shapes, and never one sentence '
-      + 'per province: if several provinces carry the same kind of number, they go in ONE sentence, and if they do not help answer the '
-      + 'question they do not go in at all. A reply that walks down the FACTS list is a failed reply.',
+    'RULE 5b (hard): never transcribe a FACTS line. No "=" anywhere in the reply, no "label: value" or "label = value" shapes, and '
+      + 'never one sentence per province: if several provinces carry the same kind of number, they go in ONE sentence, and if they do '
+      + 'not help answer the question they do not go in at all. A reply that walks down the FACTS list is a failed reply.',
+    // 🔴 句式雷同 = 在念表格(2026-08-05 实录:"NS requires the applicant to reach…" / "NS requires the applicant to have…"
+    //    / "NS requires the employer to…" 连着三句)。出口有 findSameOpening 机械复查这条。
+    'RULE 5c (hard): no two sentences in a row may begin with the same words, and three sentences with the same opening is a failed '
+      + 'reply — that shape means you are reading a table out loud. Requirements that share an opening belong in ONE sentence.',
     // ① 语言纯度(手法照 api/advisor 的建议行那条:专名保留 + 其余一律目标语,不重造)
     `RULE 6 (hard): write EVERY word in ${L}. FACTS are English shorthand — never paste a FACTS line, a FACTS label or a FACTS `
       + 'unit word (jobs, openings, postings, years, months, weeks, days, points, people, invitations, spots, cutoff, latest, requires) '
@@ -703,12 +781,15 @@ export function synthMessages(
       + 'PNP, EE, CRS, CLB, NOC, TEER, LMIA plus two-letter province codes. Keep the subject straight: a requirement on THE EMPLOYER '
       + 'is not a requirement on the applicant.',
     // ③ 上游忽略 max_tokens(friendLlm 顶部实测记录)→ 长度只能靠这条 + 出口截断
-    `RULE 7 (hard): at most ${LEN_CAP[lang]} characters and at most eight sentences. Everything past that is cut off before the reader `
-      + 'sees it, so lead with the facts that matter and drop the rest. Never restate a number you already gave, and never write a '
-      + 'closing summary sentence.',
+    `RULE 7 (hard): at most ${LEN_CAP[lang]} characters and at most eight sentences — but the target is three or four, plus one more `
+      + 'for each separate thing this person was told. Stop the moment '
+      + 'the question is answered; an extra fact nobody asked for makes the reply worse, not fuller. Everything past the cap is cut off '
+      + 'before the reader sees it. Never restate a number you already gave, and never write a closing summary sentence.',
     // ④ 没有 fact 撑腰的政策断言:数字 guard 拦不住,但错了一样赔信任
-    'RULE 8 (hard): you may say only three kinds of thing — (a) restate a FACTS line in your own words, (b) state plainly that FACTS '
-      + 'does not cover something, (c) state that a claim cannot be checked and why. You may NOT generalise ("usually", "in general", '
+    'RULE 8 (hard): you may say only four kinds of thing — (a) restate a FACTS line in your own words, (b) state plainly that FACTS '
+      + 'does not cover something, (c) state that a claim cannot be checked and why, (d) for ONE requirement that is already in FACTS, '
+      + 'say what single question the reader could ask to settle whether it is met — naming NO document, programme, authority or '
+      + 'process that is not already in FACTS. You may NOT generalise ("usually", "in general", '
       + '"most provinces"), rate competition or difficulty, estimate a chance, a wait or a probability, predict any outcome, describe '
       + 'what governments, agents, schools or employers normally do, or tell the reader to hurry, pay, refuse, move or study more. '
       + 'If a sentence would come from your own knowledge rather than a FACTS line, delete it.',
@@ -738,39 +819,79 @@ export function synthMessages(
   // 概率类问题**不给岗位数当材料**:在招岗位与「会不会被抽中」无关,而只要摆在 FACTS 里,
   // 模型就会拿它顶上(2026-08-04 实录:一句拒答之后跟着 BC 229、AB 162、ON 121、QC 55)。
   // 少给材料比多写一条规则管用 —— 数字照旧在 facts 里(出处区和 guard 的账一分不少),只是不进这次的稿子。
-  const rest = facts.filter((f) => f.unit !== 'claim' && !(isOdds && f.unit === 'jobs'))
+  // 🔴 抽选/运营那两条**四态行**是我们的管道内情,不是他的答案(2026-08-05 实测英文 C13 末尾两句:
+  //    "Our site has not indexed Nova Scotia draw history yet. Our site has not indexed Nova Scotia operational stats yet." ——
+  //    人家问的是「老板的承诺能不能信」)。RULE 里写了「别提没人问的记录」照样被抄,所以**不给材料**:
+  //    只有问到抽选/名额/等多久时才摆出来(那时它是正经答案:「这个省的抽选记录本站还没收」)。
+  //    facts 一条不少(出处区与 guard 的账不动),只是不进这次的稿子 —— 和概率题不给岗位数同一个手法。
+  //    没问抽选/名额的人,连那两个工具的**数字**也不给:2026-08-05 实测 C01(问的是中介收 2 万),
+  //    模型把 632 分和 74 个邀请写了一句,反倒把「曼省官方清单收没收这个职业」——中介那句话站不站得住的
+  //    唯一依据 —— 挤了出去。概率题例外:那时抽选池就是最接近的官方数(PLAYBOOK_ODDS 点名要它)。
+  const asksDrawOps = DRAW_TOPIC_RE.test(userText) || isOdds
+  const rest = facts.filter((f) => f.unit !== 'claim' && !(isOdds && f.unit === 'jobs')
+    && !(!asksDrawOps && (f.tool === 'lookupDraws' || f.tool === 'lookupOps')))
   const budget = PROMPT_BUDGET - userText.length - hist.length - claimLines.join('').length - 900
   // ⚠️⚠️ **头 2000 字符定生死**(2026-08-04 实测,见 friendLlm.ts 顶部):朋友服务按 prompt 的**前 ~2000 字符**
   // 做缓存键。所以凡是「必须让这次调用区别于上次」的东西 —— 用户原话、重试黑名单、语言与长度 ——
   // 一律钉在最前面;写在尾巴上的指令只要前缀没变,回来的就是上一次那段答复(三条尾部规则实测**零效果**,
   // 语言那条写在头上立刻生效)。FACTS 与收尾提醒才放后面。
   const user = [
-    `REPLY LANGUAGE: ${L}. LENGTH: at most ${LEN_CAP[lang]} characters, at most eight sentences.`,
+    // 句数目标随主张条数走:定死「三到四句」会逼它把两条主张压成一句(实测「这两条承诺都核不了」),
+    // 而每条主张必须各说各的 —— 长度目标不能和这条硬要求打架。
+    `REPLY LANGUAGE: ${L}. LENGTH: at most ${LEN_CAP[lang]} characters, about ${3 + claimLines.length} sentences, eight at the very most.`,
     `QUESTION: ${userText}`,                       // 用户原话必须进缓存键,否则两个人可能拿到同一段答复
-    // 目标钉在最前面(头 2000 字符定生死):这一步是**答这个问题**,不是把 FACTS 组织成人话
-    'TASK: answer THAT question. Sentence one is the answer to it. Then use only the FACTS lines that bear on it and leave the rest '
-      + 'out. If FACTS cannot answer it, say so in sentence one and name what is missing — do not answer some other question instead.',
+    // 目标钉在最前面(头 2000 字符定生死):这一步是**答这个人的担心**,不是把 FACTS 组织成人话
+    'TASK: work out what this person is worried about or trying to decide, and answer THAT. Sentence one speaks to the worry. '
+      + 'Then use only the FACTS lines that bear on it and leave the rest out. If nothing in FACTS covers what he asked about (a '
+      + 'permit, a school, a fee), sentence one says that we have no record of it — never borrow a "the government does not publish it" '
+      + 'line from some other subject to explain a gap that is ours. Do not answer some other question instead.',
+    // 主张条数钉在头部(缓存键区,权重最高):实测模型爱把两条主张并成一句「中介的收费与合作名单都核不了」,
+    // 一并就把读者自己说的那个数(2 万)吞了 —— 而那个数正是他来问的东西。
+    claimLines.length > 1
+      ? `He was told ${claimLines.length} different things (see CLAIM LINES) and each one gets its OWN sentence naming that one thing. `
+        + 'Never bundle them into "both claims" / "these promises", and never summarise them again in a sentence of your own: '
+        + 'a reader who was told two things needs to see exactly two answers, each naming what it is about.'
+      : '',
     `DATA TAG: ${factsFingerprint(facts)} — internal, never write it in the reply.`,
     // 重试黑名单同理:写在尾巴上等于没写(会原样拿回上一次那段违规答复)
     opts.forbid?.length ? `BANNED NUMBERS (not in FACTS, rewrite without them): ${opts.forbid.join(', ')}` : '',
     opts.banned?.length ? `BANNED STRINGS (internal codes, English shorthand, or FACTS lines you copied — say what they mean in ${L} instead): ${opts.banned.join(', ')}` : '',
-    // 顺序仍由数据层定(600 字放不下全部 facts),但**每一项都以「答这个问题用得上吗」为闸门** ——
-    // 旧版把这张单子当成必答提纲,于是问「值不值」「概率多大」回来的都是同一批清单与门槛(2026-08-04 实录)。
-    `AFTER sentence one, and ONLY where it actually helps answer THIS question, you may add — in this order, one sentence each, `
-      + `skipping anything that does not bear on the question: ${[
-        opts.zeroExp ? 'the apprentice-friendly count for the province they asked about plus at most two other provinces, all in ONE sentence (never one sentence per province)' : '',
-        `the occupation-list hits in FACTS for the provinces they named, giving the official list name in English followed by its short gloss from FACTS in ${L}`,
-        'the official requirement lines, saying who each one is about',
-        opts.hasClaims ? 'each claim separately, each carrying its own state sentence from FACTS' : '',
-        'the federal category line',
-      ].filter(Boolean).map((x, i) => `(${i + 1}) ${x}`).join('; ')}. `
-      + 'Nothing else — no index-scope plumbing, no closing note, no closing advice, and no fact that the question did not call for.',
+    opts.sameOpen?.length
+      ? `REWRITE — your last draft had this shape problem: ${opts.sameOpen.join(' / ')}. `
+        + 'If three sentences in a row start the same way (or each starts with a province), that is a table read out loud: merge them '
+        + 'into ONE sentence and start every sentence differently. If one sentence carried two different states ("mixed:"), split it: '
+        + 'one sentence may say only ONE of "the government does not publish it" / "our site has not indexed it", and it must name '
+        + 'which record it is about.'
+      : '',
+    // 🔴 旧版这里是一张编号提纲((1)…(2)…(3)…),而提纲就是**我们的字段顺序** —— 于是问「值不值」
+    //    回来的是清单+门槛+EE 一条不落(2026-08-04/05 实录)。改成**两拨**:他能拿去做什么排在前,
+    //    谁也核不了的排在后。哪条进答复由「这句话答不答他的担心」定,不由我们的表定。
+    'AFTER sentence one, group whatever still matters into two buckets and write the FIRST bucket first:\n'
+      + '  (A) what he can check or settle himself — official requirement lines and counts from FACTS. All of bucket A goes in ONE '
+      + 'sentence listing three or four items, never one sentence per requirement, never one sentence per province. Prefer the items '
+      + 'about the province in the question: whether its official list covers this occupation, what the applicant must reach, how '
+      + 'much experience, and what is asked of the employer.\n'
+      + '  (B) what nobody can check — one sentence per claim, each carrying its own state.\n'
+      + (opts.zeroExp
+        ? '  This person has NO work experience yet: that is a matter of timing, never of eligibility. Never write that he cannot '
+          + 'stay, cannot apply or does not qualify, and never say he has missed anything. The apprentice-friendly counts belong in '
+          + 'bucket A, all provinces in ONE sentence.\n'
+        : '')
+      + 'Skip a bucket entirely if it adds nothing. Nothing else goes in: no index-scope plumbing, no closing note, no closing advice, '
+      + 'no fact the question did not call for. In particular, never spend a sentence saying we have not indexed a record the reader '
+      + 'never asked about (draw history, operational stats) — that is our plumbing, not his answer.',
     `Never write any of these words: ${HEDGE_WORDS[lang].join(' / ')}.`,
-    // 主张行提到**头部**:① 它是这个产品的差异点,不能被 600 字挤掉;② 前 ~2000 字符才进缓存键;
-    // ③ 每行本身已经是一句成品话,放在这里模型才会一条一句地抄,不再把两条状态不同的揉成一句。
+    // 主张行提到**头部**:① 它是这个产品的差异点,不能被 600 字挤掉;② 前 ~2000 字符才进缓存键。
+    // ③ 🔴 **这几行照抄,不许改写**:2026-08-05 实测,一放开(「用你自己的话说」)模型就把两条主张
+    //    压成一句「这两项承诺均无法核实」,连读者自己说的那个「2 万」都吞掉 —— 而那正是他来问的东西。
+    //    这几行是全站写得最仔细的见客文案(四态锚点 + 对中介的杀手锏),口吻已经在数据层调成人话了
+    //    (CLAIM_LEAD),模型的活是把它放在对的位置,不是重写它。
     claimLines.length
-      ? `CLAIM LINES — copy each one as its OWN separate sentence, word for word. Never merge two of them into one `
-        + 'sentence and never swap their wording: they carry different states and merging them is a lie.\n'
+      ? 'CLAIM LINES — one sentence of yours per line, in your own words, and it must name what he was told (his figure, his phrase) '
+        + 'and keep who does not have the information (the government does not publish it / our site has not indexed it). Never merge '
+        + 'two lines into one sentence — merging is a lie even when both carry the same state, because he was told two different '
+        + 'things — and never open a sentence with a bare state ("the government does not publish this", about nothing): say what it '
+        + 'is about first.\n'
         + claimLines.join('\n')
       : '',
     `OCCUPATION: ${opts.occ}`,
@@ -859,6 +980,9 @@ const LEAK_PATTERNS: RegExp[] = [
   /\blookup[A-Z]\w*/g,
   /\bcheckClaims\b/g,
   /\bdata tag\b/gi,          // 缓存指纹是内部标记,漏进答复照样是见客事故
+  // prompt 里的段名(2026-08-05 实测韩文答复写出「…는 FACTS에 없으므로」):读者不知道 FACTS 是什么,
+  // 「我们的材料里没有」要说成人话,不是甩一个我们自己的段落名
+  /\b(?:FACTS|QUESTION|CLAIM LINES|EARLIER|PLAYBOOK|RULE \d)\b/g,
 ]
 /** 返回答复里出现过的内部 token(去重,原样带回给模型当黑名单)。 */
 export function findLeaks(answer: string): string[] {
@@ -973,6 +1097,58 @@ function claimKeys(text: string): string[] {
 const saysState = (s: string, lang: ChatLang, av: Exclude<Availability, 'ok'>) =>
   AVAIL_MARKERS[lang][av].some((m) => s.toLowerCase().includes(m.toLowerCase()))
 
+/**
+ * ⓒ **一句话里同时挂着两种状态**,不管说的是哪两条记录 ——
+ * 2026-08-05 实测中文 C13 末句:「至于该省是否有…职业清单或抽选记录,官方不公布这项数据且本站尚未收录。」
+ * 一个「且」把两件事的两种状态焊在一起,读者根本分不清哪件是官方不发、哪件是我们没收。
+ * ⓐⓑ 只盯主张行(claim),这句里两条都是四态行(status),整个漏了过去 —— 所以这条判据**不看是哪条 fact**,
+ * 只看一句话里出现了几种状态说法。这是那条红线最后一道机械网。
+ */
+export function findMixedStates(answer: string, lang: ChatLang): string[] {
+  const AVS = ['not-published', 'not-collected', 'not-applicable'] as const
+  const out: string[] = []
+  for (const sent of answer.split(/(?<=[。！？；!?;\n])/)) {
+    if (!sent.trim()) continue
+    const hit = AVS.filter((av) => saysState(sent, lang, av))
+    if (hit.length > 1) out.push(`mixed:${sent.trim().slice(0, 40)}`)
+  }
+  return out.slice(0, 4)
+}
+
+/**
+ * 🔴 **主张一条都不许静默丢掉** —— 这条不再交给模型的自觉。
+ *
+ * 2026-08-05 实测:同一道题连跑五次,模型在「一条一句照抄」和「这两条承诺都核不了」之间来回跳
+ * (后者把读者自己说的「2 万」整个吞掉,而那正是他来问的东西)。prompt 加到第三条也压不住,
+ * 那就回来自己收:答复里没交代到的主张,把我们写好的那句**原样补上**(和 dropTrailingHedge 同一个手法:
+ * 求不动的东西,出口自己动手)。补的是本层写死的见客文案,数字全部出自 facts,guard 的账一分不差。
+ *
+ * 判「交代过了吗」两条任一成立即可:① 答复里出现了这句原话本身(CLAIM LINES 要求照抄,这是常态);
+ * ② 原话碎片命中 ≥2(模型改了措辞时的兜底;**英文也要认**,claimKeys 只切中韩文,英文主张会全判成没说)。
+ * 再加一条:这条主张的状态说法得出现过。宁可漏补(读起来重复)也不错补。
+ */
+const coverKeys = (text: string): string[] => {
+  const keys = new Set(claimKeys(text))
+  for (const w of text.toLowerCase().match(/[a-z][a-z']{3,}/g) ?? []) keys.add(w)
+  return [...keys]
+}
+export function missingClaimLines(answer: string, facts: Fact[], lang: ChatLang): string[] {
+  const out: string[] = []
+  const low = answer.toLowerCase()
+  for (const f of facts.filter((x) => x.unit === 'claim')) {
+    const m = CLAIM_TEXT_RE.exec(f.label)
+    if (!m) continue
+    const quote = m[1].trim().replace(/…$/, '')
+    const said = (quote.length >= 6 && low.includes(quote.toLowerCase()))
+      || coverKeys(m[1]).filter((k) => low.includes(k.toLowerCase())).length >= 2
+    const state = (['not-published', 'not-collected', 'not-applicable'] as const)
+      .find((av) => f.label.includes(AVAIL_SENTENCE[lang][av]))
+    if (said && (!state || saysState(answer, lang, state))) continue
+    out.push(f.label)
+  }
+  return out.slice(0, 2)
+}
+
 export function findMergedStates(answer: string, facts: Fact[], lang: ChatLang): string[] {
   const claims = facts
     .map((f) => ({ f, m: CLAIM_TEXT_RE.exec(f.label) }))
@@ -1013,6 +1189,39 @@ export function findFactDump(answer: string, facts: Fact[]): string[] {
     .map((f) => f.label)
     .filter((l) => l.length >= 20 && answer.includes(l))
   if (copied.length >= 3) out.push(...copied.slice(0, 3))
+  return out.slice(0, 4)
+}
+
+// ── 🟡 出口留痕⑤:同一个句式连着来三遍 = 在念表格 ───────────────────────────
+//
+// 2026-08-05 实录(英文 C13):"NS requires the applicant to reach 5 CLB…" / "NS requires the applicant to have 12 months…"
+// / "NS requires the employer to have been in business 2 years." —— 数字全溯得回 facts、没有内部码、没有 `=`,
+// 前面每一道都放行,可它读起来就是一张表。判据只认**机械可证**的:相邻句子的开头一模一样,连着 ≥3 句。
+//
+// 🔴 **只重试一次,绝不因此降级**:降级成事实清单比句式雷同难看得多(那才是真的念表格)。
+// 判开头:英文取前两个词,中/韩取前 4 个字 —— 再长会把「MB 要求…」和「MB 现在…」误判成同一句式。
+//
+// 一省一句(RULE 5b 早就禁了)是同一个病的另一张脸:2026-08-05 实测英文 C14 连着五句
+// "Ontario requires… / British Columbia requires… / Alberta requires… / Saskatchewan requires…",
+// 每句开头不同,按前两个词判一条都抓不到。所以**开头是省名的句子一律归成同一个 key**:
+// 连着三句都以省份起头 = 在按省念表,不管念的是哪个省。
+const PROV_OPEN = new RegExp(
+  `^(?:${[...ALL_PROVS, ...Object.keys(PROV_ALIAS)].map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})(?![A-Za-z])`, 'i')
+const openKey = (s: string, lang: ChatLang): string => {
+  const t = s.trim().replace(/^[^\p{L}\p{N}]+/u, '')
+  if (PROV_OPEN.test(t)) return 'PROV'
+  return lang === 'en' ? t.toLowerCase().split(/\s+/).slice(0, 2).join(' ') : t.slice(0, 4)
+}
+export function findSameOpening(answer: string, lang: ChatLang): string[] {
+  const sents = answer.split(/(?<=[。！？；!?;\n])|(?<=\.)(?=\s)/).map((s) => s.trim()).filter(Boolean)
+  const out: string[] = []
+  let run = 1
+  for (let i = 1; i < sents.length; i++) {
+    const k = openKey(sents[i], lang)
+    if (k && k === openKey(sents[i - 1], lang)) {
+      if (++run >= 3 && !out.includes(k)) out.push(k)
+    } else run = 1
+  }
   return out.slice(0, 4)
 }
 
@@ -1107,11 +1316,8 @@ function unitText(unit: string, lang: ChatLang): string {
 }
 /** 降级:宁可给一张能溯源的事实清单,也不给一句编出来的话。 */
 export function factSheet(facts: Fact[], lang: ChatLang): string {
-  const lines = facts.slice(0, 20).map((f) => {
-    const u = f.value != null ? unitText(f.unit, lang) : ''
-    const v = f.value != null ? `${f.value}${u ? ` ${u}` : ''}` : f.valueText
-    return v ? `- ${f.label}: ${v}` : `- ${f.label}`     // 主张行本身已是一句完整的话,别再甩个「: -」
-  })
+  // 与 prompt 用同一个 sayFact:降级清单和喂模型的材料是同一批话,两处各写各的迟早分叉
+  const lines = facts.slice(0, 20).map((f) => `- ${sayFact(f, lang)}`)
   return localizeUnits(dropCodes([SHEET_HEAD[lang], ...lines].join('\n'), lang), lang)
 }
 
@@ -1248,6 +1454,8 @@ export async function orchestrate(
   let answer = ''
   let bad: string[] = []
   let banned: string[] = []
+  let sameOpen: string[] = []          // 句式雷同:重试一次就认命(降级比它难看得多),不进降级判据
+  let passed = ''                      // 最近一次**过了硬拦**的答复(句式重试的退路)
   onStep?.({ phase: 'write', text: S.write })
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
@@ -1256,7 +1464,7 @@ export async function orchestrate(
       const t0 = Date.now()
       let ttft = 0
       const raw2 = await completeText(
-        synthMessages(facts, text, lang, { ...synOpts, ...(attempt ? { forbid: bad, banned } : {}) }),
+        synthMessages(facts, text, lang, { ...synOpts, ...(attempt ? { forbid: bad, banned, sameOpen } : {}) }),
         { maxTokens: 900, provider: 'friend', onDelta: () => { if (!ttft) ttft = Date.now() - t0 } },
       )
       console.log(`[chat] synth attempt=${attempt + 1} noc=${slots.noc} ttft=${ttft}ms total=${Date.now() - t0}ms out=${raw2.length}ch`)
@@ -1272,14 +1480,41 @@ export async function orchestrate(
     const units = [...findEnglishUnits(answer, lang, facts), ...findWordNumbers(answer, lang), ...findForeignScript(answer, lang)]
     const hedges = findHedges(answer, lang)
     if (hedges.length) console.log(`[chat] hedge warn noc=${slots.noc} words=${hedges.join(',')}`)
-    const merged = findMergedStates(answer, facts, lang)
+    const merged = [...findMergedStates(answer, facts, lang), ...findMixedStates(answer, lang)]
     if (merged.length) console.log(`[chat] state-merge warn noc=${slots.noc} ${merged.join(' | ')}`)
-    if (g.ok && !leaks.length && !units.length) { bad = []; banned = []; break }
+    if (g.ok && !leaks.length && !units.length) {
+      bad = []; banned = []
+      passed = answer                       // 过了硬拦的稿子先存着:重写万一崩了,退回它比降级强
+      // 硬拦全过 → 只剩「说得顺不顺」:连着三句同一个开头、或一句话焊了两种状态,重写一次
+      // (**不进降级判据**:降级成事实清单比这两样难看得多;第二稿还这样就发出去,留痕给读日志的人)
+      const soft = attempt ? [] : [...findSameOpening(answer, lang), ...findMixedStates(answer, lang)]
+      if (!soft.length) { sameOpen = []; break }
+      sameOpen = soft
+      console.log(`[chat] soft rewrite noc=${slots.noc} hits=${soft.join(' | ')}`)
+      continue
+    }
     bad = g.bad
     banned = [...leaks, ...units].slice(0, 10)
     console.log(`[chat] exit-check hit attempt=${attempt + 1} noc=${slots.noc} nums=${g.bad.join(',')} strings=${banned.join(',')} answer=${answer.slice(0, 200)}`)
   }
+  // 🔴 模型漏掉的主张,出口自己补(见 missingClaimLines 上面那段:prompt 压不住,就别再指望 prompt)。
+  //    先把模型那段按「留出补位长度」重新截一次 —— 见客字数上限不能因为补位被顶破。
+  if (answer && !bad.length && !banned.length) {
+    const miss = missingClaimLines(answer, facts, lang)
+    if (miss.length) {
+      const sep = lang === 'en' ? ' ' : ''
+      const end = lang === 'en' ? '. ' : '。'
+      const tail = miss.map((l) => `${l}${end}`).join(sep).trim()
+      answer = `${clampAnswer(answer, lang, Math.max(120, LEN_CAP[lang] - tail.length - 2))}${sep}${tail}`
+      console.log(`[chat] claim lines re-attached noc=${slots.noc} n=${miss.length}`)
+    }
+  }
   let degraded = false
+  // 句式重写这一轮翻了车(第一稿本来是干净的)→ 退回第一稿,不许因为「不够好看」把能用的答复扔了降级
+  if ((bad.length || banned.length || !answer) && passed) {
+    console.log(`[chat] same-opening rewrite failed, keeping the first clean draft noc=${slots.noc}`)
+    answer = passed; bad = []; banned = []
+  }
   if (bad.length || banned.length || !answer) {
     if (!facts.length) throw new ChatError('guard', 'no facts to fall back on', slots)
     degraded = true

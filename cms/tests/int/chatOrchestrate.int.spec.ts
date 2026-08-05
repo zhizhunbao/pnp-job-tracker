@@ -13,8 +13,9 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import {
   AVAIL_MARKERS, clampAnswer, dropTrailingHedge, factsBlock, factSheet, findEnglishUnits, findHedges,
-  findForeignScript, findLeaks, findMergedStates, findWordNumbers, guardAnswer, LBL, localizeUnits, normalizeSlots,
-  MONEY_WHY, orchestrate, PROMISE_WHY, resolveNoc,
+  findForeignScript, findLeaks, findMergedStates, findMixedStates, findSameOpening, findWordNumbers,
+  guardAnswer, LBL, localizeUnits, missingClaimLines, normalizeSlots,
+  MONEY_WHY, orchestrate, PROMISE_WHY, resolveNoc, sayFact,
   type ChatLang, type Fact,
 } from '@/lib/chatOrchestrate'
 import { friendLlmReady } from '@/lib/friendLlm'
@@ -220,8 +221,9 @@ describe('答复见客检查(不连模型)', () => {
         mk('lookupJobs', T.indexNote, null, `${T.checked} 2026-08-04`, 'note'),
         mk('lookupCoverage', `MB ${T.listIn} NOC 72310: MPNP In-Demand Occupations List`, null, lang === 'zh' ? 'MB 在需职业' : '', 'list'),
         mk('lookupCoverage', `NB ${T.occList}`, null, AVAIL_SENTENCE_SAMPLE[lang], 'status'),
-        mk('lookupThresholds', `MB ${T.requires}: ${T.factor.empYears}`, 3, T.unknown, 'years'),
-        mk('lookupThresholds', `MB ${T.requires}: ${T.factor.experience}`, 12, `${T.fail},${T.short} 12`, 'months'),
+        // 门槛行的 label 是**半句话**,值接上去就是一句(prompt 与兜底清单共用 sayFact)
+        mk('lookupThresholds', `MB ${T.factor.empYears}`, 3, '', 'years'),
+        mk('lookupThresholds', `MB ${T.factor.experience}`, 12, `${T.fail},${T.short} 12`, 'months'),
         mk('lookupDraws', `MB ${T.drawCut} Skilled Worker Stream (MPNP EOI) 2026-07-30`, 632, 'MPNP EOI', 'points'),
         mk('lookupDraws', `MB ${T.drawInv} 2026-07-30`, 74, '', 'invitations'),
         mk('lookupOps', `AB ${T.opsKeys.eoi_pool_total}`, 23056, '2026-08-04', 'people'),
@@ -246,6 +248,74 @@ describe('答复见客检查(不连模型)', () => {
       expect(findMergedStates(sheet, sheetFacts(lang), lang), `${lang} 兜底把两条状态揉在一起了:\n${sheet}`).toEqual([])
       expect(findHedges(sheet, lang), `${lang} 兜底里有推断性措辞:\n${sheet}`).toEqual([])
     }
+  })
+
+  // ── 🔴 喂给模型的形状:给它表格它就还你表格(2026-08-05,Frank「这回答不像人话」)──────
+  it('FACTS 里一个 `=` 都不许有,门槛行读出来就是一句话', () => {
+    const T = LBL.zh
+    const facts: Fact[] = [
+      f({ label: `MB ${T.apprOpenings} (NOC 72310)`, value: 3, unit: 'jobs', valueText: '' }),
+      f({ tool: 'lookupThresholds', label: `NS ${T.factor.language}`, value: 5, unit: 'CLB', valueText: '' }),
+      f({ tool: 'lookupThresholds', label: `NS ${T.factor.empYears}`, value: 2, unit: 'years', valueText: '' }),
+      f({ tool: 'lookupCoverage', label: `NS ${T.occList}`, value: null, unit: 'status', valueText: AVAIL_SENTENCE_SAMPLE.zh }),
+    ]
+    const block = factsBlock(facts, 4000, 'zh')
+    // ① `=` 是表格的形状,prompt 里彻底没有(出口的 findFactDump 也认这个字符)
+    expect(block, `FACTS 里还留着 = :\n${block}`).not.toContain('=')
+    expect(factSheet(facts, 'zh'), '兜底清单里还留着 =').not.toContain('=')
+    // ② 门槛行:label 是半句话,值接上去就是整句(不是「字段名 = 值」)
+    expect(sayFact(facts[1], 'zh')).toBe('NS 要求申请人的语言达到 5 CLB')
+    expect(sayFact(facts[2], 'zh')).toBe('NS 要求雇主(不是申请人)已经营满 2 年')
+    // ③ 计数行:名目 + 冒号 + 值;四态行:主语 + 冒号 + 成句
+    expect(sayFact(facts[0], 'zh')).toBe('MB 现在可带学徒的在招岗位 (NOC 72310): 3 个岗位')
+    expect(sayFact(facts[3], 'zh')).toBe(`NS 的官方职业清单: ${AVAIL_SENTENCE_SAMPLE.zh}`)
+    // ④ 英文单复数:喂进去 `1 jobs`,抄出来就是「1 jobs in ON」
+    expect(sayFact(f({ label: 'ON open postings right now', value: 1, unit: 'jobs', valueText: '' }), 'en')).toBe('ON open postings right now: 1 job')
+  })
+
+  // 🔴 同一个句式连着三句 = 在念表格(数字全对、无内部码、无 `=`,前面每一道都放行)
+  it('句式雷同抓得到:同一开头连出 3 句、或连着三句都以省份起头', () => {
+    const zh3 = 'NS 要求申请人的语言达到 5 CLB。NS 要求申请人的工作经验满 12 个月。NS 要求雇主已经营满 2 年。'
+    expect(findSameOpening(zh3, 'zh').length, `没抓到中文的三连同句式:\n${zh3}`).toBeGreaterThan(0)
+    expect(findSameOpening('NS 要求申请人的语言达到 5 CLB。NS 要求雇主已经营满 2 年。', 'zh')).toEqual([])   // 两句不算
+    const en3 = 'NS requires 5 CLB. NS requires 12 months of experience. NS requires the employer to have 2 years.'
+    expect(findSameOpening(en3, 'en').length, `没抓到英文的三连同句式:\n${en3}`).toBeGreaterThan(0)
+    // 一省一句:每句开头都不一样,按前两个词判一条都抓不到 —— 所以省份起头一律归成同一个 key
+    const perProv = 'Ontario requires 5 CLB. British Columbia requires 4 CLB. Alberta requires 5 CLB and 24 months.'
+    expect(findSameOpening(perProv, 'en'), '一省一句没抓到').toContain('PROV')
+    // 正常人话不许误杀(句子长短、开头各不相同)
+    expect(findSameOpening('老板的承诺无法核实,因为没有任何一级政府公布这种名单。你现在就能核的有三件:雇主经营满 2 年、语言到 5 CLB、12 个月经验。前一条问老板公司开了几年就知道。', 'zh')).toEqual([])
+  })
+
+  // 🔴 一句话焊两种状态 = 那条红线的最后一道机械网(ⓐⓑ 只看主张行,这条谁的行都不看,只看一句话说了几种态)
+  it('一句话里同时挂着两种状态 → 抓得到', () => {
+    expect(findMixedStates('至于该省是否有职业清单或抽选记录,官方不公布这项数据且本站尚未收录。', 'zh').length).toBeGreaterThan(0)
+    // 分开说、各说各的 = 干净
+    expect(findMixedStates('NS 的职业清单官方不公布。NS 的抽选记录本站尚未收录。', 'zh')).toEqual([])
+    expect(findMixedStates('The government does not publish the NS list, and our site has not indexed its draw history.', 'en').length).toBeGreaterThan(0)
+    expect(findMixedStates('MB 现在有 3 个岗位。', 'zh')).toEqual([])
+  })
+
+  // 🔴 主张一条都不许静默丢掉:prompt 压不住(实测模型在「一条一句」和「这两条承诺都核不了」之间反复横跳,
+  //    后者把读者自己说的「2 万」整个吞掉),所以出口自己补
+  it('答复没交代到的主张,出口把我们写好的那句补回来', () => {
+    const claim = (label: string) => f({ tool: 'checkClaims', unit: 'claim', value: null, valueText: '', label })
+    const fee = claim(`你听到的「要收 2 万」这句话——${AVAIL_SENTENCE_SAMPLE.zh}。${MONEY_WHY.zh}`)
+    const coop = claim(`你听到的「中介说曼省有合作公司」这句话——${AVAIL_SENTENCE_SAMPLE.zh}。${PROMISE_WHY.zh}`)
+    // ① 两条揉成一句、读者自己说的那个数被吞掉 → 吞掉的那条补回来
+    //    (「合作公司」那条的碎片「中介」「合作」还在句子里,算交代过了 —— 宁可漏补,不重复啰嗦)
+    const back = missingClaimLines('这两条承诺都无法核实，因为官方不公布中介的收费或合作名单。', [fee, coop], 'zh')
+    expect(back).toHaveLength(1)
+    expect(back[0]).toContain('2 万')
+    // ② 照抄了原话(CLAIM LINES 的常态)→ 不重复补
+    expect(missingClaimLines(`${fee.label}。${coop.label}。`, [fee, coop], 'zh')).toEqual([])
+    // ③ 改了措辞但把原话碎片和状态都说到了 → 也算交代过
+    const paraphrased = '中介说要收 2 万,官方不公布这项数据;所谓合作公司的名单,中介与雇主之间的合作官方同样不公布。'
+    expect(missingClaimLines(paraphrased, [fee], 'zh')).toEqual([])
+    // ④ 英文主张也得认得出来(claimKeys 只切中韩文,英文会被全判成「没说」→ 每次都重复补一遍)
+    const enFee = claim(`On what you were told ("the agent wants 20k"): ${AVAIL_SENTENCE_SAMPLE.en}. ${MONEY_WHY.en}`)
+    expect(missingClaimLines('The agent wants 20k, and the government does not publish what agents charge.', [enFee], 'en')).toEqual([])
+    expect(missingClaimLines('Nothing about that can be checked.', [enFee], 'en')).toHaveLength(1)
   })
 
   it('标签词表本身就得是用户语言(数据层的单一来源,别让下游各自去翻)', () => {
@@ -275,6 +345,17 @@ describe('答复见客检查(不连模型)', () => {
       const line = PROMISE_WHY[lang]
       expect(line.length, `${lang} 的私人承诺解释句缺了`).toBeGreaterThan(20)
       expect(findForeignScript(line, lang), `${lang} 的私人承诺解释句掺了别的语言:${line}`).toEqual([])
+    }
+  })
+
+  // 🔴 「查过了但没命中」以前直接把内部占位符 `ok` 喂了出去,英文答复因此把「一个类别都不在」
+  //    说成了「都能走」(2026-08-05 实测 C06 英文)。这句是见客文案,三语都得有、都得是人话。
+  it('「查过了没命中」三语齐全,不是一个 ok', () => {
+    for (const lang of ['zh', 'en', 'ko'] as const) {
+      const line = LBL[lang].noneFound
+      expect(line.length, `${lang} 的「没命中」句缺了`).toBeGreaterThan(8)
+      expect(line, `${lang} 的「没命中」句还是内部占位符`).not.toMatch(/^ok$/i)
+      expect(findForeignScript(line, lang), `${lang} 的「没命中」句掺了别的语言:${line}`).toEqual([])
     }
   })
 })
@@ -310,6 +391,17 @@ describe('槽位归一 / prompt 预算(模型输出不可信)', () => {
     expect(t('中介要收 2 万', 'cost')).toBe('other')
     // 模型自己就分对了也认
     expect(t('说是有内部名额', 'private-promise')).toBe('private-promise')
+  })
+
+  // 🔴 用户自己的问句被当成「别人跟你说的」→ checkClaims 给它一个「本站尚未收录」→ 答复第一句
+  //    变成一句没主语的「本站尚未收录这项数据」(2026-08-05 实测 C06)。别人说的话不会是个问句。
+  it('问句不是主张:用户自己那句问话不许进 claims', () => {
+    const texts = (raw: any[]) => normalizeSlots({ claims: raw }).claims.map((c) => c.text)
+    expect(texts([{ text: '毕业后能留下来吗', topic: 'ops' }])).toEqual([])
+    expect(texts([{ text: 'Can I stay after I graduate?', topic: 'ops' }])).toEqual([])
+    expect(texts([{ text: '졸업 후에 남을 수 있을까요?', topic: 'ops' }])).toEqual([])
+    // 真的是别人说的那句照旧留着
+    expect(texts([{ text: '中介说曼省有合作公司', topic: 'other' }])).toEqual(['中介说曼省有合作公司'])
   })
 
   it('claims:认得的 topic 留着,认不得的落 other(不硬塞给某个工具去「核」)', () => {
@@ -355,6 +447,10 @@ ${r.answer}`).toEqual([])
 ${r.answer}`).toEqual([])
     expect(guardAnswer(r.answer, r.facts, EN01).ok, `英文答复里有溯不回 facts 的数字:
 ${r.answer}`).toBe(true)
+    // 🔴 像人话的两条机械底线:不许是表格(`=`)、不许连着三句一个句式(含一省一句)
+    expect(r.answer, `英文答复里出现了 = (那是 FACTS 行的形状):\n${r.answer}`).not.toContain('=')
+    expect(findSameOpening(r.answer, 'en'), `英文答复连着三句一个句式(在念表格):\n${r.answer}`).toEqual([])
+    expect(findMixedStates(r.answer, 'en'), `英文答复把两种状态焊进了一句:\n${r.answer}`).toEqual([])
     expect(r.answer.length).toBeGreaterThan(40)
     // facts 也不许带中文进英文 prompt(病根在这儿,不在模型)
     const zhInFacts = r.facts.filter((x) => findForeignScript(`${x.label} ${x.valueText}`, 'en').length)
@@ -412,6 +508,10 @@ ${r.answer}
     expect(findEnglishUnits(r.answer, 'zh', r.facts), `中文答复里裸着英文速记:\n${r.answer}`).toEqual([])
     expect(findWordNumbers(r.answer, 'zh'), `数量写成了中文数字,guard 就看不见了:\n${r.answer}`).toEqual([])
     expect(r.answer.length, `答复超长(见客上限 600 字):\n${r.answer}`).toBeLessThanOrEqual(600)
+    // 🔴 像人话:不是表格(`=`)、不是三连同句式(含一省一句)、不是一句焊两种状态
+    expect(r.answer, `答复里出现了 = (那是 FACTS 行的形状):\n${r.answer}`).not.toContain('=')
+    expect(findSameOpening(r.answer, 'zh'), `连着三句一个句式(在念表格):\n${r.answer}`).toEqual([])
+    expect(findMixedStates(r.answer, 'zh'), `一句话焊了两种状态:\n${r.answer}`).toEqual([])
     // 推断性措辞只留痕不拦,所以这里也只打印(读日志的人自己判断,别为过测试砍事实)
     const hedges = findHedges(r.answer, 'zh')
     if (hedges.length) console.log(`[金标] 推断性措辞留痕:${hedges.join(',')}`)
@@ -460,7 +560,8 @@ ${r.answer}
       expect(r.answer, `${why}(fact=${x.label}=${x.value})丢了:\n${r.answer}`).toContain(String(x.value))
     }
     keep(appr.find((x) => x.label.startsWith('MB ')), 'MB 学徒岗计数')
-    keep(r.facts.find((x) => x.tool === 'lookupThresholds' && /CLB/.test(x.label)), 'MB 语言门槛 CLB')
+    // 语言门槛:label 现在是半句话(「MB 要求申请人的语言达到」),CLB 在单位里 —— 按 factor 词表找,别按 CLB 找
+    keep(r.facts.find((x) => x.tool === 'lookupThresholds' && x.label.includes(LBL.zh.factor.language)), 'MB 语言门槛 CLB')
     keep(r.facts.find((x) => x.tool === 'lookupThresholds' && x.label.includes(LBL.zh.factor.empYears)), '雇主经营年限')
     keep(r.facts.find((x) => x.tool === 'lookupEE'), '联邦 EE trade 通道分数')
     // MB 清单命中:中介推的那个省站不站得住,全靠这句(说了省名不算,得说清单收了这个职业)
