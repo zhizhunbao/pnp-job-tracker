@@ -12,11 +12,12 @@ import pg from 'pg'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import {
-  AVAIL_MARKERS, clampAnswer, dropTrailingHedge, factsBlock, factSheet, findEnglishUnits, findHedges,
-  findForeignScript, findLeaks, findMergedStates, findMixedStates, findSameOpening, findWordNumbers,
-  guardAnswer, LBL, localizeUnits, missingClaimLines, normalizeSlots,
-  MONEY_WHY, orchestrate, PROMISE_WHY, resolveNoc, sayFact, stripMd, tidy,
-  type ChatLang, type Fact,
+  askOccupation, AVAIL_MARKERS, clampAnswer, dropTrailingHedge, factsBlock, factSheet, fieldSearchTerm,
+  findEnglishUnits, findHedges, findForeignScript, findLeaks, findMergedStates, findMixedStates,
+  findSameOpening, findShoutedWords, findWordNumbers, guardAnswer, isMoneyTalk, isSelfStatement,
+  LBL, localizeUnits, missingClaimLines, normalizeSlots, MONEY_WHY, orchestrate, otherClaimLabel,
+  PROMISE_WHY, resolveNoc, sayFact, stripMd, studyFieldOf, suggestOccupations, tidy,
+  type ChatLang, type Fact, type OccOption,
 } from '@/lib/chatOrchestrate'
 import { friendLlmReady } from '@/lib/friendLlm'
 
@@ -26,6 +27,10 @@ const CARPENTER = '72310'
 const C01 = '我亚岗昆木匠毕业,还没工作,中介说曼省有合作公司让我去曼省,要收 2 万'
 // 同一道题的英文版(88% 流量走这条路)
 const EN01 = 'I just finished carpentry at Algonquin, no work experience yet. An agent says they have a partner company in Manitoba and wants 20k.'
+// 2026-08-06 实测撞死路的那句原话:说的是**在读专业**,不是职位名
+const STUDY_EN = 'studying IT at a Toronto college, can I stay?'
+// 2026-08-06 实测:家庭状况被抽成主张,还被接上了一句「这条金额谁也核不了」(用户压根没提钱)
+const FAMILY_ZH = '我在萨省做厨师,老婆和两个孩子一起过来,现在能申请省提名吗?'
 
 // 旧英文标签词汇表:中/韩文界面里出现其中任何一个 = 有人把英文 label 漏给了用户
 const INTERNAL_EN = /\b(apprentice-friendly|openings|postings|occupation list|index scope|scope note|official requirements|latest draw|invitations|operational stats|federal EE categor|provinces whose|verdict|short=|eoi_pool|processing_weeks|nominations_ytd|allocation|remaining)\b/i
@@ -455,6 +460,106 @@ describe('槽位归一 / prompt 预算(模型输出不可信)', () => {
     expect(s.claims[1].topic).toBe('other')
   })
 
+  // 🔴 自述家庭状况不是主张(2026-08-06 实测:「老婆和两个孩子一起过来」被抽成一条 claim,
+  //    还被安上一句「这条金额谁也核不了」——用户压根没提钱)。主张 = 转述别人说的话。
+  it('自述家庭状况不进 claims,别人说的照旧留着', () => {
+    const texts = (raw: any[]) => normalizeSlots({ claims: raw }).claims.map((c) => c.text)
+    expect(texts([{ text: '老婆和两个孩子一起过来', topic: 'ops' }])).toEqual([])
+    expect(texts([{ text: 'my wife and two kids are coming with me', topic: 'ops' }])).toEqual([])
+    expect(texts([{ text: '아내와 아이 둘이 함께 옵니다', topic: 'ops' }])).toEqual([])
+    // 同一件事**由别人说出口**就是主张(判据是有没有转述标记,不是有没有提到家人)
+    expect(texts([{ text: '中介说我老婆和孩子可以一起过来', topic: 'ops' }]))
+      .toEqual(['中介说我老婆和孩子可以一起过来'])
+    expect(texts([{ text: 'the agent told me my family can come too', topic: 'ops' }])).toHaveLength(1)
+    // 跟家人无关的主张一条都不许被这条规则吃掉
+    expect(texts([{ text: '曼省有合作公司', topic: 'other' }])).toEqual(['曼省有合作公司'])
+    expect(isSelfStatement('老婆和两个孩子一起过来')).toBe(true)
+    expect(isSelfStatement('中介说曼省有合作公司')).toBe(false)
+  })
+
+  // 🔴 MONEY_WHY(「这条金额谁也核不了」)只许挂在**真提到钱**的主张上 —— 挂错一次,
+  //    读者就被告知了一个他从没听说过的价钱。分岔在纯函数里锁死,不看模型给的 topic。
+  it('没提钱的主张不许挂金额解释,提了钱的照旧挂', () => {
+    expect(isMoneyTalk('中介要收 2 万')).toBe(true)
+    expect(isMoneyTalk('An agent wants $20k for the offer')).toBe(true)
+    expect(isMoneyTalk('중개인이 수수료를 요구합니다')).toBe(true)
+    expect(isMoneyTalk('老婆和两个孩子一起过来')).toBe(false)
+    expect(isMoneyTalk('老板说帮我办')).toBe(false)
+    for (const lang of ['zh', 'en', 'ko'] as const) {
+      const money = otherClaimLabel(lang === 'zh' ? '中介要收 2 万' : 'the agent wants 20k', lang)
+      expect(money, `${lang} 收费主张丢了金额解释`).toContain(MONEY_WHY[lang])
+      expect(money, `${lang} 收费主张的状态说法不对`).toContain(AVAIL_SENTENCE_SAMPLE_ALL[lang]['not-published'])
+      // 没提钱的:一个字都不许提金额,状态也不能冒充「官方不公布」
+      const plain = otherClaimLabel(lang === 'zh' ? '老板会帮我办手续' : 'my boss will handle the paperwork', lang)
+      expect(plain, `${lang} 给没提钱的主张安了一句金额解释`).not.toContain(MONEY_WHY[lang])
+      expect(plain).toContain(AVAIL_SENTENCE_SAMPLE_ALL[lang]['not-collected'])
+    }
+  })
+
+  // 🔴 提示词里的大写强调被抄进答复(实测英文首句 `**WE** do not have a record…`)
+  it('答复里的裸大写抓得到,公认缩写与省码不误杀', () => {
+    expect(findShoutedWords('WE do not have a record of that permit.')).toEqual(['WE'])
+    expect(findShoutedWords('You MUST reach CLB 5 and NEVER pay upfront.'))
+      .toEqual(expect.arrayContaining(['MUST', 'NEVER']))
+    // 公认缩写 + 省份两位码 + 专有名词大小写 = 正常表述,一个都不许报
+    expect(findShoutedWords('Your CRS and CLB matter for EE, PNP, PGWP, LMIA, NOC and TEER in ON, BC and NS.')).toEqual([])
+    expect(findShoutedWords('The MPNP In-Demand Occupations List covers Nova Scotia carpenters.')).toEqual([])
+    expect(findShoutedWords('曼省官方清单收了这个职业,雇主要经营满 3 年。')).toEqual([])
+    // facts 里出现过的大写 = 官方原名里的缩写,照旧放行(判据同 findEnglishUnits 的专名豁免)
+    const eoi = f({ label: 'MB latest draw cutoff Skilled Worker Stream (MPNP EOI) 2026-07-30', value: 632, unit: 'points' })
+    expect(findShoutedWords('The latest MPNP EOI draw cutoff was 632.', [eoi])).toEqual([])
+  })
+
+  // 🔴 「说了专业但没说职位名」不能是死路(实测 `studying IT at a Toronto college, can I stay?` → noOcc)
+  it('专业词抽得出来,问候语照旧抽不出(不落死路 ≠ 瞎猜)', () => {
+    expect(studyFieldOf('studying IT at a Toronto college, can I stay?')).toBe('IT')
+    expect(studyFieldOf('I am majoring in computer science, no job yet')).toBe('computer science')
+    expect(studyFieldOf('Just finished a diploma in nursing at Seneca.')).toBe('nursing')
+    expect(studyFieldOf('我在多伦多的学院读 IT,毕业后能留下来吗')).toBe('IT')
+    expect(studyFieldOf('护理专业毕业,还没工作')).toBe('护理')
+    expect(studyFieldOf('요리 전공인데 남을 수 있나요?')).toBe('요리')
+    // 🔴 「随便打了句问候」照旧抽不出专业 → orchestrate 回落 noOcc(这条改动不许把它变成瞎猜)
+    expect(studyFieldOf('hello there, anyone here?')).toBe('')
+    expect(studyFieldOf('你好啊')).toBe('')
+    // 学校/学历本身不是专业
+    expect(studyFieldOf('Ontario college grad, no job yet')).toBe('')
+  })
+
+  it('专业 → 检索词只翻译「拿去查什么」,认不出的宁可空手(不许瞎编职业)', () => {
+    expect(fieldSearchTerm('IT')).toBe('information technology')
+    expect(fieldSearchTerm('计算机')).toBe('computer science')
+    expect(fieldSearchTerm('护理')).toBe('nursing')
+    expect(fieldSearchTerm('nursing')).toBe('nursing')          // 拉丁长词原样查
+    expect(fieldSearchTerm('火星学')).toBe('')                   // 认不出的中文 → 空 → 一个候选都查不到 → noOcc
+    expect(fieldSearchTerm('x')).toBe('')
+  })
+
+  it('反问文案:三语成句、点名候选职业、chip 带官方名(下一轮靠它落回 5 位码)', () => {
+    const opts: OccOption[] = [
+      { noc: '21222', title: 'Information systems specialists', label: '信息系统专家' },
+      { noc: '21220', title: 'Cybersecurity specialists', label: '网络安全专家' },
+    ]
+    const zh = askOccupation('IT', opts, 'zh')
+    expect(zh.answer).toContain('信息系统专家')
+    expect(zh.answer).toContain('网络安全专家')
+    expect(zh.slots.noc, '反问轮绝不许自己填一个 NOC').toBeNull()
+    expect(zh.facts).toEqual([])                                 // 没查工具就没有事实,不许摆出处
+    expect(zh.followups).toHaveLength(2)
+    // chip 里带 5 位码:下一轮抽槽位靠「用户自己打出了 5 位数字」落回同一条职业,不走相似度重猜
+    expect(zh.followups[0]).toContain('21222')
+    expect(zh.followups[0]).toContain('信息系统专家')
+    expect(findLeaks(zh.answer)).toEqual([])
+    expect(findWordNumbers(zh.answer, 'zh')).toEqual([])
+    for (const lang of ['zh', 'en', 'ko'] as const) {
+      const en = lang === 'en' ? opts.map((o) => ({ ...o, label: o.title })) : opts
+      const r = askOccupation('IT', en, lang)
+      expect(r.answer.length, `${lang} 反问文案缺了`).toBeGreaterThan(20)
+      expect(findLeaks(r.answer), `${lang} 反问文案泄露内部码`).toEqual([])
+      expect(findShoutedWords(r.answer), `${lang} 反问文案里有裸大写`).toEqual([])
+      if (lang === 'en') expect(findForeignScript(r.answer, 'en'), '英文反问文案掺了中文').toEqual([])
+    }
+  })
+
   it('facts 压缩有预算:塞不下就停(朋友服务 6000 字符硬上限,别整坨 JSON 喂过去)', () => {
     const many = Array.from({ length: 200 }, (_, i) => f({ label: `L${i} `.repeat(10) }))
     expect(factsBlock(many, 500).length).toBeLessThanOrEqual(500)
@@ -475,6 +580,46 @@ live('金标 C01 木匠(一句话进,多轮出)', () => {
     expect(await resolveNoc(pool, 'ab')).toBeNull()
   }, 30_000)
 
+  // 🔴 「说了专业但没说职位名」是转化杀手:挂件第一条示例就是这个形状(说 software dev 能答、
+  //    说读 IT 就答不了)。实测原话进,不许再以 noOcc 死路收场,候选还必须真是库里查出来的。
+  it('说了在读专业:反问得有用,候选来自库(实测原话)', async () => {
+    const opts = await suggestOccupations(pool, 'IT', 'en')
+    expect(opts.length, '库里查不出「读 IT」的候选职业').toBeGreaterThan(0)
+    for (const o of opts) expect(o.noc).toMatch(/^\d{5}$/)
+
+    const r = await orchestrate(pool, { text: STUDY_EN, lang: 'en' })
+    expect(r.slots.noc, '🔴 反问轮绝不许自己猜一个 NOC').toBeNull()
+    expect(r.answer.length, `反问文案太短:\n${r.answer}`).toBeGreaterThan(20)
+    expect(r.followups.length, '反问没给候选职业 —— 又是一条死路').toBeGreaterThan(0)
+    // 候选必须是库里那几条(不是现编的)
+    expect(r.followups.some((q) => opts.some((o) => q.includes(o.title))), `候选不在库里查到的那几条里:\n${r.followups.join('\n')}`).toBe(true)
+    expect(findLeaks(r.answer), `反问里泄露内部码:\n${r.answer}`).toEqual([])
+    expect(findShoutedWords(r.answer), `反问里有裸大写:\n${r.answer}`).toEqual([])
+    expect(findForeignScript(r.answer, 'en'), `英文反问混进了中文:\n${r.answer}`).toEqual([])
+    console.log(`\n──── 「读 IT」反问(${r.answer.length} 字符)────\n${r.answer}\n候选:${r.followups.join(' | ')}\n────────────────\n`)
+
+    // 🔴 点了候选那一轮必须真的落回 5 位码 —— 不然「反问」只是把死路推后一轮
+    const pick = await orchestrate(pool, {
+      text: r.followups[0], lang: 'en',
+      history: [{ role: 'user', content: STUDY_EN }, { role: 'assistant', content: r.answer }],
+    })
+    // 摆出去的和查回来的必须是**同一条**职业(chip 里的 5 位码就是为这个)
+    expect(pick.slots.noc, `点了候选落到了别的职业:${r.followups[0]}`).toBe(opts[0].noc)
+    expect(pick.facts.length, '点了候选却一条事实都没查').toBeGreaterThan(0)
+    console.log(`\n──── 点「${r.followups[0]}」之后(NOC ${pick.slots.noc})────\n${pick.answer}\n────────────────\n`)
+  }, 180_000)
+
+  // 🔴 替用户编他没说过的事:说错数字还能改口,把「你被人告知过某个价钱」强加给他不能。
+  it('自述家庭状况:不进 claims,也不许扯出一个他没提过的价钱(实测原话)', async () => {
+    const r = await orchestrate(pool, { text: FAMILY_ZH, lang: 'zh' })
+    expect(r.slots.claims.filter((c) => /老婆|孩子|家人/.test(c.text)), `家庭状况被当成了主张:${JSON.stringify(r.slots.claims)}`).toEqual([])
+    const money = r.facts.filter((x) => x.label.includes(MONEY_WHY.zh))
+    expect(money.map((x) => x.label), '用户没提钱,facts 里却挂上了金额解释').toEqual([])
+    expect(r.answer, `答复替用户编了一个价钱:\n${r.answer}`).not.toContain('金额')
+    expect(guardAnswer(r.answer, r.facts, FAMILY_ZH).ok, `答复里有溯不回 facts 的数字:\n${r.answer}`).toBe(true)
+    console.log(`\n──── 家庭状况那句的答复(${r.answer.length} 字)────\n${r.answer}\n────────────────\n`)
+  }, 180_000)
+
   // 🔴 88% 的流量是英文,而 C1 的 note/why 全是中文硬编码 —— 中文漏进英文答复只有真跑一次才看得见。
   // 断言只挑「漏了就不能上线」的:不掺中文、无内部码、数字溯得回 facts。
   it('英文同一道题:一个中文字都不许漏进去', async () => {
@@ -482,6 +627,9 @@ live('金标 C01 木匠(一句话进,多轮出)', () => {
     expect(findForeignScript(r.answer, 'en'), `英文答复里混进了中文:
 ${r.answer}`).toEqual([])
     expect(findLeaks(r.answer), `英文答复泄露内部码:
+${r.answer}`).toEqual([])
+    // 🔴 提示词里的大写强调被抄进答复(实测首句 `**WE** do not have a record…`)——英文答复才看得见
+    expect(findShoutedWords(r.answer, r.facts), `英文答复里有裸大写(提示词的强调漏出来了):
 ${r.answer}`).toEqual([])
     expect(guardAnswer(r.answer, r.facts, EN01).ok, `英文答复里有溯不回 facts 的数字:
 ${r.answer}`).toBe(true)
