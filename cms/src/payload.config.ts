@@ -13,6 +13,7 @@ import { Companies } from './collections/Companies'
 import { Jobs } from './collections/Jobs'
 import { PnpOccupations } from './collections/PnpOccupations'
 import { EeCategories } from './collections/EeCategories'
+import { EePointsGrid } from './collections/EePointsGrid'
 import { PnpDraws } from './collections/PnpDraws'
 import { PnpRequirements } from './collections/PnpRequirements'
 import { PnpScoreFactors } from './collections/PnpScoreFactors'
@@ -48,7 +49,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Companies, Jobs, PnpOccupations, PnpDraws, PnpScoreFactors, PnpRequirements, PnpOpsStats, Dli, EeCategories, NocDescriptions, PolicyDocs, DesignatedEmployers, Provinces, Cities, Districts, NocCategories, Sources, ExperienceLevels, FieldSources, Rankings, Stats, StatsDaily, StatsOccupation, StatsCity, SavedSearches, SavedJobs, News, Comments],
+  collections: [Users, Media, Companies, Jobs, PnpOccupations, PnpDraws, PnpScoreFactors, PnpRequirements, PnpOpsStats, Dli, EeCategories, EePointsGrid, NocDescriptions, PolicyDocs, DesignatedEmployers, Provinces, Cities, Districts, NocCategories, Sources, ExperienceLevels, FieldSources, Rankings, Stats, StatsDaily, StatsOccupation, StatsCity, SavedSearches, SavedJobs, News, Comments],
   editor: lexicalEditor(),
   // E3-07:邮件适配器=包一层现成 lib/mailer(Resend HTTP 直调,零新依赖);目前只有 forgot-password 走这里。
   // RESEND_API_KEY 未设 → sendMail 返回 false 不发信(dry-run 语义,与 alerts 一致)。

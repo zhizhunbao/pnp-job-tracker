@@ -130,6 +130,14 @@ export async function GET(req: Request) {
       (r) => ({ province: r.province, program: r.program, metric: r.metric, scope: r.scope, scope_kind: r.scopeKind, stream_key: r.streamKey, label: r.label, value: r.value ?? null, value_text: r.valueText, unit: r.unit, as_of: r.asOf, period: r.period, url: r.url, fetched: r.fetched, section: r.section, seq: r.seq })],
     ['ee_categories', 'ee_categories', ['category', 'label', 'noc', 'teer', 'title', 'url', 'fetched', 'draw_crs', 'draw_date', 'draw_size'],
       (r) => ({ category: r.category, label: r.label, noc: r.noc, teer: r.teer, title: r.title, url: r.url, fetched: r.fetched, draw_crs: r.drawCrs, draw_date: r.drawDate, draw_size: r.drawSize })],
+    // G9 联邦官方计分表(决策引擎事实表,不是 /jobs 筛选维度):CRS 排名分 + FSW 67 分选择因素同表,grid 列分
+    // ⚠️ 建表必须先在生产跑 docs/sql/g9-ee-points-grid.sql(含 payload_locked_documents_rels.ee_points_grid_id),
+    //    否则这一段撞 42703 → 整个 seed 事务回滚(表现为 /seed 500、无 body)
+    // ⚠️ points 保持可空 —— 官方「n/a」「Not eligible to apply」一律 null + points_text 存原文,禁 `?? 0`
+    // ⚠️ 列名 table_no / column_label:官方那两个字段叫 table / column,两个都是 SQL 保留字
+    ['ee_points_grid', 'ee_points_grid',
+      ['grid', 'section', 'section_label', 'kind', 'table_no', 'heading', 'factor', 'criterion', 'column_label', 'points', 'points_text', 'seq', 'url', 'fetched'],
+      (r) => ({ grid: r.grid, section: r.section, section_label: r.sectionLabel, kind: r.kind, table_no: r.tableNo, heading: r.heading, factor: r.factor, criterion: r.criterion, column_label: r.columnLabel, points: r.points ?? null, points_text: r.pointsText, seq: r.seq, url: r.url, fetched: r.fetched })],
     ['noc_descriptions', 'noc_descriptions', ['noc', 'title', 'title_zh', 'title_zh_short', 'title_ko', 'title_ko_short', 'title_en_short', 'duties', 'requirements', 'fetched'],
       (r) => ({ noc: r.noc, title: r.title, title_zh: r.titleZh, title_zh_short: r.titleZhShort, title_ko: r.titleKo,
         title_ko_short: r.titleKoShort, title_en_short: r.titleEnShort,
