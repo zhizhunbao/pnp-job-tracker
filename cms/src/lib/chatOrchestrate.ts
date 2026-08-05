@@ -338,6 +338,34 @@ export function normalizeSlots(raw: any): Omit<Slots, 'noc'> & { noc: string | n
   return { noc: /^\d{5}$/.test(nocRaw) ? nocRaw : null, occText, provs, expMonths, status, claims }
 }
 
+const OTHER_PROVINCES_RE = /(?:其他|别的|其它|其余).{0,4}省|other provinces?|elsewhere|다른.{0,4}(?:주|지역)/i
+
+/**
+ * 多轮的结构化接线。历史正文只负责让模型理解“那这个呢”这类指代；已经确认过的职业、身份和经验
+ * 由上一轮服务端 slots 滚动带回，不能每轮重新赌模型会不会从截断文本里猜出来。
+ *
+ * 当前轮明确说了新职业时，旧 NOC 必须清掉再解析；明确问“其他省”时也不能把旧省硬塞回来。
+ * claims 不继承：上一轮别人说过的话不能在每个后续问题里重复对账。
+ */
+export function mergeFollowupSlots(
+  current: Omit<Slots, 'noc'> & { noc: string | null }, rawPrevious: unknown, text: string,
+): Omit<Slots, 'noc'> & { noc: string | null } {
+  if (!rawPrevious || typeof rawPrevious !== 'object') return current
+  const p = rawPrevious as Record<string, unknown>
+  const previous = normalizeSlots({
+    occ_en: p.occText, noc: p.noc, provs: p.provs, exp_months: p.expMonths, status: p.status,
+  })
+  const changedOccupation = Boolean(current.occText || current.noc)
+  return {
+    noc: current.noc ?? (changedOccupation ? null : previous.noc),
+    occText: current.occText || previous.occText,
+    provs: current.provs.length ? current.provs : (OTHER_PROVINCES_RE.test(text) ? [] : previous.provs),
+    expMonths: current.expMonths ?? previous.expMonths,
+    status: current.status ?? previous.status,
+    claims: current.claims,
+  }
+}
+
 /**
  * 职名 → 5 位 NOC(照 api/resume/route.ts 的 pg_trgm 做法:在库在招职位标题比官方类名更贴用户用语)。
  * 命中不了就返回 null —— **工具层硬门槛是 5 位码,猜一个等于给别人算命**。
@@ -2229,7 +2257,7 @@ export function citeFacts(answer: string, facts: Fact[]): Fact[] {
  *                它是**撤回**不是进度,只在真要重画时发。
  */
 export async function orchestrate(
-  rawPool: any, input: { text: string; lang: ChatLang; history?: ChatTurn[] },
+  rawPool: any, input: { text: string; lang: ChatLang; history?: ChatTurn[]; context?: unknown },
   opts?: { onStep?: OnStep; onDelta?: (s: string) => void; onReset?: () => void },
 ): Promise<ChatResult> {
   const text = (input.text || '').trim().slice(0, MAX_TEXT)
@@ -2243,7 +2271,7 @@ export async function orchestrate(
   onStep?.({ phase: 'read', text: S.read })
   let raw: string
   try {
-    const hist = (input.history ?? []).slice(-2).map((h) => `${h.role}: ${h.content.slice(0, 200)}`).join('\n')
+    const hist = (input.history ?? []).slice(-6).map((h) => `${h.role}: ${h.content.slice(0, h.role === 'assistant' ? 320 : 240)}`).join('\n')
     raw = await completeText([
       { role: 'system', content: SLOT_SYSTEM },
       { role: 'user', content: (hist ? `EARLIER:\n${hist}\n\nNOW: ` : '') + text },
@@ -2253,7 +2281,7 @@ export async function orchestrate(
   }
   const parsed = parseLlmJson(raw)
   if (!parsed) throw new ChatError('llm', `slot parse failed: ${raw.slice(0, 160)}`)
-  const draft = normalizeSlots(parsed)
+  const draft = mergeFollowupSlots(normalizeSlots(parsed), input.history?.length ? input.context : null, text)
   // 联邦规则/分表不依赖职业。路由判据只读用户原话,不拿模型猜的 topic 当开关。
   const federalPrograms = federalRulePrograms(text)
   const crs = crsLookups(text)

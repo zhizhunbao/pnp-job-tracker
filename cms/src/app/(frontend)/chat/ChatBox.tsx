@@ -165,6 +165,9 @@ export function ChatBox({ compact = false, autoFocus = false }: { compact?: bool
     const history: Msg[] = base.filter((x) => x.a)
       .flatMap((x) => [{ role: 'user' as const, content: x.q }, { role: 'assistant' as const, content: x.a!.answer }])
       .slice(-8)
+    // 文本 history 让模型读语义；上一轮服务端 slots 才是职业/身份/经验的稳定记忆。
+    // 每轮结果已经含继承后的完整 slots，因此只需滚动带最近一份，不必在浏览器另造状态机。
+    const context = [...base].reverse().find((x) => x.a?.slots)?.a?.slots
     const idx = retryIdx ?? turns.length
     setTurns((prev) => (retryIdx == null ? [...prev, blank(q)] : prev.map((x, k) => (k === retryIdx ? blank(q) : x))))
     setInput('')
@@ -175,7 +178,7 @@ export function ChatBox({ compact = false, autoFocus = false }: { compact?: bool
     try {
       const r = await fetch('/api/chat', {
         method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: q, lang, history }),
+        body: JSON.stringify({ text: q, lang, history, context }),
       })
       // 流式分支:服务端改造完成后自动生效(见 §流式)
       if (r.ok && (r.headers.get('content-type') || '').includes('text/event-stream') && r.body) {

@@ -16,7 +16,7 @@ import {
   commercialClaimLabel,
   findEnglishUnits, findFactCopied, findFactDump, findHedges, findForeignScript, findLeaks, findMergedStates,
   findMixedStates, findSameOpening, findShoutedWords, findWordNumbers, guardAnswer, isMoneyTalk, isSelfStatement,
-  LABEL_CAP, LBL, localizeUnits, makeSentenceGate, missingClaimLines, normalizeSlots, MONEY_WHY, orchestrate, otherClaimLabel,
+  LABEL_CAP, LBL, localizeUnits, makeSentenceGate, mergeFollowupSlots, missingClaimLines, normalizeSlots, MONEY_WHY, orchestrate, otherClaimLabel,
   PROMISE_WHY, resolveNoc, sayFact, stripMd, studyFieldOf, suggestOccupations, tidy,
   type ChatLang, type Fact, type OccOption,
 } from '@/lib/chatOrchestrate'
@@ -666,6 +666,27 @@ describe('槽位归一 / prompt 预算(模型输出不可信)', () => {
     expect(normalizeSlots({ occ_en: 'carpenter', noc: '7231' }).noc).toBeNull()
     expect(normalizeSlots({ occ_en: 'carpenter', noc: 'carpenter' }).noc).toBeNull()
     expect(normalizeSlots({ occ_en: 'carpenter', noc: '72310' }).noc).toBe('72310')
+  })
+
+  it('多轮滚动继承已确认职业/身份/经验，不靠最后两句文本重新猜', () => {
+    const previous = {
+      noc: '72310', occText: 'carpenter', provs: ['MB'], expMonths: 0, status: 'graduated',
+      claims: [{ text: '中介说包提名', topic: 'private-promise' }],
+    }
+    const next = mergeFollowupSlots(normalizeSlots({}), previous, '那语言要求呢?')
+    expect(next).toMatchObject({ noc: '72310', occText: 'carpenter', provs: ['MB'], expMonths: 0, status: 'graduated' })
+    // 旧主张不跟着每个追问重复对账。
+    expect(next.claims).toEqual([])
+  })
+
+  it('多轮明确换职业就清旧 NOC；问其他省就不把旧省塞回来', () => {
+    const previous = { noc: '72310', occText: 'carpenter', provs: ['MB'], expMonths: 6, status: 'working', claims: [] }
+    const changed = mergeFollowupSlots(normalizeSlots({ occ_en: 'cook' }), previous, '如果我改做厨师呢?')
+    expect(changed).toMatchObject({ noc: null, occText: 'cook', provs: ['MB'], expMonths: 6, status: 'working' })
+
+    const elsewhere = mergeFollowupSlots(normalizeSlots({}), previous, '那其他省呢?')
+    expect(elsewhere.noc).toBe('72310')
+    expect(elsewhere.provs).toEqual([])
   })
 
   // 🔴 私人承诺按**原话**改判:topic 是模型猜的(实测同一句给过 ops,也给过 other),

@@ -1,7 +1,7 @@
 /**
  * POST /api/chat — 对话即产品的唯一入口(C2;设计 docs/design/对话即产品-20260803.md §二/§三/§四)。
  *
- * body: { text, lang: 'zh'|'en'|'ko', history?: [{role,content}] }
+ * body: { text, lang: 'zh'|'en'|'ko', history?: [{role,content}], context?: previousAnswer.slots }
  * 200 SSE : data:{"step":"…"}(工具轨迹,多条) → data:{"delta":"…"}(正文,逐句多条)
  *           → data:{answer,slots,facts,followups}(整段:facts/followups 只能整段给) → data:[DONE]
  *           中途可能插一条 data:{"reset":true} = 前面发出去的正文作废,前端清屏(见下)
@@ -46,6 +46,8 @@ export async function POST(req: Request) {
     .filter((h: any) => (h?.role === 'user' || h?.role === 'assistant') && typeof h?.content === 'string')
     .slice(-6)
     .map((h: any): ChatTurn => ({ role: h.role, content: h.content.slice(0, 600) }))
+  // context 来自上一轮服务端返回的 slots；编排层仍会逐字段归一，不直接信任客户端形状。
+  const context = body?.context && typeof body.context === 'object' ? body.context : undefined
 
   const user = await getUser(await headers()).catch(() => null)
   // 免费池(匿名 IP / 登录账号);本批不设付费墙,402 也当限流处理,前端一个 'limit' 分支就够
@@ -83,7 +85,7 @@ export async function POST(req: Request) {
   const run: Promise<Done> = (async (): Promise<Done> => {
     try {
       const payload = await getPayload({ config: await config })
-      return { ok: await orchestrate((payload.db as any).pool, { text, lang, history }, { onStep, onDelta, onReset }) }
+      return { ok: await orchestrate((payload.db as any).pool, { text, lang, history, context }, { onStep, onDelta, onReset }) }
     } catch (err) { return { err } }
   })()
 
