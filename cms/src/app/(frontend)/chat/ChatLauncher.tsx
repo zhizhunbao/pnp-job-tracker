@@ -33,7 +33,7 @@ import dynamic from 'next/dynamic'
 import { usePathname } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { IconChat, IconChevronDown } from '../Icons'
+import { IconChat, IconChevronDown, IconMaximize, IconMinimize } from '../Icons'
 import { useLang } from '../LangProvider'
 import { UI } from '../ui/primitives'
 import { track } from '@/lib/track'
@@ -43,6 +43,9 @@ import { track } from '@/lib/track'
 const ChatBox = dynamic(() => import('./ChatBox').then((m) => m.ChatBox), { ssr: false })
 
 const HINT_KEY = 'jt.chat.hint.v1'
+// 桌面最大化的记忆位(手机不用:那边本来就是全屏接管)。记住它是因为**这是个人偏好不是一次性动作** ——
+// 一个人愿意在 380×600 里读长答复,他每次都愿意;不愿意的那个每次都得再点一遍,那就是每次都在骂我们。
+const MAX_KEY = 'jt.chat.max.v1'
 // 挂件是全站**唯一**的对话入口(2026-08-04 傍晚 /start 内联框已撤)→ 轻提示出到用户真的点开为止,
 // 但最多 3 次:再多就是牛皮癣。点开过一次就永久不再出。
 const HINT_MAX = 3
@@ -75,6 +78,7 @@ export function ChatLauncher() {
   const [mounted, setMounted] = useState(false)   // 打开过一次就不再卸载(会话不因最小化丢失)
   const [hint, setHint] = useState(false)
   const [noPopover, setNoPopover] = useState(false)  // 老浏览器(Safari<17)退成普通 fixed 层
+  const [max, setMax] = useState(false)              // 桌面最大化(手机 ≤640 恒为全屏,这个钮那边不出现)
   const [clear, setClear] = useState(BASE)           // 离视口底的实测距离(躲吸底动作条)
   const panel = useRef<HTMLDivElement | null>(null)
   const dock = useRef<HTMLDivElement | null>(null)
@@ -84,6 +88,16 @@ export function ChatLauncher() {
     try { localStorage.setItem(HINT_KEY, String(HINT_MAX)) } catch { /* ignore */ }  // 点开过=不再提示
   }, [])
   const hide = useCallback(() => { setOpen(false); track('widget-close') }, [])
+  // 读在 effect 里,不在 useState 初值里:localStorage 在服务端不存在,当初值会 hydration 不一致
+  useEffect(() => { try { setMax(localStorage.getItem(MAX_KEY) === '1') } catch { /* 隐私模式:默认小窗 */ } }, [])
+  const toggleMax = useCallback(() => {
+    setMax((v) => {
+      const n = !v
+      try { localStorage.setItem(MAX_KEY, n ? '1' : '0') } catch { /* ignore */ }
+      track(n ? 'widget-max' : 'widget-restore')
+      return n
+    })
+  }, [])
 
   // 开合走原生 popover;`:popover-open` 的 matches() 同时充当特性检测(不支持会抛 → 退普通层)
   useEffect(() => {
@@ -172,9 +186,15 @@ export function ChatLauncher() {
       )}
       {mounted && (
         <div ref={panel} popover="manual" role="dialog" aria-label={t('chat.title')} style={bottom}
-          className={'clPanel' + (noPopover && open ? ' clOpen' : '')}>
+          className={'clPanel' + (noPopover && open ? ' clOpen' : '') + (max ? ' clMaxed' : '')}>
           <div className="clHead">
             <span className="clTitle">{t('chat.title')}</span>
+            {/* 桌面最大化:380×600 里读一段长答复很憋(Frank 实测)。手机侧 CSS 里整个藏掉 —— 那边已经全屏。
+                拖拽改尺寸不做:得自己搓 pointer 事件 + 边界 + 记忆,成本远大于「大/小」两档带来的收益 */}
+            <button className="clMax" onClick={toggleMax}
+              aria-label={t(max ? 'cw.restore' : 'cw.max')} title={t(max ? 'cw.restore' : 'cw.max')}>
+              {max ? <IconMinimize size={16} /> : <IconMaximize size={16} />}
+            </button>
             <button className="clMin" onClick={hide} aria-label={t('cw.close')} title={t('cw.close')}>
               <IconChevronDown size={18} />
             </button>
@@ -216,16 +236,22 @@ const CSS = `
   border-bottom:1px solid ${UI.hairline}}
 .clTitle{flex:1;min-width:0;font-size:14px;font-weight:700;color:${UI.text};
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.clMin{flex:none;width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+.clMin,.clMax{flex:none;width:32px;height:32px;display:flex;align-items:center;justify-content:center;
   border:none;background:none;color:${UI.text2};border-radius:8px;cursor:pointer}
-.clMin:hover{background:${UI.hairline};color:${UI.text}}
+.clMin:hover,.clMax:hover{background:${UI.hairline};color:${UI.text}}
+/* 最大化:贴着视口留 12px,宽度封到 1100(再宽正文一行 90+ 词,眼睛回不到行首)。
+   仍靠右下角锚定 —— 它得还像那个挂件,不是突然变成一个居中弹框 */
+.clPanel.clMaxed{inset:12px 12px 12px auto;width:min(1100px,calc(100vw - 24px));height:calc(100dvh - 24px)}
 /* 卡壳与历史区高度由 ChatBox 的 compact 自己管(它的 .cbFill),这里只给容器 —— 壳**不覆盖别人的类名** */
 .clBody{flex:1;min-height:0;display:flex;flex-direction:column;padding:10px 12px 12px;overflow:hidden}
 
-/* 手机:展开=全屏接管(缩在角落挤成一条没法读长答复);底部留出 iPhone 横条 */
+/* 手机:展开=全屏接管(缩在角落挤成一条没法读长答复);底部留出 iPhone 横条。
+   .clPanel.clMaxed 必须一起点名(它比单个 .clPanel 更具体),不点名的话
+   ——一个在桌面上按过最大化的人换到手机就会看到一个 12px 内缩的「最大化」窗,而不是全屏。 */
 @media(max-width:640px){
-  .clPanel{inset:0;width:100%;height:100dvh;max-height:none;border:none;border-radius:0;
+  .clPanel,.clPanel.clMaxed{inset:0;width:100%;height:100dvh;max-height:none;border:none;border-radius:0;
     padding-bottom:env(safe-area-inset-bottom,0px)}
+  .clMax{display:none}           /* 已经是全屏,这个钮在这儿没有意义 */
 }
 @media (prefers-reduced-motion:reduce){.clBtn{transition:none}}
 `

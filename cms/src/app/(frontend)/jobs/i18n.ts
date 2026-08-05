@@ -513,6 +513,7 @@ const zh: Dict = {
   'chat.retry': '重试', 'chat.open': '打开',
   // cw.* = 全站右下角对话挂件的**壳**(ChatLauncher);面板标题复用 chat.title,不另开一份
   'cw.open': '问问看', 'cw.close': '收起', 'cw.hint': '有问题?问问看',
+  'cw.max': '放大', 'cw.restore': '还原',      // 桌面面板大小(手机恒全屏,不出这个钮)
   'advisor.disclaimer': 'AI 生成判断,非移民建议(我们非持牌顾问 RCIC),以官方来源为准',
   'legal.title': '免责声明',
   'legal.wip': '完整版法律页面(隐私政策 / 使用条款 / 关于)将在正式收费前发布。',
@@ -1320,6 +1321,7 @@ const en: Dict = {
   'chat.hint': 'Enter to send, Shift+Enter for a new line',
   'chat.retry': 'Retry', 'chat.open': 'Open',
   'cw.open': 'Ask a question', 'cw.close': 'Minimize', 'cw.hint': 'Questions? Just ask',
+  'cw.max': 'Expand', 'cw.restore': 'Shrink',
   'advisor.disclaimer': 'AI-generated assessment, not immigration advice (we are not RCIC); verify with official sources',
   'legal.title': 'Disclaimer',
   'legal.wip': 'Full legal pages (privacy policy / terms of use / about) will be published before paid plans go live.',
@@ -2101,6 +2103,7 @@ const ko: Dict = {
   'chat.hint': 'Enter 전송, Shift+Enter 줄바꿈',
   'chat.retry': '다시 시도', 'chat.open': '열기',
   'cw.open': '질문하기', 'cw.close': '접기', 'cw.hint': '궁금한 점 물어보세요',
+  'cw.max': '크게', 'cw.restore': '작게',
   'advisor.disclaimer': 'AI 기반 판단이며 이민 자문이 아닙니다(당사는 RCIC가 아님) · 공식 출처를 기준으로 확인하세요.',
   'legal.title': '면책 조항',
   'legal.wip': '전체 법률 페이지(개인정보 처리방침 / 이용약관 / 소개)는 유료 서비스 시작 전에 게시됩니다.',

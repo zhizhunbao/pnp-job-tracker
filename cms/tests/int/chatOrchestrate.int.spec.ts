@@ -15,7 +15,7 @@ import {
   AVAIL_MARKERS, clampAnswer, dropTrailingHedge, factsBlock, factSheet, findEnglishUnits, findHedges,
   findForeignScript, findLeaks, findMergedStates, findMixedStates, findSameOpening, findWordNumbers,
   guardAnswer, LBL, localizeUnits, missingClaimLines, normalizeSlots,
-  MONEY_WHY, orchestrate, PROMISE_WHY, resolveNoc, sayFact,
+  MONEY_WHY, orchestrate, PROMISE_WHY, resolveNoc, sayFact, stripMd, tidy,
   type ChatLang, type Fact,
 } from '@/lib/chatOrchestrate'
 import { friendLlmReady } from '@/lib/friendLlm'
@@ -248,6 +248,44 @@ describe('答复见客检查(不连模型)', () => {
       expect(findMergedStates(sheet, sheetFacts(lang), lang), `${lang} 兜底把两条状态揉在一起了:\n${sheet}`).toEqual([])
       expect(findHedges(sheet, lang), `${lang} 兜底里有推断性措辞:\n${sheet}`).toEqual([])
     }
+  })
+
+  // ── 🔴 可读性(2026-08-05 Frank 实测挂件:「这个现在根本不可读」)────────────────────
+  it('markdown 记号一个都不许见客(C1 的 note 里带着 **,它进 prompt / 兜底清单 / 出处表)', () => {
+    // chatTools.ts 的原句(ON coverage note),生产实录里原样显示给了用户
+    const raw = 'ON 官方**不公布**职业清单(2026-06 改制后排除集为空)'
+    expect(stripMd(raw)).toBe('ON 官方不公布职业清单(2026-06 改制后排除集为空)')
+    expect(stripMd('# 小标题\n`code`\n* 项目')).toBe('小标题\ncode\n- 项目')
+    // 模型那头也走同一份词表(tidy 复用 stripMd,两处别各写各的)
+    expect(tidy('**加粗**与 `等宽`')).toBe('加粗与 等宽')
+    // 剥的是记号不是数字:guard 的账一分不能变
+    expect(stripMd('**3** 个岗位')).toBe('3 个岗位')
+  })
+
+  it('降级清单排得能读:说明是人话、主张排最前、四态行不拖着长注、管道注不进清单', () => {
+    const ev = { url: 'https://immigratemanitoba.com/x', fetched: '2026-08-04' }
+    const facts: Fact[] = [
+      { tool: 'lookupJobs', label: LBL.zh.indexNote, value: null, valueText: '查询时间 2026-08-04', unit: 'note', evidence: ev },
+      { tool: 'lookupThresholds', label: `MB ${LBL.zh.factor.empYears}`, value: 3, valueText: '', unit: 'years', evidence: ev },
+      {
+        tool: 'lookupCoverage', label: `NB ${LBL.zh.occList}`, value: null, unit: 'status', evidence: ev,
+        valueText: `${AVAIL_SENTENCE_SAMPLE.zh} — 这里是 C1 的两百字取证注(注里还套着括号),见客清单不该拖着它`,
+      },
+      { tool: 'checkClaims', label: `${CLAIM_LEAD.zh}${AVAIL_SENTENCE_SAMPLE.zh}`, value: null, valueText: '', unit: 'claim', evidence: ev },
+    ]
+    const sheet = factSheet(facts, 'zh')
+    const lines = sheet.split('\n')
+    // ① 开场白只说与他有关的那一半,不讲我们的 guard 叫什么(实录原话「模型这次没能守住…这条线」)
+    expect(lines[0]).not.toMatch(/模型|守住|校验|guard/i)
+    expect(lines[0]).toContain('出处')
+    // ② 别人跟他说的话排最前 —— 他就是为这个来的(存储序里它排最后)
+    expect(lines[1]).toContain(CLAIM_LEAD.zh)
+    // ③ 四态行留状态那半句、砍掉后面的取证注;④ 索引口径注整条不进
+    expect(sheet).toContain(AVAIL_SENTENCE_SAMPLE.zh)
+    expect(sheet).not.toContain('两百字取证注')
+    expect(sheet).not.toContain(LBL.zh.indexNote)
+    // 条数封顶:再多没人读得完
+    expect(factSheet(Array.from({ length: 30 }, () => f({})), 'zh').split('\n').length).toBeLessThanOrEqual(15)
   })
 
   // ── 🔴 喂给模型的形状:给它表格它就还你表格(2026-08-05,Frank「这回答不像人话」)──────

@@ -52,7 +52,10 @@ export type Slots = {
 }
 export type ChatLang = 'zh' | 'en' | 'ko'
 export type ChatTurn = { role: 'user' | 'assistant'; content: string }
-export type ChatResult = { answer: string; slots: Slots; facts: Fact[]; followups: string[] }
+/** `degraded` = 这段「答复」其实是**原始事实清单**(出口校验两次都没过 → factSheet)。
+ *  前端据此换一种排版(ChatAnswer.cbSheet):清单要排成清单,不能跟正常答复长一个样。
+ *  路由是纯透传(Response.json(result) / sse(result)),加字段不用动它。 */
+export type ChatResult = { answer: string; slots: Slots; facts: Fact[]; followups: string[]; degraded?: boolean }
 export type ChatErrorCode = 'tooShort' | 'noOcc' | 'llm' | 'guard'
 export class ChatError extends Error {
   code: ChatErrorCode
@@ -449,8 +452,29 @@ export const LBL: Record<ChatLang, LabelDict> = {
   },
 }
 
+/**
+ * 🔴 **markdown 记号一律剥掉,不渲染**(2026-08-05 生产实录:答复里出现 `ON 官方**不公布**职业清单`)。
+ *
+ * 病根在数据层:C1 的 note 是给人读的中文,里面带着 markdown 强调
+ * (chatTools.ts `${prov} 官方**不公布**职业清单…`),它经 valueText 进三个下游 —— 喂模型的 FACTS 块、
+ * 降级清单、前端出处表。**降级清单和出处表是我们自己写的字**,没有 tidy 这道回来剥的工序,于是原样见客。
+ *
+ * 为什么剥不渲:我们的答复按设计是**一句一事实的短纯文本**(前端 white-space:pre-wrap),
+ * 没有一处需要富文本;引入 markdown 渲染 = 一个新依赖 + 一个 XSS 面(答复正文里混着模型生成的内容),
+ * 换来的只是几个星号变成加粗。剥掉是 Ponytail 第 5 格的一行解法,而且**三个下游一次全治**。
+ *
+ * 收口在 `fact()` 这一个入口:label/valueText 是 markdown 唯一的入境口,在这儿剥干净,
+ * prompt / 降级清单 / 出处表都不必再各自处理(各自处理迟早漏一处)。
+ */
+export const stripMd = (s: string): string => s
+  .replace(/\*\*/g, '')                       // 加粗记号:去记号留字
+  .replace(/`/g, '')                          // 等宽记号
+  .replace(/^[ \t]*#{1,6}[ \t]*/gm, '')       // 小标题
+  .replace(/^[ \t]*[*+][ \t]+/gm, '- ')       // markdown 项目符号 → 我们自己的破折号(全站一种列表记号)
+
 const fact = (tool: string, label: string, value: number | null, valueText: string, unit: string, ev: { url: string; fetched: string }): Fact => ({
-  tool, label: label.slice(0, 320), value, valueText: valueText.slice(0, 110), unit, evidence: { url: ev.url, fetched: ev.fetched },
+  tool, label: stripMd(label).slice(0, 320), value, valueText: stripMd(valueText).slice(0, 110), unit,
+  evidence: { url: ev.url, fetched: ev.fetched },
 })
 /**
  * 四态成句 + 官方原文摘要一起带走:摘要跟着 valueText 截到 110 字,够模型分清「不公布」和「没收录」,又不吃光 prompt 预算。
@@ -632,9 +656,19 @@ export async function collectFacts(
 //   门槛类(lookupThresholds)label 是半句话,值直接续上 → 「NS 要求申请人的语言达到 5 CLB」;
 //   计数类 label 是名目,冒号接值 → 「MB 现在的在招岗位 (NOC 72310): 3 个岗位」;
 //   四态/主张行 label 本身已经是成品句。
-/** 一条 fact → 一句话(prompt 与降级清单共用同一份口径,不许两处各写各的)。 */
-export function sayFact(f: Fact, lang: ChatLang): string {
-  if (f.unit === 'status') return `${f.label}: ${f.valueText}`
+/**
+ * 一条 fact → 一句话(prompt 与降级清单共用同一份口径,不许两处各写各的)。
+ *
+ * `brief`(只有降级清单用):把**取证注**那截砍掉 —— 四态行的 valueText 是
+ * `官方不公布这项数据(不是本站没查到) — <C1 的 200 字取证注,注里还套着括号>`,
+ * 摆进 prompt 是对的(模型要靠它分清「不公布」和「没收录」),摆进见客清单就是 Frank 说的
+ * 「一坨 - 标签: 值 — 一长串 note,note 里还夹着括号里的括号」。状态那半句一个字不动,砍的是后面的注。
+ */
+export function sayFact(f: Fact, lang: ChatLang, opts: { brief?: boolean } = {}): string {
+  if (f.unit === 'status') {
+    const v = opts.brief ? f.valueText.split(' — ')[0] : f.valueText
+    return `${f.label}: ${v}`
+  }
   // 英文单复数:喂进去的是 `1 jobs`,抄出来的就是「1 jobs in ON」(2026-08-05 实测)。
   // 88% 是英文流量,这种小语法错读者一眼看得见 —— 在喂之前就改对,比回来再修便宜。
   const u0 = f.value != null ? unitText(f.unit, lang) : ''
@@ -963,8 +997,9 @@ export function findWordNumbers(answer: string, lang: ChatLang): string[] {
   return out.slice(0, 8)
 }
 
-/** 模型总爱加粗和小标题(RULE 5 求不动)——回来自己剥掉,比在 prompt 里反复求它便宜。只删记号不动数字。 */
-export const tidy = (s: string) => s.replace(/\*\*/g, '').replace(/^[ \t]*#{1,6}[ \t]*/gm, '').replace(/\n{3,}/g, '\n\n').trim()
+/** 模型总爱加粗和小标题(RULE 5 求不动)——回来自己剥掉,比在 prompt 里反复求它便宜。只删记号不动数字。
+ *  记号词表与数据层同一份(stripMd):两处各写各的,迟早一处漏一种记号。 */
+export const tidy = (s: string) => stripMd(s).replace(/\n{3,}/g, '\n\n').trim()
 
 // ── 🔴 出口校验②:内部状态码 / 字段名不许见客 ────────────────────────────────
 //
@@ -1291,10 +1326,17 @@ export function clampAnswer(s: string, lang: ChatLang, cap = LEN_CAP[lang], sent
   return out.trim() || t.slice(0, cap).trim()
 }
 
+/**
+ * 降级清单的开场白。**诚实和可读同时做到**(2026-08-05 Frank 实测:
+ * 原话是「模型这次没能守住『只用查到的数字』这条线,所以…」—— 用户不关心我们的 guard 叫什么,
+ * 那是在跟他讲我们的内部工程)。改法不是把它藏起来假装成正常答复,而是**只说与他有关的那一半**:
+ * 这一次给的是原始事实、不是组织好的答复,而且每条带出处。他据此知道该怎么读下面这张清单,
+ * 至于为什么只有事实,那是我们的事。
+ */
 const SHEET_HEAD: Record<ChatLang, string> = {
-  zh: '模型这次没能守住「只用查到的数字」这条线,所以直接给你查到的原始事实(每条都带官方出处):',
-  en: 'The writer could not stay inside the retrieved numbers this time, so here are the raw facts we looked up, each with its official source:',
-  ko: '이번에는 조회된 숫자만 사용하지 못했기에, 확인된 원자료를 출처와 함께 그대로 드립니다:',
+  zh: '这次我只给你查到的官方事实,每条都带出处:',
+  en: 'This time I am giving you only the official facts we looked up, each with its source:',
+  ko: '이번에는 조회한 공식 자료만 그대로 드립니다. 각 항목에 출처가 있습니다:',
 }
 // 降级清单也是见客文案:四态码换人话(四态句子只有 AVAIL_SENTENCE 一个来源)、单位换用户语言。
 // label 仍是英文速记 —— 那是原料不是话术,降级本来就是「给你看我查到了什么」。
@@ -1314,10 +1356,26 @@ function unitText(unit: string, lang: ChatLang): string {
   const mapped = localizeUnits(`1 ${unit}`, lang).replace(/^1\s*/, '')
   return /[a-z]/i.test(mapped) ? '' : mapped                  // 认不出 → 不印,绝不把英文丢给用户
 }
-/** 降级:宁可给一张能溯源的事实清单,也不给一句编出来的话。 */
+/**
+ * 降级:宁可给一张能溯源的事实清单,也不给一句编出来的话。
+ *
+ * 🔴 但**清单本身要排得能读**(2026-08-05 Frank 实测:「一坨 - 标签: 值 — 一长串 note」)。
+ * 三条排法,都只做减法,一个事实不新增、不改写:
+ *   ① **别人跟他说的话排最前** —— 他就是为这个来的,而它偏偏在 collectFacts 的存储序里排最后(第⑦格);
+ *   ② 带数字的事实排中间,四态行(「这项官方不公布」)排最后 —— 有数的先看,没数的后看;
+ *   ③ 索引口径注(unit='note')整条不进:那是管道内情,不是他的事实。
+ * 再加 brief:砍掉四态行后面的取证注(见 sayFact)。条数从 20 收到 14 —— 再多没人读得完。
+ */
+const SHEET_ORDER: Record<string, number> = { claim: 0, status: 3 }
 export function factSheet(facts: Fact[], lang: ChatLang): string {
   // 与 prompt 用同一个 sayFact:降级清单和喂模型的材料是同一批话,两处各写各的迟早分叉
-  const lines = facts.slice(0, 20).map((f) => `- ${sayFact(f, lang)}`)
+  const lines = facts
+    .filter((f) => f.unit !== 'note')
+    .map((f, i) => ({ f, i, rank: SHEET_ORDER[f.unit] ?? (f.value != null ? 1 : 2) }))
+    .sort((a, b) => a.rank - b.rank || a.i - b.i)
+    .slice(0, 14)
+    .map(({ f }) => `- ${sayFact(f, lang, { brief: true })}`)
+    .filter((l, i, a) => a.indexOf(l) === i)          // 同一句重复摆两遍只会显得没查清楚
   return localizeUnits(dropCodes([SHEET_HEAD[lang], ...lines].join('\n'), lang), lang)
 }
 
@@ -1456,6 +1514,7 @@ export async function orchestrate(
   let banned: string[] = []
   let sameOpen: string[] = []          // 句式雷同:重试一次就认命(降级比它难看得多),不进降级判据
   let passed = ''                      // 最近一次**过了硬拦**的答复(句式重试的退路)
+  let firedLast: string[] = []         // 最后一次撞到的检查名(降级日志要报「因为哪一道」,不是只报「降级了」)
   onStep?.({ phase: 'write', text: S.write })
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
@@ -1475,9 +1534,20 @@ export async function orchestrate(
       if (attempt === 0 && facts.length) { answer = ''; bad = []; break }   // 合成掉线:facts 还在,直接降级
       throw new ChatError('llm', e instanceof LlmError ? e.message : String(e))
     }
+    // 🔴 **哪一道检查、第几次** —— 逐道具名(2026-08-05 Frank:降级率是根因指标,修呈现只是化妆)。
+    //    原来六道检查被并成 leaks/units 两坨,日志里看得见「撞了」看不见「撞的是谁」,
+    //    于是没人知道该松哪一道、该改哪条 RULE。名字就是这几个函数名,别再另起别名。
     const g = guardAnswer(answer, facts, text)
-    const leaks = [...findLeaks(answer), ...findFactDump(answer, facts)]
-    const units = [...findEnglishUnits(answer, lang, facts), ...findWordNumbers(answer, lang), ...findForeignScript(answer, lang)]
+    const fired: [string, string[]][] = ([
+      ['guard', g.bad],
+      ['leak', findLeaks(answer)],
+      ['factDump', findFactDump(answer, facts)],
+      ['enUnits', findEnglishUnits(answer, lang, facts)],
+      ['cjkNum', findWordNumbers(answer, lang)],
+      ['script', findForeignScript(answer, lang)],
+    ] as [string, string[]][]).filter(([, v]) => v.length)
+    const leaks = fired.filter(([k]) => k === 'leak' || k === 'factDump').flatMap(([, v]) => v)
+    const units = fired.filter(([k]) => k === 'enUnits' || k === 'cjkNum' || k === 'script').flatMap(([, v]) => v)
     const hedges = findHedges(answer, lang)
     if (hedges.length) console.log(`[chat] hedge warn noc=${slots.noc} words=${hedges.join(',')}`)
     const merged = [...findMergedStates(answer, facts, lang), ...findMixedStates(answer, lang)]
@@ -1495,7 +1565,9 @@ export async function orchestrate(
     }
     bad = g.bad
     banned = [...leaks, ...units].slice(0, 10)
-    console.log(`[chat] exit-check hit attempt=${attempt + 1} noc=${slots.noc} nums=${g.bad.join(',')} strings=${banned.join(',')} answer=${answer.slice(0, 200)}`)
+    firedLast = fired.map(([k, v]) => `${k}(${v.length})`)
+    console.log(`[chat] exit-check hit attempt=${attempt + 1} noc=${slots.noc} lang=${lang} `
+      + `fired=${firedLast.join(',')} nums=${g.bad.join(',')} strings=${banned.join(',')} answer=${answer.slice(0, 200)}`)
   }
   // 🔴 模型漏掉的主张,出口自己补(见 missingClaimLines 上面那段:prompt 压不住,就别再指望 prompt)。
   //    先把模型那段按「留出补位长度」重新截一次 —— 见客字数上限不能因为补位被顶破。
@@ -1518,7 +1590,8 @@ export async function orchestrate(
   if (bad.length || banned.length || !answer) {
     if (!facts.length) throw new ChatError('guard', 'no facts to fall back on', slots)
     degraded = true
-    console.log(`[chat] degraded to fact sheet noc=${slots.noc} facts=${facts.length} bad=${bad.join(',')}`)
+    console.log(`[chat] degraded to fact sheet noc=${slots.noc} lang=${lang} facts=${facts.length} `
+      + `reason=${firedLast.join(',') || (answer ? 'unknown' : 'no-answer')} bad=${bad.join(',')}`)
     answer = factSheet(facts, lang)
     // 🔴 降级分支**必须过同一道出口检查**,否则它就是所有红线的后门(2026-08-04:兜底把英文内部标签
     //    `apprentice-friendly openings…` / `index scope note` 直接吐给了用户)。
@@ -1532,6 +1605,6 @@ export async function orchestrate(
   // 出处标注在最后一步(要拿最终答复回读);追问只从「这次真查到了数据」的工具里出。
   // 降级成事实清单时**整张清单就是答复**,所以有出处的全标上 —— 那种时候出处正是唯一能点的东西。
   const out = degraded ? facts.map((f) => ({ ...f, cited: Boolean(f.evidence.url) })) : citeFacts(answer, facts)
-  console.log(`[chat] cited ${out.filter((f) => f.cited).length}/${out.length} facts noc=${slots.noc}`)
-  return { answer, slots, facts: out, followups: buildFollowups(facts, lang, text) }
+  console.log(`[chat] cited ${out.filter((f) => f.cited).length}/${out.length} facts noc=${slots.noc} degraded=${degraded}`)
+  return { answer, slots, facts: out, followups: buildFollowups(facts, lang, text), ...(degraded ? { degraded: true } : {}) }
 }
