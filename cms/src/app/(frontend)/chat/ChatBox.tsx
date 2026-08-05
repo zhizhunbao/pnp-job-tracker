@@ -13,8 +13,8 @@
 // 本组件只渲染,不算数 —— 结论、数字、判定全部来自服务端工具层并挂 evidence(总红线)。三条实现红线:
 //   ① `value` 可能是 null(官方隐私抑制)→ 渲 valueText 原文,**永不折成 0 或「暂无」**(见 ChatAnswer);
 //   ② 错误码各说各话(2026-08-03 简历对照实撞:noJd 被笼统报成「稍后再试」,用户重试也没用);
-//   ③ 等待态给真反馈(打字指示 + 秒数)但**不假装逐字生成** —— 服务端今天还是一次性 JSON,
-//      逐字渲染路径已备好(readSse)但只在上游真的吐 SSE 时才启用,详见 §流式 注释。
+//   ③ 等待态给真反馈(打字指示 + 秒数);**正文 2026-08-08 起按句流**(服务端一句过了逐句门才发),
+//      渲染的每一截都是核过的字,不是假装的打字机 —— 详见 §流式 注释。
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useLang } from '../LangProvider'
@@ -47,20 +47,22 @@ const MAX_TEXT = 1200   // 对齐服务端 chatOrchestrate.MAX_TEXT(超了是**�
                         // 常量不 import:那模块是服务端的(带 pg pool),拖进客户端包不值
 
 /**
- * §流式 —— **流的是工具轨迹,不是答案**(2026-08-04 拍板;服务端 api/chat/route.ts 同一段注释)。
- * 答复要过五道出口校验(违规会重试或降级),流答案 = 用户可能读到一个随后被撤回的数字。
- * 所以 `step` 事件只报「我在查什么」,正文一次性落地。
+ * §流式 —— **轨迹在流,正文也按句在流**(2026-08-08;服务端 api/chat/route.ts 同一段注释)。
+ * 服务端一句过了逐句门(数字回查 facts / 内部码 / 语言混用 / 两态揉一句)才发一条 delta,
+ * 所以到手的每一截都是已经核过的 —— 前端**照收照渲,不自己判**(判定永远在服务端)。
  * 事件体:
  *   data: {"step":"查在招岗位:8 条"}                → 追加一条轨迹(服务端已按用户语言写好,前端不拼字)
- *   data: {"delta":"片段"}                          → 逐字正文(**今天服务端不发**;哪天真流答案了这条路还在)
- *   data: {"answer":"…","facts":[…],"followups":[…]} → 收尾(facts 是出口校验的产物,只能整段给)
+ *   data: {"delta":"这一句"}                        → 正文增量,按句发(拼在已有的后面)
+ *   data: {"reset":true}                            → **撤回**:前面发的正文作废(服务端要重试/降级),清屏重等
+ *   data: {"answer":"…","facts":[…],"followups":[…]} → 收尾定稿(facts 是出口校验的产物,只能整段给)
  *   data: {"error":"llm"}                           → 开流后才出的故障(前置错误仍走 JSON + 状态码)
  *   data: [DONE]
+ * 🔴 **最终以 answer 那条为准**:流出去的是它的前缀,但补位/重截都发生在最后一步,不许拿 acc 当定稿。
  * 返回错误码('' = 正常结束)。非 SSE(content-type 不是 text/event-stream)一律走下面的 JSON 老路径。
  */
 async function readSse(
   body: ReadableStream<Uint8Array>, onDelta: (s: string) => void, onFinal: (a: Answer) => void,
-  onStep: (s: string) => void,
+  onStep: (s: string) => void, onReset: () => void,
 ): Promise<string> {
   const reader = body.getReader()
   const dec = new TextDecoder()
@@ -79,6 +81,7 @@ async function readSse(
       let d: any = null
       try { d = JSON.parse(raw) } catch { continue }
       if (typeof d?.step === 'string') onStep(d.step)
+      else if (d?.reset === true) onReset()
       else if (typeof d?.delta === 'string') onDelta(d.delta)
       else if (typeof d?.answer === 'string') onFinal(d as Answer)
       else if (d?.error) return String(d.error)
@@ -180,7 +183,10 @@ export function ChatBox({ compact = false, autoFocus = false }: { compact?: bool
         let final: Answer | null = null
         const steps: string[] = []
         const err = await readSse(r.body, (d) => { acc += d; patch(idx, { stream: acc }) }, (a) => { final = a },
-          (s) => { steps.push(s); patch(idx, { steps: [...steps] }) })
+          (s) => { steps.push(s); patch(idx, { steps: [...steps] }) },
+          // 撤回:清屏回到等待态(轨迹那一行还在,秒数照走)。**不留半段** —— 服务端撤回的理由
+          // 恰恰是「这一稿要被换掉」,留着让人读完只会让他读到一段马上不算数的话
+          () => { acc = ''; patch(idx, { stream: '' }) })
         // 终局一律走 finish(结算耗时 + 收起轨迹,见它的注释)
         if (err) finish(idx, GUIDE_KEY[err] ? { guide: t(GUIDE_KEY[err]) } : { fault: (FAULT_KEY as any)[err] ? err as Fault : 'llm' })
         else if (final) { finish(idx, { a: final }); track('chat-answer') }
@@ -256,7 +262,7 @@ export function ChatBox({ compact = false, autoFocus = false }: { compact?: bool
         .cbFault{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:12.5px;
           color:${UI.text2};line-height:1.5}
         .cbLink{background:none;border:none;padding:0;font:inherit;color:${UI.primary};cursor:pointer;text-decoration:underline}
-        /* 等待:工具轨迹(服务端按真实进度发)+ 打字指示 + 秒数。**不假装逐字生成答案**,骗不得 */
+        /* 等待:工具轨迹(服务端按真实进度发)+ 打字指示 + 秒数。轨迹与正文都是真的,一格都不许编 */
         .cbStep{font-size:12.5px;line-height:1.5;color:${UI.text2};overflow-wrap:anywhere;
           padding-left:14px;position:relative}
         .cbStep::before{content:'';position:absolute;left:3px;top:.62em;width:5px;height:5px;
@@ -370,7 +376,8 @@ export function ChatBox({ compact = false, autoFocus = false }: { compact?: bool
               ) : turn.a ? (
                 <ChatAnswer a={turn.a} busy={busy} onAsk={(q) => void ask(q)} />
               ) : turn.stream ? (
-                <div className="cbA cbPre">{turn.stream}<i className="cbCaret" /></div>
+                // 半截正文:和最终答复同一个渲染器(服务端按整句放行,那截里已经带着行首 `- `)
+                <ChatText text={turn.stream} caret />
               ) : turn.steps.length ? null : (
                 // 等待态且**还没有一条轨迹**时才出这一行 —— 有轨迹的话,上面那条折叠条自己就带三点和秒数,
                 // 两个都出就是同一件事说两遍(取样结论:等待期只该有一行)

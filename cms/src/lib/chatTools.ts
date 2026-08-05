@@ -13,6 +13,9 @@
  * 形状照 reportFacts.ts:纯函数 + 显式 pool 入参,无全局状态、无 LLM 调用。
  */
 import { NO_LIST_PROVINCES, provListCoverage, type MatchDims, type ProvListCoverage } from './match'
+// ⚠️ 单向依赖:planTimeline 只 `import type` 本文件(编译期擦除),所以这条运行时的边不成环。
+// 要往回加一个**值**引用之前先想清楚:那会变成真的循环依赖。
+import { buildPlan, type Plan, type PlanPathInput } from './planTimeline'
 import { assembleReportFacts } from './reportFacts'
 import { evaluateRequirements, type ReqSubject, type RuleProfile, type RuleVerdict } from './rules'
 import { checkedAt } from './jobsSql'
@@ -866,4 +869,85 @@ export async function checkClaims(pool: any, args: { noc: string; teer?: number 
     .map((c) => ({ province: c.province, facts: c }))
 
   return { noc, checked, uncheckable, unsaid }
+}
+
+// ── ⑨ lookupPlan:时间线(C3 planTimeline.buildPlan 的薄封装)──────────────────
+
+/**
+ * 「我这条路大概要多久 / 走哪条更快」。
+ *
+ * 本工具**一行算术都不做**:入参由上面三个 lookup 原样装配(门槛 / 抽选 / 运营统计),
+ * 算术全在 `planTimeline.buildPlan`(纯函数、有单测、四条红线写在它自己文件顶上)。
+ * 之所以要这一层,是因为 buildPlan 不查库 —— 它的每个月数都得由**库里带 evidence 的行**喂进去,
+ * 而喂给它什么正是这里的职责:喂错一张表,它照样算得出数,只是那个数没有出处撑着。
+ *
+ * 三件**故意不做**的事(都属红线 ①「不许编时长」):
+ *  ① **不替用户挑通道**:省内按多条通道分别公布处理时长时(SK)不给 `processingScope`,
+ *     buildPlan 会把这一段判成算不出。调用方真知道走哪条(用户说了)才按省传进来。
+ *  ② **不设 noDrawStep**:「该通道不进池」是**通道级**事实(SINP 只有 Employment Offer 子类如此),
+ *     光知道省份推不出来。宁可让抽选段落 not-collected,也不拿「库里没抽选记录」推成「不用抽选」。
+ *  ③ **不带金额**:官方规费与中介报价是另一个题目(checkClaims 那条路),时间线不掺钱。
+ */
+export type PlanResult = {
+  noc: string
+  availability: Availability
+  /** 口径:这条时间线**算的是哪几段**、不算哪些 —— 摆数字之前先把边界说清楚 */
+  scope: string
+  plan: Plan
+  note: string
+}
+
+/** 一次最多铺几条路。上限不是性能顾虑而是可读性:四条以上没人对得过来,而每条都要两次查询。 */
+const MAX_PLAN_PATHS = 4
+
+export async function lookupPlan(
+  pool: any,
+  args: {
+    noc: string
+    teer?: number | null
+    provs?: string[]
+    profile?: Partial<RuleProfile>
+    /** 省 → 官方处理时长口径原文(如 SK 的 'Employment Offer')。不给 = 不替你挑(见上面 ①) */
+    processingScope?: Record<string, string>
+  },
+): Promise<PlanResult> {
+  const noc = (args.noc || '').trim()
+  // QC 不走 PNP,没有「省提名时间线」这回事(同 lookupCoverage 的短路)
+  const provs = provList(args.provs).filter((p) => p !== 'QC').slice(0, MAX_PLAN_PATHS)
+  const scope = '时间线只含三段:门槛缺口(还差多久)、官方开一轮抽选的间隔、官方公布的处理时长。'
+    + '签证、体检、雇主招你花多久、你自己准备材料花多久 —— 本站没有官方数据,一律不在这条线里'
+  if (!provs.length) {
+    return {
+      noc, availability: 'not-applicable', scope,
+      plan: buildPlan({ thresholds: { noc, title: '', teer: args.teer ?? null, provinces: [] }, paths: [] }),
+      note: '只点了魁省:魁省自有选拔体系,不属 PNP,没有省提名这条时间线可算',
+    }
+  }
+  const thresholds = await lookupThresholds(pool, { noc, teer: args.teer, provs, profile: args.profile })
+  const paths: PlanPathInput[] = await Promise.all(provs.map(async (province): Promise<PlanPathInput> => {
+    const [draws, ops] = await Promise.all([lookupDraws(pool, { prov: province }), lookupOps(pool, { prov: province })])
+    return {
+      province,
+      thresholds: thresholds.provinces.find((p) => p.province === province) ?? null,
+      draws,
+      ops,
+      ...(args.processingScope?.[province] ? { processingScope: args.processingScope[province] } : {}),
+    }
+  }))
+  const plan = buildPlan({ thresholds, paths })
+  const steps = [...plan.ranked, ...plan.partial].flatMap((p) => p.steps)
+  // 四态按**算出来的段**说话:有一段算得出就 ok(其余段各自带着自己的四态);
+  // 一段都算不出时,只有**每一段都是官方不公布**才敢说 not-published —— 那是最容易撒谎的一态,
+  // 混着「本站未收录」就一律按 not-collected 说(把我们的窟窿赖给官方,比说「不知道」坏得多)。
+  const availability: Availability =
+    steps.some((s) => s.months != null) ? 'ok'
+      : steps.length && steps.every((s) => s.availability === 'not-published') ? 'not-published'
+        : 'not-collected'
+  return {
+    noc, availability, scope, plan,
+    note: availability === 'ok'
+      ? '每段月数都挂着官方出处;算不出的段留空并说明是「官方不公布」还是「本站未收录」,不折成 0。'
+        + '含未知段的路径只给**下界**,不给总数'
+      : `本站算不出 ${provs.join('/')} 的时间线:三类数据(门槛 / 抽选 / 处理时长)没有一段能落到有出处的月数上`,
+  }
 }

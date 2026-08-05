@@ -10,7 +10,11 @@
  * 金标场景:noc=72310 木匠、ON 毕业、expMonths=0、目标省 MB(中介推的)、对照 BC/SK/NS。
  */
 import { describe, expect, it } from 'vitest'
-import type { DrawsResult, Evidence, OpsResult, ProvThresholds, ThresholdRow, ThresholdsResult } from '@/lib/chatTools'
+import { lookupPlan, type DrawsResult, type Evidence, type OpsResult, type PlanResult, type ProvThresholds, type ThresholdRow, type ThresholdsResult } from '@/lib/chatTools'
+import {
+  factSheet, findEnglishUnits, findForeignScript, findHedges, findLeaks, findWordNumbers, isPlanQuestion, LBL,
+  planFacts, sayFact,
+} from '@/lib/chatOrchestrate'
 import { buildPlan, type PlanPathInput } from '@/lib/planTimeline'
 import { evaluateRequirements, type Requirement, type RuleProfile } from '@/lib/rules'
 
@@ -289,5 +293,181 @@ describe('C3 方案计算器 buildPlan(金标 C01 木匠 72310)', () => {
     const b = buildPlan({ thresholds: THRESHOLDS, paths })
     expect(JSON.stringify(a)).toBe(JSON.stringify(b))
     expect(JSON.stringify(paths)).toBe(before)
+  })
+})
+
+// ── 接进对话:C1 的 lookupPlan(装配)+ C2 的 planFacts(回填)────────────────────
+//
+// 这两层加起来就是「buildPlan 有没有真的被人调用」。同样**不连库**:
+// lookupPlan 收一个 pool,拿一个「查什么都返回空」的桩喂它 —— 空库正是最该测的那一格
+// (库里一行都没有时,时间线**必须**一个月数都长不出来;长出来了就是编)。
+// 有数据那一格由 planFacts 测:它是纯函数,直接吃上面那份 fixture 算出的 Plan。
+describe('C3 接进对话:lookupPlan + planFacts', () => {
+  /** 查什么都没有的库(全部 SELECT 返回空行)。真库里有什么由 chatTools.int.spec 那组连库测。 */
+  const emptyPool = { query: async () => ({ rows: [] }) }
+
+  it('空库:三段一个都算不出 → not-collected,且没有任何月数被凭空造出来', async () => {
+    const r = await lookupPlan(emptyPool, { noc: '72310', provs: ['MB', 'SK'] })
+    expect(r.availability).toBe('not-collected')
+    const steps = [...r.plan.ranked, ...r.plan.partial].flatMap((p) => p.steps)
+    expect(steps.length).toBeGreaterThan(0)                       // 段是摆出来的(说清哪段算不出),只是没有数
+    expect(steps.filter((s) => s.months != null)).toHaveLength(0)
+    expect(steps.every((s) => !!s.why)).toBe(true)                // 算不出必须说为什么
+    expect(r.plan.ranked).toHaveLength(0)                         // 没有一条路敢称「全段确定」
+    expect(r.plan.comparisons).toHaveLength(0)                    // 更不许比快慢
+    expect(r.note).toContain('本站算不出')
+    expect(JSON.stringify(r)).not.toMatch(/probability|chance|odds/i)
+  })
+
+  it('只点魁省 → not-applicable(魁省不走 PNP),不是「本站没收录」', async () => {
+    const r = await lookupPlan(emptyPool, { noc: '72310', provs: ['QC'] })
+    expect(r.availability).toBe('not-applicable')
+    expect(r.plan.ranked).toHaveLength(0)
+    expect(r.plan.partial).toHaveLength(0)
+    expect(r.note).toContain('魁省')
+  })
+
+  /** 只认 pnp_ops_stats 的桩:SK 官方按两条通道**分别**公布处理时长(其余表照旧空)。 */
+  const opsRow = (scope: string) => ({
+    metric: 'processing_weeks', scope, scope_kind: 'category', label: `ISW: ${scope}`, value: 2, unit: 'weeks',
+    period: '2026Q2', url: 'https://www.saskatchewan.ca/sinp-processing-statistics', fetched: '2026-08-04',
+  })
+  const opsPool = {
+    query: async (sql: string) =>
+      (/pnp_ops_stats/.test(sql) ? { rows: [opsRow('Employment Offer'), opsRow('Existing Work Permit')] } : { rows: [] }),
+  }
+
+  it('装配即红线:不替官方宣布「不用抽选」、不替用户挑通道(用户说了才传)', async () => {
+    // noDrawStep/processingScope 这两个字段 buildPlan 认,但只有**官方原文写了不进池 / 用户说了走哪条**
+    // 才配填。lookupPlan 只按省装配,自作主张填一个,下面的月数就没有依据了。
+    const r = await lookupPlan(emptyPool, { noc: '72310', provs: ['SK'] })
+    const draw = [...r.plan.ranked, ...r.plan.partial][0].steps.find((s) => s.kind === 'draw')!
+    expect(draw.availability).not.toBe('not-applicable')   // 「库里没抽选记录」不许推成「不用抽选」
+    expect(draw.months).toBeNull()
+    // 省内两条通道各有各的处理时长、又没指明走哪条 → 不替你挑(宁可这一段算不出)
+    const guess = await lookupPlan(opsPool, { noc: '72310', provs: ['SK'] })
+    const p0 = guess.plan.partial[0].steps.find((s) => s.kind === 'processing')!
+    expect(p0.months).toBeNull()
+    expect(p0.why).toContain('不替你挑')
+    // 用户说了走哪条 → 照传,这一段才落地(2 周 = 0.5 个月)
+    const scoped = await lookupPlan(opsPool, { noc: '72310', provs: ['SK'], processingScope: { SK: 'Employment Offer' } })
+    const p1 = scoped.plan.partial[0].steps.find((s) => s.kind === 'processing')!
+    expect(p1.factor).toBe('Employment Offer')
+    expect(p1.months).toBe(0.5)
+    expect(p1.evidence?.url).toContain('saskatchewan.ca')
+  })
+
+  // ── planFacts:Plan → Fact[](数字一个不新增,出处该挂的挂、该空的空)────────────
+  const RESULT = (): PlanResult => ({ noc: '72310', availability: 'ok', scope: '口径', plan: plan(), note: '' })
+
+  it('facts 里的每个数字都来自 Plan,一个都不许是这一层算的', () => {
+    const p = plan()
+    const allowed = new Set<number>()
+    for (const x of [...p.ranked, ...p.partial]) {
+      for (const s of x.steps) if (s.months != null) allowed.add(s.months)
+      if (x.totalMonths != null) allowed.add(x.totalMonths)
+      allowed.add(x.determinedMonths)
+    }
+    for (const c of p.comparisons) allowed.add(c.monthsDelta)
+    const facts = planFacts(RESULT(), 'zh')
+    expect(facts.length).toBeGreaterThan(0)
+    for (const f of facts) if (f.value != null) expect(allowed.has(f.value), `${f.label} 的 ${f.value} 不在 Plan 里`).toBe(true)
+  })
+
+  it('🔴 下界不冒充总数:全段确定的 SK 给总数,含未知段的 MB 只给下界,名目上就分得开', () => {
+    const facts = planFacts(RESULT(), 'zh')
+    const T = LBL.zh
+    expect(facts.find((f) => f.label === `SK ${T.planTotal}`)!.value).toBe(12.5)
+    expect(facts.some((f) => f.label === `MB ${T.planTotal}`)).toBe(false)
+    const mb = facts.find((f) => f.label === `MB ${T.planLower}`)!
+    expect(mb.value).toBe(0.5)
+    expect(mb.label).toContain('下界')
+  })
+
+  it('快慢差只说两条路都摆出来了的那一对(读者看不见的省,「至少快 N 个月」没有着落)', () => {
+    // 四条路时 BC 排在第四、没摆出来 → 那条 SK-BC 的快慢差也不说
+    expect(planFacts(RESULT(), 'zh').some((f) => f.label.includes('比'))).toBe(false)
+    // 去掉 NS 后 BC 进了前三 → 这条才说,措辞照 buildPlan 的口径(atLeast → 「至少」)
+    const r3: PlanResult = { ...RESULT(), plan: buildPlan({ thresholds: THRESHOLDS, paths: PATHS().filter((p) => p.province !== 'NS') }) }
+    const cmp = planFacts(r3, 'zh').find((f) => f.label.includes('比'))!
+    expect(cmp.label).toBe(LBL.zh.faster('SK', 'BC', true))
+    expect(cmp.value).toBe(12.4)
+  })
+
+  it('🔴 分段挂出处、合计不借出处:算术自己没有官网可指,宁可不进出处区也不借一段的 url', () => {
+    const facts = planFacts(RESULT(), 'zh')
+    const T = LBL.zh
+    for (const f of facts) {
+      const derived = f.label.includes(T.planTotal) || f.label.includes(T.planLower) || f.label.includes('比')
+      if (f.value != null && !derived) expect(f.evidence.url, `${f.label} 有月数却没出处`).toBeTruthy()
+      if (derived) expect(f.evidence.url, `${f.label} 借了别人的出处`).toBe('')
+    }
+    // 至少有一条分段是挂着官方页的(否则上面那条断言可能空转)
+    expect(facts.filter((f) => f.value != null && f.evidence.url).length).toBeGreaterThan(0)
+  })
+
+  it('算不出的段照样出一行四态,value 恒空(少说一段,读者就会把下界当总数)', () => {
+    const facts = planFacts(RESULT(), 'zh')
+    const status = facts.filter((f) => f.unit === 'status')
+    expect(status.length).toBeGreaterThan(0)
+    for (const f of status) {
+      expect(f.value).toBeNull()
+      expect(f.valueText).toBeTruthy()
+    }
+    // MB 处理时长:官方不公布 —— 不许说成「本站未收录」(两句话在用户那里意思相反)
+    const mb = status.find((f) => f.label === `MB ${LBL.zh.planProc}`)!
+    expect(mb.valueText).toContain('官方不公布')
+  })
+
+  it('整条时间线算不出时:只出一行四态,一个数字都不出', () => {
+    const facts = planFacts({ noc: '72310', availability: 'not-collected', scope: '', plan: plan(), note: '本站算不出' }, 'zh')
+    expect(facts).toHaveLength(1)
+    expect(facts[0].value).toBeNull()
+    expect(facts[0].valueText).toContain('本站尚未收录')
+  })
+
+  it('三语都见客:没有内部码、没有英文速记、没有别的语言、没有推断性措辞', () => {
+    for (const lang of ['zh', 'en', 'ko'] as const) {
+      const facts = planFacts(RESULT(), lang)
+      const sheet = factSheet(facts, lang)
+      expect(findLeaks(sheet), `${lang} 时间线泄露内部码:\n${sheet}`).toEqual([])
+      expect(findEnglishUnits(sheet, lang, facts), `${lang} 时间线裸着英文速记:\n${sheet}`).toEqual([])
+      expect(findForeignScript(sheet, lang), `${lang} 时间线掺了别的语言:\n${sheet}`).toEqual([])
+      expect(findWordNumbers(sheet, lang), `${lang} 时间线把数量写成了中文数字:\n${sheet}`).toEqual([])
+      expect(findHedges(sheet, lang), `${lang} 时间线里有推断性措辞:\n${sheet}`).toEqual([])
+      // 口径注(unit='note')进得了 prompt 却不进 factSheet —— 那道检查照不到它,这里按**说出来的样子**再查一遍
+      const spoken = facts.map((f) => sayFact(f, lang)).join('\n')
+      expect(findLeaks(spoken), `${lang} 时间线原文泄露内部码:\n${spoken}`).toEqual([])
+      expect(findEnglishUnits(spoken, lang, facts), `${lang} 时间线原文裸着英文速记:\n${spoken}`).toEqual([])
+      expect(findForeignScript(spoken, lang), `${lang} 时间线原文掺了别的语言:\n${spoken}`).toEqual([])
+      // 一条 fact 渲染出来是一句话(名目 + 冒号 + 值),不是一行表格
+      expect(spoken).not.toContain('=')
+    }
+  })
+
+  it('触发判据:问「要多久 / 哪条更快」才算时间线,问概率不算(那条路是拒答)', () => {
+    for (const q of ['我这条路大概要多久?', 'How long does this take end to end?', 'which province is faster for me',
+      '走哪条更快', '얼마나 걸리나요']) expect(isPlanQuestion(q), q).toBe(true)
+    for (const q of ['曼省清单收了木匠吗?', 'What are my odds of being picked?', '中介要收 2 万值不值'])
+      expect(isPlanQuestion(q), q).toBe(false)
+  })
+
+  it('🔴 抽选段的两种 0 不许共用一个名目:「官方明示不进池」不能读成「平均每 0 个月开一轮」', () => {
+    // 中文有 basis 兜着,英文只剩名目 + 数字 —— 名目错了,那一行本身就是一句假话
+    for (const lang of ['zh', 'en'] as const) {
+      const T = LBL[lang]
+      const facts = planFacts(RESULT(), lang)
+      const sk = facts.find((f) => f.label === `SK ${T.planNoDraw}`)!
+      expect(sk.value).toBe(0)
+      expect(facts.some((f) => f.label === `SK ${T.planDraw}`)).toBe(false)
+      // 真有节奏可算的省照旧用「平均间隔」那个名目
+      expect(facts.find((f) => f.label === `MB ${T.planDraw}`)!.value).toBe(0.5)
+    }
+  })
+
+  it('算术原文里的 `=` 不进见客文案(RULE 5b 禁它,模型会照抄,出口当场判违规)', () => {
+    for (const lang of ['zh', 'en'] as const) {
+      for (const f of planFacts(RESULT(), lang)) expect(`${f.label} ${f.valueText}`, f.label).not.toContain(' = ')
+    }
   })
 })

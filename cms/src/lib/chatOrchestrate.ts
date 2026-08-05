@@ -18,9 +18,10 @@
  * 才喂模型:工具返回的整坨 JSON 一次就能把额度撑爆(resume-match 真简历事故同一个坑)。
  */
 import {
-  checkClaims, lookupCoverage, lookupDraws, lookupEE, lookupJobs, lookupOps, lookupThresholds,
-  PNP_PROVINCES, PRIVATE_PROMISE, type Availability, type Claim, type ClaimTopic,
+  checkClaims, lookupCoverage, lookupDraws, lookupEE, lookupJobs, lookupOps, lookupPlan, lookupThresholds,
+  PNP_PROVINCES, PRIVATE_PROMISE, type Availability, type Claim, type ClaimTopic, type PlanResult,
 } from './chatTools'
+import type { PlanStep } from './planTimeline'
 import { completeText, LlmError, type ChatMessage } from './llm'
 import { parseLlmJson } from './resumeMatch'
 
@@ -63,11 +64,12 @@ export class ChatError extends Error {
   constructor(code: ChatErrorCode, msg: string, slots?: Slots) { super(msg); this.name = 'ChatError'; this.code = code; this.slots = slots }
 }
 
-// ── 🔴 工具轨迹(流的是「我在查什么」,不是答案)────────────────────────────
+// ── 🔴 工具轨迹(流的是「我在查什么」)────────────────────────────────────
 //
-// 为什么不流答案:出口五道校验(guardAnswer / findLeaks / findEnglishUnits / findMergedStates /
-// findForeignScript)是**整段答复落地后**才跑的,违规要重试或降级成 factSheet。
-// 流答案 = 用户可能读到一个随后被撤回的数字,直接顶到「不算数就不显示」那条红线。
+// 🔵 2026-08-08 起**答复正文也流**,但靠的是「按句门控」不是把校验关了:一句过了逐句门才发给前端
+//    (见下方 makeSentenceGate)。旧口径「答案一个字都不流」的理由是「出口校验整段才跑」——
+//    那个前提被拆掉了:五道里有四道本来就一句一句就能判。**红线一个字没松**,
+//    跨句才判得了的那两道(逐行抄 ⓑ、同开头)整段跑完只留痕。
 //
 // 因此轨迹事件有三条铁律,改这里之前先读完:
 //   ① 事件文字**永远是我们自己构造的字符串**(下面 STEP 字典),**绝不允许**掺任何模型生成的内容 ——
@@ -87,6 +89,7 @@ type StepDict = {
   draws: (prov: string) => string
   ops: (prov: string) => string
   ee: string
+  plan: (provs: string) => string
   claims: (n: number) => string
   write: string
 }
@@ -101,6 +104,7 @@ export const STEP: Record<ChatLang, StepDict> = {
     draws: (p) => `查抽选记录:${p}`,
     ops: (p) => `查运营统计:${p}`,
     ee: '查联邦 EE 通道',
+    plan: (p) => `算时间线:${p}`,
     claims: (n) => `核对别人跟你说的:${n} 条`,
     write: '正在组织答复',
   },
@@ -113,6 +117,7 @@ export const STEP: Record<ChatLang, StepDict> = {
     draws: (p) => `Draw history checked: ${p}`,
     ops: (p) => `Operational stats checked: ${p}`,
     ee: 'Federal Express Entry categories checked',
+    plan: (p) => `Timeline worked out: ${p}`,
     claims: (n) => `What you were told: ${n} claims checked`,
     write: 'Writing the reply',
   },
@@ -125,6 +130,7 @@ export const STEP: Record<ChatLang, StepDict> = {
     draws: (p) => `추첨 기록 조회: ${p}`,
     ops: (p) => `운영 통계 조회: ${p}`,
     ee: '연방 EE 카테고리 조회',
+    plan: (p) => `소요 기간 산출: ${p}`,
     claims: (n) => `들으신 내용 대조: ${n}건`,
     write: '답변 작성 중',
   },
@@ -605,6 +611,25 @@ type LabelDict = {
   opsKeys: Record<string, string>
   /** 半句话:`${省码} ${factor}` + 值 = 一句完整的话。主语(申请人 / 雇主)必须长在里面。 */
   factor: Record<string, string>
+  /**
+   * 时间线(lookupPlan)。全是**名目**形态(sayFact 用冒号接值),不是半句话 ——
+   * 一条路上可能有两段同类,名目里必须写清是哪一段,不然读者对不上号。
+   *  planGap:门槛缺口按因素分(key='' 是认不出因素时的兜底);
+   *  planTotal / planLower:**两个不同的东西**,措辞必须让人一眼看出区别 ——
+   *    total=全段都有官方数据的合计;lower=还有段算不出,这只是下界(红线:下界不许冒充总数)。
+   *  faster:三语语序不同,拼接交给各自的函数(同 STEP 的做法),别拿一个模板硬套。
+   */
+  planGap: Record<string, string>
+  planDraw: string
+  /** 🔴 抽选段的 0 有两种意思,见 planStepLabel:这一条是「官方明示不进池」的那种 0 */
+  planNoDraw: string
+  planProc: string
+  planTotal: string
+  planLower: string
+  planNone: string
+  /** 口径注(同 indexNote 的位置):**这条线不算什么** —— 不写清楚,12.5 个月会被读成「12.5 个月拿 PR」 */
+  planScope: string
+  faster: (fast: string, slow: string, atLeast: boolean) => string
 }
 export const LBL: Record<ChatLang, LabelDict> = {
   zh: {
@@ -621,6 +646,15 @@ export const LBL: Record<ChatLang, LabelDict> = {
       experience: '要求申请人的工作经验满', income: '要求申请人家庭的收入达到', wage: '要求这份工作至少给到',
       empYears: '要求雇主(不是申请人)已经营满', empRevenue: '要求雇主(不是申请人)的年营业额至少', empStaff: '要求雇主(不是申请人)至少有员工',
     },
+    planGap: {
+      '': '补齐官方门槛要多久', experience: '补齐经验门槛要多久', language: '补齐语言门槛要多久',
+      income: '补齐收入门槛要多久', wage: '补齐工资门槛要多久',
+    },
+    planDraw: '官方开一轮抽选的平均间隔', planNoDraw: '这条通道不用等抽选(官方明示不进池)', planProc: '官方公布的处理时长(折成月)',
+    planTotal: '这条路各段合计', planLower: '这条路只把算得出的几段相加(还有段算不出,这是下界不是总数)',
+    planNone: '这条路要多久',
+    planScope: '时间线口径:只算门槛缺口、官方开一轮的间隔、官方公布的处理时长;签证、体检、找到雇主要多久都不在里面',
+    faster: (f, s, at) => `${f} 比 ${s} ${at ? '至少快多少' : '快多少'}`,
   },
   en: {
     apprOpenings: 'apprentice-friendly openings right now', openPostings: 'open postings right now', qcOutside: '(QC is outside PNP)',
@@ -642,6 +676,18 @@ export const LBL: Record<ChatLang, LabelDict> = {
       wage: 'requires this job to pay at least', empYears: 'requires the employer, not the applicant, to have been in business for',
       empRevenue: 'requires the employer, not the applicant, to have annual revenue of at least', empStaff: 'requires the employer, not the applicant, to have staff of at least',
     },
+    planGap: {
+      '': 'how long it takes to close the gap to the official requirement', experience: 'how long it takes to close the work experience gap',
+      language: 'how long it takes to close the language gap', income: 'how long it takes to close the household income gap',
+      wage: 'how long it takes to close the pay gap',
+    },
+    planDraw: 'average gap between one official draw round and the next',
+    planNoDraw: 'no draw to wait for on this stream, the official page says so', planProc: 'processing time the province publishes, put into months',
+    planTotal: 'the whole path added up', planLower: 'only the segments that can be worked out, added up (a floor, not a total)',
+    planNone: 'how long this path takes',
+    planScope: 'what this timeline counts: the gap to the official requirement, how often the province opens a round, and the '
+      + 'processing time it publishes — a visa, a medical or the time it takes to find an employer are not in it',
+    faster: (f, s, at) => `how much faster ${f} is than ${s}${at ? ', at the very least' : ''}`,
   },
   ko: {
     apprOpenings: '현재 견습 가능 채용 공고', openPostings: '현재 채용 공고', qcOutside: '(퀘벡은 주정부 이민 대상 아님)',
@@ -657,6 +703,15 @@ export const LBL: Record<ChatLang, LabelDict> = {
       experience: '요건 — 신청인의 경력은', income: '요건 — 신청인 가구 소득은', wage: '요건 — 이 일자리의 최저 임금은',
       empYears: '요건 — 고용주(신청인 아님)의 사업 운영 기간은', empRevenue: '요건 — 고용주(신청인 아님)의 연 매출은', empStaff: '요건 — 고용주(신청인 아님)의 직원 수는',
     },
+    planGap: {
+      '': '공식 요건을 채우는 데 걸리는 기간', experience: '경력 요건을 채우는 데 걸리는 기간', language: '언어 요건을 채우는 데 걸리는 기간',
+      income: '소득 요건을 채우는 데 걸리는 기간', wage: '임금 요건을 채우는 데 걸리는 기간',
+    },
+    planDraw: '공식 추첨 한 회차 사이의 평균 간격', planNoDraw: '이 통로는 추첨 대기가 없음(공식 명시)', planProc: '주정부가 공개한 처리 기간(개월 환산)',
+    planTotal: '이 경로 전체 구간 합계', planLower: '산출 가능한 구간만 합한 값(총계가 아니라 하한)',
+    planNone: '이 경로에 걸리는 기간',
+    planScope: '이 기간에 포함되는 것: 요건까지의 부족분, 주정부가 추첨을 여는 주기, 공개된 처리 기간 — 비자·건강검진·고용주를 찾는 기간은 빠져 있습니다',
+    faster: (f, s, at) => `${f}가 ${s}보다 빠른 기간${at ? '(최소치)' : ''}`,
   },
 }
 
@@ -707,6 +762,80 @@ const fact = (tool: string, label: string, value: number | null, valueText: stri
 const statusFact = (tool: string, label: string, av: Availability, note: string, url: string, lang: ChatLang) =>
   fact(tool, label, null, `${av === 'ok' ? LBL[lang].noneFound : AVAIL_SENTENCE[lang][av]}${note ? ` — ${note}` : ''}`, 'status', { url, fetched: '' })
 
+// ── 时间线 → Fact[](C3 buildPlan 的答案怎么摆给模型)────────────────────────
+//
+// 🔴 **合计与分段的出处不是一回事**,这一段的全部难点就在这儿:
+//   · 分段(缺口 / 抽选间隔 / 处理时长)是**库里的数**,各自挂着自己的 evidence.url —— 出处区点得开;
+//   · 合计与快慢差是**这几段的算术**,它自己没有一页官网可指。所以它们的 evidence 留空:
+//     guard 照旧认这个数(它在 facts 里),但 citeFacts 不会把它列进出处 —— 出处列的是被加的那几段。
+//     **不许**随手拿某一段的 url 冒充合计的出处:那是拿一段的官方页去给另一个数字背书。
+// 段数封顶是为了不把答复变成清单:一条路最多 3 段有数 + 2 段算不出,最多 3 条路。
+const PLAN_PATHS_SHOWN = 3
+const PLAN_STEPS_SHOWN = 3
+const DERIVED = { url: '', fetched: '' }      // 见上:算术没有自己的出处,留空而不是借一个
+
+/**
+ * 段 → 名目(缺口段带上是哪个门槛;认不出的因素落 planGap[''])。
+ *
+ * 🔴 抽选段的 **0 个月有两种意思**,名目必须分开:通常的 0 不存在,而 `not-applicable` 的 0 是
+ * 「这条通道官方明示不进池,压根没有『等抽选』这一步」。挂着「平均间隔」的名目报 0,
+ * 中文还有 basis 兜着,英文就只剩一句「平均每 0 个月开一轮」—— 那是我们自己造的一句假话。
+ */
+const planStepLabel = (s: PlanStep, T: LabelDict): string =>
+  s.kind === 'gap' ? (T.planGap[s.factor] ?? T.planGap[''])
+    : s.kind === 'draw' ? (s.availability === 'not-applicable' ? T.planNoDraw : T.planDraw)
+      : T.planProc
+
+/**
+ * 算术原文 → 见客文本。两处归一,都不是审美:
+ *  ① 单位跟着用户语言(库里的 unit 是英文原样,见下面 planFacts 里那段);
+ *  ② `A = B` 换成 `A:B` —— RULE 5b 明令答复里不许出现 `=`,而 basis 里那个等号会被模型照抄,
+ *     出口的 findFactDump 当场判违规,白烧一次重试(降级清单更是直接把它印给用户看)。
+ */
+const plainly = (s: string, lang: ChatLang) => localizeUnits(s, lang).replace(/\s=\s/g, ':')
+
+/**
+ * 时间线 → facts。**一个数都不在这里算**:月数、下界、快慢差全是 buildPlan 已经定好的字段,
+ * 本函数只负责给它们套上用户语言的名目(同 collectFacts 里其余六段的做法)。
+ * 算不出的段照样出一行(statusFact:官方不公布 / 本站未收录)—— 那正是「多久」这个问题最该说清的一半:
+ * 少说一段,读者就会把下界当成总数。
+ */
+export function planFacts(r: PlanResult, lang: ChatLang): Fact[] {
+  const T = LBL[lang]
+  const out: Fact[] = []
+  if (r.availability !== 'ok') {
+    out.push(statusFact('lookupPlan', T.planNone, r.availability, zhOnly(r.note, lang), '', lang))
+    return out
+  }
+  // 口径注排在最前(同 lookupJobs 的 indexNote):没有它,「12.5 个月」会被读成「12.5 个月拿 PR」
+  out.push(fact('lookupPlan', T.planScope, null, '', 'note', DERIVED))
+  const shown = [...r.plan.ranked, ...r.plan.partial].slice(0, PLAN_PATHS_SHOWN)
+  for (const p of shown) {
+    // 全段确定才给总数;含未知段只给下界,且名目里就写着「这是下界不是总数」(红线:下界不冒充总数)
+    if (p.totalMonths != null) out.push(fact('lookupPlan', `${p.province} ${T.planTotal}`, p.totalMonths, '', 'months', DERIVED))
+    else if (p.determinedMonths > 0) out.push(fact('lookupPlan', `${p.province} ${T.planLower}`, p.determinedMonths, '', 'months', DERIVED))
+    for (const s of p.steps.filter((x) => x.months != null).slice(0, PLAN_STEPS_SHOWN)) {
+      // basis 是算术原文(中文硬编码,同 C1 的 note)→ 只给中文用户;英文/韩文只剩数字与名目。
+      // ⚠️ 里面嵌着**库里的英文单位**(「官方要 12 months」——那是 pnp_requirements 的 unit 原样),
+      //    不过 plainly 那道就两头出事:进 prompt 让模型抄出中英夹生,进 factsEnglish 的白名单
+      //    还会把 months/weeks 整个放行,把 findEnglishUnits 那道检查一起废掉。
+      out.push(fact('lookupPlan', `${p.province} ${planStepLabel(s, T)}`, s.months, zhOnly(plainly(s.basis, lang), lang), 'months',
+        s.evidence ?? DERIVED))
+    }
+    for (const s of p.unknownSteps.slice(0, 2)) {
+      out.push(statusFact('lookupPlan', `${p.province} ${planStepLabel(s, T)}`, s.availability,
+        zhOnly(plainly(s.why, lang), lang), s.evidence?.url ?? '', lang))
+    }
+  }
+  // 快慢差只说**两条路都摆出来了**的那对:读者看不见的省,一句「至少快 12.4 个月」没有着落
+  const on = new Set(shown.map((p) => p.province))
+  for (const c of r.plan.comparisons.filter((c) => on.has(c.fasterProvince) && on.has(c.slowerProvince)).slice(0, 2)) {
+    out.push(fact('lookupPlan', T.faster(c.fasterProvince, c.slowerProvince, c.kind === 'atLeast'),
+      c.monthsDelta, zhOnly(plainly(c.basis, lang), lang), 'months', DERIVED))
+  }
+  return out
+}
+
 /**
  * 剧本(设计 §四):`expMonths === 0` 必加学徒岗计数;有 claims 必调 checkClaims。
  * 顺序即优先级 —— 超预算时从尾巴砍,砍掉的是补充信号不是主线。
@@ -714,6 +843,7 @@ const statusFact = (tool: string, label: string, av: Availability, note: string,
  */
 export async function collectFacts(
   pool: any, slots: Slots & { noc: string }, teerHint?: number | null, lang: ChatLang = 'en', onStep?: OnStep,
+  opts: { plan?: boolean } = {},
 ): Promise<{ facts: Fact[]; teer: number | null; title: string }> {
   const { noc } = slots
   const zeroExp = slots.expMonths === 0
@@ -739,12 +869,28 @@ export async function collectFacts(
         (r) => S.claims(r.checked.length + r.uncheckable.length))
       : Promise.resolve(null),
   ])
-  const [draws, ops, named] = await Promise.all([
+  // 🔴 时间线只在**他真的问了「要多久 / 哪条快」**时才算(orchestrate 用 isPlanQuestion 判,纯函数)。
+  //    没问就不算:多铺三条时间线只会把答复挤成一张表,而这一层最贵的教训就是「材料不是提纲」。
+  //    哪几个省:他点过名的优先;一个省都没点时退到**官方清单收了这个职业**的省 —— 那是可证的信号,
+  //    不是我们随手挑三个(PNP_PROVINCES 的前三个只是声明顺序,拿它当默认等于替他选省)。
+  const planProvs = !opts.plan ? [] : (provs.length
+    ? provs
+    : coverage.provinces.filter((c) => c.availability === 'ok' && c.hits.some((h) => h.type !== 'ineligible')).map((c) => c.province)
+  ).slice(0, 3)
+  const [draws, ops, named, plan] = await Promise.all([
     Promise.all(provs.slice(0, 3).map((p) => tap(lookupDraws(pool, { prov: p, limit: 1 }), () => S.draws(p)))),
     Promise.all(provs.slice(0, 3).map((p) => tap(lookupOps(pool, { prov: p }), () => S.ops(p)))),
     // 点名过的省即使一个岗都没有也必须出现在 facts 里(C1 契约:「0 也得让他看见」)——
     // apprentice=true 会把 0 的省过滤掉,金标里「曼省 3 个,全国垫底」恰恰要的就是那个小数字。
     Promise.all(slots.provs.slice(0, 3).map((p) => lookupJobs(pool, { noc, prov: p }))),
+    // 它内部会把上面那几个 lookup 再调一遍(同参 SQL 走 memoPool 的缓存,不多打一次库),
+    // 换来的是**装配入参这件事只有一处**:哪张表喂给 buildPlan 的哪一段,只在 C1 里说一遍。
+    planProvs.length
+      ? tap(lookupPlan(pool, {
+        noc, teer: teerHint, provs: planProvs,
+        profile: slots.expMonths == null ? undefined : { totalExpMonths: slots.expMonths, ...(zeroExp ? { canadianExpMonths: 0 } : {}) },
+      }), () => S.plan(planProvs.join(' ')))
+      : Promise.resolve(null),
   ])
 
   const out: Fact[] = []
@@ -763,6 +909,9 @@ export async function collectFacts(
     out.push(fact('lookupJobs', `${r.province} ${jobKind} (NOC ${noc})${qc}`, zeroExp ? r.apprentice : r.open, '', 'jobs', r.evidence))
   }
   if (jobs.rows.length) out.push(fact('lookupJobs', T.indexNote, null, `${T.checked} ${jobs.checkedAt.slice(0, 10)}`, 'note', { url: '/', fetched: jobs.checkedAt }))
+  // ①b 时间线(只在他问了「要多久 / 哪条快」时才有)。排在这么前面是因为**那时它就是答案**:
+  //     facts 塞不下时是从尾巴上砍的,排在后面等于问一句最该答的话反而被清单挤掉。
+  if (plan) out.push(...planFacts(plan, lang))
   // ② 省清单命中/四态
   for (const c of coverage.provinces) {
     if (c.hits.length) {
@@ -942,6 +1091,28 @@ const PLAYBOOK_ODDS =
   + 'say what each number is, and stop. Never divide one by another, never turn them into a rate or a ranking, and never call anything '
   + 'high, low, good, bad or competitive. Job-posting counts are not an answer to a question about odds — do not list them here, and '
   + 'if FACTS has no pool, draw or cutoff line, say that and write nothing further.'
+/**
+ * 🔴 「要多久 / 哪条更快」走时间线剧本(C3 buildPlan 的落点)。
+ *
+ * 为什么要单独一条剧本:这两个问题模型最爱**自己加加减减**(把门槛的 12 个月和处理时长的 3 个月
+ * 加成 15,或者把「两周一轮」说成「两周就能下来」)。加出来的数每一位都溯得回 facts,
+ * guard 一个字都拦不住 —— 所以算术必须在 FACTS 里就是现成的(buildPlan 已经算好并挂了出处),
+ * 剧本的活是让它**只念不算**,并且在有未知段时说清「总数给不了」而不是把下界当总数报出去。
+ */
+const PLAYBOOK_PLAN =
+  'PLAYBOOK (this outranks the order of FACTS): the question asks how long a path takes, or which path is faster. '
+  + 'The timeline in FACTS is already worked out segment by segment — each segment, each floor and each difference is its own '
+  + 'line. Quote those lines as they stand and never add, subtract, average or convert anything yourself: a total you worked out '
+  + 'is a lie here even when every part of it came from FACTS. Where a line gives only a floor, or says a segment cannot be worked '
+  + 'out, say plainly that the full length cannot be given, name that segment and say who is missing it (the government does not '
+  + 'publish it / our site has not indexed it) — never let a floor stand in for a total. Say one path is faster only if a FACTS line '
+  + 'says so, in the same words that line uses (at the very least / added up). Never turn any of this into a date, a deadline or a '
+  + 'promise, and never say how long the reader will wait to be picked in a draw — the draw line is how often the province opens a '
+  + 'round, nothing more.'
+/** 三语的「要多久 / 哪条更快」问法。只收明确在问**时长或快慢**的说法(「多久没开过」也在内:同一批材料能答)。 */
+const PLAN_RE =
+  /how long|how many (?:months|years|weeks)|how soon|how fast|faster|quicker|sooner|time ?line|end to end|多久|多长时间|多少个月|几个月|多快|更快|快多少|哪条快|哪个快|时间线|排期|얼마나 걸리|얼마나 오래|더 빠른|더 빨리|기간이/i
+export const isPlanQuestion = (text: string) => PLAN_RE.test(text)
 /** 三语的「概率/机会/胜算」问法。宁可漏判(照常答)也不错判 —— 词表只收明确在问可能性的说法。 */
 const ODDS_RE = /\bodds\b|\bchances?\b|probabilit|likelihood|how likely|概率|几率|機率|胜算|勝算|被抽中的可能|多大机会|확률|가능성이 (?:얼마|어느)|뽑힐/i
 /** 「找到工作的机会」问的是岗位不是抽选池:带这些词就不走概率剧本(否则会把一句抽选池的话答给找工作的人)。 */
@@ -1080,6 +1251,9 @@ export function synthMessages(
         + 'sentence and stop; a reply that repeats the previous one is a failed reply.'
       : '',
     isOdds ? PLAYBOOK_ODDS : '',
+    // 两条剧本不同时上:「被抽中的概率要多久」两边都命中,而概率那条是更硬的拒答 —— 让它说了算,
+    // 免得同一段提示里既说「不许算」又说「照着时间线念」,模型只会挑一句听。
+    !isOdds && isPlanQuestion(userText) ? PLAYBOOK_PLAN : '',
     opts.zeroExp ? PLAYBOOK_ZERO_EXP : '',
     opts.hasClaims ? PLAYBOOK_CLAIMS : '',
     opts.forbid?.length
@@ -1497,15 +1671,21 @@ export function findMergedStates(answer: string, facts: Fact[], lang: ChatLang):
 // 实测撞上(C07 英文护士,attempt 2:三条 BC 门槛全在列表里,factDump(3) 判违规,一稿好答复被顶回上一稿)。
 // 那不是在背清单,那正是我们要求的形状。其余 label(计数/清单/四态)照旧算 —— 那些是**名目**不是话,
 // 三条名目被原样搬进答复仍然是「在念表格」,红线一个字没松。
-export function findFactDump(answer: string, facts: Fact[]): string[] {
-  const out: string[] = []
-  for (const m of answer.matchAll(/[^\s=]{0,24}\s=\s[^\s=]{0,12}/g)) { out.push(m[0].trim()); break }
+/** ⓐ `=` 的形状 —— **一句就能判**,所以它进得了逐句门(见 sentenceBlockers)。 */
+export function findFactEq(answer: string): string[] {
+  for (const m of answer.matchAll(/[^\s=]{0,24}\s=\s[^\s=]{0,12}/g)) return [m[0].trim()]
+  return []
+}
+/** ⓑ 三条 label 被逐字抄 —— **跨句才判得了**(要数够三条),逐句门收不了它,只能整段那一关。 */
+export function findFactCopied(answer: string, facts: Fact[]): string[] {
   const copied = facts
     .filter((x) => x.tool !== 'lookupThresholds')
     .map((f) => f.label)
     .filter((l) => l.length >= 20 && answer.includes(l))
-  if (copied.length >= 3) out.push(...copied.slice(0, 3))
-  return out.slice(0, 4)
+  return copied.length >= 3 ? copied.slice(0, 3) : []
+}
+export function findFactDump(answer: string, facts: Fact[]): string[] {
+  return [...findFactEq(answer), ...findFactCopied(answer, facts)].slice(0, 4)
 }
 
 // ── 🟡 出口留痕⑤:同一个句式连着来三遍 = 在念表格 ───────────────────────────
@@ -1663,6 +1843,95 @@ export function clampAnswer(s: string, lang: ChatLang, cap = LEN_CAP[lang], sent
   return out.trim() || t.slice(0, cap).trim()
 }
 
+// ── 🔵 逐句门控:一句过了才发给前端 ─────────────────────────────────────────
+//
+// 2026-08-08 拍板(Frank),判据一句话:**永不让用户看见编出来的数字,偶尔容忍啰嗦。**
+// 出口校验按「判得了几句」分成两类,不是按重要性分:
+//   ① **一句就能判的**(数字回查 facts / 内部码 / 语言混用 / 两态揉一句)→ 逐句门,一句过了才放行;
+//   ② **跨句才能判的**(逐行抄 ⓑ 要数够三条、连着三句同开头)→ 属**质量**不属真假,整段跑完只留痕。
+//
+// 🔴 **一道判据都没有放宽**:①里用的就是原来那几个函数,一个字没改,只是喂给它的是「到此为止的前缀」
+//    而不是整段。**故意喂前缀而不是喂单独一句** —— 行首序号白名单、官方专名遮罩这些判据都要看上下文,
+//    拆散了喂就成了另一套判定(两套迟早不一致)。前面的句子已经验过是干净的,新报出来的必然出在新那截。
+const HEDGE_SPLIT = /(?<=[。！？；!?;\n])/    // dropTrailingHedge 砍的粒度(它自己那把刀,英文里 `.` 不断段)
+// 一句写完了没有:全角句末标点 / `\n` 直接算;ASCII `.` 前面是数字时**不算**(在写的可能是 `3.6`)——
+// 这正是 2579202 那条红线的同款判据:**宁可晚一拍,不许断在词中间(或数字中间)**。
+const SENT_END = /(?:[。！？；!?;\n]|(?<!\d)\.)$/
+
+/**
+ * 尾巴留手:两样**得等到后面还有字**才判得了的东西,不许先发出去。
+ *   ① 在途的半句 —— 断句用全站那一份 SENT_SPLIT(clampAnswer / findSameOpening / findMixedStates 用的同一条,
+ *      2579202 抽出来的),**这里不另写一套**;
+ *   ② dropTrailingHedge 会砍掉结尾那一两「段」劝告 —— 先发再删 = 用户读到了我们打算删掉的建议。
+ * ② 只对**真可能被砍的**留手(判据照抄 dropTrailingHedge:带劝告词且一个数字都没有),
+ * 而**还在写的那一段**只认「已经带着数字」就放行 —— 数字只会越加越多不会消失,带数字的段它砍不动;
+ * 一个数字都还没有的在写段一律压着,免得后面冒出一句「建议尽快…」时已经发出去了。
+ */
+function holdTail(s: string, lang: ChatLang): string {
+  const parts = s.split(SENT_SPLIT)
+  let n = parts.length
+  if (n && !SENT_END.test(parts[n - 1].trimEnd())) n--                 // ① 在途的半句
+  const head = parts.slice(0, n).join('')
+  const units = head.split(HEDGE_SPLIT)
+  const openEnd = !/[。！？；!?;\n]$/.test(head)                        // 最后那一段还没写完
+  let m = units.length
+  let held = 0
+  while (m > 0 && held < 2) {                                          // ② 它最多砍两段
+    const p = units[m - 1]
+    if (!p.trim()) { m--; continue }                                   // 空白段跟着走(它找最后一句时也跳过空白)
+    if (/\d/.test(p) || (!(m === units.length && openEnd) && !findHedges(p, lang).length)) break
+    m--; held++
+  }
+  return units.slice(0, m).join('')
+}
+
+/** 逐句门的硬拦集合 = 既有六道里**一句就能判的那五道**(第六道 findFactCopied 见上面 ⓑ)。 */
+export function sentenceBlockers(text: string, facts: Fact[], lang: ChatLang, echo = ''): string[] {
+  return [
+    ...guardAnswer(text, facts, echo).bad,
+    ...findLeaks(text),
+    ...findFactEq(text),
+    ...findEnglishUnits(text, lang, facts),
+    ...findWordNumbers(text, lang),
+    ...findForeignScript(text, lang),
+    ...findMixedStates(text, lang),
+  ].slice(0, 8)
+}
+
+export type SentenceGate = {
+  /** 已经放行出去的那截(处理后的文本 —— 前端收到的就是它,一字不差)。 */
+  readonly released: string
+  /** 又收到一段模型原文(累计) → 这次能放行的增量('' = 还不能)。blocked 非空 = 撞了门,调用方必须停流。 */
+  push(raw: string): { text: string; blocked: string[] }
+  /** 整段落地后收尾:final = 最终见客文案。返回还没发的那截;`null` = 对不上前缀,调用方得撤回重画。 */
+  tail(final: string): string | null
+}
+/**
+ * 流的那一稿走的是**和整段完全同一条流水线**(tidy → localizeUnits → clampAnswer),
+ * 只是每次喂进去的是「到目前为止」的原文 —— 所以流出去的字与最终答复逐字相同,不是另做一份。
+ */
+export function makeSentenceGate(facts: Fact[], lang: ChatLang, echo = ''): SentenceGate {
+  let out = ''
+  return {
+    get released() { return out },
+    push(raw) {
+      const cand = clampAnswer(holdTail(localizeUnits(tidy(raw), lang), lang), lang)
+      if (cand.length <= out.length || !cand.startsWith(out)) return { text: '', blocked: [] }
+      const blocked = sentenceBlockers(cand, facts, lang, echo)
+      if (blocked.length) return { text: '', blocked }
+      const add = cand.slice(out.length)
+      out = cand
+      return { text: add, blocked: [] }
+    },
+    tail(final) {
+      if (!final.startsWith(out)) return null
+      const add = final.slice(out.length)
+      out = final
+      return add
+    },
+  }
+}
+
 /**
  * 降级清单的开场白。**诚实和可读同时做到**(2026-08-05 Frank 实测:
  * 原话是「模型这次没能守住『只用查到的数字』这条线,所以…」—— 用户不关心我们的 guard 叫什么,
@@ -1801,11 +2070,15 @@ export function citeFacts(answer: string, facts: Fact[]): Fact[] {
 // ── 主流程 ──────────────────────────────────────────────────────────────────
 
 /**
- * opts.onStep = 工具轨迹(见文件上方 STEP 那段的三条铁律)。不传 = 今天的行为,一步不变。
- * 事件按**真实阶段边界**发:读懂问题 → 认出职业 → 每个工具返回 → 开始组织答复。
+ * opts.onStep  = 工具轨迹(见文件上方 STEP 那段的三条铁律)。不传 = 今天的行为,一步不变。
+ *                事件按**真实阶段边界**发:读懂问题 → 认出职业 → 每个工具返回 → 开始组织答复。
+ * opts.onDelta = 答复正文的**逐句**增量(见 makeSentenceGate:一句过了逐句门才发)。不传 = 整段落地才给。
+ * opts.onReset = 已经发出去的正文作废,前端清屏(撞了门要重试 / 降级 / 补位把前面重截了)。
+ *                它是**撤回**不是进度,只在真要重画时发。
  */
 export async function orchestrate(
-  rawPool: any, input: { text: string; lang: ChatLang; history?: ChatTurn[] }, opts?: { onStep?: OnStep },
+  rawPool: any, input: { text: string; lang: ChatLang; history?: ChatTurn[] },
+  opts?: { onStep?: OnStep; onDelta?: (s: string) => void; onReset?: () => void },
 ): Promise<ChatResult> {
   const text = (input.text || '').trim().slice(0, MAX_TEXT)
   const lang: ChatLang = (['zh', 'en', 'ko'] as const).includes(input.lang) ? input.lang : 'en'
@@ -1849,7 +2122,8 @@ export async function orchestrate(
   // 职业名先算出来:轨迹第二格要报「认出的是谁」,而 NOC 一确定这一格就是既成事实(工具还没跑)。
   const occHint = `${hit.title || slots.occText} (NOC ${slots.noc})`
   onStep?.({ phase: 'occ', text: S.occ(occHint) })
-  const { facts, title } = await collectFacts(pool, slots, null, lang, onStep)
+  // 问的是「要多久 / 哪条更快」才算时间线(判据是纯函数,不问模型:topic 归模型猜的那些坑已经踩够了)
+  const { facts, title } = await collectFacts(pool, slots, null, lang, onStep, { plan: isPlanQuestion(text) && !isOddsQuestion(text) })
   const occ = `${title || hit.title || slots.occText} (NOC ${slots.noc})`
 
   // ④ 合成 + 出口校验(违规重试一次,再违规降级成事实清单)
@@ -1862,16 +2136,33 @@ export async function orchestrate(
   let sameOpen: string[] = []          // 句式雷同:重试一次就认命(降级比它难看得多),不进降级判据
   let passed = ''                      // 最近一次**过了硬拦**的答复(句式重试的退路)
   let firedLast: string[] = []         // 最后一次撞到的检查名(降级日志要报「因为哪一道」,不是只报「降级了」)
+  // 🔵 逐句门(见 makeSentenceGate):只有**第一稿**流 —— 重试稿要么是撞了门的补救、要么是软重写,
+  //    两种都是「把刚才那段推翻重写」,流出去只会让用户读到两遍不一样的话。
+  const gate = opts?.onDelta ? makeSentenceGate(facts, lang, text) : null
+  let gateBad: string[] = []           // 流到一半撞了门:这一稿作废,照旧走重试/降级
+  let streamed = false                 // 真往前端发过字(撤回时要通知前端清屏)
+  let streamOk = false                 // 这一稿是「逐句门全过」的那一稿:收尾只补尾巴,不重画
   onStep?.({ phase: 'write', text: S.write })
   for (let attempt = 0; attempt < 2; attempt++) {
+    const live = Boolean(gate) && attempt === 0
     try {
-      // 🔴 onDelta **只用来量首字延迟,增量一个字都不往前端发**(见文件上方轨迹三铁律):
-      // 出口五道校验是整段跑的,流答案 = 用户可能读到一个随后被撤回的数字。
       const t0 = Date.now()
       let ttft = 0
+      let acc = ''
       const raw2 = await completeText(
         synthMessages(facts, text, lang, { ...synOpts, ...(attempt ? { forbid: bad, banned, sameOpen } : {}) }),
-        { maxTokens: 900, provider: 'friend', onDelta: () => { if (!ttft) ttft = Date.now() - t0 } },
+        { maxTokens: 900, provider: 'friend', onDelta: (chunk) => {
+          if (!ttft) ttft = Date.now() - t0
+          if (!live || gateBad.length) return
+          acc += chunk
+          if (!/[。！？；!?;.\n]/.test(chunk)) return      // 这一块里连一个断句记号都没有,不必回读整段
+          const r = gate!.push(acc)
+          if (r.blocked.length) {
+            gateBad = r.blocked
+            console.log(`[chat] sentence gate blocked noc=${slots.noc} lang=${lang} hits=${r.blocked.join(',')}`)
+            if (streamed) { opts?.onReset?.(); streamed = false }   // 已经发出去的那截作废:让前端清屏,别读半段
+          } else if (r.text) { streamed = true; opts!.onDelta!(r.text) }
+        } },
       )
       console.log(`[chat] synth attempt=${attempt + 1} noc=${slots.noc} ttft=${ttft}ms total=${Date.now() - t0}ms out=${raw2.length}ch`)
       const cleaned = dropTrailingHedge(clampAnswer(localizeUnits(tidy(raw2), lang), lang), lang)
@@ -1888,12 +2179,13 @@ export async function orchestrate(
     const fired: [string, string[]][] = ([
       ['guard', g.bad],
       ['leak', findLeaks(answer)],
-      ['factDump', findFactDump(answer, facts)],
+      ['factEq', findFactEq(answer)],
+      ['factCopy', findFactCopied(answer, facts)],       // ← 六道里唯一**跨句才判得了的**(要数够三条)
       ['enUnits', findEnglishUnits(answer, lang, facts)],
       ['cjkNum', findWordNumbers(answer, lang)],
       ['script', findForeignScript(answer, lang)],
     ] as [string, string[]][]).filter(([, v]) => v.length)
-    const leaks = fired.filter(([k]) => k === 'leak' || k === 'factDump').flatMap(([, v]) => v)
+    const leaks = fired.filter(([k]) => k === 'leak' || k === 'factEq' || k === 'factCopy').flatMap(([, v]) => v)
     const units = fired.filter(([k]) => k === 'enUnits' || k === 'cjkNum' || k === 'script').flatMap(([, v]) => v)
     const hedges = findHedges(answer, lang)
     if (hedges.length) console.log(`[chat] hedge warn noc=${slots.noc} words=${hedges.join(',')}`)
@@ -1903,6 +2195,18 @@ export async function orchestrate(
     if (shouted.length) console.log(`[chat] shouted-caps warn noc=${slots.noc} words=${shouted.join(',')}`)
     const merged = [...findMergedStates(answer, facts, lang), ...findMixedStates(answer, lang)]
     if (merged.length) console.log(`[chat] state-merge warn noc=${slots.noc} ${merged.join(' | ')}`)
+    // 🔵 流出去的那一稿:除了 factCopy,每一道都在流的过程中逐句判过了,这里是整段复查
+    //    (留手的那一两句也得过这一关)。**factCopy 不参与放行** —— 它跨句才判得了,而拦它就得把
+    //    用户已经读到的字全撤回;Frank 拍板的取舍正是这条:偶尔容忍啰嗦,绝不容忍编造的数字。
+    if (live && !gateBad.length && !fired.some(([k]) => k !== 'factCopy')) {
+      bad = []; banned = []
+      streamOk = true
+      const warn = [...fired.map(([k, v]) => `${k}(${v.length})`), ...findSameOpening(answer, lang).map((k) => `sameOpening(${k})`)]
+      if (warn.length) console.log(`[chat] streamed draft kept, cross-sentence warn noc=${slots.noc} lang=${lang} ${warn.join(',')}`)
+      break
+    }
+    // 流过一半却没能原样留下(尾巴撞了检查 / 中途撞了门)→ 立刻通知前端清屏,别让他盯着一段马上要被替换的字
+    if (streamed) { console.log(`[chat] stream retracted noc=${slots.noc}`); opts?.onReset?.(); streamed = false }
     if (g.ok && !leaks.length && !units.length) {
       bad = []; banned = []
       passed = answer                       // 过了硬拦的稿子先存着:重写万一崩了,退回它比降级强
@@ -1959,6 +2263,13 @@ export async function orchestrate(
     ]
     if (sheetBad.length) console.error(`[chat] 🔴 FACT SHEET LEAKS (数据层 label 没本地化) noc=${slots.noc} lang=${lang} bad=${sheetBad.join(',')}`)
   }
+  // 🔵 逐句门收尾:补发「留手的那一两句」+ missingClaimLines 补回来的主张。
+  //    对不上前缀(补位把前面重截了)→ 撤回让最终事件整段重画:宁可闪一下,不许前后两截对不上。
+  if (streamOk && gate) {
+    const add = gate.tail(answer)
+    if (add) opts?.onDelta?.(add)
+    else if (add === null) { console.log(`[chat] stream tail mismatch, repainting noc=${slots.noc}`); opts?.onReset?.() }
+  } else if (streamed) opts?.onReset?.()
   // 出处标注在最后一步(要拿最终答复回读);追问只从「这次真查到了数据」的工具里出。
   // 降级成事实清单时**整张清单就是答复**,所以有出处的全标上 —— 那种时候出处正是唯一能点的东西。
   const out = degraded ? facts.map((f) => ({ ...f, cited: Boolean(f.evidence.url) })) : citeFacts(answer, facts)

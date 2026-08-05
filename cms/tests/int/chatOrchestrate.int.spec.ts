@@ -13,9 +13,9 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import {
   askOccupation, AVAIL_MARKERS, claimLabel, clampAnswer, dropTrailingHedge, factsBlock, factSheet, fieldSearchTerm,
-  findEnglishUnits, findFactDump, findHedges, findForeignScript, findLeaks, findMergedStates, findMixedStates,
-  findSameOpening, findShoutedWords, findWordNumbers, guardAnswer, isMoneyTalk, isSelfStatement,
-  LABEL_CAP, LBL, localizeUnits, missingClaimLines, normalizeSlots, MONEY_WHY, orchestrate, otherClaimLabel,
+  findEnglishUnits, findFactCopied, findFactDump, findHedges, findForeignScript, findLeaks, findMergedStates,
+  findMixedStates, findSameOpening, findShoutedWords, findWordNumbers, guardAnswer, isMoneyTalk, isSelfStatement,
+  LABEL_CAP, LBL, localizeUnits, makeSentenceGate, missingClaimLines, normalizeSlots, MONEY_WHY, orchestrate, otherClaimLabel,
   PROMISE_WHY, resolveNoc, sayFact, stripMd, studyFieldOf, suggestOccupations, tidy,
   type ChatLang, type Fact, type OccOption,
 } from '@/lib/chatOrchestrate'
@@ -551,6 +551,107 @@ describe('答复见客检查(不连模型)', () => {
   })
 })
 
+// ── ①'' 纯函数:逐句门控(答复按句流出去)────────────────────────────────────
+//
+// 判据一句话(Frank 2026-08-08):**永不让用户看见编出来的数字,偶尔容忍啰嗦。**
+// 所以这一组只证三件事:编的数字那一句发不出去 / 跨句的毛病不拦只留痕 / 断句中英文都不断在词中间。
+describe('逐句门控(一句过了才发给前端)', () => {
+  const gateFacts = [
+    f({}),                                                                   // MB 学徒岗 3
+    f({ label: 'BC apprentice-friendly openings for NOC 72310', value: 15 }),
+    f({ tool: 'lookupThresholds', label: 'MB requirement experience (applicant)', value: 12, valueText: '', unit: 'months' }),
+  ]
+  /** 一个字一个字喂(比真 SSE 的分块更狠:任何一块都可能停在词中间),收下每一次放行的增量。 */
+  const drip = (raw: string, lang: ChatLang, facts = gateFacts, echo = '') => {
+    const gate = makeSentenceGate(facts, lang, echo)
+    const out: string[] = []
+    const seen: string[] = []                 // 每一次放行之后「已经见客」的全文
+    let blocked: string[] = []
+    for (let i = 1; i <= raw.length; i++) {
+      const r = gate.push(raw.slice(0, i))
+      if (r.blocked.length) { blocked = r.blocked; break }
+      if (r.text) { out.push(r.text); seen.push(gate.released) }
+    }
+    return { gate, out, seen, blocked, released: gate.released }
+  }
+
+  // 🔴 这一条是整批的立身之本:流出去 ≠ 松开 guard
+  it('一句里出现 facts 里没有的数字 → 这一句发不出去(前面那句照发)', () => {
+    const r = drip('曼省学徒岗有 3 个。全国一共 77 个。', 'zh')
+    expect(r.blocked).toContain('77')
+    expect(r.released).toBe('曼省学徒岗有 3 个。')      // 前一句是干净的,照发
+    expect(r.out.join('')).not.toContain('77')          // 编的那个数字一个字都没漏出去
+  })
+
+  it('内部码 / 语言混用 / 一句焊两态:哪一道都拦得住(用的就是原来那几个函数)', () => {
+    expect(drip('这条是 NOT-PUBLISHED 的。', 'zh').blocked).toContain('NOT-PUBLISHED')
+    expect(drip('BC has 15 openings. The list is 官方不公布 for now.', 'en').blocked.length).toBeGreaterThan(0)
+    const mixed = `这项${AVAIL_SENTENCE_SAMPLE_ALL.zh['not-published']},而那项${AVAIL_SENTENCE_SAMPLE_ALL.zh['not-collected']}。`
+    expect(drip(mixed, 'zh').blocked.some((x) => x.startsWith('mixed:'))).toBe(true)
+    // `=` 是 FACTS 行的形状,一句就能判 → 进逐句门;三条 label 被逐字抄要数够三条,进不来(见下一条)
+    expect(drip('MB requirement experience (applicant) = 12 months.', 'en').blocked.length).toBeGreaterThan(0)
+  })
+
+  it('🟡 跨句才判得了的(逐行抄、连着三句同开头)只留痕,不拦', () => {
+    const enFacts = [
+      f({ label: 'MB apprentice-friendly openings for NOC 72310', value: 3 }),
+      f({ label: 'BC apprentice-friendly openings for NOC 72310', value: 15 }),
+      f({ label: 'ON apprentice-friendly openings for NOC 72310', value: 7 }),
+    ]
+    const dump = 'MB apprentice-friendly openings for NOC 72310 is 3. '
+      + 'BC apprentice-friendly openings for NOC 72310 is 15. '
+      + 'ON apprentice-friendly openings for NOC 72310 is 7.'
+    const r = drip(dump, 'en', enFacts)
+    expect(r.blocked).toEqual([])                       // 逐句门放行 —— 它判不了「抄了几条」
+    expect(dump.startsWith(r.released)).toBe(true)
+    // 末句以「数字 + .」收尾 → 按 SENT_END 压着不发(在写的可能是 `7.5`),收尾那一下补齐
+    expect(r.released + (r.gate.tail(dump) ?? '')).toBe(dump)
+    expect(findFactCopied(dump, enFacts)).toHaveLength(3)   // 但整段那一关照旧看得见(日志留痕)
+    // 连着三句同一个开头:同样只留痕
+    const same = '曼省官方清单收了这个职业。曼省官方清单每年更新。曼省官方清单在官网能查到。'
+    expect(drip(same, 'zh').blocked).toEqual([])
+    expect(findSameOpening(same, 'zh').length).toBeGreaterThan(0)
+  })
+
+  // 🔴 上一轮(2579202)刚踩过「断在词中间」的坑,这条把它焊进逐句门。
+  //    判据不是「结尾一定是句号」(行首 `- ` 那种项目行,尾巴的换行会被 trim 掉),
+  //    而是**断点落在最终答复的空白/句末标点上** —— 那才是「没断在词中间」的原话。
+  it('断句中英文都成立:每一次放行都不在词/数字中间断', () => {
+    const zh = '曼省学徒岗有 3 个。BC 有 15 个。雇主要求经验满 12 个月。'
+    const en = 'MB has 3 openings. BC has 15 openings.\n- BC apprentice openings: 15 jobs\nThe employer requires 12 months of experience.'
+    for (const [raw, lang] of [[zh, 'zh'], [en, 'en']] as [string, ChatLang][]) {
+      const r = drip(raw, lang)
+      const final = clampAnswer(localizeUnits(tidy(raw), lang), lang)
+      expect(r.blocked).toEqual([])
+      expect(r.out.length, `${lang} 一句都没流出去`).toBeGreaterThan(1)   // 真的是分几次流的,不是最后一次性给
+      for (const s of r.seen) {
+        expect(final.startsWith(s), `${lang} 流出去的不是最终答复的前缀:\n流=${s}\n终=${final}`).toBe(true)
+        // 断点合法有且只有两种:自己以句末标点收口(中文「…。」后面直接接下一句),或者下一个字是空白
+        expect(/[。！？；!?;.]$/.test(s) || /\s/.test(final[s.length] ?? ' '),
+          `${lang} 断在了词中间:${s}|${final.slice(s.length, s.length + 8)}`).toBe(true)
+      }
+      // 收尾:补发剩下的那截,拼起来 = 整段答复,一个字不多不少
+      expect(r.out.join('') + (r.gate.tail(final) ?? '')).toBe(final)
+    }
+  })
+
+  // 小数点是 SENT_SPLIT 早就处理过的坑,逐句门这头也不许把它当句末(会发出去半个数字)
+  it('英文小数不当句末:`3.6` 不许被劈成两截发出去', () => {
+    const facts = [f({ label: 'MB draw cutoff', value: 3.6, unit: '%' })]
+    const r = drip('The rate is 3.6% right now. Nothing else is published.', 'en', facts)
+    expect(r.blocked).toEqual([])
+    for (const s of r.seen) expect(s).not.toMatch(/3\.$/)
+  })
+
+  // dropTrailingHedge 会砍掉结尾那一两句劝告 —— 先发再删 = 用户读到了我们打算删掉的建议
+  it('结尾那句劝告不许先发出去(它待会儿要被砍掉)', () => {
+    const body = '曼省学徒岗有 3 个。BC 有 15 个。'
+    const r = drip(`${body}建议尽快决定,务必核实。`, 'zh')
+    expect(r.released).toBe(body)
+    expect(r.out.join('')).not.toContain('建议尽快')
+  })
+})
+
 describe('槽位归一 / prompt 预算(模型输出不可信)', () => {
   it('省份认码也认中英文别名,认不出的丢掉(宁可少一个省,不许把 NB 当 NS)', () => {
     const s = normalizeSlots({ occ_en: 'carpenter', provs: ['曼省', 'bc', 'Nova Scotia', '火星省'], exp_months: 0, status: 'graduated' })
@@ -771,7 +872,25 @@ live('金标 C01 木匠(一句话进,多轮出)', () => {
   // 🔴 88% 的流量是英文,而 C1 的 note/why 全是中文硬编码 —— 中文漏进英文答复只有真跑一次才看得见。
   // 断言只挑「漏了就不能上线」的:不掺中文、无内部码、数字溯得回 facts。
   it('英文同一道题:一个中文字都不许漏进去', async () => {
-    const r = await orchestrate(pool, { text: EN01, lang: 'en' })
+    // 顺带把**逐句流**在真库真模型下验一遍(英文是断句最难的一档:`.` 得后跟空白才算句末)
+    const seen: string[] = []          // 每一次放行之后已经见客的全文
+    let acc = ''
+    let resets = 0
+    const r = await orchestrate(pool, { text: EN01, lang: 'en' }, {
+      onDelta: (d) => { acc += d; seen.push(acc) },
+      onReset: () => { resets++; acc = ''; seen.length = 0 },
+    })
+    // 流出去的每一截都必须:① 不在词/数字中间断;② 自己就过得了数字回查与内部码
+    for (const s of seen) {
+      expect(guardAnswer(s, r.facts, EN01).ok, `流出去的一截里有溯不回 facts 的数字:\n${s}`).toBe(true)
+      expect(findLeaks(s), `流出去的一截泄露内部码:\n${s}`).toEqual([])
+      if (!resets && r.answer.startsWith(s)) {
+        expect(/[\s.!?;]/.test(r.answer[s.length] ?? ' '), `英文流出去的一截断在了词中间:${s.slice(-20)}|${r.answer.slice(s.length, s.length + 8)}`).toBe(true)
+      }
+    }
+    // 撤回过就不作前缀要求(那正是撤回的意思);没撤回过则流出去的必须是最终答复的前缀
+    if (!resets) expect(r.answer.startsWith(acc), `流出去的不是最终答复的前缀:\n流=${acc}\n终=${r.answer}`).toBe(true)
+    console.log(`[stream] deltas=${seen.length} resets=${resets} streamed=${acc.length}/${r.answer.length}ch`)
     expect(findForeignScript(r.answer, 'en'), `英文答复里混进了中文:
 ${r.answer}`).toEqual([])
     expect(findLeaks(r.answer), `英文答复泄露内部码:

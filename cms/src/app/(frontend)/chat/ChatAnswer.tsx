@@ -71,13 +71,20 @@ export function textBlocks(text: string): Block[] {
   return out
 }
 
-/** 助手正文的唯一渲染出口(答复 / 降级清单 / 引导语共用一套排版) */
-export function ChatText({ text, sheet }: { text: string; sheet?: boolean }) {
+/** 助手正文的唯一渲染出口(答复 / 降级清单 / 引导语 / **逐句流式的半截正文**共用一套排版)。
+ *  `caret` = 还在写(光标跟在最后一个块尾巴上)。半截正文走同一个渲染器不是洁癖:
+ *  服务端放行的单位是**整句**,那截里早就带着行首 `- ` 了 —— 另用 pre-wrap 铺一遍,
+ *  用户会先看见一串裸着的 `- `,等整段落地再跳成项目符号,白白抖一次版。 */
+export function ChatText({ text, sheet, caret }: { text: string; sheet?: boolean; caret?: boolean }) {
+  const blocks = textBlocks(text)
+  const last = blocks.length - 1
+  const tip = (on: boolean) => (on && caret ? <i className="cbCaret" /> : null)
   return (
     <div className={sheet ? 'cbA cbSheet' : 'cbA'}>
-      {textBlocks(text).map((b, i) => (b.type === 'ul'
-        ? <div className="cbUl" key={i}>{b.items.map((s, k) => <div className="cbLi" key={k}>{s}</div>)}</div>
-        : <p className="cbP" key={i}>{b.text}</p>))}
+      {blocks.map((b, i) => (b.type === 'ul'
+        ? <div className="cbUl" key={i}>{b.items.map((s, k) => (
+          <div className="cbLi" key={k}>{s}{tip(i === last && k === b.items.length - 1)}</div>))}</div>
+        : <p className="cbP" key={i}>{b.text}{tip(i === last)}</p>))}
     </div>
   )
 }
@@ -186,8 +193,6 @@ export const CHAT_ANSWER_CSS = `
   /* 段落:空行分段 → 8px 段距(最后一段不留)。pre-wrap 保住段内的软换行 */
   .cbP{margin:0 0 8px;white-space:pre-wrap}
   .cbP:last-child{margin-bottom:0}
-  /* 逐字流式的半截正文(服务端今天不发 delta,路径备着):还没成段,原样 pre-wrap 铺 */
-  .cbPre{white-space:pre-wrap}
   /* 项目符号组:行首「- 」渲成这个。记号用 CSS 画,不用「·」这个字(站规:那是分隔号,不当记号使);
      绝对定位的记号 = 真悬挂缩进,折行后续行自动对齐到 padding-left,不顶回行首 */
   .cbUl{margin:0 0 8px}

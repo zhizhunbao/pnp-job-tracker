@@ -2,13 +2,16 @@
  * POST /api/chat — 对话即产品的唯一入口(C2;设计 docs/design/对话即产品-20260803.md §二/§三/§四)。
  *
  * body: { text, lang: 'zh'|'en'|'ko', history?: [{role,content}] }
- * 200 SSE : data:{"step":"…"}(工具轨迹,多条) → data:{answer,slots,facts,followups}(整段) → data:[DONE]
+ * 200 SSE : data:{"step":"…"}(工具轨迹,多条) → data:{"delta":"…"}(正文,逐句多条)
+ *           → data:{answer,slots,facts,followups}(整段:facts/followups 只能整段给) → data:[DONE]
+ *           中途可能插一条 data:{"reset":true} = 前面发出去的正文作废,前端清屏(见下)
  * 200 JSON: 同一份 { answer, slots, facts, followups }(前置阶段就出结果时;前端按 content-type 分流)
  * err : { error: 'tooShort'|'noOcc'|'llm'|'limit'|'guard' } + 状态码(**前置错误一律走 JSON**)
  *
- * 🔴 **流的是工具轨迹,不是答案**(2026-08-04 拍板,别改):出口五道校验是整段答复落地后才跑的,
- *    违规要重试或降级成 factSheet —— 流答案 = 用户可能读到一个随后被撤回的数字。轨迹事件全是我们
- *    自己构造的字符串(lib/chatOrchestrate 的 STEP),只带工具返回的数字,不掺模型输出。
+ * 🔵 **正文按句流**(2026-08-08 拍板;旧口径「只流轨迹」的理由——「出口校验整段才跑」——已被拆掉):
+ *    一句过了逐句门(数字回查 facts / 内部码 / 语言混用 / 两态揉一句)才发,判据见 lib/chatOrchestrate
+ *    的 makeSentenceGate。撞了门 → `{"reset":true}` 撤回已发的那截,再走重试/降级,最终整段照旧由
+ *    `{answer,…}` 那条事件定稿(前端一律以它为准)。轨迹事件仍全是我们自己构造的字符串(STEP)。
  *
  * 🔵 **闸门**:tooShort / limit / noOcc / 抽槽位挂掉这些**前置**错误必须保住 JSON + 状态码,
  *    可流一旦开了头就再也改不回状态码 —— 所以先跑 orchestrate,拿到「认出职业」那一格(NOC 已定,
@@ -71,12 +74,16 @@ export async function POST(req: Request) {
     buffered.push(s)                                // 还没开流:先攒着,开流时按原序补发
     if (s.phase === 'occ') openStream?.()            // NOC 已定 = 前置错误全过去了,可以开流
   }
+  // 正文增量:合成阶段(write)才可能发,那时流早开了(occ 在它前面)。开不了流就整段给,不攒 —— 攒了也没用
+  const emit = (o: unknown) => { if (live.ctrl) { try { live.ctrl.enqueue(sse(o)) } catch { /* 客户端已断开 */ } } }
+  const onDelta = (s: string) => emit({ delta: s })
+  const onReset = () => emit({ reset: true })
 
   type Done = { ok: ChatResult } | { err: unknown }
   const run: Promise<Done> = (async (): Promise<Done> => {
     try {
       const payload = await getPayload({ config: await config })
-      return { ok: await orchestrate((payload.db as any).pool, { text, lang, history }, { onStep }) }
+      return { ok: await orchestrate((payload.db as any).pool, { text, lang, history }, { onStep, onDelta, onReset }) }
     } catch (err) { return { err } }
   })()
 
