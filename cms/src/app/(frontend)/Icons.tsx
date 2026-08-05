@@ -4,7 +4,7 @@
 import {
   Check, ChartColumn, ChevronDown, CircleCheck, ClipboardList, Compass, Lock, Mail, Map as LMap, MapPin,
   Maximize, Medal, MessageCircle, Minimize, Newspaper, Paperclip, Rocket, Save, Scale, Settings, Star, Target,
-  TriangleAlert, User, Users, X,
+  ThumbsDown, ThumbsUp, TriangleAlert, User, Users, X,
   type LucideProps,
 } from 'lucide-react'
 
@@ -36,6 +36,8 @@ export const IconScale = wrap(Scale)          // 原 scale
 export const IconSettings = wrap(Settings)    // 原 settings
 export const IconStar = wrap(Star)            // 原 star
 export const IconTarget = wrap(Target)        // 原 target
+export const IconThumbUp = wrap(ThumbsUp)     // 答复反馈「有帮助」(ChatAnswer)
+export const IconThumbDown = wrap(ThumbsDown) // 答复反馈「没帮助」—— 点踩=数据缺口报警器,不是装饰
 export const IconUser = wrap(User)            // 原 user
 export const IconUsers = wrap(Users)          // 雇主名录(B4-01)
 export const IconWarn = wrap(TriangleAlert)   // 原 warn

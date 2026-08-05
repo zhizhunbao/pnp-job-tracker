@@ -49,13 +49,16 @@ describe('漏斗事件白名单', () => {
     // 2026-08-04:答题卡摘掉全部站内入口、对话挂件成为唯一对话入口 → 加一条**并行**的对话漏斗。
     // 断言从 5 改到 7 是事实变了,不是放宽:前五个仍必须原序在前(stepRates 按下标算相邻转化率),
     // 对话两步**追加在尾部**且不参与前五步的相邻计算 —— 两形态混算会把口径搅成一锅。
-    expect([...FUNNEL_STEPS]).toEqual(['jd-open', 'report-open', 'lock-seen', 'pricing-open', 'pay-click', 'chat-open', 'chat-answer'])
+    expect([...FUNNEL_STEPS]).toEqual(['jd-open', 'report-open', 'lock-seen', 'pricing-open', 'pay-click', 'chat-open', 'chat-answer', 'chat-feedback'])
   })
 
-  it('对话形态的两个键各自归位,不串进旧五步', () => {
+  it('对话形态的三个键各自归位,不串进旧五步', () => {
     expect(toFunnelHit('widget-open', 'jd')).toEqual({ event: 'chat-open', prop: 'jd' })
     expect(toFunnelHit('chat-answer', '')?.event).toBe('chat-answer')
+    // 点踩是数据缺口报警器 —— prop 只收 good|bad 这两个枚举,不收自由文本
+    expect(toFunnelHit('chat-feedback', 'bad')).toEqual({ event: 'chat-feedback', prop: 'bad' })
     expect(toFunnelHit('widget-close', '')).toBeNull()   // 关闭不进表:它不是漏斗的一格
+    expect(toFunnelHit('widget-drag', '')).toBeNull()    // 拖动/缩放/重置同理,是交互不是漏斗
   })
 })
 

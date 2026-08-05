@@ -10,7 +10,7 @@
  * 后两个 = 对话形态(挂件打开 → 拿到带出处的答复)。**并行量,不混算** —— 设计文档
  * `docs/design/对话即产品-20260803.md` §六:两形态的转化对照才是撤旧页的判据,
  * 塞进同一条链会把两套口径搅成一锅。 */
-export const FUNNEL_STEPS = ['jd-open', 'report-open', 'lock-seen', 'pricing-open', 'pay-click', 'chat-open', 'chat-answer'] as const
+export const FUNNEL_STEPS = ['jd-open', 'report-open', 'lock-seen', 'pricing-open', 'pay-click', 'chat-open', 'chat-answer', 'chat-feedback'] as const
 export type FunnelStep = (typeof FUNNEL_STEPS)[number]
 
 // 站内既有的埋点名 → 漏斗步骤(调用点一个都不用改名;umami 那边照旧用原名,两套口径互不干扰)。
@@ -33,6 +33,10 @@ const ALIAS: Record<string, FunnelStep> = {
   // 挡掉一部分就等于永远读不准转化率。
   'widget-open': 'chat-open',
   'chat-answer': 'chat-answer',
+  // 赞/踩。**通用聊天的点赞是训练信号,我们的点踩是数据缺口报警器** ——
+  // 案例复现率 42% 是人肉核 36 个数字换来的;上线后每个点踩都是用户在替我们标注「这里答不好」,
+  // 而且按真实频次排好序。prop 是 good|bad(低基数枚举,不收自由文本 —— 那要动隐私页)。
+  'chat-feedback': 'chat-feedback',
 }
 
 // prop 白名单:低基数枚举才留,其余一律归空 —— 高基数(NOC、公司名、搜索词)会把表撑成明细表

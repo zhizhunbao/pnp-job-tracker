@@ -74,6 +74,33 @@ const HINT_KEY = 'jt.chat.hint.v1'
 // 桌面最大化的记忆位(手机不用:那边本来就是全屏接管)。记住它是因为**这是个人偏好不是一次性动作** ——
 // 一个人愿意在 380×600 里读长答复,他每次都愿意;不愿意的那个每次都得再点一遍,那就是每次都在骂我们。
 const MAX_KEY = 'jt.chat.max.v1'
+/**
+ * 桌面的自定义位置+尺寸(2026-08-05 Frank 要拖动与四向缩放)。
+ * 上一版判「不做拖拽」的依据是 Open WebUI 自己也没有 —— 那是**它的**取舍不是他的,他要就做。
+ * 为什么原生 `resize:both` 不够:它只给右下一个角,而且要求 overflow 非 visible 又会顶掉圆角裁切,
+ * 四边四角一个都拉不了。所以自己搓 pointer —— 8 个透明把手 + 一个 pointermove,总共不到 40 行,
+ * 比引一个拖拽库便宜得多(Ponytail 第 6 格)。
+ * **只在桌面生效**:手机是全屏接管,box 一律不写进 style(否则 localStorage 里存的 900×700
+ * 会以内联样式的身份压过 @media 那条 100dvh —— 内联赢 @media,那就是把桌面尺寸泄漏到手机)。
+ */
+const BOX_KEY = 'jt.chat.box.v1'
+type Box = { x: number; y: number; w: number; h: number }
+const MIN_W = 320   // 再窄正文就开始逐字折行(ChatBox 的 composer 加发送钮本身要 ~300)
+const MIN_H = 360   // 头部 54 + composer ~96 + 至少两三行答复
+// 8 个方向:n/s/e/w 四边 + 四角。字母出现在 dir 里就动那条边(下面 startGrab 按 includes 判)
+const GRIPS = ['n', 's', 'e', 'w', 'nw', 'ne', 'sw', 'se'] as const
+/** 钳制:不许拖出视口、不许小到看不见内容。resize 与 drag 共用同一道闸,也用在读 localStorage 时
+ *  ——上次存的是 1600 宽,这次换了台小屏笔记本,不钳一下面板就有一半在视口外。 */
+const clampBox = (b: Box): Box => {
+  const de = document.documentElement
+  const w = Math.max(MIN_W, Math.min(b.w, de.clientWidth))
+  const h = Math.max(MIN_H, Math.min(b.h, de.clientHeight))
+  return {
+    w, h,
+    x: Math.max(0, Math.min(b.x, de.clientWidth - w)),
+    y: Math.max(0, Math.min(b.y, de.clientHeight - h)),
+  }
+}
 // 挂件是全站**唯一**的对话入口(2026-08-04 傍晚 /start 内联框已撤)→ 轻提示出到用户真的点开为止,
 // 但最多 3 次:再多就是牛皮癣。点开过一次就永久不再出。
 const HINT_MAX = 3
@@ -108,16 +135,33 @@ export function ChatLauncher() {
   const [force, setForce] = useState(false)          // 看门狗判定「开了却量不到高度」→ 内联 display 硬顶上去
   const [max, setMax] = useState(false)              // 桌面最大化(手机 ≤640 恒为全屏,这个钮那边不出现)
   const [clear, setClear] = useState(BASE)           // 离视口底的实测距离(躲吸底动作条)
+  const [box, setBox] = useState<Box | null>(null)   // 桌面自定义位置/尺寸;null = 还是右下角锚定的默认档
+  const [wide, setWide] = useState(false)            // 是不是桌面档(>640)。拖拽/缩放/box 全挂在它下面
+  const [resetN, setResetN] = useState(0)            // 变一次 = 换掉 ChatBox 的 key = 会话清空回空态
+  const [askReset, setAskReset] = useState(false)    // 就地二次确认(误清一整轮问答不可逆)
   const panel = useRef<HTMLDivElement | null>(null)
   const dock = useRef<HTMLDivElement | null>(null)
+  const lastBox = useRef<Box | null>(null)           // 拖拽过程中的最新值(pointerup 时落盘,不靠 setState 回调)
 
   const show = useCallback(() => {
     setMounted(true); setOpen(true); setHint(false); track('widget-open')
     try { localStorage.setItem(HINT_KEY, String(HINT_MAX)) } catch { /* ignore */ }  // 点开过=不再提示
   }, [])
   const hide = useCallback(() => { setOpen(false); track('widget-close') }, [])
-  // 读在 effect 里,不在 useState 初值里:localStorage 在服务端不存在,当初值会 hydration 不一致
-  useEffect(() => { try { setMax(localStorage.getItem(MAX_KEY) === '1') } catch { /* 隐私模式:默认小窗 */ } }, [])
+  // 读在 effect 里,不在 useState 初值里:localStorage 在服务端不存在,当初值会 hydration 不一致。
+  // 同一处也判桌面档并跟着窗口变化走(从桌面拖窄到手机档时,box 要立刻停止生效)。
+  useEffect(() => {
+    try { setMax(localStorage.getItem(MAX_KEY) === '1') } catch { /* 隐私模式:默认小窗 */ }
+    try {
+      const raw = localStorage.getItem(BOX_KEY)
+      if (raw) { const b = clampBox(JSON.parse(raw) as Box); lastBox.current = b; setBox(b) }
+    } catch { /* 存的东西坏了/隐私模式:退回默认档,不报错 */ }
+    const mq = window.matchMedia('(min-width:641px)')
+    const sync = () => setWide(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
   const toggleMax = useCallback(() => {
     setMax((v) => {
       const n = !v
@@ -126,6 +170,68 @@ export function ChatLauncher() {
       return n
     })
   }, [])
+  // 重置 = 换 ChatBox 的 key 让它整个重挂 —— 对话本就不落库、刷新即丢,所以「清空」就是清 state,
+  // 而 remount 是 React 里最省的清 state 手段(不新增 prop、ChatBox 一行都不用改)。
+  const doReset = useCallback(() => {
+    setResetN((n) => n + 1); setAskReset(false); track('widget-reset')
+  }, [])
+  // 面板一收就撤掉待确认态:再打开时看见一个亮着「确认清空」的钮是纯粹的惊吓
+  useEffect(() => { if (!open) setAskReset(false) }, [open])
+  // 问了 4 秒没人确认 = 误点,自己撤回(不留一个随时会清掉对话的活钮在头上)
+  useEffect(() => {
+    if (!askReset) return
+    const id = setTimeout(() => setAskReset(false), 4000)
+    return () => clearTimeout(id)
+  }, [askReset])
+
+  /**
+   * 拖动(dir='move',抓标题栏)与四向缩放(dir 含 n/s/e/w,抓 8 个透明把手)共用这一个入口。
+   * 监听挂 window 不挂元素:指针拖出面板外(缩放时必然会)也要跟得住。
+   * 每帧都过 clampBox —— 钳制发生在**过程中**不是松手时,否则拖出视口再回弹会闪。
+   */
+  const startGrab = useCallback((e: React.PointerEvent, dir: string) => {
+    if (!panel.current || e.button !== 0) return
+    e.preventDefault()
+    const r = panel.current.getBoundingClientRect()
+    const s = { px: e.clientX, py: e.clientY, x: r.left, y: r.top, w: r.width, h: r.height }
+    const onMove = (ev: PointerEvent) => {
+      const dx = ev.clientX - s.px
+      const dy = ev.clientY - s.py
+      let { x, y, w, h } = s
+      if (dir === 'move') { x += dx; y += dy }
+      else {
+        if (dir.includes('e')) w = s.w + dx
+        if (dir.includes('s')) h = s.h + dy
+        // 拉左/上边时对边要钉住:改宽的同时把左沿跟着挪。撞到最小值后左沿就不许再走,
+        // 否则面板会被「推着」横向漂移(缩到底还在动 = 手感最糟的那种 resize)
+        if (dir.includes('w')) { w = s.w - dx; x = w < MIN_W ? s.x + s.w - MIN_W : s.x + dx }
+        if (dir.includes('n')) { h = s.h - dy; y = h < MIN_H ? s.y + s.h - MIN_H : s.y + dy }
+      }
+      const nb = clampBox({ x, y, w, h })
+      lastBox.current = nb
+      setBox(nb)
+    }
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('pointercancel', onUp)
+      document.body.style.userSelect = ''
+      try { if (lastBox.current) localStorage.setItem(BOX_KEY, JSON.stringify(lastBox.current)) } catch { /* 隐私模式:这次生效,下次不记得 */ }
+      track(dir === 'move' ? 'widget-drag' : 'widget-resize')
+    }
+    document.body.style.userSelect = 'none'   // 拖标题栏时别把面板里的文字一路选中
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+    window.addEventListener('pointercancel', onUp)
+  }, [])
+
+  // 窗口变小(换屏 / 分屏)时把记住的框拉回视口内 —— 不然面板可能整个在屏幕外,等于又「呼不出来」
+  useEffect(() => {
+    if (!wide) return
+    const onResize = () => setBox((b) => (b ? clampBox(b) : b))
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [wide])
 
   /**
    * popover 只是**增强**(顶层渲染、绕开父级 stacking context),**不是可见性的依据** ——
@@ -236,6 +342,14 @@ export function ChatLauncher() {
   }, [path, open])
 
   const bottom = { '--clB': clear + 'px' } as React.CSSProperties
+  // 自定义框只在**桌面 + 非最大化**时写成内联样式。手机档 wide=false → 一个字都不写,
+  // @media 里那条 inset:0/100dvh 原样生效(内联样式赢 @media,所以这道闸不能只靠 CSS)。
+  const boxed = wide && box && !max
+  const style: React.CSSProperties = {
+    ...bottom,
+    ...(force ? { display: 'flex' } : null),
+    ...(boxed ? { left: box.x, top: box.y, right: 'auto', bottom: 'auto', width: box.w, height: box.h } : null),
+  }
   return (
     <>
       <style>{CSS}</style>
@@ -252,15 +366,32 @@ export function ChatLauncher() {
           代价:全站每页多挂一个空壳(一个 div + 三行头部,display:none 不参与布局/绘制)——
           换来的是 ref 从第一次 commit 就存在,showPopover 永远撞不上「元素还没连接」。
           ChatBox 的懒加载优势没丢:**壳先在,内容仍等 mounted**(第一次点开才下载那份 JS)。 */}
-      <div ref={panel} popover="manual" role="dialog" aria-label={t('chat.title')}
-        style={force ? { ...bottom, display: 'flex' } : bottom}
+      <div ref={panel} popover="manual" role="dialog" aria-label={t('chat.title')} style={style}
         className={'clPanel' + (open ? ' clOpen' : '') + (max ? ' clMaxed' : '')}>
         {mounted && (
           <>
-          <div className="clHead">
+          {/* 缩放把手:8 个透明块贴着内边缘(不敢用负偏移 —— .clPanel 是 overflow:hidden,会被裁掉)。
+              最大化时不出:那是「贴满视口」的一档,拉它没有意义。手机侧 @media 里整批清掉 */}
+          {wide && !max && GRIPS.map((d) => (
+            <div key={d} className="clGrip" data-d={d} onPointerDown={(e) => startGrab(e, d)} />
+          ))}
+          {/* 标题栏兼拖拽把手 —— 但按在钮上时不拖(不然点「收起」会先被当成一次 0 像素的拖动) */}
+          <div className="clHead"
+            onPointerDown={(e) => {
+              if (!wide || max) return
+              if ((e.target as HTMLElement).closest('button')) return
+              startGrab(e, 'move')
+            }}>
             <span className="clTitle">{t('chat.title')}</span>
-            {/* 桌面最大化:380×600 里读一段长答复很憋(Frank 实测)。手机侧 CSS 里整个藏掉 —— 那边已经全屏。
-                拖拽改尺寸不做:得自己搓 pointer 事件 + 边界 + 记忆,成本远大于「大/小」两档带来的收益 */}
+            {/* 重置:清掉本轮对话回空态(三条示例重新出现)。**就地二次确认**不上弹框 ——
+                误点清掉一整轮问答不可逆,但为这个弹个模态框又太重(还得管焦点陷阱)。
+                两态都用文字不用图标:图标→文字会让头部宽度跳一下,380 面板上很显眼 */}
+            <button className={askReset ? 'clReset clAsk' : 'clReset'}
+              onClick={() => (askReset ? doReset() : setAskReset(true))}
+              aria-label={t(askReset ? 'cw.resetOk' : 'cw.reset')} title={t(askReset ? 'cw.resetOk' : 'cw.reset')}>
+              {t(askReset ? 'cw.resetOk' : 'cw.reset')}
+            </button>
+            {/* 桌面最大化:380×600 里读一段长答复很憋(Frank 实测)。手机侧 CSS 里整个藏掉 —— 那边已经全屏 */}
             <button className="clMax" onClick={toggleMax}
               aria-label={t(max ? 'cw.restore' : 'cw.max')} title={t(max ? 'cw.restore' : 'cw.max')}>
               {max ? <IconMinimize size={16} /> : <IconMaximize size={16} />}
@@ -279,7 +410,8 @@ export function ChatLauncher() {
                 <button className="clRetry" onClick={() => location.reload()}>{t('chat.retry')}</button>
               </div>
             }>
-              <ChatBox compact autoFocus={open} />
+              {/* key 一变 ChatBox 整个重挂 = 会话清空回空态。见 doReset 注释 */}
+              <ChatBox key={resetN} compact autoFocus={open} />
             </PanelGuard>
           </div>
           </>
@@ -319,7 +451,25 @@ const CSS = `
    [popover]:not(:popover-open){display:none}(作者样式 > UA 样式),所以顶层与否都显示得出来。 */
 .clPanel.clOpen{display:flex}
 .clHead{flex:none;display:flex;align-items:center;gap:8px;padding:11px 8px 11px 14px;
-  border-bottom:1px solid ${UI.hairline}}
+  border-bottom:1px solid ${UI.hairline};position:relative;z-index:1}
+/* 缩放把手:透明、贴内边缘。8px 是「够得着又不误触」的档(macOS 窗口边框同量级)。
+   touch-action:none —— 不写的话触屏板/触屏上的拖动会被当成滚动手势吃掉 */
+.clGrip{position:absolute;z-index:2;touch-action:none}
+.clGrip[data-d=n]{top:0;left:10px;right:10px;height:8px;cursor:ns-resize}
+.clGrip[data-d=s]{bottom:0;left:10px;right:10px;height:8px;cursor:ns-resize}
+.clGrip[data-d=w]{left:0;top:10px;bottom:10px;width:8px;cursor:ew-resize}
+.clGrip[data-d=e]{right:0;top:10px;bottom:10px;width:8px;cursor:ew-resize}
+.clGrip[data-d=nw]{top:0;left:0;width:14px;height:14px;cursor:nwse-resize}
+.clGrip[data-d=se]{bottom:0;right:0;width:14px;height:14px;cursor:nwse-resize}
+.clGrip[data-d=ne]{top:0;right:0;width:14px;height:14px;cursor:nesw-resize}
+.clGrip[data-d=sw]{bottom:0;left:0;width:14px;height:14px;cursor:nesw-resize}
+/* 重置:弱化到不抢标题(灰字),按下待确认时才变红 —— 「这一下会清掉东西」得看得出来 */
+.clReset{flex:none;border:none;background:none;font-family:inherit;font-size:12px;line-height:1;
+  color:${UI.text3};border-radius:8px;padding:8px 6px;cursor:pointer;white-space:nowrap}
+.clReset:hover{background:${UI.hairline};color:${UI.text2}}
+.clReset.clAsk{color:${UI.danger};font-weight:600}
+.clReset.clAsk:hover{background:#fef2f2}
+.clPanel:not(.clMaxed) .clHead{cursor:move}   /* 标题栏即拖拽把手;最大化档没得拖 */
 .clTitle{flex:1;min-width:0;font-size:14px;font-weight:700;color:${UI.text};
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .clMin,.clMax{flex:none;width:32px;height:32px;display:flex;align-items:center;justify-content:center;
@@ -351,7 +501,8 @@ const CSS = `
 @media(max-width:640px){
   .clPanel,.clPanel.clMaxed{inset:0;width:100%;height:100dvh;max-height:none;border:none;border-radius:0;
     padding-bottom:env(safe-area-inset-bottom,0px)}
-  .clMax{display:none}           /* 已经是全屏,这个钮在这儿没有意义 */
+  .clMax,.clGrip{display:none}   /* 已经是全屏:放大钮与缩放把手在这儿都没有意义 */
+  .clHead{cursor:default}        /* 全屏没什么可拖的 */
 }
 @media (prefers-reduced-motion:reduce){.clBtn{transition:none}.clLoad i{animation:none;opacity:.6}}
 `

@@ -9,9 +9,10 @@
 // 渲 valueText 原文,**永不折成 0 或「暂无」** —— 折了就是替官方编了个数字。
 import { useState } from 'react'
 
-import { IconCheck, IconClipboard } from '../Icons'
+import { IconCheck, IconClipboard, IconThumbDown, IconThumbUp } from '../Icons'
 import { useLang } from '../LangProvider'
 import { UI } from '../ui/primitives'
+import { track } from '@/lib/track'
 
 // 后端契约(POST /api/chat 200 体)——由 api/chat/route.ts 定,这里只照抄形状,不自行扩展
 export type Fact = {
@@ -83,10 +84,21 @@ export function ChatText({ text, sheet }: { text: string; sheet?: boolean }) {
 
 export function ChatAnswer({ a, busy, onAsk }: { a: Answer; busy: boolean; onAsk: (q: string) => void }) {
   const [, , t] = useLang()
-  // 每条答复只留**一个**操作:复制(2026-08-04 Open WebUI 取样结论——它那排 8-9 个图标里,
-  // 「分叉 / 重生成 / 继续」在我们这儿语义上不成立:对话不落库、答复过五道出口校验不能随手重来)
+  // 答复下方一排小图标(2026-08-05 照 GPT/Claude 形态;原来是一行文字钮)。
+  // 只留三个 —— 复制 + 赞 + 踩。「分叉 / 重生成 / 继续」在我们这儿语义上不成立:
+  // 对话不落库、答复过五道出口校验不能随手重来(2026-08-04 Open WebUI 取样结论)。
   const [copied, setCopied] = useState(false)
   const canCopy = typeof navigator !== 'undefined' && !!navigator.clipboard    // 非安全上下文没有它,那就不出这个钮
+  // 🔴 赞/踩 —— **通用聊天的点赞是训练信号,我们的点踩是数据缺口报警器**:
+  // 每一个踩都是用户在替我们标注「这里答不好」,还是按真实频次排好序的。
+  // 所以问句要显眼到有人愿意点,又轻到不烦人;点过就收问句、图标定选中态,不给人反复点的机会。
+  // 只发 good/bad 两个枚举,**不收自由文本**(那要动隐私页,等看到点踩率再说)。
+  const [vote, setVote] = useState<'' | 'good' | 'bad'>('')
+  const rate = (kind: 'good' | 'bad') => {
+    if (vote) return
+    setVote(kind)
+    track('chat-feedback', { kind })   // 走已有 funnel_events,零新表零 DDL(白名单在 lib/funnel 那边加)
+  }
   // 🔴 出处只列**答复真的用到的**(服务端 citeFacts 回读答复标的;降级成事实清单时服务端会把有出处的全标上)。
   // 旧版全量倾倒 24 条:用户问中介收费,出处里摆着 AB/ON/QC 的岗位数 —— 没一条与那句话有关,读者只会当噪音。
   // 这里**不做兜底全量**:标不上就是没用到,列出来只是把噪音搬回来。
@@ -95,17 +107,29 @@ export function ChatAnswer({ a, busy, onAsk }: { a: Answer; busy: boolean; onAsk
     <div className="cbMsg">
       <ChatText text={a.answer} sheet={a.degraded} />
 
-      {canCopy && (
-        <button className="cbAct" onClick={() => {
-          navigator.clipboard.writeText(a.answer).then(() => {
-            setCopied(true)
-            setTimeout(() => setCopied(false), 1800)
-          }).catch(() => { /* 用户拒了剪贴板权限:不弹错,钮保持原样 */ })
-        }}>
-          {copied ? <IconCheck /> : <IconClipboard />}
-          <span>{t(copied ? 'chat.copied' : 'chat.copy')}</span>
-        </button>
-      )}
+      {/* 操作条:图标 40×40(站规触控靶),文字只进 title/aria-label(三语),不占版面。
+          问句跟在图标后面同一行,375 上放不下就 flex-wrap 折下去 —— 永不横滚 */}
+      <div className="cbActs">
+        {canCopy && (
+          <button className="cbAct" aria-label={t(copied ? 'chat.copied' : 'chat.copy')}
+            title={t(copied ? 'chat.copied' : 'chat.copy')} onClick={() => {
+              navigator.clipboard.writeText(a.answer).then(() => {
+                setCopied(true)
+                setTimeout(() => setCopied(false), 1800)
+              }).catch(() => { /* 用户拒了剪贴板权限:不弹错,钮保持原样 */ })
+            }}>
+            {copied ? <IconCheck size={16} /> : <IconClipboard size={16} />}
+          </button>
+        )}
+        <button className={vote === 'good' ? 'cbAct cbVoted' : 'cbAct'} disabled={!!vote}
+          aria-label={t('chat.fb.good')} title={t('chat.fb.good')} aria-pressed={vote === 'good'}
+          onClick={() => rate('good')}><IconThumbUp size={16} /></button>
+        <button className={vote === 'bad' ? 'cbAct cbVoted' : 'cbAct'} disabled={!!vote}
+          aria-label={t('chat.fb.bad')} title={t('chat.fb.bad')} aria-pressed={vote === 'bad'}
+          onClick={() => rate('bad')}><IconThumbDown size={16} /></button>
+        {/* 点过就收 —— 留着只会被反复点,而且「已经回答过的问题还在问」是最招人烦的一种 UI */}
+        {!vote && <span className="cbAsk">{t('chat.fb.ask')}</span>}
+      </div>
 
       {/* 出处:<details> 原生折叠(零依赖、键盘可达)。默认收起 —— 一上来铺 8 行数字表会把结论压没了,
           但摘要行必须**说清有几条**,不然没人知道下面藏着可点的官方原页 */}
@@ -144,9 +168,8 @@ export function ChatAnswer({ a, busy, onAsk }: { a: Answer; busy: boolean; onAsk
           ))}
         </div>
       ) : null}
-
-      {/* AI 免责一条(与 advisor 同一句,不另写):页脚那条是全站的,这条是「这段话是模型说的」 */}
-      <div className="cbDisc">{t('advisor.disclaimer')}</div>
+      {/* 免责句原来钉在**每条**答复下面 —— 一轮问答铺三条就重复三遍,那是噪音不是合规。
+          2026-08-05 挪到面板底部 composer 边上常驻一条(ChatBox),全局只出现一次。 */}
     </div>
   )
 }
@@ -176,11 +199,21 @@ export const CHAT_ANSWER_CSS = `
   /* 降级清单:同一套段落/项目符号排版,只多一道左细线 ——
      把「这是原始事实,不是组织好的答复」说清楚,不用再加一句解释文案 */
   .cbSheet{border-left:2px solid ${UI.hairline};padding-left:12px}
-  /* 每条答复唯一的操作钮:复制。弱化到不抢正文(灰字 12px),命中区仍有 24px 高 */
-  .cbAct{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:3px 0;
-    background:none;border:none;font-family:inherit;font-size:12px;line-height:1.5;
-    color:${UI.text3};cursor:pointer}
-  .cbAct:hover{color:${UI.text2}}
+  /* 答复下方的操作条(复制 / 赞 / 踩)。图标 16px 但命中区 40×40(站规触控靶):
+     大量留白让三个钮看着轻,手指按着又不飘。**不用负 margin 去抵消那份留白**(GPT 那手):
+     线程是 overflow:auto 的,伸到容器左边以外会被裁掉半个命中区。glyph 因此比正文缩进约 12px,
+     跟项目符号的 14px 悬挂缩进正好同一档,看着是对齐的。
+     flex-wrap:375 上问句放不下就折到第二行,绝不横滚 */
+  .cbActs{display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px;margin-top:2px}
+  .cbAct{width:40px;height:40px;flex:none;display:inline-flex;align-items:center;justify-content:center;
+    background:none;border:none;border-radius:8px;color:${UI.text3};cursor:pointer}
+  .cbAct:hover:not(:disabled){color:${UI.text2};background:${UI.hairline}}
+  .cbAct:disabled{cursor:default}
+  /* 选中态:选的那个亮起来,另一个留着但退到极淡 —— 「我点过了」得一眼看得出来 */
+  .cbAct:disabled:not(.cbVoted){opacity:.35}
+  .cbVoted{color:${UI.primary}}
+  /* 轻问一句,不是长句(站规:UI 文案一行放下、无废话)。跟图标同一条基线,不另起一行占版面 */
+  .cbAsk{font-size:12px;line-height:1.5;color:${UI.text3};margin-left:2px}
   .cbSrc{margin-top:12px;border-top:1px solid ${UI.hairline};padding-top:8px}
   .cbSrc>summary{list-style:none;cursor:pointer;font-size:12px;font-weight:600;color:${UI.text2};display:inline-flex;align-items:center;gap:6px;padding:2px 0}
   .cbSrc>summary::-webkit-details-marker{display:none}
@@ -205,5 +238,4 @@ export const CHAT_ANSWER_CSS = `
   .cbFu{max-width:100%;text-align:left;background:#fff;border:1px solid ${UI.border};border-radius:12px;
     padding:7px 12px;font-size:13px;line-height:1.4;color:${UI.primary};font-family:inherit;cursor:pointer}
   .cbFu:hover{border-color:#bfdbfe;background:#f8fafc}
-  .cbDisc{font-size:11.5px;color:${UI.text3};margin-top:12px;line-height:1.5;max-width:100%}
 `

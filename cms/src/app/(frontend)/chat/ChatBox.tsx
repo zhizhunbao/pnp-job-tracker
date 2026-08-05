@@ -242,9 +242,13 @@ export function ChatBox({ compact = false, autoFocus = false }: { compact?: bool
         .cbQ{align-self:flex-end;max-width:min(88%,560px);background:#eff6ff;color:${UI.primaryDeep};
           border-radius:12px 12px 4px 12px;padding:9px 12px;font-size:15px;line-height:1.625;
           white-space:pre-wrap;overflow-wrap:anywhere}
-        /* 空态示例:整宽一条一行(站规),点了直接发 —— 让人看见「这里该说什么」比任何说明文案都有用 */
+        /* 空态示例:整宽一条一行(站规),点了直接发 —— 让人看见「这里该说什么」比任何说明文案都有用。
+           **不再有 max-width:640px**(2026-08-05 实测修):最大化态下它把示例框卡在 640,
+           而同轴的答复/composer 是 860 —— 右边缘差 220px,一眼就是「没对齐」。
+           读列宽由 .cbEmpty 的 --cbW 统一管,这里只负责别撑破它。box-sizing 同理:
+           带 padding+border 的块必须算进总宽,不然又是一套自己的宽度。 */
         .cbTry{font-size:12px;color:${UI.text3}}
-        .cbEx{display:block;width:100%;max-width:640px;text-align:left;background:${UI.bg};border:1px solid ${UI.border};
+        .cbEx{display:block;width:100%;box-sizing:border-box;text-align:left;background:${UI.bg};border:1px solid ${UI.border};
           border-radius:10px;padding:10px 12px;font-size:13.5px;line-height:1.45;color:${UI.text};
           font-family:inherit;cursor:pointer;margin-top:6px}
         .cbEx:hover{border-color:#bfdbfe;background:#f8fafc}
@@ -280,7 +284,12 @@ export function ChatBox({ compact = false, autoFocus = false }: { compact?: bool
           vertical-align:-2px;animation:cbBlink .9s steps(1,end) infinite}
         @media (prefers-reduced-motion:reduce){.cbDots i,.cbCaret{animation:none;opacity:.6}}
         /* composer 钉底:整块一个框,textarea 无边框藏在里面,发送钮在框内右下(不再孤零零占一行) */
-        .cbComposer{border:1px solid ${UI.border};border-radius:12px;background:${UI.card};padding:8px 10px}
+        /* 🔴 box-sizing:border-box 不是洁癖(2026-08-05 实测修)。缺了它,width:100% + max-width:860
+           算的是**内容盒**,再加 10+10 padding 与 1+1 border → 外盒 882,而同轴的答复块是 860:
+           最大化态下输入框比正文两边各宽 11px(Frank 看到的「宽度不一致」就是这个)。
+           更要命的是窄档:380 面板里 composer 外盒 376 > 可用 354,右边缘超出面板 9px 被 .clBody 裁掉;
+           375 手机上超出 10px —— **发送钮被切掉一角**,而且因为父级 overflow:hidden 连横滚都看不见。 */
+        .cbComposer{box-sizing:border-box;border:1px solid ${UI.border};border-radius:12px;background:${UI.card};padding:8px 10px}
         .cbComposer:focus-within{border-color:#93c5fd;box-shadow:0 0 0 3px rgba(37,99,235,.10)}
         /* 16px:小于 16 时 iOS Safari 聚焦会自动放大页面(手机优先站规,这是全站主输入) */
         .cbIn{display:block;width:100%;box-sizing:border-box;border:none;outline:none;resize:none;
@@ -292,6 +301,10 @@ export function ChatBox({ compact = false, autoFocus = false }: { compact?: bool
         /* 手机主判据是 coarse pointer(上面的 touch,整条不渲染);这条 @media 只兜首帧那一瞬
            和「窄视口但非触屏」。.cbNum 不藏:快撞上限了手机上更要看得见 */
         @media (max-width:560px){.cbHint{display:none}}
+        /* 免责小字:composer 正下方,弱到不抢输入框,但一直在视野里(答复滚上去了它还在)。
+           **不写 max-width** —— 它挂着 .cbCol,读列宽归 --cbW 管;这里再写一条同特异性的
+           max-width:100% 会因为在后面而赢掉,把它拉成满宽(实测 1074 vs 该有的 860)。 */
+        .cbDisc{font-size:11.5px;line-height:1.5;color:${UI.text3};margin-top:6px}
         ${CHAT_ANSWER_CSS}
       `}</style>
 
@@ -301,15 +314,18 @@ export function ChatBox({ compact = false, autoFocus = false }: { compact?: bool
             const el = e.currentTarget
             stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < 48
           }}>
-          {empty ? (
-            <div className="cbEmpty">
-              <div className="cbTry">{t('chat.try')}</div>
-              {EXAMPLES.map((k) => (
-                <button key={k} className="cbEx" disabled={busy}
-                  onClick={() => { track('chat-example', { kind: k.slice(-3) }); void ask(t(k)) }}>{t(k)}</button>
-              ))}
-            </div>
-          ) : null}
+          {/* 🔴 示例块**不随第一轮卸载**(2026-08-05 Frank:「用户一点问题,瞬间就跳到一个新对话,
+              上面的问题一下就闪没了,这个需要保持吧」)。它是线程**最上方的一条内容**,
+              随线程一起滚上去 —— 第二轮之后自然滚出视野,但回滚上去还找得到,而且从头到尾只有这一份
+              (不是每轮之间重复出现,也不是常驻悬浮占掉答复的地方)。
+              点完仍可点:用户下一步很可能就是想问第二条示例 —— 那正是它该留下的理由。 */}
+          <div className="cbEmpty">
+            <div className="cbTry">{t('chat.try')}</div>
+            {EXAMPLES.map((k) => (
+              <button key={k} className="cbEx" disabled={busy}
+                onClick={() => { track('chat-example', { kind: k.slice(-3) }); void ask(t(k)) }}>{t(k)}</button>
+            ))}
+          </div>
 
           {turns.map((turn, i) => {
             // live = 这一轮还在跑(整个组件同时只可能有一轮在跑:ask 头上有 busy 闸)。
@@ -388,6 +404,11 @@ export function ChatBox({ compact = false, autoFocus = false }: { compact?: bool
             <Button lg disabled={busy || !input.trim()} onClick={() => void ask(input)}>{t('chat.send')}</Button>
           </div>
         </div>
+
+        {/* 免责一条,**全局只出现一次**(2026-08-05 从每条答复下面挪来:一轮铺三条就重复三遍,
+            那是噪音不是合规)。钉在 composer 边上常驻 —— 说的是「这块框里的话是模型说的」,
+            跟页脚那条全站免责不是一回事,所以不能只留页脚 */}
+        <div className="cbDisc cbCol">{t('advisor.disclaimer')}</div>
       </div>
     </div>
   )
