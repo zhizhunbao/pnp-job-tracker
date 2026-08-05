@@ -53,6 +53,19 @@ const numOf = (v: unknown): number | null => {
   const n = Number(v)
   return Number.isFinite(n) ? n : null
 }
+/**
+ * 两个 ISO 日之间的**整月数**(向下取整)。只用库里的日期算,不读系统时钟 ——
+ * 「多久没开过」的计时终点是**本站已知的最新一轮**,不是「今天」:今天到最新一轮之间可能又开过
+ * 一轮而本站还没抓,拿今天当终点就是替官方宣布「这期间没开过」。同理不折成小数(21.4 个月是
+ * 我们没有的精度)。日期格式不对返回 null —— 宁可不说,不猜。
+ */
+const monthsBetween = (from: string, to: string): number | null => {
+  const a = /^(\d{4})-(\d{2})-(\d{2})$/.exec(from || '')
+  const b = /^(\d{4})-(\d{2})-(\d{2})$/.exec(to || '')
+  if (!a || !b) return null
+  const m = (Number(b[1]) - Number(a[1])) * 12 + (Number(b[2]) - Number(a[2]))
+  return Number(b[3]) < Number(a[3]) ? m - 1 : m
+}
 
 // ── 政策事实表(人工核对,非数据推断;惯例同 match.ts 的 MAIN_LIST_COVERAGE)─────────
 // 核对依据:docs/design/未结问题清单-20260803.md B4-3 / B4-5(2026-08-03 逐省爬站核过)。
@@ -340,34 +353,145 @@ export type DrawRow = {
   invitations: number | null
   evidence: Evidence
 }
+/** 本站收录的抽选窗口。**「多久没开过」的分母** —— 没有它,「0 轮」就分不清是停了还是我们没抓。 */
+export type DrawWindow = {
+  from: string           // 本站收录的最早一轮(窗口更早的轮次不在库里)
+  to: string             // 最近一轮 —— 计时终点用它,不是「今天」(见 monthsBetween)
+  rounds: number         // 窗口内总轮数
+}
+
+/**
+ * 一类轮次的小结。存在的理由只有一个:**空数组与「这类轮次停了」是两件事**。
+ * 案例 C02 §4-4 的原型:「联邦常规轮次 480~530」——常规(general)轮次在本站 56 轮的窗口里
+ * 一次都没出现,而 CEC 12 轮全在 507–518。返回空数组会让上层以为「没数据」,于是它照抄了中介的数。
+ */
+export type DrawStreamStat = {
+  /** 分类键 = **库里已有的字段**(FED 是 label:cec/pnp/french/trade…;省级退回官方轮次名)。本层不给轮次归类,认不出就原样返回追问的那个词 */
+  key: string
+  stream: string         // 官方轮次名原文(该类最近一轮的写法)
+  scale: string          // 分制名(FED=CRS,与各省 SIRS/WEOI/MPNP EOI 互不相通)
+  rounds: number         // 窗口内该类的轮数;0 = 一轮都没有
+  lastDrawDate: string   // 窗口内该类最近一轮;'' = 窗口内 0 轮
+  /**
+   * 「隔了多久」的计时起点:有轮次 = lastDrawDate;0 轮 = **窗口起点**(本站只知道到这天为止)。
+   * 配 sinceIsWindowStart 一起读 —— 后者为 true 时上层只许说「**至少** N 个月没开过」。
+   */
+  since: string
+  sinceIsWindowStart: boolean
+  monthsSince: number | null   // since → window.to 的整月数(不含今天,见 monthsBetween)
+  scoreLow: number | null      // 窗口内该类的分数线区间(min/max,不是平均、不排名)
+  scoreHigh: number | null
+  availability: Availability   // ok=窗口内有轮次;not-collected=窗口内 0 轮,上一轮在窗口之前,本站没有它的日期
+  note: string
+  evidence: Evidence
+}
+
 export type DrawsResult = {
   province: string
   availability: Availability
   rows: DrawRow[]
   note?: string
+  scale?: string             // 该省/FED 的分制(全表同一个分制时给出;摆分数必须带它)
+  window?: DrawWindow        // 有记录时给出
+  streams?: DrawStreamStat[] // 不给 stream 参数=库里每一类各一行;给了=只回追问的那一类(含 0 轮的那一行)
 }
 
-/** 「多久抽一轮 / 分数线」。无记录 ≠ 0 轮:SK 是制度上没有这一步,NS/NB/PE 是本站未收录。 */
-export async function lookupDraws(pool: any, args: { prov: string; limit?: number }): Promise<DrawsResult> {
+/**
+ * 「多久抽一轮 / 分数线」。无记录 ≠ 0 轮:SK 是制度上没有这一步,NS/NB/PE 是本站未收录。
+ *
+ * `prov='FED'` = 联邦 Express Entry 轮次(同一张 pnp_draws,province='FED',分制 **CRS**)。
+ * `stream` 按**库里已有的** label / 官方轮次名过滤('cec' / 'Canadian Experience' 都能命中);
+ * 追问的那一类窗口内 0 轮时,**不返回空数组了事** —— streams 里给一行「至少 N 个月没开过」
+ * (availability=not-collected:更早的轮次不在本站窗口内,上一轮是哪天本站没有,不许编)。
+ */
+export async function lookupDraws(pool: any, args: { prov: string; limit?: number; stream?: string }): Promise<DrawsResult> {
   const province = upper(args.prov)
   const limit = Math.min(Math.max(args.limit ?? 12, 1), 60)
+  const q = (args.stream || '').trim().toLowerCase()
+  // 不再在 SQL 里 LIMIT:窗口(最早一轮 / 总轮数)要按**全部**记录算,limit 只截最终 rows。
+  // pnp_draws 全表百行量级,一次取完比多跑一条 count 查询便宜。
   const { rows } = await pool.query(
     `SELECT province, draw_date, stream, score, scale, invitations, url, fetched, label
      FROM pnp_draws WHERE province = $1 AND COALESCE(draw_date,'') <> ''
-     ORDER BY draw_date DESC LIMIT ${limit}`, [province],
+     ORDER BY draw_date DESC`, [province],
   ).catch(() => ({ rows: [] }))
-  const out = rows
-    .filter((r: any) => !!r.url)                          // 无出处的抽选行不返回(铁律 ①)
-    .map((r: any): DrawRow => ({
-      province: r.province ?? province,
-      drawDate: String(r.draw_date ?? '').slice(0, 10),
-      stream: r.stream ?? '',
-      score: numOf(r.score),
-      scale: r.scale ?? '',
-      invitations: numOf(r.invitations),
-      evidence: { url: r.url, fetched: r.fetched ?? '', label: r.label ?? '' },
-    }))
-  if (out.length) return { province, availability: 'ok', rows: out }
+  const kept = (rows ?? []).filter((r: any) => !!r.url)   // 无出处的抽选行不返回(铁律 ①)
+  const evOf = (r: any): Evidence => ({ url: r.url, fetched: r.fetched ?? '', label: r.label ?? '' })
+  const dateOf = (r: any) => String(r.draw_date ?? '').slice(0, 10)
+  const rowOf = (r: any): DrawRow => ({
+    province: r.province ?? province,
+    drawDate: dateOf(r),
+    stream: r.stream ?? '',
+    score: numOf(r.score),
+    scale: r.scale ?? '',
+    invitations: numOf(r.invitations),
+    evidence: evOf(r),
+  })
+  const all: DrawRow[] = kept.map(rowOf)
+  const win: DrawWindow | null = all.length
+    ? { from: all[all.length - 1].drawDate, to: all[0].drawDate, rounds: all.length }
+    : null
+  const scales = Array.from(new Set(all.map((r) => r.scale).filter(Boolean)))
+  const scale = scales.length === 1 ? scales[0] : ''
+  // 分类键取库里已有的 label(FED 由 ETL 的 CAT_MAP 归好),省级没有 label 就退回官方轮次名 —— 本层不新造分类
+  const keyOf = (r: any) => String(r.label || r.stream || '').trim()
+  const hit = (r: any) => !q || keyOf(r).toLowerCase() === q || String(r.stream ?? '').toLowerCase().includes(q)
+
+  const stat = (key: string, rs: any[], w: DrawWindow): DrawStreamStat => {
+    const scores = rs.map((r) => numOf(r.score)).filter((n): n is number => n != null)
+    const last = rs[0]                                     // kept 已按 draw_date DESC
+    const lastDate = dateOf(last)
+    const m = monthsBetween(lastDate, w.to)
+    return {
+      key, stream: last.stream ?? '', scale: last.scale ?? '', rounds: rs.length,
+      lastDrawDate: lastDate, since: lastDate, sinceIsWindowStart: false, monthsSince: m,
+      scoreLow: scores.length ? Math.min(...scores) : null,
+      scoreHigh: scores.length ? Math.max(...scores) : null,
+      availability: 'ok',
+      note: `本站收录这类 ${rs.length} 轮,最近一轮 ${lastDate}${m == null ? '' : `(距本站已知的最新一轮 ${w.to} ${m} 个月)`}`,
+      evidence: evOf(last),
+    }
+  }
+  /** 窗口内 0 轮:摆「至少多久没开过」+ 说清上一轮的日期本站没有(不是「没有这类轮次」) */
+  const silent = (key: string, w: DrawWindow): DrawStreamStat => {
+    const m = monthsBetween(w.from, w.to)
+    return {
+      key, stream: '', scale, rounds: 0,
+      lastDrawDate: '', since: w.from, sinceIsWindowStart: true, monthsSince: m,
+      scoreLow: null, scoreHigh: null,
+      availability: 'not-collected',
+      note: `本站收录的 ${province} 抽选窗口(${w.from} 起 ${w.rounds} 轮)里没有一轮匹配「${key}」——`
+        + ` 按这份记录**至少** ${m ?? '?'} 个月没开过这类轮次;`
+        + `更早的轮次不在本站窗口内,上一轮是哪天、多少分,本站没有(不许拿别处的数字填)`,
+      // 出处 = 该省抽选记录的官方页:「这一类没出现」正是在这一页上看出来的
+      evidence: { url: all[0].evidence.url, fetched: all[0].evidence.fetched },
+    }
+  }
+
+  let streams: DrawStreamStat[] | undefined
+  if (win) {
+    const groups = new Map<string, any[]>()
+    for (const r of kept) {
+      const k = keyOf(r)
+      if (!groups.has(k)) groups.set(k, [])
+      groups.get(k)!.push(r)
+    }
+    const matched = [...groups].filter(([, rs]) => rs.some(hit))
+    streams = matched.length ? matched.map(([k, rs]) => stat(k, rs, win)) : [silent((args.stream || '').trim(), win)]
+  }
+
+  // 过滤走**原始行**(分类键 label 只在原始行上,DrawRow 里没有它 —— 拿 DrawRow 去筛 'cec' 会全军覆没)
+  const out = kept.filter(hit).map(rowOf).slice(0, limit)
+  if (out.length) {
+    return {
+      province, availability: 'ok', rows: out, ...(scale ? { scale } : {}), ...(win ? { window: win } : {}), streams,
+      ...(province === 'FED'
+        ? { note: '联邦 Express Entry 轮次,分制是 CRS —— 与各省的 SIRS/WEOI/MPNP EOI 互不相通,分数不能互换' }
+        : {}),
+    }
+  }
+  // 有记录、只是没有匹配这一类:是「这类停了」,**不是**「本站没有这个省的数据」——两句话在用户那里意思相反
+  if (win && streams) return { province, availability: 'not-collected', rows: [], note: streams[0].note, ...(scale ? { scale } : {}), window: win, streams }
   const policy = DRAWS_POLICY[province]
   return {
     province,
@@ -507,7 +631,111 @@ export async function lookupEE(pool: any, args: { noc: string }): Promise<EeResu
   }
 }
 
-// ── ⑦ checkClaims:外部主张对账三分法 ────────────────────────────────────────
+// ── ⑦ lookupPermit:联邦工签规则(pnp_requirements 的 FED 行)────────────────────
+
+export type PermitRule = {
+  program: string        // PGWP / PR-fees …(库里的 program 字段,原样带出)
+  stream: string         // 官方分档:masters / short / long / degree / college;'' = 不分档的通则
+  factor: string         // pgwpLength / pgwpCombine / pgwpOnce / pgwpWindow / pgwpMinProgram / pgwpLanguage
+  op: string             // >= / <= / = / rule('rule' = 是条规则不是道门槛,别拿 value 去比大小)
+  /** 🔴 可空同 OpsMetric:'rule' 行与「跟课程一样长」这类没有绝对数的行 value 恒 null,**不许 ?? 0** */
+  value: number | null
+  valueText: string      // 官方原句(quote-anchored:ETL 每轮验证它仍在页面上)——引用一律用这句
+  unit: string           // months / days / CLB / lifetime / ''
+  basis: string          // 口径速记(permit=36;minProgramMonths=24 …)。说这一行之前先看它,口径不同话就是假的
+  label: string
+  evidence: Evidence
+}
+
+/**
+ * 🔴 **官方没写的那一跳**。官方 A 成立、B 成立,不等于 A→B 这条桥官方也认。
+ * 这类断层必须当成一条**独立事实**返回,而不是留给上层自己想起来 —— 案例 C02 §4-2 的原型:
+ * 「2 年 + 1 年合并 = 满 2 年 = 3 年 PGWP」,整条时间线的缓冲压在一个官方从没写过的推论上。
+ */
+export type PermitGap = {
+  kind: 'not-written'    // 官方原文没写这一跳。**不是「不允许」也不是「允许」** —— 只有 IRCC 能填这个空
+  between: string[]      // 断层两端各自的官方事实(factor 或 factor|stream)
+  claim: string          // 民间常见的那条推论(原样写出来,好让上层点名说「这一条没有官方依据」)
+  note: string
+  evidence: Evidence[]   // 两端各自的出处:两条都在,**中间没有桥**
+}
+
+export type PermitResult = {
+  program: string
+  availability: Availability
+  rules: PermitRule[]
+  gaps: PermitGap[]      // 空数组 = 这个 program 本站没登记断层,**不代表官方写全了**
+  note: string
+}
+
+/**
+ * 断层表(人工核对,惯例同 DRAWS_POLICY / OPS_POLICY:政策事实不靠行数推断)。
+ * PGWP 这条的出处是 data/raw/ircc/pgwp_rules.json 顶部的 note:
+ *   「合并条款原文未写明合并后是否触发『≥2年→3年』档,引擎不得替官方补这一跳。」
+ * 两端原文都在库里:pgwpCombine「combines the length of each program」/ pgwpLength(long)
+ * 「If **your program** was 2 years or more」(单数,说的是一个课程)。官方**没有一句**把合并后的
+ * 总长接到 3 年档 —— 所以本层只把两条摆出来,绝不相加。
+ */
+const PERMIT_GAPS: Record<string, { between: string[]; claim: string; note: string }[]> = {
+  PGWP: [{
+    between: ['pgwpCombine', 'pgwpLength|long'],
+    claim: '两个课程(如 2 年 + 1 年)可以合并,合并后满 2 年,所以能拿 3 年 PGWP',
+    note: '官方原文只写了两件事:①「多个课程的长度**可以合并**」;②「**your program**(单数)满 2 年 → 3 年」。'
+      + '**没有一句把合并后的总长接到 3 年档** —— 这一跳官方没写,本站不替它补。'
+      + '要按 3 年排时间线,先向 IRCC 正式确认;两条原文见 rules 里 pgwpCombine 与 pgwpLength(long)那两行',
+  }],
+}
+
+/**
+ * 「我的工签能有多久 / 有哪些硬条件」= SELECT pnp_requirements WHERE province='FED'。
+ * PGWP 是**联邦**规则,与省无关(所以不收 prov 参数);九条规则本来就在库里,只是前六个工具都读不到。
+ * 本层照旧**不判定**:不问用户读了几年、不算他能拿几年 —— 只摆官方分档 + 原句 + 出处,
+ * 外加官方**没写**的那一跳(gaps)。按 program / factor 过滤,不加其他参数。
+ */
+export async function lookupPermit(pool: any, args: { program?: string; factor?: string } = {}): Promise<PermitResult> {
+  const program = (args.program || 'PGWP').trim()
+  const factor = (args.factor || '').trim()
+  const { rows } = await pool.query(
+    `SELECT program, stream, factor, op, value, value_text, unit, basis, label, section, url, page_url, fetched, effective
+     FROM pnp_requirements WHERE province = 'FED' AND program = $1 ORDER BY seq`, [program],
+  ).catch(() => ({ rows: [] }))
+  const all: PermitRule[] = (rows ?? [])
+    .filter((r: any) => !!(r.url || r.page_url))          // 无出处的规则不返回(铁律 ①)
+    .map((r: any): PermitRule => ({
+      program: r.program ?? program, stream: r.stream ?? '', factor: r.factor ?? '', op: r.op ?? '',
+      value: r.value == null ? null : numOf(r.value),     // 🔴 null 原样带出,永远不 `?? 0`
+      valueText: r.value_text ?? '', unit: r.unit ?? '', basis: r.basis ?? '', label: r.label ?? '',
+      evidence: {
+        url: r.url || r.page_url, fetched: r.fetched ?? '', label: r.value_text ?? '',
+        ...(r.section ? { section: r.section } : {}), ...(r.effective ? { effective: r.effective } : {}),
+      },
+    }))
+  // 断层按**全量**行认领(不受 factor 过滤影响):只查 pgwpLength 的人同样得看见「合并那一跳官方没写」
+  const idOf = (r: PermitRule) => (r.stream ? `${r.factor}|${r.stream}` : r.factor)
+  const gaps: PermitGap[] = (PERMIT_GAPS[program] ?? [])
+    .map((g) => ({ ...g, ends: g.between.map((id) => all.find((r) => idOf(r) === id || r.factor === id)) }))
+    .filter((g) => g.ends.every(Boolean))                 // 两端都在库里才敢说「中间没有桥」
+    .map((g): PermitGap => ({
+      kind: 'not-written', between: g.between, claim: g.claim, note: g.note,
+      evidence: g.ends.map((r) => r!.evidence),
+    }))
+  const rules = factor ? all.filter((r) => r.factor === factor) : all
+  if (!rules.length) {
+    return {
+      program, availability: 'not-collected', rules: [], gaps,
+      note: factor
+        ? `本站未收录 ${program} 的 ${factor} 条款 —— 不等于官方没有这一条`
+        : `本站未收录 ${program} 的官方条款 —— 不等于官方没有这个项目`,
+    }
+  }
+  return {
+    program, availability: 'ok', rules, gaps,
+    note: `${program} 是联邦规则(与省提名无关),以上每条都挂官方原句;`
+      + `官方没写的接口另列在 gaps 里 —— 那些地方**本站不推**,只能去 IRCC 确认`,
+  }
+}
+
+// ── ⑧ checkClaims:外部主张对账三分法 ────────────────────────────────────────
 
 /**
  * 主张能落到哪张官方表上。前六个各对应一个查询工具;`private-promise` 是**第七个桶,它不查任何表** ——

@@ -12,7 +12,7 @@ import pg from 'pg'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import {
-  checkClaims, lookupCoverage, lookupDraws, lookupEE, lookupJobs, lookupOps, lookupThresholds,
+  checkClaims, lookupCoverage, lookupDraws, lookupEE, lookupJobs, lookupOps, lookupPermit, lookupThresholds,
   PNP_PROVINCES,
 } from '@/lib/chatTools'
 
@@ -186,6 +186,84 @@ d('对话工具层(生产库只读)', () => {
       assertEvidence(r)
     })
 
+    // ── C02 §4-4:「联邦常规轮次 480~530」的证伪(2026-08-04 起 lookupDraws 收 FED)──────
+    // FED 56 行一直躺在同一张 pnp_draws 里,只是没人查得到。这三条守住案例里那两句话:
+    //   ① CEC 12 轮的分数线区间(507–518,下限比中介说的 480 高 27 分);
+    //   ② 常规(general)轮次**不是空数组,是停了** —— 空数组会让上层以为「没数据」照抄中介的数。
+    it('FED CEC:最近 12 轮的分数线区间取得到(库里实测 507–518),分制是 CRS', async () => {
+      const r = await lookupDraws(pool, { prov: 'FED', stream: 'cec' })
+      expect(r.availability).toBe('ok')
+      expect(r.scale).toBe('CRS')
+      expect(r.rows.length).toBeGreaterThan(0)
+      expect(r.rows.every((x) => x.scale === 'CRS' && x.province === 'FED')).toBe(true)
+      expect(r.rows.every((x) => /Canadian Experience/i.test(x.stream))).toBe(true)
+      const cec = r.streams!.find((s) => s.key === 'cec')!
+      expect(cec, 'FED 抽选按库里的 label 分类,cec 这一类没出来').toBeTruthy()
+      expect(cec.availability).toBe('ok')
+      expect(cec.rounds).toBe(12)
+      expect(cec.scoreLow).toBe(507)
+      expect(cec.scoreHigh).toBe(518)
+      expect(cec.scale).toBe('CRS')
+      expect(cec.sinceIsWindowStart).toBe(false)           // 有轮次 → 说的是「上一轮就是这天」,不是「至少」
+      expect(cec.lastDrawDate).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+      expect(cec.since).toBe(cec.lastDrawDate)
+      expect(cec.evidence.url).toMatch(/canada\.ca/)
+      // 窗口是「多久没开过」的分母:它必须覆盖全部 FED 轮次,而不是被 limit 截过的那一段
+      expect(r.window!.rounds).toBeGreaterThan(r.rows.length)
+      assertEvidence(r)
+    })
+
+    // 🔴 这一条是本案例的核心:**空数组与「这类轮次停了」是两件事**。
+    it('FED general:窗口内 0 轮 → 表达成「至少 N 个月没开过」,不是空数组、更不是「本站没有 FED 数据」', async () => {
+      const r = await lookupDraws(pool, { prov: 'FED', stream: 'general' })
+      expect(r.rows).toHaveLength(0)
+      expect(r.availability).toBe('not-collected')
+      expect(r.window!.rounds, 'FED 整体是有记录的 —— 0 轮说的只是 general 这一类').toBeGreaterThan(20)
+      const g = r.streams![0]
+      expect(g.key).toBe('general')
+      expect(g.rounds).toBe(0)
+      expect(g.lastDrawDate, '窗口内一轮都没有 → 不许编一个"上一轮"的日期').toBe('')
+      expect(g.scoreLow).toBeNull()
+      expect(g.scoreHigh).toBeNull()
+      // 「隔了多久」= 从窗口起点算起,且必须自报这是**下限**(真正的上一轮在本站窗口之前)
+      expect(g.sinceIsWindowStart).toBe(true)
+      expect(g.since).toBe(r.window!.from)
+      expect(g.monthsSince).toBeGreaterThanOrEqual(12)     // 案例:近 12 个月 0 轮
+      expect(g.note).toMatch(/至少/)
+      expect(g.note).toMatch(/本站/)
+      expect(g.availability).toBe('not-collected')
+      // 与「整个省本站未收录」必须分得开:NS 那句是没有窗口的
+      expect(r.note).not.toMatch(/本站未收录 FED 的抽选记录/)
+      const ns = await lookupDraws(pool, { prov: 'NS' })
+      expect(ns.window).toBeUndefined()
+      expect(ns.streams).toBeUndefined()
+    })
+
+    it('FED 不给 stream:库里已有的每一类各一行(不自己归类),每行挂出处', async () => {
+      const r = await lookupDraws(pool, { prov: 'FED', limit: 60 })
+      expect(r.availability).toBe('ok')
+      expect(r.note).toMatch(/CRS/)                        // 分制必须说在明处(各省分制互不相通)
+      const keys = r.streams!.map((s) => s.key)
+      expect(keys).toContain('cec')
+      expect(keys).toContain('pnp')
+      expect(new Set(keys).size, '同一类别被拆成了两行').toBe(keys.length)
+      expect(r.streams!.every((s) => !!s.evidence.url && s.rounds > 0)).toBe(true)
+      expect(r.streams!.every((s) => s.stream !== '')).toBe(true)   // 官方轮次名原文照抄
+      assertEvidence(r)
+    })
+
+    it('省级调用不受 FED 改动影响:AB 照旧按 limit 给最近若干轮,分制不是 CRS', async () => {
+      const r = await lookupDraws(pool, { prov: 'AB' })
+      expect(r.availability).toBe('ok')
+      expect(r.rows.length).toBeLessThanOrEqual(12)                 // 默认 limit=12
+      expect(r.rows.every((x) => x.scale !== 'CRS')).toBe(true)
+      expect(r.note, '省级 ok 分支不该多出一句 note').toBeUndefined()
+      const one = await lookupDraws(pool, { prov: 'AB', limit: 1 }) // 编排层用的就是 limit:1
+      expect(one.rows).toHaveLength(1)
+      expect(one.rows[0].drawDate).toBe(r.rows[0].drawDate)
+      assertEvidence(r)
+    })
+
     it('EE 类别:查过全表就敢说「不在任何类别里」,并说明仍可走全类别轮次', async () => {
       const r = await lookupEE(pool, { noc: DEV })
       expect(r.availability).toBe('ok')
@@ -197,6 +275,89 @@ d('对话工具层(生产库只读)', () => {
       expect(t.rows[0].drawCrs).toBeGreaterThan(0)
       expect(t.rows[0].evidence.url).toBeTruthy()
       assertEvidence(t)
+    })
+  })
+
+  // ── ⑦ lookupPermit:联邦工签规则(案例 C02 §5「数据已在库里,只差工具」的另一半)──────
+  // PGWP 九行 quote-anchored 躺在 pnp_requirements 的 FED 行里,原先七个工具没一个读得到。
+  describe('联邦工签 lookupPermit(pnp_requirements FED)', () => {
+    it('PGWP 九条全取得到,每条挂官方原句与出处,value=null 的行不许被折成数字', async () => {
+      const r = await lookupPermit(pool, {})
+      expect(r.availability).toBe('ok')
+      expect(r.program).toBe('PGWP')
+      expect(r.rules).toHaveLength(9)
+      expect(r.rules.every((x) => !!x.evidence.url && /canada\.ca/.test(x.evidence.url))).toBe(true)
+      expect(r.rules.every((x) => !!x.evidence.fetched && !!x.valueText)).toBe(true)
+      expect(r.rules.every((x) => !!x.evidence.section)).toBe(true)   // 官方节号(about / elig)
+      const of = (factor: string, stream = '') => r.rules.find((x) => x.factor === factor && x.stream === stream)!
+      // 案例 §3 的三条「能复现」:最短课程 8 个月 / 2 年档 / 一生一次
+      expect(of('pgwpMinProgram').value).toBe(8)
+      expect(of('pgwpMinProgram').unit).toBe('months')
+      expect(of('pgwpMinProgram').valueText).toMatch(/at least 8 months/i)
+      expect(of('pgwpLength', 'long').value).toBe(36)
+      expect(of('pgwpLength', 'masters').value).toBe(36)
+      expect(of('pgwpOnce').value).toBe(1)
+      expect(of('pgwpOnce').unit).toBe('lifetime')
+      expect(of('pgwpWindow').value).toBe(180)
+      expect(of('pgwpWindow').unit).toBe('days')
+      expect(of('pgwpLanguage', 'degree').value).toBe(7)
+      expect(of('pgwpLanguage', 'college').value).toBe(5)
+      // 「跟课程一样长」没有绝对数 → value 恒 null,全部意义在官方原句里(不许 ?? 0)
+      expect(of('pgwpLength', 'short').value).toBeNull()
+      expect(of('pgwpLength', 'short').valueText).toMatch(/same length as your study program/i)
+      assertEvidence(r)
+    })
+
+    // 🔴 红线(案例 C02 §4-2):官方写了「可合并」,也写了「your program 满 2 年 → 3 年」,
+    //    但**没有一句把合并后的总长接到 3 年档**。整条时间线的缓冲压在这个官方从没写过的推论上。
+    it('🔴「合并 → 3 年」这一跳:两条事实各自独立返回,跳档被显式标成官方未写', async () => {
+      const r = await lookupPermit(pool, {})
+      const combine = r.rules.find((x) => x.factor === 'pgwpCombine')!
+      const long = r.rules.find((x) => x.factor === 'pgwpLength' && x.stream === 'long')!
+      expect(combine, '合并条款一行都没有').toBeTruthy()
+      // ① 两条是**独立的两行**,不是一行合成品
+      expect(combine.op).toBe('rule')
+      expect(combine.value, '合并条款挂上了数字 = 替官方算了合并后的长度').toBeNull()
+      expect(combine.unit).toBe('')
+      expect(combine.valueText).toMatch(/combines the length of each program/i)
+      // ② 反向断言:合并那一行的**任何字段**都不许出现 3 年 / 36 个月的痕迹
+      for (const [k, v] of Object.entries({ valueText: combine.valueText, basis: combine.basis, label: combine.label, unit: combine.unit })) {
+        expect(v, `合并条款的 ${k} 里出现了 3 年/36 个月:${v}`).not.toMatch(/3[-\s]?year|三年|36/i)
+      }
+      // 全表:凡是提到「合并」的行,value 必须是 null —— 没有任何一个数字挂在合并上
+      expect(r.rules.filter((x) => /combin/i.test(`${x.factor} ${x.basis} ${x.valueText} ${x.label}`))
+        .every((x) => x.value == null)).toBe(true)
+      // ③ 反过来,3 年档那一行只说单个课程(官方原文是单数 your program),不许提合并
+      expect(long.value).toBe(36)
+      expect(long.valueText).toMatch(/your program was 2 years or more/i)
+      expect(long.valueText).not.toMatch(/combin/i)
+      expect(long.basis).not.toMatch(/combin/i)
+      // ④ 断层本身作为一条**独立事实**返回,并且自己说清「官方没写」,不指望上层想得起来
+      const gap = r.gaps.find((g) => g.between.includes('pgwpCombine'))!
+      expect(gap, '合并→3 年的跳档没有被标出来').toBeTruthy()
+      expect(gap.kind).toBe('not-written')
+      expect(gap.between).toContain('pgwpLength|long')
+      expect(gap.note).toMatch(/没有一句|官方没写|不替它补/)
+      expect(gap.claim).toBeTruthy()
+      expect(gap.evidence).toHaveLength(2)                 // 两端各自的出处:都在,中间没有桥
+      expect(gap.evidence.every((e) => !!e.url)).toBe(true)
+      // 过滤只查时长档的人,同样得看见这一跳(gaps 不受 factor 过滤影响)
+      const only = await lookupPermit(pool, { factor: 'pgwpLength' })
+      expect(only.rules.every((x) => x.factor === 'pgwpLength')).toBe(true)
+      expect(only.rules).toHaveLength(3)
+      expect(only.gaps).toHaveLength(1)
+    })
+
+    it('四态:查不到的 program → not-collected(本站未收录),不说成「官方没有」', async () => {
+      const r = await lookupPermit(pool, { program: 'PGWP', factor: 'noSuchFactor' })
+      expect(r.availability).toBe('not-collected')
+      expect(r.rules).toHaveLength(0)
+      expect(r.note).toMatch(/未收录/)
+      expect(r.note).toMatch(/不等于官方没有/)
+      const none = await lookupPermit(pool, { program: 'NoSuchProgram' })
+      expect(none.availability).toBe('not-collected')
+      expect(none.gaps).toHaveLength(0)
+      expect(none.note).toMatch(/未收录/)
     })
   })
 
