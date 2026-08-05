@@ -12,10 +12,10 @@ import pg from 'pg'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import {
-  askOccupation, AVAIL_MARKERS, clampAnswer, dropTrailingHedge, factsBlock, factSheet, fieldSearchTerm,
+  askOccupation, AVAIL_MARKERS, claimLabel, clampAnswer, dropTrailingHedge, factsBlock, factSheet, fieldSearchTerm,
   findEnglishUnits, findFactDump, findHedges, findForeignScript, findLeaks, findMergedStates, findMixedStates,
   findSameOpening, findShoutedWords, findWordNumbers, guardAnswer, isMoneyTalk, isSelfStatement,
-  LBL, localizeUnits, missingClaimLines, normalizeSlots, MONEY_WHY, orchestrate, otherClaimLabel,
+  LABEL_CAP, LBL, localizeUnits, missingClaimLines, normalizeSlots, MONEY_WHY, orchestrate, otherClaimLabel,
   PROMISE_WHY, resolveNoc, sayFact, stripMd, studyFieldOf, suggestOccupations, tidy,
   type ChatLang, type Fact, type OccOption,
 } from '@/lib/chatOrchestrate'
@@ -412,12 +412,31 @@ describe('答复见客检查(不连模型)', () => {
     expect(findSameOpening('老板的承诺无法核实,因为没有任何一级政府公布这种名单。你现在就能核的有三件:雇主经营满 2 年、语言到 5 CLB、12 个月经验。前一条问老板公司开了几年就知道。', 'zh')).toEqual([])
   })
 
-  // 🔴 一句话焊两种状态 = 那条红线的最后一道机械网(ⓐⓑ 只看主张行,这条谁的行都不看,只看一句话说了几种态)
-  it('一句话里同时挂着两种状态 → 抓得到', () => {
-    expect(findMixedStates('至于该省是否有职业清单或抽选记录,官方不公布这项数据且本站尚未收录。', 'zh').length).toBeGreaterThan(0)
-    // 分开说、各说各的 = 干净
+  // 🔴 一句话焊两种状态 = 那条红线的最后一道机械网(ⓐⓑ 只看主张行,这条谁的行都不看,只看一句话说了几种态)。
+  //    这条断言**必须双向**:2026-08-07 补了英文断句的 ASCII `.` —— 那是在放宽一条红线,
+  //    所以「两句各说各态 = 干净」和「一句焊两态 = 照旧抓得到」得同时钉死,三语各一例。
+  it('一句话里同时挂着两种状态 → 抓得到;两句各说各态 → 干净', () => {
+    // ── ① 焊在一句里:三语各一例,判据一个字没松
+    expect(findMixedStates('至于该省是否有职业清单或抽选记录,官方不公布这项数据且本站尚未收录。', 'zh').length,
+      '中文:一句焊两态没抓到').toBeGreaterThan(0)
+    expect(findMixedStates('The government does not publish the NS list, and our site has not indexed its draw history.', 'en').length,
+      '英文:一句焊两态没抓到').toBeGreaterThan(0)
+    expect(findMixedStates('정부가 공개하지 않으며 본 사이트도 아직 수집하지 않았습니다.', 'ko').length,
+      '한국어:一句焊两态没抓到').toBeGreaterThan(0)
+
+    // ── ② 分开说、各说各的 = 干净(误报的代价是白烧一次软重写,2026-08-07 实测 C07 英文撞上)
     expect(findMixedStates('NS 的职业清单官方不公布。NS 的抽选记录本站尚未收录。', 'zh')).toEqual([])
-    expect(findMixedStates('The government does not publish the NS list, and our site has not indexed its draw history.', 'en').length).toBeGreaterThan(0)
+    // 🔴 病根就在这一条:英文句末是 ASCII `.`,原来的断句不认它 → 两句被当成一句 → 误判成焊了两态
+    expect(findMixedStates('The government does not publish the BC list. Our site has not indexed the draw history yet.', 'en'),
+      '英文两句各说各态被误判成焊了两态(断句没认 ASCII 句号)').toEqual([])
+    expect(findMixedStates('정부가 공개하지 않는 항목입니다. 본 사이트가 아직 수집하지 않았습니다.', 'ko'),
+      '한국어两句各说各态被误判').toEqual([])
+    // 项目符号(答复里唯一允许的列表形态)也是各说各的一行
+    expect(findMixedStates('- The government does not publish this\n- Our site has not indexed this yet', 'en')).toEqual([])
+
+    // ── ③ 放宽断句不许放出漏网之鱼:小数点后面没空白 = 不是句末,那一句照旧整句判
+    expect(findMixedStates('The cutoff moved 3.6 points, the government does not publish this and our site has not indexed it.', 'en').length,
+      '小数点把一句劈成两半 → 焊两态漏了').toBeGreaterThan(0)
     expect(findMixedStates('MB 现在有 3 个岗位。', 'zh')).toEqual([])
   })
 
@@ -441,6 +460,53 @@ describe('答复见客检查(不连模型)', () => {
     const enFee = claim(`On what you were told ("the agent wants 20k"): ${AVAIL_SENTENCE_SAMPLE.en}. ${MONEY_WHY.en}`)
     expect(missingClaimLines('The agent wants 20k, and the government does not publish what agents charge.', [enFee], 'en')).toEqual([])
     expect(missingClaimLines('Nothing about that can be checked.', [enFee], 'en')).toHaveLength(1)
+  })
+
+  // 🔴 对中介的杀手锏不许断在词中间(2026-08-07 实测 C14 英文:`…, not a private promi.`)。
+  //    320 帽只会从尾巴上砍,而尾巴恰恰是**我们自己写的见客文案**;该截的是长度不可控的原话。
+  it('主张行超长时截的是原话,解释句一个字不少', () => {
+    // 测试是第二双眼睛:引导词照 lib 的样子独立写一遍,不 import 过来自己核对自己
+    const LEAD: Record<ChatLang, [string, string, string]> = {
+      zh: ['你听到的「', '」这句话', '——'],
+      en: ['On what you were told ("', '")', ': '],
+      ko: ['「', '」라고 들으신 건', ' — '],
+    }
+    // 用户可以说很长 —— 原话长度不可控,正是这条规则存在的理由
+    const LONG: Record<ChatLang, string> = {
+      // 都带上金额:otherClaimLabel 那一路要走**收费**分岔(没提钱的主张不许挂金额解释,那是另一条测试守的)
+      zh: '中介说他在曼省有合作公司,还说包 offer 包提名,要收我 2 万块。'.repeat(3),
+      en: 'the agent says they have a partner company in Manitoba and a guaranteed nomination for 20000 dollars. '.repeat(3),
+      ko: '중개인이 매니토바에 협력 회사가 있고 지명을 보장한다며 수수료 2만원을 요구했습니다. '.repeat(3),
+    }
+    for (const lang of ['zh', 'en', 'ko'] as const) {
+      const [lead, close, dash] = LEAD[lang]
+      const sep = lang === 'en' ? '. ' : '。'
+      for (const [name, why] of [['PROMISE_WHY', PROMISE_WHY[lang]], ['MONEY_WHY', MONEY_WHY[lang]]] as const) {
+        const rest = `${dash}${AVAIL_SENTENCE_SAMPLE_ALL[lang]['not-published']}${sep}${why}`
+        // 固定部分(引导词 + 四态成句 + 解释句)吃光额度 = 原话没地方站,MIN_QUOTE 兜底会顶破帽子。
+        // 这条断言就是那份契约:见客解释句再写长,先在这里红,不许红在用户屏幕上。
+        expect(LABEL_CAP - (lead.length + close.length + rest.length),
+          `${lang}/${name}:固定部分吃光了 320 额度,原话没地方站了`).toBeGreaterThanOrEqual(24)
+
+        const line = claimLabel(lead, LONG[lang], close, rest)
+        // ① 帽还在 —— 修法不是把 320 调大(那只是把同一刀推到更长的下一句上)
+        expect(line.length, `${lang}/${name}:主张行破了 ${LABEL_CAP} 帽(${line.length})`).toBeLessThanOrEqual(LABEL_CAP)
+        // ② 杀手锏整句都在,而且收在句尾(`… not a private promi.` 就是这条红的形状)
+        expect(line, `${lang}/${name}:解释句被截了\n${line}`).toContain(why)
+        expect(line.endsWith(why), `${lang}/${name}:解释句没收在句尾\n${line}`).toBe(true)
+        // ③ 截的是原话,而且留了痕 —— 别让用户以为我们改了他的话
+        expect(line, `${lang}/${name}:截了原话却没留省略号\n${line}`).toContain('…')
+        expect(line, `${lang}/${name}:原话整段搬进来了(该截没截)`).not.toContain(LONG[lang])
+        // ④ 放得下就一个字都别动(短原话不许被安上一个莫名其妙的省略号)
+        const short = claimLabel(lead, lang === 'zh' ? '中介说包过' : 'the agent says it is guaranteed', close, rest)
+        expect(short, `${lang}/${name}:短原话被无故截了\n${short}`).not.toContain('…')
+        expect(short.endsWith(why), `${lang}/${name}:短原话那条的解释句也丢了\n${short}`).toBe(true)
+      }
+      // 生产路径复验一遍:topic='other' 的主张只从 otherClaimLabel 出来
+      const money = otherClaimLabel(LONG[lang], lang)
+      expect(money.length, `${lang}:otherClaimLabel 破了 ${LABEL_CAP} 帽`).toBeLessThanOrEqual(LABEL_CAP)
+      expect(money.endsWith(MONEY_WHY[lang]), `${lang}:otherClaimLabel 的金额解释被截了\n${money}`).toBe(true)
+    }
   })
 
   it('标签词表本身就得是用户语言(数据层的单一来源,别让下游各自去翻)', () => {
@@ -720,6 +786,11 @@ ${r.answer}`).toBe(true)
     expect(findSameOpening(r.answer, 'en'), `英文答复连着三句一个句式(在念表格):\n${r.answer}`).toEqual([])
     expect(findMixedStates(r.answer, 'en'), `英文答复把两种状态焊进了一句:\n${r.answer}`).toEqual([])
     expect(r.answer.length).toBeGreaterThan(40)
+    // 🔴 对中介的杀手锏必须整句活着(实测 C14 英文断成 `…, not a private promi.`):
+    //    英文是三语里最挤的一档 —— 主张行带上 PROMISE_WHY 就顶着 320 帽,真跑一次才看得见谁被砍
+    for (const fx of r.facts.filter((x) => x.unit === 'claim' && x.label.includes(PROMISE_WHY.en.slice(0, 24)))) {
+      expect(fx.label, `私人承诺那句被 ${LABEL_CAP} 帽截了(该截的是原话):\n${fx.label}`).toContain(PROMISE_WHY.en)
+    }
     // facts 也不许带中文进英文 prompt(病根在这儿,不在模型)
     const zhInFacts = r.facts.filter((x) => findForeignScript(`${x.label} ${x.valueText}`, 'en').length)
     expect(zhInFacts.map((x) => `${x.label} | ${x.valueText}`), '英文会话的 facts 里带了中文').toEqual([])

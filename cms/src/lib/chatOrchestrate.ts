@@ -513,8 +513,26 @@ export const PROMISE_WHY: Record<ChatLang, string> = {
   ko: '이런 주장은 누구도 확인할 수 없습니다: 중개인과 고용주의 제휴 명단이나 내부 경로를 공개하는 정부는 없으며, 주정부 지명은 공식 조항만 인정합니다',
 }
 
-// 引原话最多 60 字:后面还要接四态成句 + 解释句(英文那句 160 字),原话不封顶会把解释句挤出 label 上限
-const quoteClaim = (t: string) => (t.length > 60 ? `${t.slice(0, 60)}…` : t)
+/** fact.label 的硬帽(见 fact():prompt 预算、降级清单、前端出处表共用同一个上限)。 */
+export const LABEL_CAP = 320
+const QUOTE_CAP = 60      // 原话的常规上限;真给多少由 claimLabel 现算(解释句先留够)
+const MIN_QUOTE = 24      // 截到比这还短就不叫「引他的原话」了 —— 三语今天都够不着这条底线,claimLabel 那组断言盯着
+/**
+ * 🔴 **该截的是原话,不是尾巴**。
+ *
+ * 2026-08-07 实测 C14 英文:主张行撞 320 帽,结尾断成 `…, not a private promi.` ——
+ * 被砍掉的正是这个产品对中介最有力的半句(「省提名只认官方条款,不认私下承诺」),一刀把它变成了错别字。
+ * 病根是 `slice(0, 320)` 只会从尾巴上砍,而尾巴恰恰是**我们自己写的见客文案**。
+ *
+ * 所以按来源分工:原话长度由用户决定(不可控,可截,截了必留省略号 —— 别让他以为我们改了他的话);
+ * 引导词 / 四态成句 / 解释句是我们写的,**一个字都不许少**。先把固定部分占掉的额度扣干净,剩下多少才给原话。
+ * **不把帽调大**:调大只是把同一刀推到更长的下一句上;帽也不必按行类型分档 —— 扣完固定部分,
+ * 三语最紧的一档(en + PROMISE_WHY)还剩 59 字给原话,320 够用,分档只是多一个会分叉的旋钮。
+ */
+export function claimLabel(lead: string, text: string, close: string, rest: string, cap = LABEL_CAP): string {
+  const room = Math.max(MIN_QUOTE, Math.min(QUOTE_CAP, cap - (lead.length + close.length + rest.length)))
+  return `${lead}${text.length > room ? `${text.slice(0, room - 1)}…` : text}${close}${rest}`
+}
 const sepOf = (l: ChatLang) => (l === 'en' ? '. ' : '。')
 /**
  * 🔴 topic='other' 的主张 → 一句成品话,**分岔只看原话里有没有钱**(纯函数,不看模型给的 topic):
@@ -527,7 +545,7 @@ export function otherClaimLabel(text: string, lang: ChatLang): string {
   const [lead, close, dash] = CLAIM_LEAD[lang]
   const money = isMoneyTalk(text)
   const state = AVAIL_SENTENCE[lang][money ? 'not-published' : 'not-collected']
-  return `${lead}${quoteClaim(text)}${close}${dash}${state}${money ? `${sepOf(lang)}${MONEY_WHY[lang]}` : ''}`
+  return claimLabel(lead, text, close, `${dash}${state}${money ? `${sepOf(lang)}${MONEY_WHY[lang]}` : ''}`)
 }
 
 /**
@@ -672,7 +690,9 @@ export const stripMd = (s: string): string => s
   .replace(/^[ \t]*\d{1,2}[.)][ \t]+/gm, '- ')
 
 const fact = (tool: string, label: string, value: number | null, valueText: string, unit: string, ev: { url: string; fetched: string }): Fact => ({
-  tool, label: stripMd(label).slice(0, 320), value, valueText: stripMd(valueText).slice(0, 110), unit,
+  // 🔴 这一刀只会从尾巴上砍,所以主张行**不能靠它收口**(见 claimLabel:被砍的正是我们自己的解释句)。
+  //    主张行进来之前已按 LABEL_CAP 把原话截过,这里对它是个恒等式 —— 帽照旧存在,只是不再由它决定截谁。
+  tool, label: stripMd(label).slice(0, LABEL_CAP), value, valueText: stripMd(valueText).slice(0, 110), unit,
   evidence: { url: ev.url, fetched: ev.fetched },
 })
 /**
@@ -824,7 +844,8 @@ export async function collectFacts(
       // 再接一句 C1 的「这条能对照:上面是本站职位板索引里的在招数」就是同一句话说两遍(2026-08-05 实测)。
       const tail = isPromise ? `${sep}${PROMISE_WHY[lang]}`
         : (c.availability !== 'ok' && why && why.length <= 80 ? `${sep}${why}` : '')
-      out.push(fact('checkClaims', `${lead}${quoteClaim(c.claim.text)}${close}${state}${tail}`, null, zhOnly(c.why, lang), 'claim',
+      // 🔴 原话按剩余额度截(claimLabel):四态成句与解释句是我们自己的见客文案,一个字都不许被 320 帽砍掉
+      out.push(fact('checkClaims', claimLabel(lead, c.claim.text, close, `${state}${tail}`), null, zhOnly(c.why, lang), 'claim',
         { url: c.claim.province ? `/?prov=${c.claim.province}` : '/', fetched: '' }))
     }
     // 他点过名的省不许进第三格:checkClaims 只认它收到的那几条主张的省份,
@@ -1376,6 +1397,16 @@ const saysState = (s: string, lang: ChatLang, av: Exclude<Availability, 'ok'>) =
   AVAIL_MARKERS[lang][av].some((m) => s.toLowerCase().includes(m.toLowerCase()))
 
 /**
+ * 断句的**单一来源**(clampAnswer / findSameOpening 一直用的就是这一条,现在写成一份)。
+ * 全角句末标点直接断;ASCII 的 `.` 必须后跟空白才算句末,否则「3.6」会被劈开。
+ *
+ * 🔴 findMixedStates 原来漏了 ASCII `.` —— 于是**两句各说各态的英文**(`… does not publish this.
+ * Our site has not indexed …`)被当成一句,判成「一句焊了两态」,白烧一次软重写(2026-08-07 实测 C07)。
+ * 补的是断句,不是判据:一句里真焊两态照旧抓 —— 英文句末那个 `.` 后面没有空白,整句仍然是一句。
+ */
+const SENT_SPLIT = /(?<=[。！？；!?;\n])|(?<=\.)(?=\s)/
+
+/**
  * ⓒ **一句话里同时挂着两种状态**,不管说的是哪两条记录 ——
  * 2026-08-05 实测中文 C13 末句:「至于该省是否有…职业清单或抽选记录,官方不公布这项数据且本站尚未收录。」
  * 一个「且」把两件事的两种状态焊在一起,读者根本分不清哪件是官方不发、哪件是我们没收。
@@ -1385,7 +1416,7 @@ const saysState = (s: string, lang: ChatLang, av: Exclude<Availability, 'ok'>) =
 export function findMixedStates(answer: string, lang: ChatLang): string[] {
   const AVS = ['not-published', 'not-collected', 'not-applicable'] as const
   const out: string[] = []
-  for (const sent of answer.split(/(?<=[。！？；!?;\n])/)) {
+  for (const sent of answer.split(SENT_SPLIT)) {
     if (!sent.trim()) continue
     const hit = AVS.filter((av) => saysState(sent, lang, av))
     if (hit.length > 1) out.push(`mixed:${sent.trim().slice(0, 40)}`)
@@ -1508,7 +1539,7 @@ export const BULLET_LINE = /^\s*-\s+/
  * 只是**列表形态不算它的射程**;列表还顺带把前后两句的连号打断(隔着一份清单的两句不叫「连着」)。
  */
 export function findSameOpening(answer: string, lang: ChatLang): string[] {
-  const sents = answer.split(/(?<=[。！？；!?;\n])|(?<=\.)(?=\s)/).map((s) => s.trim()).filter(Boolean)
+  const sents = answer.split(SENT_SPLIT).map((s) => s.trim()).filter(Boolean)
   const out: string[] = []
   let run = 1
   for (let i = 1; i < sents.length; i++) {
@@ -1620,8 +1651,7 @@ const SENT_CAP = 11
 /** 按句截断:宁可少说一句,不许留半句。字数与句数**两条都收**;整句都塞不下才硬切(极端情况)。 */
 export function clampAnswer(s: string, lang: ChatLang, cap = LEN_CAP[lang], sentCap = SENT_CAP): string {
   const t = s.trim()
-  // 句末标点(中/日全角 。!?; + ASCII .!?; + 换行);ASCII 的 `.` 必须后跟空白才算句末,否则「3.6」会被劈开
-  const parts = t.split(/(?<=[。！？；!?;\n])|(?<=\.)(?=\s)/)
+  const parts = t.split(SENT_SPLIT)      // 断句口径见 SENT_SPLIT(全站一份,别在这儿另写一条)
   if (t.length <= cap && parts.filter((p) => p.trim()).length <= sentCap) return t
   let out = ''
   let n = 0
