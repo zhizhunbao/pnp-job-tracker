@@ -12,7 +12,8 @@ import pg from 'pg'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import {
-  askOccupation, AVAIL_MARKERS, claimLabel, clampAnswer, dropTrailingHedge, factsBlock, factSheet, fieldSearchTerm,
+  askOccupation, claimLabel, clampAnswer, collectFacts, dropTrailingHedge, factsBlock, factSheet, fieldSearchTerm,
+  commercialClaimLabel,
   findEnglishUnits, findFactCopied, findFactDump, findHedges, findForeignScript, findLeaks, findMergedStates,
   findMixedStates, findSameOpening, findShoutedWords, findWordNumbers, guardAnswer, isMoneyTalk, isSelfStatement,
   LABEL_CAP, LBL, localizeUnits, makeSentenceGate, missingClaimLines, normalizeSlots, MONEY_WHY, orchestrate, otherClaimLabel,
@@ -20,6 +21,7 @@ import {
   type ChatLang, type Fact, type OccOption,
 } from '@/lib/chatOrchestrate'
 import { friendLlmReady } from '@/lib/friendLlm'
+import { makeT } from '@/app/(frontend)/jobs/i18n'
 
 const URI = process.env.DATABASE_URI || ''
 const CARPENTER = '72310'
@@ -674,6 +676,7 @@ describe('槽位归一 / prompt 预算(模型输出不可信)', () => {
     expect(t('中介说曼省有合作公司让我去曼省')).toBe('private-promise')
     expect(t('中介说曼省有合作公司让我去曼省', 'ops')).toBe('private-promise')
     expect(t('他说有内部渠道,包过')).toBe('private-promise')
+    expect(t('中介说能包曼省木匠 offer 和省提名')).toBe('private-promise')
     expect(t('中介说他认识移民官,走关系能快')).toBe('private-promise')
     expect(t('the agent says they have a partner company in MB', 'jobs')).toBe('private-promise')
     // 能对账的事实主张不许被这条规则吃掉(它们各有各的官方表)
@@ -726,9 +729,7 @@ describe('槽位归一 / prompt 预算(模型输出不可信)', () => {
     expect(isSelfStatement('中介说曼省有合作公司')).toBe(false)
   })
 
-  // 🔴 MONEY_WHY(「这条金额谁也核不了」)只许挂在**真提到钱**的主张上 —— 挂错一次,
-  //    读者就被告知了一个他从没听说过的价钱。分岔在纯函数里锁死,不看模型给的 topic。
-  it('没提钱的主张不许挂金额解释,提了钱的照旧挂', () => {
+  it('收费是交易判断,不冒充“官方不公布”;没提钱的主张也不许被安上报价', () => {
     expect(isMoneyTalk('中介要收 2 万')).toBe(true)
     expect(isMoneyTalk('An agent wants $20k for the offer')).toBe(true)
     expect(isMoneyTalk('중개인이 수수료를 요구합니다')).toBe(true)
@@ -736,13 +737,51 @@ describe('槽位归一 / prompt 预算(模型输出不可信)', () => {
     expect(isMoneyTalk('老板说帮我办')).toBe(false)
     for (const lang of ['zh', 'en', 'ko'] as const) {
       const money = otherClaimLabel(lang === 'zh' ? '中介要收 2 万' : 'the agent wants 20k', lang)
-      expect(money, `${lang} 收费主张丢了金额解释`).toContain(MONEY_WHY[lang])
-      expect(money, `${lang} 收费主张的状态说法不对`).toContain(AVAIL_SENTENCE_SAMPLE_ALL[lang]['not-published'])
-      // 没提钱的:一个字都不许提金额,状态也不能冒充「官方不公布」
+      expect(money, `${lang} 收费主张丢了交易判断`).toContain(MONEY_WHY[lang])
+      expect(money, `${lang} 收费主张不该冒充政府数据缺口`).not.toContain(AVAIL_SENTENCE_SAMPLE_ALL[lang]['not-published'])
+      expect(money, `${lang} 收费主张不该冒充本站数据缺口`).not.toContain(AVAIL_SENTENCE_SAMPLE_ALL[lang]['not-collected'])
       const plain = otherClaimLabel(lang === 'zh' ? '老板会帮我办手续' : 'my boss will handle the paperwork', lang)
       expect(plain, `${lang} 给没提钱的主张安了一句金额解释`).not.toContain(MONEY_WHY[lang])
       expect(plain).toContain(AVAIL_SENTENCE_SAMPLE_ALL[lang]['not-collected'])
     }
+  })
+
+  it('收费与包办承诺只合成一条结论,不重复“无法核实”四态话术', () => {
+    for (const lang of ['zh', 'en', 'ko'] as const) {
+      const line = commercialClaimLabel([
+        lang === 'zh' ? '中介要收 2 万' : 'the agent wants 20k',
+        lang === 'zh' ? '中介说包 offer 和省提名' : 'the agent guarantees the offer and nomination',
+      ], lang)
+      expect(line).toContain(PROMISE_WHY[lang])
+      expect(line.match(new RegExp(PROMISE_WHY[lang].replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'))).toHaveLength(1)
+      expect(line).not.toContain(AVAIL_SENTENCE_SAMPLE_ALL[lang]['not-published'])
+      expect(line).not.toContain(AVAIL_SENTENCE_SAMPLE_ALL[lang]['not-collected'])
+    }
+  })
+
+  it('预设问题不替用户编报价,只问包办承诺是否可信', () => {
+    for (const lang of ['zh', 'en', 'ko'] as const) {
+      const preset = makeT(lang)('chat.ex3')
+      expect(preset).not.toMatch(/2\s*万|20\s*k|20[,.]?000|2만/iu)
+      expect(preset.length).toBeGreaterThan(20)
+    }
+  })
+
+  it('真实 collectFacts + 空库:收费与包办经过完整组件仍只落一条决策结论', async () => {
+    let queries = 0
+    const emptyPool = { query: async () => { queries++; return { rows: [] } } }
+    const r = await collectFacts(emptyPool, {
+      noc: '72310', occText: 'carpenter', provs: ['MB'], expMonths: null, status: null,
+      claims: [
+        { text: '中介说能包曼省木匠 offer 和省提名', topic: 'private-promise', province: 'MB' },
+        { text: '中介要收 2 万', topic: 'other', province: 'MB' },
+      ],
+    }, 2, 'zh')
+    const commercial = r.facts.filter((x) => x.unit === 'claim' && /包曼省|2 万/.test(x.label))
+    expect(queries).toBeGreaterThan(0) // 跑的是真 lookup/collectFacts,不是静态复刻 label
+    expect(commercial).toHaveLength(1)
+    expect(commercial[0].label).toContain(PROMISE_WHY.zh)
+    expect(commercial[0].label).not.toMatch(/官方不公布|本站尚未收录|无法核实|谁也核不了/)
   })
 
   // 🔴 提示词里的大写强调被抄进答复(实测英文首句 `**WE** do not have a record…`)
@@ -974,43 +1013,14 @@ ${r.answer}
     const hedges = findHedges(r.answer, 'zh')
     if (hedges.length) console.log(`[金标] 推断性措辞留痕:${hedges.join(',')}`)
 
-    // 🔴 四态不许合并。**期望值从 facts 里读,不写死**:哪条主张落哪个态由 C1 工具层 + 当天库里的数据决定
-    // (2026-08-04 就变过一次:MB 运营数据进库后,「合作公司」那条从 not-published 变成了 ok),
-    // 写死状态的测试测的是那一天的库,不是这条链的正确性。要守的不变量是:**每条主张各说各的态,两条不共用一个说法**。
+    // 私人交易话术不是一项政府数据:收费与合作/包办只生成一条决策结论,不套四态、不重复“无法核实”。
     expect(findMergedStates(r.answer, r.facts, 'zh'), `四态被揉在一起了:\n${r.answer}`).toEqual([])
-    const sents = r.answer.split(/(?<=[。！？\n])/).filter((s) => s.trim())
-    const AVS = ['not-published', 'not-collected', 'not-applicable'] as const
-    const stateOf = (fx: Fact) => AVS.find((av) => `${fx.label} ${fx.valueText}`.includes(AVAIL_SENTENCE_SAMPLE_ALL.zh[av]))
-    // 找答复里交代这条主张的那句话:**按意思找,不按原字找** —— 模型会改写措辞
-    // (实录把「合作公司」写成了「合作名单」),盯着原字会把一句正确的答复判成没交代。
-    const claimSay = (factFrag: string, sentRe: RegExp) => {
-      const fx = r.facts.find((x) => x.unit === 'claim' && x.label.includes(factFrag))
-      if (!fx) return { fx, want: undefined, said: undefined, sent: undefined }
-      const sent = sents.find((s) => sentRe.test(s))
-      const want = stateOf(fx)
-      return { fx, want, sent, said: want && sent ? AVAIL_MARKERS.zh[want].find((m) => sent.includes(m)) : undefined }
-    }
-    const coop = claimSay('合作公司', /合作|内部渠道|私下承诺|走关系/)
-    const fee = claimSay('2 万', /万/)
-    // 🔴 「合作公司」这条现在是**确定的**:PRIVATE_PROMISE 按原话改判,不看模型给的 topic,
-    //    所以它必然落 private-promise → not-published。「政府根本不公布这种名单,谁承诺都没依据」
-    //    才是对中介那句话的正确回答;说成「本站尚未收录」等于把锅揽到自己身上。
-    expect(coop.fx, 'facts 里没有「合作公司」那条主张').toBeTruthy()
-    expect(coop.want, `「合作公司」必须落 not-published(私人承诺桶),实际:${coop.want}\n${coop.fx?.label}`).toBe('not-published')
-    expect(coop.sent, `答复没交代「合作公司」那条:\n${r.answer}`).toBeTruthy()
-    expect(coop.said, `「合作公司」得说成「官方不公布」,答复没这么说:\n${coop.sent}`).toBeTruthy()
-    // 收费那条:槽位模型偶尔会把两句并成一条主张,所以按「存在才断言」守。
-    // 🔴 2026-08-04 改判:收费**不是**「本站尚未收录」(那句读起来像「我们回头会收录」),
-    //    而是**没有任何一级政府公布中介的收费与承诺** → not-published + MONEY_WHY。
-    //    生产实录里英文用户问「An agent wants $20k … Worth it?」被答成 "our site has not indexed this yet",
-    //    等于把中介最爱钻的空子替他堵上了嘴。要守的不变量仍是:**收费与私人承诺不共用一句解释**。
-    if (fee.fx && fee.fx !== coop.fx) {
-      expect(fee.want, `「2 万」应是 not-published(官方不公布中介收费),实际:${fee.want}`).toBe('not-published')
-      expect(fee.fx.label, `「2 万」那条没带上「谁也核不了」的解释:\n${fee.fx.label}`).toContain(MONEY_WHY.zh)
-      expect(coop.fx!.label, '「合作公司」那条该带 PROMISE_WHY,不是 MONEY_WHY').toContain(PROMISE_WHY.zh)
-      expect(fee.sent, `答复没交代「2 万」那条:\n${r.answer}`).toBeTruthy()
-      expect(fee.said, `「2 万」得说成「官方不公布」:\n${fee.sent}`).toBeTruthy()
-    }
+    const commercial = r.facts.filter((x) => x.unit === 'claim' && /合作公司|2 万/.test(x.label))
+    expect(commercial, `商业话术没有合成一条:\n${commercial.map((x) => x.label).join('\n')}`).toHaveLength(1)
+    expect(commercial[0].label).toContain(PROMISE_WHY.zh)
+    expect(commercial[0].label).not.toMatch(/官方不公布|本站尚未收录|无法核实|谁也核不了/)
+    expect(r.answer, `答复没有直接判断收费/承诺能否证明结果:\n${r.answer}`).toMatch(/不能证明|不能当作|不是官方保证/)
+    expect(r.answer, `答复又退回“全都无法核实”的空话:\n${r.answer}`).not.toMatch(/这两项.*无法核实|全部.*无法核实|官方不公布这项数据|谁也核不了/)
 
     // 关键事实仍在:短是目标,丢事实不是。数字从 facts 里取(库里数会变,不写死)
     const keep = (x: Fact | undefined, why: string) => {

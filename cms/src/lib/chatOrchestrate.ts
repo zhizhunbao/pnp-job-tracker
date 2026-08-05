@@ -39,10 +39,8 @@ export type Fact = {
   /** 答复真的用到了这条吗(citeFacts 在答复落地后回读打的标)。前端出处区只列 true 的。 */
   cited?: boolean
 }
-/** 'other' = 主张不属于任何工具管得着的题目(中介收费这类)—— 不硬塞给某个工具去"核",
- *  否则会出现「问的是收费、答的是清单收录」这种各说各话。这类只如实说一句"本站没有这类数据"。
- *  ⚠️ **私人承诺不在这里**:「有合作公司 / 内部渠道 / 包过」有自己的桶(C1 的 'private-promise'),
- *  答的是「没有任何一级政府公布这种名单」——比「本站尚未收录」强得多,别让它掉回 'other'。 */
+/** 'other' = 主张不属于任何官方数据工具管得着的题目(中介收费这类)—— 不硬塞给某张表去“核”。
+ *  收费是交易条件,私人承诺有自己的 'private-promise' 桶;两者在见客层合成一条“不能证明结果”的判断。 */
 export type SlotClaimTopic = ClaimTopic | 'other'
 export type SlotClaim = { text: string; topic: SlotClaimTopic; province?: string }
 export type Slots = {
@@ -268,8 +266,7 @@ export const isSelfStatement = (text: string): boolean =>
   SELF_FAMILY_RE.test(text) && !ATTRIBUTION_RE.test(text)
 
 /**
- * 🔴 **这条主张真的提到钱了吗** —— MONEY_WHY(「没有任何一级政府公布中介的收费或承诺,
- * 所以这条金额谁也核不了」)只许挂在真提到金额/收费的主张上。挂错一次,读者就被告知了
+ * 🔴 **这条主张真的提到钱了吗** —— 报价判断只许挂在真提到金额/收费的主张上。挂错一次,读者就被告知了
  * 一个他从没听说过的价钱。判据只认**写在原话里的**金额与收费词,不看模型给的 topic。
  */
 const MONEY_RE =
@@ -288,8 +285,7 @@ export const SLOT_SYSTEM = [
   'RULES:',
   '- claims = EVERY sentence the user attributes to someone else (中介/agent, 朋友/friend, school, consultant). Copy their wording verbatim.'
     + ' This is the field people get wrong: if the message contains 中介说 / 朋友说 / they told me / I was told, claims MUST NOT be empty.',
-  // 🔴 一条主张一项:合并了,下游就只能给它一个状态 —— 而「要收 2 万」(本站没收录)和「有合作公司」
-  //    (官方不公布)状态不同,揉在一起必然吞掉一个,那正是这套系统最不能出的错。
+  // 一条主张一项:官方事实仍要逐条对账;收费与包办在见客层会有意识地合成一条交易判断。
   '- ONE assertion per claim item. If one sentence carries a promise about a company AND a fee AND a timeline, that is THREE claim'
     + ' items, each with its own text and topic. Never put two assertions into one text — they get different answers.',
   '- topic: coverage = "province X wants my occupation"; thresholds = "you need N years / this score"; jobs = "there are jobs there";'
@@ -333,8 +329,7 @@ export function normalizeSlots(raw: any): Omit<Slots, 'noc'> & { noc: string | n
       const text = c.text.trim().slice(0, 160)
       // 🔴 私人承诺按**原话**改判,不信模型给的 topic(chatTools 的 PRIVATE_PROMISE,**复用不重写**:
       //    两份词表迟早分叉)。为什么在这儿判:topic 是模型猜的,「中介说曼省有合作公司」它给过 ops,
-      //    也给过 other —— 给 other 就绕开了 checkClaims,被编排层硬写成「本站尚未收录」,
-      //    而正确的话是「政府根本不公布这种名单,所以谁承诺都没依据」。对用户来说这两句天差地别。
+      //    也给过 other。归进专桶后不查不相干的官方表,见客层直接说明私人承诺不能当作官方保证。
       //    放在 normalizeSlots 是因为这是 topic 归一的唯一入口:slots 一改,前端与下游全都一致。
       const topic = PRIVATE_PROMISE.test(text) ? 'private-promise' : normTopic(c.topic)
       return { text, topic, ...(p ? { province: p } : {}) }
@@ -556,18 +551,11 @@ const CLAIM_LEAD: Record<ChatLang, [string, string, string]> = {   // [开头, �
   en: ['On what you were told ("', '")', ': '],
   ko: ['「', '」라고 들으신 건', ' — '],
 }
-/**
- * 钱与承诺(topic='other':中介收 X 万 / 收费 / 报价)**不是「本站尚未收录」**。
- * 2026-08-04 生产实录:英文「An agent wants $20k for a carpenter offer in Manitoba」被答成
- * "our site has not indexed this yet" —— 读起来像「我们回头会收录」,而真相是**没有任何一级政府
- * 公布中介收费与承诺**,所以谁也核不了。这两句对用户是天差地别(前者让他继续等,后者让他警觉)。
- * 状态句照旧取 AVAIL_SENTENCE['not-published'](出口校验认的是它,不能换),后面接这句解释。
- */
+/** 私人报价是交易条件,不是一项政府数据。见客时直接回答它能不能证明结果,不套 Availability。 */
 export const MONEY_WHY: Record<ChatLang, string> = {
-  zh: '没有任何一级政府公布中介的收费或承诺,所以这条金额谁也核不了,只能看官方条款怎么写',
-  // 大写开头:它接在四态句的句号后面(`… (not that we failed to find it). no government publishes …` 是实测出来的病句)
-  en: 'No government publishes what a private agent charges or promises, so nobody can check this figure against anything official',
-  ko: '중개인의 수수료나 약속을 공개하는 정부는 없으므로 이 금액은 누구도 확인할 수 없습니다',
+  zh: '报价本身不能证明对方承诺的结果能办成;真正可核的是下面的官方清单和门槛',
+  en: 'A quoted fee does not prove that the promised outcome will happen; check the published lists and requirements below instead',
+  ko: '제시된 수수료만으로 약속한 결과가 이루어진다는 뜻은 아닙니다. 아래의 공식 목록과 요건을 확인해야 합니다',
 }
 /**
  * 私人承诺的解释句 —— **见客文案的单一来源在这一层**,不在工具层。
@@ -576,12 +564,12 @@ export const MONEY_WHY: Record<ChatLang, string> = {
  * 硬塞进去等于把语言关注点下沉到不该管它的层)。工具层给的**稳定标识**是 `topic === 'private-promise'`,
  * 见客的话由这里按用户语言出 —— 和 AVAIL_SENTENCE / LBL 一个道理。88% 是英文流量,这条尤其不能凑合。
  *
- * 这句是这个产品对中介的杀手锏:不评价对方,只说清「谁也核不了」和「为什么谁也核不了」。
+ * 私人销售承诺不是一项待查的政府数据。这里直接回答「能不能当保证」,再把读者带回真正可核的门槛。
  */
 export const PROMISE_WHY: Record<ChatLang, string> = {
-  zh: '这类主张谁也核不了:没有任何一级政府公布中介与雇主的合作名单或内部渠道,省提名只认官方条款,不认私下承诺',
-  en: 'Nobody can check this: no government publishes agent-employer partner lists or inside channels, and a nomination follows the published rules, not a private promise',
-  ko: '이런 주장은 누구도 확인할 수 없습니다: 중개인과 고용주의 제휴 명단이나 내부 경로를 공개하는 정부는 없으며, 주정부 지명은 공식 조항만 인정합니다',
+  zh: '这类私人承诺不能当作官方保证;真正可核的是下面的官方清单和门槛',
+  en: 'A private promise is not an official guarantee; check the published lists and requirements below instead',
+  ko: '이런 사적인 약속은 공식 보장이 아닙니다. 아래의 공식 목록과 요건을 확인해야 합니다',
 }
 
 /** fact.label 的硬帽(见 fact():prompt 预算、降级清单、前端出处表共用同一个上限)。 */
@@ -605,18 +593,21 @@ export function claimLabel(lead: string, text: string, close: string, rest: stri
   return `${lead}${text.length > room ? `${text.slice(0, room - 1)}…` : text}${close}${rest}`
 }
 const sepOf = (l: ChatLang) => (l === 'en' ? '. ' : '。')
-/**
- * 🔴 topic='other' 的主张 → 一句成品话,**分岔只看原话里有没有钱**(纯函数,不看模型给的 topic):
- *   ① 真提到金额/收费 → 「官方不公布」+ MONEY_WHY(没有任何一级政府公布中介的收费与承诺);
- *   ② 没提钱 → 只说「本站尚未收录这项数据」,**一个字都不许提金额**。
- * 2026-08-06 实测就是栽在②:用户说「老婆和两个孩子一起过来」,答复接上一句「这条金额谁也核不了」——
- * 把「你被人告知过某个价钱」强加给了一个从没提过钱的人。说错数字还能改口,替他编经历不能。
- */
+/** 报价走交易判断;真正未收录的普通主张才走 Availability。 */
 export function otherClaimLabel(text: string, lang: ChatLang): string {
   const [lead, close, dash] = CLAIM_LEAD[lang]
   const money = isMoneyTalk(text)
-  const state = AVAIL_SENTENCE[lang][money ? 'not-published' : 'not-collected']
-  return claimLabel(lead, text, close, `${dash}${state}${money ? `${sepOf(lang)}${MONEY_WHY[lang]}` : ''}`)
+  return claimLabel(lead, text, close, `${dash}${money ? MONEY_WHY[lang] : AVAIL_SENTENCE[lang]['not-collected']}`)
+}
+
+/** 收费与包办话术合成一条结论,避免同一问答连续念两遍“无法核实”。 */
+export function commercialClaimLabel(texts: string[], lang: ChatLang): string {
+  const [lead, close, dash] = CLAIM_LEAD[lang]
+  const unique = [...new Set(texts.map((x) => x.trim()).filter(Boolean))]
+  const joiner = lang === 'en' ? '; ' : lang === 'ko' ? '; ' : ';'
+  const quoted = unique.join(joiner)
+  const promise = unique.some((x) => PRIVATE_PROMISE.test(x))
+  return claimLabel(lead, quoted, close, `${dash}${promise ? PROMISE_WHY[lang] : MONEY_WHY[lang]}`)
 }
 
 /**
@@ -1079,7 +1070,10 @@ export async function collectFacts(
         // h.label 是库里的中文显示名(「MB 在需职业」);官方原名 h.stream 本身就是英文,en/ko 有它就够了
         out.push(fact('lookupCoverage', `${c.province} ${h.type === 'ineligible' ? T.listEx : T.listIn} NOC ${noc}: ${h.stream}`, null, zhOnly(h.label, lang), 'list', h.evidence))
       }
-    } else if (slots.provs.includes(c.province)) {
+    // exclusion = 主线按 offer/TEER 或排除清单判断,没有“这份职业清单收不收”这一问。
+    // lookupCoverage 的策略说明没有逐 NOC evidence,不把它包装成一条“官方不公布”见客事实；
+    // 真正可核的 offer/TEER/雇主门槛由紧接着的 lookupThresholds 提供并逐行挂官方出处。
+    } else if (slots.provs.includes(c.province) && c.coverage !== 'exclusion') {
       out.push(statusFact('lookupCoverage', `${c.province} ${T.occList}`, c.availability, zhOnly(c.note, lang), c.hits[0]?.evidence.url ?? '', lang))
     }
   }
@@ -1092,12 +1086,16 @@ export async function collectFacts(
     .slice(0, 3)
   for (const p of thrProvs) {
     if (p.availability !== 'ok') { out.push(statusFact('lookupThresholds', `${p.province} ${T.officialReq}`, p.availability, zhOnly(p.note, lang), '', lang)); continue }
+    const streams = new Set(p.rows.filter((x) => x.need != null).map((x) => x.stream).filter(Boolean))
     for (const r of p.rows.filter((x) => x.need != null).slice(0, 4)) {
       // verdict/short 也是内部速记(verdict= 在泄露词表里),同样在这一层就换成人话。
       // 🔴 「未判定」且没差额 = 一个字的信息都没有,却会被模型抄成「具体未判定」这种废话
       //    (2026-08-05 实录 C13 中文答复最后半句)。没话说就别给材料 —— 少给比多写一条 RULE 管用。
       const v = r.verdict === 'unknown' && r.short == null ? '' : (T[r.verdict as 'pass' | 'fail' | 'unknown'] ?? '')
-      out.push(fact('lookupThresholds', `${p.province} ${T.factor[r.factor] ?? r.factor}`, r.need,
+      // 同省规则若来自多条官方通道，必须把通道名写进事实。否则模型会把 EDI 雇主门槛、SWM 在职时长
+      // 和职业清单语言档硬拼成一条“同时满足”的路线；每个数字虽有出处，组合起来仍是假话。
+      const stream = streams.size > 1 && r.stream ? ` ${r.stream}` : ''
+      out.push(fact('lookupThresholds', `${p.province}${stream} ${T.factor[r.factor] ?? r.factor}`, r.need,
         `${v}${r.short != null ? `,${T.short} ${r.short}` : ''}`, r.unit, r.evidence))
     }
   }
@@ -1124,15 +1122,14 @@ export async function collectFacts(
   } else {
     out.push(statusFact('lookupEE', T.eeAll, ee.availability, zhOnly(ee.note, lang), '', lang))
   }
-  // ⑦ 中介对账三分法(他说的 / 核不了的 / 他没提的)
-  //    label 直接写成**一句能照抄的话**:「别人跟他说的:「原话」→ 官方不公布这项数据(不是本站没查到)」。
-  //    只把四态塞进 valueText 是不够的 —— 实测模型会把两条状态不同的主张并成一句(「关于收 2 万及所谓
-  //    合作公司的说法,本站未收集此类数据」),把「官方不公布」整个吞掉。一条主张一句成品,它才照抄不合并。
+  // ⑦ 第三方说法对账。私人报价/包办不是一项政府数据:所有商业话术只给一条判断,
+  //    不套「官方不公布」,也不让收费与承诺各重复一遍同义空话。
   const [lead, close, dash] = CLAIM_LEAD[lang]
-  // 只剩「本站真没有这类数据」的(中介收费这种)。私人承诺已在 normalizeSlots 按原话改判进 C1 的
-  // private-promise 桶,答的是「政府根本不公布这种名单」——别让它掉回这条「尚未收录」的路。
-  // 收费与非收费的分岔在 otherClaimLabel 里(纯函数):**没提钱的主张不许被安上一句金额解释**。
-  for (const c of slots.claims.filter((x) => x.topic === 'other')) {
+  const commercial = slots.claims.filter((c) => c.topic === 'private-promise' || isMoneyTalk(c.text))
+  if (commercial.length) {
+    out.push(fact('checkClaims', commercialClaimLabel(commercial.map((c) => c.text), lang), null, '', 'claim', { url: '/', fetched: '' }))
+  }
+  for (const c of slots.claims.filter((x) => x.topic === 'other' && !isMoneyTalk(x.text))) {
     out.push(fact('checkClaims', otherClaimLabel(c.text, lang), null, '', 'claim', { url: '/', fetched: '' }))
   }
   if (claims) {
@@ -1148,6 +1145,7 @@ export async function collectFacts(
       // 四态成句照旧放最前 —— 它是出口校验认状态的锚点,不能被解释句顶掉。
       const sep = sepOf(lang)
       const isPromise = c.claim.topic === 'private-promise' || PRIVATE_PROMISE.test(c.claim.text || '')
+      if (isPromise) continue
       const why = zhOnly(c.why, lang).trim()
       // availability='ok' 时连 why 都不要:T.claimOk 已经把「这条能拿下面的官方数字对照」说完了,
       // 再接一句 C1 的「这条能对照:上面是本站职位板索引里的在招数」就是同一句话说两遍(2026-08-05 实测)。
@@ -1233,11 +1231,11 @@ const PLAYBOOK_ZERO_EXP =
   + 'Never phrase it as "you do not qualify" or "you fail".'
 const PLAYBOOK_CLAIMS =
   'PLAYBOOK: a third party told them something, so what they really want to know is whether it holds up and what they should go '
-  + 'and check. Sentence one: say straight out whether that promise can be checked at all, and why not if it cannot. Then the '
-  + 'things they can check, as one short bullet list. Each claim gets its own ordinary sentence carrying its own state — never a '
-  + 'bullet, and never one sentence for two claims. If they ask whether it is worth it or whether to trust someone, you do not '
-  + 'judge: what can be checked against '
-  + 'official records and what cannot is the answer.'
+  + 'and check. Sentence one must answer the trust or worth question. If CLAIM LINES contains a decision-oriented caveat about a '
+  + 'sales pitch, use it once and do not replace it with "cannot verify" or "the government does not publish this". Then give the '
+  + 'things they can actually check as one short bullet list. A genuine data-availability claim may get one separate sentence. Never '
+  + 'summarise the whole question as "everything cannot be verified". If they ask whether it is worth it or whether to trust '
+  + 'someone, the answer is which published requirements the pitch does or does not establish.'
 /**
  * 🔴 概率类问题走自己的路(2026-08-04 生产实录:追问「What are my odds of being picked?」
  * 回来的是上一轮那批清单与门槛,一个字没答概率)。本站红线是**不算胜率**,所以正确答复不是绕开话题,
@@ -1358,14 +1356,13 @@ export function synthMessages(
     //    (那道白名单会把行首的 1-2 位数当排版放行),而且渲染器不认它,`1.` 会原样留在正文里。
     // 🔴 **什么时候该用列表**(不说清,模型会把整篇变成列表 —— 那和一坨长文一样难读):
     //    只有 bucket A(「你可以自己去核的这几件」)这类**并列同质项**才配列表 —— 它们本来就被
-    //    RULE 0b 压成一句长句,那正是最难读的一句。答问题的那一两句、和「谁也核不了」那类结论句
-    //    **保持成句**:后者每句必须驮着「谁没有这份信息」和「说的是哪件事」,拆成项目符号会把这层
-    //    连接组织掐断,还会连出三条句式雷同的项(findSameOpening 存在的理由正是这个形状)。
+    //    RULE 0b 压成一句长句,那正是最难读的一句。答问题的交易判断与数据可得性句**保持成句**,
+    //    拆成项目符号会把主语和判断的连接掐断,还会连出三条句式雷同的项。
     'RULE 5: exactly two pieces of formatting are allowed, and nothing else. (a) a blank line between paragraphs; '
       + '(b) a line that begins with "- " for one item of a short list. Everything else is still forbidden: no "#" headings, '
       + 'no "**" bold, no tables and no "|" columns, no code blocks, no numbered list ("1." "2."), no URLs. '
       + 'Use the list for one thing only: the two to four parallel items this reader can go and check for himself. '
-      + 'The sentence that answers the question, and every sentence about something nobody can check, stay ordinary sentences and '
+      + 'The sentence that answers the question, and every sentence about data availability, stay ordinary sentences and '
       + 'are never bullets — a reply that is all bullets is exactly as unreadable as one with none. '
       + 'FACTS lines are unnumbered — never refer to "fact number N" and never repeat the two-letter tags as codes the reader must '
       + 'decode; the "- " in FACTS is our own formatting, not a shape to copy back.',
@@ -1482,7 +1479,7 @@ export function synthMessages(
       : '',
     // 🔴 旧版这里是一张编号提纲((1)…(2)…(3)…),而提纲就是**我们的字段顺序** —— 于是问「值不值」
     //    回来的是清单+门槛+EE 一条不落(2026-08-04/05 实录)。改成**两拨**:他能拿去做什么排在前,
-    //    谁也核不了的排在后。哪条进答复由「这句话答不答他的担心」定,不由我们的表定。
+    //    交易判断排在前、可核事实随后。哪条进答复由「这句话答不答他的担心」定,不由我们的表定。
     'After sentence one, group whatever still matters into two buckets and write bucket (A) first:\n'
       + '  (A) what he can check or settle himself — official requirement lines and counts from FACTS. Write bucket A as a short bullet '
       + 'list: leave a blank line, then two to four lines, each starting with "- " and holding one item, never one line per requirement '
@@ -1493,7 +1490,8 @@ export function synthMessages(
       //    (2026-08-06 实测:bucket A 改成列表后,金标 C01 把联邦技工通道的分数线整条丢了)。
       + 'If FACTS has a federal Express Entry line for this occupation, it is one of these checkable items too — it goes on its own '
       + 'line in the same list, never dropped for lack of room.\n'
-      + '  (B) what nobody can check — one ordinary sentence per claim, never a bullet, each carrying its own state.\n'
+      + '  (B) the decision-oriented caveat about a sales pitch — at most one ordinary sentence, never a bullet. A genuinely '
+      + 'different data-availability claim may follow once with its own state.\n'
       + (opts.zeroExp
         ? '  This person has no work experience yet: that is a matter of timing, never of eligibility. Never write that he cannot '
           + 'stay, cannot apply or does not qualify, and never say he has missed anything. The apprentice-friendly counts belong in '
@@ -1503,17 +1501,11 @@ export function synthMessages(
       + 'no fact the question did not call for. In particular, never spend a sentence saying we have not indexed a record the reader '
       + 'never asked about (draw history, operational stats) — that is our plumbing, not his answer.',
     `Never write any of these words: ${HEDGE_WORDS[lang].join(' / ')}.`,
-    // 主张行提到**头部**:① 它是这个产品的差异点,不能被 600 字挤掉;② 前 ~2000 字符才进缓存键。
-    // ③ 🔴 **这几行照抄,不许改写**:2026-08-05 实测,一放开(「用你自己的话说」)模型就把两条主张
-    //    压成一句「这两项承诺均无法核实」,连读者自己说的那个「2 万」都吞掉 —— 而那正是他来问的东西。
-    //    这几行是全站写得最仔细的见客文案(四态锚点 + 对中介的杀手锏),口吻已经在数据层调成人话了
-    //    (CLAIM_LEAD),模型的活是把它放在对的位置,不是重写它。
+    // 主张行提到头部:商业话术已经在 collectFacts 合成一条可直接见客的判断;真正的数据缺口仍保留四态。
     claimLines.length
-      ? 'CLAIM LINES — one sentence of yours per line, in your own words, and it has to name what he was told (his figure, his phrase) '
-        + 'and keep who does not have the information (the government does not publish it / our site has not indexed it). Never merge '
-        + 'two lines into one sentence — merging is a lie even when both carry the same state, because he was told two different '
-        + 'things — and never open a sentence with a bare state ("the government does not publish this", about nothing): say what it '
-        + 'is about first.\n'
+      ? 'CLAIM LINES — use each line at most once. A line may be a decision-oriented caveat or a genuine data-availability statement. '
+        + 'Do not turn a decision caveat into "cannot verify", "official data is not published", or a summary about all claims. '
+        + 'When a line does carry an availability state, keep its subject and state together.\n'
         + claimLines.join('\n')
       : '',
     `Occupation: ${opts.occ}`,

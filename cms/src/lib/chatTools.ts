@@ -34,15 +34,14 @@ export type Evidence = {
 /**
  * 数据可得性(铁律 ②)。四态互不替代:
  *   ok              有数据,可以直接说
- *   not-published   官方制度性不公布(ON 2026-06 改制后不公布职业清单;中介与雇主的「合作关系」
- *                   没有任何一级政府建名录)—— 不是我们没查
+ *   not-published   官方制度性不公布(如官方原文明确说不发布某项数据)—— 不是我们没查
  *                   ⚠️ 这一态是**最容易说谎的一态**:说「官方不公布」而官方其实公布了,比说「我不知道」
  *                   坏得多(中介正好钻这个空子)。写进 *_POLICY 之前必须**在 data/crawl 的 html_cache 里
  *                   找到官方原句**并把 URL + 原句抄进注释,爬完一个目录不算爬完全站。
  *                   两次翻车都在这上头:MB「不发运营统计」(2026-08-04 推翻)、SK「不公布逐轮抽选」
  *                   (同日推翻 —— 官方 EOI 页自己挂着结果下载件)。
  *   not-collected   本站未收录(官方有或未核实)—— **不得说成「没有」**
- *   not-applicable  该省不走这套制度(QC 自有体系)
+ *   not-applicable  查询本身不适用(如 QC 不走 PNP,或私人销售承诺不是一项政府数据)
  */
 export type Availability = 'ok' | 'not-published' | 'not-collected' | 'not-applicable'
 
@@ -142,6 +141,8 @@ const OPS_POLICY: Record<string, { published: boolean; url: string; note: string
 export type ThresholdRow = {
   factor: string                 // language / income / experience / wage / empYears / empRevenue / empStaff …
   subject: ReqSubject
+  /** 官方通道原名。一个省的规则可能来自多条互不等价的通道，消费端必须据此避免把门槛硬拼成一条路。 */
+  stream?: string
   /**
    * 阈值口径(rules.ts 原样带出)。**说这一行之前先看它**:
    * basis='employerTenure'(MB SWM)量的是「在**这家**雇主连续全职多久」,不是「N 个月技术工作经验」——
@@ -205,6 +206,7 @@ export async function lookupThresholds(
     }
     const rows = evaluateRequirements(reqs, p)
       .map((r): ThresholdRow => {
+        const source = reqs.find((q) => q.label === r.evidence.label && q.url === r.evidence.url)
         const evidence: Evidence = {
           url: r.evidence.url || fallback,
           fetched: r.evidence.fetched, label: r.evidence.label, section: r.evidence.section, effective: r.evidence.effective,
@@ -222,7 +224,8 @@ export async function lookupThresholds(
           }
         }).filter((t) => !!t.evidence.url)
         return {
-          factor: r.factor, subject: r.subject, ...(r.basis ? { basis: r.basis } : {}), verdict: r.verdict,
+          factor: r.factor, subject: r.subject, stream: source?.stream ?? '',
+          ...(r.basis ? { basis: r.basis } : {}), verdict: r.verdict,
           need: r.need, needLow: r.needLow, have: r.have, short: r.short, unit: r.unit,
           ...(tiers?.length ? { tiers } : {}),
           evidence,
@@ -862,7 +865,7 @@ export type ClaimsResult = { noc: string; checked: ClaimCheck[]; uncheckable: Cl
  * 这些是能对账的事实主张,不许被吃掉。
  */
 export const PRIVATE_PROMISE =
-  /合作(公司|企业|雇主|单位|关系)|内部(渠道|名额|指标|关系|价)|内推名额|走关系|有关系|认识(人|领导|移民官)|特殊渠道|绿色通道|包(过|下来|拿)|保(过|证过|证拿|证能|你拿|你过)|包?保\s*offer|保证.{0,4}(offer|提名|批)|partner(ed|ship)? (compan|employer|firm)|inside (track|channel|connection)|guarantee\w* (an? )?(offer|nomination|pr\b|approval)|special (channel|access)|connections? (at|with|inside)/i
+  /合作(公司|企业|雇主|单位|关系)|内部(渠道|名额|指标|关系|价)|内推名额|走关系|有关系|认识(人|领导|移民官)|特殊渠道|绿色通道|(?:老板|雇主).{0,12}(?:帮|协助).{0,8}(?:办|申请|提名|手续)|包(过|下来|拿)|包.{0,12}(offer|提名|省提名|pr\b)|保(过|证过|证拿|证能|你拿|你过)|包?保\s*offer|保证.{0,12}(offer|提名|批)|partner(ed|ship)? (compan|employer|firm)|inside (track|channel|connection)|guarantee\w*.{0,40}\b(offer|nomination|pr\b|approval)|(?:employer|boss|restaurant).{0,40}(?:help|handle|support).{0,30}(?:apply|application|nomination|paperwork|process)|보장.{0,20}(오퍼|지명|승인)|(오퍼|지명|승인).{0,30}보장|(고용주|사장).{0,30}(도와|돕|지원|처리).{0,20}(신청|절차|지명)?|특별 (경로|채널)|내부 (경로|채널)|special (channel|access)|connections? (at|with|inside)/i
 
 /**
  * availability='ok' 时的 why:**一句结论**,不超过一行。
@@ -879,9 +882,9 @@ const OK_WHY: Record<ClaimTopic, string> = {
   ee: '这条能对照:IRCC 类别抽选清单本站已收录,命中与否见上面',
   'private-promise': '',    // 私人承诺永远到不了 ok
 }
-/** 私人承诺的答复:说清"核不了"和"为什么谁也核不了",一句话,不评价对方。 */
+/** 私人承诺不是一项政府数据:不推断“官方不公布”,只标明它不能当作官方保证。 */
 const PRIVATE_PROMISE_WHY =
-  '这类主张本站核不了:没有任何一级政府公布中介与雇主的合作名单或内部渠道,省提名只认官方条款,不认私下承诺'
+  '私人承诺本身不能当作官方资格或结果保证,需按官方清单和门槛逐项对照'
 
 /**
  * 「中介说 X」。本工具**只对账,不评价**:每条主张挂上对应的官方事实与出处,
@@ -914,7 +917,7 @@ export async function checkClaims(pool: any, args: { noc: string; teer?: number 
     let why = ''
     if (topic === 'private-promise') {
       // 一张表都不查:查了也只会查出一个不相干的答案(这就是本桶存在的理由)
-      availability = 'not-published'
+      availability = 'not-applicable'
       why = PRIVATE_PROMISE_WHY
     } else if (topic === 'coverage') {
       const c = prov ? covOf(prov) : null

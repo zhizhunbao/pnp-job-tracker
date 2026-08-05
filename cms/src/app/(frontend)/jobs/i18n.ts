@@ -511,7 +511,7 @@ const zh: Dict = {
   'chat.try': '试试这样问',
   'chat.ex1': '安省大专毕业,做软件开发,还没工作,毕业后能留下吗?',
   'chat.ex2': '新斯科舍的餐厅给了我厨师 offer,老板说帮我办,可信吗?',
-  'chat.ex3': '中介收 2 万包曼省木匠 offer 和省提名,值吗?',
+  'chat.ex3': '中介说能包曼省木匠 offer 和省提名,可信吗?',
   'chat.hint': 'Enter 发送,Shift+Enter 换行',
   'chat.retry': '重试', 'chat.open': '打开',
   // 答复反馈(2026-08-05)。**点踩是数据缺口报警器,不是训练信号** —— 用户在替我们标注
@@ -1325,8 +1325,8 @@ const en: Dict = {
   // 空态三条示例:真人开口的第一句,三类人各一条(刚毕业没工作 / 有 offer / 中介开价)
   'chat.try': 'Try asking',
   'chat.ex1': 'Ontario college grad, software dev, no job yet — can I stay?',
-  'chat.ex2': 'I have a cook offer in Nova Scotia. Is this employer for real?',
-  'chat.ex3': 'An agent wants $20k for a carpenter offer in Manitoba. Worth it?',
+  'chat.ex2': 'A Nova Scotia restaurant gave me a cook offer and says it will help with the nomination. Can I trust that?',
+  'chat.ex3': 'An agent says they can guarantee a Manitoba carpenter offer and nomination. Can I trust that?',
   'chat.hint': 'Enter to send, Shift+Enter for a new line',
   'chat.retry': 'Retry', 'chat.open': 'Open',
   'chat.fb.ask': 'Did this help?', 'chat.fb.good': 'Helpful', 'chat.fb.bad': 'Not helpful',
@@ -2111,8 +2111,8 @@ const ko: Dict = {
   // 빈 화면 예시 3개:실제 사람이 처음 꺼내는 한 문장(졸업 직후 / 오퍼 보유 / 에이전트 견적)
   'chat.try': '이렇게 물어보세요',
   'chat.ex1': '온타리오 컬리지 졸업, 소프트웨어 개발자, 아직 무직인데 남을 수 있나요?',
-  'chat.ex2': '노바스코샤 식당에서 요리사 오퍼를 받았는데 고용주를 믿어도 될까요?',
-  'chat.ex3': '에이전트가 매니토바 목수 오퍼에 2만 달러를 요구합니다. 낼 만한가요?',
+  'chat.ex2': '노바스코샤 식당에서 요리사 오퍼를 받았고 고용주가 주정부 지명을 도와준다고 합니다. 믿어도 될까요?',
+  'chat.ex3': '에이전트가 매니토바 목수 오퍼와 주정부 지명을 보장한다고 합니다. 믿어도 될까요?',
   'chat.hint': 'Enter 전송, Shift+Enter 줄바꿈',
   'chat.retry': '다시 시도', 'chat.open': '열기',
   'chat.fb.ask': '도움이 되었나요?', 'chat.fb.good': '도움됨', 'chat.fb.bad': '도움 안 됨',

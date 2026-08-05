@@ -157,9 +157,10 @@ d('对话工具层(生产库只读)', () => {
       for (const c of r.uncheckable) {
         expect(c.claim.topic).toBe('private-promise')   // 原话说了算,topic 被改判
         expect(c.claim.text).toMatch(/中介说|他说/)      // 但原话一字不改
-        expect(c.availability).toBe('not-published')
+        expect(c.availability).toBe('not-applicable')
         expect(c.facts).toBeNull()                      // 一张表都没查
-        expect(c.why).toMatch(/核不了/)
+        expect(c.why).toMatch(/不能当作官方.*保证/)
+        expect(c.why).not.toMatch(/官方不公布|政府不公布|没有任何一级政府公布/)
         expect(c.why).not.toMatch(/运营统计|处理时长|月度/)
       }
       expect(r.unsaid.map((u) => u.province)).not.toContain('MB')
