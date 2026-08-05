@@ -13,7 +13,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import {
   askOccupation, AVAIL_MARKERS, clampAnswer, dropTrailingHedge, factsBlock, factSheet, fieldSearchTerm,
-  findEnglishUnits, findHedges, findForeignScript, findLeaks, findMergedStates, findMixedStates,
+  findEnglishUnits, findFactDump, findHedges, findForeignScript, findLeaks, findMergedStates, findMixedStates,
   findSameOpening, findShoutedWords, findWordNumbers, guardAnswer, isMoneyTalk, isSelfStatement,
   LBL, localizeUnits, missingClaimLines, normalizeSlots, MONEY_WHY, orchestrate, otherClaimLabel,
   PROMISE_WHY, resolveNoc, sayFact, stripMd, studyFieldOf, suggestOccupations, tidy,
@@ -265,6 +265,88 @@ describe('答复见客检查(不连模型)', () => {
     expect(tidy('**加粗**与 `等宽`')).toBe('加粗与 等宽')
     // 剥的是记号不是数字:guard 的账一分不能变
     expect(stripMd('**3** 个岗位')).toBe('3 个岗位')
+  })
+
+  // ── 🔴 允许的两样 / 禁掉的四样(2026-08-06,RULE 5 松绑)────────────────────────
+  //
+  // 前端 ChatText(3ebe64c)只认**空行分段**与**行首 `- `**。所以出口这道清洗的判据只有一条:
+  // **渲染得出来的留着,渲染不出来的剥掉**。留错一样 = 裸记号见客;剥错一样 = 渲染器白装(那正是
+  // 「格式乱」的病根 —— 提示词禁掉列表 + 出口全剥,答复只能是一坨长文)。两个方向都得有测试。
+  it('🔴 允许的两样活着出去:行首 `- ` 与空行分段,tidy 不许顺手吃掉', () => {
+    const listed = '曼省清单收了这个职业。\n\n- 雇主要经营满 3 年\n- 语言要到 CLB 5\n- 经验要满 12 个月\n\n中介那句话谁也核不了。'
+    expect(tidy(listed), 'tidy 把列表记号或分段吃掉了').toBe(listed)
+    // 空行只压不删:三个以上空行压成一个(排版),一个空行原样留着(那是分段)
+    expect(tidy('第一段。\n\n\n\n第二段。')).toBe('第一段。\n\n第二段。')
+    // 别家的项目符号归一成我们这一种(渲染器只认 `- `),不是剥掉
+    expect(tidy('* 星号项\n+ 加号项\n• 圆点项')).toBe('- 星号项\n- 加号项\n- 圆点项')
+    // 编号列表 → 项目符号:渲染器不认 `1.`,而行首序号又撞 guard 的白名单(按位置放行,不查 facts)
+    expect(tidy('1. 第一件\n2) 第二件')).toBe('- 第一件\n- 第二件')
+    expect(guardAnswer(tidy('1. 先找带训岗\n2. 攒满经验'), []).ok, '归一后行首序号不该再留在正文里').toBe(true)
+    // 剥的是记号不是内容:数字与字一个不少(guard 的账不能因为排版变)
+    expect(tidy('- **3** 个岗位')).toBe('- 3 个岗位')
+    // 🔴 第一条项目粘在上一句后面(实测中文 C01 原样):句末标点后紧跟 `- ` 一律补换行,
+    //    否则渲染器只认得后两条,同一份清单被劈成两半
+    expect(tidy('你缺的是第一段算数的工作。- MB 有 3 个岗\n- SK 有 6 个岗'))
+      .toBe('你缺的是第一段算数的工作。\n- MB 有 3 个岗\n- SK 有 6 个岗')
+    expect(tidy('You can check these yourself: - BC asks for 24 months'))
+      .toBe('You can check these yourself:\n- BC asks for 24 months')
+    // 但句子中间的连字符不是项目符号(减号、区间、复合词一个都不许被劈成列表)
+    expect(tidy('这份工作 3 - 5 年经验都收。')).toBe('这份工作 3 - 5 年经验都收。')
+    expect(tidy('BC requires 5 CLB - not 4.')).toBe('BC requires 5 CLB - not 4.')
+    // 🔴 出口那道砍劝告的工序也不许顺手改排版(实测 C01:模型交回来的空行是对的,是我们自己拼没了)
+    const paged = '你缺的是第一段算数的工作。\n\n- MB 有 3 个岗\n- SK 有 6 个岗\n\n曼省要求语言到 5 CLB。'
+    expect(dropTrailingHedge(paged, 'zh').text, '砍劝告那一步把空行吃掉了').toBe(paged)
+  })
+
+  it('🔴 禁掉的四样若出现,现有检查抓得到(标题 / 加粗 / 表格 / 编号)', () => {
+    // ① 标题、② 加粗:tidy 原地剥掉记号,一个都到不了读者眼前
+    expect(tidy('## 小标题\n正文**加粗**在此')).toBe('小标题\n正文加粗在此')
+    expect(tidy('答复里不该有 `等宽`')).toBe('答复里不该有 等宽')
+    // ③ 表格:表格的内容按定义就是逐行抄 FACTS —— findFactDump 的 ⓐ(`=`)和 ⓑ(≥3 条 label 被逐字抄)
+    const T = LBL.zh
+    const tf: Fact[] = [
+      f({ tool: 'lookupJobs', label: `MB ${T.apprOpenings} (NOC 72310)`, value: 3, unit: 'jobs', valueText: '' }),
+      f({ tool: 'lookupJobs', label: `BC ${T.apprOpenings} (NOC 72310)`, value: 20, unit: 'jobs', valueText: '' }),
+      f({ tool: 'lookupJobs', label: `SK ${T.apprOpenings} (NOC 72310)`, value: 13, unit: 'jobs', valueText: '' }),
+    ]
+    const table = `| 项目 | 值 |\n| ${tf[0].label} | 3 |\n| ${tf[1].label} | 20 |\n| ${tf[2].label} | 13 |`
+    expect(findFactDump(table, tf).length, `逐行抄 FACTS 的表格没抓到:\n${table}`).toBeGreaterThan(0)
+    expect(findFactDump('MB 要求申请人的语言达到 = 5 CLB', tf).length, '`=` 那个形状没抓到').toBeGreaterThan(0)
+    // 🔴 但门槛行不算「抄」:它的 label 是**半句话**,值接上去就是一句人话,照着说正是我们要的形状
+    //    (实测 C07 英文:四条 BC 门槛落进 bucket A 列表,老判据一判三中,把一稿好答复顶了回去)
+    const thr: Fact[] = [
+      f({ tool: 'lookupThresholds', label: `BC ${LBL.en.factor.experience}`, value: 24, unit: 'months', valueText: '' }),
+      f({ tool: 'lookupThresholds', label: `BC ${LBL.en.factor.empYears}`, value: 1, unit: 'years', valueText: '' }),
+      f({ tool: 'lookupThresholds', label: `BC ${LBL.en.factor.empStaff}`, value: 5, unit: 'people', valueText: '' }),
+    ]
+    const bucketA = `Here is what you can check.\n\n- ${thr[0].label} 24 months\n- ${thr[1].label} 1 year\n- ${thr[2].label} 5 staff`
+    expect(findFactDump(bucketA, thr), `门槛行落进列表被误判成「在背清单」:\n${bucketA}`).toEqual([])
+    // ④ 编号列表:归一成项目符号(见上一条)—— 行首序号不再有绕过 guard 的机会
+    expect(tidy('1. MB 有 3 个岗')).toBe('- MB 有 3 个岗')
+  })
+
+  // 🔴 列表项天然句式相近,那正是列表的用处 —— 收窄检查,不放弃列表
+  it('句式雷同这道检查不误伤列表:项目符号不算「在念表格」,散文照旧抓', () => {
+    // bucket A 按 RULE 0b 就该围着问题里那个省写 → 三条项目全以省名起头,老判据会一判三中
+    const listed = '曼省的官方清单收了木匠。\n\n- MB 要求雇主已经营满 3 年\n- MB 要求申请人的语言达到 5 CLB\n- MB 要求申请人的工作经验满 12 个月\n\n中介那句话谁也核不了。'
+    expect(findSameOpening(listed, 'zh'), `列表被误判成「在念表格」:\n${listed}`).toEqual([])
+    const enListed = 'Manitoba does list carpenters.\n\n- MB asks the employer for 3 years\n- MB asks you for 5 CLB\n- MB asks for 12 months of experience\n\nNobody can check what the agent promised.'
+    expect(findSameOpening(enListed, 'en'), `英文列表被误判:\n${enListed}`).toEqual([])
+    // 同样三句话,写成散文就还是「在念表格」—— 这道红线一个字没松
+    expect(findSameOpening('MB 要求雇主已经营满 3 年。MB 要求申请人的语言达到 5 CLB。MB 要求申请人的工作经验满 12 个月。', 'zh').length)
+      .toBeGreaterThan(0)
+    // 隔着一份清单的两句不叫「连着」:列表把连号打断
+    expect(findSameOpening('MB 要求雇主已经营满 3 年。\n- 一条项目\n- 两条项目\nMB 要求申请人的语言达到 5 CLB。MB 要求经验满 12 个月。', 'zh')).toEqual([])
+  })
+
+  it('长度上限按「行」收:项目符号一条算一行,超了照样截(不给「一省一行」开后门)', () => {
+    // 1 句答题 + 4 行清单 + 2 条主张 + 1 句收口 = 8 行,现在的口径下不许被截掉
+    const eight = ['这份工作曼省的清单收了。', '- 雇主经营满 3 年', '- 语言到 CLB 5', '- 经验满 12 个月', '- 岗位 3 个',
+      '中介说的合作公司谁也核不了。', '要收 2 万这条官方不公布。', '公司开了几年问雇主就知道。'].join('\n')
+    expect(clampAnswer(eight, 'zh'), `八行的正常答复被截了:\n${clampAnswer(eight, 'zh')}`).toBe(eight)
+    // 一省一行摞十四条 = 老毛病换了张脸,照截
+    const dump = Array.from({ length: 14 }, (_, i) => `- 第 ${i} 个省有岗位`).join('\n')
+    expect(clampAnswer(dump, 'zh').split('\n').filter((l) => l.trim()).length).toBeLessThanOrEqual(11)
   })
 
   it('降级清单排得能读:说明是人话、主张排最前、四态行不拖着长注、管道注不进清单', () => {
@@ -756,3 +838,4 @@ ${r.answer}
     console.log(`\n──── 金标 C01 答复全文(${r.answer.length} 字)────\n${r.answer}\n────────────────────────────\n`)
   }, 180_000)
 })
+

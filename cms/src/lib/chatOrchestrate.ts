@@ -655,12 +655,21 @@ export const LBL: Record<ChatLang, LabelDict> = {
  *
  * 收口在 `fact()` 这一个入口:label/valueText 是 markdown 唯一的入境口,在这儿剥干净,
  * prompt / 降级清单 / 出处表都不必再各自处理(各自处理迟早漏一处)。
+ *
+ * 🔴 2026-08-06 起**两样不剥**:行首 `- ` 与空行。它们是前端 ChatText(3ebe64c)真渲染得出来的
+ * 两样(项目符号组 + 空行分段),剥掉就等于把渲染器废了 —— 「格式乱」的病根正是这里曾经全剥。
+ * 剥的判据从此只有一条:**渲染不出来的记号才剥**(`**` `#` 反引号 → 剥;`*`/`+`/`•` → 归一成 `- `;
+ * 编号列表 → 也归一成 `- `,理由见下)。
  */
 export const stripMd = (s: string): string => s
   .replace(/\*\*/g, '')                       // 加粗记号:去记号留字
   .replace(/`/g, '')                          // 等宽记号
   .replace(/^[ \t]*#{1,6}[ \t]*/gm, '')       // 小标题
-  .replace(/^[ \t]*[*+][ \t]+/gm, '- ')       // markdown 项目符号 → 我们自己的破折号(全站一种列表记号)
+  .replace(/^[ \t]*[*+•][ \t]+/gm, '- ')      // 别家的项目符号 → 我们这一种(渲染器只认 `- `)
+  // 🔴 编号列表 → 项目符号。两个理由,都不是审美:① 渲染器不认 `1.`,它会原样留在正文里;
+  //    ② 行首编号撞 guard 的**行首序号白名单**(那道白名单按位置放行 1-2 位数,不查 facts)——
+  //    归一掉序号,这个盲区就不存在了。提示词那头照旧明令禁止,这里是回来自己收的那一道。
+  .replace(/^[ \t]*\d{1,2}[.)][ \t]+/gm, '- ')
 
 const fact = (tool: string, label: string, value: number | null, valueText: string, unit: string, ev: { url: string; fetched: string }): Fact => ({
   tool, label: stripMd(label).slice(0, 320), value, valueText: stripMd(valueText).slice(0, 110), unit,
@@ -895,8 +904,9 @@ const PLAYBOOK_ZERO_EXP =
 const PLAYBOOK_CLAIMS =
   'PLAYBOOK: a third party told them something, so what they really want to know is whether it holds up and what they should go '
   + 'and check. Sentence one: say straight out whether that promise can be checked at all, and why not if it cannot. Then the '
-  + 'things they can check, together in one sentence. Each claim gets its own sentence carrying its own state — never one sentence '
-  + 'for two claims. If they ask whether it is worth it or whether to trust someone, you do not judge: what can be checked against '
+  + 'things they can check, as one short bullet list. Each claim gets its own ordinary sentence carrying its own state — never a '
+  + 'bullet, and never one sentence for two claims. If they ask whether it is worth it or whether to trust someone, you do not '
+  + 'judge: what can be checked against '
   + 'official records and what cannot is the answer.'
 /**
  * 🔴 概率类问题走自己的路(2026-08-04 生产实录:追问「What are my odds of being picked?」
@@ -962,9 +972,9 @@ export function synthMessages(
     // 🔴 组织方式(2026-08-05,Frank:「按自己的字段顺序倾倒」):读者要的是「这事靠不靠谱、我该去核什么」,
     //    所以第二句起按**他能拿去做什么**分两拨,能核的排前 —— 不是按我们的表分。
     'RULE 0b: after that first sentence, sort what is left by what the reader can do with it, never by what kind of record it came '
-      + 'from. First the things he can check or settle himself — put them together in one single sentence as a short list ("the province '
-      + 'asks the employer to have been in business N years, you to reach CLB N, and N months of experience"), never one sentence per '
-      + 'requirement and never one sentence per province. Then, only if it still matters, the things nobody can check, each with its own '
+      + 'from. First the things he can check or settle himself — put them in one short bullet list, one item per line beginning with '
+      + '"- " ("- the province asks the employer to have been in business N years"), two to four lines, never one line per province. '
+      + 'Then, only if it still matters, the things nobody can check, each as an ordinary sentence with its own '
       + 'state sentence. You may end with one short sentence saying what single question or document settles one of those checkable '
       + 'items (for example that how long the company has been running is settled by asking the employer) — state it as a fact about '
       + 'what settles it, never as advice, never with the words recommend / should / make sure / hurry.',
@@ -988,8 +998,25 @@ export function synthMessages(
       + 'floating with no subject ("our site has not indexed this yet", about nothing) tells the reader nothing.',
     'RULE 4: do not name programs, provinces, requirements, fees or dates that are not in FACTS, and do not give legal '
       + 'or regulatory statements ("the law forbids X") — if FACTS does not say it, you do not say it.',
-    'RULE 5: plain sentences only. No markdown, no headings, no bold, no bullet list, no tables, no URLs. '
-      + 'FACTS lines are unnumbered — never refer to "fact number N" and never repeat the two-letter tags as codes the reader must decode.',
+    // 🔴 2026-08-06 松绑(Open WebUI 取样得出的因果):我们**渲染不了 markdown** → 这条曾经明令
+    //    「不许标题/加粗/列表」→ 于是答复只能是一坨无结构长文。「格式乱」不是乱,是被我们自己禁掉的。
+    //    前端 ChatText(3ebe64c)现在**只认两样**:空行分段、行首 `- `(连续多条合成一组、真悬挂缩进),
+    //    不认标题/加粗/表格/代码块。所以这条改成**允许那两样、其余仍禁** —— 允许的正好等于渲染得出来的,
+    //    多允许一样就是又一个见客的裸记号。编号列表(`1.`)也仍然禁:它撞 guard 的行首序号白名单
+    //    (那道白名单会把行首的 1-2 位数当排版放行),而且渲染器不认它,`1.` 会原样留在正文里。
+    // 🔴 **什么时候该用列表**(不说清,模型会把整篇变成列表 —— 那和一坨长文一样难读):
+    //    只有 bucket A(「你可以自己去核的这几件」)这类**并列同质项**才配列表 —— 它们本来就被
+    //    RULE 0b 压成一句长句,那正是最难读的一句。答问题的那一两句、和「谁也核不了」那类结论句
+    //    **保持成句**:后者每句必须驮着「谁没有这份信息」和「说的是哪件事」,拆成项目符号会把这层
+    //    连接组织掐断,还会连出三条句式雷同的项(findSameOpening 存在的理由正是这个形状)。
+    'RULE 5: exactly two pieces of formatting are allowed, and nothing else. (a) a blank line between paragraphs; '
+      + '(b) a line that begins with "- " for one item of a short list. Everything else is still forbidden: no "#" headings, '
+      + 'no "**" bold, no tables and no "|" columns, no code blocks, no numbered list ("1." "2."), no URLs. '
+      + 'Use the list for one thing only: the two to four parallel items this reader can go and check for himself. '
+      + 'The sentence that answers the question, and every sentence about something nobody can check, stay ordinary sentences and '
+      + 'are never bullets — a reply that is all bullets is exactly as unreadable as one with none. '
+      + 'FACTS lines are unnumbered — never refer to "fact number N" and never repeat the two-letter tags as codes the reader must '
+      + 'decode; the "- " in FACTS is our own formatting, not a shape to copy back.',
     // 🔴 实测的失败形态就是这个:把 FACTS 当稿子逐行抄(「ON requires … = 5 CLB」「AB open postings … equal 162 jobs」)。
     //    数字全溯得回 facts,所以 guard 放行 —— 只能在这条规则 + 出口的 findFactDump 两头堵。
     // ⚠️ 2026-08-06 实测又见一种抄法:`该职业在 MPNP In-Demand Occupations List: MB 在需职业清单中` ——
@@ -997,8 +1024,9 @@ export function synthMessages(
     'RULE 5b (hard): never transcribe a FACTS line. No "=" anywhere in the reply, no "label: value" or "label = value" shapes, '
       + 'and never copy a FACTS label together with the colon that follows it — the words after that colon are an official name, so '
       + 'write them inside a sentence of your own. Also, '
-      + 'never one sentence per province: if several provinces carry the same kind of number, they go in one single sentence, and if they do '
-      + 'not help answer the question they do not go in at all. A reply that walks down the FACTS list is a failed reply.',
+      + 'never one sentence and never one bullet per province: if several provinces carry the same kind of number, they go in one single '
+      + 'sentence or one single bullet, and if they do not help answer the question they do not go in at all. A reply that walks down the '
+      + 'FACTS list is a failed reply, and turning that walk into bullets does not make it a different reply.',
     // 🔴 句式雷同 = 在念表格(2026-08-05 实录:"NS requires the applicant to reach…" / "NS requires the applicant to have…"
     //    / "NS requires the employer to…" 连着三句)。出口有 findSameOpening 机械复查这条。
     'RULE 5c (hard): no two sentences in a row may begin with the same words, and three sentences with the same opening is a failed '
@@ -1011,7 +1039,8 @@ export function synthMessages(
       + 'PNP, EE, CRS, CLB, NOC, TEER, LMIA plus two-letter province codes. No other word may be written in capital letters, not even '
       + 'for emphasis. Keep the subject straight: a requirement on the employer is not a requirement on the applicant.',
     // ③ 上游忽略 max_tokens(friendLlm 顶部实测记录)→ 长度只能靠这条 + 出口截断
-    `RULE 7 (hard): at most ${LEN_CAP[lang]} characters and at most eight sentences — but the target is three or four, plus one more `
+    `RULE 7 (hard): at most ${LEN_CAP[lang]} characters and at most ${SENT_CAP} lines, where every bullet counts as one line — but the `
+      + 'target is three or four sentences plus a two-to-four-line list, plus one more sentence '
       + 'for each separate thing this person was told. Stop the moment '
       + 'the question is answered; an extra fact nobody asked for makes the reply worse, not fuller. Everything past the cap is cut off '
       + 'before the reader sees it. Never restate a number you already gave, and never write a closing summary sentence.',
@@ -1070,7 +1099,8 @@ export function synthMessages(
     // 而每条主张必须各说各的 —— 长度目标不能和这条硬要求打架。
     // 段名(QUESTION / FACTS / EARLIER / CLAIM LINES)保持大写:它们是结构锚点,而且 findLeaks 逐个盯着。
     // 其余一律不用大写做强调 —— 强调词会被原样抄进答复(2026-08-06 实测 `**WE** do not have a record…`)。
-    `Reply language: ${L}. Length: at most ${LEN_CAP[lang]} characters, about ${3 + claimLines.length} sentences, eight at the very most.`,
+    `Reply language: ${L}. Length: at most ${LEN_CAP[lang]} characters, about ${3 + claimLines.length} sentences plus a short bullet `
+      + `list, ${SENT_CAP} lines at the very most (a bullet is a line).`,
     `QUESTION: ${userText}`,                       // 用户原话必须进缓存键,否则两个人可能拿到同一段答复
     // 目标钉在最前面(头 2000 字符定生死):这一步是**答这个人的担心**,不是把 FACTS 组织成人话
     'Task: work out what this person is worried about or trying to decide, and answer that one thing. Sentence one speaks to the worry. '
@@ -1099,15 +1129,20 @@ export function synthMessages(
     //    回来的是清单+门槛+EE 一条不落(2026-08-04/05 实录)。改成**两拨**:他能拿去做什么排在前,
     //    谁也核不了的排在后。哪条进答复由「这句话答不答他的担心」定,不由我们的表定。
     'After sentence one, group whatever still matters into two buckets and write bucket (A) first:\n'
-      + '  (A) what he can check or settle himself — official requirement lines and counts from FACTS. All of bucket A goes in one single '
-      + 'sentence listing three or four items, never one sentence per requirement, never one sentence per province. Prefer the items '
+      + '  (A) what he can check or settle himself — official requirement lines and counts from FACTS. Write bucket A as a short bullet '
+      + 'list: leave a blank line, then two to four lines, each starting with "- " and holding one item, never one line per requirement '
+      + 'of the same kind and never one line per province. Prefer the items '
       + 'about the province in the question: whether its official list covers this occupation, what the applicant must reach, how '
-      + 'much experience, and what is asked of the employer.\n'
-      + '  (B) what nobody can check — one sentence per claim, each carrying its own state.\n'
+      + 'much experience, and what is asked of the employer. '
+      // 🔴 联邦通道那条也是「他自己去核得了的官方数字」,只是它不姓省 —— 不点名它就会被挤掉
+      //    (2026-08-06 实测:bucket A 改成列表后,金标 C01 把联邦技工通道的分数线整条丢了)。
+      + 'If FACTS has a federal Express Entry line for this occupation, it is one of these checkable items too — it goes on its own '
+      + 'line in the same list, never dropped for lack of room.\n'
+      + '  (B) what nobody can check — one ordinary sentence per claim, never a bullet, each carrying its own state.\n'
       + (opts.zeroExp
         ? '  This person has no work experience yet: that is a matter of timing, never of eligibility. Never write that he cannot '
           + 'stay, cannot apply or does not qualify, and never say he has missed anything. The apprentice-friendly counts belong in '
-          + 'bucket A, all provinces in one single sentence.\n'
+          + 'bucket A, all provinces on one single bullet line.\n'
         : '')
       + 'Skip a bucket entirely if it adds nothing. Nothing else goes in: no index-scope plumbing, no closing note, no closing advice, '
       + 'no fact the question did not call for. In particular, never spend a sentence saying we have not indexed a record the reader '
@@ -1132,7 +1167,7 @@ export function synthMessages(
     hist ? `EARLIER (already read by this person — do not say any of it again):\n${hist}` : '',
     `FACTS (the only numbers you may use):\n${factsBlock(rest, Math.max(600, budget), lang)}`,
     `Write the reply now, entirely in ${L}, at most ${LEN_CAP[lang]} characters, starting with the sentence that answers the QUESTION. `
-      + 'Plain sentences, no headings, no internal codes, '
+      + 'Ordinary sentences plus at most one short "- " list, no headings, no bold, no tables, no numbered list, no internal codes, '
       + 'no English words other than an official programme name plus its gloss, and no number that is not in FACTS or the QUESTION.',
   ].filter(Boolean).join('\n\n')
   return [{ role: 'system', content: system }, { role: 'user', content: user }]
@@ -1196,8 +1231,18 @@ export function findWordNumbers(answer: string, lang: ChatLang): string[] {
 }
 
 /** 模型总爱加粗和小标题(RULE 5 求不动)——回来自己剥掉,比在 prompt 里反复求它便宜。只删记号不动数字。
- *  记号词表与数据层同一份(stripMd):两处各写各的,迟早一处漏一种记号。 */
-export const tidy = (s: string) => stripMd(s).replace(/\n{3,}/g, '\n\n').trim()
+ *  记号词表与数据层同一份(stripMd):两处各写各的,迟早一处漏一种记号。
+ *  🔴 **允许的两样必须活着出去**:行首 `- ` 与空行分段(`\n{3,}` 只是把多余空行压成一个,不是吃掉分段)——
+ *  前端 ChatText 只认这两样,在这儿剥掉一样,渲染器就白装了。
+ *
+ *  🔴 **第一条项目常常没换行**(2026-08-06 实测中文 C01:`…而非省份选择。- MB、SK、NS 均有带学徒岗位…`)——
+ *  提示词写着「另起一行」也压不住,而渲染器只认**行首** `- `,于是那一条被读成正文的一部分,
+ *  后两条却成了列表:同一份清单被劈成两半,比不排版还难看。句末标点后面紧跟 `- ` 是**位置可判定的**,
+ *  回来自己补那个换行(和 dropTrailingHedge 同一个手法:求不动的东西,出口自己动手)。 */
+export const tidy = (s: string) => stripMd(s)
+  .replace(/([。！？；：!?;:])[ \t]*-[ \t]+(?=\S)/g, '$1\n- ')
+  .replace(/\n{3,}/g, '\n\n')
+  .trim()
 
 // ── 🔴 出口校验②:内部状态码 / 字段名不许见客 ────────────────────────────────
 //
@@ -1415,10 +1460,17 @@ export function findMergedStates(answer: string, facts: Fact[], lang: ChatLang):
 //   ⓐ 答复里出现 `=`(FACTS 行的形状 `- 标签 = 值`;正常人话里不会出现);
 //   ⓑ 三条及以上 fact 的 label(≥20 字符的那部分)被逐字抄进答复 = 在背清单,不是在答题。
 // 命中 → 进重试黑名单(和内部码同一条路);再犯才降级成事实清单(那张清单**自带说明**,不冒充答复)。
+// 🔴 2026-08-06 收窄 ⓑ:**门槛行的 label 不算「抄」**。2026-08-05 起它们被特意写成**半句话**
+// (`BC requires the applicant to have work experience of` + 值 = 一句完整的话),就是为了让模型照着说;
+// RULE 5 松绑后 bucket A 成了项目符号,四条门槛逐条落进列表 —— 每条都「逐字命中 label」,一判三中。
+// 实测撞上(C07 英文护士,attempt 2:三条 BC 门槛全在列表里,factDump(3) 判违规,一稿好答复被顶回上一稿)。
+// 那不是在背清单,那正是我们要求的形状。其余 label(计数/清单/四态)照旧算 —— 那些是**名目**不是话,
+// 三条名目被原样搬进答复仍然是「在念表格」,红线一个字没松。
 export function findFactDump(answer: string, facts: Fact[]): string[] {
   const out: string[] = []
   for (const m of answer.matchAll(/[^\s=]{0,24}\s=\s[^\s=]{0,12}/g)) { out.push(m[0].trim()); break }
   const copied = facts
+    .filter((x) => x.tool !== 'lookupThresholds')
     .map((f) => f.label)
     .filter((l) => l.length >= 20 && answer.includes(l))
   if (copied.length >= 3) out.push(...copied.slice(0, 3))
@@ -1445,11 +1497,22 @@ const openKey = (s: string, lang: ChatLang): string => {
   if (PROV_OPEN.test(t)) return 'PROV'
   return lang === 'en' ? t.toLowerCase().split(/\s+/).slice(0, 2).join(' ') : t.slice(0, 4)
 }
+/** 行首 `- `(答复里唯一允许的列表记号,与前端 ChatText 同一个判据)。 */
+export const BULLET_LINE = /^\s*-\s+/
+/**
+ * 🔴 **列表项不进这道检查**(2026-08-06,RULE 5 松绑同批):项目符号里句式相近**正是列表的用处** ——
+ * 「- 这个省要求雇主经营满 3 年 / - 要求你语言到 CLB 5」读起来是一份对齐的清单,不是在念表格。
+ * 而且 bucket A 按 RULE 0b 就该**围着问题里那个省**写,一判 PROV 三条全中,等于把我们自己
+ * 要求的形状判成违规(那会白烧一次重写,重写完还是同一个形状)。
+ * 收窄而不是放弃:散文句之间照旧连着三句同开头就抓 —— 「在念表格」这道红线一个字没松,
+ * 只是**列表形态不算它的射程**;列表还顺带把前后两句的连号打断(隔着一份清单的两句不叫「连着」)。
+ */
 export function findSameOpening(answer: string, lang: ChatLang): string[] {
   const sents = answer.split(/(?<=[。！？；!?;\n])|(?<=\.)(?=\s)/).map((s) => s.trim()).filter(Boolean)
   const out: string[] = []
   let run = 1
   for (let i = 1; i < sents.length; i++) {
+    if (BULLET_LINE.test(sents[i]) || BULLET_LINE.test(sents[i - 1])) { run = 1; continue }
     const k = openKey(sents[i], lang)
     if (k && k === openKey(sents[i - 1], lang)) {
       if (++run >= 3 && !out.includes(k)) out.push(k)
@@ -1521,13 +1584,22 @@ export function findHedges(answer: string, lang: ChatLang): string[] {
  * 句子中间的推断照旧只留痕不动 —— 那种得靠 prompt 治,删了会把整句话删残。
  */
 export function dropTrailingHedge(s: string, lang: ChatLang): { text: string; dropped: string[] } {
-  const parts = s.split(/(?<=[。！？；!?;\n])/).filter((p) => p.trim())
+  // 🔴 **空白段不能 filter 掉再 join** —— 那正是 2026-08-06 实测中文 C01 的病根:
+  //    模型交回来的排版是对的(`…而非省份选择。\n\n- MB、SK、NS…`),按 `\n` 切完,那两个只含换行的
+  //    part 被 `.filter(p => p.trim())` 丢掉,`join('')` 一拼,**空行就没了** —— 第一条项目粘回上一句,
+  //    渲染器只认得剩下两条,同一份清单被劈成两半。这一道本来只该砍尾巴,却顺手改了全篇排版。
+  //    改法:一个 part 都不丢,只在**找最后一句**时跳过空白段(要砍就连它后面的空白一起砍)。
+  const parts = s.split(/(?<=[。！？；!?;\n])/)
   const dropped: string[] = []
-  while (parts.length > 1 && dropped.length < 2) {
-    const last = parts[parts.length - 1]
+  const lastIdx = () => { let i = parts.length - 1; while (i >= 0 && !parts[i].trim()) i--; return i }
+  while (dropped.length < 2) {
+    const i = lastIdx()
+    if (i <= 0) break                                                // 只剩一句(或全是空白)就停
+    const last = parts[i]
     if (/\d/.test(last) || !findHedges(last, lang).length) break
-    if (parts.slice(0, -1).join('').trim().length < 40) break        // 砍到只剩个开头就停(宁可留着)
-    dropped.push(parts.pop()!.trim())
+    if (parts.slice(0, i).join('').trim().length < 40) break         // 砍到只剩个开头就停(宁可留着)
+    dropped.push(last.trim())
+    parts.splice(i)                                                  // 连同它后面的空白一起去掉
   }
   return { text: parts.join('').trim() || s.trim(), dropped }
 }
@@ -1535,10 +1607,16 @@ export function dropTrailingHedge(s: string, lang: ChatLang): { text: string; dr
 // ── ✂️ 出口截断:长度与句数都得回来自己收 ──
 const LEN_CAP: Record<ChatLang, number> = { zh: 600, ko: 700, en: 1400 }
 /**
- * RULE 7 写着「至多八句」,模型该写十六句照写十六句(2026-08-04 实录:一省一句摞了八行岗位数)。
- * 句数上限做成**机械的**:多出来的句子按定义是清单尾巴 —— 剧本要求的内容全在前八句里。
+ * RULE 7 写着「至多 N 句」,模型该写十六句照写十六句(2026-08-04 实录:一省一句摞了八行岗位数)。
+ * 句数上限做成**机械的**:多出来的句子按定义是清单尾巴 —— 剧本要求的内容全在前 N 行里。
+ *
+ * 🔴 2026-08-06 由 8 提到 11:RULE 5 松绑后 bucket A 从**一句长句**摊成**二到四行项目符号**,
+ * 而这里按 `\n` 断行 —— 每条项目就是一行。内容预算一个字没加,只是同样的内容多占了 3 行:
+ * 1 句答题 + 4 行清单 + 最多 5 条主张各一句 + 1 句收口 = 11(旧口径 1+1+5+1 = 8,同一笔账)。
+ * 不改成「一组项目符号算一句」是因为那会给「一省一行」开后门 —— 每一行都得记账,超了照样截。
+ * 字数上限不动:项目符号只多了几个 `- ` 与换行,LEN_CAP 那头一点没紧张。
  */
-const SENT_CAP = 8
+const SENT_CAP = 11
 /** 按句截断:宁可少说一句,不许留半句。字数与句数**两条都收**;整句都塞不下才硬切(极端情况)。 */
 export function clampAnswer(s: string, lang: ChatLang, cap = LEN_CAP[lang], sentCap = SENT_CAP): string {
   const t = s.trim()
@@ -1820,7 +1898,10 @@ export async function orchestrate(
       const sep = lang === 'en' ? ' ' : ''
       const end = lang === 'en' ? '. ' : '。'
       const tail = miss.map((l) => `${l}${end}`).join(sep).trim()
-      answer = `${clampAnswer(answer, lang, Math.max(120, LEN_CAP[lang] - tail.length - 2))}${sep}${tail}`
+      const head = clampAnswer(answer, lang, Math.max(120, LEN_CAP[lang] - tail.length - 2))
+      // 🔴 补位落在项目符号后面要另起一段:直接续在 `- …` 那行后面,补回来的主张会被渲染**进那一条项目里**
+      //    (前端只按行首 `- ` 认项),读者看到的就是一条又臭又长的清单项,而不是一句独立的话。
+      answer = `${head}${BULLET_LINE.test(head.split('\n').pop() ?? '') ? '\n\n' : sep}${tail}`
       console.log(`[chat] claim lines re-attached noc=${slots.noc} n=${miss.length}`)
     }
   }
