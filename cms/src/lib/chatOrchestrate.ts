@@ -306,6 +306,22 @@ export const SLOT_SYSTEM = [
   'You only listen. Never judge, never advise, never add facts of your own.',
 ].join('\n')
 
+/**
+ * 用户原话里 **literally 打出来的 5 位 NOC**。纯函数,不过模型。
+ *
+ * 🔴 2026-08-05 实测:候选 chip 是我们自己摆出去的(OCC_PICK,三语都带「NOC 21222」),
+ * 用户点回来那一轮,SLOT_SYSTEM 那条「用户 literally 打出了 5 位数字才填 noc」**模型并不总是照做** ——
+ * 它把 noc 留成 null,于是回落 resolveNoc 走 pg_trgm 相似度,Information systems specialists(21222)
+ * 落到了隔壁的 Business systems specialists(21221)。**摆出去的和查回来的不是同一个职业**,
+ * 而后面所有职业工具都在按错的那条答 —— 错的不是一个数字,是整份回答的前提。
+ *
+ * 病根不在模型不听话,在于**我们把一件机器能判死的事押给了模型**:码是我们自己写进那句话的,
+ * 回读它是正则的活。同 studyFieldOf 的理由(见上面那段:「模型今天已经证明靠不住,这里不再多押它一次」)。
+ * 模型那条规则不删:用户自己敲 5 位码进来时它照旧管用,这里只是把我们自己摆的那份改成不依赖它。
+ */
+const NOC_IN_TEXT = /(?:^|[^0-9])NOC\s*[:：#]?\s*(\d{5})(?![0-9])/i
+export const literalNoc = (text: string): string | null => NOC_IN_TEXT.exec(text || '')?.[1] ?? null
+
 /** 自由文本 → Slots(未解析 NOC)。模型输出形状不可信,逐字段归一。 */
 export function normalizeSlots(raw: any): Omit<Slots, 'noc'> & { noc: string | null } {
   const occText = String(raw?.occ_en ?? '').trim().slice(0, 80)
@@ -664,6 +680,23 @@ export const AVAIL_MARKERS: Record<ChatLang, Record<Exclude<Availability, 'ok'>,
     'not-collected': ['수집하지 않', '수집되지 않', '색인되지 않'],
     'not-applicable': ['해당 없음', '대상이 아닙'],
   },
+}
+/**
+ * 商业话术那条主张的**判断**有没有被说出口 —— 同 AVAIL_MARKERS 一个道理:按语义认,不按原句认。
+ *
+ * 🔴 2026-08-05 实测这个洞:facts 里给的是「这类私人承诺不能当作官方保证」(PROMISE_WHY),
+ * 模型写出来的是「中介收取的 2 万费用及所谓合作公司承诺并非官方要求,**本站无此记录**」——
+ * 把交易判断换成了四态口吻。而 collectFacts ⑦ 之所以**不**给商业话术套四态,防的正是这一句:
+ * 「本站未收录」= 我们的问题,他该去官网看;「私人承诺不能当官方保证」= **对方的问题**,他该警惕。
+ * 两句在用户那里意思相反,说反等于拿假前提教他防中介(CLAUDE.md 那条铁律的同一个坑)。
+ *
+ * 为什么 missingClaimLines 原来放行:它只在主张带四态时才要求答复复述状态,而商业话术那行没有四态,
+ * 于是「提到了这条主张」就算过 —— 判断说成什么样都行。这里给它补上该有的那把尺。
+ */
+export const VERDICT_MARKERS: Record<ChatLang, string[]> = {
+  zh: ['不能当作', '不能证明', '不是官方保证', '不等于官方', '不构成官方', '并不保证', '没有官方效力'],
+  en: ['not an official guarantee', 'does not prove', 'do not prove', 'does not guarantee', 'no official standing', 'is not official'],
+  ko: ['공식 보장이 아', '증명하지 않', '보장하지 않', '공식적인 효력이 없'],
 }
 /**
  * 🔴 fact 的 label 也按用户语言成句(和 AVAIL_SENTENCE 同一个做法)。
@@ -1806,7 +1839,12 @@ export function missingClaimLines(answer: string, facts: Fact[], lang: ChatLang)
       || coverKeys(m[1]).filter((k) => low.includes(k.toLowerCase())).length >= 2
     const state = (['not-published', 'not-collected', 'not-applicable'] as const)
       .find((av) => f.label.includes(AVAIL_SENTENCE[lang][av]))
-    if (said && (!state || saysState(answer, lang, state))) continue
+    // 商业话术那行没有四态,带的是交易判断(PROMISE_WHY / MONEY_WHY)。判断也必须被说出口 ——
+    // 见 VERDICT_MARKERS 上面那段:说漏了,模型就用「本站无此记录」把它填上,而那句意思正好相反。
+    const verdict = f.label.includes(PROMISE_WHY[lang]) || f.label.includes(MONEY_WHY[lang])
+    const kept = state ? saysState(answer, lang, state)
+      : (!verdict || VERDICT_MARKERS[lang].some((m) => low.includes(m.toLowerCase())))
+    if (said && kept) continue
     out.push(f.label)
   }
   return out.slice(0, 2)
@@ -2281,7 +2319,11 @@ export async function orchestrate(
   }
   const parsed = parseLlmJson(raw)
   if (!parsed) throw new ChatError('llm', `slot parse failed: ${raw.slice(0, 160)}`)
-  const draft = mergeFollowupSlots(normalizeSlots(parsed), input.history?.length ? input.context : null, text)
+  const merged = mergeFollowupSlots(normalizeSlots(parsed), input.history?.length ? input.context : null, text)
+  // 他原话里打出来的 5 位码压过模型和上下文:那是**他自己指定的那一条**(多半是点了我们摆的候选 chip),
+  // 再去 pg_trgm 猜一次就是拿相似度覆盖一个确定值(见 literalNoc 上面那段实测)。
+  const typed = literalNoc(text)
+  const draft = typed && typed !== merged.noc ? { ...merged, noc: typed } : merged
   // 联邦规则/分表不依赖职业。路由判据只读用户原话,不拿模型猜的 topic 当开关。
   const federalPrograms = federalRulePrograms(text)
   const crs = crsLookups(text)

@@ -16,7 +16,7 @@ import {
   commercialClaimLabel,
   findEnglishUnits, findFactCopied, findFactDump, findHedges, findForeignScript, findLeaks, findMergedStates,
   findMixedStates, findSameOpening, findShoutedWords, findWordNumbers, guardAnswer, isMoneyTalk, isSelfStatement,
-  LABEL_CAP, LBL, localizeUnits, makeSentenceGate, mergeFollowupSlots, missingClaimLines, normalizeSlots, MONEY_WHY, orchestrate, otherClaimLabel,
+  LABEL_CAP, LBL, literalNoc, localizeUnits, makeSentenceGate, mergeFollowupSlots, missingClaimLines, normalizeSlots, MONEY_WHY, orchestrate, otherClaimLabel,
   PROMISE_WHY, resolveNoc, sayFact, stripMd, studyFieldOf, suggestOccupations, tidy,
   type ChatLang, type Fact, type OccOption,
 } from '@/lib/chatOrchestrate'
@@ -668,6 +668,22 @@ describe('槽位归一 / prompt 预算(模型输出不可信)', () => {
     expect(normalizeSlots({ occ_en: 'carpenter', noc: '72310' }).noc).toBe('72310')
   })
 
+  // 🔴 候选 chip 里的码是**我们自己写进去的**,回读它是正则的活,不该再押模型一次
+  //    (2026-08-05 实测:模型把 noc 留空 → 回落 pg_trgm → 21222 落到隔壁 21221)。
+  it('原话里 literally 打出的 5 位 NOC 认得出来(三语 chip 都带它)', () => {
+    expect(literalNoc('Look it up for Information systems specialists (NOC 21222)')).toBe('21222')
+    expect(literalNoc('按信息系统专业人员(NOC 21222)查')).toBe('21222')
+    expect(literalNoc('정보 시스템 전문가(NOC 21222) 기준으로 조회해 주세요')).toBe('21222')
+    expect(literalNoc('noc:72310')).toBe('72310')
+  })
+
+  it('不是码的数字一个都不许当码(月薪/年份/位数不对的都得放过)', () => {
+    expect(literalNoc('我在安省做木匠,月薪 42000')).toBeNull()
+    expect(literalNoc('NOC 7231')).toBeNull()          // 4 位不是码
+    expect(literalNoc('NOC 723101')).toBeNull()        // 6 位也不是
+    expect(literalNoc('')).toBeNull()
+  })
+
   it('多轮滚动继承已确认职业/身份/经验，不靠最后两句文本重新猜', () => {
     const previous = {
       noc: '72310', occText: 'carpenter', provs: ['MB'], expMonths: 0, status: 'graduated',
@@ -1007,11 +1023,19 @@ ${r.answer}
     expect(unsaid!.valueText).toMatch(/BC|NS/)
     expect(unsaid!.valueText).not.toMatch(/MB/)          // 他说过的不进第三格
 
-    // 中介那句话进得来:每条主张都在 facts 里有交代(核到 / 核不了,都不许静默丢掉)
+    // 中介那句话进得来:每条主张都在 facts 里有交代(核到 / 核不了,都不许静默丢掉)。
+    // 🔴 按**原话有没有落地**判,不按行数判:`commercialClaimLabel`(2026-08-05 起)有意把
+    //    「包合作公司」与「收 2 万」合成一条交易判断 —— 两条主张一行,是设计不是丢失
+    //    (「不让收费与承诺各重复一遍同义空话」)。数行数会把这次合并误判成静默丢弃;
+    //    真正要守的是「他说的每一句都还在」,顺带盯住 claimLabel 那把 320 帽别把第二句截没了。
     const claimFacts = r.facts.filter((x) => x.tool === 'checkClaims' && x.unit === 'claim')
-    expect(claimFacts.length, '主张一条都没进 facts').toBeGreaterThanOrEqual(r.slots.claims.length)
-    // 四态在**数据层**就写成了成句(模型只照抄,不许自己翻译枚举)
-    expect(claimFacts.some((x) => /官方不公布|本站尚未收录/.test(x.label)), `主张行没带成句四态:\n${claimFacts.map((x) => x.label).join('\n')}`).toBe(true)
+    expect(claimFacts.length, '主张一条都没进 facts').toBeGreaterThan(0)
+    const claimBlob = claimFacts.map((x) => x.label).join('\n')
+    for (const c of r.slots.claims) {
+      expect(claimBlob, `这条主张被静默丢掉了:「${c.text}」\n现有主张行:\n${claimBlob}`).toContain(c.text.slice(0, 6))
+    }
+    // 商业话术那行带的是交易判断而非四态(collectFacts ⑦「私人报价/包办不是一项政府数据」)——
+    // 它的成句断言在下面 §商业话术合成一条 那几行,这里不重复。
 
     // 每个带数字的 fact 都挂得住出处(铁律 ①,与 C1 同一把尺)
     for (const x of r.facts) if (x.value != null) expect(x.evidence.url, x.label).toBeTruthy()
