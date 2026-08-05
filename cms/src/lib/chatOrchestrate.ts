@@ -1871,6 +1871,53 @@ export function missingClaimLines(answer: string, facts: Fact[], lang: ChatLang)
   return out.slice(0, 2)
 }
 
+/**
+ * 🔴 出口校验:**说某个省的清单收了这个职业,必须有那个省的 coverage fact 撑腰**。
+ *
+ * 2026-08-05 生产实录(chat_logs id=9)两次撞上,数字 guard 一次都拦不住:
+ *   ·「萨省清单收录该职业,要求 12 个月工作经验」—— 12 有 fact(SK 门槛),但 facts 里
+ *     **SK 一条 coverage 都没有**(72310 在 pnp_occupations 的 SK 里一行都不存在)。
+ *     模型拿门槛事实自己配了一句清单结论。
+ *   ·「这些省份的清单也收录了该职业」—— 一句话给八个省发了通行证。
+ * 为什么危险:清单收没收是**资格前提**,说错了后面每个数字都在答另一个人的问题;
+ * 而它是纯文字断言,`guardAnswer` 只查数字,`findMergedStates` 只查四态,两道都不管。
+ *
+ * 判据只认机械可判的:一个**子句**里同时出现「某个省」和「清单类词」→ 该省必须有一条
+ * `lookupCoverage` 的 list 行。按子句判(不是整句)是为了不让「BC 有 234 个岗位,比曼省多」
+ * 这种句子里的 MB 被邻居的清单词牵连。
+ *
+ * ⚠️ 已知盲区(不装作能管):指代式的「这些省份 / these provinces」没点名,判不了 ——
+ * 那条要么靠 prompt 压,要么等 DecisionPlan 把结论权收走,不在这一层硬凑。
+ */
+const PROV_IN_TEXT = new RegExp(
+  `(?:\\b(?:${[...ALL_PROVS].join('|')})\\b|${Object.keys(PROV_ALIAS).filter((k) => /[^\x20-\x7f]/.test(k)).join('|')})`, 'g')
+const COVERAGE_WORD: Record<ChatLang, RegExp> = {
+  zh: /清单|列表|在需|收录|收了|列入|名单/,
+  en: /\blist(?:s|ed|ing)?\b|in-demand|in demand/i,
+  ko: /목록|리스트|수요\s*직업/,
+}
+/** 子句:比句子更细,免得同一句里的两个省互相牵连。`\.\s` 收英文句点(小数点后面没空格,不误伤 $1,590.00)。 */
+const CLAUSE_SPLIT = /[。；;!?！？\n]+|[,，、]|\.\s+/
+export function findUnbackedCoverage(answer: string, facts: Fact[], lang: ChatLang): string[] {
+  const backed = new Set(facts
+    .filter((f) => f.tool === 'lookupCoverage' && f.unit === 'list')
+    .map((f) => f.label.slice(0, 2)))
+  // 🔴 **否定句不是主张**(拿 6 条真实答复量出来的:第一版 1 真 3 假,两条假的都是这个形态)。
+  //    「本站未收录新斯科舍省是否发布额外官方清单的信息」是我们自己写的诚实话,它带着「清单」和省名,
+  //    但它在说「查不到」,不是在说「收了」。四态标记就是现成的判据(AVAIL_MARKERS),不另写词表。
+  const denies = (s: string) => Object.values(AVAIL_MARKERS[lang]).flat().some((m) => s.includes(m))
+  const out: string[] = []
+  for (const clause of answer.split(CLAUSE_SPLIT)) {
+    if (!COVERAGE_WORD[lang].test(clause) || denies(clause)) continue
+    for (const m of clause.matchAll(PROV_IN_TEXT)) {
+      const prov = normProv(m[0])
+      if (!prov || backed.has(prov)) continue
+      out.push(`${prov}:${clause.trim().slice(0, 40)}`)
+    }
+  }
+  return [...new Set(out)].slice(0, 3)
+}
+
 export function findMergedStates(answer: string, facts: Fact[], lang: ChatLang): string[] {
   const claims = facts
     .map((f) => ({ f, m: CLAIM_TEXT_RE.exec(f.label) }))
@@ -2436,11 +2483,15 @@ export async function orchestrate(
       ['leak', findLeaks(answer)],
       ['factEq', findFactEq(answer)],
       ['factCopy', findFactCopied(answer, facts)],       // ← 六道里唯一**跨句才判得了的**(要数够三条)
+      // 「某省清单收了这个职业」但 facts 里没有那个省的 coverage —— 数字 guard 一个字都拦不住,
+      // 而它错的是**资格前提**(2026-08-05 实录:SK 一条 coverage 都没有,答复照样说「萨省清单收录该职业」)。
+      // 归进硬拦(leaks 那一组):重试一次,再犯就降级成事实清单 —— 宁可朴素,不发一句凭空的资格结论。
+      ['coverage', findUnbackedCoverage(answer, facts, lang)],
       ['enUnits', findEnglishUnits(answer, lang, facts)],
       ['cjkNum', findWordNumbers(answer, lang)],
       ['script', findForeignScript(answer, lang)],
     ] as [string, string[]][]).filter(([, v]) => v.length)
-    const leaks = fired.filter(([k]) => k === 'leak' || k === 'factEq' || k === 'factCopy').flatMap(([, v]) => v)
+    const leaks = fired.filter(([k]) => k === 'leak' || k === 'factEq' || k === 'factCopy' || k === 'coverage').flatMap(([, v]) => v)
     const units = fired.filter(([k]) => k === 'enUnits' || k === 'cjkNum' || k === 'script').flatMap(([, v]) => v)
     const hedges = findHedges(answer, lang)
     if (hedges.length) console.log(`[chat] hedge warn noc=${slots.noc} words=${hedges.join(',')}`)

@@ -15,7 +15,7 @@ import {
   askOccupation, claimLabel, clampAnswer, collectFacts, dropTrailingHedge, factsBlock, factSheet, fieldSearchTerm,
   commercialClaimLabel,
   findEnglishUnits, findFactCopied, findFactDump, findHedges, findForeignScript, findLeaks, findMergedStates,
-  findMixedStates, findSameOpening, findShoutedWords, findWordNumbers, guardAnswer, isMoneyTalk, isSelfStatement,
+  findMixedStates, findSameOpening, findShoutedWords, findUnbackedCoverage, findWordNumbers, guardAnswer, isMoneyTalk, isSelfStatement,
   LABEL_CAP, LBL, literalNoc, localizeUnits, makeSentenceGate, mergeFollowupSlots, missingClaimLines, normalizeSlots, MONEY_WHY, orchestrate, otherClaimLabel,
   PROMISE_WHY, resolveNoc, sayFact, stripMd, studyFieldOf, suggestOccupations, tidy,
   type ChatLang, type Fact, type OccOption,
@@ -117,6 +117,51 @@ describe('guardAnswer(出口校验)', () => {
 })
 
 // ── ①' 纯函数:见客三道检查(内部码 / 英文速记 / 推断性措辞)+ 长度收口 ──────
+// 🔴 「某省清单收了这个职业」是**资格前提**,说错了后面每个数字都在答另一个人的问题;
+//    而它是纯文字断言,guardAnswer(只查数字)和 findMergedStates(只查四态)两道都不管。
+//    下面的正反例全部来自 chat_logs 的真实答复(2026-08-05 那 6 条),不是编的:
+//    第一版判据在这 6 条上是 1 真 3 假,三条假的形态都留在这儿当护栏。
+describe('清单主张必须有 coverage fact 撑腰', () => {
+  const cov = (prov: string): Fact => ({
+    tool: 'lookupCoverage', label: `${prov} 的官方职业清单收了 NOC 72310: MPNP In-Demand`,
+    value: null, valueText: '', unit: 'list', evidence: { url: 'https://x', fetched: '2026-08-05' },
+  })
+  const other: Fact = {
+    tool: 'lookupThresholds', label: 'SK 要求申请人的工作经验满', value: 12, valueText: '', unit: 'months',
+    evidence: { url: 'https://y', fetched: '2026-08-05' },
+  }
+
+  it('🔴 真实事故:facts 里 SK 一条 coverage 都没有,答复却说「萨省清单收录该职业」', () => {
+    const answer = '- 曼省清单收录该职业,技工通道需 6 个月工作经验\n- 萨省清单收录该职业,要求 12 个月工作经验'
+    expect(findUnbackedCoverage(answer, [cov('MB'), other], 'zh').join(' ')).toContain('SK')
+  })
+
+  it('有 coverage fact 的省照过,不误伤', () => {
+    const answer = '曼省 MPNP In-Demand Occupations List 收录了木匠职业。'
+    expect(findUnbackedCoverage(answer, [cov('MB')], 'zh')).toEqual([])
+  })
+
+  it('🔴 否定句不是主张:「本站未收录 NS 是否发布额外官方清单」不许算', () => {
+    const answer = '本站未收录新斯科舍省是否发布额外官方清单的信息。'
+    expect(findUnbackedCoverage(answer, [cov('MB')], 'zh')).toEqual([])
+  })
+
+  it('🔴 「本站尚未收录…对比数据」也是否定句', () => {
+    const answer = '本站尚未收录关于曼省和萨省移民难易度的对比数据。'
+    expect(findUnbackedCoverage(answer, [cov('MB')], 'zh')).toEqual([])
+  })
+
+  it('🔴 英文要按句点断句:「1 in BC. The list of provinces…」不是在说 BC 的清单', () => {
+    const answer = 'the apprentice-friendly opening counts are 1 in ON and 1 in BC. '
+      + 'The list of provinces covering this role is settled by checking their official tech pathways.'
+    expect(findUnbackedCoverage(answer, [cov('AB')], 'en')).toEqual([])
+  })
+
+  it('隔壁子句的省不被清单词牵连', () => {
+    expect(findUnbackedCoverage('BC 有 234 个岗位,比曼省多;BC 清单收录该职业。', [cov('BC')], 'zh')).toEqual([])
+  })
+})
+
 describe('答复见客检查(不连模型)', () => {
   // 一段"四条毛病齐活"的假答复:内部码 + 英文单位 + 推断性措辞
   const DIRTY = 'MB 要求 THE EMPLOYER 已经营满 3 years,BC: 15 jobs。'
