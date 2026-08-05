@@ -368,10 +368,27 @@ export async function GET(req: Request) {
       }
     }
 
+    // ── 「本轮见过」名单(2026-08-04 数据销毁修)──
+    // 病根:seenIds 原来 = mart.jobs 的 externalId,而 mart.jobs 已被 09 的**展示去重**(company|title,
+    // 不含城市)砍过一刀;被砍掉的帖因此退出「见过」集,满 30 天被下面那条规则静默 closed —— 可它们
+    // 在官方仍在招(抽样 60%),在 DB 里也不算重复(DB 判重是 company×title×city)。展示去重与下架对账
+    // 从此解耦:09 另出一张 seen_ids(本轮源数据里真实见到、未判死的全部 posting id)。
+    // ⚠️ 防线(最危险的回归:名单缺失把全库下架):**只做并集,不做替换**——
+    //   ① seen_ids 文件缺失/为空 → 集合退回等于 mart.jobs 的 id(= 修改前的老行为),不会变空;
+    //   ② seen_ids 在 → 集合是老行为的超集,只可能少下架、绝不可能多下架;
+    //   ③ 集合为空仍走下面 `size > 0` 的老闸门,直接跳过下架。
+    //   任何一步读文件失败都会抛错 → 整事务回滚(martPaths 对「目录都不存在」也是抛错不是空表)。
+    for (const p of martPaths('seen_ids')) {
+      for (const id of JSON.parse(fs.readFileSync(p, 'utf8')) as string[]) {
+        if (id && !seenExt.has(id)) { seenExt.add(id); seenIds.push(id) }
+      }
+    }
+    counts.seen_ids = seenIds.length
+
     // ── 下架(非 reset):只下架「本次未见 且 发布已超 EXPIRE_DAYS 天」的岗 ──
     // 不用「本次没出现就 closed」对账:增量抓取只含最近几天,会误杀仍在招的旧岗(实测 805,见 docs/source-framework.md)
     const EXPIRE_DAYS = 30
-    // seenIds 为空(jobs mart 缺/空)时跳过:空清单会把所有 30 天以上的旧岗一锅端下架
+    // seenIds 为空(jobs + seen_ids 两张 mart 都缺/空)时跳过:空清单会把所有 30 天以上的旧岗一锅端下架
     if (!reset && seenIds.length > 0) {
       const cutoff = new Date(Date.now() - EXPIRE_DAYS * 86400000).toISOString()
       // 本次见到的 external_id 灌进带主键的临时表,下架走 NOT EXISTS 反连接。
@@ -379,7 +396,9 @@ export async function GET(req: Request) {
       // 库涨到 5 万岗后超线性变慢 → seed 整轮撞 180s 超时(mart 已传但灌不进库)。
       // 临时表主键让反连接走索引/哈希探测,下架从超时降到秒级;ON COMMIT DROP 随本事务清理。
       await client.query('CREATE TEMP TABLE seen_ext (external_id text PRIMARY KEY) ON COMMIT DROP')
-      await insertBatch(client, 'seen_ext', ['external_id'], seenIds.map((id) => ({ external_id: id })))
+      // 单列表灌 5 万行走 unnest 一条语句(原 insertBatch 300 行/句 ≈ 164 次往返;并入 seen_ids 后名单从
+      // 3.4 万涨到 4.9 万,别把往返数也一起涨)。数组参数只占 1 个占位符,不碰 65535 上限。
+      await client.query('INSERT INTO seen_ext (external_id) SELECT unnest($1::text[])', [seenIds])
       await client.query('ANALYZE seen_ext')  // 临时表无自动统计,喂给规划器选反连接计划
       const r = await client.query(
         `UPDATE jobs SET status='closed', closed_at=$1, updated_at=$1

@@ -5,6 +5,8 @@ seed 从此只读 mart 直接灌库,不再在加载器里东拼西凑(中介过�
 产出 data/mart/(每个文件 = 一张 Payload 表):
   事实表  companies.json  jobs.json
   维度表  provinces.json  cities.json  districts.json  designated_employers.json
+  对账表  closed_jobs.json(实测判死名单)  seen_ids.json(本轮**真实见过**的全部 posting id,
+          含被展示去重丢掉的——seed 的下架对账只认它,展示去重不许有下架副作用)
 
 Usage:  uv run python etl/09_build_mart.py
 """
@@ -390,8 +392,14 @@ def build():
 
     companies: dict[str, dict] = {}   # slug -> company row
     jobs: list[dict] = []
-    seen: set[str] = set()            # company-slug|title 去重
+    seen: set[str] = set()            # company-slug|title 去重(**只服务展示**:前端不该出现一堆同公司同岗名)
     seen_ext: set[str] = set()        # externalId 去重
+    # 2026-08-04 数据销毁修:本轮**真实见到**的全部 posting(不受上面那把展示去重的尺子影响)。
+    # 病根——被 `company|title` 去重丢掉的帖同时退出了 seed 的「本次见过」集,满 30 天被静默 closed,
+    # 而 DB 侧的重复判定带城市(company×title×city),两套口径打架 → 实测 5.4k 个「不在本轮 mart」的
+    # 在招岗里抽样 60% 官方仍在招。展示去重与「我们这轮见过什么」是两件事,从此各走各的集合。
+    seen_ids: set[str] = set()
+
     # #124 批C:验尸判死帖不进 mart → 退出 seed 的 seen 集 → 既有「不在 seen 且发布>30天」规则自然置 closed。
     # 首跑教训:mart externalId 是 jb:<posting_id> 前缀形,验尸文件存裸 posting_id——比对必须加前缀(0 剔除实锤)
     expired: set[str] = set()
@@ -483,10 +491,12 @@ def build():
             ats_seen = datetime.fromtimestamp(jf.stat().st_mtime, tz=timezone.utc).isoformat().replace("+00:00", "Z")
             for j in jd["jobs"]:
                 key = f"{slug}|{norm(j.get('title',''))}"
+                ext = j.get("url") or key
+                if ext not in expired:
+                    seen_ids.add(ext)   # 先记「见过」,再做展示去重(顺序不能倒)
                 if key in seen:
                     continue
                 seen.add(key)
-                ext = j.get("url") or key
                 add_job(ext, slug, title=j.get("title"), source=jd.get("ats") or "ats", origin="ats",
                         country=j.get("country"), province=j.get("province") or guess_prov(j.get("location", "")),
                         city=j.get("city"), district=j.get("district"), address=j.get("address"),
@@ -503,16 +513,18 @@ def build():
                 continue
             cslug = slugify(j.get("employer") or "unknown")
             key = f"{cslug}|{norm(j.get('title',''))}"
-            if key in seen:
-                continue
-            seen.add(key)
-            add_company(j.get("employer") or "—", cslug, website=j.get("website"),
-                        address=j.get("address"), region=j.get("province"), source="jobbank")
             # 稳定 ID:Job Bank 帖子 ID(posting_id 字段优先,否则从 URL 的 /jobposting/<id> 取),
             # 不用含 ?source= 查询串的完整 URL(见 docs/source-framework.md)
             m = re.search(r"/jobposting/(\d+)", j.get("url", ""))
             pid = str(j.get("posting_id") or (m.group(1) if m else ""))
             ext = f"jb:{pid}" if pid else (j.get("url") or key)
+            if ext not in expired:
+                seen_ids.add(ext)   # 「见过」= 本轮源数据里还在、且没被验尸判死;与展示去重无关
+            if key in seen:
+                continue
+            seen.add(key)
+            add_company(j.get("employer") or "—", cslug, website=j.get("website"),
+                        address=j.get("address"), region=j.get("province"), source="jobbank")
             add_job(ext, cslug, title=j.get("title"), source=j.get("source") or "Job Bank", origin="jobbank",
                     country=j.get("country"), province=j.get("province") or guess_prov(j.get("city", "")),
                     city=j.get("city"), district=j.get("district"), address=j.get("address"),
@@ -894,8 +906,15 @@ def build():
                    (json.loads(IN_EXPIRED.read_text(encoding="utf-8")).get("dead", {}).items()
                     if IN_EXPIRED.exists() else [])]
 
+    # 「本轮见过」名单(2026-08-04):seed 的下架对账**只**认它,不再拿去重后的 mart.jobs 当见过集。
+    # 一个岗被下架从此只剩两条路:① 命中 closed_jobs 判死名单(410/过期页=事实);
+    # ② 真的不在这张表里 且 发布已超 30 天(推断,保守兜底)。展示去重不再有下架副作用。
+    print(f"  seen_ids(本轮见过): {len(seen_ids)} · mart.jobs(展示去重后): {len(jobs)} · "
+          f"见过但不进 mart(展示去重/同 ext 重复): {len(seen_ids) - len(jobs)}")
+
     return {
         "companies": list(companies.values()), "jobs": jobs, "closed_jobs": closed_jobs,
+        "seen_ids": sorted(seen_ids),
         "provinces": provinces, "cities": cities, "districts": districts,
         "designated_employers": designated,
         "noc_categories": noc_categories, "sources": sources, "experience_levels": experience_levels,
@@ -912,11 +931,13 @@ def build():
 def main() -> None:
     OUT_MART.mkdir(parents=True, exist_ok=True)
     mart = build()
-    # 验尸用的「还在板上」名单(2026-08-03):verify_expired 的预算只该花在用户看得见的岗上。
-    # 不在 mart 的帖有两种——库里早已 closed、或被同名去重丢掉——验它们对用户零收益,实测占候选 26%。
+    # 验尸用的「还在板上」名单(2026-08-03;2026-08-04 改口径):verify_expired 的预算只该花在
+    # 用户看得见的岗上。**改用 seen_ids 而不是去重后的 jobs**——修完去重副作用后,被展示去重丢掉的帖
+    # 仍以 open 留在库里、用户仍点得到(DB 的重复判定带城市),它们必须继续被验尸,否则永不判死。
+    # 剩下被筛掉的仍是库里早已 closed / 中介过滤掉的帖,预算照样不白花。
     # 写 processed/ 不写 mart/:mart 目录整个会被 upload_mart 传去 cms,这张表纯属 ETL 内部协作。
     OUT_MART_OPEN_IDS.write_text(json.dumps(sorted(
-        j["externalId"][3:] for j in mart["jobs"] if str(j.get("externalId", "")).startswith("jb:")
+        e[3:] for e in mart["seen_ids"] if e.startswith("jb:")
     )), encoding="utf-8")
     for table, rows in mart.items():
         # 原子写(tmp+replace,04c 惯例):直写遇并发跑 09(手动 exec × 每小时例行轮)会截断失败留尾部垃圾
