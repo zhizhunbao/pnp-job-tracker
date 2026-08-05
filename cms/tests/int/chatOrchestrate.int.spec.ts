@@ -14,7 +14,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import {
   AVAIL_MARKERS, clampAnswer, dropTrailingHedge, factsBlock, factSheet, findEnglishUnits, findHedges,
   findForeignScript, findLeaks, findMergedStates, findWordNumbers, guardAnswer, LBL, localizeUnits, normalizeSlots,
-  orchestrate, PROMISE_WHY, resolveNoc,
+  MONEY_WHY, orchestrate, PROMISE_WHY, resolveNoc,
   type ChatLang, type Fact,
 } from '@/lib/chatOrchestrate'
 import { friendLlmReady } from '@/lib/friendLlm'
@@ -441,13 +441,17 @@ ${r.answer}
     expect(coop.want, `「合作公司」必须落 not-published(私人承诺桶),实际:${coop.want}\n${coop.fx?.label}`).toBe('not-published')
     expect(coop.sent, `答复没交代「合作公司」那条:\n${r.answer}`).toBeTruthy()
     expect(coop.said, `「合作公司」得说成「官方不公布」,答复没这么说:\n${coop.sent}`).toBeTruthy()
-    // 收费那条:槽位模型偶尔会把两句并成一条主张,所以按「存在才断言」守——但存在时必须是「本站没收录」,
-    // 且与私人承诺**用不同的说法**(实录回归就死在这:两件事一个说法)
+    // 收费那条:槽位模型偶尔会把两句并成一条主张,所以按「存在才断言」守。
+    // 🔴 2026-08-04 改判:收费**不是**「本站尚未收录」(那句读起来像「我们回头会收录」),
+    //    而是**没有任何一级政府公布中介的收费与承诺** → not-published + MONEY_WHY。
+    //    生产实录里英文用户问「An agent wants $20k … Worth it?」被答成 "our site has not indexed this yet",
+    //    等于把中介最爱钻的空子替他堵上了嘴。要守的不变量仍是:**收费与私人承诺不共用一句解释**。
     if (fee.fx && fee.fx !== coop.fx) {
-      expect(fee.want, `「2 万」应是 not-collected,实际:${fee.want}`).toBe('not-collected')
+      expect(fee.want, `「2 万」应是 not-published(官方不公布中介收费),实际:${fee.want}`).toBe('not-published')
+      expect(fee.fx.label, `「2 万」那条没带上「谁也核不了」的解释:\n${fee.fx.label}`).toContain(MONEY_WHY.zh)
+      expect(coop.fx!.label, '「合作公司」那条该带 PROMISE_WHY,不是 MONEY_WHY').toContain(PROMISE_WHY.zh)
       expect(fee.sent, `答复没交代「2 万」那条:\n${r.answer}`).toBeTruthy()
-      expect(fee.said, `「2 万」得说成「本站尚未收录」:\n${fee.sent}`).toBeTruthy()
-      expect(coop.said).not.toBe(fee.said)
+      expect(fee.said, `「2 万」得说成「官方不公布」:\n${fee.sent}`).toBeTruthy()
     }
 
     // 关键事实仍在:短是目标,丢事实不是。数字从 facts 里取(库里数会变,不写死)

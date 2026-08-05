@@ -15,6 +15,10 @@
 //   ❌ **/v1 没有联网搜索**(实测发 web_search/search_query 被忽略,答「无法提供实时数据」,回包也没有
 //      sources)→ **webSearch 的调用一律走旧 /api/chat**(companyResearch 靠它),不是回退是唯一通道。
 //
+// 🔵 **流式**(2026-08-04 加,`onDelta`):`stream:true` 上游真支持,本机实测两态 ——
+//    MISS 逐字吐(首块 ~650ms,总 1.3s/35 块)、HIT 也走 SSE 但整段在一个 delta 里(~300ms),末尾都有 `data: [DONE]`。
+//    仍留「上游回 JSON」的一次性分支兜底(网关版本变了不至于整段丢),外加空答案原地非流式重来一次。
+//
 // 🔴 **旧 /api/chat 留作回退**(他刚上线,不把全站押上去):/v1 报 upstream_error 或连不上 → 退回旧链,
 //    留痕日志 `[friendLlm] v1→legacy`。旧链输入上限今天也一起提到了 20000(实测 19900 通、21000 报
 //    `{"detail":"prompt too long (max 20000 chars)"}`),所以回退不会因为长度二次失败。
@@ -102,6 +106,12 @@ export type FriendChatOpts = {
   temperature?: number
   /** 绕开上游缓存(排查串答用):/v1 发 X-No-Cache 头 + body cache:false */
   noCache?: boolean
+  /**
+   * 流式增量回调(**只 /v1 支持**;传了就发 `stream:true`,回调按上游吐的块逐段给)。
+   * 传不传都返回完整 answer —— 调用方可以只拿它测首字延迟,不改变返回契约。
+   * ⚠️ `stream:true` 进 body = 进上游缓存键,所以流式与非流式各缓存一份(第一次切过去必然 MISS)。
+   */
+  onDelta?: (chunk: string) => void
 }
 
 // 上游标准错误结构 → 我们的错误码。认不出的按 HTTP 状态兜底。
@@ -152,6 +162,40 @@ async function postJson(path: string, body: unknown, headers: Record<string, str
   }
 }
 
+/**
+ * SSE 解流:`data: {"choices":[{"delta":{"content":"…"}}]}` 逐块 → 累积成整段,同时喂 onDelta。
+ * 2026-08-04 本机实测上游两种形态,都在这一个解析器里吃掉:
+ *   MISS：几十个块逐字吐(首块 ~650ms,role 那块 content 是空串)、末块 finish_reason=stop、收 `data: [DONE]`;
+ *   HIT ：**照样是 SSE**,但整段答案在**一个** delta 里一次给完(~300ms)。
+ * 半块粘包按 `\n\n` 切、剩余留 buf —— 解不动的行直接跳过(宁可少一块,不许把整段扔了)。
+ */
+async function readV1Sse(body: ReadableStream<Uint8Array>, onDelta?: (s: string) => void): Promise<string> {
+  const reader = body.getReader()
+  const dec = new TextDecoder()
+  let buf = ''
+  let out = ''
+  for (;;) {
+    const { value, done } = await reader.read()
+    if (done) break
+    buf += dec.decode(value, { stream: true })
+    const blocks = buf.split('\n\n')
+    buf = blocks.pop() ?? ''
+    for (const b of blocks) {
+      for (const line of b.split('\n')) {
+        if (!line.startsWith('data:')) continue
+        const raw = line.slice(5).trim()
+        if (!raw || raw === '[DONE]') continue
+        try {
+          const c = JSON.parse(raw)?.choices?.[0]
+          const t = String(c?.delta?.content ?? c?.message?.content ?? '')
+          if (t) { out += t; onDelta?.(t) }
+        } catch { /* 半块/心跳行:跳过 */ }
+      }
+    }
+  }
+  return out
+}
+
 // ── 主通道:OpenAI 兼容端点 ──
 async function chatV1(o: FriendChatOpts): Promise<FriendResult> {
   const messages = [
@@ -163,21 +207,41 @@ async function chatV1(o: FriendChatOpts): Promise<FriendResult> {
   if (chars > FRIEND_INPUT_MAX) {
     throw new FriendLlmError('tooLong', `input ${chars} chars > gateway max ${FRIEND_INPUT_MAX}`)
   }
-  const res = await postJson('/v1/chat/completions', {
+  const send = (stream: boolean) => postJson('/v1/chat/completions', {
     model: MODEL,
     messages,
+    ...(stream ? { stream: true } : {}),
     ...(o.maxTokens ? { max_tokens: Math.min(o.maxTokens, FRIEND_MAX_TOKENS) } : {}),
     ...(o.temperature != null ? { temperature: o.temperature } : {}),
     ...(o.noCache ? { cache: false } : {}),
   }, o.noCache ? { 'X-No-Cache': '1' } : {}, o.timeoutMs ?? 60_000)
 
+  let res = await send(Boolean(o.onDelta))
   if (!res.ok) throw mapErr(res.status, await res.text().catch(() => ''))
-  const d: any = await res.json().catch(() => null)
-  const answer = String(d?.choices?.[0]?.message?.content ?? '').trim()
-  const xCache = res.headers.get('x-cache')
+  let xCache = res.headers.get('x-cache')
+  let answer = ''
+  let d: any = null
+  // 兜底①:要了流,上游却回 JSON(命中网关缓存时可能直接吐整段)—— 按一次性解,onDelta 补发一次。
+  // 兜底②:流解出来是空的 —— **绝不把空答案交出去**,原地非流式重来一次(数据丢失处理不上砧板)。
+  const streamed = Boolean(o.onDelta) && (res.headers.get('content-type') || '').includes('text/event-stream') && !!res.body
+  if (streamed) {
+    answer = (await readV1Sse(res.body!, o.onDelta)).trim()
+    if (!answer) {
+      console.log(`[friendLlm] v1 stream empty (x-cache=${xCache ?? '-'}) → retry non-stream`)
+      res = await send(false)
+      if (!res.ok) throw mapErr(res.status, await res.text().catch(() => ''))
+      xCache = res.headers.get('x-cache')
+      d = await res.json().catch(() => null)
+      answer = String(d?.choices?.[0]?.message?.content ?? '').trim()
+    }
+  } else {
+    d = await res.json().catch(() => null)
+    answer = String(d?.choices?.[0]?.message?.content ?? '').trim()
+    if (answer) o.onDelta?.(answer)
+  }
   if (!answer) throw new FriendLlmError('empty', `empty choices (x-cache=${xCache ?? '-'})`)
   const u = d?.usage
-  console.log(`[friendLlm] v1 ok x-cache=${xCache ?? '-'} in=${chars}ch out=${answer.length}ch tok=${u?.prompt_tokens ?? '?'}/${u?.completion_tokens ?? '?'} fr=${d?.choices?.[0]?.finish_reason ?? '?'}`)
+  console.log(`[friendLlm] v1 ok stream=${streamed} x-cache=${xCache ?? '-'} in=${chars}ch out=${answer.length}ch tok=${u?.prompt_tokens ?? '?'}/${u?.completion_tokens ?? '?'} fr=${d?.choices?.[0]?.finish_reason ?? '?'}`)
   return { answer, sources: [], cached: xCache === 'HIT', via: 'v1', xCache }
 }
 

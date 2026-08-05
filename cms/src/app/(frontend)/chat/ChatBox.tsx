@@ -24,9 +24,9 @@ import { ChatAnswer, CHAT_ANSWER_CSS, type Answer } from './ChatAnswer'
 
 type Msg = { role: 'user' | 'assistant'; content: string }
 type Fault = 'limit' | 'llm' | 'guard' | 'net'
-// 一轮 = 用户那句 + 其中**恰好一种**结果:引导(接着聊)/ 故障 / 答复 / 还在等(stream 逐字追加)
-type Turn = { q: string; a: Answer | null; stream: string; guide: string; fault: Fault | '' }
-const blank = (q: string): Turn => ({ q, a: null, stream: '', guide: '', fault: '' })
+// 一轮 = 用户那句 + 其中**恰好一种**结果:引导(接着聊)/ 故障 / 答复 / 还在等(steps = 工具轨迹)
+type Turn = { q: string; a: Answer | null; steps: string[]; stream: string; guide: string; fault: Fault | '' }
+const blank = (q: string): Turn => ({ q, a: null, steps: [], stream: '', guide: '', fault: '' })
 
 // 错误码分两类 —— 分类不是文案问题是**观感问题**:
 // 「再多说两句,你做什么工作」是助手在接着聊,不是用户填错了表单
@@ -41,18 +41,20 @@ const MAX_TEXT = 1200   // 对齐服务端 chatOrchestrate.MAX_TEXT(超了是**�
                         // 常量不 import:那模块是服务端的(带 pg pool),拖进客户端包不值
 
 /**
- * §流式 —— 逐字渲染路径(今天走不到,形状先留好)。
- * 上游 `/v1/chat/completions` 已支持 SSE,但 /api/chat 现在返回一次性 JSON;
- * 这里按 content-type 分流:`text/event-stream` 走本函数,其余走 JSON —— 服务端哪天改完,前端零改动接上。
- * 约定的事件体(交回说明里给服务端的契约):
- *   data: {"delta":"片段"}                        → 追加正文
- *   data: {"answer":"…","facts":[…],"followups":[…]}  → 收尾(facts 只能在正文完成后一次性给,它是出口校验的产物)
- *   data: {"error":"llm"}                        → 中途故障
+ * §流式 —— **流的是工具轨迹,不是答案**(2026-08-04 拍板;服务端 api/chat/route.ts 同一段注释)。
+ * 答复要过五道出口校验(违规会重试或降级),流答案 = 用户可能读到一个随后被撤回的数字。
+ * 所以 `step` 事件只报「我在查什么」,正文一次性落地。
+ * 事件体:
+ *   data: {"step":"查在招岗位:8 条"}                → 追加一条轨迹(服务端已按用户语言写好,前端不拼字)
+ *   data: {"delta":"片段"}                          → 逐字正文(**今天服务端不发**;哪天真流答案了这条路还在)
+ *   data: {"answer":"…","facts":[…],"followups":[…]} → 收尾(facts 是出口校验的产物,只能整段给)
+ *   data: {"error":"llm"}                           → 开流后才出的故障(前置错误仍走 JSON + 状态码)
  *   data: [DONE]
- * 返回错误码('' = 正常结束)。
+ * 返回错误码('' = 正常结束)。非 SSE(content-type 不是 text/event-stream)一律走下面的 JSON 老路径。
  */
 async function readSse(
   body: ReadableStream<Uint8Array>, onDelta: (s: string) => void, onFinal: (a: Answer) => void,
+  onStep: (s: string) => void,
 ): Promise<string> {
   const reader = body.getReader()
   const dec = new TextDecoder()
@@ -70,7 +72,8 @@ async function readSse(
       if (raw === '[DONE]') return ''
       let d: any = null
       try { d = JSON.parse(raw) } catch { continue }
-      if (typeof d?.delta === 'string') onDelta(d.delta)
+      if (typeof d?.step === 'string') onStep(d.step)
+      else if (typeof d?.delta === 'string') onDelta(d.delta)
       else if (typeof d?.answer === 'string') onFinal(d as Answer)
       else if (d?.error) return String(d.error)
     }
@@ -135,7 +138,9 @@ export function ChatBox() {
       if (r.ok && (r.headers.get('content-type') || '').includes('text/event-stream') && r.body) {
         let acc = ''
         let final: Answer | null = null
-        const err = await readSse(r.body, (d) => { acc += d; patch(idx, { stream: acc }) }, (a) => { final = a })
+        const steps: string[] = []
+        const err = await readSse(r.body, (d) => { acc += d; patch(idx, { stream: acc }) }, (a) => { final = a },
+          (s) => { steps.push(s); patch(idx, { steps: [...steps] }) })
         if (err) patch(idx, GUIDE_KEY[err] ? { guide: t(GUIDE_KEY[err]) } : { fault: (FAULT_KEY as any)[err] ? err as Fault : 'llm' })
         else if (final) { patch(idx, { a: final }); track('chat-answer') }
         else if (acc) { patch(idx, { a: { answer: acc } }); track('chat-answer') }
@@ -193,7 +198,22 @@ export function ChatBox() {
         .cbFault{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:12.5px;
           color:${UI.text2};line-height:1.5}
         .cbLink{background:none;border:none;padding:0;font:inherit;color:${UI.primary};cursor:pointer;text-decoration:underline}
-        /* 等待:打字指示 + 秒数。**不假装逐字生成** —— 服务端还是一次性返回,骗不得 */
+        /* 等待:工具轨迹(服务端按真实进度发)+ 打字指示 + 秒数。**不假装逐字生成答案**,骗不得 */
+        .cbRun{display:flex;flex-direction:column;gap:4px;min-width:0}
+        .cbStep{font-size:12.5px;line-height:1.5;color:${UI.text2};overflow-wrap:anywhere;
+          padding-left:14px;position:relative}
+        .cbStep::before{content:'';position:absolute;left:3px;top:.62em;width:5px;height:5px;
+          border-radius:50%;background:#bfdbfe}
+        .cbStepDone::before{background:#93c5fd}
+        /* 答复落地后的轨迹:整块收进折叠条并弱化(灰、12px),点开才铺 */
+        .cbSteps{margin-bottom:2px}
+        .cbSteps>summary{list-style:none;cursor:pointer;font-size:11.5px;color:${UI.text3};
+          display:inline-flex;align-items:center;gap:6px;padding:2px 0}
+        .cbSteps>summary::-webkit-details-marker{display:none}
+        .cbSteps>summary::before{content:'\\25B8';font-size:9px;color:${UI.text3}}
+        .cbSteps[open]>summary::before{content:'\\25BE'}
+        .cbSteps>summary:hover{color:${UI.text2}}
+        .cbSteps .cbStep{font-size:12px;color:${UI.text3}}
         .cbWait{display:flex;align-items:center;gap:8px;font-size:13px;color:${UI.text2}}
         .cbDots{display:inline-flex;gap:3px;align-items:center}
         .cbDots i{width:5px;height:5px;border-radius:50%;background:#93c5fd;animation:cbBlink 1.2s infinite}
@@ -248,14 +268,27 @@ export function ChatBox() {
                   ) : null}
                 </div>
               ) : turn.a ? (
-                <ChatAnswer a={turn.a} busy={busy} onAsk={(q) => void ask(q)} />
+                <>
+                  {/* 轨迹是**过程**不是结果:答复落地后收进折叠条,不跟结论抢视线(想复盘的人点开) */}
+                  {turn.steps.length ? (
+                    <details className="cbSteps">
+                      <summary>{t('chat.steps')}<span className="cbCnt">{turn.steps.length}</span></summary>
+                      {turn.steps.map((s, k) => <div className="cbStep" key={k}>{s}</div>)}
+                    </details>
+                  ) : null}
+                  <ChatAnswer a={turn.a} busy={busy} onAsk={(q) => void ask(q)} />
+                </>
               ) : turn.stream ? (
                 <div className="cbA">{turn.stream}<i className="cbCaret" /></div>
               ) : (
-                <div className="cbWait">
-                  <span className="cbDots"><i /><i /><i /></span>
-                  <span style={{ minWidth: 0 }}>{t('chat.waiting')}</span>
-                  <span style={{ color: UI.text3, whiteSpace: 'nowrap' }}>{secs}s</span>
+                // 等待态:已查完的步骤逐条留在上面(服务端按真实进度发的),下面一行是「还在跑」的活证据
+                <div className="cbRun">
+                  {turn.steps.map((s, k) => <div className="cbStep cbStepDone" key={k}>{s}</div>)}
+                  <div className="cbWait">
+                    <span className="cbDots"><i /><i /><i /></span>
+                    <span style={{ minWidth: 0 }}>{t('chat.waiting')}</span>
+                    <span style={{ color: UI.text3, whiteSpace: 'nowrap' }}>{secs}s</span>
+                  </div>
                 </div>
               )}
             </div>

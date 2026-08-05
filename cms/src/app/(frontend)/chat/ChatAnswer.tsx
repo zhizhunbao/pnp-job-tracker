@@ -14,6 +14,7 @@ import { UI } from '../ui/primitives'
 export type Fact = {
   tool: string; label: string; value: number | null; valueText: string; unit: string
   evidence: { url: string; fetched: string; label?: string; section?: string }
+  cited?: boolean       // 服务端回读答复打的标(chatOrchestrate.citeFacts):这条答复真用到了吗
 }
 export type Answer = { answer: string; slots?: Record<string, unknown>; facts?: Fact[]; followups?: string[] }
 
@@ -25,10 +26,19 @@ const factValue = (f: Fact): string => {
   return f.unit === '%' ? v + '%' : v + ' ' + f.unit
 }
 const isExt = (u: string) => /^https?:/i.test(u)
+// 链接文字用**官方站点名**(域名),不用「Open」——「Open」不告诉用户这是谁说的。
+// 站内页(职位板 /?prov=…)用品牌名:它语言中立,不必翻译,也不会把工具层的中文 label 漏进英文界面。
+const srcName = (u: string): string => {
+  if (!isExt(u)) return 'Offer2PR'
+  try { return new URL(u).hostname.replace(/^www\./, '') } catch { return 'Offer2PR' }
+}
 
 export function ChatAnswer({ a, busy, onAsk }: { a: Answer; busy: boolean; onAsk: (q: string) => void }) {
   const [, , t] = useLang()
-  const facts = a.facts ?? []
+  // 🔴 出处只列**答复真的用到的**(服务端 citeFacts 回读答复标的;降级成事实清单时服务端会把有出处的全标上)。
+  // 旧版全量倾倒 24 条:用户问中介收费,出处里摆着 AB/ON/QC 的岗位数 —— 没一条与那句话有关,读者只会当噪音。
+  // 这里**不做兜底全量**:标不上就是没用到,列出来只是把噪音搬回来。
+  const facts = (a.facts ?? []).filter((f) => f.cited && f.evidence?.url)
   return (
     <div className="cbMsg">
       <div className="cbA">{a.answer}</div>
@@ -39,6 +49,8 @@ export function ChatAnswer({ a, busy, onAsk }: { a: Answer; busy: boolean; onAsk
         <details className="cbSrc">
           <summary>{t('chat.sources')}<span className="cbCnt">{facts.length}</span></summary>
           <div>
+            {/* 一条出处 = **一行**(旧版把标签/数值/Open/抓取时间摞成四行,8 条就是 32 行)。
+                抓取时间挪进链接的 title:它是取证信息,不是每行都要看的东西 */}
             {facts.map((f, k) => {
               const ev = f.evidence
               return (
@@ -46,16 +58,11 @@ export function ChatAnswer({ a, busy, onAsk }: { a: Answer; busy: boolean; onAsk
                   <span style={{ minWidth: 0, color: UI.text2 }}>{f.label}</span>
                   {/* value=null → valueText 原文;两者都空就整格留白,不编「暂无」 */}
                   <span className="cbFactV">{factValue(f)}</span>
-                  <span className="cbFactS">
-                    {ev?.url ? (
-                      <a href={ev.url} title={ev.label || ev.url}
-                        target={isExt(ev.url) ? '_blank' : undefined} rel={isExt(ev.url) ? 'noreferrer' : undefined}
-                        style={{ color: UI.primary, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('chat.open')}</a>
-                    ) : null}
-                    {ev?.fetched ? (
-                      <span style={{ fontSize: 11.5, color: UI.text3, whiteSpace: 'nowrap' }}>{t('match.srcFetched', { d: ev.fetched.slice(0, 10) })}</span>
-                    ) : null}
-                  </span>
+                  <a className="cbFactS" href={ev.url}
+                    title={ev.fetched ? t('match.srcFetched', { d: ev.fetched.slice(0, 10) }) : ev.url}
+                    target={isExt(ev.url) ? '_blank' : undefined} rel={isExt(ev.url) ? 'noreferrer' : undefined}>
+                    {srcName(ev.url)}
+                  </a>
                 </div>
               )
             })}
@@ -92,16 +99,14 @@ export const CHAT_ANSWER_CSS = `
   .cbSrc[open]>summary::before{content:'\\25BE'}
   .cbSrc>summary:hover{color:${UI.primary}}
   .cbCnt{background:${UI.hairline};color:${UI.text2};border-radius:999px;padding:0 7px;font-size:11px;font-weight:600}
-  /* 出处行:手机 = 标签+数值一行、来源链接自己一行(375 上三件挤一行必截数字);
-     ≥700 三列一行,链接顶右。永不横滚(站规) */
-  .cbFact{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;padding:8px 0;
+  /* 出处行:**一条一行**(标签 | 数值 | 官方站点名),375 上标签自己折行,数值与站名不折、不横滚(站规)。
+     站名列封到 40% 宽:长域名(saskatchewan.ca 这类)自己截,绝不把整行顶宽 */
+  .cbFact{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,auto);gap:2px 10px;padding:7px 0;
     border-top:1px solid ${UI.hairline};align-items:baseline;font-size:13px}
   .cbFactV{text-align:right;white-space:nowrap;font-weight:600;color:${UI.text}}
-  .cbFactS{grid-column:1/-1;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
-  @media (min-width:700px){
-    .cbFact{grid-template-columns:minmax(0,1fr) auto minmax(0,auto)}
-    .cbFactS{grid-column:auto;justify-content:flex-end;flex-wrap:nowrap}
-  }
+  .cbFactS{max-width:40%;color:${UI.primary};text-decoration:none;white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis;font-size:12px}
+  .cbFactS:hover{text-decoration:underline}
   /* 追问 chip:整句放不进 375 的一行 → 允许折行(不是胶囊挤扁,是块状 chip),永不横向溢出 */
   .cbFus{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
   .cbFusT{width:100%;font-size:11.5px;font-weight:600;color:${UI.text3}}

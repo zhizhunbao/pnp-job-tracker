@@ -66,11 +66,14 @@ async function friendStream(messages: ChatMessage[], opts: { maxTokens: number }
 // 还得靠人肉撞见(2026-08-04 事故)。**xCache 是上游 `x-cache: HIT|MISS` 响应头的原值**(换 /v1 端点后
 // 直接读头,不再靠我们自己推断);via 记这次走的是新端点还是回退到了旧 /api/chat。
 // opts.temperature = 要确定性的调用点(抽 JSON、对照打分)显式压低;不传走上游默认 0.4。
+// opts.onDelta = 流式增量(**只 friend 通道**;传了就让 friendLlm 发 stream:true)。返回值照旧是整段答案 ——
+// 对话侧拿它测首字延迟,**不往前端发**:出口五道校验是整段跑的,流答案 = 用户可能读到随后被撤回的数字。
 export async function completeText(messages: ChatMessage[], opts: {
   maxTokens: number
   provider?: 'friend' | 'anthropic' | 'ollama'
   temperature?: number
   onMeta?: (m: { cached: boolean; via: 'v1' | 'legacy'; xCache: string | null }) => void
+  onDelta?: (chunk: string) => void
 }): Promise<string> {
   const prov = opts.provider || PROVIDER
   if (prov === 'friend') {
@@ -78,6 +81,7 @@ export async function completeText(messages: ChatMessage[], opts: {
     // maxTokens 现在真发出去(旧结论「上游不收长度参数」已随 /v1 端点作废,见 friendLlm 文件头)
     const r = await friendChatOrThrow({
       prompt, system, timeoutMs: 90_000, maxTokens: opts.maxTokens, temperature: opts.temperature,
+      ...(opts.onDelta ? { onDelta: opts.onDelta } : {}),
     }).catch((e) => { throw toLlmError(e) })
     opts.onMeta?.({ cached: r.cached, via: r.via, xCache: r.xCache })
     return r.answer

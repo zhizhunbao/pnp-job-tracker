@@ -494,6 +494,7 @@ const zh: Dict = {
   // 对话即产品(C2):landing 主输入框。错误码一句一说 —— 笼统的「稍后再试」让用户白重试(简历对照实撞)
   'chat.title': '说说你的情况', 'chat.ph': '一句话说说你的情况', 'chat.send': '提问',
   'chat.waiting': '正在查官方数据', 'chat.sources': '官方来源', 'chat.followups': '接着问',
+  'chat.steps': '查询过程',        // 工具轨迹的折叠条(答复落地后弱化,见 ChatBox §流式)
   // 错误文案一律 ≤20 字:375 上错误框可写宽约 265px,超了就折行(文案一行放下站规)
   'chat.err.tooShort': '再多说两句,你做什么工作、在哪个省',
   'chat.err.noOcc': '说说你做的是什么工作,才查得到',
@@ -1301,6 +1302,7 @@ const en: Dict = {
   // Chat-first landing (C2). Every error code says its own thing — a generic "try later" makes users retry for nothing
   'chat.title': 'Tell us your situation', 'chat.ph': 'Your situation in one sentence', 'chat.send': 'Ask',
   'chat.waiting': 'Checking official data', 'chat.sources': 'Source', 'chat.followups': 'Ask next',
+  'chat.steps': 'How this was checked',
   // Keep every error under ~38 chars: the error box has ~265px of writable width at 375
   'chat.err.tooShort': 'Add your job and your province',
   'chat.err.noOcc': 'Tell us what work you do',
@@ -2080,6 +2082,7 @@ const ko: Dict = {
   // 대화형 랜딩(C2). 오류 코드마다 다른 안내 — 뭉뚱그린 "잠시 후 다시"는 헛된 재시도만 부름
   'chat.title': '상황을 알려 주세요', 'chat.ph': '한 문장으로 상황을 알려 주세요', 'chat.send': '질문',
   'chat.waiting': '공식 데이터 확인 중', 'chat.sources': '공식 출처', 'chat.followups': '이어서 질문',
+  'chat.steps': '조회 과정',
   // 오류 문구는 20자 이내: 375에서 오류 박스의 가용 폭은 약 265px(넘으면 줄바꿈)
   'chat.err.tooShort': '직업과 주를 알려 주세요',
   'chat.err.noOcc': '어떤 일을 하시는지 알려 주세요',
