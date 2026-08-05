@@ -239,7 +239,9 @@ const CSS = `
 .clMin,.clMax{flex:none;width:32px;height:32px;display:flex;align-items:center;justify-content:center;
   border:none;background:none;color:${UI.text2};border-radius:8px;cursor:pointer}
 .clMin:hover,.clMax:hover{background:${UI.hairline};color:${UI.text}}
-/* 最大化:贴着视口留 12px,宽度封到 1100(再宽正文一行 90+ 词,眼睛回不到行首)。
+/* 最大化:贴着视口留 12px,窗宽封到 1100。**行宽不靠窗宽管** ——
+   正文读列由 ChatBox 的 --cbW(860px,对齐 Open WebUI 取样)自己居中收窄,
+   所以窗放到 1100 也不会出现「一行 90+ 词、眼睛回不到行首」。
    仍靠右下角锚定 —— 它得还像那个挂件,不是突然变成一个居中弹框 */
 .clPanel.clMaxed{inset:12px 12px 12px auto;width:min(1100px,calc(100vw - 24px));height:calc(100dvh - 24px)}
 /* 卡壳与历史区高度由 ChatBox 的 compact 自己管(它的 .cbFill),这里只给容器 —— 壳**不覆盖别人的类名** */

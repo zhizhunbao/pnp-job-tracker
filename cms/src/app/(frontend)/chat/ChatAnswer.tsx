@@ -7,6 +7,9 @@
 //
 // 红线(与 chatTools 同口径,不许放松):`value === null` 是官方隐私抑制(如 "Less than 10"),
 // 渲 valueText 原文,**永不折成 0 或「暂无」** —— 折了就是替官方编了个数字。
+import { useState } from 'react'
+
+import { IconCheck, IconClipboard } from '../Icons'
 import { useLang } from '../LangProvider'
 import { UI } from '../ui/primitives'
 
@@ -36,34 +39,73 @@ const srcName = (u: string): string => {
 }
 
 /**
- * 降级清单的排版。**不是 markdown 渲染** —— 认的只有我们自己写的那个行首 `- `
- * (chatOrchestrate.factSheet 拼的),一个记号一条规则,不引解析器、不碰 innerHTML。
+ * §排版 —— **不是 markdown 渲染**(2026-08-04 Open WebUI 取样后扩到全部答复;原来只用在降级清单上)。
+ * 认的记号**只有两个**,都是我们自己约定的:
+ *   ① 空行  → 分段(段距 8px);
+ *   ② 行首 `- ` → 项目符号一条(连续多条合成一组,悬挂缩进)。
+ * **不认** 标题 / 加粗 / 表格 / 代码块 —— 那要么得引 markdown 依赖,要么得碰 dangerouslySetInnerHTML,
+ * 两条都不走。产出永远是纯文本节点,注入面为零。
  *
- * 为什么值得单独排:pre-wrap 下 14 行 `- 标签: 值` 折行后**续行顶回行首**,读起来就是一坨
- * (Frank 实测原话「一坨」)。悬挂缩进 + 行距一改,同一份文字就分得清「几条事实」了。
- * 第一行是那句人话说明,单独一段,不挂项目符号。
+ * 为什么值得排:pre-wrap 一铺到底时,14 行 `- 标签: 值` 折行后**续行顶回行首**,读起来就是一坨
+ * (Frank 实测原话「一坨」);长答复没有段落概念时同理,一屏字没有落脚点。
+ * **向后兼容**:模型今天多半还不产 `- `(提示词那半另派)—— 没有记号就当普通段落,不显示空列表。
  */
-function Sheet({ text }: { text: string }) {
-  const lines = text.split('\n').map((l) => l.trim()).filter(Boolean)
-  const head = lines[0] && !lines[0].startsWith('- ') ? lines[0] : ''
-  const items = (head ? lines.slice(1) : lines).map((l) => l.replace(/^-\s*/, ''))
+type Block = { type: 'p'; text: string } | { type: 'ul'; items: string[] }
+const BULLET = /^-\s+(.+)$/
+export function textBlocks(text: string): Block[] {
+  const out: Block[] = []
+  let para: string[] = []
+  const flush = () => { if (para.length) { out.push({ type: 'p', text: para.join('\n') }); para = [] } }
+  for (const raw of text.split('\n')) {
+    const s = raw.trim()
+    if (!s) { flush(); continue }
+    const m = BULLET.exec(s)
+    if (!m) { para.push(s); continue }
+    flush()
+    const last = out[out.length - 1]
+    if (last && last.type === 'ul') last.items.push(m[1])
+    else out.push({ type: 'ul', items: [m[1]] })
+  }
+  flush()
+  return out
+}
+
+/** 助手正文的唯一渲染出口(答复 / 降级清单 / 引导语共用一套排版) */
+export function ChatText({ text, sheet }: { text: string; sheet?: boolean }) {
   return (
-    <div className="cbA cbSheet">
-      {head ? <div className="cbSheetH">{head}</div> : null}
-      {items.map((l, k) => <div className="cbSheetI" key={k}>{l}</div>)}
+    <div className={sheet ? 'cbA cbSheet' : 'cbA'}>
+      {textBlocks(text).map((b, i) => (b.type === 'ul'
+        ? <div className="cbUl" key={i}>{b.items.map((s, k) => <div className="cbLi" key={k}>{s}</div>)}</div>
+        : <p className="cbP" key={i}>{b.text}</p>))}
     </div>
   )
 }
 
 export function ChatAnswer({ a, busy, onAsk }: { a: Answer; busy: boolean; onAsk: (q: string) => void }) {
   const [, , t] = useLang()
+  // 每条答复只留**一个**操作:复制(2026-08-04 Open WebUI 取样结论——它那排 8-9 个图标里,
+  // 「分叉 / 重生成 / 继续」在我们这儿语义上不成立:对话不落库、答复过五道出口校验不能随手重来)
+  const [copied, setCopied] = useState(false)
+  const canCopy = typeof navigator !== 'undefined' && !!navigator.clipboard    // 非安全上下文没有它,那就不出这个钮
   // 🔴 出处只列**答复真的用到的**(服务端 citeFacts 回读答复标的;降级成事实清单时服务端会把有出处的全标上)。
   // 旧版全量倾倒 24 条:用户问中介收费,出处里摆着 AB/ON/QC 的岗位数 —— 没一条与那句话有关,读者只会当噪音。
   // 这里**不做兜底全量**:标不上就是没用到,列出来只是把噪音搬回来。
   const facts = (a.facts ?? []).filter((f) => f.cited && f.evidence?.url)
   return (
     <div className="cbMsg">
-      {a.degraded ? <Sheet text={a.answer} /> : <div className="cbA">{a.answer}</div>}
+      <ChatText text={a.answer} sheet={a.degraded} />
+
+      {canCopy && (
+        <button className="cbAct" onClick={() => {
+          navigator.clipboard.writeText(a.answer).then(() => {
+            setCopied(true)
+            setTimeout(() => setCopied(false), 1800)
+          }).catch(() => { /* 用户拒了剪贴板权限:不弹错,钮保持原样 */ })
+        }}>
+          {copied ? <IconCheck /> : <IconClipboard />}
+          <span>{t(copied ? 'chat.copied' : 'chat.copy')}</span>
+        </button>
+      )}
 
       {/* 出处:<details> 原生折叠(零依赖、键盘可达)。默认收起 —— 一上来铺 8 行数字表会把结论压没了,
           但摘要行必须**说清有几条**,不然没人知道下面藏着可点的官方原页 */}
@@ -112,17 +154,33 @@ export function ChatAnswer({ a, busy, onAsk }: { a: Answer; busy: boolean; onAsk
 // 样式与 ChatBox 同一块 <style> 注入(答复可能同页出现多条,组件内联 <style> 会重复 N 份)
 export const CHAT_ANSWER_CSS = `
   .cbMsg{min-width:0}
-  /* 正文限行长:1200px 一行的散文一行 90+ 词,眼睛回不到行首。表格类(出处/追问)照旧吃满宽 */
-  .cbA{font-size:14.5px;line-height:1.7;color:${UI.text};white-space:pre-wrap;overflow-wrap:anywhere;max-width:74ch}
-  /* 降级清单:一条事实一行、续行悬挂缩进(pre-wrap 直接铺会让续行顶回行首,14 行糊成一坨)。
-     左侧一道细线把「这是原始事实,不是组织好的答复」说清楚,不用再加一句解释文案 */
-  .cbSheet{white-space:normal;border-left:2px solid ${UI.hairline};padding-left:12px}
-  .cbSheetH{margin-bottom:6px;color:${UI.text2};font-size:13.5px;line-height:1.6}
-  /* 项目符号用 CSS 画,不用「·」这个字(站规:那个字是分隔号,不当记号使);
-     绝对定位的记号 = 真悬挂缩进,折行后自动对齐到 padding-left */
-  .cbSheetI{position:relative;padding-left:14px;margin-top:6px;line-height:1.6}
-  .cbSheetI::before{content:'';position:absolute;left:3px;top:.72em;width:5px;height:5px;
+  /* 排版基线(2026-08-04 对齐 Open WebUI 取样:15px / 1.625 / 段距 8px)。
+     **AI 答复满宽无气泡** —— 只有用户消息有气泡(.cbQ)。长答复套气泡是可读性杀手:
+     气泡把正文再挤窄一圈,还在每段两侧加一道视觉边界。
+     行宽上限不写死 ch:原来那行 max-width:74ch 在 380px 面板里从头到尾没生效过(74ch≈555px),
+     是行死 CSS。真正的行宽闸门放在 .cbTurn 的 --cbW(见 ChatBox),这里只保证不撑破容器。 */
+  .cbA{font-size:15px;line-height:1.625;color:${UI.text};overflow-wrap:anywhere;max-width:100%;min-width:0}
+  /* 段落:空行分段 → 8px 段距(最后一段不留)。pre-wrap 保住段内的软换行 */
+  .cbP{margin:0 0 8px;white-space:pre-wrap}
+  .cbP:last-child{margin-bottom:0}
+  /* 逐字流式的半截正文(服务端今天不发 delta,路径备着):还没成段,原样 pre-wrap 铺 */
+  .cbPre{white-space:pre-wrap}
+  /* 项目符号组:行首「- 」渲成这个。记号用 CSS 画,不用「·」这个字(站规:那是分隔号,不当记号使);
+     绝对定位的记号 = 真悬挂缩进,折行后续行自动对齐到 padding-left,不顶回行首 */
+  .cbUl{margin:0 0 8px}
+  .cbUl:last-child{margin-bottom:0}
+  .cbLi{position:relative;padding-left:14px;margin-top:4px;white-space:pre-wrap}
+  .cbLi:first-child{margin-top:0}
+  .cbLi::before{content:'';position:absolute;left:3px;top:.66em;width:5px;height:5px;
     border-radius:50%;background:#bfdbfe}
+  /* 降级清单:同一套段落/项目符号排版,只多一道左细线 ——
+     把「这是原始事实,不是组织好的答复」说清楚,不用再加一句解释文案 */
+  .cbSheet{border-left:2px solid ${UI.hairline};padding-left:12px}
+  /* 每条答复唯一的操作钮:复制。弱化到不抢正文(灰字 12px),命中区仍有 24px 高 */
+  .cbAct{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:3px 0;
+    background:none;border:none;font-family:inherit;font-size:12px;line-height:1.5;
+    color:${UI.text3};cursor:pointer}
+  .cbAct:hover{color:${UI.text2}}
   .cbSrc{margin-top:12px;border-top:1px solid ${UI.hairline};padding-top:8px}
   .cbSrc>summary{list-style:none;cursor:pointer;font-size:12px;font-weight:600;color:${UI.text2};display:inline-flex;align-items:center;gap:6px;padding:2px 0}
   .cbSrc>summary::-webkit-details-marker{display:none}
@@ -131,11 +189,14 @@ export const CHAT_ANSWER_CSS = `
   .cbSrc>summary:hover{color:${UI.primary}}
   .cbCnt{background:${UI.hairline};color:${UI.text2};border-radius:999px;padding:0 7px;font-size:11px;font-weight:600}
   /* 出处行:**一条一行**(标签 | 数值 | 官方站点名),375 上标签自己折行,数值与站名不折、不横滚(站规)。
-     站名列封到 40% 宽:长域名(saskatchewan.ca 这类)自己截,绝不把整行顶宽 */
+     站名列的封顶从 40% 换成 200px(2026-08-04 实测修):百分比 max-width 在 auto 网格轨道里是**循环依赖**
+     ——轨道按内容定宽,内容又按轨道取百分比,浏览器解出来的结果是把站名一律截到 72px。
+     实测三档全中:immigration-quebec.gouv.qc.ca 显示成「immig…」,连是谁说的都看不出来。
+     px 封顶没有这个循环:轨道 = min(域名实宽, 200px),最长的官方域名 181px 正好整条显示。 */
   .cbFact{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,auto);gap:2px 10px;padding:7px 0;
     border-top:1px solid ${UI.hairline};align-items:baseline;font-size:13px}
   .cbFactV{text-align:right;white-space:nowrap;font-weight:600;color:${UI.text}}
-  .cbFactS{max-width:40%;color:${UI.primary};text-decoration:none;white-space:nowrap;overflow:hidden;
+  .cbFactS{max-width:200px;color:${UI.primary};text-decoration:none;white-space:nowrap;overflow:hidden;
     text-overflow:ellipsis;font-size:12px}
   .cbFactS:hover{text-decoration:underline}
   /* 追问 chip:整句放不进 375 的一行 → 允许折行(不是胶囊挤扁,是块状 chip),永不横向溢出 */
@@ -144,5 +205,5 @@ export const CHAT_ANSWER_CSS = `
   .cbFu{max-width:100%;text-align:left;background:#fff;border:1px solid ${UI.border};border-radius:12px;
     padding:7px 12px;font-size:13px;line-height:1.4;color:${UI.primary};font-family:inherit;cursor:pointer}
   .cbFu:hover{border-color:#bfdbfe;background:#f8fafc}
-  .cbDisc{font-size:11.5px;color:${UI.text3};margin-top:12px;line-height:1.5;max-width:74ch}
+  .cbDisc{font-size:11.5px;color:${UI.text3};margin-top:12px;line-height:1.5;max-width:100%}
 `

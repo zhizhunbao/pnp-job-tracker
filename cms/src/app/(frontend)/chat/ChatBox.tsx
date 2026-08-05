@@ -20,15 +20,19 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLang } from '../LangProvider'
 import { Button, UI } from '../ui/primitives'
 import { track } from '@/lib/track'
-import { ChatAnswer, CHAT_ANSWER_CSS, type Answer } from './ChatAnswer'
+import { ChatAnswer, ChatText, CHAT_ANSWER_CSS, type Answer } from './ChatAnswer'
 
 type Msg = { role: 'user' | 'assistant'; content: string }
 type Fault = 'limit' | 'llm' | 'guard' | 'net'
 // 一轮 = 用户那句 + 其中**恰好一种**结果:引导(接着聊)/ 故障 / 答复 / 还在等(steps = 工具轨迹)
-// stepsOpen:`null` = 跟着阶段走(等待时展开——那时它是唯一内容;结果一落地立刻收起)。
+// stepsOpen:`null` = 跟着默认走,也就是**收起**(2026-08-04 改;原来是「等待时展开」——
+// 取样发现顺序正好反了:等待期摊开十行轨迹占掉半个面板,答复落地反而收走)。
 // 用户手点过折叠条才写成布尔值(展开是**他主动的事**);下一次落地又归 null,重新收起。
-type Turn = { q: string; a: Answer | null; steps: string[]; stream: string; guide: string; fault: Fault | ''; stepsOpen: boolean | null }
-const blank = (q: string): Turn => ({ q, a: null, steps: [], stream: '', guide: '', fault: '', stepsOpen: null })
+// t0/secs:这一轮的**真实**耗时(t0 = 发出时刻,secs = 落地时算出来的秒数)。
+// 折叠条上那个数字必须是量出来的,不是编的 —— 编的耗时比不显示更糟。
+type Turn = { q: string; a: Answer | null; steps: string[]; stream: string; guide: string; fault: Fault | ''; stepsOpen: boolean | null; t0: number; secs: number }
+const blank = (q: string): Turn =>
+  ({ q, a: null, steps: [], stream: '', guide: '', fault: '', stepsOpen: null, t0: Date.now(), secs: 0 })
 
 // 错误码分两类 —— 分类不是文案问题是**观感问题**:
 // 「再多说两句,你做什么工作」是助手在接着聊,不是用户填错了表单
@@ -128,6 +132,17 @@ export function ChatBox({ compact = false, autoFocus = false }: { compact?: bool
 
   const patch = (i: number, v: Partial<Turn>) =>
     setTurns((prev) => prev.map((x, k) => (k === i ? { ...x, ...v } : x)))
+  /**
+   * 终局补丁(答复 / 引导 / 故障都走这里)。做**两件只该做一次**的事:
+   *   ① 结算真实耗时 —— 从这一轮自己的 t0 算,不用那个全局 secs(重试时它已经被清零了);
+   *   ② stepsOpen 归 null = 轨迹回到默认的收起态。等待期间用户手点开过也一样收:
+   *      那是**上一阶段**的选择,答复才是他现在要读的东西。
+   * 至少记 1s:不足一秒显示 0s 像没查过,而每一轮都真的打了后端。
+   */
+  const finish = (i: number, v: Partial<Turn>) =>
+    setTurns((prev) => prev.map((x, k) => (k === i
+      ? { ...x, ...v, stepsOpen: null, secs: Math.max(1, Math.round((Date.now() - x.t0) / 1000)) }
+      : x)))
 
   const ask = useCallback(async (raw: string, retryIdx?: number) => {
     const q = raw.trim()
@@ -157,29 +172,28 @@ export function ChatBox({ compact = false, autoFocus = false }: { compact?: bool
         const steps: string[] = []
         const err = await readSse(r.body, (d) => { acc += d; patch(idx, { stream: acc }) }, (a) => { final = a },
           (s) => { steps.push(s); patch(idx, { steps: [...steps] }) })
-        // 每条终局都带 stepsOpen:null —— 结果落地 = 轨迹回到「跟着阶段走」,也就是收起(见 Turn 注释)。
-        // 等待期间用户手点开过也一样收:那是**上一阶段**的选择,答复才是他现在要读的东西。
-        if (err) patch(idx, GUIDE_KEY[err] ? { guide: t(GUIDE_KEY[err]), stepsOpen: null } : { fault: (FAULT_KEY as any)[err] ? err as Fault : 'llm', stepsOpen: null })
-        else if (final) { patch(idx, { a: final, stepsOpen: null }); track('chat-answer') }
-        else if (acc) { patch(idx, { a: { answer: acc }, stepsOpen: null }); track('chat-answer') }
-        else patch(idx, { fault: 'llm', stepsOpen: null })
+        // 终局一律走 finish(结算耗时 + 收起轨迹,见它的注释)
+        if (err) finish(idx, GUIDE_KEY[err] ? { guide: t(GUIDE_KEY[err]) } : { fault: (FAULT_KEY as any)[err] ? err as Fault : 'llm' })
+        else if (final) { finish(idx, { a: final }); track('chat-answer') }
+        else if (acc) { finish(idx, { a: { answer: acc } }); track('chat-answer') }
+        else finish(idx, { fault: 'llm' })
       } else {
         const d = await r.json().catch(() => null)
         const code = String(d?.error || '')
         if (!r.ok || !d || d.error) {
           if (GUIDE_KEY[code]) {
-            patch(idx, { guide: t(GUIDE_KEY[code]), stepsOpen: null })
+            finish(idx, { guide: t(GUIDE_KEY[code]) })
             taRef.current?.focus()          // 引导 = 该他接着说,光标直接回到输入框
           } else {
-            patch(idx, { fault: (code === 'limit' || code === 'guard' || code === 'llm') ? code : 'net', stepsOpen: null })
+            finish(idx, { fault: (code === 'limit' || code === 'guard' || code === 'llm') ? code : 'net' })
           }
         } else {
-          patch(idx, { a: d as Answer, stepsOpen: null })
+          finish(idx, { a: d as Answer })
           track('chat-answer')
         }
       }
     } catch {
-      patch(idx, { fault: 'net', stepsOpen: null })
+      finish(idx, { fault: 'net' })
     }
     setBusy(false)
   }, [busy, turns, lang, t])
@@ -195,8 +209,14 @@ export function ChatBox({ compact = false, autoFocus = false }: { compact?: bool
   return (
     <div className={compact ? 'cbFill' : undefined}>
       <style>{`
-        .cbCard{background:${UI.card};border:1px solid ${UI.border};border-radius:14px;padding:10px;
+        /* --cbW = **正文读列宽**(2026-08-04 Open WebUI 取样:它 860px,我们桌面小窗只有 354px ——
+           「Frank 在电脑上看到的就是别人手机上的观感」)。860 是上限不是宽度:
+           小于它的容器(375 手机 / 380 小窗)完全吃不到这条,自然还是满宽,不横滚不截字;
+           最大化(面板封 1100)才真的收到 860,并且**居中** —— 否则窗开大了正文仍是左边一条窄带。
+           挂在 .cbCard 上,提问气泡/答复/示例/composer 共用同一条中轴。 */
+        .cbCard{--cbW:860px;background:${UI.card};border:1px solid ${UI.border};border-radius:14px;padding:10px;
           display:flex;flex-direction:column;gap:10px}
+        .cbTurn,.cbEmpty,.cbCol{width:100%;max-width:var(--cbW);margin-inline:auto}
         /* 历史在上:自身滚动 + 高度封顶,composer 永远在视野里(聊天界面的通用形态,别再让输入框骑在历史上面) */
         .cbThread{display:flex;flex-direction:column;gap:16px;min-width:0;overflow-y:auto;
           max-height:min(56vh,520px);padding:2px}
@@ -208,9 +228,10 @@ export function ChatBox({ compact = false, autoFocus = false }: { compact?: bool
         .cbFill .cbThread{flex:1;min-height:0;max-height:none}
         .cbFill .cbThread.cbNoScroll{overflow-y:auto}   /* 空态在挂件里也要能滚(面板矮时三条示例放不下) */
         .cbTurn{display:flex;flex-direction:column;gap:8px;min-width:0}
-        /* 提问气泡:靠右、封顶宽,桌面上不拉成一整行 1160px */
+        /* 提问气泡:靠右、封顶宽。**气泡只给用户消息** —— AI 答复满宽无气泡(见 CHAT_ANSWER_CSS .cbA),
+           长答复套气泡是可读性杀手。字号跟正文同一档(15/1.625),不然一问一答两种字看着像两个网站 */
         .cbQ{align-self:flex-end;max-width:min(88%,560px);background:#eff6ff;color:${UI.primaryDeep};
-          border-radius:12px 12px 4px 12px;padding:9px 12px;font-size:14px;line-height:1.5;
+          border-radius:12px 12px 4px 12px;padding:9px 12px;font-size:15px;line-height:1.625;
           white-space:pre-wrap;overflow-wrap:anywhere}
         /* 空态示例:整宽一条一行(站规),点了直接发 —— 让人看见「这里该说什么」比任何说明文案都有用 */
         .cbTry{font-size:12px;color:${UI.text3}}
@@ -227,15 +248,19 @@ export function ChatBox({ compact = false, autoFocus = false }: { compact?: bool
           padding-left:14px;position:relative}
         .cbStep::before{content:'';position:absolute;left:3px;top:.62em;width:5px;height:5px;
           border-radius:50%;background:#93c5fd}
-        /* 轨迹折叠条:等待期展开(那时它是唯一内容),结果一落地就收 —— open 由 React 控,见渲染处注释 */
+        /* 轨迹折叠条:**等待期就已经是折叠的一行**(2026-08-04 改;原来等待期摊开)。
+           一行里装三样:活体记号(等待时的三点 / 落地后的三角)、一句话、真实耗时。
+           flex-wrap:365 上中文那句 + 耗时若放不下就折第二行,绝不横滚 */
         .cbSteps{margin-bottom:2px}
-        .cbSteps>summary{list-style:none;cursor:pointer;font-size:11.5px;color:${UI.text3};
-          display:inline-flex;align-items:center;gap:6px;padding:2px 0}
+        .cbSteps>summary{list-style:none;cursor:pointer;font-size:12px;line-height:1.5;color:${UI.text3};
+          display:flex;align-items:center;flex-wrap:wrap;gap:4px 6px;padding:3px 0}
         .cbSteps>summary::-webkit-details-marker{display:none}
-        .cbSteps>summary::before{content:'\\25B8';font-size:9px;color:${UI.text3}}
-        .cbSteps[open]>summary::before{content:'\\25BE'}
         .cbSteps>summary:hover{color:${UI.text2}}
         .cbSteps[open]{padding-bottom:4px}
+        /* 三角只在「已落地」的那一行出(等待时左边站的是三点),所以挂在 span 上不挂 summary::before */
+        .cbCar::before{content:'\\25B8';font-size:9px;color:${UI.text3}}
+        .cbSteps[open] .cbCar::before{content:'\\25BE'}
+        .cbSecs{color:${UI.text3};white-space:nowrap;font-variant-numeric:tabular-nums}
         .cbWait{display:flex;align-items:center;gap:8px;font-size:13px;color:${UI.text2}}
         .cbDots{display:inline-flex;gap:3px;align-items:center}
         .cbDots i{width:5px;height:5px;border-radius:50%;background:#93c5fd;animation:cbBlink 1.2s infinite}
@@ -266,7 +291,7 @@ export function ChatBox({ compact = false, autoFocus = false }: { compact?: bool
             stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < 48
           }}>
           {empty ? (
-            <div>
+            <div className="cbEmpty">
               <div className="cbTry">{t('chat.try')}</div>
               {EXAMPLES.map((k) => (
                 <button key={k} className="cbEx" disabled={busy}
@@ -275,23 +300,38 @@ export function ChatBox({ compact = false, autoFocus = false }: { compact?: bool
             </div>
           ) : null}
 
-          {turns.map((turn, i) => (
+          {turns.map((turn, i) => {
+            // live = 这一轮还在跑(整个组件同时只可能有一轮在跑:ask 头上有 busy 闸)。
+            // 等待中读全局 secs(每秒 tick),落地后读这一轮自己结算的 turn.secs —— 两个数都是量的。
+            // 逐字流式的半截正文**也算在跑**(耗时还没结算,turn.secs 还是 0)
+            const live = busy && !(turn.a || turn.guide || turn.fault)
+            return (
             <div className="cbTurn" key={i}>
               <div className="cbQ">{turn.q}</div>
               {/* 🔴 轨迹**只有这一处**(等待期和落地后同一个 <details>,不是两套渲染)。
                   两套渲染时,「等待时铺开」和「落地后折叠」之间隔着一次组件换型 ——
                   换型就有换不干净的余地(Frank 实测:答复落地了,十行轨迹还占着面板一半)。
-                  一个受控 <details> 把这件事变成一个布尔量:open 只由 stepsOpen ?? 阶段 决定,没有第二条路。 */}
+                  一个受控 <details> 把这件事变成一个布尔量:open 只由 stepsOpen 决定,没有第二条路。
+                  2026-08-04:默认从「等待时展开」改成**一直收起**(取样结论,顺序原来是反的)——
+                  等待中 → 一行「正在查询… 8s」;落地后 → 一行「已核查 6 项 11s ⌄」,点开才看细节。 */}
               {turn.steps.length ? (
-                <details className="cbSteps" open={turn.stepsOpen ?? !(turn.a || turn.guide || turn.fault)}
+                <details className="cbSteps" open={turn.stepsOpen ?? false}
                   onToggle={(e) => patch(i, { stepsOpen: e.currentTarget.open })}>
-                  <summary>{t('chat.steps')}<span className="cbCnt">{turn.steps.length}</span></summary>
+                  <summary>
+                    {live
+                      ? <span className="cbDots" aria-hidden><i /><i /><i /></span>
+                      : <span className="cbCar" aria-hidden />}
+                    <span style={{ minWidth: 0 }}>
+                      {live ? t('chat.stepsRunning') : t('chat.stepsDone', { n: turn.steps.length })}
+                    </span>
+                    <span className="cbSecs">{live ? secs : turn.secs}s</span>
+                  </summary>
                   {turn.steps.map((s, k) => <div className="cbStep" key={k}>{s}</div>)}
                 </details>
               ) : null}
               {turn.guide ? (
                 // 引导:这是助手的一条消息(「再多说两句,你做什么工作」),不是表单报错
-                <div className="cbA">{turn.guide}</div>
+                <ChatText text={turn.guide} />
               ) : turn.fault ? (
                 <div className="cbFault">
                   <span aria-hidden style={{ color: UI.warn }}>!</span>
@@ -303,20 +343,23 @@ export function ChatBox({ compact = false, autoFocus = false }: { compact?: bool
               ) : turn.a ? (
                 <ChatAnswer a={turn.a} busy={busy} onAsk={(q) => void ask(q)} />
               ) : turn.stream ? (
-                <div className="cbA">{turn.stream}<i className="cbCaret" /></div>
-              ) : (
-                // 等待态:「还在跑」的活证据。轨迹在上面那个 <details> 里(收起来了也照样看得见这一行)
+                <div className="cbA cbPre">{turn.stream}<i className="cbCaret" /></div>
+              ) : turn.steps.length ? null : (
+                // 等待态且**还没有一条轨迹**时才出这一行 —— 有轨迹的话,上面那条折叠条自己就带三点和秒数,
+                // 两个都出就是同一件事说两遍(取样结论:等待期只该有一行)
                 <div className="cbWait">
-                  <span className="cbDots"><i /><i /><i /></span>
+                  <span className="cbDots" aria-hidden><i /><i /><i /></span>
                   <span style={{ minWidth: 0 }}>{t('chat.waiting')}</span>
-                  <span style={{ color: UI.text3, whiteSpace: 'nowrap' }}>{secs}s</span>
+                  <span className="cbSecs">{secs}s</span>
                 </div>
               )}
             </div>
-          ))}
+            )
+          })}
         </div>
 
-        <div className="cbComposer">
+        {/* cbCol:composer 跟正文共用同一条中轴与读列宽(最大化时不横跨 1100px,那样输入框比正文还宽) */}
+        <div className="cbComposer cbCol">
           <textarea ref={taRef} className="cbIn" rows={2} value={input} placeholder={t('chat.ph')} maxLength={MAX_TEXT}
             onFocus={() => { if (!opened.current) { opened.current = true; track('chat-open') } }}
             onChange={(e) => {

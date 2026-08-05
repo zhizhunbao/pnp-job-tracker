@@ -495,6 +495,9 @@ const zh: Dict = {
   'chat.title': '说说你的情况', 'chat.ph': '一句话说说你的情况', 'chat.send': '提问',
   'chat.waiting': '正在查官方数据', 'chat.sources': '官方来源', 'chat.followups': '接着问',
   'chat.steps': '查询过程',        // 工具轨迹的折叠条(答复落地后弱化,见 ChatBox §流式)
+  // 轨迹折叠条的一行文案(2026-08-04:等待期就折叠,后面那个秒数是**实测**的,不是编的)
+  'chat.stepsRunning': '正在查询', 'chat.stepsDone': '已核查 {n} 项',
+  'chat.copy': '复制', 'chat.copied': '已复制',   // 每条答复唯一的操作钮(不做分叉/重生成/继续)
   // 错误文案一律 ≤20 字:375 上错误框可写宽约 265px,超了就折行(文案一行放下站规)
   'chat.err.tooShort': '再多说两句,你做什么工作、在哪个省',
   'chat.err.noOcc': '说说你做的是什么工作,才查得到',
@@ -1306,6 +1309,8 @@ const en: Dict = {
   'chat.title': 'Tell us your situation', 'chat.ph': 'Your situation in one sentence', 'chat.send': 'Ask',
   'chat.waiting': 'Checking official data', 'chat.sources': 'Source', 'chat.followups': 'Ask next',
   'chat.steps': 'How this was checked',
+  'chat.stepsRunning': 'Checking', 'chat.stepsDone': 'Checked {n} items',
+  'chat.copy': 'Copy', 'chat.copied': 'Copied',
   // Keep every error under ~38 chars: the error box has ~265px of writable width at 375
   'chat.err.tooShort': 'Add your job and your province',
   'chat.err.noOcc': 'Tell us what work you do',
@@ -2088,6 +2093,8 @@ const ko: Dict = {
   'chat.title': '상황을 알려 주세요', 'chat.ph': '한 문장으로 상황을 알려 주세요', 'chat.send': '질문',
   'chat.waiting': '공식 데이터 확인 중', 'chat.sources': '공식 출처', 'chat.followups': '이어서 질문',
   'chat.steps': '조회 과정',
+  'chat.stepsRunning': '조회 중', 'chat.stepsDone': '{n}개 항목 확인',
+  'chat.copy': '복사', 'chat.copied': '복사됨',
   // 오류 문구는 20자 이내: 375에서 오류 박스의 가용 폭은 약 265px(넘으면 줄바꿈)
   'chat.err.tooShort': '직업과 주를 알려 주세요',
   'chat.err.noOcc': '어떤 일을 하시는지 알려 주세요',
