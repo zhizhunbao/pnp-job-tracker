@@ -718,7 +718,7 @@ export const VERDICT_MARKERS: Record<ChatLang, string[]> = {
  * 计数类(岗位数/池子/抽选)保持「名目」形态,由 factLine 用冒号接值 —— `=` 一律不进 prompt。
  */
 type LabelDict = {
-  apprOpenings: string; openPostings: string; qcOutside: string; indexNote: string; checked: string
+  apprOpenings: string; apprSub: string; openPostings: string; qcOutside: string; indexNote: string; checked: string
   listIn: string; listEx: string; occList: string; officialReq: string; claimOk: string
   /** 查过了但一条都没命中(availability='ok' 却没有行):不是「不公布」也不是「没收录」 */
   noneFound: string
@@ -751,7 +751,7 @@ type LabelDict = {
 }
 export const LBL: Record<ChatLang, LabelDict> = {
   zh: {
-    apprOpenings: '现在可带学徒的在招岗位', openPostings: '现在的在招岗位', qcOutside: '(魁省不走省提名)',
+    apprOpenings: '现在可带学徒的在招岗位', apprSub: '其中雇主写明不要经验的在招岗位', openPostings: '现在的在招岗位', qcOutside: '(魁省不走省提名)',
     indexNote: '索引口径说明:0 表示本站当前索引里没有,不代表该省没有空缺', checked: '查询时间',
     listIn: '的官方职业清单收了', listEx: '的官方职业清单排除了', occList: '的官方职业清单', officialReq: '的官方门槛',
     claimOk: '这条可以拿下面的官方数字对照', noneFound: '本站查过了,这一项没有命中的记录',
@@ -776,7 +776,7 @@ export const LBL: Record<ChatLang, LabelDict> = {
     faster: (f, s, at) => `${f} 比 ${s} ${at ? '至少快多少' : '快多少'}`,
   },
   en: {
-    apprOpenings: 'apprentice-friendly openings right now', openPostings: 'open postings right now', qcOutside: '(QC is outside PNP)',
+    apprOpenings: 'apprentice-friendly openings right now', apprSub: 'of those postings, the ones where the employer states no experience is needed', openPostings: 'open postings right now', qcOutside: '(QC is outside PNP)',
     indexNote: 'index note: 0 means nothing in our index right now, not that the province has none', checked: 'checked',
     // ⚠️ 「officially excludes」曾经写作 EXCLUDES —— **我们自己的 label 里用大写做强调,模型照抄进答复**
     // (2026-08-06 实测同一个病:RULE 0 里的 WE 原样进了英文首句)。见客文案里一律不用大写强调。
@@ -811,7 +811,7 @@ export const LBL: Record<ChatLang, LabelDict> = {
     faster: (f, s, at) => `how much faster ${f} is than ${s}${at ? ', at the very least' : ''}`,
   },
   ko: {
-    apprOpenings: '현재 견습 가능 채용 공고', openPostings: '현재 채용 공고', qcOutside: '(퀘벡은 주정부 이민 대상 아님)',
+    apprOpenings: '현재 견습 가능 채용 공고', apprSub: '그중 고용주가 경력 무관이라고 밝힌 공고', openPostings: '현재 채용 공고', qcOutside: '(퀘벡은 주정부 이민 대상 아님)',
     indexNote: '색인 안내: 0은 현재 본 사이트 색인에 없다는 뜻이며 해당 주에 공석이 없다는 뜻이 아닙니다', checked: '조회 시각',
     listIn: '공식 직업 목록에 들어 있는 직업', listEx: '공식 직업 목록에서 제외된 직업', occList: '공식 직업 목록', officialReq: '공식 요건',
     claimOk: '이 건은 아래 공식 수치와 대조할 수 있습니다', noneFound: '조회했으나 이 직업에 해당하는 기록이 없습니다',
@@ -1104,19 +1104,35 @@ export async function collectFacts(
   ])
 
   const out: Fact[] = []
-  // ① 在招岗位(0 经验时按学徒岗排;这是剧本里的第一句话「缺的不是选省,是第一份算数的岗」)
+  // ① 在招岗位。这是零经验剧本里的第一句话「缺的不是选省,是第一份算数的岗」——
+  //    所以给的必须是**这个职业真实的在招盘子**,不是它的某个子集。
   const T = LBL[lang]
-  const jobKind = zeroExp ? T.apprOpenings : T.openPostings
   // 🔴 **材料不是提纲**:同一种数字给八个省,模型必然一省写一句(2026-08-04 生产实录:问「中介收 2 万值不值」,
-  //    答复里八行省份岗位数)。零经验剧本要拿全国排名找「哪儿有学徒岗」,那时才给 8 个;其余情形
+  //    答复里八行省份岗位数)。零经验剧本要的是全国盘子,那时给全 10 省;其余情形
   //    只给点名省 + 前几名(追问「哪个省岗位最多」照样答得了),把「省份点名册」这条诱惑掐掉。
+  //    零经验给 6 个(点名省已在最前,去重后仍在):原来是 8,配的是按学徒岗排序;排序键换成真实在招后
+  //    一度改成全给 10,实测立刻撞回这条老教训 —— 模型把十个省摆成一句话,还顺手加了一句
+  //    「这些省份的清单也收录了该职业」(SK 里 72310 一行都没有)。给多少材料就会被摊成多长的提纲。
+  //    小省(NL 18 个岗)进不来是对的:它的价值不在岗位数,在于它有 Day 0 通道 —— 那是 pnp_requirements
+  //    该说的话,不该靠把岗位榜拉长来夹带。
   const jobRows = [...named.flatMap((j) => j.rows), ...jobs.rows]
     .filter((r, i, a) => a.findIndex((x) => x.province === r.province) === i)   // 点名省在前,去重
-    .slice(0, zeroExp ? 8 : 4)
+    .slice(0, zeroExp ? 6 : 4)
   for (const r of jobRows) {
     // QC 不属 PNP:数字照给(职位板真有这些岗),但标签自带这句,免得答复把它当成一条省提名路
     const qc = r.province === 'QC' ? ` ${T.qcOutside}` : ''
-    out.push(fact('lookupJobs', `${r.province} ${jobKind} (NOC ${noc})${qc}`, zeroExp ? r.apprentice : r.open, '', 'jobs', r.evidence))
+    // 🔴 主数永远是**总在招**(2026-08-05 改;旧版零经验时只给 apprentice,把安省 129 说成 4):
+    //    「雇主明说不要经验」是更好上手的一档,但它是子集 —— 未声明经验要求 ≠ 要经验,
+    //    替雇主写一条他没写的门槛,等于把用户的机会面砍掉九成。
+    out.push(fact('lookupJobs', `${r.province} ${T.openPostings} (NOC ${noc})${qc}`, r.open, '', 'jobs', r.evidence))
+    // 🔴 **一行一个数**。第一版把子集写进同一条 label(`…(NOC 72310;其中不要经验的 4)` = 24),
+    //    实测模型立刻串省:facts 是 MB 总 24/子集 4、BC 总 234/子集 15,它写成
+    //    「曼省无经验岗位 24 个,BC 省 15 个」—— 拿 MB 的总数配 BC 的子集,两个数都在 facts 里,guard 全放行。
+    //    所以子集单独成行,而且**只给他点名的省**:那几个省才是他会照着行动的,其余省多给一个数
+    //    只是又一次「材料变提纲」的机会。
+    if (zeroExp && r.apprentice > 0 && slots.provs.includes(r.province)) {
+      out.push(fact('lookupJobs', `${r.province} ${T.apprSub} (NOC ${noc})`, r.apprentice, '', 'jobs', r.evidence))
+    }
   }
   if (jobs.rows.length) out.push(fact('lookupJobs', T.indexNote, null, `${T.checked} ${jobs.checkedAt.slice(0, 10)}`, 'note', { url: '/', fetched: jobs.checkedAt }))
   // ①b 时间线(只在他问了「要多久 / 哪条快」时才有)。排在这么前面是因为**那时它就是答案**:
@@ -1286,8 +1302,13 @@ export function factsBlock(facts: Fact[], budget = PROMPT_BUDGET, lang: ChatLang
 //    而且 findLeaks 早就逐个盯着,漏出去当场拦。
 const PLAYBOOK_ZERO_EXP =
   'PLAYBOOK: this person has zero work experience. Right after the sentence that answers their question, say that '
-  + 'what they are missing is not a province but a first job that counts, and quote the apprentice-friendly opening counts '
-  + 'from FACTS — both the province they asked about and the provinces with the most. Only after that discuss lists, draws or programs. '
+  + 'what they are missing is not a province but a first job that counts, and quote the open-posting counts '
+  + 'from FACTS — both the province they asked about and the provinces with the most. '
+  // 🔴 「其中雇主写明不要经验的 N」是**子集**,不是他的全部机会(2026-08-05:旧剧本让模型只报这个子集,
+  //    于是安省 129 个在招被说成 4 个)。没写经验要求的岗不等于要经验 —— 不许替雇主加一条他没写的门槛。
+  + 'Where a FACTS line also shows how many of those postings state that no experience is needed, treat that as an easier subset '
+  + 'of the same total, never as the whole opportunity, and never imply the other postings require experience. '
+  + 'Only after that discuss lists, draws or programs. '
   + 'An experience requirement is a matter of timing, not of eligibility: say how many months short they are and where the work counts. '
   + 'Never phrase it as "you do not qualify" or "you fail".'
 const PLAYBOOK_CLAIMS =

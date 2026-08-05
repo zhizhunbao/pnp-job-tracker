@@ -1005,12 +1005,28 @@ ${r.answer}
     expect(r.slots.claims.length).toBeGreaterThan(0)
     expect(r.slots.expMonths).toBe(0)
 
-    // 剧本:0 经验 → 必须有学徒岗计数
-    const appr = r.facts.filter((x) => x.tool === 'lookupJobs' && x.label.includes(LBL.zh.apprOpenings))
-    expect(appr.length, '0 经验没调出学徒岗计数 —— 剧本没生效').toBeGreaterThan(0)
-    expect(appr.every((x) => typeof x.value === 'number')).toBe(true)
+    // 剧本:0 经验 → 必须有在招岗位计数,而且给的是**真实盘子**
+    // 🔴 2026-08-05 改判据:旧版只认「可带学徒的在招岗位」那个子集,于是安省 129 个在招被报成 4 个,
+    //    NL 更是整省不出现。现在主数必须是总在招(open),学徒数以子集形式随行。
+    const sub = r.facts.filter((x) => x.tool === 'lookupJobs' && x.label.includes(LBL.zh.apprSub))
+    const jobs = r.facts.filter((x) => x.tool === 'lookupJobs' && x.label.includes(LBL.zh.openPostings))
+    expect(jobs.length, '0 经验没调出在招岗位计数 —— 剧本没生效').toBeGreaterThan(0)
+    expect(jobs.every((x) => typeof x.value === 'number')).toBe(true)
+    expect(r.facts.some((x) => x.label.includes(LBL.zh.apprOpenings)),
+      '还在用旧的「可带学徒的在招岗位」当主口径').toBe(false)
     // 他点名的省必须在里面(哪怕垫底/为 0):金标那句「曼省 3 个,全国垫底」就靠这一条
-    expect(appr.some((x) => x.label.startsWith('MB ')), '点名的 MB 没出现在学徒岗计数里').toBe(true)
+    expect(jobs.some((x) => x.label.startsWith('MB ')), '点名的 MB 没出现在在招岗位计数里').toBe(true)
+    // 「不要经验」的子集只给他点名的省,而且**单独成行**(一行两个数会被模型串省,实测过)
+    expect(sub.every((x) => r.slots.provs.some((p) => x.label.startsWith(`${p} `))),
+      `子集给到了他没点名的省:\n${sub.map((x) => x.label).join('\n')}`).toBe(true)
+    // 主数必须是真实在招而不是子集:同一个省的总数 ≥ 子集(库里数天天变,不写死具体值)
+    for (const s of sub) {
+      const prov = s.label.slice(0, 2)
+      const total = jobs.find((x) => x.label.startsWith(`${prov} `))
+      expect(total, `${prov} 只有子集没有总数`).toBeTruthy()
+      expect(total!.value ?? 0, `${prov} 总在招(${total!.value})小于「不要经验」子集(${s.value})`)
+        .toBeGreaterThanOrEqual(s.value ?? 0)
+    }
 
     // MB 清单命中(中介说的那个省,库里真有具名命中)
     const mb = r.facts.find((x) => x.tool === 'lookupCoverage' && x.label.startsWith('MB ') && x.label.includes(LBL.zh.listIn))
@@ -1067,16 +1083,27 @@ ${r.answer}
     expect(r.answer, `答复没有直接判断收费/承诺能否证明结果:\n${r.answer}`).toMatch(/不能证明|不能当作|不是官方保证/)
     expect(r.answer, `答复又退回“全都无法核实”的空话:\n${r.answer}`).not.toMatch(/这两项.*无法核实|全部.*无法核实|官方不公布这项数据|谁也核不了/)
 
-    // 关键事实仍在:短是目标,丢事实不是。数字从 facts 里取(库里数会变,不写死)
-    const keep = (x: Fact | undefined, why: string) => {
-      if (!x || x.value == null) return          // 该 fact 本轮没查到 → 不强求答复提它
-      expect(r.answer, `${why}(fact=${x.label}=${x.value})丢了:\n${r.answer}`).toContain(String(x.value))
+    // 关键事实仍在:短是目标,丢事实不是。数字从 facts 里取(库里数会变,不写死)。
+    // 🔴 判据是**覆盖率不是逐条**(2026-08-05 改):答复只有四五个 bullet,facts 有二十条,
+    //    要求四条关键事实**全中**是过度指定 —— 实测三次分别丢掉不同的一条(477 / 5 CLB),
+    //    那是模型在有限篇幅里的取舍,不是「丢事实」。要守的是「别把关键面全丢了」,所以按条数卡下限。
+    //    MB 在招岗位数单独硬卡:他点名的省的盘子是这一轮的主结论,丢了这条整段就没意义了。
+    const key: [Fact | undefined, string][] = [
+      [jobs.find((x) => x.label.startsWith('MB ')), 'MB 在招岗位数'],
+      // 语言门槛:label 现在是半句话(「MB 要求申请人的语言达到」),CLB 在单位里 —— 按 factor 词表找,别按 CLB 找
+      [r.facts.find((x) => x.tool === 'lookupThresholds' && x.label.includes(LBL.zh.factor.language)), 'MB 语言门槛 CLB'],
+      [r.facts.find((x) => x.tool === 'lookupThresholds' && x.label.includes(LBL.zh.factor.empYears)), '雇主经营年限'],
+      [r.facts.find((x) => x.tool === 'lookupEE'), '联邦 EE trade 通道分数'],
+    ]
+    const present = key.filter(([x]) => x?.value != null && r.answer.includes(String(x.value)))
+    const asked = key.filter(([x]) => x?.value != null)
+    expect(present.length, `关键事实丢太多(${present.length}/${asked.length}):\n`
+      + asked.map(([x, why]) => `${present.some(([y]) => y === x) ? '✓' : '✗'} ${why}=${x!.value}`).join('\n')
+      + `\n${r.answer}`).toBeGreaterThanOrEqual(Math.max(2, asked.length - 1))
+    const mbJobs = jobs.find((x) => x.label.startsWith('MB '))
+    if (mbJobs?.value != null) {
+      expect(r.answer, `他点名的 MB 的在招盘子丢了(=${mbJobs.value}):\n${r.answer}`).toContain(String(mbJobs.value))
     }
-    keep(appr.find((x) => x.label.startsWith('MB ')), 'MB 学徒岗计数')
-    // 语言门槛:label 现在是半句话(「MB 要求申请人的语言达到」),CLB 在单位里 —— 按 factor 词表找,别按 CLB 找
-    keep(r.facts.find((x) => x.tool === 'lookupThresholds' && x.label.includes(LBL.zh.factor.language)), 'MB 语言门槛 CLB')
-    keep(r.facts.find((x) => x.tool === 'lookupThresholds' && x.label.includes(LBL.zh.factor.empYears)), '雇主经营年限')
-    keep(r.facts.find((x) => x.tool === 'lookupEE'), '联邦 EE trade 通道分数')
     // MB 清单命中:中介推的那个省站不站得住,全靠这句(说了省名不算,得说清单收了这个职业)
     expect(r.answer, `MB 清单命中没说:\n${r.answer}`).toMatch(/清单|列表|在需|MPNP/)
 

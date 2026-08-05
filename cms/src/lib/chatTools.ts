@@ -321,7 +321,7 @@ export type JobsResult = {
  */
 export async function lookupJobs(
   pool: any,
-  args: { noc: string; prov?: string; apprentice?: boolean },
+  args: { noc: string; prov?: string },
 ): Promise<JobsResult> {
   const noc = (args.noc || '').trim()
   const [facts, at] = await Promise.all([assembleReportFacts(pool, noc), checkedAt(pool).catch(() => '')])
@@ -337,14 +337,21 @@ export async function lookupJobs(
       evidence: { url: `/?prov=${prov}&q=${noc}`, fetched: at, label: 'Offer2PR 职位板(Job Bank 全国日更 + ATS)' },
     }
   })
-  // apprentice=true 只是把没有学徒岗的省摘掉(点名了省份就照给,0 也得让他看见)
-  const filtered = args.apprentice && !args.prov ? rows.filter((r) => r.apprentice > 0) : rows
   return {
     noc,
     availability: /^\d{5}$/.test(noc) ? 'ok' : 'not-collected',
     scope: '本站索引口径:Job Bank 全国全职业日更增量 + Kanata ATS;0 表示本站当前索引里没有在招,不代表该省没有空缺',
     checkedAt: at,
-    rows: filtered.sort((a, b) => (args.apprentice ? b.apprentice - a.apprentice : b.open - a.open)),
+    // 🔴 **永远按 open 排序,永远不按 apprentice 过滤**(2026-08-05 撤掉的旧行为,见下)。
+    //   旧版:0 经验时 `rows.filter(r => r.apprentice > 0)` + 按 apprentice 排序。两处都错:
+    //   ① `apprentice_friendly` 只统计「雇主**明说**不要经验」(etl/clean/05e:33-35:Job Bank 结构化
+    //      Experience 字段命中 will-train/no-experience,或标题含 apprenti)。**未声明 ≠ 要经验** ——
+    //      NOC 72310 在安省 129 个在招里只有 4 个带这个标,而木工证在魁省之外是自愿的,
+    //      那 125 个没标的岗 0 经验照样能投。把 129 说成 4,等于替雇主写了一条他没写的门槛。
+    //   ② 拿这个近乎噪声的数当排序键再截断,会**整省消失**:NL 只有 4 个带标的岗排到第 9,
+    //      于是「NL 有 18 个木工岗」这句话从来没机会进对话 —— 而 NL 恰是人工复盘里的第一路径。
+    //   学徒岗仍然有用(它是更容易上手的那一档),但它是**子集**,由消费端另外标注,不在这里当闸门。
+    rows: rows.sort((a, b) => b.open - a.open),
   }
 }
 

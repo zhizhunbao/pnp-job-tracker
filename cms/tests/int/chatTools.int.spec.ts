@@ -112,12 +112,18 @@ d('对话工具层(生产库只读)', () => {
       assertEvidence(r)
     })
 
-    it('学徒岗计数:按省给数,口径写在返回值里(0 ≠ 该省没有)', async () => {
-      const r = await lookupJobs(pool, { noc: CARPENTER, apprentice: true })
+    it('在招岗位:按总在招排序、一个省都不摘,学徒岗只作子集随行(0 ≠ 该省没有)', async () => {
+      const r = await lookupJobs(pool, { noc: CARPENTER })
       expect(r.availability).toBe('ok')
       expect(r.scope).toMatch(/不代表该省没有空缺/)
       expect(r.rows.length).toBeGreaterThan(0)
-      expect(r.rows.every((x) => x.apprentice > 0)).toBe(true)
+      // 🔴 旧行为(2026-08-05 撤):0 经验时按 apprentice 过滤+排序,把 NL 这种小省整省摘掉,
+      //    还把安省 129 个在招说成 4 个。判据改回真实盘子:总在招降序,学徒数只是行里的一个子集字段。
+      const opens = r.rows.map((x) => x.open)
+      expect([...opens].sort((a, b) => b - a), '没有按总在招降序').toEqual(opens)
+      expect(r.rows.every((x) => x.apprentice <= x.open), '学徒岗数超过了总在招').toBe(true)
+      expect(r.rows.some((x) => x.apprentice === 0 || x.apprentice < x.open),
+        '每个省的学徒数都等于总在招 —— 子集口径没生效').toBe(true)
       expect(r.rows.every((x) => x.evidence.url.includes(CARPENTER))).toBe(true)
       // 点名省份时即使 0 也照给(让他看见 0,而不是拿不到行)
       const one = await lookupJobs(pool, { noc: CARPENTER, prov: 'PE' })
