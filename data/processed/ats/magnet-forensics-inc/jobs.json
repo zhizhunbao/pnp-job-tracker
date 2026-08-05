@@ -18,7 +18,8 @@
       "district": "",
       "salaryAnnual": 67500,
       "salaryText": "$60K–$75K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Finance Co-op (Fall 2026)",
@@ -33,7 +34,8 @@
       "province": "ON",
       "country": "Canada",
       "district": "",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Senior Product Manager, Graykey",
@@ -50,7 +52,8 @@
       "district": "",
       "salaryAnnual": 195000,
       "salaryText": "$195K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Software Developer Co-op (Fall 2026)",
@@ -67,7 +70,8 @@
       "district": "",
       "salaryAnnual": 58053,
       "salaryText": "$22–$34/hr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     }
   ]
 }

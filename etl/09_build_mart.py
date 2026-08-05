@@ -78,6 +78,7 @@ IN_EE_DRAWS = _paths.EE / "draws.json"          # 各类别最近一次抽选(CR
 # G9 联邦官方计分表(两套分,同一张窄表,grid 列区分)——build_ee_rules.py 产,只读 crawl 缓存。
 IN_EE_CRS = _paths.EE / "crs-grid.json"         # CRS 排名分 A/B/C/D 四段(rows)
 IN_EE_ELIG = _paths.EE / "fed-eligibility.json"  # 资格门槛(上面 IN_REQ_TABLES 消费)+ FSW 67 分表(selectionFactors)
+IN_EE_LANG = _paths.EE / "language-grid.json"    # T4–T26 语言成绩 ↔ CLB/NCLC(独立表,绝不参与 points 求和)
 IN_NOC_DESC = _paths.NOC / "descriptions.json"  # NOC 官方名+主要职责(build_noc_descriptions.py 产)
 IN_FIELD_SOURCES = _paths.RAW / "sources" / "field-sources.json"  # 字段级来源注册表(build_field_sources.py 产,E4-04)
 IN_DLI = _paths.DLI / "dli.json"                # PGWP 可申 DLI 子集(build_dli.py 产,E12-03)
@@ -455,6 +456,70 @@ def build_ee_points_grid(crs_src, elig_src) -> list:
                 "url": r.get("url", ""), "fetched": r.get("fetched", ""),
             })
     return rows
+
+
+def numeric_range(text: str) -> tuple[float | None, float | None, str]:
+    """官方分数格的保守数值化;识别不了就双空并保留 valueText,绝不替官方补 0。"""
+    value = re.sub(r"\s+", "", (text or "").replace("–", "-").replace("—", "-"))
+    # CELPIP 的部分 CLB 单元格含无障碍隐藏后缀(如「7 CELPIP-G」);原文仍在 *Text,
+    # 数值边界只移除这个页面真实存在且已由 table.test 另列保存的测试名。
+    value = re.sub(r"CELPIP-G$", "", value, flags=re.I)
+    value = re.sub(r"andabove$", "+", value, flags=re.I)
+    number = r"\d+(?:\.\d+)?"
+    if m := re.fullmatch(f"({number})", value):
+        n = float(m.group(1))
+        return n, n, "exact"
+    if m := re.fullmatch(f"({number})\\+", value):
+        return float(m.group(1)), None, "minimum"
+    if m := re.fullmatch(f"({number})-({number})", value):
+        return float(m.group(1)), float(m.group(2)), "range"
+    # 官方有「226-371+」这类“某分起及以上”写法;下界可证,上界不可封死。
+    if m := re.fullmatch(f"({number})-({number})\\+", value):
+        return float(m.group(1)), None, "minimum"
+    return None, None, "text"
+
+
+def language_metric(column: str) -> str:
+    label = (column or "").lower()
+    for ability in ("speaking", "listening", "reading", "writing"):
+        if label.startswith(ability):
+            return ability
+    if "points" in label and "total" in label:
+        return "points_total"
+    if "points" in label and "per ability" in label.replace("(", "").replace(")", ""):
+        return "points_per_ability"
+    return re.sub(r"[^a-z0-9]+", "_", label).strip("_")
+
+
+def build_ee_language_grid(src) -> list:
+    """语言成绩换算单独成表,不复用 ee_points_grid:换算区间不是 CRS/FSW 分,不能被求和。"""
+    if not src.exists():
+        return []
+    try:
+        data = json.loads(src.read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001 — 单个源坏了不拖垮整个 mart
+        return []
+
+    out: list = []
+    seq = 0
+    for table in data.get("tables", []):
+        for row in table.get("rows", []):
+            level_min, level_max, level_kind = numeric_range(row.get("levelText", ""))
+            for cell in row.get("cells", []):
+                score_min, score_max, range_kind = numeric_range(cell.get("valueText", ""))
+                out.append({
+                    "program": table.get("program", ""), "test": table.get("test", ""),
+                    "tableNo": table.get("tableNo"), "rowNo": row.get("rowNo"),
+                    "benchmark": table.get("benchmark", ""), "levelText": row.get("levelText", ""),
+                    "levelMin": level_min, "levelMax": level_max, "levelRangeKind": level_kind,
+                    "nocTeer": row.get("nocTeer", ""),
+                    "metric": language_metric(cell.get("column", "")),
+                    "scoreText": cell.get("valueText", ""),
+                    "scoreMin": score_min, "scoreMax": score_max, "rangeKind": range_kind,
+                    "seq": seq, "url": table.get("url", ""), "fetched": table.get("fetched", ""),
+                })
+                seq += 1
+    return out
 
 
 def build():
@@ -1008,6 +1073,8 @@ def build():
         "pnp_requirements": pnp_requirements, "pnp_ops_stats": build_pnp_ops_stats(IN_PNP_STATS),
         "ee_categories": ee_categories,
         "ee_points_grid": build_ee_points_grid(IN_EE_CRS, IN_EE_ELIG),
+        # 语言原始成绩区间不是“分数项”:独立 mart,从结构上杜绝与 CRS/FSW67 相加。
+        "ee_language_grid": build_ee_language_grid(IN_EE_LANG),
         "noc_descriptions": noc_descriptions,
         "field_sources": field_sources,
         "dli": dli,

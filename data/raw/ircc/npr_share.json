@@ -3,8 +3,8 @@
   "population": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710000901",
   "npr": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710012101"
  },
- "fetched": "2026-08-02",
- "fetchedAt": "2026-08-03T01:00:33+00:00",
+ "fetched": "2026-08-04",
+ "fetchedAt": "2026-08-04T17:35:04+00:00",
  "target": 0.05,
  "quarters": [
   {

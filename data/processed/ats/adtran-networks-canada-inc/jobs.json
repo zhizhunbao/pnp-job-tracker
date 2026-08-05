@@ -16,7 +16,8 @@
       "province": "ON",
       "country": "Canada",
       "district": "",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Director Product Line Management Optical Engines",
@@ -31,7 +32,8 @@
       "province": "ON",
       "country": "Canada",
       "district": "",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     }
   ]
 }

@@ -1,8 +1,15 @@
 {
   "source": "Express Entry rounds of invitations",
   "url": "https://www.canada.ca/content/dam/ircc/documents/json/ee_rounds_123_en.json",
-  "fetched": "2026-08-03",
+  "fetched": "2026-08-05",
   "byCategory": {
+    "pnp": {
+      "date": "2026-08-04",
+      "crs": 768,
+      "size": 507,
+      "drawName": "Provincial Nominee Program",
+      "drawNumber": 431
+    },
     "military": {
       "date": "2026-07-23",
       "crs": 368,
@@ -23,13 +30,6 @@
       "size": 2000,
       "drawName": "Canadian Experience Class",
       "drawNumber": 428
-    },
-    "pnp": {
-      "date": "2026-07-20",
-      "crs": 744,
-      "size": 511,
-      "drawName": "Provincial Nominee Program",
-      "drawNumber": 427
     },
     "senior-managers": {
       "date": "2026-07-10",
@@ -103,6 +103,92 @@
     }
   },
   "history": {
+    "pnp": [
+      {
+        "date": "2026-08-04",
+        "crs": 768,
+        "size": 507,
+        "drawName": "Provincial Nominee Program",
+        "drawNumber": 431
+      },
+      {
+        "date": "2026-07-20",
+        "crs": 744,
+        "size": 511,
+        "drawName": "Provincial Nominee Program",
+        "drawNumber": 427
+      },
+      {
+        "date": "2026-07-06",
+        "crs": 708,
+        "size": 534,
+        "drawName": "Provincial Nominee Program",
+        "drawNumber": 423
+      },
+      {
+        "date": "2026-06-22",
+        "crs": 730,
+        "size": 955,
+        "drawName": "Provincial Nominee Program",
+        "drawNumber": 419
+      },
+      {
+        "date": "2026-05-25",
+        "crs": 805,
+        "size": 334,
+        "drawName": "Provincial Nominee Program",
+        "drawNumber": 416
+      },
+      {
+        "date": "2026-05-11",
+        "crs": 798,
+        "size": 380,
+        "drawName": "Provincial Nominee Program",
+        "drawNumber": 415
+      },
+      {
+        "date": "2026-04-27",
+        "crs": 795,
+        "size": 473,
+        "drawName": "Provincial Nominee Program",
+        "drawNumber": 412
+      },
+      {
+        "date": "2026-04-13",
+        "crs": 786,
+        "size": 324,
+        "drawName": "Provincial Nominee Program",
+        "drawNumber": 409
+      },
+      {
+        "date": "2026-03-30",
+        "crs": 802,
+        "size": 356,
+        "drawName": "Provincial Nominee Program",
+        "drawNumber": 406
+      },
+      {
+        "date": "2026-03-16",
+        "crs": 742,
+        "size": 362,
+        "drawName": "Provincial Nominee Program",
+        "drawNumber": 403
+      },
+      {
+        "date": "2026-03-02",
+        "crs": 710,
+        "size": 264,
+        "drawName": "Provincial Nominee Program",
+        "drawNumber": 399
+      },
+      {
+        "date": "2026-02-16",
+        "crs": 789,
+        "size": 279,
+        "drawName": "Provincial Nominee Program",
+        "drawNumber": 395
+      }
+    ],
     "military": [
       {
         "date": "2026-07-23",
@@ -284,92 +370,6 @@
         "drawNumber": 390
       }
     ],
-    "pnp": [
-      {
-        "date": "2026-07-20",
-        "crs": 744,
-        "size": 511,
-        "drawName": "Provincial Nominee Program",
-        "drawNumber": 427
-      },
-      {
-        "date": "2026-07-06",
-        "crs": 708,
-        "size": 534,
-        "drawName": "Provincial Nominee Program",
-        "drawNumber": 423
-      },
-      {
-        "date": "2026-06-22",
-        "crs": 730,
-        "size": 955,
-        "drawName": "Provincial Nominee Program",
-        "drawNumber": 419
-      },
-      {
-        "date": "2026-05-25",
-        "crs": 805,
-        "size": 334,
-        "drawName": "Provincial Nominee Program",
-        "drawNumber": 416
-      },
-      {
-        "date": "2026-05-11",
-        "crs": 798,
-        "size": 380,
-        "drawName": "Provincial Nominee Program",
-        "drawNumber": 415
-      },
-      {
-        "date": "2026-04-27",
-        "crs": 795,
-        "size": 473,
-        "drawName": "Provincial Nominee Program",
-        "drawNumber": 412
-      },
-      {
-        "date": "2026-04-13",
-        "crs": 786,
-        "size": 324,
-        "drawName": "Provincial Nominee Program",
-        "drawNumber": 409
-      },
-      {
-        "date": "2026-03-30",
-        "crs": 802,
-        "size": 356,
-        "drawName": "Provincial Nominee Program",
-        "drawNumber": 406
-      },
-      {
-        "date": "2026-03-16",
-        "crs": 742,
-        "size": 362,
-        "drawName": "Provincial Nominee Program",
-        "drawNumber": 403
-      },
-      {
-        "date": "2026-03-02",
-        "crs": 710,
-        "size": 264,
-        "drawName": "Provincial Nominee Program",
-        "drawNumber": 399
-      },
-      {
-        "date": "2026-02-16",
-        "crs": 789,
-        "size": 279,
-        "drawName": "Provincial Nominee Program",
-        "drawNumber": 395
-      },
-      {
-        "date": "2026-02-03",
-        "crs": 749,
-        "size": 423,
-        "drawName": "Provincial Nominee Program",
-        "drawNumber": 393
-      }
-    ],
     "senior-managers": [
       {
         "date": "2026-07-10",
@@ -521,6 +521,13 @@
   },
   "recent": [
     {
+      "date": "2026-08-04",
+      "crs": 768,
+      "size": 507,
+      "name": "Provincial Nominee Program",
+      "number": 431
+    },
+    {
       "date": "2026-07-23",
       "crs": 368,
       "size": 4,
@@ -652,13 +659,6 @@
       "size": 473,
       "name": "Provincial Nominee Program",
       "number": 412
-    },
-    {
-      "date": "2026-04-15",
-      "crs": 419,
-      "size": 4000,
-      "name": "French-Language proficiency 2026-Version 2",
-      "number": 411
     }
   ]
 }

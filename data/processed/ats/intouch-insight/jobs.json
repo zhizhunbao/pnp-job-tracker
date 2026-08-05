@@ -18,7 +18,8 @@
       "district": "Kanata",
       "salaryAnnual": 125000,
       "salaryText": "$110K–$140K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Data Analyst",
@@ -35,7 +36,8 @@
       "district": "Kanata",
       "salaryAnnual": 65000,
       "salaryText": "$60K–$70K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     }
   ]
 }

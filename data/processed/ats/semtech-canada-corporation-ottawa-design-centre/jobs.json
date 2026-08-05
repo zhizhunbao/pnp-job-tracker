@@ -18,7 +18,8 @@
       "district": "",
       "salaryAnnual": 135000,
       "salaryText": "$120K–$150K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     }
   ]
 }

@@ -18,7 +18,8 @@
       "district": "",
       "salaryAnnual": 150000,
       "salaryText": "$135K–$165K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Senior Cloud Site Reliability Engineer",
@@ -33,7 +34,8 @@
       "province": "ON",
       "country": "Canada",
       "district": "",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Cloud Site Reliability Engineer",
@@ -50,7 +52,8 @@
       "district": "",
       "salaryAnnual": 110000,
       "salaryText": "$100K–$120K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Principal Software Developer - AI Integration",
@@ -67,7 +70,8 @@
       "district": "",
       "salaryAnnual": 167500,
       "salaryText": "$155K–$180K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Payroll Specialist",
@@ -84,7 +88,8 @@
       "district": "",
       "salaryAnnual": 67500,
       "salaryText": "$60K–$75K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Sales Director, GOC",
@@ -99,7 +104,8 @@
       "province": "ON",
       "country": "Canada",
       "district": "",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Software Developer - Datapath",
@@ -116,7 +122,8 @@
       "district": "",
       "salaryAnnual": 107500,
       "salaryText": "$90K–$125K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Software Developer - Full Stack ",
@@ -133,7 +140,8 @@
       "district": "",
       "salaryAnnual": 197600,
       "salaryText": "$95/hr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Office Coordinator",
@@ -150,7 +158,8 @@
       "district": "",
       "salaryAnnual": 52000,
       "salaryText": "$22–$28/hr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Assistant Controller",
@@ -167,7 +176,8 @@
       "district": "",
       "salaryAnnual": 107500,
       "salaryText": "$100K–$115K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Chaos Engineer",
@@ -184,7 +194,8 @@
       "district": "",
       "salaryAnnual": 105000,
       "salaryText": "$90K–$120K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Senior DevOps Engineer",
@@ -201,7 +212,8 @@
       "district": "",
       "salaryAnnual": 127500,
       "salaryText": "$115K–$140K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     }
   ]
 }

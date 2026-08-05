@@ -1,0 +1,2922 @@
+{
+ "source": "Express Entry: Language test results",
+ "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
+ "fetched": "2026-08-05",
+ "pageUpdated": "2026-06-22",
+ "note": "language-test.html 的 T4–T26 共 23 张官方表。原始分数区间只存 valueText,不在 raw 层擅自补边界;表号、行号、原表头与项目上下文全部保留。该数据不是 CRS/FSW points,09 单独产出 ee_language_grid,禁止参与分数求和。",
+ "tables": [
+  {
+   "tableNo": 4,
+   "program": "FSW",
+   "test": "CELPIP-G",
+   "benchmark": "CLB",
+   "headers": [
+    "CLB Level",
+    "Speaking",
+    "Listening",
+    "Reading",
+    "Writing",
+    "Points per ability"
+   ],
+   "rows": [
+    {
+     "rowNo": 0,
+     "levelText": "7 CELPIP-G",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "7"
+      },
+      {
+       "column": "Listening",
+       "valueText": "7"
+      },
+      {
+       "column": "Reading",
+       "valueText": "7"
+      },
+      {
+       "column": "Writing",
+       "valueText": "7"
+      },
+      {
+       "column": "Points per ability",
+       "valueText": "4"
+      }
+     ]
+    },
+    {
+     "rowNo": 1,
+     "levelText": "8 CELPIP-G",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "8"
+      },
+      {
+       "column": "Listening",
+       "valueText": "8"
+      },
+      {
+       "column": "Reading",
+       "valueText": "8"
+      },
+      {
+       "column": "Writing",
+       "valueText": "8"
+      },
+      {
+       "column": "Points per ability",
+       "valueText": "5"
+      }
+     ]
+    },
+    {
+     "rowNo": 2,
+     "levelText": "9 CELPIP-G",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "9"
+      },
+      {
+       "column": "Listening",
+       "valueText": "9"
+      },
+      {
+       "column": "Reading",
+       "valueText": "9"
+      },
+      {
+       "column": "Writing",
+       "valueText": "9"
+      },
+      {
+       "column": "Points per ability",
+       "valueText": "6"
+      }
+     ]
+    },
+    {
+     "rowNo": 3,
+     "levelText": "10 and above CELPIP-G",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "10+"
+      },
+      {
+       "column": "Listening",
+       "valueText": "10+"
+      },
+      {
+       "column": "Reading",
+       "valueText": "10+"
+      },
+      {
+       "column": "Writing",
+       "valueText": "10+"
+      },
+      {
+       "column": "Points per ability",
+       "valueText": "6"
+      }
+     ]
+    }
+   ],
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
+   "fetched": "2026-08-05"
+  },
+  {
+   "tableNo": 5,
+   "program": "FSW",
+   "test": "CELPIP-G",
+   "benchmark": "CLB",
+   "headers": [
+    "CLB Level",
+    "Speaking",
+    "Listening",
+    "Reading",
+    "Writing",
+    "Points (total)"
+   ],
+   "rows": [
+    {
+     "rowNo": 0,
+     "levelText": "5 and above",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "5-12"
+      },
+      {
+       "column": "Listening",
+       "valueText": "5-12"
+      },
+      {
+       "column": "Reading",
+       "valueText": "5-12"
+      },
+      {
+       "column": "Writing",
+       "valueText": "5-12"
+      },
+      {
+       "column": "Points (total)",
+       "valueText": "4"
+      }
+     ]
+    }
+   ],
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
+   "fetched": "2026-08-05"
+  },
+  {
+   "tableNo": 6,
+   "program": "FSW",
+   "test": "IELTS General Training",
+   "benchmark": "CLB",
+   "headers": [
+    "CLB Level",
+    "Speaking",
+    "Listening",
+    "Reading",
+    "Writing",
+    "Points per ability"
+   ],
+   "rows": [
+    {
+     "rowNo": 0,
+     "levelText": "7",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "6.0"
+      },
+      {
+       "column": "Listening",
+       "valueText": "6.0"
+      },
+      {
+       "column": "Reading",
+       "valueText": "6.0"
+      },
+      {
+       "column": "Writing",
+       "valueText": "6.0"
+      },
+      {
+       "column": "Points per ability",
+       "valueText": "4"
+      }
+     ]
+    },
+    {
+     "rowNo": 1,
+     "levelText": "8",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "6.5"
+      },
+      {
+       "column": "Listening",
+       "valueText": "7.5"
+      },
+      {
+       "column": "Reading",
+       "valueText": "6.5"
+      },
+      {
+       "column": "Writing",
+       "valueText": "6.5"
+      },
+      {
+       "column": "Points per ability",
+       "valueText": "5"
+      }
+     ]
+    },
+    {
+     "rowNo": 2,
+     "levelText": "9",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "7.0"
+      },
+      {
+       "column": "Listening",
+       "valueText": "8.0"
+      },
+      {
+       "column": "Reading",
+       "valueText": "7.0"
+      },
+      {
+       "column": "Writing",
+       "valueText": "7.0"
+      },
+      {
+       "column": "Points per ability",
+       "valueText": "6"
+      }
+     ]
+    },
+    {
+     "rowNo": 3,
+     "levelText": "10 and above",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "7.5-9.0"
+      },
+      {
+       "column": "Listening",
+       "valueText": "8.5-9.0"
+      },
+      {
+       "column": "Reading",
+       "valueText": "8.0-9.0"
+      },
+      {
+       "column": "Writing",
+       "valueText": "7.5-9.0"
+      },
+      {
+       "column": "Points per ability",
+       "valueText": "6"
+      }
+     ]
+    }
+   ],
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
+   "fetched": "2026-08-05"
+  },
+  {
+   "tableNo": 7,
+   "program": "FSW",
+   "test": "IELTS General Training",
+   "benchmark": "CLB",
+   "headers": [
+    "CLB Level",
+    "Speaking",
+    "Listening",
+    "Reading",
+    "Writing",
+    "Points (total)"
+   ],
+   "rows": [
+    {
+     "rowNo": 0,
+     "levelText": "5 and above",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "5.0-9.0"
+      },
+      {
+       "column": "Listening",
+       "valueText": "5.0-9.0"
+      },
+      {
+       "column": "Reading",
+       "valueText": "4.0-9.0"
+      },
+      {
+       "column": "Writing",
+       "valueText": "5.0-9.0"
+      },
+      {
+       "column": "Points (total)",
+       "valueText": "4"
+      }
+     ]
+    }
+   ],
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
+   "fetched": "2026-08-05"
+  },
+  {
+   "tableNo": 8,
+   "program": "FSW",
+   "test": "PTE Core",
+   "benchmark": "CLB",
+   "headers": [
+    "CLB Level",
+    "Speaking",
+    "Listening",
+    "Reading",
+    "Writing",
+    "Points per ability"
+   ],
+   "rows": [
+    {
+     "rowNo": 0,
+     "levelText": "7",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "68-75"
+      },
+      {
+       "column": "Listening",
+       "valueText": "60-70"
+      },
+      {
+       "column": "Reading",
+       "valueText": "60-68"
+      },
+      {
+       "column": "Writing",
+       "valueText": "69-78"
+      },
+      {
+       "column": "Points per ability",
+       "valueText": "4"
+      }
+     ]
+    },
+    {
+     "rowNo": 1,
+     "levelText": "8",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "76-83"
+      },
+      {
+       "column": "Listening",
+       "valueText": "71-81"
+      },
+      {
+       "column": "Reading",
+       "valueText": "69-77"
+      },
+      {
+       "column": "Writing",
+       "valueText": "79-87"
+      },
+      {
+       "column": "Points per ability",
+       "valueText": "5"
+      }
+     ]
+    },
+    {
+     "rowNo": 2,
+     "levelText": "9",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "84-88"
+      },
+      {
+       "column": "Listening",
+       "valueText": "82-88"
+      },
+      {
+       "column": "Reading",
+       "valueText": "78-87"
+      },
+      {
+       "column": "Writing",
+       "valueText": "88-89"
+      },
+      {
+       "column": "Points per ability",
+       "valueText": "6"
+      }
+     ]
+    },
+    {
+     "rowNo": 3,
+     "levelText": "10 and above",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "89+"
+      },
+      {
+       "column": "Listening",
+       "valueText": "89+"
+      },
+      {
+       "column": "Reading",
+       "valueText": "88+"
+      },
+      {
+       "column": "Writing",
+       "valueText": "90+"
+      },
+      {
+       "column": "Points per ability",
+       "valueText": "6"
+      }
+     ]
+    }
+   ],
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
+   "fetched": "2026-08-05"
+  },
+  {
+   "tableNo": 9,
+   "program": "FSW",
+   "test": "PTE Core",
+   "benchmark": "CLB",
+   "headers": [
+    "CLB Level",
+    "Speaking",
+    "Listening",
+    "Reading",
+    "Writing",
+    "Points (total)"
+   ],
+   "rows": [
+    {
+     "rowNo": 0,
+     "levelText": "5 and above",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "51-90"
+      },
+      {
+       "column": "Listening",
+       "valueText": "39-90"
+      },
+      {
+       "column": "Reading",
+       "valueText": "42-90"
+      },
+      {
+       "column": "Writing",
+       "valueText": "51-90"
+      },
+      {
+       "column": "Points (total)",
+       "valueText": "4"
+      }
+     ]
+    }
+   ],
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
+   "fetched": "2026-08-05"
+  },
+  {
+   "tableNo": 10,
+   "program": "FSW",
+   "test": "TEF Canada",
+   "benchmark": "NCLC",
+   "headers": [
+    "NCLC Level",
+    "Speaking ( expression orale )",
+    "Listening ( compréhension de l'oral )",
+    "Reading ( compréhension de l'écrit )",
+    "Writing ( expression écrite )"
+   ],
+   "rows": [
+    {
+     "rowNo": 0,
+     "levelText": "10",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "393-450"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "316-360"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "263-300"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "393-450"
+      }
+     ]
+    },
+    {
+     "rowNo": 1,
+     "levelText": "9",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "371-392"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "298-315"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "248-262"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "371-392"
+      }
+     ]
+    },
+    {
+     "rowNo": 2,
+     "levelText": "8",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "349-370"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "280-297"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "233-247"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "349-370"
+      }
+     ]
+    },
+    {
+     "rowNo": 3,
+     "levelText": "7",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "310-348"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "249-279"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "207-232"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "310-348"
+      }
+     ]
+    },
+    {
+     "rowNo": 4,
+     "levelText": "6",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "271-309"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "217-248"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "181-206"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "271-309"
+      }
+     ]
+    },
+    {
+     "rowNo": 5,
+     "levelText": "5",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "226-270"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "181-216"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "151-180"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "226-270"
+      }
+     ]
+    },
+    {
+     "rowNo": 6,
+     "levelText": "4",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "181-225"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "145-180"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "121-150"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "181-225"
+      }
+     ]
+    }
+   ],
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
+   "fetched": "2026-08-05"
+  },
+  {
+   "tableNo": 11,
+   "program": "FSW",
+   "test": "TEF Canada",
+   "benchmark": "NCLC",
+   "headers": [
+    "NCLC Level",
+    "Speaking ( expression orale )",
+    "Listening ( compréhension de l'oral )",
+    "Reading ( compréhension de l'écrit )",
+    "Writing ( expression écrite )",
+    "Points (per ability)"
+   ],
+   "rows": [
+    {
+     "rowNo": 0,
+     "levelText": "7",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "310-348"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "249-279"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "207-232"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "310-348"
+      },
+      {
+       "column": "Points (per ability)",
+       "valueText": "4"
+      }
+     ]
+    },
+    {
+     "rowNo": 1,
+     "levelText": "8",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "349-370"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "280-297"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "233-247"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "349-370"
+      },
+      {
+       "column": "Points (per ability)",
+       "valueText": "5"
+      }
+     ]
+    },
+    {
+     "rowNo": 2,
+     "levelText": "9 and above",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "371+"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "298+"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "248+"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "371+"
+      },
+      {
+       "column": "Points (per ability)",
+       "valueText": "6"
+      }
+     ]
+    }
+   ],
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
+   "fetched": "2026-08-05"
+  },
+  {
+   "tableNo": 12,
+   "program": "FSW",
+   "test": "TEF Canada",
+   "benchmark": "NCLC",
+   "headers": [
+    "NCLC Level",
+    "Speaking ( expression orale )",
+    "Listening ( compréhension de l'oral )",
+    "Reading ( compréhension de l'écrit )",
+    "Writing ( expression écrite )",
+    "Points (total)"
+   ],
+   "rows": [
+    {
+     "rowNo": 0,
+     "levelText": "5 and above",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "226-371+"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "181-298+"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "151-248+"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "226-371+"
+      },
+      {
+       "column": "Points (total)",
+       "valueText": "4"
+      }
+     ]
+    }
+   ],
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
+   "fetched": "2026-08-05"
+  },
+  {
+   "tableNo": 13,
+   "program": "FSW",
+   "test": "TCF Canada",
+   "benchmark": "NCLC",
+   "headers": [
+    "NCLC Level",
+    "Speaking ( expression orale )",
+    "Listening ( compréhension de l'oral )",
+    "Reading ( compréhension de l'écrit )",
+    "Writing ( expression écrite )",
+    "Points (per ability)"
+   ],
+   "rows": [
+    {
+     "rowNo": 0,
+     "levelText": "7",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "10-11"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "458-502"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "453-498"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "10-11"
+      },
+      {
+       "column": "Points (per ability)",
+       "valueText": "4"
+      }
+     ]
+    },
+    {
+     "rowNo": 1,
+     "levelText": "8",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "12-13"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "503-522"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "499-523"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "12-13"
+      },
+      {
+       "column": "Points (per ability)",
+       "valueText": "5"
+      }
+     ]
+    },
+    {
+     "rowNo": 2,
+     "levelText": "9 and above",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "14+"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "523+"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "524+"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "14+"
+      },
+      {
+       "column": "Points (per ability)",
+       "valueText": "6"
+      }
+     ]
+    }
+   ],
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
+   "fetched": "2026-08-05"
+  },
+  {
+   "tableNo": 14,
+   "program": "FSW",
+   "test": "TCF Canada",
+   "benchmark": "NCLC",
+   "headers": [
+    "NCLC Level",
+    "Speaking ( expression orale )",
+    "Listening ( compréhension de l'oral )",
+    "Reading ( compréhension de l'écrit )",
+    "Writing ( expression écrite )",
+    "Points (total)"
+   ],
+   "rows": [
+    {
+     "rowNo": 0,
+     "levelText": "5 and above",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "6+"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "369-397+"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "375-405+"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "6+"
+      },
+      {
+       "column": "Points (total)",
+       "valueText": "4"
+      }
+     ]
+    }
+   ],
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
+   "fetched": "2026-08-05"
+  },
+  {
+   "tableNo": 15,
+   "program": "FST",
+   "test": "CELPIP-G",
+   "benchmark": "CLB",
+   "headers": [
+    "CLB Level",
+    "Speaking",
+    "Listening",
+    "Reading",
+    "Writing"
+   ],
+   "rows": [
+    {
+     "rowNo": 0,
+     "levelText": "9 and above",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "9+"
+      },
+      {
+       "column": "Listening",
+       "valueText": "9+"
+      },
+      {
+       "column": "Reading",
+       "valueText": "9+"
+      },
+      {
+       "column": "Writing",
+       "valueText": "9+"
+      }
+     ]
+    },
+    {
+     "rowNo": 1,
+     "levelText": "8",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "8"
+      },
+      {
+       "column": "Listening",
+       "valueText": "8"
+      },
+      {
+       "column": "Reading",
+       "valueText": "8"
+      },
+      {
+       "column": "Writing",
+       "valueText": "8"
+      }
+     ]
+    },
+    {
+     "rowNo": 2,
+     "levelText": "7",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "7"
+      },
+      {
+       "column": "Listening",
+       "valueText": "7"
+      },
+      {
+       "column": "Reading",
+       "valueText": "7"
+      },
+      {
+       "column": "Writing",
+       "valueText": "7"
+      }
+     ]
+    },
+    {
+     "rowNo": 3,
+     "levelText": "6",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "6"
+      },
+      {
+       "column": "Listening",
+       "valueText": "6"
+      },
+      {
+       "column": "Reading",
+       "valueText": "6"
+      },
+      {
+       "column": "Writing",
+       "valueText": "6"
+      }
+     ]
+    },
+    {
+     "rowNo": 4,
+     "levelText": "5",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "5"
+      },
+      {
+       "column": "Listening",
+       "valueText": "5"
+      },
+      {
+       "column": "Reading",
+       "valueText": "5"
+      },
+      {
+       "column": "Writing",
+       "valueText": "5"
+      }
+     ]
+    },
+    {
+     "rowNo": 5,
+     "levelText": "4",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "4"
+      },
+      {
+       "column": "Listening",
+       "valueText": "4"
+      },
+      {
+       "column": "Reading",
+       "valueText": "4"
+      },
+      {
+       "column": "Writing",
+       "valueText": "4"
+      }
+     ]
+    }
+   ],
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
+   "fetched": "2026-08-05"
+  },
+  {
+   "tableNo": 16,
+   "program": "FST",
+   "test": "IELTS General Training",
+   "benchmark": "CLB",
+   "headers": [
+    "CLB Level",
+    "Speaking",
+    "Listening",
+    "Reading",
+    "Writing"
+   ],
+   "rows": [
+    {
+     "rowNo": 0,
+     "levelText": "10 and above",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "7.5-9.0"
+      },
+      {
+       "column": "Listening",
+       "valueText": "8.5-9.0"
+      },
+      {
+       "column": "Reading",
+       "valueText": "8.0-9.0"
+      },
+      {
+       "column": "Writing",
+       "valueText": "7.5-9.0"
+      }
+     ]
+    },
+    {
+     "rowNo": 1,
+     "levelText": "9",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "7.0"
+      },
+      {
+       "column": "Listening",
+       "valueText": "8.0"
+      },
+      {
+       "column": "Reading",
+       "valueText": "7.0"
+      },
+      {
+       "column": "Writing",
+       "valueText": "7.0"
+      }
+     ]
+    },
+    {
+     "rowNo": 2,
+     "levelText": "8",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "6.5"
+      },
+      {
+       "column": "Listening",
+       "valueText": "7.5"
+      },
+      {
+       "column": "Reading",
+       "valueText": "6.5"
+      },
+      {
+       "column": "Writing",
+       "valueText": "6.5"
+      }
+     ]
+    },
+    {
+     "rowNo": 3,
+     "levelText": "7",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "6.0"
+      },
+      {
+       "column": "Listening",
+       "valueText": "6.0"
+      },
+      {
+       "column": "Reading",
+       "valueText": "6.0"
+      },
+      {
+       "column": "Writing",
+       "valueText": "6.0"
+      }
+     ]
+    },
+    {
+     "rowNo": 4,
+     "levelText": "6",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "5.5"
+      },
+      {
+       "column": "Listening",
+       "valueText": "5.5"
+      },
+      {
+       "column": "Reading",
+       "valueText": "5.0"
+      },
+      {
+       "column": "Writing",
+       "valueText": "5.5"
+      }
+     ]
+    },
+    {
+     "rowNo": 5,
+     "levelText": "5",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "5.0"
+      },
+      {
+       "column": "Listening",
+       "valueText": "5.0"
+      },
+      {
+       "column": "Reading",
+       "valueText": "4.0"
+      },
+      {
+       "column": "Writing",
+       "valueText": "5.0"
+      }
+     ]
+    },
+    {
+     "rowNo": 6,
+     "levelText": "4",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "4.0"
+      },
+      {
+       "column": "Listening",
+       "valueText": "4.5"
+      },
+      {
+       "column": "Reading",
+       "valueText": "3.5"
+      },
+      {
+       "column": "Writing",
+       "valueText": "4.0"
+      }
+     ]
+    }
+   ],
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
+   "fetched": "2026-08-05"
+  },
+  {
+   "tableNo": 17,
+   "program": "FST",
+   "test": "PTE Core",
+   "benchmark": "CLB",
+   "headers": [
+    "CLB Level",
+    "Speaking",
+    "Listening",
+    "Reading",
+    "Writing"
+   ],
+   "rows": [
+    {
+     "rowNo": 0,
+     "levelText": "10 and above",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "89+"
+      },
+      {
+       "column": "Listening",
+       "valueText": "89+"
+      },
+      {
+       "column": "Reading",
+       "valueText": "88+"
+      },
+      {
+       "column": "Writing",
+       "valueText": "90+"
+      }
+     ]
+    },
+    {
+     "rowNo": 1,
+     "levelText": "9",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "84-88"
+      },
+      {
+       "column": "Listening",
+       "valueText": "82-88"
+      },
+      {
+       "column": "Reading",
+       "valueText": "78-87"
+      },
+      {
+       "column": "Writing",
+       "valueText": "88-89"
+      }
+     ]
+    },
+    {
+     "rowNo": 2,
+     "levelText": "8",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "76-83"
+      },
+      {
+       "column": "Listening",
+       "valueText": "71-81"
+      },
+      {
+       "column": "Reading",
+       "valueText": "69-77"
+      },
+      {
+       "column": "Writing",
+       "valueText": "79-87"
+      }
+     ]
+    },
+    {
+     "rowNo": 3,
+     "levelText": "7",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "68-75"
+      },
+      {
+       "column": "Listening",
+       "valueText": "60-70"
+      },
+      {
+       "column": "Reading",
+       "valueText": "60-68"
+      },
+      {
+       "column": "Writing",
+       "valueText": "69-78"
+      }
+     ]
+    },
+    {
+     "rowNo": 4,
+     "levelText": "6",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "59-67"
+      },
+      {
+       "column": "Listening",
+       "valueText": "50-59"
+      },
+      {
+       "column": "Reading",
+       "valueText": "51-59"
+      },
+      {
+       "column": "Writing",
+       "valueText": "60-68"
+      }
+     ]
+    },
+    {
+     "rowNo": 5,
+     "levelText": "5",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "51-58"
+      },
+      {
+       "column": "Listening",
+       "valueText": "39-49"
+      },
+      {
+       "column": "Reading",
+       "valueText": "42-50"
+      },
+      {
+       "column": "Writing",
+       "valueText": "51-59"
+      }
+     ]
+    },
+    {
+     "rowNo": 6,
+     "levelText": "4",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "42-50"
+      },
+      {
+       "column": "Listening",
+       "valueText": "28-38"
+      },
+      {
+       "column": "Reading",
+       "valueText": "33-41"
+      },
+      {
+       "column": "Writing",
+       "valueText": "41-50"
+      }
+     ]
+    }
+   ],
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
+   "fetched": "2026-08-05"
+  },
+  {
+   "tableNo": 18,
+   "program": "FST",
+   "test": "TEF Canada",
+   "benchmark": "NCLC",
+   "headers": [
+    "NCLC Level",
+    "Speaking ( expression orale )",
+    "Listening ( compréhension de l'oral )",
+    "Reading ( compréhension de l'écrit )",
+    "Writing ( expression écrite )"
+   ],
+   "rows": [
+    {
+     "rowNo": 0,
+     "levelText": "10",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "393-450"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "316-360"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "263-300"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "393-450"
+      }
+     ]
+    },
+    {
+     "rowNo": 1,
+     "levelText": "9",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "371-392"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "298-315"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "248-262"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "371-392"
+      }
+     ]
+    },
+    {
+     "rowNo": 2,
+     "levelText": "8",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "349-370"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "280-297"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "233-247"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "349-370"
+      }
+     ]
+    },
+    {
+     "rowNo": 3,
+     "levelText": "7",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "310-348"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "249-279"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "207-232"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "310-348"
+      }
+     ]
+    },
+    {
+     "rowNo": 4,
+     "levelText": "6",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "271-309"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "217-248"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "181-206"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "271-309"
+      }
+     ]
+    },
+    {
+     "rowNo": 5,
+     "levelText": "5",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "226-270"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "181-216"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "151-180"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "226-270"
+      }
+     ]
+    },
+    {
+     "rowNo": 6,
+     "levelText": "4",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "181-225"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "145-180"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "121-150"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "181-225"
+      }
+     ]
+    }
+   ],
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
+   "fetched": "2026-08-05"
+  },
+  {
+   "tableNo": 19,
+   "program": "FST",
+   "test": "TEF Canada",
+   "benchmark": "NCLC",
+   "headers": [
+    "NCLC Level",
+    "Speaking ( expression orale )",
+    "Listening ( compréhension de l'oral )",
+    "Reading ( compréhension de l'écrit )",
+    "Writing ( expression écrite )"
+   ],
+   "rows": [
+    {
+     "rowNo": 0,
+     "levelText": "9 and above",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "371+"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "298+"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "248+"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "371+"
+      }
+     ]
+    },
+    {
+     "rowNo": 1,
+     "levelText": "8",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "349-370"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "280-297"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "233-247"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "349-370"
+      }
+     ]
+    },
+    {
+     "rowNo": 2,
+     "levelText": "7",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "310-348"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "249-279"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "207-232"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "310-348"
+      }
+     ]
+    },
+    {
+     "rowNo": 3,
+     "levelText": "6",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "271-309"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "217-248"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "181-206"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "271-309"
+      }
+     ]
+    },
+    {
+     "rowNo": 4,
+     "levelText": "5",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "226-270"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "181-216"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "151-180"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "226-270"
+      }
+     ]
+    },
+    {
+     "rowNo": 5,
+     "levelText": "4",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "181-225"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "145-180"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "121-150"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "181-225"
+      }
+     ]
+    }
+   ],
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
+   "fetched": "2026-08-05"
+  },
+  {
+   "tableNo": 20,
+   "program": "FST",
+   "test": "TCF Canada",
+   "benchmark": "NCLC",
+   "headers": [
+    "NCLC Level",
+    "Speaking ( expression orale )",
+    "Listening ( compréhension de l'oral )",
+    "Reading ( compréhension de l'écrit )",
+    "Writing ( expression écrite )"
+   ],
+   "rows": [
+    {
+     "rowNo": 0,
+     "levelText": "10 and above",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "16-20"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "549-699"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "549-699"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "16-20"
+      }
+     ]
+    },
+    {
+     "rowNo": 1,
+     "levelText": "9",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "14-15"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "523-548"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "524-548"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "14-15"
+      }
+     ]
+    },
+    {
+     "rowNo": 2,
+     "levelText": "8",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "12-13"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "503-522"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "499-523"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "12-13"
+      }
+     ]
+    },
+    {
+     "rowNo": 3,
+     "levelText": "7",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "10-11"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "458-502"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "453-498"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "10-11"
+      }
+     ]
+    },
+    {
+     "rowNo": 4,
+     "levelText": "6",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "7-9"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "398-457"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "406-452"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "7-9"
+      }
+     ]
+    },
+    {
+     "rowNo": 5,
+     "levelText": "5",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "6"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "369-397"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "375-405"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "6"
+      }
+     ]
+    },
+    {
+     "rowNo": 6,
+     "levelText": "4",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "4-5"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "331-368"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "342-374"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "4-5"
+      }
+     ]
+    }
+   ],
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
+   "fetched": "2026-08-05"
+  },
+  {
+   "tableNo": 21,
+   "program": "CEC",
+   "test": "CELPIP-G",
+   "benchmark": "CLB",
+   "headers": [
+    "NOC TEER",
+    "CLB Level",
+    "Speaking",
+    "Listening",
+    "Reading",
+    "Writing"
+   ],
+   "rows": [
+    {
+     "rowNo": 0,
+     "levelText": "9 and above",
+     "nocTeer": "0 and 1",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "9+"
+      },
+      {
+       "column": "Listening",
+       "valueText": "9+"
+      },
+      {
+       "column": "Reading",
+       "valueText": "9+"
+      },
+      {
+       "column": "Writing",
+       "valueText": "9+"
+      }
+     ]
+    },
+    {
+     "rowNo": 1,
+     "levelText": "8",
+     "nocTeer": "0 and 1",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "8"
+      },
+      {
+       "column": "Listening",
+       "valueText": "8"
+      },
+      {
+       "column": "Reading",
+       "valueText": "8"
+      },
+      {
+       "column": "Writing",
+       "valueText": "8"
+      }
+     ]
+    },
+    {
+     "rowNo": 2,
+     "levelText": "7",
+     "nocTeer": "0 and 1",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "7"
+      },
+      {
+       "column": "Listening",
+       "valueText": "7"
+      },
+      {
+       "column": "Reading",
+       "valueText": "7"
+      },
+      {
+       "column": "Writing",
+       "valueText": "7"
+      }
+     ]
+    },
+    {
+     "rowNo": 3,
+     "levelText": "6",
+     "nocTeer": "2 and 3",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "6"
+      },
+      {
+       "column": "Listening",
+       "valueText": "6"
+      },
+      {
+       "column": "Reading",
+       "valueText": "6"
+      },
+      {
+       "column": "Writing",
+       "valueText": "6"
+      }
+     ]
+    },
+    {
+     "rowNo": 4,
+     "levelText": "5",
+     "nocTeer": "2 and 3",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "5"
+      },
+      {
+       "column": "Listening",
+       "valueText": "5"
+      },
+      {
+       "column": "Reading",
+       "valueText": "5"
+      },
+      {
+       "column": "Writing",
+       "valueText": "5"
+      }
+     ]
+    }
+   ],
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
+   "fetched": "2026-08-05"
+  },
+  {
+   "tableNo": 22,
+   "program": "CEC",
+   "test": "IELTS General Training",
+   "benchmark": "CLB",
+   "headers": [
+    "NOC TEER",
+    "CLB Level",
+    "Speaking",
+    "Listening",
+    "Reading",
+    "Writing"
+   ],
+   "rows": [
+    {
+     "rowNo": 0,
+     "levelText": "10 and above",
+     "nocTeer": "0 and 1",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "7.5-9.0"
+      },
+      {
+       "column": "Listening",
+       "valueText": "8.5-9.0"
+      },
+      {
+       "column": "Reading",
+       "valueText": "8.0-9.0"
+      },
+      {
+       "column": "Writing",
+       "valueText": "7.5-9.0"
+      }
+     ]
+    },
+    {
+     "rowNo": 1,
+     "levelText": "9",
+     "nocTeer": "0 and 1",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "7.0"
+      },
+      {
+       "column": "Listening",
+       "valueText": "8.0"
+      },
+      {
+       "column": "Reading",
+       "valueText": "7.0"
+      },
+      {
+       "column": "Writing",
+       "valueText": "7.0"
+      }
+     ]
+    },
+    {
+     "rowNo": 2,
+     "levelText": "8",
+     "nocTeer": "0 and 1",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "6.5"
+      },
+      {
+       "column": "Listening",
+       "valueText": "7.5"
+      },
+      {
+       "column": "Reading",
+       "valueText": "6.5"
+      },
+      {
+       "column": "Writing",
+       "valueText": "6.5"
+      }
+     ]
+    },
+    {
+     "rowNo": 3,
+     "levelText": "7",
+     "nocTeer": "0 and 1",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "6.0"
+      },
+      {
+       "column": "Listening",
+       "valueText": "6.0"
+      },
+      {
+       "column": "Reading",
+       "valueText": "6.0"
+      },
+      {
+       "column": "Writing",
+       "valueText": "6.0"
+      }
+     ]
+    },
+    {
+     "rowNo": 4,
+     "levelText": "6",
+     "nocTeer": "2 and 3",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "5.5"
+      },
+      {
+       "column": "Listening",
+       "valueText": "5.5"
+      },
+      {
+       "column": "Reading",
+       "valueText": "5.0"
+      },
+      {
+       "column": "Writing",
+       "valueText": "5.5"
+      }
+     ]
+    },
+    {
+     "rowNo": 5,
+     "levelText": "5",
+     "nocTeer": "2 and 3",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "5.0"
+      },
+      {
+       "column": "Listening",
+       "valueText": "5.0"
+      },
+      {
+       "column": "Reading",
+       "valueText": "4.0"
+      },
+      {
+       "column": "Writing",
+       "valueText": "5.0"
+      }
+     ]
+    }
+   ],
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
+   "fetched": "2026-08-05"
+  },
+  {
+   "tableNo": 23,
+   "program": "CEC",
+   "test": "PTE Core",
+   "benchmark": "CLB",
+   "headers": [
+    "NOC TEER",
+    "CLB Level",
+    "Speaking",
+    "Listening",
+    "Reading",
+    "Writing"
+   ],
+   "rows": [
+    {
+     "rowNo": 0,
+     "levelText": "10 and above",
+     "nocTeer": "0 and 1",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "89+"
+      },
+      {
+       "column": "Listening",
+       "valueText": "89+"
+      },
+      {
+       "column": "Reading",
+       "valueText": "88+"
+      },
+      {
+       "column": "Writing",
+       "valueText": "90+"
+      }
+     ]
+    },
+    {
+     "rowNo": 1,
+     "levelText": "9",
+     "nocTeer": "0 and 1",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "84-88"
+      },
+      {
+       "column": "Listening",
+       "valueText": "82-88"
+      },
+      {
+       "column": "Reading",
+       "valueText": "78-87"
+      },
+      {
+       "column": "Writing",
+       "valueText": "88-89"
+      }
+     ]
+    },
+    {
+     "rowNo": 2,
+     "levelText": "8",
+     "nocTeer": "0 and 1",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "76-83"
+      },
+      {
+       "column": "Listening",
+       "valueText": "71-81"
+      },
+      {
+       "column": "Reading",
+       "valueText": "69-77"
+      },
+      {
+       "column": "Writing",
+       "valueText": "79-87"
+      }
+     ]
+    },
+    {
+     "rowNo": 3,
+     "levelText": "7",
+     "nocTeer": "0 and 1",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "68-75"
+      },
+      {
+       "column": "Listening",
+       "valueText": "60-70"
+      },
+      {
+       "column": "Reading",
+       "valueText": "60-68"
+      },
+      {
+       "column": "Writing",
+       "valueText": "69-78"
+      }
+     ]
+    },
+    {
+     "rowNo": 4,
+     "levelText": "6",
+     "nocTeer": "2 and 3",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "59-67"
+      },
+      {
+       "column": "Listening",
+       "valueText": "50-59"
+      },
+      {
+       "column": "Reading",
+       "valueText": "51-59"
+      },
+      {
+       "column": "Writing",
+       "valueText": "60-68"
+      }
+     ]
+    },
+    {
+     "rowNo": 5,
+     "levelText": "5",
+     "nocTeer": "2 and 3",
+     "cells": [
+      {
+       "column": "Speaking",
+       "valueText": "51-58"
+      },
+      {
+       "column": "Listening",
+       "valueText": "39-49"
+      },
+      {
+       "column": "Reading",
+       "valueText": "42-50"
+      },
+      {
+       "column": "Writing",
+       "valueText": "51-59"
+      }
+     ]
+    }
+   ],
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
+   "fetched": "2026-08-05"
+  },
+  {
+   "tableNo": 24,
+   "program": "CEC",
+   "test": "TEF Canada",
+   "benchmark": "NCLC",
+   "headers": [
+    "NCLC Level",
+    "Speaking ( expression orale )",
+    "Listening ( compréhension de l'oral )",
+    "Reading ( compréhension de l'écrit )",
+    "Writing ( expression écrite )"
+   ],
+   "rows": [
+    {
+     "rowNo": 0,
+     "levelText": "10",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "393-450"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "316-360"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "263-300"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "393-450"
+      }
+     ]
+    },
+    {
+     "rowNo": 1,
+     "levelText": "9",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "371-392"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "298-315"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "248-262"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "371-392"
+      }
+     ]
+    },
+    {
+     "rowNo": 2,
+     "levelText": "8",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "349-370"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "280-297"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "233-247"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "349-370"
+      }
+     ]
+    },
+    {
+     "rowNo": 3,
+     "levelText": "7",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "310-348"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "249-279"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "207-232"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "310-348"
+      }
+     ]
+    },
+    {
+     "rowNo": 4,
+     "levelText": "6",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "271-309"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "217-248"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "181-206"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "271-309"
+      }
+     ]
+    },
+    {
+     "rowNo": 5,
+     "levelText": "5",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "226-270"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "181-216"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "151-180"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "226-270"
+      }
+     ]
+    },
+    {
+     "rowNo": 6,
+     "levelText": "4",
+     "nocTeer": "",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "181-225"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "145-180"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "121-150"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "181-225"
+      }
+     ]
+    }
+   ],
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
+   "fetched": "2026-08-05"
+  },
+  {
+   "tableNo": 25,
+   "program": "CEC",
+   "test": "TEF Canada",
+   "benchmark": "NCLC",
+   "headers": [
+    "NOC TEER",
+    "NCLC Level",
+    "Speaking ( expression orale )",
+    "Listening ( compréhension de l'oral )",
+    "Reading ( compréhension de l'écrit )",
+    "Writing ( expression écrite )"
+   ],
+   "rows": [
+    {
+     "rowNo": 0,
+     "levelText": "9 and above",
+     "nocTeer": "0 and 1",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "371+"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "298+"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "248+"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "371+"
+      }
+     ]
+    },
+    {
+     "rowNo": 1,
+     "levelText": "8",
+     "nocTeer": "0 and 1",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "349-370"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "280-297"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "233-247"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "349-370"
+      }
+     ]
+    },
+    {
+     "rowNo": 2,
+     "levelText": "7",
+     "nocTeer": "0 and 1",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "310-348"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "249-279"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "207-232"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "310-348"
+      }
+     ]
+    },
+    {
+     "rowNo": 3,
+     "levelText": "6",
+     "nocTeer": "2 and 3",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "271-309"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "217-248"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "181-206"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "271-309"
+      }
+     ]
+    },
+    {
+     "rowNo": 4,
+     "levelText": "5",
+     "nocTeer": "2 and 3",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "226-270"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "181-216"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "151-180"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "226-270"
+      }
+     ]
+    }
+   ],
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
+   "fetched": "2026-08-05"
+  },
+  {
+   "tableNo": 26,
+   "program": "CEC",
+   "test": "TCF Canada",
+   "benchmark": "NCLC",
+   "headers": [
+    "NOC TEER",
+    "NCLC Level",
+    "Speaking ( expression orale )",
+    "Listening ( compréhension de l'oral )",
+    "Reading ( compréhension de l'écrit )",
+    "Writing ( expression écrite )"
+   ],
+   "rows": [
+    {
+     "rowNo": 0,
+     "levelText": "10 and above",
+     "nocTeer": "0 and 1",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "16-20"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "549-699"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "549-699"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "16-20"
+      }
+     ]
+    },
+    {
+     "rowNo": 1,
+     "levelText": "9",
+     "nocTeer": "0 and 1",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "14-15"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "523-548"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "524-548"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "14-15"
+      }
+     ]
+    },
+    {
+     "rowNo": 2,
+     "levelText": "8",
+     "nocTeer": "0 and 1",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "12-13"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "503-522"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "499-523"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "12-13"
+      }
+     ]
+    },
+    {
+     "rowNo": 3,
+     "levelText": "7",
+     "nocTeer": "0 and 1",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "10-11"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "458-502"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "453-498"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "10-11"
+      }
+     ]
+    },
+    {
+     "rowNo": 4,
+     "levelText": "6",
+     "nocTeer": "2 and 3",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "7-9"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "398-457"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "406-452"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "7-9"
+      }
+     ]
+    },
+    {
+     "rowNo": 5,
+     "levelText": "5",
+     "nocTeer": "2 and 3",
+     "cells": [
+      {
+       "column": "Speaking ( expression orale )",
+       "valueText": "6"
+      },
+      {
+       "column": "Listening ( compréhension de l'oral )",
+       "valueText": "369-397"
+      },
+      {
+       "column": "Reading ( compréhension de l'écrit )",
+       "valueText": "375-405"
+      },
+      {
+       "column": "Writing ( expression écrite )",
+       "valueText": "6"
+      }
+     ]
+    }
+   ],
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
+   "fetched": "2026-08-05"
+  }
+ ]
+}

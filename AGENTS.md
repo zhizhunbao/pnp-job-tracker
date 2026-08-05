@@ -1,0 +1,75 @@
+# AGENTS.md — pnp-job-tracker 核心理念
+
+> 这是项目的「设计宪法」，每个 session 自动加载。**当前状态/进度看 [STATUS.md](STATUS.md)，产品需求看 [prd.md](prd.md)。**
+> **开工前先对一眼 [主线与支线](docs/主线与支线-20260801.md)**(判据:能不能把「有人真的掏钱」往前推一格);文档去哪找看 [docs/README.md](docs/README.md)。
+> 本文件只放长期不变的理念与约定;具体进度、数字、待办不要写这里(会过时)。
+
+## 工程理念:Ponytail(有纪律的极简主义)
+> 参考 https://github.com/DietrichGebert/ponytail —— **「最好的代码是你从没写过的代码」**。
+> 动手写任何代码前,先过这道**决策阶梯**:
+> 1. 这功能**需要存在**吗?(YAGNI,不臆测需求)
+> 2. **标准库**能搞定吗?
+> 3. 有**原生/平台特性**吗?
+> 4. **已装的依赖**里有现成的吗?
+> 5. 能**一行**解决吗?
+> 6. 以上都不行,才写**最小必要**实现。
+>
+> **但这几样永不上砧板:信任边界校验、数据丢失处理、安全、可访问性、数据完整性。**
+> 在本项目的体现:① 清洗宁可留空也不瞎猜(如邮编 FSA 只映射高置信社区);② 不为「可能用得上」加字段/脚本/依赖;③ 改动越小越好,先复用 04c/_paths 等既有结构再考虑新建。
+
+**提问与假设的规矩**(猜错的代价归你,多问一句的代价归我):
+- **要问就只问「答错了得推翻重做」的**,最多 3 个,每个自带推荐默认值——我能一句「都行」结掉。搜一分钟能查到的(测试框架、目录结构、既有约定)不算问题,是你该做的功课。
+- **说假设就说可证伪的**,最多 5 条。「输入 <10k 行、能全塞内存」算;「代码要可维护」不算。凑数的假设不如不写。
+
+## 这是什么
+**PNP Job Tracker** —— 每日更新的**全加拿大全职业职位板**,带移民价值视角:能走「雇主 offer → 省提名(PNP)」的岗打 `pnpEligible` 状态标记(不再只 focus PNP,PNP 只是其中一个信号)。
+**Job Bank 已覆盖全 10 省全职业**(含 QC;每日抓最新增量);ATS(Kanata 科技公司)仍 Ottawa。数据按 国→省→市→区 分层,不写死地域。
+全国单文件:`raw/jobbank/postings.json`(province 作字段,posting_id 增量去重)。
+
+## 架构:两段式,数据层和展示层严格分离
+```
+etl/ (Python: 抓取 → 清洗 → 评分, 写 data/) ──> cms/ (Payload + Next.js + Postgres) ──> /jobs 公开页
+```
+- `etl/` 编号顺序执行,`etl/_paths.py` 是**唯一的路径真相来源**(任何脚本不写死路径)。
+- **分层(数据仓库式)**:raw(抽取) → clean/(清洗,按字段) → **mart(集市层,`09_build_mart.py` 产出 data/mart/ 最终表,列对齐 DB)** → load(seed)。
+- `cms/src/app/seed/route.ts` 是**纯加载器**:只读 `data/mart/*.json`(每文件=一张表)→ 灌库,不做拼装/清洗。不带 `?reset=1` = 增量对账(本次没出现的岗 → status=closed)。
+- **DB 表**:事实表 jobs/companies;维度表 provinces/cities/districts/noc_categories/sources/experience_levels/designated_employers(AIP)。Payload 仍管 schema/admin。
+- **分类/标签也在数据层算**:NOC 大/中/小分类+TEER 在 `etl/noc.py`(单一来源)→ 存 job 字段 + noc_categories 维度;来源显示标签(JB→Job Bank)在 mart 洗 → job.sourceLabel + sources 维度。前端只读字段、筛选选项读维度表(颜色等纯显示留前端)。
+
+## 核心理念:清洗下沉到数据层(最重要的一条)
+**"脏活在脚本里干完,seed 只入库,前端只显示。"**
+
+1. **所有清洗脚本统一放 `etl/clean/`**(04b 抽薪资 / 04c 地点 / 04d 薪资归一)。其余 scrape/build/score 留在 `etl/`。
+2. **每个清洗脚本顶部先声明显式的输入/输出全路径常量**(`IN_*` / `OUT_*`,经 `_paths` 解析为绝对路径,运行时打印),再写逻辑——一眼看清这步读什么、写哪。原地清洗时 IN 与 OUT 同址。
+3. **一个「清洗关注点」一个脚本,不是每字段一个,也不是每来源一个。**
+   - 一个关注点(地点 / 薪资 / 分类)往往同时产出**多个互相依赖的字段**,要在同一个脚本里一次算清。
+     例:`04c` 一次性规范化 `country/province/city/district/address`,因为它们同源、共用社区映射表。
+   - 拆成「每字段一个脚本」= 重复解析同一原料 + 拆散互相依赖的逻辑 + 复制共享表,是反模式。
+4. 每个清洗步只做一件事:**读原始抓取字段 → 写回干净的结构化字段**。同一脚本对所有来源生效(ATS 和 Job Bank 都过同一套地点清洗)。
+5. **seed 只入库不清洗;前端只显示不清洗。** 发现前端在做清洗/换算(如已下沉的 `parseSalary` 年薪折算),那是技术债 —— 应下沉成清洗脚本。
+
+## 数据约定
+
+- **铁律:URL → 数据 → SQL,顺序不许倒**(2026-08-04 立)。找官方数据先 grep `data/crawl/<slug>/manifest.json`(crawl 役周更,全文在 `html_cache/`),**禁止凭印象猜 URL**;抓下来先落 raw/mart,再进库,消费端只读库。
+- **「官方不公布」是需要举证的断言,不是默认值。** 举证 = 一个 URL + 一句官方原句(quote-anchored)。举不出来只能落「本站未收录」。
+  两者在用户那里意思相反:*本站未收录* = 我们的问题,他该去官网看;*官方不公布* = **官方的问题**,他该警惕任何敢承诺时间的人。搞反 = 拿假前提教用户防中介。
+  踩过:`OPS_POLICY.MB.published=false` 凭「爬完 324 页没看见」就写下「官方不发处理时长」,而它发在年报 §9 与月度数据页里;BC 同款。抓不到(如 PE 挡在 WAF 后)一律 `not-collected`。
+- **地点**:大渥太华的各社区(Kanata/Nepean/Orléans…)是「区」,统一 `city=Ottawa`;Orléans 合并(含 Orleans South)。精确地址需含街号,否则 `address` 留空。社区判定:文本社区名优先,文本没写但地址带邮编时用**高置信郊区 FSA 兜底**(central Ottawa 不猜,留空)。
+- **来源真相**:Job Bank 自己聚合 indeed/Talent 等 → 统一显示「Job Bank」;`source` 字段保留原始板。
+  `origin`(jobbank/ats/directory)是**发布渠道**,不代表雇主真假;中介已按公司名过滤。
+- **评分 / PNP**:NOC → TEER 分类 → 每 TEER 评分(08_score)。`pnpEligible` = TEER 0-3 或在紧缺低TEER通道清单;**排除式省(AB;ON 2026-06 改制后排除集为空=全职业可)TEER 0-5 默认可、排除清单内不可** —— **粗筛信号,非资格认定**(各省有自己的职业清单/语言/工资要求;QC 走自己的体系不属 PNP)。未匹配 NOC 的岗标「未分类」,不硬塞。
+
+## 展示约定
+- 站点定位是**日更职位板**:默认排序「发布时间最新在前」;同日岗保持 Job Bank 原序(入库序,#127 拍板)——**旧 0-100 分不再参与任何排序**,通道档(1-5)只在用户点「通道」列时作主键。列顺序**发布时间第一、评分(通道)最后**。
+- 评分、`vs 工资中位` 等移民价值维度是这个站和普通招聘站的差异点,优先保护。
+
+## 跑起来
+```bash
+# ⚠️ 2026-07-04 起:本地 dev **直连 Supabase 正式库**(cms/.env 已配;本地 postgres 已过时,仅紧急回退)
+cd cms && npm run dev                            # 开发:localhost:3000(读写的就是生产!测试号用 @test.local)
+# 改 collection 字段:dev 默认不推 schema(护栏)→ 显式 `DB_PUSH=1 npm run dev` 单次推,删列/改类型手写 SQL
+# 无人值守全栈(含容器化 cms,开机自更新):cd docker && docker compose --profile unattended up -d --build
+# seed 必须带 token(直连生产!): curl -H "x-seed-token: $SEED_TOKEN" localhost:3000/seed  (reset=1 会清生产,慎)
+# 改了 Jobs collection 字段 → 必须重启 dev server(Payload 同步 schema)再重灌
+# 完整重跑 ETL: 04 → clean/04b → clean/04c → clean/04d → 05 → 05b → 08 (走 _paths,顺序见 STATUS.md)
+```

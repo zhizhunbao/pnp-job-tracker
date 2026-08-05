@@ -738,7 +738,97 @@ export async function lookupPermit(pool: any, args: { program?: string; factor?:
   }
 }
 
-// ── ⑧ checkClaims:外部主张对账三分法 ────────────────────────────────────────
+// ── ⑧ lookupCrs:联邦计分表(ee_points_grid)──────────────────────────────────
+
+export type CrsGrid = 'CRS' | 'FSW67'
+export type CrsRow = {
+  grid: CrsGrid
+  section: string
+  sectionLabel: string
+  kind: string
+  tableNo: number | null
+  heading: string
+  factor: string
+  criterion: string
+  columnLabel: string
+  /** 官方写 n/a / Not eligible to apply 时恒 null,原文在 pointsText；绝不能折成 0。 */
+  points: number | null
+  pointsText: string
+  seq: number | null
+  evidence: Evidence
+}
+export type CrsLookupArgs = {
+  grid: CrsGrid | string
+  section?: string
+  kind?: 'summary' | 'detail'
+  factor?: string
+  criterion?: string
+  limit?: number
+}
+export type CrsResult = {
+  grid: string
+  availability: Availability
+  rows: CrsRow[]
+  note: string
+}
+
+/**
+ * 「CRS 这一档几分 / FSW 67 分怎么给」= ee_points_grid。
+ *
+ * 🔴 CRS 与 FSW67 是官方定义的两套分:前者是进池后的排名分,后者是 FSW 够不够资格进池的
+ * 67/100 选择因素。本查询的 SQL 第一条约束永远是 `grid = $1`,其余筛选只能排在它后面；
+ * 返回前再按 grid 防御性过滤一次,避免测试替身或上游误实现把两套分混进同一结果。
+ * `points` 可空:官方的 n/a / Not eligible to apply 原样放在 pointsText,不拿 0 冒充。
+ */
+export async function lookupCrs(pool: any, args: CrsLookupArgs): Promise<CrsResult> {
+  const grid = upper(args.grid)
+  if (grid !== 'CRS' && grid !== 'FSW67') {
+    return { grid, availability: 'not-applicable', rows: [], note: '只支持 CRS 排名分与 FSW67 资格分,这不是其中一套分制' }
+  }
+  const section = (args.section || '').trim()
+  const kind = (args.kind || '').trim()
+  const factor = (args.factor || '').trim()
+  const criterion = (args.criterion || '').trim()
+  const limit = Math.min(Math.max(args.limit ?? 240, 1), 240)
+  const result = await pool.query(
+    `SELECT grid, section, section_label, kind, table_no, heading, factor, criterion,
+            column_label, points, points_text, seq, url, fetched
+     FROM ee_points_grid
+     WHERE grid = $1
+       AND ($2 = '' OR section = $2)
+       AND ($3 = '' OR kind = $3)
+       AND ($4 = '' OR factor ILIKE '%' || $4 || '%')
+       AND ($5 = '' OR criterion ILIKE '%' || $5 || '%')
+     ORDER BY seq
+     LIMIT $6`, [grid, section, kind, factor, criterion, limit],
+  ).catch(() => null)
+  if (!result) return { grid, availability: 'not-collected', rows: [], note: `本站 ${grid} 官方计分表暂不可用` }
+  const rows: CrsRow[] = (result.rows ?? [])
+    .filter((r: any) => upper(r.grid) === grid && !!r.url) // SQL 已先筛 grid；这里是第二道防混表护栏
+    .map((r: any): CrsRow => ({
+      grid: grid as CrsGrid,
+      section: r.section ?? '', sectionLabel: r.section_label ?? '', kind: r.kind ?? '',
+      tableNo: numOf(r.table_no), heading: r.heading ?? '', factor: r.factor ?? '',
+      criterion: r.criterion ?? '', columnLabel: r.column_label ?? '',
+      points: r.points == null ? null : numOf(r.points), // null 原样带出,真 0 仍是 0
+      pointsText: r.points_text ?? '', seq: numOf(r.seq),
+      evidence: { url: r.url, fetched: r.fetched ?? '', label: r.heading ?? '' },
+    }))
+  if (!rows.length) {
+    return {
+      grid, availability: 'not-collected', rows: [],
+      note: `本站未收录 ${grid} 计分表中符合这组筛选的档位 —— 不等于官方没有`,
+    }
+  }
+  return {
+    grid, availability: 'ok', rows,
+    note: grid === 'CRS'
+      ? 'CRS 是进池后的排名分,不能与 FSW 67 分资格线相加'
+      : 'FSW67 是 FSW 入池资格的 67/100 选择因素,不能与 CRS 排名分相加',
+  }
+}
+
+// ── ⑨ checkClaims:外部主张对账三分法 ────────────────────────────────────────
 
 /**
  * 主张能落到哪张官方表上。前六个各对应一个查询工具;`private-promise` 是**第七个桶,它不查任何表** ——

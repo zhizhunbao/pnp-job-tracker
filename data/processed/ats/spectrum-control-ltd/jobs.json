@@ -16,7 +16,8 @@
       "province": "ON",
       "country": "Canada",
       "district": "Kanata",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     }
   ]
 }

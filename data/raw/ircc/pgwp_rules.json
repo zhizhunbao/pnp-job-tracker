@@ -2,7 +2,7 @@
  "province": "FED",
  "program": "PGWP",
  "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/work/after-graduation/about.html",
- "fetched": "2026-08-03",
+ "fetched": "2026-08-04",
  "note": "quote-anchored:valueText=官方原文,本脚本每轮验证其仍在页面上;字段语义见 basis。合并条款原文未写明合并后是否触发『≥2年→3年』档,引擎不得替官方补这一跳。",
  "requirements": [
   {

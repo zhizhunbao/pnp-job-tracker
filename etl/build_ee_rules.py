@@ -1,5 +1,5 @@
 """
-build_ee_rules — 联邦 Express Entry 官方口径:**CRS 计分表 + CEC/FSW/FST 资格规则**。
+build_ee_rules — 联邦 Express Entry 官方口径:**CRS/FSW 计分 + 语言换算 + 资格规则**。
 
 铁律「URL → 数据 → SQL」:先 grep `data/crawl/*/manifest.json` 确认 canada.ca 的 EE 区
 从未被覆盖(2026-08-05 实测:只有 fed-pgwp / fed-rcip 两个联邦 slug)→ 在
@@ -7,7 +7,7 @@ build_ee_rules — 联邦 Express Entry 官方口径:**CRS 计分表 + CEC/FSW/F
 (etl/crawl/cache.get),不自己猜 URL、不重复发请求。
 
 一个关注点一个脚本(宪法 §清洗-3):CRS 计分与 CEC/FSW/FST 资格同源于同一次 fed-ee 爬取、
-共用同一套「HTML 表 → 窄表行」解析器,故一个脚本两个产出。
+共用同一套「HTML 表 → 窄表行」解析器,故一个脚本集中产出。
 
 两种数据两种做法:
   · **CRS 计分表** = 官方 HTML 表格,机器逐格解析成**窄表**(一行 = 一个 criterion × 一列表头),
@@ -44,10 +44,12 @@ IN_URL_CEC = _EE + "who-can-apply/canadian-experience-class.html"
 IN_URL_FSW = _EE + "who-can-apply/federal-skilled-workers.html"   # 含 67 分 selection factors
 IN_URL_FST = _EE + "who-can-apply/federal-skilled-trades.html"
 IN_URL_LANG = _EE + "documents/language-test.html"          # 三个项目的最低 CLB/NCLC 门槛表
+IN_URL_ECA = _EE + "documents/education-assessment.html"     # ECA 结果 → FSW 教育 selection factor 分
 
 # ── OUT ────────────────────────────────────────────────────────────────────
 OUT_CRS = _paths.EE / "crs-grid.json"
 OUT_ELIG = _paths.EE / "fed-eligibility.json"
+OUT_LANG = _paths.EE / "language-grid.json"
 
 SECTION_RE = re.compile(r"^([A-D])\.\s+(.+?)\s*$")
 
@@ -126,6 +128,106 @@ def grid_rows(main, url: str, fetched: str, section_of=nearest_heading) -> list[
                     "url": url, "fetched": fetched,
                 })
     return out
+
+
+PROGRAM_HEADINGS = {
+    "Federal Skilled Worker Program": "FSW",
+    "Federal Skilled Trades Program": "FST",
+    "Canadian Experience Class": "CEC",
+}
+TEST_NAMES = {
+    "CELPIP": "CELPIP-G",
+    "IELTS": "IELTS General Training",
+    "PTE Core": "PTE Core",
+    "TEF Canada": "TEF Canada",
+    "TCF Canada": "TCF Canada",
+}
+
+
+def previous_heading(tbl, tag: str, accepted: dict[str, str]) -> str:
+    """取本表之前最近一个命中白名单的标题;页面里的说明性 h3 不会误当 program。"""
+    for h in tbl.find_all_previous(tag):
+        text = norm(h.get_text(" ", strip=True))
+        if text in accepted:
+            return accepted[text]
+    return ""
+
+
+def language_tables(main, url: str, fetched: str) -> list[dict]:
+    """language-test.html 的 T4–T26 → 23 张原表的稳定结构;数字不在这里换算或推导。"""
+    tables = main.find_all("table")
+    selected = list(enumerate(tables[4:], start=4))
+    if len(selected) != 23:
+        raise SystemExit(f"✗ 语言换算表预期 T4–T26 共 23 张,实际 {len(selected)} 张——保留旧表")
+
+    out = []
+    for table_no, tbl in selected:
+        parsed = [[norm(c.get_text(" ", strip=True)) for c in tr.find_all(["th", "td"])]
+                  for tr in tbl.find_all("tr")]
+        parsed = [r for r in parsed if r]
+        headers, body = parsed[0], parsed[1:]
+        if not body or any(len(r) != len(headers) for r in body):
+            raise SystemExit(f"✗ 语言表 T{table_no} 列数不齐——保留旧表")
+
+        program = previous_heading(tbl, "h3", PROGRAM_HEADINGS)
+        test_heading = norm(tbl.find_previous("h4").get_text(" ", strip=True))
+        test = next((code for prefix, code in TEST_NAMES.items() if test_heading.startswith(prefix)), "")
+        benchmark_header = next((h for h in headers if h in {"CLB Level", "NCLC Level"}), "")
+        if not program or not test or not benchmark_header:
+            raise SystemExit(f"✗ 语言表 T{table_no} 上下文识别失败"
+                             f"(program={program!r}, test={test!r}, benchmark={benchmark_header!r})——保留旧表")
+
+        level_idx = headers.index(benchmark_header)
+        teer_idx = headers.index("NOC TEER") if "NOC TEER" in headers else None
+        value_cols = [i for i in range(len(headers)) if i not in {level_idx, teer_idx}]
+        out.append({
+            "tableNo": table_no, "program": program, "test": test,
+            "benchmark": "CLB" if benchmark_header.startswith("CLB") else "NCLC",
+            "headers": headers,
+            "rows": [{
+                "rowNo": row_no,
+                "levelText": row[level_idx],
+                "nocTeer": row[teer_idx] if teer_idx is not None else "",
+                "cells": [{"column": headers[i], "valueText": row[i]} for i in value_cols],
+            } for row_no, row in enumerate(body)],
+            "url": url, "fetched": fetched,
+        })
+    return out
+
+
+def fsw_education_rows(main, url: str, fetched: str) -> list[dict]:
+    """ECA 报告解读页的 FSW 教育表;一行保留一个官方 assessment result 别名。"""
+    expected = [
+        "Assessment result (Canadian equivalency)",
+        "Level of education for Express Entry profile",
+        "Federal Skilled Workers Program selection factor points",
+    ]
+    match = None
+    for table_no, tbl in enumerate(main.find_all("table")):
+        factor, cols, body = parse_table(tbl)
+        if [factor, *cols] == expected:
+            match = (table_no, tbl, body)
+            break
+    if match is None:
+        raise SystemExit("✗ ECA 页找不到 FSW 教育 selection factor 官方表——保留旧表")
+
+    table_no, tbl, body = match
+    rows = []
+    for result, profile_level, points_text in body:
+        rows.append({
+            "section": "FSW", "sectionLabel": "Selection factors",
+            "kind": "detail", "table": table_no,
+            "heading": profile_level,
+            # 这张表同时有 ECA 原结果与 EE profile 档位;现有窄表无额外列:
+            # profile 档位放 heading、ECA 原结果放 criterion;factor 保持可被消费端稳定筛出的 Education。
+            "factor": "Education", "criterion": result,
+            "column": expected[2],
+            "points": as_points(points_text), "pointsText": points_text,
+            "url": url, "fetched": fetched,
+        })
+    if len(rows) < 100:
+        raise SystemExit(f"✗ ECA 页 FSW 教育表只解析出 {len(rows)} 行——保留旧表")
+    return rows
 
 
 def crs_sections(main) -> list[dict]:
@@ -230,10 +332,11 @@ RULES = [
 
 def main() -> None:
     print(f"IN  : {IN_CRAWL}  (crawl 缓存,不重复发请求)")
-    for u in (IN_URL_CRS, IN_URL_CEC, IN_URL_FSW, IN_URL_FST, IN_URL_LANG):
+    for u in (IN_URL_CRS, IN_URL_CEC, IN_URL_FSW, IN_URL_FST, IN_URL_LANG, IN_URL_ECA):
         print(f"      {u}")
     print(f"OUT : {OUT_CRS}")
     print(f"OUT : {OUT_ELIG}")
+    print(f"OUT : {OUT_LANG}")
 
     # ── 1. CRS 计分表 ────────────────────────────────────────────────────
     crs_main, crs_fetched = load(IN_URL_CRS)
@@ -283,17 +386,24 @@ def main() -> None:
     if len(sel) < 30:
         raise SystemExit(f"✗ FSW selection factors 表只解析出 {len(sel)} 行 —— 页面结构变了,保留旧表")
 
+    # FSW 页教育段只给去 ECA 页的链接,真正的 25 分档在 ECA 报告解读页第三张官方表。
+    # URL 来自 fed-ee manifest 的真实命中,不是凭印象拼接;每个 ECA result 别名都保留,供报告原文精确匹配。
+    eca_main, eca_fetched = load(IN_URL_ECA)
+    education = fsw_education_rows(eca_main, IN_URL_ECA, eca_fetched)
+    sel.extend(education)
+
     OUT_ELIG.write_text(json.dumps({
         "source": "Express Entry: Who can apply (CEC / FSW / FST)",
         # 表级 province:联邦源统一 FED(同 raw/ircc/pgwp_rules.json、fees.json)——09 的
         # build_pnp_requirements 从这里取,少了它 23 条会静默落成 province=''(引擎按省挑行永远挑不到)。
         # program 不在表级:这一个文件装三个项目,逐行写在 requirements[].program 上。
         "province": "FED",
-        "fetched": max(p["fetched"] for p in pages.values()),
+        "fetched": max([eca_fetched, *(p["fetched"] for p in pages.values())]),
         "note": "quote-anchored:valueText=官方原文,本脚本每轮验证其仍逐字在页面上;字段语义见 basis。"
                 "requirements 形状对齐 raw/ircc/pgwp_rules.json(09 IN_REQ_TABLES 可直接消费)。"
                 "selectionFactors = FSW 67 分制的官方表格(与 CRS 排名分是两套分,官方明确写明不同)。"
-                "教育 25 分档不在本页表格里(官方把它挂在 ECA 报告解读页)→ not-collected,未收录不等于官方不公布。",
+                "其中教育档来自 fed-ee 缓存命中的 ECA 报告解读页;criterion=ECA assessment result、"
+                "heading=EE profile 教育档、points=FSW 教育分(最高 25),没有把 CRS 教育分混入。",
         "programs": [
             {"code": code, "name": name, "url": pages[k]["url"],
              "fetched": pages[k]["fetched"], "pageUpdated": page_updated(pages[k]["main"])}
@@ -304,7 +414,22 @@ def main() -> None:
         "requirements": reqs,
         "selectionFactors": sel,
     }, ensure_ascii=False, indent=1), encoding="utf-8")
-    print(f"✓ 资格规则 {len(reqs)} 条(引用全部核验通过)+ FSW selection factors {len(sel)} 行 → {OUT_ELIG.name}")
+    print(f"✓ 资格规则 {len(reqs)} 条(引用全部核验通过)+ FSW selection factors {len(sel)} 行"
+          f"(其中 ECA 教育 {len(education)} 行) → {OUT_ELIG.name}")
+
+    # ── 3. 语言成绩 ↔ CLB/NCLC 换算(T4–T26,独立于计分表)──────────────
+    lang_tables = language_tables(pages["lang"]["main"], IN_URL_LANG, pages["lang"]["fetched"])
+    OUT_LANG.write_text(json.dumps({
+        "source": "Express Entry: Language test results",
+        "url": IN_URL_LANG, "fetched": pages["lang"]["fetched"],
+        "pageUpdated": page_updated(pages["lang"]["main"]),
+        "note": "language-test.html 的 T4–T26 共 23 张官方表。原始分数区间只存 valueText,"
+                "不在 raw 层擅自补边界;表号、行号、原表头与项目上下文全部保留。"
+                "该数据不是 CRS/FSW points,09 单独产出 ee_language_grid,禁止参与分数求和。",
+        "tables": lang_tables,
+    }, ensure_ascii=False, indent=1), encoding="utf-8")
+    print(f"✓ 语言换算 {len(lang_tables)} 张表 / "
+          f"{sum(len(t['rows']) for t in lang_tables)} 个档位 → {OUT_LANG.name}")
 
 
 if __name__ == "__main__":

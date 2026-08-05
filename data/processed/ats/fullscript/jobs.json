@@ -18,7 +18,8 @@
       "district": "",
       "salaryAnnual": 105000,
       "salaryText": "$100K–$110K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Director of Engineering, Developer Infrastructure",
@@ -33,7 +34,8 @@
       "province": "ON",
       "country": "Canada",
       "district": "",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "IT Administrator lll",
@@ -50,7 +52,8 @@
       "district": "",
       "salaryAnnual": 66000,
       "salaryText": "$66K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Lead Data Scientist",
@@ -65,7 +68,8 @@
       "province": "ON",
       "country": "Canada",
       "district": "",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Senior Customer Insights Analyst",
@@ -82,7 +86,8 @@
       "district": "",
       "salaryAnnual": 102500,
       "salaryText": "$90K–$115K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Senior Data Engineer",
@@ -97,7 +102,8 @@
       "province": "ON",
       "country": "Canada",
       "district": "",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Senior Developer, Backend - Developer Infrastructure",
@@ -114,7 +120,8 @@
       "district": "",
       "salaryAnnual": 125000,
       "salaryText": "$125K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Senior Developer, Fullstack - Canada Pod",
@@ -131,7 +138,8 @@
       "district": "",
       "salaryAnnual": 125000,
       "salaryText": "$125K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Senior Developer, Fullstack - Identity and Access Management (IAM)",
@@ -148,7 +156,8 @@
       "district": "",
       "salaryAnnual": 125000,
       "salaryText": "$125K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Senior Machine Learning Engineer",
@@ -164,8 +173,9 @@
       "country": "Canada",
       "district": "",
       "salaryAnnual": null,
-      "salaryText": "$130,00 to $150,000 CAD",
-      "aip": false
+      "salaryText": null,
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Senior Support Enablement Specialist",
@@ -182,7 +192,8 @@
       "district": "",
       "salaryAnnual": 72500,
       "salaryText": "$60K–$85K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Staff, Machine Learning Engineer",
@@ -197,7 +208,8 @@
       "province": "ON",
       "country": "Canada",
       "district": "",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Staff, Security Engineer",
@@ -212,7 +224,8 @@
       "province": "ON",
       "country": "Canada",
       "district": "",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Workforce Management Manager, Customer Support",
@@ -229,7 +242,8 @@
       "district": "",
       "salaryAnnual": 97500,
       "salaryText": "$90K–$105K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     }
   ]
 }

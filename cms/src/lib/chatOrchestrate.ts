@@ -11,15 +11,17 @@
  *      **"官方不公布"和"本站没收录"不许在答复里合并成"没有"**;但**枚举值本身不许见客**
  *      (findLeaks:意思照说,代码照拦)。同一道出口还拦中/韩答复里的英文速记(findEnglishUnits)、
  *      按句截断长度(clampAnswer:朋友服务不收 max_tokens),并给没有 fact 撑腰的推断性措辞留痕(findHedges)。
- *   ③ 拿不到 5 位 NOC 就反问,**绝不猜职业码** —— 猜错一位,下面七个工具全在答另一个人的问题。
+ *   ③ 依赖职业的问题拿不到 5 位 NOC 就反问,**绝不猜职业码** —— 猜错一位,下面所有职业工具都在答另一个人的问题；
+ *      PGWP / CEC / FSW / FST 规则与 CRS / FSW67 分表不依赖职业,纯问这些时不强迫用户补 NOC。
  *
  * 形状照 lib/resumeMatch.ts:纯函数 + 显式 pool 入参,路由只负责鉴权/限流/错误码。
  * ⚠️ 朋友服务(qwen3.6)prompt 上限 6000 字符(实测 400,system 不占额),所以 facts **先压平再压缩**
  * 才喂模型:工具返回的整坨 JSON 一次就能把额度撑爆(resume-match 真简历事故同一个坑)。
  */
 import {
-  checkClaims, lookupCoverage, lookupDraws, lookupEE, lookupJobs, lookupOps, lookupPlan, lookupThresholds,
-  PNP_PROVINCES, PRIVATE_PROMISE, type Availability, type Claim, type ClaimTopic, type PlanResult,
+  checkClaims, lookupCoverage, lookupCrs, lookupDraws, lookupEE, lookupJobs, lookupOps, lookupPermit, lookupPlan, lookupThresholds,
+  PNP_PROVINCES, PRIVATE_PROMISE, type Availability, type Claim, type ClaimTopic, type CrsLookupArgs, type CrsResult,
+  type PermitResult, type PlanResult,
 } from './chatTools'
 import type { PlanStep } from './planTimeline'
 import { completeText, LlmError, type ChatMessage } from './llm'
@@ -89,6 +91,8 @@ type StepDict = {
   draws: (prov: string) => string
   ops: (prov: string) => string
   ee: string
+  permit: (program: string) => string
+  crs: (grid: string) => string
   plan: (provs: string) => string
   claims: (n: number) => string
   write: string
@@ -104,6 +108,8 @@ export const STEP: Record<ChatLang, StepDict> = {
     draws: (p) => `查抽选记录:${p}`,
     ops: (p) => `查运营统计:${p}`,
     ee: '查联邦 EE 通道',
+    permit: (p) => `查联邦规则:${p}`,
+    crs: (g) => `查联邦计分表:${g}`,
     plan: (p) => `算时间线:${p}`,
     claims: (n) => `核对别人跟你说的:${n} 条`,
     write: '正在组织答复',
@@ -117,6 +123,8 @@ export const STEP: Record<ChatLang, StepDict> = {
     draws: (p) => `Draw history checked: ${p}`,
     ops: (p) => `Operational stats checked: ${p}`,
     ee: 'Federal Express Entry categories checked',
+    permit: (p) => `Federal rules checked: ${p}`,
+    crs: (g) => `Federal points grid checked: ${g}`,
     plan: (p) => `Timeline worked out: ${p}`,
     claims: (n) => `What you were told: ${n} claims checked`,
     write: 'Writing the reply',
@@ -130,6 +138,8 @@ export const STEP: Record<ChatLang, StepDict> = {
     draws: (p) => `추첨 기록 조회: ${p}`,
     ops: (p) => `운영 통계 조회: ${p}`,
     ee: '연방 EE 카테고리 조회',
+    permit: (p) => `연방 규정 조회: ${p}`,
+    crs: (g) => `연방 점수표 조회: ${g}`,
     plan: (p) => `소요 기간 산출: ${p}`,
     claims: (n) => `들으신 내용 대조: ${n}건`,
     write: '답변 작성 중',
@@ -143,7 +153,7 @@ const MAX_FACTS = 40               // facts 上限:再多前端也读不完,prom
 
 // ── 小工具 ──────────────────────────────────────────────────────────────────
 
-/** 一次请求内的查询记忆:chatTools 七个工具会重复调 assembleReportFacts(同 noc 同 SQL),同参只查一次。 */
+/** 一次请求内的查询记忆:多个职业工具会重复调 assembleReportFacts(同 noc 同 SQL),同参只查一次。 */
 function memoPool(pool: any) {
   const cache = new Map<string, Promise<any>>()
   return {
@@ -181,6 +191,61 @@ function normProv(raw: unknown): string | null {
 
 const TOPICS: ClaimTopic[] = ['coverage', 'thresholds', 'jobs', 'draws', 'ops', 'ee', 'private-promise']
 const normTopic = (raw: unknown): SlotClaimTopic => (TOPICS.includes(String(raw ?? '') as ClaimTopic) ? (String(raw) as ClaimTopic) : 'other')
+
+// ── 联邦规则 / 计分题路由(纯函数,不交给模型猜)───────────────────────────────
+
+export type FederalRuleProgram = 'PGWP' | 'CEC' | 'FSW' | 'FST'
+const FEDERAL_PROGRAM_RE: Record<FederalRuleProgram, RegExp> = {
+  PGWP: /\bPGWP\b|post[- ]graduation work permit|毕业后工签|毕业工签|졸업 후 취업 허가/i,
+  CEC: /\bCEC\b|Canadian Experience Class|加拿大经验类|加拿大经验类别|캐나다 경험 이민/i,
+  FSW: /\bFSW(?:P|67)?\b|Federal Skilled Worker|联邦技术移民|联邦技术工人|연방 전문인력/i,
+  FST: /\bFST(?:P)?\b|Federal Skilled Trades?|联邦技工|联邦技术工种|연방 숙련 기능직/i,
+}
+/** 一句话可以同时问 CEC / FSW / FST 对比,所以返回全部命中的 program,不擅自只留第一个。 */
+export function federalRulePrograms(text: string): FederalRuleProgram[] {
+  return (Object.keys(FEDERAL_PROGRAM_RE) as FederalRuleProgram[]).filter((p) => FEDERAL_PROGRAM_RE[p].test(text || ''))
+}
+
+const CRS_RE = /\bCRS\b|Comprehensive Ranking System|综合排名(?:系统)?|EE\s*(?:score|points?)|EE\s*分(?:数)?|종합 순위 점수/i
+const SCORE_RE = /\b67\s*(?:points?|점)?\b|分数|打分|计分|多少分|得分|scor(?:e|ing)|points?|점수/i
+const AGE_RE = /\bage\b|years? old|岁|年(?:龄|齡)|나이|살\b/i
+const EDUCATION_RE = /education|degree|diploma|master|bachelor|phd|学历|學歷|教育|学位|學位|硕士|碩士|本科|博士|학력|학위|석사|학사|박사/i
+const LANGUAGE_RE = /language|CLB|NCLC|IELTS|CELPIP|TEF|TCF|语言|語言|雅思|法语|法語|영어|불어|언어/i
+const WORK_RE = /work experience|工作经验|工作經驗|경력|근무 경력/i
+
+/** 用户原话 → 官方表里的结构化筛选。只映射高置信词；判不了就不加筛选,绝不猜档位。 */
+function crsDimension(text: string, grid: 'CRS' | 'FSW67'): Pick<CrsLookupArgs, 'factor' | 'criterion' | 'kind'> {
+  const s = text || ''
+  if (AGE_RE.test(s)) {
+    const a = /(?:age|aged|years? old|岁|年(?:龄|齡)|나이|살)\D{0,5}(\d{1,2})|(\d{1,2})\s*(?:years? old|岁|살)/i.exec(s)
+    const age = a ? (a[1] || a[2]) : ''
+    return { factor: 'Age', ...(grid === 'CRS' && age ? { criterion: `${age} years` } : {}), kind: 'detail' }
+  }
+  if (EDUCATION_RE.test(s)) return { factor: 'Education', kind: 'detail' }
+  if (LANGUAGE_RE.test(s)) return { factor: grid === 'CRS' ? 'Language' : 'official language', kind: 'detail' }
+  if (/foreign.{0,12}(?:work|experience)|海外.{0,6}(?:工作|经验)|境外.{0,6}(?:工作|经验)/i.test(s)) return { factor: 'Foreign work experience', kind: 'detail' }
+  if (WORK_RE.test(s)) return { factor: grid === 'CRS' ? 'Canadian work experience' : 'Experience', kind: 'detail' }
+  if (/spouse|partner|配偶|伴侣|伴侶|배우자/i.test(s)) return { factor: 'Spouse', kind: 'detail' }
+  if (/adaptability|适应(?:能力)?|適應(?:能力)?|적응력/i.test(s)) return { factor: 'Adaptability', kind: 'detail' }
+  if (/job offer|arranged employment|雇主 offer|工作邀请|工作邀請|잡 오퍼/i.test(s)) return { criterion: 'Arranged employment', kind: 'detail' }
+  if (/provincial nomination|省提名|주정부 지명/i.test(s)) return { criterion: 'Provincial nomination', kind: 'detail' }
+  if (/sibling|brother|sister|兄弟|姐妹|姊妹|형제|자매/i.test(s)) return { criterion: 'Brother or sister', kind: 'detail' }
+  if (/french|法语|法語|프랑스어|불어/i.test(s)) return { criterion: 'French', kind: 'detail' }
+  return {}
+}
+
+/**
+ * 只有真问到 CRS / FSW 67 分才查表；提到 FSW 资格但没问分数时只走联邦资格规则,不把 43 行分值污染进去。
+ * 同一句拿 CRS 与 FSW67 对比时两套分别查询,各自 SQL 都先按 grid 过滤。
+ */
+export function crsLookups(text: string): CrsLookupArgs[] {
+  const out: CrsLookupArgs[] = []
+  if (CRS_RE.test(text || '')) out.push({ grid: 'CRS', ...crsDimension(text, 'CRS') })
+  if (FEDERAL_PROGRAM_RE.FSW.test(text || '') && SCORE_RE.test(text || '')) {
+    out.push({ grid: 'FSW67', ...crsDimension(text, 'FSW67') })
+  }
+  return out
+}
 
 const LANG_NAME: Record<ChatLang, string> = { zh: 'Simplified Chinese', en: 'English', ko: 'Korean' }
 
@@ -309,7 +374,7 @@ export async function resolveNoc(pool: any, occEn: string): Promise<{ noc: strin
 // (「Ontario college grad, software dev…」说职业能答,「读 IT」就答不了)。他明明说清楚了自己的情况,
 // 回来一句「说说你做什么工作」,读起来就是这个产品坏了。
 //
-// 红线不动:**5 位 NOC 拿不准就不许填**(猜错一位,下面七个工具全在答另一个人的问题)。所以修的不是
+// 红线不动:**5 位 NOC 拿不准就不许填**(猜错一位,下面所有职业工具都在答另一个人的问题)。所以修的不是
 // 「猜得更狠」,而是**反问得更有用**:把专业引到几个候选职业上,让他点一下就走回正轨。
 // 三条实现约束:
 //   ① 候选**从库里查**(noc_descriptions.requirements 里点名了这个专业、且现在真有在招岗位的职业),
@@ -608,6 +673,7 @@ type LabelDict = {
   pass: string; fail: string; unknown: string; short: string
   drawCut: string; drawInv: string; draws: string; opsStats: string
   eeCat: string; eeAll: string; unsaid: string
+  federalRule: string; federalGap: string; crsPoint: string; fswPoint: string
   opsKeys: Record<string, string>
   /** 半句话:`${省码} ${factor}` + 值 = 一句完整的话。主语(申请人 / 雇主)必须长在里面。 */
   factor: Record<string, string>
@@ -640,6 +706,7 @@ export const LBL: Record<ChatLang, LabelDict> = {
     pass: '已达标', fail: '未达标', unknown: '未判定(没拿到你的情况)', short: '还差',
     drawCut: '最近一轮抽选的最低分数线', drawInv: '最近一轮抽选发出的邀请数', draws: '的抽选记录', opsStats: '的运营统计',
     eeCat: '联邦 EE 通道', eeAll: '联邦 EE 通道', unsaid: '官方清单也收了这个职业、但对方没提过的省',
+    federalRule: '官方规则', federalGap: '官方原文没有接上的一步', crsPoint: 'CRS 官方计分档', fswPoint: 'FSW 67 分官方计分档',
     opsKeys: { eoi_pool_total: '的 EOI 池子现有人数', eoi_pool: '的 EOI 池内人数', allocation: '今年的提名名额', remaining: '今年剩余的提名名额', nominations_ytd: '今年已经发出的提名数', processing_weeks: '官方公布的处理周期' },
     factor: {
       language: '要求申请人的语言达到', languageExempt: '规定申请人可以豁免语言的等级是',
@@ -667,6 +734,8 @@ export const LBL: Record<ChatLang, LabelDict> = {
     pass: 'met', fail: 'not met', unknown: 'not judged (your situation not given)', short: 'short by',
     drawCut: 'latest draw cutoff', drawInv: 'invitations in the latest draw', draws: 'draw history', opsStats: 'operational stats',
     eeCat: 'federal EE category', eeAll: 'federal EE categories',
+    federalRule: 'official rule', federalGap: 'step the official wording does not connect',
+    crsPoint: 'official CRS points row', fswPoint: 'official FSW 67-point row',
     // 这句会被整句抄进答复,写成能直接当句子用的形状(旧版「provinces whose … but nobody mentioned」抄出来不成句)
     unsaid: 'other provinces whose official lists also cover this occupation, which nobody mentioned',
     opsKeys: { eoi_pool_total: 'EOI pool size right now', eoi_pool: 'EOI pool size right now', allocation: 'nomination allocation for the year', remaining: 'nomination allocation still left', nominations_ytd: 'nominations issued so far this year', processing_weeks: 'processing time the province publishes' },
@@ -697,6 +766,8 @@ export const LBL: Record<ChatLang, LabelDict> = {
     pass: '충족', fail: '미충족', unknown: '판정 불가(본인 상황 미제공)', short: '부족분',
     drawCut: '최근 추첨 커트라인', drawInv: '최근 추첨 초청 건수', draws: '추첨 기록', opsStats: '운영 통계',
     eeCat: '연방 EE 카테고리', eeAll: '연방 EE 카테고리', unsaid: '공식 목록에 이 직업이 있으나 상대가 말하지 않은 주',
+    federalRule: '공식 규정', federalGap: '공식 문구가 연결하지 않은 단계',
+    crsPoint: 'CRS 공식 점수 항목', fswPoint: 'FSW 67점 공식 항목',
     opsKeys: { eoi_pool_total: 'EOI 풀 전체 인원', eoi_pool: 'EOI 풀 인원', allocation: '올해 지명 배정', remaining: '남은 지명 배정', nominations_ytd: '올해 누적 지명', processing_weeks: '주정부가 공개한 처리 기간' },
     factor: {
       language: '요건 — 신청인의 언어 등급은', languageExempt: '요건 — 언어 면제 기준 등급(신청인)은',
@@ -836,16 +907,89 @@ export function planFacts(r: PlanResult, lang: ChatLang): Fact[] {
   return out
 }
 
+const FED_FACTOR: Record<ChatLang, Record<string, string>> = {
+  zh: {
+    pgwpLength: '工签长度分档', pgwpCombine: '多个课程合并规则', pgwpOnce: '一生可申请次数',
+    pgwpWindow: '毕业后申请窗口', pgwpMinProgram: '课程最短长度', pgwpLanguage: '语言门槛',
+    workTeer: '合资格工作所属 TEER', workHours: '工作经验时数', workLocation: '工作经验地点',
+    workSelfEmployed: '自雇及全日制学生期间工作是否计入', workRecency: '工作经验有效期',
+    workNocGroups: '合资格 NOC 组别', passMark: '入池资格分数线', proofOfFunds: '资金证明规则',
+    jobOfferOrCertificate: '工作邀请或技工资格证规则', residence: '计划居住地', language: '语言门槛', education: '教育要求',
+  },
+  en: {
+    pgwpLength: 'permit length band', pgwpCombine: 'combining programs', pgwpOnce: 'lifetime application limit',
+    pgwpWindow: 'application window after graduation', pgwpMinProgram: 'minimum program length', pgwpLanguage: 'language requirement',
+    workTeer: 'eligible work TEER', workHours: 'work-experience hours', workLocation: 'location of work experience',
+    workSelfEmployed: 'whether self-employment and full-time-student work count', workRecency: 'work-experience recency',
+    workNocGroups: 'eligible NOC groups', passMark: 'eligibility pass mark', proofOfFunds: 'proof-of-funds rule',
+    jobOfferOrCertificate: 'job-offer or trade-certificate rule', residence: 'intended residence', language: 'language requirement', education: 'education requirement',
+  },
+  ko: {
+    pgwpLength: '취업 허가 기간 구간', pgwpCombine: '여러 과정 합산 규정', pgwpOnce: '평생 신청 가능 횟수',
+    pgwpWindow: '졸업 후 신청 기간', pgwpMinProgram: '최소 과정 기간', pgwpLanguage: '언어 요건',
+    workTeer: '인정 경력의 TEER', workHours: '경력 시간', workLocation: '경력 취득 장소',
+    workSelfEmployed: '자영업·전일제 학생 경력 인정 여부', workRecency: '경력 인정 기간',
+    workNocGroups: '해당 NOC 그룹', passMark: '자격 통과 점수', proofOfFunds: '정착 자금 증빙 규정',
+    jobOfferOrCertificate: '잡오퍼 또는 기능 자격증 규정', residence: '거주 예정지', language: '언어 요건', education: '학력 요건',
+  },
+}
+
+/** lookupPermit 的真返回 → 对话 facts。rule 的数字与原句共用同一条 evidence；null 只摆原文,不补 0。 */
+export function federalRuleFacts(results: PermitResult[], lang: ChatLang): Fact[] {
+  const T = LBL[lang]
+  const out: Fact[] = []
+  for (const r of results) {
+    if (r.availability !== 'ok') {
+      out.push(statusFact('lookupPermit', `${r.program} ${T.federalRule}`, r.availability, zhOnly(r.note, lang), '', lang))
+      continue
+    }
+    for (const rule of r.rules) {
+      const name = FED_FACTOR[lang][rule.factor] ?? T.federalRule
+      out.push(fact('lookupPermit', `${rule.program} ${name}`, rule.value,
+        rule.valueText, rule.unit, rule.evidence))
+    }
+    for (const gap of r.gaps) {
+      const note = lang === 'zh' ? gap.note
+        : lang === 'en'
+          ? 'IRCC states the program-combination rule and the 3-year permit band separately, but does not connect the combined length to that band.'
+          : 'IRCC는 과정 합산 규정과 3년 허가 구간을 따로 제시하지만, 합산한 기간을 그 구간에 연결하지 않습니다.'
+      out.push(fact('lookupPermit', `${r.program} ${T.federalGap}`, null, note, 'rule', gap.evidence[0] ?? DERIVED))
+    }
+  }
+  return out
+}
+
+/** lookupCrs 的真返回 → 对话 facts。两套 grid 的名字长在每一行里,不让模型把分值混加。 */
+export function crsFacts(results: CrsResult[], lang: ChatLang): Fact[] {
+  const T = LBL[lang]
+  const out: Fact[] = []
+  for (const r of results) {
+    const title = r.grid === 'FSW67' ? T.fswPoint : T.crsPoint
+    if (r.availability !== 'ok') {
+      out.push(statusFact('lookupCrs', title, r.availability, zhOnly(r.note, lang), '', lang))
+      continue
+    }
+    // 口径注不带数字,但必须进 prompt:CRS 与 FSW67 绝不能相加。出处仍逐行挂在实际分值上。
+    out.push(fact('lookupCrs', title, null, zhOnly(r.note, lang), 'note', DERIVED))
+    for (const row of r.rows.slice(0, 16)) {
+      const band = [row.factor, row.criterion, row.columnLabel].filter(Boolean).join(' — ')
+      out.push(fact('lookupCrs', `${title}: ${band}`, row.points,
+        row.points == null ? row.pointsText : '', 'points', row.evidence))
+    }
+  }
+  return out
+}
+
 /**
  * 剧本(设计 §四):`expMonths === 0` 必加学徒岗计数;有 claims 必调 checkClaims。
  * 顺序即优先级 —— 超预算时从尾巴砍,砍掉的是补充信号不是主线。
  * `lang`:四态在这一层就写成用户语言的成句(AVAIL_SENTENCE),模型只照抄不翻译。
  */
 export async function collectFacts(
-  pool: any, slots: Slots & { noc: string }, teerHint?: number | null, lang: ChatLang = 'en', onStep?: OnStep,
-  opts: { plan?: boolean } = {},
+  pool: any, slots: Slots, teerHint?: number | null, lang: ChatLang = 'en', onStep?: OnStep,
+  opts: { plan?: boolean; federalPrograms?: FederalRuleProgram[]; crs?: CrsLookupArgs[] } = {},
 ): Promise<{ facts: Fact[]; teer: number | null; title: string }> {
-  const { noc } = slots
+  const noc = slots.noc ?? ''
   const zeroExp = slots.expMonths === 0
   const provs = slots.provs.filter((p) => p !== 'QC')
   const checkable = slots.claims.filter((c) => c.topic !== 'other')
@@ -853,7 +997,19 @@ export async function collectFacts(
   // 轨迹只在**这一步真的返回了**才发(挂在各自的 promise 上,不是先发再查)——铁律③。
   const tap = <T>(p: Promise<T>, text: (r: T) => string): Promise<T> =>
     (onStep ? p.then((r) => { onStep({ phase: 'tool', text: text(r) }); return r }) : p)
-  const [jobs, coverage, thresholds, ee, claims] = await Promise.all([
+  const federalPs = opts.federalPrograms ?? []
+  const crsQs = opts.crs ?? []
+  const federalQuery = Promise.all(federalPs.map((program) => tap(lookupPermit(pool, { program }), () => S.permit(program))))
+  const crsQuery = Promise.all(crsQs.map((q) => tap(lookupCrs(pool, q), () => S.crs(String(q.grid)))))
+
+  // PGWP / CEC / FSW / FST 规则与两套联邦分表都不依赖职业。纯问这些题时没有 NOC 是正常输入,
+  // 不许为了沿用省提名工具而编一个职业码,也不该把用户赶去回答无关的职业问题。
+  if (!/^\d{5}$/.test(noc)) {
+    const [federal, grids] = await Promise.all([federalQuery, crsQuery])
+    return { facts: [...federalRuleFacts(federal, lang), ...crsFacts(grids, lang)].slice(0, MAX_FACTS), teer: null, title: '' }
+  }
+
+  const [jobs, coverage, thresholds, ee, claims, federal, grids] = await Promise.all([
     tap(lookupJobs(pool, { noc, apprentice: zeroExp }), (r) => S.jobs(r.rows.length)),
     tap(lookupCoverage(pool, { noc }), (r) => S.coverage(r.provinces.length)),
     tap(lookupThresholds(pool, {
@@ -868,6 +1024,8 @@ export async function collectFacts(
       ? tap(checkClaims(pool, { noc, teer: teerHint, claims: checkable as Claim[] }),
         (r) => S.claims(r.checked.length + r.uncheckable.length))
       : Promise.resolve(null),
+    federalQuery,
+    crsQuery,
   ])
   // 🔴 时间线只在**他真的问了「要多久 / 哪条快」**时才算(orchestrate 用 isPlanQuestion 判,纯函数)。
   //    没问就不算:多铺三条时间线只会把答复挤成一张表,而这一层最贵的教训就是「材料不是提纲」。
@@ -912,6 +1070,8 @@ export async function collectFacts(
   // ①b 时间线(只在他问了「要多久 / 哪条快」时才有)。排在这么前面是因为**那时它就是答案**:
   //     facts 塞不下时是从尾巴上砍的,排在后面等于问一句最该答的话反而被清单挤掉。
   if (plan) out.push(...planFacts(plan, lang))
+  // ①c 用户点名才查的联邦规则 / 计分档。排在主线前部,避免真问题被省级补充事实挤出 40 条上限。
+  out.push(...federalRuleFacts(federal, lang), ...crsFacts(grids, lang))
   // ② 省清单命中/四态
   for (const c of coverage.provinces) {
     if (c.hits.length) {
@@ -2102,10 +2262,14 @@ export async function orchestrate(
   const parsed = parseLlmJson(raw)
   if (!parsed) throw new ChatError('llm', `slot parse failed: ${raw.slice(0, 160)}`)
   const draft = normalizeSlots(parsed)
+  // 联邦规则/分表不依赖职业。路由判据只读用户原话,不拿模型猜的 topic 当开关。
+  const federalPrograms = federalRulePrograms(text)
+  const crs = crsLookups(text)
+  const federalOnlyOk = federalPrograms.length > 0 || crs.length > 0
 
   // ② 职名 → 5 位 NOC(拿不到就反问,绝不猜)
   const hit = draft.noc ? { noc: draft.noc, title: '' } : await resolveNoc(pool, draft.occText)
-  if (!hit) {
+  if (!hit && !federalOnlyOk) {
     // 🔴 说了专业没说职位名 → **反问得有用**,别让他撞死路(见 studyFieldOf 上面那段)。
     //    候选一条都查不到才回落 noOcc:「随便打了句问候」照旧走原路。
     const field = studyFieldOf(text) || draft.occText
@@ -2116,15 +2280,23 @@ export async function orchestrate(
     }
     throw new ChatError('noOcc', 'occupation not resolved', { ...draft, noc: null })
   }
-  const slots: Slots & { noc: string } = { ...draft, noc: hit.noc, occText: draft.occText || hit.title }
+  const slots: Slots = {
+    ...draft,
+    noc: hit?.noc ?? null,
+    occText: draft.occText || hit?.title || '',
+  }
 
   // ③ 调工具 → Fact[]
   // 职业名先算出来:轨迹第二格要报「认出的是谁」,而 NOC 一确定这一格就是既成事实(工具还没跑)。
-  const occHint = `${hit.title || slots.occText} (NOC ${slots.noc})`
-  onStep?.({ phase: 'occ', text: S.occ(occHint) })
+  if (hit) {
+    const occHint = `${hit.title || slots.occText} (NOC ${slots.noc})`
+    onStep?.({ phase: 'occ', text: S.occ(occHint) })
+  }
   // 问的是「要多久 / 哪条更快」才算时间线(判据是纯函数,不问模型:topic 归模型猜的那些坑已经踩够了)
-  const { facts, title } = await collectFacts(pool, slots, null, lang, onStep, { plan: isPlanQuestion(text) && !isOddsQuestion(text) })
-  const occ = `${title || hit.title || slots.occText} (NOC ${slots.noc})`
+  const { facts, title } = await collectFacts(pool, slots, null, lang, onStep, {
+    plan: !!hit && isPlanQuestion(text) && !isOddsQuestion(text), federalPrograms, crs,
+  })
+  const occ = hit ? `${title || hit.title || slots.occText} (NOC ${slots.noc})` : ''
 
   // ④ 合成 + 出口校验(违规重试一次,再违规降级成事实清单)
   //    三道硬拦:数字溯源(guard) / 内部码泄露(findLeaks) / 中韩答复里的英文速记(findEnglishUnits);

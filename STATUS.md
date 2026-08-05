@@ -5,6 +5,12 @@
 > ⚠️ **「真实收款」这四个字 2026-08-03 撤掉**:live 通道验过没错(07-04 开闸演练,已退款),但库里两条
 > Stripe session 一条是测试号、一条是 Frank 自己那笔 —— **陌生用户付费至今 0 笔**。别再把「已收款」当既成事实。批次进度=`docs/implementation/_开发批次顺序.md`:**B0-B8 全部落地(2026-07-04 一天从 B4 打到 B8),24 工作项代码侧全完**。
 >
+> **🧰 当前工作区(2026-08-05,未提交/未上线):联邦对话接线 + Job Bank 竞态结构性收口 + EE 数据补全**
+> - **A 对话**:`lookupPermit` 已接主编排(PGWP/CEC/FSW/FST);新增 `lookupCrs`,SQL 第一条件固定 `grid=$1`,返回层再防混表,`points=NULL` 原样保留。纯联邦直问不再强迫用户先给 NOC;普通职位问法不触发。新增 fake-pool 真组件测试 6 绿;既有对话纯函数 47 绿;`tsc --noEmit` 绿。**本轮未连生产库,未跑真实 SQL。**
+> - **B 竞态**:build 全轮由跨进程内核文件锁包住,直到真实 `09_build_mart.py` 消费完成;Job Bank 两个 `postings.json` 写入口(`05_parse`/`05b_parse_details`)走同一锁。异常退出由内核释放,6 个跨进程/真实入口边界测试绿。不是三处 mart 兜底,也不是“复制了但 09 仍读 live”的假快照。
+> - **C 数据**:只读 `data/crawl/fed-ee/` 97 页缓存。语言 T4–T26 → raw 23 表/105 档、mart 443 行;ECA 页 FSW 教育映射 151 行并入 FSW67。实际本地 mart=`ee_points_grid` 380(CRS 186 + FSW67 194,points NULL 22)、`ee_language_grid` 443;唯一键重复 0、evidence 缺失 0。**未跑 09 main/seed/DB_PUSH/DDL;新语言 mart 尚无 CMS/生产消费链,不能对外声称 IELTS 原分已可自动换 CLB。**
+> - 全程未启 dev server、未 commit/push;`data/raw/ee/draws.json` 等定时 ETL 既有脏改保留,不属于本批。
+>
 > **⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡ 最新交接(2026-08-05,「多 agent 并行:联邦 EE 入库 + 薪资竞态」)—— 5701ac2..be39dbc 生产已验**
 > **工作模式**:Frank 拍板走 **agent team(多 agent 并行)** —— 一批活按**文件区不重叠**拆给 4 个子 agent 同时干,主 agent 派活+收口。
 > 派活前必须先核基线(**差点重派上一轮已落地的 `lookupDraws` FED 与 `lookupPermit`**);交回的「已验」一律追问验的是真组件还是复刻件。

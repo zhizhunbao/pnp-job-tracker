@@ -26,6 +26,7 @@ from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/ 上层(_paths / 05 在那)
 import _paths  # noqa: E402
+from sources._jobbank_lock import JOBBANK_STORE_LOCK, jobbank_store_lock  # noqa: E402
 
 _s05 = importlib.import_module("05_scrape_jobbank")  # 模块名以数字开头 → 只能 importlib
 parse_article = _s05.parse_article                  # 单一解析逻辑,不重复实现
@@ -126,6 +127,7 @@ def main() -> None:
 
     print(f"IN  listing : {IN_SNAP_ROOT}/<latest date>/", flush=True)
     print(f"OUT postings: {OUT_POSTINGS}", flush=True)
+    print(f"LOCK store   : {JOBBANK_STORE_LOCK}", flush=True)
     snap = latest_snapshot_dir()
     if snap is None:
         print("没有 listing 快照可解析(raw/jobbank/ 为空)——跳过", flush=True)
@@ -134,26 +136,29 @@ def main() -> None:
     fetched = fetched_at_of(snap)
     rows = parse_snapshot(snap)
 
-    by_id = load_postings()
-    base = len(by_id)
-    added = updated = skipped_old = 0
-    for row in rows:
-        d = parse_date(row["date"])
-        if d is not None and d < cutoff:   # 早于截止 → 跳过(与旧 05 行过滤一致)
-            skipped_old += 1
-            continue
-        pid = pid_of(row)
-        if not pid:
-            continue
-        scraped = {k: row.get(k, "") for k in SCRAPED_KEYS}
-        if pid in by_id:
-            by_id[pid].update(scraped)     # 保留衍生字段
-            updated += 1
-        else:
-            by_id[pid] = scraped
-            added += 1
-        by_id[pid]["last_seen"] = fetched  # 本快照见到的帖 → 抓取时刻(mart 透传 lastSeen)
-    write_postings(by_id)
+    # 原始 HTML 解析不碰共享 store,放锁外做。读旧 store→合并→原子替换是一个写事务:
+    # 若 build 已开轮就在这里等;若本事务先拿锁,build 会等到新帖完整落盘后再清洗。
+    with jobbank_store_lock():
+        by_id = load_postings()
+        base = len(by_id)
+        added = updated = skipped_old = 0
+        for row in rows:
+            d = parse_date(row["date"])
+            if d is not None and d < cutoff:   # 早于截止 → 跳过(与旧 05 行过滤一致)
+                skipped_old += 1
+                continue
+            pid = pid_of(row)
+            if not pid:
+                continue
+            scraped = {k: row.get(k, "") for k in SCRAPED_KEYS}
+            if pid in by_id:
+                by_id[pid].update(scraped)     # 保留衍生字段
+                updated += 1
+            else:
+                by_id[pid] = scraped
+                added += 1
+            by_id[pid]["last_seen"] = fetched  # 本快照见到的帖 → 抓取时刻(mart 透传 lastSeen)
+        write_postings(by_id)
     print(f"解析 {snap.name}: {len(rows)} 行 → +{added} new · {updated} updated · "
           f"{skipped_old} 跳过(早于 {cutoff}) · base {base} → {len(by_id)}", flush=True)
 

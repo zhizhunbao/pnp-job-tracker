@@ -1,5 +1,5 @@
 {
- "generated": "2026-08-02",
+ "generated": "2026-08-04",
  "trYear": "2024",
  "rows": [
   {
@@ -29,7 +29,7 @@
      "invitations": 2573,
      "tier": "easy",
      "source": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp-invitations-apply",
-     "asOf": "2026-08-02"
+     "asOf": "2026-08-04"
     },
     {
      "key": "scoreLevel",
@@ -69,7 +69,7 @@
      "invitations": 1465,
      "tier": "easy",
      "source": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply",
-     "asOf": "2026-08-02"
+     "asOf": "2026-08-04"
     },
     {
      "key": "scoreLevel",
@@ -109,7 +109,7 @@
      "invitations": 1505,
      "tier": "easy",
      "source": "https://www.alberta.ca/aaip-processing-information",
-     "asOf": "2026-08-02"
+     "asOf": "2026-08-04"
     },
     {
      "key": "scoreLevel",
@@ -158,7 +158,7 @@
      "invitations": 1118,
      "tier": "easy",
      "source": "https://immigratemanitoba.com/draws/",
-     "asOf": "2026-08-02"
+     "asOf": "2026-08-04"
     }
    ]
   },
@@ -214,7 +214,7 @@
      "invitations": 1989,
      "tier": "easy",
      "source": "https://www.gov.nl.ca/immigration/invitations-to-apply-updates/",
-     "asOf": "2026-08-02"
+     "asOf": "2026-08-04"
     }
    ]
   },

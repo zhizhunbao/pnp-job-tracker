@@ -18,7 +18,8 @@
       "district": "",
       "salaryAnnual": 131000,
       "salaryText": "$106K–$156K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Engineer - 6G",
@@ -35,7 +36,8 @@
       "salary": "$100,000 to $150,000",
       "salaryAnnual": 125000,
       "salaryText": "$100K–$150K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Co-op Engineer – Wireless Sensing",
@@ -52,7 +54,8 @@
       "salary": "$58,000 to $104,000",
       "salaryAnnual": 81000,
       "salaryText": "$58K–$104K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Intern Engineer - Digital IC Design (AI-Assisted Design Focus)",
@@ -69,7 +72,8 @@
       "district": "",
       "salaryAnnual": 81000,
       "salaryText": "$58K–$104K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Engineer - Advanced Network",
@@ -86,7 +90,8 @@
       "district": "",
       "salaryAnnual": 131000,
       "salaryText": "$106K–$156K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Senior Researcher - Hollow-Core Fiber (HCF) Communications",
@@ -103,7 +108,8 @@
       "district": "",
       "salaryAnnual": 131000,
       "salaryText": "$106K–$156K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Assets Manager",
@@ -117,7 +123,8 @@
       "province": "ON",
       "country": "Canada",
       "district": "",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Co-op Engineer - Real-Time Operating System (12-16 months)",
@@ -134,7 +141,8 @@
       "salary": "$58,000 to $104,000",
       "salaryAnnual": 81000,
       "salaryText": "$58K–$104K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Senior Strategic Researcher - Computing Hardware",
@@ -148,7 +156,8 @@
       "province": "ON",
       "country": "Canada",
       "district": "",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Researcher – AI/ML Real-Time Embedded OS",
@@ -162,7 +171,8 @@
       "province": "ON",
       "country": "Canada",
       "district": "",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Intellectual Property Counsel",
@@ -179,7 +189,8 @@
       "district": "",
       "salaryAnnual": 71000,
       "salaryText": "$48K–$94K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Recruiter",
@@ -196,7 +207,8 @@
       "salary": "$48,000 to $94,000",
       "salaryAnnual": 71000,
       "salaryText": "$48K–$94K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "HR Assistant",
@@ -213,7 +225,8 @@
       "salary": "$48,000 to $94,000",
       "salaryAnnual": 71000,
       "salaryText": "$48K–$94K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Administrative Assistant",
@@ -230,7 +243,8 @@
       "salary": "$48,000 to $94,000",
       "salaryAnnual": 71000,
       "salaryText": "$48K–$94K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Researcher - Real-Time Embedded OS",
@@ -244,7 +258,8 @@
       "province": "ON",
       "country": "Canada",
       "district": "",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Junior Software Developer - Real-time Operating System",
@@ -258,7 +273,8 @@
       "province": "ON",
       "country": "Canada",
       "district": "",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Software Developer - Real-time Operating System",
@@ -272,7 +288,8 @@
       "province": "ON",
       "country": "Canada",
       "district": "",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     },
     {
       "title": "Senior Kernel Developer - RTOS",
@@ -286,7 +303,8 @@
       "province": "ON",
       "country": "Canada",
       "district": "",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     }
   ]
 }

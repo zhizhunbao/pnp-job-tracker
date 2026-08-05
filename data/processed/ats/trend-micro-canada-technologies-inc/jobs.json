@@ -18,7 +18,8 @@
       "district": "Kanata",
       "salaryAnnual": 117500,
       "salaryText": "$105K–$130K/yr",
-      "aip": false
+      "aip": false,
+      "apprentice_friendly": false
     }
   ]
 }

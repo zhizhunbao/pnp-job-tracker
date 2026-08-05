@@ -21,6 +21,7 @@ from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # etl/ 上层(_paths 在那)
 import _paths  # noqa: E402
+from sources._jobbank_lock import JOBBANK_STORE_LOCK, jobbank_store_lock  # noqa: E402
 
 _POSTING_RE = re.compile(r"/jobposting/(\d+)")
 IN_SNAP_ROOT = _paths.RAW_JOBBANK                      # 详情原始 HTML 在各 <日期>/details/ 下
@@ -182,62 +183,66 @@ def email_website(html: str) -> str:
 def main() -> None:
     print(f"IN  raw details : {IN_SNAP_ROOT}/<日期>/details/", flush=True)
     print(f"OUT postings/md : {IN_POSTINGS} · {OUT_DETAILS}", flush=True)
-    if not IN_POSTINGS.exists():
-        print("没有 postings.json,跳过", flush=True)
-        return
-    jobs = json.loads(IN_POSTINGS.read_text(encoding="utf-8"))
-    OUT_DETAILS.mkdir(parents=True, exist_ok=True)
-    have = detail_html_index()  # posting_id → 详情 HTML path(跨日期)
-    seen: set[str] = set()  # 本轮文件名去重(雇主+职位偶尔重复时加帖子号)
-    reparse = os.environ.get("REPARSE") == "1"  # 强制重解析全部(如改了描述提取逻辑后回填)
-    parsed = 0
-    for j in jobs:
-        pid = pid_of(j)
-        raw_f = have.get(pid)
-        # 有原始 HTML、且(没解析过 或 还缺官方 noc 或 还缺雇佣形态键)→ 解析。缺键条件让存量帖
-        # 自动回填新字段(noc 回填同款先例,无需重抓)。REPARSE=1 全部重解析。
-        if not pid or raw_f is None or (not reparse and j.get("detail_fetched") and j.get("noc")
-                                        and "employment_hours" in j):
-            continue
-        raw_html = raw_f.read_text(encoding="utf-8")
-        s = BeautifulSoup(raw_html, "html.parser")
-        addr = text(s.select_one('[property="address"]'))
-        desc = description(s)
-        dp = text(s.select_one('[property="datePosted"]')).replace("Posted on", "").strip()
-        web = employer_website(s) or email_website(raw_html)
-        noc = extract_noc(s)  # Job Bank 官方 NOC(权威,胜过标题猜)
-        if addr:
-            j["address"] = addr
-        if dp:
-            j["date_detail"] = dp
-        if web:
-            j["website"] = web
-        if noc:
-            j["noc"] = noc
-        # 雇佣形态 + 入职要求(E6-06/E6-07A):无标注即空,无条件写(幂等;宁缺不猜)
-        term, hours = employment_of(s)
-        j["employment_term"] = term
-        j["employment_hours"] = hours
-        j["certificates"] = req_section(s, "Certificates, licences")
-        j["education"] = "; ".join(req_section(s, "Education"))
-        j["detail_fetched"] = True
-        md = (f"---\ntitle: {j.get('title', '')}\nemployer: {j.get('employer', '')}\n"
-              f"address: {addr}\nwebsite: {web}\nposted: {dp}\nsalary: {j.get('salary', '')}\n"
-              f"source: {j.get('source', '')}\nurl: {j.get('url', '')}\n---\n\n{desc}\n")
-        stem = stem_of(j.get("employer", ""), j.get("title", ""))
-        fn = f"{stem}.md" if stem not in seen else f"{stem}-{pid}.md"
-        seen.add(stem)
-        (OUT_DETAILS / fn).write_text(md, encoding="utf-8")
-        parsed += 1
-    if parsed:  # 仅有变更才原子写回(temp + os.replace 同目录)
-        IN_POSTINGS.parent.mkdir(parents=True, exist_ok=True)  # 防御:长回填期间目录偶发不可用(bind-mount/并发抖动)→ 写回 FileNotFoundError 崩整轮(2026-07-17 实测)
-        tmp = IN_POSTINGS.with_suffix(".json.tmp")
-        tmp.write_text(json.dumps(jobs, ensure_ascii=False, indent=2), encoding="utf-8")
-        os.replace(tmp, IN_POSTINGS)
-    webs = sum(1 for j in jobs if j.get("website"))
-    addrs = sum(1 for j in jobs if j.get("address"))
-    emp = sum(1 for j in jobs if j.get("employment_hours"))
-    certs = sum(1 for j in jobs if j.get("certificates"))
+    print(f"LOCK store       : {JOBBANK_STORE_LOCK}", flush=True)
+    # 详情解析同时写 postings.json 与 details/*.md。两者作为一个发布事务持锁,
+    # 防止 build 的 05e 读到新 md、却仍读到旧 postings(或反过来)。
+    with jobbank_store_lock():
+        if not IN_POSTINGS.exists():
+            print("没有 postings.json,跳过", flush=True)
+            return
+        jobs = json.loads(IN_POSTINGS.read_text(encoding="utf-8"))
+        OUT_DETAILS.mkdir(parents=True, exist_ok=True)
+        have = detail_html_index()  # posting_id → 详情 HTML path(跨日期)
+        seen: set[str] = set()  # 本轮文件名去重(雇主+职位偶尔重复时加帖子号)
+        reparse = os.environ.get("REPARSE") == "1"  # 强制重解析全部(如改了描述提取逻辑后回填)
+        parsed = 0
+        for j in jobs:
+            pid = pid_of(j)
+            raw_f = have.get(pid)
+            # 有原始 HTML、且(没解析过 或 还缺官方 noc 或 还缺雇佣形态键)→ 解析。缺键条件让存量帖
+            # 自动回填新字段(noc 回填同款先例,无需重抓)。REPARSE=1 全部重解析。
+            if not pid or raw_f is None or (not reparse and j.get("detail_fetched") and j.get("noc")
+                                            and "employment_hours" in j):
+                continue
+            raw_html = raw_f.read_text(encoding="utf-8")
+            s = BeautifulSoup(raw_html, "html.parser")
+            addr = text(s.select_one('[property="address"]'))
+            desc = description(s)
+            dp = text(s.select_one('[property="datePosted"]')).replace("Posted on", "").strip()
+            web = employer_website(s) or email_website(raw_html)
+            noc = extract_noc(s)  # Job Bank 官方 NOC(权威,胜过标题猜)
+            if addr:
+                j["address"] = addr
+            if dp:
+                j["date_detail"] = dp
+            if web:
+                j["website"] = web
+            if noc:
+                j["noc"] = noc
+            # 雇佣形态 + 入职要求(E6-06/E6-07A):无标注即空,无条件写(幂等;宁缺不猜)
+            term, hours = employment_of(s)
+            j["employment_term"] = term
+            j["employment_hours"] = hours
+            j["certificates"] = req_section(s, "Certificates, licences")
+            j["education"] = "; ".join(req_section(s, "Education"))
+            j["detail_fetched"] = True
+            md = (f"---\ntitle: {j.get('title', '')}\nemployer: {j.get('employer', '')}\n"
+                  f"address: {addr}\nwebsite: {web}\nposted: {dp}\nsalary: {j.get('salary', '')}\n"
+                  f"source: {j.get('source', '')}\nurl: {j.get('url', '')}\n---\n\n{desc}\n")
+            stem = stem_of(j.get("employer", ""), j.get("title", ""))
+            fn = f"{stem}.md" if stem not in seen else f"{stem}-{pid}.md"
+            seen.add(stem)
+            (OUT_DETAILS / fn).write_text(md, encoding="utf-8")
+            parsed += 1
+        if parsed:  # 仅有变更才原子写回(temp + os.replace 同目录)
+            IN_POSTINGS.parent.mkdir(parents=True, exist_ok=True)  # 防御:长回填期间目录偶发不可用(bind-mount/并发抖动)→ 写回 FileNotFoundError 崩整轮(2026-07-17 实测)
+            tmp = IN_POSTINGS.with_suffix(".json.tmp")
+            tmp.write_text(json.dumps(jobs, ensure_ascii=False, indent=2), encoding="utf-8")
+            os.replace(tmp, IN_POSTINGS)
+        webs = sum(1 for j in jobs if j.get("website"))
+        addrs = sum(1 for j in jobs if j.get("address"))
+        emp = sum(1 for j in jobs if j.get("employment_hours"))
+        certs = sum(1 for j in jobs if j.get("certificates"))
     print(f"Parsed {parsed} new details · {addrs} with address · {webs} with website "
           f"· {emp} with employment · {certs} with certificates → postings 富集 + {OUT_DETAILS}", flush=True)
 
