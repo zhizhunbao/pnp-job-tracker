@@ -487,7 +487,10 @@ const zh: Dict = {
   'rpt.hook.go': '继续答题', 'rpt.hook.ee': '再答 1 题可算 EE 分差',
 
   'home.cta2.t': '每天更新的全加拿大职位', 'home.cta2.s': '按省份、职业、省提名信号筛选,免费',
+  // Hero 胶囊(2026-08-04 合并:原「今日日更」节撤,三个数并进胶囊)——讲的都是「日更职位板」这一件事;
+  // AIP/DLI 两个存量数不驱动动作,从胶囊撤下(aip/dli 键留着,别处仍在用)
   'home.st.jobs': '在招岗位', 'home.st.aip': 'AIP 雇主', 'home.st.dli': '所 DLI',
+  'home.st.new': '今日新增', 'home.st.elig': '可提名',
   // 对话即产品(C2):landing 主输入框。错误码一句一说 —— 笼统的「稍后再试」让用户白重试(简历对照实撞)
   'chat.title': '说说你的情况', 'chat.ph': '一句话说说你的情况', 'chat.send': '提问',
   'chat.waiting': '正在查官方数据', 'chat.sources': '官方来源', 'chat.followups': '接着问',
@@ -498,6 +501,15 @@ const zh: Dict = {
   'chat.err.llm': '这次没答上来,换个说法再问',
   'chat.err.guard': '这次答复没对上官方出处,不显示',
   'chat.err.net': '没连上服务,请重试',
+  // 空态三条示例(2026-08-04 对话形态重做):照案例库原话形状写成**真人会说的一句话**,
+  // 覆盖三类人 —— 刚毕业没工作(C06)、有 offer 不知道够不够(C13)、中介开价该不该信(C01/C14)。
+  // 检索式的「查询 XX 省提名要求」不写:那是搜索框的说法,不是人开口的第一句
+  'chat.try': '试试这样问',
+  'chat.ex1': '安省大专毕业,做软件开发,还没工作,毕业后能留下吗?',
+  'chat.ex2': '新斯科舍的餐厅给了我厨师 offer,老板说帮我办,可信吗?',
+  'chat.ex3': '中介收 2 万包曼省木匠 offer 和省提名,值吗?',
+  'chat.hint': 'Enter 发送,Shift+Enter 换行',
+  'chat.retry': '重试', 'chat.open': '打开',
   'advisor.disclaimer': 'AI 生成判断,非移民建议(我们非持牌顾问 RCIC),以官方来源为准',
   'legal.title': '免责声明',
   'legal.wip': '完整版法律页面(隐私政策 / 使用条款 / 关于)将在正式收费前发布。',
@@ -1285,6 +1297,7 @@ const en: Dict = {
 
   'home.cta2.t': 'Canada-wide jobs, updated daily', 'home.cta2.s': 'Filter by province, occupation and PNP signals — free',
   'home.st.jobs': 'open jobs', 'home.st.aip': 'AIP employers', 'home.st.dli': 'DLIs',
+  'home.st.new': 'new today', 'home.st.elig': 'PNP-eligible',
   // Chat-first landing (C2). Every error code says its own thing — a generic "try later" makes users retry for nothing
   'chat.title': 'Tell us your situation', 'chat.ph': 'Your situation in one sentence', 'chat.send': 'Ask',
   'chat.waiting': 'Checking official data', 'chat.sources': 'Source', 'chat.followups': 'Ask next',
@@ -1295,6 +1308,13 @@ const en: Dict = {
   'chat.err.llm': 'Could not answer that — try rephrasing',
   'chat.err.guard': 'Failed our source check — not shown',
   'chat.err.net': 'Could not reach the service — retry',
+  // 空态三条示例:真人开口的第一句,三类人各一条(刚毕业没工作 / 有 offer / 中介开价)
+  'chat.try': 'Try asking',
+  'chat.ex1': 'Ontario college grad, software dev, no job yet — can I stay?',
+  'chat.ex2': 'I have a cook offer in Nova Scotia. Is this employer for real?',
+  'chat.ex3': 'An agent wants $20k for a carpenter offer in Manitoba. Worth it?',
+  'chat.hint': 'Enter to send, Shift+Enter for a new line',
+  'chat.retry': 'Retry', 'chat.open': 'Open',
   'advisor.disclaimer': 'AI-generated assessment, not immigration advice (we are not RCIC); verify with official sources',
   'legal.title': 'Disclaimer',
   'legal.wip': 'Full legal pages (privacy policy / terms of use / about) will be published before paid plans go live.',
@@ -2056,6 +2076,7 @@ const ko: Dict = {
 
   'home.cta2.t': '매일 갱신되는 캐나다 전역 채용 공고', 'home.cta2.s': '주, 직업, PNP 신호로 필터링, 무료',
   'home.st.jobs': '채용 중', 'home.st.aip': 'AIP 고용주', 'home.st.dli': 'DLI',
+  'home.st.new': '오늘 신규', 'home.st.elig': 'PNP 대상',
   // 대화형 랜딩(C2). 오류 코드마다 다른 안내 — 뭉뚱그린 "잠시 후 다시"는 헛된 재시도만 부름
   'chat.title': '상황을 알려 주세요', 'chat.ph': '한 문장으로 상황을 알려 주세요', 'chat.send': '질문',
   'chat.waiting': '공식 데이터 확인 중', 'chat.sources': '공식 출처', 'chat.followups': '이어서 질문',
@@ -2066,6 +2087,13 @@ const ko: Dict = {
   'chat.err.llm': '답하지 못했습니다. 다르게 물어보세요',
   'chat.err.guard': '출처 확인을 통과하지 못한 답변입니다',
   'chat.err.net': '서비스에 연결하지 못했습니다',
+  // 빈 화면 예시 3개:실제 사람이 처음 꺼내는 한 문장(졸업 직후 / 오퍼 보유 / 에이전트 견적)
+  'chat.try': '이렇게 물어보세요',
+  'chat.ex1': '온타리오 컬리지 졸업, 소프트웨어 개발자, 아직 무직인데 남을 수 있나요?',
+  'chat.ex2': '노바스코샤 식당에서 요리사 오퍼를 받았는데 고용주를 믿어도 될까요?',
+  'chat.ex3': '에이전트가 매니토바 목수 오퍼에 2만 달러를 요구합니다. 낼 만한가요?',
+  'chat.hint': 'Enter 전송, Shift+Enter 줄바꿈',
+  'chat.retry': '다시 시도', 'chat.open': '열기',
   'advisor.disclaimer': 'AI 기반 판단이며 이민 자문이 아닙니다(당사는 RCIC가 아님) · 공식 출처를 기준으로 확인하세요.',
   'legal.title': '면책 조항',
   'legal.wip': '전체 법률 페이지(개인정보 처리방침 / 이용약관 / 소개)는 유료 서비스 시작 전에 게시됩니다.',

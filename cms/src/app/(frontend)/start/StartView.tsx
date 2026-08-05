@@ -89,11 +89,14 @@ export function StartView({ stats }: { stats: HomeStats }) {
     return (noc: string) => m.get(noc) || ''
   }, [occTop, lang])
 
-  const pills = [
-    stats.total != null ? { v: num(stats.total), label: t('home.st.jobs') } : null,
-    stats.aipEmployers != null ? { v: num(stats.aipEmployers), label: t('home.st.aip') } : null,
-    stats.dli != null ? { v: String(stats.dli), label: t('home.st.dli') } : null,
-  ].filter(Boolean) as { v: string; label: string }[]
+  // Hero 三枚数字(2026-08-04 合并:原「今日日更」节整块撤,它与胶囊讲的是同一件事——本站有多少数据,
+  // 而 37,401 在同一屏出现两次)。对话框已是主入口,它上面每多一节用户就晚一屏才动手,所以并进 Hero 不另起节。
+  // 撤下的 AIP 雇主 / DLI 是存量数,不驱动动作(/employers 在主导航;DLI 数据在 /pathways 学校信号与城市弹窗里)。
+  const heroNums = [
+    stats.total != null ? { v: num(stats.total), label: t('home.st.jobs'), color: UI.text } : null,
+    stats.daily ? { v: num(stats.daily.n), label: t('home.st.new'), color: UI.primaryDeep } : null,
+    stats.daily && stats.daily.eligible > 0 ? { v: num(stats.daily.eligible), label: t('home.st.elig'), color: UI.ok } : null,
+  ].filter(Boolean) as { v: string; label: string; color: string }[]
 
   // 抽选行显示:省轮 stream 是官方英文原文 + 中文灰注;联邦轮(province=FED)的 label 是 cat_key,
   // 原先直接出**中文**类别名 —— 同一张表里两种长相(Frank 2026-08-02「只有中文名的改成 上面英文下面中文翻译统一风格」)。
@@ -136,13 +139,15 @@ export function StartView({ stats }: { stats: HomeStats }) {
         .hmBand h2{font-size:20px}
         .hmHero.hmBand{padding:16px 0 0}
         .hmBtn{display:block;border-radius:8px;padding:12px 20px;font-size:14px;font-weight:600;text-align:center;cursor:pointer;text-decoration:none;border:none;font-family:inherit}
-        /* 三个数字 = 三张卡(原目标卡节同款长相,该节 2026-08-04 已摘)。
-           前两版都错在「裸文字铺灰底」:先是居中(标题在左轨,两条轴打架,右边空 400+px),
-           改成等宽分列后又变成三段文字隔着 380px 各自漂,读不成一组
-           —— 2026-08-03 Frank 两次实拍打回。这一页所有内容都住在白卡/表格里,
-           这节没有容器才是根因,不是留白多少的事。列数随数字个数自适应(eligible/total 可能不渲)。 */
-        .hmNums{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-        .hmNums b{display:block;font-size:28px;line-height:1.15;font-weight:700}
+        /* Hero 数字的手机形态:PageBanner 的胶囊在 ≤640 是 display:none(图上没那么多地方),
+           而三个数在手机上恰恰是唯一的数据门面 —— 原来靠「今日日更」节撑着,那节 2026-08-04 撤了,
+           所以在 banner 下补一条等宽三列条(≥641 交回给胶囊,永不同时出现)。
+           不用一行三胶囊:375 实测三胶囊连排 ~366px > 可用 335px,只能折行或截字;
+           等宽三列(106px/列)数字与标签各占一行,不横滚不截字(见交回③的实测)。 */
+        .hmHeroNums{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+        .hmHeroNums a{min-width:0;overflow:hidden;background:${UI.card};border:1px solid ${UI.border};border-radius:10px;padding:8px 10px;text-decoration:none;color:inherit}
+        .hmHeroNums b{display:block;font-size:20px;line-height:1.2;font-weight:700}
+        @media (min-width:641px){ .hmHeroNums{display:none} }
         .hmCtaBand{display:flex;flex-direction:column;gap:12px}
         /* 榜单:桌面表格 / 手机卡片,两套 DOM 各渲各的(站规「电脑用表格 手机用卡片」)。
            手机卡片走 ui/JobCard(全站唯一那张,与职位板同源)——**这里的 .hmJobRow/.hmOccRow 只管桌面**,
@@ -181,18 +186,28 @@ export function StartView({ stats }: { stats: HomeStats }) {
           .hmBand h2{font-size:24px}
           .hmHero.hmBand{padding:16px 0 0}
           .hmBtn{padding:13px 28px;font-size:15px}
-          .hmNums{grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:12px}
-          .hmNums b{font-size:40px}
           .hmCtaBand{flex-direction:row;align-items:center}
           .hmCtaBand .hmBtn{flex:0 0 auto;padding:12px 28px}
         }`}</style>
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="start" />
       <main style={{ flex: '1 0 auto' }}>
 
-        {/* ① Hero:PageBanner 图版(home 档 200/150)。双按钮 2026-07-30 Frank 拍板挪到页底 CTA 带 */}
+        {/* ① Hero:PageBanner 图版(home 档 200/150)。双按钮 2026-07-30 Frank 拍板挪到页底 CTA 带。
+            胶囊 2026-08-04 换成日更三数(在招/今日新增/可提名),手机由 banner 下的 .hmHeroNums 接手 */}
         <div className="hmBand hmHero">
           <div style={{ maxWidth: 1320, margin: '0 auto', padding: '0 1.25rem', boxSizing: 'border-box' }}>
-            <PageBanner module="home" tall title={t('home.title')} images={BANNER_IMGS.home} stats={pills} />
+            <PageBanner module="home" tall title={t('home.title')} images={BANNER_IMGS.home} stats={heroNums} />
+            {/* 手机专用(≤640):三个数各是一个入口 → 职位板,把撤掉的「今日日更」三张卡的点击功能留住 */}
+            {heroNums.length > 0 && (
+              <div className="hmHeroNums">
+                {heroNums.map((s) => (
+                  <a key={s.label} href="/" className="cardHover" onClick={() => track('landing_goal_jobs')}>
+                    <b style={{ color: s.color }}>{s.v}</b>
+                    <span style={{ fontSize: 11.5, color: UI.text2, whiteSpace: 'nowrap' }}>{s.label}</span>
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -207,29 +222,8 @@ export function StartView({ stats }: { stats: HomeStats }) {
 
         {/* ②b 决策引擎目标卡节:2026-08-04 摘除(见文件头注释) */}
 
-        {/* ③ 今日日更(灰带,大数字;点数字进职位板)
-            节头与其余各节同规:左上角一个光标题,不挂日期灰注(2026-08-03 Frank「不需要日期」——
-            全页九个节头只有这一个挂过,而节名已经说了是「今日」,日期是同一件事说两遍)。
-            大数字原本居中(「那是这节的焦点排布」)—— 同日实拍推翻:标题在左轨、数字群居中,
-            桌面右侧空 400+px,读起来像没排完。改回与标题同轨的等宽分列(排布规则见 .hmNums) */}
-        {stats.daily && (
-          <Band bg="#fff" className="hmTight">
-            <h2 style={secH}>{t('home.daily')}</h2>
-            <div className="hmNums">
-              {([
-                [num(stats.daily.n), t('home.daily.new'), UI.primaryDeep],
-                stats.daily.eligible > 0 ? [num(stats.daily.eligible), t('home.daily.elig'), UI.ok] : null,
-                stats.total != null ? [num(stats.total), t('home.daily.total'), UI.text] : null,
-              ].filter(Boolean) as [string, string, string][]).map(([v, label, color]) => (
-                <a key={label} href="/" className="cardHover"
-                  style={{ display: 'block', minWidth: 0, background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 10, padding: '14px 16px', textDecoration: 'none', color: 'inherit' }}>
-                  <b style={{ color }}>{v}</b>
-                  <span style={{ fontSize: 12.5, color: UI.text2 }}>{label}</span>
-                </a>
-              ))}
-            </div>
-          </Band>
-        )}
+        {/* ③ 今日日更节 2026-08-04 撤:同屏出现两次 37,401,而它与 Hero 胶囊讲的是同一件事;
+            三个数并进 Hero(见 heroNums),点击入口保留在 .hmHeroNums 与页底 CTA 带 */}
 
         {/* ④ 职位榜(白带,Frank「单独 section 展示 job」+「老外喜欢排名」+ 2026-07-31「加个最多」):
             最新榜=fetchJobRows 发布序,高薪榜=fetchJobsPage 年薪序,最多榜=职业×在招量(market.occ 投影);

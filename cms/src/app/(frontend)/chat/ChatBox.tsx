@@ -1,43 +1,82 @@
 'use client'
 // C2 对话即产品(设计 docs/design/对话即产品-20260803.md §二 目标形态 / §六 并存迁移):
-// landing 主入口的「一句话说说你的情况」输入框 + 答复区。答题卡 2026-08-04 摘除后由它接主位。
+// landing 主入口的对话框。答题卡 2026-08-04 摘除后由它接主位。
+//
+// 2026-08-04 形态重做(Frank:「是不是太简陋了,参考一些开源项目」)——只抄交互范式不引框架
+// (assistant-ui / Vercel ai-chatbot / LobeChat 的形状),四条改动:
+//   ① **历史在上、composer 钉底**(原来输入框在上、答复往下长,第二轮起用户就迷路);
+//   ② **空态给 3 个示例问题**(可点即发)—— 对着空白框写自己的移民处境门槛极高,这是转化最大的杠杆;
+//   ③ 错误分两类:tooShort/noOcc 是**引导**(渲成助手气泡,接着聊),limit/llm/guard/net 是**故障**
+//      (低调行内提示 + 可重试)。原来一律红色表单错误框,观感是「我做错了什么」;
+//   ④ Enter 发送 / Shift+Enter 换行(IME 组合中不发),按钮进 composer 内、有内容才亮。
 //
 // 本组件只渲染,不算数 —— 结论、数字、判定全部来自服务端工具层并挂 evidence(总红线)。三条实现红线:
-//   ① `value` 可能是 null(官方隐私抑制,如 "Less than 10")→ 渲 valueText 原文,
-//      **永不折成 0 或「暂无」**(折了就是替官方编了个数字,与 chatTools 同一口径);
-//   ② 错误码各说各话(2026-08-03 简历对照实撞:noJd 被笼统报成「稍后再试」,用户重试也没用)——
-//      tooShort/noOcc/limit/llm/guard 各一句,答不了就说答不了,不装作能答;
-//   ③ 等待态给真反馈(转圈 + 秒数)但**不假装逐字生成** —— friend 模型非流式,一次十几秒。
-import { useEffect, useRef, useState } from 'react'
+//   ① `value` 可能是 null(官方隐私抑制)→ 渲 valueText 原文,**永不折成 0 或「暂无」**(见 ChatAnswer);
+//   ② 错误码各说各话(2026-08-03 简历对照实撞:noJd 被笼统报成「稍后再试」,用户重试也没用);
+//   ③ 等待态给真反馈(打字指示 + 秒数)但**不假装逐字生成** —— 服务端今天还是一次性 JSON,
+//      逐字渲染路径已备好(readSse)但只在上游真的吐 SSE 时才启用,详见 §流式 注释。
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useLang } from '../LangProvider'
-import { Button, Notice, UI } from '../ui/primitives'
+import { Button, UI } from '../ui/primitives'
 import { track } from '@/lib/track'
+import { ChatAnswer, CHAT_ANSWER_CSS, type Answer } from './ChatAnswer'
 
-// 后端契约(POST /api/chat)——由 api/chat/route.ts 定,这里只照抄形状,不自行扩展
-type Fact = {
-  tool: string; label: string; value: number | null; valueText: string; unit: string
-  evidence: { url: string; fetched: string; label?: string; section?: string }
-}
-type Answer = { answer: string; slots?: Record<string, unknown>; facts?: Fact[]; followups?: string[] }
 type Msg = { role: 'user' | 'assistant'; content: string }
-type Turn = { q: string; a: Answer | null; err: string }
+type Fault = 'limit' | 'llm' | 'guard' | 'net'
+// 一轮 = 用户那句 + 其中**恰好一种**结果:引导(接着聊)/ 故障 / 答复 / 还在等(stream 逐字追加)
+type Turn = { q: string; a: Answer | null; stream: string; guide: string; fault: Fault | '' }
+const blank = (q: string): Turn => ({ q, a: null, stream: '', guide: '', fault: '' })
 
-// 错误码 → 文案键。落不到表里的(网络挂、500 无 body)退 net,**不并进 llm**:
-// 「模型答不上来」和「请求根本没送到」是两件事,给的下一步动作也不同
-const ERR_KEY: Record<string, string> = {
-  tooShort: 'chat.err.tooShort', noOcc: 'chat.err.noOcc', limit: 'chat.err.limit',
-  llm: 'chat.err.llm', guard: 'chat.err.guard',
+// 错误码分两类 —— 分类不是文案问题是**观感问题**:
+// 「再多说两句,你做什么工作」是助手在接着聊,不是用户填错了表单
+const GUIDE_KEY: Record<string, string> = { tooShort: 'chat.err.tooShort', noOcc: 'chat.err.noOcc' }
+const FAULT_KEY: Record<Fault, string> = {
+  limit: 'chat.err.limit', llm: 'chat.err.llm', guard: 'chat.err.guard', net: 'chat.err.net',
 }
+// 重试有意义的才给重试钮:limit(额度用完)重试只会再撞一次,guard(答复没对上出处)重试也是同一份事实
+const RETRYABLE: Fault[] = ['llm', 'net']
+const EXAMPLES = ['chat.ex1', 'chat.ex2', 'chat.ex3']
+const MAX_TEXT = 1200   // 对齐服务端 chatOrchestrate.MAX_TEXT(超了是**静默截断**,不拦用户看不出后半截没被读)
+                        // 常量不 import:那模块是服务端的(带 pg pool),拖进客户端包不值
 
-// 数字显示:value=null 一律念官方原文;单位跟数字同格(% 不留空格,其余留)
-const factValue = (f: Fact): string => {
-  if (f.value == null) return f.valueText || ''
-  const v = f.value.toLocaleString('en-CA')
-  if (!f.unit) return v
-  return f.unit === '%' ? v + '%' : v + ' ' + f.unit
+/**
+ * §流式 —— 逐字渲染路径(今天走不到,形状先留好)。
+ * 上游 `/v1/chat/completions` 已支持 SSE,但 /api/chat 现在返回一次性 JSON;
+ * 这里按 content-type 分流:`text/event-stream` 走本函数,其余走 JSON —— 服务端哪天改完,前端零改动接上。
+ * 约定的事件体(交回说明里给服务端的契约):
+ *   data: {"delta":"片段"}                        → 追加正文
+ *   data: {"answer":"…","facts":[…],"followups":[…]}  → 收尾(facts 只能在正文完成后一次性给,它是出口校验的产物)
+ *   data: {"error":"llm"}                        → 中途故障
+ *   data: [DONE]
+ * 返回错误码('' = 正常结束)。
+ */
+async function readSse(
+  body: ReadableStream<Uint8Array>, onDelta: (s: string) => void, onFinal: (a: Answer) => void,
+): Promise<string> {
+  const reader = body.getReader()
+  const dec = new TextDecoder()
+  let buf = ''
+  for (;;) {
+    const { value, done } = await reader.read()
+    if (done) break
+    buf += dec.decode(value, { stream: true })
+    const blocks = buf.split('\n\n')
+    buf = blocks.pop() ?? ''
+    for (const b of blocks) {
+      const line = b.split('\n').find((l) => l.startsWith('data:'))
+      if (!line) continue
+      const raw = line.slice(5).trim()
+      if (raw === '[DONE]') return ''
+      let d: any = null
+      try { d = JSON.parse(raw) } catch { continue }
+      if (typeof d?.delta === 'string') onDelta(d.delta)
+      else if (typeof d?.answer === 'string') onFinal(d as Answer)
+      else if (d?.error) return String(d.error)
+    }
+  }
+  return ''
 }
-const isExt = (u: string) => /^https?:/i.test(u)
 
 export function ChatBox() {
   const [lang, , t] = useLang()
@@ -46,7 +85,12 @@ export function ChatBox() {
   const [busy, setBusy] = useState(false)
   const [secs, setSecs] = useState(0)
   const opened = useRef(false)          // chat-open 只打第一次聚焦(每次点回输入框都算一次会把口径撑爆)
-  const endRef = useRef<HTMLDivElement | null>(null)
+  const threadRef = useRef<HTMLDivElement | null>(null)
+  const taRef = useRef<HTMLTextAreaElement | null>(null)
+  const stick = useRef(true)            // 用户往回翻看旧答复时别把他甩到底
+  const coarse = useRef(false)          // 触屏:Enter 是换行不是发送(手机上写三句话被 Enter 截断很恼人)
+
+  useEffect(() => { coarse.current = !!window.matchMedia?.('(pointer: coarse)').matches }, [])
 
   // 等待秒数:friend 模型十几秒不出声,只转圈用户会以为死了 —— 这是「还活着」的证据,不是进度条
   useEffect(() => {
@@ -56,144 +100,184 @@ export function ChatBox() {
     return () => clearInterval(id)
   }, [busy])
 
+  // 新内容后视口跟随(贴底时才跟);逐字流式时同一路径每帧生效
+  useEffect(() => {
+    const el = threadRef.current
+    if (!el || !stick.current) return
+    el.scrollTop = el.scrollHeight
+  }, [turns, busy])
+
   const patch = (i: number, v: Partial<Turn>) =>
     setTurns((prev) => prev.map((x, k) => (k === i ? { ...x, ...v } : x)))
 
-  const ask = async (raw: string) => {
+  const ask = useCallback(async (raw: string, retryIdx?: number) => {
     const q = raw.trim()
     if (!q || busy) return
     // 多轮:把已答成的问答对带回去(§二「不是槽位齐了吐整份报告,是多轮按需调工具」);
-    // 只带最近 8 条,长会话不把上下文顶爆
-    const history: Msg[] = turns.filter((x) => x.a)
+    // 只带最近 8 条,长会话不把上下文顶爆。重试时只取被重试那轮之前的历史
+    const base = retryIdx == null ? turns : turns.slice(0, retryIdx)
+    const history: Msg[] = base.filter((x) => x.a)
       .flatMap((x) => [{ role: 'user' as const, content: x.q }, { role: 'assistant' as const, content: x.a!.answer }])
       .slice(-8)
-    const idx = turns.length
-    setTurns((prev) => [...prev, { q, a: null, err: '' }])
+    const idx = retryIdx ?? turns.length
+    setTurns((prev) => (retryIdx == null ? [...prev, blank(q)] : prev.map((x, k) => (k === retryIdx ? blank(q) : x))))
     setInput('')
+    if (taRef.current) taRef.current.style.height = 'auto'
     setBusy(true)
+    stick.current = true
     track('chat-submit')
-    // 刚提交的那轮滚进视野(block:nearest = 够看见就停,不把页面甩到底)
-    setTimeout(() => endRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 0)
     try {
       const r = await fetch('/api/chat', {
         method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: q, lang, history }),
       })
-      const d = await r.json().catch(() => null)
-      if (!r.ok || !d || d.error) {
-        patch(idx, { err: t(ERR_KEY[String(d?.error)] || 'chat.err.net') })
+      // 流式分支:服务端改造完成后自动生效(见 §流式)
+      if (r.ok && (r.headers.get('content-type') || '').includes('text/event-stream') && r.body) {
+        let acc = ''
+        let final: Answer | null = null
+        const err = await readSse(r.body, (d) => { acc += d; patch(idx, { stream: acc }) }, (a) => { final = a })
+        if (err) patch(idx, GUIDE_KEY[err] ? { guide: t(GUIDE_KEY[err]) } : { fault: (FAULT_KEY as any)[err] ? err as Fault : 'llm' })
+        else if (final) { patch(idx, { a: final }); track('chat-answer') }
+        else if (acc) { patch(idx, { a: { answer: acc } }); track('chat-answer') }
+        else patch(idx, { fault: 'llm' })
       } else {
-        patch(idx, { a: d as Answer })
-        track('chat-answer')
+        const d = await r.json().catch(() => null)
+        const code = String(d?.error || '')
+        if (!r.ok || !d || d.error) {
+          if (GUIDE_KEY[code]) {
+            patch(idx, { guide: t(GUIDE_KEY[code]) })
+            taRef.current?.focus()          // 引导 = 该他接着说,光标直接回到输入框
+          } else {
+            patch(idx, { fault: (code === 'limit' || code === 'guard' || code === 'llm') ? code : 'net' })
+          }
+        } else {
+          patch(idx, { a: d as Answer })
+          track('chat-answer')
+        }
       }
     } catch {
-      patch(idx, { err: t('chat.err.net') })
+      patch(idx, { fault: 'net' })
     }
     setBusy(false)
+  }, [busy, turns, lang, t])
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key !== 'Enter') return
+    if ((e.nativeEvent as unknown as { isComposing?: boolean }).isComposing) return   // 中/韩输入法选词中,别抢 Enter
+    if (e.shiftKey) return
+    if (!coarse.current || e.metaKey || e.ctrlKey) { e.preventDefault(); void ask(input) }
   }
 
+  const empty = turns.length === 0
   return (
     <div>
       <style>{`
-        /* 输入框 16px:小于 16 时 iOS Safari 聚焦会自动放大页面(手机优先站规,这是全站主输入) */
-        .cbIn{width:100%;box-sizing:border-box;border:1px solid ${UI.border};border-radius:10px;padding:11px 12px;
-          font-size:16px;line-height:1.5;color:${UI.text};font-family:inherit;resize:vertical;background:#fff}
-        .cbIn:focus{outline:none;border-color:#93c5fd;box-shadow:0 0 0 3px rgba(37,99,235,.10)}
-        .cbSpin{width:14px;height:14px;flex:none;border-radius:50%;border:2px solid #bfdbfe;border-top-color:${UI.primary};animation:cbSpin .8s linear infinite}
-        @keyframes cbSpin{to{transform:rotate(360deg)}}
-        @media (prefers-reduced-motion:reduce){.cbSpin{animation:none}}
-        /* 出处行:手机 = 标签+数值一行、来源链接自己一行(375 上三件挤一行必截数字);
-           ≥700 三列一行,链接顶右。永不横滚(站规) */
-        .cbFact{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;padding:8px 0;
-          border-top:1px solid ${UI.hairline};align-items:baseline;font-size:13px}
-        .cbFactV{text-align:right;white-space:nowrap;font-weight:600;color:${UI.text}}
-        .cbFactS{grid-column:1/-1;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
-        @media (min-width:700px){
-          .cbFact{grid-template-columns:minmax(0,1fr) auto minmax(0,auto)}
-          .cbFactS{grid-column:auto;justify-content:flex-end;flex-wrap:nowrap}
-        }
-        /* 追问:一行一条整宽钮(站规「一行一条」)—— 胶囊在 375 上放不下一句问句,不许横向溢出 */
-        .cbFu{display:block;width:100%;text-align:left;background:#fff;border:1px solid ${UI.border};
-          border-radius:10px;padding:9px 12px;font-size:13.5px;line-height:1.45;color:${UI.primary};
+        .cbCard{background:${UI.card};border:1px solid ${UI.border};border-radius:14px;padding:10px;
+          display:flex;flex-direction:column;gap:10px}
+        /* 历史在上:自身滚动 + 高度封顶,composer 永远在视野里(聊天界面的通用形态,别再让输入框骑在历史上面) */
+        .cbThread{display:flex;flex-direction:column;gap:16px;min-width:0;overflow-y:auto;
+          max-height:min(56vh,520px);padding:2px}
+        .cbThread.cbNoScroll{overflow:visible;max-height:none}
+        .cbTurn{display:flex;flex-direction:column;gap:8px;min-width:0}
+        /* 提问气泡:靠右、封顶宽,桌面上不拉成一整行 1160px */
+        .cbQ{align-self:flex-end;max-width:min(88%,560px);background:#eff6ff;color:${UI.primaryDeep};
+          border-radius:12px 12px 4px 12px;padding:9px 12px;font-size:14px;line-height:1.5;
+          white-space:pre-wrap;overflow-wrap:anywhere}
+        /* 空态示例:整宽一条一行(站规),点了直接发 —— 让人看见「这里该说什么」比任何说明文案都有用 */
+        .cbTry{font-size:12px;color:${UI.text3}}
+        .cbEx{display:block;width:100%;max-width:640px;text-align:left;background:${UI.bg};border:1px solid ${UI.border};
+          border-radius:10px;padding:10px 12px;font-size:13.5px;line-height:1.45;color:${UI.text};
           font-family:inherit;cursor:pointer;margin-top:6px}
-        .cbFu:hover{border-color:#bfdbfe;background:#f8fafc}
-        /* 读列宽:节走全站 1320 轨(与各节同宽,不另开窄壳),但**正文与提问气泡限行长** ——
-           1200px 一行的散文一行 90+ 词,眼睛回不到行首。表格类(出处行/追问钮)照旧吃满宽,
-           这是段落与表格本来就不同的排法,不是版式没排完 */
-        .cbA{font-size:14.5px;line-height:1.7;color:${UI.text};white-space:pre-wrap;overflow-wrap:anywhere;max-width:74ch}
-        .cbQ{max-width:min(88%,620px);margin-left:auto;background:#eff6ff;border-radius:12px;padding:9px 12px;
-          font-size:14px;line-height:1.5;color:#1e40af;white-space:pre-wrap;overflow-wrap:anywhere}
+        .cbEx:hover{border-color:#bfdbfe;background:#f8fafc}
+        /* 故障:低调行内一行(不是红色大块)。引导类走 .cbA 助手气泡,不进这里 */
+        .cbFault{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:12.5px;
+          color:${UI.text2};line-height:1.5}
+        .cbLink{background:none;border:none;padding:0;font:inherit;color:${UI.primary};cursor:pointer;text-decoration:underline}
+        /* 等待:打字指示 + 秒数。**不假装逐字生成** —— 服务端还是一次性返回,骗不得 */
+        .cbWait{display:flex;align-items:center;gap:8px;font-size:13px;color:${UI.text2}}
+        .cbDots{display:inline-flex;gap:3px;align-items:center}
+        .cbDots i{width:5px;height:5px;border-radius:50%;background:#93c5fd;animation:cbBlink 1.2s infinite}
+        .cbDots i:nth-child(2){animation-delay:.2s}
+        .cbDots i:nth-child(3){animation-delay:.4s}
+        @keyframes cbBlink{0%,80%,100%{opacity:.28}40%{opacity:1}}
+        .cbCaret{display:inline-block;width:2px;height:1em;background:${UI.primary};margin-left:2px;
+          vertical-align:-2px;animation:cbBlink .9s steps(1,end) infinite}
+        @media (prefers-reduced-motion:reduce){.cbDots i,.cbCaret{animation:none;opacity:.6}}
+        /* composer 钉底:整块一个框,textarea 无边框藏在里面,发送钮在框内右下(不再孤零零占一行) */
+        .cbComposer{border:1px solid ${UI.border};border-radius:12px;background:${UI.card};padding:8px 10px}
+        .cbComposer:focus-within{border-color:#93c5fd;box-shadow:0 0 0 3px rgba(37,99,235,.10)}
+        /* 16px:小于 16 时 iOS Safari 聚焦会自动放大页面(手机优先站规,这是全站主输入) */
+        .cbIn{display:block;width:100%;box-sizing:border-box;border:none;outline:none;resize:none;
+          background:transparent;font-size:16px;line-height:1.5;color:${UI.text};font-family:inherit;
+          max-height:160px;overflow-y:auto}
+        /* justify-end:手机上 .cbHint 藏了(没有实体 Enter 键,提示是废话),发送钮仍须顶右 */
+        .cbBar{display:flex;align-items:center;gap:10px;margin-top:6px;justify-content:flex-end}
+        .cbHint,.cbNum{flex:1;min-width:0;font-size:11.5px;color:${UI.text3};white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        @media (max-width:560px){.cbHint{display:none}}   /* .cbNum 不藏:快撞上限了手机上更要看得见 */
+        ${CHAT_ANSWER_CSS}
       `}</style>
 
-      <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, padding: 12 }}>
-        {/* maxLength 对齐服务端 chatOrchestrate.MAX_TEXT(1200):服务端超了是**静默截断** ——
-            前端不拦的话,用户贴 2000 字进来,后半截没被读却看不出来。这里拦住 = 他知道自己写到头了。
-            常量不 import:那模块是服务端的(带 pg pool),拖进客户端包不值 */}
-        <textarea className="cbIn" rows={3} value={input} placeholder={t('chat.ph')} maxLength={1200}
-          onFocus={() => { if (!opened.current) { opened.current = true; track('chat-open') } }}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); void ask(input) } }} />
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
-          <Button lg disabled={busy || !input.trim()} onClick={() => void ask(input)}>{t('chat.send')}</Button>
+      <div className="cbCard">
+        <div ref={threadRef} className={empty ? 'cbThread cbNoScroll' : 'cbThread'}
+          onScroll={(e) => {
+            const el = e.currentTarget
+            stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < 48
+          }}>
+          {empty ? (
+            <div>
+              <div className="cbTry">{t('chat.try')}</div>
+              {EXAMPLES.map((k) => (
+                <button key={k} className="cbEx" disabled={busy}
+                  onClick={() => { track('chat-example', { kind: k.slice(-3) }); void ask(t(k)) }}>{t(k)}</button>
+              ))}
+            </div>
+          ) : null}
+
+          {turns.map((turn, i) => (
+            <div className="cbTurn" key={i}>
+              <div className="cbQ">{turn.q}</div>
+              {turn.guide ? (
+                // 引导:这是助手的一条消息(「再多说两句,你做什么工作」),不是表单报错
+                <div className="cbA">{turn.guide}</div>
+              ) : turn.fault ? (
+                <div className="cbFault">
+                  <span aria-hidden style={{ color: UI.warn }}>!</span>
+                  <span style={{ minWidth: 0 }}>{t(FAULT_KEY[turn.fault])}</span>
+                  {RETRYABLE.includes(turn.fault) && !busy ? (
+                    <button className="cbLink" onClick={() => void ask(turn.q, i)}>{t('chat.retry')}</button>
+                  ) : null}
+                </div>
+              ) : turn.a ? (
+                <ChatAnswer a={turn.a} busy={busy} onAsk={(q) => void ask(q)} />
+              ) : turn.stream ? (
+                <div className="cbA">{turn.stream}<i className="cbCaret" /></div>
+              ) : (
+                <div className="cbWait">
+                  <span className="cbDots"><i /><i /><i /></span>
+                  <span style={{ minWidth: 0 }}>{t('chat.waiting')}</span>
+                  <span style={{ color: UI.text3, whiteSpace: 'nowrap' }}>{secs}s</span>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
 
-        {turns.map((turn, i) => (
-          <div key={i} style={{ marginTop: 14, paddingTop: 14, borderTop: `1px solid ${UI.hairline}` }}>
-            <div className="cbQ">{turn.q}</div>
-            {turn.err ? (
-              <Notice kind="err" style={{ marginTop: 10 }}>{turn.err}</Notice>
-            ) : turn.a ? (
-              <div style={{ marginTop: 10 }}>
-                <div className="cbA">{turn.a.answer}</div>
-                {turn.a.facts?.length ? (
-                  <div style={{ marginTop: 12 }}>
-                    <div style={{ fontSize: 11.5, fontWeight: 600, color: UI.text3 }}>{t('chat.sources')}</div>
-                    {turn.a.facts.map((f, k) => {
-                      const v = factValue(f)
-                      const ev = f.evidence
-                      return (
-                        <div className="cbFact" key={k}>
-                          <span style={{ minWidth: 0, color: UI.text2 }}>{f.label}</span>
-                          {/* value=null → valueText 原文;两者都空就整格留白,不编「暂无」 */}
-                          <span className="cbFactV">{v}</span>
-                          <span className="cbFactS">
-                            {ev?.url ? (
-                              <a href={ev.url} title={ev.label || ev.url}
-                                target={isExt(ev.url) ? '_blank' : undefined} rel={isExt(ev.url) ? 'noreferrer' : undefined}
-                                style={{ color: UI.primary, textDecoration: 'none', whiteSpace: 'nowrap' }}>{t('chat.sources')}</a>
-                            ) : null}
-                            {ev?.fetched ? (
-                              <span style={{ fontSize: 11.5, color: UI.text3, whiteSpace: 'nowrap' }}>{t('match.srcFetched', { d: ev.fetched.slice(0, 10) })}</span>
-                            ) : null}
-                          </span>
-                        </div>
-                      )
-                    })}
-                  </div>
-                ) : null}
-                {turn.a.followups?.length ? (
-                  <div style={{ marginTop: 12 }}>
-                    <div style={{ fontSize: 11.5, fontWeight: 600, color: UI.text3 }}>{t('chat.followups')}</div>
-                    {turn.a.followups.map((q, k) => (
-                      <button key={k} className="cbFu" disabled={busy} onClick={() => void ask(q)}
-                        style={busy ? { opacity: 0.55, cursor: 'default' } : undefined}>{q}</button>
-                    ))}
-                  </div>
-                ) : null}
-                {/* AI 免责一条(与 advisor 同一句,不另写);页脚那条是全站的,这条是「这段话是模型说的」 */}
-                <div style={{ fontSize: 11.5, color: UI.text3, marginTop: 12, lineHeight: 1.5 }}>{t('advisor.disclaimer')}</div>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, fontSize: 13, color: UI.text2 }}>
-                <span className="cbSpin" />
-                <span style={{ minWidth: 0 }}>{t('chat.waiting')}</span>
-                {/* 秒数紧跟提示语,不顶右:桌面 1200px 宽的行里顶右就与转圈隔了一屏,读不成一句话 */}
-                <span style={{ color: UI.text3, whiteSpace: 'nowrap' }}>{secs}s</span>
-              </div>
-            )}
+        <div className="cbComposer">
+          <textarea ref={taRef} className="cbIn" rows={2} value={input} placeholder={t('chat.ph')} maxLength={MAX_TEXT}
+            onFocus={() => { if (!opened.current) { opened.current = true; track('chat-open') } }}
+            onChange={(e) => {
+              setInput(e.target.value)
+              e.target.style.height = 'auto'                          // 随内容长高到 160px 封顶
+              e.target.style.height = Math.min(e.target.scrollHeight, 160) + 'px'
+            }}
+            onKeyDown={onKeyDown} />
+          <div className="cbBar">
+            {input.length > MAX_TEXT - 200
+              ? <span className="cbNum">{input.length}/{MAX_TEXT}</span>
+              : <span className="cbHint">{t('chat.hint')}</span>}
+            <Button lg disabled={busy || !input.trim()} onClick={() => void ask(input)}>{t('chat.send')}</Button>
           </div>
-        ))}
-        <div ref={endRef} />
+        </div>
       </div>
     </div>
   )
