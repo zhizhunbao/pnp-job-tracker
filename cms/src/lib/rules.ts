@@ -270,7 +270,17 @@ export function evaluateRequirements(reqs: Requirement[], p: RuleProfile): RuleR
     })
   }
   const exp = expRows.filter((r) => r.basis !== 'employerTenure')[0]
-  if (exp && exp.value != null) {
+  // 🔴 op='none' = **官方明说这条通道不设经验门槛**(照 language 那支的先例)。
+  //    2026-08-05 之前这里只认 `value != null`,于是这类行在三层里被静默丢掉,
+  //    结果「0 经验去哪个省」这种问题永远得到「各省都要求经验」——而 NL International Graduate
+  //    的官方资格清单里根本没有经验这一项。**「没有门槛」和「没查到门槛」是两件事**,
+  //    前者是这条通道最值钱的性质,不能因为它没有数字就当不存在。
+  if (exp && exp.op === 'none') {
+    out.push({
+      factor: 'experience', subject: 'applicant', verdict: 'pass', need: null, needLow: null,
+      have: p.totalExpMonths ?? p.canadianExpMonths ?? null, short: null, unit: exp.unit, evidence: ev(exp),
+    })
+  } else if (exp && exp.value != null) {
     const answered = [p.totalExpMonths, p.canadianExpMonths].filter((v): v is number => v != null)
     const have = answered.length ? Math.max(...answered) : null
     const verdict: RuleVerdict = have == null ? 'unknown'

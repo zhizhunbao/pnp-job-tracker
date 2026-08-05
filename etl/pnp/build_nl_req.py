@@ -52,6 +52,30 @@ PROVINCE = "NL"
 PROGRAM = "PNP"
 STREAM = "NLPNP Skilled Worker Category"
 
+# ── International Graduate 通道(2026-08-05 补)──────────────────────────────
+# 为什么补:人工复盘 C01 把这条排为「Day 0 唯一可递交」的第一路径,而引擎一个字说不出来 ——
+# 库里 NL 只有 Skilled Worker 那 5 行。**它是本站唯一一条不设工作经验门槛的省提名通道**,
+# 对「刚毕业 0 经验」这一整类用户,少了它整份回答就少了最优解。
+# URL 不是猜的(CLAUDE.md 铁律):#4 那页当时不在 crawl 里,href 是从已抓的
+# `international-graduate-category` 分类页正文里抠出来的。
+IG_URL = "https://www.gov.nl.ca/immigration/4-international-graduate-category-eligibility-criteria"
+IG_LANG_URL = "https://www.gov.nl.ca/immigration/11-language-testing-international-graduate"
+STREAM_IG = "NLPNP International Graduate Category"
+
+# 官方那份「Applicants must:」清单是**穷举式**的,下面每条对着一句原文
+RE_IG_PGWP = re.compile(r"Post-Graduation work permit \(PGWP\) that has at least (\w+) \((\d+)\) months? validity", re.I)
+RE_IG_TEER = re.compile(r"In a NOC TEER level ([\d, ]*or \d) occupation", re.I)
+RE_IG_HOURS = re.compile(r"minimum of \w+ \((\d+)\) hours per week", re.I)
+RE_IG_MONTHS = re.compile(r"at least one \(1\) year \(twelve \((\d+)\) months\) in duration", re.I)
+RE_IG_AGE = re.compile(r"Be (\d+) to (\d+) years old", re.I)
+# 🔴 op='none' 是**断言没有这条门槛**,不是「我们没查到」。所以拿这个反向正则自证:
+#    官方清单里但凡出现「工作经验」字样,就说明它其实有要求 → 不发这一行,并报问题。
+RE_IG_EXPERIENCE = re.compile(r"(?:work|employment) experience|(?:months|years) of experience", re.I)
+# 语言页:TEER 4(in-demand)必考 CLB N;TEER 0-3 不强制 —— 但官方留了酌情权,这句不能漏
+RE_IG_LANG_CLB = re.compile(r"Canadian Language Benchmark \(CLB\) (\d) in each", re.I)
+RE_IG_LANG_TEER4 = re.compile(r"TEER Category 4 \(in-demand\) occupation must submit proof of language", re.I)
+RE_IG_LANG_DISCRETION = re.compile(r"discretion to request language testing.{0,120}TEER Level 0, 1, 2 or 3", re.I | re.S)
+
 # 「In a TEER 0, 1, 2, 3, 4 or 5 occupation」—— 本通道收的全部档位
 RE_ALL_TEERS = re.compile(r"In a TEER ([\d, ]*or \d) occupation", re.I)
 # 「Applicants with TEER 4 or 5 job offers must submit a valid language proficiency test」
@@ -143,6 +167,46 @@ def main() -> None:
                         unit="employees", appliesArea="rest-of-nl", url=EMPLOYER_URL,
                         section="Employer Criteria — local staff",
                         label=f"Outside St. John's: at least {m_out.group(1)} full-time local employee(s)"))
+
+    # ── International Graduate 通道 ────────────────────────────────────────────
+    ig_txt, ig_lang_txt = page_text(IG_URL), page_text(IG_LANG_URL)
+    m_pgwp, m_teer = RE_IG_PGWP.search(ig_txt), RE_IG_TEER.search(ig_txt)
+    m_hours, m_months, m_age = RE_IG_HOURS.search(ig_txt), RE_IG_MONTHS.search(ig_txt), RE_IG_AGE.search(ig_txt)
+    ig_clbs = {int(x) for x in RE_IG_LANG_CLB.findall(ig_lang_txt)}
+    m_t4, m_disc = RE_IG_LANG_TEER4.search(ig_lang_txt), RE_IG_LANG_DISCRETION.search(ig_lang_txt)
+    for m, what in ((m_pgwp, "PGWP 剩余有效期"), (m_teer, "收的 TEER 档位"), (m_hours, "每周最低小时数"),
+                    (m_months, "offer 最短时长"), (m_age, "年龄区间"), (m_t4, "TEER 4 必考语言那句"),
+                    (m_disc, "官方对 TEER 0-3 保留的语言酌情权那句")):
+        if not m:
+            problems.append(f"IG 通道「{what}」没解析到(资格页可能改版)")
+    if len(ig_clbs) != 1:
+        problems.append(f"IG 语言档解析到 {sorted(ig_clbs)} 个 —— 需人工核对")
+
+    if all((m_pgwp, m_teer, m_hours, m_months, m_age, m_t4, m_disc)) and len(ig_clbs) == 1:
+        ig_clb = next(iter(ig_clbs))
+        ig_teers = teers(m_teer.group(1))                      # 0,1,2,3(TEER 4 另有 in-demand 限定)
+        # ① 语言:TEER 4(in-demand)必考
+        reqs.append(req(stream=STREAM_IG, factor="language", value=ig_clb, unit="CLB", appliesTeer=[4], url=IG_LANG_URL,
+                        section="International Graduate — Language Testing",
+                        label=f"An offer in a TEER 4 (in-demand) occupation must come with a language test at "
+                              f"CLB/NCLC {ig_clb} in each of the four abilities"))
+        # ② 语言:TEER 0-3 不强制 —— 但**必须带上官方那句酌情权**,不然就是替官方打包票
+        reqs.append(req(stream=STREAM_IG, factor="language", op="none", appliesTeer=ig_teers, url=IG_LANG_URL,
+                        section="International Graduate — Language Testing",
+                        label=f"No language test is required up front for an offer in TEER "
+                              f"{', '.join(str(t) for t in ig_teers)}; the officer may still request one at their "
+                              f"discretion regardless of the TEER level"))
+        # ③ 🔴 **本站唯一一条「不设工作经验门槛」的省提名通道** —— 这是它的全部价值所在。
+        #    官方那份「Applicants must:」是穷举清单,通篇没有经验这一项;上面的反向正则替这句话作证。
+        if RE_IG_EXPERIENCE.search(ig_txt):
+            problems.append("IG 资格页出现了「工作经验」字样 —— 「不设经验门槛」这条断言不再成立,须人工重读")
+        else:
+            reqs.append(req(stream=STREAM_IG, factor="experience", op="none", appliesTeer=[*ig_teers, 4], url=IG_URL,
+                            section="International Graduate Category Eligibility Criteria",
+                            label=f"This category sets no minimum work-experience requirement: the published "
+                                  f"criteria are a PGWP with at least {m_pgwp.group(2)} months validity left plus a "
+                                  f"job offer of at least {m_months.group(1)} months at "
+                                  f"{m_hours.group(1)}+ hours a week, applicant aged {m_age.group(1)}-{m_age.group(2)}"))
 
     if problems:
         print("✗ 自校未过,保留旧表不覆盖:")

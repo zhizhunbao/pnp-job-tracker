@@ -104,6 +104,73 @@
       "section": "Employer Criteria — local staff",
       "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/employers/employer-criteria",
       "factor": "empStaff"
+    },
+    {
+      "stream": "NLPNP International Graduate Category",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 4,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        4
+      ],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "An offer in a TEER 4 (in-demand) occupation must come with a language test at CLB/NCLC 4 in each of the four abilities",
+      "section": "International Graduate — Language Testing",
+      "url": "https://www.gov.nl.ca/immigration/11-language-testing-international-graduate",
+      "factor": "language"
+    },
+    {
+      "stream": "NLPNP International Graduate Category",
+      "subject": "applicant",
+      "op": "none",
+      "value": null,
+      "valueText": "",
+      "unit": "",
+      "appliesTeer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "No language test is required up front for an offer in TEER 0, 1, 2, 3; the officer may still request one at their discretion regardless of the TEER level",
+      "section": "International Graduate — Language Testing",
+      "url": "https://www.gov.nl.ca/immigration/11-language-testing-international-graduate",
+      "factor": "language"
+    },
+    {
+      "stream": "NLPNP International Graduate Category",
+      "subject": "applicant",
+      "op": "none",
+      "value": null,
+      "valueText": "",
+      "unit": "",
+      "appliesTeer": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "This category sets no minimum work-experience requirement: the published criteria are a PGWP with at least 4 months validity left plus a job offer of at least 12 months at 30+ hours a week, applicant aged 21-59",
+      "section": "International Graduate Category Eligibility Criteria",
+      "url": "https://www.gov.nl.ca/immigration/4-international-graduate-category-eligibility-criteria",
+      "factor": "experience"
     }
   ]
 }

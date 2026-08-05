@@ -729,6 +729,8 @@ type LabelDict = {
   opsKeys: Record<string, string>
   /** 半句话:`${省码} ${factor}` + 值 = 一句完整的话。主语(申请人 / 雇主)必须长在里面。 */
   factor: Record<string, string>
+  /** op='none' = 官方明说这条通道**不设**这项门槛。与 factor 分开:两句话意思相反,共用模板就会说反。 */
+  factorNone: Record<string, string>
   /**
    * 时间线(lookupPlan)。全是**名目**形态(sayFact 用冒号接值),不是半句话 ——
    * 一条路上可能有两段同类,名目里必须写清是哪一段,不然读者对不上号。
@@ -765,6 +767,7 @@ export const LBL: Record<ChatLang, LabelDict> = {
       experience: '要求申请人的工作经验满', income: '要求申请人家庭的收入达到', wage: '要求这份工作至少给到',
       empYears: '要求雇主(不是申请人)已经营满', empRevenue: '要求雇主(不是申请人)的年营业额至少', empStaff: '要求雇主(不是申请人)至少有员工',
     },
+    factorNone: { experience: '这条通道不设工作经验门槛', language: '这条通道不要求先交语言成绩' },
     planGap: {
       '': '补齐官方门槛要多久', experience: '补齐经验门槛要多久', language: '补齐语言门槛要多久',
       income: '补齐收入门槛要多久', wage: '补齐工资门槛要多久',
@@ -797,6 +800,7 @@ export const LBL: Record<ChatLang, LabelDict> = {
       wage: 'requires this job to pay at least', empYears: 'requires the employer, not the applicant, to have been in business for',
       empRevenue: 'requires the employer, not the applicant, to have annual revenue of at least', empStaff: 'requires the employer, not the applicant, to have staff of at least',
     },
+    factorNone: { experience: 'sets no minimum work-experience requirement', language: 'requires no language test up front' },
     planGap: {
       '': 'how long it takes to close the gap to the official requirement', experience: 'how long it takes to close the work experience gap',
       language: 'how long it takes to close the language gap', income: 'how long it takes to close the household income gap',
@@ -826,6 +830,7 @@ export const LBL: Record<ChatLang, LabelDict> = {
       experience: '요건 — 신청인의 경력은', income: '요건 — 신청인 가구 소득은', wage: '요건 — 이 일자리의 최저 임금은',
       empYears: '요건 — 고용주(신청인 아님)의 사업 운영 기간은', empRevenue: '요건 — 고용주(신청인 아님)의 연 매출은', empStaff: '요건 — 고용주(신청인 아님)의 직원 수는',
     },
+    factorNone: { experience: '이 통로는 경력 요건이 없습니다', language: '이 통로는 사전 어학 성적을 요구하지 않습니다' },
     planGap: {
       '': '공식 요건을 채우는 데 걸리는 기간', experience: '경력 요건을 채우는 데 걸리는 기간', language: '언어 요건을 채우는 데 걸리는 기간',
       income: '소득 요건을 채우는 데 걸리는 기간', wage: '임금 요건을 채우는 데 걸리는 기간',
@@ -1158,13 +1163,21 @@ export async function collectFacts(
   // 🔴 **材料不是提纲**(和上面岗位数同一条教训):没点名省时 lookupThresholds 会把九个省全给回来,
   //    九省 × 四行 = 三十多条门槛,模型必然一省一句地念(2026-08-05 实测 C14 英文,一句话点了九个省)。
   //    点过名的省排前,最多三个 —— 追问「别的省什么要求」照样答得了,「省份点名册」这条诱惑掐掉。
-  const thrProvs = [...thresholds.provinces]
-    .sort((a, b) => Number(slots.provs.includes(b.province)) - Number(slots.provs.includes(a.province)))
-    .slice(0, 3)
+  // 🔴 `need == null` 不等于没话说:`verdict==='pass'` 且没有数字 = **官方明说这条通道不设这项门槛**
+  //    (rules.ts 里 op='none' 那支)。旧的 `need != null` 把这一整类信号滤掉了,于是
+  //    「0 经验去哪个省」永远得到「各省都要求经验」—— 而 NL International Graduate 的官方清单里
+  //    根本没有经验这一项。**「没有门槛」和「没查到门槛」在用户那里意思相反**,不能一起丢。
+  const speaks = (x: { need: number | null; verdict: string }) => x.need != null || x.verdict === 'pass'
+  // 不设经验门槛的省,对 0 经验的人就是答案本身 —— 让它跟点名省一起排在前面,别被 slice(0,3) 切掉
+  const waivesExp = (p: { rows: { factor: string; need: number | null; verdict: string }[] }) =>
+    zeroExp && p.rows.some((x) => x.factor === 'experience' && x.need == null && x.verdict === 'pass')
+  const rank = (p: (typeof thresholds.provinces)[number]) =>
+    Number(slots.provs.includes(p.province)) * 2 + Number(waivesExp(p))
+  const thrProvs = [...thresholds.provinces].sort((a, b) => rank(b) - rank(a)).slice(0, 3)
   for (const p of thrProvs) {
     if (p.availability !== 'ok') { out.push(statusFact('lookupThresholds', `${p.province} ${T.officialReq}`, p.availability, zhOnly(p.note, lang), '', lang)); continue }
-    const streams = new Set(p.rows.filter((x) => x.need != null).map((x) => x.stream).filter(Boolean))
-    for (const r of p.rows.filter((x) => x.need != null).slice(0, 4)) {
+    const streams = new Set(p.rows.filter(speaks).map((x) => x.stream).filter(Boolean))
+    for (const r of p.rows.filter(speaks).slice(0, 4)) {
       // verdict/short 也是内部速记(verdict= 在泄露词表里),同样在这一层就换成人话。
       // 🔴 「未判定」且没差额 = 一个字的信息都没有,却会被模型抄成「具体未判定」这种废话
       //    (2026-08-05 实录 C13 中文答复最后半句)。没话说就别给材料 —— 少给比多写一条 RULE 管用。
@@ -1172,6 +1185,11 @@ export async function collectFacts(
       // 同省规则若来自多条官方通道，必须把通道名写进事实。否则模型会把 EDI 雇主门槛、SWM 在职时长
       // 和职业清单语言档硬拼成一条“同时满足”的路线；每个数字虽有出处，组合起来仍是假话。
       const stream = streams.size > 1 && r.stream ? ` ${r.stream}` : ''
+      // 🔴 「不设这项门槛」和「要求满 N」是**意思相反**的两句话,不能共用 factor 那套模板 ——
+      //    套上去会写出「NL 要求申请人的工作经验满」后面跟一个空值,把这条通道最值钱的性质说反。
+      //    没有对应译法的因素退回原模板(宁可少说一句,不许说反)。
+      const none = r.need == null && r.verdict === 'pass' && T.factorNone[r.factor]
+      if (none) { out.push(fact('lookupThresholds', `${p.province}${stream} ${none}`, null, '', 'rule', r.evidence)); continue }
       out.push(fact('lookupThresholds', `${p.province}${stream} ${T.factor[r.factor] ?? r.factor}`, r.need,
         `${v}${r.short != null ? `,${T.short} ${r.short}` : ''}`, r.unit, r.evidence))
     }

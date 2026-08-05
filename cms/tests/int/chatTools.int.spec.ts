@@ -56,10 +56,17 @@ d('对话工具层(生产库只读)', () => {
         if (p.availability === 'ok') expect(p.rows.length).toBeGreaterThan(0)
         else { expect(p.rows).toHaveLength(0); expect(p.note).toBeTruthy() }   // 空行必须配一句"为什么空"
       }
-      // 至少有一个省真的判出了「差多少」(0 经验 → experience fail/unknown 都可以,但门槛数必须在)
+      // 至少有一个省真的判出了「差多少」(0 经验 → experience fail/unknown 都可以,但门槛数必须在)。
+      // 🔴 例外只有一种:`need == null && verdict === 'pass'` = 官方明说这条通道**不设**经验门槛
+      //    (rules.ts 的 op='none' 那支;NL International Graduate 就是全国唯一一条)。
+      //    它没有数字恰恰是它的内容 —— 拿「必须有数字」去要求它,等于把这条通道从库里抹掉。
       const withExp = r.provinces.flatMap((p) => p.rows).filter((x) => x.factor === 'experience')
       expect(withExp.length).toBeGreaterThan(0)
-      expect(withExp.every((x) => x.need != null)).toBe(true)
+      expect(withExp.every((x) => x.need != null || x.verdict === 'pass'),
+        `经验行既没有门槛数、也不是「不设门槛」:\n${withExp.filter((x) => x.need == null && x.verdict !== 'pass')
+          .map((x) => `${x.stream} verdict=${x.verdict}`).join('\n')}`).toBe(true)
+      expect(withExp.some((x) => x.need == null && x.verdict === 'pass'),
+        '一条「不设经验门槛」的通道都没有 —— NL International Graduate 没入库或没透出来').toBe(true)
       expect(assertEvidence(r)).toBeGreaterThan(0)
     })
 
