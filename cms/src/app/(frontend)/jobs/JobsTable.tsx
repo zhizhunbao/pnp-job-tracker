@@ -1247,7 +1247,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       else if (k === 'company') { node = j.company; Object.assign(extra, wrapCell(), { color: '#2563eb' }) }
                       else if (k === 'noc') node = j.noc || '—'
                       else if (k === 'accessibility') node = t('acc.' + (j.accessibility || 'unknown'))
-                      else if (k === 'salary') { node = <span title={j.salary || ''}>{j.salaryText || '—'}</span>; Object.assign(extra, { color: j.salary ? '#15803d' : '#9ca3af' }) }
+                      /* 颜色跟 salaryText 走,不跟 salary(原文)走:护栏判定源头填错的行(如「$295,000.00 daily」)
+                         原文有值但我们不敢显示 —— 标成绿色等于说「这条有可信薪资」,是误导。2026-08-05 拍板 */
+                      else if (k === 'salary') { node = <span title={j.salary || ''}>{j.salaryText || '—'}</span>; Object.assign(extra, { color: j.salaryText ? '#15803d' : '#9ca3af' }) }
                       else if (k === 'salaryYr') { const a = j.salaryAnnual; node = a != null ? `$${Math.round(a / 1000)}K/yr` : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: a != null ? '#15803d' : '#9ca3af' }) }
                       else if (k === 'wageMedHr') { node = j.wageMedHourly != null ? `$${j.wageMedHourly}/hr` : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: j.wageMedHourly != null ? '#4b5563' : '#9ca3af' }) }
                       else if (k === 'wageMedYr') { const m = j.wageMedAnnual; node = m != null ? `$${Math.round(m / 1000)}K/yr` : '—'; Object.assign(extra, { whiteSpace: 'nowrap', color: m != null ? '#4b5563' : '#9ca3af' }) }
@@ -1315,7 +1317,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                           // Pro 锁列(免费态数据已在服务端剥离)不开顾问弹框——没数据只会误导;锁形本身已链去 /account。match 免费额度内有值仍可开。
                           if (PRO_COLS.has(k) && !plan.isPro && !(k === 'match' && j.match)) return
                           // 大标题=单元格字符串值;元素类 cell 只有薪资列回退薪资文本,其余留空(页眉已有字段名,别拿别列的值凑)
-                          open(k, typeof node === 'string' ? node : (k === 'salary' ? (j.salaryText || j.salary || '') : ''))
+                          open(k, typeof node === 'string' ? node : (k === 'salary' ? (j.salaryText || '') : ''))
                         }}>
                           {href
                             ? <a href={href} target="_blank" rel="noreferrer" style={link} onClick={(e) => e.stopPropagation()}>{node}</a>
@@ -1394,7 +1396,10 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                 company={j.company ? { text: j.company, onClick: stop(() => open('company', j.company)) } : undefined}
                 companyBadge={j.sponsorGrade != null ? <span title={t('gr.sponsorTip')} style={{ fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sp.' + j.sponsorGrade)}</span> : undefined}
                 /* #175:薪资退出可点集合——写死的 pointer+onClick 摘除(看着能点点了没反应比不能点更糟) */
-                salary={(j.salaryText || j.salary) || undefined}
+                /* 只认 salaryText,**不兜底回原文**:原来写 (salaryText || salary),于是清洗产物为空时
+                   手机上会冒出 Job Bank 原话「$37.50 hourly」,而桌面是横线 —— 同一格两端两个样。
+                   护栏压制的行(源头填错栏)更不能靠这条兜底复活。2026-08-05 拍板 */
+                salary={j.salaryText || undefined}
                 /* E8-12(Frank「手机卡片呢?」+「省和市没法分开点」):市名/省码各自可点,各开各的弹框;
                    <a href> 语义保留给爬虫/长按新开对应层级地图 */
                 location={L.city ? (

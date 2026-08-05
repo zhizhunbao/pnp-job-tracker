@@ -75,8 +75,15 @@ def _amounts(text: str) -> list[float]:
     return [float(m.replace(",", "")) for m in _NUM.findall(text)]
 
 
-def parse_salary(raw: str) -> tuple[int | None, str]:
-    """任意格式 → (年薪数值, 规范文本)。解析不出/护栏拦下 → (None, 原文)。"""
+def parse_salary(raw: str) -> tuple[int | None, str | None]:
+    """任意格式 → (年薪数值, 规范文本)。
+
+    解析不出 → (None, 原文):「Salary to be negotiated」「$0.55 per km」这类**是真信息**,原样给用户看。
+    源头自相矛盾 → (None, None):金额离谱 / 区间比离谱 / 年化超顶三类,**一个字都不显示**
+      (2026-08-05 Frank 拍板)。理由:这 6+111+2 条全是雇主填错栏 ——「$295,000.00 daily」是把年薪
+      填进了日薪格、「$500.00 hourly」是洁牙师标了十倍。原样透出去,用户会当成我们的数;
+      美化成「$500/hr」更糟 —— 那等于替源头的错误背书。**判不了就不说,别替官方/雇主圆场。**
+    """
     if not raw:
         return None, "—"
     base = _EXTRA.split(raw, maxsplit=1)[0] or raw          # 剪掉佣金/奖金子句
@@ -86,11 +93,12 @@ def parse_salary(raw: str) -> tuple[int | None, str]:
     if not nums:
         if any(n >= ANNUAL_MAX for n in _amounts(text_src)):  # 只有离谱金额(如 -$4,972,171,264)
             GUARDED["absurd"] += 1
-        return None, raw
+            return None, None
+        return None, raw          # 纯文字(面议/按件计)→ 原文有用,照给
     lo, hi = min(nums), max(nums)
     if hi / lo > RATIO_MAX:  # 区间上限 typo("$20.00 to $999.00 hourly")→ 整条不可信
         GUARDED["ratio"] += 1
-        return None, raw
+        return None, None
     low = text_src.lower()
     # 单位判断(biweekly 必须在 week 之前;daily 单列)+ 常识纠错
     if re.search(r"bi[-\s]?week|every\s+two\s+weeks|fortnight", low):
@@ -113,9 +121,9 @@ def parse_salary(raw: str) -> tuple[int | None, str]:
     if unit == "mo" and lo >= 20_000:  # 月薪≥$2万 → 实为年薪(源误标,同上)
         unit = "yr"
     annual = round(((lo + hi) / 2) * MULT[unit])
-    if annual > ANNUAL_MAX:  # 最终护栏:年化后仍离谱("$600.00 hourly")→ NULL
+    if annual > ANNUAL_MAX:  # 最终护栏:年化后仍离谱("$600.00 hourly"「$295,000.00 daily」)→ 整条不显示
         GUARDED["cap"] += 1
-        return None, raw
+        return None, None
     sub = SUB[unit]
     money = (lambda n: f"${round(n / 1000)}K") if unit == "yr" else (lambda n: f"${round(n)}")
     text = f"{money(lo)}{sub}" if lo == hi else f"{money(lo)}–{money(hi)}{sub}"
