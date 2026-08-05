@@ -512,14 +512,13 @@ const zh: Dict = {
   'chat.ex1': '安省大专毕业,做软件开发,还没工作,毕业后能留下吗?',
   'chat.ex2': '新斯科舍的餐厅给了我厨师 offer,老板说帮我办,可信吗?',
   'chat.ex3': '中介说能包曼省木匠 offer 和省提名,可信吗?',
-  'chat.hint': 'Enter 发送,Shift+Enter 换行',
   'chat.retry': '重试', 'chat.open': '打开',
   // 答复反馈(2026-08-05)。**点踩是数据缺口报警器,不是训练信号** —— 用户在替我们标注
   // 「这里答不好」,而且按真实频次排好序。所以问句要轻到不烦人、又显眼到有人愿意点。
   'chat.fb.ask': '解决了你的问题吗?', 'chat.fb.good': '有帮助', 'chat.fb.bad': '没帮助',
   // cw.* = 全站右下角对话挂件的**壳**(ChatLauncher);面板标题复用 chat.title,不另开一份
-  'cw.open': '问问看', 'cw.close': '收起', 'cw.hint': '有问题?问问看',
-  'cw.max': '放大', 'cw.restore': '还原',      // 桌面面板大小(手机恒全屏,不出这个钮)
+  'cw.open': '问问看', 'cw.minimize': '最小化', 'cw.close': '关闭', 'cw.hint': '有问题?问问看',
+  'cw.max': '全屏', 'cw.restore': '退出全屏',  // 桌面面板大小(手机恒全屏,不出这个钮)
   'cw.reset': '重置', 'cw.resetOk': '确认清空',   // 就地二次确认(误清一整轮问答不可逆),不上弹框
   'advisor.disclaimer': 'AI 生成判断,非移民建议(我们非持牌顾问 RCIC),以官方来源为准',
   'legal.title': '免责声明',
@@ -1327,11 +1326,10 @@ const en: Dict = {
   'chat.ex1': 'Ontario college grad, software dev, no job yet — can I stay?',
   'chat.ex2': 'A Nova Scotia restaurant gave me a cook offer and says it will help with the nomination. Can I trust that?',
   'chat.ex3': 'An agent says they can guarantee a Manitoba carpenter offer and nomination. Can I trust that?',
-  'chat.hint': 'Enter to send, Shift+Enter for a new line',
   'chat.retry': 'Retry', 'chat.open': 'Open',
   'chat.fb.ask': 'Did this help?', 'chat.fb.good': 'Helpful', 'chat.fb.bad': 'Not helpful',
-  'cw.open': 'Ask a question', 'cw.close': 'Minimize', 'cw.hint': 'Questions? Just ask',
-  'cw.max': 'Expand', 'cw.restore': 'Shrink',
+  'cw.open': 'Ask a question', 'cw.minimize': 'Minimize', 'cw.close': 'Close', 'cw.hint': 'Questions? Just ask',
+  'cw.max': 'Fullscreen', 'cw.restore': 'Exit fullscreen',
   'cw.reset': 'Reset', 'cw.resetOk': 'Confirm',
   'advisor.disclaimer': 'AI-generated assessment, not immigration advice (we are not RCIC); verify with official sources',
   'legal.title': 'Disclaimer',
@@ -2113,11 +2111,10 @@ const ko: Dict = {
   'chat.ex1': '온타리오 컬리지 졸업, 소프트웨어 개발자, 아직 무직인데 남을 수 있나요?',
   'chat.ex2': '노바스코샤 식당에서 요리사 오퍼를 받았고 고용주가 주정부 지명을 도와준다고 합니다. 믿어도 될까요?',
   'chat.ex3': '에이전트가 매니토바 목수 오퍼와 주정부 지명을 보장한다고 합니다. 믿어도 될까요?',
-  'chat.hint': 'Enter 전송, Shift+Enter 줄바꿈',
   'chat.retry': '다시 시도', 'chat.open': '열기',
   'chat.fb.ask': '도움이 되었나요?', 'chat.fb.good': '도움됨', 'chat.fb.bad': '도움 안 됨',
-  'cw.open': '질문하기', 'cw.close': '접기', 'cw.hint': '궁금한 점 물어보세요',
-  'cw.max': '크게', 'cw.restore': '작게',
+  'cw.open': '질문하기', 'cw.minimize': '최소화', 'cw.close': '닫기', 'cw.hint': '궁금한 점 물어보세요',
+  'cw.max': '전체 화면', 'cw.restore': '전체 화면 종료',
   'cw.reset': '초기화', 'cw.resetOk': '지우기 확인',
   'advisor.disclaimer': 'AI 기반 판단이며 이민 자문이 아닙니다(당사는 RCIC가 아님) · 공식 출처를 기준으로 확인하세요.',
   'legal.title': '면책 조항',

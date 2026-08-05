@@ -2,8 +2,8 @@
 // lucide-react 线条风:stroke=currentColor 跟随文字颜色;这里统一 size="1em" 跟随字号 + 基线微下沉。
 // 加图标 = 从 lucide-react 挑一个再包一行,调用点永远只 import 本文件。
 import {
-  Check, ChartColumn, ChevronDown, CircleCheck, ClipboardList, Compass, Lock, Mail, Map as LMap, MapPin,
-  Maximize, Medal, MessageCircle, Minimize, Newspaper, Paperclip, Rocket, Save, Scale, Settings, Star, Target,
+  ArrowUp, Check, ChartColumn, ChevronDown, CircleCheck, ClipboardList, Compass, Lock, Mail, Map as LMap, MapPin,
+  Maximize, Medal, MessageCircle, Minimize, Minus, Newspaper, Paperclip, Rocket, Save, Scale, Settings, Square, Star, Target,
   ThumbsDown, ThumbsUp, TriangleAlert, User, Users, X,
   type LucideProps,
 } from 'lucide-react'
@@ -15,6 +15,7 @@ const wrap = (C: React.ComponentType<LucideProps>) => {
 }
 
 export const IconCheck = wrap(Check)          // 原 check
+export const IconArrowUp = wrap(ArrowUp)      // 对话发送
 export const IconCheckCircle = wrap(CircleCheck) // 原 check-circle
 export const IconChart = wrap(ChartColumn)    // 原 chart
 export const IconChat = wrap(MessageCircle)   // 右下角对话挂件的气泡钮(ChatLauncher)
@@ -28,12 +29,14 @@ export const IconMapPin = wrap(MapPin)        // 原 map-pin
 export const IconMaximize = wrap(Maximize)    // 原 maximize
 export const IconMedal = wrap(Medal)          // 原 medal
 export const IconMinimize = wrap(Minimize)    // 原 minimize
+export const IconMinus = wrap(Minus)          // 窗口最小化
 export const IconNews = wrap(Newspaper)       // 移民动态(E12-06)
 export const IconPaperclip = wrap(Paperclip)  // 原 paperclip
 export const IconRocket = wrap(Rocket)        // 开始规划(L1-01 landing 顶栏入口)
 export const IconSave = wrap(Save)            // 原 save
 export const IconScale = wrap(Scale)          // 原 scale
 export const IconSettings = wrap(Settings)    // 原 settings
+export const IconSquare = wrap(Square)        // 窗口全屏
 export const IconStar = wrap(Star)            // 原 star
 export const IconTarget = wrap(Target)        // 原 target
 export const IconThumbUp = wrap(ThumbsUp)     // 答复反馈「有帮助」(ChatAnswer)

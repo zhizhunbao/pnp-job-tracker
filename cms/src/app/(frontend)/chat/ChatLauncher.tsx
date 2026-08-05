@@ -38,7 +38,7 @@ import dynamic from 'next/dynamic'
 import { usePathname } from 'next/navigation'
 import { Component, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 
-import { IconChat, IconChevronDown, IconMaximize, IconMinimize } from '../Icons'
+import { IconChat, IconMinimize, IconMinus, IconSquare, IconX } from '../Icons'
 import { useLang } from '../LangProvider'
 import { UI } from '../ui/primitives'
 import { track } from '@/lib/track'
@@ -71,7 +71,7 @@ class PanelGuard extends Component<{ fallback: ReactNode; children: ReactNode },
 }
 
 const HINT_KEY = 'jt.chat.hint.v1'
-// 桌面最大化的记忆位(手机不用:那边本来就是全屏接管)。记住它是因为**这是个人偏好不是一次性动作** ——
+// 桌面全屏的记忆位(手机不用:那边本来就是全屏接管)。记住它是因为**这是个人偏好不是一次性动作** ——
 // 一个人愿意在 380×600 里读长答复,他每次都愿意;不愿意的那个每次都得再点一遍,那就是每次都在骂我们。
 const MAX_KEY = 'jt.chat.max.v1'
 /**
@@ -133,7 +133,7 @@ export function ChatLauncher() {
   const [mounted, setMounted] = useState(false)   // 打开过一次就不再卸载(会话不因最小化丢失)
   const [hint, setHint] = useState(false)
   const [force, setForce] = useState(false)          // 看门狗判定「开了却量不到高度」→ 内联 display 硬顶上去
-  const [max, setMax] = useState(false)              // 桌面最大化(手机 ≤640 恒为全屏,这个钮那边不出现)
+  const [max, setMax] = useState(false)              // 桌面全屏(手机 ≤640 恒为全屏,这个钮那边不出现)
   const [clear, setClear] = useState(BASE)           // 离视口底的实测距离(躲吸底动作条)
   const [box, setBox] = useState<Box | null>(null)   // 桌面自定义位置/尺寸;null = 还是右下角锚定的默认档
   const [wide, setWide] = useState(false)            // 是不是桌面档(>640)。拖拽/缩放/box 全挂在它下面
@@ -148,6 +148,7 @@ export function ChatLauncher() {
     try { localStorage.setItem(HINT_KEY, String(HINT_MAX)) } catch { /* ignore */ }  // 点开过=不再提示
   }, [])
   const hide = useCallback(() => { setOpen(false); track('widget-close') }, [])
+  const minimize = useCallback(() => { setOpen(false); track('widget-minimize') }, [])
   // 读在 effect 里,不在 useState 初值里:localStorage 在服务端不存在,当初值会 hydration 不一致。
   // 同一处也判桌面档并跟着窗口变化走(从桌面拖窄到手机档时,box 要立刻停止生效)。
   useEffect(() => {
@@ -342,7 +343,7 @@ export function ChatLauncher() {
   }, [path, open])
 
   const bottom = { '--clB': clear + 'px' } as React.CSSProperties
-  // 自定义框只在**桌面 + 非最大化**时写成内联样式。手机档 wide=false → 一个字都不写,
+  // 自定义框只在**桌面 + 非全屏**时写成内联样式。手机档 wide=false → 一个字都不写,
   // @media 里那条 inset:0/100dvh 原样生效(内联样式赢 @media,所以这道闸不能只靠 CSS)。
   const boxed = wide && box && !max
   const style: React.CSSProperties = {
@@ -371,7 +372,7 @@ export function ChatLauncher() {
         {mounted && (
           <>
           {/* 缩放把手:8 个透明块贴着内边缘(不敢用负偏移 —— .clPanel 是 overflow:hidden,会被裁掉)。
-              最大化时不出:那是「贴满视口」的一档,拉它没有意义。手机侧 @media 里整批清掉 */}
+              全屏时不出:那是「贴满视口」的一档,拉它没有意义。手机侧 @media 里整批清掉 */}
           {wide && !max && GRIPS.map((d) => (
             <div key={d} className="clGrip" data-d={d} onPointerDown={(e) => startGrab(e, d)} />
           ))}
@@ -391,14 +392,19 @@ export function ChatLauncher() {
               aria-label={t(askReset ? 'cw.resetOk' : 'cw.reset')} title={t(askReset ? 'cw.resetOk' : 'cw.reset')}>
               {t(askReset ? 'cw.resetOk' : 'cw.reset')}
             </button>
-            {/* 桌面最大化:380×600 里读一段长答复很憋(Frank 实测)。手机侧 CSS 里整个藏掉 —— 那边已经全屏 */}
-            <button className="clMax" onClick={toggleMax}
-              aria-label={t(max ? 'cw.restore' : 'cw.max')} title={t(max ? 'cw.restore' : 'cw.max')}>
-              {max ? <IconMinimize size={16} /> : <IconMaximize size={16} />}
-            </button>
-            <button className="clMin" onClick={hide} aria-label={t('cw.close')} title={t('cw.close')}>
-              <IconChevronDown size={18} />
-            </button>
+            {/* 桌面全屏:380×600 里读一段长答复很憋(Frank 实测)。手机侧 CSS 里整个藏掉 —— 那边已经全屏 */}
+            <div className="clWindowActions">
+              <button className="clWin clMin" onClick={minimize} aria-label={t('cw.minimize')} title={t('cw.minimize')}>
+                <IconMinus size={18} />
+              </button>
+              <button className="clWin clMax" onClick={toggleMax}
+                aria-label={t(max ? 'cw.restore' : 'cw.max')} title={t(max ? 'cw.restore' : 'cw.max')}>
+                {max ? <IconMinimize size={16} /> : <IconSquare size={15} />}
+              </button>
+              <button className="clWin clClose" onClick={hide} aria-label={t('cw.close')} title={t('cw.close')}>
+                <IconX size={20} />
+              </button>
+            </div>
           </div>
           {/* compact/autoFocus 是 ChatBox 自己声明的契约(2026-08-04 加):壳不再靠覆盖它的类名做样式。
               autoFocus 跟着 open 翻,每次展开聚焦一次;触屏侧 ChatBox 内部会跳过。
@@ -469,17 +475,19 @@ const CSS = `
 .clReset:hover{background:${UI.hairline};color:${UI.text2}}
 .clReset.clAsk{color:${UI.danger};font-weight:600}
 .clReset.clAsk:hover{background:#fef2f2}
-.clPanel:not(.clMaxed) .clHead{cursor:move}   /* 标题栏即拖拽把手;最大化档没得拖 */
+.clPanel:not(.clMaxed) .clHead{cursor:move}   /* 标题栏即拖拽把手;全屏档没得拖 */
 .clTitle{flex:1;min-width:0;font-size:14px;font-weight:700;color:${UI.text};
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.clMin,.clMax{flex:none;width:32px;height:32px;display:flex;align-items:center;justify-content:center;
-  border:none;background:none;color:${UI.text2};border-radius:8px;cursor:pointer}
-.clMin:hover,.clMax:hover{background:${UI.hairline};color:${UI.text}}
-/* 最大化:贴着视口留 12px,窗宽封到 1100。**行宽不靠窗宽管** ——
+.clWindowActions{flex:none;align-self:stretch;display:flex;margin:-11px -8px -11px 0}
+.clWin{flex:none;width:46px;height:54px;display:flex;align-items:center;justify-content:center;
+  border:none;background:none;color:${UI.text};border-radius:0;cursor:pointer}
+.clWin:hover{background:#e5e7eb}
+.clWin:focus-visible{outline:2px solid ${UI.primary};outline-offset:-3px}
+.clClose:hover{background:#c42b1c;color:#fff}
+/* 全屏:面板完整接管浏览器视口。**行宽不靠窗宽管** ——
    正文读列由 ChatBox 的 --cbW(860px,对齐 Open WebUI 取样)自己居中收窄,
-   所以窗放到 1100 也不会出现「一行 90+ 词、眼睛回不到行首」。
-   仍靠右下角锚定 —— 它得还像那个挂件,不是突然变成一个居中弹框 */
-.clPanel.clMaxed{inset:12px 12px 12px auto;width:min(1100px,calc(100vw - 24px));height:calc(100dvh - 24px)}
+   所以全屏也不会出现「一行 90+ 词、眼睛回不到行首」。 */
+.clPanel.clMaxed{inset:0;width:100%;height:100dvh;max-width:none;max-height:none;border:none;border-radius:0}
 /* 卡壳与历史区高度由 ChatBox 的 compact 自己管(它的 .cbFill),这里只给容器 —— 壳**不覆盖别人的类名** */
 .clBody{flex:1;min-height:0;display:flex;flex-direction:column;padding:10px 12px 12px;overflow:hidden}
 /* 懒加载那份 JS 在路上(弱网几秒)。手机是全屏接管,没这行就是一张全屏白纸 */
@@ -497,11 +505,11 @@ const CSS = `
 
 /* 手机:展开=全屏接管(缩在角落挤成一条没法读长答复);底部留出 iPhone 横条。
    .clPanel.clMaxed 必须一起点名(它比单个 .clPanel 更具体),不点名的话
-   ——一个在桌面上按过最大化的人换到手机就会看到一个 12px 内缩的「最大化」窗,而不是全屏。 */
+   ——一个在桌面上按过全屏的人换到手机就会看到一个带内缩的窗,而不是全屏。 */
 @media(max-width:640px){
   .clPanel,.clPanel.clMaxed{inset:0;width:100%;height:100dvh;max-height:none;border:none;border-radius:0;
     padding-bottom:env(safe-area-inset-bottom,0px)}
-  .clMax,.clGrip{display:none}   /* 已经是全屏:放大钮与缩放把手在这儿都没有意义 */
+  .clMin,.clMax,.clGrip{display:none}   /* 手机已经全屏:只留关闭钮 */
   .clHead{cursor:default}        /* 全屏没什么可拖的 */
 }
 @media (prefers-reduced-motion:reduce){.clBtn{transition:none}.clLoad i{animation:none;opacity:.6}}

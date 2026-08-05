@@ -17,8 +17,9 @@
 //      渲染的每一截都是核过的字,不是假装的打字机 —— 详见 §流式 注释。
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { IconArrowUp } from '../Icons'
 import { useLang } from '../LangProvider'
-import { Button, UI } from '../ui/primitives'
+import { UI } from '../ui/primitives'
 import { track } from '@/lib/track'
 import { ChatAnswer, ChatText, CHAT_ANSWER_CSS, type Answer } from './ChatAnswer'
 
@@ -108,16 +109,9 @@ export function ChatBox({ compact = false, autoFocus = false }: { compact?: bool
   const taRef = useRef<HTMLTextAreaElement | null>(null)
   const stick = useRef(true)            // 用户往回翻看旧答复时别把他甩到底
   const coarse = useRef(false)          // 触屏:Enter 是换行不是发送(手机上写三句话被 Enter 截断很恼人)
-  // 同一个判据的可渲染版:手机上「Enter 发送,Shift+Enter 换行」是**纯噪音**(没有 Shift 键、
-  // 回车本来就是换行),还白占 composer 下面一行 —— 挂件面板本就窄。按文案铁律它一条都不沾,
-  // 所以**不渲染**而不是渲了再 CSS 藏。初值 false = SSR/首帧当桌面,effect 落地后翻;
-  // 窄视口那条 @media 仍留着当兜底(翻之前的那一帧就已经是藏的)。
-  const [touch, setTouch] = useState(false)
 
   useEffect(() => {
-    const m = !!window.matchMedia?.('(pointer: coarse)').matches
-    coarse.current = m
-    setTouch(m)
+    coarse.current = !!window.matchMedia?.('(pointer: coarse)').matches
   }, [])
 
   // autoFocus:翻成 true 就聚焦(挂件每次展开翻一次)。触屏不聚焦 —— 见 props 注释。
@@ -251,13 +245,10 @@ export function ChatBox({ compact = false, autoFocus = false }: { compact?: bool
         .cbQ{align-self:flex-end;max-width:min(88%,560px);background:#eff6ff;color:${UI.primaryDeep};
           border-radius:12px 12px 4px 12px;padding:9px 12px;font-size:15px;line-height:1.625;
           white-space:pre-wrap;overflow-wrap:anywhere}
-        /* 空态示例:整宽一条一行(站规),点了直接发 —— 让人看见「这里该说什么」比任何说明文案都有用。
-           **不再有 max-width:640px**(2026-08-05 实测修):最大化态下它把示例框卡在 640,
-           而同轴的答复/composer 是 860 —— 右边缘差 220px,一眼就是「没对齐」。
-           读列宽由 .cbEmpty 的 --cbW 统一管,这里只负责别撑破它。box-sizing 同理:
-           带 padding+border 的块必须算进总宽,不然又是一套自己的宽度。 */
+        /* 空态示例按文字包裹,不把短问题的浅色背景铺满整条读列。
+           max-width:100% 是窄屏护栏:问题太长时仍在容器内换行,绝不横向溢出。 */
         .cbTry{font-size:12px;color:${UI.text3}}
-        .cbEx{display:block;width:100%;box-sizing:border-box;text-align:left;background:${UI.bg};border:1px solid ${UI.border};
+        .cbEx{display:block;width:fit-content;max-width:100%;box-sizing:border-box;text-align:left;background:${UI.bg};border:1px solid ${UI.border};
           border-radius:10px;padding:10px 12px;font-size:13.5px;line-height:1.45;color:${UI.text};
           font-family:inherit;cursor:pointer;margin-top:6px}
         .cbEx:hover{border-color:#bfdbfe;background:#f8fafc}
@@ -292,24 +283,24 @@ export function ChatBox({ compact = false, autoFocus = false }: { compact?: bool
         .cbCaret{display:inline-block;width:2px;height:1em;background:${UI.primary};margin-left:2px;
           vertical-align:-2px;animation:cbBlink .9s steps(1,end) infinite}
         @media (prefers-reduced-motion:reduce){.cbDots i,.cbCaret{animation:none;opacity:.6}}
-        /* composer 钉底:整块一个框,textarea 无边框藏在里面,发送钮在框内右下(不再孤零零占一行) */
-        /* 🔴 box-sizing:border-box 不是洁癖(2026-08-05 实测修)。缺了它,width:100% + max-width:860
-           算的是**内容盒**,再加 10+10 padding 与 1+1 border → 外盒 882,而同轴的答复块是 860:
-           最大化态下输入框比正文两边各宽 11px(Frank 看到的「宽度不一致」就是这个)。
-           更要命的是窄档:380 面板里 composer 外盒 376 > 可用 354,右边缘超出面板 9px 被 .clBody 裁掉;
-           375 手机上超出 10px —— **发送钮被切掉一角**,而且因为父级 overflow:hidden 连横滚都看不见。 */
-        .cbComposer{box-sizing:border-box;border:1px solid ${UI.border};border-radius:12px;background:${UI.card};padding:8px 10px}
+        /* GPT 式 composer:默认是一条紧凑圆角输入条,文字变多才向上生长;发送钮固定在右下。
+           右侧 54px padding 是按钮的实体槽位,文字永远不会钻到按钮下面。 */
+        /* 🔴 box-sizing:border-box 保证 padding 与 border 都算进同轴的 --cbW 内；
+           缺了它,全屏读列会比正文宽,窄屏还会把右侧发送钮裁掉。 */
+        .cbComposer{position:relative;box-sizing:border-box;min-height:54px;border:1px solid ${UI.border};
+          border-radius:27px;background:${UI.bg};padding:14px 54px 14px 18px}
         .cbComposer:focus-within{border-color:#93c5fd;box-shadow:0 0 0 3px rgba(37,99,235,.10)}
         /* 16px:小于 16 时 iOS Safari 聚焦会自动放大页面(手机优先站规,这是全站主输入) */
         .cbIn{display:block;width:100%;box-sizing:border-box;border:none;outline:none;resize:none;
-          background:transparent;font-size:16px;line-height:1.5;color:${UI.text};font-family:inherit;
-          max-height:160px;overflow-y:auto}
-        /* justify-end:手机上 .cbHint 藏了(没有实体 Enter 键,提示是废话),发送钮仍须顶右 */
-        .cbBar{display:flex;align-items:center;gap:10px;margin-top:6px;justify-content:flex-end}
-        .cbHint,.cbNum{flex:1;min-width:0;font-size:11.5px;color:${UI.text3};white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        /* 手机主判据是 coarse pointer(上面的 touch,整条不渲染);这条 @media 只兜首帧那一瞬
-           和「窄视口但非触屏」。.cbNum 不藏:快撞上限了手机上更要看得见 */
-        @media (max-width:560px){.cbHint{display:none}}
+          min-height:24px;height:24px;padding:0;background:transparent;font-size:16px;line-height:24px;
+          color:${UI.text};font-family:inherit;max-height:160px;overflow-y:auto}
+        .cbBar{position:absolute;right:9px;bottom:9px;display:flex;align-items:center;gap:8px}
+        .cbNum{flex:1;min-width:0;font-size:11.5px;color:${UI.text3};white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .cbSend{width:36px;height:36px;padding:0;border:none;border-radius:50%;display:flex;align-items:center;
+          justify-content:center;background:${UI.primary};color:#fff;cursor:pointer}
+        .cbSend:hover:not(:disabled){background:${UI.primaryDeep}}
+        .cbSend:disabled{background:#d1d5db;color:#fff;cursor:default}
+        .cbSend:focus-visible{outline:2px solid ${UI.primary};outline-offset:2px}
         /* 免责小字:composer 正下方,弱到不抢输入框,但一直在视野里(答复滚上去了它还在)。
            **不写 max-width** —— 它挂着 .cbCol,读列宽归 --cbW 管;这里再写一条同特异性的
            max-width:100% 会因为在后面而赢掉,把它拉成满宽(实测 1074 vs 该有的 860)。 */
@@ -395,9 +386,9 @@ export function ChatBox({ compact = false, autoFocus = false }: { compact?: bool
           })}
         </div>
 
-        {/* cbCol:composer 跟正文共用同一条中轴与读列宽(最大化时不横跨 1100px,那样输入框比正文还宽) */}
+        {/* cbCol:composer 跟正文共用同一条中轴与读列宽(全屏时也不横跨整个视口) */}
         <div className="cbComposer cbCol">
-          <textarea ref={taRef} className="cbIn" rows={2} value={input} placeholder={t('chat.ph')} maxLength={MAX_TEXT}
+          <textarea ref={taRef} className="cbIn" rows={1} value={input} placeholder={t('chat.ph')} maxLength={MAX_TEXT}
             onFocus={() => { if (!opened.current) { opened.current = true; track('chat-open') } }}
             onChange={(e) => {
               setInput(e.target.value)
@@ -406,12 +397,14 @@ export function ChatBox({ compact = false, autoFocus = false }: { compact?: bool
             }}
             onKeyDown={onKeyDown} />
           <div className="cbBar">
-            {/* 字数只在快撞上限时出(手机上更要看得见);Enter 提示手机整条不渲染。
-                两个都不出时 .cbBar 的 justify-content:flex-end 顶着发送钮,不会塌回左边 */}
+            {/* 字数只在快撞上限时出(手机上更要看得见);平时只显示圆形发送钮。 */}
             {input.length > MAX_TEXT - 200
               ? <span className="cbNum">{input.length}/{MAX_TEXT}</span>
-              : touch ? null : <span className="cbHint">{t('chat.hint')}</span>}
-            <Button lg disabled={busy || !input.trim()} onClick={() => void ask(input)}>{t('chat.send')}</Button>
+              : null}
+            <button className="cbSend" disabled={busy || !input.trim()} onClick={() => void ask(input)}
+              aria-label={t('chat.send')} title={t('chat.send')}>
+              <IconArrowUp size={19} />
+            </button>
           </div>
         </div>
 
