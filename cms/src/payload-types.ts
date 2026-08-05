@@ -78,6 +78,7 @@ export interface Config {
     'pnp-ops-stats': PnpOpsStat;
     dli: Dli;
     'ee-categories': EeCategory;
+    'ee-points-grid': EePointsGrid;
     'noc-descriptions': NocDescription;
     'policy-docs': PolicyDoc;
     'designated-employers': DesignatedEmployer;
@@ -97,6 +98,7 @@ export interface Config {
     'saved-jobs': SavedJob;
     news: News;
     comments: Comment;
+    'chat-logs': ChatLog;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -115,6 +117,7 @@ export interface Config {
     'pnp-ops-stats': PnpOpsStatsSelect<false> | PnpOpsStatsSelect<true>;
     dli: DliSelect<false> | DliSelect<true>;
     'ee-categories': EeCategoriesSelect<false> | EeCategoriesSelect<true>;
+    'ee-points-grid': EePointsGridSelect<false> | EePointsGridSelect<true>;
     'noc-descriptions': NocDescriptionsSelect<false> | NocDescriptionsSelect<true>;
     'policy-docs': PolicyDocsSelect<false> | PolicyDocsSelect<true>;
     'designated-employers': DesignatedEmployersSelect<false> | DesignatedEmployersSelect<true>;
@@ -134,6 +137,7 @@ export interface Config {
     'saved-jobs': SavedJobsSelect<false> | SavedJobsSelect<true>;
     news: NewsSelect<false> | NewsSelect<true>;
     comments: CommentsSelect<false> | CommentsSelect<true>;
+    'chat-logs': ChatLogsSelect<false> | ChatLogsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -982,6 +986,68 @@ export interface EeCategory {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ee-points-grid".
+ */
+export interface EePointsGrid {
+  id: number;
+  /**
+   * 🔴 'CRS'(排名分,A/B/C/D 四段)/ 'FSW67'(67 分选择因素)—— 两套分的区分键,查表必先按它过滤,不过滤会把两套分加在一起
+   */
+  grid?: string | null;
+  /**
+   * CRS: A / B / C / D;FSW67 恒 FSW
+   */
+  section?: string | null;
+  /**
+   * 官方段名(Core/human capital factors …)
+   */
+  sectionLabel?: string | null;
+  /**
+   * summary=各段封顶速览表 / detail=逐档明细表。⚠️ 两者不能相加(明细是速览的展开)
+   */
+  kind?: string | null;
+  /**
+   * 官方页内第几张表(0 起)—— 同一 factor 出现在多张表时用它还原上下文。列名不叫 table:SQL 保留字
+   */
+  tableNo?: number | null;
+  /**
+   * 该表最近的官方小标题(「First official language (maximum 24 points)」——各因素的封顶就写在这)
+   */
+  heading?: string | null;
+  /**
+   * 该表第一列的表头(Age / Level of education / …)
+   */
+  factor?: string | null;
+  /**
+   * 档位:该行第一格(「CLB level 9 or higher」)
+   */
+  criterion?: string | null;
+  /**
+   * 列表头(「Points with a spouse or common-law partner」/「Speaking」)。列名不叫 column:SQL 保留字
+   */
+  columnLabel?: string | null;
+  /**
+   * 🔴 可空:官方非数字格一律留空,原文进 pointsText,绝不写 0
+   */
+  points?: number | null;
+  /**
+   * 官方原格文本(「n/a」「Not eligible to apply」「100」)
+   */
+  pointsText?: string | null;
+  /**
+   * 官方页内原序 —— 报告按官方顺序摆
+   */
+  seq?: number | null;
+  url?: string | null;
+  /**
+   * 该页真正被取回那天(crawl 轮次日期,不是今天)
+   */
+  fetched?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "noc-descriptions".
  */
 export interface NocDescription {
@@ -1548,6 +1614,87 @@ export interface Comment {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "chat-logs".
+ */
+export interface ChatLog {
+  id: number;
+  /**
+   * sha256(首轮提问)前 16 位:串起多轮,不指向人
+   */
+  thread?: string | null;
+  /**
+   * 本串里的第几轮(由 history 里的 user 消息数推)
+   */
+  turn?: number | null;
+  /**
+   * zh / en / ko
+   */
+  lang?: string | null;
+  /**
+   * 用户原话(截断 2,000)
+   */
+  question?: string | null;
+  /**
+   * 最终答复(截断 8,000);失败时为空
+   */
+  answer?: string | null;
+  /**
+   * 抽出来的 NOC —— 最常用的 group by,从 slots 提到列上
+   */
+  noc?: string | null;
+  /**
+   * 整份槽位:看抽槽对不对
+   */
+  slots?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * 整份事实(含 cited):复现率靠它回算,D3 给 Fact 加 code 后可回填
+   */
+  facts?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * 本轮实际打了哪些 lookup(去重保序)。用 json 不用 array:array 会被拆成子表
+   */
+  tools?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * 出口校验两次没过 → 降级成事实清单
+   */
+  degraded?: boolean | null;
+  /**
+   * tooShort / noOcc / llm / guard;成功为空
+   */
+  err?: string | null;
+  /**
+   * 端到端耗时
+   */
+  ms?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -1613,6 +1760,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'ee-categories';
         value: number | EeCategory;
+      } | null)
+    | ({
+        relationTo: 'ee-points-grid';
+        value: number | EePointsGrid;
       } | null)
     | ({
         relationTo: 'noc-descriptions';
@@ -1689,6 +1840,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'comments';
         value: number | Comment;
+      } | null)
+    | ({
+        relationTo: 'chat-logs';
+        value: number | ChatLog;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -2048,6 +2203,28 @@ export interface EeCategoriesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ee-points-grid_select".
+ */
+export interface EePointsGridSelect<T extends boolean = true> {
+  grid?: T;
+  section?: T;
+  sectionLabel?: T;
+  kind?: T;
+  tableNo?: T;
+  heading?: T;
+  factor?: T;
+  criterion?: T;
+  columnLabel?: T;
+  points?: T;
+  pointsText?: T;
+  seq?: T;
+  url?: T;
+  fetched?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "noc-descriptions_select".
  */
 export interface NocDescriptionsSelect<T extends boolean = true> {
@@ -2349,6 +2526,26 @@ export interface CommentsSelect<T extends boolean = true> {
   status?: T;
   parent?: T;
   pinned?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "chat-logs_select".
+ */
+export interface ChatLogsSelect<T extends boolean = true> {
+  thread?: T;
+  turn?: T;
+  lang?: T;
+  question?: T;
+  answer?: T;
+  noc?: T;
+  slots?: T;
+  facts?: T;
+  tools?: T;
+  degraded?: T;
+  err?: T;
+  ms?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -26,6 +26,7 @@ import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
+import { logChat } from '@/lib/chatLog'
 import { ChatError, orchestrate, type ChatLang, type ChatResult, type ChatStep, type ChatTurn } from '@/lib/chatOrchestrate'
 import { getUser } from '@/lib/entitlement'
 import { freeGate } from '@/lib/freeQuota'
@@ -81,10 +82,20 @@ export async function POST(req: Request) {
   const onDelta = (s: string) => emit({ delta: s })
   const onReset = () => emit({ reset: true })
 
+  // 留痕(设计 §1.1):payload 借 run 里那一次 getPayload 捎出来 —— 不为它多建一次实例;
+  // getPayload 自己挂了就留 null,logChat 直接跳过(那时用户已经拿到错误码,留痕不值得再抢救)。
+  let pl: any = null
+  const t0 = Date.now()
+  const log = (d: Done) => logChat(pl, {
+    text, lang, history, ms: Date.now() - t0,
+    ...('ok' in d ? { result: d.ok } : { err: d.err instanceof ChatError ? d.err.code : 'llm' }),
+  })
+
   type Done = { ok: ChatResult } | { err: unknown }
   const run: Promise<Done> = (async (): Promise<Done> => {
     try {
       const payload = await getPayload({ config: await config })
+      pl = payload
       return { ok: await orchestrate((payload.db as any).pool, { text, lang, history, context }, { onStep, onDelta, onReset }) }
     } catch (err) { return { err } }
   })()
@@ -94,6 +105,7 @@ export async function POST(req: Request) {
 
   // 前置阶段就结束了(tooShort / noOcc / 抽槽位挂掉)→ 照旧 JSON + 状态码,前端老路径原样吃
   if (early) {
+    log(early)
     if ('err' in early) { const f = fail(early.err); return Response.json(f.body, { status: f.status }) }
     console.log(`[chat] ok(json) noc=${early.ok.slots.noc} facts=${early.ok.facts.length} in=${text.length}ch`)
     return Response.json(early.ok, { headers: g.headers })
@@ -104,6 +116,7 @@ export async function POST(req: Request) {
       live.ctrl = c
       for (const s of buffered) c.enqueue(sse({ step: s.text }))   // 开流前攒下的那两格补发
       const d = await run
+      log(d)
       if ('ok' in d) {
         console.log(`[chat] ok(sse) noc=${d.ok.slots.noc} facts=${d.ok.facts.length} in=${text.length}ch`)
         c.enqueue(sse(d.ok))
