@@ -5,8 +5,12 @@
 // 隐私口径(与 docs/sql/m2-funnel.sql 一致):只记「哪天、哪个事件、哪个低基数分组、多少次」——
 // 没有 IP、没有 UA、没有 user id、没有 session id。prop 只收枚举,不收自由文本。
 
-/** 五步漏斗的规范事件名(库里存的就是这几个) */
-export const FUNNEL_STEPS = ['jd-open', 'report-open', 'lock-seen', 'pricing-open', 'pay-click'] as const
+/** 漏斗的规范事件名(库里存的就是这几个)。
+ * 前五个 = 旧形态(答题卡 → 报告 → 锁区 → 定价 → 付费),2026-08-04 已摘掉全部站内入口,只剩直达。
+ * 后两个 = 对话形态(挂件打开 → 拿到带出处的答复)。**并行量,不混算** —— 设计文档
+ * `docs/design/对话即产品-20260803.md` §六:两形态的转化对照才是撤旧页的判据,
+ * 塞进同一条链会把两套口径搅成一锅。 */
+export const FUNNEL_STEPS = ['jd-open', 'report-open', 'lock-seen', 'pricing-open', 'pay-click', 'chat-open', 'chat-answer'] as const
 export type FunnelStep = (typeof FUNNEL_STEPS)[number]
 
 // 站内既有的埋点名 → 漏斗步骤(调用点一个都不用改名;umami 那边照旧用原名,两套口径互不干扰)。
@@ -24,6 +28,11 @@ const ALIAS: Record<string, FunnelStep> = {
   'pricing-open': 'pricing-open',
   'upgrade-open': 'pricing-open',
   'pay-click': 'pay-click',
+  // 对话形态(2026-08-04 起)。挂件是全站唯一的对话入口 —— 首页那个内联框同批撤掉了。
+  // 为什么必须进第一方表而不是只靠 umami:广告拦截器会挡 umami,而这是现在唯一入口的分母,
+  // 挡掉一部分就等于永远读不准转化率。
+  'widget-open': 'chat-open',
+  'chat-answer': 'chat-answer',
 }
 
 // prop 白名单:低基数枚举才留,其余一律归空 —— 高基数(NOC、公司名、搜索词)会把表撑成明细表
@@ -52,12 +61,27 @@ export function toFunnelHit(name: unknown, prop?: unknown): FunnelHit | null {
 }
 
 /** 五步的相邻转化率;分母为 0 给 null(显示层出「—」,不许出 0% 或 NaN) */
-export function stepRates(counts: Record<string, number>): (number | null)[] {
-  return FUNNEL_STEPS.slice(1).map((step, i) => {
-    const from = counts[FUNNEL_STEPS[i]] ?? 0
+/** 旧形态那条链(答题卡 → 报告 → 锁区 → 定价 → 付费)。相邻转化率**只在这五步之间**算。 */
+export const LEGACY_STEPS = FUNNEL_STEPS.slice(0, 5)
+/** 对话形态那条链(挂件打开 → 带出处的答复)。与旧链**并行**,不接在它后面。 */
+export const CHAT_STEPS = FUNNEL_STEPS.slice(5)
+
+const ratesOf = (steps: readonly string[], counts: Record<string, number>) =>
+  steps.slice(1).map((step, i) => {
+    const from = counts[steps[i]] ?? 0
     const to = counts[step] ?? 0
     return from > 0 ? Math.round((to / from) * 1000) / 10 : null
   })
+
+/** 旧五步的相邻转化率(四格)。**对话两步不许接进来** —— 两形态是并行对照,
+ * 混算会算出「报告 → 挂件打开」这种没有因果的比值,而这张表就是拿来做撤旧页判断的。 */
+export function stepRates(counts: Record<string, number>): (number | null)[] {
+  return ratesOf(LEGACY_STEPS, counts)
+}
+
+/** 对话链的转化率(一格:打开 → 拿到答复)。 */
+export function chatRates(counts: Record<string, number>): (number | null)[] {
+  return ratesOf(CHAT_STEPS, counts)
 }
 
 /**

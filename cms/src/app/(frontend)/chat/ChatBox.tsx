@@ -81,7 +81,14 @@ async function readSse(
   return ''
 }
 
-export function ChatBox() {
+/**
+ * @param compact   嵌在别的容器里(右下角挂件 ChatLauncher)时用:去掉自己的卡壳(边框/圆角/内边距/底色),
+ *   并把历史区从「56vh 封顶」改成「撑满父级剩余高度」。**这两件事必须由本组件自己声明** ——
+ *   挂件那边原来是靠父级 CSS 覆盖 .cbCard/.cbThread 做的,本文件类名一改就静默退化成卡中卡。
+ * @param autoFocus 变成 true 时把光标放进输入框(挂件每次展开翻一次 false→true)。
+ *   触屏上是 no-op:一展开就顶起键盘、把示例问题挤出屏幕,那是挂件最招人烦的手感。
+ */
+export function ChatBox({ compact = false, autoFocus = false }: { compact?: boolean; autoFocus?: boolean } = {}) {
   const [lang, , t] = useLang()
   const [input, setInput] = useState('')
   const [turns, setTurns] = useState<Turn[]>([])
@@ -94,6 +101,13 @@ export function ChatBox() {
   const coarse = useRef(false)          // 触屏:Enter 是换行不是发送(手机上写三句话被 Enter 截断很恼人)
 
   useEffect(() => { coarse.current = !!window.matchMedia?.('(pointer: coarse)').matches }, [])
+
+  // autoFocus:翻成 true 就聚焦(挂件每次展开翻一次)。触屏不聚焦 —— 见 props 注释。
+  // 这里读 matchMedia 而不是 coarse.current:两个 effect 的执行顺序不该成为聚焦与否的依据。
+  useEffect(() => {
+    if (!autoFocus || window.matchMedia?.('(pointer: coarse)').matches) return
+    taRef.current?.focus()
+  }, [autoFocus])
 
   // 等待秒数:friend 模型十几秒不出声,只转圈用户会以为死了 —— 这是「还活着」的证据,不是进度条
   useEffect(() => {
@@ -175,7 +189,7 @@ export function ChatBox() {
 
   const empty = turns.length === 0
   return (
-    <div>
+    <div className={compact ? 'cbFill' : undefined}>
       <style>{`
         .cbCard{background:${UI.card};border:1px solid ${UI.border};border-radius:14px;padding:10px;
           display:flex;flex-direction:column;gap:10px}
@@ -183,6 +197,12 @@ export function ChatBox() {
         .cbThread{display:flex;flex-direction:column;gap:16px;min-width:0;overflow-y:auto;
           max-height:min(56vh,520px);padding:2px}
         .cbThread.cbNoScroll{overflow:visible;max-height:none}
+        /* compact(嵌在挂件面板里):卸掉自己的卡壳,历史区改成撑满父级剩余高度。
+           min-height:0 那三处是 flex 子项能真正收缩的前提,少一处历史区就把 composer 顶出面板。 */
+        .cbFill{flex:1;min-height:0;display:flex;flex-direction:column}
+        .cbFill .cbCard{flex:1;min-height:0;border:none;border-radius:0;padding:0;background:transparent}
+        .cbFill .cbThread{flex:1;min-height:0;max-height:none}
+        .cbFill .cbThread.cbNoScroll{overflow-y:auto}   /* 空态在挂件里也要能滚(面板矮时三条示例放不下) */
         .cbTurn{display:flex;flex-direction:column;gap:8px;min-width:0}
         /* 提问气泡:靠右、封顶宽,桌面上不拉成一整行 1160px */
         .cbQ{align-self:flex-end;max-width:min(88%,560px);background:#eff6ff;color:${UI.primaryDeep};

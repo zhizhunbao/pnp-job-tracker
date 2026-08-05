@@ -1,6 +1,7 @@
 import React from 'react'
 import './styles.css'
 import { LangProvider } from './LangProvider'
+import { ChatLauncher } from './chat/ChatLauncher'
 import { ssrLang } from '@/lib/lang.server'
 
 // 站点默认 metadata(各页 generateMetadata 覆盖);E7-02:umami 轻量 analytics(无 cookie,env 未设=本地不注入)
@@ -45,6 +46,10 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
       <body>
         <LangProvider initial={lang}>
           <main>{children}</main>
+          {/* 右下角对话挂件:挂在 layout = 全站可用(67.5% 的会话只看一页,入口=出口=职位详情页,
+              把对话放到流量真正在的地方)。放在 <main> 外:它是浮层不是页面内容,读屏器按顺序读到最后;
+              在 LangProvider 内:壳文案跟全站同一份语言状态。/start 自己判断不显示(那页有内联 ChatBox)。 */}
+          <ChatLauncher />
         </LangProvider>
       </body>
     </html>

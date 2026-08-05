@@ -2,8 +2,9 @@
 // lucide-react 线条风:stroke=currentColor 跟随文字颜色;这里统一 size="1em" 跟随字号 + 基线微下沉。
 // 加图标 = 从 lucide-react 挑一个再包一行,调用点永远只 import 本文件。
 import {
-  Check, ChartColumn, CircleCheck, ClipboardList, Compass, Lock, Mail, Map as LMap, MapPin,
-  Maximize, Medal, Minimize, Newspaper, Paperclip, Rocket, Save, Scale, Settings, Star, Target, TriangleAlert, User, Users, X,
+  Check, ChartColumn, ChevronDown, CircleCheck, ClipboardList, Compass, Lock, Mail, Map as LMap, MapPin,
+  Maximize, Medal, MessageCircle, Minimize, Newspaper, Paperclip, Rocket, Save, Scale, Settings, Star, Target,
+  TriangleAlert, User, Users, X,
   type LucideProps,
 } from 'lucide-react'
 
@@ -16,6 +17,8 @@ const wrap = (C: React.ComponentType<LucideProps>) => {
 export const IconCheck = wrap(Check)          // 原 check
 export const IconCheckCircle = wrap(CircleCheck) // 原 check-circle
 export const IconChart = wrap(ChartColumn)    // 原 chart
+export const IconChat = wrap(MessageCircle)   // 右下角对话挂件的气泡钮(ChatLauncher)
+export const IconChevronDown = wrap(ChevronDown) // 收起(挂件面板头)
 export const IconClipboard = wrap(ClipboardList) // 原 clipboard
 export const IconCompass = wrap(Compass)      // 原 compass
 export const IconLock = wrap(Lock)            // 原 lock

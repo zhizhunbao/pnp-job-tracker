@@ -7,7 +7,6 @@
 // 红线:数字全库内真数,查不到整节不渲;通道名映射不到显官方原文,前端不编翻译。
 import { useMemo, useState } from 'react'
 
-import { ChatBox } from '../chat/ChatBox'
 import { eeDisplay, eeKeyDisplay, makeT, drawStreamNote } from '../jobs/i18n'
 import { useLang } from '../LangProvider'
 import { SiteHeader } from '../SiteHeader'
@@ -132,10 +131,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
       {/* 分节版式(v3):.hmBand 全宽色带,节内 1320 轨;节纵距 40/72px,节标题 20/24px —— 一节一事不挤屏 */}
       <style>{`
         .hmBand{padding:40px 0}
-        /* 矮内容节收紧带高(2026-08-03 Frank「这个 title 不应该贴到上边吗」):节距 72/72 是给
-           整屏内容定的,今日日更只有一行数字(130px)—— 撑在 273px 的带子里,标题看着浮在带中间。
-           只收这一节,其余节的节奏不动。 */
-        .hmBand.hmTight{padding:28px 0}
+        /* .hmBand.hmTight 随内联对话节一起撤(2026-08-04):全站只有那一节用它 */
         .hmBand h2{font-size:20px}
         .hmHero.hmBand{padding:16px 0 0}
         .hmBtn{display:block;border-radius:8px;padding:12px 20px;font-size:14px;font-weight:600;text-align:center;cursor:pointer;text-decoration:none;border:none;font-family:inherit}
@@ -182,7 +178,6 @@ export function StartView({ stats }: { stats: HomeStats }) {
         @media (min-width:900px){ .hmDrawTable{display:table}.hmDrawCards{display:none} }
         @media (min-width:900px){
           .hmBand{padding:72px 0}
-          .hmBand.hmTight{padding:40px 0}
           .hmBand h2{font-size:24px}
           .hmHero.hmBand{padding:16px 0 0}
           .hmBtn{padding:13px 28px;font-size:15px}
@@ -211,14 +206,10 @@ export function StartView({ stats }: { stats: HomeStats }) {
           </div>
         </div>
 
-        {/* ② 一句话问(C2「对话即产品」,设计 docs/design/对话即产品-20260803.md §二/§六 第 1 条):
-            答题卡 2026-08-04 摘除后这个位置由对话接主位 —— landing 的**主入口**就是这个输入框。
-            紧贴 Hero 之下、今日日更之上;整节走 hmTight(它只有一张卡,不占整屏节距)。
-            服务挂了怎么办:输入框照渲,提交后按错误码说实话(见 ChatBox 头注释红线②),不牵连下面的数据节 */}
-        <Band bg="#fff" className="hmTight">
-          <h2 style={secH}>{t('chat.title')}</h2>
-          <ChatBox />
-        </Band>
+        {/* ② 一句话问(内联 ChatBox)2026-08-04 傍晚撤:Frank 拍板**对话只放右下角挂件里,不放主入口**。
+            依据是 30 天数据 —— 67.5% 的会话只看一页,入口=出口=职位详情页,这个内联框服务的是
+            绝大多数用户根本不经过的地方。挂件全站在(chat/ChatLauncher,挂在 layout),才是把对话
+            放到流量真正在的位置。本页不再有第二个对话入口。 */}
 
         {/* ②b 决策引擎目标卡节:2026-08-04 摘除(见文件头注释) */}
 

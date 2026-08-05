@@ -45,8 +45,17 @@ describe('漏斗事件白名单', () => {
     expect(toFunnelHit('pay-click', '30')).toEqual({ event: 'pay-click', prop: '30' })
   })
 
-  it('五步顺序就是漏斗顺序(页面按它排,别在显示层再排一次)', () => {
-    expect([...FUNNEL_STEPS]).toEqual(['jd-open', 'report-open', 'lock-seen', 'pricing-open', 'pay-click'])
+  it('顺序就是漏斗顺序(页面按它排,别在显示层再排一次);旧五步在前、对话两步在后', () => {
+    // 2026-08-04:答题卡摘掉全部站内入口、对话挂件成为唯一对话入口 → 加一条**并行**的对话漏斗。
+    // 断言从 5 改到 7 是事实变了,不是放宽:前五个仍必须原序在前(stepRates 按下标算相邻转化率),
+    // 对话两步**追加在尾部**且不参与前五步的相邻计算 —— 两形态混算会把口径搅成一锅。
+    expect([...FUNNEL_STEPS]).toEqual(['jd-open', 'report-open', 'lock-seen', 'pricing-open', 'pay-click', 'chat-open', 'chat-answer'])
+  })
+
+  it('对话形态的两个键各自归位,不串进旧五步', () => {
+    expect(toFunnelHit('widget-open', 'jd')).toEqual({ event: 'chat-open', prop: 'jd' })
+    expect(toFunnelHit('chat-answer', '')?.event).toBe('chat-answer')
+    expect(toFunnelHit('widget-close', '')).toBeNull()   // 关闭不进表:它不是漏斗的一格
   })
 })
 
