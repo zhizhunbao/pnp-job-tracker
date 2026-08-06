@@ -3,8 +3,31 @@
 // 简单表统一壳:jobs 主表同款观感(表头可排序 ↑↓ 态、拖列宽、行 hover、白卡圆角描边容器);
 // jobs 主表是独立重器(服务端排序/冻结列/字段面板)不并入,只对齐视觉 token(G 节拍板)。
 // 排序=客户端(简单表数据已全量在手);列用配置声明,render 缺省取 r[key]。
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { UI } from './primitives'
+
+// 翻页行(总数 + ‹ x/y ›):DataTable 内置页脚用,OccBoard 手机卡片列表也复用同一个
+export function DTPager({ page, max, note, onPage }: {
+  page: number; max: number; note?: React.ReactNode; onPage: (p: number) => void
+}) {
+  const btn = (disabled: boolean): React.CSSProperties => ({
+    border: `1px solid ${UI.border}`, borderRadius: 6, background: '#fff', padding: '2px 10px',
+    fontSize: 13, lineHeight: '18px', fontFamily: 'inherit',
+    color: disabled ? '#d1d5db' : UI.text2, cursor: disabled ? 'default' : 'pointer',
+  })
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12.5, color: UI.text2 }}>
+      {note != null && <span>{note}</span>}
+      {max > 1 && (
+        <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button aria-label="‹" disabled={page === 0} onClick={() => onPage(Math.max(0, page - 1))} style={btn(page === 0)}>‹</button>
+          <span style={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{page + 1} / {max}</span>
+          <button aria-label="›" disabled={page >= max - 1} onClick={() => onPage(Math.min(max - 1, page + 1))} style={btn(page >= max - 1)}>›</button>
+        </span>
+      )}
+    </div>
+  )
+}
 
 export type DTCol<T> = {
   key: string
@@ -15,12 +38,16 @@ export type DTCol<T> = {
   thTip?: string                            // 表头 hover 提示(如「技能类获批」口径)
 }
 
-export function DataTable<T>({ cols, rows, rowKey, empty, header, minWidth }: {
+export function DataTable<T>({ cols, rows, rowKey, empty, header, minWidth, pageSize, footerNote }: {
   cols: DTCol<T>[]; rows: T[]; rowKey: (r: T, i: number) => string; empty?: React.ReactNode
   header?: React.ReactNode                  // 卡内表格上方的头行(如 occupations 的通道标题行)
   minWidth?: number                         // 窄屏横滚而非挤成竖排(stats 第 2 轮 #10)
+  pageSize?: number                         // 传了才分页:先全量排序再切页,页脚出总数+翻页
+  footerNote?: React.ReactNode              // 页脚左侧总数文案(i18n 在调用方,组件不携词)
 }) {
   const [sort, setSort] = useState<{ key: string; dir: 1 | -1 } | null>(null)
+  const [page, setPage] = useState(0)
+  useEffect(() => { setPage(0) }, [rows])   // 数据换了(如切省)回第一页,不停在越界页
   const [widths, setWidths] = useState<Record<string, number>>({})
   const thRefs = useRef<Record<string, HTMLTableCellElement | null>>({})
   const sorted = (() => {
@@ -35,6 +62,9 @@ export function DataTable<T>({ cols, rows, rowKey, empty, header, minWidth }: {
       return (va < vb ? -1 : va > vb ? 1 : 0) * sort.dir
     })
   })()
+  const maxPage = pageSize ? Math.max(1, Math.ceil(rows.length / pageSize)) : 1
+  const p = Math.min(page, maxPage - 1)
+  const paged = pageSize ? sorted.slice(p * pageSize, (p + 1) * pageSize) : sorted
   const startResize = (e: React.PointerEvent, key: string) => {
     e.preventDefault(); e.stopPropagation()
     const sx = e.clientX, sw = widths[key] ?? thRefs.current[key]?.offsetWidth ?? 100
@@ -49,10 +79,10 @@ export function DataTable<T>({ cols, rows, rowKey, empty, header, minWidth }: {
       {header}
       <table style={{ width: '100%', minWidth, borderCollapse: 'collapse' }}>
         <thead><tr>
-          {cols.map((c) => (
+          {cols.map((c, ci) => (
             <th key={c.key} ref={(el) => { thRefs.current[c.key] = el }} title={c.thTip}
               onClick={c.sort ? () => setSort((s) => (s?.key === c.key ? (s.dir === -1 ? { key: c.key, dir: 1 } : null) : { key: c.key, dir: -1 })) : undefined}
-              style={{ ...th, width: widths[c.key], cursor: c.sort ? 'pointer' : undefined, ...(c.thTip ? { textDecoration: 'underline dotted #d1d5db' } : {}) }}>
+              style={{ ...th, width: widths[c.key], cursor: c.sort ? 'pointer' : undefined, ...(ci < cols.length - 1 ? { borderRight: '1px solid #e5e7eb' } : {}), ...(c.thTip ? { textDecoration: 'underline dotted #d1d5db' } : {}) }}>
               {c.label}{sort?.key === c.key ? (sort.dir === -1 ? ' ▼' : ' ▲') : c.sort ? <span style={{ color: '#d1d5db' }}> ⇅</span> : null}
               <span onPointerDown={(e) => startResize(e, c.key)} onClick={(e) => e.stopPropagation()}
                 style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 6, cursor: 'col-resize' }} />
@@ -62,17 +92,22 @@ export function DataTable<T>({ cols, rows, rowKey, empty, header, minWidth }: {
         <tbody>
           {/* E8-08 hover 规范(Frank「可点才有态」):行本身不可点 → 行 hover 摘除(原 #f9fafb 全行态误导);
               行内链接/钮的 hover 由 styles.css 全局规则(a:hover 加深)接管 */}
-          {sorted.map((r, i) => {
+          {paged.map((r, i) => {
             const k = rowKey(r, i)
             return (
               <tr key={k}>
-                {cols.map((c) => <td key={c.key} style={{ ...td, ...(c.nowrap ? { whiteSpace: 'nowrap' } : {}) }}>{c.render ? c.render(r) : String((r as any)[c.key] ?? '—')}</td>)}
+                {cols.map((c, ci) => <td key={c.key} style={{ ...td, ...(ci < cols.length - 1 ? { borderRight: '1px solid #f3f4f6' } : {}), ...(c.nowrap ? { whiteSpace: 'nowrap' } : {}) }}>{c.render ? c.render(r) : String((r as any)[c.key] ?? '—')}</td>)}
               </tr>
             )
           })}
         </tbody>
       </table>
       {rows.length === 0 && <div style={{ padding: '24px 16px', color: UI.text3, fontSize: 13, textAlign: 'center' }}>{empty}</div>}
+      {pageSize != null && rows.length > 0 && (
+        <div style={{ padding: '8px 12px', borderTop: `1px solid ${UI.hairline}` }}>
+          <DTPager page={p} max={maxPage} note={footerNote} onPage={setPage} />
+        </div>
+      )}
     </div>
   )
 }

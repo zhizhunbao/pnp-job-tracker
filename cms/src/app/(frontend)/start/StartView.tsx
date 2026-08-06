@@ -12,7 +12,7 @@
 //      下架/净流失卡在排水期(虚高),两者的数字与措辞都不上前端(同入 E13-04);
 //   ③ 每行可溯源:职业名点开落到按该 NOC 筛过的职位板(/?q=<noc>),省卡下钻落 /stats/[prov]。
 // SSR 瘦身手法守住:职业大表(occ ~3400 行)不进 HTML,挂载后拉 /api/market-stats(与旧版同一端点)。
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { eeKeyDisplay, makeT, drawStreamNote, streamDisplay, type TFn } from '../jobs/i18n'
 import { useLang } from '../LangProvider'
@@ -23,7 +23,7 @@ import { CaliberLine } from '../stats/ui'
 import { PROVS, PROV_NAME, type OccRow, type ProvExtra, type SrcRow, type StatRow } from '../stats/shared'
 import { shortOcc } from '../quiz/EntryQuiz'
 import { JobCard } from '../ui/JobCard'
-import { DataTable, type DTCol } from '../ui/DataTable'
+import { DataTable, DTPager, type DTCol } from '../ui/DataTable'
 import { BANNER_IMGS, Chip, PageBanner, PageShell, Tag, UI } from '../ui/primitives'
 import { track } from '@/lib/track'
 
@@ -58,11 +58,6 @@ const occNote = (o: OccRow, lang: string) => {
   const s = lang === 'zh' ? (o.titleZhShort || o.titleZh) : lang === 'ko' ? o.titleKo : ''
   return s ? shortOcc(s) : ''
 }
-const occLocal = (o: OccRow, lang: string) => {
-  const s = lang === 'zh' ? (o.titleZhShort || o.titleZh) : lang === 'ko' ? o.titleKo : ''
-  return shortOcc(s || o.titleEn || o.noc)
-}
-
 // 样本门槛(设计 §3):全国榜在架 ≥30,省级 ≥10 —— 不足不进榜,禁上榜噪音
 const NAT_MIN_OPEN = 30   // 省级榜门槛(S4)沿用
 // Frank 2026-08-06「谁会关心中小学教师助理」「主要打主流的、中介推的职业」:
@@ -102,8 +97,14 @@ function TopN({ v, on, max }: { v: number; on: (n: number) => void; max: number 
 // 且文案里必须带窗口(不许只写「环比」让人当成月环比)。
 // mom14d 缺列/全 null 时:环比列与判决列**整列不出**(降级成在架/命中率/薪资偏离能撑的版本),
 // 绝不拿 0 顶包;单行缺值显「—」。
-function OccBoard({ rows, t, lang, nocProvs, showProvs = true }: { rows: OccRow[]; t: TFn; lang: string; nocProvs: Map<string, string[]>; showProvs?: boolean }) {
+function OccBoard({ rows, t, lang, nocProvs, showProvs = true, pageSize = 10 }: { rows: OccRow[]; t: TFn; lang: string; nocProvs: Map<string, string[]>; showProvs?: boolean; pageSize?: number }) {
   const hasMom = rows.some((o) => o.mom14d != null)
+  // 手机卡片列表的页态(桌面表格的页态在 DataTable 里,俩视图同刻只显示一个,各翻各的)
+  const [page, setPage] = useState(0)
+  useEffect(() => { setPage(0) }, [rows])
+  const maxPage = Math.max(1, Math.ceil(rows.length / pageSize))
+  const p = Math.min(page, maxPage - 1)
+  const totalNote = t('pulse.total', { n: rows.length })
   // Frank 08-06「在某些省份能不能提名,直接告诉用户,百分比谁能看懂」:占比列撤,
   // 换「可提名省份」直陈(来源=该职业各省清单命中的在架岗);空+TEER 4/5 = 原通道预警合并进本列
   const provsOf = (o: OccRow) => nocProvs.get(o.noc) ?? []
@@ -137,6 +138,9 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true }: { rows: OccRow[
         </div>
       ),
     },
+    // TEER 列(Frank 08-06 拍板加):无清单职业还剩什么路,先看 TEER——0-3 有联邦 EE,4-5 没有
+    { key: 'teer', label: t('pulse.col.teer'), nowrap: true, thTip: t('pulse.col.teer.tip'),
+      sort: (o) => o.teer, render: (o) => <>{o.teer != null ? o.teer : '—'}</> },
     { key: 'open', label: t('pulse.col.open'), nowrap: true, sort: (o) => o.openJobs, render: (o) => <>{o.openJobs != null ? num(o.openJobs) : '—'}</> },
     ...(hasMom ? [{
       key: 'mom', label: t('pulse.col.mom'), nowrap: true, thTip: t('pulse.col.mom.tip'),
@@ -147,16 +151,25 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true }: { rows: OccRow[
       sort: (o: OccRow) => provsOf(o).length,
       render: (o: OccRow) => provsCell(o),
     }] : []),
-    { key: 'gap', label: t('pulse.col.gap'), nowrap: true, sort: (o) => gap(o), render: (o) => <>{gap(o) != null ? `${signed(gap(o) as number)}%` : '—'}</> },
+    // 薪资列(Frank 08-06「这个不如显示薪资」):帖面中位年薪绝对值主显(vs ESDC 偏离百分比
+    // 一般人读不懂),偏离降级进单元格 title;小样本护栏沿用(salaryN<5 不显示)
+    { key: 'sal', label: t('pulse.col.sal'), nowrap: true, thTip: t('pulse.col.sal.tip'),
+      sort: (o) => ((o.salaryN ?? 0) >= 5 ? o.medianSalaryAnnual : null),
+      render: (o) => {
+        const g = gap(o)
+        return o.medianSalaryAnnual != null && (o.salaryN ?? 0) >= 5
+          ? <span title={g != null ? `${t('pulse.col.gap')} ${signed(g)}%` : undefined}>{`$${Math.round(o.medianSalaryAnnual / 1000)}K`}</span>
+          : <>—</>
+      } },
   ]
 
   return (
     <>
-      <div className="plTable"><DataTable<OccRow> rows={rows} cols={cols} rowKey={(o) => o.noc} /></div>
+      <div className="plTable"><DataTable<OccRow> rows={rows} cols={cols} rowKey={(o) => o.noc} pageSize={pageSize} footerNote={totalNote} /></div>
       {/* ≤900 卡片:左列身份(职业名/可提名省份)、右列数字(新发环比)——与职位板同一张 JobCard。
           薪资偏离只留桌面表:375 上两个百分数并排谁是谁得猜 —— 宁可少一个数,不给会读错的数 */}
       <div className="plCards">
-        {rows.map((o) => {
+        {rows.slice(p * pageSize, (p + 1) * pageSize).map((o) => {
           const ps = provsOf(o)
           return (
             <JobCard key={o.noc} href={`/?q=${o.noc}`}
@@ -167,6 +180,9 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true }: { rows: OccRow[
               location={showProvs ? `${t('pulse.col.provs')} ${ps.length ? ps.join('、') : t('pulse.provs.none')}` : undefined} />
           )
         })}
+        <div style={{ padding: '2px 2px 0' }}>
+          <DTPager page={p} max={maxPage} note={totalNote} onPage={setPage} />
+        </div>
       </div>
     </>
   )
@@ -194,33 +210,24 @@ export function StartView({ stats }: { stats: HomeStats }) {
     return m
   }, [market])
 
-  // 三榜分层(Frank 08-06 深夜拍板:「用户要先知道哪些完全不考虑,哪些可以考虑但在萎缩,哪些需求在增加」):
-  //   A 先排除 = 不在任何省提名清单(不分 TEER——无清单对受众=只剩卷 EE 分/学法语,不现实),按在架量排(中介推得最凶的先看到)
-  //   B 有通道但在降温 = 在清单上 && 环比 < -5%,跌得狠的在前
-  //   C 有通道且在升温 = 在清单上 && 环比 > +5%,涨得猛的在前
+  // 三榜分层(Frank 08-06 深夜拍板,口径 08-06 二改):判据 = **省具名紧缺清单命中**(namedJobs),
+  // ≠「有无 PNP 通道」——排除式省(AB;ON 改制后全职业可)和雇主担保类通用通道不进 namedJobs
+  // (Chefs 教训:榜A原名「无省提名通道」=撒谎),榜题/tooltip 一律说「紧缺清单」:
+  //   A 不在任何省紧缺清单,按在架量排(中介推得最凶的先看到)
+  //   B 清单在列 && 环比 < -5%,跌得狠的在前
+  //   C 清单在列 && 环比 > +5%,涨得猛的在前
   // AIP 维度职业级现库没有(occ 表无 aip 计数)→ Board A 暂按 PNP 清单口径,ETL 加列后升级「PNP+AIP 双无」
   const boards = useMemo(() => {
     if (!natOcc) return null
     const pool = natOcc.filter((o) => (o.openJobs ?? 0) >= MAIN_MIN_OPEN)
     const hasPath = (o: OccRow) => (nocProvs.get(o.noc)?.length ?? 0) > 0
-    const noPath = pool.filter((o) => !hasPath(o)).sort((a, b) => (b.openJobs ?? 0) - (a.openJobs ?? 0)).slice(0, 10)
+    // top-10 截断撤(Frank 08-06「应该有分页,有总数」)——全量给 OccBoard,分页在表内
+    const noPath = pool.filter((o) => !hasPath(o)).sort((a, b) => (b.openJobs ?? 0) - (a.openJobs ?? 0))
     const withPath = pool.filter((o) => hasPath(o) && o.mom14d != null)
-    const cooling = withPath.filter((o) => (o.mom14d as number) < -0.05).sort((a, b) => (a.mom14d as number) - (b.mom14d as number)).slice(0, 10)
-    const heating = withPath.filter((o) => (o.mom14d as number) > 0.05).sort((a, b) => (b.mom14d as number) - (a.mom14d as number)).slice(0, 10)
+    const cooling = withPath.filter((o) => (o.mom14d as number) < -0.05).sort((a, b) => (a.mom14d as number) - (b.mom14d as number))
+    const heating = withPath.filter((o) => (o.mom14d as number) > 0.05).sort((a, b) => (b.mom14d as number) - (a.mom14d as number))
     return { noPath, cooling, heating }
   }, [natOcc, nocProvs])
-
-  // S1 动态判决标题 = **降温榜(有通道但在跌)第一名**(头条与榜首同源同数,Frank 08-06「banner
-  // 和 table 没关系」教训);降温榜空了退升温榜第一,再没有就回退静态标题。
-  const headline = useMemo(() => {
-    const top = boards?.cooling?.[0] ?? boards?.heating?.[0]
-    if (!top || top.mom14d == null) return ''
-    const v = top.mom14d as number
-    const occ = occLocal(top, lang)
-    return v < -0.005 ? t('pulse.h1.down', { occ, n: pctSigned(v) })
-      : v > 0.005 ? t('pulse.h1.up', { occ, n: pctSigned(v) })
-        : t('pulse.h1.flat', { occ })
-  }, [boards, lang, t])
 
   // S1 三脉象卡(契约 v3):近 14 天新发(主数字 + 环比副行)/ 平均在架天数 / PNP 命中率。
   // 逐卡 null 守卫 —— 缺数的卡整张不出。净值卡(在架存量差)本批**不做**:
@@ -272,7 +279,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
     // Frank 08-06「命中率 0 还排第一?」:省级小样本里 pulse 的动量分被小基数环比打爆
     // (SK 收银员 7→19 = +171% 骑上榜首)——省榜回归**体量榜**(按在架量,「该省职业真榜」本义),
     // 环比/占比/判决当信息列;pulse 排序只留全国降温/升温榜(有 ≥100 门槛守着)
-    return [...rows].sort((a, b) => (b.openJobs ?? 0) - (a.openJobs ?? 0)).slice(0, 20)
+    return [...rows].sort((a, b) => (b.openJobs ?? 0) - (a.openJobs ?? 0))
   }, [market, prov])
   const provName = prov === 'ALL' ? t('pulse.s4.all') : (PROV_NAME[prov] || prov)
 
@@ -291,7 +298,8 @@ export function StartView({ stats }: { stats: HomeStats }) {
       ? t('pulse.dr.note', { n: r.histN, min: num(r.histMin), max: num(r.histMax) }) : '')
 
   const secH: React.CSSProperties = { margin: '0 0 6px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 10, rowGap: 8, flexWrap: 'wrap', color: UI.text }
-  const noteS: React.CSSProperties = { fontSize: 12, color: UI.text3, margin: '0 0 12px' }
+  // 节标题的口径 tooltip 记号(说明句不上台面,悬停看;与表头 thTip 同虚线形态)
+  const tipHead: React.CSSProperties = { textDecoration: 'underline dotted #d1d5db', textUnderlineOffset: 6, cursor: 'help' }
   const moreA: React.CSSProperties = { fontSize: 13, fontWeight: 600, color: UI.primary, textDecoration: 'none', whiteSpace: 'nowrap' }
   const hmRight: React.CSSProperties = { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }
   const th: React.CSSProperties = { fontSize: 11.5, color: UI.text3, fontWeight: 600, textAlign: 'left', padding: '9px 12px', borderBottom: `1px solid ${UI.hairline}`, background: '#fafafa' }
@@ -308,14 +316,15 @@ export function StartView({ stats }: { stats: HomeStats }) {
       <style>{`
         .plBand{padding:36px 0}
         .plBand h2{font-size:20px}
-        .plHero.plBand{padding:16px 0 0}
+        .plHero.plBand{padding:16px 0 26px}
         .plBtn{display:block;border-radius:8px;padding:12px 20px;font-size:14px;font-weight:600;text-align:center;cursor:pointer;text-decoration:none;border:none;font-family:inherit}
         /* S1 四脉象卡:banner 下方白卡(毛玻璃合并版 Frank 打回「放下来」),手机 2×2、桌面一行四等分 */
-        .plNums{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
-        .plNums a{min-width:0;overflow:hidden;background:${UI.card};border:1px solid ${UI.border};border-radius:12px;padding:12px 14px;text-decoration:none;color:inherit}
-        .plNums b{display:block;font-size:22px;line-height:1.25;font-weight:800;font-variant-numeric:tabular-nums;color:${UI.text}}
-        .plNums span{display:block;font-size:11.5px;color:${UI.text2};white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .plNums i{display:block;font-size:11.5px;font-style:normal;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        /* 卡内容居中(Frank 08-06「都缩在左上角」),数字主、标签副;标签虚线=有悬停口径 */
+        .plNums{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+        .plNums a{min-width:0;overflow:hidden;background:${UI.card};border:1px solid ${UI.border};border-radius:12px;padding:16px 12px;text-decoration:none;color:inherit;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;justify-content:center}
+        .plNums b{font-size:24px;line-height:1.15;font-weight:800;font-variant-numeric:tabular-nums;color:${UI.text}}
+        .plNums span{max-width:100%;font-size:12px;color:${UI.text2};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-bottom:1px dotted #d1d5db;padding-bottom:1px}
+        .plNums i{max-width:100%;font-size:12px;font-style:normal;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
         /* 榜单:桌面表格 / 手机卡片,两套 DOM 各渲各的(站规「电脑用表格 手机用卡片」) */
         .plTable{display:none}
         .plCards{display:flex;flex-direction:column;gap:8px}
@@ -327,9 +336,11 @@ export function StartView({ stats }: { stats: HomeStats }) {
         @media (min-width:900px){
           .plBand{padding:56px 0}
           .plBand h2{font-size:24px}
-          .plHero.plBand{padding:16px 0 0}
+          .plHero.plBand{padding:16px 0 26px}
           .plNums{grid-template-columns:repeat(4,1fr);gap:10px}
-          .plNums b{font-size:28px}
+          .plNums a{padding:22px 14px}
+          .plNums b{font-size:32px}
+          .plNums span,.plNums i{font-size:12.5px}
           .plTable{display:block}.plCards{display:none}
           .plDrawTable{display:table}.plDrawCards{display:none}
           .plBtn{padding:13px 28px;font-size:15px}
@@ -343,7 +354,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
             Frank 08-06「还是放下来吧」;副题口号已删,调性靠数字自己立) ── */}
         <div className="plBand plHero">
           <PageShell pad="0 1.25rem">
-            <PageBanner module="home" tall title={headline || t('home.title')} images={BANNER_IMGS.home} />
+            <PageBanner module="home" tall title={t('home.title')} images={BANNER_IMGS.home} />
             {pulseCards.length > 0 && (
               <div className="plNums">
                 {pulseCards.map((c) => (
@@ -362,24 +373,23 @@ export function StartView({ stats }: { stats: HomeStats }) {
             数据没就绪 → 整块不渲染(绝不拿存量榜顶包);无大竖线、标题深色(08-06 版式拍板) */}
         {boards && (boards.noPath.length > 0 || boards.cooling.length > 0 || boards.heating.length > 0) && (
           <Band bg="#fff">
+            {/* 口径说明降级进标题 tooltip(Frank 08-06「应该是 tooltips 不要直接显示出来」),
+                虚线下划线=可悬停记号,与表头 thTip 同形态 */}
             {boards.noPath.length > 0 && (
               <div>
-                <h2 style={secH}>{t('pulse.b1')}</h2>
-                <p style={noteS}>{t('pulse.b1.note')}</p>
+                <h2 style={{ ...secH, margin: '0 0 10px' }}><span title={t('pulse.b1.note')} style={tipHead}>{t('pulse.b1')}</span></h2>
                 <OccBoard rows={boards.noPath} t={t} lang={lang} nocProvs={nocProvs} showProvs={false} />
               </div>
             )}
             {boards.cooling.length > 0 && (
               <div style={{ marginTop: 28 }}>
-                <h2 style={secH}>{t('pulse.b2')}</h2>
-                <p style={noteS}>{t('pulse.b2.note')}</p>
+                <h2 style={{ ...secH, margin: '0 0 10px' }}><span title={t('pulse.b2.note')} style={tipHead}>{t('pulse.b2')}</span></h2>
                 <OccBoard rows={boards.cooling} t={t} lang={lang} nocProvs={nocProvs} />
               </div>
             )}
             {boards.heating.length > 0 && (
               <div style={{ marginTop: 28 }}>
-                <h2 style={secH}>{t('pulse.b3')}</h2>
-                <p style={noteS}>{t('pulse.b3.note')}</p>
+                <h2 style={{ ...secH, margin: '0 0 10px' }}><span title={t('pulse.b3.note')} style={tipHead}>{t('pulse.b3')}</span></h2>
                 <OccBoard rows={boards.heating} t={t} lang={lang} nocProvs={nocProvs} />
               </div>
             )}
@@ -403,8 +413,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
               {provStat.streamLabels.split('、').map((s) => <Tag key={s} variant="warn">{streamDisplay(t, s)}</Tag>)}
             </div>
           ) : null}
-          <h3 style={{ fontSize: 15, margin: '10px 0 4px', fontWeight: 700 }}>{t('pulse.s4.rank', { prov: provName })}</h3>
-          <p style={noteS}>{t('pulse.s4.note')}</p>
+          <h3 style={{ fontSize: 15, margin: '10px 0 8px', fontWeight: 700 }}><span title={t('pulse.s4.note')} style={tipHead}>{t('pulse.s4.rank', { prov: provName })}</span></h3>
           {provOcc === null
             ? <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, height: 320 }} />
             : provOcc.length > 0
