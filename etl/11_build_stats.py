@@ -18,11 +18,12 @@ import json
 import statistics
 import sys
 from collections import Counter, defaultdict
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _paths  # noqa: E402
+import noc as NOC  # noqa: E402  E13-02:NOC 分类法(单一来源),给 stats_daily 的 closed 归 broad 桶用
 
 if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
     sys.stdout.reconfigure(encoding="utf-8")
@@ -38,6 +39,22 @@ IN_NOC_DESC = _paths.MART / "noc_descriptions.json"   # 职业名(官方名,已�
 OUT_OCC = _paths.MART / "stats_occupation.json"       # 职业 × 省(province='all' 为全国行)
 OUT_CITY = _paths.MART / "stats_city.json"            # 城市
 
+# E13-02(把脉首页,00_总设计与口径.md §3,v2 2026-08-06 晚修订)派生指标输入。ETL 只读写 data/,不碰 DB。
+IN_POSTINGS = _paths.PROCESSED_JOBBANK / "postings.json"   # 累积当前态,有 date(发布日),推 new30d/new30d_prev/mom30d
+IN_EXPIRED = _paths.PROCESSED_JOBBANK / "expired_ids.json"  # verify_expired.py 的判死台账(dead: posting_id→判死时刻)——closed30d/stats_daily.closed 的源
+IN_CLOSED = _paths.MART / "closed_jobs.json"                # 09 写的实测判死名单(externalId+closedAt)——avg_days_open 只认它(不受本次 v2 修订影响)
+
+# pulse_score 复合脉象分权重(设计文档 §3 写死,前端/后续改动不许绕过 ETL 改权重)
+# v2:动量分量从 net30d/openJobs 换成 mom30d(环比涨跌);v3:再换成 mom14d(理由见下),权重不变
+PULSE_W_MOM, PULSE_W_NAMED, PULSE_W_WAGE = 0.5, 0.3, 0.2
+
+# E13-02 v3(2026-08-06 晚,再修订):mom30d 的分母窗口 (T−60d,T−30d] 撞上本站抓取从局部覆盖扩到
+# 全 10 省全职业的爬坡期(实测:2026-06-18~06-25 那周从 94 条跳到 3608 条,此后才稳定在 1.1~1.3 万/周)——
+# 60 天窗口只要还咬到爬坡期,mom30d 就是「跟当年数据本来就少的自己比」,不是真实环比(v2 实测中位数 +169%)。
+# COVERAGE_COMPLETE = 稳定覆盖起点;分母窗起点 T−60d 早于它,整列 mom30d 写 null(8-31 起 T−60d 滑过
+# 07-02,自然解禁,不用改代码)。mom14d 的四个窗口边界(T、T-14d、T-28d)全晚于它,眼下唯一干净的环比。
+COVERAGE_COMPLETE = date(2026, 7, 2)
+
 PROVS = ["ON", "BC", "AB", "SK", "MB", "QC", "NS", "NB", "NL", "PE"]
 TODAY = date.today().isoformat()
 
@@ -47,10 +64,152 @@ def median_or_none(vals: list) -> float | None:
     return round(statistics.median(vals)) if vals else None
 
 
+def _parse_posted(s: str) -> date | None:
+    """postings.json 的 date 字段:'August 06, 2026' 或已经是 'YYYY-MM-DD'(与 verify_expired.py 同一套解法)。"""
+    s = (s or "").strip()
+    for fmt in ("%B %d, %Y", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(s[:10] if fmt == "%Y-%m-%d" else s, fmt).date()
+        except ValueError:
+            continue
+    return None
+
+
+def _parse_iso_date(s: str) -> date | None:
+    """last_seen('2026-08-06T17:34:52Z')/closedAt(ISO 带时区)都只取日期部分。"""
+    s = (s or "")[:10]
+    try:
+        return date.fromisoformat(s)
+    except ValueError:
+        return None
+
+
+def _zscores(vals: list) -> list:
+    """组内 z-score。None(算不出的项)记 0——中性,不拉不拽那一项的分;样本<2 或全同值一并归 0(防除零)。"""
+    xs = [v for v in vals if v is not None]
+    if len(xs) < 2:
+        return [0.0] * len(vals)
+    m = statistics.mean(xs)
+    sd = statistics.pstdev(xs)
+    if not sd:
+        return [0.0] * len(vals)
+    return [0.0 if v is None else (v - m) / sd for v in vals]
+
+
+def build_flow_stats() -> tuple[dict, dict, dict]:
+    """E13-02 v3(2026-08-06 晚,设计文档 §3 修订):从 postings.json(累积当前态,不是时序)推
+    new30d/new30d_prev/mom30d + new14d_prev/mom14d,从 expired_ids.json 的判死台账推 closed30d +
+    stats_daily 的 closed,从 closed_jobs.json(实测判死,mart)推 avg_days_open。province 键含 'all'。
+
+    v1→v2 变更(如实记录):v1 拿 postings.last_seen「停更」当下架信号,实测证伪——增量抓取不复核老帖,
+    发布 >7 天的帖当天 last_seen 命中率≈0%,把 closed30d 撑高了约六成。v2 换成 verify_expired.py 的
+    判死台账(expired_ids.json.dead:posting_id→判死时刻,7-25 起累积,27k 条)。
+    ⚠️ closed30d/stats_daily.closed 仍有局限,未上前端(见设计文档 §3「上前端?」列):**判死日≠真实
+    下架日**——台账是「哪天被本站的验尸脚本抽中并确认 410」,不是「哪天真的从 Job Bank 下架」,排水期
+    (积压历史欠账的那几天)会显得虚高、扎堆(实测:8-03 单天判死 7364 条、8-05 判死 6858 条,对比稳态
+    几百条/天)。因此只入库不进 S1-S3 展示,等台账进入稳态(E13-04)再校准启用。
+
+    v2→v3 变更(如实记录):mom30d 的分母窗口 (T−60d,T−30d] 撞上抓取爬坡期,v2 实测中位数 +169%,不是
+    真实环比——加 COVERAGE_COMPLETE 闸门,分母窗起点早于它就整列写 null(见模块顶部常量注释)。
+    另加 mom14d(窗口边界全晚于爬坡期,眼下唯一干净的环比),pulse_score 动量分量改用它。
+    avg_days_open 不受这两轮修订影响,仍只认 closed_jobs.json。
+    """
+    if not IN_POSTINGS.exists():
+        print(f"  ⚠ {IN_POSTINGS} 不存在,new30d/new30d_prev/mom30d/new14d_prev/mom14d/closed30d/"
+              f"avg_days_open/stats_daily.closed 留空(0/null)")
+        return {}, {}, {}
+
+    postings = json.loads(IN_POSTINGS.read_text(encoding="utf-8"))
+    today_d = date.today()
+    cut14 = today_d - timedelta(days=14)
+    cut28 = today_d - timedelta(days=28)
+    cut30 = today_d - timedelta(days=30)
+    cut60 = today_d - timedelta(days=60)
+    mom30_gated = cut60 < COVERAGE_COMPLETE   # 分母窗起点撞爬坡期 → 整列 mom30d 写 null(如实标注,不瞎补)
+
+    dead: dict[str, date] = {}   # posting_id → 判死日(expired_ids.json 台账)
+    if IN_EXPIRED.exists():
+        for pid, ts in json.loads(IN_EXPIRED.read_text(encoding="utf-8")).get("dead", {}).items():
+            d = _parse_iso_date(ts)
+            if d:
+                dead[pid] = d
+
+    recs = []  # (noc, province, posted, posting_id)
+    for p in postings:
+        noc = p.get("noc") or ""
+        pid = p.get("posting_id")
+        if not pid or NOC.teer_of(noc) is None:
+            continue
+        recs.append((noc, (p.get("province") or "").upper(), _parse_posted(p.get("date")), pid))
+
+    flow: dict[tuple, dict] = defaultdict(lambda: {"new30d": 0, "new30d_prev": 0, "new14d": 0, "new14d_prev": 0, "closed30d": 0})
+    daily_closed: dict[tuple, int] = defaultdict(int)
+    for noc, prov, posted, pid in recs:
+        keys = [(noc, "all")] + ([(noc, prov)] if prov in PROVS else [])
+        is_new30 = posted is not None and posted >= cut30
+        is_new30_prev = posted is not None and cut60 < posted <= cut30
+        is_new14 = posted is not None and posted >= cut14          # new7d 同源手法,窗口换成 14 天
+        is_new14_prev = posted is not None and cut28 < posted <= cut14
+        closed_date = dead.get(pid)
+        is_closed30 = closed_date is not None and cut30 < closed_date <= today_d
+        for k in keys:
+            if is_new30:
+                flow[k]["new30d"] += 1
+            if is_new30_prev:
+                flow[k]["new30d_prev"] += 1
+            if is_new14:
+                flow[k]["new14d"] += 1
+            if is_new14_prev:
+                flow[k]["new14d_prev"] += 1
+            if is_closed30:
+                flow[k]["closed30d"] += 1
+        # stats_daily「当日下架计数」= 台账判死日恰好是今天(不是推导,是台账写入日,不存在 1 天滞后)
+        if closed_date == today_d and prov in PROVS:
+            broad = NOC.broad_of(noc)
+            daily_closed[(prov, broad)] += 1
+            daily_closed[(prov, "all")] += 1
+
+    for d in flow.values():
+        d["net30d"] = d["new30d"] - d["closed30d"]
+        d["mom30d"] = None if mom30_gated else (
+            (d["new30d"] / d["new30d_prev"] - 1) if d["new30d_prev"] >= 5 else None)
+        d["mom14d"] = (d["new14d"] / d["new14d_prev"] - 1) if d["new14d_prev"] >= 5 else None
+
+    # avg_days_open:只认 closed_jobs.json(实测判死);postings.json 只用来查回 noc/province/发布日
+    pmap = {p["posting_id"]: p for p in postings if p.get("posting_id")}
+    days_by_key: dict[tuple, list] = defaultdict(list)
+    if IN_CLOSED.exists():
+        for c in json.loads(IN_CLOSED.read_text(encoding="utf-8")):
+            pid = (c.get("externalId") or "").split(":", 1)[-1]
+            pp = pmap.get(pid)
+            if not pp:
+                continue
+            noc = pp.get("noc") or ""
+            if NOC.teer_of(noc) is None:
+                continue
+            posted = _parse_posted(pp.get("date"))
+            closed_at = _parse_iso_date(c.get("closedAt"))
+            if not posted or not closed_at or closed_at < posted:
+                continue
+            n = (closed_at - posted).days
+            days_by_key[(noc, "all")].append(n)
+            prov = (pp.get("province") or "").upper()
+            if prov in PROVS:
+                days_by_key[(noc, prov)].append(n)
+
+    avg_open = {k: (round(statistics.mean(v), 1) if len(v) >= 5 else None) for k, v in days_by_key.items()}
+    return dict(flow), avg_open, dict(daily_closed)
+
+
 def main() -> None:
     print(f"IN : {IN_JOBS}\nOUT: {OUT_STATS}")
     jobs = [j for j in json.loads(IN_JOBS.read_text(encoding="utf-8")) if j.get("status") != "closed"]
     cut7 = (date.today() - timedelta(days=7)).isoformat()
+
+    print(f"IN : {IN_POSTINGS}\nIN : {IN_EXPIRED}\nIN : {IN_CLOSED}  (E13-02 v3 派生指标)")
+    flow, avg_open, daily_closed = build_flow_stats()
+    print(f"  flow keys(noc×province,含 all): {len(flow)} · avg_days_open 有效样本(≥5): {len(avg_open)} · "
+          f"daily_closed 桶(province×broad): {len(daily_closed)}")
 
     buckets: dict[tuple[str, str, str], list[dict]] = defaultdict(list)
     for j in jobs:
@@ -91,9 +250,11 @@ def main() -> None:
     # ── E8-14 每日快照 ────────────────────────────────────────────────────────
     # 粒度 = 日 × 省 × 大类(含 all 汇总行),取 stats 的大类层直接投影 —— 不重算,口径与主表天生一致。
     # 一天多跑几轮 ETL 也只会 UPSERT 同一批行(date 是主键的一部分),不会灌出重复点。
+    # E13-02:closed = 当日下架计数(见 build_flow_stats 顶部的口径局限说明);同一 province×broad 桶合并。
     daily = [{"date": TODAY, "province": r["province"], "broad": r["broad"],
               "openJobs": r["openJobs"], "new7d": r["new7d"],
-              "medianSalaryAnnual": r["medianSalaryAnnual"], "namedJobs": r["namedJobs"]}
+              "medianSalaryAnnual": r["medianSalaryAnnual"], "namedJobs": r["namedJobs"],
+              "closed": daily_closed.get((r["province"], r["broad"]), 0)}
              for r in rows if r["mid"] == "all"]
     OUT_DAILY.write_text(json.dumps(daily, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"stats_daily: {len(daily)} 行(日期 {TODAY})→ {OUT_DAILY}")
@@ -139,13 +300,38 @@ def main() -> None:
                 "mid": js[0].get("mid", ""), "fine": js[0].get("fine", ""),
                 "titleZh": nd.get("titleZh", ""), "titleZhShort": nd.get("titleZhShort", ""),
                 "titleEn": nd.get("title", ""), "fetched": TODAY}
-        occ_rows.append({**base, "province": "all", **agg(js)})       # 全国行
+
+        def flow_of(key: tuple) -> dict:
+            # 找不到 = 该 noc×province 在本轮 postings.json 里没有可归属的样本,真实 0(不是没算)
+            f = flow.get(key, {"new30d": 0, "new30d_prev": 0, "new14d": 0, "new14d_prev": 0, "closed30d": 0, "net30d": 0, "mom30d": None, "mom14d": None})
+            # new14d 入库(契约缝隙修补:S1「近14天新发」主数字要直读它,不能只当 mom14d 中间量)
+            return {"new30d": f["new30d"], "new30dPrev": f["new30d_prev"], "new14d": f.get("new14d", 0), "new14dPrev": f["new14d_prev"],
+                    "closed30d": f["closed30d"], "net30d": f["net30d"],
+                    "mom30d": f.get("mom30d"), "mom14d": f.get("mom14d"), "avgDaysOpen": avg_open.get(key)}
+
+        occ_rows.append({**base, "province": "all", **agg(js), **flow_of((noc, "all"))})   # 全国行
         by_p: dict[str, list] = defaultdict(list)
         for j in js:
             if j.get("province"):
                 by_p[j["province"]].append(j)
         for prov, pjs in by_p.items():
-            occ_rows.append({**base, "province": prov, **agg(pjs)})
+            occ_rows.append({**base, "province": prov, **agg(pjs), **flow_of((noc, prov))})
+
+    # pulse_score(设计文档 §3 v3):province 相同的行分一组做 z-score(全国行 'all' 自成一组,不跟单省混算)——
+    # 组内 z 是「这个职业比同组里其他职业强/弱多少个标准差」,跨组比较没意义。样本门槛不在这里裁(§8.2 前端裁)。
+    # 动量分量改用 mom14d(mom30d 撞抓取爬坡期,眼下整列 null——见 COVERAGE_COMPLETE 闸门);
+    # mom14d=None(new14d_prev<5)的行该分量按组内均值计(_zscores 对 None 记 0)。
+    by_prov_rows: dict[str, list] = defaultdict(list)
+    for r in occ_rows:
+        by_prov_rows[r["province"]].append(r)
+    for rs in by_prov_rows.values():
+        mom = [r.get("mom14d") for r in rs]
+        named_ratio = [(r["namedJobs"] / r["openJobs"]) if r["openJobs"] else None for r in rs]
+        wage_dev = [((r["medianSalaryAnnual"] - r["medianWageAnnual"]) / r["medianWageAnnual"])
+                    if r.get("medianSalaryAnnual") and r.get("medianWageAnnual") else None for r in rs]
+        for r, zm, zj, zw in zip(rs, _zscores(mom), _zscores(named_ratio), _zscores(wage_dev)):
+            r["pulseScore"] = round(PULSE_W_MOM * zm + PULSE_W_NAMED * zj + PULSE_W_WAGE * zw, 4)
+
     OUT_OCC.write_text(json.dumps(occ_rows, ensure_ascii=False, indent=2), encoding="utf-8")
 
     city_rows = []

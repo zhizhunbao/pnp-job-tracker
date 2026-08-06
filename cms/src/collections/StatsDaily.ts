@@ -15,5 +15,8 @@ export const StatsDaily: CollectionConfig = {
     { name: 'new7d', type: 'number' },
     { name: 'medianSalaryAnnual', type: 'number' },
     { name: 'namedJobs', type: 'number' },
+    // E13-02(把脉首页,v2):当日下架计数,源=expired_ids.json 判死台账;判死日≠真实下架日,排水期虚高,
+    // 暂不上前端(口径局限见 etl/11_build_stats.py build_flow_stats 顶部注释)
+    { name: 'closed', type: 'number', admin: { description: '当日下架计数(源=判死台账,判死日=今天)' } },
   ],
 }

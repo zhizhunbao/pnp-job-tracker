@@ -156,10 +156,16 @@ export async function GET(req: Request) {
     // E8-14 主图两个新粒度(当下状态 → 照常清空重灌;历史那张 stats_daily 在下面单独 UPSERT)
     ['stats_occupation', 'stats_occupation',
       // wage_low/high_annual(2026-07-31 范围拍板):改列后已清 seed_state(坑:表级哈希会让新列静默跳过)
-      ['noc', 'province', 'title_zh', 'title_zh_short', 'title_en', 'teer', 'broad', 'mid', 'fine', 'open_jobs', 'new7d', 'median_wage_annual', 'wage_low_annual', 'wage_high_annual', 'median_salary_annual', 'salary_n', 'named_jobs', 'fetched'],
+      // E13-02 v3(把脉首页):new30d/new30d_prev/mom30d/new14d_prev/mom14d/closed30d/net30d/avg_days_open/pulse_score
+      // ——改列后同样要清 seed_state('stats_occupation')
+      ['noc', 'province', 'title_zh', 'title_zh_short', 'title_en', 'teer', 'broad', 'mid', 'fine', 'open_jobs', 'new7d', 'median_wage_annual', 'wage_low_annual', 'wage_high_annual', 'median_salary_annual', 'salary_n', 'named_jobs', 'fetched', 'new30d', 'new30d_prev', 'mom30d', 'new14d', 'new14d_prev', 'mom14d', 'closed30d', 'net30d', 'avg_days_open', 'pulse_score'],
       (r) => ({ noc: r.noc, province: r.province, title_zh: r.titleZh, title_zh_short: r.titleZhShort, title_en: r.titleEn, teer: r.teer, broad: r.broad, mid: r.mid, fine: r.fine,
                 open_jobs: r.openJobs, new7d: r.new7d, median_wage_annual: r.medianWageAnnual, wage_low_annual: r.wageLowAnnual, wage_high_annual: r.wageHighAnnual, median_salary_annual: r.medianSalaryAnnual,
-                salary_n: r.salaryN, named_jobs: r.namedJobs, fetched: r.fetched })],
+                salary_n: r.salaryN, named_jobs: r.namedJobs, fetched: r.fetched,
+                new30d: r.new30d ?? null, new30d_prev: r.new30dPrev ?? null, mom30d: r.mom30d ?? null,
+                new14d: r.new14d ?? null, new14d_prev: r.new14dPrev ?? null, mom14d: r.mom14d ?? null,
+                closed30d: r.closed30d ?? null, net30d: r.net30d ?? null,
+                avg_days_open: r.avgDaysOpen ?? null, pulse_score: r.pulseScore ?? null })],
     ['stats_city', 'stats_city',
       ['city', 'province', 'open_jobs', 'new7d', 'median_wage_annual', 'median_salary_annual', 'salary_n', 'named_jobs', 'fetched'],
       (r) => ({ city: r.city, province: r.province, open_jobs: r.openJobs, new7d: r.new7d,
@@ -206,14 +212,14 @@ export async function GET(req: Request) {
     if (martPaths('stats_daily').length > 0) {
       const dailyRows = (await mart('stats_daily')).map((r: any) => ({
         date: r.date, province: r.province, broad: r.broad, open_jobs: r.openJobs, new7d: r.new7d,
-        median_salary_annual: r.medianSalaryAnnual, named_jobs: r.namedJobs,
+        median_salary_annual: r.medianSalaryAnnual, named_jobs: r.namedJobs, closed: r.closed ?? null,
         created_at: now, updated_at: now,
       })).filter((r) => r.date && r.province)
       await insertBatch(client, 'stats_daily',
-        ['date', 'province', 'broad', 'open_jobs', 'new7d', 'median_salary_annual', 'named_jobs', 'created_at', 'updated_at'],
+        ['date', 'province', 'broad', 'open_jobs', 'new7d', 'median_salary_annual', 'named_jobs', 'closed', 'created_at', 'updated_at'],
         dailyRows,
         `ON CONFLICT (date, province, broad) DO UPDATE SET open_jobs=EXCLUDED.open_jobs, new7d=EXCLUDED.new7d,
-         median_salary_annual=EXCLUDED.median_salary_annual, named_jobs=EXCLUDED.named_jobs, updated_at=EXCLUDED.updated_at`)
+         median_salary_annual=EXCLUDED.median_salary_annual, named_jobs=EXCLUDED.named_jobs, closed=EXCLUDED.closed, updated_at=EXCLUDED.updated_at`)
       counts.stats_daily = dailyRows.length
     }
 

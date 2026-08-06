@@ -1106,6 +1106,14 @@ export interface DesignatedEmployer {
    * 雇主申报的 NOC 码(逗号连接)。仅 NL(官方省站名录)有;空 = 未申报职位(NL)或来源不含此信息(NB/NS)
    */
   nocs?: string | null;
+  /**
+   * 雇主页出处(NL 官方名录逐家页);判定层引用此表事实时的 evidence
+   */
+  url?: string | null;
+  /**
+   * 本站抓取日(evidence 随行)
+   */
+  fetched?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1389,6 +1397,10 @@ export interface StatsDaily {
   new7d?: number | null;
   medianSalaryAnnual?: number | null;
   namedJobs?: number | null;
+  /**
+   * 当日下架计数(源=判死台账,判死日=今天)
+   */
+  closed?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1440,6 +1452,46 @@ export interface StatsOccupation {
   salaryN?: number | null;
   namedJobs?: number | null;
   fetched?: string | null;
+  /**
+   * 近 30 天新增(datePosted∈(T-30d,T])
+   */
+  new30d?: number | null;
+  /**
+   * 前 30 天新增(datePosted∈(T-60d,T-30d]),仅作 mom30d 分母
+   */
+  new30dPrev?: number | null;
+  /**
+   * 环比涨跌:new30d/new30dPrev−1;分母窗撞抓取爬坡期时整列为 null(COVERAGE_COMPLETE 闸门,8-31 起解禁)
+   */
+  mom30d?: number | null;
+  /**
+   * 近 14 天新增(datePosted∈(T-14d,T]);S1「近14天新发」主数字直读
+   */
+  new14d?: number | null;
+  /**
+   * 前 14 天新增(datePosted∈(T-28d,T-14d]),仅作 mom14d 分母
+   */
+  new14dPrev?: number | null;
+  /**
+   * 环比涨跌(14 天窗,眼下唯一干净的环比):new14d/new14dPrev−1;new14dPrev<5 为 null——pulse_score 动量分量用它
+   */
+  mom14d?: number | null;
+  /**
+   * 近 30 天下架(源=expired_ids.json 判死台账;判死日≠真实下架日,排水期虚高,暂不上前端)
+   */
+  closed30d?: number | null;
+  /**
+   * new30d − closed30d(随判死台账积累变准)
+   */
+  net30d?: number | null;
+  /**
+   * 平均在架天数,只认实测判死名单(closed_jobs.json);样本<5 为 null
+   */
+  avgDaysOpen?: number | null;
+  /**
+   * 复合脉象分:0.5·z(mom14d)+0.3·z(通道命中率)+0.2·z(薪资偏离),province 同组内 z-score
+   */
+  pulseScore?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2272,6 +2324,8 @@ export interface DesignatedEmployersSelect<T extends boolean = true> {
   isTech?: T;
   source?: T;
   nocs?: T;
+  url?: T;
+  fetched?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2427,6 +2481,7 @@ export interface StatsDailySelect<T extends boolean = true> {
   new7d?: T;
   medianSalaryAnnual?: T;
   namedJobs?: T;
+  closed?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2453,6 +2508,16 @@ export interface StatsOccupationSelect<T extends boolean = true> {
   salaryN?: T;
   namedJobs?: T;
   fetched?: T;
+  new30d?: T;
+  new30dPrev?: T;
+  mom30d?: T;
+  new14d?: T;
+  new14dPrev?: T;
+  mom14d?: T;
+  closed30d?: T;
+  net30d?: T;
+  avgDaysOpen?: T;
+  pulseScore?: T;
   updatedAt?: T;
   createdAt?: T;
 }
