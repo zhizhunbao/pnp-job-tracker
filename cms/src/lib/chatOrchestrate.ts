@@ -368,6 +368,10 @@ export const SLOT_SYSTEM = [
   'RULES:',
   '- claims = EVERY sentence the user attributes to someone else (中介/agent, 朋友/friend, school, consultant). Copy their wording verbatim.'
     + ' This is the field people get wrong: if the message contains 中介说 / 朋友说 / they told me / I was told, claims MUST NOT be empty.',
+  // 🔴 2026-08-06 生产实录 #36/#37:抽槽把 EARLIER 里 assistant 的句子(我们自己上一轮的答复)抽成
+  //    「你听到的」主张,见客层回头把自家门槛行当中介报价对账。prompt 这条是软约束,硬闸在 orchestrate。
+  '- claims come ONLY from the user\'s own words (NOW, or user lines in EARLIER). Lines under "assistant:" are OUR OWN'
+    + ' previous answers — they are NEVER a claim, no matter what they say.',
   // 一条主张一项:官方事实仍要逐条对账;收费与包办在见客层会有意识地合成一条交易判断。
   '- ONE assertion per claim item. If one sentence carries a promise about a company AND a fee AND a timeline, that is THREE claim'
     + ' items, each with its own text and topic. Never put two assertions into one text — they get different answers.',
@@ -2899,7 +2903,21 @@ export async function orchestrate(
   }
   const parsed = parseLlmJson(raw)
   if (!parsed) throw new ChatError('llm', `slot parse failed: ${raw.slice(0, 160)}`)
-  const merged = mergeFollowupSlots(normalizeSlots(parsed), input.history?.length ? input.context : null, text)
+  let merged = mergeFollowupSlots(normalizeSlots(parsed), input.history?.length ? input.context : null, text)
+  // 🔴 claims 只能来自用户自己的话(2026-08-06 生产实录 #36/#37):抽槽模型会把 EARLIER 里
+  //    assistant 的句子 —— 我们自己上一轮的答复 —— 抽成「你听到的」主张,见客层回头把自家门槛行
+  //    当中介报价对账(「报价本身不能证明…」)。SLOT_SYSTEM 里那条规则是软的,这道闸是硬的:
+  //    主张文本(掐头 60 字、去空白)出现在任何一条 assistant 历史里就整条丢弃。
+  //    误伤面算过:用户真把我们的话复述回来问「真的吗」,那也不是第三方主张,丢了正确。
+  if (merged.claims.length && input.history?.length) {
+    const squash = (s: string) => s.replace(/\s+/g, '')
+    const ours = input.history.filter((h) => h.role === 'assistant').map((h) => squash(h.content))
+    const own = merged.claims.filter((c) => {
+      const t = squash(c.text).slice(0, 60)
+      return t.length < 6 || !ours.some((a) => a.includes(t))
+    })
+    if (own.length !== merged.claims.length) merged = { ...merged, claims: own }
+  }
   // 他原话里打出来的 5 位码压过模型和上下文:那是**他自己指定的那一条**(多半是点了我们摆的候选 chip),
   // 再去 pg_trgm 猜一次就是拿相似度覆盖一个确定值(见 literalNoc 上面那段实测)。
   const typed = literalNoc(text)

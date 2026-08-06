@@ -34,6 +34,12 @@
 >   弹出、点推荐位以用户身份发「我持有有效的 PGWP 工签」。测试 119 绿(pathVerdict 33+chatVerdict
 >   19+orchestrate 67)、tsc 绿。生产已验 /api/pathways(13 行 NL 首 PE 底)。
 >   **待办:CTA 落点仅挂件一种(内嵌未做);ko 文案未人工校。**
+> - **🐛 自家答复被当「你听到的」主张对账(Frank 实测报障,chat_logs #36/#37 实录)**:抽槽模型把
+>   EARLIER 里 assistant 的句子抽成 claims → 见客层把自家门槛行当中介报价回怼(「报价本身不能证明…」)。
+>   修法:orchestrate 加**硬闸**(claim 文本去空白掐 60 字,命中任一 assistant 历史即整条丢弃)+
+>   SLOT_SYSTEM 补软规则;回归测试进 chatVerdict(误抽的死、真主张活)。
+>   同串还看到两类 LLM 组稿病(未修,归「非数字断言无闸门」旧账):把「要求这份工作至少给到中位」
+>   压成「申请人年薪门槛」;省名拼接串台(「新不伦瑞克省 NL NLPNP International Graduate」)。
 > - **✅ 挂件启动器可自由拖动(Frank 追加「防挡内容」,`4db9059`)**:位移>6px 才算拖、
 >   松手压掉那次 click、位置存 localStorage(jt.chat.dock.v1)、resize 钳回视口;
 >   **拖过=用户显式选位,吸底条启发式避让停用**(只服务默认档);touch-action:none 保手机手感。

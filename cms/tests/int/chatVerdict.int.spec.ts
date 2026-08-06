@@ -277,6 +277,33 @@ describe('缺槽 → 反问那几个槽,一个裁决数字都不出', () => {
   })
 })
 
+// ── ③b 主张只认用户自己的话(2026-08-06 生产实录 #36/#37)─────────────────────
+
+describe('claims 硬闸:自家上一轮答复不许被抽成「你听到的」主张', () => {
+  const OUR_LINE = '安省要求申请人的语言达到CLB6,工作经验满3个月,年薪至少$100,006/年'
+
+  it('抽槽把 assistant 历史里的句子抽成 claim → 整条丢弃;真第三方主张原样留下', async () => {
+    const pool = new FakePool()
+    H.slots = JSON.stringify({
+      occ_en: 'carpenter', noc: '72310', provs: ['ON'], exp_months: 0, status: null,
+      age: null, married: null, clb: null, edu: null, edu_years: null, canada_study: null, study_prov: null,
+      claims: [
+        { text: OUR_LINE, topic: 'thresholds', province: 'ON' },              // 自家答复被误抽 → 该死
+        { text: '中介说曼省有合作公司包提名', topic: 'private-promise', province: 'MB' },  // 真主张 → 该活
+      ],
+    })
+    const r = await orchestrate(pool, {
+      text: '其他省有机会吗', lang: 'zh',
+      history: [
+        { role: 'user', content: '安省大专毕业,做木工,还没工作,毕业后能留下吗?' },
+        { role: 'assistant', content: `安省大专毕业后能否留下,取决于雇主工作。\n\n- ${OUR_LINE}\n- 目前安省在招岗位…` },
+      ],
+    })
+    expect(r.slots.claims.map((c) => c.text), '自家门槛行还在 claims 里').toEqual(['中介说曼省有合作公司包提名'])
+    expect(JSON.stringify(r.facts), 'facts 里不许出现拿自家答复当主张的对账行').not.toContain('100,006')
+  })
+})
+
 // ── ④ 零回归:普通问法不触发 ───────────────────────────────────────────────
 
 describe('普通职位问法不触发裁决(既有行为一步不改)', () => {
