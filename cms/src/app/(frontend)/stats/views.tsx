@@ -1,20 +1,18 @@
 'use client'
 // 地区统计视图集(E5-04):全部零计算,渲染 ETL 预聚合行。
 // 每级拆「*Content 内容组件」+页面壳(E8-02 时代曾与 /jobs 统计弹窗共用;弹窗 2026-07-11 已退役,顶栏改跳转页面)。
-import { useMemo, useState } from 'react'
+// E13-03(2026-08-06):/stats 索引页与 /stats/compare **退役**(301 → /start,见 next.config redirects)——
+// 本文件只剩省级与省×大类两级(S4 的下钻落点)。StatsIndexContent/StatsIndexView/CompareContent/CompareView
+// 与它们独占的 StatsCharts 一并删除,不留死代码;省卡形态搬去 start/StartView 的 S4。
+import { useMemo } from 'react'
 import { StatsShell, MetricCards, CaliberLine, useLang } from './ui'
 import { BackLink } from '../BackLink'
-import { BANNER_IMGS, Button, Card, CardAction, CardKV, Chip, PageBanner, Tag } from '../ui/primitives'
+import { Card, CardAction, CardKV, Tag } from '../ui/primitives'
 import { DataTable } from '../ui/DataTable'
-import { IconMapPin, IconScale, IconStar, IconTarget } from '../Icons'
-import { BROAD_SLUGS, PROVS, PROV_NAME, type StatRow, type SrcRow, type ProvExtra, type OccRow, type CityRow } from './shared'
-import { MarketChart, StatsCharts, useMarketStats } from './charts'
-import { PricingModal } from '../jobs/PricingModal'
+import { BROAD_SLUGS, PROV_NAME, type StatRow, type SrcRow } from './shared'
 import { streamDisplay, type TFn } from '../jobs/i18n'
 
 const money = (v: number | null) => (v != null ? `$${Math.round(v / 1000)}K` : '—')
-const th: React.CSSProperties = { textAlign: 'left', padding: '8px 12px', fontSize: 12.5, color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap', borderBottom: '1px solid #e5e7eb' }
-const td: React.CSSProperties = { padding: '8px 12px', fontSize: 13, color: '#374151', borderBottom: '1px solid #f3f4f6' }
 
 function TopCities({ raw, t }: { raw: string; t: TFn }) {
   const cities = useMemo(() => { try { return JSON.parse(raw) as { city: string; n: number }[] } catch { return [] } }, [raw])
@@ -27,91 +25,6 @@ function TopCities({ raw, t }: { raw: string; t: TFn }) {
       {cities.map((c) => <span key={c.city} style={{ background: '#eef2ff', color: '#3730a3', borderRadius: 6, padding: '2px 8px', whiteSpace: 'nowrap' }}>{c.city}　{c.n}</span>)}
     </div>
   )
-}
-
-// 难度 tier 药丸配色(与 JobsTable DIFF_TAG 同值;stats 包不从 JobsTable 导入避免拖整模块,老坑 6 同族)
-const DIFF_COLORS: Record<string, { bg: string; fg: string; bd: string }> = {
-  easy: { bg: '#dcfce7', fg: '#166534', bd: '#bbf7d0' },
-  mid: { bg: '#fef9c3', fg: '#854d0e', bd: '#fde68a' },
-  tight: { bg: '#fee2e2', fg: '#b91c1c', bd: '#fecaca' },
-}
-const numFmt = (n: number) => n.toLocaleString('en-CA')
-
-// ── 省份索引(批B #133 重做:省卡挪最上;指标换血——中位年薪撤(省级单一中位=无效聚合),
-//    上 IRCC 学签/工签/PNP 拿到 PR + 移民难度(与 E8-12 省弹框同源同口径))──
-const SHORT_PROV: Record<string, string> = { NL: 'Newfoundland' }  // 卡上用通行短名(全名 218px 任何布局都放不下),悬停仍显全名
-export function StatsIndexContent({ rows, srcs, t, lang = 'zh', provExtra = {}, occ = [], city = [], channels, marketLoading = false }: { rows: StatRow[]; srcs: SrcRow[]; t: TFn; lang?: string; provExtra?: Record<string, ProvExtra>; occ?: OccRow[]; city?: CityRow[]; channels?: { pnp: string[]; ee: string[] }; marketLoading?: boolean }) {
-  const provRows = rows.filter((r) => r.broad === 'all')
-  // 2026-07-25 Frank:卡内一律不折行——标签放不下省略号截断,数值不换行
-  const kv = (label: React.ReactNode, val: React.ReactNode) => (
-    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-      <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{label}</span>
-      <span style={{ color: '#111827', whiteSpace: 'nowrap', flexShrink: 0 }}>{val}</span>
-    </div>
-  )
-  return (
-    <>
-      {/* 页头=PageBanner(#65 五模块统一浅色带,统计=绿) */}
-      <PageBanner module="stats" icon={<IconMapPin />} title={t('stats.entry')} images={BANNER_IMGS.stats}
-        stats={[{ v: PROVS.length, label: t('stats.bnProvs') }, { v: BROAD_SLUGS.length, label: t('stats.bnBroads') }]} />
-      {/* E8-14 主图放**页头之下、省卡之上**(Frank 2026-07-28「图没显示啊」——实测它原来在
-          距页顶 867px 处,1280×900 的首屏根本看不到,手机更要滚过 10 张省卡)。
-          它是「页面最主要的统计图」,就该占首屏。 */}
-      {/* 主图数据改挂载后拉 /api/market-stats(SSR 瘦身,与 /start 同端点):加载中渲固定高占位防跳版,
-          拉完为空(缺表)整块不渲(MarketChart 自身的空守卫),标题一并撤 —— 不出空壳 */}
-      {(marketLoading || occ.length > 0 || city.length > 0) && (
-        <>
-          <h2 style={{ fontSize: 15.5, margin: '14px 0 8px' }}>{t('mkt.title')}</h2>
-          {marketLoading
-            ? <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, height: 560 }} />
-            : <MarketChart occ={occ} city={city} rows={rows} t={t} lang={lang} channels={channels} />}
-        </>
-      )}
-
-      <h2 style={{ fontSize: 15.5, margin: '18px 0 8px' }}>{t('stats.provIndex')}</h2>
-      {/* min 270:装得下「Newfoundland and Labrador+NL+徽章」一行(230 时省名被截成 Onta…);超窄屏 min(100%,·) 防溢出 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 270px), 1fr))', gap: 12, margin: '4px 0 16px' }}>
-        {provRows.map((r) => {
-          const ex = provExtra[r.province]
-          const work = (ex?.info?.tfwp?.n ?? 0) + (ex?.info?.imp?.n ?? 0)
-          const tier = ex?.tier && DIFF_COLORS[ex.tier] ? ex.tier : null
-          return (
-          <a key={r.province} href={`/stats/${r.province.toLowerCase()}`} className="cardHover"
-            style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '14px 16px', textDecoration: 'none', color: '#1f2937' }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-              <span title={PROV_NAME[r.province] || r.province} style={{ fontWeight: 700, fontSize: 15, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{SHORT_PROV[r.province] || PROV_NAME[r.province] || r.province}</span>
-              <span style={{ color: '#9ca3af', fontWeight: 400, fontSize: 12.5, flexShrink: 0 }}>{r.province}</span>
-              {tier ? <span style={{ marginLeft: 'auto', flexShrink: 0, whiteSpace: 'nowrap', fontSize: 11, fontWeight: 600, padding: '1px 8px', borderRadius: 999, background: DIFF_COLORS[tier].bg, color: DIFF_COLORS[tier].fg, border: `1px solid ${DIFF_COLORS[tier].bd}` }}>{t('diff.' + tier)}</span> : null}
-            </div>
-            <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 8, lineHeight: 2 }}>
-              {kv(t('stats.openJobs'), <strong>{r.openJobs != null ? numFmt(r.openJobs) : '—'}</strong>)}
-              {/* #203(第 26 轮体检):首页成片裸「—」掉可信度 —— 无清单/不适用是政策事实,直接说人话(口径挂 title) */}
-              {kv(t('stats.named'), r.namedJobs
-                ? <span style={{ color: '#b45309', fontWeight: 600 }}>{numFmt(r.namedJobs)}</span>
-                : <span title={t('stats.noList.tip')} style={{ color: '#9ca3af' }}>{t('stats.noList')}</span>)}
-              {kv(t('stats.cardWork'), work ? numFmt(work) : '—')}
-              {kv(t('stats.cardStudy'), ex?.info?.study?.n ? numFmt(ex.info.study.n) : '—')}
-              {kv(t('stats.cardPr'), ex?.info?.pnpPr?.n ? numFmt(ex.info.pnpPr.n)
-                : r.province === 'QC' ? <span title={t('stats.naQc.tip')} style={{ color: '#9ca3af' }}>{t('stats.naQc')}</span> : '—')}
-            </div>
-          </a>
-          )
-        })}
-      </div>
-      {/* IRCC 年份口径一行说清,不在每卡重复(第25轮「同句重复=废话」口径) */}
-      <StatsCharts rows={rows} t={t} />
-      <div style={{ marginTop: 14 }}>
-        <a href="/stats/compare" style={{ fontSize: 13, color: '#2563eb', textDecoration: 'none' }}><IconScale /> {t('stats.compare')}</a>
-      </div>
-      <CaliberLine t={t} srcs={srcs} fetched={provRows[0]?.fetched || ''} />
-    </>
-  )
-}
-export function StatsIndexView({ rows, srcs, provExtra }: { rows: StatRow[]; srcs: SrcRow[]; provExtra?: Record<string, ProvExtra> }) {
-  const [lang, setLang, t] = useLang()
-  // 主图 occ/city/channels 挂载后拉(SSR 瘦身,/start 同端点);rows 走 SSR 传入(省卡/SEO 本来就要)
-  const market = useMarketStats()
-  return <StatsShell lang={lang} setLang={setLang} t={t}><StatsIndexContent rows={rows} srcs={srcs} t={t} lang={lang} provExtra={provExtra} occ={market?.occ} city={market?.city} channels={market?.channels} marketLoading={market === null} /></StatsShell>
 }
 
 // ── E12-07 省难度卡(2026-07-20 Frank 拍板「stats 卡先行/人话档名」):分档+逐因子出处;
@@ -171,14 +84,14 @@ export function StatsProvContent({ prov, rows, srcs, t, ranks, news = [] }: { pr
   const broadLabel = (b: string) => (b === '未分类' ? t('cell.uncat') : t('broad.' + b))
   return (
     <>
-      <div style={{ marginBottom: 8 }}><BackLink href="/stats" label={t('stats.provIndex')} /></div>
+      <div style={{ marginBottom: 8 }}><BackLink href="/start" label={t('pulse.entry')} /></div>
       <h1 style={{ fontSize: 22, margin: 0 }}>{t('stats.title', { prov: PROV_NAME[prov] || prov })}</h1>
       {all && <MetricCards r={all} t={t} />}
-      {/* 全国排名一句话结论 + 对比入口(第 5 轮 #19):P3 要的是答案,不是让用户跨页心算 */}
+      {/* 全国排名一句话结论(第 5 轮 #19):P3 要的是答案,不是让用户跨页心算。
+          跨省对比入口 2026-08-06 随 /stats/compare 退役一并撤(E13-00 §1 拍板 2) */}
       {ranks && (ranks.open != null || ranks.wage != null) && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', background: '#eef2ff', border: '1px solid #e0e7ff', borderRadius: 8, padding: '8px 12px', margin: '10px 0 0', fontSize: 13 }}>
           <span style={{ color: '#3730a3' }}>{t('stats.rank', { a: ranks.open ?? '—', b: ranks.wage ?? '—', total: ranks.total })}</span>
-          <a href="/stats/compare" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 600, whiteSpace: 'nowrap' }}>{t('stats.compare')}</a>
         </div>
       )}
       {all && <TopCities raw={all.topCities} t={t} />}
@@ -245,112 +158,4 @@ export function StatsCatContent({ prov, row, srcs, t }: { prov: string; row: Sta
 export function StatsCatView({ prov, row, srcs }: { prov: string; row: StatRow; srcs: SrcRow[]; catSlug?: string }) {
   const [lang, setLang, t] = useLang()
   return <StatsShell lang={lang} setLang={setLang} t={t}><StatsCatContent prov={prov} row={row} srcs={srcs} t={t} /></StatsShell>
-}
-
-// ── Pro 跨省对比(E5-04 §3.4):选 2-4 省并排;已建档用户按「我的 NOC」预选大类并高亮 ──
-// 原先按「我的 NOC」首位猜大类预选 —— 本站大类不再是官方首位的一一对应(官方一个首位里
-// 混着好几个行业),猜出来的大类经常空表。照「宁可留空也不瞎猜」,默认全部,用户自己挑。
-export function CompareContent({ rows, srcs, isPro, loggedIn, myNocs, t }: { rows: StatRow[]; srcs: SrcRow[]; isPro: boolean; loggedIn: boolean; myNocs: string[]; t: TFn }) {
-  const [broad, setBroad] = useState<string>('all')
-  const [picked, setPicked] = useState<string[]>(['ON', 'BC'])
-  const [pricing, setPricing] = useState(false)  // 升级 CTA 开定价弹窗(E8-02:站内不跳页)
-  const provs = [...new Set(rows.map((r) => r.province))]
-  const toggle = (p: string) => setPicked((cur) => cur.includes(p) ? cur.filter((x) => x !== p) : cur.length >= 4 ? cur : [...cur, p])
-  const broadLabel = (b: string) => (b === 'all' ? t('fields.all') : b === '未分类' ? t('cell.uncat') : t('broad.' + b))
-
-  if (!isPro) {
-    // ⑤ 价值时刻批(2026-07-19 Frank 批):空态从「一条横幅」改「三行价值点+模糊示例表」——
-    // 用户知道对比长什么样、比什么;示例值硬编码不回传真数据(服务端 gate 原样);点钮开定价弹窗
-    const demo: [string, string[]][] = [
-      [t('stats.openJobs'), ['9,842', '6,157', '4,910']],
-      [t('stats.medWage'), ['$62K', '$60K', '$65K']],
-      [t('stats.named'), ['214', '187', '96']],
-    ]
-    const demoProvs = ['ON', 'BC', 'AB']
-    return (
-      <>
-        <h1 style={{ fontSize: 22, margin: 0 }}><IconScale /> {t('stats.compare')}</h1>
-        <ul style={{ margin: '14px 0 12px 20px', fontSize: 13, color: '#374151', lineHeight: 2 }}>
-          <li>{t('cmp.v1')}</li>
-          <li>{t('cmp.v2')}</li>
-          <li>{t('cmp.v3')}</li>
-        </ul>
-        <div style={{ position: 'relative', border: '1px solid #e5e7eb', borderRadius: 12, overflow: 'hidden', maxWidth: 640 }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5, background: '#fff' }}>
-            <thead><tr><th style={{ ...th }}></th>{demoProvs.map((p) => <th key={p} style={{ ...th, fontSize: 13 }}>{PROV_NAME[p] || p}</th>)}</tr></thead>
-            <tbody>
-              {demo.map(([label, vals]) => (
-                <tr key={label}>
-                  <td style={{ ...td, color: '#9ca3af', whiteSpace: 'nowrap' }}>{label}</td>
-                  {vals.map((v, i) => <td key={i} style={{ ...td, filter: 'blur(4px)', userSelect: 'none' }}>{v}</td>)}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <span style={{ background: 'rgba(255,255,255,.92)', border: '1px solid #fde68a', color: '#92400e', fontSize: 12.5, fontWeight: 600, borderRadius: 999, padding: '5px 12px' }}>{t('cmp.demo')}</span>
-            <Button kind="pro" sm onClick={() => setPricing(true)}><IconStar /> {t('cmp.demoCta')}</Button>
-          </div>
-        </div>
-        {pricing && <PricingModal t={t} loggedIn={loggedIn} pro={false} z={60} onClose={() => setPricing(false)} />}
-      </>
-    )
-  }
-  const metrics: [string, (r: StatRow) => React.ReactNode][] = [
-    [t('stats.openJobs'), (r) => r.openJobs],
-    [t('stats.new7d'), (r) => r.new7d],
-    [t('stats.medWage'), (r) => money(r.medianWageAnnual)],
-    [t('stats.medSalary'), (r) => money(r.medianSalaryAnnual)],
-    // #203:省级对比同口径——无清单是政策事实,说人话不留裸「—」
-    [t('stats.named'), (r) => (r.namedJobs ? <span style={{ color: '#b45309', fontWeight: 600 }}>{r.namedJobs}</span> : <span title={t('stats.noList.tip')} style={{ color: '#9ca3af' }}>{t('stats.noList')}</span>)],
-    [t('stats.aip'), (r) => r.aipJobs],
-    // W 规矩存量清理(#110):通道枚举「· 」杂糅拆一行一条
-    [t('stats.streams'), (r) => (r.streamLabels ? <>{r.streamLabels.split('、').map((s) => <div key={s}>{streamDisplay(t, s)}</div>)}</> : '—')],
-  ]
-  return (
-    <>
-      <h1 style={{ fontSize: 22, margin: 0 }}><IconScale /> {t('stats.compare')}</h1>
-      <div style={{ margin: '12px 0', fontSize: 12.5, color: '#6b7280' }}>{t('stats.pickProv')}{myNocs.length ? <span style={{ marginLeft: 10, color: '#3730a3' }}><IconTarget /> {t('stats.myNoc')}:NOC {myNocs.join('/')}</span> : null}</div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
-        {provs.map((p) => (
-          <Chip key={p} active={picked.includes(p)} onClick={() => toggle(p)}>{p}</Chip>
-        ))}
-        <select value={broad} onChange={(e) => setBroad(e.target.value)} style={{ marginLeft: 10, fontSize: 12.5, border: '1px solid #d1d5db', borderRadius: 6, padding: '4px 8px', color: '#374151' }}>
-          <option value="all">{broadLabel('all')}</option>
-          {BROAD_SLUGS.map(([, b]) => <option key={b} value={b}>{broadLabel(b)}</option>)}
-        </select>
-      </div>
-      {/* E8-08 #121:≤640 一省一卡(转置卡:原列头省=卡标题,原指标行=键值行;metrics 数组复用零双写) */}
-      <div className="tcCards">
-        {picked.map((p) => {
-          const r = rows.find((x) => x.province === p && x.broad === broad)
-          return (
-            <Card key={p}>
-              <div style={{ fontSize: 14.5, fontWeight: 600 }}>{PROV_NAME[p] || p}</div>
-              <CardKV items={metrics.map(([label, get]) => ({ k: label, v: r ? get(r) : '—' }))} />
-            </Card>
-          )
-        })}
-      </div>
-      <div className="tcTableWrap">
-      {/* 组件统一 P2 余批(#110):对比表换公共 DataTable(转置表=指标行×省列,列随选省动态生成,不排序) */}
-      <DataTable<typeof metrics[number]> rows={metrics} rowKey={([label]) => String(label)} cols={[
-        { key: 'metric', label: '', nowrap: true, render: ([label]) => <span style={{ color: '#9ca3af' }}>{label}</span> },
-        ...picked.map((p) => ({
-          key: p,
-          label: <span style={{ fontSize: 14 }}>{PROV_NAME[p] || p}</span>,
-          render: ([, get]: typeof metrics[number]) => {
-            const r = rows.find((x) => x.province === p && x.broad === broad)
-            return <span style={{ fontWeight: 500 }}>{r ? get(r) : '—'}</span>
-          },
-        })),
-      ]} />
-      </div>
-      <CaliberLine t={t} srcs={srcs} fetched={rows[0]?.fetched || ''} />
-    </>
-  )
-}
-export function CompareView({ rows, srcs, isPro, loggedIn, myNocs }: { rows: StatRow[]; srcs: SrcRow[]; isPro: boolean; loggedIn: boolean; myNocs: string[] }) {
-  const [lang, setLang, t] = useLang()
-  return <StatsShell lang={lang} setLang={setLang} t={t}><CompareContent rows={rows} srcs={srcs} isPro={isPro} loggedIn={loggedIn} myNocs={myNocs} t={t} /></StatsShell>
 }

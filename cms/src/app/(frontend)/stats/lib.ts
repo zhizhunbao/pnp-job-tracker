@@ -63,28 +63,41 @@ export async function loadStatSources(): Promise<SrcRow[]> {
 export async function loadOccStats(): Promise<OccRow[]> {
   const payload = await getPayload({ config: await config })
   const num = (v: any) => (v == null ? null : Number(v))
+  // 韩文职业名从 noc_descriptions 借(485/489 有值);stats_occupation 不另存一列 —— 名字的家在那张表。
+  // 英文用 title_en(NOC 官方名,引用依据);中文用 title_zh_short(本站 04f/04g 译名)。
+  const BASE = `s.noc, s.province, s.title_zh, s.title_zh_short, s.title_en, d.title_ko, s.teer, s.broad, s.mid, s.fine,
+              s.open_jobs, s.new7d, s.median_wage_annual, s.wage_low_annual, s.wage_high_annual, s.median_salary_annual, s.salary_n, s.named_jobs`
+  // E13-03 派生列(§3 契约 v3):只取上得了前端的五列 —— 30 天窗(爬坡期假涨)与下架列(排水期虚高)
+  // 口径都未稳,不读也不展示(同入 E13-04)。
+  // **逐列探测**而不是整句 try/catch:E13-02 的 DDL 分批落库,少一列不该把其余几列一起打回 null。
+  // 探到哪列就 SELECT 哪列,没探到的在映射层给 null(前端「null=整块不渲」照旧)。
+  const WANT = ['new14d', 'new14d_prev', 'mom14d', 'avg_days_open', 'pulse_score']
+  const pool = (payload.db as any).pool
+  const have: string[] = await pool.query(
+    `SELECT column_name FROM information_schema.columns WHERE table_name = 'stats_occupation' AND column_name = ANY($1)`, [WANT],
+  ).then((r: any) => r.rows.map((x: any) => String(x.column_name))).catch(() => [])
+  const extra = have.length ? `, ${have.map((c) => `s.${c}`).join(', ')}` : ''
+  let rows: any[]
   try {
-    const rows = (await (payload.db as any).pool.query(
-      // 韩文职业名从 noc_descriptions 借(485/489 有值);stats_occupation 不另存一列 —— 名字的家在那张表。
-      // 英文用 title_en(NOC 官方名,引用依据);中文用 title_zh_short(本站 04f/04g 译名)。
-      `SELECT s.noc, s.province, s.title_zh, s.title_zh_short, s.title_en, d.title_ko, s.teer, s.broad, s.mid, s.fine,
-              s.open_jobs, s.new7d, s.median_wage_annual, s.wage_low_annual, s.wage_high_annual, s.median_salary_annual, s.salary_n, s.named_jobs
+    rows = (await pool.query(`SELECT ${BASE}${extra}
        FROM stats_occupation s LEFT JOIN noc_descriptions d ON d.noc = s.noc
        ORDER BY s.open_jobs DESC NULLS LAST`)).rows
-    return rows.map((r: any) => ({
-      noc: r.noc ?? '', province: r.province ?? '', titleZh: r.title_zh ?? '',
-      titleZhShort: r.title_zh_short ?? '', titleEn: r.title_en ?? '', titleKo: r.title_ko ?? '',
-      teer: num(r.teer), broad: r.broad ?? '', mid: r.mid ?? '', fine: r.fine ?? '',
-      openJobs: num(r.open_jobs), new7d: num(r.new7d),
-      medianWageAnnual: num(r.median_wage_annual),
-      wageLowAnnual: num(r.wage_low_annual), wageHighAnnual: num(r.wage_high_annual),
-      medianSalaryAnnual: num(r.median_salary_annual),
-      salaryN: num(r.salary_n), namedJobs: num(r.named_jobs),
-    }))
   } catch (e: any) {
     if (e?.code !== '42P01' && e?.code !== '42703') throw e
     return []
   }
+  return rows.map((r: any) => ({
+    noc: r.noc ?? '', province: r.province ?? '', titleZh: r.title_zh ?? '',
+    titleZhShort: r.title_zh_short ?? '', titleEn: r.title_en ?? '', titleKo: r.title_ko ?? '',
+    teer: num(r.teer), broad: r.broad ?? '', mid: r.mid ?? '', fine: r.fine ?? '',
+    openJobs: num(r.open_jobs), new7d: num(r.new7d),
+    medianWageAnnual: num(r.median_wage_annual),
+    wageLowAnnual: num(r.wage_low_annual), wageHighAnnual: num(r.wage_high_annual),
+    medianSalaryAnnual: num(r.median_salary_annual),
+    salaryN: num(r.salary_n), namedJobs: num(r.named_jobs),
+    new14d: num(r.new14d), new14dPrev: num(r.new14d_prev), mom14d: num(r.mom14d),
+    avgDaysOpen: num(r.avg_days_open), pulseScore: num(r.pulse_score),
+  }))
 }
 
 export async function loadCityStats(limit = 400): Promise<CityRow[]> {

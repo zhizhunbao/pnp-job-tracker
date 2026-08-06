@@ -13,7 +13,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { LANGS, type Lang, type TFn } from './jobs/i18n'
 import { Avatar } from './Avatar'
 import { Button } from './ui/primitives'
-import { IconTarget, IconChart, IconCompass, IconMapPin, IconNews, IconRocket, IconUser, IconUsers } from './Icons'
+import { IconTarget, IconChart, IconCompass, IconNews, IconUser, IconUsers } from './Icons'
 
 type AcctState = { state: 'loading' | 'out' | 'in'; u: { email: string; displayName: string | null; avatar: string | null; pro: boolean } }
 
@@ -116,7 +116,8 @@ function MobileDrawer({ t, active, showAcctTab, onClose }: { t: TFn; active?: st
         </div>
         <nav style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 20 }}>
           <a href="/" style={item('/', t('detail.crumbHome'), !active)}>{t('detail.crumbHome')}</a>
-          <a href="/start" style={item('/start', '', active === 'start')}>{t('home.entry')}</a>
+          {/* E13-03:开始规划 / 榜单 / 地区统计 三项合一为「就业把脉」(/start) */}
+          <a href="/start" style={item('/start', '', active === 'start' || active === 'stats' || active === 'rank')}>{t('pulse.entry')}</a>
           <a href="/?view=match" style={item('/?view=match', '', false)}>{t('mv.entry')}</a>
           <a href="/pathways" style={item('/pathways', '', active === 'pathways')}>{t('pw.entry')}</a>
           {grp('lib', t('nav.library'), [
@@ -124,9 +125,7 @@ function MobileDrawer({ t, active, showAcctTab, onClose }: { t: TFn; active?: st
             { href: '/occupations', label: t('dir.occ.title') },
             { href: '/resources', label: t('res.entry') },
           ])}
-          <div style={{ fontSize: 10.5, color: '#9ca3af', letterSpacing: .5, padding: '6px 4px 0' }}>{t('nav.sect.data')}</div>
-          <a href="/rankings/weekly-top" style={item('/rankings/weekly-top', '', active === 'rank')}>{t('rank.entry')}</a>
-          <a href="/stats" style={item('/stats', '', active === 'stats')}>{t('stats.entry')}</a>
+          {/* E13-03:「数据与结论」组原有的 榜单 / 地区统计 两项已并进顶部的「就业把脉」,组标题随之撤 */}
           {grp('info', t('nav.info'), [
             { href: '/news', label: t('news.entry'), active: active === 'news' },
             { href: '/timeline', label: t('nav.timeline') },
@@ -203,20 +202,19 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
           @media (min-width:1351px){.shBar{flex-wrap:nowrap !important}.shRight{flex-wrap:nowrap !important;flex-shrink:0}}`}</style>
         <div className="shRight" style={{ display: 'flex', alignItems: 'center', gap: 12, maxWidth: '100%', flexWrap: 'wrap' }}>
           <div className="shNav" style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-            {/* L1-01 B 方案并行期:landing 入口进顶栏;切 A(landing 占根)后本项退役 */}
-            <a href="/start" style={{ ...nav, color: active === 'start' ? '#2563eb' : '#6b7280', fontWeight: active === 'start' ? 700 : 400 }}><IconRocket /> {t('home.entry')}</a>
+            {/* E13-03(2026-08-06 三页合一):开始规划 / 榜单 / 地区统计 三项 → 一项「就业把脉」;
+                /rankings/[slug] 与 /stats/[prov] 页面仍在(SEO 与下钻落点),只是不再各占一格顶栏 */}
+            <a href="/start" style={{ ...nav, color: active === 'start' || active === 'stats' || active === 'rank' ? '#2563eb' : '#6b7280', fontWeight: active === 'start' || active === 'stats' || active === 'rank' ? 700 : 400 }}><IconChart /> {t('pulse.entry')}</a>
             {matchButton
               ? <button onClick={matchButton.onClick} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: matchButton.active ? '#2563eb' : '#6b7280', fontWeight: matchButton.active ? 700 : 400, cursor: 'pointer', whiteSpace: 'nowrap' }}><IconTarget /> {t('mv.entry')}</button>
               : <a href="/?view=match" style={nav}><IconTarget /> {t('mv.entry')}</a>}
             <a href="/pathways" style={{ ...nav, color: active === 'pathways' ? '#2563eb' : '#6b7280', fontWeight: active === 'pathways' ? 700 : 400 }}><IconCompass /> {t('pw.entry')}</a>
-            <a href="/rankings/weekly-top" style={{ ...nav, color: active === 'rank' ? '#2563eb' : '#6b7280', fontWeight: active === 'rank' ? 700 : 400 }}><IconChart /> {t('rank.entry')}</a>
             {/* 资料库 ▾(2026-07-19 Frank 批提案方案 A;E8-07 E:点击开改 hover 开,NavDrop 统一交互) */}
             <NavDrop label={t('nav.library')} icon={<IconUsers />} highlight={active === 'employers'} items={[
               { href: '/employers', label: t('dir.title'), active: active === 'employers' },
               { href: '/occupations', label: t('dir.occ.title') },
               { href: '/resources', label: t('res.entry') },
             ]} />
-            <a href="/stats" style={{ ...nav, color: active === 'stats' ? '#2563eb' : '#6b7280', fontWeight: active === 'stats' ? 700 : 400 }}><IconMapPin /> {t('stats.entry')}</a>
             {/* 资讯 ▾(E8-07 E):移民新闻+政策时间线聚合(时间线首次进顶栏);原「移民动态」顶级项并入 */}
             <NavDrop label={t('nav.info')} icon={<IconNews />} highlight={active === 'news'} items={[
               { href: '/news', label: t('news.entry'), active: active === 'news' },

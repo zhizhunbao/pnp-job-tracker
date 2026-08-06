@@ -1,52 +1,89 @@
 'use client'
-// L1-01 Landing 视图(/start,v3 分节版式 2026-07-30 Frank「参考 MongoDB 那类首页:分 sections,不把密集信息挤一屏」):
-// 一节一事、全宽色带交替(白/灰)、大节标题大留白;内容仍是 v2 拍板的真数块(B 骨架 + A 抽选表),只换排布节奏。
-// 每块都是**既有事实源的投影 + 入口**(架构 v2 判定式:通向 L2/L3,永不死路),不是裸数据橱窗:
-//   今日日更大数字(→职位板)/ 抽选表(pnp_draws,与 /pathways 同源)/ 职业行情卡(与 /api/quiz?top 同一 DAL →/occupations)/
-//   政策动态(news →/news)/ 全宽 CTA 带收束回评估主按钮。
-// 红线:数字全库内真数,查不到整节不渲;通道名映射不到显官方原文,前端不编翻译。
+// E13-03 把脉首页视图(/start)——「开始规划 + 榜单 + 地区统计」三合一。
+// 规格 = docs/implementation/E13-把脉首页/00_总设计与口径.md §4 的 S1-S7,一区一事、全宽色带交替:
+//   S1 判决区(动态冷脸标题 + 三脉象卡)/ S2 劝退榜 / S3 真香榜 / S4 省份照妖镜 /
+//   S5 抽选尺子(抽选表 + 冷解读 + 政策动态)/ S6 职位板入口 / S7 订阅与分享。
+// 信条:**「难听,但没骗你」——调性激进,数据保守,每个数字可溯源**。
+// 三条硬红线,改这文件前先读:
+//   ① 判决语一律「模板 + 库内数字填槽」(三语进 jobs/i18n),LLM 不参与下结论;
+//   ② E13-02 的派生列(mom14d/avgDaysOpen/pulseScore)**可能还没落库** —— 值为 null 时
+//      该卡/该行/该榜**整块不渲染**,绝不显示 0 或 NaN,页面退化成「现有数据撑得住的版本」;
+//      变化量口径按契约 v3 一律用**近 14 天新发环比 mom14d**:30 天窗卡在抓取爬坡期(假涨)、
+//      下架/净流失卡在排水期(虚高),两者的数字与措辞都不上前端(同入 E13-04);
+//   ③ 每行可溯源:职业名点开落到按该 NOC 筛过的职位板(/?q=<noc>),省卡下钻落 /stats/[prov]。
+// SSR 瘦身手法守住:职业大表(occ ~3400 行)不进 HTML,挂载后拉 /api/market-stats(与旧版同一端点)。
 import { useMemo, useState } from 'react'
 
-import { eeDisplay, eeKeyDisplay, makeT, drawStreamNote } from '../jobs/i18n'
+import { eeKeyDisplay, makeT, drawStreamNote, streamDisplay, type TFn } from '../jobs/i18n'
 import { useLang } from '../LangProvider'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { MarketChart, useMarketStats } from '../stats/charts'
+import { CaliberLine } from '../stats/ui'
+import { PROVS, PROV_NAME, type OccRow, type ProvExtra, type SrcRow, type StatRow } from '../stats/shared'
 import { shortOcc } from '../quiz/EntryQuiz'
 import { JobCard } from '../ui/JobCard'
-import { BANNER_IMGS, PageBanner, Tag, UI } from '../ui/primitives'
+import { DataTable, type DTCol } from '../ui/DataTable'
+import { BANNER_IMGS, Chip, PageBanner, PageShell, Tag, UI } from '../ui/primitives'
 import { track } from '@/lib/track'
 
-// 「决策引擎目标卡」网格 2026-08-04 摘除(Frank 拍板:答题卡功能摘入口、保留路由)——
-// /plan/* 仍可直达,但 landing 不再挂任何入口。占位卡(选城市/学校/专业)随该节一并撤:
-// 整节只剩「即将上线」虚线卡=空壳,按站规「空了就整块不渲」处理,不编内容填充。
+// 抽选行 + 冷解读三标量(近 12 期同通道的期数/最低/最高,服务端算好,见 start/page.tsx)
+export type PulseDraw = {
+  date: string; province: string; stream: string; label: string
+  score: number | null; invitations: number | null
+  histN: number | null; histMin: number | null; histMax: number | null
+}
 
 export type HomeStats = {
-  total: number | null; named: number | null; lmia: number | null
-  provinces: number | null; cities: number | null; dli: number | null
-  occupations: number | null; aipEmployers: number | null
-  draws: { date: string; province: string; stream: string; label: string; score: number | null; invitations: number | null }[]
-  daily: { date: string; n: number; eligible: number } | null
+  total: number | null; named: number | null      // S1 命中率证据(与职位板 proof 同源)
+  draws: PulseDraw[]
   news: { date: string; region: string; title: string; slug: string }[]
-  latestJobs: { id: number | string; title: string; company: string; city: string; province: string; salaryText: string; pnp: boolean; ee: string; aip: boolean; date: string; noc: string }[]
+  provExtra: Record<string, ProvExtra>            // S4 省卡:IRCC 体量 + 难度档
+  srcs: SrcRow[]                                  // 页尾口径行出处
+  provPreset: string                              // S4 预选省(档案省;匿名为空 → 默认 ON。禁 IP 定位)
   checkedAt: string
 }
 
 const num = (n: number) => n.toLocaleString('en-CA')
-// 日期带年(2026-08-02 Frank「08-02 加上年份啊」):月日单出在跨年边界读不出是今年还是去年,
-// 而这页的日期(发帖日/抽选日/公告日)是要拿来判断新鲜度的
+const signed = (n: number) => (n > 0 ? '+' : n < 0 ? '-' : '') + num(Math.abs(n))
+// 环比(mom14d 是比值:近 14 天新发 ÷ 前 14 天新发 − 1)→ 百分数;不做四舍五入以外的加工
+const pctSigned = (ratio: number) => `${ratio > 0 ? '+' : ratio < 0 ? '-' : ''}${Math.abs(Math.round(ratio * 100))}%`
 const ymd = (iso: string) => (iso || '').slice(0, 10)
+const isAllProv = (p: string) => (p || '').toLowerCase() === 'all'
 
-// 全宽色带 + 1320 内轨(MongoDB 式分节;带色只用既有 token:白 / 页底灰,蓝 tint 只给 CTA 带)
-function Band({ bg, className, children }: { bg?: string; className?: string; children: React.ReactNode }) {
-  return (
-    <div className={'hmBand' + (className ? ' ' + className : '')} style={{ background: bg }}>
-      <div style={{ maxWidth: 1320, margin: '0 auto', padding: '0 1.25rem', boxSizing: 'border-box' }}>{children}</div>
-    </div>
-  )
+// 职业名三态(人话名主文案 + 代码/译名灰注,站规):
+//   列表主文案 = NOC 官方英文名(引用依据),灰注 = 界面语言译名;标题里则直接用界面语言的人话名。
+const occMain = (o: OccRow) => o.titleEn || o.titleZh || o.noc
+const occNote = (o: OccRow, lang: string) => {
+  const s = lang === 'zh' ? (o.titleZhShort || o.titleZh) : lang === 'ko' ? o.titleKo : ''
+  return s ? shortOcc(s) : ''
+}
+const occLocal = (o: OccRow, lang: string) => {
+  const s = lang === 'zh' ? (o.titleZhShort || o.titleZh) : lang === 'ko' ? o.titleKo : ''
+  return shortOcc(s || o.titleEn || o.noc)
 }
 
-// 条数下拉:三处共用一把(职位榜/抽选表/政策动态),样式与全站表单件同源,避免各写各的
+// 样本门槛(设计 §3):全国榜在架 ≥30,省级 ≥10 —— 不足不进榜,禁上榜噪音
+const NAT_MIN_OPEN = 30   // 省级榜门槛(S4)沿用
+// Frank 2026-08-06「谁会关心中小学教师助理」「主要打主流的、中介推的职业」:
+// 头条与全国红绿榜一律只收大盘职业(在架 ≥100)——冷门岗数学上再差也进不了受众视野,不值得占版面
+const MAIN_MIN_OPEN = 100
+const PROV_MIN_OPEN = 10
+
+// 难度档药丸配色(与 JobsTable DIFF_TAG / 原 /stats 索引页省卡同值)
+const DIFF_COLORS: Record<string, { bg: string; fg: string; bd: string }> = {
+  easy: { bg: '#dcfce7', fg: '#166534', bd: '#bbf7d0' },
+  mid: { bg: '#fef9c3', fg: '#854d0e', bd: '#fde68a' },
+  tight: { bg: '#fee2e2', fg: '#b91c1c', bd: '#fecaca' },
+}
+const SHORT_PROV: Record<string, string> = { NL: 'Newfoundland' }   // 卡上用通行短名,悬停仍显全名
+
+// 全宽色带 + PageShell 内轨(全站统一 1320 正文轨)
+function Band({ bg, children }: { bg?: string; children: React.ReactNode }) {
+  return <div className="plBand" style={{ background: bg }}><PageShell pad="0 1.25rem">{children}</PageShell></div>
+}
+
+// 条数下拉:抽选表与政策动态共用一把(数据 SSR 已多取,前端只切片)
 function TopN({ v, on, max }: { v: number; on: (n: number) => void; max: number }) {
   const opts = [10, 20, 50].filter((n, i) => i === 0 || n <= Math.max(max, 10))
   if (opts.length < 2) return null
@@ -58,427 +95,477 @@ function TopN({ v, on, max }: { v: number; on: (n: number) => void; max: number 
   )
 }
 
-export function StartView({ stats }: { stats: HomeStats }) {
-  const [lang, setLangSaved, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
+// ── 职业榜(S2/S3/S4 共用一套形态)────────────────────────────────
+// 桌面 DataTable(全站公共表件,百分比自适应不横滚)/ ≤900 JobCard 列表(全站唯一那张卡)。
+// 变化量口径 = **近 14 天新发环比 mom14d**(契约 v3):下架信号与 30 天窗都不可靠 →
+// 净流失类数字与措辞一律不上前端,判决语只说「14 天新发在萎缩/腰斩」这类拿新发数就能对账的话,
+// 且文案里必须带窗口(不许只写「环比」让人当成月环比)。
+// mom14d 缺列/全 null 时:环比列与判决列**整列不出**(降级成在架/命中率/薪资偏离能撑的版本),
+// 绝不拿 0 顶包;单行缺值显「—」。
+function OccBoard({ rows, t, lang }: { rows: OccRow[]; t: TFn; lang: string }) {
+  const hasMom = rows.some((o) => o.mom14d != null)
+  // 无清单省(ON/QC/NB/NL)每行命中都是 0 —— 那是政策事实不是职业信号,整列不出(#203 同族:不留满屏误导性 0%)
+  const hasHit = rows.some((o) => (o.namedJobs ?? 0) > 0)
+  const hit = (o: OccRow) => (o.openJobs && o.namedJobs != null ? Math.round((o.namedJobs / o.openJobs) * 100) : null)
+  const gap = (o: OccRow) => (o.medianWageAnnual && o.medianSalaryAnnual != null
+    ? Math.round(((o.medianSalaryAnnual - o.medianWageAnnual) / o.medianWageAnnual) * 100) : null)
+  const momColor = (v: number) => (v < 0 ? UI.danger : v > 0 ? UI.ok : UI.text2)
+  // 判决语=模板填槽(i18n 三语),数字来自 mom14d;没有 mom14d 就没有判决,不编
+  const verdict = (o: OccRow) => {
+    const v = o.mom14d
+    if (v == null) return null
+    const key = v <= -0.5 ? 'pulse.v.dive' : v < -0.05 ? 'pulse.v.shrink' : v > 0.05 ? 'pulse.v.grow' : 'pulse.v.flat'
+    // Frank 2026-08-06「劳工没有 PR 通道的,不要选这些职位」:TEER 4/5 且不在任何省清单 = 走提名基本无门,
+    // 判决语点破(中介爱推的「好找工作」陷阱岗,涨的时候更要点)——纯事实陈述,不说死「无通道」(AIP/RNIP 等另论)
+    const noPr = (o.teer ?? 0) >= 4 && !(o.namedJobs && o.namedJobs > 0)
+    return { text: t(key, { n: pctSigned(v) }) + (noPr ? t('pulse.v.nopr') : ''), color: momColor(v) }
+  }
+  const momCell = (o: OccRow) => (o.mom14d == null ? null
+    : <span style={{ color: momColor(o.mom14d), fontWeight: 700, whiteSpace: 'nowrap' }}>{pctSigned(o.mom14d)}</span>)
 
-  // 老三问弹框 2026-07-31 在 landing 全下架;目标卡与主 CTA 2026-08-04 一并摘除(见文件头注释)——
-  // 这页现在只剩「数据事实 + 进职位板」,不再往答题卡送人。
-  // 主图四份数据挂载后拉 /api/market-stats(SSR 瘦身:occ ~3400 行不再进 HTML);null=加载中渲占位高度
+  const cols: DTCol<OccRow>[] = [
+    {
+      key: 'occ', label: t('pulse.col.occ'), sort: (o) => occMain(o),
+      // maxWidth 罩一层:官方 NOC 名很长(「Financial auditors and accountants」),不封顶的话
+      // nowrap 单元格会把整张表撑宽 → 容器横滚(站规:表格永不横滚)。封顶后超长名走省略号,全名挂 title
+      render: (o) => (
+        <div style={{ maxWidth: 280 }}>
+          <a href={`/?q=${o.noc}`} onClick={() => track('pulse_occ_click')}
+            style={{ color: UI.primary, textDecoration: 'none', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+            title={occMain(o)}>{occMain(o)}</a>
+          {occNote(o, lang)
+            ? <span style={{ display: 'block', fontSize: 11.5, color: UI.text3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{occNote(o, lang)}</span>
+            : null}
+        </div>
+      ),
+    },
+    { key: 'open', label: t('pulse.col.open'), nowrap: true, sort: (o) => o.openJobs, render: (o) => <>{o.openJobs != null ? num(o.openJobs) : '—'}</> },
+    ...(hasMom ? [{
+      key: 'mom', label: t('pulse.col.mom'), nowrap: true, thTip: t('pulse.col.mom.tip'),
+      sort: (o: OccRow) => o.mom14d, render: (o: OccRow) => <>{momCell(o) ?? '—'}</>,
+    }] : []),
+    ...(hasHit ? [{
+      key: 'hit', label: t('pulse.col.hit'), nowrap: true,
+      sort: (o: OccRow) => hit(o), render: (o: OccRow) => <>{hit(o) != null ? `${hit(o)}%` : '—'}</>,
+    }] : []),
+    { key: 'gap', label: t('pulse.col.gap'), nowrap: true, sort: (o) => gap(o), render: (o) => <>{gap(o) != null ? `${signed(gap(o) as number)}%` : '—'}</> },
+    // 判决列不加 nowrap:它是这行里最长的一段,窄桌面宁可让它折一行,也不让整张表横滚
+    ...(hasMom ? [{
+      key: 'verdict', label: t('pulse.col.verdict'),
+      render: (o: OccRow) => { const v = verdict(o); return <span style={{ color: v?.color }}>{v?.text ?? '—'}</span> },
+    }] : []),
+  ]
+
+  return (
+    <>
+      <div className="plTable"><DataTable<OccRow> rows={rows} cols={cols} rowKey={(o) => o.noc} /></div>
+      {/* ≤900 卡片:左列身份(职业名/命中率)、右列数字(新发环比)——与职位板同一张 JobCard。
+          薪资偏离只留桌面表:375 上两个百分数并排(环比 -42% / 偏离 -12%)谁是谁得猜,
+          而卡片寸土寸金(JobCard 自带的规矩)—— 宁可少一个数,不给会读错的数 */}
+      <div className="plCards">
+        {rows.map((o) => {
+          const v = verdict(o)
+          const h = hit(o)
+          return (
+            <JobCard key={o.noc} href={`/?q=${o.noc}`}
+              title={{ text: occMain(o), href: `/?q=${o.noc}` }}
+              note={occNote(o, lang) || undefined}
+              company={o.openJobs != null ? { text: `${t('pulse.col.open')} ${num(o.openJobs)}` } : undefined}
+              salary={momCell(o) ?? undefined}
+              location={hasHit && h != null ? `${t('pulse.col.hit')} ${h}%` : undefined}
+              chips={v ? <span style={{ fontSize: 12, fontWeight: 600, color: v.color }}>{v.text}</span> : undefined} />
+          )
+        })}
+      </div>
+    </>
+  )
+}
+
+export function StartView({ stats }: { stats: HomeStats }) {
+  const [lang, setLangSaved, t] = useLang()
+  // 主图四份数据(occ 含 E13-03 派生列)挂载后拉;null=加载中 → 依赖它的区渲占位高度,不出空壳
   const market = useMarketStats()
-  // 职位榜控件:最新=逐岗(服务端 50 条);高薪/最多=职业级(2026-07-31 两次拍板:「最多」加榜、
-  // 「高薪要的是职业薪资排名,不是具体某些职位——top50 全是医生帖,程序员排在哪」),
-  // 数据吃 useMarketStats 已到手的 occ 全国行,零新请求
-  const [jobsTab, setJobsTab] = useState<'new' | 'paid' | 'most'>('new')
-  const [jobsN, setJobsN] = useState(10)
-  // 条数下拉(2026-08-01 Frank 队列③④):抽选表与政策动态各一个,SSR 已多取,前端只切片
   const [drawsN, setDrawsN] = useState(10)
   const [newsN, setNewsN] = useState(10)
-  const occTop = useMemo(() => market === null ? null : market.occ.filter((o) => o.province === 'all'), [market])
-  // 高薪=ESDC 中位年薪降序;在招 <5 的职业不上榜(与主图 minJobs 同拍板:1 个岗的职业没有统计意义)
-  const occList = useMemo(() => {
-    if (!occTop) return null
-    if (jobsTab !== 'paid') return occTop   // 最多榜:SQL 已按在招量降序
-    return occTop.filter((o) => (o.openJobs ?? 0) >= 5 && o.medianWageAnnual != null)
-      .sort((a, b) => (b.medianWageAnnual as number) - (a.medianWageAnnual as number))
-  }, [occTop, jobsTab])
-  // NOC → 职业译名查表(中/韩榜行灰注用):market.occ 已在手,零新请求;英文界面/查不到 → 无注
-  const nocNote = useMemo(() => {
-    if (!occTop || lang === 'en') return () => ''
-    const m = new Map(occTop.map((o) => [o.noc, lang === 'zh' ? (o.titleZhShort || o.titleZh) : o.titleKo]))
-    return (noc: string) => m.get(noc) || ''
-  }, [occTop, lang])
+  const [prov, setProv] = useState(stats.provPreset || 'ON')
+  const [chartOpen, setChartOpen] = useState(false)     // S4 主图默认收起(它是补充证据,不是首屏主角)
+  const [copied, setCopied] = useState(false)
 
-  // Hero 三枚数字(2026-08-04 合并:原「今日日更」节整块撤,它与胶囊讲的是同一件事——本站有多少数据,
-  // 而 37,401 在同一屏出现两次)。对话框已是主入口,它上面每多一节用户就晚一屏才动手,所以并进 Hero 不另起节。
-  // 撤下的 AIP 雇主 / DLI 是存量数,不驱动动作(/employers 在主导航;DLI 数据在 /pathways 学校信号与城市弹窗里)。
-  const heroNums = [
-    stats.total != null ? { v: num(stats.total), label: t('home.st.jobs'), color: UI.text } : null,
-    stats.daily ? { v: num(stats.daily.n), label: t('home.st.new'), color: UI.primaryDeep } : null,
-    stats.daily && stats.daily.eligible > 0 ? { v: num(stats.daily.eligible), label: t('home.st.elig'), color: UI.ok } : null,
-  ].filter(Boolean) as { v: string; label: string; color: string }[]
+  // ── 全国行(province='all';E13-02 若改出 'ALL' 大写也吃得下,不因大小写掉数据)──
+  const natOcc = useMemo(() => (market === null ? null : market.occ.filter((o) => isAllProv(o.province))), [market])
 
-  // 抽选行显示:省轮 stream 是官方英文原文 + 中文灰注;联邦轮(province=FED)的 label 是 cat_key,
-  // 原先直接出**中文**类别名 —— 同一张表里两种长相(Frank 2026-08-02「只有中文名的改成 上面英文下面中文翻译统一风格」)。
-  // 改成一律「英文官方名主文案 + 译名灰注」:主文案拿英文 t 取,灰注拿界面语言 t 取;映射不到就原样回退,不编译文。
+  // S1 动态判决标题:全国榜里新发环比最难看的那个职业,模板填槽(不逐职业手写)。
+  // 无 mom14d(列没落库)→ 回退静态标题,页面照常。
+  const headline = useMemo(() => {
+    if (!natOcc) return ''
+    const cand = natOcc.filter((o) => (o.openJobs ?? 0) >= MAIN_MIN_OPEN && o.mom14d != null)
+    if (!cand.length) return ''
+    const worst = cand.reduce((a, b) => ((b.mom14d as number) < (a.mom14d as number) ? b : a))
+    const v = worst.mom14d as number
+    const occ = occLocal(worst, lang)
+    return v < -0.005 ? t('pulse.h1.down', { occ, n: pctSigned(v) })
+      : v > 0.005 ? t('pulse.h1.up', { occ, n: pctSigned(v) })
+        : t('pulse.h1.flat', { occ })
+  }, [natOcc, lang, t])
+
+  // S1 三脉象卡(契约 v3):近 14 天新发(主数字 + 环比副行)/ 平均在架天数 / PNP 命中率。
+  // 逐卡 null 守卫 —— 缺数的卡整张不出。净值卡(在架存量差)本批**不做**:
+  // 7-25 起验尸排水清了 2.7 万死帖,存量下跌是数据清洗不是市场收缩,上线=撒谎(后置 E13-04)。
+  const pulseCards = useMemo(() => {
+    const out: { label: string; v: string; sub?: string; subColor?: string; tip: string; href: string; color: string }[] = []
+    // Frank 2026-08-06「还有就是整个加拿大的就业体量」:体量卡打头(与职位板 proof 同源同口径)
+    if (stats.total) {
+      out.push({ label: t('pulse.card.total'), v: num(stats.total), tip: t('pulse.card.total.tip'), href: '/', color: UI.text })
+    }
+    if (natOcc) {
+      const news = natOcc.map((o) => o.new14d).filter((v): v is number => v != null)
+      if (news.length) {
+        const total = news.reduce((a, b) => a + b, 0)
+        // 全国环比 = 两个窗各自求和后相除(不是逐职业环比再平均——小职业会把均值带跑);
+        // 分母列缺/为 0 就只出主数字,不出副行
+        const prevRows = natOcc.filter((o) => o.new14d != null && o.new14dPrev != null)
+        const prev = prevRows.reduce((a, o) => a + (o.new14dPrev as number), 0)
+        const cur = prevRows.reduce((a, o) => a + (o.new14d as number), 0)
+        const mom = prev > 0 ? cur / prev - 1 : null
+        out.push({
+          label: t('pulse.card.new14'), v: num(total),
+          sub: mom == null ? undefined : t('pulse.card.mom14', { n: pctSigned(mom) }),
+          subColor: mom == null ? undefined : mom < 0 ? UI.danger : mom > 0 ? UI.ok : UI.text2,
+          tip: t('pulse.card.new14.tip'), href: '/', color: UI.text,
+        })
+      }
+      // 在架天数按在架量加权(职业间直接平均会让 3 个岗的小职业和 3000 个岗的大职业等权)
+      const w = natOcc.filter((o) => o.avgDaysOpen != null && (o.openJobs ?? 0) > 0)
+      if (w.length) {
+        const days = w.reduce((a, o) => a + (o.avgDaysOpen as number) * (o.openJobs as number), 0) / w.reduce((a, o) => a + (o.openJobs as number), 0)
+        out.push({ label: t('pulse.card.days'), v: t('pulse.unit.days', { n: Math.round(days) }), tip: t('pulse.card.days.tip'), href: '/', color: UI.text })
+      }
+    }
+    if (stats.total && stats.named != null) {
+      out.push({ label: t('pulse.card.pnp'), v: `${((stats.named / stats.total) * 100).toFixed(1)}%`, tip: t('pulse.card.pnp.tip'), href: '/?pnp=yes', color: UI.primaryDeep })
+    }
+    return out
+  }, [natOcc, stats.total, stats.named, t])
+
+  // S2/S3:pulse_score 排序的两头各 10 行。列没落库(pulseScore 全 null)→ 两榜整块不渲染。
+  const boards = useMemo(() => {
+    if (!natOcc) return null
+    const pool = natOcc.filter((o) => (o.openJobs ?? 0) >= MAIN_MIN_OPEN && o.pulseScore != null && o.mom14d != null)
+    if (!pool.length) return { down: [], up: [] }
+    const byPulse = [...pool].sort((a, b) => (a.pulseScore as number) - (b.pulseScore as number))
+    const down = byPulse.slice(0, 10)
+    const up = byPulse.slice(Math.max(10, byPulse.length - 10)).reverse()   // 行数不足 20 时两榜不重叠
+    return { down, up }
+  }, [natOcc])
+
+  // ── S4 省份照妖镜 ──
+  const provRows = useMemo(() => (market?.rows ?? []).filter((r) => r.broad === 'all' && (r.mid === 'all' || !r.mid)), [market])
+  const provStat: StatRow | undefined = useMemo(() => provRows.find((r) => r.province === prov), [provRows, prov])
+  const provOcc = useMemo(() => {
+    if (!market) return null
+    const rows = market.occ.filter((o) => o.province === prov && (o.openJobs ?? 0) >= PROV_MIN_OPEN)
+    const hasPulse = rows.some((o) => o.pulseScore != null)
+    // 有脉象分按脉象分,没有就按在架量(降级:少两列,不假造分数)
+    const sorted = hasPulse
+      ? [...rows].filter((o) => o.pulseScore != null).sort((a, b) => (b.pulseScore as number) - (a.pulseScore as number))
+      : [...rows].sort((a, b) => (b.openJobs ?? 0) - (a.openJobs ?? 0))
+    return sorted.slice(0, 20)
+  }, [market, prov])
+  const provName = PROV_NAME[prov] || prov
+
+  // ── S5 抽选行显示(与旧版同口径):官方英文名主文案 + 界面语言译名灰注 ──
   const tEn = useMemo(() => makeT('en'), [])
-  const drawMain = (r: HomeStats['draws'][number]) =>
-    r.province === 'FED' ? eeKeyDisplay(tEn, r.label) : (r.stream || r.label)
-  const drawNote = (r: HomeStats['draws'][number]) => {
+  const drawMain = (r: PulseDraw) => (r.province === 'FED' ? eeKeyDisplay(tEn, r.label) : (r.stream || r.label))
+  const drawNote = (r: PulseDraw) => {
     if (lang === 'en') return ''
     if (r.province !== 'FED') return drawStreamNote(r.stream || '', lang)
     const zh = eeKeyDisplay(t, r.label)
-    return zh === drawMain(r) ? '' : zh   // 映射不到时中英同字,不重复出一遍
+    return zh === drawMain(r) ? '' : zh
   }
+  // 冷解读:当期分数线 vs 近 12 期同通道区间(服务端算好的三标量填槽)。样本不足 → 不出这句
+  const drawVerdict = (r: PulseDraw) =>
+    (r.histN != null && r.histMin != null && r.histMax != null
+      ? t('pulse.dr.note', { n: r.histN, min: num(r.histMin), max: num(r.histMax) }) : '')
 
-  // flexWrap:375 职位榜三 tab + Top N 挤不进一行(2026-07-31 实拍标题折行、tab 截断)→ 控件整组下折,不压缩不截字
-  // 节头分左右两部分(2026-08-02 Frank 看过居中版后拍板「还是要像以前一样分左右两部分 不要居中」):
-  // 左=标题与控件,右=「全部职位」顶到最右(marginLeft:auto)。居中版在 375 上把这个链接挤到第二行
-  // 单独一行,看着像按钮而不是出口 —— 实拍抓到后撤回
-  const secH: React.CSSProperties = { margin: '0 0 18px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 10, rowGap: 8, flexWrap: 'wrap', color: UI.text }
+  const secH: React.CSSProperties = { margin: '0 0 6px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 10, rowGap: 8, flexWrap: 'wrap', color: UI.text }
+  const noteS: React.CSSProperties = { fontSize: 12, color: UI.text3, margin: '0 0 12px' }
   const moreA: React.CSSProperties = { fontSize: 13, fontWeight: 600, color: UI.primary, textDecoration: 'none', whiteSpace: 'nowrap' }
-  // 右组(2026-08-02 Frank「top 下拉框放到右边」+「top 10 和 全部职位放一行」):
-  // Top N 与链接**包成一个元素**再顶右 —— 各自散着挂时,375 上折行会把它俩拆到两行去;
-  // 包起来后整组一起折,永远同一行。auto 也只能给这一个包(两个元素各写 auto 会平分空隙,右组散成两段)
   const hmRight: React.CSSProperties = { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }
   const th: React.CSSProperties = { fontSize: 11.5, color: UI.text3, fontWeight: 600, textAlign: 'left', padding: '9px 12px', borderBottom: `1px solid ${UI.hairline}`, background: '#fafafa' }
-  // 榜单(grid 行)的表头:与抽选表 th 同一套灰底小字,只是走 grid 不走 table —— 列宽仍由 .hmJobRow/.hmOccRow 定
-  const headS: React.CSSProperties = { ...th, padding: '9px 14px' }
   const td: React.CSSProperties = { padding: '9px 12px', borderBottom: `1px solid ${UI.hairline}`, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
-  const numCell: React.CSSProperties = { textAlign: 'right' }
+  const kv = (label: React.ReactNode, val: React.ReactNode) => (
+    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+      <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{label}</span>
+      <span style={{ color: '#111827', whiteSpace: 'nowrap', flexShrink: 0 }}>{val}</span>
+    </div>
+  )
 
   return (
     <div style={{ background: UI.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
-      {/* 分节版式(v3):.hmBand 全宽色带,节内 1320 轨;节纵距 40/72px,节标题 20/24px —— 一节一事不挤屏 */}
       <style>{`
-        .hmBand{padding:40px 0}
-        /* .hmBand.hmTight 随内联对话节一起撤(2026-08-04):全站只有那一节用它 */
-        .hmBand h2{font-size:20px}
-        .hmHero.hmBand{padding:16px 0 0}
-        .hmBtn{display:block;border-radius:8px;padding:12px 20px;font-size:14px;font-weight:600;text-align:center;cursor:pointer;text-decoration:none;border:none;font-family:inherit}
-        /* Hero 数字的手机形态:PageBanner 的胶囊在 ≤640 是 display:none(图上没那么多地方),
-           而三个数在手机上恰恰是唯一的数据门面 —— 原来靠「今日日更」节撑着,那节 2026-08-04 撤了,
-           所以在 banner 下补一条等宽三列条(≥641 交回给胶囊,永不同时出现)。
-           不用一行三胶囊:375 实测三胶囊连排 ~366px > 可用 335px,只能折行或截字;
-           等宽三列(106px/列)数字与标签各占一行,不横滚不截字(见交回③的实测)。 */
-        .hmHeroNums{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-        .hmHeroNums a{min-width:0;overflow:hidden;background:${UI.card};border:1px solid ${UI.border};border-radius:10px;padding:8px 10px;text-decoration:none;color:inherit}
-        .hmHeroNums b{display:block;font-size:20px;line-height:1.2;font-weight:700}
-        @media (min-width:641px){ .hmHeroNums{display:none} }
-        .hmCtaBand{display:flex;flex-direction:column;gap:12px}
-        /* 榜单:桌面表格 / 手机卡片,两套 DOM 各渲各的(站规「电脑用表格 手机用卡片」)。
-           手机卡片走 ui/JobCard(全站唯一那张,与职位板同源)——**这里的 .hmJobRow/.hmOccRow 只管桌面**,
-           它们全在 .hmListTable 里,而 .hmListTable 手机端 display:none,所以不必再写断点。 */
-        .hmListTable{display:none}
-        .hmCards{display:flex;flex-direction:column;gap:8px}
-        @media (min-width:900px){ .hmListTable{display:block}.hmCards{display:none} }
-        /* 网格定列(2026-07-31 Frank「对齐也比较好吧」)——胶囊、地点、薪资各归各列,不随标题长短漂;
-           **译名单独一列**(2026-08-01 队列①:原先紧跟英文名后,位置随英文长短漂)。
-           序号列 20px:行里是裸数字,# 只作表头列标(Frank「rank 为什么要带 # 这个符号」)。
-           通道列 170px:EE/AIP 进来后要三枚胶囊并排(原 46px 只放得下 PNP 一枚)。 */
-        .hmJobRow,.hmOccRow{display:grid;gap:12px;padding:12px 14px;font-size:13.5px;text-decoration:none;color:inherit;align-items:baseline}
-        .hmJobRow{grid-template-columns:20px minmax(0,1.1fr) minmax(0,0.8fr) minmax(0,0.9fr) minmax(0,170px) minmax(0,150px) 130px;
-          grid-template-areas:"rank title note co pnp loc pay"}
-        .hmOccRow{grid-template-columns:20px minmax(0,1fr) minmax(0,0.7fr) 110px minmax(0,150px) 130px;
-          grid-template-areas:"rank title note open elig pay"}
-        .hmRank{grid-area:rank}.hmTitle{grid-area:title}.hmNote{grid-area:note}.hmPay{grid-area:pay}
-        .hmJobRow .hmPnp{grid-area:pnp;display:flex;gap:6px;flex-wrap:wrap}
-        .hmJobRow .hmJobCo{grid-area:co}.hmJobRow .hmJobLoc{grid-area:loc}
-        .hmOccRow .hmOccOpen{grid-area:open}.hmOccRow .hmOccElig{grid-area:elig}
-        /* 职位名/职业名蓝字表示可点、**不加粗**(Frank 2026-08-02):蓝色已说明是入口,再加粗是同一件事说两遍 */
-        .hmTitle{color:#2563eb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .hmNote{font-size:12px}.hmNote:empty{display:none}
-        .hmJobLoc,.hmOccOpen,.hmPay{font-size:12.5px;text-align:right}
-        /* 表头(2026-08-02 Frank「这个也是需要加一个表头吧」):复用同一 grid 类 → 与数据行天然同列,
-           改列宽只改一处;单元格不吃数据行那套色/字号,统一回灰底小字 */
-        .hmHead .hmTitle,.hmHead .hmNote,.hmHead .hmJobCo,.hmHead .hmPay,.hmHead .hmJobLoc,.hmHead .hmOccOpen{font-size:11.5px;font-weight:600;color:inherit}
-        /* 抽选块照职位板的范式(2026-07-31 Frank「电脑用表格 手机用卡片」):
-           五列表格在 375 上通道列只剩 ~100px,通道名一律省略号 —— 手机换成一岗一卡,通道名完整可换行 */
-        .hmDrawTable{display:none}
-        .hmDrawCards{display:flex;flex-direction:column}
-        @media (min-width:900px){ .hmDrawTable{display:table}.hmDrawCards{display:none} }
+        .plBand{padding:36px 0}
+        .plBand h2{font-size:20px}
+        .plHero.plBand{padding:16px 0 0}
+        .plBtn{display:block;border-radius:8px;padding:12px 20px;font-size:14px;font-weight:600;text-align:center;cursor:pointer;text-decoration:none;border:none;font-family:inherit}
+        /* S1 三脉象卡:375 三列等宽(数字与标签各占一行,不横滚不截字) */
+        .plNums{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+        .plNums a{min-width:0;overflow:hidden;background:${UI.card};border:1px solid ${UI.border};border-radius:10px;padding:10px 12px;text-decoration:none;color:inherit}
+        .plNums b{display:block;font-size:20px;line-height:1.25;font-weight:700}
+        .plNums span{display:block;font-size:11.5px;color:${UI.text2};white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .plNums i{display:block;font-size:11.5px;font-style:normal;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        /* 榜单:桌面表格 / 手机卡片,两套 DOM 各渲各的(站规「电脑用表格 手机用卡片」) */
+        .plTable{display:none}
+        .plCards{display:flex;flex-direction:column;gap:8px}
+        .plDrawTable{display:none}
+        .plDrawCards{display:flex;flex-direction:column}
+        .plProvCards{display:grid;grid-template-columns:repeat(auto-fill, minmax(min(100%, 250px), 1fr));gap:10px;margin:12px 0 0}
+        .plProvCards button{text-align:left;font-family:inherit;cursor:pointer}
+        .plCta{display:flex;flex-direction:column;gap:12px}
         @media (min-width:900px){
-          .hmBand{padding:72px 0}
-          .hmBand h2{font-size:24px}
-          .hmHero.hmBand{padding:16px 0 0}
-          .hmBtn{padding:13px 28px;font-size:15px}
-          .hmCtaBand{flex-direction:row;align-items:center}
-          .hmCtaBand .hmBtn{flex:0 0 auto;padding:12px 28px}
+          .plBand{padding:56px 0}
+          .plBand h2{font-size:24px}
+          .plHero.plBand{padding:16px 0 0}
+          .plNums b{font-size:26px}
+          .plTable{display:block}.plCards{display:none}
+          .plDrawTable{display:table}.plDrawCards{display:none}
+          .plBtn{padding:13px 28px;font-size:15px}
+          .plCta{flex-direction:row;align-items:center}
+          .plCta .plBtn{flex:0 0 auto;padding:12px 28px}
         }`}</style>
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="start" />
       <main style={{ flex: '1 0 auto' }}>
 
-        {/* ① Hero:PageBanner 图版(home 档 200/150)。双按钮 2026-07-30 Frank 拍板挪到页底 CTA 带。
-            胶囊 2026-08-04 换成日更三数(在招/今日新增/可提名),手机由 banner 下的 .hmHeroNums 接手 */}
-        <div className="hmBand hmHero">
-          <div style={{ maxWidth: 1320, margin: '0 auto', padding: '0 1.25rem', boxSizing: 'border-box' }}>
-            <PageBanner module="home" tall title={t('home.title')} images={BANNER_IMGS.home} stats={heroNums} />
-            {/* 手机专用(≤640):三个数各是一个入口 → 职位板,把撤掉的「今日日更」三张卡的点击功能留住 */}
-            {heroNums.length > 0 && (
-              <div className="hmHeroNums">
-                {heroNums.map((s) => (
-                  <a key={s.label} href="/" className="cardHover" onClick={() => track('landing_goal_jobs')}>
-                    <b style={{ color: s.color }}>{s.v}</b>
-                    <span style={{ fontSize: 11.5, color: UI.text2, whiteSpace: 'nowrap' }}>{s.label}</span>
+        {/* ── S1 判决区:动态冷脸标题(模板填槽)+ 三脉象卡 ────────────────────────── */}
+        <div className="plBand plHero">
+          <PageShell pad="0 1.25rem">
+            {/* Frank 2026-08-06:副题「难听,但没骗你」删——调性靠数字自己立,不用口号(解释类文案默认删) */}
+            <PageBanner module="home" tall title={headline || t('home.title')} images={BANNER_IMGS.home} />
+            {pulseCards.length > 0 && (
+              <div className="plNums">
+                {pulseCards.map((c) => (
+                  <a key={c.label} href={c.href} title={c.tip} className="cardHover" onClick={() => track('pulse_card_click')}>
+                    <b style={{ color: c.color }}>{c.v}</b>
+                    <span>{c.label}</span>
+                    {c.sub ? <i style={{ color: c.subColor }}>{c.sub}</i> : null}
                   </a>
                 ))}
               </div>
             )}
-          </div>
+          </PageShell>
         </div>
 
-        {/* ② 一句话问(内联 ChatBox)2026-08-04 傍晚撤:Frank 拍板**对话只放右下角挂件里,不放主入口**。
-            依据是 30 天数据 —— 67.5% 的会话只看一页,入口=出口=职位详情页,这个内联框服务的是
-            绝大多数用户根本不经过的地方。挂件全站在(chat/ChatLauncher,挂在 layout),才是把对话
-            放到流量真正在的位置。本页不再有第二个对话入口。 */}
-
-        {/* ②b 决策引擎目标卡节:2026-08-04 摘除(见文件头注释) */}
-
-        {/* ③ 今日日更节 2026-08-04 撤:同屏出现两次 37,401,而它与 Hero 胶囊讲的是同一件事;
-            三个数并进 Hero(见 heroNums),点击入口保留在 .hmHeroNums 与页底 CTA 带 */}
-
-        {/* ④ 职位榜(白带,Frank「单独 section 展示 job」+「老外喜欢排名」+ 2026-07-31「加个最多」):
-            最新榜=fetchJobRows 发布序,高薪榜=fetchJobsPage 年薪序,最多榜=职业×在招量(market.occ 投影);
-            行首挂名次,职位行点详情页、职业行点职位板按 NOC 筛;Top 10/20/50 三榜通用 */}
-        {stats.latestJobs.length > 0 && (
+        {/* ── S2 劝退榜 + S3 真香榜:红绿紧邻强对比,同一白带内上下相接 ─────────────
+            pulse_score 列未落库 → boards.down/up 为空 → 两榜整块不渲染(绝不拿存量榜顶包) */}
+        {boards && (boards.down.length > 0 || boards.up.length > 0) && (
           <Band bg="#fff">
-            <h2 style={secH}>{t('home.jobs')}
-              <span style={{ display: 'inline-flex', border: `1px solid ${UI.border}`, borderRadius: 8, overflow: 'hidden' }}>
-                {/* 高薪/最多都是职业级(吃 occ):market 拉完确认没数据才收起这两钮(查不到不上假入口) */}
-                {([['new', t('home.jobs.new')], ...(occTop === null || occTop.length ? [['paid', t('home.jobs.paid')], ['most', t('home.jobs.most')]] : [])] as ['new' | 'paid' | 'most', string][]).map(([k, lb]) => (
-                  <button key={k} onClick={() => setJobsTab(k)}
-                    style={{ border: 'none', padding: '5px 12px', fontSize: 12.5, cursor: 'pointer',
-                      background: jobsTab === k ? '#eff6ff' : '#fff', color: jobsTab === k ? '#1d4ed8' : '#374151', fontWeight: jobsTab === k ? 600 : 400 }}>{lb}</button>
-                ))}
-              </span>
-              <span style={hmRight}>
-                <select value={jobsN} onChange={(e) => setJobsN(Number(e.target.value))}
-                  style={{ height: 30, border: `1px solid ${UI.border}`, borderRadius: 8, background: '#fff', fontSize: 12.5, color: '#374151', padding: '0 6px' }}>
-                  <option value={10}>Top 10</option><option value={20}>Top 20</option><option value={50}>Top 50</option>
-                </select>
-                <a href="/" style={moreA} onClick={() => track('landing_goal_jobs')}>{t('home.jobs.all')}</a>
-              </span></h2>
-            {/* 桌面=表格、手机=卡片(站规「电脑用表格 手机用卡片」),两套 DOM 各渲各的:
-                卡片的行序与字段取舍本来就与表格不同,硬用同一份 DOM 会两头将就(此前实测:
-                卡片要的发布日期挤不进七列表格,表格要的名次在卡上是重复)。
-                卡片一律用 ui/JobCard —— 全站唯一那张,与职位板同源(2026-08-02 Frank「以后这个定死」)。 */}
-            <div className="hmListTable" style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, overflow: 'hidden' }}>
-              {/* 译名列表头留空 —— 它是上一列名字的中文注,英文界面本就没内容,不给空列硬编标签 */}
-              {jobsTab !== 'new' ? (
-                <div className="hmOccRow hmHead" style={headS}>
-                  <span className="hmRank">#</span>
-                  <span className="hmTitle">{t('quiz.step2')}</span>
-                  <span className="hmNote" />
-                  <span className="hmOccOpen">{t('stats.openJobs')}</span>
-                  <span className="hmOccElig">{t('stats.named')}</span>
-                  <span className="hmPay">{t('col.salaryYr')}</span>
-                </div>
-              ) : (
-                <div className="hmJobRow hmHead" style={headS}>
-                  <span className="hmRank">#</span>
-                  <span className="hmTitle">{t('col.title')}</span>
-                  <span className="hmNote" />
-                  <span className="hmJobCo">{t('col.company')}</span>
-                  <span className="hmPnp">{t('col.score')}</span>
-                  <span className="hmJobLoc">{t('col.city')}</span>
-                  <span className="hmPay">{t('col.salary')}</span>
-                </div>
-              )}
-              {jobsTab !== 'new' ? (
-                // 职业级榜(高薪=薪资序/最多=在招序):行点进职位板按该 NOC 筛(与三问深链同口径)
-                occList === null
-                  ? <div style={{ height: 45 * jobsN }} />
-                  : occList.slice(0, jobsN).map((o, i) => {
-                    // 与职位行同一形态:英文官方名做主文案 + 中/韩译名灰注(Frank「为什么长得不一样」)
-                    const main = o.titleEn || o.titleZh || o.noc
-                    const note = lang === 'zh' ? (o.titleZhShort || o.titleZh) : lang === 'ko' ? o.titleKo : ''
-                    return (
-                    <a key={o.noc} href={`/?q=${o.noc}`} className="hmOccRow rowHover" style={{ borderTop: i ? `1px solid ${UI.hairline}` : 'none' }}>
-                      <span className="hmRank" style={{ fontSize: 12.5, fontWeight: 700, color: i < 3 ? UI.primary : UI.text3 }}>{i + 1}</span>
-                      <span className="hmTitle" title={main} style={{ minWidth: 0 }}>{main}</span>
-                      {/* 译名自己一列:跟着列走,不再随英文名长短漂(2026-08-01 Frank 队列①) */}
-                      <span className="hmNote" title={note} style={{ color: UI.text3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{note ? shortOcc(note) : ''}</span>
-                      <span className="hmOccOpen" style={{ color: UI.text2, whiteSpace: 'nowrap' }}>{o.openJobs != null ? t('quiz.openN', { n: o.openJobs.toLocaleString('en-CA') }) : ''}</span>
-                      <span className="hmOccElig" style={{ color: UI.ok, fontSize: 12.5, whiteSpace: 'nowrap', textAlign: 'right' }}>{o.namedJobs ? t('quiz.eligN', { n: o.namedJobs.toLocaleString('en-CA') }) : ''}</span>
-                      {/* 薪资=ESDC 官方低–高位区间(Frank 2026-07-31「改成范围」;口径同中位:岗位加权取中位);
-                          区间列未灌到(部署时序)回退「中位 $NK」,再不行留空 —— 宁可留空不瞎猜 */}
-                      <span className="hmPay" title={t('home.jobs.rangeTip')} style={{ whiteSpace: 'nowrap' }}>
-                        {o.wageLowAnnual != null && o.wageHighAnnual != null
-                          ? `$${Math.round(o.wageLowAnnual / 1000)}K–$${Math.round(o.wageHighAnnual / 1000)}K`
-                          : o.medianWageAnnual != null ? t('home.jobs.med', { v: '$' + Math.round(o.medianWageAnnual / 1000) + 'K' }) : ''}
-                      </span>
-                    </a>
-                    )
-                  })
-              ) : stats.latestJobs.slice(0, jobsN).map((j, i) => {
-                // 帖子标题是逐帖英文原文,无逐帖译名 —— 中/韩界面挂 NOC 职业译名灰注(人话名+灰字小注站规)
-                const note = nocNote(j.noc)
-                return (
-                <a key={j.id} href={`/jobs/${j.id}`} className="hmJobRow rowHover" style={{ borderTop: i ? `1px solid ${UI.hairline}` : 'none' }}>
-                  <span className="hmRank" style={{ fontSize: 12.5, fontWeight: 700, color: i < 3 ? UI.primary : UI.text3 }}>{i + 1}</span>
-                  <span className="hmTitle" title={j.title} style={{ minWidth: 0 }}>{j.title}</span>
-                  <span className="hmNote" title={note} style={{ color: UI.text3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{note ? shortOcc(note) : ''}</span>
-                  <span className="hmJobCo" style={{ color: UI.text2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{j.company}</span>
-                  {/* 通道胶囊排(Frank 2026-08-02「除了 pnp 能走 ee aip 的胶囊也加上」):三个正向信号并列。
-                      职位板卡上还有「本省不受理」「久未抽选」等否定态,那要排除清单 + 抽选历史两份数据,
-                      landing 不带这两份 —— 这里只报「能走」,不报「走不了」(宁可不说,不说错) */}
-                  <span className="hmPnp">
-                    {j.pnp ? <Tag variant="ok">PNP</Tag> : null}
-                    {j.ee ? <Tag variant="region">{'EE ' + eeDisplay(t, j.ee)}</Tag> : null}
-                    {j.aip ? <Tag variant="warn">AIP</Tag> : null}
-                  </span>
-                  <span className="hmJobLoc" style={{ color: UI.text2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{j.city ? `${j.city}, ${j.province}` : j.province}</span>
-                  <span className="hmPay" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{j.salaryText}</span>
-                </a>
-                )
-              })}
-            </div>
-            {/* 手机卡片列表:与职位板同一张 JobCard。landing 整卡只有一个去处(职位详情/按 NOC 筛),
-                所以不传逐字段 onClick —— 组件里不可点的字段自动渲成纯文本,不假装成入口 */}
-            <div className="hmCards">
-              {jobsTab !== 'new' ? (
-                occList === null
-                  ? <div style={{ height: 92 * jobsN }} />
-                  : occList.slice(0, jobsN).map((o) => {
-                    const main = o.titleEn || o.titleZh || o.noc
-                    const note = lang === 'zh' ? (o.titleZhShort || o.titleZh) : lang === 'ko' ? o.titleKo : ''
-                    const pay = o.wageLowAnnual != null && o.wageHighAnnual != null
-                      ? `$${Math.round(o.wageLowAnnual / 1000)}K–$${Math.round(o.wageHighAnnual / 1000)}K`
-                      : o.medianWageAnnual != null ? t('home.jobs.med', { v: '$' + Math.round(o.medianWageAnnual / 1000) + 'K' }) : ''
-                    return (
-                      <JobCard key={o.noc} href={`/?q=${o.noc}`} title={{ text: main }}
-                        note={note ? shortOcc(note) : undefined}
-                        company={o.openJobs != null ? { text: t('quiz.openN', { n: o.openJobs.toLocaleString('en-CA') }) } : undefined}
-                        salary={pay || undefined} />
-                    )
-                  })
-              ) : stats.latestJobs.slice(0, jobsN).map((j) => {
-                const note = nocNote(j.noc)
-                const chips = [
-                  j.pnp ? <Tag key="pnp" variant="ok">PNP</Tag> : null,
-                  j.ee ? <Tag key="ee" variant="region">{'EE ' + eeDisplay(t, j.ee)}</Tag> : null,
-                  j.aip ? <Tag key="aip" variant="warn">AIP</Tag> : null,
-                ].filter(Boolean)
-                return (
-                  <JobCard key={j.id} href={`/jobs/${j.id}`} title={{ text: j.title }}
-                    note={note ? shortOcc(note) : undefined}
-                    company={j.company ? { text: j.company } : undefined}
-                    salary={j.salaryText || undefined}
-                    location={j.city ? `${j.city}, ${j.province}` : j.province}
-                    date={ymd(j.date)}
-                    chips={chips.length ? chips : undefined} />
-                )
-              })}
-            </div>
+            {boards.down.length > 0 && (
+              <div style={{ borderLeft: `4px solid ${UI.danger}`, paddingLeft: 14 }}>
+                {/* Frank 2026-08-06:大红标题太吓人 —— 标题回正常深色,红色只留左色条与数据本身(环比/判决);
+                    注释行去黑话(「脉象分」用户读不懂),门槛与排序口径挪 title tooltip */}
+                <h2 style={secH} title={t('pulse.board.tip')}>{t('pulse.s2')}</h2>
+                <p style={noteS}>{t('pulse.s2.note')}</p>
+                <OccBoard rows={boards.down} t={t} lang={lang} />
+              </div>
+            )}
+            {boards.up.length > 0 && (
+              <div style={{ borderLeft: `4px solid ${UI.ok}`, paddingLeft: 14, marginTop: 28 }}>
+                <h2 style={secH} title={t('pulse.board.tip')}>{t('pulse.s3')}</h2>
+                <p style={noteS}>{t('pulse.s3.note')}</p>
+                <OccBoard rows={boards.up} t={t} lang={lang} />
+              </div>
+            )}
           </Band>
         )}
 
-        {/* ⑤ 最近抽选(灰带,A 表;窄轨撤,与各节同走 1320) */}
-        {stats.draws.length > 0 && (
-          <Band>
-            <div>
-              <h2 style={secH}>{t('home.draws')}
-                <span style={hmRight}>
-                  <TopN v={drawsN} on={setDrawsN} max={stats.draws.length} />
-                  <a href="/pathways" style={moreA}>{t('pw.entry')}</a>
-                </span></h2>
-              {/* 与 /pathways 抽选事实块同源(pnp_draws),这里是轻量投影;百分比固定布局永不横滚(站规) */}
-              <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, overflow: 'hidden' }}>
-                <table className="hmDrawTable" style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed', fontSize: 13 }}>
-                  {/* 列宽按 375 实测定:日期/项目/分数线/邀请必须完整(数字不许截),通道列吃剩余宽度做省略 */}
-                  <colgroup><col style={{ width: '19%' }} /><col style={{ width: '17%' }} /><col style={{ width: '28%' }} /><col style={{ width: '18%' }} /><col style={{ width: '18%' }} /></colgroup>
-                  <thead><tr>
-                    <th style={th}>{t('home.dr.date')}</th><th style={th}>{t('home.dr.prog')}</th><th style={th}>{t('home.dr.stream')}</th>
-                    <th style={{ ...th, ...numCell }}>{t('home.dr.score')}</th><th style={{ ...th, ...numCell }}>{t('home.dr.inv')}</th>
-                  </tr></thead>
-                  <tbody>
-                    {stats.draws.slice(0, drawsN).map((r, i) => {
-                      const last = i === Math.min(drawsN, stats.draws.length) - 1
-                      return (
-                        <tr key={i}>
-                          <td style={{ ...td, ...(last && { borderBottom: 'none' }) }}>{ymd(r.date)}</td>
-                          <td style={{ ...td, ...(last && { borderBottom: 'none' }) }}><Tag>{r.province === 'FED' ? 'EE' : r.province}</Tag></td>
-                          {/* 通道名双语(队列⑤):官方英文名为主,译名灰字第二行 —— 加一列会把已经很窄的
-                              通道列再切一半,长名字全成省略号;英文界面无第二行(国际化口径) */}
-                          <td style={{ ...td, ...(last && { borderBottom: 'none' }), whiteSpace: 'normal' }} title={drawMain(r)}>
-                            <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{drawMain(r)}</span>
-                            {drawNote(r) ? (
-                              <span style={{ display: 'block', fontSize: 11.5, color: UI.text3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{drawNote(r)}</span>
-                            ) : null}
-                          </td>
-                          <td style={{ ...td, ...numCell, ...(last && { borderBottom: 'none' }) }}>{r.score != null ? num(r.score) : '—'}</td>
-                          <td style={{ ...td, ...numCell, ...(last && { borderBottom: 'none' }) }}>{r.invitations != null ? num(r.invitations) : '—'}</td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-                {/* 手机卡片:与职位榜/职业榜卡同一范式(左信息右数字,详见 .hmJobRow 那段注释)——
-                    行1 左 省胶囊+日期、右 分数线与邀请;行2 通道名整行(不截、可折);行3 译名灰注(空则不占行)。
-                    两个数字同挂行1 右侧:英文界面没有译名,行3 一空,邀请数就孤零零吊在下面白一行(实拍抓到) */}
-                <div className="hmDrawCards">
-                  {stats.draws.slice(0, drawsN).map((r, i) => (
-                    <div key={i} style={{ padding: '12px 14px', borderBottom: i === Math.min(drawsN, stats.draws.length) - 1 ? 'none' : `1px solid ${UI.hairline}` }}>
-                      {/* 通道名与职位卡主名同字号(14.5/600),但**不上蓝**:抽选行不可点,蓝色会假装成链接 */}
-                      <div style={{ fontSize: 14.5, fontWeight: 600, lineHeight: 1.35 }}>{drawMain(r)}</div>
-                      {/* 译名紧跟通道名下面(与职位/职业卡同序:名 → 译名 → 信息行) */}
-                      {drawNote(r) ? (
-                        <div style={{ fontSize: 11.5, color: UI.text3, lineHeight: 1.4 }}>{drawNote(r)}</div>
-                      ) : null}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4 }}>
-                        <Tag>{r.province === 'FED' ? 'EE' : r.province}</Tag>
-                        <span style={{ fontSize: 12, color: UI.text3 }}>{ymd(r.date)}</span>
-                        <span style={{ marginLeft: 'auto', fontSize: 12, color: UI.text2, whiteSpace: 'nowrap' }}>
-                          {t('home.dr.score')}<span style={{ color: UI.text, fontSize: 13.5, marginLeft: 6 }}>{r.score != null ? num(r.score) : '—'}</span>
-                        </span>
-                        <span style={{ fontSize: 12, color: UI.text2, whiteSpace: 'nowrap' }}>
-                          {t('home.dr.inv')}<span style={{ color: UI.text, fontSize: 13.5, marginLeft: 6 }}>{r.invitations != null ? num(r.invitations) : '—'}</span>
-                        </span>
-                      </div>
+        {/* ── S4 省份照妖镜:省标签切换(档案省预选/匿名默认 ON,禁 IP 定位)+ 该省职业榜 +
+            省提名通道标签 + 省卡(难度档 + IRCC 体量)作切换入口 + 折叠的分布主图 ────────── */}
+        <Band>
+          <h2 style={secH}>{t('pulse.s4')}
+            <span style={hmRight}><a href={`/stats/${prov.toLowerCase()}`} style={moreA}>{t('pulse.s4.drill', { prov: provName })}</a></span>
+          </h2>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, margin: '4px 0 8px' }}>
+            {PROVS.map((p) => <Chip key={p} active={p === prov} onClick={() => setProv(p)} title={PROV_NAME[p]}>{p}</Chip>)}
+          </div>
+          {/* 该省提名通道(与 /stats 省页同源 stream_labels);无清单的省整行不出,不写「暂无」 */}
+          {provStat?.streamLabels ? (
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, margin: '0 0 10px', fontSize: 12.5, color: UI.text2 }}>
+              <span style={{ whiteSpace: 'nowrap' }}>{t('pulse.s4.streams')}</span>
+              {provStat.streamLabels.split('、').map((s) => <Tag key={s} variant="warn">{streamDisplay(t, s)}</Tag>)}
+            </div>
+          ) : null}
+          <h3 style={{ fontSize: 15, margin: '10px 0 4px', fontWeight: 700 }}>{t('pulse.s4.rank', { prov: provName })}</h3>
+          <p style={noteS}>{t('pulse.s4.note')}</p>
+          {provOcc === null
+            ? <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, height: 320 }} />
+            : provOcc.length > 0
+              ? <OccBoard rows={provOcc} t={t} lang={lang} />
+              : null}
+          {/* 省卡=切换入口(点卡换省,不跳页;下钻链接在节头)。缺 IRCC 数的格显「—」而非 0 */}
+          {provRows.length > 0 && (
+            <div className="plProvCards">
+              {provRows.map((r) => {
+                const ex = stats.provExtra[r.province]
+                const work = (ex?.info?.tfwp?.n ?? 0) + (ex?.info?.imp?.n ?? 0)
+                const tier = ex?.tier && DIFF_COLORS[ex.tier] ? ex.tier : null
+                const on = r.province === prov
+                return (
+                  <button key={r.province} onClick={() => setProv(r.province)} className="cardHover"
+                    style={{ background: on ? '#eff6ff' : '#fff', border: `1px solid ${on ? '#bfdbfe' : UI.border}`, borderRadius: 12, padding: '12px 14px', color: '#1f2937' }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                      <span title={PROV_NAME[r.province] || r.province} style={{ fontWeight: 700, fontSize: 14.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{SHORT_PROV[r.province] || PROV_NAME[r.province] || r.province}</span>
+                      <span style={{ color: UI.text3, fontWeight: 400, fontSize: 12.5, flexShrink: 0 }}>{r.province}</span>
+                      {tier ? <span style={{ marginLeft: 'auto', flexShrink: 0, whiteSpace: 'nowrap', fontSize: 11, fontWeight: 600, padding: '1px 8px', borderRadius: 999, background: DIFF_COLORS[tier].bg, color: DIFF_COLORS[tier].fg, border: `1px solid ${DIFF_COLORS[tier].bd}` }}>{t('diff.' + tier)}</span> : null}
                     </div>
+                    <div style={{ fontSize: 12.5, color: UI.text2, marginTop: 6, lineHeight: 1.9 }}>
+                      {kv(t('stats.openJobs'), <strong>{r.openJobs != null ? num(r.openJobs) : '—'}</strong>)}
+                      {kv(t('stats.named'), r.namedJobs
+                        ? <span style={{ color: UI.warn, fontWeight: 600 }}>{num(r.namedJobs)}</span>
+                        : <span title={t('stats.noList.tip')} style={{ color: UI.text3 }}>{t('stats.noList')}</span>)}
+                      {kv(t('stats.cardWork'), work ? num(work) : '—')}
+                      {kv(t('stats.cardStudy'), ex?.info?.study?.n ? num(ex.info.study.n) : '—')}
+                      {kv(t('stats.cardPr'), ex?.info?.pnpPr?.n ? num(ex.info.pnpPr.n)
+                        : r.province === 'QC' ? <span title={t('stats.naQc.tip')} style={{ color: UI.text3 }}>{t('stats.naQc')}</span> : '—')}
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          )}
+          {/* 分布主图折叠进本区(默认收起):它是补充证据,展开才拉图库(echarts 懒加载照旧) */}
+          {market !== null && market.occ.length > 0 && (
+            <div style={{ marginTop: 14 }}>
+              <button onClick={() => { setChartOpen((o) => !o); track('pulse_chart_toggle') }}
+                style={{ border: `1px solid ${UI.border}`, background: '#fff', borderRadius: 8, padding: '7px 14px', fontSize: 12.5, color: '#374151', cursor: 'pointer', fontFamily: 'inherit' }}>
+                {t(chartOpen ? 'pulse.chart.hide' : 'pulse.chart.show')}
+              </button>
+              {chartOpen && (
+                <div style={{ marginTop: 10 }}>
+                  <MarketChart occ={market.occ} city={market.city} rows={market.rows} t={t} lang={lang} channels={market.channels} />
+                </div>
+              )}
+            </div>
+          )}
+        </Band>
+
+        {/* ── S5 抽选尺子:抽选表(每期配冷解读)+ 政策动态合并一区 ────────────────── */}
+        {(stats.draws.length > 0 || stats.news.length > 0) && (
+          <Band bg="#fff">
+            {stats.draws.length > 0 && (
+              <>
+                <h2 style={secH}>{t('pulse.s5')}
+                  <span style={hmRight}>
+                    <TopN v={drawsN} on={setDrawsN} max={stats.draws.length} />
+                    <a href="/pathways" style={moreA}>{t('pw.entry')}</a>
+                  </span></h2>
+                <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, overflow: 'hidden' }}>
+                  <table className="plDrawTable" style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed', fontSize: 13 }}>
+                    {/* 百分比固定布局永不横滚;冷解读吃最宽一列(它是这张表的结论) */}
+                    <colgroup><col style={{ width: '12%' }} /><col style={{ width: '8%' }} /><col style={{ width: '22%' }} /><col style={{ width: '10%' }} /><col style={{ width: '10%' }} /><col style={{ width: '38%' }} /></colgroup>
+                    <thead><tr>
+                      <th style={th}>{t('home.dr.date')}</th><th style={th}>{t('home.dr.prog')}</th><th style={th}>{t('home.dr.stream')}</th>
+                      <th style={th}>{t('home.dr.score')}</th><th style={th}>{t('home.dr.inv')}</th><th style={th}>{t('pulse.col.verdict')}</th>
+                    </tr></thead>
+                    <tbody>
+                      {stats.draws.slice(0, drawsN).map((r, i) => {
+                        const last = i === Math.min(drawsN, stats.draws.length) - 1
+                        const base = { ...td, ...(last && { borderBottom: 'none' }) }
+                        return (
+                          <tr key={i}>
+                            <td style={base}>{ymd(r.date)}</td>
+                            <td style={base}><Tag>{r.province === 'FED' ? 'EE' : r.province}</Tag></td>
+                            <td style={{ ...base, whiteSpace: 'normal' }} title={drawMain(r)}>
+                              <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{drawMain(r)}</span>
+                              {drawNote(r) ? <span style={{ display: 'block', fontSize: 11.5, color: UI.text3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{drawNote(r)}</span> : null}
+                            </td>
+                            <td style={base}>{r.score != null ? num(r.score) : '—'}</td>
+                            <td style={base}>{r.invitations != null ? num(r.invitations) : '—'}</td>
+                            {/* 冷解读:样本不足(同通道 <4 期有分)就整格留空,不编一句话 */}
+                            <td style={{ ...base, color: UI.text2 }} title={drawVerdict(r)}>{drawVerdict(r)}</td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                  <div className="plDrawCards">
+                    {stats.draws.slice(0, drawsN).map((r, i) => (
+                      <div key={i} style={{ padding: '12px 14px', borderBottom: i === Math.min(drawsN, stats.draws.length) - 1 ? 'none' : `1px solid ${UI.hairline}` }}>
+                        <div style={{ fontSize: 14.5, fontWeight: 600, lineHeight: 1.35 }}>{drawMain(r)}</div>
+                        {drawNote(r) ? <div style={{ fontSize: 11.5, color: UI.text3, lineHeight: 1.4 }}>{drawNote(r)}</div> : null}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4 }}>
+                          <Tag>{r.province === 'FED' ? 'EE' : r.province}</Tag>
+                          <span style={{ fontSize: 12, color: UI.text3 }}>{ymd(r.date)}</span>
+                          <span style={{ marginLeft: 'auto', fontSize: 12, color: UI.text2, whiteSpace: 'nowrap' }}>
+                            {t('home.dr.score')}<span style={{ color: UI.text, fontSize: 13.5, marginLeft: 6 }}>{r.score != null ? num(r.score) : '—'}</span>
+                          </span>
+                          <span style={{ fontSize: 12, color: UI.text2, whiteSpace: 'nowrap' }}>
+                            {t('home.dr.inv')}<span style={{ color: UI.text, fontSize: 13.5, marginLeft: 6 }}>{r.invitations != null ? num(r.invitations) : '—'}</span>
+                          </span>
+                        </div>
+                        {drawVerdict(r) ? <div style={{ fontSize: 12, color: UI.text2, marginTop: 4 }}>{drawVerdict(r)}</div> : null}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+            {stats.news.length > 0 && (
+              <div style={{ marginTop: 28 }}>
+                <h3 style={{ fontSize: 15, margin: '0 0 8px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 10 }}>{t('home.policy')}
+                  <span style={hmRight}>
+                    <TopN v={newsN} on={setNewsN} max={stats.news.length} />
+                    <a href="/news" style={moreA}>{t('home.pulse.all')}</a>
+                  </span></h3>
+                <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, overflow: 'hidden' }}>
+                  {stats.news.slice(0, newsN).map((r, i) => (
+                    <a key={r.slug || i} href={r.slug ? `/news/${r.slug}` : '/news'} className="rowHover"
+                      style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '12px 14px', borderTop: i ? `1px solid ${UI.hairline}` : 'none', fontSize: 13, textDecoration: 'none', color: 'inherit' }}>
+                      <span style={{ color: UI.text3, fontSize: 12, whiteSpace: 'nowrap' }}>{ymd(r.date)}</span>
+                      <Tag>{r.region === 'federal' ? 'IRCC' : (r.region || '').toUpperCase()}</Tag>
+                      <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.title}</span>
+                    </a>
                   ))}
                 </div>
               </div>
+            )}
+          </Band>
+        )}
+
+        {/* ── S6 职位板入口(文案承接判决)────────────────────────────────────── */}
+        <div className="plBand" style={{ background: 'linear-gradient(100deg,#eff6ff,#dbeafe)' }}>
+          <PageShell pad="0 1.25rem">
+            <div className="plCta">
+              <span style={{ flex: 1 }}>
+                <span style={{ fontSize: 17, fontWeight: 700, color: UI.primaryDeep, display: 'block', marginBottom: 4 }}>{t('pulse.s6.t')}</span>
+                <span style={{ fontSize: 13, color: UI.text2 }}>{t('pulse.s6.s')}</span>
+              </span>
+              <a className="plBtn" style={{ background: UI.primary, color: '#fff' }} href="/" onClick={() => track('landing_cta_browse')}>{t('home.ctaBrowse')}</a>
             </div>
-          </Band>
-        )}
-
-        {/* ⑤ 在招职位分布主图(灰带,1320 全轨与各节同宽):/stats 主图整块投影
-            (同一 MarketChart 组件、同一 /api/market-stats 数据,单一真相源;echarts 懒加载)。
-            数据挂载后 useMarketStats 后台拉:加载中渲固定高占位(不渲空壳控件、375 不跳版),
-            拉完为空(缺表/查询挂)整节撤 —— 与 SSR 时代「查不到整节不渲」同一红线。
-            v2 的「热门职业行情」横滑卡节撤(2026-07-30 自检):与主图默认职业轴同批职业同一排序,
-            两节讲同一件事 —— 按 Frank「不同 section 显示不同的信息」原则,留超集(主图带筛选/下钻)。 */}
-        {(market === null || market.occ.length > 0) && (
-          <Band>
-            {/* 这节没有 Top N,右组只有链接一个 —— 仍走同一个包,不另写一套 */}
-            <h2 style={secH}>{t('mkt.title')}<span style={hmRight}><a href="/stats" style={moreA}>{t('home.stats.more')}</a></span></h2>
-            {market === null
-              ? <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, height: 560 }} />
-              : <MarketChart occ={market.occ} city={market.city} rows={market.rows} t={t} lang={lang} channels={market.channels} />}
-          </Band>
-        )}
-
-        {/* ⑥ 政策动态(白带;窄轨撤,与各节同走 1320) */}
-        {stats.news.length > 0 && (
-          <Band bg="#fff">
-            <div>
-              <h2 style={secH}>{t('home.policy')}
-                <span style={hmRight}>
-                  <TopN v={newsN} on={setNewsN} max={stats.news.length} />
-                  <a href="/news" style={moreA}>{t('home.pulse.all')}</a>
-                </span></h2>
-              <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, overflow: 'hidden' }}>
-                {stats.news.slice(0, newsN).map((r, i) => (
-                  <a key={r.slug || i} href={r.slug ? `/news/${r.slug}` : '/news'} className="rowHover"
-                    style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '12px 14px', borderTop: i ? `1px solid ${UI.hairline}` : 'none', fontSize: 13, textDecoration: 'none', color: 'inherit' }}>
-                    <span style={{ color: UI.text3, fontSize: 12, whiteSpace: 'nowrap' }}>{ymd(r.date)}</span>
-                    <Tag>{r.region === 'federal' ? 'IRCC' : (r.region || '').toUpperCase()}</Tag>
-                    <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.title}</span>
-                  </a>
-                ))}
-              </div>
-            </div>
-          </Band>
-        )}
-
-        {/* ⑦ 全宽 CTA 带:数据节收束回主按钮(架构 v2 判定式——数据是证据,行动是评估) */}
-        <div className="hmBand" style={{ background: 'linear-gradient(100deg,#eff6ff,#dbeafe)' }}>
-          <div className="hmCtaBand" style={{ maxWidth: 1320, margin: '0 auto', padding: '0 1.25rem', boxSizing: 'border-box' }}>
-            <span style={{ flex: 1 }}>
-              <span style={{ fontSize: 17, fontWeight: 700, color: UI.primaryDeep, display: 'block', marginBottom: 4 }}>{t('home.cta2.t')}</span>
-              <span style={{ fontSize: 13, color: UI.text2 }}>{t('home.cta2.s')}</span>
-            </span>
-            {/* 按钮从 hero 挪到这(2026-07-30 Frank「这两个按钮放到最下面」)。
-                主按钮(→ /plan/pr,埋点 landing_cta_quiz)2026-08-04 摘除:答题卡摘入口、保留路由。
-                只剩「进职位板」一个去处,带文案随之改准(不再写「答几道题」) */}
-            <a className="hmBtn" style={{ background: UI.primary, color: '#fff' }}
-              href="/" onClick={() => track('landing_cta_browse')}>{t('home.ctaBrowse')}</a>
-          </div>
+          </PageShell>
         </div>
-      </main>
-      {/* 免责与数据来源都在页脚(全站同一条),页内不再重复写 */}
-      <SiteFooter t={t} />
 
+        {/* ── S7 订阅与分享:订阅走既有周报开关(账户页 saved-jobs 节),分享用平台原生能力 ── */}
+        <Band>
+          <div className="plCta">
+            <span style={{ flex: 1 }}>
+              <span style={{ fontSize: 17, fontWeight: 700, color: UI.text, display: 'block', marginBottom: 4 }}>{t('pulse.s7.t')}</span>
+              <span style={{ fontSize: 13, color: UI.text2 }}>{t('pulse.s7.s')}</span>
+            </span>
+            <a className="plBtn" style={{ background: UI.primary, color: '#fff' }} href="/account?sec=sjobs" onClick={() => track('pulse_subscribe')}>{t('pulse.s7.sub')}</a>
+            <button className="plBtn" style={{ background: '#fff', color: '#374151', border: `1px solid ${UI.border}` }}
+              onClick={() => {
+                track('pulse_share')
+                const url = window.location.href
+                // 原生分享优先(手机),桌面退剪贴板;两条都不可用就什么也不做(不弹自造分享面板)
+                const nav = navigator as Navigator & { share?: (d: { title: string; url: string }) => Promise<void> }
+                if (nav.share) { void nav.share({ title: document.title, url }).catch(() => {}); return }
+                void navigator.clipboard?.writeText(url).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) }).catch(() => {})
+              }}>{copied ? t('pulse.s7.copied') : t('pulse.s7.share')}</button>
+          </div>
+          {/* 口径说明留页尾(溯源是人设凭据,E13-00 §1 拍板 6) */}
+          <CaliberLine t={t} srcs={stats.srcs} fetched={provRows[0]?.fetched || stats.checkedAt || ''} />
+        </Band>
+      </main>
+      <SiteFooter t={t} />
     </div>
   )
 }

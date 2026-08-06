@@ -43,9 +43,19 @@ export const PROV_NAME: Record<string, string> = {
 }
 
 // E8-14 统计主图的两个数据源(ETL 算好,前端零计算透传)
+// E13-03 派生指标(契约 v3,见 docs/implementation/E13-把脉首页/00_总设计与口径.md §3 修订 v3):
+//   上前端的只有 new14d / new14dPrev(分母)/ mom14d(14 天发帖环比)/ avgDaysOpen / pulseScore。
+//   **30 天口径与下架口径都不进这个类型**:
+//     · mom30d 的分母窗卡在抓取全国化爬坡期(全员假涨),有成熟度闸门,约 8-31 后才可信;
+//     · closed30d/net30d 的判死日≠真实下架日,7-25 起的排水期虚高。
+//   凡上前端的数字必须经得起「怎么算的」追问 —— 两者同入 E13-04。
+//   列可能还没落库:读取层逐列探测(见 lib.ts loadOccStats),缺列即 null,
+//   前端「null=该卡/该行/该榜整块不渲染」(绝不显示 0 或 NaN)。
 export type OccRow = { noc: string; province: string; titleZh: string; titleZhShort: string; titleEn: string; titleKo: string
   teer: number | null; broad: string; mid: string; fine: string; openJobs: number | null; new7d: number | null
   medianWageAnnual: number | null; wageLowAnnual: number | null; wageHighAnnual: number | null
-  medianSalaryAnnual: number | null; salaryN: number | null; namedJobs: number | null }
+  medianSalaryAnnual: number | null; salaryN: number | null; namedJobs: number | null
+  new14d: number | null; new14dPrev: number | null; mom14d: number | null
+  avgDaysOpen: number | null; pulseScore: number | null }
 export type CityRow = { city: string; cityZh: string; cityKo: string; province: string; openJobs: number | null; new7d: number | null
   medianWageAnnual: number | null; medianSalaryAnnual: number | null; salaryN: number | null; namedJobs: number | null }

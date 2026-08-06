@@ -27,7 +27,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
     url('/rankings/weekly-top', 0.9),
     url('/rankings/sponsor-likely', 0.9),
-    url('/stats', 0.8),
+    // E13-03:/stats 索引页退役(301 → /start),收录换成把脉首页;省级/省×大类页照旧收录
+    url('/start', 0.9),
   ]
   const stats = PROVS.flatMap((p) => [
     url(`/stats/${p.toLowerCase()}`, 0.7),

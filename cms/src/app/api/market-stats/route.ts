@@ -4,6 +4,10 @@
  * (实测 /start 直出 1.85MB,手机端解析重),与用户无关、mart 日更 —— 改挂载后后台拉,SSR 不再背它。
  * 进程内 10 分钟缓存(与 start/page.tsx homeCache 同 TTL 手法;Render 单实例,进程缓存即全局缓存),
  * 浏览器侧再叠 5 分钟 + SWR(同 /api/dims:过期先用旧的再后台换新,页间往返不重付)。
+ *
+ * E13-03:把脉首页 S1-S4 的派生指标(new14d/new14d_prev/mom14d/avgDaysOpen/pulse_score,契约 v3)随 occ 一起出 ——
+ * 列在 loadOccStats 里逐列探测后加,本路由是纯透传(单一真相源在 stats/lib.ts,别在这儿再写一份 SELECT)。
+ * 列未落库时该列值为 null,前端整块不渲,本路由永不 500。
  */
 import { loadChannelNocs, loadCityStats, loadOccStats, loadStats } from '@/app/(frontend)/stats/lib'
 

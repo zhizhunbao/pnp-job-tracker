@@ -198,7 +198,9 @@ export function PageBanner({ module, icon, title, sub, right, images, stats, tal
     <div className={tall ? 'pbImgBanner pbTall' : 'pbImgBanner'} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
       style={{ position: 'relative', height: tall ? 200 : 130, borderRadius: 12, overflow: 'hidden', margin: '0 0 14px' }}>
       <style>{`.pbImgBanner.pbTall h1{font-size:30px !important}
-        @media (max-width:640px){.pbImgBanner{height:104px !important}.pbImgBanner.pbTall{height:150px !important}.pbImgBanner.pbTall h1{font-size:22px !important}.pbStat{display:none !important}.pbProof{display:none !important}
+        @media (max-width:640px){.pbImgBanner{height:104px !important}
+        /* E13-03:pbTall 标题是动态判决语(长职业名),375 下 4 行装不进定高 150 会被裁头 → 改自撑高+min-height 兜底,内容层补顶部留白 */
+        .pbImgBanner.pbTall{height:auto !important;min-height:150px !important}.pbImgBanner.pbTall h1{font-size:20px !important}.pbImgBanner.pbTall .pbBody{padding-top:14px !important}.pbStat{display:none !important}.pbProof{display:none !important}
         .pbDots{right:4px !important;top:0 !important;gap:0 !important}.pbDots button{width:40px !important;height:40px !important}}`}</style>
       {imgs.map((src, i) => (
         // eslint-disable-next-line @next/next/no-img-element
@@ -207,7 +209,7 @@ export function PageBanner({ module, icon, title, sub, right, images, stats, tal
       ))}
       {/* 模块色暗化层(左浓右淡)压图保字;对比度红线 ≥4.5:1 */}
       <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(90deg, rgba(${m.deep},.82), rgba(${m.deep},.45) 55%, rgba(17,24,39,.25))` }} />
-      <div style={{ position: 'relative', zIndex: 2, height: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, padding: '0 20px 13px', color: '#fff' }}>
+      <div className="pbBody" style={{ position: 'relative', zIndex: 2, height: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, padding: '0 20px 13px', color: '#fff' }}>
         <div style={{ minWidth: 0 }}>
           <h1 style={{ fontSize: 20, margin: 0, display: 'flex', alignItems: 'center', gap: 8, textShadow: '0 1px 6px rgba(0,0,0,.5)' }}>{icon}{title}</h1>
           {sub && <div style={{ fontSize: 12, opacity: 0.92, marginTop: 3, textShadow: '0 1px 4px rgba(0,0,0,.5)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub}</div>}

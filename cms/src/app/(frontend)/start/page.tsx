@@ -1,70 +1,84 @@
-// L1-01 Landing 页(/start,B 方案并行期;切 A 时把内容移到根 page.tsx、职位板还给 jobs/page.tsx)。
-// 本页只做入口:三问式首屏 + 七目标入口 + 最新动态;不做报告(L2)、不做实体页(L3)、不碰数据层。
-// 红线:数字全部来自库内聚合查询,不写死;单项查询失败 → 该行/该胶囊整条不渲染,绝不显示 0。
+// E13-03 把脉首页(/start)—— 开始规划 + 榜单 + 地区统计**三合一**(设计:docs/implementation/E13-把脉首页/00_总设计与口径.md)。
+// 本页只做 SSR 取数:判决区的证据数(proof)、抽选表+冷解读、政策动态、省卡的 IRCC 体量与难度档、口径出处。
+// S1 的「近 14 天新发 + 环比」走 occ 全国行(客户端 /api/market-stats),不在这儿查;
+// 净值卡(在架存量差)按契约 v3 **本批不做** —— 排水期的存量下跌是数据清洗不是市场收缩(后置 E13-04)。
+// 红线:数字全部来自库内聚合查询,不写死;单项查询失败 → 该行/该块整条不渲染,绝不显示 0。
+// SSR 瘦身照旧:职业大表(occ ~3400 行,含 E13-03 派生列)不进 HTML,由 StartView 挂载后拉 /api/market-stats。
+import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import { checkedAt, fetchJobRows, fetchJobsPage, fetchTotalAndProof } from '@/lib/jobsSql'
+import { getUser } from '@/lib/entitlement'
+import { checkedAt, fetchTotalAndProof } from '@/lib/jobsSql'
 import { normalizeProfile } from '@/lib/match'
+import { loadProvExtra, loadStatSources } from '../stats/lib'
+import { PROVS } from '../stats/shared'
 import { StartView, type HomeStats } from './StartView'
 
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: 'Plan your Canada move with data — jobs, PNP streams, provinces, schools | Offer2PR',
+  title: 'Canada job market pulse — what is shrinking, what is hiring, by province | Offer2PR',
   description:
-    'One entry point for data-backed decisions: 7 goals (find a job, get PR, pick a province/city/school, career planning) with live counts from official sources. 用数据算你的下一步:找工作、拿 PR、选省份/城市/学校,数字全部来自库内真数。',
+    'Which occupations are shrinking and which are still hiring: 14-day posting change, average days open, PNP-list hit rate, provincial breakdown and the latest draw cutoffs. 就业把脉:哪些职业在缩、哪些还在招,数字全部来自库内真数。',
 }
 
-// 聚合进程内缓存(手法照 jobs/page.tsx 的 ssrDimsCache):七卡小注/胶囊/动态三行全是与用户无关的
-// 聚合数,10 分钟陈旧完全可接受;Render 单实例,进程缓存即全局缓存。checkedAt 不进缓存(jobsSql 自带 30s)。
-let homeCache: { v: Omit<HomeStats, 'checkedAt'>; ts: number } | null = null
+// 聚合进程内缓存(手法照 jobs/page.tsx 的 ssrDimsCache):判决证据/抽选/政策/省卡全是与用户无关的
+// 聚合数,10 分钟陈旧完全可接受;Render 单实例,进程缓存即全局缓存。
+// checkedAt 与「用户档案省」不进缓存(前者 jobsSql 自带 30s,后者是逐用户的)。
+let homeCache: { v: Omit<HomeStats, 'checkedAt' | 'provPreset'>; ts: number } | null = null
 const HOME_TTL = 10 * 60_000
 
-async function loadHomeStats(pool: any): Promise<Omit<HomeStats, 'checkedAt'>> {
-  // 每项独立 .catch(null):一张表缺/查询挂只丢它自己那行,页面照常(宁可留空)
-  const cnt = (sql: string) => pool.query(sql).then((r: any) => Number(r.rows[0]?.n) || null).catch(() => null)
-  const ANON = { profile: normalizeProfile(null), matchDims: { pnpOccupations: [], eeCategories: [] } }
-  const [proof, provinces, cities, dli, occupations, aipEmployers, drawRes, dailyRes, newsRes, jobRows] = await Promise.all([
-    fetchTotalAndProof(pool).catch(() => null),
-    cnt('SELECT count(*)::int n FROM provinces'),
-    cnt('SELECT count(*)::int n FROM cities'),
-    cnt('SELECT count(*)::int n FROM dli'),
-    cnt('SELECT count(*)::int n FROM stats_occupation'),
-    cnt('SELECT count(*)::int n FROM designated_employers'),
-    // 最近抽选表(v2 B+A 拍板):pnp_draws 含省抽选与联邦轮次(province=FED),有分/有邀请数的。
-    // 2026-08-01 Frank 队列③:表上加 10/20/50 条数下拉 → SSR 取 50 条,前端切(50 行 ≈ 6KB,不值得再开端点)。
-    // 单一真相源:与 /pathways 抽选事实块同表同口径,本页只是轻量投影
-    pool.query(`SELECT province, draw_date, stream, label, score, invitations FROM pnp_draws
-      WHERE (score IS NOT NULL OR invitations IS NOT NULL) AND COALESCE(draw_date,'') <> ''
-      ORDER BY draw_date DESC LIMIT 50`).then((r: any) => r.rows as any[]).catch(() => []),
-    // 日更卡:最新发布日的新增岗数 + 其中可提名数(与职位板 pnp_eligible 同口径)
-    pool.query(`SELECT to_char(date_posted,'YYYY-MM-DD') d, count(*)::int n,
-        count(*) FILTER (WHERE COALESCE(pnp_eligible,false))::int elig
-      FROM jobs WHERE date_posted = (SELECT max(date_posted) FROM jobs)
-      GROUP BY date_posted`).then((r: any) => r.rows[0] ?? null).catch(() => null),
-    // 多取几条再按标题去重(同题新闻隔日重抓会出重复行,landing 三行里出现两条同题很难看;取最新那条)
-    // 2026-08-01 Frank 队列④:政策动态同样加 10/20/50 下拉 → 多取一批,去重后前端切
-    pool.query(`SELECT region, title, date, slug FROM news ORDER BY date DESC, id DESC LIMIT 80`)
-      .then((r: any) => r.rows as any[]).catch(() => []),
-    // 地区统计主图四份数据(occ/city/rows/channels)不再 SSR 直出:occ ~3400 行占 HTML 大头(实测 1.85MB),
-    // 移到 /api/market-stats,StartView 挂载后后台拉(SSR 瘦身,手法照 /jobs 的 /api/dims)
-    // 职位节:最新榜=fetchJobRows 发布时间序(与职位板同一 DAL,匿名口径)。
-    // 逐岗高薪榜 2026-07-31 退役(Frank「要的是职业薪资排名,不是具体某些职位;top50 全是医生帖,
-    // 程序员排在哪」)→ 高薪 tab 改职业级,吃 market.occ(StartView 客户端排序),SSR 不再背这查询
-    fetchJobRows(pool, { pro: false, profile: ANON.profile, profileOk: false, matchDims: ANON.matchDims, limit: 50 })
-      .then((r) => r.jobs).catch(() => []),
-  ])
-  return {
-    total: proof?.total || null, named: proof?.named || null, lmia: proof?.lmia || null,
-    provinces, cities, dli, occupations, aipEmployers,
-    draws: (drawRes as any[]).map((r) => ({
+// S5 冷解读的口径(设计 §4):当期分数线 vs **近 12 期同通道**的区间。
+// 在服务端算完只带三个标量下去(histN/histMin/histMax),而不是把 400 行抽选史塞进 HTML。
+const HIST_WINDOW = 12
+const HIST_MIN_N = 4        // 同通道有效期数 <4 不出解读(样本太少的「区间」是噪音,宁可不说)
+
+type RawDraw = { province: string; draw_date: string; stream: string | null; label: string | null; score: number | null; invitations: number | null }
+
+function withDrawHistory(rows: RawDraw[], limit: number): HomeStats['draws'] {
+  const groups = new Map<string, RawDraw[]>()   // 键=省+通道;rows 已按日期降序,组内自然也降序
+  for (const r of rows) {
+    const k = `${r.province}|${r.stream || r.label || ''}`
+    const g = groups.get(k); if (g) g.push(r); else groups.set(k, [r])
+  }
+  const pos = new Map<RawDraw, { n: number; min: number; max: number } | null>()
+  for (const g of groups.values()) {
+    g.forEach((r, i) => {
+      // 从本期往回数 12 期(含本期):只统计有分数线的期次
+      const scores = g.slice(i, i + HIST_WINDOW).map((x) => x.score).filter((v): v is number => v != null)
+      pos.set(r, scores.length >= HIST_MIN_N ? { n: scores.length, min: Math.min(...scores), max: Math.max(...scores) } : null)
+    })
+  }
+  return rows.slice(0, limit).map((r) => {
+    const h = pos.get(r) ?? null
+    return {
       date: String(r.draw_date), province: r.province ?? '', stream: r.stream ?? '', label: r.label ?? '',
       score: r.score == null ? null : Number(r.score),
       invitations: r.invitations == null ? null : Number(r.invitations),
-    })),
-    daily: dailyRes && Number(dailyRes.n) > 0
-      ? { date: dailyRes.d, n: Number(dailyRes.n), eligible: Number(dailyRes.elig) || 0 } : null,
+      histN: h?.n ?? null, histMin: h?.min ?? null, histMax: h?.max ?? null,
+    }
+  })
+}
+
+async function loadHomeStats(pool: any): Promise<Omit<HomeStats, 'checkedAt' | 'provPreset'>> {
+  // 每项独立 .catch(null):一张表缺/查询挂只丢它自己那块,页面照常(宁可留空)
+  const [proof, drawRes, newsRes, provExtra, srcs] = await Promise.all([
+    fetchTotalAndProof(pool).catch(() => null),
+    // 抽选表(与 /pathways 同源 pnp_draws):前端只展示 Top N(下拉 10/20/50),
+    // 但冷解读要按通道回看 12 期 —— 多取一批只在服务端用完即丢,不进 HTML
+    pool.query(`SELECT province, draw_date, stream, label, score, invitations FROM pnp_draws
+      WHERE (score IS NOT NULL OR invitations IS NOT NULL) AND COALESCE(draw_date,'') <> ''
+      ORDER BY draw_date DESC LIMIT 400`).then((r: any) => r.rows as RawDraw[]).catch(() => []),
+    // 多取几条再按标题去重(同题新闻隔日重抓会出重复行);前端 Top N 下拉再切
+    pool.query(`SELECT region, title, date, slug FROM news ORDER BY date DESC, id DESC LIMIT 80`)
+      .then((r: any) => r.rows as any[]).catch(() => []),
+    loadProvExtra().catch(() => ({})),      // 省卡:IRCC 学签/工签/PNP 拿到 PR + 难度档(与 /stats 索引页同源)
+    loadStatSources().catch(() => []),      // 口径行(CaliberLine)出处
+  ])
+  return {
+    total: proof?.total || null, named: proof?.named || null,
+    draws: withDrawHistory(drawRes as RawDraw[], 50),
     news: (() => {
       // 同题去重带归一化:IRCC 同一稿隔日重发常只差尾部「(城市)」括注,精确比对抓不住
       const norm = (s: string) => s.replace(/\s*[(（][^)）]*[)）]\s*$/, '').trim().toLowerCase()
@@ -74,20 +88,10 @@ async function loadHomeStats(pool: any): Promise<Omit<HomeStats, 'checkedAt'>> {
         .slice(0, 50)
         .map((r) => ({ date: String(r.date), region: r.region ?? '', title: r.title ?? '', slug: r.slug ?? '' }))
     })(),
-    latestJobs: (jobRows as any[]).map(slimJob),
+    provExtra,
+    srcs,
   }
 }
-
-// landing 职位行瘦身:只留展示字段(全量 JobRow 50×2 行会白背几百 KB 的公司简介/JD 字段)。
-// noc(2026-07-31 Frank「榜单要国际化」):帖子标题无逐帖译名,中/韩界面在前端拿 market.occ
-// 已到手的 NOC 三语短名查表做灰注 —— 人话名主文案+灰字小注站规,零新数据零新查询
-// ee/aip(2026-08-02 Frank「除了 pnp 能走 ee aip 的胶囊也加上」):三个通道信号同源于职位板同一 DAL,
-// 这里只多带两个标量字段(eeCategory 是短 label,aip 是布尔)——不引入新查询
-const slimJob = (j: any) => ({
-  id: j.id, title: j.title, company: j.company, city: j.city, province: j.province,
-  salaryText: j.salaryText || j.salary || '', pnp: !!j.pnpEligible, date: String(j.datePosted || '').slice(0, 10),
-  noc: j.noc || '', ee: j.eeCategory || '', aip: !!j.aip,
-})
 
 export default async function StartPage() {
   const payload = await getPayload({ config: await config })
@@ -95,6 +99,10 @@ export default async function StartPage() {
   if (!homeCache || Date.now() - homeCache.ts >= HOME_TTL) {
     homeCache = { v: await loadHomeStats(pool), ts: Date.now() }
   }
+  // S4 省份预选(设计 §1 拍板 4):**已建档按档案省,匿名默认 ON —— 不许按 IP 判**
+  // (站内零 geo 能力,且主力受众在境外;同 i18n「不许按 IP 判语言」同族红线)。
+  const user = await getUser(await headers()).catch(() => null)
+  const target = normalizeProfile((user as any)?.profile).targetProvinces.find((p) => PROVS.includes(p))
   const upd = await checkedAt(pool).catch(() => '')
-  return <StartView stats={{ ...homeCache.v, checkedAt: upd }} />
+  return <StartView stats={{ ...homeCache.v, provPreset: target || '', checkedAt: upd }} />
 }

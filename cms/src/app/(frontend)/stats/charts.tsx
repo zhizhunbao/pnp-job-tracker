@@ -1,11 +1,10 @@
 'use client'
-// 统计图表(E8-06,2026-07-10 用户拍板「开源漂亮图表,任意维度×指标;上常见下自定义」):
-// EChart 薄壳(echarts 动态 import 懒加载——打开统计页/弹窗才拉,/jobs 首屏不背体积)+ 预设四图 + 自定义区。
-// 数据=stats 表 119 行零计算透传;红线:计数类可跨省求和,中位数不做跨省合并(提示引导选省,不瞎算)。
+// 统计图表(E8-06):EChart 薄壳(echarts 动态 import 懒加载——展开图才拉,首屏不背体积)+ 统计主图 MarketChart。
+// E13-03(2026-08-06):按省/按大类的预设四图与自定义区(StatsCharts)随 /stats 索引页退役一并删 ——
+// 主图折进把脉首页 S4(默认收起)。红线不变:计数类可跨省求和,中位数不做跨省合并。
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { BROAD_SLUGS, PROVS, PROV_NAME, type StatRow, type OccRow, type CityRow } from './shared'
 import type { TFn } from '../jobs/i18n'
-import { track } from '@/lib/track'   // #129 功能级 umami 埋点
 
 type ChartInst = { setOption: (o: object, notMerge?: boolean) => void; resize: () => void; clear: () => void; dispose: () => void; on: (ev: string, cb: (e: { dataIndex: number }) => void) => void }
 
@@ -38,168 +37,9 @@ function EChart({ option, height, onBarClick }: { option: object; height: number
   return <div ref={ref} style={{ width: '100%', height, cursor: onBarClick ? 'pointer' : undefined, overflow: 'hidden' }} />
 }
 
-// #128(批A):类目过多图变长梯——计数类 >20 收 TOP15+「其他」归并条(其他=不可下钻);
-// 中位类不归并(跨类目中位不能求和,红线),原样全列
-const CAP_AT = 20
-const CAP_TOP = 15
-const OTHER_KEY = '__other'
-function capItems(items: Item[], sum: boolean, t: TFn): Item[] {
-  if (!sum || items.length <= CAP_AT) return items
-  const top = items.slice(-CAP_TOP)   // 升序数组,尾部=最大
-  const rest = items.slice(0, items.length - CAP_TOP)
-  const other: Item = { name: t('chart.other'), full: `${t('chart.other')}(${rest.length})`, key: OTHER_KEY, value: rest.reduce((a, b) => a + b.value, 0) }
-  return [other, ...top].sort(asc)
-}
-
-type Item = { name: string; full: string; value: number; key: string }  // key=原始维度值(省码/大类中文),下钻用
-const fmtOf = (money: boolean) => (v: number) => (money ? `$${Math.round(v / 1000)}K` : String(v))
-
-// 横向条形(10 类目手机窄屏也可读;降序=最大在最上)
-function barOption(items: Item[], money: boolean): object {
-  const fmt = fmtOf(money)
-  return {
-    animationDuration: 400,
-    grid: { left: 8, right: 48, top: 6, bottom: 6, containLabel: true },
-    xAxis: { type: 'value', splitLine: { lineStyle: { color: '#f3f4f6' } }, axisLabel: { color: '#9ca3af', fontSize: 11, formatter: (v: number) => fmt(v) } },
-    yAxis: { type: 'category', data: items.map((i) => i.name), axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: '#374151', fontSize: 12 } },
-    tooltip: {
-      trigger: 'axis', axisPointer: { type: 'shadow' }, borderColor: '#e5e7eb', textStyle: { fontSize: 12.5 },
-      formatter: (ps: { dataIndex: number; value: number }[]) => { const p = ps[0]; const it = items[p.dataIndex]; return `${it.full}:<b> ${fmt(p.value)}</b>` },
-    },
-    series: [{
-      type: 'bar', data: items.map((i) => i.value), barMaxWidth: 16,
-      itemStyle: { color: '#2563eb', borderRadius: [0, 4, 4, 0] },
-      label: { show: true, position: 'right', color: '#6b7280', fontSize: 11, formatter: (p: { value: number }) => fmt(p.value) },
-    }],
-  }
-}
-
-// 指标配置:sum=计数类(跨省求和成立);中位类只透传预聚合值,不合并
-const METRICS = [
-  { key: 'openJobs', label: 'stats.openJobs', money: false, sum: true },
-  { key: 'new7d', label: 'stats.new7d', money: false, sum: true },
-  { key: 'medianWageAnnual', label: 'stats.medWage', money: true, sum: false },
-  { key: 'medianSalaryAnnual', label: 'stats.medSalary', money: true, sum: false },
-  { key: 'namedJobs', label: 'stats.named', money: false, sum: true },
-  { key: 'aipJobs', label: 'stats.aip', money: false, sum: true },
-] as const
-type MetricKey = (typeof METRICS)[number]['key']
-
-const asc = (a: Item, b: Item) => a.value - b.value // 横向条形:数组升序 = 最大条在最上
-
-// 维度=省:broad=cat('all'=全部职业)的 10 省行(mid='all' 守卫:行集已含中类行,别错配)
-function byProv(rows: StatRow[], metric: MetricKey, cat: string): Item[] {
-  return PROVS
-    .map((p) => ({ name: p, full: PROV_NAME[p] || p, key: p, value: rows.find((r) => r.province === p && r.broad === cat && r.mid === 'all')?.[metric] ?? null }))
-    .filter((i): i is Item => i.value != null)
-    .sort(asc)
-}
-
-// 维度=大类:某省 filter;全部省=计数求和(中位类由调用侧挡在 medianBlocked)
-function byCat(rows: StatRow[], metric: MetricKey, prov: string, label: (b: string) => string): Item[] {
-  return BROAD_SLUGS
-    .map(([, broad]) => {
-      const rs = rows.filter((r) => r.broad === broad && r.mid === 'all' && (prov === 'all' || r.province === prov))
-      const vals = rs.map((r) => r[metric]).filter((v): v is number => v != null)
-      const value = !vals.length ? null : prov === 'all' ? vals.reduce((a, b) => a + b, 0) : vals[0]
-      return { name: label(broad), full: label(broad), key: broad, value }
-    })
-    .filter((i): i is Item => i.value != null)
-    .sort(asc)
-}
-
-// NOC 中类显示翻译(同 JobsTable catName:cat.* 缺键退 broad.* 再退原值;不从 JobsTable 导入避免拖整模块进 stats 包)
-const midName = (t: TFn, v: string) => { for (const k of ['cat.' + v, 'broad.' + v]) { const s = t(k); if (s !== k) return s } return v }
-
-// 维度=中类:单省×单大类的中类行(L2;单省内不触碰跨省中位合并红线)
-function byMid(rows: StatRow[], metric: MetricKey, prov: string, broad: string, t: TFn): Item[] {
-  return rows
-    .filter((r) => r.province === prov && r.broad === broad && r.mid !== 'all')
-    .map((r) => ({ name: midName(t, r.mid), full: midName(t, r.mid), key: r.mid, value: r[metric] as number | null }))
-    .filter((i): i is Item => i.value != null)
-    .sort(asc)
-}
-
-const selS: React.CSSProperties = { padding: '5px 8px', fontSize: 12.5, border: '1px solid #d1d5db', borderRadius: 6, background: '#fff', color: '#374151' }
+// 主图卡壳(MarketChart 用;原「预设四图/自定义区」那套 DrillCard 与 byProv/byCat/byMid/barOption
+// 随 /stats 索引页 2026-08-06 退役一并删,不留死代码)
 const cardS: React.CSSProperties = { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '12px 14px' }
-const h2S: React.CSSProperties = { fontSize: 15.5, margin: '18px 0 8px' }
-
-const chartH = (n: number) => n * 26 + 40
-
-// 预设图卡:三级下钻+面包屑(#57 两级;2026-07-19 Frank 拍板加中类层 L2「统计=选行业选地区的概率指导」)——
-// L0 全景;L1 省图→该省按大类 / 大类图→该类按省;L2 = 单省×单大类按 NOC 中类;L3 = 小类(仅 openJobs)。
-// 2026-07-25 Frank 拍板:点条形一律不跳职位板 —— 末级点条无动作,图表只做统计浏览。
-// 面包屑「全部 › ON › 服务」任意段上卷。中位类全程单省,不触碰跨省合并红线。
-function DrillCard({ rows, t, title, kind, metric, money, broadLabel }: {
-  rows: StatRow[]; t: TFn; title: string; kind: 'prov' | 'cat'; metric: MetricKey; money: boolean; broadLabel: (b: string) => string
-}) {
-  const [path, setPath] = useState<Item[]>([])  // []=L0;[a]=L1;[a,b]=L2;[a,b,mid]=L3(批A,#127 小类层,仅 openJobs)
-  const provBroad = (): { prov: string; broad: string } => (
-    kind === 'prov' ? { prov: path[0]?.key ?? '', broad: path[1]?.key ?? '' } : { prov: path[1]?.key ?? '', broad: path[0]?.key ?? '' })
-  // #127(批A)L3:小类不进 stats 表 —— 单省×大类×中类现查 /api/statsfine(count by fine),null=加载中
-  const [fineItems, setFineItems] = useState<Item[] | null>(null)
-  useEffect(() => {
-    if (path.length !== 3) { setFineItems(null); return }
-    const { prov, broad } = provBroad()
-    const ctrl = new AbortController()
-    fetch(`/api/statsfine?prov=${prov}&broad=${encodeURIComponent(broad)}&mid=${encodeURIComponent(path[2].key)}`, { signal: ctrl.signal })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        if (!d) { setFineItems([]); return }
-        setFineItems((d.rows as { fine: string; n: number }[])
-          .map((r) => ({ name: midName(t, r.fine), full: midName(t, r.fine), key: r.fine, value: r.n }))
-          .sort(asc))
-      })
-      .catch(() => { if (!ctrl.signal.aborted) setFineItems([]) })
-    return () => ctrl.abort()
-  }, [path]) // eslint-disable-line react-hooks/exhaustive-deps
-  const items = useMemo(() => {
-    const sum = METRICS.find((x) => x.key === metric)?.sum ?? false
-    if (!path.length) return kind === 'prov' ? byProv(rows, metric, 'all') : byCat(rows, metric, 'all', broadLabel)
-    if (path.length === 1) return capItems(kind === 'prov' ? byCat(rows, metric, path[0].key, broadLabel) : byProv(rows, metric, path[0].key), sum, t)
-    if (path.length === 3) return capItems(fineItems ?? [], true, t)
-    const { prov, broad } = provBroad()
-    return capItems(byMid(rows, metric, prov, broad, t), sum, t)
-  }, [rows, metric, kind, path, fineItems]) // eslint-disable-line react-hooks/exhaustive-deps
-  // 末级=没有更深层可钻:L3;或 L2 非 openJobs(中位类小类级无数据)。末级不挂点击回调(也不给 pointer 光标)
-  const terminal = path.length === 3 || (path.length === 2 && metric !== 'openJobs')
-  return (
-    <div style={cardS}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>{title}</div>
-        {path.length ? (
-          <span style={{ fontSize: 12, color: '#9ca3af', whiteSpace: 'nowrap' }}>
-            <button onClick={() => setPath([])} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12, color: '#2563eb', cursor: 'pointer' }}>{t('chart.all')}</button>
-            {path.map((seg, i) => (
-              <span key={seg.key}>
-                {' › '}
-                {i < path.length - 1
-                  ? <button onClick={() => setPath(path.slice(0, i + 1))} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12, color: '#2563eb', cursor: 'pointer' }}>{seg.full}</button>
-                  : <span style={{ color: '#374151', fontWeight: 600 }}>{seg.full}</span>}
-              </span>
-            ))}
-          </span>
-        ) : (
-          <span style={{ fontSize: 11, color: '#d1d5db', whiteSpace: 'nowrap' }}>{t('chart.drillHint')}</span>
-        )}
-      </div>
-      {path.length === 3 && fineItems === null
-        ? <p style={{ margin: '10px 0', fontSize: 13, color: '#9ca3af' }}>{t('chart.loading')}</p>
-        : items.length
-        ? <EChart option={barOption(items, money)} height={chartH(items.length)}
-            onBarClick={terminal ? undefined : (i) => {
-              const it = items[i]; if (!it || it.key === OTHER_KEY) return   // 「其他」归并条不可下钻
-              if (path.length === 1) {  // L1→L2 前探一眼:该桶无中类行(列未落地/数据缺)→ 到底,点条无动作
-                const pb = kind === 'prov' ? { prov: path[0].key, broad: it.key } : { prov: it.key, broad: path[0].key }
-                if (!byMid(rows, metric, pb.prov, pb.broad, t).length) return
-              }
-              track('stats-drill', { depth: path.length + 1 })   // #129
-              setPath([...path, it])
-            }} />
-        : <p style={{ margin: '10px 0', fontSize: 13, color: '#9ca3af' }}>—</p>}
-    </div>
-  )
-}
 
 // ── /api/market-stats 客户端拉取(SSR 瘦身,手法照 /jobs 的 /api/dims):主图四份数据与用户无关、
 // mart 日更,不该 SSR 直出(occ ~3400 行占 /start HTML 大头)。null=加载中(调用侧渲占位高度防 CLS);
@@ -556,83 +396,5 @@ export function MarketChart({ occ, city, rows, t, lang = 'zh', channels, firstSc
       <style>{'@media(min-width:900px){.mktFs{display:none}}'}</style>
       <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 6, lineHeight: 1.6 }}>{t('mkt.note')}</div>
     </div>
-  )
-}
-
-export function StatsCharts({ rows, t }: { rows: StatRow[]; t: TFn }) {
-  const broadLabel = (b: string) => t('broad.' + b)
-
-  const presets = useMemo(() => [
-    { title: `${t('stats.openJobs')}(${t('chart.dimProv')})`, kind: 'prov' as const, metric: 'openJobs' as const, money: false },
-    { title: `${t('stats.medWage')}(${t('chart.dimProv')})`, kind: 'prov' as const, metric: 'medianWageAnnual' as const, money: true },
-    { title: `${t('stats.named')}(${t('chart.dimProv')})`, kind: 'prov' as const, metric: 'namedJobs' as const, money: false },
-    { title: `${t('stats.openJobs')}(${t('chart.dimCat')})`, kind: 'cat' as const, metric: 'openJobs' as const, money: false },
-  ], [t])
-
-  const [dim, setDim] = useState<'prov' | 'cat'>('prov')
-  const [metric, setMetric] = useState<MetricKey>('openJobs')
-  const [fixCat, setFixCat] = useState('all')   // 维度=省 时锁某大类
-  const [fixProv, setFixProv] = useState('all') // 维度=大类 时锁某省
-  const m = METRICS.find((x) => x.key === metric)!
-  const medianBlocked = dim === 'cat' && fixProv === 'all' && !m.sum // 红线:中位数不跨省合并
-  const custom = useMemo(
-    () => (dim === 'prov' ? byProv(rows, metric, fixCat) : byCat(rows, metric, fixProv, broadLabel)),
-    [rows, dim, metric, fixCat, fixProv, t], // eslint-disable-line react-hooks/exhaustive-deps
-  )
-
-  return (
-    <>
-      <h2 style={h2S}>{t('chart.common')}</h2>
-      {/* #60:min 420px 的 auto-fit 让 4 卡在 1100px 容器内恒为 2×2 等宽(300px auto-fill 会落成 3+1,
-          第二行两格空白=用户指的「中间和右边大量空白」);窄屏自然单列,min(100%,·) 防超窄溢出 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 420px), 1fr))', gap: 12 }}>
-        {presets.map((p) => (
-          <DrillCard key={p.title} rows={rows} t={t} title={p.title} kind={p.kind} metric={p.metric} money={p.money} broadLabel={broadLabel} />
-        ))}
-      </div>
-
-      <h2 style={h2S}>{t('chart.custom')}</h2>
-      <div style={cardS}>
-        <div className="stCtl" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', fontSize: 12.5, color: '#6b7280', marginBottom: 8 }}>
-          <label>{t('chart.dim')}{' '}
-            <select style={selS} value={dim} onChange={(e) => setDim(e.target.value as 'prov' | 'cat')}>
-              <option value="prov">{t('chart.dimProv')}</option>
-              <option value="cat">{t('chart.dimCat')}</option>
-            </select>
-          </label>
-          <label>{t('chart.metric')}{' '}
-            <select style={selS} value={metric} onChange={(e) => setMetric(e.target.value as MetricKey)}>
-              {METRICS.map((x) => <option key={x.key} value={x.key}>{t(x.label)}</option>)}
-            </select>
-          </label>
-          {dim === 'prov' ? (
-            <label>{t('filter.cat')}{' '}
-              <select style={selS} value={fixCat} onChange={(e) => setFixCat(e.target.value)}>
-                <option value="all">{t('chart.all')}</option>
-                {BROAD_SLUGS.map(([slug, broad]) => <option key={slug} value={broad}>{broadLabel(broad)}</option>)}
-              </select>
-            </label>
-          ) : (
-            <label>{t('col.province')}{' '}
-              <select style={selS} value={fixProv} onChange={(e) => setFixProv(e.target.value)}>
-                <option value="all">{t('chart.all')}</option>
-                {PROVS.map((p) => <option key={p} value={p}>{PROV_NAME[p] || p}</option>)}
-              </select>
-            </label>
-          )}
-          <span style={{ fontSize: 11, color: '#d1d5db', whiteSpace: 'nowrap' }}>{t('chart.drillHint')}</span>
-        </div>
-        {medianBlocked
-          ? <p style={{ margin: '10px 0', fontSize: 13, color: '#9ca3af' }}>{t('chart.medianNote')}</p>
-          : custom.length
-            ? <EChart option={barOption(custom, m.money)} height={chartH(custom.length)}
-                onBarClick={(i) => {  // 自定义图下钻=切维度联动:点省→该省按大类;点大类→该大类按省(选择器即上卷)
-                  const it = custom[i]; if (!it) return
-                  if (dim === 'prov') { setDim('cat'); setFixProv(it.key) }
-                  else { setDim('prov'); setFixCat(it.key) }
-                }} />
-            : <p style={{ margin: '10px 0', fontSize: 13, color: '#9ca3af' }}>—</p>}
-      </div>
-    </>
   )
 }

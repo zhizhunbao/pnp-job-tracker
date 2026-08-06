@@ -1073,7 +1073,7 @@ export function buildCareerReport(profile: MatchProfile, facts: ReportFacts, occ
   // 「能不能转」需要技能/学历映射,本站没有 —— 明说,不拿模型编
   gaps.push({ key: 'rpt.k.noPath', params: {}, verdict: 'na' })
 
-  nextSteps.push({ key: 'rpt.n.stats', params: {}, url: '/stats' })
+  nextSteps.push({ key: 'rpt.n.stats', params: {}, url: '/start' })   // E13-03:/stats 索引页退役,落点换把脉首页
   nextSteps.push({ key: 'rpt.n.pathways', params: {}, url: '/pathways' })
 
   return {
