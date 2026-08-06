@@ -65,7 +65,7 @@ etl/ (Python: 抓取 → 清洗 → 评分, 写 data/) ──> cms/ (Payload + N
 
 ## 跑起来
 ```bash
-# ⚠️ 2026-07-04 起:本地 dev **直连 Supabase 正式库**(cms/.env 已配;本地 postgres 已过时,仅紧急回退)
+# ⚠️ 本地 dev **直连正式库**(07-04 拍板;07-16 起正式库=Render Postgres,cms/.env 已配;Supabase 已退役)
 cd cms && npm run dev                            # 开发:localhost:3000(读写的就是生产!测试号用 @test.local)
 # 改 collection 字段:dev 默认不推 schema(护栏)→ 显式 `DB_PUSH=1 npm run dev` 单次推,删列/改类型手写 SQL
 # 无人值守全栈(含容器化 cms,开机自更新):cd docker && docker compose --profile unattended up -d --build
