@@ -6,6 +6,9 @@ import { ssrLang } from '@/lib/lang.server'
 
 // 站点默认 metadata(各页 generateMetadata 覆盖);E7-02:umami 轻量 analytics(无 cookie,env 未设=本地不注入)
 export const metadata = {
+  // E13-01:不设 metadataBase 时 og:image 按请求 HOST 拼 URL,Render 容器内 HOST=localhost:10000,
+  // 分享卡全挂;fallback 必须=正式域(⚠️ Docker 构建拿不到 Render env,robots.ts 同款惯例)
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://offer2pr.com'),
   title: 'Offer2PR — Canadian jobs with an immigration-value lens',
   description: 'Daily-updated Canada-wide job board: PNP streams, EE categories, wages vs median, profile matching. 每日更新的全加拿大职位板,带移民价值视角。',
   verification: { google: 'zm002EQ20ckam-N3hvapv6J3YeF_ebKfv7_UymszCA4' }, // GSC 站点所有权(E7-03;验证后不可删)
