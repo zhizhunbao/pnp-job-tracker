@@ -4010,8 +4010,14 @@ const applyEmailOf = (text: string): string => {
   }
   return ''
 }
-function ApplyBar({ job, email, emailDone, t, plan }: { job: JobRow; email: string; emailDone: boolean; t: TFn; plan: Plan }) {
+function ApplyBar({ job, email, emailDone, t, plan, onPage }: { job: JobRow; email: string; emailDone: boolean; t: TFn; plan: Plan; onPage?: boolean }) {
   const [stage, setStage] = useState<'idle' | 'auth' | 'intent'>('idle')
+  // 整页窄屏投递栏跑偏(Frank 2026-08-05 实拍):sticky bottom 只在**父容器盒内**吸底,整页版的
+  // 父级是白卡,卡下面还有 ~150px 的 SiteFooter —— 滚进页脚段,栏就跟着卡边上滑(弹框里滚动容器
+  // 就是父级,没这回事)。窄屏整页改 fixed 常驻视口底(页脚那一屏浮在其上),占位 div 补回文档流高度;
+  // 桌面整页维持 sticky 原样(卡居中 1320,fixed 全宽会破卡片版式,且桌面没有这条投诉)。
+  const narrow = useIsNarrow()
+  const fixedBar = !!onPage && narrow
   // G3 简历对照(设计 docs/design/G3-简历对照JD-20260803.md):JD 文本走既有懒抓缓存(fetchJobText),
   // 拿不到全文就不开弹框空转 —— 直接用 t('rm.noJd') 提示
   const [matchJd, setMatchJd] = useState<string | null>(null)   // null=未开;''=拿不到 JD
@@ -4077,7 +4083,12 @@ function ApplyBar({ job, email, emailDone, t, plan }: { job: JobRow; email: stri
     <>
       {/* 2026-07-25 用户:全宽大蓝钮「太吓人」→ 右对齐紧凑钮;同日「复制要点」钮撤除,只留投递单钮;
           底 padding 14px = 吸底栏自带留白(容器底 padding 已归 0,补「穿墙」) */}
-      <div style={{ position: 'sticky', bottom: 0, background: '#fff', borderTop: '1px solid #e5e7eb', marginTop: 'auto', padding: '10px 0 14px', display: 'flex', gap: 8, justifyContent: 'flex-end', zIndex: 5 }}>
+      {/* 占位:fixed 抽离文档流后补回高度,免得来源行被压住 */}
+      {fixedBar && <div style={{ height: 63 }} />}
+      <div style={fixedBar
+        ? { position: 'fixed', left: 0, right: 0, bottom: 0, background: '#fff', borderTop: '1px solid #e5e7eb',
+            padding: '10px 16px calc(14px + env(safe-area-inset-bottom))', display: 'flex', gap: 8, justifyContent: 'flex-end', zIndex: 40 }
+        : { position: 'sticky', bottom: 0, background: '#fff', borderTop: '1px solid #e5e7eb', marginTop: 'auto', padding: '10px 0 14px', display: 'flex', gap: 8, justifyContent: 'flex-end', zIndex: 5 }}>
         {/* G3 简历对照:AI 靛蓝钮(色语义:靛=AI 功能),在投递钮左侧;下架岗照给(改简历不受岗位死活影响) */}
         <button onClick={openMatch}
           style={{ background: '#eef2ff', color: '#4338ca', border: '1px solid #c7d2fe', borderRadius: 8, padding: '9px 14px', fontSize: 13.5, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
@@ -4281,7 +4292,7 @@ const hostOf = (u: string) => { try { return new URL(u).host.replace(/^www\./, '
       {/* E9-04 投递栏:正文之后常驻(弹框与页面同渲;sticky 吸底)。
           2026-07-25 用户「AI 整理的时候不要显示这个按钮,等整理完了再显示」:整理进行中(fmt===undefined)先藏,
           有结果(整理版 string / 失败 null / 空态)才出——fmt 各路径都会落定,不会永久不显 */}
-      {fmt !== undefined && <ApplyBar job={job} email={applyEmail} emailDone={jbDone} t={t} plan={plan} />}
+      {fmt !== undefined && <ApplyBar job={job} email={applyEmail} emailDone={jbDone} t={t} plan={plan} onPage={!inModal} />}
     </>
   )
 }
