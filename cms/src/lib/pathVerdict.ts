@@ -740,6 +740,70 @@ export function pathVerdict(profile: VerdictProfile, data: VerdictData): Pathway
   return out.map((x) => x.v)
 }
 
+// ── 职业级通道行(C6 职位详情页通道卡的无档案态)────────────────────────────
+//
+// 一个 NOC+TEER 进,13 条通道的**职业级**事实出(不含任何个人档案):
+// 经验门槛月数(排序键)、门槛口径(同雇主在职时长另标)、清单点名/排除、availability。
+// 有档案时详情卡不走这条 —— 直接用上面 pathVerdict 的序(设计 §五「双态」)。
+
+export type JobPathwayRow = {
+  key: string
+  province: string
+  stream: string
+  /** 经验门槛月数(无条件档里最低的一档;op='none'=0)。null 仅当 availability≠ok */
+  months: number | null
+  /** true = 门槛量的是「同雇主连续在职时长」(MB SWM),不是同职业总经验 —— 口径必须标出 */
+  tenure: boolean
+  /** 官方在需/定向清单点名本职业(信号,不是资格认定) */
+  listedIn: boolean
+  /** 清单型硬伤:排除清单命中,或明文要求在清单而本职业不在(PE OID) */
+  excludedByList: boolean
+  availability: Availability
+}
+
+const EMPTY_PROFILE: VerdictProfile = {
+  age: null, married: null, clb: null, edu: null, eduYears: null, canadaStudy: null,
+  studyProvince: null, noc: null, teer: null, expCanadaMonths: null, expForeignMonths: null,
+  foreignExpSelfEmployed: null, status: null, province: null,
+}
+
+/** 排序:可判的按经验门槛升序 → 门槛未收录 → 清单排除沉底;同档按注册表原序(与卡片效果图一致)。 */
+export function jobPathways(noc: string | null, teer: number | null, data: VerdictData): JobPathwayRow[] {
+  const p: VerdictProfile = { ...EMPTY_PROFILE, noc, teer }
+  const out = REGISTRY.map((spec, i) => {
+    const rows = reqsOf(spec, data.requirements)
+    // 清单判定与 evaluateOne ① 同口径(那边还要造 quote/evidence,这里只要布尔,不共函数)
+    let listedIn = false
+    let excludedByList = false
+    if (noc) {
+      excludedByList = data.occupations.some((o) => o.province === spec.reqProvince && o.type === 'ineligible' && o.noc === noc
+        && (!o.appliesTo || o.appliesTo.toLowerCase().includes('employment offer') === /employment offer/i.test(spec.stream)))
+      listedIn = data.occupations.some((o) => o.province === spec.reqProvince && o.type === 'indemand' && o.noc === noc)
+      if (spec.listRequired) {
+        const list = data.occupations.filter((o) => o.province === spec.listRequired!.province && o.type === 'indemand'
+          && spec.listRequired!.streamRe.test(o.stream))
+        if (list.length && !list.some((o) => o.noc === noc)) excludedByList = true
+      }
+    }
+    if (!rows.length) {
+      return { row: { key: spec.key, province: spec.province, stream: spec.stream, months: null, tenure: false, listedIn, excludedByList, availability: 'not-collected' as Availability }, i }
+    }
+    const selfEmpExcluded = rows.some((r) => r.factor === 'workSelfEmployed' || r.factor === 'experienceExcluded')
+    const gate = pickGate(spec, rows, p, selfEmpExcluded)
+    return {
+      row: {
+        key: spec.key, province: spec.province, stream: spec.stream,
+        months: gate.picked ? gate.need : null, tenure: gate.tenure, listedIn, excludedByList,
+        availability: (gate.picked ? 'ok' : 'not-collected') as Availability,
+      },
+      i,
+    }
+  })
+  const rank = (r: JobPathwayRow) => (r.excludedByList ? 2 : r.availability !== 'ok' || r.months == null ? 1 : 0)
+  out.sort((a, b) => rank(a.row) - rank(b.row) || (a.row.months ?? 99) - (b.row.months ?? 99) || a.i - b.i)
+  return out.map((x) => x.row)
+}
+
 /**
  * 杠杆:哪一个动作最值钱、哪一个动作最毁事。
  * @param clbTarget 语言目标档(默认 8:雅思一次提两档是最常见的可行目标)。**分值仍全部查表**,

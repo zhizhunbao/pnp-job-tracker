@@ -97,10 +97,13 @@ async function readSse(
  *   挂件那边原来是靠父级 CSS 覆盖 .cbCard/.cbThread 做的,本文件类名一改就静默退化成卡中卡。
  * @param autoFocus 变成 true 时把光标放进输入框(挂件每次展开翻一次 false→true)。
  *   触屏上是 no-op:一展开就顶起键盘、把示例问题挤出屏幕,那是挂件最招人烦的手感。
+ * @param prefill  C6 通道卡 CTA 带来的预填问句:**只进输入框不自动发送**(以用户身份发话必须
+ *   由用户按发送)。变化一次覆盖一次输入框 —— 事件只来自用户点 CTA,是明确意图,不算误伤草稿。
  */
-export function ChatBox({ compact = false, autoFocus = false }: { compact?: boolean; autoFocus?: boolean } = {}) {
+export function ChatBox({ compact = false, autoFocus = false, prefill = '' }: { compact?: boolean; autoFocus?: boolean; prefill?: string } = {}) {
   const [lang, , t] = useLang()
   const [input, setInput] = useState('')
+  useEffect(() => { if (prefill) setInput(prefill) }, [prefill])
   const [turns, setTurns] = useState<Turn[]>([])
   const [busy, setBusy] = useState(false)
   const [secs, setSecs] = useState(0)
@@ -252,6 +255,23 @@ export function ChatBox({ compact = false, autoFocus = false }: { compact?: bool
           border-radius:10px;padding:10px 12px;font-size:13.5px;line-height:1.45;color:${UI.text};
           font-family:inherit;cursor:pointer;margin-top:6px}
         .cbEx:hover{border-color:#bfdbfe;background:#f8fafc}
+        /* C6 选项卡(设计 §一):答复下方的决定卡。胶囊沿 .cbEx 形态;推荐项蓝框浅蓝底 + 绿徽标;
+           点击目标 ≥44px;标签一行放下(文案铁律:零逗号、禁口语腔)。只挂在**最后一轮**答复下,
+           下一轮开始自然消失 —— 永不堵嘴,输入框随时可用。 */
+        .cbOpts{display:flex;flex-direction:column;gap:6px}
+        .cbOptWhy{font-size:12px;color:${UI.text3};line-height:1.5}
+        .cbOpt{display:flex;align-items:center;gap:8px;width:100%;max-width:100%;box-sizing:border-box;
+          text-align:left;background:${UI.bg};border:1px solid ${UI.border};border-radius:10px;
+          padding:11px 12px;font-size:13.5px;line-height:1.45;color:${UI.text};font-family:inherit;
+          cursor:pointer;min-height:44px}
+        .cbOpt:hover{border-color:#bfdbfe;background:#f8fafc}
+        .cbOpt:disabled{opacity:.6;cursor:default}
+        .cbOptRec{border-color:#93c5fd;background:#f8fbff}
+        .cbOptTag{background:#dcfce7;color:${UI.ok};font-weight:700;border-radius:6px;padding:1px 7px;
+          font-size:11.5px;white-space:nowrap;flex-shrink:0}
+        .cbOptMain{min-width:0}
+        .cbOptLabel{font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .cbOptCons{font-size:12px;color:${UI.text2};margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
         /* 故障:低调行内一行(不是红色大块)。引导类走 .cbA 助手气泡,不进这里 */
         .cbFault{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:12.5px;
           color:${UI.text2};line-height:1.5}
@@ -368,7 +388,29 @@ export function ChatBox({ compact = false, autoFocus = false }: { compact?: bool
                   ) : null}
                 </div>
               ) : turn.a ? (
-                <ChatAnswer a={turn.a} busy={busy} onAsk={(q) => void ask(q)} />
+                <>
+                  <ChatAnswer a={turn.a} busy={busy} onAsk={(q) => void ask(q)} />
+                  {/* C6 选项卡:只挂最后一轮;点选 = 以用户身份把 sendText 发出去(气泡进对话流)。
+                      第 4 张「自己说」固定在末尾 → 聚焦输入框(设计 §一第 5 条:永不堵嘴)。 */}
+                  {turn.a.options?.items?.length && i === turns.length - 1 && !busy ? (
+                    <div className="cbOpts">
+                      <div className="cbOptWhy">{turn.a.options.reason}</div>
+                      {turn.a.options.items.map((o, k) => (
+                        <button key={k} className={'cbOpt' + (o.recommended ? ' cbOptRec' : '')} disabled={busy}
+                          onClick={() => { track('chat-option', { pick: k }); void ask(o.sendText) }}>
+                          {o.recommended ? <span className="cbOptTag">{t('chat.opt.rec')}</span> : null}
+                          <span className="cbOptMain">
+                            <span className="cbOptLabel">{o.label}</span>
+                            {o.consequence ? <span className="cbOptCons">{o.consequence}</span> : null}
+                          </span>
+                        </button>
+                      ))}
+                      <button className="cbOpt" onClick={() => { track('chat-option', { pick: -1 }); taRef.current?.focus() }}>
+                        <span className="cbOptMain"><span className="cbOptLabel" style={{ color: UI.text2, fontWeight: 400 }}>{t('chat.opt.self')}</span></span>
+                      </button>
+                    </div>
+                  ) : null}
+                </>
               ) : turn.stream ? (
                 // 半截正文:和最终答复同一个渲染器(服务端按整句放行,那截里已经带着行首 `- `)
                 <ChatText text={turn.stream} caret />

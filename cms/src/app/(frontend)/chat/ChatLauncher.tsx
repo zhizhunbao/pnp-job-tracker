@@ -148,6 +148,18 @@ export function ChatLauncher() {
     try { localStorage.setItem(HINT_KEY, String(HINT_MAX)) } catch { /* ignore */ }  // 点开过=不再提示
   }, [])
   const hide = useCallback(() => { setOpen(false); track('widget-close') }, [])
+  // C6 通道卡的 CTA 从页面任意处拉起挂件并预填问句(prefill 只进输入框,**不自动发送** ——
+  // 以用户身份发话必须由用户按发送)。detail 是我们自己 dispatch 的,仍设长度帽防手滑。
+  const [prefill, setPrefill] = useState('')
+  useEffect(() => {
+    const onOpenEvt = (e: Event) => {
+      const d = (e as CustomEvent).detail
+      if (typeof d?.prefill === 'string') setPrefill(d.prefill.slice(0, 300))
+      show()
+    }
+    window.addEventListener('o2p:chat-open', onOpenEvt)
+    return () => window.removeEventListener('o2p:chat-open', onOpenEvt)
+  }, [show])
   const minimize = useCallback(() => { setOpen(false); track('widget-minimize') }, [])
   // 读在 effect 里,不在 useState 初值里:localStorage 在服务端不存在,当初值会 hydration 不一致。
   // 同一处也判桌面档并跟着窗口变化走(从桌面拖窄到手机档时,box 要立刻停止生效)。
@@ -418,7 +430,7 @@ export function ChatLauncher() {
               </div>
             }>
               {/* key 一变 ChatBox 整个重挂 = 会话清空回空态。见 doReset 注释 */}
-              <ChatBox key={resetN} compact autoFocus={open} />
+              <ChatBox key={resetN} compact autoFocus={open} prefill={prefill} />
             </PanelGuard>
           </div>
           </>

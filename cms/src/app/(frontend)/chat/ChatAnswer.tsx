@@ -22,7 +22,13 @@ export type Fact = {
 }
 // degraded = 服务端出口校验两次没过,`answer` 其实是**一句说明 + 一张原始事实清单**(chatOrchestrate.factSheet)。
 // 不许假装成正常答复,也不许拿它当报错 —— 它是我们真查到的东西,只是没被组织成一段话。
-export type Answer = { answer: string; slots?: Record<string, unknown>; facts?: Fact[]; followups?: string[]; degraded?: boolean }
+/** C6 选项卡(服务端 chatOrchestrate.ChatOption):需要决定才有;第 4 张「自己说」由前端固定给 */
+export type AnswerOption = { label: string; consequence?: string; sendText: string; recommended?: boolean }
+export type Answer = {
+  answer: string; slots?: Record<string, unknown>; facts?: Fact[]; followups?: string[]
+  options?: { reason: string; items: AnswerOption[] }
+  degraded?: boolean
+}
 
 // 数字显示:value=null 一律念官方原文;单位跟数字同格(% 不留空格,其余留)
 const factValue = (f: Fact): string => {

@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react'
 import { LANGS } from '../i18n'
 import { useLang } from '../../LangProvider'
 import { catName, JobBody, nocLocalTitle, provName, type JobRow, type NocDesc, type Plan } from '../JobsTable'
+import { PathwaysCard } from './PathwaysCard'
 import { SiteHeader } from '../../SiteHeader'
 import { SiteFooter } from '../../SiteFooter'
 import { PageShell } from '../../ui/primitives'
@@ -72,11 +73,19 @@ export default function JobDetailView({ job, plan, dims }: { job: JobRow; plan: 
               <div style={{ fontSize: 13, color: '#9ca3af', marginBottom: 8 }}>{nocZh}</div>
             ) : null}
             <JobBody job={job} lang={lang} plan={plan} />
+
+            {/* C6 通道卡(2026-08-06,设计 §五;卡位=已摘的 OccReportCard,效果图定的是嵌在白卡内):
+                该职业匹配的移民通道,按**系统抓的官方经验门槛**从低到高排(Frank 拍板「基于系统抓的
+                数据排序」,不含个人档案);CTA 拉起对话挂件并预填路径问句。自包含+懒取,拿不到数整卡不渲。 */}
+            {job.noc && job.noc !== '未分类' ? (
+              <PathwaysCard noc={job.noc} teer={job.teer} t={t}
+                prefill={t('jpw.prefill', { occ: nocZh || nocRow?.title || job.title, noc: job.noc })} />
+            ) : null}
           </div>
 
           {/* 刀 1(入口下沉-20260731):报告入口,自包含组件,老结构不动;拿不到数/本省零在招=整卡不渲 */}
           {/* OccReportCard 已摘(2026-08-06 Frank「没什么用可以删了」):它的付费出口挂在已退役的报告体系,
-              成了「有 aha 没去处」的孤儿。组件文件保留(照答题卡摘入口先例);C6 这个卡位换装成路径裁决入口。 */}
+              成了「有 aha 没去处」的孤儿。组件文件保留(照答题卡摘入口先例);卡位由 C6 通道卡接手(见上)。 */}
 
         </div>
       </PageShell>

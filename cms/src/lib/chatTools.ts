@@ -1089,9 +1089,12 @@ const VERDICT_SCOPE =
   '路径判定的口径:逐条通道拿官方门槛条文与这份档案对照,每条判定都挂官方原句与出处。'
   + '这是粗筛信号,不是资格认定 —— 各省还有自己的清单、语言与工资细则,最终以官方受理为准'
 
-export async function lookupVerdict(
-  pool: any, profile: VerdictProfile, opts: { clbTarget?: number; teerDowngradeNoc?: string } = {},
-): Promise<VerdictResult> {
+/**
+ * 判定层的六张表一次读齐(pathVerdict 的 VerdictData)。
+ * 从 lookupVerdict 抽出来单独导出:职位详情页的通道卡(/api/pathways)也要同一份数据,
+ * 两处各写一遍 SELECT 迟早列名对不上。
+ */
+export async function loadVerdictData(pool: any): Promise<VerdictData> {
   const rowsOf = async (sql: string, params: unknown[] = []): Promise<any[]> => {
     const r = await pool.query(sql, params).catch(() => ({ rows: [] }))
     return (r?.rows ?? []) as any[]
@@ -1158,6 +1161,13 @@ export async function lookupVerdict(
       source: r.source ?? '', nocs: r.nocs ?? '', url: r.url ?? '', fetched: r.fetched ?? '',
     })),
   }
+  return data
+}
+
+export async function lookupVerdict(
+  pool: any, profile: VerdictProfile, opts: { clbTarget?: number; teerDowngradeNoc?: string } = {},
+): Promise<VerdictResult> {
+  const data = await loadVerdictData(pool)
 
   // 门槛条文一行都没有 = **本站的缺口**,不是「官方没有门槛」。这时不跑判定:
   // 跑出来的 13 条全是 needs-info,除了把这句话说十三遍没有别的信息。

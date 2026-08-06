@@ -79,7 +79,18 @@ export type ChatTurn = { role: 'user' | 'assistant'; content: string }
 /** `degraded` = 这段「答复」其实是**原始事实清单**(出口校验两次都没过 → factSheet)。
  *  前端据此换一种排版(ChatAnswer.cbSheet):清单要排成清单,不能跟正常答复长一个样。
  *  路由是纯透传(Response.json(result) / sse(result)),加字段不用动它。 */
-export type ChatResult = { answer: string; slots: Slots; facts: Fact[]; followups: string[]; degraded?: boolean }
+/**
+ * C6 选项卡(设计 docs/design/对话选项卡与图片上传-20260806.md §一):
+ * 需要决定才弹;点选=以用户身份把 sendText 发出去(气泡进对话流,引擎照常抽槽+继承 context);
+ * 推荐位带理由。label/consequence 是 UI 文案(零逗号铁律),sendText 是用户口吻的一句话。
+ */
+export type ChatOption = { label: string; consequence?: string; sendText: string; recommended?: boolean }
+export type ChatResult = {
+  answer: string; slots: Slots; facts: Fact[]; followups: string[]
+  /** 弹选项卡时才有:reason 是推荐理由行,options ≤3(第 4 张「自己说」由前端固定给) */
+  options?: { reason: string; items: ChatOption[] }
+  degraded?: boolean
+}
 export type ChatErrorCode = 'tooShort' | 'noOcc' | 'llm' | 'guard'
 export class ChatError extends Error {
   code: ChatErrorCode
@@ -1365,6 +1376,41 @@ export function verdictProfileOf(slots: Slots, teer: number | null): VerdictProf
 /** 缺槽反问:按 PROFILE_SLOTS 的顺序问最要紧的几个(问句是本层写死的三语文案,不过模型)。 */
 export function verdictFollowups(slots: Slots, lang: ChatLang, limit = 3): string[] {
   return PROFILE_SLOTS.filter((k) => slots[k] == null).slice(0, limit).map((k) => LBL[lang].vAsk[k])
+}
+
+/**
+ * C6 选项卡的第一个真实场景:裁决已出但**身份不明**(与 vAsk.status 那条追问同一触发)。
+ * 三张选项写死三语 —— label/consequence 是 UI 文案(零逗号);sendText 是用户口吻整句,
+ * 发出去走既有抽槽(status 词表:student/graduated/working…),**不塞任何用户没说过的事实**。
+ */
+export function permitOptions(lang: ChatLang): NonNullable<ChatResult['options']> {
+  const O: Record<ChatLang, NonNullable<ChatResult['options']>> = {
+    zh: {
+      reason: '先确认工签——它决定最快的通道对你开不开',
+      items: [
+        { label: '我有有效的 PGWP', consequence: '相关通道立刻可判', sendText: '我持有有效的 PGWP 工签', recommended: true },
+        { label: '工签已过期或没有工签', consequence: '先看不吃身份的通道', sendText: '我没有有效的工签' },
+        { label: '学签在读', consequence: '按毕业后的时间线算', sendText: '我还在读书(持学签)' },
+      ],
+    },
+    en: {
+      reason: 'Confirm the work permit first — it decides whether the fastest pathway is open to you',
+      items: [
+        { label: 'I hold a valid PGWP', consequence: 'those pathways can be ruled on right away', sendText: 'I hold a valid PGWP work permit.', recommended: true },
+        { label: 'My permit expired or I have none', consequence: 'look first at pathways that need none', sendText: 'I do not hold a valid work permit.' },
+        { label: 'Still on a study permit', consequence: 'plan on the post-graduation timeline', sendText: 'I am still studying on a study permit.' },
+      ],
+    },
+    ko: {
+      reason: '취업 허가부터 확인하세요 · 가장 빠른 통로의 가능 여부가 여기서 갈립니다',
+      items: [
+        { label: '유효한 PGWP 보유', consequence: '해당 통로 즉시 판정 가능', sendText: '유효한 PGWP 취업 허가를 갖고 있습니다.', recommended: true },
+        { label: '허가 만료 또는 없음', consequence: '신분 요건 없는 통로부터 확인', sendText: '유효한 취업 허가가 없습니다.' },
+        { label: '학생 비자로 재학 중', consequence: '졸업 후 일정으로 계산', sendText: '아직 학생 비자로 재학 중입니다.' },
+      ],
+    },
+  }
+  return O[lang]
 }
 
 const FED_FACTOR: Record<ChatLang, Record<string, string>> = {
@@ -3056,9 +3102,11 @@ export async function orchestrate(
   // 🔴 问了「走哪条路」却没判 = 档案槽不够。这时**反问缺的那几个槽**排在追问最前面:
   //    不补槽就不会有裁决,推别的追问等于把他领去一个答不了他这个问题的地方。
   const askSlots = isPathQuestion(text) && !verdictOn ? verdictFollowups(slots, lang) : []
-  // 🔴 裁决已出但**身份不明**时点名问工签(§4.5):NL 国际毕业生这类通道的前提是有效工签,
-  //    而库里没有这条门槛行 —— 判定层说不出口的前提,追问替它问。排最前:它决定第一名成不成立。
-  const askPermit = verdictOn && slots.status == null ? [LBL[lang].vAsk.status] : []
-  const followups = [...askPermit, ...askSlots, ...buildFollowups(facts, lang, text)].slice(0, 3)
-  return { answer, slots, facts: out, followups, ...(degraded ? { degraded: true } : {}) }
+  // 🔴 裁决已出但**身份不明**时点名问工签(§4.5 → C6 选项卡):NL 国际毕业生这类通道的前提是
+  //    有效工签,而库里没有这条门槛行 —— 判定层说不出口的前提,由选项卡替它问(需要决定才弹,
+  //    宁缺勿滥)。**不再同时塞进 followups**:那些 chip 点击=以用户身份发这句话,而这句是
+  //    助手问用户的,语义拧着;选项卡的三张选项才是它的正确形态(2026-08-06 dev 实测两处重复)。
+  const options = verdictOn && slots.status == null ? permitOptions(lang) : undefined
+  const followups = [...askSlots, ...buildFollowups(facts, lang, text)].slice(0, 3)
+  return { answer, slots, facts: out, followups, ...(options ? { options } : {}), ...(degraded ? { degraded: true } : {}) }
 }

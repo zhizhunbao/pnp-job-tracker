@@ -202,6 +202,23 @@ describe('金标 C01:一句话进 → 不编数字的路径裁决', () => {
     }
   })
 
+  it('C6 选项卡:裁决已出而身份不明 → options 弹工签三选(推荐位第一);身份已知 → 不弹', async () => {
+    // C01_SLOTS 带 status:'graduated' → 不弹(需要决定才弹,宁缺勿滥)
+    const r1 = await orchestrate(pool, { text: C01_TEXT, lang: 'zh' })
+    expect(r1.options).toBeUndefined()
+    // 同一份档案抠掉 status → 弹三张 + 理由行;followups[0] 同步点名问工签
+    H.slots = C01_SLOTS.replace('"status":"graduated"', '"status":null')
+    const r2 = await orchestrate(pool, { text: C01_TEXT, lang: 'zh' })
+    expect(r2.options).toBeTruthy()
+    expect(r2.options!.items).toHaveLength(3)
+    expect(r2.options!.items[0].recommended).toBe(true)
+    expect(r2.options!.items[0].label).toContain('PGWP')
+    expect(r2.options!.reason.length).toBeGreaterThan(3)
+    for (const o of r2.options!.items) expect(o.sendText.length).toBeGreaterThan(3)
+    // 工签问句只走选项卡,不再重复进 followups(chip 点击=以用户身份发话,发一句「助手问用户」的话是语义事故)
+    expect(r2.followups).not.toContain(LBL.zh.vAsk.status)
+  })
+
   it('配偶随行就换一张官方分表:CRS 183(和 C5a-1 的修正值一致)', async () => {
     H.slots = C01_SLOTS.replace('"married":false', '"married":true')
     const r = await orchestrate(pool, { text: C01_TEXT, lang: 'zh' })

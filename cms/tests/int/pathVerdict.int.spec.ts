@@ -11,7 +11,7 @@ import { fileURLToPath } from 'url'
 import path from 'path'
 import { describe, expect, it } from 'vitest'
 import {
-  pathVerdict, pathLevers,
+  jobPathways, pathVerdict, pathLevers,
   type DesignatedEmployerRow, type OccupationRow, type PathwayVerdict,
   type VerdictData, type VerdictDrawRow, type VerdictProfile,
 } from '@/lib/pathVerdict'
@@ -380,5 +380,36 @@ describe('红线不变量', () => {
     expect(fact.text).toContain('639')
     expect(fact.text).toContain('3 家')
     expect(fact.quote, 'NL 雇主名录不是官方条文,不许伪装成 quote').toBeUndefined()
+  })
+})
+
+// ── C6 · 职业级通道行(职位详情页通道卡的无档案态,一个个人档案槽都不吃)────────
+
+describe('jobPathways:72310 TEER 2 的职业级名单', () => {
+  const rows = jobPathways('72310', 2, data)
+  const byK = (k: string) => rows.find((r) => r.key === k)!
+
+  it('13 条全出;按经验门槛升序;NL(0 月)第一;PE 清单排除沉底', () => {
+    expect(rows).toHaveLength(13)
+    expect(rows[0].key).toBe('NL-intl-grad')
+    expect(rows[0].months).toBe(0)
+    expect(rows[rows.length - 1].key).toBe('PE-sw')
+    expect(rows[rows.length - 1].excludedByList).toBe(true)
+    const months = rows.filter((r) => !r.excludedByList && r.availability === 'ok').map((r) => r.months as number)
+    expect(months).toEqual([...months].sort((a, b) => a - b))
+  })
+
+  it('口径与清单信号:MB 是同雇主在职时长;BC Build 清单点名;AIP 门槛未收录', () => {
+    expect(byK('MB-swm').tenure).toBe(true)
+    expect(byK('MB-swm').months).toBe(6)
+    expect(byK('BC-build').listedIn).toBe(true)
+    expect(byK('AIP').availability).toBe('not-collected')
+    expect(byK('AIP').months).toBeNull()
+  })
+
+  it('清单适用范围不越界:SK OID/EE 那 152 条不把 Employment Offer 通道判死', () => {
+    const oidOnly = data.occupations.find((o) => o.province === 'SK' && o.type === 'ineligible' && o.appliesTo === 'OID/EE')!
+    const sk = jobPathways(oidOnly.noc, 2, data).find((r) => r.key === 'SK-offer')!
+    expect(sk.excludedByList).toBe(false)
   })
 })
