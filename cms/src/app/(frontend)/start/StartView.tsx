@@ -45,7 +45,6 @@ export type HomeStats = {
 }
 
 const num = (n: number) => n.toLocaleString('en-CA')
-const signed = (n: number) => (n > 0 ? '+' : n < 0 ? '-' : '') + num(Math.abs(n))
 // 环比(mom14d 是比值:近 14 天新发 ÷ 前 14 天新发 − 1)→ 百分数;不做四舍五入以外的加工
 const pctSigned = (ratio: number) => `${ratio > 0 ? '+' : ratio < 0 ? '-' : ''}${Math.abs(Math.round(ratio * 100))}%`
 const ymd = (iso: string) => (iso || '').slice(0, 10)
@@ -108,9 +107,6 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, pageSize = 10 }: 
   // Frank 08-06「在某些省份能不能提名,直接告诉用户,百分比谁能看懂」:占比列撤,
   // 换「可提名省份」直陈(来源=该职业各省清单命中的在架岗);空+TEER 4/5 = 原通道预警合并进本列
   const provsOf = (o: OccRow) => nocProvs.get(o.noc) ?? []
-  // 薪资偏离:帖面薪资样本 <5 不显示(小样本畸值如 +212% 会上台面,宁可留空——E6-12 薪资诚实护栏同族)
-  const gap = (o: OccRow) => (o.medianWageAnnual && o.medianSalaryAnnual != null && (o.salaryN ?? 0) >= 5
-    ? Math.round(((o.medianSalaryAnnual - o.medianWageAnnual) / o.medianWageAnnual) * 100) : null)
   const momColor = (v: number) => (v < 0 ? UI.danger : v > 0 ? UI.ok : UI.text2)
   // 判决列 08-06 深夜删(Frank:「环比百分比用户一看就明白,还用再说一遍萎缩?」)——判决只活在 S1 头条。
   // 「无」不再分红灰(Frank:「大部分人不可能卷 CRS 分也不可能再学法语」——无清单对受众=只剩不现实的路,
@@ -151,14 +147,15 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, pageSize = 10 }: 
       sort: (o: OccRow) => provsOf(o).length,
       render: (o: OccRow) => provsCell(o),
     }] : []),
-    // 薪资列(Frank 08-06「这个不如显示薪资」):帖面中位年薪绝对值主显(vs ESDC 偏离百分比
-    // 一般人读不懂),偏离降级进单元格 title;小样本护栏沿用(salaryN<5 不显示)
-    { key: 'sal', label: t('pulse.col.sal'), nowrap: true, thTip: t('pulse.col.sal.tip'),
-      sort: (o) => ((o.salaryN ?? 0) >= 5 ? o.medianSalaryAnnual : null),
+    // 薪资列(Frank 08-06 二改「不如换成薪资区间」):ESDC 官方薪资区间年化(低-高)主显,
+    // 帖面中位年薪降级进单元格 title(小样本护栏沿用:salaryN<5 不带中位)
+    { key: 'sal', label: t('pulse.col.range'), nowrap: true, thTip: t('pulse.col.range.tip'),
+      sort: (o) => o.wageHighAnnual,
       render: (o) => {
-        const g = gap(o)
-        return o.medianSalaryAnnual != null && (o.salaryN ?? 0) >= 5
-          ? <span title={g != null ? `${t('pulse.col.gap')} ${signed(g)}%` : undefined}>{`$${Math.round(o.medianSalaryAnnual / 1000)}K`}</span>
+        const med = o.medianSalaryAnnual != null && (o.salaryN ?? 0) >= 5
+          ? `${t('pulse.col.sal')} $${Math.round(o.medianSalaryAnnual / 1000)}K` : undefined
+        return o.wageLowAnnual != null && o.wageHighAnnual != null
+          ? <span title={med}>{`$${Math.round(o.wageLowAnnual / 1000)}K–$${Math.round(o.wageHighAnnual / 1000)}K`}</span>
           : <>—</>
       } },
   ]
