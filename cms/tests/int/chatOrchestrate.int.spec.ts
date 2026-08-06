@@ -455,14 +455,19 @@ describe('答复见客检查(不连模型)', () => {
     // ① `=` 是表格的形状,prompt 里彻底没有(出口的 findFactDump 也认这个字符)
     expect(block, `FACTS 里还留着 = :\n${block}`).not.toContain('=')
     expect(factSheet(facts, 'zh'), '兜底清单里还留着 =').not.toContain('=')
-    // ② 门槛行:label 是半句话,值接上去就是整句(不是「字段名 = 值」)
-    expect(sayFact(facts[1], 'zh')).toBe('NS 要求申请人的语言达到 5 CLB')
+    // ② 门槛行:label 是半句话,值接上去就是整句(不是「字段名 = 值」);CLB 分制名在前(「6 CLB」是病句,2026-08-06 §4.5)
+    expect(sayFact(facts[1], 'zh')).toBe('NS 要求申请人的语言达到 CLB 5')
     expect(sayFact(facts[2], 'zh')).toBe('NS 要求雇主(不是申请人)已经营满 2 年')
     // ③ 计数行:名目 + 冒号 + 值;四态行:主语 + 冒号 + 成句
     expect(sayFact(facts[0], 'zh')).toBe('MB 现在可带学徒的在招岗位 (NOC 72310): 3 个岗位')
     expect(sayFact(facts[3], 'zh')).toBe(`NS 的官方职业清单: ${AVAIL_SENTENCE_SAMPLE.zh}`)
     // ④ 英文单复数:喂进去 `1 jobs`,抄出来就是「1 jobs in ON」
     expect(sayFact(f({ label: 'ON open postings right now', value: 1, unit: 'jobs', valueText: '' }), 'en')).toBe('ON open postings right now: 1 job')
+    // ⑤ 钱要 $ + 千分位(2026-08-06 生产实录「薪资至少 100006」裸奔);guard 的 normNum 剥逗号,账仍对得上
+    expect(sayFact(f({ tool: 'lookupThresholds', label: `BC ${T.factor.income}`, value: 31264, unit: 'CAD/yr', valueText: '' }), 'zh'))
+      .toBe('BC 要求申请人家庭的收入达到 $31,264/年')
+    expect(sayFact(f({ tool: 'lookupThresholds', label: `ON ${LBL.en.factor.wage}`, value: 100006, unit: 'CAD/yr', valueText: '' }), 'en'))
+      .toBe('ON requires this job to pay at least $100,006/yr')
   })
 
   // 🔴 同一个句式连着三句 = 在念表格(数字全对、无内部码、无 `=`,前面每一道都放行)

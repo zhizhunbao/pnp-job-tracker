@@ -11,7 +11,23 @@
 > - **C 数据**:只读 `data/crawl/fed-ee/` 97 页缓存。语言 T4–T26 → raw 23 表/105 档、mart 443 行;ECA 页 FSW 教育映射 151 行并入 FSW67。实际本地 mart=`ee_points_grid` 380(CRS 186 + FSW67 194,points NULL 22)、`ee_language_grid` 443;唯一键重复 0、evidence 缺失 0。**未跑 09 main/seed/DB_PUSH/DDL;新语言 mart 尚无 CMS/生产消费链,不能对外声称 IELTS 原分已可自动换 CLB。**
 > - 全程未启 dev server、未 commit/push;`data/raw/ee/draws.json` 等定时 ETL 既有脏改保留,不属于本批。
 >
-> **⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡ 最新交接(2026-08-06 凌晨,「C5 判定层全链 + 两起生产事故」)**
+> **⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡ 最新交接(2026-08-06,「NL 掉桶修复 + C6 效果图」)**
+> - **✅ C5 遗留首修落地**(明细=C5 文档 §4.5,比原方案多挖一层根):① NL 经验门槛 op='none' 却因
+>   「缺经验月数」被 pickGate 拖成 needs-info —— 现 need=0 ⇒ gap 恒 0 不记缺槽,**第一轮 NL 直接
+>   open tier0 浮顶**;② needs-info 的 tier 改成**潜力上界**(缺槽门槛按 0 经验/0 居住记档)且排序
+>   对 needs-info 也按 tier 升序(C6 选项卡推荐位同一套序);③ 裁决已出而 status 缺 → followups
+>   第一条点名问工签(vAsk.status 三语)。顺带:sayFact 货币 `$100,006/年`($+千分位,差额注同步)、
+>   CLB 语序翻正(「CLB 6」)。**验收**:C01 两轮 dev 实测(直连生产库+真 LLM)第一轮答复已含
+>   「纽芬兰…拿到 offer 即可递」+ followups[0]=工签问句;全量 418 绿 1 红(既有 BC 池脆测试)、tsc 绿。
+>   ⚠️ 实测顺带发现(未修,LLM 侧非引擎):同题重问命中朋友服务的 prompt 前缀缓存返回旧稿;
+>   换句式后有一轮把「手里的 PGWP 还有效」误当 claims 且没触发裁决 —— 组稿/抽槽方差,facts 层已验对。
+> - **✅ C6 效果图已出并发 Frank(Mode B,未动任何 UI 代码)**:裁决入口卡(详情页 OccReportCard
+>   卡位,三行 job 级判定数全查表 + CTA 进对话)+ Claude 式选项卡(推荐位带理由/后果行/「自己说」)。
+>   图 5 张在 docs/assets/mockups/c6-*.png,设计口径+悬而未决(CTA 落点、按省过滤)在
+>   docs/design/对话选项卡与图片上传-20260806.md §五。**等 Frank 点头才写 UI**。
+> - C7 付费闸未动(等 Frank 拍板切分);图片上传未动(视觉模型前置,Frank 亲自谈)。
+>
+> **⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡ 上一轮交接(2026-08-06 凌晨,「C5 判定层全链 + 两起生产事故」)**
 > - **✅ C5 三批全落**(明细见 docs/implementation/C5-判定层pathVerdict-20260805.md):C5a 估分器×2
 >   (CRS 183/199——抓出 C01 已婚年龄档 47→官方 45 笔误;MPNP 695/595/715)、C5b `pathVerdict` 13 通道
 >   注册表(29 测,**机器自跑出「应避开曼省」**:经验放安省→天花板 615<632→excluded)、C5c 对话接线

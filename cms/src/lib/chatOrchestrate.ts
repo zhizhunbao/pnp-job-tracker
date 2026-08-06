@@ -899,8 +899,9 @@ type LabelDict = {
   vRefLine: string
   vLeverClb: (target: number) => string
   vLeverTeer: string
-  /** 缺槽反问(三语;followups 是见客文案,同 FOLLOWUPS 一层) */
-  vAsk: Record<ProfileSlot, string>
+  /** 缺槽反问(三语;followups 是见客文案,同 FOLLOWUPS 一层)。status 不在 PROFILE_SLOTS 里:
+   *  它不参与触发计数,只在裁决已出、身份还不明时点名问(NL 这类通道的前提是有效工签,§4.5)。 */
+  vAsk: Record<ProfileSlot | 'status', string>
 }
 export const LBL: Record<ChatLang, LabelDict> = {
   zh: {
@@ -954,6 +955,7 @@ export const LBL: Record<ChatLang, LabelDict> = {
       eduYears: '你读的课程是几年制?',
       studyProvince: '你在哪个省读的书?',
       expMonths: '你有多少个月的工作经验?',
+      status: '你现在有有效的工签吗(比如 PGWP)?',
     },
   },
   en: {
@@ -1017,6 +1019,7 @@ export const LBL: Record<ChatLang, LabelDict> = {
       eduYears: 'How many years does your programme run?',
       studyProvince: 'Which province did you study in?',
       expMonths: 'How many months of work experience do you have?',
+      status: 'Do you hold a valid work permit right now (a PGWP, for example)?',
     },
   },
   ko: {
@@ -1070,6 +1073,7 @@ export const LBL: Record<ChatLang, LabelDict> = {
       eduYears: '과정 기간은 몇 년인가요?',
       studyProvince: '어느 주에서 공부하셨나요?',
       expMonths: '경력은 몇 개월인가요?',
+      status: '지금 유효한 취업 허가(예: PGWP)가 있나요?',
     },
   },
 }
@@ -1604,8 +1608,10 @@ export async function collectFacts(
       //    没有对应译法的因素退回原模板(宁可少说一句,不许说反)。
       const none = r.need == null && r.verdict === 'pass' && T.factorNone[r.factor]
       if (none) { out.push(fact('lookupThresholds', `${p.province}${stream} ${none}`, null, '', 'rule', r.evidence)); continue }
+      // 差额跟着单位走:CAD 类差额也要 $ + 千分位(值那头 sayFact 管,这条注文只能在这儿管)
+      const short = r.short == null ? '' : `,${T.short} ${/^CAD\b/i.test(r.unit ?? '') ? `$${r.short.toLocaleString('en-US')}` : r.short}`
       out.push(fact('lookupThresholds', `${p.province}${stream} ${T.factor[r.factor] ?? r.factor}`, r.need,
-        `${v}${r.short != null ? `,${T.short} ${r.short}` : ''}`, r.unit, r.evidence))
+        `${v}${short}`, r.unit, r.evidence))
     }
   }
   // ④ 抽选史(最近一轮)
@@ -1706,7 +1712,13 @@ export function sayFact(f: Fact, lang: ChatLang, opts: { brief?: boolean } = {})
   // 88% 是英文流量,这种小语法错读者一眼看得见 —— 在喂之前就改对,比回来再修便宜。
   const u0 = f.value != null ? unitText(f.unit, lang) : ''
   const u = lang === 'en' && f.value === 1 ? u0.replace(/s$/, '') : u0
-  const v = f.value != null ? `${f.value}${u ? ` ${u}` : ''}` : f.valueText
+  // 钱和分制在喂之前就写成人话(2026-08-06 生产实录「薪资至少 100006」「6 CLB」):
+  //   · CAD 类 → `$100,006/年`($ + 千分位;guard 的 normNum 会剥逗号,账还是同一个数);
+  //   · CLB → 分制名在前(「CLB 6」),数字在前是病句。模型照抄 FACTS,喂对了才抄得对。
+  const v = f.value == null ? f.valueText
+    : /^CAD\b/i.test(f.unit) ? `$${f.value.toLocaleString('en-US')}${/\/yr$/i.test(f.unit) ? ({ zh: '/年', en: '/yr', ko: '/년' } as const)[lang] : ''}`
+      : f.unit === 'CLB' ? `CLB ${f.value}`
+        : `${f.value}${u ? ` ${u}` : ''}`
   if (!v) return f.label                                   // 主张行:label 就是整句话,别再甩个「: -」
   // 门槛行的 label 是半句话(值是这句话的宾语);其余是「名目 + 数值」,冒号连
   const head = f.tool === 'lookupThresholds' ? `${f.label} ${v}` : `${f.label}: ${v}`
@@ -3044,6 +3056,9 @@ export async function orchestrate(
   // 🔴 问了「走哪条路」却没判 = 档案槽不够。这时**反问缺的那几个槽**排在追问最前面:
   //    不补槽就不会有裁决,推别的追问等于把他领去一个答不了他这个问题的地方。
   const askSlots = isPathQuestion(text) && !verdictOn ? verdictFollowups(slots, lang) : []
-  const followups = [...askSlots, ...buildFollowups(facts, lang, text)].slice(0, 3)
+  // 🔴 裁决已出但**身份不明**时点名问工签(§4.5):NL 国际毕业生这类通道的前提是有效工签,
+  //    而库里没有这条门槛行 —— 判定层说不出口的前提,追问替它问。排最前:它决定第一名成不成立。
+  const askPermit = verdictOn && slots.status == null ? [LBL[lang].vAsk.status] : []
+  const followups = [...askPermit, ...askSlots, ...buildFollowups(facts, lang, text)].slice(0, 3)
   return { answer, slots, facts: out, followups, ...(degraded ? { degraded: true } : {}) }
 }

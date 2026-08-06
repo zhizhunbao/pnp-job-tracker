@@ -111,10 +111,22 @@ export type PathwayVerdict = {
 
 - ✅ 第二轮(档案含 PGWP):首句即「最快路径是纽芬兰国际毕业生类别,无需工作经验门槛」,
   逐省差距 + 曼省双倒扣毒点 + AIP 如实未收录,核查 14 项 —— C01 手工分析的对话版,价值先行。
-- 🔴 **遗留(下轮首修)**:用户没提工签状态时,NL 掉进 needs-info 桶(上限 2)被 AIP/NB 挤掉,
-  第一轮答复整个缺席。正确行为=「最快的可能路径是 NL——前提是有效 PGWP,你有吗?」:
-  ① verdictFacts 的 needs-info 桶按 **tier 潜力**排序(tier0 潜力 > 其他),不按通道序;
-  ② 缺 PGWP/身份槽时 followups 点名问工签状态。
+- ✅ **遗留已修(2026-08-06,NL 掉桶)**:用户没提工签状态时,NL 掉进 needs-info 桶(上限 2)被
+  AIP/NB 挤掉,第一轮答复整个缺席。修法(比原方案多挖了一层根):
+  ① **根因**:NL 经验门槛 op='none'(官方明说无门槛),但 pickGate 在 have=null 时把 gap 记 null、
+    还把「缺经验月数」记缺槽——一道**不存在的闸**把通道拖成 needs-info。现 need=0 ⇒ gap 恒 0、
+    不记缺槽、reason 恒 met:第一轮 NL 直接 **open tier0 浮顶**(不再是 needs-info);
+  ② **tier 潜力排序**(pathVerdict 内,verdictFacts/C6 选项卡同一套序):缺槽判不出 gap 的门槛按
+    0 经验/0 居住的**上界**记档 → needs-info 的 tier=最坏还要等多久(ON=1、NS=2、BC=3),
+    排序对 needs-info 也按 tier 升序,库缺行(AIP,tier=null)沉底。全缺槽极端下 13 条不再是
+    无差别的一堆 0;
+  ③ 裁决已出但 status 缺时,followups **第一条**点名问工签(vAsk.status 三语)——NL 的前提
+    (有效工签)库里没有门槛行,判定层说不出口的前提由追问替它问。
+  实测(dev 直连生产库+真 LLM):第一轮答复现含「纽芬兰…无语言和经验门槛,拿到 offer 即可递」,
+  followups[0]=「你现在有有效的工签吗(比如 PGWP)?」。金标零回归(pathVerdict 29 + chatVerdict 19 全绿)。
+- ✅ **facts 数字格式(同日顺带)**:sayFact 里 CAD 类值 → `$100,006/年|/yr|/년`($+千分位,
+  thresholds 的差额注同步;guard normNum 剥逗号,账不变),CLB → 分制名在前(「CLB 6」,
+  「6 CLB」是病句;chatOrchestrate 测试期望已同步)。
 - 过程整改(同晚 Frank 三连击):旧零经验剧本「缺的不是省份」删除,新增 PLAYBOOK_VERDICT
   (tier0 必点名/省份差异即答案/第一份工作与选省同一决策),`295334c` 生产已验。
 
@@ -127,3 +139,6 @@ export type PathwayVerdict = {
 ## 六、进度记录
 
 - 2026-08-05 深夜:立项,契约定稿;C5a 两估分器并行派出。
+- 2026-08-06:§4.5 遗留修复(NL 掉桶:op=none 闸不再因缺槽拖桶 + needs-info 按 tier 潜力排序 +
+  followups 点名问工签)+ facts 数字格式($千分位/CLB 语序)。全量 418 绿 1 红(既有 BC 池脆测试),
+  tsc 绿;C01 两轮 dev 实测过。

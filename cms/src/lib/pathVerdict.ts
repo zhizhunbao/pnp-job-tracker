@@ -16,7 +16,8 @@
 //   excluded  = 有**攒时间补不齐**的硬伤(分数鸿沟:语言拉满后的上界仍够不着抽选线;或职业清单型硬伤)
 //   open+tier = 未达门槛的全是可积累项(经验 / 居住),tier = offer 到手后还要等多久
 //               (0=Day0 / 1=3-6 月 / 2=12 月 / 3=24 月)
-//   needs-info= 缺档案槽,**或库里缺这条通道的门槛行**(后者 availability='not-collected')
+//   needs-info= 缺档案槽,**或库里缺这条通道的门槛行**(后者 availability='not-collected')。
+//               其 tier = **潜力上界**(缺槽的门槛按 0 经验/0 居住的最坏情况记档;库缺行 = null)
 //
 // 纯函数 + rows 显式入参(不连库、不调 LLM)。消费方(C5c lookupVerdict)自己喂 mart 行进来。
 
@@ -359,7 +360,9 @@ function pickGate(spec: PathwaySpec, rows: Requirement[], p: VerdictProfile, sel
   } else {
     have = countableMonths(spec, p, selfEmpExcluded)
   }
-  const gap = need == null || have == null ? null : Math.max(0, need - have)
+  // 🔴 need=0(op='none':官方明说不设门槛)时 gap 恒 0,**不看 have**:一道不存在的闸不许因为
+  //    「缺经验月数」把通道拖成 needs-info(2026-08-06 §4.5:NL 正是这么被挤出第一轮答复的)。
+  const gap = need == null ? null : need === 0 ? 0 : have == null ? null : Math.max(0, need - have)
   return { rows: pool, picked, need, have, gap, tenure, unknownCond }
 }
 
@@ -539,14 +542,21 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
   }
 
   // ── ③ 经验 / 居住(可积累项,决定 tier)────────────────────────────────────
+  // 缺槽判不出 gap 时,把 need 记进 gaps —— needs-info 的 tier 因此是「最坏情况的上界」
+  // (按 0 经验 / 0 居住算)。这就是 §4.5 说的 **tier 潜力**:NL(need=0)最坏也是 tier0,
+  // ON(3-6 月)最坏 tier1 —— 排序按它,缺槽的通道才不会全挤成一堆无差别的 0。
   const gaps: number[] = []
   if (!gate.picked) {
     reasons.push({ kind: 'needs-info', text: `本站尚未收录 ${spec.stream} 的工作经验门槛条文 —— 这是本站的缺口,不等于官方不要求经验` })
   }
   if (gate.gap != null) gaps.push(gate.gap)
-  if (gate.have == null && gate.picked) missingSlots.push('expCanadaMonths')
+  else if (gate.need != null) gaps.push(gate.need)
+  if (gate.have == null && gate.picked && gate.need !== 0) missingSlots.push('expCanadaMonths')
   const res = residenceGap(spec, rows, p)
-  if (res) { if (res.gap != null) gaps.push(res.gap); else missingSlots.push('province') }
+  if (res) {
+    if (res.gap != null) gaps.push(res.gap)
+    else { gaps.push(res.need); missingSlots.push('province') }
+  }
 
   // ── ④ 估分 + 参照线 ──────────────────────────────────────────────────────
   const draw = refDraw(spec, data.draws)
@@ -651,7 +661,8 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
   for (const r of gate.rows) {
     const need = monthsOfReq(r)
     if (need == null) continue
-    const met = gate.have != null && gate.have >= need
+    // need=0 = 官方明说无门槛 → 恒达标(缺经验月数也一样:一道不存在的闸没有「判不了」)
+    const met = need === 0 || (gate.have != null && gate.have >= need)
     const tenureNote = r.basis === 'employerTenure' ? '(官方量的是「在这家雇主连续全职多久」,不是同职业总经验)' : ''
     reasons.push({
       kind: met ? 'met' : gate.have == null ? 'needs-info' : hardKind,
@@ -712,7 +723,9 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
 
 /**
  * 档案 → 13 条通道的裁决。
- * 排序:open 在前(按 tier 升序)→ needs-info → excluded 沉底;
+ * 排序:open 在前(按 tier 升序)→ needs-info(按 **tier 潜力**升序:缺槽的门槛按 0 经验/0 居住的
+ * 上界记档,tier0 潜力浮顶、库缺行的 null 沉底 —— §4.5 的 NL 掉桶修复,C6 选项卡推荐位同一套序)
+ * → excluded 沉底(tier 恒 null → 注册表原序)。
  * **同 tier 不再排序**(v1 没有配额/竞争度入参,按注册表原序保持稳定 —— 编个次序出来等于替用户拿主意)。
  */
 export function pathVerdict(profile: VerdictProfile, data: VerdictData): PathwayVerdict[] {
@@ -720,10 +733,8 @@ export function pathVerdict(profile: VerdictProfile, data: VerdictData): Pathway
   const rank = (v: PathwayVerdict) => (v.verdict === 'open' ? 0 : v.verdict === 'needs-info' ? 1 : 2)
   out.sort((a, b) => {
     if (rank(a.v) !== rank(b.v)) return rank(a.v) - rank(b.v)
-    if (a.v.verdict === 'open' && b.v.verdict === 'open') {
-      const ta = a.v.tier ?? 9, tb = b.v.tier ?? 9
-      if (ta !== tb) return ta - tb
-    }
+    const ta = a.v.tier ?? 9, tb = b.v.tier ?? 9
+    if (ta !== tb) return ta - tb
     return a.i - b.i
   })
   return out.map((x) => x.v)
