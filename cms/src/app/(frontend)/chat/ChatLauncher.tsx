@@ -104,6 +104,20 @@ const clampBox = (b: Box): Box => {
 // 挂件是全站**唯一**的对话入口(2026-08-04 傍晚 /start 内联框已撤)→ 轻提示出到用户真的点开为止,
 // 但最多 3 次:再多就是牛皮癣。点开过一次就永久不再出。
 const HINT_MAX = 3
+// 启动器自定义位置(2026-08-06 Frank「图标可自由拖动到任意位置,防挡内容」)。
+// null = 右下角默认档(带吸底条自动避让);拖过 = 用户显式选的位置,存 localStorage,
+// 避让测量不再插手(用户的手比启发式懂他想让开什么)。
+const DOCK_KEY = 'jt.chat.dock.v1'
+type DockPos = { x: number; y: number }
+const clampDock = (p: DockPos, w: number, h: number): DockPos => {
+  const de = document.documentElement
+  return {
+    x: Math.max(8, Math.min(p.x, de.clientWidth - w - 8)),
+    y: Math.max(8, Math.min(p.y, de.clientHeight - h - 8)),
+  }
+}
+/** 点按与拖动的分界:指针位移超过这个数才算拖(松手后抑制那次 click) */
+const DRAG_SLOP = 6
 const BASE = 16                 // 常规离底距离(px)
 /**
  * 有吸底动作条的路由(见头注释②)→ 才开测量。为什么要这道闸而不是全站都测:
@@ -148,6 +162,48 @@ export function ChatLauncher() {
     try { localStorage.setItem(HINT_KEY, String(HINT_MAX)) } catch { /* ignore */ }  // 点开过=不再提示
   }, [])
   const hide = useCallback(() => { setOpen(false); track('widget-close') }, [])
+  // 启动器自定义位置(拖过才有;draggedRef 在松手后压掉那一次 click,不然拖完必弹面板)
+  const [dockPos, setDockPos] = useState<DockPos | null>(null)
+  const dragged = useRef(false)
+  const startDockDrag = useCallback((e: React.PointerEvent) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return
+    const d = dock.current
+    if (!d) return
+    const r = d.getBoundingClientRect()
+    const s = { px: e.clientX, py: e.clientY, x: r.left, y: r.top }
+    dragged.current = false
+    let last: DockPos | null = null
+    const onMove = (ev: PointerEvent) => {
+      const dx = ev.clientX - s.px
+      const dy = ev.clientY - s.py
+      if (!dragged.current && Math.hypot(dx, dy) < DRAG_SLOP) return
+      dragged.current = true
+      // 钳制按**按钮**的 56×56 算,不按 dock 整体:提示条在自定义位隐藏(见 render),
+      // 拿带提示条的宽度钳会让按钮够不到屏幕右缘
+      last = clampDock({ x: s.x + dx, y: s.y + dy }, 56, 56)
+      setDockPos(last)
+    }
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('pointercancel', onUp)
+      document.body.style.userSelect = ''
+      if (!last) return
+      try { localStorage.setItem(DOCK_KEY, JSON.stringify(last)) } catch { /* 隐私模式:这次生效,下次不记得 */ }
+      track('widget-dock-drag')
+    }
+    document.body.style.userSelect = 'none'
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+    window.addEventListener('pointercancel', onUp)
+  }, [])
+  // 窗口变小时把记住的位置拉回视口内(同面板 clampBox 那条:不钳就可能整个在屏幕外)
+  useEffect(() => {
+    const onResize = () => setDockPos((p) => (p ? clampDock(p, 56, 56) : p))
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
   // C6 通道卡的 CTA 从页面任意处拉起挂件并预填问句(prefill 只进输入框,**不自动发送** ——
   // 以用户身份发话必须由用户按发送)。detail 是我们自己 dispatch 的,仍设长度帽防手滑。
   const [prefill, setPrefill] = useState('')
@@ -169,6 +225,10 @@ export function ChatLauncher() {
       const raw = localStorage.getItem(BOX_KEY)
       if (raw) { const b = clampBox(JSON.parse(raw) as Box); lastBox.current = b; setBox(b) }
     } catch { /* 存的东西坏了/隐私模式:退回默认档,不报错 */ }
+    try {
+      const raw = localStorage.getItem(DOCK_KEY)
+      if (raw) setDockPos(clampDock(JSON.parse(raw) as DockPos, 56, 56))
+    } catch { /* 同上:退回右下角默认档 */ }
     const mq = window.matchMedia('(min-width:641px)')
     const sync = () => setWide(mq.matches)
     sync()
@@ -304,7 +364,8 @@ export function ChatLauncher() {
   // 相交判定用**基准位的合成矩形**(而不是挂件的实时矩形)—— 抬起来之后就不相交了,
   // 拿实时矩形判会抬起→落下→抬起地来回抖。条子异步渲出(JD 整理完才挂)→ MutationObserver 补测。
   useEffect(() => {
-    if (open || !hasBottomBar(path)) { setClear(BASE); return }
+    // 用户拖过 = 显式选过位置,启发式避让不再插手(它只服务右下角默认档)
+    if (open || dockPos || !hasBottomBar(path)) { setClear(BASE); return }
     let bar: HTMLElement | null = null
     let raf = 0
     const measure = () => {
@@ -336,7 +397,7 @@ export function ChatLauncher() {
       window.removeEventListener('resize', schedule)
       mo.disconnect()
     }
-  }, [path, open, hint])
+  }, [path, open, hint, dockPos])
 
   // 轻提示:延迟出场(别跟首屏抢注意力),9 秒自己走。**只是提示,不弹面板**(红线③)
   // 依赖带 open:用户在 1.6s 内就点开了的话,cleanup 掐掉待触发的定时器(否则提示会在面板开着时冒出来);
@@ -366,11 +427,17 @@ export function ChatLauncher() {
   return (
     <>
       <style>{CSS}</style>
-      {/* 启动器:面板开着时整块收走(手机是全屏接管,桌面面板正压在它头上) */}
+      {/* 启动器:面板开着时整块收走(手机是全屏接管,桌面面板正压在它头上)。
+          可自由拖动(2026-08-06 Frank「防挡内容」):按住位移超过 DRAG_SLOP 才算拖,
+          松手后压掉那一次 click;拖过 = 改用 left/top 定位并隐藏轻提示(提示条会把 dock
+          向左撑宽,钳制口径就不再是那颗 56px 的钮)。 */}
       {!open && (
-        <div ref={dock} className="clDock" style={bottom}>
-          {hint && <button className="clHint" onClick={show}>{t('cw.hint')}</button>}
-          <button className="clBtn" onClick={show} aria-label={t('cw.open')} title={t('cw.open')}>
+        <div ref={dock} className="clDock"
+          style={dockPos ? { left: dockPos.x, top: dockPos.y, right: 'auto', bottom: 'auto' } : bottom}
+          onPointerDown={startDockDrag}>
+          {hint && !dockPos && <button className="clHint" onClick={show}>{t('cw.hint')}</button>}
+          <button className="clBtn" aria-label={t('cw.open')} title={t('cw.open')}
+            onClick={() => { if (dragged.current) { dragged.current = false; return } show() }}>
             <IconChat size={24} />
           </button>
         </div>
@@ -443,8 +510,9 @@ export function ChatLauncher() {
 // --clB = 离视口底的距离,由上面的测量段按吸底动作条的实时位置写进来(默认 16px)。
 // env(safe-area-inset-bottom):iPhone 底部横条,不加会被横条压住半个钮。
 const CSS = `
+/* touch-action:none = 手指按在启动器上就是要拖它,不让浏览器抢去当滚动(拖动手感的前提) */
 .clDock{--clB:16px;position:fixed;right:16px;bottom:calc(var(--clB) + env(safe-area-inset-bottom,0px));
-  z-index:40;display:flex;align-items:center;gap:8px;max-width:calc(100vw - 32px)}
+  z-index:40;display:flex;align-items:center;gap:8px;max-width:calc(100vw - 32px);touch-action:none}
 .clBtn{width:56px;height:56px;flex:none;border-radius:50%;border:none;background:${UI.primary};color:#fff;
   display:flex;align-items:center;justify-content:center;cursor:pointer;
   box-shadow:0 8px 24px rgba(37,99,235,.34);transition:transform .08s,background .12s}
