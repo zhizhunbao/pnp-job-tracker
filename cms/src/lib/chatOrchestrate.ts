@@ -204,6 +204,21 @@ export function federalRulePrograms(text: string): FederalRuleProgram[] {
   return (Object.keys(FEDERAL_PROGRAM_RE) as FederalRuleProgram[]).filter((p) => FEDERAL_PROGRAM_RE[p].test(text || ''))
 }
 
+/**
+ * 🔴 「哪个省…」这类问题**必须全省查**,不能只查槽位里那几个省。
+ *
+ * 2026-08-05 实录(chat_logs id=17):用户问「哪个省的省提名不要求工作经验?」——一个省名都没提,
+ * 抽槽却把 BC 塞进了 provs(模型编的)。于是 lookupThresholds 只查了 BC 一个省,
+ * 「不设经验门槛的省排前面」那条排序根本没机会生效(NL 压根没进候选集),
+ * 模型最后写出「各省省提名均要求工作经验」—— 一个它只看了一个省就下的全称判断,而且是错的。
+ *
+ * 判据只读**用户原话**,不看模型猜的槽位 —— 同 federalRulePrograms / crsLookups 那条既定原则:
+ * 路由开关不许交给模型。他问「哪个省」,候选集就是全部省,由后面的排序决定摆哪几个。
+ */
+const PICK_PROV_RE =
+  /哪[一几]?[个些]?省|省份.{0,4}选|选.{0,4}省份|which provinces?|what provinces?|어느 주|어떤 주/i
+export const asksWhichProvince = (text: string): boolean => PICK_PROV_RE.test(text || '')
+
 const CRS_RE = /\bCRS\b|Comprehensive Ranking System|综合排名(?:系统)?|EE\s*(?:score|points?)|EE\s*分(?:数)?|종합 순위 점수/i
 const SCORE_RE = /\b67\s*(?:points?|점)?\b|分数|打分|计分|多少分|得分|scor(?:e|ing)|points?|점수/i
 const AGE_RE = /\bage\b|years? old|岁|年(?:龄|齡)|나이|살\b/i
@@ -1044,7 +1059,7 @@ export function crsFacts(results: CrsResult[], lang: ChatLang): Fact[] {
  */
 export async function collectFacts(
   pool: any, slots: Slots, teerHint?: number | null, lang: ChatLang = 'en', onStep?: OnStep,
-  opts: { plan?: boolean; federalPrograms?: FederalRuleProgram[]; crs?: CrsLookupArgs[] } = {},
+  opts: { plan?: boolean; federalPrograms?: FederalRuleProgram[]; crs?: CrsLookupArgs[]; allProvs?: boolean } = {},
 ): Promise<{ facts: Fact[]; teer: number | null; title: string }> {
   const noc = slots.noc ?? ''
   const zeroExp = slots.expMonths === 0
@@ -1070,7 +1085,9 @@ export async function collectFacts(
     tap(lookupJobs(pool, { noc }), (r) => S.jobs(r.rows.length)),
     tap(lookupCoverage(pool, { noc }), (r) => S.coverage(r.provinces.length)),
     tap(lookupThresholds(pool, {
-      noc, teer: teerHint, provs: provs.length ? provs : undefined,
+      // allProvs:他问的是「哪个省」→ 候选集必须是全部省(见 asksWhichProvince 上面那段实录),
+      // 摆哪几个由下面的排序决定,不由抽槽那几个省决定 —— 尤其它还可能是模型编的。
+      noc, teer: teerHint, provs: provs.length && !opts.allProvs ? provs : undefined,
       profile: slots.expMonths == null ? undefined : { totalExpMonths: slots.expMonths, ...(zeroExp ? { canadianExpMonths: 0 } : {}) },
     }), (r) => S.thresholds(r.provinces.map((p) => p.province).join(' ') || String(noc))),
     tap(lookupEE(pool, { noc }), () => S.ee),
@@ -2443,6 +2460,7 @@ export async function orchestrate(
   // 问的是「要多久 / 哪条更快」才算时间线(判据是纯函数,不问模型:topic 归模型猜的那些坑已经踩够了)
   const { facts, title } = await collectFacts(pool, slots, null, lang, onStep, {
     plan: !!hit && isPlanQuestion(text) && !isOddsQuestion(text), federalPrograms, crs,
+    allProvs: asksWhichProvince(text),
   })
   const occ = hit ? `${title || hit.title || slots.occText} (NOC ${slots.noc})` : ''
 

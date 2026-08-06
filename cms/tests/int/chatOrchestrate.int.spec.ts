@@ -12,7 +12,7 @@ import pg from 'pg'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import {
-  askOccupation, claimLabel, clampAnswer, collectFacts, dropTrailingHedge, factsBlock, factSheet, fieldSearchTerm,
+  askOccupation, asksWhichProvince, claimLabel, clampAnswer, collectFacts, dropTrailingHedge, factsBlock, factSheet, fieldSearchTerm,
   commercialClaimLabel,
   findEnglishUnits, findFactCopied, findFactDump, findHedges, findForeignScript, findLeaks, findMergedStates,
   findMixedStates, findSameOpening, findShoutedWords, findUnbackedCoverage, findWordNumbers, guardAnswer, isMoneyTalk, isSelfStatement,
@@ -117,6 +117,26 @@ describe('guardAnswer(出口校验)', () => {
 })
 
 // ── ①' 纯函数:见客三道检查(内部码 / 英文速记 / 推断性措辞)+ 长度收口 ──────
+// 🔴 「哪个省…」必须全省查(chat_logs id=17 实录:用户一个省名都没提,抽槽把 BC 编了进去,
+//    于是门槛只查了 BC 一个省,答复写出「各省省提名均要求工作经验」—— 只看一个省下的全称判断)。
+//    判据只读用户原话,不看模型猜的槽位(同 federalRulePrograms 那条既定原则)。
+describe('「哪个省」这类问题要全省查', () => {
+  it('三语的问法都认得出来', () => {
+    for (const q of ['哪个省的省提名不要求工作经验?', '哪些省收我这个职业?', '我该选哪一个省?',
+      '哪几个省对木匠最松', 'which province should I pick?', 'What provinces list my occupation?',
+      '어느 주가 좋을까요?']) {
+      expect(asksWhichProvince(q), q).toBe(true)
+    }
+  })
+
+  it('点名了具体省份的问句不算(那种就该只查他问的省)', () => {
+    for (const q of ['曼省对木匠的要求是什么?', 'What does Manitoba require?', '我在安省,毕业后能留下吗?',
+      '省提名要多久?', '中介说包省提名可信吗?']) {
+      expect(asksWhichProvince(q), q).toBe(false)
+    }
+  })
+})
+
 // 🔴 「某省清单收了这个职业」是**资格前提**,说错了后面每个数字都在答另一个人的问题;
 //    而它是纯文字断言,guardAnswer(只查数字)和 findMergedStates(只查四态)两道都不管。
 //    下面的正反例全部来自 chat_logs 的真实答复(2026-08-05 那 6 条),不是编的:
