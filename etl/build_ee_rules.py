@@ -43,6 +43,13 @@ IN_URL_CRS = _EE + "check-score/crs-criteria.html"          # CRS 计分表(A/B/
 IN_URL_CEC = _EE + "who-can-apply/canadian-experience-class.html"
 IN_URL_FSW = _EE + "who-can-apply/federal-skilled-workers.html"   # 含 67 分 selection factors
 IN_URL_FST = _EE + "who-can-apply/federal-skilled-trades.html"
+# RCIP(Rural / Francophone Community Immigration Pilots)不是 Express Entry 项目,不挂在 _EE 前缀下,
+# 但门槛表同样落 province='FED'、同一份 fed-eligibility.json(C5b-0,2026-08-05)——两条 pilot 的
+# 「Work experience」页文案逐字相同(已用 fed-rcip crawl 缓存核对),Rural 页作为 quote 出处,
+# Franco 页只做交叉核验(见 main() 里的 missing_franco 检查),不重复落两条一样的行。
+_RCIP = "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/"
+IN_URL_RCIP_RURAL = _RCIP + "rural-immigration/eligibility/work-experience.html"
+IN_URL_RCIP_FRANCO = _RCIP + "franco-immigration/eligibility/work-experience.html"
 IN_URL_LANG = _EE + "documents/language-test.html"          # 三个项目的最低 CLB/NCLC 门槛表
 IN_URL_ECA = _EE + "documents/education-assessment.html"     # ECA 结果 → FSW 教育 selection factor 分
 
@@ -327,12 +334,24 @@ RULES = [
     {"program": "FST", "page": "lang", "factor": "language", "stream": "reading-writing", "op": ">=", "value": 4, "unit": "CLB",
      "label": "FST: CLB/NCLC 4 for reading and writing",
      "quote": "English Reading and writing CLB 4"},
+
+    # ---- Rural and Francophone Community Immigration Pilots (RCIP) ----
+    # C5b-0:引擎缺的工作经验门槛行。Rural/Franco 两条 pilot 的 Work experience 页文案逐字相同
+    # (fed-rcip crawl 缓存 2025-08-13 版核对过),quote 出自 Rural 页,main() 里另外核验 Franco 页同款。
+    {"program": "RCIP", "page": "rcip_rural", "factor": "workHours", "op": ">=", "value": 1560, "unit": "hours",
+     "basis": "windowYears=3;minYears=1",
+     "label": "RCIP: 1 year (1,560 hours) of related work experience in the past 3 years",
+     "quote": "you need at least 1 year (1,560 hours) of related work experience in the past 3 years"},
+    {"program": "RCIP", "page": "rcip_rural", "factor": "workSelfEmployed", "op": "rule", "value": "excluded", "unit": "",
+     "label": "RCIP: self-employed work does not count toward the experience requirement",
+     "quote": "not be from a self-employed job"},
 ]
 
 
 def main() -> None:
     print(f"IN  : {IN_CRAWL}  (crawl 缓存,不重复发请求)")
-    for u in (IN_URL_CRS, IN_URL_CEC, IN_URL_FSW, IN_URL_FST, IN_URL_LANG, IN_URL_ECA):
+    for u in (IN_URL_CRS, IN_URL_CEC, IN_URL_FSW, IN_URL_FST, IN_URL_LANG, IN_URL_ECA,
+              IN_URL_RCIP_RURAL, IN_URL_RCIP_FRANCO):
         print(f"      {u}")
     print(f"OUT : {OUT_CRS}")
     print(f"OUT : {OUT_ELIG}")
@@ -361,7 +380,8 @@ def main() -> None:
 
     # ── 2. 资格规则(quote-anchored)+ FSW 67 分 selection factors ────────
     pages = {}
-    for key, url in (("cec", IN_URL_CEC), ("fsw", IN_URL_FSW), ("fst", IN_URL_FST), ("lang", IN_URL_LANG)):
+    for key, url in (("cec", IN_URL_CEC), ("fsw", IN_URL_FSW), ("fst", IN_URL_FST), ("lang", IN_URL_LANG),
+                     ("rcip_rural", IN_URL_RCIP_RURAL), ("rcip_franco", IN_URL_RCIP_FRANCO)):
         m, fetched = load(url)
         pages[key] = {"url": url, "fetched": fetched, "main": m,
                       "text": norm(m.get_text(" ", strip=True))}
@@ -370,6 +390,16 @@ def main() -> None:
     if missing:
         print(f"✗ {len(missing)}/{len(RULES)} 条官方引用在页面上消失(改版?)—— 保留旧表,人工重核:")
         for r in missing:
+            print(f"✗   [{r['program']}/{r['factor']}] {r['quote'][:90]}")
+        raise SystemExit(1)
+
+    # RCIP 两条 pilot 共享文案:Rural 页(上面已核验)之外,交叉核验 Franco 页也逐字命中同一批引用,
+    # 否则「两条 pilot 都是 1,560 小时」这个结论只验证了一半就写进了库。
+    rcip_missing_franco = [r for r in RULES if r["program"] == "RCIP"
+                           and norm(r["quote"]) not in pages["rcip_franco"]["text"]]
+    if rcip_missing_franco:
+        print(f"✗ RCIP 引用在 Franco pilot 页上对不上(Rural/Franco 文案已经不一致?)—— 保留旧表,人工重核:")
+        for r in rcip_missing_franco:
             print(f"✗   [{r['program']}/{r['factor']}] {r['quote'][:90]}")
         raise SystemExit(1)
 
@@ -393,23 +423,28 @@ def main() -> None:
     sel.extend(education)
 
     OUT_ELIG.write_text(json.dumps({
-        "source": "Express Entry: Who can apply (CEC / FSW / FST)",
+        "source": "Express Entry: Who can apply (CEC / FSW / FST) + Rural and Francophone Community "
+                  "Immigration Pilots (RCIP): Work experience",
         # 表级 province:联邦源统一 FED(同 raw/ircc/pgwp_rules.json、fees.json)——09 的
         # build_pnp_requirements 从这里取,少了它 23 条会静默落成 province=''(引擎按省挑行永远挑不到)。
-        # program 不在表级:这一个文件装三个项目,逐行写在 requirements[].program 上。
+        # program 不在表级:这一个文件装四个项目(含 RCIP),逐行写在 requirements[].program 上。
         "province": "FED",
         "fetched": max([eca_fetched, *(p["fetched"] for p in pages.values())]),
         "note": "quote-anchored:valueText=官方原文,本脚本每轮验证其仍逐字在页面上;字段语义见 basis。"
                 "requirements 形状对齐 raw/ircc/pgwp_rules.json(09 IN_REQ_TABLES 可直接消费)。"
                 "selectionFactors = FSW 67 分制的官方表格(与 CRS 排名分是两套分,官方明确写明不同)。"
                 "其中教育档来自 fed-ee 缓存命中的 ECA 报告解读页;criterion=ECA assessment result、"
-                "heading=EE profile 教育档、points=FSW 教育分(最高 25),没有把 CRS 教育分混入。",
+                "heading=EE profile 教育档、points=FSW 教育分(最高 25),没有把 CRS 教育分混入。"
+                "RCIP(program=RCIP)不是 Express Entry 项目、不参与 CRS,只是同表落 province='FED' 的"
+                "经验门槛;来源是 Rural/Franco 两条 pilot 各自的 Work experience 官方页(文案逐字相同,"
+                "已交叉核验),不是 fed-ee 那 97 页种子(RCIP 走 fed-rcip crawl slug)。",
         "programs": [
             {"code": code, "name": name, "url": pages[k]["url"],
              "fetched": pages[k]["fetched"], "pageUpdated": page_updated(pages[k]["main"])}
             for code, name, k in (("CEC", "Canadian Experience Class", "cec"),
                                   ("FSW", "Federal Skilled Worker Program", "fsw"),
-                                  ("FST", "Federal Skilled Trades Program", "fst"))
+                                  ("FST", "Federal Skilled Trades Program", "fst"),
+                                  ("RCIP", "Rural and Francophone Community Immigration Pilots", "rcip_rural"))
         ],
         "requirements": reqs,
         "selectionFactors": sel,

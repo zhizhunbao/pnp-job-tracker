@@ -10,12 +10,14 @@ build_on_req — ON(OINP)Workforce Priority 通道的门槛。规则引擎第二
   申请人  language      TEER 0-3 非技工 CLB 6;TEER 0-3 技工 CLB 5(NOC 大组白名单);TEER 4/5 CLB 4
           languageExempt 近 3 年安省院校指定学历可免考(本站没问学历 → 报告里只陈述,不判定)
           wage          basis=occMedian:不低于该职业该地区的**中位工资档**(官方按 Job Bank 工资报告)
+          experience    TEER 0-3 两档并行(官方 bullet 用「or」并列,任一满足即可,不是叠加):
+                        一般 6 个月 / 安省应届毕业生(近 3 年、2 年制以上文凭)3 个月 —— 都是**同雇主
+                        同岗位**在职时长,不是本站问的「同职业总经验」,故 basis='employerTenure'
+                        (照 build_mb_req.py SWM 的先例)。官方还有第三档「近 5 年内同 NOC 累计 2 年」
+                        (不绑同雇主同岗位,C5b-0 范围外未抓,不收录 = 不假装它不存在)。
   雇主    empYears      在营 ≥3 年
           empRevenue    GTA $1,000,000 / 指定普查区 $500,000 / 其余 $250,000(后者按近两个财年)
           empStaff      GTA ≥5 名、GTA 外 ≥3 名(须为公民/PR,周 30 小时以上)
-
-**没抓的**:工作经验(官方按「同一雇主同一岗位近 12 个月连续 6 个月 / 安省应届 3 个月 / 部分职业
-近 5 年累计 2 年」三套并行,且绑定「同一岗位」——本站问的是通用经验,对不上就不硬套,留空=不收录)。
 
 自校是硬闸(照 build_bc_req):任何一组没解析到就**保留旧表不覆盖**并 exit 1。
 
@@ -66,6 +68,12 @@ RE_LANG_EXEMPT = re.compile(r"proof that you graduated from an eligible Ontario 
                             r"(\d) years", re.I)
 RE_WAGE = re.compile(r"must meet or exceed the wage level assigned to the specific region of Ontario where the "
                      r"employee will be working and be at or above either: the median wage level", re.I)
+RE_EXP_BASE = re.compile(r"At least (\w+) months? of consecutive, paid full-time work experience in the job "
+                         r"offer employment position, within the (\w+) months? before the date you made your "
+                         r"application", re.I)
+RE_EXP_GRAD = re.compile(r"If you are a recent Ontario graduate, at least (\w+) months? of consecutive, paid "
+                         r"full-time work experience in the job offer employment position within the (\w+) "
+                         r"months? before the date you made your application", re.I)
 # 技工白名单:官方逐条列「Major/Minor/Unit Group NN」,个别条目自带「excluding … Sub-Major Group NNN」
 RE_TRADE_LINE = re.compile(r"(?:Major|Minor|Unit) Group (\d{2,5})\s*[-–—]\s*(.*?)(?=(?:Major|Minor|Unit) Group |$)", re.I)
 RE_TRADE_EXCL = re.compile(r"excluding[^)]*?Group (\d{3,5})", re.I)
@@ -81,7 +89,7 @@ def page_text(url: str) -> str:
 def req(**kw) -> dict:
     base = {"stream": STREAM, "subject": "applicant", "op": ">=", "value": None, "valueText": "",
             "unit": "", "appliesTeer": "", "appliesNoc": "", "excludesNoc": "", "appliesArea": "",
-            "familySize": None, "basis": "", "label": "", "section": "", "url": STREAM_URL}
+            "appliesCondition": "", "familySize": None, "basis": "", "label": "", "section": "", "url": STREAM_URL}
     return {**base, **kw}
 
 
@@ -146,6 +154,30 @@ def main() -> None:
     else:
         problems.append("工资档(median wage level)没解析到")
 
+    # ── 申请人:工作经验(TEER 0-3,两档并行,同雇主同岗位在职时长)────────────
+    # 官方这两句写的是阿拉伯数字(6/12、3/12),不是 empYears 那种英文数词 → 单独转,别套 WORDS。
+    def as_int(tok: str):
+        return int(tok) if tok.isdigit() else WORDS.get(tok.lower())
+
+    eb = RE_EXP_BASE.search(stream_txt)
+    ebv = as_int(eb.group(1)) if eb else None
+    if eb and ebv is not None:
+        reqs.append(req(factor="experience", value=ebv, unit="months",
+                        basis="employerTenure", appliesTeer="0,1,2,3",
+                        section="Applicant requirements — Work experience",
+                        label=re.sub(r"\s+", " ", eb.group(0)).strip()))
+    else:
+        problems.append("工作经验(一般 6 个月)没解析到")
+    eg = RE_EXP_GRAD.search(stream_txt)
+    egv = as_int(eg.group(1)) if eg else None
+    if eg and egv is not None:
+        reqs.append(req(factor="experience", value=egv, unit="months",
+                        basis="employerTenure", appliesTeer="0,1,2,3", appliesCondition="recent-on-graduate",
+                        section="Applicant requirements — Work experience",
+                        label=re.sub(r"\s+", " ", eg.group(0)).strip()))
+    else:
+        problems.append("工作经验(安省应届毕业生 3 个月)没解析到")
+
     # ── 雇主侧:经营年限 / 营业额三档 / 雇员数两档 ────────────────────────────
     y = RE_EMP_YEARS.search(emp_txt)
     if y and y.group(1).lower() in WORDS:
@@ -203,7 +235,7 @@ def main() -> None:
         "requirements": reqs,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"✓ {OUT}  共 {len(reqs)} 条门槛")
-    for f in ("language", "languageExempt", "wage", "empYears", "empRevenue", "empStaff"):
+    for f in ("language", "languageExempt", "wage", "experience", "empYears", "empRevenue", "empStaff"):
         print(f"  {f:15} {sum(1 for x in reqs if x['factor'] == f)} 条")
 
 

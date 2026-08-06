@@ -9,17 +9,23 @@ build_nb_req — NB(NBPNP Skilled Worker)的**门槛**。走三份官方申请�
 **PDF 链接从通道页现取**(同 build_ns_req 的理由:官方随时换文件名)。NB Skilled Worker 下有三条
 并列 pathway,各一份指南:New Brunswick Experience / Graduates / Priority Occupations。
 
-抓这一条:
+抓这几条:
   语言  CLB/NCLC 4(听说读写四项)—— **三份指南必须都写这个数**,对不上就判解析出错。
         三条 pathway 语言口径一致,所以可以作为「NB 的语言门槛」不分 TEER 地陈述。
+  经验(C5b-0,2026-08-05 补;只补 Experience 一条 pathway,理由见下)
+        与**该支持雇主**连续全职 6 个月(basis='employerTenure',照 MB SWM/build_mb_req.py 先例 ——
+        rules.ts 已有专门的口径隔离分支:这类行**只摆门槛不判定**,不会被拿去跟「同职业总经验」比大小,
+        2026-08-04 那次「口径隔离」修的正是这个坑,现在补 NB 这一条是安全的)。
+        residence(NB 居住满 6 个月)形状上一起补 —— 引擎目前没有 residence 分支消费它,
+        但 pnp_requirements 是通用行形状,数据层先落上不等未来的引擎功能;不算「硬塞」。
 
-**没抓的 —— 经验(重要,别当漏抓)**:三条 pathway 的经验口径互不相同且都不是通用门槛:
-  · Experience:与**该支持雇主**连续全职 6 个月 + 在 NB 住满 6 个月(口径是在职/居住时长)
-  · Graduates:不设经验门槛
-  · Priority Occupations:1 年带薪相关经验,但只对**省政府境外招聘团**发出的 offer 生效
-引擎的 experience 是「同职业总经验」一条通吃,把其中任何一条塞进去,都会对走另外两条路的人
-说错话(拿 Experience 那条走 6 个月的人会被判「差 6 个月」)。判不了就不出这一行 ——
-同 Frank 2026-08-02「这一条不参与判定,那还显示干什么」,与 rules.ts 铁律①「unknown 是一等公民」。
+**仍然没抓 —— 经验的另外两条 pathway**:
+  · Graduates:不设经验门槛(尚未确认官方是否有 op='none' 式明文条款,留后续核实)
+  · Priority Occupations:1 年带薪相关经验,但只对**省政府境外招聘团**发出的 offer 生效 ——
+    这条的适用范围本站题库判不出(不是「你干了几年」能问出来的),继续不收录。
+  三条 pathway 分属不同 stream 字符串,Experience 这条门槛只挂在它自己的 stream 上,
+  不会被挑到走 Graduates/Priority Occupations 的人身上(stream 字段虽然引擎当前不按它筛选,
+  但 basis='employerTenure' 的行本身就只摆门槛不判定,不存在「误判某条路的人」的风险)。
 
 同理没抓:年龄 ≥19、高中学历 + ECA(引擎无对应因素);最低收入(NB **不设**收入表)。
 
@@ -61,6 +67,12 @@ PATHWAYS = {
 RE_LANG = re.compile(r"have (?:at least|a minimum of) Canadian Language Benchmarks \(CLB\) (\d) in listening", re.I)
 # 指南封面/页眉的版本:「New Brunswick Experience (2026-06)」
 RE_VERSION = re.compile(r"New Brunswick (?:Experience|Graduates|Priority Occupations) \((\d{4}-\d{2})\)")
+# 只在 New Brunswick Experience 指南「YOUR ELIGIBILITY」段落里找,不套另外两份指南
+RE_EXP_TENURE = re.compile(
+    r"you must already have at least (\d+) months? of full-time work experience with the supporting employer", re.I)
+RE_NB_RESIDENCE = re.compile(
+    r"You must have been living in New Brunswick with valid temporary resident status for the past (\d+) months?", re.I)
+EXPERIENCE_STREAM = "New Brunswick Skilled Worker stream — New Brunswick Experience pathway"
 
 
 def guide_urls() -> dict[str, str]:
@@ -99,8 +111,11 @@ def main() -> None:
 
     clbs: dict[str, int] = {}
     versions: set[str] = set()
+    exp_txt = ""
     for name, url in urls.items():
         txt = pdf_text(url)
+        if name == "New Brunswick Experience":
+            exp_txt = txt
         m = RE_LANG.search(txt)
         if m:
             clbs[name] = int(m.group(1))
@@ -123,6 +138,26 @@ def main() -> None:
                               f"({', '.join(sorted(clbs))})"))
     if not versions:
         problems.append("没解析到指南版本(封面 pathway 名后的 YYYY-MM)")
+
+    # ── New Brunswick Experience pathway:与支持雇主的在职时长 + NB 居住时长 ──────
+    # 只挂 stream=EXPERIENCE_STREAM,不当成三条 pathway 通用门槛(Graduates/Priority Occupations
+    # 不是这个口径,见文件头说明)。basis='employerTenure' 触发 rules.ts 的口径隔离分支。
+    te = RE_EXP_TENURE.search(exp_txt)
+    if te:
+        reqs.append(req(stream=EXPERIENCE_STREAM, factor="experience", value=int(te.group(1)), unit="months",
+                        basis="employerTenure", url=urls["New Brunswick Experience"],
+                        section="Your eligibility — 1. NB employment",
+                        label=re.sub(r"\s+", " ", te.group(0)).strip().capitalize()))
+    else:
+        problems.append("New Brunswick Experience 指南里的雇主在职时长(6 个月)没解析到")
+    tr = RE_NB_RESIDENCE.search(exp_txt)
+    if tr:
+        reqs.append(req(stream=EXPERIENCE_STREAM, factor="residence", value=int(tr.group(1)), unit="months",
+                        url=urls["New Brunswick Experience"],
+                        section="Your eligibility — 4. NB residency",
+                        label=re.sub(r"\s+", " ", tr.group(0)).strip()))
+    else:
+        problems.append("New Brunswick Experience 指南里的 NB 居住时长(6 个月)没解析到")
 
     if problems:
         print("✗ 自校未过,保留旧表不覆盖:")

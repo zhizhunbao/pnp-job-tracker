@@ -1,8 +1,8 @@
 {
- "source": "Express Entry: Who can apply (CEC / FSW / FST)",
+ "source": "Express Entry: Who can apply (CEC / FSW / FST) + Rural and Francophone Community Immigration Pilots (RCIP): Work experience",
  "province": "FED",
  "fetched": "2026-08-05",
- "note": "quote-anchored:valueText=官方原文,本脚本每轮验证其仍逐字在页面上;字段语义见 basis。requirements 形状对齐 raw/ircc/pgwp_rules.json(09 IN_REQ_TABLES 可直接消费)。selectionFactors = FSW 67 分制的官方表格(与 CRS 排名分是两套分,官方明确写明不同)。其中教育档来自 fed-ee 缓存命中的 ECA 报告解读页;criterion=ECA assessment result、heading=EE profile 教育档、points=FSW 教育分(最高 25),没有把 CRS 教育分混入。",
+ "note": "quote-anchored:valueText=官方原文,本脚本每轮验证其仍逐字在页面上;字段语义见 basis。requirements 形状对齐 raw/ircc/pgwp_rules.json(09 IN_REQ_TABLES 可直接消费)。selectionFactors = FSW 67 分制的官方表格(与 CRS 排名分是两套分,官方明确写明不同)。其中教育档来自 fed-ee 缓存命中的 ECA 报告解读页;criterion=ECA assessment result、heading=EE profile 教育档、points=FSW 教育分(最高 25),没有把 CRS 教育分混入。RCIP(program=RCIP)不是 Express Entry 项目、不参与 CRS,只是同表落 province='FED' 的经验门槛;来源是 Rural/Franco 两条 pilot 各自的 Work experience 官方页(文案逐字相同,已交叉核验),不是 fed-ee 那 97 页种子(RCIP 走 fed-rcip crawl slug)。",
  "programs": [
   {
    "code": "CEC",
@@ -24,6 +24,13 @@
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-trades.html",
    "fetched": "2026-08-05",
    "pageUpdated": "2026-06-22"
+  },
+  {
+   "code": "RCIP",
+   "name": "Rural and Francophone Community Immigration Pilots",
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/work-experience.html",
+   "fetched": "2026-08-05",
+   "pageUpdated": "2025-08-13"
   }
  ],
  "requirements": [
@@ -347,6 +354,34 @@
    "basis": "",
    "label": "FST: CLB/NCLC 4 for reading and writing",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
+   "fetched": "2026-08-05"
+  },
+  {
+   "program": "RCIP",
+   "stream": "",
+   "subject": "applicant",
+   "factor": "workHours",
+   "op": ">=",
+   "value": 1560,
+   "valueText": "you need at least 1 year (1,560 hours) of related work experience in the past 3 years",
+   "unit": "hours",
+   "basis": "windowYears=3;minYears=1",
+   "label": "RCIP: 1 year (1,560 hours) of related work experience in the past 3 years",
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/work-experience.html",
+   "fetched": "2026-08-05"
+  },
+  {
+   "program": "RCIP",
+   "stream": "",
+   "subject": "applicant",
+   "factor": "workSelfEmployed",
+   "op": "rule",
+   "value": "excluded",
+   "valueText": "not be from a self-employed job",
+   "unit": "",
+   "basis": "",
+   "label": "RCIP: self-employed work does not count toward the experience requirement",
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/work-experience.html",
    "fetched": "2026-08-05"
   }
  ],

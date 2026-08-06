@@ -24,6 +24,42 @@
       "section": "Overview — eligibility",
       "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/nb-immigration-program-streams/nb-skilled-worker-stream.html",
       "factor": "language"
+    },
+    {
+      "stream": "New Brunswick Skilled Worker stream — New Brunswick Experience pathway",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 6,
+      "valueText": "",
+      "unit": "months",
+      "appliesTeer": [],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "employerTenure",
+      "label": "You must already have at least 6 months of full-time work experience with the supporting employer",
+      "section": "Your eligibility — 1. NB employment",
+      "url": "https://www2.gnb.ca/content/dam/gnb/Corporate/Promo/Immigration/guide-new-brunswick-experience.pdf",
+      "factor": "experience"
+    },
+    {
+      "stream": "New Brunswick Skilled Worker stream — New Brunswick Experience pathway",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 6,
+      "valueText": "",
+      "unit": "months",
+      "appliesTeer": [],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "You must have been living in New Brunswick with valid temporary resident status for the past 6 months",
+      "section": "Your eligibility — 4. NB residency",
+      "url": "https://www2.gnb.ca/content/dam/gnb/Corporate/Promo/Immigration/guide-new-brunswick-experience.pdf",
+      "factor": "residence"
     }
   ]
 }
