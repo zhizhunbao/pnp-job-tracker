@@ -1,0 +1,69 @@
+{
+  "stream": "SINP Employment Offer",
+  "label": "SK Job Offer 不合格清单",
+  "province": "SK",
+  "program": "PNP",
+  "type": "ineligible",
+  "appliesTo": "Employment Offer",
+  "note": "SINP International Skilled Worker: With an Employment Offer 子类别的排除清单——与 sk-excluded.json(OID/EE 排除清单)是两张不同的表,互不通用。官方原句(PDF):「The following occupations are not eligible for the SINP sub-categories requiring a job offer and JAL from a Saskatchewan employer unless certain requirements, listed below, are met.」即多数行是**条件性排除**(如持有效 LMIA/CUAET 工签在萨省该职业已在职则不受限);本表 name 字段为 PDF 逐行解析,长条件文本可能截到第一行,完整条件请查 PDF 原文。",
+  "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/occupation-restrictions-and-requirements",
+  "fetched": "2026-08-05",
+  "occupations": [
+    {
+      "noc": "10022",
+      "name": "Advertising, marketing, and public relations managers unless the candidate is currently working in"
+    },
+    {
+      "noc": "11202",
+      "name": "Professional occupations in advertising, marketing, and public relations unless the"
+    },
+    {
+      "noc": "12200",
+      "name": "Accounting technicians and bookkeepers unless the candidate is:"
+    },
+    {
+      "noc": "32200",
+      "name": "Chinese health practitioners/Acupuncturist unless the candidate is currently in Saskatchewan under"
+    },
+    {
+      "noc": "32201",
+      "name": "Massage therapist, including those within massage service operations, unless the candidate is a"
+    },
+    {
+      "noc": "32209",
+      "name": "Other practitioners of natural healing unless the candidate is currently in Saskatchewan under a"
+    },
+    {
+      "noc": "33109",
+      "name": "Other assisting occupations in support of health services is no longer eligible for positions that"
+    },
+    {
+      "noc": "41302",
+      "name": "Religious leaders"
+    },
+    {
+      "noc": "41402",
+      "name": "Business development officers and market researchers, analysts unless the candidate is currently"
+    },
+    {
+      "noc": "42204",
+      "name": "Religious workers"
+    },
+    {
+      "noc": "43200",
+      "name": "Sheriffs and bailiffs unless the candidate is currently working in Saskatchewan under a valid LMIA or"
+    },
+    {
+      "noc": "43202",
+      "name": "By-law enforcement and other regulatory officers unless the candidate is currently working in"
+    },
+    {
+      "noc": "63210",
+      "name": "Hairstylists and barbers"
+    },
+    {
+      "noc": "63211",
+      "name": "Estheticians, electrologists and related occupations"
+    }
+  ]
+}

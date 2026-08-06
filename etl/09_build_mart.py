@@ -51,12 +51,14 @@ IN_EXPIRED = _paths.PROCESSED_JOBBANK / "expired_ids.json"   # #124 批C:verify_
 IN_ATS_COMPANIES = _paths.COMPANIES                       # processed/ats/.../companies/<slug>/
 IN_SCORED = _paths.PROCESSED / "all-scored.json"
 IN_AIP = _paths.AIP / "aip-designated-employers.json"
+IN_NL_EMPLOYERS = _paths.PNP / "nl-employers.json"  # NL 官网指定雇主 645 家(C4-W4,含申报 NOC)
 IN_WAGES = _paths.WAGES / "wages.json"   # NOC×省 中位工资(build_wages.py 从 ESDC 开放数据建)
 IN_PNP = _paths.PNP                      # raw/pnp/*.json(各省具名通道:每文件一条通道)
 IN_PNP_DRAWS = _paths.PNP / "draws.json"  # 省抽选事实(BC/AB/MB+ON通告,build_draws.py 产,E6-04)
 # 省提名官方打分表(E12-09)——一省一个文件,加省就往这个 list 里加,下面的组装逻辑不用改。
 # BC=SIRS 200 分制(build_bc_sirs.py 从官方 PDF 抓)/ SK=SINP Points Grid 110 分制(build_sk_points.py 抓官网表)
-IN_SCORE_TABLES = [_paths.PNP / "bc-sirs.json", _paths.PNP / "sk-points.json", _paths.PNP / "on-points.json"]
+IN_SCORE_TABLES = [_paths.PNP / "bc-sirs.json", _paths.PNP / "sk-points.json", _paths.PNP / "on-points.json",
+                   _paths.PNP / "mb-points.json"]  # MB EOI 六因子(C4-W2;含风险负分档,points 存负数)
 # 省提名官方**门槛**(规则引擎第一刀)——打分表管「能打几分」,这张管「打分之前先要满足什么」。
 # 一省一个文件,加省=往这个 list 里加一个(build_<省>_req.py 产,列同一套)。
 IN_REQ_TABLES = [_paths.PNP / f"{p}-req.json"
@@ -72,7 +74,7 @@ IN_REQ_TABLES = [_paths.PNP / f"{p}-req.json"
                  _paths.EE / "fed-eligibility.json"]
 # G5 省级官方运营统计(配额/已发/剩余、积压游标、EOI 池、处理时长、SIRS 池分布)——
 # 一省一个文件,加省=往这个 list 里加一个;各省字段形状不同,按 province 分派(下面 build_pnp_ops_stats)。
-IN_PNP_STATS = [_paths.PNP / f"{p}-stats.json" for p in ("ab", "sk", "bc", "mb")]
+IN_PNP_STATS = [_paths.PNP / f"{p}-stats.json" for p in ("ab", "sk", "bc", "mb", "on")]
 IN_EE = _paths.EE / "federal-categories.json"  # 联邦 Express Entry 类别抽选(全国单一源)
 IN_EE_DRAWS = _paths.EE / "draws.json"          # 各类别最近一次抽选(CRS/日期/邀请数,build_ee_draws.py 产)
 # G9 联邦官方计分表(两套分,同一张窄表,grid 列区分)——build_ee_rules.py 产,只读 crawl 缓存。
@@ -407,6 +409,16 @@ def build_pnp_ops_stats(files) -> list:
                                          ("processing_days_refused", "refusedDays", "Refused Applications")):
                     add(abase, metric, st, "stream", f"{st} — {lab}: {p.get(key)} days",
                         p.get(key), "days", section=asec, period=ayear)
+        elif prov == "ON":
+            # ON(C4-W5):官方「审理时长与提名数」专页 2026 改制后已 302 下线(raw 的 pageRedirect
+            # 存了官方注册的 redirect 证据)→ 审理时长无行可出,这是举证过的「本站未收录」。
+            # 配额/历年提名数出自逐年 Program Updates 页 —— 每条自带出处页,用自己的 url/fetched,
+            # 别拿顶层(已下线那页)给数字背书。label = 官方原句(quote-anchored)。
+            for m, key in (("allocation", "allocation"), ("nominations_issued", "nominationsIssued")):
+                for e in d.get(key, []):
+                    ebase = {**base, "url": e.get("url", ""), "fetched": e.get("fetched", ""), "asOf": ""}
+                    add(ebase, m, "", "", e.get("label", ""), e.get("value"), e.get("unit", "nominations"),
+                        section=e.get("section", ""), period=str(e.get("year") or ""))
     # 撞车检测:**同一个 (province, metric) 内**两个不同的官方通道名压出同一个 key = 归一切过头了
     # (跨 metric 同键正是要的效果,不算撞)。撞了就报出来 —— 静默合并两条通道比漏配更毒。
     seen_key: dict = {}
@@ -821,11 +833,29 @@ def build():
     dist_keys = sorted({(j.get("district"), j.get("city"), j.get("province")) for j in jobs if j.get("district")},
                        key=lambda t: (t[0] or "", t[1] or "", t[2] or ""))
     districts = [{"name": d, "city": c or "", "province": p or ""} for d, c, p in dist_keys]
-    designated = []
+    # NL 官网指定雇主名录(C4-W4,build_nl_employers.py 产,639 家):它就是 NL 的 AIP 指定雇主
+    # 官方全量名录(与旧聚合源同一体系,Strobel TEK 两边都在)——旧源只收到 94 家,官方名录 639 家
+    # 且带申报 NOC → **有官方名录时旧源的 NL 行整省让位**,否则同一雇主出两行。
+    # nocs = 雇主页「NOC's Requested」明文的码(逗号连接,去重);只有职位名没有码的不反推,宁缺毋滥。
+    designated, nl_official = [], []
+    if IN_NL_EMPLOYERS.exists():
+        try:
+            nle = json.loads(IN_NL_EMPLOYERS.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001 — 单文件坏了不拖垮整个 mart
+            nle = {}
+        for e in nle.get("employers", []):
+            codes = sorted({n["noc"] for n in e.get("nocs", []) if n.get("noc")})
+            nl_official.append({"name": e.get("name"), "province": "NL",
+                                "location": e.get("location") or "", "isTech": False,
+                                "source": "AIP", "nocs": ",".join(codes)})
     if IN_AIP.exists():
         for e in json.loads(IN_AIP.read_text(encoding="utf-8")):
+            if nl_official and e.get("province") == "NL":
+                continue
             designated.append({"name": e.get("employer"), "province": e.get("province"),
-                               "location": e.get("location"), "isTech": bool(e.get("tech")), "source": "AIP"})
+                               "location": e.get("location"), "isTech": bool(e.get("tech")), "source": "AIP",
+                               "nocs": ""})  # 旧聚合源不含申报职位 —— 空串是「来源没有」,不是「没申报」
+    designated += nl_official
 
     # NOC 分类维度(大/中/小 + TEER,数据集出现的层级组合)
     # 维度行带上中/小类的英韩名(2026-08-03):先前显示层靠 i18n 里人肉维护的 cat.*,
@@ -864,6 +894,9 @@ def build():
                         # program:PNP(默认)/AIP —— 前端按项目分开判(AIP 与省提名是两条路,E6-09)
                         "program": d.get("program", "PNP"),
                         "type": d.get("type", "indemand"), "url": d.get("url", ""), "fetched": d.get("fetched", ""),
+                        # appliesTo:清单管哪几条子通道(空=全项目)。SK 排除清单只管 OID/EE,
+                        # Employment Offer 不受约束 —— 少这一列判定层会把「SK 走不通」判给不该判的人(C4)。
+                        "appliesTo": d.get("appliesTo", ""),
                         "noc": o["noc"], "name": o.get("name", ""), "gtaRestricted": bool(o.get("gtaRestricted"))})
 
     # 省 PNP 抽选事实维度(E6-04):每行=一省一次抽选(kind=draw)或改制通告(kind=notice)。
@@ -877,7 +910,9 @@ def build():
         for prov, v in pd.get("provinces", {}).items():
             base = {"province": prov, "label": v.get("label", ""), "scale": v.get("scale"),
                     "url": v.get("url", ""), "fetched": pd.get("fetched", "")}
-            for dr in v.get("draws", [])[:8]:
+            # 截断放宽(C4):普通省 8→12;NB 按类别定向邀请、一轮拆多行,判定层要数
+            # 「某职业类别 2026 年被选中几轮」→ 给一年的量(48,与 build_draws.NB_MAX 一致)。
+            for dr in v.get("draws", [])[:48 if prov == "NB" else 12]:
                 pnp_draws.append({**base, "kind": "draw", "drawDate": dr.get("date"),
                                   "stream": dr.get("stream", ""), "score": dr.get("score"),
                                   "invitations": dr.get("invitations"), "note": dr.get("note", "")})

@@ -191,17 +191,66 @@
       "draws": [
         {
           "date": "2026-07-30",
-          "stream": "Skilled Worker Stream",
+          "stream": "Occupation-specific selections",
+          "note": "Draw #276",
+          "score": null,
+          "invitations": 74
+        },
+        {
+          "date": "2026-07-30",
+          "stream": "Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba in broad occupational category 9 – Occupation",
           "note": "Draw #276",
           "score": 632,
-          "invitations": 74
+          "invitations": 605
+        },
+        {
+          "date": "2026-07-30",
+          "stream": "Francophone selection",
+          "note": "Draw #276",
+          "score": null,
+          "invitations": 17
+        },
+        {
+          "date": "2026-07-30",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #276",
+          "score": null,
+          "invitations": 70
+        },
+        {
+          "date": "2026-07-16",
+          "stream": "Expression of Interest",
+          "note": "Draw #275",
+          "score": null,
+          "invitations": 78
+        },
+        {
+          "date": "2026-07-16",
+          "stream": "Occupation-specific selection",
+          "note": "Draw #275",
+          "score": null,
+          "invitations": 24
+        },
+        {
+          "date": "2026-07-16",
+          "stream": "Francophone selection",
+          "note": "Draw #275",
+          "score": null,
+          "invitations": 84
+        },
+        {
+          "date": "2026-07-16",
+          "stream": "Completed post-secondary study in Manitoba",
+          "note": "Draw #275",
+          "score": 825,
+          "invitations": 1874
         },
         {
           "date": "2026-07-16",
           "stream": "Skilled Worker Stream",
           "note": "Draw #275",
-          "score": 825,
-          "invitations": 78
+          "score": null,
+          "invitations": 86
         },
         {
           "date": "2026-07-02",
@@ -223,41 +272,6 @@
           "note": "Draw #272",
           "score": null,
           "invitations": null
-        },
-        {
-          "date": "2026-05-21",
-          "stream": "Skilled Worker Stream",
-          "note": "Draw #271",
-          "score": null,
-          "invitations": 96
-        },
-        {
-          "date": "2026-05-07",
-          "stream": "Skilled Worker Stream",
-          "note": "Draw #270",
-          "score": null,
-          "invitations": 431
-        },
-        {
-          "date": "2026-04-23",
-          "stream": "Skilled Worker Stream",
-          "note": "Draw #269",
-          "score": null,
-          "invitations": 192
-        },
-        {
-          "date": "2026-04-09",
-          "stream": "Skilled Worker Stream",
-          "note": "Draw #268",
-          "score": null,
-          "invitations": 32
-        },
-        {
-          "date": "2026-03-26",
-          "stream": "Skilled Worker Stream",
-          "note": "Draw #267",
-          "score": null,
-          "invitations": 14
         }
       ]
     },
@@ -444,6 +458,209 @@
           "note": "NLPNP – 73, AIP – 52",
           "score": null,
           "invitations": 125
+        }
+      ]
+    },
+    "NB": {
+      "label": "NBPNP + AIP",
+      "scale": null,
+      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/invitations-to-apply.html",
+      "draws": [
+        {
+          "date": "2026-07-22",
+          "stream": "AIP",
+          "note": "Categories: Construction trades, Education, social and community services, Health care, Manufacturing, Other trades, Professional and IT, Sales and services, Tr",
+          "score": null,
+          "invitations": 114
+        },
+        {
+          "date": "2026-07-18",
+          "stream": "Skilled Worker (NB Graduates)",
+          "note": "Categories: Construction trades, Education, social and community services, Health care, Manufacturing, Other trades, Professional and IT, Sales and services, Tr",
+          "score": null,
+          "invitations": 209
+        },
+        {
+          "date": "2026-07-18",
+          "stream": "Skilled Worker (NB Experience + NB Priorities)",
+          "note": "Categories: Construction trades, Health care",
+          "score": null,
+          "invitations": 58
+        },
+        {
+          "date": "2026-07-16",
+          "stream": "Express Entry (Employment in New Brunswick)",
+          "note": "Categories: Education, social and community services, Health care, Manufacturing, Professional and IT, Sales and services, Transportation",
+          "score": null,
+          "invitations": 115
+        },
+        {
+          "date": "2026-07-16",
+          "stream": "Strategic Initiative (Francophone workers in New Brunswick + NB Francophone priorities)",
+          "note": "Categories: Education, social and community services, Food and accommodation, Health care, Manufacturing, Professional and IT, Sales and services, Transportatio",
+          "score": null,
+          "invitations": 254
+        },
+        {
+          "date": "2026-06-04",
+          "stream": "Express Entry (Employment in New Brunswick)",
+          "note": "Categories: Construction trades, Education, social and community services, Health care, Manufacturing, Professional and IT, Transportation",
+          "score": null,
+          "invitations": 75
+        },
+        {
+          "date": "2026-06-03",
+          "stream": "Strategic Initiative (NB Francophone Priorities)",
+          "note": "Categories: Construction trades, Education, social and community services, Health care, Manufacturing, Professional and IT, Sales and services, Transportation",
+          "score": null,
+          "invitations": 94
+        },
+        {
+          "date": "2026-06-03",
+          "stream": "Strategic Initiative (Francophone Workers in New Brunswick)",
+          "note": "Categories: Construction trades, Education, social and community services, Health care, Manufacturing, Professional and IT, Transportation, Sales and services",
+          "score": null,
+          "invitations": 52
+        },
+        {
+          "date": "2026-06-03",
+          "stream": "AIP",
+          "note": "Categories: Construction trades, Education, social and community services, Health care, Manufacturing, Other trades, Professional and IT, Sales and services, Tr",
+          "score": null,
+          "invitations": 97
+        },
+        {
+          "date": "2026-06-03",
+          "stream": "Skilled Worker (NB Experience)",
+          "note": "Categories: Construction trades, Health care",
+          "score": null,
+          "invitations": 243
+        },
+        {
+          "date": "2026-06-03",
+          "stream": "Skilled Worker (NB Graduates)",
+          "note": "Categories: Education, social and community services, Construction trades, Health care, Transportation",
+          "score": null,
+          "invitations": 138
+        },
+        {
+          "date": "2026-05-03",
+          "stream": "Skilled Worker (NB Experience + NB Graduates)",
+          "note": "Categories: All sectors",
+          "score": null,
+          "invitations": 113
+        },
+        {
+          "date": "2026-05-01",
+          "stream": "AIP",
+          "note": "Categories: Transportation, Manufacturing, Construction Trades",
+          "score": null,
+          "invitations": 50
+        },
+        {
+          "date": "2026-05-01",
+          "stream": "Skilled Worker (NB Experience + NB Graduates)",
+          "note": "Categories: Healthcare",
+          "score": null,
+          "invitations": 87
+        },
+        {
+          "date": "2026-04-30",
+          "stream": "Express Entry (Employment in New Brunswick)",
+          "note": "Categories: Healthcare, Professional & IT",
+          "score": null,
+          "invitations": 17
+        },
+        {
+          "date": "2026-04-30",
+          "stream": "Strategic Initiative (NB francophone priorities + Francophone workers in New Brunswick)",
+          "note": "Categories: All sectors",
+          "score": null,
+          "invitations": 106
+        },
+        {
+          "date": "2026-04-01",
+          "stream": "AIP",
+          "note": "Categories: Transportation, Manufacturing",
+          "score": null,
+          "invitations": 118
+        },
+        {
+          "date": "2026-03-30",
+          "stream": "Express Entry (Employment in New Brunswick)",
+          "note": "Categories: Health care, Professional and IT occupations",
+          "score": null,
+          "invitations": 25
+        },
+        {
+          "date": "2026-03-06",
+          "stream": "Express Entry (Employment in New Brunswick)",
+          "note": "Categories: Health care, Education, social and community services, Construction trades, Professional occupations",
+          "score": null,
+          "invitations": 29
+        },
+        {
+          "date": "2026-03-06",
+          "stream": "Skilled Worker (NB Experience + NB Graduates)",
+          "note": "Categories: Health care, Education, social and community services, Construction trades, Professional occupations",
+          "score": null,
+          "invitations": 279
+        },
+        {
+          "date": "2026-03-06",
+          "stream": "Strategic Initiative (Francophone Workers in New Brunswick + NB Francophone Priorities)",
+          "note": "Categories: All sectors",
+          "score": null,
+          "invitations": 189
+        },
+        {
+          "date": "2026-03-06",
+          "stream": "AIP",
+          "note": "Categories: Health care, Education, social and community services, Construction trades, Professional occupations, Transportation, Manufacturing",
+          "score": null,
+          "invitations": 125
+        },
+        {
+          "date": "2026-02-11",
+          "stream": "Skilled Worker (NB Experience + NB Graduates)",
+          "note": "Categories: Health care",
+          "score": null,
+          "invitations": 196
+        },
+        {
+          "date": "2026-02-02",
+          "stream": "Express Entry (Employment in New Brunswick)",
+          "note": "Categories: All sectors",
+          "score": null,
+          "invitations": 170
+        },
+        {
+          "date": "2026-02-02",
+          "stream": "Strategic Initiative (NB Francophone Priorities + Francophone Workers in New Brunswick)",
+          "note": "Categories: All sectors",
+          "score": null,
+          "invitations": 160
+        },
+        {
+          "date": "2026-01-15",
+          "stream": "Express Entry (Employment in New Brunswick)",
+          "note": "Categories: All sectors",
+          "score": null,
+          "invitations": 20
+        },
+        {
+          "date": "2026-01-15",
+          "stream": "Skilled Worker (NB experience + NB graduates)",
+          "note": "Categories: All sectors",
+          "score": null,
+          "invitations": 244
+        },
+        {
+          "date": "2026-01-15",
+          "stream": "Strategic Initiative (NB Francophone priorities)",
+          "note": "Categories: All sectors",
+          "score": null,
+          "invitations": 115
         }
       ]
     }

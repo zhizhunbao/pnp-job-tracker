@@ -1,0 +1,238 @@
+{
+  "province": "MB",
+  "system": "MPNP EOI",
+  "maxTotal": 1000,
+  "passMark": null,
+  "source": "MPNP Expression of Interest (EOI) — EOI ranking system, six factors",
+  "url": "https://immigratemanitoba.com/mpnp/apply/eoi",
+  "pageUrl": "https://immigratemanitoba.com/mpnp",
+  "guideEffective": "",
+  "fetched": "2026-08-05",
+  "groupMax": {
+    "adaptability": 500
+  },
+  "factors": {
+    "language": {
+      "rows": [
+        {
+          "label": "First Official Language — CLB 8 or higher",
+          "points": 25
+        },
+        {
+          "label": "First Official Language — CLB 7",
+          "points": 22
+        },
+        {
+          "label": "First Official Language — CLB 6",
+          "points": 20
+        },
+        {
+          "label": "First Official Language — CLB 5",
+          "points": 17
+        },
+        {
+          "label": "First Official Language — CLB 4",
+          "points": 12
+        },
+        {
+          "label": "First Official Language — CLB 3 or lower",
+          "points": 0
+        }
+      ],
+      "bonus": [
+        {
+          "label": "Second Official Language — CLB 5 or higher (overall)",
+          "points": 25
+        }
+      ],
+      "bandCount": 4,
+      "max": 125,
+      "rule": "First Official Language 每档是「per band」:阅读/写作/听力/口语四项各自按本表同一档打分后相加(四项 CLB 不同档时应分别取值相加,不是查一次乘四);此处 max 按四项都在最高档估算 = 25×4 + Second Official Language 25 = 125。 Second Official Language 按总体 CLB≥5 一次性加 25,不分项、不按 band 乘。"
+    },
+    "age": {
+      "rows": [
+        {
+          "label": "18",
+          "points": 20
+        },
+        {
+          "label": "19",
+          "points": 30
+        },
+        {
+          "label": "20",
+          "points": 40
+        },
+        {
+          "label": "21 to 45",
+          "points": 75
+        },
+        {
+          "label": "46",
+          "points": 40
+        },
+        {
+          "label": "47",
+          "points": 30
+        },
+        {
+          "label": "48",
+          "points": 20
+        },
+        {
+          "label": "49",
+          "points": 10
+        },
+        {
+          "label": "50 or older",
+          "points": 0
+        }
+      ],
+      "bonus": [],
+      "max": 75
+    },
+    "work": {
+      "rows": [
+        {
+          "label": "Less than one year",
+          "points": 0
+        },
+        {
+          "label": "One year",
+          "points": 40
+        },
+        {
+          "label": "Two years",
+          "points": 50
+        },
+        {
+          "label": "Three years",
+          "points": 60
+        },
+        {
+          "label": "Four years or more",
+          "points": 75
+        }
+      ],
+      "bonus": [
+        {
+          "label": "Fully recognized by provincial licensing body",
+          "points": 100
+        }
+      ],
+      "max": 175
+    },
+    "education": {
+      "rows": [
+        {
+          "label": "Master's degree or doctorate",
+          "points": 125
+        },
+        {
+          "label": "Two post-secondary programs of at least two years each",
+          "points": 115
+        },
+        {
+          "label": "One post-secondary program of three years or more",
+          "points": 110
+        },
+        {
+          "label": "One post-secondary program of two years",
+          "points": 100
+        },
+        {
+          "label": "One-year post-secondary program",
+          "points": 70
+        },
+        {
+          "label": "Trade certificate",
+          "points": 70
+        },
+        {
+          "label": "No formal post-secondary education",
+          "points": 0
+        }
+      ],
+      "bonus": [],
+      "max": 125
+    },
+    "adaptConnection": {
+      "group": "adaptability",
+      "rows": [
+        {
+          "label": "Close relative in Manitoba",
+          "points": 200
+        },
+        {
+          "label": "Previous authorized work experience in Manitoba (six months or more)",
+          "points": 100
+        },
+        {
+          "label": "Completed post-secondary program in Manitoba (two years or more)",
+          "points": 100
+        },
+        {
+          "label": "Completed post-secondary program in Manitoba (one year)",
+          "points": 50
+        },
+        {
+          "label": "Close friend or distant relative in Manitoba",
+          "points": 50
+        }
+      ],
+      "bonus": [],
+      "max": 200
+    },
+    "adaptDemand": {
+      "group": "adaptability",
+      "rows": [
+        {
+          "label": "Ongoing employment in Manitoba for six months or more with long-term job offer from the same employer",
+          "points": 500
+        },
+        {
+          "label": "Invitation to Apply under a Strategic Initiative",
+          "points": 500
+        }
+      ],
+      "bonus": [],
+      "max": 500
+    },
+    "adaptRegional": {
+      "group": "adaptability",
+      "rows": [
+        {
+          "label": "Immigration destination in Manitoba outside of Winnipeg",
+          "points": 50
+        }
+      ],
+      "bonus": [],
+      "max": 50,
+      "rule": "Regional development 可与 Connection to Manitoba 组合相加(最高 200+50=250),但不能与 Manitoba Demand 叠加;Adaptability 因子总上限由 Manitoba Demand 单项封顶(见 groupMax.adaptability)。"
+    },
+    "risk": {
+      "rows": [
+        {
+          "label": "Close relative in another province and no close relative in Manitoba",
+          "points": 0
+        },
+        {
+          "label": "Previous immigration application to another province",
+          "points": 0
+        }
+      ],
+      "bonus": [
+        {
+          "label": "Work experience in another province",
+          "points": -100
+        },
+        {
+          "label": "Studies in another province",
+          "points": -100
+        }
+      ],
+      "max": -200,
+      "rule": "外省工作经历、外省学业经历互不排斥,可同时成立、按加总计(两项都触发 = -100-100 = -200)。"
+    }
+  }
+}

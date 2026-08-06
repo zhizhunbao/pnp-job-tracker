@@ -1,10 +1,10 @@
 """
-build_draws — 省 PNP 抽选事实(E6-04):BC / AB / MB 三省最近抽选 + ON 改制通告,全 httpx 实时抓。
+build_draws — 省 PNP 抽选事实(E6-04):BC / AB / MB / NB 最近抽选 + ON 改制通告,全 httpx 实时抓。
 **事实展示层,非资格判定**:各省分制互不相通(BC=SIRS / AB=WEOI / MB=MPNP EOI),都不是 CRS——
 score 一律带 scale 标注,前端展示必须声明「省自评分制,非 CRS」。SK 2025 改制后无抽选、QC 不属 PNP,不产出。
 抓取失败/解析空 → 该省保留旧数据(循 build_on 模式,宁可留旧不留错)。
 
-  IN : (网络)welcomebc.ca / alberta.ca / immigratemanitoba.com / ontario.ca
+  IN : (网络)welcomebc.ca / alberta.ca / immigratemanitoba.com / ontario.ca / www2.gnb.ca
   OUT: raw/pnp/draws.json   (⚠️ 无 occupations 键 —— 08_score 目录驱动扫 raw/pnp/*.json 时天然跳过)
 
 Usage:  uv run python etl/pnp/build_draws.py
@@ -37,7 +37,18 @@ NL_URL = "https://www.gov.nl.ca/immigration/invitations-to-apply-updates/"
 # **只公布日期与邀请数,不公布分数线** —— score 一律 None、scale 一律 None(不是抓漏了,是官方不发)。
 # Notes 列写 NLPNP / AIP 各多少,原样留在 note 里(AIP 是联邦大西洋项目,与省提名同批发)。
 
+# NB(2026-08-05 接入,海洋四省第二份):ImmigrationNB 也是 EOI 模型,**按职业类别定向发邀请,不发分数线**
+# —— score/scale 一律 None,不假装有分制。「最新一轮」和「本年历史」分别在两个页面(URL 经
+# data/crawl/nb-imm/manifest.json 核对,禁凭印象猜):当期页只挂最新一轮(~5 条),更早的轮次要去
+# previous-invitations-<year>.html 才有 —— 两页合并去重后再按日期倒排、截 MAX_PER_PROV。
+NB_URL = "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/invitations-to-apply.html"
+NB_PREV_URL = ("https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/"
+               "immigrating-to-nb/invitations-to-apply/previous-invitations-2026.html")
+
 MAX_PER_PROV = 12  # raw 留最近 N 条;mart 再截
+# NB 例外(C4):按职业类别定向邀请,一轮拆 4-5 行(一通道一行),12 条只装得下两轮半 ——
+# 三月那轮建筑类 279 邀请就被挤掉了。判定层要数「某类别一年被选中几轮」,给 NB 留一年的量。
+NB_MAX = 48
 
 
 def fetch(url: str) -> str:
@@ -142,9 +153,54 @@ MB_LAA = re.compile(r"Letters? of Advice to Apply issued\s*:?\s*([\d,]+)", re.I)
 MB_DATE = re.compile(r"[A-Z][a-z]+ \d{1,2}, \d{4}")
 
 
+def _mb_is_heading(tag) -> bool:
+    """整段加粗的 <p>/<h2-4> 才算子标题(如「Skilled Worker Stream」「Francophone selection」);
+    正文段落里夹 <strong> 强调的不算(全文字数要等于其唯一 <strong> 子节点的字数)。"""
+    if tag.name not in ("p", "h2", "h3", "h4"):
+        return False
+    strongs = tag.find_all("strong")
+    if len(strongs) != 1:
+        return False
+    full = re.sub(r"\s+", " ", tag.get_text(" ", strip=True))
+    inner = re.sub(r"\s+", " ", strongs[0].get_text(" ", strip=True))
+    return bool(full) and full == inner and len(full) < 100
+
+
+def _mb_stream_blocks(art) -> list[tuple[str, int | None, int | None]]:
+    """一期公告里常有多个「…were considered / Number of LAA issued / (可选)Ranking score…」小节
+    (Occupation-specific / broad category / Francophone / Skilled Worker Stream 各一段)。
+    分数线和 LAA 数官方总是写在同一个 <ul> 里 → 按 ul 配对,不会把 A 段的分算进 B 段。
+    每段的名字取「最近的整段加粗子标题」;同一子标题下第 2 个带数据的 ul(比如
+    「Occupation-specific selections」标题下,后面紧跟一段没有独立加粗标题的
+    「broad occupational category」选法)用其前面最近的普通段落原句去区分,不瞎归并。
+    找不到任何加粗子标题(老格式/改版)→ 返回空列表,调用方退回合并成一行的老逻辑。"""
+    blocks: list[tuple[str, int | None, int | None]] = []
+    heading, desc, count = "", "", 0
+    for tag in art.find_all(["p", "h2", "h3", "h4", "ul"]):
+        if tag.name == "ul":
+            li_text = " ".join(li.get_text(strip=True) for li in tag.find_all("li", recursive=False))
+            m_laa = MB_LAA.search(li_text)
+            if not m_laa:
+                continue  # NOC 码列表 / 分项拆解列表,不是「流」的数据块
+            m_score = MB_SCORE.search(li_text)
+            count += 1
+            name = heading if count == 1 else f"{heading} – {desc}".strip(" –")
+            blocks.append((name[:140] or "Expression of Interest",
+                            _int(m_laa.group(1)), _int(m_score.group(1)) if m_score else None))
+            desc = ""
+            continue
+        text = re.sub(r"\s+", " ", tag.get_text(" ", strip=True))
+        if _mb_is_heading(tag):
+            heading, desc, count = text, "", 0
+        elif text:
+            desc = text
+    return blocks
+
+
 def parse_mb(html: str) -> list[dict]:
     """/draws/ 索引页 prose:每期一个 <article class=post>,标题 h2「…Draw #N」。
-    多流多分数期(通用抽选)只取总 LAA、score 留空(宁可留空,来源链兜底)。"""
+    能按 <ul> 配出「子标题 + 该段分数线 + 该段 LAA」时一段一行(_mb_stream_blocks);
+    配不出来(老格式)才退回一期一行、多分不猜的合并行为。"""
     soup = BeautifulSoup(html, "html.parser")
     draws = []
     for art in soup.find_all("article"):
@@ -154,20 +210,28 @@ def parse_mb(html: str) -> list[dict]:
         num = m.group(1)
         body = art.get_text("\n", strip=True)
         dm = MB_DATE.search(body)
-        laas = [_int(x) for x in MB_LAA.findall(body)]
-        scores = [_int(x) for x in MB_SCORE.findall(body)]
-        stream = next((ln.strip() for ln in body.split("\n")
-                       if re.search(r"(Stream|Pathway)$", ln.strip()) and len(ln.strip()) < 60), "")
-        draws.append({
-            "date": _iso(dm.group(0)) if dm else None,
-            "stream": stream or "Expression of Interest",
-            "note": f"Draw #{num}",
-            "score": scores[0] if len(scores) == 1 else None,   # 多流多分不猜
-            "invitations": laas[0] if laas else None,
-        })
-        if len(draws) >= MAX_PER_PROV:
-            break
-    return [d for d in draws if d["date"]]
+        d = _iso(dm.group(0)) if dm else None
+        if not d:
+            continue
+        blocks = _mb_stream_blocks(art)
+        if blocks:
+            for name, laa, score in blocks:
+                draws.append({"date": d, "stream": name, "note": f"Draw #{num}",
+                              "score": score, "invitations": laa})
+        else:
+            laas = [_int(x) for x in MB_LAA.findall(body)]
+            scores = [_int(x) for x in MB_SCORE.findall(body)]
+            stream = next((ln.strip() for ln in body.split("\n")
+                           if re.search(r"(Stream|Pathway)$", ln.strip()) and len(ln.strip()) < 60), "")
+            draws.append({
+                "date": d,
+                "stream": stream or "Expression of Interest",
+                "note": f"Draw #{num}",
+                "score": scores[0] if len(scores) == 1 else None,   # 多流多分不猜
+                "invitations": laas[0] if laas else None,
+            })
+    draws.sort(key=lambda x: x["date"], reverse=True)  # 稳定排序:同日多段保持原文顺序
+    return draws[:MAX_PER_PROV]
 
 
 def build(prov: str, url: str, parse, scale: str | None, label: str, old: dict) -> dict:
@@ -283,6 +347,107 @@ def parse_nl(html: str) -> list[dict]:
     return draws[:MAX_PER_PROV]
 
 
+NB_ORDINAL = re.compile(r"(\d)(st|nd|rd|th)\b", re.I)
+NB_RANGE = re.compile(r"^([A-Za-z]+)\s+\d{1,2}\s*(?:to|[–-])\s*(\d{1,2}),\s*(\d{4})$")
+
+
+def _iso_nb(s: str) -> str | None:
+    """NB 官方日期常写成区间(「July 16 to 18, 2026」「October 6-7, 2025」)或带序数词
+    (「May 1st, 2026」)——区间取**最后一天**当抽选日(那天邀请才算发出);序数词去掉再喂 _iso。"""
+    s = NB_ORDINAL.sub(r"\1", (s or "").strip())
+    m = NB_RANGE.match(s)
+    if m:
+        mon, day2, yr = m.group(1), m.group(2), m.group(3)
+        s = f"{mon} {day2}, {yr}"
+    return _iso(s)
+
+
+def _nb_br_lines(cell) -> list[str]:
+    """officia 表格用 <br> 分隔多行(Pathways 可多条、Occupational categories 常见 5+ 条),
+    不能直接 get_text 合并——那样逗号本就出现在类别名里(如「Education, social and community
+    services」),会分不清是类别名内部逗号还是分隔符。按 <br> 切出原生的每行文本。"""
+    for br in cell.find_all("br"):
+        br.replace_with("\n")
+    return [re.sub(r"\s+", " ", x).strip() for x in cell.get_text("\n").split("\n") if x.strip()]
+
+
+def parse_nb(html: str) -> list[dict]:
+    """ImmigrationNB 的「表格块」格式(当期页与 previous-invitations-*.html 通用):
+    每轮一段「<p><b>通道名</b></p> + <table>」,表格是「标签: 值」两列行(Date of draw /
+    Cut-off date and time / Pathways(可无,如 AIP) / Invitations issued 或 Applications selected /
+    Occupational categories selected)。按类别定向发邀请、官方不发分数线 —— score 恒 None。"""
+    soup = BeautifulSoup(html, "html.parser")
+    draws: list[dict] = []
+    for table in soup.find_all("table"):
+        rows: dict[str, object] = {}
+        for tr in table.find_all("tr"):
+            cells = tr.find_all("td")
+            if len(cells) < 2:
+                continue
+            label = re.sub(r"\s+", " ", cells[0].get_text(" ", strip=True)).rstrip(":").lower()
+            if "occupational" in label and "categories" in label:
+                rows[label] = _nb_br_lines(cells[1])
+            elif label == "pathways":
+                rows[label] = _nb_br_lines(cells[1])
+            else:
+                rows[label] = re.sub(r"\s+", " ", cells[1].get_text(" ", strip=True))
+        if "date of draw" not in rows:
+            continue
+        d = _iso_nb(str(rows["date of draw"]))
+        if not d:
+            continue
+        # 通道名 = 表格前最近一个居中加粗段落(官方原文,如「New Brunswick Skilled Worker stream」)
+        head = table.find_previous(lambda t: t.name == "p" and t.find("b"))
+        base = re.sub(r"\s+", " ", head.get_text(" ", strip=True)) if head else ""
+        base = re.sub(r"\s+stream$", "", base, flags=re.I).strip()
+        base = re.sub(r"^New Brunswick\s+", "", base, flags=re.I)
+        if base.lower() == "atlantic immigration program":
+            base = "AIP"
+        pathways = rows.get("pathways") or []
+        if pathways:
+            short = [re.sub(r"^New Brunswick\s+", "NB ", p, flags=re.I) for p in pathways]
+            stream = f"{base} ({' + '.join(short)})" if base else " + ".join(short)
+        else:
+            stream = base or "NBPNP"
+        categories = rows.get("occupational categories selected") or []
+        note = f"Categories: {', '.join(categories)}" if categories else ""
+        inv = _int(rows.get("invitations issued") or rows.get("applications selected"))
+        draws.append({"date": d, "stream": stream, "note": note[:160], "score": None, "invitations": inv})
+    draws.sort(key=lambda x: x["date"], reverse=True)  # 稳定排序:同轮多通道保持原文顺序
+    return draws[:NB_MAX]  # 页内不截 12:合并前截会把历史页(三月建筑轮)提前挤掉,截断统一在 build_nb
+
+
+def build_nb(old: dict) -> dict:
+    """两页合并:当期页(最新一轮,~5 条)+ previous-invitations-2026.html(本年历史,~20+ 条)。
+    任一页抓失败不清空、拿另一页结果照跑(循 BC/AB「抓失败→保留旧数据」的兜底,但 NB 是两页,
+    两页都失败才真正退回旧数据)。"""
+    draws: list[dict] = []
+    errors: list[str] = []
+    for label, url in (("当期", NB_URL), ("history", NB_PREV_URL)):
+        try:
+            draws += parse_nb(fetch(url))
+        except Exception as e:  # noqa: BLE001
+            errors.append(f"{label} {type(e).__name__} {e}")
+    if not draws:
+        print(f"  ✗ NB 两页都抓取/解析失败: {'; '.join(errors) or '无数据'}(保留旧数据)")
+        return old.get("NB") or {}
+    if errors:
+        print(f"  ⚠ NB 有一页失败(用另一页结果续跑): {'; '.join(errors)}")
+    seen = set()
+    merged = []
+    for d in draws:
+        key = (d["date"], d["stream"], d["invitations"])
+        if key in seen:
+            continue
+        seen.add(key)
+        merged.append(d)
+    merged.sort(key=lambda x: x["date"], reverse=True)
+    merged = merged[:NB_MAX]
+    print(f"  ✓ NB  {len(merged):>2} 条  最近 {merged[0]['date']} {merged[0]['stream'][:40]}"
+          f"  score={merged[0]['score']} inv={merged[0]['invitations']}")
+    return {"label": "NBPNP + AIP", "scale": None, "url": NB_URL, "draws": merged}
+
+
 def build_on(old: dict) -> dict:
     try:
         _, notice = parse_on(fetch(ON_URL))          # 通告仍取更新页(新通道细则的第一手动静)
@@ -323,6 +488,8 @@ def main() -> None:
         "ON": build_on(old),
         # NL:scale=None —— 官方只发邀请数不发分数线,前端不得凭空造一条「分数线」列
         "NL": build("NL", NL_URL, parse_nl, None, "NLPNP + AIP(ITA 批次)", old),
+        # NB:scale=None —— 按职业类别定向发邀请,官方同样不发分数线
+        "NB": build_nb(old),
     }
     provinces = {k: v for k, v in provinces.items() if v}
 

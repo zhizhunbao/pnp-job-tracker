@@ -11,7 +11,25 @@
 > - **C 数据**:只读 `data/crawl/fed-ee/` 97 页缓存。语言 T4–T26 → raw 23 表/105 档、mart 443 行;ECA 页 FSW 教育映射 151 行并入 FSW67。实际本地 mart=`ee_points_grid` 380(CRS 186 + FSW67 194,points NULL 22)、`ee_language_grid` 443;唯一键重复 0、evidence 缺失 0。**未跑 09 main/seed/DB_PUSH/DDL;新语言 mart 尚无 CMS/生产消费链,不能对外声称 IELTS 原分已可自动换 CLB。**
 > - 全程未启 dev server、未 commit/push;`data/raw/ee/draws.json` 等定时 ETL 既有脏改保留,不属于本批。
 >
-> **⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡ 最新交接(2026-08-05,「多 agent 并行:联邦 EE 入库 + 薪资竞态」)—— 5701ac2..be39dbc 生产已验**
+> **⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡ 最新交接(2026-08-05 深夜,「C4 数据补口:案例 C01 的数字全部入库」)**
+> 上游:[路径裁决-C01复现计划](docs/design/路径裁决-C01复现计划-20260805.md)(C4→C7 把 C01 手工裁决变成对话产出+付费闸)。
+> 工作模式照 agent-team:5 子 agent 按文件区并行(NB/MB 抽选、MB EOI 积分表、SINP 适用范围+PDF、NL 雇主、OINP 运营),主 agent 收口集成。
+> - **✅ 金标 20/20 全绿**(`etl/audit_c01_gold.py`,C5 判定层拿它当单测底座):MPNP 695 逐档复现、
+>   MB #276/632 与 #275/825 分流成行、NB 2026 建筑类 13 轮(58/209/114 在列)、SK 排除清单 `appliesTo=OID/EE`
+>   且 72310 不在 Job Offer 排除清单(14 条,官方 PDF 解析)、NL 雇主 639 家 3 家申报 72310、OINP 配额 14,119。
+> - **🔴 两处推翻 C01 原文,已照数据改案例文档**:① NL 指定雇主 645→**639** 家、申报 72310 的 1→**3** 家
+>   (多出 St. John's 两家,对案例是利好);② **OINP 审理时长专页已官方下线**(注册 302 + 全 slug 负扫)
+>   → not-collected(举证过),不是「官方不公布」。
+> - **模型两列**(docs/sql/c4-pnp-gaps.sql,**已代跑生产** + seed_state 已清):`pnp_occupations.applies_to`
+>   (清单管哪些子通道——SK 那 152 条只管 OID/EE,少这列会把「SK 走不通」判给不该判的人)、
+>   `designated_employers.nocs`(NL 取官方省站全量名录 639 家取代旧聚合源 94 行,防重复)。
+> - 抽选容量:mart 每省 8→12,NB 单独 48(按类别一轮拆多行,12 只装得下两轮半,三月建筑轮曾被挤掉)。
+> - 已知瑕疵:MB #276 一行 LAA「605」是官方页 `<strong>60</strong><strong>5</strong>` 排版伤,照原文收;
+>   OINP 提名数 2020/2022-2024 被 Radware 拦,如实缺;SINP PDF 多行条件款截首行(note 指向原 PDF)。
+> - **⏭️ 下一件 = C5 判定层 `pathVerdict`**:Slots 扩五槽(年龄/婚姻/CLB/学历/加拿大学历),档案进裁决出,
+>   估分器全查表(CRS/OINP/MPNP),金标即 C01;然后 C6 裁决卡+职位详情页入口(Mode B)、C7 付费闸(§五待 Frank 拍板)。
+>
+> **⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡ 上一轮交接(2026-08-05,「多 agent 并行:联邦 EE 入库 + 薪资竞态」)—— 5701ac2..be39dbc 生产已验**
 > **工作模式**:Frank 拍板走 **agent team(多 agent 并行)** —— 一批活按**文件区不重叠**拆给 4 个子 agent 同时干,主 agent 派活+收口。
 > 派活前必须先核基线(**差点重派上一轮已落地的 `lookupDraws` FED 与 `lookupPermit`**);交回的「已验」一律追问验的是真组件还是复刻件。
 >

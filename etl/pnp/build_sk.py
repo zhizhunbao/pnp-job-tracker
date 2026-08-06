@@ -59,6 +59,18 @@ EXCL_PAGE = _SK + "occupation-restrictions-and-requirements"
 EXCL_NOTE = ("SINP 主线(Occupations In-Demand / Express Entry)是**排除式**:不在本清单上即可申请;"
              "官方同页明示 NOC TEER 4/5 不合格(即需 TEER 0-3)。"
              "在清单上的职业仍可能走 Employment Offer 或萨省经验类——但需萨省雇主注册并获 EPA 批准。")
+# 2026-08-05 补:此清单只管 OID/EE 两个子类别,不管 Employment Offer(雇主 offer 制,走另一张
+# Job Offer Exclusion List,见 build_sk_joboffer.py)。原句抄自 occupation-restrictions-and-requirements
+# 页(data/crawl/sk-sinp/ 缓存),quote-anchored,禁转述。
+EXCL_APPLIES_TO = "OID/EE"
+EXCL_APPLIES_TO_QUOTE = (
+    "People with the following occupations are excluded from applying to the Occupations "
+    "In-Demand (OID) and Express Entry (EE) program sub-categories. This is a list of "
+    "occupations that are not eligible for these program sub-categories. Note that these "
+    "occupations may be eligible through the International Skilled Worker Employment Offer "
+    "subcategory and the Saskatchewan Work Experience category if your employer has "
+    "registered with the Government of Saskatchewan and received approval for the job offer."
+)
 # PDF 是两列表格,pymupdf 把 NOC 与职业名拆成相邻两行(「11100」\n「Financial auditors…」);
 # 少数导出会并成一行,两种都认。
 EXCL_ROW = re.compile(r"^\s*(\d{5})\s+([A-Za-z].*?)\s*$")
@@ -113,6 +125,7 @@ def build_excluded() -> None:
     table = {
         "stream": "SINP Occupations In-Demand / Express Entry", "label": "SK 主线不合格清单",
         "province": PROVINCE, "program": "PNP", "type": "ineligible", "note": EXCL_NOTE,
+        "appliesTo": EXCL_APPLIES_TO, "appliesToQuote": EXCL_APPLIES_TO_QUOTE,
         "url": EXCL_PAGE, "fetched": date.today().isoformat(), "effective": effective,
         "occupations": [{"noc": n, "name": nm} for n, nm in sorted(occ.items())],
     }

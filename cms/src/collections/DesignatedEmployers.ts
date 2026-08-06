@@ -1,6 +1,8 @@
 import type { CollectionConfig } from 'payload'
 
-// AIP 指定雇主名单 — ETL 写入(NL/NB/NS)。供 Jobs/Companies 交叉匹配 isDesignatedEmployer。
+// AIP 指定雇主名单 — ETL 写入(NL/NB/NS)。NL 一省取官方省站全量名录(639 家,带申报 NOC),
+// NB/NS 仍来自旧聚合源(无 NOC 信息)。供 Jobs/Companies 交叉匹配 isDesignatedEmployer;
+// nocs 供判定层数「哪些雇主申报过某职业」(如 NL 639 家里 3 家申报过木工 72310)。
 export const DesignatedEmployers: CollectionConfig = {
   slug: 'designated-employers',
   admin: {
@@ -14,5 +16,6 @@ export const DesignatedEmployers: CollectionConfig = {
     { name: 'location', type: 'text' },
     { name: 'isTech', type: 'checkbox', defaultValue: false },
     { name: 'source', type: 'text', admin: { description: 'AIP官方名单来源(NL/NB/NS)' } },
+    { name: 'nocs', type: 'text', admin: { description: '雇主申报的 NOC 码(逗号连接)。仅 NL(官方省站名录)有;空 = 未申报职位(NL)或来源不含此信息(NB/NS)' } },
   ],
 }
