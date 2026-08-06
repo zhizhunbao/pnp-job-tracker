@@ -28,6 +28,11 @@
 >   Claude 式选项卡效果图已发未回话——**等 Frank 点头才写 UI**。图在 docs/assets/mockups/c6-*.png,
 >   设计=docs/design/对话选项卡与图片上传-20260806.md §五。
 > - C7 付费闸未动(等 Frank 拍板切分);图片上传未动(视觉模型前置,Frank 亲自谈)。
+> - **🔎 NL 国际毕业生两条门槛未入库**(Frank 问「要不要在 NL 上学」时查官方原文发现):
+>   ① PGWP 剩 ≥4 个月;② 外省毕业生的工作须与所学专业相关(仅 MUN/CNA 毕业生可不相关)。
+>   原文在 data/crawl/nl-imm/html_cache/fed95ccd…html(gov.nl.ca「4. International Graduate
+>   Category Eligibility Criteria」),补两行 pnp_requirements 即可让 pathVerdict 如实带出前提。
+>   注:**不需要在 NL 上学**(加拿大任意院校+PGWP 即可)——C01 马龙专业相关成立,结论不变。
 >
 > **⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡ 上一轮交接(2026-08-06 凌晨,「C5 判定层全链 + 两起生产事故」)**
 > - **✅ C5 三批全落**(明细见 docs/implementation/C5-判定层pathVerdict-20260805.md):C5a 估分器×2
