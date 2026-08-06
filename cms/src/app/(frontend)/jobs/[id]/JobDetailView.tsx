@@ -8,7 +8,6 @@ import { useEffect, useState } from 'react'
 import { LANGS } from '../i18n'
 import { useLang } from '../../LangProvider'
 import { catName, JobBody, nocLocalTitle, provName, type JobRow, type NocDesc, type Plan } from '../JobsTable'
-import { OccReportCard } from './OccReportCard'
 import { SiteHeader } from '../../SiteHeader'
 import { SiteFooter } from '../../SiteFooter'
 import { PageShell } from '../../ui/primitives'
@@ -66,7 +65,8 @@ export default function JobDetailView({ job, plan, dims }: { job: JobRow; plan: 
             <button className="jdBack" onClick={() => { setLeaving(true); goBackOr('/?back=1') }}
               style={{ position: 'absolute', top: 12, right: 12, border: '1px solid #d1d5db', borderRadius: 8, padding: '6px 14px', fontSize: 12.5, color: '#374151', background: leaving ? '#f3f4f6' : '#fff', opacity: leaving ? 0.7 : 1, whiteSpace: 'nowrap', cursor: 'pointer', transition: 'transform .06s' }}>
               <style>{'.jdBack:active{transform:scale(.95)}'}</style>
-              {leaving ? '… ' : ''}{t('detail.back')}</button>
+              {/* 在途态只靠灰底+降透明(2026-08-06 Frank「前面为什么出现三个…」:文案前拼「… 」只添困惑,删) */}
+              {t('detail.back')}</button>
             <h1 style={{ margin: '0 0 2px', fontSize: 22, lineHeight: 1.35, color: '#111827', paddingRight: 120 }}>{job.title}</h1>
             {nocZh && nocZh.toLowerCase() !== (job.title || '').toLowerCase() ? (
               <div style={{ fontSize: 13, color: '#9ca3af', marginBottom: 8 }}>{nocZh}</div>
@@ -75,7 +75,8 @@ export default function JobDetailView({ job, plan, dims }: { job: JobRow; plan: 
           </div>
 
           {/* 刀 1(入口下沉-20260731):报告入口,自包含组件,老结构不动;拿不到数/本省零在招=整卡不渲 */}
-          <OccReportCard noc={job.noc || ''} province={job.province || ''} salaryAnnual={job.salaryAnnual ?? null} t={t} />
+          {/* OccReportCard 已摘(2026-08-06 Frank「没什么用可以删了」):它的付费出口挂在已退役的报告体系,
+              成了「有 aha 没去处」的孤儿。组件文件保留(照答题卡摘入口先例);C6 这个卡位换装成路径裁决入口。 */}
 
         </div>
       </PageShell>

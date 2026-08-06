@@ -492,7 +492,8 @@ const zh: Dict = {
   'home.st.jobs': '在招岗位', 'home.st.aip': 'AIP 雇主', 'home.st.dli': '所 DLI',
   'home.st.new': '今日新增', 'home.st.elig': '可提名',
   // 对话即产品(C2):landing 主输入框。错误码一句一说 —— 笼统的「稍后再试」让用户白重试(简历对照实撞)
-  'chat.title': '说说你的情况', 'chat.ph': '一句话说说你的情况', 'chat.send': '提问',
+  // 标题=身份词(2026-08-06 Frank「有冗余」:原「说说你的情况」与输入框占位重复,动作指引留给占位符)
+  'chat.title': 'AI 顾问', 'chat.ph': '一句话说说你的情况', 'chat.send': '提问',
   'chat.waiting': '正在查官方数据', 'chat.sources': '官方来源', 'chat.followups': '接着问',
   'chat.steps': '查询过程',        // 工具轨迹的折叠条(答复落地后弱化,见 ChatBox §流式)
   // 轨迹折叠条的一行文案(2026-08-04:等待期就折叠,后面那个秒数是**实测**的,不是编的)
@@ -1309,7 +1310,7 @@ const en: Dict = {
   'home.st.jobs': 'open jobs', 'home.st.aip': 'AIP employers', 'home.st.dli': 'DLIs',
   'home.st.new': 'new today', 'home.st.elig': 'PNP-eligible',
   // Chat-first landing (C2). Every error code says its own thing — a generic "try later" makes users retry for nothing
-  'chat.title': 'Tell us your situation', 'chat.ph': 'Your situation in one sentence', 'chat.send': 'Ask',
+  'chat.title': 'AI advisor', 'chat.ph': 'Your situation in one sentence', 'chat.send': 'Ask',
   'chat.waiting': 'Checking official data', 'chat.sources': 'Source', 'chat.followups': 'Ask next',
   'chat.steps': 'How this was checked',
   'chat.stepsRunning': 'Checking', 'chat.stepsDone': 'Checked {n} items',
@@ -2094,7 +2095,7 @@ const ko: Dict = {
   'home.st.jobs': '채용 중', 'home.st.aip': 'AIP 고용주', 'home.st.dli': 'DLI',
   'home.st.new': '오늘 신규', 'home.st.elig': 'PNP 대상',
   // 대화형 랜딩(C2). 오류 코드마다 다른 안내 — 뭉뚱그린 "잠시 후 다시"는 헛된 재시도만 부름
-  'chat.title': '상황을 알려 주세요', 'chat.ph': '한 문장으로 상황을 알려 주세요', 'chat.send': '질문',
+  'chat.title': 'AI 상담', 'chat.ph': '한 문장으로 상황을 알려 주세요', 'chat.send': '질문',
   'chat.waiting': '공식 데이터 확인 중', 'chat.sources': '공식 출처', 'chat.followups': '이어서 질문',
   'chat.steps': '조회 과정',
   'chat.stepsRunning': '조회 중', 'chat.stepsDone': '{n}개 항목 확인',

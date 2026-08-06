@@ -38,7 +38,7 @@ import dynamic from 'next/dynamic'
 import { usePathname } from 'next/navigation'
 import { Component, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 
-import { IconChat, IconMinimize, IconMinus, IconSquare, IconX } from '../Icons'
+import { IconChat, IconMaximize, IconMinimize, IconMinus, IconRefresh } from '../Icons'
 import { useLang } from '../LangProvider'
 import { UI } from '../ui/primitives'
 import { track } from '@/lib/track'
@@ -386,24 +386,25 @@ export function ChatLauncher() {
             <span className="clTitle">{t('chat.title')}</span>
             {/* 重置:清掉本轮对话回空态(三条示例重新出现)。**就地二次确认**不上弹框 ——
                 误点清掉一整轮问答不可逆,但为这个弹个模态框又太重(还得管焦点陷阱)。
-                两态都用文字不用图标:图标→文字会让头部宽度跳一下,380 面板上很显眼 */}
-            <button className={askReset ? 'clReset clAsk' : 'clReset'}
+                2026-08-06 Frank「重置两个字别扭」→ 图标化:两态同尺寸只变色(红=这一下会清东西),
+                旧注释担心的「图标→文字宽度跳」在全图标方案下不存在;语义仍靠 title/aria 兜底 */}
+            <button className={askReset ? 'clWin clReset clAsk' : 'clWin clReset'}
               onClick={() => (askReset ? doReset() : setAskReset(true))}
               aria-label={t(askReset ? 'cw.resetOk' : 'cw.reset')} title={t(askReset ? 'cw.resetOk' : 'cw.reset')}>
-              {t(askReset ? 'cw.resetOk' : 'cw.reset')}
+              <IconRefresh size={15} />
             </button>
-            {/* 桌面全屏:380×600 里读一段长答复很憋(Frank 实测)。手机侧 CSS 里整个藏掉 —— 那边已经全屏 */}
+            {/* 桌面全屏:380×600 里读一段长答复很憋(Frank 实测)。手机侧 CSS 里整个藏掉 —— 那边已经全屏。
+                2026-08-06 Frank「右上角与 job 弹框保持一致」:三钮统一成 Modal.tsx iconBtnS 形制
+                (30×30 圆角灰底,图标同款),关闭钮同 ActModal 用文字 ×,红色悬停撤销 */}
             <div className="clWindowActions">
               <button className="clWin clMin" onClick={minimize} aria-label={t('cw.minimize')} title={t('cw.minimize')}>
-                <IconMinus size={18} />
+                <IconMinus size={16} />
               </button>
               <button className="clWin clMax" onClick={toggleMax}
                 aria-label={t(max ? 'cw.restore' : 'cw.max')} title={t(max ? 'cw.restore' : 'cw.max')}>
-                {max ? <IconMinimize size={16} /> : <IconSquare size={15} />}
+                {max ? <IconMinimize size={16} /> : <IconMaximize size={16} />}
               </button>
-              <button className="clWin clClose" onClick={hide} aria-label={t('cw.close')} title={t('cw.close')}>
-                <IconX size={20} />
-              </button>
+              <button className="clWin clClose" onClick={hide} aria-label={t('cw.close')} title={t('cw.close')}>×</button>
             </div>
           </div>
           {/* compact/autoFocus 是 ChatBox 自己声明的契约(2026-08-04 加):壳不再靠覆盖它的类名做样式。
@@ -469,21 +470,19 @@ const CSS = `
 .clGrip[data-d=se]{bottom:0;right:0;width:14px;height:14px;cursor:nwse-resize}
 .clGrip[data-d=ne]{top:0;right:0;width:14px;height:14px;cursor:nesw-resize}
 .clGrip[data-d=sw]{bottom:0;left:0;width:14px;height:14px;cursor:nesw-resize}
-/* 重置:弱化到不抢标题(灰字),按下待确认时才变红 —— 「这一下会清掉东西」得看得出来 */
-.clReset{flex:none;border:none;background:none;font-family:inherit;font-size:12px;line-height:1;
-  color:${UI.text3};border-radius:8px;padding:8px 6px;cursor:pointer;white-space:nowrap}
-.clReset:hover{background:${UI.hairline};color:${UI.text2}}
-.clReset.clAsk{color:${UI.danger};font-weight:600}
-.clReset.clAsk:hover{background:#fef2f2}
+/* 重置(图标化,2026-08-06):形制同 .clWin;按下待确认时变红 —— 「这一下会清掉东西」得看得出来 */
+.clReset.clAsk{background:#fef2f2;color:${UI.danger}}
+.clReset.clAsk:hover{background:#fee2e2}
 .clPanel:not(.clMaxed) .clHead{cursor:move}   /* 标题栏即拖拽把手;全屏档没得拖 */
 .clTitle{flex:1;min-width:0;font-size:14px;font-weight:700;color:${UI.text};
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.clWindowActions{flex:none;align-self:stretch;display:flex;margin:-11px -8px -11px 0}
-.clWin{flex:none;width:46px;height:54px;display:flex;align-items:center;justify-content:center;
-  border:none;background:none;color:${UI.text};border-radius:0;cursor:pointer}
+/* 右上三钮 + 重置:统一 Modal.tsx 的 iconBtnS 形制(30×30 圆角灰底灰字),与 job 弹框一致
+   (2026-08-06 Frank 拍板;Windows 风通栏钮与红色关闭悬停一并撤销) */
+.clWindowActions{flex:none;display:flex;gap:6px}
+.clWin{flex:none;width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+  border:none;background:#f3f4f6;color:#6b7280;border-radius:8px;font-size:16px;line-height:1;cursor:pointer}
 .clWin:hover{background:#e5e7eb}
-.clWin:focus-visible{outline:2px solid ${UI.primary};outline-offset:-3px}
-.clClose:hover{background:#c42b1c;color:#fff}
+.clWin:focus-visible{outline:2px solid ${UI.primary};outline-offset:2px}
 /* 全屏:面板完整接管浏览器视口。**行宽不靠窗宽管** ——
    正文读列由 ChatBox 的 --cbW(860px,对齐 Open WebUI 取样)自己居中收窄,
    所以全屏也不会出现「一行 90+ 词、眼睛回不到行首」。 */

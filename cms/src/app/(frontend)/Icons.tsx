@@ -3,7 +3,7 @@
 // 加图标 = 从 lucide-react 挑一个再包一行,调用点永远只 import 本文件。
 import {
   ArrowUp, Check, ChartColumn, ChevronDown, CircleCheck, ClipboardList, Compass, Lock, Mail, Map as LMap, MapPin,
-  Maximize, Medal, MessageCircle, Minimize, Minus, Newspaper, Paperclip, Rocket, Save, Scale, Settings, Square, Star, Target,
+  Maximize, Medal, MessageCircle, Minimize, Minus, Newspaper, Paperclip, Rocket, RotateCcw, Save, Scale, Settings, Square, Star, Target,
   ThumbsDown, ThumbsUp, TriangleAlert, User, Users, X,
   type LucideProps,
 } from 'lucide-react'
@@ -30,6 +30,7 @@ export const IconMaximize = wrap(Maximize)    // 原 maximize
 export const IconMedal = wrap(Medal)          // 原 medal
 export const IconMinimize = wrap(Minimize)    // 原 minimize
 export const IconMinus = wrap(Minus)          // 窗口最小化
+export const IconRefresh = wrap(RotateCcw)    // 对话重置(挂件头部,2026-08-06 Frank「重置两个字别扭」→ 图标化)
 export const IconNews = wrap(Newspaper)       // 移民动态(E12-06)
 export const IconPaperclip = wrap(Paperclip)  // 原 paperclip
 export const IconRocket = wrap(Rocket)        // 开始规划(L1-01 landing 顶栏入口)
