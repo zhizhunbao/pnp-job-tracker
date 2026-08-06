@@ -1732,10 +1732,14 @@ export function factsBlock(facts: Fact[], budget = PROMPT_BUDGET, lang: ChatLang
 //    加重语气只能靠结构(编号规则 / (hard) 标记 / 独立成句),不靠字形。出口另有 findShoutedWords 复查。
 //    段名(FACTS / QUESTION / EARLIER / CLAIM LINES / RULE n)照旧大写:它们是**结构锚点**不是强调,
 //    而且 findLeaks 早就逐个盯着,漏出去当场拦。
+// 🔴 2026-08-06 Frank 实测发飙整改:旧版这里让模型说「缺的不是省份,是第一份工作」——那是判定层
+//    出现**之前**的剧本(当年只有岗位计数工具)。现在各省差异(NL 不要经验/MB 倒扣外省/ON 毕业生减免)
+//    正是答案本身,再说「不缺省份」= 一开口就把用户要买的东西说成不重要。省份与第一份工作是**同一个决策**。
 const PLAYBOOK_ZERO_EXP =
-  'PLAYBOOK: this person has zero work experience. Right after the sentence that answers their question, say that '
-  + 'what they are missing is not a province but a first job that counts, and quote the open-posting counts '
-  + 'from FACTS — both the province they asked about and the provinces with the most. '
+  'PLAYBOOK: this person has zero work experience. Right after the sentence that answers their question, '
+  + 'quote the open-posting counts from FACTS — both the province they asked about and the provinces with the most — '
+  + 'and say that where they take their first job decides which pathways open later. Never say or imply that the '
+  + 'province does not matter. '
   // 🔴 「其中雇主写明不要经验的 N」是**子集**,不是他的全部机会(2026-08-05:旧剧本让模型只报这个子集,
   //    于是安省 129 个在招被说成 4 个)。没写经验要求的岗不等于要经验 —— 不许替雇主加一条他没写的门槛。
   + 'Where a FACTS line also shows how many of those postings state that no experience is needed, treat that as an easier subset '
@@ -1743,6 +1747,22 @@ const PLAYBOOK_ZERO_EXP =
   + 'Only after that discuss lists, draws or programs. '
   + 'An experience requirement is a matter of timing, not of eligibility: say how many months short they are and where the work counts. '
   + 'Never phrase it as "you do not qualify" or "you fail".'
+// 裁决剧本(2026-08-06,Frank「前几条能给用户价值,用户才有欲望继续问,能继续问才有付费的可能性」):
+// facts 里有逐通道裁决时,开头几句必须先交付最值钱的发现,价值排序压过工具顺序。
+const PLAYBOOK_VERDICT =
+  'PLAYBOOK (when FACTS contains pathway verdicts, this outranks the zero-experience playbook): the reader asked '
+  + 'which route works, so the opening sentences must hand over the most decision-changing findings first. '
+  + '(1) If any pathway line in FACTS has no experience requirement or is open right now, name it — with its province — '
+  + 'in the first two sentences. '
+  + '(2) The differences between provinces are the answer itself: never say or imply that the province does not matter. '
+  + 'If FACTS shows a province that penalises or excludes this person, or one with a shorter requirement for them, '
+  + 'give each such province one sentence with the reason. '
+  + '(3) Treat the first job and the choice of province as one decision: where the months are worked decides which '
+  + 'pathways open — when FACTS has lines about in-province or same-employer requirements, use them here. '
+  + '(4) Where FACTS shows posting counts with a "no experience stated" subset, treat that subset as an easier slice '
+  + 'of the same total, never as the whole opportunity. '
+  + '(5) An experience requirement is a matter of timing, not eligibility: say how many months short they are and '
+  + 'where the work counts. Never phrase it as "you do not qualify".'
 const PLAYBOOK_CLAIMS =
   'PLAYBOOK: a third party told them something, so what they really want to know is whether it holds up and what they should go '
   + 'and check. Sentence one must answer the trust or worth question. If CLAIM LINES contains a decision-oriented caveat about a '
@@ -1815,7 +1835,7 @@ export function factsFingerprint(facts: Fact[]): string {
 export function synthMessages(
   facts: Fact[], userText: string, lang: ChatLang,
   opts: {
-    zeroExp: boolean; hasClaims: boolean; occ: string
+    zeroExp: boolean; hasClaims: boolean; hasVerdict?: boolean; occ: string
     forbid?: string[]; banned?: string[]; sameOpen?: string[]; history?: ChatTurn[]
   },
 ): ChatMessage[] {
@@ -1925,7 +1945,9 @@ export function synthMessages(
     // 两条剧本不同时上:「被抽中的概率要多久」两边都命中,而概率那条是更硬的拒答 —— 让它说了算,
     // 免得同一段提示里既说「不许算」又说「照着时间线念」,模型只会挑一句听。
     !isOdds && isPlanQuestion(userText) ? PLAYBOOK_PLAN : '',
-    opts.zeroExp ? PLAYBOOK_ZERO_EXP : '',
+    opts.hasVerdict ? PLAYBOOK_VERDICT : '',
+    // 裁决剧本在场时零经验剧本让位(两条同上会打架:一条说先报岗位数,一条说先报通道 —— 模型只会挑一句听)
+    opts.zeroExp && !opts.hasVerdict ? PLAYBOOK_ZERO_EXP : '',
     opts.hasClaims ? PLAYBOOK_CLAIMS : '',
     opts.forbid?.length
       ? `You already broke RULE 1 once. These numbers are not in FACTS and are banned from your reply: ${opts.forbid.join(', ')}. Rewrite without them.`
@@ -2870,7 +2892,7 @@ export async function orchestrate(
   // ④ 合成 + 出口校验(违规重试一次,再违规降级成事实清单)
   //    三道硬拦:数字溯源(guard) / 内部码泄露(findLeaks) / 中韩答复里的英文速记(findEnglishUnits);
   //    一道留痕:推断性措辞(findHedges)—— 只报警不拦,误杀正常表述比漏一句更贵。
-  const synOpts = { zeroExp: slots.expMonths === 0, hasClaims: slots.claims.length > 0, occ, history: input.history }
+  const synOpts = { zeroExp: slots.expMonths === 0, hasClaims: slots.claims.length > 0, hasVerdict: verdictOn, occ, history: input.history }
   let answer = ''
   let bad: string[] = []
   let banned: string[] = []
