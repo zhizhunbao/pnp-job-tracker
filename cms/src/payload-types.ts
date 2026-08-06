@@ -644,6 +644,10 @@ export interface PnpOccupation {
    */
   type?: string | null;
   /**
+   * 清单适用范围(如 SK 排除清单只管 OID/EE 子类);空 = 全项目适用
+   */
+  appliesTo?: string | null;
+  /**
    * PNP(省提名,默认) / AIP(大西洋移民试点背书) —— 两条路分开判
    */
   program?: string | null;
@@ -1098,6 +1102,10 @@ export interface DesignatedEmployer {
    * AIP官方名单来源(NL/NB/NS)
    */
   source?: string | null;
+  /**
+   * 雇主申报的 NOC 码(逗号连接)。仅 NL(官方省站名录)有;空 = 未申报职位(NL)或来源不含此信息(NB/NS)
+   */
+  nocs?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2058,6 +2066,7 @@ export interface PnpOccupationsSelect<T extends boolean = true> {
   stream?: T;
   label?: T;
   type?: T;
+  appliesTo?: T;
   program?: T;
   noc?: T;
   name?: T;
@@ -2262,6 +2271,7 @@ export interface DesignatedEmployersSelect<T extends boolean = true> {
   location?: T;
   isTech?: T;
   source?: T;
+  nocs?: T;
   updatedAt?: T;
   createdAt?: T;
 }

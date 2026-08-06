@@ -20,9 +20,12 @@
  */
 import {
   checkClaims, lookupCoverage, lookupCrs, lookupDraws, lookupEE, lookupJobs, lookupOps, lookupPermit, lookupPlan, lookupThresholds,
+  lookupVerdict,
   PNP_PROVINCES, PRIVATE_PROMISE, type Availability, type Claim, type ClaimTopic, type CrsLookupArgs, type CrsResult,
-  type PermitResult, type PlanResult,
+  type PermitResult, type PlanResult, type VerdictResult,
 } from './chatTools'
+import type { PathwayVerdict, VerdictProfile, VerdictReason } from './pathVerdict'
+import { EDU_KEYS, systemShort, type EduKey } from './pnpSelfScore'
 import type { PlanStep } from './planTimeline'
 import { completeText, LlmError, type ChatMessage } from './llm'
 import { parseLlmJson } from './resumeMatch'
@@ -43,6 +46,13 @@ export type Fact = {
  *  收费是交易条件,私人承诺有自己的 'private-promise' 桶;两者在见客层合成一条“不能证明结果”的判断。 */
 export type SlotClaimTopic = ClaimTopic | 'other'
 export type SlotClaim = { text: string; topic: SlotClaimTopic; province?: string }
+/**
+ * C5c 起多了**档案槽**(age / married / clb / edu + 两个附带项 eduYears / studyProvince / canadaStudy):
+ * 判定层 `pathVerdict` 要的就是这几样。全部**可选**且默认 null —— 两条理由,都不是图省事:
+ *   ① 缺一个槽 ≠ 有一个默认值:`married: false`「按单身算」会直接换一张 CRS 分表,
+ *      算出来的分是另一个人的(编排层缺槽就反问,见 verdictFollowups);
+ *   ② 类型上可选,是为了不逼既有调用方(路由、测试里的 emptySlots)全部改造 —— 加槽不该是一次破坏性变更。
+ */
 export type Slots = {
   noc: string | null
   occText: string
@@ -50,6 +60,19 @@ export type Slots = {
   expMonths: number | null
   status: string | null
   claims: SlotClaim[]
+  /** 年龄(CRS/MPNP 年龄档;不猜) */
+  age?: number | null
+  /** **配偶是否随行申请**(不是「有没有结婚」):CRS 单身/已婚是两张表,随行与否才是分表的判据 */
+  married?: boolean | null
+  /** CLB 四项最低。**只认用户自己说的 CLB/NCLC 档** —— 雅思分数换算 CLB 是官方一张表,本站没收录,不许模型心算 */
+  clb?: number | null
+  edu?: EduKey | null
+  /** 学制年数(两年制 → 2);说不清就 null */
+  eduYears?: number | null
+  /** 有没有加拿大学历 */
+  canadaStudy?: boolean | null
+  /** 在哪个省读的(两位省码) */
+  studyProvince?: string | null
 }
 export type ChatLang = 'zh' | 'en' | 'ko'
 export type ChatTurn = { role: 'user' | 'assistant'; content: string }
@@ -92,6 +115,7 @@ type StepDict = {
   permit: (program: string) => string
   crs: (grid: string) => string
   plan: (provs: string) => string
+  verdict: (n: number) => string
   claims: (n: number) => string
   write: string
 }
@@ -109,6 +133,7 @@ export const STEP: Record<ChatLang, StepDict> = {
     permit: (p) => `查联邦规则:${p}`,
     crs: (g) => `查联邦计分表:${g}`,
     plan: (p) => `算时间线:${p}`,
+    verdict: (n) => `逐条比对官方门槛:${n} 条通道`,
     claims: (n) => `核对别人跟你说的:${n} 条`,
     write: '正在组织答复',
   },
@@ -124,6 +149,7 @@ export const STEP: Record<ChatLang, StepDict> = {
     permit: (p) => `Federal rules checked: ${p}`,
     crs: (g) => `Federal points grid checked: ${g}`,
     plan: (p) => `Timeline worked out: ${p}`,
+    verdict: (n) => `Official requirements compared: ${n} streams`,
     claims: (n) => `What you were told: ${n} claims checked`,
     write: 'Writing the reply',
   },
@@ -139,6 +165,7 @@ export const STEP: Record<ChatLang, StepDict> = {
     permit: (p) => `연방 규정 조회: ${p}`,
     crs: (g) => `연방 점수표 조회: ${g}`,
     plan: (p) => `소요 기간 산출: ${p}`,
+    verdict: (n) => `공식 요건 대조: ${n}개 통로`,
     claims: (n) => `들으신 내용 대조: ${n}건`,
     write: '답변 작성 중',
   },
@@ -219,6 +246,31 @@ const PICK_PROV_RE =
   /哪[一几]?[个些]?省|省份.{0,4}选|选.{0,4}省份|which provinces?|what provinces?|어느 주|어떤 주/i
 export const asksWhichProvince = (text: string): boolean => PICK_PROV_RE.test(text || '')
 
+/**
+ * 🔴 **「我走哪条路」才触发路径裁决**(C5c)。判据同 federalRulePrograms / asksWhichProvince 那条既定原则:
+ * 路由开关只读**用户原话**,不看模型猜的槽位。
+ *
+ * 为什么要窄:裁决会往 facts 里铺十几条通道判定,它们**挤掉的是主线**(在招岗位、清单命中、门槛)。
+ * 一个问「曼省木匠岗位多吗」的人拿到十三条通道裁决,得到的是一张表而不是答案 ——
+ * 这正是这一层最贵的那条教训(「材料不是提纲」)。所以词表只收**明确在问「哪条路 / 怎么走 / 我能不能走」**的说法。
+ *
+ * 「我能不能」故意收得住:后面必须跟移民/申请/PR/留下这类词,否则「我能不能找到工作」也会命中。
+ */
+const PATH_RE =
+  /走哪条|哪条路|哪条通道|哪条线|该走哪|走什么路|怎么(?:才能)?移民|如何移民|移民路径|移民路线|路径规划|我的路径|哪条最快下来/i
+const CAN_I_RE =
+  /能不能.{0,8}(?:移民|申请\s*(?:PR|省提名)|拿到?\s*(?:PR|枫叶卡|身份)|留(?:下|在加拿大))|有(?:没有|多大)机会.{0,8}(?:移民|拿|留)|能不能走.{0,6}(?:省提名|联邦|这条)/i
+const PATH_EN_RE =
+  /which (?:path|route|stream|program|programme|pathway)|what (?:path|route|pathway)s? (?:should|can|do)|my (?:best )?(?:options?|pathways?|routes?)\b|how (?:do|can|should) i immigrate|best way to immigrate|road ?map to pr|can i (?:immigrate|qualify|get pr|apply for pr)/i
+const PATH_KO_RE = /어느 경로|어떤 경로|이민 (?:방법|경로)|어떻게 이민|영주권.{0,6}(?:경로|방법)/i
+/** 用户原话在问「我该走哪条路」吗(纯函数,不问模型)。 */
+export const isPathQuestion = (text: string): boolean => {
+  const s = text || ''
+  return PATH_RE.test(s) || CAN_I_RE.test(s) || PATH_EN_RE.test(s) || PATH_KO_RE.test(s)
+}
+/** 触发裁决还要**档案槽够用**:少于这么多有值的槽,判出来的十三条几乎全是 needs-info,不如反问一句。 */
+export const MIN_PROFILE_SLOTS = 3
+
 const CRS_RE = /\bCRS\b|Comprehensive Ranking System|综合排名(?:系统)?|EE\s*(?:score|points?)|EE\s*分(?:数)?|종합 순위 점수/i
 const SCORE_RE = /\b67\s*(?:points?|점)?\b|分数|打分|计分|多少分|得分|scor(?:e|ing)|points?|점수/i
 const AGE_RE = /\bage\b|years? old|岁|年(?:龄|齡)|나이|살\b/i
@@ -292,11 +344,16 @@ export const isMoneyTalk = (text: string): boolean => MONEY_RE.test(text)
 
 export const SLOT_SYSTEM = [
   'You turn one message from a would-be immigrant into slots. Reply with ONLY one JSON object, no prose, no markdown fence.',
-  'SHAPE: {"occ_en":"","noc":null,"provs":[],"exp_months":null,"status":null,"claims":[{"text":"","topic":"","province":null}]}',
+  'SHAPE: {"occ_en":"","noc":null,"provs":[],"exp_months":null,"status":null,"age":null,"married":null,"clb":null,'
+    + '"edu":null,"edu_years":null,"canada_study":null,"study_prov":null,"claims":[{"text":"","topic":"","province":null}]}',
   'EXAMPLE IN: 我是厨师,在BC读完书还没工作,朋友说萨省两个月就下来了,找他办要收 5 万',
   'EXAMPLE OUT: {"occ_en":"cook","noc":null,"provs":["BC","SK"],"exp_months":0,"status":"graduated",'
+    + '"age":null,"married":null,"clb":null,"edu":null,"edu_years":null,"canada_study":true,"study_prov":"BC",'
     + '"claims":[{"text":"朋友说萨省两个月就下来了","topic":"ops","province":"SK"},'
     + '{"text":"找他办要收 5 万","topic":"other","province":"SK"}]}',
+  'EXAMPLE IN: 我 40 岁,已婚但太太不随行,CLB6,在安省读的两年制大专,零经验想学木工,走哪条路?',
+  'EXAMPLE OUT: {"occ_en":"carpenter","noc":null,"provs":["ON"],"exp_months":0,"status":null,"age":40,"married":false,'
+    + '"clb":6,"edu":"diploma2y","edu_years":2,"canada_study":true,"study_prov":"ON","claims":[]}',
   'RULES:',
   '- claims = EVERY sentence the user attributes to someone else (中介/agent, 朋友/friend, school, consultant). Copy their wording verbatim.'
     + ' This is the field people get wrong: if the message contains 中介说 / 朋友说 / they told me / I was told, claims MUST NOT be empty.',
@@ -318,6 +375,23 @@ export const SLOT_SYSTEM = [
   '- provs: 2-letter codes only (ON BC AB SK MB NS NB NL PE QC), including provinces that only appear inside a claim.',
   '- exp_months: 0 if they say they have no work experience yet; null if not stated.',
   '- status: student | graduated | working | visitor | abroad | null.',
+  // ── C5c 档案槽:路径判定要的那几样。**每一条的默认答案都是 null** ──────────────
+  // 猜错一个槽 = 换一张官方分表 / 换一条门槛档,算出来的是另一个人的结果。
+  '- age: their age in years as a number, only if they state it (40 / 40 岁 / 마흔). Otherwise null.',
+  // 「已婚」不等于「配偶随行」—— CRS 单身/已婚是两张官方分表,分表的判据是**随不随行**
+  '- married: this field means "will a spouse or partner come along on the application", not "are you married".'
+    + ' true = married/partnered and the spouse comes too. false = single, OR married but the spouse stays behind'
+    + ' (配偶不随行 / 太太在国内 / spouse is not coming). null if they never mention a spouse.',
+  // 雅思/CELPIP 换算 CLB 是官方一张对照表,本站没收录 → 不许模型心算(算错一档就换一条门槛)
+  '- clb: the CLB (or NCLC) level as a number, only when they give a CLB/NCLC level (CLB6 / CLB 六 / 四项都 6 / NCLC 7).'
+    + ' An IELTS, CELPIP, TEF or TCF band is NOT a CLB level — leave clb null for those, we will ask.',
+  '- edu: highest completed education, one of doctorate | master | bachelor | tradeCert | diploma2y | cert1y | highschool.'
+    + ' 博士=doctorate, 硕士/研究生=master, 本科/学士=bachelor, 技工证/学徒证=tradeCert, 大专/两年制文凭/college diploma=diploma2y,'
+    + ' 一年证书=cert1y, 高中=highschool. If they are still studying, use the programme they are enrolled in. null if not stated.',
+  '- edu_years: how many years that programme lasts, only if they say so (两年制 -> 2, three-year -> 3). Otherwise null.',
+  '- canada_study: true if they studied (or are studying) in Canada — a Canadian college/university by name counts;'
+    + ' false only if they say all their study was outside Canada; null if unknown.',
+  '- study_prov: the 2-letter province where they studied in Canada (在安省读的 -> "ON"). null if unknown.',
   'You only listen. Never judge, never advise, never add facts of your own.',
 ].join('\n')
 
@@ -336,6 +410,18 @@ export const SLOT_SYSTEM = [
  */
 const NOC_IN_TEXT = /(?:^|[^0-9])NOC\s*[:：#]?\s*(\d{5})(?![0-9])/i
 export const literalNoc = (text: string): string | null => NOC_IN_TEXT.exec(text || '')?.[1] ?? null
+
+/**
+ * 数值槽归一:超出**官方表存在的范围**就当没说(不是夹到边界值)。
+ * 夹边界 = 替用户编一个他没说的数;判不了就 null,后面反问一句,代价是他的一次点击。
+ */
+const numSlot = (raw: unknown, lo: number, hi: number, round = true): number | null => {
+  const n = Number(raw)
+  if (raw == null || raw === '' || !Number.isFinite(n) || n < lo || n > hi) return null
+  return round ? Math.round(n) : n
+}
+/** 三态布尔:模型给 null/缺字段/说不清 → null(**不折成 false**:false 是一个判定,null 是「还不知道」)。 */
+const boolSlot = (raw: unknown): boolean | null => (raw === true ? true : raw === false ? false : null)
 
 /** 自由文本 → Slots(未解析 NOC)。模型输出形状不可信,逐字段归一。 */
 export function normalizeSlots(raw: any): Omit<Slots, 'noc'> & { noc: string | null } {
@@ -366,8 +452,27 @@ export function normalizeSlots(raw: any): Omit<Slots, 'noc'> & { noc: string | n
       return { text, topic, ...(p ? { province: p } : {}) }
     })
     .slice(0, 5)
-  return { noc: /^\d{5}$/.test(nocRaw) ? nocRaw : null, occText, provs, expMonths, status, claims }
+  const eduRaw = String(raw?.edu ?? '').trim()
+  return {
+    noc: /^\d{5}$/.test(nocRaw) ? nocRaw : null, occText, provs, expMonths, status, claims,
+    // 年龄下限取官方 CRS 年龄表的最低档(17 岁以下同一档),上限给个人活得到的岁数;越界一律当没说
+    age: numSlot(raw?.age, 14, 99),
+    married: boolSlot(raw?.married),
+    // CLB 官方档位到 10 为止(10 以上仍按 10 计分),12 只是留个余量;0 不是一个档
+    clb: numSlot(raw?.clb, 1, 12),
+    edu: (EDU_KEYS as string[]).includes(eduRaw) ? (eduRaw as EduKey) : null,
+    eduYears: numSlot(raw?.eduYears ?? raw?.edu_years, 0.5, 12, false),
+    canadaStudy: boolSlot(raw?.canadaStudy ?? raw?.canada_study),
+    studyProvince: normProv(raw?.studyProvince ?? raw?.study_prov),
+  }
 }
+
+/** 判定层要的**档案槽**(不含职业/省份:那两样另有各自的红线)。缺槽计数与反问都只数这几个。 */
+export const PROFILE_SLOTS = ['age', 'clb', 'edu', 'married', 'canadaStudy', 'expMonths', 'eduYears', 'studyProvince'] as const
+export type ProfileSlot = (typeof PROFILE_SLOTS)[number]
+/** 有值的档案槽(`married: false`、`expMonths: 0` 都算**有值** —— 它们是判定,不是缺失)。 */
+export const filledProfileSlots = (s: Partial<Slots>): ProfileSlot[] =>
+  PROFILE_SLOTS.filter((k) => s[k] != null)
 
 const OTHER_PROVINCES_RE = /(?:其他|别的|其它|其余).{0,4}省|other provinces?|elsewhere|다른.{0,4}(?:주|지역)/i
 
@@ -385,6 +490,11 @@ export function mergeFollowupSlots(
   const p = rawPrevious as Record<string, unknown>
   const previous = normalizeSlots({
     occ_en: p.occText, noc: p.noc, provs: p.provs, exp_months: p.expMonths, status: p.status,
+    // 档案槽同样滚动带回:「我 40 岁 CLB6…」说过一次之后,追问「那安省呢」不该把年龄和语言丢了
+    // (丢了 = 下一轮缺槽 → 又反问一遍已经答过的问题)。职业那条「说了新职业就清掉旧 NOC」的
+    // 覆盖逻辑在这里用不上:一个人的年龄/学历不会因为换个问法就变成另一个值,当轮说了新值自然覆盖。
+    age: p.age, married: p.married, clb: p.clb, edu: p.edu,
+    edu_years: p.eduYears, canada_study: p.canadaStudy, study_prov: p.studyProvince,
   })
   const changedOccupation = Boolean(current.occText || current.noc)
   return {
@@ -394,6 +504,13 @@ export function mergeFollowupSlots(
     expMonths: current.expMonths ?? previous.expMonths,
     status: current.status ?? previous.status,
     claims: current.claims,
+    age: current.age ?? previous.age,
+    married: current.married ?? previous.married,
+    clb: current.clb ?? previous.clb,
+    edu: current.edu ?? previous.edu,
+    eduYears: current.eduYears ?? previous.eduYears,
+    canadaStudy: current.canadaStudy ?? previous.canadaStudy,
+    studyProvince: current.studyProvince ?? previous.studyProvince,
   }
 }
 
@@ -765,6 +882,25 @@ type LabelDict = {
   /** 口径注(同 indexNote 的位置):**这条线不算什么** —— 不写清楚,12.5 个月会被读成「12.5 个月拿 PR」 */
   planScope: string
   faster: (fast: string, slow: string, atLeast: boolean) => string
+  /**
+   * 路径裁决(C5c lookupVerdict)。全是**半句话或名目**,值/官方原句由 sayFact 接上去。
+   * 🔴 `vTier` 那四句**一个数字都不许有**:tier 是「gap 落在哪个区间」的分档
+   * (0=没有缺口 / ≤6 月 / ≤12 月 / >12 月),写成「还要 12 个月」是给一个区间编了一个精度。
+   * 真实的月数在通道自己的 gap 理由里(带官方原句与出处),那才是能报的数。
+   */
+  vScope: string
+  vPaths: string
+  vExcluded: string
+  vNeedsInfo: string
+  vTier: [string, string, string, string]
+  vWhy: string
+  vScore: string
+  vCeiling: string
+  vRefLine: string
+  vLeverClb: (target: number) => string
+  vLeverTeer: string
+  /** 缺槽反问(三语;followups 是见客文案,同 FOLLOWUPS 一层) */
+  vAsk: Record<ProfileSlot, string>
 }
 export const LBL: Record<ChatLang, LabelDict> = {
   zh: {
@@ -792,6 +928,33 @@ export const LBL: Record<ChatLang, LabelDict> = {
     planNone: '这条路要多久',
     planScope: '时间线口径:只算门槛缺口、官方开一轮的间隔、官方公布的处理时长;签证、体检、找到雇主要多久都不在里面',
     faster: (f, s, at) => `${f} 比 ${s} ${at ? '至少快多少' : '快多少'}`,
+    vScope: '路径判定的口径:逐条通道拿官方门槛与你的情况对照,这是粗筛,不是资格认定;各省还有自己的清单与细则',
+    vPaths: '路径判定',
+    vExcluded: '这条通道现在走不通',
+    vNeedsInfo: '这条通道判不了',
+    vTier: [
+      '拿到 offer 当天就能递,没有还要攒的门槛',
+      '拿到 offer 之后还要再攒不到半年',
+      '拿到 offer 之后还要再攒不到一年',
+      '拿到 offer 之后还要再攒一年以上',
+    ],
+    vWhy: '判定依据',
+    vScore: '你在这条通道的估分',
+    vCeiling: '把语言拉到官方最高档之后的上界',
+    vRefLine: '最近一轮抽选的最低分',
+    vLeverClb: (t) => `语言提到 CLB ${t} 之后,官方分值表上能多拿的分`,
+    vLeverTeer: '改接 TEER 5 的岗之后会掉档的通道数',
+    // 反问文案是**问句**(和 ASK_OCC 一样:缺了判定必需的东西就当面问,不拿默认值顶上)
+    vAsk: {
+      age: '你今年多少岁?',
+      married: '配偶会不会跟你一起申请?',
+      clb: '你的语言考到 CLB 几?',
+      edu: '你的最高学历是什么?',
+      canadaStudy: '你在加拿大读过书吗?',
+      eduYears: '你读的课程是几年制?',
+      studyProvince: '你在哪个省读的书?',
+      expMonths: '你有多少个月的工作经验?',
+    },
   },
   en: {
     apprOpenings: 'apprentice-friendly openings right now', apprSub: 'of those postings, the ones where the employer states no experience is needed', openPostings: 'open postings right now', qcOutside: '(QC is outside PNP)',
@@ -828,6 +991,33 @@ export const LBL: Record<ChatLang, LabelDict> = {
     planScope: 'what this timeline counts: the gap to the official requirement, how often the province opens a round, and the '
       + 'processing time it publishes — a visa, a medical or the time it takes to find an employer are not in it',
     faster: (f, s, at) => `how much faster ${f} is than ${s}${at ? ', at the very least' : ''}`,
+    vScope: 'what this path ruling is: every stream checked line by line against the official requirements on file — '
+      + 'a first-pass sort, not an eligibility decision; each province still has its own lists and fine print',
+    vPaths: 'path ruling',
+    vExcluded: 'is closed on the official requirements',
+    vNeedsInfo: 'cannot be ruled on',
+    vTier: [
+      'can be filed the day a job offer is in hand, with nothing left to build up',
+      'still needs under half a year of building up after a job offer',
+      'still needs under a year of building up after a job offer',
+      'still needs over a year of building up after a job offer',
+    ],
+    vWhy: 'the official wording behind that ruling',
+    vScore: 'the estimated score on this stream',
+    vCeiling: 'the ceiling once language is taken to the top official band',
+    vRefLine: 'the cutoff in the latest draw',
+    vLeverClb: (t) => `points gained on the official grid by taking language to CLB ${t}`,
+    vLeverTeer: 'streams that drop out if the job taken is a TEER 5 one',
+    vAsk: {
+      age: 'How old are you?',
+      married: 'Would a spouse or partner come along on the application?',
+      clb: 'What CLB level did you reach?',
+      edu: 'What is your highest completed education?',
+      canadaStudy: 'Did you study in Canada?',
+      eduYears: 'How many years does your programme run?',
+      studyProvince: 'Which province did you study in?',
+      expMonths: 'How many months of work experience do you have?',
+    },
   },
   ko: {
     apprOpenings: '현재 견습 가능 채용 공고', apprSub: '그중 고용주가 경력 무관이라고 밝힌 공고', openPostings: '현재 채용 공고', qcOutside: '(퀘벡은 주정부 이민 대상 아님)',
@@ -855,6 +1045,32 @@ export const LBL: Record<ChatLang, LabelDict> = {
     planNone: '이 경로에 걸리는 기간',
     planScope: '이 기간에 포함되는 것: 요건까지의 부족분, 주정부가 추첨을 여는 주기, 공개된 처리 기간 — 비자·건강검진·고용주를 찾는 기간은 빠져 있습니다',
     faster: (f, s, at) => `${f}가 ${s}보다 빠른 기간${at ? '(최소치)' : ''}`,
+    vScope: '경로 판정 기준: 각 통로를 수집된 공식 요건과 한 줄씩 대조한 결과입니다. 1차 선별일 뿐 자격 판정이 아니며, 주마다 별도의 목록과 세부 규정이 있습니다',
+    vPaths: '경로 판정',
+    vExcluded: '이 상황에서는 막혀 있습니다',
+    vNeedsInfo: '판정할 수 없습니다',
+    vTier: [
+      '오퍼를 받은 당일에 신청 가능(더 쌓을 요건 없음)',
+      '오퍼 이후 반년 미만을 더 쌓아야 함',
+      '오퍼 이후 한 해 미만을 더 쌓아야 함',
+      '오퍼 이후 한 해 넘게 더 쌓아야 함',
+    ],
+    vWhy: '판정 근거가 된 공식 문구',
+    vScore: '이 통로에서의 예상 점수',
+    vCeiling: '언어를 공식 최고 등급까지 올렸을 때의 상한',
+    vRefLine: '최근 추첨의 커트라인',
+    vLeverClb: (t) => `언어를 CLB ${t}까지 올릴 때 공식 점수표에서 더 받는 점수`,
+    vLeverTeer: 'TEER 5 일자리로 바꾸면 빠지는 통로 수',
+    vAsk: {
+      age: '연세가 어떻게 되시나요?',
+      married: '배우자도 함께 신청하나요?',
+      clb: '언어 점수는 CLB 몇 등급인가요?',
+      edu: '최종 학력은 무엇인가요?',
+      canadaStudy: '캐나다에서 공부한 적이 있나요?',
+      eduYears: '과정 기간은 몇 년인가요?',
+      studyProvince: '어느 주에서 공부하셨나요?',
+      expMonths: '경력은 몇 개월인가요?',
+    },
   },
 }
 
@@ -979,6 +1195,174 @@ export function planFacts(r: PlanResult, lang: ChatLang): Fact[] {
   return out
 }
 
+// ── 路径裁决 → Fact[](C5c:pathVerdict 的十三条判定怎么摆给模型)────────────────
+//
+// 🔴 三条约束,都不是风格问题:
+//   ① **中文的判定理由只给中文用户**(zhOnly,同 C1 的 note 那条规矩):pathVerdict 的 reason.text
+//      是中文硬编码,漏进英文答复会被 findForeignScript 当场硬拦,而 88% 的流量是英文。
+//      en/ko 拿到的是「我们自己的三语名目 + 官方英文原句 + 数字」—— 事实一条不少,只是不夹生。
+//   ② **tier 不写成月数**(见 LBL.vTier):tier 是「差距落在哪个区间」的分档,写成「还要 12 个月」
+//      等于给一个区间编了一个精度。真实月数在该通道自己的理由里(带官方原句与出处),那才是能报的数。
+//   ③ **条数封顶**:13 条通道全铺 = 又一次「材料变提纲」。排除的全给(那是他最该知道的),
+//      open 给最前几条**外加有估分的那几条**(估分是他自己算不出来的东西),needs-info 一句话带过。
+const VERDICT_EXCLUDED_SHOWN = 3
+const VERDICT_OPEN_SHOWN = 3
+const VERDICT_NEEDS_SHOWN = 2
+/** 语言杠杆问的是「提到哪一档」。这个数同时喂给 pathLevers 与见客标签 —— 两处各写一个迟早对不上。 */
+export const VERDICT_CLB_TARGET = 8
+
+/**
+ * 抽选线那个数的出处是**抽选页**,不是分值表。pathVerdict 没把它单列出来,但它留了一个
+ * **结构判据**:只有 `evOfDraw` 造的 evidence.label 里带 `(YYYY-MM-DD`(门槛行是官方原文、
+ * 清单行是「stream — noc name」、分值表行是 system 名,都不长这样)。认不出就返回 undefined,
+ * 那时这条线整个不给 —— 宁可少一个数,也不拿分值表的 url 去给抽选线背书。
+ */
+const drawEvidenceOf = (v: PathwayVerdict) =>
+  v.reasons.find((r) => /\(\d{4}-\d{2}-\d{2}/.test(r.evidence?.label ?? ''))?.evidence
+
+export function verdictFacts(r: VerdictResult, lang: ChatLang): Fact[] {
+  const T = LBL[lang]
+  if (r.availability !== 'ok') {
+    return [statusFact('lookupVerdict', T.vPaths, r.availability, zhOnly(r.note, lang), '', lang)]
+  }
+  const out: Fact[] = []
+  // 口径注排最前(同 planFacts 的 planScope):没有它,「这条走不通」会被读成一句资格认定
+  out.push(fact('lookupVerdict', T.vScope, null, '', 'note', DERIVED))
+
+  const name = (v: PathwayVerdict) => `${v.province} ${v.stream}`
+  /**
+   * 一条通道 + 一条理由 → 一句话:名目(三语)+ 中文用户额外拿到的判定理由,官方原句接在冒号后面。
+   *
+   * 🔴 **截断的官方原句要看得出被截过**(valueText 的硬帽是 110 字):`fact()` 那一刀只会齐字砍,
+   *    砍完读者拿到的是一句完整模样、其实少了半截的「官方原话」—— 那比不引用更糟。这里按词边界先截、
+   *    并留省略号(同 claimLabel 对用户原话的做法:别人的话可以截,但必须让人看出来截过)。
+   */
+  const clip = (t: string, cap: number): string => {
+    const x = (t || '').trim()
+    if (x.length <= cap) return x
+    const cut = x.slice(0, cap - 1)
+    const sp = cut.lastIndexOf(' ')
+    return `${sp > cap * 0.6 ? cut.slice(0, sp) : cut}…`
+  }
+  /** `null` = 这一行一个字的信息都没有(en/ko 拿不到中文理由、这条理由又没有官方原句)—— 不摆空名目。 */
+  const line = (v: PathwayVerdict, head: string, x?: VerdictReason): Fact | null => {
+    const why = zhOnly(x?.text ? `——${x.text}` : '', lang)
+    // 76 而不是 110 帽满打:整段 FACTS 的预算是 4200 字,十几条通道判定再各挂一句百来字的英文原文,
+    // 就会把在招岗位那几行从 prompt 里挤出去(facts 数组一条不少,挤掉的只是这次的稿子)。
+    // 原句在这里的作用是**锚**(让模型看得见判定有出处),不是给人读全文 —— 全文点出处链接去看。
+    const quote = clip(x?.quote ?? '', 76)
+    if (head === T.vWhy && !why && !quote) return null
+    return fact('lookupVerdict', `${name(v)} ${head}${why}`, null, quote, 'path', x?.evidence ?? DERIVED)
+  }
+  const push = (f: Fact | null) => { if (f) out.push(f) }
+  const scoreOf = (v: PathwayVerdict): Fact[] => {
+    const s = v.score
+    if (!s) return []
+    const rows = [fact('lookupVerdict', `${name(v)} ${T.vScore}(${s.system})`, s.value, '', 'points', s.evidence)]
+    if (s.ceiling != null) rows.push(fact('lookupVerdict', `${name(v)} ${T.vCeiling}(${s.system})`, s.ceiling, '', 'points', s.evidence))
+    const dev = drawEvidenceOf(v)
+    if (s.refLine != null && dev) {
+      rows.push(fact('lookupVerdict', `${name(v)} ${T.vRefLine}(${s.system})`, s.refLine, clip(zhOnly(s.refLabel, lang), 104), 'points', dev))
+    }
+    return rows
+  }
+  /**
+   * 该通道最该说的那几条理由:有差距就说差距,没差距(tier0)就说「官方明说没有这道门槛」那种带原句的。
+   * 同一句话不摆两遍 —— 联邦三个子通道的经验差距文案逐字相同(只有官方原句不同),
+   * 两行并排读起来就是在念表格(RULE 5b 那条老病)。
+   */
+  const pick = (v: PathwayVerdict, n: number): VerdictReason[] => {
+    const gaps = v.reasons.filter((x) => x.kind === 'gap')
+    const pool = gaps.length ? gaps : v.reasons.filter((x) => x.kind === 'met' && x.quote)
+    return pool.filter((x, i, a) => a.findIndex((y) => y.text === x.text) === i).slice(0, n)
+  }
+
+  const excluded = r.pathways.filter((v) => v.verdict === 'excluded')
+  const open = r.pathways.filter((v) => v.verdict === 'open')
+  const needs = r.pathways.filter((v) => v.verdict === 'needs-info')
+
+  for (const v of excluded.slice(0, VERDICT_EXCLUDED_SHOWN)) {
+    const hard = v.reasons.filter((x) => x.kind === 'excluded')
+      .filter((x, i, a) => a.findIndex((y) => y.text === x.text) === i)
+    // 排除的理由**必须能溯源**:头一句就带官方原句(pathVerdict 保证 excluded 的 reason 有 quote)
+    push(line(v, T.vExcluded, hard[0]))
+    for (const x of hard.slice(1, 2)) push(line(v, T.vWhy, x))
+    out.push(...scoreOf(v))
+  }
+  // 有估分的通道即使排在后面也要进来:估分与抽选线是他自己算不出的东西,
+  // 而按 tier 排序时它们常常压在第四第五位(金标 C01 的 MB 就是第七条)。
+  const openShown = open.filter((v, i) => i < VERDICT_OPEN_SHOWN || !!v.score).slice(0, VERDICT_OPEN_SHOWN + 2)
+  for (const v of openShown) {
+    const reasons = pick(v, v.score ? 3 : 2)
+    // 🔴 头一句只跟**差距**并排:差距就是 tier 的来由,并在一起读得通。一条差距都没有(tier0)时
+    //    并进来的会是一条 met —— 「当天就能递」后面接一句「官方明说不要求语言成绩」,读者会以为
+    //    tier0 是语言判出来的。那时头一句单独站着,理由另起一行。
+    const paired = reasons[0]?.kind === 'gap' ? reasons[0] : undefined
+    push(line(v, T.vTier[(v.tier ?? 0) as 0 | 1 | 2 | 3], paired))
+    for (const x of reasons.slice(paired ? 1 : 0)) push(line(v, T.vWhy, x))
+    out.push(...scoreOf(v))
+  }
+  for (const v of needs.slice(0, VERDICT_NEEDS_SHOWN)) {
+    const why = v.reasons.find((x) => x.kind === 'needs-info')
+    // 🔴 「本站没收录这条通道的门槛」和「你还没告诉我年龄」是两件事:前者带 availability(四态成句),
+    //    后者只是缺槽。合并成一句「判不了」等于把我们的窟窿说成他的问题。
+    if (v.availability !== 'ok') {
+      // 注跟着 valueText 的 110 字帽走,四态成句要先占够 —— 截到一半的解释比不给解释还难读
+      out.push(statusFact('lookupVerdict', `${name(v)} ${T.vNeedsInfo}`, v.availability,
+        clip(zhOnly(why?.text ?? '', lang), 68), why?.evidence?.url ?? '', lang))
+    } else {
+      push(line(v, T.vNeedsInfo, why))
+    }
+  }
+  for (const l of r.levers.slice(0, 2)) {
+    if (l.key === 'clb-boost') {
+      for (const g of (l.gains ?? []).slice(0, 2)) {
+        // systemShort:分制名尾巴上那个「(Ontario Workforce Priority stream)」是它自报的通道名,
+        // 套进我们自己的括号里就成了套娃(「…能多拿的分(OINP EOI points (Ontario …))」)
+        out.push(fact('lookupVerdict', `${g.province} ${T.vLeverClb(VERDICT_CLB_TARGET)}(${systemShort(g.system)})`, g.delta, '', 'points', g.evidence))
+      }
+    } else if (l.key === 'teer-downgrade') {
+      out.push(fact('lookupVerdict', `${T.vLeverTeer}${zhOnly(`——${l.text}`, lang)}`,
+        (l.affected ?? []).length, '', 'paths', l.reasons?.[0]?.evidence ?? DERIVED))
+    }
+  }
+  return out
+}
+
+/**
+ * Slots → VerdictProfile。**一个槽都不补默认值**:缺的原样传 null,pathVerdict 会把该通道判成
+ * needs-info,编排层据此反问(verdictFollowups)。默认一个「一般人」的年龄或语言 = 算另一个人的分。
+ */
+export function verdictProfileOf(slots: Slots, teer: number | null): VerdictProfile {
+  // 🔴 「一共几个月经验」拆不出「在哪儿攒的」—— 只有 0 是无歧义的(哪儿都没干过)。
+  //    >0 时两边都留 null:相关通道落 needs-info,那正是实话。**不许**默认算加拿大经验
+  //    (多数通道只认加拿大的,会把一个海外申请人的路凭空判开),也不许默认算海外经验(反过来一样错)。
+  const zeroExp = slots.expMonths === 0
+  return {
+    age: slots.age ?? null,
+    married: slots.married ?? null,
+    clb: slots.clb ?? null,
+    edu: slots.edu ?? null,
+    eduYears: slots.eduYears ?? null,
+    canadaStudy: slots.canadaStudy ?? null,
+    studyProvince: slots.studyProvince ?? null,
+    noc: slots.noc,
+    teer,
+    expCanadaMonths: zeroExp ? 0 : null,
+    expForeignMonths: zeroExp ? 0 : null,
+    foreignExpSelfEmployed: null,
+    status: slots.status,
+    // 现居省本站还没有这个槽(slots.provs 是他**问的**省,不是他**住的**省 —— 拿它当现居地,
+    // 一个在安省问「曼省怎么样」的人会被当成曼省居民)。留 null → 带居住门槛的通道落 needs-info。
+    province: null,
+  }
+}
+
+/** 缺槽反问:按 PROFILE_SLOTS 的顺序问最要紧的几个(问句是本层写死的三语文案,不过模型)。 */
+export function verdictFollowups(slots: Slots, lang: ChatLang, limit = 3): string[] {
+  return PROFILE_SLOTS.filter((k) => slots[k] == null).slice(0, limit).map((k) => LBL[lang].vAsk[k])
+}
+
 const FED_FACTOR: Record<ChatLang, Record<string, string>> = {
   zh: {
     pgwpLength: '工签长度分档', pgwpCombine: '多个课程合并规则', pgwpOnce: '一生可申请次数',
@@ -1059,7 +1443,11 @@ export function crsFacts(results: CrsResult[], lang: ChatLang): Fact[] {
  */
 export async function collectFacts(
   pool: any, slots: Slots, teerHint?: number | null, lang: ChatLang = 'en', onStep?: OnStep,
-  opts: { plan?: boolean; federalPrograms?: FederalRuleProgram[]; crs?: CrsLookupArgs[]; allProvs?: boolean } = {},
+  opts: {
+    plan?: boolean; federalPrograms?: FederalRuleProgram[]; crs?: CrsLookupArgs[]; allProvs?: boolean
+    /** 路径裁决(C5c)。触发判据在 orchestrate:问的是「走哪条路」且档案槽够用 —— 纯函数判,不问模型。 */
+    verdict?: boolean
+  } = {},
 ): Promise<{ facts: Fact[]; teer: number | null; title: string }> {
   const noc = slots.noc ?? ''
   const zeroExp = slots.expMonths === 0
@@ -1109,7 +1497,7 @@ export async function collectFacts(
     ? provs
     : coverage.provinces.filter((c) => c.availability === 'ok' && c.hits.some((h) => h.type !== 'ineligible')).map((c) => c.province)
   ).slice(0, 3)
-  const [draws, ops, named, plan] = await Promise.all([
+  const [draws, ops, named, plan, verdict] = await Promise.all([
     Promise.all(provs.slice(0, 3).map((p) => tap(lookupDraws(pool, { prov: p, limit: 1 }), () => S.draws(p)))),
     Promise.all(provs.slice(0, 3).map((p) => tap(lookupOps(pool, { prov: p }), () => S.ops(p)))),
     // 点名过的省即使一个岗都没有也必须出现在 facts 里(C1 契约:「0 也得让他看见」)——
@@ -1123,12 +1511,21 @@ export async function collectFacts(
         profile: slots.expMonths == null ? undefined : { totalExpMonths: slots.expMonths, ...(zeroExp ? { canadianExpMonths: 0 } : {}) },
       }), () => S.plan(planProvs.join(' ')))
       : Promise.resolve(null),
+    // 🔴 只在他真的问了「走哪条路」时才判(orchestrate 用 isPathQuestion + 档案槽计数判,纯函数)。
+    //    teer 用 lookupThresholds 查出来的那一个:通道门槛按 TEER 挑行,自己再算一次迟早两处不一致。
+    opts.verdict
+      ? tap(lookupVerdict(pool, verdictProfileOf(slots, thresholds.teer), { clbTarget: VERDICT_CLB_TARGET }),
+        (r) => S.verdict(r.pathways.length))
+      : Promise.resolve(null),
   ])
 
   const out: Fact[] = []
+  const T = LBL[lang]
+  // ①0 路径裁决。排在**最前面**是因为他问「走哪条路」时,这几条就是答案本身;
+  //     facts 塞不下时是从尾巴上砍的,排在后面等于最该答的那句反而被省级清单挤掉(同 planFacts 的理由)。
+  if (verdict) out.push(...verdictFacts(verdict, lang))
   // ① 在招岗位。这是零经验剧本里的第一句话「缺的不是选省,是第一份算数的岗」——
   //    所以给的必须是**这个职业真实的在招盘子**,不是它的某个子集。
-  const T = LBL[lang]
   // 🔴 **材料不是提纲**:同一种数字给八个省,模型必然一省写一句(2026-08-04 生产实录:问「中介收 2 万值不值」,
   //    答复里八行省份岗位数)。零经验剧本要的是全国盘子,那时给全 10 省;其余情形
   //    只给点名省 + 前几名(追问「哪个省岗位最多」照样答得了),把「省份点名册」这条诱惑掐掉。
@@ -2457,10 +2854,16 @@ export async function orchestrate(
     const occHint = `${hit.title || slots.occText} (NOC ${slots.noc})`
     onStep?.({ phase: 'occ', text: S.occ(occHint) })
   }
+  // 🔴 路径裁决的触发判据(C5c),两条同时成立才算,缺一不可:
+  //   ① 他问的就是「我走哪条路」(isPathQuestion 只读原话,不看模型猜的槽 —— 同 federalRulePrograms 那条原则);
+  //   ② 档案槽有值的够 MIN_PROFILE_SLOTS 个 —— 不够就不硬算:判出来的十三条几乎全是 needs-info,
+  //      与其把「判不了」说十三遍,不如反问一句该补的槽(followups 见下面 askSlots)。
+  //   另外还要 hit:通道判定处处依赖 NOC/TEER,拿不到 5 位码就反问,这条铁律在这儿一样管用。
+  const verdictOn = !!hit && isPathQuestion(text) && filledProfileSlots(slots).length >= MIN_PROFILE_SLOTS
   // 问的是「要多久 / 哪条更快」才算时间线(判据是纯函数,不问模型:topic 归模型猜的那些坑已经踩够了)
   const { facts, title } = await collectFacts(pool, slots, null, lang, onStep, {
     plan: !!hit && isPlanQuestion(text) && !isOddsQuestion(text), federalPrograms, crs,
-    allProvs: asksWhichProvince(text),
+    allProvs: asksWhichProvince(text), verdict: verdictOn,
   })
   const occ = hit ? `${title || hit.title || slots.occText} (NOC ${slots.noc})` : ''
 
@@ -2616,5 +3019,9 @@ export async function orchestrate(
   // 降级成事实清单时**整张清单就是答复**,所以有出处的全标上 —— 那种时候出处正是唯一能点的东西。
   const out = degraded ? facts.map((f) => ({ ...f, cited: Boolean(f.evidence.url) })) : citeFacts(answer, facts)
   console.log(`[chat] cited ${out.filter((f) => f.cited).length}/${out.length} facts noc=${slots.noc} degraded=${degraded}`)
-  return { answer, slots, facts: out, followups: buildFollowups(facts, lang, text), ...(degraded ? { degraded: true } : {}) }
+  // 🔴 问了「走哪条路」却没判 = 档案槽不够。这时**反问缺的那几个槽**排在追问最前面:
+  //    不补槽就不会有裁决,推别的追问等于把他领去一个答不了他这个问题的地方。
+  const askSlots = isPathQuestion(text) && !verdictOn ? verdictFollowups(slots, lang) : []
+  const followups = [...askSlots, ...buildFollowups(facts, lang, text)].slice(0, 3)
+  return { answer, slots, facts: out, followups, ...(degraded ? { degraded: true } : {}) }
 }

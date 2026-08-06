@@ -73,20 +73,39 @@ export type PathwayVerdict = {
       RCIP workHours 1560+自雇不计(Rural/Francophone 两页文案逐字同,引用核验闸过)。
       **AIP 未补**:门槛数字只在联邦 canada.ca 页,现有 crawl 无覆盖 → 缺 URL 待爬(需新 slug fed-aip),
       C5b 注册表里 AIP 先标 not-collected。ON 第三档(近5年同NOC 2 年)超范围未收录,builder 注释留痕。
-- [ ] **C5b pathVerdict 核心**(`lib/pathVerdict.ts` + `tests/int/pathVerdict.int.spec.ts`):
+- [x] **C5b 完成(2026-08-06,29 测试绿/tsc 绿)**:`lib/pathVerdict.ts`(契约原样)+ `pathLevers` 第二导出。
+      金标 ①-⑤ 全过;加测「攒 12 个月 MB 工作」tier 2→0,并**机器自跑出 C01 的核心结论**:
+      同一年经验放安省 → MB 再扣 100 → 天花板 615<632 → excluded(「应避开曼省」的机器版)。
+      两处判断已定(可推翻,文件头有注):分数鸿沟 = 语言拉满后的天花板仍 < refLine → excluded;
+      MB score 按「门槛达成态」算并在 refLabel 明写。
+      发现并已修:designated_employers mart 不带 url/fetched → NL 3 家事实挂不上 evidence
+      (09+Payload+seed+`docs/sql/c5-designated-evidence.sql` 已补,DDL 已代跑生产);
+      仍留:pnp_draws 无子通道键(MB 用全省兜底,BC 明令不开)、RCIP/MB-SWM 语言行缺、ON 第三档未收录。
+- [ ] ~~**C5b pathVerdict 核心**~~(原始规格保留在下,已按上执行)(`lib/pathVerdict.ts` + `tests/int/pathVerdict.int.spec.ts`):
       通道注册表(C01 §二/§三的 15 条:FED-EE、ON-workforce、NB-sw、NS-sw、SK-offer、AIP、RCIP、
       MB-swm、AB-opportunity、BC-sw、BC-build、NL-intl-grad、PE-sw);逐通道:经验/语言/学历/年龄门槛
       走 evaluateRequirements + 通道特有规则(自雇不计/外省毕业生年限/JVA 豁免);估分通道挂 score
-      与 refLine(最近抽选线,draws 查表);tier 按被卡的最长门槛算。金标断言(全部来自 C01):
-      ① excluded 5 条:FED-EE(CRS 185 vs CEC 516 + 零经验不入池)/PE(24 月)/BC-sw(24 月)/
-        AB(24 月)/MB-swm(外省毕业生 12 月 + 695<825 天花板 715);
-      ② open 分档:tier0=NL-intl-grad(无经验门槛,PGWP≥4 月);tier1=ON-workforce(3-6 月)、NB-sw(6 月);
-        tier2=NS/SK-offer/AIP/RCIP/MB-swm(12 月);tier3=AB/BC(24 月);
-      ③ SK-offer 不受 243 清单约束(appliesTo)且 72310 不在 Job Offer 排除清单;
-      ④ 杠杆:75110(TEER 5)会毁掉 TEER 匹配 → 单独输出 warning;CLB6→8 对 ON +8 / MB +20。
-- [ ] **C5c 编排接线**(`chatOrchestrate.ts` Slots 扩五槽 age/married/clb/edu/canadaStudy +
-      `lookupVerdict` 薄封装 + STEP 三语 + 缺槽反问文案):纯联邦/普通职位问法不触发;缺槽列 needs-info
-      不硬算;对话金标 = 木匠一句话进 → 排除/可用/杠杆多轮出,每个数字可溯源。
+      与 refLine(最近抽选线,draws 查表);tier 按被卡的最长门槛算。
+      **verdict 语义(定稿,消 C01「已排除」的双关)**:excluded = 有**攒时间补不齐**的硬伤
+      (分数差鸿沟/职业清单不含);open+tier = 未达门槛全为可积累项(经验/居住),tier=还差多久;
+      needs-info = 缺档案槽**或库缺门槛行**(availability 带 not-collected,不拿文档记忆当库)。
+      金标断言(来自 C01,CRS 数字用 08-06 修正版):
+      ① excluded 2 条:FED-EE(零经验不入池 + CRS 183/199 vs CEC 516,分差不可积累)、
+        PE(72310 不在 PEI OID 清单——清单型硬伤;24 月另列 gap);
+      ② open 分档:tier0=NL-intl-grad(无经验门槛,quote=op none);tier1=ON-workforce(6/毕业生3月)、
+        NB-sw(6 月);tier2=NS、SK-offer、RCIP、MB-swm(12 月);tier3=AB、BC-sw、BC-build(24 月);
+        MB-swm 必须带三条 warning:外省学习 −100(quote)/若先外省工作再 −100(595)/
+        估分 695 与天花板 715 对照抽选 632·825;
+      ③ AIP = needs-info:经验门槛行未收录(C5b-0 如实缺口),不许拿 C01 文档里的 1560h 当库;
+      ④ SK-offer 不受 243 清单约束(appliesTo=OID/EE)且 72310 不在 Job Offer 排除清单(14 条);
+      ⑤ 杠杆:75110(TEER 5)毁 TEER 匹配 → warning;CLB6→8:ON +8 / MB +20(查表得出)。
+- [x] **C5c 完成(2026-08-06,19/19 新测试;chat 全家 137/137;全量 418 绿 1 红=既有脆测试,stash 复跑证明无关)**:
+      触发 = NOC 到手 + 路径问法词表(纯函数不过模型)+ 档案槽 ≥3;缺槽反问(年龄→CLB→学历序,三语写死)。
+      口径三则(接手必读):`married` 存的是**配偶随不随行**(CRS 分表判据),不是婚否;雅思/CELPIP 不心算
+      CLB(换算表未收录 → 反问,已知取舍);tier 四句**零数字**(区间分档不给假精度)。
+      facts 压平:C01 实测 23 条 <3000 字符,excluded 全带官方 quote(词边界截 76 字留省略号),
+      抽选线 evidence 用结构判据认领,认不出整条不给。两处故意留 null:经验「在哪儿攒的」>0 时不猜、
+      现居省无此槽(provs 是问的省)→ NB 居住门槛落 needs-info 是实话。
 
 ## 五、验收
 

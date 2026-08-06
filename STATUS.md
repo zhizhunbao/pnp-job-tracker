@@ -11,7 +11,24 @@
 > - **C 数据**:只读 `data/crawl/fed-ee/` 97 页缓存。语言 T4–T26 → raw 23 表/105 档、mart 443 行;ECA 页 FSW 教育映射 151 行并入 FSW67。实际本地 mart=`ee_points_grid` 380(CRS 186 + FSW67 194,points NULL 22)、`ee_language_grid` 443;唯一键重复 0、evidence 缺失 0。**未跑 09 main/seed/DB_PUSH/DDL;新语言 mart 尚无 CMS/生产消费链,不能对外声称 IELTS 原分已可自动换 CLB。**
 > - 全程未启 dev server、未 commit/push;`data/raw/ee/draws.json` 等定时 ETL 既有脏改保留,不属于本批。
 >
-> **⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡ 最新交接(2026-08-05 深夜,「C4 数据补口:案例 C01 的数字全部入库」)**
+> **⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡ 最新交接(2026-08-06 凌晨,「C5 判定层全链 + 两起生产事故」)**
+> - **✅ C5 三批全落**(明细见 docs/implementation/C5-判定层pathVerdict-20260805.md):C5a 估分器×2
+>   (CRS 183/199——抓出 C01 已婚年龄档 47→官方 45 笔误;MPNP 695/595/715)、C5b `pathVerdict` 13 通道
+>   注册表(29 测,**机器自跑出「应避开曼省」**:经验放安省→天花板 615<632→excluded)、C5c 对话接线
+>   (触发=NOC+路径问法+档案槽≥3;19 测;chat 全家 137/137)。**待办:生产真 LLM 实问一轮**(mock 已金标)。
+> - **🔴 事故复盘(我引发,已修已验)**:手动跑 09 用了 jobbank 21:03 刚写、详情未解析的半熟快照并 seed
+>   → 生产最新一批全「未分类」、表内中文全消失(Frank 实拍报障)。**手动 09 前必查最新批 noc 非空率**
+>   (已进 memory);修复后生产复验:首页 50 行分类全中文,8/5 残量 6/2309。
+> - **🐛 投递栏跑偏(Frank 报障,已修,生产已验)**:sticky 只在白卡盒内吸底,卡下还有页脚 → 窄屏整页改
+>   fixed 贴底(iOS 安全区+占位),弹框/桌面不动;playwright 双位点 + 生产探针 barBottom=viewportH。
+> - **Frank 口头反馈(记入 C6)**:详情页 OccReportCard「现在没什么用」——判断=病在出口(报告体系已摘),
+>   C6 卡位换装成裁决入口(Mode B 效果图先行);他若要先摘锁行,单独处理。
+> - `designated_employers` 补 url/fetched(C5b 发现 NL 3 家事实挂不上 evidence;DDL 已代跑生产)——
+>   ⏭️ **push 部署后须清 seed_state('designated_employers') 重灌一次**,否则生产该两列恒 NULL。
+> - ⏭️ 下一批 **C6 裁决卡 + 详情页入口**(Mode B),**C7 付费闸**(§五切分待 Frank 拍板);
+>   欠账:AIP 门槛缺 URL(需 fed-aip crawl)、pnp_draws 子通道键、RCIP/MB-SWM 语言行、BC 池脆测试待修。
+>
+> **⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡ 上一轮交接(2026-08-05 深夜,「C4 数据补口:案例 C01 的数字全部入库」)**
 > 上游:[路径裁决-C01复现计划](docs/design/路径裁决-C01复现计划-20260805.md)(C4→C7 把 C01 手工裁决变成对话产出+付费闸)。
 > 工作模式照 agent-team:5 子 agent 按文件区并行(NB/MB 抽选、MB EOI 积分表、SINP 适用范围+PDF、NL 雇主、OINP 运营),主 agent 收口集成。
 > - **✅ 金标 20/20 全绿**(`etl/audit_c01_gold.py`,C5 判定层拿它当单测底座):MPNP 695 逐档复现、

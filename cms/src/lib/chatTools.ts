@@ -16,8 +16,17 @@ import { NO_LIST_PROVINCES, provListCoverage, type MatchDims, type ProvListCover
 // ⚠️ 单向依赖:planTimeline 只 `import type` 本文件(编译期擦除),所以这条运行时的边不成环。
 // 要往回加一个**值**引用之前先想清楚:那会变成真的循环依赖。
 import { buildPlan, type Plan, type PlanPathInput } from './planTimeline'
+// ⚠️ 这条边只能是**单向**的:pathVerdict 对本文件只 `import type`(编译期擦除),
+// 所以这里拿它的**值**(pathVerdict/pathLevers)不成环。往 pathVerdict 里加一个指回本文件的值引用之前先想清楚。
+import {
+  pathLevers, pathVerdict,
+  type DesignatedEmployerRow, type OccupationRow, type PathwayVerdict,
+  type VerdictData, type VerdictDrawRow, type VerdictLever, type VerdictProfile,
+} from './pathVerdict'
 import { assembleReportFacts } from './reportFacts'
-import { evaluateRequirements, type ReqSubject, type RuleProfile, type RuleVerdict } from './rules'
+import { evaluateRequirements, type Requirement, type ReqSubject, type RuleProfile, type RuleVerdict } from './rules'
+import type { ScoreFactor } from './pnpSelfScore'
+import type { EeGridRow } from './crsEstimate'
 import { checkedAt } from './jobsSql'
 
 // ── 公共类型 ────────────────────────────────────────────────────────────────
@@ -1049,5 +1058,120 @@ export async function lookupPlan(
       ? '每段月数都挂着官方出处;算不出的段留空并说明是「官方不公布」还是「本站未收录」,不折成 0。'
         + '含未知段的路径只给**下界**,不给总数'
       : `本站算不出 ${provs.join('/')} 的时间线:三类数据(门槛 / 抽选 / 处理时长)没有一段能落到有出处的月数上`,
+  }
+}
+
+// ── ⑩ lookupVerdict:路径裁决(C5b pathVerdict 的薄封装,C5c)────────────────────
+//
+// 本工具**一条判定规则都不写**:注册表、排除口径、tier 分档、估分全在 `lib/pathVerdict.ts`
+// (纯函数 + rows 入参,29 条测试盯着)。这一层只干两件事:把六张表按 mart 的 snake_case 列查出来
+// 喂进去、把结果原样带出来。理由同 lookupPlan —— 那边算术全在 buildPlan,这边判定全在 pathVerdict;
+// 之所以还要这一层,是因为纯函数不查库,而**喂它哪张表**正是这里的职责(喂错一张,它照样算得出结果,
+// 只是那个结果没有出处撑着)。
+//
+// 三件**故意不做**的事:
+//   ① 不补默认档案:profile 里缺的槽原样传 null —— pathVerdict 会把该通道判成 needs-info,
+//      那正是对的答案(编排层据此反问),不是让这里猜一个「一般人」的年龄/语言。
+//   ② 不合并四态:库里一行门槛都没有 → not-collected(本站的缺口),**不说成「官方没有要求」**。
+//   ③ 不排序、不挑「推荐哪条」:pathVerdict 自己按 open→needs-info→excluded 排好,本层原样返回。
+
+export type VerdictResult = {
+  availability: Availability
+  /** 13 条通道的裁决,pathVerdict 排好序原样带出(open 按 tier 升序在前 → needs-info → excluded 沉底) */
+  pathways: PathwayVerdict[]
+  levers: VerdictLever[]
+  /** 口径:这是按官方门槛做的粗筛信号,不是资格认定 */
+  scope: string
+  note: string
+}
+
+const VERDICT_SCOPE =
+  '路径判定的口径:逐条通道拿官方门槛条文与这份档案对照,每条判定都挂官方原句与出处。'
+  + '这是粗筛信号,不是资格认定 —— 各省还有自己的清单、语言与工资细则,最终以官方受理为准'
+
+export async function lookupVerdict(
+  pool: any, profile: VerdictProfile, opts: { clbTarget?: number; teerDowngradeNoc?: string } = {},
+): Promise<VerdictResult> {
+  const rowsOf = async (sql: string, params: unknown[] = []): Promise<any[]> => {
+    const r = await pool.query(sql, params).catch(() => ({ rows: [] }))
+    return (r?.rows ?? []) as any[]
+  }
+  const [reqRows, occRows, drawRows, factorRows, gridRows, empRows] = await Promise.all([
+    // applies_condition 走 to_jsonb 取(同 reportFacts):列缺失时返回 NULL 而不是 42703 —— 
+    // additive 列上生产**之前**这段也能照常查,不让 DDL/push 谁先谁后变成线上开关
+    rowsOf(`SELECT province, program, stream, subject, factor, op, value, value_text, unit,
+                   applies_teer, applies_noc, excludes_noc, applies_area,
+                   to_jsonb(q) ->> 'applies_condition' AS applies_condition,
+                   applies_family_size, basis, label, section, seq, effective, url, page_url, fetched
+            FROM pnp_requirements q ORDER BY province, seq`),
+    rowsOf(`SELECT province, stream, label, program, type, applies_to, noc, name, gta_restricted, url, fetched
+            FROM pnp_occupations`),
+    rowsOf(`SELECT province, label, scale, kind, draw_date, stream, score, invitations, note, url, fetched
+            FROM pnp_draws WHERE COALESCE(draw_date,'') <> '' ORDER BY draw_date DESC`),
+    rowsOf(`SELECT province, system, factor, kind, seq, label, points, xor_prev, rule,
+                   factor_max, factor_group, group_max, pass_mark, max_total, guide_effective, url, fetched
+            FROM pnp_score_factors ORDER BY province, factor, seq`),
+    rowsOf(`SELECT grid, section, section_label, kind, table_no, heading, factor, criterion,
+                   column_label, points, points_text, seq, url, fetched
+            FROM ee_points_grid ORDER BY seq`),
+    // 指定雇主名录 3476 行里,pathVerdict 只读 NL 那一段(NLPNP 的 supporting fact:
+    // 「名录里有几家申报过这个 NOC」,分母也是 NL 自己那 639 家)。整表拉回来纯属浪费带宽。
+    rowsOf(`SELECT name, province, location, is_tech, source, nocs, url, fetched
+            FROM designated_employers WHERE province = 'NL'`),
+  ])
+
+  const data: VerdictData = {
+    requirements: reqRows.map((r): Requirement => ({
+      province: r.province ?? '', program: r.program ?? '', stream: r.stream ?? '', subject: r.subject,
+      factor: r.factor ?? '', op: r.op ?? '', value: numOf(r.value), valueText: r.value_text ?? '', unit: r.unit ?? '',
+      appliesTeer: r.applies_teer ?? '', appliesNoc: r.applies_noc ?? '', excludesNoc: r.excludes_noc ?? '',
+      appliesArea: r.applies_area ?? '', appliesCondition: r.applies_condition ?? '',
+      familySize: numOf(r.applies_family_size), basis: r.basis ?? '', label: r.label ?? '',
+      section: r.section ?? '', effective: r.effective ?? '',
+      url: r.url ?? '', pageUrl: r.page_url ?? '', fetched: r.fetched ?? '',
+    })),
+    occupations: occRows.map((r): OccupationRow => ({
+      province: r.province ?? '', stream: r.stream ?? '', label: r.label ?? '', program: r.program ?? '',
+      type: r.type ?? '', url: r.url ?? '', fetched: r.fetched ?? '', appliesTo: r.applies_to ?? '',
+      noc: r.noc ?? '', name: r.name ?? '', gtaRestricted: !!r.gta_restricted,
+    })),
+    draws: drawRows.map((r): VerdictDrawRow => ({
+      province: r.province ?? '', label: r.label ?? '', scale: r.scale ?? null, url: r.url ?? '',
+      fetched: r.fetched ?? '', kind: r.kind ?? '', drawDate: String(r.draw_date ?? '').slice(0, 10),
+      stream: r.stream ?? '', score: numOf(r.score), invitations: numOf(r.invitations), note: r.note ?? '',
+    })),
+    scoreFactors: factorRows.map((r): ScoreFactor => ({
+      province: r.province ?? '', system: r.system ?? '', factor: r.factor ?? '', kind: r.kind ?? 'row',
+      seq: Number(r.seq ?? 0), label: r.label ?? '', points: numOf(r.points), xorPrev: !!r.xor_prev, rule: r.rule ?? '',
+      factorMax: numOf(r.factor_max), factorGroup: r.factor_group ?? '', groupMax: numOf(r.group_max),
+      passMark: numOf(r.pass_mark), maxTotal: numOf(r.max_total),
+      guideEffective: r.guide_effective ?? '', fetched: r.fetched ?? '', url: r.url ?? '',
+    })),
+    eeGrid: gridRows.map((r): EeGridRow => ({
+      grid: r.grid ?? '', section: r.section ?? '', sectionLabel: r.section_label ?? '', kind: r.kind ?? '',
+      tableNo: numOf(r.table_no), heading: r.heading ?? '', factor: r.factor ?? '', criterion: r.criterion ?? '',
+      columnLabel: r.column_label ?? '', points: numOf(r.points), pointsText: r.points_text ?? '',
+      seq: numOf(r.seq), url: r.url ?? '', fetched: r.fetched ?? '',
+    })),
+    designatedEmployers: empRows.map((r): DesignatedEmployerRow => ({
+      name: r.name ?? '', province: r.province ?? '', location: r.location ?? '', isTech: !!r.is_tech,
+      source: r.source ?? '', nocs: r.nocs ?? '', url: r.url ?? '', fetched: r.fetched ?? '',
+    })),
+  }
+
+  // 门槛条文一行都没有 = **本站的缺口**,不是「官方没有门槛」。这时不跑判定:
+  // 跑出来的 13 条全是 needs-info,除了把这句话说十三遍没有别的信息。
+  if (!data.requirements.length) {
+    return {
+      availability: 'not-collected', pathways: [], levers: [], scope: VERDICT_SCOPE,
+      note: '本站未收录省提名门槛条文,这一轮判不了路径 —— 是本站的缺口,不等于官方没有要求',
+    }
+  }
+  return {
+    availability: 'ok',
+    pathways: pathVerdict(profile, data),
+    levers: pathLevers(profile, data, opts),
+    scope: VERDICT_SCOPE,
+    note: '每条通道的排除理由都带官方原句;库里缺门槛行的通道标 needs-info(本站未收录),不拿别处的记忆填',
   }
 }

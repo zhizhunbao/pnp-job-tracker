@@ -17,5 +17,7 @@ export const DesignatedEmployers: CollectionConfig = {
     { name: 'isTech', type: 'checkbox', defaultValue: false },
     { name: 'source', type: 'text', admin: { description: 'AIP官方名单来源(NL/NB/NS)' } },
     { name: 'nocs', type: 'text', admin: { description: '雇主申报的 NOC 码(逗号连接)。仅 NL(官方省站名录)有;空 = 未申报职位(NL)或来源不含此信息(NB/NS)' } },
+    { name: 'url', type: 'text', admin: { description: '雇主页出处(NL 官方名录逐家页);判定层引用此表事实时的 evidence' } },
+    { name: 'fetched', type: 'text', admin: { description: '本站抓取日(evidence 随行)' } },
   ],
 }

@@ -847,14 +847,17 @@ def build():
             codes = sorted({n["noc"] for n in e.get("nocs", []) if n.get("noc")})
             nl_official.append({"name": e.get("name"), "province": "NL",
                                 "location": e.get("location") or "", "isTech": False,
-                                "source": "AIP", "nocs": ",".join(codes)})
+                                "source": "AIP", "nocs": ",".join(codes),
+                                # 出处随行(C5b 发现):判定层要引「639 家里 3 家申报过 72310」,
+                                # 没有 url/fetched 这条 supporting fact 挂不上 evidence,只能闭嘴。
+                                "url": e.get("url") or "", "fetched": nle.get("fetched", "")})
     if IN_AIP.exists():
         for e in json.loads(IN_AIP.read_text(encoding="utf-8")):
             if nl_official and e.get("province") == "NL":
                 continue
             designated.append({"name": e.get("employer"), "province": e.get("province"),
                                "location": e.get("location"), "isTech": bool(e.get("tech")), "source": "AIP",
-                               "nocs": ""})  # 旧聚合源不含申报职位 —— 空串是「来源没有」,不是「没申报」
+                               "nocs": "", "url": "", "fetched": ""})  # 旧聚合源不含申报职位/逐家页 —— 空串是「来源没有」,不是「没申报」
     designated += nl_official
 
     # NOC 分类维度(大/中/小 + TEER,数据集出现的层级组合)
