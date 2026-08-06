@@ -18,13 +18,13 @@ const nextConfig: NextConfig = {
     '/api/resume-extract': ['./node_modules/pdfjs-dist/**/*'],
     '/api/resume': ['./node_modules/pdfjs-dist/**/*'],
   },
-  // E13-03 三页合一(设计 §5):/stats 索引页与 /stats/compare 退役 → 301 到把脉首页。
-  // source 精确匹配这两条路径,**不影响** /stats/[prov] 与 /stats/[prov]/[cat](S4 的下钻落点,照旧存在)。
+  // E13-03 三页合一 + 08-06 Frank 追加拍板「完整统计都删掉,与首页重复」:
+  // /stats 全家(索引/compare/省页/省×大类)退役 → 通配 301 到把脉首页(S4 已承载省级内容)。
   // 用 statusCode:301 而非 permanent:true(后者发 308)——旧链接在搜索引擎里已被收录,301 是它们认的那个。
   async redirects() {
     return [
       { source: '/stats', destination: '/start', statusCode: 301 },
-      { source: '/stats/compare', destination: '/start', statusCode: 301 },
+      { source: '/stats/:path*', destination: '/start', statusCode: 301 },
     ]
   },
   images: {
