@@ -98,6 +98,17 @@ function TopN({ v, on, max }: { v: number; on: (n: number) => void; max: number 
 // 绝不拿 0 顶包;单行缺值显「—」。
 function OccBoard({ rows, t, lang, nocProvs, showProvs = true, pageSize = 10 }: { rows: OccRow[]; t: TFn; lang: string; nocProvs: Map<string, string[]>; showProvs?: boolean; pageSize?: number }) {
   const hasMom = rows.some((o) => o.mom14d != null)
+  // E13-05:榜 A(showProvs=false)专用列——真口径可提名省份(pnp_provs,含排除式省/雇主担保类,
+  // 与「紧缺清单省份」列语义不同、互斥出现)。列还没落库(全行 null/undefined)时整列不渲染。
+  const hasPnpProvs = rows.some((o) => o.pnpProvs != null)
+  const pnpProvsCell = (o: OccRow) => {
+    const s = o.pnpProvs ?? ''
+    if (!s) return <span style={{ color: UI.text3 }}>—</span>
+    const arr = s.split('、')
+    return arr.length <= 4
+      ? <span style={{ color: '#b45309', fontWeight: 600 }}>{s}</span>
+      : <span title={s} style={{ color: '#b45309', fontWeight: 600 }}>{t('pulse.provs.n', { n: arr.length })}</span>
+  }
   // 手机卡片列表的页态(桌面表格的页态在 DataTable 里,俩视图同刻只显示一个,各翻各的)
   const [page, setPage] = useState(0)
   useEffect(() => { setPage(0) }, [rows])
@@ -146,6 +157,10 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, pageSize = 10 }: 
       key: 'provs', label: t('pulse.col.provs'), nowrap: true, thTip: t('pulse.col.provs.tip'),
       sort: (o: OccRow) => provsOf(o).length,
       render: (o: OccRow) => provsCell(o),
+    }] : hasPnpProvs ? [{
+      key: 'pnpProvs', label: t('pulse.col.pnpProvs'), nowrap: true, thTip: t('pulse.col.pnpProvs.tip'),
+      sort: (o: OccRow) => (o.pnpProvs ? o.pnpProvs.split('、').length : 0),
+      render: (o: OccRow) => pnpProvsCell(o),
     }] : []),
     // 薪资列(Frank 08-06 二改「不如换成薪资区间」):ESDC 官方薪资区间年化(低-高)主显,
     // 帖面中位年薪降级进单元格 title(小样本护栏沿用:salaryN<5 不带中位)

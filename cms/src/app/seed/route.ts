@@ -158,14 +158,16 @@ export async function GET(req: Request) {
       // wage_low/high_annual(2026-07-31 范围拍板):改列后已清 seed_state(坑:表级哈希会让新列静默跳过)
       // E13-02 v3(把脉首页):new30d/new30d_prev/mom30d/new14d_prev/mom14d/closed30d/net30d/avg_days_open/pulse_score
       // ——改列后同样要清 seed_state('stats_occupation')
-      ['noc', 'province', 'title_zh', 'title_zh_short', 'title_en', 'teer', 'broad', 'mid', 'fine', 'open_jobs', 'new7d', 'median_wage_annual', 'wage_low_annual', 'wage_high_annual', 'median_salary_annual', 'salary_n', 'named_jobs', 'fetched', 'new30d', 'new30d_prev', 'mom30d', 'new14d', 'new14d_prev', 'mom14d', 'closed30d', 'net30d', 'avg_days_open', 'pulse_score'],
+      // E13-05:pnp_provs(真口径可提名省份,只在 province='all' 行有值)——同样要清 seed_state('stats_occupation')
+      ['noc', 'province', 'title_zh', 'title_zh_short', 'title_en', 'teer', 'broad', 'mid', 'fine', 'open_jobs', 'new7d', 'median_wage_annual', 'wage_low_annual', 'wage_high_annual', 'median_salary_annual', 'salary_n', 'named_jobs', 'fetched', 'new30d', 'new30d_prev', 'mom30d', 'new14d', 'new14d_prev', 'mom14d', 'closed30d', 'net30d', 'avg_days_open', 'pulse_score', 'pnp_provs'],
       (r) => ({ noc: r.noc, province: r.province, title_zh: r.titleZh, title_zh_short: r.titleZhShort, title_en: r.titleEn, teer: r.teer, broad: r.broad, mid: r.mid, fine: r.fine,
                 open_jobs: r.openJobs, new7d: r.new7d, median_wage_annual: r.medianWageAnnual, wage_low_annual: r.wageLowAnnual, wage_high_annual: r.wageHighAnnual, median_salary_annual: r.medianSalaryAnnual,
                 salary_n: r.salaryN, named_jobs: r.namedJobs, fetched: r.fetched,
                 new30d: r.new30d ?? null, new30d_prev: r.new30dPrev ?? null, mom30d: r.mom30d ?? null,
                 new14d: r.new14d ?? null, new14d_prev: r.new14dPrev ?? null, mom14d: r.mom14d ?? null,
                 closed30d: r.closed30d ?? null, net30d: r.net30d ?? null,
-                avg_days_open: r.avgDaysOpen ?? null, pulse_score: r.pulseScore ?? null })],
+                avg_days_open: r.avgDaysOpen ?? null, pulse_score: r.pulseScore ?? null,
+                pnp_provs: r.pnpProvs ?? null })],
     ['stats_city', 'stats_city',
       ['city', 'province', 'open_jobs', 'new7d', 'median_wage_annual', 'median_salary_annual', 'salary_n', 'named_jobs', 'fetched'],
       (r) => ({ city: r.city, province: r.province, open_jobs: r.openJobs, new7d: r.new7d,

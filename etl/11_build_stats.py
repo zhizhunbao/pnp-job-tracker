@@ -25,6 +25,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _paths  # noqa: E402
 import noc as NOC  # noqa: E402  E13-02:NOC 分类法(单一来源),给 stats_daily 的 closed 归 broad 桶用
 
+# E13-05:全国 occ 行的 pnpProvs 复用 08_score.pnp_eligible(禁复制判定逻辑)。
+# 08_score 是数字开头的模块名,不能直接 import;importlib 按路径加载——顶层只有表构建
+# (PNP_BY_PROV/EE_BY_NOC 读 json,轻量),重活(collect/main 扫全量岗位)都在 __main__ 守卫内,
+# 加载它不会触发那段重活。
+import importlib.util as _ilu  # noqa: E402
+_score_spec = _ilu.spec_from_file_location("score08", Path(__file__).resolve().parent / "08_score.py")
+_score = _ilu.module_from_spec(_score_spec)
+_score_spec.loader.exec_module(_score)
+pnp_eligible = _score.pnp_eligible
+
 if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
     sys.stdout.reconfigure(encoding="utf-8")
 
@@ -57,6 +67,8 @@ COVERAGE_COMPLETE = date(2026, 7, 2)
 
 PROVS = ["ON", "BC", "AB", "SK", "MB", "QC", "NS", "NB", "NL", "PE"]
 TODAY = date.today().isoformat()
+# E13-05:榜 A「可提名省份」列的省序(工作项文档 §3.1 写死);QC 由 pnp_eligible 内部按 NON_PNP_PROV 自然排除,不入序
+PNP_PROV_ORDER = ["BC", "AB", "SK", "MB", "ON", "NB", "NS", "PE", "NL"]
 
 
 def median_or_none(vals: list) -> float | None:
@@ -309,7 +321,10 @@ def main() -> None:
                     "closed30d": f["closed30d"], "net30d": f["net30d"],
                     "mom30d": f.get("mom30d"), "mom14d": f.get("mom14d"), "avgDaysOpen": avg_open.get(key)}
 
-        occ_rows.append({**base, "province": "all", **agg(js), **flow_of((noc, "all"))})   # 全国行
+        # E13-05:真口径可提名省份(pnp_eligible 逐省判,非省具名清单命中);teer=None → 空串(宁可留空)
+        teer = base["teer"]
+        pnp_provs = "、".join(p for p in PNP_PROV_ORDER if pnp_eligible(noc, teer, p))
+        occ_rows.append({**base, "province": "all", "pnpProvs": pnp_provs, **agg(js), **flow_of((noc, "all"))})   # 全国行
         by_p: dict[str, list] = defaultdict(list)
         for j in js:
             if j.get("province"):
