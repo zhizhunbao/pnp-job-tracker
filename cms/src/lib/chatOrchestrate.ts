@@ -1067,7 +1067,7 @@ export async function collectFacts(
   }
 
   const [jobs, coverage, thresholds, ee, claims, federal, grids] = await Promise.all([
-    tap(lookupJobs(pool, { noc, apprentice: zeroExp }), (r) => S.jobs(r.rows.length)),
+    tap(lookupJobs(pool, { noc }), (r) => S.jobs(r.rows.length)),
     tap(lookupCoverage(pool, { noc }), (r) => S.coverage(r.provinces.length)),
     tap(lookupThresholds(pool, {
       noc, teer: teerHint, provs: provs.length ? provs : undefined,
