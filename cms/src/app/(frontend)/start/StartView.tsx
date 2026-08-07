@@ -134,17 +134,22 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
       </span>
     )
   }
-  // 全码直陈(Frank 08-06「tooltips 都去掉」后不再折叠成「N 省」,列内自然折行)。
-  // E13-09 拆两行:直陈行=拿 offer 即可;灰行=先省内同雇主 6 个月(五省普通通道)。
-  // 无 cond 时不出行标签(免噪音);两行都空才「—」。
+  // 08-08 Frank 拍 A 方案:全码直陈退役(翻案后行行 8-9 省=没区分度,且全是雇主锚定通道)——
+  // 压缩成「N 省可走」+ 只标例外:走不了的省红字(措辞与雷区榜同源「{provs} 无通道」),
+  // 「先省内工作 6 个月」的五省灰行保留(offer 都不够的前置条件,Frank「有些拿 offer 还不行」)。
   const pnpProvsCell = (o: OccRow) => {
-    const direct = o.pnpProvs ?? ''
-    const cond = o.pnpProvsCond ?? ''
-    if (!direct && !cond) return <span style={{ color: UI.text3 }}>—</span>
+    const direct = (o.pnpProvs ?? '').split('、').filter(Boolean)
+    const cond = (o.pnpProvsCond ?? '').split('、').filter(Boolean)
+    if (!direct.length && !cond.length) return <span style={{ color: UI.text3 }}>—</span>
+    const ok = new Set([...direct, ...cond])
+    const missing = DEAD_PROV_ORDER.filter((p) => !ok.has(p))
     return (
       <span style={{ display: 'block' }}>
-        {direct ? <span style={{ display: 'block', color: '#b45309', fontWeight: 600 }}>{cond ? `${t('pulse.provs.direct')} ${direct}` : direct}</span> : null}
-        {cond ? <span style={{ display: 'block', fontSize: 12, color: UI.text3 }}>{`${t('pulse.provs.cond')} ${cond}`}</span> : null}
+        <span style={{ display: 'block', color: '#b45309', fontWeight: 600 }}>
+          {t('pulse.provs.n', { n: ok.size })}
+          {missing.length ? <span style={{ color: UI.danger, marginLeft: 6 }}>{t('pulse.dead.cell', { provs: missing.join('、') })}</span> : null}
+        </span>
+        {cond.length ? <span style={{ display: 'block', fontSize: 12, color: UI.text3 }}>{`${t('pulse.provs.cond')} ${cond.join('、')}`}</span> : null}
       </span>
     )
   }
@@ -243,11 +248,8 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
                 ? undefined   // 08-08 Frank:有通道省两行删(常量);死路信息改红胶囊(chips 区)
                 : showProvs ? undefined   // 紧缺省文字行删——信息在 chips 的「MB 紧缺」胶囊里
 
-                : (o.pnpProvs || o.pnpProvsCond)   // E13-09:榜A手机卡也带两档省份(桌面独有=信息不对称)
-                  ? <span style={{ display: 'block' }}>
-                    {o.pnpProvs ? <span style={{ display: 'block', color: '#b45309', fontWeight: 600, whiteSpace: 'normal', overflowWrap: 'break-word' }}>{`${t('pulse.provs.direct')} ${o.pnpProvs}`}</span> : null}
-                    {o.pnpProvsCond ? <span style={{ display: 'block', color: UI.text3, whiteSpace: 'normal', overflowWrap: 'break-word' }}>{`${t('pulse.provs.cond')} ${o.pnpProvsCond}`}</span> : null}
-                  </span>
+                : (o.pnpProvs || o.pnpProvsCond)   // 08-08 A 方案:手机卡与桌面同一压缩形态(pnpProvsCell)
+                  ? <span style={{ display: 'block', whiteSpace: 'normal', overflowWrap: 'break-word' }}>{pnpProvsCell(o)}</span>
                   : undefined}
               chips={<>
                 {/* NOC/TEER 代码胶囊(Frank 08-08「手机端改成胶囊」「teer 也需要」);中性灰,别抢通道档的色 */}

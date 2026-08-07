@@ -296,7 +296,7 @@ const zh: Dict = {
   'pulse.b1a': '部分省禁止',
   'pulse.col.dead': '无移民通道的省', 'pulse.dead.cell': '{provs} 无通道',
   // 08-08 Frank 走查:紧缺列胶囊化(省码进胶囊);雷区榜 QC/RCIP 灰注删、「有移民通道的省」常量列删
-  'pulse.col.hot': '紧缺', 'pulse.tier.provOne': '{p} 紧缺', 'pulse.tier.fedOne': '联邦紧缺',
+  'pulse.col.hot': '紧缺', 'pulse.provs.n': '{n} 省可走', 'pulse.tier.provOne': '{p} 紧缺', 'pulse.tier.fedOne': '联邦紧缺',
   'pulse.provs.none': '无',
   // E13-09 可提名省份两档(拆行直陈,禁杂糅一行)
   'pulse.provs.direct': '拿 offer 可', 'pulse.provs.cond': '先省内工作 6 个月',
@@ -1185,7 +1185,7 @@ const en: Dict = {
   // E13-08 minefield board (strong negative claim; caliber = ETL any_pr_path: dead only when PNP, federal EE, AIP and the caregiver pilots all say no)
   'pulse.b1a': 'Not accepted in some provinces',
   'pulse.col.dead': 'Provinces with no route', 'pulse.dead.cell': '{provs} no route',
-  'pulse.col.hot': 'In-demand', 'pulse.tier.provOne': '{p} in-demand', 'pulse.tier.fedOne': 'Federal in-demand',
+  'pulse.col.hot': 'In-demand', 'pulse.provs.n': '{n} provinces open', 'pulse.tier.provOne': '{p} in-demand', 'pulse.tier.fedOne': 'Federal in-demand',
   'pulse.provs.none': 'None',
   // E13-09 two tiers of PNP provinces (separate lines, no mixed separators)
   'pulse.provs.direct': 'With a job offer', 'pulse.provs.cond': 'After 6 months working there',
@@ -2027,7 +2027,7 @@ const ko: Dict = {
   // E13-08 지뢰밭 랭킹(강한 부정 판정; 기준 = ETL any_pr_path: PNP·연방 EE·AIP·돌봄 파일럿 전부 불가일 때만)
   'pulse.b1a': '일부 주 접수 불가',
   'pulse.col.dead': '이민 경로 없는 주', 'pulse.dead.cell': '{provs} 경로 없음',
-  'pulse.col.hot': '수요', 'pulse.tier.provOne': '{p} 수요', 'pulse.tier.fedOne': '연방 수요',
+  'pulse.col.hot': '수요', 'pulse.provs.n': '{n}개 주 가능', 'pulse.tier.provOne': '{p} 수요', 'pulse.tier.fedOne': '연방 수요',
   'pulse.provs.none': '없음',
   // E13-09 PNP 가능 주 2단계(줄 분리 표기)
   'pulse.provs.direct': '오퍼만으로 가능', 'pulse.provs.cond': '주내 6개월 근무 후 가능',
