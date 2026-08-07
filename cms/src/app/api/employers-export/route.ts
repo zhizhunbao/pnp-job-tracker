@@ -26,6 +26,7 @@ export async function GET(req: Request) {
   const filters = {
     f: (fRaw === 'aip' || fRaw === 'lmia' || fRaw === 'named' ? fRaw : '') as '' | 'aip' | 'lmia' | 'named',
     prov: PROV_OK.has(one('prov').toUpperCase()) ? one('prov').toUpperCase() : '',
+    city: one('city').slice(0, 60),
     noc: /^\d{5}$/.test(one('noc')) ? one('noc') : '',
     q: one('q').slice(0, 80),
     sort: (one('sort') === 'skilled' ? 'skilled' : 'open') as 'open' | 'skilled',

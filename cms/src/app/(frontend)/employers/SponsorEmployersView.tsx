@@ -14,13 +14,14 @@ import { DataTable } from '../ui/DataTable'
 import { IconUsers } from '../Icons'
 import { SE_PAGE_SIZE, type SponsorEmployerRow } from '@/lib/sponsorEmployers'
 
-export type SponsorQuery = { f: string; prov: string; noc: string; q: string; sort: string; page: number }
+export type SponsorQuery = { f: string; prov: string; city: string; noc: string; q: string; sort: string; page: number }
 
 // 所在地压缩(Frank 文案铁律:不折行不杂糅):单省=市+省全名;两省=省全名并列;≥3 省=「N 省」
+// 省一律两字码(Frank 08-08「省可以用缩写」);单省带市,多省列码,≥4 省收「N 省」
 function whereText(r: SponsorEmployerRow, t: TFn): string {
   if (!r.provs.length) return r.city || '—'
-  if (r.provs.length === 1) return [r.city, provName(t, r.provs[0])].filter(Boolean).join(' ')
-  if (r.provs.length === 2) return r.provs.map((p) => provName(t, p)).join('、')
+  if (r.provs.length === 1) return [r.city, r.provs[0]].filter(Boolean).join(' ')
+  if (r.provs.length <= 3) return r.provs.join('、')
   return t('se.where.multi', { n: r.provs.length })
 }
 
@@ -29,6 +30,7 @@ function href(p: Partial<SponsorQuery>, cur: SponsorQuery) {
   const sp = new URLSearchParams()
   if (v.f) sp.set('f', v.f)
   if (v.prov) sp.set('prov', v.prov)
+  if (v.city) sp.set('city', v.city)
   if (v.noc) sp.set('noc', v.noc)
   if (v.q) sp.set('q', v.q)
   if (v.sort && v.sort !== 'open') sp.set('sort', v.sort)
@@ -66,11 +68,11 @@ export function sponsorEmployerCols(t: TFn, lang: Lang, kind: SponsorKind = '') 
   const namedMix = { key: 'named', label: t('se.col.named'), nowrap: true, sort: (r: SponsorEmployerRow) => r.lmiaPr * 1000 + (r.named ? 1 : 0), render: (r: SponsorEmployerRow) => (r.lmiaPr > 0 ? <span style={{ color: '#92400e', fontWeight: 700 }}>{t('se.pr', { n: r.lmiaPr })}</span> : r.named ? <span style={{ color: '#92400e', fontWeight: 700 }}>✓</span> : NIL) }
   const open = { key: 'open', label: t('se.col.open'), nowrap: true, sort: (r: SponsorEmployerRow) => r.openJobs, render: (r: SponsorEmployerRow) => <span style={{ fontWeight: 700 }}>{r.openJobs}</span> }
   const where = { key: 'where', label: t('se.col.where'), sort: (r: SponsorEmployerRow) => r.provs[0] ?? null, render: (r: SponsorEmployerRow) => <>{whereText(r, t)}</> }
-  const base = lang === 'en' ? [name, grade] : [name, alias, grade]
-  if (kind === 'lmia') return [...base, lmia, skilled, quarter, open, where]
-  if (kind === 'named') return [...base, pr, namedJobs, open, where]
-  if (kind === 'aip') return [...base, open, where]
-  return [...base, aip, lmia, namedMix, open, where]
+  const base = lang === 'en' ? [name, grade, open] : [name, alias, grade, open]
+  if (kind === 'lmia') return [...base, lmia, skilled, quarter, where]
+  if (kind === 'named') return [...base, pr, namedJobs, where]
+  if (kind === 'aip') return [...base, where]
+  return [...base, aip, lmia, namedMix, where]
 }
 
 export function SponsorCard({ r, lang, t, kind = '' }: { r: SponsorEmployerRow; lang: Lang; t: TFn; kind?: SponsorKind }) {
@@ -103,11 +105,13 @@ export function SponsorCard({ r, lang, t, kind = '' }: { r: SponsorEmployerRow; 
   )
 }
 
-export function SponsorEmployersView({ query, items, total, occTitle, pro = false, myFilter = null }: {
+export function SponsorEmployersView({ query, items, total, occTitle, pro = false, myFilter = null, cityOptions = [], occOptions = [] }: {
   query: SponsorQuery; items: SponsorEmployerRow[]; total: number
   occTitle: string   // noc 筛选时的 NOC 官方职业名('' = 无筛选)
   pro?: boolean                                        // B3:导出钮 Pro 直链 / 免费落定价(?from=se-export)
   myFilter?: { noc: string; prov: string } | null      // B3:档案一键筛(nocCodes/targetProvinces 有值才传)
+  cityOptions?: string[]                               // 三级联动:选省后的市候选(服务端从缓存聚合算)
+  occOptions?: { noc: string; title: string; titleZh: string }[]   // 职业检索候选(datalist)
 }) {
   const [lang, setLangSaved, t] = useLang()
   const [qInput, setQInput] = useState(query.q)
@@ -137,11 +141,25 @@ export function SponsorEmployersView({ query, items, total, occTitle, pro = fals
             {query.noc && <input type="hidden" name="noc" value={query.noc} />}
             {query.sort !== 'open' && <input type="hidden" name="sort" value={query.sort} />}
             {/* 省筛=全名下拉(与职位板同款,循 #146 全名惯例);选中即提交 */}
-            <select name="prov" value={query.prov} onChange={(e) => e.currentTarget.form?.submit()}
+            {/* 三级联动(Frank 08-08):全国=不选省;选省出市级下拉(候选=该省雇主城市);换省清市 */}
+            <select name="prov" value={query.prov} onChange={(e) => { const f = e.currentTarget.form; const c = f?.elements.namedItem('city') as HTMLSelectElement | null; if (c) c.value = ''; f?.submit() }}
               style={{ height: 30, border: `1px solid ${UI.border}`, borderRadius: 8, background: '#fff', fontSize: 12.5, color: '#374151', padding: '0 6px' }}>
               <option value="">{t('all.prov')}</option>
               {PROVS.map((p) => <option key={p} value={p}>{provName(t, p)}</option>)}
             </select>
+            {query.prov ? (
+              <select name="city" value={query.city} onChange={(e) => e.currentTarget.form?.submit()}
+                style={{ height: 30, border: `1px solid ${UI.border}`, borderRadius: 8, background: '#fff', fontSize: 12.5, color: '#374151', padding: '0 6px', maxWidth: 180 }}>
+                <option value="">{t('se.all.city')}</option>
+                {cityOptions.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            ) : null}
+            {/* 职业检索(Frank 08-08):datalist 值「职业名(NOC)」,服务端抓 5 位码 */}
+            <input list="seOccList" name="occ" defaultValue="" placeholder={t('se.occSearch')}
+              style={{ border: `1px solid ${UI.border}`, borderRadius: 8, padding: '5px 10px', fontSize: 13, minWidth: 170 }} />
+            <datalist id="seOccList">
+              {occOptions.map((o) => <option key={o.noc} value={`${(lang === 'zh' && o.titleZh) ? o.titleZh : o.title}(${o.noc})`} />)}
+            </datalist>
             <input name="q" value={qInput} onChange={(e) => setQInput(e.target.value)} placeholder={t('dir.search')}
               style={{ border: `1px solid ${UI.border}`, borderRadius: 8, padding: '5px 10px', fontSize: 13, minWidth: 180 }} />
             <Button sm style={{ fontSize: 13, padding: '5px 14px' }}>{t('dir.searchBtn')}</Button>

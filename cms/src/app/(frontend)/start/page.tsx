@@ -82,7 +82,7 @@ async function loadHomeStats(pool: any): Promise<Omit<HomeStats, 'checkedAt' | '
   // Frank 08-08 三分表:对应三类人——没工签→LMIA、有工签→PNP 担保记录(PR 股/清单岗)、想去海洋省→AIP
   const seSlice = (rows: typeof sponsorRows, keep: (r: (typeof sponsorRows)[number]) => boolean) => {
     const hit = rows.filter(keep)
-    return { top: hit.slice(0, 5), total: hit.length }
+    return { top: hit.slice(0, 50), total: hit.length }
   }
   return {
     total: proof?.total || null, named: proof?.named || null,

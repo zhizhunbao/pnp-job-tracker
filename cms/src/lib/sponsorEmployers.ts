@@ -9,7 +9,7 @@ export const SE_PAGE_SIZE = 100
 export type SponsorEmployerRow = {
   name: string; slug: string; industry: string; aliasZh: string; aliasKo: string
   sponsorGrade: number | null
-  openJobs: number; city: string; provs: string[]; nocs: string[]
+  openJobs: number; city: string; provs: string[]; nocs: string[]; cities: string[]
   aip: boolean; named: boolean
   lmiaPositions: number; lmiaPositionsSkilled: number | null; lmiaLastQuarter: string
   // Frank 08-08:「PNP 资格」维=这家雇主担没担保过移民——PR 股 LMIA 获批数(ESDC 股别串解析)为主证,
@@ -17,7 +17,7 @@ export type SponsorEmployerRow = {
   lmiaPr: number
 }
 
-export type SponsorFilters = { f: '' | 'aip' | 'lmia' | 'named'; prov: string; noc: string; q: string; sort: 'open' | 'skilled'; page: number }
+export type SponsorFilters = { f: '' | 'aip' | 'lmia' | 'named'; prov: string; city: string; noc: string; q: string; sort: 'open' | 'skilled'; page: number }
 
 const TTL = 10 * 60_000
 let cache: { ts: number; rows: SponsorEmployerRow[] } | null = null
@@ -33,6 +33,7 @@ async function loadAll(pool: any): Promise<SponsorEmployerRow[]> {
       BOOL_OR(COALESCE(j.pnp_stream, '') <> '') AS named,
       COALESCE(ARRAY_AGG(DISTINCT j.noc) FILTER (WHERE COALESCE(j.noc, '') <> ''), '{}') AS nocs,
       COALESCE(ARRAY_AGG(DISTINCT j.province) FILTER (WHERE COALESCE(j.province, '') <> ''), '{}') AS provs,
+      COALESCE(ARRAY_AGG(DISTINCT j.city) FILTER (WHERE COALESCE(j.city, '') <> ''), '{}') AS cities,
       COALESCE((ARRAY_AGG(j.city ORDER BY j.id) FILTER (WHERE COALESCE(j.city, '') <> ''))[1], '') AS city
     FROM jobs j JOIN companies c ON c.id = j.company_id
     WHERE COALESCE(j.status, 'open') <> 'closed'
@@ -43,7 +44,7 @@ async function loadAll(pool: any): Promise<SponsorEmployerRow[]> {
   return rows.map((r: any): SponsorEmployerRow => ({
     name: r.name ?? '', slug: r.slug ?? '', industry: r.industry ?? '', aliasZh: r.alias_zh ?? '', aliasKo: r.alias_ko ?? '',
     sponsorGrade: r.sponsor_grade ?? null,
-    openJobs: Number(r.open_jobs) || 0, city: r.city ?? '', provs: r.provs ?? [], nocs: r.nocs ?? [],
+    openJobs: Number(r.open_jobs) || 0, city: r.city ?? '', provs: r.provs ?? [], nocs: r.nocs ?? [], cities: r.cities ?? [],
     aip: !!r.aip, named: !!r.named,
     lmiaPositions: Number(r.lmia_positions) || 0,
     lmiaPositionsSkilled: r.lmia_positions_skilled == null ? null : Number(r.lmia_positions_skilled),
@@ -69,6 +70,7 @@ export function applySponsorFilters(all: SponsorEmployerRow[], f: Omit<SponsorFi
   const rows = all.filter((r) =>
     (f.f === 'aip' ? r.aip : f.f === 'lmia' ? r.lmiaPositions > 0 : f.f === 'named' ? (r.lmiaPr > 0 || r.named) : true)
     && (!f.prov || r.provs.includes(f.prov))
+    && (!f.city || r.cities.includes(f.city))
     && (!f.noc || r.nocs.includes(f.noc))
     && (!q || r.name.toLowerCase().includes(q)))
   if (f.sort === 'skilled') return [...rows].sort((a, b) => (b.lmiaPositionsSkilled ?? 0) - (a.lmiaPositionsSkilled ?? 0) || b.openJobs - a.openJobs)
