@@ -25,7 +25,7 @@ import { JobCard } from '../ui/JobCard'
 import { DataTable, DTPager, type DTCol } from '../ui/DataTable'
 import { BANNER_IMGS, Chip, PageBanner, PageShell, Tag, UI } from '../ui/primitives'
 import { track } from '@/lib/track'
-import { SponsorCard, sponsorEmployerCols } from '../employers/SponsorEmployersView'
+import { SponsorCard, sponsorEmployerCols, type SponsorKind } from '../employers/SponsorEmployersView'
 import type { SponsorEmployerRow } from '@/lib/sponsorEmployers'
 
 // 抽选行 + 冷解读三标量(近 12 期同通道的期数/最低/最高,服务端算好,见 start/page.tsx)
@@ -170,7 +170,7 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
           {t('pulse.provs.n', { n: ok.size })}
           {missing.length ? <span style={{ color: UI.danger, marginLeft: 6 }}>{t('pulse.dead.cell', { provs: missing.join('、') })}</span> : null}
         </span>
-        {cond.length ? <span style={{ display: 'block', fontSize: 12, color: UI.text3 }}>{`${t('pulse.provs.cond')} ${cond.join('、')}`}</span> : null}
+        {/* 「先省内工作 6 个月」灰行 08-08 Frank 拍删(细则归 PNP 弹框 whyCond,榜上只留可走面) */}
       </span>
     )
   }
@@ -484,13 +484,13 @@ export function StartView({ stats }: { stats: HomeStats }) {
         {/* ── 在招担保雇主橱窗三分表(Frank 08-08:按人群拆——没工签→LMIA、有工签→PNP 担保记录、
             想去海洋省→AIP;各表删自己的常量凭证列;TOP5+看全部,货架与筛选在 /employers)── */}
         <Band id="pl-se">
-          {([['lmia', stats.sponsor.lmia, ['lmia'], 'f=lmia'], ['named', stats.sponsor.named, ['named'], 'f=named'], ['aip', stats.sponsor.aip, ['aip'], 'f=aip']] as [string, { top: SponsorEmployerRow[]; total: number }, string[], string][]).map(([k, grp, drop, qs]) => (
+          {([['lmia', stats.sponsor.lmia, 'f=lmia'], ['named', stats.sponsor.named, 'f=named'], ['aip', stats.sponsor.aip, 'f=aip']] as [string, { top: SponsorEmployerRow[]; total: number }, string][]).map(([k, grp, qs]) => (
             grp.top.length > 0 ? (
               <div key={k} style={{ marginTop: k === 'lmia' ? 0 : 24 }}>
                 <Sec id={'se-' + k} title={t('se.grp.' + k)}
                   right={<a href={'/employers?' + qs} onClick={() => track('pulse-se-all')} style={moreA}>{t('se.top.all', { n: num(grp.total) })}</a>}>
-                  <div className="plTable"><DataTable<SponsorEmployerRow> rows={grp.top} cols={sponsorEmployerCols(t, lang, drop)} rowKey={(r) => r.name} pageSize={5} /></div>
-                  <div className="plCards">{grp.top.slice(0, 3).map((r) => <SponsorCard key={r.name} r={r} lang={lang} t={t} />)}</div>
+                  <div className="plTable"><DataTable<SponsorEmployerRow> rows={grp.top} cols={sponsorEmployerCols(t, lang, k as SponsorKind)} rowKey={(r) => r.name} pageSize={5} /></div>
+                  <div className="plCards">{grp.top.slice(0, 3).map((r) => <SponsorCard key={r.name} r={r} lang={lang} t={t} kind={k as SponsorKind} />)}</div>
                 </Sec>
               </div>
             ) : null

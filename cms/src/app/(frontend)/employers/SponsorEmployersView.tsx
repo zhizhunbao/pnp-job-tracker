@@ -37,47 +37,61 @@ function href(p: Partial<SponsorQuery>, cur: SponsorQuery) {
   return '/employers' + (s ? `?${s}` : '')
 }
 
-// 凭证三列(Frank 08-08「包含什么列要清晰划分,不要杂糅」):AIP 指定 / LMIA 获批(近两年)/ 紧缺清单
-// 各占一列,✓/数字/—;把脉页 TOP10 与本页共用同一列定义(改一处两边同变)
+// 按人群分表的列组(Frank 08-08 三拍:每表只描述自己那条通道):
+// lmia 表(没工签→要雇主办 LMIA):获批量/技能类/最近季度;
+// named 表(有工签→要打包省提名):PR 股获批(担保过移民的硬证)/省清单岗;
+// aip 表(去海洋省):指定身份即表题,行内只留 在招/所在地;'' = 货架总览(三凭证并列)。
 const NIL = <span style={{ color: '#9ca3af' }}>—</span>
-export function sponsorEmployerCols(t: TFn, lang: Lang, drop: string[] = []) {
-  return [
-    { key: 'name', label: t('dir.col.employer'), sort: (r: SponsorEmployerRow) => r.name.toLowerCase(), render: (r: SponsorEmployerRow) => {
-      const alias = lang === 'zh' ? r.aliasZh : lang === 'ko' ? r.aliasKo : ''
-      return <span style={{ fontWeight: 600 }}>
-        {r.name}
-        {alias ? <span style={{ marginLeft: 6, color: '#9ca3af', fontWeight: 400, fontSize: 12 }}>{alias}</span> : null}
-        {r.sponsorGrade != null && <span title={t('gr.sponsorTip')} style={{ marginLeft: 6, fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sp.' + r.sponsorGrade)}</span>}
-      </span> } },
-    { key: 'aip', label: t('se.chip.aip'), nowrap: true, sort: (r: SponsorEmployerRow) => (r.aip ? 1 : 0), render: (r: SponsorEmployerRow) => (r.aip ? <span style={{ color: '#15803d', fontWeight: 700 }}>✓</span> : NIL) },
-    { key: 'lmia', label: t('se.col.lmia'), nowrap: true, sort: (r: SponsorEmployerRow) => r.lmiaPositions, render: (r: SponsorEmployerRow) => (r.lmiaPositions > 0 ? <span style={{ color: '#0f766e', fontWeight: 700 }}>{r.lmiaPositions}</span> : NIL) },
-    // Frank 08-08:第三维≠职业清单,=这家雇主担没担保过移民——PR 股 LMIA 获批数为主证(直陈数),
-    // 发过省清单岗 ✓ 为次级信号;两者全无 —
-    { key: 'named', label: t('se.col.named'), nowrap: true, sort: (r: SponsorEmployerRow) => r.lmiaPr * 1000 + (r.named ? 1 : 0), render: (r: SponsorEmployerRow) => (r.lmiaPr > 0 ? <span style={{ color: '#92400e', fontWeight: 700 }}>{t('se.pr', { n: r.lmiaPr })}</span> : r.named ? <span style={{ color: '#92400e', fontWeight: 700 }}>✓</span> : NIL) },
-    { key: 'open', label: t('se.col.open'), nowrap: true, sort: (r: SponsorEmployerRow) => r.openJobs, render: (r: SponsorEmployerRow) => <span style={{ fontWeight: 700 }}>{r.openJobs}</span> },
-    { key: 'where', label: t('se.col.where'), sort: (r: SponsorEmployerRow) => r.provs[0] ?? null, render: (r: SponsorEmployerRow) => <>{whereText(r, t)}</> },
-    { key: 'go', label: '', nowrap: true, render: (r: SponsorEmployerRow) => <a href={`/?q=${encodeURIComponent(r.name)}`} onClick={() => track('se-view-jobs')} style={{ color: UI.primary, textDecoration: 'none', fontSize: 12.5 }}>{t('rank.viewJobs')}</a> },
-  ].filter((c) => !drop.includes(c.key))
+export type SponsorKind = '' | 'aip' | 'lmia' | 'named'
+export function sponsorEmployerCols(t: TFn, lang: Lang, kind: SponsorKind = '') {
+  const name = { key: 'name', label: t('dir.col.employer'), sort: (r: SponsorEmployerRow) => r.name.toLowerCase(), render: (r: SponsorEmployerRow) => {
+    const alias = lang === 'zh' ? r.aliasZh : lang === 'ko' ? r.aliasKo : ''
+    return <span style={{ fontWeight: 600 }}>
+      <a href={`/?q=${encodeURIComponent(r.name)}`} onClick={() => track('se-view-jobs')} style={{ color: UI.primary, textDecoration: 'none' }}>{r.name}</a>
+      {alias ? <span style={{ marginLeft: 6, color: '#9ca3af', fontWeight: 400, fontSize: 12 }}>{alias}</span> : null}
+      {r.sponsorGrade != null && <span title={t('gr.sponsorTip')} style={{ marginLeft: 6, fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sp.' + r.sponsorGrade)}</span>}
+    </span> } }
+  const aip = { key: 'aip', label: t('se.chip.aip'), nowrap: true, sort: (r: SponsorEmployerRow) => (r.aip ? 1 : 0), render: (r: SponsorEmployerRow) => (r.aip ? <span style={{ color: '#15803d', fontWeight: 700 }}>✓</span> : NIL) }
+  const lmia = { key: 'lmia', label: t('se.col.lmia'), nowrap: true, sort: (r: SponsorEmployerRow) => r.lmiaPositions, render: (r: SponsorEmployerRow) => (r.lmiaPositions > 0 ? <span style={{ color: '#0f766e', fontWeight: 700 }}>{r.lmiaPositions}</span> : NIL) }
+  const skilled = { key: 'skilled', label: t('dir.col.skilled'), nowrap: true, sort: (r: SponsorEmployerRow) => r.lmiaPositionsSkilled ?? null, render: (r: SponsorEmployerRow) => (r.lmiaPositionsSkilled ? <span style={{ color: '#0f766e', fontWeight: 700 }}>{r.lmiaPositionsSkilled}</span> : NIL) }
+  const quarter = { key: 'quarter', label: t('dir.col.quarter'), nowrap: true, sort: (r: SponsorEmployerRow) => r.lmiaLastQuarter || null, render: (r: SponsorEmployerRow) => (r.lmiaLastQuarter ? <span style={{ color: '#6b7280' }}>{r.lmiaLastQuarter}</span> : NIL) }
+  const pr = { key: 'pr', label: t('se.col.pr'), nowrap: true, sort: (r: SponsorEmployerRow) => r.lmiaPr, render: (r: SponsorEmployerRow) => (r.lmiaPr > 0 ? <span style={{ color: '#92400e', fontWeight: 700 }}>{r.lmiaPr}</span> : NIL) }
+  const namedJobs = { key: 'namedJobs', label: t('se.col.namedJobs'), nowrap: true, sort: (r: SponsorEmployerRow) => (r.named ? 1 : 0), render: (r: SponsorEmployerRow) => (r.named ? <span style={{ color: '#92400e', fontWeight: 700 }}>✓</span> : NIL) }
+  const namedMix = { key: 'named', label: t('se.col.named'), nowrap: true, sort: (r: SponsorEmployerRow) => r.lmiaPr * 1000 + (r.named ? 1 : 0), render: (r: SponsorEmployerRow) => (r.lmiaPr > 0 ? <span style={{ color: '#92400e', fontWeight: 700 }}>{t('se.pr', { n: r.lmiaPr })}</span> : r.named ? <span style={{ color: '#92400e', fontWeight: 700 }}>✓</span> : NIL) }
+  const open = { key: 'open', label: t('se.col.open'), nowrap: true, sort: (r: SponsorEmployerRow) => r.openJobs, render: (r: SponsorEmployerRow) => <span style={{ fontWeight: 700 }}>{r.openJobs}</span> }
+  const where = { key: 'where', label: t('se.col.where'), sort: (r: SponsorEmployerRow) => r.provs[0] ?? null, render: (r: SponsorEmployerRow) => <>{whereText(r, t)}</> }
+  if (kind === 'lmia') return [name, lmia, skilled, quarter, open, where]
+  if (kind === 'named') return [name, pr, namedJobs, open, where]
+  if (kind === 'aip') return [name, open, where]
+  return [name, aip, lmia, namedMix, open, where]
 }
 
-export function SponsorCard({ r, lang, t }: { r: SponsorEmployerRow; lang: Lang; t: TFn }) {
+export function SponsorCard({ r, lang, t, kind = '' }: { r: SponsorEmployerRow; lang: Lang; t: TFn; kind?: SponsorKind }) {
   const alias = lang === 'zh' ? r.aliasZh : lang === 'ko' ? r.aliasKo : ''
+  const NILC = <span style={{ color: '#9ca3af' }}>—</span>
+  const kv: { k: string; v: React.ReactNode }[] = []
+  if (kind === 'lmia') {
+    kv.push({ k: t('se.col.lmia'), v: r.lmiaPositions > 0 ? <b style={{ color: '#0f766e' }}>{r.lmiaPositions}</b> : NILC })
+    kv.push({ k: t('dir.col.skilled'), v: r.lmiaPositionsSkilled ? <b style={{ color: '#0f766e' }}>{r.lmiaPositionsSkilled}</b> : NILC })
+    kv.push({ k: t('dir.col.quarter'), v: r.lmiaLastQuarter || NILC })
+  } else if (kind === 'named') {
+    kv.push({ k: t('se.col.pr'), v: r.lmiaPr > 0 ? <b style={{ color: '#92400e' }}>{r.lmiaPr}</b> : NILC })
+    kv.push({ k: t('se.col.namedJobs'), v: r.named ? <b style={{ color: '#92400e' }}>✓</b> : NILC })
+  } else if (kind !== 'aip') {
+    kv.push({ k: t('se.chip.aip'), v: r.aip ? <b style={{ color: '#15803d' }}>✓</b> : NILC })
+    kv.push({ k: t('se.col.lmia'), v: r.lmiaPositions > 0 ? <b style={{ color: '#0f766e' }}>{r.lmiaPositions}</b> : NILC })
+    kv.push({ k: t('se.col.named'), v: r.lmiaPr > 0 ? <b style={{ color: '#92400e' }}>{t('se.pr', { n: r.lmiaPr })}</b> : r.named ? <b style={{ color: '#92400e' }}>✓</b> : NILC })
+  }
+  kv.push({ k: t('se.col.open'), v: <span style={{ fontWeight: 700 }}>{r.openJobs}</span> })
+  kv.push({ k: t('se.col.where'), v: whereText(r, t) })
   return (
     <Card>
       <div style={{ fontSize: 14.5, fontWeight: 600 }}>
-        {r.name}
+        <a href={`/?q=${encodeURIComponent(r.name)}`} onClick={() => track('se-view-jobs')} style={{ color: UI.primary, textDecoration: 'none' }}>{r.name}</a>
         {r.sponsorGrade != null && <span title={t('gr.sponsorTip')} style={{ marginLeft: 6, fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', fontWeight: 600, whiteSpace: 'nowrap' }}>{t('gr.sp.' + r.sponsorGrade)}</span>}
       </div>
       {alias ? <div style={{ fontSize: 12.5, color: '#9ca3af', marginTop: 2 }}>{alias}</div> : null}
-      {/* 凭证一行一条(Frank 08-08 拆列拍板;卡上=KV 行,与桌面三列同语义) */}
-      <CardKV items={[
-        { k: t('se.chip.aip'), v: r.aip ? <span style={{ color: '#15803d', fontWeight: 700 }}>✓</span> : <span style={{ color: '#9ca3af' }}>—</span> },
-        { k: t('se.col.lmia'), v: r.lmiaPositions > 0 ? <span style={{ color: '#0f766e', fontWeight: 700 }}>{r.lmiaPositions}</span> : <span style={{ color: '#9ca3af' }}>—</span> },
-        { k: t('se.col.named'), v: r.lmiaPr > 0 ? <span style={{ color: '#92400e', fontWeight: 700 }}>{t('se.pr', { n: r.lmiaPr })}</span> : r.named ? <span style={{ color: '#92400e', fontWeight: 700 }}>✓</span> : <span style={{ color: '#9ca3af' }}>—</span> },
-        { k: t('se.col.open'), v: <span style={{ fontWeight: 700 }}>{r.openJobs}</span> },
-        { k: t('se.col.where'), v: whereText(r, t) },
-      ]} />
-      <CardAction><a href={`/?q=${encodeURIComponent(r.name)}`} onClick={() => track('se-view-jobs')} style={{ color: UI.primary, textDecoration: 'none' }}>{t('rank.viewJobs')}</a></CardAction>
+      <CardKV items={kv} />
     </Card>
   )
 }
@@ -148,11 +162,11 @@ export function SponsorEmployersView({ query, items, total, occTitle, pro = fals
         <div style={{ fontSize: 12, color: '#9ca3af', margin: '0 0 12px' }}>{t('se.note')}</div>
 
         <div className="tcCards">
-          {items.map((r) => <SponsorCard key={r.name} r={r} lang={lang} t={t} />)}
+          {items.map((r) => <SponsorCard key={r.name} r={r} lang={lang} t={t} kind={(query.f as SponsorKind) || ''} />)}
           {items.length === 0 && <div style={{ padding: 24, textAlign: 'center', color: '#9ca3af', fontSize: 13 }}>{t('dir.empty')}</div>}
         </div>
         <div className="tcTableWrap">
-          <DataTable<SponsorEmployerRow> rows={items} rowKey={(r) => r.name} empty={t('dir.empty')} cols={sponsorEmployerCols(t, lang)} />
+          <DataTable<SponsorEmployerRow> rows={items} rowKey={(r) => r.name} empty={t('dir.empty')} cols={sponsorEmployerCols(t, lang, (query.f as SponsorKind) || '')} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, margin: '12px 0', fontSize: 12.5, color: '#6b7280', flexWrap: 'wrap' }}>
           <span>{t('dir.total', { n: total })} · {t('dir.page', { p: query.page + 1, m: pages })}</span>
