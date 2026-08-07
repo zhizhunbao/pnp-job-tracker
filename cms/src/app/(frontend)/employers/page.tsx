@@ -1,8 +1,11 @@
 // B2 在招担保雇主页(docs/implementation/在招担保雇主/02_B2):
 // 默认视图=在招×凭证聚合(进程内 TTL 缓存,lib/sponsorEmployers);
 // 旧名录视图保留在 ?type=aip|lmia 下原样渲染(已收录 SEO 页不断链,B4-01 原实现未动)。
+import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
+import { getUser, isPro } from '@/lib/entitlement'
+import { normalizeProfile } from '@/lib/match'
 import { EmployersView } from './EmployersView'
 import { SponsorEmployersView } from './SponsorEmployersView'
 import { fetchAipEmployers, fetchLmiaEmployers } from '@/lib/directory'
@@ -57,13 +60,19 @@ export default async function EmployersPage({ searchParams }: { searchParams: Pr
     sort: one(sp.sort) === 'skilled' ? 'skilled' : 'open',
     page: Math.max(0, Math.min(500, parseInt(one(sp.page), 10) || 0)),
   }
-  const [all, occTitle] = await Promise.all([
+  // B3:Pro 态(导出钮直链/去定价)+ 档案一键筛(nocCodes/targetProvinces 有值才出 chip)
+  const [all, occTitle, user] = await Promise.all([
     fetchSponsorEmployers(pool),
     filters.noc
       ? pool.query(`SELECT title FROM noc_descriptions WHERE noc = $1 LIMIT 1`, [filters.noc])
           .then((r: any) => r.rows[0]?.title ?? '').catch(() => '')
       : Promise.resolve(''),
+    getUser(await headers()).catch(() => null),
   ])
+  const prof = normalizeProfile((user as any)?.profile)
+  const myNoc = prof.nocCodes.find((n) => /^\d{5}$/.test(n)) ?? ''
+  const myProv = prof.targetProvinces.find((p) => PROV_OK.has(p)) ?? ''
   const { items, total } = filterSponsorEmployers(all, filters)
-  return <SponsorEmployersView query={filters} items={items} total={total} occTitle={occTitle} />
+  return <SponsorEmployersView query={filters} items={items} total={total} occTitle={occTitle}
+    pro={!!user && isPro(user)} myFilter={myNoc || myProv ? { noc: myNoc, prov: myProv } : null} />
 }

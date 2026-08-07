@@ -40,7 +40,7 @@ function href(p: Partial<SponsorQuery>, cur: SponsorQuery) {
 // 凭证三列(Frank 08-08「包含什么列要清晰划分,不要杂糅」):AIP 指定 / LMIA 获批(近两年)/ 紧缺清单
 // 各占一列,✓/数字/—;把脉页 TOP10 与本页共用同一列定义(改一处两边同变)
 const NIL = <span style={{ color: '#9ca3af' }}>—</span>
-export function sponsorEmployerCols(t: TFn, lang: Lang) {
+export function sponsorEmployerCols(t: TFn, lang: Lang, drop: string[] = []) {
   return [
     { key: 'name', label: t('dir.col.employer'), sort: (r: SponsorEmployerRow) => r.name.toLowerCase(), render: (r: SponsorEmployerRow) => {
       const alias = lang === 'zh' ? r.aliasZh : lang === 'ko' ? r.aliasKo : ''
@@ -51,11 +51,13 @@ export function sponsorEmployerCols(t: TFn, lang: Lang) {
       </span> } },
     { key: 'aip', label: t('se.chip.aip'), nowrap: true, sort: (r: SponsorEmployerRow) => (r.aip ? 1 : 0), render: (r: SponsorEmployerRow) => (r.aip ? <span style={{ color: '#15803d', fontWeight: 700 }}>✓</span> : NIL) },
     { key: 'lmia', label: t('se.col.lmia'), nowrap: true, sort: (r: SponsorEmployerRow) => r.lmiaPositions, render: (r: SponsorEmployerRow) => (r.lmiaPositions > 0 ? <span style={{ color: '#0f766e', fontWeight: 700 }}>{r.lmiaPositions}</span> : NIL) },
-    { key: 'named', label: t('se.col.named'), nowrap: true, sort: (r: SponsorEmployerRow) => (r.named ? 1 : 0), render: (r: SponsorEmployerRow) => (r.named ? <span style={{ color: '#92400e', fontWeight: 700 }}>✓</span> : NIL) },
+    // Frank 08-08:第三维≠职业清单,=这家雇主担没担保过移民——PR 股 LMIA 获批数为主证(直陈数),
+    // 发过省清单岗 ✓ 为次级信号;两者全无 —
+    { key: 'named', label: t('se.col.named'), nowrap: true, sort: (r: SponsorEmployerRow) => r.lmiaPr * 1000 + (r.named ? 1 : 0), render: (r: SponsorEmployerRow) => (r.lmiaPr > 0 ? <span style={{ color: '#92400e', fontWeight: 700 }}>{t('se.pr', { n: r.lmiaPr })}</span> : r.named ? <span style={{ color: '#92400e', fontWeight: 700 }}>✓</span> : NIL) },
     { key: 'open', label: t('se.col.open'), nowrap: true, sort: (r: SponsorEmployerRow) => r.openJobs, render: (r: SponsorEmployerRow) => <span style={{ fontWeight: 700 }}>{r.openJobs}</span> },
     { key: 'where', label: t('se.col.where'), sort: (r: SponsorEmployerRow) => r.provs[0] ?? null, render: (r: SponsorEmployerRow) => <>{whereText(r, t)}</> },
     { key: 'go', label: '', nowrap: true, render: (r: SponsorEmployerRow) => <a href={`/?q=${encodeURIComponent(r.name)}`} onClick={() => track('se-view-jobs')} style={{ color: UI.primary, textDecoration: 'none', fontSize: 12.5 }}>{t('rank.viewJobs')}</a> },
-  ]
+  ].filter((c) => !drop.includes(c.key))
 }
 
 export function SponsorCard({ r, lang, t }: { r: SponsorEmployerRow; lang: Lang; t: TFn }) {
@@ -71,7 +73,7 @@ export function SponsorCard({ r, lang, t }: { r: SponsorEmployerRow; lang: Lang;
       <CardKV items={[
         { k: t('se.chip.aip'), v: r.aip ? <span style={{ color: '#15803d', fontWeight: 700 }}>✓</span> : <span style={{ color: '#9ca3af' }}>—</span> },
         { k: t('se.col.lmia'), v: r.lmiaPositions > 0 ? <span style={{ color: '#0f766e', fontWeight: 700 }}>{r.lmiaPositions}</span> : <span style={{ color: '#9ca3af' }}>—</span> },
-        { k: t('se.col.named'), v: r.named ? <span style={{ color: '#92400e', fontWeight: 700 }}>✓</span> : <span style={{ color: '#9ca3af' }}>—</span> },
+        { k: t('se.col.named'), v: r.lmiaPr > 0 ? <span style={{ color: '#92400e', fontWeight: 700 }}>{t('se.pr', { n: r.lmiaPr })}</span> : r.named ? <span style={{ color: '#92400e', fontWeight: 700 }}>✓</span> : <span style={{ color: '#9ca3af' }}>—</span> },
         { k: t('se.col.open'), v: <span style={{ fontWeight: 700 }}>{r.openJobs}</span> },
         { k: t('se.col.where'), v: whereText(r, t) },
       ]} />
@@ -80,9 +82,11 @@ export function SponsorCard({ r, lang, t }: { r: SponsorEmployerRow; lang: Lang;
   )
 }
 
-export function SponsorEmployersView({ query, items, total, occTitle }: {
+export function SponsorEmployersView({ query, items, total, occTitle, pro = false, myFilter = null }: {
   query: SponsorQuery; items: SponsorEmployerRow[]; total: number
   occTitle: string   // noc 筛选时的 NOC 官方职业名('' = 无筛选)
+  pro?: boolean                                        // B3:导出钮 Pro 直链 / 免费落定价(?from=se-export)
+  myFilter?: { noc: string; prov: string } | null      // B3:档案一键筛(nocCodes/targetProvinces 有值才传)
 }) {
   const [lang, setLangSaved, t] = useLang()
   const [qInput, setQInput] = useState(query.q)
@@ -131,6 +135,14 @@ export function SponsorEmployersView({ query, items, total, occTitle }: {
               {t('se.occFilter', { name: occTitle || query.noc })} ×
             </a>
           ) : null}
+          {/* B3 档案一键筛(有档案才出);导出=付费交付物,免费落定价页(?from= 漏斗口径) */}
+          {myFilter ? (
+            <a href={href({ noc: myFilter.noc, prov: myFilter.prov }, query)} onClick={() => track('se-my-filter')}
+              style={{ ...chipStyle(false), textDecoration: 'none', display: 'inline-block' }}>{t('se.myFilter')}</a>
+          ) : null}
+          <a href={pro ? '/api/employers-export' + (() => { const s = href({}, query).split('?')[1]; return s ? '?' + s : '' })() : '/pricing?from=se-export'}
+            onClick={() => track(pro ? 'se-export' : 'se-export-gate')}
+            style={{ ...chipStyle(false), textDecoration: 'none', display: 'inline-block', marginLeft: 'auto' }}>{t('se.export')}</a>
         </div>
         {/* 免责一行(蓝图 §4 四类允许文案:非担保承诺) */}
         <div style={{ fontSize: 12, color: '#9ca3af', margin: '0 0 12px' }}>{t('se.note')}</div>

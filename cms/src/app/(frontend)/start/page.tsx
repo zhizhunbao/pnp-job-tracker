@@ -79,9 +79,18 @@ async function loadHomeStats(pool: any): Promise<Omit<HomeStats, 'checkedAt' | '
     // B2+ 雇主橱窗:复用 /employers 的进程内聚合缓存(同进程同一份,零额外查询);挂了只丢橱窗
     fetchSponsorEmployers(pool).catch(() => []),
   ])
+  // Frank 08-08 三分表:对应三类人——没工签→LMIA、有工签→PNP 担保记录(PR 股/清单岗)、想去海洋省→AIP
+  const seSlice = (rows: typeof sponsorRows, keep: (r: (typeof sponsorRows)[number]) => boolean) => {
+    const hit = rows.filter(keep)
+    return { top: hit.slice(0, 5), total: hit.length }
+  }
   return {
     total: proof?.total || null, named: proof?.named || null,
-    sponsorTop: sponsorRows.slice(0, 10), sponsorTotal: sponsorRows.length || null,
+    sponsor: {
+      lmia: seSlice(sponsorRows, (r) => r.lmiaPositions > 0),
+      named: seSlice(sponsorRows, (r) => r.lmiaPr > 0 || r.named),
+      aip: seSlice(sponsorRows, (r) => r.aip),
+    },
     draws: withDrawHistory(drawRes as RawDraw[], 50),
     news: (() => {
       // 同题去重带归一化:IRCC 同一稿隔日重发常只差尾部「(城市)」括注,精确比对抓不住

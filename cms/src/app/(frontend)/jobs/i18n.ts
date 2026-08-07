@@ -294,15 +294,15 @@ const zh: Dict = {
   'pulse.b3': '在紧缺清单且岗位增长',
   // E13-08 雷区榜(强负断言,口径=ETL any_pr_path:PNP∪联邦EE∪AIP∪保育专项全无才判死)
   'pulse.b1a': '部分省禁止',
-  'pulse.col.dead': '无移民通道的省', 'pulse.dead.cell': '{provs} 无通道',
+  'pulse.col.dead': '通道档', 'pulse.dead.cell': '{provs} 无通道',
   // 08-08 Frank 走查:紧缺列胶囊化(省码进胶囊);雷区榜 QC/RCIP 灰注删、「有移民通道的省」常量列删
-  'pulse.col.hot': '紧缺', 'pulse.provs.n': '{n} 省可走', 'pulse.tier.provOne': '{p} 紧缺', 'pulse.tier.fedOne': '联邦紧缺',
+  'pulse.col.hot': '通道', 'pulse.provs.n': '{n} 省可走', 'pulse.tier.provOne': '{p} 紧缺', 'pulse.tier.fedOne': '联邦紧缺',
   'pulse.provs.none': '无',
   // E13-09 可提名省份两档(拆行直陈,禁杂糅一行)
   'pulse.provs.direct': '拿 offer 可', 'pulse.provs.cond': '先省内工作 6 个月',
   'pulse.col.occ': '职业', 'pulse.col.open': '在招', 'pulse.col.mom': '14 天新增环比',
   'pulse.col.provs': '紧缺清单省份',
-  'pulse.col.pnpProvs': '雇主担保可提名省份',
+  'pulse.col.pnpProvs': '通道档',
   'pulse.col.teer': 'TEER 档',
   'pulse.s4b': '省内职业榜', 'pulse.s4.prov': '省份', 'pulse.s4.diff': '竞争度',
   // 药丸措辞 08-08 Frank 拍板:「点名」(内部黑话)→ 对齐全站「紧缺清单」
@@ -885,9 +885,10 @@ const zh: Dict = {
   // B1 在招担保雇主:弹框雇主线入口(凭证行有据才出,负断言不上台面)
   // B2 在招担保雇主页(se.*;凭证措辞与 B1 弹框 spl.* 同源)
   'se.title': '在招担保雇主', 'se.sub': '现在就在招人、且有担保凭证的雇主',
-  'se.chip.all': '全部', 'se.chip.aip': 'AIP 指定', 'se.chip.lmia': 'LMIA 历史', 'se.chip.named': '紧缺清单命中',
+  'se.chip.all': '全部', 'se.chip.aip': 'AIP 指定', 'se.chip.lmia': 'LMIA 历史', 'se.chip.named': 'PNP 担保记录',
   'se.col.open': '在招', 'se.col.where': '所在地', 'se.where.multi': '{n} 省',
-  'se.col.lmia': 'LMIA 获批(近两年)', 'se.col.named': 'PNP 紧缺清单', 'se.top.all': '看全部 {n} 家', 'pulse.nav.boards': '职业榜',
+  'se.col.lmia': 'LMIA 获批(近两年)', 'se.myFilter': '按我的档案筛', 'se.export': '导出名单 CSV', 'rpt.emp.all': '在担保雇主页看全部', 'se.col.named': 'PNP 担保记录', 'se.pr': 'PR {n}',
+  'se.grp.aip': 'AIP 指定雇主', 'se.grp.lmia': 'LMIA 获批雇主(近两年)', 'se.grp.named': 'PNP 担保记录雇主', 'se.top.all': '看全部 {n} 家', 'pulse.nav.boards': '职业榜',
   'se.sort.open': '按在招岗数', 'se.sort.skilled': '按技能类获批',
   'se.occFilter': '职业:{name}', 'se.note': '凭证=官方名录与历史事实,为粗筛信号非担保承诺。',
   'spl.head': '担保雇主', 'spl.aip': 'AIP 指定雇主(官方名单)', 'spl.lmia': '近两年 LMIA 获批 {n} 岗', 'spl.lmia1': '近两年 LMIA 获批 1 岗',
@@ -1191,14 +1192,14 @@ const en: Dict = {
   'pulse.b3': 'On a list and growing',
   // E13-08 minefield board (strong negative claim; caliber = ETL any_pr_path: dead only when PNP, federal EE, AIP and the caregiver pilots all say no)
   'pulse.b1a': 'Not accepted in some provinces',
-  'pulse.col.dead': 'Provinces with no route', 'pulse.dead.cell': '{provs} no route',
-  'pulse.col.hot': 'In-demand', 'pulse.provs.n': '{n} provinces open', 'pulse.tier.provOne': '{p} in-demand', 'pulse.tier.fedOne': 'Federal in-demand',
+  'pulse.col.dead': 'Route tier', 'pulse.dead.cell': '{provs} no route',
+  'pulse.col.hot': 'Route', 'pulse.provs.n': '{n} provinces open', 'pulse.tier.provOne': '{p} in-demand', 'pulse.tier.fedOne': 'Federal in-demand',
   'pulse.provs.none': 'None',
   // E13-09 two tiers of PNP provinces (separate lines, no mixed separators)
   'pulse.provs.direct': 'With a job offer', 'pulse.provs.cond': 'After 6 months working there',
   'pulse.col.occ': 'Occupation', 'pulse.col.open': 'Open', 'pulse.col.mom': '14d posting change',
   'pulse.col.provs': 'In-demand list provinces',
-  'pulse.col.pnpProvs': 'Employer-offer PNP provinces',
+  'pulse.col.pnpProvs': 'Route tier',
   'pulse.col.teer': 'TEER',
   'pulse.s4b': 'Occupations by province', 'pulse.s4.prov': 'Province', 'pulse.s4.diff': 'Competition',
   'pulse.col.tier': 'Route tier', 'pulse.tier.both': 'Prov + federal in-demand', 'pulse.tier.prov': 'Province in-demand list',
@@ -1738,9 +1739,10 @@ const en: Dict = {
   'ch.pnp.on': 'Eligible: {label}', 'ch.pnp.generic': 'Eligible via employer job offer', 'ch.pnp.ex': 'On exclusion list', 'ch.pnp.no': 'Not eligible (excluded or unclassified)', 'ch.pnp.qc': 'QC has its own system',
   // B1 sponsor-employer entry lines (credential rows only when on record)
   'se.title': 'Sponsor employers hiring now', 'se.sub': 'Employers hiring right now with sponsorship records',
-  'se.chip.all': 'All', 'se.chip.aip': 'AIP designated', 'se.chip.lmia': 'LMIA history', 'se.chip.named': 'On in-demand lists',
+  'se.chip.all': 'All', 'se.chip.aip': 'AIP designated', 'se.chip.lmia': 'LMIA history', 'se.chip.named': 'PNP sponsorship record',
   'se.col.open': 'Open jobs', 'se.col.where': 'Location', 'se.where.multi': '{n} provinces',
-  'se.col.lmia': 'LMIA approved (2 yrs)', 'se.col.named': 'PNP in-demand list', 'se.top.all': 'See all {n} employers', 'pulse.nav.boards': 'Occupation boards',
+  'se.col.lmia': 'LMIA approved (2 yrs)', 'se.myFilter': 'Filter by my profile', 'se.export': 'Export CSV', 'rpt.emp.all': 'See all on the sponsor employers page', 'se.col.named': 'PNP sponsorship record', 'se.pr': 'PR {n}',
+  'se.grp.aip': 'AIP designated employers', 'se.grp.lmia': 'LMIA-approved employers (2 yrs)', 'se.grp.named': 'Employers with PNP sponsorship records', 'se.top.all': 'See all {n} employers', 'pulse.nav.boards': 'Occupation boards',
   'se.sort.open': 'Most open jobs', 'se.sort.skilled': 'Most skilled LMIA',
   'se.occFilter': 'Occupation: {name}', 'se.note': 'Records are official lists and history — a rough signal, not a promise to sponsor.',
   'spl.head': 'Sponsor employers', 'spl.aip': 'AIP designated employer (official list)', 'spl.lmia': 'LMIA-approved {n} positions in the past two years', 'spl.lmia1': 'LMIA-approved 1 position in the past two years',
@@ -2039,14 +2041,14 @@ const ko: Dict = {
   'pulse.b3': '목록에 있고 증가세',
   // E13-08 지뢰밭 랭킹(강한 부정 판정; 기준 = ETL any_pr_path: PNP·연방 EE·AIP·돌봄 파일럿 전부 불가일 때만)
   'pulse.b1a': '일부 주 접수 불가',
-  'pulse.col.dead': '이민 경로 없는 주', 'pulse.dead.cell': '{provs} 경로 없음',
-  'pulse.col.hot': '수요', 'pulse.provs.n': '{n}개 주 가능', 'pulse.tier.provOne': '{p} 수요', 'pulse.tier.fedOne': '연방 수요',
+  'pulse.col.dead': '경로 등급', 'pulse.dead.cell': '{provs} 경로 없음',
+  'pulse.col.hot': '경로', 'pulse.provs.n': '{n}개 주 가능', 'pulse.tier.provOne': '{p} 수요', 'pulse.tier.fedOne': '연방 수요',
   'pulse.provs.none': '없음',
   // E13-09 PNP 가능 주 2단계(줄 분리 표기)
   'pulse.provs.direct': '오퍼만으로 가능', 'pulse.provs.cond': '주내 6개월 근무 후 가능',
   'pulse.col.occ': '직업', 'pulse.col.open': '게시', 'pulse.col.mom': '14일 신규 증감률',
   'pulse.col.provs': '수요 목록 등재 주',
-  'pulse.col.pnpProvs': '고용주 오퍼 PNP 가능 주',
+  'pulse.col.pnpProvs': '경로 등급',
   'pulse.col.teer': 'TEER 등급',
   'pulse.s4b': '주별 직업 랭킹', 'pulse.s4.prov': '주', 'pulse.s4.diff': '경쟁도',
   'pulse.col.tier': '경로 등급', 'pulse.tier.both': '주+연방 수요 목록', 'pulse.tier.prov': '주 수요 목록',
@@ -2586,9 +2588,10 @@ const ko: Dict = {
   'ch.pnp.on': '가능: {label}', 'ch.pnp.generic': '고용주 오퍼로 지명 가능', 'ch.pnp.ex': '제외 목록, 불가', 'ch.pnp.no': '불가(제외 목록 또는 미분류)', 'ch.pnp.qc': 'QC 자체 시스템',
   // B1 스폰서 고용주 진입 라인(이력 있을 때만 표시)
   'se.title': '채용 중인 스폰서 고용주', 'se.sub': '지금 채용 중이며 스폰서 이력이 있는 고용주',
-  'se.chip.all': '전체', 'se.chip.aip': 'AIP 지정', 'se.chip.lmia': 'LMIA 이력', 'se.chip.named': '수요 목록 해당',
+  'se.chip.all': '전체', 'se.chip.aip': 'AIP 지정', 'se.chip.lmia': 'LMIA 이력', 'se.chip.named': 'PNP 스폰서 이력',
   'se.col.open': '채용 중', 'se.col.where': '지역', 'se.where.multi': '{n}개 주',
-  'se.col.lmia': 'LMIA 승인(2년)', 'se.col.named': 'PNP 수요 목록', 'se.top.all': '전체 {n}곳 보기', 'pulse.nav.boards': '직업 보드',
+  'se.col.lmia': 'LMIA 승인(2년)', 'se.myFilter': '내 프로필로 필터', 'se.export': 'CSV 내보내기', 'rpt.emp.all': '스폰서 고용주 페이지에서 전체 보기', 'se.col.named': 'PNP 스폰서 이력', 'se.pr': 'PR {n}',
+  'se.grp.aip': 'AIP 지정 고용주', 'se.grp.lmia': 'LMIA 승인 고용주(2년)', 'se.grp.named': 'PNP 스폰서 이력 고용주', 'se.top.all': '전체 {n}곳 보기', 'pulse.nav.boards': '직업 보드',
   'se.sort.open': '채용 많은 순', 'se.sort.skilled': '기술직 승인 많은 순',
   'se.occFilter': '직업: {name}', 'se.note': '이력은 공식 명단·기록으로 참고 신호이며 스폰서 약속이 아닙니다.',
   'spl.head': '스폰서 고용주', 'spl.aip': 'AIP 지정 고용주(공식 명단)', 'spl.lmia': '최근 2년 LMIA 승인 {n}건', 'spl.lmia1': '최근 2년 LMIA 승인 1건',

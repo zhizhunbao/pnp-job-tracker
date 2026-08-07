@@ -565,6 +565,11 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                         </span>
                       </div>
                     ))}
+                    {/* B3 互通(在招担保雇主计划):雇主线索 ↔ 货架双向——货架免费,锁区卖的是匹配+门槛落到这一家 */}
+                    <div style={{ marginTop: 8 }}>
+                      <a href={`/employers?noc=${encodeURIComponent(rpt.noc)}`} onClick={() => track('rpt-se-all')}
+                        style={{ fontSize: 12.5, fontWeight: 600, color: UI.primary, textDecoration: 'none' }}>{t('rpt.emp.all')} →</a>
+                    </div>
                   </Sec>
                 )}
                 {/* 换省对照(L2-08):位置照 v5 定稿 —— 雇主线索之后、薪资之前 */}

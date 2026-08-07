@@ -39,8 +39,8 @@ export type HomeStats = {
   total: number | null; named: number | null      // S1 命中率证据(与职位板 proof 同源)
   draws: PulseDraw[]
   news: { date: string; region: string; title: string; titleZh?: string; slug: string }[]
-  sponsorTop: SponsorEmployerRow[]                // B2+ 雇主橱窗(TOP10;货架在 /employers)
-  sponsorTotal: number | null
+  // B2+ 雇主橱窗三分表(Frank 08-08:没工签→LMIA/有工签→PNP 担保记录/海洋省→AIP;货架在 /employers)
+  sponsor: { lmia: { top: SponsorEmployerRow[]; total: number }; named: { top: SponsorEmployerRow[]; total: number }; aip: { top: SponsorEmployerRow[]; total: number } }
   provExtra: Record<string, ProvExtra>            // S4 省卡:IRCC 体量 + 难度档
   provPreset: string                              // S4 预选省(档案省;匿名为空 → 默认 ON。禁 IP 定位)
   checkedAt: string
@@ -142,11 +142,6 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
   const pill = (c: { bg: string; fg: string; bd: string }, txt: string, key?: string) => (
     <span key={key ?? txt} style={{ whiteSpace: 'nowrap', fontSize: 11, fontWeight: 600, padding: '1px 8px', borderRadius: 999, background: c.bg, color: c.fg, border: `1px solid ${c.bd}` }}>{txt}</span>
   )
-  const tierPill = (o: OccRow) => {
-    const k = o.channelTier
-    if (!k || !TIER_COLORS[k]) return null
-    return pill(TIER_COLORS[k], t('pulse.tier.' + k))
-  }
   // 08-08 Frank 走查连拍:紧缺榜「通道档」列删(榜内基本常量)、「紧缺清单省份」列改名「紧缺」、
   // 值胶囊化——省紧缺具体到省码「MB 紧缺」(多省多胶囊)+ 联邦紧缺单独一粒,省紧缺绿/联邦青与通道档同色系
   const hotPills = (o: OccRow) => {
@@ -228,14 +223,7 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
     // 单元格直接写「TEER 2」(Frank 08-06:裸数字像个数据值,带前缀自明)
     { key: 'teer', label: t('pulse.col.teer'), nowrap: true,
       sort: (o) => o.teer, render: (o) => <>{o.teer != null ? `TEER ${o.teer}` : '—'}</> },
-    // E13-07 通道档列:列缺(还没落库)整列不出,契约 v3 降级
-    // Frank 08-08 走查:雷区榜(deadCol)与紧缺榜(showProvs)都不出——榜内常量列没有意义;
-    // 紧缺榜的通道信息并进「紧缺」列胶囊(hotPills),只剩榜A 保留本列(值有区分度)
-    ...(hasTier && !deadCol && !showProvs ? [{
-      key: 'tier', label: t('pulse.col.tier'), nowrap: true,
-      sort: (o: OccRow) => (o.channelTier != null ? TIER_RANK[o.channelTier] ?? null : null),
-      render: (o: OccRow) => tierPill(o) ?? <>—</>,
-    }] : []),
+    // E13-07 通道档 pill 列 08-08 三轮退役(榜A 也全员「仅雇主担保」=常量;通道信息归各榜的「通道(档)」列)
     // E13-08 雷区榜 → 08-08 Frank 走查砍成一列:「有移民通道的省」全员 ~8 省=常量列删;
     // 只留死路列,单元格自带「无通道」后缀(表头滚出视野后裸省码不自明)
     ...(deadCol ? [{
@@ -285,7 +273,7 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
                   : null}
                 {/* 08-08 Frank:雷区榜通道档胶囊撤(全员同值);死路省改红胶囊「NB 无通道」;
                     紧缺榜 chips=「MB 紧缺」+「联邦紧缺」胶囊(与桌面「紧缺」列同源 hotPills) */}
-                {deadCol ? null : showProvs ? hotPills(o) : tierPill(o)}
+                {deadCol ? null : showProvs ? hotPills(o) : null}
                 {deadCol && o.deadProvs
                   ? <span style={{ fontSize: 11, fontWeight: 600, padding: '1px 8px', borderRadius: 999, background: '#fee2e2', color: '#b91c1c', border: '1px solid #fecaca' }}>{t('pulse.dead.cell', { provs: o.deadProvs })}</span>
                   : null}
@@ -458,6 +446,9 @@ export function StartView({ stats }: { stats: HomeStats }) {
       <div style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', borderBottom: `1px solid ${UI.border}` }}>
         <PageShell pad="0 1.25rem">
           <div style={{ display: 'flex', gap: 16, overflowX: 'auto', padding: '9px 0', fontSize: 12.5, whiteSpace: 'nowrap' }}>
+            {/* 归属设计(Frank 08-08「二级标题应该只属于这个一级标题」):条首挂一级项「就业把脉」作属主 */}
+            <span style={{ fontWeight: 700, color: UI.primary, flexShrink: 0 }}>{t('pulse.entry')}</span>
+            <span style={{ width: 1, height: 14, background: UI.border, flexShrink: 0, alignSelf: 'center' }} />
             {([['pl-se', t('se.title')], ['pl-boards', t('pulse.nav.boards')], ['pl-prov', t('pulse.s4')], ['pl-provocc', t('pulse.s4b')], ['pl-draws', t('pulse.s5')]] as [string, string][]).map(([id, label]) => (
               <a key={id} href={'#' + id} style={{ color: '#6b7280', textDecoration: 'none', fontWeight: 600, flexShrink: 0 }}>{label}</a>
             ))}
@@ -490,17 +481,21 @@ export function StartView({ stats }: { stats: HomeStats }) {
           </PageShell>
         </div>
 
-        {/* ── 在招担保雇主橱窗(Frank 08-08「最优价值的部分」→ S1 后第一块):
-            TOP10 按在招岗数,列=B2 页共用定义(AIP/LMIA/PNP 紧缺三分,不杂糅);货架与筛选在 /employers ── */}
-        {stats.sponsorTop.length > 0 && (
-          <Band id="pl-se">
-            <Sec id="se" title={t('se.title')}
-              right={<a href="/employers" onClick={() => track('pulse-se-all')} style={moreA}>{t('se.top.all', { n: num(stats.sponsorTotal ?? stats.sponsorTop.length) })}</a>}>
-              <div className="plTable"><DataTable<SponsorEmployerRow> rows={stats.sponsorTop} cols={sponsorEmployerCols(t, lang)} rowKey={(r) => r.name} pageSize={10} /></div>
-              <div className="plCards">{stats.sponsorTop.map((r) => <SponsorCard key={r.name} r={r} lang={lang} t={t} />)}</div>
-            </Sec>
-          </Band>
-        )}
+        {/* ── 在招担保雇主橱窗三分表(Frank 08-08:按人群拆——没工签→LMIA、有工签→PNP 担保记录、
+            想去海洋省→AIP;各表删自己的常量凭证列;TOP5+看全部,货架与筛选在 /employers)── */}
+        <Band id="pl-se">
+          {([['lmia', stats.sponsor.lmia, ['lmia'], 'f=lmia'], ['named', stats.sponsor.named, ['named'], 'f=named'], ['aip', stats.sponsor.aip, ['aip'], 'f=aip']] as [string, { top: SponsorEmployerRow[]; total: number }, string[], string][]).map(([k, grp, drop, qs]) => (
+            grp.top.length > 0 ? (
+              <div key={k} style={{ marginTop: k === 'lmia' ? 0 : 24 }}>
+                <Sec id={'se-' + k} title={t('se.grp.' + k)}
+                  right={<a href={'/employers?' + qs} onClick={() => track('pulse-se-all')} style={moreA}>{t('se.top.all', { n: num(grp.total) })}</a>}>
+                  <div className="plTable"><DataTable<SponsorEmployerRow> rows={grp.top} cols={sponsorEmployerCols(t, lang, drop)} rowKey={(r) => r.name} pageSize={5} /></div>
+                  <div className="plCards">{grp.top.slice(0, 3).map((r) => <SponsorCard key={r.name} r={r} lang={lang} t={t} />)}</div>
+                </Sec>
+              </div>
+            ) : null
+          ))}
+        </Band>
 
         {/* ── S2 三榜分层(按用户决策顺序):先排除(无通道)→ 有通道但在降温 → 有通道且在升温。
             加载中出占位块(自上而下渲染铁律,08-06「为什么下面的内容先刷出来」);
@@ -644,8 +639,13 @@ export function StartView({ stats }: { stats: HomeStats }) {
         <Band bg="#fff" id="pl-provocc">
           <Sec id="s4b" title={t('pulse.s4b')}>
           {/* 全国档打头(Frank 08-06「全国 省份 城市 都需要」;职业×城市粒度现库没有,ETL 侧排下一批,不瞎猜) */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, margin: '4px 0 8px' }}>
-            <Chip active={prov === 'ALL'} onClick={() => setProv('ALL')}>{t('pulse.s4.all')}</Chip>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, margin: '4px 0 8px', alignItems: 'center' }}>
+            <select value={prov} onChange={(e) => setProv(e.target.value)}
+              style={{ height: 32, border: `1px solid ${UI.border}`, borderRadius: 8, background: '#fff', fontSize: 13, color: '#374151', padding: '0 8px', maxWidth: '100%' }}>
+              <option value="ALL">{t('pulse.s4.all')}</option>
+              {PROVS.map((p) => <option key={p} value={p}>{PROV_NAME[p] || p}</option>)}
+            </select>
+            {false && <Chip active={prov === 'ALL'} onClick={() => setProv('ALL')}>{t('pulse.s4.all')}</Chip>}
             {/* 省 chips 用全名(Frank 08-06;#146 站规:英文在前,中韩括注译名;NL 用通行短名) */}
             {PROVS.map((p) => {
               const en = SHORT_PROV[p] || PROV_NAME[p] || p
