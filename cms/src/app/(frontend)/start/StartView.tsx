@@ -113,11 +113,26 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
   // 与「紧缺清单省份」列语义不同、互斥出现)。列还没落库(全行 null/undefined)时整列不渲染。
   const hasPnpProvs = rows.some((o) => o.pnpProvs != null)
   const hasTier = rows.some((o) => o.channelTier != null)
+  const pill = (c: { bg: string; fg: string; bd: string }, txt: string, key?: string) => (
+    <span key={key ?? txt} style={{ whiteSpace: 'nowrap', fontSize: 11, fontWeight: 600, padding: '1px 8px', borderRadius: 999, background: c.bg, color: c.fg, border: `1px solid ${c.bd}` }}>{txt}</span>
+  )
   const tierPill = (o: OccRow) => {
     const k = o.channelTier
     if (!k || !TIER_COLORS[k]) return null
-    const c = TIER_COLORS[k]
-    return <span style={{ whiteSpace: 'nowrap', fontSize: 11, fontWeight: 600, padding: '1px 8px', borderRadius: 999, background: c.bg, color: c.fg, border: `1px solid ${c.bd}` }}>{t('pulse.tier.' + k)}</span>
+    return pill(TIER_COLORS[k], t('pulse.tier.' + k))
+  }
+  // 08-08 Frank 走查连拍:紧缺榜「通道档」列删(榜内基本常量)、「紧缺清单省份」列改名「紧缺」、
+  // 值胶囊化——省紧缺具体到省码「MB 紧缺」(多省多胶囊)+ 联邦紧缺单独一粒,省紧缺绿/联邦青与通道档同色系
+  const hotPills = (o: OccRow) => {
+    const ps = provsOf(o)
+    const fed = o.channelTier === 'fed' || o.channelTier === 'both'
+    if (!ps.length && !fed) return <span style={{ color: UI.text3 }}>{t('pulse.provs.none')}</span>
+    return (
+      <span style={{ display: 'inline-flex', gap: 4, flexWrap: 'wrap' }}>
+        {ps.map((p) => pill(TIER_COLORS.prov, t('pulse.tier.provOne', { p }), p))}
+        {fed ? pill(TIER_COLORS.fed, t('pulse.tier.fedOne')) : null}
+      </span>
+    )
   }
   // 全码直陈(Frank 08-06「tooltips 都去掉」后不再折叠成「N 省」,列内自然折行)。
   // E13-09 拆两行:直陈行=拿 offer 即可;灰行=先省内同雇主 6 个月(五省普通通道)。
@@ -146,17 +161,8 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
   // 判决列 08-06 深夜删(Frank:「环比百分比用户一看就明白,还用再说一遍萎缩?」)——判决只活在 S1 头条。
   // 「无」不再分红灰(Frank:「大部分人不可能卷 CRS 分也不可能再学法语」——无清单对受众=只剩不现实的路,
   //  这层含义由三榜分层本身表达,tooltip 说透即可)
-  const provsCell = (o: OccRow) => {
-    const ps = provsOf(o)
-    if (ps.length) return <span style={{ color: '#b45309', fontWeight: 600 }}>{ps.join('、')}</span>
-    return <span style={{ color: UI.text3 }}>{t('pulse.provs.none')}</span>
-  }
   const momCell = (o: OccRow) => (o.mom14d == null ? null
     : <span style={{ color: momColor(o.mom14d), fontWeight: 700, whiteSpace: 'nowrap' }}>{pctSigned(o.mom14d)}</span>)
-  const aliveOf = (o: OccRow) => {
-    const dead = new Set((o.deadProvs ?? '').split('、').filter(Boolean))
-    return DEAD_PROV_ORDER.filter((p) => !dead.has(p))
-  }
 
   const cols: DTCol<OccRow>[] = [
     {
@@ -173,49 +179,11 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
         </div>
       ),
     },
-    // NOC 代码独立成列(Frank 08-06 二改「代码单独弄一个列」;手机卡片仍在灰注里)
-    { key: 'noc', label: 'NOC', nowrap: true, sort: (o) => o.noc, render: (o) => <>{o.noc}</> },
-    // TEER 列(Frank 08-06 拍板加):无清单职业还剩什么路,先看 TEER——0-3 有联邦 EE,4-5 没有
-    // 单元格直接写「TEER 2」(Frank 08-06:裸数字像个数据值,带前缀自明)
-    { key: 'teer', label: t('pulse.col.teer'), nowrap: true,
-      sort: (o) => o.teer, render: (o) => <>{o.teer != null ? `TEER ${o.teer}` : '—'}</> },
-    // E13-07 通道档列:列缺(还没落库)整列不出,契约 v3 降级
-    ...(hasTier ? [{
-      key: 'tier', label: t('pulse.col.tier'), nowrap: true,
-      sort: (o: OccRow) => (o.channelTier != null ? TIER_RANK[o.channelTier] ?? null : null),
-      render: (o: OccRow) => tierPill(o) ?? <>—</>,
-    }] : []),
+    // 08-08 Frank:三个数字列(在招/14 天环比/薪资区间)紧跟职业列,代码列(NOC/TEER)后移
     { key: 'open', label: t('pulse.col.open'), nowrap: true, sort: (o) => o.openJobs, render: (o) => <>{o.openJobs != null ? num(o.openJobs) : '—'}</> },
     ...(hasMom ? [{
       key: 'mom', label: t('pulse.col.mom'), nowrap: true,
       sort: (o: OccRow) => o.mom14d, render: (o: OccRow) => <>{momCell(o) ?? '—'}</>,
-    }] : []),
-    // E13-08 雷区榜两列(Frank 08-07「在哪些省可走 在哪些省不能走 分两列」):
-    // 有路可走的省 = 9 省 − dead(any_pr_path=true,含 AIP/保育兜底,不只雇主担保);完全走不了的省 = dead(红)
-    ...(deadCol ? [{
-      key: 'alive', label: t('pulse.col.alive'),
-      sort: (o: OccRow) => aliveOf(o).length,
-      render: (o: OccRow) => {
-        const a = aliveOf(o)
-        return a.length
-          ? <span style={{ color: '#b45309', fontWeight: 600 }}>{a.join('、')}</span>
-          : <span style={{ color: UI.text3 }}>—</span>
-      },
-    }, {
-      key: 'dead', label: t('pulse.col.dead'),   // 最多 9 个省码,列内自然折行
-      sort: (o: OccRow) => (o.deadProvs ? o.deadProvs.split('、').length : 0),
-      render: (o: OccRow) => (o.deadProvs
-        ? <span style={{ color: UI.danger, fontWeight: 700 }}>{o.deadProvs}</span>
-        : <span style={{ color: UI.text3 }}>—</span>),
-    }] : showProvs ? [{
-      key: 'provs', label: t('pulse.col.provs'), nowrap: true,
-      sort: (o: OccRow) => provsOf(o).length,
-      render: (o: OccRow) => provsCell(o),
-    }] : hasPnpProvs ? [{
-      key: 'pnpProvs', label: t('pulse.col.pnpProvs'),   // 全码直陈会到 8-9 个省,允许列内折行
-      sort: (o: OccRow) => (o.pnpProvs ? o.pnpProvs.split('、').length : 0) * 10
-        + (o.pnpProvsCond ? o.pnpProvsCond.split('、').length : 0),   // 直可省数主键,cond 省数副键
-      render: (o: OccRow) => pnpProvsCell(o),
     }] : []),
     // 薪资列(Frank 08-06 二改「不如换成薪资区间」):ESDC 官方薪资区间年化(低-高)
     { key: 'sal', label: t('pulse.col.range'), nowrap: true,
@@ -223,6 +191,39 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
       render: (o) => (o.wageLowAnnual != null && o.wageHighAnnual != null
         ? <>{`$${Math.round(o.wageLowAnnual / 1000)}K–$${Math.round(o.wageHighAnnual / 1000)}K`}</>
         : <>—</>) },
+    // NOC 代码独立成列(Frank 08-06 二改「代码单独弄一个列」;手机卡片仍在灰注里)
+    { key: 'noc', label: 'NOC', nowrap: true, sort: (o) => o.noc, render: (o) => <>{o.noc}</> },
+    // TEER 列(Frank 08-06 拍板加):无清单职业还剩什么路,先看 TEER——0-3 有联邦 EE,4-5 没有
+    // 单元格直接写「TEER 2」(Frank 08-06:裸数字像个数据值,带前缀自明)
+    { key: 'teer', label: t('pulse.col.teer'), nowrap: true,
+      sort: (o) => o.teer, render: (o) => <>{o.teer != null ? `TEER ${o.teer}` : '—'}</> },
+    // E13-07 通道档列:列缺(还没落库)整列不出,契约 v3 降级
+    // Frank 08-08 走查:雷区榜(deadCol)与紧缺榜(showProvs)都不出——榜内常量列没有意义;
+    // 紧缺榜的通道信息并进「紧缺」列胶囊(hotPills),只剩榜A 保留本列(值有区分度)
+    ...(hasTier && !deadCol && !showProvs ? [{
+      key: 'tier', label: t('pulse.col.tier'), nowrap: true,
+      sort: (o: OccRow) => (o.channelTier != null ? TIER_RANK[o.channelTier] ?? null : null),
+      render: (o: OccRow) => tierPill(o) ?? <>—</>,
+    }] : []),
+    // E13-08 雷区榜 → 08-08 Frank 走查砍成一列:「有移民通道的省」全员 ~8 省=常量列删;
+    // 只留死路列,单元格自带「无通道」后缀(表头滚出视野后裸省码不自明)
+    ...(deadCol ? [{
+      key: 'dead', label: t('pulse.col.dead'),   // 最多 9 个省码,列内自然折行
+      sort: (o: OccRow) => (o.deadProvs ? o.deadProvs.split('、').length : 0),
+      render: (o: OccRow) => (o.deadProvs
+        ? <span style={{ color: UI.danger, fontWeight: 700 }}>{t('pulse.dead.cell', { provs: o.deadProvs })}</span>
+        : <span style={{ color: UI.text3 }}>—</span>),
+    }] : showProvs ? [{
+      // 08-08 Frank:列名「紧缺清单省份」→「紧缺」;值=省码胶囊+联邦胶囊(hotPills),多胶囊允许折行
+      key: 'provs', label: t('pulse.col.hot'),
+      sort: (o: OccRow) => provsOf(o).length,
+      render: (o: OccRow) => hotPills(o),
+    }] : hasPnpProvs ? [{
+      key: 'pnpProvs', label: t('pulse.col.pnpProvs'),   // 全码直陈会到 8-9 个省,允许列内折行
+      sort: (o: OccRow) => (o.pnpProvs ? o.pnpProvs.split('、').length : 0) * 10
+        + (o.pnpProvsCond ? o.pnpProvsCond.split('、').length : 0),   // 直可省数主键,cond 省数副键
+      render: (o: OccRow) => pnpProvsCell(o),
+    }] : []),
   ]
 
   return (
@@ -232,7 +233,6 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
           薪资偏离只留桌面表:375 上两个百分数并排谁是谁得猜 —— 宁可少一个数,不给会读错的数 */}
       <div className="plCards">
         {rows.slice(p * pageSize, (p + 1) * pageSize).map((o) => {
-          const ps = provsOf(o)
           return (
             <JobCard key={o.noc} href={`/?q=${o.noc}`}
               title={{ text: occMain(o), href: `/?q=${o.noc}` }}
@@ -240,14 +240,9 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
               company={o.openJobs != null ? { text: `${t('pulse.col.open')} ${num(o.openJobs)}` } : undefined}
               salary={momCell(o) ?? undefined}
               location={deadCol
-                ? (o.deadProvs
-                  ? <span style={{ display: 'block' }}>
-                    {/* 省码多到 8 个,卡上必须折行不截断(JobCard 外层 nowrap,这里显式放开) */}
-                    <span style={{ display: 'block', color: '#b45309', fontWeight: 600, whiteSpace: 'normal', overflowWrap: 'break-word' }}>{`${t('pulse.col.alive')} ${aliveOf(o).join('、') || '—'}`}</span>
-                    <span style={{ display: 'block', color: UI.danger, fontWeight: 700, whiteSpace: 'normal', overflowWrap: 'break-word' }}>{`${t('pulse.col.dead')} ${o.deadProvs}`}</span>
-                  </span>
-                  : undefined)
-                : showProvs ? `${t('pulse.col.provs')} ${ps.length ? ps.join('、') : t('pulse.provs.none')}`
+                ? undefined   // 08-08 Frank:有通道省两行删(常量);死路信息改红胶囊(chips 区)
+                : showProvs ? undefined   // 紧缺省文字行删——信息在 chips 的「MB 紧缺」胶囊里
+
                 : (o.pnpProvs || o.pnpProvsCond)   // E13-09:榜A手机卡也带两档省份(桌面独有=信息不对称)
                   ? <span style={{ display: 'block' }}>
                     {o.pnpProvs ? <span style={{ display: 'block', color: '#b45309', fontWeight: 600, whiteSpace: 'normal', overflowWrap: 'break-word' }}>{`${t('pulse.provs.direct')} ${o.pnpProvs}`}</span> : null}
@@ -260,7 +255,12 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
                 {o.teer != null
                   ? <span style={{ whiteSpace: 'nowrap', fontSize: 11, fontWeight: 600, padding: '1px 8px', borderRadius: 999, background: '#f3f4f6', color: '#4b5563', border: '1px solid #e5e7eb' }}>{`TEER ${o.teer}`}</span>
                   : null}
-                {tierPill(o)}
+                {/* 08-08 Frank:雷区榜通道档胶囊撤(全员同值);死路省改红胶囊「NB 无通道」;
+                    紧缺榜 chips=「MB 紧缺」+「联邦紧缺」胶囊(与桌面「紧缺」列同源 hotPills) */}
+                {deadCol ? null : showProvs ? hotPills(o) : tierPill(o)}
+                {deadCol && o.deadProvs
+                  ? <span style={{ fontSize: 11, fontWeight: 600, padding: '1px 8px', borderRadius: 999, background: '#fee2e2', color: '#b91c1c', border: '1px solid #fecaca' }}>{t('pulse.dead.cell', { provs: o.deadProvs })}</span>
+                  : null}
               </>} />
           )
         })}
@@ -466,15 +466,11 @@ export function StartView({ stats }: { stats: HomeStats }) {
             )}
             {/* E13-08 雷区榜(Frank 08-07「哪些职位在哪些省完全无路可走·千万别来」):
                 deadProvs 非空才进榜;判定=ETL any_pr_path(四通道全无才判死,锚官方原句);
-                榜下两行灰注 = 强负断言的边界(QC 不判 / RCIP 社区例外),不是解释文案 */}
+                QC/RCIP 两行灰注 08-08 Frank「删掉」 */}
             {boards !== null && boards.mine.length > 0 && (
               <div>
                 <h2 style={{ ...secH, margin: '0 0 10px' }}>{t('pulse.b1a')}</h2>
                 <OccBoard rows={boards.mine} t={t} lang={lang} nocProvs={nocProvs} showProvs={false} deadCol />
-                <div style={{ marginTop: 8, fontSize: 12, color: UI.text3 }}>
-                  <span style={{ display: 'block' }}>{t('pulse.dead.qc')}</span>
-                  <span style={{ display: 'block' }}>{t('pulse.dead.rcip')}</span>
-                </div>
               </div>
             )}
             {boards !== null && boards.backup.length > 0 && (
@@ -485,13 +481,14 @@ export function StartView({ stats }: { stats: HomeStats }) {
             )}
             {boards !== null && boards.cooling.length > 0 && (
               <div style={{ marginTop: 28 }}>
-                <h2 style={{ ...secH, margin: '0 0 10px' }}>{t('pulse.b2')}</h2>
+                {/* 08-08 Frank:榜题带涨跌箭头(收缩红↓/增长绿↑) */}
+                <h2 style={{ ...secH, margin: '0 0 10px' }}>{t('pulse.b2')} <span style={{ color: UI.danger }}>↓</span></h2>
                 <OccBoard rows={boards.cooling} t={t} lang={lang} nocProvs={nocProvs} />
               </div>
             )}
             {boards !== null && boards.heating.length > 0 && (
               <div style={{ marginTop: 28 }}>
-                <h2 style={{ ...secH, margin: '0 0 10px' }}>{t('pulse.b3')}</h2>
+                <h2 style={{ ...secH, margin: '0 0 10px' }}>{t('pulse.b3')} <span style={{ color: UI.ok }}>↑</span></h2>
                 <OccBoard rows={boards.heating} t={t} lang={lang} nocProvs={nocProvs} />
               </div>
             )}

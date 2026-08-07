@@ -293,10 +293,10 @@ const zh: Dict = {
   'pulse.b2': '在紧缺清单但岗位收缩',
   'pulse.b3': '在紧缺清单且岗位增长',
   // E13-08 雷区榜(强负断言,口径=ETL any_pr_path:PNP∪联邦EE∪AIP∪保育专项全无才判死)
-  'pulse.b1a': '部分省无任何移民通道',
-  'pulse.col.alive': '有移民通道的省', 'pulse.col.dead': '无移民通道的省',
-  'pulse.dead.qc': 'QC 走自己的甄选体系,不在判定内',
-  'pulse.dead.rcip': '个别 RCIP 乡村社区或有例外',
+  'pulse.b1a': '部分省禁止',
+  'pulse.col.dead': '无移民通道的省', 'pulse.dead.cell': '{provs} 无通道',
+  // 08-08 Frank 走查:紧缺列胶囊化(省码进胶囊);雷区榜 QC/RCIP 灰注删、「有移民通道的省」常量列删
+  'pulse.col.hot': '紧缺', 'pulse.tier.provOne': '{p} 紧缺', 'pulse.tier.fedOne': '联邦紧缺',
   'pulse.provs.none': '无',
   // E13-09 可提名省份两档(拆行直陈,禁杂糅一行)
   'pulse.provs.direct': '拿 offer 可', 'pulse.provs.cond': '先省内工作 6 个月',
@@ -1183,10 +1183,9 @@ const en: Dict = {
   'pulse.b2': 'On a list but contracting',
   'pulse.b3': 'On a list and growing',
   // E13-08 minefield board (strong negative claim; caliber = ETL any_pr_path: dead only when PNP, federal EE, AIP and the caregiver pilots all say no)
-  'pulse.b1a': 'No immigration route in some provinces',
-  'pulse.col.alive': 'Provinces with a route', 'pulse.col.dead': 'Provinces with no route',
-  'pulse.dead.qc': 'Quebec runs its own selection system and is not assessed here',
-  'pulse.dead.rcip': 'A few RCIP rural communities may be exceptions',
+  'pulse.b1a': 'Not accepted in some provinces',
+  'pulse.col.dead': 'Provinces with no route', 'pulse.dead.cell': '{provs} no route',
+  'pulse.col.hot': 'In-demand', 'pulse.tier.provOne': '{p} in-demand', 'pulse.tier.fedOne': 'Federal in-demand',
   'pulse.provs.none': 'None',
   // E13-09 two tiers of PNP provinces (separate lines, no mixed separators)
   'pulse.provs.direct': 'With a job offer', 'pulse.provs.cond': 'After 6 months working there',
@@ -2026,10 +2025,9 @@ const ko: Dict = {
   'pulse.b2': '목록에 있지만 감소세',
   'pulse.b3': '목록에 있고 증가세',
   // E13-08 지뢰밭 랭킹(강한 부정 판정; 기준 = ETL any_pr_path: PNP·연방 EE·AIP·돌봄 파일럿 전부 불가일 때만)
-  'pulse.b1a': '일부 주는 이민 경로 없음',
-  'pulse.col.alive': '이민 경로 있는 주', 'pulse.col.dead': '이민 경로 없는 주',
-  'pulse.dead.qc': '퀘벡주는 자체 선발 제도를 운영하며 판정 대상이 아닙니다',
-  'pulse.dead.rcip': '일부 RCIP 농촌 커뮤니티는 예외일 수 있습니다',
+  'pulse.b1a': '일부 주 접수 불가',
+  'pulse.col.dead': '이민 경로 없는 주', 'pulse.dead.cell': '{provs} 경로 없음',
+  'pulse.col.hot': '수요', 'pulse.tier.provOne': '{p} 수요', 'pulse.tier.fedOne': '연방 수요',
   'pulse.provs.none': '없음',
   // E13-09 PNP 가능 주 2단계(줄 분리 표기)
   'pulse.provs.direct': '오퍼만으로 가능', 'pulse.provs.cond': '주내 6개월 근무 후 가능',
