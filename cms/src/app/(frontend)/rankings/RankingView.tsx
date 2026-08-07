@@ -132,8 +132,9 @@ const rankTitle = (t: TFn, slug: string): string => {
 export function RankingView({ slug, items, slugs = [] }: { slug: string; items: RankRow[]; slugs?: string[] }) {
   const [lang, setLangSaved, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
   // 有数据的榜单清单(导航与 banner 数字块共用)
-  const boards = ['daily-top', ...BROAD_SLUGS.map(([s]) => `daily-top-${s}`), 'weekly-top', 'sponsor-likely']
-    .filter((x) => x === slug || slugs.includes(x) || x === 'weekly-top' || x === 'sponsor-likely')
+  // B2:sponsor-likely 摘出榜单 tab(路由 301 → /employers?sort=skilled,担保雇主页承接)
+  const boards = ['daily-top', ...BROAD_SLUGS.map(([s]) => `daily-top-${s}`), 'weekly-top']
+    .filter((x) => x === slug || slugs.includes(x) || x === 'weekly-top')
 
   return (
     <div style={{ background: '#f9fafb', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>

@@ -1,7 +1,7 @@
 // 榜单页(E5-02,PRD F8):零前端计算 —— 只 SELECT rankings 表渲染(计算在 etl/10_build_rankings.py)。
 // 行只含事实字段 + 官方链接(E4-03 约束);SEO 主体 = generateMetadata。
 import { getPayload } from 'payload'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import config from '@/payload.config'
 import { RankingView } from '../RankingView'
 import { fetchRankingRows, fetchRankingSlugs, RANKING_SLUGS } from '@/lib/rankings'
@@ -38,6 +38,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function RankingPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
+  // B2(在招担保雇主计划):sponsor-likely 榜并入 /employers 当一个排序,不再单页(减页面不加页面)
+  if (slug === 'sponsor-likely') redirect('/employers?sort=skilled')
   if (!RANKING_SLUGS.has(slug)) notFound()
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool

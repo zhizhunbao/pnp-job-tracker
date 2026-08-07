@@ -1570,7 +1570,7 @@ function SponsorLeadCard({ job, t, src }: { job: JobRow; t: TFn; src: 'pnp' | 'c
     <div style={MODAL_CARD}>
       <div style={MODAL_CARD_HEAD}>{t('spl.head')}</div>
       {hasCred && job.aip ? <div style={row}>{t('spl.aip')}</div> : null}
-      {hasCred && lmiaN > 0 ? <div style={row}>{t('spl.lmia', { n: lmiaN })}</div> : null}
+      {hasCred && lmiaN > 0 ? <div style={row}>{lmiaN === 1 ? t('spl.lmia1') : t('spl.lmia', { n: lmiaN })}</div> : null}
       {/* Frank 2026-08-08「按钮风格保持一致」:裸链改站内既有 PILL_BTN(与「打开完整页 ↗」同款;↗=新开页惯例) */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: hasCred ? 8 : 2 }}>
         {hasCred && job.company ? (

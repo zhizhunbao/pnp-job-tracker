@@ -120,8 +120,9 @@ function MobileDrawer({ t, active, showAcctTab, onClose }: { t: TFn; active?: st
           <a href="/start" style={item('/start', '', active === 'start' || active === 'stats' || active === 'rank')}>{t('pulse.entry')}</a>
           <a href="/?view=match" style={item('/?view=match', '', false)}>{t('mv.entry')}</a>
           <a href="/pathways" style={item('/pathways', '', active === 'pathways')}>{t('pw.entry')}</a>
+          {/* B2:「担保雇主」升一级项(蓝图候选 Frank 拍板方向);资料库下拉里旧「雇主名录」项随之移除 */}
+          <a href="/employers" style={item('/employers', '', active === 'employers')}>{t('spl.head')}</a>
           {grp('lib', t('nav.library'), [
-            { href: '/employers', label: t('dir.title'), active: active === 'employers' },
             { href: '/occupations', label: t('dir.occ.title') },
             { href: '/resources', label: t('res.entry') },
           ])}
@@ -209,9 +210,10 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
               ? <button onClick={matchButton.onClick} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: matchButton.active ? '#2563eb' : '#6b7280', fontWeight: matchButton.active ? 700 : 400, cursor: 'pointer', whiteSpace: 'nowrap' }}><IconTarget /> {t('mv.entry')}</button>
               : <a href="/?view=match" style={nav}><IconTarget /> {t('mv.entry')}</a>}
             <a href="/pathways" style={{ ...nav, color: active === 'pathways' ? '#2563eb' : '#6b7280', fontWeight: active === 'pathways' ? 700 : 400 }}><IconCompass /> {t('pw.entry')}</a>
+            {/* B2:「担保雇主」升一级项;资料库下拉只剩职业库/资源库 */}
+            <a href="/employers" style={{ ...nav, color: active === 'employers' ? '#2563eb' : '#6b7280', fontWeight: active === 'employers' ? 700 : 400 }}><IconUsers /> {t('spl.head')}</a>
             {/* 资料库 ▾(2026-07-19 Frank 批提案方案 A;E8-07 E:点击开改 hover 开,NavDrop 统一交互) */}
-            <NavDrop label={t('nav.library')} icon={<IconUsers />} highlight={active === 'employers'} items={[
-              { href: '/employers', label: t('dir.title'), active: active === 'employers' },
+            <NavDrop label={t('nav.library')} icon={<IconUsers />} highlight={false} items={[
               { href: '/occupations', label: t('dir.occ.title') },
               { href: '/resources', label: t('res.entry') },
             ]} />
