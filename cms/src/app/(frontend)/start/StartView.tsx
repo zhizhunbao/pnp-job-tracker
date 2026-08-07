@@ -410,11 +410,97 @@ export function StartView({ stats }: { stats: HomeStats }) {
           </Band>
         )}
 
-        {/* ── S4 省份照妖镜:省标签切换(档案省预选/匿名默认 ON,禁 IP 定位)+ 该省职业榜 +
-            省提名通道标签 + 省卡(难度档 + IRCC 体量)作切换入口 + 折叠的分布主图 ────────── */}
-        <Band>
-          {/* 「看完整统计」下钻链接删(Frank 08-06:省页与首页重复,/stats/[prov] 同批退役) */}
-          <h2 style={secH}>{t('pulse.s4')}</h2>
+        {/* ── S4a 分省概览(Frank 08-06「省卡改表格吧 拆两个section」):
+            桌面=可排序 DataTable(10 省 × 混量纲指标,表格才排得动),手机=原省卡(站规「电脑表格手机卡片」)。
+            表格行不可点(E8-08 站规「可点才有态」),切省统一走 S4b 的 chips;手机卡片保留点卡切省。 ── */}
+        {provRows.length > 0 && (
+          <Band>
+            <h2 style={secH}>{t('pulse.s4')}</h2>
+            <div className="plTable">
+              <DataTable<StatRow>
+                rows={provRows}
+                rowKey={(r) => r.province}
+                cols={[
+                  {
+                    key: 'prov', label: t('pulse.s4.prov'), sort: (r) => PROV_NAME[r.province] || r.province,
+                    render: (r) => (
+                      <div>
+                        <span style={{ fontWeight: 700 }}>{SHORT_PROV[r.province] || PROV_NAME[r.province] || r.province}</span>
+                        <span style={{ color: UI.text3, fontWeight: 400, fontSize: 12, marginLeft: 6 }}>{r.province}</span>
+                        {lang !== 'en'
+                          ? <span style={{ display: 'block', fontSize: 11.5, color: UI.text3 }}>{t('pr.' + r.province)}</span>
+                          : null}
+                      </div>
+                    ),
+                  },
+                  {
+                    key: 'diff', label: t('pulse.s4.diff'), nowrap: true,
+                    sort: (r) => ({ easy: 0, mid: 1, tight: 2 } as Record<string, number>)[stats.provExtra[r.province]?.tier ?? ''] ?? null,
+                    render: (r) => {
+                      const tier = stats.provExtra[r.province]?.tier
+                      return tier && DIFF_COLORS[tier]
+                        ? <span style={{ whiteSpace: 'nowrap', fontSize: 11, fontWeight: 600, padding: '1px 8px', borderRadius: 999, background: DIFF_COLORS[tier].bg, color: DIFF_COLORS[tier].fg, border: `1px solid ${DIFF_COLORS[tier].bd}` }}>{t('diff.' + tier)}</span>
+                        : <>—</>
+                    },
+                  },
+                  { key: 'open', label: t('stats.openJobs'), nowrap: true, sort: (r) => r.openJobs,
+                    render: (r) => <strong>{r.openJobs != null ? num(r.openJobs) : '—'}</strong> },
+                  { key: 'named', label: t('stats.named'), nowrap: true, sort: (r) => r.namedJobs ?? 0,
+                    render: (r) => (r.namedJobs
+                      ? <span style={{ color: UI.warn, fontWeight: 600 }}>{num(r.namedJobs)}</span>
+                      : <span style={{ color: UI.text3 }}>{t('stats.noList')}</span>) },
+                  { key: 'work', label: t('stats.cardWork'), nowrap: true,
+                    sort: (r) => { const ex = stats.provExtra[r.province]; return (ex?.info?.tfwp?.n ?? 0) + (ex?.info?.imp?.n ?? 0) || null },
+                    render: (r) => { const ex = stats.provExtra[r.province]; const w = (ex?.info?.tfwp?.n ?? 0) + (ex?.info?.imp?.n ?? 0); return <>{w ? num(w) : '—'}</> } },
+                  { key: 'study', label: t('stats.cardStudy'), nowrap: true,
+                    sort: (r) => stats.provExtra[r.province]?.info?.study?.n ?? null,
+                    render: (r) => { const n = stats.provExtra[r.province]?.info?.study?.n; return <>{n ? num(n) : '—'}</> } },
+                  { key: 'pr', label: t('stats.cardPr'), nowrap: true,
+                    sort: (r) => stats.provExtra[r.province]?.info?.pnpPr?.n ?? null,
+                    render: (r) => {
+                      const n = stats.provExtra[r.province]?.info?.pnpPr?.n
+                      if (n) return <>{num(n)}</>
+                      return r.province === 'QC' ? <span style={{ color: UI.text3 }}>{t('stats.naQc')}</span> : <>—</>
+                    } },
+                ]}
+              />
+            </div>
+            <div className="plCards">
+              <div className="plProvCards">
+                {provRows.map((r) => {
+                  const ex = stats.provExtra[r.province]
+                  const work = (ex?.info?.tfwp?.n ?? 0) + (ex?.info?.imp?.n ?? 0)
+                  const tier = ex?.tier && DIFF_COLORS[ex.tier] ? ex.tier : null
+                  const on = r.province === prov
+                  return (
+                    <button key={r.province} onClick={() => setProv(r.province)} className="cardHover"
+                      style={{ background: on ? '#eff6ff' : '#fff', border: `1px solid ${on ? '#bfdbfe' : UI.border}`, borderRadius: 12, padding: '12px 14px', color: '#1f2937' }}>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                        <span style={{ fontWeight: 700, fontSize: 14.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{SHORT_PROV[r.province] || PROV_NAME[r.province] || r.province}</span>
+                        <span style={{ color: UI.text3, fontWeight: 400, fontSize: 12.5, flexShrink: 0 }}>{r.province}</span>
+                        {tier ? <span style={{ marginLeft: 'auto', flexShrink: 0, whiteSpace: 'nowrap', fontSize: 11, fontWeight: 600, padding: '1px 8px', borderRadius: 999, background: DIFF_COLORS[tier].bg, color: DIFF_COLORS[tier].fg, border: `1px solid ${DIFF_COLORS[tier].bd}` }}>{t('diff.' + tier)}</span> : null}
+                      </div>
+                      <div style={{ fontSize: 12.5, color: UI.text2, marginTop: 6, lineHeight: 1.9 }}>
+                        {kv(t('stats.openJobs'), <strong>{r.openJobs != null ? num(r.openJobs) : '—'}</strong>)}
+                        {kv(t('stats.named'), r.namedJobs
+                          ? <span style={{ color: UI.warn, fontWeight: 600 }}>{num(r.namedJobs)}</span>
+                          : <span style={{ color: UI.text3 }}>{t('stats.noList')}</span>)}
+                        {kv(t('stats.cardWork'), work ? num(work) : '—')}
+                        {kv(t('stats.cardStudy'), ex?.info?.study?.n ? num(ex.info.study.n) : '—')}
+                        {kv(t('stats.cardPr'), ex?.info?.pnpPr?.n ? num(ex.info.pnpPr.n)
+                          : r.province === 'QC' ? <span style={{ color: UI.text3 }}>{t('stats.naQc')}</span> : '—')}
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </Band>
+        )}
+
+        {/* ── S4b 省内职业榜:chips 切省(档案省预选/匿名默认 ON,禁 IP 定位)+ 通道标签 + 职业榜 + 分布主图 ── */}
+        <Band bg="#fff">
+          <h2 style={secH}>{t('pulse.s4b')}</h2>
           {/* 全国档打头(Frank 08-06「全国 省份 城市 都需要」;职业×城市粒度现库没有,ETL 侧排下一批,不瞎猜) */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, margin: '4px 0 8px' }}>
             <Chip active={prov === 'ALL'} onClick={() => setProv('ALL')}>{t('pulse.s4.all')}</Chip>
@@ -437,37 +523,6 @@ export function StartView({ stats }: { stats: HomeStats }) {
             : provOcc.length > 0
               ? <OccBoard rows={provOcc} t={t} lang={lang} nocProvs={nocProvs} />
               : null}
-          {/* 省卡=切换入口(点卡换省,不跳页;下钻链接在节头)。缺 IRCC 数的格显「—」而非 0 */}
-          {provRows.length > 0 && (
-            <div className="plProvCards">
-              {provRows.map((r) => {
-                const ex = stats.provExtra[r.province]
-                const work = (ex?.info?.tfwp?.n ?? 0) + (ex?.info?.imp?.n ?? 0)
-                const tier = ex?.tier && DIFF_COLORS[ex.tier] ? ex.tier : null
-                const on = r.province === prov
-                return (
-                  <button key={r.province} onClick={() => setProv(r.province)} className="cardHover"
-                    style={{ background: on ? '#eff6ff' : '#fff', border: `1px solid ${on ? '#bfdbfe' : UI.border}`, borderRadius: 12, padding: '12px 14px', color: '#1f2937' }}>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                      <span style={{ fontWeight: 700, fontSize: 14.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{SHORT_PROV[r.province] || PROV_NAME[r.province] || r.province}</span>
-                      <span style={{ color: UI.text3, fontWeight: 400, fontSize: 12.5, flexShrink: 0 }}>{r.province}</span>
-                      {tier ? <span style={{ marginLeft: 'auto', flexShrink: 0, whiteSpace: 'nowrap', fontSize: 11, fontWeight: 600, padding: '1px 8px', borderRadius: 999, background: DIFF_COLORS[tier].bg, color: DIFF_COLORS[tier].fg, border: `1px solid ${DIFF_COLORS[tier].bd}` }}>{t('diff.' + tier)}</span> : null}
-                    </div>
-                    <div style={{ fontSize: 12.5, color: UI.text2, marginTop: 6, lineHeight: 1.9 }}>
-                      {kv(t('stats.openJobs'), <strong>{r.openJobs != null ? num(r.openJobs) : '—'}</strong>)}
-                      {kv(t('stats.named'), r.namedJobs
-                        ? <span style={{ color: UI.warn, fontWeight: 600 }}>{num(r.namedJobs)}</span>
-                        : <span style={{ color: UI.text3 }}>{t('stats.noList')}</span>)}
-                      {kv(t('stats.cardWork'), work ? num(work) : '—')}
-                      {kv(t('stats.cardStudy'), ex?.info?.study?.n ? num(ex.info.study.n) : '—')}
-                      {kv(t('stats.cardPr'), ex?.info?.pnpPr?.n ? num(ex.info.pnpPr.n)
-                        : r.province === 'QC' ? <span style={{ color: UI.text3 }}>{t('stats.naQc')}</span> : '—')}
-                    </div>
-                  </button>
-                )
-              })}
-            </div>
-          )}
           {/* 分布主图常驻(Frank 08-06「柱状图带拖动的找回来/最重要的」;7-28 也骂过图被藏——不再折叠) */}
           {market === null
             ? <div style={{ marginTop: 14, background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, height: 380 }} />
@@ -478,9 +533,9 @@ export function StartView({ stats }: { stats: HomeStats }) {
             )}
         </Band>
 
-        {/* ── S5 抽选尺子:抽选表(每期配冷解读)+ 政策动态合并一区 ────────────────── */}
+        {/* ── S5 抽选尺子:抽选表(每期配冷解读)+ 政策动态合并一区(S4 拆两区后色带让位,回默认底) ── */}
         {(stats.draws.length > 0 || stats.news.length > 0) && (
-          <Band bg="#fff">
+          <Band>
             {stats.draws.length > 0 && (
               <>
                 <h2 style={secH}>{t('pulse.s5')}
