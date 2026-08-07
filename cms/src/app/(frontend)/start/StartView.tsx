@@ -99,13 +99,11 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, pageSize = 10 }: 
   // E13-05:榜 A(showProvs=false)专用列——真口径可提名省份(pnp_provs,含排除式省/雇主担保类,
   // 与「紧缺清单省份」列语义不同、互斥出现)。列还没落库(全行 null/undefined)时整列不渲染。
   const hasPnpProvs = rows.some((o) => o.pnpProvs != null)
+  // 全码直陈(Frank 08-06「tooltips 都去掉」后不再折叠成「N 省」,列内自然折行)
   const pnpProvsCell = (o: OccRow) => {
     const s = o.pnpProvs ?? ''
     if (!s) return <span style={{ color: UI.text3 }}>—</span>
-    const arr = s.split('、')
-    return arr.length <= 4
-      ? <span style={{ color: '#b45309', fontWeight: 600 }}>{s}</span>
-      : <span title={s} style={{ color: '#b45309', fontWeight: 600 }}>{t('pulse.provs.n', { n: arr.length })}</span>
+    return <span style={{ color: '#b45309', fontWeight: 600 }}>{s}</span>
   }
   // 手机卡片列表的页态(桌面表格的页态在 DataTable 里,俩视图同刻只显示一个,各翻各的)
   const [page, setPage] = useState(0)
@@ -123,7 +121,7 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, pageSize = 10 }: 
   const provsCell = (o: OccRow) => {
     const ps = provsOf(o)
     if (ps.length) return <span style={{ color: '#b45309', fontWeight: 600 }}>{ps.join('、')}</span>
-    return <span title={t('pulse.provs.none.tip')} style={{ color: UI.text3 }}>{t('pulse.provs.none')}</span>
+    return <span style={{ color: UI.text3 }}>{t('pulse.provs.none')}</span>
   }
   const momCell = (o: OccRow) => (o.mom14d == null ? null
     : <span style={{ color: momColor(o.mom14d), fontWeight: 700, whiteSpace: 'nowrap' }}>{pctSigned(o.mom14d)}</span>)
@@ -133,47 +131,42 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, pageSize = 10 }: 
       key: 'occ', label: t('pulse.col.occ'), sort: (o) => occMain(o),
       // Frank 08-06「职业名字要显示完整,右面有很多空间」:不截断不省略,长名自然折行
       // (数字列全 nowrap,表格仍不会横滚;折行只发生在主列自己的宽度里)
-      // 灰注行 = 界面语言译名 + NOC 代码(Frank 08-06「NOC 代码也要显示」;间距分隔,禁「·」杂糅)
       render: (o) => (
         <div>
           <a href={`/?q=${o.noc}`} onClick={() => track('pulse_occ_click')}
             style={{ color: UI.primary, textDecoration: 'none', display: 'block' }}>{occMain(o)}</a>
-          <span style={{ display: 'flex', gap: 10, fontSize: 11.5, color: UI.text3 }}>
-            {occNote(o, lang) ? <span>{occNote(o, lang)}</span> : null}
-            <span style={{ whiteSpace: 'nowrap' }}>NOC {o.noc}</span>
-          </span>
+          {occNote(o, lang)
+            ? <span style={{ display: 'block', fontSize: 11.5, color: UI.text3 }}>{occNote(o, lang)}</span>
+            : null}
         </div>
       ),
     },
+    // NOC 代码独立成列(Frank 08-06 二改「代码单独弄一个列」;手机卡片仍在灰注里)
+    { key: 'noc', label: 'NOC', nowrap: true, sort: (o) => o.noc, render: (o) => <>{o.noc}</> },
     // TEER 列(Frank 08-06 拍板加):无清单职业还剩什么路,先看 TEER——0-3 有联邦 EE,4-5 没有
     // 单元格直接写「TEER 2」(Frank 08-06:裸数字像个数据值,带前缀自明)
-    { key: 'teer', label: t('pulse.col.teer'), nowrap: true, thTip: t('pulse.col.teer.tip'),
+    { key: 'teer', label: t('pulse.col.teer'), nowrap: true,
       sort: (o) => o.teer, render: (o) => <>{o.teer != null ? `TEER ${o.teer}` : '—'}</> },
     { key: 'open', label: t('pulse.col.open'), nowrap: true, sort: (o) => o.openJobs, render: (o) => <>{o.openJobs != null ? num(o.openJobs) : '—'}</> },
     ...(hasMom ? [{
-      key: 'mom', label: t('pulse.col.mom'), nowrap: true, thTip: t('pulse.col.mom.tip'),
+      key: 'mom', label: t('pulse.col.mom'), nowrap: true,
       sort: (o: OccRow) => o.mom14d, render: (o: OccRow) => <>{momCell(o) ?? '—'}</>,
     }] : []),
     ...(showProvs ? [{
-      key: 'provs', label: t('pulse.col.provs'), nowrap: true, thTip: t('pulse.col.provs.tip'),
+      key: 'provs', label: t('pulse.col.provs'), nowrap: true,
       sort: (o: OccRow) => provsOf(o).length,
       render: (o: OccRow) => provsCell(o),
     }] : hasPnpProvs ? [{
-      key: 'pnpProvs', label: t('pulse.col.pnpProvs'), nowrap: true, thTip: t('pulse.col.pnpProvs.tip'),
+      key: 'pnpProvs', label: t('pulse.col.pnpProvs'),   // 全码直陈会到 8-9 个省,允许列内折行
       sort: (o: OccRow) => (o.pnpProvs ? o.pnpProvs.split('、').length : 0),
       render: (o: OccRow) => pnpProvsCell(o),
     }] : []),
-    // 薪资列(Frank 08-06 二改「不如换成薪资区间」):ESDC 官方薪资区间年化(低-高)主显,
-    // 帖面中位年薪降级进单元格 title(小样本护栏沿用:salaryN<5 不带中位)
-    { key: 'sal', label: t('pulse.col.range'), nowrap: true, thTip: t('pulse.col.range.tip'),
+    // 薪资列(Frank 08-06 二改「不如换成薪资区间」):ESDC 官方薪资区间年化(低-高)
+    { key: 'sal', label: t('pulse.col.range'), nowrap: true,
       sort: (o) => o.wageHighAnnual,
-      render: (o) => {
-        const med = o.medianSalaryAnnual != null && (o.salaryN ?? 0) >= 5
-          ? `${t('pulse.col.sal')} $${Math.round(o.medianSalaryAnnual / 1000)}K` : undefined
-        return o.wageLowAnnual != null && o.wageHighAnnual != null
-          ? <span title={med}>{`$${Math.round(o.wageLowAnnual / 1000)}K–$${Math.round(o.wageHighAnnual / 1000)}K`}</span>
-          : <>—</>
-      } },
+      render: (o) => (o.wageLowAnnual != null && o.wageHighAnnual != null
+        ? <>{`$${Math.round(o.wageLowAnnual / 1000)}K–$${Math.round(o.wageHighAnnual / 1000)}K`}</>
+        : <>—</>) },
   ]
 
   return (
@@ -315,8 +308,6 @@ export function StartView({ stats }: { stats: HomeStats }) {
       ? t('pulse.dr.note', { n: r.histN, min: num(r.histMin), max: num(r.histMax) }) : '')
 
   const secH: React.CSSProperties = { margin: '0 0 6px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 10, rowGap: 8, flexWrap: 'wrap', color: UI.text }
-  // 节标题挂口径 tooltip(说明句不上台面,悬停看;Frank 08-06 不要下划线记号,只留 title)
-  const tipHead: React.CSSProperties = { cursor: 'help' }
   const moreA: React.CSSProperties = { fontSize: 13, fontWeight: 600, color: UI.primary, textDecoration: 'none', whiteSpace: 'nowrap' }
   const hmRight: React.CSSProperties = { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }
   const th: React.CSSProperties = { fontSize: 11.5, color: UI.text3, fontWeight: 600, textAlign: 'left', padding: '9px 12px', borderBottom: `1px solid ${UI.hairline}`, background: '#fafafa' }
@@ -379,7 +370,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
                     <span style={{ width: 72, height: 20, borderRadius: 6, background: '#f1f3f5' }} />
                     <span style={{ width: 96, height: 12, borderRadius: 6, background: '#f1f3f5' }} />
                   </div>
-                  : <a key={c.label} href={c.href} title={c.tip} className="cardHover" onClick={() => track('pulse_card_click')}>
+                  : <a key={c.label} href={c.href} className="cardHover" onClick={() => track('pulse_card_click')}>
                     <b>{c.v}</b>
                     <span>{c.label}</span>
                     {c.sub ? <i style={{ color: c.subUp ? UI.ok : c.subDown ? UI.danger : UI.text2 }}>{c.sub}</i> : null}
@@ -394,23 +385,25 @@ export function StartView({ stats }: { stats: HomeStats }) {
             数据没就绪 → 整块不渲染(绝不拿存量榜顶包);无大竖线、标题深色(08-06 版式拍板) */}
         {boards && (boards.noPath.length > 0 || boards.cooling.length > 0 || boards.heating.length > 0) && (
           <Band bg="#fff">
-            {/* 口径说明降级进标题 tooltip(Frank 08-06「应该是 tooltips 不要直接显示出来」),
-                虚线下划线=可悬停记号,与表头 thTip 同形态 */}
-            {boards.noPath.length > 0 && (
+            {/* 口径说明句与悬停提示 08-06 全撤(Frank「tooltips 都去掉」),榜题裸标题 */}
+            {boards === null && (
+              <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, height: 480 }} />
+            )}
+            {boards !== null && boards.noPath.length > 0 && (
               <div>
-                <h2 style={{ ...secH, margin: '0 0 10px' }}><span title={t('pulse.b1.note')} style={tipHead}>{t('pulse.b1')}</span></h2>
+                <h2 style={{ ...secH, margin: '0 0 10px' }}>{t('pulse.b1')}</h2>
                 <OccBoard rows={boards.noPath} t={t} lang={lang} nocProvs={nocProvs} showProvs={false} />
               </div>
             )}
             {boards.cooling.length > 0 && (
               <div style={{ marginTop: 28 }}>
-                <h2 style={{ ...secH, margin: '0 0 10px' }}><span title={t('pulse.b2.note')} style={tipHead}>{t('pulse.b2')}</span></h2>
+                <h2 style={{ ...secH, margin: '0 0 10px' }}>{t('pulse.b2')}</h2>
                 <OccBoard rows={boards.cooling} t={t} lang={lang} nocProvs={nocProvs} />
               </div>
             )}
             {boards.heating.length > 0 && (
               <div style={{ marginTop: 28 }}>
-                <h2 style={{ ...secH, margin: '0 0 10px' }}><span title={t('pulse.b3.note')} style={tipHead}>{t('pulse.b3')}</span></h2>
+                <h2 style={{ ...secH, margin: '0 0 10px' }}>{t('pulse.b3')}</h2>
                 <OccBoard rows={boards.heating} t={t} lang={lang} nocProvs={nocProvs} />
               </div>
             )}
@@ -429,7 +422,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
             {PROVS.map((p) => {
               const en = SHORT_PROV[p] || PROV_NAME[p] || p
               const loc = lang === 'en' ? '' : t('pr.' + p)
-              return <Chip key={p} active={p === prov} onClick={() => setProv(p)} title={PROV_NAME[p]}>{loc ? `${en}(${loc})` : en}</Chip>
+              return <Chip key={p} active={p === prov} onClick={() => setProv(p)}>{loc ? `${en}(${loc})` : en}</Chip>
             })}
           </div>
           {/* 该省提名通道(与 /stats 省页同源 stream_labels);无清单的省整行不出,不写「暂无」 */}
@@ -456,7 +449,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
                   <button key={r.province} onClick={() => setProv(r.province)} className="cardHover"
                     style={{ background: on ? '#eff6ff' : '#fff', border: `1px solid ${on ? '#bfdbfe' : UI.border}`, borderRadius: 12, padding: '12px 14px', color: '#1f2937' }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                      <span title={PROV_NAME[r.province] || r.province} style={{ fontWeight: 700, fontSize: 14.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{SHORT_PROV[r.province] || PROV_NAME[r.province] || r.province}</span>
+                      <span style={{ fontWeight: 700, fontSize: 14.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{SHORT_PROV[r.province] || PROV_NAME[r.province] || r.province}</span>
                       <span style={{ color: UI.text3, fontWeight: 400, fontSize: 12.5, flexShrink: 0 }}>{r.province}</span>
                       {tier ? <span style={{ marginLeft: 'auto', flexShrink: 0, whiteSpace: 'nowrap', fontSize: 11, fontWeight: 600, padding: '1px 8px', borderRadius: 999, background: DIFF_COLORS[tier].bg, color: DIFF_COLORS[tier].fg, border: `1px solid ${DIFF_COLORS[tier].bd}` }}>{t('diff.' + tier)}</span> : null}
                     </div>
@@ -464,11 +457,11 @@ export function StartView({ stats }: { stats: HomeStats }) {
                       {kv(t('stats.openJobs'), <strong>{r.openJobs != null ? num(r.openJobs) : '—'}</strong>)}
                       {kv(t('stats.named'), r.namedJobs
                         ? <span style={{ color: UI.warn, fontWeight: 600 }}>{num(r.namedJobs)}</span>
-                        : <span title={t('stats.noList.tip')} style={{ color: UI.text3 }}>{t('stats.noList')}</span>)}
+                        : <span style={{ color: UI.text3 }}>{t('stats.noList')}</span>)}
                       {kv(t('stats.cardWork'), work ? num(work) : '—')}
                       {kv(t('stats.cardStudy'), ex?.info?.study?.n ? num(ex.info.study.n) : '—')}
                       {kv(t('stats.cardPr'), ex?.info?.pnpPr?.n ? num(ex.info.pnpPr.n)
-                        : r.province === 'QC' ? <span title={t('stats.naQc.tip')} style={{ color: UI.text3 }}>{t('stats.naQc')}</span> : '—')}
+                        : r.province === 'QC' ? <span style={{ color: UI.text3 }}>{t('stats.naQc')}</span> : '—')}
                     </div>
                   </button>
                 )
@@ -476,11 +469,13 @@ export function StartView({ stats }: { stats: HomeStats }) {
             </div>
           )}
           {/* 分布主图常驻(Frank 08-06「柱状图带拖动的找回来/最重要的」;7-28 也骂过图被藏——不再折叠) */}
-          {market !== null && market.occ.length > 0 && (
-            <div style={{ marginTop: 14 }}>
-              <MarketChart occ={market.occ} city={market.city} rows={market.rows} t={t} lang={lang} channels={market.channels} />
-            </div>
-          )}
+          {market === null
+            ? <div style={{ marginTop: 14, background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, height: 380 }} />
+            : market.occ.length > 0 && (
+              <div style={{ marginTop: 14 }}>
+                <MarketChart occ={market.occ} city={market.city} rows={market.rows} t={t} lang={lang} channels={market.channels} />
+              </div>
+            )}
         </Band>
 
         {/* ── S5 抽选尺子:抽选表(每期配冷解读)+ 政策动态合并一区 ────────────────── */}
@@ -509,14 +504,15 @@ export function StartView({ stats }: { stats: HomeStats }) {
                           <tr key={i}>
                             <td style={base}>{ymd(r.date)}</td>
                             <td style={base}><Tag>{r.province === 'FED' ? 'EE' : r.province}</Tag></td>
-                            <td style={{ ...base, whiteSpace: 'normal' }} title={drawMain(r)}>
-                              <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{drawMain(r)}</span>
-                              {drawNote(r) ? <span style={{ display: 'block', fontSize: 11.5, color: UI.text3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{drawNote(r)}</span> : null}
+                            {/* 通道名不截断(Frank 08-06「名字别隐藏」):列内自然折行 */}
+                            <td style={{ ...base, whiteSpace: 'normal' }}>
+                              <span style={{ display: 'block', overflowWrap: 'break-word' }}>{drawMain(r)}</span>
+                              {drawNote(r) ? <span style={{ display: 'block', fontSize: 11.5, color: UI.text3, overflowWrap: 'break-word' }}>{drawNote(r)}</span> : null}
                             </td>
                             <td style={base}>{r.score != null ? num(r.score) : '—'}</td>
                             <td style={base}>{r.invitations != null ? num(r.invitations) : '—'}</td>
                             {/* 冷解读:样本不足(同通道 <4 期有分)就整格留空,不编一句话 */}
-                            <td style={{ ...base, color: UI.text2 }} title={drawVerdict(r)}>{drawVerdict(r)}</td>
+                            <td style={{ ...base, color: UI.text2, whiteSpace: 'normal' }}>{drawVerdict(r)}</td>
                           </tr>
                         )
                       })}
