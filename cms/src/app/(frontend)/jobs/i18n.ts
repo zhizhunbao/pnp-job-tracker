@@ -869,7 +869,8 @@ const zh: Dict = {
   'pnpdraws.on.k1': '通道', 'pnpdraws.on.v1': 'Ontario Workforce Priority(2026-06-25 起)',
   'pnpdraws.on.k2': '旧 8 条流', 'pnpdraws.on.v2': '已全部关闭,不再发邀请',
   'pnpdraws.on.k3': '覆盖', 'pnpdraws.on.v3': '全部 TEER 均有路径,自雇医生可无 offer',
-  'pnpdraws.on.k4': '抽选', 'pnpdraws.on.v4': '新 EOI 系统官方称今夏开放,暂无记录',
+  // 2026-08-08 Frank 实核:官方页 Updated: August 04, 2026 已挂 Register an EOI 三步流程=已开放;抽选记录仍无(最新 2026-04-30 旧通道)
+  'pnpdraws.on.k4': '抽选', 'pnpdraws.on.v4': 'EOI 注册 2026-08-04 起开放,暂无记录',
   'ch.pnp.whySkilled': '依据:TEER {teer} 属技能类,多数省的雇主类通道门槛为 TEER 0-3。',
   'ch.pnp.whyOpen': '依据:{prov}不设职业清单,只列不受理职业,本岗不在其中。',
   // E13-09 普通通道两档(五省官方原句锚在 etl/08_score.py)
@@ -1718,7 +1719,7 @@ const en: Dict = {
   'pnpdraws.on.k1': 'Stream', 'pnpdraws.on.v1': 'Ontario Workforce Priority (since 2026-06-25)',
   'pnpdraws.on.k2': 'Former 8 streams', 'pnpdraws.on.v2': 'All closed, no further invitations',
   'pnpdraws.on.k3': 'Coverage', 'pnpdraws.on.v3': 'A pathway for every TEER; self-employed physicians need no offer',
-  'pnpdraws.on.k4': 'Draws', 'pnpdraws.on.v4': 'New EOI system opens later this summer, no rounds yet',
+  'pnpdraws.on.k4': 'Draws', 'pnpdraws.on.v4': 'EOI registration open since 2026-08-04, no rounds yet',
   'ch.pnp.whySkilled': 'Basis: TEER {teer} is a skilled occupation; most PNP employer streams set the bar at TEER 0-3.',
   'ch.pnp.whyOpen': 'Basis: {prov} publishes no occupation list, only occupations it will not accept — this one is not among them.',
   // E13-09 universal streams, two tiers (official quotes anchored in etl/08_score.py)
@@ -2561,7 +2562,7 @@ const ko: Dict = {
   'pnpdraws.on.k1': '스트림', 'pnpdraws.on.v1': 'Ontario Workforce Priority(2026-06-25 시행)',
   'pnpdraws.on.k2': '기존 8개 스트림', 'pnpdraws.on.v2': '모두 폐지, 추가 초청 없음',
   'pnpdraws.on.k3': '적용 범위', 'pnpdraws.on.v3': '모든 TEER에 경로 있음, 자영 의사는 오퍼 불필요',
-  'pnpdraws.on.k4': '추첨', 'pnpdraws.on.v4': '신규 EOI 시스템은 올여름 개시 예정, 기록 없음',
+  'pnpdraws.on.k4': '추첨', 'pnpdraws.on.v4': 'EOI 등록 2026-08-04 개방, 기록 없음',
   'ch.pnp.whySkilled': '근거: TEER {teer}은 숙련 직종이며 대부분 PNP 고용주 스트림 기준선은 TEER 0-3입니다.',
   'ch.pnp.whyOpen': '근거: {prov}는 직업 목록 없이 접수 제외 직종만 명시하며 이 직무는 제외 대상이 아닙니다.',
   // E13-09 일반 스트림 2단계(공식 원문은 etl/08_score.py에 앵커)

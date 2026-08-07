@@ -1571,18 +1571,17 @@ function SponsorLeadCard({ job, t, src }: { job: JobRow; t: TFn; src: 'pnp' | 'c
       <div style={MODAL_CARD_HEAD}>{t('spl.head')}</div>
       {hasCred && job.aip ? <div style={row}>{t('spl.aip')}</div> : null}
       {hasCred && lmiaN > 0 ? <div style={row}>{t('spl.lmia', { n: lmiaN })}</div> : null}
-      {hasCred && job.company ? (
-        <div style={row}>
-          <a href={'/?q=' + encodeURIComponent(job.company)} target="_blank" rel="noreferrer" style={{ ...link, fontWeight: 600 }}
-            onClick={() => track('pnp-employer-click', { kind: src })}>{t('spl.coJobs')} →</a>
-        </div>
-      ) : null}
-      {job.noc ? (
-        <div style={row}>
-          <a href={'/employers?noc=' + encodeURIComponent(job.noc)} target="_blank" rel="noreferrer" style={{ ...link, fontWeight: 600 }}
-            onClick={() => track('pnp-sponsor-list-click', { kind: src })}>{t('spl.occList')} →</a>
-        </div>
-      ) : null}
+      {/* Frank 2026-08-08「按钮风格保持一致」:裸链改站内既有 PILL_BTN(与「打开完整页 ↗」同款;↗=新开页惯例) */}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: hasCred ? 8 : 2 }}>
+        {hasCred && job.company ? (
+          <a href={'/?q=' + encodeURIComponent(job.company)} target="_blank" rel="noreferrer" style={{ ...PILL_BTN, textDecoration: 'none', display: 'inline-block', whiteSpace: 'nowrap' }}
+            onClick={() => track('pnp-employer-click', { kind: src })}>{t('spl.coJobs')} ↗</a>
+        ) : null}
+        {job.noc ? (
+          <a href={'/employers?noc=' + encodeURIComponent(job.noc)} target="_blank" rel="noreferrer" style={{ ...PILL_BTN, textDecoration: 'none', display: 'inline-block', whiteSpace: 'nowrap' }}
+            onClick={() => track('pnp-sponsor-list-click', { kind: src })}>{t('spl.occList')} ↗</a>
+        ) : null}
+      </div>
     </div>
   )
 }
