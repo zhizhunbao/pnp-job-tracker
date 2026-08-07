@@ -35,6 +35,24 @@ _score = _ilu.module_from_spec(_score_spec)
 _score_spec.loader.exec_module(_score)
 pnp_eligible = _score.pnp_eligible
 
+# E13-07:通道档(Frank 08-06 深夜四档拍板)。省具名紧缺 ∪ 联邦 EE 类别 = 点名(双头/单头);
+# 都没点名时 TEER 0-3 还有 EE 泛池,TEER 4-5 只剩雇主担保(最难);TEER 未分类不硬塞档。
+NAMED_ANY: set = set().union(*_score.NAMED_STREAM_NOCS_BY_PROV.values()) if _score.NAMED_STREAM_NOCS_BY_PROV else set()
+EE_BY_NOC = _score.EE_BY_NOC
+
+
+def channel_tier(noc: str, teer) -> str | None:
+    prov_named, fed_named = noc in NAMED_ANY, noc in EE_BY_NOC
+    if prov_named and fed_named:
+        return "both"
+    if prov_named:
+        return "prov"
+    if fed_named:
+        return "fed"
+    if teer in (0, 1, 2, 3):
+        return "ee"
+    return "employer" if teer is not None else None
+
 if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
     sys.stdout.reconfigure(encoding="utf-8")
 
@@ -324,7 +342,9 @@ def main() -> None:
         # E13-05:真口径可提名省份(pnp_eligible 逐省判,非省具名清单命中);teer=None → 空串(宁可留空)
         teer = base["teer"]
         pnp_provs = "、".join(p for p in PNP_PROV_ORDER if pnp_eligible(noc, teer, p))
-        occ_rows.append({**base, "province": "all", "pnpProvs": pnp_provs, **agg(js), **flow_of((noc, "all"))})   # 全国行
+        occ_rows.append({**base, "province": "all", "pnpProvs": pnp_provs,
+                         "channelTier": channel_tier(noc, teer),   # E13-07 四档
+                         **agg(js), **flow_of((noc, "all"))})   # 全国行
         by_p: dict[str, list] = defaultdict(list)
         for j in js:
             if j.get("province"):

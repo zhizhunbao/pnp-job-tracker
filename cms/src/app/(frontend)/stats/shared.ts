@@ -56,6 +56,7 @@ export type OccRow = { noc: string; province: string; titleZh: string; titleZhSh
   medianWageAnnual: number | null; wageLowAnnual: number | null; wageHighAnnual: number | null
   medianSalaryAnnual: number | null; salaryN: number | null; namedJobs: number | null
   new14d: number | null; new14dPrev: number | null; mom14d: number | null
-  avgDaysOpen: number | null; pulseScore: number | null; pnpProvs: string | null }
+  avgDaysOpen: number | null; pulseScore: number | null
+  pnpProvs: string | null; channelTier: string | null }
 export type CityRow = { city: string; cityZh: string; cityKo: string; province: string; openJobs: number | null; new7d: number | null
   medianWageAnnual: number | null; medianSalaryAnnual: number | null; salaryN: number | null; namedJobs: number | null }

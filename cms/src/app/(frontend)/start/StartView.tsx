@@ -70,6 +70,17 @@ const DIFF_COLORS: Record<string, { bg: string; fg: string; bd: string }> = {
 }
 const SHORT_PROV: Record<string, string> = { NL: 'Newfoundland' }   // 卡上用通行短名,悬停仍显全名
 
+// E13-07 通道档(Frank 08-06 深夜四档拍板):rank 越小越难——榜 A 默认难的在上;
+// 药丸字面自解释(tooltips 已全撤):双/单头点名绿青,无点名灰,仅雇主担保红=「别为它来」
+const TIER_RANK: Record<string, number> = { employer: 0, ee: 1, fed: 2, prov: 3, both: 4 }
+const TIER_COLORS: Record<string, { bg: string; fg: string; bd: string }> = {
+  both: { bg: '#dcfce7', fg: '#166534', bd: '#bbf7d0' },
+  prov: { bg: '#dcfce7', fg: '#166534', bd: '#bbf7d0' },
+  fed: { bg: '#ccfbf1', fg: '#0f766e', bd: '#99f6e4' },
+  ee: { bg: '#f3f4f6', fg: '#4b5563', bd: '#e5e7eb' },
+  employer: { bg: '#fee2e2', fg: '#b91c1c', bd: '#fecaca' },
+}
+
 // 全宽色带 + PageShell 内轨(全站统一 1320 正文轨)
 function Band({ bg, children }: { bg?: string; children: React.ReactNode }) {
   return <div className="plBand" style={{ background: bg }}><PageShell pad="0 1.25rem">{children}</PageShell></div>
@@ -99,6 +110,13 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, pageSize = 10 }: 
   // E13-05:榜 A(showProvs=false)专用列——真口径可提名省份(pnp_provs,含排除式省/雇主担保类,
   // 与「紧缺清单省份」列语义不同、互斥出现)。列还没落库(全行 null/undefined)时整列不渲染。
   const hasPnpProvs = rows.some((o) => o.pnpProvs != null)
+  const hasTier = rows.some((o) => o.channelTier != null)
+  const tierPill = (o: OccRow) => {
+    const k = o.channelTier
+    if (!k || !TIER_COLORS[k]) return null
+    const c = TIER_COLORS[k]
+    return <span style={{ whiteSpace: 'nowrap', fontSize: 11, fontWeight: 600, padding: '1px 8px', borderRadius: 999, background: c.bg, color: c.fg, border: `1px solid ${c.bd}` }}>{t('pulse.tier.' + k)}</span>
+  }
   // 全码直陈(Frank 08-06「tooltips 都去掉」后不再折叠成「N 省」,列内自然折行)
   const pnpProvsCell = (o: OccRow) => {
     const s = o.pnpProvs ?? ''
@@ -147,6 +165,12 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, pageSize = 10 }: 
     // 单元格直接写「TEER 2」(Frank 08-06:裸数字像个数据值,带前缀自明)
     { key: 'teer', label: t('pulse.col.teer'), nowrap: true,
       sort: (o) => o.teer, render: (o) => <>{o.teer != null ? `TEER ${o.teer}` : '—'}</> },
+    // E13-07 通道档列:列缺(还没落库)整列不出,契约 v3 降级
+    ...(hasTier ? [{
+      key: 'tier', label: t('pulse.col.tier'), nowrap: true,
+      sort: (o: OccRow) => (o.channelTier != null ? TIER_RANK[o.channelTier] ?? null : null),
+      render: (o: OccRow) => tierPill(o) ?? <>—</>,
+    }] : []),
     { key: 'open', label: t('pulse.col.open'), nowrap: true, sort: (o) => o.openJobs, render: (o) => <>{o.openJobs != null ? num(o.openJobs) : '—'}</> },
     ...(hasMom ? [{
       key: 'mom', label: t('pulse.col.mom'), nowrap: true,
@@ -183,7 +207,8 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, pageSize = 10 }: 
               note={[occNote(o, lang), `NOC ${o.noc}`].filter(Boolean).join('  ') || undefined}
               company={o.openJobs != null ? { text: `${t('pulse.col.open')} ${num(o.openJobs)}` } : undefined}
               salary={momCell(o) ?? undefined}
-              location={showProvs ? `${t('pulse.col.provs')} ${ps.length ? ps.join('、') : t('pulse.provs.none')}` : undefined} />
+              location={showProvs ? `${t('pulse.col.provs')} ${ps.length ? ps.join('、') : t('pulse.provs.none')}` : undefined}
+              chips={tierPill(o) ?? undefined} />
           )
         })}
         <div style={{ padding: '2px 2px 0' }}>
@@ -228,7 +253,10 @@ export function StartView({ stats }: { stats: HomeStats }) {
     const pool = natOcc.filter((o) => (o.openJobs ?? 0) >= MAIN_MIN_OPEN)
     const hasPath = (o: OccRow) => (nocProvs.get(o.noc)?.length ?? 0) > 0
     // top-10 截断撤(Frank 08-06「应该有分页,有总数」)——全量给 OccBoard,分页在表内
-    const noPath = pool.filter((o) => !hasPath(o)).sort((a, b) => (b.openJobs ?? 0) - (a.openJobs ?? 0))
+    // 榜A行序 = 通道档难在上(Frank「把最难的放上面」):仅雇主担保 → EE 泛池 → 联邦点名,
+    // 同档按在架量;channel_tier 还没落库时全档同 rank,自然退回按在架量
+    const rank = (o: OccRow) => (o.channelTier != null ? TIER_RANK[o.channelTier] ?? 9 : 9)
+    const noPath = pool.filter((o) => !hasPath(o)).sort((a, b) => rank(a) - rank(b) || (b.openJobs ?? 0) - (a.openJobs ?? 0))
     const withPath = pool.filter((o) => hasPath(o) && o.mom14d != null)
     const cooling = withPath.filter((o) => (o.mom14d as number) < -0.05).sort((a, b) => (a.mom14d as number) - (b.mom14d as number))
     const heating = withPath.filter((o) => (o.mom14d as number) > 0.05).sort((a, b) => (b.mom14d as number) - (a.mom14d as number))
