@@ -57,9 +57,8 @@ const occNote = (o: OccRow, lang: string) => {
 }
 // 样本门槛(设计 §3):全国榜在架 ≥30,省级 ≥10 —— 不足不进榜,禁上榜噪音
 const NAT_MIN_OPEN = 30   // 省级榜门槛(S4)沿用
-// Frank 2026-08-06「谁会关心中小学教师助理」「主要打主流的、中介推的职业」:
-// 头条与全国红绿榜一律只收大盘职业(在架 ≥100)——冷门岗数学上再差也进不了受众视野,不值得占版面
-const MAIN_MIN_OPEN = 100
+// S2/S3 的 ≥100 大盘门槛 08-07 撤(Frank「榜单去 ≥100 门槛、全 NOC 显示」E13-08);
+// 小样本环比仍被 mom14d 的 prev<5→null 守着,不出噪音数
 const PROV_MIN_OPEN = 10
 
 // 难度档药丸配色(与 JobsTable DIFF_TAG / 原 /stats 索引页省卡同值)
@@ -69,6 +68,9 @@ const DIFF_COLORS: Record<string, { bg: string; fg: string; bd: string }> = {
   tight: { bg: '#fee2e2', fg: '#b91c1c', bd: '#fecaca' },
 }
 const SHORT_PROV: Record<string, string> = { NL: 'Newfoundland' }   // 卡上用通行短名,悬停仍显全名
+// E13-08:判定省序(与 etl/11_build_stats.PNP_PROV_ORDER 同值同序;QC 不判)——
+// 「有路可走的省」= 此序 − deadProvs(any_pr_path=true,含 AIP/保育兜底,不只雇主担保)
+const DEAD_PROV_ORDER = ['BC', 'AB', 'SK', 'MB', 'ON', 'NB', 'NS', 'PE', 'NL']
 
 // E13-07 通道档(Frank 08-06 深夜四档拍板):rank 越小越难——榜 A 默认难的在上;
 // 药丸字面自解释(tooltips 已全撤):双/单头点名绿青,无点名灰,仅雇主担保红=「别为它来」
@@ -105,7 +107,7 @@ function TopN({ v, on, max }: { v: number; on: (n: number) => void; max: number 
 // 且文案里必须带窗口(不许只写「环比」让人当成月环比)。
 // mom14d 缺列/全 null 时:环比列与判决列**整列不出**(降级成在架/命中率/薪资偏离能撑的版本),
 // 绝不拿 0 顶包;单行缺值显「—」。
-function OccBoard({ rows, t, lang, nocProvs, showProvs = true, pageSize = 10 }: { rows: OccRow[]; t: TFn; lang: string; nocProvs: Map<string, string[]>; showProvs?: boolean; pageSize?: number }) {
+function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, pageSize = 10 }: { rows: OccRow[]; t: TFn; lang: string; nocProvs: Map<string, string[]>; showProvs?: boolean; deadCol?: boolean; pageSize?: number }) {
   const hasMom = rows.some((o) => o.mom14d != null)
   // E13-05:榜 A(showProvs=false)专用列——真口径可提名省份(pnp_provs,含排除式省/雇主担保类,
   // 与「紧缺清单省份」列语义不同、互斥出现)。列还没落库(全行 null/undefined)时整列不渲染。
@@ -143,6 +145,10 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, pageSize = 10 }: 
   }
   const momCell = (o: OccRow) => (o.mom14d == null ? null
     : <span style={{ color: momColor(o.mom14d), fontWeight: 700, whiteSpace: 'nowrap' }}>{pctSigned(o.mom14d)}</span>)
+  const aliveOf = (o: OccRow) => {
+    const dead = new Set((o.deadProvs ?? '').split('、').filter(Boolean))
+    return DEAD_PROV_ORDER.filter((p) => !dead.has(p))
+  }
 
   const cols: DTCol<OccRow>[] = [
     {
@@ -176,7 +182,24 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, pageSize = 10 }: 
       key: 'mom', label: t('pulse.col.mom'), nowrap: true,
       sort: (o: OccRow) => o.mom14d, render: (o: OccRow) => <>{momCell(o) ?? '—'}</>,
     }] : []),
-    ...(showProvs ? [{
+    // E13-08 雷区榜两列(Frank 08-07「在哪些省可走 在哪些省不能走 分两列」):
+    // 有路可走的省 = 9 省 − dead(any_pr_path=true,含 AIP/保育兜底,不只雇主担保);完全走不了的省 = dead(红)
+    ...(deadCol ? [{
+      key: 'alive', label: t('pulse.col.alive'),
+      sort: (o: OccRow) => aliveOf(o).length,
+      render: (o: OccRow) => {
+        const a = aliveOf(o)
+        return a.length
+          ? <span style={{ color: '#b45309', fontWeight: 600 }}>{a.join('、')}</span>
+          : <span style={{ color: UI.text3 }}>—</span>
+      },
+    }, {
+      key: 'dead', label: t('pulse.col.dead'),   // 最多 9 个省码,列内自然折行
+      sort: (o: OccRow) => (o.deadProvs ? o.deadProvs.split('、').length : 0),
+      render: (o: OccRow) => (o.deadProvs
+        ? <span style={{ color: UI.danger, fontWeight: 700 }}>{o.deadProvs}</span>
+        : <span style={{ color: UI.text3 }}>—</span>),
+    }] : showProvs ? [{
       key: 'provs', label: t('pulse.col.provs'), nowrap: true,
       sort: (o: OccRow) => provsOf(o).length,
       render: (o: OccRow) => provsCell(o),
@@ -207,7 +230,15 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, pageSize = 10 }: 
               note={[occNote(o, lang), `NOC ${o.noc}`].filter(Boolean).join('  ') || undefined}
               company={o.openJobs != null ? { text: `${t('pulse.col.open')} ${num(o.openJobs)}` } : undefined}
               salary={momCell(o) ?? undefined}
-              location={showProvs ? `${t('pulse.col.provs')} ${ps.length ? ps.join('、') : t('pulse.provs.none')}` : undefined}
+              location={deadCol
+                ? (o.deadProvs
+                  ? <span style={{ display: 'block' }}>
+                    {/* 省码多到 8 个,卡上必须折行不截断(JobCard 外层 nowrap,这里显式放开) */}
+                    <span style={{ display: 'block', color: '#b45309', fontWeight: 600, whiteSpace: 'normal', overflowWrap: 'break-word' }}>{`${t('pulse.col.alive')} ${aliveOf(o).join('、') || '—'}`}</span>
+                    <span style={{ display: 'block', color: UI.danger, fontWeight: 700, whiteSpace: 'normal', overflowWrap: 'break-word' }}>{`${t('pulse.col.dead')} ${o.deadProvs}`}</span>
+                  </span>
+                  : undefined)
+                : showProvs ? `${t('pulse.col.provs')} ${ps.length ? ps.join('、') : t('pulse.provs.none')}` : undefined}
               chips={tierPill(o) ?? undefined} />
           )
         })}
@@ -250,17 +281,19 @@ export function StartView({ stats }: { stats: HomeStats }) {
   // AIP 维度职业级现库没有(occ 表无 aip 计数)→ Board A 暂按 PNP 清单口径,ETL 加列后升级「PNP+AIP 双无」
   const boards = useMemo(() => {
     if (!natOcc) return null
-    const pool = natOcc.filter((o) => (o.openJobs ?? 0) >= MAIN_MIN_OPEN)
+    // E13-08:≥100 大盘门槛撤,全 NOC 入榜(Frank 08-07);分页在表内,小样本环比由 mom14d 守空
     const hasPath = (o: OccRow) => (nocProvs.get(o.noc)?.length ?? 0) > 0
-    // top-10 截断撤(Frank 08-06「应该有分页,有总数」)——全量给 OccBoard,分页在表内
-    // 榜A行序 = 通道档难在上(Frank「把最难的放上面」):仅雇主担保 → EE 泛池 → 联邦点名,
-    // 同档按在架量;channel_tier 还没落库时全档同 rank,自然退回按在架量
     const rank = (o: OccRow) => (o.channelTier != null ? TIER_RANK[o.channelTier] ?? 9 : 9)
-    const noPath = pool.filter((o) => !hasPath(o)).sort((a, b) => rank(a) - rank(b) || (b.openJobs ?? 0) - (a.openJobs ?? 0))
-    const withPath = pool.filter((o) => hasPath(o) && o.mom14d != null)
+    const noPath = natOcc.filter((o) => !hasPath(o))
+    // 雷区榜:存在完全无路可走的省(dead_provs 非空)——按在架量降序(中介推得最凶的先看到)
+    const mine = noPath.filter((o) => !!o.deadProvs).sort((a, b) => (b.openJobs ?? 0) - (a.openJobs ?? 0))
+    // 有兜底榜:处处有路(dead_provs 空串;列未落库/TEER 未分类的 null 也归这——不硬判)。
+    // 行序 = 通道档难在上(Frank「把最难的放上面」),同档按在架量;档未落库全档同 rank 退回按在架量
+    const backup = noPath.filter((o) => !o.deadProvs).sort((a, b) => rank(a) - rank(b) || (b.openJobs ?? 0) - (a.openJobs ?? 0))
+    const withPath = natOcc.filter((o) => hasPath(o) && o.mom14d != null)
     const cooling = withPath.filter((o) => (o.mom14d as number) < -0.05).sort((a, b) => (a.mom14d as number) - (b.mom14d as number))
     const heating = withPath.filter((o) => (o.mom14d as number) > 0.05).sort((a, b) => (b.mom14d as number) - (a.mom14d as number))
-    return { noPath, cooling, heating }
+    return { mine, backup, cooling, heating }
   }, [natOcc, nocProvs])
 
   // S1 三脉象卡(契约 v3):近 14 天新发(主数字 + 环比副行)/ 平均在架天数 / PNP 命中率。
@@ -281,18 +314,8 @@ export function StartView({ stats }: { stats: HomeStats }) {
       const news = natOcc.map((o) => o.new14d).filter((v): v is number => v != null)
       if (news.length) {
         const total = news.reduce((a, b) => a + b, 0)
-        // 全国环比 = 两个窗各自求和后相除(不是逐职业环比再平均——小职业会把均值带跑);
-        // 分母列缺/为 0 就只出主数字,不出副行
-        const prevRows = natOcc.filter((o) => o.new14d != null && o.new14dPrev != null)
-        const prev = prevRows.reduce((a, o) => a + (o.new14dPrev as number), 0)
-        const cur = prevRows.reduce((a, o) => a + (o.new14d as number), 0)
-        const mom = prev > 0 ? cur / prev - 1 : null
-        out.push({
-          label: t('pulse.card.new14'), v: num(total),
-          sub: mom == null ? undefined : t('pulse.card.mom14', { n: pctSigned(mom) }),
-          subUp: mom != null && mom > 0, subDown: mom != null && mom < 0,
-          tip: t('pulse.card.new14.tip'), href: '/',
-        })
+        // 环比副行 08-07 Frank 拍板删(「那个绿字没用」),只留主数字
+        out.push({ label: t('pulse.card.new14'), v: num(total), tip: t('pulse.card.new14.tip'), href: '/' })
       }
       // 在架天数按在架量加权(职业间直接平均会让 3 个岗的小职业和 3000 个岗的大职业等权)
       const w = natOcc.filter((o) => o.avgDaysOpen != null && (o.openJobs ?? 0) > 0)
@@ -390,7 +413,8 @@ export function StartView({ stats }: { stats: HomeStats }) {
             Frank 08-06「还是放下来吧」;副题口号已删,调性靠数字自己立) ── */}
         <div className="plBand plHero">
           <PageShell pad="0 1.25rem">
-            <PageBanner module="home" tall title={t('home.title')} images={BANNER_IMGS.home} />
+            {/* banner 口号 08-07 Frank 拍板删(「你的下一步,用数据算出来」),纯图版;页 <title> 不受影响 */}
+            <PageBanner module="home" tall title="" images={BANNER_IMGS.home} />
             {pulseCards.length > 0 && (
               <div className="plNums">
                 {pulseCards.map((c) => (c.ph
@@ -412,16 +436,29 @@ export function StartView({ stats }: { stats: HomeStats }) {
         {/* ── S2 三榜分层(按用户决策顺序):先排除(无通道)→ 有通道但在降温 → 有通道且在升温。
             加载中出占位块(自上而下渲染铁律,08-06「为什么下面的内容先刷出来」);
             数据到了但榜全空才整块不渲染(绝不拿存量榜顶包) */}
-        {(boards === null || boards.noPath.length > 0 || boards.cooling.length > 0 || boards.heating.length > 0) && (
+        {(boards === null || boards.mine.length > 0 || boards.backup.length > 0 || boards.cooling.length > 0 || boards.heating.length > 0) && (
           <Band bg="#fff">
             {/* 口径说明句与悬停提示 08-06 全撤(Frank「tooltips 都去掉」),榜题裸标题 */}
             {boards === null && (
               <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, height: 480 }} />
             )}
-            {boards !== null && boards.noPath.length > 0 && (
+            {/* E13-08 雷区榜(Frank 08-07「哪些职位在哪些省完全无路可走·千万别来」):
+                deadProvs 非空才进榜;判定=ETL any_pr_path(四通道全无才判死,锚官方原句);
+                榜下两行灰注 = 强负断言的边界(QC 不判 / RCIP 社区例外),不是解释文案 */}
+            {boards !== null && boards.mine.length > 0 && (
               <div>
+                <h2 style={{ ...secH, margin: '0 0 10px' }}>{t('pulse.b1a')}</h2>
+                <OccBoard rows={boards.mine} t={t} lang={lang} nocProvs={nocProvs} showProvs={false} deadCol />
+                <div style={{ marginTop: 8, fontSize: 12, color: UI.text3 }}>
+                  <span style={{ display: 'block' }}>{t('pulse.dead.qc')}</span>
+                  <span style={{ display: 'block' }}>{t('pulse.dead.rcip')}</span>
+                </div>
+              </div>
+            )}
+            {boards !== null && boards.backup.length > 0 && (
+              <div style={{ marginTop: boards.mine.length > 0 ? 28 : 0 }}>
                 <h2 style={{ ...secH, margin: '0 0 10px' }}>{t('pulse.b1')}</h2>
-                <OccBoard rows={boards.noPath} t={t} lang={lang} nocProvs={nocProvs} showProvs={false} />
+                <OccBoard rows={boards.backup} t={t} lang={lang} nocProvs={nocProvs} showProvs={false} />
               </div>
             )}
             {boards !== null && boards.cooling.length > 0 && (

@@ -160,7 +160,8 @@ export async function GET(req: Request) {
       // ——改列后同样要清 seed_state('stats_occupation')
       // E13-05:pnp_provs(真口径可提名省份,只在 province='all' 行有值)——同样要清 seed_state('stats_occupation')
       // E13-07:channel_tier(通道档 both/prov/fed/ee/employer,全国行有值)
-      ['noc', 'province', 'title_zh', 'title_zh_short', 'title_en', 'teer', 'broad', 'mid', 'fine', 'open_jobs', 'new7d', 'median_wage_annual', 'wage_low_annual', 'wage_high_annual', 'median_salary_annual', 'salary_n', 'named_jobs', 'fetched', 'new30d', 'new30d_prev', 'mom30d', 'new14d', 'new14d_prev', 'mom14d', 'closed30d', 'net30d', 'avg_days_open', 'pulse_score', 'pnp_provs', 'channel_tier'],
+      // E13-08:dead_provs(完全无路可走的省,全国行;空串=处处有路,NULL=TEER 未分类不判)
+      ['noc', 'province', 'title_zh', 'title_zh_short', 'title_en', 'teer', 'broad', 'mid', 'fine', 'open_jobs', 'new7d', 'median_wage_annual', 'wage_low_annual', 'wage_high_annual', 'median_salary_annual', 'salary_n', 'named_jobs', 'fetched', 'new30d', 'new30d_prev', 'mom30d', 'new14d', 'new14d_prev', 'mom14d', 'closed30d', 'net30d', 'avg_days_open', 'pulse_score', 'pnp_provs', 'channel_tier', 'dead_provs'],
       (r) => ({ noc: r.noc, province: r.province, title_zh: r.titleZh, title_zh_short: r.titleZhShort, title_en: r.titleEn, teer: r.teer, broad: r.broad, mid: r.mid, fine: r.fine,
                 open_jobs: r.openJobs, new7d: r.new7d, median_wage_annual: r.medianWageAnnual, wage_low_annual: r.wageLowAnnual, wage_high_annual: r.wageHighAnnual, median_salary_annual: r.medianSalaryAnnual,
                 salary_n: r.salaryN, named_jobs: r.namedJobs, fetched: r.fetched,
@@ -168,7 +169,7 @@ export async function GET(req: Request) {
                 new14d: r.new14d ?? null, new14d_prev: r.new14dPrev ?? null, mom14d: r.mom14d ?? null,
                 closed30d: r.closed30d ?? null, net30d: r.net30d ?? null,
                 avg_days_open: r.avgDaysOpen ?? null, pulse_score: r.pulseScore ?? null,
-                pnp_provs: r.pnpProvs ?? null, channel_tier: r.channelTier ?? null })],
+                pnp_provs: r.pnpProvs ?? null, channel_tier: r.channelTier ?? null, dead_provs: r.deadProvs ?? null })],
     ['stats_city', 'stats_city',
       ['city', 'province', 'open_jobs', 'new7d', 'median_wage_annual', 'median_salary_annual', 'salary_n', 'named_jobs', 'fetched'],
       (r) => ({ city: r.city, province: r.province, open_jobs: r.openJobs, new7d: r.new7d,

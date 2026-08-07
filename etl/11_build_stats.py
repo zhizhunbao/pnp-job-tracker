@@ -34,6 +34,7 @@ _score_spec = _ilu.spec_from_file_location("score08", Path(__file__).resolve().p
 _score = _ilu.module_from_spec(_score_spec)
 _score_spec.loader.exec_module(_score)
 pnp_eligible = _score.pnp_eligible
+any_pr_path = _score.any_pr_path   # E13-08:跨通道判定(PNP∪EE∪AIP∪保育;口径与锚句见 08_score 顶注)
 
 # E13-07:通道档(Frank 08-06 深夜四档拍板)。省具名紧缺 ∪ 联邦 EE 类别 = 点名(双头/单头);
 # 都没点名时 TEER 0-3 还有 EE 泛池,TEER 4-5 只剩雇主担保(最难);TEER 未分类不硬塞档。
@@ -342,7 +343,10 @@ def main() -> None:
         # E13-05:真口径可提名省份(pnp_eligible 逐省判,非省具名清单命中);teer=None → 空串(宁可留空)
         teer = base["teer"]
         pnp_provs = "、".join(p for p in PNP_PROV_ORDER if pnp_eligible(noc, teer, p))
-        occ_rows.append({**base, "province": "all", "pnpProvs": pnp_provs,
+        # E13-08:完全无路可走的省(9 省内 any_pr_path=False 的补集;空串=处处有路)。
+        # teer 未分类判不了 → None(强负断言不硬判,前端该行不出死路)。
+        dead_provs = None if teer is None else "、".join(p for p in PNP_PROV_ORDER if not any_pr_path(noc, teer, p))
+        occ_rows.append({**base, "province": "all", "pnpProvs": pnp_provs, "deadProvs": dead_provs,
                          "channelTier": channel_tier(noc, teer),   # E13-07 四档
                          **agg(js), **flow_of((noc, "all"))})   # 全国行
         by_p: dict[str, list] = defaultdict(list)

@@ -219,6 +219,53 @@ def pnp_stream(noc: str, prov: str) -> str | None:
     return None
 
 
+# ── E13-08 跨通道「完全无路可走」判定 ────────────────────────────────────────
+# 「无路可走」是强负断言,举证标准高于正向:每条通道锚官方原句,举不出就保守=不判死。
+# · AIP 大西洋四省:job offer 须 TEER 0-4 —— 原句「for TEER 0, 1, 2 or 3 job offers …
+#   for TEER 4 job offers at the same or higher skill level as your qualifying work experience」
+#   https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration/how-to-immigrate/job-offer.html
+AIP_PROVS = {"NB", "NS", "PE", "NL"}
+AIP_TEERS = {0, 1, 2, 3, 4}
+# · 联邦保育专项(Home Care Worker Immigration Pilots)四 NOC 逐字锚 —— 原句
+#   「HCWIP: Child Care — Home child care providers (NOC 44100) / Early childhood educators and
+#   assistants (NOC 42202)」「HCWIP: Home Support — Home support workers, caregivers and related
+#   occupations (NOC 44101) / Nurse aides, orderlies and patient service associates (NOC 33102)」
+#   https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/caregivers/home-care-worker-immigration-pilots/child-care-home-support/eligibility.html
+#   ⚠️ 2026-04 起两 stream 暂停收件(积压处理中,通道本身仍在 → 原则判定计入,不因暂停判死):
+#   https://www.canada.ca/en/immigration-refugees-citizenship/news/notices/pausing-home-care-worker-immigration-pilots-application-intake.html
+CAREGIVER_NOCS = {"44100", "42202", "44101", "33102"}
+
+
+def any_pr_path(noc: str, teer: int | None, prov: str) -> bool:
+    """该省对该职业**原则上**是否存在任一通用 PR 通道(E13-08;粗筛信号,非资格认定)。
+
+    口径 v2(2026-08-07 深夜 Frank 拍板「排除清单口径」,v1 的 inclusion 模型被官方原句证伪):
+    **九省全部存在雇主/经验锚定的普通提名通道,不看紧缺清单、不限 TEER** —— 逐省锚句:
+      · BC/AB/SK/ON:排除式资格(pnp_eligible 既有模型,TEER0-5 默认可)
+      · MB SWM:同雇主 6 个月全职 + 长期 offer,无职业清单 —— immigratemanitoba.com/mpnp/skilled-worker/swm/eligibility
+        「a Manitoba company has offered you a full-time, long-term job after you have completed six months
+         or more of continuous full-time employment with that company」
+      · NS Skilled Worker:TEER4-5 同雇主 6 个月可走 —— liveinnovascotia.com/skilled-worker
+        「Workers in TEER 4 or 5 … must already have six months' experience with the employer」
+      · NB Experience:NB 雇主 + 同雇主 6 个月 + 住满 6 个月,无清单 —— …/nb-skilled-worker-stream.html
+      · NL Skilled Worker:「a full-time job or job offer: In a TEER 0, 1, 2, 3, 4 or 5 occupation」
+        —— gov.nl.ca/immigration/4-skilled-worker-category-eligibility-criteria
+      · PE:官方指南 PDF(pei_workforce_application_guide.pdf)为源;负断言举证不出「无路」→ 不判死
+    因此判死只剩一种情形:**该省明文排除/不受理清单命中**(AAIP/BC/SK 排除集、NB 不受理 overlay),
+    且联邦三路(EE / AIP / 保育专项)也救不回来。sector 级暂停(NS 餐饮住宿 2024-04 起)与保育专项闭门
+    同属「暂停≠无路」,不判死只留痕。
+    RCIP 社区级不进省判(站级脚注);QC 走自身体系不判死;teer=None 由调用方留空不硬判。"""
+    tbl = PNP_BY_PROV.get(prov)
+    blocked = bool(tbl) and (noc in tbl["blocked"] or (tbl["type"] == "ineligible" and noc in tbl["nocs"]))
+    if not blocked:
+        return True
+    if teer in (0, 1, 2, 3) or noc in EE_BY_NOC:
+        return True
+    if prov in AIP_PROVS and teer in AIP_TEERS:
+        return True
+    return noc in CAREGIVER_NOCS
+
+
 def accessibility(title: str) -> str:
     t = title.lower()
     if re.search(r"co[-\s]?op|intern|new grad", t):

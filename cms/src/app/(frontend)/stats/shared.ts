@@ -57,6 +57,7 @@ export type OccRow = { noc: string; province: string; titleZh: string; titleZhSh
   medianSalaryAnnual: number | null; salaryN: number | null; namedJobs: number | null
   new14d: number | null; new14dPrev: number | null; mom14d: number | null
   avgDaysOpen: number | null; pulseScore: number | null
-  pnpProvs: string | null; channelTier: string | null }
+  pnpProvs: string | null; channelTier: string | null
+  deadProvs: string | null }   // E13-08 完全无路可走的省(''=处处有路;null=未落库或 TEER 未分类不判)
 export type CityRow = { city: string; cityZh: string; cityKo: string; province: string; openJobs: number | null; new7d: number | null
   medianWageAnnual: number | null; medianSalaryAnnual: number | null; salaryN: number | null; namedJobs: number | null }

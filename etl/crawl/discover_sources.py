@@ -90,6 +90,14 @@ SEEDS: list[dict] = [
     {"slug": "fed-pgwp",     "seed": "https://www.canada.ca/en/immigration-refugees-citizenship/services/"
                                      "study-canada/work/after-graduation.html",
      "depth": 3, "max_pages": 200, "keywords": "after-graduation,post-graduation,study-canada/work"},
+    # E13-08(2026-08-07)雷区判定的两条通道锚页,进周更当政策雷达(diff 报了才知道口径常量过期):
+    # AIP job offer TEER 0-4 原句在 how-to-immigrate/job-offer.html;保育专项四 NOC 在 child-care-home-support/eligibility.html
+    {"slug": "fed-aip",      "seed": "https://www.canada.ca/en/immigration-refugees-citizenship/services/"
+                                     "immigrate-canada/atlantic-immigration.html",
+     "depth": 2, "max_pages": 60, "keywords": "atlantic-immigration"},
+    {"slug": "fed-caregiver", "seed": "https://www.canada.ca/en/immigration-refugees-citizenship/services/"
+                                      "immigrate-canada/caregivers.html",
+     "depth": 2, "max_pages": 60, "keywords": "caregivers,home-care-worker"},
     # 联邦 Express Entry(2026-08-05,铁律「URL → 数据 → SQL」):CRS 计分表 + CEC/FSW/FST 资格页。
     # 种子不是猜的 —— 用 raw/ee/federal-categories.json 里已举证的官方 URL 起爬,靠 keyword 限域
     # 展开整个 express-entry 区(who-can-apply 一族 = 资格;check-score/criteria = CRS 计分)。
