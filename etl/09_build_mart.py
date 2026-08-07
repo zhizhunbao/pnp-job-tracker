@@ -1069,7 +1069,8 @@ def build():
                 n += 1
             seen_slug.add(slug)
             news.append({
-                "region": r.get("region", ""), "title": r["title"], "date": (r.get("date") or "")[:10],
+                "region": r.get("region", ""), "title": r["title"], "titleZh": r.get("titleZh") or None,
+                "date": (r.get("date") or "")[:10],
                 "slug": slug, "url": r["url"], "ogImage": r.get("ogImage") or None,
                 "excerpt": news_excerpt(r["title"], r["bodyEn"]) or None,
                 "bodyEn": r["bodyEn"], "bodyZh": r.get("bodyZh") or None, "summaryZh": r.get("summaryZh") or None,

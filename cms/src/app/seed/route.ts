@@ -232,11 +232,11 @@ export async function GET(req: Request) {
     if (martPaths('news').length > 0 && prevHash['news'] === martHash('news')) { counts.news = -2 }
     else if (martPaths('news').length > 0) {
       const newsRows = (await mart('news')).filter((r: any) => r.slug).map((r: any) => ({
-        region: r.region, title: r.title, date: r.date, slug: r.slug, url: r.url, og_image: r.ogImage,
+        region: r.region, title: r.title, title_zh: r.titleZh ?? null, date: r.date, slug: r.slug, url: r.url, og_image: r.ogImage,
         excerpt: r.excerpt, importance: r.importance, importance_note: r.importanceNote,
         body_en: r.bodyEn, citation: r.citation, fetched: r.fetched, created_at: now, updated_at: now,
       }))
-      const newsCols = ['region', 'title', 'date', 'slug', 'url', 'og_image', 'excerpt', 'importance', 'importance_note', 'body_en', 'citation', 'fetched', 'created_at', 'updated_at']
+      const newsCols = ['region', 'title', 'title_zh', 'date', 'slug', 'url', 'og_image', 'excerpt', 'importance', 'importance_note', 'body_en', 'citation', 'fetched', 'created_at', 'updated_at']
       const newsUpdate = newsCols.filter((c) => !['slug', 'created_at'].includes(c)).map((c) => `${c}=EXCLUDED.${c}`).join(',')
       const staleClear = ['body_zh', 'body_ko', 'summary_zh', 'summary_ko', 'summary_en']
         .map((c) => `${c}=CASE WHEN news.body_en IS DISTINCT FROM EXCLUDED.body_en THEN NULL ELSE news.${c} END`).join(',')

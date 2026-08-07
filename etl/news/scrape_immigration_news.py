@@ -91,6 +91,7 @@ PROMPT_KO = """당신은 이민 정책 뉴스 전문 번역가입니다. 아래�
 
 IMP_RE = re.compile(r"^重要度[::]\s*([1-5])\s*[|丨]\s*(.+)$")
 SEG_RE = re.compile(r"\n?\[(\d+)\]\s*")
+CJK_RE = re.compile(r"[一-鿿]")
 
 
 def _strip_md(s: str) -> str:
@@ -231,7 +232,58 @@ def score_missing(out_file: Path) -> None:
     print(f"score: {done}/{len(todo)} 条打分")
 
 
+# ---- 标题中文灰注(E13-06,与正文 bodyZh 独立)----
+# 只用本地 Ollama(NEWS_LLM_BASE 未设=跳过,不落 Anthropic 兜底——标题量大单价低,不值得烧 API 预算)。
+# 单条一行译文,不走 bodyZh 那套逐段编号协议(标题没有段落)。
+# 实测踩坑:qwen3.6 直接问会展开成大段「解读/纠错」正文而不吐译文(疑似 think:false 在 /api/chat
+# 对这模型不生效);Qwen3 系支持提示词内 /no_think 指令强制关闭——加上后才稳定吐单行,照此写死。
+MAX_TITLE_TRANSLATE_PER_RUN = int(os.environ.get("NEWS_TITLE_TRANSLATE_BUDGET", "60"))
+TITLE_TIMEOUT = 30.0  # 单条超时(秒);连不上/超时=留空,下轮重试,绝不拿英文顶包
+
+PROMPT_TITLE = ("/no_think\n把下面这条加拿大官方移民新闻标题直译为简体中文,只输出译文本身一行,"
+                "不加解释、不加引号、不加星号:\n专有名词(项目名如 OINP/AAIP、部门名如 IRCC/IRPA)"
+                "保留英文缩写,不展开不音译。\n\n标题:{title}")
+
+
+def translate_titles_missing(out_file: Path) -> None:
+    if not LLM_BASE:
+        print("translate_titles: NEWS_LLM_BASE 未设,跳过(标题翻译本地 Ollama-only,不落 Anthropic 兜底)")
+        return
+    data = json.loads(out_file.read_text(encoding="utf-8"))
+    todo = [it for it in data["items"] if it.get("title") and not it.get("titleZh")]
+    if not todo:
+        print("translate_titles: 无待翻标题")
+        return
+    done = 0
+    with httpx.Client(base_url=LLM_BASE, timeout=TITLE_TIMEOUT) as c:
+        for it in todo[:MAX_TITLE_TRANSLATE_PER_RUN]:
+            try:
+                r = c.post("/api/chat", json={
+                    "model": LLM_LOCAL_MODEL, "think": False, "stream": False,
+                    "options": {"temperature": 0.1, "num_predict": 120},
+                    "messages": [{"role": "user", "content": PROMPT_TITLE.format(title=it["title"])}]})
+                r.raise_for_status()
+                out = (r.json().get("message", {}).get("content") or "").strip()
+                out = re.sub(r"<think>.*?</think>", "", out, flags=re.S).strip()
+                out = _strip_md(out).strip(" 　\"'“”‘’")
+                out = out.splitlines()[0].strip() if out else ""
+                # 校验:非空、含中文字符、不比原标题离谱地长(拦掉「展开成大段解读」的失败样)——
+                # 宁可留空也不瞎猜,不过关就跳过,下轮再翻
+                if out and CJK_RE.search(out) and len(out) <= len(it["title"]) + 40:
+                    it["titleZh"] = out
+                    done += 1
+                else:
+                    print(f"  ✗ translate_titles {it['url']}: 不过校验 {out[:60]!r}")
+            except Exception as e:  # noqa: BLE001  # 单条失败不断轮,留空下轮重试
+                print(f"  ! translate_titles {it['url']}: {type(e).__name__}: {e}")
+    if done:
+        _scrape_base.atomic_write_json(out_file, data)
+    print(f"translate_titles: {done}/{len(todo)} 条" +
+          (f"(剩 {len(todo) - done} 下轮续)" if len(todo) > done else ""))
+
+
 if __name__ == "__main__":
     _scrape_base.run(SOURCES, OUT_FILE)
-    score_missing(OUT_FILE)      # 重要度:轻量必跑(新条目才有徽标/上 banner)
-    translate_missing(OUT_FILE)  # 全文翻译:预翻已停(budget 0),恢复=调 NEWS_TRANSLATE_BUDGET
+    score_missing(OUT_FILE)          # 重要度:轻量必跑(新条目才有徽标/上 banner)
+    translate_missing(OUT_FILE)      # 全文翻译:预翻已停(budget 0),恢复=调 NEWS_TRANSLATE_BUDGET
+    translate_titles_missing(OUT_FILE)  # 标题中文灰注(E13-06):独立预算,默认开(NEWS_TITLE_TRANSLATE_BUDGET)
