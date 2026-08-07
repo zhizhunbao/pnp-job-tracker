@@ -44,13 +44,19 @@ function href(p: Partial<SponsorQuery>, cur: SponsorQuery) {
 const NIL = <span style={{ color: '#9ca3af' }}>—</span>
 export type SponsorKind = '' | 'aip' | 'lmia' | 'named'
 export function sponsorEmployerCols(t: TFn, lang: Lang, kind: SponsorKind = '') {
-  const name = { key: 'name', label: t('dir.col.employer'), sort: (r: SponsorEmployerRow) => r.name.toLowerCase(), render: (r: SponsorEmployerRow) => {
-    const alias = lang === 'zh' ? r.aliasZh : lang === 'ko' ? r.aliasKo : ''
-    return <span style={{ fontWeight: 600 }}>
-      <a href={`/?q=${encodeURIComponent(r.name)}`} onClick={() => track('se-view-jobs')} style={{ color: UI.primary, textDecoration: 'none' }}>{r.name}</a>
-      {alias ? <span style={{ marginLeft: 6, color: '#9ca3af', fontWeight: 400, fontSize: 12 }}>{alias}</span> : null}
-      {r.sponsorGrade != null && <span title={t('gr.sponsorTip')} style={{ marginLeft: 6, fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sp.' + r.sponsorGrade)}</span>}
-    </span> } }
+  // Frank 08-08「胶囊和中文应该弄两列」:别名/担保档从雇主格拆出各占一列(EN 界面无别名,列整体不出)
+  const name = { key: 'name', label: t('dir.col.employer'), sort: (r: SponsorEmployerRow) => r.name.toLowerCase(), render: (r: SponsorEmployerRow) => (
+    <a href={`/?q=${encodeURIComponent(r.name)}`} onClick={() => track('se-view-jobs')} style={{ color: UI.primary, textDecoration: 'none', fontWeight: 600 }}>{r.name}</a>
+  ) }
+  const alias = { key: 'alias', label: t('se.col.alias'), sort: (r: SponsorEmployerRow) => (lang === 'zh' ? r.aliasZh : r.aliasKo) || null, render: (r: SponsorEmployerRow) => {
+    const v = lang === 'zh' ? r.aliasZh : r.aliasKo
+    return v ? <span style={{ color: '#6b7280', fontSize: 12.5 }}>{v}</span> : NIL
+  } }
+  const grade = { key: 'grade', label: t('se.col.grade'), nowrap: true, sort: (r: SponsorEmployerRow) => r.sponsorGrade ?? null, render: (r: SponsorEmployerRow) => (
+    r.sponsorGrade != null
+      ? <span title={t('gr.sponsorTip')} style={{ fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sp.' + r.sponsorGrade)}</span>
+      : NIL
+  ) }
   const aip = { key: 'aip', label: t('se.chip.aip'), nowrap: true, sort: (r: SponsorEmployerRow) => (r.aip ? 1 : 0), render: (r: SponsorEmployerRow) => (r.aip ? <span style={{ color: '#15803d', fontWeight: 700 }}>✓</span> : NIL) }
   const lmia = { key: 'lmia', label: t('se.col.lmia'), nowrap: true, sort: (r: SponsorEmployerRow) => r.lmiaPositions, render: (r: SponsorEmployerRow) => (r.lmiaPositions > 0 ? <span style={{ color: '#0f766e', fontWeight: 700 }}>{r.lmiaPositions}</span> : NIL) }
   const skilled = { key: 'skilled', label: t('dir.col.skilled'), nowrap: true, sort: (r: SponsorEmployerRow) => r.lmiaPositionsSkilled ?? null, render: (r: SponsorEmployerRow) => (r.lmiaPositionsSkilled ? <span style={{ color: '#0f766e', fontWeight: 700 }}>{r.lmiaPositionsSkilled}</span> : NIL) }
@@ -60,10 +66,11 @@ export function sponsorEmployerCols(t: TFn, lang: Lang, kind: SponsorKind = '') 
   const namedMix = { key: 'named', label: t('se.col.named'), nowrap: true, sort: (r: SponsorEmployerRow) => r.lmiaPr * 1000 + (r.named ? 1 : 0), render: (r: SponsorEmployerRow) => (r.lmiaPr > 0 ? <span style={{ color: '#92400e', fontWeight: 700 }}>{t('se.pr', { n: r.lmiaPr })}</span> : r.named ? <span style={{ color: '#92400e', fontWeight: 700 }}>✓</span> : NIL) }
   const open = { key: 'open', label: t('se.col.open'), nowrap: true, sort: (r: SponsorEmployerRow) => r.openJobs, render: (r: SponsorEmployerRow) => <span style={{ fontWeight: 700 }}>{r.openJobs}</span> }
   const where = { key: 'where', label: t('se.col.where'), sort: (r: SponsorEmployerRow) => r.provs[0] ?? null, render: (r: SponsorEmployerRow) => <>{whereText(r, t)}</> }
-  if (kind === 'lmia') return [name, lmia, skilled, quarter, open, where]
-  if (kind === 'named') return [name, pr, namedJobs, open, where]
-  if (kind === 'aip') return [name, open, where]
-  return [name, aip, lmia, namedMix, open, where]
+  const base = lang === 'en' ? [name, grade] : [name, alias, grade]
+  if (kind === 'lmia') return [...base, lmia, skilled, quarter, open, where]
+  if (kind === 'named') return [...base, pr, namedJobs, open, where]
+  if (kind === 'aip') return [...base, open, where]
+  return [...base, aip, lmia, namedMix, open, where]
 }
 
 export function SponsorCard({ r, lang, t, kind = '' }: { r: SponsorEmployerRow; lang: Lang; t: TFn; kind?: SponsorKind }) {
