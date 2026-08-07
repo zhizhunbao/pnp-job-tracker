@@ -11,7 +11,7 @@ import config from '@/payload.config'
 import { getUser } from '@/lib/entitlement'
 import { checkedAt, fetchTotalAndProof } from '@/lib/jobsSql'
 import { normalizeProfile } from '@/lib/match'
-import { loadProvExtra, loadStatSources } from '../stats/lib'
+import { loadProvExtra } from '../stats/lib'
 import { PROVS } from '../stats/shared'
 import { StartView, type HomeStats } from './StartView'
 
@@ -63,7 +63,7 @@ function withDrawHistory(rows: RawDraw[], limit: number): HomeStats['draws'] {
 
 async function loadHomeStats(pool: any): Promise<Omit<HomeStats, 'checkedAt' | 'provPreset'>> {
   // 每项独立 .catch(null):一张表缺/查询挂只丢它自己那块,页面照常(宁可留空)
-  const [proof, drawRes, newsRes, provExtra, srcs] = await Promise.all([
+  const [proof, drawRes, newsRes, provExtra] = await Promise.all([
     fetchTotalAndProof(pool).catch(() => null),
     // 抽选表(与 /pathways 同源 pnp_draws):前端只展示 Top N(下拉 10/20/50),
     // 但冷解读要按通道回看 12 期 —— 多取一批只在服务端用完即丢,不进 HTML
@@ -71,10 +71,10 @@ async function loadHomeStats(pool: any): Promise<Omit<HomeStats, 'checkedAt' | '
       WHERE (score IS NOT NULL OR invitations IS NOT NULL) AND COALESCE(draw_date,'') <> ''
       ORDER BY draw_date DESC LIMIT 400`).then((r: any) => r.rows as RawDraw[]).catch(() => []),
     // 多取几条再按标题去重(同题新闻隔日重抓会出重复行);前端 Top N 下拉再切
-    pool.query(`SELECT region, title, date, slug FROM news ORDER BY date DESC, id DESC LIMIT 80`)
+    // SELECT *:title_zh 列(E13-06)可能还没加,点名会整块炸;* 容缺列,80 行无压力
+    pool.query(`SELECT * FROM news ORDER BY date DESC, id DESC LIMIT 80`)
       .then((r: any) => r.rows as any[]).catch(() => []),
     loadProvExtra().catch(() => ({})),      // 省卡:IRCC 学签/工签/PNP 拿到 PR + 难度档(与 /stats 索引页同源)
-    loadStatSources().catch(() => []),      // 口径行(CaliberLine)出处
   ])
   return {
     total: proof?.total || null, named: proof?.named || null,
@@ -86,10 +86,9 @@ async function loadHomeStats(pool: any): Promise<Omit<HomeStats, 'checkedAt' | '
       return (newsRes as any[])
         .filter((r) => { const k = norm(r.title ?? ''); if (seen.has(k)) return false; seen.add(k); return true })
         .slice(0, 50)
-        .map((r) => ({ date: String(r.date), region: r.region ?? '', title: r.title ?? '', slug: r.slug ?? '' }))
+        .map((r) => ({ date: String(r.date), region: r.region ?? '', title: r.title ?? '', titleZh: r.title_zh ?? '', slug: r.slug ?? '' }))
     })(),
     provExtra,
-    srcs,
   }
 }
 

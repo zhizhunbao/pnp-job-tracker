@@ -19,8 +19,7 @@ import { useLang } from '../LangProvider'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { MarketChart, useMarketStats } from '../stats/charts'
-import { CaliberLine } from '../stats/ui'
-import { PROVS, PROV_NAME, type OccRow, type ProvExtra, type SrcRow, type StatRow } from '../stats/shared'
+import { PROVS, PROV_NAME, type OccRow, type ProvExtra, type StatRow } from '../stats/shared'
 import { shortOcc } from '../quiz/EntryQuiz'
 import { JobCard } from '../ui/JobCard'
 import { DataTable, DTPager, type DTCol } from '../ui/DataTable'
@@ -37,9 +36,8 @@ export type PulseDraw = {
 export type HomeStats = {
   total: number | null; named: number | null      // S1 命中率证据(与职位板 proof 同源)
   draws: PulseDraw[]
-  news: { date: string; region: string; title: string; slug: string }[]
+  news: { date: string; region: string; title: string; titleZh?: string; slug: string }[]
   provExtra: Record<string, ProvExtra>            // S4 省卡:IRCC 体量 + 难度档
-  srcs: SrcRow[]                                  // 页尾口径行出处
   provPreset: string                              // S4 预选省(档案省;匿名为空 → 默认 ON。禁 IP 定位)
   checkedAt: string
 }
@@ -135,19 +133,22 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, pageSize = 10 }: 
       key: 'occ', label: t('pulse.col.occ'), sort: (o) => occMain(o),
       // Frank 08-06「职业名字要显示完整,右面有很多空间」:不截断不省略,长名自然折行
       // (数字列全 nowrap,表格仍不会横滚;折行只发生在主列自己的宽度里)
+      // 灰注行 = 界面语言译名 + NOC 代码(Frank 08-06「NOC 代码也要显示」;间距分隔,禁「·」杂糅)
       render: (o) => (
         <div>
           <a href={`/?q=${o.noc}`} onClick={() => track('pulse_occ_click')}
             style={{ color: UI.primary, textDecoration: 'none', display: 'block' }}>{occMain(o)}</a>
-          {occNote(o, lang)
-            ? <span style={{ display: 'block', fontSize: 11.5, color: UI.text3 }}>{occNote(o, lang)}</span>
-            : null}
+          <span style={{ display: 'flex', gap: 10, fontSize: 11.5, color: UI.text3 }}>
+            {occNote(o, lang) ? <span>{occNote(o, lang)}</span> : null}
+            <span style={{ whiteSpace: 'nowrap' }}>NOC {o.noc}</span>
+          </span>
         </div>
       ),
     },
     // TEER 列(Frank 08-06 拍板加):无清单职业还剩什么路,先看 TEER——0-3 有联邦 EE,4-5 没有
+    // 单元格直接写「TEER 2」(Frank 08-06:裸数字像个数据值,带前缀自明)
     { key: 'teer', label: t('pulse.col.teer'), nowrap: true, thTip: t('pulse.col.teer.tip'),
-      sort: (o) => o.teer, render: (o) => <>{o.teer != null ? o.teer : '—'}</> },
+      sort: (o) => o.teer, render: (o) => <>{o.teer != null ? `TEER ${o.teer}` : '—'}</> },
     { key: 'open', label: t('pulse.col.open'), nowrap: true, sort: (o) => o.openJobs, render: (o) => <>{o.openJobs != null ? num(o.openJobs) : '—'}</> },
     ...(hasMom ? [{
       key: 'mom', label: t('pulse.col.mom'), nowrap: true, thTip: t('pulse.col.mom.tip'),
@@ -186,7 +187,7 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, pageSize = 10 }: 
           return (
             <JobCard key={o.noc} href={`/?q=${o.noc}`}
               title={{ text: occMain(o), href: `/?q=${o.noc}` }}
-              note={occNote(o, lang) || undefined}
+              note={[occNote(o, lang), `NOC ${o.noc}`].filter(Boolean).join('  ') || undefined}
               company={o.openJobs != null ? { text: `${t('pulse.col.open')} ${num(o.openJobs)}` } : undefined}
               salary={momCell(o) ?? undefined}
               location={showProvs ? `${t('pulse.col.provs')} ${ps.length ? ps.join('、') : t('pulse.provs.none')}` : undefined} />
@@ -245,10 +246,15 @@ export function StartView({ stats }: { stats: HomeStats }) {
   // 逐卡 null 守卫 —— 缺数的卡整张不出。净值卡(在架存量差)本批**不做**:
   // 7-25 起验尸排水清了 2.7 万死帖,存量下跌是数据清洗不是市场收缩,上线=撒谎(后置 E13-04)。
   const pulseCards = useMemo(() => {
-    const out: { label: string; v: string; sub?: string; subUp?: boolean; subDown?: boolean; tip: string; href: string }[] = []
+    const out: { label: string; v: string; sub?: string; subUp?: boolean; subDown?: boolean; tip: string; href: string; ph?: boolean }[] = []
     // Frank 2026-08-06「还有就是整个加拿大的就业体量」:体量卡打头(与职位板 proof 同源同口径)
     if (stats.total) {
       out.push({ label: t('pulse.card.total'), v: num(stats.total), tip: t('pulse.card.total.tip'), href: '/' })
+    }
+    // 市场数据还在拉(挂载后才到)→ 两张骨架占位卡压住格子,避免 2→4 张的水合跳变
+    // (Frank 08-06「刷新时卡片闪烁」);拉完确实缺数的卡仍整张不出(契约 v3),那是稳态不是闪烁
+    if (natOcc === null) {
+      out.push({ label: 'new14', v: '', tip: '', href: '', ph: true }, { label: 'days', v: '', tip: '', href: '', ph: true })
     }
     if (natOcc) {
       const news = natOcc.map((o) => o.new14d).filter((v): v is number => v != null)
@@ -293,7 +299,6 @@ export function StartView({ stats }: { stats: HomeStats }) {
     // 环比/占比/判决当信息列;pulse 排序只留全国降温/升温榜(有 ≥100 门槛守着)
     return [...rows].sort((a, b) => (b.openJobs ?? 0) - (a.openJobs ?? 0))
   }, [market, prov])
-  const provName = prov === 'ALL' ? t('pulse.s4.all') : (PROV_NAME[prov] || prov)
 
   // ── S5 抽选行显示(与旧版同口径):官方英文名主文案 + 界面语言译名灰注 ──
   const tEn = useMemo(() => makeT('en'), [])
@@ -310,8 +315,8 @@ export function StartView({ stats }: { stats: HomeStats }) {
       ? t('pulse.dr.note', { n: r.histN, min: num(r.histMin), max: num(r.histMax) }) : '')
 
   const secH: React.CSSProperties = { margin: '0 0 6px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 10, rowGap: 8, flexWrap: 'wrap', color: UI.text }
-  // 节标题的口径 tooltip 记号(说明句不上台面,悬停看;与表头 thTip 同虚线形态)
-  const tipHead: React.CSSProperties = { textDecoration: 'underline dotted #d1d5db', textUnderlineOffset: 6, cursor: 'help' }
+  // 节标题挂口径 tooltip(说明句不上台面,悬停看;Frank 08-06 不要下划线记号,只留 title)
+  const tipHead: React.CSSProperties = { cursor: 'help' }
   const moreA: React.CSSProperties = { fontSize: 13, fontWeight: 600, color: UI.primary, textDecoration: 'none', whiteSpace: 'nowrap' }
   const hmRight: React.CSSProperties = { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }
   const th: React.CSSProperties = { fontSize: 11.5, color: UI.text3, fontWeight: 600, textAlign: 'left', padding: '9px 12px', borderBottom: `1px solid ${UI.hairline}`, background: '#fafafa' }
@@ -335,7 +340,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
         .plNums{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
         .plNums a{min-width:0;overflow:hidden;background:${UI.card};border:1px solid ${UI.border};border-radius:12px;padding:16px 12px;text-decoration:none;color:inherit;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;justify-content:center}
         .plNums b{font-size:24px;line-height:1.15;font-weight:800;font-variant-numeric:tabular-nums;color:${UI.text}}
-        .plNums span{max-width:100%;font-size:12px;color:${UI.text2};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-bottom:1px dotted #d1d5db;padding-bottom:1px}
+        .plNums span{max-width:100%;font-size:12px;color:${UI.text2};white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
         .plNums i{max-width:100%;font-size:12px;font-style:normal;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
         /* 榜单:桌面表格 / 手机卡片,两套 DOM 各渲各的(站规「电脑用表格 手机用卡片」) */
         .plTable{display:none}
@@ -369,8 +374,12 @@ export function StartView({ stats }: { stats: HomeStats }) {
             <PageBanner module="home" tall title={t('home.title')} images={BANNER_IMGS.home} />
             {pulseCards.length > 0 && (
               <div className="plNums">
-                {pulseCards.map((c) => (
-                  <a key={c.label} href={c.href} title={c.tip} className="cardHover" onClick={() => track('pulse_card_click')}>
+                {pulseCards.map((c) => (c.ph
+                  ? <div key={c.label} style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '16px 12px' }}>
+                    <span style={{ width: 72, height: 20, borderRadius: 6, background: '#f1f3f5' }} />
+                    <span style={{ width: 96, height: 12, borderRadius: 6, background: '#f1f3f5' }} />
+                  </div>
+                  : <a key={c.label} href={c.href} title={c.tip} className="cardHover" onClick={() => track('pulse_card_click')}>
                     <b>{c.v}</b>
                     <span>{c.label}</span>
                     {c.sub ? <i style={{ color: c.subUp ? UI.ok : c.subDown ? UI.danger : UI.text2 }}>{c.sub}</i> : null}
@@ -416,7 +425,12 @@ export function StartView({ stats }: { stats: HomeStats }) {
           {/* 全国档打头(Frank 08-06「全国 省份 城市 都需要」;职业×城市粒度现库没有,ETL 侧排下一批,不瞎猜) */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, margin: '4px 0 8px' }}>
             <Chip active={prov === 'ALL'} onClick={() => setProv('ALL')}>{t('pulse.s4.all')}</Chip>
-            {PROVS.map((p) => <Chip key={p} active={p === prov} onClick={() => setProv(p)} title={PROV_NAME[p]}>{p}</Chip>)}
+            {/* 省 chips 用全名(Frank 08-06;#146 站规:英文在前,中韩括注译名;NL 用通行短名) */}
+            {PROVS.map((p) => {
+              const en = SHORT_PROV[p] || PROV_NAME[p] || p
+              const loc = lang === 'en' ? '' : t('pr.' + p)
+              return <Chip key={p} active={p === prov} onClick={() => setProv(p)} title={PROV_NAME[p]}>{loc ? `${en}(${loc})` : en}</Chip>
+            })}
           </div>
           {/* 该省提名通道(与 /stats 省页同源 stream_labels);无清单的省整行不出,不写「暂无」 */}
           {provStat?.streamLabels ? (
@@ -425,7 +439,6 @@ export function StartView({ stats }: { stats: HomeStats }) {
               {provStat.streamLabels.split('、').map((s) => <Tag key={s} variant="warn">{streamDisplay(t, s)}</Tag>)}
             </div>
           ) : null}
-          <h3 style={{ fontSize: 15, margin: '10px 0 8px', fontWeight: 700 }}><span title={t('pulse.s4.note')} style={tipHead}>{t('pulse.s4.rank', { prov: provName })}</span></h3>
           {provOcc === null
             ? <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, height: 320 }} />
             : provOcc.length > 0
@@ -544,7 +557,13 @@ export function StartView({ stats }: { stats: HomeStats }) {
                       style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '12px 14px', borderTop: i ? `1px solid ${UI.hairline}` : 'none', fontSize: 13, textDecoration: 'none', color: 'inherit' }}>
                       <span style={{ color: UI.text3, fontSize: 12, whiteSpace: 'nowrap' }}>{ymd(r.date)}</span>
                       <Tag>{r.region === 'federal' ? 'IRCC' : (r.region || '').toUpperCase()}</Tag>
-                      <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.title}</span>
+                      {/* 中文界面下英文标题带中文灰注(E13-06,titleZh 由 ETL 本地翻译;没译文只出原题) */}
+                      <span style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                        <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.title}</span>
+                        {lang === 'zh' && r.titleZh
+                          ? <span style={{ display: 'block', fontSize: 11.5, color: UI.text3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.titleZh}</span>
+                          : null}
+                      </span>
                     </a>
                   ))}
                 </div>
@@ -566,10 +585,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
           </PageShell>
         </div>
 
-        {/* S7 订阅/分享区 2026-08-06 Frank 拍板整块删;口径说明留页尾(溯源是人设凭据,E13-00 §1 拍板 6) */}
-        <Band>
-          <CaliberLine t={t} srcs={stats.srcs} fetched={provRows[0]?.fetched || stats.checkedAt || ''} />
-        </Band>
+        {/* S7 订阅/分享区与页尾口径说明 2026-08-06 Frank 拍板都删(半空色带只挂一个折叠钮=版面噪音) */}
       </main>
       <SiteFooter t={t} />
     </div>
