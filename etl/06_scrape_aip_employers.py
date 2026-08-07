@@ -11,6 +11,11 @@ Sources (official):
   NS — https://liveinnovascotia.com/.../Designated_AIP_employers.pdf
   PE — list source not yet located on princeedwardisland.ca (TODO)
 
+B4 判定留痕(2026-08-08,docs/implementation/在招担保雇主/04_B4 §3c):
+  NS/NB 官方名录 PDF **不带 NOC 维度**(列=雇主名/地点;本脚本 parse 实核)——职业级精筛
+  只能走岗位侧(jobs.noc × aip),别在名录侧造字段。NL 的 NOC 维度在 nl-imm crawl(C4 已入库)。
+  保鲜=本脚本在 pnp 源容器时更(docker-compose SOURCE=pnp,SCRAPE_INTERVAL 3600)。
+
 Usage:
   uv run python scripts/jobs/aip_designated_employers.py
 
@@ -95,11 +100,59 @@ def load_nl() -> list[dict]:
     return rows
 
 
+# ── PE(B4 §3b,2026-08-08):官方只发网页不发文件,页面在 Radware WAF 后(不绕验证码)。
+# 数据经 web.archive.org 存档快照 httpx 直取(存档站公开;快照 1-3 月一存)——staleness 以快照里
+# 页面自带的 Published date 为准。2026-04-19 快照实核 391 家(A-Z <li> 列表,首条 100066 PEI Inc.)。
+PE_PAGE = ("https://www.princeedwardisland.ca/en/information/office-of-immigration/"
+           "atlantic-immigration-program-designated-employers")
+PE_MIN_ROWS = 300   # 解析量 sanity 下限:低于它=解析坏了/快照残缺 → 保旧不清空(宁可留旧)
+
+
+def load_pe() -> list[dict]:
+    try:
+        cdx = httpx.get("http://web.archive.org/cdx/search/cdx",
+                        params={"url": PE_PAGE, "output": "json", "filter": "statuscode:200", "limit": "-5"},
+                        headers={"User-Agent": USER_AGENT}, timeout=90).json()
+        ts = max(row[1] for row in cdx[1:])   # 首行是表头
+        html = httpx.get(f"http://web.archive.org/web/{ts}/{PE_PAGE}",
+                         headers={"User-Agent": USER_AGENT}, follow_redirects=True, timeout=60).text
+    except Exception as e:
+        print(f"  PE: Wayback 取档失败({e}),本轮保旧")
+        return _pe_previous()
+    # 名单区= <li> 纯文本项(快照实核干净无导航混入);去 tag、HTML 实体还原
+    items = re.findall(r"<li[^>]*>\s*([^<]+?)\s*</li>", html)
+    import html as _html
+    names = []
+    for it in items:
+        name = _html.unescape(it).strip()
+        # 导航/页脚 li 的典型词剔除;真雇主名不含这些
+        if not name or len(name) > 120 or re.search(r"(?i)(home|contact|privacy|feedback|government|service|about pei|français)$", name):
+            continue
+        names.append(name)
+    if len(names) < PE_MIN_ROWS:
+        print(f"  PE: 解析仅 {len(names)} 行(<{PE_MIN_ROWS}),疑残缺,本轮保旧")
+        return _pe_previous()
+    print(f"  PE: Wayback {ts[:8]} 快照 {len(names)} 家")
+    return [{"province": "PE", "employer": n, "location": "",
+             "tech": bool(TECH_NAME.search(n)), "asOf": ts[:8]} for n in names]
+
+
+def _pe_previous() -> list[dict]:
+    f = OUT_DIR / "aip-designated-employers.json"
+    if f.exists():
+        try:
+            return [r for r in json.loads(f.read_text(encoding="utf-8")) if r.get("province") == "PE"]
+        except Exception:
+            pass
+    return []
+
+
 def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     rows = load_nl()
     for prov, url in PDFS.items():
         rows += parse_pdf_bullets(prov, url)
+    rows += load_pe()
 
     by_prov: dict = {}
     for r in rows:

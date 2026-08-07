@@ -61,15 +61,17 @@ export function sponsorEmployerCols(t: TFn, lang: Lang, kind: SponsorKind = '') 
   ) }
   const aip = { key: 'aip', label: t('se.chip.aip'), nowrap: true, sort: (r: SponsorEmployerRow) => (r.aip ? 1 : 0), render: (r: SponsorEmployerRow) => (r.aip ? <span style={{ color: '#15803d', fontWeight: 700 }}>✓</span> : NIL) }
   const lmia = { key: 'lmia', label: t('se.col.lmia'), nowrap: true, sort: (r: SponsorEmployerRow) => r.lmiaPositions, render: (r: SponsorEmployerRow) => (r.lmiaPositions > 0 ? <span style={{ color: '#0f766e', fontWeight: 700 }}>{r.lmiaPositions}</span> : NIL) }
+  const w1 = { key: 'w1', label: t('se.col.w1'), nowrap: true, sort: (r: SponsorEmployerRow) => r.lmia1q, render: (r: SponsorEmployerRow) => (r.lmia1q > 0 ? <span style={{ color: '#0f766e', fontWeight: 700 }}>{r.lmia1q}</span> : NIL) }
+  const w2 = { key: 'w2', label: t('se.col.w2'), nowrap: true, sort: (r: SponsorEmployerRow) => r.lmia2q, render: (r: SponsorEmployerRow) => (r.lmia2q > 0 ? <span style={{ color: '#0f766e', fontWeight: 700 }}>{r.lmia2q}</span> : NIL) }
+  const w4 = { key: 'w4', label: t('se.col.w4'), nowrap: true, sort: (r: SponsorEmployerRow) => r.lmia4q, render: (r: SponsorEmployerRow) => (r.lmia4q > 0 ? <span style={{ color: '#0f766e', fontWeight: 700 }}>{r.lmia4q}</span> : NIL) }
   const skilled = { key: 'skilled', label: t('dir.col.skilled'), nowrap: true, sort: (r: SponsorEmployerRow) => r.lmiaPositionsSkilled ?? null, render: (r: SponsorEmployerRow) => (r.lmiaPositionsSkilled ? <span style={{ color: '#0f766e', fontWeight: 700 }}>{r.lmiaPositionsSkilled}</span> : NIL) }
-  const quarter = { key: 'quarter', label: t('dir.col.quarter'), nowrap: true, sort: (r: SponsorEmployerRow) => r.lmiaLastQuarter || null, render: (r: SponsorEmployerRow) => (r.lmiaLastQuarter ? <span style={{ color: '#6b7280' }}>{r.lmiaLastQuarter}</span> : NIL) }
   const pr = { key: 'pr', label: t('se.col.pr'), nowrap: true, sort: (r: SponsorEmployerRow) => r.lmiaPr, render: (r: SponsorEmployerRow) => (r.lmiaPr > 0 ? <span style={{ color: '#92400e', fontWeight: 700 }}>{r.lmiaPr}</span> : NIL) }
   const namedJobs = { key: 'namedJobs', label: t('se.col.namedJobs'), nowrap: true, sort: (r: SponsorEmployerRow) => (r.named ? 1 : 0), render: (r: SponsorEmployerRow) => (r.named ? <span style={{ color: '#92400e', fontWeight: 700 }}>✓</span> : NIL) }
   const namedMix = { key: 'named', label: t('se.col.named'), nowrap: true, sort: (r: SponsorEmployerRow) => r.lmiaPr * 1000 + (r.named ? 1 : 0), render: (r: SponsorEmployerRow) => (r.lmiaPr > 0 ? <span style={{ color: '#92400e', fontWeight: 700 }}>{t('se.pr', { n: r.lmiaPr })}</span> : r.named ? <span style={{ color: '#92400e', fontWeight: 700 }}>✓</span> : NIL) }
   const open = { key: 'open', label: t('se.col.open'), nowrap: true, sort: (r: SponsorEmployerRow) => r.openJobs, render: (r: SponsorEmployerRow) => <span style={{ fontWeight: 700 }}>{r.openJobs}</span> }
   const where = { key: 'where', label: t('se.col.where'), sort: (r: SponsorEmployerRow) => r.provs[0] ?? null, render: (r: SponsorEmployerRow) => <>{whereText(r, t)}</> }
   const base = lang === 'en' ? [name, grade, open] : [name, alias, grade, open]
-  if (kind === 'lmia') return [...base, lmia, skilled, quarter, where]
+  if (kind === 'lmia') return [...base, w1, w2, w4, lmia, skilled, where]
   if (kind === 'named') return [...base, pr, namedJobs, where]
   if (kind === 'aip') return [...base, where]
   return [...base, aip, lmia, namedMix, where]
@@ -80,9 +82,10 @@ export function SponsorCard({ r, lang, t, kind = '' }: { r: SponsorEmployerRow; 
   const NILC = <span style={{ color: '#9ca3af' }}>—</span>
   const kv: { k: string; v: React.ReactNode }[] = []
   if (kind === 'lmia') {
+    kv.push({ k: t('se.col.w1'), v: r.lmia1q > 0 ? <b style={{ color: '#0f766e' }}>{r.lmia1q}</b> : NILC })
+    kv.push({ k: t('se.col.w4'), v: r.lmia4q > 0 ? <b style={{ color: '#0f766e' }}>{r.lmia4q}</b> : NILC })
     kv.push({ k: t('se.col.lmia'), v: r.lmiaPositions > 0 ? <b style={{ color: '#0f766e' }}>{r.lmiaPositions}</b> : NILC })
     kv.push({ k: t('dir.col.skilled'), v: r.lmiaPositionsSkilled ? <b style={{ color: '#0f766e' }}>{r.lmiaPositionsSkilled}</b> : NILC })
-    kv.push({ k: t('dir.col.quarter'), v: r.lmiaLastQuarter || NILC })
   } else if (kind === 'named') {
     kv.push({ k: t('se.col.pr'), v: r.lmiaPr > 0 ? <b style={{ color: '#92400e' }}>{r.lmiaPr}</b> : NILC })
     kv.push({ k: t('se.col.namedJobs'), v: r.named ? <b style={{ color: '#92400e' }}>✓</b> : NILC })

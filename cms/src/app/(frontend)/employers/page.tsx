@@ -44,7 +44,7 @@ export default async function EmployersPage({ searchParams }: { searchParams: Pr
   if (legacy === 'aip' || legacy === 'lmia') {
     const type = legacy === 'aip' ? 'aip' as const : 'lmia' as const
     const q = one(sp.q).slice(0, 80)
-    const prov = ['NS', 'NB', 'NL'].includes(one(sp.prov).toUpperCase()) ? one(sp.prov).toUpperCase() : ''
+    const prov = ['NS', 'NB', 'NL', 'PE'].includes(one(sp.prov).toUpperCase()) ? one(sp.prov).toUpperCase() : ''   // B4:PE 名录已入(Wayback 官方页)
     const page = Math.max(0, Math.min(500, parseInt(one(sp.page), 10) || 0))
     const [aipAll, lmiaAll, cur] = await Promise.all([
       fetchAipEmployers(pool, { q: '', prov: '', page: 0 }).then((r) => r.total),

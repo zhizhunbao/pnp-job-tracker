@@ -699,6 +699,10 @@ def build():
     # 只挂 companies(列表 SQL 已 join companies,jobs 零改动);语义=历史事实,展示层必须带股别/季度。
     if IN_LMIA.exists():
         lmia = json.loads(IN_LMIA.read_text(encoding="utf-8")).get("employers", {})
+        # B4 时间窗(Frank 08-08「最近一年/6个月/3个月也有价值」):官方粒度=季度,
+        # 窗=全表最新季往回 4/2/1 季(≈近一年/近半年/最近一季);逐季明细 quarters 维护表里现成,零新抓。
+        all_qs = sorted({q for e in lmia.values() for q in e.get("quarters", {})})
+        w4, w2, w1 = set(all_qs[-4:]), set(all_qs[-2:]), set(all_qs[-1:])
         lmia_hit = 0
         for c in companies.values():
             e = lmia.get(norm_name(c.get("name", "")))
@@ -710,8 +714,12 @@ def build():
             c["lmiaLastQuarter"] = e["lastQuarter"]
             c["lmiaStreams"] = " · ".join(f"{s} {n}" for s, n in streams[:3])
             c["lmiaPositionsSkilled"] = e.get("positionsSkilled", 0)  # 非农业/季节股(仅榜单口径用,不进 DB)
+            qmap = e.get("quarters", {})
+            c["lmiaPositions4q"] = sum(v[1] for q, v in qmap.items() if q in w4)
+            c["lmiaPositions2q"] = sum(v[1] for q, v in qmap.items() if q in w2)
+            c["lmiaPositions1q"] = sum(v[1] for q, v in qmap.items() if q in w1)
             lmia_hit += 1
-        print(f"  LMIA 雇佣记录匹配: {lmia_hit}/{len(companies)} 公司")
+        print(f"  LMIA 雇佣记录匹配: {lmia_hit}/{len(companies)} 公司(窗口 {all_qs[-4:] if all_qs else []})")
 
     # E12-08 公司四维档(1-5,grades.py 单一来源):担保/活跃/薪资/知名——全部从在库聚合+LMIA 列现算,零新抓取。
     # 知名依据=processed/company_facts.json 的 wiki(D 批产物;K 懒探索回填的 wiki 在 DB 侧,mart 不可见——
@@ -855,9 +863,12 @@ def build():
         for e in json.loads(IN_AIP.read_text(encoding="utf-8")):
             if nl_official and e.get("province") == "NL":
                 continue
+            # PE(B4):出处=官方名单页(经 Wayback 存档取),fetched=快照日期——引证惯例出处随行
+            pe_url = ("https://www.princeedwardisland.ca/en/information/office-of-immigration/"
+                      "atlantic-immigration-program-designated-employers") if e.get("province") == "PE" else ""
             designated.append({"name": e.get("employer"), "province": e.get("province"),
                                "location": e.get("location"), "isTech": bool(e.get("tech")), "source": "AIP",
-                               "nocs": "", "url": "", "fetched": ""})  # 旧聚合源不含申报职位/逐家页 —— 空串是「来源没有」,不是「没申报」
+                               "nocs": "", "url": pe_url, "fetched": e.get("asOf", "")})  # 旧聚合源不含申报职位/逐家页 —— 空串是「来源没有」,不是「没申报」
     designated += nl_official
 
     # NOC 分类维度(大/中/小 + TEER,数据集出现的层级组合)

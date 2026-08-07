@@ -12,6 +12,8 @@ export type SponsorEmployerRow = {
   openJobs: number; city: string; provs: string[]; nocs: string[]; cities: string[]
   aip: boolean; named: boolean
   lmiaPositions: number; lmiaPositionsSkilled: number | null; lmiaLastQuarter: string
+  // B4 时间窗(近 4/2/1 季;列可能未回填=null → 0)
+  lmia4q: number; lmia2q: number; lmia1q: number
   // Frank 08-08:「PNP 资格」维=这家雇主担没担保过移民——PR 股 LMIA 获批数(ESDC 股别串解析)为主证,
   // named(发过省清单岗)为次级信号;pnpSignal=两者任一
   lmiaPr: number
@@ -28,6 +30,7 @@ async function loadAll(pool: any): Promise<SponsorEmployerRow[]> {
   const { rows } = await pool.query(`
     SELECT c.name, c.slug, c.industry, c.alias_zh, c.alias_ko, c.sponsor_grade,
       c.lmia_positions, c.lmia_positions_skilled, c.lmia_last_quarter, c.lmia_streams,
+      c.lmia_positions_4q, c.lmia_positions_2q, c.lmia_positions_1q,
       COUNT(*)::int AS open_jobs,
       BOOL_OR(j.aip) AS aip,
       BOOL_OR(COALESCE(j.pnp_stream, '') <> '') AS named,
@@ -38,7 +41,8 @@ async function loadAll(pool: any): Promise<SponsorEmployerRow[]> {
     FROM jobs j JOIN companies c ON c.id = j.company_id
     WHERE COALESCE(j.status, 'open') <> 'closed'
     GROUP BY c.id, c.name, c.slug, c.industry, c.alias_zh, c.alias_ko, c.sponsor_grade,
-      c.lmia_positions, c.lmia_positions_skilled, c.lmia_last_quarter, c.lmia_streams
+      c.lmia_positions, c.lmia_positions_skilled, c.lmia_last_quarter, c.lmia_streams,
+      c.lmia_positions_4q, c.lmia_positions_2q, c.lmia_positions_1q
     HAVING BOOL_OR(j.aip) OR BOOL_OR(COALESCE(j.pnp_stream, '') <> '') OR COALESCE(c.lmia_positions, 0) > 0
     ORDER BY open_jobs DESC, c.name ASC`)
   return rows.map((r: any): SponsorEmployerRow => ({
@@ -49,6 +53,7 @@ async function loadAll(pool: any): Promise<SponsorEmployerRow[]> {
     lmiaPositions: Number(r.lmia_positions) || 0,
     lmiaPositionsSkilled: r.lmia_positions_skilled == null ? null : Number(r.lmia_positions_skilled),
     lmiaLastQuarter: r.lmia_last_quarter ?? '',
+    lmia4q: Number(r.lmia_positions_4q) || 0, lmia2q: Number(r.lmia_positions_2q) || 0, lmia1q: Number(r.lmia_positions_1q) || 0,
     lmiaPr: (() => { const m = /(?:\bPR\b|permanent residents?)\s+([\d,]+)/i.exec(r.lmia_streams ?? ''); return m ? Number(m[1].replace(/,/g, '')) || 0 : 0 })(),
   }))
 }

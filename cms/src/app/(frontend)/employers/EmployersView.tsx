@@ -113,7 +113,7 @@ export function EmployersView({ type, q, prov, page, aip, lmia, counts }: {
         {/* AIP 省筛(名单只覆盖 NS/NB/NL) */}
         {type === 'aip' && (
           <div style={{ display: 'flex', gap: 6, margin: '0 0 12px', flexWrap: 'wrap' }}>
-            {['', 'NS', 'NB', 'NL'].map((p) => (
+            {['', 'NS', 'NB', 'NL', 'PE'].map((p) => (
               <a key={p || 'all'} href={href('aip', q, p, 0)} style={{ ...chipStyle(prov === p), textDecoration: 'none', display: 'inline-block' }}>{p ? t('pr.' + p) : t('all.prov')}</a>
             ))}
           </div>

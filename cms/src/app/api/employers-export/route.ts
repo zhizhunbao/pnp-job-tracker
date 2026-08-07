@@ -34,10 +34,10 @@ export async function GET(req: Request) {
   const payload = await getPayload({ config: await config })
   const rows = applySponsorFilters(await fetchSponsorEmployers((payload.db as any).pool), filters)
 
-  const head = ['employer', 'aip_designated', 'lmia_positions_2yr', 'lmia_skilled', 'lmia_last_quarter', 'pnp_in_demand_hit', 'open_jobs', 'provinces', 'city']
+  const head = ['employer', 'aip_designated', 'lmia_3mo', 'lmia_6mo', 'lmia_1yr', 'lmia_positions_2yr', 'lmia_skilled', 'lmia_last_quarter', 'pnp_pr_lmias', 'pnp_in_demand_hit', 'open_jobs', 'provinces', 'city']
   const body = rows.map((r) => [
-    esc(r.name), r.aip ? 'yes' : '', r.lmiaPositions || '', r.lmiaPositionsSkilled ?? '', esc(r.lmiaLastQuarter),
-    r.named ? 'yes' : '', r.openJobs, esc(r.provs.join('|')), esc(r.city),
+    esc(r.name), r.aip ? 'yes' : '', r.lmia1q || '', r.lmia2q || '', r.lmia4q || '', r.lmiaPositions || '', r.lmiaPositionsSkilled ?? '', esc(r.lmiaLastQuarter),
+    r.lmiaPr || '', r.named ? 'yes' : '', r.openJobs, esc(r.provs.join('|')), esc(r.city),
   ].join(','))
   const csv = '﻿' + head.join(',') + '\n' + body.join('\n') + '\n'
   return new Response(csv, {
