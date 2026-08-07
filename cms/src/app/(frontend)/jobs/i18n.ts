@@ -881,6 +881,9 @@ const zh: Dict = {
   'eefed.title': '联邦抽选近况', 'eefed.mixHead': '近 {n} 轮:', 'eefed.cat': '职业类别', 'eefed.ita': '{n} 份',
   'eefed.french': '法语轮次按语言能力抽,与职业无关', 'eefed.more': '看更多 {n} 轮', 'eefed.less': '收起',
   'ch.pnp.on': '能走: {label}', 'ch.pnp.generic': '凭雇主 offer 可提名', 'ch.pnp.ex': '在排除清单,走不了', 'ch.pnp.no': '走不了(排除清单或未分类)', 'ch.pnp.qc': 'QC 走省独立体系',
+  // B1 在招担保雇主:弹框雇主线入口(凭证行有据才出,负断言不上台面)
+  'spl.head': '担保雇主', 'spl.aip': 'AIP 指定雇主(官方名单)', 'spl.lmia': '近两年 LMIA 获批 {n} 岗',
+  'spl.coJobs': '看它全部在招职位', 'spl.occList': '看该职业的全部担保雇主',
   'ch.ee.on': '能进类别抽选: {cats}', 'ch.ee.more': '{first} 等 {n} 类', 'ch.ee.gen': '能走 CEC 通用抽选(分数线高)', 'ch.ee.no': '走不了(TEER {teer})',
   'ch.aip.on': '能走 AIP(雇主在指定名单)', 'ch.aip.miss': '走不了(雇主不在名单)', 'ch.aip.na': '走不了(仅大西洋四省)',
   'ch.pnp.exl': '走不了:本岗在「{label}」内', 'ch.aip.blocked': '走不了:本省不受理本岗职业的背书', 'ch.aip.onBlocked': '雇主在指定名单,但本岗职业本省不受理',
@@ -1726,6 +1729,9 @@ const en: Dict = {
   'eefed.title': 'Recent federal rounds', 'eefed.mixHead': 'Last {n} rounds: ', 'eefed.cat': 'category', 'eefed.ita': '{n} ITAs',
   'eefed.french': 'French rounds go by language ability, not occupation', 'eefed.more': 'see {n} more rounds', 'eefed.less': 'collapse',
   'ch.pnp.on': 'Eligible: {label}', 'ch.pnp.generic': 'Eligible via employer job offer', 'ch.pnp.ex': 'On exclusion list', 'ch.pnp.no': 'Not eligible (excluded or unclassified)', 'ch.pnp.qc': 'QC has its own system',
+  // B1 sponsor-employer entry lines (credential rows only when on record)
+  'spl.head': 'Sponsor employers', 'spl.aip': 'AIP designated employer (official list)', 'spl.lmia': 'LMIA-approved {n} positions in the past two years',
+  'spl.coJobs': 'All its open jobs', 'spl.occList': 'All sponsor employers in this occupation',
   'ch.ee.on': 'Category draws: {cats}', 'ch.ee.more': '{first} +{n}', 'ch.ee.gen': 'CEC general draws (high cut-off)', 'ch.ee.no': 'Not eligible (TEER {teer})',
   'ch.aip.on': 'Eligible (designated employer)', 'ch.aip.miss': 'Not eligible (not designated)', 'ch.aip.na': 'Not eligible (Atlantic only)',
   'ch.pnp.exl': 'Not eligible — on the {label} list', 'ch.aip.blocked': 'Not eligible — province not accepting this occupation', 'ch.aip.onBlocked': 'Employer designated, but this occupation is not accepted',
@@ -2566,6 +2572,9 @@ const ko: Dict = {
   'eefed.title': '연방 추첨 현황', 'eefed.mixHead': '최근 {n}회: ', 'eefed.cat': '직업 카테고리', 'eefed.ita': '{n}건',
   'eefed.french': '프랑스어 회차는 직업이 아닌 언어 능력 기준입니다', 'eefed.more': '{n}회 더 보기', 'eefed.less': '접기',
   'ch.pnp.on': '가능: {label}', 'ch.pnp.generic': '고용주 오퍼로 지명 가능', 'ch.pnp.ex': '제외 목록, 불가', 'ch.pnp.no': '불가(제외 목록 또는 미분류)', 'ch.pnp.qc': 'QC 자체 시스템',
+  // B1 스폰서 고용주 진입 라인(이력 있을 때만 표시)
+  'spl.head': '스폰서 고용주', 'spl.aip': 'AIP 지정 고용주(공식 명단)', 'spl.lmia': '최근 2년 LMIA 승인 {n}건',
+  'spl.coJobs': '이 고용주의 전체 채용 보기', 'spl.occList': '이 직업의 스폰서 고용주 전체 보기',
   'ch.ee.on': '카테고리 추첨 가능: {cats}', 'ch.ee.more': '{first} 등 {n}종', 'ch.ee.gen': 'CEC 일반 추첨 가능(커트라인 높음)', 'ch.ee.no': '불가(TEER {teer})',
   'ch.aip.on': 'AIP 가능(지정 고용주)', 'ch.aip.miss': '불가(고용주 미지정)', 'ch.aip.na': '불가(대서양 4개 주만)',
   'ch.pnp.exl': '불가: 「{label}」에 포함', 'ch.aip.blocked': '불가: 주정부가 이 직종 추천을 접수하지 않음', 'ch.aip.onBlocked': '지정 고용주이지만 이 직종은 접수 제외',

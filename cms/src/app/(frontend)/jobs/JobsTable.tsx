@@ -1558,6 +1558,35 @@ function NewsLatestBlock({ province, lang, news }: { province: string; lang: Lan
   )
 }
 
+// ── B1 在招担保雇主 · 弹框雇主线入口(docs/implementation/在招担保雇主/01_B1)──────
+// 凭证行(AIP 指定/LMIA 获批)有据才出,无凭证整行不出不写「无」;company 态只渲职业链接
+// (公司弹框自带担保记录卡与在招职位卡,凭证行再出=重复)。/employers?noc= 是 B2 的前向契约。
+function SponsorLeadCard({ job, t, src }: { job: JobRow; t: TFn; src: 'pnp' | 'company' }) {
+  const lmiaN = job.lmiaPositions ?? 0
+  const hasCred = src === 'pnp' && (job.aip || lmiaN > 0)
+  if (!hasCred && !job.noc) return null
+  const row: React.CSSProperties = { fontSize: 13, lineHeight: 1.75, color: '#374151' }
+  return (
+    <div style={MODAL_CARD}>
+      <div style={MODAL_CARD_HEAD}>{t('spl.head')}</div>
+      {hasCred && job.aip ? <div style={row}>{t('spl.aip')}</div> : null}
+      {hasCred && lmiaN > 0 ? <div style={row}>{t('spl.lmia', { n: lmiaN })}</div> : null}
+      {hasCred && job.company ? (
+        <div style={row}>
+          <a href={'/?q=' + encodeURIComponent(job.company)} target="_blank" rel="noreferrer" style={{ ...link, fontWeight: 600 }}
+            onClick={() => track('pnp-employer-click', { kind: src })}>{t('spl.coJobs')} →</a>
+        </div>
+      ) : null}
+      {job.noc ? (
+        <div style={row}>
+          <a href={'/employers?noc=' + encodeURIComponent(job.noc)} target="_blank" rel="noreferrer" style={{ ...link, fontWeight: 600 }}
+            onClick={() => track('pnp-sponsor-list-click', { kind: src })}>{t('spl.occList')} →</a>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 export function PnpListSection({ job, lang, occ, draws, news, profileClb, nocDesc = [], showZh = true }: { job: JobRow; lang: Lang; occ: PnpOcc[]; draws: PnpDraw[]; news: NewsSlim[]; profileClb?: number | null; nocDesc?: NocDesc[]; showZh?: boolean }) {
   const t = makeT(lang)
   const matchRef = useRef<HTMLDivElement | null>(null)
@@ -1605,6 +1634,8 @@ export function PnpListSection({ job, lang, occ, draws, news, profileClb, nocDes
         {/* Frank「qc 没有对应的通道 也没有历史」:QC 不参加 PNP 是制度事实,不是缺数 —— 把它走的是什么说清 */}
         {isQc ? <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 6, lineHeight: 1.7 }}>{t('ch.pnp.qcWhy')}</div> : null}
       </div>
+      {/* B1 雇主线:判定卡之后、抽选卡之前——用户点这个弹框问的就是「这雇主/这职业谁能担保我」 */}
+      <SponsorLeadCard job={job} t={t} src="pnp" />
       {/* E12-09 自评打分已迁到「移民路径」页(Frank 2026-07-27「应该单独弄个功能吧,不应该放到 pnp 弹框里面」)。
           它算的是**你这个人**够不够分,跟看哪一个岗没关系;这里连跳转链也不留(#198/#199「多余的跳转都删掉」)。 */}
       {!isQc && job.province && draws.some((d) => d.province === job.province) ? (
@@ -2574,6 +2605,8 @@ function CompanyPanel({ job, jobs, lang, plan, onOpenJob }: { job: JobRow; jobs:
         : d === null ? <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>{t('advisor.unavail')}</p>
         : <CompanyBody company={d.company} similar={d.similar} t={t} lang={lang} showTrans={showTrans} hideTopInfo
             onOpenJob={onOpenJob} resolveJob={(id) => jobs.find((x) => Number(x.id) === id)} />}
+      {/* B1 雇主线:公司弹框只渲职业链接(凭证/在招职位上面的卡已有,再出=重复) */}
+      <SponsorLeadCard job={job} t={t} src="company" />
     </>
   )
 }
