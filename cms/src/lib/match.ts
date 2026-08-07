@@ -174,7 +174,14 @@ export function match(profile: MatchProfile, job: MatchJob, dims: MatchDims): Ma
       reasons.push({ rule: 'prov', verdict: 'na', key: 'match.r.prov.uncovered', params: { prov } })
     } else if (job.pnpEligible) {
       score += 15
-      reasons.push({ rule: 'prov', verdict: 'pass', key: 'match.r.prov.generic', params: { prov } })
+      // E13-09:TEER4-5 的通过理由分三类,不再一律写「TEER 0-3 通用粗筛」(翻案岗会拿到假理由)。
+      // 省集合镜像 etl/08_score.UNIVERSAL_*_PROVS(NL=offer 即可;MB/NS/NB/PE=先同雇主 6 个月)。
+      const t45 = job.teer != null && job.teer >= 4
+      const key = !t45 ? 'match.r.prov.generic'
+        : prov === 'NL' ? 'match.r.prov.nl'
+        : ['MB', 'NS', 'NB', 'PE'].includes(prov) ? 'match.r.prov.cond'
+        : 'match.r.prov.open'
+      reasons.push({ rule: 'prov', verdict: 'pass', key, params: { prov } })
     } else {
       score -= 10
       reasons.push({ rule: 'prov', verdict: 'fail', key: 'match.r.prov.none', params: { prov } })

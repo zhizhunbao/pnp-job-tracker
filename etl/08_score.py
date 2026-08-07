@@ -187,14 +187,25 @@ def teer_of(noc: str) -> int | None:
 # 不属 PNP 体系的省:魁省走自己的甄选(CSQ/Arrima),不发省提名 → 一律不标 pnpEligible。
 NON_PNP_PROV = {"QC"}
 
+# ── E13-09 五省「普通通道」(2026-08-07 深夜拍板修口径根:inclusion 模型对 TEER4-5 系统性低估)──
+# 不看职业清单的雇主/经验锚定通道,逐省锚官方原句(全文见 docs/implementation/E13-把脉首页/09_*.md §2):
+# · direct = 拿 offer 即可入池:NL Skilled Worker「a full-time job or job offer: In a TEER 0, 1, 2,
+#   3, 4 or 5 occupation」(gov.nl.ca/immigration/4-skilled-worker-category-eligibility-criteria)
+# · cond = 须先省内同雇主干满 6 个月:MB SWM(immigratemanitoba.com/mpnp/skilled-worker/swm/eligibility)、
+#   NS Skilled Worker TEER4-5(liveinnovascotia.com/skilled-worker)、NB Experience(gnb.ca
+#   …/nb-skilled-worker-stream.html)、PE Critical Worker TEER4-5(pei_workforce_application_guide.pdf)
+UNIVERSAL_DIRECT_PROVS = {"NL"}
+UNIVERSAL_COND_PROVS = {"MB", "NS", "NB", "PE"}
+
 
 def pnp_eligible(noc: str, teer: int | None, prov: str) -> bool:
     """能否走雇主 offer 省提名,按省精准(不跨省套用)。魁省不属 PNP,直接排除。
-    · 命中该省叠加式排除清单(NB 不受理职业)→ 一律不可,先于下面两条判。
-    · 有 exclusion 表的省(AB/AAIP;ON 2026-06 改制后为空排除集=全职业可):
+    · 命中该省叠加式排除清单(NB 不受理职业)→ 一律不可,先于一切判。
+    · 有 exclusion 表的省(AB/AAIP;BC/SK;ON 2026-06 改制后空排除集=全职业可):
       TEER0-5 默认都可走,清单内 NOC 不可。
-    · 其余(有 inclusion 表如 SK/NS,或无表):TEER0-3 粗筛通用,
-      TEER4-5 仅当 NOC 在该省 inclusion 清单内才可。"""
+    · 其余(inclusion 表省 MB/NS/NB/PE/NL):TEER0-3 粗筛通用,TEER4-5 清单命中可,
+      **清单没命中也有五省普通通道兜底**(E13-09:direct=NL 拿 offer 即可;
+      cond=MB/NS/NB/PE 先省内同雇主 6 个月)——直可/需前置的区分由 pnp_direct 承担。"""
     if prov in NON_PNP_PROV:
         return False
     tbl = PNP_BY_PROV.get(prov)
@@ -203,7 +214,26 @@ def pnp_eligible(noc: str, teer: int | None, prov: str) -> bool:
     if tbl and tbl["type"] == "ineligible":
         return teer is not None and noc not in tbl["nocs"]
     nocs = tbl["nocs"] if tbl else set()
-    return teer in (0, 1, 2, 3) or noc in nocs
+    if teer in (0, 1, 2, 3) or noc in nocs:
+        return True
+    return teer is not None and prov in (UNIVERSAL_DIRECT_PROVS | UNIVERSAL_COND_PROVS)
+
+
+def pnp_direct(noc: str, teer: int | None, prov: str) -> bool:
+    """在 pnp_eligible 之内再分档:**拿 offer 即可入池**(不需先省内工作)。
+    榜A「雇主担保可提名省份」直陈行用它;eligible−direct = 「先省内工作 6 个月」灰行。
+    TEER0-3 通用、排除式省默认、具名清单命中、NL 普通通道 → direct;
+    仅靠 MB/NS/NB/PE 普通通道兜底的 TEER4-5 → 非 direct(cond)。"""
+    if not pnp_eligible(noc, teer, prov):
+        return False
+    if teer in (0, 1, 2, 3):
+        return True
+    tbl = PNP_BY_PROV.get(prov)
+    if tbl and tbl["type"] == "ineligible":
+        return True
+    if noc in (tbl["nocs"] if tbl else set()):
+        return True
+    return prov in UNIVERSAL_DIRECT_PROVS
 
 
 def pnp_stream(noc: str, prov: str) -> str | None:

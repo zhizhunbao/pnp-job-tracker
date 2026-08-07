@@ -1582,10 +1582,16 @@ export function PnpListSection({ job, lang, occ, draws, news, profileClb, nocDes
   else if (matched) verdictPill = <VerdictPill tone="ok">{t('ch.pnp.on', { label: streamDisplay(t, matched.label) })}</VerdictPill>
   else if (job.pnpEligible) {
     verdictPill = <VerdictPill tone="ok">{t('ch.pnp.generic')}</VerdictPill>
-    // Frank 同批「显示走通用 但是不知道具体走的是什么」:把「凭什么算通用」写出来,别让用户猜
-    genericWhy = skilled ? t('ch.pnp.whySkilled', { teer: teer ?? '?' }) : t('ch.pnp.whyOpen', { prov: t('prov.' + job.province) || job.province, teer: teer ?? '?' })
+    // Frank 同批「显示走通用 但是不知道具体走的是什么」:把「凭什么算通用」写出来,别让用户猜。
+    // E13-09:TEER4-5 的「凭什么」分三类——排除式省(不设清单)/ NL(offer 即可)/
+    // MB·NS·NB·PE 普通通道(先同雇主 6 个月)。省集合镜像 etl/08_score.UNIVERSAL_*_PROVS。
+    const provName = t('prov.' + job.province) || job.province
+    genericWhy = skilled ? t('ch.pnp.whySkilled', { teer: teer ?? '?' })
+      : job.province === 'NL' ? t('ch.pnp.whyDirect')
+      : ['MB', 'NS', 'NB', 'PE'].includes(job.province) ? t('ch.pnp.whyCond', { prov: provName })
+      : t('ch.pnp.whyOpen', { prov: provName, teer: teer ?? '?' })
   }
-  else verdictPill = <VerdictPill tone="na">{t('ch.pnp.no', { teer: teer ?? '?' })}</VerdictPill>
+  else verdictPill = <VerdictPill tone="na">{t('ch.pnp.no')}</VerdictPill>
 
   return (
     <>

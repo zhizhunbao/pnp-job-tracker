@@ -119,11 +119,19 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
     const c = TIER_COLORS[k]
     return <span style={{ whiteSpace: 'nowrap', fontSize: 11, fontWeight: 600, padding: '1px 8px', borderRadius: 999, background: c.bg, color: c.fg, border: `1px solid ${c.bd}` }}>{t('pulse.tier.' + k)}</span>
   }
-  // 全码直陈(Frank 08-06「tooltips 都去掉」后不再折叠成「N 省」,列内自然折行)
+  // 全码直陈(Frank 08-06「tooltips 都去掉」后不再折叠成「N 省」,列内自然折行)。
+  // E13-09 拆两行:直陈行=拿 offer 即可;灰行=先省内同雇主 6 个月(五省普通通道)。
+  // 无 cond 时不出行标签(免噪音);两行都空才「—」。
   const pnpProvsCell = (o: OccRow) => {
-    const s = o.pnpProvs ?? ''
-    if (!s) return <span style={{ color: UI.text3 }}>—</span>
-    return <span style={{ color: '#b45309', fontWeight: 600 }}>{s}</span>
+    const direct = o.pnpProvs ?? ''
+    const cond = o.pnpProvsCond ?? ''
+    if (!direct && !cond) return <span style={{ color: UI.text3 }}>—</span>
+    return (
+      <span style={{ display: 'block' }}>
+        {direct ? <span style={{ display: 'block', color: '#b45309', fontWeight: 600 }}>{cond ? `${t('pulse.provs.direct')} ${direct}` : direct}</span> : null}
+        {cond ? <span style={{ display: 'block', fontSize: 12, color: UI.text3 }}>{`${t('pulse.provs.cond')} ${cond}`}</span> : null}
+      </span>
+    )
   }
   // 手机卡片列表的页态(桌面表格的页态在 DataTable 里,俩视图同刻只显示一个,各翻各的)
   const [page, setPage] = useState(0)
@@ -205,7 +213,8 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
       render: (o: OccRow) => provsCell(o),
     }] : hasPnpProvs ? [{
       key: 'pnpProvs', label: t('pulse.col.pnpProvs'),   // 全码直陈会到 8-9 个省,允许列内折行
-      sort: (o: OccRow) => (o.pnpProvs ? o.pnpProvs.split('、').length : 0),
+      sort: (o: OccRow) => (o.pnpProvs ? o.pnpProvs.split('、').length : 0) * 10
+        + (o.pnpProvsCond ? o.pnpProvsCond.split('、').length : 0),   // 直可省数主键,cond 省数副键
       render: (o: OccRow) => pnpProvsCell(o),
     }] : []),
     // 薪资列(Frank 08-06 二改「不如换成薪资区间」):ESDC 官方薪资区间年化(低-高)
@@ -227,7 +236,7 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
           return (
             <JobCard key={o.noc} href={`/?q=${o.noc}`}
               title={{ text: occMain(o), href: `/?q=${o.noc}` }}
-              note={[occNote(o, lang), `NOC ${o.noc}`].filter(Boolean).join('  ') || undefined}
+              note={occNote(o, lang) || undefined}
               company={o.openJobs != null ? { text: `${t('pulse.col.open')} ${num(o.openJobs)}` } : undefined}
               salary={momCell(o) ?? undefined}
               location={deadCol
@@ -238,8 +247,21 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
                     <span style={{ display: 'block', color: UI.danger, fontWeight: 700, whiteSpace: 'normal', overflowWrap: 'break-word' }}>{`${t('pulse.col.dead')} ${o.deadProvs}`}</span>
                   </span>
                   : undefined)
-                : showProvs ? `${t('pulse.col.provs')} ${ps.length ? ps.join('、') : t('pulse.provs.none')}` : undefined}
-              chips={tierPill(o) ?? undefined} />
+                : showProvs ? `${t('pulse.col.provs')} ${ps.length ? ps.join('、') : t('pulse.provs.none')}`
+                : (o.pnpProvs || o.pnpProvsCond)   // E13-09:榜A手机卡也带两档省份(桌面独有=信息不对称)
+                  ? <span style={{ display: 'block' }}>
+                    {o.pnpProvs ? <span style={{ display: 'block', color: '#b45309', fontWeight: 600, whiteSpace: 'normal', overflowWrap: 'break-word' }}>{`${t('pulse.provs.direct')} ${o.pnpProvs}`}</span> : null}
+                    {o.pnpProvsCond ? <span style={{ display: 'block', color: UI.text3, whiteSpace: 'normal', overflowWrap: 'break-word' }}>{`${t('pulse.provs.cond')} ${o.pnpProvsCond}`}</span> : null}
+                  </span>
+                  : undefined}
+              chips={<>
+                {/* NOC/TEER 代码胶囊(Frank 08-08「手机端改成胶囊」「teer 也需要」);中性灰,别抢通道档的色 */}
+                <span style={{ whiteSpace: 'nowrap', fontSize: 11, fontWeight: 600, padding: '1px 8px', borderRadius: 999, background: '#f3f4f6', color: '#4b5563', border: '1px solid #e5e7eb' }}>{`NOC ${o.noc}`}</span>
+                {o.teer != null
+                  ? <span style={{ whiteSpace: 'nowrap', fontSize: 11, fontWeight: 600, padding: '1px 8px', borderRadius: 999, background: '#f3f4f6', color: '#4b5563', border: '1px solid #e5e7eb' }}>{`TEER ${o.teer}`}</span>
+                  : null}
+                {tierPill(o)}
+              </>} />
           )
         })}
         <div style={{ padding: '2px 2px 0' }}>
