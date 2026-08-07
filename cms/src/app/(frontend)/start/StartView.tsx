@@ -382,8 +382,9 @@ export function StartView({ stats }: { stats: HomeStats }) {
         </div>
 
         {/* ── S2 三榜分层(按用户决策顺序):先排除(无通道)→ 有通道但在降温 → 有通道且在升温。
-            数据没就绪 → 整块不渲染(绝不拿存量榜顶包);无大竖线、标题深色(08-06 版式拍板) */}
-        {boards && (boards.noPath.length > 0 || boards.cooling.length > 0 || boards.heating.length > 0) && (
+            加载中出占位块(自上而下渲染铁律,08-06「为什么下面的内容先刷出来」);
+            数据到了但榜全空才整块不渲染(绝不拿存量榜顶包) */}
+        {(boards === null || boards.noPath.length > 0 || boards.cooling.length > 0 || boards.heating.length > 0) && (
           <Band bg="#fff">
             {/* 口径说明句与悬停提示 08-06 全撤(Frank「tooltips 都去掉」),榜题裸标题 */}
             {boards === null && (
@@ -395,13 +396,13 @@ export function StartView({ stats }: { stats: HomeStats }) {
                 <OccBoard rows={boards.noPath} t={t} lang={lang} nocProvs={nocProvs} showProvs={false} />
               </div>
             )}
-            {boards.cooling.length > 0 && (
+            {boards !== null && boards.cooling.length > 0 && (
               <div style={{ marginTop: 28 }}>
                 <h2 style={{ ...secH, margin: '0 0 10px' }}>{t('pulse.b2')}</h2>
                 <OccBoard rows={boards.cooling} t={t} lang={lang} nocProvs={nocProvs} />
               </div>
             )}
-            {boards.heating.length > 0 && (
+            {boards !== null && boards.heating.length > 0 && (
               <div style={{ marginTop: 28 }}>
                 <h2 style={{ ...secH, margin: '0 0 10px' }}>{t('pulse.b3')}</h2>
                 <OccBoard rows={boards.heating} t={t} lang={lang} nocProvs={nocProvs} />
@@ -413,9 +414,13 @@ export function StartView({ stats }: { stats: HomeStats }) {
         {/* ── S4a 分省概览(Frank 08-06「省卡改表格吧 拆两个section」):
             桌面=可排序 DataTable(10 省 × 混量纲指标,表格才排得动),手机=原省卡(站规「电脑表格手机卡片」)。
             表格行不可点(E8-08 站规「可点才有态」),切省统一走 S4b 的 chips;手机卡片保留点卡切省。 ── */}
-        {provRows.length > 0 && (
+        {(market === null || provRows.length > 0) && (
           <Band>
             <h2 style={secH}>{t('pulse.s4')}</h2>
+            {market === null && (
+              <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, height: 420 }} />
+            )}
+            {provRows.length > 0 && (<>
             <div className="plTable">
               <DataTable<StatRow>
                 rows={provRows}
@@ -495,6 +500,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
                 })}
               </div>
             </div>
+            </>)}
           </Band>
         )}
 
