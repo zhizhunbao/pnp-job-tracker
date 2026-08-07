@@ -25,6 +25,8 @@ import { JobCard } from '../ui/JobCard'
 import { DataTable, DTPager, type DTCol } from '../ui/DataTable'
 import { BANNER_IMGS, Chip, PageBanner, PageShell, Tag, UI } from '../ui/primitives'
 import { track } from '@/lib/track'
+import { SponsorCard, sponsorEmployerCols } from '../employers/SponsorEmployersView'
+import type { SponsorEmployerRow } from '@/lib/sponsorEmployers'
 
 // 抽选行 + 冷解读三标量(近 12 期同通道的期数/最低/最高,服务端算好,见 start/page.tsx)
 export type PulseDraw = {
@@ -37,6 +39,8 @@ export type HomeStats = {
   total: number | null; named: number | null      // S1 命中率证据(与职位板 proof 同源)
   draws: PulseDraw[]
   news: { date: string; region: string; title: string; titleZh?: string; slug: string }[]
+  sponsorTop: SponsorEmployerRow[]                // B2+ 雇主橱窗(TOP10;货架在 /employers)
+  sponsorTotal: number | null
   provExtra: Record<string, ProvExtra>            // S4 省卡:IRCC 体量 + 难度档
   provPreset: string                              // S4 预选省(档案省;匿名为空 → 默认 ON。禁 IP 定位)
   checkedAt: string
@@ -83,9 +87,31 @@ const TIER_COLORS: Record<string, { bg: string; fg: string; bd: string }> = {
   employer: { bg: '#fee2e2', fg: '#b91c1c', bd: '#fecaca' },
 }
 
+// 分区标题三件套(Sec 折叠组件也用,提到模块级)
+const secH: React.CSSProperties = { margin: '0 0 6px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 10, rowGap: 8, flexWrap: 'wrap', color: UI.text }
+const moreA: React.CSSProperties = { fontSize: 13, fontWeight: 600, color: UI.primary, textDecoration: 'none', whiteSpace: 'nowrap' }
+const hmRight: React.CSSProperties = { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }
+
 // 全宽色带 + PageShell 内轨(全站统一 1320 正文轨)
-function Band({ bg, children }: { bg?: string; children: React.ReactNode }) {
-  return <div className="plBand" style={{ background: bg }}><PageShell pad="0 1.25rem">{children}</PageShell></div>
+function Band({ bg, id, children }: { bg?: string; id?: string; children: React.ReactNode }) {
+  return <div className="plBand" id={id} style={{ background: bg, scrollMarginTop: 52 }}><PageShell pad="0 1.25rem">{children}</PageShell></div>
+}
+
+// 08-08 Frank「首页太长,每个 section 给个折叠」:h2 即开关(▾/▸),状态记 localStorage;
+// right=标题行右侧控件(TopN/链接),点它不折叠
+function Sec({ id, title, right, children }: { id: string; title: React.ReactNode; right?: React.ReactNode; children: React.ReactNode }) {
+  const [open, setOpen] = useState(true)
+  useEffect(() => { try { if (localStorage.getItem('pl.fold.' + id) === '0') setOpen(false) } catch { /* ignore */ } }, [id])
+  const toggle = () => setOpen((v) => { const n = !v; try { localStorage.setItem('pl.fold.' + id, n ? '1' : '0') } catch { /* ignore */ } ; return n })
+  return (
+    <div>
+      <h2 onClick={toggle} style={{ ...secH, margin: '0 0 10px', cursor: 'pointer', userSelect: 'none' }}>
+        {title} <span style={{ color: '#9ca3af', fontSize: 14 }}>{open ? '▾' : '▸'}</span>
+        {right ? <span style={hmRight} onClick={(e) => e.stopPropagation()}>{right}</span> : null}
+      </h2>
+      {open ? children : null}
+    </div>
+  )
 }
 
 // 条数下拉:抽选表与政策动态共用一把(数据 SSR 已多取,前端只切片)
@@ -382,9 +408,6 @@ export function StartView({ stats }: { stats: HomeStats }) {
     (r.histN != null && r.histMin != null && r.histMax != null
       ? t('pulse.dr.note', { n: r.histN, min: num(r.histMin), max: num(r.histMax) }) : '')
 
-  const secH: React.CSSProperties = { margin: '0 0 6px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 10, rowGap: 8, flexWrap: 'wrap', color: UI.text }
-  const moreA: React.CSSProperties = { fontSize: 13, fontWeight: 600, color: UI.primary, textDecoration: 'none', whiteSpace: 'nowrap' }
-  const hmRight: React.CSSProperties = { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }
   const th: React.CSSProperties = { fontSize: 11.5, color: UI.text3, fontWeight: 600, textAlign: 'left', padding: '9px 12px', borderBottom: `1px solid ${UI.hairline}`, background: '#fafafa' }
   const td: React.CSSProperties = { padding: '9px 12px', borderBottom: `1px solid ${UI.hairline}`, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
   const kv = (label: React.ReactNode, val: React.ReactNode) => (
@@ -431,6 +454,16 @@ export function StartView({ stats }: { stats: HomeStats }) {
           .plCta .plBtn{flex:0 0 auto;padding:12px 28px}
         }`}</style>
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="start" />
+      {/* 二级导航条(08-08 Frank):分区锚点直跳;粘顶,375 横向滚动 */}
+      <div style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', borderBottom: `1px solid ${UI.border}` }}>
+        <PageShell pad="0 1.25rem">
+          <div style={{ display: 'flex', gap: 16, overflowX: 'auto', padding: '9px 0', fontSize: 12.5, whiteSpace: 'nowrap' }}>
+            {([['pl-se', t('se.title')], ['pl-boards', t('pulse.nav.boards')], ['pl-prov', t('pulse.s4')], ['pl-provocc', t('pulse.s4b')], ['pl-draws', t('pulse.s5')]] as [string, string][]).map(([id, label]) => (
+              <a key={id} href={'#' + id} style={{ color: '#6b7280', textDecoration: 'none', fontWeight: 600, flexShrink: 0 }}>{label}</a>
+            ))}
+          </div>
+        </PageShell>
+      </div>
       <main style={{ flex: '1 0 auto' }}>
 
         {/* ── S1 判决区:动态冷脸标题 + 四脉象卡(banner 下方——毛玻璃合并版试过一轮,
@@ -457,11 +490,23 @@ export function StartView({ stats }: { stats: HomeStats }) {
           </PageShell>
         </div>
 
+        {/* ── 在招担保雇主橱窗(Frank 08-08「最优价值的部分」→ S1 后第一块):
+            TOP10 按在招岗数,列=B2 页共用定义(AIP/LMIA/PNP 紧缺三分,不杂糅);货架与筛选在 /employers ── */}
+        {stats.sponsorTop.length > 0 && (
+          <Band id="pl-se">
+            <Sec id="se" title={t('se.title')}
+              right={<a href="/employers" onClick={() => track('pulse-se-all')} style={moreA}>{t('se.top.all', { n: num(stats.sponsorTotal ?? stats.sponsorTop.length) })}</a>}>
+              <div className="plTable"><DataTable<SponsorEmployerRow> rows={stats.sponsorTop} cols={sponsorEmployerCols(t, lang)} rowKey={(r) => r.name} pageSize={10} /></div>
+              <div className="plCards">{stats.sponsorTop.map((r) => <SponsorCard key={r.name} r={r} lang={lang} t={t} />)}</div>
+            </Sec>
+          </Band>
+        )}
+
         {/* ── S2 三榜分层(按用户决策顺序):先排除(无通道)→ 有通道但在降温 → 有通道且在升温。
             加载中出占位块(自上而下渲染铁律,08-06「为什么下面的内容先刷出来」);
             数据到了但榜全空才整块不渲染(绝不拿存量榜顶包) */}
         {(boards === null || boards.mine.length > 0 || boards.backup.length > 0 || boards.cooling.length > 0 || boards.heating.length > 0) && (
-          <Band bg="#fff">
+          <Band bg="#fff" id="pl-boards">
             {/* 口径说明句与悬停提示 08-06 全撤(Frank「tooltips 都去掉」),榜题裸标题 */}
             {boards === null && (
               <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, height: 480 }} />
@@ -471,27 +516,31 @@ export function StartView({ stats }: { stats: HomeStats }) {
                 QC/RCIP 两行灰注 08-08 Frank「删掉」 */}
             {boards !== null && boards.mine.length > 0 && (
               <div>
-                <h2 style={{ ...secH, margin: '0 0 10px' }}>{t('pulse.b1a')}</h2>
-                <OccBoard rows={boards.mine} t={t} lang={lang} nocProvs={nocProvs} showProvs={false} deadCol />
+                <Sec id="b1a" title={t('pulse.b1a')}>
+                  <OccBoard rows={boards.mine} t={t} lang={lang} nocProvs={nocProvs} showProvs={false} deadCol />
+                </Sec>
               </div>
             )}
             {boards !== null && boards.backup.length > 0 && (
               <div style={{ marginTop: boards.mine.length > 0 ? 28 : 0 }}>
-                <h2 style={{ ...secH, margin: '0 0 10px' }}>{t('pulse.b1')}</h2>
-                <OccBoard rows={boards.backup} t={t} lang={lang} nocProvs={nocProvs} showProvs={false} />
+                <Sec id="b1" title={t('pulse.b1')}>
+                  <OccBoard rows={boards.backup} t={t} lang={lang} nocProvs={nocProvs} showProvs={false} />
+                </Sec>
               </div>
             )}
             {boards !== null && boards.cooling.length > 0 && (
               <div style={{ marginTop: 28 }}>
                 {/* 08-08 Frank:榜题带涨跌箭头(收缩红↓/增长绿↑) */}
-                <h2 style={{ ...secH, margin: '0 0 10px' }}>{t('pulse.b2')} <span style={{ color: UI.danger }}>↓</span></h2>
-                <OccBoard rows={boards.cooling} t={t} lang={lang} nocProvs={nocProvs} />
+                <Sec id="b2" title={<>{t('pulse.b2')} <span style={{ color: UI.danger }}>↓</span></>}>
+                  <OccBoard rows={boards.cooling} t={t} lang={lang} nocProvs={nocProvs} />
+                </Sec>
               </div>
             )}
             {boards !== null && boards.heating.length > 0 && (
               <div style={{ marginTop: 28 }}>
-                <h2 style={{ ...secH, margin: '0 0 10px' }}>{t('pulse.b3')} <span style={{ color: UI.ok }}>↑</span></h2>
-                <OccBoard rows={boards.heating} t={t} lang={lang} nocProvs={nocProvs} />
+                <Sec id="b3" title={<>{t('pulse.b3')} <span style={{ color: UI.ok }}>↑</span></>}>
+                  <OccBoard rows={boards.heating} t={t} lang={lang} nocProvs={nocProvs} />
+                </Sec>
               </div>
             )}
           </Band>
@@ -501,8 +550,8 @@ export function StartView({ stats }: { stats: HomeStats }) {
             桌面=可排序 DataTable(10 省 × 混量纲指标,表格才排得动),手机=原省卡(站规「电脑表格手机卡片」)。
             表格行不可点(E8-08 站规「可点才有态」),切省统一走 S4b 的 chips;手机卡片保留点卡切省。 ── */}
         {(market === null || provRows.length > 0) && (
-          <Band>
-            <h2 style={secH}>{t('pulse.s4')}</h2>
+          <Band id="pl-prov">
+            <Sec id="s4" title={t('pulse.s4')}>
             {market === null && (
               <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, height: 420 }} />
             )}
@@ -587,12 +636,13 @@ export function StartView({ stats }: { stats: HomeStats }) {
               </div>
             </div>
             </>)}
+            </Sec>
           </Band>
         )}
 
         {/* ── S4b 省内职业榜:chips 切省(档案省预选/匿名默认 ON,禁 IP 定位)+ 通道标签 + 职业榜 + 分布主图 ── */}
-        <Band bg="#fff">
-          <h2 style={secH}>{t('pulse.s4b')}</h2>
+        <Band bg="#fff" id="pl-provocc">
+          <Sec id="s4b" title={t('pulse.s4b')}>
           {/* 全国档打头(Frank 08-06「全国 省份 城市 都需要」;职业×城市粒度现库没有,ETL 侧排下一批,不瞎猜) */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, margin: '4px 0 8px' }}>
             <Chip active={prov === 'ALL'} onClick={() => setProv('ALL')}>{t('pulse.s4.all')}</Chip>
@@ -623,18 +673,16 @@ export function StartView({ stats }: { stats: HomeStats }) {
                 <MarketChart occ={market.occ} city={market.city} rows={market.rows} t={t} lang={lang} channels={market.channels} />
               </div>
             )}
+          </Sec>
         </Band>
 
         {/* ── S5 抽选尺子:抽选表(每期配冷解读)+ 政策动态合并一区(S4 拆两区后色带让位,回默认底) ── */}
         {(stats.draws.length > 0 || stats.news.length > 0) && (
-          <Band>
+          <Band id="pl-draws">
             {stats.draws.length > 0 && (
               <>
-                <h2 style={secH}>{t('pulse.s5')}
-                  <span style={hmRight}>
-                    <TopN v={drawsN} on={setDrawsN} max={stats.draws.length} />
-                    <a href="/pathways" style={moreA}>{t('pw.entry')}</a>
-                  </span></h2>
+                <Sec id="s5" title={t('pulse.s5')}
+                  right={<><TopN v={drawsN} on={setDrawsN} max={stats.draws.length} /><a href="/pathways" style={moreA}>{t('pw.entry')}</a></>}>
                 <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, overflow: 'hidden' }}>
                   <table className="plDrawTable" style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed', fontSize: 13 }}>
                     {/* 百分比固定布局永不横滚;冷解读吃最宽一列(它是这张表的结论) */}
@@ -685,6 +733,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
                     ))}
                   </div>
                 </div>
+              </Sec>
               </>
             )}
             {stats.news.length > 0 && (

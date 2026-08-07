@@ -37,21 +37,28 @@ function href(p: Partial<SponsorQuery>, cur: SponsorQuery) {
   return '/employers' + (s ? `?${s}` : '')
 }
 
-// 凭证 chips(一格多凭证=并排胶囊;无「·」杂糅,一粒一凭证)
-function CredChips({ r, t }: { r: SponsorEmployerRow; t: TFn }) {
-  const pill = (bg: string, fg: string, bd: string, txt: string) => (
-    <span key={txt} style={{ whiteSpace: 'nowrap', fontSize: 11, fontWeight: 600, padding: '1px 8px', borderRadius: 999, background: bg, color: fg, border: `1px solid ${bd}` }}>{txt}</span>
-  )
-  return (
-    <span style={{ display: 'inline-flex', gap: 4, flexWrap: 'wrap' }}>
-      {r.aip ? pill('#f0fdf4', '#15803d', '#bbf7d0', t('se.chip.aip')) : null}
-      {r.lmiaPositions > 0 ? pill('#ccfbf1', '#0f766e', '#99f6e4', r.lmiaPositions === 1 ? t('spl.lmia1') : t('spl.lmia', { n: r.lmiaPositions })) : null}
-      {r.named ? pill('#fef3c7', '#92400e', '#fde68a', t('se.chip.named')) : null}
-    </span>
-  )
+// 凭证三列(Frank 08-08「包含什么列要清晰划分,不要杂糅」):AIP 指定 / LMIA 获批(近两年)/ 紧缺清单
+// 各占一列,✓/数字/—;把脉页 TOP10 与本页共用同一列定义(改一处两边同变)
+const NIL = <span style={{ color: '#9ca3af' }}>—</span>
+export function sponsorEmployerCols(t: TFn, lang: Lang) {
+  return [
+    { key: 'name', label: t('dir.col.employer'), sort: (r: SponsorEmployerRow) => r.name.toLowerCase(), render: (r: SponsorEmployerRow) => {
+      const alias = lang === 'zh' ? r.aliasZh : lang === 'ko' ? r.aliasKo : ''
+      return <span style={{ fontWeight: 600 }}>
+        {r.name}
+        {alias ? <span style={{ marginLeft: 6, color: '#9ca3af', fontWeight: 400, fontSize: 12 }}>{alias}</span> : null}
+        {r.sponsorGrade != null && <span title={t('gr.sponsorTip')} style={{ marginLeft: 6, fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sp.' + r.sponsorGrade)}</span>}
+      </span> } },
+    { key: 'aip', label: t('se.chip.aip'), nowrap: true, sort: (r: SponsorEmployerRow) => (r.aip ? 1 : 0), render: (r: SponsorEmployerRow) => (r.aip ? <span style={{ color: '#15803d', fontWeight: 700 }}>✓</span> : NIL) },
+    { key: 'lmia', label: t('se.col.lmia'), nowrap: true, sort: (r: SponsorEmployerRow) => r.lmiaPositions, render: (r: SponsorEmployerRow) => (r.lmiaPositions > 0 ? <span style={{ color: '#0f766e', fontWeight: 700 }}>{r.lmiaPositions}</span> : NIL) },
+    { key: 'named', label: t('se.col.named'), nowrap: true, sort: (r: SponsorEmployerRow) => (r.named ? 1 : 0), render: (r: SponsorEmployerRow) => (r.named ? <span style={{ color: '#92400e', fontWeight: 700 }}>✓</span> : NIL) },
+    { key: 'open', label: t('se.col.open'), nowrap: true, sort: (r: SponsorEmployerRow) => r.openJobs, render: (r: SponsorEmployerRow) => <span style={{ fontWeight: 700 }}>{r.openJobs}</span> },
+    { key: 'where', label: t('se.col.where'), sort: (r: SponsorEmployerRow) => r.provs[0] ?? null, render: (r: SponsorEmployerRow) => <>{whereText(r, t)}</> },
+    { key: 'go', label: '', nowrap: true, render: (r: SponsorEmployerRow) => <a href={`/?q=${encodeURIComponent(r.name)}`} onClick={() => track('se-view-jobs')} style={{ color: UI.primary, textDecoration: 'none', fontSize: 12.5 }}>{t('rank.viewJobs')}</a> },
+  ]
 }
 
-function SponsorCard({ r, lang, t }: { r: SponsorEmployerRow; lang: Lang; t: TFn }) {
+export function SponsorCard({ r, lang, t }: { r: SponsorEmployerRow; lang: Lang; t: TFn }) {
   const alias = lang === 'zh' ? r.aliasZh : lang === 'ko' ? r.aliasKo : ''
   return (
     <Card>
@@ -60,8 +67,11 @@ function SponsorCard({ r, lang, t }: { r: SponsorEmployerRow; lang: Lang; t: TFn
         {r.sponsorGrade != null && <span title={t('gr.sponsorTip')} style={{ marginLeft: 6, fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', fontWeight: 600, whiteSpace: 'nowrap' }}>{t('gr.sp.' + r.sponsorGrade)}</span>}
       </div>
       {alias ? <div style={{ fontSize: 12.5, color: '#9ca3af', marginTop: 2 }}>{alias}</div> : null}
-      <div style={{ marginTop: 6 }}><CredChips r={r} t={t} /></div>
+      {/* 凭证一行一条(Frank 08-08 拆列拍板;卡上=KV 行,与桌面三列同语义) */}
       <CardKV items={[
+        { k: t('se.chip.aip'), v: r.aip ? <span style={{ color: '#15803d', fontWeight: 700 }}>✓</span> : <span style={{ color: '#9ca3af' }}>—</span> },
+        { k: t('se.col.lmia'), v: r.lmiaPositions > 0 ? <span style={{ color: '#0f766e', fontWeight: 700 }}>{r.lmiaPositions}</span> : <span style={{ color: '#9ca3af' }}>—</span> },
+        { k: t('se.col.named'), v: r.named ? <span style={{ color: '#92400e', fontWeight: 700 }}>✓</span> : <span style={{ color: '#9ca3af' }}>—</span> },
         { k: t('se.col.open'), v: <span style={{ fontWeight: 700 }}>{r.openJobs}</span> },
         { k: t('se.col.where'), v: whereText(r, t) },
       ]} />
@@ -130,19 +140,7 @@ export function SponsorEmployersView({ query, items, total, occTitle }: {
           {items.length === 0 && <div style={{ padding: 24, textAlign: 'center', color: '#9ca3af', fontSize: 13 }}>{t('dir.empty')}</div>}
         </div>
         <div className="tcTableWrap">
-          <DataTable<SponsorEmployerRow> rows={items} rowKey={(r) => r.name} empty={t('dir.empty')} cols={[
-            { key: 'name', label: t('dir.col.employer'), sort: (r) => r.name.toLowerCase(), render: (r) => {
-              const alias = lang === 'zh' ? r.aliasZh : lang === 'ko' ? r.aliasKo : ''
-              return <span style={{ fontWeight: 600 }}>
-                {r.name}
-                {alias ? <span style={{ marginLeft: 6, color: '#9ca3af', fontWeight: 400, fontSize: 12 }}>{alias}</span> : null}
-                {r.sponsorGrade != null && <span title={t('gr.sponsorTip')} style={{ marginLeft: 6, fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sp.' + r.sponsorGrade)}</span>}
-              </span> } },
-            { key: 'cred', label: t('gr.dim.coSponsor'), render: (r) => <CredChips r={r} t={t} /> },
-            { key: 'open', label: t('se.col.open'), nowrap: true, sort: (r) => r.openJobs, render: (r) => <span style={{ fontWeight: 700 }}>{r.openJobs}</span> },
-            { key: 'where', label: t('se.col.where'), sort: (r) => r.provs[0] ?? null, render: (r) => <>{whereText(r, t)}</> },
-            { key: 'go', label: '', nowrap: true, render: (r) => <a href={`/?q=${encodeURIComponent(r.name)}`} onClick={() => track('se-view-jobs')} style={{ color: UI.primary, textDecoration: 'none', fontSize: 12.5 }}>{t('rank.viewJobs')}</a> },
-          ]} />
+          <DataTable<SponsorEmployerRow> rows={items} rowKey={(r) => r.name} empty={t('dir.empty')} cols={sponsorEmployerCols(t, lang)} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, margin: '12px 0', fontSize: 12.5, color: '#6b7280', flexWrap: 'wrap' }}>
           <span>{t('dir.total', { n: total })} · {t('dir.page', { p: query.page + 1, m: pages })}</span>

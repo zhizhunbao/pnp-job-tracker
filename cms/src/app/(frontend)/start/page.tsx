@@ -14,6 +14,7 @@ import { normalizeProfile } from '@/lib/match'
 import { loadProvExtra } from '../stats/lib'
 import { PROVS } from '../stats/shared'
 import { StartView, type HomeStats } from './StartView'
+import { fetchSponsorEmployers } from '@/lib/sponsorEmployers'
 
 export const dynamic = 'force-dynamic'
 
@@ -63,7 +64,7 @@ function withDrawHistory(rows: RawDraw[], limit: number): HomeStats['draws'] {
 
 async function loadHomeStats(pool: any): Promise<Omit<HomeStats, 'checkedAt' | 'provPreset'>> {
   // 每项独立 .catch(null):一张表缺/查询挂只丢它自己那块,页面照常(宁可留空)
-  const [proof, drawRes, newsRes, provExtra] = await Promise.all([
+  const [proof, drawRes, newsRes, provExtra, sponsorRows] = await Promise.all([
     fetchTotalAndProof(pool).catch(() => null),
     // 抽选表(与 /pathways 同源 pnp_draws):前端只展示 Top N(下拉 10/20/50),
     // 但冷解读要按通道回看 12 期 —— 多取一批只在服务端用完即丢,不进 HTML
@@ -75,9 +76,12 @@ async function loadHomeStats(pool: any): Promise<Omit<HomeStats, 'checkedAt' | '
     pool.query(`SELECT * FROM news ORDER BY date DESC, id DESC LIMIT 80`)
       .then((r: any) => r.rows as any[]).catch(() => []),
     loadProvExtra().catch(() => ({})),      // 省卡:IRCC 学签/工签/PNP 拿到 PR + 难度档(与 /stats 索引页同源)
+    // B2+ 雇主橱窗:复用 /employers 的进程内聚合缓存(同进程同一份,零额外查询);挂了只丢橱窗
+    fetchSponsorEmployers(pool).catch(() => []),
   ])
   return {
     total: proof?.total || null, named: proof?.named || null,
+    sponsorTop: sponsorRows.slice(0, 10), sponsorTotal: sponsorRows.length || null,
     draws: withDrawHistory(drawRes as RawDraw[], 50),
     news: (() => {
       // 同题去重带归一化:IRCC 同一稿隔日重发常只差尾部「(城市)」括注,精确比对抓不住
