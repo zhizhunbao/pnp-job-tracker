@@ -39,7 +39,7 @@ export type HomeStats = {
   total: number | null; named: number | null      // S1 命中率证据(与职位板 proof 同源)
   draws: PulseDraw[]
   news: { date: string; region: string; title: string; titleZh?: string; slug: string }[]
-  // B2+ 雇主橱窗三分表(Frank 08-08:没工签→LMIA/有工签→PNP 担保记录/海洋省→AIP;货架在 /employers)
+  // B2+ 雇主橱窗三分表(Frank 08-08:没工签→LMIA/有工签→PNP 担保记录/海洋省→AIP;货架页已下架,此处即唯一承载)
   sponsor: { lmia: { top: SponsorEmployerRow[]; total: number }; named: { top: SponsorEmployerRow[]; total: number }; aip: { top: SponsorEmployerRow[]; total: number } }
   provExtra: Record<string, ProvExtra>            // S4 省卡:IRCC 体量 + 难度档
   provPreset: string                              // S4 预选省(档案省;匿名为空 → 默认 ON。禁 IP 定位)
@@ -499,13 +499,12 @@ export function StartView({ stats }: { stats: HomeStats }) {
         </div>
 
         {/* ── 在招担保雇主橱窗三分表(Frank 08-08:按人群拆+分页——每表 50 行,桌面 10/页,手机卡 5/页;
-            列组=每表只描述自己那条通道;货架与筛选在 /employers)── */}
+            列组=每表只描述自己那条通道;货架页与「看全部」钮 08-08 拍板下架,橱窗即唯一承载)── */}
         <Band id="pl-se">
-          {([['lmia', stats.sponsor.lmia, 'f=lmia'], ['named', stats.sponsor.named, 'f=named'], ['aip', stats.sponsor.aip, 'f=aip']] as [string, { top: SponsorEmployerRow[]; total: number }, string][]).map(([k, grp, qs], idx) => (
+          {([['lmia', stats.sponsor.lmia], ['named', stats.sponsor.named], ['aip', stats.sponsor.aip]] as [string, { top: SponsorEmployerRow[]; total: number }][]).map(([k, grp], idx) => (
             grp.top.length > 0 ? (
               <div key={k} style={{ marginTop: idx === 0 ? 0 : 24 }}>
-                <Sec id={'se-' + k} title={t('se.grp.' + k)}
-                  right={<a href={'/employers?' + qs} onClick={() => track('pulse-se-all')} style={moreA}>{t('se.top.all', { n: num(grp.total) })}</a>}>
+                <Sec id={'se-' + k} title={t('se.grp.' + k)}>
                   <SponsorBoard rows={grp.top} kind={k as SponsorKind} t={t} lang={lang} total={grp.total} />
                 </Sec>
               </div>

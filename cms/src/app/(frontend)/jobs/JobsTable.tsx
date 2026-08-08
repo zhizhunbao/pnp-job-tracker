@@ -1559,29 +1559,25 @@ function NewsLatestBlock({ province, lang, news }: { province: string; lang: Lan
 }
 
 // ── B1 在招担保雇主 · 弹框雇主线入口(docs/implementation/在招担保雇主/01_B1)──────
-// 凭证行(AIP 指定/LMIA 获批)有据才出,无凭证整行不出不写「无」;company 态只渲职业链接
-// (公司弹框自带担保记录卡与在招职位卡,凭证行再出=重复)。/employers?noc= 是 B2 的前向契约。
+// 凭证行(AIP 指定/LMIA 获批)有据才出,无凭证整行不出不写「无」。
+// 「看该职业的全部担保雇主」链随货架页下架摘除(Frank 08-08)→ company 态无内容可渲,整卡不出。
 function SponsorLeadCard({ job, t, src }: { job: JobRow; t: TFn; src: 'pnp' | 'company' }) {
   const lmiaN = job.lmiaPositions ?? 0
   const hasCred = src === 'pnp' && (job.aip || lmiaN > 0)
-  if (!hasCred && !job.noc) return null
+  if (!hasCred) return null
   const row: React.CSSProperties = { fontSize: 13, lineHeight: 1.75, color: '#374151' }
   return (
     <div style={MODAL_CARD}>
       <div style={MODAL_CARD_HEAD}>{t('spl.head')}</div>
-      {hasCred && job.aip ? <div style={row}>{t('spl.aip')}</div> : null}
-      {hasCred && lmiaN > 0 ? <div style={row}>{lmiaN === 1 ? t('spl.lmia1') : t('spl.lmia', { n: lmiaN })}</div> : null}
+      {job.aip ? <div style={row}>{t('spl.aip')}</div> : null}
+      {lmiaN > 0 ? <div style={row}>{lmiaN === 1 ? t('spl.lmia1') : t('spl.lmia', { n: lmiaN })}</div> : null}
       {/* Frank 2026-08-08「按钮风格保持一致」:裸链改站内既有 PILL_BTN(与「打开完整页 ↗」同款;↗=新开页惯例) */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: hasCred ? 8 : 2 }}>
-        {hasCred && job.company ? (
+      {job.company ? (
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
           <a href={'/?q=' + encodeURIComponent(job.company)} target="_blank" rel="noreferrer" style={{ ...PILL_BTN, textDecoration: 'none', display: 'inline-block', whiteSpace: 'nowrap' }}
             onClick={() => track('pnp-employer-click', { kind: src })}>{t('spl.coJobs')} ↗</a>
-        ) : null}
-        {job.noc ? (
-          <a href={'/employers?noc=' + encodeURIComponent(job.noc)} target="_blank" rel="noreferrer" style={{ ...PILL_BTN, textDecoration: 'none', display: 'inline-block', whiteSpace: 'nowrap' }}
-            onClick={() => track('pnp-sponsor-list-click', { kind: src })}>{t('spl.occList')} ↗</a>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
     </div>
   )
 }

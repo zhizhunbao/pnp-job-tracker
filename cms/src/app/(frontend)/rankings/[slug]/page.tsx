@@ -38,8 +38,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function RankingPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  // B2(在招担保雇主计划):sponsor-likely 榜并入 /employers 当一个排序,不再单页(减页面不加页面)
-  if (slug === 'sponsor-likely') permanentRedirect('/employers?sort=skilled')
+  // B2:sponsor-likely 曾并入 /employers;货架页 08-08 下架 → 直指把脉页橱窗(避免 308 双跳)
+  if (slug === 'sponsor-likely') permanentRedirect('/start')
   if (!RANKING_SLUGS.has(slug)) notFound()
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool

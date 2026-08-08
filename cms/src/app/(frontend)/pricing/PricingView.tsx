@@ -36,9 +36,9 @@ export function PricingView({ loggedIn, pro, caps }: { loggedIn: boolean; pro: b
         <div style={{ maxWidth: 1000, margin: '0 auto' }}>
           <h1 style={{ fontSize: 24, margin: 0, textAlign: 'center' }}>{t('price.title')}</h1>
           <p style={{ fontSize: 13.5, color: '#6b7280', textAlign: 'center', margin: '8px 0 24px' }}>{t('price.sub')}</p>
-          {/* B3(蓝图 §2):第一卖点 price.pA「担保雇主名单」配真图——在招担保雇主页实拍,点图直达货架;
+          {/* B3(蓝图 §2):第一卖点 price.pA「担保雇主名单」配真图;货架页 08-08 下架 → 点图落把脉页橱窗;
               只挂页面壳,PricingCard(弹窗共用)不动 */}
-          <a href="/employers" onClick={() => track('pricing-se-img')} style={{ display: 'block', margin: '0 0 24px' }}>
+          <a href="/start" onClick={() => track('pricing-se-img')} style={{ display: 'block', margin: '0 0 24px' }}>
             <img src={lang === 'zh' ? '/pricing-se-zh.webp' : '/pricing-se-en.webp'} alt={t('se.title')}
               style={{ width: '100%', borderRadius: 12, border: '1px solid #e5e7eb', display: 'block' }} />
           </a>

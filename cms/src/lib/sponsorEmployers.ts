@@ -14,9 +14,9 @@ export type SponsorEmployerRow = {
   lmiaPositions: number; lmiaPositionsSkilled: number | null; lmiaLastQuarter: string
   // B4 时间窗(近 4/2/1 季;列可能未回填=null → 0)
   lmia4q: number; lmia2q: number; lmia1q: number
-  // Frank 08-08:「PNP 资格」维=这家雇主担没担保过移民——PR 股 LMIA 获批数(ESDC 股别串解析)为主证,
-  // named(发过省清单岗)为次级信号;pnpSignal=两者任一
-  lmiaPr: number
+  // Frank 08-08 二拍(PNP 视图=看省提名资质,不挂 LMIA):在招岗命中的具名省清单标签(去重,如「BC 医疗」)。
+  // 旧「PR 股 LMIA」正则主证已撤——全库 35,478 家命中 0,是列名先行、数据不存在
+  streams: string[]
 }
 
 export type SponsorFilters = { f: '' | 'aip' | 'lmia' | 'named'; prov: string; city: string; noc: string; q: string; sort: 'open' | 'skilled'; page: number }
@@ -34,6 +34,7 @@ async function loadAll(pool: any): Promise<SponsorEmployerRow[]> {
       COUNT(*)::int AS open_jobs,
       BOOL_OR(j.aip) AS aip,
       BOOL_OR(COALESCE(j.pnp_stream, '') <> '') AS named,
+      COALESCE(ARRAY_AGG(DISTINCT j.pnp_stream) FILTER (WHERE COALESCE(j.pnp_stream, '') <> ''), '{}') AS streams,
       COALESCE(ARRAY_AGG(DISTINCT j.noc) FILTER (WHERE COALESCE(j.noc, '') <> ''), '{}') AS nocs,
       COALESCE(ARRAY_AGG(DISTINCT j.province) FILTER (WHERE COALESCE(j.province, '') <> ''), '{}') AS provs,
       COALESCE(ARRAY_AGG(DISTINCT j.city) FILTER (WHERE COALESCE(j.city, '') <> ''), '{}') AS cities,
@@ -54,7 +55,7 @@ async function loadAll(pool: any): Promise<SponsorEmployerRow[]> {
     lmiaPositionsSkilled: r.lmia_positions_skilled == null ? null : Number(r.lmia_positions_skilled),
     lmiaLastQuarter: r.lmia_last_quarter ?? '',
     lmia4q: Number(r.lmia_positions_4q) || 0, lmia2q: Number(r.lmia_positions_2q) || 0, lmia1q: Number(r.lmia_positions_1q) || 0,
-    lmiaPr: (() => { const m = /(?:\bPR\b|permanent residents?)\s+([\d,]+)/i.exec(r.lmia_streams ?? ''); return m ? Number(m[1].replace(/,/g, '')) || 0 : 0 })(),
+    streams: r.streams ?? [],
   }))
 }
 
@@ -73,7 +74,7 @@ export async function fetchSponsorEmployers(pool: any): Promise<SponsorEmployerR
 export function applySponsorFilters(all: SponsorEmployerRow[], f: Omit<SponsorFilters, 'page'>): SponsorEmployerRow[] {
   const q = f.q.trim().toLowerCase()
   const rows = all.filter((r) =>
-    (f.f === 'aip' ? r.aip : f.f === 'lmia' ? r.lmiaPositions > 0 : f.f === 'named' ? (r.lmiaPr > 0 || r.named) : true)
+    (f.f === 'aip' ? r.aip : f.f === 'lmia' ? r.lmiaPositions > 0 : f.f === 'named' ? r.named : true)
     && (!f.prov || r.provs.includes(f.prov))
     && (!f.city || r.cities.includes(f.city))
     && (!f.noc || r.nocs.includes(f.noc))
