@@ -119,7 +119,8 @@ function SponsorBoard({ rows, kind, t, lang, total }: { rows: SponsorEmployerRow
   const PAGE = 5
   const [p, setP] = useState(0)
   const maxPage = Math.max(1, Math.ceil(rows.length / PAGE))
-  const note = t('pulse.totalEmp', { n: num(total) })
+  // 货架页下架后橱窗只装前 50 行:总数>已装行数时脚注照实写「前 m 家(共 n 家)」,免得分页页数与总数对不上(Frank 08-08 实指)
+  const note = total > rows.length ? t('pulse.topEmp', { m: num(rows.length), n: num(total) }) : t('pulse.totalEmp', { n: num(total) })
   return (
     <>
       <div className="plTable"><DataTable<SponsorEmployerRow> rows={rows} cols={sponsorEmployerCols(t, lang, kind)} rowKey={(r) => r.name} pageSize={10} footerNote={note} /></div>

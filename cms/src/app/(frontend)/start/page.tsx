@@ -80,14 +80,18 @@ async function loadHomeStats(pool: any): Promise<Omit<HomeStats, 'checkedAt' | '
     fetchSponsorEmployers(pool).catch(() => []),
   ])
   // Frank 08-08 三分表:对应三类人——没工签→LMIA、有工签→PNP 担保记录(省清单命中,二拍撤 LMIA 维)、想去海洋省→AIP
-  const seSlice = (rows: typeof sponsorRows, keep: (r: (typeof sponsorRows)[number]) => boolean) => {
+  type SR = (typeof sponsorRows)[number]
+  const seSlice = (rows: typeof sponsorRows, keep: (r: SR) => boolean, order?: (a: SR, b: SR) => number) => {
+    // 缓存行全站共享,排序前 filter 已产出新数组,勿在原数组上排
     const hit = rows.filter(keep)
+    if (order) hit.sort(order)
     return { top: hit.slice(0, 50), total: hit.length }
   }
   return {
     total: proof?.total || null, named: proof?.named || null,
     sponsor: {
-      lmia: seSlice(sponsorRows, (r) => r.lmiaPositions > 0),
+      // LMIA 表按新近度排(Frank 08-08「按最近 LMIA 数排前面」,与 #278 新近度主轴同拍):最近一季→近半年→近一年→在招
+      lmia: seSlice(sponsorRows, (r) => r.lmiaPositions > 0, (a, b) => b.lmia1q - a.lmia1q || b.lmia2q - a.lmia2q || b.lmia4q - a.lmia4q || b.openJobs - a.openJobs),
       named: seSlice(sponsorRows, (r) => r.named),
       aip: seSlice(sponsorRows, (r) => r.aip),
     },
