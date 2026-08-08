@@ -25,6 +25,8 @@ import { JobCard } from '../ui/JobCard'
 import { DataTable, DTPager, type DTCol } from '../ui/DataTable'
 import { BANNER_IMGS, Chip, PageBanner, PageShell, Tag, UI } from '../ui/primitives'
 import { track } from '@/lib/track'
+import { SponsorCard, sponsorEmployerCols, type SponsorKind } from '../employers/SponsorEmployersView'
+import type { SponsorEmployerRow } from '@/lib/sponsorEmployers'
 
 // 抽选行 + 冷解读三标量(近 12 期同通道的期数/最低/最高,服务端算好,见 start/page.tsx)
 export type PulseDraw = {
@@ -37,7 +39,8 @@ export type HomeStats = {
   total: number | null; named: number | null      // S1 命中率证据(与职位板 proof 同源)
   draws: PulseDraw[]
   news: { date: string; region: string; title: string; titleZh?: string; slug: string }[]
-  // 雇主橱窗三分表已整删(Frank 08-08「重复有开发成本」):雇主维度内容全归 /employers,本页只留市场面
+  // B2+ 雇主橱窗三分表(Frank 08-08:没工签→LMIA/有工签→PNP 担保记录/海洋省→AIP;货架在 /employers)
+  sponsor: { lmia: { top: SponsorEmployerRow[]; total: number }; named: { top: SponsorEmployerRow[]; total: number }; aip: { top: SponsorEmployerRow[]; total: number } }
   provExtra: Record<string, ProvExtra>            // S4 省卡:IRCC 体量 + 难度档
   provPreset: string                              // S4 预选省(档案省;匿名为空 → 默认 ON。禁 IP 定位)
   checkedAt: string
@@ -108,6 +111,23 @@ function Sec({ id, title, right, children }: { id: string; title: React.ReactNod
       </h2>
       {open ? children : null}
     </div>
+  )
+}
+
+// 雇主橱窗单表(Frank 08-08「加分页」):桌面 DataTable 自带翻页(10/页),手机卡 5/页 DTPager
+function SponsorBoard({ rows, kind, t, lang, total }: { rows: SponsorEmployerRow[]; kind: SponsorKind; t: TFn; lang: Lang; total: number }) {
+  const PAGE = 5
+  const [p, setP] = useState(0)
+  const maxPage = Math.max(1, Math.ceil(rows.length / PAGE))
+  const note = t('pulse.total', { n: total })
+  return (
+    <>
+      <div className="plTable"><DataTable<SponsorEmployerRow> rows={rows} cols={sponsorEmployerCols(t, lang, kind)} rowKey={(r) => r.name} pageSize={10} footerNote={note} /></div>
+      <div className="plCards">
+        {rows.slice(p * PAGE, (p + 1) * PAGE).map((r) => <SponsorCard key={r.name} r={r} lang={lang} t={t} kind={kind} />)}
+        <div style={{ padding: '2px 2px 0' }}><DTPager page={Math.min(p, maxPage - 1)} max={maxPage} note={note} onPage={setP} /></div>
+      </div>
+    </>
   )
 }
 
@@ -446,7 +466,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
             {/* 归属设计(Frank 08-08「二级标题应该只属于这个一级标题」):条首挂一级项「就业把脉」作属主 */}
             <span style={{ fontWeight: 700, color: UI.primary, flexShrink: 0 }}>{t('pulse.entry')}</span>
             <span style={{ width: 1, height: 14, background: UI.border, flexShrink: 0, alignSelf: 'center' }} />
-            {([['pl-boards', t('pulse.nav.boards')], ['pl-prov', t('pulse.s4')], ['pl-provocc', t('pulse.s4b')], ['pl-draws', t('pulse.s5')]] as [string, string][]).map(([id, label]) => (
+            {([['pl-se', t('se.title')], ['pl-boards', t('pulse.nav.boards')], ['pl-prov', t('pulse.s4')], ['pl-provocc', t('pulse.s4b')], ['pl-draws', t('pulse.s5')]] as [string, string][]).map(([id, label]) => (
               <a key={id} href={'#' + id} style={{ color: '#6b7280', textDecoration: 'none', fontWeight: 600, flexShrink: 0 }}>{label}</a>
             ))}
           </div>
@@ -477,6 +497,21 @@ export function StartView({ stats }: { stats: HomeStats }) {
             )}
           </PageShell>
         </div>
+
+        {/* ── 在招担保雇主橱窗三分表(Frank 08-08:按人群拆+分页——每表 50 行,桌面 10/页,手机卡 5/页;
+            列组=每表只描述自己那条通道;货架与筛选在 /employers)── */}
+        <Band id="pl-se">
+          {([['lmia', stats.sponsor.lmia, 'f=lmia'], ['named', stats.sponsor.named, 'f=named'], ['aip', stats.sponsor.aip, 'f=aip']] as [string, { top: SponsorEmployerRow[]; total: number }, string][]).map(([k, grp, qs], idx) => (
+            grp.top.length > 0 ? (
+              <div key={k} style={{ marginTop: idx === 0 ? 0 : 24 }}>
+                <Sec id={'se-' + k} title={t('se.grp.' + k)}
+                  right={<a href={'/employers?' + qs} onClick={() => track('pulse-se-all')} style={moreA}>{t('se.top.all', { n: num(grp.total) })}</a>}>
+                  <SponsorBoard rows={grp.top} kind={k as SponsorKind} t={t} lang={lang} total={grp.total} />
+                </Sec>
+              </div>
+            ) : null
+          ))}
+        </Band>
 
         {/* ── S2 三榜分层(按用户决策顺序):先排除(无通道)→ 有通道但在降温 → 有通道且在升温。
             加载中出占位块(自上而下渲染铁律,08-06「为什么下面的内容先刷出来」);
