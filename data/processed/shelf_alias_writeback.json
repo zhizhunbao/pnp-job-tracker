@@ -1,0 +1,1256 @@
+{
+ "new": [
+  {
+   "slug": "vitalit-health-network",
+   "zh": "维塔利特健康网络",
+   "ko": ""
+  },
+  {
+   "slug": "saskatchewan-health-authority",
+   "zh": "萨斯喀彻温省卫生局",
+   "ko": ""
+  },
+  {
+   "slug": "horizon-health-network",
+   "zh": "地平线健康网络",
+   "ko": ""
+  },
+  {
+   "slug": "the-government-of-nova-scotia",
+   "zh": "新斯科舍省政府",
+   "ko": ""
+  },
+  {
+   "slug": "city-of-burnaby",
+   "zh": "本拿比市",
+   "ko": ""
+  },
+  {
+   "slug": "halifax-regional-centre-for-education-hrce",
+   "zh": "哈利法克斯地区教育中心",
+   "ko": ""
+  },
+  {
+   "slug": "mcdonald-s",
+   "zh": "麦当劳",
+   "ko": "맥도날드"
+  },
+  {
+   "slug": "city-of-vancouver",
+   "zh": "温哥华市政府",
+   "ko": "밴쿠버"
+  },
+  {
+   "slug": "domino-s-pizza",
+   "zh": "达美乐比萨",
+   "ko": "도미노피자"
+  },
+  {
+   "slug": "northern-health-authority",
+   "zh": "北部卫生局",
+   "ko": ""
+  },
+  {
+   "slug": "northern-lights-school-division-113",
+   "zh": "极光第113教育局",
+   "ko": ""
+  },
+  {
+   "slug": "pizza-hut",
+   "zh": "必胜客",
+   "ko": "피자헛"
+  },
+  {
+   "slug": "kfc",
+   "zh": "肯德基",
+   "ko": ""
+  },
+  {
+   "slug": "pizza-pizza",
+   "zh": "比萨比萨",
+   "ko": "피자피자"
+  },
+  {
+   "slug": "nova-scotia-health-authority",
+   "zh": "新斯科舍省卫生局",
+   "ko": ""
+  },
+  {
+   "slug": "universit-de-montr-al",
+   "zh": "蒙特利尔大学",
+   "ko": "몬트리올 대학교"
+  },
+  {
+   "slug": "metro-vancouver",
+   "zh": "大温哥华区域局",
+   "ko": "메트로 밴쿠버"
+  },
+  {
+   "slug": "queen-s-university",
+   "zh": "皇后大学",
+   "ko": "퀸스 대학교"
+  },
+  {
+   "slug": "city-of-port-moody",
+   "zh": "波特莫迪市政府",
+   "ko": ""
+  },
+  {
+   "slug": "district-of-west-vancouver",
+   "zh": "西温哥华区",
+   "ko": ""
+  },
+  {
+   "slug": "government-of-saskatchewan",
+   "zh": "萨斯喀彻温省政府",
+   "ko": ""
+  },
+  {
+   "slug": "northern-health-region",
+   "zh": "北部卫生局",
+   "ko": ""
+  },
+  {
+   "slug": "school-district-28-quesnel",
+   "zh": "第28学区（奎斯内尔）",
+   "ko": ""
+  },
+  {
+   "slug": "city-of-regina",
+   "zh": "里贾纳市政府",
+   "ko": ""
+  },
+  {
+   "slug": "farm-credit-canada",
+   "zh": "加拿大农场信用社",
+   "ko": ""
+  },
+  {
+   "slug": "mcdonald-s-restaurant",
+   "zh": "麦当劳",
+   "ko": "맥도날드"
+  },
+  {
+   "slug": "island-health",
+   "zh": "岛卫生局",
+   "ko": ""
+  },
+  {
+   "slug": "south-east-cornerstone-school-division-209-weyburn",
+   "zh": "东南基石第209区教育局（韦伯恩）",
+   "ko": ""
+  },
+  {
+   "slug": "city-of-brandon",
+   "zh": "布兰登市政府",
+   "ko": ""
+  },
+  {
+   "slug": "city-of-richmond",
+   "zh": "列治文市",
+   "ko": ""
+  },
+  {
+   "slug": "city-of-maple-ridge",
+   "zh": "枫树岭市",
+   "ko": ""
+  },
+  {
+   "slug": "m-tis-nation-british-columbia",
+   "zh": "不列颠哥伦比亚省梅蒂斯民族",
+   "ko": ""
+  },
+  {
+   "slug": "school-district-91-nechako-lakes",
+   "zh": "第91学区（内查科湖）",
+   "ko": ""
+  },
+  {
+   "slug": "sioux-lookout-meno-ya-win-health-centre",
+   "zh": "苏克斯卢克特梅诺亚温健康中心",
+   "ko": ""
+  },
+  {
+   "slug": "soci-t-de-chaudi-res-indeck",
+   "zh": "因德克锅炉公司",
+   "ko": ""
+  },
+  {
+   "slug": "brandon-university",
+   "zh": "布兰登大学",
+   "ko": ""
+  },
+  {
+   "slug": "coco-fresh-tea-juice",
+   "zh": "CoCo都可",
+   "ko": "코코버블티"
+  },
+  {
+   "slug": "developmental-disabilities-association",
+   "zh": "发育障碍协会",
+   "ko": ""
+  },
+  {
+   "slug": "meadow-lake-tribal-council",
+   "zh": "草地湖部落理事会",
+   "ko": ""
+  },
+  {
+   "slug": "cargill-inc",
+   "zh": "嘉吉公司",
+   "ko": "카길"
+  },
+  {
+   "slug": "city-of-delta",
+   "zh": "三角洲市",
+   "ko": ""
+  },
+  {
+   "slug": "health-sciences-north",
+   "zh": "北方健康科学中心",
+   "ko": ""
+  },
+  {
+   "slug": "hertz",
+   "zh": "赫兹",
+   "ko": "헤르츠"
+  },
+  {
+   "slug": "papa-johns-pizza",
+   "zh": "棒!约翰",
+   "ko": "파파존스"
+  },
+  {
+   "slug": "saskatchewan-cancer-agency",
+   "zh": "萨斯喀彻温癌症局",
+   "ko": ""
+  },
+  {
+   "slug": "alberta-health-services",
+   "zh": "阿尔伯塔卫生服务局",
+   "ko": ""
+  },
+  {
+   "slug": "lift-community-services-of-qathet-society",
+   "zh": "凯塞特Lift社区服务协会",
+   "ko": ""
+  },
+  {
+   "slug": "northwood",
+   "zh": "诺斯伍德",
+   "ko": ""
+  },
+  {
+   "slug": "st-paul-s-hospital",
+   "zh": "圣保罗医院",
+   "ko": ""
+  },
+  {
+   "slug": "b-c-family-hearing-resource-society",
+   "zh": "卑诗省家庭听力资源协会",
+   "ko": ""
+  },
+  {
+   "slug": "irving-shipbuilding",
+   "zh": "欧文造船厂",
+   "ko": ""
+  },
+  {
+   "slug": "mallette",
+   "zh": "马利特",
+   "ko": ""
+  },
+  {
+   "slug": "prince-albert-cooperative-health-centre",
+   "zh": "阿尔伯特王子城合作健康中心",
+   "ko": ""
+  },
+  {
+   "slug": "township-of-esquimalt",
+   "zh": "埃斯奎莫尔特",
+   "ko": ""
+  },
+  {
+   "slug": "vancouver-coastal-health",
+   "zh": "温哥华沿岸卫生局",
+   "ko": ""
+  },
+  {
+   "slug": "water-security-agency-moose-jaw",
+   "zh": "穆斯乔水务安全局",
+   "ko": ""
+  },
+  {
+   "slug": "well-health-clinic-network",
+   "zh": "WELL健康诊所联盟",
+   "ko": ""
+  },
+  {
+   "slug": "alberta-machine-intelligence-institute",
+   "zh": "阿尔伯塔机器智能研究所",
+   "ko": ""
+  },
+  {
+   "slug": "assiniboine-community-college",
+   "zh": "阿西尼博因社区学院",
+   "ko": ""
+  },
+  {
+   "slug": "association-chec-et-math-matiques",
+   "zh": "国际象棋与数学协会",
+   "ko": ""
+  },
+  {
+   "slug": "city-of-castlegar",
+   "zh": "卡斯尔加市",
+   "ko": ""
+  },
+  {
+   "slug": "district-of-oak-bay",
+   "zh": "橡树湾区",
+   "ko": ""
+  },
+  {
+   "slug": "esso",
+   "zh": "埃索",
+   "ko": "에소"
+  },
+  {
+   "slug": "file-hills-qu-appelle-tribal-council-health-services",
+   "zh": "弗利特山夸佩尔部落理事会卫生服务部",
+   "ko": ""
+  },
+  {
+   "slug": "gem-health-care-services",
+   "zh": "吉姆医疗保健服务",
+   "ko": ""
+  },
+  {
+   "slug": "iga",
+   "zh": "伊加",
+   "ko": ""
+  },
+  {
+   "slug": "individualized-funding-resource-centre-society",
+   "zh": "个别化资助资源中心协会",
+   "ko": ""
+  },
+  {
+   "slug": "institut-national-de-la-recherche-scientifique",
+   "zh": "国立科学研究学院",
+   "ko": ""
+  },
+  {
+   "slug": "little-caesars",
+   "zh": "小凯萨",
+   "ko": "리틀 시저스"
+  },
+  {
+   "slug": "magnus-health-and-wellness",
+   "zh": "马格努斯健康与养生中心",
+   "ko": ""
+  },
+  {
+   "slug": "malahat-first-nation",
+   "zh": "马拉哈特第一民族",
+   "ko": ""
+  },
+  {
+   "slug": "mcewan",
+   "zh": "麦克尤恩",
+   "ko": ""
+  },
+  {
+   "slug": "nexus-community-support-society",
+   "zh": "纽克斯社区支持协会",
+   "ko": ""
+  },
+  {
+   "slug": "north-okanagan-youth-and-family-services-society",
+   "zh": "北奥卡纳根青少年与家庭服务协会",
+   "ko": ""
+  },
+  {
+   "slug": "papa-john-s-pizza",
+   "zh": "棒!约翰",
+   "ko": "파파존스"
+  },
+  {
+   "slug": "school-district-84-vancouver-island-west",
+   "zh": "第84学区（温哥华岛西部）",
+   "ko": ""
+  },
+  {
+   "slug": "shilp-framing-shilp-icf-foundations",
+   "zh": "希尔普框架与希尔普ICF基础工程",
+   "ko": ""
+  },
+  {
+   "slug": "sparx-wellness-institute",
+   "zh": "斯帕克斯健康研究所",
+   "ko": ""
+  },
+  {
+   "slug": "st-joseph-s-hospital-of-estevan",
+   "zh": "埃文圣约瑟夫医院",
+   "ko": ""
+  },
+  {
+   "slug": "town-of-cochrane",
+   "zh": "科克伦镇",
+   "ko": ""
+  },
+  {
+   "slug": "town-of-yarmouth",
+   "zh": "亚茅斯镇",
+   "ko": ""
+  },
+  {
+   "slug": "whycocomagh-lakeview-child-care-society",
+   "zh": "怀科科马格湖景儿童保育协会",
+   "ko": ""
+  },
+  {
+   "slug": "allied-physiotherapy-health-group",
+   "zh": "联合物理治疗健康集团",
+   "ko": ""
+  },
+  {
+   "slug": "alzheimer-society-of-saskatchewan",
+   "zh": "萨斯喀彻温省阿尔茨海默病协会",
+   "ko": ""
+  },
+  {
+   "slug": "bethesda-christian-association",
+   "zh": "毕士大基督教协会",
+   "ko": ""
+  },
+  {
+   "slug": "canada-west-veterinary-specialists-and-critical-care-hospita",
+   "zh": "加拿大西部兽医专科与重症监护医院",
+   "ko": ""
+  },
+  {
+   "slug": "city-of-chilliwack",
+   "zh": "奇利瓦克市",
+   "ko": ""
+  },
+  {
+   "slug": "city-of-pitt-meadows",
+   "zh": "皮特梅多斯市",
+   "ko": ""
+  },
+  {
+   "slug": "couve-health",
+   "zh": "库韦医疗",
+   "ko": ""
+  },
+  {
+   "slug": "domino-s",
+   "zh": "达美乐比萨",
+   "ko": "도미노피자"
+  },
+  {
+   "slug": "four-points-by-sheraton",
+   "zh": "福朋喜来登酒店",
+   "ko": "포 포인츠 바이 쉐라톤"
+  },
+  {
+   "slug": "fraserside-community-services-society",
+   "zh": "弗雷泽赛德社区服务协会",
+   "ko": ""
+  },
+  {
+   "slug": "hakim-optical",
+   "zh": "哈基姆光学",
+   "ko": ""
+  },
+  {
+   "slug": "institut-de-d-veloppement-durable-des-premi-res-nations-du-q",
+   "zh": "魁北克与拉布拉多第一民族可持续发展研究所",
+   "ko": ""
+  },
+  {
+   "slug": "john-howard-society-of-red-deer",
+   "zh": "红鹿市约翰·霍华德协会",
+   "ko": ""
+  },
+  {
+   "slug": "killarney-animal-hospital",
+   "zh": "基拉尼动物医院",
+   "ko": ""
+  },
+  {
+   "slug": "ksan-society",
+   "zh": "克森协会",
+   "ko": ""
+  },
+  {
+   "slug": "langley-meadows-animal-hospital",
+   "zh": "兰利梅多斯动物医院",
+   "ko": ""
+  },
+  {
+   "slug": "lethbridge-pet-hospital",
+   "zh": "莱瑟布里奇宠物医院",
+   "ko": ""
+  },
+  {
+   "slug": "lheidli-t-enneh-first-nation",
+   "zh": "莱赫德利·滕纳第一民族",
+   "ko": ""
+  },
+  {
+   "slug": "l-occitane-en-provence",
+   "zh": "欧舒丹",
+   "ko": "록시땅/록시딴/록시탄"
+  },
+  {
+   "slug": "mcdonald-s-restaurants-of-canada",
+   "zh": "加拿大麦当劳",
+   "ko": ""
+  },
+  {
+   "slug": "muskoday-first-nation",
+   "zh": "马斯科代第一民族",
+   "ko": ""
+  },
+  {
+   "slug": "neobridge-healthcare",
+   "zh": "新桥医疗",
+   "ko": ""
+  },
+  {
+   "slug": "orica",
+   "zh": "奥里卡",
+   "ko": ""
+  },
+  {
+   "slug": "pawsitive-animal-hospital",
+   "zh": "积极动物医院",
+   "ko": ""
+  },
+  {
+   "slug": "plea-community-services-society-of-british-columbia",
+   "zh": "不列颠哥伦比亚省PLEA社区服务协会",
+   "ko": ""
+  },
+  {
+   "slug": "prairie-spirit-school-division-no-206",
+   "zh": "草原精神第206号教育局",
+   "ko": ""
+  },
+  {
+   "slug": "prosport-health-centre",
+   "zh": "专业运动健康中心",
+   "ko": ""
+  },
+  {
+   "slug": "regent-christian-academy-society",
+   "zh": "瑞真特基督学院",
+   "ko": ""
+  },
+  {
+   "slug": "schizophrenia-society-of-saskatchewan",
+   "zh": "萨斯喀彻温省精神分裂症协会",
+   "ko": ""
+  },
+  {
+   "slug": "school-district-10-arrow-lakes",
+   "zh": "第十教育局（箭湖区）",
+   "ko": ""
+  },
+  {
+   "slug": "st-francis-xavier-university",
+   "zh": "圣弗朗西斯·格扎维埃大学",
+   "ko": "세인트 프랜시스 자비에 대학교"
+  },
+  {
+   "slug": "st-peter-s-hospital",
+   "zh": "圣彼得医院",
+   "ko": ""
+  },
+  {
+   "slug": "st-thomas-university",
+   "zh": "圣托马斯大学",
+   "ko": ""
+  },
+  {
+   "slug": "tall-tree-health",
+   "zh": "高树健康",
+   "ko": ""
+  },
+  {
+   "slug": "the-butchart-gardens",
+   "zh": "布查德花园",
+   "ko": "부차트 가든"
+  },
+  {
+   "slug": "the-salvation-army-william-booth-special-care-home",
+   "zh": "救世军威廉·布斯特护院",
+   "ko": ""
+  },
+  {
+   "slug": "town-of-peace-river",
+   "zh": "和平河镇",
+   "ko": ""
+  },
+  {
+   "slug": "united-health-centres",
+   "zh": "联合健康中心",
+   "ko": ""
+  },
+  {
+   "slug": "weeneebayko-area-health-authority",
+   "zh": "韦尼巴科地区卫生局",
+   "ko": ""
+  },
+  {
+   "slug": "whole-body-health-and-wellness",
+   "zh": "整体健康与康养",
+   "ko": ""
+  },
+  {
+   "slug": "108-avenue-animal-hospital",
+   "zh": "108大道动物医院",
+   "ko": ""
+  },
+  {
+   "slug": "academy-of-healthcare-services",
+   "zh": "医疗保健服务学院",
+   "ko": ""
+  },
+  {
+   "slug": "acupuncture-college-of-manitoba",
+   "zh": "曼尼托巴针灸学院",
+   "ko": ""
+  },
+  {
+   "slug": "alberta-motor-vehicle-industry-council-amvic",
+   "zh": "阿尔伯塔省机动车行业委员会",
+   "ko": ""
+  },
+  {
+   "slug": "alouette-addictions-services-society",
+   "zh": "阿卢埃特成瘾服务协会",
+   "ko": ""
+  },
+  {
+   "slug": "atkinsr-alis",
+   "zh": "SNC兰万灵",
+   "ko": ""
+  },
+  {
+   "slug": "barreau-du-qu-bec",
+   "zh": "魁北克省律师公会",
+   "ko": ""
+  },
+  {
+   "slug": "belmont-physiotherapy-and-health-clinic",
+   "zh": "贝尔蒙特物理治疗与健康诊所",
+   "ko": ""
+  },
+  {
+   "slug": "beyond-health-medical",
+   "zh": "超越健康与医疗",
+   "ko": ""
+  },
+  {
+   "slug": "bibleway-christian-academy-foundation",
+   "zh": "圣经之路基督学院基金会",
+   "ko": ""
+  },
+  {
+   "slug": "canadian-aviation-college",
+   "zh": "加拿大航空学院",
+   "ko": ""
+  },
+  {
+   "slug": "cape-breton-county-homemakers-agency",
+   "zh": "布雷顿角县家政服务机构",
+   "ko": ""
+  },
+  {
+   "slug": "caring-touch-home-health-services",
+   "zh": "关爱之手居家健康服务",
+   "ko": ""
+  },
+  {
+   "slug": "cedar-grove-animal-hospital",
+   "zh": "雪松林动物医院",
+   "ko": ""
+  },
+  {
+   "slug": "centre-d-ins-mination-porcine-du-qu-bec-s-e-c",
+   "zh": "魁北克猪人工授精中心",
+   "ko": ""
+  },
+  {
+   "slug": "charles-river-laboratories",
+   "zh": "查尔斯河实验室",
+   "ko": ""
+  },
+  {
+   "slug": "chatham-kent-family-health-team",
+   "zh": "查塔姆-肯特家庭医疗团队",
+   "ko": ""
+  },
+  {
+   "slug": "chilliwack-animal-hospital",
+   "zh": "奇利瓦克动物医院",
+   "ko": ""
+  },
+  {
+   "slug": "choose-life-ministry",
+   "zh": "选择生命事工",
+   "ko": ""
+  },
+  {
+   "slug": "city-of-fredericton",
+   "zh": "弗雷德里克顿市政府",
+   "ko": ""
+  },
+  {
+   "slug": "city-of-williams-lake",
+   "zh": "威廉姆斯湖市政府",
+   "ko": ""
+  },
+  {
+   "slug": "clarenville-vet-hospital",
+   "zh": "克拉伦维尔动物医院",
+   "ko": ""
+  },
+  {
+   "slug": "college-of-registered-nurses-of-manitoba-crnm",
+   "zh": "马尼托巴省注册护士公会",
+   "ko": ""
+  },
+  {
+   "slug": "comox-valley-child-development-association",
+   "zh": "科莫克斯谷儿童发展协会",
+   "ko": ""
+  },
+  {
+   "slug": "comox-valley-transition-society",
+   "zh": "科莫克斯谷过渡协会",
+   "ko": ""
+  },
+  {
+   "slug": "courtenay-dental-health",
+   "zh": "考特尼牙科保健中心",
+   "ko": ""
+  },
+  {
+   "slug": "creating-smiles-educational-society",
+   "zh": "创造微笑教育协会",
+   "ko": ""
+  },
+  {
+   "slug": "departure-bay-veterinary-hospital",
+   "zh": "迪帕彻湾动物医院",
+   "ko": ""
+  },
+  {
+   "slug": "eagle-ridge-animal-bird-hospital",
+   "zh": "鹰岭动物与鸟类医院",
+   "ko": ""
+  },
+  {
+   "slug": "ecoland",
+   "zh": "",
+   "ko": "에코랜드"
+  },
+  {
+   "slug": "ecotex-healthcare-linen-service",
+   "zh": "艾科泰克斯医疗布草服务",
+   "ko": ""
+  },
+  {
+   "slug": "envision-saint-john-the-regional-growth-agency",
+   "zh": "圣约翰展望：区域发展局",
+   "ko": ""
+  },
+  {
+   "slug": "etio-health",
+   "zh": "埃蒂奥健康",
+   "ko": ""
+  },
+  {
+   "slug": "felix-schoeller",
+   "zh": "菲利克斯·舍勒集团",
+   "ko": ""
+  },
+  {
+   "slug": "first-foundations-jewish-community-preschools",
+   "zh": "第一基础犹太社区幼儿园",
+   "ko": ""
+  },
+  {
+   "slug": "fleur-de-sel",
+   "zh": "盐之花",
+   "ko": ""
+  },
+  {
+   "slug": "forge-health",
+   "zh": "福吉健康",
+   "ko": ""
+  },
+  {
+   "slug": "gateway-college",
+   "zh": "门径学院",
+   "ko": ""
+  },
+  {
+   "slug": "greater-toronto-airports-authority",
+   "zh": "大多伦多机场管理局",
+   "ko": ""
+  },
+  {
+   "slug": "harmony-physiotherapy-health-clinic",
+   "zh": "和谐物理治疗与健康诊所",
+   "ko": ""
+  },
+  {
+   "slug": "head-to-tail-veterinary-hospital",
+   "zh": "从头到尾动物医院",
+   "ko": ""
+  },
+  {
+   "slug": "healthcare-pharmacy",
+   "zh": "医疗保健药房",
+   "ko": ""
+  },
+  {
+   "slug": "healthplus-rehab-centre",
+   "zh": "康健加康复中心",
+   "ko": ""
+  },
+  {
+   "slug": "heart-and-sole-healthcare",
+   "zh": "心与足医疗",
+   "ko": ""
+  },
+  {
+   "slug": "hecate-strait-employment-development-society",
+   "zh": "赫卡特海峡就业发展协会",
+   "ko": ""
+  },
+  {
+   "slug": "institut-de-recherche-et-de-d-veloppement-en-agroenvironneme",
+   "zh": "农业环境研究与发展研究所",
+   "ko": ""
+  },
+  {
+   "slug": "institute-of-mine-seismology",
+   "zh": "矿山地震学研究所",
+   "ko": ""
+  },
+  {
+   "slug": "intrepid-health-group",
+   "zh": "英特瑞德健康集团",
+   "ko": ""
+  },
+  {
+   "slug": "it-takes-a-village-daycare-society",
+   "zh": "一村之力日托中心",
+   "ko": ""
+  },
+  {
+   "slug": "joe-s-pharmacy-campbell-river-health-and-drug-store",
+   "zh": "坎贝尔河乔氏健康药房",
+   "ko": ""
+  },
+  {
+   "slug": "kingston-health-sciences-centre",
+   "zh": "金斯顿健康科学中心",
+   "ko": ""
+  },
+  {
+   "slug": "lakehead-university",
+   "zh": "湖首大学",
+   "ko": ""
+  },
+  {
+   "slug": "la-soci-t-saint-vincent-de-paul-de-montr-al",
+   "zh": "蒙特利尔圣文生保禄会",
+   "ko": ""
+  },
+  {
+   "slug": "livwell-integrated-health",
+   "zh": "利威尔综合医疗",
+   "ko": ""
+  },
+  {
+   "slug": "lucid-integrative-health",
+   "zh": "卢西德整合健康中心",
+   "ko": ""
+  },
+  {
+   "slug": "medcare-health-system",
+   "zh": "美迪康健康系统",
+   "ko": ""
+  },
+  {
+   "slug": "medicine-hat-ymca",
+   "zh": "梅迪辛哈特基督教青年会",
+   "ko": ""
+  },
+  {
+   "slug": "medigroup-health-centre-pharmacy",
+   "zh": "美迪健康中心药房",
+   "ko": ""
+  },
+  {
+   "slug": "msvu",
+   "zh": "圣文森山大学",
+   "ko": ""
+  },
+  {
+   "slug": "municipalit-de-longue-pointe-de-mingan",
+   "zh": "朗格蓬特德米甘市镇",
+   "ko": ""
+  },
+  {
+   "slug": "municipalit-de-saint-modeste",
+   "zh": "圣莫德斯特市",
+   "ko": ""
+  },
+  {
+   "slug": "norgate-animal-hospital",
+   "zh": "诺盖特动物医院",
+   "ko": ""
+  },
+  {
+   "slug": "north-bay-regional-health-centre",
+   "zh": "北湾地区健康中心",
+   "ko": ""
+  },
+  {
+   "slug": "north-shore-crisis-services-society",
+   "zh": "北岸危机服务协会",
+   "ko": ""
+  },
+  {
+   "slug": "opal-physiotherapy-and-health-clinic",
+   "zh": "欧珀尔理疗与健康诊所",
+   "ko": ""
+  },
+  {
+   "slug": "ottawa-hospital-and-region-imaging-associates",
+   "zh": "渥太华医院及地区影像中心",
+   "ko": ""
+  },
+  {
+   "slug": "pacific-centre-family-services-association",
+   "zh": "太平洋中心家庭服务协会",
+   "ko": ""
+  },
+  {
+   "slug": "panda-tea",
+   "zh": "熊猫茶",
+   "ko": ""
+  },
+  {
+   "slug": "pembina-trails-school-division",
+   "zh": "彭比纳小径学区",
+   "ko": ""
+  },
+  {
+   "slug": "petroglyph-animal-hospital",
+   "zh": "岩画动物医院",
+   "ko": ""
+  },
+  {
+   "slug": "pharmasave-health-centre",
+   "zh": "菲玛萨维健康中心",
+   "ko": ""
+  },
+  {
+   "slug": "phoenix-residential-society",
+   "zh": "菲尼克斯住宅协会",
+   "ko": ""
+  },
+  {
+   "slug": "po-lam-buddhist-association",
+   "zh": "宝林佛教会",
+   "ko": ""
+  },
+  {
+   "slug": "port-moody-health",
+   "zh": "穆迪港卫生局",
+   "ko": ""
+  },
+  {
+   "slug": "prairie-mountain-health",
+   "zh": "草原山卫生局",
+   "ko": ""
+  },
+  {
+   "slug": "precision-health-group",
+   "zh": "精准健康集团",
+   "ko": ""
+  },
+  {
+   "slug": "prolam-soci-t-en-commandite",
+   "zh": "普罗拉姆有限合伙公司",
+   "ko": ""
+  },
+  {
+   "slug": "pure-life-health-centre",
+   "zh": "纯生健康中心",
+   "ko": ""
+  },
+  {
+   "slug": "pure-life-physiotherapy-health-centre",
+   "zh": "纯生物理治疗与健康中心",
+   "ko": ""
+  },
+  {
+   "slug": "quinte-health",
+   "zh": "金特医疗",
+   "ko": ""
+  },
+  {
+   "slug": "rejuvenation-dermatology",
+   "zh": "焕颜皮肤科诊所",
+   "ko": ""
+  },
+  {
+   "slug": "remember-when-healthcare",
+   "zh": "昔日医疗保健",
+   "ko": ""
+  },
+  {
+   "slug": "revolution-health",
+   "zh": "革命健康",
+   "ko": ""
+  },
+  {
+   "slug": "richmond-villa",
+   "zh": "里士满别墅",
+   "ko": ""
+  },
+  {
+   "slug": "ridgeview-animal-hospital",
+   "zh": "里奇维尤动物医院",
+   "ko": ""
+  },
+  {
+   "slug": "roboplanet-education-and-community-society",
+   "zh": "罗博星球教育社区协会",
+   "ko": ""
+  },
+  {
+   "slug": "roquette",
+   "zh": "罗盖特",
+   "ko": ""
+  },
+  {
+   "slug": "royal-manitoba-theatre-centre",
+   "zh": "皇家曼尼托巴剧场中心",
+   "ko": ""
+  },
+  {
+   "slug": "royal-winnipeg-ballet",
+   "zh": "温尼佩格皇家芭蕾舞团",
+   "ko": ""
+  },
+  {
+   "slug": "sfu-childcare-society",
+   "zh": "西蒙菲莎大学托儿协会",
+   "ko": ""
+  },
+  {
+   "slug": "soci-t-des-arts-technologiques",
+   "zh": "科技艺术协会",
+   "ko": ""
+  },
+  {
+   "slug": "soci-t-qu-b-coise-des-infrastructures",
+   "zh": "魁北克基础设施公司",
+   "ko": ""
+  },
+  {
+   "slug": "sonic-health-clinic",
+   "zh": "声波健康诊所",
+   "ko": ""
+  },
+  {
+   "slug": "south-saskatchewan-animal-hospital",
+   "zh": "南萨斯喀彻温动物医院",
+   "ko": ""
+  },
+  {
+   "slug": "spectrum-health-care",
+   "zh": "光谱医疗保健",
+   "ko": ""
+  },
+  {
+   "slug": "st-james-veterinary-hospital",
+   "zh": "圣詹姆斯动物医院",
+   "ko": ""
+  },
+  {
+   "slug": "st-joseph-s-hospital",
+   "zh": "圣约瑟夫医院",
+   "ko": ""
+  },
+  {
+   "slug": "strive-health-and-performance",
+   "zh": "斯特莱夫健康与表现中心",
+   "ko": ""
+  },
+  {
+   "slug": "strive-living-society-powell-river",
+   "zh": "鲍威尔河斯特莱夫生活协会",
+   "ko": ""
+  },
+  {
+   "slug": "the-original-pancake-house",
+   "zh": "",
+   "ko": "오리지널 팬케이크 하우스"
+  },
+  {
+   "slug": "thunder-bay-regional-health-sciences-centre",
+   "zh": "桑德贝地区健康科学中心",
+   "ko": ""
+  },
+  {
+   "slug": "totem",
+   "zh": "",
+   "ko": "그놈 비디오"
+  },
+  {
+   "slug": "trout-lake-animal-hospital-urgent-care",
+   "zh": "鳟湖动物医院与急诊中心",
+   "ko": ""
+  },
+  {
+   "slug": "university-health-network",
+   "zh": "大学医疗网络",
+   "ko": ""
+  },
+  {
+   "slug": "university-of-windsor",
+   "zh": "温莎大学",
+   "ko": "윈저 대학교"
+  },
+  {
+   "slug": "valentine",
+   "zh": "瓦伦丁",
+   "ko": "발렌타인"
+  },
+  {
+   "slug": "vanwest-college",
+   "zh": "范威斯学院",
+   "ko": ""
+  },
+  {
+   "slug": "vic-west-pet-hospital",
+   "zh": "维多利亚西区宠物医院",
+   "ko": ""
+  },
+  {
+   "slug": "vic-west-pet-hospital-midtown-veterinary-hospital",
+   "zh": "维多利亚西区宠物医院 / 中区宠物医院",
+   "ko": ""
+  },
+  {
+   "slug": "village-of-berwyn",
+   "zh": "伯温村",
+   "ko": ""
+  },
+  {
+   "slug": "western-community-college",
+   "zh": "西部社区学院",
+   "ko": ""
+  },
+  {
+   "slug": "whole-health-pharmacy-compounding",
+   "zh": "整体健康药房与制剂中心",
+   "ko": ""
+  },
+  {
+   "slug": "windermere-valley-child-care-society",
+   "zh": "温德米尔谷儿童保育协会",
+   "ko": ""
+  },
+  {
+   "slug": "yaletown-house-society",
+   "zh": "耶鲁镇大厦协会",
+   "ko": ""
+  },
+  {
+   "slug": "ymca-of-greater-moncton",
+   "zh": "大蒙克顿基督教青年会",
+   "ko": ""
+  },
+  {
+   "slug": "ymca-of-southwest-nova-scotia",
+   "zh": "新斯科舍西南基督教青年会",
+   "ko": ""
+  },
+  {
+   "slug": "york-university",
+   "zh": "约克大学",
+   "ko": "요크 대학교"
+  },
+  {
+   "slug": "zara-s-health-beauty-salon",
+   "zh": "扎拉健康美容馆",
+   "ko": ""
+  }
+ ],
+ "trad": [
+  {
+   "slug": "bell-canada",
+   "old": "加拿大貝爾",
+   "zh": "加拿大贝尔"
+  },
+  {
+   "slug": "mccain-foods",
+   "old": "麥肯食品",
+   "zh": "麦肯食品"
+  },
+  {
+   "slug": "canadian-red-cross",
+   "old": "加拿大紅十字會",
+   "zh": "加拿大红十字会"
+  },
+  {
+   "slug": "bank-of-canada",
+   "old": "加拿大中央銀行",
+   "zh": "加拿大中央银行"
+  },
+  {
+   "slug": "burger-king",
+   "old": "漢堡王",
+   "zh": "汉堡王"
+  },
+  {
+   "slug": "blackberry",
+   "old": "黑莓手機",
+   "zh": "黑莓手机"
+  },
+  {
+   "slug": "domtar",
+   "old": "黛美達",
+   "zh": "黛美达"
+  },
+  {
+   "slug": "university-of-toronto",
+   "old": "多倫多大學",
+   "zh": "多伦多大学"
+  },
+  {
+   "slug": "s-paq",
+   "old": "賽帕克",
+   "zh": "赛帕克"
+  },
+  {
+   "slug": "korean-garden",
+   "old": "朝鮮古典園林",
+   "zh": "朝鲜古典园林"
+  }
+ ]
+}

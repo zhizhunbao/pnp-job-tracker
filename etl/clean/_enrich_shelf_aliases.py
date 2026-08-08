@@ -39,7 +39,7 @@ SUFFIX = re.compile(r"\b(incorporated|inc|ltd|limited|llp|llc|corp|corporation|c
 CORP_SUFFIX = re.compile(r"\b(inc|ltd|limited|llc|llp|corp|corporation|ltee|ltée|ulc|lp)\b\.?", re.I)
 # 机构/公共部门(描述性名称,可意译):医疗/市政/教育/政府/原住民组织/协会
 PUB = re.compile(
-    r"health|hospital|authority|city of |town of |village of |district of |municipalit|regional municipality"
+    r"health|\bhospital\b|authority|city of |town of |village of |district of |municipalit|regional municipality"
     r"|school (district|division|board)|board of education|centre for education|university|college|institut"
     r"|government|ministry|department of |agency|first nation|nation |tribal|band council|council|commission"
     r"|library|société|centre de santé|association|society|foundation|red cross|salvation army|ymca|ywca", re.I)
