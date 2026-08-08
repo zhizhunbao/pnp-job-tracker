@@ -15,6 +15,7 @@ v1 只做省级(市级后置);RNIP 待 E6 有数据再并入。
 from __future__ import annotations
 
 import json
+import re
 import statistics
 import sys
 from collections import Counter, defaultdict
@@ -42,6 +43,11 @@ any_pr_path = _score.any_pr_path   # E13-08:跨通道判定(PNP∪EE∪AIP∪保
 NAMED_ANY: set = set().union(*_score.NAMED_STREAM_NOCS_BY_PROV.values()) if _score.NAMED_STREAM_NOCS_BY_PROV else set()
 EE_BY_NOC = _score.EE_BY_NOC
 
+# E14-02:担保率分子(单季度 LMIA 获批岗位)按 NOC 从季度源 xlsx 直接聚合(见 §sponsor_of 下方)。
+# NOC 正则复用 build_lmia.py 的 _NOC_RE(单一来源,不复制口径);该模块名不以数字开头,可直接 import
+# (不需要像 08_score 那样走 importlib)。模块顶层无重活(只有函数/常量定义),import 安全。
+import build_lmia as _lmia_mod  # noqa: E402
+
 
 def channel_tier(noc: str, teer) -> str | None:
     prov_named, fed_named = noc in NAMED_ANY, noc in EE_BY_NOC
@@ -54,6 +60,58 @@ def channel_tier(noc: str, teer) -> str | None:
     if teer in (0, 1, 2, 3):
         return "ee"
     return "employer" if teer is not None else None
+
+
+_QUARTER_FILE_RE = re.compile(r"tfwp_(\d{4}q\d)_pos_en\.xlsx$", re.I)
+
+
+def _comparable_quarter() -> str | None:
+    """E14-02:LMIA 季度源文件名集合 ∩ JVWS raw 表 quarters[] 的**最近共同季度**('YYYYQN' 字符串可
+    直接比大小排序)。同季对同季;若 LMIA 最新季晚于 JVWS 最新季(或反过来),退到两者都有的最近季。
+    任一侧没有交集(如某侧数据完全没跑过)→ None,调用方把 sponsor_* 四列整列写 None,不硬凑。"""
+    lmia_qs = {m.group(1).upper() for p in IN_LMIA_XLSX_DIR.glob("tfwp_*_pos_en.xlsx")
+               for m in [_QUARTER_FILE_RE.match(p.name)] if m}
+    if not lmia_qs or not IN_JVWS_RAW.exists():
+        return None
+    jvws_qs = set(json.loads(IN_JVWS_RAW.read_text(encoding="utf-8")).get("quarters", []))
+    common = lmia_qs & jvws_qs
+    return max(common) if common else None
+
+
+def _lmia_positions_by_noc(quarter: str) -> dict[str, int]:
+    """单季度 xlsx(build_lmia.py 已缓存的同一份季度源,原地复用不重下)→ {noc: approved positions}
+    (全国口径——ESDC 表本没有省份维度上限,但 JVWS 分母本轮只取全国 NAT,省级担保率留后续批次)。
+    ESDC LMIA 是穷举的行政记录,不是抽样调查:某 NOC 当季没出现 = 确实 0 件获批,不是官方抑制
+    (与 JVWS 分母的 None 抑制语义不同,数字 0 在这里就是真 0,可以直接用)。
+    NOC 匹配复用 build_lmia.py 的 _NOC_RE(单一来源);解析逻辑(表头定位/跳过尾注行/列位)照抄
+    build_lmia.parse_quarter,但只按 NOC 聚合 positions,不建雇主维护表(那张表把 8 个季度累加到一起,
+    丢了单季颗粒度,做不了本表要的「同季对同季」)。"""
+    import openpyxl  # 延迟 import,同 build_lmia.py 惯例(镜像 Dockerfile 需装 openpyxl)
+    path = IN_LMIA_XLSX_DIR / f"tfwp_{quarter.lower()}_pos_en.xlsx"
+    if not path.exists():
+        return {}
+    wb = openpyxl.load_workbook(path, read_only=True)
+    ws = wb.active
+    out: dict[str, int] = defaultdict(int)
+    header = None
+    for row in ws.iter_rows(values_only=True):
+        cells = ["" if c is None else str(c).strip() for c in row]
+        if header is None:
+            if cells and cells[0].startswith("Province"):
+                header = cells
+            continue
+        if len(cells) < 8 or not cells[2]:          # Employer 空 = 尾部注释/空行
+            continue
+        _prov, _stream, _employer, _addr, occ, _inc, _lmias, positions = cells[:8]
+        m = _lmia_mod._NOC_RE.match(occ)
+        if not m:
+            continue
+        try:
+            out[m.group(1).zfill(5)] += int(float(positions or 0))
+        except ValueError:
+            continue
+    wb.close()
+    return dict(out)
 
 if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
     sys.stdout.reconfigure(encoding="utf-8")
@@ -68,6 +126,12 @@ OUT_DAILY = _paths.MART / "stats_daily.json"
 IN_NOC_DESC = _paths.MART / "noc_descriptions.json"   # 职业名(官方名,已随 09 产出)
 OUT_OCC = _paths.MART / "stats_occupation.json"       # 职业 × 省(province='all' 为全国行)
 OUT_CITY = _paths.MART / "stats_city.json"            # 城市
+
+# E14-02:担保率(sponsor_rate)= LMIA 同季获批岗位数(分子,担保侧)÷ JVWS 同季全国空缺数(分母,全市场)。
+# 口径详见 docs/implementation/E14-全市场数据三角/02_担保率.md。只在 stats_occupation 的 province='all'
+# 全国行落值(与 pnpProvs/channelTier 同款做法——省级担保率需要省级 LMIA×NOC 拆分,本轮不做,YAGNI)。
+IN_LMIA_XLSX_DIR = _paths.LMIA                        # tfwp_YYYYqN_pos_en.xlsx 季度源(build_lmia.py 已缓存,原地复用不重下)
+IN_JVWS_RAW = _paths.JVWS / "jvws-vacancies.json"      # build_jvws.py 产,已按 StatCan 抑制规则把不可发布值设 None
 
 # E13-02(把脉首页,00_总设计与口径.md §3,v2 2026-08-06 晚修订)派生指标输入。ETL 只读写 data/,不碰 DB。
 IN_POSTINGS = _paths.PROCESSED_JOBBANK / "postings.json"   # 累积当前态,有 date(发布日),推 new30d/new30d_prev/mom30d
@@ -243,6 +307,39 @@ def main() -> None:
     print(f"  flow keys(noc×province,含 all): {len(flow)} · avg_days_open 有效样本(≥5): {len(avg_open)} · "
           f"daily_closed 桶(province×broad): {len(daily_closed)}")
 
+    # ── E14-02:担保率分子/分母(同季对同季)──────────────────────────────────
+    sponsor_quarter = _comparable_quarter()
+    sponsor_lmia: dict[str, int] = {}
+    sponsor_jvws: dict[str, dict] = {}   # noc → {vacancies, quality}(province='NAT' 行)
+    if sponsor_quarter:
+        print(f"IN : {IN_LMIA_XLSX_DIR / ('tfwp_' + sponsor_quarter.lower() + '_pos_en.xlsx')}\nIN : {IN_JVWS_RAW}  (E14-02 担保率同季 {sponsor_quarter})")
+        sponsor_lmia = _lmia_positions_by_noc(sponsor_quarter)
+        sponsor_jvws = {r["noc"]: r for r in json.loads(IN_JVWS_RAW.read_text(encoding="utf-8"))["rows"]
+                         if r["province"] == "NAT" and r["quarter"] == sponsor_quarter}
+        print(f"  sponsor_quarter={sponsor_quarter}: LMIA {len(sponsor_lmia)} 个 NOC 有获批记录 · "
+              f"JVWS NAT {len(sponsor_jvws)} 个 NOC 有分母行")
+    else:
+        print("  ⚠ E14-02: LMIA 与 JVWS 无共同季度,stats_occupation.sponsor_* 四列整列写 None")
+
+    def sponsor_of(noc: str, teer) -> dict:
+        """只喂 stats_occupation 的 province='all' 全国行(调用点见 occ_rows.append)。"""
+        if not sponsor_quarter:
+            return {"sponsorPosQ": None, "sponsorPosSkilledQ": None, "jvwsVacQ": None,
+                    "sponsorRate": None, "sponsorEvidence": None}
+        pos = sponsor_lmia.get(noc, 0)      # ESDC 穷举行政记录:没出现=当季确实 0 件获批,不是抑制
+        v = sponsor_jvws.get(noc)
+        vac = v["vacancies"] if v else None  # 🔴 StatCan 抑制/未采集本就是 None,原样传,不折 0(e14-01 红线同款)
+        skilled = pos if teer in (0, 1, 2, 3) else 0   # 副指标口径=本 NOC 的 TEER,不是 LMIA 项目股别
+        rate = round(pos / vac, 4) if vac else None    # vac 是 None 或 0 → rate=None(分母缺失/为零都不算)
+        evidence = json.dumps({
+            "quarter": sponsor_quarter,
+            "jvwsQuality": v["quality"] if v else None,
+            "lmiaSource": "ESDC TFWP positive LMIA positions (open.canada.ca 90fed587)",
+            "jvwsSource": "StatCan 14-10-0444-01",
+        }, ensure_ascii=False)
+        return {"sponsorPosQ": pos, "sponsorPosSkilledQ": skilled, "jvwsVacQ": vac,
+                "sponsorRate": rate, "sponsorEvidence": evidence}
+
     buckets: dict[tuple[str, str, str], list[dict]] = defaultdict(list)
     for j in jobs:
         prov = (j.get("province") or "").upper()
@@ -352,7 +449,8 @@ def main() -> None:
         dead_provs = None if teer is None else "、".join(p for p in PNP_PROV_ORDER if not any_pr_path(noc, teer, p))
         occ_rows.append({**base, "province": "all", "pnpProvs": pnp_provs, "pnpProvsCond": pnp_provs_cond, "deadProvs": dead_provs,
                          "channelTier": channel_tier(noc, teer),   # E13-07 四档
-                         **agg(js), **flow_of((noc, "all"))})   # 全国行
+                         **agg(js), **flow_of((noc, "all")),
+                         **sponsor_of(noc, teer)})   # E14-02 担保率(仅全国行,同 pnpProvs 做法)
         by_p: dict[str, list] = defaultdict(list)
         for j in js:
             if j.get("province"):

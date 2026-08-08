@@ -59,6 +59,10 @@ export type OccRow = { noc: string; province: string; titleZh: string; titleZhSh
   avgDaysOpen: number | null; pulseScore: number | null
   pnpProvs: string | null; channelTier: string | null
   deadProvs: string | null     // E13-08 完全无路可走的省(''=处处有路;null=未落库或 TEER 未分类不判)
-  pnpProvsCond: string | null }  // E13-09 先省内工作 6 个月可提名的省(pnpProvs 同步收紧为拿 offer 即可)
+  pnpProvsCond: string | null   // E13-09 先省内工作 6 个月可提名的省(pnpProvs 同步收紧为拿 offer 即可)
+  // E14-02 担保率(分子=担保侧观测量,分母=StatCan JVWS 官方空缺季度数):sponsorPosQ/sponsorPosSkilledQ
+  // 是分子的两种口径(全量/技能股),sponsorRate=分子/分母的 0-1 小数,>1 是已知方法论偏差(见 E14-01 §7.4
+  // 农业案例)非 bug。列可能还没落库,读取层同款逐列探测,缺列即 null。
+  sponsorPosQ: number | null; sponsorPosSkilledQ: number | null; jvwsVacQ: number | null; sponsorRate: number | null }
 export type CityRow = { city: string; cityZh: string; cityKo: string; province: string; openJobs: number | null; new7d: number | null
   medianWageAnnual: number | null; medianSalaryAnnual: number | null; salaryN: number | null; namedJobs: number | null }

@@ -222,6 +222,10 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
   // 与「紧缺清单省份」列语义不同、互斥出现)。列还没落库(全行 null/undefined)时整列不渲染。
   const hasPnpProvs = rows.some((o) => o.pnpProvs != null)
   const hasTier = rows.some((o) => o.channelTier != null)
+  // E14-02:榜 A(showProvs=false,与上面 hasPnpProvs 同一专属域)独有的担保率列——
+  // 分子/分母任一没落库都是 sponsorRate=null,整列不渲(同 hasMom/hasPnpProvs 的容缺先例)
+  const hasSponsorRate = rows.some((o) => o.sponsorRate != null)
+  const sponsorRateCell = (o: OccRow) => (o.sponsorRate == null ? '—' : o.sponsorRate > 1 ? '100%+' : `${(o.sponsorRate * 100).toFixed(1)}%`)
   const pill = (c: { bg: string; fg: string; bd: string }, txt: string, key?: string) => (
     <span key={key ?? txt} style={{ whiteSpace: 'nowrap', fontSize: 11, fontWeight: 600, padding: '1px 8px', borderRadius: 999, background: c.bg, color: c.fg, border: `1px solid ${c.bd}` }}>{txt}</span>
   )
@@ -326,6 +330,13 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
         + (o.pnpProvsCond ? o.pnpProvsCond.split('、').length : 0),   // 直可省数主键,cond 省数副键
       render: (o: OccRow) => pnpProvsCell(o),
     }] : []),
+    // E14-02:担保率——只在榜 A(showProvs=false)出现,分子=担保侧观测量/分母=StatCan JVWS 官方空缺;
+    // 整榜全 null(列未落库)时不渲染
+    ...(!showProvs && hasSponsorRate ? [{
+      key: 'sponsorRate', label: t('pulse.col.sponsorRate'), nowrap: true,
+      sort: (o: OccRow) => o.sponsorRate,
+      render: (o: OccRow) => <>{sponsorRateCell(o)}</>,
+    }] : []),
   ]
 
   return (
@@ -359,6 +370,10 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
                 {deadCol ? null : showProvs ? hotPills(o) : null}
                 {deadCol && o.deadProvs
                   ? <span style={{ fontSize: 11, fontWeight: 600, padding: '1px 8px', borderRadius: 999, background: '#fee2e2', color: '#b91c1c', border: '1px solid #fecaca' }}>{t('pulse.dead.cell', { provs: o.deadProvs })}</span>
+                  : null}
+                {/* E14-02:担保率胶囊——手机端与桌面「担保率」列同一份数据,只在榜 A(showProvs=false)出现 */}
+                {!showProvs && o.sponsorRate != null
+                  ? <span style={{ whiteSpace: 'nowrap', fontSize: 11, fontWeight: 600, padding: '1px 8px', borderRadius: 999, background: '#f3f4f6', color: '#4b5563', border: '1px solid #e5e7eb' }}>{`${t('pulse.col.sponsorRate')} ${sponsorRateCell(o)}`}</span>
                   : null}
               </>} />
           )
@@ -550,7 +565,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
         <div className="plBand plHero">
           <PageShell pad="0 1.25rem">
             {/* banner 口号 08-07 Frank 拍板删(「你的下一步,用数据算出来」),纯图版;页 <title> 不受影响 */}
-            <PageBanner module="home" tall title="" images={BANNER_IMGS.home} />
+            <PageBanner module="home" tall title={t('pulse.entry')} images={BANNER_IMGS.home} />
             {pulseCards.length > 0 && (
               <div className="plNums">
                 {pulseCards.map((c) => (c.ph

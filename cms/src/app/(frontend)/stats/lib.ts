@@ -71,7 +71,9 @@ export async function loadOccStats(): Promise<OccRow[]> {
   // 口径都未稳,不读也不展示(同入 E13-04)。
   // **逐列探测**而不是整句 try/catch:E13-02 的 DDL 分批落库,少一列不该把其余几列一起打回 null。
   // 探到哪列就 SELECT 哪列,没探到的在映射层给 null(前端「null=整块不渲」照旧)。
-  const WANT = ['new14d', 'new14d_prev', 'mom14d', 'avg_days_open', 'pulse_score', 'pnp_provs', 'channel_tier', 'dead_provs', 'pnp_provs_cond']
+  // E14-02 担保率四列(sponsor_pos_q/sponsor_pos_skilled_q/jvws_vac_q/sponsor_rate):生产 DDL 未跑前不存在,
+  // 同一逐列探测机制兜底,缺列时前端 sponsorRate 全 null → 榜上该列整块不渲(#280 同款容缺先例)。
+  const WANT = ['new14d', 'new14d_prev', 'mom14d', 'avg_days_open', 'pulse_score', 'pnp_provs', 'channel_tier', 'dead_provs', 'pnp_provs_cond', 'sponsor_pos_q', 'sponsor_pos_skilled_q', 'jvws_vac_q', 'sponsor_rate']
   const pool = (payload.db as any).pool
   const have: string[] = await pool.query(
     `SELECT column_name FROM information_schema.columns WHERE table_name = 'stats_occupation' AND column_name = ANY($1)`, [WANT],
@@ -101,6 +103,8 @@ export async function loadOccStats(): Promise<OccRow[]> {
     channelTier: r.channel_tier ?? null,
     deadProvs: r.dead_provs ?? null,
     pnpProvsCond: r.pnp_provs_cond ?? null,
+    sponsorPosQ: num(r.sponsor_pos_q), sponsorPosSkilledQ: num(r.sponsor_pos_skilled_q),
+    jvwsVacQ: num(r.jvws_vac_q), sponsorRate: num(r.sponsor_rate),
   }))
 }
 
