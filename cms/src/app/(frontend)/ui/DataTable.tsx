@@ -10,8 +10,9 @@ import { UI } from './primitives'
 export function DTPager({ page, max, note, onPage }: {
   page: number; max: number; note?: React.ReactNode; onPage: (p: number) => void
 }) {
+  // #276 手机触控靶:padding 移交 .dtPagerBtn(styles.css),桌面值原样,手机断点单独抬 ≥44px
   const btn = (disabled: boolean): React.CSSProperties => ({
-    border: `1px solid ${UI.border}`, borderRadius: 6, background: '#fff', padding: '2px 10px',
+    border: `1px solid ${UI.border}`, borderRadius: 6, background: '#fff',
     fontSize: 13, lineHeight: '18px', fontFamily: 'inherit',
     color: disabled ? '#d1d5db' : UI.text2, cursor: disabled ? 'default' : 'pointer',
   })
@@ -20,9 +21,9 @@ export function DTPager({ page, max, note, onPage }: {
       {note != null && <span>{note}</span>}
       {max > 1 && (
         <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <button aria-label="‹" disabled={page === 0} onClick={() => onPage(Math.max(0, page - 1))} style={btn(page === 0)}>‹</button>
+          <button aria-label="‹" className="dtPagerBtn" disabled={page === 0} onClick={() => onPage(Math.max(0, page - 1))} style={btn(page === 0)}>‹</button>
           <span style={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{page + 1} / {max}</span>
-          <button aria-label="›" disabled={page >= max - 1} onClick={() => onPage(Math.min(max - 1, page + 1))} style={btn(page >= max - 1)}>›</button>
+          <button aria-label="›" className="dtPagerBtn" disabled={page >= max - 1} onClick={() => onPage(Math.min(max - 1, page + 1))} style={btn(page >= max - 1)}>›</button>
         </span>
       )}
     </div>

@@ -197,6 +197,21 @@ button:not(:disabled):hover {
   }
 }
 
+/* #276:桌面态基准值(原内联样式搬出,数值不变)——DTPager 按钮 padding、SponsorBoard 筛选控件 height、
+   Sec 折叠箭头 padding/margin,三处手机断点覆写见下方 640px 媒体块,桌面走这里的默认值 */
+.dtPagerBtn {
+  padding: 2px 10px;
+}
+
+.sbCtl {
+  height: 30px;
+}
+
+.secFold {
+  padding: 6px 10px;
+  margin: -6px -4px;
+}
+
 /* ── #212(第 26 轮)手机触控靶:**只扩可点范围,不改视觉** ──────────────────
    教训(Frank 2026-07-26 三连反馈「别换行」「语言钮怎么这么大」「用户下拉怎么这么大」):
    靠 padding/min-height 撑热区 = 控件真的变大、版式被挤走。正确姿势是伪元素向外撑,
@@ -238,5 +253,30 @@ button:not(:disabled):hover {
 
   .jtMore button {
     min-height: 40px;
+  }
+
+  /* #276(第 34 轮体检):DTPager ‹›(20px 高)/ /start 三分表筛选控件(30px)/
+     Sec 折叠箭头(更小)三处触控靶不足 44px——同款手法,只手机断点抬,字号/桌面态不动。 */
+  .dtPagerBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 2px 14px;
+  }
+
+  .sbCtl {
+    min-height: 44px;
+  }
+
+  .secFold {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    margin: 0;
   }
 }

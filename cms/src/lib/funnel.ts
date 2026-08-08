@@ -10,7 +10,7 @@
  * 后两个 = 对话形态(挂件打开 → 拿到带出处的答复)。**并行量,不混算** —— 设计文档
  * `docs/design/对话即产品-20260803.md` §六:两形态的转化对照才是撤旧页的判据,
  * 塞进同一条链会把两套口径搅成一锅。 */
-export const FUNNEL_STEPS = ['jd-open', 'report-open', 'lock-seen', 'pricing-open', 'pay-click', 'chat-open', 'chat-answer', 'chat-feedback'] as const
+export const FUNNEL_STEPS = ['jd-open', 'report-open', 'lock-seen', 'pricing-open', 'pay-click', 'chat-open', 'chat-answer', 'chat-feedback', 'modal-pnp', 'pnp-employer-click', 'se-view-jobs'] as const
 export type FunnelStep = (typeof FUNNEL_STEPS)[number]
 
 // 站内既有的埋点名 → 漏斗步骤(调用点一个都不用改名;umami 那边照旧用原名,两套口径互不干扰)。
@@ -37,6 +37,14 @@ const ALIAS: Record<string, FunnelStep> = {
   // 案例复现率 42% 是人肉核 36 个数字换来的;上线后每个点踩都是用户在替我们标注「这里答不好」,
   // 而且按真实频次排好序。prop 是 good|bad(低基数枚举,不收自由文本 —— 那要动隐私页)。
   'chat-feedback': 'chat-feedback',
+  // 雇主线漏斗(B5,2026-08-08):PNP 弹框打开(分母)→ 点了「该公司在招职位」(分子)。
+  // 调用点早就在打(JobsTable AdvisorModal / SponsorLeadCard),只是没进白名单 → 一直只有 umami 那条腿,
+  // 广告拦截器一挡就读不出数;三个都是站内既有名,原样收进来,不用改调用点。
+  'modal-pnp': 'modal-pnp',
+  'pnp-employer-click': 'pnp-employer-click',
+  // 三分表(把脉页橱窗)点雇主名 —— 只作参照,不进 modal-pnp→pnp-employer-click 这条转化率
+  // (来源不同的两条路,拿橱窗的点击数当 PNP 弹框的分子/分母都不对)。
+  'se-view-jobs': 'se-view-jobs',
 }
 
 // prop 白名单:低基数枚举才留,其余一律归空 —— 高基数(NOC、公司名、搜索词)会把表撑成明细表
@@ -67,8 +75,10 @@ export function toFunnelHit(name: unknown, prop?: unknown): FunnelHit | null {
 /** 五步的相邻转化率;分母为 0 给 null(显示层出「—」,不许出 0% 或 NaN) */
 /** 旧形态那条链(答题卡 → 报告 → 锁区 → 定价 → 付费)。相邻转化率**只在这五步之间**算。 */
 export const LEGACY_STEPS = FUNNEL_STEPS.slice(0, 5)
-/** 对话形态那条链(挂件打开 → 带出处的答复)。与旧链**并行**,不接在它后面。 */
-export const CHAT_STEPS = FUNNEL_STEPS.slice(5)
+/** 对话形态那条链(挂件打开 → 带出处的答复)。与旧链**并行**,不接在它后面。
+ * 显式截到 8(而非开放式 .slice(5))—— 后面追加的雇主线三步不是这条链的延伸,
+ * 开放式切片会把它们错误地拖进「挂件→答复→反馈」的相邻转化率计算。 */
+export const CHAT_STEPS = FUNNEL_STEPS.slice(5, 8)
 
 const ratesOf = (steps: readonly string[], counts: Record<string, number>) =>
   steps.slice(1).map((step, i) => {

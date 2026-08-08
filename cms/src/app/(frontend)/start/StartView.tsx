@@ -106,10 +106,11 @@ function Sec({ id, title, right, children }: { id: string; title: React.ReactNod
   const toggle = () => setOpen((v) => { const n = !v; try { localStorage.setItem('pl.fold.' + id, n ? '1' : '0') } catch { /* ignore */ } ; return n })
   return (
     <div>
-      {/* 折叠开关=只点箭头(Frank 08-08 二拍;此前整行 onClick 连右侧空白都触发);padding 撑触控靶 */}
+      {/* 折叠开关=只点箭头(Frank 08-08 二拍;此前整行 onClick 连右侧空白都触发);padding 撑触控靶。
+          #276:padding/margin 移交 .secFold(styles.css)——手机断点单独抬到 ≥44px,桌面值原样不动 */}
       <h2 style={{ ...secH, margin: '0 0 10px' }}>
         {title}
-        <span onClick={toggle} style={{ color: '#9ca3af', fontSize: 14, cursor: 'pointer', userSelect: 'none', padding: '6px 10px', margin: '-6px -4px' }}>{open ? '▾' : '▸'}</span>
+        <span onClick={toggle} className="secFold" style={{ color: '#9ca3af', fontSize: 14, cursor: 'pointer', userSelect: 'none' }}>{open ? '▾' : '▸'}</span>
         {right ? <span style={hmRight}>{right}</span> : null}
       </h2>
       {open ? children : null}
@@ -145,15 +146,16 @@ function SponsorBoard({ rows, kind, t, lang, total, occOpts }: { rows: SponsorEm
   // 省下拉只显本语言全名(Frank 08-08「全部省那么宽吗」——双语并排把控件撑到 460px,单语即窄);
   // 不引 JobsTable.provName 免把重器拖进本页包
   const provLabel = (c: string) => { const loc = t('prov.' + c); return loc && loc !== 'prov.' + c ? loc : PROV_NAME[c] || c }
-  const ctl: React.CSSProperties = { height: 30, border: `1px solid ${UI.border}`, borderRadius: 8, background: '#fff', fontSize: 12.5, color: '#374151', padding: '0 6px', maxWidth: 210 }
+  // #276:height 移交 .sbCtl(styles.css)——桌面仍 30,手机断点单独抬到 ≥44px,字号/其余样式不动
+  const ctl: React.CSSProperties = { border: `1px solid ${UI.border}`, borderRadius: 8, background: '#fff', fontSize: 12.5, color: '#374151', padding: '0 6px', maxWidth: 210 }
   const provSel = (
-    <select key="prov" value={fProv} onChange={(e) => setFProv(e.target.value)} style={ctl}>
+    <select key="prov" className="sbCtl" value={fProv} onChange={(e) => setFProv(e.target.value)} style={ctl}>
       <option value="">{t('all.prov')}</option>
       {provOpts.map((c) => <option key={c} value={c}>{provLabel(c)}</option>)}
     </select>
   )
   const streamSel = kind === 'named' ? (
-    <select key="stream" value={fStream} onChange={(e) => setFStream(e.target.value)} style={ctl}>
+    <select key="stream" className="sbCtl" value={fStream} onChange={(e) => setFStream(e.target.value)} style={ctl}>
       <option value="">{t('se.allStreams')}</option>
       {streamOpts.map((s) => <option key={s} value={s}>{streamDisplay(t, s)}</option>)}
     </select>
@@ -167,13 +169,13 @@ function SponsorBoard({ rows, kind, t, lang, total, occOpts }: { rows: SponsorEm
     return [...cnt.entries()].sort((a, b) => b[1] - a[1]).map(([n]) => ({ noc: n, label: title.get(n) || n }))
   }, [rows, occOpts, lang])
   const occInput = (
-    <select key="occ" value={fNoc} onChange={(e) => setFNoc(e.target.value)} style={ctl}>
+    <select key="occ" className="sbCtl" value={fNoc} onChange={(e) => setFNoc(e.target.value)} style={ctl}>
       <option value="">{t('se.allOcc')}</option>
       {occSel.map((o) => <option key={o.noc} value={o.noc}>{o.label}</option>)}
     </select>
   )
   const skilledBtn = kind === 'lmia' ? (
-    <button key="skilled" onClick={() => setSkilled((v) => !v)}
+    <button key="skilled" className="sbCtl" onClick={() => setSkilled((v) => !v)}
       style={{ ...ctl, cursor: 'pointer', fontFamily: 'inherit', ...(skilled ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8', fontWeight: 600 } : {}) }}>
       {t('se.skilledOnly')}{skilled ? ' ✓' : ''}
     </button>
