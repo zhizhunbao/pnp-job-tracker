@@ -11,6 +11,9 @@ export type SponsorEmployerRow = {
   sponsorGrade: number | null
   openJobs: number; city: string; provs: string[]; nocs: string[]; cities: string[]
   aip: boolean; named: boolean
+  // AIP 视图专用口径(Frank 08-08 实指「AIP 不是只在四个省吗」):指定只存在于 NB/NS/PE/NL,
+  // 全国在招数/所在地会让用户把安省岗也读成 AIP 可用 → 该视图在招/所在地只计 j.aip=true 的岗
+  openJobsAip: number; provsAip: string[]
   lmiaPositions: number; lmiaPositionsSkilled: number | null; lmiaLastQuarter: string
   // B4 时间窗(近 4/2/1 季;列可能未回填=null → 0)
   lmia4q: number; lmia2q: number; lmia1q: number
@@ -32,6 +35,8 @@ async function loadAll(pool: any): Promise<SponsorEmployerRow[]> {
       c.lmia_positions, c.lmia_positions_skilled, c.lmia_last_quarter, c.lmia_streams,
       c.lmia_positions_4q, c.lmia_positions_2q, c.lmia_positions_1q,
       COUNT(*)::int AS open_jobs,
+      COUNT(*) FILTER (WHERE j.aip)::int AS open_jobs_aip,
+      COALESCE(ARRAY_AGG(DISTINCT j.province) FILTER (WHERE j.aip AND COALESCE(j.province, '') <> ''), '{}') AS provs_aip,
       BOOL_OR(j.aip) AS aip,
       BOOL_OR(COALESCE(j.pnp_stream, '') <> '') AS named,
       COALESCE(ARRAY_AGG(DISTINCT j.pnp_stream) FILTER (WHERE COALESCE(j.pnp_stream, '') <> ''), '{}') AS streams,
@@ -51,6 +56,7 @@ async function loadAll(pool: any): Promise<SponsorEmployerRow[]> {
     sponsorGrade: r.sponsor_grade ?? null,
     openJobs: Number(r.open_jobs) || 0, city: r.city ?? '', provs: r.provs ?? [], nocs: r.nocs ?? [], cities: r.cities ?? [],
     aip: !!r.aip, named: !!r.named,
+    openJobsAip: Number(r.open_jobs_aip) || 0, provsAip: r.provs_aip ?? [],
     lmiaPositions: Number(r.lmia_positions) || 0,
     lmiaPositionsSkilled: r.lmia_positions_skilled == null ? null : Number(r.lmia_positions_skilled),
     lmiaLastQuarter: r.lmia_last_quarter ?? '',

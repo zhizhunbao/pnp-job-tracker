@@ -9,10 +9,12 @@ import { type SponsorEmployerRow } from '@/lib/sponsorEmployers'
 
 // 所在地统一省维度(Frank 08-08「怎么有的显示省有的显示市」:单省带市名造成两种粒度混排)——
 // 1-3 省列两字码,≥4 省收「N 省」;市级细节归公司弹框
-function whereText(r: SponsorEmployerRow, t: TFn): string {
-  if (!r.provs.length) return '—'
-  if (r.provs.length <= 3) return r.provs.join(t('se.where.sep'))
-  return t('se.where.multi', { n: r.provs.length })
+function whereText(r: SponsorEmployerRow, t: TFn, kind?: SponsorKind): string {
+  // AIP 视图只列大西洋四省内的岗(指定不跨省;Frank 08-08「AIP 不是只在四个省」)
+  const provs = kind === 'aip' ? r.provsAip : r.provs
+  if (!provs.length) return '—'
+  if (provs.length <= 3) return provs.join(t('se.where.sep'))
+  return t('se.where.multi', { n: provs.length })
 }
 
 // 按人群分表的列组(Frank 08-08 连拍收敛:每表只留纯雇主事实+自己那条通道的数值):
@@ -40,8 +42,11 @@ export function sponsorEmployerCols(t: TFn, lang: Lang, kind: SponsorKind) {
   const w2 = { key: 'w2', label: t('se.col.w2'), nowrap: true, sort: (r: SponsorEmployerRow) => r.lmia2q, render: (r: SponsorEmployerRow) => (r.lmia2q > 0 ? <span style={{ color: '#0f766e', fontWeight: 700 }}>{r.lmia2q}</span> : NIL) }
   const w4 = { key: 'w4', label: t('se.col.w4'), nowrap: true, sort: (r: SponsorEmployerRow) => r.lmia4q, render: (r: SponsorEmployerRow) => (r.lmia4q > 0 ? <span style={{ color: '#0f766e', fontWeight: 700 }}>{r.lmia4q}</span> : NIL) }
   const skilled = { key: 'skilled', label: t('dir.col.skilled'), nowrap: true, sort: (r: SponsorEmployerRow) => r.lmiaPositionsSkilled ?? null, render: (r: SponsorEmployerRow) => (r.lmiaPositionsSkilled ? <span style={{ color: '#0f766e', fontWeight: 700 }}>{r.lmiaPositionsSkilled}</span> : NIL) }
-  const open = { key: 'open', label: t('se.col.open'), nowrap: true, sort: (r: SponsorEmployerRow) => r.openJobs, render: (r: SponsorEmployerRow) => <span style={{ fontWeight: 700 }}>{r.openJobs}</span> }
-  const where = { key: 'where', label: t('se.col.where'), sort: (r: SponsorEmployerRow) => r.provs[0] ?? null, render: (r: SponsorEmployerRow) => <>{whereText(r, t)}</> }
+  // AIP 视图:在招/所在地只计四省内 AIP 岗(全国口径会把安省的 Tim Hortons 岗读成 AIP 可用)
+  const open = kind === 'aip'
+    ? { key: 'open', label: t('se.col.openAip'), nowrap: true, sort: (r: SponsorEmployerRow) => r.openJobsAip, render: (r: SponsorEmployerRow) => <span style={{ fontWeight: 700 }}>{r.openJobsAip}</span> }
+    : { key: 'open', label: t('se.col.open'), nowrap: true, sort: (r: SponsorEmployerRow) => r.openJobs, render: (r: SponsorEmployerRow) => <span style={{ fontWeight: 700 }}>{r.openJobs}</span> }
+  const where = { key: 'where', label: t('se.col.where'), sort: (r: SponsorEmployerRow) => (kind === 'aip' ? r.provsAip[0] : r.provs[0]) ?? null, render: (r: SponsorEmployerRow) => <>{whereText(r, t, kind)}</> }
   const base = [name, open]
   if (kind === 'lmia') return [...base, w1, w2, w4, lmia, skilled, where]
   return [...base, where]
@@ -58,8 +63,10 @@ export function SponsorCard({ r, lang, t, kind }: { r: SponsorEmployerRow; lang:
     kv.push({ k: t('se.col.lmia'), v: r.lmiaPositions > 0 ? <b style={{ color: '#0f766e' }}>{r.lmiaPositions}</b> : NILC })
     kv.push({ k: t('dir.col.skilled'), v: r.lmiaPositionsSkilled ? <b style={{ color: '#0f766e' }}>{r.lmiaPositionsSkilled}</b> : NILC })
   }
-  kv.push({ k: t('se.col.open'), v: <span style={{ fontWeight: 700 }}>{r.openJobs}</span> })
-  kv.push({ k: t('se.col.where'), v: whereText(r, t) })
+  kv.push(kind === 'aip'
+    ? { k: t('se.col.openAip'), v: <span style={{ fontWeight: 700 }}>{r.openJobsAip}</span> }
+    : { k: t('se.col.open'), v: <span style={{ fontWeight: 700 }}>{r.openJobs}</span> })
+  kv.push({ k: t('se.col.where'), v: whereText(r, t, kind) })
   return (
     <Card>
       <div style={{ fontSize: 14.5, fontWeight: 600 }}>
