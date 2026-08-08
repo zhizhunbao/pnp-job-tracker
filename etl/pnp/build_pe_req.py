@@ -20,6 +20,16 @@ build_pe_req — PE(PEI PNP Workforce)的**门槛**。与 build_pe.py 同一份�
 **没抓的**:年龄 18-59、高中/大专学历(引擎无对应因素);最低收入(PE 只写「有足够财力支付移民费用」,
 **不发数额表** —— 全国只有 BC 发布了收入表,这是结论不是缺口)。
 
+**雇主侧(B2 补,2026-08-08)**:同一份指南 PDF 里有独立的「Employer Requirements - All Streams」段
+(第 5 页),原句「The company has been in active and continuous operation under current ownership/
+management in Prince Edward Island for a minimum of two years」→ 只收经营年限一条。**该段是穷举式
+清单**("confirming the following criteria" 后面十几条 bullet,逐条读完没有雇员数/营业额字样)——
+PE PNP **没有**发布雇主侧的最低雇员数或最低营业额门槛,这是举证过的结论,不是漏抓
+(同 build_ab_req 头注的判例:先把段落读完,能确认「没有」才敢不发那一行)。
+不走 HTML 的原因同文件头:princeedwardisland.ca 的雇主专页(如有)大概率也在 Radware 后面
+(data/crawl/pe-imm 缓存里种子页之外的每一页都是验证壳),但这份指南 PDF 本身不挡,而且已经把
+Employer Requirements 整段收进来了,不需要另外碰 WAF。
+
 自校是硬闸:任何一组没解析到就**保留旧表不覆盖**并 exit 1。
 
 Usage:  uv run python etl/pnp/build_pe_req.py
@@ -54,6 +64,12 @@ RE_EXP = re.compile(r"have at least (\w+) years of full.time work experience in 
 RE_EXP_OID = re.compile(r"have at least (\w+) year of work experience directly related to the job", re.I)
 # 页脚:「PEI Workforce Application Guide • • • January 2026 – page 2」
 RE_EFFECTIVE = re.compile(r"([A-Z][a-z]+ \d{4}) ?[–—-] ?page \d+")
+# 雇主侧(B2):「Employer Requirements - All Streams」段,「The company has been in active and
+# continuous operation under current ownership/management in Prince Edward Island for a minimum of
+# two years」
+RE_EMP_YEARS = re.compile(
+    r"The company has been in active and continuous operation under current ownership.{0,5}management "
+    r"in Prince Edward Island for a minimum of (\w+) years", re.I)
 
 
 def req(**kw) -> dict:
@@ -101,6 +117,19 @@ def main() -> None:
                               f"TEER 0-3 (the Occupations in Demand stream requires only "
                               f"{WORDS[o.group(1).lower()] * 12} months, but is limited to its named NOC list)"))
 
+    # ── 雇主侧(B2):经营年限,Employer Requirements - All Streams 段,全体通道通用 ──────
+    m_emp = RE_EMP_YEARS.search(txt)
+    if not m_emp or m_emp.group(1).lower() not in WORDS:
+        problems.append("雇主侧经营年限没解析到(Employer Requirements - All Streams 段可能改版)")
+    else:
+        yrs = WORDS[m_emp.group(1).lower()]
+        reqs.append(req(stream="PEI PNP Workforce — Employer Requirements (all streams)", subject="employer",
+                        factor="empYears", value=yrs, unit="years", section="Employer Requirements - All Streams",
+                        label=f"[Employer] The company has been in active and continuous operation under current "
+                              f"ownership/management in Prince Edward Island for a minimum of {m_emp.group(1)} "
+                              f"years with identified labour gaps (no published minimum staff count or minimum "
+                              f"annual revenue in this section)"))
+
     eff = RE_EFFECTIVE.search(txt)
     if not eff:
         problems.append("没解析到指南版本(页脚「月份 年份 – page N」)")
@@ -120,7 +149,7 @@ def main() -> None:
         "requirements": reqs,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"✓ {OUT}  指南版本 {eff.group(1)},共 {len(reqs)} 条门槛")
-    for f in ("language", "experience"):
+    for f in ("language", "experience", "empYears"):
         print(f"  {f:12} {sum(1 for x in reqs if x['factor'] == f)} 条")
 
 

@@ -5,7 +5,7 @@
   "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/international-skilled-worker-with-employment-offer",
   "pageUrl": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/international-skilled-worker-occupations-in-demand",
   "guideEffective": "",
-  "fetched": "2026-08-05",
+  "fetched": "2026-08-08",
   "requirements": [
     {
       "stream": "SINP International Skilled Worker (Employment Offer / Occupations In-Demand / Express Entry)",
@@ -42,6 +42,24 @@
       "section": "Eligibility — Work experience",
       "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/international-skilled-worker-with-employment-offer",
       "factor": "experience"
+    },
+    {
+      "stream": "SINP — Employer Certificate of Registration (all streams)",
+      "subject": "employer",
+      "op": ">=",
+      "value": 24,
+      "valueText": "",
+      "unit": "months",
+      "appliesTeer": [],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "[Employer] actively operate the business as the employer for no less than 24 consecutive months in Saskatchewan; must also provide evidence of financial capacity to hire and support the international worker's full-time employment for the duration of the employment contract (no published numeric staff/revenue bar for this general requirement — see script docstring for the two conditional, non-general numeric paths: the <24-month exemption and the hospitality/truck-transport renewal revenue tiers)",
+      "section": "Apply for a Certificate of Registration — Qualification and Application Requirements",
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/hire-a-foreign-worker/recruit-and-hire-workers-with-sinp/apply-for-a-certificate-of-registration",
+      "factor": "empYears"
     }
   ]
 }

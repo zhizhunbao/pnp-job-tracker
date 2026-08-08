@@ -5,7 +5,7 @@
   "url": "https://www.alberta.ca/aaip-alberta-opportunity-stream-eligibility",
   "pageUrl": "https://www.alberta.ca/aaip-alberta-opportunity-stream-eligibility",
   "guideEffective": "",
-  "fetched": "2026-08-05",
+  "fetched": "2026-08-08",
   "requirements": [
     {
       "stream": "AAIP Alberta Opportunity Stream",
@@ -86,6 +86,60 @@
       "section": "Work experience requirements",
       "url": "https://www.alberta.ca/aaip-alberta-opportunity-stream-eligibility",
       "factor": "experience"
+    },
+    {
+      "stream": "AAIP (job offer & employer requirements, all streams)",
+      "subject": "employer",
+      "op": ">=",
+      "value": 2,
+      "valueText": "",
+      "unit": "years",
+      "appliesTeer": [],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The Alberta employer must have been in continuous and active operation in Alberta for a minimum of 2 complete fiscal years (the year used for tax or accounting purposes) prior to application submission",
+      "section": "Job offer and employer requirements — Employer requirements",
+      "url": "https://www.alberta.ca/job-offer-and-employer-requirements",
+      "factor": "empYears"
+    },
+    {
+      "stream": "AAIP (job offer & employer requirements, all streams)",
+      "subject": "employer",
+      "op": ">=",
+      "value": 400000,
+      "valueText": "",
+      "unit": "CAD/yr",
+      "appliesTeer": [],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "The Alberta employer must have a minimum total gross annual revenue of $400,000 for the most recent fiscal year (the year used for tax or accounting purposes)",
+      "section": "Job offer and employer requirements — Employer requirements",
+      "url": "https://www.alberta.ca/job-offer-and-employer-requirements",
+      "factor": "empRevenue"
+    },
+    {
+      "stream": "AAIP (job offer & employer requirements, all streams)",
+      "subject": "employer",
+      "op": ">=",
+      "value": 3,
+      "valueText": "",
+      "unit": "employees",
+      "appliesTeer": [],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "Employment of a minimum of 3 full-time (or full-time equivalent) employees in Alberta (independent contractors do not count; two part-time employees may count as one full-time equivalent at an average of 30+ hours/week combined). If an employer cannot meet the revenue and staff minimums, it may still qualify but is capped on the number of nominees it can support based on years of operation (2 years → 1 nominee, 3 years → 2 nominees, +1 per additional year); Indigenous, municipal, provincial, Government of Canada and Government of Alberta employers are exempt from the revenue and staff minimums",
+      "section": "Job offer and employer requirements — Employer requirements",
+      "url": "https://www.alberta.ca/job-offer-and-employer-requirements",
+      "factor": "empStaff"
     }
   ]
 }

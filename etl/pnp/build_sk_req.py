@@ -22,6 +22,19 @@ build_sk_req — SK(SINP International Skilled Worker)主线的**门槛**。
   · 最低家庭收入(SK **不设** —— 全国只有 BC 发布了收入表;这是结论不是缺口)
   · 学历/ECA(题库口径对不上,同 build_on_req 的处理)
 
+**雇主侧(B2 补,2026-08-08)**:抓「Apply for a Certificate of Registration」页(SINP 招外籍工人的
+注册闸门,全体 SINP 雇主都要过,与上面两条申请人主线并列的第三个官方页;不在 data/crawl/sk-sinp 缓存
+里——种子只爬了 `live-in-saskatchewan/…/saskatchewan-immigrant-nominee-program` 这条居民侧路径,
+雇主侧在 `hire-a-foreign-worker` 命名空间下,种子没覆盖,按铁律③ httpx 现抓)。
+只收经营年限一条:「actively operate the business as the employer for no less than 24 consecutive
+months in Saskatchewan」。**不收雇员数/营业额**——官方对这两项**没有通用数值门槛**,只写了定性的
+「financial capacity to hire and support the international worker's full-time employment」;真正带
+数字的只有两条**条件性**分支:① 经营不满 24 个月申请豁免,门槛是「≥5 名全职雇员 + 年营收
+≥$500,000」;② 住宿业(NAICS 72)/货运业(NAICS 484)续证时按雇员规模分五档营收下限(如住宿业
+0-5 人档 $250,000、101+ 人档 $7,500,000+)。这两条只对**特定情形/特定行业**成立,不是「SK 雇主
+通用门槛」——硬塞成 empStaff/empRevenue 通用行,会被规则引擎当成全体 SK 雇主都要达标的数,比不说
+更危险(同本文件开头「门槛错一位比没有更危险」的红线)。
+
 自校是硬闸:任何一组没解析到、或两页对不上就**保留旧表不覆盖**并 exit 1。
 
 Usage:  uv run python etl/pnp/build_sk_req.py
@@ -42,6 +55,9 @@ _SK = ("https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-sas
        "saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/")
 EO_URL = _SK + "international-skilled-worker-with-employment-offer"
 OID_URL = _SK + "international-skilled-worker-occupations-in-demand"
+# B2:雇主侧 —— 全体 SINP 雇主注册闸门(不在 sk-sinp crawl 缓存里,见文件头说明)
+EMPLOYER_URL = ("https://www.saskatchewan.ca/residents/moving-to-saskatchewan/hire-a-foreign-worker/"
+                "recruit-and-hire-workers-with-sinp/apply-for-a-certificate-of-registration")
 OUT = _paths.PNP / "sk-req.json"
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                     "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"}
@@ -59,6 +75,10 @@ RE_EXP_EO = re.compile(r"at least (\w+)[- ]year work experience in the past (\d+
 # 「a minimum of one year of full-time (minimum 30 hours per week) paid work experience … over the past 10 years」(OID 页)
 RE_EXP_OID = re.compile(r"minimum of (\w+) year of full-time \(minimum (\d+) hours per week\) paid work experience "
                         r"in a skilled occupation over the past (\d+) years", re.I)
+# 雇主侧(B2):「actively operate the business as the employer for no less than 24 consecutive months
+# in Saskatchewan」——Apply for a Certificate of Registration 页,Qualification and Application Requirements 段
+RE_EMP_YEARS = re.compile(
+    r"actively operate the business as the employer for no less than (\d+) consecutive months in Saskatchewan", re.I)
 
 
 def page_text(url: str) -> str:
@@ -109,6 +129,24 @@ def main() -> None:
                         label=f"{e.group(1).title()} year of full-time (at least {o.group(2)} hours per week) paid "
                               f"work experience in your intended occupation within the past {e.group(2)} years"))
 
+    # ── 雇主侧(B2):经营年限,全体 SINP 雇主的注册闸门,不分通道不分区 ─────────────
+    emp_txt = page_text(EMPLOYER_URL)
+    m_emp = RE_EMP_YEARS.search(emp_txt)
+    if not m_emp:
+        problems.append("雇主侧经营年限没解析到(apply-for-a-certificate-of-registration 页可能改版)")
+    else:
+        months = int(m_emp.group(1))
+        reqs.append(req(stream="SINP — Employer Certificate of Registration (all streams)", subject="employer",
+                        url=EMPLOYER_URL, factor="empYears", value=months, unit="months",
+                        section="Apply for a Certificate of Registration — Qualification and Application Requirements",
+                        label=f"[Employer] actively operate the business as the employer for no less than "
+                              f"{months} consecutive months in Saskatchewan; must also provide evidence of "
+                              f"financial capacity to hire and support the international worker's full-time "
+                              f"employment for the duration of the employment contract (no published numeric "
+                              f"staff/revenue bar for this general requirement — see script docstring for the two "
+                              f"conditional, non-general numeric paths: the <24-month exemption and the hospitality/"
+                              f"truck-transport renewal revenue tiers)"))
+
     if problems:
         print("✗ 自校未过,保留旧表不覆盖:")
         for p in problems:
@@ -125,7 +163,7 @@ def main() -> None:
         "requirements": reqs,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"✓ {OUT}  共 {len(reqs)} 条门槛")
-    for f in ("language", "experience"):
+    for f in ("language", "experience", "empYears"):
         print(f"  {f:12} {sum(1 for x in reqs if x['factor'] == f)} 条")
 
 

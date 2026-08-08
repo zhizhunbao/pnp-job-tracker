@@ -5,7 +5,7 @@
   "url": "https://www.princeedwardisland.ca/sites/default/files/publications/pei_workforce_application_guide.pdf",
   "pageUrl": "https://www.princeedwardisland.ca/en/information/office-of-immigration/pei-pnp-workforce-streams",
   "guideEffective": "January 2026",
-  "fetched": "2026-08-05",
+  "fetched": "2026-08-08",
   "requirements": [
     {
       "stream": "PEI PNP Workforce streams (Skilled Worker / Critical Worker / International Graduate / Occupations in Demand)",
@@ -47,6 +47,24 @@
       "section": "Skilled Worker Stream",
       "url": "https://www.princeedwardisland.ca/sites/default/files/publications/pei_workforce_application_guide.pdf",
       "factor": "experience"
+    },
+    {
+      "stream": "PEI PNP Workforce — Employer Requirements (all streams)",
+      "subject": "employer",
+      "op": ">=",
+      "value": 2,
+      "valueText": "",
+      "unit": "years",
+      "appliesTeer": [],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "[Employer] The company has been in active and continuous operation under current ownership/management in Prince Edward Island for a minimum of two years with identified labour gaps (no published minimum staff count or minimum annual revenue in this section)",
+      "section": "Employer Requirements - All Streams",
+      "url": "https://www.princeedwardisland.ca/sites/default/files/publications/pei_workforce_application_guide.pdf",
+      "factor": "empYears"
     }
   ]
 }
