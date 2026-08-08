@@ -50,6 +50,7 @@ export function SponsorCard({ r, lang, t, kind }: { r: SponsorEmployerRow; lang:
   const kv: { k: string; v: React.ReactNode }[] = []
   if (kind === 'lmia') {
     kv.push({ k: t('se.col.w1'), v: r.lmia1q > 0 ? <b style={{ color: '#0f766e' }}>{r.lmia1q}</b> : NILC })
+    kv.push({ k: t('se.col.w2'), v: r.lmia2q > 0 ? <b style={{ color: '#0f766e' }}>{r.lmia2q}</b> : NILC })
     kv.push({ k: t('se.col.w4'), v: r.lmia4q > 0 ? <b style={{ color: '#0f766e' }}>{r.lmia4q}</b> : NILC })
     kv.push({ k: t('se.col.lmia'), v: r.lmiaPositions > 0 ? <b style={{ color: '#0f766e' }}>{r.lmiaPositions}</b> : NILC })
     kv.push({ k: t('dir.col.skilled'), v: r.lmiaPositionsSkilled ? <b style={{ color: '#0f766e' }}>{r.lmiaPositionsSkilled}</b> : NILC })
