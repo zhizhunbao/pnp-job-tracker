@@ -100,8 +100,8 @@ export function EmployersView({ type, q, prov, page, aip, lmia, counts }: {
 
         {/* tab 二分 + 搜索(表单 GET 刷新=每个结果页都有 URL,SEO 可抓) */}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', margin: '0 0 12px' }}>
-          <a href={href('lmia', '', '', 0)} style={{ ...chipStyle(type === 'lmia'), textDecoration: 'none', display: 'inline-block' }}>{t('dir.tab.lmia')} · {counts.lmia}</a>
-          <a href={href('aip', '', '', 0)} style={{ ...chipStyle(type === 'aip'), textDecoration: 'none', display: 'inline-block' }}>{t('dir.tab.aip')} · {counts.aip}</a>
+          <a href={href('lmia', '', '', 0)} style={{ ...chipStyle(type === 'lmia'), textDecoration: 'none', display: 'inline-block' }}>{t('dir.tab.lmia')} ({counts.lmia.toLocaleString('en-CA')})</a>
+          <a href={href('aip', '', '', 0)} style={{ ...chipStyle(type === 'aip'), textDecoration: 'none', display: 'inline-block' }}>{t('dir.tab.aip')} ({counts.aip.toLocaleString('en-CA')})</a>
           <form action="/employers" method="get" onSubmit={() => track('employers-search')} style={{ display: 'flex', gap: 6, marginLeft: 'auto' }}>
             {type !== 'lmia' && <input type="hidden" name="type" value={type} />}
             {prov && <input type="hidden" name="prov" value={prov} />}

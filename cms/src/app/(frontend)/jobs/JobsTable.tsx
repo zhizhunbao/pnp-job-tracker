@@ -1394,7 +1394,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                 /* 点公司名=开公司弹框(2026-07-22 Frank「其他弹框都很清晰」:与职位/分类一致,不特殊化;
                    #182 手机直跳页退役——弹框里有「打开完整页」进深页);stop 保整卡进职位详情不被抢 */
                 company={j.company ? { text: j.company, onClick: stop(() => open('company', j.company)) } : undefined}
-                companyBadge={j.sponsorGrade != null ? <span title={t('gr.sponsorTip')} style={{ fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sp.' + j.sponsorGrade)}</span> : undefined}
+                companyBadge={j.sponsorGrade != null && !(j.sponsorGrade === 3 && !j.lmiaPositions && j.aip) ? <span title={t('gr.sponsorTip')} style={{ fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sp.' + j.sponsorGrade)}</span> : undefined}
                 /* #175:薪资退出可点集合——写死的 pointer+onClick 摘除(看着能点点了没反应比不能点更糟) */
                 /* 只认 salaryText,**不兜底回原文**:原来写 (salaryText || salary),于是清洗产物为空时
                    手机上会冒出 Job Bank 原话「$37.50 hourly」,而桌面是横线 —— 同一格两端两个样。
@@ -2329,7 +2329,7 @@ export function CompanyGradesView({ detail, t, hideSponsor }: { detail: CoGradeD
     <span key={label + 'e'} style={FG_N}>{evidence}</span>,
   ]
   const sp = detail.sponsor, act = detail.active, sal = detail.salary, fm = detail.fame
-  const fameParts = fm ? [fm.v?.wiki ? t('gr.co.fm.wiki') : '', fm.v?.provs >= 2 ? t('gr.co.fm.provs', { n: fm.v.provs }) : '', fm.v?.open ? t('gr.co.fm.open', { n: fm.v.open }) : ''].filter(Boolean) : []
+  const fameParts = fm ? [fm.v?.wiki ? t('gr.co.fm.wiki') : '', fm.v?.provs >= 2 ? t('gr.co.fm.provs', { n: fm.v.provs }) : '', fm.v?.open ? t(fm.v.open === 1 ? 'gr.co.fm.open1' : 'gr.co.fm.open', { n: fm.v.open }) : ''].filter(Boolean) : []
   return (
     <>
       {/* 字号/行高/色显式定在 ul(不靠继承):(frontend)/styles.css 的 body 白字 18px 会吃掉裸继承的 li
@@ -2337,9 +2337,9 @@ export function CompanyGradesView({ detail, t, hideSponsor }: { detail: CoGradeD
       <div style={{ fontSize: 13, color: '#374151' }}>
         <FactGrid cols={3}>
           {/* hideSponsor:公司详情页把担保维让给独立「担保记录」详情卡,速览卡不再列(不重复,#182) */}
-          {hideSponsor ? [] : sp ? row(t('gr.dim.coSponsor'), gname(sp.g, t('gr.sp.' + sp.g)), sp.v?.total ? t('gr.co.sp.d', { total: sp.v.total, n: sp.v.skilled ?? 0, q: sp.v.q || '—' }) : t('gr.co.sp.aip'))
+          {hideSponsor ? [] : sp ? row(t('gr.dim.coSponsor'), gname(sp.g, t(sp.v?.total ? 'gr.sp.' + sp.g : 'gr.sp.aip')), sp.v?.total ? t('gr.co.sp.d', { total: sp.v.total, n: sp.v.skilled ?? 0, q: sp.v.q || '—' }) : t('gr.co.sp.aip'))
             : row(t('gr.dim.coSponsor'), <span style={{ color: '#9ca3af' }}>{t('gr.co.sp.na')}</span>)}
-          {act ? row(t('gr.dim.coActive'), gname(act.g, t('gr.act.' + act.g)), t('gr.co.act.d', { open: act.v?.open ?? 0, n: act.v?.new30 ?? 0 })) : []}
+          {act ? row(t('gr.dim.coActive'), gname(act.g, t('gr.act.' + act.g)), t((act.v?.open ?? 0) === 1 ? 'gr.co.act.d1' : 'gr.co.act.d', { open: act.v?.open ?? 0, n: act.v?.new30 ?? 0 })) : []}
           {sal ? row(t('gr.dim.coSalary'), gname(sal.g, t('gr.sal.' + sal.g)), t('gr.co.sal.d', { pct: sal.v >= 0 ? `+${sal.v}` : String(sal.v) }))
             : row(t('gr.dim.coSalary'), <span style={{ color: '#9ca3af' }}>{t('gr.noData')}</span>)}
           {fm ? row(t('gr.dim.coFame'), gname(fm.g, t('gr.fm.' + fm.g)), fameParts.length ? fameParts.join('、') : undefined) : []}

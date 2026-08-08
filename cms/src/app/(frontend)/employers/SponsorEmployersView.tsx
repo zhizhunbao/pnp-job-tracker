@@ -21,7 +21,7 @@ export type SponsorQuery = { f: string; prov: string; city: string; noc: string;
 function whereText(r: SponsorEmployerRow, t: TFn): string {
   if (!r.provs.length) return r.city || '—'
   if (r.provs.length === 1) return [r.city, r.provs[0]].filter(Boolean).join(' ')
-  if (r.provs.length <= 3) return r.provs.join('、')
+  if (r.provs.length <= 3) return r.provs.join(t('se.where.sep'))
   return t('se.where.multi', { n: r.provs.length })
 }
 
@@ -54,8 +54,10 @@ export function sponsorEmployerCols(t: TFn, lang: Lang, kind: SponsorKind = '') 
     const v = lang === 'zh' ? r.aliasZh : r.aliasKo
     return v ? <span style={{ color: '#6b7280', fontSize: 12.5 }}>{v}</span> : NIL
   } }
+  // #277：AIP 兜底档（g=3 且零 LMIA）不再渲「办过 LMIA」——AIP 列已有 ✓，此格显「—」不撒谎
+  const aipOnly = (r: SponsorEmployerRow) => r.sponsorGrade === 3 && !r.lmiaPositions && r.aip
   const grade = { key: 'grade', label: t('se.col.grade'), nowrap: true, sort: (r: SponsorEmployerRow) => r.sponsorGrade ?? null, render: (r: SponsorEmployerRow) => (
-    r.sponsorGrade != null
+    r.sponsorGrade != null && !aipOnly(r)
       ? <span title={t('gr.sponsorTip')} style={{ fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sp.' + r.sponsorGrade)}</span>
       : NIL
   ) }
@@ -100,7 +102,7 @@ export function SponsorCard({ r, lang, t, kind = '' }: { r: SponsorEmployerRow; 
     <Card>
       <div style={{ fontSize: 14.5, fontWeight: 600 }}>
         <a href={`/?q=${encodeURIComponent(r.name)}`} onClick={() => track('se-view-jobs')} style={{ color: UI.primary, textDecoration: 'none' }}>{r.name}</a>
-        {r.sponsorGrade != null && <span title={t('gr.sponsorTip')} style={{ marginLeft: 6, fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', fontWeight: 600, whiteSpace: 'nowrap' }}>{t('gr.sp.' + r.sponsorGrade)}</span>}
+        {r.sponsorGrade != null && !(r.sponsorGrade === 3 && !r.lmiaPositions && r.aip) && <span title={t('gr.sponsorTip')} style={{ marginLeft: 6, fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', fontWeight: 600, whiteSpace: 'nowrap' }}>{t('gr.sp.' + r.sponsorGrade)}</span>}
       </div>
       {alias ? <div style={{ fontSize: 12.5, color: '#9ca3af', marginTop: 2 }}>{alias}</div> : null}
       <CardKV items={kv} />
@@ -197,7 +199,8 @@ export function SponsorEmployersView({ query, items, total, occTitle, pro = fals
           <DataTable<SponsorEmployerRow> rows={items} rowKey={(r) => r.name} empty={t('dir.empty')} cols={sponsorEmployerCols(t, lang, (query.f as SponsorKind) || '')} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, margin: '12px 0', fontSize: 12.5, color: '#6b7280', flexWrap: 'wrap' }}>
-          <span>{t('dir.total', { n: total })} · {t('dir.page', { p: query.page + 1, m: pages })}</span>
+          <span>{t('dir.total', { n: total.toLocaleString('en-CA') })}</span>
+          <span>{t('dir.page', { p: query.page + 1, m: pages })}</span>
           {query.page > 0 && <a href={href({ page: query.page - 1 }, query)} style={{ color: UI.primary, textDecoration: 'none' }}>{t('dir.prev')}</a>}
           {query.page + 1 < pages && <a href={href({ page: query.page + 1 }, query)} style={{ color: UI.primary, textDecoration: 'none' }}>{t('dir.next')}</a>}
         </div>
