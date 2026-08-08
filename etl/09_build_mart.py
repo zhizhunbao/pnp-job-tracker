@@ -55,6 +55,9 @@ IN_NL_EMPLOYERS = _paths.PNP / "nl-employers.json"  # NL 官网指定雇主 645 
 IN_WAGES = _paths.WAGES / "wages.json"   # NOC×省 中位工资(build_wages.py 从 ESDC 开放数据建)
 IN_PNP = _paths.PNP                      # raw/pnp/*.json(各省具名通道:每文件一条通道)
 IN_PNP_DRAWS = _paths.PNP / "draws.json"  # 省抽选事实(BC/AB/MB+ON通告,build_draws.py 产,E6-04)
+# #280:抽选流名中文灰注缓存(etl/pnp/translate_draw_streams.py 本地 qwen 批译产,增量缓存)——
+# 缺这个文件(还没跑过批译)= streamZh 全列 None,前端优雅回退纯英文,不是报错
+IN_DRAW_STREAM_ZH = _paths.PROCESSED / "draw_stream_zh.json"
 # 省提名官方打分表(E12-09)——一省一个文件,加省就往这个 list 里加,下面的组装逻辑不用改。
 # BC=SIRS 200 分制(build_bc_sirs.py 从官方 PDF 抓)/ SK=SINP Points Grid 110 分制(build_sk_points.py 抓官网表)
 IN_SCORE_TABLES = [_paths.PNP / "bc-sirs.json", _paths.PNP / "sk-points.json", _paths.PNP / "on-points.json",
@@ -913,6 +916,15 @@ def build():
                         "appliesTo": d.get("appliesTo", ""),
                         "noc": o["noc"], "name": o.get("name", ""), "gtaRestricted": bool(o.get("gtaRestricted"))})
 
+    # #280:抽选流名中文灰注(本地 qwen 批译缓存,translate_draw_streams.py 产)——
+    # 缓存没有的 stream(还没翻/翻译校验没过)streamZh 留 None,前端回退纯英文,不是报错
+    draw_stream_zh: dict = {}
+    if IN_DRAW_STREAM_ZH.exists():
+        try:
+            draw_stream_zh = {k: v.get("zh") for k, v in json.loads(IN_DRAW_STREAM_ZH.read_text(encoding="utf-8")).items()}
+        except Exception:  # noqa: BLE001
+            draw_stream_zh = {}
+
     # 省 PNP 抽选事实维度(E6-04):每行=一省一次抽选(kind=draw)或改制通告(kind=notice)。
     # 各省分制互不相通且都非 CRS(scale 标注),纯事实展示层,不进评分/匹配。每省 ≤8 条,全量历史在 raw。
     pnp_draws = []
@@ -927,12 +939,13 @@ def build():
             # 截断放宽(C4):普通省 8→12;NB 按类别定向邀请、一轮拆多行,判定层要数
             # 「某职业类别 2026 年被选中几轮」→ 给一年的量(48,与 build_draws.NB_MAX 一致)。
             for dr in v.get("draws", [])[:48 if prov == "NB" else 12]:
+                stream = dr.get("stream", "")
                 pnp_draws.append({**base, "kind": "draw", "drawDate": dr.get("date"),
-                                  "stream": dr.get("stream", ""), "score": dr.get("score"),
+                                  "stream": stream, "streamZh": draw_stream_zh.get(stream), "score": dr.get("score"),
                                   "invitations": dr.get("invitations"), "note": dr.get("note", "")})
             if v.get("notice"):
                 pnp_draws.append({**base, "kind": "notice", "drawDate": v["notice"].get("date"),
-                                  "stream": "", "score": None, "invitations": None,
+                                  "stream": "", "streamZh": None, "score": None, "invitations": None,
                                   "note": v["notice"].get("note", "")})
 
     # 各类别最近抽选(CRS/日期/邀请数)—— join 进每行,EE 弹框显示「近期抽选」

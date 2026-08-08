@@ -37,6 +37,7 @@ FSA = RAW / "fsa"                                       # GeoNames 邮编→区:
 POLICY = RAW / "policy"                                 # 各省移民政策原文(.md)
 DLI = RAW / "dli"                                       # PGWP 可申 DLI 子集(dli.json,build_dli.py 产,E12-03)
 NEWS = RAW / "news"                                     # 官方移民新闻累积表(news.json,etl/news/ 产,E12-06)
+JVWS = RAW / "jvws"                                      # StatCan JVWS 空缺岗位数(NOC×省×季度,build_jvws.py 产,E14-01)
 
 # crawl 役产物(etl/crawl/discover_sources.py,每小时):<slug>/manifest.json + html_cache/<md5>.html
 # 定向抽取脚本先查这里再考虑发请求(2026-08-03 Frank 拍板;读取入口见 etl/crawl/cache.py)

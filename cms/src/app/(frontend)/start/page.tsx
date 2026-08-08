@@ -35,7 +35,7 @@ const HOME_TTL = 10 * 60_000
 const HIST_WINDOW = 12
 const HIST_MIN_N = 4        // 同通道有效期数 <4 不出解读(样本太少的「区间」是噪音,宁可不说)
 
-type RawDraw = { province: string; draw_date: string; stream: string | null; label: string | null; score: number | null; invitations: number | null }
+type RawDraw = { province: string; draw_date: string; stream: string | null; stream_zh?: string | null; label: string | null; score: number | null; invitations: number | null }
 
 function withDrawHistory(rows: RawDraw[], limit: number): HomeStats['draws'] {
   const groups = new Map<string, RawDraw[]>()   // 键=省+通道;rows 已按日期降序,组内自然也降序
@@ -54,7 +54,7 @@ function withDrawHistory(rows: RawDraw[], limit: number): HomeStats['draws'] {
   return rows.slice(0, limit).map((r) => {
     const h = pos.get(r) ?? null
     return {
-      date: String(r.draw_date), province: r.province ?? '', stream: r.stream ?? '', label: r.label ?? '',
+      date: String(r.draw_date), province: r.province ?? '', stream: r.stream ?? '', streamZh: r.stream_zh ?? '', label: r.label ?? '',
       score: r.score == null ? null : Number(r.score),
       invitations: r.invitations == null ? null : Number(r.invitations),
       histN: h?.n ?? null, histMin: h?.min ?? null, histMax: h?.max ?? null,
@@ -77,7 +77,9 @@ async function loadHomeStats(pool: any): Promise<Omit<HomeStats, 'checkedAt' | '
     fetchTotalAndProof(pool).catch(() => null),
     // 抽选表(与 /pathways 同源 pnp_draws):前端只展示 Top N(下拉 10/20/50),
     // 但冷解读要按通道回看 12 期 —— 多取一批只在服务端用完即丢,不进 HTML
-    pool.query(`SELECT province, draw_date, stream, label, score, invitations FROM pnp_draws
+    // #280:SELECT *(不点名 stream_zh)—— 同 news.title_zh 的容缺手法:DDL 没跑前该列不存在,
+    // 点名会整块炸(catch 吞掉会连累score/invitations 一起消失);* 容缺列,400 行无压力
+    pool.query(`SELECT * FROM pnp_draws
       WHERE (score IS NOT NULL OR invitations IS NOT NULL) AND COALESCE(draw_date,'') <> ''
       ORDER BY draw_date DESC LIMIT 400`).then((r: any) => r.rows as RawDraw[]).catch(() => []),
     // 多取几条再按标题去重(同题新闻隔日重抓会出重复行);前端 Top N 下拉再切

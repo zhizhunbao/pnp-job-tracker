@@ -1,0 +1,166 @@
+{
+ "Care: Childcare": {
+  "zh": "儿童照护类",
+  "translatedAt": "2026-08-08T06:17:18.181298+00:00"
+ },
+ "Care: Health": {
+  "zh": "医护类",
+  "translatedAt": "2026-08-08T06:17:46.324248+00:00"
+ },
+ "Care: Education": {
+  "zh": "教育行业定向邀请",
+  "translatedAt": "2026-08-08T06:18:30.312717+00:00"
+ },
+ "Care: Veterinary Care": {
+  "zh": "兽医及动物保健",
+  "translatedAt": "2026-08-08T06:18:59.517996+00:00"
+ },
+ "Build: Construction Trades": {
+  "zh": "建筑业技工通道",
+  "translatedAt": "2026-08-08T06:19:26.987418+00:00"
+ },
+ "Temporary Rural/Remote Health Support Initiative": {
+  "zh": "偏远地区医护短期招募",
+  "translatedAt": "2026-08-08T06:20:11.385802+00:00"
+ },
+ "Innovate: High Economic Impact": {
+  "zh": "高经济价值创新类",
+  "translatedAt": "2026-08-08T06:20:57.637303+00:00"
+ },
+ "Alberta Express Entry Stream – Priority Sectors (Construction)": {
+  "zh": "阿省EE建筑优先类",
+  "translatedAt": "2026-08-08T06:21:36.758604+00:00"
+ },
+ "Alberta Express Entry Stream – Priority Sectors (Agriculture)": {
+  "zh": "阿省农业优先快速通道",
+  "translatedAt": "2026-08-08T06:22:20.408337+00:00"
+ },
+ "Dedicated Health Care Pathway – non-Express Entry": {
+  "zh": "医护人员独立申请通道",
+  "translatedAt": "2026-08-08T06:24:07.016106+00:00"
+ },
+ "Alberta Express Entry Stream – Law Enforcement Pathway": {
+  "zh": "阿省执法人员通道",
+  "translatedAt": "2026-08-08T06:24:41.917046+00:00"
+ },
+ "Alberta Express Entry Stream – Accelerated Tech Pathway": {
+  "zh": "阿省科技人才快速通道",
+  "translatedAt": "2026-08-08T06:25:34.643514+00:00"
+ },
+ "Rural Renewal Stream": {
+  "zh": "乡村振兴移民通道",
+  "translatedAt": "2026-08-08T06:26:08.819795+00:00"
+ },
+ "Dedicated Health Care Pathway – Express Entry": {
+  "zh": "医护人员快速通道",
+  "translatedAt": "2026-08-08T06:26:45.594649+00:00"
+ },
+ "Alberta Express Entry Stream – Priority Sectors (Aviation and skilled trade)": {
+  "zh": "阿省航空技工通道",
+  "translatedAt": "2026-08-08T06:27:12.091501+00:00"
+ },
+ "Occupation-specific selections": {
+  "zh": "定向职业抽选",
+  "translatedAt": "2026-08-08T06:27:49.446590+00:00"
+ },
+ "Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba in broad occupational category 9 – Occupation": {
+  "zh": "曼省第九类职业定向抽选",
+  "translatedAt": "2026-08-08T06:28:41.506554+00:00"
+ },
+ "Francophone selection": {
+  "zh": "法语人才通道",
+  "translatedAt": "2026-08-08T06:29:16.915154+00:00"
+ },
+ "Skilled Worker Stream": {
+  "zh": "技术工人通道",
+  "translatedAt": "2026-08-08T06:29:41.019309+00:00"
+ },
+ "Expression of Interest": {
+  "zh": "移民意向登记",
+  "translatedAt": "2026-08-08T06:30:16.402006+00:00"
+ },
+ "Occupation-specific selection": {
+  "zh": "特定职业定向抽选",
+  "translatedAt": "2026-08-08T06:30:53.716098+00:00"
+ },
+ "Completed post-secondary study in Manitoba": {
+  "zh": "在曼省完成学业",
+  "translatedAt": "2026-08-08T06:31:38.315720+00:00"
+ },
+ "Employer Job Offer: International Student stream": {
+  "zh": "留学生雇主担保通道",
+  "translatedAt": "2026-08-08T06:33:15.799651+00:00"
+ },
+ "Employer Job Offer: In-Demand Skills stream": {
+  "zh": "紧缺职业雇主担保",
+  "translatedAt": "2026-08-08T06:33:40.666420+00:00"
+ },
+ "NLPNP + AIP (ITA batch)": {
+  "zh": "纽省与大西洋邀请批",
+  "translatedAt": "2026-08-08T06:34:15.800452+00:00"
+ },
+ "AIP": {
+  "zh": "大西洋雇主担保移民",
+  "translatedAt": "2026-08-08T06:34:55.555960+00:00"
+ },
+ "Skilled Worker (NB Graduates)": {
+  "zh": "纽省技术工人毕业生",
+  "translatedAt": "2026-08-08T06:35:43.594139+00:00"
+ },
+ "Skilled Worker (NB Experience + NB Priorities)": {
+  "zh": "新省技工经验优先类",
+  "translatedAt": "2026-08-08T06:36:09.452721+00:00"
+ },
+ "Strategic Initiative (Francophone workers in New Brunswick + NB Francophone priorities)": {
+  "zh": "新省法语专项通道",
+  "translatedAt": "2026-08-08T06:37:46.077098+00:00"
+ },
+ "Strategic Initiative (NB Francophone Priorities)": {
+  "zh": "新省法语专项通道",
+  "translatedAt": "2026-08-08T06:38:23.025758+00:00"
+ },
+ "Strategic Initiative (Francophone Workers in New Brunswick)": {
+  "zh": "新省法语工作者专项",
+  "translatedAt": "2026-08-08T06:38:52.408846+00:00"
+ },
+ "Skilled Worker (NB Experience)": {
+  "zh": "有本省工作经验的技工",
+  "translatedAt": "2026-08-08T06:39:43.733933+00:00"
+ },
+ "Skilled Worker (NB Experience + NB Graduates)": {
+  "zh": "新省技工（经验或毕业生）",
+  "translatedAt": "2026-08-08T06:40:18.500930+00:00"
+ },
+ "Strategic Initiative (NB francophone priorities + Francophone workers in New Brunswick)": {
+  "zh": "新省法语人才定向抽选",
+  "translatedAt": "2026-08-08T06:41:13.197281+00:00"
+ },
+ "Strategic Initiative (Francophone Workers in New Brunswick + NB Francophone Priorities)": {
+  "zh": "新不伦瑞克法语专项通道",
+  "translatedAt": "2026-08-08T06:41:47.839718+00:00"
+ },
+ "Strategic Initiative (NB Francophone Priorities + Francophone Workers in New Brunswick)": {
+  "zh": "新省法语优先通道",
+  "translatedAt": "2026-08-08T06:42:36.869943+00:00"
+ },
+ "Skilled Worker (NB experience + NB graduates)": {
+  "zh": "新省技工（需本省经验或学历）",
+  "translatedAt": "2026-08-08T06:43:19.451047+00:00"
+ },
+ "Strategic Initiative (NB Francophone priorities)": {
+  "zh": "新省法语人才专项通道",
+  "translatedAt": "2026-08-08T06:44:00.209265+00:00"
+ },
+ "Alberta Opportunity Stream": {
+  "zh": "阿省定向邀请通道",
+  "translatedAt": "2026-08-08T07:30:03.946894+00:00"
+ },
+ "Employer Job Offer: Foreign Worker stream": {
+  "zh": "有雇主工作邀请的外籍工人",
+  "translatedAt": "2026-08-08T07:30:44.298767+00:00"
+ },
+ "Express Entry (Employment in New Brunswick)": {
+  "zh": "新不伦瑞克省就业抽选",
+  "translatedAt": "2026-08-08T07:31:39.944425+00:00"
+ }
+}

@@ -114,7 +114,7 @@ async function wikidataLookup(name: string): Promise<{ zh: string; ko: string; w
     const hits = (await wdGet({ action: 'wbsearchentities', search: name, language: 'en', type: 'item', limit: '3' }, ctrl.signal)).search || []
     const ids: string[] = hits.map((h: any) => h.id).filter(Boolean)
     if (!ids.length) return null
-    const ents = (await wdGet({ action: 'wbgetentities', ids: ids.join('|'), props: 'labels|aliases|sitelinks', languages: 'en|zh|ko' }, ctrl.signal)).entities || {}
+    const ents = (await wdGet({ action: 'wbgetentities', ids: ids.join('|'), props: 'labels|aliases|sitelinks', languages: 'en|zh|zh-cn|zh-hans|ko' }, ctrl.signal)).entities || {}
     const target = norm(name)
     for (const id of ids) {
       const e = ents[id] || {}
@@ -123,7 +123,8 @@ async function wikidataLookup(name: string): Promise<{ zh: string; ko: string; w
       if (!names.some((x: string) => x && norm(x) === target)) continue
       const title = e.sitelinks?.enwiki?.title
       if (!title) continue // 无英文维基条目=不算知名,别名也不收(与批量版同门槛)
-      return { zh: labels.zh?.value || '', ko: labels.ko?.value || '', wiki: 'https://en.wikipedia.org/wiki/' + encodeURIComponent(title.replace(/ /g, '_')) }
+      // #279:zh 裸标签常是 zh-TW/zh-HK 繁体 → 优先简体变体;都没有才退 zh(ETL 侧同款取序,见 _enrich_shelf_aliases)
+      return { zh: labels['zh-cn']?.value || labels['zh-hans']?.value || labels.zh?.value || '', ko: labels.ko?.value || '', wiki: 'https://en.wikipedia.org/wiki/' + encodeURIComponent(title.replace(/ /g, '_')) }
     }
     return null
   } catch {

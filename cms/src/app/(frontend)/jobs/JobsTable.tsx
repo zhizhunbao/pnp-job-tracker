@@ -549,7 +549,7 @@ const ORIGIN_LABEL: Record<string, string> = { jobbank: 'Job Bank', ats: 'ATS', 
 export type PnpOcc = { province: string; stream: string; label: string; type: string; program?: string; noc: string; name: string; gtaRestricted: boolean; url: string; fetched: string }
 // 省抽选事实(E6-04):score 是省自评分制(scale 标注),非 CRS —— 只作事实展示,不做资格/差分判定
 // E12-09 的 ScoreFactor 类型已随打分功能迁到 jobs/pnpSelfScore.ts(职位板不再依赖它)
-export type PnpDraw = { province: string; kind: string; drawDate: string; stream: string; score: number | null; scale: string; invitations: number | null; note: string; label: string; url: string; fetched: string }
+export type PnpDraw = { province: string; kind: string; drawDate: string; stream: string; streamZh?: string; score: number | null; scale: string; invitations: number | null; note: string; label: string; url: string; fetched: string }
 export type EeOcc = { category: string; label: string; noc: string; teer: number | null; title: string; url: string; fetched: string; drawCrs: number | null; drawDate: string; drawSize: number | null }
 export type DesigEmp = { name: string; province: string; location: string; isTech: boolean }
 export type NocDesc = { noc: string; title: string; titleZh?: string; titleKo?: string; duties: string; requirements: string; fetched: string }
@@ -973,6 +973,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
         .colResize:active{background:#3b82f6}
         .jtCards{display:none}
         .jtOnlyNarrow{display:none}
+        /* #268:桌面态原样吃外层 PnpDrawsBlock 4 列网格(见下 @media 覆写) */
+        .pnpDrawRow{display:contents}
         @media (max-width:640px){
           /* #212(第 26 轮体检续):筛选行下拉/按钮 38px 手机点不稳,统一 40(桌面维持 38);
              卡上星标 13×16、「显示更多」29 高同理——热区撑到 40,图标字号不动 */
@@ -985,6 +987,14 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           .jtTableWrap{display:none !important}
           .jtCards{display:flex}
           .jtOnlyNarrow{display:flex}
+          /* #268(375 弹框「最近抽选」卡流名截断):行改两层——流名整行(不截断,自然折行),
+             日期/分数/邀请数落次行灰字。grid-area 重排,不依赖 DOM 顺序(桌面顺序仍是 date/stream/score/inv,
+             靠 display:contents 吃外层网格,两处互不干扰) */
+          .pnpDrawRow{display:grid;grid-column:1/-1;grid-template-columns:auto auto 1fr;grid-template-areas:"stream stream stream" "date score inv";column-gap:8px;row-gap:2px;padding:6px 10px}
+          .pnpDrawRow .pdStream{grid-area:stream;white-space:normal !important;overflow:visible !important;text-overflow:clip !important;overflow-wrap:break-word;padding-left:0 !important}
+          .pnpDrawRow .pdDate{grid-area:date;padding-left:0 !important;text-align:left !important}
+          .pnpDrawRow .pdScore{grid-area:score;text-align:left !important}
+          .pnpDrawRow .pdInv{grid-area:inv;padding-right:0 !important;text-align:left !important}
         }
         @media (max-width:1350px){.jtTagline{display:none}}
         /* 量自然宽用(见 measureNatural):整表临时不折行、按内容撑开,量完立刻摘掉 —— 只存在一帧,不进画面 */
@@ -1526,10 +1536,22 @@ function PnpDrawsBlock({ province, lang, draws, limit }: { province: string; lan
             <IconWarn /> {d.note ? `${d.drawDate} ${d.note}` : t('pnpdraws.notice', { date: d.drawDate })}
           </div>,
         ] : [
-          <span key={i + 'd'} style={{ paddingLeft: 10, fontVariantNumeric: 'tabular-nums', color: '#9ca3af', whiteSpace: 'nowrap', fontSize: 12.5, opacity: reform && d.drawDate < reform.since ? .55 : 1 }}>{d.drawDate}</span>,
-          <span key={i + 's'} style={{ minWidth: 0, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12.5, opacity: reform && d.drawDate < reform.since ? .55 : 1 }} title={d.note || d.stream}>{d.stream}</span>,
-          <span key={i + 'm'} style={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'right', color: '#374151', fontSize: 12.5 }}>{d.score != null ? t('pnpdraws.min', { score: d.score }) : ''}</span>,
-          <span key={i + 'i'} style={{ paddingRight: 10, color: '#6b7280', whiteSpace: 'nowrap', textAlign: 'right', fontSize: 12.5 }}>{d.invitations != null ? t('pnpdraws.inv', { n: d.invitations }) : ''}</span>,
+          // #268(375 走查):4 列固定网格在窄屏把流名压成 3-4 字母(Fra…/Occ…/Skil…)——
+          // 包一层 .pnpDrawRow:桌面 display:contents 原样吃外层 4 列网格(逐行对齐效果不变),
+          // ≤640px 改用 grid-template-areas 两行(流名整行不截断,日期/分数/邀请数落次行灰字)
+          <div key={i} className="pnpDrawRow">
+            <span className="pdDate" style={{ paddingLeft: 10, fontVariantNumeric: 'tabular-nums', color: '#9ca3af', whiteSpace: 'nowrap', fontSize: 12.5, opacity: reform && d.drawDate < reform.since ? .55 : 1 }}>{d.drawDate}</span>
+            <span className="pdStream" style={{ minWidth: 0, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12.5, opacity: reform && d.drawDate < reform.since ? .55 : 1 }} title={d.note || d.stream}>
+              {d.stream}
+              {/* #280:zh 态英文流名+中文灰注(次行,块级子元素天然不受父 span 的 nowrap/ellipsis 约束);
+                  streamZh 缺列/还没翻到 = 不出注,纯英文,不是报错 */}
+              {lang === 'zh' && d.streamZh
+                ? <span style={{ display: 'block', fontSize: 11, color: '#9ca3af', whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip' }}>{d.streamZh}</span>
+                : null}
+            </span>
+            <span className="pdScore" style={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'right', color: '#374151', fontSize: 12.5 }}>{d.score != null ? t('pnpdraws.min', { score: d.score }) : ''}</span>
+            <span className="pdInv" style={{ paddingRight: 10, color: '#6b7280', whiteSpace: 'nowrap', textAlign: 'right', fontSize: 12.5 }}>{d.invitations != null ? t('pnpdraws.inv', { n: d.invitations }) : ''}</span>
+          </div>,
         ])}
       </div>
     </div>

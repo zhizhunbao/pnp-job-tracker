@@ -682,6 +682,10 @@ export interface PnpDraw {
    */
   stream?: string | null;
   /**
+   * 流名中文灰注(zh 界面用,en/ko 不读)
+   */
+  streamZh?: string | null;
+  /**
    * 最低邀请分 — 省自评分制,非 CRS!展示必须带 scale
    */
   score?: number | null;
@@ -2137,6 +2141,7 @@ export interface PnpDrawsSelect<T extends boolean = true> {
   kind?: T;
   drawDate?: T;
   stream?: T;
+  streamZh?: T;
   score?: T;
   scale?: T;
   invitations?: T;

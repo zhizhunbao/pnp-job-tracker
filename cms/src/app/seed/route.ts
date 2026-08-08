@@ -113,8 +113,10 @@ export async function GET(req: Request) {
     ['experience_levels', 'experience_levels', ['name'], (r) => ({ name: r.name })],
     ['pnp_occupations', 'pnp_occupations', ['province', 'stream', 'label', 'type', 'program', 'noc', 'name', 'gta_restricted', 'applies_to', 'url', 'fetched'],
       (r) => ({ province: r.province, stream: r.stream, label: r.label, type: r.type, program: r.program || 'PNP', noc: r.noc, name: r.name, gta_restricted: r.gtaRestricted, applies_to: r.appliesTo ?? '', url: r.url, fetched: r.fetched })],
-    ['pnp_draws', 'pnp_draws', ['province', 'kind', 'draw_date', 'stream', 'score', 'scale', 'invitations', 'note', 'label', 'url', 'fetched'],
-      (r) => ({ province: r.province, kind: r.kind, draw_date: r.drawDate, stream: r.stream, score: r.score, scale: r.scale, invitations: r.invitations, note: r.note, label: r.label, url: r.url, fetched: r.fetched })],
+    // ⚠️ stream_zh 是 #280 新列:必须先在生产跑 docs/sql/pnp-draws-stream-zh.sql,
+    // 否则这一段撞 42703 → 整个 seed 事务回滚(表现为 /seed 500、无 body)
+    ['pnp_draws', 'pnp_draws', ['province', 'kind', 'draw_date', 'stream', 'stream_zh', 'score', 'scale', 'invitations', 'note', 'label', 'url', 'fetched'],
+      (r) => ({ province: r.province, kind: r.kind, draw_date: r.drawDate, stream: r.stream, stream_zh: r.streamZh ?? null, score: r.score, scale: r.scale, invitations: r.invitations, note: r.note, label: r.label, url: r.url, fetched: r.fetched })],
     ['pnp_score_factors', 'pnp_score_factors', ['province', 'system', 'factor', 'kind', 'seq', 'label', 'points', 'xor_prev', 'rule', 'factor_max', 'factor_group', 'group_max', 'pass_mark', 'max_total', 'guide_effective', 'url', 'fetched'],
       (r) => ({ province: r.province, system: r.system, factor: r.factor, kind: r.kind, seq: r.seq, label: r.label, points: r.points, xor_prev: r.xorPrev, rule: r.rule, factor_max: r.factorMax, factor_group: r.factorGroup, group_max: r.groupMax, pass_mark: r.passMark, max_total: r.maxTotal, guide_effective: r.guideEffective, url: r.url, fetched: r.fetched })],
     // E13-01 省提名官方门槛(规则引擎):一行一条,subject 区分申请人/雇主,applies_* 是适用条件

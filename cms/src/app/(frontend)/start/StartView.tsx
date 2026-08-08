@@ -30,7 +30,7 @@ import type { SponsorEmployerRow } from '@/lib/sponsorEmployers'
 
 // 抽选行 + 冷解读三标量(近 12 期同通道的期数/最低/最高,服务端算好,见 start/page.tsx)
 export type PulseDraw = {
-  date: string; province: string; stream: string; label: string
+  date: string; province: string; stream: string; streamZh?: string; label: string
   score: number | null; invitations: number | null
   histN: number | null; histMin: number | null; histMax: number | null
 }
@@ -470,7 +470,12 @@ export function StartView({ stats }: { stats: HomeStats }) {
   const drawMain = (r: PulseDraw) => (r.province === 'FED' ? eeKeyDisplay(tEn, r.label) : (r.stream || r.label))
   const drawNote = (r: PulseDraw) => {
     if (lang === 'en') return ''
-    if (r.province !== 'FED') return drawStreamNote(r.stream || '', lang)
+    if (r.province !== 'FED') {
+      // #280:优先用 ETL 批译(data/processed/draw_stream_zh.json → pnp_draws.stream_zh,覆盖全部
+      // 41 个 distinct 流名);缺列/还没翻到的 stream 回退旧的手工小表(17 条,覆盖有限但零延迟)
+      if (lang === 'zh') return r.streamZh || drawStreamNote(r.stream || '', lang)
+      return drawStreamNote(r.stream || '', lang)
+    }
     const zh = eeKeyDisplay(t, r.label)
     return zh === drawMain(r) ? '' : zh
   }
