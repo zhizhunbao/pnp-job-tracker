@@ -24,13 +24,16 @@ function whereText(r: SponsorEmployerRow, t: TFn): string {
 const NIL = <span style={{ color: '#9ca3af' }}>—</span>
 export type SponsorKind = 'aip' | 'lmia' | 'named'
 export function sponsorEmployerCols(t: TFn, lang: Lang, kind: SponsorKind) {
-  // Frank 08-08「胶囊和中文应该弄两列」:别名独立一列(EN 界面无别名,列整体不出)
-  const name = { key: 'name', label: t('dir.col.employer'), sort: (r: SponsorEmployerRow) => r.name.toLowerCase(), render: (r: SponsorEmployerRow) => (
-    <a href={`/?q=${encodeURIComponent(r.name)}`} onClick={() => track('se-view-jobs')} style={{ color: UI.primary, textDecoration: 'none', fontWeight: 600 }}>{r.name}</a>
-  ) }
-  const alias = { key: 'alias', label: t('se.col.alias'), sort: (r: SponsorEmployerRow) => (lang === 'zh' ? r.aliasZh : r.aliasKo) || null, render: (r: SponsorEmployerRow) => {
-    const v = lang === 'zh' ? r.aliasZh : r.aliasKo
-    return v ? <span style={{ color: '#6b7280', fontSize: 12.5 }}>{v}</span> : NIL
+  // 中文名不再独立成列(Frank 08-08 晚拍板,替代早间「弄两列」):方案A 不生造红线下仅 ~4% 雇主有
+  // 公认中文名,一列 96% 都是「—」;改挂雇主名下灰注(与抽选流名灰注同形态),无名不占位
+  const name = { key: 'name', label: t('dir.col.employer'), sort: (r: SponsorEmployerRow) => r.name.toLowerCase(), render: (r: SponsorEmployerRow) => {
+    const v = lang === 'zh' ? r.aliasZh : lang === 'ko' ? r.aliasKo : ''
+    return (
+      <>
+        <a href={`/?q=${encodeURIComponent(r.name)}`} onClick={() => track('se-view-jobs')} style={{ color: UI.primary, textDecoration: 'none', fontWeight: 600 }}>{r.name}</a>
+        {v ? <div style={{ color: '#9ca3af', fontSize: 12, marginTop: 1 }}>{v}</div> : null}
+      </>
+    )
   } }
   const lmia = { key: 'lmia', label: t('se.col.lmia'), nowrap: true, sort: (r: SponsorEmployerRow) => r.lmiaPositions, render: (r: SponsorEmployerRow) => (r.lmiaPositions > 0 ? <span style={{ color: '#0f766e', fontWeight: 700 }}>{r.lmiaPositions}</span> : NIL) }
   const w1 = { key: 'w1', label: t('se.col.w1'), nowrap: true, sort: (r: SponsorEmployerRow) => r.lmia1q, render: (r: SponsorEmployerRow) => (r.lmia1q > 0 ? <span style={{ color: '#0f766e', fontWeight: 700 }}>{r.lmia1q}</span> : NIL) }
@@ -39,7 +42,7 @@ export function sponsorEmployerCols(t: TFn, lang: Lang, kind: SponsorKind) {
   const skilled = { key: 'skilled', label: t('dir.col.skilled'), nowrap: true, sort: (r: SponsorEmployerRow) => r.lmiaPositionsSkilled ?? null, render: (r: SponsorEmployerRow) => (r.lmiaPositionsSkilled ? <span style={{ color: '#0f766e', fontWeight: 700 }}>{r.lmiaPositionsSkilled}</span> : NIL) }
   const open = { key: 'open', label: t('se.col.open'), nowrap: true, sort: (r: SponsorEmployerRow) => r.openJobs, render: (r: SponsorEmployerRow) => <span style={{ fontWeight: 700 }}>{r.openJobs}</span> }
   const where = { key: 'where', label: t('se.col.where'), sort: (r: SponsorEmployerRow) => r.provs[0] ?? null, render: (r: SponsorEmployerRow) => <>{whereText(r, t)}</> }
-  const base = lang === 'en' ? [name, open] : [name, alias, open]
+  const base = [name, open]
   if (kind === 'lmia') return [...base, w1, w2, w4, lmia, skilled, where]
   return [...base, where]
 }
