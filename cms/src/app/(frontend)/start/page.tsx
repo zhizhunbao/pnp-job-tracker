@@ -62,9 +62,18 @@ function withDrawHistory(rows: RawDraw[], limit: number): HomeStats['draws'] {
   })
 }
 
+// 橱窗职业筛 datalist 候选(旧货架页同款手法,1h 进程缓存;~500 行,gzip 15KB)
+let occCache: { ts: number; rows: { noc: string; title: string; titleZh: string }[] } | null = null
+async function occOptions(pool: any) {
+  if (occCache && Date.now() - occCache.ts < 3600_000) return occCache.rows
+  const { rows } = await pool.query(`SELECT noc, title, COALESCE(title_zh, '') AS title_zh FROM noc_descriptions ORDER BY title`).catch(() => ({ rows: [] }))
+  occCache = { ts: Date.now(), rows: rows.map((r: any) => ({ noc: r.noc, title: r.title ?? '', titleZh: r.title_zh ?? '' })) }
+  return occCache.rows
+}
+
 async function loadHomeStats(pool: any): Promise<Omit<HomeStats, 'checkedAt' | 'provPreset'>> {
   // 每项独立 .catch(null):一张表缺/查询挂只丢它自己那块,页面照常(宁可留空)
-  const [proof, drawRes, newsRes, provExtra, sponsorRows] = await Promise.all([
+  const [proof, drawRes, newsRes, provExtra, sponsorRows, occOpts] = await Promise.all([
     fetchTotalAndProof(pool).catch(() => null),
     // 抽选表(与 /pathways 同源 pnp_draws):前端只展示 Top N(下拉 10/20/50),
     // 但冷解读要按通道回看 12 期 —— 多取一批只在服务端用完即丢,不进 HTML
@@ -76,18 +85,19 @@ async function loadHomeStats(pool: any): Promise<Omit<HomeStats, 'checkedAt' | '
     pool.query(`SELECT * FROM news ORDER BY date DESC, id DESC LIMIT 80`)
       .then((r: any) => r.rows as any[]).catch(() => []),
     loadProvExtra().catch(() => ({})),      // 省卡:IRCC 学签/工签/PNP 拿到 PR + 难度档(与 /stats 索引页同源)
-    // B2+ 雇主橱窗:复用 /employers 的进程内聚合缓存(同进程同一份,零额外查询);挂了只丢橱窗
+    // B2+ 雇主橱窗:复用进程内聚合缓存(同进程同一份,零额外查询);挂了只丢橱窗
     fetchSponsorEmployers(pool).catch(() => []),
+    occOptions(pool).catch(() => []),
   ])
   // Frank 08-08 三分表:对应三类人——没工签→LMIA、有工签→PNP 担保记录(省清单命中,二拍撤 LMIA 维)、想去海洋省→AIP
   type SR = (typeof sponsorRows)[number]
-  // Frank 08-08「不要只显示 50 条」:货架页下架后橱窗即货架本体,三表全量装填客户端翻页
-  // (瘦身:nocs/cities 表格不渲、占体积大头,置空后全量 gzip ~191KB;之后每表加筛选条件,届时再评服务端分页)
+  // Frank 08-08「不要只显示 50 条」:货架页下架后橱窗即货架本体,三表全量装填客户端翻页。
+  // 瘦身:cities 表格不渲不筛,置空;nocs 留着供职业筛(实测独立体积 0.10MB,gzip 后可忽略)
   const seSlice = (rows: typeof sponsorRows, keep: (r: SR) => boolean, order?: (a: SR, b: SR) => number) => {
     // 缓存行全站共享:filter 产新数组供排序,map 产新对象供瘦身,均不动缓存
     const hit = rows.filter(keep)
     if (order) hit.sort(order)
-    return { top: hit.map((r) => ({ ...r, nocs: [], cities: [] })), total: hit.length }
+    return { top: hit.map((r) => ({ ...r, cities: [] })), total: hit.length }
   }
   return {
     total: proof?.total || null, named: proof?.named || null,
@@ -97,6 +107,7 @@ async function loadHomeStats(pool: any): Promise<Omit<HomeStats, 'checkedAt' | '
       named: seSlice(sponsorRows, (r) => r.named),
       aip: seSlice(sponsorRows, (r) => r.aip),
     },
+    occOpts,
     draws: withDrawHistory(drawRes as RawDraw[], 50),
     news: (() => {
       // 同题去重带归一化:IRCC 同一稿隔日重发常只差尾部「(城市)」括注,精确比对抓不住

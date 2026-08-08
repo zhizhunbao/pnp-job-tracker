@@ -41,6 +41,7 @@ export type HomeStats = {
   news: { date: string; region: string; title: string; titleZh?: string; slug: string }[]
   // B2+ 雇主橱窗三分表(Frank 08-08:没工签→LMIA/有工签→PNP 担保记录/海洋省→AIP;货架页已下架,此处即唯一承载)
   sponsor: { lmia: { top: SponsorEmployerRow[]; total: number }; named: { top: SponsorEmployerRow[]; total: number }; aip: { top: SponsorEmployerRow[]; total: number } }
+  occOpts: { noc: string; title: string; titleZh: string }[]   // 橱窗职业筛 datalist 候选(noc_descriptions,~500 行)
   provExtra: Record<string, ProvExtra>            // S4 省卡:IRCC 体量 + 难度档
   provPreset: string                              // S4 预选省(档案省;匿名为空 → 默认 ON。禁 IP 定位)
   checkedAt: string
@@ -105,27 +106,89 @@ function Sec({ id, title, right, children }: { id: string; title: React.ReactNod
   const toggle = () => setOpen((v) => { const n = !v; try { localStorage.setItem('pl.fold.' + id, n ? '1' : '0') } catch { /* ignore */ } ; return n })
   return (
     <div>
-      <h2 onClick={toggle} style={{ ...secH, margin: '0 0 10px', cursor: 'pointer', userSelect: 'none' }}>
-        {title} <span style={{ color: '#9ca3af', fontSize: 14 }}>{open ? '▾' : '▸'}</span>
-        {right ? <span style={hmRight} onClick={(e) => e.stopPropagation()}>{right}</span> : null}
+      {/* 折叠开关=只点箭头(Frank 08-08 二拍;此前整行 onClick 连右侧空白都触发);padding 撑触控靶 */}
+      <h2 style={{ ...secH, margin: '0 0 10px' }}>
+        {title}
+        <span onClick={toggle} style={{ color: '#9ca3af', fontSize: 14, cursor: 'pointer', userSelect: 'none', padding: '6px 10px', margin: '-6px -4px' }}>{open ? '▾' : '▸'}</span>
+        {right ? <span style={hmRight}>{right}</span> : null}
       </h2>
       {open ? children : null}
     </div>
   )
 }
 
-// 雇主橱窗单表(Frank 08-08「加分页」):桌面 DataTable 自带翻页(10/页),手机卡 5/页 DTPager
-function SponsorBoard({ rows, kind, t, lang, total }: { rows: SponsorEmployerRow[]; kind: SponsorKind; t: TFn; lang: Lang; total: number }) {
+// 雇主橱窗单表(Frank 08-08「加分页」+「每表加筛选条件」+「按逻辑重新设计」):桌面 DataTable 翻页(10/页),
+// 手机卡 5/页;全量已在客户端 → 筛选纯前端,控件一行等高 30 照职位板站规(#282 教训)。
+// 每表按人群逻辑配筛选:
+//   lmia(没工签找肯办 LMIA 的雇主):职业 → 省 → 只看技能类(治农业季节工霸榜)→ 搜名;
+//   named(有工签打包省提名):省(省提名绑省,居首)→ 清单 → 职业 → 搜名;
+//   aip(奔大西洋):省 → 职业 → 搜名。
+function SponsorBoard({ rows, kind, t, lang, total, occOpts }: { rows: SponsorEmployerRow[]; kind: SponsorKind; t: TFn; lang: Lang; total: number; occOpts: HomeStats['occOpts'] }) {
   const PAGE = 5
   const [p, setP] = useState(0)
-  const maxPage = Math.max(1, Math.ceil(rows.length / PAGE))
-  // 货架页下架后橱窗只装前 50 行:总数>已装行数时脚注照实写「前 m 家(共 n 家)」,免得分页页数与总数对不上(Frank 08-08 实指)
-  const note = total > rows.length ? t('pulse.topEmp', { m: num(rows.length), n: num(total) }) : t('pulse.totalEmp', { n: num(total) })
+  const [fProv, setFProv] = useState('')
+  const [fStream, setFStream] = useState('')
+  const [fNoc, setFNoc] = useState('')
+  const [skilled, setSkilled] = useState(false)
+  useEffect(() => { setP(0) }, [fProv, fStream, fNoc, skilled])
+  const provOpts = useMemo(() => Array.from(new Set(rows.flatMap((r) => r.provs))).sort((a, b) => {
+    const ia = PROVS.indexOf(a), ib = PROVS.indexOf(b)
+    return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib)
+  }), [rows])
+  const streamOpts = useMemo(() => (kind === 'named' ? Array.from(new Set(rows.flatMap((r) => r.streams))).sort() : []), [kind, rows])
+  const shown = useMemo(() => rows.filter((r) => (!fProv || r.provs.includes(fProv))
+    && (!fStream || r.streams.includes(fStream))
+    && (!fNoc || r.nocs.includes(fNoc))
+    && (!skilled || (r.lmiaPositionsSkilled ?? 0) > 0)), [rows, fProv, fStream, fNoc, skilled])
+  const maxPage = Math.max(1, Math.ceil(shown.length / PAGE))
+  const note = shown.length !== total ? t('pulse.hitEmp', { m: num(shown.length), n: num(total) }) : t('pulse.totalEmp', { n: num(total) })
+  // 省下拉只显本语言全名(Frank 08-08「全部省那么宽吗」——双语并排把控件撑到 460px,单语即窄);
+  // 不引 JobsTable.provName 免把重器拖进本页包
+  const provLabel = (c: string) => { const loc = t('prov.' + c); return loc && loc !== 'prov.' + c ? loc : PROV_NAME[c] || c }
+  const ctl: React.CSSProperties = { height: 30, border: `1px solid ${UI.border}`, borderRadius: 8, background: '#fff', fontSize: 12.5, color: '#374151', padding: '0 6px', maxWidth: 210 }
+  const provSel = (
+    <select key="prov" value={fProv} onChange={(e) => setFProv(e.target.value)} style={ctl}>
+      <option value="">{t('all.prov')}</option>
+      {provOpts.map((c) => <option key={c} value={c}>{provLabel(c)}</option>)}
+    </select>
+  )
+  const streamSel = kind === 'named' ? (
+    <select key="stream" value={fStream} onChange={(e) => setFStream(e.target.value)} style={ctl}>
+      <option value="">{t('se.allStreams')}</option>
+      {streamOpts.map((s) => <option key={s} value={s}>{streamDisplay(t, s)}</option>)}
+    </select>
+  ) : null
+  // 职业筛=纯点选(Frank 08-08「手机上也没办法敲字」):选项只列本表真实存在的职业,按雇主数倒序,
+  // 常用职业置顶;字典缺题名的码原样兜底(不因缺翻译丢筛选项)
+  const occSel = useMemo(() => {
+    const cnt = new Map<string, number>()
+    rows.forEach((r) => r.nocs.forEach((n) => cnt.set(n, (cnt.get(n) ?? 0) + 1)))
+    const title = new Map(occOpts.map((o) => [o.noc, lang === 'zh' && o.titleZh ? o.titleZh : o.title]))
+    return [...cnt.entries()].sort((a, b) => b[1] - a[1]).map(([n]) => ({ noc: n, label: title.get(n) || n }))
+  }, [rows, occOpts, lang])
+  const occInput = (
+    <select key="occ" value={fNoc} onChange={(e) => setFNoc(e.target.value)} style={ctl}>
+      <option value="">{t('se.allOcc')}</option>
+      {occSel.map((o) => <option key={o.noc} value={o.noc}>{o.label}</option>)}
+    </select>
+  )
+  const skilledBtn = kind === 'lmia' ? (
+    <button key="skilled" onClick={() => setSkilled((v) => !v)}
+      style={{ ...ctl, cursor: 'pointer', fontFamily: 'inherit', ...(skilled ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8', fontWeight: 600 } : {}) }}>
+      {t('se.skilledOnly')}{skilled ? ' ✓' : ''}
+    </button>
+  ) : null
+  // 搜雇主名文本框 08-08 拍掉(「文本框是干啥的」+手机零打字):筛选全点选
+  const controls = kind === 'lmia' ? [occInput, provSel, skilledBtn]
+    : kind === 'named' ? [provSel, streamSel, occInput]
+      : [provSel, occInput]
   return (
     <>
-      <div className="plTable"><DataTable<SponsorEmployerRow> rows={rows} cols={sponsorEmployerCols(t, lang, kind)} rowKey={(r) => r.name} pageSize={10} footerNote={note} /></div>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '0 0 10px' }}>{controls}</div>
+      <div className="plTable"><DataTable<SponsorEmployerRow> rows={shown} cols={sponsorEmployerCols(t, lang, kind)} rowKey={(r) => r.name} pageSize={10} footerNote={note} empty={t('se.empty')} /></div>
       <div className="plCards">
-        {rows.slice(p * PAGE, (p + 1) * PAGE).map((r) => <SponsorCard key={r.name} r={r} lang={lang} t={t} kind={kind} />)}
+        {shown.slice(p * PAGE, (p + 1) * PAGE).map((r) => <SponsorCard key={r.name} r={r} lang={lang} t={t} kind={kind} />)}
+        {shown.length === 0 && <div style={{ padding: '18px 12px', color: '#9ca3af', fontSize: 13, textAlign: 'center' }}>{t('se.empty')}</div>}
         <div style={{ padding: '2px 2px 0' }}><DTPager page={Math.min(p, maxPage - 1)} max={maxPage} note={note} onPage={setP} /></div>
       </div>
     </>
@@ -506,7 +569,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
             grp.top.length > 0 ? (
               <div key={k} style={{ marginTop: idx === 0 ? 0 : 24 }}>
                 <Sec id={'se-' + k} title={t('se.grp.' + k)}>
-                  <SponsorBoard rows={grp.top} kind={k as SponsorKind} t={t} lang={lang} total={grp.total} />
+                  <SponsorBoard rows={grp.top} kind={k as SponsorKind} t={t} lang={lang} total={grp.total} occOpts={stats.occOpts} />
                 </Sec>
               </div>
             ) : null
