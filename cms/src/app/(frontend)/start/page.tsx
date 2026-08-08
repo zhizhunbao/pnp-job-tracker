@@ -81,11 +81,13 @@ async function loadHomeStats(pool: any): Promise<Omit<HomeStats, 'checkedAt' | '
   ])
   // Frank 08-08 三分表:对应三类人——没工签→LMIA、有工签→PNP 担保记录(省清单命中,二拍撤 LMIA 维)、想去海洋省→AIP
   type SR = (typeof sponsorRows)[number]
+  // Frank 08-08「不要只显示 50 条」:货架页下架后橱窗即货架本体,三表全量装填客户端翻页
+  // (瘦身:nocs/cities 表格不渲、占体积大头,置空后全量 gzip ~191KB;之后每表加筛选条件,届时再评服务端分页)
   const seSlice = (rows: typeof sponsorRows, keep: (r: SR) => boolean, order?: (a: SR, b: SR) => number) => {
-    // 缓存行全站共享,排序前 filter 已产出新数组,勿在原数组上排
+    // 缓存行全站共享:filter 产新数组供排序,map 产新对象供瘦身,均不动缓存
     const hit = rows.filter(keep)
     if (order) hit.sort(order)
-    return { top: hit.slice(0, 50), total: hit.length }
+    return { top: hit.map((r) => ({ ...r, nocs: [], cities: [] })), total: hit.length }
   }
   return {
     total: proof?.total || null, named: proof?.named || null,
