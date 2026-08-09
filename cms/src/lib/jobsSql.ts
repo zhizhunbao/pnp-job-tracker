@@ -531,6 +531,27 @@ async function fetchCompanyWhere(pool: any, where: string, param: unknown): Prom
     `SELECT count(*)::int n FROM jobs WHERE company_id = $1 AND COALESCE(status,'open') <> 'closed'`, [c.id])
   let sources: string[] = []
   try { sources = JSON.parse(c.ai_sources || '[]') } catch { /* ignore */ }
+  // #286 获批职业拆分:单独容缺查询(列没建/没灌 → 空数组,弹框整块不渲;不并主 SELECT 防 42703 掀整个弹框)
+  let lmiaNocs: NonNullable<CompanyDetail['lmiaNocs']> = []
+  try {
+    const nr = await pool.query(`SELECT lmia_nocs FROM companies WHERE id = $1`, [c.id])
+    const raw = nr.rows[0]?.lmia_nocs
+    const dict = typeof raw === 'string' ? JSON.parse(raw) : raw
+    if (dict && typeof dict === 'object') {
+      const entries = Object.entries(dict).map(([noc, n]) => [noc, Number(n)] as [string, number])
+        .filter(([noc, n]) => /^\d{5}$/.test(noc) && n > 0).sort((a, b) => b[1] - a[1])
+      if (entries.length) {
+        const nd = await pool.query(
+          `SELECT noc, title, title_zh, title_ko FROM noc_descriptions WHERE noc = ANY($1)`,
+          [entries.map(([noc]) => noc)]).then((r: any) => r.rows).catch(() => [])
+        const nm = new Map<string, any>(nd.map((r: any) => [String(r.noc), r]))
+        lmiaNocs = entries.map(([noc, positions]) => {
+          const r = nm.get(noc) ?? {}
+          return { noc, positions, title: r.title || '', titleZh: r.title_zh || '', titleKo: r.title_ko || '' }
+        })
+      }
+    }
+  } catch { /* 列未建=容缺,块不出 */ }
   return {
     name: c.name || '', slug: c.slug || '', website: c.website || '', websiteSource: c.website_source || '',
     industry: c.industry || '', sectors: c.sectors || '', aliasZh: c.alias_zh || '', aliasKo: c.alias_ko || '',
@@ -539,7 +560,7 @@ async function fetchCompanyWhere(pool: any, where: string, param: unknown): Prom
     aiSources: Array.isArray(sources) ? sources : [], aiFetched: iso(c.ai_fetched).slice(0, 10),
     description: c.description || '', address: c.address || '', province: c.region || '',
     lmiaPositions: num(c.lmia_positions), lmiaLmias: num(c.lmia_lmias), lmiaLastQuarter: c.lmia_last_quarter || '',
-    lmiaStreams: c.lmia_streams || '', lmiaSkilled: num(c.lmia_positions_skilled),
+    lmiaStreams: c.lmia_streams || '', lmiaSkilled: num(c.lmia_positions_skilled), lmiaNocs,
     openCount: cntRes.rows[0]?.n ?? jr.rows.length,
     jobs: jr.rows.map((j: any) => ({
       id: Number(j.id), title: j.title || '', city: j.city || '', province: j.province || '',

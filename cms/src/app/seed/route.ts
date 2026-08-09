@@ -278,6 +278,8 @@ export async function GET(req: Request) {
         lmia_positions_skilled: c.lmiaPositionsSkilled,   // B4-02:技能股(High Wage/GTS/PR-only),match/名录分档用
         // B4 时间窗(近 4/2/1 季;docs/sql/b4-lmia-windows.sql 先行)
         lmia_positions_4q: c.lmiaPositions4q, lmia_positions_2q: c.lmiaPositions2q, lmia_positions_1q: c.lmiaPositions1q,
+        // #286 职业拆分(近两年 NOC→岗位数 JSON 串;docs/sql/se286-lmia-nocs.sql 先行)
+        lmia_nocs: c.lmiaNocs ?? null,
         // E12-08:担保档(药丸)+ 四维档明细(jsonb);盒过渡期缺键 → COALESCE 保旧值(GAP1 惯例)
         sponsor_grade: c.sponsorGrade ?? null,
         score_detail: c.scoreDetail ? JSON.stringify(c.scoreDetail) : null,
@@ -285,14 +287,14 @@ export async function GET(req: Request) {
       })
     }
     const companyCols = ['slug', 'name', 'website', 'website_source', 'email', 'region', 'sectors', 'address', 'description', 'source',
-      'lmia_positions', 'lmia_lmias', 'lmia_last_quarter', 'lmia_streams', 'lmia_positions_skilled', 'lmia_positions_4q', 'lmia_positions_2q', 'lmia_positions_1q', 'sponsor_grade', 'score_detail', 'created_at', 'updated_at']
+      'lmia_positions', 'lmia_lmias', 'lmia_last_quarter', 'lmia_streams', 'lmia_positions_skilled', 'lmia_positions_4q', 'lmia_positions_2q', 'lmia_positions_1q', 'lmia_nocs', 'sponsor_grade', 'score_detail', 'created_at', 'updated_at']
     // 跳过未变行(2026-07-25):upsert 原本无条件重写每一行(含没变的),companies 2.6万 + jobs 4.3万
     // 全量重写把整轮从秒级抬到 100s+,必撞代理 ~100s 上限 —— 客户端每轮记「seed 失败」,alerts 连带停摆。
     // DO UPDATE 加 WHERE「任一业务列真变了才写」:普通列比 EXCLUDED,COALESCE 列比 COALESCE 后的终值
     // (与 SET 子句一一对应);updated_at 不参与比较,数据没变就不该跳。语义与原版唯一差异:
     // 未变行的 updated_at 不再逐轮刷新 —— 全库无按 jobs/companies.updated_at 排序/过滤的查询,已核。
     const companyPlain = ['name', 'website', 'website_source', 'email', 'region', 'sectors', 'address', 'description', 'source',
-      'lmia_positions', 'lmia_lmias', 'lmia_last_quarter', 'lmia_streams', 'lmia_positions_skilled', 'lmia_positions_4q', 'lmia_positions_2q', 'lmia_positions_1q']
+      'lmia_positions', 'lmia_lmias', 'lmia_last_quarter', 'lmia_streams', 'lmia_positions_skilled', 'lmia_positions_4q', 'lmia_positions_2q', 'lmia_positions_1q', 'lmia_nocs']
     const companyUpdate = [...companyPlain, 'updated_at']
       .map((c) => `${c}=EXCLUDED.${c}`).join(',')
       + ', sponsor_grade=COALESCE(EXCLUDED.sponsor_grade, companies.sponsor_grade)'

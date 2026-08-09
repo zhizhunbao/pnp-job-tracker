@@ -721,6 +721,8 @@ def build():
             c["lmiaPositions4q"] = sum(v[1] for q, v in qmap.items() if q in w4)
             c["lmiaPositions2q"] = sum(v[1] for q, v in qmap.items() if q in w2)
             c["lmiaPositions1q"] = sum(v[1] for q, v in qmap.items() if q in w1)
+            # #286 职业拆分(raw nocs 字典即近两年窗口聚合,与 positions 同口径):JSON 串直下沉,排序归消费端
+            c["lmiaNocs"] = json.dumps(e["nocs"], ensure_ascii=False) if e.get("nocs") else None
             lmia_hit += 1
         print(f"  LMIA 雇佣记录匹配: {lmia_hit}/{len(companies)} 公司(窗口 {all_qs[-4:] if all_qs else []})")
 
