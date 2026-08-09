@@ -11,7 +11,28 @@
 > - **C 数据**:只读 `data/crawl/fed-ee/` 97 页缓存。语言 T4–T26 → raw 23 表/105 档、mart 443 行;ECA 页 FSW 教育映射 151 行并入 FSW67。实际本地 mart=`ee_points_grid` 380(CRS 186 + FSW67 194,points NULL 22)、`ee_language_grid` 443;唯一键重复 0、evidence 缺失 0。**未跑 09 main/seed/DB_PUSH/DDL;新语言 mart 尚无 CMS/生产消费链,不能对外声称 IELTS 原分已可自动换 CLB。**
 > - 全程未启 dev server、未 commit/push;`data/raw/ee/draws.json` 等定时 ETL 既有脏改保留,不属于本批。
 >
-> **⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡ 最新交接(2026-08-06,「NL 掉桶修复 + C6 效果图」)**
+> **⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡ 最新交接(2026-08-09,「批A+批B 多 agent 并行:对话入口四修 + G-AIP 入库」de819f3..f2d762a)**
+> 蓝本=docs/design/对话闭环总设计-20260809.md §3;拆法照 next-session-status 置顶(A1 Terra 示例三档/A2 Sol 编排红线/B Terra G-AIP/Lead 收口);实施文档=docs/implementation/对话闭环-批AB/01-03。
+> - **✅ 批A D1-D4 四修**(`0c50a1e`):①示例句三档动态化(chatExamples 纯函数+/api/users/me 复用;
+>   **Lead 补刀:③档三候选全部织入职业名** —— 编排层只有档案**写方向**(profileFill)没有**读方向**,
+>   句里无职业首轮必撞 noOcc;读方向记批C);②D1 用法类问句 guide 分支(chat_logs noOcc 4/4 全是自家
+>   CTA 预填句,isUsageQuestion 两半都命中才算,answerUsage 三语不进模型);③D2 追问轮短答放行
+>   (isFollowupTurn,首轮四字门未动);④D3 登录用户高置信槽**只补空**回写 users.profile+答复尾行告知
+>   (手填优先/匿名不存/status 三档白名单/provs 无第三方主张才写)。七道逐句闸/claims 硬闸零改动。
+>   **验收实测**(dev 直连生产+真 LLM):33102 锚定档案(batab-33102@test.local,id 109)三态示例
+>   全实渲、③档三句句句带数字答上(PGWP 18 个月窗/BC 在招 20 岗/SW 24 个月差 6 个月/$31,264 收入线),
+>   D1 用 chat_logs 原句冒烟过。测试:tsc 绿、对话全家+funnel+chatExamples 92 绿、全量 456 绿 4 红=
+>   既有(SIRS 口径漂移/pathVerdict mart 漂移×2/活体 LLM 金标;stash 对拍同红)。顺修 funnel spec
+>   存量红(647e891 加雇主线三事件漏更断言)。**实测顺带记两条组稿层旧账(非本批)**:把没答过的
+>   经验/CRS 说成「你的」(非数字断言无闸门旧账的新实例)。
+> - **✅ 批B G-AIP 36 行入库**(`f2d762a`,#287 硬前置):build_aip_rules.py 只读 crawl 缓存,36 行
+>   quote-anchored(经验 1560 小时含大西洋毕业生豁免/offer 按 TEER 时长+**医疗职业互认 31201·31301
+>   经验可拿 33102·44101 offer=直锚完美案例**/语言 CLB5·4 分档/学历+ECA/资金按 familySize 10 档);
+>   fed-aip crawl 深度 2→3 补爬 6 明细页(eligibility 是索引页,照 fed-ee 先例);raw 字符串 value 由
+>   09 既有闸折 valueCode。build_pnp_requirements 单独重算 264→300 行既有零变。
+>   **⏭️ 尾验一件:push 后首个整点批重算 mart+seed,生产 `pnp_requirements` program='AIP' 应 0→36 行**。
+> - 批C(tripleVerdict 组装器+金标)下一批开工条件已齐(AIP 行入库后金标才诚实);批D 效果图先行;
+>   待 Frank 拍(总设计 §4):定价形态荐 B、槽回填告知已按批A描述落答复尾行、批E 排期。
 > - **✅ C5 遗留首修落地**(明细=C5 文档 §4.5,比原方案多挖一层根):① NL 经验门槛 op='none' 却因
 >   「缺经验月数」被 pickGate 拖成 needs-info —— 现 need=0 ⇒ gap 恒 0 不记缺槽,**第一轮 NL 直接
 >   open tier0 浮顶**;② needs-info 的 tier 改成**潜力上界**(缺槽门槛按 0 经验/0 居住记档)且排序
