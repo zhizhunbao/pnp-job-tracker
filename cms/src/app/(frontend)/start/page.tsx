@@ -118,7 +118,15 @@ async function loadHomeStats(pool: any, payload: any): Promise<Omit<HomeStats, '
     sponsor: {
       // LMIA 表按新近度排(Frank 08-08「按最近 LMIA 数排前面」,与 #278 新近度主轴同拍):最近一季→近半年→近一年→在招
       lmia: seSlice(sponsorRows, (r) => r.lmiaPositions > 0, (a, b) => b.lmia1q - a.lmia1q || b.lmia2q - a.lmia2q || b.lmia4q - a.lmia4q || b.openJobs - a.openJobs),
-      named: seSlice(sponsorRows, (r) => r.named),
+      // #285 三灯默认序(Frank 08-08「投了入职了有什么用」终态,PNP 表=named 视图):
+      // 灯①雇主资格(达标 0 → 待核/公共部门 1 → 差项 2:差项=对照官方门槛明确不够,投递优先级垫底,
+      // 与列内 VERDICT_RANK「信息量大先看」不同轴)→ 灯②有担保行为记录(LMIA 获批或 AIP 指定)→ 在招数。
+      // 灯③职业紧缺=named 视图准入条件,行行全亮不参与排序;全 unknown(判定列未激活)时自然退化为 记录→在招。
+      named: seSlice(sponsorRows, (r) => r.named, (a, b) => {
+        const prio = (r: SR) => (r.verdict.state === 'met' ? 0 : r.verdict.state === 'short' ? 2 : 1)
+        const rec = (r: SR) => (r.lmiaPositions > 0 || r.aip ? 1 : 0)
+        return prio(a) - prio(b) || rec(b) - rec(a) || b.openJobs - a.openJobs
+      }),
       aip: seSlice(sponsorRows, (r) => r.aip),
     },
     occOpts,
