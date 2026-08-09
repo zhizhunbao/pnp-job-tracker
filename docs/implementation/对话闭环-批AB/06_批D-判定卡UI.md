@@ -68,7 +68,7 @@
 - [x] 验收标准 ①-⑧ 全勾
 - [x] 生产库零写入(路由只读)
 - [x] commit 后 `git show --stat` 自查(并行 session 暂存危害;6dccd68=8 文件全为本批)
-- [ ] push 后按 verify-deploy 惯例拉新路由验生产换版
+- [x] push 后按 verify-deploy 惯例拉新路由验生产换版(f9fd91f 上线后 /api/triple-verdict?job=11039073 生产 200:免费 6 行齐、付费 6 行全 locked 零 params;home 5.3s 恢复)
 
 ## 7. 实测发现
 
