@@ -8,7 +8,7 @@
  *
  * 四条金标(实施文档 C5c 验收):
  *   ① C01 档案一句话进 → facts 里有 FED-EE 排除(CRS 199 对照 CEC 516)、NL tier0、ON tier1、
- *      MB 三条 warning、AIP「本站未收录」;
+ *      MB 三条 warning;AIP 自 2026-08-09 批B 灌入 36 行门槛后已判得了,不再是四态里的「本站未收录」;
  *   ② 缺槽(只说职业)→ followups 反问那几个槽,facts 里一个裁决数字都没有;
  *   ③ 普通职位问法**不触发** lookupVerdict(按它独占的那张表计数);
  *   ④ guardAnswer 放行含裁决数字的答复、拦下编造的数字。
@@ -149,7 +149,7 @@ describe('金标 C01:一句话进 → 不编数字的路径裁决', () => {
   let pool: FakePool
   beforeEach(() => { pool = new FakePool(); H.slots = C01_SLOTS; H.answer = '判定结果在下面,每条都带官方出处。' })
 
-  it('facts 里有 FED-EE 排除(CRS 199 对照 CEC 516)、NL tier0、ON tier1、MB 三条 warning、AIP 未收录', async () => {
+  it('facts 里有 FED-EE 排除(CRS 199 对照 CEC 516)、NL tier0、ON tier1、MB 三条 warning、AIP 已入库', async () => {
     const r = await orchestrate(pool, { text: C01_TEXT, lang: 'zh' })
     const v = verdictFacts(r.facts)
     expect(v.length, '裁决 facts 没接进来').toBeGreaterThan(8)
@@ -179,14 +179,15 @@ describe('金标 C01:一句话进 → 不编数字的路径裁决', () => {
     expect(v.some((f) => f.value === 715)).toBe(true)
     expect(v.some((f) => f.value === 632)).toBe(true)
 
-    // AIP:库里一行门槛都没有 → 四态说「本站未收录」,**不许**说成官方没有要求,更不许冒出 1,560
-    const aip = v.find((f) => f.label.includes('Atlantic Immigration Program'))!
-    expect(aip, 'AIP 那条要出现在 facts 里').toBeTruthy()
-    expect(aip.unit).toBe('status')
-    expect(aip.valueText).toContain('本站尚未收录')
-    // 「1,560 小时」是 CEC/FSW 官方原句里的数(联邦那条通道真有),但它**不许出现在 AIP 这一行上** ——
-    // 库里一行 AIP 门槛都没有,那条上的任何小时数都只能来自文档记忆 = 编造
-    expect(/1,?560/.test(`${aip.label}|${aip.valueText}`), 'AIP 那条冒出了库里没有的小时数').toBe(false)
+    // 2026-08-09 批B AIP 36 行入库后更新
+    // (原断言:AIP 那条必须是四态 status fact、valueText 含「本站尚未收录」、不许出现 1,560)
+    // AIP 现在判得了(open + tier2,见本文件 §⑥ 的正向断言),于是:
+    //   ① 它不再是四态里的 not-collected 那一条 —— **不许再冒出「AIP 本站尚未收录」这句假话**;
+    //   ② 按 tier 排序它排在 top-3 open 之外(NL/ON/NB + 带估分的 MB),facts 里不出现是对的,
+    //      所以这里断言的是「出现就必须是判得了的形态」,而不是「必须出现」。
+    const aip = v.filter((f) => f.label.includes('Atlantic Immigration Program'))
+    expect(aip.some((f) => f.unit === 'status'), 'AIP 门槛已入库,不该再有四态 status 行').toBe(false)
+    expect(aip.some((f) => f.valueText.includes('尚未收录')), '不许再说 AIP 本站未收录').toBe(false)
 
     // 杠杆:CLB 6→8 的加分是查官方分值表查出来的
     expect(v.some((f) => f.label.includes(T.vLeverClb(8)) && f.value === 8 && f.label.startsWith('ON'))).toBe(true)
@@ -366,7 +367,13 @@ describe('lookupVerdict(薄封装)', () => {
     expect(r.availability).toBe('ok')
     expect(r.pathways).toHaveLength(13)
     expect(r.pathways.filter((v) => v.verdict === 'excluded').map((v) => v.key).sort()).toEqual(['FED-EE', 'PE-sw'])
-    expect(r.pathways.find((v) => v.key === 'AIP')!.availability).toBe('not-collected')
+    // 2026-08-09 批B AIP 36 行入库后更新(原断言:availability='not-collected')
+    // 正向断言:门槛行在库 → 四态回 ok、判得出 tier;这一条测的仍是「四态按库里有没有门槛行说话」
+    const aip = r.pathways.find((v) => v.key === 'AIP')!
+    expect(aip.availability).toBe('ok')
+    expect(aip.verdict).toBe('open')
+    expect(aip.tier, '1,560 小时 = 官方自写的 1 年 → 12 个月 → tier2').toBe(2)
+    expect(r.pathways.every((v) => v.availability === 'ok'), '13 条门槛行现已齐全').toBe(true)
     expect(r.levers.map((l) => l.key).sort()).toEqual(['clb-boost', 'teer-downgrade'])
   })
 

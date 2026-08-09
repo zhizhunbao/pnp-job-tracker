@@ -432,12 +432,26 @@ const ruleProfileOf = (p: VerdictProfile, total: number | null): RuleProfile => 
   area: null,
 })
 
-/** 联邦三子通道的语言行:appliesTeer 是空的,TEER 档写在 stream 键里(teer-0-1 / teer-2-3)。 */
+/**
+ * 联邦三子通道的语言行:appliesTeer 是空的,TEER 档写在 stream 键里(teer-0-1 / teer-2-3 / teer-0-3 / teer-4)。
+ *
+ * 🔴 `teer-a-b` 是**闭区间**,不是两个端点的枚举(2026-08-09 批C 实证的 bug):
+ *    CEC/FSW 的 teer-0-1 / teer-2-3 恰好端点=全集,当枚举读从没炸过;批B 灌进 AIP 的
+ *    teer-0-3(CLB 5)/ teer-2-4 后,TEER 1 与 TEER 2 的 job offer **一条语言门槛行都挑不到**,
+ *    上游 langRowsSeen=0 于是输出「本站尚未收录 AIP 的语言门槛条文」—— 库里明明有,这是一句假话。
+ *    改法:恰好两个数字 = 闭区间展开(两元枚举形态天然兼容,既有判定零变化);
+ *    三个及以上数字仍按枚举读(库里目前没有这种写法,不为它猜区间语义)。
+ */
 const fedLangApplies = (r: Requirement, teer: number | null): boolean => {
   const m = /^teer-([\d-]+)$/.exec(r.stream || '')
   if (!m) return true                                  // first-official / speaking-listening / reading-writing:该子通道通用
   if (teer == null) return false
-  return m[1].split('-').map(Number).includes(teer)
+  const parts = m[1].split('-').map(Number)
+  if (parts.length === 2) {
+    const [lo, hi] = parts[0] <= parts[1] ? parts : [parts[1], parts[0]]
+    return teer >= lo && teer <= hi
+  }
+  return parts.includes(teer)
 }
 
 // ── 主函数 ──────────────────────────────────────────────────────────────────

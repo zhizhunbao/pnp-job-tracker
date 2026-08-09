@@ -9,6 +9,10 @@
 // fixture = **2026-08-09 生产库只读实查冻结**(生产库禁写)。复查用的 SELECT 逐块贴在各常量上方,
 // 数字对不上时先跑那句 SELECT 再改断言 —— 不许反过来改引擎迁就断言。
 //
+// ⚠️ TEER 覆盖面:本案例是 TEER 3,只走得到 AIP 语言行 `teer-0-3` 的**端点**。TEER 1/2 那两档
+//    (曾被 pathVerdict.fedLangApplies 的端点枚举解析漏掉)由 `pathVerdict.int.spec.ts` 的
+//    「teer-0-3 闭区间」回归组覆盖,本金标不重复摆。
+//
 // 验的是真组件:tripleVerdict 真调 employerVerdict(#284)、pathVerdict(C5)、rules.evaluateRequirements,
 // 没有任何复刻件/桩件。VerdictData 用冻结行组装(不读 mart:AIP 那 36 行是 08-09 批B 直接进库的,
 // mart 还没跟上;拿 mart 当输入这个金标就验不到「AIP 行入库后比路翻案」)。

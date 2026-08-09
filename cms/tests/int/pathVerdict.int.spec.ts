@@ -60,12 +60,16 @@ const byKey = (list: PathwayVerdict[], key: string): PathwayVerdict => {
 
 describe('mart 实况', () => {
   it('六张表的行数与 C4 入库一致', () => {
-    expect(data.requirements).toHaveLength(259)
+    // 2026-08-09 批B AIP 36 行入库后更新:门槛表 259 → 300(264 既有 + 36 AIP)
+    expect(data.requirements).toHaveLength(300)
+    expect(data.requirements.filter((r) => r.program === 'AIP')).toHaveLength(36)
     expect(data.occupations).toHaveLength(630)
-    expect(data.draws).toHaveLength(145)
     expect(data.scoreFactors).toHaveLength(164)
     expect(data.eeGrid).toHaveLength(380)
-    expect(data.designatedEmployers).toHaveLength(3476)
+    // 抽选表与指定雇主名录**按周增长**(抽选每轮一行、名录每次抓取补差)——钉死行数是纯脆断言,
+    // 只守「不许倒退」;门槛/清单/分值表那四张是政策表,改版要炸得出来,继续钉死。
+    expect(data.draws.length).toBeGreaterThanOrEqual(146)
+    expect(data.designatedEmployers.length).toBeGreaterThanOrEqual(3867)
   })
   it('注册表 13 条通道全部出结果', () => {
     const keys = run().map((v) => v.key).sort()
@@ -179,7 +183,12 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
     // BC Build 是定向抽选:72310 在定向清单上、抽选线 97 摆出来但不冒充成「你的分」
     const build = byKey(list, 'BC-build')
     expect(build.reasons.some((r) => /Build: construction trades/i.test(r.evidence?.label ?? ''))).toBe(true)
-    expect(build.reasons.some((r) => /97/.test(r.text) && /Build: Construction Trades/.test(r.text))).toBe(true)
+    // 抽选线**从数据里取最近一轮**,不钉死分数:Build 每轮都开(08-06 那轮 88 分已把 07-09 的 97 顶掉),
+    // 钉一个分数 = 每来一轮抽选炸一次,炸的还不是引擎(2026-08-09 随批B 金标更新一并改口径)
+    const lastBuild = data.draws.filter((d) => d.province === 'BC' && /Build: Construction Trades/.test(d.stream) && d.score != null)
+      .sort((a, b) => (a.drawDate < b.drawDate ? 1 : -1))[0]
+    expect(lastBuild, 'BC Build 抽选行不该消失').toBeTruthy()
+    expect(build.reasons.some((r) => r.text.includes(String(lastBuild.score)) && /Build: Construction Trades/.test(r.text))).toBe(true)
     expect(build.score, 'BC 没有自评估分器 → 不给 score,只摆线').toBeUndefined()
   })
 
@@ -219,21 +228,82 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
   })
 })
 
-// ── 金标 ③:AIP = needs-info(库缺行,不许拿文档记忆当库)────────────────────
+// ── 金标 ③:AIP 门槛已入库(2026-08-09 批B),从「缺口」翻成「判得了」──────────
+//
+// 本节原来断言的是**缺口本身**(AIP 0 行 → needs-info + not-collected,且一个字都不许提 1,560 小时)。
+// 批B 把 36 行 quote-anchored 灌进库之后,那套断言测的是一个已经不存在的世界。
+// 这里整节翻成**正向**:判得了、数字全部来自官方原句、TEER 分档挑得对。
 
-describe('金标 ③:AIP 的经验门槛本站没收录', () => {
-  it('AIP = needs-info + not-collected,并且一个字都不许提 1,560 小时', () => {
+describe('金标 ③:AIP 门槛已入库,判得了', () => {
+  it('AIP = open + ok + tier2;1,560 小时按官方自写的「1 年」折成 12 个月', () => {
+    // 2026-08-09 批B AIP 36 行入库后更新(原断言:needs-info + not-collected + 禁止出现 1,560)
     const aip = byKey(run(), 'AIP')
-    expect(aip.verdict).toBe('needs-info')
-    expect(aip.availability).toBe('not-collected')
-    expect(aip.tier).toBeNull()
-    expect(aip.score).toBeUndefined()
-    const text = JSON.stringify(aip)
-    expect(/1560|1,560/.test(text), '库里没有 AIP 门槛行,任何数字都只能来自文档记忆 = 编造').toBe(false)
-    expect(aip.reasons.some((r) => r.kind === 'needs-info' && /本站/.test(r.text))).toBe(true)
+    expect(aip.verdict).toBe('open')
+    expect(aip.availability).toBe('ok')
+    expect(aip.tier).toBe(2)
+    expect(aip.score, 'AIP 没有自评估分器 → 不给分').toBeUndefined()
+    // 数字必须**出现**,而且必须来自官方原句(quote),不是代码里手写的
+    expect(aip.reasons.some((r) => /1,560 hours/.test(r.quote ?? ''))).toBe(true)
+    expect(aip.reasons.some((r) => r.kind === 'gap' && /工作经验门槛 12 个月/.test(r.text))).toBe(true)
+    // 折算口径:小时数不许拿工时去除,只认 basis 里官方自己写的 minYears
+    expect(aip.reasons.some((r) => /52|30 小时/.test(r.text)), '不许出现按工时反推的月数').toBe(false)
   })
-  it('库里确实一行 AIP 门槛都没有(断言的是缺口本身)', () => {
-    expect(data.requirements.filter((r) => r.program === 'AIP')).toHaveLength(0)
+
+  it('库里 AIP 门槛 36 行(断言的是数据在位,不再是缺口)', () => {
+    // 2026-08-09 批B AIP 36 行入库后更新(原断言:toHaveLength(0))
+    const aipRows = data.requirements.filter((r) => r.program === 'AIP')
+    expect(aipRows).toHaveLength(36)
+    expect(aipRows.every((r) => !!(r.valueText || r.label)), '每行都得有官方原句').toBe(true)
+    expect(aipRows.every((r) => !!r.url), '每行都得有出处').toBe(true)
+  })
+
+  // ── 区间解析回归(2026-08-09 批C 修 fedLangApplies)───────────────────────
+  // `teer-a-b` 是闭区间不是端点枚举。CEC/FSW 的 teer-0-1 / teer-2-3 端点=全集,当枚举读从没炸过;
+  // 批B 的 AIP teer-0-3 当枚举读会让 **TEER 1 / TEER 2** 一条语言行都挑不到 →
+  // 上游 langRowsSeen=0 输出「本站尚未收录 AIP 的语言门槛条文」,而库里明明有 = 假话。
+  const aipLangOf = (teer: number) =>
+    byKey(run({ ...C01, teer }), 'AIP').reasons.filter((r) => /语言门槛/.test(r.text))
+
+  for (const teer of [0, 1, 2, 3]) {
+    it(`teer-0-3 闭区间:TEER ${teer} 的 offer 挑得到 AIP 语言行 CLB 5`, () => {
+      const rows = aipLangOf(teer)
+      expect(rows, `TEER ${teer} 一条语言行都没挑到`).toHaveLength(1)
+      expect(rows[0].text).toContain('CLB 5')
+      expect(rows[0].kind).toBe('met')                    // C01 是 CLB 6
+      expect(rows[0].quote).toContain('CLB 5 for job offer in TEER 0, 1, 2 or 3')
+    })
+  }
+
+  it('teer-4:TEER 4 走 CLB 4 那一档,不串到 CLB 5', () => {
+    const rows = aipLangOf(4)
+    expect(rows).toHaveLength(1)
+    expect(rows[0].text).toContain('CLB 4')
+  })
+
+  it('未收录语言门槛的假话不再出现(TEER 1/2 曾是重灾区)', () => {
+    for (const teer of [0, 1, 2, 3, 4]) {
+      const aip = byKey(run({ ...C01, teer }), 'AIP')
+      expect(aip.reasons.some((r) => /尚未收录.*语言/.test(r.text)), `TEER ${teer}`).toBe(false)
+    }
+  })
+
+  it('两种写法的解析:teer-0-3(区间)与 teer-4-5(区间,端点=全集)各自只覆盖自己那几档', () => {
+    // 库里眼下只有 teer-0-3 / teer-4 两种;teer-4-5 这种写法用合成门槛行验,防下一批改口径时又踩回去
+    const synth = (stream: string, value: number): Requirement => ({
+      ...(data.requirements.find((r) => r.program === 'AIP' && r.factor === 'language') as Requirement),
+      stream, value,
+    })
+    const synthData: VerdictData = {
+      ...data,
+      requirements: [
+        ...data.requirements.filter((r) => !(r.program === 'AIP' && r.factor === 'language')),
+        synth('teer-0-3', 5), synth('teer-4-5', 4),
+      ],
+    }
+    const clbOf = (teer: number) => pathVerdict({ ...C01, teer }, synthData)
+      .find((v) => v.key === 'AIP')!.reasons.filter((r) => /语言门槛/.test(r.text)).map((r) => /CLB (\d)/.exec(r.text)?.[1])
+    expect([0, 1, 2, 3].map(clbOf)).toEqual([['5'], ['5'], ['5'], ['5']])
+    expect([4, 5].map(clbOf)).toEqual([['4'], ['4']])
   })
 })
 
@@ -353,7 +423,10 @@ describe('红线不变量', () => {
       if (v.availability === 'not-collected') expect(v.verdict).toBe('needs-info')
       else expect(v.availability).toBe('ok')
     }
-    expect(list.filter((v) => v.availability === 'not-collected').map((v) => v.key)).toEqual(['AIP'])
+    // 2026-08-09 批B AIP 36 行入库后更新(原断言:['AIP'])——最后一条 not-collected 的通道被补齐了,
+    // 13 条现在门槛行齐全。这条断言的意思不变:availability 只许由「库里有没有那条通道的门槛行」决定。
+    expect(list.filter((v) => v.availability === 'not-collected').map((v) => v.key)).toEqual([])
+    expect(list.every((v) => v.availability === 'ok')).toBe(true)
   })
 
   it('excluded 不带 tier;open 一定有 tier', () => {
@@ -399,12 +472,14 @@ describe('jobPathways:72310 TEER 2 的职业级名单', () => {
     expect(months).toEqual([...months].sort((a, b) => a - b))
   })
 
-  it('口径与清单信号:MB 是同雇主在职时长;BC Build 清单点名;AIP 门槛未收录', () => {
+  it('口径与清单信号:MB 是同雇主在职时长;BC Build 清单点名;AIP 门槛已收录', () => {
     expect(byK('MB-swm').tenure).toBe(true)
     expect(byK('MB-swm').months).toBe(6)
     expect(byK('BC-build').listedIn).toBe(true)
-    expect(byK('AIP').availability).toBe('not-collected')
-    expect(byK('AIP').months).toBeNull()
+    // 2026-08-09 批B AIP 36 行入库后更新(原断言:not-collected + months=null)
+    expect(byK('AIP').availability).toBe('ok')
+    expect(byK('AIP').months, '1,560 小时 = 官方自写的 1 年 → 12 个月').toBe(12)
+    expect(byK('AIP').tenure, 'AIP 量的是同职业经验,不是同雇主在职时长').toBe(false)
   })
 
   it('清单适用范围不越界:SK OID/EE 那 152 条不把 Employment Offer 通道判死', () => {

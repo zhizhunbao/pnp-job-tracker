@@ -54,8 +54,11 @@
 | `cms/src/lib/tripleVerdict.ts` | **新增**(唯一新逻辑文件) |
 | `cms/tests/int/tripleVerdict.int.spec.ts` | **新增**(金标) |
 | `docs/implementation/对话闭环-批AB/05_批C-tripleVerdict组装器.md` | **新增**(本文) |
+| `cms/src/lib/pathVerdict.ts` | **收尾批改**:仅 `fedLangApplies` 一个解析点(§7.2),判定逻辑与注册表零改动 |
+| `cms/tests/int/pathVerdict.int.spec.ts` | **收尾批改**:6 条过期金标翻正向 + 区间回归组(§7.3) |
+| `cms/tests/int/chatVerdict.int.spec.ts` | **收尾批改**:2 条过期金标翻正向(§7.3) |
 
-其余文件**零改动**(`employerVerdict.ts` / `pathVerdict.ts` / `rules.ts` / collections / schema / UI 全部未碰)。
+`employerVerdict.ts` / `rules.ts` / collections / schema / UI 全程未碰。
 
 ## 5. 现有代码(复用点)
 
@@ -121,14 +124,32 @@
 联邦 CEC/FSW 的 `teer-0-1`/`teer-2-3` 恰好是两元枚举所以从没炸过;批B 引入区间式 stream 后,
 **TEER 1 / TEER 2 的 AIP job offer 会一条语言门槛行都挑不到**,`langRowsSeen=0` → 输出
 「本站尚未收录 AIP 的语言门槛条文」——**这是一句假话**(库里明明有)。
-本案例 TEER 3 侥幸命中,金标测不出来。**本批不改**(红线:不动既有判定件),记入 §8-② 交下一批。
 
-### 7.3 既有测试红 10 条,全部是批B 落地的既有红,与本批无关
+**已修(2026-08-09 收尾批,Lead 授权)**:`fedLangApplies` 恰好两个数字时按**闭区间**展开,
+三个及以上仍按枚举(库里没有这种写法,不为它猜语义);`pathVerdict` 其余判定一行未动。
+回归组见 `pathVerdict.int.spec.ts`「金标 ③ → teer-0-3 闭区间」:TEER 0/1/2/3 各一条(挑得到 CLB 5 行、
+quote 对得上)、TEER 4 走 CLB 4 不串档、五档全不许再出现「尚未收录语言门槛」、
+外加 `teer-0-3` / `teer-4-5` 两种写法的合成解析单测。
 
-`pathVerdict.int.spec.ts`(6)与 `chatVerdict.int.spec.ts`(2)的金标写死「AIP 门槛本站 0 行 / not-collected」
-与 mart 259 行 —— 批B 把 AIP 36 行灌进 mart 后(现 300 行)这些断言自然翻红,**断言过期,不是引擎坏**。
-另 `chatTools`(BC SIRS,连生产库)/`chatOrchestrate`(走 LLM)各 1 条与判定层无关。
-处置建议:批B 的收尾或下一批统一改这两个金标(不在本批范围,红线只许碰新文件区)。
+### 7.3 批B 落地导致的八条过期金标(收尾批已逐条翻正向)
+
+`pathVerdict.int.spec.ts`(6)与 `chatVerdict.int.spec.ts`(2)写死「AIP 0 行 / not-collected / mart 259 行」,
+批B 灌进 36 行后(现 300)这些断言测的是一个已经不存在的世界 —— **断言过期,不是引擎坏**。
+收尾批逐条改法:
+
+| # | 文件 · 断言 | 原口径 | 新口径 |
+|---|---|---|---|
+| 1 | pathVerdict「六张表行数」 | requirements 259 | **300** + 单列 `AIP === 36`;`draws` / `designated_employers` 按周增长,改 `>=`(146 / 3867),政策四表继续钉死 |
+| 2 | pathVerdict「tier3 BC Build」 | 抽选线钉死 97 | 从 `data.draws` 取最近一轮 Build(08-06 那轮 88 已顶掉 97),分数**数据里取** |
+| 3 | pathVerdict「AIP = needs-info + not-collected + 禁止出现 1,560」 | 断言缺口本身 | **正向**:`open` + `ok` + tier 2;1,560 hours **必须**出现且必须来自 quote;禁止按工时反推月数 |
+| 4 | pathVerdict「库里一行 AIP 都没有」 | `toHaveLength(0)` | `toHaveLength(36)` + 每行有官方原句、有出处 |
+| 5 | pathVerdict「四态不合并」 | not-collected 名单 `['AIP']` | `[]` + 13 条全 `ok`(断言本意不变:四态只许由库里有没有行决定) |
+| 6 | pathVerdict「jobPathways 口径」 | AIP `not-collected` + months null | AIP `ok` + months **12** + `tenure=false` |
+| 7 | chatVerdict「C01 金标 AIP 那条」 | 必须是四态 status 行、含「本站尚未收录」 | AIP 已判得了 → **不许**再有四态 status 行、不许再说「尚未收录」;它排在 top-3 open 之外故不出现在 facts 是对的 |
+| 8 | chatVerdict「lookupVerdict 薄封装」 | AIP `not-collected` | AIP `ok` + `open` + tier 2 + 13 条门槛行齐全 |
+
+每条断言旁已注「2026-08-09 批B AIP 36 行入库后更新」。
+`chatTools`(BC SIRS,连生产库)/ `chatOrchestrate`(走活体 LLM)各 1 条既有红**不属本批,未碰**。
 
 ## 8. 接口缺口与批D 入参清单
 
@@ -136,8 +157,9 @@
 
 1. **`companies.is_designated_employer` 与 `designated_employers` 名录矛盾**:Grand View Manor 名录在册(`source='AIP'`)
    但 `companies.is_designated_employer = false`。组装器因此**只信名录行**,不读该布尔列。该列口径要么修要么废,请数据侧定夺。
-2. **`pathVerdict.fedLangApplies` 区间解析缺陷**(见 §7.2)——TEER 1/2 的 AIP offer 会被告知「本站未收录语言门槛」。修法建议:
-   `teer-a-b` 按闭区间展开(`a..b`),两元枚举形态天然兼容。**必须在批D UI 上线前修**,否则判定卡会对 TEER 1/2 用户撒谎。
+2. ~~**`pathVerdict.fedLangApplies` 区间解析缺陷**~~ —— **已修**(收尾批,见 §7.2)。
+   遗留一条同族**未修**:`teer-2-4` 的 AIP **学历**行(`factor='education'`)当前没有任何消费端读取(见下面第 3 条),
+   一旦有人去读它,同一个区间语义必须走同一套解析,别再写第二份。
 3. **批B §8 交办的 `workHealthcareCrossQualify` 消费路径:今天是断的。** 该行(NOC 31201/31301 经验可用于 33102/44101 的 offer)
    `factor` 不在 `pathVerdict.pickGate` 的 `experience | workHours` 过滤里,也不在 `rules.evaluateRequirements` 的任何分支里 →
    **全站没有任何代码读它**。本案例经验槽未答所以结论不受影响,但一旦用户答了「护士经验 2 年」,AIP 那条会照 33102 的经验判,漏掉这条豁免。
