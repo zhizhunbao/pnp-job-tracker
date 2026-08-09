@@ -46,7 +46,7 @@ vi.mock('@/lib/entitlement', () => ({
 }))
 vi.mock('@/lib/profile', () => ({ patchProfile: H.patch }))
 
-import { ChatError, isFollowupTurn, isUsageQuestion, orchestrate, profileFill, type ChatLang, type ChatTurn, type Slots } from '@/lib/chatOrchestrate'
+import { ChatError, buildFollowups, isFollowupTurn, isUsageQuestion, orchestrate, profileFill, type ChatLang, type ChatTurn, type Slots } from '@/lib/chatOrchestrate'
 import { findForeignScript, findLeaks, findShoutedWords, findWordNumbers } from '@/lib/chatOrchestrate'
 import { completeText } from '@/lib/llm'
 import { POST } from '@/app/api/chat/route'
@@ -299,5 +299,33 @@ describe('D3 api/chat 路由:匿名不写、登录只补空、尾行接在定稿
     const answer = await finalAnswer(await ask())
     expect(H.patch).not.toHaveBeenCalled()
     expect(answer).not.toContain('已存入档案')
+  })
+})
+
+// ── 接着问织槽(2026-08-09 Frank:「接着问怎么也是固定的」)────────────────────
+describe('buildFollowups 织入用户自己的职业叫法(确定性个性化,不是 LLM 现编)', () => {
+  const factsWith = (tool: string): Parameters<typeof buildFollowups>[0] =>
+    [{ tool, label: 'x', value: 7, valueText: '', unit: 'jobs', evidence: { url: '/x', fetched: '' }, cited: false }] as never
+
+  it('有职业词 → 模板里出现他的叫法;无职业词 → 通用句原样', () => {
+    const withOcc = buildFollowups(factsWith('lookupJobs'), 'zh', '', '护士')
+    expect(withOcc[0]).toBe('现在哪个省护士的在招岗位最多?')
+    const noOcc2 = buildFollowups(factsWith('lookupJobs'), 'zh', '')
+    expect(noOcc2[0]).toBe('现在哪个省这个职业的在招岗位最多?')
+    expect(buildFollowups(factsWith('lookupJobs'), 'en', '', 'PSW')[0])
+      .toBe('Which province has the most open postings for PSW?')
+  })
+
+  it('职业词超长(>20)或空白 → 回落通用句,不把一句话撑破', () => {
+    const long = 'Registered nurses and registered psychiatric nurses'
+    expect(buildFollowups(factsWith('lookupJobs'), 'en', '', long)[0])
+      .toBe('Which province has the most open postings for this occupation?')
+    expect(buildFollowups(factsWith('lookupJobs'), 'zh', '', '  ')[0])
+      .toBe('现在哪个省这个职业的在招岗位最多?')
+  })
+
+  it('刚问过的那句照旧不重复推(织槽不破坏 asked 去重)', () => {
+    const q = buildFollowups(factsWith('lookupJobs'), 'zh', '', '护士')[0]
+    expect(buildFollowups(factsWith('lookupJobs'), 'zh', q, '护士')).toHaveLength(0)
   })
 })

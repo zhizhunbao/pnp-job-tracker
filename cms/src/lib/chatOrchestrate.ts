@@ -3031,38 +3031,44 @@ export function factSheet(facts: Fact[], lang: ChatLang): string {
 //    而是**按这次真查到了什么**生成:某个工具这轮拿回了带数字的 fact,才推它对应的那句。
 //    证书、时长、胜算这类库里没有的,一律不推。
 type FollowKey = 'unsaid' | 'jobs' | 'thresholds' | 'coverage' | 'draws' | 'ops' | 'ee'
-const FOLLOWUPS: Record<ChatLang, Record<FollowKey, string>> = {
+// 🔵 2026-08-09 Frank:「接着问怎么也是固定的?不应该根据对话生成吗」。改法=**确定性个性化**,
+//    不是 LLM 现编(自由生成的追问会造出「本站未收录」的死路 chip——递出去的话头必须保证答得上,
+//    这条底线不动)。模板织入**用户自己的职业叫法**(slots.occText:护士/PSW,不用英文长官名):
+//    有槽=「护士还有哪些省的官方清单收?」,无槽=原通用句。chip 点出去自带职业词,追问轮更接得稳。
+const FOLLOWUPS: Record<ChatLang, Record<FollowKey, (occ?: string) => string>> = {
   zh: {
-    unsaid: '还有哪些省的官方清单收了我这个职业?',
-    jobs: '现在哪个省这个职业的在招岗位最多?',
-    thresholds: '这些省的官方门槛具体要求什么?',
-    coverage: '我这个职业被哪些官方清单排除了?',
-    draws: '最近一轮抽选的分数线是多少?',
-    ops: '这个省今年的提名名额还剩多少?',
-    ee: '联邦 EE 通道收了我这个职业吗?',
+    unsaid: (o) => o ? `还有哪些省的官方清单收了${o}?` : '还有哪些省的官方清单收了我这个职业?',
+    jobs: (o) => o ? `现在哪个省${o}的在招岗位最多?` : '现在哪个省这个职业的在招岗位最多?',
+    thresholds: () => '这些省的官方门槛具体要求什么?',
+    coverage: (o) => o ? `${o}被哪些官方清单排除了?` : '我这个职业被哪些官方清单排除了?',
+    draws: () => '最近一轮抽选的分数线是多少?',
+    ops: () => '这个省今年的提名名额还剩多少?',
+    ee: (o) => o ? `联邦 EE 通道收了${o}吗?` : '联邦 EE 通道收了我这个职业吗?',
   },
   en: {
-    unsaid: 'Which other provinces list my occupation officially?',
-    jobs: 'Which province has the most open postings for this occupation?',
-    thresholds: 'What exactly do these provinces require on paper?',
-    coverage: 'Which official lists exclude my occupation?',
-    draws: 'What was the cutoff in the latest draw?',
-    ops: 'How much of this year’s nomination allocation is left?',
-    ee: 'Do the federal Express Entry categories cover my occupation?',
+    unsaid: (o) => o ? `Which other provinces list ${o} officially?` : 'Which other provinces list my occupation officially?',
+    jobs: (o) => o ? `Which province has the most open postings for ${o}?` : 'Which province has the most open postings for this occupation?',
+    thresholds: () => 'What exactly do these provinces require on paper?',
+    coverage: (o) => o ? `Which official lists exclude ${o}?` : 'Which official lists exclude my occupation?',
+    draws: () => 'What was the cutoff in the latest draw?',
+    ops: () => 'How much of this year’s nomination allocation is left?',
+    ee: (o) => o ? `Do the federal Express Entry categories cover ${o}?` : 'Do the federal Express Entry categories cover my occupation?',
   },
   ko: {
-    unsaid: '다른 어느 주가 제 직업을 공식 목록에 올려두었나요?',
-    jobs: '지금 어느 주에 이 직업 공고가 가장 많나요?',
-    thresholds: '이 주들의 공식 요건은 구체적으로 무엇인가요?',
-    coverage: '어느 공식 목록이 제 직업을 제외했나요?',
-    draws: '최근 추첨의 커트라인은 얼마였나요?',
-    ops: '이 주의 올해 지명 배정은 얼마나 남았나요?',
-    ee: '연방 EE 카테고리에 제 직업이 포함되나요?',
+    unsaid: (o) => o ? `다른 어느 주가 ${o}을(를) 공식 목록에 올려두었나요?` : '다른 어느 주가 제 직업을 공식 목록에 올려두었나요?',
+    jobs: (o) => o ? `지금 어느 주에 ${o} 공고가 가장 많나요?` : '지금 어느 주에 이 직업 공고가 가장 많나요?',
+    thresholds: () => '이 주들의 공식 요건은 구체적으로 무엇인가요?',
+    coverage: (o) => o ? `어느 공식 목록이 ${o}을(를) 제외했나요?` : '어느 공식 목록이 제 직업을 제외했나요?',
+    draws: () => '최근 추첨의 커트라인은 얼마였나요?',
+    ops: () => '이 주의 올해 지명 배정은 얼마나 남았나요?',
+    ee: (o) => o ? `연방 EE 카테고리에 ${o}이(가) 포함되나요?` : '연방 EE 카테고리에 제 직업이 포함되나요?',
   },
 }
 /** 这次真拿到了数据的工具 → 对应的追问;顺序即优先级,最多三条。拿不到数据的一条都不推。
- *  `asked` = 用户刚问的那句:同一句不再推给他(点了 chip 又看见同一个 chip,像没反应)。 */
-export function buildFollowups(facts: Fact[], lang: ChatLang, asked = ''): string[] {
+ *  `asked` = 用户刚问的那句:同一句不再推给他(点了 chip 又看见同一个 chip,像没反应)。
+ *  `occ` = 用户自己的职业叫法(slots.occText),织进模板;超长或空 → 回落通用句。 */
+export function buildFollowups(facts: Fact[], lang: ChatLang, asked = '', occ = ''): string[] {
+  const o = occ.trim().length >= 2 && occ.trim().length <= 20 ? occ.trim() : undefined
   const has = (tool: string, ok: (f: Fact) => boolean) => facts.some((f) => f.tool === tool && ok(f))
   const num = (f: Fact) => f.value != null
   const avail: [FollowKey, boolean][] = [
@@ -3075,7 +3081,7 @@ export function buildFollowups(facts: Fact[], lang: ChatLang, asked = ''): strin
     ['ee', has('lookupEE', num)],
   ]
   const norm = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ')
-  return avail.filter(([, ok]) => ok).map(([k]) => FOLLOWUPS[lang][k])
+  return avail.filter(([, ok]) => ok).map(([k]) => FOLLOWUPS[lang][k](o))
     .filter((q) => norm(q) !== norm(asked))
     .slice(0, 3)
 }
@@ -3459,6 +3465,6 @@ export async function orchestrate(
   //    宁缺勿滥)。**不再同时塞进 followups**:那些 chip 点击=以用户身份发这句话,而这句是
   //    助手问用户的,语义拧着;选项卡的三张选项才是它的正确形态(2026-08-06 dev 实测两处重复)。
   const options = verdictOn && slots.status == null ? permitOptions(lang) : undefined
-  const followups = [...askSlots, ...buildFollowups(facts, lang, text)].slice(0, 3)
+  const followups = [...askSlots, ...buildFollowups(facts, lang, text, slots.occText)].slice(0, 3)
   return { answer, slots, facts: out, followups, ...(options ? { options } : {}), ...(degraded ? { degraded: true } : {}) }
 }
