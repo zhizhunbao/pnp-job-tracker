@@ -90,11 +90,11 @@ export type ChatResult = {
   /** 弹选项卡时才有:reason 是推荐理由行,options ≤3(第 4 张「自己说」由前端固定给)。
    *  slotKey = 这张卡在收集哪个档案槽(2026-08-09 Frank「能让用户手点就别用手输入」),
    *  裁决路径的工签卡不带它(那是判定前置,不是建档)。 */
-  options?: { reason: string; items: ChatOption[]; slotKey?: 'status' | 'prov' | 'clb' }
+  options?: { reason: string; items: ChatOption[]; slotKey?: 'status' | 'prov' | 'clb' | 'edu' | 'expMonths' | 'married' | 'canadaStudy' }
   degraded?: boolean
 }
 /** 档案里已有值的槽(route 从 users.profile 算好传进来)——已有的不再点选追问,手填优先。 */
-export type ProfileKnown = { status?: boolean; provs?: boolean; clb?: boolean }
+export type ProfileKnown = { status?: boolean; provs?: boolean; clb?: boolean; edu?: boolean; expMonths?: boolean; married?: boolean; canadaStudy?: boolean }
 export type ChatErrorCode = 'tooShort' | 'noOcc' | 'llm' | 'guard'
 export class ChatError extends Error {
   code: ChatErrorCode
@@ -1535,7 +1535,8 @@ export function permitOptions(lang: ChatLang): NonNullable<ChatResult['options']
 
 // ── 建档点选卡(2026-08-09 Frank:「做,能让用户手点就别用手输入」)──────────────
 // 普通轮答完,档案还缺槽 → 垫一张点选卡:点选=以用户身份发话=当轮抽槽=D3 只补空回写。
-// 一轮只垫一张(优先级 status→prov→clb);档案里已有的槽(ProfileKnown)不追问,手填优先。
+// 一轮只垫一张(优先级 status→prov→clb→edu→expMonths→married→canadaStudy,08-09 Frank
+// 「每次都要显示四选一的问题」卡链延长);档案里已有的槽(ProfileKnown)不追问,手填优先。
 // 省卡是数据驱动的:只摆**这轮真查到在招数据**的省(答得上的保证,同 followups 一条底线),
 // 凑不满两个省就不出省卡;QC 不进卡(QC 走自己的体系不属 PNP,摆进目标省是误导)。
 const PROV_ZH: Record<string, [zh: string, en: string, ko: string]> = {
@@ -1605,6 +1606,86 @@ export function slotAskOptions(
         ? { label: `CLB ${n}`, sendText: `My language level is CLB ${n}.` }
         : { label: `CLB ${n}`, sendText: `제 언어 성적은 CLB ${n}입니다.` }
     return { slotKey: 'clb', reason: REASON[lang], items: [item(5), item(6), item(7)] }
+  }
+  // ── 卡链延长(2026-08-09 Frank「每次都要显示四选一的问题」):三张收齐后接着收其余能点选的档案槽,
+  // 每一轮答完都有下一张建档卡。sendText 全部落在 SLOT_SYSTEM 词表的档位上(edu 七档取最常见三档,
+  // 其余走卡自带的自行输入;年龄/几年制/读书省是数字与省名,没法三选,不硬造档位——归反问/自行输入)
+  if (slots.edu == null && !known.edu) {
+    const O: Record<ChatLang, NonNullable<ChatResult['options']>> = {
+      zh: { slotKey: 'edu', reason: '记下最高学历——联邦和多数省按它给分', items: [
+        { label: '两年制大专', consequence: '按大专档计分', sendText: '我的最高学历是两年制大专' },
+        { label: '本科', consequence: '按本科档计分', sendText: '我的最高学历是本科' },
+        { label: '硕士或以上', consequence: '按硕博档计分', sendText: '我的最高学历是硕士' },
+      ] },
+      en: { slotKey: 'edu', reason: 'Note your highest education — federal and most provincial grids score it', items: [
+        { label: 'Two-year college diploma', consequence: 'scored at the diploma band', sendText: 'My highest education is a two-year college diploma.' },
+        { label: "Bachelor's degree", consequence: 'scored at the bachelor band', sendText: "My highest education is a bachelor's degree." },
+        { label: "Master's or above", consequence: 'scored at the graduate band', sendText: "My highest education is a master's degree." },
+      ] },
+      ko: { slotKey: 'edu', reason: '최종 학력을 기록하세요 · 연방과 대부분 주가 점수로 반영합니다', items: [
+        { label: '2년제 칼리지 디플로마', consequence: '디플로마 구간으로 계산', sendText: '최종 학력은 2년제 칼리지 디플로마입니다.' },
+        { label: '학사', consequence: '학사 구간으로 계산', sendText: '최종 학력은 학사입니다.' },
+        { label: '석사 이상', consequence: '석박사 구간으로 계산', sendText: '최종 학력은 석사입니다.' },
+      ] },
+    }
+    return O[lang]
+  }
+  if (slots.expMonths == null && !known.expMonths) {
+    const O: Record<ChatLang, NonNullable<ChatResult['options']>> = {
+      zh: { slotKey: 'expMonths', reason: '记下工作经验——通道门槛按月数比对', items: [
+        { label: '还没有工作经验', consequence: '按零经验通道算', sendText: '我还没有工作经验' },
+        { label: '满一年', consequence: '按 12 个月比对门槛', sendText: '我有 12 个月工作经验' },
+        { label: '满两年', consequence: '按 24 个月比对门槛', sendText: '我有 24 个月工作经验' },
+      ] },
+      en: { slotKey: 'expMonths', reason: 'Note your work experience — pathway thresholds compare months', items: [
+        { label: 'No work experience yet', consequence: 'zero-experience pathways apply', sendText: 'I have no work experience yet.' },
+        { label: 'One year', consequence: 'compared against thresholds at 12 months', sendText: 'I have 12 months of work experience.' },
+        { label: 'Two years', consequence: 'compared against thresholds at 24 months', sendText: 'I have 24 months of work experience.' },
+      ] },
+      ko: { slotKey: 'expMonths', reason: '경력을 기록하세요 · 통로 요건은 개월 수로 비교합니다', items: [
+        { label: '아직 경력 없음', consequence: '무경력 통로로 계산', sendText: '아직 경력이 없습니다.' },
+        { label: '1년', consequence: '12개월 기준으로 비교', sendText: '경력이 12개월 있습니다.' },
+        { label: '2년', consequence: '24개월 기준으로 비교', sendText: '경력이 24개월 있습니다.' },
+      ] },
+    }
+    return O[lang]
+  }
+  if (slots.married == null && !known.married) {
+    const O: Record<ChatLang, NonNullable<ChatResult['options']>> = {
+      zh: { slotKey: 'married', reason: '记下配偶随行与否——联邦计分表按它分单双', items: [
+        { label: '单身', consequence: '按单人分表算', sendText: '我单身' },
+        { label: '配偶随行', consequence: '按随行分表算', sendText: '我已婚,配偶会一起申请' },
+        { label: '已婚但配偶不随行', consequence: '按单人分表算', sendText: '我已婚,但配偶不随行' },
+      ] },
+      en: { slotKey: 'married', reason: 'Note whether a spouse comes along — federal grids split on it', items: [
+        { label: 'Single', consequence: 'single grid applies', sendText: 'I am single.' },
+        { label: 'Spouse coming along', consequence: 'accompanied grid applies', sendText: 'I am married and my spouse will come along on the application.' },
+        { label: 'Married but spouse stays', consequence: 'single grid applies', sendText: 'I am married but my spouse is not coming along.' },
+      ] },
+      ko: { slotKey: 'married', reason: '배우자 동반 여부를 기록하세요 · 연방 점수표가 여기서 갈립니다', items: [
+        { label: '미혼', consequence: '단독 점수표로 계산', sendText: '미혼입니다.' },
+        { label: '배우자 동반', consequence: '동반 점수표로 계산', sendText: '기혼이고 배우자도 함께 신청합니다.' },
+        { label: '기혼이지만 동반 안 함', consequence: '단독 점수표로 계산', sendText: '기혼이지만 배우자는 동반하지 않습니다.' },
+      ] },
+    }
+    return O[lang]
+  }
+  if (slots.canadaStudy == null && !known.canadaStudy) {
+    const O: Record<ChatLang, NonNullable<ChatResult['options']>> = {
+      zh: { slotKey: 'canadaStudy', reason: '记下是否在加拿大读过书——毕业生通道按它开关', items: [
+        { label: '在加拿大读过书', consequence: '毕业生通道可判', sendText: '我在加拿大读过书' },
+        { label: '学历都在境外', consequence: '按境外学历通道算', sendText: '我的学历都是在境外读的' },
+      ] },
+      en: { slotKey: 'canadaStudy', reason: 'Note whether you studied in Canada — graduate pathways switch on it', items: [
+        { label: 'Studied in Canada', consequence: 'graduate pathways can be assessed', sendText: 'I studied in Canada.' },
+        { label: 'All study outside Canada', consequence: 'overseas-education pathways apply', sendText: 'All my study was outside Canada.' },
+      ] },
+      ko: { slotKey: 'canadaStudy', reason: '캐나다 학업 여부를 기록하세요 · 졸업생 통로가 여기서 갈립니다', items: [
+        { label: '캐나다에서 공부함', consequence: '졸업생 통로 판정 가능', sendText: '캐나다에서 공부한 적이 있습니다.' },
+        { label: '모두 해외에서 공부함', consequence: '해외 학력 통로로 계산', sendText: '학업은 모두 캐나다 밖에서 했습니다.' },
+      ] },
+    }
+    return O[lang]
   }
   return undefined
 }

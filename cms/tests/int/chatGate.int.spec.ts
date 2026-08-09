@@ -352,18 +352,30 @@ describe('slotAskOptions 建档点选卡:一轮一张,档案已有的槽不问',
     expect(card?.items[0].sendText).toBe('我的目标省是安大略')
   })
 
-  it('省数据不足两个 → 跳过省卡落 CLB 卡;三张全知 → 不出卡', () => {
+  it('省数据不足两个 → 跳过省卡落 CLB 卡;前三张收齐 → 卡链接着问学历(08-09 卡链延长)', () => {
     const one = slotAskOptions(emptySlots({ status: 'working' }), [jobsFact('BC', 5)], 'en')
     expect(one?.slotKey).toBe('clb')
     expect(one?.items.map((i) => i.label)).toEqual(['CLB 5', 'CLB 6', 'CLB 7'])
-    const none = slotAskOptions(emptySlots({ status: 'working', provs: ['BC'], clb: 6 }), [], 'zh')
-    expect(none).toBeUndefined()
+    const next = slotAskOptions(emptySlots({ status: 'working', provs: ['BC'], clb: 6 }), [], 'zh')
+    expect(next?.slotKey).toBe('edu')
   })
 
-  it('档案已有的槽不追问(手填优先):known.status → 直接问下一个缺槽', () => {
+  it('卡链全序:edu→expMonths→married→canadaStudy,能点的槽全收齐才不出卡', () => {
+    const base: Partial<Slots> = { status: 'working', provs: ['BC'], clb: 6 }
+    expect(slotAskOptions(emptySlots({ ...base, edu: 'bachelor' }), [], 'zh')?.slotKey).toBe('expMonths')
+    expect(slotAskOptions(emptySlots({ ...base, edu: 'bachelor', expMonths: 12 }), [], 'zh')?.slotKey).toBe('married')
+    expect(slotAskOptions(emptySlots({ ...base, edu: 'bachelor', expMonths: 12, married: false }), [], 'zh')?.slotKey).toBe('canadaStudy')
+    // 0/false 都算有值(判定不是缺失),与 filledProfileSlots 同口径
+    const full = slotAskOptions(emptySlots({ ...base, edu: 'bachelor', expMonths: 0, married: false, canadaStudy: false }), [], 'zh')
+    expect(full).toBeUndefined()
+  })
+
+  it('档案已有的槽不追问(手填优先):known 逐槽跳,全 known 不出卡', () => {
     const card = slotAskOptions(emptySlots(), [], 'zh', { status: true, provs: true })
     expect(card?.slotKey).toBe('clb')
-    const full = slotAskOptions(emptySlots(), [], 'zh', { status: true, provs: true, clb: true })
+    const afterClb = slotAskOptions(emptySlots(), [], 'zh', { status: true, provs: true, clb: true })
+    expect(afterClb?.slotKey).toBe('edu')
+    const full = slotAskOptions(emptySlots(), [], 'zh', { status: true, provs: true, clb: true, edu: true, expMonths: true, married: true, canadaStudy: true })
     expect(full).toBeUndefined()
   })
 
@@ -371,11 +383,16 @@ describe('slotAskOptions 建档点选卡:一轮一张,档案已有的槽不问',
     H.slots = () => ({ occ_en: 'carpenter', noc: null, provs: [], exp_months: null, status: null, claims: [] })
     const r = await orchestrate(new FakePool(), { text: '我是木匠,想知道哪些省有戏', lang: 'zh' })
     expect(r.options?.slotKey).toBe('status')
-    // 档案全知时同一轮不出卡(route 传 profileKnown 的形状)
+    // 前三槽全知 → 卡链接着收学历(08-09「每次都要显示四选一的问题」);全链 known 才不出卡
     const r2 = await orchestrate(new FakePool(), {
       text: '我是木匠,想知道哪些省有戏', lang: 'zh',
       profileKnown: { status: true, provs: true, clb: true },
     })
-    expect(r2.options).toBeUndefined()
+    expect(r2.options?.slotKey).toBe('edu')
+    const r3 = await orchestrate(new FakePool(), {
+      text: '我是木匠,想知道哪些省有戏', lang: 'zh',
+      profileKnown: { status: true, provs: true, clb: true, edu: true, expMonths: true, married: true, canadaStudy: true },
+    })
+    expect(r3.options).toBeUndefined()
   })
 })

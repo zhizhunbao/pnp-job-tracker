@@ -183,9 +183,11 @@ export function ChatAnswer({ a, busy, onAsk, fallback }: { a: Answer; busy: bool
           任何一轮答完都得有可点的下一步,不许出现死胡同 */}
       {(() => {
         const fus = a.followups?.length ? a.followups : (fallback ?? [])
+        // 兜底垫的是示例问句不是本轮的延伸(08-09 Frank「不是显示接着问」)→ 标题用空态同款「试试这样问」
+        const title = a.followups?.length ? t('chat.followups') : t('chat.try')
         return fus.length ? (
           <div className="cbFus">
-            <div className="cbFusT">{t('chat.followups')}</div>
+            <div className="cbFusT">{title}</div>
             {fus.map((q, k) => (
               <button key={k} className="cbFu" disabled={busy} onClick={() => onAsk(q)}
                 style={busy ? { opacity: 0.5, cursor: 'default' } : undefined}>{q}</button>
