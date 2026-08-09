@@ -355,6 +355,18 @@ export interface Company {
    */
   lmiaStreams?: string | null;
   /**
+   * LMIA 获批职业拆分 {NOC: 岗位数}(近两年;#286,docs/sql/se286-lmia-nocs.sql 先行)
+   */
+  lmiaNocs?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
    * AI 检索整理的公司简介(懒生成)
    */
   aiBrief?: string | null;
@@ -2038,6 +2050,7 @@ export interface CompaniesSelect<T extends boolean = true> {
   lmiaLmias?: T;
   lmiaLastQuarter?: T;
   lmiaStreams?: T;
+  lmiaNocs?: T;
   aiBrief?: T;
   aiWebsite?: T;
   aiSources?: T;
