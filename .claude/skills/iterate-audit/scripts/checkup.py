@@ -38,6 +38,7 @@ MODULES = {
     "pathways": {"pathways"},
     "plan":     {"plan-pr", "plan-job", "plan-career", "plan-province"},   # SurveyJS 客户端渲染,visit() 多等 2s
     "account":  {"account", "match-view"},
+    "start":    {"pulse"},   # 把脉页 /start(2026-08-09 补:36 轮起=担保雇主唯一承载,此前整页不在体检集)
 }
 WANT = None
 if A.only.strip():
@@ -320,12 +321,12 @@ FULL = [("/jobs", "jobs"), ("/pricing", "pricing"), ("/stats", "stats-index"), (
         ("/rankings/sponsor-likely", "rank-sponsor"), ("/rankings/daily-top", "rank-daily"),
         ("/news", "news"), ("/pathways", "pathways"),
         ("/plan/pr", "plan-pr"), ("/plan/job", "plan-job"),
-        ("/plan/career", "plan-career"), ("/plan/province", "plan-province")]
-# /plan 四页在付费转化链上,漏翻直接砸转化 → 破例进 LITE(2026-08-02)
+        ("/plan/career", "plan-career"), ("/plan/province", "plan-province"), ("/start", "pulse")]
+# /plan 四页在付费转化链上,漏翻直接砸转化 → 破例进 LITE(2026-08-02);/start 同理(2026-08-09,雇主橱窗唯一承载)
 LITE = [("/jobs", "jobs"), ("/pricing", "pricing"), ("/stats", "stats-index"),
         ("/rankings/weekly-top", "rank-weekly"), ("/news", "news"),
         ("/plan/pr", "plan-pr"), ("/plan/job", "plan-job"),
-        ("/plan/career", "plan-career"), ("/plan/province", "plan-province")]
+        ("/plan/career", "plan-career"), ("/plan/province", "plan-province"), ("/start", "pulse")]
 
 RESULTS = []   # 每条 = 一个 (page, viewport, lang, auth) 上下文的体检结果
 RUNTIME = []   # console / network / perf
@@ -378,7 +379,7 @@ def sweep(b, viewport, lang, pages, login=False):
         page.goto(BASE + path, wait_until="domcontentloaded", timeout=60000)
         if path.startswith("/jobs"):
             page.wait_for_selector("table tbody tr", state="attached", timeout=30000)
-        page.wait_for_timeout(4200 if path.startswith("/plan/") else 2200)   # SurveyJS 客户端渲染,慢一拍
+        page.wait_for_timeout(4200 if path.startswith("/plan/") or path == "/start" else 2200)   # SurveyJS/把脉榜单客户端渲染,慢一拍
         close_banner()
         try: RUNTIME.append({"kind": "perf", "page": name, "viewport": viewport, "lang": lang, **page.evaluate(PERF)})
         except Exception: pass
