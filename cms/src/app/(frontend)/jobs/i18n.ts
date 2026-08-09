@@ -373,6 +373,7 @@ const zh: Dict = {
   'rpt.emp.bar.restBc': '在大温以外:该通道要求雇主有 {staff} 名全职雇员',
   'rpt.emp.bar.stJohns': '在圣约翰斯地区:要求雇主有 {staff} 名本地全职雇员',
   'rpt.emp.bar.restNl': '在圣约翰斯以外:要求雇主有 {staff} 名本地全职雇员',
+  'rpt.emp.bar.all': '全省同一档:该通道要求雇主年营业额 ${rev}、全职雇员 {staff} 名',
   'rpt.emp.bar.years': '该省要求雇主经营满 {n} 年',
   // v5 报告:节标题=用户会问的问题(顾问口吻,不用口语)
   'rpt.q.prov': '这个职业在哪个省更有优势?', 'rpt.q.emp': '哪些雇主发布过可走省提名的岗位?',
@@ -1268,6 +1269,7 @@ const en: Dict = {
   'rpt.emp.bar.restBc': 'Outside Metro Vancouver: this stream asks the employer for {staff} full-time employees',
   'rpt.emp.bar.stJohns': 'In the St. John’s area: the employer needs {staff} full-time local employees',
   'rpt.emp.bar.restNl': 'Outside St. John’s: the employer needs {staff} full-time local employee(s)',
+  'rpt.emp.bar.all': 'Province-wide: this stream asks the employer for ${rev} gross annual revenue and {staff} full-time staff',
   'rpt.emp.bar.years': 'This province asks for {n}+ years of operation from the employer',
   'rpt.q.prov': 'Which province suits this occupation best?', 'rpt.q.emp': 'Which employers have posted PNP-eligible jobs?',
   'rpt.q.req': 'Official thresholds vs your situation', 'rpt.q.pay': 'What does this occupation pay?',
@@ -2119,6 +2121,7 @@ const ko: Dict = {
   'rpt.emp.bar.restBc': '메트로 밴쿠버 외: 해당 스트림은 정규직 {staff}명을 요구',
   'rpt.emp.bar.stJohns': '세인트존스 지역: 고용주에게 현지 정규직 {staff}명 요구',
   'rpt.emp.bar.restNl': '세인트존스 외: 고용주에게 현지 정규직 {staff}명 요구',
+  'rpt.emp.bar.all': '주 전역 동일 기준: 해당 스트림은 고용주에게 연 총매출 ${rev}와 정규직 {staff}명을 요구',
   'rpt.emp.bar.years': '해당 주는 고용주에게 {n}년 이상 운영 이력을 요구',
   'rpt.q.prov': '이 직종은 어느 주에서 더 유리한가?', 'rpt.q.emp': '주정부 지명 가능 공고를 낸 고용주는?',
   'rpt.q.req': '주별 공식 요건과 내 상황', 'rpt.q.pay': '이 직종의 임금 수준은?',

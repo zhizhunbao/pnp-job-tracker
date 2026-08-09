@@ -556,7 +556,8 @@ export function PlanPrView({ decision = 'pr' }: { decision?: 'pr' | 'job' | 'car
                             <span style={{ color: UI.text2 }}>
                               {t(e.area === 'gta' ? 'rpt.emp.bar.gta' : e.area === 'on-listed-cd' ? 'rpt.emp.bar.cd'
                                 : e.area === 'outside-gta' ? 'rpt.emp.bar.outGta' : e.area === 'metro-vancouver' ? 'rpt.emp.bar.metro'
-                                  : e.area === 'st-johns' ? 'rpt.emp.bar.stJohns' : e.area === 'rest-of-nl' ? 'rpt.emp.bar.restNl' : 'rpt.emp.bar.restBc',
+                                  : e.area === 'st-johns' ? 'rpt.emp.bar.stJohns' : e.area === 'rest-of-nl' ? 'rpt.emp.bar.restNl'
+                                    : e.area === 'rest-of-bc' ? 'rpt.emp.bar.restBc' : 'rpt.emp.bar.all',
                               { staff: e.empStaff, rev: e.empRevenue != null ? (e.empRevenue >= 1e6 ? `${e.empRevenue / 1e6}M` : `${Math.round(e.empRevenue / 1000)}K`) : '' })}
                             </span>
                           ) : null}

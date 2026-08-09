@@ -80,21 +80,27 @@ export function areaOfPlace(province: string, city: string, district = ''): stri
 }
 
 /** 该省雇主侧门槛:经营年限(全省一档,B2-4 起真消费)+ 该区域的营业额与全职雇员数。
- *  认不出区域(area='')时年限照给(不分区),雇员/营业额留空 —— 宁缺不猜。 */
+ *  分档省(BC/ON/NL)认不出区域(area='')时雇员/营业额留空 —— 宁缺不猜;
+ *  不分区省(AB 三项 appliesArea 全空)区档落空后回落通用行 —— 全省一档没有可猜的。 */
 export function employerBar(reqs: Requirement[], province: string, area: string): { years: number | null; revenue: number | null; staff: number | null } {
   const rows = reqs.filter((r) => r.province === province && r.subject === 'employer')
-  const of = (factor: string, areas: string[]) =>
-    rows.filter((r) => r.factor === factor).find((r) => areas.includes(r.appliesArea))?.value ?? null
-  // 经营年限不分区(BC 1 年 / ON 3 年 / NS / MB EDI 3 年 / NL 2 年,appliesArea 全空)
-  const years = of('empYears', [''])
+  // 区档找不到再回落 appliesArea='' 的通用行:分档省没有通用行(回落自然落空,宁缺不猜不破),
+  // AB 这类全省一档的省靠它取到数 —— 原先 area 恒 ''(areaOfPlace 只判 ON/BC/NL)导致 AB 三项永远取不到
+  const rowOf = (factor: string, areas: string[]) => {
+    const rs = rows.filter((r) => r.factor === factor)
+    return rs.find((r) => areas.includes(r.appliesArea)) ?? rs.find((r) => r.appliesArea === '') ?? null
+  }
+  // 经营年限不分区(BC 1 年 / ON 3 年 / NS / MB EDI 3 年 / NL 2 年);SK 官方原文用月 → 统一换算成年(与 employerVerdict 同口径)
+  const yearsRow = rowOf('empYears', [''])
+  const years = yearsRow?.value == null ? null : yearsRow.unit === 'months' ? yearsRow.value / 12 : yearsRow.value
   // 雇员数:ON 点名普查区的雇员档併回 GTA 外(官方雇员数只分 GTA 内外;BC/NL 的区键与行一一对应)
   const staffArea = area === 'on-listed-cd' ? ['outside-gta'] : area ? [area] : []
   // 营业额 ON 分三档:GTA / 官方点名普查区 / 其余;认不出普查区(outside-gta)时不给数
   const revArea = area === 'on-listed-cd' ? ['on-listed-cd'] : area === 'gta' ? ['gta'] : area === 'outside-gta' ? [] : area ? [area] : []
   return {
     years,
-    revenue: revArea.length ? of('empRevenue', revArea) : null,
-    staff: staffArea.length ? of('empStaff', staffArea) : null,
+    revenue: rowOf('empRevenue', revArea)?.value ?? null,
+    staff: rowOf('empStaff', staffArea)?.value ?? null,
   }
 }
 

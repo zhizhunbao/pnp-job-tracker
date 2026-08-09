@@ -370,6 +370,20 @@ describe('地点 → 官方分档区域', () => {
     const MB_REQS = [R({ province: 'MB', subject: 'employer', factor: 'empYears', value: 3, unit: 'years' })]
     expect(employerBar(MB_REQS, 'MB', '')).toEqual({ years: 3, revenue: null, staff: null })
   })
+
+  // #284 收尾(2026-08-09):AB 三项门槛全省一档(appliesArea 全空),而 areaOfPlace 只判 ON/BC/NL
+  // → AB 的 area 恒 '' —— 区档落空后必须回落通用行,否则 AB 雇员/营业额永远取不到;
+  // SK 官方原文按月计经营年限 → 统一换算成年(employerVerdict 同口径,消费端渲「{n} 年」)
+  it('#284:AB 全省一档回落通用行;SK 月换算成年;分档省认不出区域仍宁缺不猜', () => {
+    const AB_REQS = [
+      R({ province: 'AB', subject: 'employer', factor: 'empYears', value: 2, unit: 'years' }),
+      R({ province: 'AB', subject: 'employer', factor: 'empRevenue', value: 400_000, unit: 'CAD/yr' }),
+      R({ province: 'AB', subject: 'employer', factor: 'empStaff', value: 3, unit: 'employees' }),
+    ]
+    expect(employerBar(AB_REQS, 'AB', '')).toEqual({ years: 2, revenue: 400_000, staff: 3 })
+    const SK_REQS = [R({ province: 'SK', subject: 'employer', factor: 'empYears', value: 24, unit: 'months' })]
+    expect(employerBar(SK_REQS, 'SK', '')).toEqual({ years: 2, revenue: null, staff: null })
+  })
 })
 
 // ── B1-1(2026-08-03):其余七省的官方门槛入库后,引擎挑行的三条口径 ────────────────
