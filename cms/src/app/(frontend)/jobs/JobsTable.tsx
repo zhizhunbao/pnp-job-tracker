@@ -2428,9 +2428,7 @@ export function CompanyBody({ company, similar, t, lang, showTrans, hideTopInfo,
   const aip = !!company.scoreDetail?.sponsor?.v?.aip
   const showSponsor = (company.lmiaPositions ?? 0) > 0 || aip
   const streams = parseCoStreams(company.lmiaStreams, t)
-  const conc = (company.lmiaSkilled ?? 0) > 0 ? { key: 'co.spConcYes', bg: '#f0fdf4', fg: '#15803d' }
-    : (company.lmiaPositions ?? 0) > 0 ? { key: 'co.spConcLow', bg: '#fffbeb', fg: '#b45309' }
-    : { key: 'co.spConcAip', bg: '#f0fdf4', fg: '#15803d' }
+  // 结论彩条(co.spConc*)2026-08-09 Frank「不要解释文字」整条撤:数据行自己说话,技术类信号由「技术类」标签承担
   const nocLocal = (j: CompanyDetail['jobs'][number]) => ((lang === 'zh' ? j.nocTitleZh : lang === 'ko' ? j.nocTitleKo : '') || j.nocTitle)
   const extTarget = onOpenJob ? '_blank' : undefined   // 弹框内跳页新开(别关掉弹框);页面同标签
   // #197(Frank「这两部分合并」+「AI 声明放按钮下」):身份(官网/地址/行业)与公司简介合成一块「公司」;
@@ -2533,8 +2531,7 @@ export function CompanyBody({ company, similar, t, lang, showTrans, hideTopInfo,
                 </>
               )
             })()}
-            {/* #200(Frank「这个废话也是」):来源行(ESDC 名录、IRCC)撤 */}
-            <div style={{ fontSize: 12, color: conc.fg, background: conc.bg, borderRadius: 8, padding: '6px 10px', margin: '6px 0 0', lineHeight: 1.55 }}>{t(conc.key)}</div>
+            {/* #200 来源行撤;结论彩条 08-09 随「不要解释文字」拍板撤(见上) */}
           </div>
         </div>
       )}
