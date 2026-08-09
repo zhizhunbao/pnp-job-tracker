@@ -2424,6 +2424,161 @@ export function findMixedStates(answer: string, lang: ChatLang): string[] {
   return out.slice(0, 4)
 }
 
+// ── 🔴 闸A 归因闸:**替用户说他没说过的话** ─────────────────────────────────
+//
+// 2026-08-09 生产实测(33102 锚号三轮),三句原话,一句比一句危险:
+//   ① 「…which your previous message indicates you do not」—— 用户从没提过经验,expMonths 槽 = null,
+//      组稿把**缺槽**编成了**「你说过没有」**:凭空替他做了一句自述,再拿这句自述判他不合格;
+//   ② 「You are currently short by 6 months on this requirement」—— 6 = 24 − 18,把 PGWP 剩 18 个月
+//      当成 18 个月工作经验做减法(见闸B:6 这个数还骗过了数字闸);
+//   ③ 「cutoff scores up to 475 CRS, which is higher than your current score」—— 槽里根本没有 CRS。
+//
+// 三句的共同形状是**第二人称 + 陈述态 + 属性**,而那个属性我们手上一个值都没有。数字闸对它们全盲:
+// ①③一个数字都不用编,②的数字还从用户原话里借到了合法性。所以这道闸判的不是数字,是**归因**。
+//
+// 判定三步(全是确定性正则,不问模型;宁可漏拦不可误杀):
+//   ⓐ 先看**要求态豁免**:`you need` / `requires you` / `if you` / 问句 / 你需要 / 如果你 ——
+//      门槛转述与条件句是这个产品的正业(「BC SW 要求你有 24 个月经验」必须答得出口),整句放过;
+//   ⓑ 再看**陈述/报告态**:you are / you have / you do not / your CRS / you said / 你没有 / 你说过…;
+//   ⓒ 再看句里提到的**属性**有没有底:槽里有值(0 与 false 都算有值)或**用户自己这轮提过**这个属性,
+//      两者都没有 = 这句话是替他编的 → 整句拦。
+// 判据只认这一句里的词,不跨句推理 —— 跨句推理正是模型犯错的那一步,闸门不跟着犯。
+type AttrKey = 'exp' | 'crs' | 'clb' | 'age' | 'edu' | 'status'
+const ATTR_KEYS: AttrKey[] = ['exp', 'crs', 'clb', 'age', 'edu', 'status']
+/** 属性词:句子里提到它,才轮得到查这个属性有没有底。收窄不收宽(`points` 不算 CRS —— 抽选分数线天天出现)。 */
+const ATTR_RE: Record<AttrKey, RegExp> = {
+  // 英文的 months 也算经验面(「short by 6 months」病灶 ② 就没写 experience 这个词);
+  // 中文不收「月」——「个月」在中文答复里同时是 PGWP 剩余、处理周期、门槛期,收了必误杀。
+  exp: /\bexperience\b|\bmonths?\b|经验|經驗|경력/i,
+  crs: /\bCRS\b|\bscores?\b|分数|分數|得分|점수/i,
+  clb: /\bCLB\b|\bNCLC\b|\blanguage (?:level|band|score|ability|result)\b|语言(?:水平|成绩)?|語言|언어 (?:점수|능력)/i,
+  age: /\bage\b|\byears old\b|年龄|年齡|나이/i,
+  edu: /\beducation\b|\bdegree\b|\bdiploma\b|\bcredential\b|学历|學歷|학력/i,
+  status: /\bPGWP\b|\b(?:work|study) permit\b|\bstatus\b|工签|工簽|学签|學簽|签证|簽證|身份|신분|비자/i,
+}
+/** 槽里有没有这个属性的值。**0 与 false 都算有值**(它们是判定,不是缺失,同 filledProfileSlots 的口径)。 */
+const attrFilled = (k: AttrKey, s: Partial<Slots>): boolean => {
+  switch (k) {
+    case 'exp': return s.expMonths != null
+    case 'clb': return s.clb != null
+    case 'age': return s.age != null
+    case 'edu': return s.edu != null || s.eduYears != null || s.canadaStudy != null
+    case 'status': return s.status != null
+    // 🔴 槽里**根本没有 CRS 这一格**(见 Slots):所以关于「你的分数」的任何陈述,
+    //    只有他自己这轮说过 CRS/分数才算有底,否则一律是编的。
+    case 'crs': return false
+  }
+}
+/** ⓐ 要求态 / 条件 / 疑问 —— 门槛转述是正业,一个都不许拦。 */
+const ASSERT_EXEMPT_RE = new RegExp([
+  String.raw`\byou (?:need|must|should|shall|have to|had to|will need|would need|may need|might need|are required|can|could|will|would|may|might)\b`,
+  String.raw`\brequires? you\b|\brequired of you\b|\bfor you to\b`,
+  String.raw`\b(?:if|once|when|whenever|unless|until|whether|provided|assuming) you\b`,
+  String.raw`\b(?:do|did|does|have|has|are|were|was|will|would|can|could|should) you\b`,
+  '你需要|需要你|要求你|你必须|你必須|你得先|你可以|你能|你应|你應|如果你|若你|你要是|你是否|你有没有|你有沒有|当你|當你|等你|你想|你打算',
+  '필요합니다|해야 합니다|하셔야|요구|하신다면|하시면|하실 수|하려면',
+].join('|'), 'i')
+/** ⓑ 第二人称陈述态 / 报告态(「你说过」也在内:替他复述他没说过的话是本病灶 ①)。 */
+const ASSERT_RE = new RegExp([
+  String.raw`\byou(?:'re| are| were| have| had| hold| lack| only have| currently have| already have| still have)\b`,
+  String.raw`\byou (?:do|did|does) not\b|\byou don'?t\b|\byou haven'?t\b|\byou'?ve\b|\byou aren'?t\b`,
+  String.raw`\byou (?:said|told|mentioned|indicated|stated|reported)\b|\byour (?:previous|last|earlier) message\b`,
+  String.raw`\byour (?:current |own |existing |present )?(?:score|CRS|CLB|experience|age|education|degree|diploma|status|permit|level|band)\b`,
+  '你\\s*(?:已经|已經|已|现在|現在|目前|还|還|尚)?\\s*(?:有|没有|沒有|是|不是|还差|還差|缺|不足|不满足|不滿足|不符合|达到|達到|过了|過了|属于|屬於)',
+  '你的\\s*(?:CRS|CLB|分数|分數|得分|经验|經驗|年龄|年齡|学历|學歷|语言|語言|身份|工签|工簽|签证|簽證)',
+  '你说过|你說過|你提到|你之前说|你之前說|你上一条|你上一條|据你所说|據你所說',
+  '(?:귀하|당신)(?:의|은|는|께서)|말씀하신|하셨다고|하신 것으로',
+].join('|'), 'i')
+/**
+ * 第二人称陈述态属性断言,而那个属性我们一个值都没有 → 整句拦。
+ * `slots` 缺省 = 调用方没告诉我们他给过什么(旧调用点/单测),这道闸**整个不生效** ——
+ * 没有输入就不判,绝不拿「什么都不知道」当「他什么都没说」。
+ */
+export function findUngroundedClaims(answer: string, slots?: Partial<Slots> | null, echo = ''): string[] {
+  if (!slots) return []
+  const out: string[] = []
+  for (const sent of answer.split(SENT_SPLIT)) {
+    const s = sent.trim()
+    if (!s || ASSERT_EXEMPT_RE.test(s) || !ASSERT_RE.test(s)) continue
+    for (const k of ATTR_KEYS) {
+      if (!ATTR_RE[k].test(s)) continue
+      if (attrFilled(k, slots) || ATTR_RE[k].test(echo)) continue   // 槽里有值 / 他自己这轮提过
+      out.push(`${k}:${s.slice(0, 40)}`)
+      break                                                          // 一句只报一条:报的是这句话,不是词表
+    }
+  }
+  return [...new Set(out)].slice(0, 4)
+}
+
+// ── 🔴 闸B 派生数单位闸:**数字对了,单位是编的** ───────────────────────────
+//
+// 病灶 ②「short by 6 months」:6 = 24 − 18 是**现算出来的**,facts 里没有这个数;它之所以过了数字闸,
+// 是因为用户原话里有「CLB 6」—— guardAnswer 只比数字不看语境,于是一个语言等级替一个月份数背了书。
+// 所以这道闸比的是**(数字, 单位类)这一对**:同一个 6,`clb` 类出现过不等于 `mo` 类可以出现。
+//
+// 窄口径(误杀比漏拦贵):
+//   · 只对**带单位词**的数字生效,裸数一概不管(年份、编号、序号、TEER、NOC 一律与它无关);
+//   · 四位数年份(≥1900)与日期串先剥掉 —— 「2026 年 7 月 30 日」不是 7 个月;
+//   · 中文/韩文只认**时长写法**:「N 个月 / N개월」才算月份数,「7 月 / 7월」是日历月,不判;
+//   · 只覆盖下面这几类单位;不认识的单位(invitations / spots …)两边都不产出对,自然不判。
+const UNIT_AFTER: [RegExp, string][] = [
+  [/(\d[\d,.]*)\s*(?:months?|个月|個月|개월)/gi, 'mo'],
+  [/(\d[\d,.]*)\s*(?:years?|yrs?|年|년)(?![\d월月])/gi, 'yr'],
+  [/(\d[\d,.]*)\s*(?:weeks?|周|週|주)/gi, 'wk'],
+  [/(\d[\d,.]*)\s*(?:hours?|hrs?|小时|小時|시간)/gi, 'hr'],
+  [/(\d[\d,.]*)\s*(?:points?|分(?![钟鐘之])|점)/gi, 'pt'],
+  [/(\d[\d,.]*)\s*CRS\b/gi, 'pt'],
+  [/(\d[\d,.]*)\s*(?:CLB|NCLC)\b/gi, 'clb'],
+  [/(\d[\d,.]*)\s*(?:jobs?|openings?|postings?|个岗位|個崗位|岗位|崗位|개\s*일자리|일자리)/gi, 'job'],
+  [/(\d[\d,.]*)\s*(?:people|persons?|applicants?|人(?!民)|명)/gi, 'ppl'],
+  [/(\d[\d,.]*)\s*(?:CAD|加元|加币|加幣)/gi, 'money'],
+]
+const UNIT_BEFORE: [RegExp, string][] = [
+  [/\b(?:CLB|NCLC)\s*(\d[\d,.]*)/gi, 'clb'],
+  [/\bCRS\s*(?:score\s*)?(\d[\d,.]*)/gi, 'pt'],
+  [/[$￥]\s*(\d[\d,.]*)/g, 'money'],
+]
+/** 日期串不是「数字 + 单位」,先剥掉再抽(剥的是两边同一份文本,不偏袒答复也不偏袒 facts)。 */
+const stripDates = (s: string) => s
+  .replace(/\d{4}\s*[-/]\s*\d{1,2}(?:\s*[-/]\s*\d{1,2})?/g, ' ')
+  .replace(/\d{4}\s*年\s*\d{1,2}\s*月(?:\s*\d{1,2}\s*日)?/g, ' ')
+  .replace(/\d{4}\s*년\s*\d{1,2}\s*월(?:\s*\d{1,2}\s*일)?/g, ' ')
+/** 文本 → 「数字:单位类」对。四位年份(≥1900)一律不产出对。 */
+function unitPairs(text: string): Set<string> {
+  const out = new Set<string>()
+  const s = stripDates(String(text ?? ''))
+  for (const [re, cls] of [...UNIT_AFTER, ...UNIT_BEFORE]) {
+    for (const m of s.matchAll(re)) {
+      const n = normNum(m[1])
+      if (/^\d{4}$/.test(n) && Number(n) >= 1900) continue
+      out.add(`${n}:${cls}`)
+    }
+  }
+  return out
+}
+/**
+ * 答复里的「数字 + 单位」必须在 facts 或用户原话里**带着相容的单位**出现过。
+ * 数字只在别的单位类里出现过(echo 的「CLB 6」≠ 答复的「6 months」)= 现算出来的派生数 → 拦。
+ * 月 ↔ 年整除互认(12 months = 1 year 是同一条 fact 换个说法,与 guardAnswer 同一口径,双向都认)。
+ */
+export function findUnitMismatch(answer: string, facts: Fact[], echo = ''): string[] {
+  const allowed = new Set<string>()
+  const take = (t: string) => { for (const p of unitPairs(t)) allowed.add(p) }
+  for (const f of facts) {
+    take(`${f.label}\n${f.valueText}`)
+    if (f.value != null) take(`${f.value} ${f.unit}`)
+  }
+  take(echo)
+  for (const p of [...allowed]) {
+    const [n, cls] = p.split(':')
+    const v = Number(n)
+    if (!Number.isFinite(v)) continue
+    if (cls === 'mo' && v % 12 === 0) allowed.add(`${v / 12}:yr`)
+    if (cls === 'yr') allowed.add(`${v * 12}:mo`)
+  }
+  return [...unitPairs(answer)].filter((p) => !allowed.has(p)).slice(0, 6)
+}
+
 /**
  * 🔴 **主张一条都不许静默丢掉** —— 这条不再交给模型的自觉。
  *
@@ -2763,8 +2918,12 @@ function holdTail(s: string, lang: ChatLang): string {
   return units.slice(0, m).join('')
 }
 
-/** 逐句门的硬拦集合 = 既有六道里**一句就能判的那五道**(第六道 findFactCopied 见上面 ⓑ)。 */
-export function sentenceBlockers(text: string, facts: Fact[], lang: ChatLang, echo = ''): string[] {
+/**
+ * 逐句门的硬拦集合 = 既有六道里**一句就能判的那五道**(第六道 findFactCopied 见上面 ⓑ),
+ * 外加 2026-08-09 新增的两道确定性硬拦(闸A 归因 / 闸B 派生数单位),它们也都是一句就能判的。
+ * `slots` = 用户真给过的槽,闸A 的输入;不给 = 闸A 不生效(见 findUngroundedClaims)。
+ */
+export function sentenceBlockers(text: string, facts: Fact[], lang: ChatLang, echo = '', slots?: Partial<Slots> | null): string[] {
   return [
     ...guardAnswer(text, facts, echo).bad,
     ...findLeaks(text),
@@ -2773,6 +2932,8 @@ export function sentenceBlockers(text: string, facts: Fact[], lang: ChatLang, ec
     ...findWordNumbers(text, lang),
     ...findForeignScript(text, lang),
     ...findMixedStates(text, lang),
+    ...findUngroundedClaims(text, slots, echo),
+    ...findUnitMismatch(text, facts, echo),
   ].slice(0, 8)
 }
 
@@ -2788,14 +2949,14 @@ export type SentenceGate = {
  * 流的那一稿走的是**和整段完全同一条流水线**(tidy → localizeUnits → clampAnswer),
  * 只是每次喂进去的是「到目前为止」的原文 —— 所以流出去的字与最终答复逐字相同,不是另做一份。
  */
-export function makeSentenceGate(facts: Fact[], lang: ChatLang, echo = ''): SentenceGate {
+export function makeSentenceGate(facts: Fact[], lang: ChatLang, echo = '', slots?: Partial<Slots> | null): SentenceGate {
   let out = ''
   return {
     get released() { return out },
     push(raw) {
       const cand = clampAnswer(holdTail(localizeUnits(tidy(raw), lang), lang), lang)
       if (cand.length <= out.length || !cand.startsWith(out)) return { text: '', blocked: [] }
-      const blocked = sentenceBlockers(cand, facts, lang, echo)
+      const blocked = sentenceBlockers(cand, facts, lang, echo, slots)
       if (blocked.length) return { text: '', blocked }
       const add = cand.slice(out.length)
       out = cand
@@ -3138,7 +3299,8 @@ export async function orchestrate(
   let firedLast: string[] = []         // 最后一次撞到的检查名(降级日志要报「因为哪一道」,不是只报「降级了」)
   // 🔵 逐句门(见 makeSentenceGate):只有**第一稿**流 —— 重试稿要么是撞了门的补救、要么是软重写,
   //    两种都是「把刚才那段推翻重写」,流出去只会让用户读到两遍不一样的话。
-  const gate = opts?.onDelta ? makeSentenceGate(facts, lang, text) : null
+  //    slots 一并交给它:闸A(归因)判的是「这句话替他说了他没说过的属性」,没有槽就判不了。
+  const gate = opts?.onDelta ? makeSentenceGate(facts, lang, text, slots) : null
   let gateBad: string[] = []           // 流到一半撞了门:这一稿作废,照旧走重试/降级
   let streamed = false                 // 真往前端发过字(撤回时要通知前端清屏)
   let streamOk = false                 // 这一稿是「逐句门全过」的那一稿:收尾只补尾巴,不重画
@@ -3185,11 +3347,18 @@ export async function orchestrate(
       // 而它错的是**资格前提**(2026-08-05 实录:SK 一条 coverage 都没有,答复照样说「萨省清单收录该职业」)。
       // 归进硬拦(leaks 那一组):重试一次,再犯就降级成事实清单 —— 宁可朴素,不发一句凭空的资格结论。
       ['coverage', findUnbackedCoverage(answer, facts, lang)],
+      // 🔴 2026-08-09 两道新硬拦(33102 三轮实测,非数字断言此前无闸门):
+      //   attrib = 第二人称陈述态说了一个我们手上没有值的属性(「你说过没有经验」/「你现在的分数」);
+      //   unitNum = 数字对上了但**单位是编的**(「short by 6 months」借用户那句「CLB 6」的 6 过了数字闸)。
+      //   都归硬拦:重试一次,再犯就降级成事实清单 —— 宁可朴素,不发一句替他编的自述。
+      ['attrib', findUngroundedClaims(answer, slots, text)],
+      ['unitNum', findUnitMismatch(answer, facts, text)],
       ['enUnits', findEnglishUnits(answer, lang, facts)],
       ['cjkNum', findWordNumbers(answer, lang)],
       ['script', findForeignScript(answer, lang)],
     ] as [string, string[]][]).filter(([, v]) => v.length)
-    const leaks = fired.filter(([k]) => k === 'leak' || k === 'factEq' || k === 'factCopy' || k === 'coverage').flatMap(([, v]) => v)
+    const leaks = fired.filter(([k]) => k === 'leak' || k === 'factEq' || k === 'factCopy' || k === 'coverage'
+      || k === 'attrib' || k === 'unitNum').flatMap(([, v]) => v)
     const units = fired.filter(([k]) => k === 'enUnits' || k === 'cjkNum' || k === 'script').flatMap(([, v]) => v)
     const hedges = findHedges(answer, lang)
     if (hedges.length) console.log(`[chat] hedge warn noc=${slots.noc} words=${hedges.join(',')}`)
