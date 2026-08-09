@@ -1046,7 +1046,9 @@ export const LBL: Record<ChatLang, LabelDict> = {
       empYears: '要求雇主(不是申请人)已经营满', empRevenue: '要求雇主(不是申请人)的年营业额至少', empStaff: '要求雇主(不是申请人)至少有员工',
     },
     factorNone: { experience: '这条通道不设工作经验门槛', language: '这条通道不要求先交语言成绩' },
-    exemptYears: (n) => `省内认可院校毕业 ${n} 年内可免语言考试`,
+    // 「免」只免这条通道的**入池门槛**(2026-08-09 Frank「OINP 新系统也有语言打分啊」):EOI 排位仍计
+    // 语言分(pnp_score_factors ON language CLB6=4…CLB9+=15 在库,判定/规划场景各自出行),措辞不许扩大成「语言无用」
+    exemptYears: (n) => `省内认可院校毕业 ${n} 年内免交语言成绩也可入池`,
     planGap: {
       '': '补齐官方门槛要多久', experience: '补齐经验门槛要多久', language: '补齐语言门槛要多久',
       income: '补齐收入门槛要多久', wage: '补齐工资门槛要多久',
@@ -1108,7 +1110,7 @@ export const LBL: Record<ChatLang, LabelDict> = {
       empRevenue: 'requires the employer, not the applicant, to have annual revenue of at least', empStaff: 'requires the employer, not the applicant, to have staff of at least',
     },
     factorNone: { experience: 'sets no minimum work-experience requirement', language: 'requires no language test up front' },
-    exemptYears: (n) => `waives the language test if the applicant graduated from an eligible institution in the province within the last ${n} years`,
+    exemptYears: (n) => `accepts registration without a language test if the applicant graduated from an eligible institution in the province within the last ${n} years`,
     planGap: {
       '': 'how long it takes to close the gap to the official requirement', experience: 'how long it takes to close the work experience gap',
       language: 'how long it takes to close the language gap', income: 'how long it takes to close the household income gap',
@@ -1167,7 +1169,7 @@ export const LBL: Record<ChatLang, LabelDict> = {
       empYears: '요건 — 고용주(신청인 아님)의 사업 운영 기간은', empRevenue: '요건 — 고용주(신청인 아님)의 연 매출은', empStaff: '요건 — 고용주(신청인 아님)의 직원 수는',
     },
     factorNone: { experience: '이 통로는 경력 요건이 없습니다', language: '이 통로는 사전 어학 성적을 요구하지 않습니다' },
-    exemptYears: (n) => `주 내 인정 교육기관 졸업 후 ${n}년 이내면 어학 시험이 면제됩니다`,
+    exemptYears: (n) => `주 내 인정 교육기관 졸업 후 ${n}년 이내면 어학 성적 없이 등록할 수 있습니다`,
     planGap: {
       '': '공식 요건을 채우는 데 걸리는 기간', experience: '경력 요건을 채우는 데 걸리는 기간', language: '언어 요건을 채우는 데 걸리는 기간',
       income: '소득 요건을 채우는 데 걸리는 기간', wage: '임금 요건을 채우는 데 걸리는 기간',
