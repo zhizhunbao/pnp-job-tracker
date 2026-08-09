@@ -3198,7 +3198,11 @@ export async function orchestrate(
   const lang: ChatLang = (['zh', 'en', 'ko'] as const).includes(input.lang) ? input.lang : 'en'
   // 🔵 D2:首轮仍是四字门;我们刚问完一句(history 里有 assistant 轮)时短答放行 —— 见 isFollowupTurn。
   //    空串永远拦:那不是短答,是没答。
-  if (!text || (text.length < MIN_TEXT && !isFollowupTurn(input.history))) {
+  // 🔵 四字门是按英文字符数定的 —— 中/韩双字就是一个完整职业(「护士」「厨师」「목수」),
+  //    2026-08-09 Frank 实撞:冷启动发「护士」被回「你做什么工作」,用户刚说完职业就被装没听见。
+  //    CJK 文本 ≥2 字即放行进抽槽:真是「你好」这类寒暄,后面 noOcc/候选路照旧接得住。
+  const cjkOk = text.length >= 2 && /[㐀-鿿가-힣]/.test(text)
+  if (!text || (text.length < MIN_TEXT && !cjkOk && !isFollowupTurn(input.history))) {
     throw new ChatError('tooShort', 'input too short')
   }
   const pool = memoPool(rawPool)

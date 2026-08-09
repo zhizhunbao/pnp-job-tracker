@@ -153,14 +153,20 @@ describe('D2 追问轮短答(chat_logs #52「没工作」)', () => {
     { role: 'assistant', content: '告诉我你的职业或 NOC 码,我按这个职业查哪些雇主在招。' },
   ]
 
-  it('首轮闸一个字没动:短句/空串照旧 tooShort', async () => {
-    for (const text of ['没工作', 'a', '你好', '   ', '']) {
+  it('首轮闸:英文短句/空串照旧 tooShort;CJK ≥2 字放行进抽槽(08-09 Frank 实撞「护士」被回「你做什么工作」)', async () => {
+    for (const text of ['a', 'hi', '   ', '']) {
       await expect(orchestrate(new FakePool(), { text, lang: 'zh' }), text)
         .rejects.toMatchObject({ code: 'tooShort' })
     }
-    // 历史里只有用户自己的话 ≠ 我们问过一句
-    await expect(orchestrate(new FakePool(), { text: '没工作', lang: 'zh', history: [guide[0]] }))
-      .rejects.toMatchObject({ code: 'tooShort' })
+    // 🔵 改判(2026-08-09):四字门原按英文字符数定,中文双字就是完整职业(护士/厨师/木匠)。
+    //    短 CJK 首轮改走抽槽 —— fixture 里查不出职业,落 noOcc 反问「说说你做什么工作」,
+    //    这比 tooShort 对题(「没工作」冷启动时问他职业正是该问的)。「你好」多烧一次抽槽,
+    //    由 IP 日限兜底;深修(短文本先查职业候选,零 LLM)记对话病系统批。
+    for (const text of ['护士', '没工作', '你好']) {
+      await expect(orchestrate(new FakePool(), { text, lang: 'zh' }), text)
+        .rejects.toMatchObject({ code: 'noOcc' })
+    }
+    // 历史里只有用户自己的话 ≠ 我们问过一句(isFollowupTurn 语义不随 CJK 改判变)
     expect(isFollowupTurn([])).toBe(false)
     expect(isFollowupTurn([guide[0]])).toBe(false)
     expect(isFollowupTurn(guide)).toBe(true)
