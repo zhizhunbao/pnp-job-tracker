@@ -33,6 +33,14 @@
 >   ④出处行值英文裸单位(24 months)zh 态未过闸——算不算病归 Frank。
 > - **⏭ 立项挂账**:雇主中文名=扩 `companies.alias_zh` 既有管线(etl/clean/_enrich_shelf_aliases.py,
 >   AIP 表「蒂姆·霍顿斯」即它)到 LMIA 雇主,Frank 拍板「大模型联网查通行译名」,查证不到留空。
+> - **夜场三追加(41561b8..7d94e85)**:①**雇主中文名 brand 遍开跑**(Frank 放开「私企不生造」旧闸):
+>   _enrich_shelf_aliases 第三遍,6,765 家 qwen 灰注名(名称语义优先;首跑撞「库内粗桶行业锚压过名字
+>   自带行业词」已修),按在招岗数降序跑(全量 ~37h,表首先得名,断点续跑);回写=cms/scripts/
+>   apply-shelf-aliases.mjs(裸跑审样,--yes 才写,只补空)。**接手先查批进度**:重跑
+>   `PYTHONUTF8=1 python -u etl/clean/_enrich_shelf_aliases.py brand` 即续。②**会话 ID**(f2c8487
+>   已换版):面板免责行末「会话 ID <16位>」点击复制=chat_logs.thread,Frank 贴 ID 即可 SELECT 拉整串
+>   排查。③Frank 报「AI 一分钟没动静」坐实=chat_logs id132 实测 112.7s(朋友 qwen 冷启/单队列;
+>   热身后 9-11s;生产探针复测 7.7s 健康)——**对话超时降级策略待拍待做**。
 > - **晚场续批(39779ea..544810a,全部换版验讫)**:镜像下拉(闭合宽=选中项,照 JobsTable.Sel 手法;
 >   maxWidth 硬压两次都治标)/二级导航滚动跟随(属主改深色,蓝=当前分区)/**对话交互形态四拍定稿**:
 >   卡链延长(edu→expMonths→married→canadaStudy 四张新卡,sendText 全落 SLOT_SYSTEM 词表)→
