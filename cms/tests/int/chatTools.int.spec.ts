@@ -443,32 +443,54 @@ d('对话工具层(生产库只读)', () => {
       assertEvidence(r)
     })
 
-    it('金标 SK:省级配额 4761 / YTD 提名 2628,统计期 2026Q2(SK 无 as_of)', async () => {
+    // 2026-08-09 改结构化:配额/提名的精确值与统计期随官方每期发布漂移(数据变化的雷达在
+    // ETL diff,不在恒绿测试)—— 这里只守结构与口径:两行都在、单位对、统计期是季度格式、
+    // 「SK 官方不给口径日」这一制度事实不变。
+    it('金标 SK:省级配额与 YTD 提名两行齐全,统计期是季度口径(SK 无 as_of)', async () => {
       const r = await lookupOps(pool, { prov: 'SK' })
       expect(r.availability).toBe('ok')
       const prov = (key: string) => r.metrics.find((m) => m.key === key && m.scope === '')!
-      expect(prov('allocation').value).toBe(4761)
+      expect(prov('allocation'), '省级配额一行都没有').toBeTruthy()
       expect(prov('allocation').unit).toBe('spots')
-      expect(prov('nominations_ytd').value).toBe(2628)
+      expect(prov('nominations_ytd'), 'YTD 提名一行都没有').toBeTruthy()
       expect(prov('nominations_ytd').unit).toBe('nominations')
       for (const k of ['allocation', 'nominations_ytd']) {
-        expect(prov(k).period, k).toBe('2026Q2')
+        // 数值不写死(每周漂移):只守「有限正数」
+        expect(Number.isFinite(prov(k).value), `${k}:value 不是有限数`).toBe(true)
+        expect(prov(k).value!, k).toBeGreaterThan(0)
+        expect(prov(k).period, k).toMatch(/^\d{4}Q[1-4]$/)   // 季度口径是结构,哪一季随数据走
         expect(prov(k).asOf, `${k}:SK 官方不给口径日,asOf 必须留空而不是编一个`).toBe('')
         expect(prov(k).evidence.url, k).toBeTruthy()
       }
+      // 同一张官方表出的两行,统计期必须一致(口径关系,不随数据漂移)
+      expect(prov('allocation').period).toBe(prov('nominations_ytd').period)
       // 处理时长按 category 分行(「等多久」的答案就在这)
       expect(r.metrics.filter((m) => m.key === 'processing_weeks').length).toBeGreaterThan(0)
       assertEvidence(r)
     })
 
-    it('金标 BC:SIRS 注册池 11 个分数段齐全,每档带出处与口径日', async () => {
+    // 2026-08-09 改结构化:段数与每段人数随官方周更漂移(11 段/1728 人是当周快照,这类漂移的
+    // 雷达在 ETL diff,不在恒绿测试)—— 这里只守 SIRS 的**制度结构**:按分数段发布、段格式合法、
+    // 区间互不重叠、同一快照共用一个口径日、每档带出处;抑制值(「<5」)保持 null+原文的语义。
+    it('金标 BC:SIRS 注册池按分数段发布,段区间互不重叠,每档带出处与口径日', async () => {
       const r = await lookupOps(pool, { prov: 'BC' })
       expect(r.availability).toBe('ok')
-      const pool11 = r.metrics.filter((m) => m.key === 'sirs_pool')
-      expect(pool11).toHaveLength(11)
-      expect(pool11.every((m) => m.scopeKind === 'scoreRange' && m.scope !== '')).toBe(true)
-      expect(pool11.every((m) => !!m.evidence.url && !!m.asOf)).toBe(true)
-      expect(pool11.find((m) => m.scope === '100 - 109')?.value).toBe(1728)
+      const bands = r.metrics.filter((m) => m.key === 'sirs_pool')
+      expect(bands.length, 'SIRS 池一个分数段都没有').toBeGreaterThan(0)   // 段数不写死
+      expect(bands.every((m) => m.scopeKind === 'scoreRange' && m.scope !== '')).toBe(true)
+      expect(bands.every((m) => /^\d+(?: - \d+|\+)$/.test(m.scope)),
+        `分数段格式不合法:${bands.map((m) => m.scope).join(' / ')}`).toBe(true)
+      // 「<5」= 官方隐私抑制 → null + 原文;其余必须是 ≥0 的有限数(具体人数不写死)
+      expect(bands.every((m) => m.value === null ? !!m.valueText : Number.isFinite(m.value) && m.value! >= 0)).toBe(true)
+      expect(bands.every((m) => !!m.evidence.url && !!m.asOf)).toBe(true)
+      expect(new Set(bands.map((m) => m.asOf)).size, '同一次池快照必须共用一个口径日').toBe(1)
+      // 分数段区间互不重叠(官方分段的结构不变量;「150+」这类开口段按无上界解析)
+      const spans = bands
+        .map((m) => { const g = m.scope.match(/^(\d+)(?: - (\d+))?/)!; return { lo: Number(g[1]), hi: g[2] ? Number(g[2]) : Infinity } })
+        .sort((a, b) => a.lo - b.lo)
+      for (let i = 1; i < spans.length; i++) {
+        expect(spans[i].lo, `分数段区间重叠:${JSON.stringify(spans)}`).toBeGreaterThan(spans[i - 1].hi)
+      }
       // 官方页别名坑:出处必须是 ETL 实抓的那一页(about-the-…/invitations-to-apply)
       expect(r.officialUrl).toMatch(/welcomebc\.ca\/.*invitations-to-apply/)
       assertEvidence(r)
@@ -494,27 +516,37 @@ d('对话工具层(生产库只读)', () => {
 
     // G6 2026-08-04:MB 从「官方不发」→ 全国披露最厚的省之一。这条守住两件事:
     // ① 处理时长确实查得到(逐通道天数 + 6 个月服务承诺);② 配额与提名摆得出「还剩多少」。
-    it('金标 MB:配额 6239 / 至 6 月提名 2673 / SWM 平均 207 天 / 承诺 6 个月', async () => {
+    // 2026-08-09 改结构化:配额/提名/库存/天数的精确值随月度页与年报每期漂移(雷达在 ETL diff,
+    // 不在恒绿测试)—— 只守行齐全、单位口径,以及不随数据漂移的算术/子集关系(库存=在审+待审、
+    // enhanced ⊆ 总提名)。
+    it('金标 MB:配额与 YTD 提名、库存拆分、逐通道处理天数、服务承诺各行齐全且口径对', async () => {
       const r = await lookupOps(pool, { prov: 'MB' })
       expect(r.availability).toBe('ok')
       const one = (key: string, scope = '') => r.metrics.find((m) => m.key === key && m.scope === scope)!
-      expect(one('allocation').value).toBe(6239)
-      expect(one('allocation').unit).toBe('spots')
-      expect(one('nominations_ytd').value).toBe(2673)
-      expect(one('nominations_enhanced_ytd').value).toBe(886)
+      // 数值不写死(每期漂移):只守「行在 + 有限正数」
+      const pos = (key: string, scope = '') => {
+        const m = one(key, scope)
+        expect(m, `${key}${scope ? `/${scope}` : ''} 一行都没有`).toBeTruthy()
+        expect(Number.isFinite(m.value), `${key}${scope ? `/${scope}` : ''}:value 不是有限数`).toBe(true)
+        expect(m.value!, `${key}${scope ? `/${scope}` : ''}`).toBeGreaterThan(0)
+        return m
+      }
+      expect(pos('allocation').unit).toBe('spots')
+      pos('nominations_ytd')
+      // enhanced 是总提名的子集(口径关系,不随数据漂移)
+      expect(pos('nominations_enhanced_ytd').value!).toBeLessThanOrEqual(one('nominations_ytd').value!)
       // 库存(在审 + 待审):「等多久」的另一半分母,必须写明是哪个月的快照,不能说成「当前」
-      expect(one('in_assessment').value).toBe(1050)
-      expect(one('pending_assessment').value).toBe(641)
-      expect(one('inventory').value).toBe(1691)
+      pos('in_assessment')
+      pos('pending_assessment')
+      // 库存 = 在审 + 待审(算术恒等式,不随数据漂移)
+      expect(pos('inventory').value).toBe(one('in_assessment').value! + one('pending_assessment').value!)
       expect(one('inventory').period).toMatch(/^\d{4}-\d{2}$/)
-      // 年报 §9:逐通道平均处理天数(官方单位是天,不折算)
-      const swm = one('processing_days', 'Skilled Worker in Manitoba')
-      expect(swm.value).toBe(207)
+      // 年报 §9:逐通道平均处理天数(官方单位是天,不折算;批/拒两档各自成行)
+      const swm = pos('processing_days', 'Skilled Worker in Manitoba')
       expect(swm.unit).toBe('days')
-      expect(r.metrics.find((m) => m.key === 'processing_days_approved' && m.scope === 'Skilled Worker in Manitoba')!.value).toBe(205)
-      expect(r.metrics.find((m) => m.key === 'processing_days_refused' && m.scope === 'Skilled Worker in Manitoba')!.value).toBe(379)
-      expect(one('processing_commitment').value).toBe(6)
-      expect(one('processing_commitment').unit).toBe('months')
+      pos('processing_days_approved', 'Skilled Worker in Manitoba')
+      pos('processing_days_refused', 'Skilled Worker in Manitoba')
+      expect(pos('processing_commitment').unit).toBe('months')
       // 两个源不同页:年报的天数不许挂月度页的出处
       expect(swm.evidence.url).toMatch(/annual-report/)
       expect(one('allocation').evidence.url).toMatch(/monthly-data/)

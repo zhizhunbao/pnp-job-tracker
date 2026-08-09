@@ -56,6 +56,12 @@ describe('闸A 归因闸(第二人称陈述态 + 手上没有值的属性)', () 
     expect(guardAnswer(BAD3, facts, 'CLB 6').ok).toBe(true)
   })
 
+  it('中文态两查(07 评测批补):同病同拦,经验/CRS 的中文句式也在判据面内', () => {
+    const empty = emptySlots()
+    expect(findUngroundedClaims('你的经验还差 6 个月才满足这条线。', empty)[0]).toMatch(/^exp:/)
+    expect(findUngroundedClaims('你的 CRS 分数还不够这轮抽选。', empty)[0]).toMatch(/^crs:/)
+  })
+
   it('要求态是门槛转述,一句都不许拦', () => {
     const empty = emptySlots()
     for (const s of [

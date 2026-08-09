@@ -11,7 +11,40 @@
 > - **C 数据**:只读 `data/crawl/fed-ee/` 97 页缓存。语言 T4–T26 → raw 23 表/105 档、mart 443 行;ECA 页 FSW 教育映射 151 行并入 FSW67。实际本地 mart=`ee_points_grid` 380(CRS 186 + FSW67 194,points NULL 22)、`ee_language_grid` 443;唯一键重复 0、evidence 缺失 0。**未跑 09 main/seed/DB_PUSH/DDL;新语言 mart 尚无 CMS/生产消费链,不能对外声称 IELTS 原分已可自动换 CLB。**
 > - 全程未启 dev server、未 commit/push;`data/raw/ee/draws.json` 等定时 ETL 既有脏改保留,不属于本批。
 >
-> **⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡ 最新交接(2026-08-09,「批A+批B 多 agent 并行:对话入口四修 + G-AIP 入库」de819f3..f2d762a)**
+> **⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡ 最新交接(2026-08-09 深夜,「对话评测批(后1)」+批D 欠账①清账)**
+> 蓝本=engine_v2 三件套(evaluation 批跑+病例卡+生产语料回归);设计+实施=docs/implementation/
+> 对话闭环-批AB/**07_对话评测批.md**(六节全勾);上位=对话Case-Harness方案-20260805(本批=其 D2/D4
+> 变体落地;**D3 Fact.code/availability 仍未动**=语义级复现率的前置)。生产代码 cms/src 零改动,零 UI。
+> - **✅ 两层评测网上线**:恒绿网 `test:int` **首次全量 0 红(27 文件/504 测试)**——活体 C01 金标
+>   5 用例迁 `tests/eval/chatGold.eval.spec.ts`;chatTools 三处生产快照值断言(SIRS 1728/11 段、SK、MB)
+>   改结构不变量(段区间不重叠/同期/inventory 恒等式)。「既有 2 红」账销。批跑层=`pnpm run eval:chat`
+>   (vitest.eval.config.mts 独立 include,真库+真 LLM 串行,硬档红=非零退出、软档只记录),
+>   报告自动落 docs/evaluation/对话评测-<日期>.{md,json}。**接管道 `| tail` 会吃退出码,看数直跑。**
+> - **✅ 病例卡 K01-K13**(cms/tests/cases/diseaseCards.ts + 07 文档 §8;铁规矩:新病灶先登卡再修,
+>   翻✅必须指到恒绿用例):K01 定性反转=chatGuardAttr 金标 BAD1-3 **就是**批A「经验/CRS 说成你的」
+>   病灶原句(闸A 为治它而建,已治;本批补中文态两查 13/13 绿)。
+> - **✅ 语料集冻结**:chat_logs 实拉 **113 轮/31 串**(「约 50 轮」旧账过时;串 1a415b 30 轮=Git Bash
+>   乱码探针垃圾整串剔),**真实陌生语料≈0**;冻结 corpus.json 24 case/36 轮(#94 K08 实录/#52 短答实录在内)。
+> - **🔎 基线批跑三发三中(复跑对拍=稳定命中非偶发)**:答上 35/36(唯一 err=设计内 noOcc)、降级 3 轮、
+>   出口残留 0(七道闸零逃逸)。**K03 省名串台复现**(R08 答复冒出 facts 没有的 NB);**K05 坐实且更具体**
+>   (建档点选卡自家 sendText「我持有有效的 PGWP 工签」被抽进 claims——治它拿这句当金标);**K08 复发**
+>   (裸码 33102 两跑都抄成 31102 且答复两码混说 → literalNoc 裸码扩围记账**升优先级**;注意连错两跑
+>   分不清抽槽稳定性 vs K09 缓存钉同答,治时换句式验);**K13 新卡**=「studying IT」反问轮猜 41101
+>   (活体金标历史红的真身,批跑层断言在守)。R15 期望修正=评测网抓到 CJK≥2 修复的行为变更
+>   (首轮短中文 tooShort→noOcc)。**K09 缓存实证**:同语料二跑 375s→122s。
+> - **✅ 批D 欠账① 名录匹配审计**(docs/evaluation/名录匹配审计-20260809.md,只读零改):503 对命中,
+>   🔴 **词内子串假阳性**(Esso→Wheeler Acc*esso*ries/Mont*esso*ri;ARMS Ltd→Wohlgemuth F*arms Ltd*)、
+>   连锁多配 72 对(Tim Hortons ×55,最短名胜出点错加盟法人;HOTEL HALIFAX 被 Atlantica 抢配实例)。
+>   **修法待 Frank 拍**:词边界匹配/多配≥2 不点名法人只报 N 家/胜出序=相等>全词>最短。
+> - **⏭️ 批D 欠账② 待 Frank 亲手**:真 Pro 号生产验判定卡直渲。核对清单:① 金标岗 11039073 开判定卡,
+>   paid 行直渲(行名+真值+quote+出处日期,序=语言→经验→时间窗→换省→比路→雇主下一步,免费行照旧✓);
+>   ② DevTools Network 看 /api/triple-verdict:pro:true 且 paid 行带 params/quote(非 Pro 只有
+>   gate/tier/key);③ 已是 Pro 不应再见 UpgradeModal;④ 若有无档案 Pro 号,应见六行—+建档 CTA。
+> - **记账新增**:治病批候选(K05 点选卡 sendText 金标/K03 串台/K02 未收录推断/K12 tier0 点名——
+>   基线命中句就是金标);literalNoc 裸码扩围(升优先级);名录匹配词边界修;AB 三门槛快照值断言
+>   未防漂移(同族低风险,SIRS 同款修法);批跑节奏=每批收口+每周一次(周跑对比记得 K09 缓存层)。
+>
+> **⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡ 上一轮交接(2026-08-09,「批A+批B 多 agent 并行:对话入口四修 + G-AIP 入库」de819f3..f2d762a)**
 > 蓝本=docs/design/对话闭环总设计-20260809.md §3;拆法照 next-session-status 置顶(A1 Terra 示例三档/A2 Sol 编排红线/B Terra G-AIP/Lead 收口);实施文档=docs/implementation/对话闭环-批AB/01-03。
 > - **✅ 批A D1-D4 四修**(`0c50a1e`):①示例句三档动态化(chatExamples 纯函数+/api/users/me 复用;
 >   **Lead 补刀:③档三候选全部织入职业名** —— 编排层只有档案**写方向**(profileFill)没有**读方向**,
