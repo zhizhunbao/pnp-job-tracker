@@ -405,7 +405,12 @@ export function ChatBox({ compact = false, autoFocus = false, prefill = '' }: { 
                 </div>
               ) : turn.a ? (
                 <>
-                  <ChatAnswer a={turn.a} busy={busy} onAsk={(q) => void ask(q)} />
+                  {/* 追问兜底(08-09 Frank「四个选项还是没有啊」):这一轮编排既没给追问也没给点选卡
+                      → 把空态的三条个性化示例垫回去当「接着问」(剔与本轮同句的),不留死胡同 */}
+                  <ChatAnswer a={turn.a} busy={busy} onAsk={(q) => void ask(q)}
+                    fallback={!turn.a.followups?.length && !turn.a.options?.items?.length
+                      ? examples.map((ex) => t(ex.key, ex.params)).filter((q) => q !== turn.q)
+                      : undefined} />
                   {/* C6 选项卡:只挂最后一轮;点选 = 以用户身份把 sendText 发出去(气泡进对话流)。
                       第 4 张「自己说」固定在末尾 → 聚焦输入框(设计 §一第 5 条:永不堵嘴)。 */}
                   {turn.a.options?.items?.length && i === turns.length - 1 && !busy ? (

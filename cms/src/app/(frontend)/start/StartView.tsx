@@ -124,6 +124,27 @@ function Sec({ id, title, right, children, sub }: { id: string; title: React.Rea
   )
 }
 
+// 筛选控件统一样式(2026-08-09 Frank「这两部分样式怎么不一样」):对齐职位板 JobsTable ctrl 规格
+// (38 高 radius6 字号 14;高度走 .sbCtl,手机 44 触控靶不变)
+const SB_CTL: React.CSSProperties = { border: '1px solid #d1d5db', borderRadius: 6, background: '#fff', fontSize: 14, color: '#1f2937', padding: '0 10px' }
+// select 的固有宽度=**最长选项**文本,闭合态永远被撑到上限(Frank 08-09 两连「太宽了/怎么还是这么宽」,
+// maxWidth 硬压治标不治本)——照职位板 Sel 的镜像手法:流内占宽的是当前选中项的隐形镜像,select 绝对
+// 定位铺满壳(弹出的选项列表浏览器仍按全文排,不吃这个宽);不 import JobsTable.Sel 免把重器拖进本页包
+function SbSel({ value, onChange, all, options }: {
+  value: string; onChange: (v: string) => void; all: string; options: { v: string; label: string }[]
+}) {
+  const shown = value ? (options.find((o) => o.v === value)?.label || value) : all
+  return (
+    <span style={{ position: 'relative', display: 'inline-block', maxWidth: 210 }}>
+      <span aria-hidden className="sbCtl" style={{ ...SB_CTL, display: 'flex', alignItems: 'center', visibility: 'hidden', paddingRight: 30, whiteSpace: 'nowrap', overflow: 'hidden', border: '1px solid transparent' }}>{shown}</span>
+      <select className="sbCtl" value={value} onChange={(e) => onChange(e.target.value)} style={{ ...SB_CTL, position: 'absolute', inset: 0, width: '100%' }}>
+        <option value="">{all}</option>
+        {options.map((o) => <option key={o.v} value={o.v}>{o.label}</option>)}
+      </select>
+    </span>
+  )
+}
+
 // 雇主橱窗单表(Frank 08-08「加分页」+「每表加筛选条件」+「按逻辑重新设计」):桌面 DataTable 翻页(10/页),
 // 手机卡 5/页;全量已在客户端 → 筛选纯前端,控件一行等高 30 照职位板站规(#282 教训)。
 // 每表按人群逻辑配筛选(职业筛 08-08 Frank「大类种类小类联动过滤要加上」;08-09 Frank「全部小类呢?」
@@ -163,20 +184,13 @@ function SponsorBoard({ rows, kind, t, lang, total, occOpts, catMids, nocCat }: 
   // 省下拉只显本语言全名(Frank 08-08「全部省那么宽吗」——双语并排把控件撑到 460px,单语即窄);
   // 不引 JobsTable.provName 免把重器拖进本页包
   const provLabel = (c: string) => { const loc = t('prov.' + c); return loc && loc !== 'prov.' + c ? loc : PROV_NAME[c] || c }
-  // #276:height 移交 .sbCtl(styles.css);2026-08-09 Frank「这两部分样式怎么不一样」——
-  // 边框/圆角/字号/内距全对齐职位板筛选控件(JobsTable ctrl:38 高 radius6 字号14),全站一套筛选形态
-  const ctl: React.CSSProperties = { border: '1px solid #d1d5db', borderRadius: 6, background: '#fff', fontSize: 14, color: '#1f2937', padding: '0 10px', maxWidth: 210 }
   const provSel = (
-    <select key="prov" className="sbCtl" value={fProv} onChange={(e) => setFProv(e.target.value)} style={ctl}>
-      <option value="">{t('all.prov')}</option>
-      {provOpts.map((c) => <option key={c} value={c}>{provLabel(c)}</option>)}
-    </select>
+    <SbSel key="prov" value={fProv} onChange={setFProv} all={t('all.prov')}
+      options={provOpts.map((c) => ({ v: c, label: provLabel(c) }))} />
   )
   const streamSel = kind === 'named' ? (
-    <select key="stream" className="sbCtl" value={fStream} onChange={(e) => setFStream(e.target.value)} style={ctl}>
-      <option value="">{t('se.allStreams')}</option>
-      {streamOpts.map((s) => <option key={s} value={s}>{streamDisplay(t, s)}</option>)}
-    </select>
+    <SbSel key="stream" value={fStream} onChange={setFStream} all={t('se.allStreams')}
+      options={streamOpts.map((s) => ({ v: s, label: streamDisplay(t, s) }))} />
   ) : null
   // 职业筛三级联动(08-08 Frank「大类种类小类联动过滤要加上」,与职位板 JobsTable 同套形态):
   // 大类/中类=纯点选、选项只列本表真实存在的分类(小样本橱窗表不比全量职位板,摆满 89 个中类全是死选项);
@@ -209,26 +223,17 @@ function SponsorBoard({ rows, kind, t, lang, total, occOpts, catMids, nocCat }: 
     return [...set].sort()
   }, [rows, nocCat, fBroad, fMid])
   const broadSel = (
-    <select key="broad" className="sbCtl" value={fBroad} onChange={(e) => { setFBroad(e.target.value); setFMid(''); setFFine(''); setFNoc('') }} style={ctl}>
-      <option value="">{t('all.broad')}</option>
-      {broadOpts.map((b) => <option key={b} value={b}>{b === '未分类' ? t('cell.uncat') : t('broad.' + b)}</option>)}
-    </select>
+    <SbSel key="broad" value={fBroad} onChange={(v) => { setFBroad(v); setFMid(''); setFFine(''); setFNoc('') }} all={t('all.broad')}
+      options={broadOpts.map((b) => ({ v: b, label: b === '未分类' ? t('cell.uncat') : t('broad.' + b) }))} />
   )
   const midSel = (
-    <select key="mid" className="sbCtl" value={fMid} onChange={(e) => { setFMid(e.target.value); setFFine(''); setFNoc('') }} style={ctl}>
-      <option value="">{t('all.mid')}</option>
-      {midOpts.map((m) => <option key={m} value={m}>{midLabel(m)}</option>)}
-    </select>
+    <SbSel key="mid" value={fMid} onChange={(v) => { setFMid(v); setFFine(''); setFNoc('') }} all={t('all.mid')}
+      options={midOpts.map((m) => ({ v: m, label: midLabel(m) }))} />
   )
-  // 小类/职业两个下拉的选项名长(最长职业题名会把控件撑到 210 上限,08-09 Frank「这个太宽了吧」)
-  // → 收到 150,与省/中类同一视觉档;收窄的只是控件框,弹出的选项列表浏览器仍按全文排
-  const narrow: React.CSSProperties = { ...ctl, maxWidth: 150 }
   // 小类(08-09 Frank「全部小类呢?」——此前从中类直接跳到职业,少了职位板同款的一级)
   const fineSel = (
-    <select key="fine" className="sbCtl" value={fFine} onChange={(e) => { setFFine(e.target.value); setFNoc('') }} style={narrow}>
-      <option value="">{t('all.fine')}</option>
-      {fineOpts.map((f) => <option key={f} value={f}>{fineLabel(f)}</option>)}
-    </select>
+    <SbSel key="fine" value={fFine} onChange={(v) => { setFFine(v); setFNoc('') }} all={t('all.fine')}
+      options={fineOpts.map((f) => ({ v: f, label: fineLabel(f) }))} />
   )
   // 职业筛=纯点选(Frank 08-08「手机上也没办法敲字」):选项只列本表真实存在的职业,按雇主数倒序,
   // 常用职业置顶;字典缺题名的码原样兜底(不因缺翻译丢筛选项);受上三级大类/中类/小类联动收窄
@@ -245,14 +250,12 @@ function SponsorBoard({ rows, kind, t, lang, total, occOpts, catMids, nocCat }: 
     return [...cnt.entries()].sort((a, b) => b[1] - a[1]).map(([n]) => ({ noc: n, label: title.get(n) || n }))
   }, [rows, occOpts, lang, nocCat, fBroad, fMid, fFine])
   const occInput = (
-    <select key="occ" className="sbCtl" value={fNoc} onChange={(e) => setFNoc(e.target.value)} style={narrow}>
-      <option value="">{t('se.allOcc')}</option>
-      {occSel.map((o) => <option key={o.noc} value={o.noc}>{o.label}</option>)}
-    </select>
+    <SbSel key="occ" value={fNoc} onChange={setFNoc} all={t('se.allOcc')}
+      options={occSel.map((o) => ({ v: o.noc, label: o.label }))} />
   )
   const skilledBtn = kind === 'lmia' ? (
     <button key="skilled" className="sbCtl" onClick={() => setSkilled((v) => !v)}
-      style={{ ...ctl, cursor: 'pointer', fontFamily: 'inherit', ...(skilled ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8', fontWeight: 600 } : {}) }}>
+      style={{ ...SB_CTL, cursor: 'pointer', fontFamily: 'inherit', ...(skilled ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8', fontWeight: 600 } : {}) }}>
       {t('se.skilledOnly')}{skilled ? ' ✓' : ''}
     </button>
   ) : null
@@ -480,6 +483,26 @@ export function StartView({ stats }: { stats: HomeStats }) {
   const [drawsN, setDrawsN] = useState(10)
   const [newsN, setNewsN] = useState(10)
   const [prov, setProv] = useState(stats.provPreset || 'ON')
+  // 二级导航滚动跟随(08-09 Frank「高亮也不对」):当前分区=顶部粘条下沿(~96px)以上最后一个分区标题。
+  // scroll 监听 + rAF 节流;分区可能条件不渲(榜全空),getElementById 空安全
+  const [navSec, setNavSec] = useState('')
+  useEffect(() => {
+    const ids = ['pl-se', 'pl-boards', 'pl-prov', 'pl-provocc', 'pl-draws']
+    let raf = 0
+    const pick = () => {
+      raf = 0
+      let cur = ''
+      for (const id of ids) {
+        const el = document.getElementById(id)
+        if (el && el.getBoundingClientRect().top <= 96) cur = id
+      }
+      setNavSec(cur)
+    }
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(pick) }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    pick()
+    return () => { window.removeEventListener('scroll', onScroll); if (raf) cancelAnimationFrame(raf) }
+  }, [])
 
   // ── 全国行(province='all';E13-02 若改出 'ALL' 大写也吃得下,不因大小写掉数据)──
   const natOcc = useMemo(() => (market === null ? null : market.occ.filter((o) => isAllProv(o.province))), [market])
@@ -638,15 +661,17 @@ export function StartView({ stats }: { stats: HomeStats }) {
           .plNavRow{padding:9px 0}
         }`}</style>
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="start" />
-      {/* 二级导航条(08-08 Frank):分区锚点直跳;粘顶,375 横向滚动 */}
+      {/* 二级导航条(08-08 Frank):分区锚点直跳;粘顶,375 横向滚动。
+          2026-08-09 Frank「这个地方的高亮也不对啊」:原先五个锚点永远灰、属主永远蓝=看着像永远停在第一项。
+          现加滚动跟随(当前分区的锚点亮蓝),属主前缀改深色粗体——蓝色只有一个语义:你现在在哪 */}
       <div style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', borderBottom: `1px solid ${UI.border}` }}>
         <PageShell pad="0 1.25rem">
           <div className="plNavRow" style={{ display: 'flex', gap: 16, overflowX: 'auto', fontSize: 12.5, whiteSpace: 'nowrap', alignItems: 'center' }}>
             {/* 归属设计(Frank 08-08「二级标题应该只属于这个一级标题」):条首挂一级项「就业把脉」作属主 */}
-            <span style={{ fontWeight: 700, color: UI.primary, flexShrink: 0 }}>{t('pulse.entry')}</span>
+            <span style={{ fontWeight: 700, color: UI.text, flexShrink: 0 }}>{t('pulse.entry')}</span>
             <span style={{ width: 1, height: 14, background: UI.border, flexShrink: 0, alignSelf: 'center' }} />
             {([['pl-se', t('se.title')], ['pl-boards', t('pulse.nav.boards')], ['pl-prov', t('pulse.s4')], ['pl-provocc', t('pulse.s4b')], ['pl-draws', t('pulse.s5')]] as [string, string][]).map(([id, label]) => (
-              <a key={id} href={'#' + id} className="plNavA" style={{ color: '#6b7280', textDecoration: 'none', fontWeight: 600, flexShrink: 0 }}>{label}</a>
+              <a key={id} href={'#' + id} className="plNavA" style={{ color: navSec === id ? UI.primary : '#6b7280', textDecoration: 'none', fontWeight: navSec === id ? 700 : 600, flexShrink: 0 }}>{label}</a>
             ))}
           </div>
         </PageShell>

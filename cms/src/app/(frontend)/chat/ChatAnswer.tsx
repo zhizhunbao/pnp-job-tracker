@@ -95,7 +95,7 @@ export function ChatText({ text, sheet, caret }: { text: string; sheet?: boolean
   )
 }
 
-export function ChatAnswer({ a, busy, onAsk }: { a: Answer; busy: boolean; onAsk: (q: string) => void }) {
+export function ChatAnswer({ a, busy, onAsk, fallback }: { a: Answer; busy: boolean; onAsk: (q: string) => void; fallback?: string[] }) {
   const [, , t] = useLang()
   // 答复下方一排小图标(2026-08-05 照 GPT/Claude 形态;原来是一行文字钮)。
   // 只留三个 —— 复制 + 赞 + 踩。「分叉 / 重生成 / 继续」在我们这儿语义上不成立:
@@ -177,16 +177,22 @@ export function ChatAnswer({ a, busy, onAsk }: { a: Answer; busy: boolean; onAsk
         </div>
       )}
 
-      {/* 追问:点了带 history 再问一轮(不是重开一段对话) */}
-      {a.followups?.length ? (
-        <div className="cbFus">
-          <div className="cbFusT">{t('chat.followups')}</div>
-          {a.followups.map((q, k) => (
-            <button key={k} className="cbFu" disabled={busy} onClick={() => onAsk(q)}
-              style={busy ? { opacity: 0.5, cursor: 'default' } : undefined}>{q}</button>
-          ))}
-        </div>
-      ) : null}
+      {/* 追问:点了带 history 再问一轮(不是重开一段对话)。
+          编排一条追问也给不出、点选卡也不出的轮(概念问答无数据命中+档案槽全有,2026-08-09 Frank
+          「四个选项还是没有啊」)→ 垫回空态那三条个性化示例(fallback,ChatBox 传入):
+          任何一轮答完都得有可点的下一步,不许出现死胡同 */}
+      {(() => {
+        const fus = a.followups?.length ? a.followups : (fallback ?? [])
+        return fus.length ? (
+          <div className="cbFus">
+            <div className="cbFusT">{t('chat.followups')}</div>
+            {fus.map((q, k) => (
+              <button key={k} className="cbFu" disabled={busy} onClick={() => onAsk(q)}
+                style={busy ? { opacity: 0.5, cursor: 'default' } : undefined}>{q}</button>
+            ))}
+          </div>
+        ) : null
+      })()}
       {/* 免责句原来钉在**每条**答复下面 —— 一轮问答铺三条就重复三遍,那是噪音不是合规。
           2026-08-05 挪到面板底部 composer 边上常驻一条(ChatBox),全局只出现一次。 */}
     </div>
