@@ -598,6 +598,9 @@ export function StartView({ stats }: { stats: HomeStats }) {
         .plCta{display:flex;flex-direction:column;gap:12px}
         /* 08-08 追加对话导流钮(三分表表题旁):默认(手机)触控靶 ≥44px,桌面收紧(字号不动,同 secFold/sbCtl 手法) */
         .seAsk{font-size:12.5px;font-weight:600;color:${UI.primary};background:none;border:none;cursor:pointer;padding:4px 2px;font-family:inherit;white-space:nowrap;display:inline-flex;align-items:center;min-height:44px}
+        /* #289:二级导航条锚点链接同款(37 轮体检 R8 实测 20px,#276 那批漏了这一族) */
+        .plNavA{display:inline-flex;align-items:center;min-height:44px}
+        .plNavRow{padding:3px 0}
         @media (min-width:900px){
           .plBand{padding:56px 0}
           .plBand h2{font-size:24px}
@@ -612,17 +615,19 @@ export function StartView({ stats }: { stats: HomeStats }) {
           .plCta{flex-direction:row;align-items:center}
           .plCta .plBtn{flex:0 0 auto;padding:12px 28px}
           .seAsk{min-height:auto}
+          .plNavA{min-height:auto}
+          .plNavRow{padding:9px 0}
         }`}</style>
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="start" />
       {/* 二级导航条(08-08 Frank):分区锚点直跳;粘顶,375 横向滚动 */}
       <div style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', borderBottom: `1px solid ${UI.border}` }}>
         <PageShell pad="0 1.25rem">
-          <div style={{ display: 'flex', gap: 16, overflowX: 'auto', padding: '9px 0', fontSize: 12.5, whiteSpace: 'nowrap' }}>
+          <div className="plNavRow" style={{ display: 'flex', gap: 16, overflowX: 'auto', fontSize: 12.5, whiteSpace: 'nowrap', alignItems: 'center' }}>
             {/* 归属设计(Frank 08-08「二级标题应该只属于这个一级标题」):条首挂一级项「就业把脉」作属主 */}
             <span style={{ fontWeight: 700, color: UI.primary, flexShrink: 0 }}>{t('pulse.entry')}</span>
             <span style={{ width: 1, height: 14, background: UI.border, flexShrink: 0, alignSelf: 'center' }} />
             {([['pl-se', t('se.title')], ['pl-boards', t('pulse.nav.boards')], ['pl-prov', t('pulse.s4')], ['pl-provocc', t('pulse.s4b')], ['pl-draws', t('pulse.s5')]] as [string, string][]).map(([id, label]) => (
-              <a key={id} href={'#' + id} style={{ color: '#6b7280', textDecoration: 'none', fontWeight: 600, flexShrink: 0 }}>{label}</a>
+              <a key={id} href={'#' + id} className="plNavA" style={{ color: '#6b7280', textDecoration: 'none', fontWeight: 600, flexShrink: 0 }}>{label}</a>
             ))}
           </div>
         </PageShell>

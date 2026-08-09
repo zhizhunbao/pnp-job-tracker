@@ -49,13 +49,15 @@ OUT = _paths.PROCESSED / "employer_facts.json"
 ERR_LOG = _paths.PROCESSED / "employer_facts_errors.log"
 print(f"IN_NAMED={IN_NAMED}\nIN_REGISTRY_DIR={IN_REGISTRY_DIR}\nOUT={OUT}", flush=True)
 
-# 公共部门识别(移植 etl/clean/_enrich_shelf_aliases.py PUB 正则,2026-08-08 hospital 词界已修版)
+# 公共部门识别(移植 etl/clean/_enrich_shelf_aliases.py PUB 正则,2026-08-08 hospital 词界已修版;
+# 2026-08-09 #290 补 canadian/armed forces——CFMWS 在 08-08 快照里但漏标,生产渲「待核」误导)
 PUB = re.compile(
     r"health (network|authority|region)|\bhospital\b|city of |town of |village of |district of "
     r"|municipalit|regional municipality|school (district|division|board)|board of education"
     r"|centre for education|government|ministry|department of |agency|first nation|nation |tribal"
     r"|band council|\bcouncil\b|commission|public library|regional centre|university|college|institut"
-    r"|société|centre de santé|association|society|foundation|red cross|salvation army|ymca|ywca", re.I)
+    r"|société|centre de santé|association|society|foundation|red cross|salvation army|ymca|ywca"
+    r"|canadian forces|armed forces", re.I)
 
 SUFFIX = re.compile(r"\b(inc|ltd|limited|corp|corporation|co|company|ulc|llp|lp|ltee|ltée)\b\.?", re.I)
 
