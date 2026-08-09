@@ -986,6 +986,9 @@ type LabelDict = {
   factor: Record<string, string>
   /** op='none' = 官方明说这条通道**不设**这项门槛。与 factor 分开:两句话意思相反,共用模板就会说反。 */
   factorNone: Record<string, string>
+  /** languageExempt 且 unit=years:值是**毕业年限**不是语言等级(ON 那行 value=3 unit=years)——
+   *  套 factor 模板会拼出「豁免语言的等级是 3 years」,年限被读成等级。整句在这儿拼好,值嵌句中。 */
+  exemptYears: (n: number) => string
   /**
    * 时间线(lookupPlan)。全是**名目**形态(sayFact 用冒号接值),不是半句话 ——
    * 一条路上可能有两段同类,名目里必须写清是哪一段,不然读者对不上号。
@@ -1043,6 +1046,7 @@ export const LBL: Record<ChatLang, LabelDict> = {
       empYears: '要求雇主(不是申请人)已经营满', empRevenue: '要求雇主(不是申请人)的年营业额至少', empStaff: '要求雇主(不是申请人)至少有员工',
     },
     factorNone: { experience: '这条通道不设工作经验门槛', language: '这条通道不要求先交语言成绩' },
+    exemptYears: (n) => `省内认可院校毕业 ${n} 年内可免语言考试`,
     planGap: {
       '': '补齐官方门槛要多久', experience: '补齐经验门槛要多久', language: '补齐语言门槛要多久',
       income: '补齐收入门槛要多久', wage: '补齐工资门槛要多久',
@@ -1104,6 +1108,7 @@ export const LBL: Record<ChatLang, LabelDict> = {
       empRevenue: 'requires the employer, not the applicant, to have annual revenue of at least', empStaff: 'requires the employer, not the applicant, to have staff of at least',
     },
     factorNone: { experience: 'sets no minimum work-experience requirement', language: 'requires no language test up front' },
+    exemptYears: (n) => `waives the language test if the applicant graduated from an eligible institution in the province within the last ${n} years`,
     planGap: {
       '': 'how long it takes to close the gap to the official requirement', experience: 'how long it takes to close the work experience gap',
       language: 'how long it takes to close the language gap', income: 'how long it takes to close the household income gap',
@@ -1162,6 +1167,7 @@ export const LBL: Record<ChatLang, LabelDict> = {
       empYears: '요건 — 고용주(신청인 아님)의 사업 운영 기간은', empRevenue: '요건 — 고용주(신청인 아님)의 연 매출은', empStaff: '요건 — 고용주(신청인 아님)의 직원 수는',
     },
     factorNone: { experience: '이 통로는 경력 요건이 없습니다', language: '이 통로는 사전 어학 성적을 요구하지 않습니다' },
+    exemptYears: (n) => `주 내 인정 교육기관 졸업 후 ${n}년 이내면 어학 시험이 면제됩니다`,
     planGap: {
       '': '공식 요건을 채우는 데 걸리는 기간', experience: '경력 요건을 채우는 데 걸리는 기간', language: '언어 요건을 채우는 데 걸리는 기간',
       income: '소득 요건을 채우는 데 걸리는 기간', wage: '임금 요건을 채우는 데 걸리는 기간',
@@ -1836,15 +1842,26 @@ export async function collectFacts(
       const v = r.verdict === 'unknown' && r.short == null ? '' : (T[r.verdict as 'pass' | 'fail' | 'unknown'] ?? '')
       // 同省规则若来自多条官方通道，必须把通道名写进事实。否则模型会把 EDI 雇主门槛、SWM 在职时长
       // 和职业清单语言档硬拼成一条“同时满足”的路线；每个数字虽有出处，组合起来仍是假话。
-      const stream = streams.size > 1 && r.stream ? ` ${r.stream}` : ''
+      const streamName = streams.size > 1 ? r.stream ?? '' : ''
+      // 官方流名有的自带省码(「BC PNP Skills Immigration…」),再前置省码就渲成「BC BC PNP…」的结巴;
+      // 词边界匹配,「BCIT」这类以省码开头的普通词不受影响。
+      const head = streamName
+        ? (new RegExp(`^${p.province}\\b`).test(streamName) ? streamName : `${p.province} ${streamName}`)
+        : p.province
       // 🔴 「不设这项门槛」和「要求满 N」是**意思相反**的两句话,不能共用 factor 那套模板 ——
       //    套上去会写出「NL 要求申请人的工作经验满」后面跟一个空值,把这条通道最值钱的性质说反。
       //    没有对应译法的因素退回原模板(宁可少说一句,不许说反)。
       const none = r.need == null && r.verdict === 'pass' && T.factorNone[r.factor]
-      if (none) { out.push(fact('lookupThresholds', `${p.province}${stream} ${none}`, null, '', 'rule', r.evidence)); continue }
+      if (none) { out.push(fact('lookupThresholds', `${head} ${none}`, null, '', 'rule', r.evidence)); continue }
+      // 🔴 languageExempt 的值不一定是等级:ON 那行 value=3 unit=years(官方原句「毕业 3 年内免语言考试」),
+      //    套 factor 模板会拼出「规定申请人可以豁免语言的等级是 3 years」—— 年限被读成 CLB 等级,意思全错。
+      //    年限型整句在这儿拼好(值嵌句中,guard 收 label 里的数,账不变);等级型豁免行照旧走 factor 模板。
+      if (r.factor === 'languageExempt' && /^years?$/i.test(r.unit ?? '') && r.need != null) {
+        out.push(fact('lookupThresholds', `${head} ${T.exemptYears(r.need)}`, null, '', 'rule', r.evidence)); continue
+      }
       // 差额跟着单位走:CAD 类差额也要 $ + 千分位(值那头 sayFact 管,这条注文只能在这儿管)
       const short = r.short == null ? '' : `,${T.short} ${/^CAD\b/i.test(r.unit ?? '') ? `$${r.short.toLocaleString('en-US')}` : r.short}`
-      out.push(fact('lookupThresholds', `${p.province}${stream} ${T.factor[r.factor] ?? r.factor}`, r.need,
+      out.push(fact('lookupThresholds', `${head} ${T.factor[r.factor] ?? r.factor}`, r.need,
         `${v}${short}`, r.unit, r.evidence))
     }
   }
@@ -3614,9 +3631,6 @@ export async function orchestrate(
   // 降级成事实清单时**整张清单就是答复**,所以有出处的全标上 —— 那种时候出处正是唯一能点的东西。
   const out = degraded ? facts.map((f) => ({ ...f, cited: Boolean(f.evidence.url) })) : citeFacts(answer, facts)
   console.log(`[chat] cited ${out.filter((f) => f.cited).length}/${out.length} facts noc=${slots.noc} degraded=${degraded}`)
-  // 🔴 问了「走哪条路」却没判 = 档案槽不够。这时**反问缺的那几个槽**排在追问最前面:
-  //    不补槽就不会有裁决,推别的追问等于把他领去一个答不了他这个问题的地方。
-  const askSlots = isPathQuestion(text) && !verdictOn ? verdictFollowups(slots, lang) : []
   // 🔴 裁决已出但**身份不明**时点名问工签(§4.5 → C6 选项卡):NL 国际毕业生这类通道的前提是
   //    有效工签,而库里没有这条门槛行 —— 判定层说不出口的前提,由选项卡替它问(需要决定才弹,
   //    宁缺勿滥)。**不再同时塞进 followups**:那些 chip 点击=以用户身份发这句话,而这句是
@@ -3625,6 +3639,12 @@ export async function orchestrate(
   const options = verdictOn && slots.status == null
     ? permitOptions(lang)
     : slotAskOptions(slots, facts, lang, input.profileKnown)
+  // 🔴 问了「走哪条路」却没判 = 档案槽不够。这时**反问缺的那几个槽**排在追问最前面:
+  //    不补槽就不会有裁决,推别的追问等于把他领去一个答不了他这个问题的地方。
+  //    点选卡这轮在收的那个槽除外(2026-08-09 Frank 截图:CLB 卡和「你的语言考到 CLB 几?」
+  //    同屏两问)——卡是它的正确形态,同槽的文字反问不再重复出。
+  const dupAsk = options?.slotKey ? (LBL[lang].vAsk as Record<string, string>)[options.slotKey] : undefined
+  const askSlots = (isPathQuestion(text) && !verdictOn ? verdictFollowups(slots, lang) : []).filter((q) => q !== dupAsk)
   const followups = [...askSlots, ...buildFollowups(facts, lang, text, slots.occText)].slice(0, 3)
   return { answer, slots, facts: out, followups, ...(options ? { options } : {}), ...(degraded ? { degraded: true } : {}) }
 }

@@ -880,6 +880,42 @@ describe('槽位归一 / prompt 预算(模型输出不可信)', () => {
     expect(commercial[0].label).not.toMatch(/官方不公布|本站尚未收录|无法核实|谁也核不了/)
   })
 
+  // 🔴 官方流名自带省码(「BC PNP Skills Immigration…」)时门槛 fact 渲成「BC BC PNP…」的结巴
+  //    (2026-08-09 手机 375 对话出处展开态实见)。流名以省码开头就不再前置省码;
+  //    判据是词边界 —— NB「New Brunswick…」这类以省**全名**开头的照旧带码,BCIT 之类不误伤。
+  it('真实 collectFacts:流名自带省码不再前置,省全名开头的照旧带码', async () => {
+    const BC_GUIDE = 'https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-si-program-guide-pdf'
+    const requirement = (over: Record<string, unknown>) => ({
+      province: 'BC', program: 'PNP', stream: 'BC PNP Skills Immigration (all streams)',
+      subject: 'applicant', factor: 'language', op: '>=', value: 4, value_text: '', unit: 'CLB',
+      applies_teer: '', applies_noc: '', excludes_noc: '', applies_area: '', applies_condition: '',
+      applies_family_size: null, basis: '', label: 'CLB 4 or higher', section: 'Language',
+      effective: '2026-06-10', url: BC_GUIDE, page_url: 'https://www.welcomebc.ca/immigrate-to-b-c/for-workers',
+      fetched: '2026-08-07', ...over,
+    })
+    const pool = { query: async (sql: string) => sql.includes('FROM pnp_requirements q ORDER BY province, seq')
+      ? { rows: [
+        // 真实政策形状:BC 两条通道都以省码开头;NB 两条通道以省全名开头
+        requirement({}),
+        requirement({ stream: 'BC PNP Skilled Worker stream', factor: 'experience', value: 24, unit: 'months',
+          label: '2 years of directly related work experience', section: 'Skilled Worker' }),
+        requirement({ province: 'NB', stream: 'New Brunswick Skilled Worker stream (Experience / Graduates / Priority Occupations)',
+          value: 5, url: 'https://www2.gnb.ca/content/gnb/en/gateways/immigration.html', page_url: '' }),
+        requirement({ province: 'NB', stream: 'New Brunswick Skilled Worker stream — New Brunswick Experience pathway',
+          factor: 'experience', value: 12, unit: 'months', label: '12 months of work experience',
+          url: 'https://www2.gnb.ca/content/gnb/en/gateways/immigration.html', page_url: '' }),
+      ] }
+      : { rows: [] } }
+    const r = await collectFacts(pool, { noc: '63200', occText: 'cook', provs: ['BC', 'NB'], expMonths: null, status: null, claims: [] }, 3, 'zh')
+    const thr = r.facts.filter((x) => x.tool === 'lookupThresholds')
+    expect(thr.length).toBeGreaterThanOrEqual(4)
+    // BC:流名开头已是省码,标签直接用流名,不再渲成「BC BC PNP…」
+    expect(thr.some((x) => x.label.startsWith(`BC PNP Skills Immigration (all streams) ${LBL.zh.factor.language}`))).toBe(true)
+    expect(thr.every((x) => !x.label.startsWith('BC BC'))).toBe(true)
+    // NB:流名以省全名开头(不是省码「NB」),照旧前置省码 —— 词边界判据管的就是这条边
+    expect(thr.some((x) => x.label.startsWith('NB New Brunswick Skilled Worker stream'))).toBe(true)
+  })
+
   // 🔴 提示词里的大写强调被抄进答复(实测英文首句 `**WE** do not have a record…`)
   it('答复里的裸大写抓得到,公认缩写与省码不误杀', () => {
     expect(findShoutedWords('WE do not have a record of that permit.')).toEqual(['WE'])

@@ -101,6 +101,7 @@ export function ChatAnswer({ a, busy, onAsk }: { a: Answer; busy: boolean; onAsk
   // 只留三个 —— 复制 + 赞 + 踩。「分叉 / 重生成 / 继续」在我们这儿语义上不成立:
   // 对话不落库、答复过五道出口校验不能随手重来(2026-08-04 Open WebUI 取样结论)。
   const [copied, setCopied] = useState(false)
+  const [srcOpen, setSrcOpen] = useState(false)   // 出处清单开合(开关在操作条同一行)
   const canCopy = typeof navigator !== 'undefined' && !!navigator.clipboard    // 非安全上下文没有它,那就不出这个钮
   // 🔴 赞/踩 —— **通用聊天的点赞是训练信号,我们的点踩是数据缺口报警器**:
   // 每一个踩都是用户在替我们标注「这里答不好」,还是按真实频次排好序的。
@@ -142,13 +143,18 @@ export function ChatAnswer({ a, busy, onAsk }: { a: Answer; busy: boolean; onAsk
           onClick={() => rate('bad')}><IconThumbDown size={16} /></button>
         {/* 「解决了你的问题吗?」问句 2026-08-09 Frank 拍板撤掉:图标自解释(title/aria 三语还在),
             文字只把操作条拉宽。 */}
+        {/* 出处开关与图标同一行(2026-08-09 Frank「放一行」,分割线随之撤):按钮态折叠,aria-expanded
+            驱动箭头,键盘可达;展开的清单仍全宽铺在操作条下。默认收起 —— 一上来铺 8 行数字表会把
+            结论压没了,但开关必须**说清有几条**,不然没人知道下面藏着可点的官方原页 */}
+        {facts.length > 0 && (
+          <button className="cbSrcTgl" aria-expanded={srcOpen} onClick={() => setSrcOpen((v) => !v)}>
+            {t('chat.sources')}<span className="cbCnt">{facts.length}</span>
+          </button>
+        )}
       </div>
 
-      {/* 出处:<details> 原生折叠(零依赖、键盘可达)。默认收起 —— 一上来铺 8 行数字表会把结论压没了,
-          但摘要行必须**说清有几条**,不然没人知道下面藏着可点的官方原页 */}
-      {facts.length > 0 && (
-        <details className="cbSrc">
-          <summary>{t('chat.sources')}<span className="cbCnt">{facts.length}</span></summary>
+      {facts.length > 0 && srcOpen && (
+        <div className="cbSrc">
           <div>
             {/* 一条出处 = **一行**(旧版把标签/数值/Open/抓取时间摞成四行,8 条就是 32 行)。
                 抓取时间挪进链接的 title:它是取证信息,不是每行都要看的东西 */}
@@ -168,7 +174,7 @@ export function ChatAnswer({ a, busy, onAsk }: { a: Answer; busy: boolean; onAsk
               )
             })}
           </div>
-        </details>
+        </div>
       )}
 
       {/* 追问:点了带 history 再问一轮(不是重开一段对话) */}
@@ -224,13 +230,14 @@ export const CHAT_ANSWER_CSS = `
   /* 选中态:选的那个亮起来,另一个留着但退到极淡 —— 「我点过了」得一眼看得出来 */
   .cbAct:disabled:not(.cbVoted){opacity:.35}
   .cbVoted{color:${UI.primary}}
-  /* 轻问一句,不是长句(站规:UI 文案一行放下、无废话)。跟图标同一条基线,不另起一行占版面 */
-  .cbSrc{margin-top:12px;border-top:1px solid ${UI.hairline};padding-top:8px}
-  .cbSrc>summary{list-style:none;cursor:pointer;font-size:12px;font-weight:600;color:${UI.text2};display:inline-flex;align-items:center;gap:6px;padding:2px 0}
-  .cbSrc>summary::-webkit-details-marker{display:none}
-  .cbSrc>summary::before{content:'\\25B8';font-size:9px;color:${UI.text3}}
-  .cbSrc[open]>summary::before{content:'\\25BE'}
-  .cbSrc>summary:hover{color:${UI.primary}}
+  /* 出处开关:与三图标同行同高(40px 触控靶),箭头随 aria-expanded 翻向;清单容器只留一点顶距,
+     原「分割线+独占一行」的两行形态 08-09 Frank「放一行」撤掉 */
+  .cbSrcTgl{border:none;background:none;cursor:pointer;font-size:12px;font-weight:600;color:${UI.text2};
+    display:inline-flex;align-items:center;gap:6px;padding:0 8px;min-height:40px;font-family:inherit}
+  .cbSrcTgl::before{content:'\\25B8';font-size:9px;color:${UI.text3}}
+  .cbSrcTgl[aria-expanded="true"]::before{content:'\\25BE'}
+  .cbSrcTgl:hover{color:${UI.primary}}
+  .cbSrc{margin-top:2px}
   .cbCnt{background:${UI.hairline};color:${UI.text2};border-radius:999px;padding:0 7px;font-size:11px;font-weight:600}
   /* 出处行:**一条一行**(标签 | 数值 | 官方站点名),375 上标签自己折行,数值与站名不折、不横滚(站规)。
      站名列的封顶从 40% 换成 200px(2026-08-04 实测修):百分比 max-width 在 auto 网格轨道里是**循环依赖**

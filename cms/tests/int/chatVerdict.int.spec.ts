@@ -267,6 +267,17 @@ describe('缺槽 → 反问那几个槽,一个裁决数字都不出', () => {
     expect(r.followups.slice(0, 3)).toEqual([T.vAsk.age, T.vAsk.clb, T.vAsk.edu])
   })
 
+  it('点选卡这轮在收的槽,文字反问不再重复出(08-09 Frank 截图:CLB 同屏两问)', async () => {
+    const pool = new FakePool()
+    // 身份/目标省都有 → 建档点选卡轮到 CLB;档案槽仍是 0 个 → 裁决不触发,缺槽反问照出
+    H.slots = BARE_SLOTS.replace('"provs":[]', '"provs":["ON"]').replace('"status":null', '"status":"working"')
+    const r = await orchestrate(pool, { text: '我想做木工(NOC 72310),走哪条路?', lang: 'zh' })
+    const T = LBL.zh
+    expect(r.options?.slotKey).toBe('clb')
+    expect(r.followups, 'CLB 卡已在收,反问句不许再问一遍').not.toContain(T.vAsk.clb)
+    expect(r.followups.slice(0, 2)).toEqual([T.vAsk.age, T.vAsk.edu])
+  })
+
   it('反问只问缺的那几个(已经说过的不再问一遍)', () => {
     const s = normalizeSlots({ age: 40, clb: 6 }) as Slots
     expect(verdictFollowups(s, 'zh')).toEqual([LBL.zh.vAsk.edu, LBL.zh.vAsk.married, LBL.zh.vAsk.canadaStudy])
@@ -383,5 +394,25 @@ describe('lookupVerdict(薄封装)', () => {
     expect(r.availability).toBe('not-collected')
     expect(r.pathways).toEqual([])
     expect(r.note).toContain('不等于官方没有要求')
+  })
+})
+
+// ── ⑦ ON 语言免考行:值是毕业年限,不是豁免等级 ──────────────────────────────
+// mart 里那行 value=3 unit=years(官方原句「毕业 3 年内免语言考试」)。曾走 factor 模板
+// 渲成「规定申请人可以豁免语言的等级是 3 years」—— 年限被读成 CLB 等级,三语同病。
+
+describe('ON 语言免考行:年限不许渲成豁免等级', () => {
+  const Q = '安省对木匠的语言要求是多少?(NOC 72310)'
+  it.each(['zh', 'en', 'ko'] as ChatLang[])('%s:整句「毕业 3 年内免考」,旧模板不再接 years', async (lang) => {
+    const pool = new FakePool()
+    H.slots = BARE_SLOTS.replace('"provs":[]', '"provs":["ON"]')
+    const r = await orchestrate(pool, { text: Q, lang })
+    const T = LBL[lang]
+    const wrong = r.facts.filter((f) => f.label.includes(T.factor.languageExempt))
+    expect(wrong.map((f) => f.label), '年限型免考行不许再走 factor 模板').toEqual([])
+    const line = r.facts.find((f) => f.label.includes(T.exemptYears(3)))
+    expect(line, '免考行整句丢了').toBeTruthy()
+    expect(line!.value, '值已嵌进句中,不许再让 sayFact 接「3 years」').toBeNull()
+    expect(line!.evidence.url).toBeTruthy()
   })
 })
