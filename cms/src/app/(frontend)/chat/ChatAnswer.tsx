@@ -177,14 +177,15 @@ export function ChatAnswer({ a, busy, onAsk, fallback }: { a: Answer; busy: bool
         </div>
       )}
 
-      {/* 追问:点了带 history 再问一轮(不是重开一段对话)。
-          编排一条追问也给不出、点选卡也不出的轮(概念问答无数据命中+档案槽全有,2026-08-09 Frank
-          「四个选项还是没有啊」)→ 垫回空态那三条个性化示例(fallback,ChatBox 传入):
-          任何一轮答完都得有可点的下一步,不许出现死胡同 */}
+      {/* 推荐问题:点了带 history 再问一轮(不是重开一段对话)。
+          2026-08-09 Frank 定形态「显示四选一的推荐问题,类似 Claude」——每轮答完**恒四条**:
+          编排的真追问在前(≤3),不足四条从 fallback 补位(三条个性化示例+一条判定导流问句,
+          ChatBox 传入;剔重),概念问答轮也不再是死胡同。全是真追问=「接着问」,纯补位=「试试这样问」 */}
       {(() => {
-        const fus = a.followups?.length ? a.followups : (fallback ?? [])
-        // 兜底垫的是示例问句不是本轮的延伸(08-09 Frank「不是显示接着问」)→ 标题用空态同款「试试这样问」
-        const title = a.followups?.length ? t('chat.followups') : t('chat.try')
+        const real = a.followups ?? []
+        const pad = (fallback ?? []).filter((q) => !real.includes(q))
+        const fus = [...real, ...pad].slice(0, 4)
+        const title = real.length ? t('chat.followups') : t('chat.try')
         return fus.length ? (
           <div className="cbFus">
             <div className="cbFusT">{title}</div>

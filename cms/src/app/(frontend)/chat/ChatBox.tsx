@@ -405,12 +405,10 @@ export function ChatBox({ compact = false, autoFocus = false, prefill = '' }: { 
                 </div>
               ) : turn.a ? (
                 <>
-                  {/* 追问兜底(08-09 Frank「四个选项还是没有啊」):这一轮编排既没给追问也没给点选卡
-                      → 把空态的三条个性化示例垫回去当「接着问」(剔与本轮同句的),不留死胡同 */}
+                  {/* 推荐问题补位池(08-09 Frank「显示四选一的推荐问题,类似 Claude」):真追问不足四条时
+                      按序补——判定导流问句打头(把人往裁决漏斗引),再补个性化示例;剔与本轮同句的 */}
                   <ChatAnswer a={turn.a} busy={busy} onAsk={(q) => void ask(q)}
-                    fallback={!turn.a.followups?.length && !turn.a.options?.items?.length
-                      ? examples.map((ex) => t(ex.key, ex.params)).filter((q) => q !== turn.q)
-                      : undefined} />
+                    fallback={[t('chat.padVerdict'), ...examples.map((ex) => t(ex.key, ex.params))].filter((q) => q !== turn.q)} />
                   {/* C6 选项卡:只挂最后一轮;点选 = 以用户身份把 sendText 发出去(气泡进对话流)。
                       第 4 张「自己说」固定在末尾 → 聚焦输入框(设计 §一第 5 条:永不堵嘴)。 */}
                   {turn.a.options?.items?.length && i === turns.length - 1 && !busy ? (
