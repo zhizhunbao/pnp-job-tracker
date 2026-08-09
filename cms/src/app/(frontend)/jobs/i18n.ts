@@ -936,6 +936,30 @@ const zh: Dict = {
   'mkt.fs': '全屏看图', 'mkt.fs.exit': '退出全屏',
   'mkt.note': '数据来自官方 Job Bank;在招量=当前在招职位数,不等于「缺人」',
   'stats.title': '{prov} 地区职位统计', 'stats.catTitle': '{prov} · {cat} 职位统计', 'stats.openJobs': '在招职位', 'stats.new7d': '近 7 天发布', 'stats.medWage': '中位年薪(ESDC)', 'stats.medSalary': '帖面中位年薪', 'stats.named': '紧缺清单岗', 'stats.aip': 'AIP 指定雇主岗', 'stats.topCities': '主要城市', 'stats.streams': '命中通道', 'stats.byCat': '按职业大类', 'stats.entry': '地区统计', 'stats.toJobs': '看这些职位', 'stats.caliber': '口径说明', 'stats.noList': '无清单', 'stats.noList.tip': '该省当前不公布省提名职业清单(如 OINP 2026-06 改制后),按 TEER 等条件判定,不是数据缺失。', 'stats.naQc': '不适用', 'stats.naQc.tip': '魁省不参加省提名(PNP),走自己的甄选体系。', 'stats.provIndex': '选择省份', 'stats.compare': '跨省对比(Pro)', 'stats.pickProv': '选 2-4 个省对比', 'stats.myNoc': '按我的档案高亮', 'stats.cardWork': '工签存量(TFWP+IMP)', 'stats.cardStudy': '学签存量', 'stats.cardPr': 'PNP 拿到 PR(年)',
+
+  // #287 批D · 一键三合一判定卡(tv.*;行 key 对应 tripleVerdict §6.1)
+  'tv.head': '身份判定', 'tv.entryTitle': '这份工作能不能帮我拿身份', 'tv.cta': '一键三合一判定',
+  'tv.build': '去对话建档', 'tv.ask': '{co} 这份工作能帮我拿身份吗?', 'tv.err': '数据暂不可用',
+  'tv.lockN': '{n} 条结论已锁',
+  'tv.g.occ': '职业关', 'tv.g.emp': '雇主关', 'tv.g.you': '个人关', 'tv.g.youCard': '个人关',
+  'tv.occ.listed': '命中「{list}」清单', 'tv.occ.excluded': '在「{list}」排除清单内',
+  'tv.occ.notListed': '未命中{prov}任何具名清单',
+  'tv.occ.teerPass': 'TEER {teer} 在{prov}受理范围内', 'tv.occ.teerGap': 'TEER {teer} 不在{prov}受理范围内', 'tv.occ.teerNa': 'TEER 未知',
+  'tv.emp.designated': '{program} 指定雇主', 'tv.emp.listedAs': '名录名称 {name}', 'tv.emp.desigNa': '指定雇主名录暂未匹配到这家',
+  'tv.emp.yearsHave': '经营 {have} 年', 'tv.emp.yearsNeed': '{prov}门槛 {need} 年', 'tv.emp.yearsNa': '{prov}门槛 {need} 年——成立年份未收录',
+  'tv.emp.staffHave': '员工 {have} 人', 'tv.emp.staffNeed': '{prov}门槛 {need} 人', 'tv.emp.staffNa': '{prov}门槛 {need} 人——员工数未收录',
+  'tv.emp.staffFact': '员工约 {staff} 人', 'tv.emp.estimate': '本站估算', 'tv.emp.public': '公共部门雇主',
+  'tv.pe.langPass': '语言门槛 CLB {need}——你 CLB {have} 已过', 'tv.pe.langGap': '语言门槛 CLB {need}——你 CLB {have} 未到', 'tv.pe.langNa': '语言门槛 CLB {need}——你的 CLB 未答',
+  'tv.pe.expPass': '经验门槛 {need} 个月——你 {have} 个月已过', 'tv.pe.expGap': '经验门槛 {need} 个月——你 {have} 个月差 {short} 个月', 'tv.pe.expNa': '经验门槛 {need} 个月——你没答',
+  'tv.pe.genPass': '门槛 {need} {unit}——你 {have} 已达', 'tv.pe.genGap': '门槛 {need} {unit}——你 {have} 未达', 'tv.pe.genNa': '门槛 {need} {unit}——未答',
+  'tv.time.months': '工签还剩 {months} 个月', 'tv.time.na': '工签剩余月数未答',
+  'tv.cmp.listed': '{prov}也把本职业列入「{list}」', 'tv.cmp.basis': '判定仍按{prov}这份岗算',
+  'tv.cmp.notListed': '{prov}没有本职业的具名清单', 'tv.cmp.noTarget': '目标省未填',
+  'tv.route.tied': '{routes}并列最快', 'tv.route.one': '{route}最快', 'tv.route.na': '暂无可判通道',
+  'tv.next.viaProgram': '{program} 背书由雇主端发起', 'tv.next.lmiaN': '该雇主担保过本职业 {n} 次',
+  'tv.next.lmia0': '该雇主近两年无本职业 LMIA 获批', 'tv.next.lmiaNa': '担保次数本站暂无数据', 'tv.next.na': '暂无可摆的下一步',
+  'tv.k.language': '语言', 'tv.k.experience': '工作经验', 'tv.k.person': '个人门槛', 'tv.k.permit': '工签窗口',
+  'tv.k.compare': '换省对照', 'tv.k.route': '最快通道', 'tv.k.next': '雇主下一步',
 }
 
 const en: Dict = {
@@ -1796,6 +1820,30 @@ const en: Dict = {
   'mkt.fs': 'Fullscreen', 'mkt.fs.exit': 'Exit fullscreen',
   'mkt.note': 'From Canada’s official Job Bank. Open postings — not a measure of labour shortage',
   'stats.title': '{prov} job statistics', 'stats.catTitle': '{prov} · {cat} job statistics', 'stats.openJobs': 'Open jobs', 'stats.new7d': 'Posted in last 7 days', 'stats.medWage': 'Median wage (ESDC)', 'stats.medSalary': 'Median posted salary', 'stats.named': 'In-demand list jobs', 'stats.aip': 'AIP designated-employer jobs', 'stats.topCities': 'Top cities', 'stats.streams': 'Streams hit', 'stats.byCat': 'By occupation group', 'stats.entry': 'Region stats', 'stats.toJobs': 'See these jobs', 'stats.caliber': 'Methodology', 'stats.noList': 'No list', 'stats.noList.tip': 'This province currently publishes no PNP occupation list (e.g. OINP after its 2026-06 redesign) — eligibility runs on TEER and other conditions. Not missing data.', 'stats.naQc': 'N/A', 'stats.naQc.tip': 'Quebec does not take part in the PNP — it runs its own selection system.', 'stats.provIndex': 'Choose a province', 'stats.compare': 'Compare provinces (Pro)', 'stats.pickProv': 'Pick 2–4 provinces', 'stats.myNoc': 'Highlight by my profile', 'stats.cardWork': 'Work permits (TFWP+IMP)', 'stats.cardStudy': 'Study permits', 'stats.cardPr': 'PNP admissions (yr)',
+
+  // #287 批D · PR verdict card (tv.*)
+  'tv.head': 'PR verdict', 'tv.entryTitle': 'Will this job get me PR', 'tv.cta': 'Run PR verdict',
+  'tv.build': 'Build my profile in chat', 'tv.ask': 'Can this job at {co} get me PR?', 'tv.err': 'Data unavailable right now',
+  'tv.lockN': '{n} conclusions locked',
+  'tv.g.occ': 'Occupation', 'tv.g.emp': 'Employer', 'tv.g.you': 'You', 'tv.g.youCard': 'Your verdict',
+  'tv.occ.listed': 'Named on the {list} list', 'tv.occ.excluded': 'On the {list} exclusion list',
+  'tv.occ.notListed': 'Not on any named list of {prov}',
+  'tv.occ.teerPass': 'TEER {teer} is in the {prov} eligible range', 'tv.occ.teerGap': 'TEER {teer} is outside the {prov} range', 'tv.occ.teerNa': 'TEER unknown',
+  'tv.emp.designated': '{program} designated employer', 'tv.emp.listedAs': 'Listed as {name}', 'tv.emp.desigNa': 'Not matched in our designation directory yet',
+  'tv.emp.yearsHave': 'Operating {have} years', 'tv.emp.yearsNeed': '{prov} requires {need} years', 'tv.emp.yearsNa': '{prov} requires {need} years and founding year is not on file',
+  'tv.emp.staffHave': '{have} employees', 'tv.emp.staffNeed': '{prov} requires {need}', 'tv.emp.staffNa': '{prov} requires {need} employees and headcount is not on file',
+  'tv.emp.staffFact': 'About {staff} employees', 'tv.emp.estimate': 'Site estimate', 'tv.emp.public': 'Public sector employer',
+  'tv.pe.langPass': 'CLB {have} clears the CLB {need} line', 'tv.pe.langGap': 'CLB {have} is under the CLB {need} line', 'tv.pe.langNa': 'CLB {need} required and yours is unanswered',
+  'tv.pe.expPass': '{have} months clears the {need} month line', 'tv.pe.expGap': '{have} months against {need} and short {short}', 'tv.pe.expNa': '{need} months required and yours is unanswered',
+  'tv.pe.genPass': '{have} clears the {need} {unit} line', 'tv.pe.genGap': '{have} is under the {need} {unit} line', 'tv.pe.genNa': '{need} {unit} required and yours is unanswered',
+  'tv.time.months': '{months} months left on your permit', 'tv.time.na': 'Permit months left unanswered',
+  'tv.cmp.listed': '{prov} also names this occupation on {list}', 'tv.cmp.basis': 'The verdict still runs on this {prov} job',
+  'tv.cmp.notListed': '{prov} has no named list for this occupation', 'tv.cmp.noTarget': 'No target province on file',
+  'tv.route.tied': '{routes} tie for fastest', 'tv.route.one': '{route} is fastest', 'tv.route.na': 'No judgeable route yet',
+  'tv.next.viaProgram': 'The {program} endorsement goes through the employer', 'tv.next.lmiaN': '{n} LMIA approvals for this occupation at this employer',
+  'tv.next.lmia0': 'No LMIA approvals for this occupation in the last two years', 'tv.next.lmiaNa': 'LMIA split for this occupation is not on file yet', 'tv.next.na': 'No next step on file',
+  'tv.k.language': 'Language', 'tv.k.experience': 'Work experience', 'tv.k.person': 'Personal threshold', 'tv.k.permit': 'Permit window',
+  'tv.k.compare': 'Province compare', 'tv.k.route': 'Fastest route', 'tv.k.next': 'Employer next step',
 }
 
 const ko: Dict = {
@@ -2653,6 +2701,30 @@ const ko: Dict = {
   'mkt.fs': '전체 화면', 'mkt.fs.exit': '전체 화면 종료',
   'mkt.note': '캐나다 공식 Job Bank 기준. 현재 채용 중인 공고 수이며 인력 부족을 뜻하지 않습니다',
   'stats.title': '{prov} 채용 통계', 'stats.catTitle': '{prov} · {cat} 채용 통계', 'stats.openJobs': '채용 중', 'stats.new7d': '최근 7일 게시', 'stats.medWage': '중위 연봉(ESDC)', 'stats.medSalary': '게시된 중위 연봉', 'stats.named': '수요 목록 공고', 'stats.aip': 'AIP 지정 고용주 공고', 'stats.topCities': '주요 도시', 'stats.streams': '해당 스트림', 'stats.byCat': '직업 대분류별', 'stats.entry': '지역 통계', 'stats.toJobs': '이 공고 보기', 'stats.caliber': '산정 기준', 'stats.noList': '목록 없음', 'stats.noList.tip': '해당 주는 현재 PNP 직업 목록을 공개하지 않습니다(예: OINP 2026-06 개편 후). TEER 등 조건으로 판단하며 데이터 누락이 아닙니다.', 'stats.naQc': '해당없음', 'stats.naQc.tip': '퀘벡주는 PNP에 참여하지 않고 자체 선발 제도를 운영합니다.', 'stats.provIndex': '주 선택', 'stats.compare': '주 간 비교 (Pro)', 'stats.pickProv': '2–4개 주 선택', 'stats.myNoc': '내 프로필로 강조', 'stats.cardWork': '취업비자 보유량(TFWP+IMP)', 'stats.cardStudy': '학생비자 보유량', 'stats.cardPr': 'PNP 영주권 승인(연간)',
+
+  // #287 批D · 영주권 판정 카드 (tv.*)
+  'tv.head': '영주권 판정', 'tv.entryTitle': '이 일자리로 영주권 가능할까', 'tv.cta': '원클릭 3관 판정',
+  'tv.build': '채팅으로 프로필 만들기', 'tv.ask': '{co}의 이 일자리로 영주권을 받을 수 있나요?', 'tv.err': '지금은 데이터를 불러올 수 없습니다',
+  'tv.lockN': '{n}개 결론 잠김',
+  'tv.g.occ': '직업 관문', 'tv.g.emp': '고용주 관문', 'tv.g.you': '본인 관문', 'tv.g.youCard': '본인 판정',
+  'tv.occ.listed': '「{list}」 목록에 지명', 'tv.occ.excluded': '「{list}」 제외 목록에 포함',
+  'tv.occ.notListed': '{prov} 지명 목록에 없음',
+  'tv.occ.teerPass': 'TEER {teer}는 {prov} 접수 범위', 'tv.occ.teerGap': 'TEER {teer}는 {prov} 범위 밖', 'tv.occ.teerNa': 'TEER 미상',
+  'tv.emp.designated': '{program} 지정 고용주', 'tv.emp.listedAs': '명부 등재명 {name}', 'tv.emp.desigNa': '지정 명부에서 아직 확인되지 않음',
+  'tv.emp.yearsHave': '운영 {have}년', 'tv.emp.yearsNeed': '{prov} 기준 {need}년', 'tv.emp.yearsNa': '{prov} 기준 {need}년 · 설립연도 미수록',
+  'tv.emp.staffHave': '직원 {have}명', 'tv.emp.staffNeed': '{prov} 기준 {need}명', 'tv.emp.staffNa': '{prov} 기준 {need}명 · 직원 수 미수록',
+  'tv.emp.staffFact': '직원 약 {staff}명', 'tv.emp.estimate': '사이트 추정치', 'tv.emp.public': '공공부문 고용주',
+  'tv.pe.langPass': '언어 기준 CLB {need} · 보유 CLB {have} 통과', 'tv.pe.langGap': '언어 기준 CLB {need} · 보유 CLB {have} 미달', 'tv.pe.langNa': '언어 기준 CLB {need} · 본인 CLB 미응답',
+  'tv.pe.expPass': '경력 기준 {need}개월 · 보유 {have}개월 통과', 'tv.pe.expGap': '경력 기준 {need}개월 · 보유 {have}개월 · {short}개월 부족', 'tv.pe.expNa': '경력 기준 {need}개월 · 본인 경력 미응답',
+  'tv.pe.genPass': '기준 {need} {unit} · 충족', 'tv.pe.genGap': '기준 {need} {unit} · 미달', 'tv.pe.genNa': '기준 {need} {unit} · 미응답',
+  'tv.time.months': '워크퍼밋 잔여 {months}개월', 'tv.time.na': '워크퍼밋 잔여 개월 미응답',
+  'tv.cmp.listed': '{prov}도 이 직업을 「{list}」에 지명', 'tv.cmp.basis': '판정은 {prov}의 이 일자리 기준',
+  'tv.cmp.notListed': '{prov}에는 이 직업 지명 목록 없음', 'tv.cmp.noTarget': '목표 주 미입력',
+  'tv.route.tied': '{routes} 공동 최속', 'tv.route.one': '{route} 최속', 'tv.route.na': '판정 가능한 경로 없음',
+  'tv.next.viaProgram': '{program} 추천은 고용주 측에서 진행', 'tv.next.lmiaN': '이 고용주의 해당 직업 LMIA 승인 {n}건',
+  'tv.next.lmia0': '최근 2년 해당 직업 LMIA 승인 없음', 'tv.next.lmiaNa': '해당 직업 LMIA 세부는 아직 미수록', 'tv.next.na': '표시할 다음 단계 없음',
+  'tv.k.language': '언어', 'tv.k.experience': '경력', 'tv.k.person': '개인 기준', 'tv.k.permit': '퍼밋 기간',
+  'tv.k.compare': '주 비교', 'tv.k.route': '최속 경로', 'tv.k.next': '고용주 다음 단계',
 }
 
 const MESSAGES: Record<Lang, Dict> = { zh, en, ko }

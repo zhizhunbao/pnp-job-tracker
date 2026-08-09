@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react'
 import { LANGS } from '../i18n'
 import { useLang } from '../../LangProvider'
 import { catName, JobBody, nocLocalTitle, provName, type JobRow, type NocDesc, type Plan } from '../JobsTable'
+import { TripleVerdictModal, TvEntryCard } from '../TripleVerdictModal'
 import { PathwaysCard } from './PathwaysCard'
 import { SiteHeader } from '../../SiteHeader'
 import { SiteFooter } from '../../SiteFooter'
@@ -25,6 +26,7 @@ export default function JobDetailView({ job, plan, dims }: { job: JobRow; plan: 
   const [lang, setLang, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
   // 2026-07-25 Frank「点击要有动画,不然不知道点没点,跳页有延迟」:按下即置忙态(变灰+省略号),导航期间可感
   const [leaving, setLeaving] = useState(false)
+  const [tvOpen, setTvOpen] = useState(false)   // #287 批D:判定卡入口(详情页)
   useEffect(() => {
     // 漏斗第 1 步(主线 M2 收口 2026-08-02):这个页面一直没有第一方浏览埋点 ——
     // 于是库里只有第 3 步「锁区曝光」有数,分母是空的,M3 的两种分叉(锁的东西不值钱 / 根本没人看见)
@@ -73,6 +75,10 @@ export default function JobDetailView({ job, plan, dims }: { job: JobRow; plan: 
               <div style={{ fontSize: 13, color: '#9ca3af', marginBottom: 8 }}>{nocZh}</div>
             ) : null}
             <JobBody job={job} lang={lang} plan={plan} />
+
+            {/* #287 批D:判定卡入口(通道卡上方;效果图 se287-entry-detail;流量落点=本页,决策入口下沉) */}
+            <TvEntryCard t={t} lg onOpen={() => { track('tv-entry', { kind: 'detail' }); setTvOpen(true) }} />
+            {tvOpen && <TripleVerdictModal job={job} lang={lang} onClose={() => setTvOpen(false)} />}
 
             {/* C6 通道卡(2026-08-06,设计 §五;卡位=已摘的 OccReportCard,效果图定的是嵌在白卡内):
                 该职业匹配的移民通道,按**系统抓的官方经验门槛**从低到高排(Frank 拍板「基于系统抓的

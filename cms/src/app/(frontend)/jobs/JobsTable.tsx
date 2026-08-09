@@ -25,6 +25,7 @@ import { BROAD_SLUGS } from '../stats/shared'   // 大类的行业顺序(镜像 
 import { useOverlayClose } from './overlay'
 import { CARD, iconBtnS, Modal, SCRIM, useIsNarrow } from './Modal'
 import { ResumeMatchModal } from './ResumeMatchModal'   // G3 简历对照(入口在 ApplyBar)
+import { TripleVerdictModal, TvEntryCard, TV_PILL } from './TripleVerdictModal'   // #287 批D:一键三合一判定卡
 import { match as matchJob, matchRank, hasProfile, normalizeProfile, type MatchProfile, type MatchJob, type MatchReason } from '@/lib/match'
 import type { CompanyDetail, SimilarEmployer } from '@/lib/jobsSql'   // E8-11 B1:公司域同源数据形状(type-only,不拉服务端码)
 import { lmiaWageClass, isExemptSector } from '@/lib/lmiaStatus'
@@ -707,6 +708,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   }, [])
   // C1 走查拍板(2026-07-07):删两套公司弹窗——操作列「公司信息」直接开顾问公司弹窗;ActModal 只剩 JD 快看
   const [actModal, setActModal] = useState<{ kind: 'desc'; job: JobRow } | null>(null)
+  // #287 批D:一键三合一判定卡(职位板入口;弹框内入口各自持 local state)
+  const [tvJob, setTvJob] = useState<JobRow | null>(null)
   // 升级入口(Pro 锁列/保存筛选 gate)统一开独立升级弹框;未登录先走注册弹框(用户定:注册与购买分离)
   const [upsell, setUpsell] = useState<false | 'lock' | 'ss' | 'login' | 'match' | 'quiz'>(false)   // match=①匹配锁(弹框带 FOMO 数字);quiz=入口三问结果页的「注册保存」
   // E11-05②:分型引导 wizard。首访自动弹(登录且无档案且没弹过);关/完成置 OB_SEEN 不再自动弹;横幅「建档」手动开忽略它
@@ -1212,6 +1215,11 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                               style={{ ...actBtn, whiteSpace: 'nowrap', ...(saved[String(j.id)] ? { color: '#b45309', borderColor: '#fde68a', background: '#fffbeb' } : {}) }}>
                               {saved[String(j.id)] ? t('sj.saved') : t('sj.save')}
                             </button>
+                            {/* #287 批D:判定卡入口(桌面行,与收藏同列) */}
+                            <button onClick={(e) => { e.stopPropagation(); track('tv-entry', { kind: 'table' }); setTvJob(j) }}
+                              style={{ ...actBtn, whiteSpace: 'nowrap', color: '#1d4ed8', borderColor: '#bfdbfe', background: '#eff6ff' }}>
+                              {t('tv.head')}
+                            </button>
                           </span>
                         </td>
                       )
@@ -1392,6 +1400,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               j.lmiaPositions && j.sponsorGrade == null ? chip('#ccfbf1', '#0f766e', 'LMIA ✓' + j.lmiaPositions, 'lmia') : null,
               // GAP1③:红旗 chip —— 白投预警比正面信号更值得占位
               j.eligibilityFlag ? chip('#fee2e2', '#b91c1c', t('cell.elig.' + j.eligibilityFlag), 'eligibility') : null,
+              // #287 批D:判定卡入口 pill(蓝系动作钮,胶囊排尾;效果图 se287-entry-board)
+              <span key="tv" onClick={stop(() => { track('tv-entry', { kind: 'board' }); setTvJob(j) })} style={TV_PILL}>{t('tv.head')}</span>,
             ].filter(Boolean)
             return (
               <JobCard key={j.id}
@@ -1458,6 +1468,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
 
       {popup && <AdvisorModal group={popup.group} field={popup.srcField} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} news={dims.news} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} onOpenJob={(x) => setActModal({ kind: 'desc', job: x })} />}
       {actModal && <ActModal job={actModal.job} lang={lang} plan={plan} nocDesc={dims.nocDescriptions} onClose={() => setActModal(null)} />}
+      {tvJob && <TripleVerdictModal job={tvJob} lang={lang} onClose={() => setTvJob(null)} />}
       {wizard && <OnboardingWizard t={t} initial={plan.profile} onClose={closeWizard} />}
       {/* 三问弹框已删(2026-07-31 统一答题):答题只在 /plan/*,这页只读答案做回显与筛选 */}
       {upsell && (plan.loggedIn
@@ -1610,6 +1621,7 @@ export function PnpListSection({ job, lang, occ, draws, news, profileClb, nocDes
   // 2026-07-25 Frank:清单可折叠+职业带界面语言译名+展开不内嵌滚动。译名=NOC 官方职业名(noc_descriptions)
   const nocRowOf = useMemo(() => new Map(nocDesc.map((d) => [d.noc, d])), [nocDesc])
   const [foldOpen, setFoldOpen] = useState<Record<string, boolean>>({})
+  const [tvOpen, setTvOpen] = useState(false)   // #287 批D:判定卡入口(本弹框内叠开,z=60)
   const isQc = job.province === 'QC'
   // 批A:命中计算抽 pnpMatchOf(与通道直判块共用,改一处两边同变)
   const { streams, matched, excluded, excludedBy, hasInclusion } = useMemo(() => pnpMatchOf(job, occ), [job, occ])
@@ -1651,6 +1663,9 @@ export function PnpListSection({ job, lang, occ, draws, news, profileClb, nocDes
         {/* Frank「qc 没有对应的通道 也没有历史」:QC 不参加 PNP 是制度事实,不是缺数 —— 把它走的是什么说清 */}
         {isQc ? <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 6, lineHeight: 1.7 }}>{t('ch.pnp.qcWhy')}</div> : null}
       </div>
+      {/* #287 批D:判定卡入口(设计 §5「modal-pnp 判定卡后」;效果图 se287-entry-pnp-modal) */}
+      <TvEntryCard t={t} onOpen={() => { track('tv-entry', { kind: 'pnp' }); setTvOpen(true) }} />
+      {tvOpen && <TripleVerdictModal job={job} lang={lang} z={60} onClose={() => setTvOpen(false)} />}
       {/* B1 雇主线:判定卡之后、抽选卡之前——用户点这个弹框问的就是「这雇主/这职业谁能担保我」 */}
       <SponsorLeadCard job={job} t={t} src="pnp" />
       {/* E12-09 自评打分已迁到「移民路径」页(Frank 2026-07-27「应该单独弄个功能吧,不应该放到 pnp 弹框里面」)。
@@ -2404,10 +2419,11 @@ export function CompanyTopInfo({ company, t }: { company: CompanyDetail; t: TFn 
     </div>
   )
 }
-export function CompanyBody({ company, similar, t, lang, showTrans, hideTopInfo, onOpenJob, resolveJob }: {
+export function CompanyBody({ company, similar, t, lang, showTrans, hideTopInfo, onOpenJob, resolveJob, afterSponsor }: {
   company: CompanyDetail; similar: SimilarEmployer[]; t: TFn; lang: Lang; showTrans?: boolean; hideTopInfo?: boolean
   onOpenJob?: (j: JobRow) => void   // 弹框内点职位=叠开 JD 弹框;页面不传=纯链接
   resolveJob?: (id: number) => JobRow | undefined   // 弹框把已载入行喂回来(JD 弹框要整 JobRow)
+  afterSponsor?: React.ReactNode    // #287 批D:担保卡后的插槽(公司弹框挂判定卡入口)
 }) {
   // 中文对照:缓存简介(aiBrief 直渲)也可懒翻——与 CompanyAiSection 内的懒翻同款,拿到存一份切换零延迟
   const [trans, setTrans] = useState<string | null>(null)
@@ -2535,6 +2551,8 @@ export function CompanyBody({ company, similar, t, lang, showTrans, hideTopInfo,
           </div>
         </div>
       )}
+      {/* #287 批D:判定卡入口槽(担保卡后;只有公司弹框传,/companies/[slug] 页面无 job 语境不传) */}
+      {afterSponsor}
       {/* ④ 在招职位(富行=NOC 对照+薪资+通道档,#184 口径;弹框内点职位叠开 JD 弹框) */}
       {company.jobs.length ? (
         <div style={MODAL_CARD}>
@@ -2606,6 +2624,7 @@ function CompanyPanel({ job, jobs, lang, plan, onOpenJob }: { job: JobRow; jobs:
   const t = makeT(lang)
   const [showTrans, setShowTrans] = useState(false)
   const [aiOn, setAiOn] = useState(false)
+  const [tvOpen, setTvOpen] = useState(false)   // #287 批D:判定卡入口(本弹框内叠开,z=60)
   const [d, setD] = useState<undefined | null | { company: CompanyDetail; similar: SimilarEmployer[] }>(undefined)
   useEffect(() => {
     let dead = false
@@ -2645,7 +2664,9 @@ function CompanyPanel({ job, jobs, lang, plan, onOpenJob }: { job: JobRow; jobs:
       {d === undefined ? <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>{t('act.loadingText')}</p>
         : d === null ? <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>{t('advisor.unavail')}</p>
         : <CompanyBody company={d.company} similar={d.similar} t={t} lang={lang} showTrans={showTrans} hideTopInfo
-            onOpenJob={onOpenJob} resolveJob={(id) => jobs.find((x) => Number(x.id) === id)} />}
+            onOpenJob={onOpenJob} resolveJob={(id) => jobs.find((x) => Number(x.id) === id)}
+            afterSponsor={<TvEntryCard t={t} onOpen={() => { track('tv-entry', { kind: 'company' }); setTvOpen(true) }} />} />}
+      {tvOpen && <TripleVerdictModal job={job} lang={lang} z={60} onClose={() => setTvOpen(false)} />}
       {/* B1 雇主线:公司弹框只渲职业链接(凭证/在招职位上面的卡已有,再出=重复) */}
       <SponsorLeadCard job={job} t={t} src="company" />
     </>

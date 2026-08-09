@@ -7,18 +7,11 @@
  *    → VerdictData 进程内缓存 10 分钟(同 /api/quiz topCache 手法;Render 单实例,重启即失效)。
  *    卡片端另有「进视口才请求」的懒取(同 OccReportCard),两道一起把 DB 压力钉死。
  */
-import { getPayload } from 'payload'
-
-import config from '@/payload.config'
-import { loadVerdictData } from '@/lib/chatTools'
 import { jobPathways } from '@/lib/pathVerdict'
-import type { VerdictData } from '@/lib/pathVerdict'
+import { getVerdictData } from '@/lib/verdictCache'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
-
-let cache: { at: number; data: VerdictData } | null = null
-const TTL = 10 * 60_000
 
 export async function GET(req: Request) {
   const sp = new URL(req.url).searchParams
@@ -27,11 +20,9 @@ export async function GET(req: Request) {
   const teerRaw = Number(sp.get('teer'))
   const teer = Number.isInteger(teerRaw) && teerRaw >= 0 && teerRaw <= 5 ? teerRaw : null
 
-  if (!cache || Date.now() - cache.at > TTL) {
-    const payload = await getPayload({ config: await config })
-    cache = { at: Date.now(), data: await loadVerdictData((payload.db as any).pool) }
-  }
+  // 缓存单件抽到 lib/verdictCache(批D):/api/triple-verdict 与本路由共用同一份 VerdictData
+  const data = await getVerdictData()
   // 门槛表空(库还没灌)= 本站缺口 → 空名单,卡片整卡不渲,不出空壳
-  if (!cache.data.requirements.length) return Response.json({ rows: [] })
-  return Response.json({ rows: jobPathways(noc, teer, cache.data) })
+  if (!data.requirements.length) return Response.json({ rows: [] })
+  return Response.json({ rows: jobPathways(noc, teer, data) })
 }
