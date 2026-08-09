@@ -11,7 +11,29 @@
 > - **C 数据**:只读 `data/crawl/fed-ee/` 97 页缓存。语言 T4–T26 → raw 23 表/105 档、mart 443 行;ECA 页 FSW 教育映射 151 行并入 FSW67。实际本地 mart=`ee_points_grid` 380(CRS 186 + FSW67 194,points NULL 22)、`ee_language_grid` 443;唯一键重复 0、evidence 缺失 0。**未跑 09 main/seed/DB_PUSH/DDL;新语言 mart 尚无 CMS/生产消费链,不能对外声称 IELTS 原分已可自动换 CLB。**
 > - 全程未启 dev server、未 commit/push;`data/raw/ee/draws.json` 等定时 ETL 既有脏改保留,不属于本批。
 >
-> **⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡ 最新交接(2026-08-09 深夜,「对话评测批(后1)」+批D 欠账①清账)**
+> **⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡ 最新交接(2026-08-09 深夜二场,「治病批 K05/K03/K08」——评测网首个治疗闭环)**
+> Frank 拍板「拿基线命中句当金标」;实施=docs/implementation/对话闭环-批AB/**08_治病批-K05K03K08.md**;
+> 三修全在引擎确定性层,**对 K09 前缀缓存免疫**。⚠️ 施工在独立 worktree(并行 session 正改主工作区
+> chatOrchestrate.ts 尾部 followups 区未提交——同文件不能整文件暂存,worktree 隔离提交,他们 rebase 即可)。
+> - **✅ K05**:isSelfStatement 扩身份自述(SELF_STATUS_RE:第一人称/持有×证件词,或证件词×有效期;
+>   转述豁免照旧)——点选卡 sendText「我持有有效的 PGWP 工签」不再进 claims;「没触发裁决」半边=
+>   status 抽取方差,另记不混治。
+> - **✅ K03**:新逐句闸 findAlienProvinces(答复点名的省必须在 facts∪原话∪slots.provs;检测=
+>   PROV_IN_TEXT 复用+ASCII 全名式,零新词表)进 sentenceBlockers 第十道+fired `provDrift` 硬拦组
+>   (重试→降级)。盲区如实记:两省都在 facts 只是方向说反(语义)、指代式「这些省份」。
+> - **✅ K08**:bareNocCandidates(裸五位、金额/年薪语境排除)+ noc_descriptions **库验真**后与
+>   literalNoc 同权压过模型——「裸码扩围带库验证」记账销;工资样数字库不认→零覆盖。
+> - **✅ 验证链**:chatCure.int.spec 12 金标(全部基线命中句/chat_logs 原文)一把绿;全量 28 文件/
+>   517 测 0 红(新闸零误伤);eval 复跑 corpus 24/24 全绿、R18 转绿、K03/K05 命中清零、降级 3→1;
+>   chatGold 仍 1 红=K13 方差实锤(基线猜 41101 这回猜 11100,未点名不治)。
+> - **🔎 方差病定性(重要)**:push 前探针打现网,换句式即双 PASS、R18 原句也已翻对——K08/K05 是
+>   「抽槽方差+K09 缓存钉死」不是稳定错;**行为探针当不了换版翻转证明**,生产验证以 `/api/version`
+>   RENDER_GIT_COMMIT 翻新为硬信号(现网术前=f9fd91f),探针只当冒烟。
+> - **🔎 评测器照出非本批缝(记账)**:findMixedStates 整段复查只 warn 不拦(逐句门才拦)——无 onDelta
+>   调用方(评测器/JSON 态)会把「本站尚未收录…因为官方并未公布」两态句放出来(R23 实录);生产 SSE
+>   有逐句门在拦,缝主要在评测口径。另记:R11轮2 claims 滤净后转降级=诚实回落的可见代价。
+>
+> **⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡ 上一轮交接(2026-08-09 深夜,「对话评测批(后1)」+批D 欠账①清账)**
 > 蓝本=engine_v2 三件套(evaluation 批跑+病例卡+生产语料回归);设计+实施=docs/implementation/
 > 对话闭环-批AB/**07_对话评测批.md**(六节全勾);上位=对话Case-Harness方案-20260805(本批=其 D2/D4
 > 变体落地;**D3 Fact.code/availability 仍未动**=语义级复现率的前置)。生产代码 cms/src 零改动,零 UI。

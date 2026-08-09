@@ -352,9 +352,17 @@ const ATTRIBUTION_RE =
   /说|讲|告诉|承诺|保证|听说|据说|中介|顾问|老板|雇主|学校|朋友|told|said|says|say that|promis|claim|according to|heard|agent|consultant|recruiter|들었|말했|약속|에이전트|중개|사장/i
 const SELF_FAMILY_RE =
   /老婆|妻子|太太|老公|丈夫|配偶|孩子|儿子|女儿|家人|一家|父母|my wife|my husband|my spouse|my kids?\b|my child|my children|my family|my parents|wife and|husband and|아내|남편|배우자|아이|자녀|가족|부모/i
+/**
+ * 🔴 K05(2026-08-09 基线批跑 R11 实录):「我持有有效的 PGWP 工签」——**建档点选卡自家的 sendText**
+ * 也被抽成一条 claim,见客层回头把他自己的处境陈述当第三方主张对账。同家庭自述一个病根:
+ * 自述身份/证件不是「别人跟他说的话」。判据同款收窄:第一人称/持有语境 × 证件词,或证件词 ×
+ * 有效期语境;转述标记豁免照旧——「中介说我的工签没问题」仍是主张,一条不误伤。
+ */
+const SELF_STATUS_RE =
+  /(?:我|本人|手里|手上|自己|I\b|I'm\b|I've\b|my\b|제|저는)[^,。;!?]{0,16}(?:工签|学签|签证|身份|PGWP|permit|visa|status|비자)|(?:PGWP|工签|学签|签证|permit|visa|비자)[^,。;!?]{0,12}(?:有效|还在|没过期|未过期|快过期|剩|valid|expir|남았)/i
 /** 这句话是「别人跟你说的」吗(不是 → 不进 claims)。 */
 export const isSelfStatement = (text: string): boolean =>
-  SELF_FAMILY_RE.test(text) && !ATTRIBUTION_RE.test(text)
+  (SELF_FAMILY_RE.test(text) || SELF_STATUS_RE.test(text)) && !ATTRIBUTION_RE.test(text)
 
 /**
  * 🔴 **这条主张真的提到钱了吗** —— 报价判断只许挂在真提到金额/收费的主张上。挂错一次,读者就被告知了
@@ -438,6 +446,26 @@ export const SLOT_SYSTEM = [
  */
 const NOC_IN_TEXT = /(?:^|[^0-9])NOC\s*[:：#]?\s*(\d{5})(?![0-9])/i
 export const literalNoc = (text: string): string | null => NOC_IN_TEXT.exec(text || '')?.[1] ?? null
+
+/**
+ * 🔴 K08(chat_logs #94 / 基线批跑 R18 两跑同错):「33102 (PSW)」**裸码开头**没有 NOC 字样,
+ * literalNoc 不认 → 押给模型,模型抄成 31102,答复整段在按错码答。病根同 literalNoc 那段:
+ * 码是用户 literally 打出来的,回读它是正则的活。但裸五位数也可能是工资/数量,所以这里只出
+ * **候选**,由调用方拿 noc_descriptions 验真——库里实存才算码,31264 这类工资数不是合法 NOC,
+ * 验真就是防误伤的那道闸(「literalNoc 裸码扩围要带库验证」记账即此)。
+ * 词面排除:金额前缀($31264)、金额/年薪/时薪后缀(31264 加元 / 31264 a year)、更长数字串的一段。
+ */
+const BARE_NOC_RE = /(?<![\d.,$￥¥€£])(\d{5})(?![\d.,%])/g
+const MONEY_AFTER_RE = /^\s*(?:元|块|万|加币|加元|刀|dollars?\b|CAD\b|USD\b|(?:a|per)\s+year\b|每年|年薪|\/\s*(?:yr|year|h|hr|hour)\b)/i
+export const bareNocCandidates = (text: string): string[] => {
+  const s = text || ''
+  const out: string[] = []
+  for (const m of s.matchAll(BARE_NOC_RE)) {
+    if (MONEY_AFTER_RE.test(s.slice((m.index ?? 0) + 5))) continue
+    out.push(m[1])
+  }
+  return [...new Set(out)].slice(0, 3)
+}
 
 /**
  * 数值槽归一:超出**官方表存在的范围**就当没说(不是夹到边界值)。
@@ -2745,6 +2773,39 @@ export function findUnbackedCoverage(answer: string, facts: Fact[], lang: ChatLa
   return [...new Set(out)].slice(0, 3)
 }
 
+/**
+ * 🔴 出口校验:**答复里点名的省,必须是 facts 或他自己的话里出现过的省**(K03 省名串台)。
+ *
+ * 实测两形:「新不伦瑞克省 NL NLPNP International Graduate」把 NB 的名字焊在 NL 的项目上;
+ * 基线批跑 R08 的答复凭空冒出 facts 里根本没有的 NB。省名指错是**资格前提级**的错——那句话之后
+ * 全在给另一个省背书,而它是纯文字断言,数字 guard/四态/coverage 三道都不管。
+ * 判据只认机械可判的:子句里出现的省码/省名,normProv 归一后必须落在 allowed 集合
+ * (facts 的 label+valueText ∪ 用户原话 ∪ slots.provs)。一句就能判 → 进逐句门。
+ *
+ * ⚠️ 已知盲区(不装作能管):两个省都真在 facts 里、只是方向说反(AB+BC「下一步」指向 BC)——
+ * 那是语义不是词面;指代式「这些省份」同 findUnbackedCoverage 的盲区口径。
+ */
+const PROV_NAME_RE = new RegExp(
+  `\\b(?:${Object.keys(PROV_ALIAS).filter((k) => /^[\x20-\x7f]+$/.test(k)).sort((a, b) => b.length - a.length).join('|').replace(/ /g, '\\s+')})\\b`, 'gi')
+const provsMentioned = (s: string): Set<string> => {
+  const out = new Set<string>()
+  for (const m of s.matchAll(PROV_IN_TEXT)) { const p = normProv(m[0]); if (p) out.add(p) }
+  for (const m of s.matchAll(PROV_NAME_RE)) { const p = normProv(m[0]); if (p) out.add(p) }
+  return out
+}
+export function findAlienProvinces(answer: string, facts: Fact[], echo = '', slots?: Partial<Slots> | null): string[] {
+  const allowed = provsMentioned(echo)
+  for (const p of slots?.provs ?? []) allowed.add(p)
+  for (const f of facts) for (const p of provsMentioned(`${f.label} ${f.valueText}`)) allowed.add(p)
+  const out: string[] = []
+  for (const clause of answer.split(CLAUSE_SPLIT)) {
+    for (const p of provsMentioned(clause)) {
+      if (!allowed.has(p)) out.push(`${p}:${clause.trim().slice(0, 40)}`)
+    }
+  }
+  return [...new Set(out)].slice(0, 3)
+}
+
 export function findMergedStates(answer: string, facts: Fact[], lang: ChatLang): string[] {
   const claims = facts
     .map((f) => ({ f, m: CLAIM_TEXT_RE.exec(f.label) }))
@@ -3014,6 +3075,8 @@ export function sentenceBlockers(text: string, facts: Fact[], lang: ChatLang, ec
     ...findMixedStates(text, lang),
     ...findUngroundedClaims(text, slots, echo),
     ...findUnitMismatch(text, facts, echo),
+    // K03 省名串台(2026-08-09 治病批):点名了 facts/原话里都没有的省,一句就能判
+    ...findAlienProvinces(text, facts, echo, slots),
   ].slice(0, 8)
 }
 
@@ -3326,7 +3389,19 @@ export async function orchestrate(
   }
   // 他原话里打出来的 5 位码压过模型和上下文:那是**他自己指定的那一条**(多半是点了我们摆的候选 chip),
   // 再去 pg_trgm 猜一次就是拿相似度覆盖一个确定值(见 literalNoc 上面那段实测)。
-  const typed = literalNoc(text)
+  let typed = literalNoc(text)
+  // 🔴 K08:裸码(没写 NOC 字样)同权,但先过 noc_descriptions 验真——裸五位数可能是工资,
+  //    库里实存才算码(见 bareNocCandidates 那段)。fixture 池不认这条 SQL → catch 折空行 → 行为与旧链一致。
+  if (!typed) {
+    const bare = bareNocCandidates(text)
+    if (bare.length) {
+      const { rows } = await pool.query(`SELECT noc FROM noc_descriptions WHERE noc = ANY($1)`, [bare])
+        .catch(() => ({ rows: [] as { noc: string }[] }))
+      const real = new Set(rows.map((r: { noc: string }) => String(r.noc)))
+      typed = bare.find((n) => real.has(n)) ?? null
+      if (typed) console.log(`[chat] bare noc ${typed} confirmed in noc_descriptions (candidates=${bare.join(',')})`)
+    }
+  }
   const draft = typed && typed !== merged.noc ? { ...merged, noc: typed } : merged
   // 联邦规则/分表不依赖职业。路由判据只读用户原话,不拿模型猜的 topic 当开关。
   const federalPrograms = federalRulePrograms(text)
@@ -3443,12 +3518,14 @@ export async function orchestrate(
       //   都归硬拦:重试一次,再犯就降级成事实清单 —— 宁可朴素,不发一句替他编的自述。
       ['attrib', findUngroundedClaims(answer, slots, text)],
       ['unitNum', findUnitMismatch(answer, facts, text)],
+      // K03 省名串台(2026-08-09 治病批,基线 R08 实录冒 NB):省名凭空出现=资格前提级错,归硬拦
+      ['provDrift', findAlienProvinces(answer, facts, text, slots)],
       ['enUnits', findEnglishUnits(answer, lang, facts)],
       ['cjkNum', findWordNumbers(answer, lang)],
       ['script', findForeignScript(answer, lang)],
     ] as [string, string[]][]).filter(([, v]) => v.length)
     const leaks = fired.filter(([k]) => k === 'leak' || k === 'factEq' || k === 'factCopy' || k === 'coverage'
-      || k === 'attrib' || k === 'unitNum').flatMap(([, v]) => v)
+      || k === 'attrib' || k === 'unitNum' || k === 'provDrift').flatMap(([, v]) => v)
     const units = fired.filter(([k]) => k === 'enUnits' || k === 'cjkNum' || k === 'script').flatMap(([, v]) => v)
     const hedges = findHedges(answer, lang)
     if (hedges.length) console.log(`[chat] hedge warn noc=${slots.noc} words=${hedges.join(',')}`)
