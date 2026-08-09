@@ -3,6 +3,14 @@
 // 铁律:站级聚合禁每请求现算——单条 GROUP BY 全量进程内 TTL 缓存(Render 单实例=进程缓存即全局),
 // 筛选/排序/翻页全在进程内做;并发 miss 以 in-flight promise 去重(单飞)。
 // 语义红线循 E6-02:凭证=历史事实/官方名录,非担保承诺。
+//
+// B4(design/雇主省提名门槛判定-20260808.md):named 表每行再挂一个「雇主够不够所在省门槛」判定
+// (employerVerdict.ts,纯函数)。公司事实列(founded_year 等)B3 还没建 DDL → **逐列探测**取数
+// (#280/E14-02 容缺先例),没探到的字段整行按「缺」处理,判定自然全落 unknown,不会报错。
+// 门槛省 = r.provs[0](与既有 where 列同一取法:雇主表一行没有单一地址,只能挑一个代表省)。
+
+import { employerVerdict, type EmployerFacts, type EmployerVerdict } from './employerVerdict'
+import type { Requirement } from './rules'
 
 export const SE_PAGE_SIZE = 100
 
@@ -20,6 +28,9 @@ export type SponsorEmployerRow = {
   // Frank 08-08 二拍(PNP 视图=看省提名资质,不挂 LMIA):在招岗命中的具名省清单标签(去重,如「BC 医疗」)。
   // 旧「PR 股 LMIA」正则主证已撤——全库 35,478 家命中 0,是列名先行、数据不存在
   streams: string[]
+  // B4:雇主侧门槛判定(公司事实×该省官方门槛)。字段没落库/门槛未收录时 state 恒 'unknown',
+  // 不是一等公民的报错 —— 消费端(表列)据此判断要不要整列隐藏。
+  verdict: EmployerVerdict
 }
 
 export type SponsorFilters = { f: '' | 'aip' | 'lmia' | 'named'; prov: string; city: string; noc: string; q: string; sort: 'open' | 'skilled'; page: number }
@@ -28,12 +39,41 @@ const TTL = 10 * 60_000
 let cache: { ts: number; rows: SponsorEmployerRow[] } | null = null
 let inflight: Promise<SponsorEmployerRow[]> | null = null
 
+// B4 公司事实五列(founded_year/registry_status/staff_est/staff_est_src/sector):B3 还没建 DDL,
+// 生产库大概率没有 —— 逐列探测(#280/E14-02 容缺先例),探到哪列就 SELECT/GROUP BY 哪列,
+// 一列都没有时 extraSelect/extraGroup 都是空串,整条 SQL 退回到探测前的原样。
+const FACT_COLS = ['founded_year', 'registry_status', 'staff_est', 'staff_est_src', 'sector']
+async function probeFactCols(pool: any): Promise<string[]> {
+  return pool.query(
+    `SELECT column_name FROM information_schema.columns WHERE table_name = 'companies' AND column_name = ANY($1)`,
+    [FACT_COLS],
+  ).then((r: any) => r.rows.map((x: any) => String(x.column_name))).catch(() => [])
+}
+
+// 门槛端:pnp_requirements 雇主侧行(全表几十行,整表取回,判定在进程内做——纯函数好测)。
+// 只取判定用得到的列;Requirement 其余字段判定不读,给空值占位即可(与 R() 测试 fixture 同一惯例)。
+async function loadEmployerReqs(pool: any): Promise<Requirement[]> {
+  const rows = await pool.query(
+    `SELECT province, factor, op, value, unit, applies_area FROM pnp_requirements WHERE subject = 'employer'`,
+  ).then((r: any) => r.rows).catch(() => [])
+  return rows.map((r: any): Requirement => ({
+    province: r.province ?? '', program: 'PNP', stream: '', subject: 'employer', factor: r.factor ?? '',
+    op: r.op ?? '>=', value: r.value == null ? null : Number(r.value), valueText: '', unit: r.unit ?? '',
+    appliesTeer: '', appliesNoc: '', excludesNoc: '', appliesArea: r.applies_area ?? '', appliesCondition: '',
+    familySize: null, basis: '', label: '', section: '', effective: '', url: '', pageUrl: '', fetched: '',
+  }))
+}
+
 async function loadAll(pool: any): Promise<SponsorEmployerRow[]> {
-  // 在招口径与职位板同源(jobsSql #136):COALESCE(status,'open') <> 'closed'
-  const { rows } = await pool.query(`
+  const factCols = await probeFactCols(pool)
+  const factSelect = factCols.length ? `, ${factCols.map((c) => `c.${c}`).join(', ')}` : ''
+  const factGroup = factCols.length ? `, ${factCols.map((c) => `c.${c}`).join(', ')}` : ''
+  const [{ rows }, employerReqs] = await Promise.all([
+    // 在招口径与职位板同源(jobsSql #136):COALESCE(status,'open') <> 'closed'
+    pool.query(`
     SELECT c.name, c.slug, c.industry, c.alias_zh, c.alias_ko, c.sponsor_grade,
       c.lmia_positions, c.lmia_positions_skilled, c.lmia_last_quarter, c.lmia_streams,
-      c.lmia_positions_4q, c.lmia_positions_2q, c.lmia_positions_1q,
+      c.lmia_positions_4q, c.lmia_positions_2q, c.lmia_positions_1q${factSelect},
       COUNT(*)::int AS open_jobs,
       COUNT(*) FILTER (WHERE j.aip)::int AS open_jobs_aip,
       COALESCE(ARRAY_AGG(DISTINCT j.province) FILTER (WHERE j.aip AND COALESCE(j.province, '') <> ''), '{}') AS provs_aip,
@@ -48,21 +88,35 @@ async function loadAll(pool: any): Promise<SponsorEmployerRow[]> {
     WHERE COALESCE(j.status, 'open') <> 'closed'
     GROUP BY c.id, c.name, c.slug, c.industry, c.alias_zh, c.alias_ko, c.sponsor_grade,
       c.lmia_positions, c.lmia_positions_skilled, c.lmia_last_quarter, c.lmia_streams,
-      c.lmia_positions_4q, c.lmia_positions_2q, c.lmia_positions_1q
+      c.lmia_positions_4q, c.lmia_positions_2q, c.lmia_positions_1q${factGroup}
     HAVING BOOL_OR(j.aip) OR BOOL_OR(COALESCE(j.pnp_stream, '') <> '') OR COALESCE(c.lmia_positions, 0) > 0
-    ORDER BY open_jobs DESC, c.name ASC`)
-  return rows.map((r: any): SponsorEmployerRow => ({
-    name: r.name ?? '', slug: r.slug ?? '', industry: r.industry ?? '', aliasZh: r.alias_zh ?? '', aliasKo: r.alias_ko ?? '',
-    sponsorGrade: r.sponsor_grade ?? null,
-    openJobs: Number(r.open_jobs) || 0, city: r.city ?? '', provs: r.provs ?? [], nocs: r.nocs ?? [], cities: r.cities ?? [],
-    aip: !!r.aip, named: !!r.named,
-    openJobsAip: Number(r.open_jobs_aip) || 0, provsAip: r.provs_aip ?? [],
-    lmiaPositions: Number(r.lmia_positions) || 0,
-    lmiaPositionsSkilled: r.lmia_positions_skilled == null ? null : Number(r.lmia_positions_skilled),
-    lmiaLastQuarter: r.lmia_last_quarter ?? '',
-    lmia4q: Number(r.lmia_positions_4q) || 0, lmia2q: Number(r.lmia_positions_2q) || 0, lmia1q: Number(r.lmia_positions_1q) || 0,
-    streams: r.streams ?? [],
-  }))
+    ORDER BY open_jobs DESC, c.name ASC`),
+    loadEmployerReqs(pool),
+  ])
+  return rows.map((r: any): SponsorEmployerRow => {
+    // 门槛省 = provs[0](表行没有单一地址,与既有 where 列同一取法;见文件头注)
+    const province = (r.provs ?? [])[0] ?? ''
+    const facts: EmployerFacts = {
+      foundedYear: r.founded_year == null ? null : Number(r.founded_year),
+      registryStatus: r.registry_status ?? null,
+      staffEst: r.staff_est == null ? null : Number(r.staff_est),
+      staffEstSrc: r.staff_est_src ?? null,
+      sector: r.sector ?? null,
+    }
+    return {
+      name: r.name ?? '', slug: r.slug ?? '', industry: r.industry ?? '', aliasZh: r.alias_zh ?? '', aliasKo: r.alias_ko ?? '',
+      sponsorGrade: r.sponsor_grade ?? null,
+      openJobs: Number(r.open_jobs) || 0, city: r.city ?? '', provs: r.provs ?? [], nocs: r.nocs ?? [], cities: r.cities ?? [],
+      aip: !!r.aip, named: !!r.named,
+      openJobsAip: Number(r.open_jobs_aip) || 0, provsAip: r.provs_aip ?? [],
+      lmiaPositions: Number(r.lmia_positions) || 0,
+      lmiaPositionsSkilled: r.lmia_positions_skilled == null ? null : Number(r.lmia_positions_skilled),
+      lmiaLastQuarter: r.lmia_last_quarter ?? '',
+      lmia4q: Number(r.lmia_positions_4q) || 0, lmia2q: Number(r.lmia_positions_2q) || 0, lmia1q: Number(r.lmia_positions_1q) || 0,
+      streams: r.streams ?? [],
+      verdict: employerVerdict(facts, province, employerReqs),
+    }
+  })
 }
 
 export async function fetchSponsorEmployers(pool: any): Promise<SponsorEmployerRow[]> {

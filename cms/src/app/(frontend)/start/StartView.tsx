@@ -25,7 +25,7 @@ import { JobCard } from '../ui/JobCard'
 import { DataTable, DTPager, type DTCol } from '../ui/DataTable'
 import { BANNER_IMGS, Chip, PageBanner, PageShell, Tag, UI } from '../ui/primitives'
 import { track } from '@/lib/track'
-import { SponsorCard, sponsorEmployerCols, type SponsorKind } from '../employers/SponsorEmployersView'
+import { SponsorCard, sponsorEmployerCols, hasVerdictSignal, type SponsorKind } from '../employers/SponsorEmployersView'
 import type { SponsorEmployerRow } from '@/lib/sponsorEmployers'
 
 // 抽选行 + 冷解读三标量(近 12 期同通道的期数/最低/最高,服务端算好,见 start/page.tsx)
@@ -150,6 +150,9 @@ function SponsorBoard({ rows, kind, t, lang, total, occOpts, catMids, nocCat }: 
     && (!skilled || (r.lmiaPositionsSkilled ?? 0) > 0)), [rows, fProv, fStream, fBroad, fMid, fNoc, skilled, nocCat])
   const maxPage = Math.max(1, Math.ceil(shown.length / PAGE))
   const note = shown.length !== total ? t('pulse.hitEmp', { m: num(shown.length), n: num(total) }) : t('pulse.totalEmp', { n: num(total) })
+  // B4 雇主门槛列(design/雇主省提名门槛判定-20260808.md):按本榜整批(未筛选前的 rows,不随用户筛选闪现/消失)
+  // 判断要不要出这一列——公司事实列 B3 还没建 DDL 前全行 unknown,列压根不进 cols(容缺先例同担保率列)
+  const showVerdict = kind === 'named' && hasVerdictSignal(rows)
   // 省下拉只显本语言全名(Frank 08-08「全部省那么宽吗」——双语并排把控件撑到 460px,单语即窄);
   // 不引 JobsTable.provName 免把重器拖进本页包
   const provLabel = (c: string) => { const loc = t('prov.' + c); return loc && loc !== 'prov.' + c ? loc : PROV_NAME[c] || c }
@@ -230,9 +233,9 @@ function SponsorBoard({ rows, kind, t, lang, total, occOpts, catMids, nocCat }: 
   return (
     <>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '0 0 10px' }}>{controls}</div>
-      <div className="plTable"><DataTable<SponsorEmployerRow> rows={shown} cols={sponsorEmployerCols(t, lang, kind)} rowKey={(r) => r.name} pageSize={10} footerNote={note} empty={t('se.empty')} /></div>
+      <div className="plTable"><DataTable<SponsorEmployerRow> rows={shown} cols={sponsorEmployerCols(t, lang, kind, showVerdict)} rowKey={(r) => r.name} pageSize={10} footerNote={note} empty={t('se.empty')} /></div>
       <div className="plCards">
-        {shown.slice(p * PAGE, (p + 1) * PAGE).map((r) => <SponsorCard key={r.name} r={r} lang={lang} t={t} kind={kind} />)}
+        {shown.slice(p * PAGE, (p + 1) * PAGE).map((r) => <SponsorCard key={r.name} r={r} lang={lang} t={t} kind={kind} showVerdict={showVerdict} />)}
         {shown.length === 0 && <div style={{ padding: '18px 12px', color: '#9ca3af', fontSize: 13, textAlign: 'center' }}>{t('se.empty')}</div>}
         <div style={{ padding: '2px 2px 0' }}><DTPager page={Math.min(p, maxPage - 1)} max={maxPage} note={note} onPage={setP} /></div>
       </div>

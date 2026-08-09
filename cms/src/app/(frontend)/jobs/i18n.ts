@@ -891,6 +891,9 @@ const zh: Dict = {
   'se.col.open': '全部在招', 'se.col.where': '所在地', 'se.where.multi': '{n} 省',
   'se.col.lmia': 'LMIA 获批(近两年)', 'se.col.w1': 'LMIA 最近一季', 'se.col.w2': 'LMIA 近半年', 'se.col.w4': 'LMIA 近一年',
   'se.grp.aip': 'AIP 指定雇主', 'se.grp.lmia': 'LMIA 获批雇主(近两年)', 'se.grp.named': '在招岗命中紧缺清单的雇主', 'pulse.nav.boards': '职业榜',
+  // B4 雇主省提名门槛判定(design/雇主省提名门槛判定-20260808.md):三态 + 公共部门旁路,判定≠官方认证
+  'se.col.verdict': '雇主门槛', 'se.verdict.met': '达标', 'se.verdict.short': '差{items}', 'se.verdict.unknown': '待核', 'se.verdict.public': '公共部门',
+  'se.verdict.factor.years': '年限', 'se.verdict.factor.staff': '雇员数',
   'spl.head': '担保雇主', 'spl.aip': 'AIP 指定雇主(官方名单)', 'spl.lmia': '近两年 LMIA 获批 {n} 岗', 'spl.lmia1': '近两年 LMIA 获批 1 岗',
   'spl.coJobs': '看它全部在招职位',
   'ch.ee.on': '能进类别抽选: {cats}', 'ch.ee.more': '{first} 等 {n} 类', 'ch.ee.gen': '能走 CEC 通用抽选(分数线高)', 'ch.ee.no': '走不了(TEER {teer})',
@@ -1744,6 +1747,9 @@ const en: Dict = {
   'se.col.open': 'All open jobs', 'se.col.where': 'Location', 'se.where.multi': '{n} provinces',
   'se.col.lmia': 'LMIA approved (2 yrs)', 'se.col.w1': 'LMIA last quarter', 'se.col.w2': 'LMIA 6 months', 'se.col.w4': 'LMIA 1 year',
   'se.grp.aip': 'AIP designated employers', 'se.grp.lmia': 'LMIA-approved employers (2 yrs)', 'se.grp.named': 'Employers with jobs on shortage lists', 'pulse.nav.boards': 'Occupation boards',
+  // B4 employer PNP bar check (design/雇主省提名门槛判定-20260808.md): three states + public-sector bypass, a check against the bar, not an official certification
+  'se.col.verdict': 'Employer bar', 'se.verdict.met': 'Meets bar', 'se.verdict.short': 'Short on {items}', 'se.verdict.unknown': 'Pending', 'se.verdict.public': 'Public sector',
+  'se.verdict.factor.years': 'years operating', 'se.verdict.factor.staff': 'staff count',
   'spl.head': 'Sponsor employers', 'spl.aip': 'AIP designated employer (official list)', 'spl.lmia': 'LMIA-approved {n} positions in the past two years', 'spl.lmia1': 'LMIA-approved 1 position in the past two years',
   'spl.coJobs': 'All its open jobs',
   'ch.ee.on': 'Category draws: {cats}', 'ch.ee.more': '{first} +{n}', 'ch.ee.gen': 'CEC general draws (high cut-off)', 'ch.ee.no': 'Not eligible (TEER {teer})',
@@ -2592,6 +2598,9 @@ const ko: Dict = {
   'se.col.open': '전체 채용 중', 'se.col.where': '지역', 'se.where.multi': '{n}개 주',
   'se.col.lmia': 'LMIA 승인(2년)', 'se.col.w1': 'LMIA 최근 분기', 'se.col.w2': 'LMIA 6개월', 'se.col.w4': 'LMIA 1년',
   'se.grp.aip': 'AIP 지정 고용주', 'se.grp.lmia': 'LMIA 승인 고용주(2년)', 'se.grp.named': '구인 직종이 수요 목록에 오른 고용주', 'pulse.nav.boards': '직업 보드',
+  // B4 고용주 주정부 지명 기준 판정: 3단계 + 공공 부문 예외, 기준 대조일 뿐 공식 인증 아님
+  'se.col.verdict': '고용주 기준', 'se.verdict.met': '기준 충족', 'se.verdict.short': '{items} 미달', 'se.verdict.unknown': '확인 중', 'se.verdict.public': '공공 부문',
+  'se.verdict.factor.years': '운영 연차', 'se.verdict.factor.staff': '직원 수',
   'spl.head': '스폰서 고용주', 'spl.aip': 'AIP 지정 고용주(공식 명단)', 'spl.lmia': '최근 2년 LMIA 승인 {n}건', 'spl.lmia1': '최근 2년 LMIA 승인 1건',
   'spl.coJobs': '이 고용주의 전체 채용 보기',
   'ch.ee.on': '카테고리 추첨 가능: {cats}', 'ch.ee.more': '{first} 등 {n}종', 'ch.ee.gen': 'CEC 일반 추첨 가능(커트라인 높음)', 'ch.ee.no': '불가(TEER {teer})',

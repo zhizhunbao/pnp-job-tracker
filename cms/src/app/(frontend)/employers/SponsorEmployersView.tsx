@@ -25,7 +25,23 @@ function whereText(r: SponsorEmployerRow, t: TFn, kind?: SponsorKind): string {
 // aip 表(去海洋省):指定身份即表题,行内只留 在招/所在地。
 const NIL = <span style={{ color: '#9ca3af' }}>—</span>
 export type SponsorKind = 'aip' | 'lmia' | 'named'
-export function sponsorEmployerCols(t: TFn, lang: Lang, kind: SponsorKind) {
+
+// B4(design/雇主省提名门槛判定-20260808.md):named 表「雇主门槛」列/卡片行——公司事实×该省官方
+// 雇主侧门槛(employerVerdict.ts)判出的三态 + 公共部门旁路。列生产(founded_year 等)还没建 DDL 前
+// sponsorEmployers.ts 探列拿不到值,每行 verdict.state 恒 'unknown' → 整列/整行都不渲染
+// (容缺先例同 stats 榜「担保率」列:hasSponsorRate 全 null 则整列不出)。
+export const hasVerdictSignal = (rows: SponsorEmployerRow[]) => rows.some((r) => r.verdict.state !== 'unknown')
+const VERDICT_FACTOR_KEY: Record<string, string> = { years: 'se.verdict.factor.years', staff: 'se.verdict.factor.staff' }
+function verdictCell(r: SponsorEmployerRow, t: TFn): { text: string; color: string } {
+  const v = r.verdict
+  if (v.state === 'public') return { text: t('se.verdict.public'), color: '#9ca3af' }
+  if (v.state === 'met') return { text: `✓ ${t('se.verdict.met')}`, color: UI.ok }
+  if (v.state === 'short') return { text: `✗ ${t('se.verdict.short', { items: v.failed.map((f) => t(VERDICT_FACTOR_KEY[f])).join(t('se.where.sep')) })}`, color: UI.danger }
+  return { text: t('se.verdict.unknown'), color: '#9ca3af' }
+}
+// showVerdict:调用方(SponsorBoard)算好的 hasVerdictSignal(rows) 结果——整批全 unknown 时不传/传 false,
+// 该列压根不进 cols 数组(不是渲染出一列全「待核」,是列本身不存在)。
+export function sponsorEmployerCols(t: TFn, lang: Lang, kind: SponsorKind, showVerdict = false) {
   // 中文名不再独立成列(Frank 08-08 晚拍板,替代早间「弄两列」):方案A 不生造红线下仅 ~4% 雇主有
   // 公认中文名,一列 96% 都是「—」;改挂雇主名下灰注(与抽选流名灰注同形态),无名不占位
   const name = { key: 'name', label: t('dir.col.employer'), sort: (r: SponsorEmployerRow) => r.name.toLowerCase(), render: (r: SponsorEmployerRow) => {
@@ -47,12 +63,20 @@ export function sponsorEmployerCols(t: TFn, lang: Lang, kind: SponsorKind) {
     ? { key: 'open', label: t('se.col.openAip'), nowrap: true, sort: (r: SponsorEmployerRow) => r.openJobsAip, render: (r: SponsorEmployerRow) => <span style={{ fontWeight: 700 }}>{r.openJobsAip}</span> }
     : { key: 'open', label: t('se.col.open'), nowrap: true, sort: (r: SponsorEmployerRow) => r.openJobs, render: (r: SponsorEmployerRow) => <span style={{ fontWeight: 700 }}>{r.openJobs}</span> }
   const where = { key: 'where', label: t('se.col.where'), sort: (r: SponsorEmployerRow) => (kind === 'aip' ? r.provsAip[0] : r.provs[0]) ?? null, render: (r: SponsorEmployerRow) => <>{whereText(r, t, kind)}</> }
+  // 达标/差项排前面(信息量大的先看),待核垫底,公共部门单独一档
+  const VERDICT_RANK: Record<string, number> = { met: 0, short: 1, public: 2, unknown: 3 }
+  const verdict = {
+    key: 'verdict', label: t('se.col.verdict'), nowrap: true,
+    sort: (r: SponsorEmployerRow) => VERDICT_RANK[r.verdict.state],
+    render: (r: SponsorEmployerRow) => { const c = verdictCell(r, t); return <span style={{ color: c.color, fontWeight: c.color === '#9ca3af' ? 400 : 700 }}>{c.text}</span> },
+  }
   const base = [name, open]
   if (kind === 'lmia') return [...base, w1, w2, w4, lmia, skilled, where]
+  if (kind === 'named') return [...base, where, ...(showVerdict ? [verdict] : [])]
   return [...base, where]
 }
 
-export function SponsorCard({ r, lang, t, kind }: { r: SponsorEmployerRow; lang: Lang; t: TFn; kind: SponsorKind }) {
+export function SponsorCard({ r, lang, t, kind, showVerdict = false }: { r: SponsorEmployerRow; lang: Lang; t: TFn; kind: SponsorKind; showVerdict?: boolean }) {
   const alias = lang === 'zh' ? r.aliasZh : lang === 'ko' ? r.aliasKo : ''
   const NILC = <span style={{ color: '#9ca3af' }}>—</span>
   const kv: { k: string; v: React.ReactNode }[] = []
@@ -67,6 +91,10 @@ export function SponsorCard({ r, lang, t, kind }: { r: SponsorEmployerRow; lang:
     ? { k: t('se.col.openAip'), v: <span style={{ fontWeight: 700 }}>{r.openJobsAip}</span> }
     : { k: t('se.col.open'), v: <span style={{ fontWeight: 700 }}>{r.openJobs}</span> })
   kv.push({ k: t('se.col.where'), v: whereText(r, t, kind) })
+  if (kind === 'named' && showVerdict) {
+    const c = verdictCell(r, t)
+    kv.push({ k: t('se.col.verdict'), v: <b style={{ color: c.color }}>{c.text}</b> })
+  }
   return (
     <Card>
       <div style={{ fontSize: 14.5, fontWeight: 600 }}>
