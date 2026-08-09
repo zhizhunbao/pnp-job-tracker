@@ -311,9 +311,9 @@ const zh: Dict = {
   'pulse.col.range': '薪资区间',
   'pulse.col.sponsorRate': 'LMIA 率',
   'pulse.total': '共 {n} 个职业', 'pulse.totalEmp': '共 {n} 家', 'pulse.hitEmp': '符合 {m} 家(共 {n} 家)',
-  'se.col.openAip': '大西洋四省在招', 'se.allStreams': '全部清单', 'se.allOcc': '全部职业', 'se.empty': '没有匹配的雇主', 'se.skilledOnly': '高技能岗获批优先',
+  'se.col.openAip': '大西洋四省在招', 'se.allStreams': '全部清单', 'se.allOcc': '全部职业', 'se.empty': '没有匹配的雇主', 'se.skilledOnly': '只看技能类获批',
   // 08-08 Frank 追加「表管事实,人话归对话」:三分表表题旁的对话导流钮 + 三张各自预填问句
-  'se.askChat': '这张表怎么用?问问看',
+  'se.askChat': '问 AI 顾问怎么用这张表',
   'se.ask.lmia': 'LMIA 获批雇主的表对我找工作移民有什么用?',
   'se.ask.named': '在招岗命中紧缺清单的雇主,对我意味着什么?',
   'se.ask.aip': 'AIP 指定雇主是什么?对我有用吗?',
@@ -590,7 +590,7 @@ const zh: Dict = {
   // 「这里答不好」,而且按真实频次排好序。所以问句要轻到不烦人、又显眼到有人愿意点。
   'chat.fb.good': '有帮助', 'chat.fb.bad': '没帮助',
   // cw.* = 全站右下角对话挂件的**壳**(ChatLauncher);面板标题复用 chat.title,不另开一份
-  'cw.open': '问问看', 'cw.minimize': '最小化', 'cw.close': '关闭', 'cw.hint': '有问题?问问看',
+  'cw.open': '问 AI 顾问', 'cw.minimize': '最小化', 'cw.close': '关闭', 'cw.hint': '有问题?问 AI 顾问',
   'cw.max': '全屏', 'cw.restore': '退出全屏',  // 桌面面板大小(手机恒全屏,不出这个钮)
   'cw.reset': '重置', 'cw.resetOk': '确认清空',   // 就地二次确认(误清一整轮问答不可逆),不上弹框
   'advisor.disclaimer': 'AI 生成判断,非移民建议(我们非持牌顾问 RCIC),以官方来源为准',
@@ -701,7 +701,7 @@ const zh: Dict = {
   'pw.bnRoutes': '条路径方案', 'rank.bnBoards': '个榜单', 'stats.bnProvs': '省全覆盖', 'stats.bnBroads': '职业大类',
   // B4-01 实体名录(雇主名录 + 紧缺职业清单)
   'dir.title': '雇主名录',
-  'dir.col.employer': '雇主', 'dir.col.skilled': '高技能岗获批(近两年)', 'dir.col.quarter': '最近季度', 'dir.col.skilled.tip': '高薪(High Wage)与全球人才(Global Talent)通道的 LMIA 获批职位数——不含农业/低薪季节工;想找愿意办技能类工作担保的雇主,看这个数',
+  'dir.col.employer': '雇主', 'dir.col.skilled': '技能类 LMIA 获批(近两年)', 'dir.col.quarter': '最近季度', 'dir.col.skilled.tip': '高薪(High Wage)与全球人才(Global Talent)通道的 LMIA 获批职位数——不含农业/低薪季节工;想找愿意办技能类工作担保的雇主,看这个数',
   'dir.occ.title': '紧缺职业清单', 'dir.occ.sub': '各省具体通道的职业清单,随官方页面周更',
   'dir.occ.note': '清单命中是粗筛信号,不是资格认定。',
   'dir.occ.colStream': '通道', 'dir.occ.colNoc': 'NOC', 'dir.occ.colName': '职业', 'dir.occ.fetched': '抓取 {d}', 'dir.occ.src': '官方清单',
@@ -1247,8 +1247,8 @@ const en: Dict = {
   'pulse.col.range': 'Salary range',
   'pulse.col.sponsorRate': 'LMIA rate',
   'pulse.total': '{n} occupations', 'pulse.totalEmp': '{n} employers', 'pulse.hitEmp': '{m} of {n} employers',
-  'se.col.openAip': 'Atlantic open jobs', 'se.allStreams': 'All lists', 'se.allOcc': 'All occupations', 'se.empty': 'No matching employers', 'se.skilledOnly': 'High-skill approvals first',
-  'se.askChat': 'How do I use this? Ask',
+  'se.col.openAip': 'Atlantic open jobs', 'se.allStreams': 'All lists', 'se.allOcc': 'All job titles', 'se.empty': 'No matching employers', 'se.skilledOnly': 'Skilled approvals only',
+  'se.askChat': 'Ask the AI advisor how to use this table',
   'se.ask.lmia': 'How does the LMIA-approved employer table help my immigration job search?',
   'se.ask.named': 'What does an employer with jobs on a shortage list mean for me?',
   'se.ask.aip': 'What is an AIP designated employer? Is it useful to me?',
@@ -1603,7 +1603,7 @@ const en: Dict = {
   'pw.bnRoutes': 'pathway plans', 'rank.bnBoards': 'boards', 'stats.bnProvs': 'provinces covered', 'stats.bnBroads': 'occupation groups',
   // B4-01 directory
   'dir.title': 'Employer directory',
-  'dir.col.employer': 'Employer', 'dir.col.skilled': 'High-skill approvals (2y)', 'dir.col.quarter': 'Latest quarter', 'dir.col.skilled.tip': 'Approved LMIA positions in High Wage / Global Talent streams — excludes Primary Agriculture / Low Wage seasonal hiring; this is the number that matters for skilled sponsorship',
+  'dir.col.employer': 'Employer', 'dir.col.skilled': 'Skilled LMIA approved (2 yrs)', 'dir.col.quarter': 'Latest quarter', 'dir.col.skilled.tip': 'Approved LMIA positions in High Wage / Global Talent streams — excludes Primary Agriculture / Low Wage seasonal hiring; this is the number that matters for skilled sponsorship',
   'dir.occ.title': 'In-demand occupation lists', 'dir.occ.sub': 'Named occupation lists of provincial nominee streams, refreshed weekly from official pages',
   'dir.occ.note': 'Being on a list is a screening signal, not an eligibility ruling.',
   'dir.occ.colStream': 'Stream', 'dir.occ.colNoc': 'NOC', 'dir.occ.colName': 'Occupation', 'dir.occ.fetched': 'Fetched {d}', 'dir.occ.src': 'Official list',
@@ -2128,8 +2128,8 @@ const ko: Dict = {
   'pulse.col.range': '급여 범위',
   'pulse.col.sponsorRate': 'LMIA 비율',
   'pulse.total': '총 {n}개 직업', 'pulse.totalEmp': '총 {n}곳', 'pulse.hitEmp': '{m}곳(총 {n}곳)',
-  'se.col.openAip': '대서양 4개 주 채용 중', 'se.allStreams': '전체 목록', 'se.allOcc': '모든 직업', 'se.empty': '일치하는 고용주가 없습니다', 'se.skilledOnly': '고숙련 승인 우선',
-  'se.askChat': '이 표 어떻게 쓰나요? 물어보기',
+  'se.col.openAip': '대서양 4개 주 채용 중', 'se.allStreams': '전체 목록', 'se.allOcc': '전체 직업명', 'se.empty': '일치하는 고용주가 없습니다', 'se.skilledOnly': '숙련 승인만 보기',
+  'se.askChat': 'AI 상담사에게 이 표 사용법 묻기',
   'se.ask.lmia': 'LMIA 승인 고용주 표가 제 이민 구직에 어떤 도움이 되나요?',
   'se.ask.named': '구인 직종이 수요 목록에 오른 고용주는 저에게 어떤 의미인가요?',
   'se.ask.aip': 'AIP 지정 고용주란 무엇인가요? 저에게 도움이 되나요?',
@@ -2484,7 +2484,7 @@ const ko: Dict = {
   'pw.bnRoutes': '개 경로 플랜', 'rank.bnBoards': '개 랭킹', 'stats.bnProvs': '대상 주 수', 'stats.bnBroads': '직업 대분류 수',
   // B4-01 디렉터리
   'dir.title': '고용주 디렉터리',
-  'dir.col.employer': '고용주', 'dir.col.skilled': '고숙련 승인(2년)', 'dir.col.quarter': '최신 분기', 'dir.col.skilled.tip': 'High Wage / Global Talent 스트림의 승인 LMIA 포지션 수 — Primary Agriculture / Low Wage 계절성 고용 제외; 숙련 스폰서를 찾는다면 이 숫자를 참고하세요.',
+  'dir.col.employer': '고용주', 'dir.col.skilled': '숙련 LMIA 승인(2년)', 'dir.col.quarter': '최신 분기', 'dir.col.skilled.tip': 'High Wage / Global Talent 스트림의 승인 LMIA 포지션 수 — Primary Agriculture / Low Wage 계절성 고용 제외; 숙련 스폰서를 찾는다면 이 숫자를 참고하세요.',
   'dir.occ.title': '수요 직업 리스트', 'dir.occ.sub': '각 주 노미니 프로그램의 지정 직업 리스트, 공식 페이지 기준 주간 갱신',
   'dir.occ.note': '목록 포함은 선별 신호일 뿐 자격 판정이 아닙니다.',
   'dir.occ.colStream': '스트림', 'dir.occ.colNoc': 'NOC', 'dir.occ.colName': '직업', 'dir.occ.fetched': '수집 {d}', 'dir.occ.src': '공식 목록',

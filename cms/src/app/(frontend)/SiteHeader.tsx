@@ -10,10 +10,16 @@
 //   E=桌面下拉统一 hover 开(离开 150ms 延时关防抖,键盘 focus 同样可开)——资料库改 hover,新增「资讯 ▾」聚合
 //     (移民新闻+政策时间线;时间线首次获得顶栏入口)。榜单/统计保持顶级不并组(IA 大改另拍)。
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import dynamic from 'next/dynamic'
 import { LANGS, type Lang, type TFn } from './jobs/i18n'
 import { Avatar } from './Avatar'
 import { Button } from './ui/primitives'
-import { IconTarget, IconChart, IconCompass, IconNews, IconUser, IconUsers } from './Icons'
+import { IconTarget, IconChart, IconCompass, IconNews, IconUsers } from './Icons'
+
+// 登录弹框就地开(2026-08-09 Frank「为什么要跳到 jobtable 页面再弹框」):AuthModal 按需载
+// (点开才下载那份 JS,手法同 ChatLauncher),header 常驻包不背它
+const AuthModal = dynamic(() => import('./jobs/AuthForm').then((m) => m.AuthModal), { ssr: false })
 
 type AcctState = { state: 'loading' | 'out' | 'in'; u: { email: string; displayName: string | null; avatar: string | null; pro: boolean } }
 
@@ -31,6 +37,10 @@ const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayout
 
 function AccountLite({ t, acct }: { t: TFn; acct: AcctState }) {
   const { state, u } = acct
+  // 就地弹框(2026-08-09 Frank「为什么要跳到 jobtable 页面再弹框,不能直接弹框吗」):
+  // 原「登录/注册」是 /?login=1 链接——弹框只挂在职位板,二级页都得先跳过去。现当页开
+  // AuthModal;成功后整页刷新让 SSR 登录态(分层列等)生效,同 /jobs 惯例。深链 /?login=1 照旧可用。
+  const [auth, setAuth] = useState<'' | 'login' | 'register'>('')
   if (state === 'loading') return <span style={{ display: 'inline-block', width: ACCT_SLOT_W, height: 28 }} />
   if (state === 'in') {
     // #63b(Frank「像 Google 那样只显示图标」):纯头像圆钮,名字/Pro 态挂 title
@@ -45,8 +55,9 @@ function AccountLite({ t, acct }: { t: TFn; acct: AcctState }) {
   return (
     <>
       {/* P1 换装(2026-07-19):登录=ghost,注册=primary sm——与 /jobs AccountArea 同规格 */}
-      <Button kind="ghost" sm href="/?login=1">{t('nav.login')}</Button>
-      <Button kind="primary" sm href="/?signup=1">{t('nav.register')}</Button>
+      <Button kind="ghost" sm onClick={() => setAuth('login')}>{t('nav.login')}</Button>
+      <Button kind="primary" sm onClick={() => setAuth('register')}>{t('nav.register')}</Button>
+      {auth && <AuthModal t={t} mode={auth} onClose={() => setAuth('')} onDone={() => window.location.reload()} />}
     </>
   )
 }
@@ -84,8 +95,32 @@ function NavDrop({ label, icon, highlight, items }: {
 }
 
 // D 件:窄屏侧滑抽屉。条目圆角块;带二级的组 chevron 展开;遮罩/×关。
-function MobileDrawer({ t, active, showAcctTab, onClose }: { t: TFn; active?: string; showAcctTab: boolean; onClose: () => void }) {
+// 2026-08-09 Frank「点击的时候要有一个推动主页面的动画」:抽屉滑入的同时 <main> 同步右移同宽
+// (push 而非 overlay)。抽屉因此 portal 到 body——它原来渲在 header 里=main 内部,
+// main 一 transform 就成了 fixed 的包含块,抽屉会跟着页面一起被推走。
+function MobileDrawer({ t, active, onClose }: { t: TFn; active?: string; onClose: () => void }) {
   const [openGrp, setOpenGrp] = useState<string>('')   // 展开中的组(单开足够:资讯/资料库)
+  // 推主页面:挂载=开(推出去),卸载=关(回弹;transition 留到动画放完再摘)。
+  // overflow-x 同时按住——main 右移出视口的部分会把横向滚动条顶出来
+  useEffect(() => {
+    const m = document.querySelector('main')
+    const prevBody = document.body.style.overflowX
+    const prevHtml = document.documentElement.style.overflowX
+    document.body.style.overflowX = 'hidden'
+    document.documentElement.style.overflowX = 'hidden'
+    if (m) {
+      m.style.transition = 'transform .24s cubic-bezier(.4,0,.2,1)'
+      requestAnimationFrame(() => { m.style.transform = 'translateX(min(68vw, 280px))' })
+    }
+    return () => {
+      document.body.style.overflowX = prevBody
+      document.documentElement.style.overflowX = prevHtml
+      if (m) {
+        m.style.transform = ''
+        setTimeout(() => { m.style.transition = '' }, 300)
+      }
+    }
+  }, [])
   const item = (href: string, label: React.ReactNode, cur: boolean): React.CSSProperties => ({
     display: 'block', padding: '10px 12px', borderRadius: 9, fontSize: 14, textDecoration: 'none',
     background: cur ? '#eff6ff' : '#f9fafb', border: `1px solid ${cur ? '#bfdbfe' : '#e5e7eb'}`,
@@ -103,7 +138,7 @@ function MobileDrawer({ t, active, showAcctTab, onClose }: { t: TFn; active?: st
       ))}
     </>
   )
-  return (
+  return createPortal(
     // 平移动画(Frank 2026-07-23「呼出太宽太大,加平移动画+缩小」):遮罩淡入、面板从左 translateX(-100%)→0 滑入;
     // 挂载即播关键帧(无需 open 态);宽度 80%/340 → 68%/280 收窄,条目内距略缩(仍保 ≥40px 触控高)
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(17,24,39,.28)', zIndex: 60, animation: 'drwFade .18s ease' }}>
@@ -130,13 +165,11 @@ function MobileDrawer({ t, active, showAcctTab, onClose }: { t: TFn; active?: st
             { href: '/news', label: t('news.entry'), active: active === 'news' },
             { href: '/timeline', label: t('nav.timeline') },
           ])}
-          {showAcctTab && <>
-            <div style={{ fontSize: 10.5, color: '#9ca3af', letterSpacing: .5, padding: '6px 4px 0' }}>{t('nav.sect.mine')}</div>
-            <a href="/account" style={item('/account', '', active === 'account')}>{t('nav.acctTab')}</a>
-          </>}
+          {/* 「我的账户」项 2026-08-09 Frank 摘除(账户入口只留头像),同桌面 nav */}
         </nav>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 
@@ -178,7 +211,6 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
       })
       .catch(() => setAcct((a) => ({ ...a, state: 'out' })))
   }, [loggedIn, accountArea])
-  const showAcctTab = loggedIn !== undefined ? loggedIn : acct.state === 'in'
   const [drawer, setDrawer] = useState(false)
   const nav: React.CSSProperties = { textDecoration: 'none', fontSize: 12.5, color: '#6b7280', whiteSpace: 'nowrap' }
   return (
@@ -220,10 +252,8 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
               { href: '/news', label: t('news.entry'), active: active === 'news' },
               { href: '/timeline', label: t('nav.timeline') },
             ]} />
-            {/* 我的账户=独立选项卡(2026-07-16 拍板);2026-07-19 Frank:未登录不显示(登录入口=右端登录/注册钮) */}
-            {showAcctTab && (active === 'account'
-              ? <span style={{ ...nav, color: '#2563eb', fontWeight: 700 }}><IconUser /> {t('nav.acctTab')}</span>
-              : <a href="/account" style={nav}><IconUser /> {t('nav.acctTab')}</a>)}
+            {/* 「我的账户」独立选项卡 2026-08-09 Frank 摘除(「登录之后不要在 header 显示这个导航」):
+                账户入口只留右端头像(/jobs 头像下拉里本就有「我的账户」项,二级页头像直达 /account) */}
           </div>
           <span className="shDivider" style={{ width: 1, height: 16, background: '#e5e7eb' }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
@@ -239,7 +269,7 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
       </div>
       {/* C 件:窄屏通栏搜索带(桌面藏;sticky 时随 header 一起吸顶)。jobs 传受控输入;缺省=GET / 提交(?q= 深链语义 #92 已有)。
           hideSearch=页面自己在 banner 下有搜索框(/jobs),不在顶栏再挂一条 */}
-      {drawer && <MobileDrawer t={t} active={active} showAcctTab={showAcctTab} onClose={() => setDrawer(false)} />}
+      {drawer && <MobileDrawer t={t} active={active} onClose={() => setDrawer(false)} />}
     </header>
   )
 }

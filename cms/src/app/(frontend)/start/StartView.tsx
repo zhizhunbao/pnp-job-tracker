@@ -42,7 +42,11 @@ export type HomeStats = {
   // B2+ 雇主橱窗三分表(Frank 08-08:没工签→LMIA/有工签→PNP 担保记录/海洋省→AIP;货架页已下架,此处即唯一承载)
   sponsor: { lmia: { top: SponsorEmployerRow[]; total: number }; named: { top: SponsorEmployerRow[]; total: number }; aip: { top: SponsorEmployerRow[]; total: number } }
   occOpts: { noc: string; title: string; titleZh: string }[]   // 橱窗职业筛 datalist 候选(noc_descriptions,~500 行)
-  catMids: { broad: string; mid: string; midEn: string; midKo: string }[]   // 职业筛三级联动的中类英韩名(noc_categories,~160 行)
+  catMids: { broad: string; mid: string; midEn: string; midKo: string; fine: string; fineEn: string; fineKo: string }[]   // 职业筛联动的中/小类英韩名(noc_categories,一行=一个小类)
+  // S1 中间两卡标量(08-09 下沉 SSR 消刷新闪占位,Frank「中间两个数为什么会闪」):null=该卡不出
+  pulse: { new14: number | null; days: number | null }
+  // 三分表职业筛联动 noc→分类(只含橱窗行出现过的 NOC;同批下沉 SSR,中类下拉不再等 /api/market-stats)
+  nocCat: Record<string, { broad: string; mid: string; fine: string }>
   provExtra: Record<string, ProvExtra>            // S4 省卡:IRCC 体量 + 难度档
   provPreset: string                              // S4 预选省(档案省;匿名为空 → 默认 ON。禁 IP 定位)
   checkedAt: string
@@ -122,21 +126,23 @@ function Sec({ id, title, right, children, sub }: { id: string; title: React.Rea
 
 // 雇主橱窗单表(Frank 08-08「加分页」+「每表加筛选条件」+「按逻辑重新设计」):桌面 DataTable 翻页(10/页),
 // 手机卡 5/页;全量已在客户端 → 筛选纯前端,控件一行等高 30 照职位板站规(#282 教训)。
-// 每表按人群逻辑配筛选(职业筛 08-08 Frank「大类种类小类联动过滤要加上」升级成大类→中类→小类三级联动,
-//   形态/词汇与职位板 JobsTable 的 broad/mid/fine 一致;小类即原「职业」下拉,按雇主数排序的既有逻辑不变):
-//   lmia(没工签找肯办 LMIA 的雇主):职业(大类→中类→小类)→ 省 → 只看技能类(治农业季节工霸榜)→ 搜名;
-//   named(有工签打包省提名):省(省提名绑省,居首)→ 清单 → 职业(大类→中类→小类)→ 搜名;
-//   aip(奔大西洋):省 → 职业(大类→中类→小类)→ 搜名。
-function SponsorBoard({ rows, kind, t, lang, total, occOpts, catMids, nocCat }: { rows: SponsorEmployerRow[]; kind: SponsorKind; t: TFn; lang: Lang; total: number; occOpts: HomeStats['occOpts']; catMids: HomeStats['catMids']; nocCat: Map<string, { broad: string; mid: string }> }) {
+// 每表按人群逻辑配筛选(职业筛 08-08 Frank「大类种类小类联动过滤要加上」;08-09 Frank「全部小类呢?」
+//   补上真·小类一级——此前把「职业」下拉错当小类,从中类直接跳职业。现为大类→中类→小类→职业四级联动,
+//   形态/词汇与职位板 JobsTable 的 broad/mid/fine 一致;职业下拉按雇主数排序的既有逻辑不变):
+//   lmia(没工签找肯办 LMIA 的雇主):职业(大类→中类→小类→职业)→ 省 → 只看技能类(治农业季节工霸榜)→ 搜名;
+//   named(有工签打包省提名):省(省提名绑省,居首)→ 清单 → 职业(大类→中类→小类→职业)→ 搜名;
+//   aip(奔大西洋):省 → 职业(大类→中类→小类→职业)→ 搜名。
+function SponsorBoard({ rows, kind, t, lang, total, occOpts, catMids, nocCat }: { rows: SponsorEmployerRow[]; kind: SponsorKind; t: TFn; lang: Lang; total: number; occOpts: HomeStats['occOpts']; catMids: HomeStats['catMids']; nocCat: Map<string, { broad: string; mid: string; fine: string }> }) {
   const PAGE = 5
   const [p, setP] = useState(0)
   const [fProv, setFProv] = useState('')
   const [fStream, setFStream] = useState('')
   const [fBroad, setFBroad] = useState('')
   const [fMid, setFMid] = useState('')
+  const [fFine, setFFine] = useState('')
   const [fNoc, setFNoc] = useState('')
   const [skilled, setSkilled] = useState(false)
-  useEffect(() => { setP(0) }, [fProv, fStream, fBroad, fMid, fNoc, skilled])
+  useEffect(() => { setP(0) }, [fProv, fStream, fBroad, fMid, fFine, fNoc, skilled])
   const provOpts = useMemo(() => Array.from(new Set(rows.flatMap((r) => r.provs))).sort((a, b) => {
     const ia = PROVS.indexOf(a), ib = PROVS.indexOf(b)
     return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib)
@@ -146,8 +152,9 @@ function SponsorBoard({ rows, kind, t, lang, total, occOpts, catMids, nocCat }: 
     && (!fStream || r.streams.includes(fStream))
     && (!fBroad || r.nocs.some((n) => nocCat.get(n)?.broad === fBroad))
     && (!fMid || r.nocs.some((n) => nocCat.get(n)?.mid === fMid))
+    && (!fFine || r.nocs.some((n) => nocCat.get(n)?.fine === fFine))
     && (!fNoc || r.nocs.includes(fNoc))
-    && (!skilled || (r.lmiaPositionsSkilled ?? 0) > 0)), [rows, fProv, fStream, fBroad, fMid, fNoc, skilled, nocCat])
+    && (!skilled || (r.lmiaPositionsSkilled ?? 0) > 0)), [rows, fProv, fStream, fBroad, fMid, fFine, fNoc, skilled, nocCat])
   const maxPage = Math.max(1, Math.ceil(shown.length / PAGE))
   const note = shown.length !== total ? t('pulse.hitEmp', { m: num(shown.length), n: num(total) }) : t('pulse.totalEmp', { n: num(total) })
   // B4 雇主门槛列(design/雇主省提名门槛判定-20260808.md):按本榜整批(未筛选前的 rows,不随用户筛选闪现/消失)
@@ -156,8 +163,9 @@ function SponsorBoard({ rows, kind, t, lang, total, occOpts, catMids, nocCat }: 
   // 省下拉只显本语言全名(Frank 08-08「全部省那么宽吗」——双语并排把控件撑到 460px,单语即窄);
   // 不引 JobsTable.provName 免把重器拖进本页包
   const provLabel = (c: string) => { const loc = t('prov.' + c); return loc && loc !== 'prov.' + c ? loc : PROV_NAME[c] || c }
-  // #276:height 移交 .sbCtl(styles.css)——桌面仍 30,手机断点单独抬到 ≥44px,字号/其余样式不动
-  const ctl: React.CSSProperties = { border: `1px solid ${UI.border}`, borderRadius: 8, background: '#fff', fontSize: 12.5, color: '#374151', padding: '0 6px', maxWidth: 210 }
+  // #276:height 移交 .sbCtl(styles.css);2026-08-09 Frank「这两部分样式怎么不一样」——
+  // 边框/圆角/字号/内距全对齐职位板筛选控件(JobsTable ctrl:38 高 radius6 字号14),全站一套筛选形态
+  const ctl: React.CSSProperties = { border: '1px solid #d1d5db', borderRadius: 6, background: '#fff', fontSize: 14, color: '#1f2937', padding: '0 10px', maxWidth: 210 }
   const provSel = (
     <select key="prov" className="sbCtl" value={fProv} onChange={(e) => setFProv(e.target.value)} style={ctl}>
       <option value="">{t('all.prov')}</option>
@@ -189,33 +197,55 @@ function SponsorBoard({ rows, kind, t, lang, total, occOpts, catMids, nocCat }: 
   }, [rows, nocCat, fBroad])
   const catMidMap = useMemo(() => new Map(catMids.map((r) => [r.mid, r])), [catMids])
   const midLabel = (m: string) => (lang === 'zh' ? m : (catMidMap.get(m)?.[lang === 'ko' ? 'midKo' : 'midEn'] || m))
+  // 小类英韩名同源 noc_categories(一行=一个小类,fine 即行键)
+  const catFineMap = useMemo(() => new Map(catMids.map((r) => [r.fine, r])), [catMids])
+  const fineLabel = (f: string) => (lang === 'zh' ? f : (catFineMap.get(f)?.[lang === 'ko' ? 'fineKo' : 'fineEn'] || f))
+  const fineOpts = useMemo(() => {
+    const set = new Set<string>()
+    rows.forEach((r) => r.nocs.forEach((n) => {
+      const c = nocCat.get(n)
+      if (c?.fine && (!fBroad || c.broad === fBroad) && (!fMid || c.mid === fMid)) set.add(c.fine)
+    }))
+    return [...set].sort()
+  }, [rows, nocCat, fBroad, fMid])
   const broadSel = (
-    <select key="broad" className="sbCtl" value={fBroad} onChange={(e) => { setFBroad(e.target.value); setFMid(''); setFNoc('') }} style={ctl}>
+    <select key="broad" className="sbCtl" value={fBroad} onChange={(e) => { setFBroad(e.target.value); setFMid(''); setFFine(''); setFNoc('') }} style={ctl}>
       <option value="">{t('all.broad')}</option>
       {broadOpts.map((b) => <option key={b} value={b}>{b === '未分类' ? t('cell.uncat') : t('broad.' + b)}</option>)}
     </select>
   )
   const midSel = (
-    <select key="mid" className="sbCtl" value={fMid} onChange={(e) => { setFMid(e.target.value); setFNoc('') }} style={ctl}>
+    <select key="mid" className="sbCtl" value={fMid} onChange={(e) => { setFMid(e.target.value); setFFine(''); setFNoc('') }} style={ctl}>
       <option value="">{t('all.mid')}</option>
       {midOpts.map((m) => <option key={m} value={m}>{midLabel(m)}</option>)}
     </select>
   )
-  // 职业(小类)筛=纯点选(Frank 08-08「手机上也没办法敲字」):选项只列本表真实存在的职业,按雇主数倒序,
-  // 常用职业置顶;字典缺题名的码原样兜底(不因缺翻译丢筛选项);受上两级大类/中类联动收窄
+  // 小类/职业两个下拉的选项名长(最长职业题名会把控件撑到 210 上限,08-09 Frank「这个太宽了吧」)
+  // → 收到 150,与省/中类同一视觉档;收窄的只是控件框,弹出的选项列表浏览器仍按全文排
+  const narrow: React.CSSProperties = { ...ctl, maxWidth: 150 }
+  // 小类(08-09 Frank「全部小类呢?」——此前从中类直接跳到职业,少了职位板同款的一级)
+  const fineSel = (
+    <select key="fine" className="sbCtl" value={fFine} onChange={(e) => { setFFine(e.target.value); setFNoc('') }} style={narrow}>
+      <option value="">{t('all.fine')}</option>
+      {fineOpts.map((f) => <option key={f} value={f}>{fineLabel(f)}</option>)}
+    </select>
+  )
+  // 职业筛=纯点选(Frank 08-08「手机上也没办法敲字」):选项只列本表真实存在的职业,按雇主数倒序,
+  // 常用职业置顶;字典缺题名的码原样兜底(不因缺翻译丢筛选项);受上三级大类/中类/小类联动收窄
   const occSel = useMemo(() => {
     const cnt = new Map<string, number>()
     rows.forEach((r) => r.nocs.forEach((n) => {
       const c = nocCat.get(n)
       if (fBroad && c?.broad !== fBroad) return
       if (fMid && c?.mid !== fMid) return
+      if (fFine && c?.fine !== fFine) return
       cnt.set(n, (cnt.get(n) ?? 0) + 1)
     }))
     const title = new Map(occOpts.map((o) => [o.noc, lang === 'zh' && o.titleZh ? o.titleZh : o.title]))
     return [...cnt.entries()].sort((a, b) => b[1] - a[1]).map(([n]) => ({ noc: n, label: title.get(n) || n }))
-  }, [rows, occOpts, lang, nocCat, fBroad, fMid])
+  }, [rows, occOpts, lang, nocCat, fBroad, fMid, fFine])
   const occInput = (
-    <select key="occ" className="sbCtl" value={fNoc} onChange={(e) => setFNoc(e.target.value)} style={ctl}>
+    <select key="occ" className="sbCtl" value={fNoc} onChange={(e) => setFNoc(e.target.value)} style={narrow}>
       <option value="">{t('se.allOcc')}</option>
       {occSel.map((o) => <option key={o.noc} value={o.noc}>{o.label}</option>)}
     </select>
@@ -227,9 +257,9 @@ function SponsorBoard({ rows, kind, t, lang, total, occOpts, catMids, nocCat }: 
     </button>
   ) : null
   // 搜雇主名文本框 08-08 拍掉(「文本框是干啥的」+手机零打字):筛选全点选
-  const controls = kind === 'lmia' ? [broadSel, midSel, occInput, provSel, skilledBtn]
-    : kind === 'named' ? [provSel, streamSel, broadSel, midSel, occInput]
-      : [provSel, broadSel, midSel, occInput]
+  const controls = kind === 'lmia' ? [broadSel, midSel, fineSel, occInput, provSel, skilledBtn]
+    : kind === 'named' ? [provSel, streamSel, broadSel, midSel, fineSel, occInput]
+      : [provSel, broadSel, midSel, fineSel, occInput]
   return (
     <>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '0 0 10px' }}>{controls}</div>
@@ -464,15 +494,9 @@ export function StartView({ stats }: { stats: HomeStats }) {
     }
     return m
   }, [market])
-  // NOC → 大类/中类(08-08 Frank「大类种类小类联动过滤要加上」):三分表职业筛三级联动要用,
-  // 复用 /api/market-stats 已拉到的 occ 行(自带 broad/mid,禁新开 API 单独查分类映射)
-  const nocCat = useMemo(() => {
-    const m = new Map<string, { broad: string; mid: string }>()
-    if (market) for (const o of market.occ) {
-      if (!m.has(o.noc) && o.broad) m.set(o.noc, { broad: o.broad, mid: o.mid })
-    }
-    return m
-  }, [market])
+  // NOC → 大类/中类/小类(08-08 Frank「大类种类小类联动过滤要加上」):三分表职业筛联动要用。
+  // 08-09 改吃 SSR 的 stats.nocCat(此前吃挂载后才到的 market.occ,中类下拉每次刷新闪一次空选项)
+  const nocCat = useMemo(() => new Map(Object.entries(stats.nocCat ?? {})), [stats.nocCat])
 
   // 三榜分层(Frank 08-06 深夜拍板,口径 08-06 二改):判据 = **省具名紧缺清单命中**(namedJobs),
   // ≠「有无 PNP 通道」——排除式省(AB;ON 改制后全职业可)和雇主担保类通用通道不进 namedJobs
@@ -502,35 +526,25 @@ export function StartView({ stats }: { stats: HomeStats }) {
   // 逐卡 null 守卫 —— 缺数的卡整张不出。净值卡(在架存量差)本批**不做**:
   // 7-25 起验尸排水清了 2.7 万死帖,存量下跌是数据清洗不是市场收缩,上线=撒谎(后置 E13-04)。
   const pulseCards = useMemo(() => {
-    const out: { label: string; v: string; sub?: string; subUp?: boolean; subDown?: boolean; tip: string; href: string; ph?: boolean }[] = []
+    const out: { label: string; v: string; sub?: string; subUp?: boolean; subDown?: boolean; tip: string; href: string }[] = []
     // Frank 2026-08-06「还有就是整个加拿大的就业体量」:体量卡打头(与职位板 proof 同源同口径)
     if (stats.total) {
       out.push({ label: t('pulse.card.total'), v: num(stats.total), tip: t('pulse.card.total.tip'), href: '/' })
     }
-    // 市场数据还在拉(挂载后才到)→ 两张骨架占位卡压住格子,避免 2→4 张的水合跳变
-    // (Frank 08-06「刷新时卡片闪烁」);拉完确实缺数的卡仍整张不出(契约 v3),那是稳态不是闪烁
-    if (natOcc === null) {
-      out.push({ label: 'new14', v: '', tip: '', href: '', ph: true }, { label: 'days', v: '', tip: '', href: '', ph: true })
+    // 中间两卡 08-09 改吃 SSR 标量(此前吃挂载后才到的 market.occ,每次刷新闪一次骨架占位,
+    // Frank「中间两个数为什么会闪」);缺数的卡整张不出(契约 v3)照旧。
+    // 环比副行 08-07 Frank 拍板删(「那个绿字没用」),只留主数字
+    if (stats.pulse.new14 != null) {
+      out.push({ label: t('pulse.card.new14'), v: num(stats.pulse.new14), tip: t('pulse.card.new14.tip'), href: '/' })
     }
-    if (natOcc) {
-      const news = natOcc.map((o) => o.new14d).filter((v): v is number => v != null)
-      if (news.length) {
-        const total = news.reduce((a, b) => a + b, 0)
-        // 环比副行 08-07 Frank 拍板删(「那个绿字没用」),只留主数字
-        out.push({ label: t('pulse.card.new14'), v: num(total), tip: t('pulse.card.new14.tip'), href: '/' })
-      }
-      // 在架天数按在架量加权(职业间直接平均会让 3 个岗的小职业和 3000 个岗的大职业等权)
-      const w = natOcc.filter((o) => o.avgDaysOpen != null && (o.openJobs ?? 0) > 0)
-      if (w.length) {
-        const days = w.reduce((a, o) => a + (o.avgDaysOpen as number) * (o.openJobs as number), 0) / w.reduce((a, o) => a + (o.openJobs as number), 0)
-        out.push({ label: t('pulse.card.days'), v: t('pulse.unit.days', { n: Math.round(days) }), tip: t('pulse.card.days.tip'), href: '/' })
-      }
+    if (stats.pulse.days != null) {
+      out.push({ label: t('pulse.card.days'), v: t('pulse.unit.days', { n: stats.pulse.days }), tip: t('pulse.card.days.tip'), href: '/' })
     }
     if (stats.total && stats.named != null) {
       out.push({ label: t('pulse.card.pnp'), v: num(stats.named), tip: t('pulse.card.pnp.tip'), href: '/?pnp=yes' })
     }
     return out
-  }, [natOcc, stats.total, stats.named, t])
+  }, [stats.total, stats.named, stats.pulse, t])
 
   // ── S4 省份照妖镜 ──
   const provRows = useMemo(() => (market?.rows ?? []).filter((r) => r.broad === 'all' && (r.mid === 'all' || !r.mid)), [market])
@@ -579,7 +593,12 @@ export function StartView({ stats }: { stats: HomeStats }) {
       <style>{`
         .plBand{padding:36px 0}
         .plBand h2{font-size:20px}
-        .plHero.plBand{padding:16px 0 26px}
+        /* hero 段:banner→卡 16px(plNums margin-top),卡→下段标题也收到 16px(08-09 Frank「卡片的
+           上下距离不一致」——原 26px 带底+下段 36/56px 顶 padding 叠出 60-80px);紧随 hero 的那段顶 padding 清零 */
+        .plHero.plBand{padding:16px 0}
+        .plHero+.plBand{padding-top:0}
+        /* #267 方案B:H1 文字只给读屏与搜索引擎,视觉不渲(标准 sr-only 裁剪法) */
+        .plSrOnly{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
         .plBtn{display:block;border-radius:8px;padding:12px 20px;font-size:14px;font-weight:600;text-align:center;cursor:pointer;text-decoration:none;border:none;font-family:inherit}
         /* S1 四脉象卡:banner 下方白卡(毛玻璃合并版 Frank 打回「放下来」),手机 2×2、桌面一行四等分 */
         /* 卡内容居中(Frank 08-06「都缩在左上角」),数字主、标签副;标签虚线=有悬停口径 */
@@ -604,7 +623,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
         @media (min-width:900px){
           .plBand{padding:56px 0}
           .plBand h2{font-size:24px}
-          .plHero.plBand{padding:16px 0 26px}
+          .plHero.plBand{padding:16px 0}
           .plNums{grid-template-columns:repeat(4,1fr);gap:10px}
           .plNums a{padding:22px 14px}
           .plNums b{font-size:32px}
@@ -638,16 +657,14 @@ export function StartView({ stats }: { stats: HomeStats }) {
             Frank 08-06「还是放下来吧」;副题口号已删,调性靠数字自己立) ── */}
         <div className="plBand plHero">
           <PageShell pad="0 1.25rem">
-            {/* banner 口号 08-07 Frank 拍板删(「你的下一步,用数据算出来」),纯图版;页 <title> 不受影响 */}
-            <PageBanner module="home" tall title={t('pulse.entry')} images={BANNER_IMGS.home} />
+            {/* banner 口号 08-07 Frank 拍板删(「你的下一步,用数据算出来」);图上叠页名 08-09 Frank
+                「这个文字是不是应该删了」→ 切 #267 方案B:视觉纯图,H1 文字 sr-only 保留(裸删=#267
+                空 H1 复发,SEO/无障碍双输);页 <title> 不受影响 */}
+            <PageBanner module="home" tall title={<span className="plSrOnly">{t('pulse.entry')}</span>} images={BANNER_IMGS.home} />
             {pulseCards.length > 0 && (
               <div className="plNums">
-                {pulseCards.map((c) => (c.ph
-                  ? <div key={c.label} style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '16px 12px' }}>
-                    <span style={{ width: 72, height: 20, borderRadius: 6, background: '#f1f3f5' }} />
-                    <span style={{ width: 96, height: 12, borderRadius: 6, background: '#f1f3f5' }} />
-                  </div>
-                  : <a key={c.label} href={c.href} className="cardHover" onClick={() => track('pulse_card_click')}>
+                {pulseCards.map((c) => (
+                  <a key={c.label} href={c.href} className="cardHover" onClick={() => track('pulse_card_click')}>
                     <b>{c.v}</b>
                     <span>{c.label}</span>
                     {c.sub ? <i style={{ color: c.subUp ? UI.ok : c.subDown ? UI.danger : UI.text2 }}>{c.sub}</i> : null}

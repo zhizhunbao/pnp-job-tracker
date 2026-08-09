@@ -1,6 +1,7 @@
 // E13-03 把脉首页(/start)—— 开始规划 + 榜单 + 地区统计**三合一**(设计:docs/implementation/E13-把脉首页/00_总设计与口径.md)。
 // 本页只做 SSR 取数:判决区的证据数(proof)、抽选表+冷解读、政策动态、省卡的 IRCC 体量与难度档、口径出处。
-// S1 的「近 14 天新发 + 环比」走 occ 全国行(客户端 /api/market-stats),不在这儿查;
+// S1 中间两卡(近 14 天新发/平均在架天数)08-09 起也在这儿算成两个标量下发(此前走客户端
+// /api/market-stats,刷新必闪一次骨架占位——Frank「中间两个数为什么会闪」);occ 大表本身仍不进 HTML。
 // 净值卡(在架存量差)按契约 v3 **本批不做** —— 排水期的存量下跌是数据清洗不是市场收缩(后置 E13-04)。
 // 红线:数字全部来自库内聚合查询,不写死;单项查询失败 → 该行/该块整条不渲染,绝不显示 0。
 // SSR 瘦身照旧:职业大表(occ ~3400 行,含 E13-03 派生列)不进 HTML,由 StartView 挂载后拉 /api/market-stats。
@@ -11,7 +12,7 @@ import config from '@/payload.config'
 import { getUser } from '@/lib/entitlement'
 import { checkedAt, fetchTotalAndProof } from '@/lib/jobsSql'
 import { normalizeProfile } from '@/lib/match'
-import { loadProvExtra } from '../stats/lib'
+import { loadOccStats, loadProvExtra } from '../stats/lib'
 import { PROVS } from '../stats/shared'
 import { StartView, type HomeStats } from './StartView'
 import { fetchSponsorEmployers } from '@/lib/sponsorEmployers'
@@ -71,20 +72,23 @@ async function occOptions(pool: any) {
   return occCache.rows
 }
 
-// 职业筛三级联动(大类→中类→小类,08-08 Frank「大类种类小类联动过滤要加上」)的中类英韩名——
-// 与职位板 JobsTable 同一张 noc_categories 维度表(~160 行,1h 进程缓存);大类沿用既有 i18n `broad.*`
-// 键(27 个已全译,不必再查),小类仍是既有「职业」下拉(occOptions 的 noc 标题),故只取 mid 这一层。
-let catCache: { ts: number; rows: { broad: string; mid: string; midEn: string; midKo: string }[] } | null = null
+// 职业筛联动(大类→中类→小类→职业,08-08 Frank「大类种类小类联动过滤要加上」;小类一级 08-09 补,
+// Frank「全部小类呢?」)的中/小类英韩名——与职位板 JobsTable 同一张 noc_categories 维度表
+// (一行=一个小类,1h 进程缓存);大类沿用既有 i18n `broad.*` 键(27 个已全译,不必再查)。
+let catCache: { ts: number; rows: { broad: string; mid: string; midEn: string; midKo: string; fine: string; fineEn: string; fineKo: string }[] } | null = null
 async function catOptions(payload: any) {
   if (catCache && Date.now() - catCache.ts < 3600_000) return catCache.rows
   const docs = await payload.find({ collection: 'noc-categories', limit: 1000, depth: 0 }).catch(() => ({ docs: [] }))
-  catCache = { ts: Date.now(), rows: docs.docs.map((c: any) => ({ broad: c.broad ?? '', mid: c.mid ?? '', midEn: c.midEn ?? '', midKo: c.midKo ?? '' })) }
+  catCache = { ts: Date.now(), rows: docs.docs.map((c: any) => ({
+    broad: c.broad ?? '', mid: c.mid ?? '', midEn: c.midEn ?? '', midKo: c.midKo ?? '',
+    fine: c.fine ?? '', fineEn: c.fineEn ?? '', fineKo: c.fineKo ?? '',
+  })) }
   return catCache.rows
 }
 
 async function loadHomeStats(pool: any, payload: any): Promise<Omit<HomeStats, 'checkedAt' | 'provPreset'>> {
   // 每项独立 .catch(null):一张表缺/查询挂只丢它自己那块,页面照常(宁可留空)
-  const [proof, drawRes, newsRes, provExtra, sponsorRows, occOpts, catMids] = await Promise.all([
+  const [proof, drawRes, newsRes, provExtra, sponsorRows, occOpts, catMids, occRows] = await Promise.all([
     fetchTotalAndProof(pool).catch(() => null),
     // 抽选表(与 /pathways 同源 pnp_draws):前端只展示 Top N(下拉 10/20/50),
     // 但冷解读要按通道回看 12 期 —— 多取一批只在服务端用完即丢,不进 HTML
@@ -102,7 +106,24 @@ async function loadHomeStats(pool: any, payload: any): Promise<Omit<HomeStats, '
     fetchSponsorEmployers(pool).catch(() => []),
     occOptions(pool).catch(() => []),
     catOptions(payload).catch(() => []),
+    // S1 两标量 + noc→分类映射的原料(单一真相源 stats/lib.loadOccStats,同 /api/market-stats);
+    // 挂了只丢中间两卡与分类联动,页面照常
+    loadOccStats().catch(() => []),
   ])
+  // S1 中间两卡:occ 全国行聚合成两个标量(逻辑原样自 StartView.pulseCards 下沉;缺列/缺数=null,卡整张不出)
+  const natOcc = occRows.filter((o) => (o.province || '').toLowerCase() === 'all')
+  const news14 = natOcc.map((o) => o.new14d).filter((v): v is number => v != null)
+  const new14 = news14.length ? news14.reduce((a, b) => a + b, 0) : null
+  // 在架天数按在架量加权(职业间直接平均会让 3 个岗的小职业和 3000 个岗的大职业等权)
+  const wRows = natOcc.filter((o) => o.avgDaysOpen != null && (o.openJobs ?? 0) > 0)
+  const days = wRows.length
+    ? Math.round(wRows.reduce((a, o) => a + (o.avgDaysOpen as number) * (o.openJobs as number), 0) / wRows.reduce((a, o) => a + (o.openJobs as number), 0))
+    : null
+  // 三分表职业筛联动 noc→大/中/小类:只带橱窗行真出现过的 NOC 下去(occ 全表仍不进 HTML)
+  const nocSet = new Set<string>()
+  for (const r of sponsorRows) for (const n of r.nocs ?? []) nocSet.add(n)
+  const nocCat: Record<string, { broad: string; mid: string; fine: string }> = {}
+  for (const o of occRows) if (o.broad && nocSet.has(o.noc) && !nocCat[o.noc]) nocCat[o.noc] = { broad: o.broad, mid: o.mid ?? '', fine: o.fine ?? '' }
   // Frank 08-08 三分表:对应三类人——没工签→LMIA、有工签→PNP 担保记录(省清单命中,二拍撤 LMIA 维)、想去海洋省→AIP
   type SR = (typeof sponsorRows)[number]
   // Frank 08-08「不要只显示 50 条」:货架页下架后橱窗即货架本体,三表全量装填客户端翻页。
@@ -131,6 +152,8 @@ async function loadHomeStats(pool: any, payload: any): Promise<Omit<HomeStats, '
     },
     occOpts,
     catMids,
+    pulse: { new14, days },
+    nocCat,
     draws: withDrawHistory(drawRes as RawDraw[], 50),
     news: (() => {
       // 同题去重带归一化:IRCC 同一稿隔日重发常只差尾部「(城市)」括注,精确比对抓不住

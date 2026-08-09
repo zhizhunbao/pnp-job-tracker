@@ -204,7 +204,9 @@ button:not(:disabled):hover {
 }
 
 .sbCtl {
-  height: 30px;
+  /* 30→38(2026-08-09 Frank「这两部分样式怎么不一样」):对齐职位板筛选控件规格(JobsTable ctrl),
+     手机断点的 min-height 44 触控靶不变 */
+  height: 38px;
 }
 
 .secFold {
