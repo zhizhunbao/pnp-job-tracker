@@ -200,7 +200,9 @@ def main() -> None:
             industries = json.loads(IN_INDUSTRY.read_text(encoding="utf-8")) if IN_INDUSTRY.exists() else {}
             cands = [r for r in todo if prev.get(r["name"], {}).get("src") == "none"
                      and not prev.get(r["name"], {}).get("brand_tried")]
-            print(f"brand 候选 {len(cands)} 家(批 {BRAND_BATCH};行业锚 {len(industries)} 条)", flush=True)
+            # 在招岗数降序:实测全量 ~37h,先把表首(用户真看见的)雇主跑出来,跑到哪儿都可交付
+            cands.sort(key=lambda r: -(r.get("open") or 0))
+            print(f"brand 候选 {len(cands)} 家(批 {BRAND_BATCH};行业锚 {len(industries)} 条;按在招岗数降序)", flush=True)
             for i in range(0, len(cands), BRAND_BATCH):
                 batch = cands[i:i + BRAND_BATCH]
                 got = brand_batch_translate(cl, batch, industries)
