@@ -103,6 +103,7 @@ async function readSse(
 export function ChatBox({ compact = false, autoFocus = false, prefill = '' }: { compact?: boolean; autoFocus?: boolean; prefill?: string } = {}) {
   const [lang, , t] = useLang()
   const [input, setInput] = useState('')
+  const [thCopied, setThCopied] = useState(false)   // 会话 ID 复制反馈(1.5s 回弹)
   useEffect(() => { if (prefill) setInput(prefill) }, [prefill])
   const [turns, setTurns] = useState<Turn[]>([])
   const [busy, setBusy] = useState(false)
@@ -339,6 +340,10 @@ export function ChatBox({ compact = false, autoFocus = false, prefill = '' }: { 
            **不写 max-width** —— 它挂着 .cbCol,读列宽归 --cbW 管;这里再写一条同特异性的
            max-width:100% 会因为在后面而赢掉,把它拉成满宽(实测 1074 vs 该有的 860)。 */
         .cbDisc{font-size:11.5px;line-height:1.5;color:${UI.text3};margin-top:6px}
+        /* 会话 ID:免责行末尾的等宽小字钮,点击复制(排查用,不喧宾) */
+        .cbThreadId{border:none;background:none;padding:0;margin-left:8px;font-size:11px;color:${UI.text3};
+          font-family:ui-monospace,Consolas,monospace;cursor:pointer;text-decoration:underline dotted}
+        .cbThreadId:hover{color:${UI.text2}}
         ${CHAT_ANSWER_CSS}
       `}</style>
 
@@ -483,7 +488,19 @@ export function ChatBox({ compact = false, autoFocus = false, prefill = '' }: { 
         {/* 免责一条,**全局只出现一次**(2026-08-05 从每条答复下面挪来:一轮铺三条就重复三遍,
             那是噪音不是合规)。钉在 composer 边上常驻 —— 说的是「这块框里的话是模型说的」,
             跟页脚那条全站免责不是一回事,所以不能只留页脚 */}
-        <div className="cbDisc cbCol">{t('advisor.disclaimer')}</div>
+        <div className="cbDisc cbCol">
+          {t('advisor.disclaimer')}
+          {/* 会话 ID(2026-08-09 Frank:「复制这个 ID 发给你,你就能帮我分析这段对话」):
+              =chat_logs.thread(首轮提问哈希,不指向人),点击复制;首轮答复落地后才有 */}
+          {(() => {
+            const th = [...turns].reverse().find((x) => x.a?.thread)?.a?.thread
+            return th ? (
+              <button className="cbThreadId" onClick={() => {
+                navigator.clipboard?.writeText(th).then(() => { setThCopied(true); setTimeout(() => setThCopied(false), 1500) }).catch(() => { /* 权限拒了不弹错 */ })
+              }}>{thCopied ? t('chat.threadCopied') : `${t('chat.thread')} ${th}`}</button>
+            ) : null
+          })()}
+        </div>
       </div>
     </div>
   )

@@ -568,6 +568,7 @@ const zh: Dict = {
   // 检索式的「查询 XX 省提名要求」不写:那是搜索框的说法,不是人开口的第一句
   'chat.try': '试试这样问',
   'chat.padVerdict': '按我的情况判一判走哪条路最快',
+  'chat.thread': '会话 ID', 'chat.threadCopied': '已复制',
   'chat.opt.rec': '推荐', 'chat.opt.self': '自行输入',
   // D4(对话闭环总设计-20260809 §2):匿名三句原样保留 ——
   // tests/int/chatPreset1-3.int.spec.ts 三份端到端回归把这三句原文当 fixture 常量硬编码并做
@@ -1488,6 +1489,7 @@ const en: Dict = {
   // 空态三条示例:真人开口的第一句,三类人各一条(刚毕业没工作 / 有 offer / 中介开价)
   'chat.try': 'Try asking',
   'chat.padVerdict': 'Which pathway is fastest for my situation?',
+  'chat.thread': 'Conversation ID', 'chat.threadCopied': 'Copied',
   'chat.opt.rec': 'Recommended', 'chat.opt.self': 'Type my own answer',
   'chat.ex1': 'Ontario college grad, software dev, no job yet — can I stay?',
   'chat.ex2': 'A Nova Scotia restaurant gave me a cook offer and says it will help with the nomination. Can I trust that?',
@@ -2370,6 +2372,7 @@ const ko: Dict = {
   // 빈 화면 예시 3개:실제 사람이 처음 꺼내는 한 문장(졸업 직후 / 오퍼 보유 / 에이전트 견적)
   'chat.try': '이렇게 물어보세요',
   'chat.padVerdict': '제 상황이면 어느 경로로 가야 하나요?',
+  'chat.thread': '대화 ID', 'chat.threadCopied': '복사됨',
   'chat.opt.rec': '추천', 'chat.opt.self': '직접 입력',
   'chat.ex1': '온타리오 컬리지 졸업, 소프트웨어 개발자, 아직 무직인데 남을 수 있나요?',
   'chat.ex2': '노바스코샤 식당에서 요리사 오퍼를 받았고 고용주가 주정부 지명을 도와준다고 합니다. 믿어도 될까요?',

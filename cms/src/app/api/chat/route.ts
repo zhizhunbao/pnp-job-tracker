@@ -30,7 +30,7 @@ import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import { logChat } from '@/lib/chatLog'
+import { logChat, threadId } from '@/lib/chatLog'
 import { ChatError, orchestrate, profileFill, type ChatLang, type ChatResult, type ChatStep, type ChatTurn } from '@/lib/chatOrchestrate'
 import { getUser } from '@/lib/entitlement'
 import { freeGate } from '@/lib/freeQuota'
@@ -144,7 +144,8 @@ export async function POST(req: Request) {
     const ok = await fillProfile(early.ok)          // 留痕存的是**他真正看到的**那段(含尾行)
     log({ ok })
     console.log(`[chat] ok(json) noc=${ok.slots.noc} facts=${ok.facts.length} in=${text.length}ch`)
-    return Response.json(ok, { headers: g.headers })
+    // thread = chat_logs 的同名串 ID(首轮提问哈希,不指向人):面板显示+复制,拿它能从留痕里拉整串对话
+    return Response.json({ ...ok, thread: threadId(text, history) }, { headers: g.headers })
   }
 
   const stream = new ReadableStream<Uint8Array>({
@@ -156,7 +157,7 @@ export async function POST(req: Request) {
         const ok = await fillProfile(d.ok)
         log({ ok })
         console.log(`[chat] ok(sse) noc=${ok.slots.noc} facts=${ok.facts.length} in=${text.length}ch`)
-        c.enqueue(sse(ok))
+        c.enqueue(sse({ ...ok, thread: threadId(text, history) }))
       } else {
         log(d)
         // 开流之后才出的故障(合成挂掉 / guard 无 facts 可退):状态码已经发不出去了,给错误事件,

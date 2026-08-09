@@ -27,6 +27,7 @@ export type AnswerOption = { label: string; consequence?: string; sendText: stri
 export type Answer = {
   answer: string; slots?: Record<string, unknown>; facts?: Fact[]; followups?: string[]
   options?: { reason: string; items: AnswerOption[] }
+  thread?: string   // chat_logs 同名串 ID(首轮提问哈希):面板显示+复制,拿它可从留痕拉整串对话排查
   degraded?: boolean
 }
 
