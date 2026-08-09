@@ -71,9 +71,20 @@ async function occOptions(pool: any) {
   return occCache.rows
 }
 
-async function loadHomeStats(pool: any): Promise<Omit<HomeStats, 'checkedAt' | 'provPreset'>> {
+// 职业筛三级联动(大类→中类→小类,08-08 Frank「大类种类小类联动过滤要加上」)的中类英韩名——
+// 与职位板 JobsTable 同一张 noc_categories 维度表(~160 行,1h 进程缓存);大类沿用既有 i18n `broad.*`
+// 键(27 个已全译,不必再查),小类仍是既有「职业」下拉(occOptions 的 noc 标题),故只取 mid 这一层。
+let catCache: { ts: number; rows: { broad: string; mid: string; midEn: string; midKo: string }[] } | null = null
+async function catOptions(payload: any) {
+  if (catCache && Date.now() - catCache.ts < 3600_000) return catCache.rows
+  const docs = await payload.find({ collection: 'noc-categories', limit: 1000, depth: 0 }).catch(() => ({ docs: [] }))
+  catCache = { ts: Date.now(), rows: docs.docs.map((c: any) => ({ broad: c.broad ?? '', mid: c.mid ?? '', midEn: c.midEn ?? '', midKo: c.midKo ?? '' })) }
+  return catCache.rows
+}
+
+async function loadHomeStats(pool: any, payload: any): Promise<Omit<HomeStats, 'checkedAt' | 'provPreset'>> {
   // 每项独立 .catch(null):一张表缺/查询挂只丢它自己那块,页面照常(宁可留空)
-  const [proof, drawRes, newsRes, provExtra, sponsorRows, occOpts] = await Promise.all([
+  const [proof, drawRes, newsRes, provExtra, sponsorRows, occOpts, catMids] = await Promise.all([
     fetchTotalAndProof(pool).catch(() => null),
     // 抽选表(与 /pathways 同源 pnp_draws):前端只展示 Top N(下拉 10/20/50),
     // 但冷解读要按通道回看 12 期 —— 多取一批只在服务端用完即丢,不进 HTML
@@ -90,6 +101,7 @@ async function loadHomeStats(pool: any): Promise<Omit<HomeStats, 'checkedAt' | '
     // B2+ 雇主橱窗:复用进程内聚合缓存(同进程同一份,零额外查询);挂了只丢橱窗
     fetchSponsorEmployers(pool).catch(() => []),
     occOptions(pool).catch(() => []),
+    catOptions(payload).catch(() => []),
   ])
   // Frank 08-08 三分表:对应三类人——没工签→LMIA、有工签→PNP 担保记录(省清单命中,二拍撤 LMIA 维)、想去海洋省→AIP
   type SR = (typeof sponsorRows)[number]
@@ -110,6 +122,7 @@ async function loadHomeStats(pool: any): Promise<Omit<HomeStats, 'checkedAt' | '
       aip: seSlice(sponsorRows, (r) => r.aip),
     },
     occOpts,
+    catMids,
     draws: withDrawHistory(drawRes as RawDraw[], 50),
     news: (() => {
       // 同题去重带归一化:IRCC 同一稿隔日重发常只差尾部「(城市)」括注,精确比对抓不住
@@ -128,7 +141,7 @@ export default async function StartPage() {
   const payload = await getPayload({ config: await config })
   const pool = (payload.db as any).pool
   if (!homeCache || Date.now() - homeCache.ts >= HOME_TTL) {
-    homeCache = { v: await loadHomeStats(pool), ts: Date.now() }
+    homeCache = { v: await loadHomeStats(pool, payload), ts: Date.now() }
   }
   // S4 省份预选(设计 §1 拍板 4):**已建档按档案省,匿名默认 ON —— 不许按 IP 判**
   // (站内零 geo 能力,且主力受众在境外;同 i18n「不许按 IP 判语言」同族红线)。

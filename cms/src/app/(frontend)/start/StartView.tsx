@@ -19,7 +19,7 @@ import { useLang } from '../LangProvider'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { MarketChart, useMarketStats } from '../stats/charts'
-import { PROVS, PROV_NAME, type OccRow, type ProvExtra, type StatRow } from '../stats/shared'
+import { BROAD_SLUGS, PROVS, PROV_NAME, type OccRow, type ProvExtra, type StatRow } from '../stats/shared'
 import { shortOcc } from '../quiz/EntryQuiz'
 import { JobCard } from '../ui/JobCard'
 import { DataTable, DTPager, type DTCol } from '../ui/DataTable'
@@ -42,6 +42,7 @@ export type HomeStats = {
   // B2+ 雇主橱窗三分表(Frank 08-08:没工签→LMIA/有工签→PNP 担保记录/海洋省→AIP;货架页已下架,此处即唯一承载)
   sponsor: { lmia: { top: SponsorEmployerRow[]; total: number }; named: { top: SponsorEmployerRow[]; total: number }; aip: { top: SponsorEmployerRow[]; total: number } }
   occOpts: { noc: string; title: string; titleZh: string }[]   // 橱窗职业筛 datalist 候选(noc_descriptions,~500 行)
+  catMids: { broad: string; mid: string; midEn: string; midKo: string }[]   // 职业筛三级联动的中类英韩名(noc_categories,~160 行)
   provExtra: Record<string, ProvExtra>            // S4 省卡:IRCC 体量 + 难度档
   provPreset: string                              // S4 预选省(档案省;匿名为空 → 默认 ON。禁 IP 定位)
   checkedAt: string
@@ -100,7 +101,8 @@ function Band({ bg, id, children }: { bg?: string; id?: string; children: React.
 
 // 08-08 Frank「首页太长,每个 section 给个折叠」:h2 即开关(▾/▸),状态记 localStorage;
 // right=标题行右侧控件(TopN/链接),点它不折叠
-function Sec({ id, title, right, children }: { id: string; title: React.ReactNode; right?: React.ReactNode; children: React.ReactNode }) {
+// sub=伞标题下的子标题(08-08 二次拍板「二级导航和下面对不上」):字号降一档,与「政策动态」既有 h3(15px)同precedent
+function Sec({ id, title, right, children, sub }: { id: string; title: React.ReactNode; right?: React.ReactNode; children: React.ReactNode; sub?: boolean }) {
   const [open, setOpen] = useState(true)
   useEffect(() => { try { if (localStorage.getItem('pl.fold.' + id) === '0') setOpen(false) } catch { /* ignore */ } }, [id])
   const toggle = () => setOpen((v) => { const n = !v; try { localStorage.setItem('pl.fold.' + id, n ? '1' : '0') } catch { /* ignore */ } ; return n })
@@ -108,7 +110,7 @@ function Sec({ id, title, right, children }: { id: string; title: React.ReactNod
     <div>
       {/* 折叠开关=只点箭头(Frank 08-08 二拍;此前整行 onClick 连右侧空白都触发);padding 撑触控靶。
           #276:padding/margin 移交 .secFold(styles.css)——手机断点单独抬到 ≥44px,桌面值原样不动 */}
-      <h2 style={{ ...secH, margin: '0 0 10px' }}>
+      <h2 style={{ ...secH, margin: sub ? '0 0 8px' : '0 0 10px', ...(sub ? { fontSize: 15 } : {}) }}>
         {title}
         <span onClick={toggle} className="secFold" style={{ color: '#9ca3af', fontSize: 14, cursor: 'pointer', userSelect: 'none' }}>{open ? '▾' : '▸'}</span>
         {right ? <span style={hmRight}>{right}</span> : null}
@@ -120,18 +122,21 @@ function Sec({ id, title, right, children }: { id: string; title: React.ReactNod
 
 // 雇主橱窗单表(Frank 08-08「加分页」+「每表加筛选条件」+「按逻辑重新设计」):桌面 DataTable 翻页(10/页),
 // 手机卡 5/页;全量已在客户端 → 筛选纯前端,控件一行等高 30 照职位板站规(#282 教训)。
-// 每表按人群逻辑配筛选:
-//   lmia(没工签找肯办 LMIA 的雇主):职业 → 省 → 只看技能类(治农业季节工霸榜)→ 搜名;
-//   named(有工签打包省提名):省(省提名绑省,居首)→ 清单 → 职业 → 搜名;
-//   aip(奔大西洋):省 → 职业 → 搜名。
-function SponsorBoard({ rows, kind, t, lang, total, occOpts }: { rows: SponsorEmployerRow[]; kind: SponsorKind; t: TFn; lang: Lang; total: number; occOpts: HomeStats['occOpts'] }) {
+// 每表按人群逻辑配筛选(职业筛 08-08 Frank「大类种类小类联动过滤要加上」升级成大类→中类→小类三级联动,
+//   形态/词汇与职位板 JobsTable 的 broad/mid/fine 一致;小类即原「职业」下拉,按雇主数排序的既有逻辑不变):
+//   lmia(没工签找肯办 LMIA 的雇主):职业(大类→中类→小类)→ 省 → 只看技能类(治农业季节工霸榜)→ 搜名;
+//   named(有工签打包省提名):省(省提名绑省,居首)→ 清单 → 职业(大类→中类→小类)→ 搜名;
+//   aip(奔大西洋):省 → 职业(大类→中类→小类)→ 搜名。
+function SponsorBoard({ rows, kind, t, lang, total, occOpts, catMids, nocCat }: { rows: SponsorEmployerRow[]; kind: SponsorKind; t: TFn; lang: Lang; total: number; occOpts: HomeStats['occOpts']; catMids: HomeStats['catMids']; nocCat: Map<string, { broad: string; mid: string }> }) {
   const PAGE = 5
   const [p, setP] = useState(0)
   const [fProv, setFProv] = useState('')
   const [fStream, setFStream] = useState('')
+  const [fBroad, setFBroad] = useState('')
+  const [fMid, setFMid] = useState('')
   const [fNoc, setFNoc] = useState('')
   const [skilled, setSkilled] = useState(false)
-  useEffect(() => { setP(0) }, [fProv, fStream, fNoc, skilled])
+  useEffect(() => { setP(0) }, [fProv, fStream, fBroad, fMid, fNoc, skilled])
   const provOpts = useMemo(() => Array.from(new Set(rows.flatMap((r) => r.provs))).sort((a, b) => {
     const ia = PROVS.indexOf(a), ib = PROVS.indexOf(b)
     return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib)
@@ -139,8 +144,10 @@ function SponsorBoard({ rows, kind, t, lang, total, occOpts }: { rows: SponsorEm
   const streamOpts = useMemo(() => (kind === 'named' ? Array.from(new Set(rows.flatMap((r) => r.streams))).sort() : []), [kind, rows])
   const shown = useMemo(() => rows.filter((r) => (!fProv || r.provs.includes(fProv))
     && (!fStream || r.streams.includes(fStream))
+    && (!fBroad || r.nocs.some((n) => nocCat.get(n)?.broad === fBroad))
+    && (!fMid || r.nocs.some((n) => nocCat.get(n)?.mid === fMid))
     && (!fNoc || r.nocs.includes(fNoc))
-    && (!skilled || (r.lmiaPositionsSkilled ?? 0) > 0)), [rows, fProv, fStream, fNoc, skilled])
+    && (!skilled || (r.lmiaPositionsSkilled ?? 0) > 0)), [rows, fProv, fStream, fBroad, fMid, fNoc, skilled, nocCat])
   const maxPage = Math.max(1, Math.ceil(shown.length / PAGE))
   const note = shown.length !== total ? t('pulse.hitEmp', { m: num(shown.length), n: num(total) }) : t('pulse.totalEmp', { n: num(total) })
   // 省下拉只显本语言全名(Frank 08-08「全部省那么宽吗」——双语并排把控件撑到 460px,单语即窄);
@@ -160,14 +167,50 @@ function SponsorBoard({ rows, kind, t, lang, total, occOpts }: { rows: SponsorEm
       {streamOpts.map((s) => <option key={s} value={s}>{streamDisplay(t, s)}</option>)}
     </select>
   ) : null
-  // 职业筛=纯点选(Frank 08-08「手机上也没办法敲字」):选项只列本表真实存在的职业,按雇主数倒序,
-  // 常用职业置顶;字典缺题名的码原样兜底(不因缺翻译丢筛选项)
+  // 职业筛三级联动(08-08 Frank「大类种类小类联动过滤要加上」,与职位板 JobsTable 同套形态):
+  // 大类/中类=纯点选、选项只列本表真实存在的分类(小样本橱窗表不比全量职位板,摆满 89 个中类全是死选项);
+  // 大类沿用职位板顺序(BROAD_SLUGS/etl/noc_buckets),中类英韩名来自 noc_categories(catMids)。
+  const broadOpts = useMemo(() => {
+    const order = new Map(BROAD_SLUGS.map(([, b], i) => [b, i]))
+    const set = new Set<string>()
+    rows.forEach((r) => r.nocs.forEach((n) => { const b = nocCat.get(n)?.broad; if (b) set.add(b) }))
+    return [...set].sort((a, b) => (order.get(a) ?? 99) - (order.get(b) ?? 99))
+  }, [rows, nocCat])
+  const midOpts = useMemo(() => {
+    const set = new Set<string>()
+    rows.forEach((r) => r.nocs.forEach((n) => {
+      const c = nocCat.get(n)
+      if (c?.mid && (!fBroad || c.broad === fBroad)) set.add(c.mid)
+    }))
+    return [...set].sort()
+  }, [rows, nocCat, fBroad])
+  const catMidMap = useMemo(() => new Map(catMids.map((r) => [r.mid, r])), [catMids])
+  const midLabel = (m: string) => (lang === 'zh' ? m : (catMidMap.get(m)?.[lang === 'ko' ? 'midKo' : 'midEn'] || m))
+  const broadSel = (
+    <select key="broad" className="sbCtl" value={fBroad} onChange={(e) => { setFBroad(e.target.value); setFMid(''); setFNoc('') }} style={ctl}>
+      <option value="">{t('all.broad')}</option>
+      {broadOpts.map((b) => <option key={b} value={b}>{b === '未分类' ? t('cell.uncat') : t('broad.' + b)}</option>)}
+    </select>
+  )
+  const midSel = (
+    <select key="mid" className="sbCtl" value={fMid} onChange={(e) => { setFMid(e.target.value); setFNoc('') }} style={ctl}>
+      <option value="">{t('all.mid')}</option>
+      {midOpts.map((m) => <option key={m} value={m}>{midLabel(m)}</option>)}
+    </select>
+  )
+  // 职业(小类)筛=纯点选(Frank 08-08「手机上也没办法敲字」):选项只列本表真实存在的职业,按雇主数倒序,
+  // 常用职业置顶;字典缺题名的码原样兜底(不因缺翻译丢筛选项);受上两级大类/中类联动收窄
   const occSel = useMemo(() => {
     const cnt = new Map<string, number>()
-    rows.forEach((r) => r.nocs.forEach((n) => cnt.set(n, (cnt.get(n) ?? 0) + 1)))
+    rows.forEach((r) => r.nocs.forEach((n) => {
+      const c = nocCat.get(n)
+      if (fBroad && c?.broad !== fBroad) return
+      if (fMid && c?.mid !== fMid) return
+      cnt.set(n, (cnt.get(n) ?? 0) + 1)
+    }))
     const title = new Map(occOpts.map((o) => [o.noc, lang === 'zh' && o.titleZh ? o.titleZh : o.title]))
     return [...cnt.entries()].sort((a, b) => b[1] - a[1]).map(([n]) => ({ noc: n, label: title.get(n) || n }))
-  }, [rows, occOpts, lang])
+  }, [rows, occOpts, lang, nocCat, fBroad, fMid])
   const occInput = (
     <select key="occ" className="sbCtl" value={fNoc} onChange={(e) => setFNoc(e.target.value)} style={ctl}>
       <option value="">{t('se.allOcc')}</option>
@@ -181,9 +224,9 @@ function SponsorBoard({ rows, kind, t, lang, total, occOpts }: { rows: SponsorEm
     </button>
   ) : null
   // 搜雇主名文本框 08-08 拍掉(「文本框是干啥的」+手机零打字):筛选全点选
-  const controls = kind === 'lmia' ? [occInput, provSel, skilledBtn]
-    : kind === 'named' ? [provSel, streamSel, occInput]
-      : [provSel, occInput]
+  const controls = kind === 'lmia' ? [broadSel, midSel, occInput, provSel, skilledBtn]
+    : kind === 'named' ? [provSel, streamSel, broadSel, midSel, occInput]
+      : [provSel, broadSel, midSel, occInput]
   return (
     <>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '0 0 10px' }}>{controls}</div>
@@ -195,6 +238,17 @@ function SponsorBoard({ rows, kind, t, lang, total, occOpts }: { rows: SponsorEm
       </div>
     </>
   )
+}
+
+// 08-08 Frank 追加「表管事实,人话归对话」:三分表各挂一个对话导流钮,挂在表题旁(Sec 的 right 槽,
+// 与 S5 TopN/链接同一处理);行为复刻 C6 通道卡 PathwaysCard.openChat 的既有写法(o2p:chat-open + prefill),
+// 不自造事件;预填问句只填框,绝不代发送。
+function AskChatBtn({ kind, t }: { kind: SponsorKind; t: TFn }) {
+  const open = () => {
+    track('se-ask-chat')
+    window.dispatchEvent(new CustomEvent('o2p:chat-open', { detail: { prefill: t('se.ask.' + kind) } }))
+  }
+  return <button onClick={open} className="seAsk">{t('se.askChat')}</button>
 }
 
 // 条数下拉:抽选表与政策动态共用一把(数据 SSR 已多取,前端只切片)
@@ -407,6 +461,15 @@ export function StartView({ stats }: { stats: HomeStats }) {
     }
     return m
   }, [market])
+  // NOC → 大类/中类(08-08 Frank「大类种类小类联动过滤要加上」):三分表职业筛三级联动要用,
+  // 复用 /api/market-stats 已拉到的 occ 行(自带 broad/mid,禁新开 API 单独查分类映射)
+  const nocCat = useMemo(() => {
+    const m = new Map<string, { broad: string; mid: string }>()
+    if (market) for (const o of market.occ) {
+      if (!m.has(o.noc) && o.broad) m.set(o.noc, { broad: o.broad, mid: o.mid })
+    }
+    return m
+  }, [market])
 
   // 三榜分层(Frank 08-06 深夜拍板,口径 08-06 二改):判据 = **省具名紧缺清单命中**(namedJobs),
   // ≠「有无 PNP 通道」——排除式省(AB;ON 改制后全职业可)和雇主担保类通用通道不进 namedJobs
@@ -530,6 +593,8 @@ export function StartView({ stats }: { stats: HomeStats }) {
         .plProvCards{display:grid;grid-template-columns:repeat(auto-fill, minmax(min(100%, 250px), 1fr));gap:10px;margin:12px 0 0}
         .plProvCards button{text-align:left;font-family:inherit;cursor:pointer}
         .plCta{display:flex;flex-direction:column;gap:12px}
+        /* 08-08 追加对话导流钮(三分表表题旁):默认(手机)触控靶 ≥44px,桌面收紧(字号不动,同 secFold/sbCtl 手法) */
+        .seAsk{font-size:12.5px;font-weight:600;color:${UI.primary};background:none;border:none;cursor:pointer;padding:4px 2px;font-family:inherit;white-space:nowrap;display:inline-flex;align-items:center;min-height:44px}
         @media (min-width:900px){
           .plBand{padding:56px 0}
           .plBand h2{font-size:24px}
@@ -543,6 +608,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
           .plBtn{padding:13px 28px;font-size:15px}
           .plCta{flex-direction:row;align-items:center}
           .plCta .plBtn{flex:0 0 auto;padding:12px 28px}
+          .seAsk{min-height:auto}
         }`}</style>
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="start" />
       {/* 二级导航条(08-08 Frank):分区锚点直跳;粘顶,375 横向滚动 */}
@@ -585,17 +651,22 @@ export function StartView({ stats }: { stats: HomeStats }) {
         </div>
 
         {/* ── 在招担保雇主橱窗三分表(Frank 08-08:按人群拆+分页——每表 50 行,桌面 10/页,手机卡 5/页;
-            列组=每表只描述自己那条通道;货架页与「看全部」钮 08-08 拍板下架,橱窗即唯一承载)── */}
+            列组=每表只描述自己那条通道;货架页与「看全部」钮 08-08 拍板下架,橱窗即唯一承载)。
+            伞标题(08-08 二次拍板「二级导航和下面对不上」):外层 Sec 文字与二级导航项「在招担保雇主」
+            (se.title)完全一致,原三张表各自的表题降级为 sub 子标题 ── */}
         <Band id="pl-se">
-          {([['lmia', stats.sponsor.lmia], ['named', stats.sponsor.named], ['aip', stats.sponsor.aip]] as [string, { top: SponsorEmployerRow[]; total: number }][]).map(([k, grp], idx) => (
-            grp.top.length > 0 ? (
-              <div key={k} style={{ marginTop: idx === 0 ? 0 : 24 }}>
-                <Sec id={'se-' + k} title={t('se.grp.' + k)}>
-                  <SponsorBoard rows={grp.top} kind={k as SponsorKind} t={t} lang={lang} total={grp.total} occOpts={stats.occOpts} />
-                </Sec>
-              </div>
-            ) : null
-          ))}
+          <Sec id="pl-se-um" title={t('se.title')}>
+            {([['lmia', stats.sponsor.lmia], ['named', stats.sponsor.named], ['aip', stats.sponsor.aip]] as [string, { top: SponsorEmployerRow[]; total: number }][]).map(([k, grp], idx) => (
+              grp.top.length > 0 ? (
+                <div key={k} style={{ marginTop: idx === 0 ? 0 : 24 }}>
+                  {/* 08-08 追加「表管事实,人话归对话」:表题旁挂对话导流钮,三张统一形态 */}
+                  <Sec id={'se-' + k} title={t('se.grp.' + k)} right={<AskChatBtn kind={k as SponsorKind} t={t} />} sub>
+                    <SponsorBoard rows={grp.top} kind={k as SponsorKind} t={t} lang={lang} total={grp.total} occOpts={stats.occOpts} catMids={stats.catMids} nocCat={nocCat} />
+                  </Sec>
+                </div>
+              ) : null
+            ))}
+          </Sec>
         </Band>
 
         {/* ── S2 三榜分层(按用户决策顺序):先排除(无通道)→ 有通道但在降温 → 有通道且在升温。
@@ -603,6 +674,9 @@ export function StartView({ stats }: { stats: HomeStats }) {
             数据到了但榜全空才整块不渲染(绝不拿存量榜顶包) */}
         {(boards === null || boards.mine.length > 0 || boards.backup.length > 0 || boards.cooling.length > 0 || boards.heating.length > 0) && (
           <Band bg="#fff" id="pl-boards">
+            {/* 伞标题(08-08 二次拍板):外层 Sec 文字与二级导航项「职业榜」(pulse.nav.boards)完全一致,
+                四张分榜各自的题(没上紧缺清单的职业 / 上了紧缺清单但岗位在减 / …)降级为 sub 子标题 */}
+            <Sec id="pl-boards-um" title={t('pulse.nav.boards')}>
             {/* 口径说明句与悬停提示 08-06 全撤(Frank「tooltips 都去掉」),榜题裸标题 */}
             {boards === null && (
               <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, height: 480 }} />
@@ -612,14 +686,14 @@ export function StartView({ stats }: { stats: HomeStats }) {
                 QC/RCIP 两行灰注 08-08 Frank「删掉」 */}
             {boards !== null && boards.mine.length > 0 && (
               <div>
-                <Sec id="b1a" title={t('pulse.b1a')}>
+                <Sec id="b1a" title={t('pulse.b1a')} sub>
                   <OccBoard rows={boards.mine} t={t} lang={lang} nocProvs={nocProvs} showProvs={false} deadCol />
                 </Sec>
               </div>
             )}
             {boards !== null && boards.backup.length > 0 && (
               <div style={{ marginTop: boards.mine.length > 0 ? 28 : 0 }}>
-                <Sec id="b1" title={t('pulse.b1')}>
+                <Sec id="b1" title={t('pulse.b1')} sub>
                   <OccBoard rows={boards.backup} t={t} lang={lang} nocProvs={nocProvs} showProvs={false} />
                 </Sec>
               </div>
@@ -627,18 +701,19 @@ export function StartView({ stats }: { stats: HomeStats }) {
             {boards !== null && boards.cooling.length > 0 && (
               <div style={{ marginTop: 28 }}>
                 {/* 08-08 Frank:榜题带涨跌箭头(收缩红↓/增长绿↑) */}
-                <Sec id="b2" title={<>{t('pulse.b2')} <span style={{ color: UI.danger }}>↓</span></>}>
+                <Sec id="b2" title={<>{t('pulse.b2')} <span style={{ color: UI.danger }}>↓</span></>} sub>
                   <OccBoard rows={boards.cooling} t={t} lang={lang} nocProvs={nocProvs} />
                 </Sec>
               </div>
             )}
             {boards !== null && boards.heating.length > 0 && (
               <div style={{ marginTop: 28 }}>
-                <Sec id="b3" title={<>{t('pulse.b3')} <span style={{ color: UI.ok }}>↑</span></>}>
+                <Sec id="b3" title={<>{t('pulse.b3')} <span style={{ color: UI.ok }}>↑</span></>} sub>
                   <OccBoard rows={boards.heating} t={t} lang={lang} nocProvs={nocProvs} />
                 </Sec>
               </div>
             )}
+            </Sec>
           </Band>
         )}
 
