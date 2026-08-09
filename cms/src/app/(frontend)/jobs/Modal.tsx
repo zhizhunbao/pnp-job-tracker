@@ -22,7 +22,8 @@ export const MODAL_RADIUS = 14
 export const MODAL_SHADOW = '0 24px 60px rgba(0,0,0,.3)'
 // 纯遮罩(不含居中布局):顾问弹框的自由定位面板也铺这层
 export const SCRIM: React.CSSProperties = { position: 'fixed', inset: 0, background: 'rgba(17,24,39,.5)' }
-export const CARD: React.CSSProperties = { position: 'relative', background: '#fff', borderRadius: MODAL_RADIUS, boxShadow: MODAL_SHADOW }
+// overscrollBehavior:弹框滚到边界不把滚动传给背景页(2026-08-09 Frank:「滚轮只控制弹框」)
+export const CARD: React.CSSProperties = { position: 'relative', background: '#fff', borderRadius: MODAL_RADIUS, boxShadow: MODAL_SHADOW, overscrollBehavior: 'contain' }
 // 头部图标钮(关闭/全屏):统一 30×30
 export const iconBtnS: React.CSSProperties = {
   border: 'none', background: '#f3f4f6', borderRadius: 8, width: 30, height: 30,

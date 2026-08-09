@@ -140,8 +140,8 @@ export function ChatAnswer({ a, busy, onAsk }: { a: Answer; busy: boolean; onAsk
         <button className={vote === 'bad' ? 'cbAct cbVoted' : 'cbAct'} disabled={!!vote}
           aria-label={t('chat.fb.bad')} title={t('chat.fb.bad')} aria-pressed={vote === 'bad'}
           onClick={() => rate('bad')}><IconThumbDown size={16} /></button>
-        {/* 点过就收 —— 留着只会被反复点,而且「已经回答过的问题还在问」是最招人烦的一种 UI */}
-        {!vote && <span className="cbAsk">{t('chat.fb.ask')}</span>}
+        {/* 「解决了你的问题吗?」问句 2026-08-09 Frank 拍板撤掉:图标自解释(title/aria 三语还在),
+            文字只把操作条拉宽。 */}
       </div>
 
       {/* 出处:<details> 原生折叠(零依赖、键盘可达)。默认收起 —— 一上来铺 8 行数字表会把结论压没了,
@@ -215,7 +215,8 @@ export const CHAT_ANSWER_CSS = `
      线程是 overflow:auto 的,伸到容器左边以外会被裁掉半个命中区。glyph 因此比正文缩进约 12px,
      跟项目符号的 14px 悬挂缩进正好同一档,看着是对齐的。
      flex-wrap:375 上问句放不下就折到第二行,绝不横滚 */
-  .cbActs{display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px;margin-top:2px}
+  /* gap 8→0:三钮各自 40×40 触控靶(#276 底线)已经互留了足够空隙,再加 gap 图标就散了(08-09 Frank) */
+  .cbActs{display:flex;flex-wrap:wrap;align-items:center;gap:2px 0;margin-top:2px}
   .cbAct{width:40px;height:40px;flex:none;display:inline-flex;align-items:center;justify-content:center;
     background:none;border:none;border-radius:8px;color:${UI.text3};cursor:pointer}
   .cbAct:hover:not(:disabled){color:${UI.text2};background:${UI.hairline}}
@@ -224,7 +225,6 @@ export const CHAT_ANSWER_CSS = `
   .cbAct:disabled:not(.cbVoted){opacity:.35}
   .cbVoted{color:${UI.primary}}
   /* 轻问一句,不是长句(站规:UI 文案一行放下、无废话)。跟图标同一条基线,不另起一行占版面 */
-  .cbAsk{font-size:12px;line-height:1.5;color:${UI.text3};margin-left:2px}
   .cbSrc{margin-top:12px;border-top:1px solid ${UI.hairline};padding-top:8px}
   .cbSrc>summary{list-style:none;cursor:pointer;font-size:12px;font-weight:600;color:${UI.text2};display:inline-flex;align-items:center;gap:6px;padding:2px 0}
   .cbSrc>summary::-webkit-details-marker{display:none}

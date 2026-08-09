@@ -254,6 +254,8 @@ export function ChatBox({ compact = false, autoFocus = false, prefill = '' }: { 
         .cbFill .cbCard{flex:1;min-height:0;border:none;border-radius:0;padding:0;background:transparent}
         .cbFill .cbThread{flex:1;min-height:0;max-height:none}
         .cbFill .cbThread.cbNoScroll{overflow-y:auto}   /* 空态在挂件里也要能滚(面板矮时三条示例放不下) */
+        /* 滚轮只控制读列,滚到底不带动背景页(与弹框 CARD 同规矩,08-09 Frank) */
+        .cbThread{overscroll-behavior:contain}
         .cbTurn{display:flex;flex-direction:column;gap:8px;min-width:0}
         /* 提问气泡:靠右、封顶宽。**气泡只给用户消息** —— AI 答复满宽无气泡(见 CHAT_ANSWER_CSS .cbA),
            长答复套气泡是可读性杀手。字号跟正文同一档(15/1.625),不然一问一答两种字看着像两个网站 */

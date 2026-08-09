@@ -31,8 +31,24 @@
 >   fed-aip crawl 深度 2→3 补爬 6 明细页(eligibility 是索引页,照 fed-ee 先例);raw 字符串 value 由
 >   09 既有闸折 valueCode。build_pnp_requirements 单独重算 264→300 行既有零变。
 >   **⏭️ 尾验一件:push 后首个整点批重算 mart+seed,生产 `pnp_requirements` program='AIP' 应 0→36 行**。
+> - **✅ 组稿闸门批**(`8a97171`,Frank「可以继续吧」放行):逐句闸+两道确定性硬拦——闸A 归因闸
+>   (第二人称陈述态属性断言槽空即拦,要求态豁免)+闸B 派生数单位闸(数字+单位类须在 facts/echo
+>   同数字相容语境,堵 echo「CLB 6」放行「6 months」);金标=终验三句病灶原文;误杀实证=真 LLM 金标
+>   带闸/去闸日志 diff 逐字相同。
+> - **✅ 生产终验(deploy 07:26 live 后)**:D1 用法句生产直答;三态示例生产实渲(batab 测试号③档
+>   三句全档案生成);六句预设逐句读全文=四句合格、一句诚实降级、**一句抓出真 bug:「33102 (PSW)」
+>   裸码开头被抽槽模型抄成 31102**——literalNoc 只认「NOC」打头(NOC_IN_TEXT),occProv/occCmp 模板
+>   补「NOC 」前缀修死+literalNoc 回归断言进 chatExamples spec。
+> - **当晚 Frank 实测三连拍**(同批上线):①反馈行「解决了你的问题吗?」撤+图标 gap 8→0(cbAsk 死键
+>   三语清);②弹框/挂件滚轮不再穿透背景页(共享 Modal CARD+cbThread 加 overscroll-behavior:contain);
+>   ③「护士被 SK 排除」实问=数据为真(sk-excluded 官方页 quote-anchored,31300/31301/31302/32101 在列,
+>   **只排 OID/EE 主线**,Health Talent/雇主 offer 类不受限——答复口径无误)。
+> - **🔴 两个换版排障教训(都写进记忆)**:①代码 push 后再推 [skip render] docs 会压住整个部署
+>   (今日实踩第二次,空提交救回);②**Git Bash curl 发中文 payload 是乱码**——生产探针假阴性
+>   骗了 40 分钟(乱码撞词面匹配→误判没换版),中文探针一律 Node/Python 发。
 > - 批C(tripleVerdict 组装器+金标)下一批开工条件已齐(AIP 行入库后金标才诚实);批D 效果图先行;
 >   待 Frank 拍(总设计 §4):定价形态荐 B、槽回填告知已按批A描述落答复尾行、批E 排期。
+>   记账:literalNoc 裸码扩围(带库验证防薪资误伤)、组稿层归因病三例已被新闸治标(根治=结论句模板化归批C)。
 > - **✅ C5 遗留首修落地**(明细=C5 文档 §4.5,比原方案多挖一层根):① NL 经验门槛 op='none' 却因
 >   「缺经验月数」被 pickGate 拖成 needs-info —— 现 need=0 ⇒ gap 恒 0 不记缺槽,**第一轮 NL 直接
 >   open tier0 浮顶**;② needs-info 的 tier 改成**潜力上界**(缺槽门槛按 0 经验/0 居住记档)且排序
