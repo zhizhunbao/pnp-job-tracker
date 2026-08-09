@@ -59,10 +59,22 @@
 > - **engine_v2 调研两轮存档**(对话病系统解法与报告 PDF,侦察报告在本 session):evaluation/ 批跑+
 >   病例卡+生产语料回归=「对话评测批」蓝本;report/ 的分工可学(数字代码算死 LLM 只写文案)但
 >   xhtml2pdf/自由长文不搬,pnp 走 Playwright 渲打印页+固化分享链(归批D 一起出效果图)。
-> - ⏭️ **队列(Frank 已排):批D 判定卡效果图(Mode B,我做他拍)→ 对话评测批(「后1」)**;
->   待 Frank 拍:定价形态荐 B、批E 回访钩排期。记账:literalNoc 裸码扩围(带库验证)、AIP 学历行
->   teer-2-4 无消费端(将来复用同一套区间解析)、AIP 五 factor(healthcare 互认/资金档等)无消费分支、
->   followups「LLM 从候选池挑句」可选升级、IP 日限 10 次换分级限额(engine_v2 quota 骨架)。
+> - **✅ 批D 判定卡全链落地(2026-08-09,效果图四轮拍板→「继续吧」放行→当天实施上线)**:
+>   效果图 se287 v1→v4(v2 删解释文案+加图/v3 图标全撤/v4 报告页删尽解释句;报告一页版式=设计存档,
+>   管线未投工);实施=/api/triple-verdict(服务端组装调批C 纯函数,**付费闸照 gateReport:非 Pro 的
+>   paid 行只下发 gate/tier/key**)+ TripleVerdictModal(三关胶囊/免费行✓+quote+出处/锁区行名可见值
+>   打码+ProCard/无档案态建档 CTA+预填问句)+ 四入口(职位板卡 pill+桌面操作列钮/详情页通道卡上方/
+>   PNP 弹框判定卡后/公司弹框担保卡后 afterSponsor 插槽)+ tv.* 三语 + tv-* 埋点(umami 自由名,
+>   进第一方漏斗归 P4)。VerdictData 缓存抽 lib/verdictCache 跨路由单件;designated_employers 名字
+>   匹配全站首处(双向 ILIKE,短名连锁有误配面待观察);定价形态按 B 案接既有 Pro 链(A/C 只换文案)。
+>   验收:tsc 绿、全量 507 绿 2 红=既有;dev 直连生产 375 英文态全链实测(金标岗 11039073 免费行/
+>   锁态/无档案态/UpgradeModal 全对);**Playwright is_mobile 伪影记档**(375 走查脚本别开 is_mobile)。
+>   实施文档=对话闭环-批AB/06(§7 六条实测发现含 loadVerdictData 名录切片 NL-only 坑)。
+> - ⏭️ **队列(Frank 已排):对话评测批(「后1」)→ 批D 读数(B5 08-22 一并复盘)**;
+>   待 Frank 拍:批E 回访钩排期、判定报告 PDF 管线立项(版式已拍板)。记账:literalNoc 裸码扩围
+>   (带库验证)、AIP 学历行 teer-2-4 无消费端(将来复用同一套区间解析)、AIP 五 factor(healthcare
+>   互认/资金档等)无消费分支、followups「LLM 从候选池挑句」可选升级、IP 日限 10 次换分级限额
+>   (engine_v2 quota 骨架)、tv 名录匹配短名误配面首例核对、生产 Pro 号补验判定卡直渲分支。
 > - **✅ C5 遗留首修落地**(明细=C5 文档 §4.5,比原方案多挖一层根):① NL 经验门槛 op='none' 却因
 >   「缺经验月数」被 pickGate 拖成 needs-info —— 现 need=0 ⇒ gap 恒 0 不记缺槽,**第一轮 NL 直接
 >   open tier0 浮顶**;② needs-info 的 tier 改成**潜力上界**(缺槽门槛按 0 经验/0 居住记档)且排序

@@ -138,6 +138,11 @@ function rowText(t: TFn, row: TvRow): { main: string; sub?: string } | null {
   }
 }
 
+/** 付费行显示顺序(效果图定稿:语言→经验→其余个人→时间窗→换省→比路→雇主下一步) */
+const PAID_ORDER = (key: string): number =>
+  key === 'tv.person.language' ? 1 : key === 'tv.person.experience' ? 2 : key.startsWith('tv.person.') ? 3
+  : key === 'tv.time.permit' ? 4 : key.startsWith('tv.compare.') ? 5 : key === 'tv.route.fastest' ? 6 : 7
+
 /** 锁行/无档案行的行名(付费行只带 key 时的关别标签) */
 function lockLabel(t: TFn, key: string): string {
   if (key === 'tv.person.language') return t('tv.k.language')
@@ -212,7 +217,7 @@ export function TripleVerdictModal({ job, lang, z = 50, onClose }: {
   const free = d?.rows.filter((r) => r.tier === 'free') ?? []
   const occRows = free.filter((r) => r.gate === 'occupation')
   const empRows = free.filter((r) => r.gate === 'employer')
-  const paid = d?.rows.filter((r) => r.tier === 'paid') ?? []
+  const paid = (d?.rows.filter((r) => r.tier === 'paid') ?? []).slice().sort((a, b) => PAID_ORDER(a.key) - PAID_ORDER(b.key))
   // 锁区一行一个关别标签(compare 可多行 → 去重;计数用去重后的行数,与显示一致)
   const paidLabels = Array.from(new Set(paid.map((r) => lockLabel(t, r.key))))
 
