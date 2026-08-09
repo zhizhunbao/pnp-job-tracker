@@ -95,7 +95,7 @@ export function ChatText({ text, sheet, caret }: { text: string; sheet?: boolean
   )
 }
 
-export function ChatAnswer({ a, busy, onAsk, fallback }: { a: Answer; busy: boolean; onAsk: (q: string) => void; fallback?: string[] }) {
+export function ChatAnswer({ a, busy, onAsk }: { a: Answer; busy: boolean; onAsk: (q: string) => void }) {
   const [, , t] = useLang()
   // 答复下方一排小图标(2026-08-05 照 GPT/Claude 形态;原来是一行文字钮)。
   // 只留三个 —— 复制 + 赞 + 踩。「分叉 / 重生成 / 继续」在我们这儿语义上不成立:
@@ -177,25 +177,8 @@ export function ChatAnswer({ a, busy, onAsk, fallback }: { a: Answer; busy: bool
         </div>
       )}
 
-      {/* 推荐问题:点了带 history 再问一轮(不是重开一段对话)。
-          2026-08-09 Frank 定形态「显示四选一的推荐问题,类似 Claude」——每轮答完**恒四条**:
-          编排的真追问在前(≤3),不足四条从 fallback 补位(三条个性化示例+一条判定导流问句,
-          ChatBox 传入;剔重),概念问答轮也不再是死胡同。全是真追问=「接着问」,纯补位=「试试这样问」 */}
-      {(() => {
-        const real = a.followups ?? []
-        const pad = (fallback ?? []).filter((q) => !real.includes(q))
-        const fus = [...real, ...pad].slice(0, 4)
-        const title = real.length ? t('chat.followups') : t('chat.try')
-        return fus.length ? (
-          <div className="cbFus">
-            <div className="cbFusT">{title}</div>
-            {fus.map((q, k) => (
-              <button key={k} className="cbFu" disabled={busy} onClick={() => onAsk(q)}
-                style={busy ? { opacity: 0.5, cursor: 'default' } : undefined}>{q}</button>
-            ))}
-          </div>
-        ) : null
-      })()}
+      {/* 追问胶囊堆 2026-08-09 Frank「只要你这种」拍板撤掉:每轮唯一交互块=选项卡形态
+          (建档卡或装着四条推荐问题的同款卡),渲染在 ChatBox 的卡位;答复组件只管答复本体。 */}
       {/* 免责句原来钉在**每条**答复下面 —— 一轮问答铺三条就重复三遍,那是噪音不是合规。
           2026-08-05 挪到面板底部 composer 边上常驻一条(ChatBox),全局只出现一次。 */}
     </div>

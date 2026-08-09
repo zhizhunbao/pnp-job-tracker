@@ -405,30 +405,41 @@ export function ChatBox({ compact = false, autoFocus = false, prefill = '' }: { 
                 </div>
               ) : turn.a ? (
                 <>
-                  {/* 推荐问题补位池(08-09 Frank「显示四选一的推荐问题,类似 Claude」):真追问不足四条时
-                      按序补——判定导流问句打头(把人往裁决漏斗引),再补个性化示例;剔与本轮同句的 */}
-                  <ChatAnswer a={turn.a} busy={busy} onAsk={(q) => void ask(q)}
-                    fallback={[t('chat.padVerdict'), ...examples.map((ex) => t(ex.key, ex.params))].filter((q) => q !== turn.q)} />
-                  {/* C6 选项卡:只挂最后一轮;点选 = 以用户身份把 sendText 发出去(气泡进对话流)。
-                      第 4 张「自己说」固定在末尾 → 聚焦输入框(设计 §一第 5 条:永不堵嘴)。 */}
-                  {turn.a.options?.items?.length && i === turns.length - 1 && !busy ? (
-                    <div className="cbOpts">
-                      <div className="cbOptWhy">{turn.a.options.reason}</div>
-                      {turn.a.options.items.map((o, k) => (
-                        <button key={k} className={'cbOpt' + (o.recommended ? ' cbOptRec' : '')} disabled={busy}
-                          onClick={() => { track('chat-option', { pick: k }); void ask(o.sendText) }}>
-                          {o.recommended ? <span className="cbOptTag">{t('chat.opt.rec')}</span> : null}
-                          <span className="cbOptMain">
-                            <span className="cbOptLabel">{o.label}</span>
-                            {o.consequence ? <span className="cbOptCons">{o.consequence}</span> : null}
-                          </span>
+                  <ChatAnswer a={turn.a} busy={busy} onAsk={(q) => void ask(q)} />
+                  {/* 每轮唯一交互块(08-09 Frank「只要你这种」=带标题的选项卡+自行输入,一轮只出一块,
+                      追问胶囊堆同拍撤掉):建档卡优先(档案是判定燃料);没有建档卡时,四条推荐问题装进
+                      同一种卡(真追问在前,补位=判定导流问句+个性化示例,剔与本轮同句)。
+                      只挂最后一轮;点选 = 以用户身份把 sendText 发出去(气泡进对话流)。
+                      末行「自己说」固定 → 聚焦输入框(设计 §一第 5 条:永不堵嘴)。 */}
+                  {i === turns.length - 1 && !busy ? (() => {
+                    const real = turn.a.followups ?? []
+                    const pad = [t('chat.padVerdict'), ...examples.map((ex) => t(ex.key, ex.params))]
+                      .filter((q) => q !== turn.q && !real.includes(q))
+                    const card = turn.a.options?.items?.length
+                      ? turn.a.options
+                      : {
+                        reason: t(real.length ? 'chat.followups' : 'chat.try'),
+                        items: [...real, ...pad].slice(0, 4).map((q): NonNullable<Answer['options']>['items'][number] => ({ label: q, sendText: q })),
+                      }
+                    return (
+                      <div className="cbOpts">
+                        <div className="cbOptWhy">{card.reason}</div>
+                        {card.items.map((o, k) => (
+                          <button key={k} className={'cbOpt' + (o.recommended ? ' cbOptRec' : '')} disabled={busy}
+                            onClick={() => { track('chat-option', { pick: k }); void ask(o.sendText) }}>
+                            {o.recommended ? <span className="cbOptTag">{t('chat.opt.rec')}</span> : null}
+                            <span className="cbOptMain">
+                              <span className="cbOptLabel">{o.label}</span>
+                              {o.consequence ? <span className="cbOptCons">{o.consequence}</span> : null}
+                            </span>
+                          </button>
+                        ))}
+                        <button className="cbOpt" onClick={() => { track('chat-option', { pick: -1 }); taRef.current?.focus() }}>
+                          <span className="cbOptMain"><span className="cbOptLabel" style={{ color: UI.text2, fontWeight: 400 }}>{t('chat.opt.self')}</span></span>
                         </button>
-                      ))}
-                      <button className="cbOpt" onClick={() => { track('chat-option', { pick: -1 }); taRef.current?.focus() }}>
-                        <span className="cbOptMain"><span className="cbOptLabel" style={{ color: UI.text2, fontWeight: 400 }}>{t('chat.opt.self')}</span></span>
-                      </button>
-                    </div>
-                  ) : null}
+                      </div>
+                    )
+                  })() : null}
                 </>
               ) : turn.stream ? (
                 // 半截正文:和最终答复同一个渲染器(服务端按整句放行,那截里已经带着行首 `- `)
