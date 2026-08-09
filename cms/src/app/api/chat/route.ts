@@ -56,6 +56,13 @@ export async function POST(req: Request) {
   const context = body?.context && typeof body.context === 'object' ? body.context : undefined
 
   const user = await getUser(await headers()).catch(() => null)
+  // 建档点选卡的「档案已有槽不追问」输入(手填优先;匿名=全 false,三张卡都可能出)
+  const up = (user as any)?.profile ?? {}
+  const profileKnown = {
+    status: !!up.currentStatus,
+    provs: Array.isArray(up.targetProvinces) && up.targetProvinces.length > 0,
+    clb: up.clb != null,
+  }
   // 免费池(匿名 IP / 登录账号);本批不设付费墙,402 也当限流处理,前端一个 'limit' 分支就够
   const g = freeGate(user, req as any)
   if (g.block) return Response.json({ error: 'limit' }, { status: 429 })
@@ -124,7 +131,7 @@ export async function POST(req: Request) {
     try {
       const payload = await getPayload({ config: await config })
       pl = payload
-      return { ok: await orchestrate((payload.db as any).pool, { text, lang, history, context }, { onStep, onDelta, onReset }) }
+      return { ok: await orchestrate((payload.db as any).pool, { text, lang, history, context, profileKnown }, { onStep, onDelta, onReset }) }
     } catch (err) { return { err } }
   })()
 

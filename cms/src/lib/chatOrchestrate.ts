@@ -87,10 +87,14 @@ export type ChatTurn = { role: 'user' | 'assistant'; content: string }
 export type ChatOption = { label: string; consequence?: string; sendText: string; recommended?: boolean }
 export type ChatResult = {
   answer: string; slots: Slots; facts: Fact[]; followups: string[]
-  /** 弹选项卡时才有:reason 是推荐理由行,options ≤3(第 4 张「自己说」由前端固定给) */
-  options?: { reason: string; items: ChatOption[] }
+  /** 弹选项卡时才有:reason 是推荐理由行,options ≤3(第 4 张「自己说」由前端固定给)。
+   *  slotKey = 这张卡在收集哪个档案槽(2026-08-09 Frank「能让用户手点就别用手输入」),
+   *  裁决路径的工签卡不带它(那是判定前置,不是建档)。 */
+  options?: { reason: string; items: ChatOption[]; slotKey?: 'status' | 'prov' | 'clb' }
   degraded?: boolean
 }
+/** 档案里已有值的槽(route 从 users.profile 算好传进来)——已有的不再点选追问,手填优先。 */
+export type ProfileKnown = { status?: boolean; provs?: boolean; clb?: boolean }
 export type ChatErrorCode = 'tooShort' | 'noOcc' | 'llm' | 'guard'
 export class ChatError extends Error {
   code: ChatErrorCode
@@ -1491,6 +1495,82 @@ export function permitOptions(lang: ChatLang): NonNullable<ChatResult['options']
     },
   }
   return O[lang]
+}
+
+// ── 建档点选卡(2026-08-09 Frank:「做,能让用户手点就别用手输入」)──────────────
+// 普通轮答完,档案还缺槽 → 垫一张点选卡:点选=以用户身份发话=当轮抽槽=D3 只补空回写。
+// 一轮只垫一张(优先级 status→prov→clb);档案里已有的槽(ProfileKnown)不追问,手填优先。
+// 省卡是数据驱动的:只摆**这轮真查到在招数据**的省(答得上的保证,同 followups 一条底线),
+// 凑不满两个省就不出省卡;QC 不进卡(QC 走自己的体系不属 PNP,摆进目标省是误导)。
+const PROV_ZH: Record<string, [zh: string, en: string, ko: string]> = {
+  BC: ['不列颠哥伦比亚', 'British Columbia', '브리티시컬럼비아'], ON: ['安大略', 'Ontario', '온타리오'],
+  AB: ['阿尔伯塔', 'Alberta', '앨버타'], SK: ['萨斯喀彻温', 'Saskatchewan', '서스캐처원'],
+  MB: ['曼尼托巴', 'Manitoba', '매니토바'], NS: ['新斯科舍', 'Nova Scotia', '노바스코샤'],
+  NB: ['新不伦瑞克', 'New Brunswick', '뉴브런즈윅'], NL: ['纽芬兰', 'Newfoundland and Labrador', '뉴펀들랜드'],
+  PE: ['爱德华王子岛', 'Prince Edward Island', '프린스에드워드아일랜드'],
+}
+const provWord = (code: string, lang: ChatLang): string | null => {
+  const row = PROV_ZH[code]
+  return row ? row[lang === 'zh' ? 0 : lang === 'en' ? 1 : 2] : null
+}
+export function slotAskOptions(
+  slots: Slots, facts: Fact[], lang: ChatLang, known: ProfileKnown = {},
+): ChatResult['options'] | undefined {
+  if (slots.status == null && !known.status) {
+    const O: Record<ChatLang, NonNullable<ChatResult['options']>> = {
+      zh: { slotKey: 'status', reason: '记下你现在的身份——通道按它挑', items: [
+        { label: '学签在读', consequence: '按毕业后时间线算', sendText: '我还在读书(持学签)' },
+        { label: '持工签在工作或找工', consequence: '按在加经验通道算', sendText: '我持工签在加拿大' },
+        { label: '人还在境外', consequence: '按境外申请路线算', sendText: '我人还在境外' },
+      ] },
+      en: { slotKey: 'status', reason: 'Note your status first — pathways are picked by it', items: [
+        { label: 'Studying on a study permit', consequence: 'plan on the post-graduation timeline', sendText: 'I am studying in Canada on a study permit.' },
+        { label: 'Working on a work permit', consequence: 'Canadian-experience pathways apply', sendText: 'I am working in Canada on a work permit.' },
+        { label: 'Still outside Canada', consequence: 'overseas routes apply', sendText: 'I am still outside Canada.' },
+      ] },
+      ko: { slotKey: 'status', reason: '현재 신분부터 기록하세요 · 통로가 여기서 갈립니다', items: [
+        { label: '학생 비자로 재학 중', consequence: '졸업 후 일정으로 계산', sendText: '캐나다에서 학생 비자로 재학 중입니다.' },
+        { label: '취업 허가로 근무 또는 구직 중', consequence: '캐나다 경력 통로로 계산', sendText: '취업 허가로 캐나다에 있습니다.' },
+        { label: '아직 해외에 있음', consequence: '해외 신청 경로로 계산', sendText: '아직 캐나다 밖에 있습니다.' },
+      ] },
+    }
+    return O[lang]
+  }
+  if (!slots.provs.length && !known.provs) {
+    const top = facts
+      .map((f) => ({ f, m: f.tool === 'lookupJobs' && f.value != null ? /^([A-Z]{2}) open postings/.exec(f.label) : null }))
+      .filter((x): x is { f: Fact; m: RegExpExecArray } => !!x.m && !!provWord(x.m[1], lang))
+      .sort((a, b) => (b.f.value ?? 0) - (a.f.value ?? 0))
+      .slice(0, 3)
+    if (top.length >= 2) {
+      const REASON: Record<ChatLang, string> = {
+        zh: '目标省定一个——门槛和清单按省答', en: 'Pick a target province — requirements and lists are answered per province',
+        ko: '목표 주를 하나 정하세요 · 요건과 목록은 주별로 답합니다',
+      }
+      const item = (code: string, n: number): ChatOption => {
+        const w = provWord(code, lang)!
+        return lang === 'zh'
+          ? { label: `${w}(在招 ${n} 岗)`, consequence: '按这个省接着判', sendText: `我的目标省是${w}` }
+          : lang === 'en'
+            ? { label: `${w} (${n} open postings)`, consequence: 'continue against this province', sendText: `My target province is ${w}.` }
+            : { label: `${w}(공고 ${n}건)`, consequence: '이 주 기준으로 계속 판정', sendText: `제 목표 주는 ${w}입니다.` }
+      }
+      return { slotKey: 'prov', reason: REASON[lang], items: top.map((x) => item(x.m[1], x.f.value as number)) }
+    }
+  }
+  if (slots.clb == null && !known.clb) {
+    const REASON: Record<ChatLang, string> = {
+      zh: '语言到哪档了——各省线按它比对', en: 'Note your language level — provincial lines are compared against it',
+      ko: '언어 등급을 기록하세요 · 주별 기준선과 비교합니다',
+    }
+    const item = (n: number): ChatOption => lang === 'zh'
+      ? { label: `CLB ${n}`, sendText: `我的语言成绩是 CLB ${n}` }
+      : lang === 'en'
+        ? { label: `CLB ${n}`, sendText: `My language level is CLB ${n}.` }
+        : { label: `CLB ${n}`, sendText: `제 언어 성적은 CLB ${n}입니다.` }
+    return { slotKey: 'clb', reason: REASON[lang], items: [item(5), item(6), item(7)] }
+  }
+  return undefined
 }
 
 const FED_FACTOR: Record<ChatLang, Record<string, string>> = {
@@ -3197,7 +3277,7 @@ export function profileFill(
  *                它是**撤回**不是进度,只在真要重画时发。
  */
 export async function orchestrate(
-  rawPool: any, input: { text: string; lang: ChatLang; history?: ChatTurn[]; context?: unknown },
+  rawPool: any, input: { text: string; lang: ChatLang; history?: ChatTurn[]; context?: unknown; profileKnown?: ProfileKnown },
   opts?: { onStep?: OnStep; onDelta?: (s: string) => void; onReset?: () => void },
 ): Promise<ChatResult> {
   const text = (input.text || '').trim().slice(0, MAX_TEXT)
@@ -3464,7 +3544,10 @@ export async function orchestrate(
   //    有效工签,而库里没有这条门槛行 —— 判定层说不出口的前提,由选项卡替它问(需要决定才弹,
   //    宁缺勿滥)。**不再同时塞进 followups**:那些 chip 点击=以用户身份发这句话,而这句是
   //    助手问用户的,语义拧着;选项卡的三张选项才是它的正确形态(2026-08-06 dev 实测两处重复)。
-  const options = verdictOn && slots.status == null ? permitOptions(lang) : undefined
+  // 裁决前置的工签卡优先;普通轮垫建档点选卡(能点选就不让打字,一轮一张,档案已有的槽不问)
+  const options = verdictOn && slots.status == null
+    ? permitOptions(lang)
+    : slotAskOptions(slots, facts, lang, input.profileKnown)
   const followups = [...askSlots, ...buildFollowups(facts, lang, text, slots.occText)].slice(0, 3)
   return { answer, slots, facts: out, followups, ...(options ? { options } : {}), ...(degraded ? { degraded: true } : {}) }
 }

@@ -46,7 +46,7 @@ vi.mock('@/lib/entitlement', () => ({
 }))
 vi.mock('@/lib/profile', () => ({ patchProfile: H.patch }))
 
-import { ChatError, buildFollowups, isFollowupTurn, isUsageQuestion, orchestrate, profileFill, type ChatLang, type ChatTurn, type Slots } from '@/lib/chatOrchestrate'
+import { ChatError, buildFollowups, slotAskOptions, isFollowupTurn, isUsageQuestion, orchestrate, profileFill, type ChatLang, type ChatTurn, type Slots } from '@/lib/chatOrchestrate'
 import { findForeignScript, findLeaks, findShoutedWords, findWordNumbers } from '@/lib/chatOrchestrate'
 import { completeText } from '@/lib/llm'
 import { POST } from '@/app/api/chat/route'
@@ -327,5 +327,55 @@ describe('buildFollowups 织入用户自己的职业叫法(确定性个性化,�
   it('刚问过的那句照旧不重复推(织槽不破坏 asked 去重)', () => {
     const q = buildFollowups(factsWith('lookupJobs'), 'zh', '', '护士')[0]
     expect(buildFollowups(factsWith('lookupJobs'), 'zh', q, '护士')).toHaveLength(0)
+  })
+})
+
+// ── 建档点选卡(2026-08-09 Frank:「做,能让用户手点就别用手输入」)────────────
+describe('slotAskOptions 建档点选卡:一轮一张,档案已有的槽不问', () => {
+  const jobsFact = (prov: string, n: number): never => ({
+    tool: 'lookupJobs', label: `${prov} open postings right now (NOC 33102)`, value: n,
+    valueText: '', unit: 'jobs', evidence: { url: '/x', fetched: '' }, cited: false,
+  }) as never
+
+  it('status 缺 → 身份卡;三个 sendText 都落在 profileFill 认的三档(student/working/abroad)', () => {
+    const card = slotAskOptions(emptySlots(), [], 'zh')
+    expect(card?.slotKey).toBe('status')
+    expect(card?.items).toHaveLength(3)
+    expect(card?.items.map((i) => i.sendText)).toEqual(['我还在读书(持学签)', '我持工签在加拿大', '我人还在境外'])
+  })
+
+  it('status 已知 → 省卡:只摆这轮真查到在招数据的省,按岗位数降序,QC 永不进卡', () => {
+    const facts = [jobsFact('QC', 99), jobsFact('BC', 20), jobsFact('ON', 65), jobsFact('NS', 7)]
+    const card = slotAskOptions(emptySlots({ status: 'working' }), facts, 'zh')
+    expect(card?.slotKey).toBe('prov')
+    expect(card?.items.map((i) => i.label)).toEqual(['安大略(在招 65 岗)', '不列颠哥伦比亚(在招 20 岗)', '新斯科舍(在招 7 岗)'])
+    expect(card?.items[0].sendText).toBe('我的目标省是安大略')
+  })
+
+  it('省数据不足两个 → 跳过省卡落 CLB 卡;三张全知 → 不出卡', () => {
+    const one = slotAskOptions(emptySlots({ status: 'working' }), [jobsFact('BC', 5)], 'en')
+    expect(one?.slotKey).toBe('clb')
+    expect(one?.items.map((i) => i.label)).toEqual(['CLB 5', 'CLB 6', 'CLB 7'])
+    const none = slotAskOptions(emptySlots({ status: 'working', provs: ['BC'], clb: 6 }), [], 'zh')
+    expect(none).toBeUndefined()
+  })
+
+  it('档案已有的槽不追问(手填优先):known.status → 直接问下一个缺槽', () => {
+    const card = slotAskOptions(emptySlots(), [], 'zh', { status: true, provs: true })
+    expect(card?.slotKey).toBe('clb')
+    const full = slotAskOptions(emptySlots(), [], 'zh', { status: true, provs: true, clb: true })
+    expect(full).toBeUndefined()
+  })
+
+  it('真实 orchestrate 普通轮:木匠答完垫身份卡(裁决没触发也有点选)', async () => {
+    H.slots = () => ({ occ_en: 'carpenter', noc: null, provs: [], exp_months: null, status: null, claims: [] })
+    const r = await orchestrate(new FakePool(), { text: '我是木匠,想知道哪些省有戏', lang: 'zh' })
+    expect(r.options?.slotKey).toBe('status')
+    // 档案全知时同一轮不出卡(route 传 profileKnown 的形状)
+    const r2 = await orchestrate(new FakePool(), {
+      text: '我是木匠,想知道哪些省有戏', lang: 'zh',
+      profileKnown: { status: true, provs: true, clb: true },
+    })
+    expect(r2.options).toBeUndefined()
   })
 })
