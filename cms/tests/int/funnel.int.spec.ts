@@ -45,11 +45,14 @@ describe('漏斗事件白名单', () => {
     expect(toFunnelHit('pay-click', '30')).toEqual({ event: 'pay-click', prop: '30' })
   })
 
-  it('顺序就是漏斗顺序(页面按它排,别在显示层再排一次);旧五步在前、对话两步在后', () => {
+  it('顺序就是漏斗顺序(页面按它排,别在显示层再排一次);旧五步在前、对话三步居中、雇主线三步在后', () => {
     // 2026-08-04:答题卡摘掉全部站内入口、对话挂件成为唯一对话入口 → 加一条**并行**的对话漏斗。
     // 断言从 5 改到 7 是事实变了,不是放宽:前五个仍必须原序在前(stepRates 按下标算相邻转化率),
     // 对话两步**追加在尾部**且不参与前五步的相邻计算 —— 两形态混算会把口径搅成一锅。
-    expect([...FUNNEL_STEPS]).toEqual(['jd-open', 'report-open', 'lock-seen', 'pricing-open', 'pay-click', 'chat-open', 'chat-answer', 'chat-feedback'])
+    // 2026-08-08(647e891 B5 批):雇主线三事件进白名单(modal-pnp→pnp-employer-click 是 08-22 读数
+    // 那条转化边;se-view-jobs 只作参照)—— 同样追加在尾部,当时漏更了这条断言(spec 自那起一直红)。
+    expect([...FUNNEL_STEPS]).toEqual(['jd-open', 'report-open', 'lock-seen', 'pricing-open', 'pay-click',
+      'chat-open', 'chat-answer', 'chat-feedback', 'modal-pnp', 'pnp-employer-click', 'se-view-jobs'])
   })
 
   it('对话形态的三个键各自归位,不串进旧五步', () => {

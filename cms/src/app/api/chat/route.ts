@@ -18,6 +18,10 @@
  *    noOcc 不可能再发生)才建 Response 开流,之前攒下的事件开流时补发。前置阶段直接失败/出结果的
  *    就照今天的 JSON 回。限流头两条路都在 Response 建立时给(流开了加不上)。
  *
+ * 🔵 **登录用户的槽回填档案**(D3,2026-08-09):一轮抽出来的高置信槽**只补空**写进 users.profile,
+ *    答复末尾加一行告知(判定与文案在 lib/chatOrchestrate 的 profileFill,本路由只负责登录判定与写库)。
+ *    匿名一个字都不存;写库失败当无事发生,答复照旧。
+ *
  * 本路由**只管鉴权/限流/错误码/传输形状**,三步流水线全在 lib/chatOrchestrate(可单测,不碰网络鉴权)。
  * 本批不做付费闸(设计 §五 Frank 未拍板):全部免费,匿名按 IP、登录按账号,只防滥用。
  * 多轮记忆不落库:history 由前端传(设计 §九「v1 不做多轮长记忆」)。
@@ -27,9 +31,10 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { logChat } from '@/lib/chatLog'
-import { ChatError, orchestrate, type ChatLang, type ChatResult, type ChatStep, type ChatTurn } from '@/lib/chatOrchestrate'
+import { ChatError, orchestrate, profileFill, type ChatLang, type ChatResult, type ChatStep, type ChatTurn } from '@/lib/chatOrchestrate'
 import { getUser } from '@/lib/entitlement'
 import { freeGate } from '@/lib/freeQuota'
+import { patchProfile } from '@/lib/profile'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -91,6 +96,29 @@ export async function POST(req: Request) {
     ...('ok' in d ? { result: d.ok } : { err: d.err instanceof ChatError ? d.err.code : 'llm' }),
   })
 
+  /**
+   * 🔵 **对话槽回填档案**(D3;设计 docs/design/对话闭环总设计-20260809.md §3 批A④)。
+   * 判定与文案全在 `profileFill`(纯函数,可单测);这里只做三件事:登录才写、写成了才说、写挂了当无事发生。
+   *   - **匿名一个字都不存**(没有 user 直接返回);
+   *   - 只补空由 profileFill 保证(手填优先),写入顺带更 `profileUpdatedAt`;
+   *   - 尾行接在答复正文末尾 —— SSE 的定稿事件是 `{answer,…}`(前端以它为准),前端不用改。
+   */
+  const fillProfile = async (r: ChatResult): Promise<ChatResult> => {
+    const uid = (user as any)?.id
+    if (!uid) return r
+    const fill = profileFill(r.slots, (user as any).profile, lang)
+    if (!fill) return r
+    try {
+      await patchProfile(uid, { ...fill.patch, profileUpdatedAt: new Date().toISOString() })
+    } catch (e) {
+      // 留痕即可:档案没补上不该让他这轮的答复变样(同 logChat 那条「永不影响回答」)
+      console.log(`[chat] profile fill failed: ${e instanceof Error ? e.message.slice(0, 160) : String(e)}`)
+      return r
+    }
+    console.log(`[chat] profile filled keys=${Object.keys(fill.patch).join(',')}`)
+    return r.answer ? { ...r, answer: `${r.answer}\n\n${fill.tail}` } : r
+  }
+
   type Done = { ok: ChatResult } | { err: unknown }
   const run: Promise<Done> = (async (): Promise<Done> => {
     try {
@@ -105,10 +133,11 @@ export async function POST(req: Request) {
 
   // 前置阶段就结束了(tooShort / noOcc / 抽槽位挂掉)→ 照旧 JSON + 状态码,前端老路径原样吃
   if (early) {
-    log(early)
-    if ('err' in early) { const f = fail(early.err); return Response.json(f.body, { status: f.status }) }
-    console.log(`[chat] ok(json) noc=${early.ok.slots.noc} facts=${early.ok.facts.length} in=${text.length}ch`)
-    return Response.json(early.ok, { headers: g.headers })
+    if ('err' in early) { log(early); const f = fail(early.err); return Response.json(f.body, { status: f.status }) }
+    const ok = await fillProfile(early.ok)          // 留痕存的是**他真正看到的**那段(含尾行)
+    log({ ok })
+    console.log(`[chat] ok(json) noc=${ok.slots.noc} facts=${ok.facts.length} in=${text.length}ch`)
+    return Response.json(ok, { headers: g.headers })
   }
 
   const stream = new ReadableStream<Uint8Array>({
@@ -116,11 +145,13 @@ export async function POST(req: Request) {
       live.ctrl = c
       for (const s of buffered) c.enqueue(sse({ step: s.text }))   // 开流前攒下的那两格补发
       const d = await run
-      log(d)
       if ('ok' in d) {
-        console.log(`[chat] ok(sse) noc=${d.ok.slots.noc} facts=${d.ok.facts.length} in=${text.length}ch`)
-        c.enqueue(sse(d.ok))
+        const ok = await fillProfile(d.ok)
+        log({ ok })
+        console.log(`[chat] ok(sse) noc=${ok.slots.noc} facts=${ok.facts.length} in=${text.length}ch`)
+        c.enqueue(sse(ok))
       } else {
+        log(d)
         // 开流之后才出的故障(合成挂掉 / guard 无 facts 可退):状态码已经发不出去了,给错误事件,
         // 前端同一套错误码分支照吃(ChatBox 的 readSse 认 {error})
         c.enqueue(sse({ error: fail(d.err).body.error }))

@@ -568,9 +568,23 @@ const zh: Dict = {
   // 检索式的「查询 XX 省提名要求」不写:那是搜索框的说法,不是人开口的第一句
   'chat.try': '试试这样问',
   'chat.opt.rec': '推荐', 'chat.opt.self': '自行输入',
+  // D4(对话闭环总设计-20260809 §2):匿名三句原样保留 ——
+  // tests/int/chatPreset1-3.int.spec.ts 三份端到端回归把这三句原文当 fixture 常量硬编码并做
+  // 逐字断言(makeT(lang)('chat.ex1')===preset),字面改一个字就会带崩那三份测试;骨架本就
+  // 已经是「#287 形状」(每句都在问「这条路走不走得通」,且各带一个具体职业,不撞编排层 noOcc 闸),
+  // 无须改字面。
   'chat.ex1': '安省大专毕业,做软件开发,还没工作,毕业后能留下吗?',
   'chat.ex2': '新斯科舍的餐厅给了我厨师 offer,老板说帮我办,可信吗?',
   'chat.ex3': '中介说能包曼省木匠 offer 和省提名,可信吗?',
+  // 注册未建档:边问边建档句(职业+CLB/PGWP/目标省+经验示范值全带),照着改一改发出去就是自己的档案
+  'chat.ex.reg1': '我是护理员(NOC 33102),在安省,CLB 6,这条路走得通吗?',
+  'chat.ex.reg2': '我是电工,PGWP 还剩 12 个月,该冲刺哪个省?',
+  'chat.ex.reg3': '我是卡车司机,目标卑诗省,已经干了两年,能申省提名吗?',
+  // 已建档:从档案槽位生成(chatExamples.ts pickExamples),{noc}/{title}/{prov}/{clb}/{m} 由调用方注入
+  'chat.ex.pgwp': '我是{title}(NOC {noc}),PGWP 还剩 {m} 个月,现在冲刺还来得及吗?',
+  'chat.ex.occProv': '{noc}({title})在 {prov} 有戏吗?',
+  'chat.ex.occCmp': '{noc}({title})在 {prov} 和 {prov2} 哪条更快?',
+  'chat.ex.clbProv': '我是{title}(NOC {noc}),CLB {clb},目标省 {prov},还差哪项?',
   'chat.retry': '重试', 'chat.open': '打开',
   // 答复反馈(2026-08-05)。**点踩是数据缺口报警器,不是训练信号** —— 用户在替我们标注
   // 「这里答不好」,而且按真实频次排好序。所以问句要轻到不烦人、又显眼到有人愿意点。
@@ -1452,6 +1466,13 @@ const en: Dict = {
   'chat.ex1': 'Ontario college grad, software dev, no job yet — can I stay?',
   'chat.ex2': 'A Nova Scotia restaurant gave me a cook offer and says it will help with the nomination. Can I trust that?',
   'chat.ex3': 'An agent says they can guarantee a Manitoba carpenter offer and nomination. Can I trust that?',
+  'chat.ex.reg1': 'I am a PSW (NOC 33102) in Ontario with CLB 6 — is this path workable?',
+  'chat.ex.reg2': 'I am an electrician with 12 months left on my PGWP — which province should I push for now?',
+  'chat.ex.reg3': 'I am a truck driver targeting BC with two years of experience — can I apply for a nomination?',
+  'chat.ex.pgwp': 'I am a {title} (NOC {noc}) with {m} months left on my PGWP — is there still time to make this work?',
+  'chat.ex.occProv': '{noc} ({title}) — does this have a shot in {prov}?',
+  'chat.ex.occCmp': '{noc} ({title}) — which is faster, {prov} or {prov2}?',
+  'chat.ex.clbProv': 'I am a {title} (NOC {noc}) with CLB {clb} targeting {prov} — what am I still missing?',
   'chat.retry': 'Retry', 'chat.open': 'Open',
   'chat.fb.ask': 'Did this help?', 'chat.fb.good': 'Helpful', 'chat.fb.bad': 'Not helpful',
   'cw.open': 'Ask a question', 'cw.minimize': 'Minimize', 'cw.close': 'Close', 'cw.hint': 'Questions? Just ask',
@@ -2302,6 +2323,13 @@ const ko: Dict = {
   'chat.ex1': '온타리오 컬리지 졸업, 소프트웨어 개발자, 아직 무직인데 남을 수 있나요?',
   'chat.ex2': '노바스코샤 식당에서 요리사 오퍼를 받았고 고용주가 주정부 지명을 도와준다고 합니다. 믿어도 될까요?',
   'chat.ex3': '에이전트가 매니토바 목수 오퍼와 주정부 지명을 보장한다고 합니다. 믿어도 될까요?',
+  'chat.ex.reg1': '저는 온타리오에서 일하는 PSW(NOC 33102)이고 CLB 6인데, 이 길이 통할까요?',
+  'chat.ex.reg2': '저는 전기공이고 PGWP가 12개월 남았는데, 지금 어느 주를 노려야 할까요?',
+  'chat.ex.reg3': '저는 트럭 운전기사이고 BC를 목표로 2년 경력이 있는데, 주정부 지명 신청이 가능할까요?',
+  'chat.ex.pgwp': '저는 {title}(NOC {noc})이고 PGWP가 {m}개월 남았는데, 지금 시작해도 늦지 않을까요?',
+  'chat.ex.occProv': '{noc}({title}), {prov}에서 가능성이 있을까요?',
+  'chat.ex.occCmp': '{noc}({title}), {prov}와 {prov2} 중 어디가 더 빠를까요?',
+  'chat.ex.clbProv': '저는 {title}(NOC {noc})이고 CLB {clb}, 목표 주는 {prov}인데, 아직 뭐가 부족할까요?',
   'chat.retry': '다시 시도', 'chat.open': '열기',
   'chat.fb.ask': '도움이 되었나요?', 'chat.fb.good': '도움됨', 'chat.fb.bad': '도움 안 됨',
   'cw.open': '질문하기', 'cw.minimize': '최소화', 'cw.close': '닫기', 'cw.hint': '궁금한 점 물어보세요',

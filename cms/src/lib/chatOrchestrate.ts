@@ -186,6 +186,15 @@ export const MIN_TEXT = 4          // 少于这个字数问不出东西(「你�
 export const MAX_TEXT = 1200       // 输入侧封顶(#102 账单教训)
 const PROMPT_BUDGET = 4200         // 送 friend 的 user prompt 字符预算(留 1800 余量给 6000 硬上限)
 const MAX_FACTS = 40               // facts 上限:再多前端也读不完,prompt 也塞不下
+/**
+ * 🔴 **追问轮的短答是合法答案**(D2;2026-08-09 生产实录 chat_logs #52:「没工作」撞 tooShort)。
+ * 首轮四字门的理由是「一句问候问不出东西」——那个理由在**我们刚问完一句**之后就不成立了:
+ * 「没工作」「BC」「CLB 6」都是对上一句反问的完整回答,把它们顶回去等于自己问完自己不听。
+ * 判据取「历史里有过 assistant 轮」(= 上一句是我们说的),不看长度、不猜内容;空串仍旧拦。
+ * 首轮闸一个字没动:history 为空时行为与今天完全一致。
+ */
+export const isFollowupTurn = (history?: ChatTurn[]): boolean =>
+  (history ?? []).some((h) => h.role === 'assistant' && h.content.trim().length > 0)
 
 // ── 小工具 ──────────────────────────────────────────────────────────────────
 
@@ -692,6 +701,73 @@ export const askOccupation = (field: string, opts: OccOption[], lang: ChatLang):
   slots: { noc: null, occText: field, provs: [], expMonths: null, status: null, claims: [] },
   facts: [],
   followups: opts.map((o) => OCC_PICK[lang](o)),
+})
+
+/**
+ * 🔴 **用法类问句不该被 noOcc 怼回去**(D1;2026-08-09 生产实录 chat_logs #51/#53/#55/#54:
+ * /start 三张表的「问一句」CTA 预填句 `se.ask.lmia|named|aip` 全部撞 noOcc —— 自家导流句撞自家闸)。
+ * 他问的是**这张表是什么、对我有什么用**,还没到说职业那一步;反问「说说你做什么工作」等于答非所问。
+ *
+ * 判据两半**都要命中**才算(误判代价不对称:少认一句 = 照旧反问,多认一句 = 该反问的被糊弄过去):
+ *   ① 主语是本站这几张雇主表里的东西(LMIA / AIP / 雇主 / 清单 / 表);
+ *   ② 问的是「是什么 / 有什么用 / 意味着什么」这类用法与定义。
+ * 「什么工作好移民」「怎么找愿意担保的雇主」这类只中一半,照旧走原路。
+ * 还有一道**位置上的**保险:这个分支只长在 resolveNoc 失败之后(见 orchestrate ②),
+ * 说得出职业的一律走正常查询,连判都不判。
+ */
+const USAGE_SUBJ_RE =
+  /LMIA|\bAIP\b|雇主|僱主|清单|清單|名单|名單|这[张个]表|這[張個]表|employer|shortage list|\btable\b|\blist\b|고용주|목록|명단|\b표\b/i
+const USAGE_INTENT_RE =
+  /有(?:什么|什麼|啥)用|有用吗|有用嗎|意味着什么|意味著什麼|是什么|是什麼|什么意思|什麼意思|怎么用|怎麼用|怎么看|怎麼看/i
+const USAGE_INTENT_EN_RE =
+  /\bwhat (?:is|are|does|do)\b|\bhow (?:does|do|can)\b.{0,40}\b(?:help|use|work)|\buseful\b|\bwhat\b.{0,20}\bmean\b/i
+const USAGE_INTENT_KO_RE = /어떤 (?:도움|의미)|무엇인가요|무엇입니까|뭔가요|도움이 되나요|어떻게 (?:쓰|사용|활용)/
+/** 这句话在问「本站这张表是什么、对我有什么用」吗(纯函数,不问模型)。 */
+export const isUsageQuestion = (text: string): boolean => {
+  const s = (text || '').trim()
+  if (!s) return false
+  return USAGE_SUBJ_RE.test(s)
+    && (USAGE_INTENT_RE.test(s) || USAGE_INTENT_EN_RE.test(s) || USAGE_INTENT_KO_RE.test(s))
+}
+
+type UsageTopic = 'lmia' | 'aip' | 'employer'
+const usageTopicOf = (text: string): UsageTopic =>
+  (/LMIA/i.test(text) ? 'lmia' : /\bAIP\b/i.test(text) ? 'aip' : 'employer')
+/** 用法答复的文案(三语,和 ASK_OCC / AVAIL_SENTENCE 同一层:见客的话在数据层写死,不过模型)。
+ *  只说这张表**是什么**,不说任何数字 —— 这一轮一个工具都没查,没有 facts 就没有数可说。 */
+const USAGE_WHAT: Record<ChatLang, Record<UsageTopic, string>> = {
+  zh: {
+    lmia: 'LMIA 获批雇主指这家雇主为外籍雇员申请过劳动力市场影响评估并获批,也就是它办过这套手续。',
+    aip: 'AIP 指定雇主指经省政府指定、可按大西洋移民试点雇用外籍雇员的雇主。',
+    employer: '本站的雇主表按职业排:同一个职业下有哪些雇主在招、雇主在哪个省、该省清单收没收这个职业。',
+  },
+  en: {
+    lmia: 'An LMIA-approved employer is one that has applied for and received a Labour Market Impact Assessment for a foreign worker, so it has been through that process before.',
+    aip: 'An AIP designated employer is one designated by a provincial government to hire foreign workers under the Atlantic Immigration Program.',
+    employer: 'Our employer tables are organised by occupation: which employers are hiring for it, which province they are in, and whether that province lists the occupation.',
+  },
+  ko: {
+    lmia: 'LMIA 승인 고용주는 외국인 근로자를 위해 노동시장영향평가를 신청해 승인받은 고용주, 즉 그 절차를 거쳐 본 고용주입니다.',
+    aip: 'AIP 지정 고용주는 대서양 이민 프로그램으로 외국인 근로자를 채용하도록 주정부가 지정한 고용주입니다.',
+    employer: '본 사이트의 고용주 표는 직업 기준입니다: 어떤 고용주가 그 직업을 채용 중인지, 어느 주에 있는지, 그 주 목록에 해당 직업이 있는지.',
+  },
+}
+/** 答完用法就把话头递回职业:这一步不做,用户下一句照样撞 noOcc。 */
+const USAGE_ASK: Record<ChatLang, string> = {
+  zh: '告诉我你的职业或 NOC 码,我按这个职业查哪些雇主在招、哪些省的清单收了它。',
+  en: 'Tell us your occupation or NOC code, and we will check which employers are hiring for it and which provinces list it.',
+  ko: '직업이나 NOC 코드를 알려 주시면 해당 직업을 채용 중인 고용주와 그 직업을 목록에 올린 주를 조회해 드립니다.',
+}
+/**
+ * 用法类问句的 guide 型答复:形态照 askOccupation(自己写死的话 + 空 facts + 不进模型),
+ * **不是**一条新的答复形态。slots 原样带出去(省份/身份这些他已经说过的,下一轮 context 还接得住),
+ * 但 noc 一定是 null —— 这一轮确实没认出职业,不许在这儿假装认出来了。
+ */
+export const answerUsage = (text: string, lang: ChatLang, slots: Omit<Slots, 'noc'> & { noc: string | null }): ChatResult => ({
+  answer: `${USAGE_WHAT[lang][usageTopicOf(text)]}${lang === 'en' ? ' ' : ''}${USAGE_ASK[lang]}`,
+  slots: { ...slots, noc: null },
+  facts: [],
+  followups: [],
 })
 
 // ── 第二步:调工具 → 压平成 Fact[] ─────────────────────────────────────────
@@ -2869,6 +2945,81 @@ export function citeFacts(answer: string, facts: Fact[]): Fact[] {
   })
 }
 
+// ── 对话槽 → 档案(D3:只补空)────────────────────────────────────────────────
+
+/**
+ * 🔴 **对话是最自然的建档场景,却是唯一不建档的入口**(D3;2026-08-09 实查:抽到的槽只进 chat_logs,
+ * users.profile 零写点)。这里把一轮对话抽出来的**高置信槽**映射成 `users.profile` 的补丁。
+ *
+ * 三条红线,一条都不许松:
+ *   ① **只补空**:目标字段现值为 null/空数组才写。手填优先 —— 用户在账户页/向导里亲手填的值,
+ *      永远压过我们从一句话里抽出来的(抽槽是模型的活,手填是他自己的话)。
+ *   ② **只写高置信的**:`status` 只认三种一一对得上的身份(graduated/visitor 落哪个分型都是猜,不写);
+ *      `provs` 只在**这轮没有第三方主张**时才当目标省 —— 主张里的省份是「中介说曼省有合作公司」那种,
+ *      是别人提的地方,不是他的目标;`crs`/`pgwpMonthsLeft` 对话里根本没有对应槽,不写。
+ *   ③ **匿名不存**:登录判定在路由层(这里拿不到 user,也不该拿到)。
+ * 返回 null = 这轮没有可补的,调用方一个字都不必说(尾行只在真写了的时候出现)。
+ */
+export type ChatProfilePatch = {
+  currentStatus?: string
+  nocCodes?: string[]
+  clb?: number
+  targetProvinces?: string[]
+}
+/** 抽槽 status → 档案分型 slug(lib/match.ts 的 CurrentStatus)。**对不上的一律不映射**。 */
+const STATUS_SLUG: Record<string, string> = { student: 'studying', working: 'working', abroad: 'overseas' }
+/** 尾行里那几个字段的人话名(三语;数字/省码原样跟在后面)。 */
+const SAVED_LBL: Record<ChatLang, { occ: string; clb: string; prov: string; status: Record<string, string> }> = {
+  zh: {
+    occ: '职业 NOC', clb: 'CLB', prov: '目标省',
+    status: { studying: '身份 在读', working: '身份 在职', overseas: '身份 在境外' },
+  },
+  en: {
+    occ: 'occupation NOC', clb: 'CLB', prov: 'target province',
+    status: { studying: 'status studying', working: 'status working', overseas: 'status outside Canada' },
+  },
+  ko: {
+    occ: '직업 NOC', clb: 'CLB', prov: '희망 주',
+    status: { studying: '신분 재학', working: '신분 재직', overseas: '신분 해외' },
+  },
+}
+/** 尾行:一行、不解释、不口语(文案四闸)。枚举用顿号(全站禁「·」)。 */
+const SAVED_TAIL: Record<ChatLang, (items: string[]) => string> = {
+  zh: (i) => `已存入档案:${i.join('、')}(账户页可改)`,
+  en: (i) => `Saved to your profile: ${i.join(', ')} (editable in your account).`,
+  ko: (i) => `프로필에 저장했습니다: ${i.join(', ')} (계정 페이지에서 수정 가능)`,
+}
+/** 现值算不算「空」:null/undefined/空串/空数组算空,其余一律当用户已有值,绝不覆盖。 */
+const emptyField = (v: unknown): boolean =>
+  v == null || v === '' || (Array.isArray(v) && v.length === 0)
+
+export function profileFill(
+  slots: Slots, current: unknown, lang: ChatLang,
+): { patch: ChatProfilePatch; tail: string } | null {
+  const cur = (current && typeof current === 'object' ? current : {}) as Record<string, unknown>
+  const patch: ChatProfilePatch = {}
+  const items: string[] = []
+  const T = SAVED_LBL[lang]
+  if (/^\d{5}$/.test(slots.noc ?? '') && emptyField(cur.nocCodes)) {
+    patch.nocCodes = [slots.noc as string]
+    items.push(`${T.occ} ${slots.noc}`)
+  }
+  if (typeof slots.clb === 'number' && emptyField(cur.clb)) {
+    patch.clb = slots.clb
+    items.push(`${T.clb} ${slots.clb}`)
+  }
+  if (!slots.claims.length && slots.provs.length && emptyField(cur.targetProvinces)) {
+    patch.targetProvinces = slots.provs
+    items.push(`${T.prov} ${slots.provs.join(lang === 'zh' ? '、' : ', ')}`)
+  }
+  const slug = STATUS_SLUG[slots.status ?? '']
+  if (slug && emptyField(cur.currentStatus)) {
+    patch.currentStatus = slug
+    items.push(T.status[slug])
+  }
+  return items.length ? { patch, tail: SAVED_TAIL[lang](items) } : null
+}
+
 // ── 主流程 ──────────────────────────────────────────────────────────────────
 
 /**
@@ -2884,7 +3035,11 @@ export async function orchestrate(
 ): Promise<ChatResult> {
   const text = (input.text || '').trim().slice(0, MAX_TEXT)
   const lang: ChatLang = (['zh', 'en', 'ko'] as const).includes(input.lang) ? input.lang : 'en'
-  if (text.length < MIN_TEXT) throw new ChatError('tooShort', 'input too short')
+  // 🔵 D2:首轮仍是四字门;我们刚问完一句(history 里有 assistant 轮)时短答放行 —— 见 isFollowupTurn。
+  //    空串永远拦:那不是短答,是没答。
+  if (!text || (text.length < MIN_TEXT && !isFollowupTurn(input.history))) {
+    throw new ChatError('tooShort', 'input too short')
+  }
   const pool = memoPool(rawPool)
   const onStep = opts?.onStep
   const S = STEP[lang]
@@ -2937,6 +3092,12 @@ export async function orchestrate(
     if (opts.length) {
       console.log(`[chat] study field "${field}" → ${opts.map((o) => o.noc).join(',')} (asked which occupation)`)
       return askOccupation(field, opts, lang)
+    }
+    // 🔴 问的是「这张表是什么、对我有什么用」→ 答用法再把话头递回职业(D1;见 isUsageQuestion 上面那段)。
+    //    放在候选反问**之后**:说得出专业的人,给他真候选比给他一段说明有用。
+    if (isUsageQuestion(text)) {
+      console.log(`[chat] usage question answered without occupation lang=${lang}`)
+      return answerUsage(text, lang, draft)
     }
     throw new ChatError('noOcc', 'occupation not resolved', { ...draft, noc: null })
   }

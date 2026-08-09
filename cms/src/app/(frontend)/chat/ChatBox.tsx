@@ -15,13 +15,14 @@
 //   ② 错误码各说各话(2026-08-03 简历对照实撞:noJd 被笼统报成「稍后再试」,用户重试也没用);
 //   ③ 等待态给真反馈(打字指示 + 秒数);**正文 2026-08-08 起按句流**(服务端一句过了逐句门才发),
 //      渲染的每一截都是核过的字,不是假装的打字机 —— 详见 §流式 注释。
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { IconArrowUp } from '../Icons'
 import { useLang } from '../LangProvider'
 import { UI } from '../ui/primitives'
 import { track } from '@/lib/track'
 import { ChatAnswer, ChatText, CHAT_ANSWER_CSS, type Answer } from './ChatAnswer'
+import { pickExamples, exampleKind, type ChatProfile } from './chatExamples'
 
 type Msg = { role: 'user' | 'assistant'; content: string }
 type Fault = 'limit' | 'llm' | 'guard' | 'net'
@@ -43,7 +44,6 @@ const FAULT_KEY: Record<Fault, string> = {
 }
 // 重试有意义的才给重试钮:limit(额度用完)重试只会再撞一次,guard(答复没对上出处)重试也是同一份事实
 const RETRYABLE: Fault[] = ['llm', 'net']
-const EXAMPLES = ['chat.ex1', 'chat.ex2', 'chat.ex3']
 const MAX_TEXT = 1200   // 对齐服务端 chatOrchestrate.MAX_TEXT(超了是**静默截断**,不拦用户看不出后半截没被读)
                         // 常量不 import:那模块是服务端的(带 pg pool),拖进客户端包不值
 
@@ -116,6 +116,18 @@ export function ChatBox({ compact = false, autoFocus = false, prefill = '' }: { 
   useEffect(() => {
     coarse.current = !!window.matchMedia?.('(pointer: coarse)').matches
   }, [])
+
+  // D4(对话闭环总设计-20260809 §2):空态示例句三态动态化。复用账户页同款端点(Payload 自带
+  // /api/users/me,已含 profile),不新开接口。匿名/取数失败一律留 loggedIn=false → 退回静态三句,
+  // 绝不因为这一步网络失败就让空态开天窗。
+  const [me, setMe] = useState<{ loggedIn: boolean; profile: ChatProfile | null }>({ loggedIn: false, profile: null })
+  useEffect(() => {
+    fetch('/api/users/me', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((d) => setMe({ loggedIn: !!d?.user, profile: d?.user?.profile ?? null }))
+      .catch(() => { /* 静默:留在匿名档 */ })
+  }, [])
+  const examples = useMemo(() => pickExamples(me.loggedIn, me.profile, t), [me, t])
 
   // autoFocus:翻成 true 就聚焦(挂件每次展开翻一次)。触屏不聚焦 —— 见 props 注释。
   // 这里读 matchMedia 而不是 coarse.current:两个 effect 的执行顺序不该成为聚焦与否的依据。
@@ -341,9 +353,11 @@ export function ChatBox({ compact = false, autoFocus = false, prefill = '' }: { 
               点完仍可点:用户下一步很可能就是想问第二条示例 —— 那正是它该留下的理由。 */}
           <div className="cbEmpty">
             <div className="cbTry">{t('chat.try')}</div>
-            {EXAMPLES.map((k) => (
-              <button key={k} className="cbEx" disabled={busy}
-                onClick={() => { track('chat-example', { kind: k.slice(-3) }); void ask(t(k)) }}>{t(k)}</button>
+            {examples.map((ex) => (
+              <button key={ex.key} className="cbEx" disabled={busy}
+                onClick={() => { track('chat-example', { kind: exampleKind(ex.key) }); void ask(t(ex.key, ex.params)) }}>
+                {t(ex.key, ex.params)}
+              </button>
             ))}
           </div>
 
