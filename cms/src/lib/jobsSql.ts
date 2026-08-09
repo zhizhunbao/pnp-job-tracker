@@ -491,6 +491,9 @@ export type CompanyDetail = {
   description: string; address: string; province: string
   // LMIA 担保明细(E8-09 深化:股别拆解字段);lmiaStreams=展示串「High Wage 58 · Low Wage 1008」
   lmiaPositions: number | null; lmiaLmias: number | null; lmiaLastQuarter: string; lmiaStreams: string; lmiaSkilled: number | null
+  // #286 获批职业拆分(近两年,与 lmiaPositions 同窗口;raw lmia-employers.nocs 下沉):
+  // 列没建/没灌时为空数组 → 弹框整块不渲(容缺自激活,#284 探列同款);名字缺时前端渲裸码
+  lmiaNocs?: { noc: string; positions: number; title: string; titleZh: string; titleKo: string }[]
   openCount: number
   jobs: CompanyJobRow[]
 }

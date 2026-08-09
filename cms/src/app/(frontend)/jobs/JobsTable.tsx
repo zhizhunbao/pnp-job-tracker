@@ -2506,6 +2506,33 @@ export function CompanyBody({ company, similar, t, lang, showTrans, hideTopInfo,
                 <span key="qn" style={FG_N}>{t('co.spBatchN', { n: company.lmiaLmias ?? '—' })}</span>,
               ] : []}
             </FactGrid>
+            {/* #286 获批职业拆分(Frank 08-08「有哪些岗也不知道」):近两年窗口与上方获批数同口径;
+                数据没灌时整块不出(容缺自激活);Top 6 逐行,余量并一行,职业名走界面语言、无名渲裸码。
+                不用 FactGrid:它的 max-content 名列遇英文长职业名会把数值列挤出 375 屏(效果图实撞)——
+                名列 minmax(0,1fr) 可折行(禁截断→折行,#268 同判),数值列恒右 */}
+            {(company.lmiaNocs?.length ?? 0) > 0 && (() => {
+              const rows = company.lmiaNocs!
+              const top = rows.slice(0, 6)
+              const rest = rows.slice(6)
+              const restN = rest.reduce((s, r) => s + r.positions, 0)
+              const nm = (r: NonNullable<CompanyDetail['lmiaNocs']>[number]) => ((lang === 'zh' ? r.titleZh : lang === 'ko' ? r.titleKo : '') || r.title)
+              return (
+                <>
+                  <div style={{ borderTop: '1px solid #f3f4f6', margin: '10px 0 6px' }} />
+                  <div style={{ fontSize: 12, fontWeight: 600, color: '#6b7280', marginBottom: 4 }}>{t('co.spNocs')}</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) max-content', columnGap: 14, rowGap: 3, alignItems: 'baseline', fontSize: 13 }}>
+                    {top.flatMap((r) => [
+                      <span key={r.noc + 'k'} style={{ overflowWrap: 'anywhere' }}>{nm(r) || r.noc}{nm(r) ? <span style={{ color: '#9ca3af', fontSize: 10.5, marginLeft: 6, whiteSpace: 'nowrap' }}>{r.noc}</span> : null}</span>,
+                      <span key={r.noc + 'v'} style={{ ...FG_V, textAlign: 'right' }}>{r.positions}</span>,
+                    ])}
+                    {rest.length ? [
+                      <span key="rk" style={{ color: '#9ca3af' }}>{t('co.spNocRest', { n: rest.length })}</span>,
+                      <span key="rv" style={{ ...FG_V, color: '#9ca3af', fontWeight: 400, textAlign: 'right' }}>{restN}</span>,
+                    ] : []}
+                  </div>
+                </>
+              )
+            })()}
             {/* #200(Frank「这个废话也是」):来源行(ESDC 名录、IRCC)撤 */}
             <div style={{ fontSize: 12, color: conc.fg, background: conc.bg, borderRadius: 8, padding: '6px 10px', margin: '6px 0 0', lineHeight: 1.55 }}>{t(conc.key)}</div>
           </div>
