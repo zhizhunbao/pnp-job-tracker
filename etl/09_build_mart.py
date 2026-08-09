@@ -74,7 +74,11 @@ IN_REQ_TABLES = [_paths.PNP / f"{p}-req.json"
                  # G9:联邦 Express Entry 三个项目的资格门槛(province='FED',build_ee_rules.py 产,
                  # quote-anchored)。**一个文件三个项目** → program 逐行写在 requirements[].program
                  # ('CEC'/'FSW'/'FST'),表级只有 province —— 下面按行覆盖 program,零新表
-                 _paths.EE / "fed-eligibility.json"]
+                 _paths.EE / "fed-eligibility.json",
+                 # G-AIP:联邦大西洋移民计划(AIP)申请人门槛(province='FED' program='AIP',
+                 # build_aip_rules.py 产,quote-anchored)——#287 一键三合一判定的硬前置
+                 # (设计 docs/design/一键三合一判定-20260809.md §4:此前 AIP 申请人侧生产 0 行)
+                 _paths.IRCC / "aip_rules.json"]
 # G5 省级官方运营统计(配额/已发/剩余、积压游标、EOI 池、处理时长、SIRS 池分布)——
 # 一省一个文件,加省=往这个 list 里加一个;各省字段形状不同,按 province 分派(下面 build_pnp_ops_stats)。
 IN_PNP_STATS = [_paths.PNP / f"{p}-stats.json" for p in ("ab", "sk", "bc", "mb", "on")]

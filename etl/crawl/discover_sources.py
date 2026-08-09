@@ -92,9 +92,13 @@ SEEDS: list[dict] = [
      "depth": 3, "max_pages": 200, "keywords": "after-graduation,post-graduation,study-canada/work"},
     # E13-08(2026-08-07)雷区判定的两条通道锚页,进周更当政策雷达(diff 报了才知道口径常量过期):
     # AIP job offer TEER 0-4 原句在 how-to-immigrate/job-offer.html;保育专项四 NOC 在 child-care-home-support/eligibility.html
+    # 深度 2→3(G-AIP 抓取批,2026-08-09):申请人门槛细节页(work-experience/proof-funds/
+    # settlement-service-provider-organizations)全挂在 how-to-immigrate/eligibility.html 之下一跳,
+    # 该 index 页本身已是 depth 2 → 子页是 depth 3,depth=2 探不到(17 页里三个申请人门槛细节页缺失,
+    # build_aip_rules.py 核对 manifest 时实测发现)。照 fed-ee depth=4 同款先例抬一档。
     {"slug": "fed-aip",      "seed": "https://www.canada.ca/en/immigration-refugees-citizenship/services/"
                                      "immigrate-canada/atlantic-immigration.html",
-     "depth": 2, "max_pages": 60, "keywords": "atlantic-immigration"},
+     "depth": 3, "max_pages": 80, "keywords": "atlantic-immigration"},
     {"slug": "fed-caregiver", "seed": "https://www.canada.ca/en/immigration-refugees-citizenship/services/"
                                       "immigrate-canada/caregivers.html",
      "depth": 2, "max_pages": 60, "keywords": "caregivers,home-care-worker"},
