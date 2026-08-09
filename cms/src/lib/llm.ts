@@ -68,12 +68,15 @@ async function friendStream(messages: ChatMessage[], opts: { maxTokens: number }
 // opts.temperature = 要确定性的调用点(抽 JSON、对照打分)显式压低;不传走上游默认 0.4。
 // opts.onDelta = 流式增量(**只 friend 通道**;传了就让 friendLlm 发 stream:true)。返回值照旧是整段答案 ——
 // 对话侧拿它测首字延迟,**不往前端发**:出口五道校验是整段跑的,流答案 = 用户可能读到随后被撤回的数字。
+// opts.stallMs = 「多久没吐字就别再等」(只 friend 通道;不传 = 照旧只有 90s 硬上限)。
+// 调用点自己定这个数:等得起的后台活(简历对照)与等不起的对话合成,忍耐力本来就不该一样。
 export async function completeText(messages: ChatMessage[], opts: {
   maxTokens: number
   provider?: 'friend' | 'anthropic' | 'ollama'
   temperature?: number
   onMeta?: (m: { cached: boolean; via: 'v1' | 'legacy'; xCache: string | null }) => void
   onDelta?: (chunk: string) => void
+  stallMs?: number
 }): Promise<string> {
   const prov = opts.provider || PROVIDER
   if (prov === 'friend') {
@@ -82,6 +85,7 @@ export async function completeText(messages: ChatMessage[], opts: {
     const r = await friendChatOrThrow({
       prompt, system, timeoutMs: 90_000, maxTokens: opts.maxTokens, temperature: opts.temperature,
       ...(opts.onDelta ? { onDelta: opts.onDelta } : {}),
+      ...(opts.stallMs ? { stallMs: opts.stallMs } : {}),
     }).catch((e) => { throw toLlmError(e) })
     opts.onMeta?.({ cached: r.cached, via: r.via, xCache: r.xCache })
     return r.answer

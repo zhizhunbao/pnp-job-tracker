@@ -112,6 +112,42 @@ export type FriendChatOpts = {
    * ⚠️ `stream:true` 进 body = 进上游缓存键,所以流式与非流式各缓存一份(第一次切过去必然 MISS)。
    */
   onDelta?: (chunk: string) => void
+  /**
+   * 停摆上限:**连着这么久一个字都没吐** → abort 整个请求,报 `timeout`(2026-08-09 加)。
+   * 与 timeoutMs 的分工:timeoutMs 是「整通电话最长多久」,stallMs 是「多久没听见对方出声」。
+   * 🔴 为什么非有它不可:timeoutMs 只管到**响应头到手**(postJson 的 finally 当场 clearTimeout),
+   *    SSE body 那一段此前**一点上限都没有** —— 上游把头发回来再卡住,我们就一直读到天荒地老。
+   *    Frank 实撞的 112.7s(chat_logs id132,朋友 qwen 冷启/单队列;热身后 9-11s)就卡在这种「还连着但不出声」上。
+   * 不传 = 不装看门狗,行为与今天一字不差。
+   */
+  stallMs?: number
+}
+
+/**
+ * 看门狗:一个 AbortController 同时挂两个闸 —— 硬上限(timeoutMs,只响一次)与停摆(stallMs,每有动静就重置)。
+ * 两个闸共用同一个 signal,所以**它管得住整通请求**:等响应头那段、以及读 SSE body 那段。
+ * `why()` 只为日志分得清是「整通太久」还是「中途没动静」——错误码两者都是 timeout(调用方按同一条路降级)。
+ */
+type Watch = ReturnType<typeof makeWatch>
+function makeWatch(o: { timeoutMs: number; stallMs?: number }) {
+  const ctrl = new AbortController()
+  let why: 'timeout' | 'stall' | null = null
+  const hard = setTimeout(() => { why ??= 'timeout'; ctrl.abort() }, o.timeoutMs)
+  let soft: ReturnType<typeof setTimeout> | null = null
+  const arm = () => {
+    if (!o.stallMs || o.stallMs <= 0) return
+    if (soft) clearTimeout(soft)
+    soft = setTimeout(() => { why ??= 'stall'; ctrl.abort() }, o.stallMs)
+  }
+  arm()
+  return {
+    signal: ctrl.signal,
+    /** 收到一块**真内容**就喂一次(心跳/空 delta 不算动静,否则看门狗就白装了) */
+    kick: arm,
+    stop() { clearTimeout(hard); if (soft) clearTimeout(soft) },
+    why: () => why,
+    label: () => (why === 'stall' ? `stalled ${o.stallMs}ms` : `aborted after ${o.timeoutMs}ms`),
+  }
 }
 
 // 上游标准错误结构 → 我们的错误码。认不出的按 HTTP 状态兜底。
@@ -143,22 +179,20 @@ function mapErr(status: number, body: string): FriendLlmError {
   return new FriendLlmError(code, `${status} ${type || 'http_error'}${message ? `: ${message.slice(0, 200)}` : ''}`)
 }
 
-async function postJson(path: string, body: unknown, headers: Record<string, string>, timeoutMs: number) {
-  const ctrl = new AbortController()
-  const timer = setTimeout(() => ctrl.abort(), timeoutMs)
+// 🔴 定时器**不在这儿 clear**:响应头到手只是开头,body 还要读(见 Watch 头上那段)。
+//    由调用方在整通请求真的收尾时 watch.stop() —— 这正是 112s 那个口子的补法。
+async function postJson(path: string, body: unknown, headers: Record<string, string>, watch: Watch) {
   try {
     return await fetch(`${BASE}${path}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${KEY}`, ...headers },
       body: JSON.stringify(body),
-      signal: ctrl.signal,
+      signal: watch.signal,
     })
   } catch (e) {
     // abort 与网络错都落这;分开报码,调用方才能「各说各话」(超时可重试 / 掉线别重试)
-    throw new FriendLlmError(ctrl.signal.aborted ? 'timeout' : 'offline',
-      ctrl.signal.aborted ? `aborted after ${timeoutMs}ms` : `network: ${e instanceof Error ? e.message : String(e)}`)
-  } finally {
-    clearTimeout(timer)
+    throw new FriendLlmError(watch.signal.aborted ? 'timeout' : 'offline',
+      watch.signal.aborted ? watch.label() : `network: ${e instanceof Error ? e.message : String(e)}`)
   }
 }
 
@@ -169,13 +203,21 @@ async function postJson(path: string, body: unknown, headers: Record<string, str
  *   HIT ：**照样是 SSE**,但整段答案在**一个** delta 里一次给完(~300ms)。
  * 半块粘包按 `\n\n` 切、剩余留 buf —— 解不动的行直接跳过(宁可少一块,不许把整段扔了)。
  */
-async function readV1Sse(body: ReadableStream<Uint8Array>, onDelta?: (s: string) => void): Promise<string> {
+async function readV1Sse(body: ReadableStream<Uint8Array>, watch: Watch, onDelta?: (s: string) => void): Promise<string> {
   const reader = body.getReader()
   const dec = new TextDecoder()
   let buf = ''
   let out = ''
   for (;;) {
-    const { value, done } = await reader.read()
+    let value: Uint8Array | undefined
+    let done: boolean
+    try {
+      ({ value, done } = await reader.read())
+    } catch (e) {
+      // 看门狗掐断的流 → 报 timeout(和「一直没等到响应头」同码,调用方一条路降级)
+      if (watch.signal.aborted) throw new FriendLlmError('timeout', `stream ${watch.label()} after ${out.length}ch`)
+      throw e
+    }
     if (done) break
     buf += dec.decode(value, { stream: true })
     const blocks = buf.split('\n\n')
@@ -188,7 +230,8 @@ async function readV1Sse(body: ReadableStream<Uint8Array>, onDelta?: (s: string)
         try {
           const c = JSON.parse(raw)?.choices?.[0]
           const t = String(c?.delta?.content ?? c?.message?.content ?? '')
-          if (t) { out += t; onDelta?.(t) }
+          // 有真内容才算「出声」:心跳行/空 delta 不喂看门狗,否则一个还在心跳但不出字的流能吊住我们一辈子
+          if (t) { out += t; onDelta?.(t); watch.kick() }
         } catch { /* 半块/心跳行:跳过 */ }
       }
     }
@@ -207,6 +250,7 @@ async function chatV1(o: FriendChatOpts): Promise<FriendResult> {
   if (chars > FRIEND_INPUT_MAX) {
     throw new FriendLlmError('tooLong', `input ${chars} chars > gateway max ${FRIEND_INPUT_MAX}`)
   }
+  let watch = makeWatch({ timeoutMs: o.timeoutMs ?? 60_000, stallMs: o.stallMs })
   const send = (stream: boolean) => postJson('/v1/chat/completions', {
     model: MODEL,
     messages,
@@ -214,30 +258,38 @@ async function chatV1(o: FriendChatOpts): Promise<FriendResult> {
     ...(o.maxTokens ? { max_tokens: Math.min(o.maxTokens, FRIEND_MAX_TOKENS) } : {}),
     ...(o.temperature != null ? { temperature: o.temperature } : {}),
     ...(o.noCache ? { cache: false } : {}),
-  }, o.noCache ? { 'X-No-Cache': '1' } : {}, o.timeoutMs ?? 60_000)
+  }, o.noCache ? { 'X-No-Cache': '1' } : {}, watch)
 
-  let res = await send(Boolean(o.onDelta))
-  if (!res.ok) throw mapErr(res.status, await res.text().catch(() => ''))
-  let xCache = res.headers.get('x-cache')
   let answer = ''
   let d: any = null
-  // 兜底①:要了流,上游却回 JSON(命中网关缓存时可能直接吐整段)—— 按一次性解,onDelta 补发一次。
-  // 兜底②:流解出来是空的 —— **绝不把空答案交出去**,原地非流式重来一次(数据丢失处理不上砧板)。
-  const streamed = Boolean(o.onDelta) && (res.headers.get('content-type') || '').includes('text/event-stream') && !!res.body
-  if (streamed) {
-    answer = (await readV1Sse(res.body!, o.onDelta)).trim()
-    if (!answer) {
-      console.log(`[friendLlm] v1 stream empty (x-cache=${xCache ?? '-'}) → retry non-stream`)
-      res = await send(false)
-      if (!res.ok) throw mapErr(res.status, await res.text().catch(() => ''))
-      xCache = res.headers.get('x-cache')
+  let xCache: string | null = null
+  let streamed = false
+  try {
+    let res = await send(Boolean(o.onDelta))
+    if (!res.ok) throw mapErr(res.status, await res.text().catch(() => ''))
+    xCache = res.headers.get('x-cache')
+    // 兜底①:要了流,上游却回 JSON(命中网关缓存时可能直接吐整段)—— 按一次性解,onDelta 补发一次。
+    // 兜底②:流解出来是空的 —— **绝不把空答案交出去**,原地非流式重来一次(数据丢失处理不上砧板)。
+    streamed = Boolean(o.onDelta) && (res.headers.get('content-type') || '').includes('text/event-stream') && !!res.body
+    if (streamed) {
+      answer = (await readV1Sse(res.body!, watch, o.onDelta)).trim()
+      if (!answer) {
+        console.log(`[friendLlm] v1 stream empty (x-cache=${xCache ?? '-'}) → retry non-stream`)
+        watch.stop()                                    // 重来一次 = 重新计时,别让第一趟的余额把补救掐死
+        watch = makeWatch({ timeoutMs: o.timeoutMs ?? 60_000, stallMs: o.stallMs })
+        res = await send(false)
+        if (!res.ok) throw mapErr(res.status, await res.text().catch(() => ''))
+        xCache = res.headers.get('x-cache')
+        d = await res.json().catch(() => null)
+        answer = String(d?.choices?.[0]?.message?.content ?? '').trim()
+      }
+    } else {
       d = await res.json().catch(() => null)
       answer = String(d?.choices?.[0]?.message?.content ?? '').trim()
+      if (answer) o.onDelta?.(answer)
     }
-  } else {
-    d = await res.json().catch(() => null)
-    answer = String(d?.choices?.[0]?.message?.content ?? '').trim()
-    if (answer) o.onDelta?.(answer)
+  } finally {
+    watch.stop()
   }
   if (!answer) throw new FriendLlmError('empty', `empty choices (x-cache=${xCache ?? '-'})`)
   const u = d?.usage
@@ -247,15 +299,22 @@ async function chatV1(o: FriendChatOpts): Promise<FriendResult> {
 
 // ── 旧链 /api/chat:webSearch 的唯一通道 + /v1 挂掉时的回退。[ref:] 指纹在这条链上保留 ──
 async function chatLegacy(o: FriendChatOpts): Promise<FriendResult> {
-  const res = await postJson('/api/chat', {
-    prompt: refPrompt(o.prompt, o.system),
-    ...(o.system ? { system: o.system } : {}),
-    ...(o.webSearch ? { web_search: true } : {}),
-    ...(o.searchQuery ? { search_query: o.searchQuery } : {}),
-  }, { 'X-API-Key': KEY }, o.timeoutMs ?? 60_000)
-
-  if (!res.ok) throw mapErr(res.status, await res.text().catch(() => ''))
-  const d: any = await res.json().catch(() => null)
+  // 旧链是一次性 JSON,没有增量可言 → 只挂硬上限,不装停摆闸(stallMs 在这条链上没有语义)。
+  // 硬上限一直管到 body 读完:头到手就撤掉看门狗,等于把「读一半卡住」这段又放生了(v1 那边刚补的就是这个)。
+  const watch = makeWatch({ timeoutMs: o.timeoutMs ?? 60_000 })
+  let d: any = null
+  try {
+    const res = await postJson('/api/chat', {
+      prompt: refPrompt(o.prompt, o.system),
+      ...(o.system ? { system: o.system } : {}),
+      ...(o.webSearch ? { web_search: true } : {}),
+      ...(o.searchQuery ? { search_query: o.searchQuery } : {}),
+    }, { 'X-API-Key': KEY }, watch)
+    if (!res.ok) throw mapErr(res.status, await res.text().catch(() => ''))
+    d = await res.json().catch(() => null)
+  } finally {
+    watch.stop()
+  }
   const answer = String(d?.answer ?? '').trim()
   if (!answer) throw new FriendLlmError('empty', 'empty answer')
   const sources = Array.isArray(d?.sources)

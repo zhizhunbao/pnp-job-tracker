@@ -191,6 +191,15 @@ export const MAX_TEXT = 1200       // 输入侧封顶(#102 账单教训)
 const PROMPT_BUDGET = 4200         // 送 friend 的 user prompt 字符预算(留 1800 余量给 6000 硬上限)
 const MAX_FACTS = 40               // facts 上限:再多前端也读不完,prompt 也塞不下
 /**
+ * 合成层的忍耐力:**连着这么久一个字都没吐 → 不等了,把事实清单发出去**(env `CHAT_SYNTH_STALL_MS`,0=关)。
+ * 病灶:朋友 qwen 冷启 / 单队列排队,chat_logs id132 实测整轮 112.7s(热身后 9-11s)——
+ * 用户那头是一分钟空白,而**这时 facts 早就查完了**,手里攥着答案让人干等是最亏的一种失败。
+ * 为什么是「多久没动静」而不是「总共多久」:字在往外流的时候用户看得见进度,掐掉正在流的答复反而更差;
+ * 真正要治的是**一个字都没有**的那种卡(见 friendLlm 的 stallMs)。
+ * 数值放 env = Frank 在 Render 上随手调,不用为一个数走一次部署。
+ */
+const SYNTH_STALL_MS = Number(process.env.CHAT_SYNTH_STALL_MS ?? 25_000)
+/**
  * 🔴 **追问轮的短答是合法答案**(D2;2026-08-09 生产实录 chat_logs #52:「没工作」撞 tooShort)。
  * 首轮四字门的理由是「一句问候问不出东西」——那个理由在**我们刚问完一句**之后就不成立了:
  * 「没工作」「BC」「CLB 6」都是对上一句反问的完整回答,把它们顶回去等于自己问完自己不听。
@@ -3562,6 +3571,7 @@ export async function orchestrate(
   let sameOpen: string[] = []          // 句式雷同:重试一次就认命(降级比它难看得多),不进降级判据
   let passed = ''                      // 最近一次**过了硬拦**的答复(句式重试的退路)
   let firedLast: string[] = []         // 最后一次撞到的检查名(降级日志要报「因为哪一道」,不是只报「降级了」)
+  let stalled = false                  // 这轮降级是「等不来字」不是「写得不合规」——降级率的根因得分得清这两类
   // 🔵 逐句门(见 makeSentenceGate):只有**第一稿**流 —— 重试稿要么是撞了门的补救、要么是软重写,
   //    两种都是「把刚才那段推翻重写」,流出去只会让用户读到两遍不一样的话。
   //    slots 一并交给它:闸A(归因)判的是「这句话替他说了他没说过的属性」,没有槽就判不了。
@@ -3578,7 +3588,7 @@ export async function orchestrate(
       let acc = ''
       const raw2 = await completeText(
         synthMessages(facts, text, lang, { ...synOpts, ...(attempt ? { forbid: bad, banned, sameOpen } : {}) }),
-        { maxTokens: 900, provider: 'friend', onDelta: (chunk) => {
+        { maxTokens: 900, provider: 'friend', ...(SYNTH_STALL_MS > 0 ? { stallMs: SYNTH_STALL_MS } : {}), onDelta: (chunk) => {
           if (!ttft) ttft = Date.now() - t0
           if (!live || gateBad.length) return
           acc += chunk
@@ -3596,7 +3606,17 @@ export async function orchestrate(
       if (cleaned.dropped.length) console.log(`[chat] dropped trailing advice noc=${slots.noc} sentences=${JSON.stringify(cleaned.dropped)}`)
       answer = cleaned.text
     } catch (e) {
-      if (attempt === 0 && facts.length) { answer = ''; bad = []; break }   // 合成掉线:facts 还在,直接降级
+      // 合成掉线 / 卡到停摆闸响:facts 还在,直接降级成事实清单。
+      // 🔴 两处不再挑食:①**哪一稿都算**(原来只认第一稿,重写那稿挂了就整轮抛错——手里有 facts 还报错是纯亏);
+      //    ②超时与掉线同路(对用户是一回事:这句话等不来了)。code=timeout 单独记,降级率要分得清根因。
+      const code = e instanceof LlmError ? e.code : undefined
+      if (facts.length) {
+        stalled = code === 'timeout'
+        // 报码不报数:timeout 可能是停摆闸(stallMs)、也可能是硬上限或上游 504 —— 别在日志里替它猜是哪一个
+        console.log(`[chat] synth ${stalled ? `timeout (stallMs=${SYNTH_STALL_MS})` : 'failed'} attempt=${attempt + 1} `
+          + `noc=${slots.noc} → fact sheet (${e instanceof Error ? e.message.slice(0, 120) : String(e)})`)
+        answer = ''; bad = []; break
+      }
       throw new ChatError('llm', e instanceof LlmError ? e.message : String(e))
     }
     // 🔴 **哪一道检查、第几次** —— 逐道具名(2026-08-05 Frank:降级率是根因指标,修呈现只是化妆)。
@@ -3689,7 +3709,7 @@ export async function orchestrate(
     if (!facts.length) throw new ChatError('guard', 'no facts to fall back on', slots)
     degraded = true
     console.log(`[chat] degraded to fact sheet noc=${slots.noc} lang=${lang} facts=${facts.length} `
-      + `reason=${firedLast.join(',') || (answer ? 'unknown' : 'no-answer')} bad=${bad.join(',')}`)
+      + `reason=${stalled ? 'stall' : firedLast.join(',') || (answer ? 'unknown' : 'no-answer')} bad=${bad.join(',')}`)
     answer = factSheet(facts, lang)
     // 🔴 降级分支**必须过同一道出口检查**,否则它就是所有红线的后门(2026-08-04:兜底把英文内部标签
     //    `apprentice-friendly openings…` / `index scope note` 直接吐给了用户)。

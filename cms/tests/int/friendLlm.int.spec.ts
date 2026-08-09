@@ -109,3 +109,85 @@ describe('friendLlm 回退旧 /api/chat', () => {
     expect(r).toMatchObject({ sources: ['https://x.ca'], cached: true, via: 'legacy' })
   })
 })
+
+/**
+ * 停摆看门狗(stallMs,2026-08-09)。补的是一个**结构性**的口子:原来的 timeoutMs 在响应头到手那一刻
+ * 就 clearTimeout 了,SSE body 读多久都没人管 —— 上游把头发回来再卡住,我们能一直读到天荒地老。
+ * 这几条全部用 stub fetch + 毫秒级阈值,不打网络、不睡秒。
+ */
+describe('friendLlm 停摆看门狗', () => {
+  const enc = new TextEncoder()
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+  const sse = (t: string) => enc.encode(`data: ${JSON.stringify({ choices: [{ delta: { content: t } }] })}\n\n`)
+
+  /** 响应头永远不来(冷启动卡在连接那头):只有 abort 能结束它 */
+  function stubHang() {
+    const calls: string[] = []
+    vi.stubGlobal('fetch', vi.fn((url: string, init: any) => new Promise((_ok, rej) => {
+      calls.push(String(url))
+      init.signal.addEventListener('abort', () => rej(new DOMException('aborted', 'AbortError')))
+    })))
+    return calls
+  }
+
+  /** 头秒回,body 按 script 逐块吐;close=false → 吐完就装死(还连着,但一个字都不来) */
+  function stubStream(script: Array<{ text: string; delay: number }>, close: boolean) {
+    vi.stubGlobal('fetch', vi.fn(async (_url: string, init: any) => {
+      const signal: AbortSignal = init.signal
+      let ctl!: ReadableStreamDefaultController<Uint8Array>
+      const body = new ReadableStream<Uint8Array>({
+        start(c) {
+          ctl = c
+          void (async () => {
+            for (const s of script) {
+              await sleep(s.delay)
+              if (signal.aborted) return
+              c.enqueue(sse(s.text))
+            }
+            if (close) c.close()
+          })()
+        },
+      })
+      signal.addEventListener('abort', () => { try { ctl.error(new DOMException('aborted', 'AbortError')) } catch { /* 已经关了 */ } })
+      return new Response(body, { status: 200, headers: { 'content-type': 'text/event-stream', 'x-cache': 'MISS' } })
+    }))
+  }
+
+  it('响应头一直不来 → stallMs 到点报 timeout,且**不回退旧链**(旧链只会再卡一次)', async () => {
+    const calls = stubHang()
+    const e = await friendChatOrThrow({ prompt: 'hi', stallMs: 60, timeoutMs: 5_000, onDelta: () => {} }).catch((x) => x)
+    expect(e).toBeInstanceOf(FriendLlmError)
+    expect(e.code).toBe('timeout')
+    expect(e.message).toMatch(/stalled 60ms/)
+    expect(calls).toHaveLength(1)
+  })
+
+  it('🔴 流吐了两块然后装死 → 也报 timeout(旧代码在这儿是永久挂住:112s 那次的口子)', async () => {
+    stubStream([{ text: '安省', delay: 5 }, { text: '目前', delay: 5 }], false)
+    const got: string[] = []
+    const e = await friendChatOrThrow({ prompt: 'hi', stallMs: 80, timeoutMs: 5_000, onDelta: (c) => got.push(c) }).catch((x) => x)
+    expect(e).toBeInstanceOf(FriendLlmError)
+    expect(e.code).toBe('timeout')
+    expect(e.message).toMatch(/^stream stalled 80ms after 4ch/)   // 已经吐出来的字数留在错误里,便于对账
+    expect(got).toEqual(['安省', '目前'])                          // 停摆之前流出去的照旧算数
+  })
+
+  it('慢但一直在吐字的流不误杀:块间隔 30ms、stallMs 80 → 正常收全', async () => {
+    stubStream([{ text: 'a', delay: 30 }, { text: 'b', delay: 30 }, { text: 'c', delay: 30 }], true)
+    const r = await friendChatOrThrow({ prompt: 'hi', stallMs: 80, timeoutMs: 5_000, onDelta: () => {} })
+    expect(r.answer).toBe('abc')
+  })
+
+  it('不传 stallMs = 一字不改的老行为:120ms 才吐第一块也照收(看门狗根本没装)', async () => {
+    stubStream([{ text: 'slow', delay: 120 }], true)
+    const r = await friendChatOrThrow({ prompt: 'hi', timeoutMs: 5_000, onDelta: () => {} })
+    expect(r.answer).toBe('slow')
+  })
+
+  it('硬上限仍然管到 body 读完:timeoutMs 到点掐断装死的流', async () => {
+    stubStream([{ text: 'x', delay: 5 }], false)
+    const e = await friendChatOrThrow({ prompt: 'hi', timeoutMs: 60, onDelta: () => {} }).catch((x) => x)
+    expect(e.code).toBe('timeout')
+    expect(e.message).toMatch(/aborted after 60ms/)
+  })
+})
