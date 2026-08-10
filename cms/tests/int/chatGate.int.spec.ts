@@ -46,7 +46,7 @@ vi.mock('@/lib/entitlement', () => ({
 }))
 vi.mock('@/lib/profile', () => ({ patchProfile: H.patch }))
 
-import { ChatError, buildFollowups, slotAskOptions, isFollowupTurn, isUsageQuestion, orchestrate, profileFill, type ChatLang, type ChatTurn, type Slots } from '@/lib/chatOrchestrate'
+import { ChatError, buildFollowups, slotAskOptions, isFollowupTurn, isUsageQuestion, metaTopicOf, orchestrate, profileFill, type ChatLang, type ChatTurn, type MetaTopic, type Slots } from '@/lib/chatOrchestrate'
 import { findForeignScript, findLeaks, findShoutedWords, findWordNumbers } from '@/lib/chatOrchestrate'
 import { completeText } from '@/lib/llm'
 import { POST } from '@/app/api/chat/route'
@@ -143,6 +143,77 @@ describe('D1 用法类问句(chat_logs 实录原文)', () => {
     const r = await orchestrate(new FakePool(), { text: '我是木匠,LMIA 获批雇主的表有什么用?', lang: 'zh' })
     expect(r.slots.noc).toBe('72310')
     expect(vi.mocked(completeText).mock.calls.length, '走到合成 = 没被用法分支截胡').toBeGreaterThan(1)
+  })
+})
+
+// ── meta:问对话本身的话也不撞 noOcc ────────────────────────────────────────
+describe('meta 问句(chat_logs #160「为什么没有选项给我」)', () => {
+  const META: [ChatLang, string, MetaTopic][] = [
+    ['zh', '为什么没有选项给我', 'options'],                     // ✅ chat_logs #160 原文
+    ['zh', '选项呢', 'options'],
+    ['zh', '你能做什么', 'capability'],
+    ['zh', '这个网站可以帮我什么', 'capability'],
+    ['zh', '这个怎么用', 'howto'],
+    ['zh', '我该问什么', 'howto'],
+    ['en', 'why are there no options for me', 'options'],
+    ['en', 'what can you do', 'capability'],
+    ['en', 'how do i use this', 'howto'],
+    ['ko', '선택지가 왜 없나요', 'options'],
+    ['ko', '무엇을 할 수 있나요', 'capability'],
+    ['ko', '어떻게 사용하나요', 'howto'],
+  ]
+
+  it('三格都认得出,且认到哪一格就是哪一格', () => {
+    for (const [, text, topic] of META) expect(metaTopicOf(text), text).toBe(topic)
+  })
+
+  it('不该算 meta 的一条都不许中:问候、问钱、真业务问句', () => {
+    for (const text of [
+      '你好啊', 'hello there', '안녕하세요',
+      '雇主担保移民要多少钱?',
+      '我是木匠,想知道哪些省有戏',
+      '现在哪个省这个职业的在招岗位最多?',
+      'which province has the most cook jobs',
+      '',
+    ]) expect(metaTopicOf(text), text).toBeNull()
+  })
+
+  it('真实 orchestrate:回 guide 型答复,不抛 noOcc、不查工具、不进合成', async () => {
+    for (const [lang, text] of META) {
+      const pool = new FakePool()
+      vi.mocked(completeText).mockClear()
+      const r = await orchestrate(pool, { text, lang })
+      expect(r.answer.length, `${lang} ${text}`).toBeGreaterThan(30)
+      expect(r.slots.noc, '这一轮确实没认出职业,不许假装认出来').toBeNull()
+      expect(r.facts, '一个工具都没查就不该有出处').toEqual([])
+      expect(vi.mocked(completeText).mock.calls, '只调了抽槽那一次 = 这段话是写死的').toHaveLength(1)
+      expect(findLeaks(r.answer), `${text} 泄露内部码`).toEqual([])
+      expect(findWordNumbers(r.answer, lang), `${text} 中文数字`).toEqual([])
+      expect(findShoutedWords(r.answer), `${text} 裸大写`).toEqual([])
+      if (lang === 'en') expect(findForeignScript(r.answer, 'en'), `${text} 掺了非英文`).toEqual([])
+    }
+  })
+
+  it('三格各答各的,都把话头递回职业(一个数字都不出现)', async () => {
+    for (const topic of ['options', 'capability', 'howto'] as MetaTopic[]) {
+      const text = META.find((m) => m[2] === topic && m[0] === 'zh')![1]
+      const r = await orchestrate(new FakePool(), { text, lang: 'zh' })
+      expect(r.answer, topic).toContain('NOC')
+      expect(r.answer, `${topic} 没查工具却报了数`).not.toMatch(/\d/)
+    }
+  })
+
+  it('主语是我们那几张表的归 usage,不落到 meta', async () => {
+    expect(isUsageQuestion('LMIA 获批雇主的表怎么用?')).toBe(true)
+    const r = await orchestrate(new FakePool(), { text: 'LMIA 获批雇主的表怎么用?', lang: 'zh' })
+    expect(r.answer, 'usage 那份文案').toContain('劳动力市场影响评估')
+  })
+
+  it('说得出职业的 meta 问句走正常查询,连 meta 分支都不判', async () => {
+    H.slots = () => ({ occ_en: 'carpenter', noc: null, provs: [], exp_months: null, status: null, claims: [] })
+    const r = await orchestrate(new FakePool(), { text: '我是木匠,这个怎么用?', lang: 'zh' })
+    expect(r.slots.noc).toBe('72310')
+    expect(vi.mocked(completeText).mock.calls.length, '走到合成 = 没被 meta 截胡').toBeGreaterThan(1)
   })
 })
 

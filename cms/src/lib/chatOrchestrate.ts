@@ -816,6 +816,65 @@ export const answerUsage = (text: string, lang: ChatLang, slots: Omit<Slots, 'no
   followups: [],
 })
 
+/**
+ * 🔴 **问本站自己的话也不该被 noOcc 怼回去**(2026-08-10;chat_logs #160 实录:
+ * 「为什么没有选项给我」回了「说说你做的是什么工作,才查得到」—— 他问的是界面,答的是职业)。
+ * 和 isUsageQuestion 是同一类东西、不同主语:那条问的是**我们的表**,这条问的是**我们这个对话**。
+ *
+ * 口子只开三格,一格一条写死的话,不放开自由闲聊:
+ *   ① options    没给我选项 / 选项呢
+ *   ② capability 你能做什么 / 你能帮我什么
+ *   ③ howto      怎么用 / 该怎么问 / 怎么开始
+ * 全库 157 轮留痕里**一条真闲聊都没有**(你好/谢谢/你是谁一次没出现,`???` 这类由 tooShort 接住),
+ * 所以不为它建分支 —— 真来了照旧走 noOcc 反问,那句反问对闲聊本来就是对的。
+ *
+ * 判据同样是主语 + 意图两半都要中,且位置在 isUsageQuestion **之后**:
+ * 「LMIA 这张表怎么用」主语是表,该走 usage 那份带数据口径的文案,不该落到这儿来。
+ */
+export type MetaTopic = 'options' | 'capability' | 'howto'
+const META_RE: Record<MetaTopic, RegExp> = {
+  // 「没有/不给…选项」与「选项…呢/去哪了」两种语序都算;英文 no/where + options/buttons/suggestions
+  options: /(?:没有|沒有|没给|沒給|不给|不出|看不到).{0,8}(?:选项|選項|按钮|按鈕|可点的|推荐问题)|(?:选项|選項|按钮|按鈕).{0,6}(?:呢|哪去了|去哪了|不见了|没了)|\b(?:no|where are|where'?s)\b.{0,16}\b(?:options?|buttons?|suggestions?|choices?)\b|선택지.{0,8}(?:없|안 )/i,
+  capability: /(?:你|你们|你們|本站|这里|這裡|这个网站|這個網站|这个工具|這個工具).{0,10}(?:能|可以|会|會).{0,6}(?:做什么|做啥|干什么|幹什麼|干嘛|幫我什么|帮我什么|查什么|查啥|回答什么|提供什么)|你(?:是谁|是誰|能干嘛|会什么|會什麼)|\bwhat can (?:you|this|it)\b|\bwhat do you do\b|\bhow can you help\b|\bwhat are you\b|무엇을 (?:할|해)|뭘 할 수|어떤 도움(?:을|이)/i,
+  howto: /怎么用|怎麼用|如何使用|怎么问|怎麼問|该问什么|該問什麼|怎么开始|怎麼開始|从哪开始|從哪開始|\bhow (?:do|should) i (?:use|start|ask|begin)\b|\bhow does this work\b|\bwhere do i start\b|어떻게 (?:쓰|사용|시작|물어|질문)/i,
+}
+/** 这句话在问「你这个对话本身怎么回事」吗(纯函数,不问模型;命中返回哪一格,没中返回 null)。 */
+export const metaTopicOf = (text: string): MetaTopic | null => {
+  const s = (text || '').trim()
+  if (!s) return null
+  return (Object.keys(META_RE) as MetaTopic[]).find((k) => META_RE[k].test(s)) ?? null
+}
+
+/**
+ * 三格各一条整句(和 USAGE_WHAT 同一层:见客的话写死在数据层,不过模型)。
+ * 每条自带把话头递回职业那半句 —— 不共用 USAGE_ASK,共用了三条里就有两条在同屏复述同一句。
+ * 一个工具都没查,所以一个数字都不许出现。
+ */
+const META_ANSWER: Record<ChatLang, Record<MetaTopic, string>> = {
+  zh: {
+    options: '选项按你说的职业生成,这一轮没认出职业就没有。说出职业名或 NOC 码,选项会跟着出来。',
+    capability: '我按职业查在招岗位、省提名清单收录、官方门槛和联邦 EE 分数线。说出职业名或 NOC 码就能开始。',
+    howto: '直接说职业名或 NOC 码,再补省份、经验和语言成绩,结果会更贴你的情况。',
+  },
+  en: {
+    options: 'The options come from the occupation you name, so there are none until we have it. Tell us your occupation or NOC code and they will appear.',
+    capability: 'We look up job openings, provincial list coverage, official thresholds and federal Express Entry cut-offs for one occupation. Tell us your occupation or NOC code to start.',
+    howto: 'Name your occupation or NOC code first, then add your province, experience and language scores for a closer answer.',
+  },
+  ko: {
+    options: '선택지는 말씀하신 직업으로 만들어지므로 직업을 알기 전에는 나오지 않습니다. 직업명이나 NOC 코드를 알려 주시면 함께 나옵니다.',
+    capability: '직업 기준으로 채용 중인 일자리, 주 목록 등재 여부, 공식 요건, 연방 Express Entry 커트라인을 조회합니다. 직업명이나 NOC 코드를 알려 주세요.',
+    howto: '직업명이나 NOC 코드를 먼저 알려 주시고, 주와 경력, 어학 점수를 더해 주시면 결과가 더 정확해집니다.',
+  },
+}
+/** 形态照 answerUsage 一字不差:写死的话 + 空 facts + 不进模型 + noc 一定是 null。 */
+export const answerMeta = (topic: MetaTopic, lang: ChatLang, slots: Omit<Slots, 'noc'> & { noc: string | null }): ChatResult => ({
+  answer: META_ANSWER[lang][topic],
+  slots: { ...slots, noc: null },
+  facts: [],
+  followups: [],
+})
+
 // ── 第二步:调工具 → 压平成 Fact[] ─────────────────────────────────────────
 
 /**
@@ -3545,6 +3604,13 @@ export async function orchestrate(
     if (isUsageQuestion(text)) {
       console.log(`[chat] usage question answered without occupation lang=${lang}`)
       return answerUsage(text, lang, draft)
+    }
+    // 🔴 问的是「你这个对话本身怎么回事」(没选项 / 你能干什么 / 怎么用)→ 写死的一句 + 递回职业
+    //    (2026-08-10;见 metaTopicOf 上面那段)。**排在 usage 之后**:主语是我们那几张表的归 usage。
+    const meta = metaTopicOf(text)
+    if (meta) {
+      console.log(`[chat] meta question answered without occupation topic=${meta} lang=${lang}`)
+      return answerMeta(meta, lang, draft)
     }
     throw new ChatError('noOcc', 'occupation not resolved', { ...draft, noc: null })
   }
