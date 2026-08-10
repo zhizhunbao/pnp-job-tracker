@@ -48,10 +48,10 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
   const [noc, setNoc] = useState('')
   const [occStep, setOccStep] = useState(true)
   const [ready, setReady] = useState(false)
-  const [resetArmed, setResetArmed] = useState(false)
   const [resetNonce, setResetNonce] = useState(0)
   const [verdictNonce, setVerdictNonce] = useState(0)
   const [occTitles, setOccTitles] = useState<Record<string, string>>({})
+  const [scoreProvince, setScoreProvince] = useState('')
   // 答题卡默认收起(Frank「上来有必要让人测分数吗」——不逼人考试,一行入口自愿点开);
   // 「开始评估/继续作答/改答案」展开,答完自动收回
   const [quizOpen, setQuizOpen] = useState(false)
@@ -62,17 +62,16 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
     const a = readAnswers()
     setBands(a)
     setNoc(a.nocs[0] || '')
-    if (new URLSearchParams(window.location.search).get('quiz') === '1') setQuizOpen(true)
+    const baseFields = fieldsOf('pr', 'basic')
+    const complete = a.nocs.length > 0 && missingFields(baseFields, a).length === 0
+    // 空白或未完成的问卷默认直接展开；只有完整资料才收成摘要。已有职业时续答缺失题,
+    // 不把用户无意义地送回第一题。?quiz=1 仍可强制展开完整资料的编辑态。
+    setQuizOpen(!complete || new URLSearchParams(window.location.search).get('quiz') === '1')
+    setOccStep(a.nocs.length === 0)
     setReady(true)
     track('dp-open', { job: tvJob ? '1' : '0' })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  useEffect(() => {
-    if (!resetArmed) return
-    const id = setTimeout(() => setResetArmed(false), 8000)
-    return () => clearTimeout(id)
-  }, [resetArmed])
 
   const stepNames = fieldsOf('pr', 'basic')
   const stepTotal = stepNames.length + 1
@@ -118,7 +117,15 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
 
   // 带职位时按职位所在省;登录后直接进问卷、尚未选职位时,BC/ON 这种单省答案也能继续补问。
   // 草原三省/海洋四省是组合答案,没让用户选具体省前不擅自挑一个。
-  const targetProvince = tvJob?.province || (bands.provs.length === 1 ? bands.provs[0] : '')
+  const automaticProvince = tvJob?.province || (bands.provs.length === 1 ? bands.provs[0] : '')
+  const targetProvince = automaticProvince || scoreProvince
+  const factorProvinces = Array.from(new Set(scoreFactors.map((f) => f.province).filter(Boolean)))
+  // 省组不能合成一个分数:让用户补选具体省。选择“先看哪个够得着”时只列本站已有官方表的省,
+  // 避免铺十个点进去仍无法估分的死入口。
+  const scoreProvinceChoices = !tvJob && !automaticProvince
+    ? (bands.provs.length > 1 ? bands.provs : factorProvinces)
+    : []
+  useEffect(() => { setScoreProvince('') }, [bands.provBand, tvJob?.id])
   const targetFactors = targetProvince ? scoreFactors.filter((f) => f.province === targetProvince) : []
   const targetTeer = tvJob?.teer ?? (/^\d{5}$/.test(noc) ? Number(noc[1]) : null)
   const hasSplitWork = targetFactors.some((f) => f.factor === 'work5' || f.factor === 'work610')
@@ -173,8 +180,8 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="pathways" />
       <div style={{ flex: '1 0 auto' }}>
         <PageShell pad="1rem 1.25rem 40px">
-          <div style={{ maxWidth: 860, margin: '0 auto' }}>
-            {/* PR 评估是顶栏一级页:banner 与问卷共用 860px 内容轨,不放历史返回按钮。 */}
+          <div style={{ width: '100%' }}>
+            {/* PR 评估是顶栏一级页:banner 与全部卡片统一使用 PageShell 1320px 页面轨,不放历史返回按钮。 */}
             <PageBanner module="pathways" title={t('plan.pr.title')} sub={t('dp.sub')} images={BANNER_IMGS.pathways} />
 
             {/* 答题卡(主干,唯一采集面;题目不进对话——顾问只答疑)。
@@ -191,11 +198,10 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
                 <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
                   {quizOpen ? (
                     <button onClick={() => {
-                      if (!resetArmed) { setResetArmed(true); return }
-                      setBands(clearAnswers()); setNoc(''); setResetArmed(false); setResetNonce((n) => n + 1); setOccStep(true); setQuizPosition(1)
+                      setBands(clearAnswers()); setNoc(''); setResetNonce((n) => n + 1); setOccStep(true); setQuizPosition(1)
                       track('dp-quiz-reset')
-                    }} style={{ ...BTN, ...(resetArmed ? { color: '#b91c1c', border: '1px solid #fecaca', fontWeight: 600 } : {}) }}>
-                      {t(resetArmed ? 'plan.reset.ok' : 'plan.reset')}
+                    }} style={BTN}>
+                      {t('plan.reset')}
                     </button>
                   ) : (
                     // 一行入口:没答过=开始评估;答了一半=继续作答;答完=改答案(蓝底主按钮只给「开始」)
@@ -229,7 +235,7 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
                   <div className="plQuizPad" style={{ maxWidth: 600, margin: '0 auto' }}>
                     <QuizTitle>{t('quiz.q2')}</QuizTitle>
                     <div style={{ fontSize: 12.5, color: UI.text3, margin: '-10px 0 13px', lineHeight: 1.55 }}>{t('quiz.q2sub')}</div>
-                    <OccPicker inline t={t} lang={lang} initial={bands.nocs} doneLabel={t('plan.next')}
+                    <OccPicker key={resetNonce} inline t={t} lang={lang} initial={bands.nocs} doneLabel={t('plan.next')}
                       onChange={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || '') }}
                       onDone={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || ''); setOccStep(false); setQuizPosition(2) }} />
                   </div>
@@ -250,20 +256,36 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
                 setTimeout(() => quizRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60)
               }} />}
 
+            {/* 省组不能硬合成一个分数。先补选具体省,再进入该省自己的官方表。 */}
+            {quizComplete && scoreProvinceChoices.length > 0 && (
+              <div style={CARD}>
+                <h2 style={H2}>{t('ps.pickProvinceTitle')}</h2>
+                <div style={{ fontSize: 13, color: UI.text2, lineHeight: 1.65, marginBottom: 10 }}>{t('ps.pickProvinceHint')}</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {scoreProvinceChoices.map((prov) => {
+                    const on = targetProvince === prov
+                    return <button type="button" key={prov} onClick={() => setScoreProvince(prov)} style={on
+                      ? { ...BTN, borderColor: UI.primary, background: UI.primary, color: '#fff', fontWeight: 600 }
+                      : BTN}>{provDisp(prov)}</button>
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* 只在基础条件完成后追问目标省缺少的计分项。语言/总经验复用上方答案,不让用户重复填。 */}
             {quizComplete && targetFactors.length > 0 && (
               <div style={CARD}>
                 <PnpScoreCard key={scoreKey} t={t} lang={lang}
                   ctx={{ noc: tvJob?.noc || noc, teer: targetTeer, province: targetProvince, city: tvJob?.city || '' }}
                   factors={targetFactors} draws={scoreDraws}
-                  streams={tvJob?.pnpStream ? { [targetProvince]: tvJob.pnpStream } : {}}
+                  streams={tvJob && tvJob.pnpStream ? { [targetProvince]: tvJob.pnpStream } : {}}
                   initial={scoreInitial} hiddenProfileInputs={hiddenScoreInputs} targetMode />
               </div>
             )}
-            {tvJob && quizComplete && targetFactors.length === 0 && (
+            {quizComplete && !!targetProvince && targetFactors.length === 0 && (
               <div style={CARD}>
                 <h2 style={H2}>{t('ps.extraTitle')}</h2>
-                <div style={{ fontSize: 13, color: UI.text2, lineHeight: 1.65 }}>{t('ps.notReady', { prov: provDisp(tvJob.province) })}</div>
+                <div style={{ fontSize: 13, color: UI.text2, lineHeight: 1.65 }}>{t('ps.notReady', { prov: provDisp(targetProvince) })}</div>
               </div>
             )}
 
