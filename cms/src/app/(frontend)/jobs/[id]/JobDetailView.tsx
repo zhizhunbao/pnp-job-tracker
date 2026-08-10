@@ -8,7 +8,6 @@ import { useEffect, useState } from 'react'
 import { LANGS } from '../i18n'
 import { useLang } from '../../LangProvider'
 import { catName, JobBody, nocLocalTitle, provName, type JobRow, type NocDesc, type Plan } from '../JobsTable'
-import { TripleVerdictModal, TvEntryCard } from '../TripleVerdictModal'
 import { SiteHeader } from '../../SiteHeader'
 import { SiteFooter } from '../../SiteFooter'
 import { PageShell } from '../../ui/primitives'
@@ -25,7 +24,6 @@ export default function JobDetailView({ job, plan, dims }: { job: JobRow; plan: 
   const [lang, setLang, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
   // 2026-07-25 Frank「点击要有动画,不然不知道点没点,跳页有延迟」:按下即置忙态(变灰+省略号),导航期间可感
   const [leaving, setLeaving] = useState(false)
-  const [tvOpen, setTvOpen] = useState(false)   // #287 批D:判定卡入口(详情页)
   useEffect(() => {
     // 漏斗第 1 步(主线 M2 收口 2026-08-02):这个页面一直没有第一方浏览埋点 ——
     // 于是库里只有第 3 步「锁区曝光」有数,分母是空的,M3 的两种分叉(锁的东西不值钱 / 根本没人看见)
@@ -75,14 +73,13 @@ export default function JobDetailView({ job, plan, dims }: { job: JobRow; plan: 
             ) : null}
             <JobBody job={job} lang={lang} plan={plan} />
 
-            {/* #287 批D:判定卡入口(通道卡上方;效果图 se287-entry-detail;流量落点=本页,决策入口下沉) */}
-            <TvEntryCard t={t} lg onOpen={() => { track('tv-entry', { kind: 'detail' }); setTvOpen(true) }} />
-            {tvOpen && <TripleVerdictModal job={job} lang={lang} onClose={() => setTvOpen(false)} />}
-
-            {/* C6 通道卡(PathwaysCard)2026-08-10 Frank 拍板整块摘除:「这么多信息放到 job 详情基本是
-                多余的,根本没人点」——Umami 近 30 天坐实,pw-seen 148 次曝光、pw-cta 连事件表前 50 都
-                没进(≤6 次)。同期 tv-entry/tv-open 各 7 次,决策入口留上面那张三合一判定卡一个即可。
-                组件文件与 /api/pathways 保留(照 OccReportCard/答题卡的摘入口先例),只撤入口。 */}
+            {/* 2026-08-10 Frank 两拍,详情页的移民入口全撤,本页回到「只讲这份 job」:
+                ① C6 通道卡 PathwaysCard(「这么多信息放到 job 详情基本是多余的,根本没人点」)——
+                   Umami 近 30 天 pw-seen 148 次曝光,pw-cta 连事件表前 50 都没进(≤6 次);
+                ② #287 批D 判定卡入口 TvEntryCard(「放到 job 详情比较突兀」「根本就没人点」)——
+                   同期 tv-entry 全渠道合计仅 7 次,同窗口 jd-open 318 次。
+                两者的组件、/api/pathways、判定弹框都保留(照 OccReportCard/答题卡的「只摘入口」先例),
+                判定入口仍在职位板行内与公司弹框挂着,只是不再落在详情页。 */}
           </div>
 
           {/* 刀 1(入口下沉-20260731):报告入口,自包含组件,老结构不动;拿不到数/本省零在招=整卡不渲 */}

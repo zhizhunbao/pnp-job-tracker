@@ -314,7 +314,6 @@ const zh: Dict = {
   'se.col.openAip': '大西洋四省在招', 'se.allStreams': '全部清单', 'se.allOcc': '全部职业', 'se.empty': '没有匹配的雇主',
   // AIP 表「下一步」动线(数值锚 pnp_requirements program='AIP':workTeerMatch 映射到 TEER 0-4,
   // language 分 TEER 0-3 CLB5 / TEER 4 CLB4 —— 官方门槛里**没有 TEER 5**,别写 0-5)
-  'se.col.next': '下一步', 'se.next.jobs': '看在招岗 →',
   // 08-08 Frank 追加「表管事实,人话归对话」:三分表表题旁的对话导流钮 + 三张各自预填问句
   'se.askChat': '问 AI 顾问怎么用这张表',
   'se.ask.lmia': 'LMIA 获批雇主的表对我找工作移民有什么用?',
@@ -1255,7 +1254,6 @@ const en: Dict = {
   'pulse.col.sponsorRate': 'LMIA rate',
   'pulse.total': '{n} occupations', 'pulse.totalEmp': '{n} employers', 'pulse.hitEmp': '{m} of {n} employers',
   'se.col.openAip': 'Atlantic open jobs', 'se.allStreams': 'All lists', 'se.allOcc': 'All job titles', 'se.empty': 'No matching employers',
-  'se.col.next': 'Next step', 'se.next.jobs': 'See open jobs →',
   // 375 实拍折了两行 → 删到一行(「这四省」由表题与「Atlantic open jobs」列已经说清,不必再说一遍)
   'se.askChat': 'Ask the AI advisor how to use this table',
   'se.ask.lmia': 'How does the LMIA-approved employer table help my immigration job search?',
@@ -2142,7 +2140,6 @@ const ko: Dict = {
   'pulse.col.sponsorRate': 'LMIA 비율',
   'pulse.total': '총 {n}개 직업', 'pulse.totalEmp': '총 {n}곳', 'pulse.hitEmp': '{m}곳(총 {n}곳)',
   'se.col.openAip': '대서양 4개 주 채용 중', 'se.allStreams': '전체 목록', 'se.allOcc': '전체 직업명', 'se.empty': '일치하는 고용주가 없습니다',
-  'se.col.next': '다음 단계', 'se.next.jobs': '채용 중인 일자리 →',
   'se.askChat': 'AI 상담사에게 이 표 사용법 묻기',
   'se.ask.lmia': 'LMIA 승인 고용주 표가 제 이민 구직에 어떤 도움이 되나요?',
   'se.ask.named': '구인 직종이 수요 목록에 오른 고용주는 저에게 어떤 의미인가요?',

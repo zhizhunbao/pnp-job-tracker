@@ -4,7 +4,7 @@
 // 红线:凭证=历史事实/官方名录,非担保承诺。
 import { type Lang, type TFn } from '../jobs/i18n'
 import { track } from '@/lib/track'
-import { Card, CardKV, PILL_BTN, UI } from '../ui/primitives'
+import { Card, CardKV, UI } from '../ui/primitives'
 import { type SponsorEmployerRow } from '@/lib/sponsorEmployers'
 
 // 所在地统一省维度(Frank 08-08「怎么有的显示省有的显示市」:单省带市名造成两种粒度混排)——
@@ -70,21 +70,12 @@ export function sponsorEmployerCols(t: TFn, lang: Lang, kind: SponsorKind, showV
     sort: (r: SponsorEmployerRow) => VERDICT_RANK[r.verdict.state],
     render: (r: SponsorEmployerRow) => { const c = verdictCell(r, t); return <span style={{ color: c.color, fontWeight: c.color === '#9ca3af' ? 400 : 700 }}>{c.text}</span> },
   }
-  // AIP 表的「下一步」动作列(2026-08-09 Frank「用户看了这个表应该做什么」):点雇主名也能到职位板,
-  // 但那是**看着像标题的链接**,读者不知道点了会去哪。行尾给一个明说去向的钮,落点=该雇主的在招岗,
-  // 每行再接职位板既有的「身份判定」。只给 AIP 表:LMIA/named 两张表列已经很挤,加列先看这张的成效。
-  // 钮的样式=职位板同一枚 PILL_BTN(08-10 Frank「这个按钮风格为什么和 jobtable 的按钮风格不统一」)
-  const next = {
-    key: 'next', label: t('se.col.next'), nowrap: true,
-    render: (r: SponsorEmployerRow) => (
-      <a href={`/?q=${encodeURIComponent(r.name)}`} onClick={() => track('se-next-jobs')}
-        style={{ ...PILL_BTN, display: 'inline-block', textDecoration: 'none' }}>{t('se.next.jobs')}</a>
-    ),
-  }
+  // 「下一步」动作列 08-10 Frank 拍掉(「点公司名不就能跳转了吗?为什么还多了一列按钮」):
+  // 它的 href 与雇主名列**完全同一个** /?q=<name>,同一落点摆两个入口=纯占列宽。
   const base = [name, open]
   if (kind === 'lmia') return [...base, w1, w2, w4, lmia, skilled, where]
   if (kind === 'named') return [...base, where, ...(showVerdict ? [verdict] : [])]
-  return [...base, where, next]
+  return [...base, where]
 }
 
 export function SponsorCard({ r, lang, t, kind, showVerdict = false }: { r: SponsorEmployerRow; lang: Lang; t: TFn; kind: SponsorKind; showVerdict?: boolean }) {
@@ -113,11 +104,7 @@ export function SponsorCard({ r, lang, t, kind, showVerdict = false }: { r: Spon
       </div>
       {alias ? <div style={{ fontSize: 12.5, color: '#9ca3af', marginTop: 2 }}>{alias}</div> : null}
       <CardKV items={kv} />
-      {/* 桌面那一列在手机上摊成卡底的整条钮(手机没有「行尾」可言);同样只给 AIP 表 */}
-      {kind === 'aip' ? (
-        <a href={`/?q=${encodeURIComponent(r.name)}`} onClick={() => track('se-next-jobs')}
-          style={{ ...PILL_BTN, display: 'block', marginTop: 10, padding: '7px 13px', textDecoration: 'none', textAlign: 'center' }}>{t('se.next.jobs')}</a>
-      ) : null}
+      {/* 卡底那条「看在招岗 →」随桌面「下一步」列一并撤(08-10):与卡头雇主名同一个落点 */}
     </Card>
   )
 }
