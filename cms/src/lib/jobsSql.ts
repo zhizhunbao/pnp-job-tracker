@@ -702,6 +702,20 @@ export async function fetchTopNocs(pool: any, limit = 24): Promise<{ noc: string
   return rows.map((r: any) => ({ noc: r.noc, title: r.title, titleZh: r.title_zh, titleZhShort: r.title_zh_short, titleKoShort: r.title_ko_short, titleEnShort: r.title_en_short, broad: r.broad, open: r.open, eligible: r.eligible, medianSalary: num(r.med) }))
 }
 
+/** 选职业按大类浏览：只在用户点中某类后查该类，避免打开问卷就扫描完整 top=200。 */
+export async function fetchBroadNocs(pool: any, broad: string, limit = 60): Promise<{ noc: string; title: string; titleZh: string; titleZhShort: string; titleKoShort: string; titleEnShort: string; broad: string; open: number; eligible: number }[]> {
+  const n = Math.min(Math.max(limit, 1), 80)
+  const { rows } = await pool.query(
+    `SELECT j.noc, COALESCE(d.title, '') title, COALESCE(d.title_zh, '') title_zh, COALESCE(d.title_zh_short, '') title_zh_short,
+            COALESCE(d.title_ko_short, '') title_ko_short, COALESCE(d.title_en_short, '') title_en_short,
+            $1::text broad, count(*)::int open, count(*) FILTER (WHERE j.pnp_eligible)::int eligible
+     FROM jobs j JOIN noc_descriptions d ON d.noc = j.noc
+     WHERE j.status = 'open' AND j.noc <> '' AND j.broad = $1
+     GROUP BY j.noc, d.title, d.title_zh, d.title_zh_short, d.title_ko_short, d.title_en_short
+     ORDER BY count(*) DESC LIMIT $2`, [broad, n])
+  return rows.map((r: any) => ({ noc: r.noc, title: r.title, titleZh: r.title_zh, titleZhShort: r.title_zh_short, titleKoShort: r.title_ko_short, titleEnShort: r.title_en_short, broad: r.broad, open: r.open, eligible: r.eligible }))
+}
+
 /**
  * 选职业控件的**同族职业**(Frank「21231/21232 那种对儿自动挨一起」)。
  * 「同族」= NOC 码前 4 位相同(官方 unit group)。**用官方码分,不用本站的中文大类** ——

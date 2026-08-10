@@ -14,13 +14,14 @@ import { IconCheck, IconSearch, IconX } from '../Icons'
 import { QuizBar, QuizStyle, QuizTitle } from './QuizUI'
 import { Button, UI } from '../ui/primitives'
 import { shortOcc } from './EntryQuiz'
+import { BROAD_SLUGS } from '../stats/shared'
 import { pickName } from '@/lib/occName'
 import type { TFn } from '../jobs/i18n'
 
 // 选职业上限:与 /api/report 的 MAX_NOCS 同一个数(那边超了就 .slice(0,3) 静默丢)。
 // 上限**必须在前端也拦一道** —— 否则用户选了 4 个、亮着 4 颗 chip,报告只算前 3 个,他不知道丢了哪个。
 const MAX_NOCS = 3
-const PAGE_SIZE = 6
+const PAGE_SIZE = 12
 
 type Cand = { noc: string; title: string; titleZh: string; titleZhShort?: string; titleKoShort?: string; titleEnShort?: string }
 type Top = Cand & { open: number; broad?: string }
@@ -58,6 +59,8 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
   const [top, setTop] = useState<Top[]>(() => POPULAR_NOCS.map((x) => ({
     noc: x.noc, title: t(x.key), titleZh: t(x.key), open: 0,
   })))
+  const [cat, setCat] = useState('')
+  const [catalogByCat, setCatalogByCat] = useState<Record<string, Top[]>>({})
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [kin, setKin] = useState<Kin[]>([])
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -101,8 +104,23 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
   const base: Top[] = top.length
     ? top
     : POPULAR_NOCS.map((x) => ({ noc: x.noc, title: t(x.key), titleZh: t(x.key), open: 0 }))
-  const list = base.slice(0, 24)
+  const cats = BROAD_SLUGS.map(([, name]) => name)
+  const catRows = cat ? catalogByCat[cat] : undefined
+  const catLoading = !!cat && catRows === undefined
+  const list = cat ? (catRows || []) : base.slice(0, 24)
   const shownList = list.slice(0, visibleCount)
+
+  // 分类名称同步可见；职业只在用户点中某类后按需查询。这样恢复旧版分类浏览,
+  // 又不再让每次打开问卷都为从未点击的 26 类扫描 top=200。
+  useEffect(() => {
+    if (!cat || Object.prototype.hasOwnProperty.call(catalogByCat, cat)) return
+    const controller = new AbortController()
+    fetch(`/api/quiz?broad=${encodeURIComponent(cat)}`, { signal: controller.signal })
+      .then((r) => r.json())
+      .then((d) => setCatalogByCat((m) => ({ ...m, [cat]: Array.isArray(d?.top) ? d.top : [] })))
+      .catch((e) => { if (e?.name !== 'AbortError') setCatalogByCat((m) => ({ ...m, [cat]: [] })) })
+    return () => controller.abort()
+  }, [cat, catalogByCat])
 
   useEffect(() => {
     if (timer.current) clearTimeout(timer.current)
@@ -186,13 +204,20 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
 .occSearchClear{position:absolute;right:5px;top:50%;transform:translateY(-50%);width:30px;height:30px;border:0;border-radius:8px;background:transparent;color:${UI.text2};cursor:pointer;font-size:15px}
 .occSearchClear:hover{background:${UI.hairline}}
 .occResultsHead{font-size:12px;color:${UI.text3};margin:0 0 7px}
-.occGrid{gap:7px}
-.occOption{min-height:44px;padding:8px 12px;text-align:left;font-family:inherit}
-.occOptionName{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13.5px!important;font-weight:400}
-.occOption--on .occOptionName{font-weight:600}
-.occOptionMeta{flex-shrink:0;margin-left:auto;color:${UI.text3};font-size:11.5px;font-variant-numeric:tabular-nums}
-.occOptionCheck{color:transparent}
-.occOption--on .occOptionCheck{color:#fff}
+.occCatSel{display:none;width:100%;height:40px;box-sizing:border-box;margin:0 0 11px;padding:0 10px;border:1px solid ${UI.border};border-radius:10px;background:#fff;color:${UI.text};font:13.5px/1 inherit}
+.occCatTabs{display:flex;flex-wrap:wrap;gap:14px;margin:1px 0 12px;padding:0 0 9px;border-bottom:1px solid ${UI.hairline}}
+.occCatTab{border:0;border-bottom:2px solid transparent;background:transparent;padding:3px 0;color:${UI.text2};font:400 13px/1.4 inherit;cursor:pointer}
+.occCatTab--on{border-bottom-color:${UI.primary};color:${UI.primary};font-weight:700}
+.occPills{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.occPill{display:inline-flex;align-items:center;gap:7px;max-width:100%;min-height:36px;box-sizing:border-box;padding:7px 13px;border:1px solid ${UI.border};border-radius:999px;background:#fff;color:${UI.text};font:500 13.5px/1.35 inherit;cursor:pointer;transition:border-color .12s,background .12s,color .12s}
+.occPill:hover{border-color:#93c5fd;background:#f8fbff}
+.occPill--on{border-color:${UI.primary};background:${UI.primary};color:#fff;font-weight:600}
+.occPill--on:hover{border-color:${UI.primaryDeep};background:${UI.primaryDeep}}
+.occPillName{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.occPillMeta{flex-shrink:0;color:${UI.text3};font-size:11.5px;font-variant-numeric:tabular-nums}
+.occPill--on .occPillMeta{color:#dbeafe}
+.occPillCheck{display:inline-flex;align-items:center;font-size:12px}
+.occPillSkeleton{height:36px;border-radius:999px;background:${UI.hairline}}
 .occMore{display:block;margin:9px auto 0;border:0;background:transparent;color:${UI.primary};font:600 12.5px/1.4 inherit;cursor:pointer;padding:5px 10px}
 .occKin{margin:0 0 12px;padding:9px 10px;border-radius:10px;background:#f8fafc;border:1px solid ${UI.hairline}}
 .occKinHead{display:flex;align-items:baseline;gap:7px;margin-bottom:7px;font-size:12px;color:${UI.text2};font-weight:600}
@@ -201,7 +226,7 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
 .occKinBtn{display:inline-flex;align-items:center;gap:6px;max-width:100%;border:1px solid #dbeafe;border-radius:999px;background:#fff;color:${UI.primaryDeep};padding:5px 9px;font:500 12px/1.35 inherit;cursor:pointer}
 .occKinBtn:hover{border-color:#93c5fd;background:#eff6ff}.occKinBtn:disabled{opacity:.4;cursor:not-allowed}
 .occKinN{color:${UI.text3};font-size:10.5px;font-variant-numeric:tabular-nums}
-@media(max-width:640px){.occOption{min-height:44px}}`}</style>
+@media(max-width:640px){.occCatSel{display:block}.occCatTabs{display:none}.occPills{gap:7px}.occPill{min-height:38px;padding:8px 12px}}`}</style>
         {!inline && (
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>
             <QuizTitle>{t('quiz.q2')}</QuizTitle>
@@ -261,15 +286,15 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
             {!searching && cands.length === 0 ? (
               <div style={{ border: `1px dashed ${UI.border}`, borderRadius: 10, padding: '18px 12px', textAlign: 'center', fontSize: 13, color: UI.text3 }}>{t('occ.noResult')}</div>
             ) : (
-              <div className="qzList occGrid">
+              <div className="occPills">
                 {cands.map((c) => {
                   const on = nocs.includes(c.noc)
                   return (
-                    <button type="button" className={`qzItem occOption${on ? ' qzItem--on occOption--on' : ''}`} key={c.noc} disabled={lockedOut(c.noc)}
+                    <button type="button" className={`occPill${on ? ' occPill--on' : ''}`} key={c.noc} disabled={lockedOut(c.noc)} aria-pressed={on}
                       onClick={() => { toggle(c.noc, label(c)); setQ(''); setCands([]) }} style={lockedStyle(c.noc)}>
-                      <span className="qzBadge occOptionCheck">{on && <IconCheck />}</span>
-                      <span className="qzText occOptionName">{shortOcc(label(c))}</span>
-                      <span className="occOptionMeta">{c.noc}</span>
+                      {on && <span className="occPillCheck"><IconCheck /></span>}
+                      <span className="occPillName">{shortOcc(label(c))}</span>
+                      <span className="occPillMeta">{c.noc}</span>
                     </button>
                   )
                 })}
@@ -278,18 +303,40 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
           </div>
         )}
 
-        {/* 首屏同步出常用职业,一次露 6 条;缓存若已热好再补真实在招数,完整职业走搜索。 */}
-        {q.trim().length < 2 && <div className="qzList occGrid">
-          {shownList.map((x) => {
+        {/* 旧版“分类 + 胶囊”浏览恢复。桌面用文字标签,手机用单行下拉；完整目录后台加载,
+            热门首屏不等它,所以刷新速度仍保持这一版的快速路径。 */}
+        {q.trim().length < 2 && (
+          <>
+            <select className="occCatSel" value={cat} aria-label={t('mkt.broad')}
+              onChange={(e) => { setCat(e.target.value); setVisibleCount(PAGE_SIZE) }}>
+              <option value="">{t('occ.cat.hot')}</option>
+              {cats.map((c) => <option key={c} value={c}>{t('broad.' + c)}</option>)}
+            </select>
+            <div className="occCatTabs">
+              {['', ...cats].map((c) => (
+                <button type="button" key={c || 'hot'} className={`occCatTab${cat === c ? ' occCatTab--on' : ''}`}
+                  onClick={() => { setCat(c); setVisibleCount(PAGE_SIZE) }}>
+                  {c ? t('broad.' + c) : t('occ.cat.hot')}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* 首屏同步出常用职业；缓存若已热好再补真实在招数。分类内按招聘量排列并分页展开。 */}
+        {q.trim().length < 2 && <div className="occPills" aria-busy={catLoading}>
+          {catLoading ? [104, 146, 122, 168, 112, 138].map((width, i) => (
+            <span className="occPillSkeleton" key={i} style={{ width }} />
+          )) : shownList.map((x) => {
             const l = label(x)
             const hint = (dupCount.get(l) || 0) > 1 ? (x.title && x.title !== l ? x.title : x.noc) : ''
             const on = nocs.includes(x.noc)
             return (
-              <button type="button" className={`qzItem occOption${on ? ' qzItem--on occOption--on' : ''}`} key={x.noc} title={l} disabled={lockedOut(x.noc)} onClick={() => toggle(x.noc, l)} style={lockedStyle(x.noc)}>
-                <span className="qzBadge occOptionCheck">{on && <IconCheck />}</span>
-                <span className="qzText occOptionName">{shortOcc(l)}</span>
-                {hint ? <span className="occOptionMeta">{hint}</span> : null}
-                {x.open ? <span style={{ fontSize: 12.5, color: UI.text3, flexShrink: 0 }}>{t('quiz.openN', { n: x.open.toLocaleString('en-CA') })}</span> : null}
+              <button type="button" className={`occPill${on ? ' occPill--on' : ''}`} key={x.noc} title={l} disabled={lockedOut(x.noc)} aria-pressed={on} onClick={() => toggle(x.noc, l)} style={lockedStyle(x.noc)}>
+                {on && <span className="occPillCheck"><IconCheck /></span>}
+                <span className="occPillName">{shortOcc(l)}</span>
+                {hint ? <span className="occPillMeta">{hint}</span> : null}
+                {x.open ? <span className="occPillMeta">{t('quiz.openN', { n: x.open.toLocaleString('en-CA') })}</span> : null}
               </button>
             )
           })}

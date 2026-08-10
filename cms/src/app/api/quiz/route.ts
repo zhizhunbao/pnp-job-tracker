@@ -7,7 +7,7 @@
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import { fetchKinNocs, fetchNocOpenCounts, fetchQuizFacts, searchNocByTitle } from '@/lib/jobsSql'
+import { fetchBroadNocs, fetchKinNocs, fetchNocOpenCounts, fetchQuizFacts, searchNocByTitle } from '@/lib/jobsSql'
 import { getTopNocsCached } from '@/lib/quizTop'
 
 // 热门清单缓存挪进 lib/quizTop(SWR + 启动预热共用一份;冷启动首访 8.4s 的账见那边注释)
@@ -16,6 +16,7 @@ const TOP_TTL = 10 * 60_000
 const factsCache = new Map<string, { at: number; facts: unknown }>()
 const kinCache = new Map<string, { at: number; rows: unknown[] }>()
 const countsCache = new Map<string, { at: number; rows: Record<string, { open: number; eligible: number }> }>()
+const broadCache = new Map<string, { at: number; rows: unknown[] }>()
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -28,6 +29,16 @@ export async function GET(req: Request) {
   const pool = (payload.db as any).pool
 
   if (q) return Response.json({ candidates: await searchNocByTitle(pool, q) })
+  // ?broad=技工 → 用户点中大类后才取该类职业。比每次打开控件都查 top=200 更快、更省。
+  const broad = (sp.get('broad') || '').trim().slice(0, 24)
+  if (broad) {
+    const hit = broadCache.get(broad)
+    if (hit && Date.now() - hit.at < TOP_TTL) return Response.json({ top: hit.rows })
+    const rows = await fetchBroadNocs(pool, broad)
+    if (broadCache.size >= 40) broadCache.clear()
+    broadCache.set(broad, { at: Date.now(), rows })
+    return Response.json({ top: rows })
+  }
   // ?top=N → 按在招量排的热门职业(清单本身不手写)。进程内缓存 10 分钟:
   // 这条要对 4 万多在招岗做 GROUP BY,实测 3.6s;选职业控件每次打开都等它是不可接受的,
   // 而它一天也变不了几次(同 /api/market-stats、homeCache 的手法)。

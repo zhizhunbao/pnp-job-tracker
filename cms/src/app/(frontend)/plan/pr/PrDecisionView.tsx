@@ -11,7 +11,6 @@ import { streamDisplay } from '../../jobs/i18n'
 import { useLang } from '../../LangProvider'
 import { SiteHeader } from '../../SiteHeader'
 import { SiteFooter } from '../../SiteFooter'
-import { goBackOr } from '../../BackLink'
 import { quizToProfile } from '../../quiz/EntryQuiz'
 import { OccPicker } from '../../quiz/OccPicker'
 import { POPULAR_NOCS } from '../../account/profileOptions'
@@ -174,10 +173,9 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="pathways" />
       <div style={{ flex: '1 0 auto' }}>
         <PageShell pad="1rem 1.25rem 40px">
-          <PageBanner module="pathways" title={t('plan.pr.title')} sub={t('dp.sub')} images={BANNER_IMGS.pathways}
-            right={<button className="noPrint" onClick={() => goBackOr('/')} style={{ ...BTN, border: 'none' }}>{t('detail.back')}</button>} />
           <div style={{ maxWidth: 860, margin: '0 auto' }}>
-            {/* 一级页统一用 pathways 图片 banner;正文继续保持 860px 阅读宽度。 */}
+            {/* PR 评估是顶栏一级页:banner 与问卷共用 860px 内容轨,不放历史返回按钮。 */}
+            <PageBanner module="pathways" title={t('plan.pr.title')} sub={t('dp.sub')} images={BANNER_IMGS.pathways} />
 
             {/* 答题卡(主干,唯一采集面;题目不进对话——顾问只答疑)。
                 答完=一行摘要+改答案(整卡铺开就是「太乱」的病根之一);改答案从职业页重新走 */}
