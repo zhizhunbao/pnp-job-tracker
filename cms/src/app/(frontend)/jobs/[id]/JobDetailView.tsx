@@ -3,11 +3,11 @@
 // 内容 = 面包屑 + H1(职位名 + NOC 官方职业名译名对照)+ JobBody(与 JD 弹框同一组件)+ 返回。
 // 砍(Frank 2026-07-22 三令):头部卡 meta(公司/城市/日期/chips)、与我的匹配、事实块、
 //   省提名/EE 卡、相关职位 —— 一条信息一个家,移民信号在移民弹框,公司在公司弹框/页。
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { LANGS } from '../i18n'
 import { useLang } from '../../LangProvider'
-import { catName, JobBody, nocLocalTitle, provName, type JobRow, type NocDesc, type Plan } from '../JobsTable'
+import { catName, JobBody, nocLocalTitle, provName, registerCatLabels, type JobRow, type NocDesc, type Plan } from '../JobsTable'
 import { SiteHeader } from '../../SiteHeader'
 import { SiteFooter } from '../../SiteFooter'
 import { PageShell } from '../../ui/primitives'
@@ -15,7 +15,11 @@ import { goBackOr } from '../../BackLink'
 import { track } from '@/lib/track'
 
 // dims 收窄:B2 后页面只用 nocDesc(职位名译名对照);其余维度(pnp/ee/新闻…)随移民卡砍一并不用
-type Dims = { nocDesc: NocDesc[] }
+type CatLabel = {
+  broad?: string; mid?: string; fine?: string
+  broadEn?: string; broadKo?: string; midEn?: string; midKo?: string; fineEn?: string; fineKo?: string
+}
+type Dims = { nocDesc: NocDesc[]; nocCategories: CatLabel[] }
 
 const aLink: React.CSSProperties = { color: '#2563eb', textDecoration: 'none' }
 const sec: React.CSSProperties = { border: '1px solid #e5e7eb', borderRadius: 12, background: '#fff', padding: '12px 16px', marginBottom: 14 }
@@ -36,9 +40,11 @@ export default function JobDetailView({ job, plan, dims }: { job: JobRow; plan: 
   // 职位名翻译(Frank「job 名称也需要翻译」):雇主原始岗名多是英文且不规范,挂 NOC 官方职业名的
   // 界面语言译名作对照(#151 口径,与公司页在招职位同款);英文界面/无 NOC 译名=空,不渲。
   const nocZh = nocLocalTitle(nocRow, lang)
+  // 列表页会注册整张分类维表；详情页直入也必须注册本岗这一行，否则英/韩界面会回退中文分类名。
+  useMemo(() => registerCatLabels(dims.nocCategories), [dims.nocCategories])
   // 面包屑职业分类路径段(省 › 大 › 中 › 小):同名相邻跳过,不铺重复
   const catSegs = (([
-    job.broad && job.broad !== '未分类' ? { txt: t('broad.' + job.broad), href: `/?broad=${encodeURIComponent(job.broad)}` } : null,
+    job.broad && job.broad !== '未分类' ? { txt: catName(t, job.broad), href: `/?broad=${encodeURIComponent(job.broad)}` } : null,
     job.mid && job.mid !== '未分类' ? { txt: catName(t, job.mid), href: `/?broad=${encodeURIComponent(job.broad || '')}&mid=${encodeURIComponent(job.mid)}` } : null,
     job.fine && job.fine !== '未分类' ? { txt: catName(t, job.fine), href: `/?fine=${encodeURIComponent(job.fine)}` } : null,
   ].filter(Boolean)) as { txt: string; href: string }[])

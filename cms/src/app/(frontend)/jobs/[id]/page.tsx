@@ -55,12 +55,25 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
   const job = await fetchJobById(pool, id, { pro, profile: normalizeProfile(null), profileOk: false, matchDims: { pnpOccupations: [], eeCategories: [] } })
   if (!job) notFound()
 
-  // 唯一页面维度:本岗 NOC 官方职业名(职位名译名对照,Frank「job 名称也需要翻译」)
+  // 页面维度:本岗 NOC 官方职业名 + 本岗分类的英韩名。后者供详情页直入时渲染面包屑；
+  // 列表页虽已加载整张分类维表,但不能假设用户一定从列表页导航过来。
   const nocDescDocs = job.noc
     ? await payload.find({ collection: 'noc-descriptions', limit: 1, depth: 0, where: { noc: { equals: job.noc } } })
     : { docs: [] as any[] }
+  const categoryTerms = [
+    job.broad ? { broad: { equals: job.broad } } : null,
+    job.mid ? { mid: { equals: job.mid } } : null,
+    job.fine ? { fine: { equals: job.fine } } : null,
+  ].filter(Boolean)
+  const nocCategoryDocs = categoryTerms.length
+    ? await payload.find({ collection: 'noc-categories', limit: 1, depth: 0, where: { and: categoryTerms as any[] } })
+    : { docs: [] as any[] }
   const dims = {
     nocDesc: nocDescDocs.docs.map((r: any) => ({ noc: r.noc, title: r.title ?? '', titleZh: r.titleZh ?? '', titleKo: r.titleKo ?? '', duties: r.duties ?? '', requirements: r.requirements ?? '', fetched: r.fetched ?? '' })),
+    nocCategories: nocCategoryDocs.docs.map((r: any) => ({
+      broad: r.broad ?? '', mid: r.mid ?? '', fine: r.fine ?? '',
+      broadEn: r.broadEn ?? '', broadKo: r.broadKo ?? '', midEn: r.midEn ?? '', midKo: r.midKo ?? '', fineEn: r.fineEn ?? '', fineKo: r.fineKo ?? '',
+    })),
   }
 
   // dd24-#107:B2 瘦身时把 profile 硬置 null,投递栏(E9-04)上线后成了坑——详情页直入的已建档用户
