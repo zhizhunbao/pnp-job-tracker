@@ -95,7 +95,9 @@ export type ChatResult = {
 }
 /** 档案里已有值的槽(route 从 users.profile 算好传进来)——已有的不再点选追问,手填优先。 */
 export type ProfileKnown = { status?: boolean; provs?: boolean; clb?: boolean; edu?: boolean; expMonths?: boolean; married?: boolean; canadaStudy?: boolean }
-export type ChatErrorCode = 'tooShort' | 'noOcc' | 'llm' | 'guard'
+// busy = 模型那头等不来字(停摆闸响/上游超时)。**不降级成事实清单**(2026-08-09 Frank 拍板
+// 「不用降级 就显示稍后再试,系统繁忙」):等太久之后再塞一张表格,读的人只会更烦。
+export type ChatErrorCode = 'tooShort' | 'noOcc' | 'llm' | 'guard' | 'busy'
 export class ChatError extends Error {
   code: ChatErrorCode
   slots?: Slots
@@ -3571,7 +3573,6 @@ export async function orchestrate(
   let sameOpen: string[] = []          // 句式雷同:重试一次就认命(降级比它难看得多),不进降级判据
   let passed = ''                      // 最近一次**过了硬拦**的答复(句式重试的退路)
   let firedLast: string[] = []         // 最后一次撞到的检查名(降级日志要报「因为哪一道」,不是只报「降级了」)
-  let stalled = false                  // 这轮降级是「等不来字」不是「写得不合规」——降级率的根因得分得清这两类
   // 🔵 逐句门(见 makeSentenceGate):只有**第一稿**流 —— 重试稿要么是撞了门的补救、要么是软重写,
   //    两种都是「把刚才那段推翻重写」,流出去只会让用户读到两遍不一样的话。
   //    slots 一并交给它:闸A(归因)判的是「这句话替他说了他没说过的属性」,没有槽就判不了。
@@ -3606,15 +3607,23 @@ export async function orchestrate(
       if (cleaned.dropped.length) console.log(`[chat] dropped trailing advice noc=${slots.noc} sentences=${JSON.stringify(cleaned.dropped)}`)
       answer = cleaned.text
     } catch (e) {
-      // 合成掉线 / 卡到停摆闸响:facts 还在,直接降级成事实清单。
-      // 🔴 两处不再挑食:①**哪一稿都算**(原来只认第一稿,重写那稿挂了就整轮抛错——手里有 facts 还报错是纯亏);
-      //    ②超时与掉线同路(对用户是一回事:这句话等不来了)。code=timeout 单独记,降级率要分得清根因。
       const code = e instanceof LlmError ? e.code : undefined
+      const why = e instanceof Error ? e.message.slice(0, 120) : String(e)
+      // 报码不报数:timeout 可能是停摆闸(stallMs)、也可能是硬上限或上游 504 —— 别在日志里替它猜是哪一个
+      if (code === 'timeout') {
+        // 🔴 等不来字 = **报「系统繁忙」,不发事实清单**(Frank 08-09 拍板)。
+        //    唯一例外:上一稿本来就是干净的(只是想重写得好看点),那就把它发出去 —— 手里有能用的答复还报错是纯亏。
+        if (passed) {
+          console.log(`[chat] synth timeout on rewrite (stallMs=${SYNTH_STALL_MS}) noc=${slots.noc} → keep the clean draft`)
+          answer = passed; bad = []; banned = []; break
+        }
+        console.log(`[chat] synth timeout (stallMs=${SYNTH_STALL_MS}) attempt=${attempt + 1} noc=${slots.noc} → busy (${why})`)
+        throw new ChatError('busy', `synthesis timed out: ${why}`, slots)
+      }
+      // 掉线/上游炸了这类**不是等待**的失败照旧降级:facts 已经查到了,给清单比给错误页强。
+      // 哪一稿挂了都算(原来只认第一稿,重写那稿挂了就整轮抛错)。
       if (facts.length) {
-        stalled = code === 'timeout'
-        // 报码不报数:timeout 可能是停摆闸(stallMs)、也可能是硬上限或上游 504 —— 别在日志里替它猜是哪一个
-        console.log(`[chat] synth ${stalled ? `timeout (stallMs=${SYNTH_STALL_MS})` : 'failed'} attempt=${attempt + 1} `
-          + `noc=${slots.noc} → fact sheet (${e instanceof Error ? e.message.slice(0, 120) : String(e)})`)
+        console.log(`[chat] synth failed attempt=${attempt + 1} noc=${slots.noc} → fact sheet (${why})`)
         answer = ''; bad = []; break
       }
       throw new ChatError('llm', e instanceof LlmError ? e.message : String(e))
@@ -3709,7 +3718,7 @@ export async function orchestrate(
     if (!facts.length) throw new ChatError('guard', 'no facts to fall back on', slots)
     degraded = true
     console.log(`[chat] degraded to fact sheet noc=${slots.noc} lang=${lang} facts=${facts.length} `
-      + `reason=${stalled ? 'stall' : firedLast.join(',') || (answer ? 'unknown' : 'no-answer')} bad=${bad.join(',')}`)
+      + `reason=${firedLast.join(',') || (answer ? 'unknown' : 'no-answer')} bad=${bad.join(',')}`)
     answer = factSheet(facts, lang)
     // 🔴 降级分支**必须过同一道出口检查**,否则它就是所有红线的后门(2026-08-04:兜底把英文内部标签
     //    `apprentice-friendly openings…` / `index scope note` 直接吐给了用户)。

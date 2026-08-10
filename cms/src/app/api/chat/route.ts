@@ -6,7 +6,8 @@
  *           → data:{answer,slots,facts,followups}(整段:facts/followups 只能整段给) → data:[DONE]
  *           中途可能插一条 data:{"reset":true} = 前面发出去的正文作废,前端清屏(见下)
  * 200 JSON: 同一份 { answer, slots, facts, followups }(前置阶段就出结果时;前端按 content-type 分流)
- * err : { error: 'tooShort'|'noOcc'|'llm'|'limit'|'guard' } + 状态码(**前置错误一律走 JSON**)
+ * err : { error: 'tooShort'|'noOcc'|'llm'|'limit'|'guard'|'busy' } + 状态码(**前置错误一律走 JSON**)
+ *       busy(503)= 合成等不来字(停摆闸响);不发事实清单,前端出「系统繁忙,稍后再试」+重试钮
  *
  * 🔵 **正文按句流**(2026-08-08 拍板;旧口径「只流轨迹」的理由——「出口校验整段才跑」——已被拆掉):
  *    一句过了逐句门(数字回查 facts / 内部码 / 语言混用 / 两态揉一句)才发,判据见 lib/chatOrchestrate
@@ -71,7 +72,8 @@ export async function POST(req: Request) {
   const dbg = String((user as any)?.email || '').endsWith('@test.local')
   const fail = (e: unknown) => {
     if (e instanceof ChatError) {
-      const status = e.code === 'tooShort' || e.code === 'noOcc' ? 400 : 502
+      // busy = 模型那头等不来字 → 503(它是「现在忙,过会儿再来」,不是 502「上游给了个坏回答」)
+      const status = e.code === 'tooShort' || e.code === 'noOcc' ? 400 : e.code === 'busy' ? 503 : 502
       console.log(`[chat] ${e.code}: ${e.message.slice(0, 200)}`)
       return { status, body: { error: e.code, ...(e.slots ? { slots: e.slots } : {}), ...(dbg ? { detail: e.message.slice(0, 300) } : {}) } }
     }

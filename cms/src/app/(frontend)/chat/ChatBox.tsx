@@ -25,7 +25,7 @@ import { ChatAnswer, ChatText, CHAT_ANSWER_CSS, type Answer } from './ChatAnswer
 import { pickExamples, exampleKind, type ChatProfile } from './chatExamples'
 
 type Msg = { role: 'user' | 'assistant'; content: string }
-type Fault = 'limit' | 'llm' | 'guard' | 'net'
+type Fault = 'limit' | 'llm' | 'guard' | 'net' | 'busy'
 // 一轮 = 用户那句 + 其中**恰好一种**结果:引导(接着聊)/ 故障 / 答复 / 还在等(steps = 工具轨迹)
 // stepsOpen:`null` = 跟着默认走,也就是**收起**(2026-08-04 改;原来是「等待时展开」——
 // 取样发现顺序正好反了:等待期摊开十行轨迹占掉半个面板,答复落地反而收走)。
@@ -41,9 +41,11 @@ const blank = (q: string): Turn =>
 const GUIDE_KEY: Record<string, string> = { tooShort: 'chat.err.tooShort', noOcc: 'chat.err.noOcc' }
 const FAULT_KEY: Record<Fault, string> = {
   limit: 'chat.err.limit', llm: 'chat.err.llm', guard: 'chat.err.guard', net: 'chat.err.net',
+  busy: 'chat.err.busy',
 }
-// 重试有意义的才给重试钮:limit(额度用完)重试只会再撞一次,guard(答复没对上出处)重试也是同一份事实
-const RETRYABLE: Fault[] = ['llm', 'net']
+// 重试有意义的才给重试钮:limit(额度用完)重试只会再撞一次,guard(答复没对上出处)重试也是同一份事实;
+// busy 恰恰相反——模型那头刚才在冷启/排队,过一会儿再问多半就答上了(实测热身后 4-11s)
+const RETRYABLE: Fault[] = ['llm', 'net', 'busy']
 const MAX_TEXT = 1200   // 对齐服务端 chatOrchestrate.MAX_TEXT(超了是**静默截断**,不拦用户看不出后半截没被读)
                         // 常量不 import:那模块是服务端的(带 pg pool),拖进客户端包不值
 
@@ -213,7 +215,9 @@ export function ChatBox({ compact = false, autoFocus = false, prefill = '' }: { 
             finish(idx, { guide: t(GUIDE_KEY[code]) })
             taRef.current?.focus()          // 引导 = 该他接着说,光标直接回到输入框
           } else {
-            finish(idx, { fault: (code === 'limit' || code === 'guard' || code === 'llm') ? code : 'net' })
+            // 认得的码原样用,认不得的才落 'net'(白名单漏一个码 = 把「系统繁忙」说成「没连上服务」;
+            // busy 走 JSON 这条路是真会发生的:纯联邦问句没有「认出职业」那一格,流压根没开)
+            finish(idx, { fault: (FAULT_KEY as any)[code] ? code as Fault : 'net' })
           }
         } else {
           finish(idx, { a: d as Answer })

@@ -562,6 +562,7 @@ const zh: Dict = {
   'chat.err.limit': '今天问得有点多,明天再来',
   'chat.err.llm': '这次没答上来,换个说法再问',
   'chat.err.guard': '这次答复没对上官方出处,不显示',
+  'chat.err.busy': '系统繁忙,稍后再试',
   'chat.err.net': '没连上服务,请重试',
   // 空态三条示例(2026-08-04 对话形态重做):照案例库原话形状写成**真人会说的一句话**,
   // 覆盖三类人 —— 刚毕业没工作(C06)、有 offer 不知道够不够(C13)、中介开价该不该信(C01/C14)。
@@ -1485,6 +1486,7 @@ const en: Dict = {
   'chat.err.limit': "That's a lot for today — try tomorrow",
   'chat.err.llm': 'Could not answer that — try rephrasing',
   'chat.err.guard': 'Failed our source check — not shown',
+  'chat.err.busy': 'System is busy — try again shortly',
   'chat.err.net': 'Could not reach the service — retry',
   // 空态三条示例:真人开口的第一句,三类人各一条(刚毕业没工作 / 有 offer / 中介开价)
   'chat.try': 'Try asking',
@@ -2368,6 +2370,7 @@ const ko: Dict = {
   'chat.err.limit': '오늘 질문 한도에 도달했습니다',
   'chat.err.llm': '답하지 못했습니다. 다르게 물어보세요',
   'chat.err.guard': '출처 확인을 통과하지 못한 답변입니다',
+  'chat.err.busy': '시스템이 혼잡합니다. 잠시 후 다시 시도해 주세요',
   'chat.err.net': '서비스에 연결하지 못했습니다',
   // 빈 화면 예시 3개:실제 사람이 처음 꺼내는 한 문장(졸업 직후 / 오퍼 보유 / 에이전트 견적)
   'chat.try': '이렇게 물어보세요',
