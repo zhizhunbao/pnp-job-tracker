@@ -198,7 +198,7 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
             {nocs.length > 0 ? (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
                 {nocs.map((n) => (
-                  <button key={n} onClick={() => toggle(n, titles[n] || n)} style={{ ...chipStyle(true), display: 'inline-flex', gap: 6, alignItems: 'center', maxWidth: '100%' }}>
+                  <button key={n} onClick={() => toggle(n, titles[n] || n)} style={{ ...chipStyle(true), fontSize: 14.5, padding: '10px 14px', display: 'inline-flex', gap: 6, alignItems: 'center', maxWidth: '100%' }}>
                     {/* 名字还没拉回来时**留个占位**,不拿 5 位码顶上去 —— 2026-08-02 Frank
                         「点击跳转为什么先显示的是数字,后变成文字」:码是给机器看的,不该在人眼前闪一下 */}
                     {titles[n] ? shortOcc(titles[n]) : <Skeleton />}<span style={{ opacity: .7 }}>×</span>
@@ -327,10 +327,12 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
             const hint = (dupCount.get(l) || 0) > 1 ? (x.title && x.title !== l ? x.title : x.noc) : ''
             return (
               <button key={x.noc} title={l} disabled={lockedOut(x.noc)} onClick={() => toggle(x.noc, l)}
-                style={{ ...chipStyle(nocs.includes(x.noc)), display: 'inline-flex', alignItems: 'baseline', gap: 6, maxWidth: '100%', ...lockedStyle(x.noc) }}>
+                // 字号/高度对齐四选一题的选项行(08-10 Frank「两页字体大小不一致有跳跃」):
+                // 14.5px + 10px 竖 padding ≈ qzItem 行高;chipStyle 全局 12.5 不动(时间线筛选等在用)
+                style={{ ...chipStyle(nocs.includes(x.noc)), fontSize: 14.5, padding: '10px 14px', display: 'inline-flex', alignItems: 'baseline', gap: 6, maxWidth: '100%', ...lockedStyle(x.noc) }}>
                 <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 190 }}>{shortOcc(l)}</span>
-                {hint ? <span style={{ fontSize: 11, color: UI.text3, flexShrink: 0 }}>{hint}</span> : null}
-                {x.open ? <span style={{ fontSize: 11.5, color: UI.text3, flexShrink: 0 }}>{t('quiz.openN', { n: x.open.toLocaleString('en-CA') })}</span> : null}
+                {hint ? <span style={{ fontSize: 12, color: UI.text3, flexShrink: 0 }}>{hint}</span> : null}
+                {x.open ? <span style={{ fontSize: 12.5, color: UI.text3, flexShrink: 0 }}>{t('quiz.openN', { n: x.open.toLocaleString('en-CA') })}</span> : null}
               </button>
             )
           })}

@@ -43,10 +43,16 @@ export const QUIZ_CSS = `
 .quizBar{position:sticky;bottom:0;z-index:2;background:#fff;border-top:1px solid ${UI.hairline};
   margin-top:18px;padding:10px 0 8px;display:flex;align-items:center;justify-content:flex-end;gap:12px;
   min-height:56px;box-sizing:border-box}
+/* 翻题不跳版(08-10 Frank「两页高度字号不一致,用户会感觉有跳跃」):
+   题区统一最小高,动作条 margin-top:auto 钉在题区底 —— 每一页「下一题」落点相同;
+   选职业页的职业区自己内滚(.occChips),不再把卡撑成两屏 */
+.plQuizPad{display:flex;flex-direction:column;min-height:440px}
+.plQuizPad .quizBar{margin-top:auto}
+.occChips{max-height:296px;overflow-y:auto}
 @media(max-width:640px){
   .quizBar{position:fixed;left:0;right:0;bottom:0;margin:0;padding:10px 16px;border-top:1px solid ${UI.border};
     box-shadow:0 -2px 8px rgba(0,0,0,.04);z-index:30}
-  .plQuizPad{padding-bottom:78px}
+  .plQuizPad{padding-bottom:78px;min-height:0}
 }`
 
 export const QuizStyle = () => <style>{QUIZ_CSS}</style>

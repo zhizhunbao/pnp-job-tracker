@@ -29,6 +29,7 @@ export type TvJob = { id: number; title: string; company: string; city: string; 
 const CARD: React.CSSProperties = { background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 12, padding: '14px 16px', margin: '0 0 10px' }
 const BTN: React.CSSProperties = { border: `1px solid ${UI.border}`, background: '#fff', color: UI.text, borderRadius: 8, padding: '5px 14px', fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }
 const H2: React.CSSProperties = { fontSize: 16, fontWeight: 700, color: '#111827', margin: '0 0 10px' }
+const PRIMARY_BTN: React.CSSProperties = { background: UI.primary, color: '#fff', border: 'none', borderRadius: 8, padding: '7px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }
 
 export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; tvJob: TvJob | null }) {
   const [lang, setLangSaved, t] = useLang()
@@ -80,7 +81,7 @@ export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; 
 
   return (
     <div style={{ background: UI.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
-      <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="start" />
+      <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="pathways" />
       <div style={{ flex: '1 0 auto' }}>
         <PageShell pad="1rem 1.25rem 40px">
           <div style={{ maxWidth: 860, margin: '0 auto' }}>
@@ -148,7 +149,7 @@ export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; 
                   </div>
                 ) : (
                   <div className="plQuizPad" style={{ maxWidth: 600, margin: '0 auto' }}>
-                    <QuizForm key={resetNonce} decision="pr" stage="basic" lang={lang} t={t} answers={bands} doneKey="dp.toScore"
+                    <QuizForm key={resetNonce} decision="pr" stage="basic" lang={lang} t={t} answers={bands} doneKey="dp.toScore" onBack={() => setOccStep(true)}
                       onPatch={(patch) => setBands(writeAnswers(patch))} onComplete={onQuizDone} />
                   </div>
                 )}
@@ -231,12 +232,13 @@ export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; 
 
             {/* 出口钩子:看在招岗(q 搜索列含 NOC 码)/ 问顾问(唤起全站挂件,顾问只答疑) */}
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {/* 蓝底白字与页内主按钮一致(08-10 Frank 截图点名) */}
               <a href={noc ? `/jobs?q=${encodeURIComponent(noc)}` : '/jobs'} onClick={() => track('dp-hook-jobs')}
-                style={{ ...BTN, textDecoration: 'none', display: 'inline-block' }}>{t('dp.hookJobs')}</a>
+                style={{ ...PRIMARY_BTN, textDecoration: 'none', display: 'inline-block' }}>{t('dp.hookJobs')}</a>
               <button onClick={() => {
                 track('dp-ask-chat')
                 window.dispatchEvent(new CustomEvent('o2p:chat-open', { detail: { prefill: t('dp.ask') } }))
-              }} style={BTN}>{t('dp.hookAdvisor')}</button>
+              }} style={PRIMARY_BTN}>{t('dp.hookAdvisor')}</button>
             </div>
           </div>
         </PageShell>

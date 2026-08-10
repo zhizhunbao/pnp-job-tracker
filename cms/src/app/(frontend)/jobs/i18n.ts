@@ -325,7 +325,7 @@ const zh: Dict = {
   'pulse.dr.note': '近 {n} 期 {min}–{max} 分,低于 {min} 没进过',
   'pulse.s6.t': '全加拿大职位板', 'pulse.s6.s': '全职业收录,每日更新',
   // ── L2 报告(rpt.*)与拿PR答题页(plan.*)——措辞红线:只陈述可核验事实,永不说「你能/不能移民」 ──
-  'plan.pr.title': '拿 PR 评估', 'plan.pr.sub': '填 4 项条件出初版报告,随时可改',
+  'plan.pr.title': 'PR 评估', 'plan.pr.sub': '填 4 项条件出初版报告,随时可改',
   // 决策页(判定合一批1)
   'dp.sub': '雇主 offer → 省提名:按官方数据评估你的条件',
   'dp.draws': '各省最近抽选', 'dp.prov': '省份', 'dp.quiz': '你的条件',
