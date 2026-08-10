@@ -37,6 +37,29 @@ const nocTitle = (t: TFn, code: string): string | null => {
   return t(key).split(' / ')[0].trim()
 }
 
+/**
+ * Activity 面板里的长期记忆。只读 users.profile —— 匿名会话的临时 slots 不冒充「已保存」。
+ * 返回人话句子而不是字段码；未知 NOC 保留官方码，不猜职业名。
+ */
+export function profileMemories(loggedIn: boolean, profile: ChatProfile | null | undefined, t: TFn): string[] {
+  if (!loggedIn) return []
+  const p = profile ?? {}
+  const out: string[] = []
+  if (p.currentStatus && ['overseas', 'studying', 'working', 'jobhunting', 'pr'].includes(p.currentStatus)) {
+    out.push(t('chat.mem.status', { value: t(`prof.st.${p.currentStatus}`) }))
+  }
+  for (const code of (p.nocCodes ?? []).filter((x): x is string => /^\d{5}$/.test(x ?? '')).slice(0, 3)) {
+    const title = nocTitle(t, code)
+    out.push(t('chat.mem.occ', { value: title ? `${title} (NOC ${code})` : `NOC ${code}` }))
+  }
+  if (p.clb != null) out.push(t('chat.mem.clb', { value: p.clb }))
+  if (p.crs != null) out.push(t('chat.mem.crs', { value: p.crs }))
+  const provs = (p.targetProvinces ?? []).filter((x): x is string => !!x).slice(0, 5)
+  if (provs.length) out.push(t('chat.mem.prov', { value: provs.map((x) => t(`pr.${x}`)).join(t('sep')) }))
+  if (p.pgwpMonthsLeft != null) out.push(t('chat.mem.pgwp', { value: p.pgwpMonthsLeft }))
+  return out
+}
+
 export function pickExamples(loggedIn: boolean, profile: ChatProfile | null | undefined, t: TFn): ExampleItem[] {
   if (!loggedIn) return ANON
   const p = profile ?? {}

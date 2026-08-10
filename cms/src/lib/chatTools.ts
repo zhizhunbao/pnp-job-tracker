@@ -669,11 +669,7 @@ export type PermitRule = {
   evidence: Evidence
 }
 
-/**
- * 🔴 **官方没写的那一跳**。官方 A 成立、B 成立,不等于 A→B 这条桥官方也认。
- * 这类断层必须当成一条**独立事实**返回,而不是留给上层自己想起来 —— 案例 C02 §4-2 的原型:
- * 「2 年 + 1 年合并 = 满 2 年 = 3 年 PGWP」,整条时间线的缓冲压在一个官方从没写过的推论上。
- */
+/** 官方规则之间确有明确断层时才登记；不能把同一官方页面「工签有效期」下连续列出的分档误拆成断层。 */
 export type PermitGap = {
   kind: 'not-written'    // 官方原文没写这一跳。**不是「不允许」也不是「允许」** —— 只有 IRCC 能填这个空
   between: string[]      // 断层两端各自的官方事实(factor 或 factor|stream)
@@ -690,23 +686,7 @@ export type PermitResult = {
   note: string
 }
 
-/**
- * 断层表(人工核对,惯例同 DRAWS_POLICY / OPS_POLICY:政策事实不靠行数推断)。
- * PGWP 这条的出处是 data/raw/ircc/pgwp_rules.json 顶部的 note:
- *   「合并条款原文未写明合并后是否触发『≥2年→3年』档,引擎不得替官方补这一跳。」
- * 两端原文都在库里:pgwpCombine「combines the length of each program」/ pgwpLength(long)
- * 「If **your program** was 2 years or more」(单数,说的是一个课程)。官方**没有一句**把合并后的
- * 总长接到 3 年档 —— 所以本层只把两条摆出来,绝不相加。
- */
-const PERMIT_GAPS: Record<string, { between: string[]; claim: string; note: string }[]> = {
-  PGWP: [{
-    between: ['pgwpCombine', 'pgwpLength|long'],
-    claim: '两个课程(如 2 年 + 1 年)可以合并,合并后满 2 年,所以能拿 3 年 PGWP',
-    note: '官方原文只写了两件事:①「多个课程的长度**可以合并**」;②「**your program**(单数)满 2 年 → 3 年」。'
-      + '**没有一句把合并后的总长接到 3 年档** —— 这一跳官方没写,本站不替它补。'
-      + '要按 3 年排时间线,先向 IRCC 正式确认;两条原文见 rules 里 pgwpCombine 与 pgwpLength(long)那两行',
-  }],
-}
+const PERMIT_GAPS: Record<string, { between: string[]; claim: string; note: string }[]> = {}
 
 /**
  * 「我的工签能有多久 / 有哪些硬条件」= SELECT pnp_requirements WHERE province='FED'。
@@ -752,8 +732,8 @@ export async function lookupPermit(pool: any, args: { program?: string; factor?:
   }
   return {
     program, availability: 'ok', rules, gaps,
-    note: `${program} 是联邦规则(与省提名无关),以上每条都挂官方原句;`
-      + `官方没写的接口另列在 gaps 里 —— 那些地方**本站不推**,只能去 IRCC 确认`,
+    note: `${program} 是联邦规则(与省提名无关),以上每条都挂官方原句`
+      + (gaps.length ? ';官方没写的接口另列在 gaps 里' : ''),
   }
 }
 

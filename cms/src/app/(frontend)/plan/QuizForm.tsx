@@ -4,7 +4,7 @@
 // 单选题渲染、必答拦住下一步、一条「加拿大经验不得超过总经验」的选项过滤、翻页导航、值变更回调。
 // 题目本身照旧住 lib/fields.ts(字段库=单一来源),取哪几道照旧走 lib/decisions.ts —— 这里只管翻页与版式,
 // 而版式全部来自 quiz/QuizUI(与选工作页共用同一套,Frank「保证所有答题页面一致」)。
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { QuizBar, QuizChoices, QuizTitle, pickL, type L } from '../quiz/QuizUI'
 import { Button, UI } from '../ui/primitives'
@@ -18,7 +18,7 @@ const BTN_SEC: React.CSSProperties = {
   padding: '11px 26px', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
 }
 
-export function QuizForm({ decision, stage, lang, t, answers, onPatch, onComplete, doneKey, onBack }: {
+export function QuizForm({ decision, stage, lang, t, answers, onPatch, onComplete, doneKey, onBack, onStepChange }: {
   decision: string
   stage: Stage
   lang: Lang
@@ -28,6 +28,7 @@ export function QuizForm({ decision, stage, lang, t, answers, onPatch, onComplet
   onComplete: () => void
   doneKey?: string          // 最后一题按钮文案键(决策页=看分数;缺省沿用报告页的「出报告」)
   onBack?: () => void       // 第一题的「上一题」出口(决策页=回选职业页;不传则第一题无上一题)
+  onStepChange?: (index: number, total: number) => void
 }) {
   const names = fieldsOf(decision, stage)
   // 起步落在第一道没答的题(答过的不重走,上一题仍可回去改)。只在挂载时算一次 ——
@@ -37,6 +38,7 @@ export function QuizForm({ decision, stage, lang, t, answers, onPatch, onComplet
     return i < 0 ? 0 : i
   })
   const at = Math.min(idx, Math.max(names.length - 1, 0))
+  useEffect(() => { onStepChange?.(at, names.length) }, [at, names.length, onStepChange])
   const name = names[at]
   const f = FIELDS[name]
   if (!f) return null

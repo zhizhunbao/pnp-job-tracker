@@ -270,6 +270,34 @@ export function federalRulePrograms(text: string): FederalRuleProgram[] {
 }
 
 /**
+ * 联邦规则追问可以省略项目名，但不能因此掉回「请先说职业」。
+ *
+ * 生产实录 fca7d1fe1ae8ed20：首轮明确问 PGWP，下一句只说「大家都是这么说的 两个一年能换 3 年」。
+ * 旧路由只读 NOW，第二轮没有 PGWP 字样就误抛 noOcc，连 lookupPermit 都没走到。
+ *
+ * 继承故意很窄：NOW 必须长得像承接/质疑，且从最近的 user 轮往前找；碰到省份、职业、岗位等
+ * 明确换题信号就停止。这样「那两个一年制合并呢」接得上，「那曼省呢」不会被套回 PGWP。
+ */
+const FEDERAL_FOLLOWUP_RE =
+  /大家.{0,5}(?:都|也).{0,5}说|都这么说|不是说|你(?:刚才)?说|真的吗|真的么|确定吗|为什么|怎么会|那(?:么|这样|这个)?|所以|可是|但是|不过|两个.{0,8}(?:一\s*年|1\s*年)|(?:一\s*年|1\s*年).{0,12}(?:两个|合并|换|拿|三\s*年|3\s*年)|合并.{0,12}(?:课程|项目|学制|时长)|everyone says|is that (?:really )?true|are you sure|what about|then|but|two one[- ]year|combin.{0,12}(?:program|course)|다들.{0,8}말|정말|확실|그럼|하지만/i
+const FEDERAL_TOPIC_SHIFT_RE =
+  /省提名|\bPNP\b|哪[个些]省|省份|安省|曼省|萨省|阿省|卑诗|新省|纽省|爱德华王子岛|魁省|找工作|找雇主|岗位|职位|招聘|薪资|工资|\boffer\b|\bLMIA\b|移民路径|哪条路|which province|provincial nominee|job openings?|employers?|salary|wages?|pathway to pr|주정부|일자리|고용주/i
+
+export function federalRuleProgramsForTurn(text: string, history?: ChatTurn[]): FederalRuleProgram[] {
+  const direct = federalRulePrograms(text)
+  if (direct.length) return direct
+  if (!FEDERAL_FOLLOWUP_RE.test(text || '') || FEDERAL_TOPIC_SHIFT_RE.test(text || '')) return []
+
+  const users = (history ?? []).filter((h) => h.role === 'user').slice(-6).reverse()
+  for (const turn of users) {
+    const hit = federalRulePrograms(turn.content)
+    if (hit.length) return hit
+    if (FEDERAL_TOPIC_SHIFT_RE.test(turn.content)) return []
+  }
+  return []
+}
+
+/**
  * 🔴 「哪个省…」这类问题**必须全省查**,不能只查槽位里那几个省。
  *
  * 2026-08-05 实录(chat_logs id=17):用户问「哪个省的省提名不要求工作经验?」——一个省名都没提,
@@ -2189,6 +2217,93 @@ const PLAYBOOK_CLAIMS =
   + 'things they can actually check as one short bullet list. A genuine data-availability claim may get one separate sentence. Never '
   + 'summarise the whole question as "everything cannot be verified". If they ask whether it is worth it or whether to trust '
   + 'someone, the answer is which published requirements the pitch does or does not establish.'
+
+/** PGWP 多课程时长题：按用户拿来对照的 GPT 结构——结论先行、理由、条件、唯一风险点；不倾倒整张规则表。 */
+const PLAYBOOK_PGWP_COMBINE =
+  'PLAYBOOK (PGWP multiple-program duration; this outranks RULE 0b, RULE 9 and the order of FACTS): '
+  + 'sentence one must answer yes or no immediately. When FACTS contains both the rule that eligible program lengths may be combined '
+  + 'and the rule that a total duration of 2 years or more may receive a 3-year PGWP, say plainly that the route can qualify for a '
+  + 'PGWP of up to 3 years; preserve the official uncertainty by saying "may" / "up to", never guarantee issuance. '
+  + 'Then explain the reason in one short paragraph. After a blank line, give only the conditions that decide this exact result as '
+  + 'two or three "- " bullets: every program must be PGWP-eligible, every program must meet the minimum length, and the person must '
+  + 'apply only once after completing the final program rather than taking a PGWP after the first. End with one sentence saying the '
+  + 'final permit length is decided by IRCC. Do not mention language scores, application windows, master degrees, occupations, jobs, '
+  + 'provinces, Express Entry or PNP unless the QUESTION explicitly asks about them. Do not open with "our records show", do not '
+  + 'repeat the QUESTION, and do not turn the reply into a list of every PGWP rule.'
+
+const PGWP_COMBINE_TEXT_RE =
+  /(?:多个|两|2|两个).{0,16}(?:课程|项目|program)|合并|combine|(?:3|三)\s*年.{0,8}PGWP|PGWP.{0,8}(?:3|三)\s*年/i
+
+export function isPgwpCombineQuestion(text: string, history?: ChatTurn[]): boolean {
+  return PGWP_COMBINE_TEXT_RE.test([...(history ?? []).filter((h) => h.role === 'user').map((h) => h.content), text].join('\n'))
+}
+
+/**
+ * users.profile → 对话能消费的长期记忆。只接已有同义槽；CRS/PGWP 剩余月数没有 Slots 对应项，
+ * 留在档案展示层，不硬塞进别的字段。未知/空值一律不补。
+ */
+export function chatProfileContext(raw: unknown): Partial<Slots> {
+  const p = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>
+  const nocs = (Array.isArray(p.nocCodes) ? p.nocCodes : []).map(String).filter((x) => /^\d{5}$/.test(x))
+  const provs = (Array.isArray(p.targetProvinces) ? p.targetProvinces : [])
+    .map(normProv).filter(Boolean) as string[]
+  const statusMap: Record<string, string> = { studying: 'student', working: 'working', overseas: 'abroad' }
+  const status = statusMap[String(p.currentStatus ?? '')] ?? null
+  const clb = numSlot(p.clb, 1, 12)
+  return {
+    noc: nocs[0] ?? null,
+    occText: '',
+    provs: [...new Set(provs)].slice(0, 5),
+    expMonths: null,
+    status,
+    claims: [],
+    clb,
+  }
+}
+
+/** 优先级：这轮明确说的 > 本会话上一轮 > 登录档案。 */
+export function mergeRememberedSlots(
+  current: ReturnType<typeof normalizeSlots>, session: unknown, profile: unknown, text: string,
+): ReturnType<typeof normalizeSlots> {
+  const empty = normalizeSlots({})
+  const fromProfile = mergeFollowupSlots(empty, profile, text)
+  const fromSession = mergeFollowupSlots(empty, session, text)
+  const remembered = mergeFollowupSlots(fromSession, fromProfile, text)
+  return mergeFollowupSlots(current, remembered, text)
+}
+
+/**
+ * 这类答案不需要模型发挥：四条决定性官方 facts 齐全时，直接交付「结论 → 原因 → 条件 → 风险」。
+ * 好处不只是文风稳定，还省掉一轮 10–15 秒的合成调用；缺任一条事实就返回空，照常走 LLM，不拿旧规则硬答。
+ */
+export function buildPgwpCombineAnswer(facts: Fact[], lang: ChatLang, userEvidence = ''): string {
+  const permit = facts.find((f) => f.tool === 'lookupPermit' && /If your program was (\d+) years? or more/i.test(f.valueText))
+  const combine = facts.find((f) => f.tool === 'lookupPermit' && /combines? the length of each program/i.test(f.valueText))
+  const minimum = facts.find((f) => f.tool === 'lookupPermit' && /at least (\d+) months? long/i.test(f.valueText))
+  const once = facts.find((f) => f.tool === 'lookupPermit' && /already had one after completing an earlier program/i.test(f.valueText))
+  const threshold = Number(/If your program was (\d+) years? or more/i.exec(permit?.valueText ?? '')?.[1])
+  const months = Number(permit?.value)
+  const years = months > 0 && months % 12 === 0 ? months / 12 : 0
+  const minMonths = Number(minimum?.value)
+  if (!permit || !combine || !minimum || !once || !threshold || !years || !minMonths) return ''
+  const onePlusOne = /\b1\s*(?:年|year)/i.test(userEvidence)
+
+  if (lang === 'zh') return [
+    `对，按现行规则，这条路线可以申请最长 ${years} 年 PGWP。关键不是“拿了两个证书”，而是 IRCC 允许把多个合格项目的时长合并计算；合计达到 ${threshold} 年或以上，就进入最长 ${years} 年这一档。`,
+    `- 两个项目都必须符合 PGWP 资格\n- 每个项目至少 ${minMonths} 个月\n- 第一段结束后不要先申请 PGWP；完成最后一段后只申请一次`,
+    `${onePlusOne ? `所以你的结构是：1 年 + 1 年 → 合并约 ${threshold} 年 → 一次申请 → 最长 ${years} 年。` : ''}最终签发长度仍由 IRCC 决定，不能保证一定给满 ${years} 年。`,
+  ].filter(Boolean).join('\n\n')
+  if (lang === 'ko') return [
+    `네. 현행 규정상 이 경로는 최대 ${years}년 PGWP를 신청할 수 있습니다. 핵심은 수료증이 2개라는 사실 자체가 아니라, IRCC가 자격을 갖춘 여러 과정의 기간을 합산하며 총기간이 ${threshold}년 이상이면 최대 ${years}년 구간에 들어간다는 점입니다.`,
+    `- 두 과정 모두 PGWP 대상이어야 합니다\n- 각 과정은 최소 ${minMonths}개월이어야 합니다\n- 첫 과정 뒤에 먼저 PGWP를 신청하지 말고 마지막 과정까지 마친 뒤 한 번만 신청해야 합니다`,
+    `최종 허가 기간은 IRCC가 결정하므로 ${years}년 전부가 보장되지는 않습니다.`,
+  ].join('\n\n')
+  return [
+    `Yes. Under the current rules, this route can lead to a PGWP of up to ${years} years. The key is not simply having two certificates: IRCC may combine the length of eligible programs, and a combined duration of ${threshold} years or more falls into the up-to-${years}-year band.`,
+    `- Both programs must be PGWP-eligible\n- Each program must be at least ${minMonths} months long\n- Do not apply after the first program; apply once after completing the final program`,
+    `IRCC makes the final decision on permit length, so the full ${years} years is not guaranteed.`,
+  ].join('\n\n')
+}
 /**
  * 🔴 概率类问题走自己的路(2026-08-04 生产实录:追问「What are my odds of being picked?」
  * 回来的是上一轮那批清单与门槛,一个字没答概率)。本站红线是**不算胜率**,所以正确答复不是绕开话题,
@@ -2256,10 +2371,12 @@ export function synthMessages(
   opts: {
     zeroExp: boolean; hasClaims: boolean; hasVerdict?: boolean; occ: string
     forbid?: string[]; banned?: string[]; sameOpen?: string[]; history?: ChatTurn[]
+    federalPrograms?: FederalRuleProgram[]
   },
 ): ChatMessage[] {
   const L = LANG_NAME[lang]
   const isOdds = isOddsQuestion(userText)
+  const pgwpCombine = (opts.federalPrograms ?? []).includes('PGWP') && isPgwpCombineQuestion(userText, opts.history)
   const system = [
     'You write the reply for an immigration job board. You never decide, rank, score or compute.',
     // 🔴 病根就在这条(2026-08-04 生产实录):这一步的目标曾经是「把 facts 组织成人话」,于是模型
@@ -2365,6 +2482,7 @@ export function synthMessages(
     // 免得同一段提示里既说「不许算」又说「照着时间线念」,模型只会挑一句听。
     !isOdds && isPlanQuestion(userText) ? PLAYBOOK_PLAN : '',
     opts.hasVerdict ? PLAYBOOK_VERDICT : '',
+    pgwpCombine ? PLAYBOOK_PGWP_COMBINE : '',
     // 裁决剧本在场时零经验剧本让位(两条同上会打架:一条说先报岗位数,一条说先报通道 —— 模型只会挑一句听)
     opts.zeroExp && !opts.hasVerdict ? PLAYBOOK_ZERO_EXP : '',
     opts.hasClaims ? PLAYBOOK_CLAIMS : '',
@@ -2395,7 +2513,11 @@ export function synthMessages(
   //    唯一依据 —— 挤了出去。概率题例外:那时抽选池就是最接近的官方数(PLAYBOOK_ODDS 点名要它)。
   const asksDrawOps = DRAW_TOPIC_RE.test(userText) || isOdds
   const rest = facts.filter((f) => f.unit !== 'claim' && !(isOdds && f.unit === 'jobs')
-    && !(!asksDrawOps && (f.tool === 'lookupDraws' || f.tool === 'lookupOps')))
+    && !(!asksDrawOps && (f.tool === 'lookupDraws' || f.tool === 'lookupOps'))
+    // 这题只给「合并、长度、每段最短、一生一次」四类材料。少给比在 prompt 里求它别讲 CLB 有效。
+    && (!pgwpCombine || f.tool !== 'lookupPermit'
+      || (/工签长度分档|多个课程合并规则|一生可申请次数|课程最短长度|permit length band|combining programs|lifetime application limit|minimum program length|취업 허가 기간 구간|여러 과정 합산 규정|평생 신청 가능 횟수|과정 최소 기간/i.test(f.label)
+        && !/master/i.test(f.valueText))))
   const budget = PROMPT_BUDGET - userText.length - hist.length - claimLines.join('').length - 900
   // ⚠️⚠️ **头 2000 字符定生死**(2026-08-04 实测,见 friendLlm.ts 顶部):朋友服务按 prompt 的**前 ~2000 字符**
   // 做缓存键。所以凡是「必须让这次调用区别于上次」的东西 —— 用户原话、重试黑名单、语言与长度 ——
@@ -2524,11 +2646,37 @@ export function guardAnswer(answer: string, facts: Fact[], echo = ''): { ok: boo
 // 收了就是天天误杀(实测第一版就把剧本那句「一份算数的第一份工作」判违规,白烧一次重试)。
 // 代价是模型把 3 写成「一个」抓不到 —— 换来的是不误杀,而 1 也是最不致命的那个数。
 // 前置的 第/每/两 一律排除:序数(第三个)、频率(每三个月)、约数(两三个)都不是从 facts 抄来的数量
-const CJK_NUM_RE = /(?<![第每两])[二三四五六七八九十百千]+\s*(?:个|份|年|月|周|天|人|分|名|次)/g
-export function findWordNumbers(answer: string, lang: ChatLang): string[] {
+const CJK_NUM_RE = /(?<![第每两])([二三四五六七八九十百千]+)\s*(个月|个|份|年|月|周|天|人|分|名|次)/g
+/** 只解析这道闸会命中的常用中文整数；不碰「几」「两三个」等模糊数量。 */
+function cjkInteger(raw: string): number | null {
+  const digit: Record<string, number> = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9 }
+  const unit: Record<string, number> = { 十: 10, 百: 100, 千: 1000 }
+  let total = 0
+  let current = 0
+  for (const ch of raw) {
+    if (digit[ch] != null) { current = digit[ch]; continue }
+    if (unit[ch] != null) {
+      total += (current || 1) * unit[ch]
+      current = 0
+      continue
+    }
+    return null
+  }
+  return total + current
+}
+
+/** 中文数量词只有在 facts / 用户原话里有同单位证据时才放行，不能让「36 个月」替「3 个岗位」背书。 */
+export function findWordNumbers(answer: string, lang: ChatLang, facts: Fact[] = [], echo = ''): string[] {
   if (lang === 'en') return []
+  const allowed = allowedUnitPairs(facts, echo)
   const out: string[] = []
-  for (const m of answer.matchAll(CJK_NUM_RE)) if (!out.includes(m[0])) out.push(m[0])
+  const unitClass: Record<string, string> = { 个月: 'mo', 年: 'yr', 周: 'wk', 人: 'ppl', 名: 'ppl', 分: 'pt' }
+  for (const m of answer.matchAll(CJK_NUM_RE)) {
+    const value = cjkInteger(m[1])
+    const cls = unitClass[m[2]]
+    if (value != null && cls && allowed.has(`${value}:${cls}`)) continue
+    if (!out.includes(m[0])) out.push(m[0])
+  }
   return out.slice(0, 8)
 }
 
@@ -2843,6 +2991,11 @@ function unitPairs(text: string): Set<string> {
  * 月 ↔ 年整除互认(12 months = 1 year 是同一条 fact 换个说法,与 guardAnswer 同一口径,双向都认)。
  */
 export function findUnitMismatch(answer: string, facts: Fact[], echo = ''): string[] {
+  const allowed = allowedUnitPairs(facts, echo)
+  return [...unitPairs(answer)].filter((p) => !allowed.has(p)).slice(0, 6)
+}
+
+function allowedUnitPairs(facts: Fact[], echo = ''): Set<string> {
   const allowed = new Set<string>()
   const take = (t: string) => { for (const p of unitPairs(t)) allowed.add(p) }
   for (const f of facts) {
@@ -2857,7 +3010,7 @@ export function findUnitMismatch(answer: string, facts: Fact[], echo = ''): stri
     if (cls === 'mo' && v % 12 === 0) allowed.add(`${v / 12}:yr`)
     if (cls === 'yr') allowed.add(`${v * 12}:mo`)
   }
-  return [...unitPairs(answer)].filter((p) => !allowed.has(p)).slice(0, 6)
+  return allowed
 }
 
 /**
@@ -3243,7 +3396,7 @@ export function sentenceBlockers(text: string, facts: Fact[], lang: ChatLang, ec
     ...findLeaks(text),
     ...findFactEq(text),
     ...findEnglishUnits(text, lang, facts),
-    ...findWordNumbers(text, lang),
+    ...findWordNumbers(text, lang, facts, echo),
     ...findForeignScript(text, lang),
     ...findMixedStates(text, lang),
     ...findUngroundedClaims(text, slots, echo),
@@ -3513,7 +3666,10 @@ export function profileFill(
  *                它是**撤回**不是进度,只在真要重画时发。
  */
 export async function orchestrate(
-  rawPool: any, input: { text: string; lang: ChatLang; history?: ChatTurn[]; context?: unknown; profileKnown?: ProfileKnown },
+  rawPool: any, input: {
+    text: string; lang: ChatLang; history?: ChatTurn[]; context?: unknown
+    profileContext?: unknown; profileKnown?: ProfileKnown
+  },
   opts?: { onStep?: OnStep; onDelta?: (s: string) => void; onReset?: () => void },
 ): Promise<ChatResult> {
   const text = (input.text || '').trim().slice(0, MAX_TEXT)
@@ -3552,7 +3708,10 @@ export async function orchestrate(
   }
   const parsed = parseLlmJson(raw)
   if (!parsed) throw new ChatError('llm', `slot parse failed: ${raw.slice(0, 160)}`)
-  let merged = mergeFollowupSlots(normalizeSlots(parsed), input.history?.length ? input.context : null, text)
+  // 登录档案跨刷新可用；同一会话的上一轮比档案新；本轮用户明确说的值优先级最高。
+  let merged = mergeRememberedSlots(
+    normalizeSlots(parsed), input.history?.length ? input.context : null, input.profileContext, text,
+  )
   // 🔴 claims 只能来自用户自己的话(2026-08-06 生产实录 #36/#37):抽槽模型会把 EARLIER 里
   //    assistant 的句子 —— 我们自己上一轮的答复 —— 抽成「你听到的」主张,见客层回头把自家门槛行
   //    当中介报价对账(「报价本身不能证明…」)。SLOT_SYSTEM 里那条规则是软的,这道闸是硬的:
@@ -3584,12 +3743,16 @@ export async function orchestrate(
   }
   const draft = typed && typed !== merged.noc ? { ...merged, noc: typed } : merged
   // 联邦规则/分表不依赖职业。路由判据只读用户原话,不拿模型猜的 topic 当开关。
-  const federalPrograms = federalRulePrograms(text)
+  const federalPrograms = federalRuleProgramsForTurn(text, input.history)
   const crs = crsLookups(text)
   const federalOnlyOk = federalPrograms.length > 0 || crs.length > 0
+  // 纯联邦政策追问不需要职业。即使抽槽模型凭空塞进 NOC，也不能因此启动 jobs/省份/EE 全套工具；
+  // 只有 NOW 明确同时问岗位、雇主、省提名等第二主题时，才允许进入职业分支。
+  const federalRulesOnly = federalOnlyOk && !FEDERAL_TOPIC_SHIFT_RE.test(text)
 
   // ② 职名 → 5 位 NOC(拿不到就反问,绝不猜)
-  const hit = draft.noc ? { noc: draft.noc, title: '' } : await resolveNoc(pool, draft.occText)
+  const hit = federalRulesOnly ? null
+    : draft.noc ? { noc: draft.noc, title: '' } : await resolveNoc(pool, draft.occText)
   if (!hit && !federalOnlyOk) {
     // 🔴 说了专业没说职位名 → **反问得有用**,别让他撞死路(见 studyFieldOf 上面那段)。
     //    候选一条都查不到才回落 noOcc:「随便打了句问候」照旧走原路。
@@ -3642,8 +3805,23 @@ export async function orchestrate(
   // ④ 合成 + 出口校验(违规重试一次,再违规降级成事实清单)
   //    三道硬拦:数字溯源(guard) / 内部码泄露(findLeaks) / 中韩答复里的英文速记(findEnglishUnits);
   //    一道留痕:推断性措辞(findHedges)—— 只报警不拦,误杀正常表述比漏一句更贵。
-  const synOpts = { zeroExp: slots.expMonths === 0, hasClaims: slots.claims.length > 0, hasVerdict: verdictOn, occ, history: input.history }
-  let answer = ''
+  const synOpts = {
+    zeroExp: slots.expMonths === 0, hasClaims: slots.claims.length > 0, hasVerdict: verdictOn,
+    occ, history: input.history, federalPrograms,
+  }
+  // 合成层与出口校验使用同一份用户证据。历史只收 user 轮，不能拿 assistant 自己说过的数字背书。
+  const userEvidence = [...(input.history ?? []).filter((h) => h.role === 'user').slice(-5).map((h) => h.content), text].join('\n')
+  let scripted = federalPrograms.includes('PGWP') && isPgwpCombineQuestion(text, input.history)
+    ? buildPgwpCombineAnswer(facts, lang, userEvidence)
+    : ''
+  if (scripted) {
+    const scriptBad = sentenceBlockers(scripted, facts, lang, userEvidence, slots)
+    if (scriptBad.length) {
+      console.error(`[chat] PGWP scripted answer failed its own guards: ${scriptBad.join(',')}`)
+      scripted = ''
+    }
+  }
+  let answer = scripted
   let bad: string[] = []
   let banned: string[] = []
   let sameOpen: string[] = []          // 句式雷同:重试一次就认命(降级比它难看得多),不进降级判据
@@ -3652,12 +3830,13 @@ export async function orchestrate(
   // 🔵 逐句门(见 makeSentenceGate):只有**第一稿**流 —— 重试稿要么是撞了门的补救、要么是软重写,
   //    两种都是「把刚才那段推翻重写」,流出去只会让用户读到两遍不一样的话。
   //    slots 一并交给它:闸A(归因)判的是「这句话替他说了他没说过的属性」,没有槽就判不了。
-  const gate = opts?.onDelta ? makeSentenceGate(facts, lang, text, slots) : null
+  const gate = opts?.onDelta && !scripted ? makeSentenceGate(facts, lang, userEvidence, slots) : null
   let gateBad: string[] = []           // 流到一半撞了门:这一稿作废,照旧走重试/降级
   let streamed = false                 // 真往前端发过字(撤回时要通知前端清屏)
   let streamOk = false                 // 这一稿是「逐句门全过」的那一稿:收尾只补尾巴,不重画
   onStep?.({ phase: 'write', text: S.write })
-  for (let attempt = 0; attempt < 2; attempt++) {
+  if (scripted) opts?.onDelta?.(scripted)
+  for (let attempt = 0; attempt < (scripted ? 0 : 2); attempt++) {
     const live = Boolean(gate) && attempt === 0
     try {
       const t0 = Date.now()
@@ -3707,7 +3886,7 @@ export async function orchestrate(
     // 🔴 **哪一道检查、第几次** —— 逐道具名(2026-08-05 Frank:降级率是根因指标,修呈现只是化妆)。
     //    原来六道检查被并成 leaks/units 两坨,日志里看得见「撞了」看不见「撞的是谁」,
     //    于是没人知道该松哪一道、该改哪条 RULE。名字就是这几个函数名,别再另起别名。
-    const g = guardAnswer(answer, facts, text)
+    const g = guardAnswer(answer, facts, userEvidence)
     const fired: [string, string[]][] = ([
       ['guard', g.bad],
       ['leak', findLeaks(answer)],
@@ -3721,12 +3900,12 @@ export async function orchestrate(
       //   attrib = 第二人称陈述态说了一个我们手上没有值的属性(「你说过没有经验」/「你现在的分数」);
       //   unitNum = 数字对上了但**单位是编的**(「short by 6 months」借用户那句「CLB 6」的 6 过了数字闸)。
       //   都归硬拦:重试一次,再犯就降级成事实清单 —— 宁可朴素,不发一句替他编的自述。
-      ['attrib', findUngroundedClaims(answer, slots, text)],
-      ['unitNum', findUnitMismatch(answer, facts, text)],
+      ['attrib', findUngroundedClaims(answer, slots, userEvidence)],
+      ['unitNum', findUnitMismatch(answer, facts, userEvidence)],
       // K03 省名串台(2026-08-09 治病批,基线 R08 实录冒 NB):省名凭空出现=资格前提级错,归硬拦
-      ['provDrift', findAlienProvinces(answer, facts, text, slots)],
+      ['provDrift', findAlienProvinces(answer, facts, userEvidence, slots)],
       ['enUnits', findEnglishUnits(answer, lang, facts)],
-      ['cjkNum', findWordNumbers(answer, lang)],
+      ['cjkNum', findWordNumbers(answer, lang, facts, userEvidence)],
       ['script', findForeignScript(answer, lang)],
     ] as [string, string[]][]).filter(([, v]) => v.length)
     const leaks = fired.filter(([k]) => k === 'leak' || k === 'factEq' || k === 'factCopy' || k === 'coverage'
@@ -3824,15 +4003,17 @@ export async function orchestrate(
   //    宁缺勿滥)。**不再同时塞进 followups**:那些 chip 点击=以用户身份发这句话,而这句是
   //    助手问用户的,语义拧着;选项卡的三张选项才是它的正确形态(2026-08-06 dev 实测两处重复)。
   // 裁决前置的工签卡优先;普通轮垫建档点选卡(能点选就不让打字,一轮一张,档案已有的槽不问)
-  const options = verdictOn && slots.status == null
-    ? permitOptions(lang)
-    : slotAskOptions(slots, facts, lang, input.profileKnown)
+  const options = federalRulesOnly ? undefined
+    : verdictOn && slots.status == null
+      ? permitOptions(lang)
+      : slotAskOptions(slots, facts, lang, input.profileKnown)
   // 🔴 问了「走哪条路」却没判 = 档案槽不够。这时**反问缺的那几个槽**排在追问最前面:
   //    不补槽就不会有裁决,推别的追问等于把他领去一个答不了他这个问题的地方。
   //    点选卡这轮在收的那个槽除外(2026-08-09 Frank 截图:CLB 卡和「你的语言考到 CLB 几?」
   //    同屏两问)——卡是它的正确形态,同槽的文字反问不再重复出。
   const dupAsk = options?.slotKey ? (LBL[lang].vAsk as Record<string, string>)[options.slotKey] : undefined
   const askSlots = (isPathQuestion(text) && !verdictOn ? verdictFollowups(slots, lang) : []).filter((q) => q !== dupAsk)
-  const followups = [...askSlots, ...buildFollowups(facts, lang, text, slots.occText)].slice(0, 3)
+  const followups = federalRulesOnly ? []
+    : [...askSlots, ...buildFollowups(facts, lang, text, slots.occText)].slice(0, 3)
   return { answer, slots, facts: out, followups, ...(options ? { options } : {}), ...(degraded ? { degraded: true } : {}) }
 }

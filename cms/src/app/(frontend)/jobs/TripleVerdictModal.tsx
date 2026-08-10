@@ -1,16 +1,15 @@
 'use client'
-// #287 批D · 一键三合一判定卡(设计 docs/design/一键三合一判定-20260809.md §5;
-// 版式基准 = se287-*.png v3(Frank 2026-08-09 四轮拍板):三关文字胶囊条、免费行 ✓+官方 quote+出处日期、
+// #287 批D · 一键三合一判定区(设计 docs/design/一键三合一判定-20260809.md §5;
+// 2026-08-10 并入 /plan/pr 主页面,不再在页面上自动套第二层弹窗。版式沿用三项文字胶囊条、免费行 ✓+官方 quote+出处日期、
 // 锁区=行名可见值打码+ProCard、无档案态=行名+「—」+建档 CTA+预填问句、入口卡=标题+按钮零解释。
 //
 // 分层不在这里:付费闸在服务端(/api/triple-verdict 只给非 Pro 下发 gate/tier/key),
 // 本组件拿到什么渲什么 —— locked 行天然没有 params,想漏都没得漏。
-// 文案四闸:零逗号标题 / 无解释句 / 术语=职业关·雇主关·个人关 / 值一行放下。
+// 文案四闸:零逗号标题 / 无解释句 / 术语=职业匹配·雇主资质·个人条件 / 值一行放下。
 import { useEffect, useRef, useState } from 'react'
 
 import { AuthModal } from './AuthForm'
 import { makeT, streamDisplay, type Lang, type TFn } from './i18n'
-import { Modal } from './Modal'
 import { UpgradeModal } from './UpgradeModal'
 import { ProCard } from '../ui/primitives'
 import { track } from '@/lib/track'
@@ -170,8 +169,11 @@ const ICON: Record<string, { bg: string; fg: string; ch: string }> = {
 }
 const PILL_S: React.CSSProperties = { display: 'inline-block', padding: '1px 10px', borderRadius: 999, fontSize: 12.5, fontWeight: 600, whiteSpace: 'nowrap' }
 
-function GateChip({ tone, children }: { tone: 'ok' | 'warn' | 'na'; children: React.ReactNode }) {
-  const c = tone === 'ok' ? { bg: '#dcfce7', fg: '#15803d' } : tone === 'warn' ? { bg: '#fef3c7', fg: '#b45309' } : { bg: '#f3f4f6', fg: '#6b7280' }
+function GateChip({ tone, children }: { tone: 'ok' | 'warn' | 'ready' | 'na'; children: React.ReactNode }) {
+  const c = tone === 'ok' ? { bg: '#dcfce7', fg: '#15803d' }
+    : tone === 'warn' ? { bg: '#fef3c7', fg: '#b45309' }
+    : tone === 'ready' ? { bg: '#eff6ff', fg: '#1d4ed8' }
+    : { bg: '#f3f4f6', fg: '#6b7280' }
   return <span style={{ ...PILL_S, background: c.bg, color: c.fg }}>{children}</span>
 }
 
@@ -197,9 +199,12 @@ function VRow({ state, main, sub, quote, ev, t }: { state: string; main: string;
 }
 
 // ── 主组件 ──────────────────────────────────────────────────────────────────
-export function TripleVerdictModal({ job, lang, z = 50, onClose }: {
+export function TripleVerdictPanel({ job, lang, profileComplete = false, refreshKey = 0, onBuildProfile }: {
   job: { id: string | number; title: string; company: string; city: string; province: string }
-  lang: Lang; z?: number; onClose: () => void
+  lang: Lang
+  profileComplete?: boolean
+  refreshKey?: number
+  onBuildProfile?: () => void
 }) {
   const t = makeT(lang)
   const [d, setD] = useState<TvWire | null>(null)
@@ -215,7 +220,7 @@ export function TripleVerdictModal({ job, lang, z = 50, onClose }: {
       .then((x) => { if (!dead) { if (x?.ok) setD(x) ; else setErr(true) } })
       .catch(() => { if (!dead) setErr(true) })
     return () => { dead = true }
-  }, [job.id])
+  }, [job.id, refreshKey])
 
   const free = d?.rows.filter((r) => r.tier === 'free') ?? []
   const occRows = free.filter((r) => r.gate === 'occupation')
@@ -223,40 +228,40 @@ export function TripleVerdictModal({ job, lang, z = 50, onClose }: {
   const paid = (d?.rows.filter((r) => r.tier === 'paid') ?? []).slice().sort((a, b) => PAID_ORDER(a.key) - PAID_ORDER(b.key))
   // 锁区一行一个关别标签(compare 可多行 → 去重;计数用去重后的行数,与显示一致)
   const paidLabels = Array.from(new Set(paid.map((r) => lockLabel(t, r.key))))
+  const hasProfile = !!d?.hasProfile || profileComplete
 
   // 付费位曝光(漏斗:锁区/建档位第一次渲染记一次)
   useEffect(() => {
-    if (d && paid.length && !lockSeen.current) { lockSeen.current = true; track('tv-lock-seen', { kind: d.pro ? 'pro' : d.hasProfile ? 'locked' : 'noprofile' }) }
-  }, [d, paid.length])
+    if (d && paid.length && !lockSeen.current) { lockSeen.current = true; track('tv-lock-seen', { kind: d.pro ? 'pro' : hasProfile ? 'locked' : 'noprofile' }) }
+  }, [d, hasProfile, paid.length])
 
-  // 三关胶囊:职业/雇主由免费行算,个人关锁态灰
+  // 三项胶囊:职业/雇主由免费行算,个人条件锁态灰
   const occTone = occRows.some((r) => r.state === 'excluded') ? 'warn' : occRows.some((r) => r.state === 'pass') ? 'ok' : 'na'
   const empTone = empRows.some((r) => r.state === 'pass') ? 'ok' : 'na'
   const youRows = paid.filter((r) => !r.locked)
-  const youTone = !d?.pro || !d?.hasProfile ? 'na'
+  const youTone = !hasProfile ? 'na' : !d?.pro ? 'ready'
     : youRows.some((r) => r.state === 'gap' || r.state === 'excluded') ? 'warn'
     : youRows.some((r) => r.state === 'unknown') ? 'na' : 'ok'
 
   const askChat = () => {
     track('tv-build-profile')
     window.dispatchEvent(new CustomEvent('o2p:chat-open', { detail: { prefill: t('tv.ask', { co: job.company }) } }))
-    onClose()
   }
 
   return (
-    <Modal onClose={onClose} size="md" z={z} pad={false}>
+    <div style={{ ...CARD, padding: 0, overflow: 'hidden' }}>
       <div style={{ padding: '16px 20px 8px' }}>
         <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 600 }}>{t('tv.head')}</div>
         <h3 style={{ margin: '4px 0 0', fontSize: 17, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingRight: 44 }}>{job.title}</h3>
         <div style={{ fontSize: 13, color: '#9ca3af', margin: '2px 0 0' }}>{job.company} {job.city} {provDisp(t, job.province)}</div>
       </div>
       <div style={{ padding: '10px 20px 20px' }}>
-        {/* 三关胶囊条 */}
+        {/* 三项胶囊条 */}
         {d ? (
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '0 0 12px' }}>
             <GateChip tone={occTone}>{t('tv.g.occ')}{occTone === 'ok' ? ' ✓' : ''}</GateChip>
             <GateChip tone={empTone}>{t('tv.g.emp')}{empTone === 'ok' ? ' ✓' : ''}</GateChip>
-            <GateChip tone={youTone}>{t('tv.g.you')}{youTone === 'ok' ? ' ✓' : ''}</GateChip>
+            <GateChip tone={youTone}>{t('tv.g.you')}{youTone === 'ok' ? ' ✓' : youTone === 'ready' ? ` · ${t('tv.filled')}` : ''}</GateChip>
           </div>
         ) : null}
 
@@ -268,31 +273,31 @@ export function TripleVerdictModal({ job, lang, z = 50, onClose }: {
         ) : null}
         {err ? <div style={{ fontSize: 13, color: '#6b7280' }}>{t('tv.err')}</div> : null}
 
-        {/* 职业关(免费) */}
+        {/* 职业匹配(免费) */}
         {occRows.length ? (
-          <div style={CARD}>
+          <section style={{ padding: '12px 0 2px', borderTop: '1px solid #e5e7eb' }}>
             <div style={CARD_HEAD}>{t('tv.g.occ')}</div>
             {occRows.map((r, i) => {
               const v = rowText(t, r)
               return v ? <VRow key={r.key + i} state={r.state ?? 'info'} main={v.main} sub={v.sub} quote={r.quote} ev={r.evidence} t={t} /> : null
             })}
-          </div>
+          </section>
         ) : null}
 
-        {/* 雇主关(免费;tv.next.employer 是 paid 不在这) */}
+        {/* 雇主资质(免费;tv.next.employer 是 paid 不在这) */}
         {empRows.length ? (
-          <div style={CARD}>
+          <section style={{ padding: '14px 0 2px', borderTop: '1px solid #e5e7eb', marginTop: 10 }}>
             <div style={CARD_HEAD}>{t('tv.g.emp')}</div>
             {empRows.map((r, i) => {
               const v = rowText(t, r)
               return v ? <VRow key={r.key + i} state={r.state ?? 'info'} main={v.main} sub={v.sub} quote={r.quote} ev={r.evidence} t={t} /> : null
             })}
-          </div>
+          </section>
         ) : null}
 
-        {/* 个人关(付费位):Pro+有档案=直渲;非 Pro=锁区;无档案=建档引导 */}
+        {/* 个人条件(付费位):Pro+有档案=直渲;非 Pro=锁区;无档案=建档引导 */}
         {d && paid.length ? (
-          <div style={CARD}>
+          <section style={{ padding: '14px 0 2px', borderTop: '1px solid #e5e7eb', marginTop: 10 }}>
             <div style={CARD_HEAD}>{t('tv.g.youCard')}</div>
             {d.pro && d.hasProfile ? (
               <>
@@ -306,7 +311,7 @@ export function TripleVerdictModal({ job, lang, z = 50, onClose }: {
                   </button>
                 ) : null}
               </>
-            ) : !d.hasProfile ? (
+            ) : !hasProfile ? (
               <>
                 {paidLabels.map((k) => (
                   <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '7px 0', borderBottom: '1px solid #f3f4f6', alignItems: 'baseline' }}>
@@ -315,7 +320,7 @@ export function TripleVerdictModal({ job, lang, z = 50, onClose }: {
                   </div>
                 ))}
                 <div style={{ marginTop: 12 }}>
-                  <button onClick={askChat} style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: 8, padding: '11px 20px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>{t('tv.build')}</button>
+                  <button onClick={onBuildProfile ?? askChat} style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: 8, padding: '11px 20px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>{t('tv.build')}</button>
                   <div style={{ marginTop: 8 }}>
                     <button onClick={askChat} style={{ border: '1px solid #e5e7eb', borderRadius: 999, padding: '6px 14px', fontSize: 12.5, color: '#374151', background: '#f9fafb', cursor: 'pointer', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {t('tv.ask', { co: job.company })}
@@ -338,7 +343,7 @@ export function TripleVerdictModal({ job, lang, z = 50, onClose }: {
                   onClick={() => { track('tv-pro-click'); setUp(d.loggedIn ? 'up' : 'auth') }} />
               </div>
             )}
-          </div>
+          </section>
         ) : null}
 
         {d ? <div style={{ fontSize: 11.5, color: '#9ca3af', lineHeight: 1.6 }}>{t('jpw.foot')}</div> : null}
@@ -346,6 +351,6 @@ export function TripleVerdictModal({ job, lang, z = 50, onClose }: {
 
       {up === 'up' && <UpgradeModal t={t} reason={t('tv.lockN', { n: paidLabels.length })} onClose={() => setUp(false)} />}
       {up === 'auth' && <AuthModal t={t} mode="register" onClose={() => setUp(false)} onDone={() => window.location.reload()} />}
-    </Modal>
+    </div>
   )
 }

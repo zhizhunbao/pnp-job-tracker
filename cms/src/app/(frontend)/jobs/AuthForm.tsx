@@ -7,6 +7,8 @@ import { useEffect, useState } from 'react'
 import type { TFn } from './i18n'
 import { Modal } from './Modal'
 import { Button, Notice } from '../ui/primitives'
+import { readAnswers } from '@/lib/answers'
+import { fieldsOf, missingFields } from '@/lib/decisions'
 
 const GOOGLE_ON = !!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
 const GoogleG = () => (
@@ -52,6 +54,30 @@ export function AuthForm({ t, onDone, initialMode, resetToken, returnTo, hero }:
   const [err, setErr] = useState('')
   const [sent, setSent] = useState(false)
 
+  // 登录/注册后先补齐统一基础问卷,再回到原操作。已有完整本地答案的用户不重复打扰。
+  // /plan/pr 自己就是问卷宿主:保留 job 参数原地展开;其它页面用 next 在答完后回跳。
+  const quizDestination = (): string | null => {
+    const a = readAnswers()
+    if (a.nocs.length && missingFields(fieldsOf('pr', 'basic'), a).length === 0) return null
+    const raw = returnTo || window.location.pathname + window.location.search
+    const safe = /^\/(?!\/)/.test(raw) ? raw : '/'
+    const from = new URL(safe, window.location.origin)
+    const out = new URL('/plan/pr', window.location.origin)
+    out.searchParams.set('quiz', '1')
+    if (from.pathname === '/plan/pr') {
+      const job = from.searchParams.get('job')
+      if (job) out.searchParams.set('job', job)
+    } else {
+      out.searchParams.set('next', from.pathname + from.search + from.hash)
+    }
+    return out.pathname + out.search
+  }
+  const finishAuth = () => {
+    const destination = quizDestination()
+    if (destination) { window.location.assign(destination); return }
+    onDone()
+  }
+
   // E11-03 遗留:Google 回跳失败带 ?oauth=fail 落回登录框——给出可见提示(读完即从 URL 摘除,刷新不复现)
   useEffect(() => {
     try {
@@ -83,7 +109,7 @@ export function AuthForm({ t, onDone, initialMode, resetToken, returnTo, hero }:
           body: JSON.stringify({ token: resetToken || '', password: pw }),
         })
         if (!r.ok) { setErr(t('acct.resetBad')); return }
-        setPw(''); onDone(); return
+        setPw(''); finishAuth(); return
       }
       if (mode === 'register') {
         if (pw.length < 8) { setErr(t('acct.err.weakPw')); return }
@@ -111,7 +137,7 @@ export function AuthForm({ t, onDone, initialMode, resetToken, returnTo, hero }:
         body: JSON.stringify({ email, password: pw }),
       })
       if (!r2.ok) { setErr(t('acct.err.cred')); return }
-      setPw(''); onDone()
+      setPw(''); finishAuth()
     } catch { setErr(t('acct.err.generic')) } finally { setBusy(false) }
   }
 
@@ -135,7 +161,7 @@ export function AuthForm({ t, onDone, initialMode, resetToken, returnTo, hero }:
           <a href="/api/auth/google"
             onClick={(e) => {
               e.preventDefault()
-              const rt = returnTo || window.location.pathname + window.location.search
+              const rt = quizDestination() || returnTo || window.location.pathname + window.location.search
               window.location.href = '/api/auth/google?returnTo=' + encodeURIComponent(rt)
             }}
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', boxSizing: 'border-box', padding: '10px 0', fontSize: 14, fontWeight: 600, color: '#374151', background: '#fff', border: '1.5px solid #e5e7eb', borderRadius: 9, textDecoration: 'none' }}>

@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 // 省提名「注册打分表」维度(E12-09)— ETL(mart)写入,一行一档。
-// 现有 BC SIRS(200 分制,官方 Program Guide PDF 抓);ON 改制后 EOI 未开、官方未公布分数表 → 暂无行。
+// 当前已入库 BC / SK / MB / ON 的官方分值表;其它省区只有在现行官方表完成抓取与核验后才加行。
 // ⚠️ 红线:这是**官方分值表**,不是本站算法。前端按它做的自评分只能叫「按官方分值表自算」,
 // 与官方审核结果不是一回事(官方以文件审核为准);任何展示都必须带 guideEffective 与官方链接。
 export const PnpScoreFactors: CollectionConfig = {

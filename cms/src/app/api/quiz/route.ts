@@ -14,6 +14,8 @@ import { getTopNocsCached } from '@/lib/quizTop'
 const TOP_TTL = 10 * 60_000
 // ?noc= 的事实卡缓存(实测 1.0s/次;决策页分值上下文与职业名回显都在打它)
 const factsCache = new Map<string, { at: number; facts: unknown }>()
+const kinCache = new Map<string, { at: number; rows: unknown[] }>()
+const countsCache = new Map<string, { at: number; rows: Record<string, { open: number; eligible: number }> }>()
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -36,10 +38,26 @@ export async function GET(req: Request) {
   // ?kin=21232 → 同族职业(NOC 前 4 位相同)。**不拿前端已有的热门 200 条筛** ——
   // 那 200 条只覆盖 41% 的职业,冷门职业的同族根本不在里面,靠它筛会**静默失效**(看着像「没有同族」)。
   const kin = (sp.get('kin') || '').split(',').map((x) => x.trim()).filter(Boolean).slice(0, 3)
-  if (kin.length) return Response.json({ kin: await fetchKinNocs(pool, kin) })
+  if (kin.length) {
+    const key = kin.slice().sort().join(',')
+    const hit = kinCache.get(key)
+    if (hit && Date.now() - hit.at < TOP_TTL) return Response.json({ kin: hit.rows })
+    const rows = await fetchKinNocs(pool, kin)
+    if (kinCache.size >= 600) kinCache.clear()
+    kinCache.set(key, { at: Date.now(), rows })
+    return Response.json({ kin: rows })
+  }
   // ?counts=21232,63200 → 这些 NOC 的在招/可提名数(第 2 题热门职业按钮挂真数)
   const counts = (sp.get('counts') || '').split(',').map((x) => x.trim()).filter(Boolean).slice(0, 30)
-  if (counts.length) return Response.json({ counts: await fetchNocOpenCounts(pool, counts) })
+  if (counts.length) {
+    const key = counts.slice().sort().join(',')
+    const hit = countsCache.get(key)
+    if (hit && Date.now() - hit.at < TOP_TTL) return Response.json({ counts: hit.rows })
+    const rows = await fetchNocOpenCounts(pool, counts)
+    if (countsCache.size >= 100) countsCache.clear()
+    countsCache.set(key, { at: Date.now(), rows })
+    return Response.json({ counts: rows })
+  }
   if (!noc) return Response.json({ error: 'noc or q required' }, { status: 400 })
 
   // 同款 SWR:命中(含过期)先回,过期后台刷;上限防无界增长(职业总数 ~500,600 封顶纯保险)

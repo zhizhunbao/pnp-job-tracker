@@ -26,6 +26,7 @@ export type Fact = {
 export type AnswerOption = { label: string; consequence?: string; sendText: string; recommended?: boolean }
 export type Answer = {
   answer: string; slots?: Record<string, unknown>; facts?: Fact[]; followups?: string[]
+  activity?: string[] // 快速 JSON 路径里随定稿返回的真实工具轨迹；SSE 路径仍逐条收 step
   options?: { reason: string; items: AnswerOption[] }
   thread?: string   // chat_logs 同名串 ID(首轮提问哈希):面板显示+复制,拿它可从留痕拉整串对话排查
   degraded?: boolean

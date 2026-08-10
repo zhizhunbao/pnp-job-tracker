@@ -32,7 +32,7 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { logChat, threadId } from '@/lib/chatLog'
-import { ChatError, orchestrate, profileFill, type ChatLang, type ChatResult, type ChatStep, type ChatTurn } from '@/lib/chatOrchestrate'
+import { ChatError, chatProfileContext, orchestrate, profileFill, type ChatLang, type ChatResult, type ChatStep, type ChatTurn } from '@/lib/chatOrchestrate'
 import { getUser } from '@/lib/entitlement'
 import { freeGate } from '@/lib/freeQuota'
 import { patchProfile } from '@/lib/profile'
@@ -64,6 +64,9 @@ export async function POST(req: Request) {
     provs: Array.isArray(up.targetProvinces) && up.targetProvinces.length > 0,
     clb: up.clb != null,
   }
+  // Memory 的消费端：登录档案不只拿来判断「这题问过没」，还作为新会话的结构化兜底上下文。
+  // 显式用户原话与本会话上一轮仍优先，合并顺序由 orchestrate.mergeRememberedSlots 守住。
+  const profileContext = chatProfileContext(up)
   // 免费池(匿名 IP / 登录账号);本批不设付费墙,402 也当限流处理,前端一个 'limit' 分支就够
   const g = freeGate(user, req as any)
   if (g.block) return Response.json({ error: 'limit' }, { status: 429 })
@@ -133,7 +136,10 @@ export async function POST(req: Request) {
     try {
       const payload = await getPayload({ config: await config })
       pl = payload
-      return { ok: await orchestrate((payload.db as any).pool, { text, lang, history, context, profileKnown }, { onStep, onDelta, onReset }) }
+      return { ok: await orchestrate(
+        (payload.db as any).pool, { text, lang, history, context, profileContext, profileKnown },
+        { onStep, onDelta, onReset },
+      ) }
     } catch (err) { return { err } }
   })()
 
@@ -147,7 +153,11 @@ export async function POST(req: Request) {
     log({ ok })
     console.log(`[chat] ok(json) noc=${ok.slots.noc} facts=${ok.facts.length} in=${text.length}ch`)
     // thread = chat_logs 的同名串 ID(首轮提问哈希,不指向人):面板显示+复制,拿它能从留痕里拉整串对话
-    return Response.json({ ...ok, thread: threadId(text, history) }, { headers: g.headers })
+    // 纯联邦规则等问题不需要 NOC，流式开闸(phase=occ)不会打开，因此走这条快速 JSON 路径。
+    // 但前面真实执行过的 read/tool/write 不能丢：Activity 要展示事实，不该只有职业问题才看得见。
+    return Response.json({
+      ...ok, activity: buffered.map((s) => s.text), thread: threadId(text, history),
+    }, { headers: g.headers })
   }
 
   const stream = new ReadableStream<Uint8Array>({

@@ -18,7 +18,7 @@ import { DEFAULT_PROFILE, EDU_KEYS, scoreProvince, streamMatches, type DrawRow, 
 // 打分是**关于你这个人**的功能,不绑某一个岗位(Frank 2026-07-27「应该单独弄个功能吧,
 // 不应该放到 pnp 弹框里面」)—— 所以只收一个轻量语境:职业(拿该省在招数)、目标省(排序)、
 // 时薪与城市(BC 的两项按官方规则要用,拿不到就让用户自己填)。全是可选。
-export type ScoreCtx = { noc?: string; province?: string; hourly?: number | null; city?: string; hasOffer?: boolean }
+export type ScoreCtx = { noc?: string; teer?: number | null; province?: string; hourly?: number | null; city?: string; hasOffer?: boolean }
 
 // 大温地区(Area 1)成员市镇 —— 官方 PDF 只写「Metro Vancouver Regional District」,成员名单是公开事实。
 const MVRD = ['vancouver', 'surrey', 'burnaby', 'richmond', 'coquitlam', 'delta', 'langley', 'maple ridge',
@@ -33,7 +33,7 @@ const guessArea = (city: string): number => {
 }
 
 // 官方标签是英文原文;中文/韩文界面按这张表出人话(**只译不改口径**,分值仍来自官方表)。
-const L10N: Record<string, { zh: string; ko: string }> = {
+const L10N: Record<string, { zh?: string; ko?: string }> = {
   // BC
   'At least 1 year of directly related experience in Canada': { zh: '在加拿大有 1 年以上同职业经验', ko: '캐나다 내 동일 직종 1년 이상' },
   'Currently working full-time in B.C. for the employer in the occupation identified in the BC PNP registration': { zh: '目前在 BC 为该雇主全职做同一职业', ko: '현재 BC에서 해당 고용주와 동일 직종 풀타임' },
@@ -50,6 +50,42 @@ const L10N: Record<string, { zh: string; ko: string }> = {
   'Fully recognized by provincial licensing body': { zh: '职业资格获省监管机构完全认证', ko: '주 면허기관 완전 인정 자격' },
   'Second Official Language — CLB 5 or higher (overall)': { zh: '第二官方语言 CLB 5 以上', ko: '제2공용어 CLB 5 이상' },
   'Studies in another province': { zh: '有外省就读经历', ko: '타 주 학업 경력' },
+  'Close relative in Manitoba': { zh: '在曼省有近亲' },
+  'Previous authorized work experience in Manitoba (six months or more)': { zh: '曾在曼省合法工作至少 6 个月' },
+  'Completed post-secondary program in Manitoba (two years or more)': { zh: '在曼省完成至少 2 年的高等教育项目' },
+  'Completed post-secondary program in Manitoba (one year)': { zh: '在曼省完成 1 年高等教育项目' },
+  'Ongoing employment in Manitoba for six months or more with long-term job offer from the same employer': { zh: '已为同一曼省雇主工作至少 6 个月并获长期 offer' },
+  'Invitation to Apply under a Strategic Initiative': { zh: '获曼省战略项目邀请' },
+  'Immigration destination in Manitoba outside of Winnipeg': { zh: '计划定居温尼伯以外地区' },
+  'Close relative in another province and no close relative in Manitoba': { zh: '外省有近亲、曼省无近亲' },
+  'Previous immigration application to another province': { zh: '曾向其他省申请移民' },
+  // ON Workforce Priority
+  'Over 24 months working in job offer position': { zh: '已在 offer 对应岗位工作超过 24 个月' },
+  '13 to 24 months working in job offer position': { zh: '已在 offer 对应岗位工作 13-24 个月' },
+  '6 to 12 months working in job offer position': { zh: '已在 offer 对应岗位工作 6-12 个月' },
+  'Less than 6 months working in job offer position or not currently working in position': { zh: '不足 6 个月或目前未在该岗位工作' },
+  '$70k or more earnings in a year': { zh: '加拿大年报税收入 7 万加元以上' },
+  '$50k to $69,999': { zh: '加拿大年报税收入 5万-69,999 加元' },
+  '$30k to $49,999': { zh: '加拿大年报税收入 3万-49,999 加元' },
+  'Under $30k earnings in a year': { zh: '加拿大年报税收入不足 3 万加元' },
+  'With valid work permit': { zh: '持有效工签' },
+  'With valid study permit': { zh: '持有效学签' },
+  'Without valid work or study permit': { zh: '没有有效工签或学签' },
+  'More than one Canadian credential': { zh: '有多个加拿大学历' },
+  'One Canadian credential': { zh: '有一个加拿大学历' },
+  'No Canadian credential': { zh: '没有加拿大学历' },
+  'Northern Ontario': { zh: '安省北部' },
+  'Eastern Ontario': { zh: '安省东部' },
+  'Central Ontario outside GTA': { zh: '安省中部（GTA 以外）' },
+  'Southwestern Ontario': { zh: '安省西南部' },
+  'Inside GTA (except Toronto)': { zh: 'GTA 内（多伦多除外）' },
+  'Toronto': { zh: '多伦多' },
+  '$40 per hour or higher': { zh: '时薪 40 加元以上' },
+  '$35 to $39.99 per hour': { zh: '时薪 35-39.99 加元' },
+  '$30 to $34.99 per hour': { zh: '时薪 30-34.99 加元' },
+  '$25 to $29.99 per hour': { zh: '时薪 25-29.99 加元' },
+  '$20 to $24.99 per hour': { zh: '时薪 20-24.99 加元' },
+  'Less than $20 per hour': { zh: '时薪不足 20 加元' },
   // SK
   'High skilled employment offer from a Saskatchewan employer': { zh: '有 SK 雇主的高技能岗 offer', ko: 'SK 고용주의 고숙련 오퍼 보유' },
   'Close family relative in Saskatchewan': { zh: '在 SK 有近亲(公民或永居)', ko: 'SK에 가까운 친척 거주' },
@@ -77,7 +113,8 @@ function Tick({ on, onToggle, text, pts }: { on: boolean; onToggle: (v: boolean)
   )
 }
 
-export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams = {}, initial, inputs = true }: {
+export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams = {}, initial, inputs = true,
+  hiddenProfileInputs = [], targetMode = false }: {
   t: TFn; lang: string; ctx: ScoreCtx; factors: ScoreFactor[]; draws: DrawRow[]; profileClb?: number | null
   /** 省 → 你的职业命中的具名通道名。抽选线按通道对照,对不上就不给差分结论(见 ProvinceResult) */
   streams?: Record<string, string>
@@ -86,12 +123,39 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
   /** false = 纯结果卡(决策页:答题是唯一输入面,卡内不再出「你的条件」下拉;
       时薪/地区走 ctx 岗位事实)。缺省 true 保 /pathways 现行为(批2 随页退役) */
   inputs?: boolean
+  /** 决策页已经问过的条件不再重复问。 */
+  hiddenProfileInputs?: (keyof SelfProfile)[]
+  /** 只评当前职位所在省:标题与说明改成“补充条件”,不再暗示跨省排行榜。 */
+  targetMode?: boolean
 }) {
   // 有官方分值表的省(数据层决定,加省不用改这里)。目标省排第一列,其余省作「换省」对照。
   const provinces = useMemo(() => {
     const all = Array.from(new Set(factors.map((f) => f.province))).filter(Boolean)
     return all.sort((a, b) => (a === ctx.province ? -1 : b === ctx.province ? 1 : a < b ? -1 : 1))
   }, [factors, ctx.province])
+
+  const manualQuestions = useMemo(() => provinces.flatMap((prov) => Array.from(new Set(factors
+    .filter((f) => f.province === prov && f.kind === 'row')
+    .map((f) => f.factor)))
+    .filter((name) => !['work', 'work5', 'work610', 'education', 'language', 'language1', 'language2', 'age', 'offer'].includes(name))
+    .filter((name) => !(name === 'area' && prov === 'BC'))
+    .filter((name) => !(name === 'teerCat' && ctx.teer != null))
+    .filter((name) => !(name === 'occCat' && /^\d{5}$/.test(ctx.noc || '')))
+    .map((name) => ({ prov, name, key: `${prov}:${name}`, rows: factors.filter((f) => f.province === prov && f.factor === name && f.kind === 'row') }))),
+  [provinces, factors, ctx.noc, ctx.teer])
+  const profileQuestionCount = [
+    !hiddenProfileInputs.includes('edu') && factors.some((f) => f.factor === 'education'),
+    !hiddenProfileInputs.includes('expRecent') && factors.some((f) => f.factor === 'work' || f.factor === 'work5'),
+    !hiddenProfileInputs.includes('expOlder') && factors.some((f) => f.factor === 'work' || f.factor === 'work610'),
+    !hiddenProfileInputs.includes('clb1') && factors.some((f) => f.factor === 'language' || f.factor === 'language1'),
+    !hiddenProfileInputs.includes('clb2') && factors.some((f) => f.factor === 'language2'),
+    !hiddenProfileInputs.includes('age') && factors.some((f) => f.factor === 'age'),
+    factors.some((f) => f.factor === 'wage' && f.kind === 'rule'),
+    factors.some((f) => f.province === 'BC' && f.factor === 'area' && f.kind === 'row'),
+  ].filter(Boolean).length
+  const extraQuestionCount = profileQuestionCount + manualQuestions.length
+    + factors.filter((f) => f.kind === 'bonus').length
+    + provinces.filter((prov) => factors.some((f) => f.province === prov && f.factor === 'offer' && f.kind === 'row')).length
 
   const [profile, setProfile] = useState<SelfProfile>(() => {
     const p = { ...DEFAULT_PROFILE, clb1: profileClb ?? DEFAULT_PROFILE.clb1, ...initial }
@@ -106,6 +170,9 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
   // 保守默认:知道城市才猜地区,否则默认 Area 1(0 分)—— 不许用有利默认把分数吹上去
   const [areaI, setAreaI] = useState<number>(() => (ctx.city ? guessArea(ctx.city) : 0))
   const [hasOffer, setHasOffer] = useState<boolean>(() => !!ctx.hasOffer)
+  // 官方表中没有通用自动映射的档位(如 ON 工作许可/加拿大收入)也必须有输入入口。
+  // 空值=未回答=0 分;选择后直接使用该官方行的 points,不在前端另造规则。
+  const [rowAnswers, setRowAnswers] = useState<Record<string, number>>({})
 
   // 换省事实:同职业在各省的在招数(/api/quiz?noc= 已有,免费事实,不新增端点)
   const [byProv, setByProv] = useState<Record<string, { n: number; eligible: number }>>({})
@@ -132,7 +199,8 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
       overrides.wage = { pts, matched: `$${wage}/hr`, source: 'job' }
     }
     const areaRows = mine.filter((f) => f.factor === 'area' && f.kind === 'row')
-    if (areaRows.length) {
+    // guessArea 只描述 BC 的三片区。ON 的地区档完全不同,必须由用户按官方档位选择。
+    if (prov === 'BC' && areaRows.length) {
       const r = areaRows[Math.min(areaI, areaRows.length - 1)]
       overrides.area = { pts: r?.points ?? 0, matched: r?.label ?? '', source: 'job' }
     }
@@ -140,8 +208,30 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
     if (offerRows.length) {
       overrides.offer = { pts: hasOffer ? (offerRows[0].points ?? 0) : 0, matched: offerRows[0].label, source: 'tick' }
     }
+    for (const name of Array.from(new Set(mine.filter((f) => f.kind === 'row').map((f) => f.factor)))) {
+      // 这些因素已有 profile/job 映射;其余因素由用户直接选择官方档位。
+      if (['work', 'work5', 'work610', 'education', 'language', 'language1', 'language2', 'age', 'offer'].includes(name)) continue
+      if (name === 'area' && prov === 'BC') continue
+      if (name === 'teerCat' && ctx.teer != null) {
+        const hit = mine.find((f) => f.factor === name && f.kind === 'row'
+          && (f.label.match(/\d/g) || []).map(Number).includes(ctx.teer!))
+        if (hit) overrides[name] = { pts: hit.points ?? 0, matched: hit.label, source: 'job' }
+        continue
+      }
+      if (name === 'occCat' && /^\d{5}$/.test(ctx.noc || '')) {
+        const cat = Number(ctx.noc![0])
+        const hit = mine.find((f) => f.factor === name && f.kind === 'row'
+          && (f.label.match(/\d/g) || []).map(Number).includes(cat))
+        if (hit) overrides[name] = { pts: hit.points ?? 0, matched: hit.label, source: 'job' }
+        continue
+      }
+      const answer = rowAnswers[`${prov}:${name}`]
+      if (answer == null) continue
+      const hit = mine.find((f) => f.factor === name && f.kind === 'row' && f.seq === answer)
+      if (hit) overrides[name] = { pts: hit.points ?? 0, matched: hit.label, source: 'profile' }
+    }
     return scoreProvince(factors, prov, profile, overrides, ticks)
-  }).filter(Boolean) as NonNullable<ReturnType<typeof scoreProvince>>[], [provinces, factors, profile, ticks, wage, areaI, hasOffer])
+  }).filter(Boolean) as NonNullable<ReturnType<typeof scoreProvince>>[], [provinces, factors, profile, ticks, wage, areaI, hasOffer, rowAnswers, ctx.noc, ctx.teer])
 
   // 手风琴展开态:目标省默认开;'__closed' = 全收起(点开着的行就是收起)
   const [openProv, setOpenProv] = useState<string | null>(null)
@@ -157,53 +247,69 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
     <div>
       {/* 制度名不再跟在标题后面串一行(375 下折两行还对不齐)——各省折叠行里各自带 */}
       <div style={{ marginBottom: 10 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', margin: 0 }}>{t('ps.title')}</h2>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', margin: 0 }}>
+          {t(targetMode ? 'ps.extraTitle' : 'ps.title')}{targetMode && extraQuestionCount > 0 ? <span style={{ color: '#9ca3af', fontSize: 12, fontWeight: 500 }}> · {t('ps.extraN', { n: extraQuestionCount })}</span> : null}
+        </h2>
+        {targetMode && <div style={{ fontSize: 12, color: '#6b7280', marginTop: 4, lineHeight: 1.55 }}>{t('ps.extraHint')}</div>}
       </div>
 
       {/* 你的条件 —— 一套答案,各省按各自官方表折算。
           inputs=false(决策页):不渲下拉 —— 答题是唯一输入面,分数由答案自动算(Frank 2026-08-10);
           时薪/工作地区是岗位事实,走 ctx,不问人 */}
       {inputs && (<>
-      <div style={lbl}>{t('ps.you')}</div>
+      <div style={lbl}>{t(targetMode ? 'ps.extraYou' : 'ps.you')}</div>
       {/* 126 = 375 手机上正好两列:弹框内宽 301 − 卡片左右 padding 28 = 273,126×2+10=262 放得下
           (先试的 132 差 1px 就掉回一列 —— 算的时候别忘了减卡片自己的 padding)。纯 CSS auto-fit,不做 JS 宽度探测 */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(126px, 1fr))', gap: 10 }}>
-        <div><div style={lbl}>{t('ps.f.education')}</div>
+        {!hiddenProfileInputs.includes('edu') && factors.some((f) => f.factor === 'education') && <div><div style={lbl}>{t('ps.f.education')}</div>
           <select value={profile.edu} onChange={(e) => set('edu', e.target.value as EduKey)} style={sel}>
             {EDU_KEYS.map((k) => <option key={k} value={k}>{t('ps.edu.' + k)}</option>)}
-          </select></div>
-        <div><div style={lbl}>{t('ps.f.expRecent')}</div>
+          </select></div>}
+        {!hiddenProfileInputs.includes('expRecent') && factors.some((f) => f.factor === 'work' || f.factor === 'work5') && <div><div style={lbl}>{t('ps.f.expRecent')}</div>
           <select value={profile.expRecent} onChange={(e) => set('expRecent', Number(e.target.value))} style={sel}>
             {[0, 1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n === 5 ? t('ps.yr5') : t('ps.yr', { n })}</option>)}
-          </select></div>
-        <div><div style={lbl}>{t('ps.f.expOlder')}</div>
+          </select></div>}
+        {!hiddenProfileInputs.includes('expOlder') && factors.some((f) => f.factor === 'work' || f.factor === 'work610') && <div><div style={lbl}>{t('ps.f.expOlder')}</div>
           <select value={profile.expOlder} onChange={(e) => set('expOlder', Number(e.target.value))} style={sel}>
             {[0, 1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n === 5 ? t('ps.yr5') : t('ps.yr', { n })}</option>)}
-          </select></div>
-        <div><div style={lbl}>{t('ps.f.clb1')}</div>
+          </select></div>}
+        {!hiddenProfileInputs.includes('clb1') && factors.some((f) => f.factor === 'language' || f.factor === 'language1') && <div><div style={lbl}>{t('ps.f.clb1')}</div>
           <select value={profile.clb1} onChange={(e) => set('clb1', Number(e.target.value))} style={sel}>
             <option value={0}>{t('ps.clbNone')}</option>
             {[4, 5, 6, 7, 8, 9, 10].map((n) => <option key={n} value={n}>CLB {n}</option>)}
-          </select></div>
-        <div><div style={lbl}>{t('ps.f.clb2')}</div>
+          </select></div>}
+        {!hiddenProfileInputs.includes('clb2') && factors.some((f) => f.factor === 'language2') && <div><div style={lbl}>{t('ps.f.clb2')}</div>
           <select value={profile.clb2} onChange={(e) => set('clb2', Number(e.target.value))} style={sel}>
             <option value={0}>{t('ps.clbNone')}</option>
             {[4, 5, 6, 7, 8, 9, 10].map((n) => <option key={n} value={n}>CLB {n}</option>)}
-          </select></div>
-        <div><div style={lbl}>{t('ps.f.age')}</div>
+          </select></div>}
+        {!hiddenProfileInputs.includes('age') && factors.some((f) => f.factor === 'age') && <div><div style={lbl}>{t('ps.f.age')}</div>
           <select value={profile.age} onChange={(e) => set('age', Number(e.target.value))} style={sel}>
             {AGES.map((n) => <option key={n} value={n}>{t('ps.age.v', { n })}</option>)}
-          </select></div>
-        {scores.some((s) => s.parts.some((p) => p.factor === 'wage')) ? (
+          </select></div>}
+        {factors.some((f) => f.factor === 'wage' && f.kind === 'rule') ? (
           <div><div style={lbl}>{t('ps.in.wage')}</div>
             <input type="number" value={wage} min={0} onChange={(e) => setWage(Number(e.target.value))} style={sel} /></div>
         ) : null}
-        {scores.some((s) => s.parts.some((p) => p.factor === 'area')) ? (
+        {scores.some((s) => s.province === 'BC' && s.parts.some((p) => p.factor === 'area')) ? (
           <div><div style={lbl}>{t('ps.in.area')}</div>
             <select value={areaI} onChange={(e) => setAreaI(Number(e.target.value))} style={sel}>
               {factors.filter((f) => f.factor === 'area' && f.kind === 'row').map((r, i) => <option key={r.label} value={i}>{label(r.label, lang)}</option>)}
             </select></div>
         ) : null}
+        {manualQuestions.map(({ name, key, rows }) => {
+            return (
+              <div key={key}><div style={lbl}>{t('ps.f.' + name)}</div>
+                <select value={rowAnswers[key] ?? ''} onChange={(e) => setRowAnswers((m) => {
+                  if (!e.target.value) { const next = { ...m }; delete next[key]; return next }
+                  return { ...m, [key]: Number(e.target.value) }
+                })} style={sel}>
+                  <option value="">{t('ps.choose')}</option>
+                  {rows.map((r) => <option key={r.seq} value={r.seq}>{label(r.label, lang)} ({r.points ?? 0})</option>)}
+                </select>
+              </div>
+            )
+          })}
       </div>
       </>)}
 

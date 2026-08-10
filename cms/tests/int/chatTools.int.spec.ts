@@ -322,9 +322,7 @@ d('对话工具层(生产库只读)', () => {
       assertEvidence(r)
     })
 
-    // 🔴 红线(案例 C02 §4-2):官方写了「可合并」,也写了「your program 满 2 年 → 3 年」,
-    //    但**没有一句把合并后的总长接到 3 年档**。整条时间线的缓冲压在这个官方从没写过的推论上。
-    it('🔴「合并 → 3 年」这一跳:两条事实各自独立返回,跳档被显式标成官方未写', async () => {
+    it('多个课程合并属于工签长度规则，不再误标成「官方没写」', async () => {
       const r = await lookupPermit(pool, {})
       const combine = r.rules.find((x) => x.factor === 'pgwpCombine')!
       const long = r.rules.find((x) => x.factor === 'pgwpLength' && x.stream === 'long')!
@@ -346,20 +344,12 @@ d('对话工具层(生产库只读)', () => {
       expect(long.valueText).toMatch(/your program was 2 years or more/i)
       expect(long.valueText).not.toMatch(/combin/i)
       expect(long.basis).not.toMatch(/combin/i)
-      // ④ 断层本身作为一条**独立事实**返回,并且自己说清「官方没写」,不指望上层想得起来
-      const gap = r.gaps.find((g) => g.between.includes('pgwpCombine'))!
-      expect(gap, '合并→3 年的跳档没有被标出来').toBeTruthy()
-      expect(gap.kind).toBe('not-written')
-      expect(gap.between).toContain('pgwpLength|long')
-      expect(gap.note).toMatch(/没有一句|官方没写|不替它补/)
-      expect(gap.claim).toBeTruthy()
-      expect(gap.evidence).toHaveLength(2)                 // 两端各自的出处:都在,中间没有桥
-      expect(gap.evidence.every((e) => !!e.url)).toBe(true)
-      // 过滤只查时长档的人,同样得看见这一跳(gaps 不受 factor 过滤影响)
+      // ④ 两条都在官方页「How long is a PGWP valid」之下，不制造一条相反的人工断层
+      expect(r.gaps).toEqual([])
       const only = await lookupPermit(pool, { factor: 'pgwpLength' })
       expect(only.rules.every((x) => x.factor === 'pgwpLength')).toBe(true)
       expect(only.rules).toHaveLength(3)
-      expect(only.gaps).toHaveLength(1)
+      expect(only.gaps).toHaveLength(0)
     })
 
     it('四态:查不到的 program → not-collected(本站未收录),不说成「官方没有」', async () => {

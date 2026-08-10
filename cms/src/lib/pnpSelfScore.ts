@@ -50,15 +50,15 @@ const EDU_RANK: Record<EduKey, number> = { doctorate: 6, master: 5, bachelor: 4,
 // 官方学历标签 → 阶梯档。一条标签命中多个关键词时取**最低**的那档
 // (SK 的「Master's or Doctorate degree」是硕博同一行,硕士就该能选中它)。
 const EDU_LADDER: [RegExp, number][] = [
+  [/less than (?:college|.*trade)|secondary school|high school/i, 1],
   [/doctor/i, 6],
   [/master/i, 5],
   [/post-?graduate/i, 4.5],
   [/bachelor|three-year/i, 4],
-  [/trade certification|journeyperson/i, 3.5],
+  [/trade certification|trades? certificate|apprenticeship|journeyperson/i, 3.5],
   [/associate/i, 3],
   [/diploma/i, 3],
   [/certificate|semesters/i, 2],
-  [/secondary school|high school/i, 1],
 ]
 
 export type SelfProfile = {
@@ -70,7 +70,9 @@ export type SelfProfile = {
   age: number
 }
 
-export const DEFAULT_PROFILE: SelfProfile = { edu: 'bachelor', expRecent: 3, expOlder: 0, clb1: 7, clb2: 0, age: 30 }
+// 未回答项必须从最低档起算。旧默认值(本科、3 年经验、CLB 7、30 岁)会让刚打开页面的用户
+// 平白多出一截分数,与“自报条件 → 官方表”的口径相反。
+export const DEFAULT_PROFILE: SelfProfile = { edu: 'highschool', expRecent: 0, expOlder: 0, clb1: 0, clb2: 0, age: 52 }
 
 // ── 从官方标签里解析可比较的数字 ────────────────────────────────────────────────
 /**

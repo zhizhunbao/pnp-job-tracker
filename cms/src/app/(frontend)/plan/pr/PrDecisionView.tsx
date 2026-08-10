@@ -2,8 +2,8 @@
 // 决策页视图(判定合一批1):答题为主干,顾问只是出口(2026-08-10 Frank 拍板)。
 // 渐进展开(Frank「排版太乱」整改):答题卡默认收起一行入口,不逼人考试;抽选事实表在主干之后。
 // 测分工具不上页面(Frank「测分数完全不用显示」)—— 答案落档喂判定核,
-// 各省分数归判定卡个人关(付费实底,批2 接 pnpSelfScore)。
-// 区块序:H1 →(带岗:岗位+三关入口)→ 答题入口 → [无岗]挑岗 → 抽选表 → 钩子。
+// 各省分数归判定卡个人条件(付费实底,批2 接 pnpSelfScore)。
+// 区块序:H1 → 答题 → [带岗]岗位三项判定 / [无岗]挑岗 → 抽选表 → 钩子。
 // 判定/分数全来自确定性层,本页不算一个数。
 import { useState, useEffect, useRef } from 'react'
 
@@ -14,24 +14,34 @@ import { SiteFooter } from '../../SiteFooter'
 import { goBackOr } from '../../BackLink'
 import { quizToProfile } from '../../quiz/EntryQuiz'
 import { OccPicker } from '../../quiz/OccPicker'
-import { QuizProgress, QuizStyle, QuizTitle } from '../../quiz/QuizUI'
+import { POPULAR_NOCS } from '../../account/profileOptions'
+import { QuizStyle, QuizTitle, pickL, type L } from '../../quiz/QuizUI'
 import { QuizForm } from '../QuizForm'
-import { PageShell, UI } from '../../ui/primitives'
-import { TripleVerdictModal, TvEntryCard } from '../../jobs/TripleVerdictModal'
+import { BANNER_IMGS, PageBanner, PageShell, UI } from '../../ui/primitives'
+import { TripleVerdictPanel } from '../../jobs/TripleVerdictModal'
+import { PnpScoreCard } from '../../jobs/PnpScoreCard'
 import { EMPTY, clearAnswers, readAnswers, writeAnswers, type Answers } from '@/lib/answers'
 import { fieldsOf, missingFields } from '@/lib/decisions'
+import { FIELDS } from '@/lib/fields'
 import { CASES, type CaseEntry, type L3 } from '@/lib/caseLibrary'
+import { pickName } from '@/lib/occName'
 import { track } from '@/lib/track'
+import type { DrawRow, ScoreFactor, SelfProfile } from '@/lib/pnpSelfScore'
 
 export type OverviewDraw = { province: string; drawDate: string; stream: string; score: number | null }
-export type TvJob = { id: number; title: string; company: string; city: string; province: string }
+export type TvJob = {
+  id: number; title: string; company: string; city: string; province: string
+  noc: string; teer: number | null; pnpStream: string
+}
 
 const CARD: React.CSSProperties = { background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 12, padding: '14px 16px', margin: '0 0 10px' }
 const BTN: React.CSSProperties = { border: `1px solid ${UI.border}`, background: '#fff', color: UI.text, borderRadius: 8, padding: '5px 14px', fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }
 const H2: React.CSSProperties = { fontSize: 16, fontWeight: 700, color: '#111827', margin: '0 0 10px' }
 const PRIMARY_BTN: React.CSSProperties = { background: UI.primary, color: '#fff', border: 'none', borderRadius: 8, padding: '7px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }
 
-export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; tvJob: TvJob | null }) {
+export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
+  overview: OverviewDraw[]; tvJob: TvJob | null; scoreFactors: ScoreFactor[]; scoreDraws: DrawRow[]
+}) {
   const [lang, setLangSaved, t] = useLang()
 
   // 答题态(wiring 同 PlanPrView 基本卷:职业=第 1 页,其余翻页;答案唯一来源 lib/answers)
@@ -41,20 +51,21 @@ export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; 
   const [ready, setReady] = useState(false)
   const [resetArmed, setResetArmed] = useState(false)
   const [resetNonce, setResetNonce] = useState(0)
-  const [tvOpen, setTvOpen] = useState(false)
+  const [verdictNonce, setVerdictNonce] = useState(0)
+  const [occTitles, setOccTitles] = useState<Record<string, string>>({})
   // 答题卡默认收起(Frank「上来有必要让人测分数吗」——不逼人考试,一行入口自愿点开);
   // 「开始评估/继续作答/改答案」展开,答完自动收回
   const [quizOpen, setQuizOpen] = useState(false)
+  const [quizPosition, setQuizPosition] = useState(1)
   const quizRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     const a = readAnswers()
     setBands(a)
     setNoc(a.nocs[0] || '')
+    if (new URLSearchParams(window.location.search).get('quiz') === '1') setQuizOpen(true)
     setReady(true)
     track('dp-open', { job: tvJob ? '1' : '0' })
-    // 带岗进来三关直接开(设计 §3.3);track 键沿用 tv-entry,kind=dp 与职位侧四入口区分
-    if (tvJob) { setTvOpen(true); track('tv-entry', { kind: 'dp' }) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -67,14 +78,79 @@ export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; 
   const stepNames = fieldsOf('pr', 'basic')
   const stepTotal = stepNames.length + 1
   const stepDone = stepNames.length - missingFields(stepNames, bands).length + (noc ? 1 : 0)
+  // 收起时显示资料完成度；展开修改时显示当前所在题，避免旧答案让进度一直停在 6/6。
+  const shownStep = quizOpen ? quizPosition : stepDone
   // 分值卡门控:基本卷答满才渲(渐进展开 —— 落地页面只有 H1 + 答题,别一屏摊开所有机器)
   const quizComplete = ready && !!noc && missingFields(stepNames, bands).length === 0
 
+  // 完成态直接回显六项条件。热门职业名同步取已有字典;冷门职业才按码补一次名字,
+  // 不让整张摘要为了一个可选请求卡住。
+  useEffect(() => {
+    if (!quizComplete) return
+    const codes = bands.nocs.filter((code) => !POPULAR_NOCS.some((x) => x.noc === code))
+    if (!codes.length) { setOccTitles({}); return }
+    let dead = false
+    setOccTitles({})
+    Promise.all(codes.map((code) => fetch(`/api/quiz?noc=${encodeURIComponent(code)}`)
+      .then((r) => r.json())
+      .then((d) => [code, pickName(d?.facts, lang)] as [string, string])
+      .catch(() => [code, ''] as [string, string])))
+      .then((rows) => { if (!dead) setOccTitles(Object.fromEntries(rows)) })
+    return () => { dead = true }
+  }, [bands.nocs, lang, quizComplete])
+
+  const choiceText = (name: string): string => {
+    const value = (bands as unknown as Record<string, string | number>)[name]
+    const choice = FIELDS[name]?.q.choices.find((x) => x.value === value)
+    return choice ? pickL(choice.text as L, lang) : ''
+  }
+  const occText = bands.nocs.map((code) => {
+    const popular = POPULAR_NOCS.find((x) => x.noc === code)
+    return popular ? t(popular.key) : occTitles[code] || `NOC ${code}`
+  }).join(lang === 'zh' ? '、' : ', ')
+  const conditionSummary = [
+    [t('dp.sum.occ'), occText],
+    [t('dp.sum.status'), choiceText('status')],
+    [t('dp.sum.clb'), choiceText('clbBand')],
+    [t('dp.sum.totalExp'), choiceText('totalExpBand')],
+    [t('dp.sum.canExp'), choiceText('expBand')],
+    [t('dp.sum.prov'), choiceText('provBand')],
+  ]
+
+  // 带职位时按职位所在省;登录后直接进问卷、尚未选职位时,BC/ON 这种单省答案也能继续补问。
+  // 草原三省/海洋四省是组合答案,没让用户选具体省前不擅自挑一个。
+  const targetProvince = tvJob?.province || (bands.provs.length === 1 ? bands.provs[0] : '')
+  const targetFactors = targetProvince ? scoreFactors.filter((f) => f.province === targetProvince) : []
+  const targetTeer = tvJob?.teer ?? (/^\d{5}$/.test(noc) ? Number(noc[1]) : null)
+  const hasSplitWork = targetFactors.some((f) => f.factor === 'work5' || f.factor === 'work610')
+  const clbLower = [0, 0, 4, 6, 8, 10][bands.clbBand] ?? 0
+  const totalExpLower = [0, 0, 0, 1, 3, 5][bands.totalExpBand] ?? 0
+  const scoreInitial: Partial<SelfProfile> = {
+    clb1: clbLower,
+    // BC/MB 的 work 是总经验,可直接复用基础题;SK 按时间段拆分,必须让用户另答,不能猜最近几年。
+    expRecent: hasSplitWork ? 0 : totalExpLower,
+    expOlder: 0,
+  }
+  const hiddenScoreInputs: (keyof SelfProfile)[] = ['clb1']
+  if (!hasSplitWork) hiddenScoreInputs.push('expRecent', 'expOlder')
+  const scoreKey = `${tvJob?.id ?? 'profile'}:${targetProvince}:${bands.clbBand}:${bands.totalExpBand}:${targetFactors[0]?.guideEffective ?? ''}`
+
   // 答完基本卷:落档(登录才写,quizToProfile 内部自判;失败不拦页面)→ 收起答题卡。
-  // 页面不出任何分数 —— 答案的消费方是判定核(个人关),不是本页
+  // 页面不出任何分数 —— 答案的消费方是判定核(个人条件),不是本页
   const onQuizDone = () => {
     track('dp-quiz-done')
-    quizToProfile(readAnswers()).catch(() => { /* 匿名或网络失败:答案仍在 localStorage */ })
+    quizToProfile(readAnswers())
+      .catch(() => { /* 匿名或网络失败:答案仍在 localStorage */ })
+      .finally(() => {
+        setVerdictNonce((n) => n + 1)
+        const sp = new URLSearchParams(window.location.search)
+        const next = sp.get('next') || ''
+        if (/^\/(?!\/)/.test(next)) { window.location.assign(next); return }
+        if (sp.has('quiz')) {
+          sp.delete('quiz'); sp.delete('next')
+          window.history.replaceState(null, '', window.location.pathname + (sp.toString() ? `?${sp}` : ''))
+        }
+      })
     setQuizOpen(false)
   }
 
@@ -98,76 +174,102 @@ export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; 
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="pathways" />
       <div style={{ flex: '1 0 auto' }}>
         <PageShell pad="1rem 1.25rem 40px">
+          <PageBanner module="pathways" title={t('plan.pr.title')} sub={t('dp.sub')} images={BANNER_IMGS.pathways}
+            right={<button className="noPrint" onClick={() => goBackOr('/')} style={{ ...BTN, border: 'none' }}>{t('detail.back')}</button>} />
           <div style={{ maxWidth: 860, margin: '0 auto' }}>
-            {/* 面包屑撤(08-10 Frank「PR 评估应该是主 title」):本页已是顶栏一级页,不挂在谁下面 */}
-
-            {/* H1 卡(骨架照职位详情页:白卡 + 右上返回) */}
-            <div style={{ ...CARD, position: 'relative' }}>
-              <div className="noPrint" style={{ position: 'absolute', top: 12, right: 12 }}>
-                <button onClick={() => goBackOr('/')} style={BTN}>{t('detail.back')}</button>
-              </div>
-              <h1 style={{ margin: 0, fontSize: 22, lineHeight: 1.35, color: '#111827', paddingRight: 90 }}>{t('plan.pr.title')}</h1>
-              <div style={{ fontSize: 13, color: UI.text2, marginTop: 4 }}>{t('dp.sub')}</div>
-            </div>
-
-            {/* 带岗进来:岗位上下文+三关入口放最上(它就是来意);弹框已自动开,这里是关掉后的重开入口 */}
-            {tvJob && (
-              <div style={CARD}>
-                <div style={{ fontSize: 13.5, color: UI.text2, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  <b style={{ color: '#111827' }}>{tvJob.title}</b>
-                  <span style={{ marginLeft: 8 }}>{tvJob.company}</span>
-                  <span style={{ marginLeft: 8 }}>{tvJob.city ? `${tvJob.city}, ` : ''}{provDisp(tvJob.province)}</span>
-                </div>
-                <TvEntryCard t={t} onOpen={() => { track('tv-entry', { kind: 'dp-reopen' }); setTvOpen(true) }} />
-              </div>
-            )}
+            {/* 一级页统一用 pathways 图片 banner;正文继续保持 860px 阅读宽度。 */}
 
             {/* 答题卡(主干,唯一采集面;题目不进对话——顾问只答疑)。
                 答完=一行摘要+改答案(整卡铺开就是「太乱」的病根之一);改答案从职业页重新走 */}
             <div ref={quizRef} style={{ ...CARD, padding: quizOpen ? '14px 20px 18px' : '14px 16px' }}>
               <QuizStyle />
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, ...(quizOpen ? { paddingBottom: 12, marginBottom: 14, borderBottom: `1px solid ${UI.hairline}` } : {}) }}>
+              <style>{`.dpConditionSummary{grid-template-columns:repeat(3,minmax(0,1fr))}@media(max-width:640px){.dpConditionSummary{grid-template-columns:repeat(2,minmax(0,1fr))}.dpConditionValue{white-space:normal!important}}`}</style>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <h2 style={{ ...H2, margin: 0 }}>{t('dp.quiz')}</h2>
-                {!quizOpen && stepDone > 0 && <span style={{ fontSize: 12.5, color: UI.text3, fontVariantNumeric: 'tabular-nums' }}>{stepDone}/{stepTotal}</span>}
+                {ready && <span style={{ borderRadius: 999, padding: '2px 8px', background: stepDone === stepTotal ? '#eff6ff' : UI.bg,
+                  color: stepDone === stepTotal ? UI.primary : UI.text3, fontSize: 11.5, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
+                  {t('dp.basicCount', { done: shownStep, total: stepTotal })}
+                </span>}
                 <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
                   {quizOpen ? (
                     <button onClick={() => {
                       if (!resetArmed) { setResetArmed(true); return }
-                      setBands(clearAnswers()); setNoc(''); setResetArmed(false); setResetNonce((n) => n + 1); setOccStep(true)
+                      setBands(clearAnswers()); setNoc(''); setResetArmed(false); setResetNonce((n) => n + 1); setOccStep(true); setQuizPosition(1)
                       track('dp-quiz-reset')
-                    }} style={{ ...BTN, ...(resetArmed ? { color: '#b91c1c', borderColor: '#fecaca', fontWeight: 600 } : {}) }}>
+                    }} style={{ ...BTN, ...(resetArmed ? { color: '#b91c1c', border: '1px solid #fecaca', fontWeight: 600 } : {}) }}>
                       {t(resetArmed ? 'plan.reset.ok' : 'plan.reset')}
                     </button>
                   ) : (
                     // 一行入口:没答过=开始评估;答了一半=继续作答;答完=改答案(蓝底主按钮只给「开始」)
-                    <button onClick={() => { setQuizOpen(true); setOccStep(true); track('dp-quiz-edit') }}
+                    <button onClick={() => { setQuizOpen(true); setOccStep(true); setQuizPosition(1); track('dp-quiz-edit') }}
                       style={stepDone === 0
-                        ? { ...BTN, background: UI.primary, color: '#fff', borderColor: UI.primary, fontWeight: 600 }
+                        ? { ...BTN, background: UI.primary, color: '#fff', border: `1px solid ${UI.primary}`, fontWeight: 600 }
                         : BTN}>
                       {t(quizComplete ? 'plan.back' : stepDone > 0 ? 'dp.resume' : 'dp.start')}
                     </button>
                   )}
                 </span>
               </div>
+              {quizOpen && ready && (
+                <div aria-label={`${shownStep}/${stepTotal}`} style={{ height: 4, borderRadius: 999, background: UI.hairline, overflow: 'hidden', margin: '11px 0 18px' }}>
+                  <div style={{ width: `${Math.round((shownStep / Math.max(stepTotal, 1)) * 100)}%`, height: '100%', borderRadius: 999,
+                    background: UI.primary, transition: 'width .2s' }} />
+                </div>
+              )}
+              {!quizOpen && quizComplete && (
+                <div className="dpConditionSummary" style={{ display: 'grid', gap: 8, marginTop: 12, paddingTop: 12, borderTop: `1px solid ${UI.hairline}` }}>
+                  {conditionSummary.map(([label, value]) => (
+                    <div key={label} style={{ minWidth: 0, background: UI.bg, border: `1px solid ${UI.hairline}`, borderRadius: 9, padding: '8px 10px' }}>
+                      <div style={{ color: UI.text3, fontSize: 11.5, lineHeight: 1.35, marginBottom: 2 }}>{label}</div>
+                      <div className="dpConditionValue" title={value} style={{ color: UI.text, fontSize: 13.5, fontWeight: 600, lineHeight: 1.45, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
               {quizOpen && (<>
-                {ready && <div style={{ maxWidth: 600, margin: '0 auto' }}><QuizProgress lang={lang} done={stepDone} total={stepTotal} /></div>}
                 {!ready ? null : (occStep || !noc) ? (
                   <div className="plQuizPad" style={{ maxWidth: 600, margin: '0 auto' }}>
                     <QuizTitle>{t('quiz.q2')}</QuizTitle>
+                    <div style={{ fontSize: 12.5, color: UI.text3, margin: '-10px 0 13px', lineHeight: 1.55 }}>{t('quiz.q2sub')}</div>
                     <OccPicker inline t={t} lang={lang} initial={bands.nocs} doneLabel={t('plan.next')}
                       onChange={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || '') }}
-                      onDone={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || ''); setOccStep(false) }} />
+                      onDone={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || ''); setOccStep(false); setQuizPosition(2) }} />
                   </div>
                 ) : (
                   <div className="plQuizPad" style={{ maxWidth: 600, margin: '0 auto' }}>
-                    <QuizForm key={resetNonce} decision="pr" stage="basic" lang={lang} t={t} answers={bands} doneKey="dp.toScore" onBack={() => setOccStep(true)}
+                    <QuizForm key={resetNonce} decision="pr" stage="basic" lang={lang} t={t} answers={bands} doneKey="dp.toScore" onBack={() => { setOccStep(true); setQuizPosition(1) }}
+                      onStepChange={(index) => setQuizPosition(index + 2)}
                       onPatch={(patch) => setBands(writeAnswers(patch))} onComplete={onQuizDone} />
                   </div>
                 )}
               </>)}
             </div>
 
-            {/* 无岗:三关判定去职位板带岗回来(判定要具体的岗和雇主,页上没有) */}
+            {/* 带岗进入后,三项判定就是本页结果,不再自动套一层弹窗。条件在上、结果在下,修改后原地重算。 */}
+            {tvJob && <TripleVerdictPanel job={tvJob} lang={lang} profileComplete={quizComplete} refreshKey={verdictNonce}
+              onBuildProfile={() => {
+                setQuizOpen(true); setOccStep(true); track('tv-build-profile')
+                setTimeout(() => quizRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60)
+              }} />}
+
+            {/* 只在基础条件完成后追问目标省缺少的计分项。语言/总经验复用上方答案,不让用户重复填。 */}
+            {quizComplete && targetFactors.length > 0 && (
+              <div style={CARD}>
+                <PnpScoreCard key={scoreKey} t={t} lang={lang}
+                  ctx={{ noc: tvJob?.noc || noc, teer: targetTeer, province: targetProvince, city: tvJob?.city || '' }}
+                  factors={targetFactors} draws={scoreDraws}
+                  streams={tvJob?.pnpStream ? { [targetProvince]: tvJob.pnpStream } : {}}
+                  initial={scoreInitial} hiddenProfileInputs={hiddenScoreInputs} targetMode />
+              </div>
+            )}
+            {tvJob && quizComplete && targetFactors.length === 0 && (
+              <div style={CARD}>
+                <h2 style={H2}>{t('ps.extraTitle')}</h2>
+                <div style={{ fontSize: 13, color: UI.text2, lineHeight: 1.65 }}>{t('ps.notReady', { prov: provDisp(tvJob.province) })}</div>
+              </div>
+            )}
+
+            {/* 无岗:三项判定去职位板带岗回来(判定要具体的岗和雇主,页上没有) */}
             {!tvJob && (
               <div style={CARD}>
                 <div style={{ fontSize: 13.5, fontWeight: 700, color: '#111827', marginBottom: 8 }}>{t('tv.head')}</div>
@@ -178,8 +280,6 @@ export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; 
                 </a>
               </div>
             )}
-            {tvOpen && tvJob && <TripleVerdictModal job={tvJob} lang={lang} onClose={() => setTvOpen(false)} />}
-
             {/* 常见处境(08-10 Frank「直接使用我那 16 个 case」):案例库 C01-C16 一键代入 ——
                 点开=用户原话问题 + 两个动作:按画像代入答题(只填案例明说的字段)/ 带原话问顾问。
                 画像与问题不是结论;结论仍由判定核按用户自己的答案算。原生 <details>,SSR 可爬。 */}

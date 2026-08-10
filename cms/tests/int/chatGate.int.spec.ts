@@ -46,7 +46,7 @@ vi.mock('@/lib/entitlement', () => ({
 }))
 vi.mock('@/lib/profile', () => ({ patchProfile: H.patch }))
 
-import { ChatError, buildFollowups, slotAskOptions, isFollowupTurn, isUsageQuestion, metaTopicOf, orchestrate, profileFill, type ChatLang, type ChatTurn, type MetaTopic, type Slots } from '@/lib/chatOrchestrate'
+import { ChatError, buildFollowups, chatProfileContext, mergeRememberedSlots, normalizeSlots, slotAskOptions, isFollowupTurn, isUsageQuestion, metaTopicOf, orchestrate, profileFill, type ChatLang, type ChatTurn, type MetaTopic, type Slots } from '@/lib/chatOrchestrate'
 import { findForeignScript, findLeaks, findShoutedWords, findWordNumbers } from '@/lib/chatOrchestrate'
 import { completeText } from '@/lib/llm'
 import { POST } from '@/app/api/chat/route'
@@ -317,6 +317,45 @@ describe('D3 profileFill(只补空 + 尾行)', () => {
     expect(findWordNumbers(zh, 'zh')).toEqual([])
     expect(findLeaks(zh)).toEqual([])
     expect(findLeaks(ko)).toEqual([])
+  })
+})
+
+describe('Memory:登录档案跨会话回读', () => {
+  it('只映射 Slots 真有对应项的高置信字段，未知分型/CRS/PGWP 不硬塞', () => {
+    expect(chatProfileContext({
+      currentStatus: 'studying', nocCodes: ['33102', 'bad'], clb: 6, crs: 451,
+      targetProvinces: ['bc', 'NS', 'bad'], pgwpMonthsLeft: 18,
+    })).toMatchObject({ noc: '33102', provs: ['BC', 'NS'], status: 'student', clb: 6 })
+    expect(chatProfileContext({ currentStatus: 'jobhunting', crs: 451, pgwpMonthsLeft: 18 }))
+      .toMatchObject({ noc: null, provs: [], status: null, clb: null })
+  })
+
+  it('优先级固定为本轮 > 会话上一轮 > 登录档案', () => {
+    const profile = chatProfileContext({ currentStatus: 'studying', nocCodes: ['33102'], clb: 6, targetProvinces: ['BC'] })
+    const session = emptySlots({ noc: '72200', provs: ['ON'], clb: 7, status: 'working' })
+    const current = normalizeSlots({ noc: '72310', provs: ['NS'], clb: 8, status: 'abroad', claims: [] })
+    expect(mergeRememberedSlots(current, session, profile, '我现在改做木匠,目标新省')).toMatchObject({
+      noc: '72310', provs: ['NS'], clb: 8, status: 'abroad',
+    })
+
+    const empty = normalizeSlots({ claims: [] })
+    expect(mergeRememberedSlots(empty, session, profile, '按我的情况看看')).toMatchObject({
+      noc: '72200', provs: ['ON'], clb: 7, status: 'working',
+    })
+    expect(mergeRememberedSlots(empty, null, profile, '按我的情况看看')).toMatchObject({
+      noc: '33102', provs: ['BC'], clb: 6, status: 'student',
+    })
+  })
+
+  it('首轮没重说职业时，登录档案的 NOC 直接进入工具链，不再误报 noOcc', async () => {
+    H.slots = () => ({ occ_en: '', noc: null, provs: [], exp_months: null, status: null, claims: [] })
+    const r = await orchestrate(new FakePool(), {
+      text: '按我的情况看看哪些省有戏', lang: 'zh',
+      profileContext: chatProfileContext({ nocCodes: ['33102'], targetProvinces: ['BC'], clb: 6 }),
+    })
+    expect(r.slots.noc).toBe('33102')
+    expect(r.slots.provs).toEqual(['BC'])
+    expect(r.slots.clb).toBe(6)
   })
 })
 

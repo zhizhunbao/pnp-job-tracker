@@ -3,7 +3,7 @@
 // 加图标 = 从 lucide-react 挑一个再包一行,调用点永远只 import 本文件。
 import {
   ArrowUp, Check, ChartColumn, ChevronDown, CircleCheck, ClipboardList, Compass, Lock, Mail, Map as LMap, MapPin,
-  Maximize, Medal, MessageCircle, Minimize, Minus, Newspaper, Paperclip, Rocket, RotateCcw, Save, Scale, Settings, Square, Star, Target,
+  Maximize, Medal, MessageCircle, Minimize, Minus, Newspaper, Paperclip, Rocket, RotateCcw, Save, Scale, Search, Settings, Square, Star, Target,
   ThumbsDown, ThumbsUp, TriangleAlert, User, Users, X,
   type LucideProps,
 } from 'lucide-react'
@@ -36,6 +36,7 @@ export const IconPaperclip = wrap(Paperclip)  // 原 paperclip
 export const IconRocket = wrap(Rocket)        // 开始规划(L1-01 landing 顶栏入口)
 export const IconSave = wrap(Save)            // 原 save
 export const IconScale = wrap(Scale)          // 原 scale
+export const IconSearch = wrap(Search)        // 搜索
 export const IconSettings = wrap(Settings)    // 原 settings
 export const IconSquare = wrap(Square)        // 窗口全屏
 export const IconStar = wrap(Star)            // 原 star

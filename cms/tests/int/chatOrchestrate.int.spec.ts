@@ -212,6 +212,16 @@ describe('答复见客检查(不连模型)', () => {
     expect(findWordNumbers('MB has three openings.', 'en')).toEqual([])
   })
 
+  it('中文数字有同单位事实或用户历史作证时放行，不能跨单位借数', () => {
+    const facts: Fact[] = [{
+      tool: 'lookupPermit', label: 'PGWP 工签长度', value: 36, valueText: '', unit: 'months',
+      evidence: { url: 'https://canada.ca/pgwp', fetched: '2026-08-10' },
+    }]
+    const echo = '两个 1 年课程能不能换 3 年 PGWP'
+    expect(findWordNumbers('满三年可获三十六个月工签。', 'zh', facts, echo)).toEqual([])
+    expect(findWordNumbers('曼省有三份岗位。', 'zh', facts, echo)).toEqual(['三份'])
+  })
+
   it('推断性措辞留痕(只报警不拦,免得误杀正常表述)', () => {
     expect(findHedges(DIRTY, 'zh')).toEqual(expect.arrayContaining(['通常', '竞争激烈', '建议尽快']))
     expect(findHedges('曼省官方清单收了这个职业,学徒岗 3 个。', 'zh')).toEqual([])

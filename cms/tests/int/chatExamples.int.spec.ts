@@ -1,7 +1,7 @@
 // D4 修复回归(对话闭环总设计-20260809 §2):空态示例句三态选择。纯函数,不需要 DB/网络 ——
 // 真人 33102 档案锚定案例见 docs/design/一键三合一判定-20260809.md §2(找工中/CLB 6/PGWP 剩 18 个月/目标省 BC)。
 import { describe, expect, it } from 'vitest'
-import { pickExamples, exampleKind, type ChatProfile } from '@/app/(frontend)/chat/chatExamples'
+import { pickExamples, profileMemories, exampleKind, type ChatProfile } from '@/app/(frontend)/chat/chatExamples'
 import { literalNoc } from '@/lib/chatOrchestrate'
 import { makeT } from '@/app/(frontend)/jobs/i18n'
 
@@ -99,5 +99,31 @@ describe('exampleKind —— 埋点短标签', () => {
     expect(exampleKind('chat.ex1')).toBe('ex1')
     expect(exampleKind('chat.ex.reg2')).toBe('reg2')
     expect(exampleKind('chat.ex.occCmp')).toBe('occCmp')
+  })
+})
+
+describe('profileMemories —— Activity 只展示真正保存的长期记忆', () => {
+  const anchor: ChatProfile = {
+    currentStatus: 'jobhunting', nocCodes: ['33102'], clb: 6, crs: 451,
+    targetProvinces: ['BC', 'NS'], pgwpMonthsLeft: 18,
+  }
+
+  it('匿名即使拿到 profile 形状也不展示，不能把临时上下文冒充长期记忆', () => {
+    expect(profileMemories(false, anchor, zh)).toEqual([])
+  })
+
+  it('登录档案逐项转成人话，职业和省份复用现有字典', () => {
+    expect(profileMemories(true, anchor, zh)).toEqual([
+      '目前情况：在加拿大找工作',
+      '职业：护理员 (NOC 33102)',
+      '语言：CLB 6',
+      'EE 分数：CRS 451',
+      '目标省：不列颠哥伦比亚、新斯科舍',
+      '工签：PGWP 还剩 18 个月',
+    ])
+  })
+
+  it('热门集外 NOC 只显示官方码，不猜职业名', () => {
+    expect(profileMemories(true, { nocCodes: ['99999'] }, en)).toEqual(['Occupation: NOC 99999'])
   })
 })

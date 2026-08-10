@@ -22,7 +22,7 @@ import { useLang } from '../LangProvider'
 import { UI } from '../ui/primitives'
 import { track } from '@/lib/track'
 import { ChatAnswer, ChatText, CHAT_ANSWER_CSS, type Answer, type AnswerOption } from './ChatAnswer'
-import { pickExamples, exampleKind, type ChatProfile } from './chatExamples'
+import { pickExamples, profileMemories, exampleKind, type ChatProfile } from './chatExamples'
 
 type Msg = { role: 'user' | 'assistant'; content: string }
 type Fault = 'limit' | 'llm' | 'guard' | 'net' | 'busy'
@@ -48,6 +48,10 @@ const FAULT_KEY: Record<Fault, string> = {
 const RETRYABLE: Fault[] = ['llm', 'net', 'busy']
 const MAX_TEXT = 1200   // 对齐服务端 chatOrchestrate.MAX_TEXT(超了是**静默截断**,不拦用户看不出后半截没被读)
                         // 常量不 import:那模块是服务端的(带 pg pool),拖进客户端包不值
+
+const sourceName = (url: string): string => {
+  try { return new URL(url).hostname.replace(/^www\./, '') } catch { return 'Offer2PR' }
+}
 
 /**
  * §流式 —— **轨迹在流,正文也按句在流**(2026-08-08;服务端 api/chat/route.ts 同一段注释)。
@@ -124,13 +128,13 @@ export function ChatBox({ compact = false, autoFocus = false, prefill = '' }: { 
   // /api/users/me,已含 profile),不新开接口。匿名/取数失败一律留 loggedIn=false → 退回静态三句,
   // 绝不因为这一步网络失败就让空态开天窗。
   const [me, setMe] = useState<{ loggedIn: boolean; profile: ChatProfile | null }>({ loggedIn: false, profile: null })
-  useEffect(() => {
-    fetch('/api/users/me', { credentials: 'include' })
-      .then((r) => r.json())
-      .then((d) => setMe({ loggedIn: !!d?.user, profile: d?.user?.profile ?? null }))
-      .catch(() => { /* 静默:留在匿名档 */ })
-  }, [])
+  const refreshMe = useCallback(() => fetch('/api/users/me', { credentials: 'include' })
+    .then((r) => r.json())
+    .then((d) => setMe({ loggedIn: !!d?.user, profile: d?.user?.profile ?? null }))
+    .catch(() => { /* 静默:留在匿名档 */ }), [])
+  useEffect(() => { void refreshMe() }, [refreshMe])
   const examples = useMemo(() => pickExamples(me.loggedIn, me.profile, t), [me, t])
+  const memories = useMemo(() => profileMemories(me.loggedIn, me.profile, t), [me, t])
 
   // autoFocus:翻成 true 就聚焦(挂件每次展开翻一次)。触屏不聚焦 —— 见 props 注释。
   // 这里读 matchMedia 而不是 coarse.current:两个 effect 的执行顺序不该成为聚焦与否的依据。
@@ -204,7 +208,7 @@ export function ChatBox({ compact = false, autoFocus = false, prefill = '' }: { 
           () => { acc = ''; patch(idx, { stream: '' }) })
         // 终局一律走 finish(结算耗时 + 收起轨迹,见它的注释)
         if (err) finish(idx, GUIDE_KEY[err] ? { guide: t(GUIDE_KEY[err]) } : { fault: (FAULT_KEY as any)[err] ? err as Fault : 'llm' })
-        else if (final) { finish(idx, { a: final }); track('chat-answer') }
+        else if (final) { finish(idx, { a: final }); track('chat-answer'); void refreshMe() }
         else if (acc) { finish(idx, { a: { answer: acc } }); track('chat-answer') }
         else finish(idx, { fault: 'llm' })
       } else {
@@ -220,15 +224,17 @@ export function ChatBox({ compact = false, autoFocus = false, prefill = '' }: { 
             finish(idx, { fault: (FAULT_KEY as any)[code] ? code as Fault : 'net' })
           }
         } else {
-          finish(idx, { a: d as Answer })
+          const answer = d as Answer
+          finish(idx, { a: answer, steps: answer.activity ?? [] })
           track('chat-answer')
+          void refreshMe()
         }
       }
     } catch {
       finish(idx, { fault: 'net' })
     }
     setBusy(false)
-  }, [busy, turns, lang, t])
+  }, [busy, turns, lang, t, refreshMe])
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key !== 'Enter') return
@@ -356,11 +362,28 @@ export function ChatBox({ compact = false, autoFocus = false, prefill = '' }: { 
           display:flex;align-items:center;flex-wrap:wrap;gap:4px 6px;padding:3px 0}
         .cbSteps>summary::-webkit-details-marker{display:none}
         .cbSteps>summary:hover{color:${UI.text2}}
+        .cbSteps>summary:focus-visible{outline:2px solid #93c5fd;outline-offset:2px;border-radius:6px}
         .cbSteps[open]{padding-bottom:4px}
         /* 三角只在「已落地」的那一行出(等待时左边站的是三点),所以挂在 span 上不挂 summary::before */
         .cbCar::before{content:'\\25B8';font-size:9px;color:${UI.text3}}
         .cbSteps[open] .cbCar::before{content:'\\25BE'}
         .cbSecs{color:${UI.text3};white-space:nowrap;font-variant-numeric:tabular-nums}
+        /* Activity = 真轨迹 + 真档案 + 本轮真出处。默认仍收起，点开后才像 GPT 的 Activity 面板；
+           没有模型内部思维文本，只有系统确实执行过的步骤。 */
+        .cbActivity{margin-top:8px;padding:12px 14px;border:1px solid ${UI.border};border-radius:12px;background:#fbfcfe}
+        .cbActSec+.cbActSec{margin-top:16px}
+        .cbActTitle{display:flex;align-items:center;gap:7px;margin-bottom:7px;font-size:13px;font-weight:700;color:${UI.text}}
+        .cbActCount{font-size:11px;font-weight:600;color:${UI.text2};background:${UI.hairline};border-radius:999px;padding:1px 7px}
+        .cbStepDone::before{background:#86efac}
+        .cbMem{position:relative;padding:5px 0 5px 15px;font-size:12.5px;line-height:1.45;color:${UI.text2}}
+        .cbMem::before{content:'';position:absolute;left:2px;top:.78em;width:5px;height:5px;border-radius:50%;background:#c4b5fd}
+        .cbActEmpty{font-size:12.5px;line-height:1.5;color:${UI.text3}}
+        .cbMemLink{display:inline-block;margin-top:6px;font-size:12px;color:${UI.primary};text-decoration:none}
+        .cbMemLink:hover{text-decoration:underline}
+        .cbWebs{display:flex;flex-wrap:wrap;gap:6px}
+        .cbWeb{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:5px 9px;border-radius:999px;
+          background:#fff;border:1px solid ${UI.border};color:${UI.text2};font-size:12px;text-decoration:none}
+        .cbWeb:hover{border-color:#bfdbfe;color:${UI.primary}}
         .cbWait{display:flex;align-items:center;gap:8px;font-size:13px;color:${UI.text2}}
         .cbDots{display:inline-flex;gap:3px;align-items:center}
         .cbDots i{width:5px;height:5px;border-radius:50%;background:#93c5fd;animation:cbBlink 1.2s infinite}
@@ -428,6 +451,9 @@ export function ChatBox({ compact = false, autoFocus = false, prefill = '' }: { 
             // 等待中读全局 secs(每秒 tick),落地后读这一轮自己结算的 turn.secs —— 两个数都是量的。
             // 逐字流式的半截正文**也算在跑**(耗时还没结算,turn.secs 还是 0)
             const live = busy && !(turn.a || turn.guide || turn.fault)
+            const sources = [...new Map((turn.a?.facts ?? [])
+              .filter((f) => f.cited && /^https?:/i.test(f.evidence?.url ?? ''))
+              .map((f) => [f.evidence.url, { url: f.evidence.url, name: sourceName(f.evidence.url) }])).values()]
             return (
             <div className="cbTurn" key={i}>
               <div className="cbQ">{turn.q}</div>
@@ -444,12 +470,35 @@ export function ChatBox({ compact = false, autoFocus = false, prefill = '' }: { 
                     {live
                       ? <span className="cbDots" aria-hidden><i /><i /><i /></span>
                       : <span className="cbCar" aria-hidden />}
-                    <span style={{ minWidth: 0 }}>
-                      {live ? t('chat.stepsRunning') : t('chat.stepsDone', { n: turn.steps.length })}
-                    </span>
-                    <span className="cbSecs">{live ? secs : turn.secs}s</span>
+                    <span style={{ minWidth: 0 }}>{t('chat.activity')}</span>
+                    <span className="cbSecs">· {live ? secs : turn.secs}s</span>
                   </summary>
-                  {turn.steps.map((s, k) => <div className="cbStep" key={k}>{s}</div>)}
+                  <div className="cbActivity">
+                    <section className="cbActSec">
+                      <div className="cbActTitle">{t('chat.thinking')}<span className="cbActCount">{turn.steps.length}</span></div>
+                      {turn.steps.map((s, k) => <div className="cbStep" key={k}>{s}</div>)}
+                      {!live ? <div className="cbStep cbStepDone">{t('chat.done')}</div> : null}
+                    </section>
+                    <section className="cbActSec">
+                      <div className="cbActTitle">{t('chat.memory')}<span className="cbActCount">{memories.length}</span></div>
+                      {me.loggedIn
+                        ? memories.length
+                          ? memories.map((m, k) => <div className="cbMem" key={k}>{m}</div>)
+                          : <div className="cbActEmpty">{t('chat.memoryEmpty')}</div>
+                        : <div className="cbActEmpty">{t('chat.memoryAnon')}</div>}
+                      <a className="cbMemLink" href={me.loggedIn ? '/account?sec=profile' : '/?login=1'}>
+                        {t(me.loggedIn ? 'chat.memoryManage' : 'chat.memorySignIn')}
+                      </a>
+                    </section>
+                    {sources.length ? (
+                      <section className="cbActSec">
+                        <div className="cbActTitle">{t('chat.web')}<span className="cbActCount">{sources.length}</span></div>
+                        <div className="cbWebs">{sources.map((s) => (
+                          <a className="cbWeb" href={s.url} target="_blank" rel="noreferrer" key={s.url}>{s.name}</a>
+                        ))}</div>
+                      </section>
+                    ) : null}
+                  </div>
                 </details>
               ) : null}
               {turn.guide ? (

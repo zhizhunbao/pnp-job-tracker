@@ -43,7 +43,7 @@ export async function quizToProfile(a: QuizAnswers): Promise<void> {
         currentStatus: a.status || old.currentStatus || null,
         nocCodes: a.nocs.length ? a.nocs : (old.nocCodes || []),
         targetProvinces: a.provs.length ? a.provs : (old.targetProvinces || []),
-        // 语言档一起落(08-10 决策页答题=唯一采集面):判定核个人关读的是 profile.clb,
+        // 语言档一起落(08-10 决策页答题=唯一采集面):判定核个人条件读的是 profile.clb,
         // 不落档答了也白答;档位→CLB 值走字段库 toAnswer(单一来源),没答不覆盖旧值
         clb: (typeof (a as { clbBand?: number }).clbBand === 'number' && (a as { clbBand?: number }).clbBand!
           ? (toEngineAnswers({ ...readAnswers(), ...a } as Answers).clb as number | undefined) ?? old.clb ?? null
