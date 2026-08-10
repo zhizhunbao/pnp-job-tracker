@@ -5,7 +5,7 @@
 // 各省分数归判定卡个人关(付费实底,批2 接 pnpSelfScore)。
 // 区块序:H1 →(带岗:岗位+三关入口)→ 答题入口 → [无岗]挑岗 → 抽选表 → 钩子。
 // 判定/分数全来自确定性层,本页不算一个数。
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 import { streamDisplay } from '../../jobs/i18n'
 import { useLang } from '../../LangProvider'
@@ -20,7 +20,7 @@ import { PageShell, UI } from '../../ui/primitives'
 import { TripleVerdictModal, TvEntryCard } from '../../jobs/TripleVerdictModal'
 import { EMPTY, clearAnswers, readAnswers, writeAnswers, type Answers } from '@/lib/answers'
 import { fieldsOf, missingFields } from '@/lib/decisions'
-import { PATHWAY_RECIPES } from '@/lib/pathwayRecipes'
+import { CASES, type CaseEntry, type L3 } from '@/lib/caseLibrary'
 import { track } from '@/lib/track'
 
 export type OverviewDraw = { province: string; drawDate: string; stream: string; score: number | null }
@@ -45,6 +45,7 @@ export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; 
   // 答题卡默认收起(Frank「上来有必要让人测分数吗」——不逼人考试,一行入口自愿点开);
   // 「开始评估/继续作答/改答案」展开,答完自动收回
   const [quizOpen, setQuizOpen] = useState(false)
+  const quizRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     const a = readAnswers()
@@ -78,6 +79,19 @@ export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; 
   }
 
   const provDisp = (code: string) => { const full = t('prov.' + code); return full === 'prov.' + code ? code : full }
+  const pickL3 = (l: L3) => l[lang as keyof L3] || l.zh
+
+  // 一键代入:案例画像写进答案(只覆盖案例明说的字段)→ 展开答题从第一道没答的题接着走
+  const applyCase = (c: CaseEntry) => {
+    track('dp-case', { id: c.id })
+    if (!c.preset) return
+    const a = writeAnswers(c.preset)
+    setBands(a); setNoc(a.nocs[0] || '')
+    setResetNonce((n) => n + 1)
+    setOccStep(!a.nocs.length)
+    setQuizOpen(true)
+    setTimeout(() => quizRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60)
+  }
 
   return (
     <div style={{ background: UI.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
@@ -85,10 +99,7 @@ export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; 
       <div style={{ flex: '1 0 auto' }}>
         <PageShell pad="1rem 1.25rem 40px">
           <div style={{ maxWidth: 860, margin: '0 auto' }}>
-            <div style={{ fontSize: 12, color: UI.text2, marginBottom: 8, lineHeight: 1.7 }}>
-              <a href="/start" style={{ color: UI.primary, textDecoration: 'none' }}>{t('home.entry')}</a>
-              {' › '}{t('plan.pr.title')}
-            </div>
+            {/* 面包屑撤(08-10 Frank「PR 评估应该是主 title」):本页已是顶栏一级页,不挂在谁下面 */}
 
             {/* H1 卡(骨架照职位详情页:白卡 + 右上返回) */}
             <div style={{ ...CARD, position: 'relative' }}>
@@ -113,7 +124,7 @@ export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; 
 
             {/* 答题卡(主干,唯一采集面;题目不进对话——顾问只答疑)。
                 答完=一行摘要+改答案(整卡铺开就是「太乱」的病根之一);改答案从职业页重新走 */}
-            <div style={{ ...CARD, padding: quizOpen ? '14px 20px 18px' : '14px 16px' }}>
+            <div ref={quizRef} style={{ ...CARD, padding: quizOpen ? '14px 20px 18px' : '14px 16px' }}>
               <QuizStyle />
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, ...(quizOpen ? { paddingBottom: 12, marginBottom: 14, borderBottom: `1px solid ${UI.hairline}` } : {}) }}>
                 <h2 style={{ ...H2, margin: 0 }}>{t('dp.quiz')}</h2>
@@ -169,26 +180,26 @@ export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; 
             )}
             {tvOpen && tvJob && <TripleVerdictModal job={tvJob} lang={lang} onClose={() => setTvOpen(false)} />}
 
-            {/* 移民路径配方(批2:/pathways 301 并入,evalPathways 退役后配方作静态信息卡)。
-                原生 <details>:SSR 全量在 DOM(爬虫可见),人看默认收成一行一条 —— 渐进展开同页规矩。
-                措辞红线沿用:摆步骤与出处,不下结论;政策数值不写死,指官方页。 */}
+            {/* 常见处境(08-10 Frank「直接使用我那 16 个 case」):案例库 C01-C16 一键代入 ——
+                点开=用户原话问题 + 两个动作:按画像代入答题(只填案例明说的字段)/ 带原话问顾问。
+                画像与问题不是结论;结论仍由判定核按用户自己的答案算。原生 <details>,SSR 可爬。 */}
             <div style={CARD}>
-              <h2 style={H2}>{t('pw.title')}</h2>
-              {PATHWAY_RECIPES.map((r) => (
-                <details key={r.id} style={{ borderTop: `1px solid ${UI.hairline}` }}>
+              <h2 style={H2}>{t('dp.cases')}</h2>
+              {CASES.map((c) => (
+                <details key={c.id} style={{ borderTop: `1px solid ${UI.hairline}` }}>
                   <summary style={{ padding: '9px 0', fontSize: 13.5, fontWeight: 600, color: '#111827', cursor: 'pointer' }}>
-                    {t(`pw.${r.id}.name`)}
+                    {pickL3(c.label)}
                   </summary>
-                  <div style={{ padding: '0 0 10px' }}>
-                    <ol style={{ margin: 0, paddingLeft: 20 }}>
-                      {r.steps.map((s) => (
-                        <li key={s.key} style={{ fontSize: 13, color: UI.text2, lineHeight: 1.7 }}>{t(s.key)}</li>
-                      ))}
-                    </ol>
-                    <div style={{ fontSize: 11.5, color: UI.text3, marginTop: 6, display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-                      <span>{t('pw.sources')}:</span>
-                      {r.sources.map((s) => <span key={s.url}>{s.label}</span>)}
-                      <span>{t('pw.reviewed', { d: r.lastReviewed })}</span>
+                  <div style={{ padding: '0 0 12px' }}>
+                    <div style={{ fontSize: 13, color: UI.text2, lineHeight: 1.7, marginBottom: 8 }}>「{pickL3(c.q)}」</div>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      {c.preset && (
+                        <button onClick={() => applyCase(c)} style={PRIMARY_BTN}>{t('dp.caseApply')}</button>
+                      )}
+                      <button onClick={() => {
+                        track('dp-case-ask', { id: c.id })
+                        window.dispatchEvent(new CustomEvent('o2p:chat-open', { detail: { prefill: pickL3(c.q) } }))
+                      }} style={BTN}>{t('dp.hookAdvisor')}</button>
                     </div>
                   </div>
                 </details>
@@ -199,7 +210,24 @@ export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; 
             {overview.length > 0 && (
               <div style={CARD}>
                 <h2 style={H2}>{t('dp.draws')}</h2>
-                <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', fontSize: 13 }}>
+                {/* 手机=卡片式(08-10 Frank),桌面=表格;CSS 二选一渲染,SSR 两份都在 DOM */}
+                <style>{`@media(max-width:640px){.dpDrawTbl{display:none}}@media(min-width:641px){.dpDrawCards{display:none}}`}</style>
+                <div className="dpDrawCards">
+                  {overview.map((r) => (
+                    <div key={r.province} style={{ borderTop: `1px solid ${UI.hairline}`, padding: '8px 0' }}>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                        <b style={{ fontSize: 13.5, color: '#111827' }}>{provDisp(r.province)}</b>
+                        <span style={{ color: UI.text3, fontSize: 11.5 }}>{r.province}</span>
+                        <span style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{r.score ?? '—'}</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: 8, fontSize: 12.5, color: UI.text2, marginTop: 2 }}>
+                        <span style={{ fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>{r.drawDate}</span>
+                        <span title={streamDisplay(t, r.stream)} style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{streamDisplay(t, r.stream)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <table className="dpDrawTbl" style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', fontSize: 13 }}>
                   <thead>
                     <tr style={{ color: UI.text3, fontSize: 12, textAlign: 'left' }}>
                       <th style={{ fontWeight: 400, padding: '0 8px 6px 0', width: '27%' }}>{t('dp.prov')}</th>

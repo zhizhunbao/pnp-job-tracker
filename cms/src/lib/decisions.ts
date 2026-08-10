@@ -14,7 +14,10 @@ export type Decision = {
 // 每张卡只取自己算得动的子集(挂不上结论的字段不问,铁律没变)。
 export const DECISIONS: Record<string, Decision> = {
   pr: {
-    basic: ['status', 'eduBand', 'ageBand', 'clbBand', 'totalExpBand', 'expBand', 'provBand'],
+    // 学历/年龄两题 08-10 撤(Frank「怎么还是显示 8 个题目」):它们是给官方分值表的,
+    // 分值卡退出决策页后引擎规则(rules)只吃语言/经验/收入 —— 没消费方的题不问(铁律)。
+    // 批 3 个人关接 pnpSelfScore 时随消费方回归。
+    basic: ['status', 'clbBand', 'totalExpBand', 'expBand', 'provBand'],
     // 批 2 = B1-4 PGWP(20260803):批首 studyMonthsBand 是 free 题(batchLeadsFree ✓)——
     // 批 1 的历史偏差(KNOWN_NO_FREE_LEAD)不因此消,但新批守规矩
     explore: [['crsBand', 'pgwpBand'], ['studyMonthsBand', 'studyLevelBand']],

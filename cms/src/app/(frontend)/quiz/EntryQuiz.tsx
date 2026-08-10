@@ -3,7 +3,7 @@
 // 四选一的题归 /plan/* 的 SurveyJS 答题器,选职业归 quiz/OccPicker,弹框问卷不再存在)。
 // 这里只剩三样还有人用的东西:读答案(readQuiz)、注册后落档(quizToProfile)、职业名砍尾(shortOcc)。
 import { OB_SEEN_KEY } from '../jobs/OnboardingWizard'
-import { ANSWERS_KEY, answeredBasics, readAnswers } from '@/lib/answers'
+import { ANSWERS_KEY, answeredBasics, readAnswers, toEngineAnswers, type Answers } from '@/lib/answers'
 
 // 记忆键收敛到 lib/answers 一个 key(2026-07-31 统一题库):三问与拿 PR 的答案同住一份,
 // 处境与目标省不再各存一份。本文件不再直接碰 localStorage,读写都过门面。
@@ -43,6 +43,11 @@ export async function quizToProfile(a: QuizAnswers): Promise<void> {
         currentStatus: a.status || old.currentStatus || null,
         nocCodes: a.nocs.length ? a.nocs : (old.nocCodes || []),
         targetProvinces: a.provs.length ? a.provs : (old.targetProvinces || []),
+        // 语言档一起落(08-10 决策页答题=唯一采集面):判定核个人关读的是 profile.clb,
+        // 不落档答了也白答;档位→CLB 值走字段库 toAnswer(单一来源),没答不覆盖旧值
+        clb: (typeof (a as { clbBand?: number }).clbBand === 'number' && (a as { clbBand?: number }).clbBand!
+          ? (toEngineAnswers({ ...readAnswers(), ...a } as Answers).clb as number | undefined) ?? old.clb ?? null
+          : old.clb ?? null),
         profileUpdatedAt: new Date().toISOString(),
       } }),
     })

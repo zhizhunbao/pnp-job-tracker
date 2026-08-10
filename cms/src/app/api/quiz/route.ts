@@ -7,14 +7,12 @@
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import { fetchKinNocs, fetchNocOpenCounts, fetchQuizFacts, fetchTopNocs, searchNocByTitle } from '@/lib/jobsSql'
+import { fetchKinNocs, fetchNocOpenCounts, fetchQuizFacts, searchNocByTitle } from '@/lib/jobsSql'
+import { getTopNocsCached } from '@/lib/quizTop'
 
-// 热门职业清单的进程内缓存(键=limit);Render 单实例,重启即失效,不需要额外依赖。
-// 08-10 Frank「刷新非常慢」实测:TTL 到期后的第一位访客吃 2.9-3.6s 冷查,低流量下几乎人人踩 ——
-// 改 SWR:过期也先回旧值,后台刷新;只有进程重启后的第一请求才真等查询
+// 热门清单缓存挪进 lib/quizTop(SWR + 启动预热共用一份;冷启动首访 8.4s 的账见那边注释)
 const TOP_TTL = 10 * 60_000
-const topCache = new Map<number, { at: number; rows: unknown[]; refreshing?: boolean }>()
-// ?noc= 的事实卡同款(实测 1.0s/次;决策页分值上下文与职业名回显都在打它)
+// ?noc= 的事实卡缓存(实测 1.0s/次;决策页分值上下文与职业名回显都在打它)
 const factsCache = new Map<string, { at: number; facts: unknown }>()
 
 export const dynamic = 'force-dynamic'
@@ -33,18 +31,7 @@ export async function GET(req: Request) {
   // 而它一天也变不了几次(同 /api/market-stats、homeCache 的手法)。
   if (sp.get('top')) {
     const n = Number(sp.get('top')) || 24
-    const hit = topCache.get(n)
-    if (hit) {
-      if (Date.now() - hit.at >= TOP_TTL && !hit.refreshing) {
-        hit.refreshing = true
-        fetchTopNocs(pool, n).then((rows) => topCache.set(n, { at: Date.now(), rows }))
-          .catch(() => { hit.refreshing = false })   // 刷失败:下次再试,旧值继续顶
-      }
-      return Response.json({ top: hit.rows })
-    }
-    const rows = await fetchTopNocs(pool, n)
-    topCache.set(n, { at: Date.now(), rows })
-    return Response.json({ top: rows })
+    return Response.json({ top: await getTopNocsCached(pool, n) })
   }
   // ?kin=21232 → 同族职业(NOC 前 4 位相同)。**不拿前端已有的热门 200 条筛** ——
   // 那 200 条只覆盖 41% 的职业,冷门职业的同族根本不在里面,靠它筛会**静默失效**(看着像「没有同族」)。
