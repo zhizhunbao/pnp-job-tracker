@@ -4,8 +4,29 @@
 //   scoreProvinces=pnp_score_factors 实际覆盖的省(BC/SK),不写死。
 import { NO_LIST_PROVINCES } from './match'   // 不公布清单的省(ON):雇主线索改用粗筛可提名口径
 import type { ScoreFactor } from './pnpSelfScore'
-import type { ReportFacts } from './report'
 import type { Requirement } from './rules'
+
+// ── 事实契约(判定合一批2:report.ts 引擎退役,类型搬回事实层自己家)────────────
+export type OccProvFacts = { province: string; open: number; named: number; apprentice?: number; medianWage?: number | null }
+// scale = 该轮抽选用的**分制名**(pnp_draws.scale:BC=SIRS / AB=WEOI / MB=MPNP EOI)。
+// 各省分制互不相通(AB 52–65 与 MB 632–825 不是一把尺),摆区间必须带它,否则读起来像数据错乱。
+export type ReportDraw = { province: string; drawDate: string; stream: string; score: number | null; invitations?: number | null; scale?: string | null }
+// 省移民难度(E12-07 stats.difficulty):tier 三档=04e 产出(easy/mid/tight);comp=国际生存量÷提名配额
+export type ProvDifficulty = { province: string; tier: string; comp: number | null; asOf?: string }
+export type ReportFacts = {
+  noc: string
+  title: string                     // NOC 官方名(noc_descriptions,不拿岗位标题冒充)
+  teer: number | null
+  byProv: OccProvFacts[]
+  draws: ReportDraw[]               // pnp_draws(省抽选;FED 行=联邦 EE,省节不取)
+  medianSalary?: number | null
+  scoreFactors?: ScoreFactor[]      // 官方分值表整张(pnp_score_factors)
+  scoreProvinces?: string[]         // 有官方分值表的省(由 scoreFactors 派生,如 BC/SK/ON)
+  scores?: Record<string, { total: number; passMark: number | null; system: string; url: string; fetched: string }>
+  requirements?: Requirement[]      // 官方门槛(pnp_requirements;规则引擎的输入)
+  difficulty?: ProvDifficulty[]
+  fetched?: string                  // 事实聚合的数据日期
+}
 
 // 注意:这是**报告生成日**(请求当天),不是数据的新鲜度 —— 各条事实的真实日期跟着自己的出处走
 // (清单 fetched / 分值表 fetched / 抽选轮次日期),报告里也是逐条列在「依据与链接」。

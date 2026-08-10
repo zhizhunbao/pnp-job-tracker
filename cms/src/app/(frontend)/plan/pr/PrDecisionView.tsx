@@ -20,6 +20,7 @@ import { PageShell, UI } from '../../ui/primitives'
 import { TripleVerdictModal, TvEntryCard } from '../../jobs/TripleVerdictModal'
 import { EMPTY, clearAnswers, readAnswers, writeAnswers, type Answers } from '@/lib/answers'
 import { fieldsOf, missingFields } from '@/lib/decisions'
+import { PATHWAY_RECIPES } from '@/lib/pathwayRecipes'
 import { track } from '@/lib/track'
 
 export type OverviewDraw = { province: string; drawDate: string; stream: string; score: number | null }
@@ -166,6 +167,32 @@ export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; 
               </div>
             )}
             {tvOpen && tvJob && <TripleVerdictModal job={tvJob} lang={lang} onClose={() => setTvOpen(false)} />}
+
+            {/* 移民路径配方(批2:/pathways 301 并入,evalPathways 退役后配方作静态信息卡)。
+                原生 <details>:SSR 全量在 DOM(爬虫可见),人看默认收成一行一条 —— 渐进展开同页规矩。
+                措辞红线沿用:摆步骤与出处,不下结论;政策数值不写死,指官方页。 */}
+            <div style={CARD}>
+              <h2 style={H2}>{t('pw.title')}</h2>
+              {PATHWAY_RECIPES.map((r) => (
+                <details key={r.id} style={{ borderTop: `1px solid ${UI.hairline}` }}>
+                  <summary style={{ padding: '9px 0', fontSize: 13.5, fontWeight: 600, color: '#111827', cursor: 'pointer' }}>
+                    {t(`pw.${r.id}.name`)}
+                  </summary>
+                  <div style={{ padding: '0 0 10px' }}>
+                    <ol style={{ margin: 0, paddingLeft: 20 }}>
+                      {r.steps.map((s) => (
+                        <li key={s.key} style={{ fontSize: 13, color: UI.text2, lineHeight: 1.7 }}>{t(s.key)}</li>
+                      ))}
+                    </ol>
+                    <div style={{ fontSize: 11.5, color: UI.text3, marginTop: 6, display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                      <span>{t('pw.sources')}:</span>
+                      {r.sources.map((s) => <span key={s.url}>{s.label}</span>)}
+                      <span>{t('pw.reviewed', { d: r.lastReviewed })}</span>
+                    </div>
+                  </div>
+                </details>
+              ))}
+            </div>
 
             {/* SSR 事实区:各省最近一轮抽选(纯事实;爬虫不看顺序,人看时它只是参考,放主干之后) */}
             {overview.length > 0 && (

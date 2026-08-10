@@ -901,7 +901,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
             {stats.draws.length > 0 && (
               <>
                 <Sec id="s5" title={t('pulse.s5')}
-                  right={<><TopN v={drawsN} on={setDrawsN} max={stats.draws.length} /><a href="/pathways" style={moreA}>{t('pw.entry')}</a></>}>
+                  right={<><TopN v={drawsN} on={setDrawsN} max={stats.draws.length} /><a href="/plan/pr" style={moreA}>{t('plan.pr.title')}</a></>}>
                 <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, overflow: 'hidden' }}>
                   <table className="plDrawTable" style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed', fontSize: 13 }}>
                     {/* 百分比固定布局永不横滚;冷解读吃最宽一列(它是这张表的结论) */}

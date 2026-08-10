@@ -25,6 +25,11 @@ const nextConfig: NextConfig = {
     return [
       { source: '/stats', destination: '/start', statusCode: 301 },
       { source: '/stats/:path*', destination: '/start', statusCode: 301 },
+      // 判定合一批2(设计 §6):四模块合成 /plan/pr 决策页,旧页 301(同上用 301 不用 308)
+      { source: '/pathways', destination: '/plan/pr', statusCode: 301 },
+      { source: '/plan/job', destination: '/plan/pr', statusCode: 301 },
+      { source: '/plan/province', destination: '/plan/pr', statusCode: 301 },
+      { source: '/plan/career', destination: '/plan/pr', statusCode: 301 },
     ]
   },
   images: {

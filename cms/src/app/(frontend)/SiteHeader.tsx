@@ -154,7 +154,7 @@ function MobileDrawer({ t, active, onClose }: { t: TFn; active?: string; onClose
           {/* E13-03:开始规划 / 榜单 / 地区统计 三项合一为「就业把脉」(/start) */}
           <a href="/start" style={item('/start', '', active === 'start' || active === 'stats' || active === 'rank')}>{t('pulse.entry')}</a>
           <a href="/?view=match" style={item('/?view=match', '', false)}>{t('mv.entry')}</a>
-          <a href="/pathways" style={item('/pathways', '', active === 'pathways')}>{t('pw.entry')}</a>
+          <a href="/plan/pr" style={item('/plan/pr', '', active === 'pathways')}>{t('plan.pr.title')}</a>
           {/* 「担保雇主」一级项 08-08 Frank 摘除(截图点名):/employers 入口=弹框雇主线/报告卡互通链/定价配图,不占顶栏 */}
           {grp('lib', t('nav.library'), [
             { href: '/occupations', label: t('dir.occ.title') },
@@ -240,7 +240,8 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
             {matchButton
               ? <button onClick={matchButton.onClick} style={{ border: 'none', background: 'none', padding: 0, fontSize: 12.5, color: matchButton.active ? '#2563eb' : '#6b7280', fontWeight: matchButton.active ? 700 : 400, cursor: 'pointer', whiteSpace: 'nowrap' }}><IconTarget /> {t('mv.entry')}</button>
               : <a href="/?view=match" style={nav}><IconTarget /> {t('mv.entry')}</a>}
-            <a href="/pathways" style={{ ...nav, color: active === 'pathways' ? '#2563eb' : '#6b7280', fontWeight: active === 'pathways' ? 700 : 400 }}><IconCompass /> {t('pw.entry')}</a>
+            {/* 判定合一批2:/pathways 301 并入决策页,导航项改指 /plan/pr、label=拿 PR 评估(active 键沿用) */}
+            <a href="/plan/pr" style={{ ...nav, color: active === 'pathways' ? '#2563eb' : '#6b7280', fontWeight: active === 'pathways' ? 700 : 400 }}><IconCompass /> {t('plan.pr.title')}</a>
             {/* 「担保雇主」一级项 08-08 Frank 摘除;/employers 走弹框雇主线/报告卡/定价配图入口 */}
             {/* 资料库 ▾(2026-07-19 Frank 批提案方案 A;E8-07 E:点击开改 hover 开,NavDrop 统一交互) */}
             <NavDrop label={t('nav.library')} icon={<IconUsers />} highlight={false} items={[

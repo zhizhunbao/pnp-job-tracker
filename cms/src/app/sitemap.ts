@@ -16,8 +16,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url('/legal/disclaimer', 0.3, 'monthly'),
     url('/legal/privacy', 0.3, 'monthly'),
     url('/legal/terms', 0.3, 'monthly'),
-    url('/pathways', 0.9, 'weekly'),
-    url('/plan/pr', 0.9, 'daily'),    // 判定合一批1:决策页(SSR 事实区上线后进收录;批2 /pathways 301 并入)
+    // 判定合一批2:/pathways 与 /plan/{job,province,career} 已 301 进决策页,sitemap 只留 /plan/pr
+    url('/plan/pr', 0.9, 'daily'),
     url('/news', 0.8),
     // B4-01 名录(SEO 高意图词落地页:AIP designated employers / LMIA records / in-demand occupations)
     url('/occupations', 0.8, 'weekly'),

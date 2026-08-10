@@ -248,7 +248,7 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
                   升级 Pro 改通栏实心钮(免费号才显),退出置底灰字;条目图标全 Icons.tsx SVG */}
               <div style={menuSect}>{t('menu.sect.job')}</div>
               <a href="/?view=match" style={menuItem}><IconTarget /> {t('mv.entry')}</a>
-              <a href="/pathways" style={menuItem}><IconCompass /> {t('pw.entry')}</a>
+              <a href="/plan/pr" style={menuItem}><IconCompass /> {t('plan.pr.title')}</a>
               <a href="/account?sec=favs" style={menuItem}><IconStar /> {t('fav.title')}</a>
               <a href="/account?sec=sjobs" style={menuItem}><IconClipboard /> {t('sj.title')}</a>
               <div style={{ borderTop: '1px solid #f3f4f6', margin: '4px 0' }} />
@@ -1367,8 +1367,14 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             const stop = (fn: () => void) => (e: React.MouseEvent) => { e.stopPropagation(); fn() }
             const L = parseLoc(j)
             // #175:不可点的 chip 连 onClick 也摘(stopPropagation 会吞整卡点击=点了没反应)
+            // 胶囊统一规格(08-10 Frank「所有胶囊的风格可以改成一样的吗」):几何对齐 TV_PILL
+            // (12px/圆角 999/1px 边框),语义色保留;边框色按底色配同族浅一档,别再一半色块一半胶囊
+            const CHIP_BORDER: Record<string, string> = {
+              '#f3f4f6': '#e5e7eb', '#fef3c7': '#fde68a', '#fee2e2': '#fecaca', '#dbeafe': '#bfdbfe',
+              '#ffedd5': '#fed7aa', '#f3e8ff': '#e9d5ff', '#ccfbf1': '#99f6e4', '#eff6ff': '#bfdbfe',
+            }
             const chip = (bg: string, fg: string, txt: string, k: ColKey, tip?: string) => (
-              <span key={k} title={tip} onClick={cellActionable(k) ? stop(() => open(k, txt)) : undefined} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: bg, color: fg, cursor: cellActionable(k) ? 'pointer' : 'default', whiteSpace: 'nowrap' }}>{txt}</span>
+              <span key={k} title={tip} onClick={cellActionable(k) ? stop(() => open(k, txt)) : undefined} style={{ fontSize: 12, padding: '2px 12px', borderRadius: 999, background: bg, color: fg, border: `1px solid ${CHIP_BORDER[bg] || bg}`, cursor: cellActionable(k) ? 'pointer' : 'default', whiteSpace: 'nowrap' }}>{txt}</span>
             )
             // Frank 走查:发布当天显示 1 天 → new Date('YYYY-MM-DD') 按 UTC 午夜解析,EDT 晚上 Date.now() 已跨 UTC 次日差 1 天;改按本地午夜解析(+'T00:00:00')
             const days = j.datePosted && (j.status || 'open') !== 'closed' ? Math.max(0, Math.floor((Date.now() - new Date(j.datePosted.slice(0, 10) + 'T00:00:00').getTime()) / 86400000)) : null
@@ -1397,8 +1403,11 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               anyRoute && aipBlocked && !pnpExcl ? chip('#fee2e2', '#b91c1c', t('cell.aipBlocked'), 'aip')
                 : anyRoute && j.aip ? chip('#ffedd5', '#9a3412', t('cell.aipYes'), 'aip') : null,
               anyRoute && isQc ? chip('#f3e8ff', '#7c3aed', 'QC', 'province') : null,
-              // #145(Frank「这两个重复不」):是。LMIA 数与公司名旁的担保档同源 —— 有担保档就不再出 LMIA chip
-              j.lmiaPositions && j.sponsorGrade == null ? chip('#ccfbf1', '#0f766e', 'LMIA ✓' + j.lmiaPositions, 'lmia') : null,
+              // 担保档下放胶囊排(08-10 Frank「这个也放到下面」):公司名旁徽章退役,与 #145 的 LMIA chip 合一 ——
+              // 有档显档名(Has LMIA record 等),无档但有 LMIA 数才显数;AIP-only 三档照旧不显(AIP 胶囊已在)
+              j.sponsorGrade != null && !(j.sponsorGrade === 3 && !j.lmiaPositions && j.aip)
+                ? chip('#eff6ff', '#1d4ed8', t('gr.sp.' + j.sponsorGrade), 'lmia', t('gr.sponsorTip'))
+                : j.lmiaPositions ? chip('#ccfbf1', '#0f766e', 'LMIA ✓' + j.lmiaPositions, 'lmia') : null,
               // GAP1③:红旗 chip —— 白投预警比正面信号更值得占位
               j.eligibilityFlag ? chip('#fee2e2', '#b91c1c', t('cell.elig.' + j.eligibilityFlag), 'eligibility') : null,
               // #287 批D:判定卡入口 pill(蓝系动作钮,胶囊排尾;效果图 se287-entry-board)
@@ -1415,7 +1424,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                 /* 点公司名=开公司弹框(2026-07-22 Frank「其他弹框都很清晰」:与职位/分类一致,不特殊化;
                    #182 手机直跳页退役——弹框里有「打开完整页」进深页);stop 保整卡进职位详情不被抢 */
                 company={j.company ? { text: j.company, onClick: stop(() => open('company', j.company)) } : undefined}
-                companyBadge={j.sponsorGrade != null && !(j.sponsorGrade === 3 && !j.lmiaPositions && j.aip) ? <span title={t('gr.sponsorTip')} style={{ fontSize: 10.5, padding: '1px 7px', borderRadius: 999, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', whiteSpace: 'nowrap' }}>{t('gr.sp.' + j.sponsorGrade)}</span> : undefined}
+                /* 担保档徽章 08-10 下放胶囊排(见上 chips)—— 公司名行回归干净一行 */
                 /* #175:薪资退出可点集合——写死的 pointer+onClick 摘除(看着能点点了没反应比不能点更糟) */
                 /* 只认 salaryText,**不兜底回原文**:原来写 (salaryText || salary),于是清洗产物为空时
                    手机上会冒出 Job Bank 原话「$37.50 hourly」,而桌面是横线 —— 同一格两端两个样。

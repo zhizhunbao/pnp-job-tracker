@@ -1,20 +1,12 @@
 // 规则引擎单测(设计《规则引擎与题库配对-20260731》§8 的黄金三例:达标 / 差一档 / 未收录)。
+// 判定合一批2:报告层用例随 report.ts 引擎退役,本文件只留判定核(rules)口径。
 // 纯函数,不需要 DB。这里锁的是**判定口径**,不是文案:
 //   · unknown 是一等公民 —— 判不了就得是 unknown,绝不能滑成 pass 或 fail;
 //   · 加拿大经验不够**不等于**总经验不够(官方要的是境内外都算)→ 只能 unknown;
 //   · 收入表家庭人数/居住区域未知时,只有「最低那档都够不到」才敢判 fail(下界推理)。
 import { describe, it, expect } from 'vitest'
-import { normalizeProfile, type MatchDims } from '@/lib/match'
-import { buildJobReport, buildPrReport, gateReport, type ReportFacts } from '@/lib/report'
 import { areaOfPlace, employerBar, evaluateRequirements, type Requirement } from '@/lib/rules'
 
-const dims: MatchDims = {
-  pnpOccupations: [
-    { province: 'BC', label: 'BC Health Authority stream', type: 'indemand', noc: '31301', url: 'https://gov.bc.ca/health', fetched: '2026-07-20' },
-    { province: 'SK', label: 'SK health stream', type: 'indemand', noc: '31301', url: 'https://sk.ca/health', fetched: '2026-07-19' },
-  ],
-  eeCategories: [],
-}
 
 // 真实抓取值(bc-req.json 2026-06-10 版):CLB 4 / 1 人家庭 $31,264(大温)与 $26,057(其余)/ 24 个月 / 雇主 1 年 · 5 人 · 3 人
 const R = (o: Partial<Requirement>): Requirement => ({
@@ -109,127 +101,6 @@ describe('evaluateRequirements —— 判定口径', () => {
   })
 })
 
-// ── 报告层:门槛对照节 + 付费闸 ────────────────────────────────────────────
-const facts = (o: Partial<ReportFacts>): ReportFacts => ({
-  noc: '31301', title: 'Registered nurses', teer: 2,
-  byProv: [{ province: 'BC', open: 17, named: 17, medianWage: 91000 }],
-  draws: [], scoreProvinces: ['BC', 'SK'], requirements: BC_REQS, fetched: '2026-07-31', ...o,
-})
-const base = (over: object = {}) => normalizeProfile({ currentStatus: 'working', clb: 8, targetProvinces: ['BC'], ...over })
-
-describe('报告「门槛对照」节', () => {
-  // 2026-08-03 收窄口径(#243,收费走查):这一节只留**他自己能动的**门槛。
-  // 先前五行里四行是「跟你无关 / 我判不了」——「算的是全家收入,本站没问」、两条「这项只有雇主拿得出材料」——
-  // 连着读下来只会得出「这网站判不了我的事」,而那正是他不掏钱的理由(设计:付费概率提升计划-20260803 §3 L4)。
-  it('BC 目标省 → 只留他自己动得了的门槛(语言、经验);判不了的与雇主侧的都不占行', () => {
-    const r = buildPrReport(base(), { canadianExpMonths: 30 }, dims, facts({}))
-    expect(r.requirements.map((l) => l.key)).toEqual(['rpt.r.lang.pass', 'rpt.r.exp.pass'])
-    expect(r.requirements[0].source?.url).toContain('welcomebc.ca')
-    // 收入判不了(门槛是全家口径,题库没问家庭)→ 整行不出,不留「本站没问」那种自证判不了的话
-    expect(r.requirements.some((l) => l.key.startsWith('rpt.r.income'))).toBe(false)
-    // 雇主侧三项改由**雇主线索每一家**挂档位(employerBar),在那里对着具体公司看才可行动
-    expect(r.requirements.some((l) => l.key.startsWith('rpt.r.emp'))).toBe(false)
-  })
-
-  // 2026-08-02 改口径(Frank「这条对照不了,那还显示干什么」):一行「我们没有数据」对读的人零价值
-  it('未收录的省(SK 没有门槛行)→ 这一节一行都不出,更不拿 BC 的门槛套', () => {
-    const r = buildPrReport(base({ targetProvinces: ['SK'] }), { canadianExpMonths: null }, dims, facts({}))
-    expect(r.requirements).toEqual([])
-  })
-
-  // ── B1-4 PGWP 规则库(2026-08-03,Frank 拍板「原文为准/只加两道/CIP 第二期」)──
-  // 规则行走 pnp_requirements 的 FED/PGWP 行(quote-anchored,build_pgwp.py 逐轮验官方原文)。
-  const F = (o: Partial<Requirement>): Requirement => R({ province: 'FED', program: 'PGWP', stream: '', url: 'https://canada.ca/pgwp-about', ...o })
-  const FED_PGWP: Requirement[] = [
-    F({ factor: 'pgwpLength', stream: 'masters', value: 36, unit: 'months', effective: '2024-02-15' }),
-    F({ factor: 'pgwpLength', stream: 'short', value: null }),
-    F({ factor: 'pgwpLength', stream: 'long', value: 36 }),
-    F({ factor: 'pgwpCombine', value: null }),
-    F({ factor: 'pgwpMinProgram', value: 8 }),
-    F({ factor: 'pgwpLanguage', stream: 'degree', value: 7, unit: 'CLB' }),
-    F({ factor: 'pgwpLanguage', stream: 'college', value: 5, unit: 'CLB' }),
-  ]
-  const pgwpFacts = () => facts({ requirements: [...BC_REQS, ...FED_PGWP] })
-
-  it('PGWP:12 个月大专 → 许可=课程等长;合并+一生一次行必出;语言按大专档对照', () => {
-    const r = buildPrReport(base(), { canadianExpMonths: null, studyMonths: 12, studyLevel: 'college' }, dims, pgwpFacts())
-    const len = r.conclusions.find((c) => c.key === 'rpt.c.pgwpLen')!
-    expect(len.params).toMatchObject({ months: 12, permit: 12 })
-    expect(len.source?.url).toBe('https://canada.ca/pgwp-about')
-    expect(r.conclusions.some((c) => c.key === 'rpt.c.pgwpCombine')).toBe(true)
-    // base() 报了 CLB 8 ≥ 大专档 5 → 达标行
-    expect(r.conclusions.find((c) => c.key === 'rpt.c.pgwpLangOk')?.params).toMatchObject({ need: 5, have: 8 })
-  })
-
-  it('PGWP:硕士 ≥8 个月走 3 年特例;≥2 年走 3 年档;不足 8 个月无 PGWP', () => {
-    const m = buildPrReport(base(), { canadianExpMonths: null, studyMonths: 12, studyLevel: 'master' }, dims, pgwpFacts())
-    expect(m.conclusions.find((c) => c.key === 'rpt.c.pgwpLen')?.params.permit).toBe(36)
-    const long = buildPrReport(base(), { canadianExpMonths: null, studyMonths: 24, studyLevel: 'college' }, dims, pgwpFacts())
-    expect(long.conclusions.find((c) => c.key === 'rpt.c.pgwpLen')?.params.permit).toBe(36)
-    const none = buildPrReport(base(), { canadianExpMonths: null, studyMonths: 4, studyLevel: 'college' }, dims, pgwpFacts())
-    expect(none.conclusions.some((c) => c.key === 'rpt.c.pgwpNone')).toBe(true)
-    expect(none.conclusions.some((c) => c.key === 'rpt.c.pgwpLen')).toBe(false)
-  })
-
-  // 2026-08-03 生产实撞:引擎算出了 pgwp 行,免费闸的「其余 N 条」桶把它们全裁进锁区(moreN+3)——
-  // 免费探索题承诺的解锁被吃掉 = 答了题什么都没多看到。ALWAYS_FREE 保底,这条测试锁死。
-  it('PGWP:免费层必留(不受「免费两条」截断)', () => {
-    const built = buildPrReport(base(), { canadianExpMonths: null, studyMonths: 12, studyLevel: 'college' }, dims, pgwpFacts())
-    const free = gateReport(built, false)
-    expect(free.conclusions.some((c) => c.key === 'rpt.c.pgwpLen')).toBe(true)
-    expect(free.conclusions.some((c) => c.key === 'rpt.c.pgwpCombine')).toBe(true)
-    expect(free.conclusions.some((c) => c.key === 'rpt.c.pgwpLangOk')).toBe(true)
-  })
-
-  // G2 路线账(案例库 C02/C08):两条结论都是拿他的答案算出来的 → 锁区专属锁行(route),不落 more 桶
-  it('G2 路线账:permit 够/不够攒满还缺的经验;先读书晚约课程时长;免费层整类进 route 锁行', () => {
-    const ok = buildPrReport(base(), { canadianExpMonths: null, studyMonths: 12, studyLevel: 'master' }, dims, pgwpFacts())
-    expect(ok.conclusions.find((c) => c.key === 'rpt.c.routeWindow')?.params).toMatchObject({ prov: 'BC', permit: 36, need: 24, remain: 24 })
-    expect(ok.conclusions.find((c) => c.key === 'rpt.c.routeDelay')?.params).toMatchObject({ months: 12 })
-    const short = buildPrReport(base(), { canadianExpMonths: null, studyMonths: 8, studyLevel: 'college' }, dims, pgwpFacts())
-    expect(short.conclusions.find((c) => c.key === 'rpt.c.routeWindowShort')?.params).toMatchObject({ permit: 8, remain: 24 })
-    const free = gateReport(ok, false)
-    expect(free.locked).toContain('route')
-    expect(free.conclusions.some((c) => c.key.startsWith('rpt.c.route'))).toBe(false)
-  })
-
-  it('PGWP:没答课程题一行不出;FED 行不漏进省级门槛节', () => {
-    const r = buildPrReport(base(), { canadianExpMonths: 30 }, dims, pgwpFacts())
-    expect(r.conclusions.some((c) => c.key.startsWith('rpt.c.pgwp'))).toBe(false)
-    expect(r.requirements.every((l) => !l.key.includes('pgwp'))).toBe(true)
-  })
-
-  // B1-2(2026-08-03 木匠案例):0 经验的 fail 换措辞 ——「你填 0 个月,差 24 个月」读起来像资格否决,
-  // 而经验是**排期**(从第一份岗起算)。0 时差值恒等于门槛,付费侧没有增量 → 免费付费同句,不进 REQ_FREE。
-  it('0 经验的经验行走 rpt.r.exp.zero(排期措辞);免费层不换键', () => {
-    const built = buildPrReport(base(), { canadianExpMonths: null, totalExpMonths: 0 }, dims, facts({}))
-    const zero = built.requirements.find((l) => l.key.startsWith('rpt.r.exp'))!
-    expect(zero.key).toBe('rpt.r.exp.zero')
-    expect(zero.params.need).toBe(24)
-    expect(gateReport(built, false).requirements.find((l) => l.key.startsWith('rpt.r.exp'))!.key).toBe('rpt.r.exp.zero')
-  })
-
-  it('免费层:差一档的语言行摘掉差值并挂锁行;Pro 层保留差值、不挂锁行', () => {
-    const built = buildPrReport(base({ clb: 3 }), { canadianExpMonths: 30 }, dims, facts({}))
-    const free = gateReport(built, false)
-    const langFree = free.requirements.find((l) => l.key.startsWith('rpt.r.lang'))!
-    expect(langFree.key).toBe('rpt.r.lang.failFree')
-    expect(langFree.params.short).toBeUndefined()
-    expect(free.locked[0]).toBe('req')
-
-    const pro = gateReport(built, true)
-    const langPro = pro.requirements.find((l) => l.key.startsWith('rpt.r.lang'))!
-    expect(langPro.key).toBe('rpt.r.lang.fail')
-    expect(langPro.params.short).toBe(1)
-    expect(pro.locked).toHaveLength(0)
-  })
-
-  it('门槛全过时不挂锁行(没有「差多少」可卖就不卖)', () => {
-    const free = gateReport(buildPrReport(base(), { canadianExpMonths: 30 }, dims, facts({})), false)
-    expect(free.locked).not.toContain('req')
-  })
-})
-
 // ── 第二刀:ON(OINP)—— 雇主侧三条 + 技工语言分档 + basis=occMedian 的工资档 ──────────
 const ON_REQS: Requirement[] = [
   R({ province: 'ON', stream: 'Ontario Workforce Priority stream', factor: 'language', value: 6, unit: 'CLB', appliesTeer: '0,1,2,3' }),
@@ -264,10 +135,8 @@ describe('ON(OINP)—— 雇主侧与技工分档', () => {
 
   // 引擎层照旧把这条官方门槛算出来(unknown 是一等公民),但**报告层不再摆这一行** ——
   // 免考看的是「在哪读的」,题库问的是学历层级,判不了(Frank 2026-08-02「这一条不参与判定,那还显示干什么」)
-  it('免考条款:引擎照旧出 unknown,报告层不占行', () => {
+  it('免考条款:引擎照旧出 unknown(报告层随 report 引擎退役,判定合一批2)', () => {
     expect(byFactor(evaluateRequirements(ON_REQS, P({ noc: '21232', teer: 1, clb: 9 })), 'languageExempt').verdict).toBe('unknown')
-    const r = buildPrReport(base({ targetProvinces: ['ON'] }), { canadianExpMonths: 30 }, dims, facts({ requirements: ON_REQS }))
-    expect(r.requirements.map((l) => l.key)).not.toContain('rpt.r.langExempt')
   })
 
   it('工资档 basis=occMedian:阈值取该职业该省中位,报告层没有具体岗位 → unknown', () => {
@@ -289,34 +158,6 @@ describe('ON(OINP)—— 雇主侧与技工分档', () => {
   it('ON 与 BC 的行互不串味(引擎只吃传进来的那一省)', () => {
     const rs = evaluateRequirements(ON_REQS, P({ noc: '21232', teer: 1, clb: 9 }))
     expect(rs.find((r) => r.factor === 'income')).toBeUndefined()   // 最低家庭收入是 BC 的东西
-  })
-})
-
-// ── 雇主线索(锁区正文)——免费层服务端就没有名单,Pro 才有 ────────────────────────
-describe('雇主线索', () => {
-  const occStats = {
-    self: { noc: '31301', province: 'all', titleEn: 'Registered nurses', titleZh: '注册护士', titleKo: '', teer: 1, broad: '3', mid: '31', fine: '3130', open: 300, named: 120, medianWage: 90000, medianPosted: 81000 },
-    byProv: [], peers: [], sponsors: 2,
-    sponsorList: [
-      { name: 'Saskatchewan Health Authority', slug: 'sk-health', named: 3, eligible: 3, city: 'Regina', province: 'SK', lastPosted: '2026-07-17', lmiaPositions: 39, lmiaQuarter: '2026Q1', aip: false },
-      { name: 'Northern Health Authority', slug: 'north-health', named: 3, eligible: 3, city: 'Mackenzie', province: 'BC', lastPosted: '2026-07-27', lmiaPositions: 2, lmiaQuarter: '2025Q3', aip: true },
-    ],
-  } as any
-
-  const built = () => buildJobReport(base(), dims, facts({ byProv: [{ province: 'BC', open: 17, named: 17, medianWage: 91000 }] }), occStats)
-
-  it('Pro:名单下发,字段照抄事实(不合成任何判断)', () => {
-    const pro = gateReport(built(), true)
-    expect(pro.employers.map((e) => e.name)).toEqual(['Saskatchewan Health Authority', 'Northern Health Authority'])
-    expect(pro.employers[1]).toMatchObject({ aip: true, lmiaPositions: 2, province: 'BC' })
-    expect(pro.locked).toHaveLength(0)
-  })
-
-  it('免费:名单**不在响应体里**(不是前端打码),但「有 N 家」那句结论与锁行都在', () => {
-    const free = gateReport(built(), false)
-    expect(free.employers).toEqual([])
-    expect(free.conclusions.some((c) => c.key === 'rpt.j.sponsors')).toBe(true)
-    expect(free.locked).toContain('sponsors')
   })
 })
 
