@@ -70,10 +70,23 @@ export function sponsorEmployerCols(t: TFn, lang: Lang, kind: SponsorKind, showV
     sort: (r: SponsorEmployerRow) => VERDICT_RANK[r.verdict.state],
     render: (r: SponsorEmployerRow) => { const c = verdictCell(r, t); return <span style={{ color: c.color, fontWeight: c.color === '#9ca3af' ? 400 : 700 }}>{c.text}</span> },
   }
+  // AIP 表的「下一步」动作列(2026-08-09 Frank「用户看了这个表应该做什么」):点雇主名也能到职位板,
+  // 但那是**看着像标题的链接**,读者不知道点了会去哪。行尾给一个明说去向的钮,落点=该雇主的在招岗,
+  // 每行再接职位板既有的「身份判定」。只给 AIP 表:LMIA/named 两张表列已经很挤,加列先看这张的成效。
+  const next = {
+    key: 'next', label: t('se.col.next'), nowrap: true,
+    render: (r: SponsorEmployerRow) => (
+      <a href={`/?q=${encodeURIComponent(r.name)}`} onClick={() => track('se-next-jobs')}
+        style={{
+          display: 'inline-block', border: `1px solid ${UI.primary}`, color: UI.primary, borderRadius: 6,
+          padding: '5px 10px', fontSize: 13, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap',
+        }}>{t('se.next.jobs')}</a>
+    ),
+  }
   const base = [name, open]
   if (kind === 'lmia') return [...base, w1, w2, w4, lmia, skilled, where]
   if (kind === 'named') return [...base, where, ...(showVerdict ? [verdict] : [])]
-  return [...base, where]
+  return [...base, where, next]
 }
 
 export function SponsorCard({ r, lang, t, kind, showVerdict = false }: { r: SponsorEmployerRow; lang: Lang; t: TFn; kind: SponsorKind; showVerdict?: boolean }) {
@@ -102,6 +115,15 @@ export function SponsorCard({ r, lang, t, kind, showVerdict = false }: { r: Spon
       </div>
       {alias ? <div style={{ fontSize: 12.5, color: '#9ca3af', marginTop: 2 }}>{alias}</div> : null}
       <CardKV items={kv} />
+      {/* 桌面那一列在手机上摊成卡底的整条钮(手机没有「行尾」可言);同样只给 AIP 表 */}
+      {kind === 'aip' ? (
+        <a href={`/?q=${encodeURIComponent(r.name)}`} onClick={() => track('se-next-jobs')}
+          style={{
+            display: 'block', marginTop: 10, border: `1px solid ${UI.primary}`, color: UI.primary,
+            borderRadius: 6, padding: '7px 10px', fontSize: 13, fontWeight: 600,
+            textDecoration: 'none', textAlign: 'center',
+          }}>{t('se.next.jobs')}</a>
+      ) : null}
     </Card>
   )
 }

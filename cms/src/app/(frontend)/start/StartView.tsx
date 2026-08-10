@@ -306,7 +306,9 @@ function TopN({ v, on, max }: { v: number; on: (n: number) => void; max: number 
 // 且文案里必须带窗口(不许只写「环比」让人当成月环比)。
 // mom14d 缺列/全 null 时:环比列与判决列**整列不出**(降级成在架/命中率/薪资偏离能撑的版本),
 // 绝不拿 0 顶包;单行缺值显「—」。
-function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, pageSize = 10 }: { rows: OccRow[]; t: TFn; lang: string; nocProvs: Map<string, string[]>; showProvs?: boolean; deadCol?: boolean; pageSize?: number }) {
+// flatDelta:环比列**不上红绿**(2026-08-09 Frank:雷区榜上绿色语义是反的 —— 涨=更多人被吸进
+// 一个在那些省根本没通道的岗,那不是好消息)。只这一榜关掉;别的榜「涨=好」的直觉是对的,照旧。
+function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, flatDelta = false, pageSize = 10 }: { rows: OccRow[]; t: TFn; lang: string; nocProvs: Map<string, string[]>; showProvs?: boolean; deadCol?: boolean; flatDelta?: boolean; pageSize?: number }) {
   const hasMom = rows.some((o) => o.mom14d != null)
   // E13-05:榜 A(showProvs=false)专用列——真口径可提名省份(pnp_provs,含排除式省/雇主担保类,
   // 与「紧缺清单省份」列语义不同、互斥出现)。列还没落库(全行 null/undefined)时整列不渲染。
@@ -365,7 +367,7 @@ function OccBoard({ rows, t, lang, nocProvs, showProvs = true, deadCol = false, 
   // 「无」不再分红灰(Frank:「大部分人不可能卷 CRS 分也不可能再学法语」——无清单对受众=只剩不现实的路,
   //  这层含义由三榜分层本身表达,tooltip 说透即可)
   const momCell = (o: OccRow) => (o.mom14d == null ? null
-    : <span style={{ color: momColor(o.mom14d), fontWeight: 700, whiteSpace: 'nowrap' }}>{pctSigned(o.mom14d)}</span>)
+    : <span style={{ color: flatDelta ? UI.text : momColor(o.mom14d), fontWeight: 700, whiteSpace: 'nowrap' }}>{pctSigned(o.mom14d)}</span>)
 
   const cols: DTCol<OccRow>[] = [
     {
@@ -711,6 +713,16 @@ export function StartView({ stats }: { stats: HomeStats }) {
                 <div key={k} style={{ marginTop: idx === 0 ? 0 : 24 }}>
                   {/* 08-08 追加「表管事实,人话归对话」:表题旁挂对话导流钮,三张统一形态 */}
                   <Sec id={'se-' + k} title={t('se.grp.' + k)} right={<AskChatBtn kind={k as SponsorKind} t={t} />} sub>
+                    {/* AIP 表专属的两行(08-09 Frank「用户看了这个表应该做什么」):
+                        第一行=允许类,数值锚 pnp_requirements program='AIP' 的 quote(TEER 0-4,官方没有 TEER 5);
+                        第二行=「被指定 ≠ 入职就能 PR」,答的是 Tim Hortons 之问(列表层此前对此一言不发)。
+                        一行一条,不用「|」把两件事焊一行;375 下两行各自都放得下。 */}
+                    {k === 'aip' ? (
+                      <div style={{ margin: '2px 0 10px', fontSize: 13, lineHeight: 1.7 }}>
+                        <div style={{ color: UI.text2 }}>{t('se.aip.lead')}</div>
+                        <div style={{ color: '#b45309' }}>{t('se.aip.note')}</div>
+                      </div>
+                    ) : null}
                     <SponsorBoard rows={grp.top} kind={k as SponsorKind} t={t} lang={lang} total={grp.total} occOpts={stats.occOpts} catMids={stats.catMids} nocCat={nocCat} />
                   </Sec>
                 </div>
@@ -737,7 +749,9 @@ export function StartView({ stats }: { stats: HomeStats }) {
             {boards !== null && boards.mine.length > 0 && (
               <div>
                 <Sec id="b1a" title={t('pulse.b1a')} sub>
-                  <OccBoard rows={boards.mine} t={t} lang={lang} nocProvs={nocProvs} showProvs={false} deadCol />
+                  {/* 「≠推荐」小注(08-09 Frank 待拍两件之一):这榜是排除清单,读者容易读成「这些职业好」 */}
+                  <div style={{ margin: '2px 0 10px', fontSize: 13, color: UI.text2 }}>{t('pulse.b1a.note')}</div>
+                  <OccBoard rows={boards.mine} t={t} lang={lang} nocProvs={nocProvs} showProvs={false} deadCol flatDelta />
                 </Sec>
               </div>
             )}

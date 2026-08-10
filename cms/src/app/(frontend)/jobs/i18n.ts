@@ -292,7 +292,7 @@ const zh: Dict = {
   'pulse.b2': '上了紧缺清单但岗位在减',
   'pulse.b3': '上了紧缺清单且岗位在涨',
   // E13-08 雷区榜(强负断言,口径=ETL any_pr_path:PNP∪联邦EE∪AIP∪保育专项全无才判死)
-  'pulse.b1a': '部分省无通道的职业',
+  'pulse.b1a': '部分省无通道的职业', 'pulse.b1a.note': '本榜列的是走不通的省,不是职业推荐',
   'pulse.col.dead': '无通道的省份', 'pulse.dead.cell': '{provs} 无通道',
   // 08-08 Frank 走查:紧缺列胶囊化(省码进胶囊);雷区榜 QC/RCIP 灰注删、「有移民通道的省」常量列删
   'pulse.col.hot': '通道', 'pulse.provs.n': '{n} 省可走', 'pulse.tier.provOne': '{p} 紧缺', 'pulse.tier.fedOne': '联邦紧缺',
@@ -312,6 +312,11 @@ const zh: Dict = {
   'pulse.col.sponsorRate': 'LMIA 率',
   'pulse.total': '共 {n} 个职业', 'pulse.totalEmp': '共 {n} 家', 'pulse.hitEmp': '符合 {m} 家(共 {n} 家)',
   'se.col.openAip': '大西洋四省在招', 'se.allStreams': '全部清单', 'se.allOcc': '全部职业', 'se.empty': '没有匹配的雇主', 'se.skilledOnly': '只看技能类获批',
+  // AIP 表「下一步」动线(数值锚 pnp_requirements program='AIP':workTeerMatch 映射到 TEER 0-4,
+  // language 分 TEER 0-3 CLB5 / TEER 4 CLB4 —— 官方门槛里**没有 TEER 5**,别写 0-5)
+  'se.col.next': '下一步', 'se.next.jobs': '看在招岗 →',
+  'se.aip.lead': 'AIP 只收 TEER 0–4 的 offer,雇主须在这四省被指定',
+  'se.aip.note': '被指定 ≠ 入职就能 PR',
   // 08-08 Frank 追加「表管事实,人话归对话」:三分表表题旁的对话导流钮 + 三张各自预填问句
   'se.askChat': '问 AI 顾问怎么用这张表',
   'se.ask.lmia': 'LMIA 获批雇主的表对我找工作移民有什么用?',
@@ -1233,7 +1238,7 @@ const en: Dict = {
   'pulse.b2': 'On a shortage list but jobs falling',
   'pulse.b3': 'On a shortage list and jobs growing',
   // E13-08 minefield board (strong negative claim; caliber = ETL any_pr_path: dead only when PNP, federal EE, AIP and the caregiver pilots all say no)
-  'pulse.b1a': 'No pathway in some provinces',
+  'pulse.b1a': 'No pathway in some provinces', 'pulse.b1a.note': 'This board lists provinces with no pathway, not job recommendations',
   'pulse.col.dead': 'Provinces with no pathway', 'pulse.dead.cell': '{provs} no route',
   'pulse.col.hot': 'Route', 'pulse.provs.n': '{n} provinces open', 'pulse.tier.provOne': '{p} in-demand', 'pulse.tier.fedOne': 'Federal in-demand',
   'pulse.provs.none': 'None',
@@ -1251,6 +1256,9 @@ const en: Dict = {
   'pulse.col.sponsorRate': 'LMIA rate',
   'pulse.total': '{n} occupations', 'pulse.totalEmp': '{n} employers', 'pulse.hitEmp': '{m} of {n} employers',
   'se.col.openAip': 'Atlantic open jobs', 'se.allStreams': 'All lists', 'se.allOcc': 'All job titles', 'se.empty': 'No matching employers', 'se.skilledOnly': 'Skilled approvals only',
+  'se.col.next': 'Next step', 'se.next.jobs': 'See open jobs →',
+  'se.aip.lead': 'AIP takes TEER 0–4 offers from employers designated in these 4 provinces',
+  'se.aip.note': 'Designated employer ≠ PR on hire',
   'se.askChat': 'Ask the AI advisor how to use this table',
   'se.ask.lmia': 'How does the LMIA-approved employer table help my immigration job search?',
   'se.ask.named': 'What does an employer with jobs on a shortage list mean for me?',
@@ -2117,7 +2125,7 @@ const ko: Dict = {
   'pulse.b2': '수요 목록에 있지만 일자리 감소',
   'pulse.b3': '수요 목록에 있고 일자리 증가',
   // E13-08 지뢰밭 랭킹(강한 부정 판정; 기준 = ETL any_pr_path: PNP·연방 EE·AIP·돌봄 파일럿 전부 불가일 때만)
-  'pulse.b1a': '일부 주에서 경로가 없는 직종',
+  'pulse.b1a': '일부 주에서 경로가 없는 직종', 'pulse.b1a.note': '이 보드는 경로가 없는 주를 보여줄 뿐, 직업 추천이 아닙니다',
   'pulse.col.dead': '경로 없는 주', 'pulse.dead.cell': '{provs} 경로 없음',
   'pulse.col.hot': '경로', 'pulse.provs.n': '{n}개 주 가능', 'pulse.tier.provOne': '{p} 수요', 'pulse.tier.fedOne': '연방 수요',
   'pulse.provs.none': '없음',
@@ -2135,6 +2143,9 @@ const ko: Dict = {
   'pulse.col.sponsorRate': 'LMIA 비율',
   'pulse.total': '총 {n}개 직업', 'pulse.totalEmp': '총 {n}곳', 'pulse.hitEmp': '{m}곳(총 {n}곳)',
   'se.col.openAip': '대서양 4개 주 채용 중', 'se.allStreams': '전체 목록', 'se.allOcc': '전체 직업명', 'se.empty': '일치하는 고용주가 없습니다', 'se.skilledOnly': '숙련 승인만 보기',
+  'se.col.next': '다음 단계', 'se.next.jobs': '채용 중인 일자리 →',
+  'se.aip.lead': 'AIP는 이 4개 주 지정 고용주의 TEER 0–4 오퍼만 인정합니다',
+  'se.aip.note': '지정 고용주 ≠ 입사하면 영주권',
   'se.askChat': 'AI 상담사에게 이 표 사용법 묻기',
   'se.ask.lmia': 'LMIA 승인 고용주 표가 제 이민 구직에 어떤 도움이 되나요?',
   'se.ask.named': '구인 직종이 수요 목록에 오른 고용주는 저에게 어떤 의미인가요?',
