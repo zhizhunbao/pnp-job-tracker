@@ -11,7 +11,33 @@
 > - **C 数据**:只读 `data/crawl/fed-ee/` 97 页缓存。语言 T4–T26 → raw 23 表/105 档、mart 443 行;ECA 页 FSW 教育映射 151 行并入 FSW67。实际本地 mart=`ee_points_grid` 380(CRS 186 + FSW67 194,points NULL 22)、`ee_language_grid` 443;唯一键重复 0、evidence 缺失 0。**未跑 09 main/seed/DB_PUSH/DDL;新语言 mart 尚无 CMS/生产消费链,不能对外声称 IELTS 原分已可自动换 CLB。**
 > - 全程未启 dev server、未 commit/push;`data/raw/ee/draws.json` 等定时 ETL 既有脏改保留,不属于本批。
 >
-> **⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡ 最新交接(2026-08-09 夜场二,「三件批」:中文名收口/超时降级/AIP 动线)**
+> **⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡ 最新交接(2026-08-10,批D 欠账①「名录匹配」清账)**
+> Frank 拍板**「AIP 雇主完全匹配的才算」**;审计=`docs/evaluation/名录匹配审计-20260809.md`(落地节已补口径标定表)。
+> 改动只在匹配与渲染层:**零改库、零改 mart、零改 seed、零动 ETL**,懒查询口径不变。
+> - **口径**:旧=双向大小写不敏感**子串包含**(`Esso`→`Wheeler Acc·esso·ries`、`ARMS Ltd`→`Wohlgemuth F·arms Ltd`)。
+>   新=**完全匹配**,比的是名录名的**任一 o/a 名段**。⚠️ 字面完全相等不可用:名录 38%(1,460/3,867)是
+>   「法定全称 o/a 营业名」,岗位挂营业名 → 四省命中 389→**81**(砍 79%),连本卡基准 fixture
+>   (Grand View Manor)都会变「名录没认出」。**D 口径 = 281 命中 / 17 多配**(旧 389/52,最大 55 配)。
+> - **审计建议 ①③ 被吸收销账**:没有「包含」就没有词内子串,也没有「谁胜出」。词边界方案实测**不够**
+>   (Esso 仍 2 配 / Tim Hortons 仍 55 配 / HOTEL HALIFAX 仍被 Atlantica 抢配),故不采用。
+> - **建议 ② 照做且仍然必须**:完全匹配**治不了连锁**——加盟法人的 o/a 段本来就精确等于品牌名,
+>   `Tim Hortons`(NS)20 家 / `Subway` 19 / `Mary Brown's`(NL)13 全是合法完全匹配。多配 ≥2 →
+>   新行 `tv.emp.designatedMulti`(free/info,只报家数不点名),且 `designation=null` 使
+>   **AIP 线不进比路、不会被标「最快」**(付费结论不拿不可证的雇主去算;事实照摆=锁合成不锁事实)。
+> - **落地件**:`lib/designationMatch.ts`(纯函数)+ `verdictCache.getDesignatedEmployers`(按省 TTL;
+>   🔴 **不能复用 `VerdictData.designatedEmployers`**——那份是 NL 专用,是 pathVerdict「NL 名录里有几家
+>   申报过该 NOC」的分母,扩成四省会把分母一起改掉)+ `tv.emp.designatedMulti` 三语文案。
+>   顺手删了 route 里已成死代码的 ILIKE 转义 `esc`。
+> - **验证**:`designationMatch.int.spec.ts` **18 例**(金标全部抄自审计点名的真实名录行,不自造样本)+
+>   tripleVerdict 补 3 例(多配不点名 / state≠pass / 多配不进比路);全量 **30 文件 554 测 0 红**、`tsc --noEmit` 绿。
+> - **⚠️ 留账(未修,已写进审计报告)**:D 口径把两类**真命中**一起丢了,卡上渲「名录暂未匹配到这家」
+>   (本站缺口语义,不写「未被指定」,不算说错话,但信息量降了)——
+>   ①**括号写法** `品牌 (法人名)` 名录里 538 行(NB 为主):`Tim Hortons (ROLAND RIOUX LTEE)`、
+>   `Esso (Higho Market Ltee-Ltd)`;把括号内外也当名段 → 命中 281→305、多配 17→20。**待 Frank 拍**。
+>   ②`… dba Hotel Halifax & The …` 这类营业名带后缀的,D 与 D+ 都是 0 配。
+> - **未做**:没起 dev server、没出效果图(改的是既有弹窗里一行的文案态,非新动线/新组件)。
+>
+> **⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡ 上一轮交接(2026-08-09 夜场二,「三件批」:中文名收口/超时降级/AIP 动线)**
 > - **✅ ② 合成停摆看门狗(`86e5f42` 已换版,/api/version 验讫)**:friendLlm 新增 `stallMs`——
 >   **补的是结构性口子**:原来 timeoutMs 在**响应头到手就 clearTimeout**,SSE body 读多久都没人管,
 >   上游把头发回来再卡住我们能读到天荒地老(112s 那次就卡在这段);旧链 `res.json()` 同款漏洞一并收进

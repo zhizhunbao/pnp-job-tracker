@@ -57,10 +57,17 @@ export type TripleCompany = {
   /** employerVerdict 的入参形状,原样复用 */
   facts: EmployerFacts
   /**
-   * designated_employers 名录里的命中行;**null = 本站没在名录里认出这家**(名录按名字匹配,
-   * 认不出 ≠ 官方没指定)→ 判定落 unknown,不写「未被指定」。
+   * designated_employers 名录里**唯一**命中的行(口径=designationMatch 的完全匹配,见该文件抬头)。
+   * **null = 没认出 或 多配**,两种情形由 designationMatches 区分:
+   *   0 → 本站没在名录里认出这家(认不出 ≠ 官方没指定)→ 判定落 unknown,不写「未被指定」
+   *   ≥2 → 同名/同链法人多家(连锁加盟:20 家 `… o/a Tim Hortons` 全是合法完全匹配),
+   *        「哪一家是你这份岗的雇主」不可证 → 只报家数不点名(tv.emp.designatedMulti)
    */
   designation: DesignatedEmployerRow | null
+  /** 名录里完全匹配到的法人数(0 / 1 / N);designation 为 null 时靠它区分「没认出」与「多配」 */
+  designationMatches: number
+  /** 多配时仍说得清是哪个名录(AIP…);没认出或多配行 source 不一致 → '' */
+  designationSource: string
   /** companies.lmia_nocs(#286,近两年窗口的获批职业拆分);null = 该列未回填 */
   lmiaNocs: Record<string, number> | null
 }
@@ -216,6 +223,15 @@ function employerRows(job: TripleJob, company: TripleCompany, ev: EmployerVerdic
       label: `${d.name} is on the ${d.source} designated employer list (${d.province})`,
       // 名录 mart 行不带 url/fetched(pathVerdict 已留痕的同一个数据缺口)→ 挂不上就不挂
       ...(d.url && d.fetched ? { evidence: { url: d.url, fetched: d.fetched, label: `${d.source} designated employers` } } : {}),
+    })
+  } else if (company.designationMatches >= 2) {
+    // 多配:「这条链在名录里」为真,「这家法人=你这份岗的雇主」不可证 → 摆家数,不点名法人。
+    // state='info'(摆事实不判定)而非 'pass' —— 下游 compareRows 靠 designation 非空才把 AIP
+    // 当已确证通道,多配时它是 null,AIP 线自然不进比路、不会被标「最快」(付费结论不冒险)。
+    out.push({
+      gate: 'employer', tier: 'free', key: 'tv.emp.designatedMulti', state: 'info',
+      params: { name: company.name, prov: job.province, count: company.designationMatches, program: company.designationSource },
+      label: `${company.designationMatches} designated employers in ${job.province} match the name "${company.name}" — chain is listed, this employer is unproven`,
     })
   } else {
     out.push({

@@ -86,6 +86,9 @@ function rowText(t: TFn, row: TvRow): { main: string; sub?: string } | null {
         : { main: t(row.state === 'pass' ? 'tv.occ.teerPass' : 'tv.occ.teerGap', { teer: P(p.teer), prov }) }
     case row.key === 'tv.emp.designated':
       return { main: t('tv.emp.designated', { program: P(p.program) }), sub: t('tv.emp.listedAs', { name: P(p.name) }) }
+    // 多配:名录里同名法人多家(连锁加盟),只报家数不点名——点名等于替用户认了一家不可证的雇主
+    case row.key === 'tv.emp.designatedMulti':
+      return { main: t('tv.emp.desigMulti', { program: P(p.program) || 'AIP', count: P(p.count) }), sub: t('tv.emp.desigMultiSub') }
     case row.key === 'tv.emp.designationUnknown':
       return { main: t('tv.emp.desigNa') }
     case row.key === 'tv.emp.years':

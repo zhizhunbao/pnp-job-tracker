@@ -78,7 +78,17 @@ const COMPANY: TripleCompany = {
     sector: null,
   },
   designation: DESIGNATION,
+  designationMatches: 1,
+  designationSource: 'AIP',
   lmiaNocs: null,
+}
+
+// 名录匹配的另两种态(批D 欠账①,口径见 lib/designationMatch):
+//   NO_MATCH  = 名录里没认出这家(本站缺口,≠ 官方没指定)
+//   MULTI     = 同名/同链法人多家(连锁加盟 `… o/a Tim Hortons`),哪一家是你雇主不可证 → 不点名
+const NO_MATCH: TripleCompany = { ...COMPANY, designation: null, designationMatches: 0, designationSource: '' }
+const MULTI: TripleCompany = {
+  ...COMPANY, name: 'Tim Hortons', designation: null, designationMatches: 20, designationSource: 'AIP',
 }
 
 // ── fixture ③:档案(真人槽位;未答的槽一律 null,**不拿默认值填**)────────────
@@ -289,9 +299,29 @@ describe('#287 金标 · 雇主关', () => {
   })
 
   it('名录里认不出这家时落 unknown,**不写「未被指定」**', () => {
-    const r = rowOf(run(DATA, { ...COMPANY, designation: null }), 'tv.emp.designationUnknown')!
+    const r = rowOf(run(DATA, NO_MATCH), 'tv.emp.designationUnknown')!
     expect(r.state).toBe('unknown')
-    expect(rowOf(run(DATA, { ...COMPANY, designation: null }), 'tv.emp.designated')).toBeUndefined()
+    expect(rowOf(run(DATA, NO_MATCH), 'tv.emp.designated')).toBeUndefined()
+  })
+
+  // ── 批D 欠账① · 多配不点名法人 ───────────────────────────────────────────
+  it('同名多配 → 只报家数,一个法人名都不点', () => {
+    const card = run(DATA, MULTI)
+    const r = rowOf(card, 'tv.emp.designatedMulti')!
+    expect(r).toMatchObject({ state: 'info', tier: 'free', params: { count: 20, program: 'AIP' } })
+    // 「已指定」那一行不许出现——多配时它是不可证的
+    expect(rowOf(card, 'tv.emp.designated')).toBeUndefined()
+    expect(rowOf(card, 'tv.emp.designationUnknown')).toBeUndefined()
+    // 卡上任何一行的 params 里都不许出现具体法人名(点名=替用户认了一家不可证的雇主)
+    const dump = JSON.stringify(card.rows)
+    expect(dump).not.toContain('Burgeo Sands')
+    expect(dump).not.toContain('o/a Tim Hortons')
+  })
+
+  it('多配的 state 是 info 不是 pass:「这条链在名录里」为真,「这家=你雇主」不判', () => {
+    const r = rowOf(run(DATA, MULTI), 'tv.emp.designatedMulti')!
+    expect(r.state).not.toBe('pass')
+    expect(r.tier).toBe('free')            // 事实恒免费(design §5 锁合成不锁事实)
   })
 })
 
@@ -401,9 +431,17 @@ describe('#287 金标 · 比路', () => {
   })
 
   it('雇主没被指定 → AIP 线压根不进比路(不拿 jobs.aip 的粗筛标记冒充雇主指定)', () => {
-    const card = run(DATA, { ...COMPANY, designation: null })
+    const card = run(DATA, NO_MATCH)
     expect(cmpOf(card, 'AIP')).toBeUndefined()
     expect(JOB.aip).toBe(true)                       // 岗上的 aip 标记仍是 true,但它管的是职业不是雇主
+  })
+
+  it('多配同样不进比路:哪一家是你雇主不可证 → AIP 不能当已确证通道,更不许标「最快」', () => {
+    const card = run(DATA, MULTI)
+    expect(cmpOf(card, 'AIP')).toBeUndefined()
+    expect(card.compare.some((c) => c.role === 'aip')).toBe(false)
+    // 事实行还在(免费位照摆家数),被拦住的只是「最快」那个付费结论
+    expect(rowOf(card, 'tv.emp.designatedMulti')).toBeDefined()
   })
 })
 

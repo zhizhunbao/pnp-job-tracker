@@ -10,16 +10,13 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { getUser, isPro } from '@/lib/entitlement'
-import { getVerdictData } from '@/lib/verdictCache'
+import { getDesignatedEmployers, getVerdictData } from '@/lib/verdictCache'
+import { matchDesignation } from '@/lib/designationMatch'
 import { tripleVerdict, type TripleCompany, type TripleJob, type TripleProfile } from '@/lib/tripleVerdict'
-import type { DesignatedEmployerRow } from '@/lib/pathVerdict'
 import type { EmployerFacts } from '@/lib/employerVerdict'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
-
-/** ILIKE 通配转义(公司名要进模式串;默认转义符 '\') */
-const esc = (s: string) => s.replace(/[\\%_]/g, (c) => '\\' + c)
 
 /**
  * 档案 currentStatus → VerdictProfile.status。**不补默认**:对不上就 null(needs-info 是实话,
@@ -92,31 +89,19 @@ export async function GET(req: Request) {
     } catch { /* 列值坏 = 未回填同款:null → lmiaKnown=false,渲染层必须区分「0 次」与「没数据」 */ }
   }
 
-  // 指定雇主名录名字匹配(全站第一处):名录名多为法定全称带 o/a 别名(如
-  // 'Grand View Manor Continuing Care Community o/a Grand View Manor'),精确相等必漏 → 双向包含。
-  // 认不出 = designation:null → tv.emp.designationUnknown(本站缺口,不写「未被指定」)。
-  let designation: DesignatedEmployerRow | null = null
-  if (companyName && job.province) {
-    const dr = await pool.query(
-      `SELECT name, province, location, is_tech, source, nocs, url, fetched
-         FROM designated_employers
-        WHERE province = $1 AND (name ILIKE '%' || $2 || '%' OR $3 ILIKE '%' || name || '%')
-        ORDER BY length(name) LIMIT 1`,
-      [job.province, esc(companyName), companyName],
-    ).catch(() => ({ rows: [] as any[] }))
-    const d = dr.rows[0]
-    if (d) {
-      designation = {
-        name: d.name, province: d.province, location: d.location ?? '', isTech: !!d.is_tech,
-        source: d.source ?? '', nocs: d.nocs ?? '',
-        ...(d.url ? { url: d.url } : {}), ...(d.fetched ? { fetched: String(d.fetched).slice(0, 10) } : {}),
-      }
-    }
-  }
+  // 指定雇主名录名字匹配(全站唯一一处):口径 = designationMatch 的**完全匹配**
+  // (规范化后公司名 == 名录名的任一 o/a 名段)。旧口径是双向子串包含,会把 `Esso` 匹进
+  // `Wheeler Accessories`、`ARMS Ltd` 匹进 `Wohlgemuth Farms Ltd`(2026-08-09 全量审计坐实)。
+  // 候选行走 getDesignatedEmployers 的按省 TTL 缓存(详情页流量最大,名录扫描不每请求现算)。
+  // 认不出 = designation:null + matches:0 → tv.emp.designationUnknown(本站缺口,不写「未被指定」);
+  // 多配 = designation:null + matches:N → tv.emp.designatedMulti(只报家数,不点名加盟法人)。
+  const dir = companyName && job.province ? await getDesignatedEmployers(job.province) : []
+  const hit = matchDesignation(companyName, dir)
 
   const company: TripleCompany = {
     id: r.company_id == null ? 0 : Number(r.company_id),
-    name: companyName, facts, designation, lmiaNocs,
+    name: companyName, facts, lmiaNocs,
+    designation: hit.row, designationMatches: hit.count, designationSource: hit.source,
   }
 
   const user = await getUser(await headers()).catch(() => null)
