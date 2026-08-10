@@ -9,7 +9,6 @@ import { LANGS } from '../i18n'
 import { useLang } from '../../LangProvider'
 import { catName, JobBody, nocLocalTitle, provName, type JobRow, type NocDesc, type Plan } from '../JobsTable'
 import { TripleVerdictModal, TvEntryCard } from '../TripleVerdictModal'
-import { PathwaysCard } from './PathwaysCard'
 import { SiteHeader } from '../../SiteHeader'
 import { SiteFooter } from '../../SiteFooter'
 import { PageShell } from '../../ui/primitives'
@@ -80,13 +79,10 @@ export default function JobDetailView({ job, plan, dims }: { job: JobRow; plan: 
             <TvEntryCard t={t} lg onOpen={() => { track('tv-entry', { kind: 'detail' }); setTvOpen(true) }} />
             {tvOpen && <TripleVerdictModal job={job} lang={lang} onClose={() => setTvOpen(false)} />}
 
-            {/* C6 通道卡(2026-08-06,设计 §五;卡位=已摘的 OccReportCard,效果图定的是嵌在白卡内):
-                该职业匹配的移民通道,按**系统抓的官方经验门槛**从低到高排(Frank 拍板「基于系统抓的
-                数据排序」,不含个人档案);CTA 拉起对话挂件并预填路径问句。自包含+懒取,拿不到数整卡不渲。 */}
-            {job.noc && job.noc !== '未分类' ? (
-              <PathwaysCard noc={job.noc} teer={job.teer} t={t}
-                prefill={t('jpw.prefill', { occ: nocZh || nocRow?.title || job.title, noc: job.noc })} />
-            ) : null}
+            {/* C6 通道卡(PathwaysCard)2026-08-10 Frank 拍板整块摘除:「这么多信息放到 job 详情基本是
+                多余的,根本没人点」——Umami 近 30 天坐实,pw-seen 148 次曝光、pw-cta 连事件表前 50 都
+                没进(≤6 次)。同期 tv-entry/tv-open 各 7 次,决策入口留上面那张三合一判定卡一个即可。
+                组件文件与 /api/pathways 保留(照 OccReportCard/答题卡的摘入口先例),只撤入口。 */}
           </div>
 
           {/* 刀 1(入口下沉-20260731):报告入口,自包含组件,老结构不动;拿不到数/本省零在招=整卡不渲 */}

@@ -3,7 +3,7 @@
 // 简单表统一壳:jobs 主表同款观感(表头可排序 ↑↓ 态、拖列宽、行 hover、白卡圆角描边容器);
 // jobs 主表是独立重器(服务端排序/冻结列/字段面板)不并入,只对齐视觉 token(G 节拍板)。
 // 排序=客户端(简单表数据已全量在手);列用配置声明,render 缺省取 r[key]。
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { UI } from './primitives'
 
 // 翻页行(总数 + ‹ x/y ›):DataTable 内置页脚用,OccBoard 手机卡片列表也复用同一个
@@ -51,6 +51,26 @@ export function DataTable<T>({ cols, rows, rowKey, empty, header, minWidth, page
   useEffect(() => { setPage(0) }, [rows])   // 数据换了(如切省)回第一页,不停在越界页
   const [widths, setWidths] = useState<Record<string, number>>({})
   const thRefs = useRef<Record<string, HTMLTableCellElement | null>>({})
+  // 列宽锁(Frank 08-10「点列排序的时候宽度会变化」):auto 布局按**当页**最长值算列宽,排序/翻页换了
+  // 一批行就整表重排 → 每点一次表头列都跳。首屏先用 auto 量一次真实内容宽,换算成百分比锁成 fixed
+  // 布局(百分比而非 px:容器变窄仍按比例缩,不横滚);只有数据本身换了(切筛选/换页大小)才重量。
+  const tableRef = useRef<HTMLTableElement | null>(null)
+  const [pct, setPct] = useState<Record<string, string> | null>(null)
+  const sig = cols.map((c) => c.key).join('|') + '#' + rows.length
+  useLayoutEffect(() => { setPct(null) }, [sig])
+  useLayoutEffect(() => {
+    if (pct) return
+    const total = tableRef.current?.offsetWidth || 0
+    if (!total) return
+    const m: Record<string, string> = {}
+    for (const c of cols) {
+      const el = thRefs.current[c.key]
+      if (!el) return
+      m[c.key] = (el.offsetWidth / total * 100).toFixed(3) + '%'
+    }
+    setPct(m)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pct, sig])
   const sorted = (() => {
     if (!sort) return rows
     const col = cols.find((c) => c.key === sort.key)
@@ -78,12 +98,12 @@ export function DataTable<T>({ cols, rows, rowKey, empty, header, minWidth, page
   return (
     <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, overflow: 'auto' }}>
       {header}
-      <table style={{ width: '100%', minWidth, borderCollapse: 'collapse' }}>
+      <table ref={tableRef} style={{ width: '100%', minWidth, borderCollapse: 'collapse', tableLayout: pct ? 'fixed' : 'auto' }}>
         <thead><tr>
           {cols.map((c, ci) => (
             <th key={c.key} ref={(el) => { thRefs.current[c.key] = el }} title={c.thTip}
               onClick={c.sort ? () => setSort((s) => (s?.key === c.key ? (s.dir === -1 ? { key: c.key, dir: 1 } : null) : { key: c.key, dir: -1 })) : undefined}
-              style={{ ...th, width: widths[c.key], cursor: c.sort ? 'pointer' : undefined, ...(ci < cols.length - 1 ? { borderRight: '1px solid #e5e7eb' } : {}), ...(c.thTip ? { textDecoration: 'underline dotted #d1d5db' } : {}) }}>
+              style={{ ...th, width: widths[c.key] ?? pct?.[c.key], cursor: c.sort ? 'pointer' : undefined, ...(ci < cols.length - 1 ? { borderRight: '1px solid #e5e7eb' } : {}), ...(c.thTip ? { textDecoration: 'underline dotted #d1d5db' } : {}) }}>
               {c.label}{sort?.key === c.key ? (sort.dir === -1 ? ' ▼' : ' ▲') : c.sort ? <span style={{ color: '#d1d5db' }}> ⇅</span> : null}
               <span onPointerDown={(e) => startResize(e, c.key)} onClick={(e) => e.stopPropagation()}
                 style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 6, cursor: 'col-resize' }} />

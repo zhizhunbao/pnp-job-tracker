@@ -10,7 +10,7 @@ import { makeT, streamDisplay, eeDisplay, eeKeyDisplay, LANGS, COLS_COOKIE, type
 import { useLang } from '../LangProvider'
 import { IconChart, IconCheck, IconClipboard, IconCompass, IconLock, IconMap, IconMapPin, IconMaximize, IconMinimize, IconNews, IconSave, IconSettings, IconStar, IconTarget, IconUser, IconWarn, IconX } from '../Icons'
 import { ACCT_SLOT_W, SiteHeader } from '../SiteHeader'
-import { BANNER_IMGS, Button, Notice, PageBanner } from '../ui/primitives'
+import { BANNER_IMGS, Button, Notice, PageBanner, PILL_BTN } from '../ui/primitives'
 import { JobCard } from '../ui/JobCard'   // 全站唯一那张职位卡(2026-08-02 拍板);landing 职位榜吃的是同一张
 import { SiteFooter } from '../SiteFooter'
 import { Avatar } from '../Avatar'
@@ -2864,7 +2864,6 @@ const FLAT_SEC: React.CSSProperties = { marginBottom: 10 }
 const FLAT_HEAD: React.CSSProperties = { fontWeight: 700, color: '#111827' }
 const FLAT_BODY: React.CSSProperties = { paddingLeft: 14 }
 // 弹框顶部胶囊钮(分类/职位弹框共用:显示中文对照 / AI 速读)
-const PILL_BTN: React.CSSProperties = { border: '1px solid #e5e7eb', borderRadius: 999, padding: '5px 13px', fontSize: 12.5, background: '#fff', color: '#374151', cursor: 'pointer', fontWeight: 600 }
 function GroupFactsSection(props: Omit<Parameters<typeof FieldFactsSection>[0], 'field'> & { group: FieldGroup }) {
   const { group, job, lang, ...rest } = props
   const t = makeT(lang)

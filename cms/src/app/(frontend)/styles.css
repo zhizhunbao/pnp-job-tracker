@@ -209,11 +209,6 @@ button:not(:disabled):hover {
   height: 38px;
 }
 
-.secFold {
-  padding: 6px 10px;
-  margin: -6px -4px;
-}
-
 /* ── #212(第 26 轮)手机触控靶:**只扩可点范围,不改视觉** ──────────────────
    教训(Frank 2026-07-26 三连反馈「别换行」「语言钮怎么这么大」「用户下拉怎么这么大」):
    靠 padding/min-height 撑热区 = 控件真的变大、版式被挤走。正确姿势是伪元素向外撑,
@@ -270,15 +265,5 @@ button:not(:disabled):hover {
 
   .sbCtl {
     min-height: 44px;
-  }
-
-  .secFold {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 44px;
-    min-height: 44px;
-    padding: 0;
-    margin: 0;
   }
 }

@@ -4,7 +4,7 @@
 // 红线:凭证=历史事实/官方名录,非担保承诺。
 import { type Lang, type TFn } from '../jobs/i18n'
 import { track } from '@/lib/track'
-import { Card, CardKV, UI } from '../ui/primitives'
+import { Card, CardKV, PILL_BTN, UI } from '../ui/primitives'
 import { type SponsorEmployerRow } from '@/lib/sponsorEmployers'
 
 // 所在地统一省维度(Frank 08-08「怎么有的显示省有的显示市」:单省带市名造成两种粒度混排)——
@@ -73,14 +73,12 @@ export function sponsorEmployerCols(t: TFn, lang: Lang, kind: SponsorKind, showV
   // AIP 表的「下一步」动作列(2026-08-09 Frank「用户看了这个表应该做什么」):点雇主名也能到职位板,
   // 但那是**看着像标题的链接**,读者不知道点了会去哪。行尾给一个明说去向的钮,落点=该雇主的在招岗,
   // 每行再接职位板既有的「身份判定」。只给 AIP 表:LMIA/named 两张表列已经很挤,加列先看这张的成效。
+  // 钮的样式=职位板同一枚 PILL_BTN(08-10 Frank「这个按钮风格为什么和 jobtable 的按钮风格不统一」)
   const next = {
     key: 'next', label: t('se.col.next'), nowrap: true,
     render: (r: SponsorEmployerRow) => (
       <a href={`/?q=${encodeURIComponent(r.name)}`} onClick={() => track('se-next-jobs')}
-        style={{
-          display: 'inline-block', border: `1px solid ${UI.primary}`, color: UI.primary, borderRadius: 6,
-          padding: '5px 10px', fontSize: 13, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap',
-        }}>{t('se.next.jobs')}</a>
+        style={{ ...PILL_BTN, display: 'inline-block', textDecoration: 'none' }}>{t('se.next.jobs')}</a>
     ),
   }
   const base = [name, open]
@@ -118,11 +116,7 @@ export function SponsorCard({ r, lang, t, kind, showVerdict = false }: { r: Spon
       {/* 桌面那一列在手机上摊成卡底的整条钮(手机没有「行尾」可言);同样只给 AIP 表 */}
       {kind === 'aip' ? (
         <a href={`/?q=${encodeURIComponent(r.name)}`} onClick={() => track('se-next-jobs')}
-          style={{
-            display: 'block', marginTop: 10, border: `1px solid ${UI.primary}`, color: UI.primary,
-            borderRadius: 6, padding: '7px 10px', fontSize: 13, fontWeight: 600,
-            textDecoration: 'none', textAlign: 'center',
-          }}>{t('se.next.jobs')}</a>
+          style={{ ...PILL_BTN, display: 'block', marginTop: 10, padding: '7px 13px', textDecoration: 'none', textAlign: 'center' }}>{t('se.next.jobs')}</a>
       ) : null}
     </Card>
   )

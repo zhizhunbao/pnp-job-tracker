@@ -103,23 +103,18 @@ function Band({ bg, id, children }: { bg?: string; id?: string; children: React.
   return <div className="plBand" id={id} style={{ background: bg, scrollMarginTop: 52 }}><PageShell pad="0 1.25rem">{children}</PageShell></div>
 }
 
-// 08-08 Frank「首页太长,每个 section 给个折叠」:h2 即开关(▾/▸),状态记 localStorage;
-// right=标题行右侧控件(TopN/链接),点它不折叠
+// 分区标题(08-10 Frank「所有的展开和关闭按钮都删了」:折叠开关连同 localStorage 记忆一并撤,分区恒展开)。
+// id 保留:二级导航靠它锚点跳转。
+// right=标题行右侧控件(TopN/链接)
 // sub=伞标题下的子标题(08-08 二次拍板「二级导航和下面对不上」):字号降一档,与「政策动态」既有 h3(15px)同precedent
-function Sec({ id, title, right, children, sub }: { id: string; title: React.ReactNode; right?: React.ReactNode; children: React.ReactNode; sub?: boolean }) {
-  const [open, setOpen] = useState(true)
-  useEffect(() => { try { if (localStorage.getItem('pl.fold.' + id) === '0') setOpen(false) } catch { /* ignore */ } }, [id])
-  const toggle = () => setOpen((v) => { const n = !v; try { localStorage.setItem('pl.fold.' + id, n ? '1' : '0') } catch { /* ignore */ } ; return n })
+function Sec({ title, right, children, sub }: { id?: string; title: React.ReactNode; right?: React.ReactNode; children: React.ReactNode; sub?: boolean }) {
   return (
     <div>
-      {/* 折叠开关=只点箭头(Frank 08-08 二拍;此前整行 onClick 连右侧空白都触发);padding 撑触控靶。
-          #276:padding/margin 移交 .secFold(styles.css)——手机断点单独抬到 ≥44px,桌面值原样不动 */}
       <h2 style={{ ...secH, margin: sub ? '0 0 8px' : '0 0 10px', ...(sub ? { fontSize: 15 } : {}) }}>
         {title}
-        <span onClick={toggle} className="secFold" style={{ color: '#9ca3af', fontSize: 14, cursor: 'pointer', userSelect: 'none' }}>{open ? '▾' : '▸'}</span>
         {right ? <span style={hmRight}>{right}</span> : null}
       </h2>
-      {open ? children : null}
+      {children}
     </div>
   )
 }
@@ -162,8 +157,7 @@ function SponsorBoard({ rows, kind, t, lang, total, occOpts, catMids, nocCat }: 
   const [fMid, setFMid] = useState('')
   const [fFine, setFFine] = useState('')
   const [fNoc, setFNoc] = useState('')
-  const [skilled, setSkilled] = useState(false)
-  useEffect(() => { setP(0) }, [fProv, fStream, fBroad, fMid, fFine, fNoc, skilled])
+  useEffect(() => { setP(0) }, [fProv, fStream, fBroad, fMid, fFine, fNoc])
   const provOpts = useMemo(() => Array.from(new Set(rows.flatMap((r) => r.provs))).sort((a, b) => {
     const ia = PROVS.indexOf(a), ib = PROVS.indexOf(b)
     return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib)
@@ -174,8 +168,7 @@ function SponsorBoard({ rows, kind, t, lang, total, occOpts, catMids, nocCat }: 
     && (!fBroad || r.nocs.some((n) => nocCat.get(n)?.broad === fBroad))
     && (!fMid || r.nocs.some((n) => nocCat.get(n)?.mid === fMid))
     && (!fFine || r.nocs.some((n) => nocCat.get(n)?.fine === fFine))
-    && (!fNoc || r.nocs.includes(fNoc))
-    && (!skilled || (r.lmiaPositionsSkilled ?? 0) > 0)), [rows, fProv, fStream, fBroad, fMid, fFine, fNoc, skilled, nocCat])
+    && (!fNoc || r.nocs.includes(fNoc))), [rows, fProv, fStream, fBroad, fMid, fFine, fNoc, nocCat])
   const maxPage = Math.max(1, Math.ceil(shown.length / PAGE))
   const note = shown.length !== total ? t('pulse.hitEmp', { m: num(shown.length), n: num(total) }) : t('pulse.totalEmp', { n: num(total) })
   // B4 雇主门槛列(design/雇主省提名门槛判定-20260808.md):按本榜整批(未筛选前的 rows,不随用户筛选闪现/消失)
@@ -253,14 +246,9 @@ function SponsorBoard({ rows, kind, t, lang, total, occOpts, catMids, nocCat }: 
     <SbSel key="occ" value={fNoc} onChange={setFNoc} all={t('se.allOcc')}
       options={occSel.map((o) => ({ v: o.noc, label: o.label }))} />
   )
-  const skilledBtn = kind === 'lmia' ? (
-    <button key="skilled" className="sbCtl" onClick={() => setSkilled((v) => !v)}
-      style={{ ...SB_CTL, cursor: 'pointer', fontFamily: 'inherit', ...(skilled ? { background: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8', fontWeight: 600 } : {}) }}>
-      {t('se.skilledOnly')}{skilled ? ' ✓' : ''}
-    </button>
-  ) : null
   // 搜雇主名文本框 08-08 拍掉(「文本框是干啥的」+手机零打字):筛选全点选
-  const controls = kind === 'lmia' ? [broadSel, midSel, fineSel, occInput, provSel, skilledBtn]
+  // 「只看技能类获批」钮 08-10 Frank 拍掉:技能类获批数已是表内一列,自己点列排序即可
+  const controls = kind === 'lmia' ? [broadSel, midSel, fineSel, occInput, provSel]
     : kind === 'named' ? [provSel, streamSel, broadSel, midSel, fineSel, occInput]
       : [provSel, broadSel, midSel, fineSel, occInput]
   return (
@@ -713,16 +701,8 @@ export function StartView({ stats }: { stats: HomeStats }) {
                 <div key={k} style={{ marginTop: idx === 0 ? 0 : 24 }}>
                   {/* 08-08 追加「表管事实,人话归对话」:表题旁挂对话导流钮,三张统一形态 */}
                   <Sec id={'se-' + k} title={t('se.grp.' + k)} right={<AskChatBtn kind={k as SponsorKind} t={t} />} sub>
-                    {/* AIP 表专属的两行(08-09 Frank「用户看了这个表应该做什么」):
-                        第一行=允许类,数值锚 pnp_requirements program='AIP' 的 quote(TEER 0-4,官方没有 TEER 5);
-                        第二行=「被指定 ≠ 入职就能 PR」,答的是 Tim Hortons 之问(列表层此前对此一言不发)。
-                        一行一条,不用「|」把两件事焊一行;375 下两行各自都放得下。 */}
-                    {k === 'aip' ? (
-                      <div style={{ margin: '2px 0 10px', fontSize: 13, lineHeight: 1.7 }}>
-                        <div style={{ color: UI.text2 }}>{t('se.aip.lead')}</div>
-                        <div style={{ color: '#b45309' }}>{t('se.aip.note')}</div>
-                      </div>
-                    ) : null}
+                    {/* AIP 表的两行口径注 08-10 Frank 拍掉(「我不要解释,我要用户一眼看表就能明白,或者直接问顾问」):
+                        要问 TEER 门槛/被指定算不算数,走表题旁的「问 AI 顾问」 */}
                     <SponsorBoard rows={grp.top} kind={k as SponsorKind} t={t} lang={lang} total={grp.total} occOpts={stats.occOpts} catMids={stats.catMids} nocCat={nocCat} />
                   </Sec>
                 </div>
@@ -749,8 +729,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
             {boards !== null && boards.mine.length > 0 && (
               <div>
                 <Sec id="b1a" title={t('pulse.b1a')} sub>
-                  {/* 「≠推荐」小注(08-09 Frank 待拍两件之一):这榜是排除清单,读者容易读成「这些职业好」 */}
-                  <div style={{ margin: '2px 0 10px', fontSize: 13, color: UI.text2 }}>{t('pulse.b1a.note')}</div>
+                  {/* 「≠推荐」小注 08-10 Frank 拍掉(解释类文案一律不留,靠表题自解释或问顾问) */}
                   <OccBoard rows={boards.mine} t={t} lang={lang} nocProvs={nocProvs} showProvs={false} deadCol flatDelta />
                 </Sec>
               </div>

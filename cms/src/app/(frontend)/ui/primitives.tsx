@@ -39,6 +39,10 @@ export function Button({ kind = 'primary', sm, lg, disabled, onClick, href, targ
   return <button disabled={disabled} onClick={onClick} title={title} style={style}>{children}</button>
 }
 
+// 站内行内动作钮的唯一样式(职位板一路用下来的那枚药丸钮)。08-10 Frank 点名把把脉页的
+// 「看在招岗 →」并过来 → 从 JobsTable 内的私有常量提到这里作单一来源,两边同 import。
+export const PILL_BTN: React.CSSProperties = { border: '1px solid #e5e7eb', borderRadius: 999, padding: '5px 13px', fontSize: 12.5, background: '#fff', color: '#374151', cursor: 'pointer', fontWeight: 600 }
+
 // ── Chip(筛选,可点):默认/选中/强调红 ─────────────────────────
 export function chipStyle(active: boolean, hot = false): React.CSSProperties {
   return {
