@@ -18,7 +18,7 @@ const BTN_SEC: React.CSSProperties = {
   padding: '11px 26px', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
 }
 
-export function QuizForm({ decision, stage, lang, t, answers, onPatch, onComplete }: {
+export function QuizForm({ decision, stage, lang, t, answers, onPatch, onComplete, doneKey }: {
   decision: string
   stage: Stage
   lang: Lang
@@ -26,6 +26,7 @@ export function QuizForm({ decision, stage, lang, t, answers, onPatch, onComplet
   answers: Answers
   onPatch: (patch: Partial<Answers>) => void
   onComplete: () => void
+  doneKey?: string          // 最后一题按钮文案键(决策页=看分数;缺省沿用报告页的「出报告」)
 }) {
   const names = fieldsOf(decision, stage)
   // 起步落在第一道没答的题(答过的不重走,上一题仍可回去改)。只在挂载时算一次 ——
@@ -57,7 +58,7 @@ export function QuizForm({ decision, stage, lang, t, answers, onPatch, onComplet
         <Button kind="primary" disabled={!done}
           onClick={() => (last ? onComplete() : setIdx(at + 1))}
           style={{ padding: '11px 26px', fontSize: 14, ...(done ? null : { background: UI.hairline, color: UI.text3, cursor: 'default' }) }}>
-          {last ? t(stage === 'explore' ? 'plan.reportUpd' : 'plan.toReport') : t('plan.next')}
+          {last ? t(doneKey || (stage === 'explore' ? 'plan.reportUpd' : 'plan.toReport')) : t('plan.next')}
         </Button>
       </QuizBar>
     </>

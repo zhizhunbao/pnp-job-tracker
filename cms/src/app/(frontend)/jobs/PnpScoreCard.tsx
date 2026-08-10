@@ -45,6 +45,11 @@ const L10N: Record<string, { zh: string; ko: string }> = {
   'Area 2: Squamish, Abbotsford, Agassiz, Mission, and Chilliwack': { zh: 'Area 2 Squamish 等 5 市镇', ko: 'Area 2 Squamish 등 5개 지역' },
   'Area 3: Areas of B.C. not included in Area 1 or 2': { zh: 'Area 3 其余地区', ko: 'Area 3 기타 지역' },
   'Regional Experience, or': { zh: '有地区工作经验或地区院校毕业', ko: '지역 근무 경력 또는 지역 졸업' },
+  // MB(MPNP EOI 加分/扣分项 —— Risk Assessment 两条是负分,符号由 Tick 按分值出)
+  'Work experience in another province': { zh: '有外省工作经历', ko: '타 주 근무 경력' },
+  'Fully recognized by provincial licensing body': { zh: '职业资格获省监管机构完全认证', ko: '주 면허기관 완전 인정 자격' },
+  'Second Official Language — CLB 5 or higher (overall)': { zh: '第二官方语言 CLB 5 以上', ko: '제2공용어 CLB 5 이상' },
+  'Studies in another province': { zh: '有外省就读经历', ko: '타 주 학업 경력' },
   // SK
   'High skilled employment offer from a Saskatchewan employer': { zh: '有 SK 雇主的高技能岗 offer', ko: 'SK 고용주의 고숙련 오퍼 보유' },
   'Close family relative in Saskatchewan': { zh: '在 SK 有近亲(公民或永居)', ko: 'SK에 가까운 친척 거주' },
@@ -52,6 +57,9 @@ const L10N: Record<string, { zh: string; ko: string }> = {
   'Past student experience in Saskatchewan': { zh: '在 SK 读过书(满一学年)', ko: 'SK 유학 경험(1학년도 이상)' },
 }
 const label = (raw: string, lang: string) => (lang === 'zh' ? L10N[raw]?.zh : lang === 'ko' ? L10N[raw]?.ko : '') || raw
+
+// 年龄下拉的选项档(打分按选中值算,预填吸附也以此为准 —— 两处必须同一张表)
+const AGES = [17, 19, 25, 30, 34, 38, 42, 45, 48, 52]
 
 const sel: React.CSSProperties = { width: '100%', height: 34, border: '1px solid #d1d5db', borderRadius: 8, fontSize: 13, background: '#fff', padding: '0 8px' }
 const lbl: React.CSSProperties = { fontSize: 12, color: '#6b7280', marginBottom: 3 }
@@ -63,15 +71,21 @@ function Tick({ on, onToggle, text, pts }: { on: boolean; onToggle: (v: boolean)
       columnGap: 5, fontSize: 12, color: '#374151', cursor: 'pointer', lineHeight: 1.7 }}>
       <input type="checkbox" checked={on} onChange={(e) => onToggle(e.target.checked)} style={{ alignSelf: 'center' }} />
       <span>{text}</span>
-      <span style={{ color: '#9ca3af', fontVariantNumeric: 'tabular-nums' }}>+{pts}</span>
+      {/* MB 有负分 bonus(Risk Assessment -100):符号跟着分值走,别拼出「+-100」 */}
+      <span style={{ color: '#9ca3af', fontVariantNumeric: 'tabular-nums' }}>{pts != null && pts >= 0 ? `+${pts}` : pts}</span>
     </label>
   )
 }
 
-export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams = {} }: {
+export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams = {}, initial, inputs = true }: {
   t: TFn; lang: string; ctx: ScoreCtx; factors: ScoreFactor[]; draws: DrawRow[]; profileClb?: number | null
   /** 省 → 你的职业命中的具名通道名。抽选线按通道对照,对不上就不给差分结论(见 ProvinceResult) */
   streams?: Record<string, string>
+  /** 答题答案预填(决策页:同一个条件不问两遍);只作初值,卡内下拉仍可改 */
+  initial?: Partial<SelfProfile>
+  /** false = 纯结果卡(决策页:答题是唯一输入面,卡内不再出「你的条件」下拉;
+      时薪/地区走 ctx 岗位事实)。缺省 true 保 /pathways 现行为(批2 随页退役) */
+  inputs?: boolean
 }) {
   // 有官方分值表的省(数据层决定,加省不用改这里)。目标省排第一列,其余省作「换省」对照。
   const provinces = useMemo(() => {
@@ -79,7 +93,13 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
     return all.sort((a, b) => (a === ctx.province ? -1 : b === ctx.province ? 1 : a < b ? -1 : 1))
   }, [factors, ctx.province])
 
-  const [profile, setProfile] = useState<SelfProfile>(() => ({ ...DEFAULT_PROFILE, clb1: profileClb ?? DEFAULT_PROFILE.clb1 }))
+  const [profile, setProfile] = useState<SelfProfile>(() => {
+    const p = { ...DEFAULT_PROFILE, clb1: profileClb ?? DEFAULT_PROFILE.clb1, ...initial }
+    // 预填年龄吸附到下拉选项(答题档位给的是 33 这类档中值,不在选项表里 select 会显示成第一项,
+    // 显示与打分口径就分叉了 —— 吸最近项,显示=实际用的值)
+    if (initial?.age != null) p.age = AGES.reduce((b, a) => (Math.abs(a - initial.age!) < Math.abs(b - initial.age!) ? a : b))
+    return p
+  })
   const set = <K extends keyof SelfProfile>(k: K, v: SelfProfile[K]) => setProfile((p) => ({ ...p, [k]: v }))
   const [ticks, setTicks] = useState<Record<string, boolean>>({})
   const [wage, setWage] = useState<number>(() => Math.round(ctx.hourly ?? 0))
@@ -123,20 +143,27 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
     return scoreProvince(factors, prov, profile, overrides, ticks)
   }).filter(Boolean) as NonNullable<ReturnType<typeof scoreProvince>>[], [provinces, factors, profile, ticks, wage, areaI, hasOffer])
 
+  // 手风琴展开态:目标省默认开;'__closed' = 全收起(点开着的行就是收起)
+  const [openProv, setOpenProv] = useState<string | null>(null)
+
   if (!scores.length) return null
+  const resolvedOpen = openProv === '__closed' ? ''
+    : (openProv ?? (scores.some((x) => x.province === ctx.province) ? ctx.province! : scores[0].province))
 
   const bonusOf = (prov: string) => factors.filter((f) => f.province === prov && f.kind === 'bonus')
-  const num = (n: number) => <span style={{ fontVariantNumeric: 'tabular-nums' }}>{n}</span>
 
   return (
     // 卡壳(边框/圆角/内边距)由外层 MODAL_CARD 提供 —— 这里再画一层就是卡中卡
     <div>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+      {/* 制度名不再跟在标题后面串一行(375 下折两行还对不齐)——各省折叠行里各自带 */}
+      <div style={{ marginBottom: 10 }}>
         <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', margin: 0 }}>{t('ps.title')}</h2>
-        <span style={{ fontSize: 11.5, color: '#9ca3af' }}>{scores.map((s) => `${s.province} ${s.system}`).join('、')}</span>
       </div>
 
-      {/* 你的条件 —— 一套答案,各省按各自官方表折算 */}
+      {/* 你的条件 —— 一套答案,各省按各自官方表折算。
+          inputs=false(决策页):不渲下拉 —— 答题是唯一输入面,分数由答案自动算(Frank 2026-08-10);
+          时薪/工作地区是岗位事实,走 ctx,不问人 */}
+      {inputs && (<>
       <div style={lbl}>{t('ps.you')}</div>
       {/* 126 = 375 手机上正好两列:弹框内宽 301 − 卡片左右 padding 28 = 273,126×2+10=262 放得下
           (先试的 132 差 1px 就掉回一列 —— 算的时候别忘了减卡片自己的 padding)。纯 CSS auto-fit,不做 JS 宽度探测 */}
@@ -165,7 +192,7 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
           </select></div>
         <div><div style={lbl}>{t('ps.f.age')}</div>
           <select value={profile.age} onChange={(e) => set('age', Number(e.target.value))} style={sel}>
-            {[17, 19, 25, 30, 34, 38, 42, 45, 48, 52].map((n) => <option key={n} value={n}>{t('ps.age.v', { n })}</option>)}
+            {AGES.map((n) => <option key={n} value={n}>{t('ps.age.v', { n })}</option>)}
           </select></div>
         {scores.some((s) => s.parts.some((p) => p.factor === 'wage')) ? (
           <div><div style={lbl}>{t('ps.in.wage')}</div>
@@ -178,38 +205,55 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
             </select></div>
         ) : null}
       </div>
+      </>)}
 
-      {/* 加分项:官方逐条,勾了才算;二选一组只算一项 */}
-      {provinces.map((prov) => {
-        const list = bonusOf(prov)
-        const offerRow = factors.find((f) => f.province === prov && f.factor === 'offer' && f.kind === 'row')
-        if (!list.length && !offerRow) return null
-        return (
-          <div key={prov} style={{ marginTop: 10 }}>
-            <div style={lbl}>{t('ps.bonusOf', { prov })}</div>
-            {/* 一行两个事实(条目、+N)必须拆成列 —— 原来 +N 跟在文字后面飘,长短不一就参差
-                (同 FactGrid 规矩:多值卡拆列、每列左对齐)。外层 auto-fit 决定几列,
-                每个条目内部再 [勾选框 | 条目 | +N] 三列,+N 因此在同一列上对齐。 */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '4px 16px' }}>
-              {offerRow ? (
-                <Tick on={hasOffer} onToggle={setHasOffer} text={label(offerRow.label, lang)} pts={offerRow.points} />
-              ) : null}
-              {list.map((b) => {
-                const key = `${prov}:${b.factor}:${b.seq}`
-                return (
-                  <Tick key={key} on={!!ticks[key]} onToggle={(v) => setTicks((m) => ({ ...m, [key]: v }))}
-                    text={label(b.label, lang)} pts={b.points} />
-                )
-              })}
+      {/* 各省:折叠手风琴(Frank 2026-08-10「四个省都列出来吗」)—— 一省一行(省名+制度+合计分),
+          目标省默认展开;该省的加分勾选也收进展开区(勾了才算;二选一组只算一项)。
+          收起行只有合计 —— 对比一眼可见,明细点开才有。 */}
+      <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {scores.map((s) => {
+          const open = s.province === resolvedOpen
+          const list = bonusOf(s.province)
+          const offerRow = factors.find((f) => f.province === s.province && f.factor === 'offer' && f.kind === 'row')
+          return (
+            <div key={s.province} style={{ border: '1px solid #e5e7eb', borderRadius: 10 }}>
+              <button onClick={() => setOpenProv(open ? '__closed' : s.province)}
+                style={{ display: 'flex', alignItems: 'baseline', gap: 8, width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: '10px 12px', fontFamily: 'inherit', textAlign: 'left' }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#111827', whiteSpace: 'nowrap' }}>{t('prov.' + s.province) || s.province}</span>
+                <span style={{ fontSize: 11, color: '#9ca3af', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.system}</span>
+                <span style={{ marginLeft: 'auto', fontSize: 15, fontWeight: 700, color: '#1d4ed8', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
+                  {s.total}{s.maxTotal ? <span style={{ fontSize: 11.5, color: '#9ca3af', fontWeight: 500 }}> / {s.maxTotal}</span> : null}
+                </span>
+                <span style={{ color: '#9ca3af', fontSize: 11, flexShrink: 0 }}>{open ? '▴' : '▾'}</span>
+              </button>
+              {open && (
+                <div style={{ padding: '0 12px 11px' }}>
+                  {(list.length || offerRow) ? (
+                    <div style={{ marginBottom: 8 }}>
+                      <div style={lbl}>{t('ps.bonus')}</div>
+                      {/* 一行两个事实(条目、+N)拆成列(同 FactGrid 规矩):外层 auto-fit 决定几列,
+                          条目内部 [勾选框 | 条目 | +N] 三列,+N 在同一列上对齐 */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '4px 16px' }}>
+                        {offerRow ? (
+                          <Tick on={hasOffer} onToggle={setHasOffer} text={label(offerRow.label, lang)} pts={offerRow.points} />
+                        ) : null}
+                        {list.map((b) => {
+                          const key = `${s.province}:${b.factor}:${b.seq}`
+                          return (
+                            <Tick key={key} on={!!ticks[key]} onToggle={(v) => setTicks((m) => ({ ...m, [key]: v }))}
+                              text={label(b.label, lang)} pts={b.points} />
+                          )
+                        })}
+                      </div>
+                    </div>
+                  ) : null}
+                  <ProvinceResult t={t} lang={lang} s={s} draws={draws} byProv={byProv}
+                    switchable={s.province !== ctx.province} matchedStream={streams[s.province] || ''} factors={factors} />
+                </div>
+              )}
             </div>
-          </div>
-        )
-      })}
-
-      {/* 各省结果:估分 + 官方对照线 + 差多少 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 10, marginTop: 12 }}>
-        {scores.map((s) => <ProvinceResult key={s.province} t={t} lang={lang} s={s} draws={draws} byProv={byProv}
-          switchable={s.province !== ctx.province} matchedStream={streams[s.province] || ''} factors={factors} />)}
+          )
+        })}
       </div>
 
       <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 8, lineHeight: 1.7 }}>
@@ -256,21 +300,14 @@ function ProvinceResult({ t, lang, s, draws, byProv, switchable, matchedStream, 
   const jobs = byProv[s.province]
 
   return (
-    <div style={{ border: '1px solid #e5e7eb', borderRadius: 10, padding: '10px 11px' }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>{t('prov.' + s.province) || s.province}</span>
-        <span style={{ fontSize: 11, color: '#9ca3af' }}>{s.system}</span>
-      </div>
-      <div style={{ fontSize: 20, fontWeight: 700, color: '#1d4ed8', fontVariantNumeric: 'tabular-nums', marginTop: 2 }}>
-        {/* 「/ 总分」只在官方**公布了**总分上限时才显示:ON 的 OINP EOI 页只印各项分值、不印总分,
-            拿各项相加冒充官方总分就是编数(BC 200 / SK 110 都是官方白纸黑字印着的) */}
-        {s.total}{s.maxTotal ? <span style={{ fontSize: 13, color: '#9ca3af', fontWeight: 500 }}> / {s.maxTotal}</span> : null}
-      </div>
-
+    // 省名/制度/合计分都在手风琴行头上(收起也可见)—— 这里只渲展开后的明细。
+    // 「/ 总分」只在官方**公布了**总分上限时才显示(行头同规矩):ON 的 OINP EOI 页只印各项分值、
+    // 不印总分,拿各项相加冒充官方总分就是编数(BC 200 / SK 110 都是官方白纸黑字印着的)
+    <div>
       {/* 分项:命中的官方原文标签一并显出来,好让用户核对我们选对了没有 */}
       {/* 「12 / 40」是两个事实 —— 拆成 得分 / 上限 两列(斜杠自成一列),数字才跨行对齐。
           标签列吃 max-content、数字列右对齐:两张省卡等宽,数字列因此也跨卡对齐。 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'max-content 1fr max-content max-content', columnGap: 6, rowGap: 2, marginTop: 6, fontSize: 12, alignItems: 'baseline' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'max-content 1fr max-content max-content', columnGap: 6, rowGap: 2, fontSize: 12, alignItems: 'baseline' }}>
         {s.parts.filter((p) => p.max > 0).map((p) => [
           <span key={p.factor + 'k'} style={{ color: '#9ca3af', gridColumn: '1 / 3' }} title={p.matched ? label(p.matched, lang) : ''}>{t('ps.f.' + p.factor) || p.factor}</span>,
           <span key={p.factor + 'v'} style={{ color: '#374151', fontWeight: 600, fontVariantNumeric: 'tabular-nums', textAlign: 'right', minWidth: 22 }}>{p.pts}</span>,

@@ -25,7 +25,7 @@ import { BROAD_SLUGS } from '../stats/shared'   // 大类的行业顺序(镜像 
 import { useOverlayClose } from './overlay'
 import { CARD, iconBtnS, Modal, SCRIM, useIsNarrow } from './Modal'
 import { ResumeMatchModal } from './ResumeMatchModal'   // G3 简历对照(入口在 ApplyBar)
-import { TripleVerdictModal, TvEntryCard, TV_PILL } from './TripleVerdictModal'   // #287 批D:一键三合一判定卡
+import { TvEntryCard, TV_PILL } from './TripleVerdictModal'   // #287 批D:判定卡入口(卡片/胶囊;判定本体已迁 /plan/pr)
 import { match as matchJob, matchRank, hasProfile, normalizeProfile, type MatchProfile, type MatchJob, type MatchReason } from '@/lib/match'
 import type { CompanyDetail, SimilarEmployer } from '@/lib/jobsSql'   // E8-11 B1:公司域同源数据形状(type-only,不拉服务端码)
 import { lmiaWageClass, isExemptSector } from '@/lib/lmiaStatus'
@@ -708,8 +708,6 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   }, [])
   // C1 走查拍板(2026-07-07):删两套公司弹窗——操作列「公司信息」直接开顾问公司弹窗;ActModal 只剩 JD 快看
   const [actModal, setActModal] = useState<{ kind: 'desc'; job: JobRow } | null>(null)
-  // #287 批D:一键三合一判定卡(职位板入口;弹框内入口各自持 local state)
-  const [tvJob, setTvJob] = useState<JobRow | null>(null)
   // 升级入口(Pro 锁列/保存筛选 gate)统一开独立升级弹框;未登录先走注册弹框(用户定:注册与购买分离)
   const [upsell, setUpsell] = useState<false | 'lock' | 'ss' | 'login' | 'match' | 'quiz'>(false)   // match=①匹配锁(弹框带 FOMO 数字);quiz=入口三问结果页的「注册保存」
   // E11-05②:分型引导 wizard。首访自动弹(登录且无档案且没弹过);关/完成置 OB_SEEN 不再自动弹;横幅「建档」手动开忽略它
@@ -1218,11 +1216,11 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                               style={{ ...actBtn, whiteSpace: 'nowrap', ...(saved[String(j.id)] ? { color: '#b45309', borderColor: '#fde68a', background: '#fffbeb' } : {}) }}>
                               {saved[String(j.id)] ? t('sj.saved') : t('sj.save')}
                             </button>
-                            {/* #287 批D:判定卡入口(桌面行,与收藏同列) */}
-                            <button onClick={(e) => { e.stopPropagation(); track('tv-entry', { kind: 'table' }); setTvJob(j) }}
-                              style={{ ...actBtn, whiteSpace: 'nowrap', color: '#1d4ed8', borderColor: '#bfdbfe', background: '#eff6ff' }}>
+                            {/* #287 批D:判定卡入口(桌面行,与收藏同列)——真 <a>,中键可新开 */}
+                            <a href={`/plan/pr?job=${j.id}`} onClick={(e) => { e.stopPropagation(); track('tv-entry', { kind: 'table' }) }}
+                              style={{ ...actBtn, whiteSpace: 'nowrap', color: '#1d4ed8', borderColor: '#bfdbfe', background: '#eff6ff', textDecoration: 'none', display: 'inline-block' }}>
                               {t('tv.head')}
-                            </button>
+                            </a>
                           </span>
                         </td>
                       )
@@ -1404,7 +1402,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               // GAP1③:红旗 chip —— 白投预警比正面信号更值得占位
               j.eligibilityFlag ? chip('#fee2e2', '#b91c1c', t('cell.elig.' + j.eligibilityFlag), 'eligibility') : null,
               // #287 批D:判定卡入口 pill(蓝系动作钮,胶囊排尾;效果图 se287-entry-board)
-              <span key="tv" onClick={stop(() => { track('tv-entry', { kind: 'board' }); setTvJob(j) })} style={TV_PILL}>{t('tv.head')}</span>,
+              <a key="tv" href={`/plan/pr?job=${j.id}`} onClick={stop(() => track('tv-entry', { kind: 'board' }))} style={{ ...TV_PILL, textDecoration: 'none' }}>{t('tv.head')}</a>,
             ].filter(Boolean)
             return (
               <JobCard key={j.id}
@@ -1471,7 +1469,6 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
 
       {popup && <AdvisorModal group={popup.group} field={popup.srcField} job={popup.job} title={popup.title} lang={lang} plan={plan} pnpOcc={dims.pnpOccupations} pnpDraws={dims.pnpDraws} news={dims.news} eeOcc={dims.eeCategories} desigEmp={dims.designatedEmployers} nocDesc={dims.nocDescriptions} fieldSources={dims.fieldSources} onClose={() => setPopup(null)} onOpenJob={(x) => setActModal({ kind: 'desc', job: x })} />}
       {actModal && <ActModal job={actModal.job} lang={lang} plan={plan} nocDesc={dims.nocDescriptions} onClose={() => setActModal(null)} />}
-      {tvJob && <TripleVerdictModal job={tvJob} lang={lang} onClose={() => setTvJob(null)} />}
       {wizard && <OnboardingWizard t={t} initial={plan.profile} onClose={closeWizard} />}
       {/* 三问弹框已删(2026-07-31 统一答题):答题只在 /plan/*,这页只读答案做回显与筛选 */}
       {upsell && (plan.loggedIn
@@ -1624,7 +1621,6 @@ export function PnpListSection({ job, lang, occ, draws, news, profileClb, nocDes
   // 2026-07-25 Frank:清单可折叠+职业带界面语言译名+展开不内嵌滚动。译名=NOC 官方职业名(noc_descriptions)
   const nocRowOf = useMemo(() => new Map(nocDesc.map((d) => [d.noc, d])), [nocDesc])
   const [foldOpen, setFoldOpen] = useState<Record<string, boolean>>({})
-  const [tvOpen, setTvOpen] = useState(false)   // #287 批D:判定卡入口(本弹框内叠开,z=60)
   const isQc = job.province === 'QC'
   // 批A:命中计算抽 pnpMatchOf(与通道直判块共用,改一处两边同变)
   const { streams, matched, excluded, excludedBy, hasInclusion } = useMemo(() => pnpMatchOf(job, occ), [job, occ])
@@ -1667,8 +1663,7 @@ export function PnpListSection({ job, lang, occ, draws, news, profileClb, nocDes
         {isQc ? <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 6, lineHeight: 1.7 }}>{t('ch.pnp.qcWhy')}</div> : null}
       </div>
       {/* #287 批D:判定卡入口(设计 §5「modal-pnp 判定卡后」;效果图 se287-entry-pnp-modal) */}
-      <TvEntryCard t={t} onOpen={() => { track('tv-entry', { kind: 'pnp' }); setTvOpen(true) }} />
-      {tvOpen && <TripleVerdictModal job={job} lang={lang} z={60} onClose={() => setTvOpen(false)} />}
+      <TvEntryCard t={t} onOpen={() => { track('tv-entry', { kind: 'pnp' }); window.location.assign(`/plan/pr?job=${job.id}`) }} />
       {/* B1 雇主线:判定卡之后、抽选卡之前——用户点这个弹框问的就是「这雇主/这职业谁能担保我」 */}
       <SponsorLeadCard job={job} t={t} src="pnp" />
       {/* E12-09 自评打分已迁到「移民路径」页(Frank 2026-07-27「应该单独弄个功能吧,不应该放到 pnp 弹框里面」)。
@@ -2627,7 +2622,6 @@ function CompanyPanel({ job, jobs, lang, plan, onOpenJob }: { job: JobRow; jobs:
   const t = makeT(lang)
   const [showTrans, setShowTrans] = useState(false)
   const [aiOn, setAiOn] = useState(false)
-  const [tvOpen, setTvOpen] = useState(false)   // #287 批D:判定卡入口(本弹框内叠开,z=60)
   const [d, setD] = useState<undefined | null | { company: CompanyDetail; similar: SimilarEmployer[] }>(undefined)
   useEffect(() => {
     let dead = false
@@ -2668,8 +2662,7 @@ function CompanyPanel({ job, jobs, lang, plan, onOpenJob }: { job: JobRow; jobs:
         : d === null ? <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>{t('advisor.unavail')}</p>
         : <CompanyBody company={d.company} similar={d.similar} t={t} lang={lang} showTrans={showTrans} hideTopInfo
             onOpenJob={onOpenJob} resolveJob={(id) => jobs.find((x) => Number(x.id) === id)}
-            afterSponsor={<TvEntryCard t={t} onOpen={() => { track('tv-entry', { kind: 'company' }); setTvOpen(true) }} />} />}
-      {tvOpen && <TripleVerdictModal job={job} lang={lang} z={60} onClose={() => setTvOpen(false)} />}
+            afterSponsor={<TvEntryCard t={t} onOpen={() => { track('tv-entry', { kind: 'company' }); window.location.assign(`/plan/pr?job=${job.id}`) }} />} />}
       {/* B1 雇主线:公司弹框只渲职业链接(凭证/在招职位上面的卡已有,再出=重复) */}
       <SponsorLeadCard job={job} t={t} src="company" />
     </>
@@ -3084,7 +3077,6 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
 
 // ── AI 顾问弹框 ────────────────────────────────────────────────
 // 所有字段都走本地大模型流式生成(按所选语言);前端只给极简头部 + 链接,正文由模型生成。
-const CHAT_ON = false  // 顾问追问对话开关(2026-07-19 Frank 暂关:先做熟现有功能;亮回=初判切本地模型后)
 // Frank 走查#15(2026-07-25):AI 顾问(移民弹框【移民信号/分步走/怎么准备】长文)整体可逆下架——
 // 「目前看着是废话,没什么实际价值;以后可能再用,看情况」。置 false=不渲卡+不发请求(省额度/朋友 qwen)+页眉不挂「AI 顾问」名;
 // 翻回 true 即复活(/api/advisor、etl 底子未删)。
@@ -3925,10 +3917,6 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
             </div>
           )}
           {/* 来源行已随事实块走(FieldFactsSection 内,紧跟内容、在 AI 区之前)—— 底部不再重复 */}
-          {/* 下半:对话框 —— 基于上方事实 + 初判,多轮 grounded 追问 */}
-          {/* 追问对话暂关(2026-07-19 Frank:「先把现有的功能做成熟」;#95 开关式惯例)——
-              亮回条件:顾问初判切本地模型后按需恢复,置 CHAT_ON=true 即亮 */}
-          {CHAT_ON && status === 'done' && <AdvisorChat field={group} job={job} lang={lang} initialJudgment={text} initialSug={sug} />}
         </div>
         {/* 八方向拉伸手柄(透明边条+角块;右下角保留视觉提示三角) */}
         {!full && <div style={{ position: 'absolute', right: 0, bottom: 0, width: 18, height: 18, pointerEvents: 'none', background: 'linear-gradient(135deg, transparent 50%, #cbd5e1 50%)' }} />}
@@ -3941,11 +3929,9 @@ export function AdvisorModal({ group, field, job, title, lang, plan, pnpOcc, pnp
   )
 }
 
-// ── 顾问对话框(弹框下半)──────────────────────────────────────
-// 多轮 grounded chat:把「初判」当首个 assistant 轮喂回去保连续性;后端 system 始终带整条岗位事实 + 铁律。
-type ChatMsg = { role: 'user' | 'assistant'; content: string }
+// ── 建议问题提取(❓协议)──────────────────────────────────────
 // ❓ 建议行协议(第 15 轮 #36,用户点名「基于具体内容生成问题」):模型每次回复结尾附一行「❓问题」,
-// 打字机 drain 时截住不显示,完成后取出做建议 chip;旧缓存/模型没给标记 → 退回 SUG_POOL 罐头兜底。
+// 打字机 drain 时截住不显示,完成后取出做建议 chip。
 const SUG_MARK = '❓'
 // 从完整回复里摘建议问题:① ❓ 标记行(协议);② 兜底=末行是独立短问句(模型偶发漏打标记,
 // 问题裸奔在正文结尾 —— 2026-07-11 用户实机撞到)。都没有 → 原文返回,chip 走罐头池。
@@ -3978,126 +3964,6 @@ const extractSug = (s: string, company?: string, lang?: Lang): { body: string; s
     return { body: t.slice(0, nl).replace(/\s+$/, ''), sug: capSug(last, company, lang) }  // 兜底分支同过 capSug(第 16 轮它绕过了)
   }
   return { body: t, sug: '' }
-}
-// 建议问题池(2026-07-10 用户点名「类似 Claude,Tab 填入直接提问」;07-11 追加「按轮迭代」):
-// 每字段族 3 条,一轮问答完推进到下一条,用完即止(不循环重复)。
-const SUG_POOL: Record<'title' | 'company' | 'generic', string[]> = {
-  title: ['advisor.sug.title', 'advisor.sug.title2', 'advisor.sug.title3'],
-  company: ['advisor.sug.company', 'advisor.sug.company2', 'advisor.sug.company3'],
-  generic: ['advisor.sug.generic', 'advisor.sug.generic2', 'advisor.sug.generic3'],
-}
-function AdvisorChat({ field, job, lang, initialJudgment, initialSug }: { field: ColKey | FieldGroup; job: JobRow; lang: Lang; initialJudgment: string; initialSug?: string }) {
-  const t = makeT(lang)
-  const [msgs, setMsgs] = useState<ChatMsg[]>([])
-  const [input, setInput] = useState('')
-  const [busy, setBusy] = useState(false)
-  const endRef = useRef<HTMLDivElement | null>(null)
-  const inputRef = useRef<HTMLInputElement | null>(null)
-  useEffect(() => { endRef.current?.scrollIntoView({ block: 'nearest' }) }, [msgs])
-
-  // 建议问题(#36):首选 = 模型每轮结尾 ❓ 行生成的本岗专属问题(初判的经 initialSug 传入);
-  // 旧缓存/模型没给 → 退 SUG_POOL 罐头,一轮推进一条,用完即止。
-  const fam: 'title' | 'company' | 'generic' = field === 'title' ? 'title' : field === 'company' ? 'company' : 'generic'
-  const [genSug, setGenSug] = useState(initialSug || '')
-  const [sugIdx, setSugIdx] = useState(0)
-  const suggestion = genSug || (sugIdx < SUG_POOL[fam].length ? t(SUG_POOL[fam][sugIdx]) : '')
-  const showSug = !!suggestion && !busy && !input
-  const fillSug = () => { setInput(suggestion); inputRef.current?.focus() }
-
-  // 追问回答打字机(07-11 用户点名「要流式,不要一下蹦出来」):与初判同一手法——
-  // 网络块进 pending,固定节奏吐字(速率与积压成正比);❓ 尾行截住做下一条建议;吐完才解 busy。
-  const pendingRef = useRef('')
-  const netDoneRef = useRef(false)
-  const curRef = useRef('')  // 本轮已吐正文镜像(完成时和 pending 拼回完整回复摘建议)
-  useEffect(() => {
-    const id = setInterval(() => {
-      const cut = pendingRef.current.indexOf(SUG_MARK)
-      const avail = cut >= 0 ? pendingRef.current.slice(0, cut) : pendingRef.current
-      if (avail) {
-        const n = Math.max(2, Math.ceil(avail.length / 12))
-        const chunk = avail.slice(0, n)
-        pendingRef.current = pendingRef.current.slice(n)
-        curRef.current += chunk
-        setMsgs((m) => { const c = [...m]; c[c.length - 1] = { ...c[c.length - 1], content: c[c.length - 1].content + chunk }; return c })
-      } else if (netDoneRef.current) {
-        netDoneRef.current = false
-        const full = curRef.current + pendingRef.current
-        pendingRef.current = ''; curRef.current = ''
-        const { body, sug: q } = extractSug(full, job.company, lang)
-        setMsgs((m) => { const c = [...m]; c[c.length - 1] = { ...c[c.length - 1], content: body }; return c })
-        if (q) setGenSug(q)
-        else { setGenSug(''); setSugIdx((i) => i + 1) }  // 没摘到 → 罐头池推进一条
-        setBusy(false)
-      }
-    }, 33)
-    return () => clearInterval(id)
-  }, [])
-
-  const send = async () => {
-    // 输入空但占位有建议问题 → 直接发建议问题(2026-07-17 用户:手机没有 Tab 键,点「发送」就该问这个)
-    const q = input.trim() || (showSug ? suggestion : '')
-    if (!q || busy) return
-    const convo = [...msgs, { role: 'user' as const, content: q }]
-    setMsgs([...convo, { role: 'assistant', content: '' }])  // 占位,流进去
-    setInput(''); setBusy(true); curRef.current = ''
-    // 喂回初判作首个 assistant 轮 → 用户可"你刚才说的…";后端 system 另带事实
-    const payload: ChatMsg[] = [{ role: 'assistant', content: initialJudgment }, ...convo]
-    try {
-      const res = await fetch('/api/advisor', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ field, id: String(job.id), job, lang, messages: payload }),
-      })
-      if (res.status === 402) {  // 免费试用用完(E3-05):对话里给升级引导
-        setMsgs((m) => { const c = [...m]; c[c.length - 1] = { role: 'assistant', content: `${t('up.title')} · ${t('up.advisor')} → /account` }; return c })
-        setBusy(false)
-      } else if (!res.ok || !res.body) {
-        setMsgs((m) => { const c = [...m]; c[c.length - 1] = { role: 'assistant', content: t(res.status === 429 ? 'advisor.limit429' : 'advisor.unavail') }; return c })
-        setBusy(false)
-      } else {
-        // 流式回答(07-11 #36):网络块只进 pending,打字机节奏吐字;吐完(interval 里)才解 busy
-        const reader = res.body.getReader(); const dec = new TextDecoder()
-        for (;;) {
-          const { done, value } = await reader.read()
-          if (done) break
-          pendingRef.current += dec.decode(value, { stream: true })
-        }
-        netDoneRef.current = true
-      }
-    } catch {
-      pendingRef.current = ''  // 半途断流:清掉积压,别往错误文案后面继续吐字
-      setMsgs((m) => { const c = [...m]; c[c.length - 1] = { role: 'assistant', content: t('advisor.offline') }; return c })
-      setBusy(false)
-    }
-  }
-
-  return (
-    <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid #f3f4f6' }}>
-      {msgs.map((m, i) => (
-        <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start', marginBottom: 6 }}>
-          <div style={{ maxWidth: '85%', padding: '7px 11px', borderRadius: 10, fontSize: 13.5, lineHeight: 1.6, whiteSpace: 'pre-wrap',
-            background: m.role === 'user' ? '#eef2ff' : '#f9fafb', color: '#374151' }}>
-            {/* 追问回复同走 renderAI(#43 剥 **);等待首字时显「努力思考中」而非光秃 ▋(2026-07-12 用户:太生硬) */}
-            {m.role === 'assistant' ? (m.content ? renderAI(m.content) : <span style={{ color: '#9ca3af' }}>{t('advisor.loading')}</span>) : m.content}
-          </div>
-        </div>
-      ))}
-      <div ref={endRef} />
-      {/* 建议问题=输入框占位(2026-07-11 用户拍板:不要 chip,问题直接放文本框,Tab 自动补全) */}
-      <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-        <input ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)} disabled={busy}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
-            else if (e.key === 'Tab' && showSug) { e.preventDefault(); fillSug() }  // Tab 补全占位里的建议问题
-          }}
-          placeholder={showSug ? suggestion : t('advisor.chatPlaceholder')}
-          style={{ flex: 1, height: 36, boxSizing: 'border-box', padding: '0 10px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 13.5, color: '#1f2937', background: '#fff' }} />
-        <button onClick={send} disabled={busy || (!input.trim() && !showSug)}
-          style={{ border: 'none', background: busy || (!input.trim() && !showSug) ? '#c7d2fe' : '#6366f1', color: '#fff', borderRadius: 8, padding: '0 14px', height: 36, cursor: busy || (!input.trim() && !showSug) ? 'default' : 'pointer', fontSize: 13.5, flexShrink: 0 }}>
-          {t('advisor.chatSend')}
-        </button>
-      </div>
-    </div>
-  )
 }
 
 // ── E9-04 投递栏(B11,2026-07-24 拍板):详情底部常驻;注册闸设在投递=全站意愿最强瞬间 ──

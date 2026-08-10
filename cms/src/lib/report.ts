@@ -986,12 +986,12 @@ export function buildJobReport(profile: MatchProfile, dims: MatchDims, facts: Re
 
   // 相关职业(Frank 2026-07-31「干 IT 可能同时适合大数据/AI/全栈/cloud」):同小类/中类的邻居也在招,
   // 免费给 —— 这是库里查得到的事实,而且一个人本来就不该被自己填的那一个 NOC 框死。
-  // 每条挂各自的报告深链:换个职业看结论,不用重新答题。
+  // 判定合一批1:/plan/job 深链撤(该页批2退役),只留事实行。
   for (const p of occ.peers.filter((x) => x.open > 0).slice(0, 2)) {
     conclusions.push({
       key: 'rpt.j.related',
       params: { occ: p.titleEn || p.noc, occZh: p.titleZh || p.titleEn || p.noc, occKo: p.titleKo || p.titleEn || p.noc, noc: p.noc, open: p.open },
-      verdict: 'na', url: `/plan/job?noc=${p.noc}&view=report`,
+      verdict: 'na',
     })
   }
 

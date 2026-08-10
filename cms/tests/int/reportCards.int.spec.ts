@@ -88,7 +88,7 @@ describe('卡① 找工作', () => {
     expect(r.gaps[0].key).toBe('rpt.g.noNoc')
   })
 
-  it('相关职业也在招:同小类邻居免费给两条,各带自己的报告深链(一个人不该被一个 NOC 框死)', () => {
+  it('相关职业也在招:同小类邻居免费给两条(判定合一批1:/plan/job 深链已撤,只留事实行)', () => {
     const peers = [
       occStat({ noc: '21231', titleEn: 'Software engineers', titleZh: '软件工程师', open: 900 }),
       occStat({ noc: '21211', titleEn: 'Data scientists', titleZh: '数据科学家', open: 300 }),
@@ -97,7 +97,7 @@ describe('卡① 找工作', () => {
     const r = buildJobReport(normalizeProfile({ targetProvinces: ['BC'] }), dims, facts, occ({ peers }))
     const rel = r.conclusions.filter((c) => c.key === 'rpt.j.related')
     expect(rel.map((c) => c.params.noc)).toEqual(['21231', '21211'])
-    expect(rel[0].url).toBe('/plan/job?noc=21231&view=report')
+    expect(rel[0].url).toBeUndefined()
   })
 
   // 2026-08-01 雇主线索落地时改口径:「有 N 家雇主发过清单岗」这句**留在免费层**
