@@ -114,7 +114,7 @@ describe('合成停摆 → 系统繁忙', () => {
 
   it('④ 契约:合成那一发带 stallMs(装没装看门狗不许悄悄回归)', async () => {
     await ask(pool)
-    expect(H.synthOpts[0]?.stallMs).toBe(25_000)  // 默认值;env CHAT_SYNTH_STALL_MS 可调
+    expect(H.synthOpts[0]?.stallMs).toBe(15_000)  // 默认值;env CHAT_SYNTH_STALL_MS 可调
     expect(H.synthOpts[0]?.provider).toBe('friend')
   })
 })

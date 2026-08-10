@@ -21,7 +21,7 @@ import { IconArrowUp } from '../Icons'
 import { useLang } from '../LangProvider'
 import { UI } from '../ui/primitives'
 import { track } from '@/lib/track'
-import { ChatAnswer, ChatText, CHAT_ANSWER_CSS, type Answer } from './ChatAnswer'
+import { ChatAnswer, ChatText, CHAT_ANSWER_CSS, type Answer, type AnswerOption } from './ChatAnswer'
 import { pickExamples, exampleKind, type ChatProfile } from './chatExamples'
 
 type Msg = { role: 'user' | 'assistant'; content: string }
@@ -238,6 +238,47 @@ export function ChatBox({ compact = false, autoFocus = false, prefill = '' }: { 
   }
 
   const empty = turns.length === 0
+
+  /**
+   * 每轮唯一交互块。**答复轮与引导轮共用这一个** —— 2026-08-09 Frank 实撞两件事:
+   *   ①「问题怎么每次都是这三个」:补位原来是首屏那三条示例原样复读(无真追问的轮次必然如此)。
+   *      现在**问过的一律不再出**(全线程去重),出完就没了,不再循环播放。
+   *   ②「按我的情况判一判走哪条路最快」点了必死:它是路径问句,没认出职业时 100% 撞 noOcc
+   *      (chat_logs 20:34 实录),而引导轮当时**一个可点的都不挂** = 死胡同。
+   *      现在:没 noc 就不生成这条(不发我们明知会失败的 chip);引导轮也挂这张卡(总有出口)。
+   * 补位一条都不剩时只留「自己说」那行,标题不出 —— 「试试这样问」底下空着比不出更难看。
+   */
+  const optionCard = (turn: Turn) => {
+    const real = turn.a?.followups ?? []
+    const asked = new Set(turns.map((x) => x.q))
+    const canVerdict = Boolean((turn.a?.slots as { noc?: string } | undefined)?.noc)
+    const pad = [...(canVerdict ? [t('chat.padVerdict')] : []), ...examples.map((ex) => t(ex.key, ex.params))]
+      .filter((q) => !asked.has(q) && !real.includes(q))
+    const items = [...real, ...pad].slice(0, 4)
+      .map((q): AnswerOption => ({ label: q, sendText: q }))
+    const card = turn.a?.options?.items?.length
+      ? turn.a.options
+      : { reason: items.length ? t(real.length ? 'chat.followups' : 'chat.try') : '', items }
+    return (
+      <div className="cbOpts">
+        {card.reason ? <div className="cbOptWhy">{card.reason}</div> : null}
+        {card.items.map((o, k) => (
+          <button key={k} className={'cbOpt' + (o.recommended ? ' cbOptRec' : '')} disabled={busy}
+            onClick={() => { track('chat-option', { pick: k }); void ask(o.sendText) }}>
+            {o.recommended ? <span className="cbOptTag">{t('chat.opt.rec')}</span> : null}
+            <span className="cbOptMain">
+              <span className="cbOptLabel">{o.label}</span>
+              {o.consequence ? <span className="cbOptCons">{o.consequence}</span> : null}
+            </span>
+          </button>
+        ))}
+        <button className="cbOpt" onClick={() => { track('chat-option', { pick: -1 }); taRef.current?.focus() }}>
+          <span className="cbOptMain"><span className="cbOptLabel" style={{ color: UI.text2, fontWeight: 400 }}>{t('chat.opt.self')}</span></span>
+        </button>
+      </div>
+    )
+  }
+
   return (
     <div className={compact ? 'cbFill' : undefined}>
       <style>{`
@@ -362,12 +403,15 @@ export function ChatBox({ compact = false, autoFocus = false, prefill = '' }: { 
               随线程一起滚上去 —— 第二轮之后自然滚出视野,但回滚上去还找得到,而且从头到尾只有这一份
               (不是每轮之间重复出现,也不是常驻悬浮占掉答复的地方)。
               点完仍可点:用户下一步很可能就是想问第二条示例 —— 那正是它该留下的理由。 */}
-          <div className="cbEmpty">
-            <div className="cbTry">{t('chat.try')}</div>
+          {/* 🔴 形态与答复下方那张选项卡**必须是同一种**(2026-08-09 Frank:「这个样式怎么上下不一致」)——
+              同一个东西(「试试这样问」)上面窄灰胶囊、下面通栏白卡,读者会以为是两种东西。
+              08-09 拍板的「每轮唯一交互块=选项卡形态」本就该管到首屏这一块,当时漏了它。 */}
+          <div className="cbEmpty cbOpts">
+            <div className="cbOptWhy">{t('chat.try')}</div>
             {examples.map((ex) => (
-              <button key={ex.key} className="cbEx" disabled={busy}
+              <button key={ex.key} className="cbOpt" disabled={busy}
                 onClick={() => { track('chat-example', { kind: exampleKind(ex.key) }); void ask(t(ex.key, ex.params)) }}>
-                {t(ex.key, ex.params)}
+                <span className="cbOptMain"><span className="cbOptLabel">{t(ex.key, ex.params)}</span></span>
               </button>
             ))}
           </div>
@@ -402,8 +446,12 @@ export function ChatBox({ compact = false, autoFocus = false, prefill = '' }: { 
                 </details>
               ) : null}
               {turn.guide ? (
-                // 引导:这是助手的一条消息(「再多说两句,你做什么工作」),不是表单报错
-                <ChatText text={turn.guide} />
+                // 引导:这是助手的一条消息(「再多说两句,你做什么工作」),不是表单报错。
+                // 反问之后也要有可点的东西 —— 光一句反问 + 空白 = 死胡同(Frank 08-09 实撞)
+                <>
+                  <ChatText text={turn.guide} />
+                  {i === turns.length - 1 && !busy ? optionCard(turn) : null}
+                </>
               ) : turn.fault ? (
                 <div className="cbFault">
                   <span aria-hidden style={{ color: UI.warn }}>!</span>
@@ -417,38 +465,9 @@ export function ChatBox({ compact = false, autoFocus = false, prefill = '' }: { 
                   <ChatAnswer a={turn.a} busy={busy} onAsk={(q) => void ask(q)} />
                   {/* 每轮唯一交互块(08-09 Frank「只要你这种」=带标题的选项卡+自行输入,一轮只出一块,
                       追问胶囊堆同拍撤掉):建档卡优先(档案是判定燃料);没有建档卡时,四条推荐问题装进
-                      同一种卡(真追问在前,补位=判定导流问句+个性化示例,剔与本轮同句)。
-                      只挂最后一轮;点选 = 以用户身份把 sendText 发出去(气泡进对话流)。
-                      末行「自己说」固定 → 聚焦输入框(设计 §一第 5 条:永不堵嘴)。 */}
-                  {i === turns.length - 1 && !busy ? (() => {
-                    const real = turn.a.followups ?? []
-                    const pad = [t('chat.padVerdict'), ...examples.map((ex) => t(ex.key, ex.params))]
-                      .filter((q) => q !== turn.q && !real.includes(q))
-                    const card = turn.a.options?.items?.length
-                      ? turn.a.options
-                      : {
-                        reason: t(real.length ? 'chat.followups' : 'chat.try'),
-                        items: [...real, ...pad].slice(0, 4).map((q): NonNullable<Answer['options']>['items'][number] => ({ label: q, sendText: q })),
-                      }
-                    return (
-                      <div className="cbOpts">
-                        <div className="cbOptWhy">{card.reason}</div>
-                        {card.items.map((o, k) => (
-                          <button key={k} className={'cbOpt' + (o.recommended ? ' cbOptRec' : '')} disabled={busy}
-                            onClick={() => { track('chat-option', { pick: k }); void ask(o.sendText) }}>
-                            {o.recommended ? <span className="cbOptTag">{t('chat.opt.rec')}</span> : null}
-                            <span className="cbOptMain">
-                              <span className="cbOptLabel">{o.label}</span>
-                              {o.consequence ? <span className="cbOptCons">{o.consequence}</span> : null}
-                            </span>
-                          </button>
-                        ))}
-                        <button className="cbOpt" onClick={() => { track('chat-option', { pick: -1 }); taRef.current?.focus() }}>
-                          <span className="cbOptMain"><span className="cbOptLabel" style={{ color: UI.text2, fontWeight: 400 }}>{t('chat.opt.self')}</span></span>
-                        </button>
-                      </div>
-                    )
-                  })() : null}
+                      同一种卡。渲染与补位口径见 optionCard(引导轮共用同一张,别在这儿另写一份)。
+                      只挂最后一轮;点选 = 以用户身份把 sendText 发出去(气泡进对话流)。 */}
+                  {i === turns.length - 1 && !busy ? optionCard(turn) : null}
                 </>
               ) : turn.stream ? (
                 // 半截正文:和最终答复同一个渲染器(服务端按整句放行,那截里已经带着行首 `- `)

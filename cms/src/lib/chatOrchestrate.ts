@@ -199,8 +199,11 @@ const MAX_FACTS = 40               // facts 上限:再多前端也读不完,prom
  * 为什么是「多久没动静」而不是「总共多久」:字在往外流的时候用户看得见进度,掐掉正在流的答复反而更差;
  * 真正要治的是**一个字都没有**的那种卡(见 friendLlm 的 stallMs)。
  * 数值放 env = Frank 在 Render 上随手调,不用为一个数走一次部署。
+ * **15s 的来历**(2026-08-09 生产实测定的,不是拍脑袋):热身后首字 ~650ms、整轮 5s;
+ * 一发 29.3s 的慢答全程都在吐字(块间隔远小于 15s,看门狗碰都不碰它)。
+ * 也就是说 15s 一个字都没有 = 那头在冷启或排队,不是「快写完了」——早点说「系统繁忙」比让人干等 30s 强。
  */
-const SYNTH_STALL_MS = Number(process.env.CHAT_SYNTH_STALL_MS ?? 25_000)
+const SYNTH_STALL_MS = Number(process.env.CHAT_SYNTH_STALL_MS ?? 15_000)
 /**
  * 🔴 **追问轮的短答是合法答案**(D2;2026-08-09 生产实录 chat_logs #52:「没工作」撞 tooShort)。
  * 首轮四字门的理由是「一句问候问不出东西」——那个理由在**我们刚问完一句**之后就不成立了:
@@ -3477,8 +3480,15 @@ export async function orchestrate(
     raw = await completeText([
       { role: 'system', content: SLOT_SYSTEM },
       { role: 'user', content: (hist ? `EARLIER:\n${hist}\n\nNOW: ` : '') + text },
-    ], { maxTokens: 400, provider: 'friend' })
+    ], { maxTokens: 400, provider: 'friend', ...(SYNTH_STALL_MS > 0 ? { stallMs: SYNTH_STALL_MS } : {}) })
   } catch (e) {
+    // 🔴 **抽槽这一发也要装闸**(2026-08-09 生产实录 chat_logs 20:29 那条:整轮 47.9s 才报 busy ——
+    //    合成只占其中 25s,前面 23s 卡在这儿没人管)。它是第一发,冷启/排队最先砸的就是它。
+    //    等不来字 → 同样报「系统繁忙」:这时连职业都还没认出来,没有任何东西可降级。
+    if (e instanceof LlmError && e.code === 'timeout') {
+      console.log(`[chat] slots timeout (stallMs=${SYNTH_STALL_MS}) → busy (${e.message.slice(0, 120)})`)
+      throw new ChatError('busy', `slot extraction timed out: ${e.message}`)
+    }
     throw new ChatError('llm', e instanceof LlmError ? e.message : String(e))
   }
   const parsed = parseLlmJson(raw)
