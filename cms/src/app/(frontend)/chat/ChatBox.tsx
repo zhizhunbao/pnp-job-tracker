@@ -252,13 +252,20 @@ export function ChatBox({ compact = false, autoFocus = false, prefill = '' }: { 
     const real = turn.a?.followups ?? []
     const asked = new Set(turns.map((x) => x.q))
     const canVerdict = Boolean((turn.a?.slots as { noc?: string } | undefined)?.noc)
-    const pad = [...(canVerdict ? [t('chat.padVerdict')] : []), ...examples.map((ex) => t(ex.key, ex.params))]
-      .filter((q) => !asked.has(q) && !real.includes(q))
-    const items = [...real, ...pad].slice(0, 4)
+    // 🔴 **示例只给引导轮当出口,答复轮一条都不补**(2026-08-09 Frank 二次实撞:答复下面又是上面那三条)。
+    //    根不在「问过没问过」——首屏那块示例**从不卸载**(08-05 拍板它随线程滚,不闪没),
+    //    所以在答复下面再摆一遍就是同屏重复。引导轮不一样:那是「说说你做什么工作」的反问,
+    //    三条示例每条都带着职业,正是它要的答案,给了才不是死胡同。
+    const pad = turn.a
+      ? (canVerdict ? [t('chat.padVerdict')] : [])
+      : examples.map((ex) => t(ex.key, ex.params))
+    const items = [...real, ...pad.filter((q) => !asked.has(q) && !real.includes(q))].slice(0, 4)
       .map((q): AnswerOption => ({ label: q, sendText: q }))
     const card = turn.a?.options?.items?.length
       ? turn.a.options
       : { reason: items.length ? t(real.length ? 'chat.followups' : 'chat.try') : '', items }
+    // 一条都没有 = 没什么可推荐的:那就什么都不出(输入框就在下面,「自行输入」单独一行是句废话)
+    if (!card.items.length) return null
     return (
       <div className="cbOpts">
         {card.reason ? <div className="cbOptWhy">{card.reason}</div> : null}
