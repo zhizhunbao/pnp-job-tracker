@@ -24,7 +24,7 @@ import { PnpScoreCard } from '../../jobs/PnpScoreCard'
 import { EMPTY, clearAnswers, readAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
 import { fieldsOf, missingFields } from '@/lib/decisions'
 import { FIELDS } from '@/lib/fields'
-import { CASES, type CaseEntry, type L3 } from '@/lib/caseLibrary'
+import { CASES, type L3 } from '@/lib/caseLibrary'
 import { pickName } from '@/lib/occName'
 import { track } from '@/lib/track'
 import type { DrawRow, ScoreFactor, SelfProfile } from '@/lib/pnpSelfScore'
@@ -251,19 +251,6 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
   const provDisp = (code: string) => { const full = t('prov.' + code); return full === 'prov.' + code ? code : full }
   const pickL3 = (l: L3) => l[lang as keyof L3] || l.zh
 
-  // 一键代入:案例画像写进答案(只覆盖案例明说的字段)→ 展开答题从第一道没答的题接着走
-  const applyCase = (c: CaseEntry) => {
-    track('dp-case', { id: c.id })
-    if (!c.preset) return
-    const a = writeAnswers(c.preset)
-    setBands(a); setNoc(a.nocs[0] || '')
-    setResetNonce((n) => n + 1)
-    setOccStep(!a.nocs.length)
-    setProvinceStep(false); setScoreStep(false); setFormAtEnd(false)
-    setQuizOpen(true)
-    setTimeout(() => quizRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60)
-  }
-
   return (
     <div style={{ background: UI.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="pathways" />
@@ -453,9 +440,12 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
                 </a>
               </div>
             )}
-            {/* 常见处境(08-10 Frank「直接使用我那 16 个 case」):案例库 C01-C16 一键代入 ——
-                点开=用户原话问题 + 两个动作:按画像代入答题(只填案例明说的字段)/ 带原话问顾问。
-                画像与问题不是结论;结论仍由判定核按用户自己的答案算。原生 <details>,SSR 可爬。 */}
+            {/* 常见处境(08-10 Frank「直接使用我那 16 个 case」):点开=用户原话问题。
+                原生 <details>,SSR 可爬;做了事实层的那条给真 <a> 进处境页(内链要被爬到)。
+                2026-08-11 Frank 二拍**两个钮全撤**:①「按这个条件代入」把别人的画像写进用户自己的
+                答案,答过题的一点就丢;②「问 AI 顾问」拿别人的原话去问,答的还是别人的事,而顾问本身
+                「烂的一逼」,不该从这里导流过去。**答不了就不假装能答**:15 条只摆问题不给动作,
+                谁的事实层补上了谁才有出口。 */}
             <div style={CARD}>
               <h2 style={H2}>{t('dp.cases')}</h2>
               {CASES.map((c) => (
@@ -464,16 +454,11 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
                     {pickL3(c.label)}
                   </summary>
                   <div style={{ padding: '0 0 12px' }}>
-                    <div style={{ fontSize: 13, color: UI.text2, lineHeight: 1.7, marginBottom: 8 }}>「{pickL3(c.q)}」</div>
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                      {c.preset && (
-                        <button onClick={() => applyCase(c)} style={PRIMARY_BTN}>{t('dp.caseApply')}</button>
-                      )}
-                      <button onClick={() => {
-                        track('dp-case-ask', { id: c.id })
-                        window.dispatchEvent(new CustomEvent('o2p:chat-open', { detail: { prefill: pickL3(c.q) } }))
-                      }} style={BTN}>{t('dp.hookAdvisor')}</button>
-                    </div>
+                    <div style={{ fontSize: 13, color: UI.text2, lineHeight: 1.7, marginBottom: c.page ? 8 : 0 }}>「{pickL3(c.q)}」</div>
+                    {c.page && (
+                      <a href={`/cases/${c.page}`} onClick={() => track('dp-case-page', { id: c.id })}
+                        style={{ ...PRIMARY_BTN, textDecoration: 'none', display: 'inline-block' }}>{t('dp.caseAnswer')}</a>
+                    )}
                   </div>
                 </details>
               ))}

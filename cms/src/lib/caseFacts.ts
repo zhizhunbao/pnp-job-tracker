@@ -6,6 +6,7 @@
 // 红线照旧不破:**一句结论都不是手写的**。排序、档位、理由、官方原句全部来自判定核
 // (`pathVerdict`),这里只负责挑出「他问的那条」、按 tier 分档、把带训岗位数查出来当第一步。
 // 案例库 `caseLibrary.ts` 里仍然只有画像与问题。
+import { CASES } from './caseLibrary'
 import { pathVerdict, type PathwayVerdict, type VerdictData, type VerdictProfile } from './pathVerdict'
 
 export type CaseAnswer = {
@@ -39,16 +40,14 @@ export type OpsFacts = {
 
 type Sql = (q: string, v?: unknown[]) => Promise<{ rows: Record<string, unknown>[] }>
 
-/** 有答案层的处境。画像取自案例自己的事实档,**不是** caseLibrary 里那份给答题预填用的残缺 preset。 */
-export const CASE_PAGES: Record<string, {
-  caseId: string
+/** 事实层:画像取自案例自己的事实档,**不是** caseLibrary 里那份给答题预填用的残缺 preset。 */
+const PROFILES: Record<string, {
   /** 中介/朋友推的那个省 —— 页面第一段就回答它 */
   askedKey: string
   /** 完整画像:docs/design/案例C01-马龙木匠路径-事实档-20260805.md §一(逐项列了来源) */
   profile: VerdictProfile
 }> = {
-  'carpenter-ontario-graduate-manitoba-agent': {
-    caseId: 'C01',
+  C01: {
     askedKey: 'MB-swm',
     profile: {
       age: 40,
@@ -63,6 +62,11 @@ export const CASE_PAGES: Record<string, {
     } as VerdictProfile,
   },
 }
+
+/** 出页白名单 = **既写了 slug 又有事实层**的处境。slug 的唯一来源是 caseLibrary 的 `page` 字段,
+    决策页的「看完整答案」读同一个字段 —— 两边各写一份就会出死链。 */
+export const CASE_PAGES: Record<string, { caseId: string } & (typeof PROFILES)[string]> =
+  Object.fromEntries(CASES.filter((c) => c.page && PROFILES[c.id]).map((c) => [c.page as string, { caseId: c.id, ...PROFILES[c.id] }]))
 
 export async function caseAnswer(slug: string, data: VerdictData, sql: Sql): Promise<CaseAnswer | null> {
   const spec = CASE_PAGES[slug]
