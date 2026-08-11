@@ -26,7 +26,8 @@ const aLink: React.CSSProperties = { color: '#2563eb', textDecoration: 'none' }
 const sec: React.CSSProperties = CARD_MD   // 白卡壳全站一份(ui/primitives),这里只留个本地别名
 
 export default function JobDetailView({ job, plan, dims, related }: {
-  job: JobRow; plan: Plan; dims: Dims; related: { sameCompany: RelatedJob[]; sameOcc: RelatedJob[] }
+  job: JobRow; plan: Plan; dims: Dims
+  related: { sameCompany: RelatedJob[]; sameOcc: RelatedJob[]; fallbackLevel: 'fine' | 'mid' | 'broad' | null }
 }) {
   const [lang, setLang, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
   // 2026-07-25 Frank「点击要有动画,不然不知道点没点,跳页有延迟」:按下即置忙态(变灰+省略号),导航期间可感
@@ -52,6 +53,20 @@ export default function JobDetailView({ job, plan, dims, related }: {
     job.fine && job.fine !== '未分类' ? { txt: catName(t, job.fine), href: `/?fine=${encodeURIComponent(job.fine)}` } : null,
   ].filter(Boolean)) as { txt: string; href: string }[])
     .filter((s, i, arr) => i === 0 || s.txt !== arr[i - 1].txt)
+
+  // 相似职位的兜底去处:筛选参数与面包屑同一套(?prov / ?fine|mid|broad),按级给键,不新造口径。
+  // 文案定长,不把职业名插进句子:NOC 官方职业名可以长到
+  // 「Machine operators and related workers in pulp and paper production and wood processing…」,
+  // 塞进句子手机上折三行。范围交给链接目标,措辞与上面的分组小标题「同省同职业」同一套词。
+  // 按哪一级筛由服务端定(fetchRelatedJobs 探过「本省该级确实还有在招岗」)—— 探不到就退到只按省,
+  // 决不把人从死页面送进空列表。省名用 t('prov.XX') 三语单名,不用面包屑那种「Ontario(安大略省)」组合。
+  const provPlain = t('prov.' + (job.province || '').toUpperCase())
+  const provWord = provPlain.startsWith('prov.') ? provFull : provPlain
+  const fbCatValue = related.fallbackLevel ? ({ fine: job.fine, mid: job.mid, broad: job.broad }[related.fallbackLevel] || '') : ''
+  const fallbackHref = !job.province ? ''
+    : fbCatValue ? `/?prov=${encodeURIComponent(job.province)}&${related.fallbackLevel}=${encodeURIComponent(fbCatValue)}`
+    : `/?prov=${encodeURIComponent(job.province)}`
+  const fallbackText = fbCatValue ? t('detail.relatedNoneOcc') : t('detail.relatedNoneProv', { p: provWord })
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f9fafb' }}>
@@ -95,7 +110,7 @@ export default function JobDetailView({ job, plan, dims, related }: {
               服务端就不查,related 恒空)—— 下架页原本是死路,横幅说完「已下架」就没有下一步。
               分组小标题代替逐行标注(同一组三行都写「同省同职业」是重复文案);行内两段:岗名蓝链一行,
               公司与城市灰字第二行,不折行超长省略——手机 375 也是一行一条。 */}
-          {related.sameCompany.length || related.sameOcc.length ? (
+          {job.status === 'closed' && (related.sameCompany.length || related.sameOcc.length || fallbackHref) ? (
             <div style={sec}>
               <div style={{ fontSize: 13.5, fontWeight: 700, color: '#111827', marginBottom: 6 }}>{t('detail.related')}</div>
               {/* 行形态不自造:与公司弹框「在招职位」同一个 JobMiniRow(左岗名右薪资城市)。
@@ -112,6 +127,12 @@ export default function JobDetailView({ job, plan, dims, related }: {
                     ))}
                   </div>
                 ))}
+              {/* 兜底(2026-08-11 Frank 追加):同公司与同职业都零在招时,卡里原本什么都不剩 ——
+                  下架页又成死路。给一条筛好的职位板链接,让他至少还有下一步可点。 */}
+              {!related.sameCompany.length && !related.sameOcc.length && fallbackHref ? (
+                <a href={fallbackHref} onClick={() => track('rel-job', { from: 'closed-none' })}
+                  style={{ ...aLink, fontSize: 13, display: 'inline-block', padding: '4px 0' }}>{fallbackText}</a>
+              ) : null}
             </div>
           ) : null}
 

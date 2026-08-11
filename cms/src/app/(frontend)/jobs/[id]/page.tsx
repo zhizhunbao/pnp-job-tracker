@@ -59,8 +59,11 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
   // Google 招聘富结果直落本页(30 天最大入口),撞上「已下架」横幅就只剩关页。相关职位卡是 B2 瘦身时
   // 摘掉的(函数与三语文案一直留着),这里只对 closed 岗接回来:在招岗照旧守「一条信息一个家」。
   const related = job.status === 'closed'
-    ? await fetchRelatedJobs(pool, { id, company: job.company || '', province: job.province || '', noc: job.noc || '' })
-    : { sameCompany: [], sameOcc: [] }
+    ? await fetchRelatedJobs(pool, {
+      id, company: job.company || '', province: job.province || '', noc: job.noc || '',
+      fine: job.fine || '', mid: job.mid || '', broad: job.broad || '',
+    })
+    : { sameCompany: [], sameOcc: [], fallbackLevel: null as null }
 
   // 页面维度:本岗 NOC 官方职业名 + 本岗分类的英韩名。后者供详情页直入时渲染面包屑；
   // 列表页虽已加载整张分类维表,但不能假设用户一定从列表页导航过来。

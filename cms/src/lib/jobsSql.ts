@@ -440,8 +440,14 @@ export async function fetchJobById(
 export type RelatedJob = { id: number; title: string; company: string; city: string; province: string; salaryText: string }
 const mapRelated = (r: any): RelatedJob => ({ id: Number(r.id), title: r.title ?? '', company: r.company_name ?? '', city: r.city ?? '', province: r.province ?? '', salaryText: r.salary_text ?? r.salary ?? '' })
 
-/** E8-07 详情页「相关职位」:同公司在招 ≤3 + 同省同 NOC 小类在招 ≤3(都排除本岗;瘦行,不过 Pro 剥离——无 Pro 列)。 */
-export async function fetchRelatedJobs(pool: any, job: { id: string | number; company: string; province: string; noc: string }): Promise<{ sameCompany: RelatedJob[]; sameOcc: RelatedJob[] }> {
+/** E8-07 详情页「相关职位」:同公司在招 ≤3 + 同省同 NOC 小类在招 ≤3(都排除本岗;瘦行,不过 Pro 剥离——无 Pro 列)。
+ *  2026-08-11:两组都空时还要给一条兜底链接(下架页不能是死路),于是顺带探一下本省该分类**有没有**在招岗 ——
+ *  用 EXISTS(命中一行即停,不 COUNT 全表:这是每请求现算,只在 closed 且零相关的页面上跑)。
+ *  返回 fallbackLevel = 能筛出东西的最细一级;三级都空 = null(调用方退到只按省)。 */
+export async function fetchRelatedJobs(
+  pool: any,
+  job: { id: string | number; company: string; province: string; noc: string; fine?: string; mid?: string; broad?: string },
+): Promise<{ sameCompany: RelatedJob[]; sameOcc: RelatedJob[]; fallbackLevel: 'fine' | 'mid' | 'broad' | null }> {
   const REL_COLS = `j.id, j.title, c.name AS company_name, j.city, j.province, j.salary, j.salary_text`
   const [co, occ] = await Promise.all([
     job.company ? pool.query(
@@ -454,7 +460,20 @@ export async function fetchRelatedJobs(pool: any, job: { id: string | number; co
          AND COALESCE(c.name,'') <> $4 AND COALESCE(j.status,'open') <> 'closed'
        ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT 3`, [job.province, job.noc, job.id, job.company || '']) : { rows: [] },
   ])
-  return { sameCompany: co.rows.map(mapRelated), sameOcc: occ.rows.map(mapRelated) }
+  const sameCompany = co.rows.map(mapRelated)
+  const sameOcc = occ.rows.map(mapRelated)
+  if (sameCompany.length || sameOcc.length || !job.province) return { sameCompany, sameOcc, fallbackLevel: null }
+
+  // 兜底探测:三级分类各探一次「本省该级还有没有在招岗」。空分类(未分类)不探。
+  const levels = ([['fine', job.fine], ['mid', job.mid], ['broad', job.broad]] as const)
+    .filter(([, v]) => v && v !== '未分类')
+  if (!levels.length) return { sameCompany, sameOcc, fallbackLevel: null }
+  const { rows } = await pool.query(
+    `SELECT ${levels.map(([lv], i) => `EXISTS(SELECT 1 FROM jobs WHERE province = $1 AND ${lv} = $${i + 2} AND COALESCE(status,'open') <> 'closed') AS ${lv}_has`).join(', ')}`,
+    [job.province, ...levels.map(([, v]) => v)],
+  )
+  const hit = levels.find(([lv]) => rows[0]?.[`${lv}_has`])
+  return { sameCompany, sameOcc, fallbackLevel: hit ? hit[0] : null }
 }
 
 /** 头条总数 + 差异化证言数字(省提名清单命中岗 named + 有外劳记录雇主数 lmia)。原在 page.tsx 裸 SQL,收编于此。 */

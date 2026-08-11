@@ -69,6 +69,8 @@ const zh: Dict = {
   'apply.authHero': '注册后帮你预填投递邮件,记录投递进度',
   'ob.valueApply': '顺手选几下,以后有相似的岗自动进你邮箱', 'ob.finishApply': '保存,继续投递',
   // E8-07 职位详情页
+  'detail.openFull': '打开完整页', 'detail.back': '返回', 'detail.related': '相关职位',
+  'detail.relatedNoneOcc': '查看本省的相似在招职位', 'detail.relatedNoneProv': '查看{p}的在招职位',
   'detail.sameCo': '同公司', 'detail.sameOcc': '同省同职业', 'detail.closedNote': '该岗位已下架,信息仅供参考',
   'detail.pnpSec': '省提名通道', 'detail.pnpSecNote': '粗筛信号,非资格认定', 'detail.eeSec': '联邦 EE 类别', 'detail.crumbHome': '职位板',
   // #142 职业分类三级(可点即按该级筛职位板)
@@ -1043,6 +1045,8 @@ const en: Dict = {
   'apply.authHero': 'Sign up to prefill the application email and track your applications',
   'ob.valueApply': 'A few taps now — similar jobs will land in your inbox', 'ob.finishApply': 'Save and continue applying',
   // E8-07 job detail page
+  'detail.openFull': 'Open full page', 'detail.back': 'Back', 'detail.related': 'Related jobs',
+  'detail.relatedNoneOcc': 'Browse similar open jobs in this province', 'detail.relatedNoneProv': 'Browse open jobs in {p}',
   'detail.sameCo': 'same employer', 'detail.sameOcc': 'same occupation in province', 'detail.closedNote': 'Posting closed, shown for reference only',
   'detail.pnpSec': 'PNP streams', 'detail.pnpSecNote': 'rough signal, not an eligibility decision', 'detail.eeSec': 'Federal EE categories', 'detail.crumbHome': 'Job board',
   'detail.catSec': 'Occupation category',
@@ -1985,6 +1989,8 @@ const ko: Dict = {
   'apply.authHero': '가입하면 지원 이메일을 미리 채우고 지원 현황을 기록합니다',
   'ob.valueApply': '몇 번만 선택하면 비슷한 공고가 이메일로 도착합니다', 'ob.finishApply': '저장하고 지원 계속',
   // E8-07 채용 상세 페이지
+  'detail.openFull': '전체 페이지 열기', 'detail.back': '뒤로', 'detail.related': '관련 공고',
+  'detail.relatedNoneOcc': '이 주의 유사 채용 중 공고 보기', 'detail.relatedNoneProv': '{p}의 채용 중 공고 보기',
   'detail.sameCo': '같은 회사', 'detail.sameOcc': '같은 주 같은 직종', 'detail.closedNote': '마감된 공고입니다. 참고용으로만 확인하세요',
   'detail.pnpSec': '주정부 지명(PNP) 통로', 'detail.pnpSecNote': '대략적 신호이며 자격 판정이 아닙니다', 'detail.eeSec': '연방 EE 카테고리', 'detail.crumbHome': '채용 보드',
   'detail.catSec': '직업 분류',
