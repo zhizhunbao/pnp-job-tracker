@@ -136,7 +136,8 @@ function Tick({ on, onToggle, text, pts }: { on: boolean; onToggle: (v: boolean)
 }
 
 export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams = {}, initial, inputs = true,
-  hiddenProfileInputs = [], targetMode = false }: {
+  hiddenProfileInputs = [], targetMode = false, questionnaireActive,
+  onQuestionnaireProgress, onQuestionnaireComplete, onQuestionnaireBack }: {
   t: TFn; lang: string; ctx: ScoreCtx; factors: ScoreFactor[]; draws: DrawRow[]; profileClb?: number | null
   /** 省 → 你的职业命中的具名通道名。抽选线按通道对照,对不上就不给差分结论(见 ProvinceResult) */
   streams?: Record<string, string>
@@ -149,7 +150,13 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
   hiddenProfileInputs?: (keyof SelfProfile)[]
   /** 只评当前职位所在省:标题与说明改成“补充条件”,不再暗示跨省排行榜。 */
   targetMode?: boolean
+  /** PR 主问卷选完省份后继续使用同一题区；关闭时保留本组件状态并显示结果。 */
+  questionnaireActive?: boolean
+  onQuestionnaireProgress?: (progress: { done: number; total: number }) => void
+  onQuestionnaireComplete?: () => void
+  onQuestionnaireBack?: () => void
 }) {
+  const showQuestionnaire = questionnaireActive ?? targetMode
   // 有官方分值表的省(数据层决定,加省不用改这里)。目标省排第一列,其余省作「换省」对照。
   const provinces = useMemo(() => {
     const all = Array.from(new Set(factors.map((f) => f.province))).filter(Boolean)
@@ -258,11 +265,20 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
   const extraAnsweredCount = extraQuestions.filter((q) => extraAnswered[q.key]).length
   const extraComplete = extraQuestions.every((q) => extraAnswered[q.key])
   const activeExtraQuestion = extraQuestions[Math.min(extraQuestionIndex, Math.max(extraQuestionCount - 1, 0))]
+  useEffect(() => {
+    onQuestionnaireProgress?.({ done: extraAnsweredCount, total: extraQuestionCount })
+  }, [extraAnsweredCount, extraQuestionCount, onQuestionnaireProgress])
+  useEffect(() => {
+    if (showQuestionnaire && extraQuestionCount === 0) onQuestionnaireComplete?.()
+  }, [extraQuestionCount, onQuestionnaireComplete, showQuestionnaire])
   const answerExtra = (question: ExtraQuestion, apply?: () => void) => {
     apply?.()
     setExtraAnswered((m) => ({ ...m, [question.key]: true }))
     if (extraQuestionIndex < extraQuestionCount - 1) setExtraQuestionIndex((i) => i + 1)
-    else setReviewExtra(false)
+    else {
+      setReviewExtra(false)
+      onQuestionnaireComplete?.()
+    }
   }
 
   // 换省事实:同职业在各省的在招数(/api/quiz?noc= 已有,免费事实,不新增端点)
@@ -344,7 +360,7 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
         {targetMode && <div style={{ fontSize: 12, color: '#6b7280', marginTop: 4, lineHeight: 1.55 }}>{t('ps.extraHint')}</div>}
       </div>
 
-      {inputs && targetMode && extraQuestionCount > 0 && (
+      {inputs && targetMode && extraQuestionCount > 0 && showQuestionnaire && (
         extraComplete && !reviewExtra ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, border: '1px solid #dbeafe', borderRadius: 10, background: '#f8fbff', padding: '9px 11px' }}>
             <span style={{ display: 'grid', placeItems: 'center', width: 22, height: 22, borderRadius: 999, background: '#2563eb', color: '#fff', fontSize: 12, fontWeight: 700 }}>✓</span>
@@ -387,8 +403,8 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
                 </button>
               </div>
             ) : null}
-            {extraQuestionIndex > 0 && (
-              <button type="button" onClick={() => setExtraQuestionIndex((i) => Math.max(0, i - 1))}
+            {(extraQuestionIndex > 0 || onQuestionnaireBack) && (
+              <button type="button" onClick={() => (extraQuestionIndex > 0 ? setExtraQuestionIndex((i) => Math.max(0, i - 1)) : onQuestionnaireBack?.())}
                 style={{ marginTop: 12, border: 0, background: 'transparent', color: '#6b7280', font: '500 12px/1.4 inherit', cursor: 'pointer', padding: 0 }}>
                 ← {t('ps.previous')}
               </button>
@@ -460,7 +476,7 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
       {/* 各省:折叠手风琴(Frank 2026-08-10「四个省都列出来吗」)—— 一省一行(省名+制度+合计分),
           目标省默认展开;该省的加分勾选也收进展开区(勾了才算;二选一组只算一项)。
           收起行只有合计 —— 对比一眼可见,明细点开才有。 */}
-      {(!targetMode || (extraComplete && !reviewExtra)) && (<>
+      {(!targetMode || (!showQuestionnaire && extraComplete && !reviewExtra)) && (<>
       {scores.length > 1 ? (
         <div style={{ marginTop: 12, borderRadius: 9, background: '#f8fafc', color: '#64748b', fontSize: 12, lineHeight: 1.55, padding: '8px 10px' }}>
           {t('ps.compareHint')}

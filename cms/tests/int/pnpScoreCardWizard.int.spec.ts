@@ -48,6 +48,7 @@ afterEach(() => {
 describe('PnpScoreCard target questionnaire', () => {
   it('shows one choice question at a time and withholds the score until completion', async () => {
     vi.stubGlobal('fetch', vi.fn(() => new Promise(() => {})))
+    const onQuestionnaireProgress = vi.fn()
     const container = document.createElement('div')
     document.body.appendChild(container)
     const root = createRoot(container)
@@ -60,9 +61,12 @@ describe('PnpScoreCard target questionnaire', () => {
         factors: allFactors.filter((row) => row.province === 'NL'),
         draws: [],
         targetMode: true,
+        questionnaireActive: true,
+        onQuestionnaireProgress,
       }))
     })
 
+    expect(onQuestionnaireProgress).toHaveBeenLastCalledWith({ done: 0, total: 8 })
     expect(container.textContent).toContain('已答 0/8')
     expect(container.textContent).toContain('第 1/8 题')
     expect(container.textContent).toContain('学历')
@@ -72,6 +76,7 @@ describe('PnpScoreCard target questionnaire', () => {
     const firstAnswer = container.querySelector('button[aria-pressed]') as HTMLButtonElement
     await act(async () => firstAnswer.click())
 
+    expect(onQuestionnaireProgress).toHaveBeenLastCalledWith({ done: 1, total: 8 })
     expect(container.textContent).toContain('已答 1/8')
     expect(container.textContent).toContain('第 2/8 题')
     expect(container.textContent).not.toContain('NLPNP Point Assessment Grid')

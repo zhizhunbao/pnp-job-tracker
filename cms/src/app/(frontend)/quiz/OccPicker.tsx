@@ -22,7 +22,6 @@ const PAGE_SIZE = 12
 
 type Cand = { noc: string; title: string; titleZh: string; titleZhShort?: string; titleKoShort?: string; titleEnShort?: string }
 type Top = Cand & { open: number; broad?: string }
-type Kin = Cand & { open: number; eligible: number }
 
 // inline=true:不套弹层,直接铺在答题卡里(2026-07-31 Frank「选职业和其他问题都放到一个方式,
 // 不要只有职业是弹框」)—— 职业是第一题,就该和别的题长一个样,而不是另开一层。
@@ -59,7 +58,6 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
   const [cat, setCat] = useState('')
   const [catalogByCat, setCatalogByCat] = useState<Record<string, Top[]>>({})
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
-  const [kin, setKin] = useState<Kin[]>([])
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // 首屏立即用内置常用清单;并行补两份事实:
@@ -129,18 +127,6 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
     return () => { if (timer.current) clearTimeout(timer.current); controller.abort() }
   }, [q])
 
-  // 选中一个职业后恢复“同族职业”推荐(NOC 前 4 位同组)。这是帮助学生/转行用户把“程序员”
-  // 展开成开发、云、数据等可投方向的关键入口;异步加载,不阻塞搜索和下一题。
-  useEffect(() => {
-    if (!nocs.length) { setKin([]); return }
-    const controller = new AbortController()
-    fetch(`/api/quiz?kin=${encodeURIComponent(nocs.join(','))}`, { signal: controller.signal })
-      .then((r) => r.json())
-      .then((d) => setKin(Array.isArray(d?.kin) ? d.kin : []))
-      .catch((e) => { if (e?.name !== 'AbortError') setKin([]) })
-    return () => controller.abort()
-  }, [nocs])
-
   // 已选职业的名字:答过一轮再回到这一步时,存档里只有 5 位码 —— 名字得现拉,
   // 不拉就在 chip 上甩一个「31301」(代码不裸奔,2026-08-01 翻页改回来后实拍撞到)
   useEffect(() => {
@@ -207,13 +193,6 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
 .occPillCheck{display:inline-flex;align-items:center;font-size:12px}
 .occPillSkeleton{height:36px;border-radius:999px;background:${UI.hairline}}
 .occMore{display:block;margin:9px auto 0;border:0;background:transparent;color:${UI.primary};font:600 12.5px/1.4 inherit;cursor:pointer;padding:5px 10px}
-.occKin{margin:0 0 12px;padding:9px 10px;border-radius:10px;background:#f8fafc;border:1px solid ${UI.hairline}}
-.occKinHead{display:flex;align-items:baseline;gap:7px;margin-bottom:7px;font-size:12px;color:${UI.text2};font-weight:600}
-.occKinHint{color:${UI.text3};font-size:11px;font-weight:400}
-.occKinList{display:flex;flex-wrap:wrap;gap:6px}
-.occKinBtn{display:inline-flex;align-items:center;gap:6px;max-width:100%;border:1px solid #dbeafe;border-radius:999px;background:#fff;color:${UI.primaryDeep};padding:5px 9px;font:500 12px/1.35 inherit;cursor:pointer}
-.occKinBtn:hover{border-color:#93c5fd;background:#eff6ff}.occKinBtn:disabled{opacity:.4;cursor:not-allowed}
-.occKinN{color:${UI.text3};font-size:10.5px;font-variant-numeric:tabular-nums}
 @media(max-width:640px){.occCatSel{display:block}.occCatTabs{display:none}.occPills{gap:7px}.occPill{min-height:38px;padding:8px 12px}}`}</style>
         {!inline && (
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>
@@ -310,26 +289,6 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
                 ))}
               </div>
             ) : <span style={{ fontSize: 12, color: UI.text3 }}>{t('occ.max')}</span>}
-          </div>
-        )}
-
-        {/* 异步推荐放在职业列表之后。先前插在搜索框与列表之间，接口一返回就会把用户正在点的
-            整排胶囊向下推，视觉上就是“每点一下页面跳一下”。 */}
-        {q.trim().length < 2 && kin.length > 0 && (
-          <div className="occKin" style={{ marginTop: 12 }}>
-            <div className="occKinHead">{t('occ.kin')}<span className="occKinHint">{t('occ.kinHint')}</span></div>
-            <div className="occKinList">
-              {kin.map((x) => {
-                const l = label(x)
-                return (
-                  <button type="button" className="occKinBtn" key={x.noc}
-                    onClick={() => toggle(x.noc, l)} title={l}>
-                    <span>＋ {shortOcc(l)}</span>
-                    <span className="occKinN">{t('quiz.openN', { n: x.open.toLocaleString('en-CA') })}</span>
-                  </button>
-                )
-              })}
-            </div>
           </div>
         )}
 

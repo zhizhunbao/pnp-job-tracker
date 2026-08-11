@@ -27,7 +27,8 @@ afterEach(() => {
 describe('OccPicker', () => {
   it('allows a fourth occupation without inserting the selected block above the stable list', async () => {
     // Keep background recommendations pending: this test isolates the synchronous selection/layout contract.
-    vi.stubGlobal('fetch', vi.fn(() => new Promise(() => {})))
+    const fetchMock = vi.fn((_url: string) => new Promise(() => {}))
+    vi.stubGlobal('fetch', fetchMock)
     const onChange = vi.fn()
     const container = document.createElement('div')
     document.body.appendChild(container)
@@ -56,6 +57,7 @@ describe('OccPicker', () => {
     expect(onChange).toHaveBeenLastCalledWith([...initial, '33102'])
     expect(container.textContent).toContain('已选 4 个')
     expect(search.compareDocumentPosition(selected) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(fetchMock.mock.calls.some(([url]) => String(url).includes('?kin='))).toBe(false)
 
     await act(async () => root.unmount())
     container.remove()

@@ -5,7 +5,7 @@
 // 各省分数归判定卡个人条件(付费实底,批2 接 pnpSelfScore)。
 // 区块序:H1 → 答题 → [带岗]岗位三项判定 / [无岗]挑岗 → 抽选表 → 钩子。
 // 判定/分数全来自确定性层,本页不算一个数。
-import { useState, useEffect, useLayoutEffect, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 
 import { streamDisplay } from '../../jobs/i18n'
 import { useLang } from '../../LangProvider'
@@ -57,6 +57,8 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
   const [noc, setNoc] = useState('')
   const [occStep, setOccStep] = useState(true)
   const [provinceStep, setProvinceStep] = useState(false)
+  const [scoreStep, setScoreStep] = useState(false)
+  const [scoreProgress, setScoreProgress] = useState({ done: 0, total: 0 })
   const [formAtEnd, setFormAtEnd] = useState(false)
   const [ready, setReady] = useState(false)
   const [resetNonce, setResetNonce] = useState(0)
@@ -69,6 +71,7 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
   const [quizPosition, setQuizPosition] = useState(1)
   const quizRef = useRef<HTMLDivElement | null>(null)
   const hasShownQuizStep = useRef(false)
+  const scoreAutoOpened = useRef(false)
 
   useEffect(() => {
     const a = readAnswers()
@@ -91,7 +94,10 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
   const stepTotal = stepNames.length + 2
   const stepDone = stepNames.length - missingFields(stepNames, bands).length + (noc ? 1 : 0) + (bands.provs.length ? 1 : 0)
   // 收起时显示资料完成度；展开修改时显示当前所在题，避免旧答案让进度一直停在 6/6。
-  const shownStep = quizOpen ? quizPosition : stepDone
+  const fullStepTotal = stepTotal + scoreProgress.total
+  const shownStep = quizOpen
+    ? (scoreStep ? stepTotal + scoreProgress.done : quizPosition)
+    : stepDone + scoreProgress.done
   // 职业页会在固定高度题区内滚动。翻页时回到题区顶部，避免下一题继承职业页的底部位置，
   // 让人误以为整张问卷又向上或向下跳了一截。
   useLayoutEffect(() => {
@@ -102,7 +108,7 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
     // 首次展开保持页面原本位置；只有用户主动翻题时才统一对齐，避免一进页面就自动跳过 banner。
     if (hasShownQuizStep.current) pad.scrollIntoView({ block: 'start', behavior: 'auto' })
     hasShownQuizStep.current = true
-  }, [quizOpen, shownStep, occStep, provinceStep])
+  }, [quizOpen, shownStep, occStep, provinceStep, scoreStep])
   // 分值卡门控:基本卷答满才渲(渐进展开 —— 落地页面只有 H1 + 答题,别一屏摊开所有机器)
   const quizComplete = ready && !!noc && bands.provs.length > 0 && missingFields(stepNames, bands).length === 0
 
@@ -186,7 +192,7 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
 
   // 答完基本卷:落档(登录才写,quizToProfile 内部自判;失败不拦页面)→ 收起答题卡。
   // 页面不出任何分数 —— 答案的消费方是判定核(个人条件),不是本页
-  const onQuizDone = () => {
+  const onQuizDone = useCallback(() => {
     track('dp-quiz-done')
     quizToProfile(readAnswers())
       .catch(() => { /* 匿名或网络失败:答案仍在 localStorage */ })
@@ -200,8 +206,31 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
           window.history.replaceState(null, '', window.location.pathname + (sp.toString() ? `?${sp}` : ''))
         }
       })
+    setScoreStep(false)
     setQuizOpen(false)
-  }
+  }, [])
+
+  const onScoreProgress = useCallback((progress: { done: number; total: number }) => {
+    setScoreProgress(progress)
+    // 已有基础答案但省份题尚未完成时，直接续到真正没答完的题，不能把 6 项基础资料伪装成整份评估完成。
+    if (!quizOpen && quizComplete && progress.total > progress.done && !scoreAutoOpened.current) {
+      scoreAutoOpened.current = true
+      setOccStep(false); setProvinceStep(false); setScoreStep(true)
+      setQuizPosition(stepTotal + progress.done)
+      setQuizOpen(true)
+    }
+  }, [quizComplete, quizOpen, stepTotal])
+
+  const onScoreComplete = useCallback(() => {
+    setScoreStep(false)
+    onQuizDone()
+  }, [onQuizDone])
+
+  const onScoreBack = useCallback(() => {
+    setScoreStep(false)
+    setProvinceStep(true)
+    setQuizPosition(stepTotal)
+  }, [stepTotal])
 
   const provDisp = (code: string) => { const full = t('prov.' + code); return full === 'prov.' + code ? code : full }
   const pickL3 = (l: L3) => l[lang as keyof L3] || l.zh
@@ -214,7 +243,7 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
     setBands(a); setNoc(a.nocs[0] || '')
     setResetNonce((n) => n + 1)
     setOccStep(!a.nocs.length)
-    setProvinceStep(false); setFormAtEnd(false)
+    setProvinceStep(false); setScoreStep(false); setFormAtEnd(false)
     setQuizOpen(true)
     setTimeout(() => quizRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60)
   }
@@ -235,21 +264,22 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
               <style>{`.dpConditionSummary{grid-template-columns:repeat(3,minmax(0,1fr))}@media(max-width:640px){.dpConditionSummary{grid-template-columns:repeat(2,minmax(0,1fr))}.dpConditionValue{white-space:normal!important}}`}</style>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <h2 style={{ ...H2, margin: 0 }}>{t('dp.quiz')}</h2>
-                {ready && <span style={{ borderRadius: 999, padding: '2px 8px', background: stepDone === stepTotal ? '#eff6ff' : UI.bg,
-                  color: stepDone === stepTotal ? UI.primary : UI.text3, fontSize: 11.5, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
-                  {t('dp.basicCount', { done: shownStep, total: stepTotal })}
+                {ready && <span style={{ borderRadius: 999, padding: '2px 8px', background: shownStep === fullStepTotal ? '#eff6ff' : UI.bg,
+                  color: shownStep === fullStepTotal ? UI.primary : UI.text3, fontSize: 11.5, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
+                  {t('dp.basicCount', { done: shownStep, total: fullStepTotal })}
                 </span>}
                 <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
                   {quizOpen ? (
                     <button onClick={() => {
-                      setBands(clearAnswers()); setNoc(''); setResetNonce((n) => n + 1); setOccStep(true); setProvinceStep(false); setFormAtEnd(false); setQuizPosition(1)
+                      setBands(clearAnswers()); setNoc(''); setResetNonce((n) => n + 1); setOccStep(true); setProvinceStep(false); setScoreStep(false); setScoreProgress({ done: 0, total: 0 }); setFormAtEnd(false); setQuizPosition(1)
+                      scoreAutoOpened.current = false
                       track('dp-quiz-reset')
                     }} style={BTN}>
                       {t('plan.reset')}
                     </button>
                   ) : (
                     // 一行入口:没答过=开始评估;答了一半=继续作答;答完=改答案(蓝底主按钮只给「开始」)
-                    <button onClick={() => { setQuizOpen(true); setOccStep(true); setProvinceStep(false); setFormAtEnd(false); setQuizPosition(1); track('dp-quiz-edit') }}
+                    <button onClick={() => { setQuizOpen(true); setOccStep(true); setProvinceStep(false); setScoreStep(false); setFormAtEnd(false); setQuizPosition(1); track('dp-quiz-edit') }}
                       style={stepDone === 0
                         ? { ...BTN, background: UI.primary, color: '#fff', border: `1px solid ${UI.primary}`, fontWeight: 600 }
                         : BTN}>
@@ -259,8 +289,8 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
                 </span>
               </div>
               {quizOpen && ready && (
-                <div aria-label={`${shownStep}/${stepTotal}`} style={{ height: 4, borderRadius: 999, background: UI.hairline, overflow: 'hidden', margin: '11px 0 18px' }}>
-                  <div style={{ width: `${Math.round((shownStep / Math.max(stepTotal, 1)) * 100)}%`, height: '100%', borderRadius: 999,
+                <div aria-label={`${shownStep}/${fullStepTotal}`} style={{ height: 4, borderRadius: 999, background: UI.hairline, overflow: 'hidden', margin: '11px 0 18px' }}>
+                  <div style={{ width: `${Math.round((shownStep / Math.max(fullStepTotal, 1)) * 100)}%`, height: '100%', borderRadius: 999,
                     background: UI.primary, transition: 'width .2s' }} />
                 </div>
               )}
@@ -274,7 +304,7 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
                   ))}
                 </div>
               )}
-              {quizOpen && (<>
+              {quizOpen && !scoreStep && (<>
                 {!ready ? null : (occStep || !noc) ? (
                   <div className="plQuizPad" style={{ maxWidth: 600, margin: '0 auto' }}>
                     <QuizTitle>{t('quiz.q2')}</QuizTitle>
@@ -288,7 +318,13 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
                     <ProvincePicker key={`${resetNonce}:provinces`} t={t} initial={bands.provs}
                       onChange={(provs) => setBands(writeAnswers({ provs }))}
                       onBack={() => { setProvinceStep(false); setFormAtEnd(true); setQuizPosition(stepTotal - 1) }}
-                      onDone={(provs) => { setBands(writeAnswers({ provs })); setQuizPosition(stepTotal); onQuizDone() }} />
+                      onDone={(provs) => {
+                        setBands(writeAnswers({ provs })); setQuizPosition(stepTotal)
+                        if (scoreFactors.some((factor) => provs.includes(factor.province))) {
+                          scoreAutoOpened.current = true
+                          setProvinceStep(false); setScoreStep(true)
+                        } else onQuizDone()
+                      }} />
                   </div>
                 ) : (
                   <div className="plQuizPad" style={{ maxWidth: 600, margin: '0 auto' }}>
@@ -300,6 +336,23 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
                   </div>
                 )}
               </>)}
+
+              {/* 选完省份后继续在同一问卷里回答官方分值表需要的条件。组件始终挂载在同一位置：
+                  答完收起时保留刚才的答案并原地显示各省结果，避免第二套“补充条件”流程。 */}
+              {quizComplete && targetFactors.length > 0 && (
+                <div className={quizOpen && scoreStep ? 'plQuizPad' : undefined}
+                  style={{ display: quizOpen && !scoreStep ? 'none' : 'block', maxWidth: quizOpen ? 600 : undefined, margin: quizOpen ? '0 auto' : '14px 0 0' }}>
+                  <PnpScoreCard key={scoreKey} t={t} lang={lang}
+                    ctx={{ noc: tvJob?.noc || noc, teer: targetTeer, province: scoreContextProvince, city: tvJob?.city || '' }}
+                    factors={targetFactors} draws={scoreDraws}
+                    streams={tvJob && tvJob.pnpStream ? { [scoreContextProvince]: tvJob.pnpStream } : {}}
+                    initial={scoreInitial} hiddenProfileInputs={hiddenScoreInputs} targetMode
+                    questionnaireActive={quizOpen && scoreStep}
+                    onQuestionnaireProgress={onScoreProgress}
+                    onQuestionnaireComplete={onScoreComplete}
+                    onQuestionnaireBack={onScoreBack} />
+                </div>
+              )}
             </div>
 
             {/* 问卷完成即给个人路径方案。它回答“先走哪条路”；具体岗位验证是后续可选动作。 */}
@@ -350,20 +403,10 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
             {/* 带岗进入后,三项判定就是本页结果,不再自动套一层弹窗。条件在上、结果在下,修改后原地重算。 */}
             {tvJob && !quizOpen && <TripleVerdictPanel job={tvJob} lang={lang} profileComplete={quizComplete} refreshKey={verdictNonce}
               onBuildProfile={() => {
-                setQuizOpen(true); setOccStep(true); setProvinceStep(false); setFormAtEnd(false); track('tv-build-profile')
+                setQuizOpen(true); setOccStep(true); setProvinceStep(false); setScoreStep(false); setFormAtEnd(false); track('tv-build-profile')
                 setTimeout(() => quizRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60)
               }} />}
 
-            {/* 具体省份已经在问卷中多选。共用条件只问一次，各省独有条件按所选省追加，最后分别出分。 */}
-            {quizComplete && !quizOpen && targetFactors.length > 0 && (
-              <div style={CARD}>
-                <PnpScoreCard key={scoreKey} t={t} lang={lang}
-                  ctx={{ noc: tvJob?.noc || noc, teer: targetTeer, province: scoreContextProvince, city: tvJob?.city || '' }}
-                  factors={targetFactors} draws={scoreDraws}
-                  streams={tvJob && tvJob.pnpStream ? { [scoreContextProvince]: tvJob.pnpStream } : {}}
-                  initial={scoreInitial} hiddenProfileInputs={hiddenScoreInputs} targetMode />
-              </div>
-            )}
             {quizComplete && !quizOpen && unscoredProvinces.length > 0 && (
               <div style={CARD}>
                 <h2 style={H2}>{t('ps.unscoredTitle')}</h2>
