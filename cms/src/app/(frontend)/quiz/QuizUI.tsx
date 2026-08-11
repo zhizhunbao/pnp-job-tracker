@@ -43,15 +43,15 @@ export const QUIZ_CSS = `
 .quizBar{position:sticky;bottom:0;z-index:2;background:#fff;border-top:1px solid ${UI.hairline};
   margin-top:18px;padding:10px 0 8px;display:flex;align-items:center;justify-content:flex-end;gap:12px;
   min-height:56px;box-sizing:border-box}
-/* 翻题不跳版(08-10 Frank「两页高度字号不一致,用户会感觉有跳跃」):
-   题区统一最小高,动作条 margin-top:auto 钉在题区底 —— 每一页「下一题」落点相同;
-   选职业页每次渐进展示 6 个,避免把卡一次撑成两屏 */
-.plQuizPad{display:flex;flex-direction:column;min-height:440px}
+/* 翻题不跳版：桌面端题区固定高度。短题由 flex 留白，长的职业页只在题区内部滚动；
+   scrollbar-gutter 让有无滚动条时内容宽度也不变。动作条始终落在同一条基线上。 */
+.plQuizPad{display:flex;flex-direction:column;height:560px;min-height:560px;overflow-y:auto;overflow-anchor:none;overscroll-behavior:contain;
+  scrollbar-gutter:stable;box-sizing:border-box;padding-right:4px}
 .plQuizPad .quizBar{margin-top:auto}
 @media(max-width:640px){
   .quizBar{position:fixed;left:0;right:0;bottom:0;margin:0;padding:10px 16px;border-top:1px solid ${UI.border};
     box-shadow:0 -2px 8px rgba(0,0,0,.04);z-index:30}
-  .plQuizPad{padding-bottom:78px;min-height:0}
+  .plQuizPad{height:auto;min-height:0;overflow:visible;scrollbar-gutter:auto;padding:0 0 78px}
 }`
 
 export const QuizStyle = () => <style>{QUIZ_CSS}</style>

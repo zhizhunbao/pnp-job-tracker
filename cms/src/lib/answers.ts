@@ -110,5 +110,7 @@ export function toEngineAnswers(a: Answers): Record<string, unknown> {
     const v = def.toAnswer ? def.toAnswer((a as any)[name], a) : (a as any)[name]
     if (v !== undefined) out[def.engineKey ?? name] = v
   }
+  // 新问卷直接多选具体省份；provBand 只保留给旧答案和其它页面兼容，不能反过来把精确数组覆盖掉。
+  if (a.provs.length) out.targetProvinces = a.provs
   return out
 }

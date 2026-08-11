@@ -579,7 +579,7 @@ type Dims = {
 const EMPTY_DIMS: Dims = { provinces: [], cities: [], districts: [], nocCategories: [], sources: [], experienceLevels: [], pnpOccupations: [], pnpDraws: [], eeCategories: [], designatedEmployers: [], nocDescriptions: [], fieldSources: [], news: [] }
 const PROV_CODE: Record<string, string> = Object.fromEntries(Object.entries(PROV_NAMES).map(([c, n]) => [n, c]))
 
-export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdatedAt, dims: initialDims = EMPTY_DIMS, initialCols, initialColW, plan = FREE_PLAN, totalCount, proof, initialFilters = {}, deferFull }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims; initialCols?: string[]; initialColW?: ColWidthSeed | null; plan?: Plan; initialBanner?: boolean; totalCount?: number; proof?: { named: number; lmia: number }; initialFilters?: JobFilters; deferFull?: boolean }) {
+export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdatedAt, dims: initialDims = EMPTY_DIMS, initialCols, initialColW, plan = FREE_PLAN, totalCount, proof, initialFilters = {}, initialMatchView = false, deferFull }: { jobs: JobRow[]; updatedAt?: string; dims?: Dims; initialCols?: string[]; initialColW?: ColWidthSeed | null; plan?: Plan; initialBanner?: boolean; totalCount?: number; proof?: { named: number; lmia: number }; initialFilters?: JobFilters; initialMatchView?: boolean; deferFull?: boolean }) {
   // 首屏拆分:SSR 带最近 50 行秒开;筛选/搜索/翻页由 fetch effect 打 /api/jobs 分页(E10-01 P3,旧 20k blob 已废);
   // 失败保底留首屏 50 行可用,loadedAll 复位以显示计数而非假「全量」。
   // E10-01 P3:服务端分页/筛选取代 20k blob。rows=当前累计页(SSR 首屏 50 起),total=同 WHERE 总数,page=已翻页数。
@@ -755,11 +755,14 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       if (id != null) setSaved((m) => ({ ...m, [key]: { id, status: 'wish' } }))
     }
   }
-  const [sort, setSort] = useState<{ key: ColKey; dir: 'asc' | 'desc' }>({ key: 'datePosted', dir: 'desc' })
+  const matchRequested = initialMatchView && plan.loggedIn && plan.profileOk
+  const [sort, setSort] = useState<{ key: ColKey; dir: 'asc' | 'desc' }>(matchRequested
+    ? { key: 'match', dir: 'desc' }
+    : { key: 'datePosted', dir: 'desc' })
   const [colOpen, setColOpen] = useState(false)
   // 我的匹配视图(E5-05,D1=B):只看命中我档案的岗,匹配度排最前;免费=每日前 N 岗匹配 + 升级卡。
   // URL ?view=match 可分享/可回退;入口三态分流(未登录/未建档 → /account 建档)。
-  const [matchView, setMatchView] = useState(false)
+  const [matchView, setMatchView] = useState(matchRequested)
   // 跳转页面语义(2026-07-11 用户拍板):进出匹配视图=整页跳 /?view=match / /(URL 即状态,可分享可回退;
   // 2026-07-17 根域直出后职位板=根路径)。未登录直接弹登录框(同日用户:「不要先跳转页面再弹窗」),
   // 已登录未建档才去 /account 建档
@@ -1010,7 +1013,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
           /jobs 特有件走 props:matchButton 切换态 + 完整 AccountArea(plan 下拉/弹框)。
           差异认账:未登录点「我的账户」由弹框改为 /account 302 回 /?login=1(终点同为登录框)。 */}
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} sticky loggedIn={plan.loggedIn}
-        matchButton={{ active: matchView, onClick: toggleMatchView }}
+        active={initialMatchView || matchView ? 'match' : undefined}
+        matchButton={{ active: initialMatchView || matchView, onClick: toggleMatchView }}
         accountArea={<AccountArea t={t} plan={plan} />}
         />{/* Frank 2026-07-26「搜索框怎么跑 banner 上面去了」「怎么所有页面都加了这个搜索框」:
           E8-07 C 顶栏搜索带全站退役,搜索回到筛选区第一格(banner 之下),手机整行独占 */}

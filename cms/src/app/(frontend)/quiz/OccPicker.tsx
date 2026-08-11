@@ -18,9 +18,6 @@ import { BROAD_SLUGS } from '../stats/shared'
 import { pickName } from '@/lib/occName'
 import type { TFn } from '../jobs/i18n'
 
-// 选职业上限:与 /api/report 的 MAX_NOCS 同一个数(那边超了就 .slice(0,3) 静默丢)。
-// 上限**必须在前端也拦一道** —— 否则用户选了 4 个、亮着 4 颗 chip,报告只算前 3 个,他不知道丢了哪个。
-const MAX_NOCS = 3
 const PAGE_SIZE = 12
 
 type Cand = { noc: string; title: string; titleZh: string; titleZhShort?: string; titleKoShort?: string; titleEnShort?: string }
@@ -95,12 +92,6 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
       .catch(() => { /* 完整榜拿不到就继续使用已补数字的同步兜底 */ })
     return () => { dead = true; topController.abort(); countsController.abort() }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps -- 首屏快照只拉一次;语言切换由逐码查询刷新
-  // 选满上限:未选中的 chip 一律置灰不可点(已选的仍可取消,不然就锁死了)
-  const full = nocs.length >= MAX_NOCS
-  const lockedOut = (noc: string) => full && !nocs.includes(noc)
-  // 选满后的置灰只压透明度 + 换光标,不再造一套颜色
-  const lockedStyle = (noc: string): React.CSSProperties =>
-    lockedOut(noc) ? { opacity: .4, cursor: 'not-allowed' } : {}
   const base: Top[] = top.length
     ? top
     : POPULAR_NOCS.map((x) => ({ noc: x.noc, title: t(x.key), titleZh: t(x.key), open: 0 }))
@@ -171,9 +162,6 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
   // Cannot update a component `PlanPrView` while rendering a different component `OccPicker`)。
   // 事件处理器里 nocs 就是最新值,不需要 updater 形式。
   const toggle = (noc: string, name: string) => {
-    // 选满了就只让**取消**,不让再加(加了也会被 /api/report 悄悄丢掉)。
-    // 未选中的 chip 同时置灰不可点 —— 拦截逻辑和视觉状态必须是同一个判断,别让用户点了没反应。
-    if (full && !nocs.includes(noc)) return
     setTitles((m) => ({ ...m, [noc]: name }))
     const next = nocs.includes(noc) ? nocs.filter((n) => n !== noc) : [...nocs, noc]
     setNocs(next)
@@ -234,51 +222,12 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
           </div>
         )}
 
-        {/* 已选区常驻且只有一行高度:选择时页面不跳,也不再为辅助推荐发慢查询。 */}
-        {!hideDone && (
-          <div className="occSelected">
-            <div className="occSelectedHead">
-              <b style={{ fontSize: 12, color: UI.text2 }}>{t('occ.selected', { n: nocs.length })}</b>
-            </div>
-            {nocs.length > 0 ? (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
-                {nocs.map((n) => (
-                  <button type="button" className="occSelectedChip" key={n} onClick={() => toggle(n, titles[n] || n)}>
-                    {/* 名字还没拉回来时**留个占位**,不拿 5 位码顶上去 —— 2026-08-02 Frank
-                        「点击跳转为什么先显示的是数字,后变成文字」:码是给机器看的,不该在人眼前闪一下 */}
-                    {titles[n] ? shortOcc(titles[n]) : <Skeleton />}<IconX aria-hidden />
-                  </button>
-                ))}
-              </div>
-            ) : <span style={{ fontSize: 12, color: UI.text3 }}>{t('occ.max')}</span>}
-
-          </div>
-        )}
-
         <div className="occSearchWrap">
           <span className="occSearchIcon"><IconSearch /></span>
           <input className="occSearchInput" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('quiz.q2ph')}
             aria-label={t('quiz.q2ph')} enterKeyHint="search" autoComplete="off" />
           {q && <button type="button" className="occSearchClear" onClick={() => { setQ(''); setCands([]) }} aria-label="clear"><IconX /></button>}
         </div>
-
-        {q.trim().length < 2 && kin.length > 0 && (
-          <div className="occKin">
-            <div className="occKinHead">{t('occ.kin')}<span className="occKinHint">{t('occ.kinHint')}</span></div>
-            <div className="occKinList">
-              {kin.map((x) => {
-                const l = label(x)
-                return (
-                  <button type="button" className="occKinBtn" key={x.noc} disabled={lockedOut(x.noc)}
-                    onClick={() => toggle(x.noc, l)} title={l}>
-                    <span>＋ {shortOcc(l)}</span>
-                    <span className="occKinN">{t('quiz.openN', { n: x.open.toLocaleString('en-CA') })}</span>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-        )}
 
         {q.trim().length >= 2 && (
           <div style={{ marginBottom: 14 }} aria-live="polite">
@@ -290,8 +239,8 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
                 {cands.map((c) => {
                   const on = nocs.includes(c.noc)
                   return (
-                    <button type="button" className={`occPill${on ? ' occPill--on' : ''}`} key={c.noc} disabled={lockedOut(c.noc)} aria-pressed={on}
-                      onClick={() => { toggle(c.noc, label(c)); setQ(''); setCands([]) }} style={lockedStyle(c.noc)}>
+                    <button type="button" className={`occPill${on ? ' occPill--on' : ''}`} key={c.noc} aria-pressed={on}
+                      onClick={() => { toggle(c.noc, label(c)); setQ(''); setCands([]) }}>
                       {on && <span className="occPillCheck"><IconCheck /></span>}
                       <span className="occPillName">{shortOcc(label(c))}</span>
                       <span className="occPillMeta">{c.noc}</span>
@@ -332,7 +281,7 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
             const hint = (dupCount.get(l) || 0) > 1 ? (x.title && x.title !== l ? x.title : x.noc) : ''
             const on = nocs.includes(x.noc)
             return (
-              <button type="button" className={`occPill${on ? ' occPill--on' : ''}`} key={x.noc} title={l} disabled={lockedOut(x.noc)} aria-pressed={on} onClick={() => toggle(x.noc, l)} style={lockedStyle(x.noc)}>
+              <button type="button" className={`occPill${on ? ' occPill--on' : ''}`} key={x.noc} title={l} aria-pressed={on} onClick={() => toggle(x.noc, l)}>
                 {on && <span className="occPillCheck"><IconCheck /></span>}
                 <span className="occPillName">{shortOcc(l)}</span>
                 {hint ? <span className="occPillMeta">{hint}</span> : null}
@@ -343,6 +292,45 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
         </div>}
         {q.trim().length < 2 && visibleCount < list.length && (
           <button type="button" className="occMore" onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}>{t('quiz.moreNocs')} ↓</button>
+        )}
+
+        {/* 动态区域统一放在稳定的搜索/分类/职业列表之后。点选时上半屏不再被新增胶囊向下顶；
+            列表内的选中态已经即时反馈，底部汇总负责删除和查看全部已选项。 */}
+        {!hideDone && (
+          <div className="occSelected" style={{ marginTop: 14 }}>
+            <div className="occSelectedHead">
+              <b style={{ fontSize: 12, color: UI.text2 }}>{t('occ.selected', { n: nocs.length })}</b>
+            </div>
+            {nocs.length > 0 ? (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+                {nocs.map((n) => (
+                  <button type="button" className="occSelectedChip" key={n} onClick={() => toggle(n, titles[n] || n)}>
+                    {titles[n] ? shortOcc(titles[n]) : <Skeleton />}<IconX aria-hidden />
+                  </button>
+                ))}
+              </div>
+            ) : <span style={{ fontSize: 12, color: UI.text3 }}>{t('occ.max')}</span>}
+          </div>
+        )}
+
+        {/* 异步推荐放在职业列表之后。先前插在搜索框与列表之间，接口一返回就会把用户正在点的
+            整排胶囊向下推，视觉上就是“每点一下页面跳一下”。 */}
+        {q.trim().length < 2 && kin.length > 0 && (
+          <div className="occKin" style={{ marginTop: 12 }}>
+            <div className="occKinHead">{t('occ.kin')}<span className="occKinHint">{t('occ.kinHint')}</span></div>
+            <div className="occKinList">
+              {kin.map((x) => {
+                const l = label(x)
+                return (
+                  <button type="button" className="occKinBtn" key={x.noc}
+                    onClick={() => toggle(x.noc, l)} title={l}>
+                    <span>＋ {shortOcc(l)}</span>
+                    <span className="occKinN">{t('quiz.openN', { n: x.open.toLocaleString('en-CA') })}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
         )}
 
         {/* 动作条**永远在**(2026-08-03 Frank「下一题在最下面点不到」「下一题位置还不统一」):

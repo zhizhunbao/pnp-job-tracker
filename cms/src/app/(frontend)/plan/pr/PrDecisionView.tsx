@@ -5,7 +5,7 @@
 // 各省分数归判定卡个人条件(付费实底,批2 接 pnpSelfScore)。
 // 区块序:H1 → 答题 → [带岗]岗位三项判定 / [无岗]挑岗 → 抽选表 → 钩子。
 // 判定/分数全来自确定性层,本页不算一个数。
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef } from 'react'
 
 import { streamDisplay } from '../../jobs/i18n'
 import { useLang } from '../../LangProvider'
@@ -13,13 +13,14 @@ import { SiteHeader } from '../../SiteHeader'
 import { SiteFooter } from '../../SiteFooter'
 import { quizToProfile } from '../../quiz/EntryQuiz'
 import { OccPicker } from '../../quiz/OccPicker'
+import { ProvincePicker } from '../../quiz/ProvincePicker'
 import { POPULAR_NOCS } from '../../account/profileOptions'
 import { QuizStyle, QuizTitle, pickL, type L } from '../../quiz/QuizUI'
 import { QuizForm } from '../QuizForm'
 import { BANNER_IMGS, PageBanner, PageShell, UI } from '../../ui/primitives'
 import { TripleVerdictPanel } from '../../jobs/TripleVerdictModal'
 import { PnpScoreCard } from '../../jobs/PnpScoreCard'
-import { EMPTY, clearAnswers, readAnswers, writeAnswers, type Answers } from '@/lib/answers'
+import { EMPTY, clearAnswers, readAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
 import { fieldsOf, missingFields } from '@/lib/decisions'
 import { FIELDS } from '@/lib/fields'
 import { CASES, type CaseEntry, type L3 } from '@/lib/caseLibrary'
@@ -31,6 +32,14 @@ export type OverviewDraw = { province: string; drawDate: string; stream: string;
 export type TvJob = {
   id: number; title: string; company: string; city: string; province: string
   noc: string; teer: number | null; pnpStream: string
+}
+
+type ProfilePath = {
+  key: string
+  province: string
+  verdict: 'open' | 'needs-info'
+  tier: 0 | 1 | 2 | 3 | null
+  availability: string
 }
 
 const CARD: React.CSSProperties = { background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 12, padding: '14px 16px', margin: '0 0 10px' }
@@ -47,39 +56,76 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
   const [bands, setBands] = useState<Answers>(EMPTY)
   const [noc, setNoc] = useState('')
   const [occStep, setOccStep] = useState(true)
+  const [provinceStep, setProvinceStep] = useState(false)
+  const [formAtEnd, setFormAtEnd] = useState(false)
   const [ready, setReady] = useState(false)
   const [resetNonce, setResetNonce] = useState(0)
   const [verdictNonce, setVerdictNonce] = useState(0)
   const [occTitles, setOccTitles] = useState<Record<string, string>>({})
-  const [scoreProvince, setScoreProvince] = useState('')
+  const [profilePaths, setProfilePaths] = useState<ProfilePath[] | null>(null)
   // 答题卡默认收起(Frank「上来有必要让人测分数吗」——不逼人考试,一行入口自愿点开);
   // 「开始评估/继续作答/改答案」展开,答完自动收回
   const [quizOpen, setQuizOpen] = useState(false)
   const [quizPosition, setQuizPosition] = useState(1)
   const quizRef = useRef<HTMLDivElement | null>(null)
+  const hasShownQuizStep = useRef(false)
 
   useEffect(() => {
     const a = readAnswers()
     setBands(a)
     setNoc(a.nocs[0] || '')
     const baseFields = fieldsOf('pr', 'basic')
-    const complete = a.nocs.length > 0 && missingFields(baseFields, a).length === 0
+    const baseComplete = missingFields(baseFields, a).length === 0
+    const complete = a.nocs.length > 0 && baseComplete && a.provs.length > 0
     // 空白或未完成的问卷默认直接展开；只有完整资料才收成摘要。已有职业时续答缺失题,
     // 不把用户无意义地送回第一题。?quiz=1 仍可强制展开完整资料的编辑态。
     setQuizOpen(!complete || new URLSearchParams(window.location.search).get('quiz') === '1')
     setOccStep(a.nocs.length === 0)
+    setProvinceStep(a.nocs.length > 0 && baseComplete && a.provs.length === 0)
     setReady(true)
     track('dp-open', { job: tvJob ? '1' : '0' })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const stepNames = fieldsOf('pr', 'basic')
-  const stepTotal = stepNames.length + 1
-  const stepDone = stepNames.length - missingFields(stepNames, bands).length + (noc ? 1 : 0)
+  const stepTotal = stepNames.length + 2
+  const stepDone = stepNames.length - missingFields(stepNames, bands).length + (noc ? 1 : 0) + (bands.provs.length ? 1 : 0)
   // 收起时显示资料完成度；展开修改时显示当前所在题，避免旧答案让进度一直停在 6/6。
   const shownStep = quizOpen ? quizPosition : stepDone
+  // 职业页会在固定高度题区内滚动。翻页时回到题区顶部，避免下一题继承职业页的底部位置，
+  // 让人误以为整张问卷又向上或向下跳了一截。
+  useLayoutEffect(() => {
+    if (!quizOpen) { hasShownQuizStep.current = false; return }
+    const pad = quizRef.current?.querySelector<HTMLElement>('.plQuizPad')
+    if (!pad) return
+    pad.scrollTop = 0
+    // 首次展开保持页面原本位置；只有用户主动翻题时才统一对齐，避免一进页面就自动跳过 banner。
+    if (hasShownQuizStep.current) pad.scrollIntoView({ block: 'start', behavior: 'auto' })
+    hasShownQuizStep.current = true
+  }, [quizOpen, shownStep, occStep, provinceStep])
   // 分值卡门控:基本卷答满才渲(渐进展开 —— 落地页面只有 H1 + 答题,别一屏摊开所有机器)
-  const quizComplete = ready && !!noc && missingFields(stepNames, bands).length === 0
+  const quizComplete = ready && !!noc && bands.provs.length > 0 && missingFields(stepNames, bands).length === 0
+
+  // 基础问卷本身就足够做“人 → 通道”的初筛，不应强迫用户先找一份具体岗位。
+  // 岗位与雇主只在第二层三项判定里使用。输入键用于修改答案后原地重算。
+  const pathInputKey = JSON.stringify([
+    bands.nocs, bands.status, bands.clbBand, bands.totalExpBand, bands.expBand, bands.provs,
+  ])
+  useEffect(() => {
+    if (!quizComplete) { setProfilePaths(null); return }
+    const ctrl = new AbortController()
+    setProfilePaths(null)
+    fetch('/api/profile-pathways', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal,
+      body: JSON.stringify({ answers: toEngineAnswers(bands) }),
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (!ctrl.signal.aborted) setProfilePaths(Array.isArray(d?.rows) ? d.rows : []) })
+      .catch(() => { if (!ctrl.signal.aborted) setProfilePaths([]) })
+    return () => ctrl.abort()
+    // pathInputKey 是刻意收窄的重算边界；bands 对象每次写答案都会换引用，不能直接作为依赖。
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quizComplete, pathInputKey])
 
   // 完成态直接回显六项条件。热门职业名同步取已有字典;冷门职业才按码补一次名字,
   // 不让整张摘要为了一个可选请求卡住。
@@ -112,21 +158,16 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
     [t('dp.sum.clb'), choiceText('clbBand')],
     [t('dp.sum.totalExp'), choiceText('totalExpBand')],
     [t('dp.sum.canExp'), choiceText('expBand')],
-    [t('dp.sum.prov'), choiceText('provBand')],
+    [t('dp.sum.prov'), bands.provs.map((code) => t('prov.' + code)).join(lang === 'zh' ? '、' : ', ')],
   ]
 
-  // 带职位时按职位所在省;登录后直接进问卷、尚未选职位时,BC/ON 这种单省答案也能继续补问。
-  // 草原三省/海洋四省是组合答案,没让用户选具体省前不擅自挑一个。
-  const automaticProvince = tvJob?.province || (bands.provs.length === 1 ? bands.provs[0] : '')
-  const targetProvince = automaticProvince || scoreProvince
+  // 用户在问卷里直接多选具体省份。共用条件交给一张 PnpScoreCard 只问一次，省独有条件按所选省追加。
   const factorProvinces = Array.from(new Set(scoreFactors.map((f) => f.province).filter(Boolean)))
-  // 省组不能合成一个分数:让用户补选具体省。选择“先看哪个够得着”时只列本站已有官方表的省,
-  // 避免铺十个点进去仍无法估分的死入口。
-  const scoreProvinceChoices = !tvJob && !automaticProvince
-    ? (bands.provs.length > 1 ? bands.provs : factorProvinces)
-    : []
-  useEffect(() => { setScoreProvince('') }, [bands.provBand, tvJob?.id])
-  const targetFactors = targetProvince ? scoreFactors.filter((f) => f.province === targetProvince) : []
+  const selectedProvinces = tvJob?.province ? [tvJob.province] : bands.provs
+  const scoredProvinces = selectedProvinces.filter((province) => factorProvinces.includes(province))
+  const unscoredProvinces = selectedProvinces.filter((province) => !factorProvinces.includes(province))
+  const targetFactors = scoreFactors.filter((f) => scoredProvinces.includes(f.province))
+  const scoreContextProvince = tvJob?.province || scoredProvinces[0] || selectedProvinces[0] || ''
   const targetTeer = tvJob?.teer ?? (/^\d{5}$/.test(noc) ? Number(noc[1]) : null)
   const hasSplitWork = targetFactors.some((f) => f.factor === 'work5' || f.factor === 'work610')
   const clbLower = [0, 0, 4, 6, 8, 10][bands.clbBand] ?? 0
@@ -141,7 +182,7 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
   // 所以这里必须让用户确认精确 CLB 和经验；不是重复提问，而是从粗筛进入正式估分。
   // 只有不拆“近 5 年/6-10 年”的表才隐藏第二段经验，并把第一格当总经验使用。
   const hiddenScoreInputs: (keyof SelfProfile)[] = hasSplitWork ? [] : ['expOlder']
-  const scoreKey = `${tvJob?.id ?? 'profile'}:${targetProvince}:${bands.clbBand}:${bands.totalExpBand}:${targetFactors[0]?.guideEffective ?? ''}`
+  const scoreKey = `${tvJob?.id ?? 'profile'}:${scoredProvinces.join(',')}:${bands.clbBand}:${bands.totalExpBand}:${targetFactors.map((f) => f.guideEffective).join(',')}`
 
   // 答完基本卷:落档(登录才写,quizToProfile 内部自判;失败不拦页面)→ 收起答题卡。
   // 页面不出任何分数 —— 答案的消费方是判定核(个人条件),不是本页
@@ -173,6 +214,7 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
     setBands(a); setNoc(a.nocs[0] || '')
     setResetNonce((n) => n + 1)
     setOccStep(!a.nocs.length)
+    setProvinceStep(false); setFormAtEnd(false)
     setQuizOpen(true)
     setTimeout(() => quizRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60)
   }
@@ -200,14 +242,14 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
                 <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
                   {quizOpen ? (
                     <button onClick={() => {
-                      setBands(clearAnswers()); setNoc(''); setResetNonce((n) => n + 1); setOccStep(true); setQuizPosition(1)
+                      setBands(clearAnswers()); setNoc(''); setResetNonce((n) => n + 1); setOccStep(true); setProvinceStep(false); setFormAtEnd(false); setQuizPosition(1)
                       track('dp-quiz-reset')
                     }} style={BTN}>
                       {t('plan.reset')}
                     </button>
                   ) : (
                     // 一行入口:没答过=开始评估;答了一半=继续作答;答完=改答案(蓝底主按钮只给「开始」)
-                    <button onClick={() => { setQuizOpen(true); setOccStep(true); setQuizPosition(1); track('dp-quiz-edit') }}
+                    <button onClick={() => { setQuizOpen(true); setOccStep(true); setProvinceStep(false); setFormAtEnd(false); setQuizPosition(1); track('dp-quiz-edit') }}
                       style={stepDone === 0
                         ? { ...BTN, background: UI.primary, color: '#fff', border: `1px solid ${UI.primary}`, fontWeight: 600 }
                         : BTN}>
@@ -239,67 +281,104 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
                     <div style={{ fontSize: 12.5, color: UI.text3, margin: '-10px 0 13px', lineHeight: 1.55 }}>{t('quiz.q2sub')}</div>
                     <OccPicker key={resetNonce} inline t={t} lang={lang} initial={bands.nocs} doneLabel={t('plan.next')}
                       onChange={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || '') }}
-                      onDone={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || ''); setOccStep(false); setQuizPosition(2) }} />
+                      onDone={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || ''); setOccStep(false); setProvinceStep(false); setFormAtEnd(false); setQuizPosition(2) }} />
+                  </div>
+                ) : provinceStep ? (
+                  <div className="plQuizPad" style={{ maxWidth: 600, margin: '0 auto' }}>
+                    <ProvincePicker key={`${resetNonce}:provinces`} t={t} initial={bands.provs}
+                      onChange={(provs) => setBands(writeAnswers({ provs }))}
+                      onBack={() => { setProvinceStep(false); setFormAtEnd(true); setQuizPosition(stepTotal - 1) }}
+                      onDone={(provs) => { setBands(writeAnswers({ provs })); setQuizPosition(stepTotal); onQuizDone() }} />
                   </div>
                 ) : (
                   <div className="plQuizPad" style={{ maxWidth: 600, margin: '0 auto' }}>
-                    <QuizForm key={resetNonce} decision="pr" stage="basic" lang={lang} t={t} answers={bands} doneKey="dp.toScore" onBack={() => { setOccStep(true); setQuizPosition(1) }}
+                    <QuizForm key={`${resetNonce}:${formAtEnd ? 'end' : 'auto'}`} decision="pr" stage="basic" lang={lang} t={t} answers={bands} doneKey="plan.next" startAtEnd={formAtEnd}
+                      onBack={() => { setOccStep(true); setFormAtEnd(false); setQuizPosition(1) }}
                       onStepChange={(index) => setQuizPosition(index + 2)}
-                      onPatch={(patch) => setBands(writeAnswers(patch))} onComplete={onQuizDone} />
+                      onPatch={(patch) => setBands(writeAnswers(patch))}
+                      onComplete={() => { setProvinceStep(true); setFormAtEnd(false); setQuizPosition(stepTotal) }} />
                   </div>
                 )}
               </>)}
             </div>
 
+            {/* 问卷完成即给个人路径方案。它回答“先走哪条路”；具体岗位验证是后续可选动作。 */}
+            {quizComplete && !quizOpen && (
+              <div style={{ ...CARD, padding: '16px' }}>
+                <h2 style={{ ...H2, marginBottom: 4 }}>{t('dp.planTitle')}</h2>
+                <div style={{ fontSize: 13, color: UI.text2, lineHeight: 1.65, marginBottom: 12 }}>{t('dp.planHint')}</div>
+                {profilePaths === null ? (
+                  <div style={{ height: 58, borderRadius: 9, background: UI.bg }} />
+                ) : profilePaths.length > 0 ? (
+                  <div style={{ display: 'grid', gap: 8 }}>
+                    {profilePaths.slice(0, 3).map((row, index) => {
+                      const routeName = t(`jpw.p.${row.key}`)
+                      const province = row.key === 'AIP'
+                        ? t('dp.atlantic')
+                        : row.key === 'RCIP'
+                          ? t('dp.ruralCommunities')
+                          : row.province === 'FED' ? t('dp.federal') : provDisp(row.province)
+                      const stateKey = row.availability !== 'ok'
+                        ? 'dp.planDataGap'
+                        : row.verdict === 'needs-info'
+                          ? 'dp.planNeedInfo'
+                          : `dp.planTier${row.tier ?? 0}`
+                      return (
+                        <div key={row.key} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', border: `1px solid ${UI.hairline}`, borderRadius: 10, background: index === 0 ? '#f8fbff' : '#fff' }}>
+                          <span style={{ width: 24, height: 24, borderRadius: 999, display: 'grid', placeItems: 'center', flexShrink: 0, background: index === 0 ? UI.primary : UI.bg, color: index === 0 ? '#fff' : UI.text2, fontSize: 12, fontWeight: 700 }}>{index + 1}</span>
+                          <span style={{ minWidth: 0, flex: 1 }}>
+                            <span style={{ display: 'block', color: '#111827', fontSize: 13.5, fontWeight: 700, lineHeight: 1.45 }}>{routeName}</span>
+                            <span style={{ display: 'block', color: UI.text3, fontSize: 12, lineHeight: 1.45 }}>{province}</span>
+                          </span>
+                          <span style={{ color: row.verdict === 'open' && row.availability === 'ok' ? UI.ok : '#92400e', background: row.verdict === 'open' && row.availability === 'ok' ? '#ecfdf5' : '#fffbeb', borderRadius: 999, padding: '4px 9px', fontSize: 11.5, fontWeight: 600, whiteSpace: 'nowrap' }}>{t(stateKey)}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: 13, color: UI.text2, lineHeight: 1.65 }}>{t('dp.planEmpty')}</div>
+                )}
+                {profilePaths && profilePaths.length > 0 && (
+                  <button onClick={() => {
+                    track('dp-plan-ask')
+                    window.dispatchEvent(new CustomEvent('o2p:chat-open', { detail: { prefill: t('dp.planAsk') } }))
+                  }} style={{ ...PRIMARY_BTN, marginTop: 12 }}>{t('dp.planAskCta')}</button>
+                )}
+              </div>
+            )}
+
             {/* 带岗进入后,三项判定就是本页结果,不再自动套一层弹窗。条件在上、结果在下,修改后原地重算。 */}
-            {tvJob && <TripleVerdictPanel job={tvJob} lang={lang} profileComplete={quizComplete} refreshKey={verdictNonce}
+            {tvJob && !quizOpen && <TripleVerdictPanel job={tvJob} lang={lang} profileComplete={quizComplete} refreshKey={verdictNonce}
               onBuildProfile={() => {
-                setQuizOpen(true); setOccStep(true); track('tv-build-profile')
+                setQuizOpen(true); setOccStep(true); setProvinceStep(false); setFormAtEnd(false); track('tv-build-profile')
                 setTimeout(() => quizRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60)
               }} />}
 
-            {/* 省组不能硬合成一个分数。先补选具体省,再进入该省自己的官方表。 */}
-            {quizComplete && scoreProvinceChoices.length > 0 && (
-              <div style={CARD}>
-                <h2 style={H2}>{t('ps.pickProvinceTitle')}</h2>
-                <div style={{ fontSize: 13, color: UI.text2, lineHeight: 1.65, marginBottom: 10 }}>{t('ps.pickProvinceHint')}</div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {scoreProvinceChoices.map((prov) => {
-                    const on = targetProvince === prov
-                    return <button type="button" key={prov} onClick={() => setScoreProvince(prov)} style={on
-                      ? { ...BTN, borderColor: UI.primary, background: UI.primary, color: '#fff', fontWeight: 600 }
-                      : BTN}>{provDisp(prov)}</button>
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* 只在基础条件完成后追问目标省缺少的精确计分项。基础卷的范围只作保守预填,
-                不能拿范围下界冒充用户的精确 CLB/经验。 */}
-            {quizComplete && targetFactors.length > 0 && (
+            {/* 具体省份已经在问卷中多选。共用条件只问一次，各省独有条件按所选省追加，最后分别出分。 */}
+            {quizComplete && !quizOpen && targetFactors.length > 0 && (
               <div style={CARD}>
                 <PnpScoreCard key={scoreKey} t={t} lang={lang}
-                  ctx={{ noc: tvJob?.noc || noc, teer: targetTeer, province: targetProvince, city: tvJob?.city || '' }}
+                  ctx={{ noc: tvJob?.noc || noc, teer: targetTeer, province: scoreContextProvince, city: tvJob?.city || '' }}
                   factors={targetFactors} draws={scoreDraws}
-                  streams={tvJob && tvJob.pnpStream ? { [targetProvince]: tvJob.pnpStream } : {}}
+                  streams={tvJob && tvJob.pnpStream ? { [scoreContextProvince]: tvJob.pnpStream } : {}}
                   initial={scoreInitial} hiddenProfileInputs={hiddenScoreInputs} targetMode />
               </div>
             )}
-            {quizComplete && !!targetProvince && targetFactors.length === 0 && (
+            {quizComplete && !quizOpen && unscoredProvinces.length > 0 && (
               <div style={CARD}>
-                <h2 style={H2}>{t('ps.extraTitle')}</h2>
-                <div style={{ fontSize: 13, color: UI.text2, lineHeight: 1.65 }}>{t('ps.notReady', { prov: provDisp(targetProvince) })}</div>
+                <h2 style={H2}>{t('ps.unscoredTitle')}</h2>
+                <div style={{ fontSize: 13, color: UI.text2, lineHeight: 1.65 }}>{t('ps.unscoredHint', { provs: unscoredProvinces.map(provDisp).join(lang === 'zh' ? '、' : ', ') })}</div>
               </div>
             )}
 
-            {/* 无岗:三项判定去职位板带岗回来(判定要具体的岗和雇主,页上没有) */}
-            {!tvJob && (
+            {/* 具体岗位判定是方案后的可选验证，不再作为问卷结果的前置门槛。 */}
+            {quizComplete && !quizOpen && !tvJob && (
               <div style={CARD}>
-                <div style={{ fontSize: 13.5, fontWeight: 700, color: '#111827', marginBottom: 8 }}>{t('tv.head')}</div>
-                <div style={{ fontSize: 13, color: UI.text2, marginBottom: 10 }}>{t('dp.needJob')}</div>
+                <div style={{ fontSize: 13.5, fontWeight: 700, color: '#111827', marginBottom: 8 }}>{t('dp.verifyJobTitle')}</div>
+                <div style={{ fontSize: 13, color: UI.text2, marginBottom: 10 }}>{t('dp.verifyJobHint')}</div>
                 <a href={noc ? `/jobs?q=${encodeURIComponent(noc)}` : '/jobs'} onClick={() => track('dp-pick-job')}
                   style={{ display: 'inline-block', background: UI.primary, color: '#fff', borderRadius: 8, padding: '7px 16px', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
-                  {t('dp.pickJob')}
+                  {t('dp.verifyJob')}
                 </a>
               </div>
             )}

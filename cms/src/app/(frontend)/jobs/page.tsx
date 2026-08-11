@@ -82,7 +82,9 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
 
   // 筛选在 SSR 就生效(2026-08-03):地址栏带 ?prov=/?broad= 时首帧直接渲筛选后的板 ——
   // 原来只有水合后的客户端读 URL,首帧永远是「全部」,于是刷新先抖一下。映射见 filters.shared。
-  const filters = parseJobFilters(toSearchParams(await searchParams))
+  const urlSearchParams = toSearchParams(await searchParams)
+  const filters = parseJobFilters(urlSearchParams)
+  const initialMatchView = urlSearchParams.get('view') === 'match'
   const filtered = Object.keys(filters).length > 0
 
   // 分层(E3-05):Pro 列(工资中位对比三件套 + 匹配)在 SELECT 源头裁掉 —— 免费用户的数据不进浏览器
@@ -142,6 +144,7 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
   // 推荐横幅槽位预判内联脚本随推荐条一并删除(2026-07-31):没有横幅就没有 CLS 要防
   return <>
     <JobsTable jobs={jobs} updatedAt={updatedAt} dims={dims} initialCols={initialCols} initialColW={initialColW} plan={plan}
-      initialBanner={initialBanner} totalCount={totalCount} proof={proof} initialFilters={filters} deferFull />
+      initialBanner={initialBanner} totalCount={totalCount} proof={proof} initialFilters={filters}
+      initialMatchView={initialMatchView} deferFull />
   </>
 }

@@ -18,7 +18,7 @@ const BTN_SEC: React.CSSProperties = {
   padding: '11px 26px', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
 }
 
-export function QuizForm({ decision, stage, lang, t, answers, onPatch, onComplete, doneKey, onBack, onStepChange }: {
+export function QuizForm({ decision, stage, lang, t, answers, onPatch, onComplete, doneKey, onBack, onStepChange, startAtEnd = false }: {
   decision: string
   stage: Stage
   lang: Lang
@@ -29,11 +29,13 @@ export function QuizForm({ decision, stage, lang, t, answers, onPatch, onComplet
   doneKey?: string          // 最后一题按钮文案键(决策页=看分数;缺省沿用报告页的「出报告」)
   onBack?: () => void       // 第一题的「上一题」出口(决策页=回选职业页;不传则第一题无上一题)
   onStepChange?: (index: number, total: number) => void
+  startAtEnd?: boolean      // 从后续自定义步骤返回时，回到基础题最后一题而不是第一题
 }) {
   const names = fieldsOf(decision, stage)
   // 起步落在第一道没答的题(答过的不重走,上一题仍可回去改)。只在挂载时算一次 ——
   // 之后 idx 归用户的「上一题/下一题」管,答完当前题不该自己往前跳
   const [idx, setIdx] = useState(() => {
+    if (startAtEnd) return Math.max(names.length - 1, 0)
     const i = names.findIndex((n) => !(answers as any)[n])
     return i < 0 ? 0 : i
   })
@@ -54,9 +56,9 @@ export function QuizForm({ decision, stage, lang, t, answers, onPatch, onComplet
     <>
       <QuizTitle>{pickL(q.title as L, lang)}</QuizTitle>
       <QuizChoices name={name} choices={choices} value={value} onPick={(v) => onPatch({ [name]: v } as Partial<Answers>)} lang={lang} />
-      {/* 没答完就走不了:按钮置灰 + 左边一句灰字说清为什么(与选工作页「先选一个职业」同一个位置、
-          同一个句式)。框架当初是点了才弹「此题必答」的红字 —— 先让人撞一下墙再解释,不如一开始就说 */}
-      <QuizBar hint={done ? undefined : t('quiz.pickOne')}>
+      {/* 没答完就走不了：下一题按钮置灰即可。不要再单独摆提示文案——窄屏或滚动裁切时
+          它会脱离题目和按钮，变成一条看不懂的孤立占位。 */}
+      <QuizBar>
         {/* 上一题恒在且靠左下(08-10 Frank「这个没有上一题,并且上一题放到左下角」):
             第一题的上一题=回选职业页(onBack);marginRight:auto 把它推到条左端 */}
         {(at > 0 || onBack) && (

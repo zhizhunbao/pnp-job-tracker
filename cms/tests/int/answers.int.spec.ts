@@ -46,6 +46,10 @@ describe('目标省两种表示同步', () => {
     expect(writeAnswers({ provs: ['BC'] }).provBand).toBe(1)
     expect(writeAnswers({ provs: ['ON', 'BC'] }).provBand).toBe(4)   // 多选 → 先看哪个够得着
   })
+  it('引擎优先使用多选的具体省份,不被兼容档位覆盖', () => {
+    const out = toEngineAnswers(base({ provs: ['BC', 'SK', 'NL'], provBand: 4 }))
+    expect(out.targetProvinces).toEqual(['BC', 'SK', 'NL'])
+  })
 })
 
 describe('档位 → 引擎输入', () => {

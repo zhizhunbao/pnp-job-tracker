@@ -101,6 +101,24 @@ const label = (raw: string, lang: string) => (lang === 'zh' ? L10N[raw]?.zh : la
 // 年龄下拉的选项档(打分按选中值算,预填吸附也以此为准 —— 两处必须同一张表)
 const AGES = [17, 19, 25, 30, 34, 38, 42, 45, 48, 52]
 
+type ExtraChoice = { key: string; text: string; active: boolean; apply: () => void }
+type ExtraQuestion = { key: string; title: string; choices?: ExtraChoice[]; number?: { value: number; set: (value: number) => void } }
+type ProvinceScore = NonNullable<ReturnType<typeof scoreProvince>>
+
+const scoreAnchor = (s: ProvinceScore, draws: DrawRow[], matchedStream: string) => {
+  const gridStream = /\(([^)]+)\)\s*$/.exec(s.system)?.[1] ?? ''
+  const scored = draws.filter((d) => d.province === s.province && d.kind !== 'notice' && d.score != null)
+    .filter((d) => !gridStream || streamMatches(d.stream, gridStream))
+    .sort((a, b) => (a.drawDate < b.drawDate ? 1 : -1))
+  const latest = scored.find((d) => streamMatches(d.stream, matchedStream))
+  const line = latest?.score ?? s.passMark ?? null
+  const hasOtherStreamDraws = !scored.length && draws.some((d) => d.province === s.province && d.kind !== 'notice' && d.score != null)
+  const range = line == null && scored.length
+    ? { lo: Math.min(...scored.map((d) => d.score as number)), hi: Math.max(...scored.map((d) => d.score as number)), n: scored.length }
+    : null
+  return { scored, latest, line, hasOtherStreamDraws, range }
+}
+
 const sel: React.CSSProperties = { width: '100%', height: 34, border: '1px solid #d1d5db', borderRadius: 8, fontSize: 13, background: '#fff', padding: '0 8px' }
 const lbl: React.CSSProperties = { fontSize: 12, color: '#6b7280', marginBottom: 3 }
 
@@ -147,20 +165,7 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
     .filter((name) => !(name === 'occCat' && /^\d{5}$/.test(ctx.noc || '')))
     .map((name) => ({ prov, name, key: `${prov}:${name}`, rows: factors.filter((f) => f.province === prov && f.factor === name && f.kind === 'row') }))),
   [provinces, factors, ctx.noc, ctx.teer])
-  const profileQuestionCount = [
-    !hiddenProfileInputs.includes('edu') && factors.some((f) => f.factor === 'education'),
-    !hiddenProfileInputs.includes('expRecent') && factors.some((f) => f.factor === 'work' || f.factor === 'work5'),
-    !hiddenProfileInputs.includes('expOlder') && factors.some((f) => f.factor === 'work' || f.factor === 'work610'),
-    !hiddenProfileInputs.includes('clb1') && factors.some((f) => f.factor === 'language' || f.factor === 'language1'),
-    !hiddenProfileInputs.includes('clb2') && factors.some((f) => f.factor === 'language2'),
-    !hiddenProfileInputs.includes('age') && factors.some((f) => f.factor === 'age'),
-    factors.some((f) => f.factor === 'wage' && f.kind === 'rule'),
-    factors.some((f) => f.province === 'BC' && f.factor === 'area' && f.kind === 'row'),
-  ].filter(Boolean).length
   const splitWork = factors.some((f) => f.factor === 'work5' || f.factor === 'work610')
-  const extraQuestionCount = profileQuestionCount + manualQuestions.length
-    + factors.filter((f) => f.kind === 'bonus').length
-    + provinces.filter((prov) => factors.some((f) => f.province === prov && f.factor === 'offer' && f.kind === 'row')).length
 
   const [profile, setProfile] = useState<SelfProfile>(() => {
     const p = { ...DEFAULT_PROFILE, clb1: profileClb ?? DEFAULT_PROFILE.clb1, ...initial }
@@ -178,6 +183,87 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
   // 官方表中没有通用自动映射的档位(如 ON 工作许可/加拿大收入)也必须有输入入口。
   // 空值=未回答=0 分;选择后直接使用该官方行的 points,不在前端另造规则。
   const [rowAnswers, setRowAnswers] = useState<Record<string, number>>({})
+  const [extraQuestionIndex, setExtraQuestionIndex] = useState(0)
+  const [extraAnswered, setExtraAnswered] = useState<Record<string, boolean>>({})
+  const [reviewExtra, setReviewExtra] = useState(false)
+
+  // PR 评估页把官方表字段收敛成逐题选择。这里只换输入形态，不改任何分值或匹配规则；
+  // 时薪是 BC 每整元计分，不能粗暴切区间，所以仍是单题数字输入。
+  const extraQuestions: ExtraQuestion[] = []
+  const addChoices = (key: string, title: string, choices: ExtraChoice[]) => extraQuestions.push({ key, title, choices })
+  const scopedTitle = (province: string, title: string) => provinces.length > 1 ? `${t('prov.' + province)} · ${title}` : title
+  if (!hiddenProfileInputs.includes('edu') && factors.some((f) => f.factor === 'education')) {
+    addChoices('profile:edu', t('ps.f.education'), EDU_KEYS.map((k) => ({
+      key: k, text: t('ps.edu.' + k), active: profile.edu === k, apply: () => set('edu', k as EduKey),
+    })))
+  }
+  if (!hiddenProfileInputs.includes('expRecent') && factors.some((f) => f.factor === 'work' || f.factor === 'work5')) {
+    addChoices('profile:expRecent', t(splitWork ? 'ps.f.expRecent' : 'ps.f.expTotal'), [0, 1, 2, 3, 4, 5].map((n) => ({
+      key: String(n), text: n === 5 ? t('ps.yr5') : t('ps.yr', { n }), active: profile.expRecent === n, apply: () => set('expRecent', n),
+    })))
+  }
+  if (!hiddenProfileInputs.includes('expOlder') && factors.some((f) => f.factor === 'work' || f.factor === 'work610')) {
+    addChoices('profile:expOlder', t('ps.f.expOlder'), [0, 1, 2, 3, 4, 5].map((n) => ({
+      key: String(n), text: n === 5 ? t('ps.yr5') : t('ps.yr', { n }), active: profile.expOlder === n, apply: () => set('expOlder', n),
+    })))
+  }
+  if (!hiddenProfileInputs.includes('clb1') && factors.some((f) => f.factor === 'language' || f.factor === 'language1')) {
+    addChoices('profile:clb1', t('ps.f.clb1'), [0, 4, 5, 6, 7, 8, 9, 10].map((n) => ({
+      key: String(n), text: n ? `CLB ${n}` : t('ps.clbNone'), active: profile.clb1 === n, apply: () => set('clb1', n),
+    })))
+  }
+  if (!hiddenProfileInputs.includes('clb2') && factors.some((f) => f.factor === 'language2')) {
+    addChoices('profile:clb2', t('ps.f.clb2'), [0, 4, 5, 6, 7, 8, 9, 10].map((n) => ({
+      key: String(n), text: n ? `CLB ${n}` : t('ps.clbNone'), active: profile.clb2 === n, apply: () => set('clb2', n),
+    })))
+  }
+  if (!hiddenProfileInputs.includes('age') && factors.some((f) => f.factor === 'age')) {
+    addChoices('profile:age', t('ps.f.age'), AGES.map((n) => ({
+      key: String(n), text: t('ps.age.v', { n }), active: profile.age === n, apply: () => set('age', n),
+    })))
+  }
+  const wageProvince = factors.find((f) => f.factor === 'wage' && f.kind === 'rule')?.province
+  if (wageProvince) {
+    extraQuestions.push({ key: 'job:wage', title: scopedTitle(wageProvince, t('ps.in.wage')), number: { value: wage, set: setWage } })
+  }
+  const bcAreaRows = factors.filter((f) => f.province === 'BC' && f.factor === 'area' && f.kind === 'row')
+  if (bcAreaRows.length) {
+    addChoices('job:bcArea', scopedTitle('BC', t('ps.in.area')), bcAreaRows.map((r, i) => ({
+      key: String(r.seq), text: label(r.label, lang), active: areaI === i, apply: () => setAreaI(i),
+    })))
+  }
+  for (const { prov, name, key, rows } of manualQuestions) {
+    addChoices(key, scopedTitle(prov, t('ps.f.' + name)), rows.map((r) => ({
+      key: String(r.seq), text: label(r.label, lang), active: rowAnswers[key] === r.seq,
+      apply: () => setRowAnswers((m) => ({ ...m, [key]: r.seq })),
+    })))
+  }
+  for (const prov of provinces) {
+    const offer = factors.find((f) => f.province === prov && f.factor === 'offer' && f.kind === 'row')
+    if (offer) {
+      addChoices(`${prov}:offer`, scopedTitle(prov, t('ps.q.meet', { condition: label(offer.label, lang) })), [
+        { key: 'yes', text: t('ps.yes'), active: hasOffer, apply: () => setHasOffer(true) },
+        { key: 'no', text: t('ps.no'), active: !hasOffer, apply: () => setHasOffer(false) },
+      ])
+    }
+    for (const bonus of factors.filter((f) => f.province === prov && f.kind === 'bonus')) {
+      const key = `${prov}:${bonus.factor}:${bonus.seq}`
+      addChoices(key, scopedTitle(prov, t('ps.q.meet', { condition: label(bonus.label, lang) })), [
+        { key: 'yes', text: t('ps.yes'), active: !!ticks[key], apply: () => setTicks((m) => ({ ...m, [key]: true })) },
+        { key: 'no', text: t('ps.no'), active: !ticks[key], apply: () => setTicks((m) => ({ ...m, [key]: false })) },
+      ])
+    }
+  }
+  const extraQuestionCount = extraQuestions.length
+  const extraAnsweredCount = extraQuestions.filter((q) => extraAnswered[q.key]).length
+  const extraComplete = extraQuestions.every((q) => extraAnswered[q.key])
+  const activeExtraQuestion = extraQuestions[Math.min(extraQuestionIndex, Math.max(extraQuestionCount - 1, 0))]
+  const answerExtra = (question: ExtraQuestion, apply?: () => void) => {
+    apply?.()
+    setExtraAnswered((m) => ({ ...m, [question.key]: true }))
+    if (extraQuestionIndex < extraQuestionCount - 1) setExtraQuestionIndex((i) => i + 1)
+    else setReviewExtra(false)
+  }
 
   // 换省事实:同职业在各省的在招数(/api/quiz?noc= 已有,免费事实,不新增端点)
   const [byProv, setByProv] = useState<Record<string, { n: number; eligible: number }>>({})
@@ -253,15 +339,68 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
       {/* 制度名不再跟在标题后面串一行(375 下折两行还对不齐)——各省折叠行里各自带 */}
       <div style={{ marginBottom: 10 }}>
         <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', margin: 0 }}>
-          {t(targetMode ? 'ps.extraTitle' : 'ps.title')}{targetMode && extraQuestionCount > 0 ? <span style={{ color: '#9ca3af', fontSize: 12, fontWeight: 500 }}> · {t('ps.extraN', { n: extraQuestionCount })}</span> : null}
+          {t(targetMode ? 'ps.extraTitle' : 'ps.title')}{targetMode && extraQuestionCount > 0 ? <span style={{ color: '#9ca3af', fontSize: 12, fontWeight: 500 }}> · {t('ps.progress', { done: extraAnsweredCount, total: extraQuestionCount })}</span> : null}
         </h2>
         {targetMode && <div style={{ fontSize: 12, color: '#6b7280', marginTop: 4, lineHeight: 1.55 }}>{t('ps.extraHint')}</div>}
       </div>
 
+      {inputs && targetMode && extraQuestionCount > 0 && (
+        extraComplete && !reviewExtra ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, border: '1px solid #dbeafe', borderRadius: 10, background: '#f8fbff', padding: '9px 11px' }}>
+            <span style={{ display: 'grid', placeItems: 'center', width: 22, height: 22, borderRadius: 999, background: '#2563eb', color: '#fff', fontSize: 12, fontWeight: 700 }}>✓</span>
+            <span style={{ color: '#1f2937', fontSize: 13, fontWeight: 600 }}>{t('ps.complete', { n: extraQuestionCount })}</span>
+            <button type="button" onClick={() => { setExtraQuestionIndex(0); setReviewExtra(true) }}
+              style={{ marginLeft: 'auto', border: 0, background: 'transparent', color: '#2563eb', font: '600 12px/1.4 inherit', cursor: 'pointer', padding: 4 }}>
+              {t('ps.edit')}
+            </button>
+          </div>
+        ) : activeExtraQuestion ? (
+          <div aria-live="polite" style={{ border: '1px solid #e5e7eb', borderRadius: 12, padding: '14px', background: '#fff' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 11 }}>
+              <span style={{ color: '#2563eb', fontSize: 11.5, fontWeight: 700 }}>{t('ps.questionN', { current: extraQuestionIndex + 1, total: extraQuestionCount })}</span>
+              <span style={{ flex: 1, height: 4, borderRadius: 999, background: '#eef2f7', overflow: 'hidden' }}>
+                <span style={{ display: 'block', width: `${((extraQuestionIndex + 1) / extraQuestionCount) * 100}%`, height: '100%', borderRadius: 999, background: '#2563eb', transition: 'width .2s' }} />
+              </span>
+            </div>
+            <div style={{ color: '#111827', fontSize: 15, fontWeight: 700, lineHeight: 1.55, marginBottom: 12 }}>{activeExtraQuestion.title}</div>
+            {activeExtraQuestion.choices ? (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {activeExtraQuestion.choices.map((choice) => (
+                  <button type="button" key={choice.key} aria-pressed={choice.active}
+                    onClick={() => answerExtra(activeExtraQuestion, choice.apply)}
+                    style={{ minHeight: 38, border: `1px solid ${choice.active ? '#2563eb' : '#d1d5db'}`, borderRadius: 999,
+                      background: choice.active ? '#eff6ff' : '#fff', color: choice.active ? '#1d4ed8' : '#374151',
+                      padding: '8px 14px', font: `${choice.active ? 650 : 500} 13px/1.35 inherit`, cursor: 'pointer', textAlign: 'left' }}>
+                    {choice.text}
+                  </button>
+                ))}
+              </div>
+            ) : activeExtraQuestion.number ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, maxWidth: 320 }}>
+                <input type="number" min={0} value={activeExtraQuestion.number.value}
+                  onChange={(e) => activeExtraQuestion.number?.set(Number(e.target.value))}
+                  aria-label={activeExtraQuestion.title}
+                  style={{ ...sel, height: 40, flex: 1, fontSize: 14 }} />
+                <button type="button" onClick={() => answerExtra(activeExtraQuestion)}
+                  style={{ height: 40, border: 0, borderRadius: 9, background: '#2563eb', color: '#fff', padding: '0 17px', font: '600 13px/1 inherit', cursor: 'pointer' }}>
+                  {t('ps.confirm')}
+                </button>
+              </div>
+            ) : null}
+            {extraQuestionIndex > 0 && (
+              <button type="button" onClick={() => setExtraQuestionIndex((i) => Math.max(0, i - 1))}
+                style={{ marginTop: 12, border: 0, background: 'transparent', color: '#6b7280', font: '500 12px/1.4 inherit', cursor: 'pointer', padding: 0 }}>
+                ← {t('ps.previous')}
+              </button>
+            )}
+          </div>
+        ) : null
+      )}
+
       {/* 你的条件 —— 一套答案,各省按各自官方表折算。
           inputs=false(决策页):不渲下拉 —— 答题是唯一输入面,分数由答案自动算(Frank 2026-08-10);
           时薪/工作地区是岗位事实,走 ctx,不问人 */}
-      {inputs && (<>
+      {inputs && !targetMode && (<>
       <div style={lbl}>{t(targetMode ? 'ps.extraYou' : 'ps.you')}</div>
       {/* 126 = 375 手机上正好两列:弹框内宽 301 − 卡片左右 padding 28 = 273,126×2+10=262 放得下
           (先试的 132 差 1px 就掉回一列 —— 算的时候别忘了减卡片自己的 padding)。纯 CSS auto-fit,不做 JS 宽度探测 */}
@@ -321,25 +460,40 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
       {/* 各省:折叠手风琴(Frank 2026-08-10「四个省都列出来吗」)—— 一省一行(省名+制度+合计分),
           目标省默认展开;该省的加分勾选也收进展开区(勾了才算;二选一组只算一项)。
           收起行只有合计 —— 对比一眼可见,明细点开才有。 */}
+      {(!targetMode || (extraComplete && !reviewExtra)) && (<>
+      {scores.length > 1 ? (
+        <div style={{ marginTop: 12, borderRadius: 9, background: '#f8fafc', color: '#64748b', fontSize: 12, lineHeight: 1.55, padding: '8px 10px' }}>
+          {t('ps.compareHint')}
+        </div>
+      ) : null}
       <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
         {scores.map((s) => {
           const open = s.province === resolvedOpen
           const list = bonusOf(s.province)
           const offerRow = factors.find((f) => f.province === s.province && f.factor === 'offer' && f.kind === 'row')
+          const { line } = scoreAnchor(s, draws, streams[s.province] || '')
+          const gap = line == null ? null : line - s.total
           return (
             <div key={s.province} style={{ border: '1px solid #e5e7eb', borderRadius: 10 }}>
               <button onClick={() => setOpenProv(open ? '__closed' : s.province)}
-                style={{ display: 'flex', alignItems: 'baseline', gap: 8, width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: '10px 12px', fontFamily: 'inherit', textAlign: 'left' }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#111827', whiteSpace: 'nowrap' }}>{t('prov.' + s.province) || s.province}</span>
-                <span style={{ fontSize: 11, color: '#9ca3af', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.system}</span>
-                <span style={{ marginLeft: 'auto', fontSize: 15, fontWeight: 700, color: '#1d4ed8', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
-                  {s.total}{s.maxTotal ? <span style={{ fontSize: 11.5, color: '#9ca3af', fontWeight: 500 }}> / {s.maxTotal}</span> : null}
+                style={{ display: 'flex', alignItems: 'center', gap: 9, width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: '10px 12px', fontFamily: 'inherit', textAlign: 'left' }}>
+                <span style={{ minWidth: 0, flex: 1 }}>
+                  <span style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('prov.' + s.province) || s.province}</span>
+                  <span style={{ display: 'block', marginTop: 2, fontSize: 11, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.system}</span>
+                </span>
+                <span style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <span style={{ display: 'block', fontSize: 15, fontWeight: 700, color: '#1d4ed8', fontVariantNumeric: 'tabular-nums' }}>
+                    {s.total}{s.maxTotal ? <span style={{ fontSize: 11.5, color: '#9ca3af', fontWeight: 500 }}> / {s.maxTotal}</span> : null}
+                  </span>
+                  <span style={{ display: 'block', marginTop: 2, color: gap == null ? '#94a3b8' : gap <= 0 ? '#15803d' : '#b45309', fontSize: 11, fontWeight: 650, whiteSpace: 'nowrap' }}>
+                    {gap == null ? t('ps.noCompareLine') : gap <= 0 ? t('ps.met') : t('ps.under', { n: gap })}
+                  </span>
                 </span>
                 <span style={{ color: '#9ca3af', fontSize: 11, flexShrink: 0 }}>{open ? '▴' : '▾'}</span>
               </button>
               {open && (
                 <div style={{ padding: '0 12px 11px' }}>
-                  {(list.length || offerRow) ? (
+                  {!targetMode && (list.length || offerRow) ? (
                     <div style={{ marginBottom: 8 }}>
                       <div style={lbl}>{t('ps.bonus')}</div>
                       {/* 一行两个事实(条目、+N)拆成列(同 FactGrid 规矩):外层 auto-fit 决定几列,
@@ -376,12 +530,13 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
           ))}
         </div>
       </div>
+      </>)}
     </div>
   )
 }
 
 function ProvinceResult({ t, lang, s, draws, byProv, switchable, matchedStream, factors }: {
-  t: TFn; lang: string; s: NonNullable<ReturnType<typeof scoreProvince>>; draws: DrawRow[]
+  t: TFn; lang: string; s: ProvinceScore; draws: DrawRow[]
   byProv: Record<string, { n: number; eligible: number }>; switchable: boolean
   matchedStream: string; factors: ScoreFactor[]
 }) {
@@ -390,20 +545,10 @@ function ProvinceResult({ t, lang, s, draws, byProv, switchable, matchedStream, 
   // 打分表可以自报它属于哪条通道(system 里的括号,如「OINP EOI points (Ontario Workforce Priority stream)」)——
   // ON 已公布的分数线全是改制前已关停通道的 EOI 分,与新通道不是同一套分制,拿来对照就是错的锚。
   // 声明了通道的省,只认同一条通道的抽选;没声明的(BC SIRS / SK)照旧全取。
-  const gridStream = /\(([^)]+)\)\s*$/.exec(s.system)?.[1] ?? ''
-  const scored = draws.filter((d) => d.province === s.province && d.kind !== 'notice' && d.score != null)
-    .filter((d) => !gridStream || streamMatches(d.stream, gridStream))
-    .sort((a, b) => (a.drawDate < b.drawDate ? 1 : -1))
-  const latest = scored.find((d) => streamMatches(d.stream, matchedStream))
-  const line = latest?.score ?? s.passMark ?? null
+  const { latest, line, hasOtherStreamDraws, range } = scoreAnchor(s, draws, matchedStream)
   const gap = line == null ? null : s.total - line
   const ok = (gap ?? 0) >= 0
   // 该省有分数线、但全是别的通道的(ON:旧通道已关停)→ 说清楚为什么这里没有线,而不是含糊说「未公布」
-  const hasOtherStreamDraws = !scored.length && draws.some((d) => d.province === s.province && d.kind !== 'notice' && d.score != null)
-  const range = line == null && scored.length
-    ? { lo: Math.min(...scored.map((d) => d.score as number)), hi: Math.max(...scored.map((d) => d.score as number)), n: scored.length }
-    : null
-
   // 「换省」可操作的一步:该省官方给雇主 offer 记多少分 —— 拿到就 +N,直接说出合计
   const offerRow = factors.find((f) => f.province === s.province && f.factor === 'offer' && f.kind === 'row')
   const offerPart = s.parts.find((p) => p.factor === 'offer')
