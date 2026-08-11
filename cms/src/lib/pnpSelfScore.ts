@@ -113,13 +113,13 @@ const eduRankOf = (label: string): number | null => {
   return hits.length ? Math.min(...hits) : null
 }
 
-/** 在档位里选「阈值 ≤ 你的值」中最高的那条;全都比你高(例如学历不够任何一档)→ 取阈值最低的那条 */
+/** 在档位里选「阈值 ≤ 你的值」中最高的那条;全都比你高=该因素 0 分,不能白送最低档分数。 */
 function pickByThreshold(rows: ScoreFactor[], thresholdOf: (l: string) => number | null, want: number): ScoreFactor | null {
   const scored = rows.map((r) => ({ r, th: thresholdOf(r.label) })).filter((x) => x.th != null) as { r: ScoreFactor; th: number }[]
   if (!scored.length) return null
   const ok = scored.filter((x) => x.th <= want)
   if (ok.length) return ok.reduce((a, b) => (b.th > a.th ? b : a)).r
-  return scored.reduce((a, b) => (b.th < a.th ? b : a)).r
+  return null
 }
 
 function pickByAge(rows: ScoreFactor[], age: number): ScoreFactor | null {

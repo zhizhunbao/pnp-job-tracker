@@ -3,7 +3,8 @@ build_nl_req — NL(NLPNP Skilled Worker)的**门槛**。走官方资格政策�
 
 三张表各管一件事(照 build_bc_req 惯例):
   · pnp_occupations   在不在清单(build_nl:优先处理职位——职位名文本非 NOC,不参与打分)
-  · pnp_score_factors 能打几分(NL 无分值表 —— EOI 择优,官方只发邀请数不发分数线)
+  · pnp_score_factors 能打几分(build_nl_points / nl-points.json 只覆盖 Express Entry Skilled Worker 的 67/100 Annex A;
+    普通 EOI 仍是公开优先标准择优,官方不公布数值权重)
   · pnp_requirements   打分之前先要满足什么(本脚本)
 
 NL 这份的看点是**分档方式跟别省相反**:官方明说 Skilled Worker 收 TEER 0-5 全档,

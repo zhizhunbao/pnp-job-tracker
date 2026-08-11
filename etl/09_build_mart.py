@@ -61,7 +61,9 @@ IN_DRAW_STREAM_ZH = _paths.PROCESSED / "draw_stream_zh.json"
 # 省提名官方打分表(E12-09)——一省一个文件,加省就往这个 list 里加,下面的组装逻辑不用改。
 # BC=SIRS 200 分制(build_bc_sirs.py 从官方 PDF 抓)/ SK=SINP Points Grid 110 分制(build_sk_points.py 抓官网表)
 IN_SCORE_TABLES = [_paths.PNP / "bc-sirs.json", _paths.PNP / "sk-points.json", _paths.PNP / "on-points.json",
-                   _paths.PNP / "mb-points.json"]  # MB EOI 六因子(C4-W2;含风险负分档,points 存负数)
+                   _paths.PNP / "mb-points.json", _paths.PNP / "nl-points.json"]
+# NL 只对 Express Entry Skilled Worker 使用 Annex A 100 分表(67 分门槛);普通 NL EOI 仍按公开优先标准择优,
+# 没有数值权重。两者不能混成“整个纽省都按 67 分”。
 # 省提名官方**门槛**(规则引擎第一刀)——打分表管「能打几分」,这张管「打分之前先要满足什么」。
 # 一省一个文件,加省=往这个 list 里加一个(build_<省>_req.py 产,列同一套)。
 IN_REQ_TABLES = [_paths.PNP / f"{p}-req.json"

@@ -1,0 +1,170 @@
+{
+  "province": "NL",
+  "system": "NLPNP Point Assessment Grid (Express Entry Skilled Worker)",
+  "maxTotal": 100,
+  "passMark": 67,
+  "source": "NLPNP Express Entry Skilled Worker Category Application Guide - Annex A",
+  "url": "https://www.gov.nl.ca/immigration/files/AnnexA_PNP.pdf",
+  "pageUrl": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/express-entry-skilled-worker/",
+  "guideEffective": "",
+  "fetched": "2026-08-10",
+  "groupMax": {
+    "WORK": 20
+  },
+  "factors": {
+    "education": {
+      "group": "",
+      "rows": [
+        {
+          "label": "Master's or Doctorate degree",
+          "points": 28
+        },
+        {
+          "label": "University Degree that required at least three years of full-time study",
+          "points": 23
+        },
+        {
+          "label": "Trade certification equivalent to journeyperson status in Newfoundland and Labrador",
+          "points": 23
+        },
+        {
+          "label": "Degree, diploma or certificate that required at least two years of full-time post-secondary study",
+          "points": 18
+        },
+        {
+          "label": "Degree, diploma or certificate that required at least one year of full-time post-secondary study",
+          "points": 15
+        }
+      ],
+      "bonus": [],
+      "max": 28
+    },
+    "work5": {
+      "group": "WORK",
+      "rows": [
+        {
+          "label": "5 years",
+          "points": 15
+        },
+        {
+          "label": "4 years",
+          "points": 12
+        },
+        {
+          "label": "3 years",
+          "points": 9
+        },
+        {
+          "label": "2 years",
+          "points": 6
+        },
+        {
+          "label": "1 year",
+          "points": 3
+        }
+      ],
+      "bonus": [],
+      "max": 15
+    },
+    "work610": {
+      "group": "WORK",
+      "rows": [
+        {
+          "label": "5 years",
+          "points": 7
+        },
+        {
+          "label": "4 years",
+          "points": 6
+        },
+        {
+          "label": "3 years",
+          "points": 5
+        },
+        {
+          "label": "2 years",
+          "points": 4
+        },
+        {
+          "label": "1 year",
+          "points": 2
+        }
+      ],
+      "bonus": [],
+      "max": 7
+    },
+    "language1": {
+      "group": "",
+      "rows": [
+        {
+          "label": "CLB 8 and higher",
+          "points": 27
+        },
+        {
+          "label": "CLB 7",
+          "points": 23
+        },
+        {
+          "label": "CLB 6",
+          "points": 21
+        },
+        {
+          "label": "CLB 5",
+          "points": 19
+        }
+      ],
+      "bonus": [],
+      "max": 27
+    },
+    "age": {
+      "group": "",
+      "rows": [
+        {
+          "label": "<18 years",
+          "points": 0
+        },
+        {
+          "label": "18-21 years",
+          "points": 8
+        },
+        {
+          "label": "22-33 years",
+          "points": 12
+        },
+        {
+          "label": "34-45 years",
+          "points": 10
+        },
+        {
+          "label": "46-50 years",
+          "points": 8
+        },
+        {
+          "label": ">50 years",
+          "points": 0
+        }
+      ],
+      "bonus": [],
+      "max": 12
+    },
+    "connection": {
+      "group": "",
+      "rows": [],
+      "bonus": [
+        {
+          "label": "Close relative in Newfoundland and Labrador",
+          "points": 7
+        },
+        {
+          "label": "Previous work experience in Newfoundland and Labrador",
+          "points": 3
+        },
+        {
+          "label": "Previous student experience in Newfoundland and Labrador",
+          "points": 3
+        }
+      ],
+      "max": 13
+    }
+  }
+}

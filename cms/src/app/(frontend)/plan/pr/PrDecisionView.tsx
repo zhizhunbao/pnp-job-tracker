@@ -137,8 +137,10 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
     expRecent: hasSplitWork ? 0 : totalExpLower,
     expOlder: 0,
   }
-  const hiddenScoreInputs: (keyof SelfProfile)[] = ['clb1']
-  if (!hasSplitWork) hiddenScoreInputs.push('expRecent', 'expOlder')
+  // 基础卷只收语言/总经验的范围，官方表却可能在同一范围内分成不同分值档。
+  // 所以这里必须让用户确认精确 CLB 和经验；不是重复提问，而是从粗筛进入正式估分。
+  // 只有不拆“近 5 年/6-10 年”的表才隐藏第二段经验，并把第一格当总经验使用。
+  const hiddenScoreInputs: (keyof SelfProfile)[] = hasSplitWork ? [] : ['expOlder']
   const scoreKey = `${tvJob?.id ?? 'profile'}:${targetProvince}:${bands.clbBand}:${bands.totalExpBand}:${targetFactors[0]?.guideEffective ?? ''}`
 
   // 答完基本卷:落档(登录才写,quizToProfile 内部自判;失败不拦页面)→ 收起答题卡。
@@ -272,7 +274,8 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
               </div>
             )}
 
-            {/* 只在基础条件完成后追问目标省缺少的计分项。语言/总经验复用上方答案,不让用户重复填。 */}
+            {/* 只在基础条件完成后追问目标省缺少的精确计分项。基础卷的范围只作保守预填,
+                不能拿范围下界冒充用户的精确 CLB/经验。 */}
             {quizComplete && targetFactors.length > 0 && (
               <div style={CARD}>
                 <PnpScoreCard key={scoreKey} t={t} lang={lang}

@@ -2,7 +2,7 @@
 // E12-09 · 省提名自评打分 + 跨省对照。Frank:「分不够赶紧换省换工作,不要继续耗」。
 //
 // 从 BcSirsCard(只有 BC)改成两省对照 —— **有两个省才谈得上「换哪个省更快」**,这是这块的全部价值。
-// 现有:BC SIRS 200 分制(对照真实抽选线)/ SK SINP 110 分制(对照官方 60 分申请门槛)。
+// 现有:BC/SK/ON/MB 各自官方分制 + NL EE Skilled Worker 100 分制(67 分申请门槛)。
 //
 // 硬约束(别放宽):
 //   ① 分值全部来自 pnp_score_factors(官方分值表),前端一分都不许自己编;算法见 pnpSelfScore.ts;
@@ -91,6 +91,10 @@ const L10N: Record<string, { zh?: string; ko?: string }> = {
   'Close family relative in Saskatchewan': { zh: '在 SK 有近亲(公民或永居)', ko: 'SK에 가까운 친척 거주' },
   'Past work experience in Saskatchewan': { zh: '在 SK 工作过(近 5 年满 12 个月)', ko: 'SK 근무 경력(최근 5년 12개월)' },
   'Past student experience in Saskatchewan': { zh: '在 SK 读过书(满一学年)', ko: 'SK 유학 경험(1학년도 이상)' },
+  // NL Express Entry Skilled Worker - Annex A adaptability
+  'Close relative in Newfoundland and Labrador': { zh: '本人或配偶在纽省有符合范围的近亲', ko: '본인 또는 배우자의 뉴펀들랜드 래브라도주 가까운 친척' },
+  'Previous work experience in Newfoundland and Labrador': { zh: '近 5 年曾在纽省持有效工签工作至少 12 个月', ko: '최근 5년 내 뉴펀들랜드 래브라도주에서 유효한 취업허가로 12개월 이상 근무' },
+  'Previous student experience in Newfoundland and Labrador': { zh: '曾在纽省认可院校持学签全日制就读至少 1 学年', ko: '뉴펀들랜드 래브라도주 인정 교육기관에서 유효한 유학허가로 1학년도 이상 수학' },
 }
 const label = (raw: string, lang: string) => (lang === 'zh' ? L10N[raw]?.zh : lang === 'ko' ? L10N[raw]?.ko : '') || raw
 
@@ -153,6 +157,7 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
     factors.some((f) => f.factor === 'wage' && f.kind === 'rule'),
     factors.some((f) => f.province === 'BC' && f.factor === 'area' && f.kind === 'row'),
   ].filter(Boolean).length
+  const splitWork = factors.some((f) => f.factor === 'work5' || f.factor === 'work610')
   const extraQuestionCount = profileQuestionCount + manualQuestions.length
     + factors.filter((f) => f.kind === 'bonus').length
     + provinces.filter((prov) => factors.some((f) => f.province === prov && f.factor === 'offer' && f.kind === 'row')).length
@@ -265,7 +270,7 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
           <select value={profile.edu} onChange={(e) => set('edu', e.target.value as EduKey)} style={sel}>
             {EDU_KEYS.map((k) => <option key={k} value={k}>{t('ps.edu.' + k)}</option>)}
           </select></div>}
-        {!hiddenProfileInputs.includes('expRecent') && factors.some((f) => f.factor === 'work' || f.factor === 'work5') && <div><div style={lbl}>{t('ps.f.expRecent')}</div>
+        {!hiddenProfileInputs.includes('expRecent') && factors.some((f) => f.factor === 'work' || f.factor === 'work5') && <div><div style={lbl}>{t(splitWork ? 'ps.f.expRecent' : 'ps.f.expTotal')}</div>
           <select value={profile.expRecent} onChange={(e) => set('expRecent', Number(e.target.value))} style={sel}>
             {[0, 1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n === 5 ? t('ps.yr5') : t('ps.yr', { n })}</option>)}
           </select></div>}
@@ -420,6 +425,12 @@ function ProvinceResult({ t, lang, s, draws, byProv, switchable, matchedStream, 
           <span key={p.factor + 'm'} style={{ color: '#9ca3af', fontVariantNumeric: 'tabular-nums' }}>/ {p.max}</span>,
         ]).flat()}
       </div>
+
+      {s.province === 'NL' ? (
+        <div style={{ marginTop: 8, padding: '7px 9px', borderRadius: 8, background: '#eff6ff', color: '#1e40af', fontSize: 11.5, lineHeight: 1.55 }}>
+          {t('ps.nlScope')}
+        </div>
+      ) : null}
 
       <div style={{ marginTop: 8, padding: '8px 10px', borderRadius: 8, fontSize: 12.5, lineHeight: 1.6,
         background: line == null ? '#f9fafb' : ok ? '#f0fdf4' : '#fffbeb', color: line == null ? '#6b7280' : ok ? '#166534' : '#b45309' }}>
