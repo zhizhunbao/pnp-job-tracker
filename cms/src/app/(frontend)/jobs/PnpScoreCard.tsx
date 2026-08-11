@@ -12,7 +12,8 @@
 //   ⑤ 默认值一律取保守值(非本岗省份的工作地区默认 0 分档),不许用有利默认把分数吹上去。
 import { useEffect, useMemo, useState } from 'react'
 
-import type { TFn } from './i18n'
+import { QuizChecks, QuizChoices, QuizNav, QuizSub, QuizTitle } from '../quiz/QuizUI'
+import type { Lang, TFn } from './i18n'
 import { DEFAULT_PROFILE, EDU_KEYS, scoreProvince, streamMatches, type DrawRow, type EduKey, type ScoreFactor, type SelfProfile } from '@/lib/pnpSelfScore'
 
 // 打分是**关于你这个人**的功能,不绑某一个岗位(Frank 2026-07-27「应该单独弄个功能吧,
@@ -101,8 +102,28 @@ const label = (raw: string, lang: string) => (lang === 'zh' ? L10N[raw]?.zh : la
 // 年龄下拉的选项档(打分按选中值算,预填吸附也以此为准 —— 两处必须同一张表)
 const AGES = [17, 19, 25, 30, 34, 38, 42, 45, 48, 52]
 
+// 时薪档位行 → 用户填的时薪落在哪一行。官方档位文字自己写着区间(「Less than $20」「$20 to $24.99」
+// 「$40 per hour or higher」),按它读;**读不出或读出多行就返回 null**,那就照旧问用户 —— 前端不替官方编档。
+const wageRowAt = (rows: ScoreFactor[], wage: number): ScoreFactor | null => {
+  const hits = rows.filter((r) => {
+    const nums = (r.label.match(/\d+(?:\.\d+)?/g) || []).map(Number)
+    if (!nums.length) return false
+    if (/less than|under/i.test(r.label)) return wage < nums[0]
+    if (/or higher|or more|and above/i.test(r.label)) return wage >= nums[0]
+    return nums.length >= 2 && wage >= nums[0] && wage <= nums[1]
+  })
+  return hits.length === 1 ? hits[0] : null
+}
+
 type ExtraChoice = { key: string; text: string; active: boolean; apply: () => void }
-type ExtraQuestion = { key: string; title: string; choices?: ExtraChoice[]; number?: { value: number; set: (value: number) => void } }
+type ExtraCheck = { key: string; text: string; pts: number | null; on: boolean; toggle: (on: boolean) => void }
+/** 一屏一题。三种题型共用同一副外观(题干 / 选项 / 底部动作条),区别只在选项形态 */
+type ExtraQuestion = {
+  key: string; title: string; sub?: string
+  choices?: ExtraChoice[]                       // 单选:官方分值表的档位
+  checks?: ExtraCheck[]                         // 多选:该省的加分项(一省一屏,不是一条一屏)
+  number?: { value: number; set: (value: number) => void }
+}
 type ProvinceScore = NonNullable<ReturnType<typeof scoreProvince>>
 
 const scoreAnchor = (s: ProvinceScore, draws: DrawRow[], matchedStream: string) => {
@@ -136,7 +157,7 @@ function Tick({ on, onToggle, text, pts }: { on: boolean; onToggle: (v: boolean)
 }
 
 export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams = {}, initial, inputs = true,
-  hiddenProfileInputs = [], targetMode = false, questionnaireActive,
+  hiddenProfileInputs = [], limits, targetMode = false, questionnaireActive,
   onQuestionnaireProgress, onQuestionnaireComplete, onQuestionnaireBack }: {
   t: TFn; lang: string; ctx: ScoreCtx; factors: ScoreFactor[]; draws: DrawRow[]; profileClb?: number | null
   /** 省 → 你的职业命中的具名通道名。抽选线按通道对照,对不上就不给差分结论(见 ProvinceResult) */
@@ -148,6 +169,9 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
   inputs?: boolean
   /** 决策页已经问过的条件不再重复问。 */
   hiddenProfileInputs?: (keyof SelfProfile)[]
+  /** 基础卷已经问过**范围**的条件(如 CLB 6-7):精确题只在范围内出选项;范围里只剩一个值就整题不问 ——
+      同一件事不问第二遍是效率,范围外的值也不该出现在选项里(那是在请人推翻自己刚给的答案)。 */
+  limits?: Partial<Record<'clb1' | 'clb2' | 'expRecent' | 'expOlder', number[]>>
   /** 只评当前职位所在省:标题与说明改成“补充条件”,不再暗示跨省排行榜。 */
   targetMode?: boolean
   /** PR 主问卷选完省份后继续使用同一题区；关闭时保留本组件状态并显示结果。 */
@@ -179,6 +203,12 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
     // 预填年龄吸附到下拉选项(答题档位给的是 33 这类档中值,不在选项表里 select 会显示成第一项,
     // 显示与打分口径就分叉了 —— 吸最近项,显示=实际用的值)
     if (initial?.age != null) p.age = AGES.reduce((b, a) => (Math.abs(a - initial.age!) < Math.abs(b - initial.age!) ? a : b))
+    // 范围外的预填吸回范围内(范围只剩一个值时这一题不会再问,所以这里必须已经是那个值)
+    for (const [k, allowed] of Object.entries(limits || {})) {
+      // Object.entries 在 Partial 上会连 undefined 一起给出来(TS 那边看不见),先挡一道
+      if (!allowed?.length) continue
+      if (!allowed.includes(p[k as 'clb1'] as number)) p[k as 'clb1'] = allowed[0]
+    }
     return p
   })
   const set = <K extends keyof SelfProfile>(k: K, v: SelfProfile[K]) => setProfile((p) => ({ ...p, [k]: v }))
@@ -192,35 +222,41 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
   const [rowAnswers, setRowAnswers] = useState<Record<string, number>>({})
   const [extraQuestionIndex, setExtraQuestionIndex] = useState(0)
   const [extraAnswered, setExtraAnswered] = useState<Record<string, boolean>>({})
-  const [reviewExtra, setReviewExtra] = useState(false)
 
   // PR 评估页把官方表字段收敛成逐题选择。这里只换输入形态，不改任何分值或匹配规则；
   // 时薪是 BC 每整元计分，不能粗暴切区间，所以仍是单题数字输入。
   const extraQuestions: ExtraQuestion[] = []
-  const addChoices = (key: string, title: string, choices: ExtraChoice[]) => extraQuestions.push({ key, title, choices })
-  const scopedTitle = (province: string, title: string) => provinces.length > 1 ? `${t('prov.' + province)} · ${title}` : title
+  const scopedSub = (province: string) => provinces.length > 1 ? t('prov.' + province) : undefined
+  // 基础卷答过范围的条件,精确题只在范围内给选项;范围内只剩一个值 = 已经问过了,不再占一屏
+  const inRange = (k: 'clb1' | 'clb2' | 'expRecent' | 'expOlder', all: number[]) => {
+    const allowed = limits?.[k]
+    return allowed ? all.filter((n) => allowed.includes(n)) : all
+  }
+  const addChoices = (key: string, title: string, choices: ExtraChoice[], sub?: string) => {
+    if (choices.length > 1) extraQuestions.push({ key, title, sub, choices })
+  }
   if (!hiddenProfileInputs.includes('edu') && factors.some((f) => f.factor === 'education')) {
     addChoices('profile:edu', t('ps.f.education'), EDU_KEYS.map((k) => ({
       key: k, text: t('ps.edu.' + k), active: profile.edu === k, apply: () => set('edu', k as EduKey),
     })))
   }
   if (!hiddenProfileInputs.includes('expRecent') && factors.some((f) => f.factor === 'work' || f.factor === 'work5')) {
-    addChoices('profile:expRecent', t(splitWork ? 'ps.f.expRecent' : 'ps.f.expTotal'), [0, 1, 2, 3, 4, 5].map((n) => ({
+    addChoices('profile:expRecent', t(splitWork ? 'ps.f.expRecent' : 'ps.f.expTotal'), inRange('expRecent', [0, 1, 2, 3, 4, 5]).map((n) => ({
       key: String(n), text: n === 5 ? t('ps.yr5') : t('ps.yr', { n }), active: profile.expRecent === n, apply: () => set('expRecent', n),
     })))
   }
   if (!hiddenProfileInputs.includes('expOlder') && factors.some((f) => f.factor === 'work' || f.factor === 'work610')) {
-    addChoices('profile:expOlder', t('ps.f.expOlder'), [0, 1, 2, 3, 4, 5].map((n) => ({
+    addChoices('profile:expOlder', t('ps.f.expOlder'), inRange('expOlder', [0, 1, 2, 3, 4, 5]).map((n) => ({
       key: String(n), text: n === 5 ? t('ps.yr5') : t('ps.yr', { n }), active: profile.expOlder === n, apply: () => set('expOlder', n),
     })))
   }
   if (!hiddenProfileInputs.includes('clb1') && factors.some((f) => f.factor === 'language' || f.factor === 'language1')) {
-    addChoices('profile:clb1', t('ps.f.clb1'), [0, 4, 5, 6, 7, 8, 9, 10].map((n) => ({
+    addChoices('profile:clb1', t('ps.f.clb1'), inRange('clb1', [0, 4, 5, 6, 7, 8, 9, 10]).map((n) => ({
       key: String(n), text: n ? `CLB ${n}` : t('ps.clbNone'), active: profile.clb1 === n, apply: () => set('clb1', n),
     })))
   }
   if (!hiddenProfileInputs.includes('clb2') && factors.some((f) => f.factor === 'language2')) {
-    addChoices('profile:clb2', t('ps.f.clb2'), [0, 4, 5, 6, 7, 8, 9, 10].map((n) => ({
+    addChoices('profile:clb2', t('ps.f.clb2'), inRange('clb2', [0, 4, 5, 6, 7, 8, 9, 10]).map((n) => ({
       key: String(n), text: n ? `CLB ${n}` : t('ps.clbNone'), active: profile.clb2 === n, apply: () => set('clb2', n),
     })))
   }
@@ -231,54 +267,66 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
   }
   const wageProvince = factors.find((f) => f.factor === 'wage' && f.kind === 'rule')?.province
   if (wageProvince) {
-    extraQuestions.push({ key: 'job:wage', title: scopedTitle(wageProvince, t('ps.in.wage')), number: { value: wage, set: setWage } })
+    extraQuestions.push({ key: 'job:wage', title: t('ps.in.wage'), sub: scopedSub(wageProvince), number: { value: wage, set: setWage } })
   }
   const bcAreaRows = factors.filter((f) => f.province === 'BC' && f.factor === 'area' && f.kind === 'row')
   if (bcAreaRows.length) {
-    addChoices('job:bcArea', scopedTitle('BC', t('ps.in.area')), bcAreaRows.map((r, i) => ({
+    addChoices('job:bcArea', t('ps.in.area'), bcAreaRows.map((r, i) => ({
       key: String(r.seq), text: label(r.label, lang), active: areaI === i, apply: () => setAreaI(i),
-    })))
+    })), scopedSub('BC'))
   }
   for (const { prov, name, key, rows } of manualQuestions) {
-    addChoices(key, scopedTitle(prov, t('ps.f.' + name)), rows.map((r) => ({
+    // 时薪已经用数字问过一遍(BC 按每整元计分),别再让人从档位里挑同一个数 ——
+    // 落哪一档由官方档位文字自己说了算(只认唯一命中,读不出区间就照旧问)
+    if (name === 'wage' && wageProvince && wageRowAt(rows, wage) != null) continue
+    addChoices(key, t('ps.f.' + name), rows.map((r) => ({
       key: String(r.seq), text: label(r.label, lang), active: rowAnswers[key] === r.seq,
       apply: () => setRowAnswers((m) => ({ ...m, [key]: r.seq })),
-    })))
+    })), scopedSub(prov))
   }
+  // 加分项:**一省一屏多选**,不是一条一屏的是/否题(BC 一个省 7 条,先前就是 7 屏 14 次点击)。
+  // 官方表本来就是一张勾选清单,合成一屏既少点二十几下,也让分值一列对齐、能互相比较。
   for (const prov of provinces) {
+    const checks: ExtraCheck[] = []
     const offer = factors.find((f) => f.province === prov && f.factor === 'offer' && f.kind === 'row')
-    if (offer) {
-      addChoices(`${prov}:offer`, scopedTitle(prov, t('ps.q.meet', { condition: label(offer.label, lang) })), [
-        { key: 'yes', text: t('ps.yes'), active: hasOffer, apply: () => setHasOffer(true) },
-        { key: 'no', text: t('ps.no'), active: !hasOffer, apply: () => setHasOffer(false) },
-      ])
-    }
+    if (offer) checks.push({ key: `${prov}:offer`, text: label(offer.label, lang), pts: offer.points, on: hasOffer, toggle: setHasOffer })
     for (const bonus of factors.filter((f) => f.province === prov && f.kind === 'bonus')) {
       const key = `${prov}:${bonus.factor}:${bonus.seq}`
-      addChoices(key, scopedTitle(prov, t('ps.q.meet', { condition: label(bonus.label, lang) })), [
-        { key: 'yes', text: t('ps.yes'), active: !!ticks[key], apply: () => setTicks((m) => ({ ...m, [key]: true })) },
-        { key: 'no', text: t('ps.no'), active: !ticks[key], apply: () => setTicks((m) => ({ ...m, [key]: false })) },
-      ])
+      checks.push({ key, text: label(bonus.label, lang), pts: bonus.points, on: !!ticks[key],
+        toggle: (on: boolean) => setTicks((m) => ({ ...m, [key]: on })) })
     }
+    if (checks.length) extraQuestions.push({ key: `${prov}:checks`, title: t('ps.q.multi'), sub: scopedSub(prov), checks })
   }
   const extraQuestionCount = extraQuestions.length
   const extraAnsweredCount = extraQuestions.filter((q) => extraAnswered[q.key]).length
   const extraComplete = extraQuestions.every((q) => extraAnswered[q.key])
-  const activeExtraQuestion = extraQuestions[Math.min(extraQuestionIndex, Math.max(extraQuestionCount - 1, 0))]
+  const extraIndex = Math.min(extraQuestionIndex, Math.max(extraQuestionCount - 1, 0))
+  const activeExtraQuestion = extraQuestions[extraIndex]
+  const activeAnswered = !!activeExtraQuestion && (!activeExtraQuestion.choices || !!extraAnswered[activeExtraQuestion.key])
   useEffect(() => {
     onQuestionnaireProgress?.({ done: extraAnsweredCount, total: extraQuestionCount })
   }, [extraAnsweredCount, extraQuestionCount, onQuestionnaireProgress])
   useEffect(() => {
     if (showQuestionnaire && extraQuestionCount === 0) onQuestionnaireComplete?.()
   }, [extraQuestionCount, onQuestionnaireComplete, showQuestionnaire])
-  const answerExtra = (question: ExtraQuestion, apply?: () => void) => {
-    apply?.()
+  // 中途退出再进来:落在**第一道没答的题**,不让人从头再翻一遍答过的
+  useEffect(() => {
+    if (!showQuestionnaire) return
+    const first = extraQuestions.findIndex((q) => !extraAnswered[q.key])
+    if (first > 0) setExtraQuestionIndex(first)
+    // 只在进入答题段的那一下对位;进来之后的翻页归用户的上一题/下一题管
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showQuestionnaire])
+  // 选中**不自动跳**(2026-07-31 拍板,全站答题同一条规矩):自动跳会在选中的瞬间换掉整屏,
+  // 看着就是「闪一下」,也没法改主意。翻页永远由用户按右下角那颗按钮。
+  const pickExtra = (question: ExtraQuestion, apply: () => void) => {
+    apply()
     setExtraAnswered((m) => ({ ...m, [question.key]: true }))
-    if (extraQuestionIndex < extraQuestionCount - 1) setExtraQuestionIndex((i) => i + 1)
-    else {
-      setReviewExtra(false)
-      onQuestionnaireComplete?.()
-    }
+  }
+  const nextExtra = (question: ExtraQuestion) => {
+    setExtraAnswered((m) => ({ ...m, [question.key]: true }))
+    if (extraIndex < extraQuestionCount - 1) setExtraQuestionIndex(extraIndex + 1)
+    else onQuestionnaireComplete?.()
   }
 
   // 换省事实:同职业在各省的在招数(/api/quiz?noc= 已有,免费事实,不新增端点)
@@ -332,6 +380,12 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
         if (hit) overrides[name] = { pts: hit.points ?? 0, matched: hit.label, source: 'job' }
         continue
       }
+      // 时薪档:已经用数字问过就按数字落档(问卷里同步跳过了这一题),不靠用户再选一次
+      if (name === 'wage' && mine.some((f) => f.factor === 'wage' && f.kind === 'rule') === false
+        && factors.some((f) => f.factor === 'wage' && f.kind === 'rule')) {
+        const hit = wageRowAt(mine.filter((f) => f.factor === 'wage' && f.kind === 'row'), wage)
+        if (hit) { overrides[name] = { pts: hit.points ?? 0, matched: hit.label, source: 'job' }; continue }
+      }
       const answer = rowAnswers[`${prov}:${name}`]
       if (answer == null) continue
       const hit = mine.find((f) => f.factor === name && f.kind === 'row' && f.seq === answer)
@@ -349,75 +403,58 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
 
   const bonusOf = (prov: string) => factors.filter((f) => f.province === prov && f.kind === 'bonus')
 
+  const asking = !!(inputs && targetMode && showQuestionnaire)
+  // 结果区(含标题)在答完之前整块不出:各省估分是自愿的第二段,没答就该只留外层那个入口,
+  // 不许剩一个「各省估分」的空标题在那儿(标题在、内容不在 = 看着像加载坏了)
+  const showResults = !targetMode || (!showQuestionnaire && extraComplete)
   return (
     // 卡壳(边框/圆角/内边距)由外层 MODAL_CARD 提供 —— 这里再画一层就是卡中卡
-    <div>
-      {/* 制度名不再跟在标题后面串一行(375 下折两行还对不齐)——各省折叠行里各自带 */}
-      <div style={{ marginBottom: 10 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', margin: 0 }}>
-          {t(targetMode ? 'ps.extraTitle' : 'ps.title')}{targetMode && extraQuestionCount > 0 ? <span style={{ color: '#9ca3af', fontSize: 12, fontWeight: 500 }}> · {t('ps.progress', { done: extraAnsweredCount, total: extraQuestionCount })}</span> : null}
+    <div className={asking ? 'qzFill' : undefined}>
+      {/* 答题中不再自带标题与进度:题卡外层已经有一个「你的条件 · 已答 n/N」和一条进度条,
+          这里再来一套就是同一件事说两遍,而且两条进度还各走各的(2026-08-10 Frank 点名) */}
+      {showResults && (
+        // 制度名不再跟在标题后面串一行(375 下折两行还对不齐)——各省折叠行里各自带
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', margin: '0 0 10px' }}>
+          {t(targetMode ? 'ps.resultTitle' : 'ps.title')}
         </h2>
-        {targetMode && <div style={{ fontSize: 12, color: '#6b7280', marginTop: 4, lineHeight: 1.55 }}>{t('ps.extraHint')}</div>}
-      </div>
+      )}
 
-      {inputs && targetMode && extraQuestionCount > 0 && showQuestionnaire && (
-        extraComplete && !reviewExtra ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, border: '1px solid #dbeafe', borderRadius: 10, background: '#f8fbff', padding: '9px 11px' }}>
-            <span style={{ display: 'grid', placeItems: 'center', width: 22, height: 22, borderRadius: 999, background: '#2563eb', color: '#fff', fontSize: 12, fontWeight: 700 }}>✓</span>
-            <span style={{ color: '#1f2937', fontSize: 13, fontWeight: 600 }}>{t('ps.complete', { n: extraQuestionCount })}</span>
-            <button type="button" onClick={() => { setExtraQuestionIndex(0); setReviewExtra(true) }}
-              style={{ marginLeft: 'auto', border: 0, background: 'transparent', color: '#2563eb', font: '600 12px/1.4 inherit', cursor: 'pointer', padding: 4 }}>
-              {t('ps.edit')}
-            </button>
-          </div>
-        ) : activeExtraQuestion ? (
-          <div aria-live="polite" style={{ border: '1px solid #e5e7eb', borderRadius: 12, padding: '14px', background: '#fff' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 11 }}>
-              <span style={{ color: '#2563eb', fontSize: 11.5, fontWeight: 700 }}>{t('ps.questionN', { current: extraQuestionIndex + 1, total: extraQuestionCount })}</span>
-              <span style={{ flex: 1, height: 4, borderRadius: 999, background: '#eef2f7', overflow: 'hidden' }}>
-                <span style={{ display: 'block', width: `${((extraQuestionIndex + 1) / extraQuestionCount) * 100}%`, height: '100%', borderRadius: 999, background: '#2563eb', transition: 'width .2s' }} />
-              </span>
-            </div>
-            <div style={{ color: '#111827', fontSize: 15, fontWeight: 700, lineHeight: 1.55, marginBottom: 12 }}>{activeExtraQuestion.title}</div>
-            {activeExtraQuestion.choices ? (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {activeExtraQuestion.choices.map((choice) => (
-                  <button type="button" key={choice.key} aria-pressed={choice.active}
-                    onClick={() => answerExtra(activeExtraQuestion, choice.apply)}
-                    style={{ minHeight: 38, border: `1px solid ${choice.active ? '#2563eb' : '#d1d5db'}`, borderRadius: 999,
-                      background: choice.active ? '#eff6ff' : '#fff', color: choice.active ? '#1d4ed8' : '#374151',
-                      padding: '8px 14px', font: `${choice.active ? 650 : 500} 13px/1.35 inherit`, cursor: 'pointer', textAlign: 'left' }}>
-                    {choice.text}
-                  </button>
-                ))}
-              </div>
-            ) : activeExtraQuestion.number ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, maxWidth: 320 }}>
-                <input type="number" min={0} value={activeExtraQuestion.number.value}
-                  onChange={(e) => activeExtraQuestion.number?.set(Number(e.target.value))}
-                  aria-label={activeExtraQuestion.title}
-                  style={{ ...sel, height: 40, flex: 1, fontSize: 14 }} />
-                <button type="button" onClick={() => answerExtra(activeExtraQuestion)}
-                  style={{ height: 40, border: 0, borderRadius: 9, background: '#2563eb', color: '#fff', padding: '0 17px', font: '600 13px/1 inherit', cursor: 'pointer' }}>
-                  {t('ps.confirm')}
-                </button>
-              </div>
-            ) : null}
-            {(extraQuestionIndex > 0 || onQuestionnaireBack) && (
-              <button type="button" onClick={() => (extraQuestionIndex > 0 ? setExtraQuestionIndex((i) => Math.max(0, i - 1)) : onQuestionnaireBack?.())}
-                style={{ marginTop: 12, border: 0, background: 'transparent', color: '#6b7280', font: '500 12px/1.4 inherit', cursor: 'pointer', padding: 0 }}>
-                ← {t('ps.previous')}
-              </button>
-            )}
-          </div>
-        ) : null
+      {/* 官方分值表要的条件也走答题壳的同一副皮(题干 / 选项卡片 / 底部动作条),
+          不再自己画一层卡中卡 —— 「统一风格」的做法是共用组件,不是照着调样式 */}
+      {asking && activeExtraQuestion && (
+        <>
+          <QuizTitle>{activeExtraQuestion.title}</QuizTitle>
+          {activeExtraQuestion.sub ? <QuizSub>{activeExtraQuestion.sub}</QuizSub> : null}
+          {activeExtraQuestion.choices ? (
+            <QuizChoices name={activeExtraQuestion.key} lang={lang as Lang}
+              choices={activeExtraQuestion.choices.map((c) => ({ value: c.key, text: c.text }))}
+              value={extraAnswered[activeExtraQuestion.key] ? activeExtraQuestion.choices.find((c) => c.active)?.key : undefined}
+              onPick={(key) => {
+                const choice = activeExtraQuestion.choices?.find((c) => c.key === key)
+                if (choice) pickExtra(activeExtraQuestion, choice.apply)
+              }} />
+          ) : activeExtraQuestion.checks ? (
+            <QuizChecks items={activeExtraQuestion.checks} />
+          ) : activeExtraQuestion.number ? (
+            <input type="number" min={0} value={activeExtraQuestion.number.value}
+              onChange={(e) => activeExtraQuestion.number?.set(Number(e.target.value))}
+              aria-label={activeExtraQuestion.title}
+              style={{ ...sel, height: 44, maxWidth: 220, fontSize: 15 }} />
+          ) : null}
+          {/* 第一屏的「上一题」上面没有题了 —— 它退回的是结果页,所以写「返回」不写「上一题」 */}
+          <QuizNav prevLabel={extraIndex > 0 ? t('plan.prev') : t('ps.back')}
+            nextLabel={extraIndex < extraQuestionCount - 1 ? t('plan.next') : t('ps.finish')}
+            onPrev={extraIndex > 0 ? () => setExtraQuestionIndex(extraIndex - 1) : onQuestionnaireBack}
+            onNext={() => nextExtra(activeExtraQuestion)} nextDisabled={!activeAnswered}
+            hint={activeExtraQuestion.checks ? t('ps.q.multiHint') : undefined} />
+        </>
       )}
 
       {/* 你的条件 —— 一套答案,各省按各自官方表折算。
           inputs=false(决策页):不渲下拉 —— 答题是唯一输入面,分数由答案自动算(Frank 2026-08-10);
           时薪/工作地区是岗位事实,走 ctx,不问人 */}
       {inputs && !targetMode && (<>
-      <div style={lbl}>{t(targetMode ? 'ps.extraYou' : 'ps.you')}</div>
+      <div style={lbl}>{t('ps.you')}</div>
       {/* 126 = 375 手机上正好两列:弹框内宽 301 − 卡片左右 padding 28 = 273,126×2+10=262 放得下
           (先试的 132 差 1px 就掉回一列 —— 算的时候别忘了减卡片自己的 padding)。纯 CSS auto-fit,不做 JS 宽度探测 */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(126px, 1fr))', gap: 10 }}>
@@ -476,7 +513,7 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
       {/* 各省:折叠手风琴(Frank 2026-08-10「四个省都列出来吗」)—— 一省一行(省名+制度+合计分),
           目标省默认展开;该省的加分勾选也收进展开区(勾了才算;二选一组只算一项)。
           收起行只有合计 —— 对比一眼可见,明细点开才有。 */}
-      {(!targetMode || (!showQuestionnaire && extraComplete && !reviewExtra)) && (<>
+      {showResults && (<>
       {scores.length > 1 ? (
         <div style={{ marginTop: 12, borderRadius: 9, background: '#f8fafc', color: '#64748b', fontSize: 12, lineHeight: 1.55, padding: '8px 10px' }}>
           {t('ps.compareHint')}

@@ -17,11 +17,13 @@ const allFactors: ScoreFactor[] = JSON.parse(fs.readFileSync(
 
 const t = ((key: string, vars?: Record<string, string | number>) => {
   const messages: Record<string, string> = {
-    'ps.extraTitle': '再回答几个问题',
-    'ps.extraHint': '一次只回答一题',
-    'ps.progress': '已答 {done}/{total}',
-    'ps.questionN': '第 {current}/{total} 题',
+    'ps.resultTitle': '各省估分',
+    'ps.q.multi': '以下哪些符合你的情况?',
+    'ps.finish': '完成',
+    'plan.next': '下一题',
+    'plan.prev': '上一题',
     'ps.f.education': '学历',
+    'ps.f.expRecent': '同职业经验(近 5 年)',
     'ps.edu.doctorate': '博士',
     'ps.edu.master': '硕士',
     'ps.edu.bachelor': '学士',
@@ -45,7 +47,73 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
+const clickNext = async (container: HTMLElement) => {
+  const next = Array.from(container.querySelectorAll('button'))
+    .find((b) => /下一题|完成/.test(b.textContent || '')) as HTMLButtonElement
+  await act(async () => next.click())
+}
+
 describe('PnpScoreCard target questionnaire', () => {
+  it('groups the province bonus rows into one multi-select screen', async () => {
+    vi.stubGlobal('fetch', vi.fn(() => new Promise(() => {})))
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+    const root = createRoot(container)
+
+    // NL 的 3 条加分项先前是 3 屏是/否题;现在合成 1 屏多选 → 总题数 8 → 6
+    await act(async () => {
+      root.render(React.createElement(PnpScoreCard, {
+        t,
+        lang: 'zh',
+        ctx: { noc: '63200', teer: 3, province: 'NL' },
+        factors: allFactors.filter((row) => row.province === 'NL'),
+        draws: [],
+        targetMode: true,
+        questionnaireActive: true,
+      }))
+    })
+
+    for (let i = 0; i < 5; i += 1) {
+      const pick = container.querySelector('.qzItem input') as HTMLInputElement
+      await act(async () => pick.click())
+      await clickNext(container)
+    }
+    expect(container.textContent).toContain('以下哪些符合你的情况?')
+    expect(container.querySelectorAll('.qzItem input[type="checkbox"]')).toHaveLength(3)
+
+    await act(async () => root.unmount())
+    container.remove()
+  })
+
+  it('drops a precise question whose range is already answered by the basic quiz', async () => {
+    vi.stubGlobal('fetch', vi.fn(() => new Promise(() => {})))
+    const onQuestionnaireProgress = vi.fn()
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+    const root = createRoot(container)
+
+    await act(async () => {
+      root.render(React.createElement(PnpScoreCard, {
+        t,
+        lang: 'zh',
+        ctx: { noc: '63200', teer: 3, province: 'NL' },
+        factors: allFactors.filter((row) => row.province === 'NL'),
+        draws: [],
+        targetMode: true,
+        questionnaireActive: true,
+        // 基础卷答的是「5 年以上」:精确题只剩 5 这一个值,不再占一屏
+        limits: { expRecent: [5], expOlder: [5] },
+        onQuestionnaireProgress,
+      }))
+    })
+
+    expect(onQuestionnaireProgress).toHaveBeenLastCalledWith({ done: 0, total: 4 })
+    expect(container.textContent).not.toContain('同职业经验(近 5 年)')
+
+    await act(async () => root.unmount())
+    container.remove()
+  })
+
   it('shows one choice question at a time and withholds the score until completion', async () => {
     vi.stubGlobal('fetch', vi.fn(() => new Promise(() => {})))
     const onQuestionnaireProgress = vi.fn()
@@ -66,19 +134,21 @@ describe('PnpScoreCard target questionnaire', () => {
       }))
     })
 
-    expect(onQuestionnaireProgress).toHaveBeenLastCalledWith({ done: 0, total: 8 })
-    expect(container.textContent).toContain('已答 0/8')
-    expect(container.textContent).toContain('第 1/8 题')
+    expect(onQuestionnaireProgress).toHaveBeenLastCalledWith({ done: 0, total: 6 })
     expect(container.textContent).toContain('学历')
+    // 题卡自己不再摆标题与进度条(外层答题卡已有一套,两套进度会各走各的)
+    expect(container.textContent).not.toContain('各省估分')
     expect(container.querySelectorAll('select')).toHaveLength(0)
     expect(container.textContent).not.toContain('NLPNP Point Assessment Grid')
 
-    const firstAnswer = container.querySelector('button[aria-pressed]') as HTMLButtonElement
+    // 选中**不自动跳**:仍停在第 1 题,翻页由右下角的「下一题」决定
+    const firstAnswer = container.querySelector('.qzItem input') as HTMLInputElement
     await act(async () => firstAnswer.click())
+    expect(onQuestionnaireProgress).toHaveBeenLastCalledWith({ done: 1, total: 6 })
+    expect(container.textContent).toContain('学历')
 
-    expect(onQuestionnaireProgress).toHaveBeenLastCalledWith({ done: 1, total: 8 })
-    expect(container.textContent).toContain('已答 1/8')
-    expect(container.textContent).toContain('第 2/8 题')
+    await clickNext(container)
+    expect(container.textContent).not.toContain('学历')
     expect(container.textContent).not.toContain('NLPNP Point Assessment Grid')
 
     await act(async () => root.unmount())

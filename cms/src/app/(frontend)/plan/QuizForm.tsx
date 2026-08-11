@@ -6,17 +6,11 @@
 // 而版式全部来自 quiz/QuizUI(与选工作页共用同一套,Frank「保证所有答题页面一致」)。
 import { useEffect, useState } from 'react'
 
-import { QuizBar, QuizChoices, QuizTitle, pickL, type L } from '../quiz/QuizUI'
-import { Button, UI } from '../ui/primitives'
+import { QuizChoices, QuizNav, QuizTitle, pickL, type L } from '../quiz/QuizUI'
 import type { Lang, TFn } from '../jobs/i18n'
 import { FIELDS } from '@/lib/fields'
 import { fieldsOf, type Stage } from '@/lib/decisions'
 import type { Answers } from '@/lib/answers'
-
-const BTN_SEC: React.CSSProperties = {
-  border: `1px solid ${UI.border}`, background: '#fff', color: UI.text2, borderRadius: 8,
-  padding: '11px 26px', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-}
 
 export function QuizForm({ decision, stage, lang, t, answers, onPatch, onComplete, doneKey, onBack, onStepChange, startAtEnd = false }: {
   decision: string
@@ -57,19 +51,13 @@ export function QuizForm({ decision, stage, lang, t, answers, onPatch, onComplet
       <QuizTitle>{pickL(q.title as L, lang)}</QuizTitle>
       <QuizChoices name={name} choices={choices} value={value} onPick={(v) => onPatch({ [name]: v } as Partial<Answers>)} lang={lang} />
       {/* 没答完就走不了：下一题按钮置灰即可。不要再单独摆提示文案——窄屏或滚动裁切时
-          它会脱离题目和按钮，变成一条看不懂的孤立占位。 */}
-      <QuizBar>
-        {/* 上一题恒在且靠左下(08-10 Frank「这个没有上一题,并且上一题放到左下角」):
-            第一题的上一题=回选职业页(onBack);marginRight:auto 把它推到条左端 */}
-        {(at > 0 || onBack) && (
-          <button onClick={() => (at > 0 ? setIdx(at - 1) : onBack?.())} style={{ ...BTN_SEC, marginRight: 'auto' }}>{t('plan.prev')}</button>
-        )}
-        <Button kind="primary" disabled={!done}
-          onClick={() => (last ? onComplete() : setIdx(at + 1))}
-          style={{ padding: '11px 26px', fontSize: 14, ...(done ? null : { background: UI.hairline, color: UI.text3, cursor: 'default' }) }}>
-          {last ? t(doneKey || (stage === 'explore' ? 'plan.reportUpd' : 'plan.toReport')) : t('plan.next')}
-        </Button>
-      </QuizBar>
+          它会脱离题目和按钮，变成一条看不懂的孤立占位。
+          上一题恒在且靠左下(08-10 Frank「这个没有上一题,并且上一题放到左下角」):
+          第一题的上一题=回选职业页(onBack)。动作条本身归 QuizNav,四种题共用同一把。 */}
+      <QuizNav prevLabel={t('plan.prev')} nextDisabled={!done}
+        onPrev={at > 0 ? () => setIdx(at - 1) : onBack}
+        onNext={() => (last ? onComplete() : setIdx(at + 1))}
+        nextLabel={last ? t(doneKey || (stage === 'explore' ? 'plan.reportUpd' : 'plan.toReport')) : t('plan.next')} />
     </>
   )
 }

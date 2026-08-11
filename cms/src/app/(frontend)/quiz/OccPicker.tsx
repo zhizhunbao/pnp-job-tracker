@@ -11,7 +11,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import { POPULAR_NOCS } from '../account/profileOptions'
 import { IconCheck, IconSearch, IconX } from '../Icons'
-import { QuizBar, QuizStyle, QuizTitle } from './QuizUI'
+import { QuizNav, QuizStyle, QuizTitle } from './QuizUI'
 import { Button, UI } from '../ui/primitives'
 import { shortOcc } from './EntryQuiz'
 import { BROAD_SLUGS } from '../stats/shared'
@@ -297,13 +297,12 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
             用户翻到底发现无处可点。现在恒在、粘在视口底,没选中时放一句灰字说明,
             **位置与答题页的「下一题」对齐**(那边同批也改了 sticky),整条决定线的下一步都在同一个地方。 */}
         {inline ? (
-          // 动作条与答题页是**同一个组件**(QuizUI 的 QuizBar),不是照着抄的一套样式 ——
-          // 「下一题位置不统一」的病根就是各写各的(2026-08-03 Frank「保证所有答题页面一致」)
-          <QuizBar hint={nocs.length === 0 ? t('quiz.pickFirst') : undefined}>
-            {nocs.length > 0
-              ? <Button kind="primary" onClick={() => onDone(nocs)} style={{ padding: '11px 26px', fontSize: 14 }}>{doneLabel || t('quiz.nextN', { n: nocs.length })}</Button>
-              : <Button kind="primary" disabled style={{ padding: '11px 26px', fontSize: 14, background: UI.hairline, color: UI.text3, cursor: 'default' }}>{doneLabel || t('plan.next')}</Button>}
-          </QuizBar>
+          // 动作条与答题页是**同一个组件**(QuizUI 的 QuizNav),不是照着抄的一套样式 ——
+          // 「下一题位置不统一」的病根就是各写各的(2026-08-03 Frank「保证所有答题页面一致」)。
+          // 按钮文案也恒定:选了几个写在左边灰字里,不塞进按钮 —— 文案变宽 = 按钮跟着挪。
+          <QuizNav prevLabel={t('plan.prev')} nextLabel={doneLabel || t('plan.next')}
+            nextDisabled={nocs.length === 0} onNext={() => onDone(nocs)}
+            hint={nocs.length === 0 ? t('quiz.pickFirst') : undefined} />
         ) : nocs.length > 0 ? (
           <Button kind="primary" onClick={() => onDone(nocs)} style={{ width: '100%', padding: '11px 0', fontSize: 15, marginTop: 14 }}>
             {t('quiz.nextN', { n: nocs.length })}

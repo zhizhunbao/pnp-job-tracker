@@ -64,7 +64,11 @@ describe('mart 实况', () => {
     expect(data.requirements).toHaveLength(300)
     expect(data.requirements.filter((r) => r.program === 'AIP')).toHaveLength(36)
     expect(data.occupations).toHaveLength(630)
-    expect(data.scoreFactors).toHaveLength(164)
+    // 分值表**按省钉**,不钉总数:钉总数时加一个省(2026-08-10 接纽省)只会报「164 变 192」,
+    // 看不出是哪张表动了,红了也没人认领。按省钉,失败信息自己说出是哪个省的官方表变了。
+    const byProvince: Record<string, number> = {}
+    for (const row of data.scoreFactors) byProvince[row.province] = (byProvince[row.province] ?? 0) + 1
+    expect(byProvince).toEqual({ BC: 32, MB: 44, NL: 28, ON: 51, SK: 37 })
     expect(data.eeGrid).toHaveLength(380)
     // 抽选表与指定雇主名录**按周增长**(抽选每轮一行、名录每次抓取补差)——钉死行数是纯脆断言,
     // 只守「不许倒退」;门槛/清单/分值表那四张是政策表,改版要炸得出来,继续钉死。

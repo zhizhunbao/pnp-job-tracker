@@ -68,10 +68,8 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
   // 答题卡默认收起(Frank「上来有必要让人测分数吗」——不逼人考试,一行入口自愿点开);
   // 「开始评估/继续作答/改答案」展开,答完自动收回
   const [quizOpen, setQuizOpen] = useState(false)
-  const [quizPosition, setQuizPosition] = useState(1)
   const quizRef = useRef<HTMLDivElement | null>(null)
   const hasShownQuizStep = useRef(false)
-  const scoreAutoOpened = useRef(false)
 
   useEffect(() => {
     const a = readAnswers()
@@ -93,11 +91,14 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
   const stepNames = fieldsOf('pr', 'basic')
   const stepTotal = stepNames.length + 2
   const stepDone = stepNames.length - missingFields(stepNames, bands).length + (noc ? 1 : 0) + (bands.provs.length ? 1 : 0)
-  // 收起时显示资料完成度；展开修改时显示当前所在题，避免旧答案让进度一直停在 6/6。
-  const fullStepTotal = stepTotal + scoreProgress.total
-  const shownStep = quizOpen
-    ? (scoreStep ? stepTotal + scoreProgress.done : quizPosition)
-    : stepDone + scoreProgress.done
+  // 计数**分两段**,不合成一条(08-10 Frank 拍板):第一段是「关于你」的 6 项,答完就够出方案;
+  // 第二段是各省官方分值表的条件,自愿进入。合成一条的话,点完省份那一刻总数会从 6 跳到 22 ——
+  // 说好 6 题的问卷突然变 22 题,人就走了。段内总数恒定,全程一个数都不跳。
+  // 数的还是**答过几项**,不是翻到第几页(先前用页码:一进第 1 题就写「已答 1/6」,其实一题没答)。
+  const scoring = quizOpen && scoreStep
+  const shownStep = scoring ? scoreProgress.done : stepDone
+  const shownTotal = scoring ? scoreProgress.total : stepTotal
+  const scoreLeft = scoreProgress.total - scoreProgress.done
   // 职业页会在固定高度题区内滚动。翻页时回到题区顶部，避免下一题继承职业页的底部位置，
   // 让人误以为整张问卷又向上或向下跳了一截。
   useLayoutEffect(() => {
@@ -106,7 +107,12 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
     if (!pad) return
     pad.scrollTop = 0
     // 首次展开保持页面原本位置；只有用户主动翻题时才统一对齐，避免一进页面就自动跳过 banner。
-    if (hasShownQuizStep.current) pad.scrollIntoView({ block: 'start', behavior: 'auto' })
+    // 题区已经整个在视口里就**别再滚**(08-10 Frank「不要闪烁」):题区高度固定、按钮位置固定,
+    // 每翻一题再 scrollIntoView 一次只会把页面又拽一下,看着就是闪。
+    const box = pad.getBoundingClientRect()
+    if (hasShownQuizStep.current && (box.top < 0 || box.bottom > window.innerHeight)) {
+      pad.scrollIntoView({ block: 'start', behavior: 'auto' })
+    }
     hasShownQuizStep.current = true
   }, [quizOpen, shownStep, occStep, provinceStep, scoreStep])
   // 分值卡门控:基本卷答满才渲(渐进展开 —— 落地页面只有 H1 + 答题,别一屏摊开所有机器)
@@ -176,16 +182,27 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
   const scoreContextProvince = tvJob?.province || scoredProvinces[0] || selectedProvinces[0] || ''
   const targetTeer = tvJob?.teer ?? (/^\d{5}$/.test(noc) ? Number(noc[1]) : null)
   const hasSplitWork = targetFactors.some((f) => f.factor === 'work5' || f.factor === 'work610')
-  const clbLower = [0, 0, 4, 6, 8, 10][bands.clbBand] ?? 0
-  const totalExpLower = [0, 0, 0, 1, 3, 5][bands.totalExpBand] ?? 0
+  // 基础卷问的是**区间**(CLB 6-7、1-3 年),官方分值表按精确值分档 —— 所以精确题只在这个区间里出选项,
+  // 区间里只剩一个值(「还没考」「CLB 10 以上」「5 年以上」)就整题不问:同一件事不问第二遍。
+  const CLB_RANGE = [[], [0], [4, 5], [6, 7], [8, 9], [10]]
+  const TOTAL_EXP_RANGE = [[], [0], [0], [1, 2, 3], [3, 4, 5], [5]]
+  const clbRange = CLB_RANGE[bands.clbBand] ?? []
+  const totalRange = TOTAL_EXP_RANGE[bands.totalExpBand] ?? []
+  const clbLower = clbRange[0] ?? 0
+  const totalExpLower = totalRange[0] ?? 0
+  // SK 把经验拆成「近 5 年 / 6-10 年」,总经验推不出分段,只能让用户自己答 —— 但仍受总经验封顶。
+  const splitCap = totalRange.length ? [0, 1, 2, 3, 4, 5].filter((n) => n <= totalRange[totalRange.length - 1]) : []
+  const scoreLimits = {
+    clb1: clbRange.length ? clbRange : undefined,
+    expRecent: (hasSplitWork ? splitCap : totalRange).length ? (hasSplitWork ? splitCap : totalRange) : undefined,
+    expOlder: hasSplitWork && splitCap.length ? splitCap : undefined,
+  }
   const scoreInitial: Partial<SelfProfile> = {
     clb1: clbLower,
     // BC/MB 的 work 是总经验,可直接复用基础题;SK 按时间段拆分,必须让用户另答,不能猜最近几年。
     expRecent: hasSplitWork ? 0 : totalExpLower,
     expOlder: 0,
   }
-  // 基础卷只收语言/总经验的范围，官方表却可能在同一范围内分成不同分值档。
-  // 所以这里必须让用户确认精确 CLB 和经验；不是重复提问，而是从粗筛进入正式估分。
   // 只有不拆“近 5 年/6-10 年”的表才隐藏第二段经验，并把第一格当总经验使用。
   const hiddenScoreInputs: (keyof SelfProfile)[] = hasSplitWork ? [] : ['expOlder']
   const scoreKey = `${tvJob?.id ?? 'profile'}:${scoredProvinces.join(',')}:${bands.clbBand}:${bands.totalExpBand}:${targetFactors.map((f) => f.guideEffective).join(',')}`
@@ -210,27 +227,24 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
     setQuizOpen(false)
   }, [])
 
-  const onScoreProgress = useCallback((progress: { done: number; total: number }) => {
-    setScoreProgress(progress)
-    // 已有基础答案但省份题尚未完成时，直接续到真正没答完的题，不能把 6 项基础资料伪装成整份评估完成。
-    if (!quizOpen && quizComplete && progress.total > progress.done && !scoreAutoOpened.current) {
-      scoreAutoOpened.current = true
-      setOccStep(false); setProvinceStep(false); setScoreStep(true)
-      setQuizPosition(stepTotal + progress.done)
-      setQuizOpen(true)
-    }
-  }, [quizComplete, quizOpen, stepTotal])
+  const onScoreProgress = useCallback((progress: { done: number; total: number }) => setScoreProgress(progress), [])
 
   const onScoreComplete = useCallback(() => {
     setScoreStep(false)
     onQuizDone()
   }, [onQuizDone])
 
+  // 估分是自愿的第二段:第一屏往回退 = 退出估分回到方案页(答过的题留着,再点入口能接着答)
   const onScoreBack = useCallback(() => {
     setScoreStep(false)
-    setProvinceStep(true)
-    setQuizPosition(stepTotal)
-  }, [stepTotal])
+    setQuizOpen(false)
+  }, [])
+
+  const openScoreStep = useCallback(() => {
+    track('dp-score-start')
+    setOccStep(false); setProvinceStep(false); setFormAtEnd(false)
+    setScoreStep(true); setQuizOpen(true)
+  }, [])
 
   const provDisp = (code: string) => { const full = t('prov.' + code); return full === 'prov.' + code ? code : full }
   const pickL3 = (l: L3) => l[lang as keyof L3] || l.zh
@@ -264,22 +278,21 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
               <style>{`.dpConditionSummary{grid-template-columns:repeat(3,minmax(0,1fr))}@media(max-width:640px){.dpConditionSummary{grid-template-columns:repeat(2,minmax(0,1fr))}.dpConditionValue{white-space:normal!important}}`}</style>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <h2 style={{ ...H2, margin: 0 }}>{t('dp.quiz')}</h2>
-                {ready && <span style={{ borderRadius: 999, padding: '2px 8px', background: shownStep === fullStepTotal ? '#eff6ff' : UI.bg,
-                  color: shownStep === fullStepTotal ? UI.primary : UI.text3, fontSize: 11.5, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
-                  {t('dp.basicCount', { done: shownStep, total: fullStepTotal })}
+                {ready && <span style={{ borderRadius: 999, padding: '2px 8px', background: shownStep === shownTotal ? '#eff6ff' : UI.bg,
+                  color: shownStep === shownTotal ? UI.primary : UI.text3, fontSize: 11.5, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
+                  {t(scoring ? 'dp.scoreCount' : 'dp.basicCount', { done: shownStep, total: shownTotal })}
                 </span>}
                 <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
                   {quizOpen ? (
                     <button onClick={() => {
-                      setBands(clearAnswers()); setNoc(''); setResetNonce((n) => n + 1); setOccStep(true); setProvinceStep(false); setScoreStep(false); setScoreProgress({ done: 0, total: 0 }); setFormAtEnd(false); setQuizPosition(1)
-                      scoreAutoOpened.current = false
+                      setBands(clearAnswers()); setNoc(''); setResetNonce((n) => n + 1); setOccStep(true); setProvinceStep(false); setScoreStep(false); setScoreProgress({ done: 0, total: 0 }); setFormAtEnd(false)
                       track('dp-quiz-reset')
                     }} style={BTN}>
                       {t('plan.reset')}
                     </button>
                   ) : (
                     // 一行入口:没答过=开始评估;答了一半=继续作答;答完=改答案(蓝底主按钮只给「开始」)
-                    <button onClick={() => { setQuizOpen(true); setOccStep(true); setProvinceStep(false); setScoreStep(false); setFormAtEnd(false); setQuizPosition(1); track('dp-quiz-edit') }}
+                    <button onClick={() => { setQuizOpen(true); setOccStep(true); setProvinceStep(false); setScoreStep(false); setFormAtEnd(false); track('dp-quiz-edit') }}
                       style={stepDone === 0
                         ? { ...BTN, background: UI.primary, color: '#fff', border: `1px solid ${UI.primary}`, fontWeight: 600 }
                         : BTN}>
@@ -289,8 +302,8 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
                 </span>
               </div>
               {quizOpen && ready && (
-                <div aria-label={`${shownStep}/${fullStepTotal}`} style={{ height: 4, borderRadius: 999, background: UI.hairline, overflow: 'hidden', margin: '11px 0 18px' }}>
-                  <div style={{ width: `${Math.round((shownStep / Math.max(fullStepTotal, 1)) * 100)}%`, height: '100%', borderRadius: 999,
+                <div aria-label={`${shownStep}/${shownTotal}`} style={{ height: 4, borderRadius: 999, background: UI.hairline, overflow: 'hidden', margin: '11px 0 18px' }}>
+                  <div style={{ width: `${Math.round((shownStep / Math.max(shownTotal, 1)) * 100)}%`, height: '100%', borderRadius: 999,
                     background: UI.primary, transition: 'width .2s' }} />
                 </div>
               )}
@@ -311,46 +324,54 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
                     <div style={{ fontSize: 12.5, color: UI.text3, margin: '-10px 0 13px', lineHeight: 1.55 }}>{t('quiz.q2sub')}</div>
                     <OccPicker key={resetNonce} inline t={t} lang={lang} initial={bands.nocs} doneLabel={t('plan.next')}
                       onChange={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || '') }}
-                      onDone={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || ''); setOccStep(false); setProvinceStep(false); setFormAtEnd(false); setQuizPosition(2) }} />
+                      onDone={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || ''); setOccStep(false); setProvinceStep(false); setFormAtEnd(false) }} />
                   </div>
                 ) : provinceStep ? (
                   <div className="plQuizPad" style={{ maxWidth: 600, margin: '0 auto' }}>
+                    {/* 省份是基础卷最后一题:答完立刻收卷出方案。各省估分是自愿的第二段,
+                        由方案上的入口进入 —— 不把 16 道官方表的题横在结论前面 */}
                     <ProvincePicker key={`${resetNonce}:provinces`} t={t} initial={bands.provs}
                       onChange={(provs) => setBands(writeAnswers({ provs }))}
-                      onBack={() => { setProvinceStep(false); setFormAtEnd(true); setQuizPosition(stepTotal - 1) }}
-                      onDone={(provs) => {
-                        setBands(writeAnswers({ provs })); setQuizPosition(stepTotal)
-                        if (scoreFactors.some((factor) => provs.includes(factor.province))) {
-                          scoreAutoOpened.current = true
-                          setProvinceStep(false); setScoreStep(true)
-                        } else onQuizDone()
-                      }} />
+                      onBack={() => { setProvinceStep(false); setFormAtEnd(true) }}
+                      onDone={(provs) => { setBands(writeAnswers({ provs })); onQuizDone() }} />
                   </div>
                 ) : (
                   <div className="plQuizPad" style={{ maxWidth: 600, margin: '0 auto' }}>
                     <QuizForm key={`${resetNonce}:${formAtEnd ? 'end' : 'auto'}`} decision="pr" stage="basic" lang={lang} t={t} answers={bands} doneKey="plan.next" startAtEnd={formAtEnd}
-                      onBack={() => { setOccStep(true); setFormAtEnd(false); setQuizPosition(1) }}
-                      onStepChange={(index) => setQuizPosition(index + 2)}
+                      onBack={() => { setOccStep(true); setFormAtEnd(false) }}
                       onPatch={(patch) => setBands(writeAnswers(patch))}
-                      onComplete={() => { setProvinceStep(true); setFormAtEnd(false); setQuizPosition(stepTotal) }} />
+                      onComplete={() => { setProvinceStep(true); setFormAtEnd(false) }} />
                   </div>
                 )}
               </>)}
 
               {/* 选完省份后继续在同一问卷里回答官方分值表需要的条件。组件始终挂载在同一位置：
-                  答完收起时保留刚才的答案并原地显示各省结果，避免第二套“补充条件”流程。 */}
+                  答完收起时保留刚才的答案并原地显示各省结果，避免第二套“补充条件”流程。
+                  display 只在收起时写 none:写死 block 会盖掉 .qzFill 的 flex,动作条就落不到题区底了。 */}
               {quizComplete && targetFactors.length > 0 && (
-                <div className={quizOpen && scoreStep ? 'plQuizPad' : undefined}
-                  style={{ display: quizOpen && !scoreStep ? 'none' : 'block', maxWidth: quizOpen ? 600 : undefined, margin: quizOpen ? '0 auto' : '14px 0 0' }}>
+                <div className={quizOpen && scoreStep ? 'plQuizPad qzFill' : undefined}
+                  style={{ display: quizOpen && !scoreStep ? 'none' : undefined, maxWidth: quizOpen ? 600 : undefined, margin: quizOpen ? '0 auto' : '14px 0 0' }}>
                   <PnpScoreCard key={scoreKey} t={t} lang={lang}
                     ctx={{ noc: tvJob?.noc || noc, teer: targetTeer, province: scoreContextProvince, city: tvJob?.city || '' }}
                     factors={targetFactors} draws={scoreDraws}
                     streams={tvJob && tvJob.pnpStream ? { [scoreContextProvince]: tvJob.pnpStream } : {}}
-                    initial={scoreInitial} hiddenProfileInputs={hiddenScoreInputs} targetMode
+                    initial={scoreInitial} hiddenProfileInputs={hiddenScoreInputs} limits={scoreLimits} targetMode
                     questionnaireActive={quizOpen && scoreStep}
                     onQuestionnaireProgress={onScoreProgress}
                     onQuestionnaireComplete={onScoreComplete}
                     onQuestionnaireBack={onScoreBack} />
+                </div>
+              )}
+
+              {/* 各省估分 = 自愿的第二段。题数写在入口上(点之前就看得见成本),不是点完才蹦出来。
+                  答过一半再退出的,入口写的是**剩下几题**,接着答不用重来。 */}
+              {quizComplete && !quizOpen && scoreLeft > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginTop: 12, paddingTop: 12, borderTop: `1px solid ${UI.hairline}` }}>
+                  <span style={{ minWidth: 0, flex: 1 }}>
+                    <span style={{ display: 'block', color: '#111827', fontSize: 13.5, fontWeight: 700, lineHeight: 1.45 }}>{t('dp.scoreEntry')}</span>
+                    <span style={{ display: 'block', color: UI.text3, fontSize: 12, lineHeight: 1.45 }}>{t('dp.scoreEntryHint', { n: scoreLeft })}</span>
+                  </span>
+                  <button onClick={openScoreStep} style={PRIMARY_BTN}>{t('dp.scoreStart')}</button>
                 </div>
               )}
             </div>
