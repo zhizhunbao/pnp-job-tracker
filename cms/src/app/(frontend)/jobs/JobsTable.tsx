@@ -10,7 +10,7 @@ import { makeT, streamDisplay, eeDisplay, eeKeyDisplay, LANGS, COLS_COOKIE, type
 import { useLang } from '../LangProvider'
 import { IconChart, IconCheck, IconClipboard, IconCompass, IconLock, IconMap, IconMapPin, IconMaximize, IconMinimize, IconNews, IconSave, IconSettings, IconStar, IconTarget, IconUser, IconWarn, IconX } from '../Icons'
 import { ACCT_SLOT_W, SiteHeader } from '../SiteHeader'
-import { BANNER_IMGS, Button, Notice, PageBanner, PILL_BTN } from '../ui/primitives'
+import { BANNER_IMGS, Button, CARD_MD, Notice, PageBanner, PILL_BTN } from '../ui/primitives'
 import { JobCard } from '../ui/JobCard'   // 全站唯一那张职位卡(2026-08-02 拍板);landing 职位榜吃的是同一张
 import { SiteFooter } from '../SiteFooter'
 import { Avatar } from '../Avatar'
@@ -2430,6 +2430,31 @@ export function CompanyTopInfo({ company, t }: { company: CompanyDetail; t: TFn 
     </div>
   )
 }
+/** 卡片内职位列表的**唯一行形态**(2026-08-11 抽出):左=岗名蓝链 + 灰字小注,右=薪资 + 城市。
+ *  原本只长在公司弹框「在招职位」里;详情页下架岗的「相关职位」要同一副皮,于是抽成组件两处共用
+ *  ——照 JobBody「一骨架两处」先例。样式逐像素照搬,公司弹框零视觉变化。 */
+export function JobMiniRow({ id, title, sub, salaryText, city, onOpen, target }: {
+  id: number; title: string; sub?: string; salaryText?: string; city?: string
+  onOpen?: () => void      // 传了=弹框内叠开 JD 弹框;不传=纯链接跳详情页
+  target?: string
+}) {
+  return (
+    <div style={{ padding: '4px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
+      <span style={{ minWidth: 0 }}>
+        {onOpen
+          ? <button onClick={onOpen} style={{ border: 'none', background: 'none', padding: 0, font: 'inherit', cursor: 'pointer', textAlign: 'left', color: '#2563eb' }}>{title}</button>
+          : <a href={`/jobs/${id}`} target={target} rel="noreferrer" style={{ ...link, fontSize: 13 }}>{title}</a>}
+        {sub ? <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 1, lineHeight: 1.5 }}>{sub}</div> : null}
+      </span>
+      <span style={{ fontSize: 11.5, whiteSpace: 'nowrap', flexShrink: 0, textAlign: 'right' }}>
+        {salaryText ? <div style={{ color: '#15803d', fontWeight: 700, fontSize: 12.5 }}>{salaryText}</div> : null}
+        {/* #200(Frank「技能岗显示有什么意义」):裸通道档标签撤(无表头没上下文);通道信号在主表「通道」列/职位弹框 */}
+        <div style={{ color: '#9ca3af' }}>{city ? <span>{city}</span> : null}</div>
+      </span>
+    </div>
+  )
+}
+
 export function CompanyBody({ company, similar, t, lang, showTrans, hideTopInfo, onOpenJob, resolveJob, afterSponsor }: {
   company: CompanyDetail; similar: SimilarEmployer[]; t: TFn; lang: Lang; showTrans?: boolean; hideTopInfo?: boolean
   onOpenJob?: (j: JobRow) => void   // 弹框内点职位=叠开 JD 弹框;页面不传=纯链接
@@ -2573,23 +2598,12 @@ export function CompanyBody({ company, similar, t, lang, showTrans, hideTopInfo,
               const r = resolveJob?.(j.id)
               const nl = nocLocal(j)
               return (
-                <div key={j.id} style={{ padding: '4px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
-                  <span style={{ minWidth: 0 }}>
-                    {r && onOpenJob
-                      ? <button onClick={() => onOpenJob(r)} style={{ border: 'none', background: 'none', padding: 0, font: 'inherit', cursor: 'pointer', textAlign: 'left', color: '#2563eb' }}>{j.title}</button>
-                      : <a href={`/jobs/${j.id}`} target={extTarget} rel="noreferrer" style={{ ...link, fontSize: 13 }}>{j.title}</a>}
-                    {/* #200(Frank「岗位名称中文翻译默认都加上」):#196 的藏译名撤——岗位名 NOC 译名默认显示
-                        (短、就是职业名、一直有用;与职位弹框标题/详情页 H1 同款);简介/JD 正文翻译仍留给「显示中文对照」 */}
-                    {nl && nl.toLowerCase() !== j.title.toLowerCase() ? <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 1, lineHeight: 1.5 }}>{nl}</div> : null}
-                  </span>
-                  <span style={{ fontSize: 11.5, whiteSpace: 'nowrap', flexShrink: 0, textAlign: 'right' }}>
-                    {j.salaryText ? <div style={{ color: '#15803d', fontWeight: 700, fontSize: 12.5 }}>{j.salaryText}</div> : null}
-                    {/* #200(Frank「技能岗显示有什么意义」):在招职位裸通道档标签撤(无表头没上下文);通道信号在主表「通道」列/职位弹框 */}
-                    <div style={{ color: '#9ca3af' }}>
-                      {j.city ? <span>{j.city}</span> : null}
-                    </div>
-                  </span>
-                </div>
+                <JobMiniRow key={j.id} id={j.id} title={j.title}
+                  /* #200(Frank「岗位名称中文翻译默认都加上」):#196 的藏译名撤——岗位名 NOC 译名默认显示
+                     (短、就是职业名、一直有用;与职位弹框标题/详情页 H1 同款);简介/JD 正文翻译仍留给「显示中文对照」 */
+                  sub={nl && nl.toLowerCase() !== j.title.toLowerCase() ? nl : ''}
+                  salaryText={j.salaryText} city={j.city}
+                  onOpen={r && onOpenJob ? () => onOpenJob(r) : undefined} target={extTarget} />
               )
             })}
             {/* #198(Frank「这个展开不要跳转」):原「展开其余 N 个」跳搜索页退役 → 原地展开已载入职位;
@@ -2861,7 +2875,7 @@ function hasFacts(k: ColKey, job: JobRow): boolean {
 // 分节标题:走既有 col.* 人话名(通道 / PNP / EE 类别 / AIP / 薪资…),不新造术语。
 // #174 对齐详情页卡规范(Frank「对齐」):原「标题在卡外、留白分隔」退役 ——
 // 每节一张 sec 同款卡(白/#e5e7eb/r12),**每卡必有 title,单节组也不例外**(#173 铁律)。
-const MODAL_CARD: React.CSSProperties = { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '12px 16px', marginBottom: 14 }
+const MODAL_CARD: React.CSSProperties = CARD_MD   // 白卡壳全站一份(ui/primitives),这里只留个本地别名
 const MODAL_CARD_HEAD: React.CSSProperties = { fontSize: 13.5, fontWeight: 700, color: '#111827', marginBottom: 6 }
 // #186(Frank「公司弹框先别用卡片」):扁平节样式,公司弹框(CompanyPanel)用这套,公司详情页仍用 MODAL_CARD。
 // #188(Frank 发 JD 弹框截图「公司的弹框也改成这种风格」):对齐 JdFormattedView 排版——

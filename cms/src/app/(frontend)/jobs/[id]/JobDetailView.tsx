@@ -7,12 +7,13 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { LANGS } from '../i18n'
 import { useLang } from '../../LangProvider'
-import { catName, JobBody, nocLocalTitle, provName, registerCatLabels, type JobRow, type NocDesc, type Plan } from '../JobsTable'
+import { catName, JobBody, JobMiniRow, nocLocalTitle, provName, registerCatLabels, type JobRow, type NocDesc, type Plan } from '../JobsTable'
 import { SiteHeader } from '../../SiteHeader'
 import { SiteFooter } from '../../SiteFooter'
-import { PageShell } from '../../ui/primitives'
+import { CARD_MD, PageShell } from '../../ui/primitives'
 import { goBackOr } from '../../BackLink'
 import { track } from '@/lib/track'
+import type { RelatedJob } from '@/lib/jobsSql'
 
 // dims 收窄:B2 后页面只用 nocDesc(职位名译名对照);其余维度(pnp/ee/新闻…)随移民卡砍一并不用
 type CatLabel = {
@@ -22,9 +23,11 @@ type CatLabel = {
 type Dims = { nocDesc: NocDesc[]; nocCategories: CatLabel[] }
 
 const aLink: React.CSSProperties = { color: '#2563eb', textDecoration: 'none' }
-const sec: React.CSSProperties = { border: '1px solid #e5e7eb', borderRadius: 12, background: '#fff', padding: '12px 16px', marginBottom: 14 }
+const sec: React.CSSProperties = CARD_MD   // 白卡壳全站一份(ui/primitives),这里只留个本地别名
 
-export default function JobDetailView({ job, plan, dims }: { job: JobRow; plan: Plan; dims: Dims }) {
+export default function JobDetailView({ job, plan, dims, related }: {
+  job: JobRow; plan: Plan; dims: Dims; related: { sameCompany: RelatedJob[]; sameOcc: RelatedJob[] }
+}) {
   const [lang, setLang, t] = useLang()   // 语言/文案:全站一处(LangProvider),初值由服务端 cookie 定
   // 2026-07-25 Frank「点击要有动画,不然不知道点没点,跳页有延迟」:按下即置忙态(变灰+省略号),导航期间可感
   const [leaving, setLeaving] = useState(false)
@@ -87,6 +90,30 @@ export default function JobDetailView({ job, plan, dims }: { job: JobRow; plan: 
                 两者的组件、/api/pathways、判定弹框都保留(照 OccReportCard/答题卡的「只摘入口」先例),
                 判定入口仍在职位板行内与公司弹框挂着,只是不再落在详情页。 */}
           </div>
+
+          {/* 相似职位(2026-08-11 Frank「下架了应该下面列出其他相似职位」):只在 closed 岗渲染(在招岗
+              服务端就不查,related 恒空)—— 下架页原本是死路,横幅说完「已下架」就没有下一步。
+              分组小标题代替逐行标注(同一组三行都写「同省同职业」是重复文案);行内两段:岗名蓝链一行,
+              公司与城市灰字第二行,不折行超长省略——手机 375 也是一行一条。 */}
+          {related.sameCompany.length || related.sameOcc.length ? (
+            <div style={sec}>
+              <div style={{ fontSize: 13.5, fontWeight: 700, color: '#111827', marginBottom: 6 }}>{t('detail.related')}</div>
+              {/* 行形态不自造:与公司弹框「在招职位」同一个 JobMiniRow(左岗名右薪资城市)。
+                  分组小标题代替逐行标注(同一组三行都写「同省同职业」是重复文案);
+                  同公司组的灰字小注留空——组标题已经说了同公司,再贴一遍公司名既重复又在 375 上被截断。 */}
+              {([[t('detail.sameCo'), related.sameCompany, false], [t('detail.sameOcc'), related.sameOcc, true]] as [string, RelatedJob[], boolean][])
+                .filter(([, rows]) => rows.length)
+                .map(([label, rows, withCo]) => (
+                  <div key={label} onClick={() => track('rel-job', { from: 'closed' })}>
+                    <div style={{ fontSize: 11.5, color: '#9ca3af', margin: '6px 0 2px' }}>{label}</div>
+                    {rows.map((r) => (
+                      <JobMiniRow key={r.id} id={r.id} title={r.title} sub={withCo ? r.company : ''}
+                        salaryText={r.salaryText} city={r.city} />
+                    ))}
+                  </div>
+                ))}
+            </div>
+          ) : null}
 
           {/* 刀 1(入口下沉-20260731):报告入口,自包含组件,老结构不动;拿不到数/本省零在招=整卡不渲 */}
           {/* OccReportCard 已摘(2026-08-06 Frank「没什么用可以删了」):它的付费出口挂在已退役的报告体系,
