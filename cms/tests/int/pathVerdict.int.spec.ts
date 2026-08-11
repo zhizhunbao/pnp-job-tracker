@@ -151,7 +151,9 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
     const nl = byKey(list, 'NL-intl-grad')
     expect(nl.verdict).toBe('open')
     expect(nl.tier).toBe(0)
-    const none = nl.reasons.find((r) => /不设工作经验门槛/.test(r.text))
+    // 文案 2026-08-11 收短成「不要工作经验」;守的规矩没变:op=none 必须说成**官方没有这条门槛**,
+    // 不能说成「本站没查到」—— 两者在用户那里意思相反。官方原句仍挂在这条理由上(下一行断言)。
+    const none = nl.reasons.find((r) => /不要工作经验/.test(r.text))
     expect(none, 'op=none 那一行必须说成「官方没有这条门槛」,不能说成「本站没查到」').toBeTruthy()
     expect(none!.quote).toContain('no minimum work-experience requirement')
     expect(none!.kind).toBe('met')
@@ -192,7 +194,7 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
     const lastBuild = data.draws.filter((d) => d.province === 'BC' && /Build: Construction Trades/.test(d.stream) && d.score != null)
       .sort((a, b) => (a.drawDate < b.drawDate ? 1 : -1))[0]
     expect(lastBuild, 'BC Build 抽选行不该消失').toBeTruthy()
-    expect(build.reasons.some((r) => r.text.includes(String(lastBuild.score)) && /Build: Construction Trades/.test(r.text))).toBe(true)
+    expect(build.reasons.some((r) => r.text.includes(String(lastBuild.score)) && /最低邀请分/.test(r.text))).toBe(true)
     expect(build.score, 'BC 没有自评估分器 → 不给 score,只摆线').toBeUndefined()
   })
 
@@ -211,7 +213,7 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
     expect(work, '「若先在外省上班」的反事实必须摆出来').toBeTruthy()
     expect(work!.text).toContain('595')
 
-    const lines = mb.reasons.find((r) => /天花板 715/.test(r.text))
+    const lines = mb.reasons.find((r) => /上界 715/.test(r.text))
     expect(lines).toBeTruthy()
     expect(lines!.text).toContain('632')
     expect(lines!.text).toContain('825')

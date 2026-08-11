@@ -470,7 +470,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
   if (!rows.length) {
     reasons.push({
       kind: 'needs-info',
-      text: `本站尚未收录 ${spec.stream} 的门槛条文${spec.note ? `(${spec.note})` : ''} —— 这是本站的缺口,不等于官方没有要求`,
+      text: `本站尚未收录 ${spec.stream} 的门槛条文`,
     })
     return { key: spec.key, province: spec.province, stream: spec.stream, verdict: 'needs-info', tier: null, reasons, availability: 'not-collected' }
   }
@@ -497,7 +497,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
     }
     const indemand = data.occupations.filter((o) => o.province === spec.reqProvince && o.type === 'indemand' && o.noc === p.noc)
     for (const o of indemand) {
-      reasons.push({ kind: 'met', text: `${p.noc} ${o.name} 在「${o.stream}」清单上(定向/受理信号,不是资格认定)`, evidence: evOfOcc(o) })
+      reasons.push({ kind: 'met', text: `${p.noc} ${o.name} 在「${o.stream}」清单上`, evidence: evOfOcc(o) })
     }
     // 明文要求「必须在清单上」的通道(PE 的 Occupations in Demand 子通道)
     if (spec.listRequired) {
@@ -509,7 +509,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
         const anchor = rows.find((r) => r.factor === 'experience') ?? rows[0]
         reasons.push({
           kind: 'excluded',
-          text: `${p.noc} 不在 ${list[0].stream} 清单上(该清单共 ${list.length} 个职业)—— 走得快的那条子通道(12 个月)对本职业关着`,
+          text: `${p.noc} 不在 ${list[0].stream} 清单上,12 个月子通道对本职业关闭`,
           quote: quoteOfReq(anchor),               // 官方原文自己写明 OID 子通道「limited to its named NOC list」
           evidence: evOfReq(anchor),
         })
@@ -532,13 +532,13 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
         if (!ok) blockedBy = blockedBy ?? 'language'
         reasons.push({
           kind: ok ? 'met' : 'gap',
-          text: `${prog} 语言门槛 CLB ${r.value}${ok ? `,你 CLB ${p.clb} 达标` : `,你 CLB ${p.clb},差 ${(r.value as number) - p.clb} 档`}`,
+          text: `${prog} 语言门槛 CLB ${r.value}${ok ? ' 达标' : `,差 ${(r.value as number) - (p.clb as number)} 档`}`,
           quote: quoteOfReq(r), evidence: evOfReq(r),
         })
       }
     }
     if (!langRowsSeen) {
-      reasons.push({ kind: 'needs-info', text: `本站尚未收录 ${spec.stream} 的语言门槛条文 —— 不等于这条通道不要求语言` })
+      reasons.push({ kind: 'needs-info', text: `本站尚未收录 ${spec.stream} 的语言门槛条文` })
     }
   } else {
     const langRows = rows.filter((r) => r.subject === 'applicant')
@@ -547,16 +547,18 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
     if (lang) {
       if (lang.verdict === 'unknown') {
         missingSlots.push('clb')
-        reasons.push({ kind: 'needs-info', text: '语言门槛判不了:档案没有 CLB 成绩', evidence: lang.evidence })
+        reasons.push({ kind: 'needs-info', text: '语言门槛判不了,档案缺 CLB 成绩', evidence: lang.evidence })
       } else if (lang.verdict === 'pass') {
         reasons.push({
           kind: 'met',
-          text: lang.need == null ? '官方明说这一档不要求语言成绩' : `语言门槛 CLB ${lang.need},你 CLB ${lang.have} 达标`,
+          // 「不要语言成绩」而不是「官方明说这一档不要求语言成绩」(2026-08-11 Frank 定的口径):
+          // 官方原句就挂在这条下面,前缀与解释是说给自己听的。同理下面那条经验门槛。
+          text: lang.need == null ? '不要语言成绩' : `语言门槛 CLB ${lang.need} 达标`,
           quote: lang.evidence.label, evidence: lang.evidence,
         })
       } else {
         blockedBy = blockedBy ?? 'language'
-        reasons.push({ kind: 'gap', text: `语言门槛 CLB ${lang.need},你 CLB ${lang.have},差 ${lang.short} 档`, quote: lang.evidence.label, evidence: lang.evidence })
+        reasons.push({ kind: 'gap', text: `语言门槛 CLB ${lang.need},差 ${lang.short} 档`, quote: lang.evidence.label, evidence: lang.evidence })
       }
     } else {
       reasons.push({ kind: 'needs-info', text: `本站尚未收录 ${spec.stream} 的语言门槛条文 —— 不等于这条通道不要求语言` })
@@ -569,7 +571,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
   // ON(3-6 月)最坏 tier1 —— 排序按它,缺槽的通道才不会全挤成一堆无差别的 0。
   const gaps: number[] = []
   if (!gate.picked) {
-    reasons.push({ kind: 'needs-info', text: `本站尚未收录 ${spec.stream} 的工作经验门槛条文 —— 这是本站的缺口,不等于官方不要求经验` })
+    reasons.push({ kind: 'needs-info', text: `本站尚未收录 ${spec.stream} 的工作经验门槛条文` })
   }
   if (gate.gap != null) gaps.push(gate.gap)
   else if (gate.need != null) gaps.push(gate.need)
@@ -627,7 +629,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
     if (base.riskForeignStudy && studyRow) {
       reasons.push({
         kind: 'gap',
-        text: `曼省对外省学习倒扣 ${Math.abs(studyRow.points ?? 0)} 分(全国唯一一个把外省经历算负分的省),已计入 ${mbNow.total} 分`,
+        text: `外省学习倒扣 ${Math.abs(studyRow.points ?? 0)} 分,全国唯一,已计入 ${mbNow.total} 分`,
         quote: studyRow.label, evidence: evOfFactor(studyRow),
       })
     }
@@ -635,7 +637,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
       const worse = estimateMbEoi(data.scoreFactors, { ...base, riskForeignWork: true }).total
       reasons.push({
         kind: 'gap',
-        text: `若先在曼省以外的省份上班再转曼省,再扣 ${Math.abs(workRow.points ?? 0)} 分 → ${worse} 分`,
+        text: `外省工作经历再扣 ${Math.abs(workRow.points ?? 0)} 分,降至 ${worse} 分`,
         quote: workRow.label, evidence: evOfFactor(workRow),
       })
     }
@@ -645,7 +647,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
       const lines = mbScored.map((d) => `${d.score}(${d.drawDate}${d.note ? ' · ' + d.note : ''})`).join('、')
       reasons.push({
         kind: 'gap',
-        text: `估分 ${mbNow.total}、天花板 ${ceil ?? '—'}(语言拉到官方最高档);本站收录的有分线抽选是 ${lines}`,
+        text: `估分 ${mbNow.total},语言拉满上界 ${ceil ?? '—'},最近抽选 ${lines}`,
         evidence: evOfDraw(mbScored[0]),
       })
     }
@@ -653,13 +655,13 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
   } catch (e) {
     // 估分器挑不出行(档案落在官方表的档位之外)→ 如实说判不了,不给一个编出来的分
     score = undefined
-    reasons.push({ kind: 'needs-info', text: `本站的估分器对这份档案挑不出官方档位(${(e as Error).message}),这条通道不给估分` })
+    reasons.push({ kind: 'needs-info', text: '本站估分器挑不出官方档位,不给估分' })
   }
   // 没有自评估分器、但有该通道的抽选线时,把线摆出来(不冒充成「你的分」)
   if (!score && draw && draw.score != null) {
     reasons.push({
       kind: 'met',
-      text: `最近一轮 ${draw.stream}(${draw.drawDate})的最低邀请分是 ${draw.score}${draw.scale ? `(${draw.scale} 分制)` : ''};本站没有这条通道的自评估分器,不替你算分`,
+      text: `${draw.drawDate} 最近一轮最低邀请分 ${draw.score}${draw.scale ? ` ${draw.scale} 分制` : ''}`,
       evidence: evOfDraw(draw),
     })
   }
@@ -671,7 +673,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
   if (scoreGulf && score) {
     reasons.push({
       kind: 'gap',
-      text: `估分 ${score.value}、把语言拉到官方最高档的上界也只有 ${score.ceiling},对照 ${score.refLabel} 的 ${score.refLine} 分 —— 这个差距不是靠攒时间能补的`,
+      text: `估分 ${score.value},语言拉满上界 ${score.ceiling},对照 ${score.refLabel} ${score.refLine} 分`,
       evidence: draw ? evOfDraw(draw) : score.evidence,
     })
   }
@@ -685,23 +687,27 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
     if (need == null) continue
     // need=0 = 官方明说无门槛 → 恒达标(缺经验月数也一样:一道不存在的闸没有「判不了」)
     const met = need === 0 || (gate.have != null && gate.have >= need)
-    const tenureNote = r.basis === 'employerTenure' ? '(官方量的是「在这家雇主连续全职多久」,不是同职业总经验)' : ''
+    const gateName = r.basis === 'employerTenure' ? '同雇主在职门槛' : '工作经验门槛'
     reasons.push({
       kind: met ? 'met' : gate.have == null ? 'needs-info' : hardKind,
       text: r.op === 'none'
-        ? '官方明说这条通道不设工作经验门槛 —— 「没有门槛」不等于「本站没查到」'
+        ? '不要工作经验'
         : gate.have == null
-          ? `工作经验门槛 ${need} 个月${tenureNote},档案缺经验月数,判不了`
+          ? `${gateName} ${need} 个月,档案缺经验月数`
           : met
-            ? `工作经验门槛 ${need} 个月${tenureNote},你 ${gate.have} 个月,达标`
-            : `工作经验门槛 ${need} 个月${tenureNote},你 ${gate.have} 个月,还差 ${need - gate.have} 个月`,
+            ? `${gateName} ${need} 个月 达标`
+            // 差额只在**已经攒了一部分**时才说:0 经验时「差 N 个月」与门槛本身是同一个数,
+            // 加上档位徽标就成了同一个数字说三遍(2026-08-11 Frank 点名)
+            : gate.have === 0
+              ? `${gateName} ${need} 个月`
+              : `${gateName} ${need} 个月,差 ${need - gate.have} 个月`,
       quote: quoteOfReq(r), evidence: evOfReq(r),
     })
   }
   for (const r of gate.unknownCond) {
     reasons.push({
       kind: 'needs-info',
-      text: `另有一档门槛(适用条件:${r.appliesCondition})判不了 —— 档案缺判定这个条件所需的信息`,
+      text: '另有一档门槛判不了,档案缺判定所需信息',
       quote: quoteOfReq(r), evidence: evOfReq(r),
     })
   }
@@ -709,15 +715,17 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
     reasons.push({
       kind: res.gap == null ? 'needs-info' : res.gap > 0 ? hardKind : 'met',
       text: res.gap == null
-        ? `居住门槛 ${res.need} 个月,档案只知道现居省、不知道住了多久`
-        : `居住门槛 ${res.need} 个月,你现居 ${p.province},还差 ${res.gap} 个月`,
+        ? `居住门槛 ${res.need} 个月,档案缺居住时长`
+        : res.gap === res.need
+          ? `居住门槛 ${res.need} 个月`
+          : `居住门槛 ${res.need} 个月,差 ${res.gap} 个月`,
       quote: quoteOfReq(res.row), evidence: evOfReq(res.row),
     })
   }
   for (const r of selfEmpRows) {
     if (p.foreignExpSelfEmployed !== true) continue
     blockedBy = blockedBy ?? 'selfEmployed'
-    reasons.push({ kind: 'gap', text: '你的海外经历是自雇,这条通道明文不计入工作经验', quote: quoteOfReq(r), evidence: evOfReq(r) })
+    reasons.push({ kind: 'gap', text: '自雇经历不计入工作经验', quote: quoteOfReq(r), evidence: evOfReq(r) })
   }
 
   // NL:指定雇主名录里申报过这个 NOC 的雇主数(supporting fact)
@@ -726,7 +734,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
     const src = hits.find((e) => e.url && e.fetched)
     reasons.push({
       kind: hits.length ? 'met' : 'gap',
-      text: `本站收录的 ${data.designatedEmployers.filter((e) => e.province === 'NL').length} 家 NL 指定雇主里,有 ${hits.length} 家申报过 ${p.noc}${hits.length ? `(${hits.map((e) => e.name).join('、')})` : ''}`,
+      text: `${data.designatedEmployers.filter((e) => e.province === 'NL').length} 家 NL 指定雇主中 ${hits.length} 家申报过 ${p.noc}`,
       // mart 的 designated_employers 行不带 url/fetched(见类型注释的数据缺口)→ 挂不上就不挂,不借别的页的出处充数
       ...(src ? { evidence: { url: src.url as string, fetched: src.fetched as string, label: 'NLPNP designated employers' } } : {}),
     })
@@ -851,7 +859,7 @@ export function pathLevers(profile: VerdictProfile, data: VerdictData, opts: { c
     if (affected.length) {
       levers.push({
         key: 'teer-downgrade',
-        text: `把岗位换成 ${downNoc}(TEER 5)后,${affected.length} 条现在开着的通道判定会掉档:${affected.join('、')} —— 低 TEER 的经验匹配不上高 TEER 的门槛,这一年是白干`,
+        text: `换成 ${downNoc} TEER 5 的岗位后,${affected.length} 条通道掉档:${affected.join('、')}`,
         affected,
         reasons: teerRows.slice(0, 4).map((r) => ({
           kind: 'excluded' as const,
@@ -891,7 +899,7 @@ export function pathLevers(profile: VerdictProfile, data: VerdictData, opts: { c
     if (gains.length) {
       levers.push({
         key: 'clb-boost',
-        text: `把语言从 CLB ${profile.clb} 提到 CLB ${target}:${gains.map((g) => `${g.province} +${g.delta}`).join('、')}(官方分值表查表得出)`,
+        text: `语言从 CLB ${profile.clb} 提到 CLB ${target}:${gains.map((g) => `${g.province} +${g.delta}`).join('、')}`,
         gains,
       })
     }

@@ -14,6 +14,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { QuizChecks, QuizChoices, QuizNav, QuizSub, QuizTitle } from '../quiz/QuizUI'
 import type { Lang, TFn } from './i18n'
+import { officialLabel as label } from '@/lib/officialLabels'
 import { DEFAULT_PROFILE, EDU_KEYS, scoreProvince, streamMatches, type DrawRow, type EduKey, type ScoreFactor, type SelfProfile } from '@/lib/pnpSelfScore'
 
 // 打分是**关于你这个人**的功能,不绑某一个岗位(Frank 2026-07-27「应该单独弄个功能吧,
@@ -32,75 +33,6 @@ const guessArea = (city: string): number => {
   if (AREA2.some((m) => c.includes(m))) return 1
   return 2
 }
-
-// 官方标签是英文原文;中文/韩文界面按这张表出人话(**只译不改口径**,分值仍来自官方表)。
-const L10N: Record<string, { zh?: string; ko?: string }> = {
-  // BC
-  'At least 1 year of directly related experience in Canada': { zh: '在加拿大有 1 年以上同职业经验', ko: '캐나다 내 동일 직종 1년 이상' },
-  'Currently working full-time in B.C. for the employer in the occupation identified in the BC PNP registration': { zh: '目前在本省为该雇主全职做同一职业', ko: '현재 해당 주에서 같은 고용주와 동일 직종 풀타임' },
-  'Post-secondary education completed in B.C., or': { zh: '学历在本省读的', ko: '해당 주에서 취득한 학력' },
-  'Post-secondary education completed in Canada (outside of B.C.)': { zh: '学历在加拿大其它省读的', ko: '캐나다 타 주에서 취득' },
-  'Eligible professional designation in B.C.': { zh: '持本省认可的执业资格', ko: '해당 주 인정 전문 자격 보유' },
-  'Language proficiency in both English and French': { zh: '英法双语都达标', ko: '영어·프랑스어 모두 충족' },
-  'Area 1: Metro Vancouver Regional District': { zh: 'Area 1 大温地区', ko: 'Area 1 메트로 밴쿠버' },
-  'Area 2: Squamish, Abbotsford, Agassiz, Mission, and Chilliwack': { zh: 'Area 2 Squamish 等 5 市镇', ko: 'Area 2 Squamish 등 5개 지역' },
-  'Area 3: Areas of B.C. not included in Area 1 or 2': { zh: 'Area 3 其余地区', ko: 'Area 3 기타 지역' },
-  'Regional Experience, or': { zh: '有地区工作经验或地区院校毕业', ko: '지역 근무 경력 또는 지역 졸업' },
-  // MB(MPNP EOI 加分/扣分项 —— Risk Assessment 两条是负分,符号由 Tick 按分值出)
-  'Work experience in another province': { zh: '有外省工作经历', ko: '타 주 근무 경력' },
-  'Fully recognized by provincial licensing body': { zh: '职业资格获省监管机构完全认证', ko: '주 면허기관 완전 인정 자격' },
-  'Second Official Language — CLB 5 or higher (overall)': { zh: '第二官方语言 CLB 5 以上', ko: '제2공용어 CLB 5 이상' },
-  'Studies in another province': { zh: '有外省就读经历', ko: '타 주 학업 경력' },
-  'Close relative in Manitoba': { zh: '在本省有近亲' },
-  'Previous authorized work experience in Manitoba (six months or more)': { zh: '曾在本省合法工作至少 6 个月' },
-  'Completed post-secondary program in Manitoba (two years or more)': { zh: '在本省完成至少 2 年的高等教育项目' },
-  'Completed post-secondary program in Manitoba (one year)': { zh: '在本省完成 1 年高等教育项目' },
-  'Ongoing employment in Manitoba for six months or more with long-term job offer from the same employer': { zh: '已为同一本省雇主工作至少 6 个月并获长期 offer' },
-  'Invitation to Apply under a Strategic Initiative': { zh: '获本省战略项目邀请' },
-  'Immigration destination in Manitoba outside of Winnipeg': { zh: '计划定居温尼伯以外地区' },
-  'Close relative in another province and no close relative in Manitoba': { zh: '外省有近亲、本省无近亲' },
-  'Previous immigration application to another province': { zh: '曾向其他省申请移民' },
-  // ON Workforce Priority
-  'Over 24 months working in job offer position': { zh: '已在 offer 对应岗位工作超过 24 个月' },
-  '13 to 24 months working in job offer position': { zh: '已在 offer 对应岗位工作 13-24 个月' },
-  '6 to 12 months working in job offer position': { zh: '已在 offer 对应岗位工作 6-12 个月' },
-  'Less than 6 months working in job offer position or not currently working in position': { zh: '不足 6 个月或目前未在该岗位工作' },
-  '$70k or more earnings in a year': { zh: '加拿大年报税收入 7 万加元以上' },
-  '$50k to $69,999': { zh: '加拿大年报税收入 5万-69,999 加元' },
-  '$30k to $49,999': { zh: '加拿大年报税收入 3万-49,999 加元' },
-  'Under $30k earnings in a year': { zh: '加拿大年报税收入不足 3 万加元' },
-  'With valid work permit': { zh: '持有效工签' },
-  'With valid study permit': { zh: '持有效学签' },
-  'Without valid work or study permit': { zh: '没有有效工签或学签' },
-  'More than one Canadian credential': { zh: '有多个加拿大学历' },
-  'One Canadian credential': { zh: '有一个加拿大学历' },
-  'No Canadian credential': { zh: '没有加拿大学历' },
-  'Northern Ontario': { zh: '安省北部' },
-  'Eastern Ontario': { zh: '安省东部' },
-  'Central Ontario outside GTA': { zh: '安省中部（GTA 以外）' },
-  'Southwestern Ontario': { zh: '安省西南部' },
-  'Inside GTA (except Toronto)': { zh: 'GTA 内（多伦多除外）' },
-  'Toronto': { zh: '多伦多' },
-  '$40 per hour or higher': { zh: '时薪 40 加元以上' },
-  '$35 to $39.99 per hour': { zh: '时薪 35-39.99 加元' },
-  '$30 to $34.99 per hour': { zh: '时薪 30-34.99 加元' },
-  '$25 to $29.99 per hour': { zh: '时薪 25-29.99 加元' },
-  '$20 to $24.99 per hour': { zh: '时薪 20-24.99 加元' },
-  'Less than $20 per hour': { zh: '时薪不足 20 加元' },
-  // SK
-  'High skilled employment offer from a Saskatchewan employer': { zh: '有本省雇主的高技能岗 offer', ko: '해당 주 고용주의 고숙련 오퍼 보유' },
-  'Close family relative in Saskatchewan': { zh: '在本省有近亲(公民或永居)', ko: '해당 주에 가까운 친척 거주' },
-  'Past work experience in Saskatchewan': { zh: '在本省工作过(近 5 年满 12 个月)', ko: '해당 주 근무 경력(최근 5년 12개월)' },
-  'Past student experience in Saskatchewan': { zh: '在本省读过书(满一学年)', ko: '해당 주 유학 경험(1학년도 이상)' },
-  // NL Express Entry Skilled Worker - Annex A adaptability
-  'Close relative in Newfoundland and Labrador': { zh: '本人或配偶在本省有符合范围的近亲', ko: '본인 또는 배우자의 해당 주 가까운 친척' },
-  'Previous work experience in Newfoundland and Labrador': { zh: '近 5 年曾在本省持有效工签工作至少 12 个月', ko: '최근 5년 내 해당 주에서 유효한 취업허가로 12개월 이상 근무' },
-  'Previous student experience in Newfoundland and Labrador': { zh: '曾在本省认可院校持学签全日制就读至少 1 学年', ko: '해당 주 인정 교육기관에서 유효한 유학허가로 1학년도 이상 수학' },
-}
-// 官方原文里「…, or」的那个 or 是**表格排版**留下的(下一行接着念),单拎出来放进选项就是个悬空的 or
-// (英文界面实拍:「Post-secondary education completed in B.C., or」)。二选一改由 UI 表达,尾巴去掉。
-const label = (raw: string, lang: string) =>
-  ((lang === 'zh' ? L10N[raw]?.zh : lang === 'ko' ? L10N[raw]?.ko : '') || raw).replace(/[,，]?\s*or\s*$/i, '')
 
 // 年龄下拉的选项档(打分按选中值算,预填吸附也以此为准 —— 两处必须同一张表)
 const AGES = [17, 19, 25, 30, 34, 38, 42, 45, 48, 52]

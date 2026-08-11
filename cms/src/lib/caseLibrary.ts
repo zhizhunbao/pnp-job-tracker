@@ -15,7 +15,9 @@ export const CASES: CaseEntry[] = [
   {
     id: 'C01',
     label: { zh: '木匠:安省毕业,0 经验,中介推曼省', en: 'Carpenter: graduated in ON, no experience, agent pushes MB', ko: '목수: 온타리오 졸업, 경력 0, 중개인은 MB 추천' },
-    q: { zh: 'MB/SK/海洋省哪个靠谱?中介说曼省稳,要收 2 万。', en: 'MB, SK or Atlantic — which is real? The agent says MB is safe and wants $20k.', ko: 'MB/SK/대서양 중 어디가 확실한가요? 중개인은 MB가 안전하다며 2만 불을 요구합니다.' },
+    // 2026-08-11 Frank 更正:中介说的不是收费,是「80% 概率拿 PR + 我给你介绍雇主」——
+    // 这是真人原话,记错一个字,整页答的就是另一个问题。
+    q: { zh: 'MB/SK/海洋省哪个靠谱?中介说曼省稳,80% 概率拿 PR,雇主他来介绍。', en: 'MB, SK or Atlantic — which is real? The agent says MB is safe, an 80% chance of PR, and that he will line up the employer.', ko: 'MB/SK/대서양 중 어디가 확실한가요? 중개인은 MB가 안전하고 영주권 확률 80%이며 고용주도 소개해 준다고 합니다.' },
     preset: { status: 'jobhunting', nocs: ['72310'], eduBand: 2, totalExpBand: 1, expBand: 1 },
   },
   {
