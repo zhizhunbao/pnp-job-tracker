@@ -12,7 +12,7 @@ import { useLang } from '../stats/ui'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { BackLink } from '../BackLink'
-import { BANNER_IMGS, PageBanner, PageShell, SectionTabs, chipStyle } from '../ui/primitives'
+import { BANNER_IMGS, CARD_SHELL, PageBanner, PageShell, SectionTabs, chipStyle } from '../ui/primitives'
 import { IconNews } from '../Icons'
 import { newsPublisher, newsRegionName, NEWS_REGIONS, type NewsCard, type NewsComment, type NewsHero, type NewsRow } from './shared'
 
@@ -243,7 +243,7 @@ export function NewsListView({ items, hero, cmtCounts }: { items: NewsCard[]; he
                 </div>
                 {rows.map((n) => (
                   <a key={n.slug} href={`/news/${n.slug}`} className="cardHover"
-                    style={{ display: 'flex', gap: 14, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '12px 14px', marginBottom: 10, textDecoration: 'none', color: 'inherit', alignItems: 'flex-start', height: 128, boxSizing: 'border-box', overflow: 'hidden' }}>
+                    style={{ ...CARD_SHELL, display: 'flex', gap: 14, padding: '12px 14px', marginBottom: 10, textDecoration: 'none', color: 'inherit', alignItems: 'flex-start', height: 128, boxSizing: 'border-box', overflow: 'hidden' }}>
                     {/* 行定高 128(Frank:「卡片的宽度和高度也应该是固定的」);标题 2 行/摘要 1 行截断,脚钉底 */}
                     <ListTile region={n.region} />
                     <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: 4, height: '100%' }}>
@@ -353,7 +353,7 @@ function CommentsSection({ t, slug, comments, loggedIn }: { t: TFn; slug: string
     )
   }
   return (
-    <section id="comments" style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '16px 18px', marginTop: 16 }}>
+    <section id="comments" style={{ ...CARD_SHELL, padding: '16px 18px', marginTop: 16 }}>
       <h3 style={{ fontSize: 14.5, margin: '0 0 10px' }}>{t('news.cmt.title', { n: comments.length })}</h3>
       {loggedIn ? (
         <div style={{ marginBottom: 12 }}>
@@ -429,7 +429,7 @@ export function NewsDetailView({ row, comments, loggedIn }: { row: NewsRow; comm
       <PageShell pad="18px 1.25rem 32px">
       <div style={{ maxWidth: 860, margin: '0 auto' }}>
         <div style={{ marginBottom: 12 }}><BackLink href="/news" label={t('news.back')} /></div>
-        <article style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '22px 26px' }}>
+        <article style={{ ...CARD_SHELL, padding: '22px 26px' }}>
           <div style={{ fontSize: 11.5, color: '#9ca3af', display: 'flex', gap: 8, alignItems: 'baseline', flexWrap: 'wrap' }}>
             <RegionTag t={t} region={row.region} />
             <ImpBadge t={t} lang={lang} importance={row.importance} note={row.importanceNote} />

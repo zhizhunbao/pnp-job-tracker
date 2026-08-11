@@ -8,7 +8,7 @@ import { useLang } from '../../LangProvider'
 import { SiteHeader } from '../../SiteHeader'
 import { SiteFooter } from '../../SiteFooter'
 import { BackLink } from '../../BackLink'
-import { Button, Card, CardKV, Notice, PageShell, Tag, UI } from '../../ui/primitives'
+import { Button, CARD_SHELL, Card, CardKV, Notice, PageShell, Tag, UI } from '../../ui/primitives'
 import { DataTable } from '../../ui/DataTable'
 import { PricingModal } from '../../jobs/PricingModal'
 import { IconScale, IconStar } from '../../Icons'
@@ -72,21 +72,18 @@ export function CompareEmployersView({ names, rows, pro, loggedIn }: {
               <li>{t('ce.v2')}</li>
               <li>{t('ce.v3')}</li>
             </ul>
-            <div style={{ position: 'relative', border: '1px solid #e5e7eb', borderRadius: 12, overflow: 'hidden', maxWidth: 680 }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5, background: '#fff' }}>
-                <thead><tr>
-                  <th style={{ textAlign: 'left', padding: '8px 12px', fontSize: 12.5, color: '#6b7280', borderBottom: '1px solid #e5e7eb' }}></th>
-                  {['Maple Health Group', 'Northern Build Co', 'Prairie Foods Ltd'].map((n) => <th key={n} style={{ textAlign: 'left', padding: '8px 12px', fontSize: 12.5, color: '#6b7280', borderBottom: '1px solid #e5e7eb' }}>{n}</th>)}
-                </tr></thead>
-                <tbody>
-                  {([[t('dir.col.skilled'), ['168', '52', '9']], [t('rank.col.openJobs'), ['24', '11', '37']], [t('stats.named'), ['12', '3', '0']], [t('ce.provDiff'), ['ON', 'AB', 'SK']]] as [string, string[]][]).map(([label, vals]) => (
-                    <tr key={label}>
-                      <td style={{ padding: '8px 12px', fontSize: 12.5, color: '#9ca3af', borderBottom: '1px solid #f3f4f6', whiteSpace: 'nowrap' }}>{label}</td>
-                      {vals.map((v, i) => <td key={i} style={{ padding: '8px 12px', fontSize: 13, borderBottom: '1px solid #f3f4f6', filter: 'blur(4px)', userSelect: 'none' }}>{v}</td>)}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div style={{ ...CARD_SHELL, position: 'relative', overflow: 'hidden', maxWidth: 680 }}>
+              {/* 2026-08-11(Frank「都改成一套」):自造裸 <table> → 公共 DataTable(bare=外面这层就是卡壳)。
+                  这张是**转置**表(指标当行、公司当列)且是模糊假数据的付费诱导样例 —— 行=指标,列=三家公司 */}
+              <DataTable<[string, string[]]> bare rowKey={(r) => r[0]}
+                rows={[[t('dir.col.skilled'), ['168', '52', '9']], [t('rank.col.openJobs'), ['24', '11', '37']], [t('stats.named'), ['12', '3', '0']], [t('ce.provDiff'), ['ON', 'AB', 'SK']]]}
+                cols={[
+                  { key: 'metric', label: '', nowrap: true, render: (r) => <span style={{ color: '#9ca3af' }}>{r[0]}</span> },
+                  ...['Maple Health Group', 'Northern Build Co', 'Prairie Foods Ltd'].map((n, i) => ({
+                    key: n, label: n,
+                    render: (r: [string, string[]]) => <span style={{ filter: 'blur(4px)', userSelect: 'none' as const, display: 'inline-block' }}>{r[1][i]}</span>,
+                  })),
+                ]} />
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, flexWrap: 'wrap' }}>
                 <span style={{ background: 'rgba(255,255,255,.92)', border: '1px solid #fde68a', color: '#92400e', fontSize: 12.5, fontWeight: 600, borderRadius: 999, padding: '5px 12px' }}>{t('cmp.demo')}</span>
                 <Button kind="pro" sm onClick={() => setPricing(true)}><IconStar /> {t('cmp.demoCta')}</Button>

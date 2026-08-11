@@ -13,7 +13,7 @@ import { SavedSearchList } from './SavedSearchList'
 import { SavedJobsList } from './SavedJobsList'
 import { ResumeArchive } from './ResumeArchive'
 import { Avatar } from '../Avatar'
-import { Button, Notice } from '../ui/primitives'
+import { Button, CARD_SHELL, Notice } from '../ui/primitives'
 
 // profile 上的简历存档两键(E11-08)只在本页读显示,不进 ProfileForm 的表单值 → 就地扩类型,不动 ProfileValue
 type ProfileWithResume = ProfileValue & { resumeText?: string | null; resumeSavedAt?: string | null }
@@ -28,7 +28,7 @@ function RedirectToLogin() {
 }
 
 // H 卡片规格(#114 E-I 批):页面内卡片一律平面描边,阴影只给弹框/下拉
-const card: React.CSSProperties = { padding: '1.6rem 1.9rem', border: '1px solid #e5e7eb', borderRadius: 12, background: '#fff' }
+const card: React.CSSProperties = { ...CARD_SHELL, padding: '1.6rem 1.9rem' }
 const btn: React.CSSProperties = { width: '100%', padding: '10px 0', fontSize: 14, fontWeight: 600, border: 'none', borderRadius: 9, cursor: 'pointer', marginTop: 14 }
 
 type Sec = 'overview' | 'profile' | 'favs' | 'sjobs' | 'saved' | 'buy'

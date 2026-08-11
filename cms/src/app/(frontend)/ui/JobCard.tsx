@@ -13,13 +13,14 @@ import React from 'react'
 import { UI } from './primitives'
 
 // 可点文本:三种形态都支持 —— 纯文本(不传 href/onClick)、链接、拦截成弹框的链接
-export type CardLink = { text: string; href?: string; onClick?: (e: React.MouseEvent) => void; title?: string }
+// target:榜单卡的岗名直链官方原帖(站外),要新开页 —— 2026-08-11 榜单并卡时加,站内链不传即同标签
+export type CardLink = { text: string; href?: string; onClick?: (e: React.MouseEvent) => void; title?: string; target?: string }
 
 function LinkText({ v, style }: { v: CardLink; style: React.CSSProperties }) {
   const clickable = !!(v.href || v.onClick)
   if (!clickable) return <span title={v.title} style={style}>{v.text}</span>
   return (
-    <a href={v.href || undefined} title={v.title} onClick={v.onClick}
+    <a href={v.href || undefined} title={v.title} onClick={v.onClick} target={v.target} rel={v.target ? 'noreferrer' : undefined}
       style={{ ...style, color: UI.primary, textDecoration: 'none', cursor: 'pointer' }}>{v.text}</a>
   )
 }

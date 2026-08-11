@@ -11,7 +11,7 @@ import { useEffect, useRef, useState } from 'react'
 import { AuthModal } from './AuthForm'
 import { makeT, streamDisplay, type Lang, type TFn } from './i18n'
 import { UpgradeModal } from './UpgradeModal'
-import { ProCard } from '../ui/primitives'
+import { CARD_MD, CARD_SHELL, ProCard } from '../ui/primitives'
 import { track } from '@/lib/track'
 
 // ── wire(与 /api/triple-verdict 的响应一一对应)─────────────────────────────
@@ -49,7 +49,7 @@ export const TV_PILL: React.CSSProperties = {
 /** 弹框/详情页的入口卡:标题(详情页)或卡头(弹框)+ 主按钮,零解释句 */
 export function TvEntryCard({ t, lg, onOpen }: { t: TFn; lg?: boolean; onOpen: () => void }) {
   return (
-    <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: lg ? '14px 16px' : '12px 16px', margin: lg ? '12px 0 0' : '0 0 14px' }}>
+    <div style={{ ...CARD_SHELL, padding: lg ? '14px 16px' : '12px 16px', margin: lg ? '12px 0 0' : '0 0 14px' }}>
       <div style={{ fontSize: lg ? 14.5 : 13.5, fontWeight: 700, color: '#111827', marginBottom: lg ? 10 : 8 }}>
         {t(lg ? 'tv.entryTitle' : 'tv.head')}
       </div>
@@ -158,7 +158,7 @@ function lockLabel(t: TFn, key: string): string {
 }
 
 // ── 样式(token 与 JobsTable MODAL_CARD / primitives 同源)────────────────────
-const CARD: React.CSSProperties = { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '12px 16px', marginBottom: 14 }
+const CARD: React.CSSProperties = CARD_MD   // 白卡壳全站一份(ui/primitives),这里只留个本地别名
 const CARD_HEAD: React.CSSProperties = { fontSize: 13.5, fontWeight: 700, color: '#111827', marginBottom: 6 }
 const ICON: Record<string, { bg: string; fg: string; ch: string }> = {
   pass: { bg: '#dcfce7', fg: '#15803d', ch: '✓' },

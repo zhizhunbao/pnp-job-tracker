@@ -642,7 +642,7 @@ export function StartView({ stats }: { stats: HomeStats }) {
           .plNums b{font-size:32px}
           .plNums span,.plNums i{font-size:12.5px}
           .plTable{display:block}.plCards{display:none}
-          .plDrawTable{display:table}.plDrawCards{display:none}
+          .plDrawTable{display:block}.plDrawCards{display:none}   /* 抽选表并入公共 DataTable 后这里是包裹 div,不再是 <table> */
           .plBtn{padding:13px 28px;font-size:15px}
           .plCta{flex-direction:row;align-items:center}
           .plCta .plBtn{flex:0 0 auto;padding:12px 28px}
@@ -903,35 +903,24 @@ export function StartView({ stats }: { stats: HomeStats }) {
                 <Sec id="s5" title={t('pulse.s5')}
                   right={<><TopN v={drawsN} on={setDrawsN} max={stats.draws.length} /><a href="/plan/pr" style={moreA}>{t('plan.pr.title')}</a></>}>
                 <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, overflow: 'hidden' }}>
-                  <table className="plDrawTable" style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed', fontSize: 13 }}>
-                    {/* 百分比固定布局永不横滚;冷解读吃最宽一列(它是这张表的结论) */}
-                    <colgroup><col style={{ width: '12%' }} /><col style={{ width: '8%' }} /><col style={{ width: '22%' }} /><col style={{ width: '10%' }} /><col style={{ width: '10%' }} /><col style={{ width: '38%' }} /></colgroup>
-                    <thead><tr>
-                      <th style={th}>{t('home.dr.date')}</th><th style={th}>{t('home.dr.prog')}</th><th style={th}>{t('home.dr.stream')}</th>
-                      <th style={th}>{t('home.dr.score')}</th><th style={th}>{t('home.dr.inv')}</th><th style={th}>{t('pulse.dr.read')}</th>
-                    </tr></thead>
-                    <tbody>
-                      {stats.draws.slice(0, drawsN).map((r, i) => {
-                        const last = i === Math.min(drawsN, stats.draws.length) - 1
-                        const base = { ...td, ...(last && { borderBottom: 'none' }) }
-                        return (
-                          <tr key={i}>
-                            <td style={base}>{ymd(r.date)}</td>
-                            <td style={base}><Tag>{r.province === 'FED' ? 'EE' : r.province}</Tag></td>
-                            {/* 通道名不截断(Frank 08-06「名字别隐藏」):列内自然折行 */}
-                            <td style={{ ...base, whiteSpace: 'normal' }}>
-                              <span style={{ display: 'block', overflowWrap: 'break-word' }}>{drawMain(r)}</span>
-                              {drawNote(r) ? <span style={{ display: 'block', fontSize: 11.5, color: UI.text3, overflowWrap: 'break-word' }}>{drawNote(r)}</span> : null}
-                            </td>
-                            <td style={base}>{r.score != null ? num(r.score) : '—'}</td>
-                            <td style={base}>{r.invitations != null ? num(r.invitations) : '—'}</td>
-                            {/* 冷解读:样本不足(同通道 <4 期有分)就整格留空,不编一句话 */}
-                            <td style={{ ...base, color: UI.text2, whiteSpace: 'normal' }}>{drawVerdict(r)}</td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
+                  {/* 2026-08-11(Frank「都改成一套」):自造裸 <table> → 公共 DataTable(bare=外面这层就是卡壳)。
+                      列宽照旧写死(冷解读吃最宽一列,它是这张表的结论);百分比固定布局永不横滚 */}
+                  <div className="plDrawTable">
+                    <DataTable<typeof stats.draws[number]> rows={stats.draws.slice(0, drawsN)} rowKey={(_r, i) => String(i)} bare
+                      cols={[
+                        { key: 'date', label: t('home.dr.date'), width: '12%', render: (r) => ymd(r.date) },
+                        { key: 'prog', label: t('home.dr.prog'), width: '8%', render: (r) => <Tag>{r.province === 'FED' ? 'EE' : r.province}</Tag> },
+                        // 通道名不截断(Frank 08-06「名字别隐藏」):列内自然折行
+                        { key: 'stream', label: t('home.dr.stream'), width: '22%', render: (r) => <>
+                          <span style={{ display: 'block', overflowWrap: 'break-word' }}>{drawMain(r)}</span>
+                          {drawNote(r) ? <span style={{ display: 'block', fontSize: 11.5, color: UI.text3, overflowWrap: 'break-word' }}>{drawNote(r)}</span> : null}
+                        </> },
+                        { key: 'score', label: t('home.dr.score'), width: '10%', render: (r) => r.score != null ? num(r.score) : '—' },
+                        { key: 'inv', label: t('home.dr.inv'), width: '10%', render: (r) => r.invitations != null ? num(r.invitations) : '—' },
+                        // 冷解读:样本不足(同通道 <4 期有分)就整格留空,不编一句话
+                        { key: 'read', label: t('pulse.dr.read'), width: '38%', render: (r) => <span style={{ color: UI.text2 }}>{drawVerdict(r)}</span> },
+                      ]} />
+                  </div>
                   <div className="plDrawCards">
                     {stats.draws.slice(0, drawsN).map((r, i) => (
                       <div key={i} style={{ padding: '12px 14px', borderBottom: i === Math.min(drawsN, stats.draws.length) - 1 ? 'none' : `1px solid ${UI.hairline}` }}>

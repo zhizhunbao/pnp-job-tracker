@@ -18,6 +18,7 @@ import { POPULAR_NOCS } from '../../account/profileOptions'
 import { QuizStyle, QuizTitle, pickL, type L } from '../../quiz/QuizUI'
 import { QuizForm } from '../QuizForm'
 import { BANNER_IMGS, PageBanner, PageShell, UI } from '../../ui/primitives'
+import { DataTable } from '../../ui/DataTable'
 import { TripleVerdictPanel } from '../../jobs/TripleVerdictModal'
 import { PnpScoreCard } from '../../jobs/PnpScoreCard'
 import { EMPTY, clearAnswers, readAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
@@ -499,34 +500,24 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
                     </div>
                   ))}
                 </div>
-                <table className="dpDrawTbl" style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', fontSize: 13 }}>
-                  <thead>
-                    <tr style={{ color: UI.text3, fontSize: 12, textAlign: 'left' }}>
-                      <th style={{ fontWeight: 400, padding: '0 8px 6px 0', width: '27%' }}>{t('dp.prov')}</th>
-                      <th style={{ fontWeight: 400, padding: '0 8px 6px 0', width: '27%' }}>{t('rpt.s.d.date')}</th>
-                      <th style={{ fontWeight: 400, padding: '0 8px 6px 0', width: '30%' }}>{t('rpt.s.d.stream')}</th>
-                      <th style={{ fontWeight: 400, padding: '0 0 6px', width: '16%' }}>{t('rpt.s.d.score')}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {overview.map((r) => (
-                      <tr key={r.province} style={{ borderTop: `1px solid ${UI.hairline}` }}>
-                        {/* 省名可截断,灰码永不截(flex:名字弹性省略,码 flexShrink 0)—— 375 下长省名靠码认省 */}
-                        <td style={{ padding: '7px 8px 7px 0' }} title={provDisp(r.province)}>
-                          <span style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
-                            <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{provDisp(r.province)}</span>
-                            <span style={{ color: UI.text3, fontSize: 11.5, flexShrink: 0 }}>{r.province}</span>
-                          </span>
-                        </td>
-                        <td style={{ padding: '7px 6px 7px 0', fontVariantNumeric: 'tabular-nums', color: UI.text2, whiteSpace: 'nowrap', fontSize: 12.5 }}>{r.drawDate}</td>
-                        <td title={streamDisplay(t, r.stream)} style={{ padding: '7px 8px 7px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: UI.text2 }}>
-                          {streamDisplay(t, r.stream)}
-                        </td>
-                        <td style={{ padding: '7px 0', fontVariantNumeric: 'tabular-nums' }}>{r.score ?? '—'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                {/* 2026-08-11(Frank「都改成一套」):自造裸 <table> → 公共 DataTable(bare=已在 CARD 内)。
+                    列宽照旧写死(27/27/30/16),省名可截断而灰码永不截的处理留在 render 里 */}
+                <div className="dpDrawTbl">
+                  <DataTable<typeof overview[number]> rows={overview} rowKey={(r) => r.province} bare
+                    cols={[
+                      { key: 'prov', label: t('dp.prov'), width: '27%', render: (r) => (
+                        <span title={provDisp(r.province)} style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
+                          <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{provDisp(r.province)}</span>
+                          <span style={{ color: UI.text3, fontSize: 11.5, flexShrink: 0 }}>{r.province}</span>
+                        </span>
+                      ) },
+                      { key: 'date', label: t('rpt.s.d.date'), width: '27%', nowrap: true, render: (r) => <span style={{ fontVariantNumeric: 'tabular-nums', color: UI.text2, fontSize: 12.5 }}>{r.drawDate}</span> },
+                      { key: 'stream', label: t('rpt.s.d.stream'), width: '30%', nowrap: true, render: (r) => (
+                        <span title={streamDisplay(t, r.stream)} style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', color: UI.text2 }}>{streamDisplay(t, r.stream)}</span>
+                      ) },
+                      { key: 'score', label: t('rpt.s.d.score'), width: '16%', align: 'right', render: (r) => <>{r.score ?? '—'}</> },
+                    ]} />
+                </div>
               </div>
             )}
 

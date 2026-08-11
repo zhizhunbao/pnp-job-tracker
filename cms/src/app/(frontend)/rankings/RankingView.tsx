@@ -6,6 +6,7 @@ import { useLang } from '../LangProvider'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { BANNER_IMGS, Card, CardAction, CardKV, PageBanner } from '../ui/primitives'
+import { JobCard } from '../ui/JobCard'
 import { DataTable } from '../ui/DataTable'
 import { IconChart } from '../Icons'
 import { BROAD_SLUGS, slugToBroad } from '../stats/shared'
@@ -42,22 +43,21 @@ function RankCompanyCard({ r, t, showNamed }: { r: RankRow; t: TFn; showNamed: b
     </Card>
   )
 }
+// 2026-08-11(Frank「都改成一套」):榜单职位卡原本自己拼了一张(Card+CardKV 的 KV 网格)——
+// 同一个岗在职位板和榜单上长两个样。改吃 ui/JobCard(全站唯一那张职位卡,08-02 拍板)。
+// 槽位映射:#排名 → action(标题行右上),移民价值分 → footer(带标签,裸数字没上下文=#200 教训)。
 function RankJobCard({ r, t }: { r: RankRow; t: TFn }) {
   return (
-    <Card>
-      <div style={{ fontSize: 14.5, fontWeight: 600 }}>
-        <span style={{ color: '#9ca3af', fontWeight: 400 }}>#{r.rank}</span>{' '}
-        {r.applyUrl ? <a href={r.applyUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{r.title}</a> : r.title}
-      </div>
-      {r.company ? <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 2 }}>{r.company}</div> : null}
-      <CardKV items={[
-        { k: t('col.city'), v: [r.city, r.province].filter(Boolean).join(', ') || '—' },
-        { k: t('col.salary'), v: r.salaryText ? <span style={{ color: '#15803d', fontWeight: 600 }}>{r.salaryText}</span> : '—' },
-        // #215(第 26 轮体检续):标签原用 col.score(=「通道」),值却是旧 0-100 分 —— 名实不符,换回榜单口径名
-        { k: t('rank.col.score'), v: r.score ?? '—' },
-        { k: t('col.datePosted'), v: <span style={{ color: '#9ca3af' }}>{(r.datePosted || '').slice(0, 10)}</span> },
-      ]} />
-    </Card>
+    <JobCard
+      title={{ text: r.title, href: r.applyUrl || undefined, target: r.applyUrl ? '_blank' : undefined }}
+      action={<span style={{ color: '#9ca3af', fontSize: 12.5 }}>#{r.rank}</span>}
+      company={r.company ? { text: r.company } : undefined}
+      salary={r.salaryText || undefined}
+      location={[r.city, r.province].filter(Boolean).join(', ') || undefined}
+      date={(r.datePosted || '').slice(0, 10) || undefined}
+      // #215(第 26 轮体检续):标签原用 col.score(=「通道」),值却是旧 0-100 分 —— 名实不符,换回榜单口径名
+      footer={r.score != null ? `${t('rank.col.score')} ${r.score}` : undefined}
+    />
   )
 }
 

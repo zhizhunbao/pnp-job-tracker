@@ -37,14 +37,20 @@ export type DTCol<T> = {
   sort?: (r: T) => string | number | null   // 提供才可排序
   nowrap?: boolean
   thTip?: string                            // 表头 hover 提示(如「技能类获批」口径)
+  // 下面两个是 2026-08-11「全站表格并成一套」时补的通用能力 —— 原先五张裸 <table> 各自实现:
+  width?: string                            // 显式列宽(百分比):给了就不进自动量宽锁列(抽选表这类固定版式)
+  className?: string                        // 列级 class:窄屏藏列等交给 styles.css(漏斗表 .fnCol)
+  align?: 'left' | 'right'                  // 数字列右对齐(漏斗/抽选表);缺省左
 }
 
-export function DataTable<T>({ cols, rows, rowKey, empty, header, minWidth, pageSize, footerNote }: {
+export function DataTable<T>({ cols, rows, rowKey, empty, header, minWidth, pageSize, footerNote, foot, bare }: {
   cols: DTCol<T>[]; rows: T[]; rowKey: (r: T, i: number) => string; empty?: React.ReactNode
   header?: React.ReactNode                  // 卡内表格上方的头行(如 occupations 的通道标题行)
   minWidth?: number                         // 窄屏横滚而非挤成竖排(stats 第 2 轮 #10)
   pageSize?: number                         // 传了才分页:先全量排序再切页,页脚出总数+翻页
   footerNote?: React.ReactNode              // 页脚左侧总数文案(i18n 在调用方,组件不携词)
+  foot?: React.ReactNode                    // 表体末尾的自定义行(<tr>,可 colSpan):漏斗表的「真实付费」尾行
+  bare?: boolean                            // 表已经嵌在调用方的白卡里 → 不再套自己的卡壳(否则双层描边)
 }) {
   const [sort, setSort] = useState<{ key: string; dir: 1 | -1 } | null>(null)
   const [page, setPage] = useState(0)
@@ -64,6 +70,7 @@ export function DataTable<T>({ cols, rows, rowKey, empty, header, minWidth, page
     if (!total) return
     const m: Record<string, string> = {}
     for (const c of cols) {
+      if (c.width) { m[c.key] = c.width; continue }   // 显式列宽不参与量宽(调用方已定死版式)
       const el = thRefs.current[c.key]
       if (!el) return
       m[c.key] = (el.offsetWidth / total * 100).toFixed(3) + '%'
@@ -96,14 +103,14 @@ export function DataTable<T>({ cols, rows, rowKey, empty, header, minWidth, page
   const th: React.CSSProperties = { textAlign: 'left', padding: '9px 12px', fontSize: 12.5, color: UI.text2, fontWeight: 600, whiteSpace: 'nowrap', borderBottom: `1px solid ${UI.border}`, background: '#fafafa', position: 'relative' }
   const td: React.CSSProperties = { padding: '9px 12px', fontSize: 13, color: '#374151', borderBottom: `1px solid ${UI.hairline}` }
   return (
-    <div style={{ background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, overflow: 'auto' }}>
+    <div style={bare ? { overflow: 'auto' } : { background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12, overflow: 'auto' }}>
       {header}
       <table ref={tableRef} style={{ width: '100%', minWidth, borderCollapse: 'collapse', tableLayout: pct ? 'fixed' : 'auto' }}>
         <thead><tr>
           {cols.map((c, ci) => (
-            <th key={c.key} ref={(el) => { thRefs.current[c.key] = el }} title={c.thTip}
+            <th key={c.key} ref={(el) => { thRefs.current[c.key] = el }} title={c.thTip} className={c.className}
               onClick={c.sort ? () => setSort((s) => (s?.key === c.key ? (s.dir === -1 ? { key: c.key, dir: 1 } : null) : { key: c.key, dir: -1 })) : undefined}
-              style={{ ...th, width: widths[c.key] ?? pct?.[c.key], cursor: c.sort ? 'pointer' : undefined, ...(ci < cols.length - 1 ? { borderRight: '1px solid #e5e7eb' } : {}), ...(c.thTip ? { textDecoration: 'underline dotted #d1d5db' } : {}) }}>
+              style={{ ...th, width: widths[c.key] ?? pct?.[c.key] ?? c.width, cursor: c.sort ? 'pointer' : undefined, ...(c.align === 'right' ? { textAlign: 'right' } : {}), ...(ci < cols.length - 1 ? { borderRight: '1px solid #e5e7eb' } : {}), ...(c.thTip ? { textDecoration: 'underline dotted #d1d5db' } : {}) }}>
               {c.label}{sort?.key === c.key ? (sort.dir === -1 ? ' ▼' : ' ▲') : c.sort ? <span style={{ color: '#d1d5db' }}> ⇅</span> : null}
               <span onPointerDown={(e) => startResize(e, c.key)} onClick={(e) => e.stopPropagation()}
                 style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 6, cursor: 'col-resize' }} />
@@ -117,10 +124,11 @@ export function DataTable<T>({ cols, rows, rowKey, empty, header, minWidth, page
             const k = rowKey(r, i)
             return (
               <tr key={k}>
-                {cols.map((c, ci) => <td key={c.key} style={{ ...td, ...(ci < cols.length - 1 ? { borderRight: '1px solid #f3f4f6' } : {}), ...(c.nowrap ? { whiteSpace: 'nowrap' } : {}) }}>{c.render ? c.render(r) : String((r as any)[c.key] ?? '—')}</td>)}
+                {cols.map((c, ci) => <td key={c.key} className={c.className} style={{ ...td, ...(c.align === 'right' ? { textAlign: 'right', fontVariantNumeric: 'tabular-nums' } : {}), ...(ci < cols.length - 1 ? { borderRight: '1px solid #f3f4f6' } : {}), ...(c.nowrap ? { whiteSpace: 'nowrap' } : {}) }}>{c.render ? c.render(r) : String((r as any)[c.key] ?? '—')}</td>)}
               </tr>
             )
           })}
+          {foot}
         </tbody>
       </table>
       {rows.length === 0 && <div style={{ padding: '24px 16px', color: UI.text3, fontSize: 13, textAlign: 'center' }}>{empty}</div>}

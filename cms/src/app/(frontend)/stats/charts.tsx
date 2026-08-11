@@ -5,6 +5,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { BROAD_SLUGS, PROVS, PROV_NAME, type StatRow, type OccRow, type CityRow } from './shared'
 import type { TFn } from '../jobs/i18n'
+import { CARD_SHELL } from '../ui/primitives'
 
 type ChartInst = { setOption: (o: object, notMerge?: boolean) => void; resize: () => void; clear: () => void; dispose: () => void; on: (ev: string, cb: (e: { dataIndex: number }) => void) => void }
 
@@ -39,7 +40,7 @@ function EChart({ option, height, onBarClick }: { option: object; height: number
 
 // 主图卡壳(MarketChart 用;原「预设四图/自定义区」那套 DrillCard 与 byProv/byCat/byMid/barOption
 // 随 /stats 索引页 2026-08-06 退役一并删,不留死代码)
-const cardS: React.CSSProperties = { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '12px 14px' }
+const cardS: React.CSSProperties = { ...CARD_SHELL, padding: '12px 14px' }
 
 // ── /api/market-stats 客户端拉取(SSR 瘦身,手法照 /jobs 的 /api/dims):主图四份数据与用户无关、
 // mart 日更,不该 SSR 直出(occ ~3400 行占 /start HTML 大头)。null=加载中(调用侧渲占位高度防 CLS);

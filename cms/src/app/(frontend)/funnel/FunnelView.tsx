@@ -5,12 +5,13 @@ import { useLang } from '../LangProvider'
 import { SiteHeader } from '../SiteHeader'
 import { SiteFooter } from '../SiteFooter'
 import { PageShell, UI } from '../ui/primitives'
+import { DataTable } from '../ui/DataTable'
 import { goBackOr } from '../BackLink'
 
 export type FunnelRow = { step: string; label: string; d30: number; d7: number; d1: number; rate: number | null }
 
-const TH: React.CSSProperties = { textAlign: 'right', padding: '8px 10px', fontSize: 12, color: UI.text3, fontWeight: 400, whiteSpace: 'nowrap' }
-const TD: React.CSSProperties = { textAlign: 'right', padding: '11px 10px', fontSize: 14, fontVariantNumeric: 'tabular-nums', borderTop: `1px solid ${UI.hairline}` }
+// 尾行(foot 槽)自己排版:它是 colSpan 合并行,不走列模型;对齐 DataTable 的单元格 token
+const TD: React.CSSProperties = { padding: '9px 12px', fontSize: 13, color: '#374151', borderBottom: `1px solid ${UI.hairline}`, fontVariantNumeric: 'tabular-nums' }
 
 export function FunnelView({ rows, pro, stripe, byEntry, byPricing = [] }: {
   rows: FunnelRow[]; pro: number; stripe: number
@@ -35,31 +36,24 @@ export function FunnelView({ rows, pro, stripe, byEntry, byPricing = [] }: {
             <button onClick={() => goBackOr('/')} style={{ marginLeft: 'auto', border: `1px solid ${UI.border}`, background: '#fff', color: UI.text2, borderRadius: 8, padding: '6px 13px', fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>返回</button>
           </div>
 
-          <div style={{ overflowX: 'auto', marginTop: 14 }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'auto' }}>
-              <thead>
+          {/* 2026-08-11(Frank「都改成一套」):这张表原是自造的裸 <table> —— 换公共 DataTable(bare=已在白卡内)。
+              尾行「⑥ 真实付费」带 colSpan,走新加的 foot 槽;窄屏藏两列仍用 .fnCol(列级 className) */}
+          <div style={{ marginTop: 14 }}>
+            <DataTable<FunnelRow> rows={rows} rowKey={(r) => r.step} bare
+              cols={[
+                { key: 'label', label: '步骤', nowrap: true, render: (r) => r.label },
+                { key: 'd30', label: '30 天', align: 'right', render: (r) => <b>{r.d30}</b> },
+                { key: 'd7', label: '7 天', align: 'right', className: 'fnCol', render: (r) => <>{r.d7}</> },
+                { key: 'd1', label: '昨天', align: 'right', className: 'fnCol', render: (r) => <>{r.d1}</> },
+                { key: 'rate', label: '比上一步', align: 'right', render: (r) => <span style={{ color: UI.text3 }}>{r.rate == null ? '—' : `${r.rate}%`}</span> },
+              ]}
+              foot={
                 <tr>
-                  <th style={{ ...TH, textAlign: 'left' }}>步骤</th>
-                  <th style={TH}>30 天</th><th style={TH} className="fnCol">7 天</th><th style={TH} className="fnCol">昨天</th><th style={TH}>比上一步</th>
+                  <td style={{ ...TD, whiteSpace: 'nowrap' }}>⑥ 真实付费</td>
+                  <td style={{ ...TD, textAlign: 'right' }}><b>{pro}</b></td>
+                  <td style={{ ...TD, color: UI.text3, fontSize: 12.5 }} colSpan={3}>proUntil 有值;其中走过 Checkout 的 {stripe} 人</td>
                 </tr>
-              </thead>
-              <tbody>
-                {rows.map((r) => (
-                  <tr key={r.step}>
-                    <td style={{ ...TD, textAlign: 'left', whiteSpace: 'nowrap' }}>{r.label}</td>
-                    <td style={TD}><b>{r.d30}</b></td>
-                    <td style={TD} className="fnCol">{r.d7}</td>
-                    <td style={TD} className="fnCol">{r.d1}</td>
-                    <td style={{ ...TD, color: UI.text3 }}>{r.rate == null ? '—' : `${r.rate}%`}</td>
-                  </tr>
-                ))}
-                <tr>
-                  <td style={{ ...TD, textAlign: 'left', whiteSpace: 'nowrap' }}>⑥ 真实付费</td>
-                  <td style={TD}><b>{pro}</b></td>
-                  <td style={{ ...TD, textAlign: 'left', color: UI.text3, fontSize: 12.5, whiteSpace: 'normal' }} colSpan={3}>proUntil 有值;其中走过 Checkout 的 {stripe} 人</td>
-                </tr>
-              </tbody>
-            </table>
+              } />
           </div>
 
           {/* 曝光要能按入口分开看:详情页(jd)与报告页(rpt)是两条路,M3 分叉时得知道该改哪一条 */}

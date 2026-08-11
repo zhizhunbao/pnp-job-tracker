@@ -138,8 +138,15 @@ export function Notice({ kind = 'info', lead, action, style, className, children
 // ── 卡片积木(E8-08 #121,2026-07-20 Frank「按逻辑拆」拍板):纯样式原子零逻辑——
 // 手机卡片=每域自己的组件用这三块拼(组合复用样式,不合并逻辑);解剖/hover 规范见 implementation/E8-08。
 // ①Card 卡壳(白卡描边 r12,右上操作位走 position:absolute 自摆)②CardKV 键值区(两列 grid,wide 独占行)③CardAction 操作行。
+// 白卡壳(2026-08-11 Frank「都改成一套」):**全站唯一一份**描边+圆角+白底。
+// 原先散在 10 处:JobsTable.MODAL_CARD / TripleVerdictModal.CARD / 详情页 sec 三份逐字符相同,
+// 加上 news/stats/account/公司页 的内联写法。padding 各页不同(密度不同)所以留在调用方,
+// 壳本身不许再抄一遍;12/16 这档最常用,直接给成 CARD_MD。
+export const CARD_SHELL: React.CSSProperties = { background: UI.card, border: `1px solid ${UI.border}`, borderRadius: 12 }
+export const CARD_MD: React.CSSProperties = { ...CARD_SHELL, padding: '12px 16px', marginBottom: 14 }
+
 export function Card({ style, children }: { style?: React.CSSProperties; children: React.ReactNode }) {
-  return <div style={{ border: `1px solid ${UI.border}`, borderRadius: 12, background: UI.card, padding: '10px 12px', marginBottom: 8, position: 'relative', ...style }}>{children}</div>
+  return <div style={{ ...CARD_SHELL, padding: '10px 12px', marginBottom: 8, position: 'relative', ...style }}>{children}</div>
 }
 export function CardKV({ items }: { items: { k: React.ReactNode; v: React.ReactNode; wide?: boolean }[] }) {
   return (
