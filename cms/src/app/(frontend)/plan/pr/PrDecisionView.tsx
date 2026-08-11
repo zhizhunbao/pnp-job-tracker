@@ -352,17 +352,6 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
                 </div>
               )}
 
-              {/* 各省估分 = 自愿的第二段。题数写在入口上(点之前就看得见成本),不是点完才蹦出来。
-                  答过一半再退出的,入口写的是**剩下几题**,接着答不用重来。 */}
-              {quizComplete && !quizOpen && scoreLeft > 0 && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginTop: 12, paddingTop: 12, borderTop: `1px solid ${UI.hairline}` }}>
-                  <span style={{ minWidth: 0, flex: 1 }}>
-                    <span style={{ display: 'block', color: '#111827', fontSize: 13.5, fontWeight: 700, lineHeight: 1.45 }}>{t('dp.scoreEntry')}</span>
-                    <span style={{ display: 'block', color: UI.text3, fontSize: 12, lineHeight: 1.45 }}>{t('dp.scoreEntryHint', { n: scoreLeft })}</span>
-                  </span>
-                  <button onClick={openScoreStep} style={PRIMARY_BTN}>{t('dp.scoreStart')}</button>
-                </div>
-              )}
             </div>
 
             {/* 问卷完成即给个人路径方案。它回答“先走哪条路”；具体岗位验证是后续可选动作。 */}
@@ -403,12 +392,19 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
                 ) : (
                   <div style={{ fontSize: 13, color: UI.text2, lineHeight: 1.65 }}>{t('dp.planEmpty')}</div>
                 )}
-                {profilePaths && profilePaths.length > 0 && (
-                  <button onClick={() => {
-                    track('dp-plan-ask')
-                    window.dispatchEvent(new CustomEvent('o2p:chat-open', { detail: { prefill: t('dp.planAsk') } }))
-                  }} style={{ ...PRIMARY_BTN, marginTop: 12 }}>{t('dp.planAskCta')}</button>
-                )}
+              </div>
+            )}
+
+            {/* 各省估分 = 自愿的第二段,**摆在方案之后**(Frank 2026-08-11:「单独一个 section 放到初步方案下面」)——
+                先给方案再谈加题,不拿 16 道官方表的题横在结论前面。题数写在入口上(点之前就看得见成本);
+                答过一半再退出的,入口写的是**剩下几题**,接着答不用重来。 */}
+            {quizComplete && !quizOpen && scoreLeft > 0 && (
+              <div style={{ ...CARD, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', padding: '14px 16px' }}>
+                <span style={{ minWidth: 0, flex: 1 }}>
+                  <span style={{ display: 'block', color: '#111827', fontSize: 13.5, fontWeight: 700, lineHeight: 1.45 }}>{t('dp.scoreEntry')}</span>
+                  <span style={{ display: 'block', color: UI.text3, fontSize: 12, lineHeight: 1.45 }}>{t('dp.scoreEntryHint', { n: scoreLeft })}</span>
+                </span>
+                <button onClick={openScoreStep} style={PRIMARY_BTN}>{t('dp.scoreStart')}</button>
               </div>
             )}
 
@@ -440,27 +436,25 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
                 </a>
               </div>
             )}
-            {/* 常见处境(08-10 Frank「直接使用我那 16 个 case」):点开=用户原话问题。
-                原生 <details>,SSR 可爬;做了事实层的那条给真 <a> 进处境页(内链要被爬到)。
-                2026-08-11 Frank 二拍**两个钮全撤**:①「按这个条件代入」把别人的画像写进用户自己的
-                答案,答过题的一点就丢;②「问 AI 顾问」拿别人的原话去问,答的还是别人的事,而顾问本身
-                「烂的一逼」,不该从这里导流过去。**答不了就不假装能答**:15 条只摆问题不给动作,
-                谁的事实层补上了谁才有出口。 */}
+            {/* 常见案例(08-10 Frank「直接使用我那 16 个 case」)。2026-08-11 Frank 连拍四刀,最后成这样:
+                ①「按这个条件代入」连 preset 数据一起撤(它把案例主人公的画像写进用户自己的答案);
+                ②「问 AI 顾问」撤(拿别人的原话去问,答的还是别人的事);
+                ③**折叠撤掉**——「隐藏小字有必要吗,不如把标题写清楚」:原话小字并进标题,一行一条不再点开;
+                ④出口改成行尾按钮「完整案例」,做了事实层的那条才有(真 <a>,内链要被爬到)。
+                **答不了就不假装能答**:15 条只摆标题,谁的事实层补上了谁才有按钮。 */}
             <div style={CARD}>
               <h2 style={H2}>{t('dp.cases')}</h2>
               {CASES.map((c) => (
-                <details key={c.id} style={{ borderTop: `1px solid ${UI.hairline}` }}>
-                  <summary style={{ padding: '9px 0', fontSize: 13.5, fontWeight: 600, color: '#111827', cursor: 'pointer' }}>
+                <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
+                  borderTop: `1px solid ${UI.hairline}`, padding: '10px 0' }}>
+                  <span style={{ minWidth: 0, flex: 1, fontSize: 13.5, fontWeight: 600, color: '#111827', lineHeight: 1.5 }}>
                     {pickL3(c.label)}
-                  </summary>
-                  <div style={{ padding: '0 0 12px' }}>
-                    <div style={{ fontSize: 13, color: UI.text2, lineHeight: 1.7, marginBottom: c.page ? 8 : 0 }}>「{pickL3(c.q)}」</div>
-                    {c.page && (
-                      <a href={`/cases/${c.page}`} onClick={() => track('dp-case-page', { id: c.id })}
-                        style={{ ...PRIMARY_BTN, textDecoration: 'none', display: 'inline-block' }}>{t('dp.caseAnswer')}</a>
-                    )}
-                  </div>
-                </details>
+                  </span>
+                  {c.page && (
+                    <a href={`/cases/${c.page}`} onClick={() => track('dp-case-page', { id: c.id })}
+                      style={{ ...PRIMARY_BTN, textDecoration: 'none', display: 'inline-block' }}>{t('dp.caseAnswer')}</a>
+                  )}
+                </div>
               ))}
             </div>
 
@@ -506,16 +500,8 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
               </div>
             )}
 
-            {/* 出口钩子:看在招岗(q 搜索列含 NOC 码)/ 问顾问(唤起全站挂件,顾问只答疑) */}
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {/* 蓝底白字与页内主按钮一致(08-10 Frank 截图点名) */}
-              <a href={noc ? `/jobs?q=${encodeURIComponent(noc)}` : '/jobs'} onClick={() => track('dp-hook-jobs')}
-                style={{ ...PRIMARY_BTN, textDecoration: 'none', display: 'inline-block' }}>{t('dp.hookJobs')}</a>
-              <button onClick={() => {
-                track('dp-ask-chat')
-                window.dispatchEvent(new CustomEvent('o2p:chat-open', { detail: { prefill: t('dp.ask') } }))
-              }} style={PRIMARY_BTN}>{t('dp.hookAdvisor')}</button>
-            </div>
+            {/* 2026-08-11 Frank 撤:页尾「看在招岗 / 问 AI 顾问」两个钮,与方案卡的「查看详细行动方案」一起。
+                顾问不再从本页导流(见记忆 advisor-quality-gate);看在招岗的入口在方案卡下面的「验证具体岗位」。 */}
           </div>
         </PageShell>
       </div>
