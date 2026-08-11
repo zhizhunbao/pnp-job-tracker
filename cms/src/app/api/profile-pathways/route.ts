@@ -70,6 +70,8 @@ export async function POST(req: Request) {
     verdict: row.verdict,
     tier: row.tier,
     availability: row.availability,
+    // 被硬门槛卡住时,方案卡不能再写「优先核对」——那等于让人拿着不够的语言分去核对
+    blockedBy: row.blockedBy ?? null,
   }))
 
   return Response.json({ noc, rows })

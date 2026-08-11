@@ -1,7 +1,7 @@
 // 漏斗五个数(主线 M2 / E7-05):白名单与归一的行为锁死 —— 纯函数,不需要 DB。
 // 这张表的价值全在「只留能读的数」:白名单一松,它就变成垃圾桶,以后没人敢读。
 import { describe, it, expect } from 'vitest'
-import { FUNNEL_STEPS, isLocalHost, stepRates, toFunnelHit } from '@/lib/funnel'
+import { FUNNEL_STEPS, decisionRates, isLocalHost, stepRates, toFunnelHit } from '@/lib/funnel'
 
 describe('漏斗事件白名单', () => {
   it('站内既有埋点名归到五步(调用点一个都不用改名)', () => {
@@ -51,8 +51,22 @@ describe('漏斗事件白名单', () => {
     // 对话两步**追加在尾部**且不参与前五步的相邻计算 —— 两形态混算会把口径搅成一锅。
     // 2026-08-08(647e891 B5 批):雇主线三事件进白名单(modal-pnp→pnp-employer-click 是 08-22 读数
     // 那条转化边;se-view-jobs 只作参照)—— 同样追加在尾部,当时漏更了这条断言(spec 自那起一直红)。
+    // 2026-08-11:PR 评估四步进白名单(先前这页一条数都没有,Frank 问「有人访问吗」只能靠
+    // 登录态 umami 一条条翻 session)—— 同样**追加在尾部**,自成一条并行链,不进前五步的相邻计算。
     expect([...FUNNEL_STEPS]).toEqual(['jd-open', 'report-open', 'lock-seen', 'pricing-open', 'pay-click',
-      'chat-open', 'chat-answer', 'chat-feedback', 'modal-pnp', 'pnp-employer-click', 'se-view-jobs'])
+      'chat-open', 'chat-answer', 'chat-feedback', 'modal-pnp', 'pnp-employer-click', 'se-view-jobs',
+      'dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done'])
+  })
+
+  it('PR 评估四步各自归位,且相邻转化率只在本链内算', () => {
+    expect(toFunnelHit('dp-open', '1')).toEqual({ event: 'dp-open', prop: '1' })
+    expect(toFunnelHit('dp-score-done', '')?.event).toBe('dp-score-done')
+    // 100 人打开 → 40 人答完 → 20 人进估分 → 10 人答完
+    expect(decisionRates({ 'dp-open': 100, 'dp-quiz-done': 40, 'dp-score-start': 20, 'dp-score-done': 10 }))
+      .toEqual([40, 50, 50])
+    // 旧五步那条链不受影响
+    expect(stepRates({ 'jd-open': 100, 'report-open': 50, 'lock-seen': 25, 'pricing-open': 5, 'pay-click': 1 }))
+      .toEqual([50, 50, 20, 20])
   })
 
   it('对话形态的三个键各自归位,不串进旧五步', () => {

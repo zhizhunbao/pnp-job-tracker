@@ -53,11 +53,57 @@ def cells_of(row: list) -> tuple[str, int | None]:
     return re.sub(r"\s+", " ", label), pts
 
 
+def parse_designations(doc) -> list[dict]:
+    """官方「Occupation → Eligible Professional Designations in B.C.」对照表(第 55 页)。
+
+    为什么要它:SIRS 学历那 5 分的原文是 "Eligible professional designation in B.C.",
+    单看这一行像是泛指任何专业资格,**实则只对表内这 11 类职业成立**——原文写明
+    "you have been offered a job in an occupation listed on the table below"。
+    不落库的话,前端只能把这一条摆给所有人看(干软件的也被问),既多一次点击又误导。
+
+    表格是稀疏格且**跨行折行**:职业名、NOC 码、认证机构常落在相邻三行。
+    规则:第一格以「:」结尾或写着 Any Trade = 新起一条;行内出现 NOC 码就挂到当前这条;
+    最后一格是机构文字,逐行拼接。
+    """
+    for page in doc:
+        if "Eligible Professional Designations" not in page.get_text():
+            continue
+        for tb in page.find_tables().tables:
+            entries, cur = [], None
+            for row in tb.extract():
+                cells = [(c or "").replace("\n", " ").strip() for c in row]
+                cells = [c for c in cells if c]
+                if not cells or cells[0].lower().startswith("occupation"):
+                    continue
+                head = cells[0]
+                if re.match(r"^any trade", head, re.I) or head.endswith(":") or re.search(r":\s*NOC\s*\d{5}", head):
+                    cur = {"occupation": re.sub(r":?\s*NOC\s*\d{5}\s*$", "", head).strip(": ").strip(),
+                           "noc": "", "designation": []}
+                    entries.append(cur)
+                if cur is None:
+                    continue
+                m = re.search(r"NOC\s*(\d{5})", " ".join(cells))
+                if m:
+                    cur["noc"] = m.group(1)
+                tail = cells[-1]
+                if tail is not head and not re.fullmatch(r"(NOC\s*)?\d{5}", tail) and not tail.endswith(":"):
+                    cur["designation"].append(tail)
+            out = [{"occupation": e["occupation"], "noc": e["noc"],
+                    "designation": re.sub(r"\s+", " ", " ".join(e["designation"])).strip()}
+                   for e in entries if " ".join(e["designation"]).strip()]
+            if len(out) >= 10:
+                return out
+    return []
+
+
 def main() -> None:
     r = httpx.get(PDF_URL, timeout=60, follow_redirects=True, headers={"User-Agent": "Mozilla/5.0"})
     r.raise_for_status()
     doc = fitz.open(stream=r.content, filetype="pdf")
 
+    # 生效日期取**前言页**(doc[3]),不取表格页的页脚:这份 PDF 内部就不一致 ——
+    # 2026-08-11 实核全文,前面 24 处写 June 10 2026、后面 38 处还留着 May 28 2026(改版没重排的旧页)。
+    # 前言那句是文档自己声明的版本号,后面的旧页脚是残留。别再为这个日期重查一遍。
     eff = ""
     m = re.search(r"information in the guide is effective ([A-Z][a-z]+ \d{1,2}, \d{4})", doc[3].get_text())
     if m:
@@ -96,6 +142,13 @@ def main() -> None:
                     item["xorWithPrev"] = True
                 F[sec][bucket].append(item)
 
+    designations = parse_designations(doc)
+    for item in F["education"]["bonus"]:
+        if re.search(r"professional designation", item["label"], re.I):
+            # 挂在这一行上,不另起一张表:它是**这一行的适用范围**,不是一张独立的职业清单
+            item["appliesTo"] = {"nocs": {d["noc"]: d["designation"] for d in designations if d["noc"]},
+                                 "anyTrade": next((d["designation"] for d in designations if not d["noc"]), "")}
+
     factors = {
         "work": {"max": 40, **F["work"]},
         "education": {"max": 40, **F["education"]},
@@ -107,6 +160,8 @@ def main() -> None:
     problems = []
     if not eff:
         problems.append("没解析到指南生效日期")
+    if len(designations) < 10:
+        problems.append(f"执业资格对照表只解析到 {len(designations)} 条(官方 11 条)")
     for k in ("work", "education", "language", "area"):
         f = factors[k]
         # 加分求和时,xor 组只取组内最大(见上面「…, or」的处理)
@@ -138,6 +193,7 @@ def main() -> None:
     print(f"✓ {OUT}  指南生效 {eff}")
     for k in ("work", "education", "language", "area"):
         print(f"  {k:10} {len(factors[k]['rows'])} 档 + {len(factors[k]['bonus'])} 项加分")
+    print(f"  执业资格对照表 {len(designations)} 条(NOC {sum(1 for d in designations if d['noc'])} + 任何技工工种)")
 
 
 if __name__ == "__main__":

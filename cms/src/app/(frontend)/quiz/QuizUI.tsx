@@ -24,7 +24,11 @@ export const QUIZ_CSS = `
 .qzTitle{font-size:19px;font-weight:700;line-height:1.55;color:${UI.text};margin:0 0 16px}
 /* 题干下的一句小注(可多选/其中含义…)。先前三个页面各写各的负 margin,间距各差 1-2px */
 .qzSub{font-size:12.5px;line-height:1.55;color:${UI.text3};margin:-11px 0 15px}
-.qzList{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;border:0}
+/* 选项两列铺开(≥900px):卡片宽度本来就有 1280,单列会让一行只放一个 15px 的选项、
+   剩下的宽度全空着,题目还被拉长到要滚(2026-08-11 Frank「为什么没有按宽度展开」)。
+   最多两列 —— 三列以上 A/B/C/D 的扫读顺序就乱了。 */
+.qzList{display:grid;grid-template-columns:1fr;gap:10px;margin:0;padding:0;border:0}
+@media(min-width:900px){.qzList{grid-template-columns:1fr 1fr}}
 /* 整块卡片就是一个点击目标(2026-07-31 Frank「点一下还不行,要点好几下」):
    内边距必须在 label 上 —— 留在外层时那一圈 11-14px 不属于 label,点上去 radio 收不到 */
 .qzItem{display:flex;align-items:center;gap:12px;width:100%;box-sizing:border-box;padding:11px 14px;margin:0;
@@ -51,13 +55,15 @@ export const QUIZ_CSS = `
 /* 两颗按钮之间那句灰字**只填空隙**:永不折行(折一行按钮就跟着上下跳),窄到放不下就整句不出 ——
    375 上两颗定宽按钮之间只剩 75px,任何一句真话都装不下,截断的半句比不写更糟 */
 .qzHint{flex:1;min-width:0;font-size:12.5px;color:${UI.text3};white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-/* 翻题不跳版：桌面端题区固定高度。短题由 flex 留白，长的职业页只在题区内部滚动；
-   scrollbar-gutter 让有无滚动条时内容宽度也不变。动作条始终落在同一条基线上。 */
-.plQuizPad{display:flex;flex-direction:column;height:560px;min-height:560px;overflow-y:auto;overflow-anchor:none;overscroll-behavior:contain;
-  scrollbar-gutter:stable;box-sizing:border-box;padding-right:4px}
+/* 翻题不跳版:题区**最小**高 560,不是固定高 —— 固定高会把长的职业页塞进一个内层滚动框,
+   于是「已选 7 个」这种动态区被推到框外看不见,还多出一根滚轮(2026-08-11 Frank 两张实拍)。
+   改成 min-height 后:短题由 flex 留白撑到 560、动作条落在同一条基线;长题让页面自己长,
+   动作条靠 sticky 粘在视口底 —— 照样一直点得到,而且没有内层滚轮。 */
+.plQuizPad{display:flex;flex-direction:column;min-height:560px;box-sizing:border-box}
 .plQuizPad .quizBar{margin-top:auto}
 /* margin-top:auto 只对**弹性子项**生效:题目外面还套了层 div 的(分值卡),那层必须自己也是
-   撑满的弹性列,否则动作条就贴在内容底下,每题落点各不相同(08-10 实拍:时薪题的按钮比别的题高 366px) */
+   撑满的弹性列,否则动作条就贴在内容底下,每题落点各不相同(08-10 实拍:时薪题的按钮比别的题高 366px)。
+   **只给内层用**:把它加到 .plQuizPad 自己身上,min-height:0 会盖掉那 560 的最小高(08-11 实撞)。 */
 .qzFill{display:flex;flex-direction:column;flex:1;min-height:0}
 @media(max-width:640px){
   .quizBar{position:fixed;left:0;right:0;bottom:0;margin:0;padding:10px 16px;border-top:1px solid ${UI.border};

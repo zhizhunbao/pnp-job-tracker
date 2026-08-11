@@ -221,14 +221,35 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
     expect(mb.reasons.some((r) => /self-employment/i.test(r.quote ?? ''))).toBe(true)
   })
 
-  it('排序:open 按 tier 升序在前 → needs-info → excluded 沉底', () => {
-    const rank = (v: PathwayVerdict) => (v.verdict === 'open' ? 0 : v.verdict === 'needs-info' ? 1 : 2)
+  it('排序:能走的 → 被硬门槛卡住的 → needs-info → excluded 沉底,档内按 tier 升序', () => {
+    // 四档(2026-08-11):「差 3 档语言」不能和「全部达标」并列 tier0 ——
+    // 先前就是这样让 CLB 4 的档案把联邦 EE 顶到第一位的
+    const rank = (v: PathwayVerdict) =>
+      (v.verdict === 'open' ? (v.blockedBy ? 1 : 0) : v.verdict === 'needs-info' ? 2 : 3)
     const ranks = list.map(rank)
     expect(ranks).toEqual([...ranks].sort((a, b) => a - b))
-    const tiers = list.filter((v) => v.verdict === 'open').map((v) => v.tier as number)
-    expect(tiers).toEqual([...tiers].sort((a, b) => a - b))
+    for (const r of [0, 1, 2]) {
+      const tiers = list.filter((v) => rank(v) === r).map((v) => v.tier ?? 9)
+      expect(tiers).toEqual([...tiers].sort((a, b) => a - b))
+    }
     expect(list[0].key).toBe('NL-intl-grad')
     expect(list[list.length - 1].verdict).toBe('excluded')
+  })
+
+  it('语言差档不再冒充「现在就能走」:联邦 EE 被标 blockedBy=language 并让位', () => {
+    // 2026-08-11 Frank 实拍:厨师 + 在加读书 + CLB 4 + 加拿大经验 0 → 方案第一条是联邦 EE。
+    // CEC 要加拿大经验、FSW 要 CLB 7、FST 要 CLB 5 口语听力,三条全不通。
+    // 档案照 Frank 那张截图配:基础卷只问 6 项,年龄/学历都没问过 → 传 null(与 /api/profile-pathways 一致)
+    const weak = pathVerdict({
+      age: null, married: null, clb: 4, edu: null, eduYears: null, canadaStudy: null, studyProvince: null,
+      noc: '63200', teer: 3, expCanadaMonths: 0, expForeignMonths: 60, foreignExpSelfEmployed: null,
+      status: 'study', province: null,
+    }, data)
+    const ee = weak.find((v) => v.key === 'FED-EE')!
+    expect(ee.blockedBy).toBe('language')
+    expect(weak[0].key).not.toBe('FED-EE')
+    // 理由还在(判定卡照旧摆官方门槛),只是不再顶到方案第一位
+    expect(ee.reasons.some((r) => r.kind === 'gap' && /语言门槛/.test(r.text))).toBe(true)
   })
 })
 

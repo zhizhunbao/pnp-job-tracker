@@ -18,7 +18,9 @@ const allFactors: ScoreFactor[] = JSON.parse(fs.readFileSync(
 const t = ((key: string, vars?: Record<string, string | number>) => {
   const messages: Record<string, string> = {
     'ps.resultTitle': '各省估分',
-    'ps.q.multi': '以下哪些符合你的情况?',
+    'ps.f.connection': '与该省的关联',
+    'ps.bonusOf': '{prov} 加分项',
+    'prov.NL': '纽芬兰与拉布拉多省',
     'ps.finish': '完成',
     'plan.next': '下一题',
     'plan.prev': '上一题',
@@ -54,13 +56,14 @@ const clickNext = async (container: HTMLElement) => {
 }
 
 describe('PnpScoreCard target questionnaire', () => {
-  it('groups the province bonus rows into one multi-select screen', async () => {
+  it('puts one official factor group per screen, at most 4 rows', async () => {
     vi.stubGlobal('fetch', vi.fn(() => new Promise(() => {})))
     const container = document.createElement('div')
     document.body.appendChild(container)
     const root = createRoot(container)
 
-    // NL 的 3 条加分项先前是 3 屏是/否题;现在合成 1 屏多选 → 总题数 8 → 6
+    // NL 的 3 条加分项同属官方「与该省的关联」一组 → 一屏多选,标题是组名、小注是省名
+    // (先前 3 屏是/否题;中间一版把七条摊一屏,标题只能写「以下哪些符合你的情况」= 没有主语)
     await act(async () => {
       root.render(React.createElement(PnpScoreCard, {
         t,
@@ -78,11 +81,52 @@ describe('PnpScoreCard target questionnaire', () => {
       await act(async () => pick.click())
       await clickNext(container)
     }
-    expect(container.textContent).toContain('以下哪些符合你的情况?')
+    expect(container.textContent).toContain('与该省的关联')
+    expect(container.textContent).toContain('纽芬兰与拉布拉多省 加分项')
     expect(container.querySelectorAll('.qzItem input[type="checkbox"]')).toHaveLength(3)
 
     await act(async () => root.unmount())
     container.remove()
+  })
+
+  // BC「执业资格 +5」官方只对 11 类职业成立(牙助/幼教/护理助理/技工…);清单在 mart 的 rule 里,
+  // 前端按 ctx.noc 决定问不问 —— 干软件、当厨师的不该被问这一条(2026-08-11 Frank 两次点名)
+  const bcEducationBonus = async (noc: string): Promise<string[]> => {
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+    const root = createRoot(container)
+    await act(async () => {
+      root.render(React.createElement(PnpScoreCard, {
+        t, lang: 'zh', ctx: { noc, teer: Number(noc[1]), province: 'BC' },
+        factors: allFactors.filter((row) => row.province === 'BC'),
+        draws: [], targetMode: true, questionnaireActive: true,
+      }))
+    })
+    let rows: string[] = []
+    for (let i = 0; i < 15; i += 1) {
+      const title = container.querySelector('.qzTitle')?.textContent || ''
+      const checks = container.querySelectorAll('.qzItem input[type="checkbox"]')
+      if (title === '学历' && checks.length) {
+        rows = Array.from(container.querySelectorAll('.qzItem .qzText')).map((x) => x.textContent || '')
+        break
+      }
+      const pick = container.querySelector('.qzItem input') as HTMLInputElement | null
+      if (pick) await act(async () => pick.click())
+      await clickNext(container)
+    }
+    await act(async () => root.unmount())
+    container.remove()
+    return rows
+  }
+
+  it('skips the professional-designation row when the official NOC list excludes this occupation', async () => {
+    vi.stubGlobal('fetch', vi.fn(() => new Promise(() => {})))
+    const cook = await bcEducationBonus('63200')          // 厨师 —— 不在官方 11 类里
+    expect(cook.length).toBeGreaterThan(0)
+    expect(cook.some((x) => x.includes('执业资格'))).toBe(false)
+
+    const ece = await bcEducationBonus('42202')           // 幼教 ECE —— 官方点名
+    expect(ece.some((x) => x.includes('执业资格'))).toBe(true)
   })
 
   it('drops a precise question whose range is already answered by the basic quiz', async () => {

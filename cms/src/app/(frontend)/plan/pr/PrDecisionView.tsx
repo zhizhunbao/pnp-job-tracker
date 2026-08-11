@@ -40,6 +40,8 @@ type ProfilePath = {
   verdict: 'open' | 'needs-info'
   tier: 0 | 1 | 2 | 3 | null
   availability: string
+  /** 被攒时间补不了的门槛卡住(语言差档 / 自雇不计经验)—— 排在能走的后面,标签也另写 */
+  blockedBy?: 'language' | 'selfEmployed' | null
 }
 
 const CARD: React.CSSProperties = { background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 12, padding: '14px 16px', margin: '0 0 10px' }
@@ -99,16 +101,14 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
   const shownStep = scoring ? scoreProgress.done : stepDone
   const shownTotal = scoring ? scoreProgress.total : stepTotal
   const scoreLeft = scoreProgress.total - scoreProgress.done
-  // 职业页会在固定高度题区内滚动。翻页时回到题区顶部，避免下一题继承职业页的底部位置，
-  // 让人误以为整张问卷又向上或向下跳了一截。
+  // 从长的职业页翻到短题时,页面可能还停在职业页的下半段 —— 把题区顶回视口。
   useLayoutEffect(() => {
     if (!quizOpen) { hasShownQuizStep.current = false; return }
     const pad = quizRef.current?.querySelector<HTMLElement>('.plQuizPad')
     if (!pad) return
-    pad.scrollTop = 0
     // 首次展开保持页面原本位置；只有用户主动翻题时才统一对齐，避免一进页面就自动跳过 banner。
-    // 题区已经整个在视口里就**别再滚**(08-10 Frank「不要闪烁」):题区高度固定、按钮位置固定,
-    // 每翻一题再 scrollIntoView 一次只会把页面又拽一下,看着就是闪。
+    // 题区已经整个在视口里就**别再滚**(08-10 Frank「不要闪烁」):每翻一题再 scrollIntoView 一次
+    // 只会把页面又拽一下,看着就是闪。
     const box = pad.getBoundingClientRect()
     if (hasShownQuizStep.current && (box.top < 0 || box.bottom > window.innerHeight)) {
       pad.scrollIntoView({ block: 'start', behavior: 'auto' })
@@ -230,6 +230,7 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
   const onScoreProgress = useCallback((progress: { done: number; total: number }) => setScoreProgress(progress), [])
 
   const onScoreComplete = useCallback(() => {
+    track('dp-score-done')
     setScoreStep(false)
     onQuizDone()
   }, [onQuizDone])
@@ -319,7 +320,7 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
               )}
               {quizOpen && !scoreStep && (<>
                 {!ready ? null : (occStep || !noc) ? (
-                  <div className="plQuizPad" style={{ maxWidth: 600, margin: '0 auto' }}>
+                  <div className="plQuizPad">
                     <QuizTitle>{t('quiz.q2')}</QuizTitle>
                     <div style={{ fontSize: 12.5, color: UI.text3, margin: '-10px 0 13px', lineHeight: 1.55 }}>{t('quiz.q2sub')}</div>
                     <OccPicker key={resetNonce} inline t={t} lang={lang} initial={bands.nocs} doneLabel={t('plan.next')}
@@ -327,7 +328,7 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
                       onDone={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || ''); setOccStep(false); setProvinceStep(false); setFormAtEnd(false) }} />
                   </div>
                 ) : provinceStep ? (
-                  <div className="plQuizPad" style={{ maxWidth: 600, margin: '0 auto' }}>
+                  <div className="plQuizPad">
                     {/* 省份是基础卷最后一题:答完立刻收卷出方案。各省估分是自愿的第二段,
                         由方案上的入口进入 —— 不把 16 道官方表的题横在结论前面 */}
                     <ProvincePicker key={`${resetNonce}:provinces`} t={t} initial={bands.provs}
@@ -336,7 +337,7 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
                       onDone={(provs) => { setBands(writeAnswers({ provs })); onQuizDone() }} />
                   </div>
                 ) : (
-                  <div className="plQuizPad" style={{ maxWidth: 600, margin: '0 auto' }}>
+                  <div className="plQuizPad">
                     <QuizForm key={`${resetNonce}:${formAtEnd ? 'end' : 'auto'}`} decision="pr" stage="basic" lang={lang} t={t} answers={bands} doneKey="plan.next" startAtEnd={formAtEnd}
                       onBack={() => { setOccStep(true); setFormAtEnd(false) }}
                       onPatch={(patch) => setBands(writeAnswers(patch))}
@@ -349,8 +350,8 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
                   答完收起时保留刚才的答案并原地显示各省结果，避免第二套“补充条件”流程。
                   display 只在收起时写 none:写死 block 会盖掉 .qzFill 的 flex,动作条就落不到题区底了。 */}
               {quizComplete && targetFactors.length > 0 && (
-                <div className={quizOpen && scoreStep ? 'plQuizPad qzFill' : undefined}
-                  style={{ display: quizOpen && !scoreStep ? 'none' : undefined, maxWidth: quizOpen ? 600 : undefined, margin: quizOpen ? '0 auto' : '14px 0 0' }}>
+                <div className={quizOpen && scoreStep ? 'plQuizPad' : undefined}
+                  style={{ display: quizOpen && !scoreStep ? 'none' : undefined, margin: quizOpen ? 0 : '14px 0 0' }}>
                   <PnpScoreCard key={scoreKey} t={t} lang={lang}
                     ctx={{ noc: tvJob?.noc || noc, teer: targetTeer, province: scoreContextProvince, city: tvJob?.city || '' }}
                     factors={targetFactors} draws={scoreDraws}
@@ -394,17 +395,19 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
                           : row.province === 'FED' ? t('dp.federal') : provDisp(row.province)
                       const stateKey = row.availability !== 'ok'
                         ? 'dp.planDataGap'
-                        : row.verdict === 'needs-info'
-                          ? 'dp.planNeedInfo'
-                          : `dp.planTier${row.tier ?? 0}`
+                        : row.blockedBy
+                          ? `dp.planBlocked.${row.blockedBy}`
+                          : row.verdict === 'needs-info'
+                            ? 'dp.planNeedInfo'
+                            : `dp.planTier${row.tier ?? 0}`
                       return (
-                        <div key={row.key} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', border: `1px solid ${UI.hairline}`, borderRadius: 10, background: index === 0 ? '#f8fbff' : '#fff' }}>
-                          <span style={{ width: 24, height: 24, borderRadius: 999, display: 'grid', placeItems: 'center', flexShrink: 0, background: index === 0 ? UI.primary : UI.bg, color: index === 0 ? '#fff' : UI.text2, fontSize: 12, fontWeight: 700 }}>{index + 1}</span>
+                        <div key={row.key} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', border: `1px solid ${UI.hairline}`, borderRadius: 10, background: index === 0 && !row.blockedBy ? '#f8fbff' : '#fff' }}>
+                          <span style={{ width: 24, height: 24, borderRadius: 999, display: 'grid', placeItems: 'center', flexShrink: 0, background: index === 0 && !row.blockedBy ? UI.primary : UI.bg, color: index === 0 && !row.blockedBy ? '#fff' : UI.text2, fontSize: 12, fontWeight: 700 }}>{index + 1}</span>
                           <span style={{ minWidth: 0, flex: 1 }}>
                             <span style={{ display: 'block', color: '#111827', fontSize: 13.5, fontWeight: 700, lineHeight: 1.45 }}>{routeName}</span>
                             <span style={{ display: 'block', color: UI.text3, fontSize: 12, lineHeight: 1.45 }}>{province}</span>
                           </span>
-                          <span style={{ color: row.verdict === 'open' && row.availability === 'ok' ? UI.ok : '#92400e', background: row.verdict === 'open' && row.availability === 'ok' ? '#ecfdf5' : '#fffbeb', borderRadius: 999, padding: '4px 9px', fontSize: 11.5, fontWeight: 600, whiteSpace: 'nowrap' }}>{t(stateKey)}</span>
+                          <span style={{ color: row.verdict === 'open' && row.availability === 'ok' && !row.blockedBy ? UI.ok : '#92400e', background: row.verdict === 'open' && row.availability === 'ok' && !row.blockedBy ? '#ecfdf5' : '#fffbeb', borderRadius: 999, padding: '4px 9px', fontSize: 11.5, fontWeight: 600, whiteSpace: 'nowrap' }}>{t(stateKey)}</span>
                         </div>
                       )
                     })}
@@ -421,8 +424,11 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
               </div>
             )}
 
-            {/* 带岗进入后,三项判定就是本页结果,不再自动套一层弹窗。条件在上、结果在下,修改后原地重算。 */}
-            {tvJob && !quizOpen && <TripleVerdictPanel job={tvJob} lang={lang} profileComplete={quizComplete} refreshKey={verdictNonce}
+            {/* 带岗进入后,三项判定就是本页结果,不再自动套一层弹窗。条件在上、结果在下,修改后原地重算。
+                **必须等 ready**:quizOpen 初值是 false,不等读完 localStorage 就渲染的话,新用户首帧先看到
+                这块判定面板、水合后又被答题卡顶掉 —— 闪一下不说,还白打一次 tv-open + 一次
+                /api/triple-verdict 请求,把「有多少人真看了判定」这个数顶虚(2026-08-11 umami session 实录)。 */}
+            {ready && tvJob && !quizOpen && <TripleVerdictPanel job={tvJob} lang={lang} profileComplete={quizComplete} refreshKey={verdictNonce}
               onBuildProfile={() => {
                 setQuizOpen(true); setOccStep(true); setProvinceStep(false); setScoreStep(false); setFormAtEnd(false); track('tv-build-profile')
                 setTimeout(() => quizRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60)

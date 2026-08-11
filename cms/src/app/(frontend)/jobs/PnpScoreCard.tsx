@@ -37,10 +37,10 @@ const guessArea = (city: string): number => {
 const L10N: Record<string, { zh?: string; ko?: string }> = {
   // BC
   'At least 1 year of directly related experience in Canada': { zh: '在加拿大有 1 年以上同职业经验', ko: '캐나다 내 동일 직종 1년 이상' },
-  'Currently working full-time in B.C. for the employer in the occupation identified in the BC PNP registration': { zh: '目前在 BC 为该雇主全职做同一职业', ko: '현재 BC에서 해당 고용주와 동일 직종 풀타임' },
-  'Post-secondary education completed in B.C., or': { zh: '学历在 BC 读的', ko: 'BC에서 취득한 학력' },
+  'Currently working full-time in B.C. for the employer in the occupation identified in the BC PNP registration': { zh: '目前在本省为该雇主全职做同一职业', ko: '현재 해당 주에서 같은 고용주와 동일 직종 풀타임' },
+  'Post-secondary education completed in B.C., or': { zh: '学历在本省读的', ko: '해당 주에서 취득한 학력' },
   'Post-secondary education completed in Canada (outside of B.C.)': { zh: '学历在加拿大其它省读的', ko: '캐나다 타 주에서 취득' },
-  'Eligible professional designation in B.C.': { zh: '持 BC 认可的执业资格', ko: 'BC 인정 전문 자격 보유' },
+  'Eligible professional designation in B.C.': { zh: '持本省认可的执业资格', ko: '해당 주 인정 전문 자격 보유' },
   'Language proficiency in both English and French': { zh: '英法双语都达标', ko: '영어·프랑스어 모두 충족' },
   'Area 1: Metro Vancouver Regional District': { zh: 'Area 1 大温地区', ko: 'Area 1 메트로 밴쿠버' },
   'Area 2: Squamish, Abbotsford, Agassiz, Mission, and Chilliwack': { zh: 'Area 2 Squamish 等 5 市镇', ko: 'Area 2 Squamish 등 5개 지역' },
@@ -51,14 +51,14 @@ const L10N: Record<string, { zh?: string; ko?: string }> = {
   'Fully recognized by provincial licensing body': { zh: '职业资格获省监管机构完全认证', ko: '주 면허기관 완전 인정 자격' },
   'Second Official Language — CLB 5 or higher (overall)': { zh: '第二官方语言 CLB 5 以上', ko: '제2공용어 CLB 5 이상' },
   'Studies in another province': { zh: '有外省就读经历', ko: '타 주 학업 경력' },
-  'Close relative in Manitoba': { zh: '在曼省有近亲' },
-  'Previous authorized work experience in Manitoba (six months or more)': { zh: '曾在曼省合法工作至少 6 个月' },
-  'Completed post-secondary program in Manitoba (two years or more)': { zh: '在曼省完成至少 2 年的高等教育项目' },
-  'Completed post-secondary program in Manitoba (one year)': { zh: '在曼省完成 1 年高等教育项目' },
-  'Ongoing employment in Manitoba for six months or more with long-term job offer from the same employer': { zh: '已为同一曼省雇主工作至少 6 个月并获长期 offer' },
-  'Invitation to Apply under a Strategic Initiative': { zh: '获曼省战略项目邀请' },
+  'Close relative in Manitoba': { zh: '在本省有近亲' },
+  'Previous authorized work experience in Manitoba (six months or more)': { zh: '曾在本省合法工作至少 6 个月' },
+  'Completed post-secondary program in Manitoba (two years or more)': { zh: '在本省完成至少 2 年的高等教育项目' },
+  'Completed post-secondary program in Manitoba (one year)': { zh: '在本省完成 1 年高等教育项目' },
+  'Ongoing employment in Manitoba for six months or more with long-term job offer from the same employer': { zh: '已为同一本省雇主工作至少 6 个月并获长期 offer' },
+  'Invitation to Apply under a Strategic Initiative': { zh: '获本省战略项目邀请' },
   'Immigration destination in Manitoba outside of Winnipeg': { zh: '计划定居温尼伯以外地区' },
-  'Close relative in another province and no close relative in Manitoba': { zh: '外省有近亲、曼省无近亲' },
+  'Close relative in another province and no close relative in Manitoba': { zh: '外省有近亲、本省无近亲' },
   'Previous immigration application to another province': { zh: '曾向其他省申请移民' },
   // ON Workforce Priority
   'Over 24 months working in job offer position': { zh: '已在 offer 对应岗位工作超过 24 个月' },
@@ -88,16 +88,19 @@ const L10N: Record<string, { zh?: string; ko?: string }> = {
   '$20 to $24.99 per hour': { zh: '时薪 20-24.99 加元' },
   'Less than $20 per hour': { zh: '时薪不足 20 加元' },
   // SK
-  'High skilled employment offer from a Saskatchewan employer': { zh: '有 SK 雇主的高技能岗 offer', ko: 'SK 고용주의 고숙련 오퍼 보유' },
-  'Close family relative in Saskatchewan': { zh: '在 SK 有近亲(公民或永居)', ko: 'SK에 가까운 친척 거주' },
-  'Past work experience in Saskatchewan': { zh: '在 SK 工作过(近 5 年满 12 个月)', ko: 'SK 근무 경력(최근 5년 12개월)' },
-  'Past student experience in Saskatchewan': { zh: '在 SK 读过书(满一学年)', ko: 'SK 유학 경험(1학년도 이상)' },
+  'High skilled employment offer from a Saskatchewan employer': { zh: '有本省雇主的高技能岗 offer', ko: '해당 주 고용주의 고숙련 오퍼 보유' },
+  'Close family relative in Saskatchewan': { zh: '在本省有近亲(公民或永居)', ko: '해당 주에 가까운 친척 거주' },
+  'Past work experience in Saskatchewan': { zh: '在本省工作过(近 5 年满 12 个月)', ko: '해당 주 근무 경력(최근 5년 12개월)' },
+  'Past student experience in Saskatchewan': { zh: '在本省读过书(满一学年)', ko: '해당 주 유학 경험(1학년도 이상)' },
   // NL Express Entry Skilled Worker - Annex A adaptability
-  'Close relative in Newfoundland and Labrador': { zh: '本人或配偶在纽省有符合范围的近亲', ko: '본인 또는 배우자의 뉴펀들랜드 래브라도주 가까운 친척' },
-  'Previous work experience in Newfoundland and Labrador': { zh: '近 5 年曾在纽省持有效工签工作至少 12 个月', ko: '최근 5년 내 뉴펀들랜드 래브라도주에서 유효한 취업허가로 12개월 이상 근무' },
-  'Previous student experience in Newfoundland and Labrador': { zh: '曾在纽省认可院校持学签全日制就读至少 1 学年', ko: '뉴펀들랜드 래브라도주 인정 교육기관에서 유효한 유학허가로 1학년도 이상 수학' },
+  'Close relative in Newfoundland and Labrador': { zh: '本人或配偶在本省有符合范围的近亲', ko: '본인 또는 배우자의 해당 주 가까운 친척' },
+  'Previous work experience in Newfoundland and Labrador': { zh: '近 5 年曾在本省持有效工签工作至少 12 个月', ko: '최근 5년 내 해당 주에서 유효한 취업허가로 12개월 이상 근무' },
+  'Previous student experience in Newfoundland and Labrador': { zh: '曾在本省认可院校持学签全日制就读至少 1 学年', ko: '해당 주 인정 교육기관에서 유효한 유학허가로 1학년도 이상 수학' },
 }
-const label = (raw: string, lang: string) => (lang === 'zh' ? L10N[raw]?.zh : lang === 'ko' ? L10N[raw]?.ko : '') || raw
+// 官方原文里「…, or」的那个 or 是**表格排版**留下的(下一行接着念),单拎出来放进选项就是个悬空的 or
+// (英文界面实拍:「Post-secondary education completed in B.C., or」)。二选一改由 UI 表达,尾巴去掉。
+const label = (raw: string, lang: string) =>
+  ((lang === 'zh' ? L10N[raw]?.zh : lang === 'ko' ? L10N[raw]?.ko : '') || raw).replace(/[,，]?\s*or\s*$/i, '')
 
 // 年龄下拉的选项档(打分按选中值算,预填吸附也以此为准 —— 两处必须同一张表)
 const AGES = [17, 19, 25, 30, 34, 38, 42, 45, 48, 52]
@@ -226,7 +229,19 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
   // PR 评估页把官方表字段收敛成逐题选择。这里只换输入形态，不改任何分值或匹配规则；
   // 时薪是 BC 每整元计分，不能粗暴切区间，所以仍是单题数字输入。
   const extraQuestions: ExtraQuestion[] = []
-  const scopedSub = (province: string) => provinces.length > 1 ? t('prov.' + province) : undefined
+  // 省名**恒显示**,不再只在多省时出:只选一个省时整屏找不到「BC」两个字,用户不知道这题在问谁的规矩
+  const scopedSub = (province: string) => t('prov.' + province) || province
+  // 行级适用范围:官方给了 NOC 清单的行,不在清单里就**不问**。
+  // 实例:BC「执业资格 +5」原文写明只对 11 类职业成立(牙助/幼教/护理助理/技工…),
+  // 干软件的被问到这一条既多点一次、又误导(2026-08-11 Frank 点名)。清单在数据层展开好,
+  // 这里只做集合判断 —— 规则串坏了就照问,宁可多问一句,不静默吞掉用户可能有的 5 分。
+  const rowApplies = (r: ScoreFactor) => {
+    if (!r.rule) return true
+    try {
+      const list = (JSON.parse(r.rule) as { appliesNoc?: Record<string, string> }).appliesNoc
+      return !list || !!list[ctx.noc || '']
+    } catch { return true }
+  }
   // 基础卷答过范围的条件,精确题只在范围内给选项;范围内只剩一个值 = 已经问过了,不再占一屏
   const inRange = (k: 'clb1' | 'clb2' | 'expRecent' | 'expOlder', all: number[]) => {
     const allowed = limits?.[k]
@@ -284,18 +299,60 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
       apply: () => setRowAnswers((m) => ({ ...m, [key]: r.seq })),
     })), scopedSub(prov))
   }
-  // 加分项:**一省一屏多选**,不是一条一屏的是/否题(BC 一个省 7 条,先前就是 7 屏 14 次点击)。
-  // 官方表本来就是一张勾选清单,合成一屏既少点二十几下,也让分值一列对齐、能互相比较。
+  // 加分项:**一屏一组、每屏 ≤4 条**(2026-08-11 Frank「一页问题小于等于 4,太多看麻了,而且要相关」)。
+  // 组 = 官方表自己的因素(经验 / 学历 / 语言 / 地区),不是我随手划的 —— 一省七条摊一屏时
+  // 标题只能写成「以下哪些符合你的情况」,**这个问句没有主语**,Frank 自己都没看懂。
+  // 现在标题就是组名、小注是省名(恒显示),一屏内的几条必定同源。
   for (const prov of provinces) {
-    const checks: ExtraCheck[] = []
+    const groups: { factor: string; rows: ScoreFactor[] }[] = []
     const offer = factors.find((f) => f.province === prov && f.factor === 'offer' && f.kind === 'row')
-    if (offer) checks.push({ key: `${prov}:offer`, text: label(offer.label, lang), pts: offer.points, on: hasOffer, toggle: setHasOffer })
-    for (const bonus of factors.filter((f) => f.province === prov && f.kind === 'bonus')) {
-      const key = `${prov}:${bonus.factor}:${bonus.seq}`
-      checks.push({ key, text: label(bonus.label, lang), pts: bonus.points, on: !!ticks[key],
-        toggle: (on: boolean) => setTicks((m) => ({ ...m, [key]: on })) })
+    if (offer) groups.push({ factor: 'offer', rows: [offer] })
+    const bonus = factors.filter((f) => f.province === prov && f.kind === 'bonus').filter(rowApplies)
+    for (const name of Array.from(new Set(bonus.map((b) => b.factor)))) {
+      groups.push({ factor: name, rows: bonus.filter((b) => b.factor === name) })
     }
-    if (checks.length) extraQuestions.push({ key: `${prov}:checks`, title: t('ps.q.multi'), sub: scopedSub(prov), checks })
+    for (const g of groups) {
+      // 现有最大的组是 3 条;这道闸是给以后加省的数据留的,别让某个省一屏冒出 8 条
+      for (let i = 0; i < g.rows.length; i += 4) {
+        const chunk = g.rows.slice(i, i + 4)
+        const isOffer = g.factor === 'offer'
+        const tickKey = (r: ScoreFactor) => (isOffer ? `${prov}:offer` : `${prov}:${r.factor}:${r.seq}`)
+        const isOn = (r: ScoreFactor) => (isOffer ? hasOffer : !!ticks[tickKey(r)])
+        // 官方原文「…, or」= 与上一条二选一(xorPrev)。把连成一串的 xor 归成同一簇:
+        // 勾上一条就把同簇的另一条放下 —— 算分本来就只取簇内最大的那条,UI 放任两个都勾
+        // 等于显示与口径分叉(用户勾了 8 和 6,以为 14,实际只算 8)
+        const cluster: number[] = []
+        chunk.forEach((r, idx) => cluster.push(idx === 0 ? 0 : (r.xorPrev ? cluster[idx - 1] : cluster[idx - 1] + 1)))
+        const setOn = (r: ScoreFactor, on: boolean) => {
+          if (isOffer) { setHasOffer(on); return }
+          const mine = cluster[chunk.indexOf(r)]
+          setTicks((m) => {
+            const next = { ...m, [tickKey(r)]: on }
+            if (on) chunk.forEach((sib, idx) => { if (sib !== r && cluster[idx] === mine) next[tickKey(sib)] = false })
+            return next
+          })
+        }
+        const screenKey = `${prov}:${g.factor}:${i}`
+        if (chunk.length === 1) {
+          // 只有一条的组不摆一个孤零零的勾选框 —— 退回是/否单选,标题就是那一条
+          const r = chunk[0]
+          addChoices(screenKey, t('ps.q.meet', { condition: label(r.label, lang) }), [
+            { key: 'yes', text: t('ps.yes'), active: isOn(r), apply: () => setOn(r, true) },
+            { key: 'no', text: t('ps.no'), active: !isOn(r), apply: () => setOn(r, false) },
+          ], t('ps.bonusOf', { prov: t('prov.' + prov) || prov }))
+        } else {
+          extraQuestions.push({
+            key: screenKey,
+            title: t('ps.f.' + g.factor) || g.factor,
+            sub: t('ps.bonusOf', { prov: t('prov.' + prov) || prov }),
+            checks: chunk.map((r) => ({
+              key: tickKey(r), text: label(r.label, lang), pts: r.points,
+              on: isOn(r), toggle: (on: boolean) => setOn(r, on),
+            })),
+          })
+        }
+      }
+    }
   }
   const extraQuestionCount = extraQuestions.length
   const extraAnsweredCount = extraQuestions.filter((q) => extraAnswered[q.key]).length

@@ -7,7 +7,7 @@ import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { getUser } from '@/lib/entitlement'
-import { FUNNEL_STEPS, stepRates } from '@/lib/funnel'
+import { CHAT_STEPS, DECISION_STEPS, FUNNEL_STEPS, LEGACY_STEPS, chatRates, decisionRates, stepRates } from '@/lib/funnel'
 import { FunnelView, type FunnelRow } from './FunnelView'
 
 export const dynamic = 'force-dynamic'
@@ -18,6 +18,11 @@ const LABEL: Record<string, string> = {
   'lock-seen': '③ 锁区被看到',
   'pricing-open': '④ 打开定价',
   'pay-click': '⑤ 点了付费',
+  // 对话形态与雇主线(并行链,不接在上面五步后面)
+  'chat-open': '对话 · 打开挂件', 'chat-answer': '对话 · 拿到答复', 'chat-feedback': '对话 · 赞踩',
+  'modal-pnp': '雇主 · PNP 弹框', 'pnp-employer-click': '雇主 · 点在招职位', 'se-view-jobs': '把脉 · 点雇主名',
+  // PR 评估形态(2026-08-11 补埋点:先前这页一条数都没有)
+  'dp-open': 'PR · 打开评估页', 'dp-quiz-done': 'PR · 答完 6 项', 'dp-score-start': 'PR · 进入估分', 'dp-score-done': 'PR · 估分答完',
 }
 
 export default async function FunnelPage() {
@@ -38,13 +43,21 @@ export default async function FunnelPage() {
     .catch(() => [])   // 表还没建 → 空页面照常渲染(说「还没有任何计数」),不 500
 
   const sum = (step: string, k: 'd30' | 'd7' | 'd1') => raw.filter((r) => r.event === step).reduce((a, r) => a + r[k], 0)
-  const rates = stepRates(Object.fromEntries(FUNNEL_STEPS.map((s) => [s, sum(s, 'd30')])))
+  const counts30 = Object.fromEntries(FUNNEL_STEPS.map((s) => [s, sum(s, 'd30')]))
+  const rates = stepRates(counts30)
+  // 三条链并行,各算各的相邻转化率(混算会算出「报告 → 打开评估页」这种没有因果的比值)
+  const chainRate = new Map<string, number | null>()
+  for (const [steps, fn] of [[CHAT_STEPS, chatRates], [DECISION_STEPS, decisionRates]] as const) {
+    const rs = fn(counts30)
+    steps.slice(1).forEach((step, i) => chainRate.set(step, rs[i]))
+  }
   // ② 不给「比上一步」(2026-08-03 第一次读这张表就撞到:① 8 次、② 16 次 = 200%)。
   // 职位详情页**不是**报告的唯一来路 —— 首页 CTA 直接进 /plan/pr 的占了绝大多数(实测 16 里 12 条是 pr 卡),
   // 拿 ① 当 ② 的分母算出来的百分比没有意义。③④⑤ 是真父子关系,照旧给。
   const rows: FunnelRow[] = FUNNEL_STEPS.map((s, i) => ({
     step: s, label: LABEL[s], d30: sum(s, 'd30'), d7: sum(s, 'd7'), d1: sum(s, 'd1'),
-    rate: i === 0 || s === 'report-open' ? null : rates[i - 1],
+    rate: chainRate.has(s) ? chainRate.get(s) ?? null
+      : i === 0 || s === 'report-open' || i >= LEGACY_STEPS.length ? null : rates[i - 1],
   }))
   const group = (event: string) =>
     raw.filter((r) => r.event === event && r.prop).sort((a, b) => b.d30 - a.d30).map((r) => ({ prop: r.prop, n: r.d30 }))

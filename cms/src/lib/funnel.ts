@@ -10,7 +10,7 @@
  * 后两个 = 对话形态(挂件打开 → 拿到带出处的答复)。**并行量,不混算** —— 设计文档
  * `docs/design/对话即产品-20260803.md` §六:两形态的转化对照才是撤旧页的判据,
  * 塞进同一条链会把两套口径搅成一锅。 */
-export const FUNNEL_STEPS = ['jd-open', 'report-open', 'lock-seen', 'pricing-open', 'pay-click', 'chat-open', 'chat-answer', 'chat-feedback', 'modal-pnp', 'pnp-employer-click', 'se-view-jobs'] as const
+export const FUNNEL_STEPS = ['jd-open', 'report-open', 'lock-seen', 'pricing-open', 'pay-click', 'chat-open', 'chat-answer', 'chat-feedback', 'modal-pnp', 'pnp-employer-click', 'se-view-jobs', 'dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done'] as const
 export type FunnelStep = (typeof FUNNEL_STEPS)[number]
 
 // 站内既有的埋点名 → 漏斗步骤(调用点一个都不用改名;umami 那边照旧用原名,两套口径互不干扰)。
@@ -45,6 +45,13 @@ const ALIAS: Record<string, FunnelStep> = {
   // 三分表(把脉页橱窗)点雇主名 —— 只作参照,不进 modal-pnp→pnp-employer-click 这条转化率
   // (来源不同的两条路,拿橱窗的点击数当 PNP 弹框的分子/分母都不对)。
   'se-view-jobs': 'se-view-jobs',
+  // PR 评估页(2026-08-11)。调用点早就在打,只是没进白名单 —— 于是 Frank 问「有人访问吗」时
+  // 第一方表里一条都查不到,只能靠登录态 umami 一条条翻 session(它的 API 免费档 401)。
+  // 四步是一条**自己的链**:打开 → 答完 6 项基础卷 → 进入各省估分 → 估分答完。
+  'dp-open': 'dp-open',
+  'dp-quiz-done': 'dp-quiz-done',
+  'dp-score-start': 'dp-score-start',
+  'dp-score-done': 'dp-score-done',
 }
 
 // prop 白名单:低基数枚举才留,其余一律归空 —— 高基数(NOC、公司名、搜索词)会把表撑成明细表
@@ -79,6 +86,9 @@ export const LEGACY_STEPS = FUNNEL_STEPS.slice(0, 5)
  * 显式截到 8(而非开放式 .slice(5))—— 后面追加的雇主线三步不是这条链的延伸,
  * 开放式切片会把它们错误地拖进「挂件→答复→反馈」的相邻转化率计算。 */
 export const CHAT_STEPS = FUNNEL_STEPS.slice(5, 8)
+/** PR 评估形态。与上面两条链**并行**,不接在谁后面:它的分母是「打开决策页」,
+ *  和职位详情页那条链没有父子关系(拿 jd-open 当它的分母会算出没意义的比值)。 */
+export const DECISION_STEPS = FUNNEL_STEPS.slice(11, 15)
 
 const ratesOf = (steps: readonly string[], counts: Record<string, number>) =>
   steps.slice(1).map((step, i) => {
@@ -96,6 +106,11 @@ export function stepRates(counts: Record<string, number>): (number | null)[] {
 /** 对话链的转化率(一格:打开 → 拿到答复)。 */
 export function chatRates(counts: Record<string, number>): (number | null)[] {
   return ratesOf(CHAT_STEPS, counts)
+}
+
+/** PR 评估链的转化率(三格:打开 → 答完基础卷 → 进估分 → 估分答完)。 */
+export function decisionRates(counts: Record<string, number>): (number | null)[] {
+  return ratesOf(DECISION_STEPS, counts)
 }
 
 /**

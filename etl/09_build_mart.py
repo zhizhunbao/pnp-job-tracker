@@ -233,6 +233,22 @@ def stream_key(scope: str) -> str:
     return STREAM_KEY_FIX.get(k, k)
 
 
+def expand_applies(applies: dict, universe) -> dict:
+    """行级适用范围 → 前端能直接判的 NOC 清单。
+
+    官方那条「Any Trade」不给 NOC,只说「持 SkilledTradesBC 证书的技工」。把它展开成
+    **本站分类树的「技工」大类**(noc.broad_of)——注意这是决定「问不问」,不是断言资格:
+    问了用户还得自己勾,过度包含只会多问一句,漏掉才会让人白丢 5 分。
+    """
+    nocs = dict(applies.get("nocs") or {})
+    trade = (applies.get("anyTrade") or "").strip()
+    if trade:
+        for code in universe:
+            if code not in nocs and NOC.broad_of(code) == "技工":
+                nocs[code] = trade
+    return {"appliesNoc": nocs}
+
+
 def build_pnp_requirements(files) -> list:
     """省提名官方门槛维度(规则引擎):一行一条可核验的官方门槛,列对齐 DB。
     与 pnp_occupations(在不在清单)、pnp_score_factors(能打几分)并列,三张表各答一个问题。
@@ -983,6 +999,15 @@ def build():
     # 省提名官方打分表(E12-09):一行一档,各省表结构不同但列同一套。
     # factorGroup/groupMax 是 SK 那种「官方分了 FACTOR I/II 且各有上限」的省才有(BC 无分组 → 留空);
     # passMark 是官方硬门槛(SK 60 分才能申请),BC 没有这种门槛 → 留空,前端改对照真实抽选线。
+    # 展开「任何技工工种」要一份 NOC 全集:用官方名录而不是「库里出现过的岗位」——
+    # 后者随每日抓取涨落,同一份分值表今天问、明天不问,用户会以为我们在乱改规则
+    noc_universe: list[str] = []
+    if IN_NOC_DESC.exists():
+        try:
+            noc_universe = list((json.loads(IN_NOC_DESC.read_text(encoding="utf-8")).get("byNoc") or {}).keys())
+        except Exception:  # noqa: BLE001 — 名录读不到就只留官方那 10 个 NOC,不猜技工
+            noc_universe = []
+
     pnp_score_factors = []
     for src in IN_SCORE_TABLES:
         if not src.exists():
@@ -1000,9 +1025,14 @@ def build():
                      "factorGroup": f.get("group", ""), "groupMax": gmax.get(f.get("group", ""))}
             for kind in ("rows", "bonus"):
                 for i, x in enumerate(f.get(kind, [])):
+                    # appliesTo:这一行的**适用范围**(现在只有 BC「执业资格 +5」有 —— 官方写明只对
+                    # 表内 11 类职业成立)。搭 rule 这个既有的规则串走,不为 11 行另起一张表;
+                    # 「任何技工工种」在数据层就展开成 NOC 清单,前端只做集合判断,不在 UI 里分类。
+                    applies = x.get("appliesTo")
                     pnp_score_factors.append({**fbase, "kind": kind[:-1] if kind == "rows" else kind,
                                               "seq": i, "label": x.get("label", ""), "points": x.get("points"),
-                                              "xorPrev": bool(x.get("xorWithPrev")), "rule": ""})
+                                              "xorPrev": bool(x.get("xorWithPrev")),
+                                              "rule": json.dumps(expand_applies(applies, noc_universe), ensure_ascii=False) if applies else ""})
             if f.get("rule"):
                 pnp_score_factors.append({**fbase, "kind": "rule", "seq": 0,
                                           "label": f.get("rule", ""), "points": None, "xorPrev": False,

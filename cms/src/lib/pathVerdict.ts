@@ -61,6 +61,11 @@ export type PathwayVerdict = {
   stream: string                     // 官方通道名
   verdict: 'excluded' | 'open' | 'needs-info'
   tier: 0 | 1 | 2 | 3 | null         // offer 后等多久:0=Day0 / 1=3-6月 / 2=12月 / 3=24月;excluded=null
+  /** 被**攒时间补不了**的门槛卡住(语言差档 / 自雇经历不计)。不是 excluded ——
+   *  考一次试就能过,但**现在**走不了。先前这类缺口只生成一条理由、不进 gaps,
+   *  于是 tier=0 + verdict=open,CLB 4 的厨师也能把联邦 EE 顶到方案第一位
+   *  (2026-08-11 Frank 两次实拍点名)。排序与标签都要看它。 */
+  blockedBy?: 'language' | 'selfEmployed'
   reasons: VerdictReason[]
   score?: {
     system: string; value: number; ceiling: number | null
@@ -515,6 +520,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
   }
 
   // ── ② 语言 ───────────────────────────────────────────────────────────────
+  let blockedBy: PathwayVerdict['blockedBy']
   let langRowsSeen = 0
   if (spec.reqPrograms) {
     // 联邦:三子通道各自一套语言行,逐条摆
@@ -523,6 +529,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
         langRowsSeen += 1
         if (p.clb == null) { missingSlots.push('clb'); continue }
         const ok = r.value == null || p.clb >= r.value
+        if (!ok) blockedBy = blockedBy ?? 'language'
         reasons.push({
           kind: ok ? 'met' : 'gap',
           text: `${prog} 语言门槛 CLB ${r.value}${ok ? `,你 CLB ${p.clb} 达标` : `,你 CLB ${p.clb},差 ${(r.value as number) - p.clb} 档`}`,
@@ -548,6 +555,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
           quote: lang.evidence.label, evidence: lang.evidence,
         })
       } else {
+        blockedBy = blockedBy ?? 'language'
         reasons.push({ kind: 'gap', text: `语言门槛 CLB ${lang.need},你 CLB ${lang.have},差 ${lang.short} 档`, quote: lang.evidence.label, evidence: lang.evidence })
       }
     } else {
@@ -708,6 +716,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
   }
   for (const r of selfEmpRows) {
     if (p.foreignExpSelfEmployed !== true) continue
+    blockedBy = blockedBy ?? 'selfEmployed'
     reasons.push({ kind: 'gap', text: '你的海外经历是自雇,这条通道明文不计入工作经验', quote: quoteOfReq(r), evidence: evOfReq(r) })
   }
 
@@ -731,6 +740,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
   return {
     key: spec.key, province: spec.province, stream: spec.stream,
     verdict, tier: verdict === 'needs-info' && !gate.picked ? null : tier,
+    ...(blockedBy && !excluded ? { blockedBy } : {}),
     reasons, ...(score ? { score } : {}), availability,
   }
 }
@@ -744,7 +754,10 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
  */
 export function pathVerdict(profile: VerdictProfile, data: VerdictData): PathwayVerdict[] {
   const out = REGISTRY.map((spec, i) => ({ v: evaluateOne(spec, profile, data), i }))
-  const rank = (v: PathwayVerdict) => (v.verdict === 'open' ? 0 : v.verdict === 'needs-info' ? 1 : 2)
+  // 四档:现在就能走 → 被硬门槛卡住(考试能补,但**现在**走不了) → 缺档案判不了 → 排除。
+  // 先前只有三档,「差 3 档语言」和「全部达标」并列 tier0,谁在注册表里靠前谁第一。
+  const rank = (v: PathwayVerdict) =>
+    (v.verdict === 'open' ? (v.blockedBy ? 1 : 0) : v.verdict === 'needs-info' ? 2 : 3)
   out.sort((a, b) => {
     if (rank(a.v) !== rank(b.v)) return rank(a.v) - rank(b.v)
     const ta = a.v.tier ?? 9, tb = b.v.tier ?? 9
