@@ -187,7 +187,9 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
 .occPill:hover{border-color:#93c5fd;background:#f8fbff}
 .occPill--on{border-color:${UI.primary};background:${UI.primary};color:#fff;font-weight:600}
 .occPill--on:hover{border-color:${UI.primaryDeep};background:${UI.primaryDeep}}
-.occPillName{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* 走查 #296:职业名不许截断(「Restaurant and food service m…」)——名字是用户找自己那一行的唯一线索,
+   截了他就认不出。放不下就换行,胶囊变高一点没关系;别再加 ellipsis/nowrap 回来。 */
+.occPillName{min-width:0;overflow-wrap:anywhere}
 .occPillMeta{flex-shrink:0;color:${UI.text3};font-size:11.5px;font-variant-numeric:tabular-nums}
 .occPill--on .occPillMeta{color:#dbeafe}
 .occPillCheck{display:inline-flex;align-items:center;font-size:12px}

@@ -5,6 +5,7 @@
 // 上一版做成「四块无主的事实」,被点名「列一堆信息,用户看了有什么用」—— 摆事实不等于给答案。
 // 每条路径下面挂的是判定核给的理由(met/gap/excluded),官方原句原样摆,页面不改写、不加戏。
 import { BackLink } from '../../BackLink'
+import { dropProvPrefix } from '../../jobs/i18n'
 import { useLang } from '../../LangProvider'
 import { SiteFooter } from '../../SiteFooter'
 import { SiteHeader } from '../../SiteHeader'
@@ -59,9 +60,12 @@ export function CaseView({ caseId, label, question, answer }: {
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
         {rank ? <span style={{ color: UI.text3, fontSize: 13, fontVariantNumeric: 'tabular-nums' }}>{rank}</span> : null}
         <span style={{ minWidth: 0, color: '#111827', fontSize: 14.5, fontWeight: 700 }}>
-          {/* 省名与官方通道名之间留空,用样式不用全角空格 —— 全角空格在英文行里是一道明显的洞 */}
+          {/* 省名与官方通道名之间留空,用样式不用全角空格 —— 全角空格在英文行里是一道明显的洞。
+              走查 #293:通道名本身以省名开头的(New Brunswick Skilled Worker stream…)把前缀摘掉,
+              否则一行里省名说两遍,还多折一行。 */}
           {v.province === 'FED' ? t('dp.federal') : provOf(v.province)}
-          <span style={{ display: 'inline-block', width: 10 }} />{v.stream}
+          <span style={{ display: 'inline-block', width: 10 }} />
+          {dropProvPrefix(v.stream, v.province === 'FED' ? '' : provOf(v.province))}
         </span>
         <span style={{ marginLeft: 'auto', color: v.verdict === 'excluded' ? '#b91c1c' : v.tier === 0 ? UI.ok : '#92400e',
           background: v.verdict === 'excluded' ? '#fef2f2' : v.tier === 0 ? '#ecfdf5' : '#fffbeb',

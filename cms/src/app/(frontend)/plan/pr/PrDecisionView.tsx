@@ -7,7 +7,7 @@
 // 判定/分数全来自确定性层,本页不算一个数。
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 
-import { streamDisplay } from '../../jobs/i18n'
+import { dropProvPrefix, streamDisplay } from '../../jobs/i18n'
 import { useLang } from '../../LangProvider'
 import { SiteHeader } from '../../SiteHeader'
 import { SiteFooter } from '../../SiteFooter'
@@ -364,12 +364,14 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
                 ) : profilePaths.length > 0 ? (
                   <div style={{ display: 'grid', gap: 8 }}>
                     {profilePaths.slice(0, 3).map((row, index) => {
-                      const routeName = t(`jpw.p.${row.key}`)
                       const province = row.key === 'AIP'
                         ? t('dp.atlantic')
                         : row.key === 'RCIP'
                           ? t('dp.ruralCommunities')
                           : row.province === 'FED' ? t('dp.federal') : provDisp(row.province)
+                      // 走查 #293:省名在灰字那行已经写了,通道名里再带一遍 =「Saskatchewan Employment Offer /
+                      // Saskatchewan」。摘掉前缀,顺带让名字短一截、少折一行。
+                      const routeName = dropProvPrefix(t(`jpw.p.${row.key}`), province)
                       const stateKey = row.availability !== 'ok'
                         ? 'dp.planDataGap'
                         : row.blockedBy
@@ -474,7 +476,7 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
                       </div>
                       <div style={{ display: 'flex', gap: 8, fontSize: 12.5, color: UI.text2, marginTop: 2 }}>
                         <span style={{ fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>{r.drawDate}</span>
-                        <span title={streamDisplay(t, r.stream)} style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{streamDisplay(t, r.stream)}</span>
+                        <span style={{ minWidth: 0, overflowWrap: 'anywhere' }}>{streamDisplay(t, r.stream)}</span>
                       </div>
                     </div>
                   ))}
@@ -491,8 +493,10 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
                         </span>
                       ) },
                       { key: 'date', label: t('rpt.s.d.date'), width: '27%', nowrap: true, render: (r) => <span style={{ fontVariantNumeric: 'tabular-nums', color: UI.text2, fontSize: 12.5 }}>{r.drawDate}</span> },
-                      { key: 'stream', label: t('rpt.s.d.stream'), width: '30%', nowrap: true, render: (r) => (
-                        <span title={streamDisplay(t, r.stream)} style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', color: UI.text2 }}>{streamDisplay(t, r.stream)}</span>
+                      // 走查 #297:官方通道名截断(「Alberta Express Entry Stream – Priority Sectors (Constructio…」)。
+                      // 英文界面拿到的就是官方原名,我们**没有权力**给它编个短名 —— 放不下就换行,不截。
+                      { key: 'stream', label: t('rpt.s.d.stream'), width: '30%', render: (r) => (
+                        <span style={{ display: 'block', color: UI.text2, overflowWrap: 'anywhere' }}>{streamDisplay(t, r.stream)}</span>
                       ) },
                       { key: 'score', label: t('rpt.s.d.score'), width: '16%', align: 'right', render: (r) => <>{r.score ?? '—'}</> },
                     ]} />

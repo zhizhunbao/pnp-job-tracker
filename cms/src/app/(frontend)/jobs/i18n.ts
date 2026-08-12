@@ -328,7 +328,7 @@ const zh: Dict = {
   // ── L2 报告(rpt.*)与拿PR答题页(plan.*)——措辞红线:只陈述可核验事实,永不说「你能/不能移民」 ──
   'plan.pr.title': 'PR 评估', 'plan.pr.sub': '填 4 项条件出初版报告,随时可改',
   // 决策页(判定合一批1)
-  'dp.sub': '雇主 offer → 省提名:按官方数据评估你的条件',
+  'dp.sub': '雇主 offer → 省提名',
   'dp.draws': '各省最近抽选', 'dp.prov': '省份', 'dp.quiz': '你的条件',
   'dp.sum.occ': '职业', 'dp.sum.status': '当前情况', 'dp.sum.clb': '语言',
   'dp.sum.totalExp': '总经验', 'dp.sum.canExp': '加拿大经验', 'dp.sum.prov': '目标省',
@@ -1355,7 +1355,7 @@ const en: Dict = {
   'pulse.s6.t': 'Canada-wide job board', 'pulse.s6.s': 'All occupations, updated daily',
   'plan.pr.title': 'PR assessment', 'plan.pr.sub': '4 details, first-pass report',
   // Decision page (verdict merge batch 1)
-  'dp.sub': 'Employer offer → provincial nomination: assess your case on official data',
+  'dp.sub': 'Employer offer → provincial nomination',
   'dp.draws': 'Latest draws by province', 'dp.prov': 'Province', 'dp.quiz': 'Your details',
   'dp.sum.occ': 'Occupation', 'dp.sum.status': 'Current situation', 'dp.sum.clb': 'Language',
   'dp.sum.totalExp': 'Total experience', 'dp.sum.canExp': 'Canadian experience', 'dp.sum.prov': 'Target province',
@@ -2329,7 +2329,7 @@ const ko: Dict = {
   'pulse.s6.t': '캐나다 전역 잡보드', 'pulse.s6.s': '전 직업 수록, 매일 갱신',
   'plan.pr.title': 'PR 평가', 'plan.pr.sub': '4개 항목으로 1차 보고서, 언제든 수정',
   // 결정 페이지(판정 통합 배치1)
-  'dp.sub': '고용주 오퍼 → 주정부 노미니: 공식 데이터로 조건 평가',
+  'dp.sub': '고용주 오퍼 → 주정부 노미니',
   'dp.draws': '주별 최근 선발', 'dp.prov': '주', 'dp.quiz': '내 조건',
   'dp.sum.occ': '직업', 'dp.sum.status': '현재 상황', 'dp.sum.clb': '언어',
   'dp.sum.totalExp': '총 경력', 'dp.sum.canExp': '캐나다 경력', 'dp.sum.prov': '희망 주',
@@ -3069,6 +3069,17 @@ const STREAM_L10N: Record<string, string> = {
   'NB AIP 不受理': 'stream.nbAipExcl', 'NB AIP 餐饮住宿不受理': 'stream.nbAipExclFood',
 }
 export const streamDisplay = (t: TFn, label: string): string => (STREAM_L10N[label] ? t(STREAM_L10N[label]) : label)
+
+/** 通道名以省名开头时把省名摘掉 —— 旁边那行灰字已经写着省名了(走查 #293)。
+ *  「Saskatchewan Employment Offer」+ 灰字「Saskatchewan」→ 主文案只留「Employment Offer」。
+ *  摘完为空(整条名字就是个省名)则原样返回:宁可重复一次,不给一个空标题。 */
+export const dropProvPrefix = (name: string, prov: string): string => {
+  const p = (prov || '').trim()
+  const n = (name || '').trim()
+  if (!p || !n.startsWith(p)) return n
+  const rest = n.slice(p.length).replace(/^[\s:：—–-]+/, '').trim()
+  return rest || n
+}
 
 // EE 类别 label 三语映射(第 11 轮 #28,同 #24 性质;数据层 label 是有限集,federal-categories.json 9 类)。
 // 职位可命中多类别,数据层用「/」拼接(如「医疗社服/医生」)——逐段映射再拼回。
