@@ -263,6 +263,26 @@ export interface User {
      * PGWP 剩余月数
      */
     pgwpMonthsLeft?: number | null;
+    /**
+     * 同职业加拿大工作经验(月)
+     */
+    expCanadaMonths?: number | null;
+    /**
+     * 同职业海外工作经验(月)
+     */
+    expForeignMonths?: number | null;
+    /**
+     * 手上有没有 job offer
+     */
+    hasOffer?: boolean | null;
+    /**
+     * 有没有加拿大学历
+     */
+    canadaStudy?: boolean | null;
+    /**
+     * 随行家庭人数(AIP 资金档 / BC 最低收入表)
+     */
+    familySize?: number | null;
     profileUpdatedAt?: string | null;
     /**
      * 简历文本(PII,上限 2 万字符):用户勾选后由 /api/resume-match 写入
@@ -2034,6 +2054,11 @@ export interface UsersSelect<T extends boolean = true> {
         crs?: T;
         targetProvinces?: T;
         pgwpMonthsLeft?: T;
+        expCanadaMonths?: T;
+        expForeignMonths?: T;
+        hasOffer?: T;
+        canadaStudy?: T;
+        familySize?: T;
         profileUpdatedAt?: T;
         resumeText?: T;
         resumeSavedAt?: T;

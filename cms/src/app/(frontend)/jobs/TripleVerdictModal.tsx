@@ -13,6 +13,7 @@ import { makeT, streamDisplay, type Lang, type TFn } from './i18n'
 import { UpgradeModal } from './UpgradeModal'
 import { CARD_MD, CARD_SHELL, ProCard } from '../ui/primitives'
 import { track } from '@/lib/track'
+import { readAnswers, toEngineAnswers } from '@/lib/answers'
 
 // ── wire(与 /api/triple-verdict 的响应一一对应)─────────────────────────────
 type TvEv = { url?: string; fetched?: string; label?: string }
@@ -215,7 +216,12 @@ export function TripleVerdictPanel({ job, lang, profileComplete = false, refresh
   useEffect(() => {
     track('tv-open')
     let dead = false
-    fetch('/api/triple-verdict?job=' + encodeURIComponent(String(job.id)), { credentials: 'include' })
+    // POST 带上本地答案(2026-08-12 Frank「匿名也可以访问」):没登录也判得出个人条件。
+    // 服务端逐槽以落档的档案优先,本地答案只补它缺的那几样;付费闸与此无关(锁不锁看是不是 Pro)。
+    fetch('/api/triple-verdict', {
+      method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ job: job.id, answers: toEngineAnswers(readAnswers()) }),
+    })
       .then((r) => (r.ok ? r.json() : null))
       .then((x) => { if (!dead) { if (x?.ok) setD(x) ; else setErr(true) } })
       .catch(() => { if (!dead) setErr(true) })

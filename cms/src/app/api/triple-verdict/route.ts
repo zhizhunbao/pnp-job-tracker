@@ -30,9 +30,23 @@ const STATUS_OF: Record<string, string> = {
 /** 档案里的数字槽:非有限数一律当没答(null),**不拿 0 冒充「答过是 0」** */
 const numOrNull = (v: unknown): number | null => (v != null && Number.isFinite(Number(v)) ? Number(v) : null)
 
+// 引擎答案(toEngineAnswers 的形状)。匿名用户没有服务端档案,把本地答案带上来即可 ——
+// **付费闸与它无关**:锁不锁看的是登录用户是不是 Pro,答案只决定「判得出来还是判不了」。
+type ClientAnswers = Record<string, unknown> | null
+
 export async function GET(req: Request) {
-  const sp = new URL(req.url).searchParams
-  const id = Number(sp.get('job'))
+  const id = Number(new URL(req.url).searchParams.get('job'))
+  return respond(id, null)
+}
+
+/** 匿名可用(2026-08-12 Frank「匿名也可以访问」):带上本地答案,个人关才判得出来。
+ *  登录用户的服务端档案**逐槽优先**,答案只补它缺的那几样 —— 落过档的不被本地旧答案覆盖。 */
+export async function POST(req: Request) {
+  const body = await req.json().catch(() => null) as { job?: unknown; answers?: ClientAnswers } | null
+  return respond(Number(body?.job), (body?.answers && typeof body.answers === 'object') ? body.answers : null)
+}
+
+async function respond(id: number, answers: ClientAnswers) {
   if (!Number.isInteger(id) || id <= 0) return Response.json({ error: 'job required' }, { status: 400 })
 
   const payload = await getPayload({ config: await config })
@@ -110,32 +124,51 @@ export async function GET(req: Request) {
   const user = await getUser(await headers()).catch(() => null)
   const pro = isPro(user)
   const up = (user as any)?.profile ?? {}
-  const noc0 = Array.isArray(up.nocCodes) && up.nocCodes.length ? String(up.nocCodes[0]) : null
-  const permitLeft = up.pgwpMonthsLeft != null && Number.isFinite(Number(up.pgwpMonthsLeft)) ? Number(up.pgwpMonthsLeft) : null
+  // 逐槽合并:**服务端档案优先,本地答案只补它缺的那几样**。落过档的不该被本地旧答案覆盖;
+  // 匿名用户没有档案,整份就用本地答案 —— 功能不再以登录为前提(Frank 2026-08-12「匿名也可以访问」)。
+  const a = answers ?? {}
+  const nOf = (fromProfile: unknown, fromAnswers: unknown): number | null => numOrNull(fromProfile) ?? numOrNull(fromAnswers)
+  const bOf = (fromProfile: unknown, fromAnswers: unknown): boolean | null =>
+    typeof fromProfile === 'boolean' ? fromProfile : typeof fromAnswers === 'boolean' ? fromAnswers : null
+  const sOf = (fromProfile: unknown, fromAnswers: unknown): string =>
+    String(fromProfile ?? '') || String(fromAnswers ?? '')
+
+  const nocList = Array.isArray(up.nocCodes) && up.nocCodes.length ? up.nocCodes
+    : Array.isArray(a.nocs) ? a.nocs : []
+  const noc0 = nocList.length ? String(nocList[0]) : (typeof a.noc === 'string' && a.noc ? a.noc : null)
+  const permitLeft = nOf(up.pgwpMonthsLeft, a.pgwpMonthsLeft)
+  const statusRaw = sOf(up.currentStatus, a.currentStatus)
+  const totalExp = numOrNull(a.totalExpMonths)
+  const canExpA = numOrNull(a.canadianExpMonths)
+  const provs = Array.isArray(up.targetProvinces) && up.targetProvinces.length ? up.targetProvinces
+    : Array.isArray(a.targetProvinces) ? a.targetProvinces : []
+
   const profile: TripleProfile = {
     age: null, married: null,
-    clb: up.clb != null && Number.isFinite(Number(up.clb)) ? Number(up.clb) : null,
+    clb: nOf(up.clb, a.clb),
     edu: null, eduYears: null,
-    canadaStudy: typeof up.canadaStudy === 'boolean' ? up.canadaStudy : null,
+    canadaStudy: bOf(up.canadaStudy, a.canadaStudy),
     studyProvince: null,
     noc: noc0, teer: null,
     // 2026-08-12:这几样先前一律硬写 null —— 于是 experience/income 行恒 unknown、
     // 「最快通道」也判不出来,「个人条件」整段对含 Pro 在内的任何人都只出「判不了」。
-    // 现在读落档的真值(quizToProfile 已把答题的全套答案写进 profile)。
-    expCanadaMonths: numOrNull(up.expCanadaMonths),
-    expForeignMonths: numOrNull(up.expForeignMonths),
+    expCanadaMonths: nOf(up.expCanadaMonths, canExpA),
+    // 官方口径的海外经验 = 总经验 − 加拿大经验(本地答案里只有总数,这里现算)
+    expForeignMonths: numOrNull(up.expForeignMonths)
+      ?? (totalExp == null ? null : Math.max(0, totalExp - (canExpA ?? 0))),
     foreignExpSelfEmployed: null,
-    hasOffer: typeof up.hasOffer === 'boolean' ? up.hasOffer : null,
+    hasOffer: bOf(up.hasOffer, a.hasJobOffer),
     // 「人在不在境内」由既有的分型槽推,不另存一列(与 /api/profile-pathways 同一口径)
-    inCanada: up.currentStatus ? String(up.currentStatus) !== 'overseas' : null,
-    status: permitLeft != null && permitLeft > 0 ? 'pgwp' : (STATUS_OF[String(up.currentStatus ?? '')] ?? null),
+    inCanada: statusRaw ? statusRaw !== 'overseas' : null,
+    status: permitLeft != null && permitLeft > 0 ? 'pgwp' : (STATUS_OF[statusRaw] ?? null),
     province: null,
     permitMonthsLeft: permitLeft,
-    targetProvinces: Array.isArray(up.targetProvinces) ? up.targetProvinces.map(String) : [],
-    familySize: numOrNull(up.familySize),
+    targetProvinces: provs.map(String),
+    familySize: nOf(up.familySize, a.familySize),
   }
   // 有没有够格的档案:任一核心槽答过才算(全空档案跑个人关只会满屏 unknown,不如引导建档)
-  const hasProfile = !!user && (profile.clb != null || profile.status != null || noc0 != null)
+  // 「够格的档案」不再以登录为前提:本地答案带上来同样算(否则匿名带了答案,面板还在劝他建档)
+  const hasProfile = profile.clb != null || profile.status != null || noc0 != null
 
   const data = await getVerdictData()
   const card = tripleVerdict(job, company, profile, data)
