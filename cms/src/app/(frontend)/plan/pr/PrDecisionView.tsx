@@ -36,6 +36,9 @@ export type TvJob = {
   noc: string; teer: number | null; pnpStream: string
 }
 
+/** /api/score-factors 的响应:官方分值表按省过滤后的行 + 本站有表的省清单 */
+type ScoreTables = { factorProvinces: string[]; factors: ScoreFactor[]; draws: DrawRow[] }
+
 type ProfilePath = {
   key: string
   province: string
@@ -59,9 +62,7 @@ const NOC_TITLE_CACHE: Record<string, string> = {}
 // 已经问过的码(不论问到没问到)。失败不重试:同一个码问一次拿不到名字,再问十次也一样。
 const NOC_TITLE_TRIED = new Set<string>()
 
-export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
-  overview: OverviewDraw[]; tvJob: TvJob | null; scoreFactors: ScoreFactor[]; scoreDraws: DrawRow[]
-}) {
+export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; tvJob: TvJob | null }) {
   const [lang, setLangSaved, t] = useLang()
 
   // 答题态(wiring 同 PlanPrView 基本卷:职业=第 1 页,其余翻页;答案唯一来源 lib/answers)
@@ -79,6 +80,9 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
   const [verdictNonce, setVerdictNonce] = useState(0)
   const [occTitles, setOccTitles] = useState<Record<string, string>>({})
   const [profilePaths, setProfilePaths] = useState<ProfilePath[] | null>(null)
+  // 官方分值表 + 抽选记录:不再随页面下发(192 行 ≈ 88KB 塞给每个访客),答完题按所选省现取。
+  // null = 还没取到,此时既不出估分区也不敢说「这些省本站没有表」——那两句都得等表到手才算数。
+  const [scoreTables, setScoreTables] = useState<ScoreTables | null>(null)
   // 答题卡默认收起(Frank「上来有必要让人测分数吗」——不逼人考试,一行入口自愿点开);
   // 「开始评估/继续作答/改答案」展开,答完自动收回
   const [quizOpen, setQuizOpen] = useState(false)
@@ -203,12 +207,32 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
   ]
 
   // 用户在问卷里直接多选具体省份。共用条件交给一张 PnpScoreCard 只问一次，省独有条件按所选省追加。
-  const factorProvinces = Array.from(new Set(scoreFactors.map((f) => f.province).filter(Boolean)))
   const selectedProvinces = tvJob?.province ? [tvJob.province] : bands.provs
+  const factorProvinces = scoreTables?.factorProvinces ?? []
   const scoredProvinces = selectedProvinces.filter((province) => factorProvinces.includes(province))
   const unscoredProvinces = selectedProvinces.filter((province) => !factorProvinces.includes(province))
+  const scoreFactors = scoreTables?.factors ?? []
+  const scoreDraws = scoreTables?.draws ?? []
   const targetFactors = scoreFactors.filter((f) => scoredProvinces.includes(f.province))
   const scoreContextProvince = tvJob?.province || scoredProvinces[0] || selectedProvinces[0] || ''
+  // 分值表按所选省懒取:答完题(或带岗进来)才发这一次请求,没答的人一个字节都不用背。
+  // 服务端 getScoreTables 有 10 分钟单件缓存,这里不做客户端缓存 —— 一次页面生命周期最多问一次。
+  const provKey = selectedProvinces.join(',')
+  useEffect(() => {
+    if (!provKey || (!quizComplete && !tvJob)) { setScoreTables(null); return }
+    const ctrl = new AbortController()
+    fetch(`/api/score-factors?provs=${encodeURIComponent(provKey)}`, { signal: ctrl.signal })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (ctrl.signal.aborted) return
+        // 拿不到就当「本站没有表」落地:估分区不出,不编分数(与表空时的既定口径一致)
+        setScoreTables(d && Array.isArray(d.factors)
+          ? { factorProvinces: d.factorProvinces ?? [], factors: d.factors, draws: d.draws ?? [] }
+          : { factorProvinces: [], factors: [], draws: [] })
+      })
+      .catch(() => { if (!ctrl.signal.aborted) setScoreTables({ factorProvinces: [], factors: [], draws: [] }) })
+    return () => ctrl.abort()
+  }, [provKey, quizComplete, tvJob])
   const targetTeer = tvJob?.teer ?? (/^\d{5}$/.test(noc) ? Number(noc[1]) : null)
   const hasSplitWork = targetFactors.some((f) => f.factor === 'work5' || f.factor === 'work610')
   // 基础卷问的是**区间**(CLB 6-7、1-3 年),官方分值表按精确值分档 —— 所以精确题只在这个区间里出选项,
@@ -497,7 +521,9 @@ export function PrDecisionView({ overview, tvJob, scoreFactors, scoreDraws }: {
                 setQuizOpen(true); setOccStep(true); setProvinceStep(false); setScoreStep(false); setFormAtEnd(false); track('tv-build-profile')
               }} />}
 
-            {quizComplete && !quizOpen && unscoredProvinces.length > 0 && (
+            {/* 「本站没有这些省的分值表」是个断言,**表到手了才敢说** —— 懒取还没回来时
+                factorProvinces 是空的,不加这道门就会先闪一句「哪个省都没有」。 */}
+            {quizComplete && !quizOpen && scoreTables && unscoredProvinces.length > 0 && (
               <div style={CARD}>
                 <h2 style={H2}>{t('ps.unscoredTitle')}</h2>
                 <div style={{ fontSize: 13, color: UI.text2, lineHeight: 1.65 }}>{t('ps.unscoredHint', { provs: unscoredProvinces.map(provDisp).join(lang === 'zh' ? '、' : ', ') })}</div>

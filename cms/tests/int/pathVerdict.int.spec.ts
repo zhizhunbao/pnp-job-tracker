@@ -375,10 +375,14 @@ describe('金标 ⑤:杠杆', () => {
   it('CLB 6 → 8:ON +8、MB +20,两个数都是查官方分值表查出来的', () => {
     const clb = levers.find((l) => l.key === 'clb-boost')
     expect(clb).toBeTruthy()
-    const on = clb!.gains?.find((g) => g.province === 'ON')!
-    expect([on.from, on.to, on.delta]).toEqual([4, 12, 8])
-    const mb = clb!.gains?.find((g) => g.province === 'MB')!
-    expect([mb.from, mb.to, mb.delta]).toEqual([695, 715, 20])
+    // 找不到就当场报「没这一行」,而不是靠 `?.find(...)!` 把 undefined 断言掉 ——
+    // 后者失败时抛的是「读不到 from」,看不出真正缺的是那条省份记录
+    const on = clb!.gains?.find((g) => g.province === 'ON')
+    expect(on, 'ON gain').toBeTruthy()
+    expect([on!.from, on!.to, on!.delta]).toEqual([4, 12, 8])
+    const mb = clb!.gains?.find((g) => g.province === 'MB')
+    expect(mb, 'MB gain').toBeTruthy()
+    expect([mb!.from, mb!.to, mb!.delta]).toEqual([695, 715, 20])
     for (const g of clb!.gains ?? []) expect(g.evidence.url).toBeTruthy()
   })
 })
