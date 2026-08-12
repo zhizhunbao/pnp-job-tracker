@@ -10,6 +10,7 @@ import { SiteFooter } from '../../SiteFooter'
 import { SiteHeader } from '../../SiteHeader'
 import { PageShell, UI } from '../../ui/primitives'
 import type { CaseAnswer, OpsFacts } from '@/lib/caseFacts'
+import type { L3 } from '@/lib/caseLibrary'
 import type { PathwayVerdict, VerdictReason } from '@/lib/pathVerdict'
 import { track } from '@/lib/track'
 
@@ -19,11 +20,14 @@ const TONE: Record<VerdictReason['kind'], string> = { met: UI.ok, gap: '#b45309'
 
 export function CaseView({ caseId, label, question, answer }: {
   caseId: string
-  label: string
-  question: string
+  label: L3
+  question: L3
   answer: CaseAnswer
 }) {
   const [lang, setLangSaved, t] = useLang()
+  const pick = (l: L3) => l[lang as keyof L3] || l.zh
+  // 判定核给的理由:有 pv.* 键就走措辞层,没有(将来新加漏挂的)退回中文原句 —— 宁可露一句中文,不露键名
+  const say = (r: VerdictReason) => (r.key ? t(r.key, r.params) : r.text)
   const provOf = (code: string) => { const full = t('prov.' + code); return full === 'prov.' + code ? code : full }
   const tierLabel = (tier: 0 | 1 | 2 | 3 | null) => t(`case.tier${tier ?? 0}`)
 
@@ -65,14 +69,14 @@ export function CaseView({ caseId, label, question, answer }: {
               <details>
                 <summary style={{ color: TONE[r.kind], cursor: 'pointer', listStyle: 'none',
                   textDecoration: 'underline dotted', textDecorationColor: UI.border, textUnderlineOffset: 3 }}>
-                  {r.text}
+                  {say(r)}
                 </summary>
                 <span style={{ display: 'block', color: UI.text3, fontSize: 12, lineHeight: 1.6, margin: '3px 0 6px' }}>
                   {r.quote}
                   {r.evidence?.url ? <>　<a href={r.evidence.url} target="_blank" rel="noreferrer" style={{ color: UI.primary, textDecoration: 'none' }}>{t('case.official')}</a></> : null}
                 </span>
               </details>
-            ) : <span style={{ color: TONE[r.kind] }}>{r.text}</span>}
+            ) : <span style={{ color: TONE[r.kind] }}>{say(r)}</span>}
           </li>
         ))}
       </ul>
@@ -89,14 +93,14 @@ export function CaseView({ caseId, label, question, answer }: {
       <div style={{ flex: '1 0 auto' }}>
         <PageShell pad="1rem 1.25rem 40px">
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, margin: '0 0 12px' }}>
-            <h1 style={{ flex: 1, minWidth: 0, fontSize: 22, fontWeight: 700, color: '#111827', margin: 0, lineHeight: 1.45 }}>{label}</h1>
+            <h1 style={{ flex: 1, minWidth: 0, fontSize: 22, fontWeight: 700, color: '#111827', margin: 0, lineHeight: 1.45 }}>{pick(label)}</h1>
             <BackLink href="/plan/pr" label={t('case.back')} />
           </div>
 
           {/* 用户原话,一个字不改 */}
           <div style={{ ...CARD, background: '#f8fbff', borderColor: '#dbeafe' }}>
             <div style={{ color: UI.text3, fontSize: 12, marginBottom: 6 }}>{t('case.theQuestion')}</div>
-            <div style={{ color: '#111827', fontSize: 16, fontWeight: 600, lineHeight: 1.65 }}>「{question}」</div>
+            <div style={{ color: '#111827', fontSize: 16, fontWeight: 600, lineHeight: 1.65 }}>「{pick(question)}」</div>
           </div>
 
           {/* ① 先回答他点名问的那个省 */}

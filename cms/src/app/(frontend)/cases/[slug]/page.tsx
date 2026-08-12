@@ -6,8 +6,9 @@ import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import { CASES } from '@/lib/caseLibrary'
+import { CASES, type L3 } from '@/lib/caseLibrary'
 import { CASE_PAGES, caseAnswer } from '@/lib/caseFacts'
+import { ssrLang } from '@/lib/lang.server'
 import { getVerdictData } from '@/lib/verdictCache'
 import { CaseView } from './CaseView'
 
@@ -22,8 +23,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const spec = CASE_PAGES[slug]
   const entry = spec && CASES.find((c) => c.id === spec.caseId)
   if (!entry) return {}
-  // 标题用**用户原话**,不用我们的行话 —— 这一页要接的就是照着这句话搜过来的人
-  return { title: `${entry.q.zh} | Offer2PR`, description: `${entry.label.zh}。${entry.q.zh} 按官方数据逐条摆事实,每条带出处。` }
+  // 标题用**用户原话**,不用我们的行话 —— 这一页要接的就是照着这句话搜过来的人。
+  // 语言跟站里同一套判据(cookie → Accept-Language):爬虫不带 cookie、Accept-Language 多为 en,
+  // 正是本站 88% 的流量所在,标题写死中文等于把英文搜索结果拱手让人。
+  const lang = await ssrLang()
+  const t = (l: L3) => l[lang] || l.zh
+  return { title: `${t(entry.q)} | Offer2PR`, description: `${t(entry.label)}。${t(entry.q)}` }
 }
 
 export default async function CasePage({ params }: { params: Promise<{ slug: string }> }) {
@@ -43,5 +48,6 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
   const answer = await caseAnswer(slug, data, sql).catch(() => null)
   if (!answer) notFound()
 
-  return <CaseView caseId={entry.id} label={entry.label.zh} question={entry.q.zh} answer={answer} />
+  // 三语原样传下去,由视图按当前语言取 —— 服务端这里定死一种,切语言就切不动了
+  return <CaseView caseId={entry.id} label={entry.label} question={entry.q} answer={answer} />
 }
