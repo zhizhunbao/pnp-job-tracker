@@ -138,21 +138,52 @@ def load_pe() -> list[dict]:
 
 
 def _pe_previous() -> list[dict]:
+    return _previous("PE")
+
+
+# ── 解析量护栏(2026-08-12 实撞):NB 官方 PDF 换版 → bullet 切不出来,**1263 家被 29 家静默覆盖**,
+#    一路灌进 mart(3322→2088)与判定层,没有任何报错。PE 早就有这道闸(PE_MIN_ROWS),
+#    只是没推广到别的省 —— 一个省栽过的坑,别的省照样能栽。
+#    规矩:解析量低于下限 = 解析坏了,**保旧不清空**并大声喊;宁可数据旧,不可数据没。
+# NL 在**本文件**里是旧聚合源(94 家);官方全量 639 家走 raw/pnp/nl-employers.json,
+# 由 09_build_mart 整省让位替换 —— 所以这里的 NL 下限按 94 定,别拿 639 当基线。
+MIN_ROWS = {"NL": 80, "NB": 800, "NS": 1000, "PE": PE_MIN_ROWS}
+
+
+def _previous(prov: str) -> list[dict]:
+    """上一轮落盘里该省的行(解析塌方时的兜底)。"""
     f = OUT_DIR / "aip-designated-employers.json"
     if f.exists():
         try:
-            return [r for r in json.loads(f.read_text(encoding="utf-8")) if r.get("province") == "PE"]
-        except Exception:
+            return [r for r in json.loads(f.read_text(encoding="utf-8")) if r.get("province") == prov]
+        except Exception:  # noqa: BLE001 — 读不出旧档就只能返回空,但仍不覆盖(见 main 的判断)
             pass
     return []
 
 
+def guard(prov: str, parsed: list[dict]) -> list[dict]:
+    """解析量塌方 → 退回上一轮该省的行;上一轮也没有才认这次的结果。"""
+    floor = MIN_ROWS.get(prov, 0)
+    if len(parsed) >= floor:
+        return parsed
+    old = _previous(prov)
+    print(f"  [WARN] {prov}: 解析仅 {len(parsed)} 行(下限 {floor})—— 疑似官方页/PDF 换版,"
+          f"{'保旧 ' + str(len(old)) + ' 行不清空' if old else '且无旧档可退,按解析结果落盘'}")
+    return old or parsed
+
+
 def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    rows = load_nl()
+    # 每一路都过 guard:任何一省解析塌方都不许把上一轮的行冲掉(见 MIN_ROWS 注释的 NB 实撞)
+    rows = guard("NL", load_nl())
     for prov, url in PDFS.items():
-        rows += parse_pdf_bullets(prov, url)
-    rows += load_pe()
+        try:
+            parsed = parse_pdf_bullets(prov, url)
+        except Exception as e:  # noqa: BLE001 — 单省取档失败不该拖垮整份名录
+            print(f"  [WARN] {prov}: 取 PDF 失败({e})")
+            parsed = []
+        rows += guard(prov, parsed)
+    rows += load_pe()   # PE 自带同款闸(load_pe 内部判 PE_MIN_ROWS)
 
     by_prov: dict = {}
     for r in rows:
