@@ -31,8 +31,33 @@
 >   NB 官方 PDF 换版 → 解析只得 29 行,把上一轮 1263 行直接覆盖,一路灌进 mart(3867→2633)与生产库,
 >   **全程零报错**。PE 早有这道闸只是没推广 → `MIN_ROWS` 覆盖四省,低于下限保旧不清空并大声喊。
 >   raw/mart 已修回;**生产库仍是 2633,靠 build 容器下一轮(1h 兜底)自愈**;NB 新版式解析待修(另账)。
-> - **⏭ 下轮**:BC 两条现落 `not-collected`(welcomebc 自称完整条件在 Program Guide,该指南未入 crawl)
->   —— 抓它就能让 BC 从「判不了」翻回可判;门槛清单其余闸类(资金/雇主指定/社区连结)按同法扩。
+> - **✅ 名录已自愈**:build 容器那一轮把修好的 mart 灌回生产,`designated_employers` 回到
+>   **3867(NB 1263 / NS 1574 / PE 391 / NL 639)**,实查生产库确认。
+>
+> **📋 下一个 session 的工作单:抓数据,把「本站未收录」从 3 条降到 0(Frank 08-12 拍板另开 session 做)**
+>
+> **为什么是它**:判定口径根治后系统诚实了,但「判不了」变多 —— 其中 **3 条纯粹是我们的数据窟窿**,
+> 不是用户的问题。这是唯一「工作量确定、验收清楚、直接减少判不了」的一批。
+>
+> | 要补的 | 现状(实查 crawl,非推测) | 落点 |
+> |---|---|---|
+> | **BC 技术工人 / BC Build** | `welcomebc` 那页原句「For complete information about eligibility and requirements, please see the Skills Immigration Program Guide.」——指南是 PDF,未入 crawl;`data/crawl/bc-immigrate` 40 页**全是门户页** | 抓该 PDF → `gateManifest['BC-sw'/'BC-build']` 的 statusInCanada / credentialCanada 从 `unknown` 改成带 quote 的 required/notRequired |
+> | **NB 技术工人** | `data/crawl/nb-imm` 只有 **1 页**门户(`www2.gnb.ca/.../immigration.html`),没有资格页 | 补抓 NB 技术工人资格页 → `gateManifest['NB-sw']` 三类闸全部落实 |
+> | **NB 的 AIP 名录 PDF** | 官方换版 → bullet 切不出来,现靠 `MIN_ROWS` 护栏冻在 1263 家旧快照(不会被冲掉,但会越来越旧) | 修 `etl/06_scrape_aip_employers.py` 的 `parse_pdf_bullets`(新版式) |
+>
+> **规矩(照旧,不许破)**:① **URL → 数据 → SQL**,先 grep `data/crawl/<slug>/manifest.json`,禁止凭印象猜 URL;
+> ② 抓到的门槛**必带官方原句 + url + fetched**;抓不到一律落 `not-collected`,**不许**拿「页上没写」
+> 当「官方不要求」;③ 清单里 `notRequired` 的 `basis:'absent'` 只在**读过该通道资格页**时才允许用。
+>
+> **验收(硬)**:`pathVerdict` 跑 C01 档案 → 13 条通道 `availability` 全 `ok`;
+> `tests/int/pathVerdict.int.spec.ts` 里那条 `.toEqual(['BC-build', 'BC-sw', 'NB-sw'])` 改回 `.toEqual([])` 并全绿;
+> AIP 名录实跑 `06` 不再出 `[WARN] NB`。
+>
+> **接手先读**:[通道判定口径根治](docs/design/通道判定口径根治-20260812.md) §3.1 + `cms/src/lib/gateManifest.ts` 顶部注释
+> (三态与举证责任写在那儿);取证器 `etl/scan_gate_quotes.py`(从 crawl 缓存捞候选句,已验过)。
+>
+> **⏭ 再往后**(不在这一批):清单下沉数据层(现在 quote 写在代码里,撞铁律①,临时降级成注释)→
+> 扩闸类(资金 / 雇主指定 / RCIP 社区推荐)→ 付费面复核 + 首屏免费事实(这两条要 Frank 拍口径)。
 >
 > **📍 2026-08-12 收口(PR 评估页评估 + 两批修复,`24936a2` / `f382fc6`,均已上线验讫)**
 > - **起因**:Frank 让评估 `/plan/pr`。工作区当时压着一批未提交的「答题卡改弹窗」改动,评估先在这批上
