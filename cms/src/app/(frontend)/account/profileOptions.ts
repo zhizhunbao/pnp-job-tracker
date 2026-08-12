@@ -6,20 +6,23 @@ export type Opt = { key: string; value: number | null }
 
 // 热门职业(§3.4:热门 chips 一点即选,只显示职位名藏码)。NOC 2021 官方码,已对照 data/mart/noc_descriptions.json 逐条核。
 export const POPULAR_NOCS: { noc: string; key: string }[] = [
-  { noc: '21232', key: 'prof.job.software' },   // Software developers and programmers
-  { noc: '11100', key: 'prof.job.accountant' }, // Financial auditors and accountants
-  { noc: '31301', key: 'prof.job.nurse' },      // Registered nurses
-  { noc: '33102', key: 'prof.job.psw' },        // Nurse aides, orderlies and patient service associates (PSW)
-  { noc: '63200', key: 'prof.job.cook' },       // Cooks
-  { noc: '73300', key: 'prof.job.truck' },      // Transport truck drivers
-  { noc: '72200', key: 'prof.job.electrician' },// Electricians
-  { noc: '72106', key: 'prof.job.welder' },     // Welders and related machine operators
-  { noc: '42202', key: 'prof.job.ece' },        // Early childhood educators and assistants
-  { noc: '64100', key: 'prof.job.retail' },     // Retail salespersons
-  { noc: '75101', key: 'prof.job.warehouse' },  // Material handlers
-  { noc: '65200', key: 'prof.job.server' },     // Food and beverage servers
-  { noc: '13110', key: 'prof.job.admin' },      // Administrative assistants
-  { noc: '65100', key: 'prof.job.cashier' },    // Cashiers
+  // **按在招量降序**(2026-08-12 Frank:「cooks 应该排在第一啊」)。这只是首屏那一帧的兜底顺序 ——
+  // 真在招数一到手,OccPicker 会按真数重排;把兜底序摆成接近真序,那一下重排就几乎看不出来。
+  // 量级取自 2026-08-12 生产实况,只用于定序,**不进 UI**(界面上的数永远来自 /api/quiz)。
+  { noc: '63200', key: 'prof.job.cook' },       // Cooks ~2,140
+  { noc: '73300', key: 'prof.job.truck' },      // Transport truck drivers ~1,296
+  { noc: '64100', key: 'prof.job.retail' },     // Retail salespersons ~969
+  { noc: '72106', key: 'prof.job.welder' },     // Welders and related machine operators ~473
+  { noc: '13110', key: 'prof.job.admin' },      // Administrative assistants ~456
+  { noc: '42202', key: 'prof.job.ece' },        // Early childhood educators and assistants ~428
+  { noc: '75101', key: 'prof.job.warehouse' },  // Material handlers ~405
+  { noc: '65100', key: 'prof.job.cashier' },    // Cashiers ~346
+  { noc: '65200', key: 'prof.job.server' },     // Food and beverage servers ~299
+  { noc: '33102', key: 'prof.job.psw' },        // Nurse aides / PSW ~245
+  { noc: '11100', key: 'prof.job.accountant' }, // Financial auditors and accountants ~213
+  { noc: '31301', key: 'prof.job.nurse' },      // Registered nurses ~189
+  { noc: '72200', key: 'prof.job.electrician' },// Electricians ~186
+  { noc: '21232', key: 'prof.job.software' },   // Software developers and programmers ~76
 ]
 
 // 英语水平(§3.4:初级/中级/流利/考过高分 → CLB 档)。match v1 不用 CLB 评分(仅存 + advisor 可见),精度低风险。

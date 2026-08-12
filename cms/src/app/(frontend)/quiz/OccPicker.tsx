@@ -53,6 +53,9 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
   const [top, setTop] = useState<Top[]>(() => POPULAR_NOCS.map((x) => ({
     noc: x.noc, title: t(x.key), titleZh: t(x.key), open: 0,
   })))
+  // 真实热门榜(top=24)到没到 —— 没到之前用骨架把格子占满,否则列表从 14 个长到 24 个,
+  // 整块跟着重排,看着就是「打开刷了一下」(2026-08-12 Frank 实拍)
+  const [topLoaded, setTopLoaded] = useState(false)
   const [cat, setCat] = useState('')
   const [catalogByCat, setCatalogByCat] = useState<Record<string, Top[]>>({})
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -92,10 +95,13 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
         })
         // 回到这一步时存档只有 NOC 码。热门清单通常比逐码查询先返回,顺手从同一份数据补名字,
         // 避免已选胶囊在慢连接下多空白一拍；冷门职业仍由下面的逐码查询兜底。
+        setTopLoaded(true)
         const known = rows.filter((x) => nocs.includes(x.noc)).map((x) => [x.noc, pickName(x, lang)] as [string, string])
         if (known.length) setTitles((m) => ({ ...m, ...Object.fromEntries(known) }))
       })
-      .catch(() => { /* 完整榜拿不到就继续使用已补数字的同步兜底 */ })
+      // **abort 不算拿不到**:StrictMode/切页会中止第一次请求,把它当失败会立刻撤掉骨架,
+      // 骨架一撤、真榜再到,列表照样长一次(2026-08-12 实撞,探针打出 topLoaded=true 才看出来)
+      .catch((e) => { if (e?.name !== 'AbortError') setTopLoaded(true) /* 真拿不到就用兜底那 14 个 */ })
     return () => { dead = true; topController.abort(); countsController.abort() }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps -- 首屏快照只拉一次;语言切换由逐码查询刷新
   const base: Top[] = top.length
@@ -104,8 +110,10 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
   const cats = BROAD_SLUGS.map(([, name]) => name)
   const catRows = cat ? catalogByCat[cat] : undefined
   const catLoading = !!cat && catRows === undefined
-  // 分类一次摆全:接口 fetchBroadNocs 硬顶 60 条,不需要再分页(「查看更多」已撤)
-  const list = cat ? (catRows || []) : base.slice(0, 24)
+  // 分类一次摆全:接口 fetchBroadNocs 硬顶 60 条,不需要再分页(「查看更多」已撤)。
+  // 热门那一屏**按在招量降序**(2026-08-12 Frank:「cooks 应该排在第一啊」)—— 胶囊上就写着在招数,
+  // 顺序不跟着它走,读者会以为这个序另有含义。分类页的行由接口按量排好,不再动。
+  const list = cat ? (catRows || []) : [...base].sort((a, b) => (b.open ?? 0) - (a.open ?? 0)).slice(0, 24)
 
   // 分类名称同步可见；职业只在用户点中某类后按需查询。这样恢复旧版分类浏览,
   // 又不再让每次打开问卷都为从未点击的 26 类扫描 top=200。
@@ -278,6 +286,11 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
               </button>
             )
           })}
+          {/* 榜还没到 → 用骨架把剩下的格子占住:格子数从头到尾是 24,列表不会长一次、也就不会重排 */}
+          {!cat && !catLoading && !topLoaded && Array.from({ length: Math.max(0, 24 - list.length) }, (_, i) => (
+            <span className="occPillSkeleton" key={`ph${i}`} // 宽度按真胶囊(名字 + 「N 在招」)的量级取,占位与实物差得越少,填上去那一下越看不出来
+            style={{ width: [206, 170, 194, 152, 214, 164][i % 6] }} />
+          ))}
         </div>}
 
         {/* 动态区域统一放在稳定的搜索/分类/职业列表之后。点选时上半屏不再被新增胶囊向下顶；
