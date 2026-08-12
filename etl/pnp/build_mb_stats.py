@@ -45,7 +45,8 @@ OUT = _paths.PNP / "mb-stats.json"
 
 PROVINCE = "MB"
 NOTE = ("MPNP 官方运营统计:年度配额与年初至今提名/拒/LAA/收件(月度数据页)、"
-        "在审与待审库存(逐月,取最新月)、逐通道平均处理天数与「6 个月」服务承诺(年报 §9)。"
+        "在审与待审库存(逐月,取最新月)、逐通道平均处理天数与「6 个月」服务承诺(年报 §9)、"
+        "EOI 池在册人数(年报 §10,**全省唯一的池子人数**,年度快照口径,与 AB 的实时池不可混用)。"
         "单位照官方原单位(天/月),不换算。"
         "⚠️ 2026-08-04 更正:此前站内写着「MB 官方不发运营统计」是错的 —— "
         "那是爬取种子只圈了 /mpnp/、漏了 /resources/data/ 造成的误判。")
@@ -61,6 +62,13 @@ RE_ALLOC = re.compile(r"(For \d{4}, Manitoba was allocated ([\d,]+) nominations 
 RE_COMMIT = re.compile(r"(The MPNP[^.]{0,40}commitment to assess\w* complete applications "
                        r"is within (\d+) months?\.(?:\s*Incomplete applications[^.]*standard\.)?)", re.I)
 RE_DAYS = re.compile(r"^([\d,]+)\s*days?$", re.I)
+# 年报「10. Expression of Interest Pool」那节是个 <ul>,三条各一个数(2026-08-11 查证接入):
+#   N Skilled Worker Expression of Interest (EOI) profiles submitted in YYYY   ← 流量
+#   N Letters of Advice to Apply (LAAs) issued in YYYY                          ← 流量
+#   N Active EOI profiles at the end of YYYY                                    ← **存量,就是「池子里有多少人」**
+# 这是**全省唯一的池子人数**:MPNP 站的通道页、月度数据页统统没有(月度页那节同名,给的是当月抽走的 LAA)。
+# 只看站内页会得出「MB 不公布池子」的错结论 —— 和当年处理时长踩的是同一个坑。
+RE_ACTIVE = re.compile(r"([\d,]+)\s+[Aa]ctive EOI profiles at the end of (\d{4})")
 
 
 def cells(tr) -> list:
@@ -233,6 +241,18 @@ def main() -> None:
     if len(proc) < 3:
         problems.append(f"年报处理时长表只解析到 {len(proc)} 条通道(期望 ≥3)")
 
+    # ── 年报 §10 Expression of Interest Pool ────────────────────────────────
+    # ⚠️ **官方文档自相矛盾,不许静默替他改**:2024 年报把这个数标成「at the end of 2023」,
+    # 而 2023 年报对同一年份给的是 20,392。几乎肯定是 2024 年报的标签笔误,但我们只做两件事 ——
+    # 取**最新一份年报**、把官方那句话原样存进 label。年份取**官方标签里写的那个**,不按报告年推。
+    eoi_pool: dict = {}
+    ma_act = RE_ACTIVE.search(atext)
+    if ma_act:
+        eoi_pool = {"value": num(ma_act.group(1)), "labelYear": ma_act.group(2),
+                    "label": re.sub(r"\s+", " ", ma_act.group(0)).strip()}
+    else:
+        problems.append("年报 §10 的「N Active EOI profiles at the end of YYYY」没解析到")
+
     mc = RE_COMMIT.search(atext)
     commitment = int(mc.group(2)) if mc else None
     commitment_label = re.sub(r"\s+", " ", mc.group(1)).strip() if mc else ""
@@ -258,7 +278,7 @@ def main() -> None:
         "annual": {"url": a_url, "fetched": a_fetched, "year": a_year,
                    "section": f"MPNP Annual Report {a_year} — 9. Processing Times",
                    "commitmentMonths": commitment, "commitmentLabel": commitment_label,
-                   "processing": proc},
+                   "processing": proc, "eoiPool": eoi_pool},
     }, ensure_ascii=False, indent=2), encoding="utf-8")
 
     inv = monthly.get("inventory", {})
@@ -267,6 +287,7 @@ def main() -> None:
           f"提名 {monthly['nominationsYtd']['rows'][0]['value']:,} · 增强 {monthly['enhancedYtd']['value']:,} · "
           f"库存 {inv.get('total')}(在审 {inv.get('inAssessment')} / 待审 {inv.get('pending')})")
     print(f"    年报 {a_year}:承诺 {commitment} 个月;逐通道平均处理天数 {len(proc)} 条")
+    print(f"    年报 {a_year} §10 池子:{eoi_pool.get('value'):,} 人 —— 官方原句「{eoi_pool.get('label')}」")
     for p in proc:
         print(f"      {p['stream']:<32} 批准 {p['approvedDays']} / 拒 {p['refusedDays']} / 总体 {p['overallDays']} 天")
 

@@ -427,6 +427,14 @@ def build_pnp_ops_stats(files) -> list:
             ayear, asec = str(an.get("year") or ""), an.get("section", "")
             add(abase, "processing_commitment", "", "", an.get("commitmentLabel", ""),
                 an.get("commitmentMonths"), "months", section=asec, period=ayear)
+            # EOI 池在册人数(年报 §10)。**period 取官方标签里写的那一年,不按报告年推** ——
+            # 2024 年报把它标成「end of 2023」而 2023 年报同年份给 20,392,官方自相矛盾;
+            # 我们只做两件事:取最新一份年报、把官方原句原样放进 label。谁要纠这个错去找 MPNP。
+            # 口径是**年度快照**,与 AB 的实时池不可混用(显示层分别标注,见 caseFacts 的注释)。
+            ep = an.get("eoiPool") or {}
+            add(abase, "eoi_pool_total", "", "", ep.get("label", ""), ep.get("value"), "people",
+                section=f"MPNP Annual Report {ayear} — 10. Expression of Interest Pool",
+                period=str(ep.get("labelYear") or ""))
             for p in an.get("processing", []):
                 st = p.get("stream", "")
                 for metric, key, lab in (("processing_days", "overallDays", "Overall Average"),
