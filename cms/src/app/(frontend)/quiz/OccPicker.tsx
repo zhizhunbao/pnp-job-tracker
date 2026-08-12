@@ -18,8 +18,6 @@ import { BROAD_SLUGS } from '../stats/shared'
 import { pickName } from '@/lib/occName'
 import type { TFn } from '../jobs/i18n'
 
-const PAGE_SIZE = 12
-
 type Cand = { noc: string; title: string; titleZh: string; titleZhShort?: string; titleKoShort?: string; titleEnShort?: string }
 type Top = Cand & { open: number; broad?: string }
 
@@ -57,7 +55,6 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
   })))
   const [cat, setCat] = useState('')
   const [catalogByCat, setCatalogByCat] = useState<Record<string, Top[]>>({})
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // 首屏立即用内置常用清单;并行补两份事实:
@@ -96,8 +93,8 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
   const cats = BROAD_SLUGS.map(([, name]) => name)
   const catRows = cat ? catalogByCat[cat] : undefined
   const catLoading = !!cat && catRows === undefined
+  // 分类一次摆全:接口 fetchBroadNocs 硬顶 60 条,不需要再分页(「查看更多」已撤)
   const list = cat ? (catRows || []) : base.slice(0, 24)
-  const shownList = list.slice(0, visibleCount)
 
   // 分类名称同步可见；职业只在用户点中某类后按需查询。这样恢复旧版分类浏览,
   // 又不再让每次打开问卷都为从未点击的 26 类扫描 top=200。
@@ -238,14 +235,14 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
         {q.trim().length < 2 && (
           <>
             <select className="occCatSel" value={cat} aria-label={t('mkt.broad')}
-              onChange={(e) => { setCat(e.target.value); setVisibleCount(PAGE_SIZE) }}>
+              onChange={(e) => setCat(e.target.value)}>
               <option value="">{t('occ.cat.hot')}</option>
               {cats.map((c) => <option key={c} value={c}>{t('broad.' + c)}</option>)}
             </select>
             <div className="occCatTabs">
               {['', ...cats].map((c) => (
                 <button type="button" key={c || 'hot'} className={`occCatTab${cat === c ? ' occCatTab--on' : ''}`}
-                  onClick={() => { setCat(c); setVisibleCount(PAGE_SIZE) }}>
+                  onClick={() => setCat(c)}>
                   {c ? t('broad.' + c) : t('occ.cat.hot')}
                 </button>
               ))}
@@ -253,11 +250,11 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
           </>
         )}
 
-        {/* 首屏同步出常用职业；缓存若已热好再补真实在招数。分类内按招聘量排列并分页展开。 */}
+        {/* 首屏同步出常用职业；缓存若已热好再补真实在招数。分类内按招聘量排列 */}
         {q.trim().length < 2 && <div className="occPills" aria-busy={catLoading}>
           {catLoading ? [104, 146, 122, 168, 112, 138].map((width, i) => (
             <span className="occPillSkeleton" key={i} style={{ width }} />
-          )) : shownList.map((x) => {
+          )) : list.map((x) => {
             const l = label(x)
             const hint = (dupCount.get(l) || 0) > 1 ? (x.title && x.title !== l ? x.title : x.noc) : ''
             const on = nocs.includes(x.noc)
@@ -271,9 +268,6 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
             )
           })}
         </div>}
-        {q.trim().length < 2 && visibleCount < list.length && (
-          <button type="button" className="occMore" onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}>{t('quiz.moreNocs')} ↓</button>
-        )}
 
         {/* 动态区域统一放在稳定的搜索/分类/职业列表之后。点选时上半屏不再被新增胶囊向下顶；
             列表内的选中态已经即时反馈，底部汇总负责删除和查看全部已选项。 */}
