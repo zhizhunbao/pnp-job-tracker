@@ -78,7 +78,18 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
       .then((d) => {
         if (dead) return
         const rows: Top[] = Array.isArray(d?.top) && d.top.length ? d.top : []
-        setTop(rows)
+        // **保住首屏已经显示的顺序**:真实热门榜按在招量排,而首屏那份是内置常用清单的固定序 ——
+        // 直接整份替换的话,用户眼睁睁看着胶囊重新洗牌(2026-08-12 Frank 实拍:「各种职业瞬间跳到第一个厨师」,
+        // 厨师岗最多所以窜到第一)。改成:已显示过的按原位留着(只把在招数合并进来),没显示过的追加在后。
+        setTop((prev) => {
+          if (!rows.length) return prev
+          const byNoc = new Map(rows.map((r) => [r.noc, r]))
+          // 首屏那 14 个**一个都不动**(在真实榜里的顺带把在招数合并进来,不在榜里的原样留着) ——
+          // 只按榜单过滤的话,榜上没有的内置职业会凭空消失,看着还是重排。榜里多出来的追加在后。
+          const kept = prev.map((p) => ({ ...p, ...(byNoc.get(p.noc) ?? {}) }))
+          const keptSet = new Set(kept.map((k) => k.noc))
+          return [...kept, ...rows.filter((r) => !keptSet.has(r.noc))]
+        })
         // 回到这一步时存档只有 NOC 码。热门清单通常比逐码查询先返回,顺手从同一份数据补名字,
         // 避免已选胶囊在慢连接下多空白一拍；冷门职业仍由下面的逐码查询兜底。
         const known = rows.filter((x) => nocs.includes(x.noc)).map((x) => [x.noc, pickName(x, lang)] as [string, string])

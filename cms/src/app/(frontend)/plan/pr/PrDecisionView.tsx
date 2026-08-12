@@ -30,7 +30,8 @@ import { pickName } from '@/lib/occName'
 import { track } from '@/lib/track'
 import type { DrawRow, ScoreFactor, SelfProfile } from '@/lib/pnpSelfScore'
 
-export type OverviewDraw = { province: string; drawDate: string; stream: string; score: number | null }
+/** 形状与 `lib/scoreTables.ts` 的同名类型对齐(那边是产出方,这里是消费方) */
+export type OverviewDraw = { province: string; drawDate: string; stream: string; score: number | null; invitations: number | null }
 export type TvJob = {
   id: number; title: string; company: string; city: string; province: string
   noc: string; teer: number | null; pnpStream: string
@@ -204,6 +205,9 @@ export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; 
     [t('dp.sum.totalExp'), choiceText('totalExpBand') || unparsed, !!choiceText('totalExpBand')],
     [t('dp.sum.canExp'), choiceText('expBand') || unparsed, !!choiceText('expBand')],
     [t('dp.sum.prov'), bands.provs.length ? bands.provs.map((code) => t('prov.' + code)).join(lang === 'zh' ? '、' : ', ') : unparsed, bands.provs.length > 0],
+    // 2026-08-12 加的两题也要回显 —— 卡头写着「已答 6/8」而下面只摆 6 格,数和格子对不上
+    [t('dp.sum.offer'), choiceText('offerBand') || unparsed, !!choiceText('offerBand')],
+    [t('dp.sum.canadaEdu'), choiceText('canadaEduBand') || unparsed, !!choiceText('canadaEduBand')],
   ]
 
   // 用户在问卷里直接多选具体省份。共用条件交给一张 PnpScoreCard 只问一次，省独有条件按所选省追加。
@@ -332,7 +336,18 @@ export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; 
                   </div>
                 </div>
                 <span style={{ marginLeft: 'auto', display: 'flex', gap: 8, flexShrink: 0 }}>
-                  <button onClick={() => { setQuizOpen(true); setOccStep(true); setProvinceStep(false); setScoreStep(false); setFormAtEnd(false); track('dp-quiz-edit') }}
+                  {/* 「继续作答」= 落在**第一道没答的题**,不把人送回第一页(2026-08-12 Frank 实拍:
+                      加了两题之后,答过 6 项的人点「继续作答」又从选职业开始重走一遍)。
+                      已经选过职业就跳过职业页,QuizForm 自己会定位到第一道空题;基础题都答满、
+                      只差目标省的直接开省份页。「开始评估」(一题没答)与「改答案」(已答满)照旧从职业页起。 */}
+                  <button onClick={() => {
+                    const resuming = stepDone > 0 && stepDone < stepTotal
+                    const baseDone = missingFields(stepNames, bands).length === 0
+                    setQuizOpen(true)
+                    setOccStep(!resuming || !noc)
+                    setProvinceStep(resuming && !!noc && baseDone && bands.provs.length === 0)
+                    setScoreStep(false); setFormAtEnd(false); track('dp-quiz-edit')
+                  }}
                     style={stepDone === 0
                       ? { ...BTN, background: UI.primary, color: '#fff', border: `1px solid ${UI.primary}`, fontWeight: 600, padding: '6px 16px', fontSize: 13 }
                       : { ...BTN, background: stepDone < stepTotal ? '#eff6ff' : '#fff', color: stepDone < stepTotal ? UI.primary : UI.text, border: `1px solid ${stepDone < stepTotal ? UI.primary : UI.border}`, fontWeight: 600 }}>
@@ -577,6 +592,10 @@ export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; 
                         <span style={{ color: UI.text3, fontSize: 11.5 }}>{r.province}</span>
                         <span style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{r.score ?? '—'}</span>
                       </div>
+                      <div style={{ display: 'flex', gap: 8, fontSize: 12, color: UI.text3, marginTop: 2 }}>
+                        <span>{t('rpt.s.d.inv')}</span>
+                        <span style={{ marginLeft: 'auto', fontVariantNumeric: 'tabular-nums' }}>{r.invitations ?? '—'}</span>
+                      </div>
                       <div style={{ display: 'flex', gap: 8, fontSize: 12.5, color: UI.text2, marginTop: 2 }}>
                         <span style={{ fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>{r.drawDate}</span>
                         <span style={{ minWidth: 0, overflowWrap: 'anywhere' }}>{streamDisplay(t, r.stream)}</span>
@@ -589,19 +608,23 @@ export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; 
                 <div className="dpDrawTbl">
                   <DataTable<typeof overview[number]> rows={overview} rowKey={(r) => r.province} bare
                     cols={[
-                      { key: 'prov', label: t('dp.prov'), width: '27%', render: (r) => (
+                      { key: 'prov', label: t('dp.prov'), width: '24%', render: (r) => (
                         <span title={provDisp(r.province)} style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
                           <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{provDisp(r.province)}</span>
                           <span style={{ color: UI.text3, fontSize: 11.5, flexShrink: 0 }}>{r.province}</span>
                         </span>
                       ) },
-                      { key: 'date', label: t('rpt.s.d.date'), width: '27%', nowrap: true, render: (r) => <span style={{ fontVariantNumeric: 'tabular-nums', color: UI.text2, fontSize: 12.5 }}>{r.drawDate}</span> },
+                      { key: 'date', label: t('rpt.s.d.date'), width: '20%', nowrap: true, render: (r) => <span style={{ fontVariantNumeric: 'tabular-nums', color: UI.text2, fontSize: 12.5 }}>{r.drawDate}</span> },
                       // 走查 #297:官方通道名截断(「Alberta Express Entry Stream – Priority Sectors (Constructio…」)。
                       // 英文界面拿到的就是官方原名,我们**没有权力**给它编个短名 —— 放不下就换行,不截。
-                      { key: 'stream', label: t('rpt.s.d.stream'), width: '30%', render: (r) => (
+                      { key: 'stream', label: t('rpt.s.d.stream'), width: '32%', render: (r) => (
                         <span style={{ display: 'block', color: UI.text2, overflowWrap: 'anywhere' }}>{streamDisplay(t, r.stream)}</span>
                       ) },
-                      { key: 'score', label: t('rpt.s.d.score'), width: '16%', align: 'right', render: (r) => <>{r.score ?? '—'}</> },
+                      // 邀请数:这张表的入选条件是「有分数线**或**有邀请数」—— 只摆分数线的话,
+                      // 靠邀请数入选的行(NL/MB/NB)整行都是「—」,把它入选的那个事实藏了
+                      { key: 'inv', label: t('rpt.s.d.inv'), width: '12%', align: 'right', nowrap: true,
+                        render: (r) => <span style={{ fontVariantNumeric: 'tabular-nums', color: UI.text2 }}>{r.invitations ?? '—'}</span> },
+                      { key: 'score', label: t('rpt.s.d.score'), width: '12%', align: 'right', render: (r) => <>{r.score ?? '—'}</> },
                     ]} />
                 </div>
               </div>

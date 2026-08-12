@@ -12,8 +12,10 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import type { DrawRow, ScoreFactor } from './pnpSelfScore'
 
-/** SSR 事实区一行:每省最近一轮有分数线或邀请数的抽选 */
-export type OverviewDraw = { province: string; drawDate: string; stream: string; score: number | null }
+/** SSR 事实区一行:每省最近一轮有分数线或邀请数的抽选。
+ *  🔴 invitations 必须带出来:这张表的入选条件就是「有分数线**或**有邀请数」,
+ *  只带分数线的话,靠邀请数入选的那几行会显示成一整行「—」——把它入选的那个事实藏了(2026-08-12 Frank 实拍)。 */
+export type OverviewDraw = { province: string; drawDate: string; stream: string; score: number | null; invitations: number | null }
 
 // 只收 13 省区码 —— pnp_draws 里还有联邦轮(province='FED'),那是 EE 不是省提名,不进这张表
 const PROVS = new Set(['ON', 'BC', 'AB', 'QC', 'MB', 'SK', 'NS', 'NB', 'NL', 'PE', 'NT', 'YT', 'NU'])
@@ -65,7 +67,8 @@ async function load(): Promise<Tables> {
     if (!prov || !PROVS.has(prov) || seen.has(prov)) continue
     if (typeof r.score !== 'number' && typeof r.invitations !== 'number') continue
     seen.add(prov)
-    overview.push({ province: prov, drawDate: str(r.drawDate), stream: str(r.stream), score: numOrNull(r.score) })
+    overview.push({ province: prov, drawDate: str(r.drawDate), stream: str(r.stream),
+      score: numOrNull(r.score), invitations: numOrNull(r.invitations) })
   }
 
   return { overview, draws, factors, factorProvinces: Array.from(new Set(factors.map((f) => f.province).filter(Boolean))) }
