@@ -40,7 +40,12 @@ export function CaseView({ caseId, label, question, answer }: {
     if (o.allocation != null && o.nominated != null) {
       bits.push(t('case.ops.spots', { total: o.allocation, used: o.nominated, left: Math.max(o.allocation - o.nominated, 0), period: o.allocPeriod ?? '' }))
     } else if (o.allocation != null) bits.push(t('case.ops.alloc', { n: o.allocation, period: o.allocPeriod ?? '' }))
-    if (o.poolTotal != null) bits.push(t('case.ops.pool', { n: o.poolTotal }))
+    if (o.poolTotal != null) {
+      // 期次形态决定说法:纯年份=年报的**年末快照**(MB);带日期=当天的**实时池**(AB)。
+      // 两者差着一年,套同一句话就等于把去年的数说成今天的(2026-08-11 接 MB 时实拍撞到)。
+      const key = !o.poolPeriod ? 'case.ops.pool' : /^\d{4}$/.test(o.poolPeriod) ? 'case.ops.poolAt' : 'case.ops.poolOn'
+      bits.push(t(key, { n: o.poolTotal, period: o.poolPeriod ?? '' }))
+    }
     if (o.nominated != null && o.refused != null) {
       const pct = Math.round((o.nominated / (o.nominated + o.refused)) * 1000) / 10
       bits.push(t('case.ops.approved', { pct, ok: o.nominated, no: o.refused, period: o.ytdPeriod ?? '' }))

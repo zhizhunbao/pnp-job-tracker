@@ -36,7 +36,10 @@ export type OpsFacts = {
   refused?: number           // 已拒签(年内至今)
   invited?: number           // 已发邀请
   received?: number          // 已收到申请
-  poolTotal?: number         // 池子里有多少人(只有 AB/BC 公布)
+  poolTotal?: number         // 池子里有多少人(AB 实时 / BC 分数段 / MB 年报年度快照)
+  /** 池子那个数的期次。**AB 是实时的、MB 是年报里的年末快照**——不标期次就会被读成一样新鲜,
+      而两者差着一年。有期次就用带期次的那句文案(2026-08-11 接 MB 年报 §10 时补)。 */
+  poolPeriod?: string
   /** 期间**按指标各记各的**:名额是全年(2026),提名/拒签是年内至今(2026 Jan-Jun)——
       共用一个 period 会把上半年的数标成全年的(2026-08-11 实撞) */
   allocPeriod?: string
@@ -142,7 +145,8 @@ async function opsByProvince(sql: Sql): Promise<Record<string, OpsFacts>> {
     const cur = out[r.province] ?? (out[r.province] = {})
     ;(cur[k] as number) = Number(r.value)
     const per = r.period || r.as_of
-    if (r.metric === 'allocation' || r.metric === 'eoi_pool_total') cur.allocPeriod = cur.allocPeriod || per
+    if (r.metric === 'eoi_pool_total') cur.poolPeriod = per
+    else if (r.metric === 'allocation') cur.allocPeriod = cur.allocPeriod || per
     else cur.ytdPeriod = cur.ytdPeriod || per
     cur.url = cur.url || r.url
   }
