@@ -142,23 +142,9 @@ export function CaseView({ caseId, label, question, answer }: {
               <h2 style={H2}>{t('case.askedTitle', { prov: provOf(answer.asked.province) })}</h2>
               <Lead lines={[t('case.askedFastest', { fastest: tierLabel(answer.tiers[0]?.tier ?? 0) })]} />
               <Path v={answer.asked} />
-              {(() => {
-                const o = answer.ops[answer.asked!.province]
-                if (!o?.nominated || !o?.refused) return null
-                const pct = Math.round((o.nominated / (o.nominated + o.refused)) * 1000) / 10
-                return (
-                  <div style={{ marginTop: 12, padding: '11px 13px 4px', borderRadius: 9, background: UI.bg }}>
-                    <div style={{ color: '#111827', fontSize: 13.5, fontWeight: 600 }}>{t('case.claim.title')}</div>
-                    <Lead lines={[
-                      t('case.claim.rate', { pct, ok: o.nominated, no: o.refused, period: o.ytdPeriod ?? '' }),
-                      t('case.claim.stage'),
-                      t('case.claim.invites', { invited: o.invited ?? 0 }),
-                      t('case.claim.pool'),
-                      t('case.claim.federal'),
-                    ]} />
-                  </div>
-                )
-              })()}
+              {/* 2026-08-11 Frank 撤掉「关于『概率』」整块。它是拿五句话去驳中介那个 80% ——
+                  但**驳这件事本身就是加戏**:批准率、邀请数、名额剩余这些数已经在上面的 bullet 里逐条摆着,
+                  用户看得出那个 80% 站不住。摆事实不需要再配一段解说词。 */}
             </div>
           ) : null}
 
