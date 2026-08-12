@@ -799,7 +799,7 @@ const zh: Dict = {
   'quiz.q1': '你现在在哪一步?', 'quiz.st.overseas': '还在境外,想来加拿大工作', 'quiz.st.studying': '在加拿大读书',
   'quiz.st.working': '已经在加拿大工作', 'quiz.st.jobhunting': '在加拿大找工作',
   'quiz.q2': '你做过或想找什么工作?', 'quiz.q2sub': '学生或暂未工作,可以选择多个想找的方向', 'quiz.q2ph': '搜职业方向,如程序员、厨师、护理员',
-  'quiz.q3': '想评估哪些省?', 'quiz.q3sub': '可多选,不选=全国', 'quiz.q3multiSub': '可以多选；下一步只问所选省份需要的条件。', 'quiz.pickProvince': '请至少选择一个省份',
+  'quiz.q3': '想评估哪些省?', 'quiz.q3sub': '可多选,不选=全国', 'quiz.q3multiSub': '可以多选；下一步只问所选省份需要的条件。', 'quiz.pickProvince': '请至少选择一个省份', 'quiz.provAny': '还不确定，帮我看哪个省合适', 'quiz.provAnyShort': '还不确定',
   'quiz.see': '看结果', 'quiz.seeAny': '不限省份,看结果', 'quiz.skip': '先随便看看 ×',
   // Frank 2026-07-26「这个弹框看着还是太单薄了」:热门职业挂真在招数 + 说清答完能拿到什么
   // E12-09 省提名自评打分与跨省对照(分值全部来自官方分值表,前端不编分)
@@ -1797,7 +1797,7 @@ const en: Dict = {
   'quiz.q1': 'Where are you right now?', 'quiz.st.overseas': 'Outside Canada, want to work here', 'quiz.st.studying': 'Studying in Canada',
   'quiz.st.working': 'Already working in Canada', 'quiz.st.jobhunting': 'Job hunting in Canada',
   'quiz.q2': 'What work have you done or want to pursue?', 'quiz.q2sub': 'Students and job seekers can choose multiple target directions', 'quiz.q2ph': 'Search a direction, e.g. programmer, cook, nurse aide',
-  'quiz.q3': 'Which provinces do you want to assess?', 'quiz.q3sub': 'Any number, or none', 'quiz.q3multiSub': 'Choose one or more. The next questions will only cover those provinces.', 'quiz.pickProvince': 'Choose at least one province',
+  'quiz.q3': 'Which provinces do you want to assess?', 'quiz.q3sub': 'Any number, or none', 'quiz.q3multiSub': 'Choose one or more. The next questions will only cover those provinces.', 'quiz.pickProvince': 'Choose at least one province', 'quiz.provAny': 'Not sure yet — show me which province fits', 'quiz.provAnyShort': 'Not sure yet',
   'quiz.see': 'See results', 'quiz.seeAny': 'Any province — see results', 'quiz.skip': 'Just browsing ×',
   'ps.title': 'PNP self-assessment score', 'ps.resultTitle': 'Provincial estimates',
   'ps.pickProvinceTitle': 'Choose a province', 'ps.pickProvinceHint': 'Each province uses its own nomination and scoring system, so multiple provinces cannot be combined into one score. Choose one to continue.',
@@ -2769,7 +2769,7 @@ const ko: Dict = {
   'quiz.q1': '지금 어느 단계인가요?', 'quiz.st.overseas': '해외에 있고 캐나다에서 일하고 싶습니다', 'quiz.st.studying': '캐나다에서 유학 중',
   'quiz.st.working': '이미 캐나다에서 근무 중', 'quiz.st.jobhunting': '캐나다에서 구직 중',
   'quiz.q2': '해 본 일이나 찾고 싶은 일은 무엇인가요?', 'quiz.q2sub': '학생·구직자는 원하는 방향을 여러 개 선택할 수 있습니다', 'quiz.q2ph': '직무 방향 검색: 프로그래머, 요리사, 요양보호사 등',
-  'quiz.q3': '어느 주를 평가할까요?', 'quiz.q3sub': '복수 선택 가능하며, 선택하지 않으면 전국 기준입니다.', 'quiz.q3multiSub': '여러 주를 선택할 수 있습니다. 다음 단계에서는 선택한 주에 필요한 조건만 질문합니다.', 'quiz.pickProvince': '주를 하나 이상 선택하세요',
+  'quiz.q3': '어느 주를 평가할까요?', 'quiz.q3sub': '복수 선택 가능하며, 선택하지 않으면 전국 기준입니다.', 'quiz.q3multiSub': '여러 주를 선택할 수 있습니다. 다음 단계에서는 선택한 주에 필요한 조건만 질문합니다.', 'quiz.pickProvince': '주를 하나 이상 선택하세요', 'quiz.provAny': '아직 미정 — 어느 주가 맞는지 봐 주세요', 'quiz.provAnyShort': '아직 미정',
   'quiz.see': '결과 보기', 'quiz.seeAny': '주 무관 — 결과 보기', 'quiz.skip': '그냥 둘러보기 ×',
   'ps.title': '주정부 이민 자가 점수', 'ps.resultTitle': '주별 예상 점수',
   'ps.pickProvinceTitle': '구체적인 주 선택', 'ps.pickProvinceHint': '주마다 지명 및 점수 제도가 달라 여러 주를 하나의 점수로 합칠 수 없습니다. 계속하려면 한 주를 선택하세요.',

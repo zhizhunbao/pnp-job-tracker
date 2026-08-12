@@ -228,24 +228,20 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
     expect(mb.reasons.some((r) => /self-employment/i.test(r.quote ?? ''))).toBe(true)
   })
 
-  it('排序:能走的 → 被硬门槛卡住的 → needs-info → excluded 沉底,档内按 tier 升序', () => {
-    // 四档(2026-08-11):「差 3 档语言」不能和「全部达标」并列 tier0 ——
-    // 先前就是这样让 CLB 4 的档案把联邦 EE 顶到第一位的
-    const rank = (v: PathwayVerdict) =>
-      (v.verdict === 'open' ? (v.blockedBy ? 1 : 0) : v.verdict === 'needs-info' ? 2 : 3)
-    const ranks = list.map(rank)
+  it('排序:按**最难拆的那道障碍**排,excluded 沉底,同难度按 tier 升序', () => {
+    // 2026-08-12 二拍(Frank 实拍):先前按判定桶排(能走→被卡住→判不了→排除),
+    // 于是「被卡住」整桶压在「判不了」前面,**要读几年书的加拿大学历排在几周能拿的 offer 前面**。
+    // 桶不是难度。现在是一把尺:none 0 < offer 1 < 境内 2 < 自雇 3 < 判不了 4 < 语言 5 < 加拿大学历 6 < 排除 9。
+    const RANK: Record<string, number> = { offer: 1, statusInCanada: 2, selfEmployed: 3, language: 5, credentialCanada: 6 }
+    const obstacle = (v: PathwayVerdict) =>
+      v.verdict === 'excluded' ? 9 : v.blockedBy ? RANK[v.blockedBy] ?? 4 : v.verdict === 'needs-info' ? 4 : 0
+    const ranks = list.map(obstacle)
     expect(ranks).toEqual([...ranks].sort((a, b) => a - b))
-    // rank 0 / 2 档内仍按 tier 升序;**rank 1(被卡住)档内先按「这道闸有多难拆」**
-    //(2026-08-12:offer 0 < 境内 1 < 自雇 2 < 语言 3 < 加拿大学历 4),tier 退为次键 ——
-    // 不这样排的话「差 3 档语言」会和「只差一份 offer」并列,再靠注册表序抢到第一。
-    for (const r of [0, 2]) {
-      const tiers = list.filter((v) => rank(v) === r).map((v) => v.tier ?? 9)
-      expect(tiers).toEqual([...tiers].sort((a, b) => a - b))
+    // 同难度内按 tier 升序
+    for (const r of new Set(ranks)) {
+      const tiers = list.filter((v) => obstacle(v) === r).map((v) => v.tier ?? 9)
+      expect(tiers, `难度 ${r} 档内 tier 应升序`).toEqual([...tiers].sort((a, b) => a - b))
     }
-    const COST: Record<string, number> = { offer: 0, statusInCanada: 1, selfEmployed: 2, language: 3, credentialCanada: 4 }
-    const costs = list.filter((v) => rank(v) === 1).map((v) => COST[v.blockedBy ?? ''] ?? 9)
-    expect(costs).toEqual([...costs].sort((a, b) => a - b))
-    expect(list[0].key).toBe('NL-intl-grad')
     expect(list[list.length - 1].verdict).toBe('excluded')
   })
 

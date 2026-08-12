@@ -39,7 +39,8 @@ describe('ProvincePicker', () => {
     await act(async () => button('纽芬兰与拉布拉多省').click())
     await act(async () => button('下一题').click())
 
-    expect(onDone).toHaveBeenCalledWith(['BC', 'SK', 'NL'])
+    // 2026-08-12 起第二个参数是「还不确定」标记(选了具体省时为 false)
+    expect(onDone).toHaveBeenCalledWith(['BC', 'SK', 'NL'], false)
 
     await act(async () => root.unmount())
     container.remove()

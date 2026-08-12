@@ -99,7 +99,7 @@ export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; 
     // 改为弹窗形态后默认收起弹窗,避免刚进页面就强插弹窗遮罩。只有 URL 带 ?quiz=1 时才自动唤起弹窗。
     setQuizOpen(new URLSearchParams(window.location.search).get('quiz') === '1')
     setOccStep(a.nocs.length === 0)
-    setProvinceStep(a.nocs.length > 0 && baseComplete && a.provs.length === 0)
+    setProvinceStep(a.nocs.length > 0 && baseComplete && a.provs.length === 0 && !a.provsAny)
     setReady(true)
     track('dp-open', { job: tvJob ? '1' : '0' })
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -107,7 +107,10 @@ export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; 
 
   const stepNames = fieldsOf('pr', 'basic')
   const stepTotal = stepNames.length + 2
-  const stepDone = stepNames.length - missingFields(stepNames, bands).length + (noc ? 1 : 0) + (bands.provs.length ? 1 : 0)
+  // 目标省「还不确定」是**答过的**(Frank 2026-08-12:「很多人不知道去哪个省,比如国内的厨师」)——
+  // 它跟「没答」不是一回事:前者=不限省、13 条通道全判一遍;后者=还没走到这一步。
+  const provAnswered = bands.provs.length > 0 || !!bands.provsAny
+  const stepDone = stepNames.length - missingFields(stepNames, bands).length + (noc ? 1 : 0) + (provAnswered ? 1 : 0)
   // 计数**分两段**,不合成一条(08-10 Frank 拍板):第一段是「关于你」的 6 项,答完就够出方案;
   // 第二段是各省官方分值表的条件,自愿进入。合成一条的话,点完省份那一刻总数会从 6 跳到 22 ——
   // 说好 6 题的问卷突然变 22 题,人就走了。段内总数恒定,全程一个数都不跳。
@@ -138,7 +141,7 @@ export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; 
     // scoreStep 不再进依赖:估分题已经不在弹窗里了,quizRef 那时是 null,滚也滚不到
   }, [quizOpen, shownStep, occStep, provinceStep])
   // 分值卡门控:基本卷答满才渲(渐进展开 —— 落地页面只有 H1 + 答题,别一屏摊开所有机器)
-  const quizComplete = ready && !!noc && bands.provs.length > 0 && missingFields(stepNames, bands).length === 0
+  const quizComplete = ready && !!noc && provAnswered && missingFields(stepNames, bands).length === 0
 
   // 基础问卷本身就足够做“人 → 通道”的初筛，不应强迫用户先找一份具体岗位。
   // 岗位与雇主只在第二层三项判定里使用。输入键用于修改答案后原地重算。
@@ -204,7 +207,8 @@ export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; 
     [t('dp.sum.clb'), choiceText('clbBand') || unparsed, !!choiceText('clbBand')],
     [t('dp.sum.totalExp'), choiceText('totalExpBand') || unparsed, !!choiceText('totalExpBand')],
     [t('dp.sum.canExp'), choiceText('expBand') || unparsed, !!choiceText('expBand')],
-    [t('dp.sum.prov'), bands.provs.length ? bands.provs.map((code) => t('prov.' + code)).join(lang === 'zh' ? '、' : ', ') : unparsed, bands.provs.length > 0],
+    [t('dp.sum.prov'), bands.provs.length ? bands.provs.map((code) => t('prov.' + code)).join(lang === 'zh' ? '、' : ', ')
+      : bands.provsAny ? t('quiz.provAnyShort') : unparsed, provAnswered],
     // 2026-08-12 加的两题也要回显 —— 卡头写着「已答 6/8」而下面只摆 6 格,数和格子对不上
     [t('dp.sum.offer'), choiceText('offerBand') || unparsed, !!choiceText('offerBand')],
     [t('dp.sum.canadaEdu'), choiceText('canadaEduBand') || unparsed, !!choiceText('canadaEduBand')],
@@ -345,7 +349,7 @@ export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; 
                     const baseDone = missingFields(stepNames, bands).length === 0
                     setQuizOpen(true)
                     setOccStep(!resuming || !noc)
-                    setProvinceStep(resuming && !!noc && baseDone && bands.provs.length === 0)
+                    setProvinceStep(resuming && !!noc && baseDone && !provAnswered)
                     setScoreStep(false); setFormAtEnd(false); track('dp-quiz-edit')
                   }}
                     style={stepDone === 0
@@ -417,10 +421,10 @@ export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; 
                     <div className="plQuizPad">
                       {/* 省份是基础卷最后一题:答完立刻收卷关弹窗出方案。各省估分是自愿的第二段,
                           由方案下面那张卡的入口进入 —— 不把 16 道官方表的题横在结论前面 */}
-                      <ProvincePicker key={`${resetNonce}:provinces`} t={t} initial={bands.provs}
+                      <ProvincePicker key={`${resetNonce}:provinces`} t={t} initial={bands.provs} unsure={bands.provsAny}
                         onChange={(provs) => setBands(writeAnswers({ provs }))}
                         onBack={() => { setProvinceStep(false); setFormAtEnd(true) }}
-                        onDone={(provs) => { setBands(writeAnswers({ provs })); onQuizDone() }} />
+                        onDone={(provs, any) => { setBands(writeAnswers({ provs, provsAny: !!any })); onQuizDone() }} />
                     </div>
                   ) : (
                     <div className="plQuizPad">

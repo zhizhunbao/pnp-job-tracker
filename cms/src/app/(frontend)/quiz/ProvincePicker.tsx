@@ -8,16 +8,22 @@ import type { TFn } from '../jobs/i18n'
 
 export const CANADA_PROVINCES = ['BC', 'AB', 'SK', 'MB', 'ON', 'QC', 'NB', 'NS', 'PE', 'NL'] as const
 
-export function ProvincePicker({ t, initial, onChange, onDone, onBack }: {
+// 「还不确定」是**一等答案**,不是跳过(2026-08-12 Frank:「很多人不知道去哪个省,比如国内的厨师」)。
+// 选它 = 不按省过滤,13 条通道全判一遍再按障碍难度排 —— 「该去哪个省」本来就该由我们回答,
+// 不该当成必答题拦在门口。
+export function ProvincePicker({ t, initial, onChange, onDone, onBack, unsure }: {
   t: TFn
   initial: string[]
   onChange?: (provinces: string[]) => void
-  onDone: (provinces: string[]) => void
+  onDone: (provinces: string[], unsure?: boolean) => void
   onBack?: () => void
+  unsure?: boolean
 }) {
   const [selected, setSelected] = useState<string[]>(initial)
+  const [anyProv, setAnyProv] = useState(!!unsure)
   const toggle = (province: string) => {
     const next = selected.includes(province) ? selected.filter((code) => code !== province) : [...selected, province]
+    setAnyProv(false)                    // 选了具体省就不再是「还不确定」
     setSelected(next)
     onChange?.(next)
   }
@@ -38,10 +44,17 @@ export function ProvincePicker({ t, initial, onChange, onDone, onBack }: {
             </button>
           )
         })}
+        <button type="button" aria-pressed={anyProv}
+          onClick={() => { setAnyProv(true); setSelected([]); onChange?.([]) }}
+          style={{ minHeight: 40, border: `1px solid ${anyProv ? UI.primary : UI.border}`, borderRadius: 999,
+            background: anyProv ? '#eff6ff' : '#fff', color: anyProv ? UI.primaryDeep : UI.text,
+            padding: '8px 15px', font: `${anyProv ? 650 : 500} 13.5px/1.35 inherit`, cursor: 'pointer' }}>
+          {t('quiz.provAny')}
+        </button>
       </div>
       <QuizNav prevLabel={t('plan.prev')} nextLabel={t('plan.next')} onPrev={onBack}
-        nextDisabled={!selected.length} onNext={() => onDone(selected)}
-        hint={selected.length ? undefined : t('quiz.pickProvince')} />
+        nextDisabled={!selected.length && !anyProv} onNext={() => onDone(selected, anyProv)}
+        hint={selected.length || anyProv ? undefined : t('quiz.pickProvince')} />
     </>
   )
 }

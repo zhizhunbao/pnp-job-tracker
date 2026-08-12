@@ -24,6 +24,7 @@ export type Answers = {
   totalExpBand: number
   offerBand: number       // 已有字段(卡③专属题),类型里先前漏声明
   canadaEduBand: number   // 有没有加拿大学历(2026-08-12 门槛清单三类闸之一)
+  provsAny?: boolean      // 目标省「还不确定」——**答过了**,只是不限省(与「没答」不同)
   // B1-4 PGWP(20260803,拿 PR 探索批 2):计划读的课程时长档 + 层级档
   studyMonthsBand: number
   studyLevelBand: number

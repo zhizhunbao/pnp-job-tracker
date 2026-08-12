@@ -31,6 +31,11 @@ const l = (en: string, zh: string, ko: string): L => ({ default: en, 'zh-cn': zh
 // 语言:问**实测档位**,不问自评(2026-08-02 Frank「我选的是英语流利,为什么显示 CLB 9」)——
 // 「初级/中级/流利 → CLB 5/7/9」那套映射是本站编的,报告却写成「你报的 CLB 9」= 替他填了个他没说过的数;
 // 而且自评偏乐观(自认流利常是 CLB 7),门槛判定会因此说「达标」而实际不达标。取每档**下界**,宁可低报。
+// 「不清楚」的统一档位值(2026-08-12 Frank「每个选项都应该给一个不清楚的」)。
+// 它是**答过的**(计数与 missingFields 认它),但 toAnswer 一律回 undefined —— 引擎拿 null
+// 落「判不了」,而不是被折成某个他没说过的答案。三值折叠里的 unknown 就该由用户显式说得出口。
+export const UNSURE_BAND = 9
+
 const CLB = [0, 0, 4, 6, 8, 10]        // a1「还没考」= 没有分,不传
 const EXP = [0, 0, 6, 18, 30]          // a1「没有」= 0 个月,是答案不是缺答
 // a4「先看哪个够得着」= 不限省。**海洋四省挂 5 不挂 4**:4 已经在生产用了,改它的含义会把
@@ -52,7 +57,8 @@ export const FIELDS: Record<string, FieldDef> = {
     engineKey: 'currentStatus',
     unlocks: ['rpt.c.window', 'rpt.g.basics'],
     tier: 'free',
-    toAnswer: (v: string) => v || undefined,
+    // 'unsure' → undefined:引擎拿 null 落「判不了」,不替他猜(2026-08-12 Frank「每个选项都应该给一个不清楚的」)
+    toAnswer: (v: string) => (v && v !== 'unsure' ? v : undefined),
     q: {
       title: l('Where are you today?', '你现在的情况?', '현재 상황은?'),
       choices: [
@@ -60,6 +66,7 @@ export const FIELDS: Record<string, FieldDef> = {
         { value: 'studying', text: l('Studying in Canada', '在加拿大读书', '캐나다에서 유학 중') },
         { value: 'working', text: l('Working in Canada', '已经在加拿大工作', '캐나다에서 근무 중') },
         { value: 'jobhunting', text: l('In Canada, job hunting', '在加拿大找工作', '캐나다에서 구직 중') },
+        { value: 'unsure', text: l('Not sure', '不清楚', '잘 모르겠음') },
       ],
     },
   },
@@ -104,7 +111,7 @@ export const FIELDS: Record<string, FieldDef> = {
     engineKey: 'totalExpMonths',
     unlocks: ['rpt.s.cur', 'rpt.s.alt.mark', 'rpt.g.zeroExp', 'rpt.n.firstJob'],
     tier: 'free',
-    toAnswer: (b: number) => (b ? TOTAL_EXP[b] : undefined),
+    toAnswer: (b: number) => (b && b !== UNSURE_BAND ? TOTAL_EXP[b] : undefined),
     q: {
       title: l('Total experience in this occupation?', '做这个职业一共多久了?(含海外)', '이 직종 총 경력은?(해외 포함)'),
       choices: [
@@ -113,6 +120,7 @@ export const FIELDS: Record<string, FieldDef> = {
         { value: 3, text: l('1-3 years', '1-3 年', '1-3년') },
         { value: 4, text: l('3-5 years', '3-5 年', '3-5년') },
         { value: 5, text: l('5+ years', '5 年以上', '5년 이상') },
+        { value: 9, text: l('Not sure', '不清楚', '잘 모르겠음') },
       ],
     },
   },
@@ -139,7 +147,7 @@ export const FIELDS: Record<string, FieldDef> = {
     engineKey: 'canadianExpMonths',
     unlocks: ['rpt.c.expOk', 'rpt.g.expShort'],
     tier: 'free',
-    toAnswer: (b: number) => (b ? EXP[b] : undefined),
+    toAnswer: (b: number) => (b && b !== UNSURE_BAND ? EXP[b] : undefined),
     q: {
       // 「其中」是真的其中:加拿大经验选不出比总经验更长的档(2026-08-02 实撞 —— 总经验答「没有」、
       // 加拿大答「2 年以上」,引擎取大的那个,句子写成「你填的 30 个月」,看着就像胡说)。
@@ -152,6 +160,7 @@ export const FIELDS: Record<string, FieldDef> = {
         { value: 2, text: l('Under 1 year', '不到 1 年', '1년 미만') },
         { value: 3, text: l('1-2 years', '1-2 年', '1-2년') },
         { value: 4, text: l('2+ years', '2 年以上', '2년 이상') },
+        { value: 9, text: l('Not sure', '不清楚', '잘 모르겠음') },
       ],
     },
   },
@@ -194,7 +203,7 @@ export const FIELDS: Record<string, FieldDef> = {
     engineKey: 'hasJobOffer',
     unlocks: ['rpt.n.employer', 'rpt.g.noOffer'],
     tier: 'free',
-    toAnswer: (b: number) => (b ? b === 1 : undefined),
+    toAnswer: (b: number) => (b && b !== UNSURE_BAND ? b === 1 : undefined),
     q: {
       title: l('Do you have a job offer in hand?', '手上有 offer 吗?', '받은 잡오퍼가 있나요?'),
       choices: [
@@ -202,6 +211,7 @@ export const FIELDS: Record<string, FieldDef> = {
         { value: 2, text: l('In interviews', '面试中', '면접 중') },
         { value: 3, text: l('No', '没有', '없음') },
         { value: 4, text: l('Self-employed', '自雇', '자영업') },
+        { value: 9, text: l('Not sure', '不清楚', '잘 모르겠음') },
       ],
     },
   },
@@ -213,12 +223,13 @@ export const FIELDS: Record<string, FieldDef> = {
     engineKey: 'canadaStudy',
     unlocks: ['rpt.g.basics'],
     tier: 'free',
-    toAnswer: (b: number) => (b ? b === 1 : undefined),
+    toAnswer: (b: number) => (b && b !== UNSURE_BAND ? b === 1 : undefined),
     q: {
       title: l('Do you have a Canadian credential?', '你有加拿大的学历吗?', '캐나다 학력이 있나요?'),
       choices: [
         { value: 1, text: l('Yes', '有', '있음') },
         { value: 2, text: l('No', '没有', '없음') },
+        { value: 9, text: l('Not sure', '不清楚', '잘 모르겠음') },
       ],
     },
   },

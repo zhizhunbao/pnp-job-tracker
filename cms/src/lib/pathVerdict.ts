@@ -874,15 +874,19 @@ export function pathVerdict(profile: VerdictProfile, data: VerdictData): Pathway
   const out = REGISTRY.map((spec, i) => ({ v: evaluateOne(spec, profile, data), i }))
   // 四档:现在就能走 → 被硬门槛卡住(考试能补,但**现在**走不了) → 缺档案判不了 → 排除。
   // 先前只有三档,「差 3 档语言」和「全部达标」并列 tier0,谁在注册表里靠前谁第一。
-  const rank = (v: PathwayVerdict) =>
-    (v.verdict === 'open' ? (v.blockedBy ? 1 : 0) : v.verdict === 'needs-info' ? 2 : 3)
-  // 「被卡住」这一档内部再按**这道闸有多难拆**排:offer 最好拆(本站的正业就是帮人找到 offer)→
-  // 人挪进境内 → 重考语言(要几个月)→ 加拿大学历(要几年)。不排的话,差 3 档语言的联邦 EE
-  // 会跟「只差一份 offer」的省通道并列,再靠注册表序抢到第一(2026-08-12 实撞)。
-  const cost = (v: PathwayVerdict) => (v.blockedBy ? blockCost(v.blockedBy) : 0)
+  // 2026-08-12 二拍(Frank 实拍:「纽芬兰那个需要学历,为什么还排在前面?」):
+  // 先前按**判定桶**排(能走 → 被卡住 → 判不了 → 排除),于是「被卡住」整桶压在「判不了」前面 ——
+  // 结果是**要读几年书才拿得到的加拿大学历**排在**几周就能拿到的 offer** 前面。桶不是难度。
+  // 改成一把尺:**最难拆的那道障碍**。能说出具体障碍的(blockedBy)按它排,说不出的(needs-info)
+  // 落在「境内身份」与「重考语言」之间 —— 我们连判都判不了,不该压过一条已知只差 offer 的路。
+  const RANK = { none: 0, offer: 1, statusInCanada: 2, selfEmployed: 3, unknown: 4, language: 5, credentialCanada: 6, excluded: 9 }
+  const obstacle = (v: PathwayVerdict): number =>
+    v.verdict === 'excluded' ? RANK.excluded
+      : v.blockedBy ? (RANK as Record<string, number>)[v.blockedBy] ?? RANK.unknown
+        : v.verdict === 'needs-info' ? RANK.unknown
+          : RANK.none
   out.sort((a, b) => {
-    if (rank(a.v) !== rank(b.v)) return rank(a.v) - rank(b.v)
-    if (cost(a.v) !== cost(b.v)) return cost(a.v) - cost(b.v)
+    if (obstacle(a.v) !== obstacle(b.v)) return obstacle(a.v) - obstacle(b.v)
     const ta = a.v.tier ?? 9, tb = b.v.tier ?? 9
     if (ta !== tb) return ta - tb
     return a.i - b.i
