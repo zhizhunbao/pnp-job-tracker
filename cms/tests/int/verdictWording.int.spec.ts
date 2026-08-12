@@ -39,7 +39,7 @@ const data: VerdictData = {
 const base: VerdictProfile = {
   age: 40, married: false, clb: 6, edu: 'diploma2y', eduYears: 2,
   canadaStudy: true, studyProvince: 'ON', noc: '72310', teer: 2,
-  expCanadaMonths: 0, expForeignMonths: 0, foreignExpSelfEmployed: true,
+  expCanadaMonths: 0, expForeignMonths: 0, foreignExpSelfEmployed: true, hasOffer: false, inCanada: true,   // 在找工作(无 offer)+ 持 PGWP 在境内
   status: 'pgwp', province: 'ON',
 }
 

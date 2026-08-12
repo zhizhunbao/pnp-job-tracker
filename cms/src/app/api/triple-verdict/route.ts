@@ -114,7 +114,7 @@ export async function GET(req: Request) {
     clb: up.clb != null && Number.isFinite(Number(up.clb)) ? Number(up.clb) : null,
     edu: null, eduYears: null, canadaStudy: null, studyProvince: null,
     noc: noc0, teer: null,
-    expCanadaMonths: null, expForeignMonths: null, foreignExpSelfEmployed: null,
+    expCanadaMonths: null, expForeignMonths: null, foreignExpSelfEmployed: null, hasOffer: null, inCanada: null,
     status: permitLeft != null && permitLeft > 0 ? 'pgwp' : (STATUS_OF[String(up.currentStatus ?? '')] ?? null),
     province: null,
     permitMonthsLeft: permitLeft,

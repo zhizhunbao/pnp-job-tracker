@@ -23,6 +23,7 @@ export type Answers = {
   ageBand: number
   totalExpBand: number
   offerBand: number       // 已有字段(卡③专属题),类型里先前漏声明
+  canadaEduBand: number   // 有没有加拿大学历(2026-08-12 门槛清单三类闸之一)
   // B1-4 PGWP(20260803,拿 PR 探索批 2):计划读的课程时长档 + 层级档
   studyMonthsBand: number
   studyLevelBand: number
@@ -32,7 +33,7 @@ export type Answers = {
 export const EMPTY: Answers = {
   status: '', nocs: [], provs: [],
   clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0,
-  eduBand: 0, ageBand: 0, totalExpBand: 0, offerBand: 0,
+  eduBand: 0, ageBand: 0, totalExpBand: 0, offerBand: 0, canadaEduBand: 0,
   studyMonthsBand: 0, studyLevelBand: 0,
 }
 
@@ -76,7 +77,8 @@ export function readAnswers(): Answers {
       nocs: arr(cur.nocs), provs: arr(cur.provs),
       clbBand: num(cur.clbBand), expBand: num(cur.expBand), provBand: num(cur.provBand),
       crsBand: num(cur.crsBand), pgwpBand: num(cur.pgwpBand),
-      eduBand: num(cur.eduBand), ageBand: num(cur.ageBand), totalExpBand: num(cur.totalExpBand), offerBand: num(cur.offerBand),
+      eduBand: num(cur.eduBand), ageBand: num(cur.ageBand), totalExpBand: num(cur.totalExpBand),
+      offerBand: num(cur.offerBand), canadaEduBand: num(cur.canadaEduBand),
     }
   }
   return migrate() ?? { ...EMPTY }

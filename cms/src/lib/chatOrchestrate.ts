@@ -1538,7 +1538,11 @@ export function verdictFacts(r: VerdictResult, lang: ChatLang): Fact[] {
     for (const x of reasons.slice(paired ? 1 : 0)) push(line(v, T.vWhy, x))
     out.push(...scoreOf(v))
   }
-  for (const v of needs.slice(0, VERDICT_NEEDS_SHOWN)) {
+  // 有估分的 needs-info 通道也要进来:**估分与抽选线是算出来的事实,跟「能不能走」是两回事**。
+  // 2026-08-12 实撞:门槛清单上线后 MB 因「没答有没有 offer」从 open 掉进 needs-info,
+  // 于是 695/715/632 三个数连同官方警告整块消失 —— 判不了的是资格,不是那几个数。
+  const needsShown = needs.filter((v, i) => i < VERDICT_NEEDS_SHOWN || !!v.score).slice(0, VERDICT_NEEDS_SHOWN + 2)
+  for (const v of needsShown) {
     const why = v.reasons.find((x) => x.kind === 'needs-info')
     // 🔴 「本站没收录这条通道的门槛」和「你还没告诉我年龄」是两件事:前者带 availability(四态成句),
     //    后者只是缺槽。合并成一句「判不了」等于把我们的窟窿说成他的问题。
@@ -1549,6 +1553,9 @@ export function verdictFacts(r: VerdictResult, lang: ChatLang): Fact[] {
     } else {
       push(line(v, T.vNeedsInfo, why))
     }
+    // 估分通道的官方警告(如曼省「外省学习 −100」)与估分同源,一并照发 —— 同上:判不了的是资格,不是那些数
+    if (v.score) for (const x of pick(v, 2).filter((x) => x.kind !== 'needs-info')) push(line(v, T.vWhy, x))
+    out.push(...scoreOf(v))     // 判不了的是资格,不是估分 —— 那几个数照发(见上方注释)
   }
   for (const l of r.levers.slice(0, 2)) {
     if (l.key === 'clb-boost') {
@@ -1587,6 +1594,10 @@ export function verdictProfileOf(slots: Slots, teer: number | null): VerdictProf
     expCanadaMonths: zeroExp ? 0 : null,
     expForeignMonths: zeroExp ? 0 : null,
     foreignExpSelfEmployed: null,
+    // 门槛清单三类闸:对话链没有「有没有 offer」这个槽 → 留 null(该通道落 needs-info,那正是实话);
+    // 「人在不在境内」由既有 status 槽推得出,pgwp/study/worker 都是已在境内,other/null 不猜。
+    hasOffer: null,
+    inCanada: ['pgwp', 'study', 'worker'].includes(String(slots.status ?? '')) ? true : null,
     status: slots.status,
     // 现居省本站还没有这个槽(slots.provs 是他**问的**省,不是他**住的**省 —— 拿它当现居地,
     // 一个在安省问「曼省怎么样」的人会被当成曼省居民)。留 null → 带居住门槛的通道落 needs-info。

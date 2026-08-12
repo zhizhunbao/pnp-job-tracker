@@ -205,6 +205,23 @@ export const FIELDS: Record<string, FieldDef> = {
       ],
     },
   },
+  // 门槛清单三类闸之一(2026-08-12,设计 docs/design/通道判定口径根治-20260812.md §3.3):
+  // 「有没有加拿大学历」是好几条通道的硬闸(NL 国际毕业生要 PGWP、PGWP 的前提就是加拿大院校毕业)。
+  // 不问就只能落「判不了」—— 而不问却当成「没有障碍」,正是把从没来过加拿大的人推荐去走
+  // 「国际毕业生」通道的那个病。第三类闸「人在不在境内」不另开题:既有的「你现在的情况」已经分开了。
+  canadaEduBand: {
+    engineKey: 'canadaStudy',
+    unlocks: ['rpt.g.basics'],
+    tier: 'free',
+    toAnswer: (b: number) => (b ? b === 1 : undefined),
+    q: {
+      title: l('Do you have a Canadian credential?', '你有加拿大的学历吗?', '캐나다 학력이 있나요?'),
+      choices: [
+        { value: 1, text: l('Yes', '有', '있음') },
+        { value: 2, text: l('No', '没有', '없음') },
+      ],
+    },
+  },
   // 探索层:CRS → EE 分差(锁区 ee)
   crsBand: {
     engineKey: 'crs',

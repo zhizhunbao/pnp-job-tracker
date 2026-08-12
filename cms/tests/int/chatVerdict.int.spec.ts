@@ -167,9 +167,13 @@ describe('金标 C01:一句话进 → 不编数字的路径裁决', () => {
     expect(ref.evidence.url).toBeTruthy()
     expect(ref.evidence.url).not.toBe(fed.find((f) => f.value === 199)!.evidence.url)
 
-    // NL = Day 0(tier0),ON = tier1
-    expect(v.some((f) => f.label.includes('NL ') && f.label.includes(T.vTier[0])), 'NL 应是 tier0').toBe(true)
-    expect(v.some((f) => f.label.includes('ON ') && f.label.includes(T.vTier[1])), 'ON 应是 tier1').toBe(true)
+    // NL 2026-08-12 起是「判不了」:门槛清单里 NL 国际毕业生的 job offer 是硬闸(官方原句在
+    // gateManifest),而**对话链没有「有没有 offer」这个槽** → 缺答案就不许说「当天能递」。
+    // 这正是本次口径改动要的:不知道就说不知道。ON 仍是 tier1(它的缺口是可积累的经验)。
+    expect(v.some((f) => f.label.includes('NL ') && f.label.includes(T.vNeedsInfo)), 'NL 应是判不了').toBe(true)
+    // ON Workforce 同理:官方原句「offers eligible skilled foreign workers with a qualifying job offer」——
+    // offer 是硬闸,对话链问不到 → 判不了。tier 仍按可积累项算,只是不再对外说「3-6 个月就能走」。
+    expect(v.some((f) => f.label.includes('ON ') && f.label.includes(T.vNeedsInfo)), 'ON 应是判不了').toBe(true)
 
     // MB 三条 warning:外省学习 −100 / 再叠外省工作 → 595 / 估分 695 天花板 715 对照 632
     expect(text).toContain('Studies in another province')
@@ -382,9 +386,14 @@ describe('lookupVerdict(薄封装)', () => {
     // 正向断言:门槛行在库 → 四态回 ok、判得出 tier;这一条测的仍是「四态按库里有没有门槛行说话」
     const aip = r.pathways.find((v) => v.key === 'AIP')!
     expect(aip.availability).toBe('ok')
-    expect(aip.verdict).toBe('open')
+    // AIP 2026-08-12 起是 needs-info:offer 是它的硬闸(官方原句「You must receive a job offer
+    // from a designated employer in Atlantic Canada to participate in the program.」),
+    // 而这份档案没答有没有 offer。tier 仍按可积累项算 —— 缺的是**答案**不是**条文**,所以 availability 照旧 ok。
+    expect(aip.verdict).toBe('needs-info')
     expect(aip.tier, '1,560 小时 = 官方自写的 1 年 → 12 个月 → tier2').toBe(2)
-    expect(r.pathways.every((v) => v.availability === 'ok'), '13 条门槛行现已齐全').toBe(true)
+    // NB/BC 两条的门槛条文本站确实没有(NB 只抓到门户页、BC 完整条件在没抓的 Program Guide)
+    expect(r.pathways.filter((v) => v.availability !== 'ok').map((v) => v.key).sort())
+      .toEqual(['BC-build', 'BC-sw', 'NB-sw'])
     expect(r.levers.map((l) => l.key).sort()).toEqual(['clb-boost', 'teer-downgrade'])
   })
 

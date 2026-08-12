@@ -18,7 +18,10 @@ export const DECISIONS: Record<string, Decision> = {
     // 分值卡退出决策页后引擎规则(rules)只吃语言/经验/收入 —— 没消费方的题不问(铁律)。
     // 批 3 个人关接 pnpSelfScore 时随消费方回归。
     // 具体省份是可多选数组，不再塞进四选一字段；PR 页面在基础题之后用 ProvincePicker 采集。
-    basic: ['status', 'clbBand', 'totalExpBand', 'expBand'],
+    // 2026-08-12 加两题(门槛清单三类闸,设计 §3.3):offerBand 是既有题、先前只在卡③用;
+    // canadaEduBand 是新题。不问这两样,判定核只能对一半通道说「判不了」——而先前它是**默认放行**,
+    // 把从没来过加拿大的人推荐去走「国际毕业生」通道。第三类闸「人在不在境内」由 status 推,不另开题。
+    basic: ['status', 'clbBand', 'totalExpBand', 'expBand', 'offerBand', 'canadaEduBand'],
     // 批 2 = B1-4 PGWP(20260803):批首 studyMonthsBand 是 free 题(batchLeadsFree ✓)——
     // 批 1 的历史偏差(KNOWN_NO_FREE_LEAD)不因此消,但新批守规矩
     explore: [['crsBand', 'pgwpBand'], ['studyMonthsBand', 'studyLevelBand']],

@@ -97,7 +97,7 @@ const PROFILE: TripleProfile = {
   clb: 6,
   edu: null, eduYears: null, canadaStudy: null, studyProvince: null,
   noc: '33102', teer: 3,
-  expCanadaMonths: null, expForeignMonths: null, foreignExpSelfEmployed: null,
+  expCanadaMonths: null, expForeignMonths: null, foreignExpSelfEmployed: null, hasOffer: null, inCanada: null,
   status: 'pgwp',
   province: null,
   permitMonthsLeft: 18,

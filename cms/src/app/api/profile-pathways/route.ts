@@ -50,7 +50,7 @@ export async function POST(req: Request) {
   const profile: VerdictProfile = {
     age: finite(answers.age), married: null,
     clb: finite(answers.clb), edu: null, eduYears: null,
-    canadaStudy: null, studyProvince: null,
+    studyProvince: null,
     noc, teer: Number.isInteger(teer) && teer >= 0 && teer <= 5 ? teer : null,
     expCanadaMonths: canadaExp,
     expForeignMonths: totalExp == null ? null : Math.max(0, totalExp - (canadaExp ?? 0)),
@@ -58,6 +58,11 @@ export async function POST(req: Request) {
     status: STATUS[String(answers.currentStatus ?? '')] ?? null,
     // 目标省不是现居省。居住门槛没有单独问过，必须留空让引擎如实标 needs-info。
     province: null,
+    // 门槛清单三类闸(2026-08-12):没答就是 null → 引擎落「判不了」,**不许**当成没有障碍。
+    hasOffer: typeof answers.hasJobOffer === 'boolean' ? answers.hasJobOffer : null,
+    // 「人在不在境内」不另开一题:既有的「你现在的情况」已经把 overseas 与另外三个境内选项分开了
+    inCanada: answers.currentStatus ? String(answers.currentStatus) !== 'overseas' : null,
+    canadaStudy: typeof answers.canadaStudy === 'boolean' ? answers.canadaStudy : null,
   }
 
   const data = await getVerdictData()

@@ -44,7 +44,7 @@ const C01: VerdictProfile = {
   teer: 2,
   expCanadaMonths: 0,
   expForeignMonths: 0,            // 海外全自雇 → 可计月数 0(同 crsEstimate 测试的上游口径)
-  foreignExpSelfEmployed: true,
+  foreignExpSelfEmployed: true, hasOffer: false, inCanada: true,   // 在找工作(无 offer)+ 持 PGWP 在境内
   status: 'pgwp',
   province: 'ON',
 }
@@ -182,9 +182,14 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
   })
 
   it('tier3 = AB Opportunity、BC Skilled Worker、BC Build(24 个月)', () => {
-    for (const k of ['AB-opportunity', 'BC-sw', 'BC-build']) {
-      expect(byKey(list, k).verdict, k).toBe('open')
-      expect(tierOf(k), k).toBe(3)
+    expect(byKey(list, 'AB-opportunity').verdict).toBe('open')
+    expect(tierOf('AB-opportunity')).toBe(3)
+    // BC 两条 2026-08-12 起是 needs-info:门槛清单(gateManifest)里 BC 的境内身份/加拿大学历落 unknown，
+    // 因为 welcomebc 那页自己写明「完整条件见 Skills Immigration Program Guide」而指南没进 crawl
+    //(实查 bc-immigrate 40 页全是门户页)。**不拿「页上没写」当「官方不要求」** —— 补上指南就自动翻回 open。
+    for (const k of ['BC-sw', 'BC-build']) {
+      expect(byKey(list, k).verdict, k).toBe('needs-info')
+      expect(byKey(list, k).availability, k).toBe('not-collected')
     }
     // BC Build 是定向抽选:72310 在定向清单上、抽选线 97 摆出来但不冒充成「你的分」
     const build = byKey(list, 'BC-build')
@@ -230,10 +235,16 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
       (v.verdict === 'open' ? (v.blockedBy ? 1 : 0) : v.verdict === 'needs-info' ? 2 : 3)
     const ranks = list.map(rank)
     expect(ranks).toEqual([...ranks].sort((a, b) => a - b))
-    for (const r of [0, 1, 2]) {
+    // rank 0 / 2 档内仍按 tier 升序;**rank 1(被卡住)档内先按「这道闸有多难拆」**
+    //(2026-08-12:offer 0 < 境内 1 < 自雇 2 < 语言 3 < 加拿大学历 4),tier 退为次键 ——
+    // 不这样排的话「差 3 档语言」会和「只差一份 offer」并列,再靠注册表序抢到第一。
+    for (const r of [0, 2]) {
       const tiers = list.filter((v) => rank(v) === r).map((v) => v.tier ?? 9)
       expect(tiers).toEqual([...tiers].sort((a, b) => a - b))
     }
+    const COST: Record<string, number> = { offer: 0, statusInCanada: 1, selfEmployed: 2, language: 3, credentialCanada: 4 }
+    const costs = list.filter((v) => rank(v) === 1).map((v) => COST[v.blockedBy ?? ''] ?? 9)
+    expect(costs).toEqual([...costs].sort((a, b) => a - b))
     expect(list[0].key).toBe('NL-intl-grad')
     expect(list[list.length - 1].verdict).toBe('excluded')
   })
@@ -245,6 +256,7 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
     const weak = pathVerdict({
       age: null, married: null, clb: 4, edu: null, eduYears: null, canadaStudy: null, studyProvince: null,
       noc: '63200', teer: 3, expCanadaMonths: 0, expForeignMonths: 60, foreignExpSelfEmployed: null,
+      hasOffer: false, inCanada: true,     // 在加读书、还没拿到 offer(新卷这两题都会问)
       status: 'study', province: null,
     }, data)
     const ee = weak.find((v) => v.key === 'FED-EE')!
@@ -456,8 +468,10 @@ describe('红线不变量', () => {
     }
     // 2026-08-09 批B AIP 36 行入库后更新(原断言:['AIP'])——最后一条 not-collected 的通道被补齐了,
     // 13 条现在门槛行齐全。这条断言的意思不变:availability 只许由「库里有没有那条通道的门槛行」决定。
-    expect(list.filter((v) => v.availability === 'not-collected').map((v) => v.key)).toEqual([])
-    expect(list.every((v) => v.availability === 'ok')).toBe(true)
+    // 2026-08-12:availability 的判据从「库里有没有门槛行」扩到「**门槛清单里那几类闸有没有条文**」——
+    // 两者都是「本站未收录」。NB 只抓到门户页;BC 两条的完整条件在没抓的 Program Guide 里。
+    expect(list.filter((v) => v.availability === 'not-collected').map((v) => v.key).sort())
+      .toEqual(['BC-build', 'BC-sw', 'NB-sw'])
   })
 
   it('excluded 不带 tier;open 一定有 tier', () => {
@@ -470,7 +484,7 @@ describe('红线不变量', () => {
   it('缺档案槽 → needs-info,不硬算(空档案不许出 open,也不许出 excluded)', () => {
     const blank: VerdictProfile = {
       age: null, married: null, clb: null, edu: null, eduYears: null, canadaStudy: null, studyProvince: null,
-      noc: null, teer: null, expCanadaMonths: null, expForeignMonths: null, foreignExpSelfEmployed: null,
+      noc: null, teer: null, expCanadaMonths: null, expForeignMonths: null, foreignExpSelfEmployed: null, hasOffer: null, inCanada: null,
       status: null, province: null,
     }
     const out = run(blank)

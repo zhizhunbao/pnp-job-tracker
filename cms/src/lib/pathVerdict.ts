@@ -28,6 +28,17 @@ import { streamMatches, type ScoreFactor } from './pnpSelfScore'
 import type { EduKey } from './pnpSelfScore'
 // 只 import type:编译期擦除,不给 chatTools(它拉着 match/planTimeline/reportFacts)加运行时边。
 import type { Availability, Evidence } from './chatTools'
+import { GATE_LABEL, gateOf, type GateKey } from './gateManifest'
+
+/** 门槛清单里参与裁决的三类闸(顺序=理由的展示顺序) */
+const GATE_KEYS: GateKey[] = ['offer', 'statusInCanada', 'credentialCanada']
+
+/** 一道闸有多难拆:offer 最好拆(本站正业就是帮人找到 offer)→ 人挪进境内 → 自雇经历 →
+ *  重考语言(几个月)→ 加拿大学历(几年)。裁决挑标签、排序定次序,共用这一份口径。 */
+const BLOCK_COST: Record<string, number> = {
+  offer: 0, statusInCanada: 1, selfEmployed: 2, language: 3, credentialCanada: 4,
+}
+const blockCost = (b?: string) => (b ? BLOCK_COST[b] ?? 9 : -1)
 
 // ── 契约(实施文档 §三,照抄)──────────────────────────────────────────────────
 
@@ -46,6 +57,10 @@ export type VerdictProfile = {
   foreignExpSelfEmployed: boolean | null   // 海外经验是否全为自雇(C01:开商店=自雇→多通道记 0)
   status: string | null              // pgwp / study / worker / other
   province: string | null            // 现居省
+  // ── 门槛清单三类闸的答案(2026-08-12,设计 §3.2)。null = 没答 → 该闸 unknown → 判不了,
+  //    **不许**当成「没有障碍」——那正是「没有行 ⇒ 没有闸 ⇒ open」的同一个病。
+  hasOffer: boolean | null           // 手上有没有 job offer
+  inCanada: boolean | null           // 人是否已在加拿大境内(由「你现在的情况」推出)
 }
 
 export type VerdictReason = {
@@ -68,11 +83,12 @@ export type PathwayVerdict = {
   stream: string                     // 官方通道名
   verdict: 'excluded' | 'open' | 'needs-info'
   tier: 0 | 1 | 2 | 3 | null         // offer 后等多久:0=Day0 / 1=3-6月 / 2=12月 / 3=24月;excluded=null
-  /** 被**攒时间补不了**的门槛卡住(语言差档 / 自雇经历不计)。不是 excluded ——
-   *  考一次试就能过,但**现在**走不了。先前这类缺口只生成一条理由、不进 gaps,
-   *  于是 tier=0 + verdict=open,CLB 4 的厨师也能把联邦 EE 顶到方案第一位
-   *  (2026-08-11 Frank 两次实拍点名)。排序与标签都要看它。 */
-  blockedBy?: 'language' | 'selfEmployed'
+  /** 被**攒时间补不了**的门槛卡住(语言差档 / 自雇经历不计 / 门槛清单里明确不满足的那类闸)。
+   *  不是 excluded —— 考一次试、找一份 offer 就能过,但**现在**走不了。先前这类缺口只生成一条理由、
+   *  不进 gaps,于是 tier=0 + verdict=open,CLB 4 的厨师也能把联邦 EE 顶到方案第一位
+   *  (2026-08-11 Frank 两次实拍点名)。排序与标签都要看它。
+   *  2026-08-12 扩:offer / statusInCanada / credentialCanada 三类闸来自 gateManifest。 */
+  blockedBy?: 'language' | 'selfEmployed' | GateKey
   reasons: VerdictReason[]
   score?: {
     system: string; value: number; ceiling: number | null
@@ -786,10 +802,58 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
     })
   }
 
+  // ── ⑥ 门槛清单:这条通道有哪几类闸(gateManifest)────────────────────────────
+  // 病灶原话:`pnp_requirements` 是开放世界的表,这里却做封闭世界推理 ——「库里这几条你都满足 → 能走」。
+  // 抽不到的门槛不是不存在的门槛。清单把「有哪几类闸」独立记一份,于是「我没这类数据 / 你没答这题」
+  // 第一次变得**可被发现**;发现不了的时候一律不许说「能走」。
+  let manifestGap = false          // 明确不满足(有闸、答案是「没有」)→ 现在走不了,但可解决
+  let manifestUnknown = false      // 判不了(条文缺 **或** 答案缺,两者都进 needs-info)
+  // 🔴 但这两者对用户意思相反,**只有条文缺才是 availability='not-collected'**:
+  //    「本站没收录这条通道的门槛」是我们的窟窿;「你还没答有没有 offer」是他一步就能补的。
+  //    合并成一句「判不了」等于把我们的窟窿说成他的问题(与库里缺门槛行的老规矩同源)。
+  let manifestNoSource = false
+  const answerOf: Record<GateKey, boolean | null> = {
+    offer: p.hasOffer, statusInCanada: p.inCanada, credentialCanada: p.canadaStudy,
+  }
+  for (const g of GATE_KEYS) {
+    const rule = gateOf(spec.key, g)
+    if (rule.need === 'notRequired') continue                    // 没这道闸
+    if (rule.need === 'unknown') {                               // 本站未收录 ≠ 官方不要求
+      manifestUnknown = true
+      manifestNoSource = true
+      reasons.push({ kind: 'needs-info', text: `本站尚未收录 ${spec.stream} 的${GATE_LABEL[g].zh}门槛条文`,
+        key: `pv.gate.${g}.notCollected`, params: { stream: spec.stream },
+        ...(rule.url ? { evidence: { url: rule.url, fetched: rule.fetched ?? '', label: spec.stream } } : {}) })
+      continue
+    }
+    const have = answerOf[g]
+    const ev = { url: rule.url, fetched: rule.fetched, label: spec.stream }
+    if (have == null) {                                          // 有闸,但用户没答 → 判不了
+      manifestUnknown = true
+      missingSlots.push(g)
+      reasons.push({ kind: 'needs-info', text: `${GATE_LABEL[g].zh}判不了,档案缺这一项`,
+        key: `pv.gate.${g}.unknown`, evidence: ev })
+      continue
+    }
+    if (have) { reasons.push({ kind: 'met', text: `${GATE_LABEL[g].zh} 达标`, key: `pv.gate.${g}.met`, evidence: ev }); continue }
+    manifestGap = true                                           // 明确没有 → 现在走不了
+    // 标签报**最难拆的**那道闸:一个从没来过加拿大、也没有 offer 的人,写「要先有 offer」
+    // 会让他以为找份工作就行,而真正挡路的是那张加拿大学历(2026-08-12 实拍)
+    if (blockCost(g) > blockCost(blockedBy)) blockedBy = g
+    reasons.push({ kind: 'gap', text: `这条通道要求${GATE_LABEL[g].zh},你现在没有`,
+      key: `pv.gate.${g}.gap`, evidence: ev })
+  }
+
   const tier: PathwayVerdict['tier'] = excluded ? null : tierOfMonths(gaps.length ? Math.max(...gaps) : 0)
-  const needsInfo = !excluded && (!gate.picked || gate.gap == null || missingSlots.length > 0)
+  // 三值折叠:清单里每一类闸都 met 才是 open;有 unknown 就是「判不了」;有明确不满足的闸 → blockedBy 兜住
+  //(rank 里 blockedBy 排在无阻碍的 open 之后,标签另写 —— 与语言差档同一套语义)。
+  const needsInfo = !excluded && (!gate.picked || gate.gap == null || missingSlots.length > 0 || manifestUnknown)
   const verdict: PathwayVerdict['verdict'] = excluded ? 'excluded' : needsInfo ? 'needs-info' : 'open'
-  const availability: Availability = !gate.picked ? 'not-collected' : 'ok'
+  // 清单缺条文 = 本站未收录,与「查不到门槛行」同属 not-collected(对用户是「规则待核对」不是「你不行」)。
+  // **excluded 时不改 availability**:硬伤是判出来的结论,不是「我们没数据」——两者混在一起就成了
+  // 「因为没数据所以排除你」,那是拿缺口当判据(四态不合并的老规矩)。
+  const availability: Availability = !gate.picked || (!excluded && manifestNoSource) ? 'not-collected' : 'ok'
+  void manifestGap
 
   return {
     key: spec.key, province: spec.province, stream: spec.stream,
@@ -812,8 +876,13 @@ export function pathVerdict(profile: VerdictProfile, data: VerdictData): Pathway
   // 先前只有三档,「差 3 档语言」和「全部达标」并列 tier0,谁在注册表里靠前谁第一。
   const rank = (v: PathwayVerdict) =>
     (v.verdict === 'open' ? (v.blockedBy ? 1 : 0) : v.verdict === 'needs-info' ? 2 : 3)
+  // 「被卡住」这一档内部再按**这道闸有多难拆**排:offer 最好拆(本站的正业就是帮人找到 offer)→
+  // 人挪进境内 → 重考语言(要几个月)→ 加拿大学历(要几年)。不排的话,差 3 档语言的联邦 EE
+  // 会跟「只差一份 offer」的省通道并列,再靠注册表序抢到第一(2026-08-12 实撞)。
+  const cost = (v: PathwayVerdict) => (v.blockedBy ? blockCost(v.blockedBy) : 0)
   out.sort((a, b) => {
     if (rank(a.v) !== rank(b.v)) return rank(a.v) - rank(b.v)
+    if (cost(a.v) !== cost(b.v)) return cost(a.v) - cost(b.v)
     const ta = a.v.tier ?? 9, tb = b.v.tier ?? 9
     if (ta !== tb) return ta - tb
     return a.i - b.i
@@ -845,7 +914,7 @@ export type JobPathwayRow = {
 const EMPTY_PROFILE: VerdictProfile = {
   age: null, married: null, clb: null, edu: null, eduYears: null, canadaStudy: null,
   studyProvince: null, noc: null, teer: null, expCanadaMonths: null, expForeignMonths: null,
-  foreignExpSelfEmployed: null, status: null, province: null,
+  foreignExpSelfEmployed: null, hasOffer: null, inCanada: null, status: null, province: null,
 }
 
 /** 排序:可判的按经验门槛升序 → 门槛未收录 → 清单排除沉底;同档按注册表原序(与卡片效果图一致)。 */
@@ -900,7 +969,19 @@ export function pathLevers(profile: VerdictProfile, data: VerdictData, opts: { c
     const before = pathVerdict(profile, data)
     const after = pathVerdict({ ...profile, noc: downNoc, teer: 5 }, data)
     const byKey = new Map(after.map((v) => [v.key, v]))
-    const affected = before.filter((v) => v.verdict === 'open' && byKey.get(v.key)?.verdict !== 'open').map((v) => v.key)
+    // 「接 TEER 5 岗会掉档」问的是**职业等级**这一件事,与「你今天够不够格」无关 ——
+    // 原来只看 verdict==='open',门槛清单上线后大量通道落 needs-info(缺 offer 答案),
+    // 这条杠杆会整条消失(2026-08-12 实撞)。改成**前后对比谁变差了**:
+    // 档次 open(无阻碍) < open(被卡住) < needs-info < excluded,同档再比 tier。
+    // 前后两次跑的是同一份档案,清单那三类闸的贡献一样,差出来的只会是 TEER 带来的。
+    const vRank = (v?: PathwayVerdict) =>
+      v == null ? 9 : v.verdict === 'open' ? (v.blockedBy ? 1 : 0) : v.verdict === 'needs-info' ? 2 : 3
+    const worse = (b: PathwayVerdict) => {
+      const a = byKey.get(b.key)
+      if (vRank(a) !== vRank(b)) return vRank(a) > vRank(b)
+      return (a?.tier ?? 9) > (b.tier ?? 9)
+    }
+    const affected = before.filter((v) => v.verdict !== 'excluded' && worse(v)).map((v) => v.key)
     const teerRows = data.requirements.filter((r) => r.factor === 'experience' && r.appliesTeer && !teerHit(r, 5))
     if (affected.length) {
       levers.push({
