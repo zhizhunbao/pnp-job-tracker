@@ -52,7 +52,9 @@ export function CaseView({ caseId, label, question, answer }: {
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
         {rank ? <span style={{ color: UI.text3, fontSize: 13, fontVariantNumeric: 'tabular-nums' }}>{rank}</span> : null}
         <span style={{ minWidth: 0, color: '#111827', fontSize: 14.5, fontWeight: 700 }}>
-          {v.province === 'FED' ? t('dp.federal') : provOf(v.province)}　{v.stream}
+          {/* 省名与官方通道名之间留空,用样式不用全角空格 —— 全角空格在英文行里是一道明显的洞 */}
+          {v.province === 'FED' ? t('dp.federal') : provOf(v.province)}
+          <span style={{ display: 'inline-block', width: 10 }} />{v.stream}
         </span>
         <span style={{ marginLeft: 'auto', color: v.verdict === 'excluded' ? '#b91c1c' : v.tier === 0 ? UI.ok : '#92400e',
           background: v.verdict === 'excluded' ? '#fef2f2' : v.tier === 0 ? '#ecfdf5' : '#fffbeb',
@@ -73,7 +75,7 @@ export function CaseView({ caseId, label, question, answer }: {
                 </summary>
                 <span style={{ display: 'block', color: UI.text3, fontSize: 12, lineHeight: 1.6, margin: '3px 0 6px' }}>
                   {r.quote}
-                  {r.evidence?.url ? <>　<a href={r.evidence.url} target="_blank" rel="noreferrer" style={{ color: UI.primary, textDecoration: 'none' }}>{t('case.official')}</a></> : null}
+                  {r.evidence?.url ? <> <a href={r.evidence.url} target="_blank" rel="noreferrer" style={{ marginLeft: 6, color: UI.primary, textDecoration: 'none' }}>{t('case.official')}</a></> : null}
                 </span>
               </details>
             ) : <span style={{ color: TONE[r.kind] }}>{say(r)}</span>}
@@ -100,7 +102,10 @@ export function CaseView({ caseId, label, question, answer }: {
           {/* 用户原话,一个字不改 */}
           <div style={{ ...CARD, background: '#f8fbff', borderColor: '#dbeafe' }}>
             <div style={{ color: UI.text3, fontSize: 12, marginBottom: 6 }}>{t('case.theQuestion')}</div>
-            <div style={{ color: '#111827', fontSize: 16, fontWeight: 600, lineHeight: 1.65 }}>「{pick(question)}」</div>
+            {/* 引号跟着语言走:中文用「」,英韩用弯引号 —— 英文句子外面套一对全角方头括号是明显的中文味 */}
+            <div style={{ color: '#111827', fontSize: 16, fontWeight: 600, lineHeight: 1.65 }}>
+              {lang === 'zh' ? `「${pick(question)}」` : `“${pick(question)}”`}
+            </div>
           </div>
 
           {/* ① 先回答他点名问的那个省 */}

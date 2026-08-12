@@ -669,7 +669,9 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
     const mbScored = data.draws.filter((d) => d.province === 'MB' && d.kind === 'draw' && d.score != null)
       .sort((a, b) => (a.drawDate < b.drawDate ? 1 : -1))
     if (mbScored.length) {
-      const lines = mbScored.map((d) => `${d.score}(${d.drawDate}${d.note ? ' · ' + d.note : ''})`).join('、')
+      // 这串会当参数进三语句子 → 分隔符必须是语言中立的半角符号。原来用「、」和「·」,
+      // 英文态就成了「632(2026-07-30 · Draw #276)、825(…)」这种半中半英(2026-08-11 生产实拍)。
+      const lines = mbScored.map((d) => `${d.score} ${d.drawDate}${d.note ? ' ' + d.note : ''}`).join(', ')
       reasons.push({
         kind: 'gap',
         text: `估分 ${mbNow.total},语言拉满上界 ${ceil ?? '—'},最近抽选 ${lines}`,

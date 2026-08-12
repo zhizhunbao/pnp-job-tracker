@@ -111,4 +111,21 @@ describe('判定核措辞层 pv.*', () => {
     }
     expect([...new Set(cjk)]).toEqual([])
   })
+
+  // 标点单列一条:2026-08-11 生产实拍,英文句子里混着「632(2026-07-30 · Draw #276)、825(…)」——
+  // 汉字一个没有,可它一眼就是中文排版。分隔符是**拼在参数里**的,汉字检查抓不到,所以单独钉。
+  it('英文态不残留中文标点(、。「」·、全角空格)', () => {
+    const bad: string[] = []
+    const tEn = makeT('en')
+    for (const { p } of PROFILES) {
+      for (const v of pathVerdict(p, data)) {
+        for (const r of v.reasons) {
+          if (!r.key) continue
+          const s = tEn(r.key, r.params)
+          if (/[　-〿·＀-￯]/.test(s)) bad.push(`${r.key} → ${s}`)
+        }
+      }
+    }
+    expect([...new Set(bad)]).toEqual([])
+  })
 })
