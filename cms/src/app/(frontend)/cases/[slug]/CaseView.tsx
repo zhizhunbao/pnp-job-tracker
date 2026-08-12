@@ -31,9 +31,11 @@ export function CaseView({ caseId, label, question, answer }: {
   const provOf = (code: string) => { const full = t('prov.' + code); return full === 'prov.' + code ? code : full }
   const tierLabel = (tier: 0 | 1 | 2 | 3 | null) => t(`case.tier${tier ?? 0}`)
 
-  // 供需一行:各省公布的口径不同,谁公布什么写什么,**不硬凑统一比值**
-  const supply = (o?: OpsFacts) => {
-    if (!o) return ''
+  // 供需:各省公布的口径不同,谁公布什么写什么,**不硬凑统一比值**。
+  // 2026-08-11 Frank「不需要小字 都改成 bullet」——原来是 12px 灰字一行、三条用全角分号粘着
+  //(英文态那个「；」也是中文标点)。现在返回条目数组,由 Path 摊进理由那张 bullet 列表,同字号。
+  const supply = (o?: OpsFacts): string[] => {
+    if (!o) return []
     const bits: string[] = []
     if (o.allocation != null && o.nominated != null) {
       bits.push(t('case.ops.spots', { total: o.allocation, used: o.nominated, left: Math.max(o.allocation - o.nominated, 0), period: o.allocPeriod ?? '' }))
@@ -43,7 +45,7 @@ export function CaseView({ caseId, label, question, answer }: {
       const pct = Math.round((o.nominated / (o.nominated + o.refused)) * 1000) / 10
       bits.push(t('case.ops.approved', { pct, ok: o.nominated, no: o.refused, period: o.ytdPeriod ?? '' }))
     }
-    return bits.join('；')
+    return bits
   }
 
   // 一条通道 = 省 + 官方通道名 + 档位 + 判定核给的理由(官方原句原样挂)+ 该省供需
@@ -81,11 +83,20 @@ export function CaseView({ caseId, label, question, answer }: {
             ) : <span style={{ color: TONE[r.kind] }}>{say(r)}</span>}
           </li>
         ))}
+        {/* 该省公布的运营数字:与判定理由同列同字号,一条一个 bullet(不再是列表外的一行灰小字) */}
+        {supply(answer.ops[v.province]).map((s, i) => (
+          <li key={`ops${i}`} style={{ marginBottom: 5, color: UI.text3 }}>{s}</li>
+        ))}
       </ul>
-      {supply(answer.ops[v.province]) ? (
-        <div style={{ marginTop: 2, paddingLeft: 18, fontSize: 12, color: UI.text3, lineHeight: 1.6 }}>{supply(answer.ops[v.province])}</div>
-      ) : null}
     </div>
+  )
+
+  // 段首说明一律走 bullet:一条一行、与路径理由同字号。
+  // 撤的是「灰色小字整段」那种版式 —— Frank 2026-08-11 连指三处(供需行、概率框、段首句)。
+  const Lead = ({ lines }: { lines: string[] }) => (
+    <ul style={{ margin: '0 0 10px', padding: '0 0 0 18px', color: UI.text2, fontSize: 13, lineHeight: 1.75 }}>
+      {lines.filter(Boolean).map((s, i) => <li key={i} style={{ marginBottom: 4 }}>{s}</li>)}
+    </ul>
   )
 
   let rank = 0
@@ -99,10 +110,9 @@ export function CaseView({ caseId, label, question, answer }: {
             <BackLink href="/plan/pr" label={t('case.back')} />
           </div>
 
-          {/* 用户原话,一个字不改 */}
+          {/* 用户原话,一个字不改。「用户原话」那个标签 2026-08-11 Frank 撤掉 —— 引号自己就说明了。
+              引号跟着语言走:中文用「」,英韩用弯引号(英文句子外面套一对全角方头括号是明显的中文味) */}
           <div style={{ ...CARD, background: '#f8fbff', borderColor: '#dbeafe' }}>
-            <div style={{ color: UI.text3, fontSize: 12, marginBottom: 6 }}>{t('case.theQuestion')}</div>
-            {/* 引号跟着语言走:中文用「」,英韩用弯引号 —— 英文句子外面套一对全角方头括号是明显的中文味 */}
             <div style={{ color: '#111827', fontSize: 16, fontWeight: 600, lineHeight: 1.65 }}>
               {lang === 'zh' ? `「${pick(question)}」` : `“${pick(question)}”`}
             </div>
@@ -112,21 +122,22 @@ export function CaseView({ caseId, label, question, answer }: {
           {answer.asked ? (
             <div style={CARD}>
               <h2 style={H2}>{t('case.askedTitle', { prov: provOf(answer.asked.province) })}</h2>
-              <div style={{ fontSize: 13.5, color: UI.text2, lineHeight: 1.8 }}>
-                {t('case.askedLead', {
-                  prov: provOf(answer.asked.province),
-                  tier: tierLabel(answer.asked.tier),
-                  fastest: tierLabel(answer.tiers[0]?.tier ?? 0),
-                })}
-              </div>
+              <Lead lines={[t('case.askedFastest', { fastest: tierLabel(answer.tiers[0]?.tier ?? 0) })]} />
               <Path v={answer.asked} />
               {(() => {
                 const o = answer.ops[answer.asked!.province]
                 if (!o?.nominated || !o?.refused) return null
                 const pct = Math.round((o.nominated / (o.nominated + o.refused)) * 1000) / 10
                 return (
-                  <div style={{ marginTop: 12, padding: '11px 13px', borderRadius: 9, background: UI.bg, color: UI.text2, fontSize: 13, lineHeight: 1.8 }}>
-                    {t('case.claimLead', { pct, ok: o.nominated, no: o.refused, invited: o.invited ?? 0, period: o.ytdPeriod ?? '' })}
+                  <div style={{ marginTop: 12, padding: '11px 13px 4px', borderRadius: 9, background: UI.bg }}>
+                    <div style={{ color: '#111827', fontSize: 13.5, fontWeight: 600 }}>{t('case.claim.title')}</div>
+                    <Lead lines={[
+                      t('case.claim.rate', { pct, ok: o.nominated, no: o.refused, period: o.ytdPeriod ?? '' }),
+                      t('case.claim.stage'),
+                      t('case.claim.invites', { invited: o.invited ?? 0 }),
+                      t('case.claim.pool'),
+                      t('case.claim.federal'),
+                    ]} />
                   </div>
                 )
               })()}
@@ -137,7 +148,6 @@ export function CaseView({ caseId, label, question, answer }: {
           {answer.tiers.length ? (
             <div style={CARD}>
               <h2 style={H2}>{t('case.othersTitle')}</h2>
-              <div style={{ fontSize: 13.5, color: UI.text2, lineHeight: 1.8 }}>{t('case.othersLead')}</div>
               {answer.tiers.map((g) => g.rows.map((v) => { rank += 1; return <Path key={v.key} v={v} rank={rank} /> }))}
             </div>
           ) : null}
@@ -146,7 +156,7 @@ export function CaseView({ caseId, label, question, answer }: {
           {answer.excluded.length ? (
             <div style={CARD}>
               <h2 style={H2}>{t('case.blockedTitle')}</h2>
-              <div style={{ fontSize: 13.5, color: UI.text2, lineHeight: 1.8 }}>{t('case.blockedLead')}</div>
+              <Lead lines={[t('case.blockedLead')]} />
               {answer.excluded.map((v) => <Path key={v.key} v={v} />)}
             </div>
           ) : null}
@@ -155,9 +165,7 @@ export function CaseView({ caseId, label, question, answer }: {
           {answer.trainable.length ? (
             <div style={CARD}>
               <h2 style={H2}>{t('case.firstStepTitle')}</h2>
-              <div style={{ fontSize: 13.5, color: UI.text2, lineHeight: 1.8, marginBottom: 10 }}>
-                {t('case.firstStepLead', { n: answer.trainableTotal })}
-              </div>
+              <Lead lines={[t('case.firstStepOffer'), t('case.firstStepCount', { n: answer.trainableTotal })]} />
               <div style={{ display: 'grid', gridTemplateColumns: 'max-content max-content', columnGap: 16, rowGap: 6, fontSize: 13.5 }}>
                 {answer.trainable.map((x) => [
                   <span key={`${x.province}p`} style={{ color: '#111827', fontWeight: 600 }}>{provOf(x.province)}</span>,
@@ -169,7 +177,7 @@ export function CaseView({ caseId, label, question, answer }: {
 
           <div style={CARD}>
             <h2 style={H2}>{t('case.mineTitle')}</h2>
-            <div style={{ fontSize: 13.5, color: UI.text2, lineHeight: 1.8, marginBottom: 12 }}>{t('case.mineLead')}</div>
+            <Lead lines={[t('case.mineLead')]} />
             <a href="/plan/pr?quiz=1" onClick={() => track('case-to-quiz', { id: caseId })}
               style={{ display: 'inline-block', background: UI.primary, color: '#fff', borderRadius: 8, padding: '8px 18px', fontSize: 13.5, fontWeight: 600, textDecoration: 'none' }}>
               {t('case.mineCta')}
