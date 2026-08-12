@@ -28,10 +28,14 @@ const Skeleton = () => (
   <span aria-hidden style={{ display: 'inline-block', width: 76, height: '0.85em', borderRadius: 4, background: 'rgba(255,255,255,.45)' }} />
 )
 
-export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline, doneLabel, hideDone }: {
+export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline, doneLabel, hideDone, initialTop }: {
   t: TFn
   lang: string
   initial: string[]
+  /** 服务端已取好的热门榜(ETL 聚合表 noc_openings 直出)。给了它就**一次成型**:
+   *  首帧即终态,不再「内置 14 个 → 补数字 → 换真榜」刷三次,骨架也用不上。
+   *  (2026-08-12 Frank「现在是一点一点刷出来,不能一次性刷出来吗」) */
+  initialTop?: Top[]
   onDone: (nocs: string[]) => void
   // 2026-08-01(Frank「不能同时显示出来吗」):合并成一屏后,选职业不再是独立一步 ——
   // 选中即回传(onChange),自己的动作按钮收起(hideDone),整卷底部只留一个「出报告」。
@@ -50,12 +54,12 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
   const [cands, setCands] = useState<Cand[]>([])
   const [searching, setSearching] = useState(false)
   // 首屏先用内置常用清单,不让冷启动的全表 GROUP BY 把题目冻成骨架 8 秒。
-  const [top, setTop] = useState<Top[]>(() => POPULAR_NOCS.map((x) => ({
+  const [top, setTop] = useState<Top[]>(() => initialTop?.length ? initialTop : POPULAR_NOCS.map((x) => ({
     noc: x.noc, title: t(x.key), titleZh: t(x.key), open: 0,
   })))
   // 真实热门榜(top=24)到没到 —— 没到之前用骨架把格子占满,否则列表从 14 个长到 24 个,
   // 整块跟着重排,看着就是「打开刷了一下」(2026-08-12 Frank 实拍)
-  const [topLoaded, setTopLoaded] = useState(false)
+  const [topLoaded, setTopLoaded] = useState(!!initialTop?.length)
   const [cat, setCat] = useState('')
   const [catalogByCat, setCatalogByCat] = useState<Record<string, Top[]>>({})
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -64,6 +68,7 @@ export function OccPicker({ t, lang, initial, onDone, onChange, onClose, inline,
   // ① 小查询只给这 14 个兜底职业补在招数,让数字尽快出现;
   // ② 完整 top=24 后台跑完后替换成真实热门榜。两者都不阻塞控件,也不再 400ms 就掐断。
   useEffect(() => {
+    if (initialTop?.length) return          // 服务端已给终态,一个请求都不用发
     let dead = false
     const topController = new AbortController()
     const countsController = new AbortController()

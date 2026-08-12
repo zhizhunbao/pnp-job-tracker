@@ -472,6 +472,26 @@ def build_on(old: dict) -> dict:
             "url": ON_INV_URL, "draws": draws, "notice": notice}
 
 
+# ── 抽选是**只增不减的历史**(2026-08-12 实撞:NB 官方页改版,解析从 28 条掉到 23 条,
+#    直接覆盖 → mart pnp_draws 146→141,判定层的对照线跟着少)。原来只在「抓失败/解析为空」时保旧,
+#    解析出更少也照收 —— 而一轮已经发生过的抽选不会消失,少了只能是我们没解析到。
+#    官方页通常只挂最近几轮,所以正确做法是**并回历史**而不是替换。
+def merge_draws(prov: str, new: list, old: dict) -> list:
+    prev = (old.get(prov) or {}).get("draws") or []
+    key = lambda d: (d.get("date"), d.get("stream"), d.get("score"), d.get("invitations"))  # noqa: E731
+    seen, out = set(), []
+    for d in list(new) + list(prev):
+        k = key(d)
+        if k in seen:
+            continue
+        seen.add(k)
+        out.append(d)
+    out.sort(key=lambda d: d.get("date") or "", reverse=True)
+    if len(out) > len(new):
+        print(f"  [merge] {prov} 本轮解析 {len(new)} 条,并回历史后 {len(out)} 条")
+    return out
+
+
 def main() -> None:
     print(f"OUT: {OUT}")
     old = {}
@@ -491,6 +511,10 @@ def main() -> None:
         # NB:scale=None —— 按职业类别定向发邀请,官方同样不发分数线
         "NB": build_nb(old),
     }
+    # 每个省都并回历史:少了只可能是没解析到,不可能是官方把已发生的轮次删了
+    for p, v in provinces.items():
+        if isinstance(v, dict) and v.get("draws"):
+            v["draws"] = merge_draws(p, v["draws"], old)
     provinces = {k: v for k, v in provinces.items() if v}
 
     OUT.write_text(json.dumps({

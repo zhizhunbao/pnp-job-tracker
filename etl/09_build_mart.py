@@ -1089,6 +1089,45 @@ def build():
                     "requirements": "\n".join(v.get("requirements", [])),
                     "fetched": fetched})
 
+    # ── 职业在招量聚合(2026-08-12 Frank「把这个数据现在数据库里聚合好」)────────────
+    # 先前选职业控件的热门榜是**每次请求现算**一个 GROUP BY(还带 percentile_cont 求中位),
+    # 慢到要靠进程内缓存 + 前端分两次拉(先内置 14 个兜底、再换真榜)—— 用户看到的就是「一点一点刷出来」。
+    # 脏活归 ETL:这里一次算完落 mart,库里按 open 建索引,前端(甚至 SSR)一次读出直接画。
+    noc_openings = []
+    if True:
+        by_noc: dict = {}
+        for j in jobs:
+            n = j.get("noc")
+            if not n or j.get("status") != "open":
+                continue
+            b = by_noc.setdefault(n, {"open": 0, "eligible": 0, "sal": [], "broad": {}})
+            b["open"] += 1
+            if j.get("pnpEligible"):
+                b["eligible"] += 1
+            if isinstance(j.get("salaryAnnual"), (int, float)):
+                b["sal"].append(float(j["salaryAnnual"]))
+            if j.get("broad"):
+                b["broad"][j["broad"]] = b["broad"].get(j["broad"], 0) + 1
+        desc_by_noc = {d["noc"]: d for d in noc_descriptions}
+        for n, b in by_noc.items():
+            d = desc_by_noc.get(n, {})
+            sal = sorted(b["sal"])
+            med = None
+            if sal:                                   # 中位数与 SQL 的 percentile_cont(0.5) 同口径(偶数取两数均值)
+                mid = len(sal) // 2
+                med = sal[mid] if len(sal) % 2 else (sal[mid - 1] + sal[mid]) / 2
+            noc_openings.append({
+                "noc": n, "open": b["open"], "eligible": b["eligible"],
+                "medianSalary": round(med) if med is not None else None,
+                # 大类取该职业岗位里出现最多的那个(与 SQL 的 mode() 同口径)
+                "broad": max(b["broad"].items(), key=lambda kv: kv[1])[0] if b["broad"] else "",
+                "title": d.get("title", ""), "titleZh": d.get("titleZh", ""),
+                "titleZhShort": d.get("titleZhShort", ""), "titleKoShort": d.get("titleKoShort", ""),
+                "titleEnShort": d.get("titleEnShort", ""),
+            })
+        noc_openings.sort(key=lambda r: (-r["open"], r["noc"]))   # 落盘即有序,消费端不用再排
+
+
     # 字段级来源维度(E4-04):build_field_sources.py 已抓取验证,这里直通(缺文件→空表,宁可留空)
     field_sources = []
     if IN_FIELD_SOURCES.exists():
@@ -1185,6 +1224,7 @@ def build():
         # 语言原始成绩区间不是“分数项”:独立 mart,从结构上杜绝与 CRS/FSW67 相加。
         "ee_language_grid": build_ee_language_grid(IN_EE_LANG),
         "noc_descriptions": noc_descriptions,
+        "noc_openings": noc_openings,
         "field_sources": field_sources,
         "dli": dli,
         "news": news,

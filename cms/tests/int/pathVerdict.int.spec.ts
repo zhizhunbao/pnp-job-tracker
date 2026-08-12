@@ -72,7 +72,10 @@ describe('mart 实况', () => {
     expect(data.eeGrid).toHaveLength(380)
     // 抽选表与指定雇主名录**按周增长**(抽选每轮一行、名录每次抓取补差)——钉死行数是纯脆断言,
     // 只守「不许倒退」;门槛/清单/分值表那四张是政策表,改版要炸得出来,继续钉死。
-    expect(data.draws.length).toBeGreaterThanOrEqual(146)
+    // 只守**抽选**不许倒退(kind='draw' 是历史,已发生的轮次不会消失;2026-08-12 起 ETL 并回历史)。
+    // 不连 notice 一起数:那是官方「最新通告」,新的一来就替掉旧的,少一条是正常更替不是数据丢失
+    //(实撞:总行数 146→145 全由一条 ON 通告更替造成,kind='draw' 两次都是 144)。
+    expect(data.draws.filter((d) => d.kind === 'draw').length).toBeGreaterThanOrEqual(144)
     expect(data.designatedEmployers.length).toBeGreaterThanOrEqual(3867)
   })
   it('注册表 13 条通道全部出结果', () => {

@@ -51,7 +51,7 @@ RULES = [
      "basis": "permit=36;minProgramMonths=24",
      "label": "Program 2 years or more -> 3-year PGWP",
      "quote": "If your program was 2 years or more"},
-    # 合并条款:官方只写「合并各段时长」,**没写**合并后是否触发「≥2 年 → 3 年」档 —— 引擎只复述+求和,不替官方拍
+    # 合并条款位于官方页「How long is a PGWP valid」下：各段时长用于确定工签长度；最终仍是 may、不是保证签发。
     {"page": "about", "factor": "pgwpCombine", "stream": "", "op": "rule", "value": None, "unit": "",
      "basis": "eachMinProgramMonths=8;languageTakesHigher",
      "label": "More than 1 program: lengths may combine (each PGWP-eligible & >=8 months; higher language req applies)",
@@ -111,7 +111,7 @@ def main() -> None:
         "province": "FED", "program": "PGWP", "url": URL_ABOUT,
         "fetched": date.today().isoformat(),
         "note": "quote-anchored:valueText=官方原文,本脚本每轮验证其仍在页面上;字段语义见 basis。"
-                "合并条款原文未写明合并后是否触发『≥2年→3年』档,引擎不得替官方补这一跳。",
+                "多个合格课程可合并时长来确定 PGWP 长度;官方措辞为 may,不保证签发。",
         "requirements": reqs,
     }, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"✓ {len(reqs)} 条规则全部引用核验通过 → {OUT.name}")

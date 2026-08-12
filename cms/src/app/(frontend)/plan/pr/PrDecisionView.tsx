@@ -32,6 +32,11 @@ import type { DrawRow, ScoreFactor, SelfProfile } from '@/lib/pnpSelfScore'
 
 /** 形状与 `lib/scoreTables.ts` 的同名类型对齐(那边是产出方,这里是消费方) */
 export type OverviewDraw = { province: string; drawDate: string; stream: string; score: number | null; invitations: number | null }
+/** 热门职业一行(与 lib/jobsSql.fetchTopNocs 的返回对齐) */
+export type TopNoc = {
+  noc: string; title: string; titleZh: string; titleZhShort: string; titleKoShort: string
+  titleEnShort: string; broad: string; open: number; eligible: number; medianSalary: number | null
+}
 export type TvJob = {
   id: number; title: string; company: string; city: string; province: string
   noc: string; teer: number | null; pnpStream: string
@@ -63,7 +68,11 @@ const NOC_TITLE_CACHE: Record<string, string> = {}
 // 已经问过的码(不论问到没问到)。失败不重试:同一个码问一次拿不到名字,再问十次也一样。
 const NOC_TITLE_TRIED = new Set<string>()
 
-export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; tvJob: TvJob | null }) {
+export function PrDecisionView({ overview, tvJob, topNocs }: {
+  overview: OverviewDraw[]; tvJob: TvJob | null
+  /** 服务端取好的热门职业榜(noc_openings 直出)→ 选职业控件一次成型,不再分段刷 */
+  topNocs?: TopNoc[]
+}) {
   const [lang, setLangSaved, t] = useLang()
 
   // 答题态(wiring 同 PlanPrView 基本卷:职业=第 1 页,其余翻页;答案唯一来源 lib/answers)
@@ -413,7 +422,8 @@ export function PrDecisionView({ overview, tvJob }: { overview: OverviewDraw[]; 
                     <div className="plQuizPad">
                       <QuizTitle>{t('quiz.q2')}</QuizTitle>
                       <div style={{ fontSize: 12.5, color: UI.text3, margin: '-10px 0 13px', lineHeight: 1.55 }}>{t('quiz.q2sub')}</div>
-                      <OccPicker key={resetNonce} inline t={t} lang={lang} initial={bands.nocs} doneLabel={t('plan.next')}
+                      {/* initialTop:服务端已按在招量取好的热门榜 → 控件首帧即终态,一个请求都不发 */}
+                      <OccPicker key={resetNonce} inline t={t} lang={lang} initial={bands.nocs} doneLabel={t('plan.next')} initialTop={topNocs}
                         onChange={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || '') }}
                         onDone={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || ''); setOccStep(false); setProvinceStep(false); setFormAtEnd(false) }} />
                     </div>

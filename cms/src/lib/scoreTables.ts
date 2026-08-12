@@ -10,6 +10,7 @@
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
+import { fetchTopNocs } from './jobsSql'
 import type { DrawRow, ScoreFactor } from './pnpSelfScore'
 
 /** SSR 事实区一行:每省最近一轮有分数线或邀请数的抽选。
@@ -21,8 +22,13 @@ export type OverviewDraw = { province: string; drawDate: string; stream: string;
 const PROVS = new Set(['ON', 'BC', 'AB', 'QC', 'MB', 'SK', 'NS', 'NB', 'NL', 'PE', 'NT', 'YT', 'NU'])
 const TTL = 10 * 60_000
 
+/** 热门职业一行(fetchTopNocs 的返回,读 ETL 聚合表 noc_openings) */
+export type TopNoc = Awaited<ReturnType<typeof fetchTopNocs>>[number]
+
 type Tables = {
   overview: OverviewDraw[]
+  /** 选职业控件的热门榜:服务端取好随页面下发 → 控件首帧即终态,不再分段刷 */
+  topNocs: TopNoc[]
   draws: DrawRow[]
   factors: ScoreFactor[]
   /** 本站已收录官方分值表的省 —— 决策页据此把「本站没有表」的省单列出来 */
@@ -36,6 +42,7 @@ const numOrNull = (v: unknown): number | null => (typeof v === 'number' ? v : nu
 
 async function load(): Promise<Tables> {
   const payload = await getPayload({ config: await config })
+  const pool = (payload.db as { pool?: { query: (q: string, v?: unknown[]) => Promise<{ rows: Record<string, unknown>[] }> } }).pool
   const [drawRes, factorRes] = await Promise.all([
     payload.find({ collection: 'pnp-draws', limit: 200, depth: 0, sort: '-drawDate' })
       .catch(() => ({ docs: [] as Record<string, unknown>[] })),
@@ -71,14 +78,16 @@ async function load(): Promise<Tables> {
       score: numOrNull(r.score), invitations: numOrNull(r.invitations) })
   }
 
-  return { overview, draws, factors, factorProvinces: Array.from(new Set(factors.map((f) => f.province).filter(Boolean))) }
+  // 热门职业 24 条:聚合表一次索引扫描(表还没建时 fetchTopNocs 内部自动回退老查询)
+  const topNocs = pool ? await fetchTopNocs(pool, 24).catch(() => [] as TopNoc[]) : []
+  return { overview, draws, factors, topNocs, factorProvinces: Array.from(new Set(factors.map((f) => f.province).filter(Boolean))) }
 }
 
 export async function getScoreTables(): Promise<Tables> {
   if (!cache || Date.now() - cache.at > TTL) {
     const data = await load()
     // 两张表都空 = 多半是查挂了,不把一次抖动钉死 10 分钟
-    if (data.draws.length || data.factors.length) cache = { at: Date.now(), data }
+    if (data.draws.length || data.factors.length || data.topNocs.length) cache = { at: Date.now(), data }
     return data
   }
   return cache.data

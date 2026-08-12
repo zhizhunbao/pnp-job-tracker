@@ -702,11 +702,24 @@ export async function fetchNocOpenCounts(pool: any, nocs: string[]): Promise<Rec
  * 只收 noc_descriptions 里有官方职业名的(没名字的码显示出来等于黑话)。
  */
 export async function fetchTopNocs(pool: any, limit = 24): Promise<{ noc: string; title: string; titleZh: string; titleZhShort: string; titleKoShort: string; titleEnShort: string; broad: string; open: number; eligible: number; medianSalary: number | null }[]> {
-  // 上限放到 200:选职业控件要按大类分组浏览(Frank 2026-07-31「那么多职业用户怎么选」),
-  // 只给 24 个连一个大类都铺不满。大类取自岗位行的 broad(与职位板筛选同一套分类,不另造)。
   const n = Math.min(Math.max(limit, 1), 200)
-  // 大清单(选职业控件按大类浏览)不要中位薪资:percentile_cont 是这条查询的大头,
-  // 实测带它 200 行要 3.2s,去掉后只剩计数 —— 控件里也用不到那个数,不为没人看的列付延迟。
+  // 主路:读 ETL 聚合好的 noc_openings(2026-08-12 Frank「把这个数据现在数据库里聚合好」)——
+  // 一次索引扫描,不再 GROUP BY、更不再 percentile_cont(旧实现带中位数的 200 行实测 3.2s,
+  // 慢到只能靠缓存兜 + 前端分两次拉,用户看到的就是「一点一点刷出来」)。口径见 docs/sql/noc-openings.sql。
+  const hit = await pool.query(
+    `SELECT noc, title, title_zh, title_zh_short, title_ko_short, title_en_short, broad,
+            open::int open, eligible::int eligible, median_salary
+       FROM noc_openings ORDER BY open DESC, noc LIMIT $1`, [n],
+  ).catch(() => null)
+  if (hit?.rows?.length) {
+    return hit.rows.map((r: any) => ({
+      noc: r.noc, title: r.title ?? '', titleZh: r.title_zh ?? '', titleZhShort: r.title_zh_short ?? '',
+      titleKoShort: r.title_ko_short ?? '', titleEnShort: r.title_en_short ?? '', broad: r.broad ?? '',
+      open: r.open, eligible: r.eligible, medianSalary: num(r.median_salary),
+    }))
+  }
+  // 回退:表还没建/还没灌(DDL 与部署有先后)→ 走老的现算,慢但不瞎。
+  // 大清单(按大类浏览)不要中位薪资:percentile_cont 是这条查询的大头,控件里也用不到那个数。
   const withMed = n <= 24
   const { rows } = await pool.query(
     `SELECT j.noc, COALESCE(d.title, '') title, COALESCE(d.title_zh, '') title_zh, COALESCE(d.title_zh_short, '') title_zh_short,

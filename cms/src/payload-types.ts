@@ -80,6 +80,7 @@ export interface Config {
     'ee-categories': EeCategory;
     'ee-points-grid': EePointsGrid;
     'noc-descriptions': NocDescription;
+    'noc-openings': NocOpening;
     'policy-docs': PolicyDoc;
     'designated-employers': DesignatedEmployer;
     provinces: Province;
@@ -119,6 +120,7 @@ export interface Config {
     'ee-categories': EeCategoriesSelect<false> | EeCategoriesSelect<true>;
     'ee-points-grid': EePointsGridSelect<false> | EePointsGridSelect<true>;
     'noc-descriptions': NocDescriptionsSelect<false> | NocDescriptionsSelect<true>;
+    'noc-openings': NocOpeningsSelect<false> | NocOpeningsSelect<true>;
     'policy-docs': PolicyDocsSelect<false> | PolicyDocsSelect<true>;
     'designated-employers': DesignatedEmployersSelect<false> | DesignatedEmployersSelect<true>;
     provinces: ProvincesSelect<false> | ProvincesSelect<true>;
@@ -1106,6 +1108,46 @@ export interface NocDescription {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "noc-openings".
+ */
+export interface NocOpening {
+  id: number;
+  /**
+   * NOC 2021 五位码
+   */
+  noc?: string | null;
+  /**
+   * 在招岗位数(status=open)
+   */
+  open?: number | null;
+  /**
+   * 其中 pnpEligible 的岗位数
+   */
+  eligible?: number | null;
+  /**
+   * 在招岗年薪中位(与旧 SQL 的 percentile_cont(0.5) 同口径)
+   */
+  medianSalary?: number | null;
+  /**
+   * 本站浏览大类(该职业岗位里出现最多的那个)
+   */
+  broad?: string | null;
+  /**
+   * NOC 官方英文名(一个字不动)
+   */
+  title?: string | null;
+  titleZh?: string | null;
+  /**
+   * 窄位短名(04g 产,三语)
+   */
+  titleZhShort?: string | null;
+  titleKoShort?: string | null;
+  titleEnShort?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "designated-employers".
  */
 export interface DesignatedEmployer {
@@ -1846,6 +1888,10 @@ export interface PayloadLockedDocument {
         value: number | NocDescription;
       } | null)
     | ({
+        relationTo: 'noc-openings';
+        value: number | NocOpening;
+      } | null)
+    | ({
         relationTo: 'policy-docs';
         value: number | PolicyDoc;
       } | null)
@@ -2315,6 +2361,24 @@ export interface NocDescriptionsSelect<T extends boolean = true> {
   duties?: T;
   requirements?: T;
   fetched?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "noc-openings_select".
+ */
+export interface NocOpeningsSelect<T extends boolean = true> {
+  noc?: T;
+  open?: T;
+  eligible?: T;
+  medianSalary?: T;
+  broad?: T;
+  title?: T;
+  titleZh?: T;
+  titleZhShort?: T;
+  titleKoShort?: T;
+  titleEnShort?: T;
   updatedAt?: T;
   createdAt?: T;
 }

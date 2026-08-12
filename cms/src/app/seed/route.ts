@@ -107,6 +107,10 @@ export async function GET(req: Request) {
     ['districts', 'districts', ['name', 'city', 'province'], (r) => ({ name: r.name, city: r.city, province: r.province })],
     ['designated_employers', 'designated_employers', ['name', 'province', 'location', 'is_tech', 'source', 'nocs', 'url', 'fetched'],
       (r) => ({ name: r.name, province: r.province, location: r.location, is_tech: r.isTech, source: r.source, nocs: r.nocs ?? '', url: r.url ?? '', fetched: r.fetched ?? '' })],
+    // 职业在招量聚合(2026-08-12):**先在生产跑 docs/sql/noc-openings.sql**(建表 + 补
+    // payload_locked_documents_rels 的列),否则这段 INSERT 撞 42P01/42703 → 整个 seed 事务回滚
+    ['noc_openings', 'noc_openings', ['noc', 'open', 'eligible', 'median_salary', 'broad', 'title', 'title_zh', 'title_zh_short', 'title_ko_short', 'title_en_short'],
+      (r) => ({ noc: r.noc, open: r.open, eligible: r.eligible, median_salary: r.medianSalary, broad: r.broad, title: r.title, title_zh: r.titleZh, title_zh_short: r.titleZhShort, title_ko_short: r.titleKoShort, title_en_short: r.titleEnShort })],
     ['noc_categories', 'noc_categories', ['broad', 'mid', 'fine', 'teer', 'broad_en', 'broad_ko', 'mid_en', 'mid_ko', 'fine_en', 'fine_ko'],
       (r) => ({ broad: r.broad, mid: r.mid, fine: r.fine, teer: r.teer, broad_en: r.broadEn, broad_ko: r.broadKo, mid_en: r.midEn, mid_ko: r.midKo, fine_en: r.fineEn, fine_ko: r.fineKo })],
     ['sources', 'sources', ['name'], (r) => ({ name: r.name })],
@@ -194,7 +198,7 @@ export async function GET(req: Request) {
   let closedDead = 0   // 实测判死立即下架的条数(与上面「本次未见+30天」那条分开计,好在响应里看清谁在干活)
   try {
     await client.query('BEGIN')
-    // #118 表级哈希态(响应计数:-1=本轮无上传跳过,-2=内容与上轮一致跳过)
+    // #118 表级哈希态(响应计数:-1=本轮无上传跳过,-2=内容与上轮一致跳过,-3=表还没建/DDL 未跑)
     await client.query('CREATE TABLE IF NOT EXISTS seed_state (name text PRIMARY KEY, hash text NOT NULL)')
     const prevHash: Record<string, string> = {}
     for (const r of (await client.query('SELECT name, hash FROM seed_state')).rows) prevHash[r.name] = r.hash
@@ -206,6 +210,10 @@ export async function GET(req: Request) {
       // E12-03 防线升级(22c8d6a 空灌事故防线的延伸):mart **文件缺失** = 该表本轮没上传(新表未产出/分表上传)
       // → 跳过保留现有行,不再「清空+重灌 0 行」。要真清空一张维度表 = 上传内容为 [] 的文件(显式意图)。
       if (martPaths(file).length === 0) { counts[table] = -1; continue }   // -1 = skipped(本轮无该表上传)
+      // -3 = **表还没建**(DDL 与部署有先后)。seed 整个跑在一个事务里,撞 42P01 会让**这一轮全部回滚** ——
+      // 一张新表的 SQL 还没在生产跑,就能把每小时一次的灌库整个停掉。to_regclass 查不到只返回 null,
+      // 不抛错、也不污染事务(2026-08-12 随 noc_openings 新表一并加的闸)。
+      if (!(await client.query('SELECT to_regclass($1) AS t', [table])).rows[0]?.t) { counts[table] = -3; continue }
       const hash = martHash(file)
       if (prevHash[table] === hash) { counts[table] = -2; continue }   // -2 = 内容与上轮一致,整表免重灌
       const rows = (await mart(file)).map(map).filter((d) => Object.values(d).some((v) => v !== undefined && v !== null && v !== ''))
