@@ -48,8 +48,11 @@ export function ModalTitle({ eyebrow, color = '#6366f1', title }: { eyebrow?: Re
  * 居中弹框壳: sm=390, md=560, lg=760。
  * 支持 header 按住拖拽移动 (draggable) 和 右上角全屏/还原按钮 (resizable)。
  */
-export function Modal({ onClose, size = 'md', z = 50, pad = true, vh = 85, draggable = true, resizable = true, children }: {
-  onClose: () => void; size?: 'sm' | 'md' | 'lg'; z?: number; pad?: boolean; vh?: number; draggable?: boolean; resizable?: boolean; children: React.ReactNode
+export function Modal({ onClose, size = 'md', z = 50, pad = true, vh = 85, draggable = true, resizable = true, actions, children }: {
+  onClose: () => void; size?: 'sm' | 'md' | 'lg'; z?: number; pad?: boolean; vh?: number; draggable?: boolean; resizable?: boolean
+  /** 额外的窗口按钮(与全屏/关闭同排,右上角对齐)。传进来的按钮请用 iconBtnS —— 三颗钮一样大才叫一排。 */
+  actions?: React.ReactNode
+  children: React.ReactNode
 }) {
   const ov = useOverlayClose(onClose)
   const narrow = useIsNarrow()
@@ -110,6 +113,7 @@ export function Modal({ onClose, size = 'md', z = 50, pad = true, vh = 85, dragg
         onPointerUp={onPointerUp}
         style={{ ...cardStyle, cursor: draggable && !narrow && !maximized ? 'grab' : 'default' }}>
         <div style={windowActionsS} onClick={(e) => e.stopPropagation()}>
+          {actions}
           {resizable && !narrow && (
             <button onClick={() => { setMaximized(!maximized); setPos({ x: 0, y: 0 }) }}
               aria-label={maximized ? '还原' : '全屏展开'}

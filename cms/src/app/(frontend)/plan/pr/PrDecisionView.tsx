@@ -21,7 +21,8 @@ import { BANNER_IMGS, PageBanner, PageShell, UI } from '../../ui/primitives'
 import { DataTable } from '../../ui/DataTable'
 import { TripleVerdictPanel } from '../../jobs/TripleVerdictModal'
 import { PnpScoreCard } from '../../jobs/PnpScoreCard'
-import { Modal } from '../../jobs/Modal'
+import { Modal, iconBtnS } from '../../jobs/Modal'
+import { IconRefresh } from '../../Icons'
 import { EMPTY, clearAnswers, readAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
 import { fieldsOf, missingFields } from '@/lib/decisions'
 import { FIELDS } from '@/lib/fields'
@@ -398,21 +399,24 @@ export function PrDecisionView({ overview, tvJob, topNocs }: {
                 表头右侧留 84:Modal 自带的「全屏/关闭」两颗钮固定在 top12/right12,占掉约 78px,
                 只留 40 的话重置钮会压在全屏钮上。draggable 关掉:答题不需要拖窗,按住空白就把窗拖走更碍事。 */}
             {quizOpen && ready && (
-              <Modal onClose={() => setQuizOpen(false)} size="lg" pad z={60} draggable={false}>
+              <Modal onClose={() => setQuizOpen(false)} size="lg" pad z={60} draggable={false}
+                actions={(
+                  // 重置改成图标、与全屏/关闭对齐成一排(2026-08-12 Frank「这个改成图标吧 和右上角对齐」)。
+                  // 沿用挂件头部那颗同款(IconRefresh,2026-08-06 Frank「重置两个字别扭」→ 图标化),不另造一个。
+                  <button type="button" style={iconBtnS} title={t('plan.reset')} aria-label={t('plan.reset')}
+                    onClick={() => {
+                      setBands(clearAnswers()); setNoc(''); setResetNonce((n) => n + 1); setOccStep(true); setProvinceStep(false); setScoreStep(false); setScoreProgress(null); setFormAtEnd(false)
+                      track('dp-quiz-reset')
+                    }}><IconRefresh /></button>
+                )}>
                 <div ref={quizRef}>
                   <QuizStyle />
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingRight: 84, marginBottom: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingRight: 114, marginBottom: 12 }}>
                     <h2 style={{ ...H2, margin: 0 }}>{t('dp.quiz')}</h2>
                     <span style={{ ...COUNT_PILL, background: shownStep === shownTotal ? '#eff6ff' : UI.bg,
                       color: shownStep === shownTotal ? UI.primary : UI.text3 }}>
                       {t('dp.basicCount', { done: shownStep, total: shownTotal })}
                     </span>
-                    <button onClick={() => {
-                      setBands(clearAnswers()); setNoc(''); setResetNonce((n) => n + 1); setOccStep(true); setProvinceStep(false); setScoreStep(false); setScoreProgress(null); setFormAtEnd(false)
-                      track('dp-quiz-reset')
-                    }} style={{ ...BTN, marginLeft: 'auto' }}>
-                      {t('plan.reset')}
-                    </button>
                   </div>
                   <div aria-label={`${shownStep}/${shownTotal}`} style={{ height: 4, borderRadius: 999, background: UI.hairline, overflow: 'hidden', margin: '0 0 18px' }}>
                     <div style={{ width: `${Math.round((shownStep / Math.max(shownTotal, 1)) * 100)}%`, height: '100%', borderRadius: 999,
