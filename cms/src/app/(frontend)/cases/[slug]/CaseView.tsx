@@ -18,6 +18,9 @@ import { track } from '@/lib/track'
 const CARD: React.CSSProperties = { background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 12, padding: '16px 18px', margin: '0 0 10px' }
 const H2: React.CSSProperties = { fontSize: 16, fontWeight: 700, color: '#111827', margin: '0 0 6px' }
 const TONE: Record<VerdictReason['kind'], string> = { met: UI.ok, gap: '#b45309', excluded: '#b91c1c', 'needs-info': UI.text3 }
+/** 摊开几条再折叠(走查 #299) */
+const HEAD_N = 5
+const SUMMARY: React.CSSProperties = { padding: '10px 0 2px', color: UI.primary, fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }
 
 export function CaseView({ caseId, label, question, answer }: {
   caseId: string
@@ -117,6 +120,8 @@ export function CaseView({ caseId, label, question, answer }: {
     </ul>
   )
 
+  // 摊平成一条有序队列(档位分组只是排序依据,不是版面分节),前 HEAD_N 条直出、其余折叠
+  const flatTiers = answer.tiers.flatMap((g) => g.rows)
   let rank = 0
   return (
     <div style={{ background: UI.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
@@ -148,20 +153,31 @@ export function CaseView({ caseId, label, question, answer }: {
             </div>
           ) : null}
 
-          {/* ② 其余路径,由易到难 */}
-          {answer.tiers.length ? (
+          {/* ② 其余路径,由易到难。走查 #299:整页太长(英文 5.5k px)——
+              **前 5 条摊开、其余收进 <details>**。第 6 条往后都是「更慢或更难」的,先看不着不影响判断;
+              用原生 details 是因为内容仍在 DOM 里,爬虫照样吃得到(不是懒加载)。 */}
+          {flatTiers.length ? (
             <div style={CARD}>
               <h2 style={H2}>{t('case.othersTitle')}</h2>
-              {answer.tiers.map((g) => g.rows.map((v) => { rank += 1; return <Path key={v.key} v={v} rank={rank} /> }))}
+              {flatTiers.slice(0, HEAD_N).map((v) => { rank += 1; return <Path key={v.key} v={v} rank={rank} /> })}
+              {flatTiers.length > HEAD_N ? (
+                <details>
+                  <summary style={SUMMARY}>{t('case.showMore', { n: flatTiers.length - HEAD_N })}</summary>
+                  {flatTiers.slice(HEAD_N).map((v) => { rank += 1; return <Path key={v.key} v={v} rank={rank} /> })}
+                </details>
+              ) : null}
             </div>
           ) : null}
 
-          {/* ③ 现在走不通的 */}
+          {/* ③ 现在走不通的:整块收起 —— 它回答的是「哪些别去试」,不是他此刻要做的事 */}
           {answer.excluded.length ? (
             <div style={CARD}>
-              <h2 style={H2}>{t('case.blockedTitle')}</h2>
-              <Lead lines={[t('case.blockedLead')]} />
-              {answer.excluded.map((v) => <Path key={v.key} v={v} />)}
+              <h2 style={{ ...H2, margin: 0 }}>{t('case.blockedTitle')}</h2>
+              <details>
+                <summary style={SUMMARY}>{t('case.showMore', { n: answer.excluded.length })}</summary>
+                <Lead lines={[t('case.blockedLead')]} />
+                {answer.excluded.map((v) => <Path key={v.key} v={v} />)}
+              </details>
             </div>
           ) : null}
 

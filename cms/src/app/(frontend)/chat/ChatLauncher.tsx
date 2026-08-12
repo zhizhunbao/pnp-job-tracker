@@ -435,7 +435,10 @@ export function ChatLauncher() {
         <div ref={dock} className="clDock"
           style={dockPos ? { left: dockPos.x, top: dockPos.y, right: 'auto', bottom: 'auto' } : bottom}
           onPointerDown={startDockDrag}>
-          {hint && !dockPos && <button className="clHint" onClick={show}>{t('cw.hint')}</button>}
+          {/* 走查 #298:提示胶囊在手机上是 210×56 的一块,钉在视口底部**永远盖住正文最后一行**
+              (375 实测 y=740/812)。桌面右下角有的是空地,手机没有 —— 窄屏只留圆球,不出这条。
+              顾问本身也不该在手机上占这么大一块地(见记忆 advisor-quality-gate)。 */}
+          {hint && !dockPos && wide && <button className="clHint" onClick={show}>{t('cw.hint')}</button>}
           <button className="clBtn" aria-label={t('cw.open')} title={t('cw.open')}
             onClick={() => { if (dragged.current) { dragged.current = false; return } show() }}>
             <IconChat size={24} />
