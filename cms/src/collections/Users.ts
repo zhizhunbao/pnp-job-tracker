@@ -106,6 +106,16 @@ export const Users: CollectionConfig = {
         { name: 'crs', type: 'number', admin: { description: 'EE CRS 分(自报,可空)' } },
         { name: 'targetProvinces', type: 'json', admin: { description: '目标省(省码 string[])' } },
         { name: 'pgwpMonthsLeft', type: 'number', admin: { description: 'PGWP 剩余月数' } },
+        // ── 判定核个人条件要的槽(2026-08-12 Frank「先把功能做完善」)────────────────────
+        // 病灶:答题时明明问了经验/offer/加拿大学历,quizToProfile 却只落 status/nocs/provs/clb,
+        // /api/triple-verdict 里其余一律硬写 null —— 于是「个人条件」那几行对**任何人**(含 Pro)
+        // 都只能输出「判不了」。不是锁的问题,是答案根本没存下来。
+        // 列由 docs/sql/user-profile-verdict-slots.sql 手写添加(不走 DB_PUSH,见 db-push-minefield)。
+        { name: 'expCanadaMonths', type: 'number', admin: { description: '同职业加拿大工作经验(月)' } },
+        { name: 'expForeignMonths', type: 'number', admin: { description: '同职业海外工作经验(月)' } },
+        { name: 'hasOffer', type: 'checkbox', admin: { description: '手上有没有 job offer' } },
+        { name: 'canadaStudy', type: 'checkbox', admin: { description: '有没有加拿大学历' } },
+        { name: 'familySize', type: 'number', admin: { description: '随行家庭人数(AIP 资金档 / BC 最低收入表)' } },
         { name: 'profileUpdatedAt', type: 'date' },
         // 简历存档(E11-08):默认不存 —— 只有用户在对照弹框勾了「存进档案」才写;原件(PDF/DOCX)照旧不落盘,只存抽出的文本。
         // 列由 docs/sql/resume-archive.sql 手写添加(不走 DB_PUSH,见 [[db-push-minefield]])。

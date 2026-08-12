@@ -27,6 +27,9 @@ const STATUS_OF: Record<string, string> = {
   studying: 'study', working: 'worker', pr: 'other', overseas: 'other',
 }
 
+/** 档案里的数字槽:非有限数一律当没答(null),**不拿 0 冒充「答过是 0」** */
+const numOrNull = (v: unknown): number | null => (v != null && Number.isFinite(Number(v)) ? Number(v) : null)
+
 export async function GET(req: Request) {
   const sp = new URL(req.url).searchParams
   const id = Number(sp.get('job'))
@@ -112,14 +115,24 @@ export async function GET(req: Request) {
   const profile: TripleProfile = {
     age: null, married: null,
     clb: up.clb != null && Number.isFinite(Number(up.clb)) ? Number(up.clb) : null,
-    edu: null, eduYears: null, canadaStudy: null, studyProvince: null,
+    edu: null, eduYears: null,
+    canadaStudy: typeof up.canadaStudy === 'boolean' ? up.canadaStudy : null,
+    studyProvince: null,
     noc: noc0, teer: null,
-    expCanadaMonths: null, expForeignMonths: null, foreignExpSelfEmployed: null, hasOffer: null, inCanada: null,
+    // 2026-08-12:这几样先前一律硬写 null —— 于是 experience/income 行恒 unknown、
+    // 「最快通道」也判不出来,「个人条件」整段对含 Pro 在内的任何人都只出「判不了」。
+    // 现在读落档的真值(quizToProfile 已把答题的全套答案写进 profile)。
+    expCanadaMonths: numOrNull(up.expCanadaMonths),
+    expForeignMonths: numOrNull(up.expForeignMonths),
+    foreignExpSelfEmployed: null,
+    hasOffer: typeof up.hasOffer === 'boolean' ? up.hasOffer : null,
+    // 「人在不在境内」由既有的分型槽推,不另存一列(与 /api/profile-pathways 同一口径)
+    inCanada: up.currentStatus ? String(up.currentStatus) !== 'overseas' : null,
     status: permitLeft != null && permitLeft > 0 ? 'pgwp' : (STATUS_OF[String(up.currentStatus ?? '')] ?? null),
     province: null,
     permitMonthsLeft: permitLeft,
     targetProvinces: Array.isArray(up.targetProvinces) ? up.targetProvinces.map(String) : [],
-    familySize: null,
+    familySize: numOrNull(up.familySize),
   }
   // 有没有够格的档案:任一核心槽答过才算(全空档案跑个人关只会满屏 unknown,不如引导建档)
   const hasProfile = !!user && (profile.clb != null || profile.status != null || noc0 != null)

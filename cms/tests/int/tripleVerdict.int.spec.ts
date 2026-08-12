@@ -352,6 +352,31 @@ describe('#287 金标 · 个人关', () => {
 
 // ── 金标 ④:时间窗 + 换省对照(paid)────────────────────────────────────────
 
+// ── 2026-08-12:答案落了档,个人关就不许再说「判不了」──────────────────────────
+// 病灶(Frank「这个功能还不完善啊」):答题时明明问了经验/offer/加拿大学历,quizToProfile 却只落
+// status/nocs/provs/clb,/api/triple-verdict 里其余一律硬写 null —— 于是「个人条件」那几行
+// 对**任何人(含 Pro)**都只能输出「判不了」。这一节守的就是那条链:**槽填了,结论必须出来**。
+describe('个人关:槽填了就必须判得出来(不许再落「判不了」)', () => {
+  const FILLED: TripleProfile = { ...PROFILE, expCanadaMonths: 24, expForeignMonths: 12, hasOffer: true, canadaStudy: true }
+
+  it('经验 24+12 个月 → 达标,且不再点名问槽', () => {
+    const r = rowOf(run(DATA, COMPANY, FILLED), 'tv.person.experience')!
+    expect(r.state).toBe('pass')
+    expect(r.params).toMatchObject({ need: 12, have: 36, unit: 'months' })
+    expect(r.followups, '判出来了就不该再问').toBeUndefined()
+  })
+
+  it('整张卡不再挂经验类追问', () => {
+    expect(run(DATA, COMPANY, FILLED).followups ?? []).not.toContain('expCanadaMonths')
+  })
+
+  it('对照:槽空着时仍然如实说判不了(这条不许被上面的改动带塌)', () => {
+    const r = rowOf(run(), 'tv.person.experience')!
+    expect(r.state).toBe('unknown')
+    expect(r.followups).toEqual(['expCanadaMonths', 'expForeignMonths'])
+  })
+})
+
 describe('#287 金标 · 时间窗与换省对照', () => {
   it('PGWP 剩 18 个月摆成事实行,不编概率', () => {
     expect(rowOf(run(), 'tv.time.permit')).toMatchObject({

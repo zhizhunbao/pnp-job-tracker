@@ -43,11 +43,26 @@ export async function quizToProfile(a: QuizAnswers): Promise<void> {
         currentStatus: a.status || old.currentStatus || null,
         nocCodes: a.nocs.length ? a.nocs : (old.nocCodes || []),
         targetProvinces: a.provs.length ? a.provs : (old.targetProvinces || []),
-        // 语言档一起落(08-10 决策页答题=唯一采集面):判定核个人条件读的是 profile.clb,
-        // 不落档答了也白答;档位→CLB 值走字段库 toAnswer(单一来源),没答不覆盖旧值
-        clb: (typeof (a as { clbBand?: number }).clbBand === 'number' && (a as { clbBand?: number }).clbBand!
-          ? (toEngineAnswers({ ...readAnswers(), ...a } as Answers).clb as number | undefined) ?? old.clb ?? null
-          : old.clb ?? null),
+        // 判定核个人条件要的槽全部一起落(2026-08-12 Frank「先把功能做完善」)——
+        // 先前只落了 status/nocs/provs/clb,于是答过的经验/offer/加拿大学历在判定里等于没答,
+        // 「个人条件」那几行对任何人(含 Pro)都只能输出「判不了」。**不落档答了也白答**。
+        // 档位 → 引擎值一律走字段库 toAnswer(单一来源,「不清楚」在那里被翻成 undefined);
+        // 没答的不覆盖旧值 —— 一次没答不该把上次答过的抹掉。
+        ...(() => {
+          const e = toEngineAnswers({ ...readAnswers(), ...a } as Answers)
+          const keep = <T,>(v: T | undefined, prev: T | null | undefined): T | null => (v === undefined ? prev ?? null : v)
+          const totalExp = e.totalExpMonths as number | undefined
+          const canExp = e.canadianExpMonths as number | undefined
+          return {
+            clb: keep(e.clb as number | undefined, old.clb),
+            expCanadaMonths: keep(canExp, old.expCanadaMonths),
+            // 官方口径的「海外经验」= 总经验 − 加拿大经验(两个都答了才算得出,否则留旧值)
+            expForeignMonths: totalExp === undefined ? (old.expForeignMonths ?? null)
+              : Math.max(0, totalExp - (canExp ?? 0)),
+            hasOffer: keep(e.hasJobOffer as boolean | undefined, old.hasOffer),
+            canadaStudy: keep(e.canadaStudy as boolean | undefined, old.canadaStudy),
+          }
+        })(),
         profileUpdatedAt: new Date().toISOString(),
       } }),
     })
