@@ -83,6 +83,15 @@ export function CaseView({ caseId, label, question, answer }: {
             ) : <span style={{ color: TONE[r.kind] }}>{say(r)}</span>}
           </li>
         ))}
+        {/* 工作机会:同档排序就是按它排的,所以每条路径下面把这个数摆出来 —— 排序依据必须看得见。
+            跨省通道(AIP/RCIP/联邦)没有单一省份,openings 里查不到 → 不编,直接不出这条。 */}
+        {answer.openings[v.province] ? (
+          <li style={{ marginBottom: 5, color: UI.text2 }}>
+            {answer.openings[v.province].t > 0
+              ? t('case.openingsTrain', { n: answer.openings[v.province].n, m: answer.openings[v.province].t })
+              : t('case.openings', { n: answer.openings[v.province].n })}
+          </li>
+        ) : null}
         {/* 该省公布的运营数字:与判定理由同列同字号,一条一个 bullet(不再是列表外的一行灰小字) */}
         {supply(answer.ops[v.province]).map((s, i) => (
           <li key={`ops${i}`} style={{ marginBottom: 5, color: UI.text3 }}>{s}</li>

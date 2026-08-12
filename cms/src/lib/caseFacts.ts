@@ -19,6 +19,12 @@ export type CaseAnswer = {
   /** 第一步:这个职业「提供带训 / 不要经验」的在招岗按省分布 */
   trainable: { province: string; n: number }[]
   trainableTotal: number
+  /** 各省该职业的在招岗数(n=全部,t=其中标了带训)。2026-08-11 Frank:
+      「每个省的推荐不单要看时长条件,还有竞争程度和工作机会」——
+      **工作机会先落地**:这个数全国同一口径、来自本站自己的库、天天更新,同档内拿它排序。
+      竞争程度暂不进排序:各省公布口径不同(AB 给池子+名额、BC 只给分数段、SK/MB/ON 只给名额),
+      硬凑一个跨省可比的「几人抢一个」= 编数(见 STATUS 记账②,池子公不公布还没查证)。 */
+  openings: Record<string, { n: number; t: number }>
   /** 每个省官方公布的运营数字(名额/提名/拒签/池子)—— 只按时长排序会假设各省一样挤,
       而这几个数正是「挤不挤」。各省公布的口径不同,**不硬凑成一个统一比值**,谁公布什么就摆什么。 */
   ops: Record<string, OpsFacts>
@@ -72,21 +78,31 @@ export async function caseAnswer(slug: string, data: VerdictData, sql: Sql): Pro
   const spec = CASE_PAGES[slug]
   if (!spec) return null
 
+  // 一次查两列:该职业各省在招岗数 n,其中官方标了带训/不要经验的 t(apprentice_friendly,05e)
+  const byProv = await sql(
+    `SELECT province, count(*)::int n, count(*) FILTER (WHERE apprentice_friendly)::int t
+     FROM jobs WHERE noc = $1 AND status <> 'closed'
+     GROUP BY province`, [spec.profile.noc],
+  ).then((r) => r.rows as { province: string; n: number; t: number }[]).catch(() => [])
+  const openings: CaseAnswer['openings'] = {}
+  for (const r of byProv) openings[r.province] = { n: Number(r.n), t: Number(r.t) }
+
   const all = pathVerdict(spec.profile, data)
   const asked = all.find((v) => v.key === spec.askedKey) ?? null
   const rest = all.filter((v) => v.key !== spec.askedKey && v.verdict !== 'excluded')
   const tiers: CaseAnswer['tiers'] = []
   for (const t of [0, 1, 2, 3] as const) {
+    // 同档内按**本省该职业在招岗数**降序:同样是「无需积累」,一个省有 300 个岗、另一个省 3 个,
+    // 对一个还没有 offer 的人来说这两条路根本不是一回事。跨省通道(AIP/RCIP/联邦)没有单一省份 → 记 -1 排后面。
     const rows = rest.filter((v) => v.tier === t)
+      .sort((a, b) => (openings[b.province]?.n ?? -1) - (openings[a.province]?.n ?? -1))
     if (rows.length) tiers.push({ tier: t, rows })
   }
 
-  // 第一步:零经验的人先要的是「谁肯带」,不是选省。apprentice_friendly = 官方标了带训/不要经验(05e)
-  const trainable = await sql(
-    `SELECT province, count(*)::int n FROM jobs
-     WHERE noc = $1 AND apprentice_friendly = true AND status <> 'closed'
-     GROUP BY province ORDER BY n DESC`, [spec.profile.noc],
-  ).then((r) => r.rows as { province: string; n: number }[]).catch(() => [])
+  // 第一步:零经验的人先要的是「谁肯带」,不是选省
+  const trainable = byProv.filter((r) => Number(r.t) > 0)
+    .map((r) => ({ province: r.province, n: Number(r.t) }))
+    .sort((a, b) => b.n - a.n)
 
   return {
     asked,
@@ -94,6 +110,7 @@ export async function caseAnswer(slug: string, data: VerdictData, sql: Sql): Pro
     excluded: all.filter((v) => v.verdict === 'excluded'),
     trainable,
     trainableTotal: trainable.reduce((a, x) => a + Number(x.n), 0),
+    openings,
     ops: await opsByProvince(sql),
   }
 }
