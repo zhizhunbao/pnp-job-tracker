@@ -30,6 +30,8 @@ import { CASES, type L3 } from '@/lib/caseLibrary'
 import { pickName } from '@/lib/occName'
 import { track } from '@/lib/track'
 import type { DrawRow, ScoreFactor, SelfProfile } from '@/lib/pnpSelfScore'
+import type { ProvCompetition } from '@/lib/scoreTables'
+import type { OccCompetitionRow } from '@/app/api/occ-competition/route'
 
 /** 形状与 `lib/scoreTables.ts` 的同名类型对齐(那边是产出方,这里是消费方) */
 export type OverviewDraw = { province: string; drawDate: string; stream: string; score: number | null; invitations: number | null }
@@ -54,6 +56,8 @@ type ProfilePath = {
   availability: string
   /** 被攒时间补不了的门槛卡住(语言差档 / 自雇不计经验)—— 排在能走的后面,标签也另写 */
   blockedBy?: 'language' | 'selfEmployed' | null
+  /** 该省名额竞争度(临时居民存量 ÷ 当年省提名名额,IRCC 开放数据);联邦线为 null */
+  competition?: { ratio: number; tier: string; pool: number; quota: number; quotaYear: number } | null
 }
 
 const CARD: React.CSSProperties = { background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 12, padding: '14px 16px', margin: '0 0 10px' }
@@ -69,10 +73,14 @@ const NOC_TITLE_CACHE: Record<string, string> = {}
 // 已经问过的码(不论问到没问到)。失败不重试:同一个码问一次拿不到名字,再问十次也一样。
 const NOC_TITLE_TRIED = new Set<string>()
 
-export function PrDecisionView({ overview, tvJob, topNocs }: {
+export function PrDecisionView({ overview, competition = [], tvJob, topNocs, initialVerdict }: {
   overview: OverviewDraw[]; tvJob: TvJob | null
+  /** 各省名额竞争(松→紧);与抽选表并列的第二条免费硬事实 */
+  competition?: ProvCompetition[]
   /** 服务端取好的热门职业榜(noc_openings 直出)→ 选职业控件一次成型,不再分段刷 */
   topNocs?: TopNoc[]
+  /** 服务端先算好的判定卡(首屏不出骨架);客户端带本地答案再刷一次 */
+  initialVerdict?: unknown
 }) {
   const [lang, setLangSaved, t] = useLang()
 
@@ -94,6 +102,8 @@ export function PrDecisionView({ overview, tvJob, topNocs }: {
   // 官方分值表 + 抽选记录:不再随页面下发(192 行 ≈ 88KB 塞给每个访客),答完题按所选省现取。
   // null = 还没取到,此时既不出估分区也不敢说「这些省本站没有表」——那两句都得等表到手才算数。
   const [scoreTables, setScoreTables] = useState<ScoreTables | null>(null)
+  // 该职业分省竞争面:按 NOC 懒取(省级那张表随页面 SSR,这张要等他答完职业才知道查谁)
+  const [occComp, setOccComp] = useState<OccCompetitionRow[] | null>(null)
   // 答题卡默认收起(Frank「上来有必要让人测分数吗」——不逼人考试,一行入口自愿点开);
   // 「开始评估/继续作答/改答案」展开,答完自动收回
   const [quizOpen, setQuizOpen] = useState(false)
@@ -114,6 +124,16 @@ export function PrDecisionView({ overview, tvJob, topNocs }: {
     track('dp-open', { job: tvJob ? '1' : '0' })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    if (!noc) { setOccComp(null); return }
+    const ctrl = new AbortController()
+    fetch(`/api/occ-competition?noc=${encodeURIComponent(noc)}`, { signal: ctrl.signal })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (!ctrl.signal.aborted) setOccComp(Array.isArray(d?.rows) ? d.rows : []) })
+      .catch(() => { if (!ctrl.signal.aborted) setOccComp([]) })
+    return () => ctrl.abort()
+  }, [noc])
 
   const stepNames = fieldsOf('pr', 'basic')
   const stepTotal = stepNames.length + 2
@@ -319,6 +339,84 @@ export function PrDecisionView({ overview, tvJob, topNocs }: {
   const provDisp = (code: string) => { const full = t('prov.' + code); return full === 'prov.' + code ? code : full }
   const pickL3 = (l: L3) => l[lang as keyof L3] || l.zh
 
+  // 「你的初步方案」整块抽出来:带岗态它是判定卡的**第三张卡**
+  //(Frank 2026-08-12 定的卡序:① 这份工作 ② 你的条件 ③ 你的初步方案 ④⑤⑥ 三关 ⑦ 付费),
+  // 无岗态原地摆在答题卡下面。
+  // 省份消歧(审计 A4 / 设计 B3):这张表按**档案里的目标省**算,带岗时岗位省未必在里面 ——
+  // 一张 PE 的岗上摆着 NS/NL 的通道,不说一句就是让人自己去猜(Frank 实拍:「爱德华王子岛还走 RCIP 还走 EE?」)。
+  // **不是警告是消歧**:说清主语,并给一键对齐;不替他改答案。
+  const jobProvOutside = !!tvJob && !bands.provsAny && bands.provs.length > 0 && !bands.provs.includes(tvJob.province)
+  const addJobProv = () => {
+    if (!tvJob) return
+    const next = writeAnswers({ provs: [...bands.provs, tvJob.province] })
+    setBands(next); setVerdictNonce((n) => n + 1); track('dp-add-job-prov', { prov: tvJob.province })
+  }
+
+  const planCard = quizComplete && !quizOpen ? (
+    <div style={{ ...CARD, padding: '16px' }}>
+                  <h2 style={{ ...H2, marginBottom: 10 }}>{t('dp.planTitle')}</h2>
+                  {jobProvOutside && tvJob ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
+                      background: '#f8fafc', border: `1px solid ${UI.hairline}`, borderRadius: 9, padding: '9px 12px', marginBottom: 10 }}>
+                      <span style={{ minWidth: 0, flex: 1, fontSize: 12.5, color: UI.text2, lineHeight: 1.5 }}>
+                        {t('dp.provMismatch', {
+                          provs: bands.provs.map(provDisp).join(lang === 'zh' ? '、' : ', '),
+                          jobProv: provDisp(tvJob.province),
+                        })}
+                      </span>
+                      <button onClick={addJobProv} style={BTN}>{t('dp.provAdd', { jobProv: provDisp(tvJob.province) })}</button>
+                    </div>
+                  ) : null}
+                              {profilePaths === null ? (
+                    <div style={{ height: 58, borderRadius: 9, background: UI.bg }} />
+                  ) : profilePaths.length > 0 ? (
+                    <div style={{ display: 'grid', gap: 8 }}>
+                      {profilePaths.slice(0, 3).map((row, index) => {
+                        const province = row.key === 'AIP'
+                          ? t('dp.atlantic')
+                          : row.key === 'RCIP'
+                            ? t('dp.ruralCommunities')
+                            : row.province === 'FED' ? t('dp.federal') : provDisp(row.province)
+                        // 走查 #293:省名在灰字那行已经写了,通道名里再带一遍 =「Saskatchewan Employment Offer /
+                        // Saskatchewan」。摘掉前缀,顺带让名字短一截、少折一行。
+                        const routeName = dropProvPrefix(t(`jpw.p.${row.key}`), province)
+                        const stateKey = row.availability !== 'ok'
+                          ? 'dp.planDataGap'
+                          : row.blockedBy
+                            ? `dp.planBlocked.${row.blockedBy}`
+                            : row.verdict === 'needs-info'
+                              ? 'dp.planNeedInfo'
+                              : `dp.planTier${row.tier ?? 0}`
+                        return (
+                          <div key={row.key} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', border: `1px solid ${UI.hairline}`, borderRadius: 10, background: index === 0 && !row.blockedBy ? '#f8fbff' : '#fff' }}>
+                            <span style={{ width: 24, height: 24, borderRadius: 999, display: 'grid', placeItems: 'center', flexShrink: 0, background: index === 0 && !row.blockedBy ? UI.primary : UI.bg, color: index === 0 && !row.blockedBy ? '#fff' : UI.text2, fontSize: 12, fontWeight: 700 }}>{index + 1}</span>
+                            <span style={{ minWidth: 0, flex: 1 }}>
+                              <span style={{ display: 'block', color: '#111827', fontSize: 13.5, fontWeight: 700, lineHeight: 1.45 }}>{routeName}</span>
+                              <span style={{ display: 'block', color: UI.text3, fontSize: 12, lineHeight: 1.45 }}>
+                              {province}
+                              {/* 竞争度:很多人根本不知道各省松紧差 9 倍(BC 84.2 vs SK 9.0)。
+                                  只摆数,口径与出处在卡尾说一次 —— 每行都解释一遍就是噪音。 */}
+                              {row.competition ? `　${t('dp.compRatio', { n: row.competition.ratio })}` : ''}
+                            </span>
+                            </span>
+                            <span style={{ color: row.verdict === 'open' && row.availability === 'ok' && !row.blockedBy ? UI.ok : '#92400e', background: row.verdict === 'open' && row.availability === 'ok' && !row.blockedBy ? '#ecfdf5' : '#fffbeb', borderRadius: 999, padding: '4px 9px', fontSize: 11.5, fontWeight: 600, whiteSpace: 'nowrap' }}>{t(stateKey)}</span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: 13, color: UI.text2, lineHeight: 1.65 }}>{t('dp.planEmpty')}</div>
+                  )}
+                  {/* 竞争度的口径与出处:摆了数就得说清这个数是什么、哪一年的(全站规矩:结论带出处) */}
+                  {profilePaths?.some((r) => r.competition) ? (
+                    <div style={{ fontSize: 11.5, color: UI.text3, lineHeight: 1.6, marginTop: 10 }}>
+                      {t('dp.compNote', { year: profilePaths.find((r) => r.competition)?.competition?.quotaYear ?? '' })}
+                    </div>
+                  ) : null}
+                </div>
+  ) : null
+
+
   return (
     <div style={{ background: UI.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
       <SiteHeader lang={lang} setLang={setLangSaved} t={t} active="pathways" />
@@ -328,7 +426,11 @@ export function PrDecisionView({ overview, tvJob, topNocs }: {
             {/* PR 评估是顶栏一级页:banner 与全部卡片统一使用 PageShell 1320px 页面轨,不放历史返回按钮。 */}
             <PageBanner module="pathways" title={t('plan.pr.title')} sub={t('dp.sub')} images={BANNER_IMGS.pathways} />
 
-            {/* 我的评估条件摘要卡片 */}
+            {/* 我的评估条件摘要卡片。
+                **带岗进来时整张不出**(2026-08-12 B2/A3,Frank 实拍指「重复」):判定卡里已经有
+                「按你答的 n/N 项判定 · 改答案」那一行,同屏再摆一张「你的条件」就是两个输入面
+                —— 设计 §5「输入面只留一个,多一个就又是两套主语」。无岗态照旧。 */}
+            {!tvJob && (
             <div style={CARD}>
               <QuizStyle />
               <style>{`.dpConditionSummary{grid-template-columns:repeat(3,minmax(0,1fr))}@media(max-width:640px){.dpConditionSummary{grid-template-columns:repeat(2,minmax(0,1fr))}.dpConditionValue{white-space:normal!important}}`}</style>
@@ -393,6 +495,7 @@ export function PrDecisionView({ overview, tvJob, topNocs }: {
                 ))}
               </div>
             </div>
+            )}
 
             {/* 弹框问卷:只装基础卷(职业 / 四题 / 省份)。各省估分不进这里 —— 它要的那个分值卡
                 必须常驻在页面上,一卸载答案就没了(它的勾选全是组件本地 state)。
@@ -452,48 +555,7 @@ export function PrDecisionView({ overview, tvJob, topNocs }: {
               </Modal>
             )}
 
-            {/* 问卷完成即给个人路径方案。它回答“先走哪条路”；具体岗位验证是后续可选动作。 */}
-            {quizComplete && !quizOpen && (
-              <div style={{ ...CARD, padding: '16px' }}>
-                <h2 style={{ ...H2, marginBottom: 4 }}>{t('dp.planTitle')}</h2>
-                <div style={{ fontSize: 13, color: UI.text2, lineHeight: 1.65, marginBottom: 12 }}>{t('dp.planHint')}</div>
-                {profilePaths === null ? (
-                  <div style={{ height: 58, borderRadius: 9, background: UI.bg }} />
-                ) : profilePaths.length > 0 ? (
-                  <div style={{ display: 'grid', gap: 8 }}>
-                    {profilePaths.slice(0, 3).map((row, index) => {
-                      const province = row.key === 'AIP'
-                        ? t('dp.atlantic')
-                        : row.key === 'RCIP'
-                          ? t('dp.ruralCommunities')
-                          : row.province === 'FED' ? t('dp.federal') : provDisp(row.province)
-                      // 走查 #293:省名在灰字那行已经写了,通道名里再带一遍 =「Saskatchewan Employment Offer /
-                      // Saskatchewan」。摘掉前缀,顺带让名字短一截、少折一行。
-                      const routeName = dropProvPrefix(t(`jpw.p.${row.key}`), province)
-                      const stateKey = row.availability !== 'ok'
-                        ? 'dp.planDataGap'
-                        : row.blockedBy
-                          ? `dp.planBlocked.${row.blockedBy}`
-                          : row.verdict === 'needs-info'
-                            ? 'dp.planNeedInfo'
-                            : `dp.planTier${row.tier ?? 0}`
-                      return (
-                        <div key={row.key} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', border: `1px solid ${UI.hairline}`, borderRadius: 10, background: index === 0 && !row.blockedBy ? '#f8fbff' : '#fff' }}>
-                          <span style={{ width: 24, height: 24, borderRadius: 999, display: 'grid', placeItems: 'center', flexShrink: 0, background: index === 0 && !row.blockedBy ? UI.primary : UI.bg, color: index === 0 && !row.blockedBy ? '#fff' : UI.text2, fontSize: 12, fontWeight: 700 }}>{index + 1}</span>
-                          <span style={{ minWidth: 0, flex: 1 }}>
-                            <span style={{ display: 'block', color: '#111827', fontSize: 13.5, fontWeight: 700, lineHeight: 1.45 }}>{routeName}</span>
-                            <span style={{ display: 'block', color: UI.text3, fontSize: 12, lineHeight: 1.45 }}>{province}</span>
-                          </span>
-                          <span style={{ color: row.verdict === 'open' && row.availability === 'ok' && !row.blockedBy ? UI.ok : '#92400e', background: row.verdict === 'open' && row.availability === 'ok' && !row.blockedBy ? '#ecfdf5' : '#fffbeb', borderRadius: 999, padding: '4px 9px', fontSize: 11.5, fontWeight: 600, whiteSpace: 'nowrap' }}>{t(stateKey)}</span>
-                        </div>
-                      )
-                    })}
-                  </div>
-                ) : (
-                  <div style={{ fontSize: 13, color: UI.text2, lineHeight: 1.65 }}>{t('dp.planEmpty')}</div>
-                )}
-              </div>
-            )}
+            {!tvJob && planCard}
 
             {/* 各省估分 = 自愿的第二段,**摆在方案之后**(Frank 2026-08-11:「单独一个 section 放到初步方案下面」)——
                 先给方案再谈加题,不拿 16 道官方表的题横在结论前面。题数写在入口上(点之前就看得见成本);
@@ -548,10 +610,26 @@ export function PrDecisionView({ overview, tvJob, topNocs }: {
                 **必须等 ready**:quizOpen 初值是 false,不等读完 localStorage 就渲染的话,新用户首帧先看到
                 这块判定面板、水合后又被答题卡顶掉 —— 闪一下不说,还白打一次 tv-open + 一次
                 /api/triple-verdict 请求,把「有多少人真看了判定」这个数顶虚(2026-08-11 umami session 实录)。 */}
-            {ready && tvJob && !quizOpen && <TripleVerdictPanel job={tvJob} lang={lang} profileComplete={quizComplete} refreshKey={verdictNonce}
+            {/* 服务端已经把判定算好了(initialVerdict)就**不必等 ready**:ready 那道闸是为了防
+                「首帧先渲判定、水合后被答题卡顶掉」的闪烁,而带岗态如今根本不摆答题卡,顶不掉。
+                有 initialVerdict = 这一段真的进 SSR HTML,首屏不再是空白 + 骨架。 */}
+            {(ready || !!initialVerdict) && tvJob && !quizOpen && <TripleVerdictPanel job={tvJob} lang={lang} profileComplete={quizComplete} refreshKey={verdictNonce}
+              initial={initialVerdict}
+              answered={stepDone} answerTotal={stepTotal}
+              answerList={conditionSummary.map(([label, value, filled]) => ({ label, value, filled }))}
+              planSlot={planCard}
               onBuildProfile={() => {
                 // 弹窗自己就在视口正中,不用再滚页面(内联时代的 scrollIntoView 已撤)
                 setQuizOpen(true); setOccStep(true); setProvinceStep(false); setScoreStep(false); setFormAtEnd(false); track('tv-build-profile')
+              }}
+              // 「改答案」落在第一道没答的题(与上面那张卡的「继续作答」同一套落点口径)
+              onEditAnswers={() => {
+                const resuming = stepDone > 0 && stepDone < stepTotal
+                const baseDone = missingFields(stepNames, bands).length === 0
+                setQuizOpen(true)
+                setOccStep(!resuming || !noc)
+                setProvinceStep(resuming && !!noc && baseDone && !provAnswered)
+                setScoreStep(false); setFormAtEnd(false); track('dp-quiz-edit')
               }} />}
 
             {/* 「本站没有这些省的分值表」是个断言,**表到手了才敢说** —— 懒取还没回来时
@@ -595,6 +673,106 @@ export function PrDecisionView({ overview, tvJob, topNocs }: {
                 </div>
               ))}
             </div>
+
+            {/* SSR 事实区①:各省名额竞争(Frank 2026-08-12:「很多人不知道竞争激烈程度,我们有这个数据
+                并且是最新的就有这个能力」)。9 省同口径、来源同一份 IRCC 开放数据 —— 所以敢横着比、敢排序。
+                摆在抽选表之前:选省的第一问是「这个省多少人抢一个名额」,分数线是第二问。 */}
+            {competition.length > 0 && (
+              <div style={CARD}>
+                <h2 style={H2}>{t('dp.compTitle')}</h2>
+                <style>{`@media(max-width:640px){.dpCompTbl{display:none}}@media(min-width:641px){.dpCompCards{display:none}}`}</style>
+                <div className="dpCompCards">
+                  {competition.map((r) => (
+                    <div key={r.province} style={{ borderTop: `1px solid ${UI.hairline}`, padding: '8px 0', display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                      <b style={{ fontSize: 13.5, color: '#111827' }}>{provDisp(r.province)}</b>
+                      <span style={{ color: UI.text3, fontSize: 11.5 }}>{r.province}</span>
+                      <span style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{r.ratio}:1</span>
+                      <span style={{ width: '100%', color: UI.text3, fontSize: 11.5, fontVariantNumeric: 'tabular-nums' }}>
+                        {r.pool.toLocaleString('en-CA')} {r.poolYear ? `${r.poolYear}-12` : ''}　÷　{r.quota.toLocaleString('en-CA')} {r.quotaYear || ''}
+                        {r.flow ? `　${t('dp.compFlow')} ${r.flow.n.toLocaleString('en-CA')} ${r.flow.period}` : ''}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <div className="dpCompTbl">
+                  <DataTable<ProvCompetition> rows={competition} rowKey={(r) => r.province} bare
+                    cols={[
+                      { key: 'province', label: t('dp.prov'), width: '24%', render: (r) => (
+                        <span style={{ display: 'flex', alignItems: 'baseline', gap: 6, minWidth: 0 }}>
+                          <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{provDisp(r.province)}</span>
+                          <span style={{ color: UI.text3, fontSize: 11.5, flexShrink: 0 }}>{r.province}</span>
+                        </span>
+                      ) },
+                      // 两个数各是各的年份(分子 2024 存量、分母 2025/2026 名额,还逐省不同)——
+                      // 年份贴在数字后面,不放页脚:放页脚就会被读成「整表同一年」
+                      // 存量是 Dec 31 快照 → 写到月(2024-12),不写光一个年份:同一格里再出现「2026-05」那种
+                      // 月度数字时,光写年份会让人以为两者同粒度
+                      { key: 'pool', label: t('dp.compPool'), width: '18%', align: 'right', render: (r) => (
+                        <span>{r.pool.toLocaleString('en-CA')}<span style={{ color: UI.text3, fontSize: 11.5, marginLeft: 5 }}>{r.poolYear ? `${r.poolYear}-12` : ''}</span></span>
+                      ) },
+                      { key: 'quota', label: t('dp.compQuota'), width: '16%', align: 'right', render: (r) => (
+                        <span>{r.quota.toLocaleString('en-CA')}<span style={{ color: UI.text3, fontSize: 11.5, marginLeft: 5 }}>{r.quotaYear || ''}</span></span>
+                      ) },
+                      { key: 'ratio', label: t('dp.compCol'), width: '12%', align: 'right', render: (r) => <b>{r.ratio}:1</b> },
+                      // 流量列:存量停在 2024,这是唯一反映当期的官方数字。**不参与比值**,页脚点明
+                      { key: 'flow', label: t('dp.compFlow'), width: '18%', align: 'right', render: (r) => (
+                        r.flow
+                          ? <span>{r.flow.n.toLocaleString('en-CA')}<span style={{ color: UI.text3, fontSize: 11.5, marginLeft: 5 }}>{r.flow.period}</span></span>
+                          : <span style={{ color: UI.text3 }}>—</span>
+                      ) },
+                      { key: 'generated', label: t('dp.compAsOf'), width: '12%', align: 'right', render: (r) => (
+                        <span style={{ fontVariantNumeric: 'tabular-nums' }}>{r.generated}</span>
+                      ) },
+                    ]} />
+                </div>
+                <div style={{ fontSize: 11.5, color: UI.text3, lineHeight: 1.6, marginTop: 8 }}>
+                  {t('dp.compNoteShort')}
+                  <br />
+                  {t('dp.compFlowNote')}
+                </div>
+              </div>
+            )}
+
+            {/* 该职业分省竞争(Frank 2026-08-12:「还需要加相关职业各省市的竞争比」)。
+                🔴 职业级的「几人抢一个」**没有任何官方源发布**,本站不编 —— 这里摆三个实数:
+                在招岗数、近 30 天新增、平均在招天数(挂多久被撤:越短越抢手),外加该省的名额竞争。
+                四列不合成分数:合成就是替用户拿主意,而且没有官方口径支持那种合成。 */}
+            {noc && occComp && occComp.length > 0 && (
+              <div style={CARD}>
+                <h2 style={H2}>{t('dp.occCompTitle')}</h2>
+                <style>{`@media(max-width:640px){.dpOccTbl{display:none}}@media(min-width:641px){.dpOccCards{display:none}}`}</style>
+                <div className="dpOccCards">
+                  {occComp.map((r) => (
+                    <div key={r.province} style={{ borderTop: `1px solid ${UI.hairline}`, padding: '8px 0' }}>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                        <b style={{ fontSize: 13.5, color: '#111827' }}>{provDisp(r.province)}</b>
+                        <span style={{ color: UI.text3, fontSize: 11.5 }}>{r.province}</span>
+                        <span style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{r.openJobs}</span>
+                      </div>
+                      <div style={{ color: UI.text3, fontSize: 11.5, marginTop: 2, fontVariantNumeric: 'tabular-nums' }}>
+                        {t('dp.occNew30')} {r.new30d ?? '—'}　{t('dp.occDays')} {r.avgDaysOpen ?? '—'}　{r.ratio == null ? '' : t('dp.compRatio', { n: r.ratio })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="dpOccTbl">
+                  <DataTable<OccCompetitionRow> rows={occComp} rowKey={(r) => r.province} bare
+                    cols={[
+                      { key: 'province', label: t('dp.prov'), width: '28%', render: (r) => (
+                        <span style={{ display: 'flex', alignItems: 'baseline', gap: 6, minWidth: 0 }}>
+                          <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{provDisp(r.province)}</span>
+                          <span style={{ color: UI.text3, fontSize: 11.5, flexShrink: 0 }}>{r.province}</span>
+                        </span>
+                      ) },
+                      { key: 'open', label: t('stats.openJobs'), width: '18%', align: 'right', render: (r) => <b>{r.openJobs.toLocaleString('en-CA')}</b> },
+                      { key: 'new30', label: t('dp.occNew30'), width: '18%', align: 'right', render: (r) => r.new30d == null ? '—' : r.new30d.toLocaleString('en-CA') },
+                      { key: 'days', label: t('dp.occDays'), width: '18%', align: 'right', render: (r) => r.avgDaysOpen == null ? '—' : r.avgDaysOpen },
+                      { key: 'ratio', label: t('dp.compCol'), width: '18%', align: 'right', render: (r) => r.ratio == null ? <span style={{ color: UI.text3 }}>—</span> : <span>{r.ratio}:1</span> },
+                    ]} />
+                </div>
+                <div style={{ fontSize: 11.5, color: UI.text3, lineHeight: 1.6, marginTop: 8 }}>{t('dp.occCompNote')}</div>
+              </div>
+            )}
 
             {/* SSR 事实区:各省最近一轮抽选(纯事实;爬虫不看顺序,人看时它只是参考,放主干之后) */}
             {overview.length > 0 && (

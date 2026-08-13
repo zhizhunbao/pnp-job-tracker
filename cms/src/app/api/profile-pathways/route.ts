@@ -4,6 +4,9 @@
  * 这里只把统一题库答案翻成 VerdictProfile，再调用判定层 pathVerdict；不依赖具体职位或雇主。
  * 具体岗位判定仍走 /api/triple-verdict，作为用户已有 offer/看中岗位后的第二层验证。
  */
+import { getPayload } from 'payload'
+
+import config from '@/payload.config'
 import { pathVerdict, type VerdictProfile } from '@/lib/pathVerdict'
 import { getVerdictData } from '@/lib/verdictCache'
 
@@ -24,6 +27,42 @@ export const pathwayMatchesTargets = (key: string, province: string, targets: st
   if (province !== 'FED') return targets.includes(province)
   const regionalTargets = REGIONAL_FEDERAL_PATHWAYS[key]
   return !regionalTargets || regionalTargets.some((provinceCode) => targets.includes(provinceCode))
+}
+
+/**
+ * 各省名额竞争度(E12-07 `stats.difficulty`,来源 IRCC 开放数据):
+ *   value = 该省临时居民存量 ÷ 该省当年省提名名额,例 BC 84.2 / SK 9.0。
+ *
+ * 🔴 它与 2026-08-11 结案的「各省 EOI 池不可比」**不是一回事**:那个是各省自己公布的池子
+ *    (AB 实时 / MB 年报 / SK·ON 不发),口径各异不能横比;这个是**联邦一个源**算出来的比值,
+ *    9 个省同口径 —— 所以它可以排序,也应该排序(Frank 2026-08-12:「竞争肯定是要排序的」
+ *    「很多人不知道竞争激烈程度,我们有这个数据并且是最新的就有这个能力」)。
+ */
+export type ProvinceCompetition = { ratio: number; tier: string; pool: number; quota: number; quotaYear: number }
+
+async function competitionByProvince(): Promise<Record<string, ProvinceCompetition>> {
+  const out: Record<string, ProvinceCompetition> = {}
+  try {
+    const payload = await getPayload({ config: await config })
+    const pool = (payload.db as { pool?: { query: (q: string) => Promise<{ rows: Record<string, unknown>[] }> } }).pool
+    if (!pool) return out
+    const { rows } = await pool.query(
+      `SELECT province, difficulty FROM stats
+        WHERE broad = 'all' AND (mid = 'all' OR mid IS NULL) AND difficulty IS NOT NULL`,
+    )
+    for (const r of rows) {
+      const raw = r.difficulty
+      const d = typeof raw === 'string' ? JSON.parse(raw) : raw
+      const f = Array.isArray(d?.factors) ? d.factors.find((x: { key?: string }) => x?.key === 'comp') : null
+      const ratio = Number(f?.value)
+      if (!Number.isFinite(ratio)) continue
+      out[String(r.province)] = {
+        ratio, tier: String(d?.tier ?? ''),
+        pool: Number(f?.pool) || 0, quota: Number(f?.quota) || 0, quotaYear: Number(f?.quotaYear) || 0,
+      }
+    }
+  } catch { /* 列缺/值坏 = 这一维不出,方案照常给 —— 竞争度是加分项不是前置条件 */ }
+  return out
 }
 
 const finite = (v: unknown): number | null => {
@@ -65,11 +104,26 @@ export async function POST(req: Request) {
     canadaStudy: typeof answers.canadaStudy === 'boolean' ? answers.canadaStudy : null,
   }
 
-  const data = await getVerdictData()
+  const [data, comp] = await Promise.all([getVerdictData(), competitionByProvince()])
   const all = pathVerdict(profile, data)
   const scoped = all.filter((row) => pathwayMatchesTargets(row.key, row.province, targetProvinces))
   // 方案区只推荐仍可推进或待补资料的路径；硬排除项不包装成“方案”。
-  const rows = scoped.filter((row) => row.verdict !== 'excluded').slice(0, 6).map((row) => ({
+  const open = scoped.filter((row) => row.verdict !== 'excluded')
+
+  // 排序:**门槛难度仍是第一主键**(pathVerdict 的原序:能走的在前、被卡住的在后、判不了沉底),
+  // 竞争度只在**同一障碍档内**做次级排序 —— 同样是「至少还差 offer」,SK(9.0)该排在 BC(84.2)前面。
+  // 拿竞争度盖过门槛就是本末倒置:再松的省,门槛不满足也走不了。
+  const bandOf = (row: (typeof open)[number]) => `${row.verdict}|${row.blockedBy ?? ''}|${row.tier ?? ''}`
+  const ranked = open.map((row, i) => ({ row, i, band: bandOf(row), c: comp[row.province] }))
+  ranked.sort((a, b) => {
+    if (a.band !== b.band) return a.i - b.i                 // 不同档:原序(门槛难度)
+    // 联邦线没有省级竞争度 → 沉在同档末尾,不拿 0 冒充「最松」
+    const ar = a.c?.ratio ?? Number.POSITIVE_INFINITY
+    const br = b.c?.ratio ?? Number.POSITIVE_INFINITY
+    return ar === br ? a.i - b.i : ar - br
+  })
+
+  const rows = ranked.slice(0, 6).map(({ row, c }) => ({
     key: row.key,
     province: row.province,
     verdict: row.verdict,
@@ -77,6 +131,8 @@ export async function POST(req: Request) {
     availability: row.availability,
     // 被硬门槛卡住时,方案卡不能再写「优先核对」——那等于让人拿着不够的语言分去核对
     blockedBy: row.blockedBy ?? null,
+    /** 该省名额竞争度(联邦口径,9 省可比);联邦线为 null */
+    competition: c ?? null,
   }))
 
   return Response.json({ noc, rows })

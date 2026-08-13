@@ -25,8 +25,34 @@ const TTL = 10 * 60_000
 /** 热门职业一行(fetchTopNocs 的返回,读 ETL 聚合表 noc_openings) */
 export type TopNoc = Awaited<ReturnType<typeof fetchTopNocs>>[number]
 
+/**
+ * 各省名额竞争(E12-07 `stats.difficulty`,来源 IRCC 开放数据):
+ *   ratio = 该省临时居民存量 ÷ 该省当年省提名名额。9 省**同一个源同一套口径**,可以横向比 ——
+ *   与各省自己公布的 EOI 池(AB 实时 / MB 年报 / SK·ON 不发)不是一回事,后者才是不可比的那类。
+ */
+export type ProvCompetition = {
+  province: string; ratio: number; tier: string
+  pool: number; quota: number
+  /** 两个数不是同一年的:分子是临时居民存量的统计年(asOf),分母是名额的年份(quotaYear)——
+   *  各行还不一样(ON/BC/AB/SK 拿到 2026 名额,MB/NS/NB/NL/PE 还是 2025)。**必须逐行摆出来**,
+   *  否则读者会默认它们同年。 */
+  poolYear: string; quotaYear: number
+  /** 本站算出这一行的日期(difficulty.generated) */
+  generated: string
+  source: string
+  /**
+   * 新发学签**流量**(IRCC 月度表,provinces.info.studyFlow)。
+   * 🔴 与上面的比值**口径不同不可混用**:比值的分母是「在库存量」(2024-12 快照,官方最新只到这儿),
+   *    这一列是「当期新增」——2026 年只到 5 月,拿它当分子会把比值凭空砍一半。
+   *    摆它是因为存量停在 2024,而这是唯一能反映**当下还在涌进多少人**的官方数字。
+   */
+  flow?: { period: string; n: number; prevYear: number | null } | null
+}
+
 type Tables = {
   overview: OverviewDraw[]
+  /** 各省名额竞争(松→紧);这一页的第二条免费硬事实,要被爬到 */
+  competition: ProvCompetition[]
   /** 选职业控件的热门榜:服务端取好随页面下发 → 控件首帧即终态,不再分段刷 */
   topNocs: TopNoc[]
   draws: DrawRow[]
@@ -80,7 +106,53 @@ async function load(): Promise<Tables> {
 
   // 热门职业 24 条:聚合表一次索引扫描(表还没建时 fetchTopNocs 内部自动回退老查询)
   const topNocs = pool ? await fetchTopNocs(pool, 24).catch(() => [] as TopNoc[]) : []
-  return { overview, draws, factors, topNocs, factorProvinces: Array.from(new Set(factors.map((f) => f.province).filter(Boolean))) }
+
+  // 各省名额竞争:一条按省的小查询,与上面几张表共用同一份 TTL 缓存
+  const competition: ProvCompetition[] = []
+  if (pool) {
+    const { rows } = await pool.query(
+      `SELECT province, difficulty, fetched FROM stats
+        WHERE broad = 'all' AND (mid = 'all' OR mid IS NULL) AND difficulty IS NOT NULL`,
+    ).catch(() => ({ rows: [] as Record<string, unknown>[] }))
+    for (const r of rows) {
+      const raw = r.difficulty
+      let d: {
+        tier?: string; generated?: string
+        factors?: { key?: string; value?: number; pool?: number; quota?: number; quotaYear?: number; asOf?: string; source?: string }[]
+      } | null = null
+      try { d = typeof raw === 'string' ? JSON.parse(raw) : (raw as typeof d) } catch { d = null }
+      const f = d?.factors?.find((x) => x?.key === 'comp')
+      const ratio = Number(f?.value)
+      const prov = str(r.province)
+      if (!PROVS.has(prov) || !Number.isFinite(ratio)) continue
+      competition.push({
+        province: prov, ratio, tier: str(d?.tier),
+        pool: Number(f?.pool) || 0, quota: Number(f?.quota) || 0,
+        poolYear: str(f?.asOf), quotaYear: Number(f?.quotaYear) || 0,
+        generated: str(d?.generated) || str(r.fetched), source: str(f?.source),
+      })
+    }
+    // 新发学签流量:与竞争比同一次取(provinces 维度表的 info jsonb,ETL 09 已写好)
+    const MONTH: Record<string, string> = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06', Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12' }
+    const { rows: provRows } = await pool.query('SELECT code, info FROM provinces')
+      .catch(() => ({ rows: [] as Record<string, unknown>[] }))
+    const flowOf: Record<string, ProvCompetition['flow']> = {}
+    for (const r of provRows) {
+      const raw = r.info
+      let info: { studyFlow?: { year?: string; n?: number; throughMonth?: string; prev?: number | null } } | null = null
+      try { info = typeof raw === 'string' ? JSON.parse(raw) : (raw as typeof info) } catch { info = null }
+      const f = info?.studyFlow
+      const n = Number(f?.n)
+      if (!f?.year || !Number.isFinite(n)) continue
+      const mm = MONTH[str(f.throughMonth)] ?? ''
+      flowOf[str(r.code)] = { period: mm ? `${f.year}-${mm}` : String(f.year), n, prevYear: Number(f.prev) || null }
+    }
+    for (const row of competition) row.flow = flowOf[row.province] ?? null
+
+    competition.sort((x, y) => x.ratio - y.ratio)          // 松 → 紧
+  }
+
+  return { overview, competition, draws, factors, topNocs, factorProvinces: Array.from(new Set(factors.map((f) => f.province).filter(Boolean))) }
 }
 
 export async function getScoreTables(): Promise<Tables> {
