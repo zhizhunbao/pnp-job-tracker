@@ -92,8 +92,12 @@ describe('mart 实况', () => {
 describe('金标 ①:排除两条,各带官方 quote', () => {
   const list = run()
 
-  it('excluded 恰好是 FED-EE 与 PE-sw', () => {
-    expect(list.filter((v) => v.verdict === 'excluded').map((v) => v.key).sort()).toEqual(['FED-EE', 'PE-sw'])
+  // 2026-08-12 晚改口径:PE-sw 不再因为「不在 OID 清单上」整条判死 —— 官方原句(就在我们库里那行
+  // 经验门槛的 label 里)写明「the Occupations in Demand stream requires only 12 months, but is
+  // limited to its named NOC list」—— 受限的是 **OID 那个子通道**,Skilled Worker 走 TEER 0-3 + 24 个月,
+  // 与清单无关。C01 是 TEER 3 的木匠 → Skilled Worker 适用 → 不该 excluded。
+  it('excluded 恰好只剩 FED-EE', () => {
+    expect(list.filter((v) => v.verdict === 'excluded').map((v) => v.key).sort()).toEqual(['FED-EE'])
   })
 
   it('FED-EE:零经验进不了池(CEC/FSW/FST 三条门槛各带原句)+ CRS 199 对照 CEC 516,差距补不上', () => {
@@ -123,18 +127,24 @@ describe('金标 ①:排除两条,各带官方 quote', () => {
     expect(fed.verdict).toBe('excluded')
   })
 
-  it('PE-sw:清单型硬伤(72310 不在 PEI Occupations in Demand),24 个月另列为 gap', () => {
+  it('PE-sw:清单只关 OID 子通道不关整条线;24 个月经验差距单列为 gap', () => {
     const pe = byKey(list, 'PE-sw')
-    expect(pe.verdict).toBe('excluded')
-    expect(pe.tier).toBeNull()
-    const hard = pe.reasons.filter((r) => r.kind === 'excluded')
-    expect(hard).toHaveLength(1)
-    expect(hard[0].quote).toContain('named NOC list')                      // 官方原文自己写明 OID 限于清单
-    expect(hard[0].evidence?.url).toContain('princeedwardisland.ca')
-    // 24 个月是可积累项 → 另列成 gap,不混进排除理由
+    // TEER 3 走得上 Skilled Worker 子通道(门槛行 applies_teer=0,1,2,3)→ 不在 OID 清单上不构成硬伤
+    expect(pe.verdict).not.toBe('excluded')
+    expect(pe.reasons.filter((r) => r.kind === 'excluded')).toHaveLength(0)
+    // 24 个月是可积累项 → 摆成 gap,带官方原句
     const gap = pe.reasons.find((r) => r.kind === 'gap' && /24 个月/.test(r.text))
     expect(gap, 'PE 的 24 个月经验差距要单独摆出来').toBeTruthy()
     expect(gap!.quote).toContain('24 months')
+    expect(gap!.evidence?.url).toContain('princeedwardisland.ca')
+  })
+
+  it('TEER 4/5 时清单仍然关死这条线(本站只收录了 SW/OID 两个子通道)', () => {
+    // 同一份档案换成 TEER 5 职业:Skilled Worker 的 applies_teer 盖不到他 → 只剩 OID 可走 → 不在清单上就是硬伤
+    const pe5 = run({ ...C01, noc: '65200', teer: 5 }).find((v) => v.key === 'PE-sw')!
+    const hard = pe5.reasons.filter((r) => r.kind === 'excluded')
+    expect(hard).toHaveLength(1)
+    expect(hard[0].quote).toContain('named NOC list')
   })
 
   it('PEI 在需清单里确实只有助工 75110、没有木匠 72310(排除理由的事实底座)', () => {
@@ -187,12 +197,12 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
   it('tier3 = AB Opportunity、BC Skilled Worker、BC Build(24 个月)', () => {
     expect(byKey(list, 'AB-opportunity').verdict).toBe('open')
     expect(tierOf('AB-opportunity')).toBe(3)
-    // BC 两条 2026-08-12 起是 needs-info:门槛清单(gateManifest)里 BC 的境内身份/加拿大学历落 unknown，
-    // 因为 welcomebc 那页自己写明「完整条件见 Skills Immigration Program Guide」而指南没进 crawl
-    //(实查 bc-immigrate 40 页全是门户页)。**不拿「页上没写」当「官方不要求」** —— 补上指南就自动翻回 open。
+    // BC 两条 08-12 白天还是 needs-info(指南没进 crawl → 境内/学历两类闸 unknown);当晚直提官方
+    // Program Guide PDF 逐节读完(§3.1-3.13 通用 + §4.1 技术工人),两类闸都落实 → **自动翻回 open**。
+    // 这正是当时留的话:「补上指南就自动翻回 open」—— 判定跟着数据走,没有一行代码为它开特例。
     for (const k of ['BC-sw', 'BC-build']) {
-      expect(byKey(list, k).verdict, k).toBe('needs-info')
-      expect(byKey(list, k).availability, k).toBe('not-collected')
+      expect(byKey(list, k).verdict, k).toBe('open')
+      expect(byKey(list, k).availability, k).toBe('ok')
     }
     // BC Build 是定向抽选:72310 在定向清单上、抽选线 97 摆出来但不冒充成「你的分」
     const build = byKey(list, 'BC-build')
@@ -468,9 +478,10 @@ describe('红线不变量', () => {
     // 2026-08-09 批B AIP 36 行入库后更新(原断言:['AIP'])——最后一条 not-collected 的通道被补齐了,
     // 13 条现在门槛行齐全。这条断言的意思不变:availability 只许由「库里有没有那条通道的门槛行」决定。
     // 2026-08-12:availability 的判据从「库里有没有门槛行」扩到「**门槛清单里那几类闸有没有条文**」——
-    // 两者都是「本站未收录」。NB 只抓到门户页;BC 两条的完整条件在没抓的 Program Guide 里。
+    // 两者都是「本站未收录」。当晚把最后三条的窟窿补完(BC/PE 的官方指南 PDF、NB 换版后的新资格页),
+    // **13 条通道现在一条 not-collected 都没有**。这个空数组是硬指标:再有通道掉进未收录,这条就红。
     expect(list.filter((v) => v.availability === 'not-collected').map((v) => v.key).sort())
-      .toEqual(['BC-build', 'BC-sw', 'NB-sw'])
+      .toEqual([])
   })
 
   it('excluded 不带 tier;open 一定有 tier', () => {

@@ -20,7 +20,7 @@
 
 import { employerVerdict, type EmployerFacts, type EmployerVerdict } from './employerVerdict'
 import {
-  pathVerdict,
+  blockCost, pathVerdict,
   type DesignatedEmployerRow, type OccupationRow, type PathwayVerdict, type VerdictData, type VerdictProfile,
 } from './pathVerdict'
 import { evaluateRequirements, type Requirement, type RuleProfile, type RuleResult } from './rules'
@@ -122,8 +122,33 @@ export type TripleCompareRow = {
   fastest: boolean
 }
 
+/**
+ * 一句可复述的结论(设计 PR评估页三步重设计-20260812.md §2「跨步规矩 B3」)。
+ *
+ * 🔴 **由确定性层拼,不新增判定、不让 LLM 合成**(工具层红线)。原料只有两样,都是这张卡已经算出来的:
+ *    ① 职业关的官方排除清单命中(硬伤);② `pathVerdict` 对**这份岗所在省**那几条通道的裁决。
+ *    「差哪一项」的次序共用 pathVerdict 的 `blockCost`(offer 最好拆 → … → 加拿大学历最难),
+ *    不另立一把尺子 —— 裁决、排序、结论句三处同源。
+ * 🔴 免费/付费口径**没有变**:这几条通道的裁决在同一页的「你的初步方案」上本来就是免费的,
+ *    这里只是把「这份岗所在省那条」摘出来说成一句人话。逐项差值(差几分/差几个月)仍在付费位。
+ */
+export type TripleConclusionKind = 'ok' | 'blocked' | 'needs-info' | 'excluded' | 'not-collected'
+export type TripleConclusion = {
+  kind: TripleConclusionKind
+  key: string
+  params: Record<string, string | number | boolean | string[]>
+  /** 结论锚在哪条通道(能走的那条 / 被卡住的那条);not-collected 时为空 */
+  pathway?: string
+  /** blocked 时:最难拆的那道闸(offer / statusInCanada / credentialCanada / language / selfEmployed) */
+  gate?: string
+  /** 英文调试串,**不是** UI 文案 */
+  label: string
+}
+
 export type TripleCard = {
   jobId: number
+  /** 一句可复述的结论(见 TripleConclusion) */
+  conclusion: TripleConclusion
   noc: string | null
   nocName: string | null
   teer: number | null
@@ -164,10 +189,54 @@ const SLOTS_OF_FACTOR: Record<string, string[]> = {
 const totalExpMonths = (p: TripleProfile): number | null =>
   p.expCanadaMonths == null || p.expForeignMonths == null ? null : p.expCanadaMonths + p.expForeignMonths
 
+/**
+ * 一条通道**本站收录的门槛行**覆盖了哪几档 TEER(按 pnp_requirements.appliesTeer 聚合)。
+ * 🔴 这是**收录范围的下界**,不是官方受理范围的全集 —— 所以它只有一个用途:
+ *    否掉粗筛的对错符号(「我们有行的那条通道并不收这一档」),**永不**拿来下「你不行」的结论。
+ *    (开放世界的表做封闭世界推理,正是 2026-08-12 判定口径根治要根治的那个病。)
+ */
+type TeerScope = { stream: string; teers: number[]; row: Requirement }
+
+function teerScopes(provReqs: Requirement[]): TeerScope[] {
+  const by = new Map<string, { teers: Set<number>; row: Requirement; span: number }>()
+  for (const r of provReqs) {
+    if (r.subject !== 'applicant' || !r.appliesTeer) continue
+    const ts = r.appliesTeer.split(',').map((x) => Number(x.trim())).filter((n) => Number.isInteger(n))
+    if (!ts.length) continue
+    const cur = by.get(r.stream) ?? { teers: new Set<number>(), row: r, span: 0 }
+    ts.forEach((n) => cur.teers.add(n))
+    // 引哪一行的原句:覆盖面最宽的那行最能代表这条通道的档位表(PE 只有一行,NS/ON 取 0-3 那行)
+    if (ts.length > cur.span) { cur.row = r; cur.span = ts.length }
+    by.set(r.stream, cur)
+  }
+  return [...by.entries()].map(([stream, v]) => ({ stream, teers: [...v.teers].sort((a, b) => a - b), row: v.row }))
+}
+
+/** 该省的**具名(定向)清单**:一张清单一条,带它绑的官方通道名与清单里的职业数。 */
+type NamedList = { label: string; stream: string; count: number; url: string; fetched: string }
+
+function namedLists(province: string, occs: OccupationRow[]): NamedList[] {
+  const by = new Map<string, NamedList>()
+  for (const o of occs) {
+    if (o.province !== province || o.type !== 'indemand') continue
+    const cur = by.get(o.label)
+    if (cur) cur.count += 1
+    else by.set(o.label, { label: o.label, stream: o.stream, count: 1, url: o.url, fetched: o.fetched })
+  }
+  return [...by.values()]
+}
+
 // ── 三关 ────────────────────────────────────────────────────────────────────
 
-/** 职业关(全 free):具名清单命中 / 排除清单命中 / TEER 粗筛档。零新判定,全是查表。 */
-function occupationRows(job: TripleJob, occs: OccupationRow[]): TripleRow[] {
+/**
+ * 职业关(全 free):具名清单命中 / 排除清单命中 / TEER 粗筛档。零新判定,全是查表。
+ *
+ * 举证标准三态(设计 docs/design/PR评估页三步重设计-20260812.md §2「跨步规矩」,与 gateManifest 同一套规矩):
+ *   官方门槛行判出来 → 对错符号 + 官方原句 + 出处
+ *   **本站粗筛**     → **不给对错符号**,明写是粗筛,并指向本站收录的真门槛
+ *   库里没有         → 「本站未收录」,不拿「页上没写」当「官方不要求」
+ */
+function occupationRows(job: TripleJob, occs: OccupationRow[], provReqs: Requirement[]): TripleRow[] {
   const out: TripleRow[] = []
   const nocName = job.nocName || ''
   const mine = job.noc ? occs.filter((o) => o.noc === job.noc && o.province === job.province) : []
@@ -195,18 +264,46 @@ function occupationRows(job: TripleJob, occs: OccupationRow[]): TripleRow[] {
     })
   }
   if (!listed.length) {
+    // 「未命中该省任何具名清单」事实无误,但**读起来像判死** —— 定向清单只绑它自己那条通道
+    // (PE 的 OID 就 8 个职业,该省另有技术工人/关键工人/国际毕业生几条不看清单的通道)。
+    // 所以这一行必须带**适用范围**:哪张清单、多少个职业、绑哪条通道;一张都没收录时说「未收录」而不是「未命中」。
+    const lists = namedLists(job.province, occs)
+    const only = lists.length === 1 ? lists[0] : null
     out.push({
-      gate: 'occupation', tier: 'free', key: 'tv.occ.notListed', state: 'info',
-      params: { noc: job.noc ?? '', nocName, prov: job.province },
-      label: `occupation ${job.noc ?? '?'} is not on any named list of ${job.province}`,
+      gate: 'occupation', tier: 'free', key: 'tv.occ.notListed',
+      state: lists.length ? 'info' : 'unknown',
+      params: {
+        noc: job.noc ?? '', nocName, prov: job.province,
+        lists: lists.map((l) => l.label), listCount: lists.length,
+        list: only?.label ?? '', stream: only?.stream ?? '', count: only?.count ?? 0,
+      },
+      label: lists.length
+        ? `occupation ${job.noc ?? '?'} is not on any of the ${lists.length} named list(s) of ${job.province} — named lists bind only their own stream`
+        : `no named occupation list on file for ${job.province}`,
+      ...(only?.url && only.fetched ? { evidence: { url: only.url, fetched: only.fetched, label: only.stream } } : {}),
     })
   }
 
+  // 粗筛档。**state 永不 pass/gap** —— pnpEligible 是 08_score 的省级粗筛(CLAUDE.md:粗筛信号,非资格认定),
+  // 渲成绿勾「TEER 5 在该省受理范围内」就是拿粗筛冒充官方结论:PE 那条技术工人通道 applies_teer=0,1,2,3,
+  // 而 TEER 5 的岗照样 pnpEligible=true(靠「先省内同雇主干满 6 个月」那类通道兜底)。
+  const scopes = teerScopes(provReqs)
+  const outScope = job.teer == null ? undefined : scopes.find((s) => !s.teers.includes(job.teer as number))
   out.push({
     gate: 'occupation', tier: 'free', key: 'tv.occ.teer',
-    state: job.teer == null ? 'unknown' : job.pnpEligible ? 'pass' : 'gap',
-    params: { teer: job.teer ?? '', prov: job.province, noc: job.noc ?? '', nocName },
-    label: `TEER ${job.teer ?? '?'} — ${job.province} coarse screen ${job.pnpEligible ? 'in range' : 'out of range'}`,
+    state: job.teer == null ? 'unknown' : 'info',
+    params: {
+      teer: job.teer ?? '', prov: job.province, noc: job.noc ?? '', nocName,
+      coarsePass: job.pnpEligible,
+      // 指向真门槛:本站收录的门槛行里,有哪条通道**不收**这一档(没有这样的通道就不指,更不编)
+      scopeStream: outScope?.stream ?? '',
+      scopeTeers: outScope ? outScope.teers.map(String) : [],
+      // 该省一条按 TEER 分档的门槛行都没收录 → 三态里的「库里没有」,说未收录不说不要求
+      scoped: scopes.length > 0,
+    },
+    label: `TEER ${job.teer ?? '?'} — ${job.province} coarse screen ${job.pnpEligible ? 'not ruled out' : 'ruled out'}`
+      + (outScope ? `; on file: ${outScope.stream} covers TEER ${outScope.teers.join(',')}` : ''),
+    ...(outScope ? { quote: quoteOfReq(outScope.row), evidence: evOfReq(outScope.row) } : {}),
   })
   return out
 }
@@ -399,6 +496,85 @@ function compareRows(job: TripleJob, company: TripleCompany, profile: TripleProf
   return rows
 }
 
+/**
+ * 结论句:一句话说清「这份岗现在行不行、卡在哪」。
+ *
+ * 挑通道 = 这份岗所在省的通道 ∪(雇主已被 AIP 指定时的 AIP 线)—— 与 compareRows 的 current/aip 同一批,
+ * **目标省的线不参与**(拿他没有的 offer 去下结论就是替他排队)。取舍次序:
+ *   职业被官方排除 → 有能走的 → 被闸卡住 → 判不了 → 本站未收录该省门槛
+ * 「有能走的」优先于「被卡住」:同省多条通道时,能走一条就是能走,不拿最差那条吓人。
+ */
+function conclude(job: TripleJob, rows: TripleRow[], compare: TripleCompareRow[], paths: PathwayVerdict[]): TripleConclusion {
+  const excluded = rows.find((r) => r.key === 'tv.occ.excluded')
+  if (excluded) {
+    return {
+      kind: 'excluded', key: 'tv.sum.excluded',
+      params: { prov: job.province, list: String(excluded.params.list ?? ''), noc: job.noc ?? '', nocName: job.nocName ?? '' },
+      label: `excluded: ${job.noc ?? '?'} is on ${String(excluded.params.list ?? '')} in ${job.province}`,
+    }
+  }
+
+  const byKey = new Map(paths.map((p) => [p.key, p]))
+  const mine = compare
+    .filter((c) => c.role !== 'target' && c.availability === 'ok')
+    .map((c) => ({ c, v: byKey.get(c.key) }))
+    .filter((x): x is { c: TripleCompareRow; v: PathwayVerdict } => !!x.v)
+
+  // ① 能走的:open 且没被闸卡住。并列时取 tier 最小(pathVerdict 的排序语义,本层不重排)
+  const open = mine.filter((x) => x.v.verdict === 'open' && !x.v.blockedBy)
+    .sort((a, b) => (a.c.tier ?? 9) - (b.c.tier ?? 9))
+  if (open.length) {
+    const top = open[0]
+    return {
+      kind: 'ok', key: 'tv.sum.ok', pathway: top.c.key,
+      params: { route: top.c.key, prov: job.province, tier: top.c.tier ?? '', count: open.length },
+      label: `ok: ${top.c.key} open (tier ${top.c.tier ?? '?'}), ${open.length} pathway(s) clear`,
+    }
+  }
+
+  // ② 被卡住的:报**最好拆的那道闸**(它就是「下一步该干什么」)——次序共用 pathVerdict.blockCost
+  const blocked = mine.filter((x) => !!x.v.blockedBy)
+    .sort((a, b) => blockCost(a.v.blockedBy) - blockCost(b.v.blockedBy))
+  if (blocked.length) {
+    const top = blocked[0]
+    // 语言差档要报**官方门槛值**:他答过 CLB,一句「你还缺语言成绩」会读成「我们没收到你的答案」。
+    // need 取自 pathVerdict 已经算好的那条理由(官方门槛,免费事实);**差多少不进这里** —— 差值是付费位。
+    const lang = top.v.reasons.find((r) => r.key === 'pv.langGap')
+    const need = top.v.blockedBy === 'language' ? Number(lang?.params?.clb ?? 0) : 0
+    return {
+      kind: 'blocked', key: 'tv.sum.blocked', pathway: top.c.key, gate: top.v.blockedBy,
+      params: {
+        gate: top.v.blockedBy ?? '', route: top.c.key, prov: job.province, count: blocked.length,
+        ...(need > 0 ? { need } : {}),
+      },
+      label: `blocked: ${top.c.key} needs ${top.v.blockedBy}${need > 0 ? ` (CLB ${need})` : ''}`,
+    }
+  }
+
+  // ③ 判不了:点名缺哪个档案槽。**只取 pathVerdict 自己记的 missingSlots**(他一步能补的那几样)——
+  //    不拿整卡的 followups 凑数:工签剩余月数/家庭人数/目标省是时间窗、资金档、换省对照要的,
+  //    它们缺不缺都不决定「这份岗能不能走」,写进结论句就是拿无关项挡人。
+  //    一个槽都点不出来 = 缺的是条文不是答案 → 落 not-collected(谁的窟窿说清楚)。
+  const needs = mine.filter((x) => x.v.verdict === 'needs-info')
+  const slots = Array.from(new Set(needs.flatMap((x) => x.v.missingSlots ?? [])))
+  if (needs.length && slots.length) {
+    return {
+      kind: 'needs-info', key: 'tv.sum.needsInfo', pathway: needs[0].c.key,
+      // 点名是**哪条通道**判不了:这张卡挂在一份 PE 的岗上,结论却可能说的是 AIP
+      //(PE 自己那条本站没收录资格页,压根进不了 mine)—— 不写通道名,用户读到的就是「爱德华王子岛判不了」
+      params: { slots, route: needs[0].c.key, prov: job.province, count: needs.length },
+      label: `needs-info: ${needs[0].c.key} undecidable, missing ${slots.join(',')}`,
+    }
+  }
+
+  // ④ 一条可判通道都没有 —— 本站的窟窿,如实说未收录,不说「你不行」
+  return {
+    kind: 'not-collected', key: 'tv.sum.notCollected',
+    params: { prov: job.province, considered: compare.length },
+    label: `not-collected: no judgeable pathway in ${job.province} (${compare.length} compared)`,
+  }
+}
+
 // ── 主函数 ──────────────────────────────────────────────────────────────────
 
 /**
@@ -418,7 +594,7 @@ export function tripleVerdict(
   const paths = pathVerdict(profile, data)
 
   const rows: TripleRow[] = [
-    ...occupationRows(job, data.occupations),
+    ...occupationRows(job, data.occupations, provReqs),
     ...employerRows(job, company, emp, data.requirements),
     ...personRows(job, profile, provReqs),
     timeRow(profile),
@@ -441,9 +617,32 @@ export function tripleVerdict(
       : `no judgeable pathway among ${compare.length} compared — thresholds not on file, no conclusion offered`,
   })
 
+  // 「你这边」的免费裁决行:被卡住的那道闸(与结论句同源,也与本页免费的方案卡同源)。
+  // 逐项数值差(差几分/差几个月)仍在 paid 行,免费/付费口径没动。
+  const conclusion = conclude(job, rows, compare, paths)
+  if (conclusion.gate) {
+    rows.push({
+      gate: 'person', tier: 'free', key: 'tv.you.gate', state: 'gap',
+      params: { gate: conclusion.gate, route: conclusion.params.route ?? '', prov: job.province },
+      label: `you: ${conclusion.pathway} is blocked by ${conclusion.gate}`,
+    })
+  }
+  // 🔴 这份岗所在省**本站没收录门槛**的通道要说出来,不许静默丢掉(CLAUDE.md:未收录是我们的问题,
+  //    得让用户知道该去官网看)。先前它们只是进不了比路,页面上一个字都没有 ——
+  //    于是一张 PE 的岗上写着「判不了」,而判不了的其实是 AIP,PEI 那条压根没露过面。
+  const notCollected = compare.filter((c) => c.role !== 'target' && c.availability !== 'ok')
+  if (notCollected.length) {
+    rows.push({
+      gate: 'person', tier: 'free', key: 'tv.you.notCollected', state: 'unknown',
+      params: { routes: notCollected.map((c) => c.key), prov: job.province },
+      label: `not on file: ${notCollected.map((c) => c.key).join(', ')} thresholds not collected`,
+    })
+  }
+
   const followups = Array.from(new Set(rows.flatMap((r) => r.followups ?? [])))
   return {
-    jobId: job.id, noc: job.noc, nocName: job.nocName, teer: job.teer, province: job.province,
+    jobId: job.id, conclusion,
+    noc: job.noc, nocName: job.nocName, teer: job.teer, province: job.province,
     rows, compare, employer: emp, pathways: paths, followups,
     availability: provReqs.length ? 'ok' : 'not-collected',
   }

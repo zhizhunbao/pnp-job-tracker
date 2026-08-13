@@ -381,7 +381,9 @@ describe('lookupVerdict(薄封装)', () => {
     }, 2))
     expect(r.availability).toBe('ok')
     expect(r.pathways).toHaveLength(13)
-    expect(r.pathways.filter((v) => v.verdict === 'excluded').map((v) => v.key).sort()).toEqual(['FED-EE', 'PE-sw'])
+    // 2026-08-12 晚:PE-sw 不再被 OID 清单整条判死(官方原句写明受限的是 12 个月那个子通道),
+    // C01 是 TEER 3 → Skilled Worker 适用 → 只剩 FED-EE 一条 excluded
+    expect(r.pathways.filter((v) => v.verdict === 'excluded').map((v) => v.key).sort()).toEqual(['FED-EE'])
     // 2026-08-09 批B AIP 36 行入库后更新(原断言:availability='not-collected')
     // 正向断言:门槛行在库 → 四态回 ok、判得出 tier;这一条测的仍是「四态按库里有没有门槛行说话」
     const aip = r.pathways.find((v) => v.key === 'AIP')!
@@ -391,9 +393,10 @@ describe('lookupVerdict(薄封装)', () => {
     // 而这份档案没答有没有 offer。tier 仍按可积累项算 —— 缺的是**答案**不是**条文**,所以 availability 照旧 ok。
     expect(aip.verdict).toBe('needs-info')
     expect(aip.tier, '1,560 小时 = 官方自写的 1 年 → 12 个月 → tier2').toBe(2)
-    // NB/BC 两条的门槛条文本站确实没有(NB 只抓到门户页、BC 完整条件在没抓的 Program Guide)
+    // 2026-08-12 晚:BC/PE 的官方指南 PDF 与 NB 换版后的新资格页都补进门槛清单 →
+    // **一条 not-collected 都不剩**。空数组是硬指标:再掉一条进未收录,这条就红。
     expect(r.pathways.filter((v) => v.availability !== 'ok').map((v) => v.key).sort())
-      .toEqual(['BC-build', 'BC-sw', 'NB-sw'])
+      .toEqual([])
     expect(r.levers.map((l) => l.key).sort()).toEqual(['clb-boost', 'teer-downgrade'])
   })
 

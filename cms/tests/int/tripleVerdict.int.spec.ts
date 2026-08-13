@@ -262,11 +262,171 @@ describe('#287 金标 · 职业关', () => {
     expect(critical.evidence).toMatchObject({ url: 'https://liveinnovascotia.com/critical-vacancies', fetched: '2026-08-08' })
   })
 
-  it('TEER 3 在 NS 粗筛通道内;没有任何排除清单命中', () => {
+  it('TEER 3 的粗筛行不给对错符号;没有任何排除清单命中', () => {
     const card = run()
-    expect(rowOf(card, 'tv.occ.teer')).toMatchObject({ state: 'pass', tier: 'free', params: { teer: 3, prov: 'NS' } })
+    const teer = rowOf(card, 'tv.occ.teer')!
+    // B1:粗筛**永不** pass/gap —— 它是 08_score 的省级粗筛,不是官方受理范围
+    expect(teer).toMatchObject({ state: 'info', tier: 'free', params: { teer: 3, prov: 'NS', coarsePass: true } })
+    // NS 两条语言行 0-3 / 4-5 合起来盖住 TEER 3 → 没有「不收这一档」的通道可指,不硬指
+    expect(teer.params.scopeStream).toBe('')
+    expect(teer.params.scoped).toBe(true)
     expect(rowsOf(card, 'tv.occ.excluded')).toHaveLength(0)
     expect(rowsOf(card, 'tv.occ.notListed')).toHaveLength(0)
+  })
+})
+
+// ── 回归 B1:粗筛冒充官方结论(设计 PR评估页三步重设计-20260812.md §1 B1/B2)──────
+//
+// 现网原样:PE 的 TEER 5 岗渲成绿勾「TEER 5 在爱德华王子岛省受理范围内 ✓」。
+// 那是 08_score.pnp_eligible 的粗筛(PE ∈ UNIVERSAL_COND_PROVS:先省内同雇主干满 6 个月那类通道兜底),
+// 而库里 PE 技术工人通道 applies_teer='0,1,2,3' —— 拿粗筛冒充官方受理范围,说的是错话。
+//
+// fixture 抄自 mart(data/mart/pnp_requirements.json / pnp_occupations.json,province='PE'):
+//   requirements 3 行(语言全通道 CLB4 / 技术工人 24 个月 applies_teer=0,1,2,3 / 雇主经营 2 年)
+//   occupations  8 行 = PEI PNP — Occupations in Demand 全表
+const PE_GUIDE = 'https://www.princeedwardisland.ca/sites/default/files/publications/pei_workforce_application_guide.pdf'
+const PE_PAGE = 'https://www.princeedwardisland.ca/en/information/office-of-immigration/pei-pnp-workforce-streams'
+const PE_SW_LABEL = 'At least two years (24 months) of full-time work experience in the past five (5) years, with a full-time non-seasonal job offer in NOC TEER 0-3 (the Occupations in Demand stream requires only 12 months, but is limited to its named NOC list)'
+const PE_REQS: Requirement[] = [
+  R({
+    province: 'PE', program: 'PNP', subject: 'applicant', factor: 'language', op: '>=', value: 4, unit: 'CLB',
+    stream: 'PEI PNP Workforce streams (Skilled Worker / Critical Worker / International Graduate / Occupations in Demand)',
+    label: 'A valid language test from an IRCC-approved institution with a minimum score of CLB/NCLC 4 (test valid for 2 years); required by all PEI Workforce streams',
+    section: 'Step 1: Assess Your Eligibility', effective: 'January 2026',
+    url: PE_GUIDE, pageUrl: PE_PAGE, fetched: '2026-08-12',
+  }),
+  R({
+    province: 'PE', program: 'PNP', subject: 'applicant', factor: 'experience', op: '>=', value: 24, unit: 'months',
+    stream: 'PEI PNP Workforce — Skilled Worker stream', appliesTeer: '0,1,2,3',
+    label: PE_SW_LABEL, section: 'Skilled Worker Stream', effective: 'January 2026',
+    url: PE_GUIDE, pageUrl: PE_PAGE, fetched: '2026-08-12',
+  }),
+  R({
+    province: 'PE', program: 'PNP', subject: 'employer', factor: 'empYears', op: '>=', value: 2, unit: 'years',
+    stream: 'PEI PNP Workforce — Employer Requirements (all streams)',
+    label: '[Employer] The company has been in active and continuous operation under current ownership/management in Prince Edward Island for a minimum of two years with identified labour gaps (no published minimum staff count or minimum annual revenue in this section)',
+    section: 'Employer Requirements - All Streams', effective: 'January 2026',
+    url: PE_GUIDE, pageUrl: PE_PAGE, fetched: '2026-08-12',
+  }),
+]
+const PE_OID = (noc: string, name: string): OccupationRow => O({
+  province: 'PE', stream: 'PEI PNP — Occupations in Demand', label: 'PE 在需职业',
+  noc, name, url: PE_PAGE, fetched: '2026-08-12',
+})
+const PE_OCCS: OccupationRow[] = [
+  PE_OID('33102', 'Nurse aides, orderlies and patient service associates'),
+  PE_OID('65310', 'Light duty cleaners'),
+  PE_OID('73300', 'Transport truck drivers'),
+  PE_OID('75101', 'Material handlers'),
+  PE_OID('75110', 'Construction trades helpers and labourers'),
+  PE_OID('94140', 'Process control and machine operators food and beverage processing'),
+  PE_OID('94141', 'Industrial butchers and meat cutters, poultry preparers and related workers'),
+  PE_OID('95109', 'Other labourers in processing, manufacturing and utilities'),
+]
+// TEER 5、不在那 8 个职业里的 PE 岗;pnp_eligible=t 就是 08_score 粗筛给的(不是官方给的)
+const PE_JOB: TripleJob = {
+  id: 1, title: 'food counter attendant', noc: '65200', nocName: 'Food counter attendants and kitchen helpers',
+  teer: 5, province: 'PE', city: 'Charlottetown',
+  pnpEligible: true, pnpStream: '', eeCategory: '', aip: true,
+  employmentTerm: 'permanent', employmentHours: 'full',
+}
+const PE_DATA: VerdictData = {
+  ...dataWith([...NS_REQS, ...AIP_REQS, ...PE_REQS]),
+  occupations: [...OCCS.filter((o) => o.province !== 'PE'), ...PE_OCCS],
+}
+const peCard = () => tripleVerdict(PE_JOB, NO_MATCH, PROFILE, PE_DATA, { nowYear: NOW_YEAR })
+
+describe('B1 举证标准 · 粗筛不冒充官方结论', () => {
+  it('PE 的 TEER 5 岗:粗筛行是中性 info,并指向库里那条只收 TEER 0-3 的通道', () => {
+    const r = rowOf(peCard(), 'tv.occ.teer')!
+    expect(r.state).toBe('info')                       // 不是 pass —— 绿勾归官方门槛行
+    expect(r.params.coarsePass).toBe(true)             // 粗筛确实放行了,如实说是粗筛放行的
+    expect(r.params.scopeStream).toBe('PEI PNP Workforce — Skilled Worker stream')
+    expect(r.params.scopeTeers).toEqual(['0', '1', '2', '3'])
+    expect(r.quote).toBe(PE_SW_LABEL)                  // 原句来自数据行,不手写
+    expect(r.evidence).toMatchObject({ url: PE_GUIDE, fetched: '2026-08-12' })
+  })
+
+  it('清单行带适用范围:是哪张清单、多少个职业、绑哪条通道', () => {
+    const r = rowOf(peCard(), 'tv.occ.notListed')!
+    expect(r.state).toBe('info')
+    expect(r.params).toMatchObject({
+      prov: 'PE', listCount: 1, list: 'PE 在需职业', stream: 'PEI PNP — Occupations in Demand', count: 8,
+    })
+    expect(r.evidence).toMatchObject({ url: PE_PAGE, fetched: '2026-08-12' })
+  })
+
+  it('该省一张具名清单都没收录时说「未收录」,不说「未命中」', () => {
+    const noLists: VerdictData = { ...PE_DATA, occupations: OCCS.filter((o) => o.province !== 'PE') }
+    const r = rowOf(tripleVerdict(PE_JOB, NO_MATCH, PROFILE, noLists, { nowYear: NOW_YEAR }), 'tv.occ.notListed')!
+    expect(r.state).toBe('unknown')
+    expect(r.params.listCount).toBe(0)
+    expect(r.evidence).toBeUndefined()
+  })
+
+  it('该省没有按 TEER 分档的门槛行时不硬指,scoped=false 交给显示层说「本站未收录」', () => {
+    const noTeerRows: VerdictData = dataWith([...PE_REQS.filter((r) => !r.appliesTeer)])
+    const r = rowOf(tripleVerdict(PE_JOB, NO_MATCH, PROFILE, noTeerRows, { nowYear: NOW_YEAR }), 'tv.occ.teer')!
+    expect(r.params.scoped).toBe(false)
+    expect(r.params.scopeStream).toBe('')
+    expect(r.quote).toBeUndefined()
+  })
+})
+
+// ── B2 第三步 · 一句可复述的结论(设计 §2「跨步规矩 B3」)────────────────────────
+//
+// 红线:结论由**确定性层**拼 —— 原料只有「职业关的官方排除清单」与 pathVerdict 对这份岗所在省
+// 那几条通道的裁决,「差哪一项」共用 pathVerdict.blockCost 那把尺子。这里守的是口径不是文案。
+describe('B2 结论句 · 确定性层', () => {
+  // 效果图那一案:AIP 指定雇主 + 明答「没有 offer」→ AIP 被 offer 闸卡住
+  const noOffer: TripleProfile = { ...PROFILE, hasOffer: false }
+  const blockedCard = () => tripleVerdict(PE_JOB, COMPANY, noOffer, PE_DATA, { nowYear: NOW_YEAR })
+
+  it('被闸卡住时报最好拆的那道闸,并落一行免费的「你这边」', () => {
+    const card = blockedCard()
+    expect(card.conclusion.kind).toBe('blocked')
+    expect(card.conclusion.gate).toBe('offer')          // BLOCK_COST:offer 0 < 境内 1 < 自雇 2 < 语言 3 < 学历 4
+    const you = rowOf(card, 'tv.you.gate')!
+    // 免费:它与同一页「你的初步方案」同源。**不是**新开的付费口子
+    expect(you).toMatchObject({ tier: 'free', gate: 'person', state: 'gap', params: { gate: 'offer' } })
+  })
+
+  it('职业被官方排除时,排除先于一切 —— 不拿通道裁决盖过硬伤', () => {
+    const withIneligible: VerdictData = {
+      ...PE_DATA,
+      occupations: [...PE_DATA.occupations, O({
+        province: 'PE', type: 'ineligible', stream: 'PEI PNP — ineligible occupations', label: 'PE 不符合清单',
+        noc: '65200', name: 'Food counter attendants and kitchen helpers',
+        url: PE_PAGE, fetched: '2026-08-12',
+      })],
+    }
+    const card = tripleVerdict(PE_JOB, COMPANY, noOffer, withIneligible, { nowYear: NOW_YEAR })
+    expect(card.conclusion).toMatchObject({ kind: 'excluded', key: 'tv.sum.excluded', params: { prov: 'PE', list: 'PE 不符合清单' } })
+    expect(rowOf(card, 'tv.you.gate')).toBeUndefined()   // 硬伤在前,不再报闸
+  })
+
+  it('一条可判通道都没有时说「本站未收录」,不说「你不行」', () => {
+    const bare: VerdictData = dataWith([])              // 门槛表整张空 = 判定层的窟窿
+    const card = tripleVerdict(PE_JOB, NO_MATCH, noOffer, bare, { nowYear: NOW_YEAR })
+    expect(card.conclusion.kind).toBe('not-collected')
+    expect(card.conclusion.key).toBe('tv.sum.notCollected')
+  })
+
+  it('结论只认这份岗所在省的通道,目标省的线不参与', () => {
+    const card = tripleVerdict(PE_JOB, COMPANY, { ...noOffer, targetProvinces: ['NS'] }, PE_DATA, { nowYear: NOW_YEAR })
+    const target = card.compare.filter((c) => c.role === 'target').map((c) => c.key)
+    expect(target.length).toBeGreaterThan(0)            // NS 的线确实在比路里
+    expect(target).not.toContain(card.conclusion.pathway)   // 但结论没锚在它身上
+  })
+})
+
+describe('B1 举证标准 · 兜底分支', () => {
+  it('scoped=false 的省照旧不硬指', () => {
+    const noTeerRows: VerdictData = dataWith([...PE_REQS.filter((r) => !r.appliesTeer)])
+    const r = rowOf(tripleVerdict(PE_JOB, NO_MATCH, PROFILE, noTeerRows, { nowYear: NOW_YEAR }), 'tv.occ.teer')!
+    expect(r.params.scoped).toBe(false)
+    expect(r.params.scopeStream).toBe('')
+    expect(r.quote).toBeUndefined()
   })
 })
 

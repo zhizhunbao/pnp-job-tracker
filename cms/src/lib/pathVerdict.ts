@@ -38,7 +38,8 @@ const GATE_KEYS: GateKey[] = ['offer', 'statusInCanada', 'credentialCanada']
 const BLOCK_COST: Record<string, number> = {
   offer: 0, statusInCanada: 1, selfEmployed: 2, language: 3, credentialCanada: 4,
 }
-const blockCost = (b?: string) => (b ? BLOCK_COST[b] ?? 9 : -1)
+/** 导出给判定卡的结论句用:「差最难拆的那一项」必须与这里的次序同一把尺子,不许另立一份 */
+export const blockCost = (b?: string) => (b ? BLOCK_COST[b] ?? 9 : -1)
 
 // ── 契约(实施文档 §三,照抄)──────────────────────────────────────────────────
 
@@ -89,6 +90,12 @@ export type PathwayVerdict = {
    *  (2026-08-11 Frank 两次实拍点名)。排序与标签都要看它。
    *  2026-08-12 扩:offer / statusInCanada / credentialCanada 三类闸来自 gateManifest。 */
   blockedBy?: 'language' | 'selfEmployed' | GateKey
+  /**
+   * 判不了时**缺的是哪几个档案槽**(clb / expCanadaMonths / province / noc / 三类闸的键)。
+   * 只装「他一步能补的」—— 条文缺(我们的窟窿)走 availability='not-collected',两者不许混
+   * (2026-08-12 三值折叠的同一条规矩)。判定卡的结论句「判不了:还缺 X」点名就取这里。
+   */
+  missingSlots?: string[]
   reasons: VerdictReason[]
   score?: {
     system: string; value: number; ceiling: number | null
@@ -353,13 +360,19 @@ type GateEval = {
   gap: number | null                     // null = 判不了
   tenure: boolean
   unknownCond: Requirement[]             // 条件判不了的行(缺槽)
+  /** 挑不到行的原因是**他没答职业**(库里有按 TEER 分档的行,只是不知道他哪一档)——
+   *  这与「库里根本没有这条通道的经验门槛行」是两件事:前者他一步能补,后者是我们的窟窿。
+   *  混成一件事,PE 这种只有一条 `applies_teer=0,1,2,3` 的省就会对没答题的人恒报「本站未收录」。 */
+  teerUnknown: boolean
 }
 
 function pickGate(spec: PathwaySpec, rows: Requirement[], p: VerdictProfile, selfEmpExcluded: boolean): GateEval {
-  const gateRows = rows
-    .filter((r) => (r.factor === 'experience' || r.factor === 'workHours') && r.subject === 'applicant')
-    .filter((r) => teerHit(r, p.teer))
-  if (!gateRows.length) return { rows: [], picked: null, need: null, have: null, gap: null, tenure: false, unknownCond: [] }
+  const expRows = rows.filter((r) => (r.factor === 'experience' || r.factor === 'workHours') && r.subject === 'applicant')
+  const gateRows = expRows.filter((r) => teerHit(r, p.teer))
+  if (!gateRows.length) {
+    return { rows: [], picked: null, need: null, have: null, gap: null, tenure: false, unknownCond: [],
+      teerUnknown: expRows.length > 0 && p.teer == null }
+  }
 
   const unknownCond: Requirement[] = []
   const applicable: Requirement[] = []
@@ -391,7 +404,7 @@ function pickGate(spec: PathwaySpec, rows: Requirement[], p: VerdictProfile, sel
   // 🔴 need=0(op='none':官方明说不设门槛)时 gap 恒 0,**不看 have**:一道不存在的闸不许因为
   //    「缺经验月数」把通道拖成 needs-info(2026-08-06 §4.5:NL 正是这么被挤出第一轮答复的)。
   const gap = need == null ? null : need === 0 ? 0 : have == null ? null : Math.max(0, need - have)
-  return { rows: pool, picked, need, have, gap, tenure, unknownCond }
+  return { rows: pool, picked, need, have, gap, tenure, unknownCond, teerUnknown: false }
 }
 
 /** 居住门槛(NB 的「过去 6 个月住在 NB」)。现居省不是本省 → 0 个月,是本省 → 判不了时长(缺槽)。 */
@@ -527,8 +540,16 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
         key: 'pv.occListed', params: { noc: p.noc, name: o.name, stream: o.stream }, evidence: evOfOcc(o),
       })
     }
-    // 明文要求「必须在清单上」的通道(PE 的 Occupations in Demand 子通道)
-    if (spec.listRequired) {
+    // 明文要求「必须在清单上」的通道(PE 的 Occupations in Demand 子通道)。
+    // 🔴 **只关这个子通道,不关整条线**:PE-sw 装的是「Skilled Worker / Occupations in Demand」两个子通道,
+    //    官方原句写得很清楚 ——「the Occupations in Demand stream requires only 12 months, but is limited to
+    //    its named NOC list」。Skilled Worker 那条走的是 TEER 0-3 + 24 个月,与清单无关。
+    //    先前不分档:一个 TEER 3 的 PE 岗、三类闸全达标、经验也够,只因为不在那 8 个 NOC 里就整条判 excluded。
+    //    判据用**门槛行自己的 appliesTeer**(不写死 0-3):清单外的 TEER 有别的子通道收,就不许拿清单判死。
+    const listTeerCovered = spec.listRequired
+      ? rows.some((r) => r.subject === 'applicant' && r.factor === 'experience' && !!r.appliesTeer && teerHit(r, p.teer))
+      : false
+    if (spec.listRequired && !listTeerCovered) {
       const list = data.occupations.filter((o) => o.province === spec.listRequired!.province && o.type === 'indemand'
         && spec.listRequired!.streamRe.test(o.stream))
       const onList = list.some((o) => o.noc === p.noc)
@@ -608,10 +629,12 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
   // (按 0 经验 / 0 居住算)。这就是 §4.5 说的 **tier 潜力**:NL(need=0)最坏也是 tier0,
   // ON(3-6 月)最坏 tier1 —— 排序按它,缺槽的通道才不会全挤成一堆无差别的 0。
   const gaps: number[] = []
-  if (!gate.picked) {
+  if (!gate.picked && !gate.teerUnknown) {
     reasons.push({ kind: 'needs-info', text: `本站尚未收录 ${spec.stream} 的工作经验门槛条文`,
       key: 'pv.noExpReq', params: { stream: spec.stream } })
   }
+  // 行在库里、只是不知道他哪一档 TEER → 点名让他补职业,**不许说成本站没收录**
+  if (gate.teerUnknown) missingSlots.push('noc')
   if (gate.gap != null) gaps.push(gate.gap)
   else if (gate.need != null) gaps.push(gate.need)
   if (gate.have == null && gate.picked && gate.need !== 0) missingSlots.push('expCanadaMonths')
@@ -852,13 +875,16 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
   // 清单缺条文 = 本站未收录,与「查不到门槛行」同属 not-collected(对用户是「规则待核对」不是「你不行」)。
   // **excluded 时不改 availability**:硬伤是判出来的结论,不是「我们没数据」——两者混在一起就成了
   // 「因为没数据所以排除你」,那是拿缺口当判据(四态不合并的老规矩)。
-  const availability: Availability = !gate.picked || (!excluded && manifestNoSource) ? 'not-collected' : 'ok'
+  // 🔴 「他没答职业」不算本站未收录:gate.teerUnknown 时行是有的,缺的是他那一格答案 →
+  //    availability 仍是 ok,判不了走 needs-info + missingSlots 点名(三值折叠:条文缺 ≠ 答案缺)。
+  const availability: Availability = (!gate.picked && !gate.teerUnknown) || (!excluded && manifestNoSource) ? 'not-collected' : 'ok'
   void manifestGap
 
   return {
     key: spec.key, province: spec.province, stream: spec.stream,
     verdict, tier: verdict === 'needs-info' && !gate.picked ? null : tier,
     ...(blockedBy && !excluded ? { blockedBy } : {}),
+    ...(missingSlots.length && !excluded ? { missingSlots: Array.from(new Set(missingSlots)) } : {}),
     reasons, ...(score ? { score } : {}), availability,
   }
 }
