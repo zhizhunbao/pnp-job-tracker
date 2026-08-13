@@ -10,6 +10,7 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { getScoreTables } from '@/lib/scoreTables'
+import { buildTripleWire, type TripleWire } from '@/lib/tripleWire'
 import { PrDecisionView, type TvJob } from './PrDecisionView'
 
 export const dynamic = 'force-dynamic'
@@ -22,7 +23,7 @@ export const metadata = {
 
 export default async function PlanPrPage({ searchParams }: { searchParams: Promise<{ job?: string }> }) {
   const sp = await searchParams
-  const { overview, topNocs } = await getScoreTables()
+  const { overview, competition, topNocs } = await getScoreTables()
 
   // ?job= 带岗进来 → 三项结果直接并入本页(轻查:判定本体在 /api/triple-verdict,这里只要表头四样)
   let tvJob: TvJob | null = null
@@ -48,5 +49,22 @@ export default async function PlanPrPage({ searchParams }: { searchParams: Promi
     }
   }
 
-  return <PrDecisionView overview={overview} tvJob={tvJob} topNocs={topNocs} />
+  // 判定卡**服务端先算一版**(2026-08-12):先前整张卡都在客户端取,一进页面先盯 ~1.5s 的骨架条。
+  // 服务端读不到 localStorage,所以这一版按「登录档案 / 无本地答案」算;客户端拿到本地答案后再刷一次。
+  // 同一个 buildTripleWire,与 /api/triple-verdict 一条口径(付费闸也在里面,SSR 不会多漏一行)。
+  // 🔴 **SSR 不许阻塞页面**:判定拿不到/慢了就当没有,首屏照出,客户端再取(它本来就会取)。
+  //    数据面有单件缓存(实测 getVerdictData 冷 2.3s、热 0ms;名录冷 97ms、热 0ms)——
+  //    热进程里这一步几乎免费,但**冷启那一次不能让整页跟着等**,更不能因为它挂了页面就白屏。
+  let initialVerdict: TripleWire | null = null
+  if (tvJob) {
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const wire = await Promise.race([
+      buildTripleWire(tvJob.id, null).catch(() => null),
+      new Promise<null>((resolve) => { timer = setTimeout(() => resolve(null), 1500) }),
+    ])
+    if (timer) clearTimeout(timer)
+    if (wire && !('error' in wire)) initialVerdict = wire
+  }
+
+  return <PrDecisionView overview={overview} competition={competition} tvJob={tvJob} topNocs={topNocs} initialVerdict={initialVerdict} />
 }
