@@ -32,6 +32,15 @@ export const GATE_LABEL: Record<GateKey, { zh: string; en: string; ko: string }>
 
 const D = '2026-08-12'   // 本轮 crawl 抓取日(mb-mpnp 是 08-03,见该条)
 
+// 两份官方指南 PDF:它们**不在 crawl 里**(BC 那页把完整条件推给指南、PE 的 HTML 页挡在 Radware 后面),
+// 但我们自己的 ETL 一直在读 —— URL 逐条对齐既有脚本的常量,不另起一份,更不猜。
+/** 与 etl/pnp/build_bc_req.py:PDF_URL 同一份 */
+const BC_GUIDE = 'https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-si-program-guide-pdf'
+/** 与 etl/pnp/build_pe_req.py:GUIDE_URL 同一份 */
+const PE_GUIDE = 'https://www.princeedwardisland.ca/sites/default/files/publications/pei_workforce_application_guide.pdf'
+/** NB 技术工人通道资格页(2026 换版后的新址;从老地址 302 落到的 PNP 总览页上现取的链接) */
+const NB_SW = 'https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/skilled-worker-stream.html'
+
 export const GATE_MANIFEST: Record<string, Partial<Record<GateKey, GateRule>>> = {
   // 联邦 EE:资格靠 FSW/CEC/FST 三套准入 + CRS 打分,offer 只加分不设闸;资格页未设境内/加拿大学历门槛。
   // (EE 的细颗粒门槛另有 52 行落在 pnp_requirements program='FED',本清单不重复。)
@@ -72,11 +81,21 @@ export const GATE_MANIFEST: Record<string, Partial<Record<GateKey, GateRule>>> =
     credentialCanada: { need: 'notRequired', basis: 'absent', url: 'https://www.ontario.ca/page/ontario-workforce-priority-stream', fetched: D },
   },
 
-  // NB:crawl 只抓到 1 页门户,没有资格页 → 三类闸全部本站未收录,不猜。
+  // NB:原先三类闸全 unknown —— crawl 的 nb-imm 只有 1 页门户。**根因是官网换版**:
+  // 老地址 www2.gnb.ca/.../nb-skilled-worker-stream.html 现在 302 到 www.gnb.ca 的新站,
+  // 资格条文搬到了下面这一页(链接从重定向后的 PNP 总览页上现取,不是猜的)。
+  // 🔴 同一处换版还坐实了另一件事:`etl/pnp/build_nb_req.py` 的 guide_urls() 现在返回空 —— 它照老地址
+  //    去找三份指南 PDF,而重定向落在总览页上、那页没有指南链接 → **NB 的门槛行已经在冻结状态**(另账)。
+  // 本站 NB-sw 对应的是 **New Brunswick Experience** 那条 pathway(注册表 drawStream 就是它)。
   'NB-sw': {
-    offer: { need: 'unknown', why: 'no-source', url: 'https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration.html', fetched: D },
-    statusInCanada: { need: 'unknown', why: 'no-source', url: 'https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration.html', fetched: D },
-    credentialCanada: { need: 'unknown', why: 'no-source', url: 'https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration.html', fetched: D },
+    offer: { need: 'required', url: NB_SW, fetched: D,
+      quote: 'have the support of an eligible employer who has been actively operating in New Brunswick for the past 24 months, providing goods or services',
+      note: 'Experience pathway 另写「be working full time in a non-seasonal position for the employer who is supporting your application」—— 雇主支持是硬闸' },
+    statusInCanada: { need: 'required', url: NB_SW, fetched: D,
+      quote: 'have lived in New Brunswick for the past six months',
+      note: 'Experience pathway 专条;另两条 pathway(Graduates / Priority Occupations)不是本站 NB-sw 判的那条' },
+    credentialCanada: { need: 'notRequired', basis: 'absent', url: NB_SW, fetched: D,
+      note: '资格清单只写「have at least a high school diploma」,**没写必须是加拿大学历**;要加拿大学历的是 Graduates 那条 pathway' },
   },
 
   'NS-sw': {
@@ -115,20 +134,29 @@ export const GATE_MANIFEST: Record<string, Partial<Record<GateKey, GateRule>>> =
 
   // BC:offer 是闸(资格按 job offer 定);但该页自己写明**完整条件在 Program Guide**,而指南没抓到 →
   // 其余两类一律 unknown,不拿「页上没写」当「官方不要求」。
+  // BC:原先 status/credential 标 unknown('criteria-elsewhere')—— welcomebc 那页自己把完整条件推给了
+  // Skills Immigration Program Guide,而那份指南 crawl 里没有。2026-08-12 直提 PDF(63 页)逐节读出来:
+  // §3.1–3.13 通用要求 + §4.1(a)-(e) 技术工人专条，两处都没有学历闸。
   'BC-sw': {
-    offer: { need: 'required', url: 'https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration', fetched: D,
-      quote: 'Through Skills Immigration, workers who meet specific eligibility criteria based on their job offer can choose to apply to the Skilled Worker or Health Authority stream.' },
-    statusInCanada: { need: 'unknown', why: 'criteria-elsewhere', url: 'https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration', fetched: D,
-      note: '该页原句:「For complete information about eligibility and requirements, please see the Skills Immigration Program Guide.」—— 指南未入 crawl' },
-    credentialCanada: { need: 'unknown', why: 'criteria-elsewhere', url: 'https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration', fetched: D },
+    offer: { need: 'required', url: BC_GUIDE, fetched: D,
+      quote: 'You must have a valid job offer in an eligible occupation.',
+      note: '§4.1 (b);§3.5 另写明要全职且原则上不定期' },
+    statusInCanada: { need: 'notRequired', url: BC_GUIDE, fetched: D,
+      quote: 'The BC PNP will not nominate you if you: Are in Canada and are out of status',
+      note: '§3.3 是条件句:管的是「若已在境内则须有合法身份」，不构成「必须在境内」—— 同 ON-workforce 那条，别读反' },
+    credentialCanada: { need: 'notRequired', basis: 'absent', url: BC_GUIDE, fetched: D,
+      note: '通用要求 §3.1–3.13 与技术工人 §4.1(a)-(e) 逐条读完，没有任何学历门槛(学历只在注册打分表里算分，不是资格门槛)' },
   },
 
   // BC Build 是 Skills Immigration 池里的定向抽选,资格门槛与 Skilled Worker 同一套(pathVerdict 注册表已注明)。
   'BC-build': {
-    offer: { need: 'required', url: 'https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration', fetched: D,
-      quote: 'Through Skills Immigration, workers who meet specific eligibility criteria based on their job offer can choose to apply to the Skilled Worker or Health Authority stream.' },
-    statusInCanada: { need: 'unknown', why: 'criteria-elsewhere', url: 'https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration', fetched: D },
-    credentialCanada: { need: 'unknown', why: 'criteria-elsewhere', url: 'https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration', fetched: D },
+    offer: { need: 'required', url: BC_GUIDE, fetched: D,
+      quote: 'You must have a valid job offer in an eligible occupation.' },
+    statusInCanada: { need: 'notRequired', url: BC_GUIDE, fetched: D,
+      quote: 'The BC PNP will not nominate you if you: Are in Canada and are out of status',
+      note: '同 BC-sw:§3.3 是条件句，不是「必须在境内」' },
+    credentialCanada: { need: 'notRequired', basis: 'absent', url: BC_GUIDE, fetched: D,
+      note: '同 BC-sw:通用要求与本通道专条里都没有学历门槛' },
   },
 
   // NL 国际毕业生:三类闸全是硬的 —— PGWP 同时锁死「加拿大学历」与「人在境内」。
@@ -144,10 +172,17 @@ export const GATE_MANIFEST: Record<string, Partial<Record<GateKey, GateRule>>> =
   },
 
   // PE:crawl 只抓到办公室门户页,没有分通道资格页 → 三类闸全部本站未收录。
+  // PE:三类闸原先全标 unknown —— **不是官方没写,是我们没扫到**。crawl 的 pe-imm 只有 7 页
+  // (门户 + 4 条新闻 + 1 个 stream 页,HTML 页挡在 Radware 后面),而资格条文一直在这份指南 PDF 里,
+  // 我们自己的 build_pe_req.py 早就在读它。2026-08-12 取证器加了 PDF 源后逐条读出来的。
   'PE-sw': {
-    offer: { need: 'unknown', why: 'no-source', url: 'https://www.princeedwardisland.ca/en/information/office-of-immigration', fetched: D },
-    statusInCanada: { need: 'unknown', why: 'no-source', url: 'https://www.princeedwardisland.ca/en/information/office-of-immigration', fetched: D },
-    credentialCanada: { need: 'unknown', why: 'no-source', url: 'https://www.princeedwardisland.ca/en/information/office-of-immigration', fetched: D },
+    offer: { need: 'required', url: PE_GUIDE, fetched: D,
+      quote: 'have a full-time, non-seasonal (permanent or minimum of two years) job offer from a PEI employer in a high skilled occupation defined by the Training, Education, Experience, and Responsibility classification system as TEER category 0, 1, 2, or 3' },
+    statusInCanada: { need: 'required', url: PE_GUIDE, fetched: D,
+      quote: 'have a valid work permit to be working in Canada',
+      note: '同页 Note 留了境外招募的口子:「The Skilled Worker Stream may be utilized for talent recruitment outside of Canada, if the Prince Edward Island Employer has received authorization from the Office of Immigration prior to issuing a job offer.」—— 但那道口子要**雇主事先获授权**,不是申请人自己能满足的条件,故资格闸按 bullet 记' },
+    credentialCanada: { need: 'notRequired', basis: 'absent', url: PE_GUIDE, fetched: D,
+      note: '资格清单里确有学历要求(「have successfully completed a post-secondary degree or diploma (minimum two-year program)」),但**没写必须是加拿大学历** —— 学历闸有、加拿大学历闸无' },
   },
 }
 
