@@ -20,6 +20,8 @@ import { DEFAULT_PROFILE, EDU_KEYS, scoreProvince, streamMatches, type DrawRow, 
 // 打分是**关于你这个人**的功能,不绑某一个岗位(Frank 2026-07-27「应该单独弄个功能吧,
 // 不应该放到 pnp 弹框里面」)—— 所以只收一个轻量语境:职业(拿该省在招数)、目标省(排序)、
 // 时薪与城市(BC 的两项按官方规则要用,拿不到就让用户自己填)。全是可选。
+import { TabPanel, Tabs } from '../ui/Tabs'
+
 export type ScoreCtx = { noc?: string; teer?: number | null; province?: string; hourly?: number | null; city?: string; hasOffer?: boolean }
 
 // 大温地区(Area 1)成员市镇 —— 官方 PDF 只写「Metro Vancouver Regional District」,成员名单是公开事实。
@@ -499,69 +501,65 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
       </div>
       </>)}
 
-      {/* 各省:折叠手风琴(Frank 2026-08-10「四个省都列出来吗」)—— 一省一行(省名+制度+合计分),
-          目标省默认展开;该省的加分勾选也收进展开区(勾了才算;二选一组只算一项)。
-          收起行只有合计 —— 对比一眼可见,明细点开才有。 */}
+      {/* 各省:**选项卡**(Frank 2026-08-12:「还是需要一个通用的选项卡组件,不能用按钮代替」+
+          「只给估分功能加选项卡吧」)。原来是折叠手风琴 —— 一省一行点开看明细,与 08-11「折叠撤掉」那条
+          背道而驰,四个省堆下来也读不出对比。改成一省一个选项卡:选中省的合计分与明细直接摊开。
+          🔴 勾选(ticks/hasOffer)存在**本组件**的 state 里,不在面板里 —— 所以面板可以随切随卸,答案不丢。 */}
       {showResults && (<>
-      {scores.length > 1 ? (
-        <div style={{ marginTop: 12, borderRadius: 9, background: '#f8fafc', color: '#64748b', fontSize: 12, lineHeight: 1.55, padding: '8px 10px' }}>
-          {t('ps.compareHint')}
-        </div>
-      ) : null}
-      <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {scores.map((s) => {
-          const open = s.province === resolvedOpen
-          const list = bonusOf(s.province)
-          const offerRow = factors.find((f) => f.province === s.province && f.factor === 'offer' && f.kind === 'row')
-          const { line } = scoreAnchor(s, draws, streams[s.province] || '')
-          const gap = line == null ? null : line - s.total
-          return (
-            <div key={s.province} style={{ border: '1px solid #e5e7eb', borderRadius: 10 }}>
-              <button onClick={() => setOpenProv(open ? '__closed' : s.province)}
-                style={{ display: 'flex', alignItems: 'center', gap: 9, width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: '10px 12px', fontFamily: 'inherit', textAlign: 'left' }}>
-                <span style={{ minWidth: 0, flex: 1 }}>
-                  <span style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t('prov.' + s.province) || s.province}</span>
-                  <span style={{ display: 'block', marginTop: 2, fontSize: 11, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.system}</span>
-                </span>
-                <span style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <span style={{ display: 'block', fontSize: 15, fontWeight: 700, color: '#1d4ed8', fontVariantNumeric: 'tabular-nums' }}>
-                    {s.total}{s.maxTotal ? <span style={{ fontSize: 11.5, color: '#9ca3af', fontWeight: 500 }}> / {s.maxTotal}</span> : null}
-                  </span>
-                  <span style={{ display: 'block', marginTop: 2, color: gap == null ? '#94a3b8' : gap <= 0 ? '#15803d' : '#b45309', fontSize: 11, fontWeight: 650, whiteSpace: 'nowrap' }}>
-                    {gap == null ? t('ps.noCompareLine') : gap <= 0 ? t('ps.met') : t('ps.under', { n: gap })}
-                  </span>
-                </span>
-                <span style={{ color: '#9ca3af', fontSize: 11, flexShrink: 0 }}>{open ? '▴' : '▾'}</span>
-              </button>
-              {open && (
-                <div style={{ padding: '0 12px 11px' }}>
-                  {!targetMode && (list.length || offerRow) ? (
-                    <div style={{ marginBottom: 8 }}>
-                      <div style={lbl}>{t('ps.bonus')}</div>
-                      {/* 一行两个事实(条目、+N)拆成列(同 FactGrid 规矩):外层 auto-fit 决定几列,
-                          条目内部 [勾选框 | 条目 | +N] 三列,+N 在同一列上对齐 */}
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '4px 16px' }}>
-                        {offerRow ? (
-                          <Tick on={hasOffer} onToggle={setHasOffer} text={label(offerRow.label, lang)} pts={offerRow.points} />
-                        ) : null}
-                        {list.map((b) => {
-                          const key = `${s.province}:${b.factor}:${b.seq}`
-                          return (
-                            <Tick key={key} on={!!ticks[key]} onToggle={(v) => setTicks((m) => ({ ...m, [key]: v }))}
-                              text={label(b.label, lang)} pts={b.points} />
-                          )
-                        })}
-                      </div>
-                    </div>
-                  ) : null}
-                  <ProvinceResult t={t} lang={lang} s={s} draws={draws} byProv={byProv}
-                    switchable={s.province !== ctx.province} matchedStream={streams[s.province] || ''} factors={factors} />
-                </div>
-              )}
-            </div>
-          )
-        })}
+      <div style={{ marginTop: 12 }}>
+        <Tabs
+          idPrefix="ps-prov"
+          ariaLabel={t('ps.resultTitle')}
+          value={resolvedOpen || scores[0].province}
+          onChange={setOpenProv}
+          // 选项卡上只放省名:合计分在选中省的面板里就是最大的那个数,标签上再挂一遍是同一件事说两遍
+          items={scores.map((s) => ({ key: s.province, label: t('prov.' + s.province) || s.province }))}
+        />
       </div>
+      {scores.map((s) => {
+        const open = s.province === (resolvedOpen || scores[0].province)
+        const list = bonusOf(s.province)
+        const offerRow = factors.find((f) => f.province === s.province && f.factor === 'offer' && f.kind === 'row')
+        const { line } = scoreAnchor(s, draws, streams[s.province] || '')
+        const gap = line == null ? null : line - s.total
+        return (
+          <TabPanel key={s.province} idPrefix="ps-prov" tabKey={s.province} active={open}>
+            <div style={{ padding: '12px 0 0' }}>
+              {/* 该省合计分 + 与最近一轮抽选线的差距(选项卡上只放合计,差距摆这儿) */}
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 22, fontWeight: 700, color: '#1d4ed8', fontVariantNumeric: 'tabular-nums' }}>
+                  {s.total}{s.maxTotal ? <span style={{ fontSize: 13, color: '#9ca3af', fontWeight: 500 }}> / {s.maxTotal}</span> : null}
+                </span>
+                <span style={{ fontSize: 12.5, color: '#9ca3af' }}>{s.system}</span>
+                <span style={{ marginLeft: 'auto', color: gap == null ? '#94a3b8' : gap <= 0 ? '#15803d' : '#b45309', fontSize: 12.5, fontWeight: 650, whiteSpace: 'nowrap' }}>
+                  {gap == null ? t('ps.noCompareLine') : gap <= 0 ? t('ps.met') : t('ps.under', { n: gap })}
+                </span>
+              </div>
+              {!targetMode && (list.length || offerRow) ? (
+                <div style={{ margin: '10px 0 8px' }}>
+                  <div style={lbl}>{t('ps.bonus')}</div>
+                  {/* 一行两个事实(条目、+N)拆成列(同 FactGrid 规矩):外层 auto-fit 决定几列,
+                      条目内部 [勾选框 | 条目 | +N] 三列,+N 在同一列上对齐 */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '4px 16px' }}>
+                    {offerRow ? (
+                      <Tick on={hasOffer} onToggle={setHasOffer} text={label(offerRow.label, lang)} pts={offerRow.points} />
+                    ) : null}
+                    {list.map((b) => {
+                      const key = `${s.province}:${b.factor}:${b.seq}`
+                      return (
+                        <Tick key={key} on={!!ticks[key]} onToggle={(v) => setTicks((m) => ({ ...m, [key]: v }))}
+                          text={label(b.label, lang)} pts={b.points} />
+                      )
+                    })}
+                  </div>
+                </div>
+              ) : null}
+              <ProvinceResult t={t} lang={lang} s={s} draws={draws} byProv={byProv}
+                switchable={s.province !== ctx.province} matchedStream={streams[s.province] || ''} factors={factors} />
+            </div>
+          </TabPanel>
+        )
+      })}
 
       <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 8, lineHeight: 1.7 }}>
         <div>{t('ps.note')}</div>

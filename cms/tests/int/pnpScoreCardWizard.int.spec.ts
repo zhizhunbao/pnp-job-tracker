@@ -216,12 +216,16 @@ describe('PnpScoreCard target questionnaire', () => {
       }))
     })
 
-    expect(container.textContent).toContain('COMPARE BY THRESHOLD')
-    const provinceRows = Array.from(container.querySelectorAll('button'))
-      .filter((button) => /BC|SK/.test(button.textContent || ''))
-    expect(provinceRows).toHaveLength(2)
-    expect(provinceRows[0].textContent).toMatch(/NO COMPARABLE LINE|MEETS|SHORT/)
-    expect(provinceRows[1].textContent).toMatch(/NO COMPARABLE LINE|MEETS|SHORT/)
+    // 2026-08-12:各省从折叠手风琴改成**选项卡**(Frank「只给估分功能加选项卡」)——
+    // 断言跟着形态走:一省一个 role=tab,面板与 tab 用 aria 对上,当前省的差距句直接摊开。
+    const tabs = Array.from(container.querySelectorAll('[role="tab"]'))
+    expect(tabs.map((x) => x.getAttribute('id'))).toEqual(['ps-prov-BC', 'ps-prov-SK'])
+    expect(tabs.filter((x) => x.getAttribute('aria-selected') === 'true')).toHaveLength(1)
+    for (const tab of tabs) {
+      const panel = container.querySelector(`#${tab.getAttribute('aria-controls')}`)
+      expect(panel, tab.getAttribute('id') ?? '').toBeTruthy()
+      expect(panel!.textContent).toMatch(/NO COMPARABLE LINE|MEETS|SHORT/)
+    }
 
     await act(async () => root.unmount())
     container.remove()
