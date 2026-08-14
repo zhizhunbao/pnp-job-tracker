@@ -37,13 +37,17 @@ def main() -> None:
     rows = []
     for p in PROVS:
         factors = []
-        # ① 竞争比
-        pool = (tr["study"]["byProv"].get(p) or 0) + (tr["tfwp"]["byProv"].get(p) or 0) + (tr["imp"]["byProv"].get(p) or 0)
+        # ① 竞争比。存量只含学签+工签(TFWP+IMP)持有人,访客/旅游签从不计入;
+        #    学签/工签拆分单独带出(2026-08-14 Frank「拆成多列,学签 工签」),合计仍是比值分子
+        pool_study = tr["study"]["byProv"].get(p) or 0
+        pool_work = (tr["tfwp"]["byProv"].get(p) or 0) + (tr["imp"]["byProv"].get(p) or 0)
+        pool = pool_study + pool_work
         a = alloc.get(p) or {}
         quota, qyear = (a.get("y2026"), 2026) if a.get("y2026") else (a.get("y2025"), 2025)
         comp = round(pool / quota, 1) if pool and quota else None
         if comp is not None:
-            factors.append({"key": "comp", "value": comp, "pool": pool, "quota": quota, "quotaYear": qyear,
+            factors.append({"key": "comp", "value": comp, "pool": pool, "poolStudy": pool_study, "poolWork": pool_work,
+                            "quota": quota, "quotaYear": qyear,
                             "tier": tier_of_comp(comp), "source": tr["study"]["source"] if isinstance(tr["study"].get("source"), str) else tr["source"]["study"], "asOf": tr_year})
         # ② 配额趋势(两年都有才出)
         if a.get("y2026") and a.get("y2025"):

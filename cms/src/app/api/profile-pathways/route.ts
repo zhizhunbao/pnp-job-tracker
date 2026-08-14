@@ -106,6 +106,12 @@ export async function POST(req: Request) {
 
   const [data, comp] = await Promise.all([getVerdictData(), competitionByProvince()])
   const all = pathVerdict(profile, data)
+  // 反事实(L2-09):明确没 offer 的档案,把 hasOffer=true 代入重跑一次 —— 被 offer 卡住的行
+  // 附上「拿到该省 offer 之后的世界」:立刻分出「即可申请」和「拿了 offer 还差语言/学历」的省,
+  // 这是「该押哪个省找工作」的直接依据。答案缺 offer(null)不算「没有」,不跑。
+  const afterByKey = profile.hasOffer === false
+    ? new Map(pathVerdict({ ...profile, hasOffer: true }, data).map((v) => [v.key, v]))
+    : null
   const scoped = all.filter((row) => pathwayMatchesTargets(row.key, row.province, targetProvinces))
   // 方案区只推荐仍可推进或待补资料的路径；硬排除项不包装成“方案”。
   const open = scoped.filter((row) => row.verdict !== 'excluded')
@@ -123,17 +129,22 @@ export async function POST(req: Request) {
     return ar === br ? a.i - b.i : ar - br
   })
 
-  const rows = ranked.slice(0, 6).map(({ row, c }) => ({
-    key: row.key,
-    province: row.province,
-    verdict: row.verdict,
-    tier: row.tier,
-    availability: row.availability,
-    // 被硬门槛卡住时,方案卡不能再写「优先核对」——那等于让人拿着不够的语言分去核对
-    blockedBy: row.blockedBy ?? null,
-    /** 该省名额竞争度(联邦口径,9 省可比);联邦线为 null */
-    competition: c ?? null,
-  }))
+  const rows = ranked.slice(0, 6).map(({ row, c }) => {
+    const after = row.blockedBy === 'offer' ? afterByKey?.get(row.key) : undefined
+    return {
+      key: row.key,
+      province: row.province,
+      verdict: row.verdict,
+      tier: row.tier,
+      availability: row.availability,
+      // 被硬门槛卡住时,方案卡不能再写「优先核对」——那等于让人拿着不够的语言分去核对
+      blockedBy: row.blockedBy ?? null,
+      /** 该省名额竞争度(联邦口径,9 省可比);联邦线为 null */
+      competition: c ?? null,
+      /** 反事实:拿到该省 offer 之后这条路的判定(只给被 offer 卡住的行) */
+      afterOffer: after ? { verdict: after.verdict, blockedBy: after.blockedBy ?? null, tier: after.tier } : null,
+    }
+  })
 
   return Response.json({ noc, rows })
 }

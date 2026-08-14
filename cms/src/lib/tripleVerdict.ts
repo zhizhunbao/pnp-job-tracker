@@ -267,31 +267,48 @@ function occupationRows(job: TripleJob, occs: OccupationRow[], provReqs: Require
     // 「未命中该省任何具名清单」事实无误,但**读起来像判死** —— 定向清单只绑它自己那条通道
     // (PE 的 OID 就 8 个职业,该省另有技术工人/关键工人/国际毕业生几条不看清单的通道)。
     // 所以这一行必须带**适用范围**:哪张清单、多少个职业、绑哪条通道;一张都没收录时说「未收录」而不是「未命中」。
+    // **「官方不设清单」是要举证的断言**(2026-08-14 Frank 实拍 NL:「本站未收录 NL 的定向清单」
+    // 让用户去官网找一份不存在的清单)——举证=资格页逐条只有 offer/身份/语言/经验,无职业清单条目。
+    // NL 的 nl-priority 是「优先处理表」(官方明说不在表上不等于不能申请,且只给职位名无 NOC 码),不构成定向清单。
+    const OCC_LIST_NONE: Record<string, { url: string; fetched: string }> = {
+      NL: { url: 'https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/international-graduate', fetched: '2026-08-12' },
+    }
     const lists = namedLists(job.province, occs)
     const only = lists.length === 1 ? lists[0] : null
-    out.push({
-      gate: 'occupation', tier: 'free', key: 'tv.occ.notListed',
-      state: lists.length ? 'info' : 'unknown',
-      params: {
-        noc: job.noc ?? '', nocName, prov: job.province,
-        lists: lists.map((l) => l.label), listCount: lists.length,
-        list: only?.label ?? '', stream: only?.stream ?? '', count: only?.count ?? 0,
-      },
-      label: lists.length
-        ? `occupation ${job.noc ?? '?'} is not on any of the ${lists.length} named list(s) of ${job.province} — named lists bind only their own stream`
-        : `no named occupation list on file for ${job.province}`,
-      ...(only?.url && only.fetched ? { evidence: { url: only.url, fetched: only.fetched, label: only.stream } } : {}),
-    })
+    const none = !lists.length ? OCC_LIST_NONE[job.province] : undefined
+    if (none) {
+      out.push({
+        gate: 'occupation', tier: 'free', key: 'tv.occ.noList', state: 'info',
+        params: { noc: job.noc ?? '', nocName, prov: job.province },
+        label: `${job.province} employer-offer streams set no occupation list (eligibility pages enumerate offer/status/language only)`,
+        evidence: { url: none.url, fetched: none.fetched, label: job.province },
+      })
+    } else {
+      out.push({
+        gate: 'occupation', tier: 'free', key: 'tv.occ.notListed',
+        state: lists.length ? 'info' : 'unknown',
+        params: {
+          noc: job.noc ?? '', nocName, prov: job.province,
+          lists: lists.map((l) => l.label), listCount: lists.length,
+          list: only?.label ?? '', stream: only?.stream ?? '', count: only?.count ?? 0,
+        },
+        label: lists.length
+          ? `occupation ${job.noc ?? '?'} is not on any of the ${lists.length} named list(s) of ${job.province} — named lists bind only their own stream`
+          : `no named occupation list on file for ${job.province}`,
+        ...(only?.url && only.fetched ? { evidence: { url: only.url, fetched: only.fetched, label: only.stream } } : {}),
+      })
+    }
   }
 
-  // 粗筛档。**state 永不 pass/gap** —— pnpEligible 是 08_score 的省级粗筛(CLAUDE.md:粗筛信号,非资格认定),
-  // 渲成绿勾「TEER 5 在该省受理范围内」就是拿粗筛冒充官方结论:PE 那条技术工人通道 applies_teer=0,1,2,3,
-  // 而 TEER 5 的岗照样 pnpEligible=true(靠「先省内同雇主干满 6 个月」那类通道兜底)。
+  // 粗筛档。2026-08-14 Frank 拍板「满足的显示绿色对勾 不满足的就差红色」—— state 改按 pnpEligible 分
+  // pass/excluded(原「永不 pass、中性圆点」作废)。防「拿粗筛冒充官方结论」的担子挪到**措辞**上:
+  // 文案只说「初筛通过/未过」(本站的筛),不说「在该省受理范围内」(那是官方口径,PE 反例:
+  // 技术工人通道 applies_teer=0-3 而 TEER 5 岗靠同雇主 6 个月通道照样 pnpEligible=true)。
   const scopes = teerScopes(provReqs)
   const outScope = job.teer == null ? undefined : scopes.find((s) => !s.teers.includes(job.teer as number))
   out.push({
     gate: 'occupation', tier: 'free', key: 'tv.occ.teer',
-    state: job.teer == null ? 'unknown' : 'info',
+    state: job.teer == null ? 'unknown' : job.pnpEligible ? 'pass' : 'excluded',
     params: {
       teer: job.teer ?? '', prov: job.province, noc: job.noc ?? '', nocName,
       coarsePass: job.pnpEligible,
@@ -359,6 +376,17 @@ function employerRows(job: TripleJob, company: TripleCompany, ev: EmployerVerdic
         unit: item.unit, evidence: item.evidence, name: company.name, prov: job.province,
       },
       label: `employer ${item.factor}: need ${item.need ?? '?'} ${item.unit}, has ${item.have ?? '?'} → ${item.verdict}`,
+      ...(src ? { quote: quoteOfReq(src), evidence: evOfReq(src) } : {}),
+    })
+  }
+  // 年营业额(2026-08-14 Frank「需要加一个年收入的卡片」):门槛行在库的省(ON/AB)才出;
+  // 公司营业额无源(08-10 拍板永久结案,不重启抓数)→ 恒 unknown,前端按「未收录」渲染
+  if (ev.revenue) {
+    const src = reqOf('empRevenue')
+    out.push({
+      gate: 'employer', tier: 'free', key: 'tv.emp.revenue', state: 'unknown',
+      params: { need: ev.revenue.need ?? '', name: company.name, prov: job.province },
+      label: `employer revenue: need ${ev.revenue.need ?? '?'} CAD/yr, company revenue permanently uncollected`,
       ...(src ? { quote: quoteOfReq(src), evidence: evOfReq(src) } : {}),
     })
   }

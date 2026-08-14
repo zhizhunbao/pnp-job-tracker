@@ -1,0 +1,62 @@
+{
+ "fetched": "2026-08-14",
+ "note": "名额公告哨兵 state(去重用)。命中≠核实:数字进 pnp_allocations.json 前必须人工回官方页核对原句。",
+ "watch": {
+  "ON": [
+   "2027"
+  ],
+  "BC": [
+   "2027"
+  ],
+  "AB": [
+   "2027"
+  ],
+  "SK": [
+   "2027"
+  ],
+  "MB": [
+   "2027"
+  ],
+  "NS": [
+   "2027"
+  ],
+  "NB": [
+   "2026",
+   "2027"
+  ],
+  "NL": [
+   "2026",
+   "2027"
+  ],
+  "PE": [
+   "2026",
+   "2027"
+  ]
+ },
+ "seen": {
+  "MB:2026:6239": {
+   "prov": "MB",
+   "year": "2026",
+   "n": 6239,
+   "quote": "lled “enhanced nominations.” The ratio of base to enhanced nominations is flexible and may be adjusted based on MPNP inventory and Manitoba’s labour needs. The Manitoba Provincial ",
+   "src": "mb-root/3321d841d65874e0589c412948ba314f.html",
+   "first": "2026-08-14"
+  },
+  "MB:2026:886": {
+   "prov": "MB",
+   "year": "2026",
+   "n": 886,
+   "quote": "inventory and Manitoba’s labour needs. The Manitoba Provincial Nominee Program (MPNP) receives an allocation of nominations each year from Immigration, Refugees and Citizenship Can",
+   "src": "mb-root/3321d841d65874e0589c412948ba314f.html",
+   "first": "2026-08-14"
+  },
+  "SK:2025:4761": {
+   "prov": "SK",
+   "year": "2025",
+   "n": 4761,
+   "quote": "Overview Updated as of December 19, 2025. 2026 SINP Overview What is the 2026 nomination allocation? The SINP's initial nomination allocation for 2026 is 4,761. Unlike 2025, there ",
+   "src": "sk-sinp/419bc82869a9247a608983c1c69a7bd8.html",
+   "first": "2026-08-14"
+  }
+ }
+}

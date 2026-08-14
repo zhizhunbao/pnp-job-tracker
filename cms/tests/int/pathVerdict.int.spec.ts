@@ -60,15 +60,18 @@ const byKey = (list: PathwayVerdict[], key: string): PathwayVerdict => {
 
 describe('mart 实况', () => {
   it('六张表的行数与 C4 入库一致', () => {
-    // 2026-08-09 批B AIP 36 行入库后更新:门槛表 259 → 300(264 既有 + 36 AIP)
-    expect(data.requirements).toHaveLength(300)
+    // 2026-08-09 批B AIP 36 行入库后更新:门槛表 259 → 300(264 既有 + 36 AIP);
+    // 2026-08-14 L2-09 用例横测补 RCIP 语言 3 行(TEER 档 CLB 6/5/4)→ 303
+    expect(data.requirements).toHaveLength(303)
     expect(data.requirements.filter((r) => r.program === 'AIP')).toHaveLength(36)
+    expect(data.requirements.filter((r) => r.program === 'RCIP' && r.factor === 'language')).toHaveLength(3)
     expect(data.occupations).toHaveLength(630)
     // 分值表**按省钉**,不钉总数:钉总数时加一个省(2026-08-10 接纽省)只会报「164 变 192」,
     // 看不出是哪张表动了,红了也没人认领。按省钉,失败信息自己说出是哪个省的官方表变了。
     const byProvince: Record<string, number> = {}
     for (const row of data.scoreFactors) byProvince[row.province] = (byProvince[row.province] ?? 0) + 1
-    expect(byProvince).toEqual({ BC: 32, MB: 44, NL: 28, ON: 51, SK: 37 })
+    // 2026-08-14 AB 入列(AAIP Worker EOI Points Grid 30 行,官方 PDF 人工核对)
+    expect(byProvince).toEqual({ AB: 30, BC: 32, MB: 44, NL: 28, ON: 51, SK: 37 })
     expect(data.eeGrid).toHaveLength(380)
     // 抽选表与指定雇主名录**按周增长**(抽选每轮一行、名录每次抓取补差)——钉死行数是纯脆断言,
     // 只守「不许倒退」;门槛/清单/分值表那四张是政策表,改版要炸得出来,继续钉死。
@@ -273,6 +276,26 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
     expect(weak[0].key).not.toBe('FED-EE')
     // 理由还在(判定卡照旧摆官方门槛),只是不再顶到方案第一位
     expect(ee.reasons.some((r) => r.kind === 'gap' && /语言门槛/.test(r.text))).toBe(true)
+  })
+
+  it('反事实(L2-09):hasOffer=true 重跑后,被 offer 卡住的路不再报 offer 缺口', () => {
+    // /api/profile-pathways 的 afterOffer 就靠这个不变量:offer 闸放行后,徽标要么写「即可申请」,
+    // 要么暴露下一道更硬的闸(语言/身份/学历)—— 绝不能还是 offer。
+    // 档案照 Frank 2026-08-14 实拍:软件职业、在加读书、CLB 5、海外 5 年经验、有加拿大学历、无 offer
+    const profile = {
+      age: null, married: null, clb: 5, edu: null, eduYears: null, canadaStudy: true, studyProvince: null,
+      noc: '21231', teer: 1, expCanadaMonths: 0, expForeignMonths: 60, foreignExpSelfEmployed: null,
+      hasOffer: false, inCanada: true, status: 'study' as const, province: null,
+    }
+    const before = pathVerdict(profile, data)
+    const offerBlocked = before.filter((v) => v.blockedBy === 'offer')
+    expect(offerBlocked.length, '该档案至少一条路被 offer 卡住(实拍是三条)').toBeGreaterThan(0)
+    const after = pathVerdict({ ...profile, hasOffer: true }, data)
+    for (const v of offerBlocked) {
+      const cf = after.find((x) => x.key === v.key)!
+      expect(cf.blockedBy, `${v.key} 反事实后不许再报 offer`).not.toBe('offer')
+      expect(cf.reasons.some((r) => r.kind === 'gap' && r.key === 'pv.gate.offer.gap'), `${v.key} 不许再有 offer 缺口理由`).toBe(false)
+    }
   })
 })
 

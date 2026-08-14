@@ -4,57 +4,57 @@
   "source": "BC PNP — Invitations to apply (Skills Immigration registration pool)",
   "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply",
   "note": "BC PNP Skills Immigration 注册池按 SIRS 分数段的人数分布(官方定期更新)。配合 pnp_draws 里 BC 的「最低邀请分」使用:高于最近分数线 → 池中排位靠前;低于 → 分布表能读出差的每一档压着多少人。「<5」为官方隐私抑制值,原样保留。抽选史的 canonical 维度表归 build_draws.py,本表不重复。",
-  "asOf": "2026-07-07",
-  "fetched": "2026-08-05",
+  "asOf": "2026-08-04",
+  "fetched": "2026-08-12",
   "pool": [
     {
       "scoreRange": "150+",
-      "registrations": 12
+      "registrations": 10
     },
     {
       "scoreRange": "140 - 149",
-      "registrations": 34
+      "registrations": 38
     },
     {
       "scoreRange": "130 - 139",
-      "registrations": 440
+      "registrations": 241
     },
     {
       "scoreRange": "120 - 129",
-      "registrations": 1058
+      "registrations": 1023
     },
     {
       "scoreRange": "110 - 119",
-      "registrations": 1369
+      "registrations": 1332
     },
     {
       "scoreRange": "100 - 109",
-      "registrations": 1728
+      "registrations": 1651
     },
     {
       "scoreRange": "90 - 99",
-      "registrations": 1496
+      "registrations": 1468
     },
     {
       "scoreRange": "80 - 89",
-      "registrations": 1227
+      "registrations": 1219
     },
     {
       "scoreRange": "70 - 79",
-      "registrations": 729
+      "registrations": 739
     },
     {
       "scoreRange": "60 - 69",
-      "registrations": 381
+      "registrations": 373
     },
     {
       "scoreRange": "0 - 59",
-      "registrations": 209
+      "registrations": 212
     }
   ],
   "processing": {
     "url": "https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration",
-    "fetched": "2026-08-05",
+    "fetched": "2026-08-12",
     "asOf": "",
     "percentileLabel": "Generally, around 80% of cases will be processed within the following timelines",
     "rows": [

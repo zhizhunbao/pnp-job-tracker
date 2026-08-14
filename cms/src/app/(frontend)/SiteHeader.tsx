@@ -159,6 +159,8 @@ function MobileDrawer({ t, active, onClose }: { t: TFn; active?: string; onClose
           {grp('lib', t('nav.library'), [
             { href: '/occupations', label: t('dir.occ.title') },
             { href: '/resources', label: t('res.entry') },
+            // 常见案例 2026-08-13 从决策页迁出成独立页,入口归资料库
+            { href: '/cases', label: t('dp.cases') },
           ])}
           {/* E13-03:「数据与结论」组原有的 榜单 / 地区统计 两项已并进顶部的「就业把脉」,组标题随之撤 */}
           {grp('info', t('nav.info'), [
@@ -247,6 +249,8 @@ export function SiteHeader({ lang, setLang, t, active, sticky, matchButton, acco
             <NavDrop label={t('nav.library')} icon={<IconUsers />} highlight={false} items={[
               { href: '/occupations', label: t('dir.occ.title') },
               { href: '/resources', label: t('res.entry') },
+              // 常见案例 2026-08-13 从决策页迁出成独立页,入口归资料库
+              { href: '/cases', label: t('dp.cases') },
             ]} />
             {/* 资讯 ▾(E8-07 E):移民新闻+政策时间线聚合(时间线首次进顶栏);原「移民动态」顶级项并入 */}
             <NavDrop label={t('nav.info')} icon={<IconNews />} highlight={active === 'news'} items={[

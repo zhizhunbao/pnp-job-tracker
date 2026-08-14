@@ -1,0 +1,76 @@
+'use client'
+// 申请人条件格子(2026-08-13 Frank:「按不同的省份划分不同的问题,改成 tab 切换」)。
+// 共用题(基础 8 项 + 学历/经验/语言/年龄等全省通用的分值题)平铺在上;
+// 省专属题按省分组进真选项卡(ui/Tabs,badge=该省还没答几题)。
+// 摘要卡与带岗态判定卡②共用本组件 —— 同一种东西一个长相。
+import { useState } from 'react'
+import { Tabs, TabPanel } from '../ui/Tabs'
+
+export type ConditionRow = {
+  key: string; prov: string; label: string; value: string; filled: boolean
+  /** 与当前岗位不匹配的小标(2026-08-14 Frank「加个图标标一下」):琥珀 ⚠ 胶囊,不带长句 */
+  warn?: string
+}
+
+export function ConditionGrid({ rows, provLabel, onTile, ariaLabel, idPrefix }: {
+  rows: ConditionRow[]
+  provLabel: (code: string) => string
+  /** 点哪格进哪题(带 key 直达) */
+  onTile: (key: string) => void
+  ariaLabel: string
+  idPrefix: string
+}) {
+  const shared = rows.filter((r) => !r.prov)
+  const provs = Array.from(new Set(rows.filter((r) => r.prov).map((r) => r.prov)))
+  const [tab, setTab] = useState('')
+  const active = provs.includes(tab) ? tab : provs[0] ?? ''
+
+  const tile = (r: ConditionRow) => (
+    <button key={r.key} onClick={() => onTile(r.key)} style={{
+      minWidth: 0,
+      textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit',
+      background: r.filled ? '#f8fafc' : '#fafafa',
+      border: `1px ${r.filled ? 'solid' : 'dashed'} ${r.filled ? '#eef2f7' : '#cbd5e1'}`,
+      borderRadius: 9,
+      padding: '8px 10px',
+    }}>
+      <div style={{ color: '#9ca3af', fontSize: 11.5, lineHeight: 1.35, marginBottom: 2 }}>
+        {r.label}
+        {r.warn ? <span style={{ background: '#fffbeb', color: '#92400e', borderRadius: 999, padding: '1px 7px', fontSize: 10.5, fontWeight: 600, marginLeft: 6, whiteSpace: 'nowrap' }}>⚠ {r.warn}</span> : null}
+      </div>
+      <div className="cgVal" title={r.value} style={{
+        color: r.filled ? '#1f2937' : '#94a3b8',
+        fontSize: 13,
+        fontWeight: r.filled ? 600 : 400,
+        lineHeight: 1.45,
+        whiteSpace: 'normal',
+        wordBreak: 'break-word',
+      }}>
+        {r.value}
+      </div>
+    </button>
+  )
+
+  return (
+    <>
+      <style>{'.cgGrid{display:grid;gap:8px;grid-template-columns:repeat(3,minmax(0,1fr))}@media(max-width:640px){.cgGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}'}</style>
+      <div className="cgGrid">{shared.map(tile)}</div>
+      {provs.length > 0 && (
+        <>
+          <div style={{ margin: '12px 0 10px' }}>
+            <Tabs ariaLabel={ariaLabel} idPrefix={idPrefix} value={active} onChange={setTab}
+              items={provs.map((p) => ({
+                key: p, label: provLabel(p),
+                badge: rows.filter((r) => r.prov === p && !r.filled).length || undefined,
+              }))} />
+          </div>
+          {provs.map((p) => (
+            <TabPanel key={p} tabKey={p} active={p === active} idPrefix={idPrefix}>
+              <div className="cgGrid">{rows.filter((r) => r.prov === p).map(tile)}</div>
+            </TabPanel>
+          ))}
+        </>
+      )}
+    </>
+  )
+}

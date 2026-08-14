@@ -7,7 +7,7 @@
   "url": "https://www.ontario.ca/page/ontario-workforce-priority-stream",
   "pageUrl": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp",
   "guideEffective": "",
-  "fetched": "2026-08-05",
+  "fetched": "2026-08-12",
   "groupMax": {},
   "factors": {
     "teerCat": {
@@ -95,19 +95,19 @@
       "group": "employment",
       "rows": [
         {
-          "label": "Over 24 months working in job offer position",
+          "label": "Over 24 months working full-time in job offer position",
           "points": 18
         },
         {
-          "label": "13 to 24 months working in job offer position",
+          "label": "13 to 24 months working full-time in job offer position",
           "points": 15
         },
         {
-          "label": "6 to 12 months working in job offer position",
+          "label": "6 to 12 months working full-time in job offer position",
           "points": 12
         },
         {
-          "label": "Less than 6 months working in job offer position or not currently working in position",
+          "label": "Less than 6 months working full-time in job offer position or not currently working in position",
           "points": 0
         }
       ],

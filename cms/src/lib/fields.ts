@@ -36,7 +36,9 @@ const l = (en: string, zh: string, ko: string): L => ({ default: en, 'zh-cn': zh
 // 落「判不了」,而不是被折成某个他没说过的答案。三值折叠里的 unknown 就该由用户显式说得出口。
 export const UNSURE_BAND = 9
 
-const CLB = [0, 0, 4, 6, 8, 10]        // a1「还没考」= 没有分,不传
+// 精确档(2026-08-13 语言合一:基础卷直接问精确 CLB,官方分值表不再追问第二遍)。
+// index = 选项 value;1「还没考」= 没有分,不传。**不用 CLB 数字当 value**:9 会撞 UNSURE_BAND。
+const CLB = [0, 0, 4, 5, 6, 7, 8, 9, 10]
 const EXP = [0, 0, 6, 18, 30]          // a1「没有」= 0 个月,是答案不是缺答
 // a4「先看哪个够得着」= 不限省。**海洋四省挂 5 不挂 4**:4 已经在生产用了,改它的含义会把
 // 已存档案里的「不限省」静默变成「海洋四省」(2026-08-03 加这一档时的取舍——显示顺序看 choices 数组,与值无关)。
@@ -46,7 +48,9 @@ const PGWP = [0, 4, 9, 18, 30]
 // 官方分值表要的三样(题库扩充 20260802):学历阶梯 / 年龄取区间中点 / 同职业总经验(含海外)
 const EDU = ['', 'highschool', 'diploma2y', 'bachelor', 'master', 'doctorate']
 const AGE = [0, 23, 28, 33, 38, 43]
-const TOTAL_EXP = [0, 0, 6, 24, 48, 60]   // a1「没有」= 0 个月,是答案不是缺答(同 EXP 口径)
+// 精确档(2026-08-14 经验合一,与语言同批):index=选项 value;「没有」=0 个月,是答案不是缺答。
+// 月数取整年 ×12(不到 1 年沿用 6):旧区间档迁移按旧月数对齐(见 answers.ts BANDS_V2)
+const TOTAL_EXP = [0, 0, 6, 12, 24, 36, 48, 60]
 // B1-4 PGWP:课程时长档下界 / 层级(引擎只对 master 有特例,其余按时长档)
 const STUDY_MONTHS = [0, 4, 8, 12, 24]
 const STUDY_LEVEL = ['', 'college', 'bachelor', 'master', 'doctorate']
@@ -114,12 +118,17 @@ export const FIELDS: Record<string, FieldDef> = {
     toAnswer: (b: number) => (b && b !== UNSURE_BAND ? TOTAL_EXP[b] : undefined),
     q: {
       title: l('Total experience in this occupation?', '做这个职业一共多久了?(含海外)', '이 직종 총 경력은?(해외 포함)'),
+      // 2026-08-14 经验合一(与语言同批,Frank「怎么有两个」同款病):原来问区间(1-3/3-5 年),
+      // 官方分值表按整年给分,分值段还得追问精确年数。改成一步问整年,追问题自动消失
+      //(SK 这类按「近 5 年/6-10 年」拆段的省仍要拆段追问,那不是重复,是官方口径不同)。
       choices: [
         { value: 1, text: l('None', '没有', '없음') },
         { value: 2, text: l('Under 1 year', '不到 1 年', '1년 미만') },
-        { value: 3, text: l('1-3 years', '1-3 年', '1-3년') },
-        { value: 4, text: l('3-5 years', '3-5 年', '3-5년') },
-        { value: 5, text: l('5+ years', '5 年以上', '5년 이상') },
+        { value: 3, text: l('1 year', '1 年', '1년') },
+        { value: 4, text: l('2 years', '2 年', '2년') },
+        { value: 5, text: l('3 years', '3 年', '3년') },
+        { value: 6, text: l('4 years', '4 年', '4년') },
+        { value: 7, text: l('5+ years', '5 年以上', '5년 이상') },
         { value: 9, text: l('Not sure', '不清楚', '잘 모르겠음') },
       ],
     },
@@ -133,12 +142,18 @@ export const FIELDS: Record<string, FieldDef> = {
     toAnswer: (b: number) => CLB[b] || undefined,
     q: {
       title: l('Your official language level (CLB)?', '你的语言成绩到 CLB 几?', '공인 언어 점수(CLB)는?'),
+      // 2026-08-13 语言合一(Frank 连点两次「怎么有两个语言」):原来这题问区间(4-5/6-7…),
+      // 官方分值表按精确档给分,于是分值段还得在区间里再问一遍 —— 同一件事问两遍。
+      // 改成一步问精确档,分值段的语言题因「范围只剩一个值」自动消失(PnpScoreCard 既有机制)。
       choices: [
         { value: 1, text: l('Not tested yet', '还没考', '시험 전') },
-        { value: 2, text: l('CLB 4-5', 'CLB 4-5', 'CLB 4-5') },
-        { value: 3, text: l('CLB 6-7', 'CLB 6-7', 'CLB 6-7') },
-        { value: 4, text: l('CLB 8-9', 'CLB 8-9', 'CLB 8-9') },
-        { value: 5, text: l('CLB 10 or higher', 'CLB 10 以上', 'CLB 10 이상') },
+        { value: 2, text: l('CLB 4', 'CLB 4', 'CLB 4') },
+        { value: 3, text: l('CLB 5', 'CLB 5', 'CLB 5') },
+        { value: 4, text: l('CLB 6', 'CLB 6', 'CLB 6') },
+        { value: 5, text: l('CLB 7', 'CLB 7', 'CLB 7') },
+        { value: 6, text: l('CLB 8', 'CLB 8', 'CLB 8') },
+        { value: 7, text: l('CLB 9', 'CLB 9', 'CLB 9') },
+        { value: 8, text: l('CLB 10 or higher', 'CLB 10 以上', 'CLB 10 이상') },
       ],
     },
   },
@@ -151,8 +166,9 @@ export const FIELDS: Record<string, FieldDef> = {
     q: {
       // 「其中」是真的其中:加拿大经验选不出比总经验更长的档(2026-08-02 实撞 —— 总经验答「没有」、
       // 加拿大答「2 年以上」,引擎取大的那个,句子写成「你填的 30 个月」,看着就像胡说)。
-      // 两套档位序号天然对齐(0/6/18/30 对 0/6/24/48/60),所以比一下序号就够,不写换算表。
-      choiceVisible: (a, v) => !a.totalExpBand || v <= a.totalExpBand,
+      // 2026-08-14 起总经验是精确档,两套序号不再对齐 —— 改按**月数**比(总经验「不清楚」不设限)。
+      choiceVisible: (a, v) => !a.totalExpBand || a.totalExpBand === UNSURE_BAND
+        || (EXP[v as number] ?? 0) <= (TOTAL_EXP[a.totalExpBand] ?? 999),
       // 紧跟在总经验那道题后面问 → 题干写「其中」,一眼看出是子集(全称在一屏里重复一遍是废话)
       title: l('Of that, how long in Canada?', '其中在加拿大多久?', '그중 캐나다에서는?'),
       choices: [

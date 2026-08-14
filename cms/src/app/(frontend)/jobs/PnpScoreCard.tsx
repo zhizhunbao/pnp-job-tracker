@@ -120,8 +120,8 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
   onQuestionnaireBack?: () => void
   /** 逐题答案回显(2026-08-13 Frank:「全都算成基本信息」)—— 分值表的题与基础卷一视同仁,
    *  页面把它们摆进同一片条件格子。没答的 filled=false,值留空由页面写「待填写」;
-   *  key 供「点哪格进哪题」回跳(focusQuestion)。 */
-  onQuestionnaireAnswers?: (rows: { key: string; label: string; value: string; filled: boolean }[]) => void
+   *  key 供「点哪格进哪题」回跳(focusQuestion);prov=''为全省共用,其余按省分 tab。 */
+  onQuestionnaireAnswers?: (rows: { key: string; prov: string; label: string; value: string; filled: boolean }[]) => void
   /** 点条件格直达那道题:nonce 变一次跳一次(只传 key 的话,点同一格第二次就不动了) */
   focusQuestion?: { key: string; nonce: number } | null
 }) {
@@ -135,7 +135,8 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
   const manualQuestions = useMemo(() => provinces.flatMap((prov) => Array.from(new Set(factors
     .filter((f) => f.province === prov && f.kind === 'row')
     .map((f) => f.factor)))
-    .filter((name) => !['work', 'work5', 'work610', 'education', 'language', 'language1', 'language2', 'age', 'offer'].includes(name))
+    // workMonths(AB EOI 按月计经验)走引擎自动换算,进这张排除清单 —— 否则又把经验问第二遍
+    .filter((name) => !['work', 'work5', 'work610', 'workMonths', 'education', 'language', 'language1', 'language2', 'age', 'offer'].includes(name))
     .filter((name) => !(name === 'area' && prov === 'BC'))
     .filter((name) => !(name === 'teerCat' && ctx.teer != null))
     .filter((name) => !(name === 'occCat' && /^\d{5}$/.test(ctx.noc || '')))
@@ -248,7 +249,9 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
   for (const prov of provinces) {
     const groups: { factor: string; rows: ScoreFactor[] }[] = []
     const offer = factors.find((f) => f.province === prov && f.factor === 'offer' && f.kind === 'row')
-    if (offer) groups.push({ factor: 'offer', rows: [offer] })
+    // 基础卷答过「手上的 offer」就不再问(2026-08-14 offer 合一,与语言/经验同批):
+    // ctx.hasOffer 有值 = 答过(有/没有都算),答案直接进算分;undefined = 没答或「不清楚」,照问
+    if (offer && ctx.hasOffer === undefined) groups.push({ factor: 'offer', rows: [offer] })
     const bonus = factors.filter((f) => f.province === prov && f.kind === 'bonus').filter(rowApplies)
     for (const name of Array.from(new Set(bonus.map((b) => b.factor)))) {
       groups.push({ factor: name, rows: bonus.filter((b) => b.factor === name) })
@@ -307,6 +310,10 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
   }, [extraAnsweredCount, extraQuestionCount, onQuestionnaireProgress])
   // 逐题答案回显上抛(与计数同口径:翻过/选过才算答了)。用签名串做依赖 ——
   // echoRows 每轮渲染都是新数组,直接进依赖就是每帧给父级 setState 一次,循环重渲。
+  // 每题归属的省(''=全省共用):页面按省分 tab 摆格子(2026-08-13 Frank「按省份划分,tab 切换」)。
+  // 省码从题 key 派生:profile:* 共用;job:wage/bcArea 是岗位事实题,归各自的省;其余 key 首段就是省码
+  const provOfKey = (key: string) =>
+    key.startsWith('profile:') ? '' : key === 'job:wage' ? (wageProvince ?? '') : key === 'job:bcArea' ? 'BC' : key.split(':')[0]
   const echoRows = extraQuestions.map((q) => {
     const filled = !!extraAnswered[q.key]
     const value = !filled ? '' : q.choices
@@ -314,14 +321,16 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
       : q.checks
         ? (q.checks.filter((c) => c.on).map((c) => c.text).join(lang === 'zh' ? '、' : ', ') || t('ps.no'))
         : q.number ? `$${q.number.value}/hr` : ''
-    // 省名前置空格拼(题面 sub 就是省名/「某省加分项」):「不列颠哥伦比亚省 时薪(加元)」——
-    // 后置加括号会跟「时薪(加元)」这类自带括号的题名拼出双括号
+    // 省名不再拼进标签(tab 上就是省名);加分项组保留「加分项」前缀 —— MB 的风险评估
+    // 同时是档位题和加分勾选,没这个前缀两个格子同名。bonus 题的 key 恒为 省:因素:批 三段。
     const short = q.echoLabel || q.title
-    return { key: q.key, label: q.sub ? `${q.sub} ${short}` : short, value, filled }
+    const isBonus = q.key.split(':').length === 3
+    const bonusWord = t('ps.bonusOf', { prov: '' }).trim()
+    return { key: q.key, prov: provOfKey(q.key), label: isBonus ? `${bonusWord} ${short}` : short, value, filled }
   })
   const echoSig = JSON.stringify(echoRows)
   useEffect(() => {
-    onQuestionnaireAnswers?.(JSON.parse(echoSig) as { key: string; label: string; value: string; filled: boolean }[])
+    onQuestionnaireAnswers?.(JSON.parse(echoSig) as { key: string; prov: string; label: string; value: string; filled: boolean }[])
   }, [echoSig, onQuestionnaireAnswers])
   useEffect(() => {
     if (showQuestionnaire && extraQuestionCount === 0) onQuestionnaireComplete?.()

@@ -2,10 +2,10 @@
   "province": "NB",
   "program": "PNP",
   "source": "New Brunswick Skilled Worker stream — pathway application guides",
-  "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/nb-immigration-program-streams/nb-skilled-worker-stream.html",
-  "pageUrl": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/nb-immigration-program-streams/nb-skilled-worker-stream.html",
+  "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/skilled-worker-stream.html",
+  "pageUrl": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/skilled-worker-stream.html",
   "guideEffective": "2026-06",
-  "fetched": "2026-08-05",
+  "fetched": "2026-08-12",
   "requirements": [
     {
       "stream": "New Brunswick Skilled Worker stream (Experience / Graduates / Priority Occupations)",
@@ -22,7 +22,7 @@
       "basis": "",
       "label": "Canadian Language Benchmarks (CLB) or NCLC 4 in listening, reading, writing and speaking; required by all three Skilled Worker pathways (New Brunswick Experience, New Brunswick Graduates, New Brunswick Priority Occupations)",
       "section": "Overview — eligibility",
-      "url": "https://www2.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/nb-immigration-program-streams/nb-skilled-worker-stream.html",
+      "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/skilled-worker-stream.html",
       "factor": "language"
     },
     {
@@ -40,7 +40,7 @@
       "basis": "employerTenure",
       "label": "You must already have at least 6 months of full-time work experience with the supporting employer",
       "section": "Your eligibility — 1. NB employment",
-      "url": "https://www2.gnb.ca/content/dam/gnb/Corporate/Promo/Immigration/guide-new-brunswick-experience.pdf",
+      "url": "https://www.gnb.ca/content/dam/GNB3/t/fhc-fmc/immigration/docs/guide-new-brunswick-experience.pdf",
       "factor": "experience"
     },
     {
@@ -58,7 +58,7 @@
       "basis": "",
       "label": "You must have been living in New Brunswick with valid temporary resident status for the past 6 months",
       "section": "Your eligibility — 4. NB residency",
-      "url": "https://www2.gnb.ca/content/dam/gnb/Corporate/Promo/Immigration/guide-new-brunswick-experience.pdf",
+      "url": "https://www.gnb.ca/content/dam/GNB3/t/fhc-fmc/immigration/docs/guide-new-brunswick-experience.pdf",
       "factor": "residence"
     }
   ]

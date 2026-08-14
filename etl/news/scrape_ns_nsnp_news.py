@@ -21,10 +21,13 @@ def parse_ns(html: str) -> list[dict]:
         a = row.select_one("h2 a[href]")
         if not a:
             continue
-        date = iso_date(row.get_text(" ", strip=True))   # 日期在 body 字段「July 14, 2026 |」
         title = re.sub(r"\s+", " ", a.get_text(" ", strip=True))
+        url = a["href"]
+        for h2 in row.select("h2"):  # 标题自带生效日(如「…Effective September 1, 2026」)会抢在发布日前被匹配,先摘掉
+            h2.extract()
+        date = iso_date(row.get_text(" ", strip=True))   # 日期在 body 字段「July 14, 2026 |」
         if title and date:
-            items.append({"title": title, "date": date, "url": a["href"]})
+            items.append({"title": title, "date": date, "url": url})
     return items
 
 

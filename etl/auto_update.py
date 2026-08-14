@@ -73,8 +73,9 @@ def run_once(meta: dict) -> bool:
             return False
     if meta.get("seed"):  # 仅 build 角色:增量 seed(mart 全量累积,不会误关旧岗)
         try:
-            # seed 已批量化(2026-07-05,一轮 <1 分钟),180s 足够;老 600s 是逐行时代的遗产
-            r = httpx.get(SEED_URL, timeout=180,
+            # 批量化后一轮通常 <1 分钟,但生产偶发慢轮(2026-08-14 连续 4 轮超 180s,600s 内能完):
+            # 超时设的是「放弃线」不是「期望值」,卡太紧=白跑一轮再重灌,放 600s
+            r = httpx.get(SEED_URL, timeout=600,
                           headers={"x-seed-token": SEED_TOKEN} if SEED_TOKEN else None)
             # 成功 = 2xx 且响应体 ok:true,别的一律算失败 —— 老版把任何响应都记「✓ seed 502」,
             # 还带着失败状态去触发 alerts/心跳(E5-03 的自动提醒依赖这个判定,必须真实)

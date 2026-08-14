@@ -85,6 +85,28 @@ uv run python scripts/crawl/download_md.py data/crawl/<slug>/manifest.json
 | 西北地区 | 移民 | nt-immigration | https://www.immigratenwt.ca/immigrate-here | 2 | 150 | kw:stream,immigrate,nominee |
 | 西北地区 | 税收 | nt-tax | https://www.fin.gov.nt.ca/en | 2 | 120 |
 | 西北地区 | 福利 | nt-welfare | https://www.ece.gov.nt.ca/en/services/income-assistance | 2 | 120 |
+| 试点-NS | RCIP社区 | rcip-pictou | https://pictoucountypartnership.com/rcip/ | 2 | 40 | kw:rcip |
+| 试点-ON | RCIP社区 | rcip-north-bay | https://nbrcip.ca/ | 2 | 40 |
+| 试点-ON | RCIP+FCIP社区 | rcip-sudbury | https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/ | 2 | 40 | kw:rcip,fcip,newcomers |
+| 试点-ON | RCIP+FCIP社区 | rcip-timmins | https://timminsedc.com/immigration/ | 2 | 40 | kw:immigration,rcip,fcip |
+| 试点-ON | RCIP社区 | rcip-ssm | https://welcometossm.com/rcip/ | 2 | 40 | kw:rcip |
+| 试点-ON | RCIP社区 | rcip-thunder-bay | https://gotothunderbay.ca/why-thunder-bay/immigration/ | 2 | 40 | kw:immigration,rcip |
+| 试点-MB | RCIP社区 | rcip-steinbach | https://steinbachedc.com/rcip/ | 2 | 40 | kw:rcip |
+| 试点-MB | RCIP社区 | rcip-altona | https://ared-rpga.com/immigration/rcip/ | 2 | 40 | kw:rcip,immigration |
+| 试点-MB | RCIP社区 | rcip-brandon | https://economicdevelopmentbrandon.com/rcip/rcip | 2 | 40 | kw:rcip |
+| 试点-SK | RCIP社区 | rcip-moose-jaw | https://rcip.mjchamber.com/ | 2 | 40 |
+| 试点-AB | RCIP社区 | rcip-claresholm | https://claresholm-rcip.ca/ | 2 | 40 |
+| 试点-BC | RCIP社区 | rcip-west-kootenay | https://wk-rnip.ca/ | 2 | 40 |
+| 试点-BC | RCIP社区 | rcip-okanagan-shuswap | https://rcipnorthokanaganshuswap.com/ | 2 | 40 |
+| 试点-BC | RCIP社区 | rcip-peace-liard | https://www.nebcimmigration.ca/ | 2 | 40 |
+| 试点-NB | FCIP社区 | fcip-acadian | https://inspirepeninsuleacadienne.ca/programme-pilote-immigration-communautes-francophones/ | 2 | 40 | kw:immigration,pilote |
+| 试点-ON | FCIP社区 | fcip-superior-east | https://superioreastcfdc.ca/superioreastcfdc.ca/index.php/en-ca/fcip | 2 | 40 | kw:fcip |
+| 试点-MB | FCIP社区 | fcip-st-pierre | https://villagestpierrejolys.ca/p/francophone-communities-immigration-pilot-program | 2 | 40 | kw:immigration,pilot |
+| 试点-BC | FCIP社区 | fcip-kelowna | https://www.sdecb.com/en/pilot-program/ | 2 | 40 | kw:pilot |
+
+> **试点社区行(2026-08-14,E6-11)**:20 个 RCIP/FCIP 社区站(Sudbury/Timmins 两试点共站)。
+> 名单出处=IRCC rural-franco-pilots 页(fed-rcip 役);盯的是**指定雇主名单/优先职业/配额句**,
+> 社区站体量小、更新滚动 → depth 2 / 40 页够用。E6-11 的 3.1/3.3 原料从这里读。
 
 ---
 

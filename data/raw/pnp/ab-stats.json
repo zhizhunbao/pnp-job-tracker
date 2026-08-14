@@ -5,57 +5,57 @@
   "url": "https://www.alberta.ca/aaip-processing-information",
   "note": "AAIP 官方处理信息页:配额/已发/剩余、积压游标(正在审哪天收到的申请)、**EOI 池内人数**(被抽中概率的分母 —— 单轮概率 ≈ 当轮邀请数 ÷ 池内人数)与抽选史。官方注明所有数字随时可变、配额可在 stream 间腾挪;医生与法语者走联邦附加名额,不占本省配额。抽选史的 canonical 维度表仍由 build_draws.py 维护,本表原样留档。",
   "asOf": "2026-07-30",
-  "fetched": "2026-08-05",
+  "fetched": "2026-08-12",
   "summary": {
-    "allocation": 6403,
+    "allocation": 6603,
     "issued": 3892,
-    "remaining": 2511,
+    "remaining": 2711,
     "toProcess": 1585
   },
   "streams": [
     {
       "stream": "Alberta Opportunity Stream",
-      "allocation": 3425,
+      "allocation": 3562,
       "issued": 2085,
-      "remaining": 1340,
+      "remaining": 1477,
       "toProcess": 735,
       "assessingUpTo": "May 8, 2026 (currently excludes those who received a work permit support letter under the ‘Temporary public policy to facilitate work permits for prospective Provincial Nominee Program candidates’)"
     },
     {
       "stream": "Rural Renewal Stream",
-      "allocation": 1000,
+      "allocation": 1057,
       "issued": 613,
-      "remaining": 387,
+      "remaining": 444,
       "toProcess": 65,
       "assessingUpTo": "June 21, 2026"
     },
     {
       "stream": "Tourism and Hospitality Stream",
-      "allocation": 150,
+      "allocation": 156,
       "issued": 129,
-      "remaining": 21,
+      "remaining": 27,
       "toProcess": 22,
       "assessingUpTo": "June 25, 2026"
     },
     {
       "stream": "Dedicated Health Care Pathways",
-      "allocation": 500,
+      "allocation": 518,
       "issued": 220,
-      "remaining": 280,
+      "remaining": 298,
       "toProcess": 60,
       "assessingUpTo": "July 10, 2026"
     },
     {
       "stream": "Accelerated Tech Pathway (eligible list of occupations includes jobs that support data centre needs in Alberta)",
-      "allocation": 600,
+      "allocation": 619,
       "issued": 388,
-      "remaining": 212,
+      "remaining": 231,
       "toProcess": 190,
       "assessingUpTo": "May 18, 2026"
     },
     {
       "stream": "Law Enforcement Pathway",
-      "allocation": 38,
+      "allocation": 12,
       "issued": "Less than 10",
       "remaining": "Not applicable",
       "toProcess": "Less than 10",
@@ -63,17 +63,17 @@
     },
     {
       "stream": "Priority sector draws and other initiatives (construction, manufacturing, agriculture, aviation, and including skilled trades linked to each sector, etc.)",
-      "allocation": 600,
+      "allocation": 619,
       "issued": 420,
-      "remaining": 180,
+      "remaining": 199,
       "toProcess": 284,
       "assessingUpTo": "May 5, 2026"
     },
     {
       "stream": "Entrepreneur Streams",
-      "allocation": 90,
+      "allocation": 60,
       "issued": 30,
-      "remaining": 60,
+      "remaining": 30,
       "toProcess": 228,
       "assessingUpTo": "Business applications are evaluated upon receipt"
     }

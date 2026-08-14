@@ -60,8 +60,10 @@ IN_PNP_DRAWS = _paths.PNP / "draws.json"  # 省抽选事实(BC/AB/MB+ON通告,bu
 IN_DRAW_STREAM_ZH = _paths.PROCESSED / "draw_stream_zh.json"
 # 省提名官方打分表(E12-09)——一省一个文件,加省就往这个 list 里加,下面的组装逻辑不用改。
 # BC=SIRS 200 分制(build_bc_sirs.py 从官方 PDF 抓)/ SK=SINP Points Grid 110 分制(build_sk_points.py 抓官网表)
+# AB=AAIP Worker EOI Points Grid 100 分制(2026-08-14 加,官方 PDF 人工核对:
+#   data/crawl/ab-aaip/im-worker-stream-expression-of-interest-points-grid.pdf)
 IN_SCORE_TABLES = [_paths.PNP / "bc-sirs.json", _paths.PNP / "sk-points.json", _paths.PNP / "on-points.json",
-                   _paths.PNP / "mb-points.json", _paths.PNP / "nl-points.json"]
+                   _paths.PNP / "mb-points.json", _paths.PNP / "nl-points.json", _paths.PNP / "ab-eoi-points.json"]
 # NL 只对 Express Entry Skilled Worker 使用 Annex A 100 分表(67 分门槛);普通 NL EOI 仍按公开优先标准择优,
 # 没有数值权重。两者不能混成“整个纽省都按 67 分”。
 # 省提名官方**门槛**(规则引擎第一刀)——打分表管「能打几分」,这张管「打分之前先要满足什么」。
@@ -842,6 +844,18 @@ def build():
                 for c, v in (blk.get("byProv") or {}).items():
                     if c in info:
                         info[c][out] = {"n": v, "year": blk.get("year", "")}
+            # 年份序列(2026-08-14 竞争卡年份筛选):近 3 年存量,学签单列、工签=TFWP+IMP 合计。
+            # 官方存量停在 2024 → 2025/2026 自然缺位,前端显「—」不编数
+            years = sorted((tr.get("study") or {}).get("byYear") or {})[-3:]
+            for y in years:
+                for c in info:
+                    s = ((tr.get("study") or {}).get("byYear") or {}).get(y, {}).get(c)
+                    w1 = ((tr.get("tfwp") or {}).get("byYear") or {}).get(y, {}).get(c)
+                    w2 = ((tr.get("imp") or {}).get("byYear") or {}).get(y, {}).get(c)
+                    if s is None and w1 is None and w2 is None:
+                        continue
+                    info[c].setdefault("trSeries", {})[y] = {
+                        "study": s, "work": (w1 or 0) + (w2 or 0) if (w1 is not None or w2 is not None) else None}
         if IN_IRCC_PR.exists():
             pr = json.loads(IN_IRCC_PR.read_text(encoding="utf-8"))
             for c, v in (pr.get("byProv") or {}).items():
@@ -857,12 +871,14 @@ def build():
                 latest = max(years)
                 info[c]["studyFlow"] = {"year": latest, **years[latest],
                                         "prev": (years.get(str(int(latest) - 1)) or {}).get("n")}
+                # 流量年份序列(近 5 年,竞争卡年份筛选用;进行年 complete=false 带 throughMonth)
+                info[c]["flowSeries"] = {y: years[y] for y in sorted(years)[-5:]}
         if IN_IRCC_ALLOC.exists():
             alloc = json.loads(IN_IRCC_ALLOC.read_text(encoding="utf-8"))
             for r in alloc.get("rows", []):
                 c = r.get("prov")
                 if c in info:
-                    info[c]["alloc"] = {"y2026": r.get("y2026"), "y2025": r.get("y2025")}
+                    info[c]["alloc"] = {"y2026": r.get("y2026"), "y2025": r.get("y2025"), "y2024": r.get("y2024")}
         return info
 
     prov_info = _prov_info()

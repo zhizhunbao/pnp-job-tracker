@@ -1,0 +1,215 @@
+{
+  "province": "AB",
+  "system": "AAIP Worker EOI Points Grid",
+  "maxTotal": 100,
+  "passMark": null,
+  "source": "Worker Expression of Interest (EOI) Points Grid — Alberta Advantage Immigration Program",
+  "url": "https://www.alberta.ca/system/files/im-worker-stream-expression-of-interest-points-grid.pdf",
+  "pageUrl": "https://www.alberta.ca/how-to-apply-to-aaip-worker-streams",
+  "guideEffective": "2025-08-07",
+  "fetched": "2026-08-14",
+  "note": "EOI 抽选制,无及格线(passMark null):AAIP 按月从池中定向邀请。法语(NCLC)列与「英法取高」规则未建模——档案只有单一 CLB 值,按英语列计,英法双语加分保留为勾选项。cert1y(一年证书)会保守落 0(引擎学历梯度无 certificate 档,官方 Diploma/Certificate 行为 4 分);Trades 证书持有人经引擎匹配拿 Diploma/Certificate 的 4 分(官方 7)——两处都只低不高。",
+  "groupMax": {
+    "I": 69,
+    "II": 31
+  },
+  "factors": {
+    "education": {
+      "group": "I",
+      "max": 12,
+      "rows": [
+        {
+          "label": "Doctorate Degree",
+          "points": 12
+        },
+        {
+          "label": "Master's Degree",
+          "points": 10
+        },
+        {
+          "label": "Bachelor's Degree",
+          "points": 7
+        },
+        {
+          "label": "Diploma/Certificate",
+          "points": 4
+        },
+        {
+          "label": "Trades Certificate/Diploma",
+          "points": 7
+        },
+        {
+          "label": "Secondary School and lower",
+          "points": 0
+        }
+      ],
+      "note": "Diploma/Certificate 行置于 Trades 行前:两行学历梯度同档,引擎取先出现者——普通大专不得白拿 Trades 的 7 分(红线⑤保守默认)"
+    },
+    "eduLocationCanada": {
+      "group": "I",
+      "max": 10,
+      "bonus": [
+        {
+          "label": "Location of Highest Level of Education Completed in Canada: Completed in Alberta",
+          "points": 10
+        },
+        {
+          "label": "Location of Highest Level of Education Completed in Canada: Completed in another province or territory (not Alberta)",
+          "points": 6,
+          "xorWithPrev": true
+        }
+      ]
+    },
+    "language": {
+      "group": "I",
+      "max": 13,
+      "rows": [
+        {
+          "label": "English CLB 6 or higher",
+          "points": 10
+        },
+        {
+          "label": "English CLB 5",
+          "points": 8
+        },
+        {
+          "label": "English CLB 4",
+          "points": 5
+        },
+        {
+          "label": "English CLB 3 or lower",
+          "points": 0
+        }
+      ],
+      "bonus": [
+        {
+          "label": "Bilingual language proficiency: CLB or NCLC score of 4 or higher in both English and French",
+          "points": 3
+        }
+      ],
+      "note": "英语列;官方对英/法各评一列取高,法语列(NCLC 6+:8 / 5:5 / 4:3)未建模"
+    },
+    "workMonths": {
+      "group": "I",
+      "max": 11,
+      "rows": [
+        {
+          "label": "Total Work Experience: 12 or more months",
+          "points": 11
+        },
+        {
+          "label": "Total Work Experience: 6-11 months",
+          "points": 7
+        },
+        {
+          "label": "Total Work Experience: Less than 6 months",
+          "points": 3
+        }
+      ],
+      "note": "含加拿大与海外全部经验;按月计,引擎由总经验年数换算(保守取下界)"
+    },
+    "workLocationCanada": {
+      "group": "I",
+      "max": 10,
+      "bonus": [
+        {
+          "label": "6 months or more work experience in Alberta",
+          "points": 10
+        },
+        {
+          "label": "6 months or more work experience in another province or territory in Canada (not Alberta)",
+          "points": 6,
+          "xorWithPrev": true
+        }
+      ]
+    },
+    "age": {
+      "group": "I",
+      "max": 5,
+      "rows": [
+        {
+          "label": "18-20 years",
+          "points": 3
+        },
+        {
+          "label": "21-34 years",
+          "points": 5
+        },
+        {
+          "label": "35-49 years",
+          "points": 4
+        },
+        {
+          "label": "50 years and older",
+          "points": 3
+        }
+      ]
+    },
+    "familyAlberta": {
+      "group": "I",
+      "max": 8,
+      "bonus": [
+        {
+          "label": "Family member (parent, child, or sibling) living in Alberta who is a Canadian Citizen or permanent resident over 18 years of age",
+          "points": 8
+        }
+      ]
+    },
+    "offer": {
+      "group": "II",
+      "max": 10,
+      "rows": [
+        {
+          "label": "Job offer for permanent full-time employment in Alberta",
+          "points": 10
+        }
+      ]
+    },
+    "offerSector": {
+      "group": "II",
+      "max": 6,
+      "bonus": [
+        {
+          "label": "Endorsement letter from a designated community in the Rural Renewal Stream",
+          "points": 6
+        },
+        {
+          "label": "Job offer for the tourism and hospitality sector from an employer who is a member of a required sector association under the Tourism and Hospitality Stream",
+          "points": 6,
+          "xorWithPrev": true
+        },
+        {
+          "label": "Job offer in a law enforcement occupation from an employer who is a member of the Alberta Association of Chiefs of Police (AACP)",
+          "points": 6,
+          "xorWithPrev": true
+        }
+      ]
+    },
+    "offerArea": {
+      "group": "II",
+      "max": 5,
+      "bonus": [
+        {
+          "label": "Alberta job offer location: Rural Renewal Stream designated community",
+          "points": 5
+        },
+        {
+          "label": "Alberta job offer location: Other Alberta community (outside the Edmonton and Calgary Census Metropolitan Areas and Rural Renewal Stream designated communities)",
+          "points": 5,
+          "xorWithPrev": true
+        }
+      ],
+      "note": "官方另有 Calgary CMA 0 分、Edmonton CMA 0 分两行(0 分不进勾选面,不影响总分)"
+    },
+    "regulated": {
+      "group": "II",
+      "max": 10,
+      "bonus": [
+        {
+          "label": "Job offer in a regulated occupation in Alberta and holds certification or licensing demonstrating meets regulatory requirements to practice the occupation in Alberta",
+          "points": 10
+        }
+      ]
+    }
+  }
+}

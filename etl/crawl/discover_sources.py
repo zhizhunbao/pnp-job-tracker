@@ -55,8 +55,12 @@ SEEDS: list[dict] = [
                                      "live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program",
      "depth": 3, "max_pages": 400},
     {"slug": "bc-immigrate", "seed": "https://www.welcomebc.ca/immigrate-to-b-c", "depth": 3, "max_pages": 400},
+    # 2026-08-14 keywords 放宽:AAIP 的 Worker EOI 打分材料 URL 不带 aaip
+    # (实撞:/system/files/im-worker-stream-expression-of-interest-points-grid.pdf 被限域滤掉,
+    # 差点把「AB 有没有打分制」答成没有)。PDF 本体 crawler 不收(SKIP_EXTENSIONS 设计如此),
+    # 这里放的是让 EOI 相关 **HTML** 页此后能进地图/政策雷达;分值表 PDF 走 raw 落盘。
     {"slug": "ab-aaip",      "seed": "https://www.alberta.ca/alberta-advantage-immigration-program",
-     "depth": 2, "max_pages": 400, "keywords": "aaip"},
+     "depth": 2, "max_pages": 400, "keywords": "aaip,expression-of-interest,weoi"},
     {"slug": "on-oinp",      "seed": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp",
      "depth": 2, "max_pages": 400, "keywords": "oinp,ontario-immigrant,workforce-priority"},
     # PE 在 Radware 后面 → 依赖浏览器兜底(重镜像内);本机 .venv 无 playwright 时此条会失败,属预期

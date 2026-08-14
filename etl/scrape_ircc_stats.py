@@ -3,7 +3,9 @@
 源=open.canada.ca IRCC 官方 XLSX(月更包);数字口径=IRCC 四舍五入到 5、小值 '--' 抑制 → 当 0,
 比值用途足够,绝对数不作精算(脚本与前端口径注一致)。配额不在此抓:raw/ircc/pnp_allocations.json 人工核对维护表。
 """
+import io
 import json
+import os
 import sys
 import urllib.request
 from datetime import datetime, timezone
@@ -11,6 +13,10 @@ from io import BytesIO
 from pathlib import Path
 
 import openpyxl
+
+if os.name == "nt":  # 本机控制台 cp1252 打不了 ·/中文;容器由 auto_update 设 PYTHONIOENCODING
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _paths  # noqa: E402
@@ -68,6 +74,24 @@ def latest_year_totals(ws) -> tuple[str, dict[str, int]]:
                         out[PROV[name]] = num(r[i] if i < len(r) else 0)
                         break
     return year_used, out
+
+def all_year_totals(ws) -> dict[str, dict[str, int]]:
+    """年末存量表:省 Total 行 × 全部年份列 → {year: {prov: n}}(2026-08-14 竞争卡年份筛选)。
+    列有但整列空(发布年占位)不出;单元格 '--'(小值抑制)按 0(与 latest 同口径)。"""
+    rows = [list(r) for r in ws.iter_rows(values_only=True)]
+    hdr = next(r for r in rows if any(str(c or "").strip() == "2019" for c in r) or sum(str(c or "").strip().isdigit() for c in r) > 5)
+    years = [(i, str(c).strip()) for i, c in enumerate(hdr) if str(c or "").strip()[:2] == "20" and str(c or "").strip().isdigit()]
+    out: dict[str, dict[str, int]] = {}
+    for r in rows:
+        if not r:
+            continue
+        name = str(r[0] or "").replace(" - Total", "").replace(" Total", "").strip()
+        if name in PROV:
+            for i, y in years:
+                if i < len(r) and str(r[i] or "").strip() not in ("",):
+                    out.setdefault(y, {})[PROV[name]] = num(r[i])
+    return {y: m for y, m in out.items() if any(m.values())}
+
 
 def pnp_latest_full_year(ws) -> tuple[str, dict[str, int]]:
     """PR 按省×类别表:块=类别行…「省 - Total」收尾;取「YYYY Total」最新完整年列的 Provincial Nominee 组行。"""
@@ -130,11 +154,27 @@ def main() -> None:
     _paths.IRCC.mkdir(parents=True, exist_ok=True)
     # fetched = 本轮抓取日(B3-3):要拿来下结论的数据必须知道是哪天的;新鲜度哨兵(check_freshness)也读它
     fetched = datetime.now(timezone.utc).date().isoformat()
+    # 年份哨兵(2026-08-14):存量最新年份一变(IRCC 补发 2025)就大声喊 —— 竞争卡年份列会自动亮,
+    # 但当年名额(pnp_allocations 人工表)与竞争比口径要人跟着核,静默自愈=没人知道该去补
+    old_years: dict[str, str] = {}
+    if OUT_TR.exists():
+        try:
+            _old = json.loads(OUT_TR.read_text(encoding="utf-8"))
+            old_years = {k: str((_old.get(k) or {}).get("year") or "") for k in ("study", "tfwp", "imp")}
+        except Exception:  # noqa: BLE001  旧表坏了不影响本轮抓取
+            pass
     tr: dict = {"fetched": fetched, "source": {k: SRC[k] for k in ("study", "tfwp", "imp")}, "note": "IRCC 年末存量(Dec 31 holders);数值官方四舍五入到 5,'--' 小值抑制当 0"}
     for key in ("study", "tfwp", "imp"):
-        year, totals = latest_year_totals(fetch(SRC[key]))
-        tr[key] = {"year": year, "byProv": totals}
-        print(f"{key}: {year} · {len(totals)} 省 · ON={totals.get('ON')}", flush=True)
+        ws = fetch(SRC[key])
+        year, totals = latest_year_totals(ws)
+        if old_years.get(key) and old_years[key] != year:
+            print(f"! {key} 年末存量最新年份 {old_years[key]} → {year}:IRCC 补发了新年份 —— "
+                  f"去 pnp_allocations.json 核对 {year} 名额,并复核竞争卡该年列", flush=True)
+        # byYear:全年份序列(2026-08-14 竞争卡年份筛选)。同一张表只抓一次 —— read_only 工作簿
+        # iter_rows 可重复遍历,两个解析器各自扫行
+        by_year = all_year_totals(ws)
+        tr[key] = {"year": year, "byProv": totals, "byYear": by_year}
+        print(f"{key}: {year} · {len(totals)} 省 · ON={totals.get('ON')} · 序列 {min(by_year)}–{max(by_year)}", flush=True)
     OUT_TR.write_text(json.dumps(tr, ensure_ascii=False, indent=1), encoding="utf-8")
 
     year, pnp = pnp_latest_full_year(fetch(SRC["pr"]))

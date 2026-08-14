@@ -80,6 +80,13 @@ export const DEFAULT_PROFILE: SelfProfile = { edu: 'highschool', expRecent: 0, e
  * ⚠️ 顺序不能调:「At least 3 but less than 4 years」里有两个数字,先跑通用正则会取到 4(实撞过,
  * 3 年经验被判成 2-3 年那档少算 4 分)—— 必须先认「At least N」。
  */
+/** 月数档(AB EOI 按月计经验):「12 or more months」12 /「6-11 months」6 /「Less than 6 months」0 */
+const monthsOf = (label: string): number | null => {
+  if (/less than/i.test(label)) return 0
+  const m = /(\d+)\s*(?:-\d+)?\s*(?:or more\s*)?months?/i.exec(label)
+  return m ? Number(m[1]) : null
+}
+
 const yearsOf = (label: string): number | null => {
   if (/no experience/i.test(label)) return 0
   if (/^less than/i.test(label)) return 0
@@ -96,10 +103,13 @@ const clbOf = (label: string): number | null => {
   return m ? Number(m[1]) : null
 }
 
-/** 年龄区间:「Less than 18 years」[0,17] /「22 – 34 years」[22,34] /「More than 50 years」[51,200] */
+/** 年龄区间:「Less than 18 years」[0,17] /「22 – 34 years」[22,34] /「More than 50 years」[51,200]
+ *  /「50 years and older」[50,200](AB EOI 的写法,2026-08-14) */
 const ageRangeOf = (label: string): [number, number] | null => {
   let m = /less than (\d+)/i.exec(label)
   if (m) return [0, Number(m[1]) - 1]
+  m = /(\d+)\s*years?\s*and\s*(?:older|over|above)/i.exec(label)
+  if (m) return [Number(m[1]), 200]
   m = /more than (\d+)/i.exec(label)
   if (m) return [Number(m[1]) + 1, 200]
   m = /(\d+)\s*[–—-]\s*(\d+)/.exec(label)
@@ -142,6 +152,8 @@ const AUTO_PICK: Record<string, (rows: ScoreFactor[], p: SelfProfile) => ScoreFa
   language1: (rows, p) => pickByThreshold(rows, clbOf, p.clb1),
   language2: (rows, p) => pickByThreshold(rows, clbOf, p.clb2),
   age: (rows, p) => pickByAge(rows, p.age),
+  // AB EOI 的总经验按**月**分档;档案存年 → ×12 换算(年取的是下界,换算后仍保守)
+  workMonths: (rows, p) => pickByThreshold(rows, monthsOf, (p.expRecent + p.expOlder) * 12),
 }
 
 export type ScorePart = {

@@ -8,12 +8,11 @@
 // 文案四闸:零逗号标题 / 无解释句 / 术语=职业匹配·雇主资质·你这边 / 值一行放下。
 // 三关第三关 2026-08-12 由「个人条件」改称**「你这边」**(审计 A3):页面上那张问卷回显卡叫「你的条件」,
 // 两块同屏名字打架 —— 这一关是**判定**(你这边达不达标),不是又一个输入面。
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
-import { AuthModal } from './AuthForm'
 import { makeT, reqStreamDisplay, streamDisplay, type Lang, type TFn } from './i18n'
-import { UpgradeModal } from './UpgradeModal'
-import { CARD_MD, CARD_SHELL, ProCard } from '../ui/primitives'
+import { CARD_MD, CARD_SHELL } from '../ui/primitives'
+import { ConditionGrid } from './ConditionGrid'
 import { track } from '@/lib/track'
 import { readAnswers, toEngineAnswers } from '@/lib/answers'
 
@@ -119,6 +118,10 @@ function rowText(t: TFn, row: TvRow): { main: string; sub?: string; icon?: strin
           : t('tv.occ.notListedN', { prov, n }),
       }
     }
+    case row.key === 'tv.occ.noList':
+      // 官方不设职业清单(引擎已举证:资格页逐条无职业清单条目)——与「本站未收录」是反义,别混。
+      // icon 借 coarse 通道:不渲符号、正文深灰(2026-08-14 Frank「感叹号去掉」——info 的 i 标撤)
+      return { main: t('tv.occ.noList', { prov }), icon: 'coarse' }
     case row.key === 'tv.occ.teer': {
       if (row.state === 'unknown') return { main: t('tv.occ.teerNa'), icon: 'unknown' }
       const main = t(p.coarsePass === false ? 'tv.occ.teerCoarseNo' : 'tv.occ.teerCoarse', { teer: P(p.teer), prov })
@@ -126,7 +129,8 @@ function rowText(t: TFn, row: TvRow): { main: string; sub?: string; icon?: strin
       const sub = p.scopeStream && scopeTeers.length
         ? t('tv.occ.teerScope', { stream: reqStreamDisplay(P(p.scopeStream), t.lang), teers: teerRange(scopeTeers) })
         : p.scoped === false ? t('tv.occ.teerNoScope', { prov }) : undefined
-      return { main, sub, icon: 'coarse' }
+      // 2026-08-14 Frank「满足绿勾不满足红叉」:不再强制中性圆点,吃引擎的 pass/excluded 态
+      return { main, sub }
     }
     // 「你这边」的免费裁决行:被卡住的那道闸(与结论句同源;逐项差值仍在锁区)
     case row.key === 'tv.you.gate':
@@ -153,6 +157,9 @@ function rowText(t: TFn, row: TvRow): { main: string; sub?: string; icon?: strin
       return row.state === 'unknown'
         ? { main: t('tv.emp.staffNa', { need: P(p.need), prov }) }
         : { main: t('tv.emp.staffHave', { have: P(p.have) }), sub: t('tv.emp.staffNeed', { need: P(p.need), prov }) }
+    case row.key === 'tv.emp.revenue':
+      // 公司营业额无源(08-10 永久结案)→ 恒「未收录」;门槛数字按 08-14 极简令不进正文
+      return { main: t('tv.emp.revenueNa') }
     case row.key === 'tv.emp.staffFact':
       return { main: t('tv.emp.staffFact', { staff: P(p.staff) }), sub: t('tv.emp.estimate') }
     case row.key === 'tv.emp.publicSector':
@@ -195,10 +202,6 @@ function rowText(t: TFn, row: TvRow): { main: string; sub?: string; icon?: strin
   }
 }
 
-/** 付费行显示顺序(效果图定稿:语言→经验→其余个人→时间窗→换省→比路→雇主下一步) */
-const PAID_ORDER = (key: string): number =>
-  key === 'tv.person.language' ? 1 : key === 'tv.person.experience' ? 2 : key.startsWith('tv.person.') ? 3
-  : key === 'tv.time.permit' ? 4 : key.startsWith('tv.compare.') ? 5 : key === 'tv.route.fastest' ? 6 : 7
 
 /** 锁行/无档案行的行名(付费行只带 key 时的关别标签) */
 function lockLabel(t: TFn, key: string): string {
@@ -256,39 +259,8 @@ const GHOST_SM: React.CSSProperties = {
   fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap',
 }
 
-/**
- * 结论句取词。**一个字都不在这里合成** —— kind/gate/params 全是服务端确定性层给的,
- * 这里只负责三语与人话名(通道名走 jpw.p.*、闸名走 tv.gate.*、档案槽走 tv.slot.*)。
- */
-function conclusionText(t: TFn, c: TvConclusion): string {
-  const p = c.params ?? {}
-  const prov = provDisp(t, P(p.prov))
-  // 缺槽既可能是三类闸(offer/境内身份/加拿大学历)也可能是档案槽(语言/经验/职业/现居省)——
-  // 先查闸名再查槽名,两处都没有的**不出现**(宁可少点一样,也不把内部键名摆给用户看)
-  // **槽名优先**(tv.slot.*:用户听得懂的问法「有没有 offer」),闸名兜底(tv.gate.*:用在「你还缺 X」那句)
-  const slotName = (s: string) => {
-    const k = t('tv.slot.' + s)
-    if (!k.startsWith('tv.slot.')) return k
-    const g = t('tv.gate.' + s)
-    return g.startsWith('tv.gate.') ? '' : g
-  }
-  const slots = (Array.isArray(p.slots) ? (p.slots as string[]) : []).map(slotName).filter(Boolean)
-  switch (c.kind) {
-    case 'ok': return t('tv.sum.ok', { route: t('jpw.p.' + P(p.route)) })
-    // 语言/自雇这两道闸不是「缺一样东西」:他答过 CLB,只是没到门槛;自雇经历也在,只是不计。
-    // 一句「你还缺语言成绩」会让答过题的人以为我们没读到他的答案(Frank 实拍点名)。
-    case 'blocked':
-      if (c.gate === 'language' && p.need) return t('tv.sum.blockedLang', { need: P(p.need) })
-      if (c.gate === 'selfEmployed') return t('tv.sum.blockedSelf')
-      return t('tv.sum.blocked', { gate: t('tv.gate.' + P(c.gate)) })
-    // 缺哪个槽点不出名字时,不许含糊说「缺资料」—— 退回「本站未收录」那句(谁的窟窿说清楚)
-    case 'needs-info': return slots.length
-      ? t('tv.sum.needsInfo', { slots: slots.join(t('sep')) })
-      : t('tv.sum.notCollected', { prov })
-    case 'excluded': return t('tv.sum.excluded', { prov, list: streamDisplay(t, P(p.list)) })
-    default: return t('tv.sum.notCollected', { prov })
-  }
-}
+// conclusionText(结论句取词)已随「判定结论」头条卡一并删除(2026-08-14 Frank「没有用」)——
+// 服务端 conclusion 字段照发(埋点/顾问仍消费),前端不再渲染。
 
 function VRow({ state, label, main, sub }: { state: string; label: string; main: string; sub?: string }) {
   const ic = ICON[state] ?? ICON.info
@@ -314,12 +286,14 @@ function VRow({ state, label, main, sub }: { state: string; label: string; main:
   )
 }
 
-/** 事实瓦片(职位名/雇主/地点/职业代码/技能等级):与判定瓦片同族,只是不配状态色 */
+/** 事实瓦片(职位名/雇主/地点/职业代码/职业层级):与判定瓦片同族,只是不配状态色。
+ *  解剖与 VRow **逐值相同**(2026-08-14 Frank「英文和中文一行也没对齐」——先前内边距/字号/行高
+ *  各差一点,同一行里事实瓦片与判定瓦片基线错位) */
 function FactTile({ label, value }: { label: string; value: string }) {
   return (
-    <div style={{ minWidth: 0, background: '#f8fafc', border: '1px solid #eef2f7', borderRadius: 9, padding: '6px 9px' }}>
-      <div style={{ color: '#9ca3af', fontSize: 11, lineHeight: 1.35 }}>{label}</div>
-      <div title={value} style={{ color: '#374151', fontSize: 12.5, fontWeight: 600, lineHeight: 1.4, wordBreak: 'break-word' }}>{value}</div>
+    <div style={{ minWidth: 0, background: '#f8fafc', border: '1px solid #eef2f7', borderRadius: 9, padding: '7px 10px 8px' }}>
+      <div style={{ color: '#9ca3af', fontSize: 11, lineHeight: 1.35, marginBottom: 2 }}>{label}</div>
+      <div title={value} style={{ color: '#374151', fontSize: 13, fontWeight: 600, lineHeight: 1.5, wordBreak: 'break-word' }}>{value}</div>
     </div>
   )
 }
@@ -330,6 +304,7 @@ function rowLabel(t: TFn, key: string): string {
   if (key.startsWith('tv.occ.')) return t('tv.k.occList')
   if (key.startsWith('tv.emp.designat')) return t('tv.k.desig')
   if (key === 'tv.emp.years') return t('tv.k.years')
+  if (key === 'tv.emp.revenue') return t('tv.k.revenue')
   if (key.startsWith('tv.emp.staff')) return t('tv.k.staff')
   if (key === 'tv.emp.publicSector') return t('tv.k.public')
   if (key === 'tv.you.notCollected') return t('tv.k.collect')
@@ -357,9 +332,9 @@ export function TripleVerdictPanel({ job, lang, profileComplete = false, refresh
   initial?: unknown
   /** 卡②标题旁的计数胶囊(已答 n/N · 估分 n/N,两段各报各的)—— 与无岗态摘要卡同一份,页面给什么摆什么 */
   countPills?: React.ReactNode
-  /** 17 项条件全传(答过的与没答的都要,Frank:「不然用户怎么对比?如果要修改答案呢?」)。
-   *  key = 这格对应哪道题,点格子经 onEditAnswers(key) 直达。 */
-  answerList?: { key: string; label: string; value: string; filled: boolean }[]
+  /** 全部条件全传(答过的与没答的都要,Frank:「不然用户怎么对比?如果要修改答案呢?」)。
+   *  key = 这格对应哪道题,点格子经 onEditAnswers(key) 直达;prov=''共用,其余按省分 tab。 */
+  answerList?: { key: string; prov: string; label: string; value: string; filled: boolean }[]
   /** 第三张卡的位置留给页面的「你的初步方案」(Frank 2026-08-12 定的卡序:
    *  ① 这份工作 ② 你的条件 ③ 你的初步方案 ④⑤⑥ 三关 ⑦ 付费)。页面给什么就摆什么,面板不管它怎么算。 */
   planSlot?: React.ReactNode
@@ -374,8 +349,6 @@ export function TripleVerdictPanel({ job, lang, profileComplete = false, refresh
   // SSR 那份直接当初值:首屏就有结论与三关,骨架只在**纯客户端入口**(职位板弹窗)才出现
   const [d, setD] = useState<TvWire | null>((initial as TvWire) ?? null)
   const [err, setErr] = useState(false)
-  const [up, setUp] = useState<false | 'up' | 'auth'>(false)
-  const lockSeen = useRef(false)
 
   useEffect(() => {
     track('tv-open')
@@ -398,22 +371,11 @@ export function TripleVerdictPanel({ job, lang, profileComplete = false, refresh
   }, [job.id, refreshKey])
 
   const free = d?.rows.filter((r) => r.tier === 'free') ?? []
-  // 官方清单已给出认定(命中/排除)时,本站粗筛行不再摆(2026-08-13 Frank:「这个不是和下面的重复了吗」)——
-  // 粗筛是官方信号缺位时的兜底,官方认定在场它就是同一件事说第二遍
-  const occRowsAll = free.filter((r) => r.gate === 'occupation')
-  const hasListVerdict = occRowsAll.some((r) => r.key === 'tv.occ.listed' || r.key === 'tv.occ.excluded')
-  const occRows = hasListVerdict ? occRowsAll.filter((r) => r.key !== 'tv.occ.teer') : occRowsAll
+  // 本站初筛行 2026-08-14 Frank 拍板整块删除(「这个删掉」;此前同日刚从中性圆点改成绿勾红叉,
+  // 一并作废)——引擎照常产出(金标测试与顾问消费),前端不再渲染
+  const occRows = free.filter((r) => r.gate === 'occupation' && r.key !== 'tv.occ.teer')
   const empRows = free.filter((r) => r.gate === 'employer')
-  const youFree = free.filter((r) => r.gate === 'person')
-  const paid = (d?.rows.filter((r) => r.tier === 'paid') ?? []).slice().sort((a, b) => PAID_ORDER(a.key) - PAID_ORDER(b.key))
-  // 锁区一行一个关别标签(compare 可多行 → 去重;计数用去重后的行数,与显示一致)
-  const paidLabels = Array.from(new Set(paid.map((r) => lockLabel(t, r.key))))
   const hasProfile = !!d?.hasProfile || profileComplete
-
-  // 付费位曝光(漏斗:锁区/建档位第一次渲染记一次)
-  useEffect(() => {
-    if (d && paid.length && !lockSeen.current) { lockSeen.current = true; track('tv-lock-seen', { kind: d.pro ? 'pro' : hasProfile ? 'locked' : 'noprofile' }) }
-  }, [d, hasProfile, paid.length])
 
   const askChat = () => {
     track('tv-build-profile')
@@ -427,22 +389,15 @@ export function TripleVerdictPanel({ job, lang, profileComplete = false, refresh
     const v = rowText(t, r)
     return v ? <VRow key={r.key + i} state={v.icon ?? r.state ?? 'info'} label={rowLabel(t, r.key)} main={v.main} sub={v.sub} /> : null
   })
-  const rows = (list: TvRow[]) => <div className="tvAnswers">{rowTiles(list)}</div>
+  // rows() 壳已不需要:唯一调用点(本职位判定行)并进事实瓦片同一栅格后直接用 rowTiles
 
   return (
     <>
       {/* 事实瓦片栅格:本职位与申请人条件两张卡共用一套 */}
       <style>{'.tvAnswers{display:grid;gap:8px;grid-template-columns:repeat(4,minmax(0,1fr))}@media(max-width:640px){.tvAnswers{grid-template-columns:repeat(2,minmax(0,1fr))}}'}</style>
-      {/* ① 判定结论:**整页的头条,单独一张卡**(Frank 2026-08-12:「这个要单独一个卡片放到最上面」)。
-          句子由确定性层拼好(服务端 conclusion),这里只取词 —— 一个字都不在前端合成。 */}
-      <Card title={t('tv.c.verdict')}>
-        {d?.conclusion ? (
-          <h3 style={{ margin: 0, fontSize: 19.5, lineHeight: 1.45, color: '#111827' }}>{conclusionText(t, d.conclusion)}</h3>
-        ) : !d && !err ? (
-          <div aria-hidden style={{ height: 24, borderRadius: 4, background: '#f1f3f5', maxWidth: 420 }} />
-        ) : null}
-        {err ? <div style={{ fontSize: 13, color: '#6b7280' }}>{t('tv.err')}</div> : null}
-      </Card>
+      {/* ①「判定结论」头条卡 2026-08-14 Frank 拍板删(「这个先删了吧 没有用」,覆盖 08-12 的
+          「单独一个卡片放到最上面」)——结论句与下方逐项判定重复,只留错误留痕行 */}
+      {err ? <div style={{ fontSize: 13, color: '#6b7280' }}>{t('tv.err')}</div> : null}
 
       {/* ② 本职位:判的是哪一份岗。事实摆成与「申请人条件」同款瓦片 —— 同一页上同一种东西一个长相。
           职业匹配的判定行并在同卡尾部(2026-08-13 Frank:「这两个也合一起吧」)——
@@ -454,23 +409,27 @@ export function TripleVerdictPanel({ job, lang, profileComplete = false, refresh
             卡标题「本职位」下再挂一行加粗岗位名,看着就是双标题);
             职业代码值写「NOC 63200」(同日 Frank 点名),职业英文名不再跟在码后。
             雇主/地点两块归「雇主资质」卡(同日 Frank:「这两个是不是应该放到雇主那里」) */}
+        {/* 事实瓦片与判定瓦片同一副四列栅格**流式续排**(2026-08-14 Frank「为什么这个三个卡片一行」——
+            先前两组各自起行,3+2;并进一个栅格后 4+1,与申请人条件卡同节奏) */}
         <div className="tvAnswers" style={{ marginTop: 4 }}>
           <FactTile label={t('tv.f.title')} value={job.title} />
           <FactTile label={t('tv.f.noc')} value={d?.noc ? `NOC ${d.noc}` : '—'} />
           <FactTile label={t('tv.f.teer')} value={d?.teer == null ? '—' : `TEER ${d.teer}`} />
+          {rowTiles(occRows)}
         </div>
-        {/* 判定行如今也是卡片式,与上面的瓦片同族 —— 分隔线撤了,同距续排即可 */}
-        {occRows.length ? (
-          <div style={{ marginTop: 8 }}>{rows(occRows)}</div>
-        ) : null}
       </Card>
 
       {/* 雇主资质紧跟本职位(2026-08-13 Frank:「放到申请人条件上面」)——
           岗位侧的事实连排讲完,再进入申请人自己的条件。雇主/地点事实瓦片与判定瓦片同一副栅格。 */}
-      <Card title={t('tv.g.emp')}>
+      <Card title={t('tv.g.emp')} action={
+        <a href={`/jobs?q=${encodeURIComponent(job.company)}`} onClick={() => track('tv-next-employer')}
+          style={{ ...GHOST_SM, textDecoration: 'none', display: 'inline-block' }}>{t('tv.next.jobs')}</a>
+      }>
         <div className="tvAnswers">
           <FactTile label={t('tv.f.employer')} value={job.company} />
-          <FactTile label={t('tv.f.place')} value={`${job.city} ${provDisp(t, job.province)}`.trim()} />
+          {/* 市/省分开两块(2026-08-14 Frank「拆成 省 市 两个卡片」——一格塞两级地名是杂糅) */}
+          <FactTile label={t('tv.f.city')} value={job.city || '—'} />
+          <FactTile label={t('tv.f.prov')} value={provDisp(t, job.province)} />
           {rowTiles(empRows)}
         </div>
       </Card>
@@ -483,21 +442,8 @@ export function TripleVerdictPanel({ job, lang, profileComplete = false, refresh
           ? <button onClick={() => (onEditAnswers ?? onBuildProfile)?.()} style={GHOST_SM}>{t('tv.edit')}</button>
           : <button onClick={onBuildProfile ?? askChat} style={PRIMARY_SM}>{t('tv.build')}</button>}>
           {answerList.length ? (
-            <>
-              <div className="tvAnswers">
-                {answerList.map((a) => (
-                  <button key={a.key} onClick={() => onEditAnswers ? onEditAnswers(a.key) : onBuildProfile?.()} style={{
-                    minWidth: 0, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit',
-                    background: a.filled ? '#f8fafc' : '#fafafa',
-                    border: `1px ${a.filled ? 'solid #eef2f7' : 'dashed #cbd5e1'}`,
-                    borderRadius: 9, padding: '6px 9px',
-                  }}>
-                    <div style={{ color: '#9ca3af', fontSize: 11, lineHeight: 1.35 }}>{a.label}</div>
-                    <div title={a.value} style={{ color: a.filled ? '#374151' : '#94a3b8', fontSize: 12.5, fontWeight: a.filled ? 600 : 400, lineHeight: 1.4, wordBreak: 'break-word' }}>{a.value}</div>
-                  </button>
-                ))}
-              </div>
-            </>
+            <ConditionGrid rows={answerList} provLabel={(code) => provDisp(t, code)} ariaLabel={t('dp.prov')} idPrefix="tvCond"
+              onTile={(key) => onEditAnswers ? onEditAnswers(key) : onBuildProfile?.()} />
           ) : null}
           {scoreSlot}
         </Card>
@@ -513,51 +459,16 @@ export function TripleVerdictPanel({ job, lang, profileComplete = false, refresh
         </div>
       ) : null}
 
-      {/* 省提名政策关(职业匹配并进本职位卡、雇主资质上移到申请人条件前) */}
-      {d ? (
-        <Card title={t('tv.g.youCard')}>
-          {d.pro && d.hasProfile ? rows([...youFree, ...paid]) : youFree.length ? rows(youFree) : (
-            // 没有拦路的闸时**不许含糊**:能走就说没有已知门槛拦着,判不了就说判不了,没答就说没答
-            <div style={{ fontSize: 13, color: '#6b7280', padding: '7px 0' }}>
-              {!hasProfile ? t('tv.you.unanswered') : d.conclusion?.kind === 'ok' ? t('tv.you.clear') : t('tv.you.na')}
-            </div>
-          )}
-        </Card>
-      ) : null}
+      {/* 裸「下一步」动作条 2026-08-13 Frank 点名(「这两个是什么东西」)—— 两个无标题按钮浮在
+          卡片之间,自包含决令下成了孤儿:「该雇主在招职位」收进上面雇主资质卡的头部动作位;
+          「全部可行通道」删(带岗态它=刷回本页去掉岗位,顶栏「PR 评估」本来就是这个入口)。 */}
 
-      {/* 下一步(设计 §2 第三步「完成判据 = 用户知道下一步做什么」) */}
-      {d ? (
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '0 0 10px', padding: '0 2px' }}>
-          <a href={`/jobs?q=${encodeURIComponent(job.company)}`} onClick={() => track('tv-next-employer')}
-            style={{ ...PRIMARY_SM, textDecoration: 'none', display: 'inline-block' }}>{t('tv.next.jobs')}</a>
-          <a href="/plan/pr" onClick={() => track('tv-next-allpaths')}
-            style={{ ...GHOST_SM, textDecoration: 'none', display: 'inline-block' }}>{t('tv.next.paths')}</a>
-        </div>
-      ) : null}
+      {/* 「省提名政策」卡与「差距与时间评估」付费锁卡 2026-08-13 Frank 拍板**先删**(UI 层撤,
+          判定引擎与付费闸后端原样):政策卡常年只剩一句「已收录门槛中无阻碍项」,锁卡在卖还看不见
+          的东西([[pricing]] 不卖还不存在的东西)。付费面重新设计后再回来。 */}
 
-      {/* ⑤ 付费位:可执行推演(差多少 / 先补哪一项 / 多久能到),摆在结论与动作之后 */}
-      {d && !d.pro && paid.length ? (
-        <Card title={t('tv.paidHead')}>
-          <div style={{ position: 'relative', marginTop: 2 }}>
-            {paidLabels.map((k, i) => (
-              <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '7px 0', borderBottom: '1px solid #f3f4f6', alignItems: 'baseline' }}>
-                <span style={{ fontSize: 13, color: '#374151', whiteSpace: 'nowrap' }}>{k}</span>
-                {/* 打码占位:纹理假(真内容服务端没下发),LockedRows 同款手法 */}
-                <span aria-hidden style={{ fontSize: 13.5, color: '#9ca3af', filter: 'blur(5px)', userSelect: 'none', whiteSpace: 'nowrap', overflow: 'hidden' }}>
-                  {['结论文字在这一行', '差值与结论在此行', '一行结论文字示例'][i % 3]}
-                </span>
-              </div>
-            ))}
-            <ProCard overlay={paidLabels.length >= 4} text={t('tv.lockN', { n: paidLabels.length })} cta={t('pro.unlock')}
-              onClick={() => { track('tv-pro-click'); setUp(d.loggedIn ? 'up' : 'auth') }} />
-          </div>
-        </Card>
-      ) : null}
-
-      {d ? <div style={{ fontSize: 11.5, color: '#9ca3af', lineHeight: 1.6, margin: '0 0 10px', padding: '0 2px' }}>{t('jpw.foot')}</div> : null}
-
-      {up === 'up' && <UpgradeModal t={t} reason={t('tv.lockN', { n: paidLabels.length })} onClose={() => setUp(false)} />}
-      {up === 'auth' && <AuthModal t={t} mode="register" onClose={() => setUp(false)} onDone={() => window.location.reload()} />}
+      {/* 「粗筛信号,非资格认定」脚注 2026-08-14 Frank 拍板删(「删掉」)——虽属文案四保留类的
+          「≠资格认定」,以当日指令为准;全站页脚的法律免责仍在兜底 */}
     </>
   )
 }

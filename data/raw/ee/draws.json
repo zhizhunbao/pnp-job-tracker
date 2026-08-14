@@ -1,8 +1,29 @@
 {
   "source": "Express Entry rounds of invitations",
   "url": "https://www.canada.ca/content/dam/ircc/documents/json/ee_rounds_123_en.json",
-  "fetched": "2026-08-05",
+  "fetched": "2026-08-14",
   "byCategory": {
+    "transport": {
+      "date": "2026-08-07",
+      "crs": 470,
+      "size": 300,
+      "drawName": "Transport Occupations, 2026-Version 2",
+      "drawNumber": 434
+    },
+    "french": {
+      "date": "2026-08-06",
+      "crs": 391,
+      "size": 5000,
+      "drawName": "French-Language proficiency 2026-Version 2",
+      "drawNumber": 433
+    },
+    "cec": {
+      "date": "2026-08-05",
+      "crs": 516,
+      "size": 3000,
+      "drawName": "Canadian Experience Class",
+      "drawNumber": 432
+    },
     "pnp": {
       "date": "2026-08-04",
       "crs": 768,
@@ -16,20 +37,6 @@
       "size": 4,
       "drawName": "Skilled Military Recruits, 2026-Version 1",
       "drawNumber": 430
-    },
-    "french": {
-      "date": "2026-07-22",
-      "crs": 399,
-      "size": 5000,
-      "drawName": "French-Language proficiency 2026-Version 2",
-      "drawNumber": 429
-    },
-    "cec": {
-      "date": "2026-07-21",
-      "crs": 516,
-      "size": 2000,
-      "drawName": "Canadian Experience Class",
-      "drawNumber": 428
     },
     "senior-managers": {
       "date": "2026-07-10",
@@ -80,13 +87,6 @@
       "drawName": "STEM occupations (Version 1)",
       "drawNumber": 293
     },
-    "transport": {
-      "date": "2024-03-13",
-      "crs": 430,
-      "size": 975,
-      "drawName": "Transport occupations (Version 1)",
-      "drawNumber": 289
-    },
     "agriculture": {
       "date": "2024-02-16",
       "crs": 437,
@@ -103,6 +103,187 @@
     }
   },
   "history": {
+    "transport": [
+      {
+        "date": "2026-08-07",
+        "crs": 470,
+        "size": 300,
+        "drawName": "Transport Occupations, 2026-Version 2",
+        "drawNumber": 434
+      }
+    ],
+    "french": [
+      {
+        "date": "2026-08-06",
+        "crs": 391,
+        "size": 5000,
+        "drawName": "French-Language proficiency 2026-Version 2",
+        "drawNumber": 433
+      },
+      {
+        "date": "2026-07-22",
+        "crs": 399,
+        "size": 5000,
+        "drawName": "French-Language proficiency 2026-Version 2",
+        "drawNumber": 429
+      },
+      {
+        "date": "2026-07-09",
+        "crs": 420,
+        "size": 5000,
+        "drawName": "French-Language proficiency 2026-Version 2",
+        "drawNumber": 425
+      },
+      {
+        "date": "2026-05-28",
+        "crs": 409,
+        "size": 4500,
+        "drawName": "French-Language proficiency 2026-Version 2",
+        "drawNumber": 418
+      },
+      {
+        "date": "2026-04-29",
+        "crs": 400,
+        "size": 4000,
+        "drawName": "French-Language proficiency 2026-Version 2",
+        "drawNumber": 414
+      },
+      {
+        "date": "2026-04-15",
+        "crs": 419,
+        "size": 4000,
+        "drawName": "French-Language proficiency 2026-Version 2",
+        "drawNumber": 411
+      },
+      {
+        "date": "2026-03-18",
+        "crs": 393,
+        "size": 4000,
+        "drawName": "French-Language proficiency 2026-Version 2",
+        "drawNumber": 405
+      },
+      {
+        "date": "2026-03-04",
+        "crs": 397,
+        "size": 5500,
+        "drawName": "French-Language proficiency 2026-Version 2",
+        "drawNumber": 401
+      },
+      {
+        "date": "2026-02-06",
+        "crs": 400,
+        "size": 8500,
+        "drawName": "French-Language proficiency 2026-Version 2",
+        "drawNumber": 394
+      },
+      {
+        "date": "2025-12-17",
+        "crs": 399,
+        "size": 6000,
+        "drawName": "French language proficiency (Version 1)",
+        "drawNumber": 388
+      },
+      {
+        "date": "2025-11-28",
+        "crs": 408,
+        "size": 6000,
+        "drawName": "French language proficiency (Version 1)",
+        "drawNumber": 382
+      },
+      {
+        "date": "2025-10-29",
+        "crs": 416,
+        "size": 6000,
+        "drawName": "French language proficiency (Version 1)",
+        "drawNumber": 376
+      }
+    ],
+    "cec": [
+      {
+        "date": "2026-08-05",
+        "crs": 516,
+        "size": 3000,
+        "drawName": "Canadian Experience Class",
+        "drawNumber": 432
+      },
+      {
+        "date": "2026-07-21",
+        "crs": 516,
+        "size": 2000,
+        "drawName": "Canadian Experience Class",
+        "drawNumber": 428
+      },
+      {
+        "date": "2026-07-07",
+        "crs": 517,
+        "size": 2000,
+        "drawName": "Canadian Experience Class",
+        "drawNumber": 424
+      },
+      {
+        "date": "2026-06-23",
+        "crs": 516,
+        "size": 4000,
+        "drawName": "Canadian Experience Class",
+        "drawNumber": 420
+      },
+      {
+        "date": "2026-05-27",
+        "crs": 518,
+        "size": 3000,
+        "drawName": "Canadian Experience Class",
+        "drawNumber": 417
+      },
+      {
+        "date": "2026-04-28",
+        "crs": 514,
+        "size": 2000,
+        "drawName": "Canadian Experience Class",
+        "drawNumber": 413
+      },
+      {
+        "date": "2026-04-14",
+        "crs": 515,
+        "size": 2000,
+        "drawName": "Canadian Experience Class",
+        "drawNumber": 410
+      },
+      {
+        "date": "2026-03-31",
+        "crs": 509,
+        "size": 2250,
+        "drawName": "Canadian Experience Class",
+        "drawNumber": 407
+      },
+      {
+        "date": "2026-03-17",
+        "crs": 507,
+        "size": 4000,
+        "drawName": "Canadian Experience Class",
+        "drawNumber": 404
+      },
+      {
+        "date": "2026-03-03",
+        "crs": 508,
+        "size": 4000,
+        "drawName": "Canadian Experience Class",
+        "drawNumber": 400
+      },
+      {
+        "date": "2026-02-17",
+        "crs": 508,
+        "size": 6000,
+        "drawName": "Canadian Experience Class",
+        "drawNumber": 396
+      },
+      {
+        "date": "2026-01-21",
+        "crs": 509,
+        "size": 6000,
+        "drawName": "Canadian Experience Class",
+        "drawNumber": 392
+      }
+    ],
     "pnp": [
       {
         "date": "2026-08-04",
@@ -196,178 +377,6 @@
         "size": 4,
         "drawName": "Skilled Military Recruits, 2026-Version 1",
         "drawNumber": 430
-      }
-    ],
-    "french": [
-      {
-        "date": "2026-07-22",
-        "crs": 399,
-        "size": 5000,
-        "drawName": "French-Language proficiency 2026-Version 2",
-        "drawNumber": 429
-      },
-      {
-        "date": "2026-07-09",
-        "crs": 420,
-        "size": 5000,
-        "drawName": "French-Language proficiency 2026-Version 2",
-        "drawNumber": 425
-      },
-      {
-        "date": "2026-05-28",
-        "crs": 409,
-        "size": 4500,
-        "drawName": "French-Language proficiency 2026-Version 2",
-        "drawNumber": 418
-      },
-      {
-        "date": "2026-04-29",
-        "crs": 400,
-        "size": 4000,
-        "drawName": "French-Language proficiency 2026-Version 2",
-        "drawNumber": 414
-      },
-      {
-        "date": "2026-04-15",
-        "crs": 419,
-        "size": 4000,
-        "drawName": "French-Language proficiency 2026-Version 2",
-        "drawNumber": 411
-      },
-      {
-        "date": "2026-03-18",
-        "crs": 393,
-        "size": 4000,
-        "drawName": "French-Language proficiency 2026-Version 2",
-        "drawNumber": 405
-      },
-      {
-        "date": "2026-03-04",
-        "crs": 397,
-        "size": 5500,
-        "drawName": "French-Language proficiency 2026-Version 2",
-        "drawNumber": 401
-      },
-      {
-        "date": "2026-02-06",
-        "crs": 400,
-        "size": 8500,
-        "drawName": "French-Language proficiency 2026-Version 2",
-        "drawNumber": 394
-      },
-      {
-        "date": "2025-12-17",
-        "crs": 399,
-        "size": 6000,
-        "drawName": "French language proficiency (Version 1)",
-        "drawNumber": 388
-      },
-      {
-        "date": "2025-11-28",
-        "crs": 408,
-        "size": 6000,
-        "drawName": "French language proficiency (Version 1)",
-        "drawNumber": 382
-      },
-      {
-        "date": "2025-10-29",
-        "crs": 416,
-        "size": 6000,
-        "drawName": "French language proficiency (Version 1)",
-        "drawNumber": 376
-      },
-      {
-        "date": "2025-10-06",
-        "crs": 432,
-        "size": 4500,
-        "drawName": "French language proficiency (Version 1)",
-        "drawNumber": 371
-      }
-    ],
-    "cec": [
-      {
-        "date": "2026-07-21",
-        "crs": 516,
-        "size": 2000,
-        "drawName": "Canadian Experience Class",
-        "drawNumber": 428
-      },
-      {
-        "date": "2026-07-07",
-        "crs": 517,
-        "size": 2000,
-        "drawName": "Canadian Experience Class",
-        "drawNumber": 424
-      },
-      {
-        "date": "2026-06-23",
-        "crs": 516,
-        "size": 4000,
-        "drawName": "Canadian Experience Class",
-        "drawNumber": 420
-      },
-      {
-        "date": "2026-05-27",
-        "crs": 518,
-        "size": 3000,
-        "drawName": "Canadian Experience Class",
-        "drawNumber": 417
-      },
-      {
-        "date": "2026-04-28",
-        "crs": 514,
-        "size": 2000,
-        "drawName": "Canadian Experience Class",
-        "drawNumber": 413
-      },
-      {
-        "date": "2026-04-14",
-        "crs": 515,
-        "size": 2000,
-        "drawName": "Canadian Experience Class",
-        "drawNumber": 410
-      },
-      {
-        "date": "2026-03-31",
-        "crs": 509,
-        "size": 2250,
-        "drawName": "Canadian Experience Class",
-        "drawNumber": 407
-      },
-      {
-        "date": "2026-03-17",
-        "crs": 507,
-        "size": 4000,
-        "drawName": "Canadian Experience Class",
-        "drawNumber": 404
-      },
-      {
-        "date": "2026-03-03",
-        "crs": 508,
-        "size": 4000,
-        "drawName": "Canadian Experience Class",
-        "drawNumber": 400
-      },
-      {
-        "date": "2026-02-17",
-        "crs": 508,
-        "size": 6000,
-        "drawName": "Canadian Experience Class",
-        "drawNumber": 396
-      },
-      {
-        "date": "2026-01-21",
-        "crs": 509,
-        "size": 6000,
-        "drawName": "Canadian Experience Class",
-        "drawNumber": 392
-      },
-      {
-        "date": "2026-01-07",
-        "crs": 511,
-        "size": 8000,
-        "drawName": "Canadian Experience Class",
-        "drawNumber": 390
       }
     ],
     "senior-managers": [
@@ -515,11 +524,31 @@
     ],
     "general": [],
     "stem": [],
-    "transport": [],
     "agriculture": [],
     "fsw": []
   },
   "recent": [
+    {
+      "date": "2026-08-07",
+      "crs": 470,
+      "size": 300,
+      "name": "Transport Occupations, 2026-Version 2",
+      "number": 434
+    },
+    {
+      "date": "2026-08-06",
+      "crs": 391,
+      "size": 5000,
+      "name": "French-Language proficiency 2026-Version 2",
+      "number": 433
+    },
+    {
+      "date": "2026-08-05",
+      "crs": 516,
+      "size": 3000,
+      "name": "Canadian Experience Class",
+      "number": 432
+    },
     {
       "date": "2026-08-04",
       "crs": 768,
@@ -638,27 +667,6 @@
       "size": 380,
       "name": "Provincial Nominee Program",
       "number": 415
-    },
-    {
-      "date": "2026-04-29",
-      "crs": 400,
-      "size": 4000,
-      "name": "French-Language proficiency 2026-Version 2",
-      "number": 414
-    },
-    {
-      "date": "2026-04-28",
-      "crs": 514,
-      "size": 2000,
-      "name": "Canadian Experience Class",
-      "number": 413
-    },
-    {
-      "date": "2026-04-27",
-      "crs": 795,
-      "size": 473,
-      "name": "Provincial Nominee Program",
-      "number": 412
     }
   ]
 }

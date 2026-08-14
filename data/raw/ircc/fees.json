@@ -3,7 +3,7 @@
  "program": "PR-fees",
  "source": "IRCC — fee list (Economic immigration incl. Express Entry / PNP / AIP / RCIP)",
  "url": "https://ircc.canada.ca/english/information/fees/fees.asp",
- "fetched": "2026-08-04",
+ "fetched": "2026-08-12",
  "note": "官方原文锚在每行 valueText;RPRF = principal - principalNoRprf。省级申请费 = G8 二期。",
  "requirements": [
   {

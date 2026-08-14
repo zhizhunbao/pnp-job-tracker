@@ -12,7 +12,7 @@ import { FIELDS } from '@/lib/fields'
 import { fieldsOf, type Stage } from '@/lib/decisions'
 import type { Answers } from '@/lib/answers'
 
-export function QuizForm({ decision, stage, lang, t, answers, onPatch, onComplete, doneKey, onBack, onStepChange, startAtEnd = false, startAt }: {
+export function QuizForm({ decision, stage, lang, t, answers, onPatch, onComplete, doneKey, onBack, onStepChange, startAtEnd = false, startAt, finishLabel, onFinish }: {
   decision: string
   stage: Stage
   lang: Lang
@@ -25,6 +25,10 @@ export function QuizForm({ decision, stage, lang, t, answers, onPatch, onComplet
   onStepChange?: (index: number, total: number) => void
   startAtEnd?: boolean      // 从后续自定义步骤返回时，回到基础题最后一题而不是第一题
   startAt?: string          // 点条件格直达那道题:起步落在指定字段(调用方换 key 重挂来触发)
+  /** 旁路收卷钮(2026-08-13 Frank:基础卷也要「完成」——改一个答案不用再翻完全卷)。
+   *  何时给由调用方定(决策页=整卷答满才传);点了直接收卷,不走剩余页。 */
+  finishLabel?: string
+  onFinish?: () => void
 }) {
   const names = fieldsOf(decision, stage)
   // 起步落在第一道没答的题(答过的不重走,上一题仍可回去改)。只在挂载时算一次 ——
@@ -59,6 +63,7 @@ export function QuizForm({ decision, stage, lang, t, answers, onPatch, onComplet
       <QuizNav prevLabel={t('plan.prev')} nextDisabled={!done}
         onPrev={at > 0 ? () => setIdx(at - 1) : onBack}
         onNext={() => (last ? onComplete() : setIdx(at + 1))}
+        doneLabel={finishLabel} onDone={onFinish}
         nextLabel={last ? t(doneKey || (stage === 'explore' ? 'plan.reportUpd' : 'plan.toReport')) : t('plan.next')} />
     </>
   )

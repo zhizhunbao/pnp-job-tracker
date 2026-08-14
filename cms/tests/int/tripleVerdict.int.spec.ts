@@ -262,11 +262,12 @@ describe('#287 金标 · 职业关', () => {
     expect(critical.evidence).toMatchObject({ url: 'https://liveinnovascotia.com/critical-vacancies', fetched: '2026-08-08' })
   })
 
-  it('TEER 3 的粗筛行不给对错符号;没有任何排除清单命中', () => {
+  it('TEER 3 的粗筛行按放行给绿勾;没有任何排除清单命中', () => {
     const card = run()
     const teer = rowOf(card, 'tv.occ.teer')!
-    // B1:粗筛**永不** pass/gap —— 它是 08_score 的省级粗筛,不是官方受理范围
-    expect(teer).toMatchObject({ state: 'info', tier: 'free', params: { teer: 3, prov: 'NS', coarsePass: true } })
+    // 2026-08-14 Frank「满足绿勾不满足红叉」:粗筛行按 pnpEligible 分 pass/excluded
+    // (原 B1「永不 pass、中性 info」作废;防冒充官方结论的担子挪到措辞——只说「初筛通过」)
+    expect(teer).toMatchObject({ state: 'pass', tier: 'free', params: { teer: 3, prov: 'NS', coarsePass: true } })
     // NS 两条语言行 0-3 / 4-5 合起来盖住 TEER 3 → 没有「不收这一档」的通道可指,不硬指
     expect(teer.params.scopeStream).toBe('')
     expect(teer.params.scoped).toBe(true)
@@ -337,9 +338,11 @@ const PE_DATA: VerdictData = {
 const peCard = () => tripleVerdict(PE_JOB, NO_MATCH, PROFILE, PE_DATA, { nowYear: NOW_YEAR })
 
 describe('B1 举证标准 · 粗筛不冒充官方结论', () => {
-  it('PE 的 TEER 5 岗:粗筛行是中性 info,并指向库里那条只收 TEER 0-3 的通道', () => {
+  it('PE 的 TEER 5 岗:粗筛放行给绿勾,并指向库里那条只收 TEER 0-3 的通道', () => {
     const r = rowOf(peCard(), 'tv.occ.teer')!
-    expect(r.state).toBe('info')                       // 不是 pass —— 绿勾归官方门槛行
+    // 2026-08-14 Frank 拍板改 pass(原中性 info 作废);「不冒充官方」由措辞守:
+    // 文案只说「初筛通过」,scope 子行仍指出官方通道只收 TEER 0-3
+    expect(r.state).toBe('pass')
     expect(r.params.coarsePass).toBe(true)             // 粗筛确实放行了,如实说是粗筛放行的
     expect(r.params.scopeStream).toBe('PEI PNP Workforce — Skilled Worker stream')
     expect(r.params.scopeTeers).toEqual(['0', '1', '2', '3'])
@@ -378,17 +381,20 @@ describe('B1 举证标准 · 粗筛不冒充官方结论', () => {
 // 红线:结论由**确定性层**拼 —— 原料只有「职业关的官方排除清单」与 pathVerdict 对这份岗所在省
 // 那几条通道的裁决,「差哪一项」共用 pathVerdict.blockCost 那把尺子。这里守的是口径不是文案。
 describe('B2 结论句 · 确定性层', () => {
-  // 效果图那一案:AIP 指定雇主 + 明答「没有 offer」→ AIP 被 offer 闸卡住
+  // 原案是「明答没有 offer → AIP 被 offer 闸卡住」。2026-08-13 起**带岗卡 offer 闸恒视为已满足**
+  //(Frank:「来这个网站不都是缺 job offer 的吗」——这张卡判的是「拿下这份 offer 之后卡在哪」),
+  // offer 永不再当拦路结论;换语言差档(CLB 4 < AIP teer-0-3 要求的 CLB 5)验同一条口径。
   const noOffer: TripleProfile = { ...PROFILE, hasOffer: false }
-  const blockedCard = () => tripleVerdict(PE_JOB, COMPANY, noOffer, PE_DATA, { nowYear: NOW_YEAR })
+  const lowClb: TripleProfile = { ...noOffer, clb: 4 }
+  const blockedCard = () => tripleVerdict(PE_JOB, COMPANY, lowClb, PE_DATA, { nowYear: NOW_YEAR })
 
-  it('被闸卡住时报最好拆的那道闸,并落一行免费的「你这边」', () => {
+  it('被闸卡住时报最好拆的那道闸,并落一行免费的「你这边」;offer 闸在带岗卡不拦路', () => {
     const card = blockedCard()
     expect(card.conclusion.kind).toBe('blocked')
-    expect(card.conclusion.gate).toBe('offer')          // BLOCK_COST:offer 0 < 境内 1 < 自雇 2 < 语言 3 < 学历 4
+    expect(card.conclusion.gate).toBe('language')
     const you = rowOf(card, 'tv.you.gate')!
     // 免费:它与同一页「你的初步方案」同源。**不是**新开的付费口子
-    expect(you).toMatchObject({ tier: 'free', gate: 'person', state: 'gap', params: { gate: 'offer' } })
+    expect(you).toMatchObject({ tier: 'free', gate: 'person', state: 'gap', params: { gate: 'language' } })
   })
 
   it('职业被官方排除时,排除先于一切 —— 不拿通道裁决盖过硬伤', () => {

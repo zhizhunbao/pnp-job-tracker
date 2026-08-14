@@ -50,6 +50,10 @@ IN_URL_FST = _EE + "who-can-apply/federal-skilled-trades.html"
 _RCIP = "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/"
 IN_URL_RCIP_RURAL = _RCIP + "rural-immigration/eligibility/work-experience.html"
 IN_URL_RCIP_FRANCO = _RCIP + "franco-immigration/eligibility/work-experience.html"
+# RCIP(Rural)语言门槛页(2026-08-14 L2-09 用例横测暴露:库里没有语言行 → 引擎把「没收录」
+# 当成「不要求」,语言没考的人也看到「即可申请」)。Franco 试点语言规则不同(NCLC 5 一刀切,
+# 纯法语),不共享这批行 —— 交叉核验只对经验行。
+IN_URL_RCIP_LANG = _RCIP + "rural-immigration/eligibility/language-test.html"
 IN_URL_LANG = _EE + "documents/language-test.html"          # 三个项目的最低 CLB/NCLC 门槛表
 IN_URL_ECA = _EE + "documents/education-assessment.html"     # ECA 结果 → FSW 教育 selection factor 分
 
@@ -345,6 +349,16 @@ RULES = [
     {"program": "RCIP", "page": "rcip_rural", "factor": "workSelfEmployed", "op": "rule", "value": "excluded", "unit": "",
      "label": "RCIP: self-employed work does not count toward the experience requirement",
      "quote": "not be from a self-employed job"},
+    # RCIP 语言门槛按 offer 的 TEER 分档(2026-08-14 补;stream=teer-a-b 闭区间,引擎 fedLangApplies 消费)
+    {"program": "RCIP", "page": "rcip_lang", "factor": "language", "stream": "teer-0-1", "op": ">=", "value": 6, "unit": "CLB",
+     "label": "RCIP: TEER 0 or 1 job offer needs CLB 6",
+     "quote": "TEER 0 or 1: CLB 6"},
+    {"program": "RCIP", "page": "rcip_lang", "factor": "language", "stream": "teer-2-3", "op": ">=", "value": 5, "unit": "CLB",
+     "label": "RCIP: TEER 2 or 3 job offer needs CLB 5",
+     "quote": "TEER 2 or 3: CLB 5"},
+    {"program": "RCIP", "page": "rcip_lang", "factor": "language", "stream": "teer-4-5", "op": ">=", "value": 4, "unit": "CLB",
+     "label": "RCIP: TEER 4 or 5 job offer needs CLB 4",
+     "quote": "TEER 4 or 5: CLB 4"},
 ]
 
 
@@ -381,7 +395,8 @@ def main() -> None:
     # ── 2. 资格规则(quote-anchored)+ FSW 67 分 selection factors ────────
     pages = {}
     for key, url in (("cec", IN_URL_CEC), ("fsw", IN_URL_FSW), ("fst", IN_URL_FST), ("lang", IN_URL_LANG),
-                     ("rcip_rural", IN_URL_RCIP_RURAL), ("rcip_franco", IN_URL_RCIP_FRANCO)):
+                     ("rcip_rural", IN_URL_RCIP_RURAL), ("rcip_franco", IN_URL_RCIP_FRANCO),
+                     ("rcip_lang", IN_URL_RCIP_LANG)):
         m, fetched = load(url)
         pages[key] = {"url": url, "fetched": fetched, "main": m,
                       "text": norm(m.get_text(" ", strip=True))}
@@ -393,9 +408,10 @@ def main() -> None:
             print(f"✗   [{r['program']}/{r['factor']}] {r['quote'][:90]}")
         raise SystemExit(1)
 
-    # RCIP 两条 pilot 共享文案:Rural 页(上面已核验)之外,交叉核验 Franco 页也逐字命中同一批引用,
+    # RCIP 两条 pilot 共享**经验**文案:Rural 页(上面已核验)之外,交叉核验 Franco 页也逐字命中,
     # 否则「两条 pilot 都是 1,560 小时」这个结论只验证了一半就写进了库。
-    rcip_missing_franco = [r for r in RULES if r["program"] == "RCIP"
+    # 语言行不进这道闸:Franco 是 NCLC 5 一刀切(纯法语),与 Rural 的 TEER 分档不同源。
+    rcip_missing_franco = [r for r in RULES if r["program"] == "RCIP" and r["page"] == "rcip_rural"
                            and norm(r["quote"]) not in pages["rcip_franco"]["text"]]
     if rcip_missing_franco:
         print(f"✗ RCIP 引用在 Franco pilot 页上对不上(Rural/Franco 文案已经不一致?)—— 保留旧表,人工重核:")

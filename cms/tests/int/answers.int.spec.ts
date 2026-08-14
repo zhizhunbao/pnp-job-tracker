@@ -9,7 +9,7 @@ import { FIELDS } from '@/lib/fields'
 const OLD_QUIZ = 'jobs_quiz_v1'
 const OLD_PR = 'plan_pr_v1'
 const base = (p: Partial<Answers> = {}): Answers =>
-  ({ status: '', nocs: [], provs: [], clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0, eduBand: 0, ageBand: 0, totalExpBand: 0, offerBand: 0, canadaEduBand: 0, studyMonthsBand: 0, studyLevelBand: 0, ...p })
+  ({ status: '', nocs: [], provs: [], clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0, eduBand: 0, ageBand: 0, totalExpBand: 0, offerBand: 0, canadaEduBand: 0, studyMonthsBand: 0, studyLevelBand: 0, bandsV2: true, ...p })
 
 beforeEach(() => localStorage.clear())
 
@@ -53,15 +53,31 @@ describe('目标省两种表示同步', () => {
 })
 
 describe('档位 → 引擎输入', () => {
-  // 语言 2026-08-02 从自评(初级/中级/流利)改成**实测 CLB 档**,取每档下界 ——
-  // 自评映射是本站编的,报告却写成「你报的 CLB 9」(Frank 实拍点名),而且偏乐观会把不达标说成达标
-  it('每档取下界:CLB 6-7 那档按 6 传,不按 7', () => {
-    const out = toEngineAnswers(base({ status: 'working', nocs: ['31301'], clbBand: 3, expBand: 3, provBand: 1, crsBand: 4, pgwpBand: 2 }))
+  // 语言 2026-08-13 合一成**精确档**(基础卷直接问 CLB 几,分值段不再追问):
+  // value 2..8 ↔ CLB 4..10;旧区间档答案由 readAnswers 按下界迁移(另测)
+  it('精确档逐值直传:选 CLB 6 就传 6', () => {
+    const out = toEngineAnswers(base({ status: 'working', nocs: ['31301'], clbBand: 4, expBand: 3, provBand: 1, crsBand: 4, pgwpBand: 2 }))
     expect(out).toEqual({
       noc: '31301', nocs: ['31301'], currentStatus: 'working', clb: 6, canadianExpMonths: 18,
       targetProvinces: ['BC'], crs: 480, pgwpMonthsLeft: 9,
     })
-    expect(toEngineAnswers(base({ clbBand: 5 })).clb).toBe(10)
+    expect(toEngineAnswers(base({ clbBand: 8 })).clb).toBe(10)
+  })
+
+  // 迁移:旧区间档读盘时按旧引擎数字对齐落到精确档 —— 引擎收到的数字前后不变
+  it('旧语言/总经验区间档读盘迁移到精确档,引擎数字不变', () => {
+    localStorage.setItem('o2p_answers_v1', JSON.stringify(base({ clbBand: 3, totalExpBand: 3, bandsV2: undefined })))
+    const a = readAnswers()
+    expect(a.clbBand).toBe(4)          // 旧 6-7 档 → 精确 CLB 6(value 4)
+    expect(a.totalExpBand).toBe(4)     // 旧 1-3 年档(引擎 24 月)→ 精确 2 年档(同 24 月)
+    expect(a.bandsV2).toBe(true)
+    expect(toEngineAnswers(a).clb).toBe(6)
+    expect(toEngineAnswers(a).totalExpMonths).toBe(24)
+    localStorage.setItem('o2p_answers_v1', JSON.stringify(base({ clbBand: 5, totalExpBand: 9, bandsV2: undefined })))
+    const b = readAnswers()
+    expect(toEngineAnswers(b).clb).toBe(10)               // 旧 10+ 档不许被降档
+    expect(b.totalExpBand).toBe(9)                        // 「不清楚」原样保留
+    expect(toEngineAnswers(b).totalExpMonths).toBeUndefined()
   })
 
   // 多职业(2026-08-02):选几个报几个;`noc` 保留单值只为老前端与 advisor 不受影响
@@ -77,7 +93,7 @@ describe('档位 → 引擎输入', () => {
 
   // 题库扩充 20260802:三个新字段的换算也只此一处(学历给引擎枚举、年龄给区间中点、总经验给月数)
   it('学历/年龄/总经验档 → 引擎输入', () => {
-    const out = toEngineAnswers(base({ eduBand: 4, ageBand: 2, totalExpBand: 5 }))
+    const out = toEngineAnswers(base({ eduBand: 4, ageBand: 2, totalExpBand: 7 }))
     expect(out.edu).toBe('master')
     expect(out.age).toBe(28)
     expect(out.totalExpMonths).toBe(60)

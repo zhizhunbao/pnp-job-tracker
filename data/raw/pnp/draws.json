@@ -1,12 +1,47 @@
 {
   "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
-  "fetched": "2026-08-05",
+  "fetched": "2026-08-12",
   "provinces": {
     "BC": {
       "label": "BC PNP Skills Immigration",
       "scale": "SIRS",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply",
       "draws": [
+        {
+          "date": "2026-08-06",
+          "stream": "Care: Childcare",
+          "note": "Early childhood educators only *",
+          "score": 102,
+          "invitations": 183
+        },
+        {
+          "date": "2026-08-06",
+          "stream": "Care: Health",
+          "note": "All priority health care occupations *",
+          "score": 84,
+          "invitations": 124
+        },
+        {
+          "date": "2026-08-06",
+          "stream": "Care: Education",
+          "note": "All priority education occupations *",
+          "score": 68,
+          "invitations": null
+        },
+        {
+          "date": "2026-08-06",
+          "stream": "Care: Veterinary Care",
+          "note": "All priority veterinary care occupations",
+          "score": 72,
+          "invitations": 6
+        },
+        {
+          "date": "2026-08-06",
+          "stream": "Build: Construction Trades",
+          "note": "All priority construction occupations *",
+          "score": 88,
+          "invitations": 187
+        },
         {
           "date": "2026-07-23",
           "stream": "Temporary Rural/Remote Health Support Initiative",
@@ -345,13 +380,6 @@
         },
         {
           "date": "2026-04-23",
-          "stream": "Employer Job Offer: International Student stream",
-          "note": "Targeted draw for Central Ontario (excluding GTA). Please refer to the OINP Program Updates page for more information.",
-          "score": 84,
-          "invitations": 173
-        },
-        {
-          "date": "2026-04-23",
           "stream": "Employer Job Offer: In-Demand Skills stream",
           "note": "Targeted draw for Eastern Ontario. Please refer to the OINP Program Updates page for more information.",
           "score": 34,
@@ -375,6 +403,13 @@
       "scale": null,
       "url": "https://www.gov.nl.ca/immigration/invitations-to-apply-updates/",
       "draws": [
+        {
+          "date": "2026-08-10",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 186, AIP – 22",
+          "score": null,
+          "invitations": 208
+        },
         {
           "date": "2026-07-28",
           "stream": "NLPNP + AIP (ITA batch)",

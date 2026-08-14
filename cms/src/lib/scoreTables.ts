@@ -33,12 +33,20 @@ export type TopNoc = Awaited<ReturnType<typeof fetchTopNocs>>[number]
 export type ProvCompetition = {
   province: string; ratio: number; tier: string
   pool: number; quota: number
+  /** 存量拆分:学签 / 工签(TFWP+IMP)。访客旅游签从不计入 pool。旧库行没有拆分 → null,前端回退合计列 */
+  poolStudy: number | null; poolWork: number | null
   /** 两个数不是同一年的:分子是临时居民存量的统计年(asOf),分母是名额的年份(quotaYear)——
    *  各行还不一样(ON/BC/AB/SK 拿到 2026 名额,MB/NS/NB/NL/PE 还是 2025)。**必须逐行摆出来**,
    *  否则读者会默认它们同年。 */
   poolYear: string; quotaYear: number
   /** 本站算出这一行的日期(difficulty.generated) */
   generated: string
+  /** 年份筛选序列(2026-08-14):存量近 3 年(官方停在 2024,之后年份缺位)、流量近 5 年、名额 2024–2026 */
+  series?: {
+    stocks: Record<string, { study?: number | null; work?: number | null }>
+    flow: Record<string, { n: number; period: string }>
+    quota: { y2024: number | null; y2025: number | null; y2026: number | null }
+  } | null
   source: string
   /**
    * 新发学签**流量**(IRCC 月度表,provinces.info.studyFlow)。
@@ -118,7 +126,7 @@ async function load(): Promise<Tables> {
       const raw = r.difficulty
       let d: {
         tier?: string; generated?: string
-        factors?: { key?: string; value?: number; pool?: number; quota?: number; quotaYear?: number; asOf?: string; source?: string }[]
+        factors?: { key?: string; value?: number; pool?: number; poolStudy?: number; poolWork?: number; quota?: number; quotaYear?: number; asOf?: string; source?: string }[]
       } | null = null
       try { d = typeof raw === 'string' ? JSON.parse(raw) : (raw as typeof d) } catch { d = null }
       const f = d?.factors?.find((x) => x?.key === 'comp')
@@ -128,6 +136,8 @@ async function load(): Promise<Tables> {
       competition.push({
         province: prov, ratio, tier: str(d?.tier),
         pool: Number(f?.pool) || 0, quota: Number(f?.quota) || 0,
+        poolStudy: Number.isFinite(Number(f?.poolStudy)) && f?.poolStudy != null ? Number(f.poolStudy) : null,
+        poolWork: Number.isFinite(Number(f?.poolWork)) && f?.poolWork != null ? Number(f.poolWork) : null,
         poolYear: str(f?.asOf), quotaYear: Number(f?.quotaYear) || 0,
         generated: str(d?.generated) || str(r.fetched), source: str(f?.source),
       })
@@ -137,17 +147,35 @@ async function load(): Promise<Tables> {
     const { rows: provRows } = await pool.query('SELECT code, info FROM provinces')
       .catch(() => ({ rows: [] as Record<string, unknown>[] }))
     const flowOf: Record<string, ProvCompetition['flow']> = {}
+    const seriesOf: Record<string, ProvCompetition['series']> = {}
     for (const r of provRows) {
       const raw = r.info
-      let info: { studyFlow?: { year?: string; n?: number; throughMonth?: string; prev?: number | null } } | null = null
+      let info: {
+        studyFlow?: { year?: string; n?: number; throughMonth?: string; prev?: number | null }
+        trSeries?: Record<string, { study?: number | null; work?: number | null }>
+        flowSeries?: Record<string, { n?: number; complete?: boolean; throughMonth?: string }>
+        alloc?: { y2024?: number | null; y2025?: number | null; y2026?: number | null }
+      } | null = null
       try { info = typeof raw === 'string' ? JSON.parse(raw) : (raw as typeof info) } catch { info = null }
       const f = info?.studyFlow
       const n = Number(f?.n)
+      if (info?.trSeries || info?.flowSeries || info?.alloc) {
+        // 年份筛选序列(2026-08-14):存量近 3 年(官方停在 2024)、流量近 5 年、名额 2025/2026。
+        // 流量进行年 complete=false → period 带「至几月」;缺位一律 null,前端显「—」
+        const flowS: Record<string, { n: number; period: string }> = {}
+        for (const [y, v] of Object.entries(info?.flowSeries ?? {})) {
+          const fn = Number(v?.n)
+          if (!Number.isFinite(fn)) continue
+          const mm = v?.complete === false ? MONTH[str(v?.throughMonth)] ?? '' : ''
+          flowS[y] = { n: fn, period: mm ? `${y}-${mm}` : y }
+        }
+        seriesOf[str(r.code)] = { stocks: info?.trSeries ?? {}, flow: flowS, quota: { y2024: info?.alloc?.y2024 ?? null, y2025: info?.alloc?.y2025 ?? null, y2026: info?.alloc?.y2026 ?? null } }
+      }
       if (!f?.year || !Number.isFinite(n)) continue
       const mm = MONTH[str(f.throughMonth)] ?? ''
       flowOf[str(r.code)] = { period: mm ? `${f.year}-${mm}` : String(f.year), n, prevYear: Number(f.prev) || null }
     }
-    for (const row of competition) row.flow = flowOf[row.province] ?? null
+    for (const row of competition) { row.flow = flowOf[row.province] ?? null; row.series = seriesOf[row.province] ?? null }
 
     competition.sort((x, y) => x.ratio - y.ratio)          // 松 → 紧
   }

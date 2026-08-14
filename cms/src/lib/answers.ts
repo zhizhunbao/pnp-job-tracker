@@ -25,6 +25,10 @@ export type Answers = {
   offerBand: number       // 已有字段(卡③专属题),类型里先前漏声明
   canadaEduBand: number   // 有没有加拿大学历(2026-08-12 门槛清单三类闸之一)
   provsAny?: boolean      // 目标省「还不确定」——**答过了**,只是不限省(与「没答」不同)
+  /** 档位 v2 标记(2026-08-13/14 语言+经验合一):clbBand 从区间档改成精确档(2=CLB4…8=CLB10+),
+   *  totalExpBand 从区间档改成整年档(3=1年…7=5年+,9=不清楚不变)。没打标的旧答案读取时按
+   *  旧引擎月数/下界迁移 —— 同一个 band 数字两套语义,不迁移就是静默改答案。 */
+  bandsV2?: boolean
   // B1-4 PGWP(20260803,拿 PR 探索批 2):计划读的课程时长档 + 层级档
   studyMonthsBand: number
   studyLevelBand: number
@@ -35,8 +39,15 @@ export const EMPTY: Answers = {
   status: '', nocs: [], provs: [],
   clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0,
   eduBand: 0, ageBand: 0, totalExpBand: 0, offerBand: 0, canadaEduBand: 0,
-  studyMonthsBand: 0, studyLevelBand: 0,
+  studyMonthsBand: 0, studyLevelBand: 0, bandsV2: true,
 }
+
+// 旧区间档 → 新精确档(index=旧 band):与旧 toAnswer 的引擎数字逐值一致(CLB=[0,0,4,6,8,10]、
+// TOTAL_EXP=[0,0,6,24,48,60] 月),判定核收到的数字前后不变 —— 迁移只影响「格子里显示哪一档」
+// 与「还要不要再追问精确题」。总经验 9(不清楚)原样保留。
+const CLB_V2_MAP = [0, 1, 2, 4, 6, 8]
+const TOTAL_V2_MAP = [0, 1, 2, 4, 6, 7]
+const totalV2 = (b: number) => (b === 9 ? 9 : TOTAL_V2_MAP[b] ?? 0)
 
 const parse = (s: string | null): any => { try { return s ? JSON.parse(s) : null } catch { return null } }
 const num = (v: any): number => (typeof v === 'number' && Number.isFinite(v) ? v : 0)
@@ -57,7 +68,8 @@ function migrate(): Answers | null {
     nocs: arr(q?.nocs),
     provs: provs.length ? provs : provsFromBand(provBand),
     ...(q?.done ? { done: true } : {}),
-    clbBand: num(p?.clbBand), expBand: num(p?.expBand), provBand,
+    clbBand: CLB_V2_MAP[num(p?.clbBand)] ?? 0, expBand: num(p?.expBand), provBand,
+    totalExpBand: totalV2(num(p?.totalExpBand)),
     crsBand: num(p?.crsBand), pgwpBand: num(p?.pgwpBand),
   }
   save(merged)
@@ -76,9 +88,11 @@ export function readAnswers(): Answers {
     return {
       ...EMPTY, ...cur,
       nocs: arr(cur.nocs), provs: arr(cur.provs),
-      clbBand: num(cur.clbBand), expBand: num(cur.expBand), provBand: num(cur.provBand),
+      clbBand: cur.bandsV2 ? num(cur.clbBand) : (CLB_V2_MAP[num(cur.clbBand)] ?? 0), bandsV2: true,
+      expBand: num(cur.expBand), provBand: num(cur.provBand),
       crsBand: num(cur.crsBand), pgwpBand: num(cur.pgwpBand),
-      eduBand: num(cur.eduBand), ageBand: num(cur.ageBand), totalExpBand: num(cur.totalExpBand),
+      eduBand: num(cur.eduBand), ageBand: num(cur.ageBand),
+      totalExpBand: cur.bandsV2 ? num(cur.totalExpBand) : totalV2(num(cur.totalExpBand)),
       offerBand: num(cur.offerBand), canadaEduBand: num(cur.canadaEduBand),
     }
   }

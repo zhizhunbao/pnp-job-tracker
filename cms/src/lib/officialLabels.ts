@@ -19,6 +19,7 @@ export const L10N: Record<string, { zh?: string; ko?: string }> = {
   'Second Official Language — CLB 5 or higher (overall)': { zh: '第二官方语言 CLB 5 以上', ko: '제2공용어 CLB 5 이상' },
   'Studies in another province': { zh: '有外省就读经历', ko: '타 주 학업 경력' },
   'Close relative in Manitoba': { zh: '在本省有近亲' },
+  'Close friend or distant relative in Manitoba': { zh: '在本省有远亲或密友' },
   'Previous authorized work experience in Manitoba (six months or more)': { zh: '曾在本省合法工作至少 6 个月' },
   'Completed post-secondary program in Manitoba (two years or more)': { zh: '在本省完成至少 2 年的高等教育项目' },
   'Completed post-secondary program in Manitoba (one year)': { zh: '在本省完成 1 年高等教育项目' },
