@@ -13,7 +13,7 @@
       "note": "2026 已公布" },
     { "prov": "SK", "y2026": 4761, "y2025": 4761, "y2024": 8000,
       "sources": { "y2026": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/immigration-faqs", "y2025": "https://www.cicnews.com/2025/12/saskatchewan-pnp-announces-nomination-allocation-and-sweeping-changes-for-2026-1263899.html", "y2024": "https://www.cicnews.com/2025/10/canadian-provincial-immigration-has-whipsawed-through-2025-1061430.html" },
-      "note": "2026 官方原句「The SINP's initial nomination allocation for 2026 is 4,761」(SINP FAQ,哨兵 2026-08-14 命中);2025=3,625 起步 8 月追加 1,136 → 年终 4,761;2024=8,000 待抽查(另有 7,250 推算:2025 公告称「砍半至 3,625」)" },
+      "note": "2026 官方原句「The SINP's initial nomination allocation for 2026 is 4,761」(SINP FAQ,哨兵 2026-08-14 命中);2025=3,625 起步 8 月追加 1,136 → 年终 4,761;2024=8,000 已复核(2023-03 省联邦三年协议 7,250/8,000/8,500,https://www.cbc.ca/1.6777410;「砍半至 3,625」的媒体口径是拿 2023 基数 7,250 算的,7,250 不是 2024 的数)" },
     { "prov": "MB", "y2026": 6239, "y2025": 6250, "y2024": 9500,
       "sources": { "y2026": "https://immigratemanitoba.com/resources/data/monthly-data-2026", "y2025": "https://immigrationnewscanada.ca/canada-boosts-provincial-nominee-program/", "y2024": "https://www.cicnews.com/2025/10/canadian-provincial-immigration-has-whipsawed-through-2025-1061430.html" },
       "note": "2026 官方原句「For 2026, Manitoba was allocated 6,239 nominations in total.」(MPNP 月度数据页,已在 raw/pnp/mb-stats.json);2025=4,750 基数 + 2025-10 追加 1,500" },
