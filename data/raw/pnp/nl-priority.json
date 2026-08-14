@@ -7,7 +7,7 @@
   "codeless": true,
   "note": "NL 优先处理职位:免省级劳动力市场测试(Job Vacancy Assessment / AIP 招工测试)并优先处理。**不在表上不等于不能申请**,只是没有这份加速。官方给的是职位名称文本、不是 NOC 码,故本站不做 NOC 映射。",
   "url": "https://www.gov.nl.ca/immigration/excluded-positions/",
-  "fetched": "2026-08-12",
+  "fetched": "2026-08-14",
   "positions": [
     {
       "sector": "Health Care",

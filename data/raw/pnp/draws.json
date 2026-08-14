@@ -1,6 +1,6 @@
 {
   "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
-  "fetched": "2026-08-12",
+  "fetched": "2026-08-14",
   "provinces": {
     "BC": {
       "label": "BC PNP Skills Immigration",
@@ -134,6 +134,41 @@
       "url": "https://www.alberta.ca/aaip-processing-information",
       "draws": [
         {
+          "date": "2026-08-12",
+          "stream": "Dedicated Health Care Pathway – Express Entry",
+          "note": "",
+          "score": 60,
+          "invitations": 57
+        },
+        {
+          "date": "2026-08-11",
+          "stream": "Rural Renewal Stream",
+          "note": "",
+          "score": 51,
+          "invitations": 127
+        },
+        {
+          "date": "2026-08-07",
+          "stream": "Alberta Express Entry Stream – Priority Sectors (Agriculture)",
+          "note": "",
+          "score": 55,
+          "invitations": 38
+        },
+        {
+          "date": "2026-08-06",
+          "stream": "Alberta Express Entry Stream – Accelerated Tech Pathway",
+          "note": "",
+          "score": 60,
+          "invitations": 95
+        },
+        {
+          "date": "2026-08-04",
+          "stream": "Alberta Express Entry Stream – Priority Sectors (Health Care)",
+          "note": "",
+          "score": 66,
+          "invitations": 50
+        },
+        {
           "date": "2026-07-21",
           "stream": "Alberta Express Entry Stream – Priority Sectors (Construction)",
           "note": "",
@@ -224,6 +259,13 @@
       "scale": "MPNP EOI",
       "url": "https://immigratemanitoba.com/draws/",
       "draws": [
+        {
+          "date": "2026-08-13",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #277",
+          "score": null,
+          "invitations": 53
+        },
         {
           "date": "2026-07-30",
           "stream": "Occupation-specific selections",

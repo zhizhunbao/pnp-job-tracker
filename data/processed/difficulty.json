@@ -92,11 +92,11 @@
    "factors": [
     {
      "key": "comp",
-     "value": 33.9,
+     "value": 32.9,
      "pool": 216935,
      "poolStudy": 71545,
      "poolWork": 145390,
-     "quota": 6403,
+     "quota": 6603,
      "quotaYear": 2026,
      "tier": "mid",
      "source": "https://www.ircc.canada.ca/opendata-donneesouvertes/data/EN_ODP_annual-TR-Study-IS_PT_study_level_year_end.xlsx",
@@ -104,27 +104,27 @@
     },
     {
      "key": "quotaTrend",
-     "value": -0.03,
-     "tier": "mid",
+     "value": 0.0,
+     "tier": "easy",
      "source": "",
      "asOf": "2026"
     },
     {
      "key": "activity",
-     "value": 12,
-     "invitations": 1505,
+     "value": 17,
+     "invitations": 1872,
      "tier": "easy",
      "source": "https://www.alberta.ca/aaip-processing-information",
      "asOf": "2026-08-14"
     },
     {
      "key": "scoreLevel",
-     "value": 100,
-     "latestScore": 65,
+     "value": 76,
+     "latestScore": 60,
      "scale": "WEOI",
      "tier": "tight",
      "source": "https://www.alberta.ca/aaip-processing-information",
-     "asOf": "2026-07-21"
+     "asOf": "2026-08-12"
     }
    ]
   },
@@ -171,15 +171,15 @@
     },
     {
      "key": "quotaTrend",
-     "value": -0.002,
-     "tier": "mid",
+     "value": 0.0,
+     "tier": "easy",
      "source": "",
      "asOf": "2026"
     },
     {
      "key": "activity",
-     "value": 12,
-     "invitations": 3113,
+     "value": 13,
+     "invitations": 3166,
      "tier": "easy",
      "source": "https://immigratemanitoba.com/draws/",
      "asOf": "2026-08-14"
@@ -217,11 +217,11 @@
    "factors": [
     {
      "key": "comp",
-     "value": 8.2,
+     "value": 11.6,
      "pool": 34815,
      "poolStudy": 15545,
      "poolWork": 19270,
-     "quota": 4250,
+     "quota": 3000,
      "quotaYear": 2025,
      "tier": "easy",
      "source": "https://www.ircc.canada.ca/opendata-donneesouvertes/data/EN_ODP_annual-TR-Study-IS_PT_study_level_year_end.xlsx",
@@ -265,21 +265,8 @@
   },
   {
    "province": "PE",
-   "tier": "easy",
-   "factors": [
-    {
-     "key": "comp",
-     "value": 6.9,
-     "pool": 10975,
-     "poolStudy": 4945,
-     "poolWork": 6030,
-     "quota": 1600,
-     "quotaYear": 2025,
-     "tier": "easy",
-     "source": "https://www.ircc.canada.ca/opendata-donneesouvertes/data/EN_ODP_annual-TR-Study-IS_PT_study_level_year_end.xlsx",
-     "asOf": "2024"
-    }
-   ]
+   "tier": null,
+   "factors": []
   }
  ]
 }
