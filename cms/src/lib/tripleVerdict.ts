@@ -308,6 +308,9 @@ function occupationRows(job: TripleJob, occs: OccupationRow[], provReqs: Require
   return out
 }
 
+/** 指定雇主名录是 AIP 的制度,只覆盖大西洋四省 —— 名录默认行(未匹配/多配)只对这四省有意义 */
+const AIP_PROVINCES = new Set(['NS', 'NB', 'PE', 'NL'])
+
 /** 雇主关(事实全 free,「怎么谈」那行 paid):指定名录 + employerVerdict 的年限/雇员数 + LMIA 职业拆分。 */
 function employerRows(job: TripleJob, company: TripleCompany, ev: EmployerVerdict, reqs: Requirement[]): TripleRow[] {
   const out: TripleRow[] = []
@@ -321,22 +324,27 @@ function employerRows(job: TripleJob, company: TripleCompany, ev: EmployerVerdic
       // 名录 mart 行不带 url/fetched(pathVerdict 已留痕的同一个数据缺口)→ 挂不上就不挂
       ...(d.url && d.fetched ? { evidence: { url: d.url, fetched: d.fetched, label: `${d.source} designated employers` } } : {}),
     })
-  } else if (company.designationMatches >= 2) {
-    // 多配:「这条链在名录里」为真,「这家法人=你这份岗的雇主」不可证 → 摆家数,不点名法人。
-    // state='info'(摆事实不判定)而非 'pass' —— 下游 compareRows 靠 designation 非空才把 AIP
-    // 当已确证通道,多配时它是 null,AIP 线自然不进比路、不会被标「最快」(付费结论不冒险)。
-    out.push({
-      gate: 'employer', tier: 'free', key: 'tv.emp.designatedMulti', state: 'info',
-      params: { name: company.name, prov: job.province, count: company.designationMatches, program: company.designationSource },
-      label: `${company.designationMatches} designated employers in ${job.province} match the name "${company.name}" — chain is listed, this employer is unproven`,
-    })
-  } else {
-    out.push({
-      gate: 'employer', tier: 'free', key: 'tv.emp.designationUnknown', state: 'unknown',
-      params: { name: company.name, prov: job.province },
-      // 「名录里没认出」≠「官方没指定」(CLAUDE.md:官方不公布是需要举证的断言)
-      label: `${company.name} not matched in the designated employer list — site gap, not proof of non-designation`,
-    })
+  } else if (AIP_PROVINCES.has(job.province)) {
+    // 「未匹配/多配」两种默认行**只在 AIP 四省发**(2026-08-13 Frank:「曼省还有指定雇主这一说吗?」——
+    // 指定雇主是 AIP 的制度,名录行先前对全国岗都发,MB 岗上一句「非指定雇主」是拿别省的制度
+    // 说这家雇主的不是)。命中行(上面 d 非空)不设省门:真命中名录就是事实,行里自带 program/省。
+    if (company.designationMatches >= 2) {
+      // 多配:「这条链在名录里」为真,「这家法人=你这份岗的雇主」不可证 → 摆家数,不点名法人。
+      // state='info'(摆事实不判定)而非 'pass' —— 下游 compareRows 靠 designation 非空才把 AIP
+      // 当已确证通道,多配时它是 null,AIP 线自然不进比路、不会被标「最快」(付费结论不冒险)。
+      out.push({
+        gate: 'employer', tier: 'free', key: 'tv.emp.designatedMulti', state: 'info',
+        params: { name: company.name, prov: job.province, count: company.designationMatches, program: company.designationSource },
+        label: `${company.designationMatches} designated employers in ${job.province} match the name "${company.name}" — chain is listed, this employer is unproven`,
+      })
+    } else {
+      out.push({
+        gate: 'employer', tier: 'free', key: 'tv.emp.designationUnknown', state: 'unknown',
+        params: { name: company.name, prov: job.province },
+        // 「名录里没认出」≠「官方没指定」(CLAUDE.md:官方不公布是需要举证的断言)
+        label: `${company.name} not matched in the designated employer list — site gap, not proof of non-designation`,
+      })
+    }
   }
 
   const reqOf = (factor: string) =>
@@ -591,7 +599,12 @@ export function tripleVerdict(
   const nowYear = opts.nowYear ?? new Date().getFullYear()
   const provReqs = data.requirements.filter((r) => r.province === job.province)
   const emp = employerVerdict(company.facts, job.province, data.requirements, nowYear)
-  const paths = pathVerdict(profile, data)
+  // 带岗判定的前提就是「拿这份岗当目标」(2026-08-13 Frank:「缺 job offer 还用你判定啊?
+  // 来这个网站不都是缺 job offer 的吗」)—— offer 闸在本卡**恒视为已满足**:这张卡回答的是
+  // 「拿下这份 offer 之后还卡在哪」(比路行的语义本来就是 fastest after offer),
+  // 拿「你现在没 offer」当拦路结论是对每个访客说同一句废话。
+  // 只改这张带岗卡;无岗初评(/api/profile-pathways)仍按真实答案判 offer 闸。
+  const paths = pathVerdict({ ...profile, hasOffer: true }, data)
 
   const rows: TripleRow[] = [
     ...occupationRows(job, data.occupations, provReqs),

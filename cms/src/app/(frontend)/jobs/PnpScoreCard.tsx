@@ -60,6 +60,8 @@ type ExtraQuestion = {
   choices?: ExtraChoice[]                       // 单选:官方分值表的档位
   checks?: ExtraCheck[]                         // 多选:该省的加分项(一省一屏,不是一条一屏)
   number?: { value: number; set: (value: number) => void }
+  /** 条件格子回显用的短名。单条加分项的 title 是整句问句(「你是否符合:…」),摆进格子要的是条件本身 */
+  echoLabel?: string
 }
 type ProvinceScore = NonNullable<ReturnType<typeof scoreProvince>>
 
@@ -95,7 +97,7 @@ function Tick({ on, onToggle, text, pts }: { on: boolean; onToggle: (v: boolean)
 
 export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams = {}, initial, inputs = true,
   hiddenProfileInputs = [], limits, targetMode = false, questionnaireActive,
-  onQuestionnaireProgress, onQuestionnaireComplete, onQuestionnaireBack }: {
+  onQuestionnaireProgress, onQuestionnaireComplete, onQuestionnaireBack, onQuestionnaireAnswers, focusQuestion }: {
   t: TFn; lang: string; ctx: ScoreCtx; factors: ScoreFactor[]; draws: DrawRow[]; profileClb?: number | null
   /** 省 → 你的职业命中的具名通道名。抽选线按通道对照,对不上就不给差分结论(见 ProvinceResult) */
   streams?: Record<string, string>
@@ -116,6 +118,12 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
   onQuestionnaireProgress?: (progress: { done: number; total: number }) => void
   onQuestionnaireComplete?: () => void
   onQuestionnaireBack?: () => void
+  /** 逐题答案回显(2026-08-13 Frank:「全都算成基本信息」)—— 分值表的题与基础卷一视同仁,
+   *  页面把它们摆进同一片条件格子。没答的 filled=false,值留空由页面写「待填写」;
+   *  key 供「点哪格进哪题」回跳(focusQuestion)。 */
+  onQuestionnaireAnswers?: (rows: { key: string; label: string; value: string; filled: boolean }[]) => void
+  /** 点条件格直达那道题:nonce 变一次跳一次(只传 key 的话,点同一格第二次就不动了) */
+  focusQuestion?: { key: string; nonce: number } | null
 }) {
   const showQuestionnaire = questionnaireActive ?? targetMode
   // 有官方分值表的省(数据层决定,加省不用改这里)。目标省排第一列,其余省作「换省」对照。
@@ -181,8 +189,8 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
     const allowed = limits?.[k]
     return allowed ? all.filter((n) => allowed.includes(n)) : all
   }
-  const addChoices = (key: string, title: string, choices: ExtraChoice[], sub?: string) => {
-    if (choices.length > 1) extraQuestions.push({ key, title, sub, choices })
+  const addChoices = (key: string, title: string, choices: ExtraChoice[], sub?: string, echoLabel?: string) => {
+    if (choices.length > 1) extraQuestions.push({ key, title, sub, choices, echoLabel })
   }
   if (!hiddenProfileInputs.includes('edu') && factors.some((f) => f.factor === 'education')) {
     addChoices('profile:edu', t('ps.f.education'), EDU_KEYS.map((k) => ({
@@ -273,7 +281,7 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
           addChoices(screenKey, t('ps.q.meet', { condition: label(r.label, lang) }), [
             { key: 'yes', text: t('ps.yes'), active: isOn(r), apply: () => setOn(r, true) },
             { key: 'no', text: t('ps.no'), active: !isOn(r), apply: () => setOn(r, false) },
-          ], t('ps.bonusOf', { prov: t('prov.' + prov) || prov }))
+          ], t('ps.bonusOf', { prov: t('prov.' + prov) || prov }), label(r.label, lang))
         } else {
           extraQuestions.push({
             key: screenKey,
@@ -297,6 +305,24 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
   useEffect(() => {
     onQuestionnaireProgress?.({ done: extraAnsweredCount, total: extraQuestionCount })
   }, [extraAnsweredCount, extraQuestionCount, onQuestionnaireProgress])
+  // 逐题答案回显上抛(与计数同口径:翻过/选过才算答了)。用签名串做依赖 ——
+  // echoRows 每轮渲染都是新数组,直接进依赖就是每帧给父级 setState 一次,循环重渲。
+  const echoRows = extraQuestions.map((q) => {
+    const filled = !!extraAnswered[q.key]
+    const value = !filled ? '' : q.choices
+      ? (q.choices.find((c) => c.active)?.text ?? '')
+      : q.checks
+        ? (q.checks.filter((c) => c.on).map((c) => c.text).join(lang === 'zh' ? '、' : ', ') || t('ps.no'))
+        : q.number ? `$${q.number.value}/hr` : ''
+    // 省名前置空格拼(题面 sub 就是省名/「某省加分项」):「不列颠哥伦比亚省 时薪(加元)」——
+    // 后置加括号会跟「时薪(加元)」这类自带括号的题名拼出双括号
+    const short = q.echoLabel || q.title
+    return { key: q.key, label: q.sub ? `${q.sub} ${short}` : short, value, filled }
+  })
+  const echoSig = JSON.stringify(echoRows)
+  useEffect(() => {
+    onQuestionnaireAnswers?.(JSON.parse(echoSig) as { key: string; label: string; value: string; filled: boolean }[])
+  }, [echoSig, onQuestionnaireAnswers])
   useEffect(() => {
     if (showQuestionnaire && extraQuestionCount === 0) onQuestionnaireComplete?.()
   }, [extraQuestionCount, onQuestionnaireComplete, showQuestionnaire])
@@ -308,6 +334,15 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
     // 只在进入答题段的那一下对位;进来之后的翻页归用户的上一题/下一题管
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showQuestionnaire])
+  // 点条件格直达那道题。**必须声明在「第一道没答的题」那个 effect 之后**:两者常在同一次提交里
+  // 都触发(点格子=开段+定位),同序执行时后声明的赢 —— 反过来就是「点哪格都落第一道没答的」。
+  useEffect(() => {
+    if (!focusQuestion) return
+    const i = extraQuestions.findIndex((q) => q.key === focusQuestion.key)
+    if (i >= 0) setExtraQuestionIndex(i)
+    // 只认 nonce:questions 数组每轮渲染都是新引用,进依赖就成了每帧重定位
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusQuestion?.nonce])
   // 选中**不自动跳**(2026-07-31 拍板,全站答题同一条规矩):自动跳会在选中的瞬间换掉整屏,
   // 看着就是「闪一下」,也没法改主意。翻页永远由用户按右下角那颗按钮。
   const pickExtra = (question: ExtraQuestion, apply: () => void) => {
@@ -432,11 +467,15 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
               aria-label={activeExtraQuestion.title}
               style={{ ...sel, height: 44, maxWidth: 220, fontSize: 15 }} />
           ) : null}
-          {/* 第一屏的「上一题」上面没有题了 —— 它退回的是结果页,所以写「返回」不写「上一题」 */}
+          {/* 第一屏的「上一题」上面没有题了 —— 它退回的是结果页,所以写「返回」不写「上一题」。
+              全卷已答满、又不在最后一题时,「下一题」旁边给一颗「完成」直接收卷
+              (2026-08-13 Frank:「有的时候只是改一个答案」);最后一题的主钮本来就是「完成」,不重复给。 */}
           <QuizNav prevLabel={extraIndex > 0 ? t('plan.prev') : t('ps.back')}
             nextLabel={extraIndex < extraQuestionCount - 1 ? t('plan.next') : t('ps.finish')}
             onPrev={extraIndex > 0 ? () => setExtraQuestionIndex(extraIndex - 1) : onQuestionnaireBack}
             onNext={() => nextExtra(activeExtraQuestion)} nextDisabled={!activeAnswered}
+            doneLabel={extraComplete && extraIndex < extraQuestionCount - 1 ? t('ps.finish') : undefined}
+            onDone={onQuestionnaireComplete}
             hint={activeExtraQuestion.checks ? t('ps.q.multiHint') : undefined} />
         </>
       )}

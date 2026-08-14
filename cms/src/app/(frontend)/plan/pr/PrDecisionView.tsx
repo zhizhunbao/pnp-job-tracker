@@ -21,7 +21,7 @@ import { BANNER_IMGS, PageBanner, PageShell, UI } from '../../ui/primitives'
 import { DataTable } from '../../ui/DataTable'
 import { TripleVerdictPanel } from '../../jobs/TripleVerdictModal'
 import { PnpScoreCard } from '../../jobs/PnpScoreCard'
-import { Modal, iconBtnS } from '../../jobs/Modal'
+import { iconBtnS, SCRIM, CARD as OVERLAY_CARD, useIsNarrow } from '../../jobs/Modal'
 import { IconRefresh } from '../../Icons'
 import { EMPTY, clearAnswers, readAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
 import { fieldsOf, missingFields } from '@/lib/decisions'
@@ -93,6 +93,11 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
   // null = 分值卡还没报过题数(它挂载后第一个 effect 才报)。不能用 {0,0} 兜底:那和「一道题都没有」
   // 长得一样,入口卡会在第一帧闪一下空白再冒出来。
   const [scoreProgress, setScoreProgress] = useState<{ done: number; total: number } | null>(null)
+  // 分值表逐题答案回显(分值卡上抛):与基础 8 项同摆一片格子(2026-08-13 Frank「全都算成基本信息」)
+  const [scoreEcho, setScoreEcho] = useState<{ key: string; label: string; value: string; filled: boolean }[]>([])
+  // 点条件格直达那道题:基础题记字段名(换 key 重挂 QuizForm);分值题记 {key,nonce} 传给分值卡
+  const [quizFocus, setQuizFocus] = useState('')
+  const [scoreFocus, setScoreFocus] = useState<{ key: string; nonce: number } | null>(null)
   const [formAtEnd, setFormAtEnd] = useState(false)
   const [ready, setReady] = useState(false)
   const [resetNonce, setResetNonce] = useState(0)
@@ -141,20 +146,15 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
   // 它跟「没答」不是一回事:前者=不限省、13 条通道全判一遍;后者=还没走到这一步。
   const provAnswered = bands.provs.length > 0 || !!bands.provsAny
   const stepDone = stepNames.length - missingFields(stepNames, bands).length + (noc ? 1 : 0) + (provAnswered ? 1 : 0)
-  // 计数**分两段**,不合成一条(08-10 Frank 拍板):第一段是「关于你」的 6 项,答完就够出方案;
-  // 第二段是各省官方分值表的条件,自愿进入。合成一条的话,点完省份那一刻总数会从 6 跳到 22 ——
-  // 说好 6 题的问卷突然变 22 题,人就走了。段内总数恒定,全程一个数都不跳。
+  // 计数**合成一条**(2026-08-13 Frank:「就是要合并成 17,估分功能去掉,全都算成基本信息」——
+  // 明确推翻 08-10 的两段计数):基础 8 项 + 分值表逐题,一枚胶囊报总账。分值表题数要等
+  // 选完省、分值卡挂载后才报上来,所以总数会从 8 涨到 17 —— 这是拍板接受的代价。
   // 数的还是**答过几项**,不是翻到第几页(先前用页码:一进第 1 题就写「已答 1/6」,其实一题没答)。
-  // 弹窗只装基础卷,估分整段留在方案下面那个 section(它自带计数与进度条)——
-  // 所以弹窗上的计数从此只报基础卷,一个数都不会跳。
-  const shownStep = stepDone
-  const shownTotal = stepTotal
   const scoreDone = scoreProgress?.done ?? 0
   const scoreTotal = scoreProgress?.total ?? 0
   const scoreLeft = scoreTotal - scoreDone
-  // 入口行:题数报上来了、还没答完、且不在答题态。分值卡在这三种态之外自己什么都不渲
-  // (PnpScoreCard 的 showResults:targetMode 下没答完就整块不出),所以两者不会打架。
-  const showScoreEntry = !!scoreProgress && !scoreStep && scoreLeft > 0
+  // 估分段还有没答的题(题数由分值卡挂载后回报;没报上来=还不知道,不算「有欠账」)
+  const scorePending = !!scoreProgress && scoreLeft > 0
   // 从长的职业页翻到短题时,页面可能还停在职业页的下半段 —— 把题区顶回视口。
   useLayoutEffect(() => {
     if (!quizOpen) { hasShownQuizStep.current = false; return }
@@ -169,9 +169,11 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
     }
     hasShownQuizStep.current = true
     // scoreStep 不再进依赖:估分题已经不在弹窗里了,quizRef 那时是 null,滚也滚不到
-  }, [quizOpen, shownStep, occStep, provinceStep])
+  }, [quizOpen, stepDone, occStep, provinceStep])
   // 分值卡门控:基本卷答满才渲(渐进展开 —— 落地页面只有 H1 + 答题,别一屏摊开所有机器)
   const quizComplete = ready && !!noc && provAnswered && missingFields(stepNames, bands).length === 0
+  // 整份问卷(基础段+估分段)全答完才算「修改条件」;有欠账就是「继续作答」
+  const allDone = quizComplete && !scorePending
 
   // 基础问卷本身就足够做“人 → 通道”的初筛，不应强迫用户先找一份具体岗位。
   // 岗位与雇主只在第二层三项判定里使用。输入键用于修改答案后原地重算。
@@ -231,17 +233,21 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
     return occTitles[`${lang}:${code}`] || NOC_TITLE_CACHE[`${lang}:${code}`] || `NOC ${code}`
   }).filter(Boolean).join(lang === 'zh' ? '、' : ', ')
   const unparsed = lang === 'zh' ? '待填写' : 'Not completed'
-  const conditionSummary: [string, string, boolean][] = [
-    [t('dp.sum.occ'), occText || unparsed, !!occText],
-    [t('dp.sum.status'), choiceText('status') || unparsed, !!choiceText('status')],
-    [t('dp.sum.clb'), choiceText('clbBand') || unparsed, !!choiceText('clbBand')],
-    [t('dp.sum.totalExp'), choiceText('totalExpBand') || unparsed, !!choiceText('totalExpBand')],
-    [t('dp.sum.canExp'), choiceText('expBand') || unparsed, !!choiceText('expBand')],
-    [t('dp.sum.prov'), bands.provs.length ? bands.provs.map((code) => t('prov.' + code)).join(lang === 'zh' ? '、' : ', ')
-      : bands.provsAny ? t('quiz.provAnyShort') : unparsed, provAnswered],
+  // key = 点这格该落到哪道题:'occ'/'prov' 是专属页,基础题用字段名,分值题用分值卡的题 key(带冒号)
+  type SummaryRow = { key: string; label: string; value: string; filled: boolean }
+  const conditionSummary: SummaryRow[] = [
+    { key: 'occ', label: t('dp.sum.occ'), value: occText || unparsed, filled: !!occText },
+    { key: 'status', label: t('dp.sum.status'), value: choiceText('status') || unparsed, filled: !!choiceText('status') },
+    { key: 'clbBand', label: t('dp.sum.clb'), value: choiceText('clbBand') || unparsed, filled: !!choiceText('clbBand') },
+    { key: 'totalExpBand', label: t('dp.sum.totalExp'), value: choiceText('totalExpBand') || unparsed, filled: !!choiceText('totalExpBand') },
+    { key: 'expBand', label: t('dp.sum.canExp'), value: choiceText('expBand') || unparsed, filled: !!choiceText('expBand') },
+    { key: 'prov', label: t('dp.sum.prov'), value: bands.provs.length ? bands.provs.map((code) => t('prov.' + code)).join(lang === 'zh' ? '、' : ', ')
+      : bands.provsAny ? t('quiz.provAnyShort') : unparsed, filled: provAnswered },
     // 2026-08-12 加的两题也要回显 —— 卡头写着「已答 6/8」而下面只摆 6 格,数和格子对不上
-    [t('dp.sum.offer'), choiceText('offerBand') || unparsed, !!choiceText('offerBand')],
-    [t('dp.sum.canadaEdu'), choiceText('canadaEduBand') || unparsed, !!choiceText('canadaEduBand')],
+    { key: 'offerBand', label: t('dp.sum.offer'), value: choiceText('offerBand') || unparsed, filled: !!choiceText('offerBand') },
+    { key: 'canadaEduBand', label: t('dp.sum.canadaEdu'), value: choiceText('canadaEduBand') || unparsed, filled: !!choiceText('canadaEduBand') },
+    // 分值表的题一视同仁逐格回显(合并成 17 的另一半:计数合了,格子也得合,数和格子才对得上)
+    ...scoreEcho.map((r): SummaryRow => ({ key: r.key, label: r.label, value: r.value || unparsed, filled: r.filled })),
   ]
 
   // 用户在问卷里直接多选具体省份。共用条件交给一张 PnpScoreCard 只问一次，省独有条件按所选省追加。
@@ -298,8 +304,15 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
   const hiddenScoreInputs: (keyof SelfProfile)[] = hasSplitWork ? [] : ['expOlder']
   const scoreKey = `${tvJob?.id ?? 'profile'}:${scoredProvinces.join(',')}:${bands.clbBand}:${bands.totalExpBand}:${targetFactors.map((f) => f.guideEffective).join(',')}`
 
-  // 答完基本卷:落档(登录才写,quizToProfile 内部自判;失败不拦页面)→ 收起答题卡。
-  // 页面不出任何分数 —— 答案的消费方是判定核(个人条件),不是本页
+  // 关整个问卷弹框(基础段与估分段共用一个框,2026-08-13 Frank:「开始估分不应该和申请人条件
+  // 合并到一起吗?为什么单独一个弹框」)
+  const closeQuiz = useCallback(() => { setQuizOpen(false); setScoreStep(false) }, [])
+
+  // 答完基本卷:落档(登录才写,quizToProfile 内部自判;失败不拦页面)。
+  // 页面不出任何分数 —— 答案的消费方是判定核(个人条件),不是本页。
+  // 合并动线:省份答完**不关框**,直接翻进同一弹框的估分段 —— 估分题就是这份问卷的后半截,
+  // 不另设入口(2026-08-13 Frank:「只要一个修改按钮继续行了吧」)。全卷早已答满的,估分段
+  // 自带「完成」旁路钮一点即收;所选省没表/没题的,兜底 effect 与分值卡自己会收框。
   const onQuizDone = useCallback(() => {
     track('dp-quiz-done')
     quizToProfile(readAnswers())
@@ -314,30 +327,93 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
           window.history.replaceState(null, '', window.location.pathname + (sp.toString() ? `?${sp}` : ''))
         }
       })
+    setOccStep(false); setProvinceStep(false); setScoreStep(true)
+  }, [])
+
+  const onScoreProgress = useCallback((progress: { done: number; total: number }) => setScoreProgress(progress), [])
+  const onScoreAnswers = useCallback((rows: { key: string; label: string; value: string; filled: boolean }[]) => setScoreEcho(rows), [])
+
+  // 估分答完 = 整卷答完,收框显示各省结果(结果在「申请人条件」卡内)
+  const onScoreComplete = useCallback(() => {
+    track('dp-score-done')
     setScoreStep(false)
     setQuizOpen(false)
   }, [])
 
-  const onScoreProgress = useCallback((progress: { done: number; total: number }) => setScoreProgress(progress), [])
+  // 估分段第一屏的「返回」= 回到上一步(省份页),同一弹框内往回翻,不是退出
+  const onScoreBack = useCallback(() => { setScoreStep(false); setOccStep(false); setProvinceStep(true); setFormAtEnd(false) }, [])
 
-  // 估分答完:就地收题显示各省结果。不再连带 onQuizDone —— 那是基础卷的收卷动作
-  //(落档 + 跳 next),估分是自愿的第二段,答完不该把人踢走。
-  const onScoreComplete = useCallback(() => {
-    track('dp-score-done')
-    setScoreStep(false)
-  }, [])
-
-  // 估分是自愿的第二段:第一屏往回退 = 退出估分回到入口行(答过的题留着,再点入口能接着答 ——
-  // 分值卡从头到尾只有这一个实例,不卸载,所以答案还在)
-  const onScoreBack = useCallback(() => setScoreStep(false), [])
-
+  // 打开问卷弹框、直接落在估分段(基础卷答满、只欠估分题时的落点)
   const openScoreStep = useCallback(() => {
     track('dp-score-start')
-    setScoreStep(true)
+    setQuizOpen(true); setOccStep(false); setProvinceStep(false); setScoreStep(true)
   }, [])
+
+  // **唯一入口按钮**(2026-08-13 Frank:「只要一个修改按钮继续行了吧」):不带 key 时落在
+  // 第一道没答的题 —— 基础段有空题按旧口径落基础段;基础段答满、分值题还有欠账的直接落分值题;
+  // 全答满 = 从头复查,省份翻过去接着是分值题,「完成」一点即收。
+  // 带 key = 点了哪个条件格就直达那道题(2026-08-13 Frank 实拍「点哪个框都弹学历」——
+  // 之前 17 个格子全走同一个落点):'occ'/'prov' 开专属页,基础字段落 QuizForm 对应题,
+  // 分值题 key(带冒号)开分值段并定位。
+  const startQuiz = (key?: string) => {
+    track('dp-quiz-edit')
+    setFormAtEnd(false)
+    if (key && key.includes(':')) {
+      setQuizFocus('')
+      setScoreFocus((f) => ({ key, nonce: (f?.nonce ?? 0) + 1 }))
+      setQuizOpen(true); setOccStep(false); setProvinceStep(false); setScoreStep(true)
+      return
+    }
+    if (key === 'occ') { setQuizFocus(''); setQuizOpen(true); setOccStep(true); setProvinceStep(false); setScoreStep(false); return }
+    if (key === 'prov') { setQuizFocus(''); setQuizOpen(true); setOccStep(false); setProvinceStep(true); setScoreStep(false); return }
+    if (key) {
+      setQuizFocus(key)
+      setQuizOpen(true); setOccStep(false); setProvinceStep(false); setScoreStep(false)
+      return
+    }
+    setQuizFocus('')
+    if (quizComplete && scorePending) { openScoreStep(); return }
+    const resuming = stepDone > 0 && stepDone < stepTotal
+    const baseDone = missingFields(stepNames, bands).length === 0
+    setQuizOpen(true)
+    setOccStep(!resuming || !noc)
+    setProvinceStep(resuming && !!noc && baseDone && !provAnswered)
+    setScoreStep(false)
+  }
+
+  // 弹框壳的 Esc 退出与统一壳同款(基础段与估分段一体,关的是整个框)
+  const narrow = useIsNarrow()
+  useEffect(() => {
+    if (!quizOpen) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeQuiz() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [quizOpen, closeQuiz])
+
+  // 估分段兜底收框:表到手了、但所选省一张官方表都没有 —— 段里没有任何题可出,停着就是白框。
+  //(有表但零题的情况由分值卡自己报 onQuestionnaireComplete 收框)
+  useEffect(() => {
+    if (quizOpen && scoreStep && scoreTables && targetFactors.length === 0) closeQuiz()
+  }, [quizOpen, scoreStep, scoreTables, targetFactors.length, closeQuiz])
+  // 同一情形下清掉分值卡的残留上报:组件都不挂了,计数还写着 n/17、格子还摆着上一轮的题,
+  // 数和格子就跟人对不上(改省份改成全是没表的省时实撞)
+  useEffect(() => {
+    if (scoreTables && targetFactors.length === 0) { setScoreProgress(null); setScoreEcho([]) }
+  }, [scoreTables, targetFactors.length])
 
   const provDisp = (code: string) => { const full = t('prov.' + code); return full === 'prov.' + code ? code : full }
   const pickL3 = (l: L3) => l[lang as keyof L3] || l.zh
+
+  // 唯一一枚计数胶囊:基础 8 项 + 分值表逐题合报一个数(2026-08-13 Frank「合并成 17」)。
+  // 摘要卡头、带岗态判定卡②、问卷弹框头共用同一份。
+  const doneAll = stepDone + scoreDone
+  const totalAll = stepTotal + scoreTotal
+  const countPills = ready ? (
+    <span style={{ ...COUNT_PILL, background: doneAll === totalAll ? '#eff6ff' : UI.bg,
+      color: doneAll === totalAll ? UI.primary : UI.text3 }}>
+      {t('dp.basicCount', { done: doneAll, total: totalAll })}
+    </span>
+  ) : null
 
   // 「你的初步方案」整块抽出来:带岗态它是判定卡的**第三张卡**
   //(Frank 2026-08-12 定的卡序:① 这份工作 ② 你的条件 ③ 你的初步方案 ④⑤⑥ 三关 ⑦ 付费),
@@ -416,6 +492,163 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                 </div>
   ) : null
 
+  // 各省名额竞争(Frank 2026-08-12:「很多人不知道竞争激烈程度,我们有这个数据并且是最新的」)。
+  // 9 省同口径、来源同一份 IRCC 开放数据 —— 所以敢横着比、敢排序。
+  // 无岗态摆在「可行通道初评」**上面**(2026-08-13 Frank:「竞争对初评也有影响吧」——
+  // 初评的排序就带竞争度,先看松紧再看结论);带岗态留在页尾事实区。
+  const competitionCard = competition.length > 0 ? (
+    <div style={CARD}>
+      <h2 style={H2}>{t('dp.compTitle')}</h2>
+      <style>{`@media(max-width:640px){.dpCompTbl{display:none}}@media(min-width:641px){.dpCompCards{display:none}}`}</style>
+      <div className="dpCompCards">
+        {competition.map((r) => (
+          <div key={r.province} style={{ borderTop: `1px solid ${UI.hairline}`, padding: '8px 0', display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' }}>
+            <b style={{ fontSize: 13.5, color: '#111827' }}>{provDisp(r.province)}</b>
+            <span style={{ color: UI.text3, fontSize: 11.5 }}>{r.province}</span>
+            <span style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{r.ratio}:1</span>
+            <span style={{ width: '100%', color: UI.text3, fontSize: 11.5, fontVariantNumeric: 'tabular-nums' }}>
+              {r.pool.toLocaleString('en-CA')} {r.poolYear ? `${r.poolYear}-12` : ''}　÷　{r.quota.toLocaleString('en-CA')} {r.quotaYear || ''}
+              {r.flow ? `　${t('dp.compFlow')} ${r.flow.n.toLocaleString('en-CA')} ${r.flow.period}` : ''}
+            </span>
+          </div>
+        ))}
+      </div>
+      <div className="dpCompTbl">
+        <DataTable<ProvCompetition> rows={competition} rowKey={(r) => r.province} bare
+          cols={[
+            { key: 'province', label: t('dp.prov'), width: '24%', render: (r) => (
+              <span style={{ display: 'flex', alignItems: 'baseline', gap: 6, minWidth: 0 }}>
+                <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{provDisp(r.province)}</span>
+                <span style={{ color: UI.text3, fontSize: 11.5, flexShrink: 0 }}>{r.province}</span>
+              </span>
+            ) },
+            // 两个数各是各的年份(分子 2024 存量、分母 2025/2026 名额,还逐省不同)——
+            // 年份贴在数字后面,不放页脚:放页脚就会被读成「整表同一年」
+            // 存量是 Dec 31 快照 → 写到月(2024-12),不写光一个年份:同一格里再出现「2026-05」那种
+            // 月度数字时,光写年份会让人以为两者同粒度
+            { key: 'pool', label: t('dp.compPool'), width: '18%', align: 'right', render: (r) => (
+              <span>{r.pool.toLocaleString('en-CA')}<span style={{ color: UI.text3, fontSize: 11.5, marginLeft: 5 }}>{r.poolYear ? `${r.poolYear}-12` : ''}</span></span>
+            ) },
+            { key: 'quota', label: t('dp.compQuota'), width: '16%', align: 'right', render: (r) => (
+              <span>{r.quota.toLocaleString('en-CA')}<span style={{ color: UI.text3, fontSize: 11.5, marginLeft: 5 }}>{r.quotaYear || ''}</span></span>
+            ) },
+            { key: 'ratio', label: t('dp.compCol'), width: '12%', align: 'right', render: (r) => <b>{r.ratio}:1</b> },
+            // 流量列:存量停在 2024,这是唯一反映当期的官方数字。**不参与比值**,页脚点明
+            { key: 'flow', label: t('dp.compFlow'), width: '18%', align: 'right', render: (r) => (
+              r.flow
+                ? <span>{r.flow.n.toLocaleString('en-CA')}<span style={{ color: UI.text3, fontSize: 11.5, marginLeft: 5 }}>{r.flow.period}</span></span>
+                : <span style={{ color: UI.text3 }}>—</span>
+            ) },
+            { key: 'generated', label: t('dp.compAsOf'), width: '12%', align: 'right', render: (r) => (
+              <span style={{ fontVariantNumeric: 'tabular-nums' }}>{r.generated}</span>
+            ) },
+          ]} />
+      </div>
+      <div style={{ fontSize: 11.5, color: UI.text3, lineHeight: 1.6, marginTop: 8 }}>
+        {t('dp.compNoteShort')}
+        <br />
+        {t('dp.compFlowNote')}
+      </div>
+    </div>
+  ) : null
+
+  // 问卷 = **一个弹框、两段**(2026-08-13 Frank:「开始估分不应该和申请人条件合并到一起吗?
+  // 为什么单独一个弹框」):基础段(职业/8 项/省份)答完直接翻进估分段,不关框、不换框。
+  // 两段计数拍板(08-10)不动:段内各自报数(已答 n/8 → 估分 n/9),谁的总数都不跳。
+  // 弹框壳**不能用 <Modal>**:分值卡的答案与结果都在它的本地 state,同一个实例既要在框里出题、
+  // 又要在收框后于「申请人条件」卡内出结果 —— 搬容器 = React 重挂 = 答案清零。所以这里不搬树,
+  // 只**就地换皮**:同一对 div,quizOpen 时套统一壳的遮罩/白卡 token(SCRIM/CARD 同源),
+  // 收框时退回普通块。Esc/点遮罩退出与统一壳同款;手机全屏,.quizBar 固定在视口底。
+  // 无岗态本段长在条件摘要卡尾部;带岗态经 scoreSlot 长在判定卡②「你的条件」尾部 —— 两态互斥。
+  const quizSection = (
+    // 卡内不再有任何估分入口行(2026-08-13 Frank:「只要一个修改按钮」)——收框态这里只剩
+    // 「各省估分」结果(答满才有),分隔线也只在那时画
+    <div style={!quizOpen && scoreProgress && scoreLeft === 0 ? { marginTop: 14, paddingTop: 12, borderTop: `1px solid ${UI.hairline}` } : undefined}>
+      <QuizStyle />
+      <div onClick={quizOpen ? closeQuiz : undefined}
+        style={quizOpen ? { ...SCRIM, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: narrow ? 0 : 16 } : undefined}>
+        <div onClick={quizOpen ? (e) => e.stopPropagation() : undefined}
+          style={quizOpen ? (narrow
+            ? { ...OVERLAY_CARD, borderRadius: 0, width: '100%', height: '100%', maxHeight: '100vh', overflowY: 'auto', padding: '20px 14px 16px' }
+            : { ...OVERLAY_CARD, width: 'min(760px, 100%)', maxHeight: '85vh', overflowY: 'auto', padding: '24px 24px 20px' }) : undefined}>
+          {quizOpen ? (
+            <>
+              {/* 右上角:重置 + 关闭(重置沿用 IconRefresh 同款,2026-08-12 Frank「改成图标和右上角对齐」) */}
+              <div style={{ position: 'absolute', top: 12, right: 12, display: 'flex', alignItems: 'center', gap: 6, zIndex: 20 }}>
+                <button type="button" style={iconBtnS} title={t('plan.reset')} aria-label={t('plan.reset')}
+                  onClick={() => {
+                    setBands(clearAnswers()); setNoc(''); setResetNonce((n) => n + 1); setOccStep(true); setProvinceStep(false); setScoreStep(false); setScoreProgress(null); setScoreEcho([]); setFormAtEnd(false)
+                    track('dp-quiz-reset')
+                  }}><IconRefresh /></button>
+                <button onClick={closeQuiz} aria-label="close" style={iconBtnS}>×</button>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingRight: 84, marginBottom: 12 }}>
+                <h2 style={{ ...H2, margin: 0 }}>{t('dp.quiz')}</h2>
+                {countPills}
+              </div>
+              {/* 进度条归弹框头,一条杠走完 17 项(分值卡自己不画) */}
+              <div aria-label={`${doneAll}/${totalAll}`}
+                style={{ height: 4, borderRadius: 999, background: UI.hairline, overflow: 'hidden', margin: '0 0 18px' }}>
+                <div style={{ width: `${Math.round((doneAll / Math.max(totalAll, 1)) * 100)}%`,
+                  height: '100%', borderRadius: 999, background: UI.primary, transition: 'width .2s' }} />
+              </div>
+            </>
+          ) : null}
+          {quizOpen && !scoreStep ? (
+            <div ref={quizRef}>
+              {(occStep || !noc) ? (
+                <div className="plQuizPad">
+                  <QuizTitle>{t('quiz.q2')}</QuizTitle>
+                  <div style={{ fontSize: 12.5, color: UI.text3, margin: '-10px 0 13px', lineHeight: 1.55 }}>{t('quiz.q2sub')}</div>
+                  {/* initialTop:服务端已按在招量取好的热门榜 → 控件首帧即终态,一个请求都不发 */}
+                  <OccPicker key={resetNonce} inline t={t} lang={lang} initial={bands.nocs} doneLabel={t('plan.next')} initialTop={topNocs}
+                    onChange={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || '') }}
+                    onDone={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || ''); setOccStep(false); setProvinceStep(false); setFormAtEnd(false) }} />
+                </div>
+              ) : provinceStep ? (
+                <div className="plQuizPad">
+                  {/* 省份是基础段最后一题:答完由 onQuizDone 决定 —— 还有估分题就翻进估分段,答满才收框 */}
+                  <ProvincePicker key={`${resetNonce}:provinces`} t={t} initial={bands.provs} unsure={bands.provsAny}
+                    onChange={(provs) => setBands(writeAnswers({ provs }))}
+                    onBack={() => { setProvinceStep(false); setFormAtEnd(true) }}
+                    onDone={(provs, any) => { setBands(writeAnswers({ provs, provsAny: !!any })); onQuizDone() }} />
+                </div>
+              ) : (
+                <div className="plQuizPad">
+                  <QuizForm key={`${resetNonce}:${formAtEnd ? 'end' : quizFocus ? `f:${quizFocus}` : 'auto'}`} decision="pr" stage="basic" lang={lang} t={t} answers={bands} doneKey="plan.next" startAtEnd={formAtEnd} startAt={quizFocus || undefined}
+                    onBack={() => { setOccStep(true); setFormAtEnd(false) }}
+                    onPatch={(patch) => setBands(writeAnswers(patch))}
+                    onComplete={() => { setProvinceStep(true); setFormAtEnd(false) }} />
+                </div>
+              )}
+            </div>
+          ) : null}
+          {/* 估分段还在等分值表(答完省份的那一两拍):加载区必占位 */}
+          {quizOpen && scoreStep && quizComplete && !scoreTables ? (
+            <div aria-hidden style={{ height: 120, borderRadius: 9, background: UI.bg }} />
+          ) : null}
+          {/* 分值卡**常驻**(答案/结果全在它的本地 state):基础段答题时只藏不卸载;
+              收框后它就地变回卡内的「各省估分」结果区 */}
+          <div className={quizOpen && scoreStep ? 'plQuizPad' : undefined}
+            style={quizOpen && !scoreStep ? { display: 'none' } : undefined}>
+            {quizComplete && targetFactors.length > 0 ? (
+              <PnpScoreCard key={scoreKey} t={t} lang={lang}
+                ctx={{ noc: tvJob?.noc || noc, teer: targetTeer, province: scoreContextProvince, city: tvJob?.city || '' }}
+                factors={targetFactors} draws={scoreDraws}
+                streams={tvJob && tvJob.pnpStream ? { [scoreContextProvince]: tvJob.pnpStream } : {}}
+                initial={scoreInitial} hiddenProfileInputs={hiddenScoreInputs} limits={scoreLimits} targetMode
+                questionnaireActive={quizOpen && scoreStep}
+                focusQuestion={scoreFocus}
+                onQuestionnaireProgress={onScoreProgress}
+                onQuestionnaireAnswers={onScoreAnswers}
+                onQuestionnaireComplete={onScoreComplete}
+                onQuestionnaireBack={onScoreBack} />
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 
   return (
     <div style={{ background: UI.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', color: '#1f2937' }}>
@@ -432,7 +665,6 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                 —— 设计 §5「输入面只留一个,多一个就又是两套主语」。无岗态照旧。 */}
             {!tvJob && (
             <div style={CARD}>
-              <QuizStyle />
               <style>{`.dpConditionSummary{grid-template-columns:repeat(3,minmax(0,1fr))}@media(max-width:640px){.dpConditionSummary{grid-template-columns:repeat(2,minmax(0,1fr))}.dpConditionValue{white-space:normal!important}}`}</style>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
                 <div style={{ minWidth: 0, flex: 1 }}>
@@ -440,12 +672,7 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                       真放不下时让胶囊换行,标题保持一行 */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                     <h2 style={{ ...H2, margin: 0, whiteSpace: 'nowrap' }}>{t('dp.quiz')}</h2>
-                    {ready && (
-                      <span style={{ ...COUNT_PILL, background: shownStep === shownTotal ? '#eff6ff' : UI.bg,
-                        color: shownStep === shownTotal ? UI.primary : UI.text3 }}>
-                        {t('dp.basicCount', { done: shownStep, total: shownTotal })}
-                      </span>
-                    )}
+                    {countPills}
                   </div>
                   <div style={{ fontSize: 12.5, color: UI.text3, marginTop: 4, lineHeight: 1.4 }}>
                     {lang === 'zh' ? '包含目标职业、身份、语言、工作经验及目标省份' : 'Covers occupation, status, CLB, experience & provinces'}
@@ -456,155 +683,46 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                       加了两题之后,答过 6 项的人点「继续作答」又从选职业开始重走一遍)。
                       已经选过职业就跳过职业页,QuizForm 自己会定位到第一道空题;基础题都答满、
                       只差目标省的直接开省份页。「开始评估」(一题没答)与「改答案」(已答满)照旧从职业页起。 */}
-                  <button onClick={() => {
-                    const resuming = stepDone > 0 && stepDone < stepTotal
-                    const baseDone = missingFields(stepNames, bands).length === 0
-                    setQuizOpen(true)
-                    setOccStep(!resuming || !noc)
-                    setProvinceStep(resuming && !!noc && baseDone && !provAnswered)
-                    setScoreStep(false); setFormAtEnd(false); track('dp-quiz-edit')
-                  }}
+                  <button onClick={() => startQuiz()}
                     style={stepDone === 0
                       ? { ...BTN, background: UI.primary, color: '#fff', border: `1px solid ${UI.primary}`, fontWeight: 600, padding: '6px 16px', fontSize: 13 }
-                      : { ...BTN, background: stepDone < stepTotal ? '#eff6ff' : '#fff', color: stepDone < stepTotal ? UI.primary : UI.text, border: `1px solid ${stepDone < stepTotal ? UI.primary : UI.border}`, fontWeight: 600 }}>
-                    {t(quizComplete ? 'plan.back' : stepDone > 0 ? 'dp.resume' : 'dp.start')}
+                      : { ...BTN, background: !allDone ? '#eff6ff' : '#fff', color: !allDone ? UI.primary : UI.text, border: `1px solid ${!allDone ? UI.primary : UI.border}`, fontWeight: 600 }}>
+                    {t(allDone ? 'plan.back' : stepDone > 0 ? 'dp.resume' : 'dp.start')}
                   </button>
                 </span>
               </div>
               <div className="dpConditionSummary" style={{ display: 'grid', gap: 8, marginTop: 14, paddingTop: 12, borderTop: `1px solid ${UI.hairline}` }}>
-                {conditionSummary.map(([label, value, filled]) => (
-                  <div key={label} style={{
+                {/* 每格可点、直达那道题(与带岗态判定卡②同款交互) */}
+                {conditionSummary.map((row) => (
+                  <button key={row.key} onClick={() => startQuiz(row.key)} style={{
                     minWidth: 0,
-                    background: filled ? '#f8fafc' : '#fafafa',
-                    border: `1px ${filled ? 'solid' : 'dashed'} ${filled ? UI.hairline : '#cbd5e1'}`,
+                    textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit',
+                    background: row.filled ? '#f8fafc' : '#fafafa',
+                    border: `1px ${row.filled ? 'solid' : 'dashed'} ${row.filled ? UI.hairline : '#cbd5e1'}`,
                     borderRadius: 9,
                     padding: '8px 10px',
                   }}>
-                    <div style={{ color: UI.text3, fontSize: 11.5, lineHeight: 1.35, marginBottom: 2 }}>{label}</div>
-                    <div className="dpConditionValue" title={value} style={{
-                      color: filled ? UI.text : '#94a3b8',
+                    <div style={{ color: UI.text3, fontSize: 11.5, lineHeight: 1.35, marginBottom: 2 }}>{row.label}</div>
+                    <div className="dpConditionValue" title={row.value} style={{
+                      color: row.filled ? UI.text : '#94a3b8',
                       fontSize: 13,
-                      fontWeight: filled ? 600 : 400,
+                      fontWeight: row.filled ? 600 : 400,
                       lineHeight: 1.45,
                       whiteSpace: 'normal',
                       wordBreak: 'break-word',
                     }}>
-                      {value}
+                      {row.value}
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
+              {quizSection}
             </div>
             )}
 
-            {/* 弹框问卷:只装基础卷(职业 / 四题 / 省份)。各省估分不进这里 —— 它要的那个分值卡
-                必须常驻在页面上,一卸载答案就没了(它的勾选全是组件本地 state)。
-                表头右侧留 84:Modal 自带的「全屏/关闭」两颗钮固定在 top12/right12,占掉约 78px,
-                只留 40 的话重置钮会压在全屏钮上。draggable 关掉:答题不需要拖窗,按住空白就把窗拖走更碍事。 */}
-            {quizOpen && ready && (
-              <Modal onClose={() => setQuizOpen(false)} size="lg" pad z={60} draggable={false}
-                actions={(
-                  // 重置改成图标、与全屏/关闭对齐成一排(2026-08-12 Frank「这个改成图标吧 和右上角对齐」)。
-                  // 沿用挂件头部那颗同款(IconRefresh,2026-08-06 Frank「重置两个字别扭」→ 图标化),不另造一个。
-                  <button type="button" style={iconBtnS} title={t('plan.reset')} aria-label={t('plan.reset')}
-                    onClick={() => {
-                      setBands(clearAnswers()); setNoc(''); setResetNonce((n) => n + 1); setOccStep(true); setProvinceStep(false); setScoreStep(false); setScoreProgress(null); setFormAtEnd(false)
-                      track('dp-quiz-reset')
-                    }}><IconRefresh /></button>
-                )}>
-                <div ref={quizRef}>
-                  <QuizStyle />
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingRight: 114, marginBottom: 12 }}>
-                    <h2 style={{ ...H2, margin: 0 }}>{t('dp.quiz')}</h2>
-                    <span style={{ ...COUNT_PILL, background: shownStep === shownTotal ? '#eff6ff' : UI.bg,
-                      color: shownStep === shownTotal ? UI.primary : UI.text3 }}>
-                      {t('dp.basicCount', { done: shownStep, total: shownTotal })}
-                    </span>
-                  </div>
-                  <div aria-label={`${shownStep}/${shownTotal}`} style={{ height: 4, borderRadius: 999, background: UI.hairline, overflow: 'hidden', margin: '0 0 18px' }}>
-                    <div style={{ width: `${Math.round((shownStep / Math.max(shownTotal, 1)) * 100)}%`, height: '100%', borderRadius: 999,
-                      background: UI.primary, transition: 'width .2s' }} />
-                  </div>
-                  {(occStep || !noc) ? (
-                    <div className="plQuizPad">
-                      <QuizTitle>{t('quiz.q2')}</QuizTitle>
-                      <div style={{ fontSize: 12.5, color: UI.text3, margin: '-10px 0 13px', lineHeight: 1.55 }}>{t('quiz.q2sub')}</div>
-                      {/* initialTop:服务端已按在招量取好的热门榜 → 控件首帧即终态,一个请求都不发 */}
-                      <OccPicker key={resetNonce} inline t={t} lang={lang} initial={bands.nocs} doneLabel={t('plan.next')} initialTop={topNocs}
-                        onChange={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || '') }}
-                        onDone={(nocs) => { const a = writeAnswers({ nocs }); setBands(a); setNoc(a.nocs[0] || ''); setOccStep(false); setProvinceStep(false); setFormAtEnd(false) }} />
-                    </div>
-                  ) : provinceStep ? (
-                    <div className="plQuizPad">
-                      {/* 省份是基础卷最后一题:答完立刻收卷关弹窗出方案。各省估分是自愿的第二段,
-                          由方案下面那张卡的入口进入 —— 不把 16 道官方表的题横在结论前面 */}
-                      <ProvincePicker key={`${resetNonce}:provinces`} t={t} initial={bands.provs} unsure={bands.provsAny}
-                        onChange={(provs) => setBands(writeAnswers({ provs }))}
-                        onBack={() => { setProvinceStep(false); setFormAtEnd(true) }}
-                        onDone={(provs, any) => { setBands(writeAnswers({ provs, provsAny: !!any })); onQuizDone() }} />
-                    </div>
-                  ) : (
-                    <div className="plQuizPad">
-                      <QuizForm key={`${resetNonce}:${formAtEnd ? 'end' : 'auto'}`} decision="pr" stage="basic" lang={lang} t={t} answers={bands} doneKey="plan.next" startAtEnd={formAtEnd}
-                        onBack={() => { setOccStep(true); setFormAtEnd(false) }}
-                        onPatch={(patch) => setBands(writeAnswers(patch))}
-                        onComplete={() => { setProvinceStep(true); setFormAtEnd(false) }} />
-                    </div>
-                  )}
-                </div>
-              </Modal>
-            )}
-
+            {/* 名额竞争在初评上面(2026-08-13 Frank:「竞争对初评也有影响吧」) */}
+            {!tvJob && competitionCard}
             {!tvJob && planCard}
-
-            {/* 各省估分 = 自愿的第二段,**摆在方案之后**(Frank 2026-08-11:「单独一个 section 放到初步方案下面」)——
-                先给方案再谈加题,不拿 16 道官方表的题横在结论前面。题数写在入口上(点之前就看得见成本);
-                答过一半再退出的,入口写的是**剩下几题**,接着答不用重来。
-                入口、题目、结果**三样同处这一张卡**,靠的是分值卡从头到尾只有这一个实例:
-                它的勾选全是组件本地 state,搬进弹窗或换个位置重挂 = 答案清零,而且题数也得靠它挂载后
-                回报(onQuestionnaireProgress)才知道 —— 入口的「还有 N 题」正是这么来的。
-                所以这块**常驻**:没答完且不在答题态时它自己什么都不渲(targetMode 下 showResults=false),
-                卡里就只剩入口行;进答题态出题;答完出各省结果。 */}
-            {quizComplete && targetFactors.length > 0 && (
-              // 开着弹窗时只**藏**不卸载(display 只在收起时写 none,写死 block 会盖掉 .qzFill 的 flex):
-              // 点「改答案」看一眼又关掉的人,估分答过的题不该因此清零
-              <div style={quizOpen ? { display: 'none' } : scoreProgress ? CARD : undefined}>
-                {(showScoreEntry || scoreStep) && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-                    <span style={{ minWidth: 0, flex: 1 }}>
-                      <span style={{ display: 'block', color: '#111827', fontSize: 13.5, fontWeight: 700, lineHeight: 1.45 }}>{t('dp.scoreEntry')}</span>
-                      {!scoreStep && <span style={{ display: 'block', color: UI.text3, fontSize: 12, lineHeight: 1.45 }}>{t('dp.scoreEntryHint', { n: scoreLeft })}</span>}
-                    </span>
-                    {scoreStep ? (
-                      <span style={{ ...COUNT_PILL, background: UI.bg, color: UI.text3 }}>{t('dp.scoreCount', { done: scoreDone, total: scoreTotal })}</span>
-                    ) : (
-                      <button onClick={openScoreStep} style={PRIMARY_BTN}>{t('dp.scoreStart')}</button>
-                    )}
-                  </div>
-                )}
-                {/* 答题态才给进度条(分值卡自己不画:题卡外层有一条就够了) */}
-                {scoreStep && (
-                  <div aria-label={`${scoreDone}/${scoreTotal}`} style={{ height: 4, borderRadius: 999, background: UI.hairline, overflow: 'hidden', margin: '11px 0 18px' }}>
-                    <div style={{ width: `${Math.round((scoreDone / Math.max(scoreTotal, 1)) * 100)}%`, height: '100%', borderRadius: 999, background: UI.primary, transition: 'width .2s' }} />
-                  </div>
-                )}
-                {/* 题区在**页内卡片**里,不是全屏弹窗 —— 手机上 .quizBar 默认 position:fixed 钉在视口底
-                    (那是给全屏弹窗写的),放到页内就会一直浮在案例、抽选表上面。这里把它收回卡内:
-                    改 sticky、去掉给固定条让位的 78px 底衬。桌面态照旧(sticky + 题区 560 最小高)。 */}
-                <style>{`@media(max-width:640px){.dpScorePad .quizBar{position:sticky;left:auto;right:auto;margin:18px 0 0;padding:10px 0 8px;box-shadow:none;border-top:1px solid ${UI.hairline};z-index:2}.dpScorePad{padding-bottom:0}}`}</style>
-                <div className={scoreStep ? 'plQuizPad dpScorePad' : undefined}>
-                  <PnpScoreCard key={scoreKey} t={t} lang={lang}
-                    ctx={{ noc: tvJob?.noc || noc, teer: targetTeer, province: scoreContextProvince, city: tvJob?.city || '' }}
-                    factors={targetFactors} draws={scoreDraws}
-                    streams={tvJob && tvJob.pnpStream ? { [scoreContextProvince]: tvJob.pnpStream } : {}}
-                    initial={scoreInitial} hiddenProfileInputs={hiddenScoreInputs} limits={scoreLimits} targetMode
-                    questionnaireActive={scoreStep}
-                    onQuestionnaireProgress={onScoreProgress}
-                    onQuestionnaireComplete={onScoreComplete}
-                    onQuestionnaireBack={onScoreBack} />
-                </div>
-              </div>
-            )}
 
             {/* 带岗进入后,三项判定就是本页结果,不再自动套一层弹窗。条件在上、结果在下,修改后原地重算。
                 **必须等 ready**:quizOpen 初值是 false,不等读完 localStorage 就渲染的话,新用户首帧先看到
@@ -613,24 +731,20 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
             {/* 服务端已经把判定算好了(initialVerdict)就**不必等 ready**:ready 那道闸是为了防
                 「首帧先渲判定、水合后被答题卡顶掉」的闪烁,而带岗态如今根本不摆答题卡,顶不掉。
                 有 initialVerdict = 这一段真的进 SSR HTML,首屏不再是空白 + 骨架。 */}
-            {(ready || !!initialVerdict) && tvJob && !quizOpen && <TripleVerdictPanel job={tvJob} lang={lang} profileComplete={quizComplete} refreshKey={verdictNonce}
+            {/* 面板**常驻不卸载**(问卷弹框的壳与分值卡如今都并在判定卡②里,scoreSlot):
+                开弹框时不藏面板 —— 藏了连弹框一起看不见,遮罩本来就盖在它上面。
+                顺带修掉旧行为里每开关一次弹窗就重挂面板、重打一次 tv-open + /api/triple-verdict 的毛病。 */}
+            {(ready || !!initialVerdict) && tvJob && <div><TripleVerdictPanel job={tvJob} lang={lang} profileComplete={quizComplete} refreshKey={verdictNonce}
               initial={initialVerdict}
-              answered={stepDone} answerTotal={stepTotal}
-              answerList={conditionSummary.map(([label, value, filled]) => ({ label, value, filled }))}
-              planSlot={planCard}
+              countPills={countPills}
+              answerList={conditionSummary}
+              planSlot={planCard} scoreSlot={quizSection}
               onBuildProfile={() => {
                 // 弹窗自己就在视口正中,不用再滚页面(内联时代的 scrollIntoView 已撤)
                 setQuizOpen(true); setOccStep(true); setProvinceStep(false); setScoreStep(false); setFormAtEnd(false); track('tv-build-profile')
               }}
-              // 「改答案」落在第一道没答的题(与上面那张卡的「继续作答」同一套落点口径)
-              onEditAnswers={() => {
-                const resuming = stepDone > 0 && stepDone < stepTotal
-                const baseDone = missingFields(stepNames, bands).length === 0
-                setQuizOpen(true)
-                setOccStep(!resuming || !noc)
-                setProvinceStep(resuming && !!noc && baseDone && !provAnswered)
-                setScoreStep(false); setFormAtEnd(false); track('dp-quiz-edit')
-              }} />}
+              // 「修改」= 与摘要卡同一颗唯一入口:落在第一道没答的题(估分有欠账直接落估分段)
+              onEditAnswers={startQuiz} /></div>}
 
             {/* 「本站没有这些省的分值表」是个断言,**表到手了才敢说** —— 懒取还没回来时
                 factorProvinces 是空的,不加这道门就会先闪一句「哪个省都没有」。 */}
@@ -674,64 +788,9 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
               ))}
             </div>
 
-            {/* SSR 事实区①:各省名额竞争(Frank 2026-08-12:「很多人不知道竞争激烈程度,我们有这个数据
-                并且是最新的就有这个能力」)。9 省同口径、来源同一份 IRCC 开放数据 —— 所以敢横着比、敢排序。
-                摆在抽选表之前:选省的第一问是「这个省多少人抢一个名额」,分数线是第二问。 */}
-            {competition.length > 0 && (
-              <div style={CARD}>
-                <h2 style={H2}>{t('dp.compTitle')}</h2>
-                <style>{`@media(max-width:640px){.dpCompTbl{display:none}}@media(min-width:641px){.dpCompCards{display:none}}`}</style>
-                <div className="dpCompCards">
-                  {competition.map((r) => (
-                    <div key={r.province} style={{ borderTop: `1px solid ${UI.hairline}`, padding: '8px 0', display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                      <b style={{ fontSize: 13.5, color: '#111827' }}>{provDisp(r.province)}</b>
-                      <span style={{ color: UI.text3, fontSize: 11.5 }}>{r.province}</span>
-                      <span style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{r.ratio}:1</span>
-                      <span style={{ width: '100%', color: UI.text3, fontSize: 11.5, fontVariantNumeric: 'tabular-nums' }}>
-                        {r.pool.toLocaleString('en-CA')} {r.poolYear ? `${r.poolYear}-12` : ''}　÷　{r.quota.toLocaleString('en-CA')} {r.quotaYear || ''}
-                        {r.flow ? `　${t('dp.compFlow')} ${r.flow.n.toLocaleString('en-CA')} ${r.flow.period}` : ''}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                <div className="dpCompTbl">
-                  <DataTable<ProvCompetition> rows={competition} rowKey={(r) => r.province} bare
-                    cols={[
-                      { key: 'province', label: t('dp.prov'), width: '24%', render: (r) => (
-                        <span style={{ display: 'flex', alignItems: 'baseline', gap: 6, minWidth: 0 }}>
-                          <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{provDisp(r.province)}</span>
-                          <span style={{ color: UI.text3, fontSize: 11.5, flexShrink: 0 }}>{r.province}</span>
-                        </span>
-                      ) },
-                      // 两个数各是各的年份(分子 2024 存量、分母 2025/2026 名额,还逐省不同)——
-                      // 年份贴在数字后面,不放页脚:放页脚就会被读成「整表同一年」
-                      // 存量是 Dec 31 快照 → 写到月(2024-12),不写光一个年份:同一格里再出现「2026-05」那种
-                      // 月度数字时,光写年份会让人以为两者同粒度
-                      { key: 'pool', label: t('dp.compPool'), width: '18%', align: 'right', render: (r) => (
-                        <span>{r.pool.toLocaleString('en-CA')}<span style={{ color: UI.text3, fontSize: 11.5, marginLeft: 5 }}>{r.poolYear ? `${r.poolYear}-12` : ''}</span></span>
-                      ) },
-                      { key: 'quota', label: t('dp.compQuota'), width: '16%', align: 'right', render: (r) => (
-                        <span>{r.quota.toLocaleString('en-CA')}<span style={{ color: UI.text3, fontSize: 11.5, marginLeft: 5 }}>{r.quotaYear || ''}</span></span>
-                      ) },
-                      { key: 'ratio', label: t('dp.compCol'), width: '12%', align: 'right', render: (r) => <b>{r.ratio}:1</b> },
-                      // 流量列:存量停在 2024,这是唯一反映当期的官方数字。**不参与比值**,页脚点明
-                      { key: 'flow', label: t('dp.compFlow'), width: '18%', align: 'right', render: (r) => (
-                        r.flow
-                          ? <span>{r.flow.n.toLocaleString('en-CA')}<span style={{ color: UI.text3, fontSize: 11.5, marginLeft: 5 }}>{r.flow.period}</span></span>
-                          : <span style={{ color: UI.text3 }}>—</span>
-                      ) },
-                      { key: 'generated', label: t('dp.compAsOf'), width: '12%', align: 'right', render: (r) => (
-                        <span style={{ fontVariantNumeric: 'tabular-nums' }}>{r.generated}</span>
-                      ) },
-                    ]} />
-                </div>
-                <div style={{ fontSize: 11.5, color: UI.text3, lineHeight: 1.6, marginTop: 8 }}>
-                  {t('dp.compNoteShort')}
-                  <br />
-                  {t('dp.compFlowNote')}
-                </div>
-              </div>
-            )}
+            {/* 带岗态:名额竞争留在事实区(判定卡流里插九省大表会把结论挤走);
+                无岗态它已上移到「可行通道初评」上面 */}
+            {tvJob ? competitionCard : null}
 
             {/* 该职业分省竞争(Frank 2026-08-12:「还需要加相关职业各省市的竞争比」)。
                 🔴 职业级的「几人抢一个」**没有任何官方源发布**,本站不编 —— 这里摆三个实数:

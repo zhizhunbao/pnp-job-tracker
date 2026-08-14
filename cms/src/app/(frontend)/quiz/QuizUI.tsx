@@ -103,18 +103,23 @@ const NEXT_BTN: React.CSSProperties = { padding: '11px 26px', fontSize: 14, minW
 // 每一题的动作条:上一题恒在左下、下一题恒在右下,中间那句灰字只填空隙 —— **不许把按钮挤走**
 // (先前灰字自带 marginRight:auto,和上一题的 auto 平分空隙,有提示的那一题按钮就往中间挪了 250px)。
 // 四种题(选职业/单选/多选/数字)都调这一把:「下一题位置还不统一」的病根是各页各写一遍按钮。
-export function QuizNav({ prevLabel, nextLabel, onPrev, onNext, nextDisabled, hint }: {
+export function QuizNav({ prevLabel, nextLabel, onPrev, onNext, nextDisabled, hint, doneLabel, onDone }: {
   prevLabel: string
   nextLabel: string
   onPrev?: () => void            // 不传 = 这是整卷第一题,没有上一题
   onNext: () => void
   nextDisabled?: boolean
   hint?: React.ReactNode
+  /** 旁路收卷钮,摆在「下一题」旁边(2026-08-13 Frank:「有的时候只是改一个答案」——
+   *  改完不该被逼着把答过的题再翻一遍)。调用方只在**全卷已答满**时传:没答满就收卷,结果出不来。 */
+  doneLabel?: string
+  onDone?: () => void
 }) {
   return (
     <div className="quizBar">
       {onPrev && <button type="button" onClick={onPrev} style={PREV_BTN}>{prevLabel}</button>}
       <span className="qzHint">{hint}</span>
+      {doneLabel && onDone ? <button type="button" onClick={onDone} style={PREV_BTN}>{doneLabel}</button> : null}
       <Button kind="primary" disabled={nextDisabled} onClick={onNext}
         style={{ ...NEXT_BTN, ...(nextDisabled ? { background: UI.hairline, color: UI.text3, cursor: 'default' } : null) }}>
         {nextLabel}

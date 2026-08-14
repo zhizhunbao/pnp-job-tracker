@@ -12,7 +12,7 @@ import { FIELDS } from '@/lib/fields'
 import { fieldsOf, type Stage } from '@/lib/decisions'
 import type { Answers } from '@/lib/answers'
 
-export function QuizForm({ decision, stage, lang, t, answers, onPatch, onComplete, doneKey, onBack, onStepChange, startAtEnd = false }: {
+export function QuizForm({ decision, stage, lang, t, answers, onPatch, onComplete, doneKey, onBack, onStepChange, startAtEnd = false, startAt }: {
   decision: string
   stage: Stage
   lang: Lang
@@ -24,11 +24,13 @@ export function QuizForm({ decision, stage, lang, t, answers, onPatch, onComplet
   onBack?: () => void       // 第一题的「上一题」出口(决策页=回选职业页;不传则第一题无上一题)
   onStepChange?: (index: number, total: number) => void
   startAtEnd?: boolean      // 从后续自定义步骤返回时，回到基础题最后一题而不是第一题
+  startAt?: string          // 点条件格直达那道题:起步落在指定字段(调用方换 key 重挂来触发)
 }) {
   const names = fieldsOf(decision, stage)
   // 起步落在第一道没答的题(答过的不重走,上一题仍可回去改)。只在挂载时算一次 ——
   // 之后 idx 归用户的「上一题/下一题」管,答完当前题不该自己往前跳
   const [idx, setIdx] = useState(() => {
+    if (startAt && names.includes(startAt)) return names.indexOf(startAt)
     if (startAtEnd) return Math.max(names.length - 1, 0)
     const i = names.findIndex((n) => !(answers as any)[n])
     return i < 0 ? 0 : i

@@ -143,6 +143,8 @@ function rowText(t: TFn, row: TvRow): { main: string; sub?: string; icon?: strin
       return { main: t('tv.emp.desigMulti', { program: P(p.program) || 'AIP', count: P(p.count) }), sub: t('tv.emp.desigMultiSub') }
     case row.key === 'tv.emp.designationUnknown':
       return { main: t('tv.emp.desigNa') }
+    // 未知态收成两行瓦片(2026-08-13 Frank:「改成两行」):标签 + 一行内容(门槛与未收录用逗号同句,
+    // 不再拆说明行、不用破折号)
     case row.key === 'tv.emp.years':
       return row.state === 'unknown'
         ? { main: t('tv.emp.yearsNa', { need: P(p.need), prov }) }
@@ -215,6 +217,22 @@ const CARD: React.CSSProperties = CARD_MD   // 白卡壳全站一份(ui/primitiv
 const CARD_HEAD: React.CSSProperties = { fontSize: 13.5, fontWeight: 700, color: '#111827', marginBottom: 6 }
 /** 卡标题:与 PrDecisionView 的 H2 同一档(16/700)—— 全页所有卡标题一个字号 */
 const CARD_TITLE: React.CSSProperties = { fontSize: 16, fontWeight: 700, color: '#111827' }
+// 一段一张卡,每张自包含(Frank 2026-08-12:「section 分多个卡片,每个卡片都是自包含的」)——
+// 卡内自带标题与出处,读到哪一张都不必回头看上一张。
+// **必须在模块级**:先前定义在组件体内,每次渲染都是一个新的组件类型,React 按类型对不上就把
+// 整棵子树卸了重挂 —— 纯展示内容看不出来,但估分卡(scoreSlot)挂进来后每次重挂 = 答案清零。
+const Card = ({ title, action, children }: { title?: React.ReactNode; action?: React.ReactNode; children: React.ReactNode }) => (
+  <div style={{ ...CARD, padding: '14px 18px 12px', margin: '0 0 10px' }}>
+    {/* 卡头:标题左、动作右上角(全站按钮同一款,不再是行内蓝链接) */}
+    {title || action ? (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+        <div style={{ ...CARD_TITLE, flex: 1, minWidth: 0 }}>{title}</div>
+        {action}
+      </div>
+    ) : null}
+    {children}
+  </div>
+)
 const ICON: Record<string, { bg: string; fg: string; ch: string }> = {
   pass: { bg: '#dcfce7', fg: '#15803d', ch: '✓' },
   gap: { bg: '#fef3c7', fg: '#b45309', ch: '!' },
@@ -272,25 +290,50 @@ function conclusionText(t: TFn, c: TvConclusion): string {
   }
 }
 
-function VRow({ state, main, sub, quote, ev, t }: { state: string; main: string; sub?: string; quote?: string; ev?: TvEv; t: TFn }) {
+function VRow({ state, label, main, sub }: { state: string; label: string; main: string; sub?: string }) {
   const ic = ICON[state] ?? ICON.info
-  const host = ev?.url ? ev.url.replace(/^https?:\/\//, '').split('/')[0] : ''
+  // 结论文字按状态配色(2026-08-13 Frank:「瓦片那种风格不是很清晰吗?还可以给瓦片的文字配色」);
+  // 中性初筛(coarse)不配灰 —— 结论是主文案,#9ca3af 当主文案就是没墨了,退回深灰
+  const color = state === 'coarse' ? '#374151' : ic.fg
   return (
-    <div style={{ display: 'flex', gap: 8, padding: '7px 0', borderBottom: '1px solid #f3f4f6', alignItems: 'flex-start' }}>
-      <span style={{ flexShrink: 0, width: 18, height: 18, borderRadius: '50%', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 2, background: ic.bg, color: ic.fg }}>{ic.ch}</span>
-      <div style={{ minWidth: 0 }}>
-        <div style={{ fontSize: 13.5, color: '#111827', lineHeight: 1.55 }}>{main}</div>
-        {sub ? <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.55, marginTop: 1 }}>{sub}</div> : null}
-        {quote ? <div style={{ fontSize: 11.5, color: '#9ca3af', lineHeight: 1.55, marginTop: 3 }}>{quote}</div> : null}
-        {ev?.url ? (
-          <div style={{ fontSize: 11.5, marginTop: 2 }}>
-            <a href={ev.url} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>{host} ↗</a>
-            {ev.fetched ? <span style={{ color: '#9ca3af', marginLeft: 8 }}>{ev.fetched}</span> : null}
-          </div>
-        ) : null}
+    // 判定瓦片 = 与事实瓦片同一套解剖(Frank 拍板瓦片式):灰标签在上、加粗结论在下、说明降级,
+    // 与事实瓦片同一副四列栅格(Frank:「不需要这么长」)。区别只有一处:结论带状态色 +
+    // ✓/!/✗/? 符号(色弱用户靠符号兜底,可访问性不上砧板)。
+    // 官方英文原句与出处链接/抓取日期**不再渲染**(2026-08-13 Frank:「这部分没有必要显示吧」)——
+    // quote-anchored 依据仍在判定引擎与接口数据里,只是不占用户的屏。
+    <div style={{ minWidth: 0, background: '#f8fafc', border: '1px solid #eef2f7', borderRadius: 9, padding: '7px 10px 8px' }}>
+      <div style={{ color: '#9ca3af', fontSize: 11, lineHeight: 1.35, marginBottom: 2 }}>{label}</div>
+      <div style={{ fontSize: 13, fontWeight: 600, color, lineHeight: 1.5 }}>
+        {/* 中性点与问号不渲染(2026-08-13 Frank:「前面不需要问号吧」——未知态的措辞本身就写着
+            未收录/暂未匹配,灰色又兜着,? 纯属再说一遍);✓/!/✗ 留着,那是扫读信号 */}
+        {ic.ch !== '•' && ic.ch !== '?' ? <span aria-hidden style={{ marginRight: 5 }}>{ic.ch}</span> : null}
+        {main}
       </div>
+      {sub ? <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.55, marginTop: 2 }}>{sub}</div> : null}
     </div>
   )
+}
+
+/** 事实瓦片(职位名/雇主/地点/职业代码/技能等级):与判定瓦片同族,只是不配状态色 */
+function FactTile({ label, value }: { label: string; value: string }) {
+  return (
+    <div style={{ minWidth: 0, background: '#f8fafc', border: '1px solid #eef2f7', borderRadius: 9, padding: '6px 9px' }}>
+      <div style={{ color: '#9ca3af', fontSize: 11, lineHeight: 1.35 }}>{label}</div>
+      <div title={value} style={{ color: '#374151', fontSize: 12.5, fontWeight: 600, lineHeight: 1.4, wordBreak: 'break-word' }}>{value}</div>
+    </div>
+  )
+}
+
+/** 判定瓦片的灰标签:行键 → 关别短名(个人侧沿用付费锁区那套 tv.k.*,职业/雇主侧新增) */
+function rowLabel(t: TFn, key: string): string {
+  if (key === 'tv.occ.teer') return t('tv.k.screen')
+  if (key.startsWith('tv.occ.')) return t('tv.k.occList')
+  if (key.startsWith('tv.emp.designat')) return t('tv.k.desig')
+  if (key === 'tv.emp.years') return t('tv.k.years')
+  if (key.startsWith('tv.emp.staff')) return t('tv.k.staff')
+  if (key === 'tv.emp.publicSector') return t('tv.k.public')
+  if (key === 'tv.you.notCollected') return t('tv.k.collect')
+  return lockLabel(t, key)
 }
 
 // ── 主组件 ──────────────────────────────────────────────────────────────────
@@ -304,7 +347,7 @@ function VRow({ state, main, sub, quote, ev, t }: { state: string; main: string;
 // 付费块从三关中间挪到**下一步之后**(C4:免费事实与结论在前,可执行推演在后);
 // **免费/付费口径一个字没动** —— 结论句与「你这边」那条闸来自 pathVerdict,与同一页上
 // 免费的「你的初步方案」同源;逐项差值(差几分/差几个月)仍在 paid 行里锁着。
-export function TripleVerdictPanel({ job, lang, profileComplete = false, refreshKey = 0, initial, answered, answerTotal, answerList = [], planSlot, onBuildProfile, onEditAnswers }: {
+export function TripleVerdictPanel({ job, lang, profileComplete = false, refreshKey = 0, initial, countPills, answerList = [], planSlot, scoreSlot, onBuildProfile, onEditAnswers }: {
   job: { id: string | number; title: string; company: string; city: string; province: string }
   lang: Lang
   profileComplete?: boolean
@@ -312,16 +355,20 @@ export function TripleVerdictPanel({ job, lang, profileComplete = false, refresh
   /** 服务端先算好的那份 wire(/plan/pr SSR):首屏直接有内容,不再盯骨架。
    *  它按「无本地答案」算 —— 客户端读到本地答案后再 POST 刷一次,刷不出新东西就是原样。 */
   initial?: unknown
-  /** 已答项数 / 总项数 + 已答项的回显(带岗态问卷卡整张并进本卡,数与值都由页面给) */
-  answered?: number
-  answerTotal?: number
-  /** 8 项条件全传(答过的与没答的都要,Frank:「不然用户怎么对比?如果要修改答案呢?」) */
-  answerList?: { label: string; value: string; filled: boolean }[]
+  /** 卡②标题旁的计数胶囊(已答 n/N · 估分 n/N,两段各报各的)—— 与无岗态摘要卡同一份,页面给什么摆什么 */
+  countPills?: React.ReactNode
+  /** 17 项条件全传(答过的与没答的都要,Frank:「不然用户怎么对比?如果要修改答案呢?」)。
+   *  key = 这格对应哪道题,点格子经 onEditAnswers(key) 直达。 */
+  answerList?: { key: string; label: string; value: string; filled: boolean }[]
   /** 第三张卡的位置留给页面的「你的初步方案」(Frank 2026-08-12 定的卡序:
    *  ① 这份工作 ② 你的条件 ③ 你的初步方案 ④⑤⑥ 三关 ⑦ 付费)。页面给什么就摆什么,面板不管它怎么算。 */
   planSlot?: React.ReactNode
+  /** 各省估分整段(入口/题目/结果)并进卡②「你的条件」尾部(2026-08-13 Frank:「合并到申请人条件
+   *  模块,不需要单独一个框」)。页面给什么摆什么;它内部有本地答题 state,别包在会重挂的容器里。 */
+  scoreSlot?: React.ReactNode
   onBuildProfile?: () => void
-  onEditAnswers?: () => void
+  /** 打开问卷:不带 key 落第一道没答的题,带 key(点了条件格)直达那道题 */
+  onEditAnswers?: (key?: string) => void
 }) {
   const t = makeT(lang)
   // SSR 那份直接当初值:首屏就有结论与三关,骨架只在**纯客户端入口**(职位板弹窗)才出现
@@ -351,7 +398,11 @@ export function TripleVerdictPanel({ job, lang, profileComplete = false, refresh
   }, [job.id, refreshKey])
 
   const free = d?.rows.filter((r) => r.tier === 'free') ?? []
-  const occRows = free.filter((r) => r.gate === 'occupation')
+  // 官方清单已给出认定(命中/排除)时,本站粗筛行不再摆(2026-08-13 Frank:「这个不是和下面的重复了吗」)——
+  // 粗筛是官方信号缺位时的兜底,官方认定在场它就是同一件事说第二遍
+  const occRowsAll = free.filter((r) => r.gate === 'occupation')
+  const hasListVerdict = occRowsAll.some((r) => r.key === 'tv.occ.listed' || r.key === 'tv.occ.excluded')
+  const occRows = hasListVerdict ? occRowsAll.filter((r) => r.key !== 'tv.occ.teer') : occRowsAll
   const empRows = free.filter((r) => r.gate === 'employer')
   const youFree = free.filter((r) => r.gate === 'person')
   const paid = (d?.rows.filter((r) => r.tier === 'paid') ?? []).slice().sort((a, b) => PAID_ORDER(a.key) - PAID_ORDER(b.key))
@@ -369,25 +420,14 @@ export function TripleVerdictPanel({ job, lang, profileComplete = false, refresh
     window.dispatchEvent(new CustomEvent('o2p:chat-open', { detail: { prefill: t('tv.ask', { co: job.company }) } }))
   }
 
-  const rows = (list: TvRow[]) => list.map((r, i) => {
+  // 判定瓦片与事实瓦片同一副栅格(2026-08-13 Frank:「这个也不需要这么长啊」——
+  // 一句结论占一整行太空,进四列格,内容多长格子多宽)。
+  // rowTiles = 裸瓦片数组(要跟事实瓦片同挤一副栅格时用);rows = 自带栅格的整块。
+  const rowTiles = (list: TvRow[]) => list.map((r, i) => {
     const v = rowText(t, r)
-    return v ? <VRow key={r.key + i} state={v.icon ?? r.state ?? 'info'} main={v.main} sub={v.sub} quote={r.quote} ev={r.evidence} t={t} /> : null
+    return v ? <VRow key={r.key + i} state={v.icon ?? r.state ?? 'info'} label={rowLabel(t, r.key)} main={v.main} sub={v.sub} /> : null
   })
-
-  // 一段一张卡,每张自包含(Frank 2026-08-12:「section 分多个卡片,每个卡片都是自包含的」)——
-  // 卡内自带标题与出处,读到哪一张都不必回头看上一张。
-  const Card = ({ title, action, children }: { title?: string; action?: React.ReactNode; children: React.ReactNode }) => (
-    <div style={{ ...CARD, padding: '14px 18px 12px', margin: '0 0 10px' }}>
-      {/* 卡头:标题左、动作右上角(全站按钮同一款,不再是行内蓝链接) */}
-      {title || action ? (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-          <div style={{ ...CARD_TITLE, flex: 1, minWidth: 0 }}>{title}</div>
-          {action}
-        </div>
-      ) : null}
-      {children}
-    </div>
-  )
+  const rows = (list: TvRow[]) => <div className="tvAnswers">{rowTiles(list)}</div>
 
   return (
     <>
@@ -404,36 +444,49 @@ export function TripleVerdictPanel({ job, lang, profileComplete = false, refresh
         {err ? <div style={{ fontSize: 13, color: '#6b7280' }}>{t('tv.err')}</div> : null}
       </Card>
 
-      {/* ② 本职位:判的是哪一份岗。事实摆成与「申请人条件」同款瓦片 —— 同一页上同一种东西一个长相 */}
+      {/* ② 本职位:判的是哪一份岗。事实摆成与「申请人条件」同款瓦片 —— 同一页上同一种东西一个长相。
+          职业匹配的判定行并在同卡尾部(2026-08-13 Frank:「这两个也合一起吧」)——
+          它们判的就是这份岗的职业,不另立一张卡。 */}
       <Card title={t('tv.c.job')} action={
         <a href={`/jobs/${job.id}`} onClick={() => track('tv-open-job')} style={{ ...GHOST_SM, textDecoration: 'none', display: 'inline-block' }}>{t('tv.c.jobOpen')}</a>
       }>
-        <div style={{ fontSize: 15, fontWeight: 700, color: '#111827', lineHeight: 1.45 }}>{job.title}</div>
-        <div className="tvAnswers" style={{ marginTop: 10 }}>
-          {[
-            [t('tv.f.employer'), job.company],
-            [t('tv.f.place'), `${job.city} ${provDisp(t, job.province)}`.trim()],
-            [t('tv.f.noc'), d?.noc ? `${d.noc}${d.nocName ? ` ${d.nocName}` : ''}` : '—'],
-            [t('tv.f.teer'), d?.teer == null ? '—' : `TEER ${d.teer}`],
-          ].map(([label, value]) => (
-            <div key={label} style={{ minWidth: 0, background: '#f8fafc', border: '1px solid #eef2f7', borderRadius: 9, padding: '6px 9px' }}>
-              <div style={{ color: '#9ca3af', fontSize: 11, lineHeight: 1.35 }}>{label}</div>
-              <div title={value} style={{ color: '#374151', fontSize: 12.5, fontWeight: 600, lineHeight: 1.4, wordBreak: 'break-word' }}>{value}</div>
-            </div>
-          ))}
+        {/* 职位名收成第一块瓦片(2026-08-13 Frank:「为什么有两个 title」——
+            卡标题「本职位」下再挂一行加粗岗位名,看着就是双标题);
+            职业代码值写「NOC 63200」(同日 Frank 点名),职业英文名不再跟在码后。
+            雇主/地点两块归「雇主资质」卡(同日 Frank:「这两个是不是应该放到雇主那里」) */}
+        <div className="tvAnswers" style={{ marginTop: 4 }}>
+          <FactTile label={t('tv.f.title')} value={job.title} />
+          <FactTile label={t('tv.f.noc')} value={d?.noc ? `NOC ${d.noc}` : '—'} />
+          <FactTile label={t('tv.f.teer')} value={d?.teer == null ? '—' : `TEER ${d.teer}`} />
+        </div>
+        {/* 判定行如今也是卡片式,与上面的瓦片同族 —— 分隔线撤了,同距续排即可 */}
+        {occRows.length ? (
+          <div style={{ marginTop: 8 }}>{rows(occRows)}</div>
+        ) : null}
+      </Card>
+
+      {/* 雇主资质紧跟本职位(2026-08-13 Frank:「放到申请人条件上面」)——
+          岗位侧的事实连排讲完,再进入申请人自己的条件。雇主/地点事实瓦片与判定瓦片同一副栅格。 */}
+      <Card title={t('tv.g.emp')}>
+        <div className="tvAnswers">
+          <FactTile label={t('tv.f.employer')} value={job.company} />
+          <FactTile label={t('tv.f.place')} value={`${job.city} ${provDisp(t, job.province)}`.trim()} />
+          {rowTiles(empRows)}
         </div>
       </Card>
 
-      {/* ② 你的条件:判定拿什么算的 + 8 项全列,每格可点进答题 */}
+      {/* ② 你的条件:判定拿什么算的 + 8 项全列,每格可点进答题;标题旁挂两段计数(8 基础 + 9 估分) */}
       {d ? (
-        <Card title={t('dp.quiz')} action={hasProfile
-          ? <button onClick={onEditAnswers ?? onBuildProfile} style={GHOST_SM}>{t('tv.edit')}</button>
+        <Card title={countPills
+          ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>{t('dp.quiz')}{countPills}</span>
+          : t('dp.quiz')} action={hasProfile
+          ? <button onClick={() => (onEditAnswers ?? onBuildProfile)?.()} style={GHOST_SM}>{t('tv.edit')}</button>
           : <button onClick={onBuildProfile ?? askChat} style={PRIMARY_SM}>{t('tv.build')}</button>}>
           {answerList.length ? (
             <>
               <div className="tvAnswers">
                 {answerList.map((a) => (
-                  <button key={a.label} onClick={onEditAnswers ?? onBuildProfile} style={{
+                  <button key={a.key} onClick={() => onEditAnswers ? onEditAnswers(a.key) : onBuildProfile?.()} style={{
                     minWidth: 0, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit',
                     background: a.filled ? '#f8fafc' : '#fafafa',
                     border: `1px ${a.filled ? 'solid #eef2f7' : 'dashed #cbd5e1'}`,
@@ -446,6 +499,7 @@ export function TripleVerdictPanel({ job, lang, profileComplete = false, refresh
               </div>
             </>
           ) : null}
+          {scoreSlot}
         </Card>
       ) : null}
 
@@ -459,9 +513,7 @@ export function TripleVerdictPanel({ job, lang, profileComplete = false, refresh
         </div>
       ) : null}
 
-      {/* ②③④ 三关:一关一张卡,各自带标题、行、官方出处 */}
-      {occRows.length ? <Card title={t('tv.g.occ')}>{rows(occRows)}</Card> : null}
-      {empRows.length ? <Card title={t('tv.g.emp')}>{rows(empRows)}</Card> : null}
+      {/* 省提名政策关(职业匹配并进本职位卡、雇主资质上移到申请人条件前) */}
       {d ? (
         <Card title={t('tv.g.youCard')}>
           {d.pro && d.hasProfile ? rows([...youFree, ...paid]) : youFree.length ? rows(youFree) : (
