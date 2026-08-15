@@ -86,9 +86,13 @@ export async function POST(req: Request) {
   const canadaExp = finite(answers.canadianExpMonths)
   const teer = Number(noc[1])
 
+  // 学历接线(2026-08-15 Frank「EE 为什么还会排在前面」溯源):客户端一直在送 edu(fields.ts engineKey),
+  // 此前路由写死 null → CRS 估分永远算不出,「够不着线沉队尾」无从触发。白名单校验按 EduKey 集合
+  const EDU_KEYS = new Set(['doctorate', 'master', 'bachelor', 'tradeCert', 'diploma2y', 'cert1y', 'highschool'])
+  const edu = EDU_KEYS.has(String(answers.edu ?? '')) ? String(answers.edu) as VerdictProfile['edu'] : null
   const profile: VerdictProfile = {
     age: finite(answers.age), married: null,
-    clb: finite(answers.clb), edu: null, eduYears: null,
+    clb: finite(answers.clb), edu, eduYears: null,
     studyProvince: null,
     noc, teer: Number.isInteger(teer) && teer >= 0 && teer <= 5 ? teer : null,
     expCanadaMonths: canadaExp,
@@ -120,8 +124,15 @@ export async function POST(req: Request) {
   // 竞争度只在**同一障碍档内**做次级排序 —— 同样是「至少还差 offer」,SK(9.0)该排在 BC(84.2)前面。
   // 拿竞争度盖过门槛就是本末倒置:再松的省,门槛不满足也走不了。
   const bandOf = (row: (typeof open)[number]) => `${row.verdict}|${row.blockedBy ?? ''}|${row.tier ?? ''}`
+  // 2026-08-15 Frank「能够得到就排前面,够不到就排后面——毕竟大家都要找工作的」:
+  // 分数线才是 EE 的真门槛。**估分 < 最近抽选线 → 沉到全队尾**(省线好歹拿到 offer 就能走);
+  // 线/估分未知不动(不拿缺数据当降档理由)。比较双方都是官方事实(估分=官方分值表,线=官方抽选史),不碰禁概率红线
+  const belowLine = (row: (typeof open)[number]) =>
+    row.score?.refLine != null && row.score.value != null && row.score.value < row.score.refLine
   const ranked = open.map((row, i) => ({ row, i, band: bandOf(row), c: comp[row.province] }))
   ranked.sort((a, b) => {
+    const ab = belowLine(a.row) ? 1 : 0, bb = belowLine(b.row) ? 1 : 0
+    if (ab !== bb) return ab - bb                           // 够不着线的沉底,先于一切档位比较
     if (a.band !== b.band) return a.i - b.i                 // 不同档:原序(门槛难度)
     // 联邦线没有省级竞争度 → 沉在同档末尾,不拿 0 冒充「最松」
     const ar = a.c?.ratio ?? Number.POSITIVE_INFINITY
@@ -143,6 +154,9 @@ export async function POST(req: Request) {
       competition: c ?? null,
       /** 反事实:拿到该省 offer 之后这条路的判定(只给被 offer 卡住的行) */
       afterOffer: after ? { verdict: after.verdict, blockedBy: after.blockedBy ?? null, tier: after.tier } : null,
+      /** 打分制通道的估分与官方线(EE);belowLine=估分<最近线(已沉队尾,前端门槛列写明数字) */
+      score: row.score ? { value: row.score.value, ceiling: row.score.ceiling, refLine: row.score.refLine } : null,
+      belowLine: belowLine(row),
     }
   })
 

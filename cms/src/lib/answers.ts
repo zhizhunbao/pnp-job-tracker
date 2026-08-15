@@ -94,6 +94,9 @@ export function readAnswers(): Answers {
       eduBand: num(cur.eduBand), ageBand: num(cur.ageBand),
       totalExpBand: cur.bandsV2 ? num(cur.totalExpBand) : totalV2(num(cur.totalExpBand)),
       offerBand: num(cur.offerBand), canadaEduBand: num(cur.canadaEduBand),
+      // 2026-08-15 Frank 实拍「学历下面的内容填完一刷新就没了」:这俩跟进题(就读时长/层级)
+      // 写入一直正常,是**读取路径漏了字段** → 每次刷新被归零。逐字段重建的清单必须与 Answers 全量对齐
+      studyMonthsBand: num(cur.studyMonthsBand), studyLevelBand: num(cur.studyLevelBand),
     }
   }
   return migrate() ?? { ...EMPTY }

@@ -61,6 +61,9 @@ type ProfilePath = {
   competition?: { ratio: number; tier: string; pool: number; quota: number; quotaYear: number } | null
   /** 反事实(L2-09):拿到该省 offer 之后这条路的判定;只有被 offer 卡住的行才带 */
   afterOffer?: { verdict: 'open' | 'needs-info' | 'excluded'; blockedBy: string | null; tier: 0 | 1 | 2 | 3 | null } | null
+  /** 打分制通道估分与官方线;belowLine=估分<最近线(服务端已沉队尾,门槛列写数字) */
+  score?: { value: number; ceiling: number | null; refLine: number | null } | null
+  belowLine?: boolean
 }
 
 const CARD: React.CSSProperties = { background: '#fff', border: `1px solid ${UI.border}`, borderRadius: 12, padding: '14px 16px', margin: '0 0 10px' }
@@ -503,7 +506,8 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                     // 但 NL 7.9:1 全省只挂 1 岗,排第一=劝人押空盘。规则:**同档内**在招 <10 岗
                     // (不够一页投递量级,阈值可调)沉档尾按岗数多→少,足量的仍按竞争比松→紧;
                     // 门槛档仍是第一主键(引擎原序),岗数不跨档翻盘 —— 不合成分数,只是降档规则
-                    const bandOf = (row: ProfilePath) => `${row.verdict}|${row.blockedBy ?? ''}|${row.tier ?? ''}`
+                    // belowLine 进 band 首位:服务端已把够不着线的沉队尾,客户端岗数重排不许把它捞回前排
+                    const bandOf = (row: ProfilePath) => `${row.belowLine ? 'z' : 'a'}|${row.verdict}|${row.blockedBy ?? ''}|${row.tier ?? ''}`
                     const jobsOf = (row: ProfilePath) => (/^[A-Z]{2}$/.test(row.province) && occComp
                       ? (occComp.find((o) => o.province === row.province)?.openJobs ?? 0) : null)
                     const bandRank = new Map<string, number>()
@@ -548,7 +552,8 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                               : `dp.planTier${row.tier ?? 0}`
                       // 「拿到本省 offer 即可申请」是信息态不是达标态 → 蓝,不抢 open 的绿
                       const afterOk = isOffer && ao?.verdict === 'open' && !ao.tier && row.availability === 'ok'
-                      const openOk = row.verdict === 'open' && row.availability === 'ok' && !row.blockedBy
+                      // 估分<线的行不许亮绿(2026-08-15「够不到就排后面」):门槛列直接写数字
+                      const openOk = row.verdict === 'open' && row.availability === 'ok' && !row.blockedBy && !row.belowLine
                       // 在招岗数(该省该职业本站在招;查无该省 = 0,0 必须显式写出,空着会被读成「没数据」):
                       // 数字本身就是直达链接;AIP 走指定雇主筛选无职业数,RCIP/联邦无岗位级标记 → 「—」
                       const provincial = /^[A-Z]{2}$/.test(row.province)
@@ -561,8 +566,12 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                       // 制度归属灰标(2026-08-14 Frank「通道要标明哪些是 pnp aip 或者 rcip」;08-15 实拍再确认):
                       // key 即真相 —— FED-EE=EE、AIP/RCIP 自名,其余全是省提名
                       const program = row.key === 'FED-EE' ? 'EE' : row.key === 'AIP' ? 'AIP' : row.key === 'RCIP' ? 'RCIP' : 'PNP'
-                      return { rowKey: row.key, index, province, routeName, program, top: index === 0 && !row.blockedBy,
-                        ratio: row.competition?.ratio ?? null, stateText: t(stateKey), afterOk, openOk, jobsHref, jobsN }
+                      // 门槛文案:够不着线的写数字(估分 X < 线 Y),数字是官方事实,结论用户自己得
+                      const stateText = row.belowLine && row.score?.refLine != null
+                        ? t('dp.planBelowLine', { v: row.score.value, line: row.score.refLine })
+                        : t(stateKey)
+                      return { rowKey: row.key, index, province, routeName, program, top: index === 0 && !row.blockedBy && !row.belowLine,
+                        ratio: row.competition?.ratio ?? null, stateText, afterOk, openOk, jobsHref, jobsN }
                     })
                     // 门槛全行同值(常见:全被 offer 卡住)→ 一句脚注,不铺一整列同一句话
                     const gates = Array.from(new Set(rows.map((r) => r.stateText)))
