@@ -28,7 +28,8 @@ import { streamMatches, type ScoreFactor } from './pnpSelfScore'
 import type { EduKey } from './pnpSelfScore'
 // 只 import type:编译期擦除,不给 chatTools(它拉着 match/planTimeline/reportFacts)加运行时边。
 import type { Availability, Evidence } from './chatTools'
-import { ASK_LABEL, GATE_LABEL, gateOf, type GateKey, type StatusAsk } from './gateManifest'
+import { ASK_LABEL, GATE_LABEL, type GateKey, type StatusAsk } from './gateManifest'
+import { gateOf, PATHWAYS, type PathwayStrategy } from './pathways'
 
 /** 门槛清单里参与裁决的三类闸(顺序=理由的展示顺序) */
 const GATE_KEYS: GateKey[] = ['offer', 'statusInCanada', 'credentialCanada']
@@ -248,96 +249,14 @@ const conditionHolds = (cond: string, p: VerdictProfile, province: string): bool
   return null                                          // 不认识的条件 → 判不了
 }
 
-// ── 通道注册表(13 条,C01 §二/§三)──────────────────────────────────────────
-// reqStream 用**子串**匹配而不是字面相等:mart 里的通道名带 em dash,写死全串等于把编码问题埋进代码。
+// ── 通道注册表 ────────────────────────────────────────────────────────────
+// 13 条通道的声明 2026-08-15 搬进 `lib/pathways/`(一条通道一个文件,Frank「每个通道一个策略文件吧?
+// 不要混在一起吧」)。这里只留别名:判定核读 PATHWAYS,不再自己攒表。
+// PathwaySpec 这个名字在下文的函数签名里用得到处都是,保留成类型别名,免得为改名动一遍全文件。
 
-type PathwaySpec = {
-  key: string
-  province: string                 // 'FED' 或省码(PathwayVerdict.province)
-  stream: string                   // 官方通道名(显示用)
-  reqProvince: string              // 去 pnp_requirements 挑行时用的省码
-  reqPrograms?: string[]           // FED 行按 program 挑(CEC/FSW/FST/RCIP)
-  reqStream?: RegExp               // PNP 行按 stream 子串挑
-  drawStream?: string              // 对照抽选线时的通道名(喂 streamMatches)
-  /** 该省抽选行没有子通道字段时,准不准退回「全省最近一轮有分线的抽选」。
-   *  只对 MB 开:MPNP 是**单池单分制**(所有 selection 抽的是同一个 EOI 池、同一把尺子),
-   *  BC 是**逐通道设线**(Build 97 / Care 96 / 偏远医疗 50)—— 对 BC 退回全省线就是拿医疗线量木匠,
-   *  pnpSelfScore.ts 里已为这条踩过的坑立过红线。 */
-  drawFallbackProvinceWide?: boolean
-  scorer?: 'CRS' | 'MB'
-  /** 门槛是否认可境外经验(库里没有 workLocation=canada 行的默认认;employerTenure 行另有口径) */
-  countsForeign: boolean
-  /** 该通道有没有「不在清单就不合格」的明文(PE 的 OID 子通道;其余省的 indemand 清单只是定向信号) */
-  listRequired?: { province: string; streamRe: RegExp }
-  note?: string
-}
+type PathwaySpec = PathwayStrategy
 
-const REGISTRY: PathwaySpec[] = [
-  {
-    key: 'FED-EE', province: 'FED', stream: 'Express Entry(CEC / FSW / FST)',
-    reqProvince: 'FED', reqPrograms: ['CEC', 'FSW', 'FST'],
-    drawStream: 'Canadian Experience Class', scorer: 'CRS', countsForeign: true,
-  },
-  {
-    key: 'ON-workforce', province: 'ON', stream: 'Ontario Workforce Priority stream',
-    reqProvince: 'ON', reqStream: /workforce priority/i,
-    drawStream: 'Ontario Workforce Priority stream', countsForeign: false,
-    // ⚠️ ON 官方第三档(近 5 年同 NOC 2 年经验)本站未收录(C5b-0 留痕),这里只判已入库的两档。
-  },
-  {
-    key: 'NB-sw', province: 'NB', stream: 'New Brunswick Skilled Worker stream(NB Experience pathway)',
-    reqProvince: 'NB', reqStream: /new brunswick skilled worker/i,
-    drawStream: 'Skilled Worker (NB Experience)', countsForeign: false,
-  },
-  {
-    key: 'NS-sw', province: 'NS', stream: 'Nova Scotia Nominee Program — Skilled Worker stream',
-    reqProvince: 'NS', reqStream: /nova scotia nominee/i, countsForeign: true,
-  },
-  {
-    key: 'SK-offer', province: 'SK', stream: 'SINP International Skilled Worker: Employment Offer',
-    reqProvince: 'SK', reqStream: /sinp international skilled worker/i, countsForeign: true,
-  },
-  {
-    key: 'AIP', province: 'FED', stream: 'Atlantic Immigration Program',
-    reqProvince: 'FED', reqPrograms: ['AIP'], countsForeign: true,
-    note: 'AIP 门槛数字只在联邦 canada.ca 页,现有 crawl 无覆盖(C5b-0 如实留缺口)',
-  },
-  {
-    key: 'RCIP', province: 'FED', stream: 'Rural Community Immigration Pilot',
-    reqProvince: 'FED', reqPrograms: ['RCIP'], countsForeign: true,
-  },
-  {
-    key: 'MB-swm', province: 'MB', stream: 'MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM)',
-    reqProvince: 'MB', reqStream: /skilled worker in manitoba/i,
-    drawStream: 'MPNP Skilled Worker Stream', drawFallbackProvinceWide: true,
-    scorer: 'MB', countsForeign: false,
-  },
-  {
-    key: 'AB-opportunity', province: 'AB', stream: 'AAIP Alberta Opportunity Stream',
-    reqProvince: 'AB', reqStream: /alberta opportunity/i,
-    drawStream: 'Alberta Opportunity Stream', countsForeign: true,
-  },
-  {
-    key: 'BC-sw', province: 'BC', stream: 'BC PNP Skilled Worker stream',
-    reqProvince: 'BC', reqStream: /bc pnp skill/i,
-    drawStream: 'BC PNP Skilled Worker stream', countsForeign: true,
-  },
-  {
-    key: 'BC-build', province: 'BC', stream: 'BC PNP Build: construction trades targeted ITA',
-    reqProvince: 'BC', reqStream: /bc pnp skill/i,
-    drawStream: 'BC PNP Build: construction trades targeted ITA', countsForeign: true,
-    note: 'Build 是 Skills Immigration 池里的定向抽选,资格门槛与 Skilled Worker 同一套',
-  },
-  {
-    key: 'NL-intl-grad', province: 'NL', stream: 'NLPNP International Graduate Category',
-    reqProvince: 'NL', reqStream: /international graduate/i, countsForeign: false,
-  },
-  {
-    key: 'PE-sw', province: 'PE', stream: 'PEI PNP Workforce — Skilled Worker / Occupations in Demand',
-    reqProvince: 'PE', reqStream: /pei pnp workforce/i, countsForeign: true,
-    listRequired: { province: 'PE', streamRe: /occupations in demand/i },
-  },
-]
+const REGISTRY: PathwaySpec[] = PATHWAYS
 
 // ── 每条通道的评估 ──────────────────────────────────────────────────────────
 
