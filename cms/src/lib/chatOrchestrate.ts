@@ -1606,6 +1606,8 @@ export function verdictProfileOf(slots: Slots, teer: number | null): VerdictProf
     permit: slots.status === 'pgwp' ? 'pgwp' : slots.status === 'study' ? 'study' : null,
     // 专业对口:对话链没有这个槽 → 留 null(该通道落 needs-info,那正是实话)
     fieldMatch: null,
+    // 法语:对话链没有这个槽 → 留 null(FCIP 落 needs-info,那正是实话)
+    frenchOk: null,
   }
 }
 

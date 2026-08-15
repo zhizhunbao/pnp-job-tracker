@@ -32,7 +32,7 @@ import { ASK_LABEL, GATE_LABEL, type GateKey, type StatusAsk } from './gateManif
 import { fieldMatchExemptionOf, gateOf, PATHWAYS, type PathwayStrategy } from './pathways'
 
 /** 门槛清单里参与裁决的三类闸(顺序=理由的展示顺序) */
-const GATE_KEYS: GateKey[] = ['offer', 'statusInCanada', 'credentialCanada', 'fieldMatch']
+const GATE_KEYS: GateKey[] = ['offer', 'statusInCanada', 'credentialCanada', 'fieldMatch', 'french']
 
 /** **选配闸**:没在策略文件里声明 = 这条通道**没扫过这类条款**,跳过不判 —— 与前三类闸相反。
  *  前三类是**每条通道都逐页读过**的(读了没有就记 basis:'absent'),所以「没登记」只能是本站未收录,
@@ -40,7 +40,7 @@ const GATE_KEYS: GateKey[] = ['offer', 'statusInCanada', 'credentialCanada', 'fi
  *  若照前三类的规矩办,另外 12 条会因为「没登记」集体判不了 —— 那不是如实,是拿新立的闸反咬旧结论。
  *  🔴 欠账:另外 12 条通道有没有专业对口条款**尚未逐页核**(与 NL 同样的取证方式),核完再决定
  *     是补声明还是把它升格成普适闸。在那之前这里如实跳过,不假装「官方不要求」。 */
-const OPT_IN_GATES = new Set<GateKey>(['fieldMatch'])
+const OPT_IN_GATES = new Set<GateKey>(['fieldMatch', 'french'])
 
 /** 一道闸有多难拆:offer 最好拆(本站正业就是帮人找到 offer)→ 人挪进境内 → 自雇经历 →
  *  重考语言(几个月)→ 加拿大学历(几年)。裁决挑标签、排序定次序,共用这一份口径。 */
@@ -48,7 +48,8 @@ const BLOCK_COST: Record<string, number> = {
   // fieldMatch 用小数插在自雇与语言之间(2026-08-15 新增):它比重考语言好拆(换一份对口的 offer
   // 就行),比自雇经历难(那是既成事实)。用小数是为了**不动**其余四项的既有数值 ——
   // 它们被排序、测试与另一处 RANK 表咬着,重新编号等于顺手改了别的通道的次序。
-  offer: 0, statusInCanada: 1, selfEmployed: 2, fieldMatch: 2.5, language: 3, credentialCanada: 4,
+  // french 与 language 同级(都是重考一门试),排在 language 之后一点点:法语从零学起比重考雅思难
+  offer: 0, statusInCanada: 1, selfEmployed: 2, fieldMatch: 2.5, language: 3, french: 3.5, credentialCanada: 4,
 }
 /** 导出给判定卡的结论句用:「差最难拆的那一项」必须与这里的次序同一把尺子,不许另立一份 */
 export const blockCost = (b?: string) => (b ? BLOCK_COST[b] ?? 9 : -1)
@@ -77,6 +78,9 @@ export type VerdictProfile = {
   /** 加拿大学历的专业与目标职业对不对口(2026-08-15 新题)。null = 没答 → 该闸判不了,
    *  **不许**当成对口 —— NL 国际毕业生官方要求岗位与所学专业相关,猜一个等于替他编答案。 */
   fieldMatch: boolean | null
+  /** 法语是否达到 FCIP 要的 NCLC 5 四项(2026-08-15 新题)。**不许**拿 clb 折算 ——
+   *  那是英语的尺子,换算过去就是替他编一个法语成绩。null = 没答 → 判不了。 */
+  frenchOk: boolean | null
   /** 持的许可(2026-08-15 statusInCanada 拆闸):study=学签 / pgwp / work=其他工签 / none=访客或已过期。
    *  null = 没答 → 工签/PGWP 类闸落「判不了」,不拿 inCanada 冒充有工签(学签在读被 AB 放行的那个病)。 */
   permit: 'study' | 'pgwp' | 'work' | 'none' | null
@@ -784,6 +788,7 @@ function evaluateOne(spec: PathwaySpec, p: VerdictProfile, data: VerdictData): P
   const answerOf: Record<GateKey, boolean | null> = {
     offer: p.hasOffer, statusInCanada: p.inCanada, credentialCanada: p.canadaStudy,
     fieldMatch: fieldMatchAnswer(),
+    french: p.frenchOk,
   }
   // statusInCanada 按 asks 取答案(2026-08-15 拆闸):「境内身份」底下其实是三种官方要求,
   // inCanada 只答得了「人在不在加拿大」—— 拿它过工签闸,学签在读全被 AB/PE 放行;
@@ -884,7 +889,7 @@ export function pathVerdict(profile: VerdictProfile, data: VerdictData): Pathway
   // 结果是**要读几年书才拿得到的加拿大学历**排在**几周就能拿到的 offer** 前面。桶不是难度。
   // 改成一把尺:**最难拆的那道障碍**。能说出具体障碍的(blockedBy)按它排,说不出的(needs-info)
   // 落在「境内身份」与「重考语言」之间 —— 我们连判都判不了,不该压过一条已知只差 offer 的路。
-  const RANK = { none: 0, offer: 1, statusInCanada: 2, selfEmployed: 3, fieldMatch: 3.5, unknown: 4, language: 5, credentialCanada: 6, excluded: 9 }
+  const RANK = { none: 0, offer: 1, statusInCanada: 2, selfEmployed: 3, fieldMatch: 3.5, unknown: 4, language: 5, french: 5.5, credentialCanada: 6, excluded: 9 }
   const obstacle = (v: PathwayVerdict): number =>
     v.verdict === 'excluded' ? RANK.excluded
       : v.blockedBy ? (RANK as Record<string, number>)[v.blockedBy] ?? RANK.unknown
@@ -923,7 +928,7 @@ export type JobPathwayRow = {
 const EMPTY_PROFILE: VerdictProfile = {
   age: null, married: null, clb: null, edu: null, eduYears: null, canadaStudy: null,
   studyProvince: null, noc: null, teer: null, expCanadaMonths: null, expForeignMonths: null,
-  foreignExpSelfEmployed: null, hasOffer: null, inCanada: null, status: null, province: null, permit: null, fieldMatch: null,
+  foreignExpSelfEmployed: null, hasOffer: null, inCanada: null, status: null, province: null, permit: null, fieldMatch: null, frenchOk: null,
 }
 
 /** 排序:可判的按经验门槛升序 → 门槛未收录 → 清单排除沉底;同档按注册表原序(与卡片效果图一致)。 */

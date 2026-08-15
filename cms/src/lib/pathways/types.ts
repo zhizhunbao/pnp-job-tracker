@@ -28,10 +28,10 @@ export type FieldMatchExemption = {
  *  前端读字段、不认 key,否则拆完还是散的,只是散得好看一点。 */
 export type PathwayUi = {
   /** 制度归属(显示在通道名尾的小括号);缺省 PNP */
-  program?: 'EE' | 'AIP' | 'RCIP' | 'PNP'
+  program?: 'EE' | 'AIP' | 'RCIP' | 'FCIP' | 'PNP'
   /** 「在招」取 occ-competition 的哪一列:AIP=该省指定雇主∩本职业、RCIP=试点社区∩本职业,
    *  普通省提名=全省在招。口径不许混(2026-08-15 拆省时立的规矩) */
-  jobsSource?: 'openJobs' | 'aipJobs' | 'rcipJobs'
+  jobsSource?: 'openJobs' | 'aipJobs' | 'rcipJobs' | 'fcipJobs'
   /** province==='FED' 且未拆到具体省时的区域名文案键(AIP=大西洋四省、RCIP=试点社区) */
   regionLabelKey?: string
   /** 「拿到 offer 即可申请」的专属话术键:AIP 要指定雇主、RCIP 要社区雇主、

@@ -99,7 +99,7 @@ const PROFILE: TripleProfile = {
   noc: '33102', teer: 3,
   expCanadaMonths: null, expForeignMonths: null, foreignExpSelfEmployed: null, hasOffer: null, inCanada: null,
   status: 'pgwp',
-  province: null, permit: 'pgwp', fieldMatch: null,
+  province: null, permit: 'pgwp', fieldMatch: null, frenchOk: null,
   permitMonthsLeft: 18,
   targetProvinces: ['BC'],
   familySize: null,

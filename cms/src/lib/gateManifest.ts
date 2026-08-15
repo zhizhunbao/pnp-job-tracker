@@ -18,7 +18,7 @@
 //   unknown      —— 没有资格页可读,**或**该页自己声明「完整条件见别处」而别处没抓到 → 本站未收录。
 //                   与「官方不要求」意思相反(CLAUDE.md 铁律),不许混。
 
-export type GateKey = 'offer' | 'statusInCanada' | 'credentialCanada' | 'fieldMatch'
+export type GateKey = 'offer' | 'statusInCanada' | 'credentialCanada' | 'fieldMatch' | 'french'
 
 /** statusInCanada 闸「问的是什么」(2026-08-15 拆分)。「境内身份」一个词底下其实是三种官方要求:
  *  AB/PE 要**有效工签**、NL 指名 **PGWP**、NB/MB 要**住在/受雇于该省** —— 先前统统拿
@@ -40,6 +40,9 @@ export const GATE_LABEL: Record<GateKey, { zh: string; en: string; ko: string }>
   // 2026-08-15 第四类闸(Frank「毕业生干厨师靠谱吗?跨专业了怎么弄」):NL 国际毕业生官方要求
   // 岗位与所学专业相关。先前只是一枚灰提醒胶囊,答不上就当没有障碍 —— 与工签闸同一种病,收成真闸。
   fieldMatch: { zh: '专业对口', en: 'field of study match', ko: '전공 일치' },
+  // 2026-08-15 第五类闸:FCIP 要 NCLC 5 **法语**四项。站里那道语言题问的是 CLB(英语的尺子),
+  // 拿它当 NCLC 用 = 把不会法语的人判成达标再推去法语社区,故单开一闸、单问一题。
+  french: { zh: '法语 NCLC 5', en: 'French NCLC 5', ko: '프랑스어 NCLC 5' },
 }
 
 /** statusInCanada 按 asks 拆开后的人话名(结论文案用它,不再统称「境内身份」) */

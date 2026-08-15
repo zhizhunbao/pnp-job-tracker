@@ -9,6 +9,7 @@ import { AB_OPPORTUNITY } from './ab-opportunity'
 import { AIP } from './aip'
 import { BC_BUILD } from './bc-build'
 import { BC_SW } from './bc-sw'
+import { FCIP_PATHWAY } from './fcip'
 import { FED_EE } from './fed-ee'
 import { MB_SWM } from './mb-swm'
 import { NB_SW } from './nb-sw'
@@ -32,6 +33,7 @@ export const PATHWAYS: PathwayStrategy[] = [
   SK_OFFER,
   AIP,
   RCIP,
+  FCIP_PATHWAY,
   MB_SWM,
   AB_OPPORTUNITY,
   BC_SW,

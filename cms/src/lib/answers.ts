@@ -33,6 +33,8 @@ export type Answers = {
   // 只对「有加拿大学历」的人显示(fields.ts visible)
   fieldMatchBand: number
   eduProv: string
+  /** 法语是否达 NCLC 5 四项(2026-08-15,FCIP 的定义性门槛;不由 clbBand 折算) */
+  frenchBand: number
   provsAny?: boolean      // 目标省「还不确定」——**答过了**,只是不限省(与「没答」不同)
   /** 档位 v2 标记(2026-08-13/14 语言+经验合一):clbBand 从区间档改成精确档(2=CLB4…8=CLB10+),
    *  totalExpBand 从区间档改成整年档(3=1年…7=5年+,9=不清楚不变)。没打标的旧答案读取时按
@@ -48,7 +50,7 @@ export const EMPTY: Answers = {
   status: '', nocs: [], provs: [],
   clbBand: 0, expBand: 0, provBand: 0, crsBand: 0, pgwpBand: 0,
   eduBand: 0, ageBand: 0, totalExpBand: 0, offerBand: 0, canadaEduBand: 0,
-  permitBand: 0, resProv: '', fieldMatchBand: 0, eduProv: '',
+  permitBand: 0, resProv: '', fieldMatchBand: 0, eduProv: '', frenchBand: 0,
   studyMonthsBand: 0, studyLevelBand: 0, bandsV2: true,
 }
 
@@ -113,6 +115,7 @@ export function readAnswers(): Answers {
       offerBand: num(cur.offerBand), canadaEduBand: num(cur.canadaEduBand),
       permitBand: num(cur.permitBand), resProv: typeof cur.resProv === 'string' ? cur.resProv : '',
       fieldMatchBand: num(cur.fieldMatchBand), eduProv: typeof cur.eduProv === 'string' ? cur.eduProv : '',
+      frenchBand: num(cur.frenchBand),
       // 2026-08-15 Frank 实拍「学历下面的内容填完一刷新就没了」:这俩跟进题(就读时长/层级)
       // 写入一直正常,是**读取路径漏了字段** → 每次刷新被归零。逐字段重建的清单必须与 Answers 全量对齐
       studyMonthsBand: num(cur.studyMonthsBand), studyLevelBand: num(cur.studyLevelBand),

@@ -118,6 +118,8 @@ export async function POST(req: Request) {
     permit: (['study', 'pgwp', 'work', 'none'] as const).find((k) => k === String(answers.permit ?? '')) ?? null,
     // 专业对口(同批新题):没答留 null → 该闸判不了,不许当成对口
     fieldMatch: typeof answers.fieldMatch === 'boolean' ? answers.fieldMatch : null,
+    // 法语(FCIP 的定义性门槛):没答留 null → 判不了,不拿英语 CLB 折算
+    frenchOk: typeof answers.frenchOk === 'boolean' ? answers.frenchOk : null,
     // 门槛清单三类闸(2026-08-12):没答就是 null → 引擎落「判不了」,**不许**当成没有障碍。
     hasOffer: typeof answers.hasJobOffer === 'boolean' ? answers.hasJobOffer : null,
     // 「人在不在境内」不另开一题:既有的「你现在的情况」已经把 overseas 与另外三个境内选项分开了

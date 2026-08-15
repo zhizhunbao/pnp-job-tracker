@@ -54,6 +54,11 @@ IN_URL_RCIP_FRANCO = _RCIP + "franco-immigration/eligibility/work-experience.htm
 # 当成「不要求」,语言没考的人也看到「即可申请」)。Franco 试点语言规则不同(NCLC 5 一刀切,
 # 纯法语),不共享这批行 —— 交叉核验只对经验行。
 IN_URL_RCIP_LANG = _RCIP + "rural-immigration/eligibility/language-test.html"
+# FCIP(法语社区试点)2026-08-15 立成独立通道(Frank「还有法语区,都拆成不同的策略文件吧」)。
+# **不与 RCIP 共享语言行**:官方 NCLC 5 一刀切、且是法语;经验页文案与 Rural 页逐字相同,
+# 但落成 program='FCIP' 自己的行 —— 两条 pilot 的社区名单、名额、语言尺子都不是一回事。
+IN_URL_FCIP_ELIG = _RCIP + "franco-immigration/eligibility.html"
+IN_URL_FCIP_LANG = _RCIP + "franco-immigration/eligibility/language-test.html"
 IN_URL_LANG = _EE + "documents/language-test.html"          # 三个项目的最低 CLB/NCLC 门槛表
 IN_URL_ECA = _EE + "documents/education-assessment.html"     # ECA 结果 → FSW 教育 selection factor 分
 
@@ -359,6 +364,20 @@ RULES = [
     {"program": "RCIP", "page": "rcip_lang", "factor": "language", "stream": "teer-4-5", "op": ">=", "value": 4, "unit": "CLB",
      "label": "RCIP: TEER 4 or 5 job offer needs CLB 4",
      "quote": "TEER 4 or 5: CLB 4"},
+
+    # ---- Francophone Community Immigration Pilot (FCIP) ----
+    # 2026-08-15:FCIP 立成第 14 条通道,门槛行**自己一份**(先前 program='FCIP' 一行都没有,
+    # 判定层只能如实落「本站未收录」)。语言是它与 RCIP 最大的区别:NCLC 5 一刀切、且是**法语**。
+    {"program": "FCIP", "page": "fcip_elig", "factor": "workHours", "op": ">=", "value": 1560, "unit": "hours",
+     "basis": "windowYears=3;minYears=1",
+     "label": "FCIP: 1 year (1,560 hours) of related work experience in the past 3 years",
+     "quote": "have at least 1 year (1,560 hours) of related work experience in the past 3 years"},
+    {"program": "FCIP", "page": "fcip_elig", "factor": "offerDesignatedEmployer", "op": "rule", "value": "required", "unit": "",
+     "label": "FCIP: job offer must come from a designated employer in the community",
+     "quote": "have a valid job offer from a designated employer in the community"},
+    {"program": "FCIP", "page": "fcip_lang", "factor": "language", "op": ">=", "value": 5, "unit": "NCLC",
+     "label": "FCIP: NCLC 5 in all 4 abilities (French)",
+     "quote": "You need a minimum score of NCLC 5 in all 4 abilities to apply for the Francophone Community Immigration Pilot (FCIP)."},
 ]
 
 
@@ -396,7 +415,8 @@ def main() -> None:
     pages = {}
     for key, url in (("cec", IN_URL_CEC), ("fsw", IN_URL_FSW), ("fst", IN_URL_FST), ("lang", IN_URL_LANG),
                      ("rcip_rural", IN_URL_RCIP_RURAL), ("rcip_franco", IN_URL_RCIP_FRANCO),
-                     ("rcip_lang", IN_URL_RCIP_LANG)):
+                     ("rcip_lang", IN_URL_RCIP_LANG),
+                     ("fcip_elig", IN_URL_FCIP_ELIG), ("fcip_lang", IN_URL_FCIP_LANG)):
         m, fetched = load(url)
         pages[key] = {"url": url, "fetched": fetched, "main": m,
                       "text": norm(m.get_text(" ", strip=True))}
@@ -460,7 +480,8 @@ def main() -> None:
             for code, name, k in (("CEC", "Canadian Experience Class", "cec"),
                                   ("FSW", "Federal Skilled Worker Program", "fsw"),
                                   ("FST", "Federal Skilled Trades Program", "fst"),
-                                  ("RCIP", "Rural and Francophone Community Immigration Pilots", "rcip_rural"))
+                                  ("RCIP", "Rural and Francophone Community Immigration Pilots", "rcip_rural"),
+                                  ("FCIP", "Francophone Community Immigration Pilot", "fcip_elig"))
         ],
         "requirements": reqs,
         "selectionFactors": sel,

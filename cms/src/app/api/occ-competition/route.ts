@@ -29,6 +29,8 @@ export type OccCompetitionRow = {
   aipJobs: number
   /** 该省 RCIP 试点社区在招的本职业岗数(2026-08-15 Frank「rcip 也需要拆」;LIKE 口径同列表页 pilot=RCIP) */
   rcipJobs: number
+  /** FCIP 试点社区 ∩ 本职业(2026-08-15 FCIP 立成通道;与 rcipJobs 同口径,别混) */
+  fcipJobs: number
 }
 
 const num = (v: unknown): number | null => {
@@ -44,7 +46,7 @@ export async function GET(req: NextRequest) {
   const pool = (payload.db as { pool?: { query: (q: string, v?: unknown[]) => Promise<{ rows: Record<string, unknown>[] }> } }).pool
   if (!pool) return Response.json({ noc, rows: [] })
 
-  const [occ, comp, aip, rcip] = await Promise.all([
+  const [occ, comp, aip, rcip, fcip] = await Promise.all([
     pool.query(
       `SELECT province, open_jobs, new30d, avg_days_open
          FROM stats_occupation
@@ -67,6 +69,13 @@ export async function GET(req: NextRequest) {
         WHERE status = 'open' AND COALESCE(pilot, '') LIKE '%RCIP%' AND noc = $1 AND province <> ''
         GROUP BY province`, [noc],
     ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
+    // FCIP 同款(2026-08-15 FCIP 立成通道):Sudbury/Timmins 两地双标,所以两个数会重叠 ——
+    // 那是事实不是重复计数,两条 pilot 在同一个城市各有各的社区名单与名额
+    pool.query(
+      `SELECT province, COUNT(*)::int AS n FROM jobs
+        WHERE status = 'open' AND COALESCE(pilot, '') LIKE '%FCIP%' AND noc = $1 AND province <> ''
+        GROUP BY province`, [noc],
+    ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
   ])
 
   const ratioOf: Record<string, number> = {}
@@ -81,6 +90,8 @@ export async function GET(req: NextRequest) {
   for (const r of aip.rows) aipOf[String(r.province ?? '')] = num(r.n) ?? 0
   const rcipOf: Record<string, number> = {}
   for (const r of rcip.rows) rcipOf[String(r.province ?? '')] = num(r.n) ?? 0
+  const fcipOf: Record<string, number> = {}
+  for (const r of fcip.rows) fcipOf[String(r.province ?? '')] = num(r.n) ?? 0
 
   const rows: OccCompetitionRow[] = occ.rows.map((r) => ({
     province: String(r.province ?? ''),
@@ -90,6 +101,7 @@ export async function GET(req: NextRequest) {
     ratio: ratioOf[String(r.province ?? '')] ?? null,
     aipJobs: aipOf[String(r.province ?? '')] ?? 0,
     rcipJobs: rcipOf[String(r.province ?? '')] ?? 0,
+    fcipJobs: fcipOf[String(r.province ?? '')] ?? 0,
   }))
 
   return Response.json({ noc, rows })

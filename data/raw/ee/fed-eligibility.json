@@ -1,35 +1,42 @@
 {
  "source": "Express Entry: Who can apply (CEC / FSW / FST) + Rural and Francophone Community Immigration Pilots (RCIP): Work experience",
  "province": "FED",
- "fetched": "2026-08-14",
+ "fetched": "2026-08-15",
  "note": "quote-anchored:valueText=官方原文,本脚本每轮验证其仍逐字在页面上;字段语义见 basis。requirements 形状对齐 raw/ircc/pgwp_rules.json(09 IN_REQ_TABLES 可直接消费)。selectionFactors = FSW 67 分制的官方表格(与 CRS 排名分是两套分,官方明确写明不同)。其中教育档来自 fed-ee 缓存命中的 ECA 报告解读页;criterion=ECA assessment result、heading=EE profile 教育档、points=FSW 教育分(最高 25),没有把 CRS 教育分混入。RCIP(program=RCIP)不是 Express Entry 项目、不参与 CRS,只是同表落 province='FED' 的经验门槛;来源是 Rural/Franco 两条 pilot 各自的 Work experience 官方页(文案逐字相同,已交叉核验),不是 fed-ee 那 97 页种子(RCIP 走 fed-rcip crawl slug)。",
  "programs": [
   {
    "code": "CEC",
    "name": "Canadian Experience Class",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/canadian-experience-class.html",
-   "fetched": "2026-08-14",
+   "fetched": "2026-08-15",
    "pageUpdated": "2026-06-22"
   },
   {
    "code": "FSW",
    "name": "Federal Skilled Worker Program",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14",
+   "fetched": "2026-08-15",
    "pageUpdated": "2026-06-22"
   },
   {
    "code": "FST",
    "name": "Federal Skilled Trades Program",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-trades.html",
-   "fetched": "2026-08-14",
+   "fetched": "2026-08-15",
    "pageUpdated": "2026-06-22"
   },
   {
    "code": "RCIP",
    "name": "Rural and Francophone Community Immigration Pilots",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/work-experience.html",
-   "fetched": "2026-08-14",
+   "fetched": "2026-08-15",
+   "pageUpdated": "2025-08-13"
+  },
+  {
+   "code": "FCIP",
+   "name": "Francophone Community Immigration Pilot",
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/franco-immigration/eligibility.html",
+   "fetched": "2026-08-15",
    "pageUpdated": "2025-08-13"
   }
  ],
@@ -46,7 +53,7 @@
    "basis": "",
    "label": "CEC: skilled work experience must be TEER 0/1/2/3",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/canadian-experience-class.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "program": "CEC",
@@ -60,7 +67,7 @@
    "basis": "windowYears=3;minYears=1;hoursPerWeek=30",
    "label": "CEC: 1 year (1,560 hours) of Canadian skilled work in the 3 years before applying",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/canadian-experience-class.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "program": "CEC",
@@ -74,7 +81,7 @@
    "basis": "",
    "label": "CEC: experience must be gained in Canada while authorized to work",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/canadian-experience-class.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "program": "CEC",
@@ -88,7 +95,7 @@
    "basis": "",
    "label": "CEC: self-employment and full-time-student work experience do not count",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/canadian-experience-class.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "program": "CEC",
@@ -102,7 +109,7 @@
    "basis": "",
    "label": "CEC: no education requirement",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/canadian-experience-class.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "program": "CEC",
@@ -116,7 +123,7 @@
    "basis": "",
    "label": "CEC: must plan to live outside Quebec",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/canadian-experience-class.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "program": "CEC",
@@ -130,7 +137,7 @@
    "basis": "",
    "label": "CEC (TEER 0 or 1): CLB/NCLC 7 in all 4 abilities",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "program": "CEC",
@@ -144,7 +151,7 @@
    "basis": "",
    "label": "CEC (TEER 2 or 3): CLB/NCLC 5 in all 4 abilities",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "program": "FSW",
@@ -158,7 +165,7 @@
    "basis": "",
    "label": "FSW: skilled work experience must be TEER 0/1/2/3",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "program": "FSW",
@@ -172,7 +179,7 @@
    "basis": "minYears=1;continuous=true;hoursPerWeek=30",
    "label": "FSW: 1 year of continuous work (1,560 hours)",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "program": "FSW",
@@ -186,7 +193,7 @@
    "basis": "",
    "label": "FSW: experience obtained within the last 10 years, in Canada or abroad",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "program": "FSW",
@@ -200,7 +207,7 @@
    "basis": "outOf=100;separateFromCRS=true",
    "label": "FSW: 67 of 100 selection-factor points to qualify",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "program": "FSW",
@@ -214,7 +221,7 @@
    "basis": "",
    "label": "FSW: foreign education needs a completed credential + ECA",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "program": "FSW",
@@ -228,7 +235,7 @@
    "basis": "waivedIf=legallyWorkInCanada+validJobOffer",
    "label": "FSW: proof of funds required unless legally able to work in Canada with a valid job offer",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "program": "FSW",
@@ -242,7 +249,7 @@
    "basis": "",
    "label": "FSW: must plan to live outside Quebec",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "program": "FSW",
@@ -256,7 +263,7 @@
    "basis": "",
    "label": "FSW: CLB 7 (NCLC 7) minimum in all 4 abilities, first official language",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "program": "FST",
@@ -270,7 +277,7 @@
    "basis": "",
    "label": "FST: experience must be in the listed NOC major/minor/unit groups",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-trades.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "program": "FST",
@@ -284,7 +291,7 @@
    "basis": "windowYears=5;minYears=2",
    "label": "FST: 2 years (3,120 hours) of full-time skilled-trade work in the 5 years before applying",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-trades.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "program": "FST",
@@ -298,7 +305,7 @@
    "basis": "",
    "label": "FST: needs a >=1-year full-time job offer OR a Canadian certificate of qualification",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-trades.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "program": "FST",
@@ -312,7 +319,7 @@
    "basis": "",
    "label": "FST: no education requirement",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-trades.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "program": "FST",
@@ -326,7 +333,7 @@
    "basis": "",
    "label": "FST: must plan to live outside Quebec",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-trades.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "program": "FST",
@@ -340,7 +347,7 @@
    "basis": "",
    "label": "FST: CLB/NCLC 5 for speaking and listening",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "program": "FST",
@@ -354,7 +361,7 @@
    "basis": "",
    "label": "FST: CLB/NCLC 4 for reading and writing",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-test.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "program": "RCIP",
@@ -368,7 +375,7 @@
    "basis": "windowYears=3;minYears=1",
    "label": "RCIP: 1 year (1,560 hours) of related work experience in the past 3 years",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/work-experience.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "program": "RCIP",
@@ -382,7 +389,7 @@
    "basis": "",
    "label": "RCIP: self-employed work does not count toward the experience requirement",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/work-experience.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "program": "RCIP",
@@ -396,7 +403,7 @@
    "basis": "",
    "label": "RCIP: TEER 0 or 1 job offer needs CLB 6",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/language-test.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "program": "RCIP",
@@ -410,7 +417,7 @@
    "basis": "",
    "label": "RCIP: TEER 2 or 3 job offer needs CLB 5",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/language-test.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "program": "RCIP",
@@ -424,7 +431,49 @@
    "basis": "",
    "label": "RCIP: TEER 4 or 5 job offer needs CLB 4",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/language-test.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
+  },
+  {
+   "program": "FCIP",
+   "stream": "",
+   "subject": "applicant",
+   "factor": "workHours",
+   "op": ">=",
+   "value": 1560,
+   "valueText": "have at least 1 year (1,560 hours) of related work experience in the past 3 years",
+   "unit": "hours",
+   "basis": "windowYears=3;minYears=1",
+   "label": "FCIP: 1 year (1,560 hours) of related work experience in the past 3 years",
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/franco-immigration/eligibility.html",
+   "fetched": "2026-08-15"
+  },
+  {
+   "program": "FCIP",
+   "stream": "",
+   "subject": "applicant",
+   "factor": "offerDesignatedEmployer",
+   "op": "rule",
+   "value": "required",
+   "valueText": "have a valid job offer from a designated employer in the community",
+   "unit": "",
+   "basis": "",
+   "label": "FCIP: job offer must come from a designated employer in the community",
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/franco-immigration/eligibility.html",
+   "fetched": "2026-08-15"
+  },
+  {
+   "program": "FCIP",
+   "stream": "",
+   "subject": "applicant",
+   "factor": "language",
+   "op": ">=",
+   "value": 5,
+   "valueText": "You need a minimum score of NCLC 5 in all 4 abilities to apply for the Francophone Community Immigration Pilot (FCIP).",
+   "unit": "NCLC",
+   "basis": "",
+   "label": "FCIP: NCLC 5 in all 4 abilities (French)",
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/franco-immigration/eligibility/language-test.html",
+   "fetched": "2026-08-15"
   }
  ],
  "selectionFactors": [
@@ -440,7 +489,7 @@
    "points": 6,
    "pointsText": "6",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -454,7 +503,7 @@
    "points": 6,
    "pointsText": "6",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -468,7 +517,7 @@
    "points": 6,
    "pointsText": "6",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -482,7 +531,7 @@
    "points": 6,
    "pointsText": "6",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -496,7 +545,7 @@
    "points": 5,
    "pointsText": "5",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -510,7 +559,7 @@
    "points": 5,
    "pointsText": "5",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -524,7 +573,7 @@
    "points": 5,
    "pointsText": "5",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -538,7 +587,7 @@
    "points": 5,
    "pointsText": "5",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -552,7 +601,7 @@
    "points": 4,
    "pointsText": "4",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -566,7 +615,7 @@
    "points": 4,
    "pointsText": "4",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -580,7 +629,7 @@
    "points": 4,
    "pointsText": "4",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -594,7 +643,7 @@
    "points": 4,
    "pointsText": "4",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -608,7 +657,7 @@
    "points": null,
    "pointsText": "Not eligible to apply",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -622,7 +671,7 @@
    "points": null,
    "pointsText": "Not eligible to apply",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -636,7 +685,7 @@
    "points": null,
    "pointsText": "Not eligible to apply",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -650,7 +699,7 @@
    "points": null,
    "pointsText": "Not eligible to apply",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -664,7 +713,7 @@
    "points": 4,
    "pointsText": "4",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -678,7 +727,7 @@
    "points": 0,
    "pointsText": "0",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -692,7 +741,7 @@
    "points": 9,
    "pointsText": "9",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -706,7 +755,7 @@
    "points": 11,
    "pointsText": "11",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -720,7 +769,7 @@
    "points": 13,
    "pointsText": "13",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -734,7 +783,7 @@
    "points": 15,
    "pointsText": "15",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -748,7 +797,7 @@
    "points": 0,
    "pointsText": "0",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -762,7 +811,7 @@
    "points": 12,
    "pointsText": "12",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -776,7 +825,7 @@
    "points": 11,
    "pointsText": "11",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -790,7 +839,7 @@
    "points": 10,
    "pointsText": "10",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -804,7 +853,7 @@
    "points": 9,
    "pointsText": "9",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -818,7 +867,7 @@
    "points": 8,
    "pointsText": "8",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -832,7 +881,7 @@
    "points": 7,
    "pointsText": "7",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -846,7 +895,7 @@
    "points": 6,
    "pointsText": "6",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -860,7 +909,7 @@
    "points": 5,
    "pointsText": "5",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -874,7 +923,7 @@
    "points": 4,
    "pointsText": "4",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -888,7 +937,7 @@
    "points": 3,
    "pointsText": "3",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -902,7 +951,7 @@
    "points": 2,
    "pointsText": "2",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -916,7 +965,7 @@
    "points": 1,
    "pointsText": "1",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -930,7 +979,7 @@
    "points": 0,
    "pointsText": "0",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -944,7 +993,7 @@
    "points": 5,
    "pointsText": "5",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -958,7 +1007,7 @@
    "points": 5,
    "pointsText": "5",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -972,7 +1021,7 @@
    "points": 5,
    "pointsText": "5",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -986,7 +1035,7 @@
    "points": 10,
    "pointsText": "10",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1000,7 +1049,7 @@
    "points": 5,
    "pointsText": "5",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1014,7 +1063,7 @@
    "points": 5,
    "pointsText": "5",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1028,7 +1077,7 @@
    "points": 5,
    "pointsText": "5",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/federal-skilled-workers.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1042,7 +1091,7 @@
    "points": 25,
    "pointsText": "25",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1056,7 +1105,7 @@
    "points": 25,
    "pointsText": "25",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1070,7 +1119,7 @@
    "points": 25,
    "pointsText": "25",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1084,7 +1133,7 @@
    "points": 25,
    "pointsText": "25",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1098,7 +1147,7 @@
    "points": 25,
    "pointsText": "25",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1112,7 +1161,7 @@
    "points": 25,
    "pointsText": "25",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1126,7 +1175,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1140,7 +1189,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1154,7 +1203,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1168,7 +1217,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1182,7 +1231,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1196,7 +1245,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1210,7 +1259,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1224,7 +1273,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1238,7 +1287,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1252,7 +1301,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1266,7 +1315,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1280,7 +1329,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1294,7 +1343,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1308,7 +1357,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1322,7 +1371,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1336,7 +1385,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1350,7 +1399,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1364,7 +1413,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1378,7 +1427,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1392,7 +1441,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1406,7 +1455,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1420,7 +1469,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1434,7 +1483,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1448,7 +1497,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1462,7 +1511,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1476,7 +1525,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1490,7 +1539,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1504,7 +1553,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1518,7 +1567,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1532,7 +1581,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1546,7 +1595,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1560,7 +1609,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1574,7 +1623,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1588,7 +1637,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1602,7 +1651,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1616,7 +1665,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1630,7 +1679,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1644,7 +1693,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1658,7 +1707,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1672,7 +1721,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1686,7 +1735,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1700,7 +1749,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1714,7 +1763,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1728,7 +1777,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1742,7 +1791,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1756,7 +1805,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1770,7 +1819,7 @@
    "points": 23,
    "pointsText": "23",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1784,7 +1833,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1798,7 +1847,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1812,7 +1861,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1826,7 +1875,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1840,7 +1889,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1854,7 +1903,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1868,7 +1917,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1882,7 +1931,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1896,7 +1945,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1910,7 +1959,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1924,7 +1973,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1938,7 +1987,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1952,7 +2001,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1966,7 +2015,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1980,7 +2029,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -1994,7 +2043,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2008,7 +2057,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2022,7 +2071,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2036,7 +2085,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2050,7 +2099,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2064,7 +2113,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2078,7 +2127,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2092,7 +2141,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2106,7 +2155,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2120,7 +2169,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2134,7 +2183,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2148,7 +2197,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2162,7 +2211,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2176,7 +2225,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2190,7 +2239,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2204,7 +2253,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2218,7 +2267,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2232,7 +2281,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2246,7 +2295,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2260,7 +2309,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2274,7 +2323,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2288,7 +2337,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2302,7 +2351,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2316,7 +2365,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2330,7 +2379,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2344,7 +2393,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2358,7 +2407,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2372,7 +2421,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2386,7 +2435,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2400,7 +2449,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2414,7 +2463,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2428,7 +2477,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2442,7 +2491,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2456,7 +2505,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2470,7 +2519,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2484,7 +2533,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2498,7 +2547,7 @@
    "points": 22,
    "pointsText": "22",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2512,7 +2561,7 @@
    "points": 21,
    "pointsText": "21",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2526,7 +2575,7 @@
    "points": 21,
    "pointsText": "21",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2540,7 +2589,7 @@
    "points": 21,
    "pointsText": "21",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2554,7 +2603,7 @@
    "points": 21,
    "pointsText": "21",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2568,7 +2617,7 @@
    "points": 21,
    "pointsText": "21",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2582,7 +2631,7 @@
    "points": 21,
    "pointsText": "21",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2596,7 +2645,7 @@
    "points": 21,
    "pointsText": "21",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2610,7 +2659,7 @@
    "points": 21,
    "pointsText": "21",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2624,7 +2673,7 @@
    "points": 21,
    "pointsText": "21",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2638,7 +2687,7 @@
    "points": 21,
    "pointsText": "21",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2652,7 +2701,7 @@
    "points": 21,
    "pointsText": "21",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2666,7 +2715,7 @@
    "points": 21,
    "pointsText": "21",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2680,7 +2729,7 @@
    "points": 21,
    "pointsText": "21",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2694,7 +2743,7 @@
    "points": 21,
    "pointsText": "21",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2708,7 +2757,7 @@
    "points": 21,
    "pointsText": "21",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2722,7 +2771,7 @@
    "points": 21,
    "pointsText": "21",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2736,7 +2785,7 @@
    "points": 21,
    "pointsText": "21",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2750,7 +2799,7 @@
    "points": 21,
    "pointsText": "21",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2764,7 +2813,7 @@
    "points": 21,
    "pointsText": "21",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2778,7 +2827,7 @@
    "points": 19,
    "pointsText": "19",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2792,7 +2841,7 @@
    "points": 19,
    "pointsText": "19",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2806,7 +2855,7 @@
    "points": 19,
    "pointsText": "19",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2820,7 +2869,7 @@
    "points": 19,
    "pointsText": "19",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2834,7 +2883,7 @@
    "points": 19,
    "pointsText": "19",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2848,7 +2897,7 @@
    "points": 19,
    "pointsText": "19",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2862,7 +2911,7 @@
    "points": 19,
    "pointsText": "19",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2876,7 +2925,7 @@
    "points": 19,
    "pointsText": "19",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2890,7 +2939,7 @@
    "points": 19,
    "pointsText": "19",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2904,7 +2953,7 @@
    "points": 19,
    "pointsText": "19",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2918,7 +2967,7 @@
    "points": 19,
    "pointsText": "19",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2932,7 +2981,7 @@
    "points": 15,
    "pointsText": "15",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2946,7 +2995,7 @@
    "points": 15,
    "pointsText": "15",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2960,7 +3009,7 @@
    "points": 15,
    "pointsText": "15",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2974,7 +3023,7 @@
    "points": 15,
    "pointsText": "15",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -2988,7 +3037,7 @@
    "points": 15,
    "pointsText": "15",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -3002,7 +3051,7 @@
    "points": 15,
    "pointsText": "15",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -3016,7 +3065,7 @@
    "points": 15,
    "pointsText": "15",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -3030,7 +3079,7 @@
    "points": 15,
    "pointsText": "15",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -3044,7 +3093,7 @@
    "points": 5,
    "pointsText": "5",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -3058,7 +3107,7 @@
    "points": 5,
    "pointsText": "5",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -3072,7 +3121,7 @@
    "points": 5,
    "pointsText": "5",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -3086,7 +3135,7 @@
    "points": 5,
    "pointsText": "5",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -3100,7 +3149,7 @@
    "points": 5,
    "pointsText": "5",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -3114,7 +3163,7 @@
    "points": 5,
    "pointsText": "5",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -3128,7 +3177,7 @@
    "points": 5,
    "pointsText": "5",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   },
   {
    "section": "FSW",
@@ -3142,7 +3191,7 @@
    "points": 5,
    "pointsText": "5",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/education-assessment.html",
-   "fetched": "2026-08-14"
+   "fetched": "2026-08-15"
   }
  ]
 }

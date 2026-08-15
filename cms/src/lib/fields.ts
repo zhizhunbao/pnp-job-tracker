@@ -346,6 +346,25 @@ export const FIELDS: Record<string, FieldDef> = {
       ],
     },
   },
+  // 法语(2026-08-15 Frank「需要加法语问题」):FCIP 要 **NCLC 5 四项**,而且是法语。
+  // 站里那道语言题问的是 CLB —— 英语的尺子,拿它折算 NCLC 就是替他编一个法语成绩。
+  // 所以直接问「达没达到官方那条线」:门槛数值留在官方原句里(策略文件的 quote),这里只收是/否。
+  // 全员都问:「不会法语」是一秒钟就能点掉的出口,而漏问的代价是把不会法语的人推荐去法语社区。
+  frenchBand: {
+    engineKey: 'frenchOk',
+    unlocks: ['rpt.g.basics'],
+    tier: 'free',
+    toAnswer: (b: number) => (b && b !== UNSURE_BAND ? b === 1 : undefined),
+    q: {
+      title: l('Is your French at NCLC 5 or above in all four abilities?',
+        '你的法语四项都到 NCLC 5 了吗?', '프랑스어 4개 영역이 모두 NCLC 5 이상인가요?'),
+      choices: [
+        { value: 2, text: l('No French / below that', '不会法语或没到', '프랑스어 미보유·미달') },
+        { value: 1, text: l('Yes, NCLC 5 or above', '是,四项都到了', '예, 모두 충족') },
+        { value: 9, text: l('Not sure', '不清楚', '잘 모르겠음') },
+      ],
+    },
+  },
   // 探索层:CRS → EE 分差(锁区 ee)
   crsBand: {
     engineKey: 'crs',

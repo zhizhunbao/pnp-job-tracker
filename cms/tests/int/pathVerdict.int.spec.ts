@@ -49,6 +49,7 @@ const C01: VerdictProfile = {
   province: 'ON',
   permit: 'pgwp',
   fieldMatch: null,
+  frenchOk: null,
 }
 
 const run = (p: VerdictProfile = C01) => pathVerdict(p, data)
@@ -83,10 +84,12 @@ describe('mart 实况', () => {
     expect(data.draws.filter((d) => d.kind === 'draw').length).toBeGreaterThanOrEqual(144)
     expect(data.designatedEmployers.length).toBeGreaterThanOrEqual(3867)
   })
-  it('注册表 13 条通道全部出结果', () => {
+  // 2026-08-15 FCIP 立成第 14 条(Frank「还有法语区,都拆成不同的策略文件吧」):
+  // 它与 RCIP 社区不同、语言尺子不同(NCLC 5 法语一刀切),不是 RCIP 的别名
+  it('注册表 14 条通道全部出结果', () => {
     const keys = run().map((v) => v.key).sort()
     expect(keys).toEqual([
-      'AB-opportunity', 'AIP', 'BC-build', 'BC-sw', 'FED-EE', 'MB-swm', 'NB-sw',
+      'AB-opportunity', 'AIP', 'BC-build', 'BC-sw', 'FCIP', 'FED-EE', 'MB-swm', 'NB-sw',
       'NL-intl-grad', 'NS-sw', 'ON-workforce', 'PE-sw', 'RCIP', 'SK-offer',
     ])
   })
@@ -282,7 +285,7 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
       age: null, married: null, clb: 4, edu: null, eduYears: null, canadaStudy: null, studyProvince: null,
       noc: '63200', teer: 3, expCanadaMonths: 0, expForeignMonths: 60, foreignExpSelfEmployed: null,
       hasOffer: false, inCanada: true,     // 在加读书、还没拿到 offer(新卷这两题都会问)
-      status: 'study', province: null, permit: null, fieldMatch: null,
+      status: 'study', province: null, permit: null, fieldMatch: null, frenchOk: null,
     }, data)
     const ee = weak.find((v) => v.key === 'FED-EE')!
     expect(ee.blockedBy).toBe('language')
@@ -298,7 +301,7 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
     const profile = {
       age: null, married: null, clb: 5, edu: null, eduYears: null, canadaStudy: true, studyProvince: null,
       noc: '21231', teer: 1, expCanadaMonths: 0, expForeignMonths: 60, foreignExpSelfEmployed: null,
-      hasOffer: false, inCanada: true, status: 'study' as const, province: null, permit: null, fieldMatch: null,
+      hasOffer: false, inCanada: true, status: 'study' as const, province: null, permit: null, fieldMatch: null, frenchOk: null,
     }
     const before = pathVerdict(profile, data)
     const offerBlocked = before.filter((v) => v.blockedBy === 'offer')
@@ -317,7 +320,7 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
   const student: VerdictProfile = {
     age: null, married: null, clb: 5, edu: 'bachelor', eduYears: null, canadaStudy: true, studyProvince: null,
     noc: '21234', teer: 1, expCanadaMonths: 0, expForeignMonths: 60, foreignExpSelfEmployed: null,
-    hasOffer: false, inCanada: true, status: 'study', province: 'ON', permit: 'study', fieldMatch: null,
+    hasOffer: false, inCanada: true, status: 'study', province: 'ON', permit: 'study', fieldMatch: null, frenchOk: null,
   }
   it('学签在读不再被工签/PGWP 闸放行:AB、PE 报差工签,NL 报差 PGWP(都不再只差 offer)', () => {
     const rows = pathVerdict(student, data)
@@ -590,8 +593,11 @@ describe('红线不变量', () => {
     // 2026-08-12:availability 的判据从「库里有没有门槛行」扩到「**门槛清单里那几类闸有没有条文**」——
     // 两者都是「本站未收录」。当晚把最后三条的窟窿补完(BC/PE 的官方指南 PDF、NB 换版后的新资格页),
     // **13 条通道现在一条 not-collected 都没有**。这个空数组是硬指标:再有通道掉进未收录,这条就红。
+    // 2026-08-15:FCIP 立成通道时 pnp_requirements 里**没有** program='FCIP' 的行(RCIP 有 5 行)——
+    // 经验/语言的数值还没入库,所以它如实落 not-collected。这不是回退,是把「本站未收录」摆出来;
+    // 补行走 etl/build_ee_rules.py,补完这里改回 []。
     expect(list.filter((v) => v.availability === 'not-collected').map((v) => v.key).sort())
-      .toEqual([])
+      .toEqual(['FCIP'])
   })
 
   it('excluded 不带 tier;open 一定有 tier', () => {
@@ -605,7 +611,7 @@ describe('红线不变量', () => {
     const blank: VerdictProfile = {
       age: null, married: null, clb: null, edu: null, eduYears: null, canadaStudy: null, studyProvince: null,
       noc: null, teer: null, expCanadaMonths: null, expForeignMonths: null, foreignExpSelfEmployed: null, hasOffer: null, inCanada: null,
-      status: null, province: null, permit: null, fieldMatch: null,
+      status: null, province: null, permit: null, fieldMatch: null, frenchOk: null,
     }
     const out = run(blank)
     expect(out.every((v) => v.verdict === 'needs-info')).toBe(true)
@@ -627,8 +633,8 @@ describe('jobPathways:72310 TEER 2 的职业级名单', () => {
   const rows = jobPathways('72310', 2, data)
   const byK = (k: string) => rows.find((r) => r.key === k)!
 
-  it('13 条全出;按经验门槛升序;NL(0 月)第一;PE 清单排除沉底', () => {
-    expect(rows).toHaveLength(13)
+  it('14 条全出;按经验门槛升序;NL(0 月)第一;PE 清单排除沉底', () => {
+    expect(rows).toHaveLength(14)
     expect(rows[0].key).toBe('NL-intl-grad')
     expect(rows[0].months).toBe(0)
     expect(rows[rows.length - 1].key).toBe('PE-sw')

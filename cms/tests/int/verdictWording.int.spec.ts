@@ -40,7 +40,7 @@ const base: VerdictProfile = {
   age: 40, married: false, clb: 6, edu: 'diploma2y', eduYears: 2,
   canadaStudy: true, studyProvince: 'ON', noc: '72310', teer: 2,
   expCanadaMonths: 0, expForeignMonths: 0, foreignExpSelfEmployed: true, hasOffer: false, inCanada: true,   // 在找工作(无 offer)+ 持 PGWP 在境内
-  status: 'pgwp', province: 'ON', permit: 'pgwp', fieldMatch: null,
+  status: 'pgwp', province: 'ON', permit: 'pgwp', fieldMatch: null, frenchOk: null,
 }
 
 // 覆盖尽量多的分支:达标/差档/缺槽/清单命中/自雇/居住/估分,一份档案打不全
