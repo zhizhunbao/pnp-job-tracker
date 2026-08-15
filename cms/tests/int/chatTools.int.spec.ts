@@ -418,18 +418,22 @@ d('对话工具层(生产库只读)', () => {
   // ── ⑤ lookupOps 真查库(G5,2026-08-04 pnp_ops_stats 入库 93 行)──────────────
   // 这张表存在的全部目的:让「0 / 官方压了这个数 / 本站没收录 / 官方不公布」四件事分得开。
   describe('运营统计 lookupOps(pnp_ops_stats)', () => {
-    it('金标 AB:EOI 池 Alberta Opportunity Stream = 23056,带出处', async () => {
+    it('金标 AB:EOI 池 Alberta Opportunity Stream 量级在位,带出处', async () => {
       const r = await lookupOps(pool, { prov: 'AB' })
       expect(r.availability).toBe('ok')
       const aos = r.metrics.find((m) => m.key === 'eoi_pool' && m.scope === 'Alberta Opportunity Stream')!
       expect(aos, 'AB EOI 池里没有 Alberta Opportunity Stream 这一行').toBeTruthy()
-      expect(aos.value).toBe(23056)
+      // 2026-08-15 金标去钉死:AB 官方页周更,池子数逐周漂移(23056→23291 实撞红),
+      // 钉精确值=每周误报一次。金标守的是「行在、量级对、单位对、出处对」,不是那一周的快照数
+      expect(aos.value).toBeGreaterThan(5000)
       expect(aos.unit).toBe('people')
       expect(aos.scopeKind).toBe('stream')
       expect(aos.evidence.url).toBeTruthy()
       expect(r.officialUrl).toBe(aos.evidence.url)      // 出处指向数字真正的来源页,不是常量表里的别名
-      // 省级总数与逐 stream 分母同时在(AAIP 是全国唯一发分母的省)
-      expect(r.metrics.find((m) => m.key === 'eoi_pool_total')?.value).toBe(36948)
+      // 省级总数与逐 stream 分母同时在(AAIP 是全国唯一发分母的省);
+      // 总池 ≥ 单 stream 池 —— 结构不变量,不钉周更快照数(同上 2026-08-15 去钉死)
+      const total = r.metrics.find((m) => m.key === 'eoi_pool_total')?.value
+      expect(total).toBeGreaterThanOrEqual(aos.value ?? 0)
       assertEvidence(r)
     })
 

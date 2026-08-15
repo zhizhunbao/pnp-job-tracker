@@ -198,7 +198,8 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
     bands.nocs, bands.status, bands.clbBand, bands.totalExpBand, bands.expBand, bands.provs,
   ])
   useEffect(() => {
-    if (!quizComplete) { setProfilePaths(null); return }
+    // 职业档粗筛(2026-08-15):有职业就跑 —— 引擎对没答的题落「判不了」不当障碍,答满后同一请求自动升级个人档
+    if (!ready || !noc) { setProfilePaths(null); return }
     const ctrl = new AbortController()
     setProfilePaths(null)
     fetch('/api/profile-pathways', {
@@ -211,7 +212,7 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
     return () => ctrl.abort()
     // pathInputKey 是刻意收窄的重算边界；bands 对象每次写答案都会换引用，不能直接作为依赖。
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quizComplete, pathInputKey])
+  }, [ready, noc, pathInputKey])
 
   // 常用职业名同步取已有字典;冷门职业按码异步补全中文/英文名称,结果进模块级缓存。
   // 「问过没问过」记在 NOC_TITLE_TRIED,不看 occTitles —— 查不到名字的码不会写进 occTitles,
@@ -470,9 +471,15 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
   // 未登录点任何答题入口 → 答题壳不换皮,弹**标准 AuthModal**(与顶栏同一个,08-09「别跳页」拍板);
   // 注册/登录完成 → 落档浏览器里已答的旧答案,原地接着开答题,不刷新页面不丢状态。
   const quizShow = quizOpen && me === true
-  const planCard = quizComplete && !quizOpen ? (
+  // 职业档粗筛(2026-08-15 Frank「立即出」):只答了职业也出初评 —— 同一引擎(profile-pathways
+  // 没答的题=判不了,不当障碍),同一张卡,答满 8 题原地升级成个人档,不是两张卡
+  const planCoarse = !quizComplete
+  const planCard = noc && !quizOpen ? (
     <div style={{ ...CARD, padding: '16px' }}>
-                  <h2 style={{ ...H2, marginBottom: 10 }}>{t('dp.planTitle')}</h2>
+                  <h2 style={{ ...H2, marginBottom: planCoarse ? 4 : 10 }}>{t('dp.planTitle')}
+                    {planCoarse ? <span style={{ color: UI.text3, fontSize: 12, fontWeight: 400, marginLeft: 8 }}>{t('dp.planCoarse')}</span> : null}
+                  </h2>
+                  {planCoarse ? <div style={{ fontSize: 12.5, color: UI.text2, margin: '0 0 10px' }}>{t('dp.planCoarseSub', { occ: occText })}</div> : null}
                   {/* 不匹配动作条(2026-08-14 Frank:「不需要这么多文字描述」「给个按钮重新跳过去选职位」)——
                       长句撤掉,⚠ 小标挂在条件格上;这里只留动作:省不匹配可一键并省,或跳回职位板重选 */}
                   {(jobProvOutside || occMismatch) && tvJob ? (
@@ -486,99 +493,124 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                   ) : null}
                               {profilePaths === null ? (
                     <div style={{ height: 58, borderRadius: 9, background: UI.bg }} />
-                  ) : profilePaths.length > 0 ? (
-                    <div style={{ display: 'grid', gap: 8 }}>
-                      {/* L2-09 offer 档(2026-08-14 Frank 拍板):offer 是**绑定省份的行动**——在哪个省拿到
-                          offer 就只能走那个省的通道,几条 offer 路互斥。所以这一档不写缺口写方向:
-                          组头点破互斥,徽标写「拿到 offer 之后的世界」(反事实),行尾直达该省职位板。 */}
-                      {/* 版式=网格对齐(2026-08-14 Frank「看着有点乱」):胶囊不再跟在省名后面飘,
-                          竞争/在招各占固定列,三行数字垂直对齐;徽标+链接右列。手机三段堆叠,
-                          英文徽标长(Apply once you land a local offer)放不下时链接自己掉行 —— 不横滚硬指标 */}
-                      <style>{`
-                        .dpPlanRow{display:grid;grid-template-areas:'num name comp jobs right';grid-template-columns:24px minmax(0,1fr) 150px 100px minmax(0,max-content);align-items:center;gap:6px 12px;padding:10px 12px;border:1px solid ${UI.hairline};border-radius:10px}
-                        .dpPlanNum{grid-area:num}.dpPlanName{grid-area:name;min-width:0}
-                        .dpPlanComp{grid-area:comp;justify-self:start}.dpPlanJobs{grid-area:jobs;justify-self:start}
-                        .dpPlanRight{grid-area:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:0}
-                        @media(max-width:640px){
-                          .dpPlanRow{grid-template-areas:'num name name' '. comp jobs' '. right right';grid-template-columns:24px max-content minmax(0,1fr);gap:4px 12px}
-                          .dpPlanRight{flex-direction:row;flex-wrap:wrap;justify-content:space-between;align-items:center;row-gap:4px;margin-top:2px}
-                        }`}</style>
-                      {(() => {
-                        const shown = profilePaths.slice(0, 3)
-                        return shown.map((row, index) => {
-                        const province = row.key === 'AIP'
-                          ? t('dp.atlantic')
-                          : row.key === 'RCIP'
-                            ? t('dp.ruralCommunities')
-                            : row.province === 'FED' ? t('dp.federal') : provDisp(row.province)
-                        // 走查 #293:省名在灰字那行已经写了,通道名里再带一遍 =「Saskatchewan Employment Offer /
-                        // Saskatchewan」。摘掉前缀,顺带让名字短一截、少折一行。
-                        const routeName = dropProvPrefix(t(`jpw.p.${row.key}`), province)
-                        const isOffer = row.blockedBy === 'offer'
-                        const ao = isOffer ? row.afterOffer : null
-                        // offer 行徽标 = 反事实结论;答不全(needs-info)时不敢承诺,维持「至少还差 offer」
-                        const stateKey = row.availability !== 'ok'
-                          ? 'dp.planDataGap'
-                          : isOffer
-                            ? (ao?.verdict === 'open'
-                                // AIP/RCIP 不说「本省」:AIP 是大西洋四省指定雇主,RCIP 是试点社区,各用各的说法
-                                ? (ao.tier ? `dp.planAfterOfferTier${ao.tier}`
-                                    : row.key === 'AIP' ? 'dp.planAfterOfferOkAip'
-                                      : row.key === 'RCIP' ? 'dp.planAfterOfferOkRcip' : 'dp.planAfterOfferOk')
-                                : ao?.blockedBy ? `dp.planAfterOfferGap.${ao.blockedBy}` : 'dp.planBlocked.offer')
-                            : row.blockedBy
-                              ? `dp.planBlocked.${row.blockedBy}`
-                              : row.verdict === 'needs-info'
-                                ? 'dp.planNeedInfo'
-                                : `dp.planTier${row.tier ?? 0}`
-                        // 「拿到本省 offer 即可申请」是信息态不是达标态 → 蓝,不抢 open 的绿
-                        const afterOk = isOffer && ao?.verdict === 'open' && !ao.tier && row.availability === 'ok'
-                        const openOk = row.verdict === 'open' && row.availability === 'ok' && !row.blockedBy
-                        // 直达职位板:PNP 类带省+可走通道;AIP 走指定雇主筛选;RCIP 没有岗位级标记,不给链接
-                        const jobsHref = !isOffer ? null
-                          : row.key === 'AIP' ? '/jobs?aip=1'
-                            : row.key === 'RCIP' ? null
-                              : /^[A-Z]{2}$/.test(row.province) ? `/jobs?prov=${row.province}&pnp=1` : null
-                        return (
-                          <Fragment key={row.key}>
-                            {/* offer 档组头 2026-08-14 当日立当日删(Frank「这部分删掉」)——
-                                互斥关系交由徽标+链接自答,不再单起两行说明 */}
-                            {/* 网格行(2026-08-14 Frank「看着有点乱」二改):胶囊各占固定列,三行数字垂直对齐。
-                                在招岗数(「职业机会有考虑吗」):该省该职业的本站在招数,occComp 已按所选职业拉好——
-                                NL 竞争最松(10.6:1)但岗可能只挂 1 个,不摆岗数就是劝人押空盘;
-                                表里查无该省 = 0 岗,0 必须显式写出来,空着会被读成「没数据」。口径=第一职业 */}
-                            <div className="dpPlanRow" style={{ background: index === 0 && !row.blockedBy ? '#f8fbff' : '#fff' }}>
-                              <span className="dpPlanNum" style={{ width: 24, height: 24, borderRadius: 999, display: 'grid', placeItems: 'center', background: index === 0 && !row.blockedBy ? UI.primary : UI.bg, color: index === 0 && !row.blockedBy ? '#fff' : UI.text2, fontSize: 12, fontWeight: 700 }}>{index + 1}</span>
-                              <span className="dpPlanName">
-                                <span style={{ display: 'block', color: '#111827', fontSize: 13.5, fontWeight: 700, lineHeight: 1.45 }}>{routeName}</span>
-                                <span style={{ display: 'block', color: UI.text3, fontSize: 12, lineHeight: 1.45 }}>{province}</span>
-                              </span>
-                              {row.competition ? (
-                                <span className="dpPlanComp" style={{ background: '#f3f4f6', color: '#4b5563', borderRadius: 999, padding: '1px 8px', fontSize: 11, fontWeight: 600, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{t('dp.compRatio', { n: row.competition.ratio })}</span>
-                              ) : null}
-                              {(() => {
-                                if (!isOffer || !occComp || !/^[A-Z]{2}$/.test(row.province)) return null
-                                const n = occComp.find((o) => o.province === row.province)?.openJobs ?? 0
-                                return (
-                                  <span className="dpPlanJobs" style={{ background: '#f3f4f6', color: '#4b5563', borderRadius: 999, padding: '1px 8px', fontSize: 11, fontWeight: 600, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{t('dp.planOpenJobs', { n })}</span>
-                                )
-                              })()}
-                              <span className="dpPlanRight">
-                                <span style={{ color: openOk ? UI.ok : afterOk ? '#1d4ed8' : '#92400e', background: openOk ? '#ecfdf5' : afterOk ? '#eff6ff' : '#fffbeb', borderRadius: 999, padding: '4px 9px', fontSize: 11.5, fontWeight: 600, whiteSpace: 'nowrap' }}>{t(stateKey)}</span>
-                                {jobsHref ? (
-                                  <a href={jobsHref} onClick={() => track('dp-offer-jobs', { key: row.key })}
-                                    style={{ color: UI.primary, fontSize: 12, textDecoration: 'none', whiteSpace: 'nowrap' }}>
-                                    {t(row.key === 'AIP' ? 'dp.planSeeJobsAip' : 'dp.planSeeJobs')} ›
-                                  </a>
-                                ) : null}
-                              </span>
+                  ) : profilePaths.length > 0 ? (() => {
+                    // 表格化(2026-08-15 Frank「这个也改成表格。手机改成卡片」「手机端很多重复文字」):
+                    // 标签进表头一次;门槛全行同值 → 收脚注一次不占列;「看该省在招岗」并进在招列=数字即链接。
+                    // 职业档(planCoarse)不出门槛列 —— 没答条件,判定本来就出不来,摆一列「判不了」是噪音
+                    const shown = profilePaths.slice(0, planCoarse ? 6 : 3)
+                    const rows = shown.map((row, index) => {
+                      const province = row.key === 'AIP'
+                        ? t('dp.atlantic')
+                        : row.key === 'RCIP'
+                          ? t('dp.ruralCommunities')
+                          : row.province === 'FED' ? t('dp.federal') : provDisp(row.province)
+                      // 走查 #293:省名单独一列灰字,通道名里的省前缀摘掉,名字短一截。
+                      // dropProvPrefix 只认全名,「纽芬兰省 国际毕业生类别」这类**短省名**前缀漏网 →
+                      // 中文再剥一层「X省 」;剥空说明整名就是省名,保底不剥
+                      const dropped = dropProvPrefix(t(`jpw.p.${row.key}`), province)
+                      const short = lang === 'zh' ? dropped.replace(/^[一-龥]{1,4}省\s+/, '') : dropped
+                      const routeName = short.trim() || dropped
+                      const isOffer = row.blockedBy === 'offer'
+                      const ao = isOffer ? row.afterOffer : null
+                      // offer 行门槛 = 反事实结论;答不全(needs-info)时不敢承诺,维持「至少还差 offer」
+                      const stateKey = row.availability !== 'ok'
+                        ? 'dp.planDataGap'
+                        : isOffer
+                          ? (ao?.verdict === 'open'
+                              // AIP/RCIP 不说「本省」:AIP 是大西洋四省指定雇主,RCIP 是试点社区,各用各的说法
+                              ? (ao.tier ? `dp.planAfterOfferTier${ao.tier}`
+                                  : row.key === 'AIP' ? 'dp.planAfterOfferOkAip'
+                                    : row.key === 'RCIP' ? 'dp.planAfterOfferOkRcip' : 'dp.planAfterOfferOk')
+                              : ao?.blockedBy ? `dp.planAfterOfferGap.${ao.blockedBy}` : 'dp.planBlocked.offer')
+                          : row.blockedBy
+                            ? `dp.planBlocked.${row.blockedBy}`
+                            : row.verdict === 'needs-info'
+                              ? 'dp.planNeedInfo'
+                              : `dp.planTier${row.tier ?? 0}`
+                      // 「拿到本省 offer 即可申请」是信息态不是达标态 → 蓝,不抢 open 的绿
+                      const afterOk = isOffer && ao?.verdict === 'open' && !ao.tier && row.availability === 'ok'
+                      const openOk = row.verdict === 'open' && row.availability === 'ok' && !row.blockedBy
+                      // 在招岗数(该省该职业本站在招;查无该省 = 0,0 必须显式写出,空着会被读成「没数据」):
+                      // 数字本身就是直达链接;AIP 走指定雇主筛选无职业数,RCIP/联邦无岗位级标记 → 「—」
+                      const provincial = /^[A-Z]{2}$/.test(row.province)
+                      const jobsHref = row.key === 'AIP' ? '/jobs?aip=1'
+                        : row.key === 'RCIP' ? null
+                          : provincial ? `/jobs?prov=${row.province}&pnp=1` : null
+                      const jobsN = provincial && occComp ? (occComp.find((o) => o.province === row.province)?.openJobs ?? 0) : null
+                      return { rowKey: row.key, index, province, routeName, top: index === 0 && !row.blockedBy,
+                        ratio: row.competition?.ratio ?? null, stateText: t(stateKey), afterOk, openOk, jobsHref, jobsN }
+                    })
+                    // 门槛全行同值(常见:全被 offer 卡住)→ 一句脚注,不铺一整列同一句话
+                    const gates = Array.from(new Set(rows.map((r) => r.stateText)))
+                    const gateUniform = !planCoarse && gates.length === 1
+                    type PlanRow = (typeof rows)[number]
+                    const rank = (r: PlanRow) => (
+                      <span style={{ width: 24, height: 24, borderRadius: 999, display: 'grid', placeItems: 'center', background: r.top ? UI.primary : UI.bg, color: r.top ? '#fff' : UI.text2, fontSize: 12, fontWeight: 700 }}>{r.index + 1}</span>
+                    )
+                    const gatePill = (r: PlanRow) => (
+                      <span style={{ color: r.openOk ? UI.ok : r.afterOk ? '#1d4ed8' : '#92400e', background: r.openOk ? '#ecfdf5' : r.afterOk ? '#eff6ff' : '#fffbeb', borderRadius: 999, padding: '3px 9px', fontSize: 11.5, fontWeight: 600, whiteSpace: 'nowrap' }}>{r.stateText}</span>
+                    )
+                    const jobsCell = (r: PlanRow) => (
+                      r.jobsN == null && !r.jobsHref ? <span style={{ color: UI.text3 }}>—</span>
+                        : r.jobsHref ? (
+                          <a href={r.jobsHref} onClick={() => track('dp-offer-jobs', { key: r.rowKey })}
+                            style={{ color: UI.primary, textDecoration: 'none', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
+                            {r.jobsN == null ? t('dp.planSeeJobsAip') : t('dp.planJobsN', { n: r.jobsN })} ›
+                          </a>
+                        ) : <span style={{ fontVariantNumeric: 'tabular-nums' }}>{t('dp.planJobsN', { n: r.jobsN ?? 0 })}</span>
+                    )
+                    return (
+                      <>
+                        <style>{`@media(max-width:640px){.dpPlanTbl{display:none}}@media(min-width:641px){.dpPlanCards{display:none}}`}</style>
+                        <div className="dpPlanCards" style={{ display: 'grid', gap: 8 }}>
+                          {rows.map((r) => (
+                            <div key={r.rowKey} style={{ border: `1px solid ${UI.hairline}`, borderRadius: 10, padding: '10px 12px', background: r.top ? '#f8fbff' : '#fff' }}>
+                              <div style={{ display: 'flex', alignItems: 'baseline', gap: 7 }}>
+                                <span style={{ fontSize: 12, color: UI.text3, fontVariantNumeric: 'tabular-nums' }}>{r.index + 1}</span>
+                                <b style={{ fontSize: 13.5, color: '#111827', minWidth: 0 }}>{r.routeName}</b>
+                                <span style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 600, fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>{r.ratio == null ? '—' : `${r.ratio}:1`}</span>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 4, flexWrap: 'wrap' }}>
+                                <span style={{ fontSize: 11.5, color: UI.text3 }}>{r.province}</span>
+                                {!planCoarse && !gateUniform ? gatePill(r) : null}
+                                <span style={{ marginLeft: 'auto', fontSize: 12.5 }}>{jobsCell(r)}</span>
+                              </div>
                             </div>
-                          </Fragment>
-                        )
-                        })
-                      })()}
-                    </div>
-                  ) : (
+                          ))}
+                        </div>
+                        <div className="dpPlanTbl">
+                          <DataTable<PlanRow> rows={rows} rowKey={(r) => r.rowKey} bare
+                            cols={[
+                              { key: 'rank', label: '#', width: '6%', render: rank },
+                              { key: 'path', label: t('dp.planPath'), width: planCoarse || gateUniform ? '54%' : '34%', render: (r) => (
+                                <span style={{ display: 'flex', alignItems: 'baseline', gap: 8, minWidth: 0 }}>
+                                  <b style={{ color: '#111827', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.routeName}</b>
+                                  <span style={{ color: UI.text3, fontSize: 11.5, flexShrink: 0 }}>{r.province}</span>
+                                </span>
+                              ) },
+                              ...(!planCoarse && !gateUniform
+                                ? [{ key: 'gate', label: t('dp.planGate'), width: '20%', render: gatePill } as const]
+                                : []),
+                              { key: 'ratio', label: t('dp.compCol'), width: '20%', align: 'right', sort: (r) => r.ratio,
+                                render: (r) => (r.ratio == null ? <span style={{ color: UI.text3 }}>—</span> : <span style={{ fontVariantNumeric: 'tabular-nums' }}>{r.ratio}:1</span>) },
+                              { key: 'jobs', label: t('dp.planOpen'), width: '20%', align: 'right', sort: (r) => r.jobsN, render: jobsCell },
+                            ]} />
+                        </div>
+                        {gateUniform ? (
+                          <div style={{ fontSize: 11.5, color: UI.text3, lineHeight: 1.6, marginTop: 8 }}>{t('dp.planGateSame', { s: gates[0] })}</div>
+                        ) : null}
+                        {planCoarse ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12, flexWrap: 'wrap' }}>
+                            <button onClick={() => startQuiz()}
+                              style={{ ...BTN, background: '#fff', color: UI.primary, border: `1px solid ${UI.primary}`, fontWeight: 600, padding: '7px 16px', fontSize: 13 }}>
+                              {t(stepDone > 0 ? 'dp.resume' : 'dp.start')}
+                            </button>
+                            <span style={{ fontSize: 11.5, color: UI.text3, lineHeight: 1.6 }}>{t('dp.planCoarseNote')}</span>
+                          </div>
+                        ) : null}
+                      </>
+                    )
+                  })() : (
                     <div style={{ fontSize: 13, color: UI.text2, lineHeight: 1.65 }}>{t('dp.planEmpty')}</div>
                   )}
                 </div>
@@ -922,8 +954,9 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                         <span style={{ color: UI.text3, fontSize: 11.5 }}>{r.province}</span>
                         <span style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{r.openJobs}</span>
                       </div>
+                      {/* 竞争比不再第三处重复(2026-08-15 随初评表格化):初评与竞争卡已各有一份 */}
                       <div style={{ color: UI.text3, fontSize: 11.5, marginTop: 2, fontVariantNumeric: 'tabular-nums' }}>
-                        {t('dp.occNew30')} {r.new30d ?? '—'}　{t('dp.occDays')} {r.avgDaysOpen ?? '—'}　{r.ratio == null ? '' : t('dp.compRatio', { n: r.ratio })}
+                        {t('dp.occNew30')} {r.new30d ?? '—'}　{t('dp.occDays')} {r.avgDaysOpen ?? '—'}
                       </div>
                     </div>
                   ))}
@@ -940,7 +973,6 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                       { key: 'open', label: t('stats.openJobs'), width: '18%', align: 'right', sort: (r) => r.openJobs, render: (r) => <b>{r.openJobs.toLocaleString('en-CA')}</b> },
                       { key: 'new30', label: t('dp.occNew30'), width: '18%', align: 'right', sort: (r) => r.new30d, render: (r) => r.new30d == null ? '—' : r.new30d.toLocaleString('en-CA') },
                       { key: 'days', label: t('dp.occDays'), width: '18%', align: 'right', sort: (r) => r.avgDaysOpen, render: (r) => r.avgDaysOpen == null ? '—' : r.avgDaysOpen },
-                      { key: 'ratio', label: t('dp.compCol'), width: '18%', align: 'right', sort: (r) => r.ratio, render: (r) => r.ratio == null ? <span style={{ color: UI.text3 }}>—</span> : <span>{r.ratio}:1</span> },
                     ]} />
                 </div>
                 <div style={{ fontSize: 11.5, color: UI.text3, lineHeight: 1.6, marginTop: 8 }}>{t('dp.occCompNote')}</div>
