@@ -3,6 +3,7 @@
 // 重复的根不是 UI,是没有字段单一来源。这里是唯一的读写口:页面不再直接碰 localStorage。
 // 老答案是用户唯一的资产,丢了等于让他重答 —— 所以首次读盘时把两个旧 key 合并进新 key 再删旧 key。
 import { FIELDS, bandFromProvs, provsFromBand } from './fields'
+import type { SelfProfile } from './pnpSelfScore'
 
 export const ANSWERS_KEY = 'o2p_answers_v1'
 const OLD_QUIZ = 'jobs_quiz_v1'      // 三问:{ status, nocs, provs, done }
@@ -138,22 +139,37 @@ export type ScoreAnswers = {
   ticks: Record<string, boolean>
   rowAnswers: Record<string, number>
   extraAnswered: Record<string, boolean>
+  /** 「你的条件」逐项的**值**(学历/年龄/同职业经验/更早经验/第二语言分…)。
+   *  2026-08-15 Frank 实拍「选的是本科一刷新就变成高中」:extraAnswered 只记了「答过」,
+   *  值却只活在组件 state → 刷新回 DEFAULT_PROFILE(edu='highschool')还顶着已答标记。
+   *  值必须与标记同存同取,缺一样都是在替他编答案。 */
+  profile: Partial<SelfProfile>
+  /** 基础卷没答 offer 时分值卡自问的那道;基础卷答过(ctx.hasOffer 有值)以基础卷为准 */
+  hasOffer?: boolean
 }
-const SCORE_EMPTY: ScoreAnswers = { ticks: {}, rowAnswers: {}, extraAnswered: {} }
+const SCORE_EMPTY: ScoreAnswers = { ticks: {}, rowAnswers: {}, extraAnswered: {}, profile: {} }
 
 export function readScoreAnswers(): ScoreAnswers {
   if (typeof localStorage === 'undefined') return { ...SCORE_EMPTY }
   const cur = parse(localStorage.getItem(SCORE_ANSWERS_KEY))
   if (!cur || typeof cur !== 'object') return { ...SCORE_EMPTY }
   const rec = (v: unknown) => (v && typeof v === 'object' ? (v as Record<string, never>) : {})
-  return { ticks: rec(cur.ticks), rowAnswers: rec(cur.rowAnswers), extraAnswered: rec(cur.extraAnswered) }
+  return {
+    ticks: rec(cur.ticks), rowAnswers: rec(cur.rowAnswers), extraAnswered: rec(cur.extraAnswered),
+    profile: rec(cur.profile) as Partial<SelfProfile>,
+    ...(typeof cur.hasOffer === 'boolean' ? { hasOffer: cur.hasOffer } : {}),
+  }
 }
 
 export function writeScoreAnswers(a: ScoreAnswers): void {
   try {
     const s = JSON.stringify(a)
     if (localStorage.getItem(SCORE_ANSWERS_KEY) === s) return   // 同 save():没变不记时刻
+    // schema 升级的挂载写(旧档补上空 profile 等新字段)不算「新答案」:按归一化读数再比一道,
+    // 语义没变就只落盘不记时刻 —— 记了,这台设备的旧答案会以「更新」的名义顶掉服务端档
+    const before = JSON.stringify(readScoreAnswers())
     localStorage.setItem(SCORE_ANSWERS_KEY, s)
+    if (JSON.stringify(readScoreAnswers()) === before) return
     touched()
   } catch { /* 无痕模式写不进也不能崩页面 */ }
 }

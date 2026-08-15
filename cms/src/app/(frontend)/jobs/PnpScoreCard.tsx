@@ -15,7 +15,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { QuizChecks, QuizChoices, QuizNav, QuizSub, QuizTitle } from '../quiz/QuizUI'
 import type { Lang, TFn } from './i18n'
 import { officialLabel as label } from '@/lib/officialLabels'
-import { pullAndMerge, readScoreAnswers, writeScoreAnswers } from '@/lib/answers'
+import { pullAndMerge, readScoreAnswers, writeAnswers, writeScoreAnswers, type ScoreAnswers } from '@/lib/answers'
 import { DEFAULT_PROFILE, EDU_KEYS, scoreProvince, streamMatches, type DrawRow, type EduKey, type ScoreFactor, type SelfProfile } from '@/lib/pnpSelfScore'
 
 // 打分是**关于你这个人**的功能,不绑某一个岗位(Frank 2026-07-27「应该单独弄个功能吧,
@@ -39,6 +39,23 @@ const guessArea = (city: string): number => {
 
 // 年龄下拉的选项档(打分按选中值算,预填吸附也以此为准 —— 两处必须同一张表)
 const AGES = [17, 19, 25, 30, 34, 38, 42, 45, 48, 52]
+
+// 分值卡学历档 → 字段库 eduBand(fields.ts EDU 阶梯:1 高中 / 2 大专或证书 / 3 本科 / 4 硕 / 5 博)。
+// tradeCert/cert1y/diploma2y 在字段库里同属「大专或证书」一档 —— 判定引擎按 eduBand 消费,
+// 这里答了就写回统一答案(单一来源),不然「答了白答」(engine 收不到 edu,CRS 永远估不出)
+const EDU_BAND: Record<EduKey, number> = { highschool: 1, cert1y: 2, diploma2y: 2, tradeCert: 2, bachelor: 3, master: 4, doctorate: 5 }
+
+// 存档值合回 profile(初始挂载与拉服务端档共用):只收合法值 —— localStorage 和服务端档
+// 都可能被改坏,坏值宁可丢弃回预填,不能让一个字符串炸掉打分
+const mergeStoredProfile = (p: SelfProfile, stored: Partial<SelfProfile>): SelfProfile => {
+  const n = { ...p }
+  if (stored.edu && EDU_KEYS.includes(stored.edu)) n.edu = stored.edu
+  for (const k of ['expRecent', 'expOlder', 'clb1', 'clb2', 'age'] as const) {
+    const v = stored[k]
+    if (typeof v === 'number' && Number.isFinite(v)) n[k] = v
+  }
+  return n
+}
 
 // 时薪档位行 → 用户填的时薪落在哪一行。官方档位文字自己写着区间(「Less than $20」「$20 to $24.99」
 // 「$40 per hour or higher」),按它读;**读不出或读出多行就返回 null**,那就照旧问用户 —— 前端不替官方编档。
@@ -150,6 +167,9 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
     // 预填年龄吸附到下拉选项(答题档位给的是 33 这类档中值,不在选项表里 select 会显示成第一项,
     // 显示与打分口径就分叉了 —— 吸最近项,显示=实际用的值)
     if (initial?.age != null) p.age = AGES.reduce((b, a) => (Math.abs(a - initial.age!) < Math.abs(b - initial.age!) ? a : b))
+    // 已答过的「你的条件」按存档恢复(2026-08-15 Frank「选的是本科一刷新就变成高中」):
+    // 存档优先于预填 —— 预填是推出来的初值,存档是他亲口答的;范围收缩由下面的 limits 闸兜底
+    Object.assign(p, mergeStoredProfile(p, readScoreAnswers().profile))
     // 范围外的预填吸回范围内(范围只剩一个值时这一题不会再问,所以这里必须已经是那个值)
     for (const [k, allowed] of Object.entries(limits || {})) {
       // Object.entries 在 Partial 上会连 undefined 一起给出来(TS 那边看不见),先挡一道
@@ -158,29 +178,64 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
     }
     return p
   })
-  const set = <K extends keyof SelfProfile>(k: K, v: SelfProfile[K]) => setProfile((p) => ({ ...p, [k]: v }))
+  // 「你的条件」答案的**值**也入档(2026-08-15 Frank「选的是本科一刷新就变成高中」根治):
+  // 上一轮只持久化了 ticks/rowAnswers/extraAnswered 三个 map,profile 的值仍是易失 state ——
+  // 刷新后回 DEFAULT_PROFILE('highschool')却顶着「已答」标记,等于替他改了答案
+  const [profAns, setProfAns] = useState<Partial<SelfProfile>>(() => readScoreAnswers().profile)
+  const set = <K extends keyof SelfProfile>(k: K, v: SelfProfile[K]) => {
+    setProfile((p) => ({ ...p, [k]: v }))
+    setProfAns((m) => ({ ...m, [k]: v }))
+    // 字段库有对应档位的写回统一答案(单一来源):判定引擎(profile-pathways)只认 eduBand/ageBand,
+    // 不写回 = 答了白答(CRS 三件套 age/clb/edu 永远凑不齐,估分出不来)
+    if (k === 'edu') writeAnswers({ eduBand: EDU_BAND[v as EduKey] ?? 0 })
+    if (k === 'age') { const a = v as number; writeAnswers({ ageBand: a <= 24 ? 1 : a <= 30 ? 2 : a <= 35 ? 3 : a <= 40 ? 4 : 5 }) }
+  }
   // 分值卡答案持久化(2026-08-15 Frank「学历以下的字段都有这个问题」):此前三个 map 只活在
   // state,刷新全丢。初始从 lib/answers 读档,变更即写回(键=用户自身条件,跨岗位跨页面通用)
   const [ticks, setTicks] = useState<Record<string, boolean>>(() => readScoreAnswers().ticks)
   const [wage, setWage] = useState<number>(() => Math.round(ctx.hourly ?? 0))
   // 保守默认:知道城市才猜地区,否则默认 Area 1(0 分)—— 不许用有利默认把分数吹上去
   const [areaI, setAreaI] = useState<number>(() => (ctx.city ? guessArea(ctx.city) : 0))
-  const [hasOffer, setHasOffer] = useState<boolean>(() => !!ctx.hasOffer)
+  // 基础卷答过(ctx.hasOffer 有值)以基础卷为准;没答过才落回分值卡自问的存档
+  const [hasOffer, setHasOffer] = useState<boolean>(() => (ctx.hasOffer !== undefined ? !!ctx.hasOffer : readScoreAnswers().hasOffer ?? false))
+  // offer 是否**真答过**(存档有值/本次点过):没答过不把默认 false 写进档 —— 写了,
+  // schema 升级后的挂载写就成了「新答案」,会以新者胜的名义把服务端档顶掉
+  const [offerTouched, setOfferTouched] = useState<boolean>(() => readScoreAnswers().hasOffer !== undefined)
+  const answerHasOffer = (v: boolean) => { setHasOffer(v); setOfferTouched(true) }
   // 官方表中没有通用自动映射的档位(如 ON 工作许可/加拿大收入)也必须有输入入口。
   // 空值=未回答=0 分;选择后直接使用该官方行的 points,不在前端另造规则。
   const [rowAnswers, setRowAnswers] = useState<Record<string, number>>(() => readScoreAnswers().rowAnswers)
   const [extraQuestionIndex, setExtraQuestionIndex] = useState(0)
-  const [extraAnswered, setExtraAnswered] = useState<Record<string, boolean>>(() => readScoreAnswers().extraAnswered)
-  useEffect(() => { writeScoreAnswers({ ticks, rowAnswers, extraAnswered }) }, [ticks, rowAnswers, extraAnswered])
+  // 旧档自愈(初始与拉档共用):修复前丢了值的 profile 题(标了「已答」却没存值、预填也给
+  // 不出正确值的)摘掉标记 —— 宁可回「待填写」请他重答一次,也不拿默认档冒充他的答案。
+  // clb1 恒有基础卷预填;expRecent 在不拆段(非 SK)的表里=基础卷总经验,这两类显示是对的,标记留着
+  const healExtra = (s: ScoreAnswers): Record<string, boolean> => {
+    const m = { ...s.extraAnswered }
+    const prefillOk = new Set(['clb1', ...(splitWork ? [] : ['expRecent', 'expOlder'])])
+    for (const key of Object.keys(m)) {
+      if (!key.startsWith('profile:')) continue
+      const k = key.slice('profile:'.length) as keyof SelfProfile
+      if (s.profile[k] == null && !prefillOk.has(k)) delete m[key]
+    }
+    return m
+  }
+  const [extraAnswered, setExtraAnswered] = useState<Record<string, boolean>>(() => healExtra(readScoreAnswers()))
+  // offer 没真答过就不入档(offerTouched),理由见其声明处
+  useEffect(() => { writeScoreAnswers({ ticks, rowAnswers, extraAnswered, profile: profAns, ...(offerTouched ? { hasOffer } : {}) }) }, [ticks, rowAnswers, extraAnswered, profAns, hasOffer, offerTouched])
   // 答案档入库(2026-08-15):挂载时拉服务端档合并(新者胜;未登录 401 无感)。必须排在
-  // 上面持久化 effect 之后:同内容回写不记时刻(writeScoreAnswers 内容比对),拉档才不会被
-  // 挂载即写误判成「本地更新」。拉回来有变化 → 三个 map 重建,后续改动照旧防抖同步。
+  // 上面持久化 effect 之后:同内容回写不记时刻(writeScoreAnswers 语义比对),拉档才不会被
+  // 挂载即写误判成「本地更新」。拉回来有变化 → 答案 state 全量重建(含 profile 值),照旧防抖同步。
   useEffect(() => {
     pullAndMerge().then((changed) => {
       if (!changed) return
       const s = readScoreAnswers()
-      setTicks(s.ticks); setRowAnswers(s.rowAnswers); setExtraAnswered(s.extraAnswered)
+      setTicks(s.ticks); setRowAnswers(s.rowAnswers); setExtraAnswered(healExtra(s))
+      setProfAns(s.profile)
+      setProfile((p) => mergeStoredProfile(p, s.profile))
+      if (ctx.hasOffer === undefined && typeof s.hasOffer === 'boolean') { setHasOffer(s.hasOffer); setOfferTouched(true) }
     }).catch(() => { /* 静默 */ })
+    // 挂载时一次:拉档是登录态的到店动作,不是数据依赖
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // PR 评估页把官方表字段收敛成逐题选择。这里只换输入形态，不改任何分值或匹配规则；
@@ -283,7 +338,7 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
         const cluster: number[] = []
         chunk.forEach((r, idx) => cluster.push(idx === 0 ? 0 : (r.xorPrev ? cluster[idx - 1] : cluster[idx - 1] + 1)))
         const setOn = (r: ScoreFactor, on: boolean) => {
-          if (isOffer) { setHasOffer(on); return }
+          if (isOffer) { answerHasOffer(on); return }
           const mine = cluster[chunk.indexOf(r)]
           setTicks((m) => {
             const next = { ...m, [tickKey(r)]: on }
@@ -604,7 +659,7 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
                       条目内部 [勾选框 | 条目 | +N] 三列,+N 在同一列上对齐 */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '4px 16px' }}>
                     {offerRow ? (
-                      <Tick on={hasOffer} onToggle={setHasOffer} text={label(offerRow.label, lang)} pts={offerRow.points} />
+                      <Tick on={hasOffer} onToggle={answerHasOffer} text={label(offerRow.label, lang)} pts={offerRow.points} />
                     ) : null}
                     {list.map((b) => {
                       const key = `${s.province}:${b.factor}:${b.seq}`
