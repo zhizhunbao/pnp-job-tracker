@@ -48,7 +48,10 @@ export const GATE_LABEL: Record<GateKey, { zh: string; en: string; ko: string }>
 /** statusInCanada 按 asks 拆开后的人话名(结论文案用它,不再统称「境内身份」) */
 export const ASK_LABEL: Record<StatusAsk, { zh: string; en: string; ko: string }> = {
   workPermit: { zh: '有效工签', en: 'work permit', ko: '유효한 취업 허가' },
-  pgwp: { zh: '毕业工签 PGWP', en: 'PGWP', ko: 'PGWP' },
+  // 拉丁缩写**括起来**(同 french 的「法语(NCLC 5)」):闸名会与「判不了」直接连写,
+  // 裸的 `毕业工签 PGWP` 拼出来是「毕业工签 PGWP判不了」,措辞层那份带空格,两边逐字对不上
+  // ——2026-08-15 夜判定矩阵测试实撞,与「NCLC 5判不了」同一个病
+  pgwp: { zh: '毕业工签(PGWP)', en: 'PGWP', ko: 'PGWP' },
   provResidence: { zh: '在该省居住', en: 'residence in the province', ko: '해당 주 거주' },
   provEmployment: { zh: '在该省在职', en: 'employment in the province', ko: '해당 주 재직' },
 }

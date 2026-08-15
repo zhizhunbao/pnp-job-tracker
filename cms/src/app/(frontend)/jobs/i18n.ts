@@ -426,7 +426,7 @@ const zh: Dict = {
   'pv.gate.offer.met': 'job offer 达标', 'pv.gate.offer.gap': '这条通道要求job offer,你现在没有', 'pv.gate.offer.unknown': 'job offer判不了,档案缺这一项', 'pv.gate.offer.notCollected': '本站尚未收录 {stream} 的job offer门槛条文',
   'pv.gate.statusInCanada.met': '境内身份 达标', 'pv.gate.statusInCanada.gap': '这条通道要求境内身份,你现在没有', 'pv.gate.statusInCanada.unknown': '境内身份判不了,档案缺这一项', 'pv.gate.statusInCanada.notCollected': '本站尚未收录 {stream} 的境内身份门槛条文',
   'pv.gate.statusInCanada.workPermit.met': '有效工签 达标', 'pv.gate.statusInCanada.workPermit.gap': '这条通道要求有效工签,你现在没有', 'pv.gate.statusInCanada.workPermit.unknown': '有效工签判不了,档案缺这一项',
-  'pv.gate.statusInCanada.pgwp.met': '毕业工签 PGWP 达标', 'pv.gate.statusInCanada.pgwp.gap': '这条通道要求毕业工签 PGWP,你现在没有', 'pv.gate.statusInCanada.pgwp.unknown': '毕业工签 PGWP 判不了,档案缺这一项',
+  'pv.gate.statusInCanada.pgwp.met': '毕业工签(PGWP) 达标', 'pv.gate.statusInCanada.pgwp.gap': '这条通道要求毕业工签(PGWP),你现在没有', 'pv.gate.statusInCanada.pgwp.unknown': '毕业工签(PGWP)判不了,档案缺这一项',
   'pv.gate.statusInCanada.provResidence.met': '在该省居住 达标', 'pv.gate.statusInCanada.provResidence.gap': '这条通道要求在该省居住,你现在没有', 'pv.gate.statusInCanada.provResidence.unknown': '在该省居住判不了,档案缺这一项',
   'pv.gate.statusInCanada.provEmployment.met': '在该省在职 达标', 'pv.gate.statusInCanada.provEmployment.gap': '这条通道要求在该省在职,你现在没有', 'pv.gate.statusInCanada.provEmployment.unknown': '在该省在职判不了,档案缺这一项',
   'pv.gate.fieldMatch.met': '专业对口 达标', 'pv.gate.fieldMatch.gap': '这条通道要求专业对口,你现在没有', 'pv.gate.fieldMatch.unknown': '专业对口判不了,档案缺这一项', 'pv.gate.fieldMatch.notCollected': '本站尚未收录 {stream} 的专业对口门槛条文',
