@@ -583,6 +583,12 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                     profilePaths.forEach((row) => { if (!bandRank.has(bandOf(row))) bandRank.set(bandOf(row), bandRank.size) })
                     const resorted = profilePaths.map((row, i) => ({ row, i, band: bandRank.get(bandOf(row)) ?? 0, n: jobsOf(row) }))
                     resorted.sort((a, b) => {
+                      // 0 岗**跨档沉底**(2026-08-15 Frank 两问「0 个岗位也推荐在前面?」):
+                      // 「岗数不跨档翻盘」那条管的是岗多岗少,而 0 不是「少」,是**没有** —— 这些通道
+                      // 整条的前提就是先拿到该省 offer,本站该省该职业一个岗都没挂,排在有岗的路前面
+                      // 等于让人去空盘里找 offer。数据缺失(null)不算 0,仍按下面的 thin 规则处理
+                      const aZero = a.n === 0, bZero = b.n === 0
+                      if (aZero !== bZero) return aZero ? 1 : -1
                       if (a.band !== b.band) return a.band - b.band
                       // 无数不逃降档(2026-08-15 Frank「竞争数字也没有 在招的数字也没有?为什么推到第一名」——
                       // 此前 n=null 不参与降档,AIP 靠缺数据顶到第一):null 一律按 thin 处理且排 thin 末尾。
@@ -593,6 +599,11 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                       return a.i - b.i                     // 足量组保持引擎序(竞争比松→紧)
                     })
                     const shown = resorted.map((x) => x.row).slice(0, planCoarse ? 6 : 3)
+                    // 榜首都是 0 岗(2026-08-15 Frank「0 个岗位也推荐在前面?」):这些通道的推荐语
+                    // 是「拿到该省 offer 即可申请」,而本站在这些省一个该职业的岗都没挂 —— 排第一等于
+                    // 让人去空盘里找 offer。**不删行**(0 是本站在招数,不代表官方说没有),改成上面一句实话,
+                    // 让「换省/放宽职业」成为下一步。判据用榜首:它才是被当成「第一推荐」的那条
+                    const topEmpty = resorted.length > 0 && (resorted[0].n ?? 0) === 0
                     const rows = shown.map((row, index) => {
                       // AIP/RCIP 拆省后 province 是省码 → 显省名;'FED' 只是老响应的兜底,区域名保底不删
                       const province = row.key === 'AIP'
@@ -650,8 +661,12 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                         // 差的那一样(offer 按通道分:AIP=指定雇主、RCIP=社区雇主 —— 三者要的不是同一种 offer)
                         gapKey: row.blockedBy === 'offer' && (row.key === 'AIP' || row.key === 'RCIP') ? `offer${row.key}`
                           : gateChip(row.key, row.blockedBy ?? ''),
-                        // 拿到 offer 之后还要攒的时间(反事实算出来的 tier;Day0 不出这枚)
-                        waitTier: isOffer && ao?.verdict === 'open' && ao.tier ? ao.tier : 0 }
+                        // 还要攒多久:被 offer 卡住的看反事实 tier(拿到 offer 之后还差几个月),
+                        // 其余行看本行 tier —— 2026-08-15 实撞:AB 机会通道被工签闸挡着,tier 只挂在
+                        // 本行上,先前只读反事实 tier → 那行的 24 个月经验缺口整个不出现,
+                        // 却还挂着「其余门槛已达标」= 睁眼说瞎话
+                        waitTier: (isOffer ? (ao?.verdict === 'open' ? ao.tier : 0) : row.tier) || 0,
+                        waitAfterOffer: isOffer }
                     })
                     type PlanRow = (typeof rows)[number]
                     const rank = (r: PlanRow) => (
@@ -673,10 +688,14 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                       if (r.dataGap) return [{ text: r.stateText, tone: 'mute' }]
                       if (r.openOk) return [{ text: r.stateText, tone: 'ok' }]
                       if (!r.blocked) return [{ text: r.stateText, tone: r.afterOk ? 'info' : 'warn' }]
-                      // 被门槛卡住:①其余已达标(这才是推荐它的理由)②差的那一样 ③拿到后还要攒多久
-                      const out: { text: string; tone: keyof typeof TONE }[] = [{ text: t('dp.planWhyMet'), tone: 'ok' }]
-                      out.push({ text: t(`dp.why.gap.${r.gapKey}`), tone: 'warn' })
-                      if (r.waitTier) out.push({ text: t(`dp.why.wait${r.waitTier}`), tone: 'info' })
+                      // 被门槛卡住:差的那一样 + 还要攒多久。
+                      // 🔴「其余门槛已达标」只在**真的没有别的缺口**时才敢说(waitTier=0):
+                      // 一个 0 经验的人被写成「其余门槛已达标 · 还需积累 24 个月」,两句话自相矛盾,
+                      // 而少写后半句就是拿达标掩盖经验缺口(2026-08-15 Frank「这个推荐对么」实拍)
+                      const out: { text: string; tone: keyof typeof TONE }[] = [{ text: t(`dp.why.gap.${r.gapKey}`), tone: 'warn' }]
+                      // 差 offer 的行:时间从拿到 offer 起算;被别的闸挡着的行没有那个起点,写「还需积累」
+                      if (r.waitTier) out.push({ text: t(`${r.waitAfterOffer ? 'dp.why.wait' : 'dp.planTier'}${r.waitTier}`), tone: 'info' })
+                      else out.unshift({ text: t('dp.planWhyMet'), tone: 'ok' })
                       return out
                     }
                     // 全行同因(常见:全被 offer 卡住)→ 收成一句脚注,不铺一整列同一串胶囊。
@@ -744,6 +763,9 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                         {gateUniform ? (
                           <div style={{ fontSize: 11.5, color: UI.text3, lineHeight: 1.6, marginTop: 8 }}>{t('dp.planGateSame', { s: gates[0] })}</div>
                         ) : null}
+                        {topEmpty ? (
+                          <div style={{ fontSize: 11.5, color: '#92400e', lineHeight: 1.6, marginTop: 8 }}>{t('dp.planTopEmpty')}</div>
+                        ) : null}
                         {/* 省外更优提示(2026-08-15「随便选了一个目标省…其他省更合适」):一行 + 一键并省,
                             交互同 addJobProv(消歧不警告,不替他改答案);并省后重算,提示自动消失 */}
                         {outsidePath ? (
@@ -757,14 +779,11 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                             }}>{t('dp.provAdd', { jobProv: provDisp(outsidePath.province) })}</button>
                           </div>
                         ) : null}
+                        {/* 粗筛态只留一句说明,不再摆第二颗「继续作答」(2026-08-15 Frank「未登录左下角还有
+                            一个继续作答按钮」):上面那张「申请人条件」卡右上角就有同一颗钮,同屏两颗同名钮
+                            = 同一件事说两遍;条件格每一格本来也点得进对应的题 */}
                         {planCoarse ? (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12, flexWrap: 'wrap' }}>
-                            <button onClick={() => startQuiz()}
-                              style={{ ...BTN, background: '#fff', color: UI.primary, border: `1px solid ${UI.primary}`, fontWeight: 600, padding: '7px 16px', fontSize: 13 }}>
-                              {t(stepDone > 0 ? 'dp.resume' : 'dp.start')}
-                            </button>
-                            <span style={{ fontSize: 11.5, color: UI.text3, lineHeight: 1.6 }}>{t('dp.planCoarseNote')}</span>
-                          </div>
+                          <div style={{ fontSize: 11.5, color: UI.text3, lineHeight: 1.6, marginTop: 12 }}>{t('dp.planCoarseNote')}</div>
                         ) : null}
                       </>
                     )
