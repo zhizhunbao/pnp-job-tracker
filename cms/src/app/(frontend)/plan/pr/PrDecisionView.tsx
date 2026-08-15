@@ -489,11 +489,17 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
     return () => window.removeEventListener('keydown', onKey)
   }, [quizOpen, closeQuiz])
 
-  // 估分段兜底收框:表到手了、但所选省一张官方表都没有 —— 段里没有任何题可出,停着就是白框。
+  // 估分段兜底收框:段里出不了任何题的三种情形,都别把人晾在空框里(2026-08-15 Frank
+  // 「回答完 8 个题目怎么变成白板了」实拍)。
+  //   ① 表到手、所选省一张官方表都没有
+  //   ② **目标省答的是「还不确定」** → provs 为空 → provKey 为空 → 取表那个 effect 直接
+  //      `setScoreTables(null)` 早退,而本兜底原先要求 scoreTables 非空才收框 —— 于是骨架永远挂着,
+  //      屏幕上就只剩标题和一个灰条。这条路径是白板的根因。
   //(有表但零题的情况由分值卡自己报 onQuestionnaireComplete 收框)
+  const scoreStepEmpty = !provKey || (!!scoreTables && targetFactors.length === 0)
   useEffect(() => {
-    if (quizOpen && scoreStep && scoreTables && targetFactors.length === 0) closeQuiz()
-  }, [quizOpen, scoreStep, scoreTables, targetFactors.length, closeQuiz])
+    if (quizOpen && scoreStep && scoreStepEmpty) closeQuiz()
+  }, [quizOpen, scoreStep, scoreStepEmpty, closeQuiz])
   // 同一情形下清掉分值卡的残留上报:组件都不挂了,计数还写着 n/17、格子还摆着上一轮的题,
   // 数和格子就跟人对不上(改省份改成全是没表的省时实撞)
   useEffect(() => {
