@@ -30,6 +30,19 @@ export const pathwayMatchesTargets = (key: string, province: string, targets: st
 }
 
 /**
+ * AIP 按省拆行(2026-08-15 Frank「aip 别四个省放一起了。还是分开来算吧」):
+ * 判定是联邦一份(四省同一套门槛),但在招岗/指定雇主是省的事 —— 一行「大西洋地区」既没数字
+ * 也分不出该押哪个省。拆成 目标省∩四省 各一行(不限省 = 四省全拆),判定字段原样复制;
+ * competition 保持 null —— AIP 没有 EOI 池,**不许**拿该省 PNP 的名额竞争比充数。
+ */
+export const splitAipByProvince = <T extends { key: string; province: string }>(rows: T[], targets: string[]): T[] =>
+  rows.flatMap((row) => row.key !== 'AIP'
+    ? [row]
+    : REGIONAL_FEDERAL_PATHWAYS.AIP
+        .filter((p) => !targets.length || targets.includes(p))
+        .map((p) => ({ ...row, province: p })))
+
+/**
  * 各省名额竞争度(E12-07 `stats.difficulty`,来源 IRCC 开放数据):
  *   value = 该省临时居民存量 ÷ 该省当年省提名名额,例 BC 84.2 / SK 9.0。
  *
@@ -160,5 +173,29 @@ export async function POST(req: Request) {
     }
   })
 
-  return Response.json({ noc, rows })
+  // ── 省外更优提示(2026-08-15 Frank「用户随便选了一个目标省…其他省更合适。这个怎么解决」)──
+  // 目标省是硬过滤,随手选的省会把按条件更优的通道整条滤没且无声。判据只看**档位**
+  // (belowLine → verdict|blockedBy|tier,与上面 bandOf 同一把尺):省外档位严格优于场内第一名才提示;
+  // 竞争比不参与升降 —— 再松的省,档位不如场内也轮不到它。只提省级通道:AIP/RCIP 这类联邦区域线
+  // 没有单一省可「一键加入」。展示层给一行 + 一键并省,不替他改答案(消歧不警告,同 addJobProv)。
+  let outside: { key: string; province: string } | null = null
+  if (targetProvinces.length) {
+    const openAll = all.filter((row) => row.verdict !== 'excluded')
+    const orderedAll = openAll.map((row, i) => ({ row, i }))
+      .sort((a, b) => ((belowLine(a.row) ? 1 : 0) - (belowLine(b.row) ? 1 : 0)) || a.i - b.i)
+    const bandK = (row: (typeof openAll)[number]) => `${belowLine(row) ? 'z' : 'a'}|${bandOf(row)}`
+    const bandRank = new Map<string, number>()
+    for (const { row } of orderedAll) if (!bandRank.has(bandK(row))) bandRank.set(bandK(row), bandRank.size)
+    const insideBest = ranked[0]?.row
+    const insideRank = insideBest ? bandRank.get(bandK(insideBest)) ?? Infinity : Infinity
+    const cand = orderedAll
+      .filter(({ row }) => /^[A-Z]{2}$/.test(row.province) && !targetProvinces.includes(row.province))
+      .filter(({ row }) => (bandRank.get(bandK(row)) ?? Infinity) < insideRank)
+      .sort((a, b) => (bandRank.get(bandK(a.row))! - bandRank.get(bandK(b.row))!)
+        || ((comp[a.row.province]?.ratio ?? Infinity) - (comp[b.row.province]?.ratio ?? Infinity))
+        || a.i - b.i)
+    outside = cand.length ? { key: cand[0].row.key, province: cand[0].row.province } : null
+  }
+
+  return Response.json({ noc, rows: splitAipByProvince(rows, targetProvinces), outside })
 }

@@ -110,6 +110,8 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
   const [verdictNonce, setVerdictNonce] = useState(0)
   const [occTitles, setOccTitles] = useState<Record<string, string>>({})
   const [profilePaths, setProfilePaths] = useState<ProfilePath[] | null>(null)
+  // 省外更优提示(2026-08-15):目标省外档位更优的那条省级通道,服务端算好只给一条;null=无
+  const [outsidePath, setOutsidePath] = useState<{ key: string; province: string } | null>(null)
   // 官方分值表 + 抽选记录:不再随页面下发(192 行 ≈ 88KB 塞给每个访客),答完题按所选省现取。
   // null = 还没取到,此时既不出估分区也不敢说「这些省本站没有表」——那两句都得等表到手才算数。
   const [scoreTables, setScoreTables] = useState<ScoreTables | null>(null)
@@ -208,6 +210,9 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
   // 岗位与雇主只在第二层三项判定里使用。输入键用于修改答案后原地重算。
   const pathInputKey = JSON.stringify([
     bands.nocs, bands.status, bands.clbBand, bands.totalExpBand, bands.expBand, bands.provs,
+    // 引擎实际消费的另外四个档(2026-08-15 学历持久化根治时补上):学历/年龄由分值卡写回
+    // (eduBand/ageBand),offer/加拿大学历在基础卷 —— 不进 key 就是「答了初评也不动」
+    bands.eduBand, bands.ageBand, bands.offerBand, bands.canadaEduBand,
   ])
   useEffect(() => {
     // 职业档粗筛(2026-08-15):有职业就跑 —— 引擎对没答的题落「判不了」不当障碍,答满后同一请求自动升级个人档
@@ -219,8 +224,11 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
       body: JSON.stringify({ answers: toEngineAnswers(bands) }),
     })
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => { if (!ctrl.signal.aborted) setProfilePaths(Array.isArray(d?.rows) ? d.rows : []) })
-      .catch(() => { if (!ctrl.signal.aborted) setProfilePaths([]) })
+      .then((d) => { if (!ctrl.signal.aborted) {
+        setProfilePaths(Array.isArray(d?.rows) ? d.rows : [])
+        setOutsidePath(d?.outside && typeof d.outside.key === 'string' && typeof d.outside.province === 'string' ? d.outside : null)
+      } })
+      .catch(() => { if (!ctrl.signal.aborted) { setProfilePaths([]); setOutsidePath(null) } })
     return () => ctrl.abort()
     // pathInputKey 是刻意收窄的重算边界；bands 对象每次写答案都会换引用，不能直接作为依赖。
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -372,7 +380,12 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
   }, [])
 
   const onScoreProgress = useCallback((progress: { done: number; total: number }) => setScoreProgress(progress), [])
-  const onScoreAnswers = useCallback((rows: { key: string; prov: string; label: string; value: string; filled: boolean }[]) => setScoreEcho(rows), [])
+  // 回显之外再把统一答案读回 state:分值卡答学历/年龄会写回 eduBand/ageBand(单一来源),
+  // bands 不同步的话 pathInputKey 不变,初评拿不到新答案(2026-08-15 学历持久化根治同批)
+  const onScoreAnswers = useCallback((rows: { key: string; prov: string; label: string; value: string; filled: boolean }[]) => {
+    setScoreEcho(rows)
+    setBands(readAnswers())
+  }, [])
 
   // 估分答完 = 整卷答完,收框显示各省结果(结果在「申请人条件」卡内)
   const onScoreComplete = useCallback(() => {
@@ -455,6 +468,13 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
 
   const provDisp = (code: string) => { const full = t('prov.' + code); return full === 'prov.' + code ? code : full }
 
+  // 通道短名(走查 #293 的两步剥省名),初评表行与省外提示行共用一份
+  const routeNameOf = (key: string, provinceLabel: string) => {
+    const dropped = dropProvPrefix(t(`jpw.p.${key}`), provinceLabel)
+    const short = lang === 'zh' ? dropped.replace(/^[一-龥]{1,4}省\s+/, '') : dropped
+    return short.trim() || dropped
+  }
+
   // 唯一一枚计数胶囊:基础 8 项 + 分值表逐题合报一个数(2026-08-13 Frank「合并成 17」)。
   // 摘要卡头、带岗态判定卡②、问卷弹框头共用同一份。
   const doneAll = stepDone + scoreDone
@@ -515,31 +535,35 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                     // 门槛档仍是第一主键(引擎原序),岗数不跨档翻盘 —— 不合成分数,只是降档规则
                     // belowLine 进 band 首位:服务端已把够不着线的沉队尾,客户端岗数重排不许把它捞回前排
                     const bandOf = (row: ProfilePath) => `${row.belowLine ? 'z' : 'a'}|${row.verdict}|${row.blockedBy ?? ''}|${row.tier ?? ''}`
-                    const jobsOf = (row: ProfilePath) => (/^[A-Z]{2}$/.test(row.province) && occComp
-                      ? (occComp.find((o) => o.province === row.province)?.openJobs ?? 0) : null)
+                    // AIP 已按省拆行(08-15 Frank「别四个省放一起,分开来算」)→ 它的在招 = 该省
+                    // 指定雇主 ∩ 本职业(aipJobs),不是全省在招(openJobs)—— 两个口径不许混
+                    const jobsOf = (row: ProfilePath) => {
+                      if (!/^[A-Z]{2}$/.test(row.province) || !occComp) return null
+                      const o = occComp.find((x) => x.province === row.province)
+                      return row.key === 'AIP' ? (o?.aipJobs ?? 0) : (o?.openJobs ?? 0)
+                    }
                     const bandRank = new Map<string, number>()
                     profilePaths.forEach((row) => { if (!bandRank.has(bandOf(row))) bandRank.set(bandOf(row), bandRank.size) })
                     const resorted = profilePaths.map((row, i) => ({ row, i, band: bandRank.get(bandOf(row)) ?? 0, n: jobsOf(row) }))
                     resorted.sort((a, b) => {
                       if (a.band !== b.band) return a.band - b.band
-                      const aThin = a.n != null && a.n < 10, bThin = b.n != null && b.n < 10
+                      // 无数不逃降档(2026-08-15 Frank「竞争数字也没有 在招的数字也没有?为什么推到第一名」——
+                      // 此前 n=null 不参与降档,AIP 靠缺数据顶到第一):null 一律按 thin 处理且排 thin 末尾。
+                      // 联邦 EE 无 offer 闸 → band 不同,不受这条影响
+                      const aThin = a.n == null || a.n < 10, bThin = b.n == null || b.n < 10
                       if (aThin !== bThin) return aThin ? 1 : -1
-                      if (aThin && bThin && a.n !== b.n) return (b.n ?? 0) - (a.n ?? 0)
-                      return a.i - b.i                     // 足量组保持引擎序(竞争比松→紧);null(联邦/AIP)随原序
+                      if (aThin && bThin && a.n !== b.n) return (b.n ?? -1) - (a.n ?? -1)
+                      return a.i - b.i                     // 足量组保持引擎序(竞争比松→紧)
                     })
                     const shown = resorted.map((x) => x.row).slice(0, planCoarse ? 6 : 3)
                     const rows = shown.map((row, index) => {
+                      // AIP 拆省后 province 是省码 → 显省名;'FED' 只是老响应的兜底,不删 dp.atlantic
                       const province = row.key === 'AIP'
-                        ? t('dp.atlantic')
+                        ? (/^[A-Z]{2}$/.test(row.province) ? provDisp(row.province) : t('dp.atlantic'))
                         : row.key === 'RCIP'
                           ? t('dp.ruralCommunities')
                           : row.province === 'FED' ? t('dp.federal') : provDisp(row.province)
-                      // 走查 #293:省名单独一列灰字,通道名里的省前缀摘掉,名字短一截。
-                      // dropProvPrefix 只认全名,「纽芬兰省 国际毕业生类别」这类**短省名**前缀漏网 →
-                      // 中文再剥一层「X省 」;剥空说明整名就是省名,保底不剥
-                      const dropped = dropProvPrefix(t(`jpw.p.${row.key}`), province)
-                      const short = lang === 'zh' ? dropped.replace(/^[一-龥]{1,4}省\s+/, '') : dropped
-                      const routeName = short.trim() || dropped
+                      const routeName = routeNameOf(row.key, province)
                       const isOffer = row.blockedBy === 'offer'
                       const ao = isOffer ? row.afterOffer : null
                       // offer 行门槛 = 反事实结论;答不全(needs-info)时不敢承诺,维持「至少还差 offer」
@@ -550,7 +574,12 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                               // AIP/RCIP 不说「本省」:AIP 是大西洋四省指定雇主,RCIP 是试点社区,各用各的说法
                               ? (ao.tier ? `dp.planAfterOfferTier${ao.tier}`
                                   : row.key === 'AIP' ? 'dp.planAfterOfferOkAip'
-                                    : row.key === 'RCIP' ? 'dp.planAfterOfferOkRcip' : 'dp.planAfterOfferOk')
+                                    : row.key === 'RCIP' ? 'dp.planAfterOfferOkRcip'
+                                      // AB 机会通道官方原句要求「already working full-time in Alberta」+ 有效工签
+                                      //(gateManifest AB-opportunity),引擎的境内闸只判「人在境内」判不出「在岗」
+                                      // → 话术如实降级,不承诺 Day0(2026-08-15 Frank「失实的话术修掉,按如实的改」)
+                                      : row.key === 'AB-opportunity' ? 'dp.planAfterOfferOkAb'
+                                        : 'dp.planAfterOfferOk')
                               : ao?.blockedBy ? `dp.planAfterOfferGap.${ao.blockedBy}` : 'dp.planBlocked.offer')
                           : row.blockedBy
                             ? `dp.planBlocked.${row.blockedBy}`
@@ -566,10 +595,10 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                       const provincial = /^[A-Z]{2}$/.test(row.province)
                       // RCIP 看岗链接(L2-09 尾巴):jobs.pilot 已落地(E6-11)。URL 用 filters.shared 短名;
                       // 旧值「1」不匹配谓词的 yes|no(=无效参数),顺手全修成 yes
-                      const jobsHref = row.key === 'AIP' ? '/jobs?aip=yes'
+                      const jobsHref = row.key === 'AIP' ? `/jobs?aip=yes${provincial ? `&prov=${row.province}` : ''}`
                         : row.key === 'RCIP' ? '/jobs?pilot=RCIP'
                           : provincial ? `/jobs?prov=${row.province}&pnp=yes` : null
-                      const jobsN = provincial && occComp ? (occComp.find((o) => o.province === row.province)?.openJobs ?? 0) : null
+                      const jobsN = jobsOf(row)
                       // 制度归属灰标(2026-08-14 Frank「通道要标明哪些是 pnp aip 或者 rcip」;08-15 实拍再确认):
                       // key 即真相 —— FED-EE=EE、AIP/RCIP 自名,其余全是省提名
                       const program = row.key === 'FED-EE' ? 'EE' : row.key === 'AIP' ? 'AIP' : row.key === 'RCIP' ? 'RCIP' : 'PNP'
@@ -577,7 +606,8 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                       const stateText = row.belowLine && row.score?.refLine != null
                         ? t('dp.planBelowLine', { v: row.score.value, line: row.score.refLine })
                         : t(stateKey)
-                      return { rowKey: row.key, index, province, routeName, program, top: index === 0 && !row.blockedBy && !row.belowLine,
+                      // AIP 拆省后同 key 多行 → rowKey 带省码去重(React key / DataTable rowKey / 埋点共用)
+                      return { rowKey: row.key === 'AIP' ? `AIP:${row.province}` : row.key, index, province, routeName, program, top: index === 0 && !row.blockedBy && !row.belowLine,
                         ratio: row.competition?.ratio ?? null, stateText, afterOk, openOk, jobsHref, jobsN }
                     })
                     // 门槛全行同值(常见:全被 offer 卡住)→ 一句脚注,不铺一整列同一句话
@@ -642,6 +672,19 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                         </div>
                         {gateUniform ? (
                           <div style={{ fontSize: 11.5, color: UI.text3, lineHeight: 1.6, marginTop: 8 }}>{t('dp.planGateSame', { s: gates[0] })}</div>
+                        ) : null}
+                        {/* 省外更优提示(2026-08-15「随便选了一个目标省…其他省更合适」):一行 + 一键并省,
+                            交互同 addJobProv(消歧不警告,不替他改答案);并省后重算,提示自动消失 */}
+                        {outsidePath ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
+                            <span style={{ fontSize: 12.5, color: UI.text2 }}>
+                              {t('dp.planOutside', { prov: provDisp(outsidePath.province), name: routeNameOf(outsidePath.key, provDisp(outsidePath.province)) })}
+                            </span>
+                            <button style={BTN} onClick={() => {
+                              const next = writeAnswers({ provs: [...bands.provs, outsidePath.province] })
+                              setBands(next); setVerdictNonce((n) => n + 1); track('dp-add-outside-prov', { prov: outsidePath.province })
+                            }}>{t('dp.provAdd', { jobProv: provDisp(outsidePath.province) })}</button>
+                          </div>
                         ) : null}
                         {planCoarse ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12, flexWrap: 'wrap' }}>
