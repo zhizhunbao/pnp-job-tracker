@@ -48,6 +48,7 @@ const C01: VerdictProfile = {
   status: 'pgwp',
   province: 'ON',
   permit: 'pgwp',
+  fieldMatch: null,
 }
 
 const run = (p: VerdictProfile = C01) => pathVerdict(p, data)
@@ -164,8 +165,19 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
   const list = run()
   const tierOf = (k: string) => byKey(list, k).tier
 
-  it('tier0 = NL 国际毕业生(官方明说不设经验门槛)', () => {
+  // 2026-08-15 专业对口立成第四类闸后,C01 这份档案(没答对口题)在 NL 上**judged 不出来**了 ——
+  // 这正是新闸要的:官方要求岗位与所学专业相关,没答就不许说「能走」。tier/理由的金标照旧验,
+  // 只是要先把那道题答上(fieldMatch: true = 对口)。
+  const nlProfile: VerdictProfile = { ...C01, fieldMatch: true }
+  it('专业对口没答 → NL 判不了(不许当成对口放行)', () => {
     const nl = byKey(list, 'NL-intl-grad')
+    expect(nl.verdict).toBe('needs-info')
+    expect(nl.missingSlots ?? []).toContain('fieldMatch')
+    expect(nl.reasons.some((r) => r.key === 'pv.gate.fieldMatch.unknown')).toBe(true)
+  })
+
+  it('tier0 = NL 国际毕业生(官方明说不设经验门槛)', () => {
+    const nl = byKey(run(nlProfile), 'NL-intl-grad')
     expect(nl.verdict).toBe('open')
     expect(nl.tier).toBe(0)
     // 文案 2026-08-11 收短成「不要工作经验」;守的规矩没变:op=none 必须说成**官方没有这条门槛**,
@@ -270,7 +282,7 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
       age: null, married: null, clb: 4, edu: null, eduYears: null, canadaStudy: null, studyProvince: null,
       noc: '63200', teer: 3, expCanadaMonths: 0, expForeignMonths: 60, foreignExpSelfEmployed: null,
       hasOffer: false, inCanada: true,     // 在加读书、还没拿到 offer(新卷这两题都会问)
-      status: 'study', province: null, permit: null,
+      status: 'study', province: null, permit: null, fieldMatch: null,
     }, data)
     const ee = weak.find((v) => v.key === 'FED-EE')!
     expect(ee.blockedBy).toBe('language')
@@ -286,7 +298,7 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
     const profile = {
       age: null, married: null, clb: 5, edu: null, eduYears: null, canadaStudy: true, studyProvince: null,
       noc: '21231', teer: 1, expCanadaMonths: 0, expForeignMonths: 60, foreignExpSelfEmployed: null,
-      hasOffer: false, inCanada: true, status: 'study' as const, province: null, permit: null,
+      hasOffer: false, inCanada: true, status: 'study' as const, province: null, permit: null, fieldMatch: null,
     }
     const before = pathVerdict(profile, data)
     const offerBlocked = before.filter((v) => v.blockedBy === 'offer')
@@ -305,7 +317,7 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
   const student: VerdictProfile = {
     age: null, married: null, clb: 5, edu: 'bachelor', eduYears: null, canadaStudy: true, studyProvince: null,
     noc: '21234', teer: 1, expCanadaMonths: 0, expForeignMonths: 60, foreignExpSelfEmployed: null,
-    hasOffer: false, inCanada: true, status: 'study', province: 'ON', permit: 'study',
+    hasOffer: false, inCanada: true, status: 'study', province: 'ON', permit: 'study', fieldMatch: null,
   }
   it('学签在读不再被工签/PGWP 闸放行:AB、PE 报差工签,NL 报差 PGWP(都不再只差 offer)', () => {
     const rows = pathVerdict(student, data)
@@ -335,6 +347,36 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
     const ab = byKey(pathVerdict({ ...worker, province: 'AB' }, data), 'AB-opportunity')
     expect(ab.blockedBy).toBe('offer')
   })
+  // ── 专业对口闸(2026-08-15 Frank「毕业生干厨师靠谱吗?跨专业了怎么弄」→「加」)──────────
+  // 官方:NL 国际毕业生的岗位要与所学专业相关;例外只给本省院校(Memorial/CNA)毕业生,
+  // 且岗位要落在 TEER 0-3(TEER 4 要对紧缺清单 → 本站判不了)。省外院校反而更严。
+  const grad = (over: Partial<VerdictProfile> = {}): VerdictProfile => ({
+    ...C01, canadaStudy: true, permit: 'pgwp', status: 'pgwp', hasOffer: true, ...over,
+  })
+  it('对口 → 闸达标;跨专业 + 省外院校 → 报缺口(不是判不了)', () => {
+    const ok = byKey(pathVerdict(grad({ fieldMatch: true }), data), 'NL-intl-grad')
+    expect(ok.reasons.some((r) => r.key === 'pv.gate.fieldMatch.met')).toBe(true)
+    // 安省院校 + 跨专业:官方明写省外院校 offer 要与专业**直接**相关 → 明确缺口
+    const cross = byKey(pathVerdict(grad({ fieldMatch: false, studyProvince: 'ON' }), data), 'NL-intl-grad')
+    expect(cross.blockedBy).toBe('fieldMatch')
+    expect(cross.reasons.some((r) => r.key === 'pv.gate.fieldMatch.gap')).toBe(true)
+  })
+  it('本省院校例外按 TEER 分档:TEER 0-3 跨专业照走,TEER 4/5 判不了(要对紧缺清单)', () => {
+    const inNl = (teer: number) => byKey(pathVerdict(
+      grad({ fieldMatch: false, studyProvince: 'NL', noc: teer === 2 ? '72310' : '65310', teer }), data), 'NL-intl-grad')
+    expect(inNl(2).reasons.some((r) => r.key === 'pv.gate.fieldMatch.met'), 'TEER 2 落在例外里').toBe(true)
+    const t5 = inNl(5)
+    expect(t5.reasons.some((r) => r.key === 'pv.gate.fieldMatch.unknown'), 'TEER 5 例外覆盖不到 → 判不了').toBe(true)
+    expect(t5.blockedBy, '判不了不许写成缺口').not.toBe('fieldMatch')
+  })
+  it('选配闸不误伤别人:另外 12 条通道没声明这道闸 → 不因此判不了', () => {
+    const rows = pathVerdict(grad({ fieldMatch: null }), data)
+    for (const v of rows.filter((x) => x.key !== 'NL-intl-grad')) {
+      expect(v.missingSlots ?? [], `${v.key} 不该因专业对口缺槽`).not.toContain('fieldMatch')
+      expect(v.reasons.some((r) => String(r.key).startsWith('pv.gate.fieldMatch')), `${v.key} 不该出专业对口理由`).toBe(false)
+    }
+  })
+
   it('境外档不回归:inCanada=false 时五条通道的身份闸照旧全是缺口', () => {
     const overseas: VerdictProfile = { ...student, inCanada: false, status: 'other', permit: null, province: null, canadaStudy: false }
     const rows = pathVerdict(overseas, data)
@@ -563,7 +605,7 @@ describe('红线不变量', () => {
     const blank: VerdictProfile = {
       age: null, married: null, clb: null, edu: null, eduYears: null, canadaStudy: null, studyProvince: null,
       noc: null, teer: null, expCanadaMonths: null, expForeignMonths: null, foreignExpSelfEmployed: null, hasOffer: null, inCanada: null,
-      status: null, province: null, permit: null,
+      status: null, province: null, permit: null, fieldMatch: null,
     }
     const out = run(blank)
     expect(out.every((v) => v.verdict === 'needs-info')).toBe(true)

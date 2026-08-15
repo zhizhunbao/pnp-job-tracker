@@ -21,7 +21,7 @@ import { SK_OFFER } from './sk-offer'
 import type { PathwayStrategy, PathwayUi } from './types'
 import type { GateKey, GateRule } from '../gateManifest'
 
-export type { PathwayStrategy, PathwayNote, PathwayUi } from './types'
+export type { PathwayStrategy, PathwayUi, FieldMatchExemption } from './types'
 
 /** 13 条通道,顺序 = 判定层的注册表原序(见文件头注释,别随手改) */
 export const PATHWAYS: PathwayStrategy[] = [
@@ -49,8 +49,9 @@ export const pathwayOf = (key: string): PathwayStrategy | undefined => BY_KEY.ge
 export const gateOf = (key: string, gate: GateKey): GateRule =>
   BY_KEY.get(key)?.gates?.[gate] ?? { need: 'unknown', why: 'no-source' }
 
-/** 该通道有没有「官方要求、本站没问」的提醒(现只有专业对口) */
-export const notesOf = (key: string): NonNullable<PathwayStrategy['notes']> => BY_KEY.get(key)?.notes ?? []
+/** 专业对口闸的例外(没有 = 这条通道不给例外) */
+export const fieldMatchExemptionOf = (key: string): PathwayStrategy['fieldMatchExemption'] =>
+  BY_KEY.get(key)?.fieldMatchExemption
 
 /** 三语通道名 → i18n 字典条目(`jpw.p.<key>`)。字典在装载时摊开它,
  *  调用方照旧 `t('jpw.p.AIP')` —— 名字的**来源**是策略文件,i18n 只是取用口。 */

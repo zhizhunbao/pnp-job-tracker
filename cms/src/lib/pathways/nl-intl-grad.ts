@@ -27,13 +27,19 @@ export const NL_INTL_GRAD: PathwayStrategy = {
     credentialCanada: { need: 'required', url: NL_CATEGORY, fetched: D,
       quote: 'Applicant’s to this category must hold a valid post-graduation work permit (PGWP) and have a job offer with a Newfoundland and Labrador employer, meeting the employer criteria.',
       note: 'PGWP 的前提就是加拿大院校毕业 —— 学历闸由 PGWP 反推,不是我们自己加的' },
+    // 专业对口(2026-08-15 Frank「毕业生干厨师靠谱吗?跨专业了怎么弄」→「加」):官方要求岗位与
+    // 所学专业相关。先前只是一枚灰提醒胶囊(答不上就当没有障碍),收成真闸后由问卷两道题喂答案。
+    fieldMatch: { need: 'required', url: NL_POLICY, fetched: D,
+      quote: 'Applicants to the International Graduate category should hold a fulltime position that is related to their field of study from the post-secondary program they completed in Canada.',
+      note: '省外院校毕业生更严:官方另写 offer 要与专业**直接**相关,且先在 NL 工作满 1 年' },
   },
-  // 专业对口(2026-08-15 Frank「毕业生干厨师靠谱吗?跨专业了怎么弄」):官方要求岗位与所学专业相关。
-  // 例外只给 Memorial / College of the North Atlantic 毕业生(且岗位要 NOC 需专科以上、TEER 0-3
-  // 或 TEER 4 紧缺);**省外院校毕业生反而更严** —— offer 要与专业直接相关,且先在 NL 工作满 1 年。
-  // 本站既没问专业、也没问毕业院校 → 判不了,但不许当成没有障碍:推荐原因挂灰胶囊「需专业对口」。
-  notes: [
-    { kind: 'fieldMatch', url: NL_POLICY,
-      quote: 'Applicants to the International Graduate category should hold a fulltime position that is related to their field of study from the post-secondary program they completed in Canada.' },
-  ],
+  // 例外:NL 本省院校(Memorial / College of the North Atlantic,该省公立高等院校就这两所)毕业生
+  // 可以不直接对口,但岗位要「NOC 需专科以上 + TEER 0/1/2/3(或 TEER 4 紧缺)」。
+  // TEER 4/5 那档要对紧缺清单,本站判不了 → 落判不了,不放行。
+  fieldMatchExemption: {
+    studyProvince: 'NL',
+    teers: [0, 1, 2, 3],
+    url: NL_POLICY,
+    quote: 'Memorial University or College of the North Atlantic graduates are permitted to hold a position that is not directly related to their field of study provided the applicant’s position meets all of the following criteria: NOC code requires a post-secondary degree or diploma; Corresponds to NOC TEER 0, 1, 2 or 3 occupation or TEER 4 (in-demand) occupation;',
+  },
 }

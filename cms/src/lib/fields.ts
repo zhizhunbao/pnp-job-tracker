@@ -301,6 +301,51 @@ export const FIELDS: Record<string, FieldDef> = {
       ],
     },
   },
+  // 专业对口(2026-08-15 Frank「毕业生干厨师靠谱吗?跨专业了怎么弄」→「加」):NL 国际毕业生
+  // 官方要求岗位与所学专业相关。只问有加拿大学历的人 —— 没有加拿大学历的,这条通道早被学历闸挡住了,
+  // 再问一遍专业是浪费一屏。
+  fieldMatchBand: {
+    engineKey: 'fieldMatch',
+    unlocks: ['rpt.g.basics'],
+    tier: 'free',
+    visible: (a) => a.canadaEduBand === 1,
+    toAnswer: (b: number, all) => (all.canadaEduBand === 1 && b && b !== UNSURE_BAND ? b === 1 : undefined),
+    q: {
+      title: l('Is your Canadian credential in the same field as this job?',
+        '你的加拿大学历专业与这个职业对口吗?', '캐나다 학력 전공이 이 직종과 맞나요?'),
+      choices: [
+        { value: 1, text: l('Yes, same field', '对口', '전공과 일치') },
+        { value: 2, text: l('No, different field', '不对口(跨专业)', '전공과 다름') },
+        { value: 9, text: l('Not sure', '不清楚', '잘 모르겠음') },
+      ],
+    },
+  },
+  // 学历所在省(同批):NL 只给本省院校(Memorial / College of the North Atlantic)留了不对口的口子,
+  // 省外院校反而更严。这道题还同时喂两条既有官方条款 —— MB「外省院校毕业要 12 个月经验」、
+  // ON「近 3 年安省院校毕业只要 3 个月」,先前恒缺槽判不了。
+  eduProv: {
+    engineKey: 'studyProvince',
+    unlocks: ['rpt.s.cur', 'rpt.g.basics'],
+    tier: 'free',
+    visible: (a) => a.canadaEduBand === 1,
+    toAnswer: (v: string, all) => (all.canadaEduBand === 1 && v ? v : undefined),
+    q: {
+      title: l('Where did you study in Canada?', '你的加拿大学历在哪个省读的?', '캐나다 학력은 어느 주에서 취득했나요?'),
+      choices: [
+        { value: 'ON', text: l('Ontario', '安省 Ontario', '온타리오') },
+        { value: 'BC', text: l('British Columbia', 'BC 不列颠哥伦比亚', '브리티시컬럼비아') },
+        { value: 'AB', text: l('Alberta', '阿省 Alberta', '앨버타') },
+        { value: 'QC', text: l('Quebec', '魁省 Quebec', '퀘벡') },
+        { value: 'MB', text: l('Manitoba', '曼省 Manitoba', '매니토바') },
+        { value: 'SK', text: l('Saskatchewan', '萨省 Saskatchewan', '서스캐처원') },
+        { value: 'NS', text: l('Nova Scotia', '新斯科舍 Nova Scotia', '노바스코샤') },
+        { value: 'NB', text: l('New Brunswick', '新不伦瑞克 New Brunswick', '뉴브런즈윅') },
+        { value: 'NL', text: l('Newfoundland and Labrador', '纽芬兰 Newfoundland', '뉴펀들랜드') },
+        { value: 'PE', text: l('Prince Edward Island', '爱德华王子岛 PEI', '프린스에드워드아일랜드') },
+        { value: 'TERR', text: l('Territories', '三个领地 Territories', '준주 지역') },
+      ],
+    },
+  },
   // 探索层:CRS → EE 分差(锁区 ee)
   crsBand: {
     engineKey: 'crs',

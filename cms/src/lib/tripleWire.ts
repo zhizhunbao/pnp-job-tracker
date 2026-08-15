@@ -171,7 +171,9 @@ export async function buildTripleWire(id: number, answers: ClientAnswers): Promi
     clb: nOf(up.clb, a.clb),
     edu: null, eduYears: null,
     canadaStudy: bOf(up.canadaStudy, a.canadaStudy),
-    studyProvince: null,
+    // 学历所在省 / 专业对口(2026-08-15 新题,与 /api/profile-pathways 同一口径)
+    studyProvince: /^([A-Z]{2}|TERR)$/.test(String(a.studyProvince ?? '')) ? String(a.studyProvince) : null,
+    fieldMatch: typeof a.fieldMatch === 'boolean' ? a.fieldMatch : null,
     // teer 由 NOC 第二位推(全站同一条口径:profile-pathways / employerCompare / reportFacts 都这么算)。
     // 先前硬写 null → pathVerdict 的 pickGate 按 teerHit 挑行时,**凡是分 TEER 的经验门槛行一条都挑不到**
     // → gate.picked=null → availability='not-collected'。于是 PE 这类只有一条 `applies_teer=0,1,2,3`

@@ -104,7 +104,8 @@ export async function POST(req: Request) {
   const profile: VerdictProfile = {
     age: finite(answers.age), married: null,
     clb: finite(answers.clb), edu, eduYears: null,
-    studyProvince: null,
+    // 学历所在省(2026-08-15 新题):NL 专业对口的例外按它分档,MB/ON 两条既有条款也吃它
+    studyProvince: /^([A-Z]{2}|TERR)$/.test(String(answers.studyProvince ?? '')) ? String(answers.studyProvince) : null,
     noc, teer: Number.isInteger(teer) && teer >= 0 && teer <= 5 ? teer : null,
     expCanadaMonths: canadaExp,
     expForeignMonths: totalExp == null ? null : Math.max(0, totalExp - (canadaExp ?? 0)),
@@ -115,6 +116,8 @@ export async function POST(req: Request) {
     province: /^([A-Z]{2}|TERR)$/.test(String(answers.residenceProvince ?? '')) ? String(answers.residenceProvince) : null,
     // 持的许可(同批新题):AB/PE 的工签闸、NL 的 PGWP 闸靠它判;没答留 null → 判不了,不猜
     permit: (['study', 'pgwp', 'work', 'none'] as const).find((k) => k === String(answers.permit ?? '')) ?? null,
+    // 专业对口(同批新题):没答留 null → 该闸判不了,不许当成对口
+    fieldMatch: typeof answers.fieldMatch === 'boolean' ? answers.fieldMatch : null,
     // 门槛清单三类闸(2026-08-12):没答就是 null → 引擎落「判不了」,**不许**当成没有障碍。
     hasOffer: typeof answers.hasJobOffer === 'boolean' ? answers.hasJobOffer : null,
     // 「人在不在境内」不另开一题:既有的「你现在的情况」已经把 overseas 与另外三个境内选项分开了
@@ -167,6 +170,8 @@ export async function POST(req: Request) {
       availability: row.availability,
       // 被硬门槛卡住时,方案卡不能再写「优先核对」——那等于让人拿着不够的语言分去核对
       blockedBy: row.blockedBy ?? null,
+      /** 判不了是因为**他还没答**哪几道题(展示层据此挂提醒,而不是笼统写「判不了」) */
+      missingSlots: row.missingSlots ?? [],
       /** 该省名额竞争度(联邦口径,9 省可比);联邦线为 null */
       competition: c ?? null,
       /** 反事实:拿到该省 offer 之后这条路的判定(只给被 offer 卡住的行) */

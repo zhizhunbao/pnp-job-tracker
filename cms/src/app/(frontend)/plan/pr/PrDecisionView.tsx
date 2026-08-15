@@ -28,7 +28,7 @@ import { IconRefresh } from '../../Icons'
 import { EMPTY, clearAnswers, pullAndMerge, readAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
 import { fieldsOf, missingFields } from '@/lib/decisions'
 import { FIELDS } from '@/lib/fields'
-import { gateOf, notesOf, regionProvincesOf, uiOf } from '@/lib/pathways'
+import { gateOf, regionProvincesOf, uiOf } from '@/lib/pathways'
 import { pickName } from '@/lib/occName'
 import { track } from '@/lib/track'
 import type { DrawRow, ScoreFactor, SelfProfile } from '@/lib/pnpSelfScore'
@@ -57,7 +57,9 @@ type ProfilePath = {
   tier: 0 | 1 | 2 | 3 | null
   availability: string
   /** 被攒时间补不了的门槛卡住(语言差档 / 自雇不计经验)—— 排在能走的后面,标签也另写 */
-  blockedBy?: 'language' | 'selfEmployed' | 'offer' | 'statusInCanada' | 'credentialCanada' | null
+  blockedBy?: 'language' | 'selfEmployed' | 'offer' | 'statusInCanada' | 'credentialCanada' | 'fieldMatch' | null
+  /** 判不了是因为哪几道题没答(2026-08-15:展示层据此挂「需专业对口」这类提醒) */
+  missingSlots?: string[]
   /** 该省名额竞争度(临时居民存量 ÷ 当年省提名名额,IRCC 开放数据);联邦线为 null */
   competition?: { ratio: number; tier: string; pool: number; quota: number; quotaYear: number } | null
   /** 反事实(L2-09):拿到该省 offer 之后这条路的判定;只有被 offer 卡住的行才带 */
@@ -235,6 +237,8 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
     bands.eduBand, bands.ageBand, bands.offerBand, bands.canadaEduBand,
     // 拆闸批两题(2026-08-15):许可/现居省进了闸判定,不进 key 就是「答了初评也不动」
     bands.permitBand, bands.resProv,
+    // 专业对口两题(2026-08-15):进了 NL 的第四类闸,不进 key 就是「答了初评也不动」
+    bands.fieldMatchBand, bands.eduProv,
   ])
   useEffect(() => {
     // 职业档粗筛(2026-08-15):有职业就跑 —— 引擎对没答的题落「判不了」不当障碍,答满后同一请求自动升级个人档
@@ -317,6 +321,9 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
     // 2026-08-12 加的两题也要回显 —— 卡头写着「已答 6/8」而下面只摆 6 格,数和格子对不上
     { key: 'offerBand', prov: '', label: t('dp.sum.offer'), value: choiceText('offerBand') || unparsed, filled: !!choiceText('offerBand') },
     { key: 'canadaEduBand', prov: '', label: t('dp.sum.canadaEdu'), value: choiceText('canadaEduBand') || unparsed, filled: !!choiceText('canadaEduBand') },
+    // 专业对口两题同样只对「有加拿大学历」的人回显(与题的显隐同源)
+    ...(FIELDS.fieldMatchBand.visible?.(bands) ? [{ key: 'fieldMatchBand', prov: '', label: t('dp.sum.fieldMatch'), value: choiceText('fieldMatchBand') || unparsed, filled: !!choiceText('fieldMatchBand') }] : []),
+    ...(FIELDS.eduProv.visible?.(bands) ? [{ key: 'eduProv', prov: '', label: t('dp.sum.eduProv'), value: choiceText('eduProv') || unparsed, filled: !!choiceText('eduProv') }] : []),
     // 分值表的题一视同仁逐格回显(合并成 17 的另一半:计数合了,格子也得合,数和格子才对得上)
     ...scoreEcho.map((r): SummaryRow => ({ key: r.key, prov: r.prov, label: r.label, value: r.value || unparsed, filled: r.filled })),
   ]
@@ -658,6 +665,8 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                         gapKey: row.blockedBy === 'offer' && ui.offerGapKey ? ui.offerGapKey
                           : gateChip(row.key, row.blockedBy ?? ''),
                         pathKey: row.key,
+                        // 这条通道有专业对口闸、而他还没答那道题 → 挂灰提醒(答了就不提醒)
+                        fieldUnknown: (row.missingSlots ?? []).includes('fieldMatch'),
                         // 还要攒多久:被 offer 卡住的看反事实 tier(拿到 offer 之后还差几个月),
                         // 其余行看本行 tier —— 2026-08-15 实撞:AB 机会通道被工签闸挡着,tier 只挂在
                         // 本行上,先前只读反事实 tier → 那行的 24 个月经验缺口整个不出现,
@@ -682,10 +691,10 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                     // 胶囊短到一行放得下(铁律:值折行 = 文案太长):差什么就写「差 X」,
                     // 「拿到 offer 之后还要攒多久」另起一枚,不揉进同一句
                     const whyPills = (r: PlanRow): { text: string; tone: keyof typeof TONE }[] => {
-                      // 专业对口提醒:官方要求、我们没问 → 灰胶囊摆出来(灰=待核对,不是判他不行)。
-                      // 摆在最后一枚:它是「还要自己核一下」,不该盖过「差什么」那枚
-                      const fieldPill = notesOf(r.pathKey).some((n) => n.kind === 'fieldMatch')
-                        ? [{ text: t('dp.why.fieldMatch'), tone: 'mute' as const }] : []
+                      // 专业对口(2026-08-15 起是真闸):**只在他还没答**那道题时挂灰提醒 ——
+                      // 答了「对口」闸就达标、不必再提醒;答了「不对口」引擎会直接报成缺口。
+                      // 灰=待核对,不是判他不行。摆最后一枚,不盖过「差什么」那枚
+                      const fieldPill = r.fieldUnknown ? [{ text: t('dp.why.fieldMatch'), tone: 'mute' as const }] : []
                       if (r.dataGap) return [{ text: r.stateText, tone: 'mute' }, ...fieldPill]
                       if (r.openOk) return [{ text: r.stateText, tone: 'ok' }, ...fieldPill]
                       if (!r.blocked) return [{ text: r.stateText, tone: r.afterOk ? 'info' : 'warn' }, ...fieldPill]

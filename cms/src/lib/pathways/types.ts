@@ -10,11 +10,15 @@
 // 🔴 边界二:**算法不在这里**。这一层是声明,判定流程仍归 pathVerdict()。
 import type { GateKey, GateRule } from '../gateManifest'
 
-/** 官方要求、而本站没有对应问题的提醒(灰胶囊「待你自己核对」,不是判他不行)。
- *  kind 决定文案键(dp.why.<kind>),quote/url 是举证 —— 同 gateManifest 的规矩:
- *  敢把一条门槛摆到用户面前,就得说得出它出自哪一句官方原文。 */
-export type PathwayNote = {
-  kind: 'fieldMatch'
+/** 专业对口闸的**例外**(2026-08-15):官方给本省院校毕业生留的口子。
+ *  NL 原文:Memorial University / College of the North Atlantic 毕业生可以从事与专业不直接相关的岗位,
+ *  但岗位要「NOC 需专科以上 + TEER 0/1/2/3(或 TEER 4 紧缺)」。NL 的公立高等院校就这两所,
+ *  故以**学习省份**近似;TEER 4/5 那档要对紧缺清单,本站判不了 → 落 needs-info 不放行。 */
+export type FieldMatchExemption = {
+  /** 在这个省读的书才够得着例外 */
+  studyProvince: string
+  /** 例外只覆盖这几档 TEER;其余档判不了 */
+  teers: readonly number[]
   quote: string
   url: string
 }
@@ -77,8 +81,8 @@ export type PathwayStrategy = {
   /** 缺这一类 = 本站未收录(gateOf 兜底成 unknown),**不等于**官方不要求 */
   gates?: Partial<Record<GateKey, GateRule>>
 
-  /** 官方要求但本站没问的事(现只有「工作与专业对口」) */
-  notes?: PathwayNote[]
+  /** 专业对口闸的例外(只有声明了 gates.fieldMatch 的通道才用得上) */
+  fieldMatchExemption?: FieldMatchExemption
 
   /** 展示层特性(缺省即「普通省提名通道」的那套) */
   ui?: PathwayUi

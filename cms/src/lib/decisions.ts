@@ -23,7 +23,9 @@ export const DECISIONS: Record<string, Decision> = {
     // 把从没来过加拿大的人推荐去走「国际毕业生」通道。第三类闸「人在不在境内」由 status 推,不另开题。
     // 2026-08-15 拆闸批再加两题(permitBand/resProv,均只对境内处境显示 —— fields.ts visible):
     // AB/PE 的闸是工签、NL 是 PGWP、NB/MB 是住在/受雇于该省,原「由 status 推境内身份」答不了这三种问法
-    basic: ['status', 'permitBand', 'resProv', 'clbBand', 'totalExpBand', 'expBand', 'offerBand', 'canadaEduBand'],
+    // 2026-08-15 再加两题(fieldMatchBand/eduProv,只对「有加拿大学历」的人出):NL 国际毕业生
+    // 官方要求专业对口,例外按毕业院校所在省分档;eduProv 同时喂 MB/ON 两条既有条款(先前恒缺槽)
+    basic: ['status', 'permitBand', 'resProv', 'clbBand', 'totalExpBand', 'expBand', 'offerBand', 'canadaEduBand', 'fieldMatchBand', 'eduProv'],
     // 批 2 = B1-4 PGWP(20260803):批首 studyMonthsBand 是 free 题(batchLeadsFree ✓)——
     // 批 1 的历史偏差(KNOWN_NO_FREE_LEAD)不因此消,但新批守规矩
     explore: [['crsBand', 'pgwpBand'], ['studyMonthsBand', 'studyLevelBand']],
