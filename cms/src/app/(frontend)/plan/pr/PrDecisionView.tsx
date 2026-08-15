@@ -324,6 +324,9 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
     // 专业对口两题同样只对「有加拿大学历」的人回显(与题的显隐同源)
     ...(FIELDS.fieldMatchBand.visible?.(bands) ? [{ key: 'fieldMatchBand', prov: '', label: t('dp.sum.fieldMatch'), value: choiceText('fieldMatchBand') || unparsed, filled: !!choiceText('fieldMatchBand') }] : []),
     ...(FIELDS.eduProv.visible?.(bands) ? [{ key: 'eduProv', prov: '', label: t('dp.sum.eduProv'), value: choiceText('eduProv') || unparsed, filled: !!choiceText('eduProv') }] : []),
+    // 法语(FCIP 的定义性门槛):全员都问,所以格子也无条件摆 —— 2026-08-15 首版漏了这一格,
+    // 题问了、答案也存了(计数都对),就是回显没有,人在格子里找不到自己答过的那道题
+    { key: 'frenchBand', prov: '', label: t('dp.sum.french'), value: choiceText('frenchBand') || unparsed, filled: !!choiceText('frenchBand') },
     // 分值表的题一视同仁逐格回显(合并成 17 的另一半:计数合了,格子也得合,数和格子才对得上)
     ...scoreEcho.map((r): SummaryRow => ({ key: r.key, prov: r.prov, label: r.label, value: r.value || unparsed, filled: r.filled })),
   ]
@@ -585,7 +588,10 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                     // (不够一页投递量级,阈值可调)沉档尾按岗数多→少,足量的仍按竞争比松→紧;
                     // 门槛档仍是第一主键(引擎原序),岗数不跨档翻盘 —— 不合成分数,只是降档规则
                     // belowLine 进 band 首位:服务端已把够不着线的沉队尾,客户端岗数重排不许把它捞回前排
-                    const bandOf = (row: ProfilePath) => `${row.belowLine ? 'z' : 'a'}|${row.verdict}|${row.blockedBy ?? ''}|${row.tier ?? ''}`
+                    // 「规则待核对」(本站没收录该通道条文)沉到有数据的行之后(2026-08-15 实拍:FCIP
+                    // 门槛行还没入库,它顶着「规则待核对」排第一,把答得出来的「差法语」压在下面)——
+                    // 与「belowLine 沉底」同一条老规矩:**缺数据不许换来好位置**
+                    const bandOf = (row: ProfilePath) => `${row.availability !== 'ok' ? 'y' : 'a'}|${row.belowLine ? 'z' : 'a'}|${row.verdict}|${row.blockedBy ?? ''}|${row.tier ?? ''}`
                     // AIP/RCIP 已按省拆行(08-15 Frank「别四个省放一起,分开来算」「rcip 也需要拆」)→
                     // 在招 = 该省指定雇主/试点社区 ∩ 本职业(aipJobs/rcipJobs),不是全省在招 —— 口径不许混
                     const jobsOf = (row: ProfilePath) => {
@@ -665,7 +671,9 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                         seeJobsKey: ui.seeJobsKey ?? 'dp.planSeeJobsAip',
                         // 推荐原因拆胶囊要的两个判据:被单一门槛卡住(拆「已达标 + 差这样」两枚)、
                         // 本站没收录规则(这枚是我们的窟窿,不许染成「你不行」的黄色)
-                        blocked: !!row.blockedBy && row.availability === 'ok' && !row.belowLine,
+                        // 「有明确缺口」与「本站没收录条文」是两件事,可以同时成立(FCIP 实拍:法语已判出缺口、
+                        // 门槛行却还没入库)——所以这里不再拿 availability 卡它,由 whyPills 决定怎么并排说
+                        blocked: !!row.blockedBy && !row.belowLine,
                         dataGap: row.availability !== 'ok',
                         // 差的那一样(offer 按通道分:AIP=指定雇主、RCIP=社区雇主 —— 三者要的不是同一种 offer)
                         gapKey: row.blockedBy === 'offer' && ui.offerGapKey ? ui.offerGapKey
@@ -701,7 +709,13 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                       // 答了「对口」闸就达标、不必再提醒;答了「不对口」引擎会直接报成缺口。
                       // 灰=待核对,不是判他不行。摆最后一枚,不盖过「差什么」那枚
                       const fieldPill = r.fieldUnknown ? [{ text: t('dp.why.fieldMatch'), tone: 'mute' as const }] : []
-                      if (r.dataGap) return [{ text: r.stateText, tone: 'mute' }, ...fieldPill]
+                      // 缺条文时**先说已经判出来的那道缺口**,再补一枚灰「规则待核对」——
+                      // 「差法语」是确定的事实,不该被「我们还没收录这条通道的条文」整个盖掉
+                      if (r.dataGap) {
+                        return r.blocked
+                          ? [{ text: t(`dp.why.gap.${r.gapKey}`), tone: 'warn' as const }, { text: r.stateText, tone: 'mute' as const }, ...fieldPill]
+                          : [{ text: r.stateText, tone: 'mute' as const }, ...fieldPill]
+                      }
                       if (r.openOk) return [{ text: r.stateText, tone: 'ok' }, ...fieldPill]
                       if (!r.blocked) return [{ text: r.stateText, tone: r.afterOk ? 'info' : 'warn' }, ...fieldPill]
                       // 被门槛卡住:差的那一样 + 还要攒多久。
@@ -928,6 +942,64 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
     </div>
   ) : null
 
+  // 该职业分省竞争:2026-08-15 Frank「该职业分省竞争放到各省名额竞争上面」→ 抽成常量,
+  // 两种页态(带岗/不带岗)都摆在名额竞争之前。先看**这个职业**在哪个省好找,再看那个省的名额有多挤
+  {/* 该职业分省竞争(Frank 2026-08-12:「还需要加相关职业各省市的竞争比」)。
+                🔴 职业级的「几人抢一个」**没有任何官方源发布**,本站不编 —— 这里摆三个实数:
+                在招岗数、近 30 天新增、平均在招天数(挂多久被撤:越短越抢手),外加该省的名额竞争。
+                四列不合成分数:合成就是替用户拿主意,而且没有官方口径支持那种合成。 */}
+  const occCompCard = noc && occComp && occComp.length > 0 ? (
+              <div style={CARD}>
+                <h2 style={H2}>{t('dp.occCompTitle')}</h2>
+      {/* 职业切换(2026-08-14 Frank「需要分职业吧」):选了几个职业就给几个 chip,
+                    单职业不渲——一颗孤 chip 只是噪音 */}
+                {bands.nocs.length > 1 && (
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '2px 0 10px' }}>
+                    {bands.nocs.map((code) => {
+                      const active = (occNoc || noc) === code
+                      return (
+                        <button key={code} type="button" onClick={() => setOccNoc(code)}
+                          style={{ ...BTN, ...(active ? { borderColor: UI.primary, color: UI.primary, background: '#eff6ff', fontWeight: 600 } : {}) }}>
+                          {occName(code)}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+                <style>{`@media(max-width:640px){.dpOccTbl{display:none}}@media(min-width:641px){.dpOccCards{display:none}}`}</style>
+                <div className="dpOccCards">
+                  {occComp.map((r) => (
+                    <div key={r.province} style={{ borderTop: `1px solid ${UI.hairline}`, padding: '8px 0' }}>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                        <b style={{ fontSize: 13.5, color: '#111827' }}>{provDisp(r.province)}</b>
+                        <span style={{ color: UI.text3, fontSize: 11.5 }}>{r.province}</span>
+                        <span style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{r.openJobs}</span>
+                      </div>
+            {/* 竞争比不再第三处重复(2026-08-15 随初评表格化):初评与竞争卡已各有一份 */}
+                      <div style={{ color: UI.text3, fontSize: 11.5, marginTop: 2, fontVariantNumeric: 'tabular-nums' }}>
+                        {t('dp.occNew30')} {r.new30d ?? '—'}　{t('dp.occDays')} {r.avgDaysOpen ?? '—'}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="dpOccTbl">
+                  <DataTable<OccCompetitionRow> rows={occComp} rowKey={(r) => r.province} bare
+                    cols={[
+                      { key: 'province', label: t('dp.prov'), width: '28%', sort: (r) => provDisp(r.province), render: (r) => (
+                        <span style={{ display: 'flex', alignItems: 'baseline', gap: 6, minWidth: 0 }}>
+                          <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{provDisp(r.province)}</span>
+                          <span style={{ color: UI.text3, fontSize: 11.5, flexShrink: 0 }}>{r.province}</span>
+                        </span>
+                      ) },
+                      { key: 'open', label: t('stats.openJobs'), width: '18%', align: 'right', sort: (r) => r.openJobs, render: (r) => <b>{r.openJobs.toLocaleString('en-CA')}</b> },
+                      { key: 'new30', label: t('dp.occNew30'), width: '18%', align: 'right', sort: (r) => r.new30d, render: (r) => r.new30d == null ? '—' : r.new30d.toLocaleString('en-CA') },
+                      { key: 'days', label: t('dp.occDays'), width: '18%', align: 'right', sort: (r) => r.avgDaysOpen, render: (r) => r.avgDaysOpen == null ? '—' : r.avgDaysOpen },
+                    ]} />
+                </div>
+                <div style={{ fontSize: 11.5, color: UI.text3, lineHeight: 1.6, marginTop: 8 }}>{t('dp.occCompNote')}</div>
+              </div>
+  ) : null
+
   // 问卷 = **一个弹框、两段**(2026-08-13 Frank:「开始估分不应该和申请人条件合并到一起吗?
   // 为什么单独一个弹框」):基础段(职业/8 项/省份)答完直接翻进估分段,不关框、不换框。
   // 两段计数拍板(08-10)不动:段内各自报数(已答 n/8 → 估分 n/9),谁的总数都不跳。
@@ -1103,6 +1175,7 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
             {/* 卡序:初评在前、竞争表随后(2026-08-14 Frank:「这个放到各省竞争名额上面吧」——
                 结论先行,支撑它的竞争数据紧跟其后;此前一日的「竞争在初评上面」被本条取代) */}
             {!tvJob && planCard}
+            {!tvJob && occCompCard}
             {!tvJob && competitionCard}
 
             {/* 带岗进入后,三项判定就是本页结果,不再自动套一层弹窗。条件在上、结果在下,修改后原地重算。
@@ -1137,63 +1210,9 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
 
             {/* 带岗态:名额竞争留在事实区(判定卡流里插九省大表会把结论挤走);
                 无岗态它已上移到「可行通道初评」上面 */}
+            {tvJob ? occCompCard : null}
             {tvJob ? competitionCard : null}
 
-            {/* 该职业分省竞争(Frank 2026-08-12:「还需要加相关职业各省市的竞争比」)。
-                🔴 职业级的「几人抢一个」**没有任何官方源发布**,本站不编 —— 这里摆三个实数:
-                在招岗数、近 30 天新增、平均在招天数(挂多久被撤:越短越抢手),外加该省的名额竞争。
-                四列不合成分数:合成就是替用户拿主意,而且没有官方口径支持那种合成。 */}
-            {noc && occComp && occComp.length > 0 && (
-              <div style={CARD}>
-                <h2 style={H2}>{t('dp.occCompTitle')}</h2>
-                {/* 职业切换(2026-08-14 Frank「需要分职业吧」):选了几个职业就给几个 chip,
-                    单职业不渲——一颗孤 chip 只是噪音 */}
-                {bands.nocs.length > 1 && (
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '2px 0 10px' }}>
-                    {bands.nocs.map((code) => {
-                      const active = (occNoc || noc) === code
-                      return (
-                        <button key={code} type="button" onClick={() => setOccNoc(code)}
-                          style={{ ...BTN, ...(active ? { borderColor: UI.primary, color: UI.primary, background: '#eff6ff', fontWeight: 600 } : {}) }}>
-                          {occName(code)}
-                        </button>
-                      )
-                    })}
-                  </div>
-                )}
-                <style>{`@media(max-width:640px){.dpOccTbl{display:none}}@media(min-width:641px){.dpOccCards{display:none}}`}</style>
-                <div className="dpOccCards">
-                  {occComp.map((r) => (
-                    <div key={r.province} style={{ borderTop: `1px solid ${UI.hairline}`, padding: '8px 0' }}>
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                        <b style={{ fontSize: 13.5, color: '#111827' }}>{provDisp(r.province)}</b>
-                        <span style={{ color: UI.text3, fontSize: 11.5 }}>{r.province}</span>
-                        <span style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{r.openJobs}</span>
-                      </div>
-                      {/* 竞争比不再第三处重复(2026-08-15 随初评表格化):初评与竞争卡已各有一份 */}
-                      <div style={{ color: UI.text3, fontSize: 11.5, marginTop: 2, fontVariantNumeric: 'tabular-nums' }}>
-                        {t('dp.occNew30')} {r.new30d ?? '—'}　{t('dp.occDays')} {r.avgDaysOpen ?? '—'}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="dpOccTbl">
-                  <DataTable<OccCompetitionRow> rows={occComp} rowKey={(r) => r.province} bare
-                    cols={[
-                      { key: 'province', label: t('dp.prov'), width: '28%', sort: (r) => provDisp(r.province), render: (r) => (
-                        <span style={{ display: 'flex', alignItems: 'baseline', gap: 6, minWidth: 0 }}>
-                          <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{provDisp(r.province)}</span>
-                          <span style={{ color: UI.text3, fontSize: 11.5, flexShrink: 0 }}>{r.province}</span>
-                        </span>
-                      ) },
-                      { key: 'open', label: t('stats.openJobs'), width: '18%', align: 'right', sort: (r) => r.openJobs, render: (r) => <b>{r.openJobs.toLocaleString('en-CA')}</b> },
-                      { key: 'new30', label: t('dp.occNew30'), width: '18%', align: 'right', sort: (r) => r.new30d, render: (r) => r.new30d == null ? '—' : r.new30d.toLocaleString('en-CA') },
-                      { key: 'days', label: t('dp.occDays'), width: '18%', align: 'right', sort: (r) => r.avgDaysOpen, render: (r) => r.avgDaysOpen == null ? '—' : r.avgDaysOpen },
-                    ]} />
-                </div>
-                <div style={{ fontSize: 11.5, color: UI.text3, lineHeight: 1.6, marginTop: 8 }}>{t('dp.occCompNote')}</div>
-              </div>
-            )}
 
             {/* SSR 事实区:各省最近一轮抽选(纯事实;爬虫不看顺序,人看时它只是参考,放主干之后) */}
             {overview.length > 0 && (
