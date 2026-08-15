@@ -80,6 +80,18 @@ const NOC_TITLE_CACHE: Record<string, string> = {}
 // 已经问过的码(不论问到没问到)。失败不重试:同一个码问一次拿不到名字,再问十次也一样。
 const NOC_TITLE_TRIED = new Set<string>()
 
+/** 官方要求「工作与专业对口」的通道(2026-08-15 Frank「毕业生干厨师靠谱吗?跨专业了怎么弄」)。
+ *  我们既没问专业、也没问毕业院校 → 判不了,但**不许当成没有障碍**:先在推荐原因里挂一枚提醒胶囊,
+ *  把这道官方门槛摆到台面上(问题接进题库之前的如实做法,同「不猜」的老规矩)。
+ *  NL 国际毕业生原句(gov.nl.ca 资格政策):Memorial / College of the North Atlantic 毕业生有条件例外,
+ *  省外院校毕业生反而更严(offer 要与专业直接相关 + 先在 NL 工作满 1 年)。 */
+const FIELD_MATCH: Record<string, { url: string; quote: string }> = {
+  'NL-intl-grad': {
+    url: 'https://www.gov.nl.ca/immigration/4-international-graduate-category-eligibility-criteria',
+    quote: 'Applicants to the International Graduate category should hold a fulltime position that is related to their field of study from the post-secondary program they completed in Canada.',
+  },
+}
+
 /** 官方**明说不打分**的省(举证责任在我们:一个 URL + 一句原句,同 gateManifest 的规矩)。
  *  不在这张表里的缺省一律按「本站未收录」说 —— 两句话在用户那儿意思相反,不许拿一句混着用。
  *  NS:2025-11-28 起 NSNP 全通道 + AIP 指定改 EOI,选谁由厅里按当期优先级酌情定,没有可对照的分值表。 */
@@ -661,6 +673,7 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                         // 差的那一样(offer 按通道分:AIP=指定雇主、RCIP=社区雇主 —— 三者要的不是同一种 offer)
                         gapKey: row.blockedBy === 'offer' && (row.key === 'AIP' || row.key === 'RCIP') ? `offer${row.key}`
                           : gateChip(row.key, row.blockedBy ?? ''),
+                        pathKey: row.key,
                         // 还要攒多久:被 offer 卡住的看反事实 tier(拿到 offer 之后还差几个月),
                         // 其余行看本行 tier —— 2026-08-15 实撞:AB 机会通道被工签闸挡着,tier 只挂在
                         // 本行上,先前只读反事实 tier → 那行的 24 个月经验缺口整个不出现,
@@ -685,9 +698,12 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                     // 胶囊短到一行放得下(铁律:值折行 = 文案太长):差什么就写「差 X」,
                     // 「拿到 offer 之后还要攒多久」另起一枚,不揉进同一句
                     const whyPills = (r: PlanRow): { text: string; tone: keyof typeof TONE }[] => {
-                      if (r.dataGap) return [{ text: r.stateText, tone: 'mute' }]
-                      if (r.openOk) return [{ text: r.stateText, tone: 'ok' }]
-                      if (!r.blocked) return [{ text: r.stateText, tone: r.afterOk ? 'info' : 'warn' }]
+                      // 专业对口提醒:官方要求、我们没问 → 灰胶囊摆出来(灰=待核对,不是判他不行)。
+                      // 摆在最后一枚:它是「还要自己核一下」,不该盖过「差什么」那枚
+                      const fieldPill = FIELD_MATCH[r.pathKey] ? [{ text: t('dp.why.fieldMatch'), tone: 'mute' as const }] : []
+                      if (r.dataGap) return [{ text: r.stateText, tone: 'mute' }, ...fieldPill]
+                      if (r.openOk) return [{ text: r.stateText, tone: 'ok' }, ...fieldPill]
+                      if (!r.blocked) return [{ text: r.stateText, tone: r.afterOk ? 'info' : 'warn' }, ...fieldPill]
                       // 被门槛卡住:差的那一样 + 还要攒多久。
                       // 🔴「其余门槛已达标」只在**真的没有别的缺口**时才敢说(waitTier=0):
                       // 一个 0 经验的人被写成「其余门槛已达标 · 还需积累 24 个月」,两句话自相矛盾,
@@ -696,7 +712,7 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                       // 差 offer 的行:时间从拿到 offer 起算;被别的闸挡着的行没有那个起点,写「还需积累」
                       if (r.waitTier) out.push({ text: t(`${r.waitAfterOffer ? 'dp.why.wait' : 'dp.planTier'}${r.waitTier}`), tone: 'info' })
                       else out.unshift({ text: t('dp.planWhyMet'), tone: 'ok' })
-                      return out
+                      return [...out, ...fieldPill]
                     }
                     // 全行同因(常见:全被 offer 卡住)→ 收成一句脚注,不铺一整列同一串胶囊。
                     // 判同不再看合成句,看胶囊本身 —— 列渲染的是胶囊,收不收也该由胶囊说了算
@@ -744,7 +760,7 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                           <DataTable<PlanRow> rows={rows} rowKey={(r) => r.rowKey} bare
                             cols={[
                               { key: 'rank', label: '#', width: '6%', render: rank },
-                              { key: 'path', label: t('dp.planPath'), width: planCoarse || gateUniform ? '54%' : '34%', render: (r) => (
+                              { key: 'path', label: t('dp.planPath'), width: planCoarse || gateUniform ? '54%' : '28%', render: (r) => (
                                 <span style={{ display: 'flex', alignItems: 'baseline', gap: 8, minWidth: 0 }}>
                                   <b style={{ color: '#111827', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.routeName}</b>
                                   <span style={{ color: UI.text3, fontSize: 11.5, flexShrink: 0 }}>{r.province}</span>
@@ -756,7 +772,7 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                               // 推荐原因摆末列(2026-08-15 Frank「这个放到最后一列」):它是结论性的一栏,
                               // 让前面的名字/竞争/在招三列先把事实摆完
                               ...(!planCoarse && !gateUniform
-                                ? [{ key: 'why', label: t('dp.planWhy'), width: '26%', align: 'right', render: whyCell } as const]
+                                ? [{ key: 'why', label: t('dp.planWhy'), width: '32%', align: 'right', render: whyCell } as const]
                                 : []),
                             ]} />
                         </div>
