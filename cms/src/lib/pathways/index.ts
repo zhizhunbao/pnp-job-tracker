@@ -51,3 +51,11 @@ export const gateOf = (key: string, gate: GateKey): GateRule =>
 
 /** 该通道有没有「官方要求、本站没问」的提醒(现只有专业对口) */
 export const notesOf = (key: string): NonNullable<PathwayStrategy['notes']> => BY_KEY.get(key)?.notes ?? []
+
+/** 三语通道名 → i18n 字典条目(`jpw.p.<key>`)。字典在装载时摊开它,
+ *  调用方照旧 `t('jpw.p.AIP')` —— 名字的**来源**是策略文件,i18n 只是取用口。 */
+export const pathwayNames = (lang: 'zh' | 'en' | 'ko'): Record<string, string> =>
+  Object.fromEntries(PATHWAYS.map((p) => [`jpw.p.${p.key}`, p.name[lang]]))
+
+/** 联邦区域线覆盖的省(AIP/RCIP);非区域线返回 undefined —— 调用方据此判断「要不要拆省」 */
+export const regionProvincesOf = (key: string): readonly string[] | undefined => BY_KEY.get(key)?.regionProvinces

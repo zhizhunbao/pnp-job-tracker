@@ -10,6 +10,7 @@ export const ON_WORKFORCE: PathwayStrategy = {
   key: 'ON-workforce',
   province: 'ON',
   stream: 'Ontario Workforce Priority stream',
+  name: { zh: '安大略省 劳动力优先通道', en: 'Ontario Workforce Priority', ko: '온타리오주 우선 직군 통로' },
   reqProvince: 'ON',
   reqStream: /workforce priority/i,
   drawStream: 'Ontario Workforce Priority stream',

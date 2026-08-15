@@ -8,6 +8,7 @@ export const BC_BUILD: PathwayStrategy = {
   key: 'BC-build',
   province: 'BC',
   stream: 'BC PNP Build: construction trades targeted ITA',
+  name: { zh: '不列颠哥伦比亚省 建筑技工定向抽选', en: 'BC Build targeted draw', ko: '브리티시컬럼비아주 건설 기능직 지정 추첨' },
   reqProvince: 'BC',
   reqStream: /bc pnp skill/i,
   drawStream: 'BC PNP Build: construction trades targeted ITA',

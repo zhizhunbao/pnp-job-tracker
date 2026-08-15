@@ -8,6 +8,7 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { pathVerdict, type VerdictProfile } from '@/lib/pathVerdict'
+import { regionProvincesOf } from '@/lib/pathways'
 import { getVerdictData } from '@/lib/verdictCache'
 
 export const dynamic = 'force-dynamic'
@@ -17,15 +18,12 @@ const STATUS: Record<string, string> = {
   overseas: 'other', studying: 'study', working: 'worker', jobhunting: 'other',
 }
 
-const REGIONAL_FEDERAL_PATHWAYS: Record<string, readonly string[]> = {
-  AIP: ['NB', 'NS', 'PE', 'NL'],
-  RCIP: ['BC', 'AB', 'SK', 'MB', 'ON', 'NS'],
-}
-
+// 区域线覆盖哪几个省 2026-08-15 搬进策略文件(lib/pathways/<通道>.ts 的 regionProvinces)——
+// 「AIP 管哪四个省」是 AIP 自己的事,不该住在某个路由里
 export const pathwayMatchesTargets = (key: string, province: string, targets: string[]): boolean => {
   if (!targets.length) return true
   if (province !== 'FED') return targets.includes(province)
-  const regionalTargets = REGIONAL_FEDERAL_PATHWAYS[key]
+  const regionalTargets = regionProvincesOf(key)
   return !regionalTargets || regionalTargets.some((provinceCode) => targets.includes(provinceCode))
 }
 
@@ -37,7 +35,7 @@ export const pathwayMatchesTargets = (key: string, province: string, targets: st
  */
 export const splitRegionalByProvince = <T extends { key: string; province: string }>(rows: T[], targets: string[]): T[] =>
   rows.flatMap((row) => {
-    const provs = REGIONAL_FEDERAL_PATHWAYS[row.key]
+    const provs = regionProvincesOf(row.key)
     if (!provs) return [row]
     return provs.filter((p) => !targets.length || targets.includes(p)).map((p) => ({ ...row, province: p }))
   })

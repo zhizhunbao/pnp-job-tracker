@@ -2,6 +2,8 @@
 // 作用域:/jobs 页 UI 外壳(列名/筛选/按钮/状态/大分类/经验)+ AI 顾问的 UI 壳(advisor.*)。
 // AI 顾问正文不在这里:所有字段都由 /api/advisor 大模型按所选语言生成(无三语长文要维护)。
 // NOC 中/小分类名:数据值是中文(etl/noc.py 单一来源,有限集),显示层经 cat.* 翻译(缺键退 broad.* 再退原值,见 JobsTable catName)。
+import { pathwayNames } from '@/lib/pathways'
+
 export type Lang = 'zh' | 'en' | 'ko'
 export const LANGS: { code: Lang; label: string }[] = [
   { code: 'zh', label: '中' },
@@ -445,13 +447,6 @@ const zh: Dict = {
   'jpw.prefill': '我想做{occ}(NOC {noc})走哪条路?',
   'jpw.n.none': '不要经验', 'jpw.n.m': '经验 {n} 个月', 'jpw.n.tenure': '同雇主 {n} 个月',
   'jpw.n.listed': '清单点名本职业', 'jpw.n.ex': '清单不收本职业', 'jpw.n.na': '门槛本站未收录',
-  'jpw.p.FED-EE': '联邦 快速通道(EE)', 'jpw.p.ON-workforce': '安大略省 劳动力优先通道',
-  'jpw.p.NB-sw': '新不伦瑞克省 技术工人通道', 'jpw.p.NS-sw': '新斯科舍省 技术工人通道',
-  'jpw.p.SK-offer': '萨斯喀彻温省 雇主 offer 通道', 'jpw.p.AIP': '大西洋移民计划(AIP)',
-  'jpw.p.RCIP': '乡村社区移民试点(RCIP)', 'jpw.p.MB-swm': '曼尼托巴省 技术工人通道',
-  'jpw.p.AB-opportunity': '阿尔伯塔省 机会通道', 'jpw.p.BC-sw': '不列颠哥伦比亚省 技术工人通道',
-  'jpw.p.BC-build': '不列颠哥伦比亚省 建筑技工定向抽选', 'jpw.p.NL-intl-grad': '纽芬兰省 国际毕业生类别',
-  'jpw.p.PE-sw': '爱德华王子岛省 在需职业通道',
   'jd.rep.lock': '{n} 家雇主发过能走省提名的岗', 'jd.rep.lock.sub': '公司名、命中岗数、LMIA 记录',
   'plan.prov.title': '选省份', 'plan.prov.sub': '填 1 项条件,看哪个省对你的职业最合适',
   'rpt.p.best': '首选 {prov}:你的职业在其公开清单「{label}」上,当地在招 {open} 岗,其中 {named} 个是省提名清单岗',
@@ -1531,13 +1526,6 @@ const en: Dict = {
   'jpw.prefill': 'Which pathway should I take as a {occ} (NOC {noc})?',
   'jpw.n.none': 'no experience', 'jpw.n.m': '{n} months', 'jpw.n.tenure': '{n} months same employer',
   'jpw.n.listed': 'lists this occupation', 'jpw.n.ex': 'list excludes this job', 'jpw.n.na': 'not indexed yet',
-  'jpw.p.FED-EE': 'Federal Express Entry', 'jpw.p.ON-workforce': 'Ontario Workforce Priority',
-  'jpw.p.NB-sw': 'New Brunswick Skilled Worker', 'jpw.p.NS-sw': 'Nova Scotia Skilled Worker',
-  'jpw.p.SK-offer': 'Saskatchewan Employment Offer', 'jpw.p.AIP': 'Atlantic Immigration Program',
-  'jpw.p.RCIP': 'Rural Community Immigration Pilot', 'jpw.p.MB-swm': 'Manitoba Skilled Worker',
-  'jpw.p.AB-opportunity': 'Alberta Opportunity Stream', 'jpw.p.BC-sw': 'British Columbia Skilled Worker',
-  'jpw.p.BC-build': 'BC Build targeted draw', 'jpw.p.NL-intl-grad': 'Newfoundland International Graduate',
-  'jpw.p.PE-sw': 'PEI Occupations in Demand',
   'jd.rep.lock': '{n} employers have posted jobs that can go through a PNP', 'jd.rep.lock.sub': 'Names, matching postings, LMIA record',
   'plan.prov.title': 'Choose a province', 'plan.prov.sub': '1 detail: which province fits your occupation',
   'rpt.p.best': 'Top pick — {prov}: your occupation is on the published list "{label}"; {open} open postings there, {named} hitting the named stream',
@@ -2558,13 +2546,6 @@ const ko: Dict = {
   'jpw.prefill': '{occ}(NOC {noc}) 직업인데 어느 경로로 가야 하나요?',
   'jpw.n.none': '경력 불요', 'jpw.n.m': '경력 {n}개월', 'jpw.n.tenure': '동일 고용주 {n}개월',
   'jpw.n.listed': '목록에 포함된 직업', 'jpw.n.ex': '목록에서 제외', 'jpw.n.na': '요건 미수록',
-  'jpw.p.FED-EE': '연방 Express Entry', 'jpw.p.ON-workforce': '온타리오주 우선 직군 통로',
-  'jpw.p.NB-sw': '뉴브런즈윅주 기술인력 통로', 'jpw.p.NS-sw': '노바스코샤주 기술인력 통로',
-  'jpw.p.SK-offer': '서스캐처원주 고용 오퍼 통로', 'jpw.p.AIP': '대서양 이민 프로그램(AIP)',
-  'jpw.p.RCIP': '농촌 지역 이민 시범(RCIP)', 'jpw.p.MB-swm': '매니토바주 기술인력 통로',
-  'jpw.p.AB-opportunity': '앨버타주 기회 통로', 'jpw.p.BC-sw': '브리티시컬럼비아주 기술인력 통로',
-  'jpw.p.BC-build': '브리티시컬럼비아주 건설 기능직 지정 추첨', 'jpw.p.NL-intl-grad': '뉴펀들랜드주 국제 졸업생 부문',
-  'jpw.p.PE-sw': '프린스에드워드아일랜드주 수요 직업 통로',
   'jd.rep.lock': '주정부 지명 경로가 가능한 채용을 낸 고용주 {n}곳', 'jd.rep.lock.sub': '회사명, 해당 공고 수, LMIA 기록',
   'plan.prov.title': '주 선택', 'plan.prov.sub': '1개 항목: 내 직종에 맞는 주 확인',
   'rpt.p.best': '{prov}가 가장 적합: 내 직종이 공개 목록 "{label}"에 있고 현지 채용 {open}건 중 {named}건이 지정 스트림 해당',
@@ -3178,7 +3159,13 @@ const ko: Dict = {
   'tv.k.staff': '직원 규모', 'tv.k.public': '고용주 유형', 'tv.k.collect': '수록 범위',
 }
 
-const MESSAGES: Record<Lang, Dict> = { zh, en, ko }
+// 通道名(jpw.p.<key>)由策略文件摊开(2026-08-15 一条通道一个文件):三语名跟着通道走,
+// 加一条通道不必再回这里补三处字面量 —— 漏补一处就是页面上冒出个 `jpw.p.XX` 的裸键。
+const MESSAGES: Record<Lang, Dict> = {
+  zh: { ...zh, ...pathwayNames('zh') },
+  en: { ...en, ...pathwayNames('en') },
+  ko: { ...ko, ...pathwayNames('ko') },
+}
 
 export type TFn = ((key: string, vars?: Record<string, string | number>) => string) & { lang?: Lang }
 

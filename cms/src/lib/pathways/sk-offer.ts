@@ -9,6 +9,7 @@ export const SK_OFFER: PathwayStrategy = {
   key: 'SK-offer',
   province: 'SK',
   stream: 'SINP International Skilled Worker: Employment Offer',
+  name: { zh: '萨斯喀彻温省 雇主 offer 通道', en: 'Saskatchewan Employment Offer', ko: '서스캐처원주 고용 오퍼 통로' },
   reqProvince: 'SK',
   reqStream: /sinp international skilled worker/i,
   countsForeign: true,

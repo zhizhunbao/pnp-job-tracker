@@ -12,6 +12,7 @@ export const NS_SW: PathwayStrategy = {
   key: 'NS-sw',
   province: 'NS',
   stream: 'Nova Scotia Nominee Program — Skilled Worker stream',
+  name: { zh: '新斯科舍省 技术工人通道', en: 'Nova Scotia Skilled Worker', ko: '노바스코샤주 기술인력 통로' },
   reqProvince: 'NS',
   reqStream: /nova scotia nominee/i,
   countsForeign: true,

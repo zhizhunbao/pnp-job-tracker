@@ -9,6 +9,7 @@ export const BC_SW: PathwayStrategy = {
   key: 'BC-sw',
   province: 'BC',
   stream: 'BC PNP Skilled Worker stream',
+  name: { zh: '不列颠哥伦比亚省 技术工人通道', en: 'British Columbia Skilled Worker', ko: '브리티시컬럼비아주 기술인력 통로' },
   reqProvince: 'BC',
   reqStream: /bc pnp skill/i,
   drawStream: 'BC PNP Skilled Worker stream',

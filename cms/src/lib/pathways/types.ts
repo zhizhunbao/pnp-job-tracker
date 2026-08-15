@@ -25,6 +25,12 @@ export type PathwayStrategy = {
   province: string
   /** 官方通道名(英文原名,判定卡与日志用) */
   stream: string
+  /** 页面显示名三语(2026-08-15 从 i18n 的 jpw.p.<key> 搬进来:一条通道的名字也是它自己的事)。
+   *  i18n 字典在装载时把它摊回 `jpw.p.<key>` 键,调用方照旧 t(),不必改一处。 */
+  name: { zh: string; en: string; ko: string }
+  /** 联邦区域线覆盖哪几个省(AIP/RCIP)。判定是联邦一份,但在招岗/指定雇主/试点社区是省的事 →
+   *  展示层按 目标省∩这几个省 拆行(不限省=全拆)。非区域线不填。 */
+  regionProvinces?: readonly string[]
 
   // ── 去哪挑门槛行(reqStream 用**子串**匹配不用字面相等:mart 里的通道名带 em dash,
   //    写死全串等于把编码问题埋进代码)────────────────────────────────────────
