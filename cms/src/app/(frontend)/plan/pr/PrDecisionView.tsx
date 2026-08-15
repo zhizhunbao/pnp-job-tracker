@@ -117,7 +117,9 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
   const [occNoc, setOccNoc] = useState('')
   // 竞争卡年份筛选(2026-08-14 Frank「加上年份筛选」「看 2024 2025 2026 不同年份」):
   // ''=现行口径(今天这张表);选了年 → 存量/名额/新发学签列切到该年,官方缺位的格显「—」不编
-  const [compYear, setCompYear] = useState('')
+  // 默认停在 2025(2026-08-15 Frank「默认选择 2025 吧」):最近一个名额+流量齐的年份;
+  // 再点一次 2025 可回「现行口径」(最新存量÷当年名额的比值表)
+  const [compYear, setCompYear] = useState('2025')
   // 答题闸门(2026-08-14 Frank「答题之前还是需要用户先注册」):未登录先注册/登录再答,
   // 答案从第一题起就有档可落。null=还没问回来(闸先关,加载区占位,不闪答题卡)
   const [me, setMe] = useState<boolean | null>(null)
@@ -497,7 +499,24 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                     // 表格化(2026-08-15 Frank「这个也改成表格。手机改成卡片」「手机端很多重复文字」):
                     // 标签进表头一次;门槛全行同值 → 收脚注一次不占列;「看该省在招岗」并进在招列=数字即链接。
                     // 职业档(planCoarse)不出门槛列 —— 没答条件,判定本来就出不来,摆一列「判不了」是噪音
-                    const shown = profilePaths.slice(0, planCoarse ? 6 : 3)
+                    // 排序补岗数信号(2026-08-15 Frank「1 个岗位能排第一?」):引擎序=门槛档→竞争比,
+                    // 但 NL 7.9:1 全省只挂 1 岗,排第一=劝人押空盘。规则:**同档内**在招 <10 岗
+                    // (不够一页投递量级,阈值可调)沉档尾按岗数多→少,足量的仍按竞争比松→紧;
+                    // 门槛档仍是第一主键(引擎原序),岗数不跨档翻盘 —— 不合成分数,只是降档规则
+                    const bandOf = (row: ProfilePath) => `${row.verdict}|${row.blockedBy ?? ''}|${row.tier ?? ''}`
+                    const jobsOf = (row: ProfilePath) => (/^[A-Z]{2}$/.test(row.province) && occComp
+                      ? (occComp.find((o) => o.province === row.province)?.openJobs ?? 0) : null)
+                    const bandRank = new Map<string, number>()
+                    profilePaths.forEach((row) => { if (!bandRank.has(bandOf(row))) bandRank.set(bandOf(row), bandRank.size) })
+                    const resorted = profilePaths.map((row, i) => ({ row, i, band: bandRank.get(bandOf(row)) ?? 0, n: jobsOf(row) }))
+                    resorted.sort((a, b) => {
+                      if (a.band !== b.band) return a.band - b.band
+                      const aThin = a.n != null && a.n < 10, bThin = b.n != null && b.n < 10
+                      if (aThin !== bThin) return aThin ? 1 : -1
+                      if (aThin && bThin && a.n !== b.n) return (b.n ?? 0) - (a.n ?? 0)
+                      return a.i - b.i                     // 足量组保持引擎序(竞争比松→紧);null(联邦/AIP)随原序
+                    })
+                    const shown = resorted.map((x) => x.row).slice(0, planCoarse ? 6 : 3)
                     const rows = shown.map((row, index) => {
                       const province = row.key === 'AIP'
                         ? t('dp.atlantic')
@@ -561,8 +580,10 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                     )
                     return (
                       <>
-                        <style>{`@media(max-width:640px){.dpPlanTbl{display:none}}@media(min-width:641px){.dpPlanCards{display:none}}`}</style>
-                        <div className="dpPlanCards" style={{ display: 'grid', gap: 8 }}>
+                        {/* display 走 CSS 类不走内联(2026-08-15 实撞:内联 display:grid 压过媒体查询的
+                            display:none,桌面上卡片藏不掉 → 表格+卡片双份渲染) */}
+                        <style>{`.dpPlanCards{display:grid;gap:8px}@media(max-width:640px){.dpPlanTbl{display:none}}@media(min-width:641px){.dpPlanCards{display:none}}`}</style>
+                        <div className="dpPlanCards">
                           {rows.map((r) => (
                             <div key={r.rowKey} style={{ border: `1px solid ${UI.hairline}`, borderRadius: 10, padding: '10px 12px', background: r.top ? '#f8fbff' : '#fff' }}>
                               <div style={{ display: 'flex', alignItems: 'baseline', gap: 7 }}>
