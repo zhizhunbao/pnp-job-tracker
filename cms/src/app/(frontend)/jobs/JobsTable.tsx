@@ -9,7 +9,8 @@ const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : use
 import { makeT, streamDisplay, eeDisplay, eeKeyDisplay, LANGS, COLS_COOKIE, type Lang, type TFn } from './i18n'
 import { useLang } from '../LangProvider'
 import { IconChart, IconCheck, IconClipboard, IconCompass, IconLock, IconMap, IconMapPin, IconMaximize, IconMinimize, IconNews, IconSave, IconSettings, IconStar, IconTarget, IconUser, IconWarn, IconX } from '../Icons'
-import { ACCT_SLOT_W, SiteHeader } from '../SiteHeader'
+import { SiteHeader } from '../SiteHeader'
+import { AccountMenu } from '../AccountMenu'
 import { BANNER_IMGS, Button, CARD_MD, Notice, PageBanner, PILL_BTN } from '../ui/primitives'
 import { JobCard } from '../ui/JobCard'   // 全站唯一那张职位卡(2026-08-02 拍板);landing 职位榜吃的是同一张
 import { SiteFooter } from '../SiteFooter'
@@ -213,61 +214,13 @@ function AccountArea({ t, plan }: { t: TFn; plan: Plan }) {
     window.location.reload()
   }
   // Pro 钮不进 header(#65,Frank:「没有意义」)——升级入口=横幅/升级卡/用户菜单/定价页,四处都在
-  // #63b(2026-07-19 Frank「太长太大,参考一亩三分地」):行距/字号/头部全面压紧
-  const menuItem: React.CSSProperties = { display: 'block', width: '100%', textAlign: 'left', padding: '4px 12px', fontSize: 12.5, color: '#374151', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap', boxSizing: 'border-box', lineHeight: 1.7 }
-  const menuSect: React.CSSProperties = { fontSize: 10, color: '#9ca3af', letterSpacing: 0.5, padding: '3px 12px 0' }  // #63 区头小字
-  const logout = async () => {
-    try { await fetch('/api/users/logout', { method: 'POST', credentials: 'include' }) } catch { /* ignore */ }
-    window.location.reload()
-  }
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
       {plan.loggedIn ? (
-        // 用户按钮+下拉(2026-07-16 拍板):圆形首字头像 + 邮箱前缀 + ▾;菜单右缘与按钮右缘对齐,
-        // 菜单头=完整邮箱;Pro 徽标折进菜单,退出登录不再非去 /account 不可
-        <span ref={menuRef} style={{ position: 'relative', display: 'inline-flex', minWidth: ACCT_SLOT_W, justifyContent: 'flex-end' }}>
-          {/* E11-02 账户下拉;#63b(Frank「像 Google 那样只显示图标」):按钮=纯头像圆钮,名字挂 title。
-              minWidth=ACCT_SLOT_W:与 AccountLite 同槽宽,否则登录态导航整排比其他页右移 52px(2026-07-31) */}
-          <button onClick={() => setMenu((o) => !o)} title={displayName?.trim() || email || undefined}
-            style={{ display: 'inline-flex', border: 'none', background: 'none', padding: 2, cursor: 'pointer', borderRadius: '50%', boxShadow: menu ? '0 0 0 2px #bfdbfe' : 'none' }}>
-            <Avatar src={avatar} name={displayName || email} email={email} size={28} />
-          </button>
-          {menu && (
-            <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, boxShadow: '0 10px 30px rgba(0,0,0,.12)', padding: '3px 0', zIndex: 30, minWidth: 185 }}>
-              {/* 身份头:昵称+邮箱+Free/Pro 两行紧凑版(#63b 压缩:大头像退役) */}
-              <a href="/account" style={{ display: 'block', padding: '7px 12px', textDecoration: 'none', borderBottom: '1px solid #f3f4f6', marginBottom: 2 }}>
-                <div style={{ fontSize: 12.5, fontWeight: 600, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {displayName?.trim() || (email ? email.split('@')[0] : '—')}
-                  <span style={{ fontWeight: 400, marginLeft: 6, fontSize: 11 }}>{plan.isPro
-                    ? <span style={{ color: '#b45309', fontWeight: 600 }}>Pro{proUntil ? ` · ${proUntil}` : ''}</span>
-                    : <span style={{ color: '#9ca3af' }}>{t('acct.plan.free')}</span>}</span>
-                </div>
-                <div style={{ fontSize: 11, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{email}</div>
-              </a>
-              {/* #63 Supabase 风分区(2026-07-18 效果图 Frank「可以」):求职/管理两区+区头小字,
-                  升级 Pro 改通栏实心钮(免费号才显),退出置底灰字;条目图标全 Icons.tsx SVG */}
-              <div style={menuSect}>{t('menu.sect.job')}</div>
-              <a href="/?view=match" style={menuItem}><IconTarget /> {t('mv.entry')}</a>
-              <a href="/plan/pr" style={menuItem}><IconCompass /> {t('plan.pr.title')}</a>
-              <a href="/account?sec=favs" style={menuItem}><IconStar /> {t('fav.title')}</a>
-              <a href="/account?sec=sjobs" style={menuItem}><IconClipboard /> {t('sj.title')}</a>
-              <div style={{ borderTop: '1px solid #f3f4f6', margin: '4px 0' }} />
-              <div style={menuSect}>{t('menu.sect.manage')}</div>
-              <a href="/account?sec=profile" style={menuItem}><IconUser /> {t('prof.title')}</a>
-              <a href="/account?sec=saved" style={menuItem}><IconSave /> {t('ss.title')}</a>
-              <a href="/account" style={menuItem}><IconSettings /> {t('nav.acctTab')}</a>
-              {/* 2026-07-31 Frank「升级 Pro 这个按钮太宽太突兀了吧」:通栏实心橙钮改成与其它条目同构的一行,
-                  靠 Pro 色的星与文字区分即可 —— 菜单里塞一块广告位,点的人不会多,烦的人一定多 */}
-              {!plan.isPro && (
-                <button onClick={() => { setMenu(false); setPricing(true) }} style={{ ...menuItem, color: '#b45309', fontWeight: 600 }}>
-                  <IconStar /> {t('up.cta2')}
-                </button>
-              )}
-              <div style={{ borderTop: '1px solid #f3f4f6', margin: '2px 0' }} />
-              <button onClick={logout} style={{ ...menuItem, color: '#9ca3af' }}>{t('acct.logout')}</button>
-            </div>
-          )}
-        </span>
+        // 用户按钮+下拉(2026-07-16 拍板)。菜单本体 2026-08-15 抽成全站共用的 AccountMenu ——
+        // 二级页头像先前是直达 /account,同一个头像两种行为(Frank 实拍),收敛成一个组件
+        <AccountMenu t={t} email={email} displayName={displayName} avatar={avatar}
+          isPro={plan.isPro} proUntil={proUntil} onPricing={() => setPricing(true)} />
       ) : (
         <>
           {/* P1 换装:登录=ghost,注册=primary sm(每屏唯一主行动) */}

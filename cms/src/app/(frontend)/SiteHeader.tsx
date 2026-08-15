@@ -14,6 +14,8 @@ import { createPortal } from 'react-dom'
 import dynamic from 'next/dynamic'
 import { LANGS, type Lang, type TFn } from './jobs/i18n'
 import { Avatar } from './Avatar'
+import { AccountMenu } from './AccountMenu'
+import { PricingModal } from './jobs/PricingModal'
 import { Button } from './ui/primitives'
 import { IconTarget, IconChart, IconCompass, IconNews, IconUsers } from './Icons'
 
@@ -41,14 +43,18 @@ function AccountLite({ t, acct }: { t: TFn; acct: AcctState }) {
   // 原「登录/注册」是 /?login=1 链接——弹框只挂在职位板,二级页都得先跳过去。现当页开
   // AuthModal;成功后整页刷新让 SSR 登录态(分层列等)生效,同 /jobs 惯例。深链 /?login=1 照旧可用。
   const [auth, setAuth] = useState<'' | 'login' | 'register'>('')
+  const [pricing, setPricing] = useState(false)
   if (state === 'loading') return <span style={{ display: 'inline-block', width: ACCT_SLOT_W, height: 28 }} />
   if (state === 'in') {
-    // #63b(Frank「像 Google 那样只显示图标」):纯头像圆钮,名字/Pro 态挂 title
+    // 2026-08-15 Frank「登录之后点这个应该还是下拉啊,怎么变成跳页面了」:二级页原是
+    // `<a href="/account">` 直达,而 /jobs 的同一个头像是下拉 —— 同一元素两种行为。
+    // 菜单收敛进共用的 AccountMenu(升级框仍归本组件开,与 /jobs 各管各的上下文)
     return (
-      <a href="/account" title={(u.displayName?.trim() || u.email.split('@')[0]) + (u.pro ? ' · Pro' : '')}
-        style={{ display: 'inline-flex', justifyContent: 'flex-end', minWidth: ACCT_SLOT_W, padding: 2, borderRadius: '50%', textDecoration: 'none' }}>
-        <Avatar src={u.avatar} name={u.displayName || u.email} email={u.email} size={28} />
-      </a>
+      <>
+        <AccountMenu t={t} email={u.email} displayName={u.displayName} avatar={u.avatar}
+          isPro={u.pro} onPricing={() => setPricing(true)} />
+        {pricing && <PricingModal t={t} loggedIn pro={u.pro} onClose={() => setPricing(false)} />}
+      </>
     )
   }
   // Pro 钮不进 header(Frank 2026-07-18:「没有意义」——定价入口=/pricing 与升级卡)

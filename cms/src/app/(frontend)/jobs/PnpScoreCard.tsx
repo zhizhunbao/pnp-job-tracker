@@ -546,13 +546,15 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
               style={{ ...sel, height: 44, maxWidth: 220, fontSize: 15 }} />
           ) : null}
           {/* 第一屏的「上一题」上面没有题了 —— 它退回的是结果页,所以写「返回」不写「上一题」。
-              全卷已答满、又不在最后一题时,「下一题」旁边给一颗「完成」直接收卷
-              (2026-08-13 Frank:「有的时候只是改一个答案」);最后一题的主钮本来就是「完成」,不重复给。 */}
+              「下一题」旁边**恒**给一颗「完成」直接收卷(2026-08-15 Frank「这些弹框回答也需要一个
+              完成按钮」——从条件格点进来常常只想答一格,格子里还有一堆「待填写」时先前不给这颗钮,
+              人被扣在卷子里只能一路翻到底);最后一题的主钮本来就是「完成」,不重复给。
+              答不满照样能收:没答的题在引擎那儿本来就是「判不了」,收卷不等于替他填。 */}
           <QuizNav prevLabel={extraIndex > 0 ? t('plan.prev') : t('ps.back')}
             nextLabel={extraIndex < extraQuestionCount - 1 ? t('plan.next') : t('ps.finish')}
             onPrev={extraIndex > 0 ? () => setExtraQuestionIndex(extraIndex - 1) : onQuestionnaireBack}
             onNext={() => nextExtra(activeExtraQuestion)} nextDisabled={!activeAnswered}
-            doneLabel={extraComplete && extraIndex < extraQuestionCount - 1 ? t('ps.finish') : undefined}
+            doneLabel={extraIndex < extraQuestionCount - 1 ? t('ps.finish') : undefined}
             onDone={onQuestionnaireComplete}
             hint={activeExtraQuestion.checks ? t('ps.q.multiHint') : undefined} />
         </>

@@ -80,6 +80,17 @@ const NOC_TITLE_CACHE: Record<string, string> = {}
 // 已经问过的码(不论问到没问到)。失败不重试:同一个码问一次拿不到名字,再问十次也一样。
 const NOC_TITLE_TRIED = new Set<string>()
 
+/** 官方**明说不打分**的省(举证责任在我们:一个 URL + 一句原句,同 gateManifest 的规矩)。
+ *  不在这张表里的缺省一律按「本站未收录」说 —— 两句话在用户那儿意思相反,不许拿一句混着用。
+ *  NS:2025-11-28 起 NSNP 全通道 + AIP 指定改 EOI,选谁由厅里按当期优先级酌情定,没有可对照的分值表。 */
+const NO_POINTS_GRID: Record<string, { url: string; quote: string; fetched: string }> = {
+  NS: {
+    url: 'https://liveinnovascotia.com/eoi-process',
+    quote: 'Factors that may guide selection include provincial priorities, remaining allocation, EOI pool volume, and program integrity considerations.',
+    fetched: '2026-08-15',
+  },
+}
+
 // statusInCanada 按 asks 细分文案键(2026-08-15 拆闸):判的是工签就说工签,不再统称「加拿大身份」。
 // 未标注(如 AIP/RCIP 这类本无此闸的 key)回落通用键
 const gateChip = (pathKey: string, blocked: string): string => {
@@ -314,6 +325,8 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
   const selectedProvinces = tvJob?.province ? [tvJob.province] : bands.provs
   const factorProvinces = scoreTables?.factorProvinces ?? []
   const scoredProvinces = selectedProvinces.filter((province) => factorProvinces.includes(province))
+  // 选了、但分值卡里没有页签的省(本站有表的六省:AB/BC/MB/NL/ON/SK)
+  const ungriddedProvinces = selectedProvinces.filter((province) => !factorProvinces.includes(province))
   const scoreFactors = scoreTables?.factors ?? []
   const scoreDraws = scoreTables?.draws ?? []
   const targetFactors = scoreFactors.filter((f) => scoredProvinces.includes(f.province))
@@ -629,17 +642,53 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                         : t(stateKey)
                       // AIP/RCIP 拆省后同 key 多行 → rowKey 带省码去重(React key / DataTable rowKey / 埋点共用)
                       return { rowKey: (row.key === 'AIP' || row.key === 'RCIP') && /^[A-Z]{2}$/.test(row.province) ? `${row.key}:${row.province}` : row.key, index, province, routeName, top: index === 0 && !row.blockedBy && !row.belowLine,
-                        ratio: row.competition?.ratio ?? null, stateText, afterOk, openOk, jobsHref, jobsN }
+                        ratio: row.competition?.ratio ?? null, stateText, afterOk, openOk, jobsHref, jobsN,
+                        // 推荐原因拆胶囊要的两个判据:被单一门槛卡住(拆「已达标 + 差这样」两枚)、
+                        // 本站没收录规则(这枚是我们的窟窿,不许染成「你不行」的黄色)
+                        blocked: !!row.blockedBy && row.availability === 'ok' && !row.belowLine,
+                        dataGap: row.availability !== 'ok',
+                        // 差的那一样(offer 按通道分:AIP=指定雇主、RCIP=社区雇主 —— 三者要的不是同一种 offer)
+                        gapKey: row.blockedBy === 'offer' && (row.key === 'AIP' || row.key === 'RCIP') ? `offer${row.key}`
+                          : gateChip(row.key, row.blockedBy ?? ''),
+                        // 拿到 offer 之后还要攒的时间(反事实算出来的 tier;Day0 不出这枚)
+                        waitTier: isOffer && ao?.verdict === 'open' && ao.tier ? ao.tier : 0 }
                     })
-                    // 门槛全行同值(常见:全被 offer 卡住)→ 一句脚注,不铺一整列同一句话
-                    const gates = Array.from(new Set(rows.map((r) => r.stateText)))
-                    const gateUniform = !planCoarse && gates.length === 1
                     type PlanRow = (typeof rows)[number]
                     const rank = (r: PlanRow) => (
                       <span style={{ width: 24, height: 24, borderRadius: 999, display: 'grid', placeItems: 'center', background: r.top ? UI.primary : UI.bg, color: r.top ? '#fff' : UI.text2, fontSize: 12, fontWeight: 700 }}>{r.index + 1}</span>
                     )
-                    const gatePill = (r: PlanRow) => (
-                      <span style={{ color: r.openOk ? UI.ok : r.afterOk ? '#1d4ed8' : '#92400e', background: r.openOk ? '#ecfdf5' : r.afterOk ? '#eff6ff' : '#fffbeb', borderRadius: 999, padding: '3px 9px', fontSize: 11.5, fontWeight: 600, whiteSpace: 'nowrap' }}>{r.stateText}</span>
+                    // 推荐原因(2026-08-15 Frank「改成推荐原因吧,然后用胶囊 bullets」):
+                    // 一句话拆成几枚胶囊 —— 「为什么它排在这」本来就是两件事:**其余门槛已经达标**
+                    // 和**还差这一样**。合成一句时前半截是隐含的,拆开才说得出推荐的理由。
+                    // 竞争度与在招数各有自己的列,这里不重复(文案四闸:不重复)。
+                    const TONE = {
+                      ok: { color: UI.ok, background: '#ecfdf5' },
+                      info: { color: '#1d4ed8', background: '#eff6ff' },
+                      warn: { color: '#92400e', background: '#fffbeb' },
+                      mute: { color: UI.text2, background: UI.bg },
+                    } as const
+                    // 胶囊短到一行放得下(铁律:值折行 = 文案太长):差什么就写「差 X」,
+                    // 「拿到 offer 之后还要攒多久」另起一枚,不揉进同一句
+                    const whyPills = (r: PlanRow): { text: string; tone: keyof typeof TONE }[] => {
+                      if (r.dataGap) return [{ text: r.stateText, tone: 'mute' }]
+                      if (r.openOk) return [{ text: r.stateText, tone: 'ok' }]
+                      if (!r.blocked) return [{ text: r.stateText, tone: r.afterOk ? 'info' : 'warn' }]
+                      // 被门槛卡住:①其余已达标(这才是推荐它的理由)②差的那一样 ③拿到后还要攒多久
+                      const out: { text: string; tone: keyof typeof TONE }[] = [{ text: t('dp.planWhyMet'), tone: 'ok' }]
+                      out.push({ text: t(`dp.why.gap.${r.gapKey}`), tone: 'warn' })
+                      if (r.waitTier) out.push({ text: t(`dp.why.wait${r.waitTier}`), tone: 'info' })
+                      return out
+                    }
+                    // 全行同因(常见:全被 offer 卡住)→ 收成一句脚注,不铺一整列同一串胶囊。
+                    // 判同不再看合成句,看胶囊本身 —— 列渲染的是胶囊,收不收也该由胶囊说了算
+                    const gates = Array.from(new Set(rows.map((r) => whyPills(r).map((p) => p.text).join('、'))))
+                    const gateUniform = !planCoarse && gates.length === 1
+                    const whyCell = (r: PlanRow) => (
+                      <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                        {whyPills(r).map((p) => (
+                          <span key={p.text} style={{ ...TONE[p.tone], borderRadius: 999, padding: '3px 9px', fontSize: 11.5, fontWeight: 600, whiteSpace: 'nowrap' }}>{p.text}</span>
+                        ))}
+                      </span>
                     )
                     const jobsCell = (r: PlanRow) => (
                       r.jobsN == null && !r.jobsHref ? <span style={{ color: UI.text3 }}>—</span>
@@ -666,7 +715,7 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 4, flexWrap: 'wrap' }}>
                                 <span style={{ fontSize: 11.5, color: UI.text3 }}>{r.province}</span>
-                                {!planCoarse && !gateUniform ? gatePill(r) : null}
+                                {!planCoarse && !gateUniform ? whyCell(r) : null}
                                 <span style={{ marginLeft: 'auto', fontSize: 12.5 }}>{jobsCell(r)}</span>
                               </div>
                             </div>
@@ -682,12 +731,14 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                                   <span style={{ color: UI.text3, fontSize: 11.5, flexShrink: 0 }}>{r.province}</span>
                                 </span>
                               ) },
-                              ...(!planCoarse && !gateUniform
-                                ? [{ key: 'gate', label: t('dp.planGate'), width: '20%', render: gatePill } as const]
-                                : []),
                               { key: 'ratio', label: t('dp.compCol'), width: '20%', align: 'right', sort: (r) => r.ratio,
                                 render: (r) => (r.ratio == null ? <span style={{ color: UI.text3 }}>—</span> : <span style={{ fontVariantNumeric: 'tabular-nums' }}>{r.ratio}:1</span>) },
                               { key: 'jobs', label: t('dp.planOpen'), width: '20%', align: 'right', sort: (r) => r.jobsN, render: jobsCell },
+                              // 推荐原因摆末列(2026-08-15 Frank「这个放到最后一列」):它是结论性的一栏,
+                              // 让前面的名字/竞争/在招三列先把事实摆完
+                              ...(!planCoarse && !gateUniform
+                                ? [{ key: 'why', label: t('dp.planWhy'), width: '26%', align: 'right', render: whyCell } as const]
+                                : []),
                             ]} />
                         </div>
                         {gateUniform ? (
@@ -992,6 +1043,23 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
               <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${UI.hairline}` }}>
                 <ConditionGrid rows={conditionSummary} provLabel={provDisp} ariaLabel={t('dp.prov')} idPrefix="dpCond"
                   onTile={(key) => startQuiz(key)} />
+                {/* 选了却没有页签的省要说清楚为什么(2026-08-15 Frank「这个为什么没有新斯科舍」):
+                    不说 = 看着像我们漏了。两句话意思相反,分开写:官方按 EOI 酌情选人不打分(带原句)
+                    vs 本站还没收录该省的表。铁律见 CLAUDE.md「官方不公布是需要举证的断言」。 */}
+                {ungriddedProvinces.length > 0 && scoreTables ? (
+                  <div style={{ marginTop: 10, fontSize: 11.5, color: UI.text3, lineHeight: 1.7 }}>
+                    {ungriddedProvinces.map((p) => {
+                      const ev = NO_POINTS_GRID[p]
+                      return (
+                        <div key={p}>
+                          {ev
+                            ? <>{t('dp.noGridOfficial', { prov: provDisp(p) })} <a href={ev.url} target="_blank" rel="noopener noreferrer" style={{ color: UI.text3 }}>{t('dp.src')}</a></>
+                            : t('dp.noGridSite', { prov: provDisp(p) })}
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : null}
               </div>
               {quizSection}
             </div>

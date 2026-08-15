@@ -96,6 +96,16 @@ button:not(:disabled):hover {
   filter: brightness(0.94);
 }
 
+/* 焦点态统一(2026-08-15 Frank「这三个按钮样式怎么不一样」):竞争卡 2024/2025/2026 三个
+   chip 代码完全同源,那圈黑框是**浏览器默认焦点环** —— 全站从没定义过 focus 样式,键盘焦点
+   一律借 Chrome 的黑白双环,落在未选中的 chip 上就成了第三种样式。
+   🔴 不许用 outline:none 了事(可访问性红线,键盘用户就此看不见焦点在哪):改成与设计系统同色的
+   蓝环 + 2px 外偏移,与「已选中」的浅蓝底实心态天然区分。:where() 保持零特异性,组件想覆盖照旧能覆盖。 */
+:where(a, button, summary, [role='button'], [tabindex]):focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
 /* hover 统一 token(2026-07-31 Frank「现在 hover 看着是灰色的」→ docs/design/hover统一-20260731.md 落地):
    块状链接(整行/整卡是 <a>)不再整块变暗发灰 —— 行=底色高亮、卡=蓝框+浅底,内容原样;
    filter:none 挡掉全局 a:hover 变暗;!important 压行内 background/border(resTile 同款手法)。
