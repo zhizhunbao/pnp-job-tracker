@@ -30,17 +30,17 @@ export const pathwayMatchesTargets = (key: string, province: string, targets: st
 }
 
 /**
- * AIP 按省拆行(2026-08-15 Frank「aip 别四个省放一起了。还是分开来算吧」):
- * 判定是联邦一份(四省同一套门槛),但在招岗/指定雇主是省的事 —— 一行「大西洋地区」既没数字
- * 也分不出该押哪个省。拆成 目标省∩四省 各一行(不限省 = 四省全拆),判定字段原样复制;
- * competition 保持 null —— AIP 没有 EOI 池,**不许**拿该省 PNP 的名额竞争比充数。
+ * 联邦区域线按省拆行(2026-08-15 Frank「aip 别四个省放一起了。还是分开来算吧」+「rcip 也需要拆」):
+ * 判定是联邦一份(区域内同一套门槛),但在招岗/指定雇主/试点社区是省的事 —— 一行「大西洋地区」
+ * 既没数字也分不出该押哪个省。拆成 目标省∩区域省 各一行(不限省 = 全拆),判定字段原样复制;
+ * competition 保持 null —— AIP/RCIP 都没有 EOI 池,**不许**拿该省 PNP 的名额竞争比充数。
  */
-export const splitAipByProvince = <T extends { key: string; province: string }>(rows: T[], targets: string[]): T[] =>
-  rows.flatMap((row) => row.key !== 'AIP'
-    ? [row]
-    : REGIONAL_FEDERAL_PATHWAYS.AIP
-        .filter((p) => !targets.length || targets.includes(p))
-        .map((p) => ({ ...row, province: p })))
+export const splitRegionalByProvince = <T extends { key: string; province: string }>(rows: T[], targets: string[]): T[] =>
+  rows.flatMap((row) => {
+    const provs = REGIONAL_FEDERAL_PATHWAYS[row.key]
+    if (!provs) return [row]
+    return provs.filter((p) => !targets.length || targets.includes(p)).map((p) => ({ ...row, province: p }))
+  })
 
 /**
  * 各省名额竞争度(E12-07 `stats.difficulty`,来源 IRCC 开放数据):
@@ -153,7 +153,10 @@ export async function POST(req: Request) {
     return ar === br ? a.i - b.i : ar - br
   })
 
-  const rows = ranked.slice(0, 6).map(({ row, c }) => {
+  // 全量返回不截断(2026-08-15 RCIP 拆省时实撞:此前 slice(0,6) 在拆省前砍行,RCIP 排第 7
+  // 整条到不了客户端 —— 客户端要按在招岗数降档重排,喂残缺候选集等于把重排废了;行数上限
+  // 13 条拆完 ≤ 21,负载可忽略,展示条数由客户端自己截)
+  const rows = ranked.map(({ row, c }) => {
     const after = row.blockedBy === 'offer' ? afterByKey?.get(row.key) : undefined
     return {
       key: row.key,
@@ -197,5 +200,5 @@ export async function POST(req: Request) {
     outside = cand.length ? { key: cand[0].row.key, province: cand[0].row.province } : null
   }
 
-  return Response.json({ noc, rows: splitAipByProvince(rows, targetProvinces), outside })
+  return Response.json({ noc, rows: splitRegionalByProvince(rows, targetProvinces), outside })
 }

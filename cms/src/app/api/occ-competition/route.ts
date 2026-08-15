@@ -27,6 +27,8 @@ export type OccCompetitionRow = {
   ratio: number | null
   /** 该省 AIP 指定雇主在招的本职业岗数(2026-08-15 Frank「aip 别四个省放一起了,分开来算」) */
   aipJobs: number
+  /** 该省 RCIP 试点社区在招的本职业岗数(2026-08-15 Frank「rcip 也需要拆」;LIKE 口径同列表页 pilot=RCIP) */
+  rcipJobs: number
 }
 
 const num = (v: unknown): number | null => {
@@ -42,7 +44,7 @@ export async function GET(req: NextRequest) {
   const pool = (payload.db as { pool?: { query: (q: string, v?: unknown[]) => Promise<{ rows: Record<string, unknown>[] }> } }).pool
   if (!pool) return Response.json({ noc, rows: [] })
 
-  const [occ, comp, aip] = await Promise.all([
+  const [occ, comp, aip, rcip] = await Promise.all([
     pool.query(
       `SELECT province, open_jobs, new30d, avg_days_open
          FROM stats_occupation
@@ -59,6 +61,12 @@ export async function GET(req: NextRequest) {
         WHERE status = 'open' AND COALESCE(aip, false) = true AND noc = $1 AND province <> ''
         GROUP BY province`, [noc],
     ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
+    // RCIP 试点社区在招的本职业岗:LIKE 口径与列表页 fPilot=RCIP 同一条(pilot 列可双标 RCIP/FCIP)
+    pool.query(
+      `SELECT province, COUNT(*)::int AS n FROM jobs
+        WHERE status = 'open' AND COALESCE(pilot, '') LIKE '%RCIP%' AND noc = $1 AND province <> ''
+        GROUP BY province`, [noc],
+    ).catch(() => ({ rows: [] as Record<string, unknown>[] })),
   ])
 
   const ratioOf: Record<string, number> = {}
@@ -71,6 +79,8 @@ export async function GET(req: NextRequest) {
 
   const aipOf: Record<string, number> = {}
   for (const r of aip.rows) aipOf[String(r.province ?? '')] = num(r.n) ?? 0
+  const rcipOf: Record<string, number> = {}
+  for (const r of rcip.rows) rcipOf[String(r.province ?? '')] = num(r.n) ?? 0
 
   const rows: OccCompetitionRow[] = occ.rows.map((r) => ({
     province: String(r.province ?? ''),
@@ -79,6 +89,7 @@ export async function GET(req: NextRequest) {
     avgDaysOpen: num(r.avg_days_open),
     ratio: ratioOf[String(r.province ?? '')] ?? null,
     aipJobs: aipOf[String(r.province ?? '')] ?? 0,
+    rcipJobs: rcipOf[String(r.province ?? '')] ?? 0,
   }))
 
   return Response.json({ noc, rows })

@@ -474,6 +474,16 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
     const short = lang === 'zh' ? dropped.replace(/^[一-龥]{1,4}省\s+/, '') : dropped
     return short.trim() || dropped
   }
+  // 制度归属:key 即真相(2026-08-14 Frank「通道要标明哪些是 pnp aip 或者 rcip」)
+  const programOf = (key: string) => (key === 'FED-EE' ? 'EE' : key === 'AIP' ? 'AIP' : key === 'RCIP' ? 'RCIP' : 'PNP')
+  // 归属并进名字尾的小括号(2026-08-15 Frank「把 pnp rcip 这种标签去掉 统一改成后面小括号那种」):
+  // 边框小标撤销;名字里已自带的(中文态 EE/AIP/RCIP 自名)不重复追加;中文全角括号,其余半角带空格
+  const routeNameFull = (key: string, provinceLabel: string) => {
+    const base = routeNameOf(key, provinceLabel)
+    const prog = programOf(key)
+    return new RegExp(`[((]\\s*${prog}\\s*[))]`).test(base) ? base
+      : lang === 'zh' ? `${base}(${prog})` : `${base} (${prog})`
+  }
 
   // 唯一一枚计数胶囊:基础 8 项 + 分值表逐题合报一个数(2026-08-13 Frank「合并成 17」)。
   // 摘要卡头、带岗态判定卡②、问卷弹框头共用同一份。
@@ -535,12 +545,12 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                     // 门槛档仍是第一主键(引擎原序),岗数不跨档翻盘 —— 不合成分数,只是降档规则
                     // belowLine 进 band 首位:服务端已把够不着线的沉队尾,客户端岗数重排不许把它捞回前排
                     const bandOf = (row: ProfilePath) => `${row.belowLine ? 'z' : 'a'}|${row.verdict}|${row.blockedBy ?? ''}|${row.tier ?? ''}`
-                    // AIP 已按省拆行(08-15 Frank「别四个省放一起,分开来算」)→ 它的在招 = 该省
-                    // 指定雇主 ∩ 本职业(aipJobs),不是全省在招(openJobs)—— 两个口径不许混
+                    // AIP/RCIP 已按省拆行(08-15 Frank「别四个省放一起,分开来算」「rcip 也需要拆」)→
+                    // 在招 = 该省指定雇主/试点社区 ∩ 本职业(aipJobs/rcipJobs),不是全省在招 —— 口径不许混
                     const jobsOf = (row: ProfilePath) => {
                       if (!/^[A-Z]{2}$/.test(row.province) || !occComp) return null
                       const o = occComp.find((x) => x.province === row.province)
-                      return row.key === 'AIP' ? (o?.aipJobs ?? 0) : (o?.openJobs ?? 0)
+                      return row.key === 'AIP' ? (o?.aipJobs ?? 0) : row.key === 'RCIP' ? (o?.rcipJobs ?? 0) : (o?.openJobs ?? 0)
                     }
                     const bandRank = new Map<string, number>()
                     profilePaths.forEach((row) => { if (!bandRank.has(bandOf(row))) bandRank.set(bandOf(row), bandRank.size) })
@@ -557,13 +567,13 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                     })
                     const shown = resorted.map((x) => x.row).slice(0, planCoarse ? 6 : 3)
                     const rows = shown.map((row, index) => {
-                      // AIP 拆省后 province 是省码 → 显省名;'FED' 只是老响应的兜底,不删 dp.atlantic
+                      // AIP/RCIP 拆省后 province 是省码 → 显省名;'FED' 只是老响应的兜底,区域名保底不删
                       const province = row.key === 'AIP'
                         ? (/^[A-Z]{2}$/.test(row.province) ? provDisp(row.province) : t('dp.atlantic'))
                         : row.key === 'RCIP'
-                          ? t('dp.ruralCommunities')
+                          ? (/^[A-Z]{2}$/.test(row.province) ? provDisp(row.province) : t('dp.ruralCommunities'))
                           : row.province === 'FED' ? t('dp.federal') : provDisp(row.province)
-                      const routeName = routeNameOf(row.key, province)
+                      const routeName = routeNameFull(row.key, province)
                       const isOffer = row.blockedBy === 'offer'
                       const ao = isOffer ? row.afterOffer : null
                       // offer 行门槛 = 反事实结论;答不全(needs-info)时不敢承诺,维持「至少还差 offer」
@@ -596,18 +606,15 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                       // RCIP 看岗链接(L2-09 尾巴):jobs.pilot 已落地(E6-11)。URL 用 filters.shared 短名;
                       // 旧值「1」不匹配谓词的 yes|no(=无效参数),顺手全修成 yes
                       const jobsHref = row.key === 'AIP' ? `/jobs?aip=yes${provincial ? `&prov=${row.province}` : ''}`
-                        : row.key === 'RCIP' ? '/jobs?pilot=RCIP'
+                        : row.key === 'RCIP' ? `/jobs?pilot=RCIP${provincial ? `&prov=${row.province}` : ''}`
                           : provincial ? `/jobs?prov=${row.province}&pnp=yes` : null
                       const jobsN = jobsOf(row)
-                      // 制度归属灰标(2026-08-14 Frank「通道要标明哪些是 pnp aip 或者 rcip」;08-15 实拍再确认):
-                      // key 即真相 —— FED-EE=EE、AIP/RCIP 自名,其余全是省提名
-                      const program = row.key === 'FED-EE' ? 'EE' : row.key === 'AIP' ? 'AIP' : row.key === 'RCIP' ? 'RCIP' : 'PNP'
                       // 门槛文案:够不着线的写数字(估分 X < 线 Y),数字是官方事实,结论用户自己得
                       const stateText = row.belowLine && row.score?.refLine != null
                         ? t('dp.planBelowLine', { v: row.score.value, line: row.score.refLine })
                         : t(stateKey)
-                      // AIP 拆省后同 key 多行 → rowKey 带省码去重(React key / DataTable rowKey / 埋点共用)
-                      return { rowKey: row.key === 'AIP' ? `AIP:${row.province}` : row.key, index, province, routeName, program, top: index === 0 && !row.blockedBy && !row.belowLine,
+                      // AIP/RCIP 拆省后同 key 多行 → rowKey 带省码去重(React key / DataTable rowKey / 埋点共用)
+                      return { rowKey: (row.key === 'AIP' || row.key === 'RCIP') && /^[A-Z]{2}$/.test(row.province) ? `${row.key}:${row.province}` : row.key, index, province, routeName, top: index === 0 && !row.blockedBy && !row.belowLine,
                         ratio: row.competition?.ratio ?? null, stateText, afterOk, openOk, jobsHref, jobsN }
                     })
                     // 门槛全行同值(常见:全被 offer 卡住)→ 一句脚注,不铺一整列同一句话
@@ -639,8 +646,8 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                             <div key={r.rowKey} style={{ border: `1px solid ${UI.hairline}`, borderRadius: 10, padding: '10px 12px', background: r.top ? '#f8fbff' : '#fff' }}>
                               <div style={{ display: 'flex', alignItems: 'baseline', gap: 7 }}>
                                 <span style={{ fontSize: 12, color: UI.text3, fontVariantNumeric: 'tabular-nums' }}>{r.index + 1}</span>
+                                {/* 制度归属已并进名字小括号(08-15「标签去掉 统一改成后面小括号」),边框小标撤销 */}
                                 <b style={{ fontSize: 13.5, color: '#111827', minWidth: 0 }}>{r.routeName}</b>
-                                <span style={{ color: UI.text3, fontSize: 10.5, border: `1px solid ${UI.hairline}`, borderRadius: 4, padding: '0 4px', flexShrink: 0 }}>{r.program}</span>
                                 <span style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 600, fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>{r.ratio == null ? '—' : `${r.ratio}:1`}</span>
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 4, flexWrap: 'wrap' }}>
@@ -658,7 +665,6 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                               { key: 'path', label: t('dp.planPath'), width: planCoarse || gateUniform ? '54%' : '34%', render: (r) => (
                                 <span style={{ display: 'flex', alignItems: 'baseline', gap: 8, minWidth: 0 }}>
                                   <b style={{ color: '#111827', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.routeName}</b>
-                                  <span style={{ color: UI.text3, fontSize: 10.5, border: `1px solid ${UI.hairline}`, borderRadius: 4, padding: '0 4px', flexShrink: 0 }}>{r.program}</span>
                                   <span style={{ color: UI.text3, fontSize: 11.5, flexShrink: 0 }}>{r.province}</span>
                                 </span>
                               ) },
@@ -678,7 +684,7 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                         {outsidePath ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
                             <span style={{ fontSize: 12.5, color: UI.text2 }}>
-                              {t('dp.planOutside', { prov: provDisp(outsidePath.province), name: routeNameOf(outsidePath.key, provDisp(outsidePath.province)) })}
+                              {t('dp.planOutside', { prov: provDisp(outsidePath.province), name: routeNameFull(outsidePath.key, provDisp(outsidePath.province)) })}
                             </span>
                             <button style={BTN} onClick={() => {
                               const next = writeAnswers({ provs: [...bands.provs, outsidePath.province] })
