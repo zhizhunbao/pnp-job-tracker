@@ -19,6 +19,28 @@ export type PathwayNote = {
   url: string
 }
 
+/** 展示层要的通道特性(2026-08-15 C 批:把前端那 11 处 `key === 'AIP'` 收成字段)。
+ *  🔴 边界:这里只放**这条通道与别人不一样的地方**,颜色/间距/排版仍归前端 ——
+ *  前端读字段、不认 key,否则拆完还是散的,只是散得好看一点。 */
+export type PathwayUi = {
+  /** 制度归属(显示在通道名尾的小括号);缺省 PNP */
+  program?: 'EE' | 'AIP' | 'RCIP' | 'PNP'
+  /** 「在招」取 occ-competition 的哪一列:AIP=该省指定雇主∩本职业、RCIP=试点社区∩本职业,
+   *  普通省提名=全省在招。口径不许混(2026-08-15 拆省时立的规矩) */
+  jobsSource?: 'openJobs' | 'aipJobs' | 'rcipJobs'
+  /** province==='FED' 且未拆到具体省时的区域名文案键(AIP=大西洋四省、RCIP=试点社区) */
+  regionLabelKey?: string
+  /** 「拿到 offer 即可申请」的专属话术键:AIP 要指定雇主、RCIP 要社区雇主、
+   *  AB 官方还要求「已在阿省全职在岗」→ 各自如实,不共用一句 */
+  afterOfferOkKey?: string
+  /** 推荐原因里「差 offer」那枚胶囊的专属文案键(AIP/RCIP 要的不是普通 offer) */
+  offerGapKey?: string
+  /** 「看在招岗」链接的筛选参数(不含 prov);缺省 = 该省 pnp=yes */
+  jobsQuery?: string
+  /** 没有岗位数时链接写什么(AIP 走指定雇主筛选、RCIP 走试点筛选,都没有职业级岗数) */
+  seeJobsKey?: string
+}
+
 export type PathwayStrategy = {
   key: string
   /** 'FED' 或省码(判定结果里的 province) */
@@ -57,6 +79,9 @@ export type PathwayStrategy = {
 
   /** 官方要求但本站没问的事(现只有「工作与专业对口」) */
   notes?: PathwayNote[]
+
+  /** 展示层特性(缺省即「普通省提名通道」的那套) */
+  ui?: PathwayUi
 
   note?: string
 }

@@ -28,7 +28,7 @@ import { IconRefresh } from '../../Icons'
 import { EMPTY, clearAnswers, pullAndMerge, readAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
 import { fieldsOf, missingFields } from '@/lib/decisions'
 import { FIELDS } from '@/lib/fields'
-import { gateOf } from '@/lib/pathways'
+import { gateOf, notesOf, regionProvincesOf, uiOf } from '@/lib/pathways'
 import { pickName } from '@/lib/occName'
 import { track } from '@/lib/track'
 import type { DrawRow, ScoreFactor, SelfProfile } from '@/lib/pnpSelfScore'
@@ -79,18 +79,6 @@ const COUNT_PILL: React.CSSProperties = { borderRadius: 999, padding: '2px 8px',
 const NOC_TITLE_CACHE: Record<string, string> = {}
 // 已经问过的码(不论问到没问到)。失败不重试:同一个码问一次拿不到名字,再问十次也一样。
 const NOC_TITLE_TRIED = new Set<string>()
-
-/** 官方要求「工作与专业对口」的通道(2026-08-15 Frank「毕业生干厨师靠谱吗?跨专业了怎么弄」)。
- *  我们既没问专业、也没问毕业院校 → 判不了,但**不许当成没有障碍**:先在推荐原因里挂一枚提醒胶囊,
- *  把这道官方门槛摆到台面上(问题接进题库之前的如实做法,同「不猜」的老规矩)。
- *  NL 国际毕业生原句(gov.nl.ca 资格政策):Memorial / College of the North Atlantic 毕业生有条件例外,
- *  省外院校毕业生反而更严(offer 要与专业直接相关 + 先在 NL 工作满 1 年)。 */
-const FIELD_MATCH: Record<string, { url: string; quote: string }> = {
-  'NL-intl-grad': {
-    url: 'https://www.gov.nl.ca/immigration/4-international-graduate-category-eligibility-criteria',
-    quote: 'Applicants to the International Graduate category should hold a fulltime position that is related to their field of study from the post-secondary program they completed in Canada.',
-  },
-}
 
 /** 官方**明说不打分**的省(举证责任在我们:一个 URL + 一句原句,同 gateManifest 的规矩)。
  *  不在这张表里的缺省一律按「本站未收录」说 —— 两句话在用户那儿意思相反,不许拿一句混着用。
@@ -513,8 +501,9 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
     const short = lang === 'zh' ? dropped.replace(/^[一-龥]{1,4}省\s+/, '') : dropped
     return short.trim() || dropped
   }
-  // 制度归属:key 即真相(2026-08-14 Frank「通道要标明哪些是 pnp aip 或者 rcip」)
-  const programOf = (key: string) => (key === 'FED-EE' ? 'EE' : key === 'AIP' ? 'AIP' : key === 'RCIP' ? 'RCIP' : 'PNP')
+  // 制度归属(2026-08-14 Frank「通道要标明哪些是 pnp aip 或者 rcip」);
+  // 2026-08-15 起归属写在策略文件里,这里只取 —— 前端读字段不认 key
+  const programOf = (key: string) => uiOf(key).program
   // 归属并进名字尾的小括号(2026-08-15 Frank「把 pnp rcip 这种标签去掉 统一改成后面小括号那种」):
   // 边框小标撤销;名字里已自带的(中文态 EE/AIP/RCIP 自名)不重复追加;中文全角括号,其余半角带空格
   const routeNameFull = (key: string, provinceLabel: string) => {
@@ -589,7 +578,7 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                     const jobsOf = (row: ProfilePath) => {
                       if (!/^[A-Z]{2}$/.test(row.province) || !occComp) return null
                       const o = occComp.find((x) => x.province === row.province)
-                      return row.key === 'AIP' ? (o?.aipJobs ?? 0) : row.key === 'RCIP' ? (o?.rcipJobs ?? 0) : (o?.openJobs ?? 0)
+                      return o?.[uiOf(row.key).jobsSource] ?? 0
                     }
                     const bandRank = new Map<string, number>()
                     profilePaths.forEach((row) => { if (!bandRank.has(bandOf(row))) bandRank.set(bandOf(row), bandRank.size) })
@@ -617,12 +606,12 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                     // 让「换省/放宽职业」成为下一步。判据用榜首:它才是被当成「第一推荐」的那条
                     const topEmpty = resorted.length > 0 && (resorted[0].n ?? 0) === 0
                     const rows = shown.map((row, index) => {
+                      // 通道特性一次取齐(2026-08-15 C 批:前端读字段不认 key)
+                      const ui = uiOf(row.key)
                       // AIP/RCIP 拆省后 province 是省码 → 显省名;'FED' 只是老响应的兜底,区域名保底不删
-                      const province = row.key === 'AIP'
-                        ? (/^[A-Z]{2}$/.test(row.province) ? provDisp(row.province) : t('dp.atlantic'))
-                        : row.key === 'RCIP'
-                          ? (/^[A-Z]{2}$/.test(row.province) ? provDisp(row.province) : t('dp.ruralCommunities'))
-                          : row.province === 'FED' ? t('dp.federal') : provDisp(row.province)
+                      const province = /^[A-Z]{2}$/.test(row.province)
+                        ? provDisp(row.province)
+                        : t(ui.regionLabelKey ?? 'dp.federal')
                       const routeName = routeNameFull(row.key, province)
                       const isOffer = row.blockedBy === 'offer'
                       const ao = isOffer ? row.afterOffer : null
@@ -631,15 +620,9 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                         ? 'dp.planDataGap'
                         : isOffer
                           ? (ao?.verdict === 'open'
-                              // AIP/RCIP 不说「本省」:AIP 是大西洋四省指定雇主,RCIP 是试点社区,各用各的说法
-                              ? (ao.tier ? `dp.planAfterOfferTier${ao.tier}`
-                                  : row.key === 'AIP' ? 'dp.planAfterOfferOkAip'
-                                    : row.key === 'RCIP' ? 'dp.planAfterOfferOkRcip'
-                                      // AB 机会通道官方原句要求「already working full-time in Alberta」+ 有效工签
-                                      //(gateManifest AB-opportunity),引擎的境内闸只判「人在境内」判不出「在岗」
-                                      // → 话术如实降级,不承诺 Day0(2026-08-15 Frank「失实的话术修掉,按如实的改」)
-                                      : row.key === 'AB-opportunity' ? 'dp.planAfterOfferOkAb'
-                                        : 'dp.planAfterOfferOk')
+                              // 「拿到 offer 即可申请」各家说法不同(AIP=指定雇主、RCIP=社区雇主、
+                              // AB 官方还要求已在阿省全职在岗)→ 话术住在策略文件里,这里只取
+                              ? (ao.tier ? `dp.planAfterOfferTier${ao.tier}` : ui.afterOfferOkKey ?? 'dp.planAfterOfferOk')
                               : ao?.blockedBy ? `dp.planAfterOfferGap.${gateChip(row.key, ao.blockedBy)}` : 'dp.planBlocked.offer')
                           : row.blockedBy
                             ? `dp.planBlocked.${gateChip(row.key, row.blockedBy)}`
@@ -653,25 +636,26 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                       // 在招岗数(该省该职业本站在招;查无该省 = 0,0 必须显式写出,空着会被读成「没数据」):
                       // 数字本身就是直达链接;AIP 走指定雇主筛选无职业数,RCIP/联邦无岗位级标记 → 「—」
                       const provincial = /^[A-Z]{2}$/.test(row.province)
-                      // RCIP 看岗链接(L2-09 尾巴):jobs.pilot 已落地(E6-11)。URL 用 filters.shared 短名;
-                      // 旧值「1」不匹配谓词的 yes|no(=无效参数),顺手全修成 yes
-                      const jobsHref = row.key === 'AIP' ? `/jobs?aip=yes${provincial ? `&prov=${row.province}` : ''}`
-                        : row.key === 'RCIP' ? `/jobs?pilot=RCIP${provincial ? `&prov=${row.province}` : ''}`
-                          : provincial ? `/jobs?prov=${row.province}&pnp=yes` : null
+                      // 看岗链接:筛选参数归策略文件(AIP=指定雇主、RCIP=试点社区、其余=该省 pnp)。
+                      // URL 用 filters.shared 短名;旧值「1」不匹配谓词的 yes|no(=无效参数),已全修成 yes
+                      const jobsHref = ui.jobsQuery
+                        ? `/jobs?${ui.jobsQuery}${provincial ? `&prov=${row.province}` : ''}`
+                        : provincial ? `/jobs?prov=${row.province}&pnp=yes` : null
                       const jobsN = jobsOf(row)
                       // 门槛文案:够不着线的写数字(估分 X < 线 Y),数字是官方事实,结论用户自己得
                       const stateText = row.belowLine && row.score?.refLine != null
                         ? t('dp.planBelowLine', { v: row.score.value, line: row.score.refLine })
                         : t(stateKey)
-                      // AIP/RCIP 拆省后同 key 多行 → rowKey 带省码去重(React key / DataTable rowKey / 埋点共用)
-                      return { rowKey: (row.key === 'AIP' || row.key === 'RCIP') && /^[A-Z]{2}$/.test(row.province) ? `${row.key}:${row.province}` : row.key, index, province, routeName, top: index === 0 && !row.blockedBy && !row.belowLine,
+                      // 区域线拆省后同 key 多行 → rowKey 带省码去重(React key / DataTable rowKey / 埋点共用)
+                      return { rowKey: regionProvincesOf(row.key) && /^[A-Z]{2}$/.test(row.province) ? `${row.key}:${row.province}` : row.key, index, province, routeName, top: index === 0 && !row.blockedBy && !row.belowLine,
                         ratio: row.competition?.ratio ?? null, stateText, afterOk, openOk, jobsHref, jobsN,
+                        seeJobsKey: ui.seeJobsKey ?? 'dp.planSeeJobsAip',
                         // 推荐原因拆胶囊要的两个判据:被单一门槛卡住(拆「已达标 + 差这样」两枚)、
                         // 本站没收录规则(这枚是我们的窟窿,不许染成「你不行」的黄色)
                         blocked: !!row.blockedBy && row.availability === 'ok' && !row.belowLine,
                         dataGap: row.availability !== 'ok',
                         // 差的那一样(offer 按通道分:AIP=指定雇主、RCIP=社区雇主 —— 三者要的不是同一种 offer)
-                        gapKey: row.blockedBy === 'offer' && (row.key === 'AIP' || row.key === 'RCIP') ? `offer${row.key}`
+                        gapKey: row.blockedBy === 'offer' && ui.offerGapKey ? ui.offerGapKey
                           : gateChip(row.key, row.blockedBy ?? ''),
                         pathKey: row.key,
                         // 还要攒多久:被 offer 卡住的看反事实 tier(拿到 offer 之后还差几个月),
@@ -700,7 +684,8 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                     const whyPills = (r: PlanRow): { text: string; tone: keyof typeof TONE }[] => {
                       // 专业对口提醒:官方要求、我们没问 → 灰胶囊摆出来(灰=待核对,不是判他不行)。
                       // 摆在最后一枚:它是「还要自己核一下」,不该盖过「差什么」那枚
-                      const fieldPill = FIELD_MATCH[r.pathKey] ? [{ text: t('dp.why.fieldMatch'), tone: 'mute' as const }] : []
+                      const fieldPill = notesOf(r.pathKey).some((n) => n.kind === 'fieldMatch')
+                        ? [{ text: t('dp.why.fieldMatch'), tone: 'mute' as const }] : []
                       if (r.dataGap) return [{ text: r.stateText, tone: 'mute' }, ...fieldPill]
                       if (r.openOk) return [{ text: r.stateText, tone: 'ok' }, ...fieldPill]
                       if (!r.blocked) return [{ text: r.stateText, tone: r.afterOk ? 'info' : 'warn' }, ...fieldPill]
@@ -730,7 +715,7 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                         : r.jobsHref ? (
                           <a href={r.jobsHref} onClick={() => track('dp-offer-jobs', { key: r.rowKey })}
                             style={{ color: UI.primary, textDecoration: 'none', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
-                            {r.jobsN == null ? t(r.rowKey === 'RCIP' ? 'dp.planSeeJobsPilot' : 'dp.planSeeJobsAip') : t('dp.planJobsN', { n: r.jobsN })} ›
+                            {r.jobsN == null ? t(r.seeJobsKey) : t('dp.planJobsN', { n: r.jobsN })} ›
                           </a>
                         ) : <span style={{ fontVariantNumeric: 'tabular-nums' }}>{t('dp.planJobsN', { n: r.jobsN ?? 0 })}</span>
                     )

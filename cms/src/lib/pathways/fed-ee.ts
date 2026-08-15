@@ -16,6 +16,7 @@ export const FED_EE: PathwayStrategy = {
   drawStream: 'Canadian Experience Class',
   scorer: 'CRS',
   countsForeign: true,
+  ui: { program: 'EE', regionLabelKey: 'dp.federal' },
   gates: {
     offer: { need: 'notRequired', basis: 'absent', url: EE_URL, fetched: D },
     statusInCanada: { need: 'notRequired', basis: 'absent', url: EE_URL, fetched: D },

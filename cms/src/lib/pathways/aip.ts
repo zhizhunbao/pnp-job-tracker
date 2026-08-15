@@ -15,6 +15,15 @@ export const AIP: PathwayStrategy = {
   reqPrograms: ['AIP'],
   countsForeign: true,
   note: 'AIP 门槛数字只在联邦 canada.ca 页,现有 crawl 无覆盖(C5b-0 如实留缺口)',
+  ui: {
+    program: 'AIP',
+    jobsSource: 'aipJobs',              // 该省指定雇主 ∩ 本职业,不是全省在招
+    regionLabelKey: 'dp.atlantic',
+    afterOfferOkKey: 'dp.planAfterOfferOkAip',
+    offerGapKey: 'offerAIP',            // 要的是**指定雇主**的 offer
+    jobsQuery: 'aip=yes',
+    seeJobsKey: 'dp.planSeeJobsAip',
+  },
   gates: {
     offer: { need: 'required', url: AIP_URL, fetched: D,
       quote: 'You must receive a job offer from a designated employer in Atlantic Canada to participate in the program.' },

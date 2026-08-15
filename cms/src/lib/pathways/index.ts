@@ -18,10 +18,10 @@ import { ON_WORKFORCE } from './on-workforce'
 import { PE_SW } from './pe-sw'
 import { RCIP } from './rcip'
 import { SK_OFFER } from './sk-offer'
-import type { PathwayStrategy } from './types'
+import type { PathwayStrategy, PathwayUi } from './types'
 import type { GateKey, GateRule } from '../gateManifest'
 
-export type { PathwayStrategy, PathwayNote } from './types'
+export type { PathwayStrategy, PathwayNote, PathwayUi } from './types'
 
 /** 13 条通道,顺序 = 判定层的注册表原序(见文件头注释,别随手改) */
 export const PATHWAYS: PathwayStrategy[] = [
@@ -59,3 +59,9 @@ export const pathwayNames = (lang: 'zh' | 'en' | 'ko'): Record<string, string> =
 
 /** 联邦区域线覆盖的省(AIP/RCIP);非区域线返回 undefined —— 调用方据此判断「要不要拆省」 */
 export const regionProvincesOf = (key: string): readonly string[] | undefined => BY_KEY.get(key)?.regionProvinces
+
+/** 展示层特性(带默认值,前端不必逐个判空)。默认那套 = 普通省提名通道 */
+export const uiOf = (key: string): Required<Pick<PathwayUi, 'program' | 'jobsSource'>> & PathwayUi => {
+  const ui = BY_KEY.get(key)?.ui ?? {}
+  return { program: 'PNP', jobsSource: 'openJobs', ...ui }
+}

@@ -15,6 +15,9 @@ export const AB_OPPORTUNITY: PathwayStrategy = {
   reqStream: /alberta opportunity/i,
   drawStream: 'Alberta Opportunity Stream',
   countsForeign: true,
+  // 官方原句要求「already working full-time in Alberta」+ 有效工签 —— 拿到 offer 也不是 Day0 就能申请,
+  // 话术如实降级(2026-08-15 Frank「失实的话术修掉,按如实的改」)
+  ui: { afterOfferOkKey: 'dp.planAfterOfferOkAb' },
   gates: {
     offer: { need: 'required', url: AB_URL, fetched: D,
       quote: 'The Alberta Opportunity Stream is for temporary foreign workers who are already working full-time in Alberta and have a full-time job offer from an Alberta employer in an eligible occupation.' },

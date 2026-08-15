@@ -14,6 +14,15 @@ export const RCIP: PathwayStrategy = {
   reqProvince: 'FED',
   reqPrograms: ['RCIP'],
   countsForeign: true,
+  ui: {
+    program: 'RCIP',
+    jobsSource: 'rcipJobs',             // 试点社区 ∩ 本职业
+    regionLabelKey: 'dp.ruralCommunities',
+    afterOfferOkKey: 'dp.planAfterOfferOkRcip',
+    offerGapKey: 'offerRCIP',           // 要的是**社区雇主**的 offer
+    jobsQuery: 'pilot=RCIP',
+    seeJobsKey: 'dp.planSeeJobsPilot',
+  },
   gates: {
     offer: { need: 'required', url: RCIP_URL, fetched: D,
       quote: 'Before you apply for permanent residence through this pilot, you need a job offer.' },
