@@ -21,7 +21,7 @@ export const PROV_NAMES: Record<string, string> = {
 export const URL_TO_FILTER: Record<string, string> = {
   q: 'q', prov: 'fProv', broad: 'fBroad', mid: 'fMid', fine: 'fFine', city: 'fCity',
   dist: 'fDistrict', country: 'fCountry', teer: 'fTeer', src: 'fSource', acc: 'fAcc',
-  pnp: 'fPnp', aip: 'fAip', st: 'fStatus', org: 'fOrigin', score: 'fScore', sal: 'fSal',
+  pnp: 'fPnp', aip: 'fAip', pilot: 'fPilot', st: 'fStatus', org: 'fOrigin', score: 'fScore', sal: 'fSal',
   vs: 'fVs', emp: 'fEmp', elig: 'fElig',
 }
 /** directOnly 是布尔,URL 上是 direct=1,不走上表 */

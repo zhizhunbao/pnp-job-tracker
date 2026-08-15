@@ -83,6 +83,10 @@ export function buildJobsWhere(filters: Record<string, unknown>, startIndex = 1)
   else if (s('fPnp') === 'no') conds.push(`COALESCE(j.pnp_eligible,false) = false AND COALESCE(j.province,'') <> 'QC'`)
   if (s('fAip') === 'yes') conds.push(`COALESCE(j.aip,false) = true`)
   else if (s('fAip') === 'no') conds.push(`COALESCE(j.aip,false) = false`)
+  // RCIP/FCIP 试点社区(E6-11):yes=任一试点命中;RCIP/FCIP=指定类型(含同城双试点 'RCIP+FCIP')
+  if (s('fPilot') === 'yes') conds.push(`COALESCE(j.pilot,'') <> ''`)
+  else if (s('fPilot') === 'no') conds.push(`COALESCE(j.pilot,'') = ''`)
+  else if (s('fPilot') === 'RCIP' || s('fPilot') === 'FCIP') conds.push(`COALESCE(j.pilot,'') LIKE ${param('%' + s('fPilot') + '%')}`)
 
   // #136(批A):默认排除已下架——status 列默认藏,closed 行混在列表里无标记;显式选「已下架」仍可看
   if (s('fStatus')) conds.push(`COALESCE(j.status,'open') = ${param(s('fStatus'))}`)
@@ -129,7 +133,7 @@ const SORT_COLUMNS: Record<string, string> = {
   accessibility: 'j.accessibility', country: 'j.country', district: 'j.district', address: 'j.address',
   source: 'j.source_label', origin: 'j.origin',
   direct: `(COALESCE(j.apply_url,'') NOT ILIKE '%jobbank.gc.ca%' OR COALESCE(j.source,'') = 'Job Bank')`,   // 与 directOnly 筛选同一谓词
-  pnp: 'j.pnp_eligible', ee: 'j.ee_category', aip: 'j.aip', lmia: 'c.lmia_positions',
+  pnp: 'j.pnp_eligible', ee: 'j.ee_category', aip: 'j.aip', pilot: 'j.pilot', lmia: 'c.lmia_positions',
   eligibility: `COALESCE(j.eligibility_flag,'')`,   // GAP1③:红旗岗聚一起看
 
   status: 'j.status', closedAt: 'j.closed_at',
@@ -167,7 +171,7 @@ export const mapEeCat = (r: any) => ({ category: r.category, label: r.label, noc
 const JOB_COLUMNS = `j.id, j.title, c.name AS company_name, c.slug AS company_slug, c.address AS company_address, c.description AS company_description, c.sectors AS company_sectors,
   c.website AS company_website, c.website_source,
   c.lmia_positions, c.lmia_lmias, c.lmia_last_quarter, c.lmia_streams, c.lmia_positions_skilled, c.sponsor_grade,
-  j.noc, j.category, j.teer, j.broad, j.mid, j.fine, j.accessibility, j.score, j.grade_channel, j.pnp_eligible, j.pnp_stream, j.ee_category, j.aip,
+  j.noc, j.category, j.teer, j.broad, j.mid, j.fine, j.accessibility, j.score, j.grade_channel, j.pnp_eligible, j.pnp_stream, j.ee_category, j.aip, j.pilot, j.pilot_community,
   j.employment_term, j.employment_hours, j.certificates, j.education, j.eligibility_flag, j.eligibility_quote,
   j.country, j.province, j.city, j.district, j.address, j.region,
   j.apply_url, j.official_url, j.salary, j.salary_annual, j.salary_text,
@@ -213,6 +217,7 @@ export function mapJobRow(j: any, pro: boolean, matchLevel: JobRow['match']): Jo
     pnpStream: j.pnp_stream ?? '',
     eeCategory: j.ee_category ?? '',
     aip: !!j.aip,
+    pilot: j.pilot ?? '', pilotCommunity: j.pilot_community ?? '',
     employmentTerm: j.employment_term ?? '',
     employmentHours: j.employment_hours ?? '',
     eligibilityFlag: j.eligibility_flag ?? '',
@@ -364,7 +369,7 @@ const MATCH_SORT_VAL: Record<string, (j: any) => unknown> = {
   broad: (j) => j.broad ?? '', mid: (j) => j.mid ?? '', fine: (j) => j.fine ?? '', teer: (j) => num(j.teer), noc: (j) => j.noc ?? '',
   accessibility: (j) => j.accessibility ?? '', country: (j) => j.country ?? '', district: (j) => j.district ?? '', address: (j) => j.address ?? '',
   source: (j) => j.source_label ?? '', origin: (j) => j.origin ?? '',
-  pnp: (j) => (j.pnp_eligible ? 1 : 0), ee: (j) => j.ee_category ?? '', aip: (j) => (j.aip ? 1 : 0), lmia: (j) => num(j.lmia_positions),
+  pnp: (j) => (j.pnp_eligible ? 1 : 0), ee: (j) => j.ee_category ?? '', aip: (j) => (j.aip ? 1 : 0), pilot: (j) => j.pilot ?? '', lmia: (j) => num(j.lmia_positions),
   status: (j) => j.status ?? '', closedAt: (j) => iso(j.closed_at),
   wageMedHr: (j) => num(j.wage_med_hourly), wageMedYr: (j) => num(j.wage_med_annual),
   vsMedian: (j) => { const s = num(j.salary_annual); const m = num(j.wage_med_annual); return s != null && m ? s / m : null },

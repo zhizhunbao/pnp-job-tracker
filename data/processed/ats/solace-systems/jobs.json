@@ -19,7 +19,9 @@
       "salaryAnnual": 150000,
       "salaryText": "$135K–$165K/yr",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "Senior Cloud Site Reliability Engineer",
@@ -35,7 +37,9 @@
       "country": "Canada",
       "district": "",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "Cloud Site Reliability Engineer",
@@ -53,7 +57,9 @@
       "salaryAnnual": 110000,
       "salaryText": "$100K–$120K/yr",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "Principal Software Developer - AI Integration",
@@ -71,7 +77,9 @@
       "salaryAnnual": 167500,
       "salaryText": "$155K–$180K/yr",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "Payroll Specialist",
@@ -89,7 +97,9 @@
       "salaryAnnual": 67500,
       "salaryText": "$60K–$75K/yr",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "Sales Director, GOC",
@@ -105,7 +115,9 @@
       "country": "Canada",
       "district": "",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "Software Developer - Datapath",
@@ -123,7 +135,9 @@
       "salaryAnnual": 107500,
       "salaryText": "$90K–$125K/yr",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "Software Developer - Full Stack ",
@@ -141,7 +155,9 @@
       "salaryAnnual": 197600,
       "salaryText": "$95/hr",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "Office Coordinator",
@@ -159,7 +175,9 @@
       "salaryAnnual": 52000,
       "salaryText": "$22–$28/hr",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "Assistant Controller",
@@ -177,7 +195,9 @@
       "salaryAnnual": 107500,
       "salaryText": "$100K–$115K/yr",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "Chaos Engineer",
@@ -195,7 +215,9 @@
       "salaryAnnual": 105000,
       "salaryText": "$90K–$120K/yr",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "Senior DevOps Engineer",
@@ -213,7 +235,9 @@
       "salaryAnnual": 127500,
       "salaryText": "$115K–$140K/yr",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     }
   ]
 }

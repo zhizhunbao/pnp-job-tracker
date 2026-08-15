@@ -64,6 +64,11 @@ DATASETS = [
         "fields": ["pnp"],
     },
     {
+        "publisher": "IRCC — Rural and Francophone Community Immigration pilots",
+        "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots.html",
+        "fields": ["pilot"],
+    },
+    {
         "publisher": "GeoNames — Canada postal codes (open data)",
         "url": "https://download.geonames.org/export/zip/",
         "fields": ["district"],

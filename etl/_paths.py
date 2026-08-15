@@ -31,6 +31,7 @@ EE = RAW / "ee"                                         # 联邦 Express Entry �
 IRCC = RAW / "ircc"                                     # IRCC 开放数据(E12-07:学签/工签存量、PNP 登陆数)+ pnp_allocations.json 配额维护表
 NOC = RAW / "noc"                                      # NOC 2021 官方职业名+主要职责(StatCan Elements 开放 CSV)
 AIP = RAW / "aip"                                       # AIP 指定雇主名单(aip-designated-employers.json/.md)
+PILOT = RAW / "pilot"                                   # RCIP/FCIP 试点社区名单(pilot-communities.json,E6-11)
 WAGES = RAW / "wages"                                   # ESDC 工资:wages.json(维护表)+ wage*.csv(源)
 LMIA = RAW / "lmia"                                     # ESDC 正面 LMIA 雇主清单:lmia-employers.json(维护表)+ tfwp_*.xlsx(季度源,gitignore)
 FSA = RAW / "fsa"                                       # GeoNames 邮编→区:fsa-districts.json(维护表)+ CA.txt(源)

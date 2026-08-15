@@ -19,7 +19,9 @@
       "salaryAnnual": 88000,
       "salaryText": "$76K–$100K/yr",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     }
   ]
 }

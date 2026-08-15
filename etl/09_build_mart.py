@@ -51,6 +51,7 @@ IN_EXPIRED = _paths.PROCESSED_JOBBANK / "expired_ids.json"   # #124 批C:verify_
 IN_ATS_COMPANIES = _paths.COMPANIES                       # processed/ats/.../companies/<slug>/
 IN_SCORED = _paths.PROCESSED / "all-scored.json"
 IN_AIP = _paths.AIP / "aip-designated-employers.json"
+IN_PILOT = _paths.PILOT / "pilot-communities.json"   # RCIP/FCIP 试点社区(build_pilots 产,E6-11)
 IN_NL_EMPLOYERS = _paths.PNP / "nl-employers.json"  # NL 官网指定雇主 645 家(C4-W4,含申报 NOC)
 IN_WAGES = _paths.WAGES / "wages.json"   # NOC×省 中位工资(build_wages.py 从 ESDC 开放数据建)
 IN_PNP = _paths.PNP                      # raw/pnp/*.json(各省具名通道:每文件一条通道)
@@ -695,7 +696,8 @@ def build():
                         city=j.get("city"), district=j.get("district"), address=j.get("address"),
                         applyUrl=j.get("url"), officialUrl=prof.get("website"),
                         salary=j.get("salary"), salaryAnnual=j.get("salaryAnnual"), salaryText=j.get("salaryText"),
-                        aip=bool(j.get("aip")), apprenticeFriendly=False, datePosted=j.get("posted"), lastSeen=ats_seen)
+                        aip=bool(j.get("aip")), pilot=j.get("pilot") or "", pilotCommunity=j.get("pilotCommunity") or "",
+                        apprenticeFriendly=False, datePosted=j.get("posted"), lastSeen=ats_seen)
 
     # 2) Job Bank(全国全职业)
     if IN_JOBBANK.exists():
@@ -724,7 +726,8 @@ def build():
                     city=j.get("city"), district=j.get("district"), address=j.get("address"),
                     applyUrl=j.get("url"), officialUrl=j.get("website"),
                     salary=j.get("salary"), salaryAnnual=j.get("salaryAnnual"), salaryText=j.get("salaryText"),
-                    aip=bool(j.get("aip")), apprenticeFriendly=bool(j.get("apprentice_friendly")),
+                    aip=bool(j.get("aip")), pilot=j.get("pilot") or "", pilotCommunity=j.get("pilotCommunity") or "",
+                    apprenticeFriendly=bool(j.get("apprentice_friendly")),
                     datePosted=j.get("date"), lastSeen=j.get("last_seen"),
                     # 雇佣形态 + 入职要求(E6-06/E6-07A,05b 解析):空值靠 add_job 的 (None,"") 过滤/or None 剔除
                     employmentTerm=j.get("employment_term"), employmentHours=j.get("employment_hours"),
@@ -1227,11 +1230,20 @@ def build():
     print(f"  seen_ids(本轮见过): {len(seen_ids)} · mart.jobs(展示去重后): {len(jobs)} · "
           f"见过但不进 mart(展示去重/同 ext 重复): {len(seen_ids) - len(jobs)}")
 
+    # RCIP/FCIP 试点社区维度(E6-11):cities 顿号连接,空=界线未举证不打标
+    pilot_communities: list[dict] = []
+    if IN_PILOT.exists():
+        _pl = json.loads(IN_PILOT.read_text(encoding="utf-8"))
+        pilot_communities = [{"name": r["name"], "province": r["province"], "type": r["type"],
+                              "cities": "、".join(r.get("cities") or []), "url": r.get("url", ""),
+                              "fetched": _pl.get("fetched", "")} for r in _pl.get("rows", [])]
+
     return {
         "companies": list(companies.values()), "jobs": jobs, "closed_jobs": closed_jobs,
         "seen_ids": sorted(seen_ids),
         "provinces": provinces, "cities": cities, "districts": districts,
         "designated_employers": designated,
+        "pilot_communities": pilot_communities,
         "noc_categories": noc_categories, "sources": sources, "experience_levels": experience_levels,
         "pnp_occupations": pnp_occupations, "pnp_draws": pnp_draws, "pnp_score_factors": pnp_score_factors,
         "pnp_requirements": pnp_requirements, "pnp_ops_stats": build_pnp_ops_stats(IN_PNP_STATS),

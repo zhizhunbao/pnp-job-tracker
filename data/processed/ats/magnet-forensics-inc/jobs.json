@@ -19,7 +19,9 @@
       "salaryAnnual": 67500,
       "salaryText": "$60K–$75K/yr",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "Finance Co-op (Fall 2026)",
@@ -35,7 +37,9 @@
       "country": "Canada",
       "district": "",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "Senior Product Manager, Graykey",
@@ -53,7 +57,9 @@
       "salaryAnnual": 195000,
       "salaryText": "$195K/yr",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "Software Developer Co-op (Fall 2026)",
@@ -71,7 +77,9 @@
       "salaryAnnual": 58053,
       "salaryText": "$22–$34/hr",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     }
   ]
 }

@@ -25,6 +25,7 @@ import { Dli } from './collections/Dli'
 import { NocDescriptions } from './collections/NocDescriptions'
 import { PolicyDocs } from './collections/PolicyDocs'
 import { DesignatedEmployers } from './collections/DesignatedEmployers'
+import { PilotCommunities } from './collections/PilotCommunities'
 import { Provinces } from './collections/Provinces'
 import { Cities } from './collections/Cities'
 import { Districts } from './collections/Districts'
@@ -51,7 +52,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Companies, Jobs, PnpOccupations, PnpDraws, PnpScoreFactors, PnpRequirements, PnpOpsStats, Dli, EeCategories, EePointsGrid, NocDescriptions, NocOpenings, PolicyDocs, DesignatedEmployers, Provinces, Cities, Districts, NocCategories, Sources, ExperienceLevels, FieldSources, Rankings, Stats, StatsDaily, StatsOccupation, StatsCity, SavedSearches, SavedJobs, News, Comments, ChatLogs],
+  collections: [Users, Media, Companies, Jobs, PnpOccupations, PnpDraws, PnpScoreFactors, PnpRequirements, PnpOpsStats, Dli, EeCategories, EePointsGrid, NocDescriptions, NocOpenings, PolicyDocs, DesignatedEmployers, PilotCommunities, Provinces, Cities, Districts, NocCategories, Sources, ExperienceLevels, FieldSources, Rankings, Stats, StatsDaily, StatsOccupation, StatsCity, SavedSearches, SavedJobs, News, Comments, ChatLogs],
   editor: lexicalEditor(),
   // E3-07:邮件适配器=包一层现成 lib/mailer(Resend HTTP 直调,零新依赖);目前只有 forgot-password 走这里。
   // RESEND_API_KEY 未设 → sendMail 返回 false 不发信(dry-run 语义,与 alerts 一致)。

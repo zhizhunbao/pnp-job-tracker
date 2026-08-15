@@ -19,7 +19,9 @@
       "salaryAnnual": 105000,
       "salaryText": "$100K–$110K/yr",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "Director of Engineering, Developer Infrastructure",
@@ -35,7 +37,9 @@
       "country": "Canada",
       "district": "",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "IT Administrator lll",
@@ -53,7 +57,9 @@
       "salaryAnnual": 66000,
       "salaryText": "$66K/yr",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "Lead Data Scientist",
@@ -69,7 +75,9 @@
       "country": "Canada",
       "district": "",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "Senior Customer Insights Analyst",
@@ -87,7 +95,9 @@
       "salaryAnnual": 102500,
       "salaryText": "$90K–$115K/yr",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "Senior Data Engineer",
@@ -103,7 +113,9 @@
       "country": "Canada",
       "district": "",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "Senior Developer, Backend - Developer Infrastructure",
@@ -121,7 +133,9 @@
       "salaryAnnual": 125000,
       "salaryText": "$125K/yr",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "Senior Developer, Fullstack - Canada Pod",
@@ -139,7 +153,9 @@
       "salaryAnnual": 125000,
       "salaryText": "$125K/yr",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "Senior Developer, Fullstack - Identity and Access Management (IAM)",
@@ -157,7 +173,9 @@
       "salaryAnnual": 125000,
       "salaryText": "$125K/yr",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "Senior Machine Learning Engineer",
@@ -175,7 +193,9 @@
       "salaryAnnual": null,
       "salaryText": null,
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "Senior Support Enablement Specialist",
@@ -193,7 +213,9 @@
       "salaryAnnual": 72500,
       "salaryText": "$60K–$85K/yr",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "Staff, Machine Learning Engineer",
@@ -209,7 +231,9 @@
       "country": "Canada",
       "district": "",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "Staff, Security Engineer",
@@ -225,7 +249,9 @@
       "country": "Canada",
       "district": "",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "Workforce Management Manager, Customer Support",
@@ -243,7 +269,9 @@
       "salaryAnnual": 97500,
       "salaryText": "$90K–$105K/yr",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     }
   ]
 }

@@ -487,7 +487,7 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                   {(jobProvOutside || occMismatch) && tvJob ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
                       {jobProvOutside ? <button onClick={addJobProv} style={BTN}>{t('dp.provAdd', { jobProv: provDisp(tvJob.province) })}</button> : null}
-                      <a href={`/jobs?pnp=1${bands.provs.length === 1 ? `&prov=${bands.provs[0]}` : ''}`}
+                      <a href={`/jobs?pnp=yes${bands.provs.length === 1 ? `&prov=${bands.provs[0]}` : ''}`}
                         onClick={() => track('dp-repick-job')} style={{ ...BTN, textDecoration: 'none', display: 'inline-block' }}>
                         {t('dp.repick')}
                       </a>
@@ -552,9 +552,11 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                       // 在招岗数(该省该职业本站在招;查无该省 = 0,0 必须显式写出,空着会被读成「没数据」):
                       // 数字本身就是直达链接;AIP 走指定雇主筛选无职业数,RCIP/联邦无岗位级标记 → 「—」
                       const provincial = /^[A-Z]{2}$/.test(row.province)
-                      const jobsHref = row.key === 'AIP' ? '/jobs?aip=1'
-                        : row.key === 'RCIP' ? null
-                          : provincial ? `/jobs?prov=${row.province}&pnp=1` : null
+                      // RCIP 看岗链接(L2-09 尾巴):jobs.pilot 已落地(E6-11)。URL 用 filters.shared 短名;
+                      // 旧值「1」不匹配谓词的 yes|no(=无效参数),顺手全修成 yes
+                      const jobsHref = row.key === 'AIP' ? '/jobs?aip=yes'
+                        : row.key === 'RCIP' ? '/jobs?pilot=RCIP'
+                          : provincial ? `/jobs?prov=${row.province}&pnp=yes` : null
                       const jobsN = provincial && occComp ? (occComp.find((o) => o.province === row.province)?.openJobs ?? 0) : null
                       return { rowKey: row.key, index, province, routeName, top: index === 0 && !row.blockedBy,
                         ratio: row.competition?.ratio ?? null, stateText: t(stateKey), afterOk, openOk, jobsHref, jobsN }
@@ -574,7 +576,7 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                         : r.jobsHref ? (
                           <a href={r.jobsHref} onClick={() => track('dp-offer-jobs', { key: r.rowKey })}
                             style={{ color: UI.primary, textDecoration: 'none', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
-                            {r.jobsN == null ? t('dp.planSeeJobsAip') : t('dp.planJobsN', { n: r.jobsN })} ›
+                            {r.jobsN == null ? t(r.rowKey === 'RCIP' ? 'dp.planSeeJobsPilot' : 'dp.planSeeJobsAip') : t('dp.planJobsN', { n: r.jobsN })} ›
                           </a>
                         ) : <span style={{ fontVariantNumeric: 'tabular-nums' }}>{t('dp.planJobsN', { n: r.jobsN ?? 0 })}</span>
                     )

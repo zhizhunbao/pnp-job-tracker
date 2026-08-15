@@ -19,7 +19,9 @@
       "salaryAnnual": 125000,
       "salaryText": "$110K–$140K/yr",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "Data Analyst",
@@ -37,7 +39,9 @@
       "salaryAnnual": 65000,
       "salaryText": "$60K–$70K/yr",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     }
   ]
 }

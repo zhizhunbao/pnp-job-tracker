@@ -81,7 +81,7 @@ export function catName(t: TFn, v: string): string {
 // 省/市/区格子开弹框、**文字仍是地图链接**(点文字跳地图,点格子弹框)。
 // 2026-07-25 Frank 五连拍拆弹框:「EE/PNP/AIP/薪资 的内容只放各自的弹框,移民价值做薄」——
 // #176 五合一长弹框按信号拆专属弹框,移民价值只留 依据链+通道卡+AI 顾问(结论层,清单层各回各家)
-export type FieldGroup = 'company' | 'immigration' | 'category' | 'location' | 'pnp' | 'ee' | 'aip' | 'salary'
+export type FieldGroup = 'company' | 'immigration' | 'category' | 'location' | 'pnp' | 'ee' | 'aip' | 'pilot' | 'salary'
 // 三档:并(→三个弹框之一)、图(直连地图)、无(不可点)。
 // 原设计还有一档「注=悬停小注」,2026-07-21 Frank 拍板不做 —— 它与「无」行为完全一致,
 // 留着只是个没兑现的意图,故合并(YAGNI:不为「可能用得上」保留结构)。
@@ -99,7 +99,7 @@ const FIELD_GROUP: Partial<Record<ColKey, Disposition>> = {
   address: 'map', province: 'location', city: 'location', district: 'location',
   // ⑤ PNP/EE/AIP → 各自专属弹框(2026-07-25 Frank 拆弹框:「xx 的内容只放 xx 的弹框」,
   //    原并入移民弹框的五合一退役——与移民价值的依据链行重复)
-  pnp: 'pnp', ee: 'ee', aip: 'aip',
+  pnp: 'pnp', ee: 'ee', aip: 'aip', pilot: 'pilot',
   // ⑥ 薪资族 → 薪资弹框(同批拆分:帖面薪资+折算+当地 band+vs 中位一处看全)
   vsMedian: 'salary', salary: 'salary', salaryYr: 'salary', wageMedHr: 'salary', wageMedYr: 'salary',
   // ⑦ 其余一律不可点(Pro 锁位的锁自己链升级弹窗,不走本路由)
@@ -312,6 +312,9 @@ export type JobRow = {
   pnpStream: string
   eeCategory: string
   aip: boolean
+  /** RCIP/FCIP 试点社区命中('RCIP'|'FCIP'|'RCIP+FCIP'|'');粗筛信号,试点须雇主先被社区指定 */
+  pilot: string
+  pilotCommunity: string
   eligibilityFlag?: string   // GAP1③:''|'no_sponsorship'|'pr_required'(数据层 visa_flag 检测)
   eligibilityQuote?: string  // 命中原句(可核验出处)
   // 雇佣形态 + 入职要求(E6-06/E6-07A,详情页结构化标注 05b 解析;空=未标注,ATS 岗天然空)
@@ -475,7 +478,7 @@ const searchHay = (j: JobRow): string => {
 // sourceUrl(来源板块根链接)已随 #175 来源格退回纯文本一并删除——死代码不留
 
 // ── 列配置(可勾选;职位列始终显示) ──────────────────────────────
-type ColKey = 'score' | 'match' | 'pnp' | 'ee' | 'aip' | 'lmia' | 'eligibility' | 'broad' | 'mid' | 'fine' | 'teer' | 'empHours' | 'empTerm' | 'title' | 'company' | 'noc' | 'accessibility' | 'salary' | 'salaryYr' | 'wageMedHr' | 'wageMedYr' | 'vsMedian' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'lastSeen' | 'closedAt' | 'actions'
+type ColKey = 'score' | 'match' | 'pnp' | 'ee' | 'aip' | 'pilot' | 'lmia' | 'eligibility' | 'broad' | 'mid' | 'fine' | 'teer' | 'empHours' | 'empTerm' | 'title' | 'company' | 'noc' | 'accessibility' | 'salary' | 'salaryYr' | 'wageMedHr' | 'wageMedYr' | 'vsMedian' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'lastSeen' | 'closedAt' | 'actions'
 // 默认显示 10 列(发布时间·大分类·公司·职位·省·市·薪资·年薪·vs中位·操作);其余用户自选。
 // 布局:表格永远满宽不横向滚动,列按内容自适应,内容多行换行(不省略)——见 <table>/<td> 注释。
 const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean }[] = [
@@ -512,6 +515,7 @@ const COLUMNS: { key: ColKey; label: string; default: boolean; always?: boolean 
   { key: 'pnp', label: 'PNP', default: false },
   { key: 'ee', label: 'EE 类别', default: false },
   { key: 'aip', label: 'AIP', default: false },
+  { key: 'pilot', label: 'RCIP/FCIP', default: false },
   { key: 'lmia', label: '外劳记录', default: false },  // E6-02:雇主近两年 LMIA 获批史(公司级信号)
   { key: 'eligibility', label: '身份预筛', default: false },  // GAP1③:JD 明确不担保/须 PR 红旗(C14/C15)
   { key: 'status', label: '状态', default: false },
@@ -523,7 +527,7 @@ const DEFAULT_COLS = COLUMNS.filter((c) => c.default).map((c) => c.key)
 // 原子值列:内容单行不换行(日期/金额/百分比/分级等短值,断行会很丑)。其余文本列(职位/公司/地点等)允许多行,
 // 以便表格压进容器宽度不横向滚动。表头一律不换行(=该列最小宽度)。
 // salary 不在此列:薪资原文可为长文本(如 "40% commission per sale"),要像文本列一样换行;年薪/中位数等计算列恒短值。
-const NOWRAP_COLS = new Set<ColKey>(['datePosted', 'lastSeen', 'closedAt', 'salaryYr', 'wageMedHr', 'wageMedYr', 'vsMedian', 'teer', 'empHours', 'empTerm', 'score', 'status', 'direct', 'aip', 'lmia', 'eligibility', 'match'])
+const NOWRAP_COLS = new Set<ColKey>(['datePosted', 'lastSeen', 'closedAt', 'salaryYr', 'wageMedHr', 'wageMedYr', 'vsMedian', 'teer', 'empHours', 'empTerm', 'score', 'status', 'direct', 'aip', 'pilot', 'lmia', 'eligibility', 'match'])
 const PREF_KEY = 'jobs.visibleCols.v11'  // v11:删「通道」列(#201,移民入口改操作列按钮);bump 版本让新默认生效
 const writeColsCookie = (keys: string[]) => {
   try { document.cookie = `${COLS_COOKIE}=${encodeURIComponent(JSON.stringify(keys))}; path=/; max-age=31536000; SameSite=Lax` } catch { /* ignore */ }
@@ -607,14 +611,14 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const [fCountry, setFCountry] = useState(seed('fCountry')); const [fProv, setFProv] = useState(seed('fProv')); const [fCity, setFCity] = useState(seed('fCity')); const [fDistrict, setFDistrict] = useState(seed('fDistrict'))
   const [fBroad, setFBroad] = useState(seed('fBroad')); const [fMid, setFMid] = useState(seed('fMid')); const [fFine, setFFine] = useState(seed('fFine'))
   const [fTeer, setFTeer] = useState(seed('fTeer')); const [fSource, setFSource] = useState(seed('fSource')); const [fAcc, setFAcc] = useState(seed('fAcc'))
-  const [fPnp, setFPnp] = useState(seed('fPnp')); const [fAip, setFAip] = useState(seed('fAip')); const [fStatus, setFStatus] = useState(seed('fStatus')); const [fOrigin, setFOrigin] = useState(seed('fOrigin'))
+  const [fPnp, setFPnp] = useState(seed('fPnp')); const [fAip, setFAip] = useState(seed('fAip')); const [fPilot, setFPilot] = useState(seed('fPilot')); const [fStatus, setFStatus] = useState(seed('fStatus')); const [fOrigin, setFOrigin] = useState(seed('fOrigin'))
   const [fScore, setFScore] = useState(seed('fScore')); const [fSal, setFSal] = useState(seed('fSal')); const [fVs, setFVs] = useState(seed('fVs'))  // 数值预设(下拉,不手填)
   const [fEmp, setFEmp] = useState(seed('fEmp'))  // 职位类型(E6-06):full/part/gig
   // 「更多筛选」折叠恢复(2026-07-11 用户二次拍板:五行常驻太占竖向空间,恢复默认收起);
   // 开关行右侧带更新时间+字段按钮(同日「放到一行」拍板保留,只是宿主行从薪资行换成开关行)
   // 窄屏筛选抽屉(E8-03):≤640px 整个筛选区默认收起,一行「筛选」开关展开;CSS 媒体查询控制显隐,零水合差异
   const [fDrawer, setFDrawer] = useState(false)   // #59:「更多筛选」折叠开关(原窄屏抽屉退役,本 state 复用)
-  const foldActive = [fCity, fDistrict, fMid, fFine, fAip, fEmp, fVs, fElig].filter(Boolean).length + (directOnly ? 1 : 0)
+  const foldActive = [fCity, fDistrict, fMid, fFine, fAip, fPilot, fEmp, fVs, fElig].filter(Boolean).length + (directOnly ? 1 : 0)
   // 初始列:服务端从 cookie 解析后由 initialCols 传入 → SSR 与客户端首帧一致(零闪);无则用默认
   const [visible, setVisible] = useState<ColKey[]>(() => {
     const v = (initialCols ?? []).filter((k): k is ColKey => COLUMNS.some((c) => c.key === k))
@@ -629,7 +633,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
     fMid: { v: fMid, set: setFMid }, fFine: { v: fFine, set: setFFine }, fCity: { v: fCity, set: setFCity },
     fDistrict: { v: fDistrict, set: setFDistrict }, fCountry: { v: fCountry, set: setFCountry },
     fTeer: { v: fTeer, set: setFTeer }, fSource: { v: fSource, set: setFSource }, fAcc: { v: fAcc, set: setFAcc },
-    fPnp: { v: fPnp, set: setFPnp }, fAip: { v: fAip, set: setFAip }, fStatus: { v: fStatus, set: setFStatus },
+    fPnp: { v: fPnp, set: setFPnp }, fAip: { v: fAip, set: setFAip }, fPilot: { v: fPilot, set: setFPilot }, fStatus: { v: fStatus, set: setFStatus },
     fOrigin: { v: fOrigin, set: setFOrigin }, fScore: { v: fScore, set: setFScore }, fSal: { v: fSal, set: setFSal },
     fVs: { v: fVs, set: setFVs }, fEmp: { v: fEmp, set: setFEmp }, fElig: { v: fElig, set: setFElig },
   }
@@ -689,7 +693,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       else localStorage.removeItem('boardFilters')
     } catch { /* ignore */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, directOnly, fElig, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, fEmp])
+  }, [q, directOnly, fElig, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fPilot, fStatus, fOrigin, fScore, fSal, fVs, fEmp])
   // E8-10:popup 存**分组**不再存字段(24 → 3);srcField 只用于打开时锚到哪一节,不参与内容分支
   const [popup, setPopup] = useState<{ group: FieldGroup; srcField: ColKey; job: JobRow; title: string } | null>(null)
   // 单一路由:查 FIELD_GROUP 决定开哪个弹框 / 跳地图 / 什么都不做。两处调用方(表格行、手机卡)共用,
@@ -896,7 +900,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const cellClip: React.CSSProperties = { overflow: 'hidden', overflowWrap: 'break-word' }
   // 这几列的值是**短语**不是原子值(AIP「Occupation not accepted」、LMIA、资格、匹配),
   // 中文短、英文长 —— 让它们在本列内换行,别再挤隔壁。
-  const WRAP_COLS = new Set<ColKey>(['aip', 'lmia', 'eligibility', 'match'])
+  const WRAP_COLS = new Set<ColKey>(['aip', 'pilot', 'lmia', 'eligibility', 'match'])
 
   // Esc 关弹框
   useEffect(() => {
@@ -915,7 +919,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   }, [colOpen])
 
   // 分页(E10-01 P3:服务端分页)——筛选/搜索/排序/切匹配视图变化 → 回第 0 页(fetch effect 随之重拉替换)
-  useEffect(() => { setPage(0) }, [q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, fEmp, fElig, sort, matchView])
+  useEffect(() => { setPage(0) }, [q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fPilot, fStatus, fOrigin, fScore, fSal, fVs, fEmp, fElig, sort, matchView])
 
   // 联动选项来自维度表(provinces/cities/districts;E10-01 P3:维度独立加载后不再从 job 行现推)。
   // 国家/TEER 下拉已删(2026-07-07 文案审计);fCountry/fTeer state 保留给已存的 saved-search 兼容
@@ -934,9 +938,9 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
   const midOpts = useMemo(() => uniq(nc.filter((c) => !fBroad || c.broad === fBroad).map((c) => c.mid)), [nc, fBroad])
   const fineOpts = useMemo(() => uniq(nc.filter((c) => (!fBroad || c.broad === fBroad) && (!fMid || c.mid === fMid)).map((c) => c.fine)), [nc, fBroad, fMid])
   // 来源/状态/经验/评分下拉已下架(2026-07-16 拍板只留薪资);state 与谓词保留=URL/老保存筛选照常生效
-  const anyFilter = q || directOnly || fCountry || fProv || fCity || fDistrict || fBroad || fMid || fFine || fTeer || fSource || fAcc || fPnp || fAip || fStatus || fOrigin || fScore || fSal || fVs || fEmp || fElig
+  const anyFilter = q || directOnly || fCountry || fProv || fCity || fDistrict || fBroad || fMid || fFine || fTeer || fSource || fAcc || fPnp || fAip || fPilot || fStatus || fOrigin || fScore || fSal || fVs || fEmp || fElig
   const clearAll = () => {
-    setQ(''); setDirectOnly(false); setFCountry(''); setFProv(''); setFCity(''); setFDistrict(''); setFBroad(''); setFMid(''); setFFine(''); setFTeer(''); setFSource(''); setFAcc(''); setFPnp(''); setFAip(''); setFStatus(''); setFOrigin(''); setFScore(''); setFSal(''); setFVs(''); setFEmp(''); setFElig('')
+    setQ(''); setDirectOnly(false); setFCountry(''); setFProv(''); setFCity(''); setFDistrict(''); setFBroad(''); setFMid(''); setFFine(''); setFTeer(''); setFSource(''); setFAcc(''); setFPnp(''); setFAip(''); setFPilot(''); setFStatus(''); setFOrigin(''); setFScore(''); setFSal(''); setFVs(''); setFEmp(''); setFElig('')
     // URL 参数不用在这儿摘:上面「筛选 → URL」那一处会把清空后的状态同步回地址栏
     // (2026-07-19 Frank「点击清除筛选,一刷新又回去了」的老补丁已并入同一出口)
   }
@@ -969,7 +973,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
       .catch(() => { /* 网络失败:留现有行 */ })
       .finally(() => { if (seq === reqSeq.current) setLoading(false) })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dq, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, fEmp, fElig, sort, matchView, page])
+  }, [dq, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fPilot, fStatus, fOrigin, fScore, fSal, fVs, fEmp, fElig, sort, matchView, page])
 
 
 
@@ -1067,7 +1071,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                 onClick={async () => {
                   const name = window.prompt(t('ss.name'))
                   if (!name) return
-                  const filters = { q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fStatus, fOrigin, fScore, fSal, fVs, fEmp, fElig }
+                  const filters = { q, directOnly, fCountry, fProv, fCity, fDistrict, fBroad, fMid, fFine, fTeer, fSource, fAcc, fPnp, fAip, fPilot, fStatus, fOrigin, fScore, fSal, fVs, fEmp, fElig }
                   track('save-search')
                   const r = await fetch('/api/saved-searches', {
                     method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
@@ -1124,6 +1128,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               <div className="jtCtl" style={filtRow}>
                 <span style={filtLabel}>{t('filter.other')}</span>
                 <Sel value={fAip} onChange={setFAip} opts={['yes', 'no']} all={t('all.aip')} labelOf={(v) => t('opt.' + v)} />
+                {/* RCIP/FCIP 试点社区(E6-11):yes=任一命中,RCIP/FCIP=指定类型 */}
+                <Sel value={fPilot} onChange={setFPilot} opts={['yes', 'RCIP', 'FCIP', 'no']} all={t('all.pilot')} labelOf={(v) => (v === 'yes' || v === 'no' ? t('opt.' + v) : v)} />
                 <Sel value={fEmp} onChange={setFEmp} opts={['full', 'part', 'gig']} all={t('all.emp')} labelOf={(v) => t('emp.' + v)} />
                 <Sel value={fVs} onChange={setFVs} opts={['above', 'above20', 'below']} all={t('all.vs')} labelOf={(v) => t('vs.' + v)} />
                 <label style={{ ...ctrl, display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', background: directOnly ? '#eef2ff' : '#fff', whiteSpace: 'nowrap' }} title={t('directOnly.tip')}>
@@ -1309,6 +1315,11 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                           : '—'
                         Object.assign(extra, { whiteSpace: 'normal', color: j.eeCategory ? (dormant ? '#9ca3af' : '#2563eb') : '#d1d5db', fontSize: 12.5 })
                       }
+                      else if (k === 'pilot') {
+                        // 试点社区列:值=类型(RCIP/FCIP),社区名进弹框;未命中「—」
+                        node = j.pilot || '—'
+                        Object.assign(extra, { color: j.pilot ? '#0e7490' : '#d1d5db', fontSize: 12.5 })
+                      }
                       else if (k === 'aip') {
                         // E6-09:省里逐条点名「这些职业不受理背书」→ 结论压过「雇主在指定名单」(官方一律不受理)
                         const blocked = blockedKeys.aip.has(j.province + '|' + j.noc)
@@ -1331,7 +1342,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
                       // 批A 追拍(Frank「走不了的就别给点了」):PNP/EE/AIP 的「—」格(无信号)摘可点——点开只会看到「走不了」,没有意义
                       // 2026-07-26 Frank「恢复可点」:命中官方具名清单的走不了=有依据可看,重新可点(泛判定的「—」仍不可点)
                       const act = cellActionable(k) && (k === 'pnp' ? (!!j.pnpEligible || blockedKeys.pnp.has(j.province + '|' + j.noc))
-                        : k === 'ee' ? !!j.eeCategory : k === 'aip' ? (!!j.aip || blockedKeys.aip.has(j.province + '|' + j.noc)) : true)
+                        : k === 'ee' ? !!j.eeCategory : k === 'aip' ? (!!j.aip || blockedKeys.aip.has(j.province + '|' + j.noc)) : k === 'pilot' ? !!j.pilot : true)
                       return (
                         <td key={k} className={act ? 'jcell jcellAct' : 'jcell'} style={{ ...td, padding: `7px ${cellPad}`, ...extra, cursor: act ? 'pointer' : 'default', borderRight: idx === shown.length - 1 ? undefined : '1px solid #f3f4f6', ...(NOWRAP_COLS.has(k) && !WRAP_COLS.has(k) ? { whiteSpace: 'nowrap' } : { whiteSpace: 'normal', overflowWrap: 'break-word' }), ...cellClip, ...frozenStyle(k, rowBg, '#f3f4f6') }} title={typeof node === 'string' ? node : undefined} onClick={() => {
                           if (!act) return
@@ -1391,7 +1402,7 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
             const isQc = j.province === 'QC'
             const bk = j.province + '|' + j.noc
             const pnpExcl = blockedKeys.pnp.has(bk), aipBlocked = blockedKeys.aip.has(bk)
-            const anyRoute = j.pnpEligible || j.eeCategory || j.aip || isQc || pnpExcl || aipBlocked || (j.teer != null && j.teer <= 3)
+            const anyRoute = j.pnpEligible || j.eeCategory || j.aip || j.pilot || isQc || pnpExcl || aipBlocked || (j.teer != null && j.teer <= 3)
             const eeLast = j.eeCategory ? eeLastDraw(j.eeCategory, dims.eeCategories) : ''
             const eeDorm = !!j.eeCategory && eeIsDormant(eeLast)
             const chips = [
@@ -1406,6 +1417,8 @@ export default function JobsTable({ jobs: initialJobs, updatedAt: initialUpdated
               // Frank 2026-07-26「不符合清单 职业不受理 需要两个胶囊吗」:两条都命中排除时只出一枚「本省不受理」
               anyRoute && aipBlocked && !pnpExcl ? chip('#fee2e2', '#b91c1c', t('cell.aipBlocked'), 'aip')
                 : anyRoute && j.aip ? chip('#ffedd5', '#9a3412', t('cell.aipYes'), 'aip') : null,
+              // 试点社区胶囊(E6-11):值=类型缩写,社区名/口径进弹框
+              anyRoute && j.pilot ? chip('#e0f2fe', '#075985', j.pilot, 'pilot') : null,
               anyRoute && isQc ? chip('#f3e8ff', '#7c3aed', 'QC', 'province') : null,
               // 担保档下放胶囊排(08-10 Frank「这个也放到下面」):公司名旁徽章退役,与 #145 的 LMIA chip 合一 ——
               // 有档显档名(Has LMIA record 等),无档但有 LMIA 数才显数;AIP-only 三档照旧不显(AIP 胶囊已在)
@@ -2819,7 +2832,7 @@ const TIME_FIELDS = new Set<ColKey>(['status', 'datePosted', 'lastSeen', 'closed
 // 帖内字段 → 记录级 applyUrl(这一岗的原帖,每岗不同);第三方数据字段 → field_sources 注册表里各自的
 // 官方数据集页(分类=StatCan NOC、中位=ESDC 工资、AIP/PNP/EE=IRCC、LMIA=ESDC 名录);
 // 本站派生(评分/匹配)与公司(官网行即出处)不挂。vsMedian=对比字段,帖子+ESDC 两个输入都给。
-const DATASET_SRC_FIELDS = new Set<ColKey>(['noc', 'teer', 'broad', 'mid', 'fine', 'wageMedHr', 'wageMedYr', 'aip', 'lmia', 'pnp', 'ee'])
+const DATASET_SRC_FIELDS = new Set<ColKey>(['noc', 'teer', 'broad', 'mid', 'fine', 'wageMedHr', 'wageMedYr', 'aip', 'pilot', 'lmia', 'pnp', 'ee'])
 // 本站派生字段(评分/匹配):无外部 URL,来源行显示算法说明文案(E8-04:所有字段都有来源,派生也诚实标注)
 // 本站派生字段(评分/匹配):无外部 URL,来源行显示算法说明文案(E8-04:所有字段都有来源,派生也诚实标注)
 const DERIVED_SRC_FIELDS = new Set<ColKey>(['score', 'match'])
@@ -2850,6 +2863,7 @@ const GROUP_SECTIONS: Record<FieldGroup, ColKey[]> = {
   pnp: ['pnp'],
   ee: ['ee'],
   aip: ['aip'],
+  pilot: ['pilot'],
   salary: ['salary', 'vsMedian', 'wageMedHr'],   // 批A 三卡:帖面(原文+折算) + vs中位(ESDC中位+直判) + ESDC表(低中高一行一条)
   category: ['noc'],
   company: [],   // 2026-07-21:公司组走专用 CompanyPanel(平级卡),不经 GroupFactsSection
@@ -2862,6 +2876,7 @@ function hasFacts(k: ColKey, job: JobRow): boolean {
     case 'pnp': return true          // 未命中也要说「未命中」,是结论不是空
     case 'ee': return true           // 同上(#155 已收成一行+折叠)
     case 'aip': return true          // 批A:同上——原 !!job.aip 让未命中岗点开整框空壳(第25轮 AIP P3)
+    case 'pilot': return true        // E6-11:同上,未命中也给「不在试点社区」的结论行
     case 'noc': return !!job.noc
     case 'vsMedian': return job.salaryAnnual != null || job.wageMedAnnual != null
     case 'wageMedHr': return job.wageMedHourly != null || job.wageMedAnnual != null   // 批A ESDC 表卡:无中位=整卡不出
@@ -2950,6 +2965,21 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
         {matches.map((e, i) => (
           <FactRow key={i} k={e.name}>{[e.location, e.province, e.isTech ? t('fact.aipTech') : null].filter(Boolean).join('、')}</FactRow>
         ))}
+      </FactsBox>
+    )
+  }
+
+  if (field === 'pilot') {
+    // E6-11:三态直判 —— 城市在 RCIP/FCIP 参与社区=命中(粗筛),否则「不在试点社区」。
+    // 口径红线走 note:试点是社区推荐制且雇主须先被社区**指定**,命中≠可走;
+    // 出处行由 DATASET_SRC_FIELDS + field_sources('pilot'→IRCC 官方名单页)自动挂
+    const on = !!job.pilot
+    return (
+      <FactsBox note={t('fact.pilotGate')}>
+        <FactRow k={t('fact.verdict')}>
+          <VerdictPill tone={on ? 'ok' : 'na'}>{t(on ? 'ch.pilot.on' : 'ch.pilot.na')}</VerdictPill>
+        </FactRow>
+        {on ? <FactRow k={job.pilotCommunity || job.city}>{job.pilot}</FactRow> : null}
       </FactsBox>
     )
   }

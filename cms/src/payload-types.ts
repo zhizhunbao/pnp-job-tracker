@@ -83,6 +83,7 @@ export interface Config {
     'noc-openings': NocOpening;
     'policy-docs': PolicyDoc;
     'designated-employers': DesignatedEmployer;
+    'pilot-communities': PilotCommunity;
     provinces: Province;
     cities: City;
     districts: District;
@@ -123,6 +124,7 @@ export interface Config {
     'noc-openings': NocOpeningsSelect<false> | NocOpeningsSelect<true>;
     'policy-docs': PolicyDocsSelect<false> | PolicyDocsSelect<true>;
     'designated-employers': DesignatedEmployersSelect<false> | DesignatedEmployersSelect<true>;
+    'pilot-communities': PilotCommunitiesSelect<false> | PilotCommunitiesSelect<true>;
     provinces: ProvincesSelect<false> | ProvincesSelect<true>;
     cities: CitiesSelect<false> | CitiesSelect<true>;
     districts: DistrictsSelect<false> | DistrictsSelect<true>;
@@ -584,6 +586,14 @@ export interface Job {
    * 雇主在官方 AIP 指定雇主名单(大西洋四省 NL/NB/NS/PE)
    */
   aip?: boolean | null;
+  /**
+   * RCIP/FCIP 试点社区命中(RCIP|FCIP|RCIP+FCIP,空=不在)。粗筛信号:试点须雇主先被社区指定,命中≠可走
+   */
+  pilot?: string | null;
+  /**
+   * 命中的试点社区名(pilot_communities 维度)
+   */
+  pilotCommunity?: string | null;
   /**
    * B1-3:官方 Experience 标「Will train/Experience an asset」或标题含学徒(05e 算);False=没被标,不是要经验
    */
@@ -1191,6 +1201,30 @@ export interface DesignatedEmployer {
   /**
    * 本站抓取日(evidence 随行)
    */
+  fetched?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pilot-communities".
+ */
+export interface PilotCommunity {
+  id: number;
+  name: string;
+  province?: string | null;
+  /**
+   * RCIP | FCIP
+   */
+  type?: string | null;
+  /**
+   * 命中的 Job Bank 城市名(顿号连接);空=界线未举证不打标
+   */
+  cities?: string | null;
+  /**
+   * 社区官方站(IRCC 名单页给出);判定层 evidence
+   */
+  url?: string | null;
   fetched?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -1920,6 +1954,10 @@ export interface PayloadLockedDocument {
         value: number | DesignatedEmployer;
       } | null)
     | ({
+        relationTo: 'pilot-communities';
+        value: number | PilotCommunity;
+      } | null)
+    | ({
         relationTo: 'provinces';
         value: number | Province;
       } | null)
@@ -2181,6 +2219,8 @@ export interface JobsSelect<T extends boolean = true> {
   pnpStream?: T;
   eeCategory?: T;
   aip?: T;
+  pilot?: T;
+  pilotCommunity?: T;
   apprenticeFriendly?: T;
   isDup?: T;
   employmentTerm?: T;
@@ -2431,6 +2471,20 @@ export interface DesignatedEmployersSelect<T extends boolean = true> {
   isTech?: T;
   source?: T;
   nocs?: T;
+  url?: T;
+  fetched?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pilot-communities_select".
+ */
+export interface PilotCommunitiesSelect<T extends boolean = true> {
+  name?: T;
+  province?: T;
+  type?: T;
+  cities?: T;
   url?: T;
   fetched?: T;
   updatedAt?: T;

@@ -16,22 +16,29 @@
 
 ## 2. 验收标准
 
-- [ ] `pilot_communities` 表（新）：社区名、省、试点类型（RCIP / FCIP）、状态、官方页、抓取日
-- [ ] 社区职业要求落库（各社区自行公布优先职业/行业时）：`pilot_occupations`（社区 × NOC），无清单的社区**留空不猜**（同 PE/NL 惯例）
+- [x] `pilot_communities` 表（新）：社区名、省、试点类型（RCIP / FCIP）、官方页、抓取日 —— 2026-08-15 批A 落库
+      （20 社区 = 14 RCIP + 6 FCIP，源=fed-rcip crawl 的 IRCC 名单页;docs/sql/e6-11-pilot.sql）
+- [ ] 社区职业要求落库（各社区自行公布优先职业/行业时）：`pilot_occupations`（社区 × NOC），无清单的社区**留空不猜**（同 PE/NL 惯例）→ **批B**（社区站种子已进 crawl，html_cache 到位后解析）
 - [ ] **指定雇主维度**（2026-08-14 补）：RCIP 是**雇主须先被社区 designate** 才能出试点 offer ——
       逐社区抓 designated employer 名单（各社区官网公布,格式各异),照 AIP 管线同构:
-      名单 → 雇主名匹配 → `jobs.pilot` 置信来源之一;没公布名单的社区**留空不猜**
-- [ ] 职位侧：`jobs.pilot`（社区命中）+ `jobs.pilot_stream`（命中的社区名/类型），走 08_score 判定
-- [ ] 前端：与 PNP/EE/AIP 同款——列 + 胶囊 + 弹框（判定 + 凭什么 + 官方出处）
-- [ ] 三语 label
+      名单 → 雇主名匹配 → `jobs.pilot` 置信来源之一;没公布名单的社区**留空不猜** → **批B**
+- [x] 职位侧：`jobs.pilot`（RCIP|FCIP|RCIP+FCIP）+ `jobs.pilot_community`（命中社区名）—— 批A:
+      判定在 `etl/clean/05f_flag_pilot.py`（城市×省 精确匹配人工核对映射,不走 08_score;
+      与 05c AIP 同款「一字段一脚本」），首轮 1,915/93,844 岗命中
+- [x] 前端：与 PNP/EE/AIP 同款——列(RCIP/FCIP) + 胶囊 + 弹框（三态直判 + 社区名 + IRCC 官方出处行）
+      + 筛选 fPilot(yes/RCIP/FCIP/no,URL 短名 pilot=) + 决策页 RCIP 行看岗链接
+- [x] 三语 label（col/all/grp/ch.pilot.on|na/fact.pilotGate/dp.planSeeJobsPilot）
 
 ## 3. 实现步骤
 
-- [ ] **3.1** 抓官方社区名单（IRCC 页：Rural Community Immigration Pilot / Francophone Community Immigration Pilot）。
-- [ ] **3.2** 地点匹配：社区名 → 本站 `city`（**这一步是主要风险**，见 §5）。
-- [ ] **3.3** 逐社区找职业要求页（多数社区自建站，格式各异）→ 有 NOC 的落库，只给行业名的留空不猜。
-- [ ] **3.4** 08_score 增加 pilot 判定；mart 列对齐；seed 加载。
-- [ ] **3.5** 前端字段与弹框，口径注写明「试点由社区推荐，需社区背书，非省提名」。
+- [x] **3.1** 抓官方社区名单（etl/build_pilots.py,IRCC 页 h3 标题锚切 RCIP/FCIP 两段;解析塌方哨兵保旧）。
+- [x] **3.2** 地点匹配：人工核对映射（CITY_MAP,生产库城市名实测）——**单城社区 12 个**直接映射
+      （含 Sudbury 双写名 Sudbury/Greater Sudbury）；**区域型社区 6 个 cities=[] 不打标**
+      （Pictou County/West Kootenay/North Okanagan Shuswap/Peace Liard/Acadian Peninsula/Superior East,
+      界线待社区官网举证后补,种子已进 crawl）。宁漏勿错执行到位。
+- [ ] **3.3** 逐社区找职业要求页（多数社区自建站，格式各异）→ 有 NOC 的落库，只给行业名的留空不猜。→ **批B**
+- [x] **3.4** 打标在 05f(城市匹配,不进 08_score);mart 列对齐(09);seed 加载(维度三元组+jobs 两列)。
+- [x] **3.5** 前端字段与弹框,口径注=fact.pilotGate「试点为社区推荐制,雇主须先获社区指定;命中≠资格认定」。
 
 ## 4. 涉及目录 / 文件
 

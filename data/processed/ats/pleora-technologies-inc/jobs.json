@@ -17,7 +17,9 @@
       "country": "Canada",
       "district": "Kanata",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     },
     {
       "title": "DevOps Engineer",
@@ -35,7 +37,9 @@
       "salaryAnnual": 85000,
       "salaryText": "$75K–$95K/yr",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     }
   ]
 }

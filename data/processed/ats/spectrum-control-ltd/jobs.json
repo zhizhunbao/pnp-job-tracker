@@ -17,7 +17,9 @@
       "country": "Canada",
       "district": "Kanata",
       "aip": false,
-      "apprentice_friendly": false
+      "apprentice_friendly": false,
+      "pilot": "",
+      "pilotCommunity": ""
     }
   ]
 }

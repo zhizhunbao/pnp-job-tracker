@@ -56,6 +56,8 @@ export const Jobs: CollectionConfig = {
     { name: 'pnpStream', type: 'text', admin: { description: '命中省提名具名通道的短标签(如「OINP 紧缺技能」),数据层 08_score 算;泛技能岗为空' } },
     { name: 'eeCategory', type: 'text', index: true, admin: { description: '联邦 Express Entry 类别抽选所属类别(医疗社服/STEM/技工…),数据层 08_score 算;与 PNP 是两条路,独立信号' } },
     { name: 'aip', type: 'checkbox', index: true, defaultValue: false, admin: { description: '雇主在官方 AIP 指定雇主名单(大西洋四省 NL/NB/NS/PE)' } },
+    { name: 'pilot', type: 'text', index: true, admin: { description: 'RCIP/FCIP 试点社区命中(RCIP|FCIP|RCIP+FCIP,空=不在)。粗筛信号:试点须雇主先被社区指定,命中≠可走' } },
+    { name: 'pilotCommunity', type: 'text', admin: { description: '命中的试点社区名(pilot_communities 维度)' } },
     { name: 'apprenticeFriendly', type: 'checkbox', defaultValue: false, admin: { description: 'B1-3:官方 Experience 标「Will train/Experience an asset」或标题含学徒(05e 算);False=没被标,不是要经验' } },
     { name: 'isDup', type: 'checkbox', defaultValue: false, admin: { description: '#125 展示层重复标记:同 公司×岗名×城市 非最新帖(09 算);列表隐藏,行保留统计不动' } },
     // 雇佣形态 + 入职要求(E6-06/E6-07A):Job Bank 详情页结构化标注,05b 规则解析;无标注/ATS=空(宁缺)
