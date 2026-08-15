@@ -25,3 +25,7 @@ CREATE INDEX IF NOT EXISTS pilot_occupations_noc_idx ON pilot_occupations (noc);
 -- 🔴 Payload 锁表补列(不补 admin 打开集合 500)
 ALTER TABLE payload_locked_documents_rels ADD COLUMN IF NOT EXISTS pilot_occupations_id integer;
 CREATE INDEX IF NOT EXISTS payload_locked_documents_rels_pilot_occupations_id_idx ON payload_locked_documents_rels (pilot_occupations_id);
+
+-- 批C 尾巴(2026-08-15):pilot_occupations 消费端 —— 岗位 NOC × 社区在收清单交叉判定
+-- 'yes'|'no'|''(非试点岗/该社区清单无NOC判不了);RCIP 要求 offer 职业在社区清单内,负判定以官方清单为据
+ALTER TABLE jobs ADD COLUMN IF NOT EXISTS pilot_occ varchar;

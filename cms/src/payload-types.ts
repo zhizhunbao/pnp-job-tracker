@@ -601,6 +601,10 @@ export interface Job {
    */
   pilotEmployer?: boolean | null;
   /**
+   * 岗位 NOC × 社区在收清单(yes|no|空=判不了);RCIP 要求 offer 职业在社区清单内
+   */
+  pilotOcc?: string | null;
+  /**
    * B1-3:官方 Experience 标「Will train/Experience an asset」或标题含学徒(05e 算);False=没被标,不是要经验
    */
   apprenticeFriendly?: boolean | null;
@@ -2258,6 +2262,7 @@ export interface JobsSelect<T extends boolean = true> {
   pilot?: T;
   pilotCommunity?: T;
   pilotEmployer?: T;
+  pilotOcc?: T;
   apprenticeFriendly?: T;
   isDup?: T;
   employmentTerm?: T;

@@ -617,6 +617,13 @@ def build():
                         extra["websiteSource"] = en["found"]  # jd/searched(searched 前端加小字,D2)
             companies[slug] = {"slug": slug, "name": name, **{k: v for k, v in extra.items() if v}}
 
+    # E6-11 批C 尾巴:社区在收职业集合(岗位 NOC × 社区清单交叉 → jobs.pilotOcc,判定在此层:NOC 08 评分后才定)
+    pilot_occ_sets: dict[str, set[str]] = {}
+    if IN_PILOT_OCC.exists():
+        for _r in json.loads(IN_PILOT_OCC.read_text(encoding="utf-8")).get("rows", []):
+            if _r.get("noc"):
+                pilot_occ_sets.setdefault(_r["community"], set()).add(str(_r["noc"]))
+
     def add_job(external_id, company_slug, **fields):
         if external_id in expired:
             dropped_expired[0] += 1
@@ -630,6 +637,11 @@ def build():
         fields["datePosted"] = iso_date(fields.get("datePosted"))
         sc = scored.get(external_id, {})
         cls = NOC.classify(sc.get("noc"))  # noc → teer/broad/mid/fine(分类法在 etl/noc.py)
+        # 试点职业交叉(批C 尾巴):yes=NOC 在所在社区在收清单;no=不在(RCIP 要求 offer 职业在清单内,
+        # 官方清单为据的负判定);''=非试点岗/该社区清单无 NOC/岗位无 NOC(判不了不硬判)
+        _pc = fields.get("pilotCommunity") or ""
+        _pset = pilot_occ_sets.get(_pc)
+        fields["pilotOcc"] = ("yes" if (sc.get("noc") or "") in _pset else "no") if _pc and _pset and sc.get("noc") else ""
         # 该 NOC 当地中位工资:优先省级,无则国家级(ESDC 开放数据)
         wnoc = wages.get(sc.get("noc") or "", {})
         w = wnoc.get(fields.get("province", "")) or wnoc.get("NAT") or {}

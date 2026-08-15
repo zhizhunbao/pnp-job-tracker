@@ -317,6 +317,8 @@ export type JobRow = {
   pilotCommunity: string
   /** 批B:雇主在其试点社区的官方指定名单上;false≠未指定(名单可能未公布),只做正向展示 */
   pilotEmployer: boolean
+  /** 批C 尾巴:岗位 NOC × 社区在收清单('yes'|'no'|'');no 是官方清单为据的负判定,可写 */
+  pilotOcc: string
   eligibilityFlag?: string   // GAP1③:''|'no_sponsorship'|'pr_required'(数据层 visa_flag 检测)
   eligibilityQuote?: string  // 命中原句(可核验出处)
   // 雇佣形态 + 入职要求(E6-06/E6-07A,详情页结构化标注 05b 解析;空=未标注,ATS 岗天然空)
@@ -2984,6 +2986,11 @@ function FieldFactsInner({ field, job, jobs, lang, isPro, loggedIn, pnpOcc, pnpD
         {on ? <FactRow k={job.pilotCommunity || job.city}>{job.pilot}</FactRow> : null}
         {/* 批B:雇主已获社区指定(强一级信号)。只做正向展示 —— false 可能只是名单未公布,不写反话 */}
         {on && job.pilotEmployer ? <FactRow k={job.company}>{t('fact.pilotEmp')}</FactRow> : null}
+        {/* 批C 尾巴:职业 × 社区在收清单。no 可写(RCIP 制度要求 offer 职业在清单内,官方清单为据);
+            '' = 判不了(岗无 NOC/清单无 NOC),照红线不硬判 */}
+        {on && job.pilotOcc ? (
+          <FactRow k={`NOC ${job.noc}`}>{t(job.pilotOcc === 'yes' ? 'fact.pilotOccYes' : 'fact.pilotOccNo')}</FactRow>
+        ) : null}
       </FactsBox>
     )
   }

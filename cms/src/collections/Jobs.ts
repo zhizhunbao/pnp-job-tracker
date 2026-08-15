@@ -59,6 +59,7 @@ export const Jobs: CollectionConfig = {
     { name: 'pilot', type: 'text', index: true, admin: { description: 'RCIP/FCIP 试点社区命中(RCIP|FCIP|RCIP+FCIP,空=不在)。粗筛信号:试点须雇主先被社区指定,命中≠可走' } },
     { name: 'pilotCommunity', type: 'text', admin: { description: '命中的试点社区名(pilot_communities 维度)' } },
     { name: 'pilotEmployer', type: 'checkbox', defaultValue: false, admin: { description: '雇主在其所在试点社区的官方指定雇主名单(批B;比城市命中强一级)' } },
+    { name: 'pilotOcc', type: 'text', admin: { description: '岗位 NOC × 社区在收清单(yes|no|空=判不了);RCIP 要求 offer 职业在社区清单内' } },
     { name: 'apprenticeFriendly', type: 'checkbox', defaultValue: false, admin: { description: 'B1-3:官方 Experience 标「Will train/Experience an asset」或标题含学徒(05e 算);False=没被标,不是要经验' } },
     { name: 'isDup', type: 'checkbox', defaultValue: false, admin: { description: '#125 展示层重复标记:同 公司×岗名×城市 非最新帖(09 算);列表隐藏,行保留统计不动' } },
     // 雇佣形态 + 入职要求(E6-06/E6-07A):Job Bank 详情页结构化标注,05b 规则解析;无标注/ATS=空(宁缺)
