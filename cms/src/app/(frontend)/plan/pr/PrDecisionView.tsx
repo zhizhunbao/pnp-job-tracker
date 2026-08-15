@@ -25,7 +25,7 @@ import { ConditionGrid } from '../../jobs/ConditionGrid'
 import { PnpScoreCard } from '../../jobs/PnpScoreCard'
 import { iconBtnS, SCRIM, CARD as OVERLAY_CARD, useIsNarrow } from '../../jobs/Modal'
 import { IconRefresh } from '../../Icons'
-import { EMPTY, clearAnswers, readAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
+import { EMPTY, clearAnswers, pullAndMerge, readAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
 import { fieldsOf, missingFields } from '@/lib/decisions'
 import { FIELDS } from '@/lib/fields'
 import { pickName } from '@/lib/occName'
@@ -136,18 +136,25 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
   const quizRef = useRef<HTMLDivElement | null>(null)
   const hasShownQuizStep = useRef(false)
 
-  useEffect(() => {
+  // 本地答案 → 页面状态(挂载、服务端档拉回、注册闸放行三处共用一套重建,不许各抄一份)
+  const refreshFromStore = useCallback((): Answers => {
     const a = readAnswers()
     setBands(a)
     setNoc(a.nocs[0] || '')
-    const baseFields = fieldsOf('pr', 'basic')
-    const baseComplete = missingFields(baseFields, a).length === 0
-    // 改为弹窗形态后默认收起弹窗,避免刚进页面就强插弹窗遮罩。只有 URL 带 ?quiz=1 时才自动唤起弹窗。
-    setQuizOpen(new URLSearchParams(window.location.search).get('quiz') === '1')
+    const baseComplete = missingFields(fieldsOf('pr', 'basic'), a).length === 0
     setOccStep(a.nocs.length === 0)
     setProvinceStep(a.nocs.length > 0 && baseComplete && a.provs.length === 0 && !a.provsAny)
+    return a
+  }, [])
+
+  useEffect(() => {
+    refreshFromStore()
+    // 改为弹窗形态后默认收起弹窗,避免刚进页面就强插弹窗遮罩。只有 URL 带 ?quiz=1 时才自动唤起弹窗。
+    setQuizOpen(new URLSearchParams(window.location.search).get('quiz') === '1')
     setReady(true)
     track('dp-open', { job: tvJob ? '1' : '0' })
+    // 登录态拉服务端答案档(清了浏览器/换设备答案还在;未登录 401 无感):有变化才重建
+    pullAndMerge().then((changed) => { if (changed) refreshFromStore() }).catch(() => { /* 静默 */ })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -787,8 +794,10 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
       <QuizStyle />
       {/* 未登录拦在壳外:标准 AuthModal(与顶栏同款),关掉=放弃答题,完成=原地接开答题 */}
       {quizOpen && me === false ? (
+        // onDone 前 AuthForm 已 pullAndMerge 过:refreshFromStore 读到的是合并后的答案,
+        // 老用户换浏览器登录直接接着上次的进度答,不从第一题重来
         <AuthModal t={t} mode="register" hero={t('dp.authGate')} onClose={() => setQuizOpen(false)}
-          onDone={() => { setMe(true); quizToProfile(readAnswers()) }} />
+          onDone={() => { setMe(true); quizToProfile(refreshFromStore()) }} />
       ) : null}
       <div onClick={quizShow ? closeQuiz : undefined}
         style={quizShow ? { ...SCRIM, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: narrow ? 0 : 16 } : undefined}>

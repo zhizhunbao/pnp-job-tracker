@@ -15,7 +15,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { QuizChecks, QuizChoices, QuizNav, QuizSub, QuizTitle } from '../quiz/QuizUI'
 import type { Lang, TFn } from './i18n'
 import { officialLabel as label } from '@/lib/officialLabels'
-import { readScoreAnswers, writeScoreAnswers } from '@/lib/answers'
+import { pullAndMerge, readScoreAnswers, writeScoreAnswers } from '@/lib/answers'
 import { DEFAULT_PROFILE, EDU_KEYS, scoreProvince, streamMatches, type DrawRow, type EduKey, type ScoreFactor, type SelfProfile } from '@/lib/pnpSelfScore'
 
 // 打分是**关于你这个人**的功能,不绑某一个岗位(Frank 2026-07-27「应该单独弄个功能吧,
@@ -172,6 +172,16 @@ export function PnpScoreCard({ t, lang, ctx, factors, draws, profileClb, streams
   const [extraQuestionIndex, setExtraQuestionIndex] = useState(0)
   const [extraAnswered, setExtraAnswered] = useState<Record<string, boolean>>(() => readScoreAnswers().extraAnswered)
   useEffect(() => { writeScoreAnswers({ ticks, rowAnswers, extraAnswered }) }, [ticks, rowAnswers, extraAnswered])
+  // 答案档入库(2026-08-15):挂载时拉服务端档合并(新者胜;未登录 401 无感)。必须排在
+  // 上面持久化 effect 之后:同内容回写不记时刻(writeScoreAnswers 内容比对),拉档才不会被
+  // 挂载即写误判成「本地更新」。拉回来有变化 → 三个 map 重建,后续改动照旧防抖同步。
+  useEffect(() => {
+    pullAndMerge().then((changed) => {
+      if (!changed) return
+      const s = readScoreAnswers()
+      setTicks(s.ticks); setRowAnswers(s.rowAnswers); setExtraAnswered(s.extraAnswered)
+    }).catch(() => { /* 静默 */ })
+  }, [])
 
   // PR 评估页把官方表字段收敛成逐题选择。这里只换输入形态，不改任何分值或匹配规则；
   // 时薪是 BC 每整元计分，不能粗暴切区间，所以仍是单题数字输入。

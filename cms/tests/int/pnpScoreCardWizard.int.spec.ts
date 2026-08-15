@@ -47,6 +47,9 @@ const t = ((key: string, vars?: Record<string, string | number>) => {
 afterEach(() => {
   vi.unstubAllGlobals()
   vi.restoreAllMocks()
+  // 分值卡答案持久化(3db5d0d)后组件初始 state 从 localStorage 读档:不清盘,
+  // 上一个用例答的题会漏进下一个用例的 done 计数(实撞:done 期望 0 收到 3)
+  localStorage.clear()
 })
 
 const clickNext = async (container: HTMLElement) => {

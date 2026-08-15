@@ -87,6 +87,14 @@ export const Users: CollectionConfig = {
       defaultValue: false,
       admin: { description: '退订每周收藏摘要邮件' },
     },
+    {
+      // 问卷答案档(2026-08-15 答案入库绑账号):{ basic: Answers, score: ScoreAnswers, updatedAt: ISO }。
+      // 列由 docs/sql/account-answers.sql 手写添加(不走 DB_PUSH);写入走 /api/account/answers,
+      // 服务端补 updatedAt;客户端合并规则(新者胜)在 lib/answers.ts。
+      name: 'answers',
+      type: 'json',
+      admin: { readOnly: true, description: '问卷答案档(隐私):登录态自动同步,浏览器与库新者胜' },
+    },
     // 身份最小集(E11-01):均本人可改(无字段级锁),role/proUntil/stripe* 仍锁死。
     { name: 'displayName', type: 'text', admin: { description: '昵称(空则前端回退邮箱前缀)' } },
     { name: 'avatar', type: 'text', admin: { description: '头像 URL(v1 仅存 OAuth 带回的 URL,不做上传;无则前端画首字母块)' } },

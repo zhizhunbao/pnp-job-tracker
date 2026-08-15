@@ -1,8 +1,8 @@
 // 答案门面与字段库(统一题库,docs/design/统一题库与付费面-20260731.md)。
 // 锁死三件事:① 老答案迁得过来(丢了=让用户重答,红线);② 目标省两种表示始终同步
 // (只写一边 → 另一个入口会重新问一遍,那正是这次收敛掉的病);③ 档位→引擎输入的换算与重构前逐字一致。
-import { describe, it, expect, beforeEach } from 'vitest'
-import { ANSWERS_KEY, answeredBasics, readAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { ANSWERS_KEY, answeredBasics, pullAndMerge, readAnswers, readScoreAnswers, toEngineAnswers, writeAnswers, type Answers } from '@/lib/answers'
 import { DECISIONS, batchLeadsFree, KNOWN_NO_FREE_LEAD } from '@/lib/decisions'
 import { FIELDS } from '@/lib/fields'
 
@@ -116,6 +116,47 @@ describe('档位 → 引擎输入', () => {
   it('境外不传签证剩余 —— 没有加拿大签证,拿档位造时间窗=编数', () => {
     expect(toEngineAnswers(base({ status: 'overseas', pgwpBand: 2 })).pgwpMonthsLeft).toBeUndefined()
     expect(toEngineAnswers(base({ status: 'studying', pgwpBand: 2 })).pgwpMonthsLeft).toBe(9)
+  })
+})
+
+// 服务端答案档同步(答案入库绑账号 2026-08-15):合并规则=新者胜。fetch 用素对象桩
+// (jsdom 不保证有 Response),只摸 status/ok/json 三样 —— 与 lib/answers 的用面一致。
+describe('服务端答案档同步', () => {
+  const iso = (offsetMs: number) => new Date(Date.now() + offsetMs).toISOString()
+  const res = (status: number, body: unknown) => ({ status, ok: status >= 200 && status < 300, json: async () => body })
+
+  it('服务端档更新 → 覆盖本地(清浏览器/换设备答案回得来)', async () => {
+    const doc = {
+      basic: base({ status: 'working', nocs: ['31301'], provs: ['BC'], provBand: 1 }),
+      score: { ticks: { 'edu:BC': true }, rowAnswers: {}, extraAnswered: {} },
+      updatedAt: iso(60_000),
+    }
+    vi.stubGlobal('fetch', vi.fn(async () => res(200, { answers: doc })))
+    expect(await pullAndMerge()).toBe(true)
+    expect(readAnswers().nocs).toEqual(['31301'])
+    expect(readScoreAnswers().ticks['edu:BC']).toBe(true)
+  })
+
+  it('本地档更新 → 本地不动,整档推给服务端', async () => {
+    writeAnswers({ status: 'studying' })
+    const methods: string[] = []
+    vi.stubGlobal('fetch', vi.fn(async (_url: unknown, init?: { method?: string; body?: string }) => {
+      methods.push(init?.method || 'GET')
+      if ((init?.method || 'GET') === 'GET')
+        return res(200, { answers: { basic: base(), score: {}, updatedAt: iso(-60_000) } })
+      expect(JSON.parse(init!.body!).basic.status).toBe('studying')   // 推上去的是本地这份
+      return res(200, { ok: true, updatedAt: iso(0) })
+    }))
+    expect(await pullAndMerge()).toBe(false)
+    expect(readAnswers().status).toBe('studying')
+    expect(methods).toContain('PUT')
+  })
+
+  it('未登录 401 → 本地照旧,一切静默', async () => {
+    writeAnswers({ status: 'working' })
+    vi.stubGlobal('fetch', vi.fn(async () => res(401, {})))
+    expect(await pullAndMerge()).toBe(false)
+    expect(readAnswers().status).toBe('working')
   })
 })
 

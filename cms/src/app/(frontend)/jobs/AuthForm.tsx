@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 import type { TFn } from './i18n'
 import { Modal } from './Modal'
 import { Button, Notice } from '../ui/primitives'
-import { readAnswers } from '@/lib/answers'
+import { pullAndMerge, readAnswers } from '@/lib/answers'
 import { fieldsOf, missingFields } from '@/lib/decisions'
 
 const GOOGLE_ON = !!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
@@ -72,7 +72,11 @@ export function AuthForm({ t, onDone, initialMode, resetToken, returnTo, hero }:
     }
     return out.pathname + out.search
   }
-  const finishAuth = () => {
+  const finishAuth = async () => {
+    // 答案档入库绑账号(2026-08-15):登录一成功先拉服务端档与本地合并(新者胜;服务端
+    // 无档则把浏览器旧答案送上去 —— dp.authGate「注册后答案自动存档」兑现处)。必须等它:
+    // 下面 quizDestination 读的就是合并后的答案,跳转/回调前档已落定。失败不拦登录。
+    await pullAndMerge().catch(() => { /* 网络失败:答案仍在浏览器,下次改动重试 */ })
     const destination = quizDestination()
     if (destination) { window.location.assign(destination); return }
     onDone()
@@ -109,7 +113,7 @@ export function AuthForm({ t, onDone, initialMode, resetToken, returnTo, hero }:
           body: JSON.stringify({ token: resetToken || '', password: pw }),
         })
         if (!r.ok) { setErr(t('acct.resetBad')); return }
-        setPw(''); finishAuth(); return
+        setPw(''); await finishAuth(); return
       }
       if (mode === 'register') {
         if (pw.length < 8) { setErr(t('acct.err.weakPw')); return }
@@ -137,7 +141,7 @@ export function AuthForm({ t, onDone, initialMode, resetToken, returnTo, hero }:
         body: JSON.stringify({ email, password: pw }),
       })
       if (!r2.ok) { setErr(t('acct.err.cred')); return }
-      setPw(''); finishAuth()
+      setPw(''); await finishAuth()
     } catch { setErr(t('acct.err.generic')) } finally { setBusy(false) }
   }
 

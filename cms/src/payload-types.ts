@@ -211,6 +211,18 @@ export interface User {
    */
   weeklyOptOut?: boolean | null;
   /**
+   * 问卷答案档(隐私):登录态自动同步,浏览器与库新者胜
+   */
+  answers?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
    * 昵称(空则前端回退邮箱前缀)
    */
   displayName?: string | null;
@@ -2119,6 +2131,7 @@ export interface UsersSelect<T extends boolean = true> {
   lastAlertAt?: T;
   lastWeeklyAt?: T;
   weeklyOptOut?: T;
+  answers?: T;
   displayName?: T;
   avatar?: T;
   loginProvider?: T;
