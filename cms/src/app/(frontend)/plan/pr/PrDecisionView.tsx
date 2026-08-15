@@ -638,9 +638,11 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
                   　{t('dp.compFlow')} {yFlow(r)?.toLocaleString('en-CA') ?? '—'}
                 </>
               ) : (
+                // ÷ 算式与「截至…累计」不逐行念(2026-08-15 Frank「计算公式不用每个卡片都算一遍」):
+                // 公式、存量快照月、累计口径都在脚注写一次,行内只留带短标签的值;名额年份逐省不同留行内
                 <>
-                  {r.pool.toLocaleString('en-CA')} {r.poolYear ? `${r.poolYear}-12` : ''}　÷　{r.quota.toLocaleString('en-CA')} {r.quotaYear || ''}
-                  {r.flow ? `　${t('dp.compFlow')} ${r.flow.n.toLocaleString('en-CA')} ${t('dp.compFlowP', { p: r.flow.period })}` : ''}
+                  {t('dp.compPool')} {r.pool.toLocaleString('en-CA')}　{t('dp.compQuota')} {r.quota.toLocaleString('en-CA')} {r.quotaYear || ''}
+                  {r.flow ? `　${t('dp.compFlow')} ${r.flow.n.toLocaleString('en-CA')}` : ''}
                 </>
               )}
             </span>
@@ -693,7 +695,7 @@ export function PrDecisionView({ overview, competition = [], tvJob, topNocs, ini
           ]} />
       </div>
       {/* 口径脚注一行说完(2026-08-13 Frank:「改成一行」);本站更新整列同一天 → 撤列并进这行 */}
-      <div style={{ fontSize: 11.5, color: UI.text3, lineHeight: 1.6, marginTop: 8 }}>{t('dp.compNoteShort', { d: compGen ?? '', m: poolAsOf ? `${poolAsOf}-12` : '' })}</div>
+      <div style={{ fontSize: 11.5, color: UI.text3, lineHeight: 1.6, marginTop: 8 }}>{t('dp.compNoteShort', { d: compGen ?? '', m: poolAsOf ? `${poolAsOf}-12` : '', p: flowPeriod ?? '' })}</div>
     </div>
   ) : null
 
