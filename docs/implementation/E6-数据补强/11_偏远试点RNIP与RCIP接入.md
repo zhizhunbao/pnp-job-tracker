@@ -30,6 +30,9 @@
 - [x] 前端：与 PNP/EE/AIP 同款——列(RCIP/FCIP) + 胶囊 + 弹框（三态直判 + 社区名 + IRCC 官方出处行）
       + 筛选 fPilot(yes/RCIP/FCIP/no,URL 短名 pilot=) + 决策页 RCIP 行看岗链接
 - [x] 三语 label（col/all/grp/ch.pilot.on|na/fact.pilotGate/dp.planSeeJobsPilot）
+- [x] **pilot_occupations 消费端**（批C 尾巴 2026-08-15）：09 层交叉 → `jobs.pilot_occ`(yes|no|空判不了),
+      弹框三态行「该职业在社区在收清单/不在」;在招分布 yes 372/no 850——负判定以官方清单为据
+      (RCIP 要求 offer 职业在社区清单内),此前七成试点岗会被高估
 
 ## 3. 实现步骤
 
@@ -61,4 +64,9 @@
 
 ## 6. 完成定义（DoD）
 
-- [ ] §2 全勾；生产复验：命中社区的岗显示试点标与依据，非试点社区无标；抽样 5 个社区对官方页逐字核。
+- [x] §2 全勾；生产复验（2026-08-15）：命中岗三层判定与依据齐（社区/雇主/职业），非试点城市岗无标（Toronto 抽查 pilot 空）；
+      **五社区逐字核 PASS**：Moose Jaw/Thunder Bay/Kelowna/Pictou/Steinbach 各抽 3 雇主+3 职业共 30 样本 30/30
+      逐字命中官方 PDF/页面，总数 4 个精确相等、Thunder Bay 启发式 ~2.4%（<5%）。
+      非阻塞注记：① Moose Jaw 62010/63200 与 Kelowna 63200 的年度配额官方已标满/关（Fermé）——
+      职业清单暂无「状态」字段，逐职业限额/关停状态是后续增强项；② Thunder Bay PDF 文件名(Aug 13)与
+      内页眉(Jun 29)日期不一致，系官方文件内部矛盾，留痕。
