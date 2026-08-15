@@ -341,7 +341,7 @@ const zh: Dict = {
   'dp.why.gap.fieldMatch': '差专业对口', 'dp.sum.fieldMatch': '专业对口', 'dp.sum.eduProv': '学历所在省',
   'dp.why.gap.french': '差法语 NCLC 5', 'dp.why.gap.offerFCIP': '差社区雇主 offer(法语区)', 'dp.sum.french': '法语 NCLC 5',
   'dp.francoCommunities': '法语社区', 'dp.planSeeJobsFcip': '看法语社区在招', 'dp.planAfterOfferOkFcip': '拿到法语社区雇主 offer 即可申请',
-  'pv.gate.french.met': '法语 NCLC 5 达标', 'pv.gate.french.gap': '这条通道要求法语 NCLC 5,你现在没有', 'pv.gate.french.unknown': '法语 NCLC 5 判不了,档案缺这一项', 'pv.gate.french.notCollected': '本站尚未收录 {stream} 的法语门槛条文',
+  'pv.gate.french.met': '法语(NCLC 5) 达标', 'pv.gate.french.gap': '这条通道要求法语(NCLC 5),你现在没有', 'pv.gate.french.unknown': '法语(NCLC 5)判不了,档案缺这一项', 'pv.gate.french.notCollected': '本站尚未收录 {stream} 的法语门槛条文',
   'dp.why.wait1': 'offer 后约 3–6 个月', 'dp.why.wait2': 'offer 后约 12 个月', 'dp.why.wait3': 'offer 后约 24 个月',
   'dp.planTopEmpty': '这些通道都要先拿到该省 offer,而本站在这些省暂无该职业在招 —— 建议放宽目标省',
   'dp.why.fieldMatch': '需专业对口',

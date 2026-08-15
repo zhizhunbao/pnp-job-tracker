@@ -394,11 +394,10 @@ describe('lookupVerdict(薄封装)', () => {
     expect(aip.verdict).toBe('needs-info')
     expect(aip.tier, '1,560 小时 = 官方自写的 1 年 → 12 个月 → tier2').toBe(2)
     // 2026-08-12 晚:BC/PE 的官方指南 PDF 与 NB 换版后的新资格页都补进门槛清单 → 一条不剩。
-    // 2026-08-15:FCIP 立成第 14 条通道,而 pnp_requirements 里没有 program='FCIP' 的行
-    // (经验/语言数值未入库)→ 它如实落 not-collected。补行走 etl/build_ee_rules.py,补完改回 []。
+    // 2026-08-15 当晚:FCIP 的 3 行入库后又回到一条不剩。
     // 这条断言的意思没变:availability 只许由「本站收没收录条文」决定,不许被别的东西污染。
     expect(r.pathways.filter((v) => v.availability !== 'ok').map((v) => v.key).sort())
-      .toEqual(['FCIP'])
+      .toEqual([])
     expect(r.levers.map((l) => l.key).sort()).toEqual(['clb-boost', 'teer-downgrade'])
   })
 

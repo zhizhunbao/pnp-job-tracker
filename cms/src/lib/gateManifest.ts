@@ -42,7 +42,7 @@ export const GATE_LABEL: Record<GateKey, { zh: string; en: string; ko: string }>
   fieldMatch: { zh: '专业对口', en: 'field of study match', ko: '전공 일치' },
   // 2026-08-15 第五类闸:FCIP 要 NCLC 5 **法语**四项。站里那道语言题问的是 CLB(英语的尺子),
   // 拿它当 NCLC 用 = 把不会法语的人判成达标再推去法语社区,故单开一闸、单问一题。
-  french: { zh: '法语 NCLC 5', en: 'French NCLC 5', ko: '프랑스어 NCLC 5' },
+  french: { zh: '法语(NCLC 5)', en: 'French NCLC 5', ko: '프랑스어 NCLC 5' },
 }
 
 /** statusInCanada 按 asks 拆开后的人话名(结论文案用它,不再统称「境内身份」) */

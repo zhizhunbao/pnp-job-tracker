@@ -65,7 +65,9 @@ describe('mart 实况', () => {
   it('六张表的行数与 C4 入库一致', () => {
     // 2026-08-09 批B AIP 36 行入库后更新:门槛表 259 → 300(264 既有 + 36 AIP);
     // 2026-08-14 L2-09 用例横测补 RCIP 语言 3 行(TEER 档 CLB 6/5/4)→ 303
-    expect(data.requirements).toHaveLength(303)
+    // 2026-08-15 FCIP 立成通道,补它自己的 3 行(1,560 小时 / 指定雇主 offer / NCLC 5 法语)→ 306
+    expect(data.requirements).toHaveLength(306)
+    expect(data.requirements.filter((r) => r.program === 'FCIP')).toHaveLength(3)
     expect(data.requirements.filter((r) => r.program === 'AIP')).toHaveLength(36)
     expect(data.requirements.filter((r) => r.program === 'RCIP' && r.factor === 'language')).toHaveLength(3)
     expect(data.occupations).toHaveLength(630)
@@ -593,11 +595,10 @@ describe('红线不变量', () => {
     // 2026-08-12:availability 的判据从「库里有没有门槛行」扩到「**门槛清单里那几类闸有没有条文**」——
     // 两者都是「本站未收录」。当晚把最后三条的窟窿补完(BC/PE 的官方指南 PDF、NB 换版后的新资格页),
     // **13 条通道现在一条 not-collected 都没有**。这个空数组是硬指标:再有通道掉进未收录,这条就红。
-    // 2026-08-15:FCIP 立成通道时 pnp_requirements 里**没有** program='FCIP' 的行(RCIP 有 5 行)——
-    // 经验/语言的数值还没入库,所以它如实落 not-collected。这不是回退,是把「本站未收录」摆出来;
-    // 补行走 etl/build_ee_rules.py,补完这里改回 []。
+    // 2026-08-15 当晚补完:FCIP 的 3 行入库(build_ee_rules → mart → seed),**又回到一条不剩**。
+    // 空数组仍是硬指标:再有通道掉进未收录,这条就红。
     expect(list.filter((v) => v.availability === 'not-collected').map((v) => v.key).sort())
-      .toEqual(['FCIP'])
+      .toEqual([])
   })
 
   it('excluded 不带 tier;open 一定有 tier', () => {
